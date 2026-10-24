@@ -2,7 +2,7 @@ Supreme AdBlock blochează reclamele peste tot — reclame video pe YouTube, ban
 
 • Actualizări de filtre semnate de două ori pe zi: rețelele publicitare noi sunt tratate în câteva ore, fără cod la distanță.
 • Reclamele YouTube sunt oprite la sursă, așa că videoclipurile pur și simplu pornesc.
-• Bannere de cookie-uri: apasă „Respinge” în locul dvs., elimină estomparea și blocarea derulării rămase și nu apasă niciodată un buton de conectare, OAuth sau plată.
+• Bannere de cookie-uri: apasă „Respinge” în locul dvs. când bannerul oferă această opțiune și „Acceptă” doar când nu există altă cale de a-l închide; elimină estomparea și blocarea derulării rămase și nu apasă niciodată un buton de conectare, OAuth sau plată.
 • Fără cont, fără telemetrie, fără colectare de date, iar nicio reclamă nu trece în schimbul unei plăți. Global Privacy Control cere fiecărui site să nu vă vândă și să nu vă partajeze datele.
 • EasyList, EasyPrivacy și alte liste de filtre deschise sunt incluse, plus lista pentru limba dvs. (31 de liste regionale).
 • Postările sponsorizate de pe Facebook, Instagram și Threads sunt ascunse.

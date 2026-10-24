@@ -2,7 +2,7 @@ Supreme AdBlock blokuje reklamy všade — videoreklamy na YouTube, bannery, vys
 
 • Podpísané aktualizácie filtrov dvakrát denne: nové reklamné siete sú vyriešené v priebehu niekoľkých hodín, bez vzdialeného kódu.
 • Reklamy na YouTube sa zastavia už pri zdroji, takže sa videá jednoducho prehrajú.
-• Cookie lišty: stlačí za vás „Odmietnuť“, odstráni zvyšné rozmazanie a zámok posúvania a nikdy nestlačí tlačidlo na prihlásenie, OAuth ani platbu.
+• Cookie lišty: stlačí za vás „Odmietnuť“, ak lišta toto tlačidlo ponúka, a „Prijať“ len vtedy, keď ju inak nemožno zavrieť; odstráni zvyšné rozmazanie a zámok posúvania a nikdy nestlačí tlačidlo na prihlásenie, OAuth ani platbu.
 • Žiadny účet, žiadna telemetria, žiadny zber údajov a žiadna reklama neprejde za poplatok. Global Privacy Control žiada každý web, aby vaše údaje nepredával ani nezdieľal.
 • Obsahuje EasyList, EasyPrivacy a ďalšie otvorené zoznamy filtrov a k tomu zoznam pre váš jazyk (31 regionálnych zoznamov).
 • Sponzorované príspevky na Facebooku, Instagrame a Threads sú skryté.

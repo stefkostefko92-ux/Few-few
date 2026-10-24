@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokovač reklám pre YouTube a web: videoreklamy, bannery, vyskakovacie okná, sledovače, cookies („Odmietnuť“) a anti-adblock steny."
+    "message": "Blokovač reklám pre YouTube a web: videoreklamy, bannery, vyskakovacie okná, sledovače, cookie lišty a anti-adblock steny."
   },
   "byCarbon": {
     "message": "od Carbon Stealth"
@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Kapacita pravidiel"
+  },
+  "helpTitle": {
+    "message": "Weby nefungujú?"
+  },
+  "helpText": {
+    "message": "Stačí jeden web po druhom: povoľte na ňom reklamy na hodinu alebo vypnite skrývanie prvkov len tam. Keď nám dáte vedieť, opravíme to pre všetkých."
+  },
+  "helpFix": {
+    "message": "Opraviť tento web"
+  },
+  "cardNever": {
+    "message": "Už nezobrazovať"
+  },
+  "cardClose": {
+    "message": "Zavrieť"
+  },
+  "receiptTitle": {
+    "message": "Vašich posledných 30 dní"
+  },
+  "receiptText": {
+    "message": "Zablokované požiadavky: $1 · zodpovedané cookie lišty: $2 · ušetrené dáta: približne $3 (odhad)"
+  },
+  "share": {
+    "message": "Zdieľať"
+  },
+  "shareTitle": {
+    "message": "Skopírovať odkaz na Supreme AdBlock v obchode Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Odkaz skopírovaný"
+  },
+  "rep_fixed_q": {
+    "message": "Funguje už web?"
+  },
+  "rep_fixed_yes": {
+    "message": "Áno, funguje"
+  },
+  "rep_fixed_no": {
+    "message": "Nie, stále nefunguje"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Výborne. Keď nám dáte vedieť nižšie, v hlásení bude uvedené, ktorá oprava pomohla, a opravíme web pre všetkých."
+  },
+  "rep_fixed_next": {
+    "message": "Skúste ďalšiu: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Potom nám, prosím, dajte vedieť nižšie: na web sa pozrieme."
+  },
+  "rep_webmail": {
+    "message": "Nemáte e-mailovú aplikáciu? Skopírujte hlásenie a pošlite ho na $1 zo svojej webovej pošty."
+  },
+  "blk_mistake": {
+    "message": "Myslíte si, že ide o omyl? Dajte nám vedieť"
+  },
+  "welTest": {
+    "message": "Pozrite sa, ako to funguje, na testovacej stránke"
   }
 }

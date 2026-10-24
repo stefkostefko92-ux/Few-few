@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { warEngine, type WarState } from "./war.js";
 import { SeededRng } from "../../kernel/rng.js";
+import { buildDeck, RANKS_52 } from "../cards.js";
 
 describe("WAR redact", () => {
   it("hides both decks and the buried pile but keeps counts (no shuffle leak)", () => {
@@ -62,5 +63,32 @@ describe("WAR mechanics", () => {
     const { state } = warEngine.reduce(s, { type: "FLIP" }, rng());
     expect(state.done).toBe(true);
     expect(state.winner).toBe(0); // seat 1 emptied first
+  });
+});
+
+describe("WAR таван от флипове", () => {
+  // Последен флип преди тавана (5000): място 0 (25 карти, отгоре A♠) взема
+  // 2♠ от място 1 (27 карти) → 26:26.
+  const atCap = (): WarState => {
+    const rest = buildDeck(RANKS_52).filter((c) => c !== "AS" && c !== "2S");
+    return base({ hands: [["AS", ...rest.slice(0, 24)], ["2S", ...rest.slice(24)]], flips: 4999 });
+  };
+
+  it("26:26 на тавана → реми (без победител, без WIN)", () => {
+    const { state, events } = warEngine.reduce(atCap(), { type: "FLIP" }, rng());
+    expect(state.hands[0]!.length).toBe(26);
+    expect(state.hands[1]!.length).toBe(26);
+    expect(state.done).toBe(true);
+    expect(state.winner).toBe(null);
+    expect(events.some((e) => e.type === "WIN")).toBe(false);
+    expect(warEngine.score(state).map((x) => x.result)).toEqual(["draw", "draw"]);
+  });
+
+  it("повече карти на тавана печели", () => {
+    const s = atCap();
+    s.hands[0]!.push(s.hands[1]!.pop()!); // 26:26 преди флипа → 28:24 след него
+    const { state } = warEngine.reduce(s, { type: "FLIP" }, rng());
+    expect(state.winner).toBe(0);
+    expect(warEngine.score(state)[0]).toMatchObject({ seat: 0, result: "win" });
   });
 });

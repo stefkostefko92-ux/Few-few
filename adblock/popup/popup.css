@@ -543,6 +543,10 @@ html[data-theme="light"] .site.sub { background: rgba(16, 24, 32, 0.035); }
 html[data-theme="light"] #donate svg,
 html[data-theme="light"] .rate svg { fill: var(--accent); }
 #donate:hover, .rate:hover { color: var(--ok-text); }
+/* „Сподели“ е бутон (копира адреса), изглежда като съседните линкове */
+button.rate { border: 0; background: none; padding: 0; font-family: inherit; cursor: pointer; }
+button.rate:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 3px; border-radius: 4px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .foot .meta { display: flex; flex: none; align-items: center; gap: 10px; font-size: 10.5px; color: var(--muted); }
 .foot .meta i { font-style: normal; }
 

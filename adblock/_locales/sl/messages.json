@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokator oglasov za YouTube in splet: videooglasi, pasice, pojavna okna, sledilniki, piškotki („Zavrni“) in zidovi anti-adblock."
+    "message": "Blokator oglasov za YouTube in splet: videooglasi, pasice, pojavna okna, sledilniki, obvestila o piškotkih in zidovi anti-adblock."
   },
   "byCarbon": {
     "message": "izdelek Carbon Stealth"
@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Zmogljivost pravil"
+  },
+  "helpTitle": {
+    "message": "Spletna mesta ne delujejo?"
+  },
+  "helpText": {
+    "message": "Dovolj je eno spletno mesto naenkrat: na njem za eno uro dovolite oglase ali izklopite skrivanje elementov samo tam. Če nam sporočite, ga popravimo za vse."
+  },
+  "helpFix": {
+    "message": "Popravi to spletno mesto"
+  },
+  "cardNever": {
+    "message": "Ne prikazuj več"
+  },
+  "cardClose": {
+    "message": "Zapri"
+  },
+  "receiptTitle": {
+    "message": "Vaših zadnjih 30 dni"
+  },
+  "receiptText": {
+    "message": "Blokirane zahteve: $1 · odgovorjena obvestila o piškotkih: $2 · prihranjeni podatki: približno $3 (ocena)"
+  },
+  "share": {
+    "message": "Deli"
+  },
+  "shareTitle": {
+    "message": "Kopiraj povezavo do Supreme AdBlock v trgovini Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Povezava kopirana"
+  },
+  "rep_fixed_q": {
+    "message": "Ali spletno mesto zdaj deluje?"
+  },
+  "rep_fixed_yes": {
+    "message": "Da, deluje"
+  },
+  "rep_fixed_no": {
+    "message": "Ne, še vedno ne deluje"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Odlično. Če nam sporočite spodaj, bo poročilo navedlo, kateri popravek je pomagal, da bomo spletno mesto popravili za vse."
+  },
+  "rep_fixed_next": {
+    "message": "Poskusite naslednji popravek: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Potem nam, prosim, sporočite spodaj: ogledali si bomo spletno mesto."
+  },
+  "rep_webmail": {
+    "message": "Nimate poštnega programa? Kopirajte poročilo in ga iz spletne pošte pošljite na $1."
+  },
+  "blk_mistake": {
+    "message": "Mislite, da gre za napako? Sporočite nam"
+  },
+  "welTest": {
+    "message": "Oglejte si delovanje na preizkusni strani"
   }
 }

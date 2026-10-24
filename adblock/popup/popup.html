@@ -141,8 +141,14 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.8-4.6 4.4 1.2 6.3L12 17l-5.7 3.1 1.2-6.3-4.6-4.4 6.3-.8Z"/></svg>
         <span data-i18n="rate">Rate</span>
       </a>
+      <!-- „Сподели“: копира чистия адрес на листинга (без параметри) — само при инсталация от Chrome Web Store -->
+      <button id="share" class="rate" type="button" data-i18n-title="shareTitle" title="Copy the Chrome Web Store link to Supreme AdBlock" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a3 3 0 1 0-2.8-4L8.6 7.9a3 3 0 1 0 0 4.2l6.6 3.9A3 3 0 1 0 16 14.2L9.4 10.4a3 3 0 0 0 0-.8L16 5.8A3 3 0 0 0 18 8Z"/></svg>
+        <span data-i18n="share">Share</span>
+      </button>
     </span>
-    <span class="meta"><i id="listDot">filters</i><i class="v">v5.5.1</i></span>
+    <span id="shareStatus" class="sr-only" role="status"></span>
+    <span class="meta"><i id="listDot">filters</i><i class="v">v5.6.0</i></span>
   </footer>
 
   <!-- Картата след успех: най-много два пъти, решава service worker-ът (reviewDue). Лист отдолу над
@@ -156,6 +162,29 @@
       <button id="reviewLater" class="review-later" type="button" data-i18n="reviewLater">Not now</button>
     </div>
     <button id="reviewNever" class="review-never" type="button" data-i18n="reviewNever">Don't ask again</button>
+  </aside>
+
+  <!-- 5.6: „Сайтовете се чупят?“ — веднъж, при признаци (SW: helpDue); като листа за отзив, никога заедно с него -->
+  <aside class="review help" id="help" aria-labelledby="helpTitle" aria-describedby="helpText" hidden>
+    <span class="review-star" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.1L3.5 17.2a1.8 1.8 0 0 0 2.5 2.6l5.8-5.8a4 4 0 0 0 5.1-5.4l-2.5 2.5-2.4-.6-.6-2.4 2.5-2.5Z"/></svg></span>
+    <h2 id="helpTitle" data-i18n="helpTitle">Sites breaking?</h2>
+    <p id="helpText" data-i18n="helpText">One site at a time is enough: allow its ads for an hour, or turn off element hiding just there. Telling us fixes it for everyone.</p>
+    <div class="review-actions">
+      <button id="helpGo" class="review-go" type="button" data-i18n="helpFix">Fix this site</button>
+      <button id="helpLater" class="review-later" type="button" data-i18n="reviewLater">Not now</button>
+    </div>
+    <button id="helpNever" class="review-never" type="button" data-i18n="cardNever">Don't show this again</button>
+  </aside>
+
+  <!-- 5.6: месечната „разписка“ — от дневните броячи за 30 дни (SW: receiptOf), веднъж на месец -->
+  <aside class="review receipt" id="receipt" aria-labelledby="receiptTitle" aria-describedby="receiptText" hidden>
+    <span class="review-star" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 20v-9h3v9H5Zm5.5 0V5h3v15h-3ZM16 20v-6h3v6h-3Z"/></svg></span>
+    <h2 id="receiptTitle" data-i18n="receiptTitle">Your last 30 days</h2>
+    <p id="receiptText">—</p>
+    <div class="review-actions">
+      <button id="receiptClose" class="review-later" type="button" data-i18n="cardClose">Close</button>
+    </div>
+    <button id="receiptNever" class="review-never" type="button" data-i18n="cardNever">Don't show this again</button>
   </aside>
 
   <script src="popup.js"></script>

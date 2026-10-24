@@ -1,7 +1,7 @@
 // Redis (eviction, персистентност) и бекъп на томове/качени файлове.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseInfo, parseKeyspace, summarize, evictionChecks, saveSpec, assertName } from '../src/redis.js';
+import { parseInfo, parseKeyspace, summarize, evictionChecks, saveSpec, assertName, parseHostRedis, hostPort } from '../src/redis.js';
 import { assertVolume, parseSize, volumeBackupSpec, backupAllVolumesSpec, archiveName } from '../src/volumes.js';
 import { loadConfig } from '../src/config.js';
 import fs from 'node:fs';
@@ -383,4 +383,20 @@ test('десктоп: образът и таванът минават през �
   assert.match(shipped, /image:\s*\$\{DESKTOP_IMAGE:-/);
   assert.match(shipped, /mem_limit:\s*\$\{DESKTOP_MEM:-/, 'без таван OOM убиецът избира базата, не десктопа');
   fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('redis: системният redis-server се открива по ss, паролата не минава като аргумент', () => {
+  const ss = [
+    'LISTEN 0 511 127.0.0.1:6379 0.0.0.0:* users:(("redis-server",pid=812,fd=6))',
+    'LISTEN 0 511 0.0.0.0:80 0.0.0.0:* users:(("nginx",pid=90,fd=5))',
+    'LISTEN 0 511 [::1]:6380 [::]:* users:(("valkey-server",pid=813,fd=7))',
+  ].join('\n');
+  assert.deepEqual(parseHostRedis(ss), [6379, 6380]);
+  assert.equal(hostPort('host:6379'), 6379);
+  assert.equal(hostPort('host:0'), null);
+  assert.equal(hostPort('shop-cache-1'), null);
+  const spec = saveSpec('host:6379');
+  assert.equal(spec.cmd, 'redis-cli');
+  assert.ok(!spec.args.includes('-a'), 'паролата никога като аргумент (вижда се в ps)');
+  assert.throws(() => saveSpec('host:6379;reboot'));
 });

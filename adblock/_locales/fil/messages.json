@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Ad blocker para sa YouTube at sa web: video ad, banner, pop-up, tracker, cookie banner (Reject) at anti-adblock wall."
+    "message": "Ad blocker para sa YouTube at sa web: video ad, banner, pop-up, tracker, cookie banner at anti-adblock wall."
   },
   "byCarbon": {
     "message": "by Carbon Stealth"
@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Kapasidad ng rule"
+  },
+  "helpTitle": {
+    "message": "Nasisira ba ang mga site?"
+  },
+  "helpText": {
+    "message": "Sapat na ang isang site sa bawat pagkakataon: payagan ang ads nito nang 1 oras, o i-off ang pagtatago ng element doon lang. Kapag sinabi ninyo sa amin, aayusin namin ito para sa lahat."
+  },
+  "helpFix": {
+    "message": "Ayusin ang site na ito"
+  },
+  "cardNever": {
+    "message": "Huwag nang ipakita ulit"
+  },
+  "cardClose": {
+    "message": "Isara"
+  },
+  "receiptTitle": {
+    "message": "Ang huling 30 araw ninyo"
+  },
+  "receiptText": {
+    "message": "$1 request ang na-block · $2 cookie banner ang sinagot · humigit-kumulang $3 na data ang natipid (tantiya)"
+  },
+  "share": {
+    "message": "Ibahagi"
+  },
+  "shareTitle": {
+    "message": "Kopyahin ang link ng Supreme AdBlock sa Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Nakopya ang link"
+  },
+  "rep_fixed_q": {
+    "message": "Naayos ba ang site?"
+  },
+  "rep_fixed_yes": {
+    "message": "Oo, gumagana na"
+  },
+  "rep_fixed_no": {
+    "message": "Hindi, sira pa rin"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Mabuti at gumagana na. Kung sasabihin ninyo sa amin sa ibaba, makikita sa report kung aling ayos ang gumana, para maayos namin ang site para sa lahat."
+  },
+  "rep_fixed_next": {
+    "message": "Subukan ang susunod: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Kung gayon, pakisabi sa amin sa ibaba: titingnan namin ang site."
+  },
+  "rep_webmail": {
+    "message": "Walang email app? Kopyahin ang report at ipadala ito sa $1 mula sa inyong webmail."
+  },
+  "blk_mistake": {
+    "message": "Sa tingin ninyo ay mali ito? Sabihin sa amin"
+  },
+  "welTest": {
+    "message": "Tingnan itong gumagana sa isang test page"
   }
 }

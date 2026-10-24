@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Reklam engelleyici: YouTube ve webde video reklam, banner, pop-up, izleyici, çerez banner'ı (“Reddet”) ve anti-adblock duvarı."
+    "message": "Reklam engelleyici: YouTube ve webde video reklam, banner, pop-up, izleyici, çerez banner'ı ve anti-adblock duvarı."
   },
   "byCarbon": {
     "message": "Carbon Stealth tarafından"
@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Kural kapasitesi"
+  },
+  "helpTitle": {
+    "message": "Siteler bozuluyor mu?"
+  },
+  "helpText": {
+    "message": "Her seferinde tek bir site yeterli: o sitenin reklamlarına bir saat izin verin veya öğe gizlemeyi yalnızca orada kapatın. Bize bildirirseniz herkes için düzeltiriz."
+  },
+  "helpFix": {
+    "message": "Bu siteyi düzelt"
+  },
+  "cardNever": {
+    "message": "Bir daha gösterme"
+  },
+  "cardClose": {
+    "message": "Kapat"
+  },
+  "receiptTitle": {
+    "message": "Son 30 gününüz"
+  },
+  "receiptText": {
+    "message": "$1 istek engellendi · $2 çerez banner'ı yanıtlandı · yaklaşık $3 veri tasarrufu (tahmini)"
+  },
+  "share": {
+    "message": "Paylaş"
+  },
+  "shareTitle": {
+    "message": "Supreme AdBlock'un Chrome Web Store bağlantısını kopyala"
+  },
+  "shareCopied": {
+    "message": "Bağlantı kopyalandı"
+  },
+  "rep_fixed_q": {
+    "message": "Site düzeldi mi?"
+  },
+  "rep_fixed_yes": {
+    "message": "Evet, çalışıyor"
+  },
+  "rep_fixed_no": {
+    "message": "Hayır, hâlâ bozuk"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Çalışmasına sevindik. Aşağıdan bize bildirirseniz rapor hangi düzeltmenin işe yaradığını gösterir; böylece siteyi herkes için düzeltebiliriz."
+  },
+  "rep_fixed_next": {
+    "message": "Sıradakini deneyin: $1"
+  },
+  "rep_fixed_none": {
+    "message": "O zaman lütfen aşağıdan bize bildirin: siteye bakacağız."
+  },
+  "rep_webmail": {
+    "message": "E-posta uygulamanız yok mu? Raporu kopyalayın ve web postanızdan $1 adresine gönderin."
+  },
+  "blk_mistake": {
+    "message": "Bunun bir hata olduğunu mu düşünüyorsunuz? Bize bildirin"
+  },
+  "welTest": {
+    "message": "Bir test sayfasında çalışırken görün"
   }
 }

@@ -349,7 +349,10 @@ export async function posture(cfg = {}) {
       id: 'exposed-ports',
       severity: 'high',
       title: `${plural(notExpected.length, 'услуга', 'услуги')} слушат на всички интерфейси`,
-      why: `${notExpected.map((e) => `${e.proc} на ${e.local}`).join(', ')}. Приложение, вързано на 0.0.0.0, е достъпно отвън дори да мислиш, че е зад Nginx.`,
+      // Данните (процес на адрес) са ОТДЕЛНО поле: слепени с изречението, те правят
+      // шаблон, който се мени с всяка машина, и преводът не съвпада никога.
+      why: 'Приложение, вързано на 0.0.0.0, е достъпно отвън дори да мислиш, че е зад Nginx.',
+      where: notExpected.map((e) => `${e.proc} на ${e.local}`).join(', '),
       fix: 'Върни ги на 127.0.0.1 (в конфига на приложението/compose: „127.0.0.1:3000:3000") и ги пускай само през reverse proxy.',
     });
   }
@@ -429,7 +432,10 @@ export async function posture(cfg = {}) {
 // Не е откриване на прониквания (root може да пренапише и базата). Целта е
 // друга и много по-честа: „вчера работеше, днес не" — кой файл е мръднал.
 const BASELINE_FILE = 'etc-baseline.json';
-const WATCHED = [
+// Отпечатъци, направени ПРЕДИ разширяването на списъка, нямат `watched` — за тях
+// важи този. Иначе всеки файл под новите пътища изглежда „добавен" и самият ъпдейт
+// вдига аларма за дрейф на здрав сървър.
+const LEGACY_WATCHED = [
   '/etc/ssh/sshd_config',
   '/etc/sudoers',
   '/etc/passwd',
@@ -442,6 +448,20 @@ const WATCHED = [
   '/etc/sudoers.d',
   '/etc/nginx/sites-enabled',
   '/etc/cron.d',
+];
+// Добавени след проверка в лабораторията:
+// - sshd_config.d — ТАМ панелът сам съветва да се сложи защитата на SSH, а Ubuntu
+//   24.04 носи там 50-cloud-init.conf. Един файл в тази папка връща паролите, а
+//   отпечатъкът го пропускаше;
+// - ld.so.preload — класическото място за руткит (зарежда се във ВСЕКИ процес);
+// - nginx/conf.d — включва се в http контекста като sites-enabled;
+// - ключовете на root — нов ред там е постоянен вход, без парола и без лог за вход.
+const WATCHED = [
+  ...LEGACY_WATCHED,
+  '/etc/ssh/sshd_config.d',
+  '/etc/ld.so.preload',
+  '/etc/nginx/conf.d',
+  '/root/.ssh/authorized_keys',
 ];
 const MAX_FILES = 2000;
 
@@ -488,7 +508,7 @@ function walk(target, out, depth = 0) {
 export function snapshotEtc() {
   const files = new Map();
   for (const t of WATCHED) walk(t, files);
-  return { takenAt: new Date().toISOString(), files: Object.fromEntries(files) };
+  return { takenAt: new Date().toISOString(), watched: [...WATCHED], files: Object.fromEntries(files) };
 }
 
 export function saveBaseline(stateDir, snap) {
@@ -512,9 +532,16 @@ export function diffEtc(stateDir) {
   const added = [];
   const removed = [];
   const changed = [];
+  // Файл под път, който отпечатъкът изобщо НЕ е следял, не е „добавен" — той е
+  // нов за наблюдението. Казва се отделно и не вдига аларма; влиза при следващия
+  // отпечатък.
+  const roots = Array.isArray(base.watched) ? base.watched : LEGACY_WATCHED;
+  const covered = (p) => roots.some((r) => p === r || p.startsWith(r + '/'));
+  const newlyTracked = [];
   for (const [p, h] of Object.entries(now.files)) {
     const b = base.files[p];
-    if (!b) added.push({ path: p, mode: h.mode });
+    if (!b && !covered(p)) newlyTracked.push(p);
+    else if (!b) added.push({ path: p, mode: h.mode });
     else if (b.sha256 !== h.sha256) changed.push({ path: p, sizeBefore: b.size, sizeAfter: h.size });
     else if (b.mode !== h.mode) changed.push({ path: p, modeBefore: b.mode, modeAfter: h.mode, onlyMode: true });
   }
@@ -526,6 +553,7 @@ export function diffEtc(stateDir) {
     added,
     removed,
     changed,
+    newlyTracked,
     clean: !added.length && !removed.length && !changed.length,
   };
 }

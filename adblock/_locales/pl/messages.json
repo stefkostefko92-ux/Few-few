@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bloker reklam dla YouTube i internetu: reklamy wideo, banery, wyskakujące okna, trackery, cookies („Odrzuć”) i blokady adblocka."
+    "message": "Bloker reklam dla YouTube i internetu: reklamy wideo, banery, wyskakujące okna, trackery, banery cookies i blokady adblocka."
   },
   "byCarbon": {
     "message": "od Carbon Stealth"
@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Limit reguł"
+  },
+  "helpTitle": {
+    "message": "Strony się psują?"
+  },
+  "helpText": {
+    "message": "Wystarczy naprawiać jedną stronę naraz: zezwól na niej na reklamy przez godzinę albo wyłącz ukrywanie elementów tylko tam. Jeśli dasz nam znać, naprawimy to dla wszystkich."
+  },
+  "helpFix": {
+    "message": "Napraw tę stronę"
+  },
+  "cardNever": {
+    "message": "Nie pokazuj więcej"
+  },
+  "cardClose": {
+    "message": "Zamknij"
+  },
+  "receiptTitle": {
+    "message": "Twoje ostatnie 30 dni"
+  },
+  "receiptText": {
+    "message": "Zablokowane żądania: $1 · odpowiedzi na banery cookies: $2 · zaoszczędzone dane: około $3 (szacunkowo)"
+  },
+  "share": {
+    "message": "Udostępnij"
+  },
+  "shareTitle": {
+    "message": "Kopiuj link do Supreme AdBlock w Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Link skopiowany"
+  },
+  "rep_fixed_q": {
+    "message": "Czy strona już działa?"
+  },
+  "rep_fixed_yes": {
+    "message": "Tak, działa"
+  },
+  "rep_fixed_no": {
+    "message": "Nie, nadal nie działa"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Świetnie, działa. Jeśli dasz nam znać poniżej, w zgłoszeniu będzie widać, która poprawka pomogła, i naprawimy stronę dla wszystkich."
+  },
+  "rep_fixed_next": {
+    "message": "Spróbuj następnej poprawki: $1"
+  },
+  "rep_fixed_none": {
+    "message": "W takim razie daj nam znać poniżej: przyjrzymy się tej stronie."
+  },
+  "rep_webmail": {
+    "message": "Nie masz programu pocztowego? Skopiuj zgłoszenie i wyślij je na adres $1 przez pocztę internetową."
+  },
+  "blk_mistake": {
+    "message": "Uważasz, że to pomyłka? Daj nam znać"
+  },
+  "welTest": {
+    "message": "Zobacz, jak to działa, na stronie testowej"
   }
 }

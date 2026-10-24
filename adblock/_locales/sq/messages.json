@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bllokues reklamash për YouTube dhe uebin: reklama video, banera, dritare kërcyese, gjurmues, kuki («Refuzo») dhe mure anti-adblock."
+    "message": "Bllokues reklamash për YouTube dhe uebin: reklama video, banera, dritare kërcyese, gjurmues, banera kukish dhe mure anti-adblock."
   },
   "byCarbon": {
     "message": "nga Carbon Stealth"
@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Kapaciteti i rregullave"
+  },
+  "helpTitle": {
+    "message": "Sajtet nuk punojnë?"
+  },
+  "helpText": {
+    "message": "Mjafton të rregulloni vetëm sajtin që nuk punon: lejoni reklamat e tij për një orë ose çaktivizoni fshehjen e elementeve vetëm aty. Nëse na tregoni, e rregullojmë për të gjithë."
+  },
+  "helpFix": {
+    "message": "Rregullo këtë sajt"
+  },
+  "cardNever": {
+    "message": "Mos e shfaq më"
+  },
+  "cardClose": {
+    "message": "Mbyll"
+  },
+  "receiptTitle": {
+    "message": "30 ditët tuaja të fundit"
+  },
+  "receiptText": {
+    "message": "Kërkesa të bllokuara: $1 · banera kukish me përgjigje: $2 · të dhëna të kursyera: rreth $3 (vlerësim)"
+  },
+  "share": {
+    "message": "Shpërndaj"
+  },
+  "shareTitle": {
+    "message": "Kopjo lidhjen e Supreme AdBlock në Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Lidhja u kopjua"
+  },
+  "rep_fixed_q": {
+    "message": "A u rregullua sajti?"
+  },
+  "rep_fixed_yes": {
+    "message": "Po, punon"
+  },
+  "rep_fixed_no": {
+    "message": "Jo, ende nuk punon"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Mirë që punon. Nëse na tregoni më poshtë, raporti tregon se cila zgjidhje funksionoi, që ta rregullojmë sajtin për të gjithë."
+  },
+  "rep_fixed_next": {
+    "message": "Provoni tjetrën: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Atëherë ju lutemi na tregoni më poshtë: do ta shqyrtojmë sajtin."
+  },
+  "rep_webmail": {
+    "message": "Nuk keni aplikacion email-i? Kopjoni raportin dhe dërgojeni te $1 nga webmail-i juaj."
+  },
+  "blk_mistake": {
+    "message": "Mendoni se është gabim? Na tregoni"
+  },
+  "welTest": {
+    "message": "Shihni si funksionon në një faqe testimi"
   }
 }

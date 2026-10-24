@@ -3,6 +3,7 @@ import Image from "next/image";
 import GramotaStudio from "@/components/studios/GramotaStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни грамоти и сертификати за печат";
@@ -66,6 +67,7 @@ export default function GramotiPage() {
         </p>
       </header>
       <GramotaStudio />
+      <ToolGuide current="/gramoti" howTo={HOWTO} />
       <ToolFaq items={FAQ} />
       <RelatedTools current="/gramoti" />
       <script

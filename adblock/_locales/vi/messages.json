@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Trình chặn quảng cáo cho YouTube và web: quảng cáo video, biểu ngữ, pop-up, trình theo dõi, cookie (Từ chối) và tường anti-adblock."
+    "message": "Trình chặn quảng cáo cho YouTube và web: quảng cáo video, biểu ngữ, pop-up, trình theo dõi, biểu ngữ cookie và tường anti-adblock."
   },
   "byCarbon": {
     "message": "by Carbon Stealth"
@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Dung lượng quy tắc"
+  },
+  "helpTitle": {
+    "message": "Trang web bị lỗi?"
+  },
+  "helpText": {
+    "message": "Chỉ cần xử lý từng trang một: cho phép quảng cáo trên trang đó trong 1 giờ, hoặc chỉ tắt ẩn phần tử tại đó. Khi bạn báo cho chúng tôi, chúng tôi sẽ sửa cho mọi người."
+  },
+  "helpFix": {
+    "message": "Sửa trang này"
+  },
+  "cardNever": {
+    "message": "Không hiển thị lại"
+  },
+  "cardClose": {
+    "message": "Đóng"
+  },
+  "receiptTitle": {
+    "message": "30 ngày qua của bạn"
+  },
+  "receiptText": {
+    "message": "Đã chặn $1 yêu cầu · Đã xử lý $2 biểu ngữ cookie · Tiết kiệm khoảng $3 dữ liệu (ước tính)"
+  },
+  "share": {
+    "message": "Chia sẻ"
+  },
+  "shareTitle": {
+    "message": "Sao chép liên kết đến Supreme AdBlock trên Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Đã sao chép liên kết"
+  },
+  "rep_fixed_q": {
+    "message": "Trang web đã được sửa chưa?"
+  },
+  "rep_fixed_yes": {
+    "message": "Có, đã hoạt động"
+  },
+  "rep_fixed_no": {
+    "message": "Không, vẫn bị lỗi"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Rất vui vì đã ổn. Nếu bạn báo cho chúng tôi bên dưới, báo cáo sẽ cho biết cách sửa nào hiệu quả, để chúng tôi sửa trang web cho mọi người."
+  },
+  "rep_fixed_next": {
+    "message": "Hãy thử cách tiếp theo: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Vậy vui lòng báo cho chúng tôi bên dưới: chúng tôi sẽ xem xét trang web."
+  },
+  "rep_webmail": {
+    "message": "Không có ứng dụng email? Hãy sao chép báo cáo và gửi đến $1 từ webmail của bạn."
+  },
+  "blk_mistake": {
+    "message": "Bạn nghĩ đây là nhầm lẫn? Báo cho chúng tôi"
+  },
+  "welTest": {
+    "message": "Xem cách hoạt động trên trang thử nghiệm"
   }
 }

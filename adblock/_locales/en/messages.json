@@ -4,7 +4,7 @@
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Ad blocker for YouTube and the web: video ads, banners, pop-ups, trackers, cookie banners (Reject) and anti-adblock walls.",
+    "message": "Ad blocker for YouTube and the web: video ads, banners, pop-ups, trackers, cookie banners and anti-adblock walls.",
     "description": "Extension description."
   },
   "byCarbon": {
@@ -803,5 +803,81 @@
   },
   "opt_h_capacity": {
     "message": "Rule capacity"
+  },
+  "helpTitle": {
+    "message": "Sites breaking?",
+    "description": "Popup card shown once when there are signs that sites break (several allowed sites, element hiding off on sites, or repeated pauses). Heading."
+  },
+  "helpText": {
+    "message": "One site at a time is enough: allow its ads for an hour, or turn off element hiding just there. Telling us fixes it for everyone.",
+    "description": "Text of that card: the fixes on the repair page apply to one site only; reporting the site fixes it for every user."
+  },
+  "helpFix": {
+    "message": "Fix this site",
+    "description": "Button of that card: opens the repair page ('Site broken?') for the current site."
+  },
+  "cardNever": {
+    "message": "Don't show this again",
+    "description": "Small button on the popup cards: never show this card again."
+  },
+  "cardClose": {
+    "message": "Close",
+    "description": "Button that closes the monthly summary card."
+  },
+  "receiptTitle": {
+    "message": "Your last 30 days",
+    "description": "Heading of the monthly summary card in the popup (counts kept on this device only)."
+  },
+  "receiptText": {
+    "message": "$1 requests blocked · $2 cookie banners answered · about $3 of data saved (an estimate)",
+    "description": "Monthly summary. $1 = number of blocked requests, $2 = number of cookie banners answered, $3 = amount of data such as '240 MB'. The data figure is an estimate."
+  },
+  "share": {
+    "message": "Share",
+    "description": "Footer button in the popup: copies the Chrome Web Store link to the extension."
+  },
+  "shareTitle": {
+    "message": "Copy the Chrome Web Store link to Supreme AdBlock",
+    "description": "Tooltip of the Share button."
+  },
+  "shareCopied": {
+    "message": "Link copied",
+    "description": "Shown briefly after the Share button copied the link."
+  },
+  "rep_fixed_q": {
+    "message": "Did it fix the site?",
+    "description": "Repair page: question shown after a fix was applied and the tab reloaded."
+  },
+  "rep_fixed_yes": {
+    "message": "Yes, it works",
+    "description": "Repair page: answer button."
+  },
+  "rep_fixed_no": {
+    "message": "No, still broken",
+    "description": "Repair page: answer button."
+  },
+  "rep_fixed_yes_note": {
+    "message": "Glad it works. If you tell us below, the report says which fix worked, so we can fix the site for everyone.",
+    "description": "Repair page: after 'Yes, it works'."
+  },
+  "rep_fixed_next": {
+    "message": "Try the next one: $1",
+    "description": "Repair page: after 'No, still broken'. $1 = the label of the next fix button, e.g. 'Allow ads here for 1 hour'."
+  },
+  "rep_fixed_none": {
+    "message": "Then please tell us below: we will look at the site.",
+    "description": "Repair page: after 'No, still broken' when every fix was tried."
+  },
+  "rep_webmail": {
+    "message": "No email app? Copy the report and send it to $1 from your webmail.",
+    "description": "Repair page: $1 = our email address."
+  },
+  "blk_mistake": {
+    "message": "Think this is a mistake? Tell us",
+    "description": "Malware warning page: link that opens an email to us with the site name."
+  },
+  "welTest": {
+    "message": "See it working on a test page",
+    "description": "Welcome page: link to the website's demonstration page."
   }
 }

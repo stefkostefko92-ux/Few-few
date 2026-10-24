@@ -38,7 +38,8 @@ Firefox пакетът е същият код с друг manifest (`tools/packa
 > `https://adblock.carbonstealth.eu/filters.json` and its Ed25519 signature, a data file (domain
 > names, CSS selectors, YouTube response field names) validated against a strict schema and never
 > executed; it can be switched off in Settings. Nothing from the network configures the MAIN-world
-> script. Data collection: none. Lists the user turns on from their authors (four regional lists)
+> script. Data collection: none. The Firefox build sets no uninstall page (that page exists only for
+> Chrome Web Store installs) and links to no other store. Lists the user turns on from their authors (four regional lists)
 > are downloaded from the author's address, as text, and converted locally.
 > Lint warnings: `DANGEROUS_EVAL` in `scriptlets/main.js` is the `noeval` routines replacing the page's
 > `window.eval` on listed sites (the extension itself never calls eval); `getMatchedRules`,

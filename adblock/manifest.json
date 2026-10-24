@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "5.5.1",
+  "version": "5.6.0",
   "description": "__MSG_extDescription__",
   "author": "Carbon Stealth",
   "homepage_url": "https://adblock.carbonstealth.eu",
@@ -554,6 +554,7 @@
         "*://*findav.*/*",
         "*://*findporn.*/*",
         "*://*finfang.*/*",
+        "*://*firestream.*/*",
         "*://*firstonetv.*/*",
         "*://*flix-wave.*/*",
         "*://*flixbaba.*/*",
@@ -997,6 +998,7 @@
         "*://*novablogitalia.*/*",
         "*://*novelasesp.*/*",
         "*://*nowmovies.*/*",
+        "*://*ntv.*/*",
         "*://*nudevista.*/*",
         "*://*nuroflix.*/*",
         "*://*nuvid.*/*",
@@ -1604,6 +1606,7 @@
         "*://*zone-telechargement.*/*",
         "*://*zooqle.*/*",
         "*://*zoro.*/*",
+        "*://*zovo.*/*",
         "*://*zshort.*/*"
       ],
       "js": [

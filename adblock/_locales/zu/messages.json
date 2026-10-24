@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Isivimbi sezikhangiso se-YouTube newebhu: amabhena, ama-pop-up, abalandeleli, amakhukhi (“Nqaba”) nezindonga ze-anti-adblock."
+    "message": "Isivimbi sezikhangiso se-YouTube newebhu: amabhena, ama-pop-up, abalandeleli, amabhena amakhukhi nezindonga ze-anti-adblock."
   },
   "byCarbon": {
     "message": "ngu-Carbon Stealth"
@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Umthamo wemithetho"
+  },
+  "helpTitle": {
+    "message": "Amasayithi ayonakala?"
+  },
+  "helpText": {
+    "message": "Isayithi eyodwa ngesikhathi yanele: vumela izikhangiso zayo ihora elilodwa, noma uvale ukufihla ama-elementi lapho kuphela. Uma usitshela, siyayilungisa kuwo wonke umuntu."
+  },
+  "helpFix": {
+    "message": "Lungisa le sayithi"
+  },
+  "cardNever": {
+    "message": "Ungaphinde ukubonise lokhu"
+  },
+  "cardClose": {
+    "message": "Vala"
+  },
+  "receiptTitle": {
+    "message": "Izinsuku ezingu-30 ezedlule"
+  },
+  "receiptText": {
+    "message": "Izicelo ezivinjiwe: $1 · amabhena amakhukhi aphendulwe: $2 · idatha eyongiwe: cishe $3 (kuyisilinganiso)"
+  },
+  "share": {
+    "message": "Yabelana"
+  },
+  "shareTitle": {
+    "message": "Kopisha isixhumanisi se-Chrome Web Store se-Supreme AdBlock"
+  },
+  "shareCopied": {
+    "message": "Sikopishiwe"
+  },
+  "rep_fixed_q": {
+    "message": "Ingabe kuyilungisile isayithi?"
+  },
+  "rep_fixed_yes": {
+    "message": "Yebo, iyasebenza"
+  },
+  "rep_fixed_no": {
+    "message": "Cha, ayikalungi"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Kuhle. Uma usitshela ngezansi, umbiko uzosho ukuthi yikuphi ukulungisa okusebenzile, ukuze silungise isayithi kuwo wonke umuntu."
+  },
+  "rep_fixed_next": {
+    "message": "Zama elilandelayo: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Ngakho-ke sicela usitshele ngezansi: sizoyibheka isayithi."
+  },
+  "rep_webmail": {
+    "message": "Awunayo i-app ye-imeyili? Kopisha umbiko bese uwuthumela ku-$1 usebenzisa i-webmail yakho."
+  },
+  "blk_mistake": {
+    "message": "Ucabanga ukuthi leli yiphutha? Sitshele"
+  },
+  "welTest": {
+    "message": "Yibone isebenza ekhasini lokuhlola"
   }
 }

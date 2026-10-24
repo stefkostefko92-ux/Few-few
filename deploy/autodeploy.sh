@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora fivem}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming fivem}"
 
 # fivem (FiveM Bulgaria — Docker Compose модел) — web слуша само на
 # 127.0.0.1:3010, зад Nginx с TLS. Отделен `cron` контейнер върти пингването,
@@ -162,6 +162,9 @@ PIUMA_HEALTH_URL="${PIUMA_HEALTH_URL:-http://127.0.0.1:4310/health}"
 # сочи към release без piuma/, тоест „пренеси от текущия" няма откъде; без този път
 # инструкцията „сложи го в current/piuma/.env" сочеше папка, която още не съществува.
 PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
+# gaming (АСО) — собственият му infra/autodeploy.sh държи стека в GAMING_DIR (.env + Docker
+# обемите живеят там и оцеляват между release-ите). Нов сървър: GAMING_BOOTSTRAP=1 веднъж.
+GAMING_DIR="${GAMING_DIR:-/root/aso}"
 
 # korpora (Korpora — Docker Compose: db + app на 127.0.0.1:4320 зад nginx на хоста). Стъпките са
 # в korpora/deploy/deploy.sh — същият скрипт и за ръчния деплой, затова двата пътя не се разминават:
@@ -1365,6 +1368,27 @@ deploy_piuma() {
   fi
 }
 
+# ── 3к) gaming (АСО) — Docker Compose; стъпките са в Gaming/infra/autodeploy.sh ──
+# Скриптът на продукта прави всичко сам: билд докато старото върви, pg_dump бекъп преди
+# миграцията, health на 4-те услуги и откат към предишните образи (код 1). Тук само го
+# викаме върху кода от ТОЗИ release. Без .env в GAMING_DIR машината още не е настроена →
+# пропуск, не провал (както при piuma); първото пускане е изрично: GAMING_BOOTSTRAP=1.
+deploy_gaming() {
+  local d="$SRC/Gaming"
+  [ -f "$d/infra/autodeploy.sh" ] || { warn "Няма Gaming/infra/autodeploy.sh в архива — пропускам gaming."; return; }
+  if [ ! -f "$GAMING_DIR/.env" ] && [ "${GAMING_BOOTSTRAP:-0}" != "1" ]; then
+    warn "Няма $GAMING_DIR/.env — пропускам gaming (машината още не е настроена)."
+    warn "  Първо пускане: sudo GAMING_BOOTSTRAP=1 PROJECTS=gaming bash $0 (генерира тайните сам, права 600)."
+    return
+  fi
+  log "Разгръщам gaming (АСО) → $GAMING_DIR…"
+  command -v docker >/dev/null || { warn "gaming: липсва docker — пропускам."; deploy_failed=1; return; }
+  # `|| { … }` не е украса: под `set -euo pipefail` ненулев изход би убил целия autodeploy.
+  DEPLOY_DIR="$GAMING_DIR" bash "$d/infra/autodeploy.sh" \
+    || { warn "gaming: деплоят не мина (скриптът на продукта е върнал предишната версия, ако е имало такава)."; deploy_failed=1; return; }
+  ok "gaming: жив — https://${GAMING_DOMAIN:-gaming.carbonstealth.eu}"
+}
+
 # ── 3й) korpora — Docker Compose (db + app); стъпките са в korpora/deploy/deploy.sh ──
 # Кодовете на deploy.sh: 0 — жив; 3 — няма .env (машината още не е настроена: пропуск, не провал,
 # както при piuma); 4 — контейнерите са сменени, но Korpora не отговаря → откат; друго — спрян
@@ -1558,6 +1582,7 @@ deploy_adblock() {
   mkdir -p "$ADBLOCK_WWW"
   # filters.json НЕ е тук: той се публикува ЗАЕДНО с подписа си (стъпка 1а).
   for f in index.html privacy.html support.html youtube-ad-blocker.html cookie-banner-blocker.html bye.html \
+           status.html accessibility.html for-it-admins.html ublock-origin-alternative.html press.html how-we-measure.html test.html \
            robots.txt sitemap.xml llms.txt \
            og.png favicon-48.png apple-touch-icon.png icon-512.png shield-380.webp shield-96.webp popup-shot.webp; do
     [ -f "$d/$f" ] && rsync -a "$d/$f" "$ADBLOCK_WWW"/
@@ -1571,6 +1596,22 @@ deploy_adblock() {
   done
   # favicon.svg беше старото лого (заменено с бранд щита) — да не остане да виси.
   rm -f "$ADBLOCK_WWW/favicon.svg"
+  # Точните текстове на вградените филтър-листи (по SHA-256 — THIRD_PARTY_NOTICES.txt ги сочи):
+  # GPL/AGPL/MPL искат изходният вид да е достъпен, докато версията се разпространява. БЕЗ --delete:
+  # текстовете на по-стари версии остават, имената са хешове и никога не се презаписват.
+  if [ -d "$d/sources" ]; then
+    mkdir -p "$ADBLOCK_WWW/sources"
+    rsync -a "$d/sources/" "$ADBLOCK_WWW/sources/"
+    chmod 755 "$ADBLOCK_WWW/sources"
+    find "$ADBLOCK_WWW/sources" -maxdepth 1 -type f -exec chmod 644 {} +
+  fi
+  # /test: пробите на демонстрационната страница (server/test/*.js) — само собствени файлове
+  if [ -d "$d/test" ]; then
+    mkdir -p "$ADBLOCK_WWW/test"
+    rsync -a --delete "$d/test/" "$ADBLOCK_WWW/test/"
+    chmod 755 "$ADBLOCK_WWW/test"
+    find "$ADBLOCK_WWW/test" -maxdepth 1 -type f -exec chmod 644 {} +
+  fi
   # .well-known/ (security.txt и др.)
   if [ -d "$d/.well-known" ]; then
     mkdir -p "$ADBLOCK_WWW/.well-known"
@@ -1746,7 +1787,7 @@ health() {
 indexnow_ping() {
   local key="$1"; [ -n "$key" ] || return 0
   local base="https://$ADBLOCK_DOMAIN"
-  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/youtube-ad-blocker"'","'"$base/cookie-banner-blocker"'","'"$base/support"'","'"$base/privacy"'","'"$base/bg/"'","'"$base/de/"'","'"$base/it/"'","'"$base/es/"'","'"$base/fr/"'","'"$base/pt-br/"'"]}'
+  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/youtube-ad-blocker"'","'"$base/cookie-banner-blocker"'","'"$base/support"'","'"$base/privacy"'","'"$base/status"'","'"$base/accessibility"'","'"$base/for-it-admins"'","'"$base/ublock-origin-alternative"'","'"$base/press"'","'"$base/how-we-measure"'","'"$base/test"'","'"$base/bg/"'","'"$base/de/"'","'"$base/it/"'","'"$base/es/"'","'"$base/fr/"'","'"$base/pt-br/"'"]}'
   if curl -fsS -m 10 -H "Content-Type: application/json" -d "$body" https://api.indexnow.org/indexnow >/dev/null 2>&1; then
     ok "adblock: IndexNow уведоми Bing/Yandex/Seznam (submit)."
   else
@@ -1928,6 +1969,7 @@ for p in $PROJECTS; do
     eternaltouch)         deploy_eternaltouch ;;
     piuma)      deploy_piuma ;;
     korpora)   deploy_korpora ;;
+    gaming|Gaming|aso) deploy_gaming ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     fivem|FiveM)          deploy_fivem ;;

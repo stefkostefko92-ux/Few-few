@@ -23,6 +23,7 @@ import {
   Vector2,
   Vector3,
 } from "three";
+import { grainUv, upgradeMaterial } from "../gl/baked.js";
 import { contactShadow, disposeObject, easeInOut, easeOutBack, woodNormal, woodTexture } from "../gl/helpers.js";
 import { defaultGfxParams } from "../gl/gfxRegistry.js";
 import { RenderCore } from "../gl/render.js";
@@ -136,9 +137,11 @@ export class DraughtsScene {
     woodTex.repeat.set(4, 1);
     const woodN = woodNormal();
     woodN.repeat.set(4, 1);
+    const frameMat = new MeshPhysicalMaterial({ map: woodTex, normalMap: woodN, normalScale: new Vector2(0.6, 0.6), roughness: 0.5, metalness: 0.08 });
+    upgradeMaterial(frameMat, "walnut", { repeat: [1.5, 1], albedo: true, roughness: 0.9, normalScale: 0.8, onReady: () => this.core.invalidate() });
     const frame = new Mesh(
       new BoxGeometry(W + 2 * RAIL, 0.5, W + 2 * RAIL),
-      new MeshPhysicalMaterial({ map: woodTex, normalMap: woodN, normalScale: new Vector2(0.6, 0.6), roughness: 0.5, metalness: 0.08 }),
+      frameMat,
     );
     frame.position.y = -0.1;
     frame.receiveShadow = true;
@@ -147,14 +150,18 @@ export class DraughtsScene {
     const lightMat = new MeshPhysicalMaterial({ color: new Color("#ddccA3".toLowerCase()), roughness: 0.45, clearcoat: 0.4, clearcoatRoughness: 0.4 });
     const darkMat = new MeshPhysicalMaterial({ color: new Color("#5f3f24"), roughness: 0.45, clearcoat: 0.4, clearcoatRoughness: 0.4 });
     const sqGeo = new BoxGeometry(SQ * 0.99, 0.12, SQ * 0.99);
+    // Инкрустация: тъмните полета — орех, светлите — само жилката под лака (кленов тон).
+    upgradeMaterial(darkMat, "walnut", { repeat: [1, 1], albedo: true, color: 0xffffff, roughness: 0.8, normalScale: 0.5, ao: 0.3, onReady: () => this.core.invalidate() });
+    upgradeMaterial(lightMat, "walnut", { repeat: [1, 1], roughness: 0.8, normalScale: 0.4, ao: 0.2, onReady: () => this.core.invalidate() });
     for (let i = 0; i < 64; i++) {
       const col = i % 8;
       const row = Math.floor(i / 8);
-      const sq = new Mesh(sqGeo, (col + row) % 2 === 1 ? darkMat : lightMat);
+      const sq = new Mesh(grainUv(sqGeo, row * 8 + col + 1), (col + row) % 2 === 1 ? darkMat : lightMat);
       sq.position.set(col - 3.5, 0.1, row - 3.5);
       sq.receiveShadow = true;
       this.scene.add(sq);
     }
+    sqGeo.dispose(); // само шаблон за grainUv клоновете
   }
 
   private cellWorld(i: number): [number, number] {

@@ -45,11 +45,17 @@
   cursor: crosshair;
 }
 
-/* WebGL canvas table (hybrid renderer) — rails are drawn inside the canvas. */
+/* WebGL canvas table (hybrid renderer) — rails are drawn inside the canvas.
+   The board canvas is transparent (Рейвънхолд), so this is the room around
+   the table: the hall's dark flagstone floor under a warm pool from the lamp
+   over the table. Without it the brass rim's gradient filled the whole view. */
 .aso-cue__gl {
   border-radius: 11px;
   overflow: hidden;
   line-height: 0;
+  background:
+    radial-gradient(60% 55% at 50% 52%, rgba(255, 176, 96, 0.16), transparent 72%),
+    radial-gradient(120% 100% at 50% 50%, #16130f 0%, #0b0d12 70%, #07080b 100%);
 }
 .aso-cue__gl canvas {
   touch-action: none;
@@ -113,4 +119,78 @@
   border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.4);
   vertical-align: middle;
+}
+
+/* Ефект (точка на удара) + обявяване на джоб за осмицата. */
+.aso-cue__extras {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem 1.5rem;
+  margin-top: 0.75rem;
+}
+.aso-cue__spin {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.aso-cue__spinpad {
+  width: 64px;
+  height: 64px;
+  touch-action: none;
+  cursor: crosshair;
+  border-radius: 50%;
+}
+.aso-cue__spinpad:focus-visible {
+  outline: 2px solid var(--brass-300);
+  outline-offset: 3px;
+}
+.aso-cue__spinpad[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: default;
+}
+.aso-cue__spinmeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 7.5rem;
+}
+.aso-cue__spinreset {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  color: var(--brass-300);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.aso-cue__spinreset:disabled {
+  opacity: 0.4;
+  text-decoration: none;
+}
+.aso-cue__pockets {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.aso-cue__pocketgrid {
+  display: grid;
+  grid-template-columns: repeat(3, 2.25rem);
+  gap: 4px;
+}
+.aso-cue__pocketbtn {
+  height: 2.25rem;
+  border-radius: 8px;
+  border: 1px solid rgba(242, 207, 122, 0.45);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--ink-100, #f4f1e8);
+  font-weight: 700;
+}
+.aso-cue__pocketbtn[aria-checked="true"] {
+  background: #f2cf7a;
+  color: #1c1406;
+  border-color: #f2cf7a;
+}
+.aso-cue__pocketbtn:focus-visible {
+  outline: 2px solid var(--brass-300);
+  outline-offset: 2px;
 }

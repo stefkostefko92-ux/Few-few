@@ -30,7 +30,17 @@ interface BridgeState {
   gamesWon: [number, number];
   vulnerable: [boolean, boolean];
   dealNo: number;
-  lastDeal: { declarer: number; level: number; strain: Strain; made: boolean; tricks: number; declScore: number; defScore: number } | null;
+  lastDeal: {
+    declarer: number;
+    level: number;
+    strain: Strain;
+    made: boolean;
+    tricks: number;
+    declScore: number;
+    defScore: number;
+    /** Онори (рубер): за отбора на притежателя, над линията. */
+    honors?: { seat: number; team: number; points: number } | null;
+  } | null;
 }
 type BridgeAction =
   | { type: "PASS" }
@@ -41,6 +51,15 @@ type BridgeAction =
 
 const STRAIN_GLYPH: Record<Strain, string> = { C: "♣", D: "♦", H: "♥", S: "♠", NT: "NT" };
 const STRAINS: Strain[] = ["C", "D", "H", "S", "NT"];
+
+/** Bid chip ink per strain: suit colour (four-colour aware), NT in black. */
+const BID_INK: Record<Strain, string> = {
+  C: "var(--suit-club)",
+  D: "var(--suit-diamond)",
+  H: "var(--suit-heart)",
+  S: "var(--suit-spade)",
+  NT: "var(--suit-black)",
+};
 
 export function BridgeView({ title }: { title: string }) {
   const { t } = useTranslation();
@@ -92,6 +111,14 @@ export function BridgeView({ title }: { title: string }) {
               if (ev.type === "REDOUBLE") return { text: t("belote.recontra") + "!", tone: "win" };
               if (ev.type === "CONTRACT" && typeof ev.level === "number")
                 return { text: `${ev.level}${STRAIN_GLYPH[ev.strain as Strain]}`, tone: "brass" };
+              if (ev.type === "HONORS" && typeof ev.points === "number" && typeof ev.seat === "number")
+                return {
+                  text: t("bridge.honorsBanner", {
+                    name: players.find((p) => p.seat === ev.seat)?.displayName ?? `#${ev.seat}`,
+                    n: ev.points,
+                  }),
+                  tone: ev.team === myTeam ? "win" : "loss",
+                };
               if (ev.type === "RESULT")
                 return { text: ev.made ? t("bridge.made") + "!" : t("bridge.defeated") + "!", tone: ev.made ? "win" : "loss" };
               return null;
@@ -142,10 +169,10 @@ export function BridgeView({ title }: { title: string }) {
                         disabled={!bid}
                         onClick={() => bid && m.send(bid)}
                         className="aso-bridge-bid"
-                        style={{
-                          color:
-                            strain === "H" || strain === "D" ? "var(--suit-red)" : "var(--ink-100)",
-                        }}
+                        // Suit colours on the ivory bid chip (per suit, so the four-colour
+                        // deck applies here too). It used --ink-100 for ♣/♠/NT: near-white
+                        // on ivory, i.e. those bids were invisible.
+                        style={{ color: BID_INK[strain] }}
                       >
                         {level}
                         {STRAIN_GLYPH[strain]}
@@ -227,6 +254,16 @@ export function BridgeView({ title }: { title: string }) {
               {state.lastDeal.strain} ·{" "}
               {state.lastDeal.made ? t("bridge.made") : t("bridge.defeated")} ({state.lastDeal.tricks}) ·{" "}
               +{Math.max(state.lastDeal.declScore, state.lastDeal.defScore)}
+              {state.lastDeal.honors ? (
+                <>
+                  {" "}
+                  ·{" "}
+                  {t("bridge.honors", {
+                    n: state.lastDeal.honors.points,
+                    side: state.lastDeal.honors.team === myTeam ? t("bridge.us") : t("bridge.them"),
+                  })}
+                </>
+              ) : null}
             </p>
           ) : null}
         </>

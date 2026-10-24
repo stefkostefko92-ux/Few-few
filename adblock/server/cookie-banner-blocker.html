@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Cookie Banner Blocker for Chrome — Supreme AdBlock</title>
-<meta name="description" content="Supreme AdBlock presses Reject on cookie banners for you, clears the leftover blur and scroll lock, and never clicks a sign-in or payment button. Free." />
+<meta name="description" content="Supreme AdBlock presses Reject when a cookie banner offers one, clears the blur and scroll lock, and never clicks sign-in or payment buttons. Free." />
 <meta name="keywords" content="cookie banner blocker, reject cookies automatically, block cookie pop-ups, consent banner blocker, GDPR cookie pop-ups, Chrome extension, Supreme AdBlock, Carbon Stealth" />
 <meta name="author" content="Carbon Stealth" />
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
@@ -21,13 +21,13 @@
 <meta property="og:image" content="https://adblock.carbonstealth.eu/og.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="Supreme AdBlock shield by Carbon Stealth — YouTube ads killed at the source, EasyList built in" />
+<meta property="og:image:alt" content="Supreme AdBlock shield by Carbon Stealth — a free Chrome extension that blocks ads, trackers and cookie banners" />
 <meta property="og:locale" content="en_US" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Cookie Banner Blocker for Chrome — Supreme AdBlock" />
 <meta name="twitter:description" content="It presses Reject for you when a banner offers it, clears the leftover blur and scroll lock, and never clicks a sign-in or payment button." />
 <meta name="twitter:image" content="https://adblock.carbonstealth.eu/og.png" />
-<meta name="twitter:image:alt" content="Supreme AdBlock shield by Carbon Stealth — YouTube ads killed at the source, EasyList built in" />
+<meta name="twitter:image:alt" content="Supreme AdBlock shield by Carbon Stealth — a free Chrome extension that blocks ads, trackers and cookie banners" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -37,7 +37,7 @@
       "@id": "https://adblock.carbonstealth.eu/cookie-banner-blocker#webpage",
       "url": "https://adblock.carbonstealth.eu/cookie-banner-blocker",
       "name": "Cookie Banner Blocker for Chrome — Supreme AdBlock",
-      "description": "How Supreme AdBlock answers cookie and consent banners: it presses Reject when it can, cleans up what the banner leaves behind and never presses a sign-in or payment button.",
+      "description": "How Supreme AdBlock answers cookie and consent banners: it presses Reject when the banner offers one, presses Accept only when it finds no Reject button on the banner itself, cleans up what the banner leaves behind and never presses a sign-in or payment button.",
       "inLanguage": "en",
       "isPartOf": { "@id": "https://adblock.carbonstealth.eu/#site" },
       "about": { "@id": "https://adblock.carbonstealth.eu/#app" },
@@ -45,7 +45,7 @@
       "breadcrumb": { "@id": "https://adblock.carbonstealth.eu/cookie-banner-blocker#breadcrumb" },
       "primaryImageOfPage": "https://adblock.carbonstealth.eu/og.png",
       "datePublished": "2026-10-16",
-      "dateModified": "2026-10-16"
+      "dateModified": "2026-10-23"
     },
     {
       "@type": "BreadcrumbList",
@@ -60,10 +60,10 @@
       "@id": "https://adblock.carbonstealth.eu/cookie-banner-blocker#faq",
       "mainEntity": [
         { "@type": "Question", "name": "Is the cookie banner blocker a separate extension?", "acceptedAnswer": { "@type": "Answer", "text": "No. It is part of Supreme AdBlock, together with the ad and tracker blocking: one free extension, no account." } },
-        { "@type": "Question", "name": "Does it reject cookies on every site?", "acceptedAnswer": { "@type": "Answer", "text": "On most. Banners change, and a new design can be missed. Report it from the popup with Site broken? so we can add it; until then, Hide element in the popup removes it from view." } },
-        { "@type": "Question", "name": "Will rejecting cookies break websites?", "acceptedAnswer": { "@type": "Answer", "text": "Rarely. A refusal does not touch the cookies a site needs to work. If a page does misbehave, the popup can allow that site in one click." } },
-        { "@type": "Question", "name": "Does it delete my cookies?", "acceptedAnswer": { "@type": "Answer", "text": "No. It answers banners and strips third-party tracking cookies from known ad networks. Cookies already in your browser stay until you clear them in the browser's settings." } },
-        { "@type": "Question", "name": "Does it send anything about the sites I visit?", "acceptedAnswer": { "@type": "Answer", "text": "No. Everything happens on your device. The only thing it keeps is the number of banners rejected for you, with no list of sites." } }
+        { "@type": "Question", "name": "Does it reject cookies on every site?", "acceptedAnswer": { "@type": "Answer", "text": "Not always. Banners change, and a new design can be missed. Report it from the popup with Site broken? so we can add it; until then, Hide element in the popup removes it from view." } },
+        { "@type": "Question", "name": "Will rejecting cookies break websites?", "acceptedAnswer": { "@type": "Answer", "text": "It should not: it presses the site's own Reject button, so the site keeps whatever cookies it treats as necessary. If a page does misbehave, the popup can allow that site in one click." } },
+        { "@type": "Question", "name": "Does it delete my cookies?", "acceptedAnswer": { "@type": "Answer", "text": "No. It answers banners and stops known ad networks from setting third-party tracking cookies. Cookies already in your browser stay until you clear them in the browser's settings." } },
+        { "@type": "Question", "name": "Does it send anything about the sites I visit?", "acceptedAnswer": { "@type": "Answer", "text": "No. Everything happens on your device. For cookie banners it keeps only numbers: how many were rejected for you, in total and per day for the last 30 days, with no list of sites." } }
       ]
     }
   ]
@@ -213,7 +213,7 @@
       <div class="wrap">
         <div>
           <h1>Cookie banner blocker for Chrome</h1>
-          <p class="lead">Supreme AdBlock answers cookie banners for you. It presses the banner's own <b>Reject</b> button when there is one, then clears the dimmed background and the scroll lock the banner leaves behind.</p>
+          <p class="lead">Supreme AdBlock answers cookie banners for you. It presses the banner's own <b>Reject</b> button when there is one, then clears the dimmed background and the scroll lock the banner leaves behind. If it finds no Reject button on the banner itself (it does not open the banner's settings), it presses Accept so you are not stuck.</p>
           <p class="where">Part of Supreme AdBlock, on by default, in Chrome, Edge and Brave.</p>
           <div class="cta">
             <a class="btn primary" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=cookie" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.2h6.1L9 22l10.5-11.6h-6.4z"/></svg>Add to Chrome — free</a>
@@ -247,7 +247,7 @@
         <h2>What happens when a banner appears</h2>
         <ol class="steps">
           <li><b>It finds the banner's own refusal button</b>, such as “Reject all”, “Necessary only” or “Decline”, and presses it, as you would.</li>
-          <li><b>If there is no way to refuse</b>, it presses Accept as a last resort, so you are not stuck behind the banner. Known ad and tracking requests stay blocked by the filter lists either way.</li>
+          <li><b>If it finds no free Reject button on the banner itself</b> (it does not open the banner's settings), it presses Accept as a last resort, so you are not stuck behind the banner. A Reject button whose label mentions paying or subscribing (a “pay or accept” wall) does not count as a way to refuse, and once it has pressed Reject on a page it does not press Accept there. Known ad and tracking requests stay blocked by the filter lists either way.</li>
           <li><b>It cleans up.</b> A dimmed or blurred background, a locked scroll bar, a page that no longer takes clicks: all of it is cleared.</li>
           <li><b>It keeps count.</b> The popup shows how many cookie banners it has rejected for you.</li>
         </ol>
@@ -256,8 +256,24 @@
 
     <section class="blk" id="cmps">
       <div class="wrap prose">
-        <h2>Works with the consent tools most sites use</h2>
-        <p>Supreme AdBlock knows the refusal buttons of OneTrust, Cookiebot, Didomi, Quantcast, Usercentrics, TrustArc, Sourcepoint, iubenda, Complianz, Osano, CookieYes and consentmanager, and it finds the Reject button on many banners that sites build themselves. It also looks inside the frames and the shadow DOM that some consent tools draw their banners in.</p>
+        <h2>Consent tools it knows</h2>
+        <p>Checked against the extension's code (version 5.5.1) on 23 October 2026. These consent-management platforms (the services sites use to run their banners) have buttons that Supreme AdBlock recognises by name:</p>
+        <ul class="dots">
+          <li><b>OneTrust</b>: Reject and Accept buttons.</li>
+          <li><b>Cookiebot</b>: Decline, Reject and Accept buttons.</li>
+          <li><b>Quantcast Choice</b>: the two buttons of its summary screen.</li>
+          <li><b>Didomi</b>: “continue without agreeing”, Disagree and Agree.</li>
+          <li><b>Usercentrics</b>: Deny and Accept buttons.</li>
+          <li><b>TrustArc</b>: its required-only and Accept buttons.</li>
+          <li><b>consentmanager</b>: its No and Yes buttons.</li>
+          <li><b>CookieYes</b>: Reject and Accept buttons.</li>
+          <li><b>Complianz</b>: Deny and Accept buttons.</li>
+          <li><b>iubenda</b>: Reject, “continue without accepting” and Accept buttons.</li>
+          <li><b>Osano</b>: Deny all and Accept all buttons.</li>
+          <li><b>Sourcepoint</b>: Reject all and Accept all, including when it draws its banner in a frame.</li>
+        </ul>
+        <p>Banners from other tools, and banners that sites build themselves, are handled by their wording, labels and test ids, but only inside a box that talks about cookies. It also looks inside frames and open shadow DOM (a hidden sub-tree some tools draw their banners in). Some tools, such as Termly, have no named buttons in the list: their banner is recognised by its container, and its buttons are pressed by their wording, like any other banner.</p>
+        <p>Other tools also answer banners for you. <a href="https://github.com/cavi-au/Consent-O-Matic" target="_blank" rel="noopener">Consent-O-Matic</a> (made at Aarhus University) fills them in with the choices you set once, and Ghostery's <a href="https://www.ghostery.com/blog/never-consent-by-ghostery" target="_blank" rel="noopener">Never-Consent</a> opts you out automatically; both pages were still online when we checked on 23 October 2026.</p>
       </div>
     </section>
 
@@ -267,9 +283,9 @@
         <p>A wrong click on a web page can do real harm, so the rules are strict:</p>
         <ul class="dots">
           <li>Never a sign-in, OAuth or payment button.</li>
-          <li>Never a button that submits a form, and never a link that leaves the page.</li>
+          <li>A button found by wording, label or test id never submits a form (except Google's own consent form) and never follows a link off the page.</li>
           <li>A button found by its wording, such as “Reject” or “OK”, is pressed only inside a banner that is about cookies, never anywhere else on the page.</li>
-          <li>On sign-in and payment pages, it presses nothing found by wording at all.</li>
+          <li>On pages it recognises as sign-in or payment pages by their address, it presses nothing found by wording, label or test id. Only the named buttons of the consent tools above stay active there.</li>
         </ul>
       </div>
     </section>
@@ -277,7 +293,7 @@
     <section class="blk" id="why">
       <div class="wrap prose">
         <h2>Why it refuses first</h2>
-        <p>In the EU, a site may use cookies that are not strictly necessary only with your consent, and refusing should be as easy as accepting. Some cookie tools make banners go away by accepting everything for you. Supreme AdBlock refuses first and accepts only when a banner leaves no other way out.</p>
+        <p>Some cookie tools make banners go away by accepting everything for you. Supreme AdBlock refuses first and presses Accept only when it finds no Reject button on the banner itself.</p>
         <p>Your refusal is saved by the site's own consent tool, as if you had clicked it yourself, so the banner usually stays away on your next visit.</p>
       </div>
     </section>
@@ -287,7 +303,7 @@
         <h2>When you want to choose yourself</h2>
         <p>Switch off <b>Cookie / consent banners</b> in Settings and every banner is yours to answer again, which helps when you want a site to remember particular choices.</p>
         <div class="limit">
-          <p>Switching it off does not let trackers in. Known ad and tracking requests are blocked by the filter lists, and third-party tracking cookies from known ad networks are stripped, whatever a banner says.</p>
+          <p>Switching it off does not switch off tracker blocking: known ad and tracking requests are still blocked by the filter lists, and known ad networks are still stopped from setting third-party cookies, whatever a banner says.</p>
         </div>
       </div>
     </section>
@@ -298,13 +314,13 @@
         <h3>Is the cookie banner blocker a separate extension?</h3>
         <p>No. It is part of Supreme AdBlock, together with the ad and tracker blocking: one free extension, no account.</p>
         <h3>Does it reject cookies on every site?</h3>
-        <p>On most. Banners change, and a new design can be missed. Report it from the popup with Site broken? so we can add it; until then, Hide element in the popup removes it from view.</p>
+        <p>Not always. Banners change, and a new design can be missed. Report it from the popup with Site broken? so we can add it; until then, Hide element in the popup removes it from view.</p>
         <h3>Will rejecting cookies break websites?</h3>
-        <p>Rarely. A refusal does not touch the cookies a site needs to work. If a page does misbehave, the popup can allow that site in one click.</p>
+        <p>It should not: it presses the site's own Reject button, so the site keeps whatever cookies it treats as necessary. If a page does misbehave, the popup can allow that site in one click.</p>
         <h3>Does it delete my cookies?</h3>
-        <p>No. It answers banners and strips third-party tracking cookies from known ad networks. Cookies already in your browser stay until you clear them in the browser's settings.</p>
+        <p>No. It answers banners and stops known ad networks from setting third-party tracking cookies. Cookies already in your browser stay until you clear them in the browser's settings.</p>
         <h3>Does it send anything about the sites I visit?</h3>
-        <p>No. Everything happens on your device. The only thing it keeps is the number of banners rejected for you, with no list of sites.</p>
+        <p>No. Everything happens on your device. For cookie banners it keeps only numbers: how many were rejected for you, in total and per day for the last 30 days, with no list of sites.</p>
       </div>
     </section>
 

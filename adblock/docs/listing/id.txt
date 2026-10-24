@@ -2,7 +2,7 @@ Supreme AdBlock memblokir iklan di mana saja — iklan video YouTube, banner, po
 
 • Pembaruan filter bertanda tangan dua kali sehari: jaringan iklan baru ditangani dalam hitungan jam, tanpa kode jarak jauh.
 • Iklan YouTube dihentikan dari sumbernya, jadi video langsung diputar.
-• Banner cookie: menekan Tolak untuk Anda, menghapus sisa efek buram dan kunci gulir, dan tidak pernah menekan tombol login, OAuth, atau pembayaran.
+• Banner cookie: menekan Tolak jika banner menyediakannya, dan menekan Terima hanya jika tidak ada cara lain untuk menutupnya; menghapus sisa efek buram dan kunci gulir, dan tidak pernah menekan tombol login, OAuth, atau pembayaran.
 • Tanpa akun, tanpa telemetri, tanpa pengumpulan data, dan tidak ada iklan yang diloloskan dengan bayaran. Global Privacy Control meminta situs yang Anda kunjungi untuk tidak menjual atau membagikan data Anda.
 • EasyList, EasyPrivacy, dan daftar filter terbuka lainnya sudah terpasang, ditambah daftar untuk bahasa Anda (31 daftar regional).
 • Postingan bersponsor di Facebook, Instagram, dan Threads disembunyikan.

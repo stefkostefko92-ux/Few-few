@@ -34,7 +34,8 @@ const manifest = JSON.parse(readFileSync(join(ROOT, "manifest.json"), "utf8"));
 // pages apart; utm_medium is the page. Structured data keeps the clean address (it names the listing).
 const metrics = readFileSync(join(ROOT, "docs", "METRICS.md"), "utf8");
 const MEDIUM = (f) => f === "index.html" ? "home" : isLang(f) ? "home_" + f.split("/")[0].replace(/-/g, "_")
-  : ({ "youtube-ad-blocker.html": "youtube", "cookie-banner-blocker.html": "cookie" })[f] || f.replace(/\.html$/, "");
+  : ({ "youtube-ad-blocker.html": "youtube", "cookie-banner-blocker.html": "cookie", "for-it-admins.html": "it_admins",
+    "ublock-origin-alternative.html": "ubo_alternative", "how-we-measure.html": "method" })[f] || f.replace(/\.html$/, "");
 const SOURCES = ["site", "github", "hn", "reddit", "lemmy", "mastodon", "alternativeto", "slant", "press", "llms"];
 
 ok(`site: ${pages.length} pages (${pages.join(", ")})`, pages.length >= 5);
@@ -114,6 +115,12 @@ for (const f of pages) {
 // сочи всички останали и себе си с hreflang, плюс x-default към английската; <html lang> е нейният.
 const gen = spawnSync(process.execPath, [join(ROOT, "tools", "site_lang.mjs"), "--check"], { encoding: "utf8" });
 ok(`language pages are fresh (node tools/site_lang.mjs --check): ${(gen.stdout + gen.stderr).trim()}`, gen.status === 0);
+const st = spawnSync(process.execPath, [join(ROOT, "tools", "status_page.mjs"), "--check"], { encoding: "utf8" });
+ok(`status page is fresh (node tools/status_page.mjs --check): ${(st.stdout + st.stderr).trim()}`, st.status === 0);
+const sm = spawnSync(process.execPath, [join(ROOT, "tools", "sitemap.mjs"), "--check"], { encoding: "utf8" });
+ok(`sitemap.xml is generated from the pages, fresh (node tools/sitemap.mjs --check): ${(sm.stdout + sm.stderr).trim()}`, sm.status === 0);
+ok("sitemap.xml: no changefreq/priority (ignored by Google), the language group carries hreflang + x-default",
+  !/<changefreq>|<priority>/.test(sitemap) && (sitemap.match(/hreflang="x-default"/g) || []).length === LANG_DIRS.length + 1);
 ok(`language pages: ${LANG_DIRS.join(", ")}`, LANG_DIRS.join() === "bg,de,es,fr,it,pt-br");
 const cluster = ["index.html", ...LANG_DIRS.map((d) => `${d}/index.html`)];
 const altsOf = (f) => [...read(f).slice(0, read(f).indexOf("</head>")).matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)" \/>/g)].map((m) => `${m[1]}=${m[2]}`).sort();
@@ -135,5 +142,6 @@ ok(`docs/METRICS.md lists every utm_source (${SOURCES.join(", ")})`, SOURCES.eve
 // Страницата за поддръжка казва текущата версия — като llms.txt и началната страница.
 ok(`support.html: shows the current version ${manifest.version}`, read("support.html").includes(`<dd>${manifest.version}, released`));
 ok(`llms.txt: names the current version ${manifest.version}`, llms.includes(`Current version: ${manifest.version}`));
+ok(`press.html: the fact sheet names the current version ${manifest.version}`, read("press.html").includes(`<dt>Current version</dt><dd>${manifest.version} (`));
 
 done();

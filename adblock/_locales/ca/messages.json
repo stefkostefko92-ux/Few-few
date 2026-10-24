@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bloquejador d’anuncis per a YouTube i la web: vídeo, bàners, pop-ups, rastrejadors, galetes («Rebutja») i murs anti-adblock."
+    "message": "Bloquejador d’anuncis per a YouTube i la web: vídeo, bàners, pop-ups, rastrejadors, avisos de galetes i murs anti-adblock."
   },
   "byCarbon": {
     "message": "per Carbon Stealth"
@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Capacitat de regles"
+  },
+  "helpTitle": {
+    "message": "Els llocs no funcionen?"
+  },
+  "helpText": {
+    "message": "N’hi ha prou amb un lloc cada vegada: permeteu-hi els anuncis durant una hora o desactiveu l’ocultació d’elements només en aquest lloc. Si ens ho feu saber, ho arreglem per a tothom."
+  },
+  "helpFix": {
+    "message": "Arregla aquest lloc"
+  },
+  "cardNever": {
+    "message": "No ho tornis a mostrar"
+  },
+  "cardClose": {
+    "message": "Tanca"
+  },
+  "receiptTitle": {
+    "message": "Els vostres últims 30 dies"
+  },
+  "receiptText": {
+    "message": "$1 sol·licituds bloquejades · $2 bàners de galetes gestionats · uns $3 de dades estalviades (una estimació)"
+  },
+  "share": {
+    "message": "Comparteix"
+  },
+  "shareTitle": {
+    "message": "Copia l’enllaç de Supreme AdBlock a la Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Enllaç copiat"
+  },
+  "rep_fixed_q": {
+    "message": "S’ha arreglat el lloc?"
+  },
+  "rep_fixed_yes": {
+    "message": "Sí, funciona"
+  },
+  "rep_fixed_no": {
+    "message": "No, encara no funciona"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Ens alegra que funcioni. Si ens ho feu saber a sota, l’informe dirà quina solució ha funcionat, i així podrem arreglar el lloc per a tothom."
+  },
+  "rep_fixed_next": {
+    "message": "Proveu la següent: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Doncs feu-nos-ho saber a sota: revisarem el lloc."
+  },
+  "rep_webmail": {
+    "message": "No teniu cap aplicació de correu? Copieu l’informe i envieu-lo a $1 des del vostre correu web."
+  },
+  "blk_mistake": {
+    "message": "Creieu que és un error? Feu-nos-ho saber"
+  },
+  "welTest": {
+    "message": "Vegeu com funciona en una pàgina de prova"
   }
 }

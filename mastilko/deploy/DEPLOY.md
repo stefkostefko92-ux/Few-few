@@ -32,11 +32,14 @@
 ## Еднократна настройка (преди първия деплой)
 
 ```bash
-# 1) DNS: A запис mastilko-bg.com → IP на сървъра (в панела на DNS).
+# 1) DNS: A запис mastilko-bg.com (и www.mastilko-bg.com) → IP на сървъра.
 
 # 2) Сертификат ПЪРВО (vhost-ът по-долу вече включва 443 блок, който иска cert).
-#    Издай го, докато домейнът сочи насам:
-certbot certonly --nginx -d mastilko-bg.com
+#    Издай го, докато домейнът сочи насам — С www, за да работи 301-ът
+#    https://www → апекса (иначе https://www е TLS грешка за Googlebot):
+certbot certonly --nginx -d mastilko-bg.com -d www.mastilko-bg.com
+#    Съществуващ cert само за апекса → разшири го:
+#    certbot certonly --nginx --expand -d mastilko-bg.com -d www.mastilko-bg.com
 #    (при първи път без работещ vhost: `certbot certonly --standalone -d mastilko-bg.com`,
 #     след като спреш каквото слуша на 80 за момент.)
 
