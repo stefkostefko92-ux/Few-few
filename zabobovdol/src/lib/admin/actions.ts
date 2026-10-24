@@ -76,7 +76,11 @@ async function uniqueSlugFor(
   desired: string,
   excludeId?: string,
 ): Promise<string> {
-  const root = slugify(desired) || "elem";
+  // Пътища на публичните форми и подстраници (/biznes/nova, /pomeni/nov,
+  // /dobrovolci/stani, /kak-da/kategoriya) — запис с такъв slug би бил недостъпен.
+  const RESERVED = new Set(["nova", "nov", "stani", "kategoriya", "rss-xml"]);
+  let root = slugify(desired) || "elem";
+  if (RESERVED.has(root)) root = `${root}-2`;
   // Зареждаме само кандидатите със същия корен — ограничена заявка.
   const rows = await delegate(model).findMany({
     where: { slug: { startsWith: root } },

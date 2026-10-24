@@ -33,9 +33,9 @@ function siteHost(): string {
 
 /** Източникът на прегледа; препращане от собствения домейн = вътрешно. */
 function viewSource(s: string, referrer: string, host: string): string {
+  // Собственият домейн (подаденият хост или каноничният) → „internal“.
   const src = normalizeSource(s, referrer, host);
-  const own = siteHost().replace(/^www\./, "");
-  if (src === `site:${own}`) return "internal";
+  if (src === "other-site" && normalizeSource(s, referrer, siteHost()) === "internal") return "internal";
   return src;
 }
 

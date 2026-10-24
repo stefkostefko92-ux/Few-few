@@ -196,16 +196,31 @@ async function notifyOnce(cands: Candidate[]): Promise<number> {
       const names = g.map((c) => c.area).filter(Boolean);
       const where = names.length > 3 ? `${names.slice(0, 3).join(", ")} и още ${names.length - 3}` : names.join(", ");
       const when = first.startAt ? ` от ${formatOutageTime(first.startAt)}` : "";
-      const r = await notifyTopic("outages", {
-        title: `Спира токът${first.planned ? "" : " (авария)"}`,
-        body: `${where}${when}`.slice(0, 180),
-        url: "/prekysvaniya?s=push",
+      // Заяви → прати → (при ненастроени известия) върни — като notifyOnPublish:
+      // паралелен внос или админ не може да прати същото спиране втори път.
+      const ids = g.map((c) => c.id);
+      const at = new Date();
+      const claimed = await prisma.outage.updateMany({
+        where: { id: { in: ids }, published: true, notifiedAt: null },
+        data: { notifiedAt: at },
       });
-      if (r.configured) {
-        await prisma.outage.updateMany({
-          where: { id: { in: g.map((c) => c.id) }, notifiedAt: null },
-          data: { notifiedAt: new Date() },
-        });
+      // 0 → всичко вече е известено от друг; иначе пращаме за групата (заявените
+      // от нас записи вече не могат да бъдат пратени от друг).
+      if (claimed.count === 0) continue;
+      let configured = false;
+      try {
+        configured = (
+          await notifyTopic("outages", {
+            title: `Спира токът${first.planned ? "" : " (авария)"}`,
+            body: `${where}${when}`.slice(0, 180),
+            url: "/prekysvaniya?s=push",
+          })
+        ).configured;
+      } catch {
+        configured = false;
+      }
+      if (!configured) {
+        await prisma.outage.updateMany({ where: { id: { in: ids }, notifiedAt: at }, data: { notifiedAt: null } });
       }
     } catch {
       /* известието е второстепенно — записите вече са направени */

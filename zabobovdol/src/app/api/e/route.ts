@@ -69,10 +69,9 @@ export async function POST(req: Request) {
 
   const [host] = ownHosts(req);
   const path = groupPath(normalizePath(parsed.p));
-  let source = normalizeSource(parsed.s, req.headers.get("referer"), host);
-  if (source.startsWith("site:") && ownHosts(req).some((h) => source === `site:${h.replace(/^www\./, "")}`)) {
-    source = "internal";
-  }
+  // Собственият домейн → „internal“, непознат → „other-site“ (без името му) —
+  // решава normalizeSource.
+  const source = normalizeSource(parsed.s, req.headers.get("referer"), host);
   await bump(parsed.e, path, source);
   return new Response(null, { status: 204 });
 }

@@ -41,6 +41,7 @@ export function sourceLabel(s: string): string {
   if (s === "chatgpt" || s === "perplexity" || s === "claude") return `AI помощник (${s})`;
   if (s === "egov") return "egov.bg";
   if (s === "other") return "Непознат маркер";
+  if (s === "other-site") return "Друг сайт (без име — поверителност)";
   if (s.startsWith("qr-")) return `QR плакат „${s.slice(3)}“`;
   if (s.startsWith("site:")) return `Сайт ${s.slice(5)}`;
   return s || "—";
