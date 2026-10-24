@@ -14362,7 +14362,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 231
+        "lessons": 234
       },
       "evolution": [
         {
@@ -14466,9 +14466,20 @@
           "date": "2026-10-23",
           "event": "v21.4 — учене",
           "detail": "Научи: CWS best-listing (2024-08-02): summary — Don't include superlatives like 'greatest' and… (+3 още)"
+        },
+        {
+          "version": "21.7.0",
+          "date": "2026-10-24",
+          "event": "v21.7 — учене",
+          "detail": "Научи: Apple EU от 01.10.2026 — Attachment 14 на DPLA заменя Alternative Terms Addendum и Stor… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-24",
+          "type": "learning",
+          "summary": "Научи: „Apple EU от 01.10.2026 — Attachment 14 на DPLA заменя Alternative Terms Addendum и Stor…\" (+2 още)"
+        },
         {
           "date": "2026-10-23",
           "type": "learning",
