@@ -94,7 +94,9 @@ app/                                 публичният сайт cs2.carbonste
 - Остарял сървър изпада от листинга → `cs2-update.timer` проверява на 10 минути; ъпдейтът рестартира.
 - **Модове = един ред в `gameinfo.gi`** (`Game csgo/addons/metamod` под `Game_LowViolence csgo_lv`).
   Всеки ъпдейт на CS2 го трие → `cs2dm_restart_with_mods_or_fallback` го връща и доказва зареждането
-  по реда `Finished loading plugin Deathmatch` в journald. Не тръгнат ли — **ванилов старт** (DM е
+  по реда `Finished loading plugin Deathmatch` с час след рестарта в лога на CSS
+  (`addons/counterstrikesharp/logs/log-all*.txt`), резервно в journald — stdout на играта към journald
+  се буферира и на VPS-а редът не стигна навреме. Не тръгнат ли — **ванилов старт** (DM е
   вграден), версията в `/var/lib/cs2dm/mods-broken`, нов опит на 6 часа при празен сървър.
 - **Нов мод/версия → ред в `mods.lock` с sha256, сметнат от теб върху свален файл**, никога от
   страница. Тестът изисква HTTPS и 64-hex хеш.

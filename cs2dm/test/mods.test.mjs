@@ -113,3 +113,40 @@ test("gameinfo.gi: непознат формат → отказ, файлът о
     assert.equal(readFileSync(gi, "utf8"), before);
   });
 });
+
+test("зареждането на плъгин се доказва от лога на CSS по час, без journald", () => {
+  const dir = mkdtempSync(join(tmpdir(), "cs2dm-css-"));
+  try {
+    const bin = join(dir, "bin");
+    execFileSync("mkdir", ["-p", bin, join(dir, "logs")]);
+    // journald без нито един ред от играта (както на VPS-а): проверката не бива да зависи от него.
+    writeFileSync(join(bin, "journalctl"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+    writeFileSync(
+      join(dir, "logs", "log-all20261024.txt"),
+      [
+        "2026-10-24 15:00:14.901 +02:00 [INFO] (cssharp:PluginContext) Finished loading plugin Deathmatch",
+        "2026-10-24 15:01:58.800 +02:00 [INFO] (cssharp:PluginContext) Finished loading plugin CarbonStealth",
+        "",
+      ].join("\n"),
+    );
+    const loaded = (since, name) => {
+      try {
+        execFileSync("bash", ["-c", `set -euo pipefail; source "${path("server/cs2dm-lib.sh")}"; cs2dm_plugin_loaded_since ${since} ${name}`], {
+          env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CS2DM_CSS_LOGS: join(dir, "logs") },
+          stdio: "pipe",
+        });
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    const at = (s) => Math.floor(Date.parse(s) / 1000);
+    assert.equal(loaded(at("2026-10-24T13:00:00Z"), "Deathmatch"), true, "ред след момента");
+    assert.equal(loaded(at("2026-10-24T13:01:00Z"), "Deathmatch"), false, "старият ред от същия ден не важи");
+    assert.equal(loaded(at("2026-10-24T13:01:00Z"), "CarbonStealth"), true);
+    assert.equal(loaded(at("2026-10-24T13:02:00Z"), "CarbonStealth"), false);
+    assert.equal(loaded(at("2026-10-24T13:00:00Z"), "Missing"), false);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

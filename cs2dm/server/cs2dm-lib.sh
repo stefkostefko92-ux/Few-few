@@ -16,6 +16,8 @@ CS2DM_STATE_DIR="${CS2DM_STATE_DIR:-/var/lib/cs2dm}"
 CS2DM_MODS_ENABLED="$CS2DM_STATE_DIR/mods-enabled"
 CS2DM_MODS_BROKEN="$CS2DM_STATE_DIR/mods-broken"
 CS2DM_METAMOD_LINE=$'\t\t\tGame\tcsgo/addons/metamod'
+# Логовете на CounterStrikeSharp (Serilog, по ден: log-all<ггггммдд>.txt).
+CS2DM_CSS_LOGS="${CS2DM_CSS_LOGS:-/opt/cs2/server/game/csgo/addons/counterstrikesharp/logs}"
 # Плъгинът, чието зареждане доказва, че цялата верига работи (Metamod → CSS → плъгин).
 CS2DM_PROBE_PLUGIN="Deathmatch"
 
@@ -60,10 +62,26 @@ cs2dm_wait_healthy() {
   return 1
 }
 
-# Зареден ли е плъгинът $2 след момента $1 (epoch секунди)? CSS пише в stdout → journald.
+# Зареден ли е плъгинът $2 след момента $1 (epoch секунди)?
+# Основният източник е логът на CSS във файл: stdout на играта към journald се буферира и редът
+# може да не стигне навреме (на VPS-а 24.10.2026 плъгините се заредиха, а проверката ги изпусна).
 cs2dm_plugin_loaded_since() {
+  cs2dm_css_log_since "$1" "$2" && return 0
   journalctl -u cs2.service --since "@$1" --no-pager -o cat 2>/dev/null \
     | grep -q "Finished loading plugin $2"
+}
+
+# Ред „Finished loading plugin $2“ с час ≥ $1 в log-all*.txt („2026-10-24 15:01:58.441 +02:00 [INFO] …“).
+cs2dm_css_log_since() {
+  local since=$1 name=$2 f line at
+  for f in "$CS2DM_CSS_LOGS"/log-all*.txt; do
+    [[ -f "$f" ]] || continue
+    while IFS= read -r line; do
+      at="$(date -d "${line:0:30}" +%s 2>/dev/null)" || continue
+      (( at >= since )) && return 0
+    done < <(grep -F "Finished loading plugin $name" "$f" 2>/dev/null || true)
+  done
+  return 1
 }
 
 cs2dm_mods_loaded_since() { cs2dm_plugin_loaded_since "$1" "$CS2DM_PROBE_PLUGIN"; }
