@@ -4,7 +4,7 @@
 // ONLY through the verified Stripe webhook (routes/stripe.js) — never here.
 import { Router } from "express";
 import Stripe from "stripe";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { PLANS, AGENCY_PLANS, stripePriceId, syncServerPaidFlag } from "../lib/premium.js";
