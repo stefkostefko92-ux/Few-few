@@ -1,0 +1,75 @@
+# cs2-agent.service — агентът на хоста за уеб панела на cs2dm (CONTRACT.md §9).
+# Подписани команди от сайта през Redis → status · restart · update · logs. БЕЗ root: потребител
+# cs2agent (системен, без shell); systemd действията ги разрешава polkit САМО за restart на
+# cs2.service и start на cs2-update.service (/etc/polkit-1/rules.d/50-cs2dm-agent.rules).
+# Инсталира се с server/agent/install-agent.sh.
+[Unit]
+Description=cs2dm: агентът на сървъра (команди от уеб панела)
+Documentation=https://github.com/stefkostefko92-ux/Few-few/tree/main/cs2dm
+After=network-online.target
+Wants=network-online.target
+# Границите за рестарт-цикъл са в [Unit] — в [Service] systemd ги игнорира мълчаливо.
+StartLimitIntervalSec=120
+StartLimitBurst=10
+
+[Service]
+Type=simple
+User=cs2agent
+Group=cs2agent
+# Само четене: журналът на cs2.service (група systemd-journal) и логовете на CounterStrikeSharp
+# (/opt/cs2 е 0750 cs2:cs2 → групата дава само видимост). Запис никъде — ProtectSystem=strict.
+# Групите са само в тази услуга, не в /etc/group.
+SupplementaryGroups=systemd-journal cs2
+# 0600 root — systemd (PID 1) го чете преди смяната на потребителя; ключът не е в командния ред.
+EnvironmentFile=/etc/cs2/agent.env
+Environment=NODE_ENV=production
+WorkingDirectory=/usr/local/lib/cs2dm/agent
+# Без shell: node директно; скриптът е root:root 0644 (cs2agent не може да го подмени).
+ExecStart=/usr/bin/node /usr/local/lib/cs2dm/agent/cs2-agent.mjs
+Restart=always
+RestartSec=5
+TimeoutStopSec=15
+
+# Играта има приоритет на споделения VPS.
+Nice=5
+CPUWeight=50
+MemoryMax=256M
+TasksMax=64
+
+# Втвърдяване.
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+# Какво чете (изрично; „-“ = пропусни, ако още го няма — иначе стартът пада с 226/NAMESPACE).
+ReadOnlyPaths=-/opt/cs2/server/game/csgo/addons/counterstrikesharp/logs -/opt/cs2/server/game/csgo/steam.inf -/var/lib/cs2dm
+# Групата cs2 вижда /opt/cs2 — скриваме каквото не му трябва (конфигът на плъгина е с тайни).
+InaccessiblePaths=-/opt/cs2/steamcmd -/opt/cs2/.steam -/opt/cs2/server/game/csgo/addons/counterstrikesharp/configs
+# Процесите на другите потребители са невидими → и GSLT-ът в /proc/<pid>/cmdline на играта.
+# systemd и polkitd виждат агента през собствения си /proc (извън този namespace).
+ProtectProc=invisible
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+# AF_UNIX — D-Bus към systemd (polkit); AF_INET/AF_INET6 — Redis и A2S на 127.0.0.1.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RemoveIPC=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged
+SystemCallErrorNumber=EPERM
+UMask=0077
+# БЕЗ MemoryDenyWriteExecute — V8 JIT на Node пише изпълнима памет.
+
+[Install]
+WantedBy=multi-user.target

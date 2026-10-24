@@ -9,7 +9,8 @@ _Сега: **фаза 1** (ванилов сървър под systemd на се�
 CounterStrikeSharp + DM плъгин на NockyCZ, заковани по sha256) + **фаза 3** (нашият C# плъгин
 CarbonStealth на PostgreSQL: банове, админ меню, статистики/XP, банери, реклами, мост към сайта) +
 **сайтът, етап 1** (`app/` — публичната част: статус, класация, профили, банлист, VIP, правни страници;
-Express + EJS + Prisma + Redis + BullMQ). Следва: уеб панел и вход със Steam (етап 2), Discord бот.
+Express + EJS + Prisma + Redis + BullMQ) + **агентът на хоста** (`server/agent/`, CONTRACT §9 — ръцете на
+панела върху systemd, без root). Следва: уеб панел и вход със Steam (етап 2), Discord бот.
 Банове и класация — **публични на сайта** (решение на
 собственика), затова админ системата е наша на Postgres, не CS2-SimpleAdmin (MySQL + три
 неподдържани меню зависимости). Договорът между плъгин и сайт: `CONTRACT.md`._
@@ -28,7 +29,9 @@ npm run dev                            # локално на :4330 (DATABASE_URL
 ```
 
 Сървърът е с нула зависимости → без `npm ci`. На сървъра: `sudo bash server/install.sh --check`
-(само проверки). Без `DATABASE_URL` интеграционните тестове се пропускат чисто; със — създават само
+(само проверки); агентът — `sudo bash server/agent/install-agent.sh` (идемпотентен, накрая самопроверка).
+`test/agent.test.mjs` ползва фалшив RESP сървър (CI е без Redis); ако има Redis на `127.0.0.1:6379`
+(`CS2DM_TEST_REDIS_PORT`), тича и срещу него — база 14, канали `cs2dm-test:<uuid>:…`, чисти след себе си. Без `DATABASE_URL` интеграционните тестове се пропускат чисто; със — създават само
 SteamID-та `76561190000990xxx` и ги трият преди и след себе си.
 
 ## Структура
@@ -46,13 +49,18 @@ server/systemd/                      cs2.service · cs2-update.service · cs2-up
 server/cs2.env.example               шаблон за /etc/cs2/cs2.env (GSLT, IP, порт, слотове)
 server/mods/install-plugins.sh       фаза 3: билд на CarbonStealth (dotnet или SDK контейнер по digest) → инсталиране → конфиг 0600
 server/mods/plugin-config.mjs        конфигът на плъгина от /etc/cs2/cs2.env (валидира, нищо тайно в изхода)
+server/agent/cs2-agent.mjs           агентът за панела (CONTRACT §9): подписани команди от Redis → status · restart ·
+                                     update · logs; A2S → cs2dm:a2s на 10 s; собствен RESP клиент (zero-dep)
+server/agent/cs2-agent.service       unit: cs2agent, без root и без запис (ProtectSystem=strict, ProtectProc=invisible…)
+server/agent/50-cs2dm-agent.rules    polkit: cs2agent САМО restart cs2.service · start cs2-update.service, иначе NO
+server/agent/install-agent.sh        потребител · файлове · ключове (agent.env + app.env) · unit · polkit · самопроверка
 plugins/src/CarbonStealth.Logic/     чиста логика без CSS (XP, роли, срокове, мост/HMAC, банери) — xunit тестове
 plugins/src/CarbonStealth/           плъгинът: един partial клас по тема (Admin, AdminMenu, Banners, Adverts,
                                      BridgeCommands, Chat, Connection, Stats) + Data/ (Npgsql) + lang/ (en, bg)
 plugins/scripts/build.sh             тестове + publish в plugins/out/; DeathmatchAPI.dll от архива в mods.lock
 addon/                               банери-картинки: build_textures.py → PNG, OBJ плоскости, Workshop стъпки
 CONTRACT.md                          роли, наказания, XP, heatmap, мост, одит, срокове, банери
-test/                                node --test: A2S протокол + конфиг/unit/скриптове + плъгин (конфиг, lang)
+test/                                node --test: A2S протокол + конфиг/unit/скриптове + плъгин (конфиг, lang) + агентът
 
 app/                                 публичният сайт cs2.carbonstealth.eu (етап 1) — Node 22 · TS strict ESM
   prisma/schema.prisma + migrations/ ЕДИНСТВЕНИЯТ източник на схемата (C# плъгинът пише по @map имената)
@@ -75,6 +83,8 @@ app/                                 публичният сайт cs2.carbonste
 
 На машината: играта `/opt/cs2/server` (потребител `cs2`), SteamCMD `/opt/cs2/steamcmd`, скриптовете,
 които root пуска — `/usr/local/lib/cs2dm` (извън дома на `cs2`), тайните — `/etc/cs2/cs2.env` (0600).
+Агентът: `/usr/local/lib/cs2dm/agent/cs2-agent.mjs` (root:root 0644, потребител `cs2agent`), неговият env —
+`/etc/cs2/agent.env`; env файлът на сайта (`docker compose --env-file`) — `/etc/cs2/app.env`. Env файловете са 0600 root.
 
 ## Конвенции (важно)
 
@@ -125,6 +135,31 @@ app/                                 публичният сайт cs2.carbonste
 - Нова колона/таблица → миграция в `app/prisma` (Prisma е собственикът на схемата), после SQL-а в `Data/`.
 - Пакетите са заключени (`packages.lock.json`, `RestoreLockedMode`); нов пакет/версия → `dotnet restore
   --force-evaluate` и lock файлът в същия PR.
+
+### Агентът на сървъра (`server/agent/`, CONTRACT §9)
+
+- **Затворен списък.** Ново действие → `ACTIONS` + диспечерът + (ако пипа systemd) polkit правилото +
+  CONTRACT §9 + тест — в същия PR. Изпълнение САМО с `execAllowed` (execFile, `shell: false`, абсолютни
+  пътища от `BIN`); аргументите са константи — единственият вход е `lines` (цяло 1…200) и `source`.
+- **Подписът е като моста** (`Bridge.cs`: плик `{"p","sig"}`, HMAC върху UTF-8 байтовете на `p`, ±30 s,
+  1000 id), но с **отделен** ключ `CS2DM_AGENT_KEY`. Грешките са низовете на C#; отхвърлена команда **няма
+  ack** (като плъгина). Тестовият вектор от `Bridge.cs` е в `agent.test.mjs`.
+- **Отговорите** (за панела): `status` → `{active, state, since (ms|null), gameVersion, modsLoaded,
+  broken (версията, при която модовете са паднали | null), busy ("restart"|"update"|null)}`; `logs` →
+  `{source, lines[]}`; провал → `error: "failed"` + `data.detail` (кратко, редактирано); `busy`; `bad args`.
+  `restart` чака systemctl (до 120 s), `update` е `--no-block`; `busy` важи и докато тече `cs2-update.service`.
+- **`cs2dm:a2s`**: `players` е както в A2S (с ботовете), `bots` отделно; без отговор → `online: false` и
+  `null` — никога измислени числа.
+- **Всеки ред към панела минава през `redactLines`** (IPv4/IPv6 → `x.x.x.x`, `sv_setsteamaccount`/`logon
+  token`/32+ hex/`password=` → `<redacted>`, ANSI и контролни знаци вън, ≤ 1000 знака). Нов източник на
+  логове → тест с IP и GSLT. Над-редакцията е приета (версия `1.41.9.2` → `x.x.x.x`), изтичането — не.
+- **polkit ≥ 121** (JavaScript правила; Ubuntu 24.04+). На 0.105 инсталаторът отказва — там не може да се
+  ограничи по `unit`/`verb`. Правилото е само ES5 (duktape); тестът го пуска във `vm`.
+- **Unit-ът не пише никъде** (без `ReadWritePaths`), без `MemoryDenyWriteExecute` (V8 JIT), `StartLimit*` в
+  `[Unit]`. Групите `systemd-journal cs2` са само в `SupplementaryGroups=`, не в `/etc/group`.
+- **Ключовете — само install-agent.sh**: чете env файловете със `sed` (никога `source` — `;` в Npgsql),
+  стойностите стигат до awk през средата, нищо тайно в изхода. `APP_ENC_KEY` се генерира веднъж и **никога**
+  не се сменя (шифрира TOTP тайните).
 
 ## Конвенции на сайта (`app/`)
 
