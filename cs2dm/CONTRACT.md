@@ -123,3 +123,35 @@ Redis слуша само на `127.0.0.1` с парола (ACL). Ключове
 `banner.add` / `banner.remove`; сайтът може да ги показва и трие (плъгинът презарежда при смяна на
 карта). Ключовете: текстови `carbonstealth`, `adblock` (в кода на плъгина) и модели от
 `CS2DM_BANNER_MODELS` (виж `addon/README.md`). Непознат ключ се пропуска тихо — например при махнат addon.
+
+## 9. Агентът на сървъра (`cs2-agent`, хост ↔ сайт)
+
+Сайтът е в Docker и не може да пипа systemd. На хоста тича `cs2-agent` (zero-dep Node, потребител
+`cs2agent`, polkit право само за `cs2.service` и `cs2-update.service`), вързан за същия Redis
+(127.0.0.1:6392). Подписът е като на моста (§5), но с **отделен ключ** `CS2DM_AGENT_KEY` (≥ 32 знака).
+
+- Команди: `PUBLISH cs2dm:agent:cmd <плик>`, payload `{id, ts, actor, action, args}`; отхвърля се
+  невалиден подпис, `|now − ts| > 30 s`, повторен `id`.
+- Действия (затворен списък):
+  - `status` → `{active, since, gameVersion, modsLoaded, broken}`;
+  - `restart` → `systemctl restart cs2.service`;
+  - `update` → `systemctl start --no-block cs2-update.service`;
+  - `logs {source: "css"|"journal", lines ≤ 200}` → редове след **редакция**: IP адреси → `x.x.x.x`,
+    `sv_setsteamaccount <…>` и всякакви 32+ hex низове → `<redacted>`.
+- `restart`/`update` са еднопоточни: докато едното тече, второ → `ok: false, error: "busy"`.
+- Отговор: `PUBLISH cs2dm:agent:ack {"id", "ok", "error"?, "data"?}`.
+- Статус без плъгина (празен сървър спи — §5 „живо“ липсва): агентът пише на 10 s
+  `SET cs2dm:a2s <json> EX 30` = `{ts, online, name, map, players, bots, maxPlayers}` от A2S.
+  Сайтът показва `cs2dm:live`, ако е пресен, иначе `cs2dm:a2s`, иначе „неизвестен“.
+
+## 10. Панелът (сайт, `/admin`)
+
+- Вход **само със Steam** (OpenID 2.0, проверка с `check_authentication` към steamcommunity.com;
+  `claimed_id` → SteamID64). Достъп до панела: роля ≥ `HELPER` от `players.role`.
+- **TOTP е задължителен** за панела (RFC 6238; тайната шифрована с `APP_ENC_KEY`, AES-256-GCM;
+  резервни кодове — само хешове). Без активиран TOTP панелът показва само записването му.
+- Сесии в базата (`web_sessions`, токенът — само хеш), бисквитка `__Host-cs2dm_sid` (HttpOnly, Secure,
+  SameSite=Lax — връщането от Steam е cross-site GET), 12 часа, изход на всички устройства при смяна на
+  роля. CSRF токен на всяка POST форма. Rate limit на входа и на POST.
+- Права — таблицата в §1 + immunity; проверява ги **сайтът** преди да подпише команда към моста (§5)
+  или агента (§9). Всяко действие → ред в `audit_log` със `source = WEB`.
