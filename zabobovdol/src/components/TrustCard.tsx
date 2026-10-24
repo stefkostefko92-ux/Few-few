@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { Fragment, type ReactNode } from "react";
 import { ShieldCheck } from "@/components/icons";
-import { TelLink } from "@/components/PhoneReportButton";
+import { TelLink } from "@/components/TelLink";
 import { SITE } from "@/lib/site";
 import { getFacebookUrl, getViberChannelUrl } from "@/lib/settings";
 
@@ -11,6 +12,25 @@ import { getFacebookUrl, getViberChannelUrl } from "@/lib/settings";
 // Текстът е за безопасност — само на български, без машинен превод.
 export const NEVER_ASK = "Никога не искаме пари, ЕГН, ПИН, кодове от SMS или данни на карта.";
 
+/**
+ * Адрес с позволено пренасяне само на смислено място: след „@“ в имейл и след
+ * първата точка в домейн („zabobovdol.“ | „carbonstealth.eu“). Така адресът
+ * не се цепи насред думата („carbonstealth.e / u“) — точно в картата, която
+ * учи хората да го проверяват буква по буква.
+ */
+export function breakableAddress(text: string): ReactNode {
+  const at = text.indexOf("@");
+  const cut = at >= 0 ? at + 1 : text.indexOf(".") + 1;
+  if (cut <= 0 || cut >= text.length) return text;
+  return (
+    <Fragment>
+      {text.slice(0, cut)}
+      <wbr />
+      {text.slice(cut)}
+    </Fragment>
+  );
+}
+
 export async function TrustCard({
   variant = "full",
   className = "",
@@ -19,20 +39,23 @@ export async function TrustCard({
   className?: string;
 }) {
   if (variant === "compact") {
+    // Светла карта — стои и върху тъмносиния футър.
     return (
-      <div className={"rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700 " + className}>
-        <p className="flex items-start gap-2">
-          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" aria-hidden />
-          <span>
+      <div
+        className={
+          "rounded-2xl border border-slate-200 bg-white p-4 text-base text-slate-700 shadow-sm sm:p-5 " +
+          className
+        }
+      >
+        <p className="flex items-start gap-3">
+          <ShieldCheck className="mt-0.5 h-6 w-6 shrink-0 text-brand-700" aria-hidden />
+          <span className="min-w-0">
             <strong className="text-slate-900">
-              Истинският ни адрес е само {SITE.domain}.
+              Истинският ни адрес е само {breakableAddress(SITE.domain)}.
             </strong>{" "}
             {NEVER_ASK}{" "}
-            <Link
-              href="/izmami"
-              className="font-semibold text-brand-700 underline underline-offset-2"
-            >
-              Как да се пазите от измами →
+            <Link href="/izmami" className="link">
+              Как да се пазите от измами<span aria-hidden="true">&nbsp;→</span>
             </Link>
           </span>
         </p>
@@ -46,7 +69,7 @@ export async function TrustCard({
   return (
     <section
       aria-labelledby="trust-card-title"
-      className={"rounded-2xl border-2 border-brand-200 bg-brand-50 p-6 " + className}
+      className={"rounded-2xl border-2 border-brand-200 bg-brand-50 p-5 sm:p-6 " + className}
     >
       <div className="flex items-start gap-2">
         <ShieldCheck className="mt-1 h-6 w-6 shrink-0 text-brand-700" aria-hidden />
@@ -55,26 +78,27 @@ export async function TrustCard({
         </h2>
       </div>
 
+      {/* Домейнът на свой ред — като адресната лента, която човек сравнява. */}
       <p className="mt-3 text-lg text-slate-800">
-        Истинският ни адрес в интернет е само{" "}
-        <strong className="break-all text-slate-900">{SITE.domain}</strong>. Проверете
-        го в полето с адреса на браузъра, преди да напишете каквото и да е.
+        Истинският ни адрес в интернет е само
+        <strong className="mt-1 block text-xl font-bold text-slate-900">
+          {breakableAddress(SITE.domain)}
+        </strong>
+        Проверете го в полето с адреса на браузъра, преди да напишете каквото и да е.
       </p>
 
       <ul className="mt-4 space-y-2 text-lg text-slate-800">
         {SITE.contact.phone && (
           <li>
             Нашият телефон:{" "}
-            <TelLink phone={SITE.contact.phone} className={link}>
-              {SITE.contact.phone}
-            </TelLink>
+            <TelLink phone={SITE.contact.phone} className={link + " whitespace-nowrap"} />
           </li>
         )}
         {SITE.contact.email && (
           <li>
             Нашият имейл:{" "}
-            <a href={`mailto:${SITE.contact.email}`} className={link + " break-all"}>
-              {SITE.contact.email}
+            <a href={`mailto:${SITE.contact.email}`} className={link}>
+              {breakableAddress(SITE.contact.email)}
             </a>
           </li>
         )}
@@ -104,7 +128,7 @@ export async function TrustCard({
         Ако някой ви търси от наше име по друг начин или иска такива неща — това е
         измама. Затворете и ни се обадете на горния телефон.
       </p>
-      <p className="mt-2 text-sm text-slate-600">
+      <p className="mt-2 text-base text-slate-600">
         Сайтът е безплатен за жителите. Платена е само рекламата за фирми — и то
         след заявка от самата фирма през страница „
         <Link href="/reklama" className="font-medium text-brand-700 underline underline-offset-2">
