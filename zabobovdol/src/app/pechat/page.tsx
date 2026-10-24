@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/lib/site";
 import { buildMetadata } from "@/lib/seo";
 import { formatPhoneBg } from "@/lib/phone";
 import { SECTION } from "@/lib/section-names";
+import { fitPhoneSheet } from "@/lib/print-phones";
 import { PageHero } from "@/components/ui";
 import {
   Sheet112,
@@ -55,14 +57,27 @@ function groupRows(rows: Row[]) {
   })).filter((g) => g.items.length > 0);
 }
 
+// Редът на листа: обикновен и сбит (когато номерата са много или с дълги
+// имена — виж fitPhoneSheet). Пълни низове, за да ги види Tailwind.
+const LI =
+  "flex break-inside-avoid items-baseline justify-between gap-3 print:gap-2 border-b border-slate-200 py-1.5 text-base leading-snug print:py-0.5 print:leading-tight";
+const LI_DENSE =
+  "flex break-inside-avoid items-baseline justify-between gap-3 print:gap-2 border-b border-slate-200 py-1.5 text-base leading-snug print:py-0 print:text-[11pt] print:leading-tight";
+const NUM = "shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-slate-900 print:text-base";
+const NUM_DENSE =
+  "shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-slate-900 print:text-[11pt]";
+
 export default async function PrintPage() {
   const services = await prisma.service.findMany({
     where: { published: true, phone: { not: "" } },
     orderBy: [{ isEmergency: "desc" }, { category: "asc" }, { order: "asc" }],
-    take: 30,
+    // С резерв: кои номера отпадат решава редът на групите, не базата.
+    take: 80,
     select: { id: true, name: true, phone: true, category: true },
   });
-  const groups = groupRows(services.filter((s) => s.phone.trim() !== "112"));
+  const { groups, shown, cut, dense } = fitPhoneSheet(
+    groupRows(services.filter((s) => s.phone.trim() !== "112")),
+  );
 
   return (
     <>
@@ -75,7 +90,22 @@ export default async function PrintPage() {
       />
 
       {/* Лист за печат (A4) */}
-      <SheetLayout current="/pechat" note="Листът е за хартия A4.">
+      <SheetLayout
+        current="/pechat"
+        note={
+          cut > 0 ? (
+            <>
+              Листът е за хартия A4. На него са {shown} номера — още {cut} има в{" "}
+              <Link href="/uslugi" className="link">
+                „Услуги и телефони“
+              </Link>
+              .
+            </>
+          ) : (
+            "Листът е за хартия A4."
+          )
+        }
+      >
         <SheetHead title="Важни телефони — Бобов дол" subtitle={SITE.domain} />
 
         <Sheet112 compact className="mt-5 print:mt-3 print:py-2" />
@@ -90,12 +120,9 @@ export default async function PrintPage() {
               </h3>
               <ul role="list">
                 {g.items.map((s) => (
-                  <li
-                    key={s.id}
-                    className="flex break-inside-avoid items-baseline justify-between gap-3 print:gap-2 border-b border-slate-200 py-1.5 text-base leading-snug print:py-0.5 print:leading-tight"
-                  >
+                  <li key={s.id} className={dense ? LI_DENSE : LI}>
                     <span className="min-w-0 text-slate-800 [overflow-wrap:anywhere]">{s.name}</span>
-                    <span className="shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-slate-900 print:text-base">
+                    <span className={dense ? NUM_DENSE : NUM}>
                       {formatPhoneBg(s.phone)}
                     </span>
                   </li>
