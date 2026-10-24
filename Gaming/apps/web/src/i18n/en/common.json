@@ -815,7 +815,8 @@
       "threeFoul": "Three consecutive fouls — loss of rack.",
       "illegalBreak": "Foul: illegal break — no ball potted and fewer than four balls to a rail.",
       "playAgain": "The offender plays again.",
-      "missReplay": "Foul and a miss — balls replaced, the offender plays again."
+      "missReplay": "Foul and a miss — balls replaced, the offender plays again.",
+      "eightWrongPocket": "The 8 dropped in an uncalled pocket — loss."
     },
     "pushOut": "Push-out",
     "pushPass": "Pass back",
@@ -829,7 +830,27 @@
     "miss": "foul and a miss",
     "foulChoice": "Opponent fouled — play on or make them play again.",
     "playAgain": "Make them play again",
-    "replay": "Replace the balls"
+    "replay": "Replace the balls",
+    "spin": "Spin",
+    "spinRole": "cue-ball contact point",
+    "spinTop": "top",
+    "spinBottom": "bottom",
+    "spinLeft": "left",
+    "spinRight": "right",
+    "spinCenter": "centre",
+    "spinReset": "Centre",
+    "spinHelp": "Choose where the cue strikes the cue ball: top — it keeps rolling after contact (follow), bottom — it comes back (draw), side — it changes the rebound off the rail. Arrow keys to move, Shift for finer steps, Home to centre.",
+    "callPocket": "Pocket for the 8",
+    "callPocketHint": "You're on the 8 — call a pocket (click next to it or use the buttons)",
+    "calledPocket": "called pocket",
+    "pockets": {
+      "0": "top left",
+      "1": "top middle",
+      "2": "top right",
+      "3": "bottom left",
+      "4": "bottom middle",
+      "5": "bottom right"
+    }
   },
   "net": {
     "reconnecting": "Connection lost — reconnecting…"

@@ -54,6 +54,8 @@ export interface CueScene {
   aim?: { x0: number; y0: number; x1: number; y1: number } | null;
   /** Translucent ball-in-hand preview. */
   ghost?: { x: number; y: number } | null;
+  /** 8-ball: обявеният за осмицата джоб — светещ пръстен около него. */
+  called?: { x: number; y: number } | null;
 }
 
 const RAIL = 0.085; // rail thickness (world units) — also sets the canvas aspect
@@ -179,6 +181,7 @@ export class GLTable {
   private fxLayer = new Group();
   private aimGroup = new Group();
   private ghostMesh: Mesh;
+  private calledMesh: Mesh;
   private ballGeo = new SphereGeometry(R, 48, 32);
   private nodes = new Map<number, { mesh: Mesh; kind: string }>();
   private sinks: { mesh: Mesh; born: number; dur: number; from: Vector3 }[] = [];
@@ -218,7 +221,15 @@ export class GLTable {
     );
     this.ghostMesh.visible = false;
 
-    this.scene.add(this.staticLayer, this.ballLayer, this.fxLayer, this.aimGroup, this.ghostMesh);
+    this.calledMesh = new Mesh(
+      new RingGeometry(TABLE.pocketR * 1.3, TABLE.pocketR * 1.6, 32),
+      new MeshBasicMaterial({ color: 0xf2cf7a, transparent: true, opacity: 0.85 }),
+    );
+    this.calledMesh.rotation.x = -Math.PI / 2;
+    this.calledMesh.position.y = 0.004;
+    this.calledMesh.visible = false;
+
+    this.scene.add(this.staticLayer, this.ballLayer, this.fxLayer, this.aimGroup, this.ghostMesh, this.calledMesh);
   }
 
   static async create(canvas: HTMLCanvasElement, cssWidth: number): Promise<GLTable> {
@@ -500,6 +511,14 @@ export class GLTable {
       this.ghostMesh.position.set(wx(scene.ghost.x), R, wz(scene.ghost.y));
     } else {
       this.ghostMesh.visible = false;
+    }
+
+    // обявен джоб (8-ball)
+    if (scene.called) {
+      this.calledMesh.visible = true;
+      this.calledMesh.position.set(wx(scene.called.x), 0.004, wz(scene.called.y));
+    } else {
+      this.calledMesh.visible = false;
     }
 
     this.renderBalls(scene);

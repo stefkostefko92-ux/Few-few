@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SeededRng } from "../../kernel/rng.js";
-import { ball, runShot, TABLE, type Ball } from "@aso/shared";
+import { ball, runShot, TABLE, type Ball, type ShotResult } from "@aso/shared";
 import { rackEightBall, rackNineBall, SNOOKER_SPOTS } from "./racks.js";
 import {
   eightBallEngine,
@@ -10,6 +10,7 @@ import {
   type CueActionX,
   type CueState,
   type CueStateX,
+  onEightBall,
 } from "./cue.js";
 
 const rng = () => new SeededRng("cue-test");
@@ -164,7 +165,8 @@ describe("EIGHTBALL rules", () => {
       // all solids gone: shooter 0 is on the 8
       balls: [ball(0, 1.0, 0.5), ball(8, 1.5, 0.75), ball(9, 0.2, 0.2)],
     };
-    const out = eightBallEngine.reduce(s, aimAt(find(s, 0), find(s, 8), 0.9), rng());
+    // Осмицата пада в долния десен джоб (5) — обявен.
+    const out = eightBallEngine.reduce(s, { ...aimAt(find(s, 0), find(s, 8), 0.9), pocket: 5 } as CueActionX, rng());
     expect(out.state.winner).toBe(0);
     expect(out.state.message).toBe("eightWin");
   });
@@ -792,4 +794,202 @@ describe.each([
       expect(engine.isTerminal(s)).toBe(true);
     }
   }, 120_000);
+});
+
+// ── Ефект на топката (follow/draw/английски) ─────────────────────────────────
+
+/** FNV-1a върху финалното състояние (позиции побитово + вкарани + джобове). */
+function hashResult(r: ShotResult): string {
+  const f64 = new Float64Array(1);
+  const u32 = new Uint32Array(f64.buffer);
+  let h = 0x811c9dc5;
+  const mix = (n: number) => {
+    h ^= n >>> 0;
+    h = Math.imul(h, 0x01000193) >>> 0;
+  };
+  for (const b of r.finalBalls) {
+    mix(b.id);
+    mix(b.potted ? 1 : 0);
+    for (const v of [b.x, b.y]) {
+      f64[0] = v;
+      mix(u32[0]!);
+      mix(u32[1]!);
+    }
+  }
+  for (const p of r.potted) mix(p);
+  for (const p of r.pottedPockets) mix(p);
+  mix(r.frames.length);
+  return h.toString(16);
+}
+
+describe("ефект на бялата", () => {
+  it("детерминизъм: една и съща симулация с ефект → един и същ хеш", () => {
+    for (const spin of [
+      { spinX: 0, spinY: 0 },
+      { spinX: 0.4, spinY: -0.7 },
+      { spinX: -0.9, spinY: 0.3 },
+    ]) {
+      const a = runShot(rackEightBall(), { angle: 0.013, power: 1, ...spin });
+      const b = runShot(rackEightBall(), { angle: 0.013, power: 1, ...spin });
+      expect(hashResult(a)).toBe(hashResult(b));
+    }
+    // Различен ефект → различен изход (ефектът наистина влияе).
+    const c = runShot(rackEightBall(), { angle: 0.013, power: 1, spinY: -0.8 });
+    const d = runShot(rackEightBall(), { angle: 0.013, power: 1, spinY: 0.8 });
+    expect(hashResult(c)).not.toBe(hashResult(d));
+  });
+
+  it("сървърът и клиентът стигат до едно и също (reduce ↔ runShot по lastShot)", () => {
+    const s0: CueStateX = {
+      ...eightBallEngine.init({ seats: 2 }, rng()),
+      shotNo: 4,
+      ballInHand: false,
+      balls: [ball(0, 0.5, 0.5), ball(3, 1.0, 0.52), ball(11, 1.4, 0.3)],
+    };
+    const out = eightBallEngine.reduce(s0, { type: "SHOOT", angle: 0, power: 0.7, spinX: 0.3, spinY: -0.6 }, rng());
+    const ls = out.state.lastShot!;
+    expect(ls.spinY).toBe(-0.6);
+    const replay = runShot(ls.before, { angle: ls.angle, power: ls.power, spinX: ls.spinX, spinY: ls.spinY });
+    const pos = (bs: Ball[]) => bs.filter((b) => !b.potted).map((b) => [b.id, b.x, b.y]);
+    expect(pos(replay.finalBalls)).toEqual(pos(out.state.balls));
+  });
+
+  it("без ефект ударът е побитово същият като с нулев ефект", () => {
+    const a = runShot(rackNineBall(), { angle: 0.02, power: 0.9 });
+    const b = runShot(rackNineBall(), { angle: 0.02, power: 0.9, spinX: 0, spinY: 0 });
+    expect(hashResult(a)).toBe(hashResult(b));
+  });
+
+  // Права топка: бялата (0.5) → обектна (1.0) по +x.
+  const straight = () => [ball(0, 0.5, 0.5), ball(1, 1.0, 0.5)];
+  const cueX = (r: ShotResult) => r.finalBalls.find((b) => b.id === 0)!.x;
+
+  it("draw връща бялата назад, follow я праща напред, stun я спира", () => {
+    const stun = cueX(runShot(straight(), { angle: 0, power: 0.5 }));
+    const follow = cueX(runShot(straight(), { angle: 0, power: 0.5, spinY: 0.8 }));
+    const draw = cueX(runShot(straight(), { angle: 0, power: 0.5, spinY: -0.8 }));
+    expect(stun).toBeGreaterThan(0.9); // спира почти на мястото на допира (~0.943)
+    expect(stun).toBeLessThan(0.98);
+    expect(follow).toBeGreaterThan(stun + 0.1);
+    expect(draw).toBeLessThan(stun - 0.1);
+    expect(draw).toBeLessThan(0.9); // върнала се е назад
+  });
+
+  it("английски ефект: дясно/ляво отклоняват отскока от борда в противоположни посоки", () => {
+    // Удар право в десния борд (без топки по пътя).
+    const lone = () => [ball(0, 1.4, 0.5)];
+    const y = (r: ShotResult) => r.finalBalls.find((b) => b.id === 0)!.y;
+    const none = y(runShot(lone(), { angle: 0, power: 0.4 }));
+    const right = y(runShot(lone(), { angle: 0, power: 0.4, spinX: 0.8 }));
+    const left = y(runShot(lone(), { angle: 0, power: 0.4, spinX: -0.8 }));
+    expect(none).toBeCloseTo(0.5, 9);
+    // Удар по +x: „дясно“ на играча е +y (екран, y надолу).
+    expect(right).toBeGreaterThan(0.5 + 0.02);
+    expect(left).toBeLessThan(0.5 - 0.02);
+    expect(right - 0.5).toBeCloseTo(0.5 - left, 9); // огледално
+  });
+
+  it("сървърът валидира ефекта (граници + диск)", () => {
+    const s: CueStateX = { ...eightBallEngine.init({ seats: 2 }, rng()), shotNo: 3, ballInHand: false };
+    const ok = (extra: Record<string, unknown>) =>
+      eightBallEngine.validate!(s, 0, { type: "SHOOT", angle: 0, power: 0.5, ...extra } as CueActionX);
+    expect(ok({ spinX: 0.5, spinY: -0.5 })).toBe(true);
+    expect(ok({ spinY: 1 })).toBe(true);
+    expect(ok({ spinX: 0.9, spinY: 0.9 })).toBe(false); // извън диска
+    expect(ok({ spinX: 2 })).toBe(false);
+    expect(ok({ spinY: Number.NaN })).toBe(false);
+    expect(ok({ spinX: "0.3" })).toBe(false);
+  });
+
+  it("ботът ползва ефект, за да не вкара бялата след права топка", () => {
+    // Най-добрият удар в центъра би вкарал бялата след 1-цата — ботът
+    // добавя долен ефект (draw) и бялата остава на масата.
+    const s: CueStateX = {
+      ...nineBallEngine.init({ seats: 2 }, rng()),
+      shotNo: 5,
+      ballInHand: false,
+      balls: [ball(0, 0.2, 0.15), ball(1, 0.35, 0.5), ball(2, 1.0, 0.05)],
+    };
+    const acts = nineBallEngine.legalActions(s, 0) as CueAction[];
+    expect(acts.length).toBeGreaterThan(0);
+    const best = acts[0]!;
+    expect(best.spinY).toBeLessThan(0);
+    expect(runShot(s.balls, { angle: best.angle, power: best.power }).cueScratch).toBe(true); // без ефект — бялата пада
+    for (const a of acts) {
+      expect(nineBallEngine.validate!(s, 0, a)).toBe(true);
+      const r = runShot(s.balls, a);
+      expect(r.cueScratch).toBe(false);
+    }
+  });
+});
+
+// ── 8-ball: обявен джоб за осмицата ──────────────────────────────────────────
+
+describe("EIGHTBALL обявен джоб", () => {
+  const onEight = (): CueStateX => ({
+    ...eightBallEngine.init({ seats: 2 }, rng()),
+    shotNo: 9,
+    open: false,
+    groups: ["solids", "stripes"],
+    ballInHand: false,
+    balls: [ball(0, 1.0, 0.5), ball(8, 1.5, 0.75), ball(9, 0.2, 0.2)],
+  });
+  const shot = (pocket?: number): CueActionX => ({
+    ...aimAt({ x: 1.0, y: 0.5 }, { x: 1.5, y: 0.75 }, 0.9),
+    ...(pocket !== undefined ? { pocket } : {}),
+  });
+
+  it("изисква обявен джоб, когато играчът е на осмицата", () => {
+    const s = onEight();
+    expect(onEightBall(s)).toBe(true);
+    expect(eightBallEngine.validate!(s, 0, shot())).toBe(false);
+    expect(eightBallEngine.validate!(s, 0, shot(5))).toBe(true);
+    expect(eightBallEngine.validate!(s, 0, shot(6))).toBe(false);
+    expect(eightBallEngine.validate!(s, 0, { ...shot(), pocket: 1.5 } as CueActionX)).toBe(false);
+    // В 9-ball полето не се допуска.
+    const n = { ...nineBallEngine.init({ seats: 2 }, rng()), shotNo: 3, ballInHand: false };
+    expect(nineBallEngine.validate!(n, 0, { type: "SHOOT", angle: 0, power: 0.5, pocket: 0 } as CueActionX)).toBe(false);
+  });
+
+  it("не е на осмицата, докато има своя топка (джоб не е нужен)", () => {
+    const s = { ...onEight(), balls: [...onEight().balls, ball(3, 0.3, 0.8)] };
+    expect(onEightBall(s)).toBe(false);
+    expect(eightBallEngine.validate!(s, 0, shot())).toBe(true);
+  });
+
+  it("осмица в обявения джоб печели", () => {
+    const out = eightBallEngine.reduce(onEight(), shot(5), rng());
+    expect(out.state.message).toBe("eightWin");
+    expect(out.state.winner).toBe(0);
+  });
+
+  it("осмица в друг джоб губи", () => {
+    const out = eightBallEngine.reduce(onEight(), shot(2), rng());
+    expect(out.state.message).toBe("eightWrongPocket");
+    expect(out.state.winner).toBe(1);
+  });
+
+  it("осмица с фал (бялата в джоба) губи дори в обявения джоб", () => {
+    // Бялата следва осмицата право в джоба с горен ефект.
+    const s: CueStateX = { ...onEight(), balls: [ball(0, 1.6, 0.6), ball(8, 1.8, 0.8), ball(9, 0.2, 0.2)] };
+    const a = { ...aimAt(find(s, 0), find(s, 8), 0.8), pocket: 5, spinY: 1 } as CueActionX;
+    const out = eightBallEngine.reduce(s, a, rng());
+    const ev = out.events.find((e) => e.type === "SHOT");
+    expect(ev && ev.type === "SHOT" && ev.cueScratch).toBe(true);
+    expect(out.state.message).toBe("eightLoss");
+    expect(out.state.winner).toBe(1);
+  });
+
+  it("ботът на осмицата обявява джоба, към който се цели", () => {
+    const s = onEight();
+    const acts = eightBallEngine.legalActions(s, 0) as CueAction[];
+    expect(acts.length).toBeGreaterThan(0);
+    for (const a of acts) {
+      expect(a.pocket).toBeGreaterThanOrEqual(0);
+      expect(eightBallEngine.validate!(s, 0, a)).toBe(true);
+    }
+    // Най-добрият кандидат вкарва осмицата в обявения джоб → победа.
+    const out = eightBallEngine.reduce(s, acts[0]!, rng());
+    expect(out.state.message).toBe("eightWin");
+  });
 });
