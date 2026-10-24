@@ -1,7 +1,7 @@
 import "server-only";
 import { promises as fs } from "fs";
 import path from "path";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 // Банерите се пазят в проста JSON база на сървъра (без истинска БД). Данните
 // живеят в MASTILKO_DATA_DIR (по подразбиране <cwd>/data), който на сървъра е
