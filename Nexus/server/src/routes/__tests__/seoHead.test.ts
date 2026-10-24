@@ -42,6 +42,11 @@ test('app screens are noindex with no canonical or hreflang (no mixed signals)',
   assert.equal((h.match(/name="robots"/g) || []).length, 1, 'one robots meta, not two');
 });
 
+test('IndexNow key is a real static file, not the SPA shell (tools/seo/indexnow.mjs reads /indexnow-key.txt)', () => {
+  const key = fs.readFileSync(path.join(root, 'public/indexnow-key.txt'), 'utf8').trim();
+  assert.match(key, /^[a-f0-9]{32}$/);
+});
+
 test('the sitemap lists only indexable URLs (no app screens)', () => {
   const xml = fs.readFileSync(path.join(root, 'public/sitemap.xml'), 'utf8');
   const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]));
