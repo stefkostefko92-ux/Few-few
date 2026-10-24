@@ -11,6 +11,14 @@ namespace CarbonStealth;
 
 public sealed partial class CarbonStealthPlugin
 {
+    /// <summary>
+    /// При смяна на картата CSS „изключва“ всички (OnLevelEnd) и те се свързват наново. Такъв играч не е
+    /// нов: без поздрав и без проверка за пълен сървър. Пазим само излизанията около края на картата.
+    /// </summary>
+    private static readonly TimeSpan MapChangeWindow = TimeSpan.FromMinutes(2);
+    private readonly Dictionary<ulong, DateTimeOffset> _mapChangeLeaves = new();
+    private DateTimeOffset _mapEndedAt = DateTimeOffset.MinValue;
+
     private void OnClientAuthorized(int slot, SteamID steamId)
     {
         var player = Utilities.GetPlayerFromSlot(slot);
@@ -19,15 +27,25 @@ public sealed partial class CarbonStealthPlugin
         var name = Text.SafeName(player.PlayerName);
         var state = _players.Add(steamId.SteamId64, slot, name);
         var ip = StripPort(player.IpAddress);
+        var carried = _mapChangeLeaves.Remove(state.SteamId, out var left) && DateTimeOffset.UtcNow - left < MapChangeWindow;
         RunDb(() => db.OnConnectAsync(state.SteamId64, name, ip),
-            snapshot => ApplySnapshot(slot, state.SteamId, snapshot, isConnect: true), "connect");
+            snapshot => ApplySnapshot(slot, state.SteamId, snapshot, isConnect: true, carried), "connect");
     }
 
     private void OnClientDisconnect(int slot)
     {
-        _huds.Remove(slot);
+        DropHud(slot);
         var state = _players.Remove(slot);
         if (state is null) return;
+        var now = DateTimeOffset.UtcNow;
+        if (now - _mapEndedAt < MapChangeWindow)
+        {
+            foreach (var old in _mapChangeLeaves.Where(kv => now - kv.Value >= MapChangeWindow).Select(kv => kv.Key).ToList())
+            {
+                _mapChangeLeaves.Remove(old);
+            }
+            _mapChangeLeaves[state.SteamId] = now;
+        }
         AccruePlaytime(state);
         _streaks.Forget(state.SteamId);
         _bridge?.Event("leave", new { steamId = state.SteamId64, name = state.Name });
@@ -39,7 +57,8 @@ public sealed partial class CarbonStealthPlugin
     }
 
     /// <summary>Прилага роля/VIP/XP/наказания. Играчът може вече да е излязъл — тогава нищо.</summary>
-    private void ApplySnapshot(int slot, ulong steamId, PlayerSnapshot snapshot, bool isConnect)
+    /// <param name="carried">Свърза се наново заради смяна на картата (не е нов на сървъра).</param>
+    private void ApplySnapshot(int slot, ulong steamId, PlayerSnapshot snapshot, bool isConnect, bool carried = false)
     {
         var state = _players.BySlot(slot);
         if (state is null || state.SteamId != steamId) return;
@@ -61,7 +80,7 @@ public sealed partial class CarbonStealthPlugin
             return;
         }
 
-        if (isConnect && Config.PublicSlots > 0 && HumansOnline() > Config.PublicSlots
+        if (isConnect && !carried && Config.PublicSlots > 0 && HumansOnline() > Config.PublicSlots
             && !state.IsVip(now) && state.Role < Role.Helper)
         {
             Kick(player, Localizer.ForPlayer(player, "server.full"));
@@ -73,7 +92,7 @@ public sealed partial class CarbonStealthPlugin
 
         if (isConnect)
         {
-            player.PrintToChat(Localizer.ForPlayer(player, "welcome", state.Name, Config.SiteUrl));
+            if (!carried) player.PrintToChat(Localizer.ForPlayer(player, "welcome", state.Name, Config.SiteUrl));
             _bridge?.Event("join", new { steamId = state.SteamId64, name = state.Name });
         }
     }

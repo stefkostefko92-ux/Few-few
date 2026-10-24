@@ -128,10 +128,12 @@ public sealed partial class CarbonStealthPlugin
         if (actor is null) return;
         if (!Roles.Can(ActorRole(actor), AdminAction.Noclip)) { Tell(actor.Slot, "no.permission"); return; }
         if (actor.PlayerPawn.Value is not { IsValid: true } pawn || !actor.PawnIsAlive) return;
-        var on = pawn.MoveType != MoveType_t.MOVETYPE_NOCLIP;
-        SetMoveType(pawn, on ? MoveType_t.MOVETYPE_NOCLIP : MoveType_t.MOVETYPE_WALK);
-        // Ако менюто е отворено, при затваряне връща именно това движение.
-        if (_huds.TryGetValue(actor.Slot, out var hud) && hud.Frozen is { } f) hud.Frozen = (f.Pawn, pawn.MoveType);
+        // С отворено меню тялото стои на място — меним движението, което ще важи след менюто.
+        var held = _huds.TryGetValue(actor.Slot, out var hud) && hud.Frozen is { } f && f.Pawn == pawn.EntityHandle.Raw ? hud : null;
+        var on = (held?.Frozen?.Was ?? pawn.MoveType) != MoveType_t.MOVETYPE_NOCLIP;
+        var next = on ? MoveType_t.MOVETYPE_NOCLIP : MoveType_t.MOVETYPE_WALK;
+        if (held is { Frozen: { } frozen }) held.Frozen = frozen with { Was = next };
+        else SetMoveType(pawn, next);
         Tell(actor.Slot, on ? "fun.noclip.on" : "fun.noclip.off");
         Audit(actor, "player.noclip", null, new { on });
     }

@@ -83,10 +83,6 @@
   font-size: 1rem;
   color: var(--text);
 }
-.cmd-line code::before {
-  content: '] ';
-  color: var(--amber);
-}
 .quick {
   grid-area: quick;
   display: flex;
