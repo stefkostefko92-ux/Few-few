@@ -175,6 +175,31 @@ export async function expectInside(inner: Locator, outer: Locator, what: string)
   expect(a!.y + a!.height, `${what} излиза отдолу`).toBeLessThanOrEqual(b!.y + b!.height + tol);
 }
 
+/** Every element matched by `items` lies fully inside `outer` — measured in ONE
+ *  snapshot inside the page, so a hand that re-renders between "count" and
+ *  "measure" (a bot's move lands) cannot leave a detached, size-less element. */
+export async function expectAllInside(items: Locator, outer: Locator, what: string): Promise<void> {
+  const b = await outer.boundingBox();
+  expect(b, `${what}: контейнерът няма размери`).not.toBeNull();
+  const boxes = await items.evaluateAll((els) =>
+    els.map((e) => {
+      const r = e.getBoundingClientRect();
+      return { x: r.left + window.scrollX, y: r.top + window.scrollY, w: r.width, h: r.height };
+    }),
+  );
+  expect(boxes.length, `${what}: няма елементи`).toBeGreaterThan(0);
+  const sx = await outer.evaluate(() => ({ x: window.scrollX, y: window.scrollY }));
+  const ob = { x: b!.x + sx.x, y: b!.y + sx.y, w: b!.width, h: b!.height };
+  const tol = 1;
+  boxes.forEach((a, i) => {
+    expect(a.w * a.h, `${what} ${i + 1}: няма размери`).toBeGreaterThan(0);
+    expect(a.x, `${what} ${i + 1} излиза вляво`).toBeGreaterThanOrEqual(ob.x - tol);
+    expect(a.y, `${what} ${i + 1} излиза отгоре`).toBeGreaterThanOrEqual(ob.y - tol);
+    expect(a.x + a.w, `${what} ${i + 1} излиза вдясно`).toBeLessThanOrEqual(ob.x + ob.w + tol);
+    expect(a.y + a.h, `${what} ${i + 1} излиза отдолу`).toBeLessThanOrEqual(ob.y + ob.h + tol);
+  });
+}
+
 /** Two boxes must not overlap (e.g. a seat plate and the centre pile). */
 export async function expectNoOverlap(a: Locator, b: Locator, what: string): Promise<void> {
   const x = await a.boundingBox();

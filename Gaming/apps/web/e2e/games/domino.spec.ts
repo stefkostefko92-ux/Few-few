@@ -3,7 +3,7 @@ import { expectGameOverCard, expectNoErrors, openGame, probe } from "./helpers";
 import {
   clickAndAdvance,
   expectEvent,
-  expectInside,
+  expectAllInside,
   expectNoHorizontalScroll,
   expectNoRejections,
   expectStageCannotScroll,
@@ -157,7 +157,7 @@ test.describe("мобилен изглед 390×844", () => {
     await snap(page, info, "domino-390x844");
     const felt = page.locator(".aso-table__felt");
     const tiles = page.getByTestId("domino-hand").locator("[data-tile]");
-    for (let i = 0; i < (await tiles.count()); i++) await expectInside(tiles.nth(i), felt, `плочка ${i + 1}`);
+    await expectAllInside(tiles, felt, "плочка");
 
     const seat = Number(await probe(page).getAttribute("data-seat"));
     const counts = { L: 0, R: 0, open: 0, draw: 0, pass: 0 };

@@ -270,6 +270,9 @@ button.aso-card:not(:disabled):hover {
   height: 52px;
   border-radius: 12px;
   font-size: 1.6rem;
+  /* Dark ink on the ivory face: without it the label inherited the page's
+     light ink and vanished (Риба's rank buttons rendered blank; Белот's ♣/♠). */
+  color: var(--suit-black);
   background: linear-gradient(to bottom, #fffdf6, #ece3cf);
   border: 1px solid rgba(217, 178, 95, 0.5);
   box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.5);
