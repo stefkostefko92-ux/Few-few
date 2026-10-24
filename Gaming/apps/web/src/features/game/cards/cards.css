@@ -302,6 +302,28 @@ button.aso-card:hover {
 .aso-fx-layer .aso-announce {
   position: static;
   transform: none;
+  /* Своя входна анимация: общата носи translateX(-50%) на абсолютния банер —
+     в слоя банерът влиташе изместен наляво и после подскачаше в центъра. */
+  animation-name: announce-in-stacked;
+}
+@keyframes announce-in-stacked {
+  from { opacity: 0; transform: translateY(-8px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aso-fx-layer .aso-announce { animation: none; }
+}
+/* Телефон: дълъг банер („X плаща 32 наем на Y“) се пренася на редове, вместо
+   да излиза от двете страни на екрана. */
+@media (max-width: 639px) {
+  .aso-fx-layer {
+    width: max-content;
+    max-width: calc(100vw - 32px);
+  }
+  .aso-fx-layer .aso-announce {
+    white-space: normal;
+    text-align: center;
+  }
 }
 .aso-announce[data-tone="win"] {
   background: linear-gradient(to bottom, #d8f5d0, #6fbf73);

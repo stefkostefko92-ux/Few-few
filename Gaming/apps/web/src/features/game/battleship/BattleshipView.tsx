@@ -137,25 +137,30 @@ export function BattleshipView({ title }: { title: string }) {
         </FeltTable>
       ) : state ? (
         <FeltTable crest="⚓" feltColor="#1c4a6e" feltDark="#0a2238">
-        <div className="flex h-full flex-col items-center justify-center gap-5 p-6 lg:flex-row lg:justify-center">
+        <div className="flex h-full flex-col items-center justify-center gap-5 p-3 sm:p-6 lg:flex-row lg:justify-center">
           {/* Firing grid (opponent waters). */}
           <div className="flex flex-col items-center gap-2">
             <ScorePill label={t("battleship.enemy", { name: oppName })} value="" highlight={myTurn} />
-            <BoardFrame>
+            <BoardFrame className="bs-frame">
               {coords(
                 <div className="bs-grid">
                   {Array.from({ length: SIZE * SIZE }).map((_, cell) => {
                     const shot = myShots.includes(cell);
                     const hit = myHits.has(cell);
                     const sunk = oppSunk.has(cell);
+                    const canFire = !shot && !pending && myTurn && fireable.has(cell);
                     return (
                       <button
                         key={cell}
                         type="button"
+                        data-fire={cell}
+                        data-shot={shot ? (hit ? "hit" : "miss") : undefined}
+                        data-sunk={sunk ? "true" : undefined}
+                        data-fireable={canFire ? "true" : undefined}
                         onClick={() => fire(cell)}
                         className={cn(
                           "bs-cell",
-                          !shot && !pending && myTurn && fireable.has(cell) && "bs-cell--fireable",
+                          canFire && "bs-cell--fireable",
                           shot && (hit ? "bs-cell--hit" : "bs-cell--miss"),
                           sunk && "bs-cell--sunk",
                           fresh?.mine === true && cell === fresh.cell && "bs-cell--fresh",
@@ -173,7 +178,7 @@ export function BattleshipView({ title }: { title: string }) {
           {/* My fleet. */}
           <div className="flex flex-col items-center gap-2">
             <ScorePill label={user?.displayName ?? t("game.you")} value={t("battleship.yourFleet")} />
-            <BoardFrame>
+            <BoardFrame className="bs-frame">
               {coords(
                 <div className="bs-grid bs-grid--mine">
                   {Array.from({ length: SIZE * SIZE }).map((_, cell) => {
@@ -184,6 +189,9 @@ export function BattleshipView({ title }: { title: string }) {
                     return (
                       <span
                         key={cell}
+                        data-own={cell}
+                        data-ship={ship ? "true" : undefined}
+                        data-shot={shot ? (hit ? "hit" : "miss") : undefined}
                         className={cn(
                           "bs-cell",
                           ship && "bs-cell--ship",

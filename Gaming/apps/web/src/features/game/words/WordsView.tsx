@@ -102,6 +102,9 @@ export function WordsView({ title }: { title: string }) {
               return (
                 <div
                   key={s}
+                  data-player={s}
+                  data-lives={Math.max(0, lives)}
+                  data-active={s === state.turn && !out ? "true" : undefined}
                   className={cn(
                     "words-player",
                     s === state.turn && !out && "words-player--active",
@@ -123,9 +126,9 @@ export function WordsView({ title }: { title: string }) {
           </div>
 
           {/* The chain — a typographic atelier (§4.18). */}
-          <div className="words-chain">
+          <div className="words-chain" data-chain={state.used.length}>
             {state.used.map((w, i) => (
-              <span key={i} className={cn("words-tile", i === state.used.length - 1 && "words-tile--last")}>
+              <span key={i} data-word={w} className={cn("words-tile", i === state.used.length - 1 && "words-tile--last")}>
                 {w}
               </span>
             ))}
@@ -133,7 +136,7 @@ export function WordsView({ title }: { title: string }) {
 
           <div className="words-prompt">
             {t("words.nextLetter")}:{" "}
-            <span className="words-letter">{letter || "—"}</span>
+            <span className="words-letter" data-letter={state.lastLetter}>{letter || "—"}</span>
             {skipped ? (
               <span className="words-pass-hint"> {t("words.skipHint", { tail: skipped })}</span>
             ) : null}
@@ -141,10 +144,11 @@ export function WordsView({ title }: { title: string }) {
 
           {/* My move: type the word yourself. */}
           {myTurn ? (
-            <form className="words-form" onSubmit={submit}>
+            <form className="words-form" data-words-form onSubmit={submit}>
               <div key={shakeKey} className={cn("words-input-wrap", shakeKey > 0 && "aso-shake")}>
                 <input
                   ref={inputRef}
+                  data-action="word"
                   className={cn("words-input", error && "words-input--error")}
                   value={word}
                   onChange={(e) => setWord(e.target.value)}
@@ -155,13 +159,13 @@ export function WordsView({ title }: { title: string }) {
                   maxLength={32}
                   aria-invalid={error ? true : undefined}
                 />
-                <Button type="submit" disabled={!word.trim()}>{t("words.submit")}</Button>
+                <Button type="submit" data-action="play" disabled={!word.trim()}>{t("words.submit")}</Button>
               </div>
               {error ? (
-                <p className="words-error" aria-live="polite">{error}</p>
+                <p className="words-error" data-words-error aria-live="polite">{error}</p>
               ) : null}
               <div className="words-pass">
-                <Button type="button" variant="ghost" onClick={() => m.send({ type: "PASS" })}>
+                <Button type="button" variant="ghost" data-action="pass" onClick={() => m.send({ type: "PASS" })}>
                   {t("words.pass")}
                 </Button>
                 <span className="words-pass-hint">{t("words.passHint")}</span>
