@@ -143,7 +143,28 @@ function countConsistency() {
   for (const f of agentLayerDocs())
     for (const c of rosterClaims(read(f))) checkNum(f, `„${c.label}“`, c.num);
 
+  // 4) Бройка и ростер на УМЕНИЯТА — каноничен = папките с SKILL.md.
+  let skillIds = [];
+  try { skillIds = readdirSync(join(ROOT, ".claude", "skills")).filter((d) => existsSync(join(ROOT, ".claude", "skills", d, "SKILL.md"))); } catch { /* */ }
+  for (const f of ["CLAUDE.md", "tools/agents/CLAUDE.md"]) hits.push(...skillRosterHits(read(f), skillIds, f));
+
   return { N, hits };
+}
+
+/** Твърдението „Ours (BG, vetted; N)“ + изброяването след него срещу реалните умения. Чист (тестваем).
+ *  Защо (2026-09-23): `razpit` живееше в .claude/skills/ от #164, а CLAUDE.md казваше „22“ и не го
+ *  изброяваше — главната сесия четеше списък, в който умението го нямаше. Бройката на агентите се
+ *  гейтваше, на уменията — не. */
+export function skillRosterHits(text, skillIds, file = "CLAUDE.md") {
+  const m = String(text).match(/Ours \(BG, vetted; (\d+)\)/);
+  if (!m) return [];
+  const out = [];
+  if (+m[1] !== skillIds.length) out.push({ file, what: "брой умения", detail: `казва ${m[1]}, а са ${skillIds.length}` });
+  const list = String(text).slice(m.index, m.index + 1200);
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const missing = skillIds.filter((s) => !new RegExp(`(^|[^a-z0-9-])${esc(s)}(?![a-z0-9-])`).test(list));
+  if (missing.length) out.push({ file, what: "ростер на уменията", detail: `не са изброени: ${missing.join(", ")}` });
+  return out;
 }
 
 /** Ростерни твърдения („всичките N агента") в текст. Чист — за да е тестваем срещу ИЗМЕРЕНИТЕ

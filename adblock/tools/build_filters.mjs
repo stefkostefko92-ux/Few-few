@@ -19,11 +19,12 @@
 // Лицензи: EasyList/EasyPrivacy © The EasyList authors (GPLv3 / CC BY-SA 3.0),
 // URLhaus (abuse.ch) е CC0. Виж docs/LICENSES.md.
 
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
+import { writeFileSync, readFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, domainToASCII } from "node:url";
 import { runInNewContext } from "node:vm";
 import { createHash } from "node:crypto";
+import { gzipSync } from "node:zlib";
 import { genericCss } from "./generic_css.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -31,8 +32,13 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SOURCES = {
   easylist: "https://easylist.to/easylist/easylist.txt",
   easyprivacy: "https://easylist.to/easylist/easyprivacy.txt",
-  urlhaus: "https://urlhaus.abuse.ch/downloads/hostfile/",
+  urlhaus: "https://urlhaus.abuse.ch/downloads/hostfile/", // спрян (HTTP 410) — виж URLHAUS_EXPORT
 };
+// URLhaus от октомври 2026: само с Auth-Key, при условията на abuse.ch (собственикът ги прие —
+// docs/LICENSES.md). Ключът е ТАЙНА: идва само от средата (ABUSECH_AUTH_KEY), никога от файл в репото,
+// и не се печата никъде — грешките показват адреса с „<Auth-Key>“.
+const URLHAUS_EXPORT = "https://urlhaus-api.abuse.ch/v2/files/exports/<Auth-Key>/hostfile.txt";
+const URLHAUS_KEY = (process.env.ABUSECH_AUTH_KEY || "").trim();
 
 // Пътни (не-domain) правила: капове, за да останем в бюджета от 30k статични
 // правила общо с ad_rules/youtube_rules/removeparam.
@@ -74,18 +80,38 @@ const OUT = process.argv.includes("--out") ? process.argv[process.argv.indexOf("
 mkdirSync(join(OUT, "rules"), { recursive: true });
 mkdirSync(join(OUT, "scriptlets"), { recursive: true });
 
+// Временна мрежова грешка или 5xx не бива да маха листа от пакета (пропусната листа изпада и от
+// manifest-а): до 3 опита с пауза; 4xx (410 Gone, 404) е окончателен отговор — без повторение.
+async function fetchRetry(url) {
+  for (let i = 0; ; i++) {
+    try {
+      const res = await fetch(url);
+      if (res.status < 500 || i === 2) return res;
+    } catch (e) { if (i === 2) throw e; }
+    await new Promise((r) => setTimeout(r, 2000 * (i + 1)));
+  }
+}
+
 async function getText(key) {
   if (localDir) {
     const p = join(localDir, key + ".txt");
     if (existsSync(p)) return readFileSync(p, "utf-8");
   }
-  const res = await fetch(SOURCES[key]);
+  if (key === "urlhaus") {
+    if (!/^[0-9A-Fa-f]{20,128}$/.test(URLHAUS_KEY)) throw new Error("urlhaus: no ABUSECH_AUTH_KEY in the environment");
+    let res;
+    try { res = await fetchRetry(URLHAUS_EXPORT.replace("<Auth-Key>", URLHAUS_KEY)); }
+    catch (e) { throw new Error("urlhaus: " + String(e.message).split(URLHAUS_KEY).join("<Auth-Key>")); }
+    if (!res.ok) throw new Error(`urlhaus: HTTP ${res.status} from ${URLHAUS_EXPORT}`);
+    return res.text();
+  }
+  const res = await fetchRetry(SOURCES[key]);
   if (!res.ok) throw new Error(key + ": HTTP " + res.status);
   return res.text();
 }
 
 async function fetchText(url, depth = 0) {
-  const res = await fetch(url);
+  const res = await fetchRetry(url);
   if (!res.ok) throw new Error(url + ": HTTP " + res.status);
   let text = await res.text();
   if (/^\s*<(!doctype|html)/i.test(text)) throw new Error(url + ": HTML instead of a filter list");
@@ -105,6 +131,30 @@ async function fetchText(url, depth = 0) {
   return text;
 }
 
+// Global uBO XHR redirects to ad networks (||doubleclick.net^$xhr,redirect=noop.txt,
+// ||pagead2.googlesyndication.com^$xhr,redirect=noop.js) exist to fool anti-adblock
+// detectors — and a detector's bait is always a REAL ad resource (adsbygoogle.js, gpt.js,
+// /pagead/id, /gampad/…). The redirect keeps working for exactly those paths; every other
+// request to the ad network stays BLOCKED (EasyList/our rules), as an ad blocker's should.
+// Site-specific redirects (with initiatorDomains) are left alone.
+const BAIT_NETS = new Set(["doubleclick.net", "googlesyndication.com", "pagead2.googlesyndication.com"]);
+const BAIT_PATHS = "^https?://[^/]+/(pagead/|tag/js/|gampad/|gpt/|ddm/|instream/|adsid/)";
+export function narrowBaitRedirects(rules) {
+  let next = rules.reduce((m, r) => Math.max(m, r.id), 0) + 1;
+  const out = [];
+  for (const r of rules) {
+    const c = r.condition || {};
+    if (r.action.type === "redirect" && !c.initiatorDomains && !c.urlFilter && !c.regexFilter && (c.requestDomains || []).some((d) => BAIT_NETS.has(d))) {
+      const bait = c.requestDomains.filter((d) => BAIT_NETS.has(d)), rest = c.requestDomains.filter((d) => !BAIT_NETS.has(d));
+      if (rest.length) out.push({ ...r, condition: { ...c, requestDomains: rest } });
+      out.push({ ...r, id: rest.length ? next++ : r.id, condition: { ...c, requestDomains: bait, regexFilter: BAIT_PATHS } });
+      continue;
+    }
+    out.push(r);
+  }
+  return out;
+}
+
 const RAW_TEXT = new Map(); // id → text exactly as downloaded (for the notices' SHA-256)
 async function listText(entry) {
   // Built-in Focus items: a few selectors of our own (MIT), no download.
@@ -119,7 +169,11 @@ async function listText(entry) {
   return preprocess(texts.join("\n"));
 }
 
-const [el, ep, uh] = await Promise.all([getText("easylist"), getText("easyprivacy"), getText("urlhaus")]);
+const [el, ep] = await Promise.all([getText("easylist"), getText("easyprivacy")]);
+// URLhaus: без ABUSECH_AUTH_KEY в средата (или при грешка) билдът не тегли нищо ново — остава записаното
+// rules/urlhaus.json и бележката за него, вместо да се чупи целият билд.
+let uh = null;
+try { uh = await getText("urlhaus"); } catch (e) { console.warn(`urlhaus: ${e.message} — оставям записаното копие (rules/urlhaus.json)`); }
 // Текстовете на листите от каталога — предварително, за да важат $badfilter-ите
 // на основните листи (uBO) и за EasyList/EasyPrivacy.
 const CATALOG_TEXT = new Map();
@@ -144,7 +198,12 @@ for (const [key, text] of [["easylist", el], ["easyprivacy", ep]]) {
 }
 
 // URLhaus hostfile: "127.0.0.1 domain" редове.
-{
+if (uh === null) {
+  const kept = readFileSync(join(ROOT, "rules", "urlhaus.json"), "utf8");
+  if (OUT !== ROOT) writeFileSync(join(OUT, "rules", "urlhaus.json"), kept);
+  counts.urlhaus = JSON.parse(kept).reduce((n, r) => n + (r.condition.requestDomains || []).length, 0);
+  console.log(`urlhaus: ${counts.urlhaus} malware домейна (записаното копие, без ново сваляне)`);
+} else {
   const domains = [...new Set(
     uh.split("\n")
       .map((l) => l.trim())
@@ -224,7 +283,8 @@ for (const entry of CATALOG) {
   for (const b of ownBad) BADFILTER.add(b);
   if (entry.format === "hosts") text = hostsToAbp(text);
   PATTERN_CAP["list_" + entry.id] = LIST_PATTERN_CAP;
-  const { rules, skipped } = convertList(text, "list_" + entry.id, entry.group === "core");
+  const conv = convertList(text, "list_" + entry.id, entry.group === "core");
+  const rules = narrowBaitRedirects(conv.rules), skipped = conv.skipped;
   for (const b of ownBad) BADFILTER.delete(b);
   // A list with no network rules (built-in selectors) gets no ruleset at all.
   meta.ruleset = rules.length > 0;
@@ -297,18 +357,49 @@ function licenceFiles(e) {
   if (/Apache-2\.0/.test(l)) f.push("licenses/Apache-2.0.txt");
   if (e.id === "reg-mk") f.push("licenses/MIT-Macedonian-adBlock-Filters.txt");
   if (e.id === "reg-ro") f.push("licenses/MIT-ROad-Block.txt");
+  if (e.id === "plowe") f.push("licenses/PeterLowe-terms.txt"); // няма лиценз — записано разрешението на автора
   return f;
 }
+// Точният текст на всяка вградена листа (байтовете, от които е SHA-256-ът в бележките) — на сайта,
+// под името на хеша си: GPL-3.0/AGPL-3.0 §6(d) и MPL-2.0 §3.2 искат изходния вид да е достъпен там,
+// откъдето се разпространява компилираното, докато се разпространява. Деплоят копира server/sources/
+// без --delete, така че текстовете на по-стари версии остават достъпни; в репото — само текущите.
+const SOURCES_URL = "https://adblock.carbonstealth.eu/sources/";
 if (OUT === ROOT) {
   const sha = (t) => (t ? createHash("sha256").update(t).digest("hex") : "n/a");
   const day = new Date().toISOString().slice(0, 10);
   const bundled = CATALOG.filter((e) => e.delivery === "bundled" && !e.selectors);
-  const block = (title, license, files, homepage, urls, text) => [
+  const srcDir = join(ROOT, "server", "sources");
+  mkdirSync(srcDir, { recursive: true });
+  const archived = new Set();
+  const archive = (text) => {
+    const name = sha(text) + ".txt.gz";
+    // gzip без име и време на файла: един и същ текст дава същите байтове при всеки билд
+    if (!existsSync(join(srcDir, name))) writeFileSync(join(srcDir, name), gzipSync(text, { level: 9 }));
+    archived.add(name);
+    return SOURCES_URL + name;
+  };
+  const block = (title, license, files, homepage, urls, text, copyright, republish = true) => [
     title,
     "  Licence: " + license + (files.length ? " — full text: " + files.join(", ") : ""),
+    ...(copyright ? ["  Copyright: " + copyright] : []),
     "  Authors / homepage: " + homepage,
     ...urls.map((u) => "  Source: " + u),
-    "  Retrieved " + day + " · SHA-256 of the text as downloaded (with its !#include files): " + sha(text),
+    "  Retrieved " + day + " · SHA-256 of the text as downloaded (with its !#include files" +
+      (urls.length > 1 ? "; the files above joined in this order, one newline between them" : "") + "): " + sha(text),
+    ...(text && republish ? ["  Exact copy of that text (gzip): " + archive(text)] : []),
+    ...(text && !republish ? ["  Not republished by us: its own terms govern this data (see the licence file)."] : []),
+    "",
+  ];
+  // URLhaus: само данни (без изходен код за предоставяне), а условията на abuse.ch вече ограничават
+  // повторното публикуване — не го архивираме на сайта. Без ново сваляне: предишният запис, както е.
+  const oldNotices = existsSync(join(ROOT, "THIRD_PARTY_NOTICES.txt")) ? readFileSync(join(ROOT, "THIRD_PARTY_NOTICES.txt"), "utf8") : "";
+  const oldUrlhaus = (oldNotices.match(/\nURLhaus \(abuse\.ch\)\n[\s\S]*?\n\n/) || [""])[0].trim().split("\n");
+  // заглавието, лицензът, авторите, източникът и „Retrieved“ — бележката под тях се пише наново всеки път
+  const keptUrlhaus = oldUrlhaus.slice(0, oldUrlhaus.findIndex((l) => l.startsWith("  Retrieved ")) + 1);
+  const urlhausNote = [
+    "  Not refreshed in this build (no Auth-Key at build time): this is the copy shipped",
+    "  since the date above. We do not republish it.",
     "",
   ];
   const lines = [
@@ -319,21 +410,26 @@ if (OUT === ROOT) {
     "Chrome's declarativeNetRequest format and to CSS; duplicates, rules the browser",
     "cannot express, rules our safety policy refuses (for example ones touching sign-in",
     "or payment fields) and rules over a per-list size cap were left out. Nothing was",
-    "added to a list's own rules. The unmodified source of each list is at the URL",
-    "given below as of the date shown (the SHA-256 identifies the exact text); on",
-    "request we send a copy: info@carbonstealth.eu. The conversion tools are public:",
+    "added to a list's own rules. The unmodified source of each list, exactly as it was",
+    "compiled into this version, is published at the \"Exact copy\" address under it",
+    "(gzip, named by its SHA-256) for as long as this version is distributed; the",
+    "list's own URL is given too. On request we also send a copy: info@carbonstealth.eu.",
+    "The conversion tools are public:",
     "https://github.com/stefkostefko92-ux/Few-few/tree/main/adblock/tools",
     "",
     ...block("EasyList", "GPL-3.0 or CC BY-SA 3.0", ["licenses/GPL-3.0-only.txt", "licenses/CC-BY-SA-3.0.txt"], "The EasyList authors — https://easylist.to/", [SOURCES.easylist], el),
     ...block("EasyPrivacy", "GPL-3.0 or CC BY-SA 3.0", ["licenses/GPL-3.0-only.txt", "licenses/CC-BY-SA-3.0.txt"], "The EasyList authors — https://easylist.to/", [SOURCES.easyprivacy], ep),
-    ...block("URLhaus (abuse.ch)", "CC0 1.0", ["licenses/CC0-1.0.txt"], "https://urlhaus.abuse.ch/", [SOURCES.urlhaus], uh),
-    ...bundled.flatMap((e) => block(e.title, e.license, licenceFiles(e), e.homepage, e.urls || [], RAW_TEXT.get(e.id))),
+    ...(uh === null && keptUrlhaus.length > 1
+      ? [...keptUrlhaus, ...urlhausNote]
+      : block("URLhaus (abuse.ch)", "abuse.ch Terms of Use, with an Auth-Key (not CC0)", ["licenses/abuse.ch-URLhaus-terms.txt"], "https://urlhaus.abuse.ch/", [URLHAUS_EXPORT], uh, null, false)),
+    ...bundled.flatMap((e) => block(e.title, e.license, licenceFiles(e), e.homepage, e.urls || [], RAW_TEXT.get(e.id), e.copyright)),
     "Not bundled — your browser downloads these from their authors only when you turn",
     "them on, and converts them on your device:",
     "",
     ...CATALOG.filter((e) => e.delivery === "remote").flatMap((e) => [e.title, "  Licence: " + e.license, "  Authors / homepage: " + e.homepage, "  Source: " + e.urls[0], ""]),
   ];
   writeFileSync(join(ROOT, "THIRD_PARTY_NOTICES.txt"), lines.join("\n"));
+  for (const f of readdirSync(srcDir)) if (f.endsWith(".txt.gz") && !archived.has(f)) unlinkSync(join(srcDir, f));
 }
 
 // manifest.json: рулсетовете на листите са НАШ изход — синхронизираме ги (само в

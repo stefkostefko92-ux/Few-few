@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Sekat semua iklan: video YouTube, sepanduk, pop-up, penjejak, gesaan kuki, dinding anti-adblock. Percuma, pantas, peribadi."
+    "message": "Penyekat iklan untuk YouTube dan web: iklan video, sepanduk, tetingkap timbul, penjejak, sepanduk kuki dan dinding anti-adblock."
   },
   "byCarbon": {
     "message": "by Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Sokong"
   },
+  "rate": {
+    "message": "Beri nilai"
+  },
+  "rateTitle": {
+    "message": "Beri nilai Supreme AdBlock di Kedai Web Chrome"
+  },
+  "reviewBlocked": {
+    "message": "$1 permintaan disekat setakat ini"
+  },
+  "reviewAsk": {
+    "message": "Jika Supreme AdBlock berguna untuk anda, ulasan ringkas di Kedai Web Chrome membantu orang lain menemuinya."
+  },
+  "reviewLeave": {
+    "message": "Tulis ulasan"
+  },
+  "reviewLater": {
+    "message": "Bukan sekarang"
+  },
+  "reviewNever": {
+    "message": "Jangan tanya lagi"
+  },
   "filtersCount": {
     "message": "$1+ penapis",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Sembunyikan dinding “lumpuhkan penyekat iklan anda” dan pulihkan halaman"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Sembunyikan siaran “Ditaja” pada Facebook & Instagram"
+    "message": "Sembunyikan siaran “Ditaja” pada Facebook, Instagram & Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Buang utm_*, fbclid, gclid dan pengecam klik lain daripada pautan yang anda buka"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Sekat domain perisian hasad yang diketahui (senarai URLhaus oleh abuse.ch)"
+    "message": "Beri amaran sebelum tapak perisian hasad yang diketahui dibuka, dan sekat apa yang dimuatkan oleh halaman daripada tapak sedemikian (senarai URLhaus oleh abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Lumpuhkan API iklan Google Topics, FLoC dan Protected Audience pada setiap tapak"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Derma melalui Revolut"
+  },
+  "opt_review": {
+    "message": "Peringatan ulasan"
+  },
+  "opt_review_sub": {
+    "message": "Pautan ★ kecil di bahagian bawah tetingkap Supreme AdBlock dan, paling banyak dua kali, permintaan ringkas di situ untuk menilainya di Kedai Web Chrome. Tidak sekali-kali di laman web, tidak sekali-kali sebagai pemberitahuan."
   },
   "opt_made_by": {
     "message": "made by Carbon Stealth"
@@ -599,5 +626,178 @@
   },
   "opt_notices": {
     "message": "Lesen senarai penapis"
+  },
+  "welPageTitle": {
+    "message": "Selamat datang ke Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Anda dilindungi",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock kini menyekat iklan dan penjejak pada setiap tapak yang anda lawati. Tiada apa-apa yang perlu disediakan.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Semat sambungan pada bar alat",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Klik ikon kepingan teka-teki di sebelah bar alamat dan semat Supreme AdBlock. Selepas itu, satu klik menunjukkan apa yang disekat pada halaman.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "Sambungan telah disemat pada bar alat"
+  },
+  "welPinnedText": {
+    "message": "Satu klik pada ikonnya menunjukkan apa yang disekat pada halaman."
+  },
+  "welBrokenTitle": {
+    "message": "Jika tapak kelihatan rosak",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Buka sambungan dan matikan penyekatan untuk tapak itu, atau pilih “Tapak rosak?” untuk pembaikan pantas.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Penyemakan imbas anda kekal pada peranti anda",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Penapisan berlaku secara setempat. Sambungan tidak mengumpul data peribadi dan tidak menghantar apa-apa tentang halaman yang anda lawati.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Buka tetapan",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Faham",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Dibenarkan · $1 min lagi"
+  },
+  "hiddenHere": {
+    "message": "Tersembunyi di sini: $1 · Pulihkan yang terakhir"
+  },
+  "cmd_toggle_site": {
+    "message": "Hidupkan atau matikan penyekatan pada tapak ini"
+  },
+  "cmd_pause": {
+    "message": "Jeda atau sambung perlindungan (30 minit)"
+  },
+  "cmd_picker": {
+    "message": "Sembunyikan elemen pada halaman ini"
+  },
+  "rep_fix_hour": {
+    "message": "Benarkan iklan di sini selama 1 jam"
+  },
+  "rep_done_hour": {
+    "message": "Iklan dibenarkan pada tapak ini selama 1 jam. Sudah dimuat semula — adakah ia sudah betul?"
+  },
+  "opt_last30": {
+    "message": "30 hari lepas"
+  },
+  "opt_last30_sum": {
+    "message": "Disekat: $1 · Sepanduk kuki: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Jumlah harian anda akan dipaparkan di sini semasa anda menyemak imbas."
+  },
+  "opt_last30_sub": {
+    "message": "Hanya jumlah harian, disimpan pada peranti ini selama 30 hari. Tiada tapak, tiada alamat."
+  },
+  "opt_gpc_sub": {
+    "message": "Meminta setiap tapak yang anda lawati supaya tidak menjual atau berkongsi data anda (isyarat Sec-GPC, yang menurut sesetengah undang-undang privasi mesti dipatuhi oleh tapak). Tidak dihantar pada tapak yang anda benarkan."
+  },
+  "opt_shortcuts": {
+    "message": "Pintasan papan kekunci"
+  },
+  "opt_shortcuts_change": {
+    "message": "Tukar pintasan"
+  },
+  "opt_shortcut_none": {
+    "message": "Belum ditetapkan"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Dalam Firefox: Add-on dan tema → ⚙ → Urus Pintasan Sambungan."
+  },
+  "opt_import_foreign": {
+    "message": "Import daripada penyekat iklan lain"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Berpindah daripada uBlock Origin, AdGuard atau Adblock Plus? Pilih fail sandarannya: tapak yang anda benarkan dan penapis anda sendiri akan ditambah di sini. Tiada apa-apa yang diganti."
+  },
+  "opt_import_foreign_done": {
+    "message": "Tapak dibenarkan: $1 · Penapis ditambah: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Ditinggalkan (tidak boleh digunakan di sini): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Fail ini bukan sandaran yang boleh kami baca."
+  },
+  "welQuickTitle": {
+    "message": "Sesuaikan ikut cita rasa anda"
+  },
+  "welQuickSub": {
+    "message": "Pilihan: ia sudah pun berfungsi. Semua ini boleh ditukar kemudian dalam Tetapan."
+  },
+  "blk_page_title": {
+    "message": "Tapak disekat — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Tapak ini mungkin membahayakan peranti anda"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock menghentikan halaman ini kerana tapak ini tersenarai dalam URLhaus, senarai awam alamat yang menyebarkan perisian hasad."
+  },
+  "blk_back": {
+    "message": "Kembali"
+  },
+  "blk_continue": {
+    "message": "Teruskan juga"
+  },
+  "blk_note": {
+    "message": "Jika diteruskan, hanya halaman tapak ini yang dibenarkan, sehingga anda menutup pelayar."
+  },
+  "blk_why": {
+    "message": "Mengapa ia disenaraikan? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Sambungan pada halaman ini"
+  },
+  "conn_empty": {
+    "message": "Halaman ini tidak memuatkan apa-apa daripada tapak lain."
+  },
+  "conn_block": {
+    "message": "Sekat di sini"
+  },
+  "conn_blocked": {
+    "message": "Disekat di sini"
+  },
+  "conn_hint": {
+    "message": "Sekat apa yang dimuatkan tapak ini daripada $1"
+  },
+  "opt_conn_title": {
+    "message": "Sambungan yang anda sekat"
+  },
+  "opt_conn_sub": {
+    "message": "Disekat daripada “Sambungan pada halaman ini” dalam tetingkap timbul, setiap satu hanya pada tapaknya sendiri."
+  },
+  "opt_empty_conn": {
+    "message": "Belum ada apa-apa yang disekat."
+  },
+  "opt_conn_remove": {
+    "message": "Nyahsekat $1 pada $2"
+  },
+  "opt_h_danger": {
+    "message": "Halaman amaran perisian hasad"
+  },
+  "opt_h_capacity": {
+    "message": "Kapasiti peraturan"
   }
 }

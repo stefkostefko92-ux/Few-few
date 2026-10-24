@@ -1,6 +1,6 @@
 // DNR правила + manifest: структурна валидност, никой block не достига main_frame,
 // бюджет, RULESET_IDS ↔ manifest синхрон, service worker санитизация.
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { ROOT, ok, done, loadBackground } from "./_harness.mjs";
 
@@ -58,6 +58,34 @@ ok("notices: THIRD_PARTY_NOTICES.txt names every bundled list with its licence",
   const files = [...notices.matchAll(/licenses\/[\w.-]+\.txt/g)].map((m) => m[0]);
   ok("notices: every licence text it points to ships in licenses/ (GPL/CC BY-SA/MPL/Apache/MIT ask for it)", files.length > 10 && files.every((f) => existsSync(join(ROOT, f))));
   ok("notices: says what was changed and where the unmodified source is", /What we changed/.test(notices) && /SHA-256/.test(notices) && !/content otherwise unchanged/.test(notices));
+  // GPL/AGPL §6(d), MPL-2.0 §3.2: the exact text each bundled list was compiled from is published
+  // (server/sources/<sha256>.txt.gz, copied by the deploy without --delete) — not just "on request".
+  const { gunzipSync } = await import("node:zlib");
+  const { createHash } = await import("node:crypto");
+  // URLhaus is data under abuse.ch's own terms (no source to provide, republishing restricted): never archived.
+  const allBlocks = notices.split("\n\n").map((b) => b.replace(/^\n+/, "")).filter((b) => /\n  Retrieved /.test(b));
+  const urlhaus = allBlocks.find((b) => b.startsWith("URLhaus (abuse.ch)\n"));
+  ok("notices: URLhaus is listed, never republished from our site", !!urlhaus && !/Exact copy/.test(urlhaus));
+  const blocks = allBlocks.filter((b) => b !== urlhaus);
+  const srcDir = join(ROOT, "server", "sources");
+  const archived = existsSync(srcDir) ? readdirSync(srcDir).filter((f) => f.endsWith(".txt.gz")) : [];
+  const bad = [];
+  for (const b of blocks) {
+    const sha = (b.match(/SHA-256[^:]*: ([0-9a-f]{64})/) || [])[1];
+    const url = (b.match(/Exact copy of that text \(gzip\): (\S+)/) || [])[1];
+    if (!sha || url !== `https://adblock.carbonstealth.eu/sources/${sha}.txt.gz`) { bad.push(b.split("\n")[0] + ": no exact copy"); continue; }
+    const f = join(srcDir, sha + ".txt.gz");
+    if (!existsSync(f)) { bad.push(b.split("\n")[0] + ": file missing"); continue; }
+    if (createHash("sha256").update(gunzipSync(readFileSync(f))).digest("hex") !== sha) bad.push(b.split("\n")[0] + ": archived text differs from its SHA-256");
+  }
+  ok(`notices: every bundled list has its exact source text published by SHA-256 (${blocks.length} lists${bad.length ? "; " + bad.slice(0, 4).join(" | ") : ""})`, blocks.length >= 30 && bad.length === 0);
+  const named = new Set(blocks.map((b) => (b.match(/sources\/([0-9a-f]{64}\.txt\.gz)/) || [])[1]));
+  ok(`server/sources holds only the texts this version names (${archived.length} files)`, archived.length > 0 && archived.every((f) => named.has(f)));
+  ok("notices: every bundled list points to a licence text or the author's recorded terms", blocks.every((b) => /full text: licenses\//.test(b)));
+  ok("notices: Peter Lowe's list carries the author's terms; EasyList Thailand its copyright line (Apache-2.0 §4(c))",
+    /Peter Lowe's ad and tracking server list\n  Licence: [^\n]*licenses\/PeterLowe-terms\.txt/.test(notices) && /EasyList Thailand\n  Licence: Apache-2\.0[^\n]*\n  Copyright: Copyright 2016-2017 EasyList Thailand/.test(notices));
+  const deploy = readFileSync(join(ROOT, "..", "deploy", "autodeploy.sh"), "utf8");
+  ok("deploy copies server/sources/ to the site without --delete (older versions' texts stay)", /rsync -a "\$d\/sources\/" "\$ADBLOCK_WWW\/sources\/"/.test(deploy) && !/rsync[^\n]*--delete[^\n]*sources/.test(deploy));
 }
 {
   const slots = catalog.filter((e) => e.delivery === "remote").map((e) => e.slot);
@@ -80,9 +108,7 @@ const cfg = bg.sanitizeConfig({ version: 7, blockDomains: ["||ads.example.com^",
   ] });
 ok("bg: blockDomains normalised, protected/invalid dropped", cfg.blockDomains.length === 1 && cfg.blockDomains[0] === "ads.example.com");
 ok("bg: cosmetic guards (form/password/cc/universal) applied", cfg.cosmetic.join() === ".ad,.sponsored-box");
-const names = cfg.scriptlets.map((s) => s.h + ":" + s.d.join(","));
-ok("bg: scriptlets — aliases canonicalised, global/remove-cookie/bad-cookie/protected/proto/trusted dropped",
-  names.length === 2 && names.includes("example.com:abort-on-property-read,adBlock") && names.includes("s.com:set-cookie,c,accepted"));
+ok("bg: filters.json can never carry scriptlets — the key is dropped, only data survives", !("scriptlets" in cfg));
 ok("bg: safeSelector refuses stylesheet escapes and the page itself as target",
   [".x{background:url(//t.example/b)}", ".y;", ".ad\\", ".a /* c", "body.x", ".a, body", "html > body:not(.a)", "body:has(.x)", ":root.x"].every((x) => !bg.safeSelector(x)) &&
   ["body.x .ad", ".ad-body", "html .ad", "#bodyx", ".tbody-ad"].every((x) => bg.safeSelector(x)));
@@ -117,6 +143,42 @@ ok("popup hosts are baked into shipped main.js", readFileSync(join(ROOT, "script
     bg.remoteRuleSafe(r("block")) && bg.remoteRuleSafe(r("allow")) && bg.remoteRuleSafe(r("block", { excludedResourceTypes: ["image", "main_frame"] })) &&
     !bg.remoteRuleSafe(r("redirect")) && !bg.remoteRuleSafe(r("modifyHeaders")) && !bg.remoteRuleSafe(r("allowAllRequests")) &&
     !bg.remoteRuleSafe(r("block", { resourceTypes: ["main_frame"] })) && !bg.remoteRuleSafe(r("block", { excludedResourceTypes: ["image"] })));
+}
+
+// Anti-adblock bait: the global uBO XHR redirects to ad networks keep working only for
+// real ad resources (what detectors fetch); anything else to those networks is blocked.
+{
+  const ubo = JSON.parse(readFileSync(join(ROOT, "rules", "list_ubo.json"), "utf8"));
+  const nets = /(^|\.)(doubleclick\.net|googlesyndication\.com)$/;
+  const global = ubo.filter((r) => r.action.type === "redirect" && !r.condition.initiatorDomains && (r.condition.requestDomains || []).some((d) => nets.test(d)));
+  const re = global.length ? new RegExp(global[0].condition.regexFilter || "$^") : null;
+  ok("ubo: global ad-network XHR redirects are narrowed to bait paths (adsbygoogle.js, gpt.js, /pagead/id)",
+    global.length > 0 && global.every((r) => r.condition.regexFilter && r.condition.requestDomains.every((d) => nets.test(d))) &&
+    re.test("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js") && re.test("https://securepubads.g.doubleclick.net/tag/js/gpt.js") &&
+    !re.test("https://stats.g.doubleclick.net/fakepage.html"));
+  const ad = JSON.parse(readFileSync(join(ROOT, "rules", "ad_rules.json"), "utf8")).find((r) => r.id === 238);
+  ok("ad_rules: third-party tracker rule covers ads.youtube.com, Yahoo/Yandex/X/Huawei ad hosts — never first-party",
+    ad.condition.domainType === "thirdParty" && ["ads.youtube.com", "gemini.yahoo.com", "adtech.yahooinc.com", "metrika.yandex.ru", "ads-api.twitter.com", "grs.hicloud.com"].every((d) => ad.condition.requestDomains.includes(d)));
+}
+
+// YouTube's own content pings must go out: a player that never reports playing is a strike signal.
+{
+  const yt = JSON.parse(readFileSync(join(ROOT, "rules", "youtube_rules.json"), "utf8"));
+  const blocks = yt.filter((r) => r.action.type === "block").map((r) => r.condition.urlFilter || "");
+  ok("youtube_rules: never block /ptracking (content playback) or ALL of /api/stats/atr — only ad endpoints",
+    !blocks.some((f) => /ptracking|stats\/atr|stats\/qoe|stats\/watchtime|log_event/.test(f)) && blocks.some((f) => /stats\/ads/.test(f)));
+}
+
+// Breakage fix: EasyPrivacy's ||facebook.com/platform/plugin/page/logging/ made the Facebook
+// Page Plugin throw for logged-in visitors (posts never load on any site that embeds it).
+{
+  const ad = JSON.parse(readFileSync(join(ROOT, "rules", "ad_rules.json"), "utf8"));
+  const ep = JSON.parse(readFileSync(join(ROOT, "rules", "easyprivacy.json"), "utf8"));
+  const fix = ad.find((r) => r.action.type === "allow" && r.condition.urlFilter === "||facebook.com/platform/plugin/page/logging/");
+  const topBlock = Math.max(...ep.filter((r) => r.action.type === "block").map((r) => r.priority || 1));
+  ok("ad_rules: the Facebook Page Plugin's logging is allowed from Facebook's own frame only, above every EasyPrivacy block",
+    !!fix && fix.priority > topBlock && JSON.stringify(fix.condition.initiatorDomains) === JSON.stringify(["facebook.com"]) &&
+    !fix.condition.resourceTypes.includes("main_frame") && !fix.condition.resourceTypes.includes("script"));
 }
 
 done();

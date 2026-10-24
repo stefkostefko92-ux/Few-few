@@ -21,6 +21,17 @@
   let { attempts, lastReload } = loadPersisted();
   let domCheck = { at: 0, val: false };
 
+  // "The engine was running when we reloaded to reconnect." The reload destroys
+  // this script and its in-memory state; without this the bot would reconnect
+  // and then sit idle until someone presses Start (unless startOnLoad is on),
+  // which defeats the point of reconnecting an unattended bot.
+  const RESUME_KEY = 'tb_resume_after_reload';
+  TB.Autologin = {
+    markResume() { try { sessionStorage.setItem(RESUME_KEY, '1'); } catch (_) {} },
+    peekResume() { try { return sessionStorage.getItem(RESUME_KEY) === '1'; } catch (_) { return false; } },
+    clearResume() { try { sessionStorage.removeItem(RESUME_KEY); } catch (_) {} }
+  };
+
   function cfg() { return Storage.section('autologin') || {}; }
 
   function looksLoggedOut() {
@@ -53,6 +64,7 @@
           attempts++;
           lastReload = Date.now();
           persist();
+          TB.Autologin.markResume();   // the engine is running (tick only fires then): resume after the reload
           Logger.warn(I18n.t('logReconnect', [String(attempts)]));
           location.reload();
         };

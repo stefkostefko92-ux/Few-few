@@ -1,10 +1,10 @@
 {
   "extName": {
-    "message": "Supreme AdBlock",
+    "message": "Supreme AdBlock – блокер на реклами",
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Блокира реклами навсякъде (и в YouTube), банери, изскачащи прозорци, тракери, подкани за бисквитки и анти-адблок стени. Безплатно.",
+    "message": "Блокер на реклами за YouTube и уеба: видеореклами, банери, изскачащи прозорци, тракери, банери за бисквитки и анти-адблок стени.",
     "description": "Extension description."
   },
   "byCarbon": {
@@ -120,6 +120,27 @@
   "support": {
     "message": "Подкрепи"
   },
+  "rate": {
+    "message": "Оцени"
+  },
+  "rateTitle": {
+    "message": "Оценете Supreme AdBlock в Уеб магазина на Chrome"
+  },
+  "reviewBlocked": {
+    "message": "Досега блокирани заявки: $1"
+  },
+  "reviewAsk": {
+    "message": "Ако Supreme AdBlock ви е полезно, кратък отзив в Уеб магазина на Chrome помага и на други да го открият."
+  },
+  "reviewLeave": {
+    "message": "Напишете отзив"
+  },
+  "reviewLater": {
+    "message": "Не сега"
+  },
+  "reviewNever": {
+    "message": "Не питай повече"
+  },
   "filtersCount": {
     "message": "$1+ филтъра",
     "placeholders": {
@@ -207,13 +228,13 @@
     "message": "Скрива стените „изключете блокировача на реклами“ и възстановява страницата"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Скрива публикациите „Спонсорирано“ във Facebook и Instagram"
+    "message": "Скрива публикациите „Спонсорирано“ във Facebook, Instagram и Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Премахва utm_*, fbclid, gclid и други идентификатори на кликове от връзките, които отваряте"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Блокира известни зловредни домейни (листът URLhaus на abuse.ch)"
+    "message": "Предупреждава, преди да се отвори известен зловреден сайт, и блокира това, което страниците зареждат от такива сайтове (листа URLhaus на abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Изключва рекламните API Google Topics, FLoC и Protected Audience на всеки сайт"
@@ -316,6 +337,12 @@
   },
   "opt_donate": {
     "message": "Дарение през Revolut"
+  },
+  "opt_review": {
+    "message": "Напомняне за отзив"
+  },
+  "opt_review_sub": {
+    "message": "Малък линк ★ в долната част на прозореца на Supreme AdBlock и най-много два пъти кратка молба там да го оцените в Уеб магазина на Chrome. Никога по сайтовете, никога като известие."
   },
   "opt_made_by": {
     "message": "създадено от Carbon Stealth"
@@ -601,5 +628,178 @@
   },
   "opt_notices": {
     "message": "Лицензи на филтър-листите"
+  },
+  "welPageTitle": {
+    "message": "Добре дошли в Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Защитени сте",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock вече блокира рекламите и тракерите на всеки сайт, който посещавате. Няма нищо за настройване.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Закачете го в лентата с инструменти",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Кликнете иконата с пъзел до адресната лента и закачете Supreme AdBlock. После с едно кликване виждате какво е блокирано на страницата.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "Закачен е в лентата с инструменти"
+  },
+  "welPinnedText": {
+    "message": "С едно кликване върху иконата му виждате какво е блокирано на страницата."
+  },
+  "welBrokenTitle": {
+    "message": "Ако сайт изглежда счупен",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Отворете разширението и изключете блокирането за този сайт или изберете „Сайтът е счупен?“ за бързи поправки.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Сърфирането ви остава на вашето устройство",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Филтрирането става локално. Разширението не събира лични данни и не изпраща нищо за страниците, които посещавате.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Отвори настройките",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Разбрах",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Разрешен · още $1 мин"
+  },
+  "hiddenHere": {
+    "message": "Скрити от вас тук: $1 · Върни последния"
+  },
+  "cmd_toggle_site": {
+    "message": "Включи или изключи блокирането на този сайт"
+  },
+  "cmd_pause": {
+    "message": "Пауза или продължаване на защитата (30 минути)"
+  },
+  "cmd_picker": {
+    "message": "Скрий елемент от тази страница"
+  },
+  "rep_fix_hour": {
+    "message": "Разреши рекламите тук за 1 час"
+  },
+  "rep_done_hour": {
+    "message": "Рекламите са разрешени на този сайт за 1 час. Презаредено — оправи ли се?"
+  },
+  "opt_last30": {
+    "message": "Последните 30 дни"
+  },
+  "opt_last30_sum": {
+    "message": "Блокирани: $1 · Банери за бисквитки: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Дневните суми се появяват тук, докато сърфирате."
+  },
+  "opt_last30_sub": {
+    "message": "Само дневни суми, пазят се на това устройство 30 дни. Без сайтове, без адреси."
+  },
+  "opt_gpc_sub": {
+    "message": "Моли всеки сайт, който посещавате, да не продава и да не споделя данните ви (сигналът Sec-GPC, който някои закони за поверителност задължават сайтовете да зачитат). Не се изпраща на сайтовете, които сте разрешили."
+  },
+  "opt_shortcuts": {
+    "message": "Клавишни комбинации"
+  },
+  "opt_shortcuts_change": {
+    "message": "Промени комбинациите"
+  },
+  "opt_shortcut_none": {
+    "message": "Не е зададена"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Във Firefox: Разширения и теми → ⚙ → Управление на клавишните комбинации за разширения."
+  },
+  "opt_import_foreign": {
+    "message": "Импорт от друг блокер на реклами"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Идвате от uBlock Origin, AdGuard или Adblock Plus? Изберете файла с резервното му копие: разрешените от вас сайтове и собствените ви филтри се добавят тук. Нищо не се заменя."
+  },
+  "opt_import_foreign_done": {
+    "message": "Разрешени сайтове: $1 · Добавени филтри: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Пропуснати (не могат да се приложат тук): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Този файл не е резервно копие, което можем да прочетем."
+  },
+  "welQuickTitle": {
+    "message": "Направете го свое"
+  },
+  "welQuickSub": {
+    "message": "По желание — всичко вече работи. От настройките можете да промените това по всяко време."
+  },
+  "blk_page_title": {
+    "message": "Сайтът е блокиран — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Този сайт може да навреди на устройството ви"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock спря тази страница, защото сайтът е в URLhaus — публичен списък с адреси, които разпространяват зловреден софтуер."
+  },
+  "blk_back": {
+    "message": "Назад"
+  },
+  "blk_continue": {
+    "message": "Продължи въпреки това"
+  },
+  "blk_note": {
+    "message": "Продължаването пропуска само страниците на този сайт, докато затворите браузъра."
+  },
+  "blk_why": {
+    "message": "Защо е в списъка? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Връзки на страницата"
+  },
+  "conn_empty": {
+    "message": "Страницата не е заредила нищо от други сайтове."
+  },
+  "conn_block": {
+    "message": "Блокирай тук"
+  },
+  "conn_blocked": {
+    "message": "Блокиран тук"
+  },
+  "conn_hint": {
+    "message": "Блокирай това, което сайтът зарежда от $1"
+  },
+  "opt_conn_title": {
+    "message": "Връзки, които сте блокирали"
+  },
+  "opt_conn_sub": {
+    "message": "Блокирани от „Връзки на страницата“ в прозореца на Supreme AdBlock — всяка само на своя сайт."
+  },
+  "opt_empty_conn": {
+    "message": "Още нищо не е блокирано."
+  },
+  "opt_conn_remove": {
+    "message": "Отблокирай $1 на $2"
+  },
+  "opt_h_danger": {
+    "message": "Страница за зловредни сайтове"
+  },
+  "opt_h_capacity": {
+    "message": "Капацитет на правилата"
   }
 }

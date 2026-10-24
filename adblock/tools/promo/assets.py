@@ -16,9 +16,15 @@ spec.loader.exec_module(sb)  # the slide loop only runs under __main__
 src = lambda tag: tag.split('src="', 1)[1].split('"', 1)[0]
 assets = {
     "css": sb.CSS[sb.CSS.index("/* settings panel mock */"):],
-    "popupYT": src(sb.popup(blocked="3,782", data="1.4 GB", time="52 min", host="youtube.com")),
+    "popupYT": src(sb.popup(blocked="3,782", data="1.4 GB", time="52 min", host="youtube.com",
+                            log=[["YouTube rules", 11], ["EasyPrivacy", 6], ["EasyList", 4], ["uBlock filters", 3]])),
     "popupLog": src(sb.popup(blocked="9,140", data="4.6 GB", time="2.3 h", host="news.example.com",
                              log=[["EasyPrivacy", 12], ["EasyList", 7], ["uBlock filters", 5], ["Supreme core rules", 3], ["Tracking parameters", 2]])),
+    # the vertical (social) cut shows the popup ~2× larger: 960 px wide sources stay sharp
+    "popupYT3": src(sb.popup(blocked="3,782", data="1.4 GB", time="52 min", host="youtube.com",
+                             log=[["YouTube rules", 11], ["EasyPrivacy", 6], ["EasyList", 4], ["uBlock filters", 3]], scale=3)),
+    "popupLog3": src(sb.popup(blocked="9,140", data="4.6 GB", time="2.3 h", host="news.example.com",
+                              log=[["EasyPrivacy", 12], ["EasyList", 7], ["uBlock filters", 5], ["Supreme core rules", 3], ["Tracking parameters", 2]], scale=3)),
     "smart": sb.smartlog_panel(),
     "lists": sb.features_panel(),
 }

@@ -50,22 +50,36 @@ def report(tag, m):
     if bb is not None:
         d = bb[1] - bb[0]
         print(f"  габарити (mm): {d[0]:.1f} × {d[1]:.1f} × {d[2]:.1f}")
+    # Отделни тела: плаваща частица от скана раздува габаритите и обема (3D Maniac, 2026-09-24).
+    try:
+        bodies = m.body_count
+    except Exception:
+        bodies = None
+    if bodies and bodies > 1:
+        print(f"  ⚠ отделни тела: {bodies} — габаритите/обемът включват всички; махни floater-ите преди Mesh→Solid")
 
 
 def repair(trimesh, m):
     m.remove_infinite_values()
     m.update_faces(m.unique_faces())
-    m.update_faces(m.nonzero_faces())
+    m.update_faces(m.nondegenerate_faces())  # nonzero_faces() не съществува в trimesh 5.x → срив на всеки вход
     m.remove_unreferenced_vertices()
-    trimesh.repair.fix_normals(m)
+    # multibody=True: иначе обърнато отделно тяло остава обърнато и обемът лъже зад „watertight“.
+    trimesh.repair.fix_normals(m, multibody=True)
     trimesh.repair.fix_winding(m)
-    trimesh.repair.fill_holes(m)
+    try:
+        trimesh.repair.fill_holes(m)
+    except ModuleNotFoundError as e:
+        # Голият `pip install trimesh` няма networkx → срив на основния случай.
+        print(f"  ⚠ запълването на дупки пропуснато — липсва {e.name or 'networkx'}; инсталирай: pip install -r tools/3d/requirements.txt")
     return m
 
 
 def decimate(m, target):
     try:
-        return m.simplify_quadric_decimation(target)
+        # По име: в trimesh 5.x сигнатурата е (percent, face_count, aggression) — позиционно
+        # `target` ставаше „процент“ и децимацията или гърмеше, или правеше друго.
+        return m.simplify_quadric_decimation(face_count=int(target))
     except Exception as e:
         print(f"  ⚠ децимацията пропусната ({e}); за по-добра ползвай pymeshlab/open3d")
         return m
@@ -76,8 +90,11 @@ def deviation(trimesh, m, ref_path, heatmap=None):
     # Разстояние от върховете на ref до повърхността на m (proxy за deviation).
     try:
         from trimesh.proximity import closest_point
-        _, dist, _ = closest_point(m, ref.vertices)
         import numpy as np
+        # Плътна извадка от ПОВЪРХНИНАТА на ref, не само върховете ѝ: груба референция (малко върхове)
+        # иначе дава 0.0000 mm отклонение за издутина между върховете.
+        pts = np.vstack([ref.vertices, ref.sample(20000)]) if len(ref.faces) else ref.vertices
+        _, dist, _ = closest_point(m, pts)
         print("\n── Deviation (ref → mesh) ──")
         print(f"  средно: {dist.mean():.4f} mm · max: {dist.max():.4f} mm · "
               f"95-ти персентил: {np.percentile(dist, 95):.4f} mm")
@@ -92,7 +109,7 @@ def deviation(trimesh, m, ref_path, heatmap=None):
             colors[:, 0] = (t * 255).astype(np.uint8)          # R расте с грешката
             colors[:, 1] = ((1 - t) * 255).astype(np.uint8)    # G пада
             colors[:, 3] = 255
-            cloud = trimesh.PointCloud(ref.vertices, colors=colors)
+            cloud = trimesh.PointCloud(pts, colors=colors)
             cloud.export(heatmap)
             print(f"  ✔ Heatmap (зелено=добре, червено=отклонение) → {heatmap}")
     except Exception as e:

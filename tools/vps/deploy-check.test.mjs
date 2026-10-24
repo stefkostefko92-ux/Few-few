@@ -93,6 +93,51 @@ test("cat на частен ключ ОЩЕ е изтичане", () => {
   assert.ok(codes(f).has("secret-echo"));
 });
 
+// ─── secret-echo: СТОЙНОСТ, не ДУМА (24.09.2026) ────────────────────────────
+// Шумът от думи („check BOT_TOKEN“) крие истинското. Закотвяме и двете посоки.
+
+test("реалното изтичане от stripe-setup.sh (${WH_SECRET} в echo) е хванато", () => {
+  const f = lintShell('set -euo pipefail\necho "  ЗАПИШИ: STRIPE_WEBHOOK_SECRET=${WH_SECRET}"', "stripe-setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+
+test("разгъване на тайна променлива без „ИМЕ=“ е изтичане", () => {
+  const f = lintShell('set -euo pipefail\necho "value: $API_TOKEN"', "deploy.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+
+test("имена на тайни в инструкция НЕ са изтичане", () => {
+  const f = lintShell('set -euo pipefail\necho "Fill in ENCRYPTION_KEY, SESSION_SECRET, API_SECRET"\necho -e "${YELLOW}check BOT_TOKEN${NC}"\necho "  STRIPE_SECRET_KEY=<ключът>"', "deploy.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("думата „token“ в текст с НЕтайна променлива НЕ е изтичане", () => {
+  const f = lintShell('set -euo pipefail\necho "rejects invalid bearer token [$local_code]"', "smoke.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("печат само на ДЪЛЖИНАТА (${#VAR}) не е изтичане — стойността не излиза", () => {
+  const f = lintShell('set -euo pipefail\necho "secret (${#WH_SECRET} chars)"', "x.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("брояч $pass в smoke тест НЕ е парола", () => {
+  const f = lintShell('set -euo pipefail\nok() { printf "  ✓ %s\\n" "$1"; pass=$((pass+1)); }\nprintf "passed: %s\\n" "$pass"', "smoke.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("присвояване WH_SECRET=$(echo … | grep …) НЕ е печат; печатът му след това — е", () => {
+  const assign = lintShell(`set -euo pipefail\nWH_SECRET=$(echo "$WH_JSON" | grep -o whsec_x)`, "x.sh");
+  assert.ok(!codes(assign).has("secret-echo"));
+  const printed = lintShell(`set -euo pipefail\nWH_SECRET=$(echo "$WH_JSON" | grep -o whsec_x)\necho "$WH_SECRET"`, "x.sh");
+  assert.ok(codes(printed).has("secret-echo"));
+});
+
+test("$DB_PASSWD и $ADMIN_PASSWORD в echo са изтичане", () => {
+  assert.ok(codes(lintShell('set -euo pipefail\necho "$DB_PASSWD"', "x.sh")).has("secret-echo"));
+  assert.ok(codes(lintShell('set -euo pipefail\necho "pw: $ADMIN_PASSWORD"', "x.sh")).has("secret-echo"));
+});
+
 // ─── Незащитен subshell под `set -e` ────────────────────────────────────────
 // Реален дефект (07.08.2026): `( cd "$d"; bash deploy.sh )` без `||` в
 // autodeploy.sh. При `set -e` провалът на ЕДИН продукт прекратява целия пробег —
@@ -122,6 +167,56 @@ test("тривиален subshell (без деплой команда) не е �
 test("без `set -e` правилото не важи — там subshell не убива пробега", () => {
   const f = lintShell('#!/bin/bash\n( cd "$d" && bash deploy.sh )\n', "x.sh");
   assert.ok(!codes(f).has("unguarded-subshell"));
+});
+
+// ─── Покритие на ЦЕЛИЯ файл (одит 25.09.2026, H2) ───────────────────────────
+// Мързеливият регекс тръгваше от ЕДНОРЕДОВ `( cd … ) \` и се разтягаше до първия
+// ред, започващ с `)`, стотици редове по-надолу → всичко между тях беше невидимо.
+// Така неохраненият билд на mastilko в autodeploy.sh мина незабелязан.
+test("нарушение в средата на дълъг файл се хваща (между охранени subshell-и)", () => {
+  const filler = (n, tag) => Array.from({ length: n }, (_, i) => `  echo "${tag} ${i}"`).join("\n");
+  const src = [
+    "#!/usr/bin/env bash", "set -euo pipefail",
+    'a() {\n  ( cd "$x" && npm ci --omit=dev ) \\\n    || { warn "a"; deploy_failed=1; return; }',
+    filler(300, "a"), "}",
+    // нарушителят — многоредов, без гард, в средата
+    'm() {\n  ( cd "$M" \\\n    && npm ci \\\n    && npm run build )',
+    filler(300, "m"), "}",
+    // охранен многоредов блок по-надолу: затварящото му `)` в начало на ред беше
+    // котвата, до която старият регекс „прескачаше“
+    'z() {\n  ( cd "$d"\n    bash deploy.sh\n  ) || { warn "z"; deploy_failed=1; return; }\n}',
+  ].join("\n");
+  const f = lintShell(src, "long.sh").find((x) => x.code === "unguarded-subshell");
+  assert.ok(f, "нарушението в средата е хванато");
+  assert.match(f.msg, /\(1 бр\.\)/);
+  const line = src.split("\n").findIndex((l) => l.includes('( cd "$M"')) + 1;
+  assert.match(f.msg, new RegExp(`${line}: \\( cd "\\$M"`), "съобщението сочи точния ред");
+});
+
+test("subshellEnd: кавички, $( … ) и коментари не объркват края", async () => {
+  const { subshellEnd } = await import("./deploy-check.mjs");
+  const s = '( cd "$(dirname "$P")" # коментар с )\n  echo \'буквално )\' "текст ( без край"\n) || x';
+  assert.equal(subshellEnd(s, 0), s.lastIndexOf(")"));
+});
+
+test("всеки `( cd` в реалния autodeploy.sh има намерен край (нищо не е прескочено)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { join, dirname } = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const { subshellEnd } = await import("./deploy-check.mjs");
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const src = readFileSync(join(root, "deploy", "autodeploy.sh"), "utf-8");
+  const re = /^[ \t]*\(\s*cd\s/gm;
+  let m, n = 0;
+  while ((m = re.exec(src)) !== null) {
+    const open = src.indexOf("(", m.index);
+    const close = subshellEnd(src, open);
+    assert.ok(close > open, `край за ред ${src.slice(0, m.index).split("\n").length}`);
+    // Нито един subshell в деплой скрипта не е по-дълъг от 40 реда — по-дълъг значи прескок.
+    assert.ok(src.slice(open, close).split("\n").length <= 40, "разумна дължина");
+    n++;
+  }
+  assert.ok(n >= 15, `обходени са всички (${n})`);
 });
 
 test("реалният autodeploy.sh минава правилото", async () => {

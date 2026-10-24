@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Reklamları hər yerdə bloklayır: YouTube reklamları, bannerlər, popaplar, izləyicilər, kuki sorğuları və anti-adblock divarları."
+    "message": "Reklam bloklayıcı (YouTube və veb): video reklamlar, bannerlər, popaplar, izləyicilər, kuki bannerləri, anti-adblock divarları."
   },
   "byCarbon": {
     "message": "Carbon Stealth tərəfindən"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Dəstək ol"
   },
+  "rate": {
+    "message": "Qiymətləndir"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlock-u Chrome Veb Mağazasında qiymətləndirin"
+  },
+  "reviewBlocked": {
+    "message": "İndiyədək $1 sorğu bloklanıb"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock sizə faydalıdırsa, Chrome Veb Mağazasında qısa rəy başqalarının onu tapmasına kömək edir."
+  },
+  "reviewLeave": {
+    "message": "Rəy yazın"
+  },
+  "reviewLater": {
+    "message": "İndi yox"
+  },
+  "reviewNever": {
+    "message": "Bir daha soruşma"
+  },
   "filtersCount": {
     "message": "$1+ filtr",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "«Reklam blokerinizi söndürün» divarlarını gizlədir və səhifəni bərpa edir"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook və Instagram-da «Sponsorlu» paylaşımları gizlədir"
+    "message": "Facebook, Instagram və Threads-də «Sponsorlu» paylaşımları gizlədir"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Açdığınız keçidlərdən utm_*, fbclid, gclid və digər klik identifikatorlarını silir"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Məlum zərərli domenləri bloklayır (abuse.ch-in URLhaus siyahısı)"
+    "message": "Məlum zərərli sayt açılmazdan əvvəl xəbərdarlıq edir və səhifələrin belə saytlardan yüklədiklərini bloklayır (abuse.ch-in URLhaus siyahısı)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Hər saytda Google Topics, FLoC və Protected Audience reklam API-lərini söndürür"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut ilə ianə et"
+  },
+  "opt_review": {
+    "message": "Rəy xatırlatmaları"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock pəncərəsinin aşağısında kiçik ★ keçidi və ən çoxu iki dəfə orada onu Chrome Veb Mağazasında qiymətləndirmək üçün qısa xahiş. Heç vaxt saytlarda, heç vaxt bildiriş kimi deyil."
   },
   "opt_made_by": {
     "message": "Carbon Stealth tərəfindən hazırlanıb"
@@ -599,5 +626,178 @@
   },
   "opt_notices": {
     "message": "Filtr siyahılarının lisenziyaları"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock-a xoş gəlmisiniz",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Qoruma aktivdir",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock artıq daxil olduğunuz hər saytda reklamları və izləyiciləri bloklayır. Heç nəyi ayarlamağa ehtiyac yoxdur.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Artırmanı alətlər panelinə bərkidin",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Ünvan sətrinin yanındakı tapmaca parçası ikonuna klikləyin və Supreme AdBlock-u bərkidin. Sonra bir kliklə səhifədə nəyin bloklandığını görəcəksiniz.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "Alətlər panelinə bərkidilib"
+  },
+  "welPinnedText": {
+    "message": "İkonuna bir klik səhifədə nəyin bloklandığını göstərir."
+  },
+  "welBrokenTitle": {
+    "message": "Sayt düzgün görünmürsə",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Artırmanı açın və həmin sayt üçün bloklamanı söndürün və ya sürətli düzəlişlər üçün «Sayt pozulub?» seçin.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Brauzerdəki fəaliyyətiniz cihazınızda qalır",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtrləmə cihazın özündə aparılır. Artırma şəxsi məlumat toplamır və daxil olduğunuz səhifələr haqqında heç nə göndərmir.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Ayarları açın",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Aydındır",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "İcazəli · $1 dəq qalıb"
+  },
+  "hiddenHere": {
+    "message": "Burada gizlətdikləriniz: $1 · Sonuncunu qaytar"
+  },
+  "cmd_toggle_site": {
+    "message": "Bu saytda bloklamanı aç və ya bağla"
+  },
+  "cmd_pause": {
+    "message": "Qorumaya fasilə ver və ya davam etdir (30 dəqiqə)"
+  },
+  "cmd_picker": {
+    "message": "Bu səhifədə elementi gizlət"
+  },
+  "rep_fix_hour": {
+    "message": "Burada reklamlara 1 saat icazə ver"
+  },
+  "rep_done_hour": {
+    "message": "Bu saytda reklamlara 1 saatlıq icazə verildi. Yenidən yükləndi — düzəldi?"
+  },
+  "opt_last30": {
+    "message": "Son 30 gün"
+  },
+  "opt_last30_sum": {
+    "message": "Bloklanan: $1 · Kuki bannerləri: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Gündəlik yekunlarınız internetdə gəzdikcə burada görünəcək."
+  },
+  "opt_last30_sub": {
+    "message": "Yalnız gündəlik yekunlar, bu cihazda 30 gün saxlanılır. Sayt yox, ünvan yox."
+  },
+  "opt_gpc_sub": {
+    "message": "Daxil olduğunuz hər saytdan məlumatlarınızı satmamasını və ya paylaşmamasını xahiş edir (bəzi məxfilik qanunlarının saytları riayət etməyə məcbur etdiyi Sec-GPC siqnalı). İcazə verdiyiniz saytlarda göndərilmir."
+  },
+  "opt_shortcuts": {
+    "message": "Klaviatura qısayolları"
+  },
+  "opt_shortcuts_change": {
+    "message": "Qısayolları dəyiş"
+  },
+  "opt_shortcut_none": {
+    "message": "Təyin edilməyib"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox-da: Uzantılar və Mövzular → ⚙ → Uzantı qısayollarını idarə et."
+  },
+  "opt_import_foreign": {
+    "message": "Başqa reklam bloklayıcısından idxal et"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard və ya Adblock Plus-dan keçirsiniz? Onun ehtiyat nüsxə faylını seçin: icazə verdiyiniz saytlar və öz filtrləriniz bura əlavə olunur. Heç nə əvəz edilmir."
+  },
+  "opt_import_foreign_done": {
+    "message": "İcazəli saytlar: $1 · Əlavə edilən filtrlər: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Kənarda qalan (burada tətbiq edilə bilməz): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Bu fayl oxuya biləcəyimiz ehtiyat nüsxə deyil."
+  },
+  "welQuickTitle": {
+    "message": "Özünüzə uyğunlaşdırın"
+  },
+  "welQuickSub": {
+    "message": "İstəyə bağlı: artıq işləyir. Bunların hər birini sonra Ayarlarda dəyişə bilərsiniz."
+  },
+  "blk_page_title": {
+    "message": "Sayt bloklandı — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Bu sayt cihazınıza ziyan vura bilər"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock bu səhifəni dayandırdı, çünki sayt URLhaus siyahısındadır: bu, zərərli proqram yayan ünvanların ictimai siyahısıdır."
+  },
+  "blk_back": {
+    "message": "Geri qayıt"
+  },
+  "blk_continue": {
+    "message": "Yenə də davam et"
+  },
+  "blk_note": {
+    "message": "Davam etsəniz, brauzeri bağlayana qədər yalnız bu saytın səhifələri buraxılır."
+  },
+  "blk_why": {
+    "message": "Niyə siyahıdadır? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Bu səhifədəki bağlantılar"
+  },
+  "conn_empty": {
+    "message": "Bu səhifə digər saytlardan heç nə yükləməyib."
+  },
+  "conn_block": {
+    "message": "Burada blokla"
+  },
+  "conn_blocked": {
+    "message": "Burada bloklanıb"
+  },
+  "conn_hint": {
+    "message": "Bu saytın $1 mənbəyindən yüklədiklərini blokla"
+  },
+  "opt_conn_title": {
+    "message": "Blokladığınız bağlantılar"
+  },
+  "opt_conn_sub": {
+    "message": "Artırma pəncərəsindəki «Bu səhifədəki bağlantılar» bölməsindən bloklanıb, hər biri yalnız öz saytında."
+  },
+  "opt_empty_conn": {
+    "message": "Hələ heç nə bloklanmayıb."
+  },
+  "opt_conn_remove": {
+    "message": "$2 saytında $1 üçün bloku götür"
+  },
+  "opt_h_danger": {
+    "message": "Zərərli sayt xəbərdarlığı"
+  },
+  "opt_h_capacity": {
+    "message": "Qayda tutumu"
   }
 }

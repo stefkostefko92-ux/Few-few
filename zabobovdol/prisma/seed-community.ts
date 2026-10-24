@@ -7,7 +7,8 @@ if (!process.env.DATABASE_URL) {
     const env = readFileSync(resolve(process.cwd(), ".env"), "utf8");
     for (const line of env.split("\n")) {
       const m = /^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/.exec(line);
-      if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+      if (m && !process.env[m[1]])
+        process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
     }
   } catch {
     /* няма .env */
@@ -79,25 +80,27 @@ async function main() {
   for (const v of volunteers) {
     await prisma.volunteer.upsert({
       where: { slug: v.slug },
-      update: { ...v, published: true },
+      update: { ...v }, // published не се пипа: админ може да е скрил записа
       create: { ...v, published: true },
     });
   }
   for (const c of causes) {
     await prisma.helpCause.upsert({
       where: { slug: c.slug },
-      update: { ...c, published: true },
+      update: { ...c },
       create: { ...c, published: true },
     });
   }
   for (const m of memories) {
     await prisma.memory.upsert({
       where: { slug: m.slug },
-      update: { ...m, published: true },
+      update: { ...m },
       create: { ...m, published: true },
     });
   }
-  console.log(`✔ Доброволци: ${volunteers.length}, Каузи: ${causes.length}, Спомени: ${memories.length}`);
+  console.log(
+    `✔ Доброволци: ${volunteers.length}, Каузи: ${causes.length}, Спомени: ${memories.length}`,
+  );
   await prisma.$disconnect();
   console.log("Готово.");
 }

@@ -9,6 +9,7 @@
 // (best-effort актьор), НЕ при self_* или join/leave — гласовете шумят силно.
 
 import { logServerEvent, fetchAuditActor, fetchVoiceMoveActor, fetchVoiceDisconnectActor, isEventCategoryEnabled, AuditLogEvent } from "../utils/serverEventLog.js";
+import { onVoiceForXp } from "../utils/game.js";
 
 function tagOf(user) {
   if (!user) return null;
@@ -24,6 +25,8 @@ export default {
     try {
       const guild = newState.guild || oldState.guild;
       if (!guild?.id) return;
+      // v50 — Server Season: гласови минути за XP (независимо от лог категорията).
+      onVoiceForXp(oldState, newState).catch(() => {});
 
       // Евтин гейт ПРЕДИ audit-log fetch-овете — иначе всяко voice събитие във
       // всеки guild бие fetchAuditLogs дори с изключена категория (rate limit,

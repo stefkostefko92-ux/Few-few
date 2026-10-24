@@ -18,6 +18,10 @@ import '@fontsource/manrope/700.css';
 import '@fontsource/manrope/800.css';
 import '@fontsource/jetbrains-mono/500.css';
 import '@fontsource/jetbrains-mono/700.css';
+// Само за четивен текст на лендинга (--font-read) — виж globals.css.
+import '@fontsource/spectral/400.css';
+import '@fontsource/spectral/400-italic.css';
+import '@fontsource/spectral/500.css';
 import './styles/globals.css';
 import './styles/animations.css';
 import './styles/landing.css';

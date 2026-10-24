@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube വീഡിയോ പരസ്യങ്ങൾ, ബാനറുകൾ, പോപ്പ്-അപ്പുകൾ, ട്രാക്കറുകൾ, കുക്കി അറിയിപ്പുകൾ എന്നിവ തടയുന്നു. സൗജന്യം, സ്വകാര്യം."
+    "message": "ആഡ് ബ്ലോക്കർ: YouTube, വെബ് പരസ്യങ്ങൾ, ബാനറുകൾ, പോപ്പ്-അപ്പുകൾ, ട്രാക്കറുകൾ, കുക്കി ബാനറുകൾ, ആന്റി-ആഡ്ബ്ലോക്ക് ഭിത്തികൾ."
   },
   "byCarbon": {
     "message": "Carbon Stealth-ൽ നിന്ന്"
@@ -118,6 +118,27 @@
   "support": {
     "message": "പിന്തുണയ്ക്കുക"
   },
+  "rate": {
+    "message": "റേറ്റ് ചെയ്യുക"
+  },
+  "rateTitle": {
+    "message": "Chrome വെബ് സ്റ്റോറിൽ Supreme AdBlock റേറ്റ് ചെയ്യുക"
+  },
+  "reviewBlocked": {
+    "message": "ഇതുവരെ $1 അഭ്യർത്ഥനകൾ തടഞ്ഞു"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock നിങ്ങൾക്ക് ഉപകാരപ്പെടുന്നുണ്ടെങ്കിൽ, Chrome വെബ് സ്റ്റോറിലെ ഒരു ചെറിയ റിവ്യൂ മറ്റുള്ളവർക്ക് ഇത് കണ്ടെത്താൻ സഹായിക്കും."
+  },
+  "reviewLeave": {
+    "message": "റിവ്യൂ എഴുതുക"
+  },
+  "reviewLater": {
+    "message": "ഇപ്പോൾ വേണ്ട"
+  },
+  "reviewNever": {
+    "message": "വീണ്ടും ചോദിക്കരുത്"
+  },
   "filtersCount": {
     "message": "$1+ ഫിൽട്ടറുകൾ",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "“നിങ്ങളുടെ ആഡ്ബ്ലോക്കർ ഓഫാക്കുക” ഭിത്തികൾ മറച്ച് പേജ് പുനഃസ്ഥാപിക്കുന്നു"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook-ലും Instagram-ലും “സ്പോൺസർ ചെയ്തത്” പോസ്റ്റുകൾ മറയ്ക്കുന്നു"
+    "message": "Facebook-ലും Instagram-ലും Threads-ലും “സ്പോൺസർ ചെയ്തത്” പോസ്റ്റുകൾ മറയ്ക്കുന്നു"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "നിങ്ങൾ തുറക്കുന്ന ലിങ്കുകളിൽ നിന്ന് utm_*, fbclid, gclid, മറ്റ് ക്ലിക്ക് ഐഡന്റിഫയറുകൾ എന്നിവ നീക്കം ചെയ്യുന്നു"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "അറിയപ്പെടുന്ന ക്ഷുദ്രവെയർ ഡൊമെയ്‌നുകൾ തടയുന്നു (abuse.ch-ന്റെ URLhaus ലിസ്റ്റ്)"
+    "message": "അറിയപ്പെടുന്ന ക്ഷുദ്രവെയർ സൈറ്റ് തുറക്കുന്നതിന് മുമ്പ് മുന്നറിയിപ്പ് നൽകുന്നു, അത്തരം സൈറ്റുകളിൽ നിന്ന് പേജുകൾ ലോഡ് ചെയ്യുന്നവ തടയുന്നു (abuse.ch-ന്റെ URLhaus ലിസ്റ്റ്)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "എല്ലാ സൈറ്റിലും Google Topics, FLoC, Protected Audience പരസ്യ API-കൾ പ്രവർത്തനരഹിതമാക്കുന്നു"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut വഴി സംഭാവന നൽകുക"
+  },
+  "opt_review": {
+    "message": "റിവ്യൂ ഓർമ്മപ്പെടുത്തലുകൾ"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock വിൻഡോയുടെ താഴെ ഒരു ചെറിയ ★ ലിങ്ക്, പരമാവധി രണ്ടു തവണ അവിടെത്തന്നെ Chrome വെബ് സ്റ്റോറിൽ ഇത് റേറ്റ് ചെയ്യാനുള്ള ചെറിയൊരു അഭ്യർത്ഥന. വെബ്‌സൈറ്റുകളിൽ ഒരിക്കലുമില്ല, അറിയിപ്പായി ഒരിക്കലുമില്ല."
   },
   "opt_made_by": {
     "message": "Carbon Stealth നിർമ്മിച്ചത്"
@@ -599,5 +626,178 @@
   },
   "opt_notices": {
     "message": "ഫിൽട്ടർ ലിസ്റ്റുകളുടെ ലൈസൻസുകൾ"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock-ലേക്ക് സ്വാഗതം",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "നിങ്ങൾ സുരക്ഷിതരാണ്",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "നിങ്ങൾ സന്ദർശിക്കുന്ന ഓരോ സൈറ്റിലും Supreme AdBlock ഇപ്പോൾ പരസ്യങ്ങളും ട്രാക്കറുകളും തടയുന്നു. ഒന്നും സജ്ജീകരിക്കേണ്ടതില്ല.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "വിപുലീകരണം ടൂൾബാറിൽ പിൻ ചെയ്യുക",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "വിലാസ ബാറിന് അടുത്തുള്ള പസിൽ കഷണത്തിന്റെ ഐക്കണിൽ ക്ലിക്ക് ചെയ്ത് Supreme AdBlock പിൻ ചെയ്യുക. പിന്നീട് ഒരു ക്ലിക്കിൽ പേജിൽ എന്താണ് തടഞ്ഞതെന്ന് കാണാം.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "വിപുലീകരണം ടൂൾബാറിൽ പിൻ ചെയ്തു"
+  },
+  "welPinnedText": {
+    "message": "അതിന്റെ ഐക്കണിൽ ഒറ്റ ക്ലിക്കിൽ പേജിൽ എന്താണ് തടഞ്ഞതെന്ന് കാണാം."
+  },
+  "welBrokenTitle": {
+    "message": "ഒരു സൈറ്റ് ശരിയായി കാണുന്നില്ലെങ്കിൽ",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "വിപുലീകരണം തുറന്ന് ആ സൈറ്റിനുള്ള തടയൽ ഓഫാക്കുക, അല്ലെങ്കിൽ പെട്ടെന്നുള്ള പരിഹാരങ്ങൾക്കായി “സൈറ്റ് തകരാറിലാണോ?” തിരഞ്ഞെടുക്കുക.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "നിങ്ങളുടെ ബ്രൗസിംഗ് നിങ്ങളുടെ ഉപകരണത്തിൽ തന്നെ നിൽക്കുന്നു",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ഫിൽട്ടറിംഗ് പ്രാദേശികമായി നടക്കുന്നു. വിപുലീകരണം വ്യക്തിഗത ഡാറ്റയൊന്നും ശേഖരിക്കുന്നില്ല, നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകളെക്കുറിച്ച് ഒന്നും അയയ്ക്കുന്നുമില്ല.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "ക്രമീകരണം തുറക്കുക",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "മനസ്സിലായി",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "അനുവദിച്ചു · $1 മി. ബാക്കി"
+  },
+  "hiddenHere": {
+    "message": "ഇവിടെ മറച്ചവ: $1 · അവസാനത്തേത് പഴയപടിയാക്കുക"
+  },
+  "cmd_toggle_site": {
+    "message": "ഈ സൈറ്റിൽ തടയൽ ഓൺ അല്ലെങ്കിൽ ഓഫ് ചെയ്യുക"
+  },
+  "cmd_pause": {
+    "message": "പരിരക്ഷ നിർത്തിവയ്ക്കുക / തുടരുക (30 മിനിറ്റ്)"
+  },
+  "cmd_picker": {
+    "message": "ഈ പേജിലെ ഒരു എലമെന്റ് മറയ്ക്കുക"
+  },
+  "rep_fix_hour": {
+    "message": "ഇവിടെ 1 മണിക്കൂർ പരസ്യങ്ങൾ അനുവദിക്കുക"
+  },
+  "rep_done_hour": {
+    "message": "ഈ സൈറ്റിൽ 1 മണിക്കൂർ പരസ്യങ്ങൾ അനുവദിച്ചു. റീലോഡ് ചെയ്തു — ശരിയായോ?"
+  },
+  "opt_last30": {
+    "message": "കഴിഞ്ഞ 30 ദിവസം"
+  },
+  "opt_last30_sum": {
+    "message": "തടഞ്ഞവ: $1 · കുക്കി ബാനറുകൾ: $2"
+  },
+  "opt_last30_empty": {
+    "message": "നിങ്ങൾ ബ്രൗസ് ചെയ്യുമ്പോൾ ദിവസേനയുള്ള ആകെത്തുകകൾ ഇവിടെ കാണാം."
+  },
+  "opt_last30_sub": {
+    "message": "ദിവസേനയുള്ള ആകെത്തുകകൾ മാത്രം, ഈ ഉപകരണത്തിൽ 30 ദിവസം സൂക്ഷിക്കുന്നു. സൈറ്റുകളില്ല, വിലാസങ്ങളില്ല."
+  },
+  "opt_gpc_sub": {
+    "message": "നിങ്ങൾ സന്ദർശിക്കുന്ന ഓരോ സൈറ്റിനോടും നിങ്ങളുടെ ഡാറ്റ വിൽക്കുകയോ പങ്കിടുകയോ ചെയ്യരുതെന്ന് ആവശ്യപ്പെടുന്നു (Sec-GPC സിഗ്നൽ; ചില സ്വകാര്യതാ നിയമങ്ങൾ പ്രകാരം സൈറ്റുകൾ ഇത് പാലിക്കണം). നിങ്ങൾ അനുവദിക്കുന്ന സൈറ്റുകളിൽ അയയ്ക്കില്ല."
+  },
+  "opt_shortcuts": {
+    "message": "കീബോർഡ് കുറുക്കുവഴികൾ"
+  },
+  "opt_shortcuts_change": {
+    "message": "കുറുക്കുവഴികൾ മാറ്റുക"
+  },
+  "opt_shortcut_none": {
+    "message": "സജ്ജമാക്കിയിട്ടില്ല"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox-ൽ: ആഡ്-ഓണുകളും തീമുകളും → ⚙ → വിപുലീകരണ കുറുക്കുവഴികൾ നിയന്ത്രിക്കുക."
+  },
+  "opt_import_foreign": {
+    "message": "മറ്റൊരു ആഡ് ബ്ലോക്കറിൽനിന്ന് ഇമ്പോർട്ട്"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard അല്ലെങ്കിൽ Adblock Plus-ൽ നിന്ന് മാറുകയാണോ? അതിന്റെ ബാക്കപ്പ് ഫയൽ തിരഞ്ഞെടുക്കുക: നിങ്ങൾ അനുവദിച്ച സൈറ്റുകളും നിങ്ങളുടെ സ്വന്തം ഫിൽട്ടറുകളും ഇവിടെ ചേർക്കും. ഒന്നും മാറ്റിസ്ഥാപിക്കില്ല."
+  },
+  "opt_import_foreign_done": {
+    "message": "അനുവദിച്ച സൈറ്റുകൾ: $1 · ചേർത്ത ഫിൽട്ടറുകൾ: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "ഒഴിവാക്കിയവ (ഇവിടെ പ്രയോഗിക്കാനാകില്ല): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "ഈ ഫയൽ ഞങ്ങൾക്ക് വായിക്കാനാകുന്ന ബാക്കപ്പ് അല്ല."
+  },
+  "welQuickTitle": {
+    "message": "നിങ്ങൾക്ക് ഇഷ്ടമുള്ളതുപോലെ ക്രമീകരിക്കുക"
+  },
+  "welQuickSub": {
+    "message": "ഓപ്ഷണൽ: ഇത് ഇതിനകം പ്രവർത്തിക്കുന്നുണ്ട്. ഇവയിൽ ഏതും പിന്നീട് ക്രമീകരണത്തിൽ മാറ്റാം."
+  },
+  "blk_page_title": {
+    "message": "സൈറ്റ് തടഞ്ഞു — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "ഈ സൈറ്റ് നിങ്ങളുടെ ഉപകരണത്തിന് ദോഷം ചെയ്തേക്കാം"
+  },
+  "blk_text": {
+    "message": "ഈ സൈറ്റ് URLhaus-ൽ ഉള്ളതിനാൽ Supreme AdBlock ഈ പേജ് തടഞ്ഞു. ക്ഷുദ്രവെയർ പ്രചരിപ്പിക്കുന്ന വിലാസങ്ങളുടെ ഒരു പൊതു ലിസ്റ്റാണ് URLhaus."
+  },
+  "blk_back": {
+    "message": "തിരികെ പോകുക"
+  },
+  "blk_continue": {
+    "message": "എന്നാലും തുടരുക"
+  },
+  "blk_note": {
+    "message": "തുടർന്നാൽ, നിങ്ങൾ ബ്രൗസർ അടയ്ക്കുന്നതുവരെ ഈ സൈറ്റിന്റെ പേജുകൾ മാത്രം അനുവദിക്കും."
+  },
+  "blk_why": {
+    "message": "എന്തുകൊണ്ട് ലിസ്റ്റിലുണ്ട്? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "ഈ പേജിലെ കണക്ഷനുകൾ"
+  },
+  "conn_empty": {
+    "message": "ഈ പേജ് മറ്റ് സൈറ്റുകളിൽ നിന്ന് ഒന്നും ലോഡ് ചെയ്തില്ല."
+  },
+  "conn_block": {
+    "message": "ഇവിടെ തടയുക"
+  },
+  "conn_blocked": {
+    "message": "ഇവിടെ തടഞ്ഞു"
+  },
+  "conn_hint": {
+    "message": "ഈ സൈറ്റ് $1-ൽ നിന്ന് ലോഡ് ചെയ്യുന്നവ തടയുക"
+  },
+  "opt_conn_title": {
+    "message": "നിങ്ങൾ തടഞ്ഞ കണക്ഷനുകൾ"
+  },
+  "opt_conn_sub": {
+    "message": "പോപ്പ്-അപ്പിലെ “ഈ പേജിലെ കണക്ഷനുകൾ” വഴി തടഞ്ഞവ, ഓരോന്നും അതിന്റെ സ്വന്തം സൈറ്റിൽ മാത്രം."
+  },
+  "opt_empty_conn": {
+    "message": "ഇതുവരെ ഒന്നും തടഞ്ഞിട്ടില്ല."
+  },
+  "opt_conn_remove": {
+    "message": "$2-ൽ $1 തടയുന്നത് നീക്കുക"
+  },
+  "opt_h_danger": {
+    "message": "ക്ഷുദ്രവെയർ മുന്നറിയിപ്പ് പേജ്"
+  },
+  "opt_h_capacity": {
+    "message": "നിയമങ്ങളുടെ ശേഷി"
   }
 }

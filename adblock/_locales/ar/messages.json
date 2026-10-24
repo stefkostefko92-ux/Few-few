@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "يحظر الإعلانات وإعلانات YouTube واللافتات والنوافذ المنبثقة وأدوات التتبع ونوافذ ملفات تعريف الارتباط وجدران مكافحة الحظر. مجاني."
+    "message": "مانع إعلانات لـ YouTube والويب: إعلانات فيديو ولافتات ونوافذ منبثقة وأدوات تتبع ولافتات ملفات تعريف الارتباط وجدران مكافحة الحظر."
   },
   "byCarbon": {
     "message": "من Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "ادعمنا"
   },
+  "rate": {
+    "message": "قيّمنا"
+  },
+  "rateTitle": {
+    "message": "قيّم Supreme AdBlock في سوق Chrome الإلكتروني"
+  },
+  "reviewBlocked": {
+    "message": "تم حظر $1 من الطلبات حتى الآن"
+  },
+  "reviewAsk": {
+    "message": "إذا كان Supreme AdBlock مفيدًا لك، فإن مراجعة قصيرة في سوق Chrome الإلكتروني تساعد الآخرين في العثور عليه."
+  },
+  "reviewLeave": {
+    "message": "اكتب مراجعة"
+  },
+  "reviewLater": {
+    "message": "ليس الآن"
+  },
+  "reviewNever": {
+    "message": "لا تسألني مجددًا"
+  },
   "filtersCount": {
     "message": "أكثر من $1 فلتر",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "إخفاء جدران «أوقف مانع الإعلانات» واستعادة الصفحة"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "إخفاء المنشورات «المموَّلة» على Facebook و Instagram"
+    "message": "إخفاء المنشورات «المموَّلة» على Facebook و Instagram و Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "إزالة utm_* و fbclid و gclid وغيرها من معرّفات النقرات من الروابط التي تفتحها"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "حظر نطاقات البرامج الضارة المعروفة (قائمة URLhaus من abuse.ch)"
+    "message": "التحذير قبل فتح موقع معروف بنشر البرامج الضارة، وحظر ما تحمّله الصفحات من مثل هذه المواقع (قائمة URLhaus من abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "تعطيل واجهات API الإعلانية Google Topics و FLoC و Protected Audience في كل موقع"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "تبرّع عبر Revolut"
+  },
+  "opt_review": {
+    "message": "تذكيرات التقييم"
+  },
+  "opt_review_sub": {
+    "message": "رابط ★ صغير أسفل نافذة Supreme AdBlock، وطلب قصير هناك مرتين على الأكثر لتقييمه في سوق Chrome الإلكتروني. لا يظهر أبدًا على المواقع ولا كإشعار."
   },
   "opt_made_by": {
     "message": "من صنع Carbon Stealth"
@@ -599,5 +626,178 @@
   },
   "opt_notices": {
     "message": "تراخيص قوائم الفلاتر"
+  },
+  "welPageTitle": {
+    "message": "مرحبًا بك في Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "الحماية مفعّلة",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "يحظر Supreme AdBlock الآن الإعلانات وأدوات التتبع في كل موقع تزوره. لا يوجد ما تحتاج إلى إعداده.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "ثبّت الإضافة في شريط الأدوات",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "انقر على رمز قطعة الأحجية بجوار شريط العناوين وثبّت Supreme AdBlock. بعد ذلك تعرض لك نقرة واحدة ما تم حظره في الصفحة.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "الإضافة مثبّتة في شريط الأدوات"
+  },
+  "welPinnedText": {
+    "message": "نقرة واحدة على رمزها تعرض لك ما تم حظره في الصفحة."
+  },
+  "welBrokenTitle": {
+    "message": "إذا بدا موقع ما معطّلًا",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "افتح الإضافة وأوقف الحظر لذلك الموقع، أو اختر «الموقع معطّل؟» للحصول على إصلاحات سريعة.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "يبقى تصفحك على جهازك",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "تتم الفلترة محليًا. لا تجمع الإضافة أي بيانات شخصية ولا ترسل أي شيء عن الصفحات التي تزورها.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "فتح الإعدادات",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "فهمت",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "مسموح · تبقّى $1 د"
+  },
+  "hiddenHere": {
+    "message": "عناصر أخفيتها هنا: $1 · تراجع عن الأخير"
+  },
+  "cmd_toggle_site": {
+    "message": "تشغيل الحظر على هذا الموقع أو إيقافه"
+  },
+  "cmd_pause": {
+    "message": "إيقاف الحماية مؤقتًا أو استئنافها (30 دقيقة)"
+  },
+  "cmd_picker": {
+    "message": "إخفاء عنصر في هذه الصفحة"
+  },
+  "rep_fix_hour": {
+    "message": "السماح بالإعلانات هنا لمدة ساعة واحدة"
+  },
+  "rep_done_hour": {
+    "message": "الإعلانات مسموح بها على هذا الموقع لمدة ساعة واحدة. أُعيد التحميل — هل حُلّت المشكلة؟"
+  },
+  "opt_last30": {
+    "message": "آخر 30 يومًا"
+  },
+  "opt_last30_sum": {
+    "message": "المحظور: $1 · لافتات ملفات تعريف الارتباط: $2"
+  },
+  "opt_last30_empty": {
+    "message": "تظهر إجمالياتك اليومية هنا أثناء تصفحك."
+  },
+  "opt_last30_sub": {
+    "message": "إجماليات يومية فقط، تُحفظ على هذا الجهاز لمدة 30 يومًا. بلا مواقع وبلا عناوين."
+  },
+  "opt_gpc_sub": {
+    "message": "يطلب من كل موقع تزوره ألا يبيع بياناتك أو يشاركها (إشارة Sec-GPC، التي تُلزم بعض قوانين الخصوصية المواقع باحترامها). لا تُرسل على المواقع التي تسمح بها."
+  },
+  "opt_shortcuts": {
+    "message": "اختصارات لوحة المفاتيح"
+  },
+  "opt_shortcuts_change": {
+    "message": "تغيير الاختصارات"
+  },
+  "opt_shortcut_none": {
+    "message": "غير مُعيَّن"
+  },
+  "opt_shortcuts_ff": {
+    "message": "في Firefox: الإضافات والسمات → ⚙ → إدارة اختصارات الامتدادات."
+  },
+  "opt_import_foreign": {
+    "message": "الاستيراد من مانع إعلانات آخر"
+  },
+  "opt_import_foreign_sub": {
+    "message": "هل تنتقل من uBlock Origin أو AdGuard أو Adblock Plus؟ اختر ملف النسخة الاحتياطية الخاص به: تُضاف هنا المواقع التي سمحت بها وفلاترك الخاصة. لا يُستبدل أي شيء."
+  },
+  "opt_import_foreign_done": {
+    "message": "المواقع المسموح بها: $1 · الفلاتر المضافة: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "مُستبعَد (لا يمكن تطبيقه هنا): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "هذا الملف ليس نسخة احتياطية يمكننا قراءتها."
+  },
+  "welQuickTitle": {
+    "message": "اجعلها على طريقتك"
+  },
+  "welQuickSub": {
+    "message": "اختياري: الإضافة تعمل بالفعل. يمكن تغيير أيٍّ من هذه لاحقًا من الإعدادات."
+  },
+  "blk_page_title": {
+    "message": "تم حظر الموقع — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "قد يُلحق هذا الموقع الضرر بجهازك"
+  },
+  "blk_text": {
+    "message": "أوقف Supreme AdBlock هذه الصفحة لأن الموقع مُدرج في URLhaus، وهي قائمة عامة بالعناوين التي تنشر البرامج الضارة."
+  },
+  "blk_back": {
+    "message": "العودة"
+  },
+  "blk_continue": {
+    "message": "المتابعة على أي حال"
+  },
+  "blk_note": {
+    "message": "المتابعة تسمح بمرور صفحات هذا الموقع فقط، حتى تُغلق المتصفح."
+  },
+  "blk_why": {
+    "message": "لماذا هو مُدرج؟ (URLhaus)"
+  },
+  "conn_title": {
+    "message": "الاتصالات في هذه الصفحة"
+  },
+  "conn_empty": {
+    "message": "لم تُحمّل هذه الصفحة أي شيء من مواقع أخرى."
+  },
+  "conn_block": {
+    "message": "حظر هنا"
+  },
+  "conn_blocked": {
+    "message": "محظور هنا"
+  },
+  "conn_hint": {
+    "message": "حظر ما يحمّله هذا الموقع من $1"
+  },
+  "opt_conn_title": {
+    "message": "الاتصالات التي حظرتها"
+  },
+  "opt_conn_sub": {
+    "message": "حُظرت من «الاتصالات في هذه الصفحة» في نافذة الإضافة، وكلٌّ منها على موقعه فقط."
+  },
+  "opt_empty_conn": {
+    "message": "لم يُحظر شيء بعد."
+  },
+  "opt_conn_remove": {
+    "message": "إلغاء حظر $1 على $2"
+  },
+  "opt_h_danger": {
+    "message": "صفحة التحذير من البرامج الضارة"
+  },
+  "opt_h_capacity": {
+    "message": "سعة القواعد"
   }
 }

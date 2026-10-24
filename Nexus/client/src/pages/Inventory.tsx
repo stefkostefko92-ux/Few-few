@@ -4,9 +4,10 @@ import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import type { InventoryItem } from '../lib/types';
 import Sprite, { spriteForItem } from '../components/Sprite';
+import { openItemViewer3D } from '../components/items3d/viewerStore';
 import '../styles/inventory.css';
 
-const SLOT_ORDER = ['weapon', 'offhand', 'helm', 'amulet', 'armor', 'gloves', 'boots', 'ring'] as const;
+const SLOT_ORDER = ['cloak', 'weapon', 'offhand', 'helm', 'amulet', 'armor', 'gloves', 'boots', 'ring'] as const;
 
 const CATEGORY_KEYS = ['all', 'weapon', 'armor', 'helm', 'shield', 'ring', 'amulet', 'potion'] as const;
 
@@ -266,6 +267,16 @@ export default function Inventory(): React.ReactElement {
               {actions.item.name}
             </div>
             <div style={{ height: 1, background: 'var(--border-1)', margin: '2px 0' }} />
+            {actions.item.category !== 'potion' && (
+              <button
+                onClick={() => {
+                  openItemViewer3D({ kind: 'item', slug: actions.item.slug, name: actions.item.name, category: actions.item.category, sub_type: actions.item.sub_type, tier: actions.item.tier, rarity: actions.item.rarity });
+                  setActions(null);
+                }}
+              >
+                {t('inventory.actions.view3d')}
+              </button>
+            )}
             {actions.item.equipped ? (
               <button onClick={() => act('/inventory/unequip', { inventoryId: actions.item.inv_id }, t('inventory.toasts.unequipped'))}>{t('inventory.actions.unequip')}</button>
             ) : actions.item.category === 'potion' ? (
@@ -284,7 +295,8 @@ export default function Inventory(): React.ReactElement {
                 {t('inventory.actions.list')}
               </button>
             )}
-            {!actions.item.equipped && (
+            {/* Купеното с гемове не се продава на търговеца (сървърът го отказва) — без мъртъв бутон. */}
+            {!actions.item.equipped && !actions.item.gem_bought && (
               <button className="danger" onClick={() => act('/inventory/sell', { inventoryId: actions.item.inv_id }, t('inventory.toasts.soldFor', { price: actions.item.sell_price }))}>
                 {t('inventory.actions.sell', { price: actions.item.sell_price })}
               </button>
@@ -305,8 +317,9 @@ export default function Inventory(): React.ReactElement {
               </Trans>
             </p>
             <div className="field">
-              <label>{t('inventory.listDialog.priceLabel')}</label>
+              <label htmlFor="inventory-list-price">{t('inventory.listDialog.priceLabel')}</label>
               <input
+                id="inventory-list-price"
                 type="number"
                 min={1}
                 max={1_000_000}

@@ -174,8 +174,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log(`  ${mark} ${r.name.padEnd(42)} ${d("lead: " + (r.lead || "—"))}${run}`);
     }
     console.log(`\n  ${g("✓")} = има traj- spec · ${y("○")} = НЯМА ground-truth път (пътят му не може да бъде съден)`);
-    console.log(`  Реално минати вериги в дневника: ${cov.exercised}/${cov.total}` +
-      (cov.exercised === 0 ? d("  ← дневникът е празен: гейтът е зелен, защото е СЛЯП, не защото е чисто") : ""));
+    console.log(`  Минати канонични потоци (обявени от оркестратора): ${cov.exercised}/${cov.total}` +
+      (cov.exercised === 0 ? d("  ← нито един поток не е обявен по име: гейтът е зелен, защото е СЛЯП, не защото е чисто") : ""));
+    // От 2026-09-23 куката записва ВСЯКА верига по заявка на потребителя (flow „авто", id от prompt_id).
+    // Те не се съдят по spec (името на потока е решение на оркестратора), но показват реалните пътища.
+    const auto = flowsFrom(rows).filter((f) => f.flow === "авто" && f.steps.length > 1);
+    const paths = new Map();
+    for (const f of auto) { const k = f.steps.join(" → "); paths.set(k, (paths.get(k) || 0) + 1); }
+    console.log(`  Реални вериги по заявка (авто): ${auto.length}` + (auto.length ? ` · ср. дължина ${(auto.reduce((s, f) => s + f.steps.length, 0) / auto.length).toFixed(1)}` : d("  ← още няма записана верига с поне две спирки")));
+    for (const [k, n] of [...paths].sort((a, b) => b[1] - a[1]).slice(0, 5)) console.log(d(`    ${n}× ${k}`));
     console.log("");
     process.exit(0);
   }

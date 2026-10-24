@@ -26,6 +26,38 @@ rolled out, switch the server key (`/etc/caddy/adblock-signing.key`) to `next`
 and re-sign; (3) drop `current` in a later release. Never put a private key in
 the repo.
 
+Step (1) in practice — on the server, once:
+
+```bash
+sudo bash /opt/few-few/current/adblock/tools/signing_key_next.sh   # → /etc/caddy/adblock-signing.next.key (600)
+```
+
+It prints only the public key; that line goes into `SIG_PUBKEYS_B64` as the second
+element (public, safe to paste anywhere). The server keeps signing with the
+current key. Copy BOTH private key files to two offline places (not this server,
+not git, not a chat) — losing the signing key without a second one shipped means
+no filter update reaches Chrome 137+ until a new release is reviewed.
+
+Step (2), after the release with both keys has reached the users (check the
+store's version stats):
+
+```bash
+sudo sh -c 'cd /etc/caddy && mv adblock-signing.key adblock-signing.old.key && mv adblock-signing.next.key adblock-signing.key'
+sudo REF=main PROJECTS="adblock" bash /opt/few-few/current/deploy/fetch-deploy.sh   # re-signs filters.json
+```
+
+`tests/background.test.mjs` pins the key the server signs with today
+(`SERVER_KEY_NOW`): change it in the same release that drops the old key.
+
+`/sources/<sha256>.txt.gz` holds the exact text of every bundled filter list, as compiled into a
+release (THIRD_PARTY_NOTICES.txt links each one; `docs/LICENSES.md` explains why). The deploy copies
+`server/sources/` without deleting older files, so earlier releases keep their sources online.
+
+The site (`robots.txt`) is deliberately open to every crawler, search engines and
+AI answer engines alike: one `User-agent: *` group, with only `filters.json` and
+its signature and `/sources/` disallowed (data, not pages). A named group would replace that one
+for its bot, which is how the filter file once leaked into an index.
+
 ## Schema
 
 ```jsonc
@@ -38,14 +70,6 @@ the repo.
   "cosmetic": [                 // extra CSS selectors hidden on all sites
     ".sneaky-ad-slot"
   ],
-  "scriptlets": [               // live uBO-style ##+js directives — DATA only
-    { "h": "example.com",       //   host ("" = every site); subdomains match;
-      "n": "set-constant",      //   scriptlet name or uBO alias (set, aopr, aopw,
-      "a": ["adBlockOn", "false"] }, // acs, nostif, nosiif, aeld, json-prune,
-    { "h": "",                  //   no-fetch-if, nowoif, ra, rc, href-sanitizer,
-      "n": "nowoif",            //   rmnt, nowebrtc) — nothing else is accepted,
-      "a": ["/popads/"] }       //   NO trusted-*; args validated twice (service
-  ],                            //   worker + engine); never on YouTube/core CDN
   "youtube": {
     "hide":  [ "ytd-new-ad-renderer" ],   // extra YT ad UI to hide
     "skip":  [ ".ytp-new-skip-button" ],  // extra skip buttons to click

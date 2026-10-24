@@ -1,10 +1,14 @@
 O Supreme AdBlock bloqueia anúncios em todo o lado — anúncios em vídeo do YouTube, banners, pop-ups e rastreadores — sem vigiar o que faz.
 
+• Atualizações de filtros assinadas duas vezes por dia: as novas redes de publicidade são tratadas em poucas horas, sem código remoto.
 • Os anúncios do YouTube são travados na origem, por isso os vídeos são simplesmente reproduzidos.
-• EasyList, EasyPrivacy e os filtros do uBlock Origin vêm integrados, além da lista do seu idioma (31 listas regionais).
-• Avisos de cookies: carrega em «Rejeitar» por si, remove o desfoque e o bloqueio de deslocamento que ficam para trás e nunca carrega num botão de início de sessão, OAuth ou pagamento.
+• Avisos de cookies: carrega em «Rejeitar» por si quando o aviso oferece essa opção, e em «Aceitar» só quando não há outra forma de o fechar; remove o desfoque e o bloqueio de deslocamento que ficam para trás e nunca carrega num botão de início de sessão, OAuth ou pagamento.
+• Sem conta, sem telemetria, sem recolha de dados, e nenhum anúncio passa a troco de pagamento. O Global Privacy Control pede a cada site que não venda nem partilhe os seus dados.
+• EasyList, EasyPrivacy e outras listas de filtros abertas vêm integradas, além da lista do seu idioma (31 listas regionais).
+• As publicações patrocinadas no Facebook, no Instagram e no Threads são ocultadas.
 • Modo Foco: oculte balões de chat, pop-ups de newsletter, pedidos de notificação, widgets sociais, pop-ups de IA e YouTube Shorts.
 • As barreiras anti-adblock e os pop-unders são neutralizados.
+• Sites perigosos: em vez de um site de malware conhecido, abre-se uma página de aviso, e decide se quer continuar.
 • Site com problemas? Um clique resolve, ou avise-nos — nada é enviado sem que o veja primeiro.
-• Atualizações de filtros assinadas duas vezes por dia: as novas redes de publicidade são tratadas em poucas horas, sem código remoto.
-• Sem conta, sem telemetria, sem recolha de dados. Gratuito, com donativo opcional; a janela pop-up mostra um pequeno cartão, marcado como «Anúncio», da Carbon Stealth, a criadora.
+• Vem do uBlock Origin, AdGuard ou Adblock Plus? Traga os seus sites permitidos e filtros com um só ficheiro.
+• Veja a que outros sites uma página se conecta e bloqueie qualquer um deles apenas nesse site com um clique.

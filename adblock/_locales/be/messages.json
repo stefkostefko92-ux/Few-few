@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Блакуе рэкламу ўсюды: відэарэкламу на YouTube, банеры, усплывальныя вокны, трэкеры, cookie-банеры і антыадблок-сцены. Бясплатна."
+    "message": "Блакавальнік рэкламы для YouTube і вэбу: відэарэклама, банеры, усплывальныя вокны, трэкеры, банеры cookie і антыадблок-сцены."
   },
   "byCarbon": {
     "message": "ад Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Падтрымаць"
   },
+  "rate": {
+    "message": "Ацаніць"
+  },
+  "rateTitle": {
+    "message": "Ацаніце Supreme AdBlock у Інтэрнэт-краме Chrome"
+  },
+  "reviewBlocked": {
+    "message": "Ужо заблакавана запытаў: $1"
+  },
+  "reviewAsk": {
+    "message": "Калі Supreme AdBlock вам карысны, кароткі водгук у Інтэрнэт-краме Chrome дапаможа іншым яго знайсці."
+  },
+  "reviewLeave": {
+    "message": "Пакінуць водгук"
+  },
+  "reviewLater": {
+    "message": "Не зараз"
+  },
+  "reviewNever": {
+    "message": "Больш не пытаць"
+  },
   "filtersCount": {
     "message": "$1+ фільтраў",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Хавае сцены «Выключыце блакавальнік рэкламы» і аднаўляе старонку"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Хавае допісы з пазнакай «Рэклама» ў Facebook і Instagram"
+    "message": "Хавае допісы з пазнакай «Рэклама» ў Facebook, Instagram і Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Выдаляе utm_*, fbclid, gclid і іншыя ідэнтыфікатары клікаў са спасылак, якія вы адкрываеце"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Блакуе вядомыя шкодныя дамены (спіс URLhaus ад abuse.ch)"
+    "message": "Папярэджвае перад адкрыццём вядомага шкоднага сайта і блакуе тое, што старонкі загружаюць з такіх сайтаў (спіс URLhaus ад abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Выключае рэкламныя API Google Topics, FLoC і Protected Audience на ўсіх сайтах"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Ахвяраваць праз Revolut"
+  },
+  "opt_review": {
+    "message": "Нагадванні пра водгук"
+  },
+  "opt_review_sub": {
+    "message": "Маленькая спасылка ★ унізе акна Supreme AdBlock і, не больш за два разы, кароткая просьба там ацаніць яго ў Інтэрнэт-краме Chrome. Ніколі на сайтах, ніколі як апавяшчэнне."
   },
   "opt_made_by": {
     "message": "створана Carbon Stealth"
@@ -599,5 +626,178 @@
   },
   "opt_notices": {
     "message": "Ліцэнзіі спісаў фільтраў"
+  },
+  "welPageTitle": {
+    "message": "Вітаем у Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Абарона ўключана",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock ужо блакуе рэкламу і трэкеры на ўсіх сайтах, якія вы наведваеце. Нічога наладжваць не трэба.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Замацуйце пашырэнне на панэлі інструментаў",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Націсніце значок пазла побач з адрасным радком і замацуйце Supreme AdBlock. Тады адным націскам вы ўбачыце, што было заблакавана на старонцы.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "Пашырэнне замацавана на панэлі інструментаў"
+  },
+  "welPinnedText": {
+    "message": "Адным націскам на яго значок вы ўбачыце, што было заблакавана на старонцы."
+  },
+  "welBrokenTitle": {
+    "message": "Калі сайт адлюстроўваецца няправільна",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Адкрыйце пашырэнне і выключыце блакаванне для гэтага сайта або выберыце «Сайт зламаўся?» для хуткага выпраўлення.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Вашы дзеянні ў браўзеры застаюцца на вашай прыладзе",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Фільтраванне адбываецца лакальна. Пашырэнне не збірае асабістых даных і нічога не адпраўляе пра старонкі, якія вы наведваеце.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Адкрыць налады",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Зразумела",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Дазволена · яшчэ $1 хв"
+  },
+  "hiddenHere": {
+    "message": "Схавана тут элементаў: $1 · Вярнуць апошні"
+  },
+  "cmd_toggle_site": {
+    "message": "Уключыць або выключыць блакаванне на гэтым сайце"
+  },
+  "cmd_pause": {
+    "message": "Прыпыніць або аднавіць абарону (30 хвілін)"
+  },
+  "cmd_picker": {
+    "message": "Схаваць элемент на гэтай старонцы"
+  },
+  "rep_fix_hour": {
+    "message": "Дазволіць рэкламу тут на 1 гадзіну"
+  },
+  "rep_done_hour": {
+    "message": "Рэклама на гэтым сайце дазволена на 1 гадзіну. Старонка перазагружана — праблема вырашана?"
+  },
+  "opt_last30": {
+    "message": "Апошнія 30 дзён"
+  },
+  "opt_last30_sum": {
+    "message": "Заблакавана: $1 · Банеры cookie: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Тут будуць з’яўляцца вашы штодзённыя вынікі, пакуль вы праглядаеце сайты."
+  },
+  "opt_last30_sub": {
+    "message": "Толькі штодзённыя вынікі, якія захоўваюцца на гэтай прыладзе 30 дзён. Ніякіх сайтаў, ніякіх адрасоў."
+  },
+  "opt_gpc_sub": {
+    "message": "Просіць кожны сайт, які вы наведваеце, не прадаваць і не перадаваць вашы даныя (сігнал Sec-GPC; некаторыя законы аб прыватнасці патрабуюць ад сайтаў яго выконваць). Не адпраўляецца на сайтах, якія вы дазволілі."
+  },
+  "opt_shortcuts": {
+    "message": "Спалучэнні клавіш"
+  },
+  "opt_shortcuts_change": {
+    "message": "Змяніць спалучэнні клавіш"
+  },
+  "opt_shortcut_none": {
+    "message": "Не зададзена"
+  },
+  "opt_shortcuts_ff": {
+    "message": "У Firefox: Пашырэнні і тэмы → ⚙ → Кіраваць спалучэннямі клавіш пашырэнняў."
+  },
+  "opt_import_foreign": {
+    "message": "Імпарт з іншага блакавальніка рэкламы"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Пераходзіце з uBlock Origin, AdGuard або Adblock Plus? Выберыце яго файл рэзервовай копіі: дазволеныя вамі сайты і вашы ўласныя фільтры будуць дададзены сюды. Нічога не замяняецца."
+  },
+  "opt_import_foreign_done": {
+    "message": "Дазволена сайтаў: $1 · Дададзена фільтраў: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Прапушчана (тут нельга ўжыць): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Гэты файл не з’яўляецца рэзервовай копіяй, якую мы можам прачытаць."
+  },
+  "welQuickTitle": {
+    "message": "Наладзьце пад сябе"
+  },
+  "welQuickSub": {
+    "message": "Па жаданні: усё ўжо працуе. Любы з гэтых параметраў можна пазней змяніць у наладах."
+  },
+  "blk_page_title": {
+    "message": "Сайт заблакаваны — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Гэты сайт можа нашкодзіць вашай прыладзе"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock спыніў адкрыццё гэтай старонкі, бо сайт ёсць у URLhaus — агульнадаступным спісе адрасоў, праз якія распаўсюджваецца шкоднае ПЗ."
+  },
+  "blk_back": {
+    "message": "Вярнуцца назад"
+  },
+  "blk_continue": {
+    "message": "Усё роўна працягнуць"
+  },
+  "blk_note": {
+    "message": "Калі працягнуць, будуць прапускацца толькі старонкі гэтага сайта — пакуль вы не закрыеце браўзер."
+  },
+  "blk_why": {
+    "message": "Чаму ён у спісе? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Злучэнні на гэтай старонцы"
+  },
+  "conn_empty": {
+    "message": "Гэтая старонка нічога не загружала з іншых сайтаў."
+  },
+  "conn_block": {
+    "message": "Блакаваць тут"
+  },
+  "conn_blocked": {
+    "message": "Заблакавана тут"
+  },
+  "conn_hint": {
+    "message": "Блакаваць тое, што гэты сайт загружае з $1"
+  },
+  "opt_conn_title": {
+    "message": "Заблакаваныя вамі злучэнні"
+  },
+  "opt_conn_sub": {
+    "message": "Заблакаваны ў акне Supreme AdBlock праз «Злучэнні на гэтай старонцы», кожнае — толькі на сваім сайце."
+  },
+  "opt_empty_conn": {
+    "message": "Пакуль нічога не заблакавана."
+  },
+  "opt_conn_remove": {
+    "message": "Разблакаваць $1 на сайце $2"
+  },
+  "opt_h_danger": {
+    "message": "Папярэджанне пра шкоднае ПЗ"
+  },
+  "opt_h_capacity": {
+    "message": "Ліміт правілаў"
   }
 }

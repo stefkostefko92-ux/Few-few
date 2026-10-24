@@ -16,23 +16,31 @@
       <span data-i18n="byCarbon">by Carbon Stealth</span>
     </div>
     <label class="switch" data-i18n-title="toggleProtection" title="Toggle protection">
-      <input type="checkbox" id="toggle" checked />
+      <input type="checkbox" id="toggle" checked aria-label="Toggle protection" data-i18n-aria-label="toggleProtection" />
       <span class="track"><span class="thumb"></span></span>
     </label>
   </header>
 
-  <section class="hero" id="hero">
-    <span class="pulse" id="pulse"></span>
-    <div class="hero-text">
+  <main tabindex="-1">
+  <section class="hero" id="hero" data-state="protected">
+    <!-- Щитът: статичен 3D кадър (два слоя WebP, пререндерирани от tools/popup_shield3d.mjs) —
+         видим веднага; popup/shield3d.js (зарежда го popup.js СЛЕД първото рисуване) го заменя с жив
+         WebGL2 само ако е евтино. -->
+    <div class="stage" id="stage" aria-hidden="true">
+      <span class="pulse" id="pulse"></span>
+      <span class="sh sh-bg"></span>
+      <span class="sh sh-fg"></span>
+      <canvas class="sh sh-gl" id="shGl" hidden></canvas>
+    </div>
+    <div class="hero-text" aria-live="polite">
       <strong id="heroTitle" data-i18n="protected">Protected</strong>
       <span id="statusText" data-i18n="blockingHere">Blocking ads on this page</span>
     </div>
+    <button class="pause" id="pauseBtn" type="button">
+      <svg id="pauseIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
+      <span id="pauseLabel" data-i18n="pause30">Pause for 30 minutes</span>
+    </button>
   </section>
-
-  <button class="pause" id="pauseBtn" type="button">
-    <svg id="pauseIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
-    <span id="pauseLabel" data-i18n="pause30">Pause for 30 minutes</span>
-  </button>
 
   <section class="metrics">
     <div class="metric">
@@ -64,7 +72,7 @@
         <span id="siteHost" data-i18n="thisSite">this site</span>
       </div>
       <label class="switch sm" data-i18n-title="blockOnSite" title="Block ads on this site">
-        <span class="lbl" id="allowLabel" data-i18n="blocking">Blocking</span>
+        <span class="lbl" id="allowLabel" data-i18n="blocking" aria-live="polite">Blocking</span>
         <input type="checkbox" id="allowToggle" checked />
         <span class="track"><span class="thumb"></span></span>
       </label>
@@ -76,7 +84,7 @@
         <span data-i18n="cosmetics">Hide ad boxes here</span>
       </div>
       <label class="switch sm" data-i18n-title="cosmeticsTitle" title="Hide ad boxes on this site (turn it off if the page layout breaks)">
-        <span class="lbl" id="cosmLabel" data-i18n="on">On</span>
+        <span class="lbl" id="cosmLabel" data-i18n="on" aria-live="polite">On</span>
         <input type="checkbox" id="cosmToggle" checked />
         <span class="track"><span class="thumb"></span></span>
       </label>
@@ -91,12 +99,23 @@
     </summary>
     <ul id="logList"></ul>
     <p class="log-empty" id="logEmpty" data-i18n="logEmpty">Nothing blocked here yet.</p>
+    <!-- the other sites this page loaded from (content.js reads Resource Timing): block one here -->
+    <div class="conns" id="conns" hidden>
+      <h2 class="conns-h" data-i18n="conn_title">Connections on this page</h2>
+      <ul id="connList"></ul>
+      <p class="log-empty" id="connEmpty" data-i18n="conn_empty" hidden>This page loaded nothing from other sites.</p>
+    </div>
   </details>
 
   <div class="actions">
     <button id="pickBtn" type="button">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
       <span data-i18n="hideElement">Hide element</span>
+    </button>
+    <!-- what the picker hid on this site: ↶ + the count; the full sentence is its name and tooltip -->
+    <button id="undoBtn" class="undo" type="button" hidden title="Elements you hid here: 1 · Undo the last" aria-label="Elements you hid here: 1 · Undo the last">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+      <b id="undoCount">1</b>
     </button>
     <button id="settingsBtn" type="button">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13a7.8 7.8 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1l-.4-2.5h-3.8l-.4 2.5a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4L4.6 11a7.8 7.8 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 1.7 1l.4 2.5h3.8l.4-2.5a7.6 7.6 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6Z"/></svg>
@@ -109,22 +128,35 @@
     <span data-i18n="reportBroken">Site broken? Fix it or tell us</span>
   </button>
 
-  <a class="promo" href="https://carbonstealth.eu" target="_blank" rel="noopener">
-    <img src="../icons/icon32.png" alt="" width="22" height="22" />
-    <div>
-      <strong>Carbon Stealth</strong>
-      <span data-i18n="promoSub">Gear &amp; tools, carbonstealth.eu</span>
-    </div>
-    <em data-i18n="adLabel">Ad</em>
-  </a>
+  </main>
 
   <footer class="bar foot">
-    <a id="donate" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.4.8-1.2 2-2.4 4-2.4 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21Z"/></svg>
-      <span data-i18n="support">Support</span>
-    </a>
-    <span class="meta"><i id="listDot">filters</i><i class="v">v5.1.1</i></span>
+    <span class="links">
+      <a id="donate" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.4.8-1.2 2-2.4 4-2.4 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21Z"/></svg>
+        <span data-i18n="support">Support</span>
+      </a>
+      <!-- тихата ★: href идва от service worker-а (само при инсталация от Chrome Web Store); Настройки я махат -->
+      <a id="rate" class="rate" target="_blank" rel="noopener" data-i18n-title="rateTitle" title="Rate Supreme AdBlock on the Chrome Web Store" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.8-4.6 4.4 1.2 6.3L12 17l-5.7 3.1 1.2-6.3-4.6-4.4 6.3-.8Z"/></svg>
+        <span data-i18n="rate">Rate</span>
+      </a>
+    </span>
+    <span class="meta"><i id="listDot">filters</i><i class="v">v5.5.1</i></span>
   </footer>
+
+  <!-- Картата след успех: най-много два пъти, решава service worker-ът (reviewDue). Лист отдолу над
+       клавишите — popup-ът е на тавана си от 600 px, затова не го удължава; покритото става inert. -->
+  <aside class="review" id="review" aria-labelledby="reviewTitle" aria-describedby="reviewText" hidden>
+    <span class="review-star" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.8 6.3.8-4.6 4.4 1.2 6.3L12 17l-5.7 3.1 1.2-6.3-4.6-4.4 6.3-.8Z"/></svg></span>
+    <h2 id="reviewTitle">Requests blocked so far</h2>
+    <p id="reviewText" data-i18n="reviewAsk">If Supreme AdBlock is useful to you, a short review on the Chrome Web Store helps others find it.</p>
+    <div class="review-actions">
+      <a id="reviewGo" class="review-go" target="_blank" rel="noopener" data-i18n="reviewLeave">Leave a review</a>
+      <button id="reviewLater" class="review-later" type="button" data-i18n="reviewLater">Not now</button>
+    </div>
+    <button id="reviewNever" class="review-never" type="button" data-i18n="reviewNever">Don't ask again</button>
+  </aside>
 
   <script src="popup.js"></script>
 </body>

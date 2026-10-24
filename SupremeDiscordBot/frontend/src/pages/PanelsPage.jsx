@@ -1,5 +1,5 @@
 // frontend/src/pages/PanelsPage.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -271,6 +271,12 @@ export default function PanelsPage() {
     setForm((f) => ({ ...f, buttons: f.buttons.filter((_, idx) => idx !== i) }));
   };
 
+  // Стара грешка (напр. 409 за панел A) оставаше видима при следващото
+  // отваряне на модала за панел B (одит 26.09.2026).
+  useEffect(() => {
+    if (editing === null) { createMut.reset(); updateMut.reset(); }
+  }, [editing]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const isModalOpen = editing !== null;
   const isPending = createMut.isPending || updateMut.isPending;
   const mutError = createMut.error || updateMut.error;
@@ -335,13 +341,11 @@ export default function PanelsPage() {
 
               {groupMode && (
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <input
-                    className="cs-input flex-1 min-w-[180px] py-1 text-sm"
-                    placeholder={t("panels.ph.channelId")}
-                    aria-label={t("panels.group.channel")}
-                    value={groupChannel}
-                    onChange={(e) => setGroupChannel(e.target.value)}
-                  />
+                  {/* Каналът се ИЗБИРА (както навсякъде) — полето за ръчно ID
+                      сочеше към липсващ ключ „panels.ph.channelId“ (одит 26.09.2026). */}
+                  <div className="flex-1 min-w-[180px]">
+                    <DiscordChannelSelect value={groupChannel} onChange={setGroupChannel} ariaLabel={t("panels.group.channel")} />
+                  </div>
                   <select
                     className="cs-input py-1 text-sm w-52"
                     value={groupStyle}
@@ -479,7 +483,7 @@ export default function PanelsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="block">
                   <span className="cs-label">{t("ui.internalNameReq")}</span>
-                  <input className="cs-input" required value={form.name}
+                  <input className="cs-input" required maxLength={50} value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                     placeholder={t("panels.ph.supportPanel")} />
                 </label>
@@ -831,7 +835,7 @@ export default function PanelsPage() {
               )}
 
               <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setEditing(null)} className="cs-btn-ghost">Cancel</button>
+                <button type="button" onClick={() => setEditing(null)} className="cs-btn-ghost">{t("common.cancel")}</button>
                 <button type="submit" className="cs-btn-primary" disabled={isPending}>
                   {isPending ? t("common.saving") : editing === "new" ? t("common.createPanel") : t("common.saveChanges")}
                 </button>

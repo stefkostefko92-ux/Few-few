@@ -21,12 +21,15 @@ These ports avoid conflicts with Stefko's VPS: `3002` (syndicate_backend), `3100
 
 ---
 
-## Quick Deploy on VPS (178.104.77.242)
+## Quick Deploy on the server (`vps.carbonstealth.eu`)
+
+> The canonical production path is `deploy/fetch-deploy.sh` → `deploy/autodeploy.sh`
+> (see the root `CLAUDE.md`). The manual steps below are for a fresh box only.
 
 ```bash
 # 1. Upload from your local machine
-scp -r discord-saas-bot/ root@178.104.77.242:/opt/supremebot
-ssh root@178.104.77.242
+scp -r discord-saas-bot/ root@vps.carbonstealth.eu:/opt/supremebot
+ssh root@vps.carbonstealth.eu
 cd /opt/supremebot
 
 # 2. Create all .env files
@@ -199,6 +202,8 @@ https://discord.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot+applications.
 ### 3. Discord Premium Apps (the only way to buy)
 Follow `docs/DISCORD_MONETIZATION.md`: verified Team-owned app, two monthly guild SKUs,
 SKU ids in both `.env` files. Entitlements arrive over the bot's gateway — no webhook to configure.
+Ready-to-paste answers for App Verification, the Privileged Intent review (10,000+ users,
+renewed yearly) and Premium onboarding: `docs/DISCORD_VERIFICATION.md`.
 
 ### 3a. Stripe Webhook (legacy subscribers only)
 ```
@@ -281,16 +286,18 @@ docker compose exec bot     npm test
 ## Features
 
 ### Free Tier
-- Up to 3 ticket panels, 2 forms, 10 questions/form
+- 1 ticket panel, 2 forms with 5 questions each, 1 verification panel (numbers = `backend/src/lib/premium.js` BASE_LIMITS)
 - HTML transcripts (30-day retention)
 - Core slash commands
+- **Server Season game (v50):** levels/XP from activity events (never message text), `/daily` sparks with streaks, server shop, 5 level roles, 5 shop items, common/uncommon companions (1 slot), 1 weekly server quest, counting channel, weekly trivia
 
-### Premium (€4.99/server/month · 14-day free trial)
-- Unlimited panels, forms, questions
+### Premium (€4.99/server/month, sold through the Discord store — no trial)
+- 50 panels, 50 forms, 50 questions per form, 10 verification panels (PREMIUM_LIMITS)
 - HTML transcripts (forever) + real PDF export (pdfkit) + CSV export
 - AI auto-replies (Google Gemini Flash)
 - Round-robin ticket assignment
 - White-label bot (custom name, avatar, token — AES-256-GCM encrypted)
+- **Server Season:** 100 level roles, 50 shop items, unlimited companion slots + all rarities incl. seasonal, 3 active quests, daily trivia + knowledge-base questions, `/wyr` and `/tod`
 
 ---
 
@@ -305,6 +312,9 @@ docker compose exec bot     npm test
 | `/form review <id> <action>` | Approve/deny/interview an application |
 | `/setup sync` | Re-sync panels from dashboard |
 | `/premium status/custombot/export` | Premium commands |
+| `/daily`, `/profile`, `/leaderboard`, `/shop` | Server Season: daily sparks, level card, top 10, server shop |
+| `/companion list/info/feed/activate/release/trade` | Server Season: companion collection |
+| `/quest`, `/trivia`, `/spawn`, `/wyr`, `/tod` | Server Season: server quests, trivia round and manual companion spawn (Manage Server), party commands (Premium) |
 
 ---
 

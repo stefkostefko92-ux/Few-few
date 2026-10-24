@@ -52,10 +52,27 @@ docker compose up -d --build
 > file `.env`, genera un hash con `npm run hash -- "password"` e impostalo in
 > `ADMIN_PASSWORD_HASH` (lasciando vuoto `ADMIN_PASSWORD`).
 
-## 4. nginx + lingua per IP (importante)
+## 4. nginx
 
-La selezione automatica della lingua usa il **paese** del visitatore. Il modo
-consigliato su VPS è il modulo **GeoIP2** di nginx, che imposta l'header
+`nginx/scuolabulgaramilano.conf` è pronto per il server: `scuolabulgaramilano.it` →
+`www`, le vecchie pagine WordPress (`/chi-siamo/`, `/bg/za-nas/`, gli articoli,
+i PDF in `/wp-content/uploads/`…) → la sezione corrispondente con un 301, il resto
+all'app su `127.0.0.1:3110` (= `QB_PORT` in `.env`; cambia la porta se è diversa).
+
+```bash
+cp nginx/scuolabulgaramilano.conf /etc/nginx/sites-available/scuolabulgaramilano
+ln -s /etc/nginx/sites-available/scuolabulgaramilano /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+```
+
+Il dominio dell'app (canonical, hreflang, sitemap, robots, llms.txt) è solo
+`SITE_URL` in `.env`; dopo averlo cambiato: `docker compose up -d`.
+`nginx/scuolabg.carbonstealth.eu.conf` manda il vecchio indirizzo al nuovo (301).
+
+### Lingua per IP (facoltativo)
+
+Senza nulla, l'app sceglie la lingua dal browser. Per usare il **paese** del
+visitatore serve il modulo **GeoIP2** di nginx, che imposta l'header
 `X-Country` letto dall'app.
 
 ```bash
@@ -73,13 +90,8 @@ geoip2 /etc/nginx/geoip/GeoLite2-Country.mmdb {
 }
 ```
 
-Copia il server block di esempio e attivalo:
-
-```bash
-cp nginx/scuolabulgaramilano.conf /etc/nginx/sites-available/scuolabulgaramilano
-ln -s /etc/nginx/sites-available/scuolabulgaramilano /etc/nginx/sites-enabled/
-nginx -t && systemctl reload nginx
-```
+e nel `location /` di `/etc/nginx/sites-available/scuolabulgaramilano`:
+`proxy_set_header X-Country $geoip2_country_code;`
 
 > **Alternativa senza MaxMind:** metti **Cloudflare** (gratuito) davanti al
 > dominio. Cloudflare invia `CF-IPCountry`, che l'app legge automaticamente —
@@ -88,10 +100,17 @@ nginx -t && systemctl reload nginx
 
 ## 5. HTTPS
 
+Prima: nel DNS, `@` e `www` con il solo record **A** verso il server — nessun
+**AAAA** verso il vecchio hosting (Let's Encrypt prova prima l'IPv6). MX e SPF della
+posta restano come sono.
+
 ```bash
 apt install -y certbot python3-certbot-nginx
-certbot --nginx -d scuolabulgaramilano.it -d www.scuolabulgaramilano.it
+certbot certonly --nginx --dry-run -d www.scuolabulgaramilano.it -d scuolabulgaramilano.it
+certbot --nginx --redirect -d www.scuolabulgaramilano.it -d scuolabulgaramilano.it
 ```
+
+Certbot aggiunge da solo le righe 443 e il redirect http → https al file.
 
 ## 5b. Notifiche email (facoltativo)
 
@@ -110,6 +129,43 @@ LEADS_NOTIFY_TO="centroquibulgaria@gmail.com"
 
 Se le lasci vuote, le richieste restano comunque consultabili nel pannello
 admin (sezione “Запитвания”).
+
+## 5c. Pronuncia dell'alfabeto (voce femminile, gratuita) — „Произношение“
+
+Le 30 parole dell'alfabeto vengono lette dalla voce neurale femminile **Kalina**
+di Microsoft Azure (`bg-BG-KalinaNeural`). Il piano gratuito **F0** basta per
+sempre (500 000 caratteri al mese; le 30 parole sono circa 200).
+
+1. Crea una risorsa **Speech** su https://portal.azure.com (piano **F0 – Free**,
+   regione per esempio **West Europe**).
+2. Da „Keys and Endpoint“ copia **KEY 1** e la **Location/Region**.
+3. Sul server, in `.env` (permessi 600 — la chiave non va mai nel repository):
+   ```ini
+   AZURE_SPEECH_KEY="…"
+   AZURE_SPEECH_REGION="westeurope"
+   ```
+4. Riavvia e genera:
+   ```bash
+   docker compose up -d
+   docker compose exec web node scripts/tts-alphabet.mjs
+   ```
+   I file finiscono nella libreria Media e vengono collegati alle lettere in tutte
+   e tre le lingue. `--force` rigenera tutto, `--only=Й,Я` solo quelle lettere.
+   Ogni suono si può anche sostituire a mano dall'admin (Contenuti → Alfabeto).
+
+## 5d. Giornalino della scuola — portare i PDF sul server (una volta)
+
+I numeri di „Училищен вестник“ sono ancora sul vecchio sito
+(scuolabulgaramilano.it). Prima di spegnerlo o di spostare il dominio, copiali
+sul server (finiscono nel volume `qb-data`, nella libreria Media):
+
+```bash
+docker compose exec web node scripts/import-docs.mjs
+```
+
+Si può rilanciare senza rischi: i file già copiati vengono saltati. Nuovi numeri,
+statuto e modulo di adesione si caricano dall'admin (Contenuti → Документи и
+училищен вестник → „Качи PDF“, fino a 14 MB).
 
 ## 6. Accesso all'amministrazione
 

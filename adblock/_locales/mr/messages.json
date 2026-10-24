@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube व्हिडिओ जाहिराती, बॅनर, पॉप-अप, ट्रॅकर, कुकी संदेश आणि अँटी-ॲडब्लॉक भिंती सर्वत्र ब्लॉक करा. विनामूल्य, जलद आणि खाजगी."
+    "message": "जाहिरात ब्लॉकर, YouTube आणि वेबसाठी: व्हिडिओ जाहिराती, बॅनर, पॉप-अप, ट्रॅकर, कुकी बॅनर आणि अँटी-ॲडब्लॉक भिंती."
   },
   "byCarbon": {
     "message": "Carbon Stealth कडून"
@@ -118,6 +118,27 @@
   "support": {
     "message": "सहाय्य करा"
   },
+  "rate": {
+    "message": "रेटिंग द्या"
+  },
+  "rateTitle": {
+    "message": "Chrome वेब स्टोअरवर Supreme AdBlock ला रेटिंग द्या"
+  },
+  "reviewBlocked": {
+    "message": "आतापर्यंत $1 विनंत्या ब्लॉक केल्या"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock तुम्हाला उपयोगी पडत असल्यास, Chrome वेब स्टोअरवरील छोटे परीक्षण इतरांना ते शोधण्यात मदत करते."
+  },
+  "reviewLeave": {
+    "message": "परीक्षण लिहा"
+  },
+  "reviewLater": {
+    "message": "आता नको"
+  },
+  "reviewNever": {
+    "message": "पुन्हा विचारू नका"
+  },
   "filtersCount": {
     "message": "$1+ फिल्टर",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "“तुमचा ॲडब्लॉकर बंद करा” भिंती लपवा आणि पेज पूर्ववत करा"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook आणि Instagram वरील “प्रायोजित” पोस्ट लपवा"
+    "message": "Facebook, Instagram आणि Threads वरील “प्रायोजित” पोस्ट लपवा"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "तुम्ही उघडता त्या लिंकमधून utm_*, fbclid, gclid आणि इतर क्लिक ओळखकर्ते काढून टाका"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "ज्ञात मालवेअर डोमेन ब्लॉक करा (abuse.ch ची URLhaus सूची)"
+    "message": "ज्ञात मालवेअर साइट उघडण्यापूर्वी चेतावणी द्या, आणि पेज अशा साइटवरून जे लोड करतात ते ब्लॉक करा (abuse.ch ची URLhaus सूची)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "प्रत्येक साइटवर Google Topics, FLoC आणि Protected Audience जाहिरात API बंद करा"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut द्वारे देणगी द्या"
+  },
+  "opt_review": {
+    "message": "परीक्षणाची आठवण"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock विंडोच्या तळाशी छोटी ★ लिंक, आणि जास्तीत जास्त दोनदा तिथेच Chrome वेब स्टोअरवर रेटिंग देण्याची छोटी विनंती. वेबसाइटवर कधीही नाही, सूचना म्हणून कधीही नाही."
   },
   "opt_made_by": {
     "message": "Carbon Stealth ने बनवलेले"
@@ -599,5 +626,178 @@
   },
   "opt_notices": {
     "message": "फिल्टर सूचींचे परवाने"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock मध्ये आपले स्वागत आहे",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "तुम्ही सुरक्षित आहात",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock आता तुम्ही भेट देता त्या प्रत्येक साइटवर जाहिराती आणि ट्रॅकर ब्लॉक करत आहे. काहीही सेट करण्याची गरज नाही.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "एक्स्टेंशन टूलबारवर पिन करा",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ॲड्रेस बारशेजारील कोड्याच्या तुकड्याच्या आयकनवर क्लिक करा आणि Supreme AdBlock पिन करा. मग एका क्लिकमध्ये पेजवर काय ब्लॉक झाले ते दिसेल.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "एक्स्टेंशन टूलबारवर पिन केले आहे"
+  },
+  "welPinnedText": {
+    "message": "त्याच्या आयकनवर एका क्लिकमध्ये पेजवर काय ब्लॉक झाले ते दिसते."
+  },
+  "welBrokenTitle": {
+    "message": "एखादी साइट नीट दिसत नसल्यास",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "एक्स्टेंशन उघडा आणि त्या साइटसाठी ब्लॉकिंग बंद करा, किंवा झटपट उपायांसाठी “साइट नीट चालत नाही?” निवडा.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "तुमचे ब्राउझिंग तुमच्या डिव्हाइसवरच राहते",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "फिल्टरिंग स्थानिक पातळीवर होते. एक्स्टेंशन कोणताही वैयक्तिक डेटा गोळा करत नाही आणि तुम्ही भेट देता त्या पेजबद्दल काहीही पाठवत नाही.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "सेटिंग्ज उघडा",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "समजले",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "परवानगी · $1 मिनिटे शिल्लक"
+  },
+  "hiddenHere": {
+    "message": "तुम्ही येथे लपवलेले घटक: $1 · शेवटचा परत आणा"
+  },
+  "cmd_toggle_site": {
+    "message": "या साइटवर ब्लॉकिंग चालू किंवा बंद करा"
+  },
+  "cmd_pause": {
+    "message": "संरक्षण थांबवा किंवा पुन्हा सुरू करा (30 मिनिटे)"
+  },
+  "cmd_picker": {
+    "message": "या पेजवरील एखादा घटक लपवा"
+  },
+  "rep_fix_hour": {
+    "message": "येथे 1 तास जाहिरातींना परवानगी द्या"
+  },
+  "rep_done_hour": {
+    "message": "या साइटवर 1 तासासाठी जाहिरातींना परवानगी आहे. पुन्हा लोड केले — आता ठीक झाले का?"
+  },
+  "opt_last30": {
+    "message": "मागील 30 दिवस"
+  },
+  "opt_last30_sum": {
+    "message": "ब्लॉक केले: $1 · कुकी बॅनर: $2"
+  },
+  "opt_last30_empty": {
+    "message": "तुम्ही ब्राउझ करत असताना तुमच्या दैनिक एकूण संख्या येथे दिसतील."
+  },
+  "opt_last30_sub": {
+    "message": "फक्त दैनिक एकूण संख्या, याच डिव्हाइसवर 30 दिवस ठेवल्या जातात. साइट नाहीत, पत्ते नाहीत."
+  },
+  "opt_gpc_sub": {
+    "message": "तुम्ही भेट देता त्या प्रत्येक साइटला तुमचा डेटा न विकण्यास किंवा शेअर न करण्यास सांगते (Sec-GPC सिग्नल, ज्याचे पालन काही गोपनीयता कायद्यांनुसार साइटना करावे लागते). तुम्ही परवानगी दिलेल्या साइटवर ते पाठवले जात नाही."
+  },
+  "opt_shortcuts": {
+    "message": "कीबोर्ड शॉर्टकट"
+  },
+  "opt_shortcuts_change": {
+    "message": "शॉर्टकट बदला"
+  },
+  "opt_shortcut_none": {
+    "message": "सेट केलेले नाही"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox मध्ये: ॲड-ऑन्स आणि थीम्स → ⚙ → एक्स्टेंशन शॉर्टकट व्यवस्थापित करा."
+  },
+  "opt_import_foreign": {
+    "message": "दुसऱ्या ॲडब्लॉकरमधून इंपोर्ट करा"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard किंवा Adblock Plus वरून येत आहात? त्याची बॅकअप फाइल निवडा: तुम्ही परवानगी दिलेल्या साइट आणि तुमचे स्वतःचे फिल्टर येथे जोडले जातात. आधीचे काहीही बदलले जात नाही."
+  },
+  "opt_import_foreign_done": {
+    "message": "परवानगी दिलेल्या साइट: $1 · जोडलेले फिल्टर: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "वगळलेल्या ओळी (येथे लागू करता येत नाहीत): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "ही फाइल आम्ही वाचू शकू असा बॅकअप नाही."
+  },
+  "welQuickTitle": {
+    "message": "तुमच्या पद्धतीने सेट करा"
+  },
+  "welQuickSub": {
+    "message": "ऐच्छिक: ते आधीच काम करत आहे. यापैकी काहीही नंतर सेटिंग्जमध्ये बदलता येते."
+  },
+  "blk_page_title": {
+    "message": "साइट ब्लॉक केली — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "ही साइट तुमच्या डिव्हाइसला हानी पोहोचवू शकते"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock ने हे पेज थांबवले, कारण ही साइट URLhaus वर आहे — मालवेअर पसरवणाऱ्या पत्त्यांची एक सार्वजनिक सूची."
+  },
+  "blk_back": {
+    "message": "मागे जा"
+  },
+  "blk_continue": {
+    "message": "तरीही पुढे जा"
+  },
+  "blk_note": {
+    "message": "पुढे गेल्यास, ब्राउझर बंद करेपर्यंत फक्त याच साइटची पेज उघडू दिली जातील."
+  },
+  "blk_why": {
+    "message": "ती सूचीत का आहे? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "या पेजवरील कनेक्शन"
+  },
+  "conn_empty": {
+    "message": "या पेजने इतर साइटवरून काहीही लोड केले नाही."
+  },
+  "conn_block": {
+    "message": "इथे ब्लॉक करा"
+  },
+  "conn_blocked": {
+    "message": "इथे ब्लॉक केले"
+  },
+  "conn_hint": {
+    "message": "ही साइट $1 वरून जे लोड करते ते ब्लॉक करा"
+  },
+  "opt_conn_title": {
+    "message": "तुम्ही ब्लॉक केलेली कनेक्शन"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock विंडोतील “या पेजवरील कनेक्शन” मधून ब्लॉक केलेली, प्रत्येक फक्त आपल्याच साइटवर."
+  },
+  "opt_empty_conn": {
+    "message": "अद्याप काहीही ब्लॉक केलेले नाही."
+  },
+  "opt_conn_remove": {
+    "message": "$2 वर $1 अनब्लॉक करा"
+  },
+  "opt_h_danger": {
+    "message": "मालवेअर चेतावणी पेज"
+  },
+  "opt_h_capacity": {
+    "message": "नियमांची क्षमता"
   }
 }

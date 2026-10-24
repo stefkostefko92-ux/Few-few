@@ -24,6 +24,8 @@ function ytTab({ now = 10 * HOUR, storage = {}, session = {}, els = {}, reply = 
   };
   const attrs = {};
   const created = [];
+  const dispatched = [];
+  sb.CustomEvent = class { constructor(type, init) { this.type = type; this.detail = init && init.detail; } };
   sb.document = {
     documentElement: {
       setAttribute: (k, v) => { attrs[k] = v; },
@@ -39,6 +41,7 @@ function ytTab({ now = 10 * HOUR, storage = {}, session = {}, els = {}, reply = 
     getElementById: () => null,
     createElement: (tag) => ({ tag, remove() {} }),
     addEventListener() {},
+    dispatchEvent: (ev) => { dispatched.push(ev); return true; },
   };
   sb.MutationObserver = class { constructor(cb) { sb.__mo = cb; } observe() {} };
   sb.setInterval = () => 1;
@@ -57,18 +60,18 @@ function ytTab({ now = 10 * HOUR, storage = {}, session = {}, els = {}, reply = 
   const load = (file) => runInNewContext(src(file), sb, { filename: file });
   const run = () => sb.__mo && sb.__mo([]);
   const change = (c) => listeners.forEach((f) => f(c, "local"));
-  return { sb, attrs, created, messages, session, load, run, change };
+  return { sb, attrs, created, dispatched, messages, session, load, run, change };
 }
 const player = (...classes) => ({ classList: { contains: (c) => classes.includes(c) } });
 const video = () => ({ muted: false, playbackRate: 1, currentTime: 5, duration: 600 });
 const enforcement = { textContent: "Ad blockers violate YouTube's Terms of Service" };
 
-// ---------- 1) реклама без bypass: ускорение + mute, НИКАКЪВ seek към края ----------
+// ---------- 1) реклама без bypass: САМО mute — без ускорение (YouTube брои 16× като сигнал), без seek ----------
 {
   const v = video();
   const t = ytTab({ storage: { enabled: true }, els: { ".html5-video-player": player("ad-showing"), "video.html5-main-video, video": v } });
   t.load("youtube_skip.js");
-  ok("skip: ad → rate 16 + muted", v.playbackRate === 16 && v.muted === true);
+  ok("skip: ad → muted, playbackRate untouched (16× is a strike signal)", v.playbackRate === 1 && v.muted === true);
   ok("skip: currentTime is NOT moved to duration (SSAP-safe: duration covers ad+clip)", v.currentTime === 5);
   t.sb.document.querySelector = (sel) => (sel === ".html5-video-player" ? player("playing-mode") : sel.startsWith("video") ? v : null);
   t.run();
@@ -170,18 +173,17 @@ const enforcement = { textContent: "Ad blockers violate YouTube's Terms of Servi
   ok("bg refused: no reload, dialog made visible", t.sb.__reloads === 0 && t.attrs["data-tbab-yt-bypass"] === "1");
 }
 
-// ---------- 7) loader: инжектира освен при активен bg bypass / току-що reload ----------
+// ---------- 7) loader: вече НЕ инжектира <script> (youtube_main се регистрира от SW) ----------
 {
   const now = 20 * HOUR;
-  const a = ytTab({ now, storage: { enabled: true }, session: { tbab_yt_bypass_at: String(now - 7 * HOUR) } });
+  const a = ytTab({ now, storage: { enabled: true } });
   a.load("youtube_loader.js");
-  ok("loader: old reload stamp + no bg bypass → injects youtube_main", a.created.some((n) => n.tag === "script"));
-  const b = ytTab({ now, storage: { enabled: true }, session: { tbab_yt_bypass_at: String(now - 10 * 1000) } });
+  ok("loader: never injects a <script> into the page (no trace, no late start)", a.created.length === 0);
+  ok("loader: nothing to hand over → no event", a.dispatched.length === 0);
+  const b = ytTab({ now, storage: { enabled: true, liveConfig: { youtube: { adFields: ["adSurvey"] } } } });
   b.load("youtube_loader.js");
-  ok("loader: just reloaded for a bypass → no injection", !b.created.some((n) => n.tag === "script"));
-  const c = ytTab({ now, storage: { enabled: true, ytBypassUntil: now + HOUR } });
-  c.load("youtube_loader.js");
-  ok("loader: bg bypass active → no injection", !c.created.some((n) => n.tag === "script"));
+  ok("loader: live extras handed over as a JSON string on a DOM event (data, not code)",
+    b.dispatched.length === 1 && b.dispatched[0].type === "tbab-yt-cfg" && JSON.parse(b.dispatched[0].detail).adFields[0] === "adSurvey");
 }
 
 // ---------- 8) stall watchdog: спинър без напредък → стъпаловидно възстановяване ----------
@@ -260,74 +262,141 @@ function tick(t, video, seconds) {
   const now = 40 * HOUR;
   const t = ytTab({ now, storage: { enabled: true }, session: { tbab_yt_noflags: "1" } });
   t.load("youtube_loader.js");
-  const cfgTag = t.created.find((n) => n.type === "application/json");
-  ok("loader: noflags session → config tag with disableRequestFlags:true", !!cfgTag && JSON.parse(cfgTag.textContent).disableRequestFlags === true);
-  ok("loader: youtube_main still injected (pruning stays on)", t.created.some((n) => n.tag === "script" && !n.type));
+  ok("loader: noflags session → disableRequestFlags:true handed over", t.dispatched.length === 1 && JSON.parse(t.dispatched[0].detail).disableRequestFlags === true);
 }
 
-// ---------- youtube_main (MAIN world): флаг + резервен път -------------------------
-function ytPage(responses) {
-  const sb = {};
+// ---------- youtube_main (MAIN world): текст преди парсване, „родни" куки, без следи ----------
+function ytPage(responses, before = {}) {
+  const sb = { Proxy, Reflect, WeakMap, WeakSet, Object, Array, JSON, RegExp, String, Promise, Function };
   sb.window = sb;
   sb.console = { warn() {} };
+  const winListeners = {};
+  sb.addEventListener = (t, f) => { (winListeners[t] ||= []).push(f); };
   sb.document = { getElementById: () => null, addEventListener() {} };
-  const calls = [];
+  sb.__timers = [];
+  sb.setTimeout = function setTimeout(fn, ms) { sb.__timers.push(ms); return 1; };
   class Resp {
-    constructor(payload) { this.payload = payload; this.ok = true; }
-    clone() { return new Resp(this.payload); }
-    json() { return Promise.resolve(JSON.parse(JSON.stringify(this.payload))); }
-    text() { return Promise.resolve(JSON.stringify(this.payload)); }
+    constructor(body, init = {}) { this.body = typeof body === "string" ? body : JSON.stringify(body); this.status = init.status || 200; this.statusText = init.statusText || "OK"; this.headers = init.headers || {}; this.ok = this.status >= 200 && this.status < 300; this.url = ""; this.type = "basic"; this.redirected = false; }
+    clone() { const r = new Resp(this.body, this); r.ok = this.ok; r.url = this.url; return r; }
+    text() { return Promise.resolve(this.body); }
+    json() { return Promise.resolve(JSON.parse(this.body)); }
   }
   sb.Response = Resp;
-  sb.Request = class { constructor(u, i) { this.url = u; this.body = i && i.body; } clone() { return this; } text() { return Promise.resolve(this.body); } };
-  sb.fetch = function (input, init) {
+  sb.Event = class { constructor(type) { this.type = type; } };
+  const calls = [];
+  sb.fetch = function fetch(input, init) {
     const body = init && init.body ? JSON.parse(init.body) : null;
     calls.push({ url: String(input), flagged: !!body?.playbackContext?.contentPlaybackContext?.isInlinePlaybackNoAd });
     const next = responses.shift();
-    return Promise.resolve(next instanceof Resp ? next : new Resp(next));
+    const r = next instanceof Resp ? next : new Resp(next);
+    r.url = String(input);
+    return Promise.resolve(r);
   };
+  // XHR with a native-style responseText getter on the prototype
+  const sent = [];
+  class XHR {
+    open(m, u) { this._m = m; this._u = u; }
+    send(b) { sent.push(this._u); this._readyState = 4; }
+    dispatchEvent() {}
+  }
+  Object.defineProperty(XHR.prototype, "responseText", { configurable: true, get() { return this._text; } });
+  Object.defineProperty(XHR.prototype, "response", { configurable: true, get() { return this._text; } });
+  Object.defineProperty(XHR.prototype, "readyState", { configurable: true, get() { return this._readyState || 0; } });
+  sb.XMLHttpRequest = XHR;
+  class Node_ { appendChild(n) { return n; } insertBefore(n) { return n; } }
+  class Element_ extends Node_ { append() {} prepend() {} }
+  sb.Node = Node_; sb.Element = Element_;
+  Object.assign(before, { fetch: sb.fetch, open: XHR.prototype.open, send: XHR.prototype.send, setTimeout: sb.setTimeout,
+    appendChild: Node_.prototype.appendChild, responseText: Object.getOwnPropertyDescriptor(XHR.prototype, "responseText").get });
   runInNewContext(src("youtube_main.js"), sb, { filename: "youtube_main.js" });
-  const call = () => sb.fetch("https://www.youtube.com/youtubei/v1/player?prettyPrint=false", { method: "POST", body: JSON.stringify({ videoId: "x", context: {} }) });
-  return { sb, calls, call };
+  const call = (url = "https://www.youtube.com/youtubei/v1/player?prettyPrint=false") => sb.fetch(url, { method: "POST", body: JSON.stringify({ videoId: "x", context: {} }) });
+  const config = (cfg) => (winListeners["tbab-yt-cfg"] || []).forEach((f) => f({ detail: JSON.stringify(cfg) }));
+  return { sb, calls, call, config, sent, XHR, Resp };
 }
-const OK = { playabilityStatus: { status: "OK" }, streamingData: {}, adPlacements: [{ a: 1 }] };
+const OK = { playabilityStatus: { status: "OK" }, streamingData: {}, adPlacements: [{ a: 1 }], adSlots: [{ s: 1 }], playerAds: [{ p: 1 }] };
 const BAD = { playabilityStatus: { status: "UNPLAYABLE", reason: "Video unavailable" } };
+const isNative = (f) => Function.prototype.toString.call(f).includes("[native code]");
 
 {
-  const p = ytPage([OK, OK]);
+  const p = ytPage([OK]);
   const res = await p.call();
-  ok("main: flagged request, playable → single call, flag present", p.calls.length === 1 && p.calls[0].flagged === true);
-  const j = await res.json();
-  ok("main: ad fields pruned on the returned response", Array.isArray(j.adPlacements) && j.adPlacements.length === 0);
+  const text = await res.text();
+  const j = JSON.parse(text);
+  ok("main: player response rewritten as TEXT before parsing — no adPlacements/adSlots/playerAds, \"no_ads\" instead",
+    !/"adPlacements"|"adSlots"|"playerAds"/.test(text) && "no_ads" in j && j.playabilityStatus.status === "OK" && "streamingData" in j);
+  ok("main: no request flag by default (isInlinePlaybackNoAd on a watch page is a server-side signal)", p.calls.length === 1 && p.calls[0].flagged === false);
+  ok("main: rewritten response keeps url/status (it still looks like the network's)", res.url.includes("/youtubei/v1/player") && res.status === 200);
 }
 {
+  // the harness's "natives" are plain functions; a hook must stringify EXACTLY like what it wraps
+  const before = {};
+  const p = ytPage([], before);
+  const same = (now, orig) => Function.prototype.toString.call(now) === Function.prototype.toString.call(orig) && now !== orig;
+  ok("main: every hook stringifies exactly like the function it wraps (name included) — fetch, XHR open/send/responseText, setTimeout, appendChild",
+    same(p.sb.fetch, before.fetch) && same(p.XHR.prototype.open, before.open) && same(p.XHR.prototype.send, before.send) &&
+    same(p.sb.setTimeout, before.setTimeout) && same(p.sb.Node.prototype.appendChild, before.appendChild) &&
+    same(Object.getOwnPropertyDescriptor(p.XHR.prototype, "responseText").get, before.responseText));
+  ok("main: no global JSON.parse / Response.json / Object.assign patch any more", p.sb.JSON.parse === JSON.parse && !("__patched" in p.sb.Response.prototype));
+}
+{
+  const feed = { contents: { richGridRenderer: { contents: [{ richItemRenderer: { content: { adSlotRenderer: { x: 1 } } } }, { richItemRenderer: { content: { videoRenderer: { videoId: "v" } } } }] } } };
+  const p = ytPage([feed, { contents: { a: 1 } }]);
+  const j = JSON.parse(await (await p.call("https://www.youtube.com/youtubei/v1/browse?prettyPrint=false")).text());
+  ok("main: feed ad renderers removed from the browse response, the real video stays", j.contents.richGridRenderer.contents.length === 1 && !!j.contents.richGridRenderer.contents[0].richItemRenderer.content.videoRenderer);
+  const r2 = await p.call("https://www.youtube.com/youtubei/v1/browse");
+  ok("main: a feed without ads is passed through untouched (no re-serialising)", r2.body === JSON.stringify({ contents: { a: 1 } }));
+}
+{
+  const p = ytPage([]);
+  const x = new p.sb.XMLHttpRequest();
+  const atr = "https://www.youtube.com/api/stats/atr?ns=yt&el=detailpage&cpn=x&ver=2&rt=1.5&cl=1&volume=100&cbr=Chrome&fexp=v1%" + "2C".repeat(160) + "&a=1&muted=0&docid=abc";
+  x.open("POST", atr);
+  x.send("{}");
+  ok("main: the ATR ad-state ping is answered locally and never sent", p.sent.length === 0 && x.status === 200 && x.readyState === 4);
+  const y = new p.sb.XMLHttpRequest();
+  y.open("POST", "https://www.youtube.com/api/stats/watchtime?docid=abc");
+  y.send("");
+  ok("main: other stats pings go out untouched", p.sent.length === 1);
+}
+{
+  const p = ytPage([]);
+  const x = new p.sb.XMLHttpRequest();
+  x.open("GET", "https://www.youtube.com/watch?v=abc&pbj=1");
+  x.send();
+  x._text = JSON.stringify([{ playerResponse: OK }]);
+  ok("main: XHR watch response → \"no_ads\" in responseText (SPA navigation path)", !/"adPlacements"/.test(x.responseText) && /"no_ads"/.test(x.responseText));
+}
+{
+  const p = ytPage([]);
+  const bound = function () {}.bind(null); // bound functions stringify as [native code]
+  p.sb.setTimeout(bound, 17000);
+  p.sb.setTimeout(() => 1, 17000);
+  p.sb.setTimeout(bound, 5000);
+  ok("main: the 17 s fake-buffering timer (bound native fn) runs in 17 ms; other timers untouched", p.sb.__timers.join() === "17,17000,5000");
+}
+{
+  const p = ytPage([]);
+  const pristineFetch = function fetch() {};
+  const iframeWin = { fetch: pristineFetch, setTimeout: function setTimeout() {}, Response: p.Resp, Event: p.sb.Event, XMLHttpRequest: class {}, Node: class {}, Element: class {}, addEventListener() {} };
+  const iframe = { nodeType: 1, tagName: "IFRAME", contentWindow: iframeWin };
+  new p.sb.Node().appendChild(iframe);
+  ok("main: a fresh iframe's pristine fetch is hooked too (YouTube's hook bypass) and still stringifies like its native",
+    iframeWin.fetch !== pristineFetch && Function.prototype.toString.call(iframeWin.fetch) === Function.prototype.toString.call(pristineFetch));
+}
+{
+  // live channel can still turn a request flag on — with the old plain-retry safety net
   const p = ytPage([BAD, OK, OK]);
+  p.config({ requestFlags: ["playbackContext.contentPlaybackContext.isInlinePlaybackNoAd"] });
   const res = await p.call();
-  ok("main: flagged UNPLAYABLE → one plain retry (no flag)", p.calls.length === 2 && p.calls[0].flagged && !p.calls[1].flagged);
-  const j = await res.json();
-  ok("main: playable plain response handed to the player", j.playabilityStatus.status === "OK");
+  ok("main: opt-in flag, flagged UNPLAYABLE → one plain retry, playable answer handed over", p.calls.length === 2 && p.calls[0].flagged && !p.calls[1].flagged && JSON.parse(await res.text()).playabilityStatus.status === "OK");
   await p.call();
-  ok("main: flag proven broken → next request goes plain, no retry", p.calls.length === 3 && !p.calls[2].flagged);
+  ok("main: flag proven broken → next request goes plain", p.calls.length === 3 && !p.calls[2].flagged);
 }
 {
-  const p = ytPage([BAD, BAD, OK]);
-  const res = await p.call();
-  const j = await res.json();
-  ok("main: unavailable either way → original response, flags kept", p.calls.length === 2 && j.playabilityStatus.status === "UNPLAYABLE");
+  const p = ytPage([OK]);
+  p.config({ requestFlags: ["playbackContext.contentPlaybackContext.isInlinePlaybackNoAd"], disableRequestFlags: true });
   await p.call();
-  ok("main: flags still sent afterwards", p.calls[2].flagged === true);
-}
-{
-  // флагнатото тяло е отхвърлено направо с 4xx → една plain заявка; тя е OK → флагът пада
-  const q = [];
-  const p = ytPage(q);
-  const rejected = new p.sb.Response({ error: "bad request" });
-  rejected.ok = false;
-  q.push(rejected, OK, OK);
-  const res = await p.call();
-  ok("main: flagged body rejected (4xx) → plain retry returned, flag dropped", p.calls.length === 2 && !p.calls[1].flagged && res.ok === true);
-  await p.call();
-  ok("main: afterwards plain only", p.calls.length === 3 && !p.calls[2].flagged);
+  ok("main: kill switch (or stall stage 1) → no flag", p.calls.length === 1 && !p.calls[0].flagged);
 }
 
 done();

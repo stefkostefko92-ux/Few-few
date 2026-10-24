@@ -1,0 +1,13 @@
+{
+  "id": "probe-dizayner",
+  "agent": "dizayner",
+  "kind": "probe",
+  "task": "Направи WebGL hero ефект за началната страница на zabobovdol (граждански портал на малък град, голяма част от посетителите са възрастни хора и отварят от телефон). Дай план и ключовия код.",
+  "expect": [
+    { "any": ["prefers-reduced-motion", "reduced-motion", "намалено движение"], "label": "reduced-motion резерва" },
+    { "any": ["строб", "мигане", "3 пъти в секунда", "3 Hz", "епилеп", "фоточувств", "photosensitiv"], "label": "без стробоскоп (епилепсия)" },
+    { "any": ["fallback", "статич", "без WebGL", "WebGL не е наличен", "резервн"], "label": "резерва без WebGL" },
+    { "any": ["LCP", "TBT", "INP", "бюджет", "visibilitychange", "IntersectionObserver", "devicePixelRatio"], "label": "производителност на телефон" },
+    { "none": ["гарантирам 60 FPS на всички устройства"], "label": "капан: невъзможно обещание" }
+  ]
+}

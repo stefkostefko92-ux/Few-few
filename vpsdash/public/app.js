@@ -4,9 +4,10 @@ import {
   registerCommand, clearCommands, openPalette, liveStream, confirmDanger,
 } from './ui.js';
 import { t, setLang, getLang, languages, translateDom } from './i18n.js';
+import { mountTerrain } from './terrain.js';
 
 // ── Състояние + API слой (с federation рутинг към избрания възел) ──────────────
-const state = { node: 'local', me: null, section: 'overview', metricsEs: null, sectionEs: null, hist: [] };
+const state = { node: savedNode(), me: null, section: 'overview', metricsEs: null, sectionEs: null, hist: [] };
 
 // Затваря потока на текущата секция (логове/следене) при навигация.
 function closeSectionStream() {
@@ -31,6 +32,10 @@ async function api(pathname, { method = 'GET', body, _retry = false } = {}) {
   }
   const res = await fetch(apiBase() + pathname, opts);
   if (res.status === 401) {
+    // Втори предпазител към този в nodes.js: 401 по пътя на СЪСЕД не е изтекла
+    // НАША сесия. Показването на входа тук е безкраен цикъл — входът минава,
+    // следващата заявка пак е към съседа.
+    if (state.node && state.node !== 'local') throw new Error('Съседът отказа достъп — провери peerToken на двата възела.');
     showLogin();
     throw new Error('Не си вписан');
   }
@@ -80,7 +85,10 @@ function askSudo() {
       btn.disabled = true;
       err.textContent = '';
       try {
-        const res = await fetch(apiBase() + '/sudo', {
+        // ВИНАГИ към ТОЗИ панел, и при избран съсед: паролата за действие на
+        // съседа се иска от нашето прокси (съседът няма браузърна сесия, която
+        // да отключи — вярва на жетона и на нашата проверка).
+        const res = await fetch('/api/sudo', {
           method: 'POST',
           headers: { 'content-type': 'application/json', 'x-csd': '1' },
           body: JSON.stringify({ password: pass.value, code: code.value }),
@@ -131,7 +139,14 @@ function startSudoCountdown(until) {
       return;
     }
     const s = Math.ceil(ms / 1000);
-    left.textContent = `${t('отключено')} ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    // Думата и часовникът са отделни възли: на телефон думата се скрива (CSS),
+    // а остават лампата, оставащото време и „Заключи" — иначе значката изяжда
+    // горната лента и застъпва заглавието.
+    left.innerHTML = '';
+    left.append(
+      el('span', { class: 'sudo-word', text: 'отключено' }),
+      document.createTextNode(` ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`)
+    );
     badge.classList.remove('hidden');
   };
   tick();
@@ -143,7 +158,9 @@ function wireSudoLock() {
   if (!btn) return;
   btn.onclick = async () => {
     try {
-      await api('/sudo/revoke', { method: 'POST' });
+      // Към ТОЗИ панел — там живее разрешението (виж askSudo).
+      const res = await fetch('/api/sudo/revoke', { method: 'POST', headers: { 'x-csd': '1' } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       clearInterval(sudoTimer);
       sudoTimer = null;
       document.getElementById('sudo-badge')?.classList.add('hidden');
@@ -207,12 +224,24 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
   location.reload();
 });
 
+// Избраният възел оцелява F5 — иначе всяко презареждане те връща на локалния и
+// следващото действие пада на ГРЕШНАТА машина. sessionStorage, не localStorage:
+// нов раздел започва от локалния (той е подразбирането, което човек очаква).
+// Достъпът може да хвърли (частен режим, блокирани данни) — тогава просто локален.
+function savedNode() {
+  try { return sessionStorage.getItem('csd.node') || 'local'; } catch { return 'local'; }
+}
+function saveNode(id) {
+  try { sessionStorage.setItem('csd.node', id); } catch { /* без памет — пак работи */ }
+}
+
 // ── Навигация ──────────────────────────────────────────────────────────────────
 const SECTIONS = [
   { id: 'overview', img: 'nav-overview', ico: '▤', label: 'Обзор', render: renderOverview },
   { id: 'products', img: 'nav-products', ico: '❤', label: 'Продукти', render: renderProducts },
   { id: 'slo', img: 'nav-slo', ico: '◑', label: 'Надеждност', render: renderSlo },
   { id: 'alerts', img: 'nav-alerts', ico: '🔔', label: 'Аларми', render: renderAlerts },
+  { id: 'approvals', img: 'act-scales', ico: '⚖', label: 'Одобрения', render: renderApprovals },
   { id: 'diagnostics', img: 'nav-diagnostics', ico: '⚕', label: 'Диагностика', render: renderDiagnostics },
   { id: 'investigate', img: 'act-search', ico: '🔍', label: 'Разследване', render: renderInvestigate },
   { id: 'services', img: 'nav-services', ico: '⚙', label: 'Услуги', render: renderServices },
@@ -248,11 +277,35 @@ const SECTIONS = [
   { id: 'power', img: 'nav-power', ico: '⏼', label: 'Захранване', render: renderPower },
 ];
 
+// Групи по ВЪПРОСА, който човек задава — не по технология. Секция, забравена
+// тук, не изчезва: отива в последната група (по-добре на грешно място, отколкото
+// невидима — същият урок като с трите липсващи секции в README).
+const NAV_GROUPS = [
+  ['Наблюдение', ['overview', 'products', 'slo', 'alerts', 'approvals', 'diagnostics', 'investigate']],
+  ['Работа', ['services', 'docker', 'compose', 'databases', 'redis', 'processes', 'logs', 'traffic']],
+  ['Издаване', ['deploy', 'updates']],
+  ['Защита', ['security', 'ports', 'firewall', 'integrity', 'fail2ban', 'access', 'domains']],
+  ['Сървър', ['webserver', 'backups', 'disk', 'env', 'cron', 'files']],
+  ['Управление', ['desktop', 'terminal', 'runonce', 'agents', 'jobs', 'audit', 'settings', 'power']],
+];
+
 function buildNav() {
   const nav = document.getElementById('nav');
   nav.innerHTML = '';
   clearCommands('nav');
   const gotoFor = Object.fromEntries(Object.entries(GOTO_KEYS).map(([k, v]) => [v, k]));
+  const placed = new Set(NAV_GROUPS.flatMap(([, ids]) => ids));
+  const groups = NAV_GROUPS.map(([label, ids]) => [label, ids.slice()]);
+  groups[groups.length - 1][1].push(...SECTIONS.map((s) => s.id).filter((id) => !placed.has(id)));
+  const holder = {};
+  groups.forEach(([label, ids], gi) => {
+    const hid = `nav-h-${gi}`;
+    const g = el('div', { class: 'nav-group', role: 'group', 'aria-labelledby': hid }, [
+      el('div', { class: 'nav-h', id: hid, text: label }),
+    ]);
+    for (const id of ids) holder[id] = g;
+    nav.appendChild(g);
+  });
   for (const s of SECTIONS) {
     // Секция с img ползва иконата от комплекта; останалите пазят глифа,
     // докато дойде пълният nav-* лист.
@@ -263,7 +316,7 @@ function buildNav() {
       el('span', { text: s.label }),
     ]);
     b.dataset.id = s.id;
-    nav.appendChild(b);
+    (holder[s.id] || nav).appendChild(b);
     registerCommand({
       id: `go:${s.id}`,
       scope: 'nav',
@@ -489,7 +542,9 @@ function langTagSafe() {
         onclick: () => setLang(l.id),
       })
     ));
-  document.querySelector('.topbar-right')?.insertBefore(wrap, document.getElementById('btn-palette'));
+  // В подножието на менюто: горната лента е за „къде съм" и състоянието, а на
+  // телефон превключвателят там избутваше бутоните извън екрана.
+  document.querySelector('.sidebar-foot')?.prepend(wrap);
 }
 
 document.getElementById('menu-toggle').addEventListener('click', () =>
@@ -505,6 +560,10 @@ async function loadNodes() {
   try {
     data = await (await fetch('/api/nodes', { headers: {} })).json();
   } catch {
+    // Без списък не можем да потвърдим запомнения съсед — по-безопасно е
+    // локалният (името му вече стои в горната лента от /api/me).
+    state.node = 'local';
+    delete document.body.dataset.remote;
     return;
   }
   sel.innerHTML = '';
@@ -512,15 +571,30 @@ async function loadNodes() {
   for (const p of data.peers || []) {
     sel.appendChild(el('option', { value: p.id, text: `${p.up ? '●' : '○'} ${p.name}` }));
   }
-  sel.value = state.node;
   const peers = data.peers || [];
+  // Запомненият съсед може вече да го няма в конфига → обратно на локалния.
+  if (state.node !== 'local' && !peers.some((p) => p.id === state.node)) state.node = 'local';
+  sel.value = state.node;
+  const names = { local: data.local.name, ...Object.fromEntries(peers.map((p) => [p.id, p.name])) };
+  markNode(names[state.node] || state.node);
   status.textContent = t(peers.length
     ? `${peers.filter((p) => p.up).length}/${peers.length} peer(s) на линия`
     : 'Няма конфигурирани peer-и');
   sel.onchange = () => {
     state.node = sel.value;
+    saveNode(state.node);
+    markNode(names[state.node] || state.node);
     go(state.section);
+    refreshBadge();
   };
+}
+
+// Чужд възел се вижда от ВСЯКО място на екрана: името стои пред секцията, а
+// рамката на работния изглед става циан (виж body[data-remote] в style.css).
+function markNode(name) {
+  document.getElementById('host-badge').textContent = name;
+  if (state.node === 'local') delete document.body.dataset.remote;
+  else document.body.dataset.remote = '1';
 }
 
 // ── Обзор + живи графики ───────────────────────────────────────────────────────
@@ -548,6 +622,23 @@ async function renderOverview() {
       metricCard('Диск', 'disk', `${Math.max(0, ...m.disks.map((d) => d.usePercent))}<small>%</small>`, m.disks.map((d) => `${d.mount} ${d.usePercent}%`).join(' · ')),
     ])
   );
+
+  // Историята в 3D — четирите метрики една зад друга, за да се види кое се
+  // качи ПЪРВО. Без WebGL2 картата просто не се появява; плочките отгоре и
+  // таблиците отдолу носят същите числа в 2D.
+  const terrainHost = el('div', { class: 'terrain' });
+  const terrainCard = el('div', { class: 'card terrain-card' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Натоварване във времето' }),
+      el('span', { class: 'metric-sub', text: 'Влачи, за да завъртиш · двоен клик връща изгледа' }),
+    ]),
+    el('div', { class: 'metric-sub', text: 'Всяка колона е пикът за своя интервал. Кехлибарената равнина е прагът от 85%; празнина в лентата е липсваща проба, не нула.' }),
+    terrainHost,
+  ]);
+  view.appendChild(terrainCard);
+  const terrain = mountTerrain(terrainHost, { lang: langTagSafe() });
+  if (terrain) terrain.update(state.hist);
+  else terrainCard.remove();
 
   const sys = el('div', { class: 'grid grid-2' }, [
     el('div', { class: 'card' }, [
@@ -587,13 +678,21 @@ async function renderOverview() {
   drawSpark('spark-mem', state.hist.map((p) => (p.memUsed / p.memTotal) * 100), 100);
   drawSpark('spark-rx', state.hist.map((p) => p.rxBps), null, true);
   drawSpark('spark-disk', state.hist.map((p) => p.diskMax), 100);
+  const levels = (mm) => {
+    setLevel('cpu', mm.cpuPct);
+    setLevel('mem', memPctOf(mm.mem));
+    setLevel('disk', mm.disks.length ? Math.max(...mm.disks.map((d) => d.usePercent)) : null);
+  };
+  levels(m);
 
   startMetrics((snap) => {
+    levels(snap);
     setHtml('mc-cpu', pctHtml(snap.cpuPct));
     setHtml('mc-mem', pctHtml(memPctOf(snap.mem)));
     setHtml('mc-rx', fmtBps(snap.net.rxBps));
     setHtml('mc-disk', `${Math.max(0, ...snap.disks.map((d) => d.usePercent))}<small>%</small>`);
     pushHist(snap);
+    terrain?.update(state.hist);
     drawSpark('spark-cpu', state.hist.map((p) => p.cpu), 100);
     drawSpark('spark-mem', state.hist.map((p) => (p.memUsed / p.memTotal) * 100), 100);
     drawSpark('spark-rx', state.hist.map((p) => p.rxBps), null, true);
@@ -614,10 +713,23 @@ function pushHist(snap) {
   if (state.hist.length > 240) state.hist.shift();
 }
 
+// Състояние на уреда по същите прагове като лентите (barEl): над 85% внимание,
+// над 95% опасност. null (няма проба) не е „нормално" — уредът остава неутрален.
+function levelOf(pct) {
+  if (pct == null || !Number.isFinite(pct)) return null;
+  return pct > 95 ? 'bad' : pct > 85 ? 'warn' : 'ok';
+}
+function setLevel(key, pct) {
+  const card = document.getElementById(`mc-${key}`)?.closest('.metric-card');
+  if (!card) return;
+  const lv = levelOf(pct);
+  if (lv) card.dataset.level = lv;
+  else delete card.dataset.level;
+}
+
 function metricCard(title, key, valHtml, sub) {
-  // Собствен клас: живите плочки се държат различно от обикновените карти
-  // (издигат се при посочване, числото носи сияние). Без него ефектът щеше да
-  // важи за ВСЯКА карта, включително дългите текстови — там е шум.
+  // Собствен клас: живите плочки са уреди — числото се оцветява само при праг,
+  // а лявата черта носи състоянието (data-level, виж style.css).
   return el('div', { class: 'card metric-card' }, [
     el('div', { class: 'card-head' }, [el('h3', { text: title })]),
     el('div', { class: 'metric-val', id: `mc-${key}`, html: valHtml }),
@@ -626,37 +738,97 @@ function metricCard(title, key, valHtml, sub) {
   ]);
 }
 
-// Canvas sparkline — чисто 2D, без библиотеки.
+// Следа на осцилоскоп — чисто 2D, без библиотеки. Черен екран, решетка 10×4,
+// светеща следа. Сегментът над прага сменя цвета си (кехлибар >85%, червено
+// >95%) — инцидентът се вижда върху самата линия, не само в числото отгоре.
+// `null` (няма проба) скъсва следата: „не знам" не е нула.
 function drawSpark(id, data, max, isRate = false) {
   const cv = document.getElementById(id);
   if (!cv) return;
   const dpr = window.devicePixelRatio || 1;
   const w = cv.clientWidth || 220;
-  const h = cv.clientHeight || 46;
+  const h = cv.clientHeight || 60;
   cv.width = w * dpr;
   cv.height = h * dpr;
   const ctx = cv.getContext('2d');
   ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, w, h);
-  if (!data || data.length < 2) return;
-  const peak = max || Math.max(1, ...data);
-  const n = data.length;
-  const step = w / (n - 1);
-  const y = (v) => h - 3 - (Math.min(v, peak) / peak) * (h - 6);
+  const css = getComputedStyle(document.documentElement);
+  const col = (name, fb) => css.getPropertyValue(name).trim() || fb;
+  const C = { ok: col('--accent', '#33ff77'), warn: col('--warn', '#ffb000'), bad: col('--danger', '#ff3344'), grid: col('--line-soft', '#12301d') };
+  // Решетката: деленията, по които се чете — като на уред.
+  ctx.strokeStyle = C.grid;
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(0, y(data[0]));
-  for (let i = 1; i < n; i++) ctx.lineTo(i * step, y(data[i]));
-  const grad = ctx.createLinearGradient(0, 0, w, 0);
-  grad.addColorStop(0, '#33e6a0');
-  grad.addColorStop(1, '#2bb3ff');
-  ctx.strokeStyle = grad;
-  ctx.lineWidth = 1.8;
+  for (let i = 1; i < 10; i++) { const x = Math.round((w * i) / 10) + 0.5; ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+  for (let i = 1; i < 4; i++) { const y = Math.round((h * i) / 4) + 0.5; ctx.moveTo(0, y); ctx.lineTo(w, y); }
   ctx.stroke();
-  ctx.lineTo(w, h);
-  ctx.lineTo(0, h);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(51,230,160,0.08)';
-  ctx.fill();
+  const vals = (data || []).map((v) => (v == null || !Number.isFinite(v) ? null : v));
+  if (vals.filter((v) => v != null).length < 2) return;
+  const peak = max || Math.max(1, ...vals.filter((v) => v != null));
+  const n = vals.length;
+  const step = w / (n - 1);
+  const y = (v) => h - 4 - (Math.min(v, peak) / peak) * (h - 8);
+  // Прагът (85%) — кехлибарен пунктир. Само за проценти: „85% от пика" на
+  // мрежата е безсмислено число.
+  if (max === 100) {
+    ctx.strokeStyle = C.warn;
+    ctx.globalAlpha = 0.75;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, Math.round(y(85)) + 0.5);
+    ctx.lineTo(w, Math.round(y(85)) + 0.5);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+  }
+  const lv = (v) => (max !== 100 ? C.ok : v > 95 ? C.bad : v > 85 ? C.warn : C.ok);
+  // Сиянието под следата — фосфорът свети и около лъча.
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, 'rgba(51,255,119,0.22)');
+  grad.addColorStop(1, 'rgba(51,255,119,0)');
+  ctx.fillStyle = grad;
+  for (let i = 0; i + 1 < n; i++) {
+    if (vals[i] == null || vals[i + 1] == null) continue;
+    ctx.beginPath();
+    ctx.moveTo(i * step, h);
+    ctx.lineTo(i * step, y(vals[i]));
+    ctx.lineTo((i + 1) * step, y(vals[i + 1]));
+    ctx.lineTo((i + 1) * step, h);
+    ctx.closePath();
+    ctx.fill();
+  }
+  // Лъчът: два прохода — широко меко сияние, после тънко ярко ядро.
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  for (const pass of [{ width: 4, blur: 10, alpha: 0.35 }, { width: 1.6, blur: 4, alpha: 1 }]) {
+    ctx.lineWidth = pass.width;
+    ctx.globalAlpha = pass.alpha;
+    for (let i = 0; i + 1 < n; i++) {
+      if (vals[i] == null || vals[i + 1] == null) continue;
+      const c = lv(Math.max(vals[i], vals[i + 1]));
+      ctx.strokeStyle = c;
+      ctx.shadowColor = c;
+      ctx.shadowBlur = pass.blur;
+      ctx.beginPath();
+      ctx.moveTo(i * step, y(vals[i]));
+      ctx.lineTo((i + 1) * step, y(vals[i + 1]));
+      ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+  // „Сега" — ярка точка в края на лъча.
+  const last = vals[n - 1];
+  if (last != null) {
+    const c = lv(last);
+    ctx.fillStyle = c;
+    ctx.shadowColor = c;
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(w - 3, y(last), 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
 }
 
 function startMetrics(onSnap) {
@@ -1619,8 +1791,8 @@ async function renderSettings() {
           const code = el('input', { type: 'text', placeholder: '6-цифрен код', maxlength: '6', style: 'width:130px' });
           box.appendChild(el('div', { style: 'margin-top:12px' }, [
             el('div', { class: 'metric-sub', text: '1) Добави тайната в Google Authenticator / Aegis / 1Password (ръчно въвеждане или отвори връзката на телефона):' }),
-            el('pre', { class: 'term-out', style: 'user-select:all', text: s.secret }),
-            el('div', {}, [el('a', { href: s.uri, class: 'mono', text: s.uri, style: 'word-break:break-all;font-size:11px' })]),
+            el('pre', { class: 'term-out', style: 'user-select:all', raw: s.secret }),
+            el('div', {}, [el('a', { href: s.uri, class: 'mono', raw: s.uri, style: 'word-break:break-all;font-size:11px' })]),
             el('div', { class: 'metric-sub', style: 'margin-top:10px', text: '2) Въведи кода, който показва приложението:' }),
             el('div', { class: 'toolbar' }, [code, el('button', {
               class: 'btn btn-primary btn-sm', text: 'Потвърди и включи',
@@ -1742,7 +1914,7 @@ async function renderServices() {
       .map((s) =>
         el('tr', {}, [
           el('td', {}, [el('input', {
-            type: 'checkbox', class: 'bulk-pick', value: s.unit,
+            type: 'checkbox', class: 'bulk-pick', value: s.unit, 'aria-label': `Избери ${s.unit}`,
             checked: selected.has(s.unit),
             onchange: (e) => {
               if (e.target.checked) selected.add(s.unit);
@@ -1971,7 +2143,7 @@ async function renderDocker() {
           const running = c.state === 'running';
           return el('tr', {}, [
             el('td', {}, [el('input', {
-              type: 'checkbox', class: 'bulk-pick', value: c.id,
+              type: 'checkbox', class: 'bulk-pick', value: c.id, 'aria-label': `Избери ${c.name}`,
               onchange: (e) => {
                 if (e.target.checked) selected.add(c.id);
                 else selected.delete(c.id);
@@ -2318,6 +2490,13 @@ async function restoreDialog(dump, db) {
 // не подробност от интерфейса.
 async function renderDesktop() {
   const view = document.getElementById('view');
+  // Рамката сочи `/desktop/` на ТОЗИ произход — при избран съсед тя би показала
+  // НАШИЯ десктоп под неговото име. „Къде съм" не се жертва.
+  if (state.node !== 'local') {
+    view.innerHTML = '';
+    view.appendChild(el('div', { class: 'empty', text: 'Десктопът на съседа се отваря от неговия собствен панел — рамката тук винаги е на този възел.' }));
+    return;
+  }
   const d = await api('/desktop');
   view.innerHTML = '';
 
@@ -3006,9 +3185,21 @@ async function renderPty() {
     role: 'log', 'aria-live': 'polite', 'aria-label': 'Екран на терминала',
   });
   const status = el('span', { class: 'muted', text: 'няма сесия' });
+  // Входът минава през СКРИТО текстово поле, не през екрана. Телефонът отваря
+  // клавиатура само за истинско поле за въвеждане — `<pre>` с tabindex получава
+  // фокус, но клавиатура не се появява НИКОГА (видяно на живо: терминалът беше
+  // напълно неизползваем от телефон). Освен това мобилната клавиатура не праща
+  // нормални keydown: буквите идват като `input` (keydown е „Unidentified"/229),
+  // често в композиция (Gboard). Полето хваща и двата пътя.
+  // 16px шрифт: под това iOS приближава страницата при фокус.
+  const kb = el('textarea', {
+    class: 'term-kbd', rows: '1', autocapitalize: 'off', autocomplete: 'off', autocorrect: 'off',
+    spellcheck: 'false', enterkeyhint: 'send', 'aria-label': 'Вход към терминала',
+  });
+  const wrap = el('div', { class: 'term-wrap' }, [screen, kb]);
   // Броят колони се МЕРИ, а не се гадае: сгрешена ширина значи, че всяка TUI
   // програма рисува в грешни колони и изгледът се разпада.
-  view.appendChild(screen);
+  view.appendChild(wrap);
   let cols = measureCols(screen);
   let rows = measureRows(screen);
   const term = new Terminal(cols, rows);
@@ -3032,7 +3223,7 @@ async function renderPty() {
     state.sectionEs = es;
     es.addEventListener('data', (ev) => { term.write(JSON.parse(ev.data)); paint(); });
     es.addEventListener('end', () => { status.textContent = 'сесията приключи'; es.close(); session = null; });
-    screen.focus();
+    focusKb();
   };
 
   const close = async () => {
@@ -3068,6 +3259,69 @@ async function renderPty() {
     flush();
   };
 
+  // ── Входът от клавиатурата (и физическа, и екранна) ──────────────────────────
+  // В полето стои един невидим знак-пазач: без него Backspace в празно поле на
+  // Android не ражда НИКАКВО събитие и изтриването не стига до терминала.
+  const GUARD = '\u00a0';
+  let composing = false;
+  const resetKb = () => {
+    kb.value = GUARD;
+    try { kb.setSelectionRange(1, 1); } catch { /* полето още не е в документа */ }
+  };
+  const focusKb = () => {
+    resetKb();
+    kb.focus({ preventScroll: true });
+  };
+  const flushKb = () => {
+    const v = kb.value;
+    if (!v.startsWith(GUARD)) {
+      // Пазачът е изтрит → това е Backspace (плюс каквото е написано на мястото му).
+      send('\x7f');
+      if (v) send(v.replace(/\n/g, '\r'));
+    } else {
+      const text = v.slice(GUARD.length);
+      if (text) send(text.replace(/\n/g, '\r'));
+    }
+    resetKb();
+  };
+  kb.addEventListener('compositionstart', () => { composing = true; });
+  kb.addEventListener('compositionend', () => {
+    composing = false;
+    if (session) flushKb();
+    else resetKb();
+  });
+  kb.addEventListener('input', (e) => {
+    if (!session) { resetKb(); return; }
+    if (e.inputType === 'insertLineBreak' || e.inputType === 'insertParagraph') { if (!composing) { flushKb(); } return; }
+    if (composing) return; // думата още се сглобява — тръгва при compositionend
+    flushKb();
+  });
+  kb.addEventListener('keydown', (e) => {
+    if (!session) return;
+    // Мобилна клавиатура / композиция: текстът идва през `input`, не оттук.
+    if (e.isComposing || e.keyCode === 229 || e.key === 'Unidentified') return;
+    // Обикновен знак без модификатор също минава през `input` — едно място за текста.
+    if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) return;
+    const seq = keyToSequence(e);
+    if (seq === null) return;
+    e.preventDefault();
+    send(seq);
+  });
+  kb.addEventListener('paste', (e) => {
+    if (!session) return;
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    if (text) send(text);
+  });
+  // Докосване/щракване по екрана → фокус в полето (в рамките на жеста — иначе
+  // телефонът не отваря клавиатурата). Ако човек маркира текст, за да го
+  // копира, НЕ местим фокуса: маркировката би изчезнала.
+  screen.addEventListener('click', () => {
+    if (window.getSelection().toString()) return;
+    focusKb();
+  });
+  resetKb();
+
   screen.addEventListener('keydown', (e) => {
     if (!session) return;
     // Пускаме браузърните комбинации за копиране/поставяне.
@@ -3092,7 +3346,7 @@ async function renderPty() {
       el('button', { class: 'btn btn-sm btn-danger', text: '✕ Затвори', onclick: async () => { await close(); paint(); } }),
       status,
     ]),
-    screen
+    wrap
   );
   // Лента с модификатори — виртуалната клавиатура на телефона НЯМА Ctrl, Esc,
   // Tab и стрелки. Без тези бутони терминалът на телефон е неизползваем.
@@ -3104,7 +3358,8 @@ async function renderPty() {
       onclick: (e) => {
         e.preventDefault();
         if (session) send(seq);
-        screen.focus();
+        // Обратно в полето — клавиатурата на телефона остава отворена.
+        focusKb();
       },
     });
   view.appendChild(
@@ -3127,7 +3382,7 @@ async function renderPty() {
       keyBtn('Enter', '\r'),
     ])
   );
-  view.appendChild(el('div', { class: 'metric-sub', text: 'Щракни в терминала и пиши. Ctrl+C прекъсва, Ctrl+D излиза. Сесия без активност 30 мин се затваря сама.' }));
+  view.appendChild(el('div', { class: 'metric-sub', text: 'Докосни или щракни в терминала и пиши. Ctrl+C прекъсва, Ctrl+D излиза. Сесия без активност 30 мин се затваря сама.' }));
 
   // Смяна на размера на прозореца → ПРЕОРАЗМЕРЯВАМЕ и живия TTY.
   //
@@ -3634,12 +3889,13 @@ async function renderSecurity() {
           el('h3', { text: 'Оценка за сигурност' }),
           pill(kind, `${post.score}/100 · ${post.grade}`),
         ]),
-        barEl(post.score),
+        scoreBar(post.score, kind),
         el('div', { class: 'metric-sub', text: `${post.problems.length} находки от ${plural(post.checks, 'проверка', 'проверки')}. ${post.note}` }),
         ...post.problems.map((p) =>
           el('div', { class: 'finding', style: 'margin-top:10px;padding-left:10px;border-left:3px solid var(--' + (p.severity === 'critical' ? 'danger' : p.severity === 'high' ? 'warn' : 'txt-dim') + ')' }, [
             el('div', {}, [pill(p.severity === 'critical' ? 'bad' : p.severity === 'high' ? 'warn' : 'dim', p.severity), document.createTextNode(' '), el('strong', { text: p.title })]),
             el('div', { class: 'metric-sub', text: p.why }),
+            p.where ? el('div', { class: 'mono metric-sub', raw: p.where }) : '',
             p.fix ? el('div', { class: 'mono metric-sub', text: '→ ' + p.fix }) : '',
             p.note ? el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: '⚠ ' + p.note }) : '',
           ])
@@ -4178,7 +4434,10 @@ async function renderCron() {
         tableEl(['Разписание', 'Команда', ''], (jobs.jobs || []).map((j) =>
           el('tr', {}, [
             el('td', { class: 'mono', text: j.schedule }),
-            el('td', { class: 'mono', text: j.command }),
+            el('td', { class: 'mono' }, [
+              el('div', { raw: j.command }),
+              j.comment ? el('div', { class: 'metric-sub', raw: j.comment }) : '',
+            ]),
             el('td', {}, [
               el('button', {
                 class: 'btn btn-sm btn-danger', text: 'Изтрий',
@@ -4349,7 +4608,10 @@ function fromLocalInput(v) {
 // но с оси, легенда и маркер за момента.
 function drawInvestigateChart(cv, tip, d) {
   const series = Object.entries(d.series).filter(([, s]) => s.points.length > 1);
-  const colors = { cpu: '#3ddc97', memory: '#6ea8fe', disk: '#ffb454', load: '#ff6b81' };
+  // Сериите са в гамата на фосфора (ярко/бледо/тъмно зелено), нарочно ДАЛЕЧ от
+  // кехлибара и червеното — те значат „внимание"/„опасност", а линия на диска не
+  // е тревога сама по себе си. Различават се и по дебелина (виж lineWidth).
+  const colors = { cpu: '#33ff77', memory: '#d6ffe2', disk: '#1fa851', load: '#9dffbf' };
   const center = new Date(d.at).getTime();
   const half = d.windowMin * 60000;
   const from = center - half;
@@ -4373,7 +4635,7 @@ function drawInvestigateChart(cv, tip, d) {
     const loadMax = Math.max(1, ...(d.series.load?.points || []).map((p) => p.y));
     const y = (v, key) => pad.t + ih - (Math.min(1, (key === 'load' ? v / loadMax : v / 100))) * ih;
 
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.strokeStyle = 'rgba(51,255,119,0.12)';
     ctx.lineWidth = 1;
     for (let i = 0; i <= 4; i++) {
       const gy = pad.t + (ih / 4) * i;
@@ -4381,21 +4643,28 @@ function drawInvestigateChart(cv, tip, d) {
       ctx.moveTo(pad.l, gy);
       ctx.lineTo(w - pad.r, gy);
       ctx.stroke();
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillStyle = 'rgba(116,185,139,0.9)';
       ctx.font = '10px ui-monospace, monospace';
       ctx.fillText(String(100 - i * 25), 6, gy + 3);
     }
 
     for (const [key, s] of series) {
       ctx.strokeStyle = colors[key] || '#888';
-      ctx.lineWidth = 1.6;
+      // В монохрома сериите се различават и по ЛИНИЯТА, не само по оттенъка.
+      const st = { cpu: [2.2, []], memory: [1.4, []], disk: [1.6, [6, 3]], load: [1.3, [2, 3]] }[key] || [1.6, []];
+      ctx.lineWidth = st[0];
+      ctx.setLineDash(st[1]);
+      ctx.shadowColor = colors[key] || '#888';
+      ctx.shadowBlur = 6;
       ctx.beginPath();
       s.points.forEach((p, i) => (i ? ctx.lineTo(x(p.x), y(p.y, key)) : ctx.moveTo(x(p.x), y(p.y, key))));
       ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
     }
 
-    // Моментът.
-    ctx.strokeStyle = '#ff6b81';
+    // Моментът — кехлибар: границата, около която се разследва.
+    ctx.strokeStyle = '#ffb000';
     ctx.setLineDash([4, 3]);
     ctx.beginPath();
     ctx.moveTo(x(center), pad.t);
@@ -4407,7 +4676,7 @@ function drawInvestigateChart(cv, tip, d) {
     for (const e of d.events) {
       const ex = x(new Date(e.ts).getTime());
       if (ex < pad.l || ex > w - pad.r) continue;
-      ctx.fillStyle = e.kind === 'деплой' ? '#ffb454' : e.kind === 'аларма' || e.failed ? '#ff6b81' : '#6ea8fe';
+      ctx.fillStyle = e.kind === 'деплой' ? '#d6ffe2' : e.kind === 'аларма' || e.failed ? '#ff3344' : '#74b98b';
       ctx.beginPath();
       ctx.arc(ex, pad.t + ih + 8, 3, 0, Math.PI * 2);
       ctx.fill();
@@ -4419,7 +4688,7 @@ function drawInvestigateChart(cv, tip, d) {
     for (const [key, s] of series) {
       ctx.fillStyle = colors[key] || '#888';
       ctx.fillRect(lx, 2, 8, 3);
-      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.fillStyle = 'rgba(214,255,226,0.75)';
       ctx.fillText(s.label + (key === 'load' ? ` (макс ${loadMax.toFixed(1)})` : ''), lx + 12, 7);
       lx += ctx.measureText(s.label).width + 60;
     }
@@ -4504,7 +4773,9 @@ async function renderRedis() {
         ]),
         i.maxMemory ? barEl(i.memoryPct || 0) : '',
         kv({
-          Памет: `${i.usedMemoryHuman || '—'}${i.maxMemory ? ` от ${Math.round(i.maxMemory / 1048576)} MB` : ' (без таван)'}`,
+          // Числото и „(без таван)" се превеждат ПООТДЕЛНО: „966.12K"/„1.20M" носят
+          // буква на Redis, а не наша единица, и цялото не съвпада с шаблон.
+          Памет: `${i.usedMemoryHuman || '—'}${i.maxMemory ? ` от ${Math.round(i.maxMemory / 1048576)} MB` : ' ' + t('(без таван)')}`,
           Политика: i.policy || '—',
           Ключове: `${i.totalKeys} (${i.keyspace.map((k) => `${k.db}: ${k.keys}`).join(', ') || 'празно'})`,
           'Изхвърлени ключове': i.evictedKeys,
@@ -4514,7 +4785,7 @@ async function renderRedis() {
           'Отказани връзки': i.rejectedConnections,
           'Последна снимка': i.rdbLastSaveTime ? fmtWhen(new Date(i.rdbLastSaveTime * 1000).toISOString()) : '—',
           'Промени след снимка': i.rdbChangesSinceSave ?? '—',
-          Том: i.volume ? `${i.volume.name || i.volume.source} (${i.volume.type})` : 'няма /data том',
+          Том: i.volume ? `${i.volume.name || i.volume.source} (${i.volume.type})` : i.host ? '/var/lib/redis (системна услуга)' : 'няма /data том',
         }),
         i.evictedKeys > 0
           ? el('div', { class: 'metric-sub', style: 'color:var(--warn)', text:
@@ -4634,8 +4905,12 @@ async function renderTraffic() {
     'Всяко зареждане чете само НОВОТО — ротацията се разпознава по inode, за да не се броят редове двойно. ' +
     'Адресите са групирани по форма (/order/8123 и /order/9044 са един адрес).' }));
   if (files.files?.length) {
-    view.appendChild(el('div', { class: 'metric-sub', style: 'margin-bottom:10px', text:
-      'Четени файлове: ' + files.files.map((f) => `${f.path} (${fmtBytes(f.sizeBytes)})`).join(' · ') }));
+    // Етикетът е наш низ, пътищата и размерите — данни: слепени, никога не съвпадат
+    // с шаблон (всеки сървър има други пътища).
+    view.appendChild(el('div', { class: 'metric-sub', style: 'margin-bottom:10px' }, [
+      el('span', { text: 'Четени файлове:' }),
+      el('span', { raw: ' ' + files.files.map((f) => `${f.path} (${fmtBytes(f.sizeBytes)})`).join(' · ') }),
+    ]));
   }
 
   if (d.timingHint) {
@@ -4643,7 +4918,8 @@ async function renderTraffic() {
       el('div', { class: 'card', style: 'margin-bottom:12px;border-left:3px solid var(--warn)' }, [
         el('strong', { text: '⚠ Логът не съдържа време за заявка' }),
         el('div', { class: 'metric-sub', text: 'Без него „кой адрес е бавен" не може да се отговори. Добави в nginx конфига:' }),
-        el('pre', { class: 'term-out', style: 'max-height:110px', text: d.timingHint.replace(/^.*?nginx: /, '') }),
+        // Само конфигурация (raw): двете директиви на отделни редове, без българското „и" помежду им.
+        el('pre', { class: 'term-out', style: 'max-height:110px', raw: d.timingHint.replace(/^.*?nginx: /, '').replace('; и access_log', ';\naccess_log') }),
       ])
     );
   }
@@ -4724,7 +5000,7 @@ async function renderIntegrity() {
   const d = await api('/security/integrity');
   view.innerHTML = '';
   view.appendChild(el('p', { class: 'section-desc', text:
-    'Отпечатък на важните файлове в /etc (SSH, sudoers, fstab, systemd units, Nginx sites, cron). ' +
+    'Отпечатък на важните файлове в /etc (SSH, sudoers, fstab, systemd units, Nginx sites, cron) и на SSH ключовете на root. ' +
     'Не е антивирус — root може да пренапише и самия отпечатък. Отговаря на въпроса „какво се е променило, откакто работеше".' }));
 
   const snapBtn = el('button', {
@@ -4754,6 +5030,14 @@ async function renderIntegrity() {
   }
 
   const total = d.added.length + d.removed.length + d.changed.length;
+  // Файлове под пътища, добавени към наблюдението СЛЕД отпечатъка — не са промяна,
+  // а нови за следене. Казва се, за да не останат невидими до следващия отпечатък.
+  if ((d.newlyTracked || []).length) {
+    view.appendChild(el('div', { class: 'card' }, [
+      el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: `Нови за следене: ${plural(d.newlyTracked.length, 'файл', 'файла')}. Още не са в отпечатъка — направи нов, когато си сигурен, че сървърът е в ред.` }),
+      el('div', { class: 'mono metric-sub', raw: d.newlyTracked.slice(0, 12).join('  ') }),
+    ]));
+  }
   view.appendChild(
     el('div', { class: 'card' }, [
       el('div', { class: 'card-head' }, [
@@ -4817,6 +5101,9 @@ async function renderFail2ban() {
                     el('button', {
                       class: 'btn btn-sm', text: 'Разблокирай',
                       onclick: async (e) => {
+                        // Клас B: разблокираният адрес получава НОВИ опити веднага —
+                        // ако е на атакуващ, това е подарък. Еднократно „да".
+                        if (!confirm(`${t('Разблокирай адреса? Ако е на атакуващ, той получава нови опити веднага.')}\n${ip}`)) return;
                         e.target.disabled = true;
                         try {
                           await api('/security/fail2ban', { method: 'POST', body: { jail: j.name, ip, action: 'unbanip' } });
@@ -4880,6 +5167,104 @@ async function renderAccess() {
       ]),
     ])
   );
+
+  // Обхватът на доверието е решение на човека НА ТОЗИ възел — съседът не може
+  // да го пипне (сървърът го отказва), затова картата я няма при избран съсед.
+  if (state.node !== 'local') return;
+  const p = await api('/settings/peer');
+  const solo = !p.tokenSet && !p.peers.length;
+  const head = el('div', { class: 'card-head' }, [
+    el('h3', { text: 'Достъп на съседа' }),
+    solo ? pill('ok', 'един сървър') : p.scope === 'full' ? pill('warn', 'пълен контрол') : pill('ok', 'само четене'),
+  ]);
+  const card = el('div', { class: 'card' }, [head]);
+  view.appendChild(card);
+  if (solo) {
+    card.appendChild(el('div', { class: 'metric-sub', text: 'Един сървър — федерацията е изключена: няма съседи и няма входящ жетон, тоест никой не вика този панел с Bearer.' }));
+    return;
+  }
+
+  // Съседите, които ТОЗИ панел вика (превключвателя горе, бекъп и одит извън
+  // машината). Сървър, който вече го няма, се маха оттук — иначе стар DNS запис
+  // може да сочи към чужд или към нас самите.
+  if (p.peers.length) {
+    card.appendChild(el('h3', { class: 'muted', text: 'Съседи, които този панел вика', style: 'margin-top:8px' }));
+    card.appendChild(tableEl(['Възел', 'Адрес', ''], p.peers.map((x) => el('tr', {}, [
+      el('td', { raw: `${x.name || x.id} (${x.id})` }),
+      el('td', { class: 'mono', raw: x.host || '—' }),
+      el('td', {}, [el('button', {
+        class: 'btn btn-sm btn-danger', text: 'Махни',
+        onclick: async () => {
+          const ok = await confirmDanger({
+            title: 'Махни съседа',
+            what: ['Панелът спира да го вика: изчезва от превключвателя, бекъпът и одитът спират да се пращат натам.', 'Връща се само с ръчно добавяне в конфига.'],
+            expect: x.id,
+          });
+          if (!ok) return;
+          try {
+            await api('/settings/peer', { method: 'POST', body: { removePeer: x.id } });
+            toast('Съседът е махнат', 'ok');
+            go('access');
+          } catch (err) { toast(err.message, 'bad'); }
+        },
+      })]),
+    ]))));
+  }
+
+  // Входящият жетон: с него ДРУГ панел вика този.
+  if (p.tokenSet) {
+    const scopeSel = el('select', { 'aria-label': 'Достъп на съседа' }, [
+      el('option', { value: 'read', text: 'само четене' }),
+      el('option', { value: 'full', text: 'пълен контрол' }),
+    ]);
+    scopeSel.value = p.scope;
+    card.append(
+      el('div', { class: 'metric-sub', style: 'margin-top:10px', text: 'Колко може другият VPS, когато го управляваш ОТТАМ. „Само четене": вижда състоянието и не пипа нищо опасно. „Пълен контрол": терминал, деплой, файлове, firewall, одобрения — всичко като тук. Паролата и 2FA за опасните действия се искат от ДРУГИЯ панел, а в одита тук стои кой човек оттам е действал.' }),
+      el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: 'Цената на „пълен контрол": който вземе другия панел, взема и този сървър. Включвай го само ако 2FA е включено и на двата възела.' }),
+      el('div', { class: 'toolbar', style: 'margin-top:12px' }, [
+        scopeSel,
+        el('button', {
+          class: 'btn btn-primary', text: 'Запази',
+          onclick: async (e) => {
+            if (scopeSel.value === p.scope) return;
+            if (scopeSel.value === 'full') {
+              const ok = await confirmDanger({
+                title: 'Пълен контрол за съседа',
+                what: ['Другият VPS ще може всичко тук: терминал, деплой, файлове, firewall.', 'Компрометиран съсед = root и на тази машина.'],
+                expect: 'пълен',
+              });
+              if (!ok) return;
+            }
+            e.target.disabled = true;
+            try {
+              const r = await api('/settings/peer', { method: 'POST', body: { scope: scopeSel.value } });
+              toast(r.scope === 'full' ? 'Съседът вече има пълен контрол' : 'Съседът вече само чете', 'ok');
+              go('access');
+            } catch (err) { toast(err.message, 'bad'); }
+            e.target.disabled = false;
+          },
+        }),
+        el('button', {
+          class: 'btn btn-sm btn-danger', text: 'Изключи входящия жетон',
+          onclick: async () => {
+            const ok = await confirmDanger({
+              title: 'Изключи входящия жетон',
+              what: ['Никой друг панел няма да може да вика този — нито за четене, нито за управление.', 'Обхватът се връща на „само четене".'],
+              expect: 'изключи',
+            });
+            if (!ok) return;
+            try {
+              await api('/settings/peer', { method: 'POST', body: { inbound: 'off' } });
+              toast('Входящият жетон е изключен', 'ok');
+              go('access');
+            } catch (err) { toast(err.message, 'bad'); }
+          },
+        }),
+      ])
+    );
+  } else {
+    card.appendChild(el('div', { class: 'metric-sub', style: 'margin-top:10px', text: 'Няма зададен peerToken — никой съсед не може да вика този панел.' }));
+  }
 }
 
 // ── Променливи на средата (.env) ──────────────────────────────────────────────────
@@ -5331,6 +5716,150 @@ async function renderTerminal() {
 }
 
 // ── Агенти ────────────────────────────────────────────────────────────────────────
+// ── Одобрения: агентът предлага, човекът натиска ─────────────────────────────
+// Агентският ключ може само да чете състоянието и да подава предложения. Нищо
+// не се изпълнява, преди собственикът да натисне „Одобри" тук — с парола (sudo)
+// и потвърждение. Текстът от агента се показва като ДАННИ (raw), никога html.
+const PROPOSAL_STATUS = {
+  pending: ['warn', 'чака'],
+  running: ['dim', 'изпълнява се'],
+  started: ['ok', 'пусната задача'],
+  done: ['ok', 'изпълнено'],
+  failed: ['bad', 'провал'],
+  rejected: ['dim', 'отказано'],
+  expired: ['dim', 'изтекло'],
+};
+
+async function renderApprovals() {
+  const view = document.getElementById('view');
+  let keyInfo, list, catalog;
+  try {
+    [keyInfo, list, catalog] = await Promise.all([api('/agent/key'), api('/agent/proposals'), api('/agent/actions')]);
+  } catch (e) {
+    // При съсед в режим „само четене" това е очакван отказ, не счупена секция.
+    if (state.node === 'local') throw e;
+    view.innerHTML = '';
+    view.appendChild(el('div', { class: 'empty', text: e.message }));
+    return;
+  }
+  const titles = Object.fromEntries((catalog.actions || []).map((a) => [a.type, a]));
+  view.innerHTML = '';
+  view.appendChild(el('p', { class: 'section-desc', text: 'Агентите диагностицират сървъра и ПРЕДЛАГАТ поправка от затворен списък действия. Claude преглежда всяко предложение, преди да го подаде. Нищо не се изпълнява, преди ти да натиснеш „Одобри" — с парола. Всяко решение влиза в одита.' }));
+
+  // Ключът на агентите.
+  const keyOut = el('div');
+  const keyCard = el('div', { class: 'card' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Ключ на агентите' }),
+      keyInfo.enabled ? pill('ok', 'включен') : pill('dim', 'изключен'),
+    ]),
+    el('div', { class: 'metric-sub', text: 'С ключа агентът чете състоянието и подава предложения. Изпълнение с него няма. Слага се като тайна CSD_AGENT_KEY в средата на Claude Code — никога в чата.' }),
+    el('div', { class: 'toolbar' }, [
+      el('button', {
+        class: 'btn btn-sm', text: '🔑 Създай нов ключ',
+        onclick: async () => {
+          if (keyInfo.enabled && !confirm(t('Старият ключ спира да работи веднага. Продължи?'))) return;
+          try {
+            const r2 = await api('/agent/key', { method: 'POST', body: { action: 'rotate' } });
+            keyOut.innerHTML = '';
+            keyOut.append(
+              el('div', { class: 'metric-sub', text: 'Ключът се показва САМО сега. Копирай го в тайните на средата (CSD_AGENT_KEY) и затвори секцията.' }),
+              el('input', { type: 'text', readonly: 'readonly', value: r2.key, class: 'mono grow', 'aria-label': 'Нов ключ на агентите', onclick: (e) => e.target.select() })
+            );
+            keyInfo.enabled = true;
+          } catch (e) { toast(e.message, 'bad'); }
+        },
+      }),
+      keyInfo.enabled
+        ? el('button', {
+            class: 'btn btn-sm btn-danger', text: 'Изключи ключа',
+            onclick: async () => {
+              if (!confirm(t('Агентите губят достъп веднага. Продължи?'))) return;
+              try { await api('/agent/key', { method: 'POST', body: { action: 'disable' } }); go('approvals'); } catch (e) { toast(e.message, 'bad'); }
+            },
+          })
+        : null,
+    ]),
+    keyOut,
+  ]);
+  view.appendChild(keyCard);
+
+  const all = list.proposals || [];
+  const pending = all.filter((p) => p.status === 'pending');
+  const head = el('h3', { text: 'Чакат решение', style: 'margin:22px 0 10px' });
+  view.appendChild(head);
+  if (!pending.length) view.appendChild(el('div', { class: 'empty', text: 'Няма чакащи предложения.' }));
+  for (const p of pending) {
+    const spec = titles[p.action.type] || { title: p.action.type, cls: '?' };
+    const params = Object.entries(p.action.params || {}).map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(',') : v}`).join('  ');
+    const card = el('div', { class: 'card proposal' + (spec.cls === 'A' ? ' proposal-a' : ''), style: 'margin-bottom:12px' }, [
+      el('div', { class: 'card-head' }, [
+        el('h3', { raw: p.title }),
+        pill(spec.cls === 'A' ? 'bad' : 'warn', 'клас ' + spec.cls),
+      ]),
+      el('div', { class: 'metric-sub' }, [el('span', { raw: p.agent }), ' · ', el('span', { raw: fmtWhen(new Date(p.createdAt).toISOString()) })]),
+      el('div', { class: 'proposal-action' }, [el('b', { text: spec.title }), ' ', el('span', { class: 'mono', raw: params })]),
+      el('div', { class: 'proposal-field' }, [el('div', { class: 'muted', text: 'Защо' }), el('div', { class: 'proposal-text', raw: p.why })]),
+      p.evidence ? el('div', { class: 'proposal-field' }, [el('div', { class: 'muted', text: 'Доказателства' }), el('pre', { class: 'term-out', raw: p.evidence })]) : null,
+      el('div', { class: 'proposal-field' }, [el('div', { class: 'muted', text: 'Преглед от Claude' }), el('div', { class: 'proposal-text', raw: p.review })]),
+      p.rollback ? el('div', { class: 'proposal-field' }, [el('div', { class: 'muted', text: 'Как се връща' }), el('div', { class: 'proposal-text', raw: p.rollback })]) : null,
+      el('div', { class: 'toolbar', style: 'margin:6px 0 0' }, [
+        el('button', {
+          class: 'btn btn-primary btn-sm', text: '✔ Одобри и изпълни',
+          onclick: async () => {
+            const ok = await confirmDanger({
+              title: t('Одобрение на предложение от агент'),
+              what: [`${p.agent}: ${p.title}`, `${t(spec.title)} ${params}`, p.rollback ? `${t('Връщане:')} ${p.rollback}` : t('Без описан откат.')],
+              expect: 'одобри',
+              confirmLabel: 'Одобри и изпълни',
+              delayMs: 600,
+            });
+            if (!ok) return;
+            try {
+              const r3 = await api(`/proposals/${p.id}/approve`, { method: 'POST' });
+              if (r3.job) streamJob(r3.job.id, p.title);
+              else toast(t('Изпълнено'));
+              go('approvals');
+            } catch (e) { toast(e.message, 'bad'); go('approvals'); }
+          },
+        }),
+        el('button', {
+          class: 'btn btn-sm', text: 'Откажи',
+          onclick: async () => {
+            const note = prompt(t('Защо отказваш? (по избор — агентът ще го види)')) ?? null;
+            if (note === null) return;
+            try { await api(`/proposals/${p.id}/reject`, { method: 'POST', body: { note } }); go('approvals'); } catch (e) { toast(e.message, 'bad'); }
+          },
+        }),
+      ]),
+    ]);
+    view.appendChild(card);
+  }
+
+  const done = all.filter((p) => p.status !== 'pending').slice(0, 50);
+  view.appendChild(el('h3', { text: 'История', style: 'margin:22px 0 10px' }));
+  if (!done.length) {
+    view.appendChild(el('div', { class: 'empty', text: 'Още няма решени предложения.' }));
+    return;
+  }
+  view.appendChild(el('div', { class: 'table-wrap' }, [
+    tableEl(
+      ['Кога', 'Агент', 'Предложение', 'Действие', 'Статус', 'Решил'],
+      done.map((p) => {
+        const [kind, label] = PROPOSAL_STATUS[p.status] || ['dim', p.status];
+        return el('tr', {}, [
+          el('td', { raw: fmtWhen(new Date(p.createdAt).toISOString()) }),
+          el('td', { raw: p.agent }),
+          el('td', { raw: p.title }),
+          el('td', { class: 'mono', raw: p.action.type }),
+          el('td', {}, [pill(kind, label), p.jobId ? el('button', { class: 'btn btn-sm', text: '👁 Изход', style: 'margin-left:6px', onclick: () => streamJob(p.jobId, p.title) }) : null]),
+          el('td', { raw: p.decidedBy || '—' }),
+        ]);
+      })
+    ),
+  ]));
+}
+
 async function renderAgents() {
   const view = document.getElementById('view');
   const [fleet, tools, mem] = await Promise.all([api('/agents/fleet'), api('/agents/tools'), api('/agents/memories').catch(() => ({ memories: [] }))]);
@@ -5679,6 +6208,9 @@ document.getElementById('modal').addEventListener('click', (e) => {
 });
 document.getElementById('modal-kill').addEventListener('click', async () => {
   if (!modalJobId) return;
+  // Клас B: задачата може да е деплой или възстановяване по средата — спряна там,
+  // оставя наполовина сменен release. Еднократно „да", не изписване.
+  if (!confirm(t('Да спра задачата? Ако е деплой или възстановяване, тя спира по средата.'))) return;
   try {
     await api(`/jobs/${modalJobId}/kill`, { method: 'POST' });
     toast('Задачата е спряна');
@@ -5707,8 +6239,16 @@ function kv(obj) {
   return dl;
 }
 function barEl(pct) {
-  const wrap = el('div', { class: 'bar' + (pct > 85 ? ' warn' : '') });
+  const wrap = el('div', { class: 'bar gauge' + (pct > 85 ? ' warn' : '') });
   wrap.appendChild(el('i', { style: `width:${Math.min(100, pct)}%` }));
+  return wrap;
+}
+// Оценката е ОБЪРНАТА скала спрямо заетостта: повече е по-добре. Затова не
+// минава през barEl — там 27 щеше да е „зелено, далеч от прага", а то е двойка.
+// Цветът идва от същата преценка като значката до нея (kind).
+function scoreBar(score, kind) {
+  const wrap = el('div', { class: `bar score score-${kind}` });
+  wrap.appendChild(el('i', { style: `width:${Math.max(0, Math.min(100, score))}%` }));
   return wrap;
 }
 function setHtml(id, h) { const e = document.getElementById(id); if (e) e.innerHTML = h; }
@@ -5717,15 +6257,40 @@ function setHtml(id, h) { const e = document.getElementById(id); if (e) e.innerH
 // Брой активни аларми върху иконата на приложението (Android + iOS 16.4+ PWA).
 // clearAppBadge() е ИЗРИЧЕН — setAppBadge(0) не чисти надеждно в Safari.
 async function refreshBadge() {
+  let a;
+  try {
+    a = await api('/alerts');
+  } catch {
+    // Не знаем → сигнализацията изчезва, НЕ показва „без аларми". Зелено при
+    // неизвестно е точно лъжата, срещу която е целият панел.
+    document.getElementById('annun').classList.add('hidden');
+    return;
+  }
+  showAnnunciator(a.active || []);
   if (!('setAppBadge' in navigator)) return;
   try {
-    const a = await api('/alerts');
     const n = (a.active || []).length;
     if (n > 0) await navigator.setAppBadge(n);
     else await navigator.clearAppBadge();
   } catch {
     /* без баджа — не е фатално */
   }
+}
+
+// Главната сигнализация. Брои САМО critical и warning: аномалиите (info) не
+// будят човек — това е доктрината на алармите, и тук важи същото.
+function showAnnunciator(active) {
+  const b = document.getElementById('annun');
+  const crit = active.filter((x) => x.severity === 'critical').length;
+  const warn = active.filter((x) => x.severity === 'warning').length;
+  b.innerHTML = '';
+  b.classList.remove('hidden');
+  b.dataset.level = crit ? 'bad' : warn ? 'warn' : 'ok';
+  b.appendChild(el('span', { class: 'annun-light', 'aria-hidden': 'true' }));
+  if (!crit && !warn) b.appendChild(el('span', { text: 'Без активни аларми' }));
+  if (crit) b.appendChild(el('span', { text: plural(crit, 'критична', 'критични') }));
+  if (warn) b.appendChild(el('span', { text: plural(warn, 'предупреждение', 'предупреждения') }));
+  b.onclick = () => go('alerts');
 }
 
 async function boot() {

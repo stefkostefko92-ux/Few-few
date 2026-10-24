@@ -1,0 +1,151 @@
+<%- include('../partials/page-top', { title: t('security.title') }) %>
+<div class="page-head"><h1><%= t('security.title') %></h1></div>
+<%- include('../partials/account-nav') %>
+<%- include('../partials/flash') %>
+
+<% if (codes) { %>
+<%# Кодовете се показват веднъж: копиране, файл и печат — запис на хартия или на диск, не само в паметта. %>
+<% const codesFile = t('security.codesFileHead', { email: user.email, date: fmt.date(new Date()) }) + '\n\n' + codes.join('\n') + '\n\n' + t('security.codesFileFoot') + '\n'; %>
+<section class="section codes" id="codes" aria-labelledby="codes-h">
+  <h2 id="codes-h"><%- include('../partials/icon', { name: 'key' }) %><%= t('security.codesTitle') %></h2>
+  <p><%= t('security.codesText') %></p>
+  <p class="codes-print-head"><%= t('security.codesFileHead', { email: user.email, date: fmt.date(new Date()) }) %></p>
+  <ul class="recovery" id="recovery-codes"><% for (const c of codes) { %><li><%= c %></li><% } %></ul>
+  <div class="actions codes-actions">
+    <button class="btn" type="button" data-copy="#recovery-codes" data-status="#copy-status" data-done="<%= t('common.copied') %>" data-failed="<%= t('security.copyFailed') %>"><%- include('../partials/icon', { name: 'copy' }) %><%= t('security.copyCodes') %></button>
+    <a class="btn" href="data:text/plain;charset=utf-8,<%= encodeURIComponent(codesFile) %>" download="korpora-recovery-codes.txt"><%- include('../partials/icon', { name: 'download' }) %><%= t('security.downloadCodes') %></a>
+    <button class="btn" type="button" data-print hidden><%- include('../partials/icon', { name: 'print' }) %><%= t('security.printCodes') %></button>
+    <span class="hint" role="status" id="copy-status"></span>
+  </div>
+</section>
+<% } %>
+
+<section class="section" aria-labelledby="tfa-h">
+  <h2 id="tfa-h"><%- include('../partials/icon', { name: 'shield' }) %><%= t('security.twofaTitle') %></h2>
+  <% if (user.totpEnabledAt) { %>
+    <p><span class="chip chip-ok"><%- include('../partials/icon', { name: 'check' }) %><%= t('security.twofaOn', { date: fmt.date(user.totpEnabledAt) }) %></span></p>
+    <p class="muted"><%= t('security.recoveryLeft', { n: recoveryLeft }) %></p>
+    <div class="section-grid">
+      <form method="post" action="/account/security/recovery" class="form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <h3><%= t('security.newCodes') %></h3>
+        <div class="field"><label for="rc-code"><%= t('security.currentCode') %></label><input id="rc-code" name="code" type="text" autocomplete="one-time-code" autocapitalize="off" autocorrect="off" spellcheck="false" required maxlength="20" aria-describedby="rc-hint"><p class="hint" id="rc-hint"><%= t('security.codeOrRecovery') %></p></div>
+        <div class="actions"><button class="btn" type="submit"><%= t('security.newCodesButton') %></button></div>
+      </form>
+      <% if (!staff) { %>
+      <form method="post" action="/account/security/2fa/disable" class="form" data-confirm="<%= t('security.disableConfirm') %>">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <h3><%= t('security.disableTitle') %></h3>
+        <div class="field"><label for="dis-pw"><%= t('account.currentPassword') %></label><input id="dis-pw" name="password" type="password" required autocomplete="current-password"></div>
+        <div class="field"><label for="dis-code"><%= t('security.currentCode') %></label><input id="dis-code" name="code" type="text" autocomplete="one-time-code" autocapitalize="off" autocorrect="off" spellcheck="false" required maxlength="20" aria-describedby="dis-hint"><p class="hint" id="dis-hint"><%= t('security.codeOrRecovery') %></p></div>
+        <div class="actions"><button class="btn btn-danger" type="submit"><%= t('security.disableButton') %></button></div>
+      </form>
+      <% } else { %><p class="hint"><%= t('security.staffKeeps') %></p><% } %>
+    </div>
+  <% } else if (setup) { %>
+    <p><%= t('security.setupText') %></p>
+    <div class="qr">
+      <img src="<%= setup.qrDataUrl %>" width="232" height="232" alt="<%= t('security.qrAlt') %>">
+      <div>
+        <p class="hint" id="manual-key-h"><%= t('security.manualKey') %></p>
+        <%# Групи по 4 за преписване на ръка; „Копирай“ дава ключа без интервали. %>
+        <div class="secret-row">
+          <p class="secret" aria-describedby="manual-key-h" translate="no"><%= setup.grouped %></p>
+          <span id="totp-secret" hidden><%= setup.secret %></span>
+          <button class="btn btn-small" type="button" data-copy="#totp-secret" data-status="#key-status" data-done="<%= t('common.copied') %>" data-failed="<%= t('security.copyFailed') %>"><%- include('../partials/icon', { name: 'copy' }) %><%= t('security.copyKey') %></button>
+          <span class="hint" role="status" id="key-status"></span>
+        </div>
+        <form method="post" action="/account/security/2fa/confirm" class="form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="setup" value="<%= setup.sealed %>">
+          <div class="field"><label for="tfa-code"><%= t('security.confirmCode') %></label><input id="tfa-code" name="code" type="text" class="code-input" inputmode="numeric" autocomplete="one-time-code" required maxlength="6" pattern="[0-9]{6}" data-invalid="<%= t('auth.twofaText') %>"<% if (setupError) { %> aria-invalid="true" aria-describedby="tfa-error" autofocus<% } %>>
+            <% if (setupError) { %><p class="field-error" id="tfa-error" role="alert"><%- include('../partials/icon', { name: 'alert' }) %><span><%= t(setupError) %> <%= t('security.sameKey') %></span></p><% } %></div>
+          <div class="actions"><button class="btn btn-primary" type="submit"><%= t('security.enableButton') %></button></div>
+        </form>
+      </div>
+    </div>
+  <% } else { %>
+    <p><span class="chip chip-warn"><%- include('../partials/icon', { name: 'alert' }) %><%= t('security.twofaOff') %></span></p>
+    <p><%= t(staff ? 'security.staffMust' : 'security.whyTwofa') %></p>
+    <form method="post" action="/account/security/2fa/start" class="form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field"><label for="tfa-pw"><%= t('account.currentPassword') %></label><input id="tfa-pw" name="password" type="password" required autocomplete="current-password"></div>
+      <div class="actions"><button class="btn btn-primary" type="submit"><%= t('security.startButton') %></button></div>
+    </form>
+  <% } %>
+</section>
+
+<section class="section" aria-labelledby="pw-h">
+  <h2 id="pw-h"><%- include('../partials/icon', { name: 'key' }) %><%= t('security.passwordTitle') %></h2>
+  <form method="post" action="/account/security/password" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="text" name="username" autocomplete="username" value="<%= user.email %>" hidden>
+    <div class="form-row">
+      <div class="field"><label for="pw-cur"><%= t('account.currentPassword') %></label><input id="pw-cur" name="current" type="password" required autocomplete="current-password"></div>
+      <div class="field"><label for="pw-new"><%= t('auth.newPassword') %></label><input id="pw-new" name="next" type="password" required minlength="<%= passwordMin %>" maxlength="<%= passwordMax %>" autocomplete="new-password" aria-describedby="pw-rules"></div>
+    </div>
+    <p class="hint" id="pw-rules"><%= t('password.rules') %> <%= t('security.passwordOthers') %></p>
+    <div class="actions"><button class="btn btn-primary" type="submit"><%= t('security.passwordButton') %></button></div>
+  </form>
+</section>
+
+<section class="section" aria-labelledby="ses-h">
+  <h2 id="ses-h"><%- include('../partials/icon', { name: 'device' }) %><%= t('security.sessionsTitle') %></h2>
+  <div class="table-wrap"><table class="stack">
+    <thead><tr><th><%= t('security.col.device') %></th><th><%= t('security.col.place') %></th><th><%= t('security.col.lastSeen') %></th><th><span class="sr-only"><%= t('plan.col.actions') %></span></th></tr></thead>
+    <tbody>
+    <% for (const s of sessions) { %>
+      <tr>
+        <td data-label="<%= t('security.col.device') %>"><%= [s.os, s.browser].filter(Boolean).join(', ') || t('common.unknown') %><% if (s.current) { %> <span class="chip chip-ok"><%- include('../partials/icon', { name: 'check' }) %><%= t('security.thisDevice') %></span><% } %></td>
+        <td data-label="<%= t('security.col.place') %>"><span class="mono-sm"><%= s.ip || '—' %></span><% if (s.country) { %><br><small><%= fmt.country(s.country) %></small><% } %></td>
+        <td data-label="<%= t('security.col.lastSeen') %>" class="nowrap"><%= fmt.relative(s.lastSeenAt) %></td>
+        <td><% if (!s.current) { %><form method="post" action="/account/security/sessions/<%= s.id %>/revoke"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-quiet btn-small" type="submit"><%= t('security.revoke') %></button></form><% } %></td>
+      </tr>
+    <% } %>
+    </tbody>
+  </table></div>
+  <% if (sessions.length > 1) { %>
+  <form method="post" action="/account/security/sessions/revoke-others" class="actions"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit"><%- include('../partials/icon', { name: 'logout' }) %><%= t('security.revokeOthers') %></button></form>
+  <% } %>
+</section>
+
+<section class="section" aria-labelledby="dev-h">
+  <h2 id="dev-h"><%- include('../partials/icon', { name: 'layers' }) %><%= t('security.devicesTitle') %></h2>
+  <p class="hint"><%= t('security.devicesHint') %></p>
+  <div class="table-wrap"><table class="stack">
+    <thead><tr><th>HWID</th><th><%= t('security.col.device') %></th><th><%= t('security.col.place') %></th><th><%= t('security.col.lastSeen') %></th></tr></thead>
+    <tbody>
+    <% for (const d of devices) { %>
+      <tr><td data-label="HWID" class="hwid"><%= fmt.hwid(d.fingerprintHash) || '—' %></td><td data-label="<%= t('security.col.device') %>" class="mini"><%= d.summary %></td><td data-label="<%= t('security.col.place') %>"><span class="mono-sm"><%= d.lastIp || '—' %></span><% if (d.lastCountry) { %><br><small><%= fmt.country(d.lastCountry) %></small><% } %></td><td data-label="<%= t('security.col.lastSeen') %>" class="nowrap"><%= fmt.relative(d.lastSeenAt) %></td></tr>
+    <% } %>
+    </tbody>
+  </table></div>
+</section>
+
+<%# Съгласието за отпечатъка: оттегля се с едно натискане, както се дава с една отметка при регистрация. %>
+<section class="section" aria-labelledby="consent-h">
+  <h2 id="consent-h"><%- include('../partials/icon', { name: 'info' }) %><%= t('security.consentTitle') %></h2>
+  <% if (user.deviceConsentAt) { %>
+    <p><span class="chip chip-ok"><%- include('../partials/icon', { name: 'check' }) %><%= t('security.consentOn', { date: fmt.date(user.deviceConsentAt) }) %></span></p>
+    <p><%= t('security.consentOnText') %></p>
+    <form method="post" action="/account/security/device-consent/withdraw" class="actions">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn" type="submit"><%= t('security.consentWithdraw') %></button>
+    </form>
+  <% } else { %>
+    <p class="muted"><%= t('security.consentOff') %></p>
+  <% } %>
+</section>
+
+<section class="section" aria-labelledby="log-h">
+  <h2 id="log-h"><%- include('../partials/icon', { name: 'history' }) %><%= t('security.loginsTitle') %></h2>
+  <div class="table-wrap"><table class="stack">
+    <thead><tr><th><%= t('security.col.when') %></th><th><%= t('security.col.result') %></th><th><%= t('security.col.place') %></th></tr></thead>
+    <tbody>
+    <% for (const l of logins) { const good = isGoodLogin(l.outcome); %>
+      <tr><td data-label="<%= t('security.col.when') %>" class="nowrap"><%= fmt.dateTime(l.createdAt) %></td><td data-label="<%= t('security.col.result') %>"><span class="chip <%= good ? 'chip-ok' : 'chip-bad' %>"><%- include('../partials/icon', { name: good ? 'check' : 'x' }) %><%= t('outcome.' + l.outcome) %></span></td><td data-label="<%= t('security.col.place') %>"><span class="mono-sm"><%= l.ip || '—' %></span><% if (l.country) { %> <small><%= fmt.country(l.country) %></small><% } %></td></tr>
+    <% } %>
+    </tbody>
+  </table></div>
+</section>
+<%- include('../partials/page-bottom', { scripts: ['account'] }) %>

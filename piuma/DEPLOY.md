@@ -137,7 +137,7 @@ cd /opt/few-few/current/piuma
 sudo docker compose exec \
   -e OWNER_EMAIL=admin@carbonstealth.eu \
   -e OWNER_NAME="Собственик" \
-  -e OWNER_PASSWORD='…по фирмения шаблон…' \
+  -e OWNER_PASSWORD='…дълга случайна парола от мениджъра за пароли…' \
   app npm run owner:create
 ```
 

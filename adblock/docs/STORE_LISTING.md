@@ -1,101 +1,54 @@
 # Chrome Web Store listing
 
 ## Name
-Supreme AdBlock
+Supreme AdBlock – Ad Blocker
+
+The title is the manifest's `extName`, not a dashboard field: en „Supreme AdBlock – Ad Blocker“, bg „Supreme AdBlock – блокер на реклами“, de „Supreme AdBlock – Werbeblocker“, it „Supreme AdBlock – Blocco annunci“; every other language keeps „Supreme AdBlock“ (5.5.1 — wider only if Impressions in these four grow, `docs/METRICS.md`).
 
 ## Summary (132 chars max)
-Block ads everywhere, YouTube video ads, banners, pop-ups, trackers and cookie prompts. Free, fast and private.
+Ad blocker for YouTube and the web: video ads, banners, pop-ups, trackers, cookie banners and anti-adblock walls.
 
 ## Category
-Productivity
+Privacy & Security
 
 ## Detailed description
 
-Supreme AdBlock keeps the web clean and fast, without watching what you do.
+Supreme AdBlock is an ad blocker for Chrome: it removes ads and trackers from the pages you visit, without watching what you do. It works as soon as it is installed, with no account and nothing to set up.
 
-- Blocks YouTube video ads (pre-roll & mid-roll) at the source, plus feed
-  and search ads
-- EasyList, EasyPrivacy and the uBlock Origin filters built in, plus the list for
-  your language — 31 regional lists, the one for your browser's language on by itself
-- Removes banners, pop-ups, pop-unders and native "recommended" ads
-- Hides sponsored posts on Facebook & Instagram
-- Stops trackers and behavioural analytics
-- Blocks third-party tracking cookies and beacons at the network level
-- Turns off the browser's ad-targeting APIs (Topics, interest groups,
-  attribution reporting) on every page
-- Strips tracking parameters (utm_*, fbclid, gclid, ...) from links
-- Optional malware protection (URLhaus list)
-- Handles cookie / consent banners: presses Reject when offered, clears the leftover
-  blur and scroll lock, and never presses a sign-in, OAuth or payment button
-- Keeps pages usable when an adblock detector tries to break them
-- Focus mode: hide chat bubbles, newsletter pop-ups, notification prompts, social
-  widgets, AI pop-ups, "Sign in with Google" pop-ups and YouTube Shorts
-- Site broken? A repair page fixes it in one click, or you tell us, nothing is
-  sent without you seeing it first
-- Element picker, hide anything on a page with one click
-- Advanced "My filters" with procedural selectors and anti-adblock scriptlets
-- Per-site allowlist for sites you want to support, plus a per-site switch
-  for cosmetic filtering if a layout ever breaks
-- "Blocked on this page" in the popup: see how much each filter list stopped
-- Subscribe to any filter list by URL (refreshed daily)
-- Pop-under blocker: thousands of known pop-up domains can no longer open
-  windows behind your back
-- Strips third-party tracking cookies and blocks crypto-miners
-- Daily signed (Ed25519), data-only filter updates, so blocking never goes stale
-- Live stats: ads blocked, data saved, time saved
-- Sleek Carbon Stealth theme (dark) with a light option
-- Available in 70 languages
+- Signed filter updates about twice a day: a new ad network is handled within hours, without waiting for a new version
+- YouTube video ads are taken out at the source, before they load
+- Cookie banners: it presses Reject when the banner offers it, and Accept only when there is no other way to close it
+- No account, no telemetry, and no ad is let through for a fee
 
-WHY CHOOSE SUPREME ADBLOCK
+WHAT IT BLOCKS
+- YouTube ad blocker: video ads (pre-roll & mid-roll) are taken out of the player's data before they load, plus feed and search ads
+- Banners, pop-ups, pop-unders and sponsored-content widgets, and sponsored posts on Facebook, Instagram and Threads
+- Trackers, third-party tracking cookies, crypto-miners and tracking parameters in links (utm_*, fbclid, gclid, ...)
+- Cookie and consent banners: it presses Reject when the banner offers it and Accept only when there is no other way to close it, clears the leftover blur and scroll lock, and never presses a sign-in, OAuth or payment button
+- Anti-adblock walls that try to break a page, with the uBlock Origin scriptlet syntax (39 routines, fixed in the package)
+- Ad slots no filter list knows yet, found by their shape (Smart Detection)
 
-Built for Chrome's current extension platform, not retrofitted to it. Manifest
-V3 took away the old way of blocking requests; this extension was written on the
-new API from the first line, so nothing in it is a workaround on borrowed time.
+FILTER LISTS THAT KEEP UP
+- EasyList, EasyPrivacy and the uBlock Origin filters built in, plus 31 regional lists; the one for your browser's language turns on by itself
+- Signed, data-only filter updates about twice a day, so a new ad network can be handled within hours
+- Malware protection (URLhaus), on by default: a known malware site opens a warning page instead, and what pages load from such sites is blocked; plus subscriptions to any filter list by URL
 
-YouTube ads are stopped at the source, so videos simply play. We never block
-YouTube's video servers — blocking those is what makes other setups stall,
-buffer or show a black player. The player request itself carries the no-ad flag,
-and the ad slots are removed from the response.
+YOU STAY IN CONTROL
+- From the popup, allow a site you want to support, or turn off element hiding on one site if its layout breaks; undo what you hid with one click
+- Site broken? A repair page fixes it in one click (or allows ads there for just an hour), or prepares a report you read and send yourself
+- Switching from uBlock Origin, AdGuard or Adblock Plus? Import your allowed sites and your own filters from its backup file
+- Keyboard shortcuts for blocking on this site, pause and the element picker
+- “Connections on this page” in the popup: the other sites a page loaded something from, each one blockable on that site with one click
+- Element picker and your own filters, including procedural selectors
+- Focus mode: hide chat bubbles, newsletter pop-ups, notification prompts, AI pop-ups and YouTube Shorts
+- "Blocked on this page" shows how much each filter list stopped, with live counters for data and time saved and a chart of the last 30 days
+- Dark and light themes; the interface is available in 70 languages
 
-Protection that does not go stale. Ad networks rotate domains daily, while a
-store review takes days. Our filter data refreshes twice a day, Ed25519-signed
-and version-locked, so a new ad network is handled within hours — and no new
-code is shipped to do it.
+PRIVACY
+Your browsing data never leaves your device: no account, no analytics, no telemetry. The browser's own ad-targeting features (Topics, interest groups, attribution reporting) are switched off on every page, and Global Privacy Control asks every site not to sell or share your data. We take no money from advertisers and let no ad through for a fee.
 
-No remote code, enforced rather than promised. The engine ships inside the
-package. What arrives over the network is data only: hostnames, CSS selectors
-and directives drawn from a fixed list of 19 named routines, re-checked twice
-before anything runs. No eval, no Function(), no script fetched from a server.
-
-You can read every line. No bundler, no minifier: unzip the extension and the
-code you audit is exactly the code that runs; the few generated files (rule sets,
-scriptlet data) are readable and rebuilt by public scripts. Code MIT licensed;
-the bundled filter lists keep their own licences (listed in the package).
-
-Your browsing data never leaves your device. No account, no analytics, no telemetry, no
-"anonymous usage statistics". We take no money from advertisers and run no
-"acceptable ads" scheme, so nothing is quietly unblocked behind your back.
-
-It reaches the ads that rules alone cannot. Pop-unders are refused at the moment
-a page calls window.open, for 2,700+ known hosts; anti-adblock walls are
-neutralised; and brand-new ad slots no filter list knows yet are caught by their
-shape, not by a rule.
-
-When a site breaks, you fix it in one click. Allow the site outright, or keep
-network blocking and switch off only the element hiding — per site, from the
-popup, with no config file.
-
-You can see what it did. A per-page breakdown of what each filter list
-blocked, live counters for data and time saved, and a health card in the
-settings that confirms every part is actually running.
-
-100% free. No account, no telemetry, no data collection, everything stays on
-your device. If it makes your browsing better, donations are welcome but never
-required.
-
-The popup and settings show one small, clearly labelled promo for Carbon
-Stealth, our own brand, and an optional donation link. Nothing is third-party,
-nothing is personalised, no data leaves your device for it.
+HOW IT WORKS
+Built on Manifest V3, Chrome's current extension platform. Requests are blocked with declarativeNetRequest, so the browser does the filtering without the extension seeing your traffic. All code ships inside the package and none of it is minified; what arrives over the network is data only (hostnames and CSS selectors), never code. The code is MIT licensed; the bundled filter lists keep their own licences.
 
 ## Detailed description, localised (Edge requires one per packaged locale, ≥250 chars)
 
@@ -104,144 +57,120 @@ The long versions for bg / it / de are below. For every other language packaged 
 
 **bg**
 
-Supreme AdBlock пази уеб-а чист и бърз, без да следи какво правите.
+Supreme AdBlock е блокер на реклами за Chrome: маха рекламите и тракерите от страниците, които отваряте, без да следи какво правите. Работи веднага след инсталиране, без акаунт и без настройване.
 
-- Блокира видеорекламите в YouTube (pre-roll и mid-roll) при източника, както и рекламите във feed-а и търсенето
-- Вградени EasyList и EasyPrivacy (десетки хиляди правила)
-- Маха банери, изскачащи прозорци, pop-under-и и „препоръчани“ native реклами
-- Скрива спонсорираните публикации във Facebook и Instagram
-- Спира тракери и поведенческа аналитика; блокира third-party проследяващи бисквитки и beacon-и на мрежово ниво
-- Изключва рекламните API на браузъра (Topics, interest groups, attribution reporting) на всяка страница
-- Чисти проследяващите параметри (utm_*, fbclid, gclid, …) от линковете
-- Опционална защита от зловреден софтуер (списък URLhaus)
-- Обработва банерите за бисквитки: натиска „Отхвърли“, когато го има, маха останалия блър и заключения скрол и никога не натиска бутон за вход, OAuth или плащане
-- Филтрите на uBlock Origin и 31 регионални листа — този за езика на браузъра се включва сам
-- Режим „Фокус“: скрива чат балончета, прозорци за бюлетини, покани за известия, социални джаджи, AI прозорци, „Вход с Google“ и YouTube Shorts
-- Сайтът е счупен? Страница за поправка с едно кликване — или ни кажете; нищо не се изпраща, без първо да го видите
-- Запазва страниците използваеми, когато детектор на адблокър се опита да ги счупи
-- Избор на елемент — скрийте каквото и да е на страницата с един клик
-- „Мои филтри“ с процедурни селектори и анти-адблок scriptlet-и; абонамент за всякакъв филтър-лист по URL (обновява се дневно)
-- Allowlist по сайт за сайтовете, които искате да подкрепите, плюс превключвател „без козметика“ по сайт, ако оформлението се счупи
-- „Блокирано на тази страница“ в popup-а — виждате колко е спрял всеки филтър-лист
-- Подписани (Ed25519), само-данни ъпдейти на филтрите — блокирането не остарява
-- Статистика на живо: блокирани реклами, спестени данни, спестено време
-- Тема Carbon Stealth (тъмна) и светла опция; интерфейс на 70 езика
+- Подписани ъпдейти на филтрите около два пъти на ден: нова рекламна мрежа се покрива за часове, без да се чака нова версия
+- Видеорекламите в YouTube се махат при източника, преди да заредят
+- Банери за бисквитки: натиска „Отхвърли“, когато банерът го предлага, и „Приеми“ само когато няма друг начин да го затвори
+- Без акаунт, без телеметрия и без реклами, пуснати срещу заплащане
 
-ЗАЩО ДА ИЗБЕРЕТЕ SUPREME ADBLOCK
+КАКВО БЛОКИРА
+- Рекламите в YouTube: видеорекламите (pre-roll и mid-roll) се махат от данните на плейъра, преди да заредят, както и рекламите във feed-а и търсенето
+- Банери, изскачащи прозорци, pop-under-и и джаджи със спонсорирано съдържание, както и спонсорираните публикации във Facebook, Instagram и Threads
+- Тракери, проследяващи бисквитки на трети страни, крипто-копачи и проследяващи параметри в линковете (utm_*, fbclid, gclid, …)
+- Банери за бисквитки: натиска „Отхвърли“, когато го има, и „Приеми“ само когато няма друг начин да го затвори, маха останалия блър и заключения скрол и никога не натиска бутон за вход, OAuth или плащане
+- Анти-адблок стени, които се опитват да счупят страницата — със синтаксиса на скриптлетите на uBlock Origin (39 рутини, фиксирани в пакета)
+- Рекламни полета, които никой лист още не познава — хваща ги по формата им (Smart Detection)
 
-Създаден за днешната платформа за разширения на Chrome, не преправен набързо за нея. Manifest V3 отне стария начин за блокиране на заявки; това разширение е писано върху новия API от първия ред, така че в него няма заобиколно решение, което утре ще спре да работи.
+ФИЛТЪР-ЛИСТИ, КОИТО НЕ ОСТАРЯВАТ
+- Вградени EasyList, EasyPrivacy и филтрите на uBlock Origin, плюс 31 регионални листа — този за езика на браузъра се включва сам
+- Подписани ъпдейти на филтрите, само с данни, около два пъти на ден — нова рекламна мрежа може да се добави за часове
+- Защита от зловредни домейни (URLhaus), включена по подразбиране: известен зловреден сайт отваря страница-предупреждение вместо себе си, а това, което страниците зареждат от такива сайтове, се блокира; плюс абонамент за всеки филтър-лист по URL
 
-Рекламите в YouTube се спират при източника, затова видеата просто тръгват. Никога не блокираме видео сървърите на YouTube — точно това кара други решения да заглъхват, да буферират или да показват черен плейър. Самата заявка към плейъра носи флага „без реклами“, а рекламните полета се махат от отговора.
+ВИЕ РЕШАВАТЕ
+- От popup-а разрешавате сайт, който искате да подкрепите, или спирате скриването на елементи само на един сайт, ако оформлението се счупи; връщате скритото с едно кликване
+- Сайтът е счупен? Страница за поправка го оправя с едно кликване (или разрешава рекламите там само за час) или подготвя доклад, който четете и изпращате сами
+- Минавате от uBlock Origin, AdGuard или Adblock Plus? Внесете разрешените сайтове и собствените си филтри от резервното му копие
+- Клавишни комбинации за блокирането на този сайт, паузата и избора на елемент
+- „Връзки на страницата“ в popup-а: другите сайтове, от които страницата е заредила нещо, всеки блокируем на този сайт с едно кликване
+- Избор на елемент и собствени филтри, включително процедурни селектори
+- Режим „Фокус“: скрива чат балончета, прозорци за бюлетини, покани за известия, AI прозорци и YouTube Shorts
+- „Блокирано на тази страница“ показва колко е спрял всеки филтър-лист, с броячи на спестените данни и време и графика за последните 30 дни
+- Тъмна и светла тема, интерфейс на 70 езика
 
-Защита, която не остарява. Рекламните мрежи сменят домейни всеки ден, а ревюто в магазина отнема дни. Филтърните ни данни се обновяват два пъти дневно, подписани с Ed25519 и заключени по версия — нова рекламна мрежа се покрива за часове, без да се качва нов код.
+ПОВЕРИТЕЛНОСТ
+Данните ви от сърфирането не напускат устройството ви: без акаунт, без аналитика, без телеметрия. Рекламните функции на самия браузър (Topics, interest groups, attribution reporting) се изключват на всяка страница, а Global Privacy Control моли всеки сайт да не продава и да не споделя данните ви. Не вземаме пари от рекламодатели и не пропускаме реклами срещу заплащане.
 
-Нула отдалечен код — наложено, не обещано. Двигателят е в самия пакет. От мрежата идват само данни: хостове, CSS селектори и директиви от фиксиран списък от 19 именувани рутини, проверени два пъти, преди да се изпълни каквото и да е. Без eval, без Function(), без скрипт, издърпан от сървър.
-
-Можете да прочетете всеки ред. Няма билд стъпка и нищо не е минифицирано: разархивирайте разширението и кодът, който одитирате, е точно кодът, който се изпълнява. Лиценз MIT.
-
-Данните ви от сърфирането не напускат устройството ви. Без акаунт, без аналитика, без телеметрия, без „анонимна статистика на употребата“. Не вземаме пари от рекламодатели и нямаме схема „приемливи реклами“, значи нищо не се отпушва тихомълком зад гърба ви.
-
-Стига до рекламите, до които само правилата не достигат. Pop-under прозорците се отказват в момента, в който страницата извика window.open — за над 2700 известни хоста; анти-адблок стените се неутрализират; а съвсем нови рекламни полета, които никой лист още не познава, се хващат по формата им, не по правило.
-
-Ако сайт се счупи, оправяте го с едно кликване. Разрешете сайта изцяло или запазете мрежовото блокиране и изключете само скриването на елементи — за конкретния сайт, от popup-а, без конфигурационен файл.
-
-Виждате какво е свършило. Разбивка по филтър-листи за всяка страница, броячи на живо за спестени данни и време, и карта за здравето на двигателя в настройките, която потвърждава, че всяка част наистина работи.
-
-100% безплатно. Без акаунт, без телеметрия, без събиране на данни — всичко остава на вашето устройство. Popup-ът и настройките показват една малка, ясно обозначена реклама на собствената ни марка Carbon Stealth и незадължителен линк за дарение; нищо не е от трета страна и никакви данни не напускат устройството ви заради това.
+КАК РАБОТИ
+Създаден върху Manifest V3, текущата платформа за разширения на Chrome. Заявките се блокират с declarativeNetRequest, така че филтрира самият браузър, без разширението да вижда трафика ви. Целият код е в пакета и нищо не е минифицирано; от мрежата идват само данни (хостове и CSS селектори), никога код. Кодът е с лиценз MIT; вградените филтър-листи запазват своите лицензи.
 
 **it**
 
-Supreme AdBlock mantiene il web pulito e veloce, senza osservare cosa fai.
+Supreme AdBlock è un ad blocker per Chrome: toglie annunci e tracker dalle pagine che visiti, senza osservare cosa fai. Funziona appena installato, senza account e senza nulla da configurare.
 
-- Blocca gli annunci video di YouTube (pre-roll e mid-roll) alla fonte, oltre agli annunci nel feed e nella ricerca
-- EasyList ed EasyPrivacy integrate (decine di migliaia di regole)
-- Rimuove banner, pop-up, pop-under e annunci nativi «consigliati»
-- Nasconde i post sponsorizzati su Facebook e Instagram
-- Ferma tracker e analisi comportamentale; blocca cookie e beacon di tracciamento di terze parti a livello di rete
-- Disattiva le API pubblicitarie del browser (Topics, interest groups, attribution reporting) su ogni pagina
-- Elimina i parametri di tracciamento (utm_*, fbclid, gclid, …) dai link
-- Protezione antimalware opzionale (lista URLhaus)
-- Gestisce i banner dei cookie: preme «Rifiuta» quando c'è, toglie la sfocatura e il blocco dello scorrimento rimasti e non preme mai un pulsante di accesso, OAuth o pagamento
-- I filtri di uBlock Origin e 31 liste regionali: quella per la lingua del browser si attiva da sola
-- Modalità Focus: nasconde bolle di chat, pop-up delle newsletter, richieste di notifiche, widget social, pop-up IA, «Accedi con Google» e YouTube Shorts
-- Sito rotto? Una pagina di riparazione lo sistema con un clic, oppure segnalacelo: nulla viene inviato senza che tu lo veda prima
-- Mantiene le pagine utilizzabili quando un rilevatore di adblock prova a romperle
-- Selettore di elementi: nascondi qualsiasi cosa in una pagina con un clic
-- «I miei filtri» con selettori procedurali e scriptlet anti-adblock; iscrizione a qualsiasi lista di filtri tramite URL (aggiornata ogni giorno)
-- Lista consentita per sito per i siti che vuoi sostenere, più un interruttore «senza cosmetici» per sito se il layout si rompe
-- «Bloccato in questa pagina» nel popup: vedi quanto ha fermato ogni lista di filtri
-- Aggiornamenti dei filtri firmati (Ed25519) e composti solo da dati: il blocco non invecchia
-- Statistiche in tempo reale: annunci bloccati, dati risparmiati, tempo risparmiato
-- Tema Carbon Stealth (scuro) con opzione chiara; interfaccia in 70 lingue
+- Aggiornamenti dei filtri firmati circa due volte al giorno: una nuova rete pubblicitaria è coperta in poche ore, senza aspettare una nuova versione
+- Gli annunci video di YouTube vengono tolti alla fonte, prima che si carichino
+- Banner dei cookie: preme «Rifiuta» quando il banner lo offre, e «Accetta» solo se non c'è altro modo per chiuderlo
+- Nessun account, nessuna telemetria e nessun annuncio lasciato passare a pagamento
 
-PERCHÉ SCEGLIERE SUPREME ADBLOCK
+COSA BLOCCA
+- Gli annunci di YouTube: gli annunci video (pre-roll e mid-roll) vengono tolti dai dati del player prima che si carichino, oltre agli annunci nel feed e nella ricerca
+- Banner, pop-up, pop-under e widget di contenuti sponsorizzati, e i post sponsorizzati su Facebook, Instagram e Threads
+- Tracker, cookie di tracciamento di terze parti, cryptominer e parametri di tracciamento nei link (utm_*, fbclid, gclid, …)
+- Banner dei cookie: preme «Rifiuta» quando c'è, e «Accetta» solo se non c'è altro modo per chiuderlo, toglie la sfocatura e il blocco dello scorrimento rimasti e non preme mai un pulsante di accesso, OAuth o pagamento
+- I muri anti-adblock che provano a rompere una pagina, con la sintassi degli scriptlet di uBlock Origin (39 routine, fisse nel pacchetto)
+- Gli spazi pubblicitari che nessuna lista conosce ancora, riconosciuti dalla loro forma (Smart Detection)
 
-Costruito per l'attuale piattaforma delle estensioni di Chrome, non adattato a posteriori. Manifest V3 ha eliminato il vecchio modo di bloccare le richieste; questa estensione è stata scritta sulla nuova API dalla prima riga, quindi non contiene ripieghi destinati a smettere di funzionare.
+LISTE DI FILTRI SEMPRE AGGIORNATE
+- EasyList, EasyPrivacy e i filtri di uBlock Origin integrati, più 31 liste regionali: quella per la lingua del browser si attiva da sola
+- Aggiornamenti dei filtri firmati, composti solo da dati, circa due volte al giorno: una nuova rete pubblicitaria può essere aggiunta in poche ore
+- Protezione dai domini malevoli (URLhaus), attiva di serie: un sito noto per il malware apre al suo posto una pagina di avviso, e ciò che le pagine caricano da questi siti viene bloccato; più l'iscrizione a qualsiasi lista di filtri tramite URL
 
-Gli annunci di YouTube vengono fermati alla fonte, così i video partono e basta. Non blocchiamo mai i server video di YouTube: è proprio questo che fa bloccare, bufferizzare o mostrare un player nero alle altre soluzioni. È la richiesta stessa del player a portare il flag «niente annunci», e gli spazi pubblicitari vengono rimossi dalla risposta.
+DECIDI TU
+- Dal popup consenti un sito che vuoi sostenere, oppure disattivi l'occultamento degli elementi su un solo sito se il layout si rompe; annulli ciò che hai nascosto con un clic
+- Sito rotto? Una pagina di riparazione lo sistema con un clic (o consente gli annunci lì solo per un'ora), oppure prepara una segnalazione che leggi e invii tu
+- Arrivi da uBlock Origin, AdGuard o Adblock Plus? Importa i siti consentiti e i tuoi filtri dal suo file di backup
+- Scorciatoie da tastiera per il blocco su questo sito, la pausa e il selettore di elementi
+- «Connessioni di questa pagina» nel popup: gli altri siti da cui la pagina ha caricato qualcosa, ognuno bloccabile su quel sito con un clic
+- Selettore di elementi e filtri personali, anche con selettori procedurali
+- Modalità Focus: nasconde bolle di chat, pop-up delle newsletter, richieste di notifiche, pop-up IA e YouTube Shorts
+- «Bloccato in questa pagina» mostra quanto ha fermato ogni lista di filtri, con i contatori di dati e tempo risparmiati e un grafico degli ultimi 30 giorni
+- Tema scuro e chiaro, interfaccia in 70 lingue
 
-Una protezione che non invecchia. Le reti pubblicitarie cambiano dominio ogni giorno, mentre una revisione dello store richiede giorni. I nostri dati dei filtri si aggiornano due volte al giorno, firmati con Ed25519 e vincolati alla versione: una nuova rete pubblicitaria è coperta in poche ore, senza distribuire nuovo codice.
+PRIVACY
+I tuoi dati di navigazione non lasciano mai il dispositivo: nessun account, nessuna analitica, nessuna telemetria. Le funzioni pubblicitarie del browser stesso (Topics, interest groups, attribution reporting) vengono disattivate su ogni pagina, e Global Privacy Control chiede a ogni sito di non vendere né condividere i tuoi dati. Non prendiamo denaro dagli inserzionisti e nessun annuncio passa a pagamento.
 
-Nessun codice remoto: imposto, non promesso. Il motore è dentro il pacchetto. Dalla rete arrivano solo dati: nomi host, selettori CSS e direttive tratte da un elenco fisso di 19 routine con nome, verificate due volte prima che venga eseguito qualcosa. Nessun eval, nessuna Function(), nessuno script scaricato da un server.
-
-Puoi leggere ogni riga. Non c'è alcuna fase di build e nulla è minificato: decomprimi l'estensione e il codice che verifichi è esattamente quello che viene eseguito. Licenza MIT.
-
-I tuoi dati di navigazione non lasciano mai il dispositivo. Nessun account, nessuna analitica, nessuna telemetria, nessuna «statistica d'uso anonima». Non prendiamo denaro dagli inserzionisti e non gestiamo alcun programma di «annunci accettabili», quindi nulla viene sbloccato di nascosto.
-
-Raggiunge gli annunci che le sole regole non toccano. I pop-under vengono rifiutati nel momento in cui la pagina chiama window.open, per oltre 2.700 host noti; i muri anti-adblock vengono neutralizzati; e gli spazi pubblicitari nuovissimi, che nessuna lista conosce ancora, vengono individuati dalla loro forma, non da una regola.
-
-Se un sito si rompe, lo sistemi con un clic. Consenti l'intero sito, oppure mantieni il blocco di rete e disattiva solo l'occultamento degli elementi — per quel sito, dal popup, senza file di configurazione.
-
-Vedi cosa ha fatto. Per ogni pagina, quanto ha bloccato ciascuna lista di filtri, contatori in tempo reale di dati e tempo risparmiati e una scheda di stato nelle impostazioni che conferma che ogni componente è davvero attivo.
-
-100% gratuito. Nessun account, nessuna telemetria, nessuna raccolta di dati: tutto resta sul tuo dispositivo. Il popup e le impostazioni mostrano una piccola promozione, chiaramente etichettata, del nostro marchio Carbon Stealth e un link facoltativo per le donazioni; nulla è di terze parti e nessun dato lascia il tuo dispositivo per questo.
+COME FUNZIONA
+Costruito su Manifest V3, l'attuale piattaforma delle estensioni di Chrome. Le richieste sono bloccate con declarativeNetRequest: filtra il browser stesso, senza che l'estensione veda il tuo traffico. Tutto il codice è nel pacchetto e nulla è minificato; dalla rete arrivano solo dati (nomi host e selettori CSS), mai codice. Il codice ha licenza MIT; le liste di filtri incluse mantengono le proprie licenze.
 
 **de**
 
-Supreme AdBlock hält das Web sauber und schnell, ohne zu beobachten, was Sie tun.
+Supreme AdBlock ist ein Werbeblocker für Chrome: Er entfernt Werbung und Tracker von den Seiten, die Sie besuchen, ohne zu beobachten, was Sie tun. Er arbeitet direkt nach der Installation, ohne Konto und ohne Einrichtung.
 
-- Blockiert YouTube-Videoanzeigen (Pre-Roll und Mid-Roll) an der Quelle sowie Anzeigen im Feed und in der Suche
-- EasyList und EasyPrivacy integriert (Zehntausende Regeln)
-- Entfernt Banner, Pop-ups, Pop-under und native „Empfohlen“-Anzeigen
-- Blendet gesponserte Beiträge auf Facebook und Instagram aus
-- Stoppt Tracker und Verhaltensanalyse; blockiert Tracking-Cookies und Beacons von Drittanbietern auf Netzwerkebene
-- Schaltet die Werbe-APIs des Browsers (Topics, Interest Groups, Attribution Reporting) auf jeder Seite ab
-- Entfernt Tracking-Parameter (utm_*, fbclid, gclid, …) aus Links
-- Optionaler Malware-Schutz (URLhaus-Liste)
-- Behandelt Cookie-Banner: drückt „Ablehnen“, wenn angeboten, entfernt zurückgebliebene Unschärfe und Scroll-Sperren und drückt nie eine Anmelde-, OAuth- oder Zahlungsschaltfläche
-- Die uBlock-Origin-Filter und 31 regionale Listen – die für die Sprache Ihres Browsers schaltet sich selbst ein
-- Fokusmodus: blendet Chat-Blasen, Newsletter-Pop-ups, Benachrichtigungs-Aufforderungen, Social-Widgets, KI-Pop-ups, „Mit Google anmelden“ und YouTube Shorts aus
-- Seite kaputt? Eine Reparaturseite behebt es mit einem Klick – oder melden Sie es uns; nichts wird gesendet, ohne dass Sie es vorher sehen
-- Hält Seiten nutzbar, wenn ein Adblock-Detektor sie zu stören versucht
-- Element-Picker: Verbergen Sie alles auf einer Seite mit einem Klick
-- „Meine Filter“ mit prozeduralen Selektoren und Anti-Adblock-Scriptlets; Abonnement beliebiger Filterlisten per URL (täglich aktualisiert)
-- Positivliste pro Website für Seiten, die Sie unterstützen möchten, plus ein Schalter „ohne Kosmetik“ pro Website, falls das Layout bricht
-- „Auf dieser Seite blockiert“ im Popup: Sie sehen, wie viel jede Filterliste gestoppt hat
-- Signierte (Ed25519), reine Daten-Updates der Filter: das Blockieren veraltet nicht
-- Live-Statistik: blockierte Anzeigen, gesparte Daten, gesparte Zeit
-- Carbon-Stealth-Design (dunkel) mit heller Option; Oberfläche in 70 Sprachen
+- Signierte Filter-Updates etwa zweimal täglich: Ein neues Werbenetzwerk ist in Stunden abgedeckt, ohne auf eine neue Version zu warten
+- YouTube-Videoanzeigen werden an der Quelle entfernt, bevor sie laden
+- Cookie-Banner: drückt „Ablehnen“, wenn das Banner es anbietet, und „Akzeptieren“ nur, wenn es sich anders nicht schließen lässt
+- Kein Konto, keine Telemetrie und keine Werbung, die gegen Bezahlung durchgelassen wird
 
-WARUM SUPREME ADBLOCK
+WAS ER BLOCKIERT
+- YouTube-Werbung: Videoanzeigen (Pre-Roll und Mid-Roll) werden aus den Daten des Players entfernt, bevor sie laden, dazu Anzeigen im Feed und in der Suche
+- Banner, Pop-ups, Pop-under und Widgets mit gesponserten Inhalten sowie gesponserte Beiträge auf Facebook, Instagram und Threads
+- Tracker, Tracking-Cookies von Drittanbietern, Krypto-Miner und Tracking-Parameter in Links (utm_*, fbclid, gclid, …)
+- Cookie-Banner: drückt „Ablehnen“, wenn angeboten, und „Akzeptieren“ nur, wenn es sich anders nicht schließen lässt, entfernt zurückgebliebene Unschärfe und Scroll-Sperren und drückt nie eine Anmelde-, OAuth- oder Zahlungsschaltfläche
+- Anti-Adblock-Sperren, die eine Seite unbrauchbar machen wollen – mit der Scriptlet-Syntax von uBlock Origin (39 Routinen, fest im Paket)
+- Werbeflächen, die noch keine Liste kennt, erkannt an ihrer Form (Smart Detection)
 
-Für die aktuelle Erweiterungsplattform von Chrome gebaut, nicht nachträglich angepasst. Manifest V3 hat den alten Weg zum Blockieren von Anfragen abgeschafft; diese Erweiterung wurde von der ersten Zeile an auf der neuen API geschrieben — hier gibt es keine Behelfslösung auf Zeit.
+FILTERLISTEN, DIE AKTUELL BLEIBEN
+- EasyList, EasyPrivacy und die uBlock-Origin-Filter integriert, dazu 31 regionale Listen – die für die Sprache Ihres Browsers schaltet sich selbst ein
+- Signierte Filter-Updates, die nur Daten enthalten, etwa zweimal täglich: Ein neues Werbenetzwerk kann in Stunden ergänzt werden
+- Schutz vor Malware-Domains (URLhaus), standardmäßig an: Eine bekannte Malware-Website öffnet stattdessen eine Warnseite, und was Seiten von solchen Websites laden, wird blockiert; dazu das Abonnement beliebiger Filterlisten per URL
 
-YouTube-Anzeigen werden an der Quelle gestoppt, deshalb laufen Videos einfach. Wir blockieren nie die Videoserver von YouTube — genau das lässt andere Lösungen hängen, puffern oder einen schwarzen Player zeigen. Die Player-Anfrage selbst trägt das Kein-Werbung-Flag, und die Werbeplätze werden aus der Antwort entfernt.
+SIE BEHALTEN DIE KONTROLLE
+- Im Popup erlauben Sie eine Seite, die Sie unterstützen möchten, oder schalten das Ausblenden von Elementen auf einer einzelnen Seite ab, falls das Layout bricht; Ausgeblendetes holen Sie mit einem Klick zurück
+- Seite kaputt? Eine Reparaturseite behebt es mit einem Klick (oder erlaubt Werbung dort nur für eine Stunde) oder bereitet eine Meldung vor, die Sie lesen und selbst senden
+- Sie wechseln von uBlock Origin, AdGuard oder Adblock Plus? Übernehmen Sie erlaubte Websites und eigene Filter aus dessen Sicherungsdatei
+- Tastenkombinationen für die Blockierung auf dieser Website, die Pause und den Element-Picker
+- „Verbindungen dieser Seite“ im Popup: die anderen Websites, von denen die Seite etwas geladen hat, jede mit einem Klick auf dieser Website blockierbar
+- Element-Picker und eigene Filter, auch mit prozeduralen Selektoren
+- Fokusmodus: blendet Chat-Blasen, Newsletter-Pop-ups, Benachrichtigungs-Aufforderungen, KI-Pop-ups und YouTube Shorts aus
+- „Auf dieser Seite blockiert“ zeigt, wie viel jede Filterliste gestoppt hat, mit Zählern für gesparte Daten und Zeit und einer Grafik der letzten 30 Tage
+- Dunkles und helles Design, Oberfläche in 70 Sprachen
 
-Schutz, der nicht veraltet. Werbenetzwerke wechseln täglich die Domain, eine Store-Prüfung dauert Tage. Unsere Filterdaten aktualisieren sich zweimal täglich, Ed25519-signiert und versionsgebunden: Ein neues Werbenetzwerk ist in Stunden abgedeckt — ohne neuen Code auszuliefern.
+DATENSCHUTZ
+Ihre Browsing-Daten verlassen nie Ihr Gerät: kein Konto, keine Analyse, keine Telemetrie. Die Werbefunktionen des Browsers selbst (Topics, Interest Groups, Attribution Reporting) werden auf jeder Seite abgeschaltet, und Global Privacy Control bittet jede Website, Ihre Daten nicht zu verkaufen oder weiterzugeben. Wir nehmen kein Geld von Werbetreibenden und lassen keine Werbung gegen Bezahlung durch.
 
-Kein Code aus dem Netz — erzwungen, nicht versprochen. Die Engine steckt im Paket. Aus dem Netz kommen nur Daten: Hostnamen, CSS-Selektoren und Direktiven aus einer festen Liste von 19 benannten Routinen, zweimal geprüft, bevor irgendetwas läuft. Kein eval, kein Function(), kein vom Server geladenes Skript.
-
-Sie können jede Zeile lesen. Es gibt keinen Build-Schritt und nichts ist minifiziert: Entpacken Sie die Erweiterung, und der Code, den Sie prüfen, ist genau der Code, der läuft. MIT-Lizenz.
-
-Ihre Browsing-Daten verlassen nie Ihr Gerät. Kein Konto, keine Analyse, keine Telemetrie, keine „anonyme Nutzungsstatistik“. Wir nehmen kein Geld von Werbetreibenden und betreiben kein Programm für „akzeptable Werbung“ — es wird also nichts heimlich freigeschaltet.
-
-Es erreicht die Werbung, an die Regeln allein nicht herankommen. Pop-under werden in dem Moment abgewiesen, in dem die Seite window.open aufruft — für über 2.700 bekannte Hosts; Anti-Adblock-Sperren werden neutralisiert; und brandneue Werbeflächen, die noch keine Liste kennt, werden an ihrer Form erkannt, nicht an einer Regel.
-
-Wenn eine Seite kaputtgeht, reparieren Sie es mit einem Klick. Erlauben Sie die Seite ganz, oder behalten Sie die Netzwerksperre und schalten Sie nur das Ausblenden von Elementen ab — pro Seite, aus dem Popup, ohne Konfigurationsdatei.
-
-Sie sehen, was es getan hat. Pro Seite, wie viel jede Filterliste blockiert hat, Live-Zähler für gesparte Daten und Zeit und eine Statuskarte in den Einstellungen, die bestätigt, dass jeder Teil wirklich läuft.
-
-100 % kostenlos. Kein Konto, keine Telemetrie, keine Datensammlung: Alles bleibt auf Ihrem Gerät. Popup und Einstellungen zeigen eine kleine, klar gekennzeichnete Eigenwerbung für unsere Marke Carbon Stealth und einen optionalen Spendenlink; nichts stammt von Dritten, und dafür verlassen keine Daten Ihr Gerät.
+SO FUNKTIONIERT ES
+Gebaut auf Manifest V3, der aktuellen Erweiterungsplattform von Chrome. Anfragen werden mit declarativeNetRequest blockiert: Der Browser filtert selbst, ohne dass die Erweiterung Ihren Datenverkehr sieht. Der gesamte Code steckt im Paket, nichts ist minifiziert; aus dem Netz kommen nur Daten (Hostnamen und CSS-Selektoren), nie Code. Der Code steht unter MIT-Lizenz; die enthaltenen Filterlisten behalten ihre eigenen Lizenzen.
 
 ## Privacy
 Single purpose: content blocker — blocks ads, trackers and page annoyances (pop-ups,
@@ -258,4 +187,4 @@ Privacy Policy URL: https://adblock.carbonstealth.eu/privacy
 See docs/SUBMISSION.md §5 (the single source; the store kit is built from it).
 
 ## Support / homepage
-https://adblock.carbonstealth.eu/#faq
+https://adblock.carbonstealth.eu/support

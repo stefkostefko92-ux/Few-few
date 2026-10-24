@@ -10,10 +10,19 @@
 //
 // Пуска се СЛЕД като сайтът е жив (иначе верификацията на ключа пада). autodeploy.sh
 // го вика best-effort след health check. Ръчно: npm run indexnow.
+//
+// Подава САМО променените адреси (lastmod ≠ последно подадения) + излезлите от
+// sitemap (за да видят noindex/404). Състоянието е в server/.state/indexnow.json
+// (рънтайм, извън git, оцелява при деплой). Преди: всички ~5300 при ВСЕКИ деплой
+// на която и да е част от монорепото — масово преподаване на непроменени адреси.
+// sitemap.xml вече е индекс → четат се секциите (sitemap-*.xml) от site/.
 
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { join, dirname } from 'node:path';
 import { ROOT, SITE_DIR } from './lib/paths.js';
+
+const STATO_FILE = join(ROOT, 'server', '.state', 'indexnow.json');
+const MAX_URL = 10_000;
 
 const ENDPOINT = 'https://api.indexnow.org/IndexNow';
 
@@ -28,6 +37,42 @@ export function estraiUrl(xml) {
   let m;
   while ((m = re.exec(xml)) !== null) out.push(m[1].trim());
   return out;
+}
+
+/**
+ * <loc>+<lastmod> от urlset ИЛИ sitemapindex.
+ * @param {string} xml
+ * @returns {Array<{ loc: string, lastmod: string }>}
+ */
+export function estraiVoci(xml) {
+  const out = [];
+  const re = /<(?:url|sitemap)>\s*<loc>([^<]+)<\/loc>(?:\s*<lastmod>([^<]*)<\/lastmod>)?/g;
+  let m;
+  while ((m = re.exec(xml)) !== null) out.push({ loc: m[1].trim(), lastmod: (m[2] || '').trim() });
+  return out;
+}
+
+/** @param {string} xml @returns {boolean} */
+export function eIndice(xml) {
+  return /<sitemapindex[\s>]/.test(xml);
+}
+
+/**
+ * Кои адреси да се подадат: нови/с променен lastmod + излезлите от sitemap.
+ * @param {Array<{ loc: string, lastmod: string }>} voci
+ * @param {Record<string, string>} stato url → последно подаден lastmod
+ * @returns {{ urlList: string[], nuovoStato: Record<string, string> }}
+ */
+export function daInviare(voci, stato) {
+  /** @type {Record<string, string>} */
+  const nuovoStato = {};
+  const urlList = [];
+  for (const v of voci) {
+    nuovoStato[v.loc] = v.lastmod;
+    if (stato[v.loc] !== v.lastmod) urlList.push(v.loc);
+  }
+  for (const u of Object.keys(stato)) if (!(u in nuovoStato)) urlList.push(u);
+  return { urlList, nuovoStato };
 }
 
 /**
@@ -49,21 +94,45 @@ async function main() {
   if (!siteUrl || !key) { console.error('IndexNow: липсва siteUrl или indexNowKey в config.json — пропускам.'); return; }
 
   const xml = await readFile(join(SITE_DIR, 'sitemap.xml'), 'utf8').catch(() => '');
-  const urlList = estraiUrl(xml);
-  if (!urlList.length) { console.error('IndexNow: няма URL-и в sitemap.xml — пропускам.'); return; }
+  let voci = estraiVoci(xml);
+  if (eIndice(xml)) {
+    /** @type {Array<{ loc: string, lastmod: string }>} */
+    const tutte = [];
+    for (const s of voci) {
+      const nome = s.loc.split('/').pop() || '';
+      if (!/^sitemap-[\w-]+\.xml$/.test(nome)) continue;
+      tutte.push(...estraiVoci(await readFile(join(SITE_DIR, nome), 'utf8').catch(() => '')));
+    }
+    voci = tutte;
+  }
+  if (!voci.length) { console.error('IndexNow: няма URL-и в sitemap — пропускам.'); return; }
 
-  const payload = costruisciPayload(siteUrl, key, urlList);
-  const res = await fetch(ENDPOINT, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json; charset=utf-8' },
-    body: JSON.stringify(payload),
-  });
-  // 200/202 = прието; 422 = ключът още не е верифицируем (сайтът не е жив) — не е фатално.
-  console.log(`IndexNow: ${urlList.length} URL → ${res.status} ${res.statusText} (${payload.host})`);
-  if (!res.ok && res.status !== 202) {
-    const body = await res.text().catch(() => '');
-    console.error(`IndexNow подробности: ${body.slice(0, 300)}`);
-    process.exitCode = 1;
+  /** @type {Record<string, string>} */
+  const stato = JSON.parse(await readFile(STATO_FILE, 'utf8').catch(() => '{}'));
+  const { urlList, nuovoStato } = daInviare(voci, stato);
+  if (!urlList.length) { console.log(`IndexNow: ${voci.length} URL, нищо променено — нищо за подаване.`); return; }
+
+  for (let i = 0; i < urlList.length; i += MAX_URL) {
+    const payload = costruisciPayload(siteUrl, key, urlList.slice(i, i + MAX_URL));
+    const res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json; charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+    // 200/202 = прието; 422 = ключът още не е верифицируем (сайтът не е жив) — не е фатално.
+    console.log(`IndexNow: ${payload.urlList.length} URL (променени от ${voci.length}) → ${res.status} ${res.statusText} (${payload.host})`);
+    if (!res.ok && res.status !== 202) {
+      const body = await res.text().catch(() => '');
+      console.error(`IndexNow подробности: ${body.slice(0, 300)}`);
+      process.exitCode = 1;
+      return; // без запис на състоянието → следващият деплой опитва пак
+    }
+  }
+  try {
+    await mkdir(dirname(STATO_FILE), { recursive: true });
+    await writeFile(STATO_FILE, JSON.stringify(nuovoStato));
+  } catch (err) {
+    console.error('IndexNow: състоянието не се записа (следващият път ще подаде пак):', err instanceof Error ? err.message : err);
   }
 }
 

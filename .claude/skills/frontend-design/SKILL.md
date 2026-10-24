@@ -1,13 +1,14 @@
 ---
 name: frontend-design
-description: >-
-  Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one.
-  Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.
-  Ползвай при нов уеб дизайн, лендинг страница или визия на сайт, избор на типография и палитра, или
-  когато сайтът не бива да изглежда шаблонен и „AI“ генериран. Източник: anthropics/skills (Apache-2.0),
-  commit 33375500; тялото е дословно, променено е само това описание.
-license: Complete terms in LICENSE.txt
+description: Отличителен, съзнателен визуален дизайн при нов UI или преработка на съществуващ — естетическа посока, типография и шрифтове, палитра и оформление, които не изглеждат като шаблон. Ползвай ВИНАГИ, когато правиш или преработваш страница, лендинг, екран, компонент или визуална идентичност на продукт; Дизайнера го зарежда при всяко пускане. Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one.
+license: Apache-2.0 — пълният текст е в LICENSE.txt
 ---
+
+> Официално умение на Anthropic (`frontend-design`, Apache 2.0 — виж `LICENSE.txt`), вписано по
+> изрично решение на собственика (2026-09-24) като постоянна основа на агента Дизайнера. Тялото е
+> непроменено; променени са само `description` (български тригер) и тази бележка. Предимство имат:
+> думите на собственика → дизайн системата на продукта → това умение. Дисциплината на движението
+> (режим сериозен/творчески, reduced-motion, анти-строб) остава по `motion-a11y` и дефиницията на Дизайнера.
 
 # Frontend Design
 

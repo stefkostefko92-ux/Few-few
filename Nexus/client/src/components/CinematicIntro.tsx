@@ -121,7 +121,7 @@ export default function CinematicIntro({ onDone }: Props): React.ReactElement {
   }
 
   return (
-    <div ref={rootRef} className={`cinematic-intro ${closing ? 'is-closing' : ''}`} onClick={finish} role="dialog" aria-modal="true" aria-label="Intro narration" tabIndex={-1}>
+    <div ref={rootRef} className={`cinematic-intro ${closing ? 'is-closing' : ''}`} onClick={finish} role="dialog" aria-modal="true" aria-label={t('intro.dialogAria', { defaultValue: 'Intro narration' })} tabIndex={-1}>
       <div className="ci-sky" />
       <div className="ci-embers">
         {Array.from({ length: 60 }).map((_, i) => (
@@ -176,7 +176,7 @@ export default function CinematicIntro({ onDone }: Props): React.ReactElement {
       </div>
 
       <button ref={skipBtnRef} className="ci-skip" onClick={(e) => { e.stopPropagation(); finish(); }} aria-label={t('intro.skipAria')}>
-        Skip · <kbd>Esc</kbd>
+        {t('intro.skip', { defaultValue: 'Skip' })} · <kbd>Esc</kbd>
       </button>
     </div>
   );

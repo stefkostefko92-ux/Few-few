@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "ማስታወቂያዎችን በሁሉም ቦታ ያግዳል፦ የYouTube ቪዲዮ ማስታወቂያዎች፣ ሰንደቆች፣ ብቅ-ባዮች፣ መከታተያዎች እና የፀረ-ማስታወቂያ-አጋጅ ግድግዳዎች። ነፃ እና ፈጣን።"
+    "message": "የማስታወቂያ አጋጅ ለYouTube እና ለድር፦ የቪዲዮ ማስታወቂያዎች፣ ሰንደቆች፣ ብቅ-ባዮች፣ መከታተያዎች፣ የኩኪ ሰንደቆች እና የፀረ-ማስታወቂያ-አጋጅ ግድግዳዎች።"
   },
   "byCarbon": {
     "message": "በCarbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "ይደግፉ"
   },
+  "rate": {
+    "message": "ደረጃ ይስጡ"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlockን በChrome ድር መደብር ላይ ደረጃ ይስጡ"
+  },
+  "reviewBlocked": {
+    "message": "እስካሁን $1 ጥያቄዎች ታግደዋል"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock ጠቃሚ ከሆነልዎ፣ በChrome ድር መደብር ላይ አጭር ግምገማ ሌሎች እንዲያገኙት ይረዳል።"
+  },
+  "reviewLeave": {
+    "message": "ግምገማ ይጻፉ"
+  },
+  "reviewLater": {
+    "message": "አሁን አይደለም"
+  },
+  "reviewNever": {
+    "message": "ዳግመኛ አትጠይቅ"
+  },
   "filtersCount": {
     "message": "$1+ ማጣሪያዎች",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "የ«ማስታወቂያ አጋጅዎን ያሰናክሉ» ግድግዳዎችን ይደብቃል እና ገጹን ይመልሳል"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "በFacebook እና Instagram ላይ «ስፖንሰር የተደረገ» ልጥፎችን ይደብቃል"
+    "message": "በFacebook፣ Instagram እና Threads ላይ «ስፖንሰር የተደረገ» ልጥፎችን ይደብቃል"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "utm_*፣ fbclid፣ gclid እና ሌሎች የጠቅታ መለያዎችን ከሚከፍቷቸው አገናኞች ያስወግዳል"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "የታወቁ ተንኮል-አዘል ጎራዎችን ያግዳል (የabuse.ch URLhaus ዝርዝር)"
+    "message": "የታወቀ ተንኮል-አዘል ጣቢያ ከመከፈቱ በፊት ያስጠነቅቃል፣ እና ገጾች ከእንደዚህ ዓይነት ጣቢያዎች የሚጭኑትን ያግዳል (የabuse.ch URLhaus ዝርዝር)።"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "በሁሉም ጣቢያ ላይ የGoogle Topics፣ FLoC እና Protected Audience ማስታወቂያ APIዎችን ያሰናክላል"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "በRevolut ይለግሱ"
+  },
+  "opt_review": {
+    "message": "የግምገማ አስታዋሾች"
+  },
+  "opt_review_sub": {
+    "message": "በSupreme AdBlock መስኮት ግርጌ ላይ ትንሽ የ★ አገናኝ፣ እና ቢበዛ ሁለት ጊዜ እዚያው በChrome ድር መደብር ላይ ደረጃ እንዲሰጡት የሚጠይቅ አጭር መልዕክት። በድር ጣቢያዎች ላይም ሆነ እንደ ማሳወቂያ ፈጽሞ አይታይም።"
   },
   "opt_made_by": {
     "message": "በCarbon Stealth የተሠራ"
@@ -599,5 +626,178 @@
   },
   "opt_notices": {
     "message": "የማጣሪያ ዝርዝሮቹ ፈቃዶች"
+  },
+  "welPageTitle": {
+    "message": "ወደ Supreme AdBlock እንኳን በደህና መጡ",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "ጥበቃ በርቷል",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock አሁን በሚጎበኟቸው ሁሉም ጣቢያዎች ላይ ማስታወቂያዎችን እና መከታተያዎችን እያገደ ነው። ምንም የሚዋቀር ነገር የለም።",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "ቅጥያውን በመሣሪያ አሞሌው ላይ ይሰኩት",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ከአድራሻ አሞሌው አጠገብ ያለውን የእንቆቅልሽ ቁራጭ አዶ ጠቅ ያድርጉ እና Supreme AdBlockን ይሰኩ። ከዚያ አንድ ጠቅታ በገጹ ላይ የታገደውን ያሳያል።",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "ቅጥያው በመሣሪያ አሞሌው ላይ ተሰክቷል"
+  },
+  "welPinnedText": {
+    "message": "አዶው ላይ አንድ ጠቅታ በገጹ ላይ የታገደውን ያሳያል።"
+  },
+  "welBrokenTitle": {
+    "message": "አንድ ጣቢያ የተበላሸ ቢመስል",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "ቅጥያውን ይክፈቱ እና ለዚያ ጣቢያ ማገድን ያጥፉ፣ ወይም ለፈጣን ማስተካከያዎች «ጣቢያው ተበላሽቷል?»ን ይምረጡ።",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "አሰሳዎ በመሣሪያዎ ላይ ይቆያል",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ማጣራቱ በመሣሪያዎ ላይ ይከናወናል። ቅጥያው ምንም የግል ውሂብ አይሰበስብም፣ ስለሚጎበኟቸው ገጾችም ምንም አይልክም።",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "ቅንብሮችን ይክፈቱ",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "ገባኝ",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "ተፈቅዷል · $1 ደቂቃ ቀርቷል"
+  },
+  "hiddenHere": {
+    "message": "እዚህ የደበቋቸው አባሎች፦ $1 · የመጨረሻውን ይመልሱ"
+  },
+  "cmd_toggle_site": {
+    "message": "በዚህ ጣቢያ ላይ ማገድን ያብሩ/ያጥፉ"
+  },
+  "cmd_pause": {
+    "message": "ጥበቃን ያቁሙ ወይም ይቀጥሉ (30 ደቂቃ)"
+  },
+  "cmd_picker": {
+    "message": "በዚህ ገጽ ላይ አንድ አባል ይደብቁ"
+  },
+  "rep_fix_hour": {
+    "message": "እዚህ ለ1 ሰዓት ማስታወቂያዎችን ይፍቀዱ"
+  },
+  "rep_done_hour": {
+    "message": "በዚህ ጣቢያ ላይ ማስታወቂያዎች ለ1 ሰዓት ተፈቅደዋል። እንደገና ተጭኗል — ተስተካክሏል?"
+  },
+  "opt_last30": {
+    "message": "ያለፉት 30 ቀናት"
+  },
+  "opt_last30_sum": {
+    "message": "የታገዱ፦ $1 · የኩኪ ሰንደቆች፦ $2"
+  },
+  "opt_last30_empty": {
+    "message": "ሲያስሱ የዕለት ድምሮችዎ እዚህ ይታያሉ።"
+  },
+  "opt_last30_sub": {
+    "message": "የዕለት ድምሮች ብቻ፣ በዚህ መሣሪያ ላይ ለ30 ቀናት ይቀመጣሉ። ጣቢያዎች የሉም፣ አድራሻዎች የሉም።"
+  },
+  "opt_gpc_sub": {
+    "message": "የሚጎበኙትን እያንዳንዱን ጣቢያ ውሂብዎን እንዳይሸጥ ወይም እንዳያጋራ ይጠይቃል (አንዳንድ የግላዊነት ሕጎች ጣቢያዎች እንዲያከብሩት የሚያስገድዱት የSec-GPC ምልክት)። በሚፈቅዷቸው ጣቢያዎች ላይ አይላክም።"
+  },
+  "opt_shortcuts": {
+    "message": "የቁልፍ ሰሌዳ አቋራጮች"
+  },
+  "opt_shortcuts_change": {
+    "message": "አቋራጮችን ይቀይሩ"
+  },
+  "opt_shortcut_none": {
+    "message": "አልተዘጋጀም"
+  },
+  "opt_shortcuts_ff": {
+    "message": "በFirefox ውስጥ፦ ተጨማሪዎች እና ገጽታዎች → ⚙ → የቅጥያ አቋራጮችን ያስተዳድሩ።"
+  },
+  "opt_import_foreign": {
+    "message": "ከሌላ የማስታወቂያ አጋጅ ያስመጡ"
+  },
+  "opt_import_foreign_sub": {
+    "message": "ከuBlock Origin፣ AdGuard ወይም Adblock Plus እየቀየሩ ነው? የእሱን የምትኬ ፋይል ይምረጡ፦ የፈቀዷቸው ጣቢያዎች እና የራስዎ ማጣሪያዎች እዚህ ይታከላሉ። ምንም ነገር አይተካም።"
+  },
+  "opt_import_foreign_done": {
+    "message": "የተፈቀዱ ጣቢያዎች፦ $1 · የታከሉ ማጣሪያዎች፦ $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "የቀሩ (እዚህ ሊተገበሩ አይችሉም)፦ $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "ይህ ፋይል ልናነበው የምንችለው ምትኬ አይደለም።"
+  },
+  "welQuickTitle": {
+    "message": "የራስዎ ያድርጉት"
+  },
+  "welQuickSub": {
+    "message": "አማራጭ ነው፦ አስቀድሞ እየሠራ ነው። ከእነዚህ ውስጥ ማንኛውንም በኋላ በቅንብሮች ውስጥ መቀየር ይችላሉ።"
+  },
+  "blk_page_title": {
+    "message": "ጣቢያው ታግዷል — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "ይህ ጣቢያ መሣሪያዎን ሊጎዳ ይችላል"
+  },
+  "blk_text": {
+    "message": "ጣቢያው ተንኮል-አዘል ሶፍትዌር የሚያሰራጩ አድራሻዎች ይፋዊ ዝርዝር በሆነው URLhaus ላይ ስለሚገኝ Supreme AdBlock ይህን ገጽ አቁሞታል።"
+  },
+  "blk_back": {
+    "message": "ወደ ኋላ ይመለሱ"
+  },
+  "blk_continue": {
+    "message": "ቢሆንም ይቀጥሉ"
+  },
+  "blk_note": {
+    "message": "መቀጠል አሳሹን እስኪዘጉ ድረስ የዚህን ጣቢያ ገጾች ብቻ ያሳልፋል።"
+  },
+  "blk_why": {
+    "message": "ለምን ተዘረዘረ? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "በዚህ ገጽ ላይ ያሉ ግንኙነቶች"
+  },
+  "conn_empty": {
+    "message": "ይህ ገጽ ከሌሎች ጣቢያዎች ምንም አልጫነም።"
+  },
+  "conn_block": {
+    "message": "እዚህ ያግዱ"
+  },
+  "conn_blocked": {
+    "message": "እዚህ ታግዷል"
+  },
+  "conn_hint": {
+    "message": "ይህ ጣቢያ ከ$1 የሚጭነውን ያግዱ"
+  },
+  "opt_conn_title": {
+    "message": "ያገዷቸው ግንኙነቶች"
+  },
+  "opt_conn_sub": {
+    "message": "በSupreme AdBlock መስኮት ውስጥ ካለው «በዚህ ገጽ ላይ ያሉ ግንኙነቶች» የታገዱ፣ እያንዳንዳቸው በራሳቸው ጣቢያ ላይ ብቻ።"
+  },
+  "opt_empty_conn": {
+    "message": "እስካሁን ምንም አልታገደም።"
+  },
+  "opt_conn_remove": {
+    "message": "በ$2 ላይ የ$1 እገዳን ያንሱ"
+  },
+  "opt_h_danger": {
+    "message": "የተንኮል-አዘል ጣቢያ ማስጠንቀቂያ ገጽ"
+  },
+  "opt_h_capacity": {
+    "message": "የደንብ አቅም"
   }
 }

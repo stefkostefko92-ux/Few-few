@@ -1,6 +1,7 @@
 // backend/src/routes/applications.js
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
+import { grantXpOnce, XP_REWARDS } from "../lib/game/xp.js";
 import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../middleware/auth.js";
 import { notifyBot } from "../services/botNotifier.js";
 import { buildTranscript } from "../lib/appTranscript.js";
@@ -174,6 +175,8 @@ router.post("/:serverId/:appId/review", requireAuth, loadUser, requireServerAdmi
         reviewNote: note,
       },
     });
+    // v50 — XP за одобрена кандидатура (веднъж на кандидатура).
+    if (action === "approve") grantXpOnce(application.serverId, application.userId, `app:${application.id}`, XP_REWARDS.APPLICATION_APPROVED).catch(() => {});
 
     // ─── Role application + always-DM notification ──────────────────────────
     // Applies to approve and deny. Users ALWAYS get a DM notification,

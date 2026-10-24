@@ -218,19 +218,19 @@
         prevMuted = video.muted;
         prevRate = video.playbackRate;
       }
-      // No seek to the end. With server-side stitched ads (SSAP) the media
-      // element's duration covers the WHOLE stream (ad + clip), so seeking to
-      // `duration` ends the clip itself: black player, autoplay to the next
-      // video — "the clip never played". Speed + mute + the native Skip click
-      // below are enough: a 30s ad is over in ~2s and nothing is skipped past.
+      // An ad that still got through (server-stitched, or before the response
+      // rewrite caught it) is MUTED and its native Skip button clicked — nothing
+      // more. No seek (with SSAP the duration covers ad + clip: seeking ends the
+      // clip) and NO playbackRate change: an ad "watched" at 16× is one of the
+      // signals YouTube counts towards its three strikes. The ad-state ping that
+      // would report the mute is answered locally by youtube_main.
       try {
         video.muted = true;
-        video.playbackRate = 16;
       } catch {}
     } else if (adActive && video) {
       adActive = false;
       try {
-        video.playbackRate = prevRate || 1;
+        if (video.playbackRate !== (prevRate || 1)) video.playbackRate = prevRate || 1;
         video.muted = prevMuted;
       } catch {}
     }
