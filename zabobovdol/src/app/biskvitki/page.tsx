@@ -1,8 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/ui";
-import { buildMetadata, webPageLd, breadcrumbLd } from "@/lib/seo";
+import {
+  LEGAL_TABLE,
+  LegalLayout,
+  LegalMeta,
+  LegalTableHead,
+  SecRef,
+  type Toc,
+} from "@/components/LegalDoc";
+import { buildMetadata, webPageLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
+import { SECTION } from "@/lib/section-names";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = buildMetadata({
@@ -22,7 +31,18 @@ export const metadata: Metadata = buildMetadata({
 
 // Дата на последната промяна — една и съща в текста и в JSON-LD.
 const LAST_CHANGE_ISO = "2026-10-24";
-const LAST_CHANGE_TEXT = "24 октомври 2026 г.";
+
+// Разделите — за съдържанието и за самите заглавия (id = котвата).
+const TOC = {
+  "bez-biskvitki": "За обикновените посетители няма бисквитки",
+  edinstvena: "Единствената бисквитка",
+  lokalno: "Локално съхранение (не са бисквитки)",
+  izvestiya: "Известия (не са бисквитки)",
+  "treti-strani": "Услуги на трети страни",
+  upravlenie: "Как да управлявате бисквитките",
+  otkaz: "Как да откажете броенето на бутоните",
+  kontakt: "Контакт",
+} as const satisfies Toc;
 
 export default function CookiesPage() {
   return (
@@ -36,38 +56,45 @@ export default function CookiesPage() {
             path: "/biskvitki",
             lastReviewed: LAST_CHANGE_ISO,
           }),
-          breadcrumbLd([
-            { name: "Начало", path: "/" },
-            { name: "Бисквитки", path: "/biskvitki" },
-          ]),
         ]}
       />
+      {/* BreadcrumbList идва от PageHero (crumbs). */}
       <PageHero
+        eyebrow={SECTION.legal}
         title="Политика за бисквитки"
         intro="Кратко и ясно: за обикновените посетители няма бисквитки."
         crumbs={[{ name: "Бисквитки", path: "/biskvitki" }]}
+        meta={<LegalMeta updated={LAST_CHANGE_ISO} current="/biskvitki" />}
       />
-      <div className="container-content max-w-3xl py-10">
-        <div className="prose-content text-slate-700">
-          <p className="text-sm text-slate-600">
-            <strong>Последна актуализация: {LAST_CHANGE_TEXT}</strong>
-          </p>
+      <LegalLayout toc={TOC} path="/biskvitki">
+        {/* Най-важното — в кутия най-горе (извън .prose-content, за да важат
+            собствените стилове на заглавията). */}
+        <div className="callout-info space-y-5 text-lg">
+          <section aria-labelledby="kakvo-sa">
+            <h2 id="kakvo-sa" className="h-sub">
+              Какво са бисквитките
+            </h2>
+            <p className="mt-2 text-slate-800">
+              Бисквитките (cookies) са малки текстови файлове, които сайтът запазва
+              във вашето устройство, за да работи правилно или да запомни ваш избор.
+            </p>
+          </section>
+          <section aria-labelledby="bez-biskvitki">
+            <h2 id="bez-biskvitki" className="h-sub">
+              {TOC["bez-biskvitki"]}
+            </h2>
+            <p className="mt-2 text-slate-800">
+              Това е силна страна на нашия проект:{" "}
+              <strong className="font-semibold">
+                за обикновените посетители сайтът не поставя нито една бисквитка
+              </strong>
+              . Не използваме рекламни или проследяващи бисквитки и не ви проследяваме
+              в други сайтове.
+            </p>
+          </section>
+        </div>
 
-          <h2>Какво са бисквитките</h2>
-          <p>
-            Бисквитките (cookies) са малки текстови файлове, които сайтът запазва
-            във вашето устройство, за да работи правилно или да запомни ваш избор.
-          </p>
-
-          <h2>За обикновените посетители няма бисквитки</h2>
-          <p>
-            Това е силна страна на нашия проект:{" "}
-            <strong>
-              за обикновените посетители сайтът не поставя нито една бисквитка
-            </strong>
-            . Не използваме рекламни или проследяващи бисквитки и не ви проследяваме
-            в други сайтове.
-          </p>
+        <div className="prose-content mt-8 text-slate-700">
           <p>
             И статистиката работи <strong>без бисквитки</strong>. Посещенията се
             броят на нашия сървър: записват се само денят, страницата, източникът
@@ -77,42 +104,36 @@ export default function CookiesPage() {
             телефонен номер, „Помогна ли ви?“ и др.) се броят по същия начин:
             браузърът изпраща само името на бутона, страницата и маркера на
             източника. Ако браузърът ви изпраща сигнал за отказ (GPC или „Do Not
-            Track“), не се изпраща нищо (виж по-долу „Как да откажете броенето
-            на бутоните“). Подробности — в{" "}
-            <Link href="/poveritelnost">Политиката за поверителност</Link>, т. 3.
+            Track“), не се изпраща нищо (виж по-долу{" "}
+            <a href="#otkaz">„Как да откажете броенето на бутоните“</a>). Подробности — в{" "}
+            <Link href="/poveritelnost">Политиката за поверителност</Link>,{" "}
+            <SecRef n={3} doc="/poveritelnost" />.
           </p>
 
-          <h2>Единствената бисквитка</h2>
+          <h2 id="edinstvena">{TOC.edinstvena}</h2>
           <p>
             Използваме само <strong>една</strong> технически необходима бисквитка,
             и то само за хора, които влизат в административната част (редактори и
             администратори).
           </p>
-          <table>
-            <thead>
-              <tr>
-                <th>Бисквитка</th>
-                <th>Цел</th>
-                <th>Свойства</th>
-                <th>Срок</th>
-              </tr>
-            </thead>
+          <table className={LEGAL_TABLE}>
+            <LegalTableHead cols={["Бисквитка", "Цел", "Свойства", "Срок"]} />
             <tbody>
               <tr>
                 <td>
                   <code>zbd_session</code>
                 </td>
-                <td>
+                <td data-label="Цел">
                   Поддържа входа в административната част (само за редактори и
                   администратори).
                 </td>
-                <td>httpOnly, SameSite=strict</td>
-                <td>До 8 часа</td>
+                <td data-label="Свойства">httpOnly, SameSite=strict</td>
+                <td data-label="Срок">До 8 часа</td>
               </tr>
             </tbody>
           </table>
 
-          <h2>Локално съхранение (не са бисквитки)</h2>
+          <h2 id="lokalno">{TOC.lokalno}</h2>
           <p>
             За удобство сайтът използва т.нар. „локално съхранение“ в браузъра ви.
             Това <strong>не са бисквитки</strong>, стоят на вашето устройство, не
@@ -120,19 +141,14 @@ export default function CookiesPage() {
             по-долу) и не ви проследяват в други сайтове. Нито един от тези записи
             не съдържа идентификатор. Описваме ги тук за пълна прозрачност:
           </p>
-          <table>
-            <thead>
-              <tr>
-                <th>Запис</th>
-                <th>Цел</th>
-              </tr>
-            </thead>
+          <table className={LEGAL_TABLE}>
+            <LegalTableHead cols={["Запис", "Цел"]} />
             <tbody>
               <tr>
                 <td>
                   <code>zbd_chat_v2</code>
                 </td>
-                <td>
+                <td data-label="Цел">
                   Пази разговора с дигиталния помощник, докато браузърът е
                   отворен (сесийно съхранение; изтрива се при затваряне). Съдържа
                   това, което сте написали — ако споделите лични данни в
@@ -140,14 +156,15 @@ export default function CookiesPage() {
                   всеки нов въпрос последните реплики се изпращат заедно с него
                   към сървъра, за да има отговорът контекст; сървърът не записва
                   разговора (какво се записва от търсенето — в{" "}
-                  <Link href="/poveritelnost">Политиката за поверителност</Link>, т. 6).
+                  <Link href="/poveritelnost">Политиката за поверителност</Link>,{" "}
+                  <SecRef n={6} doc="/poveritelnost" />).
                 </td>
               </tr>
               <tr>
                 <td>
                   <code>zbd_splash_seen</code>
                 </td>
-                <td>
+                <td data-label="Цел">
                   Запомня, че началният екран е показан веднъж за сесията, за да
                   не се показва при всяка страница.
                 </td>
@@ -158,7 +175,7 @@ export default function CookiesPage() {
                   <code>a11y-bigtouch</code>, <code>a11y-dark</code>,{" "}
                   <code>a11y-collapsed</code>
                 </td>
-                <td>
+                <td data-label="Цел">
                   Запомнят предпочитанията ви за достъпност (размер на шрифта,
                   контраст, по-големи бутони, тъмен режим и дали лентата за
                   достъпност е свита).
@@ -168,7 +185,7 @@ export default function CookiesPage() {
                 <td>
                   <code>zbd_install_banner_hidden_until</code>
                 </td>
-                <td>
+                <td data-label="Цел">
                   Запомня, че сте натиснали „Не сега“ на лентата „Сложи на
                   телефона“. Пази само дата — до кога лентата да не се показва (30
                   дни). Записва се само ако натиснете бутона.
@@ -178,7 +195,7 @@ export default function CookiesPage() {
                 <td>
                   Service worker (<code>/sw.js</code>)
                 </td>
-                <td>
+                <td data-label="Цел">
                   Малка програма на сайта, която браузърът пази, за да работят
                   най-важните страници (телефони, дежурна аптека) и без интернет
                   и за да може да покаже известие, ако сте включили известията.
@@ -189,7 +206,7 @@ export default function CookiesPage() {
                 <td>
                   <code>zbd-v3</code> (кеш на браузъра)
                 </td>
-                <td>
+                <td data-label="Цел">
                   Копия на вече отворени страници и файлове (изображения, стилове),
                   за да се отварят по-бързо и да работят без интернет. Не съдържа
                   данни от формите и не пази страниците с резултати от търсенето
@@ -202,7 +219,7 @@ export default function CookiesPage() {
             </tbody>
           </table>
 
-          <h2>Известия (не са бисквитки)</h2>
+          <h2 id="izvestiya">{TOC.izvestiya}</h2>
           <p>
             Ако <strong>сами</strong> включите известията на страница{" "}
             <Link href="/izvestiya">„Известия“</Link> и ги разрешите, браузърът пази
@@ -217,15 +234,16 @@ export default function CookiesPage() {
             Спирате известията с бутона „Спри известията“ на същата страница —
             абонаментът се изтрива и от нашата база. Може и да ги забраните от
             настройките на браузъра или телефона. Подробности — в{" "}
-            <Link href="/poveritelnost">Политиката за поверителност</Link>, т. 4.
+            <Link href="/poveritelnost">Политиката за поверителност</Link>,{" "}
+            <SecRef n={4} doc="/poveritelnost" />.
           </p>
 
-          <h2>Услуги на трети страни</h2>
+          <h2 id="treti-strani">{TOC["treti-strani"]}</h2>
           <p>
             Не зареждаме рекламни или проследяващи бисквитки на трети страни. Някои
             функции обаче се свързват с външни услуги, когато се покажат — повече за
             тях и за това какви данни (напр. IP адрес) се предават четете в{" "}
-            <a href="/poveritelnost">Политиката за поверителност</a> (Open-Meteo за
+            <Link href="/poveritelnost#t8">Политиката за поверителност</Link> (Open-Meteo за
             времето, OpenStreetMap за картата, услугата за известия на браузъра ви
             и др.). Бутоните „Сподели“ (менюто на телефона или връзки към Viber,
             WhatsApp и Facebook) и връзките към нашия Viber канал и Google Play са
@@ -233,7 +251,7 @@ export default function CookiesPage() {
             изпраща към тези услуги, докато не ги натиснете.
           </p>
 
-          <h2>Как да управлявате бисквитките</h2>
+          <h2 id="upravlenie">{TOC.upravlenie}</h2>
           <p>
             Можете да изтриете или блокирате бисквитките, локалното съхранение и
             разрешението за известия от настройките на своя браузър. Имайте
@@ -242,7 +260,7 @@ export default function CookiesPage() {
             известията.
           </p>
 
-          <h2>Как да откажете броенето на бутоните</h2>
+          <h2 id="otkaz">{TOC.otkaz}</h2>
           <p>
             Броенето на бутоните става със скрипт в браузъра ви, затова имате
             реален начин да го спрете: включете{" "}
@@ -255,10 +273,11 @@ export default function CookiesPage() {
             Броят на отворените страници се води от самия сървър при
             зареждането им и не записва нищо, по което да ви разпознаем —
             подробности в{" "}
-            <Link href="/poveritelnost">Политиката за поверителност</Link>, т. 3.
+            <Link href="/poveritelnost">Политиката за поверителност</Link>,{" "}
+            <SecRef n={3} doc="/poveritelnost" />.
           </p>
 
-          <h2>Контакт</h2>
+          <h2 id="kontakt">{TOC.kontakt}</h2>
           <p>
             Въпроси по тази политика:{" "}
             {SITE.contact.email ? (
@@ -269,7 +288,7 @@ export default function CookiesPage() {
             .
           </p>
         </div>
-      </div>
+      </LegalLayout>
     </>
   );
 }
