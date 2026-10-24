@@ -32,20 +32,16 @@
 ## Еднократна настройка (преди първия деплой)
 
 ```bash
-# 1) DNS: A запис mastilko-bg.com → IP на сървъра, и www като CNAME към
-#    mastilko-bg.com (в панела на DNS).
+# 1) DNS: A запис mastilko-bg.com (и www.mastilko-bg.com) → IP на сървъра.
 
-# 2) Сертификат ПЪРВО (vhost-ът по-долу вече включва 443 блокове, които искат cert).
-#    Издай го за двата адреса, докато домейнът сочи насам:
-certbot certonly --nginx --cert-name mastilko-bg.com -d mastilko-bg.com -d www.mastilko-bg.com
-#    (при първи път без работещ vhost: същото с `--standalone` вместо `--nginx`,
+# 2) Сертификат ПЪРВО (vhost-ът по-долу вече включва 443 блок, който иска cert).
+#    Издай го, докато домейнът сочи насам — С www, за да работи 301-ът
+#    https://www → апекса (иначе https://www е TLS грешка за Googlebot):
+certbot certonly --nginx -d mastilko-bg.com -d www.mastilko-bg.com
+#    Съществуващ cert само за апекса → разшири го:
+#    certbot certonly --nginx --expand -d mastilko-bg.com -d www.mastilko-bg.com
+#    (при първи път без работещ vhost: `certbot certonly --standalone -d mastilko-bg.com`,
 #     след като спреш каквото слуша на 80 за момент.)
-#    Сървър със стар сертификат само за mastilko-bg.com: първо стъпка 3 (новият
-#    vhost отговаря на www на порт 80, иначе проверката за www пада), после
-#    командата по-горе. Тя разширява същия сертификат — пътят
-#    /etc/letsencrypt/live/mastilko-bg.com/ не се сменя — и накрая
-#    `nginx -t && systemctl reload nginx`. Проверка:
-#    `curl -sI https://www.mastilko-bg.com/x | grep -i '^location'` → https://mastilko-bg.com/x
 
 # 3) Nginx vhost (пълен: 80 → 443 + прокси към :3200)
 cp /opt/few-few/current/mastilko/deploy/nginx-mastilko.conf /etc/nginx/sites-available/mastilko

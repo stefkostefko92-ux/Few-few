@@ -39,6 +39,11 @@ const LIVE_RULE_BASE = 100000;   // block domains from the live filter update
 // Update this JSON on the server and every install refreshes itself, no
 // Web Store re-review needed. MV3 forbids remote CODE, not remote data.
 const CONFIG_URL = "https://adblock.carbonstealth.eu/filters.json";
+// След деинсталиране браузърът отваря тази статична страница: помощ, повторна инсталация, имейл.
+// Адресът е фиксиран — без параметри (нито версия, нито причина, нито id), сайтът няма access логове.
+// Само за инсталация от Chrome Web Store (fromChromeStore): страницата води към неговия листинг, а
+// Edge Add-ons / AMO не допускат препратка към друг магазин — там няма страница („“ я маха).
+const UNINSTALL_URL = "https://adblock.carbonstealth.eu/bye";
 // 20k live domains fit comfortably: block rules with requestDomains are "safe"
 // dynamic rules (30k cap) and are chunked 1000 per rule (see domainBlockRules),
 // so the store holds 20 rules, not 20 000.
@@ -189,16 +194,19 @@ const SYNC_KEYS = ["features", "theme", "allowlist", "userFilters", "subscriptio
 // „Оставете отзив“, ★ или „Не питай повече“ я спират завинаги. reviewAsk:false (Настройки) маха и
 // картата, и ★ в долната лента. Нищо не се праща никъде — линкът само отваря страницата в магазина.
 const REVIEW_URL = "https://chromewebstore.google.com/detail/supreme-adblock/chbjbiabkgocfbbfhednpbhfeipjcclk/reviews";
+const STORE_LISTING_URL = "https://chromewebstore.google.com/detail/supreme-adblock/chbjbiabkgocfbbfhednpbhfeipjcclk";
 const REVIEW = { minDays: 7, minBlocked: 1000, gapDays: 60, maxAsks: 2 };
 const DAY_MS = 86400000;
 
 // Само магазинът, от който сме инсталирани, има нашата страница: инсталацията от Chrome Web Store
 // носи неговия update_url; разархивираният (dev) пакет няма такъв и също получава линка (за тестове);
 // Edge Add-ons, Firefox (AMO) и всичко друго — без линк, вместо грешен.
+function fromChromeStore(m) {
+  if (!m || m.browser_specific_settings) return false;
+  return !m.update_url || /^https:\/\/clients2\.google\.com\//.test(m.update_url);
+}
 function reviewUrl(m) {
-  if (!m || m.browser_specific_settings) return null;
-  if (m.update_url && !/^https:\/\/clients2\.google\.com\//.test(m.update_url)) return null;
-  return REVIEW_URL;
+  return fromChromeStore(m) ? REVIEW_URL : null;
 }
 
 function reviewDue(st, now) {
@@ -207,6 +215,48 @@ function reviewDue(st, now) {
   if (!(st.installedAt > 0) || now - st.installedAt < REVIEW.minDays * DAY_MS) return false;
   if ((st.blockedTotal || 0) < REVIEW.minBlocked) return false;
   return !(r.last > 0) || now - r.last >= REVIEW.gapDays * DAY_MS;
+}
+
+// 5.6: две редки карти в popup-а — „Сайтовете се чупят?“ (веднъж, когато има признаци: ≥ 3 разрешени
+// сайта, скриване изключено на ≥ 2 сайта или ≥ 3 паузи за 7 дни) и месечната „разписка“ (веднъж на
+// календарен месец, от дневните броячи). Най-много една карта на отваряне и никога пред картата за
+// отзив: reviewDue не се пипа и не зависи от тези признаци (без филтър по мнение — CWS spam policy).
+const HELP = { allowed: 3, noCosmetics: 2, pauses: 3 };
+const recentPauses = (log, now) => (Array.isArray(log) ? log : []).filter((t) => typeof t === "number" && t <= now && now - t < 7 * DAY_MS);
+function helpDue(st, now) {
+  const h = st.helpCard && typeof st.helpCard === "object" ? st.helpCard : {};
+  if (h.shown || h.never) return false;
+  return (Array.isArray(st.allowlist) ? st.allowlist.length : 0) >= HELP.allowed ||
+    (Array.isArray(st.noCosmetics) ? st.noCosmetics.length : 0) >= HELP.noCosmetics ||
+    recentPauses(st.pauseLog, now).length >= HELP.pauses;
+}
+const monthKey = (t) => dayKey(t).slice(0, 7);
+// последните 30 дни от дневните броячи: блокирани заявки, отказани банери и ПРИБЛИЗИТЕЛНО спестени MB
+// (размерът на блокирана заявка не се знае — средното от общите броячи, popup-ът пише „около“)
+function receiptOf(st, now) {
+  const r = st.receipt && typeof st.receipt === "object" ? st.receipt : {};
+  const from = dayKey(now - 29 * DAY_MS);
+  const days = Object.entries(st.daily && typeof st.daily === "object" ? st.daily : {})
+    .filter(([k, v]) => /^\d{4}-\d{2}-\d{2}$/.test(k) && k >= from && v && typeof v === "object");
+  const blocked = days.reduce((n, [, v]) => n + (Number(v.b) || 0), 0);
+  const cookies = days.reduce((n, [, v]) => n + (Number(v.c) || 0), 0);
+  const perRequest = (st.blockedTotal || 0) > 0 ? (st.savedBytes || 0) / st.blockedTotal : 0;
+  const due = !r.never && r.month !== monthKey(now) && st.installedAt > 0 && now - st.installedAt >= 25 * DAY_MS &&
+    days.length >= 7 && blocked >= 100;
+  return { due, blocked, cookies, mb: (blocked * perRequest) / (1024 * 1024) };
+}
+let cardChain = Promise.resolve();
+function recordCard(card, action) {
+  cardChain = cardChain.then(async () => {
+    const key = card === "help" ? "helpCard" : "receipt";
+    const cur = (await chrome.storage.local.get(key))[key];
+    const c = cur && typeof cur === "object" ? cur : {};
+    const next = action === "never" ? { ...c, never: true } : card === "help" ? { ...c, shown: true } : { ...c, month: monthKey(Date.now()) };
+    await chrome.storage.local.set({ [key]: next });
+    // the pause times exist only for the help card: once it was shown or refused they serve nothing
+    if (card === "help") await chrome.storage.local.remove("pauseLog");
+  }).catch(() => {});
+  return cardChain;
 }
 
 // „показана“ и „край“ идват един след друг от същия popup — едно след друго, за да не изтрие
@@ -235,6 +285,11 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (details && details.reason === "install") {
     try { chrome.tabs.create({ url: chrome.runtime.getURL("welcome/welcome.html") }); } catch {}
   }
+  // при всяка инсталация и ъпдейт (браузърът го пази, но по-стара версия може да е без него)
+  try {
+    const url = fromChromeStore(chrome.runtime.getManifest()) ? UNINSTALL_URL : "";
+    Promise.resolve(chrome.runtime.setUninstallURL(url)).catch(() => {});
+  } catch {}
   const stored = await chrome.storage.local.get([...Object.keys(DEFAULTS), "installedAt"]);
   const patch = {};
   for (const [k, v] of Object.entries(DEFAULTS)) {
@@ -372,8 +427,12 @@ async function restorePause(pausedUntil) {
 
 // temporary pause, auto-resumes via alarm
 async function pauseFor(minutes) {
-  const until = Date.now() + minutes * 60000;
-  await chrome.storage.local.set({ enabled: false, pausedUntil: until });
+  const now = Date.now();
+  const until = now + minutes * 60000;
+  // само кога (без сайт): 3 паузи за 7 дни са признак, че сайтове се чупят — картата „Сайтовете се чупят?“
+  const { pauseLog, helpCard } = await chrome.storage.local.get(["pauseLog", "helpCard"]);
+  const helpDone = helpCard && typeof helpCard === "object" && (helpCard.shown || helpCard.never);
+  await chrome.storage.local.set({ enabled: false, pausedUntil: until, ...(helpDone ? {} : { pauseLog: recentPauses(pauseLog, now).concat(now).slice(-10) }) });
   await applyState();
   chrome.alarms.create("resume", { when: until });
 }
@@ -1624,7 +1683,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "getStats":
       chrome.storage.local.get(
-        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics", "cookieRejections", "reviewAsk", "review", "installedAt", "daily", "customHidden", "allowUntil", "siteBlocks"],
+        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics", "cookieRejections", "reviewAsk", "review", "installedAt", "daily", "customHidden", "allowUntil", "siteBlocks", "helpCard", "receipt", "pauseLog"],
         async (data) => {
           let host = null;
           let allowed = false;
@@ -1654,6 +1713,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           const reviewOn = data.reviewAsk !== false;
           const onSite = /^https?:\/\//i.test(msg.tabUrl || "");
           const reviewAsk = !!storeUrl && onSite && data.enabled !== false && !((data.pausedUntil || 0) > now) && !allowed && reviewDue(data, now);
+          const rec = receiptOf(data, now);
+          // pause times older than 7 days go when they are read, not only at the next pause
+          if (Array.isArray(data.pauseLog) && recentPauses(data.pauseLog, now).length !== data.pauseLog.length) {
+            chrome.storage.local.set({ pauseLog: recentPauses(data.pauseLog, now) });
+          }
           sendResponse({
             enabled: data.enabled !== false,
             blockedTotal,
@@ -1677,6 +1741,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             allowed,
             noCosmetics,
             review: { url: storeUrl, on: reviewOn, ask: reviewAsk },
+            // „Сайтовете се чупят?“ — само на уебсайт (бутонът отваря поправките за него)
+            help: { ask: onSite && helpDue(data, now) },
+            receipt: { ask: rec.due, blocked: rec.blocked, cookies: rec.cookies, mb: rec.mb },
+            // „Сподели“ — чистият адрес на листинга (без параметри), само при инсталация от Chrome Web Store
+            shareUrl: storeUrl ? STORE_LISTING_URL : null,
           });
         }
       );
@@ -1684,6 +1753,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "setReviewAsk":
       chrome.storage.local.set({ reviewAsk: !!msg.on }, () => sendResponse({ ok: true }));
+      return true;
+
+    case "card":
+      // popup: „Сайтовете се чупят?“ / месечната разписка — показана или „Не показвай повече“
+      if ((msg.card !== "help" && msg.card !== "receipt") || (msg.action !== "shown" && msg.action !== "never")) return false;
+      recordCard(msg.card, msg.action).then(() => sendResponse({ ok: true }));
       return true;
 
     case "review":
@@ -1873,7 +1948,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "resetStats":
       chrome.storage.local.set(
-        { blockedTotal: 0, savedBytes: 0, smartBlocked: 0, smartLog: [], daily: {} },
+        { blockedTotal: 0, savedBytes: 0, smartBlocked: 0, smartLog: [], daily: {}, pauseLog: [] },
         () => sendResponse({ ok: true })
       );
       return true;

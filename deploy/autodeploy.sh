@@ -1543,7 +1543,8 @@ deploy_adblock() {
   # затова не ползваме --delete: други файлове в root-а (ако има) остават непокътнати.
   mkdir -p "$ADBLOCK_WWW"
   # filters.json НЕ е тук: той се публикува ЗАЕДНО с подписа си (стъпка 1а).
-  for f in index.html privacy.html support.html youtube-ad-blocker.html cookie-banner-blocker.html \
+  for f in index.html privacy.html support.html youtube-ad-blocker.html cookie-banner-blocker.html bye.html \
+           status.html accessibility.html for-it-admins.html ublock-origin-alternative.html press.html how-we-measure.html test.html \
            robots.txt sitemap.xml llms.txt \
            og.png favicon-48.png apple-touch-icon.png icon-512.png shield-380.webp shield-96.webp popup-shot.webp; do
     [ -f "$d/$f" ] && rsync -a "$d/$f" "$ADBLOCK_WWW"/
@@ -1557,6 +1558,22 @@ deploy_adblock() {
   done
   # favicon.svg беше старото лого (заменено с бранд щита) — да не остане да виси.
   rm -f "$ADBLOCK_WWW/favicon.svg"
+  # Точните текстове на вградените филтър-листи (по SHA-256 — THIRD_PARTY_NOTICES.txt ги сочи):
+  # GPL/AGPL/MPL искат изходният вид да е достъпен, докато версията се разпространява. БЕЗ --delete:
+  # текстовете на по-стари версии остават, имената са хешове и никога не се презаписват.
+  if [ -d "$d/sources" ]; then
+    mkdir -p "$ADBLOCK_WWW/sources"
+    rsync -a "$d/sources/" "$ADBLOCK_WWW/sources/"
+    chmod 755 "$ADBLOCK_WWW/sources"
+    find "$ADBLOCK_WWW/sources" -maxdepth 1 -type f -exec chmod 644 {} +
+  fi
+  # /test: пробите на демонстрационната страница (server/test/*.js) — само собствени файлове
+  if [ -d "$d/test" ]; then
+    mkdir -p "$ADBLOCK_WWW/test"
+    rsync -a --delete "$d/test/" "$ADBLOCK_WWW/test/"
+    chmod 755 "$ADBLOCK_WWW/test"
+    find "$ADBLOCK_WWW/test" -maxdepth 1 -type f -exec chmod 644 {} +
+  fi
   # .well-known/ (security.txt и др.)
   if [ -d "$d/.well-known" ]; then
     mkdir -p "$ADBLOCK_WWW/.well-known"
@@ -1732,7 +1749,7 @@ health() {
 indexnow_ping() {
   local key="$1"; [ -n "$key" ] || return 0
   local base="https://$ADBLOCK_DOMAIN"
-  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/youtube-ad-blocker"'","'"$base/cookie-banner-blocker"'","'"$base/support"'","'"$base/privacy"'","'"$base/bg/"'","'"$base/de/"'","'"$base/it/"'","'"$base/es/"'","'"$base/fr/"'","'"$base/pt-br/"'"]}'
+  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/youtube-ad-blocker"'","'"$base/cookie-banner-blocker"'","'"$base/support"'","'"$base/privacy"'","'"$base/status"'","'"$base/accessibility"'","'"$base/for-it-admins"'","'"$base/ublock-origin-alternative"'","'"$base/press"'","'"$base/how-we-measure"'","'"$base/test"'","'"$base/bg/"'","'"$base/de/"'","'"$base/it/"'","'"$base/es/"'","'"$base/fr/"'","'"$base/pt-br/"'"]}'
   if curl -fsS -m 10 -H "Content-Type: application/json" -d "$body" https://api.indexnow.org/indexnow >/dev/null 2>&1; then
     ok "adblock: IndexNow уведоми Bing/Yandex/Seznam (submit)."
   else

@@ -3,6 +3,7 @@ import Image from "next/image";
 import TabelkaStudio from "@/components/studios/TabelkaStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни табелки и надписи за печат";
@@ -65,6 +66,7 @@ export default function TabelkiPage() {
         </p>
       </header>
       <TabelkaStudio />
+      <ToolGuide current="/tabelki" howTo={HOWTO} />
       <ToolFaq items={FAQ} />
       <RelatedTools current="/tabelki" />
       <script

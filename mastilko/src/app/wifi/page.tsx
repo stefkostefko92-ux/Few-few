@@ -3,6 +3,7 @@ import Image from "next/image";
 import WifiStudio from "@/components/studios/WifiStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатен WiFi стикер с QR код";
@@ -64,6 +65,7 @@ export default function WifiPage() {
         </p>
       </header>
       <WifiStudio />
+      <ToolGuide current="/wifi" howTo={HOWTO} />
       <ToolFaq items={FAQ} />
       <RelatedTools current="/wifi" />
       <script

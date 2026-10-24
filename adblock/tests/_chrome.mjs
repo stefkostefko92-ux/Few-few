@@ -2,7 +2,7 @@
 // Реализира само API-тата, които тестовете наблюдават; всичко друго е no-op.
 // Storage е in-memory Map; поддържа и callback, и Promise стил (background ползва двата).
 export function makeChrome(opts = {}) {
-  const calls = { alarms: [], rulesets: [], registered: [], unregistered: [], badge: [] };
+  const calls = { alarms: [], rulesets: [], registered: [], unregistered: [], badge: [], uninstallUrl: [] };
   const listeners = { message: [], alarm: [], installed: [], startup: [] };
   let dynamic = [];
   let enabledRulesets = new Set(opts.enabledRulesets || ["ad_rules", "youtube_rules", "easylist", "easyprivacy", "removeparam", "surrogates", "headers", "privacy"]);
@@ -32,6 +32,7 @@ export function makeChrome(opts = {}) {
       onStartup: { addListener: (f) => listeners.startup.push(f) },
       onMessage: { addListener: (f) => listeners.message.push(f) },
       sendMessage: () => {},
+      setUninstallURL: (u) => { calls.uninstallUrl.push(u); return Promise.resolve(); },
     },
     storage: { local: storageArea(store), sync: storageArea(new Map()), onChanged: { addListener() {} } },
     alarms: {

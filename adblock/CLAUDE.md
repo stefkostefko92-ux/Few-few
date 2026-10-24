@@ -58,6 +58,10 @@ popup/ · options/       UI (popup + настройки; карти „Филт�
                         (`reviewDue`/`reviewUrl` — линк само при инсталация от CWS), popup-ът рисува; ключът
                         `reviewAsk` в Настройки маха всичко. БЕЗ стимули, без филтър по мнение, никога по сайтовете
                         или като известие (CWS Program Policies) — не добавяй „оцени с 5 звезди“ или награди.
+                        **Картите (5.6):** „Сайтовете се чупят?“ (helpDue — веднъж, при признаци) и месечната разписка
+                        (receiptOf — веднъж на месец, данните „около“) са същият лист; **най-много една карта на отваряне,
+                        отзивът с предимство** (showCard), а reviewDue НЕ гледа признаците (иначе е филтър по мнение) —
+                        гейт в tests/cards.test.mjs. „Сподели“ копира чистия адрес на листинга само за CWS инсталация.
 blocked/                страницата вместо опасен сайт: динамично redirect правило (regexSubstitution →
                         chrome.runtime.getURL — затова е WAR БЕЗ use_dynamic_url), приоритет 2 (под разрешен сайт,
                         пауза и YouTube bypass). „Продължи“ само през SW (`proceedDangerous`: http(s), хост от URLhaus)
@@ -95,14 +99,25 @@ store/ · docs/          store графики + листинг/submission тек
                         надписи в store/screenshots/i18n.json, нужни са Noto шрифтовете) — минимум текст, истинският
                         popup на съответния език. store/cws-unlisted.json = 10-те езика, които магазинът не показва.
 server/                 сайтът adblock.carbonstealth.eu: index, privacy, support, youtube-ad-blocker,
-                        cookie-banner-blocker (+ sitemap, llms.txt, robots, filters.json). **Нова страница =**
+                        cookie-banner-blocker, ublock-origin-alternative, for-it-admins, how-we-measure, accessibility,
+                        press, status, bye (+ sitemap, llms.txt, robots, filters.json, sources/). **Нова страница =**
                         кратък адрес в nginx.conf И Caddyfile + файлът в списъка на deploy/autodeploy.sh + IndexNow
-                        `urlList` там + sitemap + llms.txt — `tests/site.test.mjs` гейтва всичко това.
+                        `urlList` там + llms.txt + `node tools/sitemap.mjs` (sitemap.xml се ГЕНЕРИРА от страниците: без
+                        noindex, lastmod = dateModified, hreflang на езиковата група) — `tests/site.test.mjs` гейтва
+                        всичко това. **/status** се генерира: `node tools/status_page.mjs` (версия, листите, filters.json,
+                        ръчният ред за YouTube от tools/status.json — сменѝ го след ръчна проверка и пусни генератора).
                         **Езиковите страници** server/<bg|de|it|es|fr|pt-br>/index.html се ГЕНЕРИРАТ:
                         `node tools/site_lang.mjs` от tools/site-lang/<език>.json (en.json е източникът) със стиловете
                         на youtube-ad-blocker.html — не ги пипай на ръка (`--check` е в site.test). hreflang групата
                         (английската + 6 + x-default) е взаимна; нов език = JSON + LANGS в генератора + `for l in`
                         в autodeploy.sh + nginx/Caddy `/<език>` → `/<език>/` + IndexNow + sitemap + llms.txt.
+                        **/bye** (5.5.1) — страницата след деинсталиране (`setUninstallURL`, фиксиран адрес БЕЗ
+                        параметри): `noindex` → сервира се (nginx/Caddy/deploy), но НЕ е в sitemap, IndexNow и
+                        llms.txt; site.test пази и двете посоки. Без скрипт, без форма, без брояч на причините.
+                        **UTM:** всеки `<a>` към CWS носи затворения речник от `docs/METRICS.md`
+                        (`utm_source=site&utm_medium=<страница>`, езиковите — `home_<език>`); JSON-LD — чистия адрес.
+                        Нова стойност = ред в METRICS.md първо (site.test). Без брояч/GA4 на сайта, без UTM изключение
+                        в removeparam.
 ```
 
 ## Качествен гейт (преди „готово")
@@ -184,7 +199,13 @@ bash tools/package.sh                         # билд + самопровер�
   (`sender.url` на разширението).
 - **Листи: в пакета само ясно лицензирани.** Лист без лиценз за разпространение (BG, PL NC,
   Dandelicence) никога не влиза в пакета — сваля се от автора САМО при включване от
-  потребителя, конвертира се локално като данни (динамични правила ≥ 200000). Един
+  потребителя, конвертира се локално като данни (динамични правила ≥ 200000). **Точният текст** на всяка
+  вградена листа отива в `server/sources/<sha256>.txt.gz` при билда (GPL/AGPL/MPL — изходният вид да е
+  достъпен; деплоят не трие старите), бележките сочат адреса, а `tools/package.sh` пада, ако лиценз от
+  THIRD_PARTY_NOTICES.txt липсва в пакета. **URLhaus** е с Auth-Key и с условията на abuse.ch (не CC0, не се
+  преиздава, не се архивира): `ABUSECH_AUTH_KEY=<ключ> node tools/build_filters.mjs` — ключът само от средата,
+  НИКОГА във файл (`docs/LICENSES.md`); без него остава записаното копие. След `build_filters.mjs`
+  винаги `build_scriptlets.mjs` (uBO листът се сменя). Един
   невалиден `urlFilter` проваля ЦЕЛИЯ ruleset в Chrome — `tests/rules.test.mjs` и
   реалното зареждане в browser теста го пазят.
 - **Езици:** ≥54 (днес **70 езика = 73 папки**: es/es_419, pt_BR/pt_PT, zh_CN/zh_TW са варианти — твърдим
@@ -192,3 +213,8 @@ bash tools/package.sh                         # билд + самопровер�
   zu не са в листинга му — Chrome пак ги ползва), всеки с пълни ключове и същите `$1` плейсхолдъри
   (`tests/i18n.test.mjs`). Нов ключ → във ВСИЧКИ `_locales`. CSS — логически свойства
   (`margin-inline-start`, `inset-inline-*`), за да работи RTL.
+- **Името (`extName` = заглавието в магазина):** марката „Supreme AdBlock“ не се превежда; от 5.5.1 само
+  en/bg/de/it носят родова дума след „ – “ (`NAMED` в `tests/i18n.test.mjs`), другите езици — само марката.
+  Към още езици — само ако Impressions в тези четири покажат ръст (`docs/METRICS.md`). Резюмето
+  (`extDescription`) започва с родово съществително, ≤ 132 знака, без превъзходни степени (`tests/store.test.mjs`).
+  `docs/listing/*.txt` отиват и в Edge — никога „Chrome“ в тях (store.test).
