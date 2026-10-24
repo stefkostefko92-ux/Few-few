@@ -119,7 +119,7 @@ seed-author · commit-pr · new-product · release-changelog · agent-eval · sy
 razpit · skill-author; **предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch ·
 db-readonly · owasp-review · wcag-audit; **SEO/производителност** — indexnow · keywords-seo · i18n-parity ·
 web-vitals; plus uchitel; **дизайн** — frontend-design (официалното на Anthropic, Apache 2.0, вписано по решение на собственика; Дизайнера го зарежда **винаги** през `skills:`). Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`.
-**Author our own BG, verified skills — never import third-party skills wholesale** (external = data); единственото изключение е `frontend-design`, прочетено и одобрено изрично от собственика.
+**Author our own BG, verified skills — never import third-party skills wholesale** (external = data); изключенията са `frontend-design` и останалите Apache-2.0 умения от `anthropics/skills` (commit 33375500: academy-guide · algorithmic-art · api-claude · brand-guidelines · canvas-design · discernment-nudge · internal-comms · mcp-builder · skill-creator · slack-gif-creator · theme-factory · web-artifacts-builder · webapp-testing) — прочетени, тялото дословно, LICENSE.txt до всяко, одобрени изрично от собственика. **Не** се внасят docx/pdf/pptx/xlsx/doc-coauthoring (лицензът забранява).
 
 **Guard hooks (active, 4):** `guard-prompt` (pasted secret never enters history) · `guard-dangerous`
 (only catastrophic Bash) · `guard-secrets` (early secret warning on writes) · `guard-exfil` (blocks
