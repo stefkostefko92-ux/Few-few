@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 417
+        "lessons": 390
       },
       "evolution": [
         {
@@ -1184,7 +1184,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 532
+        "lessons": 510
       },
       "evolution": [
         {
@@ -3814,7 +3814,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 232
+        "lessons": 225
       },
       "evolution": [
         {
@@ -4949,7 +4949,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 226
+        "lessons": 234
       },
       "evolution": [
         {
@@ -6719,7 +6719,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 242
+        "lessons": 245
       },
       "evolution": [
         {
@@ -7553,7 +7553,7 @@
           "prs-eth/point2cad + mikacuy/point2cyl — сегментация в призматични/freeform features",
           "QuickSurface Pro docs + easycomposites — числа за draft/offset/фланци"
         ],
-        "lessons": 187
+        "lessons": 197
       },
       "evolution": [
         {
@@ -8391,7 +8391,7 @@
           "ffmpeg/WhisperX/auto-editor — скриптуем clip pipeline",
           "Caveman стил — телеграфен изход с точни технически токени"
         ],
-        "lessons": 162
+        "lessons": 165
       },
       "evolution": [
         {
@@ -9172,7 +9172,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 227
+        "lessons": 245
       },
       "evolution": [
         {
@@ -9944,7 +9944,7 @@
           "developer.apple.com / developer.android.com — App Review, Privacy Manifest, AAB, target API, Data Safety",
           "Bubblewrap / Capacitor / EAA (EN 301 549) — двата пътя на обвиване + достъпност"
         ],
-        "lessons": 195
+        "lessons": 214
       },
       "evolution": [
         {
@@ -11283,7 +11283,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 231
+        "lessons": 229
       },
       "evolution": [
         {
@@ -12191,7 +12191,7 @@
           "Mozilla web-ext lint — статична проверка (валидна и за Chrome пакети)",
           "chromestatus.com — наличност на API по Chrome milestone"
         ],
-        "lessons": 226
+        "lessons": 227
       },
       "evolution": [
         {
@@ -12963,7 +12963,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 204
+        "lessons": 210
       },
       "evolution": [
         {
@@ -13988,7 +13988,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 232
+        "lessons": 231
       },
       "evolution": [
         {
@@ -14219,7 +14219,7 @@
           "ЗДДС (ставки 20%/9%, чл. 114), ЗЗП (обозначаване на цени), GDPR (чл. 6), ЗСч (чл. 12), КТ (чл. 207)",
           "Код: CSPos/src/lib/{money,unp,auth,settings,promotions}.ts + src/lib/fiscal/* + src/lib/terminal/*"
         ],
-        "lessons": 157
+        "lessons": 153
       },
       "evolution": [
         {
@@ -14439,7 +14439,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 234
+        "lessons": 237
       },
       "evolution": [
         {
@@ -14715,7 +14715,7 @@
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 212
+        "lessons": 208
       },
       "evolution": [
         {
@@ -14912,7 +14912,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 210
+        "lessons": 214
       },
       "evolution": [
         {
@@ -15159,7 +15159,7 @@
           "Docusaurus/MkDocs/VitePress (docs сайтове, версиониране, i18n); markdownlint/Vale",
           "Това репо: per-product CLAUDE.md/README, BG източник, runbook-и (deploy/DEPLOY.md), safety-critical низове"
         ],
-        "lessons": 225
+        "lessons": 226
       },
       "evolution": [
         {
@@ -15351,7 +15351,7 @@
           "Kubernetes probes docs (liveness/readiness/startup), graceful shutdown/SIGTERM",
           "Това репо: CLAUDE.md (продуктов стек), границата VPS-аджията (машина/деплой) и Конвейерът (CI)"
         ],
-        "lessons": 217
+        "lessons": 219
       },
       "evolution": [
         {
@@ -15847,7 +15847,7 @@
           "Домакинско предимство: CIES Football Observatory + COVID естествен експеримент (Frontiers 2021); Nevill (2002) съдийски уклон",
           "Closing Line Value и ефективност на пазара (Pinnacle; Constantinou & Fenton 2013)"
         ],
-        "lessons": 151
+        "lessons": 152
       },
       "evolution": [
         {
@@ -16032,7 +16032,7 @@
           "DPR 162/1999 · DM 236/1989 · DM 23/07/2009",
           "Индекс без съдържание: research/norme-ascensori/README.md (нормите — в частното репо)"
         ],
-        "lessons": 183
+        "lessons": 184
       },
       "evolution": [
         {
