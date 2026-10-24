@@ -13,12 +13,17 @@
 #      като ПАЗИ .env и Docker обемите → базата и тайните оцеляват между качванията.
 #   2. Гарантира .env: при жива legacy база ОСИНОВЯВА стария .env (или абортира с
 #      инструкция — нови тайни биха заключили базата); генерира тайни само на чисто.
-#   3. БИЛДВА ПРЕДИ да сваля стария стек — провален билд оставя продукцията жива.
-#   4. Сваля стария стек (вкл. legacy `infra` проект) и МИГРИРА обемите му еднократно
+#   3. БИЛДВА ПРЕДИ да сваля стария стек — провален билд оставя продукцията жива;
+#      образите на работещата версия се пазят с таг :rollback.
+#   4. БЕКЪП на базата (pg_dump, custom формат) ПРЕДИ свалянето — api мигрира
+#      схемата при старт, затова копие има преди всяка миграция. Провален бекъп
+#      спира деплоя (SKIP_BACKUP=1 само съзнателно). Пазят се последните $BACKUP_KEEP.
+#   5. Сваля стария стек (вкл. legacy `infra` проект) и МИГРИРА обемите му еднократно
 #      (копие; оригиналът остава като бекъп) → живата база се пренася, не се губи.
-#   5. Вдига новия стек и проверява здравето на 4-те услуги (api/web/marketing/realtime).
-#   6. При ПЪРВО пускане предлага nginx конфиг + сочи към certbot (после НЕ пипа
-#      nginx; провален nginx -t премахва новия конфиг, за да не остане счупен).
+#   6. Вдига новия стек и проверява здравето на 4-те услуги (api/web/marketing/realtime).
+#      Нездрав → ВРЪЩА предишните образи, вдига ги и излиза с код 1 (бекъпът е до него).
+#   7. При ПЪРВО пускане предлага nginx конфиг (портовете от .env) + сочи към certbot
+#      (после НЕ пипа nginx, само предупреждава при разминаване на портовете).
 #
 #  Всичко минава само на localhost; публичният вход е host nginx на 443.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -30,6 +35,9 @@ PROJECT="${COMPOSE_PROJECT:-aso}"
 DOMAIN="${DOMAIN:-gaming.carbonstealth.eu}"
 OWNER_EMAIL="${BOOTSTRAP_OWNER_EMAIL:-admin@carbonstealth.eu}"
 COMPOSE_FILE="infra/docker-compose.yml"
+BACKUP_DIR="${BACKUP_DIR:-$DEPLOY_DIR/backups}"
+BACKUP_KEEP="${BACKUP_KEEP:-14}"
+SERVICES="api realtime worker web marketing"   # билдваните от нас (за rollback)
 
 # ── малко цвят за четимост ───────────────────────────────────────────────────
 c() { printf '\033[%sm%s\033[0m\n' "$1" "$2"; }
@@ -43,7 +51,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 [ -f "$SRC_DIR/$COMPOSE_FILE" ] || die "Не намирам $COMPOSE_FILE до скрипта. Пусни го от портала (папката с apps/ и infra/)."
 
-command -v docker >/dev/null || die "Docker липсва. Инсталирай: curl -fsSL https://get.docker.com | sh"
+command -v docker >/dev/null || die "Docker липсва. Инсталирай Docker Engine + compose plugin: https://docs.docker.com/engine/install/"
 docker compose version >/dev/null 2>&1 || die "Липсва 'docker compose' (v2)."
 
 # ── 1) синхронизирай сорса към стабилната deploy папка (пази .env) ───────────
@@ -156,8 +164,11 @@ STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 # Сложи true САМО след като зададеш Terms-of-service URL в Stripe Dashboard.
 STRIPE_TOS_CONFIGURED=false
+# true САМО след активиран Stripe Tax + регистрация за ДДС/OSS.
+STRIPE_AUTOMATIC_TAX=false
 # ── По желание (продукцията работи и без тях) ────────────────────────────────
 # Имейл (потвърждение/смяна на парола). Празен SMTP_HOST => имейлите се логват.
+# 587 + SMTP_SECURE=false (STARTTLS) или 465 + SMTP_SECURE=true.
 SMTP_HOST=
 SMTP_PORT=587
 SMTP_USER=
@@ -187,15 +198,69 @@ ENV
 fi
 
 # ── 3) билд ПРЕДИ свалянето: ако новият код не се билдва, старият стек остава
-#      жив и работещ (rollback по подразбиране); успешният билд се кешира и
-#      прави следващото up мигновено.
+#      жив и работещ; успешният билд се кешира и прави следващото up мигновено.
+#      Преди това образите на работещата версия получават таг :rollback.
+dc() { docker compose -p "$PROJECT" -f "$COMPOSE_FILE" --env-file .env "$@"; }
+HAVE_ROLLBACK=0
+for svc in $SERVICES; do
+  if docker image inspect "${PROJECT}-${svc}:latest" >/dev/null 2>&1; then
+    docker image tag "${PROJECT}-${svc}:latest" "${PROJECT}-${svc}:rollback"
+    HAVE_ROLLBACK=1
+  fi
+done
+[ "$HAVE_ROLLBACK" -eq 1 ] && ok "образите на текущата версия са запазени като :rollback"
 step "Билд (старият стек остава жив, докато билдът тече)"
-docker compose -p "$PROJECT" -f "$COMPOSE_FILE" --env-file .env build
+dc build
 ok "билдът мина"
+
+# ── 3б) бекъп на базата ПРЕДИ свалянето и преди миграциите на новия api ──────
+envval() { local v; v="$(grep -E "^$1=" .env | tail -1 | cut -d= -f2- || true)"; echo "${v:-$2}"; }
+PG_USER="$(envval POSTGRES_USER aso)"
+PG_DB="$(envval POSTGRES_DB aso)"
+BACKUP_FILE=""
+pg_container() { # работещ postgres на нашия или на legacy проекта
+  local proj id
+  for proj in "$PROJECT" infra; do
+    id="$(docker ps -q --filter label=com.docker.compose.project="$proj" --filter label=com.docker.compose.service=postgres | head -1)"
+    [ -n "$id" ] && { echo "$id"; return 0; }
+  done
+  return 1
+}
+if [ "${SKIP_BACKUP:-0}" = "1" ]; then
+  warn "SKIP_BACKUP=1 — БЕЗ бекъп на базата (само съзнателно!)"
+elif [ -n "$LIVE_VOL" ]; then
+  step "Бекъп на базата (pg_dump) → $BACKUP_DIR"
+  PG_ID="$(pg_container || true)"
+  if [ -z "$PG_ID" ] && docker volume inspect "${PROJECT}_aso_pgdata" >/dev/null 2>&1; then
+    dc up -d postgres >/dev/null
+    for _ in $(seq 1 30); do
+      PG_ID="$(pg_container || true)"
+      [ -n "$PG_ID" ] && docker exec "$PG_ID" pg_isready -U "$PG_USER" >/dev/null 2>&1 && break
+      sleep 2
+    done
+  fi
+  [ -n "$PG_ID" ] || die "Има база ($LIVE_VOL), но не успях да вдигна postgres за бекъп — деплоят спира (SKIP_BACKUP=1 за съзнателно пропускане)."
+  mkdir -p "$BACKUP_DIR" && chmod 700 "$BACKUP_DIR"
+  BACKUP_FILE="$BACKUP_DIR/aso-$(date -u +%Y%m%dT%H%M%SZ).dump"
+  old_umask="$(umask)"; umask 077
+  if docker exec "$PG_ID" pg_dump -U "$PG_USER" -d "$PG_DB" --format=custom --no-owner > "$BACKUP_FILE" \
+     && [ -s "$BACKUP_FILE" ]; then
+    umask "$old_umask"
+    ok "бекъп: $BACKUP_FILE ($(du -h "$BACKUP_FILE" | cut -f1))"
+  else
+    umask "$old_umask"
+    rm -f "$BACKUP_FILE"
+    die "pg_dump се провали — старият стек остава жив, деплоят спира."
+  fi
+  # ротация: пази последните $BACKUP_KEEP
+  ls -1t "$BACKUP_DIR"/aso-*.dump 2>/dev/null | tail -n +"$((BACKUP_KEEP + 1))" | xargs -r rm -f || true
+else
+  ok "няма база още (първо пускане) — бекъп не е нужен"
+fi
 
 # ── 4) свали стария стек чисто (вкл. legacy „infra“ проект) ──────────────────
 step "Свалям стария стек"
-docker compose -p "$PROJECT" -f "$COMPOSE_FILE" --env-file .env down --remove-orphans 2>/dev/null || true
+dc down --remove-orphans 2>/dev/null || true
 # legacy: по-ранни пускания ползваха проект „infra“ (по името на папката)
 if docker ps -a --format '{{.Names}}' | grep -q '^infra-'; then
   warn "намерен стар „infra“ стек — свалям и него, за да освободя портовете"
@@ -219,21 +284,21 @@ done
 
 # ── 6) вдигане ───────────────────────────────────────────────────────────────
 step "Старт на новия стек"
-docker compose -p "$PROJECT" -f "$COMPOSE_FILE" --env-file .env up -d --build
+dc up -d
 ok "контейнерите са пуснати"
 
 # ── 7) изчакай здравето ──────────────────────────────────────────────────────
 step "Проверявам здравето (api пуска и миграциите при старт)"
 # ВАЖНО: '|| true' е вътре в substitution-а — под pipefail grep без съвпадение
 # иначе убива скрипта ТИХО точно тук (възпроизведен бъг).
-getport() { local v; v="$(grep -E "^$1=" .env | cut -d= -f2- || true)"; echo "${v:-$2}"; }
+getport() { envval "$1" "$2"; }
 API_PORT="$(getport API_HOST_PORT 4500)"
 WEB_PORT="$(getport WEB_HOST_PORT 4502)"
 MK_PORT="$(getport MK_HOST_PORT 8090)"
 RT_PORT="$(getport RT_HOST_PORT 4501)"
 
-wait_ok() { # url label
-  for _ in $(seq 1 60); do
+wait_ok() { # url label [service] [tries]
+  for _ in $(seq 1 "${4:-60}"); do
     code=$(curl -s -o /dev/null -w '%{http_code}' "$1" 2>/dev/null || echo 000)
     [ "$code" = "200" ] && { ok "$2 (200)"; return 0; }
     sleep 3
@@ -241,15 +306,32 @@ wait_ok() { # url label
   warn "$2 не отговори с 200 навреме — виж: docker compose -p $PROJECT logs ${3:-}"
   return 1
 }
-HEALTHY=0
-wait_ok "http://127.0.0.1:${API_PORT}/health" "api" "api" && HEALTHY=$((HEALTHY+1))
-wait_ok "http://127.0.0.1:${WEB_PORT}/app/"  "web (игри)" "web" && HEALTHY=$((HEALTHY+1))
-wait_ok "http://127.0.0.1:${MK_PORT}/"       "marketing" "marketing" && HEALTHY=$((HEALTHY+1))
-# realtime: Engine.IO handshake връща 200 при жива WebSocket услуга
-wait_ok "http://127.0.0.1:${RT_PORT}/socket.io/?EIO=4&transport=polling" "realtime" "realtime" && HEALTHY=$((HEALTHY+1))
+check_all() { # [tries] → брой здрави в HEALTHY
+  HEALTHY=0
+  wait_ok "http://127.0.0.1:${API_PORT}/health" "api" "api" "${1:-60}" && HEALTHY=$((HEALTHY+1))
+  wait_ok "http://127.0.0.1:${WEB_PORT}/app/"  "web (игри)" "web" "${1:-60}" && HEALTHY=$((HEALTHY+1))
+  wait_ok "http://127.0.0.1:${MK_PORT}/"       "marketing" "marketing" "${1:-60}" && HEALTHY=$((HEALTHY+1))
+  # realtime: Engine.IO handshake връща 200 при жива WebSocket услуга
+  wait_ok "http://127.0.0.1:${RT_PORT}/socket.io/?EIO=4&transport=polling" "realtime" "realtime" "${1:-60}" && HEALTHY=$((HEALTHY+1))
+}
+check_all 60
 
 echo
-docker compose -p "$PROJECT" -f "$COMPOSE_FILE" --env-file .env ps
+dc ps
+
+# ── 7б) нездрав → откат към предишните образи ────────────────────────────────
+ROLLED_BACK=0
+if [ "$HEALTHY" -ne 4 ] && [ "$HAVE_ROLLBACK" -eq 1 ] && [ "${NO_ROLLBACK:-0}" != "1" ]; then
+  step "Новата версия не е здрава — връщам предишните образи"
+  dc logs --tail 80 api realtime 2>/dev/null | tail -n 120 || true
+  for svc in $SERVICES; do
+    docker image inspect "${PROJECT}-${svc}:rollback" >/dev/null 2>&1 \
+      && docker image tag "${PROJECT}-${svc}:rollback" "${PROJECT}-${svc}:latest"
+  done
+  dc up -d --no-build --force-recreate $SERVICES
+  check_all 40
+  ROLLED_BACK=1
+fi
 
 # ── 8) nginx (само при първо пускане — не пипаме certbot-редактирания файл) ───
 NGINX_SITE="/etc/nginx/sites-available/${DOMAIN}"
@@ -258,7 +340,11 @@ echo
 if command -v nginx >/dev/null; then
   if [ ! -e "$NGINX_SITE" ] && [ ! -e "$NGINX_LINK" ]; then
     step "Първи път: инсталирам nginx конфиг за $DOMAIN"
-    cp infra/nginx/aso.conf "$NGINX_SITE"
+    # портовете на upstream-ите идват от .env (същите, които публикува compose)
+    sed -e "s#127.0.0.1:4500;#127.0.0.1:${API_PORT};#" -e "s#127.0.0.1:4501;#127.0.0.1:${RT_PORT};#" \
+        -e "s#127.0.0.1:4502;#127.0.0.1:${WEB_PORT};#" -e "s#127.0.0.1:8090;#127.0.0.1:${MK_PORT};#" \
+        -e "s#server_name gaming.carbonstealth.eu;#server_name ${DOMAIN};#" \
+        infra/nginx/aso.conf > "$NGINX_SITE"
     ln -sf "$NGINX_SITE" "$NGINX_LINK"
     if nginx -t 2>/dev/null; then
       systemctl reload nginx && ok "nginx конфигуриран и презареден"
@@ -269,6 +355,13 @@ if command -v nginx >/dev/null; then
     fi
   else
     ok "nginx конфиг вече съществува — не го пипам (пази TLS блока на certbot)"
+    # тихо разминаване = 502 за част от сайта; само предупреждаваме, не редактираме
+    for pair in "aso_api:${API_PORT}" "aso_realtime:${RT_PORT}" "aso_web:${WEB_PORT}" "aso_marketing:${MK_PORT}"; do
+      up="${pair%%:*}"; port="${pair##*:}"
+      if [ -e "$NGINX_SITE" ] && ! grep -Eq "upstream ${up} +\{ *server 127\.0\.0\.1:${port};" "$NGINX_SITE"; then
+        warn "nginx upstream ${up} не сочи към 127.0.0.1:${port} (от .env) — поправи $NGINX_SITE и nginx -s reload"
+      fi
+    done
   fi
 else
   warn "nginx не е инсталиран — портовете са само на 127.0.0.1; сложи reverse proxy за публичен достъп"
@@ -276,15 +369,22 @@ fi
 
 # ── край ─────────────────────────────────────────────────────────────────────
 echo
-if [ "$HEALTHY" -eq 4 ]; then
+EXIT=0
+if [ "$ROLLED_BACK" -eq 1 ]; then
+  c "1;31" "✗ Новата версия не мина проверката — върнах предишната (здрави: $HEALTHY/4)."
+  [ -n "$BACKUP_FILE" ] && warn "Ако новият api вече е мигрирал схемата и старата версия не я понася, възстанови: docker exec -i \$(docker ps -q --filter label=com.docker.compose.service=postgres --filter label=com.docker.compose.project=${PROJECT}) pg_restore -U ${PG_USER} -d ${PG_DB} --clean --if-exists < ${BACKUP_FILE}"
+  EXIT=1
+elif [ "$HEALTHY" -eq 4 ]; then
   c "1;32" "✔ Деплоят е готов — https://${DOMAIN} (игри: /app)"
 else
-  c "1;33" "⚠ Стекът е вдигнат, но не всичко върна 200 — виж логовете по-горе."
+  c "1;31" "✗ Стекът е вдигнат, но не всичко върна 200 (няма предишна версия за откат) — виж логовете."
+  EXIT=1
 fi
 cat <<TIP
 
 Полезно:
   • Логове:        docker compose -p ${PROJECT} -f ${COMPOSE_FILE} --env-file .env logs -f api
+  • Бекъпи:        ${BACKUP_DIR} (последните ${BACKUP_KEEP}; ръчно: SKIP_BACKUP=0 bash infra/autodeploy.sh)
   • Статус:        docker compose -p ${PROJECT} -f ${COMPOSE_FILE} --env-file .env ps
   • OWNER роля:    регистрирай се на сайта с ${OWNER_EMAIL} ВЕДНАГА след деплоя, после
                    docker compose -p ${PROJECT} -f ${COMPOSE_FILE} --env-file .env restart api
@@ -292,3 +392,4 @@ cat <<TIP
                    BOOTSTRAP_OWNER_EMAIL в .env). Ако имейлът е „зает“ — някой те е
                    изпреварил: НЕ рестартирай, изтрий акаунта през psql.
 TIP
+exit "$EXIT"

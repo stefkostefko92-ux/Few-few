@@ -58,6 +58,7 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       STRIPE_TOS_CONFIGURED: ${STRIPE_TOS_CONFIGURED:-false}
+      STRIPE_AUTOMATIC_TAX: ${STRIPE_AUTOMATIC_TAX:-false}
       PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:4502}
       # Public origin of the API for OAuth callbacks (must match what's registered
       # with Google/Facebook). Only used when OAuth is configured. A non-empty
