@@ -159,7 +159,7 @@ export function AccessibilityBar() {
       {/* Тънката лента: вляво — честно, че сайтът е независим (не е на
           общината); вдясно — настройките за четене. */}
       <div className="container-content flex min-h-12 items-center justify-between gap-3 py-0.5">
-        <p className="min-w-0 text-sm leading-snug text-slate-700">
+        <p className="min-w-0 text-sm leading-snug text-slate-700 lg:text-base">
           <span className="hidden sm:inline">
             Независим граждански портал — не е сайтът на Община Бобов дол
           </span>

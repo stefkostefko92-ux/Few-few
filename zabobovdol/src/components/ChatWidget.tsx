@@ -370,7 +370,7 @@ export function ChatWidget({ initialOpen = false }: { initialOpen?: boolean } = 
               type="submit"
               className="btn-primary px-3"
               disabled={loading || input.trim().length < 2}
-              aria-label="Изпрати"
+              aria-label="Изпратете"
             >
               <Send className="h-5 w-5" aria-hidden />
             </button>

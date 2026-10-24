@@ -13,6 +13,18 @@ import { isDangerNav, navIcon } from "@/components/nav-icons";
 const MORE: NavGroup = { title: "Още полезно", items: QUICK_NAV };
 const ALL_GROUPS: NavGroup[] = [...NAV_GROUPS, MORE];
 
+// Ред на скриване, когато основното меню не се събира на един ред: от
+// последния по важност към първия („Данъци и срокове“, „Пенсии и помощи“…).
+// „Пази се от измами“ (безопасността) се скрива последна, а текущият раздел —
+// само ако нищо друго не остава.
+const SAFETY_HREF = "/izmami";
+const HIDE_ORDER: string[] = [
+  ...TOP_NAV.map((i) => i.href)
+    .filter((h) => h !== SAFETY_HREF)
+    .reverse(),
+  SAFETY_HREF,
+];
+
 function isCurrent(pathname: string | null, href: string): boolean {
   if (!pathname) return false;
   return pathname === href || pathname.startsWith(href + "/");
@@ -58,10 +70,10 @@ function SectionLink({
       <span className={chip}>
         <Icon aria-hidden />
       </span>
-      <span className="min-w-0">
+      <span className="min-w-0 [overflow-wrap:anywhere]">
         <span className="nav-label block font-semibold leading-snug">{item.label}</span>
         {rich && item.description && (
-          <span className="block text-sm leading-snug text-slate-600">{item.description}</span>
+          <span className="block text-base leading-snug text-slate-600">{item.description}</span>
         )}
       </span>
     </Link>
@@ -113,6 +125,14 @@ export function SiteHeader() {
       menuBtnRef.current?.focus();
     };
     const onResize = () => setMenuTop(headerBottom());
+    // Лентата за четене над хедъра може да се разгъне, докато менюто е
+    // отворено (в iOS Safari докосването не фокусира бутона и onBlur не
+    // затваря менюто) — хедърът слиза и слоят трябва да тръгне от новия ръб,
+    // иначе покрива бутона „Меню“.
+    const ro = new ResizeObserver(onResize);
+    const bar = document.querySelector(".a11y-bar");
+    if (bar) ro.observe(bar);
+    if (headerRef.current) ro.observe(headerRef.current);
     const mq = window.matchMedia("(min-width: 1024px)");
     const onMq = () => {
       if (mq.matches) setOpen(false);
@@ -123,6 +143,7 @@ export function SiteHeader() {
     return () => {
       html.classList.remove("menu-open");
       html.style.overflow = prevOverflow;
+      ro.disconnect();
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("resize", onResize);
       mq.removeEventListener("change", onMq);
@@ -130,9 +151,12 @@ export function SiteHeader() {
   }, [open, headerBottom]);
 
   // „Всички раздели“: Escape затваря и връща фокуса; щракване извън хедъра
-  // затваря.
+  // затваря; плаващият бутон на чата се скрива (html.menu-open), за да не
+  // покрива последните връзки на панела.
   useEffect(() => {
     if (!allOpen) return;
+    const html = document.documentElement;
+    html.classList.add("menu-open");
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       setAllOpen(false);
@@ -142,27 +166,71 @@ export function SiteHeader() {
       if (!headerRef.current?.contains(e.target as Node)) setAllOpen(false);
     };
     const onResize = () => setPanelMax(window.innerHeight - headerBottom());
+    // Панелът е само от lg — под lg се затваря (иначе чатът остава скрит).
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onMq = () => {
+      if (!mq.matches) setAllOpen(false);
+    };
     window.addEventListener("keydown", onKey);
     window.addEventListener("pointerdown", onDown);
     window.addEventListener("resize", onResize);
+    mq.addEventListener("change", onMq);
     return () => {
+      html.classList.remove("menu-open");
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("pointerdown", onDown);
       window.removeEventListener("resize", onResize);
+      mq.removeEventListener("change", onMq);
     };
   }, [allOpen, headerBottom]);
 
-  // Вторият ред е висок един ред и пренася излишните раздели на скрит втори
-  // ред (overflow-hidden): колкото се събират — според ширината и размера на
-  // текста (125% на 1280px). Пренесените се скриват и за клавиатурата и
-  // четеца (visibility) — те така или иначе са в „Всички раздели“.
+  // Вторият ред е висок един ред: показва толкова раздели, колкото се
+  // събират според ширината и размера на текста (125% на 1280px). Излишните
+  // се скриват по HIDE_ORDER — първо най-малко важните, никога преди тях
+  // „Пази се от измами“ и текущия раздел. Скритите отиват в края на реда
+  // (order) и на скрития втори ред (overflow-hidden); скриват се и за
+  // клавиатурата и четеца (visibility) — те са в „Всички раздели“.
   useEffect(() => {
     const ul = navListRef.current;
     if (!ul) return;
     const update = () => {
       const items = Array.from(ul.children) as HTMLElement[];
-      const top = items[0]?.offsetTop ?? 0;
-      for (const li of items) li.style.visibility = li.offsetTop > top ? "hidden" : "";
+      const avail = ul.getBoundingClientRect().width + 0.01;
+      // order и visibility не менят размера на елементите — затова
+      // ResizeObserver отдолу не се зацикля.
+      const width = new Map<HTMLElement, number>();
+      for (const li of items) width.set(li, li.getBoundingClientRect().width);
+      const byHref = new Map(items.map((li) => [li.dataset.href ?? "", li]));
+      const current = items.find((li) => li.querySelector('[aria-current="page"]'));
+      const order = HIDE_ORDER.map((h) => byHref.get(h)).filter(
+        (li): li is HTMLElement => !!li && li !== current,
+      );
+      if (current) order.push(current);
+      const hidden = new Set<HTMLElement>();
+      let total = items.reduce((s, li) => s + (width.get(li) ?? 0), 0);
+      for (const li of order) {
+        if (total <= avail) break;
+        hidden.add(li);
+        total -= width.get(li) ?? 0;
+      }
+      // Скрит по-широк раздел може да е освободил място за по-тесен —
+      // връщаме обратно, от най-важния към най-малко важния.
+      for (const li of [...order].reverse()) {
+        if (!hidden.has(li)) continue;
+        const w = width.get(li) ?? 0;
+        if (total + w <= avail) {
+          hidden.delete(li);
+          total += w;
+        }
+      }
+      for (const li of items) {
+        li.style.order = hidden.has(li) ? "1" : "";
+      }
+      // Предпазител: каквото все пак е паднало на втория ред, не се фокусира.
+      const top = Math.min(...items.filter((li) => !hidden.has(li)).map((li) => li.offsetTop));
+      for (const li of items) {
+        li.style.visibility = hidden.has(li) || li.offsetTop > top ? "hidden" : "";
+      }
     };
     update();
     // Редът и всяка връзка поотделно: шрифтът (Inter) идва след първото
@@ -259,7 +327,7 @@ export function SiteHeader() {
           <nav aria-label="Основно меню" className="-mx-2.5 flex items-stretch gap-1">
             <ul ref={navListRef} className="flex h-12 min-w-0 flex-1 flex-wrap items-stretch overflow-hidden">
               {TOP_NAV.map((item) => (
-                <li key={item.href} className="flex">
+                <li key={item.href} data-href={item.href} className="flex">
                   {/* Фокусът е навътре (offset −3px): редът реже всичко извън себе си. */}
                   <Link
                     href={item.href}
@@ -351,7 +419,7 @@ export function SiteHeader() {
                   </h2>
                   <ul
                     className={
-                      "mt-1.5 grid gap-x-4 sm:grid-cols-2 " +
+                      "mt-1.5 grid grid-cols-1 gap-x-4 sm:grid-cols-2 " +
                       (gi === 0 ? "gap-y-1" : "divide-y divide-slate-200 sm:divide-y-0")
                     }
                   >

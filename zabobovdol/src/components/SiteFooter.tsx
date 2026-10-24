@@ -30,6 +30,13 @@ function FacebookIcon({ className }: { className?: string }) {
   );
 }
 
+// „е-услуги“, „е-поща“: тирето след еднобуквена представка става неразделящо
+// (U+2011) — иначе редът се пренася като „е-/услуги“. Само при показване:
+// SITE.description отива и в метаданните, където остава с обикновено тире.
+function noBreakPrefixes(text: string): string {
+  return text.replace(/(^|[\s(„])(\p{L})-(?=\p{L})/gu, "$1$2‑");
+}
+
 // Връзка във футъра: цел ≥44px, подчертана (на тъмно фон само цветът не
 // стига), без предварително зареждане за RSS (канал, не страница).
 function FooterLink({ href, label }: { href: string; label: string }) {
@@ -78,8 +85,10 @@ export async function SiteFooter() {
 
   return (
     <footer className="site-footer mt-8 bg-brand-900 text-white">
-      {/* pb-28 на телефон — място за плаващия бутон на чата под последния ред. */}
-      <div className="container-content pb-28 pt-12 sm:pb-12">
+      {/* pb-28 на всички ширини — място за плаващия бутон на чата под
+          последния ред (от sm той е широк бутон с надпис и при 125% стига
+          ~90px от долния ръб; иначе покрива реквизитите на фирмата). */}
+      <div className="container-content pb-28 pt-12">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
           <div className="min-w-0 space-y-8 lg:col-span-4">
             <div>
@@ -99,7 +108,9 @@ export async function SiteFooter() {
                   <span className="block text-sm text-brand-100">{SITE.tagline}</span>
                 </p>
               </div>
-              <p className="mt-3 max-w-md text-base text-brand-100">{SITE.description}</p>
+              <p className="mt-3 max-w-md text-base text-brand-100">
+                {noBreakPrefixes(SITE.description)}
+              </p>
             </div>
 
             <section aria-labelledby="footer-emergency">
