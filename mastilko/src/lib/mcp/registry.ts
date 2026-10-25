@@ -158,8 +158,9 @@ const etiketi = design({
   description:
     "Прави лист А4 с етикети за печат (буркани, кутии, подправки, тетрадки, инвентар) и връща линк. " +
     "Два режима: mode='same' пише един и същ текст на всички етикети (ползвай text1/text2); " +
-    "mode='list' прави РАЗЛИЧЕН етикет на всеки ред от listText — това е начинът за цяла серия наведнъж. " +
-    "Размерът се избира с presetId; най-често търсеният е '70x36' (24 на лист).",
+    "mode='list' прави РАЗЛИЧЕН етикет на всеки ред от listText — това е начинът за цяла серия наведнъж; " +
+    "дълъг списък продължава на следващи листове. Размерът се избира с presetId; най-често търсеният е '70x36' (24 на лист). " +
+    "Инвентарни/серийни номера: numbering + numberPrefix/numberPad/numberStep; '{N}' в barcodeValue дава различен баркод на всеки етикет.",
   path: "etiketi",
   iconFile: "etiketi",
   properties: {
@@ -173,6 +174,14 @@ const etiketi = design({
     listText: str("По един етикет на ред (при mode='list'). Например: Лютеница\\nКисело зеле\\nМед", 4000),
     numbering: bool("Добавя пореден номер на всеки етикет."),
     numberStart: num("От кой номер започва номерацията.", 0, 99999),
+    numberStep: num("Стъпка на номерацията (1 = 1, 2, 3…).", 1, 1000),
+    numberPad: num("Минимален брой цифри с водещи нули (4 → 0007). 0 = без.", 0, 8),
+    numberPrefix: str("Текст преди номера, напр. „INV-“ или „№ “.", 12),
+    numberSuffix: str("Текст след номера, напр. „/2026“.", 12),
+    sheetCount: num("Колко листа при mode='same' — номерацията продължава през тях.", 1, 100),
+    barcode: bool("Слага баркод на всеки етикет."),
+    barcodeType: oneOf("Вид баркод.", ["CODE128", "EAN13", "EAN8", "UPC", "ITF14", "CODE39"]),
+    barcodeValue: str("Стойност на баркода; '{N}' става номерът на етикета (напр. 'INV{N}').", 48),
     qrUrl: str("Адрес или текст за QR код върху етикета.", 300),
     cutLines: bool("Показва линии за рязане."),
     skipCells: num("Прескача толкова клетки — за доизползване на започнат лист.", 0, 200),
@@ -185,6 +194,14 @@ const etiketi = design({
     listText: z.string().max(4000).optional(),
     numbering: z.boolean().optional(),
     numberStart: z.number().int().min(0).max(99999).optional(),
+    numberStep: z.number().int().min(1).max(1000).optional(),
+    numberPad: z.number().int().min(0).max(8).optional(),
+    numberPrefix: z.string().max(12).optional(),
+    numberSuffix: z.string().max(12).optional(),
+    sheetCount: z.number().int().min(1).max(100).optional(),
+    barcode: z.boolean().optional(),
+    barcodeType: z.enum(["CODE128", "EAN13", "EAN8", "UPC", "ITF14", "CODE39"]).optional(),
+    barcodeValue: z.string().max(48).optional(),
     qrUrl: z.string().max(300).optional(),
     cutLines: z.boolean().optional(),
     skipCells: z.number().int().min(0).max(200).optional(),

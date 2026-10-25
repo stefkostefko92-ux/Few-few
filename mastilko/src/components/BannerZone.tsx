@@ -74,7 +74,9 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
               href={b.href || undefined}
               rel="noopener"
               className="relative block min-w-0 flex-1"
-              aria-label={b.imageAlt || b.title || "Реклама"}
+              // Името започва с видимия текст „Реклама“ (WCAG 2.5.3 „етикет в
+              // името“) — гласово управление казва „натисни Реклама“.
+              aria-label={`Реклама: ${b.imageAlt || b.title || "Carbon Stealth"}`}
             >
               <span className="absolute left-2 top-2 rounded bg-black/40 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">
                 Реклама

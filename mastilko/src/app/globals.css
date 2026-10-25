@@ -556,6 +556,9 @@ body {
 
   .print-area {
     transform: none !important;
+    /* Изместеният от калибрирането лист (translate) не бива да прелива в
+       следваща страница — без clip отместване надолу даваше празен 2-ри лист. */
+    overflow: clip !important;
     width: auto !important;
     box-shadow: none !important;
     border: none !important;
@@ -565,6 +568,9 @@ body {
     box-shadow: none !important;
     border: none !important;
     filter: none !important;
+    /* Калибриране на принтера (PrintBar): домашните принтери изместват
+       печата с 1–3 mm. translate не мести оформлението → без празни страници. */
+    translate: var(--print-dx, 0mm) var(--print-dy, 0mm);
   }
   * {
     -webkit-print-color-adjust: exact !important;

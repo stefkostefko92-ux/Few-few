@@ -15,9 +15,9 @@ const BASE = "https://mastilko-bg.com";
  */
 export const LAST_MODIFIED: Record<string, string> = {
   "": "2026-09-25",
-  "/etiketi": "2026-10-22",
+  "/etiketi": "2026-10-24",
   "/vizitki": "2026-10-22",
-  "/cv": "2026-10-22",
+  "/cv": "2026-10-24",
   "/pismo": "2026-10-22",
   "/gramoti": "2026-10-22",
   "/pokani": "2026-10-22",

@@ -14,10 +14,68 @@ const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const OFFLINE_URL = "/";
 
+// Всички инструменти се кешират ОЩЕ ПРИ ИНСТАЛИРАНЕ, с техния JS, CSS и
+// шрифтове. Досега офлайн работеха само страниците, отворени СЛЕД като
+// service worker-ът поеме контрол — първата посетена и всички неотворени
+// инструменти падаха на началната. Списъкът е огледало на TOOLS в
+// src/app/sitemap.ts (пази го тестът pwa.test.ts).
+const TOOL_PAGES = [
+  "/etiketi", "/vizitki", "/cv", "/pismo", "/gramoti", "/pokani", "/tabelki",
+  "/wifi", "/badzhove", "/obyava", "/vaucheri", "/kalendar", "/menu",
+  "/dokumentni-snimki",
+];
+
+/** HTML → собствените му /_next/static ресурси (скриптове, стилове). */
+function assetsOf(html) {
+  const out = new Set();
+  for (const m of html.matchAll(/(?:src|href)="(\/_next\/static\/[^"]+)"/g)) out.add(m[1]);
+  // Иконите и маскотът (public/) — иначе офлайн менюто е с празни места.
+  for (const m of html.matchAll(/src="(\/[^"/][^"]*\.(?:webp|png|svg|jpg))"/g)) out.add(m[1]);
+  return [...out];
+}
+
+/** CSS → шрифтовете в него (next/font ги слага като url(/_next/static/media/…)). */
+function fontsOf(css) {
+  const out = new Set();
+  for (const m of css.matchAll(/url\((\/_next\/static\/media\/[^)]+)\)/g)) out.add(m[1]);
+  return [...out];
+}
+
+async function precacheAll() {
+  const pages = await caches.open(PAGE_CACHE);
+  const statics = await caches.open(STATIC_CACHE);
+  const assets = new Set();
+  for (const path of [OFFLINE_URL, ...TOOL_PAGES]) {
+    try {
+      const res = await fetch(path, { credentials: "omit" });
+      if (!res.ok) continue;
+      await pages.put(path, res.clone());
+      for (const a of assetsOf(await res.text())) assets.add(a);
+    } catch {
+      /* без мрежа по време на инсталирането — ще се кешира при посещение */
+    }
+  }
+  for (const a of assets) {
+    try {
+      if (await statics.match(a)) continue;
+      const res = await fetch(a);
+      if (!res.ok) continue;
+      await statics.put(a, res.clone());
+      if (a.endsWith(".css")) {
+        for (const f of fontsOf(await res.text())) {
+          if (!(await statics.match(f))) await statics.add(f).catch(() => {});
+        }
+      }
+    } catch {
+      /* пропускаме — stale-while-revalidate ще го вземе по-късно */
+    }
+  }
+}
+
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(PAGE_CACHE).then((c) => c.add(OFFLINE_URL)).catch(() => {}),
-  );
+  // waitUntil държи инсталирането, докато всичко се кешира — иначе worker-ът
+  // може да бъде спрян по средата. Грешките не провалят инсталирането.
+  event.waitUntil(precacheAll().catch(() => {}));
   self.skipWaiting();
 });
 

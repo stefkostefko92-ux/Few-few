@@ -1,8 +1,10 @@
 "use client";
 
 import { z } from "zod";
-import { LABEL_PRESETS, sheetGrid } from "@/lib/print";
-import { resolveTheme, fontVars, resolveDecor, sheetBg, qrSafeColor, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { LABEL_PRESETS, MAX_SHEETS, sheetGrid } from "@/lib/print";
+import { BARCODE_TYPES, checkBarcode, type BarcodeType } from "@/lib/barcode";
+import { fillNumber, formatNumber, layoutSheets, nthNumber, splitLine } from "@/lib/labels";
+import { resolveTheme, fontVars, resolveDecor, sheetBg, qrSafeColor, readableAccent, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import FitHeight from "@/components/FitHeight";
 import FitText from "@/components/FitText";
@@ -31,6 +33,20 @@ interface LabelState extends StyleState {
   listText: string;
   numbering: boolean;
   numberStart: number;
+  /** Стъпка на номерацията (1, 2, 10…). */
+  numberStep: number;
+  /** Водещи нули — минимален брой цифри (0 = без). */
+  numberPad: number;
+  numberPrefix: string;
+  numberSuffix: string;
+  /** Колко листа при „Еднакви“ (напр. 100 номерирани стикера). */
+  sheetCount: number;
+  /** „Свой размер“ (presetId = "custom"): размерите от опаковката, в mm. */
+  customW: number;
+  customH: number;
+  customGapX: number;
+  customGapY: number;
+  customMargin: number;
   /** URL за QR код върху всеки етикет (празно = без QR). */
   qrUrl: string;
   cutLines: boolean;
@@ -40,7 +56,7 @@ interface LabelState extends StyleState {
   /** Баркод върху всеки етикет. */
   barcode: boolean;
   /** Формат на баркода. */
-  barcodeType: "CODE128" | "EAN13" | "EAN8" | "UPC";
+  barcodeType: BarcodeType;
   /** Стойност на баркода. */
   barcodeValue: string;
 }
@@ -57,12 +73,23 @@ const ProjectSchema = z
     listText: z.string().max(4000),
     numbering: z.boolean(),
     numberStart: z.number().int().min(0).max(99999),
+    numberStep: z.number().int().min(1).max(1000),
+    numberPad: z.number().int().min(0).max(8),
+    numberPrefix: z.string().max(12),
+    numberSuffix: z.string().max(12),
+    // 100 = MAX_SHEETS; литерал, защото огледалният тест на MCP чете числото от кода.
+    sheetCount: z.number().int().min(1).max(100),
+    customW: z.number().min(10).max(200),
+    customH: z.number().min(10).max(287),
+    customGapX: z.number().min(0).max(20),
+    customGapY: z.number().min(0).max(20),
+    customMargin: z.number().min(0).max(20),
     qrUrl: z.string().max(300),
     cutLines: z.boolean(),
     aiDesc: z.string().max(300),
     skipCells: z.number().int().min(0).max(200),
     barcode: z.boolean(),
-    barcodeType: z.enum(["CODE128", "EAN13", "EAN8", "UPC"]),
+    barcodeType: z.enum(BARCODE_TYPES),
     barcodeValue: z.string().max(48),
   })
   .partial();
@@ -76,6 +103,16 @@ const INITIAL: LabelState = {
   listText: "босилек\nриган\nчубрица\nмента | сушена, 2026",
   numbering: false,
   numberStart: 1,
+  numberStep: 1,
+  numberPad: 0,
+  numberPrefix: "№ ",
+  numberSuffix: "",
+  sheetCount: 1,
+  customW: 64,
+  customH: 34,
+  customGapX: 2,
+  customGapY: 0,
+  customMargin: 6,
   qrUrl: "",
   cutLines: true,
   aiDesc: "",
@@ -88,28 +125,42 @@ const INITIAL: LabelState = {
 interface CellContent {
   text1: string;
   text2: string;
-  num: number | null;
+  /** Форматираният номер („№ 7“, „INV-0007“) или null без номерация. */
+  num: string | null;
+  /** Стойността на баркода за ТОЗИ етикет („{N}“ → номерът). */
+  barcode: string;
 }
 
-/** Съдържанието на клетка i от листа (null = празна клетка, не се печата). */
+/** Съдържанието на етикет с пореден индекс i в серията (null = няма ред). */
 function cellContent(s: LabelState, lines: string[], i: number): CellContent | null {
-  const num = s.numbering ? s.numberStart + i : null;
+  const n = nthNumber(s.numberStart, s.numberStep || 1, i);
+  const digits = s.numberPad > 0 ? String(n).padStart(s.numberPad, "0") : String(n);
+  const num = s.numbering
+    ? formatNumber(n, { prefix: s.numberPrefix ?? "", suffix: s.numberSuffix ?? "", pad: s.numberPad ?? 0 })
+    : null;
+  const barcode = fillNumber(s.barcodeValue, digits);
   if (s.mode === "list") {
     const line = lines[i];
     if (!line) return null;
-    const [t1, t2] = line.split("|").map((p) => p.trim());
-    return { text1: t1 ?? line, text2: t2 ?? "", num };
+    const [text1, text2] = splitLine(line);
+    return { text1, text2, num, barcode };
   }
-  return { text1: s.text1, text2: s.text2, num };
+  return { text1: s.text1, text2: s.text2, num, barcode };
 }
 
 export default function LabelStudio() {
   const [s, setS] = useLocalState<LabelState>("mastilko-labels", INITIAL, (r) => ProjectSchema.parse(r));
-  const preset = LABEL_PRESETS.find((p) => p.id === s.presetId) ?? LABEL_PRESETS[0]!;
+  // „Свой размер“ — за листове, които не са в списъка (размерите са на опаковката).
+  const custom = s.presetId === "custom";
+  const preset = custom
+    ? { id: "custom", name: `Свой размер (${s.customW} × ${s.customH} mm)`, w: s.customW, h: s.customH, shape: "rect" as const, margin: s.customMargin, gapX: s.customGapX }
+    : (LABEL_PRESETS.find((p) => p.id === s.presetId) ?? LABEL_PRESETS[0]!);
   const theme = resolveTheme(s);
   // Правоъгълните се режат по общи линии (без междина); кръгли/овални — с 3 mm.
   const gap = preset.shape === "rect" ? 0 : 3;
-  const grid = sheetGrid(preset.w, preset.h, preset.margin ?? 7, gap, gap);
+  const firstDigits = s.numberPad > 0 ? String(s.numberStart).padStart(s.numberPad, "0") : String(s.numberStart);
+  const barcodeCheck = checkBarcode(s.barcodeType, fillNumber(s.barcodeValue, firstDigits));
+  const grid = sheetGrid(preset.w, preset.h, preset.margin ?? 7, preset.gapX ?? gap, custom ? s.customGapY : gap);
 
   const set = (patch: Partial<LabelState>) => setS({ ...s, ...patch });
 
@@ -120,8 +171,14 @@ export default function LabelStudio() {
   // Начеван лист: първите N клетки са вече изразходвани → печатаме от N нататък.
   const skip = Math.min(s.skipCells ?? 0, Math.max(0, grid.total - 1));
   const capacity = grid.total - skip;
-  const usedCells = s.mode === "list" ? Math.min(listLines.length, capacity) : capacity;
-  const overflow = s.mode === "list" ? Math.max(0, listLines.length - capacity) : 0;
+  // Списъкът вече НЕ спира на първия лист — колкото реда, толкова етикета, на
+  // колкото листа трябва (досега редовете след първия лист просто изчезваха).
+  const count = s.mode === "list"
+    ? listLines.length
+    : capacity + grid.total * (Math.max(1, s.sheetCount ?? 1) - 1);
+  const sheets = layoutSheets(count, grid.total, skip);
+  const printed = sheets.reduce((a, sh) => a + sh.length, 0);
+  const notPrinted = count - printed;
 
   const qrText = s.qrUrl.trim()
     ? /^https?:\/\//i.test(s.qrUrl.trim())
@@ -135,10 +192,9 @@ export default function LabelStudio() {
   // (Cricut/Silhouette): печаташ листа, после машината реже по същите позиции.
   function downloadCutSvg() {
     const parts: string[] = [];
-    for (let i = 0; i < grid.total; i++) {
-      const ci = i - skip;
-      if (ci < 0) continue;
-      if (!cellContent(s, listLines, ci)) continue;
+    // Контурите на първия лист (със заетите клетки на начевания лист
+    // пропуснати); следващите листове са със същата решетка.
+    for (const { cell: i } of sheets[0] ?? []) {
       const col = i % grid.cols;
       const row = Math.floor(i / grid.cols);
       const x = grid.offsetX + col * (preset.w + grid.gapX);
@@ -183,7 +239,37 @@ export default function LabelStudio() {
               {LABEL_PRESETS.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
+              <option value="custom">Свой размер…</option>
             </select>
+            {custom && (
+              <div className="mt-2 grid grid-cols-[repeat(auto-fit,minmax(6.5rem,1fr))] gap-2">
+                {([
+                  ["customW", "Ширина", 10, 200],
+                  ["customH", "Височина", 10, 287],
+                  ["customGapX", "Междина ↔", 0, 20],
+                  ["customGapY", "Междина ↕", 0, 20],
+                  ["customMargin", "Мин. поле", 0, 20],
+                ] as const).map(([k, label, min, max]) => (
+                  <label key={k} className="text-xs font-semibold text-ink-soft">
+                    {label} (mm)
+                    <input
+                      type="number"
+                      step={0.1}
+                      min={min}
+                      max={max}
+                      className="field-input !py-1"
+                      value={s[k]}
+                      onChange={(e) => set({ [k]: Math.min(max, Math.max(min, Number(e.target.value) || min)) })}
+                    />
+                  </label>
+                ))}
+                <p className="col-span-full text-xs text-ink-faint" aria-live="polite">
+                  {grid.total > 0
+                    ? `${grid.cols} × ${grid.rows} = ${grid.total} на лист · отляво ${grid.offsetX.toFixed(1)} mm, отгоре ${grid.offsetY.toFixed(1)} mm — сравни с опаковката.`
+                    : "Етикетът не се събира на А4 с тези размери."}
+                </p>
+              </div>
+            )}
           </div>
 
           <StyleControls value={s} onChange={set} hideBorder />
@@ -238,6 +324,22 @@ export default function LabelStudio() {
                   placeholder="напр. ягода · 2026"
                 />
               </div>
+              <div>
+                <label htmlFor="sheet-count" className="field-label">Брой листове</label>
+                <input
+                  id="sheet-count"
+                  type="number"
+                  className="field-input !w-28"
+                  min={1}
+                  max={MAX_SHEETS}
+                  value={s.sheetCount ?? 1}
+                  onChange={(e) => set({ sheetCount: Math.min(MAX_SHEETS, Math.max(1, Number(e.target.value) || 1)) })}
+                />
+                <p className="mt-1 text-xs text-ink-faint">
+                  С номерация номерата продължават на следващия лист — напр. 100
+                  инвентарни стикера на 5 листа.
+                </p>
+              </div>
             </>
           ) : (
             <div>
@@ -253,12 +355,17 @@ export default function LabelStudio() {
                 placeholder={"босилек\nриган\nмента | сушена, 2026"}
               />
               <p className="mt-1 text-xs text-ink-faint">
-                {listLines.length} реда · {grid.total} места на листа
-                {overflow > 0 && (
-                  <strong className="text-tera-dark">
-                    {" "}· {overflow} не се събират — избери по-малък размер или втори лист
+                {listLines.length} реда · {grid.total} места на лист ·{" "}
+                <strong className="text-ink-soft">{sheets.length} {sheets.length === 1 ? "лист" : "листа"}</strong>
+                {notPrinted > 0 && (
+                  <strong className="text-ink">
+                    {" "}· ⚠ {notPrinted} реда над тавана от {MAX_SHEETS} листа — раздели списъка
                   </strong>
                 )}
+              </p>
+              <p className="mt-1 text-xs text-ink-faint">
+                Две колони от Excel или Google Sheets се поставят направо —
+                табулацията става разделител между първия и втория ред.
               </p>
               <button
                 type="button"
@@ -283,28 +390,53 @@ export default function LabelStudio() {
             </div>
           )}
 
-          <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
-            <input
-              type="checkbox"
-              checked={s.numbering}
-              onChange={(e) => set({ numbering: e.target.checked })}
-              className="h-4 w-4 accent-tera"
-            />
-            Автоматична номерация
-            {s.numbering && (
+          <div>
+            <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
               <input
-                type="number"
-                aria-label="Начален номер"
-                className="field-input !w-24 !py-1"
-                min={0}
-                max={99999}
-                value={s.numberStart}
-                onChange={(e) =>
-                  set({ numberStart: Math.max(0, Number(e.target.value) || 0) })
-                }
+                type="checkbox"
+                checked={s.numbering}
+                onChange={(e) => set({ numbering: e.target.checked })}
+                className="h-4 w-4 accent-tera"
               />
+              Автоматична номерация
+            </label>
+            {s.numbering && (
+              <div className="mt-2 grid grid-cols-[repeat(auto-fit,minmax(6.5rem,1fr))] gap-2">
+                {([
+                  ["numberStart", "Начало", 0, 99999],
+                  ["numberStep", "Стъпка", 1, 1000],
+                  ["numberPad", "Цифри (водещи 0)", 0, 8],
+                ] as const).map(([k, label, min, max]) => (
+                  <label key={k} className="text-xs font-semibold text-ink-soft">
+                    {label}
+                    <input
+                      type="number"
+                      className="field-input !py-1"
+                      min={min}
+                      max={max}
+                      value={s[k] ?? min}
+                      onChange={(e) => set({ [k]: Math.min(max, Math.max(min, Number(e.target.value) || min)) })}
+                    />
+                  </label>
+                ))}
+                <label className="text-xs font-semibold text-ink-soft">
+                  Префикс
+                  <input className="field-input !py-1" maxLength={12} value={s.numberPrefix ?? ""}
+                    onChange={(e) => set({ numberPrefix: e.target.value })} placeholder="№ " />
+                </label>
+                <label className="text-xs font-semibold text-ink-soft">
+                  Суфикс
+                  <input className="field-input !py-1" maxLength={12} value={s.numberSuffix ?? ""}
+                    onChange={(e) => set({ numberSuffix: e.target.value })} placeholder="/2026" />
+                </label>
+                <p className="col-span-full text-xs text-ink-faint">
+                  Пример: {formatNumber(s.numberStart, { prefix: s.numberPrefix ?? "", suffix: s.numberSuffix ?? "", pad: s.numberPad ?? 0 })},{" "}
+                  {formatNumber(nthNumber(s.numberStart, s.numberStep || 1, 1), { prefix: s.numberPrefix ?? "", suffix: s.numberSuffix ?? "", pad: s.numberPad ?? 0 })}…
+                  {" "}Сложи <code>{"{N}"}</code> в баркода и всеки етикет получава своя номер.
+                </p>
+              </div>
             )}
-          </label>
+          </div>
 
           <div>
             <label htmlFor="qrUrl" className="field-label">
@@ -389,18 +521,29 @@ export default function LabelStudio() {
                   <option value="EAN13">EAN-13</option>
                   <option value="EAN8">EAN-8</option>
                   <option value="UPC">UPC-A</option>
+                  <option value="ITF14">ITF-14 (кашони)</option>
+                  <option value="CODE39">Code 39</option>
                 </select>
                 <input
                   className="field-input"
                   maxLength={48}
                   value={s.barcodeValue}
                   onChange={(e) => set({ barcodeValue: e.target.value })}
-                  placeholder={s.barcodeType === "CODE128" ? "напр. ABC-12345" : "напр. 3800000000001"}
+                  placeholder={s.barcodeType === "CODE128" ? "напр. INV-{N}" : "напр. 3800000000001"}
                   aria-label="Стойност на баркода"
                 />
+                {/* Защо липсва баркодът — казваме веднага (най-често: грешна
+                    контролна цифра на EAN-13), вместо той просто да изчезне. */}
+                {barcodeCheck.message && (
+                  <p role={barcodeCheck.ok ? undefined : "alert"}
+                    className={`text-xs sm:col-span-2 ${barcodeCheck.ok ? "text-ink-soft" : "font-semibold text-ink"}`}>
+                    {barcodeCheck.ok ? "✓ " : "⚠ "}{barcodeCheck.message}
+                  </p>
+                )}
                 <p className="text-xs text-ink-faint sm:col-span-2">
-                  EAN-13 иска 12–13 цифри, EAN-8 — 7–8, UPC — 11–12. Кодът се
-                  генерира в браузъра; при невалидна стойност не се показва.
+                  EAN-13 иска 12–13 цифри, EAN-8 — 7–8, UPC — 11–12, ITF-14 —
+                  13–14 (при по-кратката дължина контролната цифра се добавя
+                  сама). Кодът се генерира в браузъра.
                 </p>
               </div>
             )}
@@ -450,12 +593,12 @@ export default function LabelStudio() {
       {/* Преглед + печат */}
       <div className="space-y-4">
         <PrintBar
-          summary={`${usedCells} етикета (${preset.name.toLowerCase()}) на лист А4`}
+          summary={`${printed} етикета (${preset.name.toLowerCase()}) на ${sheets.length} ${sheets.length === 1 ? "лист" : "листа"} А4`}
         />
-        <SheetPreview style={fontVars(s)}>
-          {Array.from({ length: grid.total }).map((_, i) => {
-            const ci = i - skip;
-            const content = ci < 0 ? null : cellContent(s, listLines, ci);
+        {sheets.map((sheet, si) => (
+        <SheetPreview key={si} style={fontVars(s)}>
+          {sheet.map(({ cell: i, index: ci }) => {
+            const content = cellContent(s, listLines, ci);
             if (!content) return null;
             const col = i % grid.cols;
             const row = Math.floor(i / grid.cols);
@@ -540,15 +683,16 @@ export default function LabelStudio() {
                         marginTop: "0.8mm",
                         fontSize: fs(Math.min(preset.h * 0.11, 4.5)),
                         fontWeight: 700,
-                        color: theme.accent,
+                        // Затъмнен акцент — светлите акценти падаха под AA при печат.
+                        color: readableAccent(theme.accent, theme.bg),
                       }}
                     >
-                      № {content.num}
+                      {content.num}
                     </span>
                   )}
-                  {s.barcode && s.barcodeValue.trim() && (
+                  {s.barcode && content.barcode.trim() && (
                     <Barcode
-                      value={s.barcodeValue}
+                      value={content.barcode}
                       format={s.barcodeType}
                       color={theme.fg}
                       style={{ marginTop: "1mm", width: "92%", height: `${Math.min(preset.h * 0.42, 14)}mm` }}
@@ -559,6 +703,7 @@ export default function LabelStudio() {
             );
           })}
         </SheetPreview>
+        ))}
       </div>
     </div>
   );

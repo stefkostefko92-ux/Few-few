@@ -1,7 +1,8 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, sheetBg, readableAccent, textOnSolid, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, sheetBg, readableAccent, textOnSolid, resolveDecor, StyleSchemaShape, type StyleState } from "@/lib/style";
+import BackgroundDecor from "@/components/BackgroundDecor";
 import { bgHolidays } from "@/lib/bg-holidays";
 import { useLocalState } from "@/lib/use-local-state";
 import PrintBar from "@/components/PrintBar";
@@ -99,14 +100,16 @@ export default function CalendarStudio() {
             position: "absolute", inset: 0, background: sheetBg(s, theme), color: theme.fg,
             display: "flex", flexDirection: "column", padding: "14mm 12mm",
           }}>
-            <div style={{ textAlign: "center", marginBottom: "8mm" }}>
+            {/* „Украса на фона“ се избираше в контролите, но не се рисуваше. */}
+            <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
+            <div style={{ textAlign: "center", marginBottom: "8mm", position: "relative", zIndex: 1 }}>
               <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: fs(16), color: accentInk }}>
                 {MONTHS[s.month]}
               </div>
               <div style={{ fontSize: fs(6), letterSpacing: "0.2em", opacity: 0.8 }}>{s.year}</div>
             </div>
             {/* Дни от седмицата */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1mm", marginBottom: "1.5mm" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1mm", marginBottom: "1.5mm", position: "relative", zIndex: 1 }}>
               {WD.map((w, i) => (
                 <div key={w} style={{ textAlign: "center", fontWeight: 700, fontSize: fs(3.6), color: i >= 5 ? accentInk : theme.fg, opacity: i >= 5 ? 1 : 0.8 }}>
                   {w}
@@ -114,7 +117,7 @@ export default function CalendarStudio() {
               ))}
             </div>
             {/* Мрежа с дните */}
-            <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gridAutoRows: "1fr", gap: "1mm" }}>
+            <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gridAutoRows: "1fr", gap: "1mm", position: "relative", zIndex: 1 }}>
               {cells.map((d, i) => {
                 const weekend = i % 7 >= 5;
                 const hol = d !== null ? holidays[`${s.month + 1}-${d}`] : undefined;

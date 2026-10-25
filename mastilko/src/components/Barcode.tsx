@@ -33,7 +33,13 @@ export default function Barcode({ value, format = "CODE128", color = "#111111", 
         lineColor: color,
         background: "transparent",
         displayValue,
-        margin: 0,
+        // „Тиха зона“ — празно поле около чертите (≥10 модула; модулът тук е
+        // width = 2 → 22 = 11 модула, колкото иска EAN-13). С margin 0 чертите
+        // опираха в съседния текст и скенерите (особено за ITF-14) не четяха.
+        marginLeft: 22,
+        marginRight: 22,
+        marginTop: 0,
+        marginBottom: 0,
         fontSize: 16,
         width: 2,
         height: 70,
