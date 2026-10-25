@@ -16,15 +16,12 @@ const ALL_GROUPS: NavGroup[] = [...NAV_GROUPS, MORE];
 
 // Ред на скриване, когато основното меню не се събира на един ред: от
 // последния по важност към първия („Данъци и срокове“, „Пенсии и помощи“…).
-// „Пазете се от измами“ (безопасността) се скрива последна, а текущият раздел —
-// само ако нищо друго не остава.
+// „Пазете се от измами“ (безопасността) и текущият раздел НЕ се скриват
+// никога — двата заедно са ~450px и се събират и на 1024px при шрифт 125%.
 const SAFETY_HREF = "/izmami";
-const HIDE_ORDER: string[] = [
-  ...TOP_NAV.map((i) => i.href)
-    .filter((h) => h !== SAFETY_HREF)
-    .reverse(),
-  SAFETY_HREF,
-];
+const HIDE_ORDER: string[] = TOP_NAV.map((i) => i.href)
+  .filter((h) => h !== SAFETY_HREF)
+  .reverse();
 
 function isCurrent(pathname: string | null, href: string): boolean {
   if (!pathname) return false;
@@ -187,8 +184,8 @@ export function SiteHeader() {
 
   // Вторият ред е висок един ред: показва толкова раздели, колкото се
   // събират според ширината и размера на текста (125% на 1280px). Излишните
-  // се скриват по HIDE_ORDER — първо най-малко важните, никога преди тях
-  // „Пазете се от измами“ и текущия раздел. Скритите отиват в края на реда
+  // се скриват по HIDE_ORDER — първо най-малко важните; никога „Пазете се от
+  // измами“ и текущия раздел. Скритите отиват в края на реда
   // (order) и на скрития втори ред (overflow-hidden); скриват се и за
   // клавиатурата и четеца (visibility) — те са в „Всички раздели“.
   useEffect(() => {
@@ -206,7 +203,6 @@ export function SiteHeader() {
       const order = HIDE_ORDER.map((h) => byHref.get(h)).filter(
         (li): li is HTMLElement => !!li && li !== current,
       );
-      if (current) order.push(current);
       const hidden = new Set<HTMLElement>();
       let total = items.reduce((s, li) => s + (width.get(li) ?? 0), 0);
       for (const li of order) {
@@ -323,9 +319,11 @@ export function SiteHeader() {
           </button>
         </div>
 
-        {/* Основното меню на компютър — втори ред. */}
+        {/* Основното меню на компютър — втори ред. Отстъпът px-2 (не 2.5):
+            при 1152–1366px и шрифт 100% и шестте раздела се събират на реда
+            (с px-2.5 не стигаха 2px и „Данъци и срокове“ се скриваше). */}
         <div className="hidden border-t border-slate-200 lg:block">
-          <nav aria-label="Основно меню" className="-mx-2.5 flex items-stretch gap-1">
+          <nav aria-label="Основно меню" className="-mx-2 flex items-stretch gap-1">
             <ul ref={navListRef} className="flex h-12 min-w-0 flex-1 flex-wrap items-stretch overflow-hidden">
               {TOP_NAV.map((item) => (
                 <li key={item.href} data-href={item.href} className="flex">
@@ -334,7 +332,7 @@ export function SiteHeader() {
                     href={item.href}
                     onClick={close}
                     aria-current={isCurrent(pathname, item.href) ? "page" : undefined}
-                    className="inline-flex h-12 items-center whitespace-nowrap px-2.5 text-base font-semibold text-slate-800 hover:bg-slate-50 hover:text-brand-700 focus-visible:[outline-offset:-3px] aria-[current=page]:text-brand-700 aria-[current=page]:shadow-[inset_0_-3px_0_#212f8a]"
+                    className="inline-flex h-12 items-center whitespace-nowrap px-2 text-base font-semibold text-slate-800 hover:bg-slate-50 hover:text-brand-700 focus-visible:[outline-offset:-3px] aria-[current=page]:text-brand-700 aria-[current=page]:shadow-[inset_0_-3px_0_#212f8a]"
                   >
                     {item.label}
                   </Link>
