@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { hasDotDecimalMoney, toBgMoneyDecimals } from "@/lib/bg-decimals";
+import { hasDotDecimalMoney, toBgMoneyDecimals } from "../../../prisma/bg-decimals";
 
 test("сумите и курсът — с десетична запетая", () => {
   assert.equal(toBgMoneyDecimals("1 евро = 1.95583 лева"), "1 евро = 1,95583 лева");

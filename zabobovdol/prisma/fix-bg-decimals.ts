@@ -1,9 +1,9 @@
 import { prisma } from "./_seedlib";
-import { hasDotDecimalMoney, toBgMoneyDecimals } from "../src/lib/bg-decimals";
+import { hasDotDecimalMoney, toBgMoneyDecimals } from "./bg-decimals";
 
 // Еднократна поправка на ВЕЧЕ засетите отговори (seed-ът върви само при
 // първо пускане): „1.95583“ → „1,95583“, „25.56 евро“ → „25,56 евро“.
-// Пипа само сумите пред валута и фиксирания курс (виж src/lib/bg-decimals.ts),
+// Пипа само сумите пред валута и фиксирания курс (виж prisma/bg-decimals.ts),
 // нищо друго в текста. Безопасно е да се пусне повече от веднъж.
 //   npm run db:fix:decimals
 
