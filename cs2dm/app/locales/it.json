@@ -1557,5 +1557,31 @@
       "bounties": "Taglie",
       "weapon": "Arma"
     }
+  },
+  "highlights": {
+    "title": "Momenti salienti",
+    "notRecorded": "Per questa partita non sono registrati dettagli delle uccisioni.",
+    "at": "a {time} dall'inizio",
+    "multi": {
+      "title": "Serie",
+      "lead": "Almeno 3 uccisioni di fila, a non più di {seconds} s l'una dall'altra e senza morire nel frattempo.",
+      "kind": "{kills}K",
+      "empty": "Nessuna serie di 3 o più uccisioni."
+    },
+    "collection": {
+      "title": "Collezionista",
+      "kinds": {
+        "noscope": "Senza mirino",
+        "wallbang": "Attraverso il muro",
+        "smoke": "Attraverso il fumo",
+        "blind": "Da accecato"
+      },
+      "most": "il maggior numero ({count}):",
+      "empty": "Nessuna uccisione senza mirino, attraverso muri, attraverso il fumo o da accecato."
+    },
+    "longest": {
+      "title": "L'uccisione più lontana",
+      "meters": "{meters} m"
+    }
   }
 }

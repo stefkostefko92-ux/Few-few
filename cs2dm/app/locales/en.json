@@ -1557,5 +1557,31 @@
       "bounties": "Bounties",
       "weapon": "Weapon"
     }
+  },
+  "highlights": {
+    "title": "Highlights",
+    "notRecorded": "No kill details were recorded for this match.",
+    "at": "at {time} from the start",
+    "multi": {
+      "title": "Streaks",
+      "lead": "At least 3 kills in a row, at most {seconds} s apart and without dying in between.",
+      "kind": "{kills}K",
+      "empty": "No streak of 3 or more kills."
+    },
+    "collection": {
+      "title": "Collector",
+      "kinds": {
+        "noscope": "No-scope",
+        "wallbang": "Wallbang",
+        "smoke": "Through smoke",
+        "blind": "While blind"
+      },
+      "most": "most ({count}):",
+      "empty": "No no-scope, wallbang, through-smoke or blind kills."
+    },
+    "longest": {
+      "title": "Longest kill",
+      "meters": "{meters} m"
+    }
   }
 }

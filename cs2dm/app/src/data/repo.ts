@@ -1,5 +1,6 @@
 import type { PublicEvent } from '../events.js';
 import type { HeatCell } from '../heatmap.js';
+import type { MomentKind } from '../highlights.js';
 
 /**
  * Какво публичният сайт чете от базата. Интерфейсът е тук (без Prisma), за да могат маршрутите
@@ -134,6 +135,21 @@ export interface MatchDetail extends Omit<MatchListRow, 'top'> {
   rows: MatchRow[];
 }
 
+/** Име в анализите на мача: скрит играч (чл. 21 GDPR) → и двете null („скрит играч“, без линк). */
+export interface MatchName {
+  steamId: string | null;
+  name: string | null;
+}
+
+/** Хайлайтите на мача (§13) — от убийствата между хора в прозореца му. */
+export interface MatchHighlights {
+  /** Има ли запазени убийства за мача (иначе — само картата, без хайлайти). */
+  recorded: boolean;
+  multiKills: Array<MatchName & { kills: number; offsetMs: number; weapons: string[] }>;
+  collections: Array<{ kind: MomentKind; count: number; leader: MatchName; leaderCount: number }>;
+  longest: (MatchName & { weapon: string; meters: number; offsetMs: number }) | null;
+}
+
 export interface SitemapPlayer {
   steamId: string;
   updatedAt: Date;
@@ -168,6 +184,8 @@ export interface Repo {
   recentMatches(limit: number): Promise<MatchListRow[]>;
   /** Един мач с всички редове по място; няма → null. */
   match(id: number): Promise<MatchDetail | null>;
+  /** Хайлайтите на мача; няма мач → null. */
+  matchHighlights(id: number): Promise<MatchHighlights | null>;
 }
 
 export function pagesFor(total: number, pageSize: number): number {

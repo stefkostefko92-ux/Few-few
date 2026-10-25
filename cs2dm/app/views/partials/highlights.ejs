@@ -1,0 +1,43 @@
+<%# Хайлайтите на мача (CONTRACT §13): серии 3K+, „колекцията“ и най-далечното убийство. Скрит играч — без линк. %>
+<section class="card spaced" aria-labelledby="hl-title">
+  <h2 id="hl-title"><%= t('highlights.title') %></h2>
+  <% if (!highlights || !highlights.recorded) { %>
+  <p><%= t('highlights.notRecorded') %></p>
+  <% } else { %>
+  <div class="hl-grid">
+    <div>
+      <h3><%= t('highlights.multi.title') %></h3>
+      <p><%= t('highlights.multi.lead', { seconds: highlights.gapSeconds }) %></p>
+      <% if (highlights.multiKills.length === 0) { %>
+      <p><%= t('highlights.multi.empty') %></p>
+      <% } else { %>
+      <ol class="hl-list">
+        <% highlights.multiKills.forEach((run) => { %><li>
+          <span class="hl-kind"><%= run.kind %></span>
+          <span class="hl-main"><% if (run.steamId) { %><a href="<%= playerHref(run.steamId) %>"><%= run.name %></a><% } else { %><%= run.name %><% } %></span>
+          <span class="hl-meta"><%= t('highlights.at', { time: run.time }) %> · <%= run.weapons %></span>
+        </li>
+        <% }) %>
+      </ol>
+      <% } %>
+    </div>
+    <div>
+      <h3><%= t('highlights.collection.title') %></h3>
+      <ol class="hl-list">
+        <% highlights.collections.forEach((line) => { %><li>
+          <span class="hl-kind"><%= fmt.int(line.count) %></span>
+          <span class="hl-main"><%= t('highlights.collection.kinds.' + line.kind) %></span>
+          <span class="hl-meta"><%= t('highlights.collection.most', { count: fmt.int(line.leaderCount) }) %> <% if (line.leader.steamId) { %><a href="<%= playerHref(line.leader.steamId) %>"><%= line.leader.name %></a><% } else { %><%= line.leader.name %><% } %></span>
+        </li>
+        <% }) %>
+        <% if (highlights.longest) { %><li>
+          <span class="hl-kind"><%= t('highlights.longest.meters', { meters: highlights.longest.meters }) %></span>
+          <span class="hl-main"><%= t('highlights.longest.title') %></span>
+          <span class="hl-meta"><% if (highlights.longest.steamId) { %><a href="<%= playerHref(highlights.longest.steamId) %>"><%= highlights.longest.name %></a><% } else { %><%= highlights.longest.name %><% } %> · <%= highlights.longest.weapon %> · <%= t('highlights.at', { time: highlights.longest.time }) %></span>
+        </li><% } %>
+      </ol>
+      <% if (highlights.collections.length === 0) { %><p><%= t('highlights.collection.empty') %></p><% } %>
+    </div>
+  </div>
+  <% } %>
+</section>

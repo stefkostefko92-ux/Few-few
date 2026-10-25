@@ -2,12 +2,14 @@ import { Prisma, type PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import type { PublicEvent } from '../events.js';
 import { CELL_PX, DUST2_OVERVIEW, cleanCells, type HeatCell } from '../heatmap.js';
+import { loadMatchHighlights } from './match-analytics.js';
 import { loadEvents, loadMatch, loadRecentMatches } from './public-extra.js';
 import {
   RATIO_MIN_KILLS,
   pagesFor,
   type LeaderRow,
   type MatchDetail,
+  type MatchHighlights,
   type MatchListRow,
   type Paged,
   type PublicBan,
@@ -260,6 +262,10 @@ export class PrismaRepo implements Repo {
 
   match(id: number): Promise<MatchDetail | null> {
     return loadMatch(this.db, id);
+  }
+
+  matchHighlights(id: number): Promise<MatchHighlights | null> {
+    return loadMatchHighlights(this.db, id);
   }
 
   async lastStatsUpdate(): Promise<Date | null> {
