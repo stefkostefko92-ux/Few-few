@@ -4,7 +4,7 @@
  */
 
 /** Последна промяна на статичните страници — сменя се ръчно, когато се промени текстът им. */
-export const CONTENT_UPDATED = '2026-10-24';
+export const CONTENT_UPDATED = '2026-10-25';
 
 /** Последна промяна на всеки правен текст — показва се на страницата и отива в sitemap. */
 export const LEGAL_UPDATED = {
@@ -32,6 +32,8 @@ export const RETENTION = {
   matchesDays: 90,
   /** Дуелите (CONTRACT §15) — duels. Значките (player_badges) се пазят, докато играчът съществува. */
   duelsDays: 90,
+  /** Мисиите за деня (CONTRACT §16) — mission_progress, по деня на мисията. */
+  missionsDays: 90,
 } as const;
 
 /** Въпросите на началната страница (видими като H3 и в FAQPage) — `home.faq.<id>.q/a`. */

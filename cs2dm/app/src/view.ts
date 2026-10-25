@@ -51,6 +51,8 @@ export interface CommonLocals {
   server: { address: string; connectUrl: string; command: string };
   contactEmail: string | null;
   discordUrl: string | null;
+  /** Часовата зона на сайта (DISPLAY_TZ) — денят на мисиите и седмицата на купата (§16–17). */
+  displayTz: string;
 }
 
 export function commonLocals(locale: Locale, current: NavId): CommonLocals {
@@ -80,6 +82,7 @@ export function commonLocals(locale: Locale, current: NavId): CommonLocals {
     },
     contactEmail: cfg.CONTACT_EMAIL ?? null,
     discordUrl: cfg.DISCORD_URL ?? null,
+    displayTz: cfg.DISPLAY_TZ,
   };
 }
 

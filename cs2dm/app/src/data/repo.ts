@@ -1,6 +1,8 @@
 import type { PublicEvent } from '../events.js';
+import type { BadgeKind } from './honors.js';
 import type { HeatCell } from '../heatmap.js';
 import type { MomentKind } from '../highlights.js';
+import type { PlayerMissions } from '../missions.js';
 
 /**
  * Какво публичният сайт чете от базата. Интерфейсът е тук (без Prisma), за да могат маршрутите
@@ -137,10 +139,11 @@ export interface MatchDetail extends Omit<MatchListRow, 'top'> {
 
 /** Значка на профила (CONTRACT §15): вид, колко пъти, последната и рекордът в убийства (ако има). */
 export interface BadgeSummary {
-  kind: 'zone_king';
+  kind: BadgeKind;
   count: number;
   lastAt: Date;
-  bestKills: number | null;
+  /** Рекордът по вида (`BADGE_BEST` в honors.ts): убийства в зоната · дни подред · XP за седмицата. */
+  best: number | null;
 }
 
 /** Дуелите на играча за срока на `duels` (§15, 90 дни). */
@@ -251,6 +254,8 @@ export interface Repo {
   matchReport(id: number, steamId: string): Promise<MatchReport | null>;
   /** Последните мачове на играч, най-новият първи; скрит или непознат → []. */
   playerMatches(steamId: string, limit: number): Promise<PlayerMatchRow[]>;
+  /** Мисиите на играча за деня `yyyy-MM-dd` (§16) и колко е изпълнил за срока на таблицата. */
+  missions(steamId: string, day: string): Promise<PlayerMissions>;
 }
 
 export function pagesFor(total: number, pageSize: number): number {

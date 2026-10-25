@@ -325,7 +325,8 @@
       "rank": "Il Suo livello e l'XP.",
       "report": "Segnalazione agli amministratori di un cheater o di una violazione.",
       "lang": "La lingua dei messaggi in gioco.",
-      "duel": "Un duello a 5 uccisioni con un giocatore a scelta; risponde con !accept o !decline."
+      "duel": "Un duello a 5 uccisioni con un giocatore a scelta; risponde con !accept o !decline.",
+      "missions": "Le Sue tre missioni di oggi e i progressi (in breve: !m)."
     },
     "vipStripe": {
       "eyebrow": "Sostegno al server",
@@ -361,6 +362,15 @@
         "tag": "Duello",
         "title": "Uno contro uno nel FFA",
         "text": "Sfidi qualcuno con !duel <nome>. Vince chi arriva per primo a {target} uccisioni sull'altro; dopo {minutes} minuti vince chi è in vantaggio. Vittorie, sconfitte e pareggi finiscono sul profilo."
+      }
+    },
+    "daily": {
+      "title": "Ogni giorno. Ogni settimana.",
+      "missions": {
+        "tag": "Missioni del giorno",
+        "title": "Tre compiti al giorno",
+        "text": "Ogni giorno a mezzanotte riceve tre missioni — facile, media e difficile: colpi alla testa, una serie, il coltello, un duello, minuti di gioco. Quella completata dà subito XP, e tutte e tre per {days} giorni di fila danno un distintivo sul profilo.",
+        "how": "Scriva !missions in gioco"
       }
     }
   },
@@ -410,7 +420,9 @@
         "mostWantedRow": "Most Wanted abbattuto (bonus)",
         "mostWanted": "Il Most Wanted è il giocatore con più uccisioni sulla mappa attuale (almeno {min} uccisioni); il server annuncia ogni cambio. Chi lo abbatte ottiene +{xp} XP in più: il bonus viene moltiplicato insieme all'uccisione.",
         "duelRow": "Duello vinto",
-        "duel": "Duello: scriva !duel <nome> e l'altro risponde con !accept o !decline entro {invite} s. Chi per primo fa {target} uccisioni sull'altro (o è in vantaggio dopo {minutes} minuti) ottiene subito +{xp} XP; il pari è un pareggio. Il resto del gioco continua normalmente; gli stessi due giocatori attendono {cooldown} minuti prima del duello successivo."
+        "duel": "Duello: scriva !duel <nome> e l'altro risponde con !accept o !decline entro {invite} s. Chi per primo fa {target} uccisioni sull'altro (o è in vantaggio dopo {minutes} minuti) ottiene subito +{xp} XP; il pari è un pareggio. Il resto del gioco continua normalmente; gli stessi due giocatori attendono {cooldown} minuti prima del duello successivo.",
+        "missionsRow": "Missione del giorno — facile / media / difficile",
+        "missions": "Missioni del giorno: ogni giorno a mezzanotte ({tz}) ognuno ne riceve tre — facile (+{easy} XP), media (+{medium} XP) e difficile (+{hard} XP). Contano solo le uccisioni di giocatori, i duelli vinti e i minuti di gioco. L'XP arriva subito, senza moltiplicatore; tutte e tre per {days} giorni di fila danno il distintivo «{badge}». In gioco: !missions."
       }
     },
     "pager": {
@@ -432,6 +444,16 @@
     "levelLabel": "Avanzamento verso il livello {next}",
     "progress": "{current} di {span} XP per il livello {next}",
     "xpTotal": "{xp} XP in totale",
+    "missions": {
+      "title": "Missioni di oggi",
+      "lead": "Tre nuove ogni giorno a mezzanotte ({tz}). I progressi si aggiornano entro un minuto mentre gioca; in gioco — !missions.",
+      "progress": "{progress} su {target}",
+      "done": "Completata",
+      "completed": {
+        "one": "{count} missione completata negli ultimi {days} giorni.",
+        "other": "{count} missioni completate negli ultimi {days} giorni."
+      }
+    },
     "cards": {
       "season": "Questa stagione — {season}",
       "allTime": "Di sempre"
@@ -503,7 +525,8 @@
       "lead": "I distintivi delle modalità dell'arena restano sul profilo finché il profilo esiste.",
       "empty": "Ancora nessun riconoscimento. Faccia più uccisioni di tutti nella zona calda e il distintivo «Re della zona» è Suo.",
       "kinds": {
-        "zone_king": "Re della zona"
+        "zone_king": "Re della zona",
+        "mission_streak": "7 giorni di fila"
       },
       "times": {
         "one": "{count} volta",
@@ -514,10 +537,37 @@
         "one": "record: {count} uccisione nella zona",
         "other": "record: {count} uccisioni nella zona"
       },
+      "bestDays": {
+        "one": "record: {count} giorno di fila",
+        "other": "record: {count} giorni di fila"
+      },
       "duels": "Duelli negli ultimi {days} giorni",
       "wins": "Vittorie",
       "losses": "Sconfitte",
       "draws": "Pareggi"
+    }
+  },
+  "missions": {
+    "tiers": {
+      "easy": "Facile",
+      "medium": "Media",
+      "hard": "Difficile"
+    },
+    "kinds": {
+      "headshots": "{target} uccisioni con colpo alla testa",
+      "rifle": "{target} uccisioni con fucile d'assalto",
+      "smg": "{target} uccisioni con mitraglietta",
+      "pistol": "{target} uccisioni con pistola",
+      "sniper": "{target} uccisioni con fucile di precisione",
+      "knife": "Un'uccisione con il coltello",
+      "wallbang": "Un'uccisione attraverso un muro",
+      "smoke": "Un'uccisione attraverso il fumo",
+      "noscope": "Un'uccisione noscope con il fucile di precisione",
+      "streak": "Una serie di {target} uccisioni",
+      "zone": "{target} uccisioni nella zona calda",
+      "wanted": "Abbatta il Most Wanted",
+      "duel": "Vinca un duello",
+      "minutes": "Giochi {target} minuti"
     }
   },
   "bans": {
@@ -663,7 +713,8 @@
           "Sanzioni: tipo, categoria, scadenza e un motivo interno visibile solo agli amministratori.",
           "Gli ultimi 2000 eventi circa del server (ingressi, uccisioni, chat) restano brevemente nella memoria operativa per la moderazione e vengono sovrascritti di continuo; la chat non viene salvata nel database.",
           "Riconoscimenti delle modalità dell'arena (ad esempio «Re della zona»: la mappa, la zona e il numero di uccisioni), mostrati sul Suo profilo.",
-          "Duelli (!duel): chi contro chi, il risultato e quando, per vittorie, sconfitte e pareggi sul profilo."
+          "Duelli (!duel): chi contro chi, il risultato e quando, per vittorie, sconfitte e pareggi sul profilo.",
+          "Missioni del giorno (!missions): quale missione, a che punto è arrivato e quando è stata completata — per i progressi sul profilo e il distintivo «7 giorni di fila»."
         ]
       },
       "website": {
@@ -696,7 +747,8 @@
           "Dati di fatturazione per il VIP: per il tempo richiesto dalla legge bulgara sulla contabilità.",
           "Schede delle partite (nickname e risultato in ogni partita) — {matchesDays} giorni, poi cancellate automaticamente.",
           "Riconoscimenti (distintivi come «Re della zona»): finché esiste il Suo profilo; vengono cancellati insieme a esso.",
-          "Duelli: {duelsDays} giorni, poi vengono cancellati automaticamente."
+          "Duelli: {duelsDays} giorni, poi vengono cancellati automaticamente.",
+          "Missioni del giorno: {missionsDays} giorni, poi vengono cancellate automaticamente."
         ]
       },
       "recipients": {
@@ -1484,7 +1536,8 @@
         "matches": "Partite (schede — 90 giorni)",
         "badges": "Distintivi (riconoscimenti)",
         "zones": "Zone calde create dal giocatore",
-        "duels": "Duelli (90 giorni)"
+        "duels": "Duelli (90 giorni)",
+        "missions": "Missioni del giorno (90 giorni)"
       }
     },
     "events": {

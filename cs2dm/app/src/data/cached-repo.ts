@@ -70,5 +70,6 @@ export function withCache(repo: Repo, cache = new TtlCache()): Repo {
       cache.get(`mr:${id}:${steamId}`, SHORT, () => repo.matchReport(id, steamId)),
     playerMatches: (id, limit) =>
       cache.get(`pm:${id}:${limit}`, SHORT, () => repo.playerMatches(id, limit)),
+    missions: (id, day) => cache.get(`ms:${id}:${day}`, SHORT, () => repo.missions(id, day)),
   };
 }

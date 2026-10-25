@@ -76,8 +76,25 @@ export const DUEL = {
   winXp: 50,
 } as const;
 
-/** Режимите на арената (CONTRACT §15) — за таблицата „Как се смята“ и началната страница. */
-export const ARENA = { hotZone: HOT_ZONE, mostWanted: MOST_WANTED, duel: DUEL } as const;
+/**
+ * Мисиите за деня (CONTRACT §16): по една лесна, средна и трудна на ден; изпълнената носи `xp[трудност]` наведнъж,
+ * без множител и зона (не е убийство). `streakDays` поредни дни с трите → значка `mission_streak`. Същото като
+ * `Progression.Mission*Xp` и `MissionPool` в C#.
+ */
+export const MISSIONS = { perDay: 3, xp: [50, 100, 150], streakDays: 7 } as const;
+
+/** XP за изпълнена мисия — същото като `Progression.MissionXp`. Тестови стойности: 0→50 · 1→100 · 2→150 · 3→0. */
+export function missionXp(tier: number): number {
+  return MISSIONS.xp[tier as 0 | 1 | 2] ?? 0;
+}
+
+/** Режимите на арената (CONTRACT §15–16) — за таблицата „Как се смята“ и началната страница. */
+export const ARENA = {
+  hotZone: HOT_ZONE,
+  mostWanted: MOST_WANTED,
+  duel: DUEL,
+  missions: MISSIONS,
+} as const;
 
 /** Баунти: серия ≥ 5 → `min(25 · (серия − 4), 250)` XP. */
 export const BOUNTY = { minStreak: 5, perKill: 25, cap: 250 } as const;

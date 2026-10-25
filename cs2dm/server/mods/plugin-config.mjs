@@ -31,6 +31,19 @@ function intIn(raw, name, def, min, max) {
   return n;
 }
 
+/** IANA часова зона (както DISPLAY_TZ на сайта); празно → Europe/Sofia. Проверява я Intl на Node. */
+export function timeZone(raw) {
+  const tz = raw === undefined || raw === '' ? 'Europe/Sofia' : raw;
+  const bad = new Error('CS2DM_DISPLAY_TZ: непозната часова зона (IANA, напр. Europe/Sofia)');
+  if (!/^[A-Za-z_]+(\/[A-Za-z0-9_+-]+){0,2}$/.test(tz)) throw bad;
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: tz });
+  } catch {
+    throw bad;
+  }
+  return tz;
+}
+
 export function buildConfig(env) {
   const db = env.CS2DM_DB_CONNECTION ?? '';
   if (!/(^|;)\s*Host=/i.test(db) || !/(^|;)\s*Password=/i.test(db)) {
@@ -58,6 +71,8 @@ export function buildConfig(env) {
     SpawnProtectionSeconds: intIn(env.CS2DM_SPAWN_PROTECTION, 'CS2DM_SPAWN_PROTECTION', 5, 1, 15),
     // Горещата зона (CONTRACT §15): на всеки N минути за 3 минути двойно XP вътре. 0 = изключено.
     HotZoneEveryMinutes: intIn(env.CS2DM_HOTZONE_EVERY, 'CS2DM_HOTZONE_EVERY', 8, 4, 60),
+    // Денят на мисиите и седмицата на купата (CONTRACT §16–17) — същата зона като DISPLAY_TZ на сайта.
+    DisplayTimeZone: timeZone(env.CS2DM_DISPLAY_TZ),
     ConfigVersion: 1,
   };
 }

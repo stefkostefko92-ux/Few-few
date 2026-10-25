@@ -115,6 +115,7 @@ CS2DM_AFK_SECONDS="$(env_value CS2DM_AFK_SECONDS)" \
 CS2DM_MAX_PING="$(env_value CS2DM_MAX_PING)" \
 CS2DM_SPAWN_PROTECTION="$(env_value CS2DM_SPAWN_PROTECTION)" \
 CS2DM_HOTZONE_EVERY="$(env_value CS2DM_HOTZONE_EVERY)" \
+CS2DM_DISPLAY_TZ="$(env_value CS2DM_DISPLAY_TZ)" \
   node "$SRC_DIR/plugin-config.mjs" >"$tmp"
 chown "$CS2_USER:$CS2_USER" "$tmp"
 chmod 0600 "$tmp"
@@ -128,7 +129,7 @@ since="$(date +%s)"
 cs2dm_restart_with_mods_or_fallback || die "модовете не тръгнаха; сървърът върви ванилов. journalctl -u cs2 -n 120 --no-pager"
 if cs2dm_plugin_loaded_since "$since" CarbonStealth; then
   ok "CarbonStealth е зареден"
-  log "Готово. В играта: !admin · !rank · !report · !duel · !banner · !zone (HEADADMIN+)."
+  log "Готово. В играта: !admin · !rank · !report · !duel · !missions · !banner · !zone (HEADADMIN+)."
 else
   warn "CarbonStealth не се вижда в лога (DM работи без него). Виж: journalctl -u cs2 -n 200 --no-pager | grep -i carbon"
   exit 1

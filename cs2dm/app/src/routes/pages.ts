@@ -6,7 +6,6 @@ import {
   HOME_MODES,
   LEGAL_UPDATED,
   PRIVACY_SECTIONS,
-  RETENTION,
   RULES,
   TERMS_VERSION,
   VIP_TERMS_SECTIONS,
@@ -23,7 +22,6 @@ import {
   type SortKey,
 } from '../data/repo.js';
 import { formattersFor } from '../format.js';
-import { HEATMAP_WINDOW_DAYS } from '../heatmap.js';
 import { translatorFor, type Locale, type Translator } from '../i18n.js';
 import { ARENA, BOUNTY, XP_REWARDS, levelForXp } from '../levels.js';
 import type { LiveSource, LiveStatus } from '../live.js';
@@ -41,6 +39,7 @@ import {
 } from '../seo.js';
 import { displayName, truncate } from '../steamid.js';
 import { eventNodes, eventViews } from './event-seo.js';
+import { companyFields, legalParams } from './legal-params.js';
 import { matchListView } from './match-view.js';
 import { renderPage, type NavId } from '../view.js';
 
@@ -433,40 +432,6 @@ export function pagesRouter(locale: Locale, deps: PageDeps): Router {
   );
 
   return router;
-}
-
-/** Числата в правните текстове — от същите константи, които ползват задачите за чистене. */
-export function legalParams(): Record<string, string | number> {
-  const cfg = config();
-  return {
-    sessionsDays: RETENTION.sessionsDays,
-    killsDays: RETENTION.killsDays,
-    matchesDays: RETENTION.matchesDays,
-    duelsDays: RETENTION.duelsDays,
-    casesDays: RETENTION.casesDays,
-    demosDays: RETENTION.demosDays,
-    heatmapDays: HEATMAP_WINDOW_DAYS,
-    site: cfg.PUBLIC_BASE_URL.replace(/^https?:\/\//, ''),
-    company: cfg.COMPANY_LEGAL_NAME ?? 'Carbon Stealth VCC',
-  };
-}
-
-/** Полетата на импресума: стойност от конфигурацията или null → „не е въведено“ на страницата. */
-export function companyFields(): Array<{ id: string; value: string | null; env: string }> {
-  const cfg = config();
-  return [
-    { id: 'legalName', value: cfg.COMPANY_LEGAL_NAME ?? null, env: 'COMPANY_LEGAL_NAME' },
-    { id: 'address', value: cfg.COMPANY_ADDRESS ?? null, env: 'COMPANY_ADDRESS' },
-    { id: 'eik', value: cfg.COMPANY_EIK ?? null, env: 'COMPANY_EIK' },
-    { id: 'vat', value: cfg.COMPANY_VAT ?? null, env: 'COMPANY_VAT' },
-    {
-      id: 'representative',
-      value: cfg.COMPANY_REPRESENTATIVE ?? null,
-      env: 'COMPANY_REPRESENTATIVE',
-    },
-    { id: 'email', value: cfg.CONTACT_EMAIL ?? null, env: 'CONTACT_EMAIL' },
-    { id: 'phone', value: cfg.COMPANY_PHONE ?? null, env: 'COMPANY_PHONE' },
-  ];
 }
 
 export type { NavId, Season };

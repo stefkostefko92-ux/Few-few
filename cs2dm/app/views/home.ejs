@@ -207,6 +207,22 @@
   </div>
 </section>
 
+<section class="band daily" aria-labelledby="daily-title">
+  <div class="wrap">
+    <div class="band-head">
+      <h2 id="daily-title"><%= t('home.daily.title') %></h2>
+    </div>
+    <div class="daily-grid">
+      <article class="daily-card">
+        <p class="arena-tag"><%= t('home.daily.missions.tag') %></p>
+        <h3><%= t('home.daily.missions.title') %></h3>
+        <p><%= t('home.daily.missions.text', { days: arena.missions.streakDays }) %></p>
+        <p class="daily-foot"><strong class="arena-value">+<%= arena.missions.xp.join(' / +') %> XP</strong><span><%= t('home.daily.missions.how') %></span></p>
+      </article>
+    </div>
+  </div>
+</section>
+
 <section class="commands" aria-labelledby="commands-title">
   <div class="wrap split">
     <div>
@@ -214,7 +230,7 @@
       <h2 id="commands-title"><%- lines('home.commands.title').map(escape).join('<br>') %></h2>
     </div>
     <ul class="ruled command-list" aria-label="<%= t('home.commands.label') %>">
-      <% ['gun', 'rank', 'duel', 'report', 'lang'].forEach((id) => { %><li><code id="cmd-<%= id %>">!<%= id %></code><span><%= t('home.commands.' + id) %></span><button type="button" class="copy" data-copy-target="cmd-<%= id %>" data-copied="<%= t('home.join.copied') %>" data-failed="<%= t('home.join.copyFailed') %>" hidden><%= t('home.join.copy') %></button></li>
+      <% ['gun', 'rank', 'missions', 'duel', 'report', 'lang'].forEach((id) => { %><li><code id="cmd-<%= id %>">!<%= id %></code><span><%= t('home.commands.' + id) %></span><button type="button" class="copy" data-copy-target="cmd-<%= id %>" data-copied="<%= t('home.join.copied') %>" data-failed="<%= t('home.join.copyFailed') %>" hidden><%= t('home.join.copy') %></button></li>
       <% }) %>
     </ul>
   </div>

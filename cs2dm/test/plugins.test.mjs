@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { buildConfig, parseBannerModels } from "../server/mods/plugin-config.mjs";
+import { buildConfig, parseBannerModels, timeZone } from "../server/mods/plugin-config.mjs";
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 const env = {
@@ -25,6 +25,20 @@ test("plugin-config: полетата съвпадат с PluginConfig.cs", () =
   assert.equal(cfg.MaxPing, 150);
   assert.equal(cfg.SpawnProtectionSeconds, 5);
   assert.equal(cfg.HotZoneEveryMinutes, 8);
+  assert.equal(cfg.DisplayTimeZone, "Europe/Sofia");
+});
+
+test("plugin-config: часовата зона на мисиите — IANA или спира; като DISPLAY_TZ на сайта", () => {
+  assert.equal(timeZone(undefined), "Europe/Sofia");
+  assert.equal(buildConfig({ ...env, CS2DM_DISPLAY_TZ: "Europe/Rome" }).DisplayTimeZone, "Europe/Rome");
+  assert.equal(timeZone("UTC"), "UTC");
+  for (const bad of ["Mars/Olympus", "Europe/Sofia;rm", "../etc/passwd", " ", "Europe/Sofia/x/y"]) {
+    assert.throws(() => buildConfig({ ...env, CS2DM_DISPLAY_TZ: bad }), /CS2DM_DISPLAY_TZ/, bad);
+  }
+  assert.match(read("plugins/src/CarbonStealth/PluginConfig.cs"), /DisplayTimeZone \{ get; set; \} = "Europe\/Sofia";/);
+  assert.match(read("server/mods/install-plugins.sh"), /CS2DM_DISPLAY_TZ="\$\(env_value CS2DM_DISPLAY_TZ\)"/);
+  assert.ok(read("server/cs2.env.example").includes("\nCS2DM_DISPLAY_TZ=Europe/Sofia\n"));
+  assert.match(read("app/src/config.ts"), /DISPLAY_TZ: z\.string\(\)\.refine\(validTimeZone, '[^']+'\)\.default\('Europe\/Sofia'\)/);
 });
 
 test("plugin-config: горещата зона — 0 изключва, 4–60, иначе спира; плъгинът и env шаблонът знаят", () => {
@@ -122,6 +136,10 @@ test("lang: EN и BG имат едни и същи ключове, всеки к
   // Динамичните ключове: admin.{тип}, category.{категория}, you.{тип}.
   for (const t of ["MUTE", "GAG", "SILENCE"]) assert.ok(`admin.${t}` in en && `you.${t}` in en);
   for (const c of ["CHEATING", "TOXICITY", "EXPLOIT", "SPAM", "IMPERSONATION", "OTHER"]) assert.ok(`category.${c}` in en);
+  // mission.{вид} — видът е началото на ключа на мисията в пула (MissionPool.Tiers).
+  const pool = [...read("plugins/src/CarbonStealth.Logic/Missions.cs").matchAll(/new\("([a-z]+)_\d+", MissionKind\./g)];
+  assert.ok(pool.length >= 15, `мисии в пула: ${pool.length}`);
+  for (const [, kind] of pool) assert.ok(`mission.${kind}` in en && `mission.${kind}` in bg, `липсва mission.${kind}`);
 });
 
 test("install-plugins.sh: SDK образът е закован по digest, тайните отиват в 0600", () => {

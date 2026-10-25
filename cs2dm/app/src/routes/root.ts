@@ -14,12 +14,13 @@ import {
 } from '../content.js';
 import type { Repo } from '../data/repo.js';
 import { LOCALES, localeFromHeader, translate, type Locale } from '../i18n.js';
-import { XP_REWARDS } from '../levels.js';
+import { MISSIONS, XP_REWARDS } from '../levels.js';
 import { logger } from '../logger.js';
 import { SITE_NAME, absolute, alternatesFor, matchPath, pagePath, playerPath } from '../seo.js';
 import { parseSteamId } from '../steamid.js';
 import { PUBLIC_DIR } from '../view.js';
-import { faqParams, legalParams } from './pages.js';
+import { legalParams } from './legal-params.js';
+import { faqParams } from './pages.js';
 
 /** Колко профила на играчи влизат в sitemap — само върхът на класацията за всички времена. */
 export const SITEMAP_PLAYERS = 50;
@@ -192,6 +193,16 @@ export function rootRouter(repo: Repo): Router {
       ),
       `- ${en('leaderboard.how.level')}`,
       '',
+      '## Daily missions',
+      `- ${en('leaderboard.how.arena.missions', {
+        tz: config().DISPLAY_TZ,
+        easy: MISSIONS.xp[0],
+        medium: MISSIONS.xp[1],
+        hard: MISSIONS.xp[2],
+        days: MISSIONS.streakDays,
+        badge: en('player.honors.kinds.mission_streak'),
+      })}`,
+      '',
       '## FAQ',
       ...HOME_FAQ.map((id) => `- ${en(`home.faq.${id}.q`, faq)} ${en(`home.faq.${id}.a`, faq)}`),
       '',
@@ -200,7 +211,7 @@ export function rootRouter(repo: Repo): Router {
       `- ${en('privacy.sections.retention.items.1', legal)}`,
       `- ${en('privacy.sections.retention.items.2', legal)}`,
       `- ${en('privacy.sections.website.items.0', legal)}`,
-      `- Retention days: sessions ${RETENTION.sessionsDays}, kills ${RETENTION.killsDays}, demos ${RETENTION.demosDays}, matches ${RETENTION.matchesDays}, duels ${RETENTION.duelsDays}`,
+      `- Retention days: sessions ${RETENTION.sessionsDays}, kills ${RETENTION.killsDays}, demos ${RETENTION.demosDays}, matches ${RETENTION.matchesDays}, duels ${RETENTION.duelsDays}, daily missions ${RETENTION.missionsDays}`,
       '',
       '## Pages',
       ...PAGES.filter((page) => !NOINDEX_PAGES.has(page)).flatMap((page) =>

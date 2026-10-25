@@ -60,6 +60,21 @@
     </aside>
   </div>
 
+  <section class="card spaced missions" aria-labelledby="missions-title">
+    <h2 id="missions-title"><%= t('player.missions.title') %></h2>
+    <p><%= t('player.missions.lead', { tz: displayTz }) %></p>
+    <ol class="mission-list">
+      <% missions.today.forEach((mission, index) => { %><li<% if (mission.done) { %> class="is-done"<% } %>>
+        <p class="mission-tier"><%= t('missions.tiers.' + missionTiers[mission.tier]) %> · +<%= mission.xp %> XP</p>
+        <label class="mission-name" for="mission-<%= index %>"><%= t('missions.kinds.' + mission.kind, { target: fmt.int(mission.target) }) %></label>
+        <progress id="mission-<%= index %>" max="<%= mission.target %>" value="<%= mission.progress %>"><%= mission.progress %>/<%= mission.target %></progress>
+        <span class="mission-count"><%= mission.done ? t('player.missions.done') : t('player.missions.progress', { progress: fmt.int(mission.progress), target: fmt.int(mission.target) }) %></span>
+      </li>
+      <% }) %>
+    </ol>
+    <p class="muted"><%= t.plural('player.missions.completed', missions.completed, { days: missionsDays }) %></p>
+  </section>
+
   <section class="card spaced honors" aria-labelledby="honors-title">
     <h2 id="honors-title"><%= t('player.honors.title') %></h2>
     <p><%= t('player.honors.lead') %></p>
@@ -70,7 +85,7 @@
       <% honors.badges.forEach((badge) => { %><li>
         <span class="badge badge-<%= badge.kind %>"><span class="badge-mark" aria-hidden="true"></span><%= t('player.honors.kinds.' + badge.kind) %></span>
         <strong><%= t.plural('player.honors.times', badge.count) %></strong>
-        <span class="muted"><%= t('player.honors.last') %> <time datetime="<%= fmt.iso(badge.lastAt) %>"><%= fmt.date(badge.lastAt) %></time><% if (badge.bestKills !== null) { %> · <%= t.plural('player.honors.best', badge.bestKills) %><% } %></span>
+        <span class="muted"><%= t('player.honors.last') %> <time datetime="<%= fmt.iso(badge.lastAt) %>"><%= fmt.date(badge.lastAt) %></time><% if (badge.best !== null) { %> · <%= t.plural('player.honors.' + badgeBest[badge.kind].text, badge.best) %><% } %></span>
       </li>
       <% }) %>
     </ul>

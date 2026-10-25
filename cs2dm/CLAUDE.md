@@ -16,7 +16,8 @@ Express + EJS + Prisma + Redis + BullMQ) + **агентът на хоста** (`
 CONTRACT §11 — реклами, патрони, ботове, XP множител, поздрав; панел ↔ игра) + **събития по график**
 (`events`, §12 — XP уикенд/режим/общностно; панел → плъгин на 30 s → начална страница + JSON-LD) + **картата на
 мача** (`matches`, §13 — топ 3 в чата, `/{език}/match/:id`, последните мачове; 90 дни) + **режимите на арената** (§15 —
-гореща зона, Most Wanted, `!duel`; значки и дуели в профила). Следва: формите за играчите; Discord ботът е отложен (собственикът).
+гореща зона, Most Wanted, `!duel`; значки и дуели в профила) + **мисиите за деня** (§16 — три на ден, `!missions`,
+`<progress>` в профила, значка „7 дни подред“). Следва: формите за играчите; Discord ботът е отложен (собственикът).
 Банове и класация — **публични на сайта** (решение на
 собственика), затова админ системата е наша на Postgres, не CS2-SimpleAdmin (MySQL + три
 неподдържани меню зависимости). Договорът между плъгин и сайт: `CONTRACT.md`._
@@ -39,7 +40,7 @@ npm run dev                            # локално на :4330 (DATABASE_URL
 `test/agent.test.mjs` ползва фалшив RESP сървър (CI е без Redis); ако има Redis на `127.0.0.1:6379`
 (`CS2DM_TEST_REDIS_PORT`), тича и срещу него — база 14, канали `cs2dm-test:<uuid>:…`, чисти след себе си. Без `DATABASE_URL` интеграционните тестове се пропускат чисто; със — създават само
 SteamID-та `76561190000990xxx` (панелът — `991xxx`…`995xxx`, настройките — `996xxx`, статистиките и SQL-ът на плъгина — `997xxx`,
-събитията — `998xxx`; те трият и своите събития; режимите на арената — `988xxx`, убийствата им са в 2099 г.; анализите на мача и „подозрителни играчи“ — `987xxx`, трият и своите `kills`) и ги трият преди и след себе си; одитът
+събитията — `998xxx`; те трият и своите събития; режимите на арената — `988xxx`, убийствата им са в 2099 г.; анализите на мача и „подозрителни играчи“ — `987xxx`, трият и своите `kills`; мисиите и купата — `986xxx`) и ги трият преди и след себе си; одитът
 остава (веригата не се реже). Локално: `REDIS_TEST_URL=redis://127.0.0.1:6379/<база>`.
 
 ## Структура
@@ -72,12 +73,12 @@ server/agent/50-cs2dm-agent.rules    polkit: cs2agent САМО start/stop/restar
 server/agent/install-agent.sh        потребител · файлове · ключове (agent.env + app.env) · unit · polkit · самопроверка
 plugins/src/CarbonStealth.Logic/     чиста логика без CSS (XP, роли, срокове, мост/HMAC, банери, CSS права,
                                      AFK/пинг, настройки, събития, карта на мача, каталог на плъгините, гореща зона +
-                                     решетката на Dust2) — xunit тестове (един файл
+                                     решетката на Dust2, мисиите — пул/избор/книга/партида) — xunit тестове (един файл
                                      с тестове на тема)
 plugins/src/CarbonStealth/           плъгинът: един partial клас по тема (Admin, AdminMenu, Banners, Adverts = живите
                                      настройки + рекламите, BridgeCommands, Chat, Connection, Stats, CssFlags, FairPlay,
                                      Events, Match, MatchEnd, PluginsBridge = плъгините от панела, HotZone, MostWanted, Duels,
-                                     Announce = обявите им) + Data/ (Npgsql) + lang/ (en, bg)
+                                     Announce = обявите им, DailyMissions = !missions) + Data/ (Npgsql) + lang/ (en, bg)
 plugins/scripts/build.sh             тестове + publish в plugins/out/; DeathmatchAPI.dll от архива в mods.lock
 addon/                               банери-картинки: build_textures.py → PNG, OBJ плоскости, Workshop стъпки
 CONTRACT.md                          роли, наказания, XP, heatmap, мост, одит, срокове, банери
@@ -93,7 +94,9 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   src/routes/report.ts               /{bg|en|it}/match/:id/player/:steamId64 — личният отчет (§13, noindex) · report-view.ts
   src/routes/root.ts                 / → език · robots.txt · sitemap.xml · llms.txt · IndexNow · /bans без език
   src/routes/health.ts               /health — база + Redis, JSON, 200/503
-  src/data/repo.ts                   интерфейсът (само публичните полета) · prisma-repo.ts · cached-repo.ts
+  src/data/repo.ts                   интерфейсът (само публичните полета) · prisma-repo.ts (наследява extra-repo.ts —
+                                     препращането към четенето след етап 1) · cached-repo.ts
+  src/missions.ts · data/arena-data.ts   мисиите за деня (§16): огледалото на пула и избора от C# · четенето за профила
   src/levels.ts · mastery.ts · heatmap.ts   формулите от CONTRACT §3–4 (тестови стойности в tests/)
   src/settings.ts                    живите настройки (§11): ключове, строги zod схеми, стойности по подразбиране
   src/events.ts                      събитията (§12): видове, тавани, местно време ↔ UTC (DISPLAY_TZ, без библиотека)
@@ -238,6 +241,14 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   `ServerSettings.Parse` (C#, с xunit) + форма в `/admin/settings` + CONTRACT §11 — заедно. Невалиден ред в
   базата никога не чупи плъгина: групата пада към конфига. Превключвател в WASD менюто, който съвпада с
   настройка, пише СЪЩИЯ ред (`SaveSetting` → одит `settings.change`), иначе опресняването на 60 s го връща.
+- **Мисиите за деня (§16, `DailyMissions.cs` + `CarbonStealth.Logic/Missions.cs` · `MissionBook.cs`, SQL в
+  `Data/MissionStore.cs`):** изборът е детерминистичен (FNV-1a по SteamID64 + местната дата в `DisplayTimeZone` =
+  `CS2DM_DISPLAY_TZ` = DISPLAY_TZ на сайта) — пулът се сменя само заедно с `app/src/missions.ts` и текстовете
+  (`mission.<вид>` в lang, `missions.kinds.<вид>` в locales; тестовете четат `.cs`). Броят само убийствата между хора
+  (куката е след `AnnounceLevelUp` в човешкия път на `OnPlayerDeath` — никога `RewardBotKill`), дуелите и минутите.
+  XP е без множител (`Progression.MissionXp`, `MatchTracker.AddXp`). Напредъкът е абсолютен → партидата пише с
+  GREATEST/COALESCE; книгата остава в паметта до края на деня (повторно влизане не чете базата — иначе двойна награда).
+  Значка, която се дава веднъж на период → `player_badges.period` + уникалността `(steam_id, kind, period)`.
 - Пакетите са заключени (`packages.lock.json`, `RestoreLockedMode`); нов пакет/версия → `dotnet restore
   --force-evaluate` и lock файлът в същия PR.
 

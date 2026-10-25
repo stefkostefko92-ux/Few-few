@@ -152,5 +152,6 @@ public sealed partial class CarbonStealthPlugin
         Delta(s).Xp += Progression.DuelWinXp;
         _match.AddXp(s.SteamId64, s.Name, Progression.DuelWinXp);
         AnnounceLevelUp(p, s, levelBefore);
+        OnMissionDuelWin(p, s);
     }
 }

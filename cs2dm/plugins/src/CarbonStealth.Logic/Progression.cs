@@ -73,6 +73,23 @@ public static class Progression
     /// </summary>
     public const int DuelWinXp = 50;
 
+    /// <summary>
+    /// Мисиите за деня (CONTRACT.md §16): изпълнена мисия носи XP по трудността ѝ — наведнъж, без множител и
+    /// зона (не е убийство). Същото като MISSIONS.xp в levels.ts. Трите за деня дават общо 300 XP.
+    /// </summary>
+    public const int MissionEasyXp = 50;
+    public const int MissionMediumXp = 100;
+    public const int MissionHardXp = 150;
+
+    /// <summary>Трудност 0/1/2 → 50/100/150 XP; непозната → 0. Същото като missionXp в TS.</summary>
+    public static int MissionXp(int tier) => tier switch
+    {
+        0 => MissionEasyXp,
+        1 => MissionMediumXp,
+        2 => MissionHardXp,
+        _ => 0,
+    };
+
     /// <summary>Ниво n иска общо 100·n·(n−1)/2 XP → level = floor((1 + √(1 + 8·xp/100)) / 2).</summary>
     public static int LevelFromXp(long xp)
     {
@@ -132,5 +149,23 @@ public static class Progression
         return !NotGuns.Contains(NormalizeWeapon(weapon));
     }
 
-    public static bool IsSniper(string weapon) => NormalizeWeapon(weapon) is "awp" or "ssg08" or "scar20" or "g3sg1";
+    public static bool IsSniper(string weapon) => WeaponClass(weapon) == "sniper";
+
+    private static readonly Dictionary<string, string> WeaponClasses = new(StringComparer.Ordinal)
+    {
+        ["ak47"] = "rifle", ["m4a1"] = "rifle", ["m4a1_silencer"] = "rifle", ["m4a1_silencer_off"] = "rifle",
+        ["famas"] = "rifle", ["galilar"] = "rifle", ["aug"] = "rifle", ["sg556"] = "rifle",
+        ["mac10"] = "smg", ["mp9"] = "smg", ["mp7"] = "smg", ["mp5sd"] = "smg", ["ump45"] = "smg", ["p90"] = "smg",
+        ["bizon"] = "smg",
+        ["glock"] = "pistol", ["hkp2000"] = "pistol", ["usp_silencer"] = "pistol", ["usp_silencer_off"] = "pistol",
+        ["p250"] = "pistol", ["elite"] = "pistol", ["fiveseven"] = "pistol", ["tec9"] = "pistol", ["cz75a"] = "pistol",
+        ["deagle"] = "pistol", ["revolver"] = "pistol",
+        ["awp"] = "sniper", ["ssg08"] = "sniper", ["scar20"] = "sniper", ["g3sg1"] = "sniper",
+    };
+
+    /// <summary>
+    /// Класът на оръжието за мисиите (§16): „rifle“, „smg“, „pistol“, „sniper“ или null (нож, пушка, картечница,
+    /// граната…). Името е като в събитието на играта, с или без „weapon_“.
+    /// </summary>
+    public static string? WeaponClass(string weapon) => WeaponClasses.GetValueOrDefault(NormalizeWeapon(weapon));
 }

@@ -156,7 +156,7 @@ describe(
       const [king] = honors.badges;
       assert.equal(king?.kind, 'zone_king');
       assert.equal(king?.count, 3);
-      assert.equal(king?.bestKills, 9);
+      assert.equal(king?.best, 9);
       assert.ok(king?.lastAt instanceof Date);
       assert.deepEqual((await loadHonors(db, VICTIM)).badges, []);
 

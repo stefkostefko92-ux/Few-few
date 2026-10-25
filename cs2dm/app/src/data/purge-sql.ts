@@ -31,6 +31,11 @@ export function prismaDeleteBatch(db: PrismaClient): DeleteBatch {
         return db.$executeRaw`
           DELETE FROM duels WHERE id IN (
             SELECT id FROM duels WHERE ended_at < ${cutoff} LIMIT ${limit})`;
+      case 'missions':
+        // По деня на мисията (местна дата) — границата е с точност до ден.
+        return db.$executeRaw`
+          DELETE FROM mission_progress WHERE id IN (
+            SELECT id FROM mission_progress WHERE day < ${cutoff}::date LIMIT ${limit})`;
       case 'reports':
         return db.$executeRaw`
           DELETE FROM reports WHERE id IN (

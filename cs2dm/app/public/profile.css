@@ -243,3 +243,45 @@
 .duel-stats {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
+
+/* Мисиите за деня (CONTRACT §16): три реда с <progress> — без inline стил (CSP). */
+.mission-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 28px;
+  margin: 14px 0 12px;
+  padding: 0;
+  border-top: 3px solid var(--ink);
+  list-style: none;
+}
+.mission-list > li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 2px 16px;
+  border-bottom: 1px solid var(--rule);
+}
+.mission-tier {
+  margin: 0;
+  color: var(--red);
+  font: 700 12px/1.3 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.mission-name {
+  font: 800 20px/1.1 var(--display);
+  text-transform: uppercase;
+}
+.mission-count {
+  color: var(--muted);
+  font: 600 13px/1 var(--mono);
+}
+.mission-list > .is-done .mission-count {
+  color: var(--ink);
+  font-weight: 800;
+}
+@media (max-width: 760px) {
+  .mission-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

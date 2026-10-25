@@ -1,44 +1,13 @@
-import type { Prisma } from '@prisma/client';
 import { displayName, parseSteamId } from '../../steamid.js';
 import type { AdminCtx, AdminRoute } from '../context.js';
 import { renderAdmin, renderAdminError } from '../render.js';
+import { LIMIT, section, type DataSection } from './data-sections.js';
 
 /**
  * „Всичко, което пазим за играча“ — само четене (HEADADMIN+, `playerData`). Колоните са имената в
  * базата (@map) — това е суровият запис, не обобщение. Тайни никога: TOTP тайната е само „има/няма“,
  * токените на сесиите и хешовете на резервните кодове не се четат изобщо.
  */
-export type Cell = string | number | bigint | boolean | Date | null | Prisma.JsonValue;
-
-export interface DataSection {
-  id: string;
-  /** Общият брой, ако показваме само последните (иначе = редовете). */
-  total: number;
-  columns: string[];
-  rows: Cell[][];
-}
-
-const LIMIT = 200;
-
-/** camelCase (Prisma) → snake_case (колоната в базата). */
-export function columnName(key: string): string {
-  return key.replace(/[A-Z]/g, (char) => `_${char.toLowerCase()}`);
-}
-
-export function section<T extends object>(
-  id: string,
-  rows: T[],
-  keys: Array<keyof T & string>,
-  total = rows.length,
-): DataSection {
-  return {
-    id,
-    total,
-    columns: keys.map(columnName),
-    rows: rows.map((row) => keys.map((key) => row[key] as Cell)),
-  };
-}
-
 export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
   return [
     {
@@ -75,6 +44,7 @@ export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
           badges,
           zones,
           duels,
+          missions,
         ] = await Promise.all([
           ctx.db.session.findMany({ where: { steamId }, ...byTime }),
           ctx.db.webSession.findMany({
@@ -121,6 +91,7 @@ export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
             where: { OR: [{ winnerId: steamId }, { loserId: steamId }] },
             ...byTime,
           }),
+          ctx.db.missionProgress.findMany({ where: { steamId }, ...byTime }),
         ]);
         const { totpSecretEnc, ...rest } = player;
         const profile = { ...rest, totpSecretStored: totpSecretEnc !== null };
@@ -272,7 +243,7 @@ export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
               'topWeapon',
             ],
           ),
-          section('badges', badges, ['kind', 'earnedAt', 'details']),
+          section('badges', badges, ['kind', 'period', 'earnedAt', 'details']),
           section('zones', zones, ['id', 'map', 'name', 'radius', 'createdAt']),
           section('duels', duels, [
             'id',
@@ -283,6 +254,14 @@ export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
             'draw',
             'startedAt',
             'endedAt',
+          ]),
+          section('missions', missions, [
+            'day',
+            'missionKey',
+            'target',
+            'progress',
+            'completedAt',
+            'updatedAt',
           ]),
         ];
         renderAdmin(req, res, 'player-data', {

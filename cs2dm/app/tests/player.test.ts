@@ -74,9 +74,7 @@ test('профилът: ниво, K/D, точност, майсторство, h
 test('профилът: отличията (§15) — значката с брой и рекорд, дуелите, празно без значки', async () => {
   const data = sampleData();
   data.honors = {
-    badges: [
-      { kind: 'zone_king', count: 3, lastAt: new Date('2026-10-24T18:00:00Z'), bestKills: 7 },
-    ],
+    badges: [{ kind: 'zone_king', count: 3, lastAt: new Date('2026-10-24T18:00:00Z'), best: 7 }],
     duels: { wins: 4, losses: 2, draws: 1 },
   };
   const app = await start({ repo: fakeRepo(data) });

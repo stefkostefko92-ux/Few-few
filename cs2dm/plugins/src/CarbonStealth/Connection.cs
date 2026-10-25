@@ -111,6 +111,7 @@ public sealed partial class CarbonStealthPlugin
                 player.PrintToChat(Localizer.ForPlayer(player, "welcome", state.Name, Config.SiteUrl));
                 TellActiveEvent(player);
             }
+            StartMissions(slot, state);
             _bridge?.Event("join", new { steamId = state.SteamId64, name = state.Name });
         }
     }
@@ -157,6 +158,7 @@ public sealed partial class CarbonStealthPlugin
         if (seconds <= 0) return;
         state.AccruedUntil = now;
         Delta(state).PlaytimeSec += seconds;
+        OnMissionPlaytime(state, seconds);
     }
 
     private void AccruePlaytime()

@@ -106,6 +106,7 @@ model Player {
   badges        PlayerBadge[]
   duelWins      Duel[]              @relation("duelWinner")
   duelLosses    Duel[]              @relation("duelLoser")
+  missions      MissionProgress[]
 
   @@index([lastSeenAt])
   @@index([role])
@@ -519,12 +520,37 @@ model PlayerBadge {
   steamId  String   @map("steam_id") @db.VarChar(17)
   kind     String   @db.VarChar(32)
   earnedAt DateTime @default(now()) @map("earned_at") @db.Timestamptz(3)
-  /// `{map, zone, kills}` за `zone_king` — само числа и имена на зони, никакви лични данни.
+  /// `{map, zone, kills}` за `zone_king`, `{days}` за `mission_streak`, `{week, xp, place}` за `cup_winner` /
+  /// `cup_podium` — само числа и имена на зони, никакви лични данни.
   details  Json     @default("{}")
+  /// Периодът на значка, която се дава веднъж на период (CONTRACT §16–17): денят за `mission_streak`, понеделникът
+  /// на седмицата за купата (`yyyy-MM-dd`, местна дата). NULL за `zone_king` (може много пъти). Уникалността
+  /// (играч, вид, период) прави наградите идемпотентни; NULL-ите не се сблъскват.
+  period   String?  @db.VarChar(16)
   player   Player   @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
 
+  @@unique([steamId, kind, period])
   @@index([steamId, earnedAt])
+  @@index([kind, period])
   @@map("player_badges")
+}
+
+/// Мисиите за деня (CONTRACT §16): три на играч на ден (местната дата в DISPLAY_TZ), избрани детерминистично;
+/// плъгинът пише напредъка с GREATEST/COALESCE (повторен запис е безвреден). Срок 90 дни (§7).
+model MissionProgress {
+  id          BigInt    @id @default(autoincrement())
+  steamId     String    @map("steam_id") @db.VarChar(17)
+  day         DateTime  @db.Date
+  missionKey  String    @map("mission_key") @db.VarChar(32)
+  target      Int
+  progress    Int       @default(0)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @default(now()) @map("updated_at") @db.Timestamptz(3)
+  player      Player    @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+
+  @@unique([steamId, day, missionKey])
+  @@index([day])
+  @@map("mission_progress")
 }
 
 /// Дуелите в FFA (CONTRACT §15): до 5 убийства един срещу друг или 3 минути. При равенство (`draw`) редът

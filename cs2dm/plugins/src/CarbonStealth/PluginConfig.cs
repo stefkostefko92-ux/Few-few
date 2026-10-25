@@ -48,4 +48,10 @@ public sealed class PluginConfig : BasePluginConfig
 
     /// <summary>Горещата зона на всеки N минути, активна 3 (0 = изключено, иначе 4–60). CS2DM_HOTZONE_EVERY.</summary>
     [JsonPropertyName("HotZoneEveryMinutes")] public int HotZoneEveryMinutes { get; set; } = 8;
+
+    /// <summary>
+    /// Часовата зона на деня на мисиите и седмицата на купата (CONTRACT §16–17) — същата като DISPLAY_TZ на сайта,
+    /// иначе плъгинът и сайтът виждат различни мисии около полунощ. IANA име. CS2DM_DISPLAY_TZ.
+    /// </summary>
+    [JsonPropertyName("DisplayTimeZone")] public string DisplayTimeZone { get; set; } = "Europe/Sofia";
 }

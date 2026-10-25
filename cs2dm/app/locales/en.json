@@ -325,7 +325,8 @@
       "rank": "Your level and XP.",
       "report": "Report a cheater or a rule break to the admins.",
       "lang": "The language of in-game messages.",
-      "duel": "A duel to 5 kills with a player of your choice; they answer with !accept or !decline."
+      "duel": "A duel to 5 kills with a player of your choice; they answer with !accept or !decline.",
+      "missions": "Your three missions for today and your progress (short: !m)."
     },
     "vipStripe": {
       "eyebrow": "Support the server",
@@ -361,6 +362,15 @@
         "tag": "Duel",
         "title": "One on one inside FFA",
         "text": "Challenge someone with !duel <name>. First to {target} kills on each other wins; after {minutes} minutes the leader wins. Wins, losses and draws go on the profile."
+      }
+    },
+    "daily": {
+      "title": "Every day. Every week.",
+      "missions": {
+        "tag": "Daily missions",
+        "title": "Three tasks a day",
+        "text": "Every day at midnight you get three missions — easy, medium and hard: headshots, a streak, a knife kill, a duel, minutes played. A completed one pays XP at once, and all three for {days} days in a row earn a badge on your profile.",
+        "how": "Type !missions in game"
       }
     }
   },
@@ -410,7 +420,9 @@
         "mostWantedRow": "Most Wanted taken down (bonus)",
         "mostWanted": "Most Wanted is the player with the most kills on the current map (at least {min} kills); the server announces every change. Whoever takes them down earns +{xp} XP on top — the bonus is multiplied together with the kill.",
         "duelRow": "Duel won",
-        "duel": "Duel: type !duel <name> and the other player answers with !accept or !decline within {invite} s. Whoever first gets {target} kills on the other (or leads after {minutes} minutes) earns +{xp} XP at once; a tie is a draw. The rest of the game goes on as usual; the same two players wait {cooldown} minutes before the next duel."
+        "duel": "Duel: type !duel <name> and the other player answers with !accept or !decline within {invite} s. Whoever first gets {target} kills on the other (or leads after {minutes} minutes) earns +{xp} XP at once; a tie is a draw. The rest of the game goes on as usual; the same two players wait {cooldown} minutes before the next duel.",
+        "missionsRow": "Daily mission — easy / medium / hard",
+        "missions": "Daily missions: every day at midnight ({tz}) everyone gets three — easy (+{easy} XP), medium (+{medium} XP) and hard (+{hard} XP). Only kills on players, duels won and minutes played count. The XP comes at once, with no multiplier; all three for {days} days in a row earn the “{badge}” badge. In game: !missions."
       }
     },
     "pager": {
@@ -432,6 +444,16 @@
     "levelLabel": "Progress to level {next}",
     "progress": "{current} of {span} XP to level {next}",
     "xpTotal": "{xp} XP in total",
+    "missions": {
+      "title": "Today's missions",
+      "lead": "Three new ones every day at midnight ({tz}). Progress updates within a minute while you play; in game — !missions.",
+      "progress": "{progress} of {target}",
+      "done": "Completed",
+      "completed": {
+        "one": "{count} mission completed in the last {days} days.",
+        "other": "{count} missions completed in the last {days} days."
+      }
+    },
     "cards": {
       "season": "This season — {season}",
       "allTime": "All time"
@@ -503,7 +525,8 @@
       "lead": "Badges from the arena modes stay on the profile for as long as the profile exists.",
       "empty": "No honours yet. Get the most kills inside the hot zone and the “King of the Zone” badge is yours.",
       "kinds": {
-        "zone_king": "King of the Zone"
+        "zone_king": "King of the Zone",
+        "mission_streak": "7 days in a row"
       },
       "times": {
         "one": "{count} time",
@@ -514,10 +537,37 @@
         "one": "record: {count} kill in the zone",
         "other": "record: {count} kills in the zone"
       },
+      "bestDays": {
+        "one": "record: {count} day in a row",
+        "other": "record: {count} days in a row"
+      },
       "duels": "Duels in the last {days} days",
       "wins": "Wins",
       "losses": "Losses",
       "draws": "Draws"
+    }
+  },
+  "missions": {
+    "tiers": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "kinds": {
+      "headshots": "{target} headshot kills",
+      "rifle": "{target} rifle kills",
+      "smg": "{target} SMG kills",
+      "pistol": "{target} pistol kills",
+      "sniper": "{target} sniper rifle kills",
+      "knife": "A knife kill",
+      "wallbang": "A kill through a wall",
+      "smoke": "A kill through smoke",
+      "noscope": "A noscope sniper kill",
+      "streak": "A streak of {target} kills",
+      "zone": "{target} kills in the hot zone",
+      "wanted": "Take down the Most Wanted",
+      "duel": "Win a duel",
+      "minutes": "Play {target} minutes"
     }
   },
   "bans": {
@@ -663,7 +713,8 @@
           "Penalties: type, category, expiry and an internal reason that only admins can see.",
           "Roughly the last 2000 server events (joins, kills, chat) are held briefly in working memory for moderation and are overwritten continuously; chat is not stored in the database.",
           "Honours from the arena modes (for example “King of the Zone” — the map, the zone and the number of kills) — shown on your profile.",
-          "Duels (!duel): who played whom, the score and when — for the wins, losses and draws on the profile."
+          "Duels (!duel): who played whom, the score and when — for the wins, losses and draws on the profile.",
+          "Daily missions (!missions): which mission, how far you got and when it was completed — for the progress on your profile and the “7 days in a row” badge."
         ]
       },
       "website": {
@@ -696,7 +747,8 @@
           "Invoice details for VIP — as long as the Bulgarian Accountancy Act requires.",
           "Match cards (nickname and result in each match) — {matchesDays} days, then deleted automatically.",
           "Honours (badges such as “King of the Zone”) — for as long as your profile exists; they are deleted together with it.",
-          "Duels — {duelsDays} days, then they are deleted automatically."
+          "Duels — {duelsDays} days, then they are deleted automatically.",
+          "Daily missions — {missionsDays} days, then deleted automatically."
         ]
       },
       "recipients": {
@@ -1484,7 +1536,8 @@
         "matches": "Matches (cards — 90 days)",
         "badges": "Badges (honours)",
         "zones": "Hot zones placed by them",
-        "duels": "Duels (90 days)"
+        "duels": "Duels (90 days)",
+        "missions": "Daily missions (90 days)"
       }
     },
     "events": {

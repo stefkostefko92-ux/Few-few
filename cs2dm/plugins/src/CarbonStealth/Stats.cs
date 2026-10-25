@@ -93,6 +93,9 @@ public sealed partial class CarbonStealthPlugin
             _bridge?.Event("bounty", new { steamId = a.SteamId64, name = a.Name, streak = outcome.AttackerStreak, bounty = outcome.NewBountyOnAttacker });
         }
         AnnounceLevelUp(attacker, a, levelBefore);
+        // След обявата за убийството — мисиите обявяват своето ниво сами (§16).
+        OnMissionKill(attacker!, a, new MissionKill(weapon, e.Headshot, facts.Knife, facts.Wallbang, facts.ThroughSmoke,
+            facts.Noscope, outcome.AttackerStreak, inZone, wanted));
         _bridge?.Event("kill", new { attacker = a.SteamId64, victim = v.SteamId64, weapon, hs = e.Headshot, revenge = outcome.Revenge });
         return HookResult.Continue;
     }
@@ -150,6 +153,7 @@ public sealed partial class CarbonStealthPlugin
     private void FlushStats()
     {
         AccruePlaytime();
+        FlushMissions();
         if (_flushing || _db is not { } db || _batch.IsEmpty) return;
         var batch = _batch;
         _batch = new StatsBatch();

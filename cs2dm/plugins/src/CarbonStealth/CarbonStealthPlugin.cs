@@ -93,6 +93,7 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
         RegisterHotZone();
         RegisterMostWanted();
         RegisterDuels();
+        RegisterMissions();
         RegisterEvents();
         RegisterMatch();
 
@@ -133,6 +134,8 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
         AccruePlaytime();
         var last = _batch;
         _batch = new StatsBatch();
+        var lastMissions = _missionBatch;
+        _missionBatch = new MissionBatch();
         var db = _db;
         var bridge = _bridge;
         _db = null;
@@ -145,6 +148,7 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
                 if (db is not null)
                 {
                     await db.FlushAsync(last, _seasonId);
+                    await db.FlushMissionsAsync(lastMissions);
                     await db.DisposeAsync();
                 }
                 if (bridge is not null) await bridge.DisposeAsync();

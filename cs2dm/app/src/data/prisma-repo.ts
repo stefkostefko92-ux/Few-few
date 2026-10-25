@@ -1,21 +1,12 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import type { PublicEvent } from '../events.js';
 import { CELL_PX, DUST2_OVERVIEW, cleanCells, type HeatCell } from '../heatmap.js';
-import { loadHonors } from './honors.js';
-import { loadMatchHighlights, loadMatchReport, loadPlayerMatches } from './match-analytics.js';
-import { loadEvents, loadMatch, loadRecentMatches } from './public-extra.js';
+import { ExtraRepo } from './extra-repo.js';
 import {
   RATIO_MIN_KILLS,
   pagesFor,
   type LeaderRow,
-  type MatchDetail,
-  type MatchHighlights,
-  type MatchListRow,
-  type MatchReport,
-  type PlayerMatchRow,
   type Paged,
-  type PlayerHonors,
   type PublicBan,
   type PublicPlayer,
   type PublicVipTier,
@@ -75,9 +66,7 @@ export const PUBLIC_BAN_SELECT = {
   expiresAt: true,
 } as const satisfies Prisma.PunishmentSelect;
 
-export class PrismaRepo implements Repo {
-  constructor(private readonly db: PrismaClient) {}
-
+export class PrismaRepo extends ExtraRepo implements Repo {
   async currentSeason(): Promise<Season> {
     const select = { id: true, startsAt: true, endsAt: true } as const;
     const active = await this.db.season.findFirst({
@@ -254,34 +243,6 @@ export class PrismaRepo implements Repo {
       take: limit,
       select: { steamId: true, updatedAt: true },
     });
-  }
-
-  events(now: Date): Promise<PublicEvent[]> {
-    return loadEvents(this.db, now);
-  }
-
-  recentMatches(limit: number): Promise<MatchListRow[]> {
-    return loadRecentMatches(this.db, limit);
-  }
-
-  match(id: number): Promise<MatchDetail | null> {
-    return loadMatch(this.db, id);
-  }
-
-  honors(steamId: string): Promise<PlayerHonors> {
-    return loadHonors(this.db, steamId);
-  }
-
-  matchHighlights(id: number): Promise<MatchHighlights | null> {
-    return loadMatchHighlights(this.db, id);
-  }
-
-  matchReport(id: number, steamId: string): Promise<MatchReport | null> {
-    return loadMatchReport(this.db, id, steamId);
-  }
-
-  playerMatches(steamId: string, limit: number): Promise<PlayerMatchRow[]> {
-    return loadPlayerMatches(this.db, steamId, limit);
   }
 
   async lastStatsUpdate(): Promise<Date | null> {

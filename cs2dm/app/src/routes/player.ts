@@ -1,6 +1,7 @@
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { config } from '../config.js';
 import { RETENTION } from '../content.js';
+import { BADGE_BEST } from '../data/honors.js';
 import type { StatLine } from '../data/repo.js';
 import { formattersFor } from '../format.js';
 import {
@@ -15,6 +16,7 @@ import {
 import { translatorFor, type Locale } from '../i18n.js';
 import { levelForXp, levelProgress } from '../levels.js';
 import { MASTERY_TIERS, masteryFor, weaponLabel } from '../mastery.js';
+import { MISSION_TIERS, missionDay } from '../missions.js';
 import { DESCRIPTION_MAX, TITLE_MAX, absolute, buildHead, pagePath, playerPath } from '../seo.js';
 import { displayName, parseSteamId } from '../steamid.js';
 import { renderPage } from '../view.js';
@@ -22,7 +24,8 @@ import { fitWithName, homeCrumb, safeAvatar, type PageDeps } from './pages.js';
 
 /**
  * Публичният профил на играч (`/{език}/player/:steamId64`): статистики, ниво, майсторство, heatmap
- * (CONTRACT §3–4) и последните му мачове с линк към личния отчет (§13). Скрит (чл. 21 GDPR) → 404.
+ * (CONTRACT §3–4), последните му мачове с линк към личния отчет (§13), отличията (§15) и мисиите за деня (§16).
+ * Скрит (чл. 21 GDPR) → 404.
  */
 export const PROFILE_MATCHES = 10;
 
@@ -44,12 +47,13 @@ export function playerRouter(locale: Locale, deps: PageDeps): Router {
     const fmt = formattersFor(locale, config().DISPLAY_TZ);
     const season = await deps.repo.currentSeason();
     const seasonIds = season.id === 0 ? [0] : [0, season.id];
-    const [stats, weapons, heat, matches, honors] = await Promise.all([
+    const [stats, weapons, heat, matches, honors, missions] = await Promise.all([
       deps.repo.playerStats(steamId, seasonIds),
       deps.repo.weaponStats(steamId),
       deps.repo.heatmap(steamId, heatmapWindow(now())),
       deps.repo.playerMatches(steamId, PROFILE_MATCHES),
       deps.repo.honors(steamId),
+      deps.repo.missions(steamId, missionDay(now(), config().DISPLAY_TZ)),
     ]);
     const name = displayName(player.name, steamId);
     const allTime = statView(stats.find((line) => line.seasonId === 0) ?? null);
@@ -143,7 +147,11 @@ export function playerRouter(locale: Locale, deps: PageDeps): Router {
       mastery,
       masteryTiers: MASTERY_TIERS,
       honors,
+      badgeBest: BADGE_BEST,
       duelsDays: RETENTION.duelsDays,
+      missions,
+      missionTiers: MISSION_TIERS,
+      missionsDays: RETENTION.missionsDays,
       heatmaps,
       recentMatches: matches,
       retentionDays: RETENTION.matchesDays,
