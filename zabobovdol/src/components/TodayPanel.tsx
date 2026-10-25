@@ -118,7 +118,10 @@ export function TodayPanel({
 
   return (
     <section aria-labelledby="dnes-title" className="panel sm:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+      {/* Времето (aside) стои до датата, не в десния край: на компютър
+          първият екран свършва точно тук и десният долен ъгъл е на бутона
+          „Попитайте помощника“ — иначе той покриваше „макс. · мин.“. */}
+      <div className="flex flex-wrap items-start gap-x-10 gap-y-3">
         <div>
           <h2 id="dnes-title" className="section-title">
             Днес в Бобов&nbsp;дол

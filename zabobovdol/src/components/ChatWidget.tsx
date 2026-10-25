@@ -263,7 +263,7 @@ export function ChatWidget({ initialOpen = false }: { initialOpen?: boolean } = 
         <div
           ref={dialogRef}
           tabIndex={-1}
-          className="chat-panel no-print fixed inset-x-0 bottom-0 z-50 flex h-[85dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-2xl focus:outline-none sm:inset-x-auto sm:bottom-20 sm:right-4 sm:h-[32rem] sm:max-h-[calc(100dvh-6rem)] sm:w-[24rem] sm:rounded-2xl"
+          className="chat-panel no-print fixed inset-x-0 bottom-0 z-50 flex h-[85dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-2xl focus:outline-none sm:inset-x-auto sm:bottom-[4.5rem] sm:right-3 sm:h-[32rem] sm:max-h-[calc(100dvh-6rem)] sm:w-[24rem] sm:rounded-2xl"
           role="dialog"
           aria-modal="true"
           aria-labelledby="chat-title"

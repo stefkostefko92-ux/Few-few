@@ -10,7 +10,8 @@ import { UI_LABEL } from "@/lib/ui-labels";
 //    екранния четец; докато чатът е отворен, бутонът е скрит (панелът е
 //    долен лист със свой бутон „Затворете“);
 //  • от sm: бутон с надпис „Попитайте помощника“ — иконата сама не се
-//    разпознава от всички.
+//    разпознава от всички; нисък (48px) и на 12px от ъгъла, за да покрива
+//    възможно най-малко от съдържанието (часа в „Днес“ на 1366×900).
 // Клас chat-fab: скрит при отворено мобилно меню, с контур в тъмен режим
 // (globals.css).
 export const ChatFab = forwardRef<
@@ -25,7 +26,7 @@ export const ChatFab = forwardRef<
       aria-expanded={open}
       aria-haspopup="dialog"
       className={
-        "chat-fab no-print fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-3 z-50 h-12 w-12 items-center justify-center gap-2 rounded-full bg-brand-700 text-white shadow-lg hover:bg-brand-800 sm:bottom-4 sm:right-4 sm:h-14 sm:w-auto sm:rounded-xl sm:px-5 " +
+        "chat-fab no-print fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-3 z-50 h-12 w-12 items-center justify-center gap-2 rounded-full bg-brand-700 text-white shadow-lg hover:bg-brand-800 sm:w-auto sm:rounded-xl sm:pl-3.5 sm:pr-4 " +
         (open ? "hidden sm:flex" : "flex")
       }
     >
