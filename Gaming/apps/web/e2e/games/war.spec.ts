@@ -10,6 +10,7 @@ import {
   waitFor,
   watchSocket,
 } from "./helpers-draw";
+import { expectDecisionClearOf, expectDecisionOnScreen, expectMinimizeAndReopen } from "./prompt-checks";
 
 // A click that cannot happen must fail fast with a clear cause, not idle
 // until the test timeout (default action timeout is unlimited).
@@ -20,8 +21,9 @@ test.use({ actionTimeout: 20_000 });
  *  - обръщането върви и само (авто-обръщане след ~0.9 s, без клик);
  *  - „Обърни“ с клик; ДВОЕН клик праща точно един ход (регресия: вторият
  *    FLIP стигаше до сървъра и той го отхвърляше — „Невалиден ход“);
- *  - при равенство (война) решава човекът: „В атака (3 карти)“ и
- *    „Предпазливо (1 карта)“ — и двете се натискат поне веднъж;
+ *  - при равенство (война) решава човекът — в прозорец, който излиза сам
+ *    горе, над равните карти: „В атака (3 карти)“ и „Предпазливо (1 карта)“ —
+ *    и двете се натискат поне веднъж;
  *  - мачът се играе до края → карта „Край“ с бутони → „Нова игра“ = нов мач.
  */
 test("война: обръщане, двоен клик, атака/предпазливо, до края и нова игра", async ({ browser, baseURL }, info) => {
@@ -36,8 +38,8 @@ test("война: обръщане, двоен клик, атака/предпа
   await expectStageCannotScroll(table);
 
   const flipBtn = page.locator('[data-war-action="FLIP"]');
-  const fightBtn = page.locator('[data-war-action="FIGHT"]');
-  const skirmishBtn = page.locator('[data-war-action="SKIRMISH"]');
+  const fightBtn = page.locator('[data-decision] [data-war-action="FIGHT"]');
+  const skirmishBtn = page.locator('[data-decision] [data-war-action="SKIRMISH"]');
 
   /** Wait for my turn in the FLIP phase (a war decision is handled by the caller). */
   const myTurn = () => waitFor(page, undefined, 30_000);
@@ -57,6 +59,7 @@ test("война: обръщане, двоен клик, атака/предпа
   let skirmishes = 0;
   let doubleChecked = false;
   let layoutChecked = false;
+  let promptChecked = false;
 
   /** A manual flip must land inside the ~0.9 s before the auto-flip. If the
    *  auto-flip got there first (the turn moved on — maybe into my war
@@ -79,8 +82,15 @@ test("война: обръщане, двоен клик, атака/предпа
       const useFight = fights <= skirmishes;
       const btn = useFight ? fightBtn : skirmishBtn;
       await expect(btn).toBeEnabled();
-      // Решението е под масата — на 1366×768 трябва само да дойде в кадър.
+      // Решението е прозорец горе — в кадър, без да покрива равните карти.
       await expect(btn).toBeInViewport();
+      await expectDecisionOnScreen(page, /^ВОЙНА!$/);
+      await expectDecisionClearOf(page, { battle: ".aso-trick-card", bounty: ".war-bounty" });
+      if (!promptChecked) {
+        promptChecked = true;
+        await snap(page, info, "war-decision-1366x768");
+        await expectMinimizeAndReopen(page);
+      }
       await clickAndAdvance(page, () => btn.click());
       if (useFight) fights++;
       else skirmishes++;
@@ -92,8 +102,16 @@ test("война: обръщане, двоен клик, атака/предпа
       const sent = ws.sent.length;
       if (!(await tryFlip(() => flipBtn.dblclick({ timeout: 600 })))) return;
       const flipsSent = ws.sent.slice(sent).filter((s) => s.includes('"type":"FLIP"')).length;
-      expect(flipsSent, "двойният клик прати повече от един ход").toBe(1);
+      // Втори ход срещу СЪЩОТО състояние сървърът отхвърля („Невалиден ход“).
       expectNoRejections(ws);
+      // Два приети FLIP-а = авто-обръщането (0.9 s) изпревари двойния клик и
+      // ботът обърна между тях: вторият клик е законен ход в ново състояние,
+      // не двойно пращане. Проверката е неубедителна — пак при следващото.
+      if (flipsSent > 1) {
+        flips++;
+        return;
+      }
+      expect(flipsSent, "двойният клик прати повече от един ход").toBe(1);
       doubleChecked = true;
     } else if (!layoutChecked) {
       // „Обърни“ стои на мястото си и извън моя ход (изключен) — не изчезва и
@@ -146,6 +164,7 @@ test("война: обръщане, двоен клик, атака/предпа
   expect(layoutChecked, "мястото на „Обърни“ не беше проверено").toBe(true);
   expect(fights, "„В атака“ не беше натиснато").toBeGreaterThan(0);
   expect(skirmishes, "„Предпазливо“ не беше натиснато").toBeGreaterThan(0);
+  expect(promptChecked).toBe(true);
   expectNoRejections(ws);
   expectNoErrors(t);
   await t.ctx.close();
@@ -155,6 +174,7 @@ test.describe("мобилен изглед 390×844", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test("война на телефон: масата се побира и „Обърни“ работи", async ({ browser, baseURL }, info) => {
+    test.setTimeout(8 * 60_000);
     const t = await openGame(browser, baseURL!, "WAR");
     const { page } = t;
     const ws = await watchSocket(t);
@@ -166,10 +186,17 @@ test.describe("мобилен изглед 390×844", () => {
     // Ходове с клик на телефона (при война — решението с клик). Обръщането
     // трябва да изпревари авто-обръщането (~0.9 s), иначе — следващ ход.
     let clicked = 0;
+    let shot = false;
     for (let i = 0; i < 12 && clicked < 2; i++) {
       if ((await waitFor(page, undefined, 30_000)) === "over") break;
-      const fight = page.locator('[data-war-action="FIGHT"]');
+      const fight = page.locator('[data-decision] [data-war-action="FIGHT"]');
       const isWar = await fight.isVisible();
+      if (isWar && !shot) {
+        shot = true;
+        await expectDecisionOnScreen(page, /^ВОЙНА!$/);
+        await expectDecisionClearOf(page, { battle: ".aso-trick-card" });
+        await snap(page, info, "war-decision-390x844");
+      }
       const btn = isWar ? fight : page.locator('[data-war-action="FLIP"]');
       const before = await stateVersion(page);
       try {
@@ -181,6 +208,21 @@ test.describe("мобилен изглед 390×844", () => {
       clicked++;
     }
     expect(clicked, "нито един ход с клик на телефона").toBeGreaterThan(0);
+    // a war comes by chance (ties): let the auto-flip run until one does, then
+    // the popup must sit above the tied cards on the phone too
+    const fight = page.locator('[data-decision] [data-war-action="FIGHT"]');
+    for (let i = 0; i < 400 && !shot; i++) {
+      if ((await waitFor(page, () => fight.isVisible(), 30_000)) === "over") break;
+      if (!(await fight.isVisible())) {
+        await page.waitForTimeout(150); // my flip goes by itself
+        continue;
+      }
+      shot = true;
+      await expectDecisionOnScreen(page, /^ВОЙНА!$/);
+      await expectDecisionClearOf(page, { battle: ".aso-trick-card" });
+      await snap(page, info, "war-decision-390x844");
+      await clickAndAdvance(page, () => fight.click());
+    }
     await expectNoHorizontalScroll(page);
     expectNoRejections(ws);
     expectNoErrors(t);

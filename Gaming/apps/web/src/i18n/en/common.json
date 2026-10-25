@@ -413,7 +413,14 @@
     "declareWith": "66 with {{n}} {{suit}}",
     "declareHint": "Declare only if you really have 66 — a false declaration gives your opponent 3 points.",
     "declaredOk": "{{name}} goes out with {{n}}!",
-    "declaredFalse": "{{name}} declared 66 with only {{n}} — 3 points to the opponent"
+    "declaredFalse": "{{name}} declared 66 with only {{n}} — 3 points to the opponent",
+    "leadTitle": "Your lead — any call?",
+    "have66Title": "You have 66!",
+    "leadHint": "Points: {{pts}} · Trump {{suit}} · Stock: {{count}}",
+    "announceKing": "Call {{n}} {{suit}} — play the king",
+    "announceQueen": "Call {{n}} {{suit}} — play the queen",
+    "exchangeWith": "Swap trump ({{nine}} ↔ {{card}})",
+    "quietHint": "On: a king or queen of a pair clicked in your hand is played without the call."
   },
   "belote": {
     "yourTeam": "Your team",
@@ -644,7 +651,9 @@
     "mainPot": "Main pot",
     "sidePot": "Side pot {{n}}",
     "winsSidePot": "{{name}} wins a side pot ({{pot}})",
-    "splitsPot": "{{name}} splits the side pot ({{pot}})"
+    "splitsPot": "{{name}} splits the side pot ({{pot}})",
+    "yourBet": "Your bet",
+    "showdownTitle": "Cards revealed"
   },
   "bridge": {
     "dummyHand": "Dummy's hand",
@@ -666,7 +675,8 @@
     "honors": "honours {{n}} ({{side}})",
     "honorsBanner": "Honours: {{name}} +{{n}}",
     "us": "us",
-    "them": "them"
+    "them": "them",
+    "noBidYet": "Nobody has bid yet."
   },
   "war": {
     "flip": "Flip",
@@ -720,12 +730,18 @@
     "roundReport": "End of round {{n}}",
     "penalty": "Penalty",
     "total": "Total",
-    "continue": "Continue"
+    "continue": "Continue",
+    "openTitle": "Open now?",
+    "openHint": "Your staged opening is {{pts}} pts ({{min}} needed):",
+    "swapTitle": "Swap a joker",
+    "swapHint": "{{card}} can replace a joker on the table — you take the joker (use it this turn)."
   },
   "gofish": {
     "ocean": "Ocean",
     "askFrom": "Ask",
-    "books": "Books"
+    "books": "Books",
+    "askTitle": "Whom do you ask, and for what?",
+    "askFor": "For which rank"
   },
   "backgammon": {
     "roll": "Roll",
@@ -980,7 +996,10 @@
     "deckLeft": "Stock",
     "pass": "Pass",
     "pickHandCard": "Pick your card to swap",
-    "pickCenterCard": "Pick a centre card"
+    "pickCenterCard": "Pick a centre card",
+    "haveKentTitle": "You have Kent!",
+    "partnerSignaledTitle": "Your partner signalled!",
+    "kupeHint": "{{name}} gave you the secret signal — call “Kupe!” to take the round."
   },
   "chess": {
     "check": "Check!",
@@ -1341,6 +1360,7 @@
   },
   "decision": {
     "minimize": "Show the table",
-    "sec": "s"
+    "sec": "s",
+    "notNow": "Not now"
   }
 }

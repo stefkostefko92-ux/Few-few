@@ -30,6 +30,8 @@ import { useMatch } from "../useMatch";
 import { useSendOnce } from "../useSendOnce";
 import { useRevealOnTurn } from "../useRevealOnTurn";
 import { Scene, ScorePill, fitOverlap } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
+import { useClearOfDecision } from "../scene/useClearOfDecision";
 
 /**
  * Българско реми (виж engines/draw-discard/rummy.ts). Сървърът е източникът на
@@ -107,6 +109,14 @@ function RummyCard({
       <span style={{ fontSize: size === "md" ? 11 : 9, letterSpacing: ".08em", textTransform: "uppercase" }}>{label}</span>
     </Tag>
   );
+}
+
+const SUIT_GLYPH: Record<string, string> = { S: "♠", H: "♥", D: "♦", C: "♣" };
+/** „10♥“, „🃏“ — a card as text in a decision popup. */
+function cardText(c: string): string {
+  if (isJoker(c)) return "🃏";
+  const r = rummyRank(c);
+  return `${r === "T" ? "10" : r}${SUIT_GLYPH[rummySuit(c)] ?? ""}`;
 }
 
 function sortHand(hand: string[]): string[] {
@@ -250,6 +260,30 @@ export function RummyView({ title }: { title: string }) {
     pending.every((c) => stagedCards.includes(c)) &&
     accepts({ type: "OPEN", melds: staged });
 
+  // Решенията като прозорец (по желание): отварянето, щом натрупаното стигне
+  // 51 т., и смяната на жокер, щом избраната карта може да замени жокер на
+  // масата. „Не сега“ ги връща на старото място — бутона „Отвори“ и клика по
+  // комбинацията — до следващата промяна.
+  const [skipped, setSkipped] = useState<string | null>(null);
+  const openKey = `open-${state?.round ?? 0}-${staged.map((g) => g.join(",")).join("|")}`;
+  const openPrompt = openOk && phase === "playing";
+  const openInPrompt = openPrompt && skipped !== openKey;
+  const only = selected.length === 1 ? selected[0] : undefined;
+  const swapTargets =
+    inPlay && opened && only && hand.length >= 2 && state
+      ? state.melds.filter(
+          (meld) => jokerSwapIndex(meld, only) >= 0 && accepts({ type: "SWAP", meldId: meld.id, card: only }),
+        )
+      : [];
+  const swapKey = `swap-${state?.round ?? 0}-${only ?? ""}-${swapTargets.map((x) => x.id).join(".")}`;
+  const swapPrompt = swapTargets.length > 0 && phase === "playing";
+  const swapInPrompt = swapPrompt && skipped !== swapKey;
+  // The popup is fixed to the screen; in the play phase the page is scrolled to
+  // the controls under the table — keep my hand (what I decide by) clear of it.
+  const handEl = () => tableRef.current?.querySelector<HTMLElement>(".aso-myhand");
+  useClearOfDecision(handEl, openInPrompt, openKey);
+  useClearOfDecision(handEl, swapInPrompt, swapKey);
+
   const toggle = (c: string) => {
     if (!inPlay) return;
     setSelected((s) => (s.includes(c) ? s.filter((x) => x !== c) : [...s, c]));
@@ -276,17 +310,23 @@ export function RummyView({ title }: { title: string }) {
     setSelected([]);
   }
 
-  /** Натиснат е комбинация на масата: долепване на избраните или смяна на жокер. */
+  /** Натиснат е комбинация на масата: долепване на избраните или смяна на
+   *  жокер (смяната — оттук само след „Не сега“ на прозореца за нея). */
   function meldAction(meld: RummyMeld): RummyAction | null {
     if (!inPlay || !opened || selected.length === 0) return null;
     const layoff: RummyAction = { type: "LAYOFF", meldId: meld.id, cards: selected };
     if (leavesOne(selected.length) && extendMeld(meld, selected) && accepts(layoff)) return layoff;
-    const only = selected[0];
-    if (selected.length === 1 && only && hand.length >= 2 && jokerSwapIndex(meld, only) >= 0) {
+    if (!swapInPrompt && only && hand.length >= 2 && jokerSwapIndex(meld, only) >= 0) {
       const swap: RummyAction = { type: "SWAP", meldId: meld.id, card: only };
       if (accepts(swap)) return swap;
     }
     return null;
+  }
+
+  function doOpen() {
+    if (!openOk || !send({ type: "OPEN", melds: staged })) return;
+    setStaged([]);
+    setSelected([]);
   }
 
   const top = state?.discard[state.discard.length - 1];
@@ -551,18 +591,12 @@ export function RummyView({ title }: { title: string }) {
                   <span className="tnum text-xs text-brass-200" data-testid="rummy-opening" data-pts={stagedPts}>
                     {t("rummy.openingTotal", { pts: stagedPts, min: RUMMY_OPEN_MIN })}
                   </span>
-                  <Button
-                    variant="brass"
-                    disabled={!openOk}
-                    data-rummy-btn="open"
-                    onClick={() => {
-                      if (!send({ type: "OPEN", melds: staged })) return;
-                      setStaged([]);
-                      setSelected([]);
-                    }}
-                  >
-                    {t("rummy.open", { pts: stagedPts })}
-                  </Button>
+                  {/* Готовото отваряне е в прозореца; тук — брояч до 51 или след „Не сега“. */}
+                  {!openInPrompt ? (
+                    <Button variant="brass" disabled={!openOk} data-rummy-btn="open" onClick={doOpen}>
+                      {t("rummy.open", { pts: stagedPts })}
+                    </Button>
+                  ) : null}
                   {staged.length > 0 ? (
                     <Button variant="felt" data-rummy-btn="clear" onClick={() => setStaged([])}>
                       {t("rummy.clearOpening")}
@@ -590,6 +624,58 @@ export function RummyView({ title }: { title: string }) {
               </Button>
             </div>
           ) : null}
+
+          {/* Low popups in the top third (one line of text per meld, not card
+              faces) — over the stock and the pile, not needed while I play. In
+              the play phase the page sits scrolled to the controls under the
+              table; useClearOfDecision then brings my hand below the popup. */}
+          <DecisionPrompt
+            open={openPrompt}
+            promptKey={openKey}
+            title={t("rummy.openTitle")}
+            hint={
+              <>
+                {t("rummy.openHint", { pts: stagedPts, min: RUMMY_OPEN_MIN })}{" "}
+                <span className="tnum font-semibold text-brass-100" data-zone="opening-melds">
+                  {staged.map((g) => (arrangeMeld(g)?.cards ?? g).map(cardText).join(" ")).join(" · ")}
+                </span>
+              </>
+            }
+            placement="top"
+            optional={{ label: t("decision.notNow"), onSkip: () => setSkipped(openKey) }}
+            testId="rummy-open"
+          >
+            <Button variant="brass" className="!py-2" data-rummy-btn="open" onClick={doOpen}>
+              {t("rummy.open", { pts: stagedPts })}
+            </Button>
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={swapPrompt}
+            promptKey={swapKey}
+            title={t("rummy.swapTitle")}
+            hint={only ? t("rummy.swapHint", { card: cardText(only) }) : undefined}
+            placement="top"
+            optional={{ label: t("decision.notNow"), onSkip: () => setSkipped(swapKey) }}
+            testId="rummy-swap"
+          >
+            {swapTargets.map((meld) => (
+              <Button
+                key={meld.id}
+                variant="brass"
+                className="!py-2"
+                data-rummy-btn="swap"
+                data-swap-meld={meld.id}
+                onClick={() => {
+                  if (!only || !send({ type: "SWAP", meldId: meld.id, card: only })) return;
+                  setSelected([]);
+                }}
+              >
+                {t("rummy.swapHere")}: <span className="tnum">{meld.cards.map(cardText).join(" ")}</span>
+                <span className="text-xs font-normal">({nameFor(meld.owner)})</span>
+              </Button>
+            ))}
+          </DecisionPrompt>
 
           {myTurn ? (
             <p className="mt-2 text-center text-xs text-ink-muted">

@@ -12,6 +12,8 @@ import { useNarrowTable } from "../table/useNarrowTable";
 import { SeatCount } from "../trick/SeatCount";
 import { useMatch } from "../useMatch";
 import { GameOverPanel, SceneHeader, ScorePill, fitOverlap } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
+import { useClearOfDecision } from "../scene/useClearOfDecision";
 import "../cards/cards.css";
 
 interface KentState {
@@ -22,6 +24,8 @@ interface KentState {
   turn: number;
   passStreak: number;
   round: number;
+  /** Брояч на ходовете (сървърът го праща) — различава ходовете в кръга. */
+  moves?: number;
   matchScore: [number, number];
   lastRound: { caller: number; kind: "KUPE" | "STOP"; correct: boolean; winningTeam: number } | null;
 }
@@ -43,17 +47,35 @@ export function KentView({ title }: { title: string }) {
   const m = useMatch<KentState, KentAction>("KENT");
   const { state, legal, seat, phase, result, players } = m;
   const [pickedHand, setPickedHand] = useState<number | null>(null);
+  // „Не сега“ на знака/„Купе!“ — за ТОЗИ ход; бутонът остава под масата.
+  const [skippedCall, setSkippedCall] = useState<string | null>(null);
+  const signalAction = legal.find((a) => a.type === "SIGNAL");
+  const kupeAction = legal.find((a) => a.type === "CALL_KUPE");
+  // Решенията, за които излиза прозорец: имам кент → тайният знак; партньорът
+  // ми е дал знак → „Купе!“. И двете са по желание (може и да смениш/пасуваш).
+  // „Стоп Кент!“ е облог, възможен на всеки ход — той остава бутон под масата.
+  const callKey = `call-${state?.round ?? 0}-${state?.moves ?? 0}-${signalAction ? "s" : ""}${kupeAction ? "k" : ""}`;
+  const callPrompt = phase === "playing" && !!state && state.turn === seat && (!!signalAction || !!kupeAction);
+  const callsInPrompt = callPrompt && skippedCall !== callKey;
 
   // Всяка валидна смяна (handIndex→centerIndex) от изброените legalActions.
   const swaps = useMemo(() => legal.filter((a) => a.type === "SWAP") as Extract<KentAction, { type: "SWAP" }>[], [legal]);
   const swappableHand = useMemo(() => new Set(swaps.map((a) => a.handIndex)), [swaps]);
   const passAction = legal.find((a) => a.type === "PASS");
-  const signalAction = legal.find((a) => a.type === "SIGNAL");
-  const kupeAction = legal.find((a) => a.type === "CALL_KUPE");
   const stopAction = legal.find((a) => a.type === "CALL_STOP");
 
   const tableRef = useRef<HTMLDivElement>(null);
   const flight = useCardFlight(tableRef);
+  // The popup sits in the top third; scrolled down to „Пас“ under the table,
+  // the partner's sign and the centre cards slid under it — bring them below.
+  useClearOfDecision(
+    () =>
+      tableRef.current?.querySelector<HTMLElement>('[data-testid="partner-signal"]') ??
+      tableRef.current?.querySelector<HTMLElement>('[data-zone="center"]'),
+    callsInPrompt,
+    callKey,
+    "below",
+  );
   const narrow = useNarrowTable();
   const myTeamForFx = seat % 2;
   const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
@@ -112,6 +134,17 @@ export function KentView({ title }: { title: string }) {
   const myTurn = state.turn === seat && legal.length > 0;
   const partnerSignaled = state.signaled[partner];
   const myKent = myHand.length === 4 && myHand.every((c) => c[0] === myHand[0]![0]);
+
+  const sendSignal = () => {
+    if (!signalAction) return;
+    playCue("flip");
+    m.send(signalAction);
+  };
+  const sendKupe = () => {
+    if (!kupeAction) return;
+    playCue("deal");
+    m.send(kupeAction);
+  };
 
   const doSwap = (centerIndex: number, el: HTMLElement | null) => {
     if (pickedHand === null) return;
@@ -257,28 +290,14 @@ export function KentView({ title }: { title: string }) {
               {t("kent.pass")}
             </Button>
           ) : null}
-          {signalAction ? (
-            <Button
-              variant="ghost"
-              className="!py-2"
-              data-action="signal"
-              onClick={() => {
-                playCue("flip");
-                m.send(signalAction);
-              }}
-            >
+          {/* Знакът и „Купе!“ са в прозореца; тук — само след „Не сега“. */}
+          {signalAction && !callsInPrompt ? (
+            <Button variant="ghost" className="!py-2" data-action="signal" onClick={sendSignal}>
               👁 {t("kent.signal")}
             </Button>
           ) : null}
-          {kupeAction ? (
-            <Button
-              className="!py-2"
-              data-action="kupe"
-              onClick={() => {
-                playCue("deal");
-                m.send(kupeAction);
-              }}
-            >
+          {kupeAction && !callsInPrompt ? (
+            <Button className="!py-2" data-action="kupe" onClick={sendKupe}>
               {t("kent.callKupe")}
             </Button>
           ) : null}
@@ -297,6 +316,27 @@ export function KentView({ title }: { title: string }) {
           ) : null}
         </div>
       ) : null}
+
+      <DecisionPrompt
+        open={callPrompt}
+        promptKey={callKey}
+        title={kupeAction ? t("kent.partnerSignaledTitle") : t("kent.haveKentTitle")}
+        hint={kupeAction ? t("kent.kupeHint", { name: nameFor(partner) }) : t("kent.youHaveKent")}
+        placement="top"
+        optional={{ label: t("decision.notNow"), onSkip: () => setSkippedCall(callKey) }}
+        testId="kent-call"
+      >
+        {kupeAction ? (
+          <Button className="!py-2" data-action="kupe" onClick={sendKupe}>
+            {t("kent.callKupe")}
+          </Button>
+        ) : null}
+        {signalAction ? (
+          <Button variant={kupeAction ? "felt" : "brass"} className="!py-2" data-action="signal" onClick={sendSignal}>
+            👁 {t("kent.signal")}
+          </Button>
+        ) : null}
+      </DecisionPrompt>
 
       <div
         className="mt-4 flex flex-wrap items-center justify-center gap-3"

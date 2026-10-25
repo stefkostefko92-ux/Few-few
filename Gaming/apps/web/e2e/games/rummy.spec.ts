@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page, type TestInfo } from "@playwright/test";
 import { arrangeMeld } from "@aso/game-core";
 import { expectNoErrors, openGame, probe } from "./helpers";
 import {
@@ -14,6 +14,17 @@ import {
   type SocketWatch,
 } from "./helpers-draw";
 import { acceptsFor, nextStep, type Memory, type RummyView, type Step } from "./rummy-plan";
+import {
+  decision,
+  expectDecisionClearOf,
+  expectDecisionOnScreen,
+  expectMinimizeAndReopen,
+  inDecision,
+  skipDecision,
+} from "./prompt-checks";
+
+/** An opening / a joker swap is decided by my hand (the melds are in the popup). */
+const RUMMY_TABLE = { hand: ".aso-myhand" };
 
 // A click that cannot happen must fail fast with a clear cause, not idle
 // until the test timeout (default action timeout is unlimited).
@@ -30,6 +41,9 @@ test.use({ actionTimeout: 20_000 });
  *  - „Изчисти“ натрупаното отваряне и „Подреди“ ръката;
  *  - полагане на комбинация, долепване към комбинация, смяна на жокер;
  *  - хвърляне; излизане → отчетът „Край на рунд 1“ → „Продължи“ → рунд 2.
+ * Отварянето (щом натрупаното стигне 51) и смяната на жокер (щом избраната
+ * карта може да замени жокер на масата) излизат сами като прозорец по желание;
+ * „Не сега“ ги връща на бутона „Отвори“ / клика по комбинацията.
  * Решенията взима rummy-plan.ts (същите като в офлайн симулацията); всеки ход
  * се проверява и по събитието, което сървърът е приложил.
  */
@@ -46,6 +60,7 @@ test("реми: тегли/вземи, отваряне ≥51, комбинац�
   const counts: Record<Step["kind"], number> = { draw: 0, take: 0, open: 0, meld: 0, layoff: 0, swap: 0, discard: 0 };
   const mem: Memory = { swapDone: false };
   const report = page.getByTestId("rummy-report");
+  const shots = { info, opened: false, swapped: false };
   let uiChecked = false;
   let rounds = 0;
   const allDone = () => Object.values(counts).every((n) => n > 0);
@@ -73,7 +88,7 @@ test("реми: тегли/вземи, отваряне ≥51, комбинац�
       await checkSortAndClear(page, view, step.melds[0]!);
       uiChecked = true;
     }
-    await perform(page, ws, view.seat, step);
+    await perform(page, ws, view.seat, step, shots);
     counts[step.kind]++;
   }
 
@@ -145,7 +160,16 @@ async function checkSortAndClear(page: Page, view: RummyView, meld: string[]): P
 }
 
 /** Carry out one decided step with clicks and check what the server applied. */
-async function perform(page: Page, ws: SocketWatch, seat: number, step: Step): Promise<void> {
+interface Shots {
+  info: TestInfo;
+  /** First opening / first swap already photographed (and minimised once). */
+  opened: boolean;
+  swapped: boolean;
+  /** Phone run: take „Не сега“ on the opening popup and open from the bar. */
+  skipOpen?: boolean;
+}
+
+async function perform(page: Page, ws: SocketWatch, seat: number, step: Step, shots: Shots): Promise<void> {
   const table = page.getByTestId("rummy-table");
   const from = ws.events.length;
   const mine = (type: string) => (e: Record<string, unknown>) => e.type === type && e.seat === seat;
@@ -188,7 +212,23 @@ async function perform(page: Page, ws: SocketWatch, seat: number, step: Step): P
       }
       expect(total).toBe(step.points);
       expect(total).toBeGreaterThanOrEqual(51);
-      const open = page.locator('[data-rummy-btn="open"]');
+      // ≥ 51 staged → the popup comes up by itself with the opening in it;
+      // the bar has no second „Отвори“
+      await expectDecisionOnScreen(page, /^Отваряш ли\?$/);
+      await expectDecisionClearOf(page, RUMMY_TABLE);
+      await expect(decision(page)).toContainText(`${total} т.`);
+      await expect(page.getByTestId("rummy-controls").locator('[data-rummy-btn="open"]')).toHaveCount(0);
+      if (!shots.opened) {
+        shots.opened = true;
+        await snap(page, shots.info, `rummy-open-${page.viewportSize()?.width}`);
+        await expectMinimizeAndReopen(page);
+      }
+      let open = inDecision(page, '[data-rummy-btn="open"]');
+      if (shots.skipOpen) {
+        // „Не сега“: the popup goes; „Отвори“ is back in the bar, live
+        await skipDecision(page);
+        open = page.getByTestId("rummy-controls").locator('[data-rummy-btn="open"]');
+      }
       await expect(open).toHaveText(`Отвори (${total} т.)`);
       await expect(open).toBeEnabled();
       await clickAndAdvance(page, () => open.click());
@@ -209,11 +249,26 @@ async function perform(page: Page, ws: SocketWatch, seat: number, step: Step): P
     case "swap": {
       await selectCards(page, [step.card]);
       const target = page.locator(`[data-meld-id="${step.meldId}"]`);
-      await expect(target, "масата не предлага хода върху тази комбинация").toHaveAttribute(
-        "data-meld-action",
-        step.kind === "layoff" ? "LAYOFF" : "SWAP",
-      );
-      await clickAndAdvance(page, () => clickVisible(target));
+      if (step.kind === "swap") {
+        // the swap comes up by itself as a popup, the table meld does not
+        // offer it a second time
+        await expectDecisionOnScreen(page, /^Смяна на жокер$/);
+        await expectDecisionClearOf(page, RUMMY_TABLE);
+        await expect(target).not.toHaveAttribute("data-meld-action", "SWAP");
+        const swap = inDecision(page, `[data-rummy-btn="swap"][data-swap-meld="${step.meldId}"]`);
+        await expect(swap).toBeVisible();
+        if (!shots.swapped) {
+          shots.swapped = true;
+          await snap(page, shots.info, `rummy-swap-${page.viewportSize()?.width}`);
+        }
+        await clickAndAdvance(page, () => swap.click());
+      } else {
+        await expect(target, "масата не предлага хода върху тази комбинация").toHaveAttribute(
+          "data-meld-action",
+          "LAYOFF",
+        );
+        await clickAndAdvance(page, () => clickVisible(target));
+      }
       const ev = await expectEvent(ws, from, mine(step.kind.toUpperCase()), `сървърът не потвърди ${step.kind}`);
       expect(ev.meldId).toBe(step.meldId);
       if (step.kind === "swap") {
@@ -246,6 +301,7 @@ test.describe("мобилен изглед 390×844", () => {
     await expectNoHorizontalScroll(page);
     await snap(page, info, "rummy-390x844");
     const mem: Memory = { swapDone: false };
+    const shots: Shots = { info, opened: false, swapped: false, skipOpen: true };
     // Първият ход (отваряне, смяна, долепване, хвърляне) — с клик по тясната
     // видима ивица на всяка карта.
     for (let i = 0; i < 12; i++) {
@@ -253,7 +309,7 @@ test.describe("мобилен изглед 390×844", () => {
       const view = await readView(page);
       if (view.phase === "DRAW") break; // ходът ми свърши — до следващия не чакаме
       const step = nextStep(view, mem, acceptsFor(view));
-      await perform(page, ws, view.seat, step);
+      await perform(page, ws, view.seat, step, shots);
       if (step.kind === "discard") break;
     }
     await snap(page, info, "rummy-390x844-opened");

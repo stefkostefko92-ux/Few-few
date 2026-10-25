@@ -9,10 +9,10 @@ import { useCardFlight } from "../anim/useCardFlight";
 import { useGameEvents } from "../useGameEvents";
 import { useMatch } from "../useMatch";
 import { useSendOnce } from "../useSendOnce";
-import { useRevealOnTurn } from "../useRevealOnTurn";
 import { seatNames } from "../seatNames";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill, fitOverlap } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
 import "./gofish.css";
 
 interface GoFishState {
@@ -105,9 +105,6 @@ export function GoFishView({ title }: { title: string }) {
   const [target, setTarget] = useState<number | null>(null);
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
-  // The ask panel sits under the table — below the fold on a laptop.
-  const askRef = useRef<HTMLDivElement>(null);
-  useRevealOnTurn(askRef, myTurn);
 
   // Ranks I can ask, and which targets are valid for each.
   const asks = useMemo(() => legal.filter((a) => a.type === "ASK"), [legal]);
@@ -189,15 +186,25 @@ export function GoFishView({ title }: { title: string }) {
             </FeltTable>
           </div>
 
-          {/* Ask controls. */}
-          {myTurn ? (
-            <div
-              ref={askRef}
-              className="mt-4 rounded-panel border border-brass-400/20 bg-felt-800/70 p-3"
-              data-testid="gofish-ask"
-            >
-              <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-                <span className="text-sm text-ink-300">{t("gofish.askFrom")}:</span>
+          {/* Кого и за какво питам — прозорец, щом е мой ред (единственият ход).
+              Горе и нисък: средата е морето, отстрани са съперниците; бутонът
+              за всеки съперник носи и комплектите му (табелата на горния може
+              да остане под прозореца на 768px лаптоп). */}
+          <DecisionPrompt
+            open={myTurn && phase === "playing"}
+            promptKey={`ask-${state.ocean.length}-${state.hands.map((h) => h.length).join(".")}-${state.books.join(".")}`}
+            title={t("gofish.askTitle")}
+            placement="top"
+            testId="gofish-decision"
+          >
+            <div className="w-full" data-testid="gofish-ask">
+              {/* the title asks „whom and for what“ — no row labels: one row of
+                  opponents fits, and the popup stays clear of the felt */}
+              <div
+                className="mb-2 flex flex-wrap items-center justify-center gap-2"
+                role="group"
+                aria-label={t("gofish.askFrom")}
+              >
                 {targets.map((tg) => (
                   <button
                     key={tg}
@@ -211,18 +218,23 @@ export function GoFishView({ title }: { title: string }) {
                       color: tg === target ? "var(--charcoal-900)" : "var(--ink-300)",
                     }}
                   >
-                    {nameFor(tg)}
+                    {nameFor(tg)} <span className="tnum">📚 {state.books[tg] ?? 0}</span>
                   </button>
                 ))}
               </div>
-              <div className="flex flex-wrap items-center justify-center gap-2">
+              {/* one row of ranks on a laptop (up to 13: narrower tiles past 10) */}
+              <div
+                className="flex flex-wrap items-center justify-center gap-1"
+                role="group"
+                aria-label={t("gofish.askFor")}
+              >
                 {ranksForTarget.map((a) => (
                   <button
                     key={a.rank}
                     type="button"
                     className="aso-bid"
                     data-gofish-rank={a.rank}
-                    style={{ width: 44, height: 44, fontSize: "1.1rem" }}
+                    style={{ width: ranksForTarget.length > 10 ? 30 : 38, height: 40, fontSize: "1.05rem" }}
                     onClick={() => {
                       if (send(a)) playCue("flip");
                     }}
@@ -232,7 +244,7 @@ export function GoFishView({ title }: { title: string }) {
                 ))}
               </div>
             </div>
-          ) : null}
+          </DecisionPrompt>
 
           <div className="mt-4 flex items-center justify-center gap-3">
             <ScorePill label={t("gofish.books")} value={state.books[seat] ?? 0} highlight />
