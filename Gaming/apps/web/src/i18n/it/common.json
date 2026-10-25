@@ -443,7 +443,8 @@
     "lastDeal": "Mano",
     "valat": "Cappotto!",
     "inside": "Dentro",
-    "redeal": "Nuova smazzata"
+    "redeal": "Nuova smazzata",
+    "noBidYet": "Nessuno ha ancora dichiarato la briscola."
   },
   "shop": {
     "payButton": "Acquista e paga · {{price}}",
@@ -1288,5 +1289,9 @@
     "limitTitle": "Limite giornaliero raggiunto",
     "limitBody": "Oggi hai giocato il limite di {{n}} min che hai scelto. Un buon momento per una pausa.",
     "understood": "Ho capito"
+  },
+  "decision": {
+    "minimize": "Mostra il tavolo",
+    "sec": "s"
   }
 }

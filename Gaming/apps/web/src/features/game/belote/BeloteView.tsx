@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../ui";
 import { useAuthStore } from "../../../lib/store";
-import { useSettings } from "../../../lib/settings";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
 import { type SuitChar } from "../cards/suits";
@@ -16,6 +15,7 @@ import { useTableFx, Announcements } from "../anim/useTableFx";
 import { useTrickDisplay, TrickCardSlot } from "../anim/useTrickDisplay";
 import { useMatch } from "../useMatch";
 import { GameOverPanel, SceneHeader, fitOverlap } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
 import "../cards/cards.css";
 
 interface Play {
@@ -160,16 +160,9 @@ export function BeloteView({ title }: { title: string }) {
     }
   }, [state, seat, dealIn]);
 
-  // Phones: the auction panel renders under the table, below the fold — bring
-  // it into view when it is my call ("nearest" keeps my hand above it). On
-  // wider screens it is sticky instead.
-  const reduced = useSettings((s) => s.reducedMotion);
-  const biddingRef = useRef<HTMLDivElement>(null);
+  // My call in the auction: the choices come up as a popup over the (empty)
+  // centre of the table — no hunting for a bar under the table.
   const bidding = !!state && state.phase === "BID" && myTurn;
-  useEffect(() => {
-    if (!bidding || !narrow) return;
-    biddingRef.current?.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
-  }, [bidding, narrow, reduced]);
 
   if (!state) {
     return <SearchingOrOver title={title} phase={phase} seat={seat} result={result} />;
@@ -322,14 +315,21 @@ export function BeloteView({ title }: { title: string }) {
         </div>
       ) : null}
 
-      {/* The auction. Sticky so it is on screen the moment it is my call (on a
-          768px-tall laptop it rendered below the fold, under the table). */}
-      {bidding ? (
-        <div
-          ref={biddingRef}
-          data-zone="bidding"
-          className="z-30 mx-auto mt-4 flex w-fit max-w-full scroll-mb-16 flex-wrap items-center justify-center gap-2 rounded-panel bg-felt-900/70 p-1.5 backdrop-blur sm:sticky sm:bottom-1"
-        >
+      {/* The auction: a popup the moment it is my call. */}
+      <DecisionPrompt
+        open={bidding && phase === "playing"}
+        promptKey={`bid-${state.dealNo}-${state.contract ?? "-"}-${state.doubling}-${state.declarer ?? "-"}`}
+        title={t("belote.auction")}
+        hint={
+          state.contract
+            ? `${t("belote.contract")}: ${contractGlyph(state.contract, t)} · ${nameFor(state.declarer ?? 0)}${
+                state.doubling === 2 ? ` · ${t("belote.contra")}` : state.doubling === 4 ? ` · ${t("belote.recontra")}` : ""
+              }`
+            : t("belote.noBidYet")
+        }
+        testId="belote-bidding"
+      >
+        <div data-zone="bidding" className="flex flex-wrap items-center justify-center gap-2">
           {BID_LADDER.map((c) => {
             const bid = bidFor(c);
             return (
@@ -343,50 +343,35 @@ export function BeloteView({ title }: { title: string }) {
                 className="aso-bid"
                 style={{
                   color: BID_INK[c],
-                  // compact tiles: the bar sticks under the hand on a 768px screen
-                  width: 44,
-                  height: 44,
+                  width: 48,
+                  height: 48,
                   opacity: bid ? 1 : 0.3,
-                  fontSize: c === "NT" || c === "AT" ? "0.7rem" : undefined,
+                  fontSize: c === "NT" || c === "AT" ? "0.75rem" : undefined,
                 }}
                 title={c === "NT" ? t("belote.noTrumpFull") : c === "AT" ? t("belote.allTrumpFull") : undefined}
+                aria-label={c === "NT" ? t("belote.noTrumpFull") : c === "AT" ? t("belote.allTrumpFull") : contractGlyph(c, t)}
               >
                 {contractGlyph(c, t)}
               </button>
             );
           })}
           {contraAction ? (
-            <Button
-              variant="ghost"
-              className="!py-2"
-              data-action="contra"
-              onClick={() => m.send(contraAction)}
-            >
+            <Button variant="ghost" className="!py-2" data-action="contra" onClick={() => m.send(contraAction)}>
               {t("belote.contra")}
             </Button>
           ) : null}
           {recontraAction ? (
-            <Button
-              variant="ghost"
-              className="!py-2"
-              data-action="recontra"
-              onClick={() => m.send(recontraAction)}
-            >
+            <Button variant="ghost" className="!py-2" data-action="recontra" onClick={() => m.send(recontraAction)}>
               {t("belote.recontra")}
             </Button>
           ) : null}
           {passAction ? (
-            <Button
-              variant="ghost"
-              className="!py-2"
-              data-action="pass"
-              onClick={() => m.send(passAction)}
-            >
+            <Button variant="ghost" className="!py-2" data-action="pass" onClick={() => m.send(passAction)}>
               {t("belote.pass")}
             </Button>
           ) : null}
         </div>
-      ) : null}
+      </DecisionPrompt>
 
       {/* Последно раздаване (между раздаванията). */}
       {state.lastDeal && state.dealNo > state.lastDeal.dealNo ? (

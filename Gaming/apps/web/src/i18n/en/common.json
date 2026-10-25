@@ -443,7 +443,8 @@
     "lastDeal": "Deal",
     "valat": "Capot!",
     "inside": "Inside",
-    "redeal": "New deal"
+    "redeal": "New deal",
+    "noBidYet": "Nobody has named trumps yet."
   },
   "wallet": {
     "chips": "Chips",
@@ -1288,5 +1289,9 @@
     "limitTitle": "Daily limit reached",
     "limitBody": "You've played the {{n}} min limit you set for today. A good moment for a break.",
     "understood": "Got it"
+  },
+  "decision": {
+    "minimize": "Show the table",
+    "sec": "s"
   }
 }
