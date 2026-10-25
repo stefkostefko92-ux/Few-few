@@ -1,0 +1,106 @@
+/* Хайлайтите на мача и личният отчет (CONTRACT §13) — същият печатен език като профила: туш, червено, моно етикети. */
+
+.hl-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px clamp(24px, 4vw, 48px);
+}
+.hl-grid h3 {
+  font-size: 28px;
+}
+.hl-list {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+.hl-list li {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 2px 14px;
+  padding: 12px 2px;
+  border-bottom: 1px solid var(--rule);
+}
+.hl-kind {
+  grid-row: span 2;
+  align-self: center;
+  color: var(--red);
+  font: 800 34px/0.95 var(--display);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.hl-main {
+  font: 800 22px/1.1 var(--display);
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.hl-meta {
+  color: var(--muted);
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.hl-list a {
+  color: var(--red);
+  text-underline-offset: 3px;
+}
+
+/* Личният отчет. Линкът в топ 3 на мача е в колоната на текста, не под мястото. */
+.match-top .match-report {
+  grid-column: 2;
+  justify-self: start;
+}
+.report-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.report-links li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+  font: 700 13px/1.4 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.report-links li::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 3px;
+  margin: 0 10px 3px 0;
+  background: var(--red);
+  vertical-align: middle;
+}
+.compare-table .delta {
+  font-weight: 800;
+}
+.delta-better {
+  color: #2f6b2a;
+}
+.delta-worse {
+  color: var(--red);
+}
+.delta-even {
+  color: var(--muted);
+}
+.report-heat {
+  max-width: 560px;
+}
+.report-note {
+  margin: 26px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+.recent-table time {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .hl-grid {
+    grid-template-columns: 1fr;
+  }
+  .hl-list li {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+  .hl-kind {
+    font-size: 28px;
+  }
+}

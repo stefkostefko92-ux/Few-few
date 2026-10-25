@@ -64,5 +64,11 @@ export function withCache(repo: Repo, cache = new TtlCache()): Repo {
     // Завършил мач не се променя — дълъг кеш.
     match: (id) => cache.get(`m:${id}`, LONG, () => repo.match(id)),
     honors: (id) => cache.get(`hn:${id}`, SHORT, () => repo.honors(id)),
+    matchHighlights: (id) => cache.get(`mh:${id}`, LONG, () => repo.matchHighlights(id)),
+    // Скриването (чл. 21) трябва да важи бързо — кратък кеш, макар мачът да не се променя.
+    matchReport: (id, steamId) =>
+      cache.get(`mr:${id}:${steamId}`, SHORT, () => repo.matchReport(id, steamId)),
+    playerMatches: (id, limit) =>
+      cache.get(`pm:${id}:${limit}`, SHORT, () => repo.playerMatches(id, limit)),
   };
 }

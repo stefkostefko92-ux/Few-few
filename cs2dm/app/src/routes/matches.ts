@@ -1,6 +1,5 @@
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { config } from '../config.js';
-import type { MatchDetail } from '../data/repo.js';
 import { formatMultiplier } from '../events.js';
 import { formattersFor } from '../format.js';
 import { translatorFor, type Locale, type Translator } from '../i18n.js';
@@ -8,7 +7,7 @@ import { weaponLabel } from '../mastery.js';
 import { DESCRIPTION_MAX, TITLE_MAX, buildHead, matchPath, pagePath, type Crumb } from '../seo.js';
 import { renderPage } from '../view.js';
 import { decimalSeparator } from './event-seo.js';
-import { matchListView, matchMinutes } from './match-view.js';
+import { highlightsView, matchListView, matchMinutes } from './match-view.js';
 import { fitWithName, type PageDeps } from './pages.js';
 
 /**
@@ -17,7 +16,7 @@ import { fitWithName, type PageDeps } from './pages.js';
  */
 export const MATCHES_LIST_SIZE = 30;
 /** Само цифри, без водеща нула — иначе 404 без заявка към базата. */
-const MATCH_ID = /^[1-9]\d{0,9}$/;
+export const MATCH_ID = /^[1-9]\d{0,9}$/;
 
 function crumbs(t: Translator, locale: Locale): Crumb[] {
   return [
@@ -51,7 +50,10 @@ export function matchesRouter(locale: Locale, deps: PageDeps): Router {
   router.get('/match/:id', async (req: Request, res: Response, next: NextFunction) => {
     const raw = typeof req.params.id === 'string' ? req.params.id : '';
     if (!MATCH_ID.test(raw)) return next();
-    const match: MatchDetail | null = await deps.repo.match(Number(raw));
+    const [match, highlights] = await Promise.all([
+      deps.repo.match(Number(raw)),
+      deps.repo.matchHighlights(Number(raw)),
+    ]);
     if (!match) return next();
     const t = translatorFor(locale);
     const fmt = formattersFor(locale, config().DISPLAY_TZ);
@@ -89,6 +91,7 @@ export function matchesRouter(locale: Locale, deps: PageDeps): Router {
           weapon: row.topWeapon ? weaponLabel(row.topWeapon) : null,
         })),
       },
+      highlights: highlights ? highlightsView(highlights, t, locale) : null,
     });
   });
 

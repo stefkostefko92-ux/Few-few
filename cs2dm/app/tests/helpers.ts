@@ -4,6 +4,9 @@ import type {
   LeaderRow,
   MatchDetail,
   PlayerHonors,
+  MatchHighlights,
+  MatchReport,
+  PlayerMatchRow,
   PublicBan,
   PublicPlayer,
   StatLine,
@@ -23,6 +26,9 @@ export interface FakeData {
   events?: PublicEvent[];
   matches?: MatchDetail[];
   honors?: PlayerHonors;
+  highlights?: Record<number, MatchHighlights>;
+  reports?: MatchReport[];
+  playerMatches?: PlayerMatchRow[];
 }
 
 export const PLAYER_ID = '76561198000000001';
@@ -68,6 +74,81 @@ export function sampleData(): FakeData {
     bans: [],
     tiers: [],
     matches: [sampleMatch()],
+    highlights: { 41: sampleHighlights() },
+    reports: [sampleReport()],
+    playerMatches: [
+      {
+        id: 41,
+        endedAt: new Date('2026-10-20T12:00:00Z'),
+        place: 1,
+        players: 3,
+        kills: 20,
+        deaths: 9,
+        xp: 300,
+      },
+    ],
+  };
+}
+
+/** Хайлайтите на мач 41: вторият в серията и водачът по noscope са скрити (чл. 21 GDPR). */
+export function sampleHighlights(): MatchHighlights {
+  const hidden = { steamId: null, name: null };
+  return {
+    recorded: true,
+    multiKills: [
+      {
+        steamId: PLAYER_ID,
+        name: 'Sandstorm',
+        kills: 4,
+        offsetMs: 751_000,
+        weapons: ['ak47', 'deagle'],
+      },
+      { ...hidden, kills: 3, offsetMs: 90_000, weapons: ['awp'] },
+    ],
+    collections: [
+      { kind: 'noscope', count: 2, leader: hidden, leaderCount: 2 },
+      {
+        kind: 'smoke',
+        count: 1,
+        leader: { steamId: PLAYER_ID, name: 'Sandstorm' },
+        leaderCount: 1,
+      },
+    ],
+    longest: {
+      steamId: PLAYER_ID,
+      name: 'Sandstorm',
+      weapon: 'awp',
+      meters: 52.324,
+      offsetMs: 300_000,
+    },
+  };
+}
+
+/** Личният отчет на Sandstorm за мач 41 (с `now` по подразбиране мачът е стар → картата на смъртите излиза). */
+export function sampleReport(): MatchReport {
+  const { id, map, mode, startedAt, endedAt, kills, players } = sampleMatch();
+  return {
+    match: { id, map, mode, startedAt, endedAt, kills, players },
+    steamId: PLAYER_ID,
+    name: 'Sandstorm',
+    row: {
+      place: 1,
+      kills: 20,
+      deaths: 9,
+      headshots: 10,
+      bestStreak: 7,
+      bountiesClaimed: 1,
+      xp: 300,
+    },
+    recorded: true,
+    weapons: [
+      { weapon: 'ak47', kills: 12, headshots: 7 },
+      { weapon: 'knife', kills: 1, headshots: 0 },
+      { weapon: 'knife_t', kills: 1, headshots: 0 },
+    ],
+    multiKills: [{ kills: 4, offsetMs: 751_000, weapons: ['ak47', 'deagle'] }],
+    deathCells: [{ cx: 20, cy: 5, n: 4 }],
+    baseline: { matches: 3, kills: 15.5, deaths: 11, headshots: 6, xp: 240 },
   };
 }
 
@@ -169,6 +250,10 @@ export function fakeRepo(data: FakeData, calls: string[] = []): Repo {
       })),
     match: async (id) => (data.matches ?? []).find((match) => match.id === id) ?? null,
     honors: async () => data.honors ?? { badges: [], duels: { wins: 0, losses: 0, draws: 0 } },
+    matchHighlights: async (id) => data.highlights?.[id] ?? null,
+    matchReport: async (id, steamId) =>
+      (data.reports ?? []).find((r) => r.match.id === id && r.steamId === steamId) ?? null,
+    playerMatches: async (_steamId, limit) => (data.playerMatches ?? []).slice(0, limit),
   };
 }
 

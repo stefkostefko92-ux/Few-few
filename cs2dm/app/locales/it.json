@@ -105,6 +105,11 @@
       "title": "Partita n. {id} su {map} — vince {name}",
       "description": "La partita del {date} sul server CS2 Dust2 DM: {kills} uccisioni, {players} giocatori. Primo è {name} con {topKills} uccisioni.",
       "keywords": "partita CS2, risultati della partita, Dust2 Deathmatch, statistiche CS2, migliori giocatori, Carbon Stealth"
+    },
+    "report": {
+      "title": "{name} nella partita n. {id} — resoconto personale",
+      "description": "Il resoconto personale di {name} della partita del {date} su Dust2 DM: {kills} uccisioni, {deaths} morti, K/D {kd}, {hs} headshot, posizione {place} su {players}.",
+      "keywords": "resoconto personale CS2, statistiche della partita, Dust2 Deathmatch, K/D, server CS2, Carbon Stealth"
     }
   },
   "season": {
@@ -447,6 +452,15 @@
     },
     "noStats": "Nessuna statistica registrata per questo periodo.",
     "duration": "{h} h {m} min",
+    "recent": {
+      "title": "Ultime partite",
+      "empty": "Ancora nessuna partita registrata (le conserviamo per {days} giorni).",
+      "caption": "Le ultime partite di {name}",
+      "match": "Partita",
+      "date": "Fine",
+      "placeOf": "{place} su {players}",
+      "reportLabel": "Resoconto personale della partita n. {id}"
+    },
     "mastery": {
       "title": "Maestria con le armi",
       "lead": "Di sempre. Il distintivo dipende dalle uccisioni con l'arma: Bronze 100, Silver 500, Gold 1500, Platinum 4000, Diamond 10.000.",
@@ -887,6 +901,7 @@
       "account": "Account",
       "settings": "Impostazioni",
       "events": "Eventi",
+      "flags": "Sospetti",
       "plugins": "Plugin"
     },
     "me": {
@@ -1504,6 +1519,55 @@
       "cancel": "Annulla l'evento",
       "cancelConfirm": "Annullare l'evento? Se è in corso, il plugin lo ferma entro 30 secondi."
     },
+    "flags": {
+      "title": "Giocatori sospetti",
+      "lead": "I giocatori i cui numeri degli ultimi {days} giorni sono insoliti per il server o molto sopra i propri. Calcolato a ogni apertura dalle uccisioni registrate e dai minuti giocati.",
+      "notVerdict": "Un segnale non è un verdetto.",
+      "notVerdictText": "Nulla qui punisce o decide automaticamente (art. 22 GDPR). Anche un giocatore forte, una buona giornata o pochi dati danno numeri alti. Agisca solo dopo una revisione umana (profilo, partite, demo) e attraverso il normale iter delle sanzioni, con motivazione e audit.",
+      "rules": {
+        "title": "Come si calcola",
+        "window": "Finestra: gli ultimi {days} giorni (dal {since}); la base del giocatore sono i giorni da {from} a {to} fa.",
+        "population": "Insolito: percentile ≥ {percentile} tra i giocatori con almeno {minKills} uccisioni nella finestra — solo se sono almeno {minPopulation}.",
+        "spike": "Picco: almeno {ratio}× la propria base (anche la base richiede {minKills} uccisioni, e le uccisioni al minuto {minMinutes} minuti di gioco).",
+        "floors": "Soglie assolute (sotto non c’è segnale): headshot {hs}, attraverso il muro {wallbang}, attraverso il fumo {smoke}, da accecato {blind}, no-scope lontano (≥ {meters} m) {longNoscope}, uccisioni al minuto {kpm}."
+      },
+      "population": {
+        "one": "{count} giocatore con almeno {minKills} uccisioni nella finestra.",
+        "other": "{count} giocatori con almeno {minKills} uccisioni nella finestra."
+      },
+      "empty": "Nessun giocatore segnalato per questa finestra.",
+      "reasons": {
+        "one": "{count} motivo",
+        "other": "{count} motivi"
+      },
+      "hidden": "nascosto dalle classifiche (art. 21)",
+      "summary": "{kills} uccisioni · {minutes} min nella finestra",
+      "profile": "Profilo nel pannello",
+      "caption": "Gli indicatori di {name}",
+      "col": {
+        "metric": "Indicatore",
+        "value": "Valore",
+        "percentile": "Percentile",
+        "baseline": "Base propria",
+        "flag": "Segnale"
+      },
+      "metrics": {
+        "hs": "Headshot",
+        "wallbang": "Attraverso il muro",
+        "smoke": "Attraverso il fumo",
+        "blind": "Da accecato",
+        "longNoscope": "No-scope da {meters} m in su",
+        "kpm": "Uccisioni al minuto"
+      },
+      "outlier": "insolito",
+      "spike": "picco",
+      "percentileValue": "P{value}",
+      "reports": "Resoconti personali (fino a {count} ultime partite):",
+      "reportLink": "partita n. {id}",
+      "noMatches": "Nessuna partita nella finestra.",
+      "hiddenReports": "I resoconti pubblici di un giocatore nascosto non si mostrano: la revisione passa dal profilo nel pannello.",
+      "note": "L’elenco non viene salvato da nessuna parte. Il percentile è la quota di giocatori con dati pari o inferiori a questo valore."
+    },
     "plugins": {
       "title": "Plugin",
       "lead": "Le mod del server dal catalogo verificato: avvio e arresto dal vivo, installazione e rimozione (con riavvio) e la configurazione di ognuna. Il sito non carica mai codice: ogni plugin è vincolato da sha256 nel catalogo.",
@@ -1621,6 +1685,8 @@
     "weapon": "Arma migliore: {weapon} ({kills})",
     "note": "La posizione è per uccisioni, poi meno morti e più headshot.",
     "back": "Tutte le partite",
+    "reportLink": "Resoconto",
+    "reportFor": "Il resoconto personale di {name}",
     "facts": {
       "kills": "Uccisioni",
       "players": "Giocatori",
@@ -1633,7 +1699,95 @@
       "hs": "Headshot",
       "streak": "Serie",
       "bounties": "Taglie",
-      "weapon": "Arma"
+      "weapon": "Arma",
+      "report": "Resoconto"
+    }
+  },
+  "report": {
+    "h1": "Il resoconto di {name}",
+    "lead": "Partita n. {id} su {map} · posizione {place} su {players}",
+    "aside": "Questo resoconto viene dalla registrazione della partita. Conserviamo le partite e i dettagli delle uccisioni per {days} giorni.",
+    "toProfile": "Il profilo di {name}",
+    "toMatch": "L'intera partita n. {id}",
+    "notRecorded": "Per questa partita non sono registrati dettagli delle uccisioni.",
+    "multiEmpty": "In questa partita non c'è stata una serie di 3 o più uccisioni.",
+    "note": "Il confronto è con la media per partita nei giorni precedenti, non con la giornata migliore.",
+    "score": {
+      "title": "Risultato",
+      "place": "Posizione",
+      "placeOf": "{place} su {players}",
+      "kills": "Uccisioni",
+      "deaths": "Morti",
+      "kd": "K/D",
+      "hs": "Headshot",
+      "bestStreak": "Serie migliore",
+      "bounties": "Taglie",
+      "xp": "XP"
+    },
+    "compare": {
+      "title": "Rispetto al solito",
+      "lead": {
+        "one": "La media è di {count} partita nei {days} giorni precedenti.",
+        "other": "La media è di {count} partite nei {days} giorni precedenti."
+      },
+      "none": "Nessuna partita nei {days} giorni precedenti: non c'è nulla con cui confrontare.",
+      "metric": "Indicatore",
+      "now": "Questa partita",
+      "average": "Media per partita",
+      "delta": "Differenza",
+      "metrics": {
+        "kills": "Uccisioni",
+        "deaths": "Morti",
+        "kd": "K/D",
+        "hs": "Headshot",
+        "xp": "XP"
+      },
+      "points": "{value} p.p.",
+      "tone": {
+        "better": "meglio del solito",
+        "worse": "peggio del solito",
+        "even": "come al solito"
+      }
+    },
+    "weapons": {
+      "title": "Le armi nella partita",
+      "empty": "Nessuna uccisione in questa partita."
+    },
+    "heat": {
+      "title": "Le morti in questa partita",
+      "lead": "Solo celle aggregate sulla nostra griglia A–H × 1–8, mai posizioni in tempo reale.",
+      "pending": "La mappa compare {hours} h dopo la fine della partita.",
+      "empty": "Nessuna morte in questa partita.",
+      "desc": {
+        "one": "{count} morte nella partita; la maggior parte nel settore {sector}.",
+        "other": "{count} morti nella partita; la maggior parte nel settore {sector}."
+      }
+    }
+  },
+  "highlights": {
+    "title": "Momenti salienti",
+    "notRecorded": "Per questa partita non sono registrati dettagli delle uccisioni.",
+    "at": "a {time} dall'inizio",
+    "multi": {
+      "title": "Serie",
+      "lead": "Almeno 3 uccisioni di fila, a non più di {seconds} s l'una dall'altra e senza morire nel frattempo.",
+      "kind": "{kills}K",
+      "empty": "Nessuna serie di 3 o più uccisioni."
+    },
+    "collection": {
+      "title": "Collezionista",
+      "kinds": {
+        "noscope": "Senza mirino",
+        "wallbang": "Attraverso il muro",
+        "smoke": "Attraverso il fumo",
+        "blind": "Da accecato"
+      },
+      "most": "il maggior numero ({count}):",
+      "empty": "Nessuna uccisione senza mirino, attraverso muri, attraverso il fumo o da accecato."
+    },
+    "longest": {
+      "title": "L'uccisione più lontana",
+      "meters": "{meters} m"
     }
   }
 }

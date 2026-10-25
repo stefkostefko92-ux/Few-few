@@ -3,13 +3,17 @@ import { z } from 'zod';
 import type { PublicEvent } from '../events.js';
 import { CELL_PX, DUST2_OVERVIEW, cleanCells, type HeatCell } from '../heatmap.js';
 import { loadHonors } from './honors.js';
+import { loadMatchHighlights, loadMatchReport, loadPlayerMatches } from './match-analytics.js';
 import { loadEvents, loadMatch, loadRecentMatches } from './public-extra.js';
 import {
   RATIO_MIN_KILLS,
   pagesFor,
   type LeaderRow,
   type MatchDetail,
+  type MatchHighlights,
   type MatchListRow,
+  type MatchReport,
+  type PlayerMatchRow,
   type Paged,
   type PlayerHonors,
   type PublicBan,
@@ -266,6 +270,18 @@ export class PrismaRepo implements Repo {
 
   honors(steamId: string): Promise<PlayerHonors> {
     return loadHonors(this.db, steamId);
+  }
+
+  matchHighlights(id: number): Promise<MatchHighlights | null> {
+    return loadMatchHighlights(this.db, id);
+  }
+
+  matchReport(id: number, steamId: string): Promise<MatchReport | null> {
+    return loadMatchReport(this.db, id, steamId);
+  }
+
+  playerMatches(steamId: string, limit: number): Promise<PlayerMatchRow[]> {
+    return loadPlayerMatches(this.db, steamId, limit);
   }
 
   async lastStatsUpdate(): Promise<Date | null> {

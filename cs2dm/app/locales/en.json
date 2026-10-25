@@ -105,6 +105,11 @@
       "title": "Match #{id} on {map} — won by {name}",
       "description": "The match of {date} on the CS2 server Dust2 DM: {kills} kills, {players} players. {name} came first with {topKills} kills.",
       "keywords": "CS2 match, match results, Dust2 Deathmatch, CS2 statistics, top players, Carbon Stealth"
+    },
+    "report": {
+      "title": "{name} in match #{id} — personal report",
+      "description": "{name}'s personal report from the match on {date} on Dust2 DM: {kills} kills, {deaths} deaths, K/D {kd}, {hs} headshots, place {place} of {players}.",
+      "keywords": "CS2 personal report, match statistics, Dust2 Deathmatch, K/D, CS2 server, Carbon Stealth"
     }
   },
   "season": {
@@ -447,6 +452,15 @@
     },
     "noStats": "No stats recorded for this period.",
     "duration": "{h} h {m} min",
+    "recent": {
+      "title": "Recent matches",
+      "empty": "No matches on record yet (we keep them for {days} days).",
+      "caption": "{name}'s recent matches",
+      "match": "Match",
+      "date": "Ended",
+      "placeOf": "{place} of {players}",
+      "reportLabel": "Personal report for match #{id}"
+    },
     "mastery": {
       "title": "Weapon mastery",
       "lead": "All time. The badge reflects kills with the weapon: Bronze 100, Silver 500, Gold 1500, Platinum 4000, Diamond 10,000.",
@@ -887,6 +901,7 @@
       "account": "Account",
       "settings": "Settings",
       "events": "Events",
+      "flags": "Suspicious",
       "plugins": "Plugins"
     },
     "me": {
@@ -1504,6 +1519,55 @@
       "cancel": "Cancel the event",
       "cancelConfirm": "Cancel the event? If it is running, the plugin stops it within 30 seconds."
     },
+    "flags": {
+      "title": "Suspicious players",
+      "lead": "Players whose numbers for the last {days} days are unusual for the server or sharply above their own. Computed on every visit from the recorded kills and minutes played.",
+      "notVerdict": "A flag is not a verdict.",
+      "notVerdictText": "Nothing here punishes or decides automatically (GDPR Art. 22). A strong player, a good day or little data also produce high numbers. Act only after a human review (profile, matches, demo) and through the normal punishment flow, with a reason and audit.",
+      "rules": {
+        "title": "How it is computed",
+        "window": "Window: the last {days} days (since {since}); the player's own baseline is days {from}–{to} back.",
+        "population": "Unusual: percentile ≥ {percentile} among players with at least {minKills} kills in the window — only if there are at least {minPopulation} of them.",
+        "spike": "Spike: at least {ratio}× their own baseline (the baseline also needs {minKills} kills, and kills per minute needs {minMinutes} minutes played).",
+        "floors": "Absolute floors (no flag below them): headshots {hs}, wallbang {wallbang}, through smoke {smoke}, while blind {blind}, long no-scope (≥ {meters} m) {longNoscope}, kills per minute {kpm}."
+      },
+      "population": {
+        "one": "{count} player with at least {minKills} kills in the window.",
+        "other": "{count} players with at least {minKills} kills in the window."
+      },
+      "empty": "No flagged players for this window.",
+      "reasons": {
+        "one": "{count} reason",
+        "other": "{count} reasons"
+      },
+      "hidden": "hidden from leaderboards (Art. 21)",
+      "summary": "{kills} kills · {minutes} min in the window",
+      "profile": "Panel profile",
+      "caption": "{name}'s metrics",
+      "col": {
+        "metric": "Metric",
+        "value": "Value",
+        "percentile": "Percentile",
+        "baseline": "Own baseline",
+        "flag": "Flag"
+      },
+      "metrics": {
+        "hs": "Headshots",
+        "wallbang": "Wallbang",
+        "smoke": "Through smoke",
+        "blind": "While blind",
+        "longNoscope": "No-scope from {meters} m",
+        "kpm": "Kills per minute"
+      },
+      "outlier": "unusual",
+      "spike": "spike",
+      "percentileValue": "P{value}",
+      "reports": "Personal reports (up to {count} latest matches):",
+      "reportLink": "match #{id}",
+      "noMatches": "No matches in the window.",
+      "hiddenReports": "A hidden player's public reports are not shown — review through the panel profile.",
+      "note": "The list is not stored anywhere. The percentile is the share of players with data at or below this value."
+    },
     "plugins": {
       "title": "Plugins",
       "lead": "The server mods from the verified catalogue: start and stop live, install and remove (with a restart), and each one’s config. The site never uploads code — every plugin is pinned by sha256 in the catalogue.",
@@ -1621,6 +1685,8 @@
     "weapon": "Best weapon: {weapon} ({kills})",
     "note": "Place is by kills, then fewer deaths and more headshots.",
     "back": "All matches",
+    "reportLink": "Report",
+    "reportFor": "{name}'s personal report",
     "facts": {
       "kills": "Kills",
       "players": "Players",
@@ -1633,7 +1699,95 @@
       "hs": "Headshots",
       "streak": "Streak",
       "bounties": "Bounties",
-      "weapon": "Weapon"
+      "weapon": "Weapon",
+      "report": "Report"
+    }
+  },
+  "report": {
+    "h1": "{name}'s report",
+    "lead": "Match #{id} on {map} · place {place} of {players}",
+    "aside": "This report comes from the match record. We keep matches and kill details for {days} days.",
+    "toProfile": "{name}'s profile",
+    "toMatch": "The whole match #{id}",
+    "notRecorded": "No kill details were recorded for this match.",
+    "multiEmpty": "No streak of 3 or more kills in this match.",
+    "note": "The comparison is with the average per match in the days before this one, not with the best day.",
+    "score": {
+      "title": "Score",
+      "place": "Place",
+      "placeOf": "{place} of {players}",
+      "kills": "Kills",
+      "deaths": "Deaths",
+      "kd": "K/D",
+      "hs": "Headshots",
+      "bestStreak": "Best streak",
+      "bounties": "Bounties",
+      "xp": "XP"
+    },
+    "compare": {
+      "title": "Compared with usual",
+      "lead": {
+        "one": "The average is from {count} match in the {days} days before this one.",
+        "other": "The average is from {count} matches in the {days} days before this one."
+      },
+      "none": "No matches in the {days} days before this one — nothing to compare with.",
+      "metric": "Metric",
+      "now": "This match",
+      "average": "Average per match",
+      "delta": "Difference",
+      "metrics": {
+        "kills": "Kills",
+        "deaths": "Deaths",
+        "kd": "K/D",
+        "hs": "Headshots",
+        "xp": "XP"
+      },
+      "points": "{value} pp",
+      "tone": {
+        "better": "better than usual",
+        "worse": "worse than usual",
+        "even": "same as usual"
+      }
+    },
+    "weapons": {
+      "title": "Weapons in the match",
+      "empty": "No kills in this match."
+    },
+    "heat": {
+      "title": "Deaths in this match",
+      "lead": "Aggregated cells on our A–H × 1–8 grid only, never live positions.",
+      "pending": "The map appears {hours} h after the match ends.",
+      "empty": "No deaths in this match.",
+      "desc": {
+        "one": "{count} death in the match; most in sector {sector}.",
+        "other": "{count} deaths in the match; most in sector {sector}."
+      }
+    }
+  },
+  "highlights": {
+    "title": "Highlights",
+    "notRecorded": "No kill details were recorded for this match.",
+    "at": "at {time} from the start",
+    "multi": {
+      "title": "Streaks",
+      "lead": "At least 3 kills in a row, at most {seconds} s apart and without dying in between.",
+      "kind": "{kills}K",
+      "empty": "No streak of 3 or more kills."
+    },
+    "collection": {
+      "title": "Collector",
+      "kinds": {
+        "noscope": "No-scope",
+        "wallbang": "Wallbang",
+        "smoke": "Through smoke",
+        "blind": "While blind"
+      },
+      "most": "most ({count}):",
+      "empty": "No no-scope, wallbang, through-smoke or blind kills."
+    },
+    "longest": {
+      "title": "Longest kill",
+      "meters": "{meters} m"
     }
   }
 }

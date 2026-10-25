@@ -21,6 +21,7 @@ const SLUGS = [
   'leaderboard',
   'matches',
   'match/41',
+  `match/41/player/${PLAYER_ID}`,
   `player/${PLAYER_ID}`,
   'bans',
   'vip',

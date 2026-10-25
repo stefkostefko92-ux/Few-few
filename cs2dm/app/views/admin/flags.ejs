@@ -1,0 +1,58 @@
+<%- include('partials/head', { title: t('admin.nav.flags') }) %>
+<%# „Подозрителни играчи“ — само за човешки преглед: без бутон за наказание, без автоматично решение (чл. 22 GDPR). %>
+<h1><%= t('admin.flags.title') %></h1>
+<p class="a-lead"><%= t('admin.flags.lead', { days: rules.windowDays }) %></p>
+<p class="a-warn" role="note"><strong><%= t('admin.flags.notVerdict') %></strong> <%= t('admin.flags.notVerdictText') %></p>
+
+<section class="a-card" aria-labelledby="rules-title">
+  <h2 id="rules-title"><%= t('admin.flags.rules.title') %></h2>
+  <ul>
+    <li><%= t('admin.flags.rules.window', { days: rules.windowDays, since: fmt.dateTime(window.since), from: rules.baselineFrom, to: rules.baselineTo }) %></li>
+    <li><%= t('admin.flags.rules.population', { percentile: rules.percentile, minKills: rules.minKills, minPopulation: rules.minPopulation }) %></li>
+    <li><%= t('admin.flags.rules.spike', { ratio: rules.spike, minKills: rules.minKills, minMinutes: rules.minMinutes }) %></li>
+    <li><%= t('admin.flags.rules.floors', rules.floorText) %></li>
+  </ul>
+  <p><%= t.plural('admin.flags.population', population, { minKills: rules.minKills }) %></p>
+</section>
+
+<% if (players.length === 0) { %>
+<p class="a-empty"><%= t('admin.flags.empty') %></p>
+<% } else { %>
+<% players.forEach((player) => { %>
+<section class="a-card" aria-labelledby="fl-<%= player.steamId %>">
+  <h2 id="fl-<%= player.steamId %>"><%= player.name %> <span class="a-chip is-warn"><%= t.plural('admin.flags.reasons', player.reasons) %></span><% if (player.hidden) { %> <span class="a-chip is-muted"><%= t('admin.flags.hidden') %></span><% } %></h2>
+  <p><code><%= player.steamId %></code> · <%= t('admin.flags.summary', { kills: fmt.int(player.kills), minutes: fmt.int(player.minutesRounded) }) %> · <a href="/admin/players/<%= player.steamId %>"><%= t('admin.flags.profile') %></a></p>
+  <div class="a-scroll">
+    <table class="a-table">
+      <caption class="sr-only"><%= t('admin.flags.caption', { name: player.name }) %></caption>
+      <thead><tr>
+        <th scope="col"><%= t('admin.flags.col.metric') %></th>
+        <th scope="col" class="num"><%= t('admin.flags.col.value') %></th>
+        <th scope="col" class="num"><%= t('admin.flags.col.percentile') %></th>
+        <th scope="col" class="num"><%= t('admin.flags.col.baseline') %></th>
+        <th scope="col"><%= t('admin.flags.col.flag') %></th>
+      </tr></thead>
+      <tbody>
+        <% player.rows.forEach((row) => { %><tr>
+          <th scope="row"><%= t('admin.flags.metrics.' + row.id, { meters: rules.longMeters }) %></th>
+          <td class="num"><%= row.value %></td>
+          <td class="num"><%= row.percentile === null ? '—' : t('admin.flags.percentileValue', { value: row.percentile }) %></td>
+          <td class="num"><%= row.baseline %></td>
+          <td><% if (row.outlier) { %><span class="a-chip is-warn"><%= t('admin.flags.outlier') %></span> <% } %><% if (row.spike) { %><span class="a-chip is-warn"><%= t('admin.flags.spike') %></span><% } %><% if (!row.outlier && !row.spike) { %>—<% } %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% if (player.hidden) { %>
+  <p class="a-note"><%= t('admin.flags.hiddenReports') %></p>
+  <% } else if (player.reports.length === 0) { %>
+  <p class="a-note"><%= t('admin.flags.noMatches') %></p>
+  <% } else { %>
+  <p><%= t('admin.flags.reports', { count: rules.matchLinks }) %> <% player.reports.forEach((report, index) => { %><%= index > 0 ? ' · ' : '' %><a href="<%= report.href %>" target="_blank" rel="noopener"><%= t('admin.flags.reportLink', { id: report.id }) %></a><% }) %></p>
+  <% } %>
+</section>
+<% }) %>
+<% } %>
+<p class="a-note"><%= t('admin.flags.note') %></p>
+<%- include('partials/foot') %>

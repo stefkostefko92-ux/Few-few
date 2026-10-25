@@ -83,6 +83,42 @@
     </dl>
   </section>
 
+  <section class="card spaced" aria-labelledby="recent-title">
+    <h2 id="recent-title"><%= t('player.recent.title') %></h2>
+    <% if (recentMatches.length === 0) { %>
+    <p><%= t('player.recent.empty', { days: retentionDays }) %></p>
+    <% } else { %>
+    <div class="table-wrap">
+      <table class="data-table recent-table">
+        <caption class="sr-only"><%= t('player.recent.caption', { name: player.name }) %></caption>
+        <thead>
+          <tr>
+            <th scope="col"><%= t('player.recent.match') %></th>
+            <th scope="col" class="opt"><%= t('player.recent.date') %></th>
+            <th scope="col" class="c-num"><%= t('match.col.place') %></th>
+            <th scope="col" class="c-num"><%= t('table.kills') %></th>
+            <th scope="col" class="c-num opt"><%= t('table.deaths') %></th>
+            <th scope="col" class="c-num opt"><%= t('table.xp') %></th>
+            <th scope="col"><%= t('match.col.report') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% recentMatches.forEach((line) => { %><tr>
+            <th scope="row"><a href="<%= matchHref(line.id) %>"><%= t('match.h1', { id: line.id }) %></a></th>
+            <td class="opt"><time datetime="<%= fmt.iso(line.endedAt) %>"><%= fmt.dateTime(line.endedAt) %></time></td>
+            <td class="c-num"><%= t('player.recent.placeOf', { place: line.place, players: fmt.int(line.players) }) %></td>
+            <td class="c-num"><%= fmt.int(line.kills) %></td>
+            <td class="c-num opt"><%= fmt.int(line.deaths) %></td>
+            <td class="c-num opt"><%= fmt.int(line.xp) %></td>
+            <td><a href="<%= reportHref(line.id, player.steamId) %>" aria-label="<%= t('player.recent.reportLabel', { id: line.id }) %>"><%= t('match.reportLink') %></a></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </section>
+
   <section class="card spaced" aria-labelledby="mastery-title">
     <h2 id="mastery-title"><%= t('player.mastery.title') %></h2>
     <p><%= t('player.mastery.lead') %></p>

@@ -21,37 +21,25 @@ import {
   type Repo,
   type Season,
   type SortKey,
-  type StatLine,
 } from '../data/repo.js';
 import { formattersFor } from '../format.js';
-import {
-  HEATMAP_DELAY_MS,
-  HEATMAP_WINDOW_DAYS,
-  CELL_PX,
-  DUST2_OVERVIEW,
-  heatmapWindow,
-  hottestSector,
-  renderHeatmapSvg,
-} from '../heatmap.js';
+import { HEATMAP_WINDOW_DAYS } from '../heatmap.js';
 import { translatorFor, type Locale, type Translator } from '../i18n.js';
-import { ARENA, BOUNTY, XP_REWARDS, levelForXp, levelProgress } from '../levels.js';
+import { ARENA, BOUNTY, XP_REWARDS, levelForXp } from '../levels.js';
 import type { LiveSource, LiveStatus } from '../live.js';
 import { logger } from '../logger.js';
-import { MASTERY_TIERS, masteryFor, weaponLabel } from '../mastery.js';
+import { MASTERY_TIERS } from '../mastery.js';
 import {
   SITE_NAME,
-  TITLE_MAX,
-  DESCRIPTION_MAX,
   absolute,
   buildHead,
   fit,
   pagePath,
-  playerPath,
   withQuery,
   type Crumb,
   type JsonLdNode,
 } from '../seo.js';
-import { displayName, parseSteamId, truncate } from '../steamid.js';
+import { displayName, truncate } from '../steamid.js';
 import { eventNodes, eventViews } from './event-seo.js';
 import { matchListView } from './match-view.js';
 import { renderPage, type NavId } from '../view.js';
@@ -134,7 +122,7 @@ function meta(t: Translator, page: PageId | 'player' | 'error') {
   };
 }
 
-function homeCrumb(t: Translator, locale: Locale): Crumb {
+export function homeCrumb(t: Translator, locale: Locale): Crumb {
   return { name: t('nav.home'), path: pagePath(locale, 'home') };
 }
 
@@ -203,11 +191,6 @@ function faqNode(locale: Locale, t: Translator): JsonLdNode {
       acceptedAnswer: { '@type': 'Answer', text: t(`home.faq.${id}.a`, params) },
     })),
   };
-}
-
-function statView(line: StatLine | null) {
-  if (!line) return null;
-  return { ...line, level: levelForXp(line.xp) };
 }
 
 export function pagesRouter(locale: Locale, deps: PageDeps): Router {
@@ -349,124 +332,6 @@ export function pagesRouter(locale: Locale, deps: PageDeps): Router {
       xpRewards: XP_REWARDS,
       bounty: BOUNTY,
       arena: ARENA,
-    });
-  });
-
-  // ── Профил на играч ───────────────────────────────────────────────────────
-  router.get('/player/:steamId', async (req: Request, res: Response, next: NextFunction) => {
-    const steamId = parseSteamId(req.params.steamId);
-    if (!steamId) return next();
-    const player = await deps.repo.player(steamId);
-    if (!player) return next();
-    const t = translatorFor(locale);
-    const fmt = formattersFor(locale, config().DISPLAY_TZ);
-    const season = await deps.repo.currentSeason();
-    const seasonIds = season.id === 0 ? [0] : [0, season.id];
-    const [stats, weapons, heat, honors] = await Promise.all([
-      deps.repo.playerStats(steamId, seasonIds),
-      deps.repo.weaponStats(steamId),
-      deps.repo.heatmap(steamId, heatmapWindow(now())),
-      deps.repo.honors(steamId),
-    ]);
-    const name = displayName(player.name, steamId);
-    const allTime = statView(stats.find((line) => line.seasonId === 0) ?? null);
-    const seasonal =
-      season.id === 0 ? null : statView(stats.find((line) => line.seasonId === season.id) ?? null);
-    const progress = levelProgress(allTime?.xp ?? 0n);
-
-    // Ножовете (`knife`, `knife_t`…) и други синоними са една значка — сливат се по показното име.
-    const merged = new Map<string, { label: string; kills: number; headshots: number }>();
-    for (const line of weapons) {
-      const label = weaponLabel(line.weapon);
-      const found = merged.get(label);
-      if (found) {
-        found.kills += line.kills;
-        found.headshots += line.headshots;
-      } else merged.set(label, { label, kills: line.kills, headshots: line.headshots });
-    }
-    const mastery = [...merged.values()]
-      .sort((a, b) => b.kills - a.kills || a.label.localeCompare(b.label))
-      .map((line) => ({ ...line, mastery: masteryFor(line.kills) }));
-
-    const killsTotal = heat.kills.reduce((sum, cell) => sum + cell.n, 0);
-    const deathsTotal = heat.deaths.reduce((sum, cell) => sum + cell.n, 0);
-    const killsSector = hottestSector(heat.kills);
-    const deathsSector = hottestSector(heat.deaths);
-    const heatmaps = {
-      killsTotal,
-      deathsTotal,
-      killsSector,
-      deathsSector,
-      killsSvg: renderHeatmapSvg({
-        id: 'hm-kills',
-        kind: 'kills',
-        cells: heat.kills,
-        title: t('player.heatmap.killsTitle'),
-        description: t.plural('player.heatmap.killsDesc', killsTotal, {
-          days: HEATMAP_WINDOW_DAYS,
-          sector: killsSector ?? '—',
-        }),
-      }),
-      deathsSvg: renderHeatmapSvg({
-        id: 'hm-deaths',
-        kind: 'deaths',
-        cells: heat.deaths,
-        title: t('player.heatmap.deathsTitle'),
-        description: t.plural('player.heatmap.deathsDesc', deathsTotal, {
-          days: HEATMAP_WINDOW_DAYS,
-          sector: deathsSector ?? '—',
-        }),
-      }),
-    };
-
-    const summary = allTime ?? null;
-    const params = {
-      level: progress.level,
-      kills: fmt.int(summary?.kills ?? 0),
-      kd: fmt.kd(summary?.kills ?? 0, summary?.deaths ?? 0),
-      hs: fmt.percent(summary?.headshots ?? 0, summary?.kills ?? 0),
-    };
-    const path = playerPath(locale, steamId);
-    const head = buildHead({
-      locale,
-      title: fitWithName(t, 'meta.player.title', name, params, TITLE_MAX),
-      description: fitWithName(t, 'meta.player.description', name, params, DESCRIPTION_MAX),
-      keywords: t('meta.player.keywords'),
-      path,
-      pathFor: (code) => playerPath(code, steamId),
-      crumbs: [
-        homeCrumb(t, locale),
-        { name: t('nav.leaderboard'), path: pagePath(locale, 'leaderboard') },
-        { name, path },
-      ],
-      pageType: 'ProfilePage',
-      extraNodes: [
-        {
-          '@type': 'Person',
-          '@id': `${absolute(path)}#player`,
-          name,
-          identifier: steamId,
-          mainEntityOfPage: { '@id': `${absolute(path)}#webpage` },
-        },
-      ],
-      ogImageAlt: t('meta.ogAlt'),
-    });
-    renderPage(res, 'player', locale, 'player', head, {
-      player: { ...player, name, avatarUrl: safeAvatar(player.avatarUrl) },
-      season,
-      allTime,
-      seasonal,
-      progress,
-      mastery,
-      masteryTiers: MASTERY_TIERS,
-      honors,
-      duelsDays: RETENTION.duelsDays,
-      heatmaps,
-      heatmapInfo: {
-        days: HEATMAP_WINDOW_DAYS,
-        delayHours: HEATMAP_DELAY_MS / 3_600_000,
-        cellUnits: Math.round(CELL_PX * DUST2_OVERVIEW.scale),
-      },
     });
   });
 
