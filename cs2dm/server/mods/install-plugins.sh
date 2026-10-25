@@ -113,6 +113,7 @@ CS2DM_INFINITE_AMMO="$(env_value CS2DM_INFINITE_AMMO)" \
 CS2DM_BANNER_MODELS="$(env_value CS2DM_BANNER_MODELS)" \
 CS2DM_AFK_SECONDS="$(env_value CS2DM_AFK_SECONDS)" \
 CS2DM_MAX_PING="$(env_value CS2DM_MAX_PING)" \
+CS2DM_SPAWN_PROTECTION="$(env_value CS2DM_SPAWN_PROTECTION)" \
   node "$SRC_DIR/plugin-config.mjs" >"$tmp"
 chown "$CS2_USER:$CS2_USER" "$tmp"
 chmod 0600 "$tmp"

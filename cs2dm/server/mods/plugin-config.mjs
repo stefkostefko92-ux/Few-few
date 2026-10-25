@@ -54,6 +54,8 @@ export function buildConfig(env) {
     // Честна игра: без вход N секунди (жив) → наблюдател; среден пинг над прага → наблюдател. 0 = изключено.
     AfkSeconds: intIn(env.CS2DM_AFK_SECONDS, 'CS2DM_AFK_SECONDS', 90, 30, 3600),
     MaxPing: intIn(env.CS2DM_MAX_PING, 'CS2DM_MAX_PING', 150, 50, 1000),
+    // Защитата при поява е в CarbonStealth (тази на Deathmatch 1.3.6 не тръгва — виж SpawnProtection.cs).
+    SpawnProtectionSeconds: intIn(env.CS2DM_SPAWN_PROTECTION, 'CS2DM_SPAWN_PROTECTION', 5, 1, 15),
     ConfigVersion: 1,
   };
 }

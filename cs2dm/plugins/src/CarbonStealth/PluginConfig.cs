@@ -42,4 +42,7 @@ public sealed class PluginConfig : BasePluginConfig
 
     /// <summary>Среден пинг над прага → наблюдател, никога kick (0 = изключено, иначе 50–1000 ms). CS2DM_MAX_PING.</summary>
     [JsonPropertyName("MaxPing")] public int MaxPing { get; set; } = 150;
+
+    /// <summary>Защита при поява в секунди — сваля я първият изстрел (0 = изключено, иначе 1–15). CS2DM_SPAWN_PROTECTION.</summary>
+    [JsonPropertyName("SpawnProtectionSeconds")] public int SpawnProtectionSeconds { get; set; } = 5;
 }

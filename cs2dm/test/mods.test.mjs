@@ -151,9 +151,15 @@ test("зареждането на плъгин се доказва от лога
   }
 });
 
-test("Deathmatch: 5 секунди защита при респаун за всички (и във ваниловия cfg)", () => {
+test("защита при респаун: наша в CarbonStealth (5 s), тази на Deathmatch е изключена, ванилов резерв в cfg", () => {
+  // DM 1.3.6 проверява DesignerName „cs_player_pawn“ (пешката е „player“) → неговата никога не тръгва; ако
+  // бъде поправена, двете не бива да се наслагват — нашата сваля защитата при изстрел, неговата не.
   const players = dm["Players Gameplay Settings"];
-  assert.equal(players["Non VIP Players"]["Spawn Protection Time"], 5);
-  assert.equal(players["VIP Players"]["Spawn Protection Time"], 5);
-  assert.match(read("server/cfg/gamemode_deathmatch_server.cfg"), /^mp_respawn_immunitytime 5$/m);
+  assert.equal(players["Non VIP Players"]["Spawn Protection Time"], 0);
+  assert.equal(players["VIP Players"]["Spawn Protection Time"], 0);
+  const cs = read("plugins/src/CarbonStealth/SpawnProtection.cs");
+  assert.match(cs, /entity\.DesignerName != "player"/);
+  assert.match(cs, /\? HookResult\.Handled : HookResult\.Continue/, "само Handled спира щетата в CSS 1.0.378");
+  assert.match(read("plugins/src/CarbonStealth/PluginConfig.cs"), /SpawnProtectionSeconds \{ get; set; \} = 5;/);
+  assert.match(read("server/cfg/gamemode_deathmatch_server.cfg"), /^mp_respawn_immunitytime 5$/m, "ванилов режим без модове");
 });

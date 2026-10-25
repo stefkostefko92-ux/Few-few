@@ -198,6 +198,11 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   или поглед) само докато е жив; смърт = пауза, не нулиране; след респаун погледът се засича наново. Пинг —
   средно за 30 засичания, предупреждение, още 15 → наблюдател. Изключения: HELPER+ и отворено WASD меню
   (`_huds`); ролята още не е заредена → не пипаме. Праговете: `CS2DM_AFK_SECONDS` / `CS2DM_MAX_PING`.
+- **Защитата при поява е наша (`SpawnProtection.cs` + `CarbonStealth.Logic/SpawnShield.cs`)**, не на DM: в 1.3.6
+  неговата кука проверява `DesignerName == "cs_player_pawn"`, а пешката е `"player"` → никога не тръгва, а
+  `mp_respawn_immunitytime` DM го нулира при всяка карта. В `Deathmatch.json` „Spawn Protection Time“ е 0
+  (без наслагване). Щета се спира само с `HookResult.Handled` от `OnEntityTakeDamagePre` (CSS 1.0.378 —
+  `Damage = 0` + `Continue` не стига). Изстрелът сваля защитата; секундите — `CS2DM_SPAWN_PROTECTION` (0–15).
 - Нова колона/таблица → миграция в `app/prisma` (Prisma е собственикът на схемата), после SQL-а в `Data/`.
 - **Статистиките са `+=` с епоха (§3).** Нов агрегат → колона + `PlayerDelta` + `StatsWriter` (с
   `WHERE ред.stats_epoch <= EXCLUDED.stats_epoch`) + полето в редактора на панела (`stats-edit.ts`). Партидата

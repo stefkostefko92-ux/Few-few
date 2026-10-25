@@ -265,7 +265,7 @@
         "protect": {
           "dt": "Protezione allo spawn",
           "dd": "5 s",
-          "note": "il tempo per orientarsi"
+          "note": "fino al Suo primo colpo"
         },
         "awp": {
           "dt": "AWP",

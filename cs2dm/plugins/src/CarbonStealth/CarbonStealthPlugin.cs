@@ -44,6 +44,7 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
         if (config.AdvertSeconds is not 0 and (< 60 or > 3600)) config.AdvertSeconds = 240;
         if (config.AfkSeconds is not 0 and (< 30 or > 3600)) config.AfkSeconds = 90;
         if (config.MaxPing is not 0 and (< 50 or > 1000)) config.MaxPing = 150;
+        if (config.SpawnProtectionSeconds is not 0 and (< 1 or > SpawnShield.MaxSeconds)) config.SpawnProtectionSeconds = 5;
         // Пътищата отиват в манифеста за precache — само наши модели, без „..“.
         foreach (var (key, model) in config.BannerModels.ToList())
         {
@@ -83,6 +84,7 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
         RegisterMatchEnd();
         RegisterCssFlags();
         RegisterFairPlay();
+        RegisterSpawnProtection();
         RegisterEvents();
         RegisterMatch();
 

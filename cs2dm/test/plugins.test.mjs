@@ -23,6 +23,18 @@ test("plugin-config: полетата съвпадат с PluginConfig.cs", () =
   assert.equal(cfg.PublicSlots, 0);
   assert.equal(cfg.AfkSeconds, 90);
   assert.equal(cfg.MaxPing, 150);
+  assert.equal(cfg.SpawnProtectionSeconds, 5);
+});
+
+test("plugin-config: защита при поява — 0 изключва, 1–15, иначе спира; плъгинът и env шаблонът знаят", () => {
+  assert.equal(buildConfig({ ...env, CS2DM_SPAWN_PROTECTION: "0" }).SpawnProtectionSeconds, 0);
+  assert.equal(buildConfig({ ...env, CS2DM_SPAWN_PROTECTION: "3" }).SpawnProtectionSeconds, 3);
+  for (const bad of ["16", "-1", "x", "2.5"]) {
+    assert.throws(() => buildConfig({ ...env, CS2DM_SPAWN_PROTECTION: bad }), /CS2DM_SPAWN_PROTECTION/, bad);
+  }
+  assert.match(read("plugins/src/CarbonStealth/CarbonStealthPlugin.cs"), /config\.SpawnProtectionSeconds is not 0 and \(< 1 or > SpawnShield\.MaxSeconds\)/);
+  assert.match(read("server/mods/install-plugins.sh"), /CS2DM_SPAWN_PROTECTION="\$\(env_value CS2DM_SPAWN_PROTECTION\)"/);
+  assert.ok(read("server/cs2.env.example").includes("\nCS2DM_SPAWN_PROTECTION=5\n"));
 });
 
 test("plugin-config: честна игра — 0 изключва, извън границите спира", () => {
