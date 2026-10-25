@@ -40,7 +40,9 @@ export function ListingForm() {
     );
   }
 
-  const f = fields(state, { type: "OFFER" });
+  // Без предварително избран вид (както /signali): който не пипне полето, не
+  // изпраща „Продавам“ по погрешка — получава „Изберете вид на обявата.“
+  const f = fields(state);
 
   return (
     <form key={state.attempt ?? 0} action={action} className={FORM} noValidate>
@@ -62,6 +64,9 @@ export function ListingForm() {
         <div className="grid gap-4 sm:grid-cols-2">
           <Field name="type" label="Вид" error={f.error("type")}>
             <select {...f.props("type")} required className={INPUT}>
+              <option value="" disabled>
+                — Изберете вид —
+              </option>
               {Object.entries(LISTING_TYPE_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v}

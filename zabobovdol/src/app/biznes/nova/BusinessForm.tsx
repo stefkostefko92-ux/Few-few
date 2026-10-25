@@ -56,7 +56,9 @@ export function BusinessForm({
   }
 
   // Стойностите след неуспешен опит са с предимство пред началните.
-  const f = fields(state, { category: "SHOP", ...(defaults ?? {}) });
+  // Видът не е предварително избран (както /signali) — иначе всеки, който не
+  // пипне полето, се записва като „Магазин“. При поправка (?za=) идва от записа.
+  const f = fields(state, { ...(defaults ?? {}) });
 
   return (
     <form key={state.attempt ?? 0} action={action} className={FORM} noValidate>
@@ -83,6 +85,9 @@ export function BusinessForm({
 
         <Field name="category" label="Вид" error={f.error("category")}>
           <select {...f.props("category")} required className={INPUT}>
+            <option value="" disabled>
+              — Изберете вид —
+            </option>
             {Object.entries(BUSINESS_CATEGORY_LABELS).map(([k, label]) => (
               <option key={k} value={k}>
                 {label}

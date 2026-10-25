@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/lib/site";
 import { buildMetadata } from "@/lib/seo";
-import { formatPhoneBg } from "@/lib/phone";
+import { formatPhoneBg, isDialablePhone } from "@/lib/phone";
 import { SECTION } from "@/lib/section-names";
 import { PageHero } from "@/components/ui";
 import { QrCode } from "@/components/QrCode";
@@ -109,7 +109,8 @@ export default async function WeekSheetPage() {
   ]);
 
   const dutyDays = groupByDay(duty);
-  const otherPhones = phones.filter((s) => s.phone.trim() !== "112");
+  // Номер с грешна дължина („0702 2016“) не отива на хартия (виж /pechat).
+  const otherPhones = phones.filter((s) => s.phone.trim() !== "112" && isDialablePhone(s.phone));
   const nothing =
     dutyDays.length === 0 && outages.length === 0 && posts.length === 0 && !scam && otherPhones.length === 0;
 
@@ -192,7 +193,7 @@ export default async function WeekSheetPage() {
                         {d.note && <div className="text-base text-slate-700">{d.note}</div>}
                       </td>
                       <td className="whitespace-nowrap py-2 text-right text-xl font-bold tabular-nums max-sm:block max-sm:p-0 max-sm:pt-1 max-sm:text-left">
-                        {formatPhoneBg(d.phone)}
+                        {isDialablePhone(d.phone) ? formatPhoneBg(d.phone) : ""}
                       </td>
                     </tr>
                   )),

@@ -300,7 +300,7 @@ export default async function FaqPage({
                   <ChevronRight className="h-6 w-6 shrink-0 rotate-180 text-brand-600" aria-hidden />
                   <span className="min-w-0">
                     <span className="text-meta block">Предишно</span>
-                    <span className="block font-semibold text-brand-800">{prev.question}</span>
+                    <span className="h-card block text-brand-800">{prev.question}</span>
                   </span>
                 </Link>
               ) : (
@@ -314,7 +314,7 @@ export default async function FaqPage({
                 >
                   <span className="min-w-0 flex-1">
                     <span className="text-meta block">Следващо</span>
-                    <span className="block font-semibold text-brand-800">{next.question}</span>
+                    <span className="h-card block text-brand-800">{next.question}</span>
                   </span>
                   <ChevronRight className="h-6 w-6 shrink-0 text-brand-600" aria-hidden />
                 </Link>

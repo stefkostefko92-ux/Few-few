@@ -5,7 +5,7 @@ import { Section, SectionHeader, EmptyState, FilterChips } from "@/components/ui
 import { JsonLd } from "@/components/JsonLd";
 import { faqPageLd } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
-import { SERVICE_CATEGORY_LABELS } from "@/lib/categories";
+import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ORDER } from "@/lib/categories";
 import { BannerCard, BannerEmptySlot } from "@/components/BannerCard";
 import { ScamBanner } from "@/components/ScamBanner";
 import { WeatherWidget } from "@/components/WeatherWidget";
@@ -15,6 +15,7 @@ import { TelLink } from "@/components/TelLink";
 import { PhoneButton } from "@/components/PhoneButton";
 import { ViberButton } from "@/components/ViberButton";
 import { isDangerNav, navIcon } from "@/components/nav-icons";
+import { GuideList } from "@/app/kak-da/_components/GuideList";
 import {
   getBanners,
   getDutyToday,
@@ -23,6 +24,7 @@ import {
   getLatestListings,
   getLatestPosts,
   getOutagesTodayTomorrow,
+  getServiceCategoryCounts,
   getTopFaqs,
   getUpcomingEvents,
 } from "@/lib/cache";
@@ -30,8 +32,8 @@ import { getViberChannelUrl } from "@/lib/settings";
 import { nextBuses, pickTodayOutages, todayCalendar } from "@/lib/today";
 import { BUS } from "@/lib/bus-schedule";
 import { newsDate } from "@/lib/ingest-news-rss";
-import { formatTime, formatWeekdayDayMonth, isoDateTime } from "@/lib/format-date";
-import { formatPhoneBg, nationalDigits } from "@/lib/phone";
+import { formatEventWhen, isoDateTime } from "@/lib/format-date";
+import { formatPhoneBg, isDialablePhone, nationalDigits } from "@/lib/phone";
 import { ChevronRight, Inbox, MapPin, Phone, Plus } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
@@ -80,12 +82,6 @@ function is112(phone: string): boolean {
   return (nationalDigits(phone) ?? phone.trim()) === "112";
 }
 
-// Часът на събитие е „стенно“ софийско време от админ полето (виж
-// lib/format-date.ts) — не зависи от часовата зона на сървъра.
-function eventWhen(d: Date): string {
-  return `${formatWeekdayDayMonth(d, { wall: true })}, ${formatTime(d, { wall: true })}`;
-}
-
 // Данните за панела „Днес“ са допълнение — ако някоя от заявките се провали
 // (напр. таблицата още не е мигрирана), панелът просто я пропуска, вместо
 // цялата начална страница да падне.
@@ -105,7 +101,7 @@ function FillStrip({ events, listings }: { events: boolean; listings: boolean })
     events && listings
       ? "Имате обява или събитие? Публикуваме ги безплатно."
       : listings
-        ? "Продавате, търсите или подарявате нещо? Пуснете безплатна обява."
+        ? "Продавате, търсите или подарявате нещо? Подайте безплатна обява."
         : "Организирате събитие в града? Кажете ни и ще го публикуваме.";
   return (
     <section aria-labelledby="pokana-zaglavie" className="container-content pb-10">
@@ -153,6 +149,7 @@ export default async function HomePage() {
     latestPosts,
     emergency,
     viberUrl,
+    serviceCounts,
   ] = await Promise.all([
     getTopFaqs(),
     getUpcomingEvents(),
@@ -164,9 +161,12 @@ export default async function HomePage() {
     orEmpty("новини", getLatestPosts()),
     orEmpty("спешни телефони", getEmergencyServices()),
     getViberChannelUrl(),
+    orEmpty("услуги по категории", getServiceCategoryCounts()),
   ]);
 
-  const otherEmergency = emergency.filter((s) => s.phone && !is112(s.phone));
+  const serviceCountOf = new Map(serviceCounts.map((c) => [c.category, c.count]));
+  // Номер с грешна дължина не стои в спешната лента (виж isDialablePhone).
+  const otherEmergency = emergency.filter((s) => s.phone && !is112(s.phone) && isDialablePhone(s.phone));
 
   // Винаги 4 слота: запълнените с реклами (на смени, виж rotate), останалите
   // — покана. На телефон се виждат първите 2 (рекламата не изтиква
@@ -349,7 +349,8 @@ export default async function HomePage() {
       {/* Бързи раздели. PRIMARY_NAV е подреден по важност, затова първите шест
           са едри („това търсят хората най-често“), а останалите — компактни.
           21 еднакви карти са твърде много за сканиране от възрастен човек. */}
-      <Section title="Най-търсено">
+      {/* id="razdeli" — „Всички раздели →“ във футъра води тук. */}
+      <Section title="Най-търсено" id="razdeli">
         <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {PRIMARY_NAV.slice(0, 6).map((item) => {
             const Icon = navIcon(item.href);
@@ -432,17 +433,17 @@ export default async function HomePage() {
         {topFaqs.length === 0 ? (
           <EmptyState title="Скоро тук ще има полезни въпроси и отговори." />
         ) : (
-          <ul className="grid gap-4 md:grid-cols-2 max-md:[&>*:nth-child(n+5)]:hidden">
-            {topFaqs.map((f) => (
-              <li key={f.id} className="flex">
-                <Link href={`/kak-da/${f.slug}`} className="card group flex w-full flex-col">
-                  <span className="badge">{f.category}</span>
-                  <h3 className="h-card mt-2 group-hover:underline">{f.question}</h3>
-                  <p className="mt-1 text-base text-slate-600">{plainText(f.answer, 120)}</p>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          // Същите карти като в „Как да…“, /izmami и /pomoshti (GuideCard).
+          <GuideList
+            items={topFaqs.map((f) => ({
+              id: f.id,
+              slug: f.slug,
+              question: f.question,
+              snippet: plainText(f.answer, 120),
+            }))}
+            as="h3"
+            className="max-md:[&>*:nth-child(n+5)]:hidden"
+          />
         )}
       </Section>
 
@@ -457,8 +458,12 @@ export default async function HomePage() {
                 {events.map((e) => (
                   <li key={e.id} className="flex">
                     <Link href={`/sabitiya/${e.slug}`} className="card group flex w-full flex-col">
+                      {/* Като в /sabitiya и детайла: с година и край. Часът е
+                          „стенно“ софийско време от админ полето (format-date.ts). */}
                       <p className="text-base font-semibold text-brand-700">
-                        <time dateTime={isoDateTime(e.startAt, { wall: true })}>{eventWhen(e.startAt)}</time>
+                        <time dateTime={isoDateTime(e.startAt, { wall: true })}>
+                          {formatEventWhen(e.startAt, e.endAt, { wall: true })}
+                        </time>
                       </p>
                       <h3 className="h-card mt-1 group-hover:underline">{glueDash(e.title)}</h3>
                       {e.location && (
@@ -597,15 +602,20 @@ export default async function HomePage() {
       </section>
 
       {/* Бърз достъп до категории услуги (помага за GEO/AEO) */}
-      <Section title="Услуги по категории" href="/uslugi">
-        <FilterChips
-          label="Категории услуги"
-          items={Object.entries(SERVICE_CATEGORY_LABELS).map(([key, label]) => ({
-            href: `/uslugi?cat=${key}`,
-            label,
-          }))}
-        />
-      </Section>
+      {serviceCountOf.size > 0 && (
+        <Section title="Услуги по категории" href="/uslugi">
+          {/* Само непразните категории, в реда и с бройката от /uslugi —
+              чип не води до „Няма услуги“. */}
+          <FilterChips
+            label="Категории услуги"
+            items={SERVICE_CATEGORY_ORDER.filter((key) => (serviceCountOf.get(key) ?? 0) > 0).map((key) => ({
+              href: `/uslugi?cat=${key}#rezultati`,
+              label: SERVICE_CATEGORY_LABELS[key],
+              count: serviceCountOf.get(key),
+            }))}
+          />
+        </Section>
+      )}
     </>
   );
 }

@@ -7,6 +7,7 @@ import { buildMetadata } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { HELP_KIND_LABELS, labelFor } from "@/lib/categories";
 import { ReportContent } from "@/components/ReportContent";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,7 @@ export default async function CausePage({
   return (
     <>
       <PageHero
+        eyebrow={SECTION.community}
         title={c.title}
         crumbs={[
           { name: "Зов за помощ", path: "/zov-za-pomosht" },

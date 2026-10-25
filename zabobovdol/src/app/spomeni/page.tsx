@@ -5,6 +5,7 @@ import { Plus } from "@/components/icons";
 import { PageHero, EmptyState, ListToolbar } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -42,9 +43,10 @@ export default async function MemoriesPage() {
   return (
     <>
       <PageHero
+        eyebrow={SECTION.city}
         title="Спомени от Бобов дол"
         intro="Жива памет на града — споделена от вас. Разкажете спомен или вижте спомените на съседите си. Всеки спомен е частица от историята."
-        crumbs={[{ name: "Спомени", path: "/spomeni" }]}
+        crumbs={[{ name: "Спомени от Бобов дол", path: "/spomeni" }]}
       />
       <div className="container-content py-10">
         {memories.length === 0 ? (

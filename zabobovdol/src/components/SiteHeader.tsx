@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, type FocusEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FocusEvent, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { SITE, NAV_GROUPS, QUICK_NAV, TOP_NAV, type NavGroup, type NavItem } from "@/lib/site";
+import { SITE, NAV_GROUPS, QUICK_NAV, TOP_NAV, isDangerNav, type NavGroup, type NavItem } from "@/lib/site";
 import { SearchBar } from "@/components/SearchBar";
 import { ChevronDown } from "@/components/icons";
-import { isDangerNav, navIcon } from "@/components/nav-icons";
 import { SECTION } from "@/lib/section-names";
 
 // „Още полезно“ — страниците, които иначе са само във футъра; в мобилното
@@ -43,17 +42,19 @@ function MenuIcon({ open }: { open: boolean }) {
 /** Ред в списък от раздели: иконно квадратче + име (+ описание за „Най-търсени“). */
 function SectionLink({
   item,
+  icon,
   current,
   rich,
   onNavigate,
 }: {
   item: NavItem;
+  /** Готовата икона от сървъра (layout.tsx → NAV_ICON_NODES). */
+  icon: ReactNode;
   current: boolean;
   /** С описание и по-голямо квадратче (групата „Най-търсени“). */
   rich: boolean;
   onNavigate: () => void;
 }) {
-  const Icon = navIcon(item.href);
   const chip = isDangerNav(item.href) ? "icon-chip-sm icon-chip-danger" : "icon-chip-sm";
   return (
     <Link
@@ -65,9 +66,7 @@ function SectionLink({
         (rich ? "min-h-[3.75rem] py-2" : "min-h-[3.25rem] py-1.5")
       }
     >
-      <span className={chip}>
-        <Icon aria-hidden />
-      </span>
+      <span className={chip}>{icon}</span>
       <span className="min-w-0 [overflow-wrap:anywhere]">
         <span className="nav-label block font-semibold leading-snug">{item.label}</span>
         {rich && item.description && (
@@ -78,7 +77,12 @@ function SectionLink({
   );
 }
 
-export function SiteHeader() {
+/**
+ * Иконите на разделите идват ГОТОВИ от сървъра (`icons`, по адрес) — така
+ * клиентският хедър не внася nav-icons/icons.tsx и на всяка страница не се
+ * тегли общ чънк с ~25 SVG пътя (~20 kB JS), които се ползват само тук.
+ */
+export function SiteHeader({ icons }: { icons: Record<string, ReactNode> }) {
   const pathname = usePathname();
   // Мобилното меню (под lg) и панелът „Всички раздели“ (от lg).
   const [open, setOpen] = useState(false);
@@ -384,6 +388,7 @@ export function SiteHeader() {
                       <li key={item.href}>
                         <SectionLink
                           item={item}
+                          icon={icons[item.href]}
                           current={isCurrent(pathname, item.href)}
                           rich={gi === 0}
                           onNavigate={close}
@@ -426,6 +431,7 @@ export function SiteHeader() {
                       <li key={item.href}>
                         <SectionLink
                           item={item}
+                          icon={icons[item.href]}
                           current={isCurrent(pathname, item.href)}
                           rich={gi === 0}
                           onNavigate={close}

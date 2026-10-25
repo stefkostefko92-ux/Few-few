@@ -8,6 +8,7 @@ import { renderMarkdown, plainText } from "@/lib/markdown";
 import { RIDE_KIND_LABELS, labelFor } from "@/lib/categories";
 import { ReportContent } from "@/components/ReportContent";
 import { Route, routeText } from "../RouteLabel";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -56,6 +57,7 @@ export default async function RidePage({
   return (
     <>
       <PageHero
+        eyebrow={SECTION.participate}
         title={routeLabel}
         crumbs={[
           { name: "Споделено пътуване", path: "/spodeleno-patuvane" },

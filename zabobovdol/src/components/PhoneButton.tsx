@@ -9,7 +9,7 @@
 
 import { Phone } from "@/components/icons";
 import { TelLink } from "@/components/TelLink";
-import { formatPhoneBg } from "@/lib/phone";
+import { NOT_DIALABLE, formatPhoneBg, isDialablePhone } from "@/lib/phone";
 
 const VARIANT = {
   primary: "btn-primary",
@@ -37,6 +37,17 @@ export function PhoneButton({
   const number = formatPhoneBg(phone);
   // Без цифри (напр. „няма“) не е бутон — просто текст.
   if (!/\d/.test(phone)) return <span className={className}>{phone}</span>;
+  // Номер с грешна дължина („0702 2016“) не става бутон — бутон, който не
+  // свързва, е по-лош от никакъв. Показваме, че се проверява.
+  if (!isDialablePhone(phone)) {
+    return (
+      <span className={`inline-flex items-center gap-2 text-base text-slate-600 ${className}`.trim()}>
+        <Phone className="h-5 w-5 shrink-0 text-slate-500" aria-hidden />
+        {/* Без „Обадете се:“ — няма на какво. */}
+        {NOT_DIALABLE}
+      </span>
+    );
+  }
   const width = full ? "w-full" : "w-full sm:w-auto";
   return (
     <TelLink

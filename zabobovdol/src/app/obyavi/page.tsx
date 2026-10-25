@@ -6,6 +6,7 @@ import { PageHero, EmptyState, FilterChips, ListToolbar } from "@/components/ui"
 import { buildMetadata } from "@/lib/seo";
 import { LISTING_TYPE_LABELS, labelFor } from "@/lib/categories";
 import { plainText } from "@/lib/markdown";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +74,7 @@ export default async function ListingsPage({
   return (
     <>
       <PageHero
+        eyebrow={SECTION.community}
         title="Обяви"
         intro="Безплатни местни обяви. Всяка обява се преглежда преди публикуване."
         crumbs={[{ name: "Обяви", path: "/obyavi" }]}

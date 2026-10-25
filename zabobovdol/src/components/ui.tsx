@@ -138,7 +138,7 @@ export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
               ) : (
                 <Link
                   href={c.path}
-                  className="inline-flex min-h-8 items-center underline decoration-slate-300 underline-offset-4 hover:text-brand-700 hover:decoration-brand-700"
+                  className="inline-flex min-h-tap items-center underline decoration-slate-300 underline-offset-4 hover:text-brand-700 hover:decoration-brand-700"
                 >
                   {c.label ?? c.name}
                 </Link>
@@ -317,7 +317,8 @@ export function FilterChips({
             <Link href={it.href} className={chip} aria-current={it.active ? "page" : undefined}>
               {it.label}
               {typeof it.count === "number" && (
-                <span className="chip-count">· {it.count}</span>
+                // „·“ и бройката не се разделят на два реда (320px, шрифт 125%).
+                <span className="chip-count whitespace-nowrap">·&nbsp;{it.count}</span>
               )}
             </Link>
           </li>

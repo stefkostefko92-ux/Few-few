@@ -3,7 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/lib/site";
 import { buildMetadata } from "@/lib/seo";
-import { formatPhoneBg } from "@/lib/phone";
+import { formatPhoneBg, isDialablePhone } from "@/lib/phone";
 import { SECTION } from "@/lib/section-names";
 import { fitPhoneSheet } from "@/lib/print-phones";
 import { PageHero } from "@/components/ui";
@@ -59,13 +59,19 @@ function groupRows(rows: Row[]) {
 
 // Редът на листа: обикновен и сбит (когато номерата са много или с дълги
 // имена — виж fitPhoneSheet). Пълни низове, за да ги види Tailwind.
+// На екран редът се пренася (flex-wrap): когато името и номерът не се
+// събират (320px, шрифт 125%), номерът минава под името, а името не се цепи
+// насред думата („Полиц|ия“). На хартия — както досега (print:flex-nowrap,
+// името до номера), иначе листът не влиза в един A4.
 const LI =
-  "flex break-inside-avoid items-baseline justify-between gap-3 print:gap-2 border-b border-slate-200 py-1.5 text-base leading-snug print:py-0.5 print:leading-tight";
+  "flex flex-wrap print:flex-nowrap break-inside-avoid items-baseline justify-between gap-x-3 print:gap-2 border-b border-slate-200 py-1.5 text-base leading-snug print:py-0.5 print:leading-tight";
 const LI_DENSE =
-  "flex break-inside-avoid items-baseline justify-between gap-3 print:gap-2 border-b border-slate-200 py-1.5 text-base leading-snug print:py-0 print:text-[11pt] print:leading-tight";
-const NUM = "shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-slate-900 print:text-base";
+  "flex flex-wrap print:flex-nowrap break-inside-avoid items-baseline justify-between gap-x-3 print:gap-2 border-b border-slate-200 py-1.5 text-base leading-snug print:py-0 print:text-[11pt] print:leading-tight";
+const NAME =
+  "min-w-[min(100%,11rem)] flex-1 text-slate-800 [overflow-wrap:break-word] print:min-w-0 print:[overflow-wrap:anywhere]";
+const NUM = "ml-auto shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-slate-900 print:text-base";
 const NUM_DENSE =
-  "shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-slate-900 print:text-[11pt]";
+  "ml-auto shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-slate-900 print:text-[11pt]";
 
 export default async function PrintPage() {
   const services = await prisma.service.findMany({
@@ -76,7 +82,9 @@ export default async function PrintPage() {
     select: { id: true, name: true, phone: true, category: true },
   });
   const { groups, shown, cut, dense } = fitPhoneSheet(
-    groupRows(services.filter((s) => s.phone.trim() !== "112")),
+    // Номер с грешна дължина („0702 2016“) не отива на хартия — листът виси
+    // месеци на стената; по-добре липсващ ред, отколкото номер, който не свързва.
+    groupRows(services.filter((s) => s.phone.trim() !== "112" && isDialablePhone(s.phone))),
   );
 
   return (
@@ -121,7 +129,7 @@ export default async function PrintPage() {
               <ul role="list">
                 {g.items.map((s) => (
                   <li key={s.id} className={dense ? LI_DENSE : LI}>
-                    <span className="min-w-0 text-slate-800 [overflow-wrap:anywhere]">{s.name}</span>
+                    <span className={NAME}>{s.name}</span>
                     <span className={dense ? NUM_DENSE : NUM}>
                       {formatPhoneBg(s.phone)}
                     </span>

@@ -37,6 +37,9 @@ function noBreakPrefixes(text: string): string {
   return text.replace(/(^|[\s(„])(\p{L})-(?=\p{L})/gu, "$1$2‑");
 }
 
+// Плочките на всички раздели на началната (Section id="razdeli").
+const ALL_SECTIONS_HREF = "/#razdeli";
+
 // Връзка във футъра: цел ≥44px, подчертана (на тъмно фон само цветът не
 // стига), без предварително зареждане за RSS (канал, не страница).
 function FooterLink({ href, label }: { href: string; label: string }) {
@@ -57,7 +60,7 @@ function FooterLink({ href, label }: { href: string; label: string }) {
 // футърът ~2000px; от sm — винаги отворена секция със заглавие. Двата вида
 // са в DOM, но скритият е display:none — за четеца и клавиатурата е само
 // единият. (::details-content за „винаги отворена“ още не е навсякъде.)
-function FooterGroup({ group, id }: { group: NavGroup; id: string }) {
+function FooterGroup({ group, id, more = false }: { group: NavGroup; id: string; more?: boolean }) {
   const list = (
     <ul className="space-y-1 text-base">
       {group.items.map((i) => (
@@ -65,6 +68,15 @@ function FooterGroup({ group, id }: { group: NavGroup; id: string }) {
           <FooterLink href={i.href} label={i.label} />
         </li>
       ))}
+      {/* Футърът е кратък (SPEC т. 8), но пълният списък е на една връзка и
+          отдолу: плочките „Най-търсено“ + „Всички раздели“ на началната. */}
+      {more && (
+        <li>
+          <Link href={ALL_SECTIONS_HREF} className="link-on-dark inline-flex min-h-tap items-center gap-1 font-semibold">
+            Всички раздели <span aria-hidden="true">→</span>
+          </Link>
+        </li>
+      )}
     </ul>
   );
   return (
@@ -214,7 +226,7 @@ export async function SiteFooter() {
             aria-label="Връзки в долната част на сайта"
             className="grid min-w-0 grid-cols-1 border-t border-white/20 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-8 sm:border-t-0 md:grid-cols-3 lg:col-span-8"
           >
-            <FooterGroup group={mostWanted} id="footer-g0" />
+            <FooterGroup group={mostWanted} id="footer-g0" more />
             <FooterGroup group={aboutSite} id="footer-g1" />
             <div className="min-w-0 sm:space-y-8">
               {rest.map((g, i) => (

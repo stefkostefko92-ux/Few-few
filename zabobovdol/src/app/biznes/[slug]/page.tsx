@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import {
@@ -19,6 +20,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, localBusinessLd } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { BUSINESS_CATEGORY_LABELS, labelFor } from "@/lib/categories";
+import { ReportContent } from "@/components/ReportContent";
 
 export const dynamic = "force-dynamic";
 
@@ -101,7 +103,16 @@ export default async function BusinessPage({
             shareTitle={`${b.name} — За Бобов дол`}
             shareText={`${b.name}${b.phone ? ` — телефон ${formatPhoneBg(b.phone)}` : ""}`}
             sharePath={`/biznes/${b.slug}`}
-          />
+          >
+            {/* Готовата форма за поправка (/biznes/nova?za=) — собственикът или
+                съсед сам предлага верния телефон/работно време. */}
+            <Link href={`/biznes/nova?za=${b.slug}`} className="btn-secondary">
+              Поправете данните
+            </Link>
+          </DetailActions>
+          {/* „Сигнализирайте за това съдържание“ — както /pravila т. 3 обещава
+              за каталога на бизнесите (чл. 16 DSA, точният адрес в писмото). */}
+          <ReportContent subject={b.name} path={`/biznes/${b.slug}`} />
         </div>
         {hasFacts && (
           <aside>

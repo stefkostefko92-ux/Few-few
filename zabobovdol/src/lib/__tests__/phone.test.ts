@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { formatPhoneBg, nationalDigits } from "@/lib/phone";
+import { formatPhoneBg, isDialablePhone, nationalDigits } from "@/lib/phone";
 
 test("formatPhoneBg: мобилни от +359, 00359 и 0 → „0XXX XXX XXX“", () => {
   assert.equal(formatPhoneBg("+359877414874"), "0877 414 874");
@@ -53,6 +53,28 @@ test("formatPhoneBg: непознатото се връща непроменен
   assert.equal(formatPhoneBg("0702+62323"), "0702+62323");
   assert.equal(formatPhoneBg(""), "");
   assert.equal(formatPhoneBg("—"), "—");
+});
+
+test("isDialablePhone: грешна дължина или примерен номер → не е бутон", () => {
+  for (const ok of [
+    "112",
+    "150",
+    "1470",
+    "0702 62323",
+    "0702 6 23 23",
+    "+359 877 414 874",
+    "0877414874",
+    "02 931 11 11",
+    "078 559 700",
+    "0700 14 802",
+    "+44 20 7946 0958", // чужд — не съдим
+    "0702 62323 (централа)", // с думи — не съдим
+  ]) {
+    assert.equal(isDialablePhone(ok), true, ok);
+  }
+  for (const bad of ["0702 2016", "0702 2000", "0702 2526", "000 000 000", "0888 12345", "62323", "0877 414 874 1"]) {
+    assert.equal(isDialablePhone(bad), false, bad);
+  }
 });
 
 test("nationalDigits дава националния запис само с цифри", () => {

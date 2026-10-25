@@ -5,6 +5,7 @@ import { Cross, MapPin, Clock, type LucideIcon } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState, Prose, SectionHeader } from "@/components/ui";
 import { PhoneButton } from "@/components/PhoneButton";
+import { isDialablePhone } from "@/lib/phone";
 import { SECTION } from "@/lib/section-names";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, itemListLd, localBusinessLd, canonical } from "@/lib/seo";
@@ -193,7 +194,7 @@ export default async function DutyPharmacyPage() {
   const pharmacyPhones = [
     ...pharmacies.map((s) => ({ id: s.id, name: s.name, phone: s.phone })),
     ...businessPharmacies.map((b) => ({ id: b.id, name: b.name, phone: b.phone })),
-  ].filter((x) => /\d/.test(x.phone));
+  ].filter((x) => /\d/.test(x.phone) && isDialablePhone(x.phone));
 
   const allPharmacies = pharmacies.length + businessPharmacies.length;
   const shareText =

@@ -9,6 +9,7 @@ import {
   CalendarClock,
   CalendarDays,
   Camera,
+  Church,
   Coins,
   Cross,
   Euro,
@@ -20,6 +21,7 @@ import {
   Inbox,
   Landmark,
   Mail,
+  MapPin,
   Megaphone,
   Newspaper,
   Phone,
@@ -41,7 +43,7 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   "/evroto": Euro,
   "/biznes": Store,
   "/sabitiya": CalendarDays,
-  "/imen-den": CalendarDays,
+  "/imen-den": Church,
   "/danaci-srokove": CalendarClock,
   "/grafik-smetosabirane": Trash2,
   "/obyavi": Megaphone,
@@ -50,7 +52,7 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   "/signali": AlertTriangle,
   "/prozrachnost": Banknote,
   "/prekysvaniya": Zap,
-  "/smetishta": Trash2,
+  "/smetishta": MapPin,
   "/grada": BookOpen,
   "/istoriya": Landmark,
   "/zov-za-pomosht": HeartHandshake,
@@ -70,7 +72,5 @@ export function navIcon(href: string): LucideIcon {
   return NAV_ICONS[href] ?? HelpCircle;
 }
 
-/** Разделите, чието квадратче е червено (цветова роля „опасност“). */
-export function isDangerNav(href: string): boolean {
-  return href === "/izmami";
-}
+// Червеното квадратче — isDangerNav в site.ts (без икони, за клиентския хедър).
+export { isDangerNav } from "@/lib/site";

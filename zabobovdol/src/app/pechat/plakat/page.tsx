@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   ...buildMetadata({
-    title: "Плакат за разпечатване — За Бобов дол",
+    title: "Плакат за разпечатване",
     description:
       "Готов за печат плакат (A4) с QR код към сайта „За Бобов дол“. Разпечатайте и закачете в аптеката, кметството, на спирката или в магазина, за да го видят повече хора.",
     path: "/pechat/plakat",

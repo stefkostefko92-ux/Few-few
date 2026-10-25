@@ -11,6 +11,19 @@ export const SERVICE_CATEGORY_LABELS: Record<string, string> = {
   OTHER: "Друго",
 };
 
+// Редът на категориите услуги навсякъде (/uslugi и началната): спешното
+// първо, после най-търсеното. Enum-ът в базата е по азбучен ред на английски.
+export const SERVICE_CATEGORY_ORDER = [
+  "EMERGENCY",
+  "HEALTH",
+  "ADMIN",
+  "UTILITY",
+  "SOCIAL",
+  "TRANSPORT",
+  "EDUCATION",
+  "OTHER",
+] as const;
+
 export const BUSINESS_CATEGORY_LABELS: Record<string, string> = {
   SHOP: "Магазин",
   FOOD: "Храна и заведения",

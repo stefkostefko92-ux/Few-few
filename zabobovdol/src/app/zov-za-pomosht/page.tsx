@@ -6,6 +6,7 @@ import { PageHero, EmptyState, FilterChips, ListToolbar, Notice } from "@/compon
 import { buildMetadata } from "@/lib/seo";
 import { HELP_KIND_LABELS, labelFor } from "@/lib/categories";
 import { plainText } from "@/lib/markdown";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +69,7 @@ export default async function HelpPage({
   return (
     <>
       <PageHero
+        eyebrow={SECTION.community}
         title="Зов за помощ"
         intro="Взаимопомощ и грижа за възрастните хора в Бобов дол. Потърсете помощ за някого или предложете своята — малките жестове променят много."
         crumbs={[{ name: "Зов за помощ", path: "/zov-za-pomosht" }]}

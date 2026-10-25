@@ -7,6 +7,7 @@ import { PageHero, EmptyState, SectionHeader } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
 import { formatEventWhen, isoDate, isoDateTime } from "@/lib/format-date";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -112,6 +113,7 @@ export default async function EventsPage() {
   return (
     <>
       <PageHero
+        eyebrow={SECTION.daily}
         title="Събития"
         intro="Какво предстои в Бобов дол."
         crumbs={[{ name: "Събития", path: "/sabitiya" }]}

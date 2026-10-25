@@ -46,8 +46,14 @@ export function AccessibilityBar() {
       // Дали лентата е свита, се решава ПРЕДИ първото рисуване от вградения
       // скрипт в layout.tsx (клас `a11y-min` на <html>) — иначе на телефон тя
       // се рисуваше разгърната и после се свиваше, а страницата подскачаше.
-      // Тук само синхронизираме състоянието за aria-expanded.
-      setCollapsed(document.documentElement.classList.contains("a11y-min"));
+      // Тук правилото се изчислява ОТНОВО (същото като във вградения скрипт),
+      // а не се чете от класа: ако React пререндира корена (грешка #418 при
+      // хидратация), класовете на <html> се връщат към сървърните и
+      // `a11y-min` изчезва — тогава лентата се разгъваше сама.
+      const k = localStorage.getItem("a11y-collapsed");
+      const min = k === "1" || (k === null && window.matchMedia("(max-width: 767px)").matches);
+      document.documentElement.classList.toggle("a11y-min", min);
+      setCollapsed(min);
       applyFont(f);
       applyContrast(c);
       applyBigTouch(t);
@@ -161,8 +167,11 @@ export function AccessibilityBar() {
           общината); вдясно — настройките за четене. */}
       <div className="container-content flex min-h-12 items-center justify-between gap-3 py-0.5">
         <p className="min-w-0 text-sm leading-snug text-slate-700 lg:text-base">
+          {/* На таблет (640–819px) редът се пренася — само след „—“, без да
+              се разкъсва името на града („Бобов“ / „дол“). */}
           <span className="hidden sm:inline">
-            Независим граждански портал — не е сайтът на Община Бобов дол
+            Независим граждански портал —{" "}
+            <span className="whitespace-nowrap">не е сайтът на Община Бобов дол</span>
           </span>
           <span className="sm:hidden">
             <span className="block">Независим портал</span>

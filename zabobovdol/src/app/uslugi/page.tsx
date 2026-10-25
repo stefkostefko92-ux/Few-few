@@ -7,10 +7,11 @@ import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState, FilterChips, ListToolbar } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, itemListLd } from "@/lib/seo";
-import { SERVICE_CATEGORY_LABELS, labelFor } from "@/lib/categories";
+import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORY_ORDER, labelFor } from "@/lib/categories";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { PhoneButton } from "@/components/PhoneButton";
 import { formatPhoneBg } from "@/lib/phone";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -31,18 +32,10 @@ export const metadata: Metadata = {
   ],
 };
 
-// Редът на групите: спешното първо, после най-търсеното. Котвите (#zdrave…)
-// са на латиница, за да се копират и споделят без %-кодиране.
-const CATEGORY_ORDER = [
-  "EMERGENCY",
-  "HEALTH",
-  "ADMIN",
-  "UTILITY",
-  "SOCIAL",
-  "TRANSPORT",
-  "EDUCATION",
-  "OTHER",
-] as const;
+// Редът на групите — SERVICE_CATEGORY_ORDER (спешното първо, общ с
+// началната). Котвите (#zdrave…) са на латиница, за да се копират и споделят
+// без %-кодиране.
+const CATEGORY_ORDER = SERVICE_CATEGORY_ORDER;
 const ANCHOR: Record<string, string> = {
   EMERGENCY: "speshni",
   HEALTH: "zdrave",
@@ -191,6 +184,7 @@ export default async function UslugiPage({
         />
       )}
       <PageHero
+        eyebrow={SECTION.directory}
         title="Услуги и важни телефони"
         intro="Намерете бързо телефон, адрес и работно време на важните услуги в града."
         crumbs={[{ name: "Услуги и телефони", path: "/uslugi" }]}

@@ -19,6 +19,9 @@ html {
   -webkit-text-size-adjust: 100%;
   /* Заглавието на раздела не остава скрито под залепения хедър. */
   scroll-padding-top: var(--header-offset);
+  /* …и фокусираният с Tab елемент — под плаващия бутон на чата долу вдясно
+     (3rem + 0.75rem отстъп + запас): браузърът спира над него. */
+  scroll-padding-bottom: 5rem;
 }
 html.bt {
   scroll-padding-top: calc(var(--header-offset) + 1rem);
@@ -327,11 +330,14 @@ h4,
   .form-panel {
     @apply space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8;
   }
+  /* На телефон групата е без рамка и отстъп — кутия в кутия (.form-panel +
+     .fieldset) стесняваше полетата до 282px при 390px. Заглавието на групата
+     (legend) остава и разделя групите. От sm — рамкирана група. */
   .fieldset {
-    @apply min-w-0 space-y-4 rounded-xl border border-slate-200 p-4 sm:p-5;
+    @apply min-w-0 space-y-4 rounded-xl border-0 p-0 sm:border sm:border-slate-200 sm:p-5;
   }
   .legend {
-    @apply px-1 font-sans text-lg font-semibold text-slate-900;
+    @apply pb-1 font-sans text-lg font-semibold text-slate-900 sm:px-1 sm:pb-0;
   }
   /* Подсказка и грешка под полето (FormKit: FieldHint/FieldError; и в
      админа). Цветовете са пренасочени — тъмен режим и контраст идват сами. */
@@ -577,6 +583,20 @@ html.menu-open .chat-fab {
    футъра (TrustCard) — пак синият, иначе златото върху бяло не се вижда. */
 .site-footer .bg-white :focus-visible {
   outline-color: theme("colors.brand.500");
+}
+/* Тъмен режим: синият контур (#3a52c0) върху тъмните повърхности е само
+   2,2–2,7:1 — под 3:1 за индикатор на фокус (WCAG 1.4.11). Там е златист
+   (~11:1 върху #0f172a). Хедърът, лентата за четене и връзката за прескачане
+   (над лентата) остават светли и в тъмен режим — там синият. */
+html.dark :focus-visible {
+  outline-color: theme("colors.gold.300");
+}
+html.dark :is(.site-header, .a11y-bar) :focus-visible,
+html.dark .skip-link:focus-visible {
+  outline-color: theme("colors.brand.500");
+}
+html.dark .site-footer .bg-white :focus-visible {
+  outline-color: theme("colors.gold.300");
 }
 
 /* Висок контраст (достъпност) — по-черен текст, по-силни граници и връзки.
@@ -1064,18 +1084,25 @@ html.a11y-min .a11y-chevron {
 }
 
 /* По-лесно докосване (достъпност) — по-големи бутони, връзки и полета за хора
-   с тремор/затруднена моторика. Включва се от лентата за достъпност (.bt). */
-html.bt .btn,
-html.bt .btn-primary,
-html.bt .btn-secondary,
-html.bt .btn-gold,
-html.bt .btn-danger {
-  padding: 0.85rem 1.6rem;
-  font-size: 1.125rem;
-}
-html.bt .a11y-btn {
-  padding: 0.55rem 0.95rem;
-  font-size: 1rem;
+   с тремор/затруднена моторика. Включва се от лентата за достъпност (.bt).
+   Само на екран (@media screen): режимът е за докосване и няма смисъл на
+   хартия — по-високите редове (li 1.9) пращаха листа „Важни телефони“ на
+   две страници A4. Страничният отстъп на бутона се свива на тесен екран
+   (clamp): 1.6rem от двете страни при шрифт 125% изкарваше бутона с номер
+   (whitespace-nowrap) извън картата на 320px. */
+@media screen {
+  html.bt .btn,
+  html.bt .btn-primary,
+  html.bt .btn-secondary,
+  html.bt .btn-gold,
+  html.bt .btn-danger {
+    padding: 0.85rem clamp(0.75rem, 4vw, 1.6rem);
+    font-size: 1.125rem;
+  }
+  html.bt .a11y-btn {
+    padding: 0.55rem 0.95rem;
+    font-size: 1rem;
+  }
 }
 /* Некомпактната търсачка (SearchBar: герой, мобилно меню, 404, /tarsene) е
    контейнер и решава според собствената си ширина в em — тоест расте и с
@@ -1156,36 +1183,38 @@ html.bt .a11y-btn {
 }
 /* Само едноредовите връзки стават inline-flex (основното меню, футърът,
    трохите). Връзка с надпис + описание (мобилното меню, картите) остава
-   блок — само получава по-висока цел. */
-html.bt .site-header nav[aria-label="Основно меню"] a,
-html.bt .site-footer a,
-html.bt nav[aria-label="Навигация по трохи"] a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-}
-html.bt nav a,
-html.bt .chip,
-html.bt .chip-on-dark,
-html.bt .link-more {
-  min-height: 48px;
-}
-html.bt a[href^="tel:"],
-html.bt a[href^="mailto:"] {
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  font-weight: 600;
-}
-html.bt .input,
-html.bt input:not([type="checkbox"]):not([type="radio"]),
-html.bt textarea,
-html.bt select {
-  padding-top: 0.8rem;
-  padding-bottom: 0.8rem;
-  font-size: 1.125rem;
-}
-html.bt li {
-  line-height: 1.9;
+   блок — само получава по-висока цел. Само на екран (виж по-горе). */
+@media screen {
+  html.bt .site-header nav[aria-label="Основно меню"] a,
+  html.bt .site-footer a,
+  html.bt nav[aria-label="Навигация по трохи"] a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  html.bt nav a,
+  html.bt .chip,
+  html.bt .chip-on-dark,
+  html.bt .link-more {
+    min-height: 48px;
+  }
+  html.bt a[href^="tel:"],
+  html.bt a[href^="mailto:"] {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 600;
+  }
+  html.bt .input,
+  html.bt input:not([type="checkbox"]):not([type="radio"]),
+  html.bt textarea,
+  html.bt select {
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+    font-size: 1.125rem;
+  }
+  html.bt li {
+    line-height: 1.9;
+  }
 }
 
 /* Индикатор в админ менюто за чакащи одобрение — текстът свети и мига в червено. */
@@ -1218,6 +1247,29 @@ html.bt li {
   .admin-pending {
     color: #dc2626;
   }
+}
+
+/* Лепкавото „Съдържание“ (правните документи, /istoriya): когато е по-високо
+   от екрана, се превърта вътре. Сянката отдолу/отгоре е знак, че списъкът
+   продължава — без нея последният ред просто се отрязваше. Само с CSS:
+   „капаците“ (local) се движат със съдържанието и скриват сянката (scroll)
+   в края на списъка. Фонът е същият като на .panel. */
+.toc-scroll {
+  --toc-bg: #ffffff;
+  --toc-shadow: rgb(15 23 42 / 0.22);
+  background:
+    linear-gradient(var(--toc-bg) 30%, transparent) top / 100% 2.5rem no-repeat local,
+    linear-gradient(transparent, var(--toc-bg) 70%) bottom / 100% 2.5rem no-repeat local,
+    radial-gradient(farthest-side at 50% 0, var(--toc-shadow), transparent) top / 100% 0.9rem no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%, var(--toc-shadow), transparent) bottom / 100% 0.9rem no-repeat scroll,
+    var(--toc-bg);
+}
+html.dark .toc-scroll {
+  --toc-bg: #1e293b;
+  --toc-shadow: rgb(0 0 0 / 0.6);
+}
+html.hc .toc-scroll {
+  --toc-shadow: rgb(0 0 0 / 0.5);
 }
 
 /* Лист A4 с 10 мм поле — печатните листове се побират на един лист. */

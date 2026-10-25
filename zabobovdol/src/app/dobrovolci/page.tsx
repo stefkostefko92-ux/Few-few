@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState, SectionHeader } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { ReportContent } from "@/components/ReportContent";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -31,13 +32,16 @@ export default async function VolunteersPage() {
   return (
     <>
       <PageHero
+        eyebrow={SECTION.community}
         title="Доброволци в помощ"
         intro="Нямаме гише, но имаме хора с добро сърце. Доброволци помагат безплатно на възрастните в Бобов дол — с телефона и интернет, документи, пазар или просто компания."
         crumbs={[{ name: "Доброволци", path: "/dobrovolci" }]}
       />
       <div className="container-content py-10">
+        {/* Двете покани — една и съща повърхност (.panel): те са равностойни
+            действия, не известия (callout-ите са за известия). */}
         <div className="mb-12 grid gap-4 sm:grid-cols-2">
-          <section aria-labelledby="nuzhda" className="callout-info flex flex-col">
+          <section aria-labelledby="nuzhda" className="panel flex flex-col">
             <h2 id="nuzhda" className="h-card">
               Нуждаете се от помощ?
             </h2>
@@ -53,7 +57,7 @@ export default async function VolunteersPage() {
               </Link>
             </div>
           </section>
-          <section aria-labelledby="pomosht" className="callout-note flex flex-col">
+          <section aria-labelledby="pomosht" className="panel flex flex-col">
             <h2 id="pomosht" className="h-card">
               Искате да помогнете?
             </h2>
@@ -102,7 +106,7 @@ export default async function VolunteersPage() {
           За връзка с доброволец пишете на нас — не публикуваме лични телефони от съображения за
           сигурност.
         </p>
-        {volunteers.length > 0 && <ReportContent subject="Профил на доброволец" path="/dobrovolci" />}
+        {volunteers.length > 0 && <ReportContent subject="Профил на доброволец (посочете чий)" path="/dobrovolci" />}
       </div>
     </>
   );

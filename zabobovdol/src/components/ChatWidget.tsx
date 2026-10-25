@@ -114,8 +114,34 @@ export function ChatWidget({ initialOpen = false }: { initialOpen?: boolean } = 
     else dialogRef.current?.focus();
     const html = document.documentElement;
     html.classList.add("chat-open");
+    // Прозорецът е aria-modal — фокусът остава вътре: Tab от последния
+    // елемент отива на първия, Shift+Tab от първия — на последния. Иначе
+    // клавиатурата излизаше към страницата под листа (WCAG 2.4.3, 2.4.11).
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const box = dialogRef.current;
+      if (!box) return;
+      const items = Array.from(
+        box.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => el.getClientRects().length > 0);
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      const inside = !!active && box.contains(active);
+      if (e.shiftKey && (!inside || active === first || active === box)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (!inside || active === last)) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -322,12 +348,13 @@ export function ChatWidget({ initialOpen = false }: { initialOpen?: boolean } = 
                   )}
                 </div>
                 {m.sources && m.sources.length > 0 && (
-                  <div className="mt-1 space-y-0.5 text-left text-sm">
+                  <div className="mt-1 space-y-1 text-left text-sm">
                     {m.sources.map((s) => (
+                      // Главният изход от чата към страниците — цел ≥44px.
                       <Link
                         key={s.url}
                         href={s.url}
-                        className="block font-medium text-brand-700 hover:underline"
+                        className="flex min-h-tap items-center gap-1 py-1 font-medium text-brand-700 hover:underline"
                         onClick={() => setOpen(false)}
                       >
                         <span aria-hidden="true">→ </span>

@@ -20,8 +20,7 @@ import { formatPhoneBg } from "@/lib/phone";
 import { SITE } from "@/lib/site";
 
 /** Изречението за независимостта — на всеки лист, видимо (не дребен шрифт). */
-export const INDEPENDENT =
-  "Независим граждански проект — не е официален сайт на Община Бобов дол.";
+export const INDEPENDENT = SITE.independence;
 
 export type SheetPath = "/pechat" | "/pechat/sedmitsa" | "/pechat/plakat" | "/pechat/avtobus";
 
@@ -175,7 +174,15 @@ export function SheetHead({
   independent?: boolean;
 }) {
   return (
-    <header className="flex items-center gap-4 border-b-2 border-slate-300 pb-4 print:pb-3">
+    // lg („Седмицата“): на телефон гербът е над заглавието — до него едрото
+    // „Седмицата“ не се събираше на 320px при шрифт 125% и се цепеше.
+    <header
+      className={
+        size === "lg"
+          ? "flex flex-col items-start gap-3 border-b-2 border-slate-300 pb-4 sm:flex-row sm:items-center sm:gap-4 print:flex-row print:items-center print:gap-4 print:pb-3"
+          : "flex items-center gap-4 border-b-2 border-slate-300 pb-4 print:pb-3"
+      }
+    >
       {/* Гербът с прозрачен фон: в тъмен режим листът е тъмен и бялата кутия
           около обикновения герб се виждаше (същото като B12 в хедъра). */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -186,12 +193,14 @@ export function SheetHead({
         height={69}
         className={size === "lg" ? "h-16 w-auto shrink-0" : "h-14 w-auto shrink-0"}
       />
-      {/* anywhere: домейнът и дългите думи се пренасят на 320px при едър шрифт. */}
-      <div className="min-w-0 [overflow-wrap:anywhere]">
+      {/* Заглавието се пренася по думи (break-word — дума се цепи само ако
+          сама не се побира); домейнът в подзаглавието — където и да е
+          (anywhere), иначе „Седмицата“ се цепеше на 320px при едър шрифт. */}
+      <div className="min-w-0 [overflow-wrap:break-word]">
         <h2
           className={
             size === "lg"
-              ? "font-display text-3xl font-extrabold leading-tight text-slate-900 sm:text-4xl"
+              ? "font-display text-[1.75rem] font-extrabold leading-tight text-slate-900 sm:text-4xl print:text-4xl"
               : "font-display text-2xl font-bold leading-tight text-slate-900"
           }
         >
@@ -201,8 +210,8 @@ export function SheetHead({
           <p
             className={
               size === "lg"
-                ? "mt-1 text-xl font-semibold text-slate-700"
-                : "mt-1 text-base text-slate-700"
+                ? "mt-1 text-xl font-semibold text-slate-700 [overflow-wrap:anywhere]"
+                : "mt-1 text-base text-slate-700 [overflow-wrap:anywhere]"
             }
           >
             {subtitle}

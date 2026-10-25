@@ -20,6 +20,7 @@ import {
 } from "./pictures";
 import { ANDROID_STEPS, IPHONE_STEPS } from "./steps";
 import { SECTION } from "@/lib/section-names";
+import { UI_LABEL } from "@/lib/ui-labels";
 
 // Чете адреса на Google Play от базата → не се генерира при билда.
 export const dynamic = "force-dynamic";
@@ -56,7 +57,7 @@ export default async function InstallPage() {
         eyebrow={SECTION.site}
         title={TITLE}
         intro="Една икона на началния екран — и сайтът се отваря като приложение, без търсене и без да пишете адреса. Безплатно е и не иска регистрация."
-        crumbs={[{ name: "Сложете на телефона", path: "/instaliraj" }]}
+        crumbs={[{ name: UI_LABEL.install, path: "/instaliraj" }]}
       />
       <JsonLd
         data={howToLd({

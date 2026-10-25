@@ -7,6 +7,7 @@ import { buildMetadata } from "@/lib/seo";
 import { RIDE_KIND_LABELS, labelFor } from "@/lib/categories";
 import { plainText } from "@/lib/markdown";
 import { Route } from "./RouteLabel";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +74,7 @@ export default async function RidesPage({
   return (
     <>
       <PageHero
+        eyebrow={SECTION.participate}
         title="Споделено пътуване"
         intro="Хора, които пътуват по същия маршрут, споделят колата и разходите. Предложете място или потърсете спътници — спестявате пари и помагате на съседите си."
         crumbs={[{ name: "Споделено пътуване", path: "/spodeleno-patuvane" }]}

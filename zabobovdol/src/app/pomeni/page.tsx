@@ -19,6 +19,7 @@ import {
   type ObituaryKind,
 } from "@/lib/obituary";
 import { listPublishedObituaries, purgeExpiredObituaryContacts } from "@/lib/obituary-store";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -81,6 +82,7 @@ export default async function ObituariesPage({ searchParams }: { searchParams: S
   return (
     <>
       <PageHero
+        eyebrow={SECTION.community}
         title="Некролози и помени"
         intro="Тъжни вести и възпоменания от Бобов дол, подадени от близките. Всяка обява се преглежда, преди да се появи тук."
         crumbs={[{ name: "Некролози и помени", path: "/pomeni" }]}

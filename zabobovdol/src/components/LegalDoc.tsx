@@ -81,7 +81,7 @@ function TocLinks({ items }: { items: [string, string][] }) {
         <li key={id}>
           <a
             href={`#${id}`}
-            className="link-quiet flex min-h-tap items-start py-2.5 text-base leading-snug text-brand-700"
+            className="link-quiet flex min-h-tap items-center py-1.5 text-base leading-snug text-brand-700"
           >
             {label}
           </a>
@@ -138,7 +138,7 @@ export function LegalLayout({
         <aside className="no-print hidden lg:block">
           <nav
             aria-label="Съдържание на документа"
-            className="panel sticky top-[calc(var(--header-offset)+1rem)] max-h-[calc(100vh-var(--header-offset)-2rem)] overflow-y-auto"
+            className="panel toc-scroll sticky top-[calc(var(--header-offset)+1rem)] max-h-[calc(100vh-var(--header-offset)-2rem)] overflow-y-auto"
           >
             <p className="label-caps">Съдържание</p>
             <TocLinks items={items} />

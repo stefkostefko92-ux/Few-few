@@ -17,6 +17,7 @@ export const SECTION = {
   guides: "Ръководства",
   safety: "Безопасност",
   health: "Здраве",
+  directory: "Справочник",
   // Футърът и хедърът.
   site: "За сайта",
   participate: "Участвайте",

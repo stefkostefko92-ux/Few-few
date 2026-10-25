@@ -6,7 +6,7 @@
 
 import type { ReactNode } from "react";
 import { track } from "@/lib/events";
-import { formatPhoneBg } from "@/lib/phone";
+import { NOT_DIALABLE, formatPhoneBg, isDialablePhone } from "@/lib/phone";
 
 export function TelLink({
   phone,
@@ -22,6 +22,11 @@ export function TelLink({
   // В tel: остават само цифрите и „+“ — интервалите и думите („централа“)
   // объркват някои телефони.
   const digits = phone.replace(/[^\d+]/g, "");
+  // Номер с грешна дължина („0702 2016“) не свързва — не е връзка и не се
+  // показва като номер, докато админът не го поправи.
+  if (digits && !isDialablePhone(phone)) {
+    return <span className="text-slate-600">{children ?? NOT_DIALABLE}</span>;
+  }
   const shown = children ?? formatPhoneBg(phone);
   if (!digits) return <span className={className}>{shown}</span>;
   return (

@@ -7,6 +7,7 @@ import { plainText } from "@/lib/markdown";
 import { newsDate } from "@/lib/news";
 import { formatDate, isoDate } from "@/lib/format-date";
 import { RssLink } from "./RssLink";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,7 @@ export default async function NewsPage() {
   return (
     <>
       <PageHero
+        eyebrow={SECTION.daily}
         title="Новини"
         intro="Актуални съобщения за града."
         crumbs={[{ name: "Новини", path: "/novini" }]}

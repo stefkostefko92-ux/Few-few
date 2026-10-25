@@ -97,5 +97,13 @@ export function plainText(src: string, max = 160): string {
     .replace(/\s+/g, " ")
     .trim();
   if (t.length <= max) return t;
-  return t.slice(0, max - 1).trimEnd() + "…";
+  const head = t.slice(0, max);
+  // Цяло изречение, което стига поне до 60% от мястото → без „…“.
+  const sentenceEnd = Math.max(head.lastIndexOf(". "), head.lastIndexOf("! "), head.lastIndexOf("? "));
+  if (sentenceEnd >= max * 0.6) return head.slice(0, sentenceEnd + 1);
+  // Иначе — до последната цяла дума, без висяща пунктуация („стойността.…“,
+  // „без да ч…“), и чак тогава „…“.
+  const space = t.lastIndexOf(" ", max - 1);
+  const cut = space > max * 0.5 ? t.slice(0, space) : t.slice(0, max - 1);
+  return cut.replace(/[\s.,;:!?—–-]+$/u, "") + "…";
 }

@@ -336,7 +336,7 @@ export default function HistoryPage() {
         <aside className="hidden lg:block">
           <nav
             aria-label="Съдържание"
-            className="panel sticky top-[calc(var(--header-offset)+1rem)] max-h-[calc(100vh-var(--header-offset)-2rem)] overflow-y-auto"
+            className="panel toc-scroll sticky top-[calc(var(--header-offset)+1rem)] max-h-[calc(100vh-var(--header-offset)-2rem)] overflow-y-auto"
           >
             <p className="label-caps">Съдържание</p>
             <TocLinks />

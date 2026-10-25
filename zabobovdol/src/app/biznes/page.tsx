@@ -10,6 +10,7 @@ import { buildMetadata, itemListLd } from "@/lib/seo";
 import { BUSINESS_CATEGORY_LABELS, labelFor } from "@/lib/categories";
 import { plainText } from "@/lib/markdown";
 import { formatPhoneBg } from "@/lib/phone";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -93,6 +94,7 @@ export default async function BiznesPage({
         />
       )}
       <PageHero
+        eyebrow={SECTION.community}
         title="Местен бизнес"
         intro="Каталог на търговци, заведения, занаятчии и услуги в Бобов дол. Имате бизнес в града? Добавете го безплатно чрез формата."
         crumbs={[{ name: "Местен бизнес", path: "/biznes" }]}

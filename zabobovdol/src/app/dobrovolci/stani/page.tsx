@@ -3,6 +3,7 @@ import { PageHero } from "@/components/ui";
 import { FormLayout, NextSteps } from "@/components/FormLayout";
 import { buildMetadata } from "@/lib/seo";
 import { VolunteerForm } from "./VolunteerForm";
+import { SECTION } from "@/lib/section-names";
 
 // Сървърна обвивка (B29): собствено заглавие и описание; формата — noindex.
 export const metadata: Metadata = buildMetadata({
@@ -31,6 +32,7 @@ export default function BecomeVolunteerPage() {
   return (
     <>
       <PageHero
+        eyebrow={SECTION.community}
         title="Станете доброволец"
         intro="Отделете малко време, за да помогнете на възрастен човек — с телефон, документи, пазар или просто компания. Записването минава през кратък преглед."
         crumbs={CRUMBS}

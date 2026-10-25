@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState, ListToolbar, safeHttpUrl } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { ReportContent } from "@/components/ReportContent";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,7 @@ export default async function GalleryPage() {
   return (
     <>
       <PageHero
+        eyebrow={SECTION.city}
         title="Снимки на Бобов дол"
         intro="Градът през очите на хората — стари и нови снимки, споделени от жителите. Всяка снимка е с кредит към автора ѝ."
         crumbs={[{ name: "Галерия", path: "/galeriya" }]}
@@ -111,7 +113,7 @@ export default async function GalleryPage() {
           .
         </p>
         {/* Сигнал за съдържание — само когато има какво да се сигнализира. */}
-        {photos.length > 0 && <ReportContent subject="Снимка в галерията" path="/galeriya" />}
+        {photos.length > 0 && <ReportContent subject="Снимка в галерията (посочете коя — заглавие или автор)" path="/galeriya" />}
       </div>
     </>
   );

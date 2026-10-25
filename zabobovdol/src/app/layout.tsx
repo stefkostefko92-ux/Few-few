@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Bitter } from "next/font/google";
 import "./globals.css";
-import { SITE } from "@/lib/site";
+import { PRIMARY_NAV, QUICK_NAV, SITE } from "@/lib/site";
 import { JsonLd } from "@/components/JsonLd";
-import { organizationLd, websiteLd } from "@/lib/seo";
+import { OG_IMAGE, OG_IMAGE_ALT, organizationLd, websiteLd } from "@/lib/seo";
 import { getFacebookUrl, getSeoVerification } from "@/lib/settings";
 import { SiteHeader } from "@/components/SiteHeader";
+import { navIcon } from "@/components/nav-icons";
 import { AccessibilityBar } from "@/components/AccessibilityBar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ChatWidgetLazy } from "@/components/ChatWidgetLazy";
@@ -24,6 +25,15 @@ const serif = Bitter({
   variable: "--font-serif",
   display: "swap",
 });
+
+// Иконите на разделите за хедъра — рендирани тук, на сървъра (виж
+// SiteHeader): клиентският код не внася иконния модул.
+const NAV_ICON_NODES = Object.fromEntries(
+  [...PRIMARY_NAV, ...QUICK_NAV].map((i) => {
+    const Icon = navIcon(i.href);
+    return [i.href, <Icon key={i.href} aria-hidden />];
+  }),
+);
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -59,13 +69,13 @@ export const metadata: Metadata = {
     siteName: SITE.name,
     title: `${SITE.name} — ${SITE.slogan}`,
     description: SITE.description,
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: SITE.name }],
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: OG_IMAGE_ALT }],
   },
   twitter: {
     card: "summary_large_image",
     title: `${SITE.name} — ${SITE.slogan}`,
     description: SITE.description,
-    images: ["/og.png"],
+    images: [OG_IMAGE],
   },
   icons: {
     icon: [
@@ -115,11 +125,10 @@ export default async function RootLayout({
         />
         <JsonLd
           data={[
+            // sameAs = „същият обект“: само профилите на самия проект. Фирмата
+            // е parentOrganization (seo.ts), не sameAs.
             organizationLd({
-              sameAs: [
-                SITE.company.website,
-                ...(facebookUrl ? [facebookUrl] : []),
-              ],
+              sameAs: facebookUrl ? [facebookUrl] : [],
             }),
             websiteLd(),
           ]}
@@ -152,7 +161,7 @@ export default async function RootLayout({
           Към основното съдържание
         </a>
         <AccessibilityBar />
-        <SiteHeader />
+        <SiteHeader icons={NAV_ICON_NODES} />
         {/* „Сложи на телефона“ — в потока под хедъра, не покрива съдържание;
             сама се скрива на компютър, в приложението, в /admin и /pechat. */}
         <InstallBanner />

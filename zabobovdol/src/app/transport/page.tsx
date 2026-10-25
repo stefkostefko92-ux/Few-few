@@ -10,6 +10,7 @@ import { SECTION } from "@/lib/section-names";
 import { Bus, Car, ExternalLink, Printer, TrainFront } from "@/components/icons";
 import { BUS } from "@/lib/bus-schedule";
 import { busBoard, inMinutesText } from "@/lib/bus-board";
+import { GuideList } from "@/app/kak-da/_components/GuideList";
 
 export const dynamic = "force-dynamic";
 
@@ -263,21 +264,8 @@ export default async function TransportPage() {
         {/* Полезни обяснения */}
         <section aria-labelledby="kak-da-zaglavie">
           <SectionHeader id="kak-da-zaglavie" title="Полезно „Как да…“" href="/kak-da" />
-          <ul role="list" className="grid gap-3 sm:grid-cols-2">
-            {GUIDES.map(([slug, label]) => (
-              <li key={slug}>
-                <Link
-                  href={`/kak-da/${slug}`}
-                  className="card flex h-full items-center justify-between gap-3 text-base font-medium text-slate-800"
-                >
-                  <span>{label}</span>
-                  <span aria-hidden="true" className="shrink-0 text-brand-700">
-                    →
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {/* Същите карти като в „Как да…“ (GuideCard) — заглавие в синьо и „›“. */}
+          <GuideList items={GUIDES.map(([slug, label]) => ({ id: slug, slug, question: label }))} as="h3" />
         </section>
       </div>
     </>

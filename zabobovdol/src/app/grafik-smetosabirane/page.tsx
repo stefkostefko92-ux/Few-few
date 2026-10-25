@@ -34,7 +34,7 @@ export default async function WasteSchedulePage() {
         eyebrow={SECTION.daily}
         title="График за сметосъбиране"
         intro="Кога се извозва битовият отпадък по квартали и в кои дни да изнасяте кофите."
-        crumbs={[{ name: "Сметосъбиране", path: "/grafik-smetosabirane" }]}
+        crumbs={[{ name: "График за сметосъбиране", path: "/grafik-smetosabirane" }]}
       />
 
       <div className="container-content space-y-8 py-10">
