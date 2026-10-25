@@ -2,7 +2,11 @@ import "server-only";
 import { promises as fs } from "fs";
 import path from "path";
 import { randomBytes } from "crypto";
-import { sniffImage, stripImageMetadata } from "@/lib/uploads-core";
+import { createSerialQueue, sniffImage, stripImageMetadata } from "@/lib/uploads-core";
+
+// Снимките се обработват една по една — паметта на сървъра остава ограничена
+// и при няколко едновременни качвания (виж stripImageMetadata).
+const oneAtATime = createSerialQueue();
 
 // Папка за качените файлове. В Docker се монтира като том (виж docker-compose).
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads");
@@ -38,7 +42,7 @@ export async function saveUploadedImage(
   // грешка в обработката НЕ записваме оригинала (fail closed).
   let clean: Buffer;
   try {
-    clean = await stripImageMetadata(buf, ext);
+    clean = await oneAtATime(() => stripImageMetadata(buf, ext));
   } catch {
     return {
       ok: false,

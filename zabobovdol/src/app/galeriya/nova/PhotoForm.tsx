@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import {
   CHECKBOX,
@@ -21,6 +21,50 @@ import { PrivacyNote } from "@/components/PrivacyNote";
 import { submitPhoto, type PhotoState } from "./actions";
 
 const initial: PhotoState = { ok: false };
+
+// Същият таван като на сървъра (src/lib/uploads.ts) — проверяваме още при
+// избора, за да не се праща напразно голям файл.
+const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
+const TOO_BIG = "Снимката е твърде голяма (максимум 8 MB). Изберете по-малка снимка.";
+
+/**
+ * Полето за файл. Твърде голяма снимка се отказва веднага: изборът се изчиства,
+ * а грешката излиза под полето и се прочита от екранния четец. Състоянието се
+ * нулира при всяко изпращане, защото формата се рисува наново (key=attempt).
+ */
+function PhotoField({ serverError }: { serverError?: string }) {
+  const [tooBig, setTooBig] = useState(false);
+  const error = tooBig ? TOO_BIG : serverError;
+  return (
+    <>
+      <Field
+        name="photo"
+        label="Качете снимка от телефона или компютъра"
+        error={error}
+        hint="Натиснете бутона и изберете снимка (JPG, PNG, до 8 MB). На телефон може да снимате и в момента."
+      >
+        <input
+          id="photo"
+          name="photo"
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.currentTarget.files?.[0];
+            const big = !!file && file.size > MAX_PHOTO_BYTES;
+            if (big) e.currentTarget.value = "";
+            setTooBig(big);
+          }}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={["photo-hint", error ? "photo-error" : ""].filter(Boolean).join(" ")}
+          className={`${INPUT} py-2 file:mr-3 file:min-h-10 file:cursor-pointer file:rounded-lg file:border-0 file:bg-brand-700 file:px-4 file:py-2 file:font-semibold file:text-white`}
+        />
+      </Field>
+      <p className="sr-only" role="alert">
+        {tooBig ? TOO_BIG : ""}
+      </p>
+    </>
+  );
+}
 
 export function PhotoForm({ sendHint }: { sendHint: string }) {
   const [state, action, pending] = useActionState(submitPhoto, initial);
@@ -81,22 +125,7 @@ export function PhotoForm({ sendHint }: { sendHint: string }) {
 
       <fieldset className="fieldset">
         <legend className="legend">Снимката</legend>
-        <Field
-          name="photo"
-          label="Качете снимка от телефона или компютъра"
-          error={f.error("photo")}
-          hint="Натиснете бутона и изберете снимка (JPG, PNG, до 8 MB). На телефон може да снимате и в момента."
-        >
-          <input
-            id="photo"
-            name="photo"
-            type="file"
-            accept="image/*"
-            aria-invalid={f.error("photo") ? true : undefined}
-            aria-describedby={["photo-hint", f.error("photo") ? "photo-error" : ""].filter(Boolean).join(" ")}
-            className={`${INPUT} py-2 file:mr-3 file:min-h-10 file:cursor-pointer file:rounded-lg file:border-0 file:bg-brand-700 file:px-4 file:py-2 file:font-semibold file:text-white`}
-          />
-        </Field>
+        <PhotoField serverError={f.error("photo")} />
         <Field name="imageUrl" label="Или връзка към снимка" optional error={f.error("imageUrl")} hint={sendHint}>
           <input
             {...f.props("imageUrl", { hint: true })}

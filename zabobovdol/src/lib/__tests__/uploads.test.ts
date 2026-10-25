@@ -1,7 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import sharp from "sharp";
-import { sniffImage, stripImageMetadata, type ImageExt } from "@/lib/uploads-core";
+import {
+  createSerialQueue,
+  MAX_INPUT_PIXELS,
+  MAX_SIDE,
+  sniffImage,
+  stripImageMetadata,
+  type ImageExt,
+} from "@/lib/uploads-core";
 
 // Качена от телефон снимка носи EXIF с GPS координатите (често — у дома),
 // модела на телефона и часа. Публикува се само снимката без тях (GDPR).
@@ -71,6 +78,67 @@ test("stripImageMetadata (gif): остава GIF, с всички кадри", a
   const m = await sharp(out, { animated: true }).metadata();
   assert.equal(m.pages, 2);
   assert.equal(m.pageHeight, 8);
+});
+
+test("stripImageMetadata (webp): анимираното WebP пази всички кадри", async () => {
+  const raw = Buffer.alloc(8 * 24 * 3);
+  raw.fill(200, 0, 8 * 8 * 3);
+  raw.fill(30, 8 * 8 * 3, 8 * 16 * 3);
+  raw.fill(120, 8 * 16 * 3);
+  const webp = await sharp(raw, { raw: { width: 8, height: 24, channels: 3, pageHeight: 8 } })
+    .webp({ delay: [100, 100, 100] })
+    .toBuffer();
+  const out = await stripImageMetadata(webp, "webp");
+  assert.equal(sniffImage(out), "webp");
+  const m = await sharp(out, { animated: true }).metadata();
+  assert.equal(m.pages, 3);
+  assert.equal(m.pageHeight, 8);
+});
+
+test("stripImageMetadata: голямата снимка се смалява до MAX_SIDE, малката остава", async () => {
+  const big = await sharp({ create: { width: 4000, height: 1000, channels: 3, background: "#204080" } })
+    .jpeg()
+    .toBuffer();
+  const m = await sharp(await stripImageMetadata(big, "jpg")).metadata();
+  assert.deepEqual([m.width, m.height], [MAX_SIDE, 750]);
+  const small = await sharp({ create: { width: 30, height: 10, channels: 3, background: "#204080" } })
+    .png()
+    .toBuffer();
+  const s = await sharp(await stripImageMetadata(small, "png")).metadata();
+  assert.deepEqual([s.width, s.height], [30, 10]);
+});
+
+test("stripImageMetadata: „декомпресионна бомба“ над тавана на пикселите → грешка", async () => {
+  // Малък файл, огромни размери: без таван декодирането иска гигабайти памет.
+  const side = Math.ceil(Math.sqrt(MAX_INPUT_PIXELS)) + 1;
+  const bomb = await sharp({ create: { width: side, height: side, channels: 3, background: "#000" } })
+    .jpeg({ quality: 1 })
+    .toBuffer();
+  assert.ok(bomb.length < 2 * 1024 * 1024);
+  await assert.rejects(() => stripImageMetadata(bomb, "jpg"), /pixel limit/);
+});
+
+test("createSerialQueue: задачите вървят една по една, грешка не спира опашката", async () => {
+  const q = createSerialQueue();
+  let running = 0;
+  let peak = 0;
+  const order: number[] = [];
+  const task = (i: number, fail = false) => async () => {
+    running++;
+    peak = Math.max(peak, running);
+    await new Promise((r) => setTimeout(r, 5));
+    running--;
+    order.push(i);
+    if (fail) throw new Error("x");
+    return i;
+  };
+  const results = await Promise.allSettled([q(task(1)), q(task(2, true)), q(task(3))]);
+  assert.equal(peak, 1);
+  assert.deepEqual(order, [1, 2, 3]);
+  assert.deepEqual(
+    results.map((r) => r.status),
+    ["fulfilled", "rejected", "fulfilled"],
+  );
 });
 
 test("stripImageMetadata: повреден файл → грешка (оригиналът не се записва)", async () => {
