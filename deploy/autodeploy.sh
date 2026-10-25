@@ -1667,12 +1667,17 @@ deploy_adblock() {
       # ЗАСЯЧЕНО НА ЖИВО (25.10.2026): certbot падна, HTTP шаблонът остана сам и HTTPS изчезна —
       # Privacy/Support адресите от листинга и ъпдейтите на филтрите. Затова бекъпът с HTTPS се
       # пази до успешен certbot и се връща, ако той не мине; изходът на certbot вече се вижда.
-      local tls_ok=0 clog="/var/log/few-few-certbot-adblock.log"
+      # Сървърът има ДВА акаунта при Let's Encrypt: без --account неинтерактивният certbot спира на
+      # „Please choose an account“ (това беше причината на 25.10.2026). Акаунтът на сертификата е в
+      # renewal конфига му.
+      local tls_ok=0 clog="/var/log/few-few-certbot-adblock.log" acct=""
+      acct="$(sed -n 's/^account *= *//p' "/etc/letsencrypt/renewal/$ADBLOCK_DOMAIN.conf" 2>/dev/null | head -n1 || true)"
       if command -v certbot >/dev/null; then
         if [ -s "/etc/letsencrypt/live/$ADBLOCK_DOMAIN/fullchain.pem" ]; then
           certbot install --nginx --cert-name "$ADBLOCK_DOMAIN" -n --redirect >"$clog" 2>&1 && tls_ok=1
         fi
-        [ "$tls_ok" = 1 ] || { certbot --nginx -d "$ADBLOCK_DOMAIN" -n --agree-tos --redirect --keep-until-expiring >>"$clog" 2>&1 && tls_ok=1; }
+        [ "$tls_ok" = 1 ] || { certbot --nginx -d "$ADBLOCK_DOMAIN" -n --agree-tos --redirect --keep-until-expiring \
+          ${acct:+--account "$acct"} >>"$clog" 2>&1 && tls_ok=1; }
       fi
       if [ "$tls_ok" = 1 ]; then
         systemctl reload nginx 2>/dev/null || nginx -s reload
