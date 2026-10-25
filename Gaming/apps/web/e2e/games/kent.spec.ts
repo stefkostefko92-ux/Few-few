@@ -15,6 +15,14 @@ import {
   reopenRulesThenLeave,
   snap,
 } from "./helpers-cards";
+import {
+  decision,
+  expectDecisionClearOf,
+  expectDecisionOnScreen,
+  expectMinimizeAndReopen,
+  inDecision,
+  skipDecision,
+} from "./prompt-checks";
 
 /**
  * Кент срещу трима ботове — само истински кликове по масата.
@@ -26,6 +34,9 @@ import {
  *     вече е дал знак (виждам „Знак!“ при него) → „Купе!“ → кръгът е наш.
  *  2.–4. кръг: „Стоп Кент!“ без каре у противниците → точка за тях всеки път;
  *     1:3 → „Край“ → „Нова игра“ сяда в нов мач.
+ * Тайният знак и „Купе!“ излизат сами като прозорец (по желание — „Не сега“
+ * ги връща под масата до следващия ход); „Пас“ и „Стоп Кент!“ са бутоните
+ * под масата (облогът „Стоп“ е възможен на всеки ход — не е прозорец).
  * Всеки ход се решава само по това, което показва масата (по същото правило
  * е избран seed-ът — офлайн реплика на стаята).
  */
@@ -88,18 +99,38 @@ async function selectAndUndo(page: Page): Promise<void> {
   await expect(page.locator('[data-zone="center"] [data-playable="true"]')).toHaveCount(0);
 }
 
+/** What a Kent call is decided by: my hand, the Kent hint, the partner's
+ *  sign. On a phone (scrolled down to my hand and „Пас“) the popup's top third
+ *  can sit over the partner's seat — there the sign is restated in its hint. */
+async function kentTable(page: Page): Promise<Record<string, string>> {
+  const phone = (page.viewportSize()?.width ?? 0) <= 640;
+  if (phone && (await page.getByTestId("partner-signal").count()) > 0)
+    await expect(decision(page).locator(".aso-decision__hint")).toContainText(/тайния знак/);
+  return {
+    hand: '[data-zone="hand"]',
+    hint: '[data-testid="kent-hint"]',
+    ...(phone ? {} : { sign: '[data-testid="partner-signal"]' }),
+  };
+}
+
 async function takeTurn(page: Page, done: Record<Step, number>): Promise<Step> {
   await expect(action(page, "pass")).toBeVisible();
+  if ((await decision(page).count()) > 0) {
+    // the call came up by itself, on screen, clear of what it is about
+    await expectDecisionOnScreen(page, /^(Имаш кент!|Партньорът ти даде знак!)$/);
+    await expectDecisionClearOf(page, await kentTable(page));
+  }
   if ((await action(page, "signal").count()) > 0) {
-    // the secret sign: no move on the table, my turn goes on
-    await act(page, action(page, "signal"));
+    // the secret sign — from the popup: no move on the table, my turn goes on
+    await act(page, inDecision(page, '[data-action="signal"]'));
     await expect(action(page, "signal")).toHaveCount(0);
     await expect(action(page, "pass")).toBeVisible();
     return "signal";
   }
   if ((await action(page, "kupe").count()) > 0) {
     await expect(page.getByTestId("partner-signal")).toBeVisible();
-    await act(page, action(page, "kupe"));
+    await expectDecisionOnScreen(page, /^Партньорът ти даде знак!$/);
+    await act(page, inDecision(page, '[data-action="kupe"]'));
     await expectBanner(page, /^Купе! ✓$/);
     return "kupe";
   }
@@ -143,8 +174,15 @@ test("кент: смяна, пас, тайният знак, „Купе!“ и 
   await snap(page, testInfo, "kent-1366x768");
 
   const done: Record<Step, number> = { swap: 0, pass: 0, signal: 0, kupe: 0, stop: 0 };
+  let checkedPrompt = false;
   for (let turn = 0; turn < 60; turn++) {
     if (!(await waitMyTurn(page))) break; // match over
+    if (!checkedPrompt && (await decision(page).count()) > 0) {
+      // the Kent popup: snapshot, then „Виж масата“ → pill → back
+      checkedPrompt = true;
+      await snap(page, testInfo, "kent-call-1366x768");
+      await expectMinimizeAndReopen(page);
+    }
     done[await takeTurn(page, done)]++;
     if (done.signal === 1 && done.kupe === 0) {
       // the Kent hint sits on the felt; the sticky calls cover neither it nor my hand
@@ -155,6 +193,7 @@ test("кент: смяна, пас, тайният знак, „Купе!“ и 
     }
   }
   expect(done, JSON.stringify(done)).toEqual({ swap: 3, pass: 3, signal: 1, kupe: 1, stop: 3 });
+  expect(checkedPrompt, "прозорецът за знака/„Купе!“ не излезе").toBe(true);
 
   await expectGameOverThenPlayAgain(page);
   expect(await waitMyTurn(page)).toBe(true);
@@ -186,10 +225,23 @@ test("кент на телефон 390×844: места, борса и ръка 
   });
   await snap(page, testInfo, "kent-390x844");
   const done: Record<Step, number> = { swap: 0, pass: 0, signal: 0, kupe: 0, stop: 0 };
-  while (done.swap === 0) {
+  // up to the Kent: the popup for the secret sign on a phone — whole on
+  // screen, hand and hint uncovered; „Не сега“ hides it (no pill) and the
+  // sign stays reachable under the table for this turn
+  for (let turn = 0; turn < 20; turn++) {
     expect(await waitMyTurn(page)).toBe(true);
+    if ((await decision(page).count()) > 0) {
+      await expectDecisionOnScreen(page, /^(Имаш кент!|Партньорът ти даде знак!)$/);
+      await expectDecisionClearOf(page, await kentTable(page));
+      await snap(page, testInfo, "kent-call-390x844");
+      await skipDecision(page);
+      await expect(page.locator('[data-zone="actions"] [data-action="signal"]')).toBeVisible();
+      break;
+    }
     done[await takeTurn(page, done)]++;
   }
+  expect(done.swap).toBeGreaterThan(0);
+  await expect(page.locator('[data-zone="actions"] [data-action="signal"]')).toBeVisible();
   await expectNotReloaded(page);
   expectNoErrors(t);
   await t.ctx.close();

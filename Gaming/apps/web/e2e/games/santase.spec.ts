@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page, type TestInfo } from "@playwright/test";
 import { expectNoErrors, stateVersion, waitMyTurn } from "./helpers";
 import {
   act,
@@ -18,9 +18,22 @@ import {
   reopenRulesThenLeave,
   snap,
 } from "./helpers-cards";
+import {
+  decision,
+  expectDecisionClearOf,
+  expectDecisionOnScreen,
+  expectMinimizeAndReopen,
+  inDecision,
+  skipDecision,
+} from "./prompt-checks";
 
 /**
  * Сантасе (66) срещу бот — само истински кликове по масата.
+ *
+ * Обявите на моето водене излизат САМИ като прозорец, когато има какво да се
+ * реши (двойка 20/40, смяна на коза, реално 66): изборите се правят в него.
+ * „Затвори“ и „Имам 66“ без 66 са в прозореца, щом е отворен, иначе са малки
+ * бутони под масата. „Не сега“ скрива прозореца до следващото водене.
  *
  * Стекът раздава с фиксиран seed (SANTASE=e2e-santase-5159 в
  * infra/e2e-games.sh), затова сценарият е известен и минава през всяко
@@ -72,32 +85,89 @@ async function matchScore(page: Page): Promise<string> {
   return (await page.locator('[data-zone="score"]').getAttribute("data-match")) ?? "";
 }
 
+/** What the decision is made by: my hand and the talon with the face-up
+ *  trump. On a phone the popup sits in the top third and may cover the small
+ *  trump badge — the trump suit is in its hint. */
+const tableParts = (page: Page): Record<string, string> => ({
+  hand: '[data-zone="hand"]',
+  talon: '[data-zone="talon"]',
+  ...((page.viewportSize()?.width ?? 0) > 640 ? { trump: ".aso-trump" } : {}),
+});
+
+type Done = Record<Step | "skip", number>;
+/** Tests that already photographed the small calls on the felt. */
+const smallCallsShot = new Set<string>();
+
 /** One decision on my turn, by the scenario's fixed priority. */
-async function takeTurn(page: Page, done: Record<Step, number>): Promise<Step> {
+async function takeTurn(page: Page, done: Done, testInfo?: TestInfo): Promise<Step> {
   await expect(page.locator('[data-zone="hand"] [data-playable="true"]').first()).toBeVisible();
   const hand = (await cardsIn(page, "hand")).map((c) => c.card);
-  const has = new Set(await actions(page));
+  let has = new Set(await actions(page));
+  const prompt = (await decision(page).count()) > 0;
+  if (prompt) {
+    // up by itself, on screen, clear of the hand and the talon it is about
+    await expectDecisionOnScreen(page);
+    await expectDecisionClearOf(page, tableParts(page));
+  }
+  if (!prompt && (await page.locator('[data-zone="actions"]').count()) > 0) {
+    // no popup: „Затвори“/„Имам 66“ are small buttons — on screen, and they
+    // cover neither my hand, nor my plate with the points, nor the talon
+    const bar = '[data-zone="actions"]';
+    await expect(page.locator(bar)).toBeInViewport();
+    for (const part of [
+      '[data-zone="hand"]',
+      '.aso-seat[data-pos="bottom"] .aso-seat__plate',
+      '[data-zone="talon"]',
+      '[data-zone="trick"]',
+      '[data-zone="opponent"]',
+    ])
+      await expectApart(page, part, bar);
+    if (testInfo && !done.skip && !smallCallsShot.has(testInfo.testId)) {
+      smallCallsShot.add(testInfo.testId);
+      await snap(page, testInfo, `santase-small-calls-${page.viewportSize()?.width}x${page.viewportSize()?.height}`);
+    }
+  }
+  if (prompt && done.declareValid && !done.skip) {
+    // „Не сега“ (deal 1 is through): the popup goes away for this lead, no
+    // pill; „Затвори“/„Имам 66“ stay reachable as small buttons under the
+    // table — and the rest of this lead is played from there
+    await skipDecision(page);
+    done.skip++;
+    const bar = page.locator('[data-zone="actions"]');
+    await expect(bar).toBeVisible();
+    await expect(bar.locator('[data-action="declare"]')).toBeVisible();
+    await expect(bar.locator('[data-action="marriage"]')).toHaveCount(0);
+    has = new Set(await actions(page));
+    if (testInfo) await snap(page, testInfo, `santase-skipped-${page.viewportSize()?.width}x${page.viewportSize()?.height}`);
+  }
   const { points, trump, match } = await score(page);
   const covered = done.exchange && done.marriage && done.quiet;
   const pair = pairCard(hand);
 
   if (has.has("exchange") && !done.exchange) {
-    // the face-up trump goes to my hand, my 9 of trumps under the stock
+    // the face-up trump goes to my hand, my 9 of trumps under the stock —
+    // the swap brings the popup up by itself, with both cards named
     const [onTable] = await cardsIn(page, "talon");
     expect(hand).toContain(`9${trump}`);
-    await act(page, action(page, "exchange"));
+    const exchange = inDecision(page, '[data-action="exchange"]');
+    await expect(exchange).toContainText(/Смени коза \(9. ↔ .+\)/);
+    await act(page, exchange);
     await expect(page.locator(`[data-zone="talon"] [data-card="9${trump}"]`)).toBeVisible();
     expect((await cardsIn(page, "hand")).map((c) => c.card)).toContain(onTable!.card);
     return "exchange";
   }
-  if (has.has("quiet") && pair && !done.marriage) {
-    // announce is the default: clicking the K/Q of a pair calls 20/40
-    await playCard(page, "hand", pair);
+  if (has.has("marriage") && pair && !done.marriage) {
+    // the pair is called from the popup: „Обяви 40 ♣ — играй дамата“
+    const call = inDecision(page, `[data-action="marriage"][data-card="${pair}"]`);
+    await expect(call).toHaveText(/^Обяви (20|40) . — играй (попа|дамата)$/);
+    await act(page, call);
     await expectBanner(page, /^(20|40)!$/);
+    await expect(page.locator(`[data-zone="hand"] [data-card="${pair}"]`)).toHaveCount(0);
     return "marriage";
   }
   if (has.has("quiet") && pair && !done.quiet) {
-    const quiet = action(page, "quiet");
+    // „Без анонс“ in the popup, then the K/Q from the hand goes quietly
+    const quiet = inDecision(page, '[data-action="quiet"]');
     await quiet.click();
     await expect(quiet).toHaveAttribute("aria-pressed", "true");
     await expect(quiet).toContainText("✓");
@@ -105,7 +175,9 @@ async function takeTurn(page: Page, done: Record<Step, number>): Promise<Step> {
     return "quiet";
   }
   if (has.has("declare") && points >= 66) {
-    await act(page, action(page, "declare"));
+    // real 66 (my tricks + called pairs) → the popup says so by itself
+    await expectDecisionOnScreen(page, /^Имаш 66!$/);
+    await act(page, inDecision(page, '[data-action="declare"]'));
     await expectBanner(page, /излиза с \d+!/);
     await expect.poll(() => matchScore(page)).not.toBe(`${match[0]}:${match[1]}`);
     expect((await score(page)).match[0]).toBeGreaterThan(match[0]);
@@ -169,12 +241,19 @@ test("сантасе: всяко действие с истински клико
   ).toEqual(SEEDED_FIRST_HAND);
   // following suit is NOT required while the stock is open: every card is live
   expect((await cardsIn(page, "hand")).every((c) => c.playable)).toBe(true);
-  // my calls stick to the bottom of a 768px screen without covering my hand
-  await expect(page.locator('[data-zone="actions"]')).toBeInViewport();
-  await expectApart(page, '[data-zone="hand"]', '[data-zone="actions"]');
-  await snap(page, testInfo, "santase-1366x768");
+  // the pair Q♣+K♣ (40) on my lead: the popup comes up by itself, top third,
+  // clear of my hand and the talon; the small calls row is not doubled under it
+  await expectDecisionOnScreen(page, /^Твоето водене — обява\?$/);
+  await expectDecisionClearOf(page, tableParts(page));
+  await expect(inDecision(page, '[data-action="marriage"]')).toHaveCount(2);
+  await expect(inDecision(page, '[data-action="close"]')).toBeVisible();
+  await expect(page.locator('[data-zone="actions"]')).toHaveCount(0);
+  await snap(page, testInfo, "santase-lead-1366x768");
+  // „Виж масата“ → pill; the hand is still live; the pill brings it back
+  await expectMinimizeAndReopen(page);
 
-  const done: Record<Step, number> = {
+  const done: Done = {
+    skip: 0,
     exchange: 0,
     marriage: 0,
     quiet: 0,
@@ -187,12 +266,15 @@ test("сантасе: всяко действие с истински клико
   };
   for (let turn = 0; turn < 40; turn++) {
     if (!(await waitMyTurn(page))) break; // match over
-    const step = await takeTurn(page, done);
+    const step = await takeTurn(page, done, testInfo);
     done[step]++;
     if (step === "close") await snap(page, testInfo, "santase-closed-1366x768");
+
+    if (step === "exchange") await snap(page, testInfo, "santase-exchanged-1366x768");
   }
 
   expect(done, JSON.stringify(done)).toMatchObject({
+    skip: 1,
     exchange: 1,
     marriage: 1,
     quiet: 1,
@@ -226,7 +308,14 @@ test("сантасе на телефон 390×844: талон, взятка, к�
   test.setTimeout(120_000);
   const t = await openTable(browser, baseURL!, "SANTASE", { viewport: PHONE });
   const { page } = t;
-  const done: Record<Step, number> = {
+  // the popup on a phone: whole on screen, hand and talon still visible
+  expect(await waitMyTurn(page)).toBe(true);
+  await expectDecisionOnScreen(page, /^Твоето водене — обява\?$/);
+  await expectDecisionClearOf(page, tableParts(page));
+  await snap(page, testInfo, "santase-lead-390x844");
+  await expectMinimizeAndReopen(page);
+  const done: Done = {
+    skip: 0,
     exchange: 0,
     marriage: 0,
     quiet: 0,
@@ -241,7 +330,7 @@ test("сантасе на телефон 390×844: талон, взятка, к�
   // the trick is on the felt next to the full talon when it is my turn.
   for (let turn = 0; turn < 16 && !done.declareValid; turn++) {
     expect(await waitMyTurn(page)).toBe(true);
-    const step = await takeTurn(page, done);
+    const step = await takeTurn(page, done, testInfo);
     done[step]++;
     // the deal-end banners carry my (long) name: they must wrap, not run off
     if (step === "declareValid") await expectBannersOnScreen(page);

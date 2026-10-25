@@ -78,7 +78,8 @@ export async function openTable(
   }
 
   await page.goto(`play/${game.toLowerCase()}`);
-  const rules = page.getByRole("dialog");
+  // the rules — not a decision popup (DecisionPrompt is a non-modal dialog too)
+  const rules = page.locator('[role="dialog"]:not([data-decision])');
   await expect(rules).toBeVisible();
   const gotIt = rules.getByRole("button", { name: /Разбрах/ });
   await expect(gotIt).toBeInViewport();
@@ -203,7 +204,8 @@ export async function expectGameOverThenPlayAgain(page: Page): Promise<void> {
  *  first and the second click takes me to the lobby. */
 export async function reopenRulesThenLeave(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Правила" }).click();
-  const rules = page.getByRole("dialog");
+  // the rules — not a decision popup (DecisionPrompt is a non-modal dialog too)
+  const rules = page.locator('[role="dialog"]:not([data-decision])');
   await expect(rules).toBeVisible();
   await rules.getByRole("button", { name: /Разбрах/ }).click();
   await expect(rules).toBeHidden();

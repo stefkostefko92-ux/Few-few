@@ -13,6 +13,19 @@ import {
   waitFor,
   watchSocket,
 } from "./helpers-draw";
+import { decision, expectDecisionClearOf, expectDecisionOnScreen, expectMinimizeAndReopen } from "./prompt-checks";
+
+/** Whom to ask is decided by the opponents' seats (cards, books) and my hand.
+ *  On a 768px laptop the felt is full, so the low popup in the top third may
+ *  sit over the TOP opponent's name plate — its name and books are on that
+ *  opponent's ask button; his cards stay in view. */
+const GOFISH_TABLE = {
+  myHand: ".aso-myhand",
+  topCards: '.aso-seat[data-pos="top"] .aso-card',
+  left: '.aso-seat[data-pos="left"]',
+  right: '.aso-seat[data-pos="right"]',
+  ocean: ".aso-table__center",
+};
 
 // A click that cannot happen must fail fast with a clear cause, not idle
 // until the test timeout (default action timeout is unlimited).
@@ -34,6 +47,7 @@ function luminance(css: string): number {
  *  - двоен клик на ранг праща ЕДНО питане (регресия: второто ASK губеше хода);
  *  - всеки от тримата съперници е питан; мачът — до края, карта „Край“,
  *    „Нова игра“ започва нов мач.
+ * Питането е прозорец, който излиза сам на моя ред (не е панел под масата).
  */
 test("риба: питане на всеки съперник за ранг, до края и нова игра", async ({ browser, baseURL }, info) => {
   test.setTimeout(6 * 60_000);
@@ -59,6 +73,8 @@ test("риба: питане на всеки съперник за ранг, д�
 
   const legibleAndDistinct = async () => {
     await snap(page, info, "gofish-1366x768");
+    // „Виж масата“ → pill → the same ask comes back
+    await expectMinimizeAndReopen(page);
     // Кого: различими имена, по един бутон на съперник с карти.
     const names = await targets.allTextContents();
     expect(new Set(names).size, `еднакви имена на съперниците: ${names.join(", ")}`).toBe(names.length);
@@ -103,8 +119,12 @@ test("риба: питане на всеки съперник за ранг, д�
     const v = await waitFor(page, undefined, 60_000);
     if (v === "over") break;
     await expect(panel).toBeVisible();
-    // Панелът за питане е под масата — на 1366×768 трябва да дойде в кадър.
+    // Питането излиза само като прозорец — цял в кадър, без да покрива
+    // съперниците (кого питам) и ръката ми (за какво).
     await expect(panel).toBeInViewport();
+    await expect(decision(page)).toHaveAttribute("data-testid", "gofish-decision");
+    await expectDecisionOnScreen(page, /^Кого питаш и за какво\?$/);
+    await expectDecisionClearOf(page, GOFISH_TABLE);
     if (!checkedUi) {
       await legibleAndDistinct();
       checkedUi = true;
@@ -154,6 +174,9 @@ test.describe("мобилен изглед 390×844", () => {
     // Едно питане с клик на телефона.
     if ((await waitFor(page, undefined, 60_000)) === "mine") {
       const panel = page.getByTestId("gofish-ask");
+      await expectDecisionOnScreen(page, /^Кого питаш и за какво\?$/);
+      await expectDecisionClearOf(page, { myHand: ".aso-myhand" });
+      await snap(page, info, "gofish-ask-390x844");
       await panel.locator("[data-gofish-target]").last().click();
       await clickAndAdvance(page, () => panel.locator("[data-gofish-rank]").first().click());
     }

@@ -5,6 +5,7 @@ import { useSettings } from "../../../lib/settings";
 import { useNarrowTable } from "../table/useNarrowTable";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
 import { FourPlayerTrick } from "../trick/FourPlayerTrick";
 import { PlayingCard } from "../cards/PlayingCard";
 import { TrumpIndicator } from "../cards/TrumpIndicator";
@@ -105,19 +106,17 @@ export function BridgeView({ title }: { title: string }) {
   const canPlayDummy = isDeclarer && dummyTurn;
   const dummyName = dummy !== null ? players.find((p) => p.seat === dummy)?.displayName ?? `#${dummy}` : "";
 
-  // The bidding box and the dummy's hand live UNDER the table — below the
-  // fold on a 768px-tall laptop (and on every phone). Bring each into view
-  // the moment it needs a click; "nearest" keeps my hand on screen above it
-  // and does nothing when the box is already visible.
+  // The dummy's hand lives UNDER the table — below the fold on a 768px-tall
+  // laptop (and on every phone). Bring it into view the moment it needs a
+  // click; "nearest" keeps my hand on screen above it. The bidding box is a
+  // popup (DecisionPrompt) that comes up by itself on my call.
   const reduced = useSettings((s) => s.reducedMotion);
   const narrow = useNarrowTable();
   const bidding = !!state && state.phase === "AUCTION" && myTurn;
-  const auctionRef = useRef<HTMLDivElement>(null);
   const dummyRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!bidding) return;
-    auctionRef.current?.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
-  }, [bidding, reduced]);
+  // Only the levels that still hold a legal bid: below the standing bid the
+  // whole row is dead — dropping it keeps the popup short on a laptop.
+  const levels = [1, 2, 3, 4, 5, 6, 7].filter((level) => STRAINS.some((strain) => bidFor(level, strain)));
   useEffect(() => {
     if (!canPlayDummy) return;
     dummyRef.current?.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
@@ -189,17 +188,15 @@ export function BridgeView({ title }: { title: string }) {
             )}
           />
 
-          {/* Auction bidding box. */}
-          {bidding ? (
-            <div
-              ref={auctionRef}
-              data-zone="auction"
-              className="mt-4 scroll-mb-16 rounded-panel border border-brass-400/20 bg-felt-800/70 p-3"
-            >
-              <div className="mb-2 text-center text-sm text-ink-300">{t("bridge.yourBid")}</div>
-              {/* The standing bid I am answering (who, what, doubled). */}
-              {state.bidLevel > 0 && state.bidStrain ? (
-                <div className="mb-2 text-center text-xs text-ink-muted" data-zone="standing-bid">
+          {/* Auction bidding box — a popup the moment it is my call; the
+              standing bid I am answering (who, what, doubled) is its hint. */}
+          <DecisionPrompt
+            open={bidding && phase === "playing"}
+            promptKey={`bid-${state.dealNo}-${state.bidLevel}${state.bidStrain ?? ""}-${state.doubled}-${state.lastBidder ?? "-"}`}
+            title={t("bridge.yourBid")}
+            hint={
+              state.bidLevel > 0 && state.bidStrain ? (
+                <span data-zone="standing-bid">
                   {t("bridge.contract")}:{" "}
                   <span className="font-semibold text-brass-100">
                     {state.bidLevel}
@@ -213,10 +210,26 @@ export function BridgeView({ title }: { title: string }) {
                     : state.doubled === 1
                       ? ` · ${t("bridge.double")}`
                       : ""}
-                </div>
-              ) : null}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4, maxWidth: 340, margin: "0 auto" }}>
-                {[1, 2, 3, 4, 5, 6, 7].map((level) =>
+                </span>
+              ) : (
+                t("bridge.noBidYet")
+              )
+            }
+            testId="bridge-auction"
+          >
+            <div data-zone="auction" className="w-full">
+              {/* Two levels per row on a laptop: seven rows of chips made the popup
+                  taller than the free felt above my hand. */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: `repeat(${narrow ? 5 : 10}, 1fr)`,
+                  gap: 4,
+                  maxWidth: narrow ? 340 : 440,
+                  margin: "0 auto",
+                }}
+              >
+                {levels.map((level) =>
                   STRAINS.map((strain) => {
                     const bid = bidFor(level, strain);
                     return (
@@ -258,7 +271,7 @@ export function BridgeView({ title }: { title: string }) {
                 ) : null}
               </div>
             </div>
-          ) : null}
+          </DecisionPrompt>
 
           {/* Dummy hand — face-up for everyone once the opening lead is out; the
               declarer clicks a card to play it on the dummy's turn. `key` on the

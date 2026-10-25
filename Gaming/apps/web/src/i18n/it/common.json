@@ -413,7 +413,14 @@
     "declareWith": "66 con {{n}} {{suit}}",
     "declareHint": "Dichiara solo se hai davvero 66 — una dichiarazione falsa dà 3 punti all'avversario.",
     "declaredOk": "{{name}} chiude con {{n}}!",
-    "declaredFalse": "{{name}} ha dichiarato 66 con solo {{n}} — 3 punti all'avversario"
+    "declaredFalse": "{{name}} ha dichiarato 66 con solo {{n}} — 3 punti all'avversario",
+    "leadTitle": "Sei di mano — annunci?",
+    "have66Title": "Hai 66!",
+    "leadHint": "Punti: {{pts}} · Briscola {{suit}} · Mazzo: {{count}}",
+    "announceKing": "Annuncia {{n}} {{suit}} — gioca il re",
+    "announceQueen": "Annuncia {{n}} {{suit}} — gioca la donna",
+    "exchangeWith": "Cambia briscola ({{nine}} ↔ {{card}})",
+    "quietHint": "Attivo: il re o la donna di una coppia cliccati in mano si giocano senza annuncio."
   },
   "belote": {
     "yourTeam": "La tua squadra",
@@ -644,7 +651,9 @@
     "mainPot": "Piatto principale",
     "sidePot": "Piatto laterale {{n}}",
     "winsSidePot": "{{name}} vince un piatto laterale ({{pot}})",
-    "splitsPot": "{{name}} divide il piatto laterale ({{pot}})"
+    "splitsPot": "{{name}} divide il piatto laterale ({{pot}})",
+    "yourBet": "La tua puntata",
+    "showdownTitle": "Carte scoperte"
   },
   "bridge": {
     "dummyHand": "Mano del morto",
@@ -666,7 +675,8 @@
     "honors": "onori {{n}} ({{side}})",
     "honorsBanner": "Onori: {{name}} +{{n}}",
     "us": "noi",
-    "them": "loro"
+    "them": "loro",
+    "noBidYet": "Nessuno ha ancora dichiarato."
   },
   "war": {
     "flip": "Gira",
@@ -720,12 +730,18 @@
     "roundReport": "Fine della mano {{n}}",
     "penalty": "Penalità",
     "total": "Totale",
-    "continue": "Continua"
+    "continue": "Continua",
+    "openTitle": "Apri adesso?",
+    "openHint": "L'apertura preparata vale {{pts}} punti (ne servono {{min}}):",
+    "swapTitle": "Scambio del jolly",
+    "swapHint": "{{card}} può sostituire un jolly sul tavolo — prendi il jolly (da usare in questo turno)."
   },
   "gofish": {
     "ocean": "Oceano",
     "askFrom": "Chiedi",
-    "books": "Gruppi"
+    "books": "Gruppi",
+    "askTitle": "A chi chiedi, e cosa?",
+    "askFor": "Per quale valore"
   },
   "backgammon": {
     "roll": "Lancia",
@@ -954,7 +970,10 @@
     "deckLeft": "Mazzo",
     "pass": "Passo",
     "pickHandCard": "Scegli la tua carta da scambiare",
-    "pickCenterCard": "Scegli una carta centrale"
+    "pickCenterCard": "Scegli una carta centrale",
+    "haveKentTitle": "Hai Kent!",
+    "partnerSignaledTitle": "Il compagno ti ha fatto il segnale!",
+    "kupeHint": "{{name}} ti ha fatto il segnale segreto — chiama «Kupe!» per vincere il round."
   },
   "chess": {
     "check": "Scacco!",
@@ -1292,6 +1311,7 @@
   },
   "decision": {
     "minimize": "Mostra il tavolo",
-    "sec": "s"
+    "sec": "s",
+    "notNow": "Non ora"
   }
 }

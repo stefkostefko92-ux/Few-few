@@ -10,8 +10,9 @@ import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { useCardFlight, type CardFlight } from "../anim/useCardFlight";
 import { useGameEvents } from "../useGameEvents";
 import { useSendOnce } from "../useSendOnce";
-import { useRevealOnTurn } from "../useRevealOnTurn";
 import { Scene, ScorePill } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
+import { useClearOfDecision } from "../scene/useClearOfDecision";
 import "./war.css";
 
 interface WarState {
@@ -66,9 +67,12 @@ export function WarView({ title }: { title: string }) {
   const inWar = legal.some((a) => a.type === "FIGHT");
   const canFlip = legal.some((a) => a.type === "FLIP");
   const oppName = players.find((p) => p.seat === opp)?.displayName ?? t("game.opponent");
-  // The war decision sits under the table — below the fold on a laptop.
-  const controlsRef = useRef<HTMLDivElement>(null);
-  useRevealOnTurn(controlsRef, inWar);
+  const warKey = `war-${state?.flips ?? 0}-${state?.bounty ?? 0}`;
+  // The war decision is a popup in the top third, over the table — the tied
+  // cards in the middle must stay visible. On a laptop the page is often
+  // scrolled down to „Обърни“ under the table, which puts the battle right
+  // under the popup: then bring the battle below it.
+  useClearOfDecision(() => tableRef.current?.querySelector<HTMLElement>(".aso-table__center"), inWar, warKey);
 
   // TAKE: fly the contested cards to the winner; RAID: celebrate the steal.
   useGameEvents(m.matchId, (events) => {
@@ -180,31 +184,44 @@ export function WarView({ title }: { title: string }) {
             </FeltTable>
           </div>
 
-          <div ref={controlsRef} className="mt-4 flex flex-col items-center gap-2">
+          <div className="mt-4 flex flex-col items-center gap-2">
             <div className="flex items-center justify-center gap-3">
               <ScorePill label={t("game.you")} value={`${state.hands[seat]?.length ?? 0}`} highlight />
               <ScorePill label={oppName} value={`${state.hands[opp]?.length ?? 0}`} />
             </div>
-            {inWar ? (
-              <>
-                <p className="text-center text-sm text-ink-muted">{t("war.fightHint")}</p>
-                <div className="flex items-center justify-center gap-3">
-                  <Button className="war-cta" data-war-action="FIGHT" onClick={() => send({ type: "FIGHT" })}>
-                    ⚔ {t("war.fight")}
-                  </Button>
-                  <Button variant="felt" data-war-action="SKIRMISH" onClick={() => send({ type: "SKIRMISH" })}>
-                    {t("war.skirmish")}
-                  </Button>
-                </div>
-              </>
-            ) : (
-              // Always rendered (disabled off-turn): it used to appear and vanish
-              // every flip, shifting the page under the pointer each turn.
-              <Button data-war-action="FLIP" disabled={!canFlip} onClick={() => send({ type: "FLIP" })}>
-                {t("war.flip")}
-              </Button>
-            )}
+            {/* Always rendered (disabled off-turn and during a war, whose
+                decision is the popup): it used to appear and vanish every
+                flip, shifting the page under the pointer each turn. */}
+            <Button data-war-action="FLIP" disabled={!canFlip} onClick={() => send({ type: "FLIP" })}>
+              {t("war.flip")}
+            </Button>
           </div>
+
+          {/* Равенство → война: колко дълбоко влизам. Прозорецът е горе, за да
+              се виждат равните карти в средата. */}
+          <DecisionPrompt
+            open={inWar && phase === "playing"}
+            promptKey={warKey}
+            title={t("war.warPhase")}
+            hint={
+              <>
+                {t("war.fightHint")}{" "}
+                <span className="tnum">
+                  {t("war.bounty", { n: bounty })} · {t("game.you")}: {state.hands[seat]?.length ?? 0} · {oppName}:{" "}
+                  {state.hands[opp]?.length ?? 0}
+                </span>
+              </>
+            }
+            placement="top"
+            testId="war-decision"
+          >
+            <Button className="war-cta" data-war-action="FIGHT" onClick={() => send({ type: "FIGHT" })}>
+              ⚔ {t("war.fight")}
+            </Button>
+            <Button variant="felt" data-war-action="SKIRMISH" onClick={() => send({ type: "SKIRMISH" })}>
+              {t("war.skirmish")}
+            </Button>
+          </DecisionPrompt>
         </>
       ) : null}
     </Scene>

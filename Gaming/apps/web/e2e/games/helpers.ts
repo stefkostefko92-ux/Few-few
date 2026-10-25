@@ -57,7 +57,8 @@ export async function openGame(browser: Browser, baseURL: string, game: string):
 
   await page.goto(`play/${game.toLowerCase()}`);
 
-  const rules = page.getByRole("dialog");
+  // the rules — not a decision popup (DecisionPrompt is a non-modal dialog too)
+  const rules = page.locator('[role="dialog"]:not([data-decision])');
   await expect(rules).toBeVisible();
   const gotIt = rules.getByRole("button", { name: /Разбрах/ });
   await expect(gotIt).toBeInViewport();

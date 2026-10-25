@@ -13,6 +13,12 @@ import {
   reopenRulesThenLeave,
   snap,
 } from "./helpers-cards";
+import {
+  decision,
+  expectDecisionClearOf,
+  expectDecisionOnScreen,
+  expectMinimizeAndReopen,
+} from "./prompt-checks";
 
 /**
  * Бридж срещу трима ботове — наддаване и разиграване само с кликове.
@@ -25,6 +31,8 @@ import {
  *  играя аз — от панела „Ръка на дъми“. Изиграват се всичките 13 взятки, после
  *  започва второ раздаване. (Робърът е дълъг — до два гейма — затова тестът
  *  спира след първото цяло раздаване.)
+ * Наддаването е прозорец, който излиза сам на моя ред (не е под масата):
+ * стоящата обява е в пояснението му, ръката ми остава видима.
  * Всеки ход се решава само по това, което показва масата.
  */
 
@@ -56,9 +64,14 @@ async function takeTurn(
   bidDeals: Set<string>,
 ): Promise<Step> {
   if ((await score(page, "data-phase")) === "AUCTION") {
-    const box = page.locator('[data-zone="auction"]');
-    // under the table, below the fold on a laptop — it must scroll into view
-    await expect(box).toBeInViewport();
+    // the bidding box comes up by itself as a popup — whole on screen, my
+    // hand (what I bid by) uncovered; only live levels are listed
+    const box = page.locator('[data-decision] [data-zone="auction"]');
+    await expect(box).toBeVisible();
+    await expectDecisionOnScreen(page, /^Твоят анонс$/);
+    await expectDecisionClearOf(page, { hand: '[data-zone="hand"]' });
+    expect(await box.locator('[data-action="bid"]').count()).toBeLessThanOrEqual(35);
+    await expect(box.locator('[data-action="bid"]:enabled').first()).toBeVisible();
     const deal = await score(page, "data-deal");
     if ((await action(page, "double").count()) > 0 && !done.double) {
       // I see what I am doubling: the opponents' standing bid and who made it
@@ -120,7 +133,13 @@ test("бридж: наддаване (пас, обява, контра, реко
     (await cardsIn(page, "hand")).map((c) => c.card),
     "стекът не раздава със seed-а на теста — пусни го с infra/e2e-games.sh (E2E_SEEDS)",
   ).toEqual(SEEDED_FIRST_HAND);
+  // opponent opened 1NT: the popup says so, the dead level-1 row is gone
+  await expectDecisionOnScreen(page, /^Твоят анонс$/);
+  await expect(decision(page).locator('[data-zone="standing-bid"]')).toContainText(/Договор: 1NT/);
+  await expect(page.locator('[data-action="bid"][data-bid^="1"]')).toHaveCount(0);
   await snap(page, testInfo, "bridge-auction-1366x768");
+  // „Виж масата“ → pill; the pill brings the same call back
+  await expectMinimizeAndReopen(page);
 
   const done: Record<Step, number> = { double: 0, redouble: 0, bid: 0, pass: 0, play: 0, dummy: 0 };
   const bidDeals = new Set<string>();
@@ -162,11 +181,27 @@ test("бридж на телефон 390×844: наддаването и дъм�
   // the auction, then the dummy's first card (after the opening lead)
   while (done.dummy === 0) {
     expect(await waitMyTurn(page)).toBe(true);
+    if (done.pass === 0 && done.double === 0) {
+      await expectDecisionOnScreen(page, /^Твоят анонс$/);
+      await expectDecisionClearOf(page, { hand: '[data-zone="hand"]' });
+      await snap(page, testInfo, "bridge-auction-390x844");
+    }
     if (done.pass === 1) {
       await expect(
         page.locator('[data-zone="dummy"] [data-playable="true"]').first(),
       ).toBeVisible();
       await expect(page.locator('[data-zone="trick"] [data-card]')).toHaveCount(1);
+      // the dummy panel scrolls into view smoothly: measure the table once the
+      // page stands still (boxes read mid-scroll come from different frames)
+      let lastY = -1;
+      await expect
+        .poll(async () => {
+          const y = await page.evaluate(() => window.scrollY);
+          const still = y === lastY;
+          lastY = y;
+          return still;
+        }, { intervals: [250] })
+        .toBe(true);
       await expectTableLayout(page, {
         top: '.aso-seat[data-pos="top"]',
         left: '.aso-seat[data-pos="left"]',
