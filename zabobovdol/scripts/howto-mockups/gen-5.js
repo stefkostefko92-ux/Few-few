@@ -226,18 +226,4 @@ S["euro-rate"] = phone(`
   ${tip("Курсът е един и същ навсякъде —<br>сумата ви остава същата","left:50%;top:70px;transform:translateX(-50%)")}
 `);
 
-S["euro-dual-period"] = phone(`
-  <div class="grow" style="background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px">
-    <div style="font-size:54px;margin-bottom:8px">👛</div>
-    <div style="font-size:18px;font-weight:700;color:#111;text-align:center;margin-bottom:6px">Първите седмици — и левове, и евро</div>
-    <div style="font-size:14px;color:#666;text-align:center;margin-bottom:20px">До 31 януари 2026 плащате с двете. Рестото ви връщат в евро.</div>
-    <div style="display:flex;gap:16px">
-      <div style="text-align:center"><div style="width:90px;height:50px;border-radius:6px;background:#5cb85c;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800">лв ✓</div><div style="font-size:12px;color:#444;margin-top:6px">до 31.01.2026</div></div>
-      <div style="text-align:center"><div style="width:90px;height:50px;border-radius:6px;background:#0a3d6b;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800">€ ✓</div><div style="font-size:12px;color:#444;margin-top:6px">винаги</div></div>
-    </div>
-    <div style="background:#fffbea;border:1px solid #fde68a;border-radius:10px;padding:12px;font-size:13px;color:#854d0e;margin-top:20px;text-align:center">Левовете в банка/поща се обменят безплатно до 30 юни 2026, а в БНБ — безсрочно.</div>
-  </div>
-  ${tip("Не бързайте да обменяте — има време.<br>Никой не идва вкъщи да „обменя“","left:50%;bottom:60px;transform:translateX(-50%)")}
-`);
-
 render(S).catch((e) => { console.error(e); process.exit(1); });

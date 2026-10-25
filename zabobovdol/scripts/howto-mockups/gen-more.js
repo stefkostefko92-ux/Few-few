@@ -224,7 +224,7 @@ S["noi-pension"] = phone(`
   <div class="grow" style="background:#fff;padding:18px">
     <div style="background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;border-radius:16px;padding:20px;margin-bottom:16px">
       <div style="font-size:13px;opacity:.85">Месечна пенсия</div>
-      <div style="font-size:30px;font-weight:800;margin:4px 0">638,20 лв</div>
+      <div style="font-size:30px;font-weight:800;margin:4px 0">326,31 €</div>
       <div style="font-size:12px;opacity:.85">изплаща се около 7-мо число</div>
     </div>
     ${[["📅","История на плащанията",""],["📄","Удостоверение за доход",""],["⚙️","Промяна на банкова сметка",""]].map(([e,t,d])=>setRow(e,t,"›")).join("")}
