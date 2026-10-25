@@ -1,6 +1,6 @@
 // Hands the live-update YouTube extras to youtube_main.js (MAIN world) as inert
 // JSON on a DOM event — data, never code: extra ad field names, extra ad renderer
-// names, request flags and the flags kill switch.
+// names, request flags and the kill switches (flags, request shapes, SSAP jump).
 //
 // youtube_main itself is no longer injected from here: the service worker registers
 // it as a MAIN-world document_start content script (background.js, YT_MAIN_SCRIPT_ID).
@@ -22,8 +22,11 @@
       adRenderers: Array.isArray(yt.adRenderers) ? yt.adRenderers.slice(0, 100) : [],
       requestFlags: Array.isArray(yt.requestFlags) ? yt.requestFlags.slice(0, 10) : [],
       disableRequestFlags: yt.disableRequestFlags === true || noFlags,
+      noShapes: yt.noShapes === true,
+      noSsapJump: yt.noSsapJump === true,
     };
-    if (!cfg.adFields.length && !cfg.adRenderers.length && !cfg.requestFlags.length && !cfg.disableRequestFlags) return;
+    if (!cfg.adFields.length && !cfg.adRenderers.length && !cfg.requestFlags.length && !cfg.disableRequestFlags &&
+      !cfg.noShapes && !cfg.noSsapJump) return;
     try { document.dispatchEvent(new CustomEvent("tbab-yt-cfg", { detail: JSON.stringify(cfg) })); } catch {}
   });
 })();
