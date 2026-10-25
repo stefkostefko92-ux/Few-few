@@ -1,7 +1,7 @@
 <% const items = t.list(prefix + '.' + id + '.items', params); %>
 <section class="legal-section" aria-labelledby="s-<%= id %>">
   <h2 id="s-<%= id %>"><%= t(prefix + '.' + id + '.title', params) %></h2>
-  <% if (items.length > 0) { %><ul class="ticks">
+  <% if (items.length > 0) { %><ul class="rule-list">
     <% items.forEach((item) => { %><li><%= item %></li>
     <% }) %>
   </ul><% } %>

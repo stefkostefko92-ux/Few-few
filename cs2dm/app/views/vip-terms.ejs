@@ -1,15 +1,13 @@
 <%- include('partials/head') %>
 <%# Чернова на правен текст: обща информация, не правен съвет — преглед от юрист преди пускане. %>
-<div class="wrap page prose-page">
-  <%- include('partials/crumbs', { here: t('nav.vipTerms') }) %>
-  <header class="page-head">
-    <h1><%= t('vipTerms.h1') %></h1>
-    <p class="page-lead"><%= t('vipTerms.lead') %></p>
-    <p class="updated"><%= t('common.updated', { date: fmt.date(new Date(updated + 'T12:00:00Z')) }) %> <span class="muted"><%= t('vipTerms.version', { version }) %></span></p>
-  </header>
-  <% sections.forEach((id) => { %>
-  <%- include('partials/section', { prefix: 'vipTerms.sections', id, params }) %>
-  <% }) %>
-  <p class="links-row"><a href="<%= nav.vip %>"><%= t('nav.vip') %></a> <a href="<%= nav.imprint %>"><%= t('nav.imprint') %></a> <a href="<%= nav.contact %>"><%= t('nav.contact') %></a></p>
+<%- include('partials/page-hero', { title: t('vipTerms.h1'), lead: t('vipTerms.lead'), here: t('nav.vipTerms') }) %>
+<div class="wrap page-content">
+  <article class="legal-content">
+    <p class="legal-date"><%= t('common.updated', { date: fmt.date(new Date(updated + 'T12:00:00Z')) }) %> · <%= t('vipTerms.version', { version }) %></p>
+    <% sections.forEach((id) => { %>
+    <%- include('partials/section', { prefix: 'vipTerms.sections', id, params }) %>
+    <% }) %>
+    <p class="links-row"><a href="<%= nav.vip %>"><%= t('nav.vip') %></a> <a href="<%= nav.imprint %>"><%= t('nav.imprint') %></a> <a href="<%= nav.contact %>"><%= t('nav.contact') %></a></p>
+  </article>
 </div>
 <%- include('partials/foot') %>

@@ -15,59 +15,59 @@
     { id: 'xp', value: fmt.int(line.xp) },
     { id: 'playtime', value: duration(line.playtimeSec) },
   ];
+  const cards = [];
+  if (season.id !== 0) cards.push({ title: t('player.cards.season', { season: seasonLabel(season) }), line: seasonal });
+  cards.push({ title: t('player.cards.allTime'), line: allTime });
 %>
-<div class="wrap page">
-  <%- include('partials/crumbs', { trail: [{ name: t('nav.leaderboard'), href: nav.leaderboard }], here: player.name }) %>
-
-  <header class="profile">
-    <% if (player.avatarUrl) { %><img class="avatar" src="<%= player.avatarUrl %>" alt="<%= t('player.avatarAlt', { name: player.name }) %>" width="96" height="96" loading="lazy" decoding="async" referrerpolicy="no-referrer"><% } %>
-    <div class="profile-main">
+<section class="page-hero">
+  <div class="wrap page-hero-inner">
+    <%- include('partials/crumbs', { trail: [{ name: t('nav.leaderboard'), href: nav.leaderboard }], here: player.name }) %>
+    <div class="profile-hero">
+      <% if (player.avatarUrl) { %><img class="avatar" src="<%= player.avatarUrl %>" alt="<%= t('player.avatarAlt', { name: player.name }) %>" width="96" height="96" loading="lazy" decoding="async" referrerpolicy="no-referrer"><% } %>
       <h1 class="profile-name"><%= player.name %></h1>
-      <dl class="profile-facts">
-        <div><dt><%= t('player.steamId') %></dt><dd><code><%= player.steamId %></code></dd></div>
-        <div><dt><%= t('player.firstSeen') %></dt><dd><time datetime="<%= fmt.iso(player.firstSeenAt) %>"><%= fmt.date(player.firstSeenAt) %></time></dd></div>
-        <div><dt><%= t('player.lastSeen') %></dt><dd><time datetime="<%= fmt.iso(player.lastSeenAt) %>"><%= fmt.dateTime(player.lastSeenAt) %></time></dd></div>
-      </dl>
-      <p><a class="ext" href="https://steamcommunity.com/profiles/<%= player.steamId %>" target="_blank" rel="noopener nofollow"><%= t('player.steamProfile') %></a></p>
     </div>
-    <div class="level-card">
+    <dl class="profile-facts">
+      <div><dt><%= t('player.steamId') %></dt><dd><code><%= player.steamId %></code></dd></div>
+      <div><dt><%= t('player.firstSeen') %></dt><dd><time datetime="<%= fmt.iso(player.firstSeenAt) %>"><%= fmt.date(player.firstSeenAt) %></time></dd></div>
+      <div><dt><%= t('player.lastSeen') %></dt><dd><time datetime="<%= fmt.iso(player.lastSeenAt) %>"><%= fmt.dateTime(player.lastSeenAt) %></time></dd></div>
+      <div><dt>Steam</dt><dd><a class="ext" href="https://steamcommunity.com/profiles/<%= player.steamId %>" target="_blank" rel="noopener nofollow"><%= t('player.steamProfile') %></a></dd></div>
+    </dl>
+  </div>
+</section>
+<div class="wrap page-content">
+  <div class="content-grid">
+    <div class="stat-cards">
+      <% cards.forEach((card) => { %>
+      <section class="card" aria-label="<%= card.title %>">
+        <h2><%= card.title %></h2>
+        <% if (card.line) { %>
+        <dl class="stats">
+          <% statRows(card.line).forEach((stat) => { %><div><dt><%= t('player.stats.' + stat.id) %></dt><dd><%= stat.value %></dd></div>
+          <% }) %>
+        </dl>
+        <% } else { %>
+        <p><%= t('player.noStats') %></p>
+        <% } %>
+      </section>
+      <% }) %>
+    </div>
+    <aside class="level-card">
       <p class="level-big"><%= t('player.level', { level: progress.level }) %></p>
       <label class="level-label" for="level-progress"><%= t('player.levelLabel', { next: progress.nextLevel }) %></label>
       <progress id="level-progress" max="100" value="<%= progress.percent %>"><%= progress.percent %>%</progress>
       <p class="level-text"><%= t('player.progress', { current: fmt.int(progress.current), span: fmt.int(progress.span), next: progress.nextLevel }) %></p>
       <p class="level-text"><%= t('player.xpTotal', { xp: fmt.int(allTime ? allTime.xp : 0) }) %></p>
-    </div>
-  </header>
-
-  <%
-    const cards = [];
-    if (season.id !== 0) cards.push({ title: t('player.cards.season', { season: seasonLabel(season) }), line: seasonal });
-    cards.push({ title: t('player.cards.allTime'), line: allTime });
-  %>
-  <div class="stat-cards">
-    <% cards.forEach((card) => { %>
-    <section class="stat-card" aria-label="<%= card.title %>">
-      <h2><%= card.title %></h2>
-      <% if (card.line) { %>
-      <dl class="stats">
-        <% statRows(card.line).forEach((stat) => { %><div><dt><%= t('player.stats.' + stat.id) %></dt><dd><%= stat.value %></dd></div>
-        <% }) %>
-      </dl>
-      <% } else { %>
-      <p class="empty"><%= t('player.noStats') %></p>
-      <% } %>
-    </section>
-    <% }) %>
+    </aside>
   </div>
 
-  <section class="mastery" aria-labelledby="mastery-title">
+  <section class="card spaced" aria-labelledby="mastery-title">
     <h2 id="mastery-title"><%= t('player.mastery.title') %></h2>
-    <p class="section-lead"><%= t('player.mastery.lead') %></p>
+    <p><%= t('player.mastery.lead') %></p>
     <% if (mastery.length === 0) { %>
-    <p class="empty"><%= t('player.mastery.empty') %></p>
+    <p><%= t('player.mastery.empty') %></p>
     <% } else { %>
     <div class="table-wrap">
-      <table class="mastery-table">
+      <table class="data-table mastery-table">
         <thead>
           <tr>
             <th scope="col"><%= t('player.mastery.weapon') %></th>
@@ -78,7 +78,7 @@
           </tr>
         </thead>
         <tbody>
-          <% mastery.forEach((line, index) => { %><tr>
+          <% mastery.forEach((line) => { %><tr>
             <th scope="row"><%= line.label %></th>
             <td class="c-num"><%= fmt.int(line.kills) %></td>
             <td class="c-num opt"><%= fmt.percent(line.headshots, line.kills) %></td>
@@ -92,9 +92,9 @@
     <% } %>
   </section>
 
-  <section class="heat" aria-labelledby="heat-title">
+  <section class="card spaced heat" aria-labelledby="heat-title">
     <h2 id="heat-title"><%= t('player.heatmap.title') %></h2>
-    <p class="section-lead"><%= t('player.heatmap.lead', { days: heatmapInfo.days, units: heatmapInfo.cellUnits }) %></p>
+    <p><%= t('player.heatmap.lead', { days: heatmapInfo.days, units: heatmapInfo.cellUnits }) %></p>
     <div class="heat-grid">
       <figure class="heat-fig">
         <figcaption><span class="heat-key heat-key-kills" aria-hidden="true"></span><%= t('player.heatmap.killsTitle') %></figcaption>

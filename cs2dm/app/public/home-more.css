@@ -1,0 +1,267 @@
+/* Началото, част 3: събития, мачове, банове, командите, VIP лентата, въпросите и последният призив. */
+.band {
+  padding-block: 72px;
+}
+.band-paper-dark {
+  background: var(--paper-dark);
+}
+.band-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 24px;
+  margin-bottom: 18px;
+}
+.band-head h2 {
+  margin: 0;
+  font-size: clamp(40px, 4.6vw, 64px);
+}
+
+/* Събитията по график (§12). */
+.events {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0 32px;
+  margin: 0;
+  padding: 0;
+  border-top: 3px solid var(--ink);
+  list-style: none;
+}
+.ev {
+  padding: 18px 2px;
+  border-bottom: 1px solid var(--rule);
+}
+.ev.is-live {
+  padding-left: 14px;
+  border-left: 5px solid var(--red);
+}
+.ev-when {
+  margin: 0 0 8px;
+  font: 700 12px/1.3 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.ev-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--red);
+}
+.ev-live .pulse {
+  background: var(--red);
+}
+.ev-soon {
+  color: var(--muted);
+}
+.ev-title {
+  margin: 0 0 8px;
+  font-size: 30px;
+}
+.ev-time {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font: 600 13px/1.5 var(--mono);
+}
+.ev-time span {
+  padding-inline: 6px;
+}
+.ev-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ev-tags li {
+  padding: 3px 8px;
+  background: var(--ink);
+  color: var(--paper);
+  font: 700 11px/1.3 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.ev-tags .ev-xp {
+  background: var(--red);
+}
+.ev-note {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Банове: кратък линиран списък. */
+.ban-strip {
+  margin: 0;
+  padding: 0;
+  border-top: 3px solid var(--ink);
+  list-style: none;
+}
+.ban-strip li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 2px;
+  border-bottom: 1px solid var(--rule);
+}
+.ban-name {
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ban-strip .cat {
+  justify-self: start;
+}
+.ban-when,
+.ban-until {
+  color: var(--muted);
+  font: 600 13px/1.3 var(--mono);
+  white-space: nowrap;
+}
+
+/* Командите: код · описание · копиране. */
+.commands {
+  padding: 92px 0;
+  background: var(--paper-dark);
+}
+.command-list > li {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 15px 4px;
+}
+.command-list code {
+  color: var(--red);
+  font-size: 22px;
+  font-weight: 800;
+}
+.command-list span {
+  color: #3f3a32;
+  font-size: 16px;
+}
+.command-list .copy {
+  border-bottom-color: var(--red);
+}
+.command-list .copy:hover {
+  color: var(--red);
+}
+
+.vip-stripe {
+  padding: 42px 0;
+  background: var(--red);
+  color: var(--paper);
+}
+.vip-stripe-inner {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr auto;
+  align-items: center;
+  gap: 36px;
+}
+.vip-stripe .eyebrow {
+  margin-bottom: 8px;
+  color: var(--paper);
+}
+.vip-stripe h2 {
+  margin: 0;
+  font-size: clamp(36px, 3.9vw, 56px);
+}
+.vip-stripe-inner > p {
+  max-width: 440px;
+  margin: 0;
+  color: #fff1dd;
+  font-size: 16px;
+  line-height: 1.65;
+}
+.vip-stripe .under-link {
+  justify-self: start;
+  color: var(--paper);
+  white-space: nowrap;
+}
+
+.faq-band {
+  padding: 102px 0;
+  background: var(--ink);
+  color: var(--paper);
+}
+.faq-band .eyebrow {
+  color: var(--red-hot);
+}
+.faq-band .split {
+  grid-template-columns: 0.7fr 1.3fr;
+}
+.faq-list {
+  border-top: 3px solid var(--paper);
+}
+.faq-list details {
+  border-bottom: 1px solid var(--rule-light);
+}
+.faq-list summary {
+  position: relative;
+  padding: 18px 40px 16px 0;
+  cursor: pointer;
+  list-style: none;
+}
+.faq-list summary::-webkit-details-marker {
+  display: none;
+}
+.faq-list summary h3 {
+  margin: 0;
+  color: var(--paper);
+  font: 700 18px/1.4 var(--body);
+  text-transform: none;
+}
+.faq-list summary::after {
+  position: absolute;
+  top: 14px;
+  right: 2px;
+  color: var(--red-hot);
+  font: 800 30px/1 var(--display);
+  content: '+';
+}
+.faq-list details[open] summary::after {
+  content: '−';
+}
+.faq-list details p {
+  max-width: 680px;
+  margin: 0;
+  padding: 0 34px 20px 0;
+  color: #cfc4ae;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.last-call {
+  padding: 74px 0 80px;
+  background: var(--red);
+  color: var(--paper);
+}
+.last-call .eyebrow {
+  color: var(--paper);
+  letter-spacing: 0.08em;
+  text-transform: none;
+}
+.last-call-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 24px 40px;
+}
+.last-call h2 {
+  margin: 0;
+  font-size: clamp(68px, 9vw, 132px);
+}
+.last-call p:not(.eyebrow) {
+  max-width: 520px;
+  margin: 22px 0 0;
+  color: #fff1dd;
+  font-size: 16px;
+}
+.last-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}

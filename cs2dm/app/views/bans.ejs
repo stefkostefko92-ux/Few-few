@@ -1,47 +1,44 @@
 <%- include('partials/head') %>
-<div class="wrap page">
-  <%- include('partials/crumbs', { here: t('nav.bans') }) %>
-  <header class="page-head">
-    <h1><%= t('bans.h1') %></h1>
-    <p class="page-lead"><%= t('bans.lead') %></p>
-  </header>
-
-  <p class="board-meta"><span><%= t.plural('bans.total', result.total) %></span></p>
-
-  <% if (result.rows.length === 0) { %>
-  <p class="empty"><%= t('bans.empty') %></p>
-  <% } else { %>
-  <div class="table-wrap">
-    <table class="bans-table">
-      <caption class="sr-only"><%= t('bans.caption') %></caption>
-      <thead>
-        <tr>
-          <th scope="col"><%= t('bans.col.player') %></th>
-          <th scope="col" class="opt"><%= t('bans.col.steamId') %></th>
-          <th scope="col"><%= t('bans.col.category') %></th>
-          <th scope="col"><%= t('bans.col.created') %></th>
-          <th scope="col"><%= t('bans.col.expires') %></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% result.rows.forEach((ban) => { %><tr>
-          <th scope="row"><%= ban.targetName %></th>
-          <td class="opt"><code><%= ban.steamId %></code></td>
-          <td><span class="cat cat-<%= ban.category.toLowerCase() %>"><%= t('bans.categories.' + ban.category) %></span></td>
-          <td><time datetime="<%= fmt.iso(ban.createdAt) %>"><%= fmt.date(ban.createdAt) %></time></td>
-          <td><% if (ban.expiresAt) { %><time datetime="<%= fmt.iso(ban.expiresAt) %>"><%= fmt.dateTime(ban.expiresAt) %></time><% } else { %><span class="is-permanent"><%= t('common.permanent') %></span><% } %></td>
-        </tr>
-        <% }) %>
-      </tbody>
-    </table>
+<%- include('partials/page-hero', { title: t('bans.h1'), lead: t('bans.lead'), here: t('nav.bans') }) %>
+<div class="wrap page-content">
+  <div class="content-grid">
+    <section class="panel" aria-labelledby="bans-total">
+      <div class="panel-head"><p class="panel-title" id="bans-total"><%= t.plural('bans.total', result.total) %></p></div>
+      <% if (result.rows.length === 0) { %>
+      <div class="empty-state"><p><%= t('bans.empty') %></p></div>
+      <% } else { %>
+      <div class="table-wrap">
+        <table class="data-table bans-table">
+          <caption class="sr-only"><%= t('bans.caption') %></caption>
+          <thead>
+            <tr>
+              <th scope="col"><%= t('bans.col.player') %></th>
+              <th scope="col" class="opt"><%= t('bans.col.steamId') %></th>
+              <th scope="col"><%= t('bans.col.category') %></th>
+              <th scope="col"><%= t('bans.col.created') %></th>
+              <th scope="col"><%= t('bans.col.expires') %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% result.rows.forEach((ban) => { %><tr>
+              <th scope="row"><%= ban.targetName %></th>
+              <td class="opt"><code><%= ban.steamId %></code></td>
+              <td><span class="cat cat-<%= ban.category.toLowerCase() %>"><%= t('bans.categories.' + ban.category) %></span></td>
+              <td><time datetime="<%= fmt.iso(ban.createdAt) %>"><%= fmt.date(ban.createdAt) %></time></td>
+              <td><% if (ban.expiresAt) { %><time datetime="<%= fmt.iso(ban.expiresAt) %>"><%= fmt.dateTime(ban.expiresAt) %></time><% } else { %><span class="is-permanent"><%= t('common.permanent') %></span><% } %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <%- include('partials/pager', { page: result.page, pages: result.pages, href: pageHref }) %>
+      <% } %>
+    </section>
+    <aside class="card" aria-labelledby="appeal-title">
+      <h2 id="appeal-title"><%= t('bans.appeal.title') %></h2>
+      <p><%= t('bans.appeal.text') %></p>
+      <a class="button button-small" href="<%= nav.contact %>"><%= t('bans.appeal.link') %> <span aria-hidden="true">↗</span></a>
+    </aside>
   </div>
-  <%- include('partials/pager', { page: result.page, pages: result.pages, href: pageHref }) %>
-  <% } %>
-
-  <aside class="note" aria-labelledby="appeal-title">
-    <h2 id="appeal-title"><%= t('bans.appeal.title') %></h2>
-    <p><%= t('bans.appeal.text') %></p>
-    <p><a href="<%= nav.contact %>"><%= t('bans.appeal.link') %></a></p>
-  </aside>
 </div>
 <%- include('partials/foot') %>

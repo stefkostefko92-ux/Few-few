@@ -1,6 +1,32 @@
 // Единственият скрипт на сайта — прогресивно подобрение, всичко останало работи без него:
-//  1) бутонът „Копирай“ до командата за конзолата (без JS остава скрит, командата се маркира на ръка);
-//  2) превключвателят „Спри анимациите“ (WCAG 2.2.2): слага `calm` на <html> и CSS спира целия декор.
+//  1) менюто на телефон: бутонът „Меню“ сгъва/разгъва връзките (без JS те остават видими като ред);
+//  2) бутоните „Копирай“ до командите (без JS остават скрити, командата се маркира на ръка).
+document.documentElement.classList.add('js');
+
+(() => {
+  const toggle = document.querySelector('[data-menu-toggle]');
+  const menu = document.querySelector('[data-menu]');
+  if (!toggle || !menu) return;
+  toggle.hidden = false;
+  const close = () => {
+    menu.classList.remove('is-open');
+    toggle.setAttribute('aria-expanded', 'false');
+  };
+  toggle.addEventListener('click', () => {
+    const open = menu.classList.toggle('is-open');
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+  menu.addEventListener('click', (event) => {
+    if (event.target instanceof Element && event.target.closest('a')) close();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+      close();
+      toggle.focus();
+    }
+  });
+})();
+
 (() => {
   const status = document.querySelector('[data-copy-status]');
   for (const button of document.querySelectorAll('button[data-copy-target]')) {
@@ -23,16 +49,4 @@
       }, 2000);
     });
   }
-})();
-
-(() => {
-  const button = document.querySelector('[data-motion-toggle]');
-  // При `prefers-reduced-motion` CSS вече е спрял декора — превключвател не е нужен.
-  if (!button || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  button.hidden = false;
-  button.addEventListener('click', () => {
-    const calm = document.documentElement.classList.toggle('calm');
-    button.setAttribute('aria-pressed', String(calm));
-    button.textContent = (calm ? button.dataset.play : button.dataset.pause) || button.textContent;
-  });
 })();

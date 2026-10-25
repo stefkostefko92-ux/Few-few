@@ -1,0 +1,178 @@
+/* Началото на по-тесни екрани: 1040 · 940 · 760 · 420 (точките на дизайна). */
+@media (max-width: 1040px) {
+  .cover {
+    min-height: 0;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  }
+  .cover-copy {
+    padding: 58px 32px 64px 40px;
+  }
+  .cover h1 {
+    font-size: clamp(70px, 9.4vw, 110px);
+  }
+  .split,
+  .faq-band .split {
+    gap: 6%;
+  }
+  .vip-stripe-inner {
+    gap: 24px;
+  }
+  .mid-story,
+  .mid-art {
+    min-height: 540px;
+  }
+  .mid-copy {
+    padding: 48px 32px;
+  }
+}
+@media (max-width: 940px) {
+  .cover {
+    grid-template-columns: 1fr;
+  }
+  .cover-copy {
+    padding: 56px calc((100% - var(--wrap)) / 2) 40px;
+  }
+  .cover-art {
+    aspect-ratio: 4 / 3;
+    border-top: 3px solid var(--red);
+    border-left: 0;
+  }
+}
+@media (max-width: 760px) {
+  .cover-copy {
+    padding-block: 52px 36px;
+  }
+  .cover h1 {
+    font-size: clamp(64px, 17vw, 100px);
+  }
+  .cover-lead {
+    font-size: 16px;
+  }
+  .status-grid {
+    grid-template-columns: repeat(2, minmax(0, auto));
+    gap: 8px 26px;
+  }
+  .brief,
+  .rotation,
+  .points {
+    padding-block: 70px;
+  }
+  .split,
+  .faq-band .split {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .split h2 {
+    font-size: clamp(56px, 15vw, 84px);
+  }
+  .spec-list > div {
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: 12px;
+  }
+  .mid-story {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .mid-art {
+    min-height: 0;
+    aspect-ratio: 4 / 5;
+    border-right: 0;
+    border-bottom: 3px solid var(--ink);
+  }
+  .mid-copy {
+    padding: 46px calc((100% - var(--wrap)) / 2) 52px;
+  }
+  .mid-copy h2 {
+    font-size: clamp(60px, 16vw, 90px);
+  }
+  .mode-list > li {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 15px 5px;
+  }
+  .rank-feature {
+    padding: 66px 0;
+  }
+  .rank-copy {
+    padding-left: 15px;
+  }
+  .top-list li {
+    grid-template-columns: 40px auto minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+  .top-kd {
+    display: none;
+  }
+  .top-rank,
+  .top-list li:nth-child(-n + 3) .top-rank {
+    font-size: 30px;
+  }
+  .xp-list > li {
+    grid-template-columns: 90px 1fr;
+    gap: 12px;
+  }
+  .band {
+    padding-block: 56px;
+  }
+  .ban-strip li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 12px;
+  }
+  .ban-when {
+    display: none;
+  }
+  .commands {
+    padding: 66px 0;
+  }
+  .command-list > li {
+    grid-template-columns: 76px minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+  .command-list code {
+    font-size: 18px;
+  }
+  .command-list span {
+    font-size: 15px;
+  }
+  .vip-stripe-inner {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .faq-band {
+    padding: 70px 0;
+  }
+  .last-call {
+    padding: 62px 0;
+  }
+  .last-call-inner {
+    grid-template-columns: 1fr;
+  }
+  .last-call h2 {
+    font-size: clamp(58px, 16vw, 96px);
+  }
+  .mc {
+    grid-template-columns: 1fr;
+  }
+  .mc-when {
+    text-align: left;
+  }
+}
+@media (max-width: 420px) {
+  .cover-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .connect-line {
+    grid-template-columns: 1fr;
+  }
+  .connect-line .copy {
+    justify-self: start;
+  }
+  .spec-list > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .ban-strip li {
+    grid-template-columns: 1fr;
+  }
+}

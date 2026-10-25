@@ -11,12 +11,11 @@
       "madeBy": "Created and Designed by Carbon Stealth VCC",
       "valve": "Counter-Strike 2 e Steam sono marchi di Valve Corporation. Il server non è affiliato a Valve né da essa approvato.",
       "explore": "Il sito",
-      "legal": "Note legali"
+      "legal": "Note legali",
+      "about": "Un server pubblico di Counter-Strike 2 Deathmatch su de_dust2. Tutti contro tutti, giorno e notte."
     },
-    "motion": {
-      "pause": "Ferma le animazioni",
-      "play": "Riattiva le animazioni"
-    }
+    "menu": "Menu",
+    "joinShort": "Entra"
   },
   "nav": {
     "home": "Inizio",
@@ -171,7 +170,6 @@
       "until": "fino al {date}"
     },
     "faq": {
-      "title": "Come iniziare",
       "join": {
         "q": "Come entro nel server?",
         "a": "Prema «Entra nel server» oppure apra la console di CS2 (tasto ~) e scriva connect {address}. Se la console non si apre, la attivi nelle impostazioni del gioco (Game → Enable Developer Console)."
@@ -210,77 +208,7 @@
       "discord": "Entra su Discord",
       "consoleHint": "Oppure nella console di CS2 (~):"
     },
-    "facts": {
-      "label": "In breve",
-      "respawn": "Rientro in 1,5 s",
-      "protect": "5 s di protezione",
-      "ammo": "Riserva infinita"
-    },
-    "why": {
-      "title": "Perché giocare qui",
-      "map": {
-        "t": "Solo de_dust2, a ogni ora",
-        "d": "Una mappa che conosce in ogni angolo. Niente votazioni né cambi di mappa: entra e spara."
-      },
-      "respawn": {
-        "t": "Rientri in 1,5 secondi",
-        "d": "Tutti contro tutti, senza squadre né round. Se muore, è di nuovo in gioco quasi subito."
-      },
-      "ammo": {
-        "t": "Riserva di munizioni infinita",
-        "d": "La riserva si rifornisce a ogni reload. Spari senza contare."
-      },
-      "protect": {
-        "t": "5 secondi di protezione",
-        "d": "Dopo ogni rientro è protetto per cinque secondi: nessuno La può uccidere mentre si orienta."
-      },
-      "awp": {
-        "t": "AWP consentito",
-        "d": "Il fucile di precisione c’è, ma al massimo 3 contemporaneamente sul server: resta spazio anche per le altre armi."
-      },
-      "modes": {
-        "t": "Modalità che si alternano",
-        "d": "Le modalità cambiano da sole, così la partita non annoia mai:"
-      },
-      "xp": {
-        "t": "XP e livelli",
-        "d": "10 XP per ogni uccisione, più bonus per:",
-        "chip": {
-          "headshot": "testa",
-          "knife": "coltello",
-          "noscope": "noscope",
-          "wallbang": "attraverso i muri",
-          "smoke": "attraverso il fumo",
-          "revenge": "vendetta"
-        }
-      },
-      "mastery": {
-        "t": "Maestria con le armi",
-        "d": "Continui a uccidere con la Sua arma preferita per ottenere un badge, in base alle uccisioni:"
-      },
-      "bounty": {
-        "t": "Taglie sulle serie",
-        "d": "Una serie di {min} uccisioni senza morire mette una taglia sulla Sua testa: fino a {cap} XP per chi La abbatte."
-      },
-      "fair": {
-        "t": "Niente pay-to-win",
-        "d": "Il VIP è solo estetico: tag, colore del nome e slot riservato. Un vantaggio nel gioco non si compra."
-      },
-      "bans": {
-        "t": "Moderazione trasparente",
-        "d": "Lista dei ban pubblica e amministratori attivi. Veda le regole e chi è stato sanzionato, senza supposizioni."
-      },
-      "commands": {
-        "t": "Comandi in chat",
-        "d": "Per armi, livello, segnalazioni di cheater e lingua:",
-        "gun": "arma",
-        "rank": "livello",
-        "report": "cheater",
-        "lang": "lingua"
-      }
-    },
     "cta": {
-      "title": "Pronto per Dust2?",
       "text": "Apre Steam e La collega direttamente. Serve solo Counter-Strike 2: niente da installare, nessuna registrazione."
     },
     "events": {
@@ -304,6 +232,110 @@
     "matches": {
       "title": "Ultime partite",
       "all": "Tutte le partite"
+    },
+    "cover": {
+      "kicker": ["Server bulgaro", "Counter-Strike 2"],
+      "title": ["Dust2.", "Niente round."],
+      "lead": "Nessuna pausa tra le partite. Nessuna squadra. Sceglie un'arma e torna a combattere quasi subito.",
+      "format": "Veda come funziona il gioco",
+      "connect": "Connessione diretta",
+      "artAlt": "Pianta di Dust2 stampata a mano, con corridoi stretti e un accento rosso",
+      "artCaption": "de_dust2 / pianta di campo"
+    },
+    "brief": {
+      "eyebrow": "Il formato",
+      "title": ["Non aspetta", "il prossimo round."],
+      "text": "Dust2 resta. La modalità delle armi cambia. Tutti gli altri sono contro di Lei.",
+      "spec": {
+        "map": {
+          "dt": "Mappa",
+          "dd": "de_dust2",
+          "note": "fissa"
+        },
+        "mode": {
+          "dt": "Modalità",
+          "dd": "Deathmatch",
+          "note": "tutti contro tutti"
+        },
+        "respawn": {
+          "dt": "Respawn",
+          "dd": "1,5 s",
+          "note": "di nuovo in gioco"
+        },
+        "protect": {
+          "dt": "Protezione allo spawn",
+          "dd": "5 s",
+          "note": "il tempo per orientarsi"
+        },
+        "awp": {
+          "dt": "AWP",
+          "dd": "Fino a 3",
+          "note": "contemporaneamente sul server"
+        },
+        "ammo": {
+          "dt": "Munizioni",
+          "dd": "Infinite",
+          "note": "la riserva si riempie a ogni ricarica"
+        }
+      }
+    },
+    "mid": {
+      "eyebrow": "Terreno noto",
+      "title": ["Le porte", "si aprono", "di nuovo."],
+      "text": "Long, Mid, i tunnel. Sa da dove arriva il contatto. Il server non cambia mai la mappa sotto i Suoi piedi.",
+      "link": "Legga le regole",
+      "alt": "Disegno in stile scratchboard delle pesanti porte di Mid su Dust2",
+      "caption": "Centro della mappa / Mid doors"
+    },
+    "rotation": {
+      "eyebrow": "Armi",
+      "title": ["Cambi", "l'arma.", "Non la mappa."],
+      "text": "Le modalità cambiano automaticamente ogni pochi minuti. Quella attuale è segnata quando il server è in diretta.",
+      "now": "Ora",
+      "modes": {
+        "AllWeapons": "Tutto l'arsenale",
+        "OnlyHeadshot": "Solo colpi alla testa",
+        "OnlyDeagle": "Solo Desert Eagle",
+        "OnlyPistols": "Solo pistole",
+        "OnlySMG": "Solo mitragliette"
+      }
+    },
+    "rank": {
+      "eyebrow": "Classifica",
+      "title": ["Il Suo nome", "si conquista."],
+      "text": "L'XP arriva dal gioco: uccisioni, colpi precisi e serie. Il livello cresce con l'XP totale, la maestria con le uccisioni fatte con ogni arma.",
+      "masteryTitle": "Maestria con le armi",
+      "masteryText": "Un distintivo per ogni arma, in base alle uccisioni fatte con essa:"
+    },
+    "points": {
+      "eyebrow": "Punti di gioco",
+      "title": ["Nessuna formula", "nascosta."],
+      "text": "Le ricompense di base sono chiare e i bonus si sommano."
+    },
+    "commands": {
+      "eyebrow": "Comandi in chat",
+      "title": ["Niente menu.", "Lo scriva."],
+      "label": "Comandi",
+      "gun": "Scelta dell'arma secondo la modalità.",
+      "rank": "Il Suo livello e l'XP.",
+      "report": "Segnalazione agli amministratori di un cheater o di una violazione.",
+      "lang": "La lingua dei messaggi in gioco."
+    },
+    "vipStripe": {
+      "eyebrow": "Sostegno al server",
+      "title": "VIP. Nessun vantaggio.",
+      "text": "Un tag, il colore del nome e uno slot riservato. Stesse armi, danni e regole per tutti.",
+      "link": "Cosa include il VIP"
+    },
+    "faqHead": {
+      "eyebrow": "Prima di entrare",
+      "title": ["Due minuti", "di preparazione."]
+    },
+    "last": {
+      "title": ["Ci vediamo", "su Dust2."]
+    },
+    "live": {
+      "eyebrow": "Sul server ora"
     }
   },
   "leaderboard": {

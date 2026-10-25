@@ -1,15 +1,11 @@
 <%- include('partials/head') %>
-<div class="wrap page">
-  <%- include('partials/crumbs', { here: t('nav.matches') }) %>
-  <header class="page-head">
-    <h1><%= t('matches.h1') %></h1>
-    <p class="page-lead"><%= t('matches.lead') %></p>
-  </header>
+<%- include('partials/page-hero', { title: t('matches.h1'), lead: t('matches.lead'), here: t('nav.matches') }) %>
+<div class="wrap page-content">
   <% if (rows.length === 0) { %>
-  <p class="empty"><%= t('matches.empty') %></p>
+  <div class="empty-state"><p><%= t('matches.empty') %></p></div>
   <% } else { %>
   <%- include('partials/match-list', { rows }) %>
   <% } %>
-  <p class="board-meta"><a href="<%= nav.leaderboard %>"><%= t('matches.toLeaderboard') %></a></p>
+  <p class="links-row spaced-top"><a href="<%= nav.leaderboard %>"><%= t('matches.toLeaderboard') %></a></p>
 </div>
 <%- include('partials/foot') %>

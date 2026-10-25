@@ -1,4 +1,4 @@
-<nav class="crumbs" aria-label="<%= t('site.crumbsLabel') %>">
+<nav class="breadcrumbs" aria-label="<%= t('site.crumbsLabel') %>">
   <ol>
     <li><a href="<%= nav.home %>"><%= t('nav.home') %></a></li>
     <% (typeof trail === 'undefined' ? [] : trail).forEach((step) => { %><li><a href="<%= step.href %>"><%= step.name %></a></li>

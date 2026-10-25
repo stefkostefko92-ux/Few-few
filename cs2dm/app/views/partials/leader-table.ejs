@@ -1,9 +1,9 @@
 <div class="table-wrap">
-  <table class="board">
+  <table class="data-table board">
     <caption class="sr-only"><%= caption %></caption>
     <thead>
       <tr>
-        <th scope="col" class="c-rank"><%= t('table.rank') %></th>
+        <th scope="col" class="c-rank-h"><%= t('table.rank') %></th>
         <th scope="col" class="c-name"><%= t('table.player') %></th>
         <th scope="col" class="c-num"><%= t('table.level') %></th>
         <% columns.forEach((col) => { %><th scope="col" class="c-num<%= col.optional ? ' opt' : '' %>"<% if (col.sorted) { %> aria-sort="descending"<% } %>><% if (col.href) { %><a href="<%= col.href %>" title="<%= t('leaderboard.sortBy', { sort: t('leaderboard.sort.' + col.sortKey) }) %>"><%= col.label %></a><% } else { %><%= col.label %><% } %></th>

@@ -102,7 +102,9 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   src/seo.ts · content.ts            canonical/hreflang/OG/JSON-LD · дати на промяна, срокове, разделите
   locales/{bg,en,it}.json            всички текстове (bg = източник; паритетът е тест)
   views/                             EJS: partials/head.ejs (целият SEO head) · страниците · error.ejs
-  public/                            site.css · app.js (само „Копирай“) · шрифтове Sofia Sans (OFL) · og.png
+  public/                            визията „Dust2 field edition“ (по дизайна на собственика): base · atoms · chrome (горе/долу) ·
+                                     home-* (началото) · pages · tables · profile (.css, всеки ≤ 300 реда) · img/ (WebP: печатната
+                                     карта, Mid вратите, фонът на вътрешните страници) · app.js (меню + „Копирай“) · Sofia Sans (OFL) · og.png
   scripts/og.py                      прави og.png и apple-touch-icon.png (Pillow) при смяна на визията
   Dockerfile · docker-compose.yml    db + redis + web + worker; портове САМО на 127.0.0.1 (4350/5442/6392)
   deploy/nginx/cs2.carbonstealth.eu.conf   TLS + HSTS + прокси към 127.0.0.1:4350

@@ -1,49 +1,46 @@
 <%- include('partials/head') %>
-<div class="wrap page prose-page">
-  <%- include('partials/crumbs', { here: t('nav.contact') }) %>
-  <header class="page-head">
-    <h1><%= t('contact.h1') %></h1>
-    <p class="page-lead"><%= t('contact.lead') %></p>
-  </header>
-
-  <div class="two-col">
-    <section class="note" aria-labelledby="email-title">
-      <h2 id="email-title"><%= t('contact.email.title') %></h2>
-      <% if (contactEmail) { %>
-      <p class="contact-email"><a href="mailto:<%= contactEmail %>"><%= contactEmail %></a></p>
-      <% } else { %>
-      <p class="unset"><%= t('contact.email.missing', { env: 'CONTACT_EMAIL' }) %></p>
-      <% } %>
-      <% if (discordUrl) { %>
-      <h2><%= t('contact.discord.title') %></h2>
-      <p><a href="<%= discordUrl %>" target="_blank" rel="noopener"><%= t('contact.discord.link') %></a></p>
-      <% } %>
-    </section>
-    <section aria-labelledby="topics-title">
-      <h2 id="topics-title"><%= t('contact.topics.title') %></h2>
-      <ul class="ticks">
-        <% t.list('contact.topics.items').forEach((item) => { %><li><%= item %></li>
-        <% }) %>
-      </ul>
-    </section>
+<%- include('partials/page-hero', { title: t('contact.h1'), lead: t('contact.lead'), here: t('nav.contact') }) %>
+<div class="wrap page-content">
+  <div class="content-grid">
+    <div>
+      <section class="card" aria-labelledby="email-title">
+        <h2 id="email-title"><%= t('contact.email.title') %></h2>
+        <% if (contactEmail) { %>
+        <p class="contact-email"><a href="mailto:<%= contactEmail %>"><%= contactEmail %></a></p>
+        <% } else { %>
+        <p class="unset"><%= t('contact.email.missing', { env: 'CONTACT_EMAIL' }) %></p>
+        <% } %>
+        <% if (discordUrl) { %>
+        <h3><%= t('contact.discord.title') %></h3>
+        <p><a href="<%= discordUrl %>" target="_blank" rel="noopener"><%= t('contact.discord.link') %></a></p>
+        <% } %>
+      </section>
+      <section class="card" aria-labelledby="topics-title">
+        <h2 id="topics-title"><%= t('contact.topics.title') %></h2>
+        <ul class="rule-list">
+          <% t.list('contact.topics.items').forEach((item) => { %><li><%= item %></li>
+          <% }) %>
+        </ul>
+      </section>
+    </div>
+    <aside>
+      <section class="card" aria-labelledby="dsa-title">
+        <h2 id="dsa-title"><%= t('contact.dsa.title') %></h2>
+        <ul class="rule-list">
+          <% t.list('contact.dsa.items').forEach((item) => { %><li><%= item %></li>
+          <% }) %>
+        </ul>
+      </section>
+      <section class="card" aria-labelledby="notice-title">
+        <h2 id="notice-title"><%= t('contact.notice.title') %></h2>
+        <p><%= t('contact.notice.lead') %></p>
+        <ol class="rule-list">
+          <% t.list('contact.notice.items').forEach((item) => { %><li><%= item %></li>
+          <% }) %>
+        </ol>
+        <p><%= t('contact.notice.after') %></p>
+      </section>
+    </aside>
   </div>
-
-  <section aria-labelledby="dsa-title">
-    <h2 id="dsa-title"><%= t('contact.dsa.title') %></h2>
-    <ul class="ticks">
-      <% t.list('contact.dsa.items').forEach((item) => { %><li><%= item %></li>
-      <% }) %>
-    </ul>
-  </section>
-
-  <section aria-labelledby="notice-title">
-    <h2 id="notice-title"><%= t('contact.notice.title') %></h2>
-    <p><%= t('contact.notice.lead') %></p>
-    <ol class="steps">
-      <% t.list('contact.notice.items').forEach((item) => { %><li><%= item %></li>
-      <% }) %>
-    </ol>
-    <p><%= t('contact.notice.after') %></p>
-  </section>
 </div>
 <%- include('partials/foot') %>

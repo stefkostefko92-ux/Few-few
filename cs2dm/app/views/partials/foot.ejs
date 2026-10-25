@@ -1,23 +1,31 @@
 </main>
-<% if (current !== 'home') { %><div class="dock"><a class="btn btn-play" href="<%= server.connectUrl %>"><%= t('home.hero.play') %></a></div>
-<% } %><footer class="foot">
-  <div class="wrap foot-in">
-    <div class="foot-server">
-      <span class="foot-logo" aria-hidden="true"></span>
-      <div>
-        <p class="foot-name"><%= siteName %></p>
-        <p class="foot-join"><span><%= t('site.footer.join') %></span> <code><%= server.command %></code></p>
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-about">
+        <a class="brand" href="<%= nav.home %>" aria-label="<%= t('site.brandLabel') %>"><span class="brand-name">CARBON<span>STEALTH</span></span><span class="brand-sub">CS2 / DUST2 DM</span></a>
+        <p><%= t('site.footer.about') %></p>
+        <p class="footer-join"><span><%= t('site.footer.join') %></span><br><code><%= server.command %></code></p>
       </div>
+      <nav aria-label="<%= t('site.footer.explore') %>">
+        <p class="footer-heading"><%= t('site.footer.explore') %></p>
+        <ul class="footer-links">
+          <% ['leaderboard', 'matches', 'bans', 'vip', 'rules'].forEach((id) => { %><li><a href="<%= nav[id] %>"<% if (current === id) { %> aria-current="page"<% } %>><%= t('nav.' + id) %></a></li>
+          <% }) %>
+        </ul>
+      </nav>
+      <nav aria-label="<%= t('site.footer.legalLabel') %>">
+        <p class="footer-heading"><%= t('site.footer.legal') %></p>
+        <ul class="footer-links">
+          <% ['privacy', 'vipTerms', 'imprint', 'contact'].forEach((id) => { %><li><a href="<%= nav[id] %>"<% if (current === id) { %> aria-current="page"<% } %>><%= t('nav.' + id) %></a></li>
+          <% }) %>
+        </ul>
+      </nav>
     </div>
-    <nav class="foot-nav" aria-label="<%= t('site.footer.legalLabel') %>">
-      <ul>
-        <% ['rules', 'privacy', 'vipTerms', 'imprint', 'contact'].forEach((id) => { %><li><a href="<%= nav[id] %>"<% if (current === id) { %> aria-current="page"<% } %>><%= t('nav.' + id) %></a></li>
-        <% }) %>
-      </ul>
-    </nav>
-    <p class="foot-valve"><%= t('site.footer.valve') %></p>
-    <p class="foot-made"><a href="https://carbonstealth.eu" target="_blank" rel="noopener"><%= t('site.footer.madeBy') %></a></p>
-    <button type="button" class="motion-toggle" data-motion-toggle data-pause="<%= t('site.motion.pause') %>" data-play="<%= t('site.motion.play') %>" aria-pressed="false" hidden><%= t('site.motion.pause') %></button>
+    <div class="footer-bottom">
+      <p>© <%= new Date().getFullYear() %> <%= siteName %> · <%= t('site.footer.valve') %></p>
+      <p><a href="https://carbonstealth.eu" target="_blank" rel="noopener"><%= t('site.footer.madeBy') %></a></p>
+    </div>
   </div>
 </footer>
 </body>
