@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { z } from "zod";
 import { PageHero, EmptyState, FilterChips, SectionHeader } from "@/components/ui";
-import { ChevronDown } from "@/components/icons";
+import { ChevronRight } from "@/components/icons";
 import { SearchBar } from "@/components/SearchBar";
 import { buildMetadata, webPageLd, itemListLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
@@ -195,8 +195,8 @@ export default async function KakDaPage({ searchParams }: { searchParams: SP }) 
                               {guidesLabel(c.count)}
                             </span>
                           </span>
-                          <ChevronDown
-                            className="h-6 w-6 shrink-0 -rotate-90 text-brand-600 sm:hidden"
+                          <ChevronRight
+                            className="h-6 w-6 shrink-0 text-brand-600 sm:hidden"
                             aria-hidden
                           />
                         </Link>

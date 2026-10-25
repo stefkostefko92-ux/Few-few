@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { track } from "@/lib/events";
+import { UI_LABEL } from "@/lib/ui-labels";
 
 type Topic = { key: string; label: string; hint: string };
 
@@ -106,7 +107,7 @@ export function PushSubscribe({ topics }: { topics: Topic[] }) {
         <>
           <p className="font-semibold">Известията са включени на това устройство.</p>
           <button type="button" className="btn-secondary w-full sm:w-auto" onClick={disable} disabled={busy}>
-            Спрете известията
+            {UI_LABEL.pushOff}
           </button>
         </>
       ) : (

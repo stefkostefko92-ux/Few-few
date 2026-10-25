@@ -1,5 +1,6 @@
 import { AlertTriangle } from "@/components/icons";
 import { SITE } from "@/lib/site";
+import { UI_LABEL } from "@/lib/ui-labels";
 
 /**
  * Механизъм „Сигнализирайте за съдържание“ (notice-and-action) по чл. 16 от
@@ -49,7 +50,7 @@ export function ReportContent({
         className="link-quiet inline-flex min-h-tap items-center gap-1.5 font-medium text-slate-700"
       >
         <AlertTriangle className="h-5 w-5 shrink-0" aria-hidden />
-        Сигнализирайте за това съдържание
+        {UI_LABEL.report}
       </a>
     </p>
   );

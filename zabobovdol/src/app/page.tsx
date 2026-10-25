@@ -32,11 +32,11 @@ import { BUS } from "@/lib/bus-schedule";
 import { newsDate } from "@/lib/ingest-news-rss";
 import { formatTime, formatWeekdayDayMonth, isoDateTime } from "@/lib/format-date";
 import { formatPhoneBg, nationalDigits } from "@/lib/phone";
-import { ChevronDown, Inbox, MapPin, Phone, Plus } from "@/components/icons";
+import { ChevronRight, Inbox, MapPin, Phone, Plus } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
-// Иконните квадратчета са в ЕДИН тон (brand). Червено — само „Пази се от
+// Иконните квадратчета са в ЕДИН тон (brand). Червено — само „Пазете се от
 // измами“ (опасност), сиво — некролозите (траур). Пълни имена на класовете,
 // за да ги вижда Tailwind.
 function chipClass(href: string, size: "sm" | "lg"): string {
@@ -393,8 +393,8 @@ export default async function HomePage() {
                   <span className="min-w-0 flex-1 break-words font-semibold leading-snug text-slate-900 underline-offset-4 group-hover:underline">
                     {softHyphens(item.label)}
                   </span>
-                  <ChevronDown
-                    className="hidden h-5 w-5 shrink-0 -rotate-90 text-slate-500 max-sm:[@container_(min-width:18rem)]:block"
+                  <ChevronRight
+                    className="hidden h-5 w-5 shrink-0 text-slate-500 max-sm:[@container_(min-width:18rem)]:block"
                     aria-hidden
                   />
                 </Link>

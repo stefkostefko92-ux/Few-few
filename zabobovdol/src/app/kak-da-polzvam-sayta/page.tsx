@@ -1,12 +1,13 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import type { ReactNode, SVGProps } from "react";
+import type { ReactNode } from "react";
 import {
   BookOpen,
   Hand,
   HeartPulse,
   MessageSquare,
   Phone,
+  Search,
   Type,
   type LucideIcon,
 } from "@/components/icons";
@@ -14,6 +15,7 @@ import { PageHero } from "@/components/ui";
 import { PhoneButton } from "@/components/PhoneButton";
 import { buildMetadata } from "@/lib/seo";
 import { SECTION } from "@/lib/section-names";
+import { UI_LABEL, quoted } from "@/lib/ui-labels";
 
 export const metadata: Metadata = buildMetadata({
   title: "Как да ползвам този сайт",
@@ -30,28 +32,20 @@ export const metadata: Metadata = buildMetadata({
   ],
 });
 
-// Лупа — същата като в полето за търсене (SearchBar), за да я познаят.
-function SearchIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.2" />
-      <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 const STEPS: {
   icon: LucideIcon;
   title: string;
   body: ReactNode;
 }[] = [
   {
-    icon: SearchIcon,
+    // Лупата е същата като на бутона за търсене (SearchBar), за да я познаят.
+    icon: Search,
     title: "Търсете каквото ви трябва",
     body: (
       <>
-        Горе на всяка страница има поле <strong>„Какво търсите?“</strong>. Напишете дума (например
-        „аптека“ или „пенсия“) и натиснете <strong>Търси</strong>. Ако ви е по-лесно да говорите,
+        Горе на страницата има поле <strong>„Какво търсите?“</strong> (на телефон — в{" "}
+        <strong>„Меню“</strong>). Напишете дума (например „аптека“ или „пенсия“) и натиснете{" "}
+        <strong>{quoted(UI_LABEL.search)}</strong>. Ако ви е по-лесно да говорите,
         натиснете <strong>микрофона</strong> в полето и кажете какво търсите.
       </>
     ),
@@ -61,8 +55,9 @@ const STEPS: {
     title: "По-едри букви и по-ясен екран",
     body: (
       <>
-        Най-горе на страницата натиснете <strong>„Аа Настройки за четене“</strong> — ще се появят
-        бутони за <strong>по-едри букви (A A A)</strong>, <strong>Контраст</strong>,{" "}
+        Най-горе на страницата натиснете <strong>{quoted(UI_LABEL.readingBar)}</strong> (на телефон —{" "}
+        <strong>{quoted(UI_LABEL.readingBarShort)}</strong>) — ще се появят
+        бутони за <strong>по-едри букви (А А А)</strong>, <strong>Контраст</strong>,{" "}
         <strong>Тъмен режим</strong> и <strong>По-лесно докосване</strong> (по-големи бутони).
         Изберете каквото е удобно за очите ви — сайтът ще го запомни.
       </>
@@ -73,7 +68,7 @@ const STEPS: {
     title: "Питайте помощника",
     body: (
       <>
-        Долу вдясно има бутон <strong>„Попитайте помощника“</strong> (на телефон — синьо кръгче).
+        Долу вдясно има бутон <strong>{quoted(UI_LABEL.chat)}</strong> (на телефон — синьо кръгче).
         Натиснете го и попитайте с прости думи — например „Как да платя ток?“ или „Кой е дежурният
         лекар?“. Той отговаря и ви насочва към правилната страница.
       </>

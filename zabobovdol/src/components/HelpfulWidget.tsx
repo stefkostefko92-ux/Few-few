@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { track } from "@/lib/events";
+import { UI_LABEL } from "@/lib/ui-labels";
 
 // „Помогна ли ви?“ — единственият директен сигнал дали обяснението е свършило
 // работа. Брои се само Да/Не на ден за страницата; нищо за човека.
@@ -42,7 +43,7 @@ export function HelpfulWidget({
       role="group"
       aria-label="Помогна ли ви тази страница?"
     >
-      <span className="text-base font-semibold text-slate-800">Помогна ли ви?</span>
+      <span className="text-base font-semibold text-slate-800">{UI_LABEL.helpful}</span>
       <button
         type="button"
         className="btn-secondary"

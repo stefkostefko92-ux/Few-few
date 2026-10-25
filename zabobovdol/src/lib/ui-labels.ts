@@ -4,10 +4,19 @@
 // За „Сигнализирайте…“ (механизмът по чл. 16 от DSA) ясното описание е и
 // правно изискване.
 //
-// Ако смените надпис в компонента, сменете го и тук (и обратно). При
-// сливането компонентите (ShareButton, ReportContent, InstallBanner,
-// PushSubscribe, HelpfulWidget, PhoneReportButton, AccessibilityBar) могат
-// да вземат надписа направо оттук.
+// Компонентите (ShareButton, ReportContent, InstallBanner, PushSubscribe,
+// HelpfulWidget, PhoneReportButton, AccessibilityBar, ChatFab, SearchBar)
+// вземат надписа оттук; „Как да ползвам сайта“ и „Достъпност“ го цитират —
+// затова цитатът в правния текст и бутонът не могат да се разминат.
+
+// Бутонът на лентата за четене е от три части: украсата „Аа“ (скрита под
+// 360px), „Настройки“ (винаги) и „ за четене“ (под 640px — само за четеца).
+export const READING_BAR = {
+  mark: "Аа",
+  short: "Настройки",
+  rest: " за четене",
+} as const;
+
 export const UI_LABEL = {
   share: "Споделете",
   report: "Сигнализирайте за това съдържание",
@@ -16,8 +25,11 @@ export const UI_LABEL = {
   pushOff: "Спрете известията",
   helpful: "Помогна ли ви?",
   phoneWrong: "Този номер е сгрешен",
-  readingBar: "Аа Настройки за четене",
-  readingBarShort: "Настройки",
+  readingBar: `${READING_BAR.mark} ${READING_BAR.short}${READING_BAR.rest}`,
+  readingBarShort: READING_BAR.short,
+  chat: "Попитайте помощника",
+  chatClose: "Затворете помощника",
+  search: "Търсете",
 } as const;
 
 /** Надписът в български кавички: „Споделете“. */

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronDown } from "@/components/icons";
+import { ChevronRight } from "@/components/icons";
 
 export type GuideListItem = { id: string; slug: string; question: string; snippet?: string };
 
@@ -28,7 +28,7 @@ export function GuideCard({
         <Title className="h-card text-brand-800">{guide.question}</Title>
         {guide.snippet && <p className="mt-1 text-base text-slate-600">{guide.snippet}</p>}
       </div>
-      <ChevronDown className="mt-0.5 h-6 w-6 shrink-0 -rotate-90 text-brand-600" aria-hidden />
+      <ChevronRight className="mt-0.5 h-6 w-6 shrink-0 text-brand-600" aria-hidden />
     </Link>
   );
 }

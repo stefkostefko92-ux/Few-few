@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { track } from "@/lib/events";
+import { UI_LABEL } from "@/lib/ui-labels";
 
-// „Сложи на телефона“ — иконата на началния екран е най-простият начин
+// „Сложете сайта на телефона“ — иконата на началния екран е най-простият начин
 // възрастният човек да се върне в сайта. Тук е общата логика:
 //  • InstallButton — бутонът, който Chrome на Android позволява
 //    (beforeinstallprompt); на iPhone такъв няма → стъпки на /instaliraj;
@@ -92,7 +93,7 @@ async function promptInstall(): Promise<"accepted" | "dismissed" | "unavailable"
   }
 }
 
-export function InstallButton({ label = "Сложете сайта на телефона" }: { label?: string }) {
+export function InstallButton({ label = UI_LABEL.install }: { label?: string }) {
   const state = useInstallState();
   const [done, setDone] = useState(false);
 
@@ -161,14 +162,14 @@ export function InstallBanner() {
   // бори със заглавието и главното действие на страницата.
   return (
     <aside
-      aria-label="Сложете сайта на телефона"
+      aria-label={UI_LABEL.install}
       className="no-print border-b border-slate-200 bg-white"
     >
       <div className="container-content flex items-center gap-3 py-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/icon-192.png" alt="" width={32} height={32} className="h-8 w-8 shrink-0 rounded-lg" />
         <p className="min-w-0 flex-1 text-base font-semibold leading-snug text-slate-900">
-          Сложете сайта на телефона
+          {UI_LABEL.install}
         </p>
         {state === "promptable" ? (
           <button
@@ -194,8 +195,8 @@ export function InstallBanner() {
         <button
           type="button"
           onClick={hide}
-          aria-label="Не сега"
-          title="Не сега"
+          aria-label={UI_LABEL.installDismiss}
+          title={UI_LABEL.installDismiss}
           className="-mr-2 grid h-11 w-11 shrink-0 place-items-center rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900"
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Type, Contrast, Hand, Info, Moon, ChevronDown } from "@/components/icons";
+import { READING_BAR } from "@/lib/ui-labels";
 
 // Нива на уголемяване на шрифта → размер на корена (html). Понеже всичко е в
 // rem, целият сайт (текст и отстояния) се мащабира пропорционално.
@@ -182,10 +183,11 @@ export function AccessibilityBar() {
           className="a11y-btn inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-base font-semibold text-brand-800 transition-colors hover:border-brand-300 hover:bg-brand-50"
         >
           <span aria-hidden className="font-display text-lg font-bold leading-none max-[359px]:hidden">
-            Аа
+            {READING_BAR.mark}
           </span>
           <span>
-            Настройки<span className="max-[639px]:sr-only"> за четене</span>
+            {READING_BAR.short}
+            <span className="max-[639px]:sr-only">{READING_BAR.rest}</span>
           </span>
           <ChevronDown className="a11y-chevron h-5 w-5 rotate-180 transition-transform" aria-hidden />
         </button>

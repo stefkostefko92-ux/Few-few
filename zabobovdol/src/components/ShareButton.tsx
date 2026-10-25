@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { SITE } from "@/lib/site";
 import { track } from "@/lib/events";
+import { UI_LABEL } from "@/lib/ui-labels";
 
 // „Споделете“ — в малък град сайтът расте от уста на уста („изпрати на мама“).
 // На телефон първо се пробва системното меню за споделяне (Viber, WhatsApp,
@@ -74,10 +75,10 @@ export function ShareButton({
             fill="currentColor"
           />
         </svg>
-        Споделете
+        {UI_LABEL.share}
       </button>
       {open && (
-        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Споделете тази страница">
+        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={`${UI_LABEL.share} тази страница`}>
           <a className={item} href={`viber://forward?text=${enc(message())}`}>
             Viber
           </a>

@@ -2,6 +2,7 @@
 
 import { forwardRef } from "react";
 import { MessageCircle, X } from "@/components/icons";
+import { UI_LABEL } from "@/lib/ui-labels";
 
 // Плаващият бутон на чата — един и същ в ChatWidgetLazy (преди чатът да е
 // зареден) и в ChatWidget, за да няма скок при смяната.
@@ -34,7 +35,7 @@ export const ChatFab = forwardRef<
         <MessageCircle className="h-6 w-6 shrink-0" aria-hidden />
       )}
       <span className="sr-only text-base font-semibold sm:not-sr-only">
-        {open ? "Затворете помощника" : "Попитайте помощника"}
+        {open ? UI_LABEL.chatClose : UI_LABEL.chat}
       </span>
     </button>
   );

@@ -4,7 +4,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { ArticleActions, PageHero, PageMeta, Prose, SectionHeader, StepList } from "@/components/ui";
-import { ChevronDown, ExternalLink } from "@/components/icons";
+import { ChevronRight, ExternalLink } from "@/components/icons";
 import { JsonLd } from "@/components/JsonLd";
 import { PrintSourceLine } from "@/components/PrintSourceLine";
 import { buildMetadata, faqPageLd, howToLd, webPageLd, canonical } from "@/lib/seo";
@@ -297,7 +297,7 @@ export default async function FaqPage({
                   rel="prev"
                   className="card group flex h-full items-center gap-3"
                 >
-                  <ChevronDown className="h-6 w-6 shrink-0 rotate-90 text-brand-600" aria-hidden />
+                  <ChevronRight className="h-6 w-6 shrink-0 rotate-180 text-brand-600" aria-hidden />
                   <span className="min-w-0">
                     <span className="text-meta block">Предишно</span>
                     <span className="block font-semibold text-brand-800">{prev.question}</span>
@@ -316,7 +316,7 @@ export default async function FaqPage({
                     <span className="text-meta block">Следващо</span>
                     <span className="block font-semibold text-brand-800">{next.question}</span>
                   </span>
-                  <ChevronDown className="h-6 w-6 shrink-0 -rotate-90 text-brand-600" aria-hidden />
+                  <ChevronRight className="h-6 w-6 shrink-0 text-brand-600" aria-hidden />
                 </Link>
               )}
             </nav>

@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { PhoneOff } from "@/components/icons";
 import { track } from "@/lib/events";
+import { UI_LABEL } from "@/lib/ui-labels";
 
 export { TelLink } from "@/components/TelLink";
 
@@ -66,7 +67,7 @@ export function PhoneReportButton({
           className="a11y-btn link-quiet inline-flex items-center gap-1.5 text-base font-medium text-slate-700"
         >
           <PhoneOff className="h-5 w-5 shrink-0" aria-hidden />
-          Този номер е сгрешен
+          {UI_LABEL.phoneWrong}
         </button>
       </div>
     );

@@ -7,7 +7,7 @@ import { isValidElement, type ReactNode } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
-  ChevronDown,
+  ChevronRight,
   Inbox,
   Info,
   Mail,
@@ -116,7 +116,7 @@ export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
             href={parent.path}
             className="-ml-1 inline-flex min-h-tap items-center gap-1 rounded-lg px-1 font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 hover:text-brand-700 hover:decoration-brand-700"
           >
-            <ChevronDown className="h-5 w-5 shrink-0 rotate-90" aria-hidden />
+            <ChevronRight className="h-5 w-5 shrink-0 rotate-180" aria-hidden />
             {parent.name}
           </Link>
         </div>
@@ -127,7 +127,7 @@ export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
           return (
             <li key={`${i}-${c.path}`} className="flex min-w-0 items-center gap-1">
               {i > 0 && (
-                <ChevronDown className="h-4 w-4 shrink-0 -rotate-90 text-slate-400" aria-hidden />
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
               )}
               {last ? (
                 <span aria-current="page" className="text-slate-700">

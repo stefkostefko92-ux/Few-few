@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
+import { Search } from "@/components/icons";
+import { UI_LABEL } from "@/lib/ui-labels";
 
 // Минимална типизация на Web Speech API (не е в стандартните DOM типове).
 type RecognitionEvent = { results: ArrayLike<ArrayLike<{ transcript: string }>> };
@@ -131,18 +133,10 @@ export function SearchBar({
       <button
         type="submit"
         className={compact ? "search-submit btn-secondary px-3" : "search-submit btn-primary"}
-        aria-label="Търсете"
+        aria-label={UI_LABEL.search}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
-          <path
-            d="M20 20l-3.5-3.5"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
-        {!compact && <span className="search-submit-label">Търсете</span>}
+        <Search className="h-5 w-5 shrink-0" aria-hidden />
+        {!compact && <span className="search-submit-label">{UI_LABEL.search}</span>}
       </button>
     </form>
   );
