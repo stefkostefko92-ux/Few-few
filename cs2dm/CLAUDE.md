@@ -203,6 +203,9 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   `mp_respawn_immunitytime` DM го нулира при всяка карта. В `Deathmatch.json` „Spawn Protection Time“ е 0
   (без наслагване). Щета се спира само с `HookResult.Handled` от `OnEntityTakeDamagePre` (CSS 1.0.378 —
   `Damage = 0` + `Continue` не стига). Изстрелът сваля защитата; секундите — `CS2DM_SPAWN_PROTECTION` (0–15).
+  Докато трае — зелен glow: невидим релей (`FollowEntity` към пешката) + копие на модела с `m_Glow`, закачено за
+  релея, и двете `SOLID_NONE`; помним ги по `EntityHandle.Raw` (със серийния номер) и ги махаме при края на защитата,
+  смърт, изход и `Unload`; при смяна на картата само забравяме.
 - Нова колона/таблица → миграция в `app/prisma` (Prisma е собственикът на схемата), после SQL-а в `Data/`.
 - **Статистиките са `+=` с епоха (§3).** Нов агрегат → колона + `PlayerDelta` + `StatsWriter` (с
   `WHERE ред.stats_epoch <= EXCLUDED.stats_epoch`) + полето в редактора на панела (`stats-edit.ts`). Партидата

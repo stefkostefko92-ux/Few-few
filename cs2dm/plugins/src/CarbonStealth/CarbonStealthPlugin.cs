@@ -118,6 +118,7 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
     public override void Unload(bool hotReload)
     {
         RemoveBannerEntities();
+        StopAllGlows();
         foreach (var slot in _huds.Keys.ToList()) CloseHud(slot);
         ClearCssFlags();
         AccruePlaytime();

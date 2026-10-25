@@ -265,7 +265,7 @@
         "protect": {
           "dt": "Spawn protection",
           "dd": "5 s",
-          "note": "until you fire your first shot"
+          "note": "you glow green until your first shot"
         },
         "awp": {
           "dt": "AWP",

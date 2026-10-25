@@ -265,7 +265,7 @@
         "protect": {
           "dt": "Protezione allo spawn",
           "dd": "5 s",
-          "note": "fino al Suo primo colpo"
+          "note": "brilla di verde fino al Suo primo colpo"
         },
         "awp": {
           "dt": "AWP",
