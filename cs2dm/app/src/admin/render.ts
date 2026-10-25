@@ -16,6 +16,7 @@ export const ADMIN_NAV: ReadonlyArray<{ id: string; href: string; cap: Capabilit
   { id: 'reports', href: '/admin/reports', cap: 'panel' },
   { id: 'appeals', href: '/admin/appeals', cap: 'appeals' },
   { id: 'events', href: '/admin/events', cap: 'events' },
+  { id: 'flags', href: '/admin/flags', cap: 'flags' },
   { id: 'vip', href: '/admin/vip', cap: 'vip' },
   { id: 'server', href: '/admin/server', cap: 'serverRead' },
   { id: 'plugins', href: '/admin/plugins', cap: 'plugins' },

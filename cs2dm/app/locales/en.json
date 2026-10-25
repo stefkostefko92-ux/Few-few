@@ -847,6 +847,7 @@
       "account": "Account",
       "settings": "Settings",
       "events": "Events",
+      "flags": "Suspicious",
       "plugins": "Plugins"
     },
     "me": {
@@ -1439,6 +1440,55 @@
       "edit": "Edit",
       "cancel": "Cancel the event",
       "cancelConfirm": "Cancel the event? If it is running, the plugin stops it within 30 seconds."
+    },
+    "flags": {
+      "title": "Suspicious players",
+      "lead": "Players whose numbers for the last {days} days are unusual for the server or sharply above their own. Computed on every visit from the recorded kills and minutes played.",
+      "notVerdict": "A flag is not a verdict.",
+      "notVerdictText": "Nothing here punishes or decides automatically (GDPR Art. 22). A strong player, a good day or little data also produce high numbers. Act only after a human review (profile, matches, demo) and through the normal punishment flow, with a reason and audit.",
+      "rules": {
+        "title": "How it is computed",
+        "window": "Window: the last {days} days (since {since}); the player's own baseline is days {from}–{to} back.",
+        "population": "Unusual: percentile ≥ {percentile} among players with at least {minKills} kills in the window — only if there are at least {minPopulation} of them.",
+        "spike": "Spike: at least {ratio}× their own baseline (the baseline also needs {minKills} kills, and kills per minute needs {minMinutes} minutes played).",
+        "floors": "Absolute floors (no flag below them): headshots {hs}, wallbang {wallbang}, through smoke {smoke}, while blind {blind}, long no-scope (≥ {meters} m) {longNoscope}, kills per minute {kpm}."
+      },
+      "population": {
+        "one": "{count} player with at least {minKills} kills in the window.",
+        "other": "{count} players with at least {minKills} kills in the window."
+      },
+      "empty": "No flagged players for this window.",
+      "reasons": {
+        "one": "{count} reason",
+        "other": "{count} reasons"
+      },
+      "hidden": "hidden from leaderboards (Art. 21)",
+      "summary": "{kills} kills · {minutes} min in the window",
+      "profile": "Panel profile",
+      "caption": "{name}'s metrics",
+      "col": {
+        "metric": "Metric",
+        "value": "Value",
+        "percentile": "Percentile",
+        "baseline": "Own baseline",
+        "flag": "Flag"
+      },
+      "metrics": {
+        "hs": "Headshots",
+        "wallbang": "Wallbang",
+        "smoke": "Through smoke",
+        "blind": "While blind",
+        "longNoscope": "No-scope from {meters} m",
+        "kpm": "Kills per minute"
+      },
+      "outlier": "unusual",
+      "spike": "spike",
+      "percentileValue": "P{value}",
+      "reports": "Personal reports (up to {count} latest matches):",
+      "reportLink": "match #{id}",
+      "noMatches": "No matches in the window.",
+      "hiddenReports": "A hidden player's public reports are not shown — review through the panel profile.",
+      "note": "The list is not stored anywhere. The percentile is the share of players with data at or below this value."
     },
     "plugins": {
       "title": "Plugins",
