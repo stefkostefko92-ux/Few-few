@@ -131,3 +131,34 @@ test('висящите образи НЕ заемат числото на `syste
   const spec = reclaimSpec('dangling-images', {});
   assert.deepEqual(spec.args, ['image', 'prune', '-f']);
 });
+
+// Инцидент 11.10.2026: release, от който работещ стек монтира файлове, беше изтрит като „стар“ →
+// nginx/backup на zabobovdol не тръгнаха след рестарт → 502. Тези release-и никога не се предлагат.
+test('стари releases: release на current и монтиран от контейнер не се предлагат', async () => {
+  const { protectedReleases, pickOldReleases } = await import('../src/reclaim.js');
+  const os = await import('node:os');
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'rel-'));
+  try {
+    const rel = path.join(base, 'releases');
+    const names = ['20260918-130341', '20260920-100000', '20260925-100000', '20261001-100000', '20261010-100000', '20261011-101124'];
+    for (const n of names) fs.mkdirSync(path.join(rel, n, 'few-few'), { recursive: true });
+    const current = path.join(base, 'current');
+    fs.symlinkSync(path.join(rel, '20260920-100000', 'few-few'), current);
+    const mount = path.join(rel, '20260918-130341', 'few-few', 'zabobovdol', 'nginx', 'zabobovdol.conf');
+    const fake = async (cmd, args) =>
+      args[0] === 'ps' ? { ok: true, stdout: 'aaa\nbbb\n' } : { ok: true, stdout: `${mount}\n/var/lib/docker/volumes/x/_data\n\n` };
+    const guard = await protectedReleases(rel, current, fake);
+    assert.deepEqual([...guard].sort(), ['20260918-130341', '20260920-100000']);
+    const old = pickOldReleases(fs.readdirSync(rel), 3, guard);
+    assert.deepEqual(old, ['20260925-100000'], 'само немонтиран и не-current стар release');
+  } finally {
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('стари releases: Docker не отговаря → null (не предлагаме нищо — fail closed)', async () => {
+  const { protectedReleases } = await import('../src/reclaim.js');
+  assert.equal(await protectedReleases('/opt/few-few/releases', '/nonexistent', async () => ({ ok: false, stdout: '' })), null);
+  const halfway = async (cmd, args) => (args[0] === 'ps' ? { ok: true, stdout: 'abc\n' } : { ok: false, stdout: '' });
+  assert.equal(await protectedReleases('/opt/few-few/releases', '/nonexistent', halfway), null);
+});
