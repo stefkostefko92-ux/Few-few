@@ -49,7 +49,8 @@ export function AccessibilityBar() {
       // Тук правилото се изчислява ОТНОВО (същото като във вградения скрипт),
       // а не се чете от класа: ако React пререндира корена (грешка #418 при
       // хидратация), класовете на <html> се връщат към сървърните и
-      // `a11y-min` изчезва — тогава лентата се разгъваше сама.
+      // `a11y-min` изчезва — тогава лентата се разгъваше сама. Честата причина
+      // за #418 е кърпена (scripts/patch-react-replay.mjs); това остава защита.
       const k = localStorage.getItem("a11y-collapsed");
       const min = k === "1" || (k === null && window.matchMedia("(max-width: 767px)").matches);
       document.documentElement.classList.toggle("a11y-min", min);

@@ -23,8 +23,8 @@
     "local-services"
   ],
   "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
+    "dev": "node scripts/patch-react-replay.mjs && next dev",
+    "build": "node scripts/patch-react-replay.mjs && prisma generate && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
