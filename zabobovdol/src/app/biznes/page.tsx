@@ -45,7 +45,8 @@ export default async function BiznesPage({
   searchParams: Promise<{ cat?: string }>;
 }) {
   const { cat } = await searchParams;
-  const validCat = cat && cat in BUSINESS_CATEGORY_LABELS ? cat : undefined;
+  // Object.hasOwn, не `in`: „?cat=toString“ иначе минава (Object.prototype) и Prisma хвърля.
+  const validCat = cat && Object.hasOwn(BUSINESS_CATEGORY_LABELS, cat) ? cat : undefined;
 
   const [businesses, counts] = await Promise.all([
     prisma.business.findMany({

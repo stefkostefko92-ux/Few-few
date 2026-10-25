@@ -65,5 +65,5 @@ export function labelFor(
   key: string | null | undefined,
 ): string {
   if (!key) return "—";
-  return map[key] ?? key;
+  return Object.hasOwn(map, key) ? map[key] : key;
 }

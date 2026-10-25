@@ -30,7 +30,7 @@ export default async function AdminSignaliPage({
   await requireAdmin();
   const { filter } = await searchParams;
   const where =
-    filter && filter in STATUS_LABEL ? { status: filter as never } : {};
+    filter && Object.hasOwn(STATUS_LABEL, filter) ? { status: filter as never } : {};
   const items = await prisma.complaint.findMany({
     where,
     orderBy: { createdAt: "desc" },

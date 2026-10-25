@@ -126,7 +126,8 @@ export default async function UslugiPage({
   searchParams: Promise<{ cat?: string }>;
 }) {
   const { cat } = await searchParams;
-  const validCat = cat && cat in SERVICE_CATEGORY_LABELS ? cat : undefined;
+  // Object.hasOwn, не `in`: „?cat=constructor“ иначе минава (Object.prototype) и Prisma хвърля.
+  const validCat = cat && Object.hasOwn(SERVICE_CATEGORY_LABELS, cat) ? cat : undefined;
 
   const [all, counts] = await Promise.all([
     prisma.service.findMany({

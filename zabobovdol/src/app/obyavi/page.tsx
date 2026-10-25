@@ -41,7 +41,8 @@ export default async function ListingsPage({
   searchParams: Promise<{ type?: string }>;
 }) {
   const { type } = await searchParams;
-  const validType = type && type in LISTING_TYPE_LABELS ? type : undefined;
+  // Object.hasOwn, не `in`: „?type=constructor“ иначе минава (Object.prototype) и Prisma хвърля.
+  const validType = type && Object.hasOwn(LISTING_TYPE_LABELS, type) ? type : undefined;
   const active = {
     published: true,
     OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
