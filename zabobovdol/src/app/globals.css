@@ -331,6 +331,14 @@ h4,
   .legend {
     @apply px-1 font-sans text-lg font-semibold text-slate-900;
   }
+  /* Подсказка и грешка под полето (FormKit: FieldHint/FieldError; и в
+     админа). Цветовете са пренасочени — тъмен режим и контраст идват сами. */
+  .field-hint {
+    @apply mt-1.5 text-base text-slate-600;
+  }
+  .field-error {
+    @apply mt-1.5 flex items-start gap-1.5 text-base font-medium text-crimson-700;
+  }
 
   /* Номер на стъпка (StepList): плътен кръг. */
   .step-num {
@@ -395,6 +403,29 @@ select.input:not([multiple]):not([size]) {
   background-repeat: no-repeat;
   background-position: right 0.9rem center;
   background-size: 1.25rem;
+}
+
+/* Сгрешено поле (aria-invalid="true" — FormKit, BusinessForm): червена рамка
+   и тънък пръстен. Извън @layer — надделява над общото .input; тъмен режим,
+   висок контраст и печат — веднага отдолу и в @media print. */
+.input[aria-invalid="true"] {
+  @apply border-crimson-600 ring-1 ring-crimson-600;
+}
+html.dark .input[aria-invalid="true"] {
+  border-color: #ee7e81;
+  --tw-ring-color: #ee7e81;
+}
+html.hc .input[aria-invalid="true"] {
+  border-color: #921616 !important;
+  --tw-ring-color: #921616;
+}
+
+/* React слага скрити полета ($ACTION_…) в началото на <form> със server
+   action — без това първият видим ред получава отстъпа на space-y-5 и над
+   него зее празно място. Собствените скрити полета — също в началото, никога
+   между видими редове. (:not([hidden]) — по-силно от правилото на space-y.) */
+.form-panel > input[type="hidden"] + :not([hidden]) {
+  margin-top: 0;
 }
 
 /* Таблица, която на телефон става списък от карти (под 640px): всеки ред е
@@ -470,14 +501,16 @@ select.input:not([multiple]):not([size]) {
   @apply rounded-lg bg-slate-100 px-1.5 text-[0.9em];
   overflow-wrap: anywhere;
 }
+/* Таблиците — с текста на страницата (text-base, не дребни), заглавният ред
+   на сив фон, ясни линии между редовете. */
 .prose-content :where(table) {
-  @apply mt-4 w-full border-collapse text-left text-sm;
+  @apply mt-4 w-full border-collapse text-left text-base;
 }
 .prose-content :where(th) {
-  @apply border-b-2 border-slate-200 px-3 py-2 font-semibold;
+  @apply border-b-2 border-slate-300 bg-slate-100 px-3 py-2.5 font-semibold text-slate-900;
 }
 .prose-content :where(td) {
-  @apply border-b border-slate-100 px-3 py-2 align-top;
+  @apply border-b border-slate-200 px-3 py-2 align-top;
 }
 /* Първият елемент не отваря празнина отгоре. Само за елементите, на които
    правилата по-горе дават отстъп — <div className="mt-6 …"> като първо дете
@@ -597,6 +630,11 @@ html.hc .chip[aria-pressed="true"] {
 }
 html.hc :focus-visible {
   outline-width: 4px;
+}
+/* Листовете за печат: редовете и рамките в листа — черни (бледите
+   border-slate-200/300 се губеха). */
+html.hc .print-sheet :is(.border-slate-200, .border-slate-300) {
+  border-color: #000000 !important;
 }
 /* Шапката: плътна черна лента и граница; в менютата се подчертава само името
    на раздела (не и описанието под него — второ подчертаване пречи). */
@@ -1203,6 +1241,18 @@ html.bt li {
   .print-sheet {
     box-shadow: none !important;
     border: none !important;
+  }
+  /* Уголеменият текст (125% от „Настройки за четене“ — inline font-size на
+     <html>, затова !important) е за екрана. Листовете са изчислени за A4 с
+     едър шрифт — с 125% излизаха на 2 листа. */
+  html:has(.print-sheet) {
+    font-size: 100% !important;
+  }
+  /* Сгрешеното поле на хартия — черна, по-дебела рамка (цветът не се печата
+     надеждно). :root — по-силно от нулирането на html.dark .input отдолу. */
+  :root .input[aria-invalid="true"] {
+    border: 2px solid #000000 !important;
+    box-shadow: none !important;
   }
   /* Браузърът не печата фонове — бял текст върху синьо/червено бутон би
      изчезнал. На хартия бутонът е обикновена рамка с черен текст. */

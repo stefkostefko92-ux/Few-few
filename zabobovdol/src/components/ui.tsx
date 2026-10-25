@@ -80,7 +80,9 @@ export function PageHero({
           {all && <Breadcrumbs crumbs={all} />}
           {all && breadcrumbJsonLd && <JsonLd data={breadcrumbLd(all)} />}
           {eyebrow && <p className={`eyebrow ${all ? "mt-3" : ""}`}>{eyebrow}</p>}
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          {/* overflow-wrap — предпазител: дълга дума („поверителност“) на 320px
+              при шрифт 125% е по-широка от колоната; иначе прелива. */}
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 [overflow-wrap:break-word] sm:text-4xl">
             {title}
           </h1>
           <div aria-hidden className="rule-gold mt-3" />

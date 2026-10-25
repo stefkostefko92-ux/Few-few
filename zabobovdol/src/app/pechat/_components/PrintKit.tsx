@@ -74,9 +74,6 @@ export function sheetCrumbs(current: SheetPath) {
 
 type SheetWidth = "max-w-2xl" | "max-w-3xl";
 
-// !important — уголемяването е inline стил на <html> (layout.tsx).
-const PRINT_FONT_RESET = "@media print{html{font-size:100%!important}}";
-
 /**
  * Страницата на лист: вляво лентата с бутона и самият лист, вдясно (на lg)
  * „Още за печат“; на по-тесен екран „Още за печат“ е под листа. Листът е
@@ -101,10 +98,8 @@ export function SheetLayout({
 }) {
   return (
     <div className="container-content grid gap-10 py-8 sm:py-10 lg:grid-cols-[minmax(0,1fr),17rem] print:block print:max-w-none print:p-0">
-      {/* Уголеменият текст (125% от „Настройки за четене“) е за екрана. Листът
-          е изчислен за A4 и вече е с едър шрифт — на хартия с 125% излизаше на
-          2 листа (плакатът, телефоните, „Седмицата“). Затова на хартия — 100%. */}
-      <style>{PRINT_FONT_RESET}</style>
+      {/* На хартия уголеменият текст се връща на 100% (листът е изчислен за
+          A4) — html:has(.print-sheet) в @media print на globals.css. */}
       <div className="min-w-0">
         <SheetToolbar label={printLabel} width={width}>
           {note}

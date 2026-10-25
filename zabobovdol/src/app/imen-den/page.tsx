@@ -109,7 +109,7 @@ export default async function NameDayPage({
                   autoComplete="off"
                   aria-describedby="ime-hint"
                 />
-                <p id="ime-hint" className="mt-1.5 text-base text-slate-600">
+                <p id="ime-hint" className="field-hint">
                   Напр. Иван, Мария, Георги.
                 </p>
               </div>

@@ -16,21 +16,18 @@ import { AlertTriangle, CheckCircle2 } from "@/components/icons";
 import type { FormState } from "@/lib/form-state";
 
 /**
- * Класът на полето. Червената рамка при aria-invalid е тук (с тъмен вариант),
- * защото общото `.input` още няма такова състояние — виж заявката в
- * design/requests-lane2.md (тогава остава само "input").
+ * Класът на полето. Червената рамка при aria-invalid="true" идва от общото
+ * `.input` в globals.css (с тъмен режим, контраст и печат).
  */
-export const INPUT =
-  "input aria-[invalid=true]:border-crimson-600 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-crimson-600 dark:aria-[invalid=true]:border-crimson-300 dark:aria-[invalid=true]:ring-crimson-300";
+export const INPUT = "input";
 
 /**
- * Контейнерът на формата. React слага скрити полета ($ACTION_…) в началото на
- * <form> със server action — без нулирането първият видим ред получаваше
- * отстъпа на space-y-5 и над него зееше празно място. Собствените скрити
- * полета също слагайте в началото (никога между видими редове — тогава
+ * Контейнерът на формата. Скритите полета ($ACTION_… на server action и
+ * собствените) стоят в началото на <form> — `.form-panel` в globals.css
+ * маха отстъпа над първия видим ред. Никога между видими редове (тогава
  * следващият ред губи отстъпа си).
  */
-export const FORM = "form-panel [&>input[type=hidden]+*]:!mt-0";
+export const FORM = "form-panel";
 
 /** Отметка (съгласие) — едро квадратче и цел ≥44px. */
 export const CHECK_ROW = "flex min-h-tap cursor-pointer items-start gap-3 text-base text-slate-800";
@@ -92,7 +89,7 @@ export function RequiredNote({ children }: { children?: ReactNode }) {
 export function FieldError({ name, error }: { name: string; error?: string }) {
   if (!error) return null;
   return (
-    <p id={`${name}-error`} className="mt-1.5 flex items-start gap-1.5 text-base font-medium text-crimson-700">
+    <p id={`${name}-error`} className="field-error">
       <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
       <span>{error}</span>
     </p>
@@ -102,7 +99,7 @@ export function FieldError({ name, error }: { name: string; error?: string }) {
 /** Подсказката под полето (свързана чрез aria-describedby="{name}-hint"). */
 export function FieldHint({ name, children }: { name: string; children: ReactNode }) {
   return (
-    <p id={`${name}-hint`} className="mt-1.5 text-base text-slate-600">
+    <p id={`${name}-hint`} className="field-hint">
       {children}
     </p>
   );

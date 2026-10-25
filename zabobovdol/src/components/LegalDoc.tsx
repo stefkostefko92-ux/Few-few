@@ -150,17 +150,17 @@ export function LegalLayout({
 }
 
 /**
- * Заглавният ред на таблица в правен текст. Клетките са text-base (не
- * дребния text-sm на .prose-content), заглавията — на сив фон. На телефон
- * таблицата е .table-stack: всеки ред става блок, а името на колоната идва
- * от data-label на клетката.
+ * Заглавният ред на таблица в правен текст (стилът — от .prose-content в
+ * globals.css: text-base, заглавията на сив фон). На телефон таблицата е
+ * .table-stack: всеки ред става блок, а името на колоната идва от
+ * data-label на клетката.
  */
 export function LegalTableHead({ cols }: { cols: readonly string[] }) {
   return (
     <thead>
       <tr>
         {cols.map((c) => (
-          <th key={c} scope="col" className="bg-slate-100 text-base text-slate-900">
+          <th key={c} scope="col">
             {c}
           </th>
         ))}
@@ -175,7 +175,7 @@ export function LegalTableHead({ cols }: { cols: readonly string[] }) {
  * авто-ширината на колоните иначе троши имената по средата
  * („zbd_splash_see/n“). Дългите имена се пренасят след „_“ — виж CodeName.
  */
-export const LEGAL_TABLE = "table-stack [&_td]:text-base [&_code]:[overflow-wrap:normal]";
+export const LEGAL_TABLE = "table-stack [&_code]:[overflow-wrap:normal]";
 
 /**
  * Таблица с 4 колони и <code> (бисквитките): стек като .table-stack, но под xl
@@ -184,7 +184,7 @@ export const LEGAL_TABLE = "table-stack [&_td]:text-base [&_code]:[overflow-wrap
  * имената се трошат по средата („zbd_sessi/on“) или излиза от колоната.
  */
 export const LEGAL_TABLE_WIDE =
-  "table-stack [&_td]:text-base [&_code]:[overflow-wrap:normal] max-xl:block [&_thead]:max-xl:sr-only [&_tbody]:max-xl:block [&_tr]:max-xl:block [&_tr]:max-xl:border-b [&_tr]:max-xl:border-slate-200 [&_tr]:max-xl:py-3 [&_td]:max-xl:block [&_td]:max-xl:w-full [&_td]:max-xl:border-0 [&_td]:max-xl:px-0 [&_td]:max-xl:py-1 [&_td]:max-xl:text-left [&_td]:max-xl:before:block [&_td]:max-xl:before:text-sm [&_td]:max-xl:before:font-semibold [&_td]:max-xl:before:text-slate-600 [&_td]:max-xl:before:content-[attr(data-label)]";
+  "table-stack [&_code]:[overflow-wrap:normal] max-xl:block [&_thead]:max-xl:sr-only [&_tbody]:max-xl:block [&_tr]:max-xl:block [&_tr]:max-xl:border-b [&_tr]:max-xl:border-slate-200 [&_tr]:max-xl:py-3 [&_td]:max-xl:block [&_td]:max-xl:w-full [&_td]:max-xl:border-0 [&_td]:max-xl:px-0 [&_td]:max-xl:py-1 [&_td]:max-xl:text-left [&_td]:max-xl:before:block [&_td]:max-xl:before:text-sm [&_td]:max-xl:before:font-semibold [&_td]:max-xl:before:text-slate-600 [&_td]:max-xl:before:content-[attr(data-label)]";
 
 /**
  * Техническо име (бисквитка, запис в браузъра) като <code>. Дългото (над 16

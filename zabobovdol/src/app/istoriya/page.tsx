@@ -11,6 +11,10 @@ import { SITE } from "@/lib/site";
 import { POPULATION } from "@/lib/town-facts";
 import { SECTION } from "@/lib/section-names";
 
+// Динамична — заради реда „отпечатано на …“ (PrintSourceLine): на статична
+// страница на хартия излизаше датата на билда, не на печата.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = buildMetadata({
   title: "История на Бобов дол — от долината с форма на боб до миньорската столица",
   description:
