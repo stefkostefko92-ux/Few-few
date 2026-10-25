@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Phone, Mail } from "@/components/icons";
+import { ChevronDown, Mail, Phone } from "@/components/icons";
 import { SITE, FOOTER_GROUPS, LEGAL_NAV, isFeedHref, type NavGroup } from "@/lib/site";
 import { getFacebookUrl, getPlayStoreUrl, getViberChannelUrl } from "@/lib/settings";
 import { TrustCard, breakableAddress } from "@/components/TrustCard";
@@ -52,20 +52,40 @@ function FooterLink({ href, label }: { href: string; label: string }) {
   );
 }
 
+// Група връзки. На телефон (под sm) — сгъната <details> (затворена по
+// подразбиране; цялото заглавие е бутон ≥44px със стрелка), за да не е
+// футърът ~2000px; от sm — винаги отворена секция със заглавие. Двата вида
+// са в DOM, но скритият е display:none — за четеца и клавиатурата е само
+// единият. (::details-content за „винаги отворена“ още не е навсякъде.)
 function FooterGroup({ group, id }: { group: NavGroup; id: string }) {
+  const list = (
+    <ul className="space-y-1 text-base">
+      {group.items.map((i) => (
+        <li key={i.href}>
+          <FooterLink href={i.href} label={i.label} />
+        </li>
+      ))}
+    </ul>
+  );
   return (
-    <section aria-labelledby={id} className="min-w-0">
-      <h2 id={id} className="footer-heading">
-        {group.title}
-      </h2>
-      <ul className="mt-2 space-y-1 text-base">
-        {group.items.map((i) => (
-          <li key={i.href}>
-            <FooterLink href={i.href} label={i.label} />
-          </li>
-        ))}
-      </ul>
-    </section>
+    <div className="min-w-0">
+      <details className="group/fg border-b border-white/20 sm:hidden">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 py-1 [&::-webkit-details-marker]:hidden">
+          <span className="footer-heading text-base">{group.title}</span>
+          <ChevronDown
+            className="h-6 w-6 shrink-0 text-brand-200 transition-transform group-open/fg:rotate-180 motion-reduce:transition-none"
+            aria-hidden
+          />
+        </summary>
+        <div className="pb-3">{list}</div>
+      </details>
+      <section aria-labelledby={id} className="hidden sm:block">
+        <h2 id={id} className="footer-heading">
+          {group.title}
+        </h2>
+        <div className="mt-2">{list}</div>
+      </section>
+    </div>
   );
 }
 
@@ -192,11 +212,11 @@ export async function SiteFooter() {
 
           <nav
             aria-label="Връзки в долната част на сайта"
-            className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-8 min-[360px]:grid-cols-2 md:grid-cols-3 lg:col-span-8"
+            className="grid min-w-0 grid-cols-1 border-t border-white/20 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-8 sm:border-t-0 md:grid-cols-3 lg:col-span-8"
           >
             <FooterGroup group={mostWanted} id="footer-g0" />
             <FooterGroup group={aboutSite} id="footer-g1" />
-            <div className="min-w-0 space-y-8">
+            <div className="min-w-0 sm:space-y-8">
               {rest.map((g, i) => (
                 <FooterGroup key={g.title} group={g} id={`footer-g${i + 2}`} />
               ))}
