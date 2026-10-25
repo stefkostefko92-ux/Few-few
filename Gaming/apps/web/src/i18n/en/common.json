@@ -749,7 +749,9 @@
     "marsWon": "Mars! +2 points",
     "marsLost": "Mars — opponent took 2 points",
     "matchWon": "You won the match {{score}}",
-    "matchLost": "You lost the match {{score}}"
+    "matchLost": "You lost the match {{score}}",
+    "noMovesTitle": "No legal move",
+    "noMovesHint": "The dice {{dice}} can’t be played — you pass."
   },
   "draughts": {
     "variant": "Russian draughts"
@@ -792,7 +794,9 @@
     },
     "upper": "Upper sum",
     "bonus": "Bonus (63+)",
-    "pickCategory": "Pick a category"
+    "scoreTitle": "Score your roll",
+    "scoreHint": "Pick a category — the best one is highlighted.",
+    "earlyScoreHint": "or score in the table"
   },
   "bingo": {
     "draw": "Draw",
@@ -850,7 +854,15 @@
     "blocked": "blocked",
     "pass": "Pass",
     "boneyard": "Boneyard",
-    "tie": "tie"
+    "tie": "tie",
+    "whichEnd": "Which end?",
+    "fitsBoth": "This tile fits both ends.",
+    "otherTile": "Another tile",
+    "leftEnd": "Left end",
+    "rightEnd": "Right end",
+    "nothingFits": "Nothing fits",
+    "drawHint": "The ends are {{left}} and {{right}} — draw from the boneyard ({{n}} left).",
+    "passHint": "The boneyard is empty — you pass."
   },
   "cue": {
     "power": "Power",
@@ -980,7 +992,17 @@
     "drawThreefold": "Draw — threefold repetition",
     "drawAgreement": "Draw by agreement",
     "drawFifty": "Draw — fifty-move rule",
-    "drawMaterial": "Draw — insufficient material"
+    "drawMaterial": "Draw — insufficient material",
+    "promoteHeading": "Pawn promotion",
+    "promoteHint": "Your pawn reaches the last rank — choose what it becomes.",
+    "otherMove": "Another move",
+    "drawOfferHint": "Accept the draw — or decline and play your move.",
+    "declineDraw": "Decline (play on)",
+    "resignQ": "Resign the game?",
+    "resignHint": "You lose the game immediately.",
+    "offerDrawQ": "Offer a draw?",
+    "offerDrawHint": "Then play your move. Your opponent can accept on their turn — if they move instead, the offer lapses.",
+    "keepPlaying": "No, keep playing"
   },
   "fx": {
     "hit": "Hit!",
@@ -1075,13 +1097,10 @@
     "jailCard": "Jail card",
     "payBail": "Pay bail (50)",
     "roll": "Roll the dice",
-    "buy": "Buy {{name}} ({{price}})",
     "decline": "Decline",
-    "auctionFor": "Auction: {{name}} · current offer",
     "auctionNone": "none",
     "bid": "Bid {{amount}}",
     "pass": "Pass",
-    "tradeOffer": "{{name}} offers you a trade:",
     "give": "You give:",
     "get": "You get:",
     "accept": "Accept",
@@ -1127,8 +1146,24 @@
     "debtWaiting": "{{name}} owes {{amount}} to {{to}} and is choosing what to sell or mortgage…",
     "debtTitle": "You owe {{amount}} to {{to}}",
     "debtCash": "Cash: {{cash}}",
-    "debtHint": "Sell buildings (houses first, evenly) or mortgage properties from the list below, then pay. If time runs out, the bank liquidates automatically.",
-    "payDebt": "Pay {{amount}}"
+    "payDebt": "Pay {{amount}}",
+    "decideInPrompt": "Your turn — the choice is in the pop-up.",
+    "jailTitle": "You’re in jail",
+    "jailHint": "Attempt {{attempt}} of 3: roll for doubles — or get out right away.",
+    "jailRoll": "Roll for doubles",
+    "buyTitle": "Buy {{name}}?",
+    "buyHint": "Price {{price}} · cash {{cash}}.",
+    "declineAuction": "Decline (auction)",
+    "auctionTitle": "Auction: {{name}}",
+    "auctionNoBids": "No bids yet",
+    "bidAmount": "Bid amount",
+    "tradeOfferTitle": "{{name}} offers you a trade",
+    "debtPromptHint": "Sell buildings or mortgage, then pay. If time runs out, the bank liquidates automatically.",
+    "sellHouse": "Sell a house: {{name}} (+{{amount}})",
+    "sellHotel": "Sell the hotel: {{name}}",
+    "mortgageFor": "Mortgage {{name}} (+{{amount}})",
+    "buyFor": "Buy for {{price}}",
+    "buyShort": "Not enough: mortgage a property or decline."
   },
   "errors": {
     "generic": "Something went wrong",

@@ -749,7 +749,9 @@
     "marsWon": "Mars! +2 punti",
     "marsLost": "Mars — l'avversario prende 2 punti",
     "matchWon": "Hai vinto la partita {{score}}",
-    "matchLost": "Hai perso la partita {{score}}"
+    "matchLost": "Hai perso la partita {{score}}",
+    "noMovesTitle": "Nessuna mossa possibile",
+    "noMovesHint": "I dadi {{dice}} non si possono giocare: passi."
   },
   "draughts": {
     "variant": "Dama russa"
@@ -792,7 +794,9 @@
     },
     "upper": "Somma 1–6",
     "bonus": "Bonus (63+)",
-    "pickCategory": "Scegli una categoria"
+    "scoreTitle": "Registra il punteggio",
+    "scoreHint": "Scegli una categoria: la migliore è evidenziata.",
+    "earlyScoreHint": "oppure registra nella tabella"
   },
   "bingo": {
     "draw": "Estrai",
@@ -850,7 +854,15 @@
     "blocked": "bloccato",
     "pass": "Passo",
     "boneyard": "Pozzo",
-    "tie": "parità"
+    "tie": "parità",
+    "whichEnd": "Su quale lato?",
+    "fitsBoth": "La tessera va bene su entrambi i lati.",
+    "otherTile": "Altra tessera",
+    "leftEnd": "Lato sinistro",
+    "rightEnd": "Lato destro",
+    "nothingFits": "Nessuna tessera va bene",
+    "drawHint": "Le estremità sono {{left}} e {{right}}: pesca dal pozzo (ne restano {{n}}).",
+    "passHint": "Il pozzo è vuoto: passi."
   },
   "cue": {
     "power": "Potenza",
@@ -980,7 +992,17 @@
     "drawThreefold": "Patta — triplice ripetizione",
     "drawAgreement": "Patta per accordo",
     "drawFifty": "Patta — regola delle 50 mosse",
-    "drawMaterial": "Patta — materiale insufficiente"
+    "drawMaterial": "Patta — materiale insufficiente",
+    "promoteHeading": "Promozione del pedone",
+    "promoteHint": "Il pedone raggiunge l’ultima traversa: scegli in cosa si trasforma.",
+    "otherMove": "Altra mossa",
+    "drawOfferHint": "Accetta la patta, oppure rifiuta e gioca la tua mossa.",
+    "declineDraw": "Rifiuta (continua)",
+    "resignQ": "Vuoi abbandonare?",
+    "resignHint": "La partita è persa subito.",
+    "offerDrawQ": "Offrire la patta?",
+    "offerDrawHint": "Poi gioca la tua mossa. L’avversario può accettare al suo turno: se invece muove, l’offerta decade.",
+    "keepPlaying": "No, continua"
   },
   "fx": {
     "hit": "Colpito!",
@@ -1075,13 +1097,10 @@
     "jailCard": "Carta uscita di prigione",
     "payBail": "Paga cauzione (50)",
     "roll": "Lancia i dadi",
-    "buy": "Compra {{name}} ({{price}})",
     "decline": "Rifiuta",
-    "auctionFor": "Asta: {{name}} · offerta attuale",
     "auctionNone": "nessuna",
     "bid": "Offri {{amount}}",
     "pass": "Passo",
-    "tradeOffer": "{{name}} ti propone uno scambio:",
     "give": "Dai:",
     "get": "Ricevi:",
     "accept": "Accetta",
@@ -1127,8 +1146,24 @@
     "debtWaiting": "{{name}} deve {{amount}} a {{to}} e sceglie cosa vendere o ipotecare…",
     "debtTitle": "Devi {{amount}} a {{to}}",
     "debtCash": "Contanti: {{cash}}",
-    "debtHint": "Vendi edifici (prima le case, in modo uniforme) o ipoteca proprietà dalla lista qui sotto, poi paga. Allo scadere del tempo la banca liquida automaticamente.",
-    "payDebt": "Paga {{amount}}"
+    "payDebt": "Paga {{amount}}",
+    "decideInPrompt": "Tocca a te: la scelta è nella finestra.",
+    "jailTitle": "Sei in prigione",
+    "jailHint": "Tentativo {{attempt}} di 3: tira per un doppio, oppure esci subito.",
+    "jailRoll": "Tira per un doppio",
+    "buyTitle": "Compri {{name}}?",
+    "buyHint": "Prezzo {{price}} · contanti {{cash}}.",
+    "declineAuction": "Rifiuta (asta)",
+    "auctionTitle": "Asta: {{name}}",
+    "auctionNoBids": "Ancora nessuna offerta",
+    "bidAmount": "Importo dell’offerta",
+    "tradeOfferTitle": "{{name}} ti propone uno scambio",
+    "debtPromptHint": "Vendi edifici o ipoteca, poi paga. Allo scadere del tempo la banca liquida automaticamente.",
+    "sellHouse": "Vendi una casa: {{name}} (+{{amount}})",
+    "sellHotel": "Vendi l’albergo: {{name}}",
+    "mortgageFor": "Ipoteca {{name}} (+{{amount}})",
+    "buyFor": "Compra per {{price}}",
+    "buyShort": "Non bastano: ipoteca una proprietà o rifiuta."
   },
   "errors": {
     "generic": "Qualcosa è andato storto",

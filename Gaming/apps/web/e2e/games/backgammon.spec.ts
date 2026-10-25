@@ -2,11 +2,14 @@ import { test, expect, type Page } from "@playwright/test";
 import { backgammonEngine, SeededRng, type BackgammonAction, type BackgammonState } from "@aso/game-core";
 import { expectNoErrors, expectServerAdvanced, openGame, stateVersion, waitMyTurn } from "./helpers";
 import { centerLuma, expectBanner, recordBanners, snapBoth, note } from "./helpers-board";
+import { expectDecisionOnScreen, expectMinimizeRestore } from "./decision-checks";
 
 /**
  * Табла (Портес) срещу бот — 2D дъската, само с истински кликове:
  * „Хвърли“ → точка с пул (data-movable) → точка-цел (data-target), „Бар“ за
- * влизане от бара, „Извади“ за изнасяне, „Пас“ без ход.
+ * влизане от бара, „Извади“ за изнасяне, „Пас“ без ход — той идва сам в
+ * прозореца „Няма възможен ход“ (единственото решение в таблата; обикновеният
+ * ход е без прозорец).
  *
  * Покрива: хвърляне, местене с двата зара в един ход, влизане от бара и
  * изнасяне (ако се стигне), край на игра в мача → нова игра (резултатът в
@@ -15,6 +18,10 @@ import { centerLuma, expectBanner, recordBanners, snapBoth, note } from "./helpe
  *
  * Тестът избира хода с двигателя от @aso/game-core (безопасно бягане — без
  * оставени самотни пулове, за да свърши играта бързо); ходовете са кликове.
+ *
+ * Seed `e2e-backgammon-111` (infra/e2e-games.sh): в началото на първата игра
+ * мой пул е на бара, а с 6-6 не може да влезе → прозорецът „Няма възможен ход“
+ * идва детерминистично (иначе пасът е въпрос на късмет и често не се пада).
  */
 
 type Move = Extract<BackgammonAction, { type: "MOVE" }>;
@@ -151,12 +158,22 @@ async function playTurn(page: Page, seen: Seen): Promise<void> {
   const gameAtStart = (await readBoard(page)).game;
   for (let guard = 0; guard < 6; guard++) {
     if (await action(page, "pass").isVisible()) {
+      // Без ход: прозорецът е дошъл сам, със заровете в подсказката.
+      const card = await expectDecisionOnScreen(page, "backgammon-pass");
+      await expect(card).toContainText("Няма възможен ход");
+      if (seen.passes === 0) {
+        await expectMinimizeRestore(page, "backgammon-pass");
+        await snapBoth(page, "backgammon-pass");
+      }
       const before = await stateVersion(page);
-      await action(page, "pass").click();
+      await card.locator('[data-action="pass"]').click();
       await expectServerAdvanced(page, before);
+      await expect(page.getByTestId("backgammon-pass")).toHaveCount(0);
       seen.passes++;
       break;
     }
+    // Има ход → няма прозорец (обикновеният ход е по дъската).
+    await expect(page.locator("[data-decision]")).toHaveCount(0);
     const b = await readBoard(page);
     if (b.game !== gameAtStart) break; // играта свърши с последния ми ход
     const s = stateFrom(b);
@@ -242,6 +259,8 @@ test("табла: хвърляне, двата зара, бар/изнасяне
     game = (await readBoard(page)).game;
   }
   note(`табла: край на теста — ${JSON.stringify(seen)}`);
+  // Със seed-а на стека пасът (единственото решение в таблата) винаги се стига.
+  expect(seen.passes, "„Няма възможен ход“ не се появи (стекът е без seed за BACKGAMMON?)").toBeGreaterThan(0);
 
   expect(seen.rolls, "не се хвърли зар").toBeGreaterThan(5);
   expect(seen.bothDice, "не се игра с двата зара").toBeGreaterThan(3);

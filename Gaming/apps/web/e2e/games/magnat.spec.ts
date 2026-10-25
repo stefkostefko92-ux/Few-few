@@ -2,12 +2,16 @@ import { test, expect, type Locator, type Page } from "@playwright/test";
 import { BOARD, GROUP_TILES, HOUSE_COST_BY_GROUP } from "@aso/shared";
 import { expectNoErrors, expectServerAdvanced, isOver, openGame, probe, stateVersion, waitMyTurn } from "./helpers";
 import { expectFullyVisible, snapBoth, PHONE } from "./helpers-grid";
+import { expectDecisionOnScreen, expectMinimizeRestore, expectNotCovered } from "./decision-checks";
 
 /**
  * Магнат срещу 3 бота (2D: WebGL е изключен → таблото вдясно и 2D дъската).
  * Само истински кликове: хвърляне, купуване/отказ, търг (наддаване и пас),
  * сделка с бот, за да събереш комплект, строеж, ипотека и откупуване, дълг
  * (продажба/ипотека и плащане), ако се стигне, край на хода — поне 15 хода.
+ * Всяко решение (купуваш ли, търг, затвор, оферта за сделка, дълг) идва САМО
+ * като прозорец (`[data-decision]`) и се взема в него; в таблото остават само
+ * обикновените ходове (хвърляне, край на хода, строеж, сделка).
  */
 
 const side = (page: Page) => page.locator("[data-mag-phase]");
@@ -36,7 +40,8 @@ async function tokenTile(page: Page, seat: number): Promise<number> {
   );
   return tiles.find(([, who]) => who.split(",").includes(String(seat)))?.[0] ?? -1;
 }
-const tile2d = (page: Page, tile: number) => page.locator(`[data-tile="${tile}"]`);
+// Само полето на 2D дъската (бутонът „Купи“ в прозореца също носи data-tile).
+const tile2d = (page: Page, tile: number) => page.locator(`.mag2d [data-tile="${tile}"]`);
 
 /** Клик, който праща ход: сървърът трябва да отговори с ново състояние. */
 async function send(page: Page, target: Locator): Promise<void> {
@@ -196,16 +201,20 @@ async function manage(page: Page, me: number, stats: Stats, plan: { offers: numb
   stats.ends++;
 }
 
-/** Фаза „DEBT“: продай сграда или ипотекирай, докато стигнат парите, после плати. */
+/** Фаза „DEBT“: в прозореца — продай сграда или ипотекирай, докато стигнат парите, после плати. */
 async function payDebt(page: Page, stats: Stats): Promise<void> {
-  const pay = act(page, "pay-debt");
+  const card = await expectDecisionOnScreen(page, "magnat-debt");
+  if (stats.debtActions + stats.debtsPaid === 0) await snapBoth(page, test.info(), "magnat-debt");
+  // Действията по имотите са само в прозореца (едно място за решението).
+  await expect(page.locator('[data-mag-prop] [data-action="sell"], [data-mag-prop] [data-action="mortgage"]')).toHaveCount(0);
+  const pay = card.locator('[data-action="pay-debt"]');
   if (await pay.isEnabled()) {
     await send(page, pay);
     stats.debtsPaid++;
     return;
   }
-  const sell = page.locator('[data-mag-prop] [data-action="sell"]').first();
-  const mortgage = page.locator('[data-mag-prop] [data-action="mortgage"]').first();
+  const sell = card.locator('[data-action="debt-sell"]').first();
+  const mortgage = card.locator('[data-action="debt-mortgage"]').first();
   const pick = (await sell.count()) > 0 ? sell : mortgage;
   expect(await pick.count(), "в дълг, но нищо за продаване/ипотекиране").toBeGreaterThan(0);
   await send(page, pick);
@@ -231,16 +240,33 @@ test("магнат (2D): ~15 хода с хвърляне, купуване, т�
     mortgaged: 0, redeemed: 0, debtActions: 0, debtsPaid: 0, ends: 0, bail: 0,
   };
   const plan = { offers: 0 };
+  const seenPrompt = new Set<string>();
+  /** Първия път за всяко решение: свиване/връщане и снимки при двата размера. */
+  const firstLook = async (testId: string) => {
+    if (seenPrompt.has(testId)) return;
+    seenPrompt.add(testId);
+    await expectMinimizeRestore(page, testId);
+    await snapBoth(page, info, testId);
+  };
   // Поне 15 хода; ако дотогава няма строеж (няма събран комплект), до 40.
   for (let guard = 0; guard < 900 && !(stats.ends >= 15 && (stats.built > 0 || stats.ends >= 40)); guard++) {
     if ((await page.locator(`[data-mag-player="${me}"]`).getAttribute("data-bankrupt")) === "true") break;
     if (!(await waitMyTurn(page, 120_000))) break; // мачът свърши
     const phase = await side(page).getAttribute("data-mag-phase");
+    // Само решенията имат прозорец; обикновеният ход — не.
+    if (phase === "MANAGE") await expect(page.locator("[data-decision]")).toHaveCount(0);
     if (phase === "ROLL") {
-      if (stats.bail === 0 && (await act(page, "jail-pay").count()) > 0) {
-        await send(page, act(page, "jail-pay"));
-        stats.bail++;
-        continue;
+      if (await page.getByTestId("magnat-jail").isVisible()) {
+        // Затвор: гаранция, карта или хвърляне за чифт — всичко в прозореца, не в таблото.
+        await firstLook("magnat-jail");
+        await expect(side(page).locator('[data-action="roll"]')).toHaveCount(0);
+        if (stats.bail === 0 && (await act(page, "jail-pay").count()) > 0) {
+          await send(page, act(page, "jail-pay"));
+          stats.bail++;
+          continue;
+        }
+      } else {
+        await expect(page.locator("[data-decision]")).toHaveCount(0);
       }
       await send(page, act(page, "roll"));
       await expect(page.locator("[data-dice]")).toBeVisible();
@@ -251,12 +277,30 @@ test("магнат (2D): ~15 хода с хвърляне, купуване, т�
         .poll(async () => (await tokenTile(page, me)) === Number(await side(page).getAttribute("data-mag-pos")))
         .toBe(true);
     } else if (phase === "BUY") {
-      const buy = act(page, "buy");
-      const tile = (await buy.count()) > 0 ? Number(await buy.getAttribute("data-tile")) : -1;
-      const price = tile >= 0 ? BOARD[tile]!.price : Infinity;
-      // Пестеливо (пари за сделка и къщи), но поне една покупка.
+      // „Купуваш ли …?“ идва сам, без клик; полето на дъската остава видимо.
+      const card = await expectDecisionOnScreen(page, "magnat-buy");
+      const buy = card.locator('[data-action="buy"]');
+      const tile = Number(await buy.getAttribute("data-tile"));
+      await expect(card).toContainText(BOARD[tile]!.name);
+      // Както я вижда играчът след „Хвърли“ (бутонът е горе в таблото): от началото на страницата.
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await expectNotCovered(page, "magnat-buy", tile2d(page, tile), `полето „${BOARD[tile]!.name}“`);
+      // На лаптоп прозорецът е над таблото вдясно — нито едно поле на дъската не е под него.
+      const covered = await page.locator(".mag2d [data-tile]").evaluateAll((els) => {
+        const card = document.querySelector('[data-testid="magnat-buy"]')!.getBoundingClientRect();
+        return els.filter((el) => {
+          const r = el.getBoundingClientRect();
+          return r.right > card.left && r.left < card.right && r.bottom > card.top && r.top < card.bottom;
+        }).length;
+      });
+      expect(covered, "прозорецът „Купуваш ли …?“ закрива полета на дъската").toBe(0);
+      await firstLook("magnat-buy");
+      const price = (await buy.isEnabled()) ? BOARD[tile]!.price : Infinity;
+      // Пестеливо (пари за сделка и къщи), но поне една покупка; след нея един
+      // отказ — за да се стигне до търга (и неговия прозорец).
       const cash = await cashOf(page, me);
-      if (tile >= 0 && (cash - price >= 350 || (stats.bought === 0 && cash - price >= 0))) {
+      const wantAuction = stats.bought > 0 && stats.declined === 0;
+      if (!wantAuction && (cash - price >= 350 || (stats.bought === 0 && cash - price >= 0))) {
         await send(page, buy);
         await expect(page.locator(`[data-mag-prop="${tile}"]`)).toBeVisible();
         await expect(tile2d(page, tile)).toHaveAttribute("data-owner", String(me));
@@ -266,6 +310,8 @@ test("магнат (2D): ~15 хода с хвърляне, купуване, т�
         stats.declined++;
       }
     } else if (phase === "AUCTION") {
+      await expectDecisionOnScreen(page, "magnat-auction");
+      await firstLook("magnat-auction");
       const bid = act(page, "bid");
       if (stats.bids === 0 && (await bid.count()) > 0 && (await bid.isEnabled())) {
         await send(page, bid);
@@ -279,12 +325,17 @@ test("магнат (2D): ~15 хода с хвърляне, купуване, т�
     } else if (phase === "DEBT") {
       await payDebt(page, stats);
     } else if (phase === "TRADE") {
+      await expectDecisionOnScreen(page, "magnat-trade");
+      await firstLook("magnat-trade");
       await send(page, act(page, "trade-decline"));
     } else {
       throw new Error(`непозната фаза ${phase}`);
     }
   }
-  console.log("магнат:", JSON.stringify(stats));
+  console.log("магнат:", JSON.stringify(stats), "прозорци:", [...seenPrompt].join(","));
+  expect(seenPrompt.has("magnat-buy"), "„Купуваш ли …?“ не се появи като прозорец").toBe(true);
+  // Отказ при включени търгове → търгът стига и до мен като прозорец.
+  if (stats.declined > 0) expect(seenPrompt.has("magnat-auction"), "търгът не се появи като прозорец").toBe(true);
   await snapBoth(page, info, "magnat-late");
   if (!(await isOver(page))) {
     expect(stats.ends, "поне 15 завършени хода").toBeGreaterThanOrEqual(15);
@@ -308,6 +359,8 @@ test("магнат на телефон: таблото и бутоните на 
   await send(page, act(page, "roll"));
   expect(await waitMyTurn(page)).toBe(true);
   const phase = await side(page).getAttribute("data-mag-phase");
+  // На телефон решението също излиза само и е изцяло в екрана.
+  if (phase === "BUY") await expectDecisionOnScreen(page, "magnat-buy");
   const next = phase === "BUY" ? act(page, "decline") : phase === "MANAGE" ? act(page, "end") : null;
   if (next) {
     await expectFullyVisible(next);

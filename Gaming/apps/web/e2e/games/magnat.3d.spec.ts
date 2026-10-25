@@ -2,6 +2,7 @@ import { test, expect, type Locator, type Page } from "@playwright/test";
 import sharp from "sharp";
 import { expectNoErrors, expectServerAdvanced, openGame, probe, stateVersion, waitMyTurn } from "./helpers";
 import { snapBoth } from "./helpers-grid";
+import { expectDecisionOnScreen } from "./decision-checks";
 
 /**
  * Магнат с WebGL (проект games-3d, swiftshader): 3D платното наистина рисува
@@ -96,15 +97,23 @@ test("магнат 3D: платното рисува дъската, пулът 
     .toBe(true);
   expect(await changed(before, await canvas.screenshot())).toBeGreaterThan(0.002);
 
-  // Довърши хода с бутоните: покупка/отказ (или търг), после „Край на хода“.
+  // Довърши хода: решенията (покупка/отказ, търг, дълг) идват сами в прозореца
+  // над 3D платното, после „Край на хода“ от таблото.
   for (let step = 0; step < 8 && (await waitMyTurn(page, 60_000)); step++) {
     const phase = await page.locator("[data-mag-phase]").getAttribute("data-mag-phase");
     if (phase === "ROLL") break; // чифт — следващото хвърляне вече е друг ход
-    if (phase === "BUY") await send(page, (await act(page, "buy").count()) > 0 ? act(page, "buy") : act(page, "decline"));
-    else if (phase === "AUCTION") await send(page, act(page, "pass-bid"));
-    else if (phase === "DEBT") {
-      const pay = act(page, "pay-debt");
-      await send(page, (await pay.isEnabled()) ? pay : page.locator('[data-mag-prop] [data-action="mortgage"]').first());
+    if (phase === "BUY") {
+      const card = await expectDecisionOnScreen(page, "magnat-buy");
+      await snapBoth(page, info, "magnat-3d-buy");
+      const buy = card.locator('[data-action="buy"]');
+      await send(page, (await buy.isEnabled()) ? buy : act(page, "decline"));
+    } else if (phase === "AUCTION") {
+      await expectDecisionOnScreen(page, "magnat-auction");
+      await send(page, act(page, "pass-bid"));
+    } else if (phase === "DEBT") {
+      const card = await expectDecisionOnScreen(page, "magnat-debt");
+      const pay = card.locator('[data-action="pay-debt"]');
+      await send(page, (await pay.isEnabled()) ? pay : card.locator('[data-action="debt-mortgage"], [data-action="debt-sell"]').first());
     } else if (phase === "MANAGE") {
       await send(page, act(page, "end"));
       break;

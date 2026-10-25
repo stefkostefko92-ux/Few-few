@@ -404,3 +404,54 @@
   background: var(--felt-900);
   color: var(--ink-100);
 }
+
+/* ── прозорците за решение (DecisionPrompt, на <body>) ──────────────────── */
+/* На широк екран таблото е вдясно от дъската: прозорецът застава горе над
+   таблото, а дъската (вляво) остава изцяло открита. Под 1200px таблото е под
+   дъската и прозорецът е горе по средата (над дъската). Само за Магнат. */
+@media (min-width: 1200px) {
+  .aso-decision-wrap:has(> .aso-decision[data-testid^="magnat-"]),
+  .aso-decision-pill-wrap:has(> [data-testid^="magnat-"]) {
+    justify-content: flex-end;
+    padding-inline-end: 32px;
+  }
+}
+.mag-decide-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.aso-decision .mag-bidrow {
+  justify-content: center;
+  width: 100%;
+}
+.mag-btns--center {
+  justify-content: center;
+}
+.mag-liquidate {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin-top: 4px;
+}
+.mag-liquidate:empty {
+  display: none;
+}
+.mag-liquidate button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(217, 178, 95, 0.3);
+  background: rgba(11, 14, 13, 0.5);
+  color: var(--ink-100);
+  font-size: 0.85rem;
+  text-align: start;
+}
+.mag-liquidate button:hover,
+.mag-liquidate button:focus-visible {
+  border-color: var(--brass-300);
+  background: rgba(217, 178, 95, 0.12);
+}
