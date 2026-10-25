@@ -7,15 +7,16 @@ import { SITE, NAV_GROUPS, QUICK_NAV, TOP_NAV, type NavGroup, type NavItem } fro
 import { SearchBar } from "@/components/SearchBar";
 import { ChevronDown } from "@/components/icons";
 import { isDangerNav, navIcon } from "@/components/nav-icons";
+import { SECTION } from "@/lib/section-names";
 
 // „Още полезно“ — страниците, които иначе са само във футъра; в мобилното
 // меню и в „Всички раздели“ стоят след разделите.
-const MORE: NavGroup = { title: "Още полезно", items: QUICK_NAV };
+const MORE: NavGroup = { title: SECTION.more, items: QUICK_NAV };
 const ALL_GROUPS: NavGroup[] = [...NAV_GROUPS, MORE];
 
 // Ред на скриване, когато основното меню не се събира на един ред: от
 // последния по важност към първия („Данъци и срокове“, „Пенсии и помощи“…).
-// „Пази се от измами“ (безопасността) се скрива последна, а текущият раздел —
+// „Пазете се от измами“ (безопасността) се скрива последна, а текущият раздел —
 // само ако нищо друго не остава.
 const SAFETY_HREF = "/izmami";
 const HIDE_ORDER: string[] = [
@@ -187,7 +188,7 @@ export function SiteHeader() {
   // Вторият ред е висок един ред: показва толкова раздели, колкото се
   // събират според ширината и размера на текста (125% на 1280px). Излишните
   // се скриват по HIDE_ORDER — първо най-малко важните, никога преди тях
-  // „Пази се от измами“ и текущия раздел. Скритите отиват в края на реда
+  // „Пазете се от измами“ и текущия раздел. Скритите отиват в края на реда
   // (order) и на скрития втори ред (overflow-hidden); скриват се и за
   // клавиатурата и четеца (visibility) — те са в „Всички раздели“.
   useEffect(() => {

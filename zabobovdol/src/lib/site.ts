@@ -1,5 +1,6 @@
 // Централна конфигурация на сайта. Едно място за всички ключови факти,
 // използвани в SEO, структурирани данни (JSON-LD), footer и контакти.
+import { SECTION } from "@/lib/section-names";
 
 export const SITE = {
   name: "За Бобов дол",
@@ -74,7 +75,7 @@ export type NavItem = { href: string; label: string; description?: string };
 export const PRIMARY_NAV: NavItem[] = [
   { href: "/kak-da", label: "Как да…", description: "Стъпка по стъпка за е\u2011услуги и документи" },
   { href: "/uslugi", label: "Услуги и телефони", description: "Важни местни телефони и услуги" },
-  { href: "/izmami", label: "Пази се от измами", description: "Как да разпознаете телефонни и онлайн измами" },
+  { href: "/izmami", label: "Пазете се от измами", description: "Как да разпознаете телефонни и онлайн измами" },
   { href: "/dezhurna-apteka", label: "Дежурна аптека", description: "Коя аптека и лекар работят сега" },
   { href: "/pomoshti", label: "Пенсии и помощи", description: "Пенсии, помощ за отопление, ТЕЛК и документи" },
   { href: "/danaci-srokove", label: "Данъци и срокове", description: "Кога и как да платите местните данъци и такси" },
@@ -121,18 +122,25 @@ export const TOP_NAV: NavItem[] = pick(
   "/izmami",
 );
 
+// „Пари и документи“ — пенсиите, данъците и еврото. Първите два са и в
+// основното меню на компютър, но в мобилното меню и в „Всички раздели“ стоят
+// в своя раздел (с eyebrow „Пари и документи“ над страницата).
+const MONEY_NAV: NavItem[] = pick("/pomoshti", "/danaci-srokove", "/evroto");
+
 // Всички раздели по групи — един източник за мобилното меню и за панела
-// „Всички раздели“ на компютър. Всеки раздел от PRIMARY_NAV е точно веднъж
-// (проверява го тестът directory-nav).
+// „Всички раздели“ на компютър. Всеки раздел от PRIMARY_NAV е точно веднъж, а
+// заглавията са от SECTION — същите като eyebrow над страниците (проверява
+// го тестът directory-nav).
 export const NAV_GROUPS: NavGroup[] = [
-  { title: "Най-търсени", items: TOP_NAV },
+  { title: SECTION.popular, items: TOP_NAV.filter((i) => !MONEY_NAV.includes(i)) },
+  { title: SECTION.money, items: MONEY_NAV },
   {
-    title: "Всеки ден",
+    title: SECTION.daily,
     items: pick("/transport", "/prekysvaniya", "/grafik-smetosabirane", "/novini", "/sabitiya", "/imen-den"),
   },
-  { title: "Пари и сигнали", items: pick("/evroto", "/signali", "/smetishta", "/prozrachnost") },
-  { title: "Хора и общност", items: pick("/obyavi", "/biznes", "/zov-za-pomosht", "/dobrovolci", "/pomeni") },
-  { title: "Градът", items: pick("/grada", "/istoriya", "/spomeni", "/galeriya") },
+  { title: SECTION.signals, items: pick("/signali", "/smetishta", "/prozrachnost") },
+  { title: SECTION.community, items: pick("/obyavi", "/biznes", "/zov-za-pomosht", "/dobrovolci", "/pomeni") },
+  { title: SECTION.city, items: pick("/grada", "/istoriya", "/spomeni", "/galeriya") },
 ];
 
 // Правните връзки — в долната лента на футъра, отделно от съдържанието.
@@ -147,7 +155,7 @@ export const LEGAL_NAV: NavItem[] = [
 // раздели“) — тук са само най-търсеното и страниците за самия сайт.
 export const FOOTER_GROUPS: NavGroup[] = [
   {
-    title: "Най-търсени",
+    title: SECTION.popular,
     items: pick(
       "/uslugi",
       "/dezhurna-apteka",
@@ -161,7 +169,7 @@ export const FOOTER_GROUPS: NavGroup[] = [
     ),
   },
   {
-    title: "За сайта",
+    title: SECTION.site,
     items: [
       { href: "/za-nas", label: "За проекта" },
       { href: "/kak-da-polzvam-sayta", label: "Как да ползвам сайта" },
@@ -169,23 +177,25 @@ export const FOOTER_GROUPS: NavGroup[] = [
       { href: "/izvestiya", label: "Известия" },
       { href: "/za-blizkite", label: "За близките" },
       { href: "/kontakti", label: "Контакти" },
+      { href: "/reklama", label: "Реклама" },
       { href: "/novini/rss.xml", label: "RSS новини" },
     ],
   },
   {
-    title: "Участвайте",
+    title: SECTION.participate,
     items: [
       { href: "/biznes/nova", label: "Добавете бизнес" },
       { href: "/spodeleno-patuvane", label: "Споделено пътуване" },
-      { href: "/reklama", label: "Реклама" },
     ],
   },
   {
-    title: "За печат",
+    // Етикетите = заглавията на листовете (SHEET_TITLE в PrintKit.tsx).
+    title: SECTION.print,
     items: [
-      { href: "/pechat", label: "Телефони за печат" },
+      { href: "/pechat", label: "Важни телефони за печат" },
       { href: "/pechat/plakat", label: "Плакат за разпечатване" },
       { href: "/pechat/sedmitsa", label: "Седмицата за печат" },
+      { href: "/pechat/avtobus", label: "Автобусно разписание за печат" },
     ],
   },
 ];

@@ -38,7 +38,7 @@ const FAMILY_URL = `${SITE.url}/?s=family`;
 const MUST_SEE = [
   { href: "/dezhurna-apteka", label: "Дежурна аптека", text: "коя аптека работи днес" },
   { href: "/uslugi", label: "Услуги и телефони", text: "лекар, община, поща, такси" },
-  { href: "/izmami", label: "Пази се от измами", text: "как да познае измамника" },
+  { href: "/izmami", label: "Пазете се от измами", text: "как да познае измамника" },
 ];
 
 export default async function ForFamilyPage() {

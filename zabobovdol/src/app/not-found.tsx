@@ -4,6 +4,7 @@ import { PageHero } from "@/components/ui";
 import { SearchBar } from "@/components/SearchBar";
 import { isDangerNav, navIcon } from "@/components/nav-icons";
 import { PRIMARY_NAV, SITE, type NavItem } from "@/lib/site";
+import { SECTION } from "@/lib/section-names";
 import { breakableAddress } from "@/components/TrustCard";
 
 // 404 — подредена като другите страници: заглавна лента, търсачка, най-търсените
@@ -44,7 +45,7 @@ export default function NotFound() {
 
         <section aria-labelledby="nf-popular">
           <h2 id="nf-popular" className="section-title mb-6">
-            Най-търсени
+            {SECTION.popular}
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {CARDS.map((item) => {

@@ -135,7 +135,7 @@ export default async function AidPage() {
       )}
 
       <PageHero
-        eyebrow={SECTION.social}
+        eyebrow={SECTION.money}
         title="Пенсии и социални помощи"
         intro="Накратко и на разбираем език: пенсии, помощ за отопление, ТЕЛК и към кого да се обърнете. Тук обясняваме къде да питате — без сложни думи."
         crumbs={[{ name: "Пенсии и помощи", path: "/pomoshti" }]}

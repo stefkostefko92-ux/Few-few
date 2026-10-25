@@ -24,7 +24,7 @@ import { SECTION } from "@/lib/section-names";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Опознай Бобов дол — география, население, икономика, забележителности",
+  title: "Опознайте Бобов дол — география, население, икономика, забележителности",
   description:
     "Кратка енциклопедия на град Бобов дол: къде се намира, колко жители има, икономика (въгледобив и ТЕЦ), забележителности и природа (язовир Дяково, манастири), религиозен живот и карта на града.",
   path: "/grada",
@@ -127,9 +127,9 @@ export default async function CityPage() {
       <JsonLd data={placeLd} />
       <PageHero
         eyebrow={SECTION.city}
-        title="Опознай Бобов дол"
+        title="Опознайте Бобов дол"
         intro="Накратко за нашия град — къде се намира, с какво е известен, какво има да се види и как изглежда на картата. За подробната история вижте отделната страница."
-        crumbs={[{ name: "Опознай Бобов дол", path: "/grada" }]}
+        crumbs={[{ name: "Опознайте Бобов дол", path: "/grada" }]}
       />
 
       <div className="container-content space-y-12 py-10">
@@ -323,7 +323,7 @@ export default async function CityPage() {
             .
           </p>
           <ArticleActions
-            shareTitle="Опознай Бобов дол — За Бобов дол"
+            shareTitle="Опознайте Бобов дол — За Бобов дол"
             shareText="Накратко за град Бобов дол: къде е, с какво е известен и какво да видите."
             sharePath="/grada"
           />

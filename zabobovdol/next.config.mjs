@@ -61,7 +61,7 @@ const nextConfig = {
       "object-src 'none'",
       "base-uri 'self'",
       "frame-ancestors 'self'",
-      // Позволяваме вградена карта от OpenStreetMap (за страницата „Опознай Бобов дол").
+      // Позволяваме вградена карта от OpenStreetMap (за страницата „Опознайте Бобов дол").
       "frame-src 'self' https://www.openstreetmap.org",
       "form-action 'self'",
       "upgrade-insecure-requests",

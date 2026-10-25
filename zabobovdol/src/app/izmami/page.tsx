@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
 const GUIDES_SHOWN = 10;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Пази се от измами — как да разпознаете телефонни и онлайн измами",
+  title: "Пазете се от измами — как да разпознаете телефонни и онлайн измами",
   description:
     "Прости правила, които пазят възрастните хора от телефонни и онлайн измами: фалшиви обаждания от „банка“, схемата с „внуче в беда“, измамни SMS и награди. Какво да направите, ако вече сте били измамени.",
   path: "/izmami",
@@ -147,9 +147,9 @@ export default async function ScamProtectionPage() {
 
       <PageHero
         eyebrow={SECTION.safety}
-        title="Пази се от измами"
+        title="Пазете се от измами"
         intro="Измамниците често търсят точно възрастните хора. Тук са простите правила, които ви пазят — и какво да направите, ако вече сте били измамени."
-        crumbs={[{ name: "Пази се от измами", path: "/izmami" }]}
+        crumbs={[{ name: "Пазете се от измами", path: "/izmami" }]}
       />
 
       <div className="container-content space-y-12 py-10">
@@ -269,7 +269,7 @@ export default async function ScamProtectionPage() {
         <div className="max-w-3xl">
           <ArticleActions
             className="!mt-0"
-            shareTitle="Пази се от измами — За Бобов дол"
+            shareTitle="Пазете се от измами — За Бобов дол"
             shareText="Прости правила срещу телефонни и онлайн измами. Изпратете ги на близките си."
             sharePath="/izmami"
             printLabel="Отпечатайте съветите"

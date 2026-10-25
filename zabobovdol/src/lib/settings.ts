@@ -140,7 +140,7 @@ export async function getViberChannelUrl(): Promise<string> {
 }
 
 // Часове на църковните служби (и празници), редактирани свободно от админа.
-// Показват се в раздела „Религиозен живот" на страница „Опознай Бобов дол".
+// Показват се в раздела „Религиозен живот" на страница „Опознайте Бобов дол".
 export async function getChurchServices(): Promise<string> {
   try {
     const row = await prisma.siteSetting.findUnique({

@@ -230,7 +230,7 @@ export default function HistoryPage() {
               <strong>„Свети Никола“</strong> (1822&nbsp;г.), в квартал „Христо Ботев“. В града има
               и <strong>евангелска съборна църква</strong>, и <strong>адвентистка църква</strong>.
               За забележителностите и манастирите в по-широкия край вижте страницата{" "}
-              <Link href="/grada">„Опознай Бобов дол“</Link>.
+              <Link href="/grada">„Опознайте Бобов дол“</Link>.
             </p>
           </Section>
 

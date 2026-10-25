@@ -83,7 +83,7 @@ export function canonicalCategory(name: string): string {
 const TOPIC_PAGES: Record<string, { href: string; label: string }> = {
   [categorySlug("Еврото")]: { href: "/evroto", label: "Еврото — въпроси и отговори" },
   [categorySlug("Пенсии и социални помощи")]: { href: "/pomoshti", label: "Пенсии и помощи" },
-  [categorySlug("Безопасност и измами")]: { href: "/izmami", label: "Пази се от измами" },
+  [categorySlug("Безопасност и измами")]: { href: "/izmami", label: "Пазете се от измами" },
   [categorySlug("Достъпност")]: { href: "/dostapnost", label: "Достъпност на сайта" },
 };
 
