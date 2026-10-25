@@ -14,7 +14,7 @@ import { PrintSourceLine } from "@/components/PrintSourceLine";
 import { sourceLink } from "@/components/VerifiedBadge";
 import { formatDate, isoDate } from "@/lib/format-date";
 import { getGuideIndex } from "@/lib/howto-index";
-import { SCAM_TOPIC, categoryPath, categorySlug, guidesLabel } from "@/lib/howto";
+import { SCAM_TOPIC, categoryPath, categorySlug, guidesLabel, pickScamGuides } from "@/lib/howto";
 import { GuideCard } from "@/app/kak-da/_components/GuideList";
 import { SECTION } from "@/lib/section-names";
 
@@ -113,9 +113,10 @@ export default async function ScamProtectionPage() {
   ]);
 
   // Ръководствата от обединената тема „Безопасност и измами“ (с всичките ѝ
-  // синоними) — първите по реда на темата; отговорите само за тях.
+  // синоними) — първо тези точно за измамите (виж pickScamGuides); отговорите
+  // само за показаните.
   const topic = index.categoryBySlug.get(categorySlug(SCAM_TOPIC));
-  const shown = topic ? topic.items.slice(0, GUIDES_SHOWN) : [];
+  const shown = topic ? pickScamGuides(topic.items, GUIDES_SHOWN) : [];
   const rows = shown.length
     ? await prisma.faq.findMany({
         where: { id: { in: shown.map((g) => g.id) } },

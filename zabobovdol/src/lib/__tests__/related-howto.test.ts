@@ -8,6 +8,7 @@ import {
   categorySlug,
   duplicateRedirects,
   formatBgDate,
+  pickScamGuides,
   groupCategories,
   guidesLabel,
   hasTag,
@@ -219,4 +220,18 @@ test("дати: български формат и ISO ден по софийс�
   const d = new Date("2026-10-11T22:30:00Z"); // 12 октомври в София (UTC+3)
   assert.equal(isoDay(d), "2026-10-12");
   assert.match(formatBgDate(d), /^12 октомври 2026/);
+});
+
+test("pickScamGuides: първо ръководствата точно за измамите, после общата безопасност, после синонимите", () => {
+  const items = [
+    { slug: "kak-da-razpoznavam-onlayn-izmami", category: "Безопасност и измами" },
+    { slug: "i-namerya-oficialen-sayt", category: "Интернет и онлайн безопасност" },
+    { slug: "iz-telefonna-izmama-vnuche", category: "Измами и безопасност" },
+    { slug: "telefonni-izmami-falshiv-policay", category: "Безопасност и измами" },
+    { slug: "iz-kakvo-ako-me-izmamiha", category: "Измами и безопасност" },
+  ];
+  assert.deepEqual(
+    pickScamGuides(items, 4).map((g) => g.slug),
+    ["iz-telefonna-izmama-vnuche", "iz-kakvo-ako-me-izmamiha", "kak-da-razpoznavam-onlayn-izmami", "telefonni-izmami-falshiv-policay"],
+  );
 });

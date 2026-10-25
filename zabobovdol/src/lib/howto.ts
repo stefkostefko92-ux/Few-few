@@ -95,6 +95,28 @@ export function topicPageFor(name: string): { href: string; label: string } | nu
 /** Темата, чиито ръководства показва /izmami. */
 export const SCAM_TOPIC = "Безопасност и измами";
 
+// Оригиналните теми в реда, в който /izmami ги показва: първо ръководствата
+// точно за измамите („Какво да направя, ако вече дадох пари?“, „Измамник на
+// вратата“), после общата безопасност и чак тогава слетите синоними
+// („Интернет и онлайн безопасност“ — официален сайт, адрес, фалшиви новини).
+const SCAM_CATEGORY_PRIORITY = ["Измами и безопасност", SCAM_TOPIC];
+
+/**
+ * Първите `n` ръководства за /izmami от слетата тема: по приоритет на
+ * оригиналната тема (SCAM_CATEGORY_PRIORITY), после по реда в темата.
+ */
+export function pickScamGuides<T extends Pick<GuideIndexItem, "category">>(items: T[], n: number): T[] {
+  const rank = (c: string) => {
+    const i = SCAM_CATEGORY_PRIORITY.indexOf(c.trim());
+    return i === -1 ? SCAM_CATEGORY_PRIORITY.length : i;
+  };
+  return items
+    .map((it, i) => ({ it, i, r: rank(it.category) }))
+    .sort((a, b) => a.r - b.r || a.i - b.i)
+    .slice(0, n)
+    .map((x) => x.it);
+}
+
 /**
  * Разделите на /kak-da: темите (каноничните имена) в 6 смислови групи, за да
  * не се превърта през 30 карти подред. Тема, която я няма тук (нова в базата),
