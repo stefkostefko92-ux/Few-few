@@ -10,7 +10,7 @@
       <nav aria-label="<%= t('site.footer.explore') %>">
         <p class="footer-heading"><%= t('site.footer.explore') %></p>
         <ul class="footer-links">
-          <% ['leaderboard', 'matches', 'bans', 'vip', 'rules'].forEach((id) => { %><li><a href="<%= nav[id] %>"<% if (current === id) { %> aria-current="page"<% } %>><%= t('nav.' + id) %></a></li>
+          <% ['leaderboard', 'cup', 'matches', 'bans', 'vip', 'rules'].forEach((id) => { %><li><a href="<%= nav[id] %>"<% if (current === id) { %> aria-current="page"<% } %>><%= t('nav.' + id) %></a></li>
           <% }) %>
         </ul>
       </nav>

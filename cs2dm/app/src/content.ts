@@ -88,6 +88,7 @@ export const RULES = ['cheats', 'toxicity', 'ads', 'exploits', 'impersonation', 
 export const PAGES = [
   'home',
   'leaderboard',
+  'cup',
   'matches',
   'bans',
   'vip',
@@ -103,6 +104,7 @@ export type PageId = (typeof PAGES)[number];
 export const PAGE_SLUG: Record<PageId, string> = {
   home: '',
   leaderboard: 'leaderboard',
+  cup: 'cup',
   matches: 'matches',
   bans: 'bans',
   vip: 'vip',

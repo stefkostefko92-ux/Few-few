@@ -205,5 +205,11 @@
   "mission.zone": "{0} убийства в горещата зона",
   "mission.wanted": "Свали Most Wanted",
   "mission.duel": "Спечели дуел",
-  "mission.minutes": "Играй {0} минути"
+  "mission.minutes": "Играй {0} минути",
+  "cup.head": "{Gold}[CarbonStealth]{Default} {Red}Седмична купа{Default} — остават {Lime}{0} д {1} ч{Default}. Брои се XP от завършените мачове:",
+  "cup.empty": "  Още никой няма XP от завършен мач тази седмица — купата е отворена.",
+  "cup.line": "  {Gold}#{0}{Default} {1} — {Lime}{2} XP{Default}",
+  "cup.you": "{Gold}[CarbonStealth]{Default} Ти си {Gold}#{0}{Default} с {Lime}{1} XP{Default}.",
+  "cup.youNone": "{Gold}[CarbonStealth]{Default} Още нямаш XP от завършен мач тази седмица.",
+  "cup.foot": "{Gold}[CarbonStealth]{Default} Първите трима в неделя в полунощ вземат значка · {0}/cup"
 }

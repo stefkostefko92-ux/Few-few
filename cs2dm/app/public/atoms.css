@@ -128,6 +128,18 @@ progress::-moz-progress-bar {
   background: var(--red-hot);
   box-shadow: 0 0 0 2px currentColor;
 }
+/* Значките от купата и мисиите (CONTRACT §16–17): злато, сребро, червен печат. */
+.badge-cup_winner .badge-mark {
+  background: #d9a92e;
+  box-shadow: 0 0 0 2px var(--ink);
+}
+.badge-cup_podium .badge-mark {
+  background: #b9b2a4;
+  box-shadow: 0 0 0 2px var(--ink);
+}
+.badge-mission_streak .badge-mark {
+  background: var(--red);
+}
 .badge {
   display: inline-flex;
   align-items: center;

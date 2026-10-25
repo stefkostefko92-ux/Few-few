@@ -94,6 +94,7 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
         RegisterMostWanted();
         RegisterDuels();
         RegisterMissions();
+        RegisterCup();
         RegisterEvents();
         RegisterMatch();
 

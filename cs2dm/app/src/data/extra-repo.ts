@@ -1,7 +1,9 @@
 import type { PrismaClient } from '@prisma/client';
+import type { CupStanding, CupWeek, CupWinner } from '../cup.js';
 import type { PublicEvent } from '../events.js';
 import type { PlayerMissions } from '../missions.js';
 import { loadMissions } from './arena-data.js';
+import { loadCupStandings, loadCupWinners } from './cup-data.js';
 import { loadHonors } from './honors.js';
 import { loadMatchHighlights, loadMatchReport, loadPlayerMatches } from './match-analytics.js';
 import { loadEvents, loadMatch, loadRecentMatches } from './public-extra.js';
@@ -23,12 +25,14 @@ type ExtraReads =
   | 'matchHighlights'
   | 'matchReport'
   | 'playerMatches'
-  | 'missions';
+  | 'missions'
+  | 'cupStandings'
+  | 'cupWinners';
 
 /**
- * Публичното четене след етап 1 — събития (§12), мачове (§13), отличия (§15), мисии (§16). PrismaRepo го наследява,
- * за да остане всеки файл кратък; заявките са в `public-extra.ts`, `match-analytics.ts`, `honors.ts`,
- * `arena-data.ts`. Само препращане — никаква логика тук.
+ * Публичното четене след етап 1 — събития (§12), мачове (§13), отличия (§15), мисии (§16), купа (§17). PrismaRepo го
+ * наследява, за да остане всеки файл кратък; заявките са в `public-extra.ts`, `match-analytics.ts`, `honors.ts`,
+ * `arena-data.ts`, `cup-data.ts`. Само препращане — никаква логика тук.
  */
 export abstract class ExtraRepo implements Pick<Repo, ExtraReads> {
   constructor(protected readonly db: PrismaClient) {}
@@ -63,5 +67,13 @@ export abstract class ExtraRepo implements Pick<Repo, ExtraReads> {
 
   missions(steamId: string, day: string): Promise<PlayerMissions> {
     return loadMissions(this.db, steamId, day);
+  }
+
+  cupStandings(week: CupWeek, limit: number): Promise<CupStanding[]> {
+    return loadCupStandings(this.db, week, limit);
+  }
+
+  cupWinners(limit: number): Promise<CupWinner[]> {
+    return loadCupWinners(this.db, limit);
   }
 }

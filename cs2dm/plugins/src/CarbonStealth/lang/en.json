@@ -205,5 +205,11 @@
   "mission.zone": "{0} kills in the hot zone",
   "mission.wanted": "Take down the Most Wanted",
   "mission.duel": "Win a duel",
-  "mission.minutes": "Play {0} minutes"
+  "mission.minutes": "Play {0} minutes",
+  "cup.head": "{Gold}[CarbonStealth]{Default} {Red}Weekly cup{Default} — {Lime}{0} d {1} h{Default} left. XP from finished matches counts:",
+  "cup.empty": "  Nobody has XP from a finished match this week yet — the cup is wide open.",
+  "cup.line": "  {Gold}#{0}{Default} {1} — {Lime}{2} XP{Default}",
+  "cup.you": "{Gold}[CarbonStealth]{Default} You are {Gold}#{0}{Default} with {Lime}{1} XP{Default}.",
+  "cup.youNone": "{Gold}[CarbonStealth]{Default} You have no XP from a finished match this week yet.",
+  "cup.foot": "{Gold}[CarbonStealth]{Default} The top 3 at Sunday midnight earn a badge · {0}/cup"
 }

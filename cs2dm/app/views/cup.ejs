@@ -1,0 +1,63 @@
+<%- include('partials/head') %>
+<%- include('partials/page-hero', { title: t('cup.h1'), lead: t('cup.lead', { tz: displayTz, podium }), here: t('nav.cup') }) %>
+<div class="wrap page-content">
+  <section class="cup-week" aria-labelledby="week-title">
+    <div class="cup-week-head">
+      <h2 id="week-title"><%= t('cup.week', { from: fmt.date(week.from), to: fmt.date(week.to) }) %></h2>
+      <p class="cup-left"><%= t('cup.left', { days: left.days, hours: left.hours }) %></p>
+    </div>
+    <% if (standings.length === 0) { %>
+    <div class="empty-state"><p><%= t('cup.empty') %></p></div>
+    <% } else { %>
+    <div class="table-wrap">
+      <table class="data-table cup-table">
+        <caption class="sr-only"><%= t('cup.caption', { from: fmt.date(week.from), to: fmt.date(week.to) }) %></caption>
+        <thead>
+          <tr>
+            <th scope="col" class="c-num"><%= t('table.rank') %></th>
+            <th scope="col"><%= t('table.player') %></th>
+            <th scope="col" class="c-num"><%= t('table.xp') %></th>
+            <th scope="col" class="c-num opt"><%= t('cup.matches') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% standings.forEach((row) => { %><tr<% if (row.place <= podium) { %> class="is-podium"<% } %>>
+            <td class="c-num"><%= row.place %></td>
+            <th scope="row"><a href="<%= playerHref(row.steamId) %>"><%= row.name %></a></th>
+            <td class="c-num"><%= fmt.int(row.xp) %></td>
+            <td class="c-num opt"><%= fmt.int(row.matches) %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </section>
+
+  <div class="cup-grid">
+    <section class="card" aria-labelledby="winners-title">
+      <h2 id="winners-title"><%= t('cup.winners.title') %></h2>
+      <% if (winners.length === 0) { %>
+      <p><%= t('cup.winners.empty') %></p>
+      <% } else { %>
+      <ol class="cup-winners">
+        <% winners.forEach((winner) => { %><li>
+          <span class="cup-when"><%= t('cup.week', { from: fmt.date(winner.from), to: fmt.date(winner.to) }) %></span>
+          <a href="<%= playerHref(winner.steamId) %>"><%= winner.name %></a>
+          <strong><%= fmt.int(winner.xp) %> XP</strong>
+        </li>
+        <% }) %>
+      </ol>
+      <% } %>
+    </section>
+    <section class="card" aria-labelledby="rules-title">
+      <h2 id="rules-title"><%= t('cup.rules.title') %></h2>
+      <ul class="cup-rules">
+        <% ['count', 'week', 'badges', 'ties', 'command'].forEach((id) => { %><li><%= t('cup.rules.' + id, { tz: displayTz, podium }) %></li>
+        <% }) %>
+      </ul>
+    </section>
+  </div>
+  <p class="links-row spaced-top"><a href="<%= nav.leaderboard %>"><%= t('cup.toLeaderboard') %></a></p>
+</div>
+<%- include('partials/foot') %>

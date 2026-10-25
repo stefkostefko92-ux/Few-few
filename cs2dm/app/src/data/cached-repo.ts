@@ -71,5 +71,9 @@ export function withCache(repo: Repo, cache = new TtlCache()): Repo {
     playerMatches: (id, limit) =>
       cache.get(`pm:${id}:${limit}`, SHORT, () => repo.playerMatches(id, limit)),
     missions: (id, day) => cache.get(`ms:${id}:${day}`, SHORT, () => repo.missions(id, day)),
+    // Класирането се мени само в края на мач — кратък кеш; победителите — веднъж седмично.
+    cupStandings: (week, limit) =>
+      cache.get(`cup:${week.key}:${limit}`, SHORT, () => repo.cupStandings(week, limit)),
+    cupWinners: (limit) => cache.get(`cupw:${limit}`, LONG, () => repo.cupWinners(limit)),
   };
 }

@@ -20,6 +20,7 @@
   "nav": {
     "home": "Home",
     "leaderboard": "Leaderboard",
+    "cup": "Cup",
     "bans": "Ban list",
     "vip": "VIP",
     "rules": "Rules",
@@ -40,6 +41,11 @@
       "title": "Dust2 DM Leaderboard — XP, K/D, HS% | CarbonStealth.eu",
       "description": "The best players on the CS2 server CarbonStealth.eu | Dust2 DM, by season and all time: XP, level, kills, K/D and headshot percentage.",
       "keywords": "CS2 leaderboard, Dust2 DM stats, K/D ranking, CS2 XP and levels, top CS2 players, Carbon Stealth"
+    },
+    "cup": {
+      "title": "Weekly cup — top XP of the week | CarbonStealth.eu",
+      "description": "The weekly cup on the CS2 server CarbonStealth.eu | Dust2 DM: standings by XP from matches Monday to Sunday. The top three earn a badge.",
+      "keywords": "CS2 weekly cup, Dust2 DM standings, CS2 XP tournament, weekly CS2 leaderboard, Dust2 Deathmatch cup, Carbon Stealth"
     },
     "player": {
       "title": "{name} — CS2 Dust2 DM stats",
@@ -326,7 +332,8 @@
       "report": "Report a cheater or a rule break to the admins.",
       "lang": "The language of in-game messages.",
       "duel": "A duel to 5 kills with a player of your choice; they answer with !accept or !decline.",
-      "missions": "Your three missions for today and your progress (short: !m)."
+      "missions": "Your three missions for today and your progress (short: !m).",
+      "cup": "The weekly cup: your place and the top three."
     },
     "vipStripe": {
       "eyebrow": "Support the server",
@@ -371,6 +378,12 @@
         "title": "Three tasks a day",
         "text": "Every day at midnight you get three missions — easy, medium and hard: headshots, a streak, a knife kill, a duel, minutes played. A completed one pays XP at once, and all three for {days} days in a row earn a badge on your profile.",
         "how": "Type !missions in game"
+      },
+      "cup": {
+        "tag": "Weekly cup",
+        "title": "Every week has a winner",
+        "text": "XP from every match from Monday to Sunday adds up in one table. At midnight on Sunday the top three earn a badge on their profile.",
+        "link": "This week's standings"
       }
     }
   },
@@ -433,6 +446,32 @@
     },
     "inviteTitle": "The leaderboard is waiting",
     "matchesLink": "Cards of the latest matches"
+  },
+  "cup": {
+    "h1": "Weekly cup",
+    "lead": "XP from matches from Monday 00:00 to Sunday 23:59 ({tz}). The top {podium} at the end of the week earn a badge on their profile.",
+    "week": "Week {from} – {to}",
+    "left": "{days} d {hours} h left",
+    "caption": "Standings for the week {from} – {to} by XP",
+    "matches": "Matches",
+    "empty": "No finished match with XP this week yet — the first match opens the cup.",
+    "winners": {
+      "title": "Latest winners",
+      "empty": "No finished week with a winner yet."
+    },
+    "rules": {
+      "title": "How it works",
+      "count": "XP from every finished match on the server counts — kills, bonuses, duels and missions. A match enters the cup when it ends.",
+      "week": "The week runs from Monday 00:00 to Sunday 23:59 ({tz}).",
+      "badges": "First place earns the “Champion of the week” badge, second and third the “Podium of the week” badge. Badges stay on the profile.",
+      "ties": "On equal XP the lower SteamID64 ranks higher. Hidden profiles do not take part.",
+      "command": "In game: !cup — your place and the top three."
+    },
+    "toLeaderboard": "To the all-time leaderboard",
+    "ld": {
+      "name": "CarbonStealth.eu | Dust2 DM weekly cup — {from} – {to}",
+      "description": "Weekly standings by match XP on the CS2 server CarbonStealth.eu | Dust2 DM; the top {podium} earn a badge."
+    }
   },
   "player": {
     "steamId": "SteamID64",
@@ -526,6 +565,8 @@
       "empty": "No honours yet. Get the most kills inside the hot zone and the “King of the Zone” badge is yours.",
       "kinds": {
         "zone_king": "King of the Zone",
+        "cup_winner": "Champion of the week",
+        "cup_podium": "Podium of the week",
         "mission_streak": "7 days in a row"
       },
       "times": {
@@ -540,6 +581,10 @@
       "bestDays": {
         "one": "record: {count} day in a row",
         "other": "record: {count} days in a row"
+      },
+      "bestXp": {
+        "one": "best: {count} XP in a week",
+        "other": "best: {count} XP in a week"
       },
       "duels": "Duels in the last {days} days",
       "wins": "Wins",
@@ -714,7 +759,8 @@
           "Roughly the last 2000 server events (joins, kills, chat) are held briefly in working memory for moderation and are overwritten continuously; chat is not stored in the database.",
           "Honours from the arena modes (for example “King of the Zone” — the map, the zone and the number of kills) — shown on your profile.",
           "Duels (!duel): who played whom, the score and when — for the wins, losses and draws on the profile.",
-          "Daily missions (!missions): which mission, how far you got and when it was completed — for the progress on your profile and the “7 days in a row” badge."
+          "Daily missions (!missions): which mission, how far you got and when it was completed — for the progress on your profile and the “7 days in a row” badge.",
+          "The weekly cup (!cup): the badges of the top three — the week, the XP and the place — are shown on the profile."
         ]
       },
       "website": {

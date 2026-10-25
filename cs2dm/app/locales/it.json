@@ -20,6 +20,7 @@
   "nav": {
     "home": "Inizio",
     "leaderboard": "Classifica",
+    "cup": "Coppa",
     "bans": "Lista dei ban",
     "vip": "VIP",
     "rules": "Regole",
@@ -40,6 +41,11 @@
       "title": "Classifica Dust2 DM — XP, K/D, HS% | CarbonStealth.eu",
       "description": "I migliori giocatori del server CS2 CarbonStealth.eu | Dust2 DM, per stagione e di sempre: XP, livello, uccisioni, K/D e percentuale di colpi alla testa.",
       "keywords": "classifica CS2, statistiche Dust2 DM, classifica K/D, XP e livelli CS2, migliori giocatori CS2, Carbon Stealth"
+    },
+    "cup": {
+      "title": "Coppa settimanale: XP della settimana | CarbonStealth.eu",
+      "description": "La coppa settimanale del server CS2 CarbonStealth.eu | Dust2 DM: classifica per XP delle partite da lunedì a domenica. I primi tre hanno un distintivo.",
+      "keywords": "coppa settimanale CS2, classifica Dust2 DM, torneo XP CS2, classifica settimanale CS2, coppa Dust2 Deathmatch, Carbon Stealth"
     },
     "player": {
       "title": "{name} — statistiche CS2 Dust2 DM",
@@ -326,7 +332,8 @@
       "report": "Segnalazione agli amministratori di un cheater o di una violazione.",
       "lang": "La lingua dei messaggi in gioco.",
       "duel": "Un duello a 5 uccisioni con un giocatore a scelta; risponde con !accept o !decline.",
-      "missions": "Le Sue tre missioni di oggi e i progressi (in breve: !m)."
+      "missions": "Le Sue tre missioni di oggi e i progressi (in breve: !m).",
+      "cup": "La coppa settimanale: la Sua posizione e i primi tre."
     },
     "vipStripe": {
       "eyebrow": "Sostegno al server",
@@ -371,6 +378,12 @@
         "title": "Tre compiti al giorno",
         "text": "Ogni giorno a mezzanotte riceve tre missioni — facile, media e difficile: colpi alla testa, una serie, il coltello, un duello, minuti di gioco. Quella completata dà subito XP, e tutte e tre per {days} giorni di fila danno un distintivo sul profilo.",
         "how": "Scriva !missions in gioco"
+      },
+      "cup": {
+        "tag": "Coppa settimanale",
+        "title": "Ogni settimana ha un vincitore",
+        "text": "L'XP di ogni partita da lunedì a domenica si somma in un'unica tabella. Domenica a mezzanotte i primi tre ricevono un distintivo sul profilo.",
+        "link": "La classifica della settimana"
       }
     }
   },
@@ -433,6 +446,32 @@
     },
     "inviteTitle": "La classifica Le aspetta",
     "matchesLink": "Le schede delle ultime partite"
+  },
+  "cup": {
+    "h1": "Coppa settimanale",
+    "lead": "L'XP delle partite da lunedì 00:00 a domenica 23:59 ({tz}). I primi {podium} a fine settimana ricevono un distintivo sul profilo.",
+    "week": "Settimana {from} – {to}",
+    "left": "Mancano {days} g {hours} h",
+    "caption": "Classifica della settimana {from} – {to} per XP",
+    "matches": "Partite",
+    "empty": "Questa settimana non c'è ancora una partita conclusa con XP — la prima partita apre la coppa.",
+    "winners": {
+      "title": "Ultimi vincitori",
+      "empty": "Non c'è ancora una settimana conclusa con un vincitore."
+    },
+    "rules": {
+      "title": "Come funziona",
+      "count": "Conta l'XP di ogni partita conclusa sul server — uccisioni, bonus, duelli e missioni. Una partita entra nella coppa quando finisce.",
+      "week": "La settimana va da lunedì 00:00 a domenica 23:59 ({tz}).",
+      "badges": "Il primo riceve il distintivo «Campione della settimana», il secondo e il terzo «Podio della settimana». I distintivi restano sul profilo.",
+      "ties": "A parità di XP è avanti lo SteamID64 più basso. I profili nascosti non partecipano.",
+      "command": "In gioco: !cup — la Sua posizione e i primi tre."
+    },
+    "toLeaderboard": "Alla classifica di sempre",
+    "ld": {
+      "name": "Coppa settimanale di CarbonStealth.eu | Dust2 DM — {from} – {to}",
+      "description": "Classifica settimanale per XP delle partite sul server CS2 CarbonStealth.eu | Dust2 DM; i primi {podium} ricevono un distintivo."
+    }
   },
   "player": {
     "steamId": "SteamID64",
@@ -526,6 +565,8 @@
       "empty": "Ancora nessun riconoscimento. Faccia più uccisioni di tutti nella zona calda e il distintivo «Re della zona» è Suo.",
       "kinds": {
         "zone_king": "Re della zona",
+        "cup_winner": "Campione della settimana",
+        "cup_podium": "Podio della settimana",
         "mission_streak": "7 giorni di fila"
       },
       "times": {
@@ -540,6 +581,10 @@
       "bestDays": {
         "one": "record: {count} giorno di fila",
         "other": "record: {count} giorni di fila"
+      },
+      "bestXp": {
+        "one": "record: {count} XP in una settimana",
+        "other": "record: {count} XP in una settimana"
       },
       "duels": "Duelli negli ultimi {days} giorni",
       "wins": "Vittorie",
@@ -714,7 +759,8 @@
           "Gli ultimi 2000 eventi circa del server (ingressi, uccisioni, chat) restano brevemente nella memoria operativa per la moderazione e vengono sovrascritti di continuo; la chat non viene salvata nel database.",
           "Riconoscimenti delle modalità dell'arena (ad esempio «Re della zona»: la mappa, la zona e il numero di uccisioni), mostrati sul Suo profilo.",
           "Duelli (!duel): chi contro chi, il risultato e quando, per vittorie, sconfitte e pareggi sul profilo.",
-          "Missioni del giorno (!missions): quale missione, a che punto è arrivato e quando è stata completata — per i progressi sul profilo e il distintivo «7 giorni di fila»."
+          "Missioni del giorno (!missions): quale missione, a che punto è arrivato e quando è stata completata — per i progressi sul profilo e il distintivo «7 giorni di fila».",
+          "Coppa settimanale (!cup): i distintivi dei primi tre — la settimana, l'XP e la posizione — sono mostrati sul profilo."
         ]
       },
       "website": {

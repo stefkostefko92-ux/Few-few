@@ -14,6 +14,7 @@ import {
 } from '../content.js';
 import type { Repo } from '../data/repo.js';
 import { LOCALES, localeFromHeader, translate, type Locale } from '../i18n.js';
+import { CUP } from '../cup.js';
 import { MISSIONS, XP_REWARDS } from '../levels.js';
 import { logger } from '../logger.js';
 import { SITE_NAME, absolute, alternatesFor, matchPath, pagePath, playerPath } from '../seo.js';
@@ -34,6 +35,7 @@ export const INDEXNOW_KEY = readFileSync(join(PUBLIC_DIR, 'indexnow-key.txt'), '
 const LASTMOD: Record<PageId, string> = {
   home: CONTENT_UPDATED,
   leaderboard: CONTENT_UPDATED,
+  cup: CONTENT_UPDATED,
   matches: CONTENT_UPDATED,
   bans: CONTENT_UPDATED,
   vip: CONTENT_UPDATED,
@@ -138,16 +140,19 @@ export function rootRouter(repo: Repo): Router {
     const entries: string[] = [];
     for (const page of PAGES) {
       if (NOINDEX_PAGES.has(page)) continue;
-      const dynamic = page === 'home' || page === 'leaderboard' || page === 'matches';
+      const dynamic =
+        page === 'home' || page === 'leaderboard' || page === 'cup' || page === 'matches';
       const lastmod = dynamic ? latest(live, LASTMOD[page]) : LASTMOD[page];
       const priority =
         page === 'home'
           ? '1.0'
           : page === 'leaderboard'
             ? '0.9'
-            : page === 'matches'
-              ? '0.6'
-              : '0.5';
+            : page === 'cup'
+              ? '0.7'
+              : page === 'matches'
+                ? '0.6'
+                : '0.5';
       entries.push(...urlEntry((locale) => pagePath(locale, page), lastmod, priority));
     }
     for (const player of players) {
@@ -202,6 +207,9 @@ export function rootRouter(repo: Repo): Router {
         days: MISSIONS.streakDays,
         badge: en('player.honors.kinds.mission_streak'),
       })}`,
+      '',
+      '## Weekly cup',
+      `- ${en('cup.lead', { tz: config().DISPLAY_TZ, podium: CUP.podium })} ${absolute(pagePath('en', 'cup'))}`,
       '',
       '## FAQ',
       ...HOME_FAQ.map((id) => `- ${en(`home.faq.${id}.q`, faq)} ${en(`home.faq.${id}.a`, faq)}`),

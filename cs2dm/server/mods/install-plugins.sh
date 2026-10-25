@@ -129,7 +129,7 @@ since="$(date +%s)"
 cs2dm_restart_with_mods_or_fallback || die "модовете не тръгнаха; сървърът върви ванилов. journalctl -u cs2 -n 120 --no-pager"
 if cs2dm_plugin_loaded_since "$since" CarbonStealth; then
   ok "CarbonStealth е зареден"
-  log "Готово. В играта: !admin · !rank · !report · !duel · !missions · !banner · !zone (HEADADMIN+)."
+  log "Готово. В играта: !admin · !rank · !report · !duel · !missions · !cup · !banner · !zone (HEADADMIN+)."
 else
   warn "CarbonStealth не се вижда в лога (DM работи без него). Виж: journalctl -u cs2 -n 200 --no-pager | grep -i carbon"
   exit 1

@@ -9,6 +9,9 @@ export const BULL_PREFIX = 'cs2dm:bull';
 export const PURGE_JOB = 'purge-retention';
 /** На 6 часа (в :17, извън кръглия час): след престой работникът наваксва бързо, партидите са малки. */
 export const PURGE_SCHEDULE = '17 */6 * * *';
+/** Значките на седмичната купа (CONTRACT §17): всеки час в :07 — завършилата седмица се връчва до час след края. */
+export const CUP_JOB = 'cup-awards';
+export const CUP_SCHEDULE = '7 * * * *';
 
 /** Връзка за BullMQ: `maxRetriesPerRequest: null` е изискване на BullMQ за блокиращите команди. */
 export function createQueueRedis(url: string): Redis {

@@ -17,7 +17,8 @@ CONTRACT §11 — реклами, патрони, ботове, XP множит�
 (`events`, §12 — XP уикенд/режим/общностно; панел → плъгин на 30 s → начална страница + JSON-LD) + **картата на
 мача** (`matches`, §13 — топ 3 в чата, `/{език}/match/:id`, последните мачове; 90 дни) + **режимите на арената** (§15 —
 гореща зона, Most Wanted, `!duel`; значки и дуели в профила) + **мисиите за деня** (§16 — три на ден, `!missions`,
-`<progress>` в профила, значка „7 дни подред“). Следва: формите за играчите; Discord ботът е отложен (собственикът).
+`<progress>` в профила, значка „7 дни подред“) + **седмичната купа** (§17 — `/{език}/cup`, `!cup`, значки от
+работника). Следва: формите за играчите; Discord ботът е отложен (собственикът).
 Банове и класация — **публични на сайта** (решение на
 собственика), затова админ системата е наша на Postgres, не CS2-SimpleAdmin (MySQL + три
 неподдържани меню зависимости). Договорът между плъгин и сайт: `CONTRACT.md`._
@@ -78,7 +79,8 @@ plugins/src/CarbonStealth.Logic/     чиста логика без CSS (XP, р�
 plugins/src/CarbonStealth/           плъгинът: един partial клас по тема (Admin, AdminMenu, Banners, Adverts = живите
                                      настройки + рекламите, BridgeCommands, Chat, Connection, Stats, CssFlags, FairPlay,
                                      Events, Match, MatchEnd, PluginsBridge = плъгините от панела, HotZone, MostWanted, Duels,
-                                     Announce = обявите им, DailyMissions = !missions) + Data/ (Npgsql) + lang/ (en, bg)
+                                     Announce = обявите им, DailyMissions = !missions, Cup = !cup) + Data/ (Npgsql) +
+                                     lang/ (en, bg)
 plugins/scripts/build.sh             тестове + publish в plugins/out/; DeathmatchAPI.dll от архива в mods.lock
 addon/                               банери-картинки: build_textures.py → PNG, OBJ плоскости, Workshop стъпки
 CONTRACT.md                          роли, наказания, XP, heatmap, мост, одит, срокове, банери
@@ -87,7 +89,8 @@ test/                                node --test: A2S протокол + кон�
 
 app/                                 сайтът cs2.carbonstealth.eu (етап 1) + панелът /admin (етап 2) — Node 22 · TS strict ESM
   prisma/schema.prisma + migrations/ ЕДИНСТВЕНИЯТ източник на схемата (C# плъгинът пише по @map имената)
-  src/index.ts · src/worker.ts       уеб процесът · BullMQ работникът (чистене по CONTRACT §7, на 6 ч)
+  src/index.ts · src/worker.ts       уеб процесът · BullMQ работникът (чистене по CONTRACT §7, на 6 ч; значките на
+                                     купата §17, на час)
   src/server.ts                      Express 5: helmet (строг CSP с nonce), rate limit, pino без IP, 404/500
   src/routes/pages.ts                /{bg|en|it}/: начало, leaderboard, bans, vip, правни · player.ts — профилът + последни мачове
   src/routes/matches.ts              /{bg|en|it}/matches и /match/:id (§13) · match-view.ts · event-seo.ts (§12 JSON-LD)
@@ -97,6 +100,8 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   src/data/repo.ts                   интерфейсът (само публичните полета) · prisma-repo.ts (наследява extra-repo.ts —
                                      препращането към четенето след етап 1) · cached-repo.ts
   src/missions.ts · data/arena-data.ts   мисиите за деня (§16): огледалото на пула и избора от C# · четенето за профила
+  src/cup.ts · data/cup-data.ts · routes/cup.ts   седмичната купа (§17): седмицата · класирането, победителите и
+                                     връчването на значките · страницата /{език}/cup (Event в JSON-LD)
   src/levels.ts · mastery.ts · heatmap.ts   формулите от CONTRACT §3–4 (тестови стойности в tests/)
   src/settings.ts                    живите настройки (§11): ключове, строги zod схеми, стойности по подразбиране
   src/events.ts                      събитията (§12): видове, тавани, местно време ↔ UTC (DISPLAY_TZ, без библиотека)
@@ -249,6 +254,12 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   XP е без множител (`Progression.MissionXp`, `MatchTracker.AddXp`). Напредъкът е абсолютен → партидата пише с
   GREATEST/COALESCE; книгата остава в паметта до края на деня (повторно влизане не чете базата — иначе двойна награда).
   Значка, която се дава веднъж на период → `player_badges.period` + уникалността `(steam_id, kind, period)`.
+- **Седмичната купа (§17, `Cup.cs` + `CarbonStealth.Logic/Cup.cs`, SQL в `Data/CupStore.cs`):** плъгинът само чете
+  (`!cup`, една заявка на 5 s); значките дава работникът на сайта (`cup-awards`, под advisory lock, седмица с
+  вече връчена значка не се пипа). Подредбата (XP ↓, SteamID64 ↑, без скритите и 0 XP) е една и съща в
+  `CupStandingsSql` и `cupStandings` — `integration-cup.test.ts` пуска и двете; седмицата е `CupRules.WeekOf` =
+  `cupWeek` (тестът чете `.cs`). Нов вид значка → `BADGE_KINDS` + `BADGE_BEST` (honors.ts) + текстовете + цвят в
+  `atoms.css`.
 - Пакетите са заключени (`packages.lock.json`, `RestoreLockedMode`); нов пакет/версия → `dotnet restore
   --force-evaluate` и lock файлът в същия PR.
 

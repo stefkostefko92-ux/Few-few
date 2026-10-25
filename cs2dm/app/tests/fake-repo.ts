@@ -11,6 +11,7 @@ import type {
   StatLine,
 } from '../src/data/repo.js';
 import { pagesFor } from '../src/data/repo.js';
+import type { CupStanding, CupWinner } from '../src/cup.js';
 import type { PublicEvent } from '../src/events.js';
 import { assignMissions, type PlayerMissions } from '../src/missions.js';
 
@@ -28,6 +29,8 @@ export interface FakeData {
   reports?: MatchReport[];
   playerMatches?: PlayerMatchRow[];
   missions?: PlayerMissions;
+  cup?: CupStanding[];
+  cupWinners?: CupWinner[];
 }
 
 export const PLAYER_ID = '76561198000000001';
@@ -107,5 +110,7 @@ export function fakeRepo(data: FakeData, calls: string[] = []): Repo {
         today: assignMissions(steamId, day).map((def) => ({ ...def, progress: 0, done: false })),
         completed: 0,
       },
+    cupStandings: async (_week, limit) => (data.cup ?? []).slice(0, limit),
+    cupWinners: async (limit) => (data.cupWinners ?? []).slice(0, limit),
   };
 }

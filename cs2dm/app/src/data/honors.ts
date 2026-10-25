@@ -8,12 +8,14 @@ import type { PlayerHonors } from './repo.js';
  * Агрегат по вид: колко пъти, кога за последно и рекордът (полето от `details` по вида — `BADGE_BEST`). Непознат
  * вид се прескача — нов вид значка = ред тук + `BADGE_BEST` + текст в трите речника.
  */
-export const BADGE_KINDS = ['zone_king', 'mission_streak'] as const;
+export const BADGE_KINDS = ['zone_king', 'cup_winner', 'cup_podium', 'mission_streak'] as const;
 export type BadgeKind = (typeof BADGE_KINDS)[number];
 
 /** Кое число от `details` е рекордът на вида и с кой текст се показва (`player.honors.<ключ>`, с множествено число). */
 export const BADGE_BEST: Record<BadgeKind, { field: 'kills' | 'days' | 'xp'; text: string }> = {
   zone_king: { field: 'kills', text: 'best' },
+  cup_winner: { field: 'xp', text: 'bestXp' },
+  cup_podium: { field: 'xp', text: 'bestXp' },
   mission_streak: { field: 'days', text: 'bestDays' },
 };
 

@@ -1,3 +1,4 @@
+import type { CupStanding, CupWeek, CupWinner } from '../cup.js';
 import type { PublicEvent } from '../events.js';
 import type { BadgeKind } from './honors.js';
 import type { HeatCell } from '../heatmap.js';
@@ -256,6 +257,10 @@ export interface Repo {
   playerMatches(steamId: string, limit: number): Promise<PlayerMatchRow[]>;
   /** Мисиите на играча за деня `yyyy-MM-dd` (§16) и колко е изпълнил за срока на таблицата. */
   missions(steamId: string, day: string): Promise<PlayerMissions>;
+  /** Класирането на седмичната купа (§17) — първите `limit`, без скритите. */
+  cupStandings(week: CupWeek, limit: number): Promise<CupStanding[]>;
+  /** Последните победители в купата (значките `cup_winner`), най-новият първи, без скритите. */
+  cupWinners(limit: number): Promise<CupWinner[]>;
 }
 
 export function pagesFor(total: number, pageSize: number): number {
