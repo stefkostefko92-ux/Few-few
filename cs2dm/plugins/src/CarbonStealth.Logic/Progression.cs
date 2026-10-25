@@ -67,6 +67,12 @@ public static class Progression
     /// </summary>
     public static int MostWantedBonus(bool victimWanted) => victimWanted ? MostWantedXp : 0;
 
+    /// <summary>
+    /// Спечелен дуел (CONTRACT.md §15): +50 XP наведнъж в края, без множител — не е убийство. Същото като
+    /// DUEL.winXp в levels.ts. Равенство и отменен дуел — нищо.
+    /// </summary>
+    public const int DuelWinXp = 50;
+
     /// <summary>Ниво n иска общо 100·n·(n−1)/2 XP → level = floor((1 + √(1 + 8·xp/100)) / 2).</summary>
     public static int LevelFromXp(long xp)
     {

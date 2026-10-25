@@ -158,7 +158,7 @@ describe(
       assert.equal(king?.count, 3);
       assert.equal(king?.bestKills, 9);
       assert.ok(king?.lastAt instanceof Date);
-      assert.deepEqual(await loadHonors(db, VICTIM), { badges: [] });
+      assert.deepEqual((await loadHonors(db, VICTIM)).badges, []);
 
       await db.player.delete({ where: { steamId: KING } });
       assert.equal(

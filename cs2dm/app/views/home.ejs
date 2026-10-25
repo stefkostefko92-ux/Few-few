@@ -192,6 +192,21 @@
   </div>
 </section>
 
+<section class="band band-paper-dark arena" aria-labelledby="arena-title">
+  <div class="wrap">
+    <div class="band-head">
+      <h2 id="arena-title"><%= t('home.arena.title') %></h2>
+      <a class="under-link" href="<%= nav.leaderboard %>#how-title"><%= t('home.arena.how') %> <span aria-hidden="true">↗</span></a>
+    </div>
+    <p class="arena-lead"><%= t('home.arena.lead') %></p>
+    <ol class="arena-list">
+      <li><p class="arena-tag">01 · <%= t('home.arena.hotZone.tag') %></p><h3><%= t('home.arena.hotZone.title') %></h3><p><%= t('home.arena.hotZone.text', { minutes: arena.hotZone.activeMinutes, king: arena.hotZone.kingMinKills }) %></p><strong class="arena-value">×<%= arena.hotZone.multiplier %> XP</strong></li>
+      <li><p class="arena-tag">02 · <%= t('home.arena.mostWanted.tag') %></p><h3><%= t('home.arena.mostWanted.title') %></h3><p><%= t('home.arena.mostWanted.text', { min: arena.mostWanted.minKills }) %></p><strong class="arena-value">+<%= arena.mostWanted.xp %> XP</strong></li>
+      <li><p class="arena-tag">03 · <%= t('home.arena.duel.tag') %></p><h3><%= t('home.arena.duel.title') %></h3><p><%= t('home.arena.duel.text', { target: arena.duel.target, minutes: arena.duel.minutes }) %></p><strong class="arena-value">+<%= arena.duel.winXp %> XP</strong></li>
+    </ol>
+  </div>
+</section>
+
 <section class="commands" aria-labelledby="commands-title">
   <div class="wrap split">
     <div>
@@ -199,7 +214,7 @@
       <h2 id="commands-title"><%- lines('home.commands.title').map(escape).join('<br>') %></h2>
     </div>
     <ul class="ruled command-list" aria-label="<%= t('home.commands.label') %>">
-      <% ['gun', 'rank', 'report', 'lang'].forEach((id) => { %><li><code id="cmd-<%= id %>">!<%= id %></code><span><%= t('home.commands.' + id) %></span><button type="button" class="copy" data-copy-target="cmd-<%= id %>" data-copied="<%= t('home.join.copied') %>" data-failed="<%= t('home.join.copyFailed') %>" hidden><%= t('home.join.copy') %></button></li>
+      <% ['gun', 'rank', 'duel', 'report', 'lang'].forEach((id) => { %><li><code id="cmd-<%= id %>">!<%= id %></code><span><%= t('home.commands.' + id) %></span><button type="button" class="copy" data-copy-target="cmd-<%= id %>" data-copied="<%= t('home.join.copied') %>" data-failed="<%= t('home.join.copyFailed') %>" hidden><%= t('home.join.copy') %></button></li>
       <% }) %>
     </ul>
   </div>

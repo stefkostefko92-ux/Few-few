@@ -235,3 +235,11 @@
   background: #ff7a18;
   box-shadow: 0 0 0 2px var(--red-deep);
 }
+.duel-title {
+  margin: 28px 0 2px;
+  font: 800 20px/1.1 var(--display);
+  text-transform: uppercase;
+}
+.duel-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}

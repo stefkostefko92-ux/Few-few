@@ -319,7 +319,8 @@
       "gun": "Pick a weapon for the current mode.",
       "rank": "Your level and XP.",
       "report": "Report a cheater or a rule break to the admins.",
-      "lang": "The language of in-game messages."
+      "lang": "The language of in-game messages.",
+      "duel": "A duel to 5 kills with a player of your choice; they answer with !accept or !decline."
     },
     "vipStripe": {
       "eyebrow": "Support the server",
@@ -336,6 +337,26 @@
     },
     "live": {
       "eyebrow": "On the server now"
+    },
+    "arena": {
+      "title": "More than deathmatch",
+      "how": "How XP is counted",
+      "lead": "Three things no other Dust2 server has — no separate maps, no waiting, right in the middle of the fight.",
+      "hotZone": {
+        "tag": "Hot zone",
+        "title": "The place to be",
+        "text": "Every few minutes one spot on the map lights up for {minutes} minutes. Kills from inside give double XP, and whoever gets the most (at least {king}) becomes King of the Zone — with a badge on their profile."
+      },
+      "mostWanted": {
+        "tag": "Most Wanted",
+        "title": "The leader is the target",
+        "text": "The player with the most kills on the map (at least {min}) is announced as Most Wanted. The server tells everyone who it is — take them down and claim the bonus."
+      },
+      "duel": {
+        "tag": "Duel",
+        "title": "One on one inside FFA",
+        "text": "Challenge someone with !duel <name>. First to {target} kills on each other wins; after {minutes} minutes the leader wins. Wins, losses and draws go on the profile."
+      }
     }
   },
   "leaderboard": {
@@ -382,7 +403,9 @@
         "hotZoneRow": "Kill from inside the hot zone",
         "hotZone": "Hot zone: every few minutes one spot on Dust2 lights up for {minutes} minutes. Every kill while you are inside gives ×{multiplier} XP. Whoever gets the most kills inside (at least {king}) becomes King of the Zone — the badge stays on their profile.",
         "mostWantedRow": "Most Wanted taken down (bonus)",
-        "mostWanted": "Most Wanted is the player with the most kills on the current map (at least {min} kills); the server announces every change. Whoever takes them down earns +{xp} XP on top — the bonus is multiplied together with the kill."
+        "mostWanted": "Most Wanted is the player with the most kills on the current map (at least {min} kills); the server announces every change. Whoever takes them down earns +{xp} XP on top — the bonus is multiplied together with the kill.",
+        "duelRow": "Duel won",
+        "duel": "Duel: type !duel <name> and the other player answers with !accept or !decline within {invite} s. Whoever first gets {target} kills on the other (or leads after {minutes} minutes) earns +{xp} XP at once; a tie is a draw. The rest of the game goes on as usual; the same two players wait {cooldown} minutes before the next duel."
       }
     },
     "pager": {
@@ -476,7 +499,11 @@
       "best": {
         "one": "record: {count} kill in the zone",
         "other": "record: {count} kills in the zone"
-      }
+      },
+      "duels": "Duels in the last {days} days",
+      "wins": "Wins",
+      "losses": "Losses",
+      "draws": "Draws"
     }
   },
   "bans": {
@@ -621,7 +648,8 @@
           "If you mute the kill-streak sounds (!qs) or change the language (!lang), the server remembers your SteamID64 with that choice until the next update of the server mods.",
           "Penalties: type, category, expiry and an internal reason that only admins can see.",
           "Roughly the last 2000 server events (joins, kills, chat) are held briefly in working memory for moderation and are overwritten continuously; chat is not stored in the database.",
-          "Honours from the arena modes (for example “King of the Zone” — the map, the zone and the number of kills) — shown on your profile."
+          "Honours from the arena modes (for example “King of the Zone” — the map, the zone and the number of kills) — shown on your profile.",
+          "Duels (!duel): who played whom, the score and when — for the wins, losses and draws on the profile."
         ]
       },
       "website": {
@@ -653,7 +681,8 @@
           "Penalties — for as long as they are needed for the security of the server.",
           "Invoice details for VIP — as long as the Bulgarian Accountancy Act requires.",
           "Match cards (nickname and result in each match) — {matchesDays} days, then deleted automatically.",
-          "Honours (badges such as “King of the Zone”) — for as long as your profile exists; they are deleted together with it."
+          "Honours (badges such as “King of the Zone”) — for as long as your profile exists; they are deleted together with it.",
+          "Duels — {duelsDays} days, then they are deleted automatically."
         ]
       },
       "recipients": {
@@ -1439,7 +1468,8 @@
         "banners": "Banners placed by them",
         "matches": "Matches (cards — 90 days)",
         "badges": "Badges (honours)",
-        "zones": "Hot zones placed by them"
+        "zones": "Hot zones placed by them",
+        "duels": "Duels (90 days)"
       }
     },
     "events": {

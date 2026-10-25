@@ -460,6 +460,7 @@ export function pagesRouter(locale: Locale, deps: PageDeps): Router {
       mastery,
       masteryTiers: MASTERY_TIERS,
       honors,
+      duelsDays: RETENTION.duelsDays,
       heatmaps,
       heatmapInfo: {
         days: HEATMAP_WINDOW_DAYS,
@@ -576,6 +577,7 @@ export function legalParams(): Record<string, string | number> {
     sessionsDays: RETENTION.sessionsDays,
     killsDays: RETENTION.killsDays,
     matchesDays: RETENTION.matchesDays,
+    duelsDays: RETENTION.duelsDays,
     casesDays: RETENTION.casesDays,
     demosDays: RETENTION.demosDays,
     heatmapDays: HEATMAP_WINDOW_DAYS,

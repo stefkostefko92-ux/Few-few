@@ -74,6 +74,7 @@ export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
           matches,
           badges,
           zones,
+          duels,
         ] = await Promise.all([
           ctx.db.session.findMany({ where: { steamId }, ...byTime }),
           ctx.db.webSession.findMany({
@@ -116,6 +117,10 @@ export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
           }),
           ctx.db.playerBadge.findMany({ where: { steamId }, ...byTime }),
           ctx.db.mapZone.findMany({ where: { createdBy: steamId }, ...byTime }),
+          ctx.db.duel.findMany({
+            where: { OR: [{ winnerId: steamId }, { loserId: steamId }] },
+            ...byTime,
+          }),
         ]);
         const { totpSecretEnc, ...rest } = player;
         const profile = { ...rest, totpSecretStored: totpSecretEnc !== null };
@@ -269,6 +274,16 @@ export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
           ),
           section('badges', badges, ['kind', 'earnedAt', 'details']),
           section('zones', zones, ['id', 'map', 'name', 'radius', 'createdAt']),
+          section('duels', duels, [
+            'id',
+            'winnerId',
+            'loserId',
+            'winnerScore',
+            'loserScore',
+            'draw',
+            'startedAt',
+            'endedAt',
+          ]),
         ];
         renderAdmin(req, res, 'player-data', {
           current: 'players',

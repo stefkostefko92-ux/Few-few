@@ -142,9 +142,17 @@ export interface BadgeSummary {
   bestKills: number | null;
 }
 
+/** Дуелите на играча за срока на `duels` (§15, 90 дни). */
+export interface DuelRecord {
+  wins: number;
+  losses: number;
+  draws: number;
+}
+
 /** Отличията на играча за публичния профил (§15). */
 export interface PlayerHonors {
   badges: BadgeSummary[];
+  duels: DuelRecord;
 }
 
 export interface SitemapPlayer {
@@ -181,7 +189,7 @@ export interface Repo {
   recentMatches(limit: number): Promise<MatchListRow[]>;
   /** Един мач с всички редове по място; няма → null. */
   match(id: number): Promise<MatchDetail | null>;
-  /** Значките на играча (§15) — профилът е публичен само за нескрит играч. */
+  /** Значките и дуелите на играча (§15) — профилът е публичен само за нескрит играч. */
   honors(steamId: string): Promise<PlayerHonors>;
 }
 

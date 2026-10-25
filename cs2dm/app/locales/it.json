@@ -319,7 +319,8 @@
       "gun": "Scelta dell'arma secondo la modalità.",
       "rank": "Il Suo livello e l'XP.",
       "report": "Segnalazione agli amministratori di un cheater o di una violazione.",
-      "lang": "La lingua dei messaggi in gioco."
+      "lang": "La lingua dei messaggi in gioco.",
+      "duel": "Un duello a 5 uccisioni con un giocatore a scelta; risponde con !accept o !decline."
     },
     "vipStripe": {
       "eyebrow": "Sostegno al server",
@@ -336,6 +337,26 @@
     },
     "live": {
       "eyebrow": "Sul server ora"
+    },
+    "arena": {
+      "title": "Più di un deathmatch",
+      "how": "Come si calcola l'XP",
+      "lead": "Tre cose che nessun altro server Dust2 ha: niente mappe separate, niente attese, nel mezzo dello scontro.",
+      "hotZone": {
+        "tag": "Zona calda",
+        "title": "Il posto dove stare",
+        "text": "Ogni pochi minuti un punto della mappa si accende per {minutes} minuti. Le uccisioni dall'interno valgono il doppio dell'XP e chi ne fa di più (almeno {king}) diventa il Re della zona, con un distintivo sul profilo."
+      },
+      "mostWanted": {
+        "tag": "Most Wanted",
+        "title": "Il primo è il bersaglio",
+        "text": "Il giocatore con più uccisioni sulla mappa (almeno {min}) viene annunciato come Most Wanted. Il server dice a tutti chi è: lo abbatta e ottenga il bonus."
+      },
+      "duel": {
+        "tag": "Duello",
+        "title": "Uno contro uno nel FFA",
+        "text": "Sfidi qualcuno con !duel <nome>. Vince chi arriva per primo a {target} uccisioni sull'altro; dopo {minutes} minuti vince chi è in vantaggio. Vittorie, sconfitte e pareggi finiscono sul profilo."
+      }
     }
   },
   "leaderboard": {
@@ -382,7 +403,9 @@
         "hotZoneRow": "Uccisione dall'interno della zona calda",
         "hotZone": "Zona calda: ogni pochi minuti un punto di Dust2 si accende per {minutes} minuti. Ogni uccisione mentre è all'interno vale ×{multiplier} XP. Chi fa più uccisioni all'interno (almeno {king}) diventa il Re della zona: il distintivo resta sul suo profilo.",
         "mostWantedRow": "Most Wanted abbattuto (bonus)",
-        "mostWanted": "Il Most Wanted è il giocatore con più uccisioni sulla mappa attuale (almeno {min} uccisioni); il server annuncia ogni cambio. Chi lo abbatte ottiene +{xp} XP in più: il bonus viene moltiplicato insieme all'uccisione."
+        "mostWanted": "Il Most Wanted è il giocatore con più uccisioni sulla mappa attuale (almeno {min} uccisioni); il server annuncia ogni cambio. Chi lo abbatte ottiene +{xp} XP in più: il bonus viene moltiplicato insieme all'uccisione.",
+        "duelRow": "Duello vinto",
+        "duel": "Duello: scriva !duel <nome> e l'altro risponde con !accept o !decline entro {invite} s. Chi per primo fa {target} uccisioni sull'altro (o è in vantaggio dopo {minutes} minuti) ottiene subito +{xp} XP; il pari è un pareggio. Il resto del gioco continua normalmente; gli stessi due giocatori attendono {cooldown} minuti prima del duello successivo."
       }
     },
     "pager": {
@@ -476,7 +499,11 @@
       "best": {
         "one": "record: {count} uccisione nella zona",
         "other": "record: {count} uccisioni nella zona"
-      }
+      },
+      "duels": "Duelli negli ultimi {days} giorni",
+      "wins": "Vittorie",
+      "losses": "Sconfitte",
+      "draws": "Pareggi"
     }
   },
   "bans": {
@@ -621,7 +648,8 @@
           "Se disattiva i suoni delle serie di uccisioni (!qs) o cambia lingua (!lang), il server ricorda il Suo SteamID64 con questa scelta fino al prossimo aggiornamento delle mod del server.",
           "Sanzioni: tipo, categoria, scadenza e un motivo interno visibile solo agli amministratori.",
           "Gli ultimi 2000 eventi circa del server (ingressi, uccisioni, chat) restano brevemente nella memoria operativa per la moderazione e vengono sovrascritti di continuo; la chat non viene salvata nel database.",
-          "Riconoscimenti delle modalità dell'arena (ad esempio «Re della zona»: la mappa, la zona e il numero di uccisioni), mostrati sul Suo profilo."
+          "Riconoscimenti delle modalità dell'arena (ad esempio «Re della zona»: la mappa, la zona e il numero di uccisioni), mostrati sul Suo profilo.",
+          "Duelli (!duel): chi contro chi, il risultato e quando, per vittorie, sconfitte e pareggi sul profilo."
         ]
       },
       "website": {
@@ -653,7 +681,8 @@
           "Sanzioni: finché sono necessarie per la sicurezza del server.",
           "Dati di fatturazione per il VIP: per il tempo richiesto dalla legge bulgara sulla contabilità.",
           "Schede delle partite (nickname e risultato in ogni partita) — {matchesDays} giorni, poi cancellate automaticamente.",
-          "Riconoscimenti (distintivi come «Re della zona»): finché esiste il Suo profilo; vengono cancellati insieme a esso."
+          "Riconoscimenti (distintivi come «Re della zona»): finché esiste il Suo profilo; vengono cancellati insieme a esso.",
+          "Duelli: {duelsDays} giorni, poi vengono cancellati automaticamente."
         ]
       },
       "recipients": {
@@ -1439,7 +1468,8 @@
         "banners": "Banner posizionati da lui",
         "matches": "Partite (schede — 90 giorni)",
         "badges": "Distintivi (riconoscimenti)",
-        "zones": "Zone calde create dal giocatore"
+        "zones": "Zone calde create dal giocatore",
+        "duels": "Duelli (90 giorni)"
       }
     },
     "events": {

@@ -75,6 +75,12 @@
       <% }) %>
     </ul>
     <% } %>
+    <h3 class="duel-title"><%= t('player.honors.duels', { days: duelsDays }) %></h3>
+    <dl class="stats duel-stats">
+      <div><dt><%= t('player.honors.wins') %></dt><dd><%= fmt.int(honors.duels.wins) %></dd></div>
+      <div><dt><%= t('player.honors.losses') %></dt><dd><%= fmt.int(honors.duels.losses) %></dd></div>
+      <div><dt><%= t('player.honors.draws') %></dt><dd><%= fmt.int(honors.duels.draws) %></dd></div>
+    </dl>
   </section>
 
   <section class="card spaced" aria-labelledby="mastery-title">

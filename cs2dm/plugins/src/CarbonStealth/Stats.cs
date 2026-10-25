@@ -86,6 +86,7 @@ public sealed partial class CarbonStealthPlugin
         if (outcome.BountyClaimed > 0) Broadcast("bounty.claimed", a.Name, v.Name, outcome.BountyClaimed);
         if (outcome.Revenge) Broadcast("revenge", a.Name, v.Name);
         OnWantedKill(a, v, wanted);
+        OnDuelKill(a, v);
         if (outcome.AttackerStreak >= StreakTracker.BountyStartStreak && outcome.AttackerStreak % 5 == 0)
         {
             Broadcast("bounty.on", a.Name, outcome.AttackerStreak, outcome.NewBountyOnAttacker);

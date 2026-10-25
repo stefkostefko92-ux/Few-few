@@ -200,7 +200,7 @@ export function rootRouter(repo: Repo): Router {
       `- ${en('privacy.sections.retention.items.1', legal)}`,
       `- ${en('privacy.sections.retention.items.2', legal)}`,
       `- ${en('privacy.sections.website.items.0', legal)}`,
-      `- Retention days: sessions ${RETENTION.sessionsDays}, kills ${RETENTION.killsDays}, demos ${RETENTION.demosDays}, matches ${RETENTION.matchesDays}`,
+      `- Retention days: sessions ${RETENTION.sessionsDays}, kills ${RETENTION.killsDays}, demos ${RETENTION.demosDays}, matches ${RETENTION.matchesDays}, duels ${RETENTION.duelsDays}`,
       '',
       '## Pages',
       ...PAGES.filter((page) => !NOINDEX_PAGES.has(page)).flatMap((page) =>

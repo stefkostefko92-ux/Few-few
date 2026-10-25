@@ -15,7 +15,8 @@ Express + EJS + Prisma + Redis + BullMQ) + **агентът на хоста** (`
 задължителен TOTP, права по §1, мостът към плъгина и агентът) + **живи настройки** (`server_settings`,
 CONTRACT §11 — реклами, патрони, ботове, XP множител, поздрав; панел ↔ игра) + **събития по график**
 (`events`, §12 — XP уикенд/режим/общностно; панел → плъгин на 30 s → начална страница + JSON-LD) + **картата на
-мача** (`matches`, §13 — топ 3 в чата, `/{език}/match/:id`, последните мачове; 90 дни). Следва: Discord бот, формите за играчите.
+мача** (`matches`, §13 — топ 3 в чата, `/{език}/match/:id`, последните мачове; 90 дни) + **режимите на арената** (§15 —
+гореща зона, Most Wanted, `!duel`; значки и дуели в профила). Следва: формите за играчите; Discord ботът е отложен (собственикът).
 Банове и класация — **публични на сайта** (решение на
 собственика), затова админ системата е наша на Postgres, не CS2-SimpleAdmin (MySQL + три
 неподдържани меню зависимости). Договорът между плъгин и сайт: `CONTRACT.md`._
@@ -75,7 +76,8 @@ plugins/src/CarbonStealth.Logic/     чиста логика без CSS (XP, р�
                                      с тестове на тема)
 plugins/src/CarbonStealth/           плъгинът: един partial клас по тема (Admin, AdminMenu, Banners, Adverts = живите
                                      настройки + рекламите, BridgeCommands, Chat, Connection, Stats, CssFlags, FairPlay,
-                                     Events, Match, MatchEnd, PluginsBridge = плъгините от панела) + Data/ (Npgsql) + lang/ (en, bg)
+                                     Events, Match, MatchEnd, PluginsBridge = плъгините от панела, HotZone, MostWanted, Duels,
+                                     Announce = обявите им) + Data/ (Npgsql) + lang/ (en, bg)
 plugins/scripts/build.sh             тестове + publish в plugins/out/; DeathmatchAPI.dll от архива в mods.lock
 addon/                               банери-картинки: build_textures.py → PNG, OBJ плоскости, Workshop стъпки
 CONTRACT.md                          роли, наказания, XP, heatmap, мост, одит, срокове, банери
@@ -218,6 +220,10 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
 - **Most Wanted (§15, `MostWanted.cs` + `CarbonStealth.Logic/MostWanted.cs`):** само в паметта, по карта; бонусът
   (`Progression.MostWantedBonus`) е ПРЕДИ множителя, зоната — след него. Жертвата се проверява преди броят на убиеца
   да се смени. Присъствието — след основното `OnClientDisconnect` (`Server.NextFrame`), никога клан тагът.
+- **Дуелите (§15, `Duels.cs` + `CarbonStealth.Logic/Duels.cs`, SQL в `Data/DuelStore.cs`):** всичко в `DuelBook`
+  (покани, резултат, пауза, край) — плъгинът само съобщава и пише. Часовникът е UTC, не времето на играта. +50 XP
+  е без множител (`Progression.DuelWinXp`, `MatchTracker.AddXp`). Нови константи на режим → `levels.ts` (`ARENA`) +
+  тест в `app/tests/arena.test.ts`, който чете `.cs` файловете.
 - Нова колона/таблица → миграция в `app/prisma` (Prisma е собственикът на схемата), после SQL-а в `Data/`.
 - **Статистиките са `+=` с епоха (§3).** Нов агрегат → колона + `PlayerDelta` + `StatsWriter` (с
   `WHERE ред.stats_epoch <= EXCLUDED.stats_epoch`) + полето в редактора на панела (`stats-edit.ts`). Партидата

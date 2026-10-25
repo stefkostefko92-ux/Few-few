@@ -21,8 +21,7 @@ public sealed partial class CarbonStealthPlugin
         // Основното OnClientDisconnect вече е махнало играча от регистъра — тук само проверяваме кой остава.
         RegisterListener<Listeners.OnClientDisconnect>(_ => Server.NextFrame(() =>
         {
-            var online = Humans().Select(p => _players.BySlot(p.Slot)?.SteamId64).OfType<string>().ToHashSet();
-            if (_wanted.SyncPresence(online)) AnnounceWanted();
+            if (_wanted.SyncPresence(OnlineSteamIds())) AnnounceWanted();
         }));
     }
 

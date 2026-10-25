@@ -30,6 +30,8 @@ export const RETENTION = {
   demosDays: 14,
   /** Картите на мачовете (CONTRACT §13) — matches + match_players. */
   matchesDays: 90,
+  /** Дуелите (CONTRACT §15) — duels. Значките (player_badges) се пазят, докато играчът съществува. */
+  duelsDays: 90,
 } as const;
 
 /** Въпросите на началната страница (видими като H3 и в FAQPage) — `home.faq.<id>.q/a`. */

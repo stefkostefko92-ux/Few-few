@@ -68,6 +68,7 @@
           <% }) %><tr><th scope="row"><%= t('leaderboard.how.bountyRow') %></th><td class="c-num"><%= t('leaderboard.how.bountyValue') %></td></tr>
           <tr><th scope="row"><%= t('leaderboard.how.arena.hotZoneRow') %></th><td class="c-num">×<%= arena.hotZone.multiplier %></td></tr>
           <tr><th scope="row"><%= t('leaderboard.how.arena.mostWantedRow') %></th><td class="c-num">+<%= arena.mostWanted.xp %></td></tr>
+          <tr><th scope="row"><%= t('leaderboard.how.arena.duelRow') %></th><td class="c-num">+<%= arena.duel.winXp %></td></tr>
         </tbody>
       </table>
     </div>
@@ -77,6 +78,7 @@
       <p><%= t('leaderboard.how.revenge') %></p>
       <p><%= t('leaderboard.how.arena.hotZone', { multiplier: arena.hotZone.multiplier, minutes: arena.hotZone.activeMinutes, king: arena.hotZone.kingMinKills }) %></p>
       <p><%= t('leaderboard.how.arena.mostWanted', { min: arena.mostWanted.minKills, xp: arena.mostWanted.xp }) %></p>
+      <p><%= t('leaderboard.how.arena.duel', { target: arena.duel.target, minutes: arena.duel.minutes, invite: arena.duel.inviteSeconds, cooldown: arena.duel.cooldownMinutes, xp: arena.duel.winXp }) %></p>
     </div>
   </section>
 </div>

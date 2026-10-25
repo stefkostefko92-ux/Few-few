@@ -168,7 +168,7 @@ export function fakeRepo(data: FakeData, calls: string[] = []): Repo {
           : null,
       })),
     match: async (id) => (data.matches ?? []).find((match) => match.id === id) ?? null,
-    honors: async () => data.honors ?? { badges: [] },
+    honors: async () => data.honors ?? { badges: [], duels: { wins: 0, losses: 0, draws: 0 } },
   };
 }
 

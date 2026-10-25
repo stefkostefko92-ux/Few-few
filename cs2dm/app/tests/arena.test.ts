@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { CELL_PX, COLUMNS, DUST2_OVERVIEW, GRID, SECTORS, sectorLabel } from '../src/heatmap.js';
-import { HOT_ZONE, MOST_WANTED } from '../src/levels.js';
+import { DUEL, HOT_ZONE, MOST_WANTED } from '../src/levels.js';
 import { decode, fakeRepo, sampleData, start } from './helpers.js';
 
 const LOGIC = new URL('../../plugins/src/CarbonStealth.Logic/', import.meta.url);
@@ -54,6 +54,15 @@ test('Most Wanted: прагът и бонусът са същите като в 
   assert.equal(num(cs('MostWanted.cs'), 'MinKills'), MOST_WANTED.minKills);
 });
 
+test('дуелът: целта, минутите, поканата, паузата и наградата са същите като в C#', () => {
+  const rules = cs('Duels.cs');
+  assert.equal(num(rules, 'Target'), DUEL.target);
+  assert.equal(num(rules, 'DurationSeconds'), DUEL.minutes * 60);
+  assert.equal(num(rules, 'InviteSeconds'), DUEL.inviteSeconds);
+  assert.equal(num(rules, 'CooldownSeconds'), DUEL.cooldownMinutes * 60);
+  assert.equal(num(cs('Progression.cs'), 'DuelWinXp'), DUEL.winXp);
+});
+
 test('класацията „Как се смята“: редовете на арената идват от константите', async () => {
   const app = await start({ repo: fakeRepo(sampleData()) });
   try {
@@ -66,8 +75,31 @@ test('класацията „Как се смята“: редовете на �
       /<th scope="row">Свален Most Wanted \(бонус\)<\/th><td class="c-num">\+25<\/td>/,
     );
     assert.match(bg, /поне 10 убийства/);
+    assert.match(bg, /<th scope="row">Спечелен дуел<\/th><td class="c-num">\+50<\/td>/);
+    assert.match(
+      bg,
+      /до 30 s\. Който пръв направи 5 убийства на другия \(или води след 3 минути\), печели \+50 XP/,
+    );
     const it = decode(await (await app.get('/it/leaderboard')).text());
     assert.match(it, /Uccisione dall'interno della zona calda/);
+  } finally {
+    await app.close();
+  }
+});
+
+test('началото: арената (три плочи от константите) и !duel в командите', async () => {
+  const app = await start({ repo: fakeRepo(sampleData()) });
+  try {
+    const bg = decode(await (await app.get('/bg/')).text());
+    assert.match(bg, /<h2 id="arena-title">Повече от deathmatch<\/h2>/);
+    assert.equal((bg.match(/<li><p class="arena-tag">/g) ?? []).length, 3);
+    assert.match(bg, /<strong class="arena-value">×2 XP<\/strong>/);
+    assert.match(bg, /<strong class="arena-value">\+25 XP<\/strong>/);
+    assert.match(bg, /<strong class="arena-value">\+50 XP<\/strong>/);
+    assert.match(bg, /<code id="cmd-duel">!duel<\/code>/);
+    assert.match(bg, /home-arena\.[0-9a-f]+\.css|home-arena\.css/);
+    const en = decode(await (await app.get('/en/')).text());
+    assert.match(en, /First to 5 kills on each other wins; after 3 minutes the leader wins/);
   } finally {
     await app.close();
   }

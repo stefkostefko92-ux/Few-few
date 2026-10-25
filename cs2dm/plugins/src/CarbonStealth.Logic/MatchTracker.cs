@@ -92,6 +92,13 @@ public sealed class MatchTracker
         For(attacker, name).Xp += Math.Max(0, xp);
     }
 
+    /// <summary>XP извън убийство (спечелен дуел, §15) — само в колоната XP на мача.</summary>
+    public void AddXp(string steamId, string name, int xp)
+    {
+        if (!Running) return;
+        For(steamId, name).Xp += Math.Max(0, xp);
+    }
+
     /// <summary>Убит от бот: серията изгаря, но смъртта не се брои (ботовете не влизат в статистиките).</summary>
     public void StreakBroken(string victim)
     {

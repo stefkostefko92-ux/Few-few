@@ -63,8 +63,21 @@ export function mostWantedBonus(victimWanted: boolean): number {
   return victimWanted ? MOST_WANTED.xp : 0;
 }
 
+/**
+ * Дуел във FFA (CONTRACT §15): до `target` убийства един срещу друг или `minutes` минути; покана за
+ * `inviteSeconds`, пауза `cooldownMinutes` за двойката. Победителят взема `winXp` наведнъж, без множител.
+ * Същото като `DuelRules` и `Progression.DuelWinXp` в C#.
+ */
+export const DUEL = {
+  target: 5,
+  minutes: 3,
+  inviteSeconds: 30,
+  cooldownMinutes: 2,
+  winXp: 50,
+} as const;
+
 /** Режимите на арената (CONTRACT §15) — за таблицата „Как се смята“ и началната страница. */
-export const ARENA = { hotZone: HOT_ZONE, mostWanted: MOST_WANTED } as const;
+export const ARENA = { hotZone: HOT_ZONE, mostWanted: MOST_WANTED, duel: DUEL } as const;
 
 /** Баунти: серия ≥ 5 → `min(25 · (серия − 4), 250)` XP. */
 export const BOUNTY = { minStreak: 5, perKill: 25, cap: 250 } as const;

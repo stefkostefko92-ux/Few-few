@@ -32,7 +32,7 @@
 <link rel="preload" href="/static/fonts/sofia-sans-extra-condensed-<%= locale === 'bg' ? 'cyrillic' : 'latin' %>-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/static/fonts/sofia-sans-<%= locale === 'bg' ? 'cyrillic' : 'latin' %>-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <% if (current === 'home') { %><link rel="preload" as="image" href="<%= asset('img/dust2-720.webp') %>" imagesrcset="<%= asset('img/dust2-720.webp') %> 720w, <%= asset('img/dust2-1080.webp') %> 1080w" imagesizes="(max-width: 940px) 100vw, 50vw" fetchpriority="high">
-<% } %><% ['base.css', 'chrome.css', 'atoms.css'].concat(current === 'home' ? ['home-cover.css', 'home-sections.css', 'home-more.css', 'home-responsive.css'] : current === 'player' || current === 'match' ? ['pages.css', 'tables.css', 'profile.css'] : ['pages.css', 'tables.css']).forEach((sheet) => { %><link rel="stylesheet" href="<%= asset(sheet) %>">
+<% } %><% ['base.css', 'chrome.css', 'atoms.css'].concat(current === 'home' ? ['home-cover.css', 'home-sections.css', 'home-more.css', 'home-arena.css', 'home-responsive.css'] : current === 'player' || current === 'match' ? ['pages.css', 'tables.css', 'profile.css'] : ['pages.css', 'tables.css']).forEach((sheet) => { %><link rel="stylesheet" href="<%= asset(sheet) %>">
 <% }) %><script src="<%= asset('app.js') %>" defer></script>
 <script type="application/ld+json" nonce="<%= cspNonce %>"><%- head.structuredData %></script>
 </head>

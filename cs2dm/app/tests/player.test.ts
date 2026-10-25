@@ -71,12 +71,13 @@ test('профилът: ниво, K/D, точност, майсторство, h
   }
 });
 
-test('профилът: отличията (§15) — значката с брой и рекорд, празно състояние без значки', async () => {
+test('профилът: отличията (§15) — значката с брой и рекорд, дуелите, празно без значки', async () => {
   const data = sampleData();
   data.honors = {
     badges: [
       { kind: 'zone_king', count: 3, lastAt: new Date('2026-10-24T18:00:00Z'), bestKills: 7 },
     ],
+    duels: { wins: 4, losses: 2, draws: 1 },
   };
   const app = await start({ repo: fakeRepo(data) });
   const empty = await start({ repo: fakeRepo(sampleData()) });
@@ -87,6 +88,10 @@ test('профилът: отличията (§15) — значката с бро
     assert.match(html, /Крал на зоната/);
     assert.match(html, /<strong>3 пъти<\/strong>/);
     assert.match(html, /рекорд: 7 убийства в зоната/);
+    assert.match(html, /<dt>Победи<\/dt><dd>4<\/dd>/);
+    assert.match(html, /<dt>Загуби<\/dt><dd>2<\/dd>/);
+    assert.match(html, /<dt>Равни<\/dt><dd>1<\/dd>/);
+    assert.match(html, /Дуели за последните 90 дни/);
     const none = await (await empty.get(`/en/player/${PLAYER_ID}`)).text();
     assert.match(none, /No honours yet/);
     assert.doesNotMatch(none, /badge-zone_king/);

@@ -12,6 +12,7 @@ test('сроковете са от CONTRACT.md §7', () => {
     casesDays: 365,
     demosDays: 14,
     matchesDays: 90,
+    duelsDays: 90,
   });
   assert.deepEqual(
     PURGE_TARGETS.map((target) => [target.id, target.days]),
@@ -21,6 +22,7 @@ test('сроковете са от CONTRACT.md §7', () => {
       ['appeals', 365],
       ['reports', 365],
       ['matches', 90],
+      ['duels', 90],
     ],
   );
 });
@@ -72,5 +74,6 @@ test('SQL-ът на чистенето трие по сроковете и не 
   assert.match(sql, /FROM sessions WHERE connected_at < \$\{cutoff\} LIMIT \$\{limit\}/);
   assert.match(sql, /FROM kills WHERE at < \$\{cutoff\} LIMIT \$\{limit\}/);
   assert.match(sql, /FROM matches WHERE ended_at < \$\{cutoff\} LIMIT \$\{limit\}/);
+  assert.match(sql, /FROM duels WHERE ended_at < \$\{cutoff\} LIMIT \$\{limit\}/);
   assert.equal((sql.match(/status <> 'OPEN' AND handled_at IS NOT NULL/g) ?? []).length, 2);
 });

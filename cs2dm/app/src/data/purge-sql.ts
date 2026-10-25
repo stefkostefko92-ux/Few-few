@@ -27,6 +27,10 @@ export function prismaDeleteBatch(db: PrismaClient): DeleteBatch {
         return db.$executeRaw`
           DELETE FROM matches WHERE id IN (
             SELECT id FROM matches WHERE ended_at < ${cutoff} LIMIT ${limit})`;
+      case 'duels':
+        return db.$executeRaw`
+          DELETE FROM duels WHERE id IN (
+            SELECT id FROM duels WHERE ended_at < ${cutoff} LIMIT ${limit})`;
       case 'reports':
         return db.$executeRaw`
           DELETE FROM reports WHERE id IN (
