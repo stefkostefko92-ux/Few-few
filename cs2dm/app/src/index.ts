@@ -14,6 +14,7 @@ import { RedisLiveSource } from './live.js';
 import { logger } from './logger.js';
 import { createWebRedis } from './queue.js';
 import { createServer } from './server.js';
+import { RedisPerfSource } from './admin/perf.js';
 
 const cfg = config();
 const redis = createWebRedis(cfg.REDIS_URL);
@@ -59,6 +60,7 @@ const app = createServer({
     live,
     bridge: command(keys.bridgeKey, BRIDGE_CHANNELS),
     agent: command(keys.agentKey, AGENT_CHANNELS),
+    perf: new RedisPerfSource(redis),
   },
 });
 

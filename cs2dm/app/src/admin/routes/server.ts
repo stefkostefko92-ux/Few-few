@@ -3,6 +3,7 @@ import { audit } from '../audit.js';
 import { commandErrorKey } from '../commands.js';
 import { me, type AdminCtx, type AdminRoute } from '../context.js';
 import { commandResultCode, first, type ResultCode } from '../forms.js';
+import { perfChart, summarize } from '../perf.js';
 import { done, renderAdmin } from '../render.js';
 import {
   LOG_SOURCES,
@@ -58,9 +59,10 @@ export function serverRoutes(ctx: AdminCtx): AdminRoute[] {
       cap: 'serverRead',
       handle: async (req, res) => {
         const principal = me(res);
-        const [{ status }, agent] = await Promise.all([
+        const [{ status }, agent, perfRows] = await Promise.all([
           ctx.live.snapshot(),
           ctx.agent.send('status', {}, principal.steamId),
+          ctx.perf.read(),
         ]);
         const parsed = agent.ok ? parseAgentStatus(agent.data) : null;
         renderAdmin(req, res, 'server', {
@@ -71,6 +73,10 @@ export function serverRoutes(ctx: AdminCtx): AdminRoute[] {
           agentDetail: agent.ok ? null : failureDetail(agent.data),
           logSources: LOG_SOURCES,
           maxLines: MAX_LOG_LINES,
+          perf:
+            perfRows === null
+              ? null
+              : { summary: summarize(perfRows), chart: perfChart(perfRows, ctx.now().getTime()) },
         });
       },
     },

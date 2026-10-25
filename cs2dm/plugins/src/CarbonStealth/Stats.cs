@@ -187,6 +187,7 @@ public sealed partial class CarbonStealthPlugin
             mode = CurrentModeName(),
             maxPlayers = Server.MaxPlayers,
             players,
+            perf = LivePerf(),
         });
     }
 

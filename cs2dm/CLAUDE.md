@@ -206,6 +206,9 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   Докато трае — **зелен модел** (`m_clrRender` през `Colorize`), вижда се само в пряка видимост. **Не** контурен
   glow: в CS2 `CGlowProperty` няма настройка за стени и светенето минава през тях (собственикът го отказа). Белият
   цвят се връща само ако моделът е още нашият зелен (замразяването от админ е синьо — не се пипа).
+- **Здраве на тика (`TickPerf.cs` + `CarbonStealth.Logic/TickHealth.cs`, CONTRACT §5):** в OnTick само едно
+  изваждане на Stopwatch; минутата → `cs2dm:perf` (LPUSH/LTRIM 1440) през `BridgeClient.PushPerf` и `perf` в
+  `cs2dm:live`. Панелът: `app/src/admin/perf.ts` (zod, сървърен SVG без inline стил) в `/admin/server`.
 - Нова колона/таблица → миграция в `app/prisma` (Prisma е собственикът на схемата), после SQL-а в `Data/`.
 - **Статистиките са `+=` с епоха (§3).** Нов агрегат → колона + `PlayerDelta` + `StatsWriter` (с
   `WHERE ред.stats_epoch <= EXCLUDED.stats_epoch`) + полето в редактора на панела (`stats-edit.ts`). Партидата

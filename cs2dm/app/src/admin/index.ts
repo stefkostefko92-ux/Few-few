@@ -9,6 +9,7 @@ import { authRouter } from './routes/auth.js';
 import { protectedRoutes } from './routes/index.js';
 import { totpRouter } from './routes/totp.js';
 import type { AdminDeps } from './types.js';
+import { NO_PERF } from './perf.js';
 
 /**
  * Уеб панелът `/admin` (CONTRACT.md §10). Извън търсачките: `noindex` в заглавието и в
@@ -40,6 +41,7 @@ export function adminRouter(deps: AdminDeps | undefined): Router {
     live: deps.live,
     bridge: deps.bridge,
     agent: deps.agent,
+    perf: deps.perf ?? NO_PERF,
     encKey,
     steamFetch: deps.steamFetch ?? ((url, init) => fetch(url, init)),
     now: deps.now ?? (() => new Date()),

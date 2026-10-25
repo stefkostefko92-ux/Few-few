@@ -1276,7 +1276,28 @@
         "update": "update",
         "plugin": "plugin from the panel"
       },
-      "detail": "Details from the agent:"
+      "detail": "Details from the agent:",
+      "perf": {
+        "title": "Tick health",
+        "unavailable": "Redis did not answer — the tick data could not be read.",
+        "empty": "No data yet: the plugin writes one minute at a time while people are on the server.",
+        "late": "Late ticks",
+        "lateOf": "({late} of {ticks} in the last minute)",
+        "max": "Longest interval",
+        "ms": "{ms} ms",
+        "avg": "Average interval",
+        "avgOf": "{avg} ms (target {budget} ms)",
+        "players": "Players",
+        "mode": "Mode",
+        "day": "Last 24 hours",
+        "dayOf": "{late} late · longest {worst} ms",
+        "updated": "Last minute",
+        "keyGap": "longest interval (up to {max} ms)",
+        "keyLate": "late ticks (up to {max})",
+        "keyPlayers": "players (up to {max})",
+        "keyLimit": "late threshold (1.5 × target)",
+        "note": "A tick is late when it arrives more than 1.5 times later than the game's target. Under 1% is fine; above 5% players feel it as server lag. Compare it with the player count and the mode to see what loads the server."
+      }
     },
     "settings": {
       "title": "Server settings",

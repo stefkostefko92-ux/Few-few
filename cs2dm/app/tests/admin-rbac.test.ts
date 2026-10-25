@@ -19,6 +19,7 @@ import {
 import { protectedRoutes } from '../src/admin/routes/index.js';
 import { DM_MODES, parseAgentStatus, parseLogLines, redactLine } from '../src/admin/server-data.js';
 import { fixedLive } from './helpers.js';
+import { NO_PERF } from '../src/admin/perf.js';
 
 const DAY = 86_400_000;
 
@@ -78,6 +79,7 @@ function ctx(): AdminCtx {
     },
     bridge: UNAVAILABLE,
     agent: UNAVAILABLE,
+    perf: NO_PERF,
     encKey: Buffer.alloc(32),
     steamFetch: async () => new Response(''),
     now: () => new Date(),

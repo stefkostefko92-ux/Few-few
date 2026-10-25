@@ -134,8 +134,12 @@ Redis слуша само на `127.0.0.1` с парола (ACL). Ключове
 ### Живо състояние: плъгин → приложение
 
 - `SET cs2dm:live <json> EX 15` на всеки 5 s:
-  `{ ts, map, mode, maxPlayers, players: [{ steamId, name, kills, deaths, ping, alive, isBot, vip, role, level }] }`
-  (`steamId`/`level` са `null` за ботове).
+  `{ ts, map, mode, maxPlayers, players: [{ steamId, name, kills, deaths, ping, alive, isBot, vip, role, level }], perf }`
+  (`steamId`/`level` са `null` за ботове; `perf` — последната минута „здраве на тика“ или `null`).
+- **Здраве на тика:** плъгинът мери истинското време между тиковете (Stopwatch в OnTick) спрямо интервала на
+  играта (`Server.TickInterval`). Закъснял тик — над 1,5 × интервала; над 2 s е пауза (сън, зареждане) и не се
+  брои. На минута: `LPUSH cs2dm:perf <json>` + `LTRIM 0 1439` (24 ч), редът е
+  `{ ts, ticks, late, maxMs, avgMs, players (хора), mode, budgetMs }`. Панелът (`/admin/server`, ADMIN+) го чете.
 - `XADD cs2dm:events MAXLEN ~ 2000 * type <t> data <json>`: `join`, `leave`, `kill`
   `{attacker, victim, weapon, hs}`, `chat` `{steamId, name, text}`, `admin` `{actor, action, target}`,
   `bounty`, `revenge`. Потокът е кратък по дизайн (чатът не се пази в базата).

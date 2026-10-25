@@ -49,6 +49,40 @@
     <% } %>
   </section>
 </div>
+<section class="a-card" aria-labelledby="pf-title">
+  <h2 id="pf-title"><%= t('admin.server.perf.title') %></h2>
+  <%# „Здраве на тика“ (CONTRACT §5): минутите от cs2dm:perf; графиката е сървърен SVG без inline стил. %>
+  <% if (!perf) { %>
+  <p class="a-warn"><%= t('admin.server.perf.unavailable') %></p>
+  <% } else if (!perf.summary) { %>
+  <p class="a-empty"><%= t('admin.server.perf.empty') %></p>
+  <% } else { const s = perf.summary; const share = s.lateShare >= 5 ? 'is-err' : s.lateShare >= 1 ? 'is-warn' : 'is-ok'; %>
+  <dl class="a-facts">
+    <div><dt><%= t('admin.server.perf.late') %></dt><dd><span class="a-chip <%= share %>"><%= fmt.percent(s.last.late, s.last.ticks) %></span> <%= t('admin.server.perf.lateOf', { late: fmt.int(s.last.late), ticks: fmt.int(s.last.ticks) }) %></dd></div>
+    <div><dt><%= t('admin.server.perf.max') %></dt><dd><%= t('admin.server.perf.ms', { ms: s.last.maxMs.toFixed(1) }) %></dd></div>
+    <div><dt><%= t('admin.server.perf.avg') %></dt><dd><%= t('admin.server.perf.avgOf', { avg: s.last.avgMs.toFixed(1), budget: s.last.budgetMs.toFixed(1) }) %></dd></div>
+    <div><dt><%= t('admin.server.perf.players') %></dt><dd><%= fmt.int(s.last.players) %></dd></div>
+    <div><dt><%= t('admin.server.perf.mode') %></dt><dd><%= s.last.mode || '—' %></dd></div>
+    <div><dt><%= t('admin.server.perf.day') %></dt><dd><%= t('admin.server.perf.dayOf', { late: fmt.int(s.lateTotal), worst: s.worstMs.toFixed(1) }) %></dd></div>
+    <div><dt><%= t('admin.server.perf.updated') %></dt><dd><%= fmt.dateTime(new Date(s.last.ts)) %></dd></div>
+  </dl>
+  <figure class="a-perf">
+    <svg class="a-perf-chart" viewBox="<%= perf.chart.viewBox %>" preserveAspectRatio="none" role="img" aria-labelledby="pf-cap" focusable="false">
+      <line class="a-perf-limit" x1="0" x2="720" y1="<%= perf.chart.lateLineY %>" y2="<%= perf.chart.lateLineY %>"/>
+      <path class="a-perf-players" d="<%= perf.chart.players %>"/>
+      <path class="a-perf-gap" d="<%= perf.chart.gap %>"/>
+      <path class="a-perf-late" d="<%= perf.chart.late %>"/>
+    </svg>
+    <figcaption id="pf-cap" class="a-perf-legend">
+      <span class="a-perf-key is-gap"><%= t('admin.server.perf.keyGap', { max: fmt.int(perf.chart.scale.gapMs) }) %></span>
+      <span class="a-perf-key is-late"><%= t('admin.server.perf.keyLate', { max: fmt.int(perf.chart.scale.late) }) %></span>
+      <span class="a-perf-key is-players"><%= t('admin.server.perf.keyPlayers', { max: fmt.int(perf.chart.scale.players) }) %></span>
+      <span class="a-perf-key is-limit"><%= t('admin.server.perf.keyLimit') %></span>
+    </figcaption>
+  </figure>
+  <p class="a-note"><%= t('admin.server.perf.note') %></p>
+  <% } %>
+</section>
 <section class="a-card" aria-labelledby="lg-title">
   <h2 id="lg-title"><%= t('admin.server.logs') %></h2>
   <%- include('partials/logs-form', { query: { source: 'css', lines: 100 } }) %>

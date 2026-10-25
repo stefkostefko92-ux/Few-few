@@ -85,6 +85,7 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
         RegisterCssFlags();
         RegisterFairPlay();
         RegisterSpawnProtection();
+        RegisterTickHealth();
         RegisterEvents();
         RegisterMatch();
 

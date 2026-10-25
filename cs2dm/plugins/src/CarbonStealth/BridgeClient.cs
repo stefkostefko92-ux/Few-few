@@ -20,6 +20,9 @@ public sealed class BridgeClient : IAsyncDisposable
     private static readonly RedisChannel AckChannel = RedisChannel.Literal("cs2dm:ack");
     private const string LiveKey = "cs2dm:live";
     private const string EventsKey = "cs2dm:events";
+    private const string PerfKey = "cs2dm:perf";
+    /// <summary>Минутите в cs2dm:perf — 24 часа (CONTRACT §5).</summary>
+    public const int PerfKeep = 1440;
 
     private readonly ConnectionMultiplexer _mux;
     private readonly byte[] _key;
@@ -69,6 +72,14 @@ public sealed class BridgeClient : IAsyncDisposable
 
     public void PublishLive(string json) =>
         Fire(_mux.GetDatabase().StringSetAsync(LiveKey, json, TimeSpan.FromSeconds(15)), "live");
+
+    /// <summary>Нова минута „здраве на тика“ най-отпред, после таван от 24 ч (същата връзка → редът се пази).</summary>
+    public void PushPerf(string json)
+    {
+        var db = _mux.GetDatabase();
+        Fire(db.ListLeftPushAsync(PerfKey, json), "perf");
+        Fire(db.ListTrimAsync(PerfKey, 0, PerfKeep - 1), "perf");
+    }
 
     public void Event(string type, object data) =>
         Fire(_mux.GetDatabase().StreamAddAsync(EventsKey,

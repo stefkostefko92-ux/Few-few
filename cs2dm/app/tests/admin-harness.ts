@@ -12,6 +12,7 @@ import type { FetchLike } from '../src/admin/steam-openid.js';
 import { base32Decode, totpAt, totpStep } from '../src/admin/totp.js';
 import type { AdminLiveSource, LivePlayer } from '../src/live.js';
 import { decode, fakeRepo, sampleData, start, type Running } from './helpers.js';
+import type { PerfSource } from '../src/admin/perf.js';
 
 export const enabled =
   Boolean(process.env.DATABASE_URL) && !process.env.DATABASE_URL?.includes('127.0.0.1:1/');
@@ -103,6 +104,7 @@ export function panelApp(input: {
   bridge: CommandSender;
   agent: CommandSender;
   steamFetch?: FetchLike;
+  perf?: PerfSource;
 }): Promise<Running> {
   return start({
     repo: fakeRepo(sampleData()),

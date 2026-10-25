@@ -3,6 +3,7 @@ import type { Locale } from '../i18n.js';
 import type { AdminLiveSource } from '../live.js';
 import type { CommandSender } from './commands.js';
 import type { FetchLike } from './steam-openid.js';
+import type { PerfSource } from './perf.js';
 
 /** Вписаният човек в панела — от `web_sessions` + `players`, прочетен наново на всяка заявка. */
 export interface AdminPrincipal {
@@ -23,6 +24,8 @@ export interface AdminDeps {
   live: AdminLiveSource;
   bridge: CommandSender;
   agent: CommandSender;
+  /** „Здраве на тика“ от `cs2dm:perf` (§5); без него картата в /admin/server казва „няма данни“. */
+  perf?: PerfSource;
   /** fetch към Steam (тестовете подават двойник — нула заявки към Steam). */
   steamFetch?: FetchLike;
   now?: () => Date;

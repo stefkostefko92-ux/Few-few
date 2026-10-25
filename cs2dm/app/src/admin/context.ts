@@ -5,6 +5,7 @@ import type { CommandSender } from './commands.js';
 import type { Capability } from './rbac.js';
 import type { FetchLike } from './steam-openid.js';
 import type { AdminPrincipal } from './types.js';
+import type { PerfSource } from './perf.js';
 
 /** Общото за маршрутите на панела — сглобява се веднъж в `admin/index.ts`. */
 export interface AdminCtx {
@@ -12,6 +13,7 @@ export interface AdminCtx {
   live: AdminLiveSource;
   bridge: CommandSender;
   agent: CommandSender;
+  perf: PerfSource;
   /** 32 байта от APP_ENC_KEY — без него панелът изобщо не се сглобява (503). */
   encKey: Buffer;
   steamFetch: FetchLike;

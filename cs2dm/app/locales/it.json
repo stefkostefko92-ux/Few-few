@@ -1276,7 +1276,28 @@
         "update": "aggiornamento",
         "plugin": "plugin dal pannello"
       },
-      "detail": "Dettagli dall’agente:"
+      "detail": "Dettagli dall’agente:",
+      "perf": {
+        "title": "Salute del tick",
+        "unavailable": "Redis non ha risposto: i dati del tick non sono stati letti.",
+        "empty": "Ancora nessun dato: il plugin scrive un minuto alla volta mentre ci sono persone sul server.",
+        "late": "Tick in ritardo",
+        "lateOf": "({late} su {ticks} nell'ultimo minuto)",
+        "max": "Intervallo più lungo",
+        "ms": "{ms} ms",
+        "avg": "Intervallo medio",
+        "avgOf": "{avg} ms (norma {budget} ms)",
+        "players": "Persone",
+        "mode": "Modalità",
+        "day": "Ultime 24 ore",
+        "dayOf": "{late} in ritardo · il più lungo {worst} ms",
+        "updated": "Ultimo minuto",
+        "keyGap": "intervallo più lungo (fino a {max} ms)",
+        "keyLate": "tick in ritardo (fino a {max})",
+        "keyPlayers": "persone (fino a {max})",
+        "keyLimit": "soglia di ritardo (1,5 × la norma)",
+        "note": "Un tick è in ritardo quando arriva più di 1,5 volte dopo la norma del gioco. Sotto l'1% va bene; sopra il 5% i giocatori lo percepiscono come lag del server. Lo confronti con il numero di persone e la modalità per capire cosa carica il server."
+      }
     },
     "settings": {
       "title": "Impostazioni del server",

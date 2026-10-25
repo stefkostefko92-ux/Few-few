@@ -69,6 +69,20 @@ describe(
         live: memoryLive([]),
         bridge: UNAVAILABLE,
         agent: agentChannel.sender,
+        perf: {
+          read: async () => [
+            {
+              ts: Date.now() - 60_000,
+              ticks: 3840,
+              late: 96,
+              maxMs: 61.5,
+              avgMs: 15.9,
+              players: 17,
+              mode: 'All Weapons',
+              budgetMs: 15.625,
+            },
+          ],
+        },
       });
       close = app.close;
       for (const [name, steamId] of Object.entries({ ADMIN, HEAD, OWNER })) {
@@ -138,7 +152,12 @@ describe(
         }
         return { ok: true };
       };
-      assert.ok((await (await as.ADMIN!.get('/admin/server')).text()).includes('1.41.2.0'));
+      const page = await (await as.ADMIN!.get('/admin/server')).text();
+      assert.ok(page.includes('1.41.2.0'));
+      // Здравето на тика (§5): 96 от 3840 = 2,5 % → предупреждение; графиката е SVG без inline стил.
+      assert.match(page, /class="a-chip is-warn">2,5\s?%</);
+      assert.match(page, /<path class="a-perf-gap" d="M[\d.]+ [\d.]+"/);
+      assert.doesNotMatch(page, /style="/);
       const logs = await (await as.ADMIN!.get('/admin/server/logs?source=css&lines=50')).text();
       assert.ok(logs.includes('x.x.x.x') && !logs.includes('203.0.113.50'), 'редакция и в панела');
       assert.deepEqual(agentGot.find((c) => c.action === 'logs')?.args, {
