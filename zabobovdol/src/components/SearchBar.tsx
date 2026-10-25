@@ -22,10 +22,16 @@ type RecognitionCtor = new () => Recognition;
 export function SearchBar({
   compact = false,
   initialQuery = "",
+  onSearch,
 }: {
   compact?: boolean;
   /** Търсеното досега — на /tarsene полето показва думата от адреса. */
   initialQuery?: string;
+  /**
+   * След изпращане (и с глас). В мобилното меню го затваря — на /tarsene
+   * адресът сменя само ?q=, pathname остава и менюто иначе покрива резултатите.
+   */
+  onSearch?: () => void;
 }) {
   const router = useRouter();
   // На страницата може да има няколко търсачки (хедър, герой, менюто) —
@@ -47,7 +53,9 @@ export function SearchBar({
 
   function go(query: string) {
     const v = query.trim();
-    if (v.length >= 2) router.push(`/tarsene?q=${encodeURIComponent(v)}`);
+    if (v.length < 2) return;
+    router.push(`/tarsene?q=${encodeURIComponent(v)}`);
+    onSearch?.();
   }
 
   function startVoice() {

@@ -414,7 +414,7 @@ export function SiteHeader({ icons }: { icons: Record<string, ReactNode> }) {
           style={{ top: menuTop }}
         >
           <div className="container-content pb-[max(2rem,env(safe-area-inset-bottom))] pt-4">
-            <SearchBar />
+            <SearchBar onSearch={close} />
             <nav aria-label="Всички раздели" className="mt-5 space-y-5">
               {ALL_GROUPS.map((g, gi) => (
                 <section key={g.title} aria-labelledby={`mob-g${gi}`}>
