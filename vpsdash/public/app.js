@@ -4754,9 +4754,13 @@ async function renderRedis() {
 
   for (const i of d.instances) {
     if (!i.ok) {
+      // „Иска парола" не е „недостъпен": Redis е жив, но панелът не може да се впише.
+      const auth = i.reason === 'auth';
       view.appendChild(el('div', { class: 'card', style: 'margin-bottom:12px' }, [
-        el('div', { class: 'card-head' }, [el('h3', { text: i.name }), pill('bad', 'недостъпен')]),
+        el('div', { class: 'card-head' }, [el('h3', { text: i.name }), pill(auth ? 'warn' : 'bad', auth ? 'иска парола' : 'недостъпен')]),
         el('div', { class: 'metric-sub', text: i.error }),
+        // Чуждият изход е доказателство, не наш низ — не се превежда.
+        i.detail ? el('div', { class: 'metric-sub mono', raw: i.detail }) : '',
       ]));
       continue;
     }
