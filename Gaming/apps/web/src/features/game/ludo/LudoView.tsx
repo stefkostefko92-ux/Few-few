@@ -7,6 +7,7 @@ import { useMatch } from "../useMatch";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene } from "../scene/SceneShell";
 import { registerE2EHook } from "../board/e2eHook";
+import { useRevealOnTurn } from "../useRevealOnTurn";
 import { CENTER, HOME, N, SEAT_COLORS, TRACK, houseSeat, tokenCoord } from "./board";
 import type { LudoScene, LudoToken } from "./ludoScene";
 import "./ludo.css";
@@ -92,6 +93,9 @@ export function LudoView({ title }: { title: string }) {
   const movable = new Set(
     legal.filter((a): a is Extract<LudoAction, { type: "MOVE" }> => a.type === "MOVE").map((a) => a.token),
   );
+  // „Хвърли“ стои под дъската — на 1366×768 извън екрана, когато ходът започне.
+  const controlsRef = useRef<HTMLDivElement>(null);
+  useRevealOnTurn(controlsRef, !!rollAction || !!passAction);
 
   const cellTypes = useMemo(buildCellTypes, []);
   const safeCells = useMemo(() => new Set(SAFE_ABS.map((a) => key(TRACK[a]![0], TRACK[a]![1]))), []);
@@ -325,7 +329,7 @@ export function LudoView({ title }: { title: string }) {
           </BoardFrame>
           )}
 
-          <div className="ludo-controls">
+          <div className="ludo-controls" ref={controlsRef}>
             {state.die && !useGL ? <Die value={state.die} rolling={dieRolling} /> : null}
             {rollAction ? (
               <Button data-action="roll" onClick={() => { playCue("flip"); m.send(rollAction); }}>

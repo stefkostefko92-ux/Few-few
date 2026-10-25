@@ -4,6 +4,7 @@ import { battleshipFleetError, placeFleet } from "@aso/game-core";
 import { Button, cn } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { isRotateKey } from "./keys";
+import { useRevealOnTurn } from "../useRevealOnTurn";
 
 const SIZE = 10;
 // БГ convention: columns А–К (Й is skipped), rows 1–10.
@@ -172,6 +173,9 @@ export function BattleshipPlacement({
   }
 
   const locked = ready || sent;
+  // „Готов“ е под мрежата — на телефон под ръба на екрана; вкарай го в кадър.
+  const actionsRef = useRef<HTMLDivElement>(null);
+  useRevealOnTurn(actionsRef, !locked);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -224,7 +228,7 @@ export function BattleshipPlacement({
         </div>
       </div>
       {!locked ? (
-        <div className="flex flex-wrap items-center justify-center gap-2">
+        <div ref={actionsRef} className="flex flex-wrap items-center justify-center gap-2">
           <Button variant="felt" data-action="rotate" onClick={rotate} disabled={selected === null}>
             {t("battleship.rotate")}
           </Button>
