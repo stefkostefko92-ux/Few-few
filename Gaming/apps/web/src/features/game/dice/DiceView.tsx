@@ -13,6 +13,7 @@ import { Die } from "../board/BoardFrame";
 import { useMatch } from "../useMatch";
 import { useGameEvents } from "../useGameEvents";
 import { Scene } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
 import { FeltTable } from "../table/FeltTable";
 import { GLDice, webglSupported } from "./GLDice";
 import "./dice.css";
@@ -53,6 +54,11 @@ export function DiceView({ title }: { title: string }) {
   const scoreCats = new Set(
     legal.filter((a): a is Extract<DiceAction, { type: "SCORE" }> => a.type === "SCORE").map((a) => a.category),
   );
+  // Без презахвърляния остава само записът → задължително решение в прозорец.
+  // Докато има презахвърляния, ранният запис е по желание — с клик в таблицата.
+  const mustScore = phase === "playing" && myTurn && !!state && state.rolledThisTurn && !canRoll && scoreCats.size > 0;
+  const options = mustScore && state ? CATS.filter((c) => scoreCats.has(c)).map((c) => ({ cat: c, pts: scoreFor(state, seat, c) })) : [];
+  const bestPts = options.reduce((b, o) => Math.max(b, o.pts), 0);
 
   // Reset holds when a new turn begins.
   useEffect(() => {
@@ -128,10 +134,8 @@ export function DiceView({ title }: { title: string }) {
               </Button>
             ) : null}
             {canHold ? (
-              <p className="mt-2 text-xs text-ink-muted">{t("dice.holdHint")}</p>
-            ) : myTurn && state.rolledThisTurn ? (
               <p className="mt-2 text-xs text-ink-muted">
-                {t("dice.pickCategory", { defaultValue: "Избери категория" })}
+                {t("dice.holdHint")} · {t("dice.earlyScoreHint")}
               </p>
             ) : null}
           </div>
@@ -155,7 +159,8 @@ export function DiceView({ title }: { title: string }) {
                     <td>{t(`dice.cat.${cat}`)}</td>
                     {state.scores.map((sc, s) => {
                       const filled = sc[cat] !== undefined;
-                      const selectable = s === seat && myTurn && scoreCats.has(cat);
+                      // При задължителен запис изборът е в прозореца — едно място.
+                      const selectable = s === seat && myTurn && !mustScore && scoreCats.has(cat);
                       return (
                         <td
                           key={s}
@@ -168,7 +173,7 @@ export function DiceView({ title }: { title: string }) {
                         >
                           {filled ? (
                             sc[cat]
-                          ) : selectable ? (
+                          ) : selectable || (mustScore && s === seat && scoreCats.has(cat)) ? (
                             // Preview what this category would bank right now (вкл. правилото „Жокер“).
                             <span style={{ opacity: 0.55 }}>{scoreFor(state, seat, cat)}</span>
                           ) : (
@@ -215,6 +220,45 @@ export function DiceView({ title }: { title: string }) {
         </div>
         </FeltTable>
       ) : null}
+
+      {/* Последното хвърляне е направено — остава записът в категория. */}
+      <DecisionPrompt
+        open={mustScore}
+        promptKey={`score-${state?.scores[seat] ? Object.keys(state.scores[seat]!).length : 0}-${state?.dice.join("") ?? ""}`}
+        title={t("dice.scoreTitle")}
+        hint={
+          state ? (
+            <span className="dice-decide-hint">
+              <span className="dice-faces">
+                {state.dice.map((d, i) => (
+                  <Die key={i} value={d} />
+                ))}
+              </span>
+              <span>{t("dice.scoreHint")}</span>
+            </span>
+          ) : null
+        }
+        // Горе: на лаптоп тавата със заровете остава видима под прозореца.
+        placement="top"
+        testId="dice-score"
+      >
+        <div className="dice-pick" data-zone="score">
+          {options.map((o) => (
+            <button
+              key={o.cat}
+              type="button"
+              data-action="score"
+              data-category={o.cat}
+              data-points={o.pts}
+              className={cn("dice-pick__opt", o.pts === bestPts && bestPts > 0 && "is-best", o.pts === 0 && "is-zero")}
+              onClick={() => m.send({ type: "SCORE", category: o.cat })}
+            >
+              <span>{t(`dice.cat.${o.cat}`)}</span>
+              <b className="tnum">{o.pts}</b>
+            </button>
+          ))}
+        </div>
+      </DecisionPrompt>
     </Scene>
   );
 }

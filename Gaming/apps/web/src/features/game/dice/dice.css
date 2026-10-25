@@ -125,3 +125,64 @@
   color: var(--brass-100);
   border-top: 1px solid var(--brass-400);
 }
+
+/* Прозорец „Запиши резултата“ (DecisionPrompt, на <body>). */
+.dice-decide-hint {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+.dice-faces {
+  display: inline-flex;
+  gap: 4px;
+}
+.dice-faces .aso-die {
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  gap: 1px;
+  border-radius: 7px;
+}
+.dice-faces .aso-pip {
+  width: 4px;
+  height: 4px;
+}
+.dice-pick {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+.dice-pick__opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(217, 178, 95, 0.3);
+  background: var(--felt-700);
+  color: var(--ink-100);
+  font-size: 0.85rem;
+  text-align: start;
+  cursor: pointer;
+}
+.dice-pick__opt b {
+  color: var(--brass-300);
+}
+.dice-pick__opt.is-best {
+  border-color: var(--brass-300);
+  background: rgba(217, 178, 95, 0.18);
+}
+.dice-pick__opt.is-zero {
+  color: var(--ink-muted);
+}
+.dice-pick__opt.is-zero b {
+  color: var(--ink-muted);
+}
+.dice-pick__opt:hover,
+.dice-pick__opt:focus-visible {
+  border-color: var(--brass-300);
+  outline: none;
+}

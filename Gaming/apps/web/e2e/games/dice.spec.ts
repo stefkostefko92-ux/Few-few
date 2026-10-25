@@ -9,11 +9,14 @@ import {
   waitMyTurn,
 } from "./helpers";
 import { snapBoth, note } from "./helpers-board";
+import { expectDecisionOnScreen, expectMinimizeRestore, expectNotCovered } from "./decision-checks";
 
 /**
  * Покер на зарове срещу бот — 2D заровете (WebGL е изключен), само с
  * истински кликове: „Хвърли“ → клик по зарове за задържане → „Хвърли пак“
- * (задържаните не се менят) → клик по свободна категория в таблицата.
+ * (задържаните не се менят) → запис: след третото хвърляне изборът идва сам
+ * в прозореца „Запиши резултата“ (стойностите са в него), а по-ранен запис е
+ * с клик по свободна категория в таблицата.
  * Играе се цялата игра (13 категории) до картата „Край на играта“ и „Нова
  * игра“ (Играй пак), която почва нов мач.
  */
@@ -46,6 +49,9 @@ interface Seen {
   rerolls: number;
   holds: number;
   scored: number;
+  /** Записи през прозореца (след последното хвърляне) / с клик в таблицата. */
+  viaPrompt: number;
+  viaTable: number;
 }
 
 async function playTurn(page: Page, seen: Seen): Promise<void> {
@@ -59,6 +65,8 @@ async function playTurn(page: Page, seen: Seen): Promise<void> {
 
   // 2) до два пъти: задържане с клик + „Хвърли пак“
   for (let r = 0; r < 2; r++) {
+    // Докато има презахвърляния, записът е по желание — без прозорец.
+    await expect(page.getByTestId("dice-score")).toHaveCount(0);
     const values = await diceValues(page);
     const plan = holdPlan(values);
     if (plan.every((h) => h) || !plan.some((h) => h)) break;
@@ -85,6 +93,32 @@ async function playTurn(page: Page, seen: Seen): Promise<void> {
   }
 
   // 3) запис в най-изгодната свободна категория (стойността се вижда предварително)
+  const noRerolls = (await roll(page).count()) === 0;
+  if (noRerolls) {
+    // Последното хвърляне → прозорецът идва сам; таблицата вече не се кликва.
+    const card = await expectDecisionOnScreen(page, "dice-score");
+    await expect(page.locator('[data-seat="0"][data-selectable="true"]')).toHaveCount(0);
+    if (seen.viaPrompt === 0) {
+      await expectMinimizeRestore(page, "dice-score");
+      // На лаптоп заровете в тавата остават видими под прозореца.
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await expectNotCovered(page, "dice-score", page.locator(".dice-tray"), "тавата със заровете");
+      await snapBoth(page, "dice-score");
+    }
+    const options = await card.locator('[data-action="score"]').evaluateAll((els) =>
+      els.map((el) => ({ cat: (el as HTMLElement).dataset.category!, pts: Number((el as HTMLElement).dataset.points ?? "0") })),
+    );
+    expect(options.length).toBeGreaterThan(0);
+    const pick = options.reduce((a, b) => (b.pts > a.pts ? b : a));
+    before = await stateVersion(page);
+    await card.locator(`[data-action="score"][data-category="${pick.cat}"]`).click();
+    await expectServerAdvanced(page, before);
+    await expect(page.getByTestId("dice-score")).toHaveCount(0);
+    await expect(page.locator(`[data-seat="0"][data-category="${pick.cat}"]`)).toHaveAttribute("data-filled", String(pick.pts));
+    seen.viaPrompt++;
+    seen.scored++;
+    return;
+  }
   const cells = page.locator('[data-seat="0"][data-selectable="true"]');
   await expect(cells.first()).toBeVisible();
   const options = await cells.evaluateAll((els) =>
@@ -94,6 +128,7 @@ async function playTurn(page: Page, seen: Seen): Promise<void> {
   before = await stateVersion(page);
   await page.locator(`[data-seat="0"][data-category="${pick.cat}"]`).click();
   await expectServerAdvanced(page, before);
+  seen.viaTable++;
   await expect(page.locator(`[data-seat="0"][data-category="${pick.cat}"]`)).toHaveAttribute(
     "data-filled",
     String(pick.pts),
@@ -109,7 +144,7 @@ test("зарове: хвърляне, задържане, запис — цял�
   await expect(page.locator('[data-seat="0"][data-category]')).toHaveCount(13);
   await snapBoth(page, "dice-2d");
 
-  const seen: Seen = { turns: 0, rerolls: 0, holds: 0, scored: 0 };
+  const seen: Seen = { turns: 0, rerolls: 0, holds: 0, scored: 0, viaPrompt: 0, viaTable: 0 };
   while (await waitMyTurn(page, 60_000)) {
     await playTurn(page, seen);
     if (seen.turns === 6) await snapBoth(page, "dice-2d-mid");
@@ -117,6 +152,7 @@ test("зарове: хвърляне, задържане, запис — цял�
   note(`зарове: ${JSON.stringify(seen)}`);
   expect(seen.scored, "не се попълниха всички 13 категории").toBe(13);
   expect(seen.rerolls).toBeGreaterThan(0);
+  expect(seen.viaPrompt, "прозорецът „Запиши резултата“ не се появи").toBeGreaterThan(0);
   // Сборът в таблицата = попълнените категории (+35 бонус при 63+ в горната част).
   const filled = await page
     .locator('[data-seat="0"][data-filled]')

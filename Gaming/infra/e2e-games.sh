@@ -74,9 +74,10 @@ common_env() {
   export DISCONNECT_GRACE_SECONDS="${DISCONNECT_GRACE_SECONDS:-45}"
   # Фиксирани раздавания (apps/realtime/src/e2eSeeds.ts) за игрите, чиито тестове
   # трябва да стигнат до всяко действие — сценарият на всеки seed е описан в
-  # spec-а (Реми: първият ход позволява отваряне със смяна на жокер). В продукция
+  # spec-а (Реми: първият ход позволява отваряне със смяна на жокер; Табла: пул
+  # на бара и 6-6 срещу затворено поле → „Няма възможен ход“). В продукция
   # realtime ги игнорира. `E2E_SEEDS= bash … up N` = напълно случайни раздавания.
-  export E2E_SEEDS="${E2E_SEEDS-SANTASE=e2e-santase-5159,BELOTE=e2e-belote-36,BRIDGE=e2e-bridge-110,KENT=e2e-kent-411,RUMMY=e2e-rummy-69}"
+  export E2E_SEEDS="${E2E_SEEDS-SANTASE=e2e-santase-5159,BELOTE=e2e-belote-36,BRIDGE=e2e-bridge-110,KENT=e2e-kent-411,RUMMY=e2e-rummy-69,BACKGAMMON=e2e-backgammon-111}"
 }
 
 up() {

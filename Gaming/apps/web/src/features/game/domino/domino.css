@@ -102,24 +102,40 @@
 .dom-pip--off {
   visibility: hidden;
 }
-.dom-controls {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.dom-side-toggle {
+/* Прозорците за решение (DecisionPrompt, на <body>): плочката и двата края. */
+.dom-decide-hint {
   display: inline-flex;
-  gap: 6px;
+  align-items: center;
+  gap: 10px;
 }
-.dom-side-btn {
-  padding: 6px 14px;
-  border-radius: 10px;
+.dom-decide-hint .dom-tile {
+  flex: 0 0 auto;
+}
+.dom-ends {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.dom-end-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: var(--r-card, 10px);
   background: var(--felt-700);
-  color: var(--ink-200, #cdbfa3);
-  border: 1px solid rgba(217, 178, 95, 0.25);
+  color: var(--ink-100);
+  border: 1px solid rgba(217, 178, 95, 0.35);
+  font-weight: 600;
   cursor: pointer;
 }
-.dom-side-btn--on {
-  background: var(--brass-400);
-  color: var(--charcoal-900);
+.dom-end-btn b {
+  color: var(--brass-300);
+  font-size: 1.1rem;
+}
+.dom-end-btn:hover,
+.dom-end-btn:focus-visible {
+  border-color: var(--brass-300);
+  background: rgba(217, 178, 95, 0.16);
+  outline: none;
 }

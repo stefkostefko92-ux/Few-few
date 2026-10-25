@@ -1,4 +1,4 @@
-import { test, expect, type Locator } from "@playwright/test";
+import { test, expect, type Locator, type Page, type TestInfo } from "@playwright/test";
 import { expectGameOverCard, expectNoErrors, openGame, probe } from "./helpers";
 import {
   clickAndAdvance,
@@ -13,6 +13,7 @@ import {
   watchSocket,
   type SocketWatch,
 } from "./helpers-draw";
+import { expectDecisionOnScreen, expectMinimizeRestore, expectNotCovered } from "./decision-checks";
 
 // A click that cannot happen must fail fast with a clear cause, not idle
 // until the test timeout (default action timeout is unlimited).
@@ -22,10 +23,13 @@ type Side = "L" | "R";
 
 /**
  * Домино (4 места: аз + 3 бота) — само истински кликове:
- *  - поставяне на плочка в ЛЕВИЯ и в ДЕСНИЯ край (превключвателят ◀/▶ и
- *    клик на плочката) — сървърът потвърждава страната с PLAY събитието;
- *  - откриване на кръга (празна маса, без превключвател);
- *  - „Тегли“, когато нищо не пасва, и „Пас“, когато и казанът е празен;
+ *  - поставяне на плочка в ЛЕВИЯ и в ДЕСНИЯ край: плочка, която пасва и в
+ *    двата (различни) края, отваря прозореца „В кой край?“ (◀ / ▶); плочка
+ *    с един възможен край отива направо — сървърът потвърждава страната с
+ *    PLAY събитието;
+ *  - откриване на кръга (празна маса, без избор);
+ *  - „Тегли“, когато нищо не пасва, и „Пас“, когато и казанът е празен — и
+ *    двете идват сами в прозореца „Нищо не пасва“;
  *  - мачът до 100 т. се играе до края → карта „Край“ → „Нова игра“.
  *  Тегленето/пасът зависят от раздаването: ако първият мач мине без пас,
  *  следващият се играе, докато се стигне до пас.
@@ -38,9 +42,9 @@ test("домино: двата края, теглене и пас, до края
   await expect(page.getByTestId("domino-table")).toBeVisible();
   await snap(page, info, "domino-1366x768");
   await expectStageCannotScroll(page.getByTestId("domino-table"));
-  const counts = { L: 0, R: 0, open: 0, draw: 0, pass: 0 };
+  const counts: Counts = { L: 0, R: 0, open: 0, draw: 0, pass: 0, asked: 0 };
 
-  const done = () => counts.L > 0 && counts.R > 0 && counts.draw > 0 && counts.pass > 0;
+  const done = () => counts.L > 0 && counts.R > 0 && counts.draw > 0 && counts.pass > 0 && counts.asked > 0;
 
   /** Play my turns until the match ends (→ true) or, with `untilCovered`,
    *  until every action has been exercised (→ false). */
@@ -48,7 +52,7 @@ test("домино: двата края, теглене и пас, до края
     const seat = Number(await probe(page).getAttribute("data-seat"));
     for (;;) {
       if ((await waitFor(page, undefined, 60_000)) === "over") return true;
-      await myTurn(page, ws, seat, counts);
+      await myTurn(page, ws, seat, counts, info);
       if (untilCovered && done()) return false;
     }
   };
@@ -71,18 +75,16 @@ test("домино: двата края, теглене и пас, до края
   expect(counts.R, "нито една плочка в десния край").toBeGreaterThan(0);
   expect(counts.draw, "„Тегли“ не беше натиснато").toBeGreaterThan(0);
   expect(counts.pass, "„Пас“ не беше натиснато").toBeGreaterThan(0);
+  expect(counts.asked, "прозорецът „В кой край?“ не се появи").toBeGreaterThan(0);
   expectNoRejections(ws);
   expectNoErrors(t);
   await t.ctx.close();
 });
 
+type Counts = Record<"L" | "R" | "open" | "draw" | "pass" | "asked", number>;
+
 /** One decision on my turn, by click. */
-async function myTurn(
-  page: import("@playwright/test").Page,
-  ws: SocketWatch,
-  seat: number,
-  counts: Record<"L" | "R" | "open" | "draw" | "pass", number>,
-): Promise<void> {
+async function myTurn(page: Page, ws: SocketWatch, seat: number, counts: Counts, info?: TestInfo): Promise<void> {
   const table = page.getByTestId("domino-table");
   // След края на кръг масата се „замразява“ за ~2.5 s — тогава няма бутони.
   await expect(table).toHaveAttribute("data-frozen", "false", { timeout: 10_000 });
@@ -92,30 +94,58 @@ async function myTurn(
   const n = await playable.count();
 
   if (n > 0) {
-    const ends = (await line.getAttribute("data-ends")) ?? "";
+    // Има ход → няма „Нищо не пасва“.
+    await expect(page.getByTestId("domino-stuck")).toHaveCount(0);
+    const ends = ((await line.getAttribute("data-ends")) ?? "").split(" ").filter(Boolean);
+    const differ = ends.length === 2 && ends[0] !== ends[1];
     const want: Side = counts.L <= counts.R ? "L" : "R";
+    // Предпочитаме плочка за двата края (прозорецът), иначе — за желания край.
     let pick: Locator = playable.first();
-    let side = ((await pick.getAttribute("data-sides")) ?? "L").split(" ")[0] as Side;
+    let sides = ((await pick.getAttribute("data-sides")) ?? "L").split(" ") as Side[];
     for (let i = 0; i < n; i++) {
-      const sides = ((await playable.nth(i).getAttribute("data-sides")) ?? "").split(" ");
-      if (sides.includes(want)) {
+      const s = ((await playable.nth(i).getAttribute("data-sides")) ?? "").split(" ") as Side[];
+      if ((differ && s.length === 2) || (s.includes(want) && !sides.includes(want))) {
         pick = playable.nth(i);
-        side = want;
-        break;
+        sides = s;
+        if (differ && s.length === 2) break;
       }
     }
     const tile = (await pick.getAttribute("data-tile"))!;
-    if (ends) {
-      // Избор на края с превключвателя ◀ / ▶.
-      const toggle = page.locator(`[data-side="${side}"]`);
-      await toggle.click();
-      await expect(toggle).toHaveAttribute("aria-pressed", "true");
-    }
+    const ask = differ && sides.length === 2;
+    // Без избор: единственият край; при еднакви краища — десния (резултатът е същият).
+    const side: Side = ask ? want : ends.length === 0 ? "L" : sides.length === 2 ? "R" : sides[0]!;
     const from = ws.events.length;
-    await clickAndAdvance(page, () => pick.click());
+    if (ask) {
+      await pick.click();
+      const card = await expectDecisionOnScreen(page, "domino-side");
+      await expect(page.getByTestId("domino-side")).toContainText("В кой край?");
+      if (counts.asked === 0) {
+        // Прозорецът идва сам след клика, свива се и се връща; „Друга плочка“
+        // го затваря без ход, а нов клик пак пита.
+        await expectMinimizeRestore(page, "domino-side");
+        // Краищата на редицата се виждат под прозореца (на лаптоп).
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await expectNotCovered(page, "domino-side", line.locator("[data-tile]").first(), "левия край на редицата");
+        await expectNotCovered(page, "domino-side", line.locator("[data-tile]").last(), "десния край на редицата");
+        if (info) await snap(page, info, "domino-side-1366x768");
+        const sent = ws.sent.length;
+        await card.locator("[data-decision-skip]").click();
+        await expect(page.getByTestId("domino-side")).toHaveCount(0);
+        await page.waitForTimeout(300);
+        expect(ws.sent.length, "„Друга плочка“ прати ход").toBe(sent);
+        await pick.click();
+        await expectDecisionOnScreen(page, "domino-side");
+      }
+      await clickAndAdvance(page, () => page.getByTestId("domino-side").locator(`[data-side="${side}"]`).click());
+      counts.asked++;
+    } else {
+      await clickAndAdvance(page, () => pick.click());
+      // Един възможен край (или еднакви краища) — ходът е направо, без прозорец.
+      await expect(page.getByTestId("domino-side")).toHaveCount(0);
+    }
     const ev = await expectEvent(ws, from, (e) => e.type === "PLAY" && e.seat === seat, "сървърът не потвърди поставената плочка");
     expect(ev.tile).toBe(tile);
-    if (ends) {
+    if (ends.length) {
       expect(ev.side, `плочката ${tile} отиде в грешния край`).toBe(side);
       counts[side]++;
     } else {
@@ -126,8 +156,16 @@ async function myTurn(
     return;
   }
 
-  const draw = page.locator('[data-domino-action="DRAW"]');
-  const pass = page.locator('[data-domino-action="PASS"]');
+  // Нищо не пасва → прозорецът идва сам (без клик) с „Тегли“ или „Пас“.
+  const card = await expectDecisionOnScreen(page, "domino-stuck");
+  if (counts.draw + counts.pass === 0) {
+    await expectMinimizeRestore(page, "domino-stuck");
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expectNotCovered(page, "domino-stuck", hand, "ръката");
+    if (info) await snap(page, info, "domino-stuck-1366x768");
+  }
+  const draw = card.locator('[data-domino-action="DRAW"]');
+  const pass = card.locator('[data-domino-action="PASS"]');
   const from = ws.events.length;
   if (await draw.isVisible()) {
     const before = await hand.locator("[data-tile]").count();
@@ -160,7 +198,7 @@ test.describe("мобилен изглед 390×844", () => {
     await expectAllInside(tiles, felt, "плочка");
 
     const seat = Number(await probe(page).getAttribute("data-seat"));
-    const counts = { L: 0, R: 0, open: 0, draw: 0, pass: 0 };
+    const counts: Counts = { L: 0, R: 0, open: 0, draw: 0, pass: 0, asked: 0 };
     for (let i = 0; i < 2; i++) {
       if ((await waitFor(page, undefined, 60_000)) === "over") break;
       await myTurn(page, ws, seat, counts);

@@ -8,6 +8,7 @@ import { BoardFrame, DiceRow } from "../board/BoardFrame";
 import { useMatch } from "../useMatch";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
 import { registerE2EHook } from "../board/e2eHook";
 import type { BackgammonScene, PointId } from "./backgammonScene";
 import "./backgammon.css";
@@ -348,11 +349,6 @@ export function BackgammonView({ title }: { title: string }) {
                 {t("backgammon.roll")}
               </Button>
             ) : null}
-            {passAction ? (
-              <Button data-action="pass" variant="ghost" onClick={() => send(passAction)}>
-                {t("backgammon.pass")}
-              </Button>
-            ) : null}
             {(state.bar[seat] ?? 0) > 0 ? (
               <Button
                 data-action="bar"
@@ -376,6 +372,23 @@ export function BackgammonView({ title }: { title: string }) {
           </div>
         </div>
       ) : null}
+
+      {/* Няма законен ход с тези зарове — пасът е решението (идва сам). */}
+      <DecisionPrompt
+        open={phase === "playing" && myTurn && !!passAction}
+        promptKey={`pass-${state?.match.game ?? 0}-${state?.dice.join("") ?? ""}-${state?.points.join(",") ?? ""}-${state?.bar.join(",") ?? ""}`}
+        title={t("backgammon.noMovesTitle")}
+        hint={t("backgammon.noMovesHint", { dice: state?.remaining.join(" · ") ?? "" })}
+        // Горе: дъската (защо няма ход) остава видима под прозореца.
+        placement="top"
+        testId="backgammon-pass"
+      >
+        {passAction ? (
+          <Button data-action="pass" onClick={() => send(passAction)}>
+            {t("backgammon.pass")}
+          </Button>
+        ) : null}
+      </DecisionPrompt>
     </Scene>
   );
 }

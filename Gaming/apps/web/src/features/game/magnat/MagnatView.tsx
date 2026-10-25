@@ -4,10 +4,12 @@ import {
   BOARD,
   GROUP_COLORS,
   GROUP_TILES,
+  HOUSE_COST_BY_GROUP,
   isOwnable,
   type MagnatAction,
   type MagnatEvent,
   type MagnatState,
+  type TradeBundle,
 } from "@aso/shared";
 import type { MagnatScene } from "./magnatScene";
 import { MagnatBoard2D } from "./MagnatBoard2D";
@@ -17,6 +19,7 @@ import { useEquippedCosmetic } from "../../shop/useEquippedCosmetic";
 import { useMatch } from "../useMatch";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
 import "./magnat.css";
 
 const PLAYER_COLORS = ["#e23b3b", "#2f7fe2", "#2faa55", "#e8b923", "#9b4fd0", "#e07a1f"];
@@ -122,6 +125,11 @@ export function MagnatView({ title }: { title: string }) {
   const creditorName = (to: number | null) => (to === null ? t("magnat.bank") : name(to));
   const pending = state?.pendingBuy ?? null;
   const myProps = state ? BOARD.map((_, i) => i).filter((i) => isOwnable(i) && state.owner[i] === seat) : [];
+  // Решенията на хода — всяко идва само в прозорец (DecisionPrompt), когато е мое.
+  const live = phase === "playing" && myTurn;
+  const inJail = live && state?.phase === "ROLL" && !!state.inJail[seat];
+  const buyOpen = live && state?.phase === "BUY" && pending !== null;
+  const myDebt = live && debt !== null && debt.debtor === seat ? debt : null;
 
   const name = (s: number) => players.find((p) => p.seat === s)?.displayName ?? t("magnat.player", { num: s + 1 });
 
@@ -218,6 +226,11 @@ export function MagnatView({ title }: { title: string }) {
   const minBid = (auction?.high ?? 0) + 10;
   const [bid, setBid] = useState(minBid);
   useEffect(() => setBid(minBid), [minBid, auction?.tile]);
+
+  const auctionOpen = live && state?.phase === "AUCTION" && auction !== null;
+  const tradeIn = live && state?.phase === "TRADE" && state.trade && state.trade.to === seat ? state.trade : null;
+  const bundleLine = (b: TradeBundle) =>
+    `${b.tiles.map((i) => BOARD[i]!.name).join(", ") || "—"}${b.cash ? ` + ${b.cash}` : ""}`;
 
   const [tradeOpen, setTradeOpen] = useState(false);
   const [partner, setPartner] = useState<number | null>(null);
@@ -360,12 +373,10 @@ export function MagnatView({ title }: { title: string }) {
                   <div className="mag-trade-resp">
                     <p className="mag-hint">{t("magnat.tradeWaiting", { name: name(state.trade.to) })}</p>
                     <p className="mag-trade-line">
-                      {t("magnat.give")} {state.trade.give.tiles.map((i) => BOARD[i]!.name).join(", ") || "—"}
-                      {state.trade.give.cash ? ` + ${state.trade.give.cash}` : ""}
+                      {t("magnat.give")} {bundleLine(state.trade.give)}
                     </p>
                     <p className="mag-trade-line">
-                      {t("magnat.get")} {state.trade.want.tiles.map((i) => BOARD[i]!.name).join(", ") || "—"}
-                      {state.trade.want.cash ? ` + ${state.trade.want.cash}` : ""}
+                      {t("magnat.get")} {bundleLine(state.trade.want)}
                     </p>
                   </div>
                 ) : debt ? (
@@ -377,83 +388,9 @@ export function MagnatView({ title }: { title: string }) {
                     {state.done ? t("magnat.gameOver") : t("magnat.turnHint", { name: name(state.turn) })}
                   </p>
                 )
-              ) : debt ? (
-                <div className="mag-trade-resp" role="alert">
-                  <p className="mag-hint">
-                    {t("magnat.debtTitle", { amount: debt.amount, to: creditorName(debt.to) })}
-                  </p>
-                  <p className="mag-trade-line">{t("magnat.debtCash", { cash: state.cash[seat] ?? 0 })}</p>
-                  <p className="mag-trade-line">{t("magnat.debtHint")}</p>
-                  <div className="mag-btns">
-                    <Button data-action="pay-debt" onClick={() => send({ type: "PAY_DEBT" })} disabled={!has("PAY_DEBT")}>
-                      {t("magnat.payDebt", { amount: debt.amount })}
-                    </Button>
-                  </div>
-                </div>
-              ) : state.phase === "ROLL" ? (
+              ) : state.phase === "ROLL" && !inJail ? (
                 <div className="mag-btns">
-                  {has("JAIL_CARD") ? <Button data-action="jail-card" onClick={() => send({ type: "JAIL_CARD" })}>{t("magnat.jailCard")}</Button> : null}
-                  {has("JAIL_PAY") ? <Button data-action="jail-pay" variant="felt" onClick={() => send({ type: "JAIL_PAY" })}>{t("magnat.payBail")}</Button> : null}
                   {has("ROLL") ? <Button data-action="roll" onClick={() => send({ type: "ROLL" })}>{t("magnat.roll")}</Button> : null}
-                </div>
-              ) : state.phase === "BUY" && pending !== null ? (
-                <div className="mag-btns">
-                  {has("BUY") ? (
-                    <Button data-action="buy" data-tile={pending} onClick={() => send({ type: "BUY" })}>
-                      {t("magnat.buy", { name: BOARD[pending]!.name, price: BOARD[pending]!.price })}
-                    </Button>
-                  ) : null}
-                  <Button data-action="decline" variant="felt" onClick={() => send({ type: "DECLINE" })}>{t("magnat.decline")}</Button>
-                </div>
-              ) : state.phase === "AUCTION" && auction ? (
-                <div className="mag-auction">
-                  <p className="mag-hint">
-                    {t("magnat.auctionFor", { name: BOARD[auction.tile]!.name })}{" "}
-                    {auction.high > 0 ? `${auction.high} (${name(auction.highBidder)})` : t("magnat.auctionNone")}
-                  </p>
-                  <div className="mag-bidrow">
-                    <input
-                      type="number"
-                      min={minBid}
-                      max={state.cash[seat]}
-                      step={10}
-                      value={bid}
-                      onChange={(e) => setBid(Number(e.target.value))}
-                    />
-                    <div className="mag-bidquick">
-                      {[10, 50, 100].map((d) => (
-                        <button key={d} type="button" onClick={() => setBid((b) => b + d)}>+{d}</button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="mag-btns">
-                    {has("BID") ? (
-                      <Button
-                        data-action="bid"
-                        onClick={() => send({ type: "BID", amount: bid })}
-                        disabled={bid < minBid || bid > state.cash[seat]!}
-                      >
-                        {t("magnat.bid", { amount: bid })}
-                      </Button>
-                    ) : null}
-                    <Button data-action="pass-bid" variant="felt" onClick={() => send({ type: "PASS_BID" })}>{t("magnat.pass")}</Button>
-                  </div>
-                </div>
-              ) : state.phase === "TRADE" && state.trade && state.trade.to === seat ? (
-                <div className="mag-trade-resp">
-                  <p className="mag-hint">{t("magnat.tradeOffer", { name: name(state.trade.from) })}</p>
-                  <p className="mag-trade-line">
-                    {t("magnat.give")} {state.trade.want.tiles.map((i) => BOARD[i]!.name).join(", ") || "—"}
-                    {state.trade.want.cash ? ` + ${state.trade.want.cash}` : ""}
-                  </p>
-                  <p className="mag-trade-line">
-                    {t("magnat.get")} {state.trade.give.tiles.map((i) => BOARD[i]!.name).join(", ") || "—"}
-                    {state.trade.give.cash ? ` + ${state.trade.give.cash}` : ""}
-                  </p>
-                  <div className="mag-btns">
-                    {has("TRADE_ACCEPT") ? <Button data-action="trade-accept" onClick={() => send({ type: "TRADE_ACCEPT" })}>{t("magnat.accept")}</Button> : null}
-                    <Button data-action="trade-decline" variant="felt" onClick={() => send({ type: "TRADE_DECLINE" })}>{t("magnat.decline")}</Button>
-                  </div>
                 </div>
               ) : state.phase === "MANAGE" ? (
                 <div className="mag-btns">
@@ -464,7 +401,10 @@ export function MagnatView({ title }: { title: string }) {
                     </Button>
                   ) : null}
                 </div>
-              ) : null}
+              ) : (
+                // Купуване, търг, сделка, затвор, дълг — изборът е в прозореца.
+                <p className="mag-hint">{t("magnat.decideInPrompt")}</p>
+              )}
               {state.dice ? <p className="mag-dice" data-dice={`${state.dice[0]}+${state.dice[1]}`}>🎲 {state.dice[0]} + {state.dice[1]}</p> : null}
             </div>
 
@@ -563,12 +503,15 @@ export function MagnatView({ title }: { title: string }) {
                           : ""}
                         {state.mortgaged[i] ? ` · ${t("magnat.mortgaged")}` : ""}
                       </span>
-                      <span className="mag-prop-acts">
-                        {tileHas("BUILD", i) ? <button type="button" data-action="build" onClick={() => send({ type: "BUILD", tile: i })}>+🏠</button> : null}
-                        {tileHas("SELL", i) ? <button type="button" data-action="sell" onClick={() => send({ type: "SELL", tile: i })}>−</button> : null}
-                        {tileHas("MORTGAGE", i) ? <button type="button" data-action="mortgage" onClick={() => send({ type: "MORTGAGE", tile: i })}>{t("magnat.mortgage")}</button> : null}
-                        {tileHas("UNMORTGAGE", i) ? <button type="button" data-action="unmortgage" onClick={() => send({ type: "UNMORTGAGE", tile: i })}>{t("magnat.redeem")}</button> : null}
-                      </span>
+                      {/* При мой дълг продажбата/ипотеката са в прозореца — едно място. */}
+                      {myDebt === null ? (
+                        <span className="mag-prop-acts">
+                          {tileHas("BUILD", i) ? <button type="button" data-action="build" onClick={() => send({ type: "BUILD", tile: i })}>+🏠</button> : null}
+                          {tileHas("SELL", i) ? <button type="button" data-action="sell" onClick={() => send({ type: "SELL", tile: i })}>−</button> : null}
+                          {tileHas("MORTGAGE", i) ? <button type="button" data-action="mortgage" onClick={() => send({ type: "MORTGAGE", tile: i })}>{t("magnat.mortgage")}</button> : null}
+                          {tileHas("UNMORTGAGE", i) ? <button type="button" data-action="unmortgage" onClick={() => send({ type: "UNMORTGAGE", tile: i })}>{t("magnat.redeem")}</button> : null}
+                        </span>
+                      ) : null}
                     </div>
                   );
                 })}
@@ -586,6 +529,173 @@ export function MagnatView({ title }: { title: string }) {
               </div>
             ) : null}
           </aside>
+
+          {/* ── решенията на хода: прозорец, който идва сам ─────────────────────
+              Горе („top“): на лаптоп — над таблото вдясно (magnat.css), на
+              телефон — над дъската; полетата и картата „Късмет“ остават видими. */}
+          <DecisionPrompt
+            open={inJail}
+            promptKey={`jail-${state.turns}-${state.jailTurns[seat] ?? 0}`}
+            title={t("magnat.jailTitle")}
+            hint={t("magnat.jailHint", { attempt: (state.jailTurns[seat] ?? 0) + 1 })}
+            placement="top"
+            testId="magnat-jail"
+          >
+            {has("ROLL") ? (
+              <Button data-action="roll" onClick={() => send({ type: "ROLL" })}>
+                {t("magnat.jailRoll")}
+              </Button>
+            ) : null}
+            {has("JAIL_PAY") ? (
+              <Button data-action="jail-pay" variant="felt" onClick={() => send({ type: "JAIL_PAY" })}>
+                {t("magnat.payBail")}
+              </Button>
+            ) : null}
+            {has("JAIL_CARD") ? (
+              <Button data-action="jail-card" variant="felt" onClick={() => send({ type: "JAIL_CARD" })}>
+                {t("magnat.jailCard")}
+              </Button>
+            ) : null}
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={buyOpen}
+            promptKey={`buy-${state.turns}-${pending ?? ""}`}
+            title={pending !== null ? t("magnat.buyTitle", { name: BOARD[pending]!.name }) : ""}
+            hint={
+              pending !== null ? (
+                <span className="mag-decide-hint">
+                  <span
+                    className="mag-prop-band"
+                    style={{ background: BOARD[pending]!.type === "prop" ? GROUP_COLORS[BOARD[pending]!.group] : "#888" }}
+                  />
+                  <span>
+                    {t("magnat.buyHint", { price: BOARD[pending]!.price, cash: state.cash[seat] ?? 0 })}
+                    {has("BUY") ? "" : ` ${t("magnat.buyShort")}`}
+                  </span>
+                </span>
+              ) : null
+            }
+            placement="top"
+            testId="magnat-buy"
+          >
+            {pending !== null ? (
+              <Button data-action="buy" data-tile={pending} onClick={() => send({ type: "BUY" })} disabled={!has("BUY")}>
+                {t("magnat.buyFor", { price: BOARD[pending]!.price })}
+              </Button>
+            ) : null}
+            <Button data-action="decline" variant="felt" onClick={() => send({ type: "DECLINE" })}>
+              {state.config.auctions ? t("magnat.declineAuction") : t("magnat.decline")}
+            </Button>
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={auctionOpen}
+            promptKey={`auction-${auction?.tile ?? ""}-${auction?.high ?? 0}-${auction?.highBidder ?? ""}-${state.turns}`}
+            title={auction ? t("magnat.auctionTitle", { name: BOARD[auction.tile]!.name }) : ""}
+            hint={
+              auction
+                ? `${
+                    auction.high > 0
+                      ? t("magnat.auctionLeader", { name: name(auction.highBidder), amount: auction.high })
+                      : t("magnat.auctionNoBids")
+                  } · ${t("magnat.debtCash", { cash: state.cash[seat] ?? 0 })}`
+                : null
+            }
+            placement="top"
+            testId="magnat-auction"
+          >
+            <div className="mag-bidrow">
+              <input
+                type="number"
+                aria-label={t("magnat.bidAmount")}
+                min={minBid}
+                max={state.cash[seat]}
+                step={10}
+                value={bid}
+                onChange={(e) => setBid(Number(e.target.value))}
+              />
+              <div className="mag-bidquick">
+                {[10, 50, 100].map((d) => (
+                  <button key={d} type="button" onClick={() => setBid((b) => b + d)}>+{d}</button>
+                ))}
+              </div>
+            </div>
+            <div className="mag-btns mag-btns--center">
+              {has("BID") ? (
+                <Button
+                  data-action="bid"
+                  onClick={() => send({ type: "BID", amount: bid })}
+                  disabled={bid < minBid || bid > state.cash[seat]!}
+                >
+                  {t("magnat.bid", { amount: bid })}
+                </Button>
+              ) : null}
+              <Button data-action="pass-bid" variant="felt" onClick={() => send({ type: "PASS_BID" })}>{t("magnat.pass")}</Button>
+            </div>
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={tradeIn !== null}
+            promptKey={`trade-${state.turns}-${tradeIn ? `${tradeIn.from}-${bundleLine(tradeIn.give)}-${bundleLine(tradeIn.want)}` : ""}`}
+            title={tradeIn ? t("magnat.tradeOfferTitle", { name: name(tradeIn.from) }) : ""}
+            hint={
+              tradeIn ? (
+                <>
+                  <span className="block">{t("magnat.give")} {bundleLine(tradeIn.want)}</span>
+                  <span className="block">{t("magnat.get")} {bundleLine(tradeIn.give)}</span>
+                </>
+              ) : null
+            }
+            placement="top"
+            testId="magnat-trade"
+          >
+            {has("TRADE_ACCEPT") ? <Button data-action="trade-accept" onClick={() => send({ type: "TRADE_ACCEPT" })}>{t("magnat.accept")}</Button> : null}
+            <Button data-action="trade-decline" variant="felt" onClick={() => send({ type: "TRADE_DECLINE" })}>{t("magnat.decline")}</Button>
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={myDebt !== null}
+            promptKey={`debt-${state.turns}-${myDebt?.amount ?? 0}-${myDebt?.to ?? "bank"}`}
+            title={myDebt ? t("magnat.debtTitle", { amount: myDebt.amount, to: creditorName(myDebt.to) }) : ""}
+            hint={`${t("magnat.debtCash", { cash: state.cash[seat] ?? 0 })} · ${t("magnat.debtPromptHint")}`}
+            placement="top"
+            testId="magnat-debt"
+          >
+            {myDebt ? (
+              <Button data-action="pay-debt" onClick={() => send({ type: "PAY_DEBT" })} disabled={!has("PAY_DEBT")}>
+                {t("magnat.payDebt", { amount: myDebt.amount })}
+              </Button>
+            ) : null}
+            <div className="mag-liquidate" data-zone="liquidate">
+              {legal.map((a) =>
+                a.type === "SELL" || a.type === "MORTGAGE" ? (
+                  <button
+                    key={`${a.type}-${a.tile}`}
+                    type="button"
+                    data-action={a.type === "SELL" ? "debt-sell" : "debt-mortgage"}
+                    data-tile={a.tile}
+                    onClick={() => send(a)}
+                  >
+                    <span
+                      className="mag-prop-band"
+                      style={{ background: BOARD[a.tile]!.type === "prop" ? GROUP_COLORS[BOARD[a.tile]!.group] : "#888" }}
+                    />
+                    <span className="mag-prop-name">
+                      {a.type === "SELL"
+                        ? state.houses[a.tile] === 5
+                          ? t("magnat.sellHotel", { name: BOARD[a.tile]!.name })
+                          : t("magnat.sellHouse", {
+                              name: BOARD[a.tile]!.name,
+                              amount: Math.floor((HOUSE_COST_BY_GROUP[BOARD[a.tile]!.group] ?? 0) / 2),
+                            })
+                        : t("magnat.mortgageFor", { name: BOARD[a.tile]!.name, amount: Math.floor(BOARD[a.tile]!.price / 2) })}
+                    </span>
+                  </button>
+                ) : null,
+              )}
+            </div>
+          </DecisionPrompt>
         </div>
       ) : null}
     </Scene>
