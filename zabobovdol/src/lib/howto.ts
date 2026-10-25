@@ -367,7 +367,8 @@ function firstSentenceEnd(text: string): number {
     const boldOpen = (before.match(/\*\*/g) ?? []).length % 2 === 1;
     const linkOpen = before.lastIndexOf("[") > before.lastIndexOf(")");
     const word = /([\p{L}.\-№]+)$/u.exec(text.slice(0, m.index))?.[1]?.toLowerCase() ?? "";
-    const abbr = m[0].startsWith(".") && ABBREVIATIONS.has(word);
+    // Еднобуквените („2026 г.“, „с. Мала Фуча“, инициали) — винаги съкращение.
+    const abbr = m[0].startsWith(".") && (word.length === 1 || ABBREVIATIONS.has(word));
     if (boldOpen || linkOpen || abbr) continue;
     return end;
   }

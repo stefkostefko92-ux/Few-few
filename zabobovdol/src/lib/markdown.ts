@@ -109,7 +109,7 @@ function lastSentenceEnd(t: string, max: number): number {
     if (i >= max - 1) break;
     if (m[0] === ".") {
       const word = /([\p{L}.-]+)$/u.exec(t.slice(0, i))?.[1] ?? "";
-      if (word.length <= 1 || ABBREVIATIONS.has(word.toLowerCase())) continue;
+      if (word.length === 1 || ABBREVIATIONS.has(word.toLowerCase())) continue;
     }
     end = i;
   }

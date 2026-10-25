@@ -235,3 +235,12 @@ test("pickScamGuides: първо ръководствата точно за из
     ["iz-telefonna-izmama-vnuche", "iz-kakvo-ako-me-izmamiha", "kak-da-razpoznavam-onlayn-izmami", "telefonni-izmami-falshiv-policay"],
   );
 });
+
+test("splitLead: „2026 г.“ не е край на първото изречение", () => {
+  const long =
+    "В **банки и пощенски станции — безплатно — до 30 юни 2026 г.** (по фиксирания курс). " +
+    "За по-големи суми уведомете банката предварително; в пощата има дневен лимит. ".repeat(4) +
+    "Най-сигурно: в БНБ — безплатно и без срок.";
+  const s = splitLead(long);
+  assert.equal(s?.lead, "В **банки и пощенски станции — безплатно — до 30 юни 2026 г.** (по фиксирания курс).");
+});
