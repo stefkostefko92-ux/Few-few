@@ -160,11 +160,13 @@ test("защита при респаун: наша в CarbonStealth (5 s), та�
   const cs = read("plugins/src/CarbonStealth/SpawnProtection.cs");
   assert.match(cs, /entity\.DesignerName != "player"/);
   assert.match(cs, /\? HookResult\.Handled : HookResult\.Continue/, "само Handled спира щетата в CSS 1.0.378");
-  // Зеленият glow: без колизия (не спира куршуми), за всички, и изчезва с края на защитата и при Unload.
-  assert.match(cs, /ShieldGlow = Color\.FromArgb\(255, 40, 220, 80\)/);
-  assert.equal((cs.match(/Collision\.SolidType = SolidType_t\.SOLID_NONE/g) ?? []).length, 2);
-  assert.match(cs, /private void EndShield\(int slot\)\s*\{\s*_shield\.End\(slot\);\s*StopGlow\(slot\);/);
-  assert.match(read("plugins/src/CarbonStealth/CarbonStealthPlugin.cs"), /StopAllGlows\(\);/);
+  // Зелено оцветяване на модела (вижда се само в пряка видимост) — НЕ контурен glow: в CS2 той минава
+  // през стени (CGlowProperty няма настройка за това). Изчезва с края на защитата и при Unload.
+  assert.match(cs, /ShieldTint = Color\.FromArgb\(255, 40, 220, 80\)/);
+  assert.doesNotMatch(cs, /\.Glow\.|prop_dynamic|FollowEntity/, "без контурен glow през стени");
+  assert.match(cs, /private void EndShield\(int slot\)\s*\{\s*_shield\.End\(slot\);\s*Untint\(slot\);/);
+  assert.match(cs, /pawn\.Render\.ToArgb\(\) == ShieldTint\.ToArgb\(\)/, "не пипа чужд цвят (замразяване)");
+  assert.match(read("plugins/src/CarbonStealth/CarbonStealthPlugin.cs"), /UntintAll\(\);/);
   assert.match(read("plugins/src/CarbonStealth/PluginConfig.cs"), /SpawnProtectionSeconds \{ get; set; \} = 5;/);
   assert.match(read("server/cfg/gamemode_deathmatch_server.cfg"), /^mp_respawn_immunitytime 5$/m, "ванилов режим без модове");
 });
