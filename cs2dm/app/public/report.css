@@ -43,7 +43,11 @@
   text-underline-offset: 3px;
 }
 
-/* Личният отчет. */
+/* Личният отчет. Линкът в топ 3 на мача е в колоната на текста, не под мястото. */
+.match-top .match-report {
+  grid-column: 2;
+  justify-self: start;
+}
 .report-links {
   margin: 0;
   padding: 0;

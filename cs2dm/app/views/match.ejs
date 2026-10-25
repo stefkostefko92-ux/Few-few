@@ -11,7 +11,7 @@
           <% if (row.steamId) { %><a class="match-name" href="<%= playerHref(row.steamId) %>"><%= row.name %></a><% } else { %><span class="match-name"><%= row.name %></span><% } %>
           <span class="match-line"><%= t('match.line', { kills: fmt.int(row.kills), deaths: fmt.int(row.deaths), hs: fmt.int(row.headshots), streak: fmt.int(row.bestStreak) }) %></span>
           <% if (row.weapon) { %><span class="match-line"><%= t('match.weapon', { weapon: row.weapon, kills: fmt.int(row.topWeaponKills) }) %></span><% } %>
-          <% if (row.steamId) { %><a class="match-line" href="<%= reportHref(match.id, row.steamId) %>"><%= t('match.reportFor', { name: row.name }) %></a><% } %>
+          <% if (row.steamId) { %><a class="match-line match-report" href="<%= reportHref(match.id, row.steamId) %>"><%= t('match.reportFor', { name: row.name }) %></a><% } %>
         </li>
         <% }) %>
       </ol>
