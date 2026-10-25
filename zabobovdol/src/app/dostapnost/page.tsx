@@ -45,12 +45,13 @@ export const metadata: Metadata = buildMetadata({
 
 // Дата на последната промяна на страницата (не на самооценката — нейните
 // дати са в декларацията по-долу).
-const LAST_CHANGE_ISO = "2026-10-24";
+const LAST_CHANGE_ISO = "2026-10-25";
 
 const TOC = {
   nastroyki: "Нагласете сайта за себе си",
   "bez-obazhdane": "Връзка без обаждане",
   "spesen-112": "112 за хора с увреден слух или говор",
+  "chesti-vaprosi": "Чести въпроси",
   deklaraciya: "Декларация за достъпност",
 } as const satisfies Toc;
 
@@ -60,6 +61,8 @@ const BAR = quoted(UI_LABEL.readingBar);
 const BAR_SHORT = quoted(UI_LABEL.readingBarShort);
 
 // Въпроси и отговори — за AEO (Answer Engine Optimization) и гласови търсачки.
+// Показват се и на страницата (раздел „Чести въпроси“): FAQPage в JSON-LD е
+// само за съдържание, което човекът вижда.
 const FAQ: { question: string; answerText: string }[] = [
   {
     question: "Как да уголемя текста на сайта?",
@@ -243,6 +246,20 @@ export default function AccessibilityPage() {
               <ExternalLink className="h-5 w-5" aria-hidden />
               <span className="sr-only">(отваря се в нов раздел)</span>
             </a>
+          </section>
+
+          <section aria-labelledby="chesti-vaprosi">
+            <h2 id="chesti-vaprosi" className="section-title">
+              {TOC["chesti-vaprosi"]}
+            </h2>
+            <div className="mt-5 space-y-3">
+              {FAQ.map((f) => (
+                <div key={f.question} className="panel">
+                  <h3 className="h-card">{f.question}</h3>
+                  <p className="mt-1 text-base text-slate-700">{f.answerText}</p>
+                </div>
+              ))}
+            </div>
           </section>
 
           {/* Формална Декларация за достъпност по Закона за изискванията за
