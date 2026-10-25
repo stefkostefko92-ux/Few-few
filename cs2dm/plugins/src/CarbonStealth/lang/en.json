@@ -156,5 +156,9 @@
   "zone.noking": "{Gold}[CarbonStealth]{Default} No King of the Zone this time — it takes at least {0} kills inside.",
   "hud.zone.start": "HOT ZONE: {0} · XP ×{1}",
   "hud.zone.warn": "Hot zone {0} · {1} s left",
-  "hud.zone.end": "Hot zone {0} is over"
+  "hud.zone.end": "Hot zone {0} is over",
+  "wanted.new": "{Gold}[CarbonStealth]{Default} {Red}MOST WANTED{Default}: {Gold}{0}{Default} — {1} kills on this map. Take them down for {Lime}+{2} XP{Default}!",
+  "wanted.down": "{Gold}[CarbonStealth]{Default} {Green}{0}{Default} took down the {Red}Most Wanted{Default} {1} and earned {Gold}+{2} XP{Default}!",
+  "wanted.gone": "{Gold}[CarbonStealth]{Default} The Most Wanted left the server — the title is up for grabs.",
+  "hud.wanted.new": "MOST WANTED: {0} · +{1} XP"
 }

@@ -54,7 +54,9 @@ public sealed partial class CarbonStealthPlugin
         var weapon = Progression.NormalizeWeapon(e.Weapon);
         var facts = FactsOf(e, outcome.Revenge, outcome.BountyClaimed);
         var inZone = InHotZone(attacker);
-        var xp = Progression.HotZoneXp(Progression.ApplyMultiplier(Progression.XpForKill(facts), XpTenths()), inZone);
+        var wanted = IsWanted(v);
+        var xp = Progression.HotZoneXp(Progression.ApplyMultiplier(
+            Progression.XpForKill(facts) + Progression.MostWantedBonus(wanted), XpTenths()), inZone);
         if (inZone) _zoneRound.Kill(a.SteamId64, a.Name);
         var levelBefore = a.Level;
         a.Xp += xp;
@@ -83,6 +85,7 @@ public sealed partial class CarbonStealthPlugin
 
         if (outcome.BountyClaimed > 0) Broadcast("bounty.claimed", a.Name, v.Name, outcome.BountyClaimed);
         if (outcome.Revenge) Broadcast("revenge", a.Name, v.Name);
+        OnWantedKill(a, v, wanted);
         if (outcome.AttackerStreak >= StreakTracker.BountyStartStreak && outcome.AttackerStreak % 5 == 0)
         {
             Broadcast("bounty.on", a.Name, outcome.AttackerStreak, outcome.NewBountyOnAttacker);

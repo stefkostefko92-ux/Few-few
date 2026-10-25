@@ -58,6 +58,15 @@ public static class Progression
     /// </summary>
     public static int HotZoneXp(int xp, bool inZone) => Math.Max(0, xp) * (inZone ? HotZoneMultiplier : 1);
 
+    /// <summary>Сваленият Most Wanted (CONTRACT.md §15) — същото като MOST_WANTED.xp в levels.ts.</summary>
+    public const int MostWantedXp = 25;
+
+    /// <summary>
+    /// Бонусът за Most Wanted се добавя към XP-то за убийството ПРЕДИ множителя (като баунтито), после идва
+    /// горещата зона: 15 + 25 = 40 → ×1,5 → 60 → в зоната 120. Същото като mostWantedBonus в TS.
+    /// </summary>
+    public static int MostWantedBonus(bool victimWanted) => victimWanted ? MostWantedXp : 0;
+
     /// <summary>Ниво n иска общо 100·n·(n−1)/2 XP → level = floor((1 + √(1 + 8·xp/100)) / 2).</summary>
     public static int LevelFromXp(long xp)
     {

@@ -156,5 +156,9 @@
   "zone.noking": "{Gold}[CarbonStealth]{Default} Този път няма Крал на зоната — нужни са поне {0} убийства вътре.",
   "hud.zone.start": "ГОРЕЩА ЗОНА: {0} · XP ×{1}",
   "hud.zone.warn": "Горещата зона {0} · остават {1} s",
-  "hud.zone.end": "Горещата зона {0} свърши"
+  "hud.zone.end": "Горещата зона {0} свърши",
+  "wanted.new": "{Gold}[CarbonStealth]{Default} {Red}MOST WANTED{Default}: {Gold}{0}{Default} — {1} убийства на тази карта. Свали го за {Lime}+{2} XP{Default}!",
+  "wanted.down": "{Gold}[CarbonStealth]{Default} {Green}{0}{Default} свали {Red}Most Wanted{Default} {1} и взе {Gold}+{2} XP{Default}!",
+  "wanted.gone": "{Gold}[CarbonStealth]{Default} Most Wanted напусна сървъра — титлата е свободна.",
+  "hud.wanted.new": "MOST WANTED: {0} · +{1} XP"
 }

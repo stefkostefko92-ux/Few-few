@@ -215,6 +215,9 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   кралят брои само убийства на хора. Маркерът е `point_worldtext` без `DepthOffset` — никога нещо, което се вижда през
   стени. `!zone` е с правото на банерите (HEADADMIN+) и одит. Решетката (`Dust2Grid`) = `heatmap.ts` — тест чете `.cs`.
   Обявите на режимите — `Announce(chat, center)` (`Announce.cs`): отворено WASD меню не получава център.
+- **Most Wanted (§15, `MostWanted.cs` + `CarbonStealth.Logic/MostWanted.cs`):** само в паметта, по карта; бонусът
+  (`Progression.MostWantedBonus`) е ПРЕДИ множителя, зоната — след него. Жертвата се проверява преди броят на убиеца
+  да се смени. Присъствието — след основното `OnClientDisconnect` (`Server.NextFrame`), никога клан тагът.
 - Нова колона/таблица → миграция в `app/prisma` (Prisma е собственикът на схемата), после SQL-а в `Data/`.
 - **Статистиките са `+=` с епоха (§3).** Нов агрегат → колона + `PlayerDelta` + `StatsWriter` (с
   `WHERE ред.stats_epoch <= EXCLUDED.stats_epoch`) + полето в редактора на панела (`stats-edit.ts`). Партидата

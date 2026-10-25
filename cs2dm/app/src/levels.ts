@@ -51,8 +51,20 @@ export function hotZoneXp(xp: number, inZone: boolean): number {
   return Math.max(0, Math.trunc(xp)) * (inZone ? HOT_ZONE.multiplier : 1);
 }
 
+/**
+ * Most Wanted (CONTRACT §15): човекът с най-много убийства на картата (поне `minKills`). Който го свали,
+ * взема `xp` — преди множителя, като баунтито. Същото като `MostWantedBoard.MinKills` и
+ * `Progression.MostWantedXp` в C#.
+ */
+export const MOST_WANTED = { minKills: 10, xp: 25 } as const;
+
+/** Бонусът за Most Wanted — същото като `Progression.MostWantedBonus`. Тестови стойности: да→25 · не→0. */
+export function mostWantedBonus(victimWanted: boolean): number {
+  return victimWanted ? MOST_WANTED.xp : 0;
+}
+
 /** Режимите на арената (CONTRACT §15) — за таблицата „Как се смята“ и началната страница. */
-export const ARENA = { hotZone: HOT_ZONE } as const;
+export const ARENA = { hotZone: HOT_ZONE, mostWanted: MOST_WANTED } as const;
 
 /** Баунти: серия ≥ 5 → `min(25 · (серия − 4), 250)` XP. */
 export const BOUNTY = { minStreak: 5, perKill: 25, cap: 250 } as const;

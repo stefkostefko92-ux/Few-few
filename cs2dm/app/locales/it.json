@@ -380,7 +380,9 @@
       "revenge": "Se qualcuno L'ha uccisa almeno 3 volte di fila e Lei lo abbatte, è una vendetta: +5 XP.",
       "arena": {
         "hotZoneRow": "Uccisione dall'interno della zona calda",
-        "hotZone": "Zona calda: ogni pochi minuti un punto di Dust2 si accende per {minutes} minuti. Ogni uccisione mentre è all'interno vale ×{multiplier} XP. Chi fa più uccisioni all'interno (almeno {king}) diventa il Re della zona: il distintivo resta sul suo profilo."
+        "hotZone": "Zona calda: ogni pochi minuti un punto di Dust2 si accende per {minutes} minuti. Ogni uccisione mentre è all'interno vale ×{multiplier} XP. Chi fa più uccisioni all'interno (almeno {king}) diventa il Re della zona: il distintivo resta sul suo profilo.",
+        "mostWantedRow": "Most Wanted abbattuto (bonus)",
+        "mostWanted": "Il Most Wanted è il giocatore con più uccisioni sulla mappa attuale (almeno {min} uccisioni); il server annuncia ogni cambio. Chi lo abbatte ottiene +{xp} XP in più: il bonus viene moltiplicato insieme all'uccisione."
       }
     },
     "pager": {

@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { CELL_PX, COLUMNS, DUST2_OVERVIEW, GRID, SECTORS, sectorLabel } from '../src/heatmap.js';
-import { HOT_ZONE } from '../src/levels.js';
+import { HOT_ZONE, MOST_WANTED } from '../src/levels.js';
 import { decode, fakeRepo, sampleData, start } from './helpers.js';
 
 const LOGIC = new URL('../../plugins/src/CarbonStealth.Logic/', import.meta.url);
@@ -49,6 +49,11 @@ test('горещата зона: множителят, минутите и кр�
   assert.equal(num(rules, 'KingMinKills'), HOT_ZONE.kingMinKills);
 });
 
+test('Most Wanted: прагът и бонусът са същите като в C#', () => {
+  assert.equal(num(cs('Progression.cs'), 'MostWantedXp'), MOST_WANTED.xp);
+  assert.equal(num(cs('MostWanted.cs'), 'MinKills'), MOST_WANTED.minKills);
+});
+
 test('класацията „Как се смята“: редовете на арената идват от константите', async () => {
   const app = await start({ repo: fakeRepo(sampleData()) });
   try {
@@ -56,6 +61,11 @@ test('класацията „Как се смята“: редовете на �
     assert.match(bg, /<th scope="row">Убийство от горещата зона<\/th><td class="c-num">×2<\/td>/);
     assert.match(bg, /светва за 3 минути\. Всяко убийство, докато си вътре, носи ×2 XP/);
     assert.match(bg, /\(поне 3\)/);
+    assert.match(
+      bg,
+      /<th scope="row">Свален Most Wanted \(бонус\)<\/th><td class="c-num">\+25<\/td>/,
+    );
+    assert.match(bg, /поне 10 убийства/);
     const it = decode(await (await app.get('/it/leaderboard')).text());
     assert.match(it, /Uccisione dall'interno della zona calda/);
   } finally {

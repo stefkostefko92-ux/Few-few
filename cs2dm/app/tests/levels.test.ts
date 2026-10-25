@@ -7,6 +7,7 @@ import {
   hotZoneXp,
   levelForXp,
   levelProgress,
+  mostWantedBonus,
   xpForLevel,
 } from '../src/levels.js';
 
@@ -96,4 +97,12 @@ test('горещата зона удвоява XP-то за убийството
   // След живия множител и след делението за бот: 15×1,5 → 22 → 44 · бот 15 → 7 → 14.
   assert.equal(hotZoneXp(applyXpMultiplier(15, 15), true), 44);
   assert.equal(hotZoneXp(botKillXp(15), true), 14);
+});
+
+test('Most Wanted: +25 преди множителя и зоната — същите стойности като C# (MostWantedTests)', () => {
+  assert.equal(mostWantedBonus(true), 25);
+  assert.equal(mostWantedBonus(false), 0);
+  const xp = applyXpMultiplier(15 + mostWantedBonus(true), 15);
+  assert.equal(xp, 60);
+  assert.equal(hotZoneXp(xp, true), 120);
 });

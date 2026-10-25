@@ -380,7 +380,9 @@
       "revenge": "If someone has killed you at least 3 times in a row and you take them down, that is revenge — +5 XP.",
       "arena": {
         "hotZoneRow": "Kill from inside the hot zone",
-        "hotZone": "Hot zone: every few minutes one spot on Dust2 lights up for {minutes} minutes. Every kill while you are inside gives ×{multiplier} XP. Whoever gets the most kills inside (at least {king}) becomes King of the Zone — the badge stays on their profile."
+        "hotZone": "Hot zone: every few minutes one spot on Dust2 lights up for {minutes} minutes. Every kill while you are inside gives ×{multiplier} XP. Whoever gets the most kills inside (at least {king}) becomes King of the Zone — the badge stays on their profile.",
+        "mostWantedRow": "Most Wanted taken down (bonus)",
+        "mostWanted": "Most Wanted is the player with the most kills on the current map (at least {min} kills); the server announces every change. Whoever takes them down earns +{xp} XP on top — the bonus is multiplied together with the kill."
       }
     },
     "pager": {
