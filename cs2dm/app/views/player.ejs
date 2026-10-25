@@ -1,0 +1,187 @@
+<%- include('partials/head') %>
+<%
+  const duration = (seconds) => fmt.duration(seconds, (h, m) => t('player.duration', { h, m }));
+  const statRows = (line) => [
+    { id: 'kills', value: fmt.int(line.kills) },
+    { id: 'deaths', value: fmt.int(line.deaths) },
+    { id: 'kd', value: fmt.kd(line.kills, line.deaths) },
+    { id: 'hs', value: fmt.percent(line.headshots, line.kills) },
+    { id: 'accuracy', value: fmt.percent(line.shotsHit, line.shotsFired) },
+    { id: 'assists', value: fmt.int(line.assists) },
+    { id: 'damage', value: fmt.int(line.damage) },
+    { id: 'bestStreak', value: fmt.int(line.bestStreak) },
+    { id: 'bounties', value: fmt.int(line.bountiesClaimed) },
+    { id: 'revenges', value: fmt.int(line.revenges) },
+    { id: 'xp', value: fmt.int(line.xp) },
+    { id: 'playtime', value: duration(line.playtimeSec) },
+  ];
+  const cards = [];
+  if (season.id !== 0) cards.push({ title: t('player.cards.season', { season: seasonLabel(season) }), line: seasonal });
+  cards.push({ title: t('player.cards.allTime'), line: allTime });
+%>
+<section class="page-hero">
+  <div class="wrap page-hero-inner">
+    <%- include('partials/crumbs', { trail: [{ name: t('nav.leaderboard'), href: nav.leaderboard }], here: player.name }) %>
+    <div class="profile-hero">
+      <% if (player.avatarUrl) { %><img class="avatar" src="<%= player.avatarUrl %>" alt="<%= t('player.avatarAlt', { name: player.name }) %>" width="96" height="96" loading="lazy" decoding="async" referrerpolicy="no-referrer"><% } %>
+      <h1 class="profile-name"><%= player.name %></h1>
+    </div>
+    <dl class="profile-facts">
+      <div><dt><%= t('player.steamId') %></dt><dd><code><%= player.steamId %></code></dd></div>
+      <div><dt><%= t('player.firstSeen') %></dt><dd><time datetime="<%= fmt.iso(player.firstSeenAt) %>"><%= fmt.date(player.firstSeenAt) %></time></dd></div>
+      <div><dt><%= t('player.lastSeen') %></dt><dd><time datetime="<%= fmt.iso(player.lastSeenAt) %>"><%= fmt.dateTime(player.lastSeenAt) %></time></dd></div>
+      <div><dt>Steam</dt><dd><a class="ext" href="https://steamcommunity.com/profiles/<%= player.steamId %>" target="_blank" rel="noopener nofollow"><%= t('player.steamProfile') %></a></dd></div>
+    </dl>
+  </div>
+</section>
+<div class="wrap page-content">
+  <div class="content-grid">
+    <div class="stat-cards">
+      <% cards.forEach((card) => { %>
+      <section class="card" aria-label="<%= card.title %>">
+        <h2><%= card.title %></h2>
+        <% if (card.line) { %>
+        <dl class="stats">
+          <% statRows(card.line).forEach((stat) => { %><div><dt><%= t('player.stats.' + stat.id) %></dt><dd><%= stat.value %></dd></div>
+          <% }) %>
+        </dl>
+        <% } else { %>
+        <p><%= t('player.noStats') %></p>
+        <% } %>
+      </section>
+      <% }) %>
+    </div>
+    <aside class="level-card">
+      <p class="level-big"><%= t('player.level', { level: progress.level }) %></p>
+      <label class="level-label" for="level-progress"><%= t('player.levelLabel', { next: progress.nextLevel }) %></label>
+      <progress id="level-progress" max="100" value="<%= progress.percent %>"><%= progress.percent %>%</progress>
+      <p class="level-text"><%= t('player.progress', { current: fmt.int(progress.current), span: fmt.int(progress.span), next: progress.nextLevel }) %></p>
+      <p class="level-text"><%= t('player.xpTotal', { xp: fmt.int(allTime ? allTime.xp : 0) }) %></p>
+    </aside>
+  </div>
+
+  <section class="card spaced missions" aria-labelledby="missions-title">
+    <h2 id="missions-title"><%= t('player.missions.title') %></h2>
+    <p><%= t('player.missions.lead', { tz: displayTz }) %></p>
+    <ol class="mission-list">
+      <% missions.today.forEach((mission, index) => { %><li<% if (mission.done) { %> class="is-done"<% } %>>
+        <p class="mission-tier"><%= t('missions.tiers.' + missionTiers[mission.tier]) %> · +<%= mission.xp %> XP</p>
+        <label class="mission-name" for="mission-<%= index %>"><%= t('missions.kinds.' + mission.kind, { target: fmt.int(mission.target) }) %></label>
+        <progress id="mission-<%= index %>" max="<%= mission.target %>" value="<%= mission.progress %>"><%= mission.progress %>/<%= mission.target %></progress>
+        <span class="mission-count"><%= mission.done ? t('player.missions.done') : t('player.missions.progress', { progress: fmt.int(mission.progress), target: fmt.int(mission.target) }) %></span>
+      </li>
+      <% }) %>
+    </ol>
+    <p class="muted"><%= t.plural('player.missions.completed', missions.completed, { days: missionsDays }) %></p>
+  </section>
+
+  <section class="card spaced honors" aria-labelledby="honors-title">
+    <h2 id="honors-title"><%= t('player.honors.title') %></h2>
+    <p><%= t('player.honors.lead') %></p>
+    <% if (honors.badges.length === 0) { %>
+    <p class="muted"><%= t('player.honors.empty') %></p>
+    <% } else { %>
+    <ul class="honor-list">
+      <% honors.badges.forEach((badge) => { %><li>
+        <span class="badge badge-<%= badge.kind %>"><span class="badge-mark" aria-hidden="true"></span><%= t('player.honors.kinds.' + badge.kind) %></span>
+        <strong><%= t.plural('player.honors.times', badge.count) %></strong>
+        <span class="muted"><%= t('player.honors.last') %> <time datetime="<%= fmt.iso(badge.lastAt) %>"><%= fmt.date(badge.lastAt) %></time><% if (badge.best !== null) { %> · <%= t.plural('player.honors.' + badgeBest[badge.kind].text, badge.best) %><% } %></span>
+      </li>
+      <% }) %>
+    </ul>
+    <% } %>
+    <h3 class="duel-title"><%= t('player.honors.duels', { days: duelsDays }) %></h3>
+    <dl class="stats duel-stats">
+      <div><dt><%= t('player.honors.wins') %></dt><dd><%= fmt.int(honors.duels.wins) %></dd></div>
+      <div><dt><%= t('player.honors.losses') %></dt><dd><%= fmt.int(honors.duels.losses) %></dd></div>
+      <div><dt><%= t('player.honors.draws') %></dt><dd><%= fmt.int(honors.duels.draws) %></dd></div>
+    </dl>
+  </section>
+
+  <section class="card spaced" aria-labelledby="recent-title">
+    <h2 id="recent-title"><%= t('player.recent.title') %></h2>
+    <% if (recentMatches.length === 0) { %>
+    <p><%= t('player.recent.empty', { days: retentionDays }) %></p>
+    <% } else { %>
+    <div class="table-wrap">
+      <table class="data-table recent-table">
+        <caption class="sr-only"><%= t('player.recent.caption', { name: player.name }) %></caption>
+        <thead>
+          <tr>
+            <th scope="col"><%= t('player.recent.match') %></th>
+            <th scope="col" class="opt"><%= t('player.recent.date') %></th>
+            <th scope="col" class="c-num"><%= t('match.col.place') %></th>
+            <th scope="col" class="c-num"><%= t('table.kills') %></th>
+            <th scope="col" class="c-num opt"><%= t('table.deaths') %></th>
+            <th scope="col" class="c-num opt"><%= t('table.xp') %></th>
+            <th scope="col"><%= t('match.col.report') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% recentMatches.forEach((line) => { %><tr>
+            <th scope="row"><a href="<%= matchHref(line.id) %>"><%= t('match.h1', { id: line.id }) %></a></th>
+            <td class="opt"><time datetime="<%= fmt.iso(line.endedAt) %>"><%= fmt.dateTime(line.endedAt) %></time></td>
+            <td class="c-num"><%= t('player.recent.placeOf', { place: line.place, players: fmt.int(line.players) }) %></td>
+            <td class="c-num"><%= fmt.int(line.kills) %></td>
+            <td class="c-num opt"><%= fmt.int(line.deaths) %></td>
+            <td class="c-num opt"><%= fmt.int(line.xp) %></td>
+            <td><a href="<%= reportHref(line.id, player.steamId) %>" aria-label="<%= t('player.recent.reportLabel', { id: line.id }) %>"><%= t('match.reportLink') %></a></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </section>
+
+  <section class="card spaced" aria-labelledby="mastery-title">
+    <h2 id="mastery-title"><%= t('player.mastery.title') %></h2>
+    <p><%= t('player.mastery.lead') %></p>
+    <% if (mastery.length === 0) { %>
+    <p><%= t('player.mastery.empty') %></p>
+    <% } else { %>
+    <div class="table-wrap">
+      <table class="data-table mastery-table">
+        <thead>
+          <tr>
+            <th scope="col"><%= t('player.mastery.weapon') %></th>
+            <th scope="col" class="c-num"><%= t('player.mastery.kills') %></th>
+            <th scope="col" class="c-num opt"><%= t('player.mastery.hs') %></th>
+            <th scope="col"><%= t('player.mastery.badge') %></th>
+            <th scope="col" class="opt"><%= t('player.mastery.progress') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% mastery.forEach((line) => { %><tr>
+            <th scope="row"><%= line.label %></th>
+            <td class="c-num"><%= fmt.int(line.kills) %></td>
+            <td class="c-num opt"><%= fmt.percent(line.headshots, line.kills) %></td>
+            <td><% if (line.mastery.tier) { %><span class="badge badge-<%= line.mastery.tier %>"><span class="badge-mark" aria-hidden="true"></span><%= t('player.mastery.tiers.' + line.mastery.tier) %></span><% } else { %><span class="muted"><%= t('player.mastery.none') %></span><% } %></td>
+            <td class="opt"><% if (line.mastery.next) { %><progress max="100" value="<%= line.mastery.percent %>" aria-label="<%= t('player.mastery.progressLabel', { tier: t('player.mastery.tiers.' + line.mastery.next.id) }) %>"><%= line.mastery.percent %>%</progress> <span class="muted"><%= t('player.mastery.next', { remaining: fmt.int(line.mastery.next.remaining), tier: t('player.mastery.tiers.' + line.mastery.next.id) }) %></span><% } else { %><span class="muted"><%= t('player.mastery.max') %></span><% } %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </section>
+
+  <section class="card spaced heat" aria-labelledby="heat-title">
+    <h2 id="heat-title"><%= t('player.heatmap.title') %></h2>
+    <p><%= t('player.heatmap.lead', { days: heatmapInfo.days, units: heatmapInfo.cellUnits }) %></p>
+    <div class="heat-grid">
+      <figure class="heat-fig">
+        <figcaption><span class="heat-key heat-key-kills" aria-hidden="true"></span><%= t('player.heatmap.killsTitle') %></figcaption>
+        <%- heatmaps.killsSvg %>
+        <p class="heat-sum"><%= heatmaps.killsTotal > 0 ? t.plural('player.heatmap.killsDesc', heatmaps.killsTotal, { days: heatmapInfo.days, sector: heatmaps.killsSector }) : t('player.heatmap.empty', { days: heatmapInfo.days }) %></p>
+      </figure>
+      <figure class="heat-fig">
+        <figcaption><span class="heat-key heat-key-deaths" aria-hidden="true"></span><%= t('player.heatmap.deathsTitle') %></figcaption>
+        <%- heatmaps.deathsSvg %>
+        <p class="heat-sum"><%= heatmaps.deathsTotal > 0 ? t.plural('player.heatmap.deathsDesc', heatmaps.deathsTotal, { days: heatmapInfo.days, sector: heatmaps.deathsSector }) : t('player.heatmap.empty', { days: heatmapInfo.days }) %></p>
+      </figure>
+    </div>
+    <p class="heat-legend"><%= t('player.heatmap.legend') %></p>
+  </section>
+</div>
+<%- include('partials/foot') %>

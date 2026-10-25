@@ -1,0 +1,55 @@
+<%- include('partials/head', { title: t('admin.nav.plugins') }) %>
+<%# Плъгините от каталога (CONTRACT §14). Състоянието е от файловете на сървъра (агентът); бутони има само
+    при отговор от агента и докато не тече инсталиране/ъпдейт. Ядрото се показва, но не се пипа. %>
+<h1><%= t('admin.plugins.title') %></h1>
+<p class="a-lead"><%= t('admin.plugins.lead') %></p>
+<p class="a-note"><%= t('admin.plugins.addNote') %></p>
+<% if (agentError) { %>
+<p class="a-warn"><%= t('admin.cmd.' + agentError) %></p>
+<% if (agentDetail) { %><p class="a-note"><%= t('admin.server.detail') %> <code><%= agentDetail %></code></p><% } %>
+<% } else if (busy) { %>
+<p class="a-warn"><%= t('admin.plugins.busy') %></p>
+<% } %>
+<% const actions = !agentError && !busy; %>
+<% const buttons = { removed: ['install'], enabled: ['disable', 'remove'], disabled: ['enable', 'remove'] }; %>
+<% const chip = { enabled: 'is-ok', disabled: 'is-warn', removed: 'is-muted' }; %>
+<% const confirms = ['install', 'remove', 'disable']; %>
+<div class="a-scroll">
+  <table class="a-table">
+    <caption class="sr-only"><%= t('admin.plugins.title') %></caption>
+    <thead><tr>
+      <th scope="col"><%= t('admin.plugins.col.plugin') %></th>
+      <th scope="col"><%= t('admin.plugins.col.version') %></th>
+      <th scope="col"><%= t('admin.plugins.col.state') %></th>
+      <th scope="col" class="wrap"><%= t('admin.plugins.col.actions') %></th>
+    </tr></thead>
+    <tbody>
+      <% rows.forEach((row) => { %><tr>
+        <th scope="row" class="wrap"><b><%= t('admin.plugins.mods.' + row.id + '.name') %></b> <code><%= row.id %></code>
+          <br><span class="a-note"><%= t('admin.plugins.mods.' + row.id + '.desc') %></span>
+          <% if (row.kind === 'metamod') { %><br><span class="a-note"><%= t('admin.plugins.metamodNote') %></span><% } %></th>
+        <td><%= row.version || '—' %></td>
+        <td><% if (row.state) { %><span class="a-chip <%= chip[row.state] %>"><%= t('admin.plugins.states.' + row.state) %></span><% } else { %>—<% } %></td>
+        <td class="wrap"><% if (actions && row.state) { %><div class="a-actions">
+          <% buttons[row.state].forEach((op) => { %>
+          <form class="a-inline" method="post" action="/admin/plugins/<%= row.id %>/<%= op %>"<% if (confirms.includes(op)) { %> data-confirm="<%= t('admin.plugins.confirm.' + op) %>"<% } %>>
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <button class="a-btn is-small<%= op === 'remove' ? ' is-danger' : op === 'disable' ? ' is-quiet' : '' %>" type="submit"><%= t('admin.plugins.ops.' + op) %></button>
+          </form>
+          <% }) %>
+          <% if (row.config && row.state !== 'removed') { %><a class="a-btn is-small is-quiet" href="/admin/plugins/<%= row.id %>/config"><%= t('admin.plugins.config.open') %></a><% } %>
+        </div><% } %></td>
+      </tr>
+      <% }) %>
+      <% core.forEach((id) => { %><tr>
+        <th scope="row" class="wrap"><b><%= t('admin.plugins.core.' + id + '.name') %></b> <code><%= id %></code>
+          <br><span class="a-note"><%= t('admin.plugins.core.' + id + '.desc') %></span></th>
+        <td>—</td>
+        <td><span class="a-chip is-muted"><%= t('admin.plugins.states.core') %></span></td>
+        <td class="wrap"><span class="a-note"><%= t('admin.plugins.coreNote') %></span></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('partials/foot') %>

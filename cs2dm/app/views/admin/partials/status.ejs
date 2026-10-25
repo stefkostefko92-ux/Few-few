@@ -1,0 +1,17 @@
+<%# Статусът на сървъра: cs2dm:live (плъгинът) → cs2dm:a2s (агентът) → неизвестен. %>
+<% if (status.known && status.online) { %>
+<p><span class="a-chip is-live"><%= t('admin.status.online') %></span> <span class="a-chip is-muted"><%= t('admin.status.source.' + status.source) %></span></p>
+<dl class="a-facts">
+  <div><dt><%= t('admin.status.players') %></dt><dd class="a-big"><%= status.humans %>/<%= status.maxPlayers %></dd></div>
+  <div><dt><%= t('admin.status.bots') %></dt><dd><%= status.bots %></dd></div>
+  <div><dt><%= t('admin.status.mode') %></dt><dd><%= status.mode || '—' %></dd></div>
+  <div><dt><%= t('admin.status.map') %></dt><dd><%= status.map %></dd></div>
+  <div><dt><%= t('admin.status.updated') %></dt><dd><time datetime="<%= fmt.iso(status.updatedAt) %>"><%= fmt.dateTime(status.updatedAt) %></time></dd></div>
+</dl>
+<% } else if (status.known) { %>
+<p><span class="a-chip is-err"><%= t('admin.status.offline') %></span> <span class="a-chip is-muted"><%= t('admin.status.source.a2s') %></span></p>
+<p class="a-note"><%= t('admin.status.offlineHint') %> <time datetime="<%= fmt.iso(status.updatedAt) %>"><%= fmt.dateTime(status.updatedAt) %></time></p>
+<% } else { %>
+<p><span class="a-chip is-warn"><%= t('admin.status.unknown') %></span></p>
+<p class="a-note"><%= t('admin.status.unknownHint') %></p>
+<% } %>

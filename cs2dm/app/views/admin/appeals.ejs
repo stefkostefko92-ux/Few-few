@@ -1,0 +1,46 @@
+<%- include('partials/head', { title: t('admin.nav.appeals') }) %>
+<h1><%= t('admin.appeals.title') %></h1>
+<p class="a-lead"><%= t('admin.appeals.lead') %></p>
+<nav class="a-actions" aria-label="<%= t('admin.common.filters') %>">
+  <% statuses.forEach((status) => { %><a class="a-btn is-quiet is-small" href="<%= withQuery('/admin/appeals', { status: status === 'OPEN' ? undefined : status }) %>"<% if (query.status === status) { %> aria-current="true"<% } %>><%= t('admin.caseStatus.' + status) %></a>
+  <% }) %>
+</nav>
+<p class="a-note"><%= t.plural('admin.common.total', total) %></p>
+<% if (rows.length === 0) { %>
+<p class="a-empty"><%= t('admin.appeals.empty') %></p>
+<% } else { rows.forEach((row) => { %>
+<article class="a-card" aria-labelledby="ap-<%= row.id %>">
+  <h2 id="ap-<%= row.id %>"><%= t('admin.appeals.item', { id: row.id }) %> · <a href="/admin/players/<%= row.steamId %>"><%= row.punishment.targetName %></a></h2>
+  <dl class="a-facts">
+    <div><dt><%= t('admin.punish.type') %></dt><dd><%= t('admin.types.' + row.punishment.type) %> · <%= t('bans.categories.' + row.punishment.category) %></dd></div>
+    <div><dt><%= t('admin.col.created') %></dt><dd><%= fmt.dateTime(row.punishment.createdAt) %></dd></div>
+    <div><dt><%= t('admin.col.expires') %></dt><dd><%= row.punishment.expiresAt ? fmt.dateTime(row.punishment.expiresAt) : t('admin.common.permanent') %></dd></div>
+    <div><dt><%= t('admin.col.state') %></dt><dd><%= row.punishment.active ? t('admin.punishments.statuses.active') : t('admin.appeals.notActive') %></dd></div>
+    <div><dt><%= t('admin.col.actor') %></dt><dd><% if (row.punishment.actorSteamId) { %><code><%= row.punishment.actorSteamId %></code><% } else { %>—<% } %></dd></div>
+  </dl>
+  <p><strong><%= t('admin.punish.reason') %>:</strong> <%= row.punishment.reason %></p>
+  <h3><%= t('admin.appeals.message') %></h3>
+  <p><%= row.message %></p>
+  <% if (row.contact) { %><p class="a-note"><%= t('admin.appeals.contact') %>: <%= row.contact %></p><% } %>
+  <p class="a-note"><%= t('admin.appeals.submitted', { date: fmt.dateTime(row.createdAt) }) %></p>
+  <% if (row.status === 'OPEN') { %>
+  <form class="a-form is-stack" method="post" action="/admin/appeals/<%= row.id %>">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="a-field">
+      <label for="an-<%= row.id %>"><%= t('admin.appeals.note') %></label>
+      <textarea id="an-<%= row.id %>" name="note" maxlength="1000" required></textarea>
+    </div>
+    <% if (row.punishment.active) { %><p class="a-note"><%= t('admin.appeals.acceptRevokes') %></p><% } %>
+    <div class="a-actions">
+      <button class="a-btn" type="submit" name="status" value="ACCEPTED" data-confirm="<%= t('admin.appeals.acceptConfirm') %>"><%= t('admin.appeals.accept') %></button>
+      <button class="a-btn is-quiet" type="submit" name="status" value="REJECTED"><%= t('admin.appeals.reject') %></button>
+    </div>
+  </form>
+  <% } else { %>
+  <p><span class="a-chip is-muted"><%= t('admin.caseStatus.' + row.status) %></span> <%= row.decisionNote || '' %></p>
+  <% } %>
+</article>
+<% }) %>
+<%- include('partials/pager', { page, pages, href: (n) => withQuery('/admin/appeals', { status: query.status === 'OPEN' ? undefined : query.status, page: n > 1 ? n : undefined }) }) %>
+<% } %>
+<%- include('partials/foot') %>

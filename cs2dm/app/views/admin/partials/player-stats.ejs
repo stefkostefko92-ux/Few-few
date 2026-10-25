@@ -1,0 +1,70 @@
+<%# Редакторът на статистиките (HEADADMIN+, само над целта). Всеки запис вдига епохата (CONTRACT §3) и праща player.reload. %>
+<% const statsBase = '/admin/players/' + player.steamId; %>
+<section id="stats" aria-labelledby="ps-title">
+  <h2 id="ps-title"><%= t('admin.stats.title') %></h2>
+  <p class="a-note"><%= t('admin.stats.lead', { epoch: editor.epoch }) %> <a href="<%= statsBase %>/data"><%= t('admin.stats.dataLink') %></a></p>
+  <% if (editor.seasons.length === 0) { %><p class="a-empty"><%= t('admin.stats.none') %></p><% } %>
+  <% editor.seasons.forEach((row) => { const sid = 's' + row.seasonId; %>
+  <details class="a-card a-more"<% if (row.seasonId === 0) { %> open<% } %>>
+    <summary><%= row.seasonId === 0 ? t('season.allTime') : t('season.numbered', { n: row.seasonId }) %> · <%= t('admin.col.kills') %> <%= fmt.int(row.kills) %> · XP <%= row.xp %></summary>
+    <form class="a-form" method="post" action="<%= statsBase %>/stats/<%= row.seasonId %>" data-confirm="<%= t('admin.stats.saveConfirm') %>">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <% editor.fields.forEach((field) => { %>
+      <div class="a-field">
+        <label for="<%= sid %>-<%= field %>"><%= t('admin.stats.fields.' + field) %></label>
+        <input id="<%= sid %>-<%= field %>" name="<%= field %>" type="number" inputmode="numeric" min="0" max="<%= editor.limits[field] %>" step="1" value="<%= row[field] %>" required>
+      </div>
+      <% }) %>
+      <div class="a-field">
+        <label for="<%= sid %>-xp"><%= t('admin.stats.fields.xp') %></label>
+        <input id="<%= sid %>-xp" name="xp" type="text" inputmode="numeric" pattern="[0-9]{1,13}" maxlength="13" value="<%= row.xp %>" required>
+      </div>
+      <button class="a-btn" type="submit"><%= t('admin.common.save') %></button>
+      <p class="a-note"><%= t('admin.stats.rules') %></p>
+    </form>
+    <h3><%= t('admin.stats.weapons') %></h3>
+    <% if (row.weapons.length === 0) { %><p class="a-empty"><%= t('admin.stats.weaponsNone') %></p><% } %>
+    <% row.weapons.forEach((weapon) => { const wid = sid + '-w-' + weapon.weapon; %>
+    <form class="a-form" method="post" action="<%= statsBase %>/weapons/<%= row.seasonId %>">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="hidden" name="weapon" value="<%= weapon.weapon %>">
+      <span class="a-label"><code><%= weapon.weapon %></code></span>
+      <div class="a-field">
+        <label for="<%= wid %>-k"><%= t('admin.stats.fields.kills') %></label>
+        <input id="<%= wid %>-k" name="kills" type="number" inputmode="numeric" min="0" max="<%= editor.limits.weapon %>" step="1" value="<%= weapon.kills %>" required>
+      </div>
+      <div class="a-field">
+        <label for="<%= wid %>-h"><%= t('admin.stats.fields.headshots') %></label>
+        <input id="<%= wid %>-h" name="headshots" type="number" inputmode="numeric" min="0" max="<%= editor.limits.weapon %>" step="1" value="<%= weapon.headshots %>" required>
+      </div>
+      <button class="a-btn is-small is-quiet" type="submit"><%= t('admin.common.save') %></button>
+    </form>
+    <% }) %>
+  </details>
+  <% }) %>
+
+  <div class="a-grid">
+    <form class="a-card a-form is-stack" method="post" action="<%= statsBase %>/playtime">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="a-field">
+        <label for="ps-playtime"><%= t('admin.stats.playtimeLabel') %></label>
+        <input id="ps-playtime" name="playtimeSec" type="number" inputmode="numeric" min="0" max="<%= editor.limits.playtimeSec %>" step="1" value="<%= editor.playtimeSec %>" required>
+      </div>
+      <p class="a-note"><%= t('admin.stats.playtimeHint', { h: fmt.int(Math.round(editor.playtimeSec / 3600)) }) %></p>
+      <button class="a-btn is-quiet" type="submit"><%= t('admin.common.save') %></button>
+    </form>
+
+    <div class="a-card">
+      <h3><%= t('admin.stats.reset.title') %></h3>
+      <p class="a-note"><%= t('admin.stats.reset.note') %></p>
+      <% [['season', editor.currentSeasonId !== null], ['all', true]].forEach(([scope, available]) => { if (!available) return; %>
+      <form class="a-form is-stack" method="post" action="<%= statsBase %>/stats-reset" data-confirm="<%= t('admin.stats.reset.' + scope + 'Confirm') %>">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <input type="hidden" name="scope" value="<%= scope %>">
+        <label class="a-check"><input type="checkbox" name="confirm" required> <%= t('admin.stats.reset.confirmLabel') %></label>
+        <button class="a-btn is-danger" type="submit"><%= scope === 'season' ? t('admin.stats.reset.season', { n: editor.currentSeasonId }) : t('admin.stats.reset.all') %></button>
+      </form>
+      <% }) %>
+    </div>
+  </div>
+</section>

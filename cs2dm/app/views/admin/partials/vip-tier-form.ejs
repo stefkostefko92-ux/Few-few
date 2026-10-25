@@ -1,0 +1,27 @@
+<%# Формата за VIP ниво: цената се въвежда в евро с ДДС и се пази в цели евроцентове. %>
+<form class="a-form" method="post" action="<%= action %>">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="a-field">
+    <label for="<%= prefix %>-code"><%= t('admin.vip.code') %></label>
+    <input id="<%= prefix %>-code" name="code" type="text" maxlength="32" pattern="[a-z0-9][a-z0-9\-]{1,31}" required value="<%= tier ? tier.code : '' %>">
+  </div>
+  <div class="a-field is-wide">
+    <label for="<%= prefix %>-name"><%= t('admin.vip.name') %></label>
+    <input id="<%= prefix %>-name" name="name" type="text" maxlength="64" required value="<%= tier ? tier.name : '' %>">
+  </div>
+  <div class="a-field">
+    <label for="<%= prefix %>-price"><%= t('admin.vip.price') %></label>
+    <input id="<%= prefix %>-price" name="price" type="text" inputmode="decimal" maxlength="16" pattern="[0-9]{1,6}([.,][0-9]{1,2})?" required value="<%= tier ? tier.priceInput : '' %>" aria-describedby="<%= prefix %>-price-hint">
+  </div>
+  <div class="a-field">
+    <label for="<%= prefix %>-period"><%= t('admin.vip.period') %></label>
+    <input id="<%= prefix %>-period" name="periodDays" type="number" min="1" max="3650" required value="<%= tier ? tier.periodDays : 30 %>">
+  </div>
+  <div class="a-field">
+    <label for="<%= prefix %>-order"><%= t('admin.vip.order') %></label>
+    <input id="<%= prefix %>-order" name="sortOrder" type="number" min="-100000" max="100000" value="<%= tier ? tier.sortOrder : 0 %>">
+  </div>
+  <label class="a-check"><input type="checkbox" name="active"<% if (!tier || tier.active) { %> checked<% } %>> <%= t('admin.vip.active') %></label>
+  <button class="a-btn" type="submit"><%= submit %></button>
+  <p class="a-note" id="<%= prefix %>-price-hint"><%= t('admin.vip.priceHint') %></p>
+</form>

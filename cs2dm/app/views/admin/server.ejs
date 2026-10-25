@@ -1,0 +1,90 @@
+<%- include('partials/head', { title: t('admin.nav.server') }) %>
+<h1><%= t('admin.server.title') %></h1>
+<div class="a-grid">
+  <section class="a-card" aria-labelledby="ss-title">
+    <h2 id="ss-title"><%= t('admin.status.title') %></h2>
+    <%- include('partials/status', { status }) %>
+  </section>
+  <section class="a-card" aria-labelledby="ag-title">
+    <h2 id="ag-title"><%= t('admin.server.agent') %></h2>
+    <% if (agent) { %>
+    <dl class="a-facts">
+      <div><dt><%= t('admin.server.service') %></dt><dd><span class="a-chip <%= agent.active ? 'is-ok' : 'is-err' %>"><%= agent.active ? t('admin.server.active') : t('admin.server.inactive') %></span><% if (agent.state) { %> <code><%= agent.state %></code><% } %></dd></div>
+      <% if (agent.busy) { %><div><dt><%= t('admin.server.busy') %></dt><dd><span class="a-chip is-warn"><%= t('admin.server.busyKinds.' + agent.busy) %></span></dd></div><% } %>
+      <div><dt><%= t('admin.server.since') %></dt><dd><%= agent.since ? fmt.dateTime(agent.since) : '—' %></dd></div>
+      <div><dt><%= t('admin.server.version') %></dt><dd><%= agent.gameVersion || '—' %></dd></div>
+      <div><dt><%= t('admin.server.mods') %></dt><dd><%= agent.modsLoaded === null ? '—' : agent.modsLoaded ? t('admin.common.yes') : t('admin.common.no') %></dd></div>
+      <div><dt><%= t('admin.server.broken') %></dt><dd><%= agent.broken || '—' %></dd></div>
+    </dl>
+    <% } else { %>
+    <p class="a-warn"><%= t('admin.cmd.' + agentError) %></p>
+    <% if (agentDetail) { %><p class="a-note"><%= t('admin.server.detail') %> <code><%= agentDetail %></code></p><% } %>
+    <% } %>
+    <% if (can('serverControl')) { %>
+    <%# Неизвестно състояние (агентът не отговаря) → всички бутони; иначе само смислените. %>
+    <% const up = agent ? agent.active : null; %>
+    <div class="a-actions">
+      <% if (up !== true) { %>
+      <form method="post" action="/admin/server/start" data-confirm="<%= t('admin.server.startConfirm') %>">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="a-btn" type="submit"><%= t('admin.server.start') %></button>
+      </form>
+      <% } %>
+      <% if (up !== false) { %>
+      <form method="post" action="/admin/server/restart" data-confirm="<%= t('admin.server.restartConfirm') %>">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="a-btn is-danger" type="submit"><%= t('admin.server.restart') %></button>
+      </form>
+      <form method="post" action="/admin/server/stop" data-confirm="<%= t('admin.server.stopConfirm') %>">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="a-btn is-danger" type="submit"><%= t('admin.server.stop') %></button>
+      </form>
+      <% } %>
+      <form method="post" action="/admin/server/update" data-confirm="<%= t('admin.server.updateConfirm') %>">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="a-btn is-quiet" type="submit"><%= t('admin.server.update') %></button>
+      </form>
+    </div>
+    <p class="a-note"><%= t('admin.server.controlNote') %></p>
+    <% } %>
+  </section>
+</div>
+<section class="a-card" aria-labelledby="pf-title">
+  <h2 id="pf-title"><%= t('admin.server.perf.title') %></h2>
+  <%# „Здраве на тика“ (CONTRACT §5): минутите от cs2dm:perf; графиката е сървърен SVG без inline стил. %>
+  <% if (!perf) { %>
+  <p class="a-warn"><%= t('admin.server.perf.unavailable') %></p>
+  <% } else if (!perf.summary) { %>
+  <p class="a-empty"><%= t('admin.server.perf.empty') %></p>
+  <% } else { const s = perf.summary; const share = s.lateShare >= 5 ? 'is-err' : s.lateShare >= 1 ? 'is-warn' : 'is-ok'; %>
+  <dl class="a-facts">
+    <div><dt><%= t('admin.server.perf.late') %></dt><dd><span class="a-chip <%= share %>"><%= fmt.percent(s.last.late, s.last.ticks) %></span> <%= t('admin.server.perf.lateOf', { late: fmt.int(s.last.late), ticks: fmt.int(s.last.ticks) }) %></dd></div>
+    <div><dt><%= t('admin.server.perf.max') %></dt><dd><%= t('admin.server.perf.ms', { ms: s.last.maxMs.toFixed(1) }) %></dd></div>
+    <div><dt><%= t('admin.server.perf.avg') %></dt><dd><%= t('admin.server.perf.avgOf', { avg: s.last.avgMs.toFixed(1), budget: s.last.budgetMs.toFixed(1) }) %></dd></div>
+    <div><dt><%= t('admin.server.perf.players') %></dt><dd><%= fmt.int(s.last.players) %></dd></div>
+    <div><dt><%= t('admin.server.perf.mode') %></dt><dd><%= s.last.mode || '—' %></dd></div>
+    <div><dt><%= t('admin.server.perf.day') %></dt><dd><%= t('admin.server.perf.dayOf', { late: fmt.int(s.lateTotal), worst: s.worstMs.toFixed(1) }) %></dd></div>
+    <div><dt><%= t('admin.server.perf.updated') %></dt><dd><%= fmt.dateTime(new Date(s.last.ts)) %></dd></div>
+  </dl>
+  <figure class="a-perf">
+    <svg class="a-perf-chart" viewBox="<%= perf.chart.viewBox %>" preserveAspectRatio="none" role="img" aria-labelledby="pf-cap" focusable="false">
+      <line class="a-perf-limit" x1="0" x2="720" y1="<%= perf.chart.lateLineY %>" y2="<%= perf.chart.lateLineY %>"/>
+      <path class="a-perf-players" d="<%= perf.chart.players %>"/>
+      <path class="a-perf-gap" d="<%= perf.chart.gap %>"/>
+      <path class="a-perf-late" d="<%= perf.chart.late %>"/>
+    </svg>
+    <figcaption id="pf-cap" class="a-perf-legend">
+      <span class="a-perf-key is-gap"><%= t('admin.server.perf.keyGap', { max: fmt.int(perf.chart.scale.gapMs) }) %></span>
+      <span class="a-perf-key is-late"><%= t('admin.server.perf.keyLate', { max: fmt.int(perf.chart.scale.late) }) %></span>
+      <span class="a-perf-key is-players"><%= t('admin.server.perf.keyPlayers', { max: fmt.int(perf.chart.scale.players) }) %></span>
+      <span class="a-perf-key is-limit"><%= t('admin.server.perf.keyLimit') %></span>
+    </figcaption>
+  </figure>
+  <p class="a-note"><%= t('admin.server.perf.note') %></p>
+  <% } %>
+</section>
+<section class="a-card" aria-labelledby="lg-title">
+  <h2 id="lg-title"><%= t('admin.server.logs') %></h2>
+  <%- include('partials/logs-form', { query: { source: 'css', lines: 100 } }) %>
+</section>
+<%- include('partials/foot') %>

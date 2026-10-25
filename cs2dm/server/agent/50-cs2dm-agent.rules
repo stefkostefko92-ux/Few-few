@@ -1,0 +1,30 @@
+// /etc/polkit-1/rules.d/50-cs2dm-agent.rules — cs2dm: правата на агента на сървъра (cs2-agent).
+//
+// Потребителят cs2agent може САМО:
+//   start / stop / restart на cs2.service   (systemctl start|stop|restart cs2.service)
+//   start на cs2-update.service             (systemctl start --no-block cs2-update.service)
+//   start на cs2-plugins@<op>-<id>.service  (плъгините от панела, CONTRACT §14; op ∈ install|remove|enable|
+//                                            disable, id ∈ [a-z0-9]{1,32} — скриптът проверява id наново)
+// Всичко друго от cs2agent — изричен отказ (fail closed; никое следващо правило не може да го разреши).
+//
+// „unit“ и „verb“ са детайлите, които systemd подава на polkit за org.freedesktop.systemd1.manage-units
+// (systemd ≥ 226; в изходния код на v255: bus_verify_manage_units_async_full → "unit" = u->id,
+// "verb" = job_type_to_string → "start" / "stop" / "restart"). Само ES5 — polkit ≥ 121 ползва duktape.
+polkit.addRule(function (action, subject) {
+  if (subject.user !== "cs2agent") {
+    return polkit.Result.NOT_HANDLED;
+  }
+  if (action.id === "org.freedesktop.systemd1.manage-units") {
+    var unit = action.lookup("unit");
+    var verb = action.lookup("verb");
+    var game = unit === "cs2.service" && (verb === "start" || verb === "stop" || verb === "restart");
+    var plugin =
+      verb === "start" &&
+      typeof unit === "string" &&
+      /^cs2-plugins@(install|remove|enable|disable)-[a-z0-9]{1,32}\.service$/.test(unit);
+    if (game || plugin || (unit === "cs2-update.service" && verb === "start")) {
+      return polkit.Result.YES;
+    }
+  }
+  return polkit.Result.NO;
+});

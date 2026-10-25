@@ -1,0 +1,10 @@
+[Unit]
+Description=cs2dm: проверка за ъпдейт на CS2 на всеки 10 минути
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=10min
+RandomizedDelaySec=60
+
+[Install]
+WantedBy=timers.target

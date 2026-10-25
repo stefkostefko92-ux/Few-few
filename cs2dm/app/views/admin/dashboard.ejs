@@ -1,0 +1,91 @@
+<%- include('partials/head', { title: t('admin.nav.dashboard') }) %>
+<h1><%= t('admin.dashboard.title') %></h1>
+<div class="a-grid">
+  <section class="a-card" aria-labelledby="st-title">
+    <h2 id="st-title"><%= t('admin.status.title') %></h2>
+    <%- include('partials/status', { status }) %>
+  </section>
+  <section class="a-card" aria-labelledby="q-title">
+    <h2 id="q-title"><%= t('admin.dashboard.queue') %></h2>
+    <p><a href="/admin/reports"><%= t.plural('admin.dashboard.openReports', openReports) %></a></p>
+    <% if (can('appeals')) { %><p><a href="/admin/appeals"><%= t.plural('admin.dashboard.openAppeals', openAppeals) %></a></p><% } %>
+    <% if (can('say')) { %>
+    <form class="a-form" method="post" action="/admin/live/say">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="a-field is-wide">
+        <label for="say-text"><%= t('admin.dashboard.sayLabel') %></label>
+        <input id="say-text" name="text" type="text" maxlength="200" required autocomplete="off">
+      </div>
+      <button class="a-btn" type="submit"><%= t('admin.dashboard.saySubmit') %></button>
+    </form>
+    <% } %>
+    <% if (can('mode')) { %>
+    <form class="a-form" method="post" action="/admin/live/mode">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="a-field">
+        <label for="mode-id"><%= t('admin.dashboard.modeLabel') %></label>
+        <select id="mode-id" name="modeId">
+          <% modes.forEach((mode) => { %><option value="<%= mode.id %>"<% if (status.known && status.online && status.mode === mode.name) { %> selected<% } %>><%= mode.name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <button class="a-btn" type="submit" data-confirm="<%= t('admin.dashboard.modeConfirm') %>"><%= t('admin.dashboard.modeSubmit') %></button>
+    </form>
+    <% } %>
+  </section>
+</div>
+
+<section aria-labelledby="pl-title">
+  <h2 id="pl-title"><%= t('admin.dashboard.players') %></h2>
+  <% if (players === null) { %>
+  <p class="a-note"><%= t('admin.dashboard.noLive') %></p>
+  <% } else if (players.length === 0) { %>
+  <p class="a-note"><%= t('admin.dashboard.empty') %></p>
+  <% } else { %>
+  <div class="a-scroll">
+    <table class="a-table">
+      <caption class="sr-only"><%= t('admin.dashboard.players') %></caption>
+      <thead><tr>
+        <th scope="col"><%= t('admin.col.player') %></th>
+        <th scope="col" class="num"><%= t('admin.col.kills') %></th>
+        <th scope="col" class="num"><%= t('admin.col.deaths') %></th>
+        <th scope="col" class="num"><%= t('admin.col.ping') %></th>
+        <th scope="col"><%= t('admin.col.role') %></th>
+        <th scope="col"><%= t('admin.col.actions') %></th>
+      </tr></thead>
+      <tbody>
+        <% players.forEach((player, index) => { %><tr>
+          <th scope="row">
+            <% if (player.steamId) { %><a href="/admin/players/<%= player.steamId %>"><%= player.name %></a><br><code><%= player.steamId %></code><% } else { %><%= player.name %><% } %>
+            <% if (player.isBot) { %> <span class="a-chip is-muted"><%= t('admin.dashboard.bot') %></span><% } %>
+            <% if (!player.alive) { %> <span class="a-chip is-muted"><%= t('admin.dashboard.dead') %></span><% } %>
+            <% if (player.vip) { %> <span class="a-chip is-warn">VIP</span><% } %>
+          </th>
+          <td class="num"><%= player.kills %></td>
+          <td class="num"><%= player.deaths %></td>
+          <td class="num"><%= player.ping %></td>
+          <td><%= player.isBot ? '—' : t('admin.roles.' + player.dbRole) %></td>
+          <td>
+            <% if (player.actions.length === 0) { %><span class="a-note">—</span><% } else { %>
+            <details class="a-more">
+              <summary><%= t('admin.dashboard.act') %></summary>
+              <form class="a-form" method="post" action="/admin/live/action">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <input type="hidden" name="steamId" value="<%= player.steamId %>">
+                <%- include('partials/punish-fields', { prefix: 'lp' + index, units, categories }) %>
+                <div class="a-actions">
+                  <% player.actions.forEach((action) => { %><button class="a-btn is-small<%= action === 'BAN' || action === 'SLAY' ? ' is-danger' : '' %>" type="submit" name="action" value="<%= action %>"<% if (action === 'BAN') { %> data-confirm="<%= t('admin.dashboard.banConfirm', { name: player.name }) %>"<% } %>><%= t('admin.types.' + action) %></button>
+                  <% }) %>
+                </div>
+              </form>
+            </details>
+            <% } %>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</section>
+<%- include('partials/foot') %>

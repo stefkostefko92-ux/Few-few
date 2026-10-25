@@ -1,0 +1,27 @@
+<%- include('partials/head', { title: t('admin.account.title') }) %>
+<h1><%= t('admin.account.title') %></h1>
+<% if (error) { %><p class="a-result is-error" role="alert"><%= t('admin.result.' + error) %></p><% } %>
+<div class="a-grid">
+  <section class="a-card" aria-labelledby="rc-title">
+    <h2 id="rc-title"><%= t('admin.account.recoveryTitle') %></h2>
+    <p><%= t.plural('admin.account.remaining', remaining) %></p>
+    <p class="a-note"><%= t('admin.account.recoveryLead') %></p>
+    <form class="a-form is-stack" method="post" action="/admin/account/recovery">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="a-field">
+        <label for="rc-code"><%= t('admin.account.codeLabel') %></label>
+        <input id="rc-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="32" required>
+      </div>
+      <button class="a-btn" type="submit"><%= t('admin.account.recoverySubmit') %></button>
+    </form>
+  </section>
+  <section class="a-card" aria-labelledby="lo-title">
+    <h2 id="lo-title"><%= t('admin.account.logoutTitle') %></h2>
+    <p class="a-note"><%= t('admin.account.logoutLead') %></p>
+    <form method="post" action="/admin/account/logout-all" data-confirm="<%= t('admin.account.logoutConfirm') %>">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button class="a-btn is-danger" type="submit"><%= t('admin.account.logoutSubmit') %></button>
+    </form>
+  </section>
+</div>
+<%- include('partials/foot') %>

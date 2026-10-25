@@ -1,0 +1,73 @@
+<%- include('partials/head', { title: t('admin.nav.audit') }) %>
+<% const params = (extra) => ({ action: query.action, actor: query.actor, target: query.target, source: query.source, ...extra }); %>
+<h1><%= t('admin.audit.title') %></h1>
+<p class="a-lead"><%= t('admin.audit.lead') %></p>
+
+<section class="a-card" aria-labelledby="chain-title">
+  <h2 id="chain-title"><%= t('admin.audit.chain') %></h2>
+  <% if (chain === null) { %>
+  <p><a class="a-btn" href="<%= withQuery('/admin/audit', params({ verify: 1 })) %>"><%= t('admin.audit.verify') %></a></p>
+  <% } else if (chain.ok) { %>
+  <p><span class="a-chip is-ok"><%= t('admin.audit.ok') %></span> <%= t.plural('admin.audit.checked', chain.checked) %></p>
+  <% } else { %>
+  <p class="a-warn" role="alert"><span class="a-chip is-err"><%= t('admin.audit.broken') %></span> <%= t('admin.audit.brokenAt', { id: chain.brokenAt }) %></p>
+  <% } %>
+</section>
+
+<form class="a-form a-card" method="get" action="/admin/audit" role="search" aria-label="<%= t('admin.common.filters') %>">
+  <div class="a-field">
+    <label for="au-action"><%= t('admin.audit.action') %></label>
+    <input id="au-action" name="action" type="search" maxlength="64" value="<%= query.action || '' %>">
+  </div>
+  <div class="a-field">
+    <label for="au-actor"><%= t('admin.col.actor') %></label>
+    <input id="au-actor" name="actor" type="text" inputmode="numeric" maxlength="17" value="<%= query.actor || '' %>">
+  </div>
+  <div class="a-field">
+    <label for="au-target"><%= t('admin.audit.target') %></label>
+    <input id="au-target" name="target" type="text" inputmode="numeric" maxlength="17" value="<%= query.target || '' %>">
+  </div>
+  <div class="a-field">
+    <label for="au-source"><%= t('admin.col.source') %></label>
+    <select id="au-source" name="source">
+      <option value=""><%= t('admin.common.any') %></option>
+      <% sources.forEach((value) => { %><option value="<%= value %>"<% if (query.source === value) { %> selected<% } %>><%= t('admin.sources.' + value) %></option>
+      <% }) %>
+    </select>
+  </div>
+  <button class="a-btn" type="submit"><%= t('admin.common.filter') %></button>
+</form>
+
+<p class="a-note"><%= t.plural('admin.common.total', total) %></p>
+<% if (rows.length === 0) { %>
+<p class="a-empty"><%= t('admin.audit.empty') %></p>
+<% } else { %>
+<div class="a-scroll">
+  <table class="a-table">
+    <caption class="sr-only"><%= t('admin.audit.title') %></caption>
+    <thead><tr>
+      <th scope="col" class="num">#</th>
+      <th scope="col"><%= t('admin.audit.at') %></th>
+      <th scope="col"><%= t('admin.audit.action') %></th>
+      <th scope="col"><%= t('admin.col.actor') %></th>
+      <th scope="col"><%= t('admin.audit.target') %></th>
+      <th scope="col"><%= t('admin.col.source') %></th>
+      <th scope="col" class="wrap"><%= t('admin.audit.details') %></th>
+    </tr></thead>
+    <tbody>
+      <% rows.forEach((row) => { %><tr>
+        <td class="num"><%= row.id %></td>
+        <td><%= fmt.dateTime(row.at) %></td>
+        <th scope="row"><code><%= row.action %></code></th>
+        <td><% if (row.actorSteamId) { %><code><%= row.actorSteamId %></code><% } else { %>—<% } %></td>
+        <td><% if (row.targetSteamId) { %><a href="/admin/players/<%= row.targetSteamId %>"><code><%= row.targetSteamId %></code></a><% } else { %>—<% } %></td>
+        <td><%= t('admin.sources.' + row.source) %></td>
+        <td class="wrap mono"><%= row.details %></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('partials/pager', { page, pages, href: (n) => withQuery('/admin/audit', params({ page: n > 1 ? n : undefined })) }) %>
+<% } %>
+<%- include('partials/foot') %>

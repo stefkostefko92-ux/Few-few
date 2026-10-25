@@ -1,0 +1,71 @@
+<%- include('partials/head') %>
+<%# Картата на един мач (CONTRACT §13): факти, топ 3, всички по място. Само хора срещу хора. %>
+<%- include('partials/page-hero', { title: t('match.h1', { id: match.id }), lead: t('match.lead', { map: match.map, mode: match.mode }), meta: fmt.dateTime(match.endedAt), trail: [{ href: nav.matches, name: t('nav.matches') }] }) %>
+<div class="wrap page-content">
+  <div class="content-grid">
+    <section aria-labelledby="top-title">
+      <h2 id="top-title" class="section-title"><%= t('match.top') %></h2>
+      <ol class="match-top">
+        <% match.rows.slice(0, 3).forEach((row) => { %><li>
+          <span class="match-place" aria-label="<%= t('match.col.place') %> <%= row.place %>"><%= row.place %></span>
+          <% if (row.steamId) { %><a class="match-name" href="<%= playerHref(row.steamId) %>"><%= row.name %></a><% } else { %><span class="match-name"><%= row.name %></span><% } %>
+          <span class="match-line"><%= t('match.line', { kills: fmt.int(row.kills), deaths: fmt.int(row.deaths), hs: fmt.int(row.headshots), streak: fmt.int(row.bestStreak) }) %></span>
+          <% if (row.weapon) { %><span class="match-line"><%= t('match.weapon', { weapon: row.weapon, kills: fmt.int(row.topWeaponKills) }) %></span><% } %>
+          <% if (row.steamId) { %><a class="match-line match-report" href="<%= reportHref(match.id, row.steamId) %>"><%= t('match.reportFor', { name: row.name }) %></a><% } %>
+        </li>
+        <% }) %>
+      </ol>
+    </section>
+    <aside class="card">
+      <dl class="stat-list">
+        <div><dt><%= t('match.facts.kills') %></dt><dd><%= fmt.int(match.kills) %></dd></div>
+        <div><dt><%= t('match.facts.players') %></dt><dd><%= fmt.int(match.players) %></dd></div>
+        <div><dt><%= t('match.facts.minutes') %></dt><dd><%= fmt.int(match.minutes) %></dd></div>
+        <% if (match.multiplier) { %><div><dt><%= t('match.facts.multiplier') %></dt><dd><%= match.multiplier %></dd></div><% } %>
+        <% if (match.eventTitle) { %><div><dt><%= t('match.facts.event') %></dt><dd><%= match.eventTitle %></dd></div><% } %>
+      </dl>
+    </aside>
+  </div>
+
+  <%- include('partials/highlights', { highlights, matchId: match.id }) %>
+
+  <section class="card spaced" aria-labelledby="all-title">
+    <h2 id="all-title"><%= t('match.all') %></h2>
+    <div class="table-wrap">
+      <table class="data-table board">
+        <caption class="sr-only"><%= t('match.caption', { id: match.id }) %></caption>
+        <thead>
+          <tr>
+            <th scope="col"><%= t('match.col.place') %></th>
+            <th scope="col" class="c-name"><%= t('table.player') %></th>
+            <th scope="col" class="c-num"><%= t('table.kills') %></th>
+            <th scope="col" class="c-num"><%= t('table.deaths') %></th>
+            <th scope="col" class="c-num opt"><%= t('match.col.hs') %></th>
+            <th scope="col" class="c-num opt"><%= t('match.col.streak') %></th>
+            <th scope="col" class="c-num opt"><%= t('match.col.bounties') %></th>
+            <th scope="col" class="c-num"><%= t('table.xp') %></th>
+            <th scope="col" class="opt"><%= t('match.col.weapon') %></th>
+            <th scope="col"><%= t('match.col.report') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% match.rows.forEach((row) => { %><tr<% if (row.place <= 3) { %> class="podium podium-<%= row.place %>"<% } %>>
+            <td class="c-rank"><%= row.place %></td>
+            <th scope="row" class="c-name"><% if (row.steamId) { %><a href="<%= playerHref(row.steamId) %>"><%= row.name %></a><% } else { %><%= row.name %><% } %></th>
+            <td class="c-num"><%= fmt.int(row.kills) %></td>
+            <td class="c-num"><%= fmt.int(row.deaths) %></td>
+            <td class="c-num opt"><%= fmt.int(row.headshots) %></td>
+            <td class="c-num opt"><%= fmt.int(row.bestStreak) %></td>
+            <td class="c-num opt"><%= fmt.int(row.bountiesClaimed) %></td>
+            <td class="c-num"><%= fmt.int(row.xp) %></td>
+            <td class="opt"><%= row.weapon ? row.weapon + ' · ' + fmt.int(row.topWeaponKills) : '—' %></td>
+            <td><% if (row.steamId) { %><a href="<%= reportHref(match.id, row.steamId) %>" aria-label="<%= t('match.reportFor', { name: row.name }) %>"><%= t('match.reportLink') %></a><% } else { %>—<% } %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <p><%= t('match.note') %> <a href="<%= nav.matches %>"><%= t('match.back') %></a></p>
+  </section>
+</div>
+<%- include('partials/foot') %>

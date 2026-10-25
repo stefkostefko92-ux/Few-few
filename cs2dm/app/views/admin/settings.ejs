@@ -1,0 +1,104 @@
+<%- include('partials/head', { title: t('admin.nav.settings') }) %>
+<%# Живите настройки (CONTRACT §11): форма на група; „По подразбиране“ трие реда → важи конфигът на плъгина. %>
+<h1><%= t('admin.settings.title') %></h1>
+<p class="a-lead"><%= t('admin.settings.lead') %></p>
+<p class="<%= pluginLive ? 'a-note' : 'a-warn' %>"><%= pluginLive ? t('admin.settings.pluginLive') : t('admin.settings.pluginOffline') %></p>
+
+<% const meta = (group) => { %>
+  <% if (group.invalid) { %><p class="a-warn"><%= t('admin.settings.invalid') %></p>
+  <% } else if (group.stored) { %><p class="a-note"><%= t('admin.settings.stored', { name: group.updatedBy ? (names.get(group.updatedBy) || group.updatedBy) : t('admin.sources.SYSTEM'), date: fmt.dateTime(group.updatedAt) }) %></p>
+  <% } else { %><p class="a-note"><%= t('admin.settings.default') %></p><% } %>
+<% } %>
+<% const buttons = (group) => { %>
+  <div class="a-actions">
+    <button class="a-btn" type="submit" name="op" value="save"><%= t('admin.common.save') %></button>
+    <% if (group.stored) { %><button class="a-btn is-quiet" type="submit" name="op" value="reset" data-confirm="<%= t('admin.settings.resetConfirm') %>"><%= t('admin.settings.reset') %></button><% } %>
+  </div>
+<% } %>
+
+<% const adverts = groups.adverts; %>
+<section class="a-card" id="adverts" aria-labelledby="st-adverts">
+  <h2 id="st-adverts"><%= t('admin.settings.adverts.title') %></h2>
+  <% meta(adverts) %>
+  <form class="a-form is-stack" method="post" action="/admin/settings/adverts">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="a-field">
+      <label for="st-interval"><%= t('admin.settings.adverts.interval') %></label>
+      <input id="st-interval" name="intervalSec" type="number" min="0" max="<%= limits.interval.max %>" step="1" value="<%= adverts.value.intervalSec %>" required>
+      <p class="a-note"><%= t('admin.settings.adverts.intervalHint', { min: limits.interval.min, max: limits.interval.max }) %></p>
+    </div>
+    <fieldset class="a-field is-wide">
+      <legend class="a-label"><%= t('admin.settings.adverts.builtin') %></legend>
+      <% builtin.forEach((key) => { %><label class="a-check"><input type="checkbox" name="b_<%= key %>"<% if (adverts.value.builtin[key]) { %> checked<% } %>> <%= t('admin.settings.adverts.builtinItems.' + key) %></label>
+      <% }) %>
+    </fieldset>
+    <% langs.forEach((lang) => { %>
+    <fieldset class="a-field is-wide">
+      <legend class="a-label"><%= t('admin.settings.adverts.custom', { lang: t('admin.settings.adverts.langs.' + lang) }) %></legend>
+      <% for (let i = 0; i < limits.customMax; i += 1) { const id = 'st-' + advertFieldName(lang, i); %>
+      <label for="<%= id %>"><%= t('admin.settings.adverts.textLabel', { n: i + 1 }) %></label>
+      <input id="<%= id %>" name="<%= advertFieldName(lang, i) %>" type="text" maxlength="<%= limits.advertMax %>" autocomplete="off" lang="<%= lang %>" value="<%= adverts.value.custom[lang][i] || '' %>">
+      <% } %>
+    </fieldset>
+    <% }) %>
+    <p class="a-note"><%= t('admin.settings.adverts.customHint', { count: limits.customMax, max: limits.advertMax }) %></p>
+    <% buttons(adverts) %>
+  </form>
+</section>
+
+<div class="a-grid">
+  <% const ammo = groups.ammo; %>
+  <section class="a-card" id="ammo" aria-labelledby="st-ammo">
+    <h2 id="st-ammo"><%= t('admin.settings.ammo.title') %></h2>
+    <% meta(ammo) %>
+    <form class="a-form is-stack" method="post" action="/admin/settings/ammo">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <label class="a-check"><input type="checkbox" name="infiniteReserve"<% if (ammo.value.infiniteReserve) { %> checked<% } %>> <%= t('admin.settings.ammo.label') %></label>
+      <p class="a-note"><%= t('admin.settings.ammo.hint') %></p>
+      <% buttons(ammo) %>
+    </form>
+  </section>
+
+  <% const bots = groups.bots; %>
+  <section class="a-card" id="bots" aria-labelledby="st-bots">
+    <h2 id="st-bots"><%= t('admin.settings.bots.title') %></h2>
+    <% meta(bots) %>
+    <form class="a-form is-stack" method="post" action="/admin/settings/bots">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="a-field">
+        <label for="st-quota"><%= t('admin.settings.bots.label') %></label>
+        <input id="st-quota" name="quota" type="number" min="0" max="<%= limits.botMax %>" step="1" value="<%= bots.value.quota %>" required>
+      </div>
+      <p class="a-note"><%= t('admin.settings.bots.hint', { max: limits.botMax }) %></p>
+      <% buttons(bots) %>
+    </form>
+  </section>
+
+  <% const xp = groups.xp; %>
+  <section class="a-card" id="xp" aria-labelledby="st-xp">
+    <h2 id="st-xp"><%= t('admin.settings.xp.title') %></h2>
+    <% meta(xp) %>
+    <form class="a-form is-stack" method="post" action="/admin/settings/xp">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="a-field">
+        <label for="st-mult"><%= t('admin.settings.xp.label') %></label>
+        <input id="st-mult" name="multiplier" type="number" min="<%= limits.xp.min %>" max="<%= limits.xp.max %>" step="0.1" value="<%= xp.value.multiplier %>" required>
+      </div>
+      <p class="a-note"><%= t('admin.settings.xp.hint', { min: limits.xp.min, max: limits.xp.max }) %></p>
+      <% buttons(xp) %>
+    </form>
+  </section>
+
+  <% const join = groups.join; %>
+  <section class="a-card" id="join" aria-labelledby="st-join">
+    <h2 id="st-join"><%= t('admin.settings.join.title') %></h2>
+    <% meta(join) %>
+    <form class="a-form is-stack" method="post" action="/admin/settings/join">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <label class="a-check"><input type="checkbox" name="welcome"<% if (join.value.welcome) { %> checked<% } %>> <%= t('admin.settings.join.label') %></label>
+      <p class="a-note"><%= t('admin.settings.join.hint') %></p>
+      <% buttons(join) %>
+    </form>
+  </section>
+</div>
+<%- include('partials/foot') %>

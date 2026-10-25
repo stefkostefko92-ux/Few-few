@@ -1,0 +1,9 @@
+<%# Заглавката на вътрешните страници: печатният план на Dust2 като потъмнен фон, път, голямо H1, увод. %>
+<section class="page-hero">
+  <div class="wrap page-hero-inner">
+    <%- include('crumbs', { here: typeof here === 'undefined' ? title : here, trail: typeof trail === 'undefined' ? [] : trail }) %>
+    <h1<% if (typeof h1Class !== 'undefined') { %> class="<%= h1Class %>"<% } %>><%= title %></h1>
+    <% if (typeof lead !== 'undefined' && lead) { %><p><%= lead %></p><% } %>
+    <% if (typeof meta !== 'undefined' && meta) { %><p class="hero-meta"><%= meta %></p><% } %>
+  </div>
+</section>

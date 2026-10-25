@@ -1,0 +1,255 @@
+/* Началото, част 1: корицата (текст на туш вляво, печатният план вдясно), статусът на живо и „Форматът“. */
+.cover {
+  display: grid;
+  min-height: 700px;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 1fr);
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--paper);
+}
+.cover-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 72px clamp(30px, 3.4vw, 52px) 76px max(44px, calc(50vw - 650px));
+}
+.cover-kicker {
+  margin: 0 0 22px;
+  color: #cfc4ae;
+  font: 700 12px/1.45 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.cover-kicker span {
+  padding-inline: 7px;
+  color: var(--red-hot);
+}
+.cover h1 {
+  margin: 0;
+  font-size: clamp(76px, 9vw, 132px);
+  letter-spacing: -0.005em;
+}
+.cover h1 > span:not(.sr-only),
+.cover h1 em {
+  display: block;
+  font-style: normal;
+}
+.cover h1 em {
+  margin-top: 12px;
+  color: var(--red-hot);
+  font-size: 0.58em;
+  line-height: 1.04;
+}
+.cover-lead {
+  max-width: 470px;
+  margin: 26px 0 0;
+  color: #ddd3bf;
+  font-size: 17px;
+  line-height: 1.6;
+}
+.cover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 20px;
+  margin-top: 26px;
+}
+.cover-actions .under-link {
+  color: var(--paper);
+}
+.cover-actions .under-link:hover {
+  color: var(--red-hot);
+}
+.connect-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 16px;
+  max-width: 520px;
+  margin-top: 30px;
+  padding-top: 13px;
+  border-top: 1px solid var(--rule-light);
+}
+.connect-line > span {
+  grid-column: 1 / -1;
+  color: #aaa08c;
+  font: 700 12px/1.35 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.connect-line code {
+  overflow-wrap: anywhere;
+  color: #f1e6d0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.copy {
+  padding: 4px 0;
+  border: 0;
+  border-bottom: 2px solid var(--red-hot);
+  background: transparent;
+  color: inherit;
+  font: 700 12px/1.35 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.copy:hover {
+  color: var(--red-hot);
+}
+
+/* Статусът на живо — никога измислен: „на живо“ само при пресни данни (CLAUDE.md). */
+.status {
+  max-width: 520px;
+  margin-top: 26px;
+  padding: 14px 0 0;
+  border-top: 3px solid var(--red);
+}
+.status-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  color: var(--paper);
+  font: 700 12px/1.3 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.pulse {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--muted-light);
+}
+.is-live .pulse {
+  background: #5bd36a;
+  box-shadow: 0 0 0 4px rgba(91, 211, 106, 0.18);
+}
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, auto));
+  justify-content: start;
+  gap: 4px 34px;
+  margin: 0;
+}
+.status-grid dt {
+  color: #aaa08c;
+  font: 700 11px/1.3 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.status-grid dd {
+  margin: 2px 0 0;
+  color: #fff4df;
+  font: 800 26px/1 var(--display);
+  text-transform: uppercase;
+}
+.status-grid dd small {
+  color: #aaa08c;
+  font-size: 0.7em;
+}
+.slots {
+  display: block;
+  width: 100%;
+  height: 6px;
+  margin-top: 12px;
+}
+.status-hint,
+.status-time {
+  margin: 10px 0 0;
+  color: #b3a995;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.status-time {
+  font: 600 12px/1.4 var(--mono);
+}
+.cover-art {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  margin: 0;
+  border-left: 3px solid var(--red);
+  background: var(--paper);
+}
+.cover-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.cover-art figcaption,
+.mid-art figcaption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 16px;
+  background: var(--ink);
+  color: #eee1c8;
+  font: 700 11px/1.3 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Форматът: факти като набрана таблица. */
+.brief {
+  padding: 104px 0 110px;
+}
+.split {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 9%;
+  align-items: start;
+}
+.split h2 {
+  margin: 0;
+  font-size: clamp(56px, 6.2vw, 92px);
+}
+.split-lead {
+  max-width: 400px;
+  margin: 24px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.65;
+}
+.ruled {
+  margin: 8px 0 0;
+  padding: 0;
+  border-top: 3px solid var(--ink);
+  list-style: none;
+}
+.ruled > li,
+.ruled > div {
+  border-bottom: 1px solid var(--rule);
+}
+.spec-list > div {
+  display: grid;
+  grid-template-columns: 1fr minmax(200px, 1.15fr);
+  align-items: baseline;
+  gap: 20px;
+  padding: 14px 2px 13px;
+}
+.spec-list dt {
+  color: var(--muted);
+  font: 700 12px/1.45 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.spec-list dd {
+  margin: 0;
+  font: 800 clamp(22px, 2.3vw, 30px)/1 var(--display);
+  text-transform: uppercase;
+}
+.spec-list small {
+  display: inline-block;
+  margin-left: 8px;
+  color: var(--muted);
+  font: 400 14px/1.3 var(--body);
+  text-transform: none;
+}

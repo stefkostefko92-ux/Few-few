@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Чистата логика на плъгина — без CounterStrikeSharp, за да се тества извън играта. -->
+  <PropertyGroup>
+    <AssemblyName>CarbonStealth.Logic</AssemblyName>
+    <RootNamespace>CarbonStealth.Logic</RootNamespace>
+  </PropertyGroup>
+</Project>

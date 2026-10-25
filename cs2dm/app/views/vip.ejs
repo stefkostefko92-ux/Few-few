@@ -1,0 +1,57 @@
+<%- include('partials/head') %>
+<%- include('partials/page-hero', { title: t('vip.h1'), lead: t('vip.lead'), here: t('nav.vip') }) %>
+<div class="wrap page-content">
+  <div class="content-grid">
+    <div>
+      <section class="card" aria-labelledby="perks-title">
+        <h2 id="perks-title"><%= t('vip.perks.title') %></h2>
+        <ul class="rule-list">
+          <% t.list('vip.perks.items').forEach((item) => { %><li><%= item %></li>
+          <% }) %>
+        </ul>
+      </section>
+      <section class="card" aria-labelledby="fair-title">
+        <h2 id="fair-title"><%= t('vip.fair.title') %></h2>
+        <p><%= t('vip.fair.text') %></p>
+      </section>
+    </div>
+    <aside>
+      <section class="card" aria-labelledby="tiers-title">
+        <h2 id="tiers-title"><%= t('vip.tiers.title') %></h2>
+        <% if (tiers.length === 0) { %>
+        <p><%= t('vip.tiers.empty') %></p>
+        <% } else { %>
+        <div class="table-wrap">
+          <table class="data-table tiers-table">
+            <caption class="sr-only"><%= t('vip.tiers.caption') %></caption>
+            <thead>
+              <tr>
+                <th scope="col"><%= t('vip.tiers.name') %></th>
+                <th scope="col"><%= t('vip.tiers.period') %></th>
+                <th scope="col" class="c-num"><%= t('vip.tiers.price') %></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% tiers.forEach((tier) => { %><tr>
+                <th scope="row"><%= tier.name %></th>
+                <td><%= t.plural('vip.tiers.days', tier.periodDays) %></td>
+                <td class="c-num price"><%= fmt.euro(tier.priceCents) %></td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <% } %>
+      </section>
+      <section class="card" aria-labelledby="pay-title">
+        <h2 id="pay-title"><%= t('vip.pay.title') %></h2>
+        <ul class="rule-list">
+          <% t.list('vip.pay.items').forEach((item) => { %><li><%= item %></li>
+          <% }) %>
+        </ul>
+        <p class="links-row"><a href="<%= nav.vipTerms %>"><%= t('vip.terms') %></a> <a href="<%= nav.contact %>"><%= t('vip.contact') %></a></p>
+      </section>
+    </aside>
+  </div>
+</div>
+<%- include('partials/foot') %>

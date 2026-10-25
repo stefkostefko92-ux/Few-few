@@ -1,0 +1,29 @@
+<%# Събитията по график (CONTRACT §12): текущото (на живо) и предстоящите до 30 дни. Без събития — нищо. %>
+<% if (events && events.length > 0) { %>
+<section class="band band-events" aria-labelledby="events-title">
+  <div class="wrap">
+    <div class="band-head"><h2 id="events-title"><%= t('home.events.title') %></h2></div>
+    <ol class="events">
+      <% events.forEach((ev) => { %><li class="ev<%= ev.active ? ' is-live' : '' %>">
+        <p class="ev-when">
+          <% if (ev.active) { %><span class="ev-live"><span class="pulse" aria-hidden="true"></span><%= t('home.events.live') %></span>
+          <% } else { %><span class="ev-soon"><%= t('home.events.upcoming') %></span><% } %>
+        </p>
+        <h3 class="ev-title"><%= ev.title %></h3>
+        <p class="ev-time">
+          <time datetime="<%= fmt.iso(ev.startsAt) %>"><%= fmt.dateTime(ev.startsAt) %></time>
+          <span aria-hidden="true">→</span><span class="sr-only"><%= t('home.events.to') %></span>
+          <time datetime="<%= fmt.iso(ev.endsAt) %>"><%= fmt.dateTime(ev.endsAt) %></time>
+        </p>
+        <ul class="ev-tags" aria-label="<%= t('home.events.tags') %>">
+          <li><%= t('home.events.kinds.' + ev.kind) %></li>
+          <% if (ev.multiplier) { %><li class="ev-xp"><b><%= ev.multiplier %></b> XP</li><% } %>
+          <% if (ev.modeName) { %><li><%= ev.modeName %></li><% } %>
+        </ul>
+      </li>
+      <% }) %>
+    </ol>
+    <p class="ev-note"><%= t('home.events.note', { tz: timeZone }) %></p>
+  </div>
+</section>
+<% } %>

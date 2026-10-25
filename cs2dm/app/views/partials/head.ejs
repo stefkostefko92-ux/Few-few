@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="<%= locale %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= head.title %></title>
+<meta name="description" content="<%= head.description %>">
+<meta name="keywords" content="<%= head.keywords %>">
+<meta name="robots" content="<%= head.robots %>">
+<meta name="theme-color" content="#11100e">
+<meta name="color-scheme" content="light">
+<link rel="canonical" href="<%= head.canonical %>">
+<% head.alternates.forEach((alt) => { %><link rel="alternate" hreflang="<%= alt.hreflang %>" href="<%= alt.href %>">
+<% }) %><meta property="og:type" content="website">
+<meta property="og:site_name" content="<%= siteName %>">
+<meta property="og:locale" content="<%= head.ogLocale %>">
+<% head.ogLocaleAlternates.forEach((code) => { %><meta property="og:locale:alternate" content="<%= code %>">
+<% }) %><meta property="og:title" content="<%= head.title %>">
+<meta property="og:description" content="<%= head.description %>">
+<meta property="og:url" content="<%= head.canonical %>">
+<meta property="og:image" content="<%= head.ogImage %>">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="<%= head.ogImageAlt %>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= head.title %>">
+<meta name="twitter:description" content="<%= head.description %>">
+<meta name="twitter:image" content="<%= head.ogImage %>">
+<meta name="twitter:image:alt" content="<%= head.ogImageAlt %>">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<link rel="preload" href="/static/fonts/sofia-sans-extra-condensed-<%= locale === 'bg' ? 'cyrillic' : 'latin' %>-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/static/fonts/sofia-sans-<%= locale === 'bg' ? 'cyrillic' : 'latin' %>-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<% if (current === 'home') { %><link rel="preload" as="image" href="<%= asset('img/dust2-720.webp') %>" imagesrcset="<%= asset('img/dust2-720.webp') %> 720w, <%= asset('img/dust2-1080.webp') %> 1080w" imagesizes="(max-width: 940px) 100vw, 50vw" fetchpriority="high">
+<% } %><% ['base.css', 'chrome.css', 'atoms.css'].concat(current === 'home' ? ['home-cover.css', 'home-sections.css', 'home-more.css', 'home-arena.css', 'home-responsive.css'] : current === 'player' || current === 'match' ? ['pages.css', 'tables.css', 'profile.css', 'report.css'] : current === 'cup' ? ['pages.css', 'tables.css', 'cup.css'] : ['pages.css', 'tables.css']).forEach((sheet) => { %><link rel="stylesheet" href="<%= asset(sheet) %>">
+<% }) %><script src="<%= asset('app.js') %>" defer></script>
+<script type="application/ld+json" nonce="<%= cspNonce %>"><%- head.structuredData %></script>
+</head>
+<body class="page-<%= current %>">
+<a class="skip" href="#main"><%= t('site.skip') %></a>
+<header class="topbar">
+  <div class="wrap nav-row">
+    <a class="brand" href="<%= nav.home %>" aria-label="<%= t('site.brandLabel') %>">
+      <span class="brand-name">CARBON<span>STEALTH</span></span>
+      <span class="brand-sub">CS2 / DUST2 DM</span>
+    </a>
+    <nav class="main-nav" id="site-menu" data-menu aria-label="<%= t('site.navLabel') %>">
+      <% ['home', 'leaderboard', 'cup', 'bans', 'vip', 'rules'].forEach((id) => { %><a href="<%= nav[id] %>"<% if (current === id) { %> aria-current="page"<% } %>><%= t('nav.' + id) %></a>
+      <% }) %>
+    </nav>
+    <div class="nav-actions">
+      <div class="langs" role="group" aria-label="<%= t('site.langLabel') %>">
+        <% head.langLinks.forEach((link) => { %><a href="<%= link.href %>" hreflang="<%= link.locale %>" lang="<%= link.locale %>" title="<%= link.label %>"<% if (link.current) { %> aria-current="true"<% } %>><%= link.locale.toUpperCase() %></a><% }) %>
+      </div>
+      <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-menu" hidden><%= t('site.menu') %></button>
+      <a class="nav-join" href="<%= server.connectUrl %>"><span class="join-long"><%= t('home.join.button') %></span><span class="join-short" aria-hidden="true"><%= t('site.joinShort') %></span> <span aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+</header>
+<main id="main">

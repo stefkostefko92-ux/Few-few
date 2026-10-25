@@ -1,0 +1,49 @@
+<%- include('partials/head', { title: t('admin.nav.reports') }) %>
+<h1><%= t('admin.reports.title') %></h1>
+<p class="a-lead"><%= t('admin.reports.lead') %></p>
+<nav class="a-actions" aria-label="<%= t('admin.common.filters') %>">
+  <% statuses.forEach((status) => { %><a class="a-btn is-quiet is-small" href="<%= withQuery('/admin/reports', { status: status === 'OPEN' ? undefined : status }) %>"<% if (query.status === status) { %> aria-current="true"<% } %>><%= t('admin.caseStatus.' + status) %></a>
+  <% }) %>
+</nav>
+<p class="a-note"><%= t.plural('admin.common.total', total) %><% if (!canHandle) { %> · <%= t('admin.reports.readOnly') %><% } %></p>
+<% if (rows.length === 0) { %>
+<p class="a-empty"><%= t('admin.reports.empty') %></p>
+<% } else { %>
+<div class="a-scroll">
+  <table class="a-table">
+    <caption class="sr-only"><%= t('admin.reports.title') %></caption>
+    <thead><tr>
+      <th scope="col"><%= t('admin.reports.target') %></th>
+      <th scope="col"><%= t('admin.reports.reporter') %></th>
+      <th scope="col" class="wrap"><%= t('admin.punish.reason') %></th>
+      <th scope="col"><%= t('admin.col.created') %></th>
+      <th scope="col"><%= t('admin.col.state') %></th>
+    </tr></thead>
+    <tbody>
+      <% rows.forEach((row) => { %><tr>
+        <th scope="row"><a href="/admin/players/<%= row.targetSteamId %>"><%= row.targetName %></a><br><code><%= row.targetSteamId %></code></th>
+        <td><% if (row.reporterSteamId) { %><a href="/admin/players/<%= row.reporterSteamId %>"><code><%= row.reporterSteamId %></code></a><% } else { %>—<% } %></td>
+        <td class="wrap"><%= row.reason %></td>
+        <td><%= fmt.dateTime(row.createdAt) %></td>
+        <td>
+          <span class="a-chip <%= row.status === 'OPEN' ? 'is-warn' : 'is-muted' %>"><%= t('admin.caseStatus.' + row.status) %></span>
+          <% if (row.note) { %><br><span class="a-note"><%= row.note %></span><% } %>
+          <% if (row.status === 'OPEN' && canHandle) { %>
+          <form class="a-form" method="post" action="/admin/reports/<%= row.id %>">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <label class="sr-only" for="rn-<%= row.id %>"><%= t('admin.reports.note') %></label>
+            <input id="rn-<%= row.id %>" name="note" type="text" maxlength="500" placeholder="<%= t('admin.reports.note') %>">
+            <button class="a-btn is-small" type="submit" name="status" value="ACCEPTED"><%= t('admin.reports.accept') %></button>
+            <button class="a-btn is-small is-quiet" type="submit" name="status" value="REJECTED"><%= t('admin.reports.reject') %></button>
+          </form>
+          <a class="a-note" href="<%= withQuery('/admin/punishments', { steamId: row.targetSteamId }) %>"><%= t('admin.player.punish') %></a>
+          <% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('partials/pager', { page, pages, href: (n) => withQuery('/admin/reports', { status: query.status === 'OPEN' ? undefined : query.status, page: n > 1 ? n : undefined }) }) %>
+<% } %>
+<%- include('partials/foot') %>

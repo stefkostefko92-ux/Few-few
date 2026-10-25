@@ -1,0 +1,33 @@
+<%- include('partials/head') %>
+<%- include('partials/page-hero', { title: t('rules.h1'), lead: t('rules.lead'), here: t('nav.rules') }) %>
+<div class="wrap page-content">
+  <div class="content-grid">
+    <ol class="rules">
+      <% rules.forEach((id) => { %><li class="rule-card">
+        <h2><%= t('rules.items.' + id + '.title') %></h2>
+        <p><%= t('rules.items.' + id + '.text') %></p>
+      </li>
+      <% }) %>
+    </ol>
+    <aside>
+      <section class="card" aria-labelledby="pen-title">
+        <h2 id="pen-title"><%= t('rules.penalties.title') %></h2>
+        <p><%= t('rules.penalties.lead') %></p>
+        <ul class="rule-list">
+          <% t.list('rules.penalties.items').forEach((item) => { %><li><%= item %></li>
+          <% }) %>
+        </ul>
+        <p><%= t('rules.penalties.public') %></p>
+      </section>
+      <section class="card" aria-labelledby="appeal-title">
+        <h2 id="appeal-title"><%= t('rules.appeal.title') %></h2>
+        <ul class="rule-list">
+          <% t.list('rules.appeal.items').forEach((item) => { %><li><%= item %></li>
+          <% }) %>
+        </ul>
+        <p class="links-row"><a href="<%= nav.bans %>"><%= t('rules.toBans') %></a> <a href="<%= nav.contact %>"><%= t('rules.toContact') %></a></p>
+      </section>
+    </aside>
+  </div>
+</div>
+<%- include('partials/foot') %>

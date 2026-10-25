@@ -1,0 +1,1892 @@
+{
+  "site": {
+    "skip": "Skip to content",
+    "navLabel": "Main navigation",
+    "langLabel": "Language",
+    "crumbsLabel": "Breadcrumb",
+    "brandLabel": "CarbonStealth.eu | Dust2 DM — home",
+    "footer": {
+      "legalLabel": "Legal information",
+      "join": "Join from the console",
+      "madeBy": "Created and Designed by Carbon Stealth VCC",
+      "valve": "Counter-Strike 2 and Steam are trademarks of Valve Corporation. This server is not affiliated with or endorsed by Valve.",
+      "explore": "The site",
+      "legal": "Legal",
+      "about": "A public Counter-Strike 2 Deathmatch server on de_dust2. Free for all, around the clock."
+    },
+    "menu": "Menu",
+    "joinShort": "Join"
+  },
+  "nav": {
+    "home": "Home",
+    "leaderboard": "Leaderboard",
+    "cup": "Cup",
+    "bans": "Ban list",
+    "vip": "VIP",
+    "rules": "Rules",
+    "privacy": "Privacy",
+    "vipTerms": "VIP terms",
+    "imprint": "Imprint",
+    "contact": "Contact",
+    "matches": "Matches"
+  },
+  "meta": {
+    "ogAlt": "CarbonStealth.eu | Dust2 DM — a CS2 Deathmatch server on de_dust2 only",
+    "home": {
+      "title": "CS2 Dust2 Deathmatch Server | CarbonStealth.eu",
+      "description": "A free CS2 server on de_dust2 only: free-for-all Deathmatch, live status, a leaderboard with XP and levels, player profiles and a public ban list.",
+      "keywords": "CS2 server, Dust2 Deathmatch, CS2 DM server, de_dust2, Counter-Strike 2 community server, Carbon Stealth"
+    },
+    "leaderboard": {
+      "title": "Dust2 DM Leaderboard — XP, K/D, HS% | CarbonStealth.eu",
+      "description": "The best players on the CS2 server CarbonStealth.eu | Dust2 DM, by season and all time: XP, level, kills, K/D and headshot percentage.",
+      "keywords": "CS2 leaderboard, Dust2 DM stats, K/D ranking, CS2 XP and levels, top CS2 players, Carbon Stealth"
+    },
+    "cup": {
+      "title": "Weekly cup — top XP of the week | CarbonStealth.eu",
+      "description": "The weekly cup on the CS2 server CarbonStealth.eu | Dust2 DM: standings by XP from matches Monday to Sunday. The top three earn a badge.",
+      "keywords": "CS2 weekly cup, Dust2 DM standings, CS2 XP tournament, weekly CS2 leaderboard, Dust2 Deathmatch cup, Carbon Stealth"
+    },
+    "player": {
+      "title": "{name} — CS2 Dust2 DM stats",
+      "description": "{name}: level {level}, {kills} kills, K/D {kd}, HS {hs} on the CS2 server Dust2 DM. Weapon mastery and a map of kills and deaths.",
+      "keywords": "CS2 player stats, K/D, headshot percentage, weapon mastery, Dust2 heatmap, Carbon Stealth"
+    },
+    "bans": {
+      "title": "Dust2 DM CS2 Server Ban List | CarbonStealth.eu",
+      "description": "Active bans on the CS2 server CarbonStealth.eu | Dust2 DM: player, violation category, date and expiry. Expired and revoked bans are not shown.",
+      "keywords": "CS2 ban list, Dust2 DM bans, fair play, anti-cheat rules, ban appeal, Carbon Stealth"
+    },
+    "vip": {
+      "title": "Dust2 DM VIP — Cosmetic Only | CarbonStealth.eu",
+      "description": "VIP on the CS2 server CarbonStealth.eu | Dust2 DM is cosmetic only: a tag, a name colour and a reserved slot, no in-game advantage. Prices incl. VAT.",
+      "keywords": "CS2 VIP, VIP without advantage, cosmetic VIP, Dust2 DM VIP, support a CS2 server, Carbon Stealth"
+    },
+    "rules": {
+      "title": "Dust2 DM CS2 Server Rules | CarbonStealth.eu",
+      "description": "The rules of CarbonStealth.eu | Dust2 DM: no cheats, insults, advertising or bug abuse. What the penalties are and how to appeal a ban.",
+      "keywords": "CS2 server rules, no cheating, CS2 penalties, ban appeal, Dust2 DM rules, Carbon Stealth"
+    },
+    "privacy": {
+      "title": "Privacy and Personal Data | CarbonStealth.eu Dust2 DM",
+      "description": "What data the CS2 server CarbonStealth.eu | Dust2 DM and its website collect, why, how long we keep it and your rights under the GDPR. No cookies.",
+      "keywords": "privacy, GDPR, personal data, SteamID64, Steam data, Carbon Stealth"
+    },
+    "vipTerms": {
+      "title": "VIP Terms and Conditions | CarbonStealth.eu Dust2 DM",
+      "description": "VIP terms for the CS2 server Dust2 DM: a digital service, prices incl. VAT, bank transfer with an invoice, 14-day right of withdrawal, no automatic renewal.",
+      "keywords": "VIP terms, right of withdrawal, digital service, prices incl. VAT, CS2 VIP terms, Carbon Stealth"
+    },
+    "imprint": {
+      "title": "Imprint — Carbon Stealth VCC | CarbonStealth.eu",
+      "description": "The publisher of the CS2 server and website CarbonStealth.eu | Dust2 DM: Carbon Stealth VCC — company details, address and how to reach us.",
+      "keywords": "imprint, publisher, Carbon Stealth VCC, company details, CS2 server Dust2 DM, Carbon Stealth"
+    },
+    "contact": {
+      "title": "Contact and DSA Point of Contact | CarbonStealth.eu",
+      "description": "How to reach the CarbonStealth.eu | Dust2 DM team: questions, ban appeals, GDPR requests and notices of illegal content under the DSA.",
+      "keywords": "contact, DSA point of contact, ban appeal, illegal content notice, GDPR request, Carbon Stealth"
+    },
+    "notFound": {
+      "title": "Page Not Found | CarbonStealth.eu Dust2 DM",
+      "description": "This page does not exist or the player has hidden their profile. Go back to the home page, the leaderboard or the ban list of CarbonStealth.eu | Dust2 DM."
+    },
+    "serverError": {
+      "title": "Site Error | CarbonStealth.eu Dust2 DM",
+      "description": "Something went wrong while loading this page. The game server is not affected — try again in a moment or join directly with connect."
+    },
+    "tooMany": {
+      "title": "Too Many Requests | CarbonStealth.eu Dust2 DM",
+      "description": "You sent too many requests in a short time. Wait about a minute and try again — the limit protects the website and the server database."
+    },
+    "error": {
+      "keywords": "CS2 server, Dust2 DM, CarbonStealth.eu, Deathmatch, Counter-Strike 2, Carbon Stealth"
+    },
+    "matches": {
+      "title": "Latest matches on Dust2 DM | CarbonStealth.eu",
+      "description": "Cards of the latest matches on the CS2 server CarbonStealth.eu | Dust2 DM: who came first, how many kills, best streaks and weapons. Kept 90 days.",
+      "keywords": "CS2 matches, match results, Dust2 Deathmatch, CS2 statistics, latest matches, Carbon Stealth"
+    },
+    "match": {
+      "title": "Match #{id} on {map} — won by {name}",
+      "description": "The match of {date} on the CS2 server Dust2 DM: {kills} kills, {players} players. {name} came first with {topKills} kills.",
+      "keywords": "CS2 match, match results, Dust2 Deathmatch, CS2 statistics, top players, Carbon Stealth"
+    },
+    "report": {
+      "title": "{name} in match #{id} — personal report",
+      "description": "{name}'s personal report from the match on {date} on Dust2 DM: {kills} kills, {deaths} deaths, K/D {kd}, {hs} headshots, place {place} of {players}.",
+      "keywords": "CS2 personal report, match statistics, Dust2 Deathmatch, K/D, CS2 server, Carbon Stealth"
+    }
+  },
+  "season": {
+    "allTime": "All time",
+    "numbered": "Season {n}",
+    "current": "current"
+  },
+  "common": {
+    "unavailable": "The data is not available right now. Try again in a moment.",
+    "permanent": "permanent",
+    "updated": "Last updated: {date}"
+  },
+  "table": {
+    "rank": "#",
+    "player": "Player",
+    "level": "Level",
+    "xp": "XP",
+    "kills": "Kills",
+    "deaths": "Deaths",
+    "kd": "K/D",
+    "hs": "HS%",
+    "caption": "{season}, sorted by {sort}"
+  },
+  "home": {
+    "titleHost": "CarbonStealth.eu",
+    "titleName": "Dust2 DM",
+    "lead": "de_dust2 only. Free-for-all Deathmatch — no teams, no waiting, you respawn the moment you die.",
+    "status": {
+      "label": "Server status",
+      "live": "Live",
+      "unknown": "Status unknown",
+      "unknownHint": "The website is not receiving data from the server right now. That does not mean it is down — try joining.",
+      "offline": "Offline",
+      "offlineHint": "The server does not answer status queries. It is probably restarting or updating — try again in a few minutes.",
+      "players": "Players",
+      "mode": "Mode",
+      "map": "Map",
+      "updated": "Updated at {time}",
+      "empty": "Nobody is playing right now — be the first in.",
+      "slots": "slots"
+    },
+    "join": {
+      "button": "Join the server",
+      "note": "The button opens Steam and connects you directly. All you need is Counter-Strike 2.",
+      "consoleTitle": "Console",
+      "consoleLabel": "Or open the CS2 console (the ~ key) and type:",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyFailed": "Copying did not work — select the command by hand."
+    },
+    "top": {
+      "title": "Top 10 — {season}",
+      "all": "Full leaderboard",
+      "empty": "No ranked players in this season yet. Join and get the first kill.",
+      "inviteTitle": "Be the first on the leaderboard",
+      "inviteText": "Nobody has XP this season yet. Your first kill puts you at the top.",
+      "inviteLink": "How XP works"
+    },
+    "bans": {
+      "title": "Latest bans",
+      "all": "Full ban list",
+      "empty": "No active bans.",
+      "until": "until {date}"
+    },
+    "faq": {
+      "join": {
+        "q": "How do I join the server?",
+        "a": "Press \"Join the server\" or open the CS2 console (the ~ key) and type connect {address}. If the console does not open, enable it in the game settings (Game → Enable Developer Console)."
+      },
+      "install": {
+        "q": "Do I need to install anything?",
+        "a": "No — all you need is Counter-Strike 2 on Steam. The de_dust2 map ships with the game and the server needs no mods on your side."
+      },
+      "mode": {
+        "q": "What is the game mode?",
+        "a": "Free-for-all Deathmatch on de_dust2 only: you respawn instantly, with no teams and no rounds. The weapon modes rotate from time to time — the current one is shown in the status above."
+      },
+      "xp": {
+        "q": "How do I earn XP and levels?",
+        "a": "By getting kills: 10 XP each plus bonuses for headshots, knife kills, noscopes, wallbangs, kills through smoke, revenge and claimed bounties. Level n needs 100 · n · (n − 1) / 2 XP in total."
+      },
+      "vip": {
+        "q": "Does VIP give an in-game advantage?",
+        "a": "No — VIP is cosmetic only: a tag, a name colour and a reserved slot. Nothing that affects the game itself."
+      },
+      "stats": {
+        "q": "Where can I see my stats?",
+        "a": "On the leaderboard — find your name and open your profile. It shows K/D, accuracy, weapon mastery and a map of your kills for the last 30 days."
+      },
+      "skins": {
+        "q": "Are there skins, knives or ranks?",
+        "a": "No — the server follows Valve's community server guidelines, which forbid plugins for skins, knives, gloves, agents and fake ranks."
+      },
+      "banned": {
+        "q": "I was banned unfairly — what can I do?",
+        "a": "Write to us through the contact page with your SteamID64 and the date of the ban. Appeals with Steam sign-in are coming soon."
+      }
+    },
+    "hero": {
+      "play": "Play now",
+      "discord": "Join Discord",
+      "consoleHint": "Or in the CS2 console (~):"
+    },
+    "cta": {
+      "text": "Opens Steam and connects you directly. All you need is Counter-Strike 2 — nothing to install, no sign-up."
+    },
+    "events": {
+      "title": "Events",
+      "live": "Running now",
+      "upcoming": "Upcoming",
+      "to": "to",
+      "tags": "Event details",
+      "kinds": {
+        "XP_BOOST": "XP weekend",
+        "MODE": "Special mode",
+        "COMMUNITY": "Community"
+      },
+      "note": "Times are in the server time zone ({tz}). The XP multiplier applies equally to every player.",
+      "ld": {
+        "XP_BOOST": "XP weekend on the CS2 server Dust2 DM: every kill gives XP {multiplier}.",
+        "MODE": "Special mode {mode} on the CS2 server Dust2 DM.",
+        "COMMUNITY": "Community event on the CS2 server Dust2 DM — join and play with everyone."
+      }
+    },
+    "matches": {
+      "title": "Latest matches",
+      "all": "All matches"
+    },
+    "cover": {
+      "kicker": ["Bulgarian server", "Counter-Strike 2"],
+      "title": ["Dust2.", "No rounds."],
+      "lead": "No break between games. No teams. Pick a weapon and you are back in the fight almost instantly.",
+      "format": "See how the game works",
+      "connect": "Direct connect",
+      "artAlt": "Hand-printed plan of Dust2 with narrow corridors and a red accent",
+      "artCaption": "de_dust2 / field plan"
+    },
+    "brief": {
+      "eyebrow": "The format",
+      "title": ["No waiting", "for the next round."],
+      "text": "Dust2 stays. The weapon mode changes. Everyone else is against you.",
+      "spec": {
+        "map": {
+          "dt": "Map",
+          "dd": "de_dust2",
+          "note": "permanent"
+        },
+        "mode": {
+          "dt": "Mode",
+          "dd": "Deathmatch",
+          "note": "free for all"
+        },
+        "respawn": {
+          "dt": "Respawn",
+          "dd": "1.5 s",
+          "note": "back in the fight"
+        },
+        "protect": {
+          "dt": "Spawn protection",
+          "dd": "5 s",
+          "note": "you glow green until your first shot"
+        },
+        "awp": {
+          "dt": "AWP",
+          "dd": "Up to 3",
+          "note": "at once on the server"
+        },
+        "ammo": {
+          "dt": "Ammo",
+          "dd": "Unlimited",
+          "note": "the reserve refills on every reload"
+        }
+      }
+    },
+    "mid": {
+      "eyebrow": "Familiar ground",
+      "title": ["The doors", "open", "again."],
+      "text": "Long, Mid, the tunnels. You know where the contact comes from. The server never swaps the map under your feet.",
+      "link": "Read the rules",
+      "alt": "Scratchboard-style drawing of the heavy Mid doors on Dust2",
+      "caption": "Middle of the map / Mid doors"
+    },
+    "rotation": {
+      "eyebrow": "Weapons",
+      "title": ["Change", "the weapon.", "Not the map."],
+      "text": "Modes rotate automatically every few minutes. The current one is marked while the server is live.",
+      "now": "Now",
+      "modes": {
+        "AllWeapons": "The full arsenal",
+        "OnlyHeadshot": "Headshots only",
+        "OnlyDeagle": "Desert Eagle only",
+        "OnlyPistols": "Pistols only",
+        "OnlySMG": "SMGs only"
+      }
+    },
+    "rank": {
+      "eyebrow": "Leaderboard",
+      "title": ["Your name", "is earned."],
+      "text": "XP comes from playing: kills, precise hits and streaks. Your level grows with total XP, and mastery with the kills you make with each weapon.",
+      "masteryTitle": "Weapon mastery",
+      "masteryText": "A badge for every weapon, by the number of kills with it:"
+    },
+    "points": {
+      "eyebrow": "Points for playing",
+      "title": ["No hidden", "formulas."],
+      "text": "The core rewards are simple, and the bonuses add up."
+    },
+    "commands": {
+      "eyebrow": "Chat commands",
+      "title": ["No menus.", "Just type it."],
+      "label": "Commands",
+      "gun": "Pick a weapon for the current mode.",
+      "rank": "Your level and XP.",
+      "report": "Report a cheater or a rule break to the admins.",
+      "lang": "The language of in-game messages.",
+      "duel": "A duel to 5 kills with a player of your choice; they answer with !accept or !decline.",
+      "missions": "Your three missions for today and your progress (short: !m).",
+      "cup": "The weekly cup: your place and the top three."
+    },
+    "vipStripe": {
+      "eyebrow": "Support the server",
+      "title": "VIP. No advantage.",
+      "text": "A tag, a name colour and a reserved slot. The same weapons, damage and rules for everyone.",
+      "link": "What VIP includes"
+    },
+    "faqHead": {
+      "eyebrow": "Before you join",
+      "title": ["Two minutes", "to get ready."]
+    },
+    "last": {
+      "title": ["See you", "on Dust2."]
+    },
+    "live": {
+      "eyebrow": "On the server now"
+    },
+    "arena": {
+      "title": "More than deathmatch",
+      "how": "How XP is counted",
+      "lead": "Three things no other Dust2 server has — no separate maps, no waiting, right in the middle of the fight.",
+      "hotZone": {
+        "tag": "Hot zone",
+        "title": "The place to be",
+        "text": "Every few minutes one spot on the map lights up for {minutes} minutes. Kills from inside give double XP, and whoever gets the most (at least {king}) becomes King of the Zone — with a badge on their profile."
+      },
+      "mostWanted": {
+        "tag": "Most Wanted",
+        "title": "The leader is the target",
+        "text": "The player with the most kills on the map (at least {min}) is announced as Most Wanted. The server tells everyone who it is — take them down and claim the bonus."
+      },
+      "duel": {
+        "tag": "Duel",
+        "title": "One on one inside FFA",
+        "text": "Challenge someone with !duel <name>. First to {target} kills on each other wins; after {minutes} minutes the leader wins. Wins, losses and draws go on the profile."
+      }
+    },
+    "daily": {
+      "title": "Every day. Every week.",
+      "missions": {
+        "tag": "Daily missions",
+        "title": "Three tasks a day",
+        "text": "Every day at midnight you get three missions — easy, medium and hard: headshots, a streak, a knife kill, a duel, minutes played. A completed one pays XP at once, and all three for {days} days in a row earn a badge on your profile.",
+        "how": "Type !missions in game"
+      },
+      "cup": {
+        "tag": "Weekly cup",
+        "title": "Every week has a winner",
+        "text": "XP from every match from Monday to Sunday adds up in one table. At midnight on Sunday the top three earn a badge on their profile.",
+        "link": "This week's standings"
+      }
+    }
+  },
+  "leaderboard": {
+    "h1": "Leaderboard",
+    "lead": "Pick a season and a sort order.",
+    "form": {
+      "season": "Season",
+      "sort": "Sort by",
+      "show": "Show"
+    },
+    "sort": {
+      "xp": "XP",
+      "kills": "kills",
+      "kd": "K/D",
+      "hs": "HS%"
+    },
+    "sortBy": "Sort by {sort}",
+    "ratioNote": "When sorting by K/D and HS%, only players with at least {min} kills in the selected season are ranked.",
+    "empty": "No ranked players for this selection.",
+    "total": {
+      "one": "{count} ranked player",
+      "other": "{count} ranked players"
+    },
+    "how": {
+      "title": "How XP and levels work",
+      "lead": "Every kill earns XP and the bonuses add up.",
+      "event": "Event",
+      "xp": "XP",
+      "rewards": {
+        "kill": "Kill",
+        "headshot": "Headshot (bonus)",
+        "knife": "Knife kill (bonus)",
+        "noscope": "Sniper noscope (bonus)",
+        "wallbang": "Through a wall (bonus)",
+        "smoke": "Through smoke (bonus)",
+        "revenge": "Revenge on your nemesis (bonus)"
+      },
+      "bountyRow": "Claimed bounty (bonus)",
+      "bountyValue": "the bounty's value",
+      "level": "Your level comes from your total XP: level n needs 100 · n · (n − 1) / 2 XP — 100 for level 2, 300 for level 3, 4500 for level 10.",
+      "bounty": "A streak of {min} kills without dying puts a bounty on your head: 25 XP for every kill after the fourth, up to {cap} XP. Whoever takes you down claims it.",
+      "revenge": "If someone has killed you at least 3 times in a row and you take them down, that is revenge — +5 XP.",
+      "arena": {
+        "hotZoneRow": "Kill from inside the hot zone",
+        "hotZone": "Hot zone: every few minutes one spot on Dust2 lights up for {minutes} minutes. Every kill while you are inside gives ×{multiplier} XP. Whoever gets the most kills inside (at least {king}) becomes King of the Zone — the badge stays on their profile.",
+        "mostWantedRow": "Most Wanted taken down (bonus)",
+        "mostWanted": "Most Wanted is the player with the most kills on the current map (at least {min} kills); the server announces every change. Whoever takes them down earns +{xp} XP on top — the bonus is multiplied together with the kill.",
+        "duelRow": "Duel won",
+        "duel": "Duel: type !duel <name> and the other player answers with !accept or !decline within {invite} s. Whoever first gets {target} kills on the other (or leads after {minutes} minutes) earns +{xp} XP at once; a tie is a draw. The rest of the game goes on as usual; the same two players wait {cooldown} minutes before the next duel.",
+        "missionsRow": "Daily mission — easy / medium / hard",
+        "missions": "Daily missions: every day at midnight ({tz}) everyone gets three — easy (+{easy} XP), medium (+{medium} XP) and hard (+{hard} XP). Only kills on players, duels won and minutes played count. The XP comes at once, with no multiplier; all three for {days} days in a row earn the “{badge}” badge. In game: !missions."
+      }
+    },
+    "pager": {
+      "label": "Pages",
+      "prev": "Previous",
+      "next": "Next",
+      "page": "Page {page} of {pages}"
+    },
+    "inviteTitle": "The leaderboard is waiting",
+    "matchesLink": "Cards of the latest matches"
+  },
+  "cup": {
+    "h1": "Weekly cup",
+    "lead": "XP from matches from Monday 00:00 to Sunday 23:59 ({tz}). The top {podium} at the end of the week earn a badge on their profile.",
+    "week": "Week {from} – {to}",
+    "left": "{days} d {hours} h left",
+    "caption": "Standings for the week {from} – {to} by XP",
+    "matches": "Matches",
+    "empty": "No finished match with XP this week yet — the first match opens the cup.",
+    "winners": {
+      "title": "Latest winners",
+      "empty": "No finished week with a winner yet."
+    },
+    "rules": {
+      "title": "How it works",
+      "count": "XP from every finished match on the server counts — kills, bonuses, duels and missions. A match enters the cup when it ends.",
+      "week": "The week runs from Monday 00:00 to Sunday 23:59 ({tz}).",
+      "badges": "First place earns the “Champion of the week” badge, second and third the “Podium of the week” badge. Badges stay on the profile.",
+      "ties": "On equal XP the lower SteamID64 ranks higher. Hidden profiles do not take part.",
+      "command": "In game: !cup — your place and the top three."
+    },
+    "toLeaderboard": "To the all-time leaderboard",
+    "ld": {
+      "name": "CarbonStealth.eu | Dust2 DM weekly cup — {from} – {to}",
+      "description": "Weekly standings by match XP on the CS2 server CarbonStealth.eu | Dust2 DM; the top {podium} earn a badge."
+    }
+  },
+  "player": {
+    "steamId": "SteamID64",
+    "firstSeen": "First seen on the server",
+    "lastSeen": "Last seen on the server",
+    "steamProfile": "Steam profile",
+    "avatarAlt": "Avatar of {name}",
+    "level": "Level {level}",
+    "levelLabel": "Progress to level {next}",
+    "progress": "{current} of {span} XP to level {next}",
+    "xpTotal": "{xp} XP in total",
+    "missions": {
+      "title": "Today's missions",
+      "lead": "Three new ones every day at midnight ({tz}). Progress updates within a minute while you play; in game — !missions.",
+      "progress": "{progress} of {target}",
+      "done": "Completed",
+      "completed": {
+        "one": "{count} mission completed in the last {days} days.",
+        "other": "{count} missions completed in the last {days} days."
+      }
+    },
+    "cards": {
+      "season": "This season — {season}",
+      "allTime": "All time"
+    },
+    "stats": {
+      "kills": "Kills",
+      "deaths": "Deaths",
+      "assists": "Assists",
+      "kd": "K/D",
+      "hs": "Headshots",
+      "accuracy": "Accuracy",
+      "bestStreak": "Best streak",
+      "bounties": "Bounties claimed",
+      "revenges": "Revenges",
+      "xp": "XP",
+      "playtime": "Time played",
+      "damage": "Damage dealt"
+    },
+    "noStats": "No stats recorded for this period.",
+    "duration": "{h} h {m} min",
+    "recent": {
+      "title": "Recent matches",
+      "empty": "No matches on record yet (we keep them for {days} days).",
+      "caption": "{name}'s recent matches",
+      "match": "Match",
+      "date": "Ended",
+      "placeOf": "{place} of {players}",
+      "reportLabel": "Personal report for match #{id}"
+    },
+    "mastery": {
+      "title": "Weapon mastery",
+      "lead": "All time. The badge reflects kills with the weapon: Bronze 100, Silver 500, Gold 1500, Platinum 4000, Diamond 10,000.",
+      "weapon": "Weapon",
+      "kills": "Kills",
+      "hs": "HS%",
+      "badge": "Badge",
+      "progress": "Next badge",
+      "next": "{remaining} more to {tier}",
+      "max": "top badge reached",
+      "none": "no badge",
+      "empty": "No weapon kills yet.",
+      "progressLabel": "Progress to {tier}",
+      "tiers": {
+        "bronze": "Bronze",
+        "silver": "Silver",
+        "gold": "Gold",
+        "platinum": "Platinum",
+        "diamond": "Diamond"
+      }
+    },
+    "heatmap": {
+      "title": "Where they kill and where they die",
+      "lead": "The last {days} days, excluding the last hour — aggregated cells of about {units} map units only, never live positions.",
+      "killsTitle": "Kills",
+      "deathsTitle": "Deaths",
+      "killsDesc": {
+        "one": "{count} kill in the last {days} days; most in sector {sector}.",
+        "other": "{count} kills in the last {days} days; most in sector {sector}."
+      },
+      "deathsDesc": {
+        "one": "{count} death in the last {days} days; most in sector {sector}.",
+        "other": "{count} deaths in the last {days} days; most in sector {sector}."
+      },
+      "empty": "No data for the last {days} days.",
+      "legend": "A denser colour means more events in the cell. The A–H × 1–8 grid is ours, not the in-game radar."
+    },
+    "honors": {
+      "title": "Honours",
+      "lead": "Badges from the arena modes stay on the profile for as long as the profile exists.",
+      "empty": "No honours yet. Get the most kills inside the hot zone and the “King of the Zone” badge is yours.",
+      "kinds": {
+        "zone_king": "King of the Zone",
+        "cup_winner": "Champion of the week",
+        "cup_podium": "Podium of the week",
+        "mission_streak": "7 days in a row"
+      },
+      "times": {
+        "one": "{count} time",
+        "other": "{count} times"
+      },
+      "last": "latest",
+      "best": {
+        "one": "record: {count} kill in the zone",
+        "other": "record: {count} kills in the zone"
+      },
+      "bestDays": {
+        "one": "record: {count} day in a row",
+        "other": "record: {count} days in a row"
+      },
+      "bestXp": {
+        "one": "best: {count} XP in a week",
+        "other": "best: {count} XP in a week"
+      },
+      "duels": "Duels in the last {days} days",
+      "wins": "Wins",
+      "losses": "Losses",
+      "draws": "Draws"
+    }
+  },
+  "missions": {
+    "tiers": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "kinds": {
+      "headshots": "{target} headshot kills",
+      "rifle": "{target} rifle kills",
+      "smg": "{target} SMG kills",
+      "pistol": "{target} pistol kills",
+      "sniper": "{target} sniper rifle kills",
+      "knife": "A knife kill",
+      "wallbang": "A kill through a wall",
+      "smoke": "A kill through smoke",
+      "noscope": "A noscope sniper kill",
+      "streak": "A streak of {target} kills",
+      "zone": "{target} kills in the hot zone",
+      "wanted": "Take down the Most Wanted",
+      "duel": "Win a duel",
+      "minutes": "Play {target} minutes"
+    }
+  },
+  "bans": {
+    "h1": "Ban list",
+    "lead": "Only active bans are listed — expired and revoked bans are not shown. The reason and the admin's details are not public.",
+    "col": {
+      "player": "Player",
+      "steamId": "SteamID64",
+      "category": "Category",
+      "created": "Date",
+      "expires": "Expires"
+    },
+    "caption": "Active bans",
+    "empty": "No active bans.",
+    "total": {
+      "one": "{count} active ban",
+      "other": "{count} active bans"
+    },
+    "appeal": {
+      "title": "Think your ban is a mistake?",
+      "text": "Appeals will work with Steam sign-in. Until then, write to us through the contact page with your SteamID64 and the date of the ban.",
+      "link": "Go to contact"
+    },
+    "categories": {
+      "CHEATING": "Cheating",
+      "TOXICITY": "Insults and toxicity",
+      "EXPLOIT": "Bug abuse",
+      "SPAM": "Spam",
+      "IMPERSONATION": "Impersonation",
+      "OTHER": "Other"
+    }
+  },
+  "vip": {
+    "h1": "VIP",
+    "lead": "VIP is cosmetic only — it gives no in-game advantage at all. You support the server and get a sign that you are part of it.",
+    "perks": {
+      "title": "What you get",
+      "items": [
+        "A VIP tag before your name in chat and on the scoreboard.",
+        "A name colour in chat.",
+        "A reserved slot: you are not kicked to free up space when the server is full."
+      ]
+    },
+    "fair": {
+      "title": "No in-game advantage",
+      "text": "VIP has no extra health, no faster respawn, no better weapons and no lighter restrictions — the rules are the same as for everyone. Nobody gets skins, knives or ranks: Valve's community server guidelines forbid them."
+    },
+    "tiers": {
+      "title": "Prices",
+      "name": "Tier",
+      "period": "Period",
+      "price": "Price incl. VAT",
+      "caption": "VIP tiers and prices including VAT",
+      "empty": "No VIP tiers have been announced yet. The prices will appear here once they are set.",
+      "days": {
+        "one": "{count} day",
+        "other": "{count} days"
+      }
+    },
+    "pay": {
+      "title": "Payment",
+      "items": [
+        "Payment is manual — by bank transfer, against an invoice.",
+        "No automatic renewal: VIP ends at the end of the period, and a new period only starts on your request.",
+        "Requests through the website are coming soon. Until then, write to us through the contact page."
+      ]
+    },
+    "terms": "VIP terms and conditions",
+    "contact": "Go to contact"
+  },
+  "rules": {
+    "h1": "Server rules",
+    "lead": "The server is about fair play and a good mood. The rules apply to everyone — VIPs and admins included.",
+    "items": {
+      "cheats": {
+        "title": "No cheats",
+        "text": "Programs and scripts that give an advantage are forbidden: aimbots, wallhacks, triggerbots, macros and the like. The penalty is a permanent ban."
+      },
+      "toxicity": {
+        "title": "No insults",
+        "text": "No insults, threats, racism or harassment — in chat, in voice or in your name."
+      },
+      "ads": {
+        "title": "No advertising",
+        "text": "No advertising of other servers, websites, services or sales — in chat, in voice or in your name."
+      },
+      "exploits": {
+        "title": "No bug abuse",
+        "text": "If you find a bug on the map or in the game that gives an advantage (for example a spot where you cannot be hit), tell us and do not use it."
+      },
+      "impersonation": {
+        "title": "No impersonation",
+        "text": "Do not pretend to be an admin, another player or the server team."
+      },
+      "spam": {
+        "title": "No spam",
+        "text": "No flooding of chat or voice and no abuse of commands."
+      }
+    },
+    "penalties": {
+      "title": "Penalties",
+      "lead": "The penalty depends on the violation and on whether it is repeated:",
+      "items": [
+        "A warning.",
+        "Muting voice (mute), chat (gag) or both.",
+        "A kick from the server.",
+        "A temporary ban — moderators can ban for up to 7 days, administrators for longer.",
+        "A permanent ban — for cheating and for serious or repeated violations."
+      ],
+      "public": "Active bans are visible on the ban list: only the name, SteamID64, category, date and expiry. The reason is not public."
+    },
+    "appeal": {
+      "title": "Appeals",
+      "items": [
+        "Appeals will work with Steam sign-in on this website.",
+        "Until then, write to us through the contact page with your SteamID64, the date and why you think the penalty is a mistake.",
+        "Every appeal is reviewed by a person on the team and you get a reasoned answer."
+      ]
+    },
+    "toBans": "Go to the ban list",
+    "toContact": "Go to contact"
+  },
+  "privacy": {
+    "h1": "Privacy",
+    "lead": "How the CarbonStealth.eu | Dust2 DM server and this website process personal data — briefly and without small print.",
+    "sections": {
+      "controller": {
+        "title": "Who is responsible for the data",
+        "body": [
+          "The controller of personal data is {company} — the publisher of the server and of the website. The company details are in the imprint; for any question about your data, write to us through the contact page."
+        ]
+      },
+      "game": {
+        "title": "What we record when you play",
+        "items": [
+          "SteamID64 — your Steam account number; stats and penalties are kept against it.",
+          "Your in-game name (Steam nickname) at the time you play.",
+          "Your IP address when you join the server — to protect against abuse and to enforce bans; we keep it for {sessionsDays} days.",
+          "Stats: kills, deaths, assists, shots fired and hits, streaks, XP, time played and kills per weapon.",
+          "Every kill with the weapon, the time and the map coordinates — for the kill maps; we keep them for {killsDays} days.",
+          "SourceTV recordings (demos) of matches while people are on the server: nickname, SteamID64, movement, shots and chat messages — to review reports of cheating and rule breaking; voice chat is not recorded. We keep them for up to {demosDays} days.",
+          "If you mute the kill-streak sounds (!qs) or change the language (!lang), the server remembers your SteamID64 with that choice until the next update of the server mods.",
+          "Penalties: type, category, expiry and an internal reason that only admins can see.",
+          "Roughly the last 2000 server events (joins, kills, chat) are held briefly in working memory for moderation and are overwritten continuously; chat is not stored in the database.",
+          "Honours from the arena modes (for example “King of the Zone” — the map, the zone and the number of kills) — shown on your profile.",
+          "Duels (!duel): who played whom, the score and when — for the wins, losses and draws on the profile.",
+          "Daily missions (!missions): which mission, how far you got and when it was completed — for the progress on your profile and the “7 days in a row” badge.",
+          "The weekly cup (!cup): the badges of the top three — the week, the XP and the place — are shown on the profile."
+        ]
+      },
+      "website": {
+        "title": "What we record when you browse the website",
+        "items": [
+          "The website uses no cookies, analytics, ads or trackers — which is why there is no consent banner either.",
+          "Your IP address is only used to limit the number of requests (overload protection); it is held in memory for up to 1 minute and is not written to any log.",
+          "If a player has signed in to the website with Steam, their avatar is loaded from Steam's servers (Valve) — your browser then connects to them."
+        ]
+      },
+      "purposes": {
+        "title": "Why, and on what legal basis",
+        "items": [
+          "Running the game, stats and the public leaderboard — legitimate interest (Art. 6(1)(f) GDPR): players want to see their results. You can object — we then hide you from the leaderboards and your profile.",
+          "Security, protection against cheaters (including the demo recordings) and enforcing bans (including the IP address) — legitimate interest.",
+          "A public ban list with minimal data (name, SteamID64, category, date and expiry) — legitimate interest: transparency and protecting the community. The reason is not public.",
+          "VIP — performance of a contract (Art. 6(1)(b)) and the legal obligation to keep accounting records (Art. 6(1)(c)).",
+          "Appeals and notices — legitimate interest: a decision on every case."
+        ]
+      },
+      "retention": {
+        "title": "How long we keep the data",
+        "items": [
+          "IP addresses when joining (sessions) — {sessionsDays} days, then they are deleted automatically.",
+          "Kills with coordinates — {killsDays} days, then they are deleted automatically.",
+          "Demos (SourceTV recordings) — up to {demosDays} days, then they are deleted automatically (sooner if they take up too much space).",
+          "Appeals and notices — 1 year after the decision, then they are deleted automatically.",
+          "Stats — for as long as the server runs or until you ask for them to be deleted.",
+          "Penalties — for as long as they are needed for the security of the server.",
+          "Invoice details for VIP — as long as the Bulgarian Accountancy Act requires.",
+          "Match cards (nickname and result in each match) — {matchesDays} days, then deleted automatically.",
+          "Honours (badges such as “King of the Zone”) — for as long as your profile exists; they are deleted together with it.",
+          "Duels — {duelsDays} days, then they are deleted automatically.",
+          "Daily missions — {missionsDays} days, then deleted automatically."
+        ]
+      },
+      "recipients": {
+        "title": "Who else sees the data",
+        "items": [
+          "Every visitor sees the leaderboard, player profiles (except hidden ones) and the ban list — with the data described above.",
+          "The provider of the server that runs the game and the database processes the data on our behalf. The server is located in the EU.",
+          "Valve (Steam) processes your account data under its own policy — we do not pass anything to them.",
+          "We do not sell data, do not use it for advertising and do not transfer it outside the EU."
+        ]
+      },
+      "steam": {
+        "title": "Data from Steam",
+        "items": [
+          "Right now the website reads nothing from the Steam Web API — it only uses the SteamID64 and nickname the game server sees when you join.",
+          "When we introduce Steam sign-in (for appeals and VIP), we will read only your public name and avatar from the Steam Web API — and only after you sign in yourself.",
+          "This data is stored on our server in the EU, is not passed to third parties and is used under the Steam Web API Terms of Use."
+        ]
+      },
+      "rights": {
+        "title": "Your rights",
+        "items": [
+          "Access — to find out what data we hold about you and to get a copy.",
+          "Rectification and erasure, when the data is inaccurate or no longer needed.",
+          "Restriction of processing.",
+          "Portability — your stats in a machine-readable format.",
+          "Objection — including being hidden from the leaderboards and your profile.",
+          "A complaint to the Bulgarian Commission for Personal Data Protection (www.cpdp.bg) or to the supervisory authority of the country where you live."
+        ],
+        "body": [
+          "For any request, write to us through the contact page with your SteamID64. We may ask you to confirm that the account is yours. We reply within one month."
+        ]
+      },
+      "changes": {
+        "title": "Changes",
+        "body": [
+          "If we change this text, the date at the top changes, and we will announce significant changes on the website."
+        ]
+      }
+    }
+  },
+  "vipTerms": {
+    "h1": "VIP terms and conditions",
+    "lead": "Short and clear: what you buy, how you pay and how you can withdraw.",
+    "version": "Version {version}",
+    "sections": {
+      "provider": {
+        "title": "Provider",
+        "body": [
+          "The VIP service is provided by {company}. The company details are in the imprint; to reach us, use the contact page."
+        ]
+      },
+      "subject": {
+        "title": "What you buy",
+        "body": [
+          "VIP is a digital service: cosmetic features on the CarbonStealth.eu | Dust2 DM server for a set period, tied to your SteamID64. VIP gives no in-game advantage and cannot be transferred or sold."
+        ]
+      },
+      "prices": {
+        "title": "Prices",
+        "body": [
+          "Prices are in euro including VAT and are those published on the VIP page at the time of the request. There are no hidden fees."
+        ]
+      },
+      "order": {
+        "title": "Request, payment and start",
+        "items": [
+          "Requests will be made through the website (coming soon) with your SteamID64, invoice details and email.",
+          "You receive a confirmation and the details for a bank transfer. The invoice is issued by {company}.",
+          "VIP is activated by hand once the payment arrives. If you expressly ask for VIP to start before the 14-day withdrawal period ends, it starts right after activation."
+        ]
+      },
+      "period": {
+        "title": "Term and renewal",
+        "body": [
+          "VIP is valid for the period of the chosen tier from activation. There is no automatic renewal and there are no automatic payments — a new period only comes with a new request."
+        ]
+      },
+      "withdrawal": {
+        "title": "Right of withdrawal (14 days)",
+        "items": [
+          "As a consumer, you can withdraw from the contract within 14 days of its conclusion without giving any reason.",
+          "If you expressly asked for VIP to start before the period ends, on withdrawal you pay the part proportionate to the period used until the withdrawal, and we refund the rest.",
+          "To withdraw, send us a clear statement through the contact page with your SteamID64 and the invoice number. We refund the amount within 14 days to the account it was paid from."
+        ]
+      },
+      "rules": {
+        "title": "Rules and penalties",
+        "body": [
+          "VIP gives no immunity: the server rules and the same penalties apply as for every player."
+        ]
+      },
+      "availability": {
+        "title": "Server availability",
+        "body": [
+          "We aim to keep the server running continuously, but Counter-Strike 2 updates from Valve and maintenance can stop it temporarily."
+        ]
+      },
+      "complaints": {
+        "title": "Questions and disputes",
+        "items": [
+          "For questions and complaints, write to us through the contact page.",
+          "If we cannot agree, you can turn to the Bulgarian Commission for Consumer Protection (www.kzp.bg) and its conciliation committees for out-of-court dispute resolution.",
+          "Bulgarian law applies, without depriving you of the protection given to you by the law of the country where you live."
+        ]
+      }
+    }
+  },
+  "imprint": {
+    "h1": "Imprint",
+    "lead": "Publisher of the CarbonStealth.eu | Dust2 DM server and of this website.",
+    "fields": {
+      "legalName": "Company",
+      "address": "Registered office and address",
+      "eik": "Company ID (EIK)",
+      "vat": "VAT number",
+      "representative": "Represented by",
+      "email": "Email",
+      "phone": "Phone",
+      "web": "Website"
+    },
+    "notSet": "not set ({env})",
+    "responsible": "The publisher above is responsible for the content.",
+    "trademark": "Counter-Strike 2, CS2 and Steam are trademarks of Valve Corporation. This server is not affiliated with Valve."
+  },
+  "contact": {
+    "h1": "Contact",
+    "lead": "Write to us with questions, ban appeals, requests about your personal data and notices of violations.",
+    "email": {
+      "title": "Email",
+      "missing": "The contact email has not been set yet ({env})."
+    },
+    "discord": {
+      "title": "Discord",
+      "link": "Our Discord server"
+    },
+    "topics": {
+      "title": "What we can help with",
+      "items": [
+        "Ban appeals — with Steam sign-in soon; until then by email with your SteamID64.",
+        "Requests about your personal data (access, erasure, hiding from the leaderboards) — with your SteamID64.",
+        "Questions about VIP, requests and withdrawal from the contract.",
+        "Bugs on the server or on the website."
+      ]
+    },
+    "dsa": {
+      "title": "DSA point of contact",
+      "items": [
+        "The email above is the single point of contact under Articles 11 and 12 of the Digital Services Act (Regulation (EU) 2022/2065) — for authorities, the European Commission and users.",
+        "You can write to us in Bulgarian, English or Italian."
+      ]
+    },
+    "notice": {
+      "title": "Notice of illegal content",
+      "lead": "If a nickname, a message or other content on the server or the website is illegal, send a notice with:",
+      "items": [
+        "Why you consider the content illegal.",
+        "Where it is — the SteamID64 or the page address, the date and the time.",
+        "Your name and email (they may be omitted only for notices about child sexual abuse).",
+        "A statement that the notice is made in good faith and is accurate to the best of your knowledge."
+      ],
+      "after": "We confirm receipt, decide without undue delay and tell you the decision and how you can challenge it."
+    }
+  },
+  "error": {
+    "notFound": {
+      "heading": "Nothing here",
+      "text": "This page does not exist or the player has hidden their profile."
+    },
+    "serverError": {
+      "heading": "Something went wrong",
+      "text": "The error is on the website, not on the game server. Try again in a moment."
+    },
+    "tooMany": {
+      "heading": "Too many requests",
+      "text": "Wait about a minute and try again."
+    },
+    "home": "Go to the home page",
+    "leaderboard": "Go to the leaderboard"
+  },
+  "admin": {
+    "brand": "Admin panel",
+    "brandTag": "staff",
+    "skip": "Skip to content",
+    "navLabel": "Panel sections",
+    "footer": "The panel is for the server staff only. Every action is written to the audit chain.",
+    "toSite": "To the website",
+    "meta": {
+      "description": "The admin panel of the CS2 server CarbonStealth.eu | Dust2 DM — for the server staff only.",
+      "keywords": "Carbon Stealth, CS2 admin panel, Dust2 DM, CS2 server management, moderation, punishments"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "punishments": "Punishments",
+      "players": "Players",
+      "reports": "Reports",
+      "appeals": "Appeals",
+      "vip": "VIP tiers",
+      "server": "Server",
+      "banners": "Banners",
+      "audit": "Audit",
+      "account": "Account",
+      "settings": "Settings",
+      "events": "Events",
+      "flags": "Suspicious",
+      "plugins": "Plugins"
+    },
+    "me": {
+      "signedAs": "Signed in:",
+      "lang": "Panel language",
+      "logout": "Sign out"
+    },
+    "roles": {
+      "PLAYER": "Player",
+      "VIP": "VIP",
+      "HELPER": "Helper",
+      "MODERATOR": "Moderator",
+      "ADMIN": "Admin",
+      "HEADADMIN": "Head admin",
+      "OWNER": "Owner"
+    },
+    "types": {
+      "BAN": "Ban",
+      "MUTE": "Mute",
+      "GAG": "Gag",
+      "SILENCE": "Silence",
+      "WARN": "Warning",
+      "KICK": "Kick",
+      "SLAY": "Slay"
+    },
+    "sources": {
+      "GAME": "game",
+      "WEB": "panel",
+      "DISCORD": "Discord",
+      "SYSTEM": "system"
+    },
+    "caseStatus": {
+      "OPEN": "Open",
+      "ACCEPTED": "Accepted",
+      "REJECTED": "Rejected"
+    },
+    "units": {
+      "m": "minutes",
+      "h": "hours",
+      "d": "days"
+    },
+    "col": {
+      "player": "Player",
+      "steamId": "SteamID64",
+      "role": "Role",
+      "kills": "Kills",
+      "deaths": "Deaths",
+      "ping": "Ping",
+      "actions": "Actions",
+      "actor": "Admin",
+      "created": "Issued",
+      "expires": "Expires",
+      "state": "State",
+      "source": "Source",
+      "lastSeen": "Last on the server",
+      "from": "From",
+      "to": "Until"
+    },
+    "common": {
+      "any": "all",
+      "filter": "Filter",
+      "filters": "Filters",
+      "reset": "Clear",
+      "search": "Search",
+      "save": "Save",
+      "yes": "yes",
+      "no": "no",
+      "permanent": "permanent",
+      "pager": "Pages",
+      "prev": "Previous",
+      "next": "Next",
+      "page": "Page {page} of {pages}",
+      "total": {
+        "one": "{count} record",
+        "other": "{count} records"
+      }
+    },
+    "result": {
+      "saved": "Saved.",
+      "sent": "Saved and confirmed by the server.",
+      "recordedNoAck": "Saved in the database, but the server did not confirm. The game will apply it within a minute or on the next join.",
+      "invalid": "Invalid form data. Check the fields.",
+      "denied": "Your role does not allow this action.",
+      "immune": "Denied: the target's level is equal to or higher than yours (immunity).",
+      "notFound": "No such record.",
+      "notActive": "The record is no longer active or someone else has decided it.",
+      "inUse": "The tier is used by grants or requests — deactivate it instead of deleting it.",
+      "duplicate": "A tier with this code already exists.",
+      "cmdTimeout": "The server did not answer within 5 seconds.",
+      "cmdNoListener": "The server is not listening right now (the plugin or the agent is not running).",
+      "cmdRedis": "No connection to Redis — the command was not sent.",
+      "cmdUnavailable": "This part of the panel is not configured: a key is missing on the server.",
+      "cmdBusy": "The server is already restarting or updating.",
+      "cmdNotOnline": "The player is not on the server.",
+      "cmdNotActive": "The punishment is no longer active.",
+      "cmdUnknownMode": "The mode is not available in the DM plugin.",
+      "cmdFailed": "The server rejected the command.",
+      "badCode": "The code is wrong or has already been used.",
+      "cmdPending": "The agent did not confirm within 25 seconds — the restart may still be running. Check the status in a minute.",
+      "overlap": "The event overlaps another (not cancelled) event. Change the times.",
+      "cmdNoDefault": "This plugin has no default config.",
+      "cmdNotInstalled": "The plugin is not installed on the server.",
+      "pluginRestart": "Saved. It takes effect after a server restart — it cannot be applied live right now.",
+      "pluginQueued": "Started: the server downloads, verifies and applies the change, then restarts (1–3 minutes). Refresh the page in a moment."
+    },
+    "cmd": {
+      "timeout": "The server agent did not answer within 5 seconds.",
+      "noListener": "The server agent is not listening right now.",
+      "redis": "No connection to Redis.",
+      "unavailable": "Server commands are not configured: the key is missing (CS2DM_AGENT_KEY).",
+      "busy": "The server is already restarting or updating.",
+      "notOnline": "The player is not on the server.",
+      "notActive": "The punishment is no longer active.",
+      "unknownMode": "The mode is not available.",
+      "failed": "The agent returned an error or an unexpected answer.",
+      "restart": "This is a Metamod plugin — it takes effect after a server restart.",
+      "noDefault": "This plugin has no default config.",
+      "notInstalled": "The plugin is not installed on the server.",
+      "invalidJson": "The config is not a valid JSON object."
+    },
+    "error": {
+      "back": "To the panel",
+      "forbidden": {
+        "title": "Not allowed",
+        "text": "Your role does not open this section or this action."
+      },
+      "notFound": {
+        "title": "No such page",
+        "text": "This address does not exist in the panel."
+      },
+      "unavailable": {
+        "title": "The panel is not configured",
+        "text": "The encryption key is missing on the server (APP_ENC_KEY). Without it the second factor cannot be stored, so the panel stays closed. The public website keeps working."
+      },
+      "csrf": {
+        "title": "The form has expired",
+        "text": "The request has no valid token or does not come from the panel. Reload the page and try again."
+      },
+      "tooMany": {
+        "title": "Too many attempts",
+        "text": "Wait a few minutes and try again."
+      },
+      "serverError": {
+        "title": "Something broke",
+        "text": "The error has been logged. Try again in a moment."
+      },
+      "badRequest": {
+        "title": "Invalid request",
+        "text": "The form is too large or malformed."
+      },
+      "denied": {
+        "title": "No access",
+        "text": "The panel is for the server staff only."
+      }
+    },
+    "login": {
+      "title": "Sign in to the panel",
+      "lead": "You sign in with your Steam account. Only the server's helpers, moderators and admins have access.",
+      "button": "Sign in through Steam",
+      "note": "Steam only tells us your SteamID64 — your password stays with Steam. After signing in, the panel asks for a code from an authenticator app (TOTP).",
+      "error": {
+        "denied": "This Steam account has no access to the panel.",
+        "failed": "Steam did not confirm the sign-in. Try again.",
+        "expired": "The sign-in has expired or was started in another browser. Start again.",
+        "locked": "Too many wrong codes. Sign in through Steam again."
+      }
+    },
+    "totp": {
+      "title": "Confirmation code",
+      "lead": "Enter the 6-digit code from your authenticator app.",
+      "label": "Code",
+      "hint": "If you do not have your phone, enter one of your recovery codes (xxxxx-xxxxx). Each works once.",
+      "submit": "Confirm"
+    },
+    "setup": {
+      "title": "Turn on the second factor",
+      "lead": "The panel requires TOTP for every staff member. Until you turn it on, you only see this page.",
+      "steps": [
+        "Open an authenticator app (Aegis, 2FAS, Google Authenticator, Microsoft Authenticator and others).",
+        "Scan the QR code or enter the key manually.",
+        "Enter the 6-digit code the app shows."
+      ],
+      "qrAlt": "QR code for the authenticator app",
+      "manual": "Key for manual entry:",
+      "label": "Code from the app",
+      "submit": "Turn on"
+    },
+    "recovery": {
+      "title": "Recovery codes",
+      "lead": "Each of these codes signs you in once if you do not have your phone.",
+      "warn": "Write them down now and keep them safe — they are shown only once and cannot be displayed again.",
+      "done": "I saved them — to the dashboard"
+    },
+    "account": {
+      "title": "Account",
+      "recoveryTitle": "Recovery codes",
+      "remaining": {
+        "one": "{count} unused recovery code left.",
+        "other": "{count} unused recovery codes left."
+      },
+      "recoveryLead": "A new set makes the old codes invalid. A current code from the app is required.",
+      "codeLabel": "Code from the app",
+      "recoverySubmit": "New set of codes",
+      "logoutTitle": "Sign out of all devices",
+      "logoutLead": "Ends all your panel sessions, including this one.",
+      "logoutConfirm": "Sign out of all devices?",
+      "logoutSubmit": "Sign out everywhere"
+    },
+    "status": {
+      "title": "Server status",
+      "online": "Running",
+      "offline": "Offline",
+      "offlineHint": "The server does not answer A2S. Last check:",
+      "unknown": "Unknown",
+      "unknownHint": "Neither the plugin nor the agent has sent fresh data.",
+      "players": "Players",
+      "bots": "Bots",
+      "mode": "Mode",
+      "map": "Map",
+      "updated": "Updated",
+      "source": {
+        "plugin": "from the plugin",
+        "a2s": "from A2S (the agent)"
+      }
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "queue": "Queue and messages",
+      "openReports": {
+        "one": "{count} open report",
+        "other": "{count} open reports"
+      },
+      "openAppeals": {
+        "one": "{count} open appeal",
+        "other": "{count} open appeals"
+      },
+      "sayLabel": "Message to everyone on the server",
+      "saySubmit": "Send",
+      "modeLabel": "DM mode",
+      "modeSubmit": "Change mode",
+      "modeConfirm": "Change the mode for all players?",
+      "players": "Live players",
+      "noLive": "No fresh data from the plugin — the player list is not available.",
+      "empty": "Nobody is on the server.",
+      "bot": "bot",
+      "dead": "dead",
+      "act": "Action",
+      "banConfirm": "Ban {name}?"
+    },
+    "punish": {
+      "type": "Type",
+      "amount": "Duration",
+      "unit": "Unit",
+      "category": "Category",
+      "reason": "Reason (internal)",
+      "hint": "Empty duration = permanent. Moderators ban for up to 7 days; longer and permanent bans need an admin. The reason is visible only in the panel, never on the public ban list."
+    },
+    "punishments": {
+      "title": "Punishments",
+      "lead": "The internal list — with the reason and the admin. The public ban list shows only the player, the category and the dates.",
+      "newTitle": "New punishment by SteamID64",
+      "newLead": "Works for a player who is not on the server too. If they are online, the server applies it at once.",
+      "nameLabel": "Name (if the player is unknown)",
+      "newSubmit": "Issue",
+      "newConfirm": "Issue the punishment?",
+      "q": "SteamID64 or name",
+      "status": "State",
+      "statuses": {
+        "active": "active",
+        "expired": "expired",
+        "revoked": "revoked",
+        "all": "all"
+      },
+      "actor": "Admin (SteamID64)",
+      "reasonSearch": "Reason contains",
+      "empty": "No punishments match these filters.",
+      "revoke": "Revoke",
+      "revokeReason": "Reason for revoking",
+      "revokeConfirm": "Revoke the punishment?"
+    },
+    "players": {
+      "title": "Players",
+      "q": "SteamID64 or name",
+      "staff": "staff only",
+      "empty": "No players match this search."
+    },
+    "player": {
+      "public": "public profile",
+      "allPunishments": "all punishments",
+      "immune": "This player's role is equal to or higher than yours — actions on them are locked.",
+      "facts": "Details",
+      "firstSeen": "First join",
+      "playtime": "Played",
+      "hours": "{h} h",
+      "webLogin": "Last website sign-in",
+      "totp": "Second factor",
+      "totpOn": "TOTP on",
+      "totpOff": "no TOTP",
+      "hidden": "hidden from leaderboards",
+      "actions": "Actions",
+      "punish": "Issue a punishment",
+      "roleSubmit": "Change role",
+      "roleConfirm": "Change the role? All of the player's panel sessions will be ended.",
+      "hideLabel": "Hide from leaderboards and the public profile (GDPR Art. 21)",
+      "totpReset": "Reset the second factor",
+      "totpResetConfirm": "Reset TOTP? The player will have to enrol again on the next sign-in.",
+      "logout": "End their panel sessions",
+      "vip": "VIP",
+      "vipTier": "Tier",
+      "vipDays": "Days",
+      "vipNote": "Note",
+      "vipGrant": "Grant VIP",
+      "vipHint": "Manual grant, no payment. If the player already has active VIP, the new period starts when it ends.",
+      "vipNone": "No VIP.",
+      "vipNoTiers": "To grant VIP, first create at least one tier (e.g. “VIP”, 30 days) in",
+      "vipActive": "active",
+      "vipInactive": "expired or upcoming",
+      "vipRevoke": "Revoke",
+      "vipRevokeConfirm": "Revoke this VIP?",
+      "punishments": "Punishments",
+      "sessions": "Recent server joins",
+      "sessionsNone": "No joins recorded.",
+      "sessionsNote": "Joins are kept for 30 days. Only admins see IP addresses.",
+      "reports": "Reports against the player"
+    },
+    "reports": {
+      "title": "Reports",
+      "lead": "Reports from the game (!report). The decision is final; a punishment is issued separately.",
+      "readOnly": "read-only for your role",
+      "target": "Against",
+      "reporter": "By",
+      "note": "Note",
+      "accept": "Accept",
+      "reject": "Reject",
+      "empty": "No reports."
+    },
+    "appeals": {
+      "title": "Appeals",
+      "lead": "Appeals against punishments. The decision comes with a reason and is final.",
+      "item": "Appeal #{id}",
+      "notActive": "no longer active",
+      "message": "The player's message",
+      "contact": "Contact",
+      "submitted": "Submitted on {date}",
+      "note": "Reason for the decision",
+      "acceptRevokes": "An accepted appeal revokes the punishment — you need the rights to revoke it.",
+      "accept": "Accept",
+      "acceptConfirm": "Accept the appeal and revoke the punishment?",
+      "reject": "Reject",
+      "empty": "No appeals."
+    },
+    "vip": {
+      "title": "VIP tiers",
+      "lead": "The tiers and prices the website shows. VIP is cosmetic only — no in-game advantage.",
+      "newTitle": "New tier",
+      "create": "Create",
+      "code": "Code",
+      "name": "Name",
+      "price": "Price in euro incl. VAT",
+      "priceHint": "For example 4.99 — stored in whole euro cents.",
+      "period": "Period in days",
+      "order": "Order",
+      "active": "active",
+      "inactive": "inactive",
+      "days": {
+        "one": "{count} day",
+        "other": "{count} days"
+      },
+      "used": "grants: {grants} · requests: {requests}",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete the tier?",
+      "inUse": "The tier is in use — it can only be deactivated.",
+      "empty": "No VIP tiers."
+    },
+    "banners": {
+      "title": "Map banners",
+      "lead": "Placed in the game with !banner add. A deleted banner disappears on the next map change.",
+      "map": "Map",
+      "key": "Key",
+      "position": "Position x, y, z",
+      "angles": "Angles",
+      "delete": "Delete",
+      "deleteConfirm": "Delete the banner?",
+      "note": "Deleting is written to the audit as banner.remove.",
+      "empty": "No banners placed."
+    },
+    "audit": {
+      "title": "Audit",
+      "lead": "Every admin action from the game, the panel and the bot. The hash chain shows whether a row was tampered with or deleted.",
+      "chain": "The chain",
+      "verify": "Verify the chain",
+      "ok": "intact",
+      "checked": {
+        "one": "{count} row checked.",
+        "other": "{count} rows checked."
+      },
+      "broken": "broken",
+      "brokenAt": "The first mismatch is at row #{id}.",
+      "action": "Action",
+      "target": "Target",
+      "at": "When",
+      "details": "Details",
+      "empty": "No entries match these filters."
+    },
+    "server": {
+      "title": "Server",
+      "agent": "The host agent",
+      "service": "cs2.service",
+      "active": "running",
+      "inactive": "stopped",
+      "since": "Since",
+      "version": "Game version",
+      "mods": "Mods loaded",
+      "broken": "Mods broken at version",
+      "restart": "Restart",
+      "restartConfirm": "Restart the server? All players will be kicked.",
+      "start": "Start",
+      "startConfirm": "Start the server?",
+      "stop": "Stop",
+      "stopConfirm": "Stop the server? All players will be kicked and the server stays down until you start it again — updates do not start it.",
+      "update": "Update",
+      "updateConfirm": "Run an update check? On a new version the server restarts.",
+      "controlNote": "Start, stop, restart and update cannot run at the same time.",
+      "logs": "Logs",
+      "source": "Source",
+      "sources": {
+        "css": "CounterStrikeSharp",
+        "journal": "journald"
+      },
+      "lines": "Lines",
+      "showLogs": "Show",
+      "logsNote": "IP addresses and keys are redacted before display.",
+      "logsEmpty": "No lines.",
+      "back": "Back to the server",
+      "busy": "Running now",
+      "busyKinds": {
+        "start": "start",
+        "stop": "stop",
+        "restart": "restart",
+        "update": "update",
+        "plugin": "plugin from the panel"
+      },
+      "detail": "Details from the agent:",
+      "perf": {
+        "title": "Tick health",
+        "unavailable": "Redis did not answer — the tick data could not be read.",
+        "empty": "No data yet: the plugin writes one minute at a time while people are on the server.",
+        "late": "Late ticks",
+        "lateOf": "({late} of {ticks} in the last minute)",
+        "max": "Longest interval",
+        "ms": "{ms} ms",
+        "avg": "Average interval",
+        "avgOf": "{avg} ms (target {budget} ms)",
+        "players": "Players",
+        "mode": "Mode",
+        "day": "Last 24 hours",
+        "dayOf": "{late} late · longest {worst} ms",
+        "updated": "Last minute",
+        "keyGap": "longest interval (up to {max} ms)",
+        "keyLate": "late ticks (up to {max})",
+        "keyPlayers": "players (up to {max})",
+        "keyLimit": "late threshold (1.5 × target)",
+        "note": "A tick is late when it arrives more than 1.5 times later than the game's target. Under 1% is fine; above 5% players feel it as server lag. Compare it with the player count and the mode to see what loads the server."
+      }
+    },
+    "settings": {
+      "title": "Server settings",
+      "lead": "They apply in game right away: after saving, the panel sends a command to the plugin, and the plugin also checks them every 60 seconds. A group that is not set follows the plugin config.",
+      "pluginLive": "The plugin is online — after saving you will see whether it confirmed.",
+      "pluginOffline": "No fresh data from the plugin. The value stays in the database and applies when the plugin starts.",
+      "stored": "Saved by {name} on {date}.",
+      "default": "Not set — the plugin config applies. The fields show the default values.",
+      "invalid": "The stored value is corrupted — the plugin ignores it and uses its config. Save it again.",
+      "reset": "Back to default",
+      "resetConfirm": "Delete this value? The plugin config will apply.",
+      "adverts": {
+        "title": "Chat adverts",
+        "interval": "Interval in seconds",
+        "intervalHint": "0 = off; otherwise {min} to {max} seconds. Every advert is shown in the player's language.",
+        "builtin": "Built-in adverts",
+        "builtinItems": {
+          "carbonstealth": "Carbon Stealth — websites, apps, ERP",
+          "adblock": "Supreme AdBlock",
+          "site": "The server website — leaderboard, stats, VIP"
+        },
+        "custom": "Custom texts — {lang}",
+        "customHint": "Up to {count} texts per language, up to {max} characters. Colour codes and curly braces are removed, as in chat. Players with another language see the English ones.",
+        "langs": {
+          "bg": "Bulgarian",
+          "en": "English"
+        },
+        "textLabel": "Text {n}"
+      },
+      "ammo": {
+        "title": "Ammo",
+        "label": "Infinite reserve (topped up on every reload)",
+        "hint": "The same as “Infinite ammo” in the !admin menu — a change in one place shows in the other."
+      },
+      "bots": {
+        "title": "Bots",
+        "label": "Number of bots (bot_quota)",
+        "hint": "0 to {max}. Bots fill the server and leave as people join. The same as “Bots” in the !admin menu."
+      },
+      "xp": {
+        "title": "XP multiplier",
+        "label": "Multiplier",
+        "hint": "{min} to {max} in steps of 0.1. It applies equally to everyone. During an active event the higher of the two applies."
+      },
+      "join": {
+        "title": "Welcome on join",
+        "label": "Show the welcome message in chat when someone joins",
+        "hint": "With the welcome off, the message about the current event on join is off as well."
+      }
+    },
+    "stats": {
+      "title": "Statistics — edit",
+      "lead": "Every change goes into the audit with “before → after” and raises the stats epoch (now {epoch}): the plugin takes the values from the database and drops what it has not saved for the player yet — up to 10 seconds of their latest play are lost.",
+      "dataLink": "Everything we store about the player",
+      "none": "The player has no statistics yet.",
+      "saveConfirm": "Save the new values?",
+      "rules": "Whole numbers ≥ 0 only. Headshots, bounties and revenges cannot exceed kills.",
+      "weapons": "Per weapon",
+      "weaponsNone": "No weapon kills in this season.",
+      "playtimeLabel": "Total playtime (seconds)",
+      "playtimeHint": "Now: about {h} h. Season playtime is the field of each season.",
+      "fields": {
+        "kills": "Kills",
+        "deaths": "Deaths",
+        "headshots": "Headshots",
+        "assists": "Assists",
+        "damage": "Damage",
+        "shotsFired": "Shots fired",
+        "shotsHit": "Hits",
+        "bestStreak": "Best streak",
+        "bountiesClaimed": "Bounties claimed",
+        "revenges": "Revenges",
+        "playtimeSec": "Playtime (seconds)",
+        "xp": "XP"
+      },
+      "reset": {
+        "title": "Reset",
+        "note": "Sets the numbers to zero (the rows stay to keep the epoch). The audit keeps the old values.",
+        "confirmLabel": "I confirm the reset",
+        "season": "Reset season {n}",
+        "all": "Reset everything",
+        "seasonConfirm": "Reset the player's statistics for the current season?",
+        "allConfirm": "Reset ALL of the player's statistics (every season, weapons and playtime)?"
+      }
+    },
+    "data": {
+      "title": "Data of {name}",
+      "back": "back to the profile",
+      "lead": "Everything the database stores about this player — the raw rows, column names as in the database. Secrets are never shown: for the second factor only whether it is set; session tokens and code hashes are not read.",
+      "shown": "{shown} of {total}",
+      "empty": "No records.",
+      "note": "At most {limit} rows per section are shown (the latest). Kills are kept for 90 days, sessions for 30.",
+      "counts": {
+        "killsAsAttacker": "Kills (as killer, raw)",
+        "killsAsVictim": "Deaths (as victim, raw)",
+        "issued": "Punishments issued by them",
+        "auditBy": "Audit entries with them as admin"
+      },
+      "sections": {
+        "player": "Player",
+        "seasonStats": "Statistics per season",
+        "weaponStats": "Statistics per weapon",
+        "sessions": "Server sessions",
+        "webSessions": "Panel sessions",
+        "recoveryCodes": "Recovery codes (dates only)",
+        "punishments": "Punishments",
+        "appeals": "Appeals",
+        "reportsAgainst": "Reports against them",
+        "reportsBy": "Reports by them",
+        "vipGrants": "VIP periods",
+        "vipRequests": "VIP requests (invoice data)",
+        "kills": "Latest kills and deaths",
+        "auditAbout": "Audit about them",
+        "banners": "Banners placed by them",
+        "matches": "Matches (cards — 90 days)",
+        "badges": "Badges (honours)",
+        "zones": "Hot zones placed by them",
+        "duels": "Duels (90 days)",
+        "missions": "Daily missions (90 days)"
+      }
+    },
+    "events": {
+      "title": "Scheduled events",
+      "lead": "The plugin checks the schedule every 30 seconds: on start it announces the event in each player's language, starts the mode (if any) and raises the XP multiplier; on end it announces and restores. Times are in the {tz} zone.",
+      "newTitle": "New event",
+      "create": "Create",
+      "rules": "No overlaps; up to 14 days; the end must be in the future. “Mode” needs a DM mode, “XP weekend” a multiplier above 1. Titles go to the game chat — colour codes are removed.",
+      "empty": "No events in the last 30 days.",
+      "kind": "Kind",
+      "kinds": {
+        "XP_BOOST": "XP weekend",
+        "MODE": "Special mode",
+        "COMMUNITY": "Community event"
+      },
+      "titleBg": "Title (Bulgarian)",
+      "titleEn": "Title (English)",
+      "titleIt": "Title (Italian)",
+      "startsAt": "Start",
+      "endsAt": "End",
+      "multiplier": "XP multiplier (1–3)",
+      "mode": "DM mode",
+      "noMode": "no mode change",
+      "states": {
+        "active": "running now",
+        "upcoming": "upcoming",
+        "ended": "ended",
+        "cancelled": "cancelled"
+      },
+      "createdBy": "Created by {name}.",
+      "edit": "Edit",
+      "cancel": "Cancel the event",
+      "cancelConfirm": "Cancel the event? If it is running, the plugin stops it within 30 seconds."
+    },
+    "flags": {
+      "title": "Suspicious players",
+      "lead": "Players whose numbers for the last {days} days are unusual for the server or sharply above their own. Computed on every visit from the recorded kills and minutes played.",
+      "notVerdict": "A flag is not a verdict.",
+      "notVerdictText": "Nothing here punishes or decides automatically (GDPR Art. 22). A strong player, a good day or little data also produce high numbers. Act only after a human review (profile, matches, demo) and through the normal punishment flow, with a reason and audit.",
+      "rules": {
+        "title": "How it is computed",
+        "window": "Window: the last {days} days (since {since}); the player's own baseline is days {from}–{to} back.",
+        "population": "Unusual: percentile ≥ {percentile} among players with at least {minKills} kills in the window — only if there are at least {minPopulation} of them.",
+        "spike": "Spike: at least {ratio}× their own baseline (the baseline also needs {minKills} kills, and kills per minute needs {minMinutes} minutes played).",
+        "floors": "Absolute floors (no flag below them): headshots {hs}, wallbang {wallbang}, through smoke {smoke}, while blind {blind}, long no-scope (≥ {meters} m) {longNoscope}, kills per minute {kpm}."
+      },
+      "population": {
+        "one": "{count} player with at least {minKills} kills in the window.",
+        "other": "{count} players with at least {minKills} kills in the window."
+      },
+      "empty": "No flagged players for this window.",
+      "reasons": {
+        "one": "{count} reason",
+        "other": "{count} reasons"
+      },
+      "hidden": "hidden from leaderboards (Art. 21)",
+      "summary": "{kills} kills · {minutes} min in the window",
+      "profile": "Panel profile",
+      "caption": "{name}'s metrics",
+      "col": {
+        "metric": "Metric",
+        "value": "Value",
+        "percentile": "Percentile",
+        "baseline": "Own baseline",
+        "flag": "Flag"
+      },
+      "metrics": {
+        "hs": "Headshots",
+        "wallbang": "Wallbang",
+        "smoke": "Through smoke",
+        "blind": "While blind",
+        "longNoscope": "No-scope from {meters} m",
+        "kpm": "Kills per minute"
+      },
+      "outlier": "unusual",
+      "spike": "spike",
+      "percentileValue": "P{value}",
+      "reports": "Personal reports (up to {count} latest matches):",
+      "reportLink": "match #{id}",
+      "noMatches": "No matches in the window.",
+      "hiddenReports": "A hidden player's public reports are not shown — review through the panel profile.",
+      "note": "The list is not stored anywhere. The percentile is the share of players with data at or below this value."
+    },
+    "plugins": {
+      "title": "Plugins",
+      "lead": "The server mods from the verified catalogue: start and stop live, install and remove (with a restart), and each one’s config. The site never uploads code — every plugin is pinned by sha256 in the catalogue.",
+      "addNote": "A new plugin? Ask the developer: they read its code, verify it and add it to the catalogue. Then it shows up here.",
+      "busy": "The server is installing a plugin or updating right now — the buttons come back when it finishes.",
+      "metamodNote": "Metamod plugin: starting and stopping take effect after a server restart.",
+      "coreNote": "Core — not managed from the panel.",
+      "back": "← Plugins",
+      "col": {
+        "plugin": "Plugin",
+        "version": "Version",
+        "state": "State",
+        "actions": "Actions"
+      },
+      "states": {
+        "enabled": "running",
+        "disabled": "stopped",
+        "removed": "not installed",
+        "core": "core"
+      },
+      "ops": {
+        "install": "Install",
+        "remove": "Remove",
+        "enable": "Start",
+        "disable": "Stop"
+      },
+      "confirm": {
+        "install": "Installing downloads the plugin, verifies it and restarts the server (1–3 minutes) — players will be disconnected. Continue?",
+        "remove": "Removing deletes the plugin’s files and restarts the server — players will be disconnected. The config stays. Continue?",
+        "disable": "The plugin stops right away and stays stopped after a restart. Continue?"
+      },
+      "mods": {
+        "serverlistplayersfix": {
+          "name": "ServerListPlayersFix",
+          "desc": "Shows the real player list in the server browser."
+        },
+        "quakesounds": {
+          "name": "Quake Sounds",
+          "desc": "Announcer sounds for kill streaks (Double Kill, Rampage…)."
+        },
+        "cosmetics": {
+          "name": "Cosmetics",
+          "desc": "Death beam — an effect where a player went down."
+        },
+        "demorecorder": {
+          "name": "Demo Recorder",
+          "desc": "Records SourceTV demos of the matches; kept for 14 days."
+        },
+        "cheatertroll": {
+          "name": "Cheater Troll",
+          "desc": "Trolls confirmed cheaters instead of only banning them; the list is in its config."
+        },
+        "metablock": {
+          "name": "MetaBlock",
+          "desc": "Blocks the meta, css_plugins and css console commands for players."
+        }
+      },
+      "core": {
+        "metamod": {
+          "name": "Metamod:Source",
+          "desc": "Loads all the mods."
+        },
+        "counterstrikesharp": {
+          "name": "CounterStrikeSharp",
+          "desc": "The platform for the C# plugins."
+        },
+        "deathmatch": {
+          "name": "Deathmatch",
+          "desc": "The Deathmatch mode — configured in “Settings” and the modes."
+        },
+        "carbonstealth": {
+          "name": "CarbonStealth",
+          "desc": "Our plugin: bans, XP, menu and the link to this panel."
+        },
+        "multiaddonmanager": {
+          "name": "MultiAddonManager",
+          "desc": "The Workshop addons (banners, sounds) — switches on by itself when there are any."
+        }
+      },
+      "config": {
+        "open": "Config",
+        "title": "Config: {name}",
+        "lead": "The file {file} on the server. Saving checks the JSON, stores it and reloads the plugin live if it is running.",
+        "label": "JSON",
+        "hint": "A valid JSON object only, up to {max} characters. It survives deploys.",
+        "save": "Save and reload",
+        "reset": "Restore the default",
+        "resetConfirm": "The config will be replaced with our default and the plugin will reload. Continue?",
+        "edited": "Edited from the panel — deploys do not overwrite it.",
+        "pristine": "Default — as in the catalogue.",
+        "offline": "The server is not running — the config can only be read and written while the server is up."
+      }
+    }
+  },
+  "matches": {
+    "h1": "Latest matches",
+    "lead": "Every match is one map until it changes (30 minutes). Only kills between people count. Cards are kept for 90 days.",
+    "empty": "No finished matches yet. Join and play the first one.",
+    "summary": "{kills} kills · {players} players · {minutes} min",
+    "first": "first:",
+    "kills": {
+      "one": "{count} kill",
+      "other": "{count} kills"
+    },
+    "toLeaderboard": "To the leaderboard"
+  },
+  "match": {
+    "h1": "Match #{id}",
+    "lead": "{map} · {mode}",
+    "hiddenPlayer": "Hidden player",
+    "top": "Top 3",
+    "all": "All players",
+    "caption": "Results of match #{id}, by place",
+    "line": "{kills} kills · {deaths} deaths · {hs} headshots · streak {streak}",
+    "weapon": "Best weapon: {weapon} ({kills})",
+    "note": "Place is by kills, then fewer deaths and more headshots.",
+    "back": "All matches",
+    "reportLink": "Report",
+    "reportFor": "{name}'s personal report",
+    "facts": {
+      "kills": "Kills",
+      "players": "Players",
+      "minutes": "Minutes",
+      "multiplier": "XP multiplier",
+      "event": "Event"
+    },
+    "col": {
+      "place": "Place",
+      "hs": "Headshots",
+      "streak": "Streak",
+      "bounties": "Bounties",
+      "weapon": "Weapon",
+      "report": "Report"
+    }
+  },
+  "report": {
+    "h1": "{name}'s report",
+    "lead": "Match #{id} on {map} · place {place} of {players}",
+    "aside": "This report comes from the match record. We keep matches and kill details for {days} days.",
+    "toProfile": "{name}'s profile",
+    "toMatch": "The whole match #{id}",
+    "notRecorded": "No kill details were recorded for this match.",
+    "multiEmpty": "No streak of 3 or more kills in this match.",
+    "note": "The comparison is with the average per match in the days before this one, not with the best day.",
+    "score": {
+      "title": "Score",
+      "place": "Place",
+      "placeOf": "{place} of {players}",
+      "kills": "Kills",
+      "deaths": "Deaths",
+      "kd": "K/D",
+      "hs": "Headshots",
+      "bestStreak": "Best streak",
+      "bounties": "Bounties",
+      "xp": "XP"
+    },
+    "compare": {
+      "title": "Compared with usual",
+      "lead": {
+        "one": "The average is from {count} match in the {days} days before this one.",
+        "other": "The average is from {count} matches in the {days} days before this one."
+      },
+      "none": "No matches in the {days} days before this one — nothing to compare with.",
+      "metric": "Metric",
+      "now": "This match",
+      "average": "Average per match",
+      "delta": "Difference",
+      "metrics": {
+        "kills": "Kills",
+        "deaths": "Deaths",
+        "kd": "K/D",
+        "hs": "Headshots",
+        "xp": "XP"
+      },
+      "points": "{value} pp",
+      "tone": {
+        "better": "better than usual",
+        "worse": "worse than usual",
+        "even": "same as usual"
+      }
+    },
+    "weapons": {
+      "title": "Weapons in the match",
+      "empty": "No kills in this match."
+    },
+    "heat": {
+      "title": "Deaths in this match",
+      "lead": "Aggregated cells on our A–H × 1–8 grid only, never live positions.",
+      "pending": "The map appears {hours} h after the match ends.",
+      "empty": "No deaths in this match.",
+      "desc": {
+        "one": "{count} death in the match; most in sector {sector}.",
+        "other": "{count} deaths in the match; most in sector {sector}."
+      }
+    }
+  },
+  "highlights": {
+    "title": "Highlights",
+    "notRecorded": "No kill details were recorded for this match.",
+    "at": "at {time} from the start",
+    "multi": {
+      "title": "Streaks",
+      "lead": "At least 3 kills in a row, at most {seconds} s apart and without dying in between.",
+      "kind": "{kills}K",
+      "empty": "No streak of 3 or more kills."
+    },
+    "collection": {
+      "title": "Collector",
+      "kinds": {
+        "noscope": "No-scope",
+        "wallbang": "Wallbang",
+        "smoke": "Through smoke",
+        "blind": "While blind"
+      },
+      "most": "most ({count}):",
+      "empty": "No no-scope, wallbang, through-smoke or blind kills."
+    },
+    "longest": {
+      "title": "Longest kill",
+      "meters": "{meters} m"
+    }
+  }
+}

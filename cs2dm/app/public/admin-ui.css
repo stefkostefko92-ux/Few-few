@@ -1,0 +1,297 @@
+/*
+ * Админ панелът — компонентите: състояния, таблици, форми, бутони и специфичните екрани (QR, кодове, логове).
+ * Токените (цветове, шрифтове) са в admin.css, който се зарежда преди този файл.
+ */
+
+/* ── Състояния ─────────────────────────────────────────────────────────── */
+.a-chip {
+  display: inline-block;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--seam);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.a-chip.is-ok {
+  border-color: var(--moss);
+  color: var(--moss);
+}
+.a-chip.is-warn {
+  border-color: var(--ochre);
+  color: var(--sand);
+}
+.a-chip.is-err {
+  border-color: var(--rust);
+  color: var(--rust-text);
+}
+.a-chip.is-live {
+  border-color: var(--sky);
+  color: var(--sky);
+}
+.a-chip.is-muted {
+  color: var(--dust);
+}
+.a-result {
+  margin: 0 0 1.25rem;
+  padding: 0.7rem 1rem;
+  border-left: 4px solid var(--sky);
+  background: var(--wall);
+}
+.a-result.is-ok {
+  border-color: var(--moss);
+}
+.a-result.is-warn {
+  border-color: var(--ochre);
+}
+.a-result.is-error {
+  border-color: var(--rust);
+  color: var(--rust-text);
+}
+.a-note {
+  color: var(--dust);
+  font-size: 0.9rem;
+}
+.a-warn {
+  color: var(--rust-text);
+}
+
+/* ── Таблици ───────────────────────────────────────────────────────────── */
+.a-scroll {
+  overflow-x: auto;
+  margin: 0 0 1rem;
+  border: 1px solid var(--seam);
+  border-radius: 4px;
+}
+.a-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+.a-table th,
+.a-table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--wall-2);
+  text-align: left;
+  vertical-align: top;
+}
+.a-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--deep);
+  color: var(--dust);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.a-table tbody tr:hover {
+  background: var(--wall);
+}
+.a-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.a-table .wrap {
+  min-width: 14rem;
+}
+.a-empty {
+  padding: 1rem;
+  color: var(--dust);
+}
+
+/* ── Форми и бутони ────────────────────────────────────────────────────── */
+.a-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.6rem 0.75rem;
+  margin: 0 0 0.75rem;
+}
+.a-form.is-stack {
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 28rem;
+}
+.a-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.a-field.is-wide {
+  flex: 1 1 16rem;
+}
+.a-field label,
+.a-label {
+  color: var(--dust);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.a-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+input[type='text'],
+input[type='number'],
+input[type='search'],
+select,
+textarea {
+  min-height: 2.4rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--seam);
+  border-radius: 3px;
+  background: var(--deep);
+  color: var(--chalk);
+  font: inherit;
+}
+input[type='number'] {
+  width: 6.5rem;
+}
+textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+.a-btn {
+  min-height: 2.4rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--ochre);
+  border-radius: 3px;
+  background: var(--sand);
+  color: var(--night);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.a-btn:hover {
+  background: var(--chalk);
+  color: var(--night);
+}
+.a-btn.is-quiet {
+  background: transparent;
+  color: var(--sand);
+  border-color: var(--seam);
+}
+.a-btn.is-quiet:hover {
+  border-color: var(--sand);
+  color: var(--chalk);
+}
+.a-btn.is-danger {
+  background: transparent;
+  color: var(--rust-text);
+  border-color: var(--rust);
+}
+.a-btn.is-danger:hover {
+  background: var(--rust);
+  color: var(--chalk);
+}
+.a-btn.is-small {
+  min-height: 2rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.85rem;
+}
+.a-btn[aria-current='true'] {
+  background: var(--wall-2);
+  color: var(--chalk);
+  border-color: var(--sand);
+}
+.a-inline {
+  display: inline;
+}
+.a-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+details.a-more > summary {
+  cursor: pointer;
+  color: var(--sand);
+  font-weight: 700;
+}
+details.a-more[open] > summary {
+  margin-bottom: 0.5rem;
+}
+
+/* ── Специфични ────────────────────────────────────────────────────────── */
+.a-login {
+  max-width: 34rem;
+  margin: 2rem auto;
+}
+.a-steam {
+  font-size: 1.05rem;
+  padding: 0.6rem 1.2rem;
+}
+.a-qr {
+  display: block;
+  width: 232px;
+  height: 232px;
+  background: #fff;
+  border-radius: 4px;
+}
+.a-secret {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  word-spacing: 0.3em;
+}
+.a-codes {
+  columns: 2 12rem;
+  padding: 1rem 1.5rem;
+  background: var(--deep);
+  border: 1px dashed var(--sand);
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+}
+.a-logs {
+  max-height: 70vh;
+  overflow: auto;
+  margin: 0;
+  padding: 0.75rem;
+  background: var(--deep);
+  border: 1px solid var(--seam);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+}
+.a-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .a-table th,
+  .a-table td {
+    padding: 0.35rem 0.45rem;
+  }
+  .a-form.is-stack {
+    max-width: none;
+  }
+}
+
+@media print {
+  .a-nav,
+  .a-me,
+  .a-form {
+    display: none;
+  }
+}
+/* Конфигът на плъгин (CONTRACT §14): редакторът е на цяла ширина, моноширинен. */
+.a-field.is-full {
+  flex: 1 1 100%;
+}
+textarea.a-code {
+  width: 100%;
+  min-height: 24rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  tab-size: 2;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}

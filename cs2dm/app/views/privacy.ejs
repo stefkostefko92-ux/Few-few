@@ -1,0 +1,15 @@
+<%- include('partials/head') %>
+<%# Чернова на правен текст: обща информация, не правен съвет — преглед от юрист преди пускане. %>
+<%- include('partials/page-hero', { title: t('privacy.h1'), lead: t('privacy.lead'), here: t('nav.privacy') }) %>
+<div class="wrap page-content">
+  <article class="legal-content">
+    <p class="legal-date"><%= t('common.updated', { date: fmt.date(new Date(updated + 'T12:00:00Z')) }) %></p>
+    <% sections.forEach((id) => { %>
+    <% if (id === 'recipients' || id === 'steam') { %><!-- ПОТВЪРДИ: държава на хостинга --><% } %>
+    <% if (id === 'retention') { %><!-- ПОТВЪРДИ: срок за счетоводните документи по ЗСч (счетоводител) --><% } %>
+    <%- include('partials/section', { prefix: 'privacy.sections', id, params }) %>
+    <% }) %>
+    <p class="links-row"><a href="<%= nav.imprint %>"><%= t('nav.imprint') %></a> <a href="<%= nav.contact %>"><%= t('nav.contact') %></a></p>
+  </article>
+</div>
+<%- include('partials/foot') %>

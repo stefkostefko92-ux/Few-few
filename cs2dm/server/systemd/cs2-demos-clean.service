@@ -1,0 +1,33 @@
+[Unit]
+Description=cs2dm: чистене на SourceTV демотата (14 дни + таван на размера)
+Documentation=https://github.com/stefkostefko92-ux/Few-few/tree/main/cs2dm
+
+[Service]
+Type=oneshot
+User=cs2
+Group=cs2
+# Таванът в GB: drop-in-ът на install-mods.sh (CS2DM_DEMO_MAX_GB от /etc/cs2/cs2.env) го презаписва.
+# Тайните от cs2.env НЕ стигат дотук — скриптът няма нужда от тях.
+Environment=CS2DM_DEMO_MAX_GB=10
+# Срокът 14 дни е обещан в политиката за поверителност (app/src/content.ts RETENTION.demosDays).
+ExecStart=/usr/local/lib/cs2dm/demos-clean.sh /opt/cs2/server/game/csgo/addons/counterstrikesharp/data/demos 14
+Nice=10
+IOSchedulingClass=idle
+
+# Пише само в папката с демотата (ако я няма — нищо); без мрежа и без привилегии.
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+PrivateTmp=yes
+PrivateNetwork=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ReadWritePaths=-/opt/cs2/server/game/csgo/addons/counterstrikesharp/data/demos
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_UNIX
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes

@@ -1,0 +1,153 @@
+/* Таблици и форми: класация, банлист, VIP нивата, XP, мачът; филтрите и страниците. */
+.panel {
+  border-top: 3px solid var(--ink);
+}
+.panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 20px;
+  padding: 16px 2px;
+  border-bottom: 1px solid var(--rule);
+}
+.panel-title {
+  margin: 0;
+  font: 800 26px/1 var(--display);
+  text-transform: uppercase;
+}
+.panel-note {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px 18px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.field {
+  display: grid;
+  gap: 6px;
+}
+.field label {
+  color: var(--muted);
+  font: 700 12px/1.3 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.field select {
+  min-height: 44px;
+  min-width: 190px;
+  padding: 0 12px;
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  background: #f1e9d8;
+  color: var(--ink);
+}
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.data-table th,
+.data-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: middle;
+}
+.data-table thead th {
+  color: var(--muted);
+  font: 700 12px/1.4 var(--mono);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.data-table thead a {
+  color: inherit;
+}
+.data-table thead [aria-sort] {
+  color: var(--red);
+}
+.data-table tbody th {
+  font-weight: 700;
+}
+.data-table tbody a {
+  color: var(--ink);
+  text-decoration-color: var(--red);
+  text-underline-offset: 3px;
+}
+.data-table tbody a:hover {
+  color: var(--red);
+}
+.c-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.data-table .c-num {
+  text-align: right;
+}
+.c-rank {
+  width: 56px;
+  color: var(--red);
+  font: 800 22px/1 var(--display);
+}
+.podium .c-rank {
+  font-size: 30px;
+}
+.is-sorted {
+  font-weight: 700;
+}
+.price {
+  font: 800 22px/1 var(--display);
+}
+.xp-table td.c-num {
+  color: var(--red);
+  font: 800 22px/1 var(--display);
+}
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 18px;
+  font: 700 13px/1.3 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.pager-step {
+  padding: 8px 0;
+  border-bottom: 2px solid var(--red);
+  text-decoration: none;
+}
+.pager-step.is-off {
+  border-color: transparent;
+  color: var(--muted);
+  opacity: 0.6;
+}
+.pager-where {
+  color: var(--muted);
+}
+@media (max-width: 760px) {
+  .data-table .opt {
+    display: none;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 11px 7px;
+  }
+  .field,
+  .field select {
+    width: 100%;
+  }
+}

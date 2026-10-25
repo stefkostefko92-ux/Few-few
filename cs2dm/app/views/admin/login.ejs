@@ -1,0 +1,9 @@
+<%- include('partials/head', { title: t('admin.login.title') }) %>
+<section class="a-card a-login" aria-labelledby="login-title">
+  <h1 id="login-title"><%= t('admin.login.title') %></h1>
+  <% if (error) { %><p class="a-result is-error" role="alert"><%= t('admin.login.error.' + error) %></p><% } %>
+  <p class="a-lead"><%= t('admin.login.lead') %></p>
+  <p><a class="a-btn a-steam" href="/admin/login/steam"><%= t('admin.login.button') %></a></p>
+  <p class="a-note"><%= t('admin.login.note') %></p>
+</section>
+<%- include('partials/foot') %>

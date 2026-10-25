@@ -1,0 +1,148 @@
+/**
+ * XP и нива — договорът е cs2dm/CONTRACT.md §3; C# плъгинът ползва същите константи.
+ *
+ * Нужно XP за ниво n: `100 · n · (n − 1) / 2` → `level = floor((1 + sqrt(1 + 8 · xp / 100)) / 2)`.
+ * XP в базата е BIGINT, затова сметката е в bigint: плаващата запетая дава приближение, а
+ * целочислената поправка го закрепва точно на границата (99 → 1, 100 → 2).
+ */
+export const XP_STEP = 100n;
+
+/** XP наградите за едно убийство (CONTRACT.md §3) — за таблицата „Как се смята“. */
+export const XP_REWARDS = [
+  { id: 'kill', xp: 10 },
+  { id: 'headshot', xp: 5 },
+  { id: 'knife', xp: 20 },
+  { id: 'noscope', xp: 10 },
+  { id: 'wallbang', xp: 5 },
+  { id: 'smoke', xp: 5 },
+  { id: 'revenge', xp: 5 },
+] as const;
+
+/**
+ * Множител на XP (живата настройка `xp` или активно събитие — по-големият от двата, CONTRACT §3):
+ * `floor(xp · m10 / 10)`, където m10 е множителят в десети (10…30). Цели числа — без float,
+ * за да съвпада с `Progression.ApplyMultiplier` в C#. Тестови стойности: 15×15→22 · 10×30→30 · 7×10→7.
+ */
+export function applyXpMultiplier(xp: number, tenths: number): number {
+  const m10 = Math.min(30, Math.max(10, Math.trunc(tenths)));
+  return Math.floor((Math.max(0, Math.trunc(xp)) * m10) / 10);
+}
+
+/** Убийство на бот дава XP-то (след множителя), делено на това и закръглено надолу (CONTRACT §3). */
+export const BOT_XP_DIVISOR = 2;
+
+/**
+ * XP за убийство на бот — същото като `Progression.BotKillXp` в C#. Без отмъщение и баунти (те са
+ * само между хора); убийството не влиза в K/D, серии и оръжия. Тестови стойности: 10→5 · 15→7 · 1→0.
+ */
+export function botKillXp(xp: number): number {
+  return Math.floor(Math.max(0, Math.trunc(xp)) / BOT_XP_DIVISOR);
+}
+
+/**
+ * Горещата зона (CONTRACT §15): за `activeMinutes` убиецът вътре взема XP-то за убийството × `multiplier`
+ * (след живия множител; при убийство на бот — след делението). „Крал на зоната“ — най-много убийства вътре,
+ * поне `kingMinKills`. Същото като `Progression.HotZoneMultiplier` и `HotZoneRules` в C#.
+ */
+export const HOT_ZONE = { multiplier: 2, activeMinutes: 3, kingMinKills: 3 } as const;
+
+/** XP в горещата зона — същото като `Progression.HotZoneXp`. Тестови стойности: 15→30 · 7→14 · извън 15→15. */
+export function hotZoneXp(xp: number, inZone: boolean): number {
+  return Math.max(0, Math.trunc(xp)) * (inZone ? HOT_ZONE.multiplier : 1);
+}
+
+/**
+ * Most Wanted (CONTRACT §15): човекът с най-много убийства на картата (поне `minKills`). Който го свали,
+ * взема `xp` — преди множителя, като баунтито. Същото като `MostWantedBoard.MinKills` и
+ * `Progression.MostWantedXp` в C#.
+ */
+export const MOST_WANTED = { minKills: 10, xp: 25 } as const;
+
+/** Бонусът за Most Wanted — същото като `Progression.MostWantedBonus`. Тестови стойности: да→25 · не→0. */
+export function mostWantedBonus(victimWanted: boolean): number {
+  return victimWanted ? MOST_WANTED.xp : 0;
+}
+
+/**
+ * Дуел във FFA (CONTRACT §15): до `target` убийства един срещу друг или `minutes` минути; покана за
+ * `inviteSeconds`, пауза `cooldownMinutes` за двойката. Победителят взема `winXp` наведнъж, без множител.
+ * Същото като `DuelRules` и `Progression.DuelWinXp` в C#.
+ */
+export const DUEL = {
+  target: 5,
+  minutes: 3,
+  inviteSeconds: 30,
+  cooldownMinutes: 2,
+  winXp: 50,
+} as const;
+
+/**
+ * Мисиите за деня (CONTRACT §16): по една лесна, средна и трудна на ден; изпълнената носи `xp[трудност]` наведнъж,
+ * без множител и зона (не е убийство). `streakDays` поредни дни с трите → значка `mission_streak`. Същото като
+ * `Progression.Mission*Xp` и `MissionPool` в C#.
+ */
+export const MISSIONS = { perDay: 3, xp: [50, 100, 150], streakDays: 7 } as const;
+
+/** XP за изпълнена мисия — същото като `Progression.MissionXp`. Тестови стойности: 0→50 · 1→100 · 2→150 · 3→0. */
+export function missionXp(tier: number): number {
+  return MISSIONS.xp[tier as 0 | 1 | 2] ?? 0;
+}
+
+/** Режимите на арената (CONTRACT §15–16) — за таблицата „Как се смята“ и началната страница. */
+export const ARENA = {
+  hotZone: HOT_ZONE,
+  mostWanted: MOST_WANTED,
+  duel: DUEL,
+  missions: MISSIONS,
+} as const;
+
+/** Баунти: серия ≥ 5 → `min(25 · (серия − 4), 250)` XP. */
+export const BOUNTY = { minStreak: 5, perKill: 25, cap: 250 } as const;
+
+export function bountyFor(streak: number): number {
+  if (streak < BOUNTY.minStreak) return 0;
+  return Math.min(BOUNTY.perKill * (streak - 4), BOUNTY.cap);
+}
+
+function toBig(xp: bigint | number): bigint {
+  if (typeof xp === 'bigint') return xp < 0n ? 0n : xp;
+  if (!Number.isFinite(xp) || xp <= 0) return 0n;
+  return BigInt(Math.floor(xp));
+}
+
+/** Общото XP, при което започва ниво n (ниво 1 започва от 0). */
+export function xpForLevel(level: number): bigint {
+  if (level <= 1) return 0n;
+  const n = BigInt(Math.floor(level));
+  return (XP_STEP * n * (n - 1n)) / 2n;
+}
+
+export function levelForXp(xpInput: bigint | number): number {
+  const xp = toBig(xpInput);
+  const estimate = Math.floor((1 + Math.sqrt(1 + (8 * Number(xp)) / Number(XP_STEP))) / 2);
+  let level = Math.max(1, estimate);
+  while (level > 1 && xpForLevel(level) > xp) level -= 1;
+  while (xpForLevel(level + 1) <= xp) level += 1;
+  return level;
+}
+
+export interface LevelProgress {
+  level: number;
+  /** XP, натрупано вътре в текущото ниво. */
+  current: bigint;
+  /** Колко XP е широко текущото ниво (от началото му до следващото). */
+  span: bigint;
+  /** Цял процент 0–99 — за `<progress>`; никога 100 преди самото качване на ниво. */
+  percent: number;
+  nextLevel: number;
+}
+
+export function levelProgress(xpInput: bigint | number): LevelProgress {
+  const xp = toBig(xpInput);
+  const level = levelForXp(xp);
+  const start = xpForLevel(level);
+  const span = xpForLevel(level + 1) - start;
+  const current = xp - start;
+  const percent = Number((current * 100n) / span);
+  return { level, current, span, percent, nextLevel: level + 1 };
+}

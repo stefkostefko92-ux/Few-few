@@ -1,0 +1,121 @@
+name: cs2dm
+
+on:
+  push:
+    paths:
+      - 'cs2dm/**'
+      - '.github/workflows/cs2dm.yml'
+  pull_request:
+    paths:
+      - 'cs2dm/**'
+      - '.github/workflows/cs2dm.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cs2dm-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Сървърът (bash + systemd + zero-dep Node): lint, тестове, проверка на деплой скриптовете.
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        node: [20, 22]
+    defaults:
+      run:
+        working-directory: cs2dm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      # Нула зависимости → без npm ci. Съставът на гейта живее в package.json („gate“), не тук.
+      - run: npm run gate
+
+  # C# плъгинът: тестове на логиката + Release билд с warnings-as-errors и заключени пакети.
+  plugins:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: cs2dm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: cs2dm/plugins/global.json
+      - run: npm run plugins
+
+  # Сайтът (cs2dm/app — Express + EJS + Prisma): typecheck · format · тестове · билд.
+  # Без DATABASE_URL интеграционните тестове се пропускат чисто; те тичат в следващата задача.
+  app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: cs2dm/app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: cs2dm/app/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+
+  # Сайтът срещу истински PostgreSQL 16 (мигрирана схема) и Redis 7 — банлистът без `reason`,
+  # скритите играчи, heatmap прозорецът, чистенето по срокове и планировчикът на BullMQ.
+  app-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: cs2dm/app
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: cs2dm
+          POSTGRES_PASSWORD: cs2dm
+          POSTGRES_DB: cs2dm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cs2dm"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      # Без жив Redis тестът на опашката не пада, а виси до timeout-minutes.
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://cs2dm:cs2dm@127.0.0.1:5432/cs2dm
+      REDIS_TEST_URL: redis://127.0.0.1:6379/15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: cs2dm/app/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx prisma migrate deploy
+      # Публичната част (integration.test.ts) + панелът (integration-admin-*.test.ts: вход със Steam
+      # през двойник, TOTP, права, мостът и агентът през истинския pub/sub, одит-веригата).
+      - run: npx tsx --test --test-timeout=60000 tests/integration*.test.ts

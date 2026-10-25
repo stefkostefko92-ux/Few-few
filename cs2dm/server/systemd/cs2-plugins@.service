@@ -1,0 +1,16 @@
+# cs2-plugins@.service — плъгин от уеб панела (CONTRACT §14): инстанция <op>-<id>, напр. disable-cosmetics.
+# Пуска го САМО агентът (polkit: start на cs2-plugins@(install|remove|enable|disable)-[a-z0-9]{1,32}.service).
+# Скриптът проверява инстанцията и id-то наново (срещу mods.lock) — fail closed. Слага го install-mods.sh,
+# заедно с root копието на скриптовете в /usr/local/lib/cs2dm/server.
+[Unit]
+Description=cs2dm: плъгин от панела (%i)
+Documentation=https://github.com/stefkostefko92-ux/Few-few/tree/main/cs2dm
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# %i — инстанцията без разкодиране (с %I „-“ би станало „/“).
+ExecStart=/bin/bash /usr/local/lib/cs2dm/server/mods/plugins-apply.sh %i
+# install/remove свалят и рестартират играта (install-mods.sh) — с резерв.
+TimeoutStartSec=900
