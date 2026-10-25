@@ -30,8 +30,11 @@ import {
 /**
  * Cue sports (8-ball, 9-ball, snooker) driven like a person would: press on
  * the felt to aim, the power slider by mouse + arrow keys, the spin pad by
- * mouse + keys, „Постави бялата“ + a click for ball in hand, the pocket
- * buttons on the 8, then „Удар“ or Space. Nothing is injected into the app.
+ * mouse + keys, „Постави бялата“ + a click for ball in hand, then „Удар“ or
+ * Space. Every DECISION (the pocket on the 8, a 9-ball push-out, the choice
+ * after a snooker foul) comes up by itself as a popup (`[data-decision]`) and
+ * is answered there — it must be open exactly when the decision is mine and
+ * the table must not need it otherwise. Nothing is injected into the app.
  *
  * Every shot is checked against the very engine the server runs:
  *  - the Socket.IO frames (websocket transport only) show what the client
@@ -284,6 +287,8 @@ async function frameAndMap(page: Page, pts: Pt[]): Promise<Framed> {
         ready: block?.getAttribute("data-ready") === "true",
         shot: block?.getAttribute("data-shot") ?? null,
         box: fb ? [fb.left, fb.top, fb.width, fb.height].join(",") : "",
+        decision:
+          document.querySelector("[data-decision]")?.getAttribute("data-decision-key") ?? null,
       };
       const cue = (window as unknown as E2EWindow).__asoE2E?.cue;
       const gl = document.querySelector('[data-table="gl"]');
@@ -313,9 +318,7 @@ async function frameAndMap(page: Page, pts: Pt[]): Promise<Framed> {
           shoot: box('[data-action="shoot"]'),
           power: box('[data-control="power"]'),
           spin: box('[data-control="spin"]'),
-          push: box('[data-action="push-out"]'),
         };
-      for (let i = 0; i < 6; i++) boxes[`pocket${i}`] = box(`[data-pocket="${i}"]`);
       const pad = document.querySelector('[data-control="spin"]');
       const spin = {
         x: Number(pad?.getAttribute("data-spin-x") ?? "0"),
@@ -373,6 +376,8 @@ interface Snapshot {
   ready: boolean;
   shot: string | null;
   box: string;
+  /** `data-decision-key` of the open decision popup (frameAndMap only). */
+  decision?: string | null;
 }
 
 /** Probe + table + felt box in one round trip. */
@@ -499,6 +504,8 @@ export interface Plan {
   boxes: Record<string, Box | null>;
   /** The spin pad's value when planning (it keeps the last setting). */
   spinNow: Pt;
+  /** The decision popup open when planning (its key), or null. */
+  decision: string | null;
 }
 
 const roundPower = (p: number): number =>
@@ -520,7 +527,13 @@ const isGood = (o: Outcome, seat: number): boolean =>
  * (aim pixel ± a few, power ± 0.08) — else the first valid one; turned into
  * screen pixels in a few round trips (placements, aims, nudged aims).
  */
-export async function planShot(t: CueTable, extra: Partial<Shoot> = {}, depth = 0): Promise<Plan> {
+export async function planShot(
+  t: CueTable,
+  extra: Partial<Shoot> = {},
+  depth = 0,
+  /** "pass": a legal shot that pots nothing — the bot gets the table (and may foul). */
+  prefer: "pot" | "pass" = "pot",
+): Promise<Plan> {
   const { page, wire } = t;
   const st = wire.last().state;
   const seat = wire.seat;
@@ -558,7 +571,7 @@ export async function planShot(t: CueTable, extra: Partial<Shoot> = {}, depth = 
       )
       .toBe(true);
     if (depth > 1) throw new Error("the table kept changing while planning");
-    return planShot(t, extra, depth + 1);
+    return planShot(t, extra, depth + 1, prefer);
   }
   const all = fr.mapped;
   let k = 0;
@@ -600,14 +613,53 @@ export async function planShot(t: CueTable, extra: Partial<Shoot> = {}, depth = 
       good: isGood(o, seat),
       boxes: fr.boxes,
       spinNow: fr.spin,
+      decision: fr.snap.decision ?? null,
     };
-    if (plan.good) return plan;
+    if (plan.good && prefer === "pot") return plan;
     fallback ??= plan;
   }
+  // "pass": of the legal misses (every candidate's aim at a range of powers —
+  // the same click, only the slider differs) the one that leaves the bot the
+  // most fouls. It picks uniformly among its candidate shots (no engine
+  // heuristic) and the engine is exact, so the share of its replies that hand
+  // ME the foul choice is known in advance.
+  let pass: Plan | null = null;
+  let passRate = -1;
+  for (let i = 0; prefer === "pass" && i < cands.length && passRate < 1; i++) {
+    for (const p of [cands[i]!.power, 0.12, 0.2, 0.3, 0.45, 0.6, 0.8, 1]) {
+      const action = build(i, aims[i]!.felt, roundPower(p));
+      const o = simulate(t.game, st, seat, action);
+      if (!o || o.state.winner !== null || o.state.turn === seat) continue;
+      if (o.events.some((e) => e.type === "FOUL")) continue;
+      const bot = o.state.turn;
+      const replies = ENGINES[t.game].legalActions(o.state, bot) as Shoot[];
+      const fouls = replies.filter(
+        (a) => simulate(t.game, o.state, bot, a)?.state.foulChoice === true,
+      ).length;
+      const rate = replies.length ? fouls / replies.length : 0;
+      if (rate > passRate) {
+        passRate = rate;
+        pass = {
+          action,
+          aimPx: aims[i]!.px,
+          placePx: place[i]?.px,
+          good: false,
+          boxes: fr.boxes,
+          spinNow: fr.spin,
+          decision: fr.snap.decision ?? null,
+        };
+      }
+      if (rate === 1) break;
+    }
+  }
+  if (pass) return pass;
   if (!fallback) throw new Error(`no valid shot for ${JSON.stringify(cands)}`);
   // After a push-out the opponent decides — nothing to improve. On the
-  // software-rendered 3D table every round trip costs the clock: no search.
-  if (extra.pushOut || t.gl) return fallback;
+  // software-rendered 3D table every round trip costs the clock: no search —
+  // except the 9-ball break (one round trip): a break that pots keeps the
+  // table, and the shot after it is the push-out decision.
+  const nineBreak = t.game === "NINEBALL" && st.shotNo === 0;
+  if (extra.pushOut || (t.gl && !nineBreak)) return fallback;
 
   // Nudge the aim a few pixels (and the power) around every candidate: the
   // simulation is exact, so a variant that pots is a sure thing.
@@ -633,6 +685,7 @@ export async function planShot(t: CueTable, extra: Partial<Shoot> = {}, depth = 
             good: true,
             boxes: fr.boxes,
             spinNow: fr.spin,
+            decision: fr.snap.decision ?? null,
           };
       }
     }
@@ -767,11 +820,10 @@ async function controlValues(page: Page) {
       power: Number(slider.value),
       spinX: Number(pad.getAttribute("data-spin-x")),
       spinY: Number(pad.getAttribute("data-spin-y")),
-      pocket:
-        document.querySelector('[data-pocket][aria-checked="true"]')?.getAttribute("data-pocket") ??
-        null,
-      push:
-        document.querySelector('[data-action="push-out"]')?.getAttribute("aria-pressed") ?? null,
+      pocket: root.getAttribute("data-called") || null,
+      push: root.getAttribute("data-push-armed"),
+      decision:
+        document.querySelector("[data-decision]")?.getAttribute("data-decision-key") ?? null,
     };
   });
 }
@@ -808,9 +860,8 @@ async function setUpLean(
     const c = centre(need("spin"));
     await page.mouse.dblclick(c.x, c.y);
   }
-  if (action.pocket !== undefined) await click(centre(need(`pocket${action.pocket}`)));
-  if (action.pushOut) await click(centre(need("push")));
   const v = await controlValues(page);
+  expect(v.decision, "a decision popup still open over the table").toBeNull();
   if (plan.placePx) expect(v.placing, "the cue ball was not placed").toBe("false");
   expect(Math.abs(v.aim - action.angle), "a press on the canvas did not aim there").toBeLessThan(
     1e-9,
@@ -823,8 +874,9 @@ async function setUpLean(
   } else {
     expect([v.spinX, v.spinY], "the spin pad was not centred").toEqual([0, 0]);
   }
-  if (action.pocket !== undefined) expect(v.pocket, "pocket button").toBe(String(action.pocket));
-  if (action.pushOut) expect(v.push, "push-out toggle").toBe("true");
+  // Answered in the popup (answerShotDecision) — the table carries the answer.
+  if (action.pocket !== undefined) expect(v.pocket, "called pocket").toBe(String(action.pocket));
+  expect(v.push, "push-out declared").toBe(action.pushOut ? "true" : "false");
   expect(v.canShoot, "the table does not let the shot go").toBe("true");
   return boxes;
 }
@@ -844,6 +896,8 @@ export async function playShot(t: CueTable, plan: Plan, style: ShotStyle): Promi
   const slider = page.locator('[data-control="power"]');
   let boxes: Record<string, Box | null> | null = null;
 
+  // Every decision was answered in its popup before planning: none covers the felt.
+  expect(plan.decision, "a decision popup still open over the table").toBeNull();
   if (lean) {
     boxes = await setUpLean(t, plan, action);
   } else {
@@ -888,18 +942,14 @@ export async function playShot(t: CueTable, plan: Plan, style: ShotStyle): Promi
       );
     }
 
-    // 5. 8-ball on the 8: call the pocket with its button; 9-ball: push-out.
+    // 5. The decisions were answered in their popup before planning
+    // (answerShotDecision): the table carries the answer, no popup is left.
     if (action.pocket !== undefined) {
       await expect(root).toHaveAttribute("data-must-call", "true");
-      const btn = page.locator(`[data-pocket="${action.pocket}"]`);
-      await btn.click();
-      await expect(btn).toHaveAttribute("aria-checked", "true");
+      await expect(root).toHaveAttribute("data-called", String(action.pocket));
     }
-    if (action.pushOut) {
-      const push = page.locator('[data-action="push-out"]');
-      await push.click();
-      await expect(push).toHaveAttribute("aria-pressed", "true");
-    }
+    await expect(root).toHaveAttribute("data-push-armed", action.pushOut ? "true" : "false");
+    await expect(page.locator("[data-decision]")).toHaveCount(0);
     await expect(root).toHaveAttribute("data-can-shoot", "true");
     // The controls must still show exactly this shot.
     await expect(root).toHaveAttribute("data-aim", String(action.angle));
@@ -1083,22 +1133,219 @@ export async function expectSvgMatchesServer(t: CueTable): Promise<void> {
 
 // ── whole matches ──────────────────────────────────────────────────────────
 
-/** Snooker after a foul by the bot: the incoming player's choice buttons. */
-export async function answerFoulChoice(t: CueTable): Promise<boolean> {
+// ── decisions: the popup that comes up by itself ─────────────────────────
+
+/** Boxes of the open decision popup's controls (and the pill), one round trip. */
+interface DecisionView {
+  key: string | null;
+  card: Box | null;
+  pill: Box | null;
+  /** The card's whole box is inside the viewport. */
+  onScreen: boolean;
+  controls: Record<string, Box | null>;
+  /** The card carries the mini table — the whole layout the decision is read from. */
+  miniTable: boolean;
+}
+
+async function decisionView(page: Page): Promise<DecisionView> {
+  return page.evaluate(() => {
+    const box = (el: Element | null) => {
+      if (!el) return null;
+      const b = el.getBoundingClientRect();
+      return { x: b.left, y: b.top, width: b.width, height: b.height };
+    };
+    const card = document.querySelector("[data-decision]");
+    const q = (sel: string) => box(card?.querySelector(sel) ?? null);
+    const controls: Record<string, ReturnType<typeof box>> = {
+      minimize: q("[data-decision-minimize]"),
+      skip: q("[data-decision-skip]"),
+      push: q('[data-action="push-out"]'),
+      pushPlay: q('[data-action="push-play"]'),
+      foulPlay: q('[data-action="foul-play"]'),
+      playAgain: q('[data-action="play-again"]'),
+      replay: q('[data-action="replay"]'),
+    };
+    for (let i = 0; i < 6; i++) controls[`pocket${i}`] = q(`[data-pocket="${i}"]`);
+    const cb = box(card);
+    return {
+      key: card?.getAttribute("data-decision-key") ?? null,
+      card: cb,
+      pill: box(document.querySelector("[data-decision-reopen]")),
+      onScreen:
+        !!cb &&
+        cb.x >= 0 &&
+        cb.y >= 0 &&
+        cb.x + cb.width <= innerWidth &&
+        cb.y + cb.height <= innerHeight,
+      controls,
+      miniTable: !!card?.querySelector("[data-decision-table] svg"),
+    };
+  });
+}
+
+async function clickBox(page: Page, b: Box | null, what: string): Promise<void> {
+  if (!b) throw new Error(`decision popup: no "${what}" control`);
+  const c = centre(b);
+  await page.mouse.click(c.x, c.y);
+}
+
+/** Wait until the popup's open decision is `prefix…` (true) or none is open (false). */
+async function expectDecision(
+  page: Page,
+  prefix: string | null,
+  message: string,
+): Promise<DecisionView> {
+  let v: DecisionView | null = null;
+  await expect
+    .poll(
+      async () => {
+        v = await decisionView(page);
+        return prefix === null ? v.key === null : (v.key ?? "").startsWith(prefix);
+      },
+      { message, intervals: [100, 250, 500] },
+    )
+    .toBe(true);
+  return v!;
+}
+
+/**
+ * The first decision of a test (2D and 3D): it came up by itself, sits fully
+ * on screen with the mini table of the whole layout inside; „Виж масата“
+ * folds it into the pill (the table is free), the pill brings it back. 2D also
+ * looks at it at 1366×768 and 390×844 (on screen at both) and attaches both.
+ * Raw clicks at measured boxes: on the software-rendered 3D table Playwright's
+ * actionability waits cost seconds of the turn clock.
+ */
+async function checkDecisionPopup(t: CueTable, prefix: string, report: MatchReport): Promise<void> {
+  if (report.popupChecks > 0) return;
+  const { page } = t;
+  const info = test.info();
+  const v = await expectDecision(page, prefix, `the ${prefix} popup did not come up by itself`);
+  // The software-rendered 3D table: the whole check costs ~10 s of the turn
+  // clock — with less left, the decision is only answered (a later one is checked).
+  const left = (t.wire.last().turnEndsAt ?? 0) - Date.now();
+  if (t.gl && left < 25_000) {
+    info.annotations.push({
+      type: "cue",
+      description: `${prefix} popup: ${left} ms left — check skipped`,
+    });
+    return;
+  }
+  report.popupChecks += 1;
+  expect(v.onScreen, `${prefix} popup inside the viewport`).toBe(true);
+  expect(v.miniTable, `${prefix} popup carries the mini table`).toBe(true);
+  const snap = async (name: string) => {
+    const path = info.outputPath(`${name}.png`);
+    await page.screenshot({ path });
+    await info.attach(name, { path, contentType: "image/png" });
+  };
+  const label = `${t.game.toLowerCase()}-${prefix.replace(/-$/, "")}-${t.gl ? "3d" : "2d"}`;
+  await snap(`${label}-${page.viewportSize()?.width}`);
+  if (!t.gl) {
+    const vp = page.viewportSize()!;
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect
+      .poll(async () => (await decisionView(page)).onScreen, {
+        message: `${prefix} popup on a 390×844 screen`,
+      })
+      .toBe(true);
+    await snap(`${label}-390`);
+    await page.setViewportSize(vp);
+    t.framedBox = null;
+  }
+  // „Виж масата“ → the pill; the pill → the popup again (same decision).
+  await clickBox(page, v.controls.minimize!, "minimize");
+  let pill: Box | null = null;
+  await expect
+    .poll(
+      async () => {
+        const w = await decisionView(page);
+        pill = w.pill;
+        return w.key === null && w.pill !== null;
+      },
+      { message: "„Виж масата“ did not fold the popup into the pill" },
+    )
+    .toBe(true);
+  await clickBox(page, pill, "pill");
+  const back = await expectDecision(page, prefix, "the pill did not bring the popup back");
+  expect(back.key, "the pill brings back the same decision").toBe(v.key);
+  if (!t.gl) await page.waitForTimeout(320); // its entry animation (260 ms)
+}
+
+/**
+ * Before a shot: the decision that belongs to it — the pocket on the 8 (the
+ * plan's `pocket`) or a 9-ball push-out (declared or declined) — is answered
+ * in its popup, which must be open exactly then. Returns true when something
+ * was answered (the caller plans again: the popup no longer covers the felt).
+ */
+async function answerShotDecision(t: CueTable, plan: Plan, report: MatchReport): Promise<boolean> {
+  const { page } = t;
+  const st = t.wire.last().state;
+  const call = plan.action.pocket !== undefined;
+  const push = t.game === "NINEBALL" && st.pushAvail === true;
+  if (!call && !push) {
+    expect(plan.decision, "a decision popup without a decision").toBeNull();
+    return false;
+  }
+  const prefix = call ? "call-" : "push-";
+  expect(plan.decision ?? "", `the ${prefix} popup did not come up by itself`).toMatch(
+    new RegExp(`^${prefix}`),
+  );
+  await checkDecisionPopup(t, prefix, report);
+  const v = await decisionView(page);
+  if (call) {
+    await clickBox(
+      page,
+      v.controls[`pocket${plan.action.pocket}`]!,
+      `pocket ${plan.action.pocket}`,
+    );
+  } else if (plan.action.pushOut) {
+    await clickBox(page, v.controls.push!, "push-out");
+  } else {
+    await clickBox(page, v.controls.skip!, "normal shot");
+  }
+  report.decisions += 1;
+  await expectDecision(page, null, `the ${prefix} popup stayed open after the answer`);
+  const root = cueTable(page);
+  if (call) await expect(root).toHaveAttribute("data-called", String(plan.action.pocket));
+  await expect(root).toHaveAttribute("data-push-armed", plan.action.pushOut ? "true" : "false");
+  return true;
+}
+
+/** Snooker after a foul by the bot: the incoming player's choice, in its popup. */
+export async function answerFoulChoice(t: CueTable, report: MatchReport): Promise<boolean> {
   const { page } = t;
   const st = t.wire.last().state;
   if (!st.foulChoice) return false;
-  const replay = page.locator('[data-action="replay"]');
-  const btn = (await replay.count()) > 0 ? replay : page.locator('[data-action="play-again"]');
-  await expect(btn).toBeVisible();
+  await checkDecisionPopup(t, "foul-", report);
+  // Raw click at the measured box (see checkDecisionPopup): „Върни топките“
+  // after a miss, else „Нека играе пак“.
+  const v = await expectDecision(page, "foul-", "the foul-choice popup is gone");
   const before = await stateVersion(page);
-  await btn.click();
+  await clickBox(page, v.controls.replay ?? v.controls.playAgain ?? null, "play again / replay");
   await expectServerAdvanced(page, before);
+  report.decisions += 1;
   const after = t.wire.last().state;
   expect(after.foulChoice).toBe(false);
   expect(after.turn, "the offender plays again").not.toBe(t.wire.seat);
+  await expectDecision(page, null, "the foul-choice popup stayed open after the answer");
   expect(t.wire.errors).toEqual([]);
   return true;
+}
+
+/** „Играя аз“ in the popup (after a foul / an opponent's push-out): it folds
+ *  away and the turn is an ordinary shot. */
+async function playOnFromDecision(
+  t: CueTable,
+  prefix: "foul-" | "push-reply-",
+  report: MatchReport,
+): Promise<void> {
+  const { page } = t;
+  await checkDecisionPopup(t, prefix, report);
+  const v = await expectDecision(page, prefix, `the ${prefix} popup did not come up by itself`);
+  await clickBox(page, prefix === "foul-" ? v.controls.foulPlay! : v.controls.pushPlay!, "play on");
+  report.decisions += 1;
+  await expectDecision(page, null, `the ${prefix} popup stayed open after „Играя аз“`);
 }
 
 export interface MatchPlan {
@@ -1108,6 +1355,12 @@ export interface MatchPlan {
   untilOverMax?: number;
   /** How shot n is played. */
   style: (n: number) => ShotStyle;
+  /** Keep playing past `shots` (and into a fresh match) until a decision
+   *  popup came up and was checked — within `budgetMs`. */
+  untilDecision?: boolean;
+  /** With `untilDecision`, past `shots`: legal shots that pot nothing — the
+   *  bot gets the table until it fouls (snooker: the foul choice). */
+  passTable?: boolean;
   /** Wall-clock budget for going past `shots`. */
   budgetMs?: number;
 }
@@ -1118,6 +1371,12 @@ export interface MatchReport {
   foulChoices: number;
   pocketCalls: number;
   placements: number;
+  /** Decisions answered through their popup (any kind). */
+  decisions: number;
+  /** Popups put through the full check (by itself, on screen, pill round trip). */
+  popupChecks: number;
+  /** Shots played to hand the bot the table (`passTable`). */
+  passes: number;
   /** 3D: turns whose clock the renderer used up before the table was usable. */
   lostToLoading: number;
 }
@@ -1127,9 +1386,11 @@ const LEAN_TURN_MS = 30_000;
 
 /**
  * Play against the bot through the UI: wait for my turn (the bot must keep
- * the table moving), check the clock and the felt, answer a snooker foul
- * choice once, take a 9-ball push-out once, plan and play each shot. A match
- * that ends is checked (verdict card, „Нова игра“) and play goes on.
+ * the table moving), check the clock and the felt, answer every decision in
+ * its popup (a snooker foul choice: the offender plays again once, „Играя аз“
+ * after that; a 9-ball push-out once, „Нормален удар“ after that; the pocket
+ * on the 8), plan and play each shot. A match that ends is checked (verdict
+ * card, „Нова игра“) and play goes on.
  */
 export async function playMatch(t: CueTable, plan: MatchPlan): Promise<MatchReport> {
   const report: MatchReport = {
@@ -1138,22 +1399,25 @@ export async function playMatch(t: CueTable, plan: MatchPlan): Promise<MatchRepo
     foulChoices: 0,
     pocketCalls: 0,
     placements: 0,
+    decisions: 0,
+    popupChecks: 0,
+    passes: 0,
     lostToLoading: 0,
   };
   const started = Date.now();
   const budget = plan.budgetMs ?? 150_000;
   for (;;) {
     const enough = t.myShots >= plan.shots;
+    const inBudget = Date.now() - started < budget;
+    const decide = plan.untilDecision === true && report.popupChecks === 0 && inBudget;
     const more =
-      plan.untilOverMax !== undefined &&
-      t.myShots < plan.untilOverMax &&
-      Date.now() - started < budget;
+      (plan.untilOverMax !== undefined && t.myShots < plan.untilOverMax && inBudget) || decide;
     if (enough && !more) break;
     const mine = await waitCueTurn(t.page);
     if (!mine) {
       report.matchesOver += 1;
       await playAgain(t); // verdict card + „Нова игра“ → a fresh match
-      if (enough) break;
+      if (enough && !decide) break;
       continue;
     }
     if (t.gl) {
@@ -1177,17 +1441,28 @@ export async function playMatch(t: CueTable, plan: MatchPlan): Promise<MatchRepo
     await expectFullClockAfterReplay(t);
     await expectSvgMatchesServer(t);
     const st = t.wire.last().state;
-    if (t.game === "SNOOKER" && st.foulChoice && report.foulChoices === 0) {
-      report.foulChoices += 1;
-      await answerFoulChoice(t);
-      continue;
+    if (t.game === "SNOOKER" && st.foulChoice) {
+      // The first time the offender plays again (or replays); later „Играя аз“.
+      if (report.foulChoices === 0) {
+        report.foulChoices += 1;
+        await answerFoulChoice(t, report);
+        continue;
+      }
+      await playOnFromDecision(t, "foul-", report);
     }
+    if (t.game === "NINEBALL" && st.pushDecision)
+      await playOnFromDecision(t, "push-reply-", report);
     const extra: Partial<Shoot> = {};
     if (t.game === "NINEBALL" && st.pushAvail && report.pushOuts === 0) {
       extra.pushOut = true;
       report.pushOuts += 1;
     }
-    const shot = await planShot(t, extra);
+    const prefer = plan.passTable && decide && enough ? "pass" : "pot";
+    if (prefer === "pass") report.passes += 1;
+    let shot = await planShot(t, extra, 0, prefer);
+    // The pocket on the 8 / the push-out: answered in the popup, then planned
+    // again (the felt under the popup is free now).
+    if (await answerShotDecision(t, shot, report)) shot = await planShot(t, extra, 0, prefer);
     if (shot.action.pocket !== undefined) report.pocketCalls += 1;
     if (shot.placePx) report.placements += 1;
     await playShot(t, shot, plan.style(t.myShots));
@@ -1259,6 +1534,17 @@ export async function checkLayout(t: CueTable, info: TestInfo, name: string): Pr
   const { page } = t;
   t.framedBox = null;
   await frameTable(t);
+  // A decision popup that came up meanwhile (an idle 3D match moves on: the
+  // bot plays a timed-out turn): fold it — this checks the table's own layout,
+  // the popup has its own check (checkDecisionPopup).
+  const open = await decisionView(page);
+  if (open.key) {
+    await clickBox(page, open.controls.minimize ?? null, "minimize");
+    await expectDecision(page, null, "„Виж масата“ did not fold the popup");
+    test
+      .info()
+      .annotations.push({ type: "cue-layout", description: `${name}: ${open.key} popup folded` });
+  }
   const path = info.outputPath(`${name}.png`);
   await page.screenshot({ path });
   await info.attach(name, { path, contentType: "image/png" });

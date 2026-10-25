@@ -119,3 +119,13 @@ export function pocketHole(p: { x: number; y: number }): number {
 export function pocketForSlot(slot: number, rotated: boolean): number {
   return rotated ? 5 - slot : slot;
 }
+
+/**
+ * Where the player sees felt point (x, y) on screen, in 2D-table coordinates:
+ * the 2D table is drawn as the engine stores it, the 3D picture is that table
+ * turned 180° (see `pocketForSlot`). The mini table in the decision popup
+ * draws by this rule, so it matches the table it stands in for.
+ */
+export function feltOnScreen(x: number, y: number, rotated: boolean): { x: number; y: number } {
+  return rotated ? { x: TABLE.w - x, y: TABLE.h - y } : { x, y };
+}

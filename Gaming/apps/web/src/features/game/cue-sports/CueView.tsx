@@ -16,11 +16,14 @@ import { Button } from "../../../ui";
 import { useEquippedCosmetic } from "../../shop/useEquippedCosmetic";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
 import { CueTableGL, webglSupported, type CueTableHandle } from "./CueTableGL";
 import type { CueScene } from "./glTable";
 import { SpinPad, type Spin } from "./SpinPad";
 import { animFrameAt, pocketForSlot, pocketHole, replayDecision, spaceShoots, type FocusTarget } from "./cueControls";
 import { cueE2E, type CueShotLog } from "./e2eHook";
+import { DecisionTable, type MiniBall } from "./DecisionTable";
+import { onEight as onEightOf, openDecision } from "./cueDecision";
 import "./cue-table.css";
 
 type RBall = { id: number; x: number; y: number };
@@ -51,10 +54,6 @@ const POCKETS: [number, number][] = [
   [TABLE.w / 2, TABLE.h],
   [TABLE.w, TABLE.h],
 ];
-
-/** Стрелки за бутоните за обявяване на джоб — по ПОЗИЦИЯ НА ЕКРАНА (горе вляво …
- *  долу вдясно, като `cue.pockets.*`); джобът зад всяка е `pocketForSlot`. */
-const POCKET_GLYPHS = ["↖", "↑", "↗", "↙", "↓", "↘"];
 
 // Pool head string (break line) + snooker "D" — mirror the engine's limits.
 const HEAD_STRING_X = 0.5;
@@ -102,6 +101,10 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   const [spin, setSpin] = useState<Spin>({ x: 0, y: 0 });
   /** 8-ball: обявеният за осмицата джоб (индекс в POCKETS) или null. */
   const [calledPocket, setCalledPocket] = useState<number | null>(null);
+  /** „Смени джоба“ — ново питане (нов promptKey), прозорецът излиза цял. */
+  const [callRound, setCallRound] = useState(0);
+  /** Решение „Играя аз“ (след push-out / фал на съперника) — ключът му. */
+  const [playOn, setPlayOn] = useState<string | null>(null);
 
   // Shot animation driven purely off state.shotNo (+ state.lastShot.before).
   const [frameBalls, setFrameBalls] = useState<RBall[] | null>(null);
@@ -228,7 +231,6 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   const myTurn = !!state && state.phase === "PLAY" && state.turn === seat && !animating;
   const ballInHand = !!state && state.ballInHand && myTurn;
   const pushAvail = game === "NINEBALL" && !!state?.pushAvail;
-  const pushDecision = game === "NINEBALL" && !!state?.pushDecision;
   const foulChoice = game === "SNOOKER" && !!state?.foulChoice;
   const canReplay = foulChoice && !!state?.missReplay;
 
@@ -244,13 +246,7 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
 
   // 8-ball: на осмицата ли съм (същото правило като в двигателя — групата ми е
   // изчистена преди удара). Тогава преди удара трябва да обявя джоб.
-  const onEight = (() => {
-    if (!state || game !== "EIGHTBALL" || state.open || state.shotNo === 0) return false;
-    const g = state.groups[state.turn] ?? null;
-    if (g === null) return false;
-    const mine = (id: number) => (g === "solids" ? id >= 1 && id <= 7 : id >= 9 && id <= 15);
-    return !state.balls.some((b) => !b.potted && mine(b.id));
-  })();
+  const onEight = !!state && game === "EIGHTBALL" && onEightOf(state);
   const mustCall = myTurn && onEight;
   const canShoot = myTurn && !pending && !(mustCall && calledPocket === null);
 
@@ -262,6 +258,30 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
 
   const cuePos =
     placedCue ?? liveBalls.find((b) => b.id === 0) ?? { x: 0.5, y: TABLE.h / 2 };
+
+  // ── Решения: изскачат сами, когато са на ред (DecisionPrompt, cueDecision) ──
+  // Ключът носи мача и удара: ново положение = ново решение (показва се отново).
+  const atShot = `${m.matchId ?? "-"}-${state?.shotNo ?? 0}`;
+  const playKey = `play-${atShot}`;
+  const decision = state
+    ? openDecision(state, seat, {
+        live: phase === "playing",
+        animating,
+        called: calledPocket !== null,
+        pushArmed,
+        playedOn: playOn === playKey,
+      })
+    : null;
+  const miniBalls: MiniBall[] = liveBalls.map((b) => ({
+    id: b.id,
+    x: b.x,
+    y: b.y,
+    color: ballColor(b.id, game),
+    stripe: isStripe(b.id, game),
+  }));
+  const miniTable = (ring?: number, onPocket?: (pocket: number) => void) => (
+    <DecisionTable balls={miniBalls} cloth={cloth} rotated={useGL} ring={ring} onPocket={onPocket} />
+  );
 
   // Pointer → table coordinates.
   function toTable(e: React.PointerEvent): { x: number; y: number } | null {
@@ -453,19 +473,12 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
       if (fouls[seat === 1 ? 1 : 0] === 2) hintParts.push(t("cue.twoFouls"));
       if (fouls[seat === 1 ? 0 : 1] === 2) hintParts.push(t("cue.twoFoulsOpp"));
     }
-    // Snooker: „фал и пропуск“ + изборът на входящия играч.
-    if (game === "SNOOKER" && state.phase === "PLAY") {
-      if (state.miss) hintParts.push(t("cue.miss"));
-      if (foulChoice && myTurn) hintParts.push(t("cue.foulChoice"));
-    }
-    // 8-ball: на осмицата — обявяване на джоб.
-    if (mustCall) {
-      hintParts.push(
-        calledPocket === null
-          ? t("cue.callPocketHint")
-          : `${t("cue.calledPocket")}: ${t(`cue.pockets.${pocketForSlot(calledPocket, useGL)}`)}`,
-      );
-    }
+    // Snooker: „фал и пропуск“ (изборът на входящия е в прозореца за решение).
+    if (game === "SNOOKER" && state.phase === "PLAY" && state.miss) hintParts.push(t("cue.miss"));
+    // 8-ball: на осмицата, джобът още не е обявен (прозорецът може да е свит).
+    if (mustCall && calledPocket === null) hintParts.push(t("cue.callPocketHint"));
+    // 9-ball: обявеният push-out.
+    if (myTurn && pushAvail && pushArmed) hintParts.push(t("cue.pushArmed"));
     if (msgText) hintParts.push(msgText);
   }
 
@@ -495,6 +508,8 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
             data-ball-in-hand={ballInHand}
             data-placing={placing}
             data-must-call={mustCall}
+            data-called={mustCall && calledPocket !== null ? calledPocket : ""}
+            data-push-armed={myTurn && pushAvail && pushArmed}
             data-aim={angle}
           >
             {useGL && glScene ? (
@@ -676,63 +691,39 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
               <Button onClick={shoot} disabled={!canShoot} title={t("cue.shootKey")} data-action="shoot">
                 {t("cue.shoot")} <kbd className="aso-kbd">Space</kbd>
               </Button>
-              {myTurn && pushAvail ? (
+              {/* Обявеният push-out се отменя тук (обявяването е в прозореца). */}
+              {myTurn && pushAvail && pushArmed ? (
                 <Button
                   variant="ghost"
-                  aria-pressed={pushArmed}
-                  className={pushArmed ? "!text-brass-100" : undefined}
-                  data-action="push-out"
-                  onClick={() => setPushArmed((v) => !v)}
+                  className="!text-brass-100"
+                  data-action="push-out-cancel"
+                  onClick={() => setPushArmed(false)}
                 >
-                  {t("cue.pushOut")}
-                </Button>
-              ) : null}
-              {myTurn && pushDecision ? (
-                <Button variant="ghost" disabled={pending} data-action="push-pass" onClick={() => send({ type: "PASS" })}>
-                  {t("cue.pushPass")}
-                </Button>
-              ) : null}
-              {myTurn && foulChoice ? (
-                <Button variant="ghost" disabled={pending} data-action="play-again" onClick={() => send({ type: "PASS" })}>
-                  {t("cue.playAgain")}
-                </Button>
-              ) : null}
-              {myTurn && canReplay ? (
-                <Button variant="ghost" disabled={pending} data-action="replay" onClick={() => send({ type: "REPLAY" })}>
-                  {t("cue.replay")}
+                  {t("cue.pushCancel")}
                 </Button>
               ) : null}
             </div>
 
             <div className="aso-cue__extras">
               <SpinPad value={spin} onChange={setSpin} disabled={!myTurn} />
+              {/* На осмицата: обявеният джоб и „Смени“ — самото обявяване
+                  е в прозореца. Мястото стои през целия ход (не мести ефекта). */}
               {mustCall ? (
-                <div className="aso-cue__pockets" role="radiogroup" aria-label={t("cue.callPocket")}>
-                  <span className="text-sm text-ink-muted" aria-hidden="true">
-                    {t("cue.callPocket")}
+                <div className="aso-cue__called" data-testid="cue-called">
+                  <span>
+                    {t("cue.calledPocket")}:{" "}
+                    <b>{calledPocket === null ? "—" : t(`cue.pockets.${pocketForSlot(calledPocket, useGL)}`)}</b>
                   </span>
-                  <div className="aso-cue__pocketgrid">
-                    {/* Laid out by screen position; the pocket behind each
-                        follows the renderer's view (3D is turned 180°). */}
-                    {POCKET_GLYPHS.map((glyph, slot) => {
-                      const pocket = pocketForSlot(slot, useGL);
-                      return (
-                        <button
-                          key={slot}
-                          type="button"
-                          role="radio"
-                          aria-checked={calledPocket === pocket}
-                          aria-label={t(`cue.pockets.${slot}`)}
-                          title={t(`cue.pockets.${slot}`)}
-                          className="aso-cue__pocketbtn"
-                          data-pocket={pocket}
-                          onClick={() => setCalledPocket(pocket)}
-                        >
-                          {glyph}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <button
+                    type="button"
+                    data-action="change-pocket"
+                    onClick={() => {
+                      setCalledPocket(null);
+                      setCallRound((n) => n + 1);
+                    }}
+                  >
+                    {calledPocket === null ? t("cue.callPocketOpen") : t("cue.changePocket")}
+                  </button>
                 </div>
               ) : null}
             </div>
@@ -753,6 +744,75 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
           <div data-testid="cue-me">
             <ScorePill label={user?.displayName ?? t("game.you")} value={scoreLine(seat)} highlight={myTurn} />
           </div>
+
+          {/* Решенията — горе, а не в средата: на телефон средата на екрана е
+              самата маса. Умалената маса в прозореца носи цялото положение. */}
+          <DecisionPrompt
+            open={decision === "call"}
+            promptKey={`call-${atShot}-${callRound}`}
+            title={t("cue.callTitle")}
+            hint={t("cue.callHint")}
+            placement="top"
+            testId="cue-call"
+          >
+            {miniTable(8, (pocket) => setCalledPocket(pocket))}
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={decision === "push"}
+            promptKey={`push-${atShot}`}
+            title={t("cue.pushTitle")}
+            hint={t("cue.pushHint")}
+            placement="top"
+            optional={{ label: t("cue.pushNo") }}
+            testId="cue-push"
+          >
+            {miniTable()}
+            <Button data-action="push-out" onClick={() => setPushArmed(true)}>
+              {t("cue.pushOut")}
+            </Button>
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={decision === "pushReply"}
+            promptKey={`push-reply-${atShot}`}
+            title={t("cue.pushReplyTitle")}
+            hint={t("cue.pushReplyHint")}
+            placement="top"
+            testId="cue-push-reply"
+          >
+            {miniTable()}
+            <Button data-action="push-play" disabled={pending} onClick={() => setPlayOn(playKey)}>
+              {t("cue.playMyself")}
+            </Button>
+            <Button variant="ghost" disabled={pending} data-action="push-pass" onClick={() => send({ type: "PASS" })}>
+              {t("cue.pushPass")}
+            </Button>
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={decision === "foul"}
+            promptKey={`foul-${atShot}`}
+            title={t("cue.foulChoiceTitle")}
+            hint={[msgText, state.freeBall ? t("cue.freeBall") : "", canReplay ? t("cue.foulChoiceMiss") : t("cue.foulChoice")]
+              .filter(Boolean)
+              .join(" · ")}
+            placement="top"
+            testId="cue-foul"
+          >
+            {miniTable()}
+            <Button data-action="foul-play" disabled={pending} onClick={() => setPlayOn(playKey)}>
+              {t("cue.playMyself")}
+            </Button>
+            <Button variant="ghost" disabled={pending} data-action="play-again" onClick={() => send({ type: "PASS" })}>
+              {t("cue.playAgain")}
+            </Button>
+            {canReplay ? (
+              <Button variant="ghost" disabled={pending} data-action="replay" onClick={() => send({ type: "REPLAY" })}>
+                {t("cue.replay")}
+              </Button>
+            ) : null}
+          </DecisionPrompt>
         </div>
       ) : null}
     </Scene>

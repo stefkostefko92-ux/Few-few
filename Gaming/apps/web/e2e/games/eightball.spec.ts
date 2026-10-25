@@ -15,9 +15,11 @@ import {
  * натискане върху сукното (пътят на мишката до контролите НЕ мести прицела),
  * сила с плъзгача (мишка + стрелки), ефект (мишка + клавиатура, вкл. ръба
  * по диагонал), удар с „Удар“ (и двоен клик — тръгва един удар) и със Space
- * при фокус върху плъзгача. На осмицата джобът се обявява с бутона. Всеки
- * удар се сверява със сървъра (виж helpers-cue.ts); ако мачът свърши —
- * картата и „Нова игра“ (играй пак).
+ * при фокус върху плъзгача. На осмицата джобът се обявява в прозореца за
+ * решение, който излиза сам (джобовете на умалената маса са бутоните; „Виж
+ * масата“ → хапче → обратно), когато мачът стигне дотам. Всеки удар се
+ * сверява със сървъра (виж helpers-cue.ts); ако мачът свърши — картата и
+ * „Нова игра“ (играй пак).
  */
 const style = (n: number): ShotStyle =>
   n === 0
@@ -35,10 +37,23 @@ test("8 топки: прицел с мишката, сила, ефект, бял
   test.setTimeout(480_000);
   const t = await openCueGame(browser, baseURL!, "EIGHTBALL");
 
-  const report = await playMatch(t, { shots: 6, untilOverMax: 14, style });
+  const report = await playMatch(t, {
+    shots: 6,
+    untilOverMax: 14,
+    untilDecision: true,
+    budgetMs: 180_000,
+    style,
+  });
 
   expect(t.myShots).toBeGreaterThanOrEqual(6);
   expect(report.placements, "бялата в ръка беше поставена (разбиването)").toBeGreaterThan(0);
+  // Осмицата идва, когато човекът изчисти групата си — обикновено още в първия
+  // рак, но не винаги (ботът играе случайно, когато получи масата). Затова тук
+  // не се изисква: всяко стигане до нея минава през прозореца (answerShotDecision),
+  // а кога точно излиза е закрепено в cueDecision.test.ts.
+  if (report.pocketCalls === 0) {
+    test.info().annotations.push({ type: "cue", description: "осмицата не дойде в бюджета" });
+  }
   await expectNoCutReplays(t);
   expectCleanWire(t);
   expectNoErrors(t);
