@@ -161,3 +161,50 @@ export function toBusinessData(d: BusinessInput) {
     facebook: d.facebook ? (safeFacebookUrl(d.facebook) ?? "") : "",
   };
 }
+
+type BusinessRow = {
+  name: string;
+  category: string;
+  description: string;
+  address: string;
+  phone: string;
+  hours: string;
+  website: string;
+  facebook: string;
+};
+
+/**
+ * Полетата, които поправката наистина променя: [поле, етикет, преди, след].
+ * И двете страни се сравняват нормализирани — адресът от каталога
+ * („https://dsk.bg“) и същият адрес от формата (safeWebUrl → „https://dsk.bg/“)
+ * не са промяна; иначе всяко празно изпращане минава като поправка.
+ */
+export function businessChanges(
+  existing: BusinessRow,
+  next: BusinessRow,
+): { key: PublicField; label: string; before: string; after: string }[] {
+  const norm = (v: string, fix: (raw: string) => string | null) => (v ? (fix(v) ?? v) : "");
+  const before: Record<PublicField, string> = {
+    name: existing.name,
+    category: existing.category,
+    description: existing.description,
+    address: existing.address,
+    phone: existing.phone,
+    hours: existing.hours,
+    websiteUrl: norm(existing.website, safeWebUrl),
+    facebook: norm(existing.facebook, safeFacebookUrl),
+  };
+  const after: Record<PublicField, string> = {
+    name: next.name,
+    category: next.category,
+    description: next.description,
+    address: next.address,
+    phone: next.phone,
+    hours: next.hours,
+    websiteUrl: next.website,
+    facebook: next.facebook,
+  };
+  return PUBLIC_FIELDS.filter(([key]) => (before[key] ?? "").trim() !== (after[key] ?? "").trim()).map(
+    ([key, label]) => ({ key, label, before: before[key], after: after[key] }),
+  );
+}
