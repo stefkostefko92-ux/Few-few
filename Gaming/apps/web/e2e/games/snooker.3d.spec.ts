@@ -13,7 +13,8 @@ import {
 /**
  * Снукър на 3D масата (WebGL през swiftshader): масата се рисува, прицел и
  * удар (и бялата в „D“, когато е в ръка) минават през платното (raycast);
- * всеки удар се сверява със сървъра, както в 2D.
+ * всеки удар се сверява със сървъра, както в 2D. След фал на бота изборът
+ * минава през прозореца за решение над платното.
  *
  * Софтуерният GPU е бавен (1–2 s на кадър): контекстът е с
  * prefers-reduced-motion — декоративната зала замръзва, самата маса се рисува
@@ -36,6 +37,9 @@ test("снукър 3D: масата се рисува, прицел и удар 
   await playMatch(t, { shots: 3, style: (n) => ({ via: n % 2 ? "space" : "button", lean: true }) });
 
   expect(t.myShots).toBeGreaterThanOrEqual(3);
+  // The last shot may have decided the match: the verdict card would cover
+  // the canvas — look at a live table.
+  if (await isOver(t.page)) await playAgain(t);
   await expectTableDrawn(t.page, info);
   expectCleanWire(t);
   expectNoErrors(t);

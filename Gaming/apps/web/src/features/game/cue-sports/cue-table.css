@@ -181,30 +181,75 @@
   opacity: 0.4;
   text-decoration: none;
 }
-.aso-cue__pockets {
+/* 8-ball на осмицата: обявеният джоб + „Смени“ (самото обявяване е в
+   прозореца за решение). Ширината е фиксирана: смяната на текста не мести
+   ефекта до него. */
+.aso-cue__called {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.6rem;
+  width: 15rem;
+  max-width: 100%;
+  font-size: 0.85rem;
+  color: var(--ink-300);
 }
-.aso-cue__pocketgrid {
-  display: grid;
-  grid-template-columns: repeat(3, 2.25rem);
-  gap: 4px;
+.aso-cue__called b {
+  color: var(--brass-100);
 }
-.aso-cue__pocketbtn {
-  height: 2.25rem;
-  border-radius: 8px;
-  border: 1px solid rgba(242, 207, 122, 0.45);
-  background: rgba(0, 0, 0, 0.3);
-  color: var(--ink-100, #f4f1e8);
-  font-weight: 700;
+.aso-cue__called button {
+  font-size: 0.8rem;
+  color: var(--brass-300);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
-.aso-cue__pocketbtn[aria-checked="true"] {
-  background: #f2cf7a;
-  color: #1c1406;
-  border-color: #f2cf7a;
+
+/* Умалената маса в прозореца за решение (DecisionTable): отделен ред над
+   бутоните на прозореца; самата маса е до 18rem. */
+.aso-cue-mini {
+  flex: 0 0 100%;
+  /* джобовете-бутони стърчат извън рамката */
+  padding-block: 0.5rem 0.25rem;
 }
-.aso-cue__pocketbtn:focus-visible {
-  outline: 2px solid var(--brass-300);
-  outline-offset: 2px;
+.aso-cue-mini__frame {
+  position: relative;
+  width: min(100%, 18rem);
+  margin-inline: auto;
+}
+.aso-cue-mini__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.8);
+}
+.aso-cue-mini__pockets {
+  position: absolute;
+  inset: 0;
+}
+.aso-cue-mini__pocket {
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  /* Само пръстен: топка в устата на джоба (осмицата!) остава видима. */
+  border: 2px solid rgba(242, 207, 122, 0.85);
+  background: transparent;
+  box-shadow: 0 0 10px -2px rgba(242, 207, 122, 0.6), inset 0 0 6px rgba(242, 207, 122, 0.35);
+  transition: transform 120ms ease, border-color 120ms ease;
+}
+.aso-cue-mini__pocket:hover {
+  transform: translate(-50%, -50%) scale(1.15);
+  border-color: #fff1c9;
+}
+/* Фокусът (прозорецът слага фокуса на първия избор) — пунктир, не „избран“. */
+.aso-cue-mini__pocket:focus-visible {
+  outline: 2px dashed var(--brass-300);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aso-cue-mini__pocket {
+    transition: none;
+  }
 }

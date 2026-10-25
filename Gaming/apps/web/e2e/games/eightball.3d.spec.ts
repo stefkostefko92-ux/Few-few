@@ -15,7 +15,9 @@ import {
  * масата, а прицелът и ударът (при бяла в ръка — и поставянето ѝ) минават
  * през него: натискане върху платното, преведено от същия raycast, с който
  * играе човек (проекцията идва от window.__asoE2E, само при
- * navigator.webdriver). Всеки удар се сверява със сървъра, както в 2D.
+ * navigator.webdriver). Всеки удар се сверява със сървъра, както в 2D. На
+ * осмицата (ако мачът стигне дотам) джобът се обявява в прозореца за решение —
+ * бутоните са джобовете на умалената маса, завъртяна като 3D картината.
  *
  * Софтуерният GPU е бавен (1–2 s на кадър): контекстът е с
  * prefers-reduced-motion — декоративната зала замръзва, самата маса се рисува
@@ -38,6 +40,9 @@ test("8 топки 3D: масата се рисува, прицел и удар 
   await playMatch(t, { shots: 3, style: (n) => ({ via: n % 2 ? "space" : "button", lean: true }) });
 
   expect(t.myShots).toBeGreaterThanOrEqual(3);
+  // The last shot may have decided the match: the verdict card would cover
+  // the canvas — look at a live table.
+  if (await isOver(t.page)) await playAgain(t);
   await expectTableDrawn(t.page, info);
   expectCleanWire(t);
   expectNoErrors(t);

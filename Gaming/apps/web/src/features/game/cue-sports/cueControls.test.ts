@@ -3,6 +3,7 @@ import { Vector3 } from "three";
 import { POCKETS, runShot, spinOk, TABLE, ball } from "@aso/shared";
 import {
   animFrameAt,
+  feltOnScreen,
   FRAME_MS,
   pocketForSlot,
   pocketHole,
@@ -172,6 +173,29 @@ describe("pocketForSlot — бутоните за джоб следват кар
     for (let k = 0; k < 6; k++) {
       expect(pocketForSlot(pocketForSlot(k, true), true)).toBe(k);
       expect(pocketForSlot(k, false)).toBe(k);
+    }
+  });
+});
+
+describe("feltOnScreen — умалената маса в прозореца за решение е като истинската", () => {
+  // Точки встрани от средните линии (камерата гледа леко наклонено към
+  // z = 0.04, перспективата не бива да реши теста).
+  const pts: [number, number][] = [];
+  for (const x of [0.15, 0.5, 0.75, 1.25, 1.5, 1.85])
+    for (const y of [0.1, 0.3, 0.75, 0.9]) pts.push([x, y]);
+
+  it("2D: точно както е на масата", () => {
+    for (const [x, y] of pts) expect(feltOnScreen(x, y, false)).toEqual({ x, y });
+  });
+
+  it("3D: всяка топка е в същата част на екрана, в която я показва истинската камера", () => {
+    const camera = makeCueCamera();
+    for (const [x, y] of pts) {
+      const v = new Vector3(x - TABLE.w / 2, 0, y - TABLE.h / 2).project(camera);
+      const m = feltOnScreen(x, y, true);
+      // NDC: +x = вдясно, +y = горе; умалената маса: +x = вдясно, +y = долу.
+      expect(Math.sign(v.x), `(${x}, ${y}) хоризонтално`).toBe(Math.sign(m.x - TABLE.w / 2));
+      expect(Math.sign(v.y), `(${x}, ${y}) вертикално`).toBe(-Math.sign(m.y - TABLE.h / 2));
     }
   });
 });

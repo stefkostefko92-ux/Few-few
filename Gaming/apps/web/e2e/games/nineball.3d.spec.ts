@@ -13,7 +13,11 @@ import {
 /**
  * 9 топки на 3D масата (WebGL през swiftshader): масата се рисува, прицел и
  * удар (при бяла в ръка — и поставянето ѝ) минават през платното (raycast);
- * всеки удар се сверява със сървъра, както в 2D.
+ * всеки удар се сверява със сървъра, както в 2D. Push-out след разбиването —
+ * през прозореца за решение над платното (излиза сам, свива се в хапче и се
+ * връща; умалената маса е завъртяна като 3D картината). Ако ходът с
+ * разбиването изтече, докато 3D масата още се зарежда, играта продължава до
+ * следващо разбиване (в рамките на бюджета).
  *
  * Софтуерният GPU е бавен (1–2 s на кадър): контекстът е с
  * prefers-reduced-motion — декоративната зала замръзва, самата маса се рисува
@@ -33,9 +37,23 @@ test("9 топки 3D: масата се рисува, прицел и удар 
   await expect(cueTable(t.page)).toHaveAttribute("data-renderer", "gl");
 
   // The break's clock is already running: shoot first, look at pixels after.
-  await playMatch(t, { shots: 3, style: (n) => ({ via: n % 2 ? "space" : "button", lean: true }) });
+  const report = await playMatch(t, {
+    shots: 3,
+    untilDecision: true,
+    budgetMs: 150_000,
+    style: (n) => ({ via: n % 2 ? "space" : "button", lean: true }),
+  });
 
   expect(t.myShots).toBeGreaterThanOrEqual(3);
+  // Разбиването вкарва (детерминистично) → push-out. Под тежък софтуерен GPU
+  // то може да изтече, преди масата да е готова (lostToLoading) — тогава
+  // push-out идва чак в следващия рак и може да не стигне в бюджета.
+  if (report.lostToLoading === 0) {
+    expect(report.popupChecks, "push-out през прозореца над 3D масата").toBe(1);
+  }
+  // The last shot may have decided the match: the verdict card would cover
+  // the canvas — look at a live table.
+  if (await isOver(t.page)) await playAgain(t);
   await expectTableDrawn(t.page, info);
   expectCleanWire(t);
   expectNoErrors(t);
