@@ -140,5 +140,21 @@
   "hud.event.end": "Събитието {0} свърши",
   "match.summary": "{Gold}[CarbonStealth]{Default} {Lime}Мачът свърши{Default} · {0} убийства · {1} играчи · топ 3:",
   "match.line": "{Gold}#{0}{Default} {1} — {Green}{2}{Default} убийства / {3} смърти · в главата {4} · най-дълга серия {5}",
-  "match.link": "{Gold}[CarbonStealth]{Default} Картата на мача: {Lime}{0}{Default}"
+  "match.link": "{Gold}[CarbonStealth]{Default} Картата на мача: {Lime}{0}{Default}",
+  "zone.ingame": "Горещите зони се задават в играта: застани на мястото и напиши !zone add <име> [радиус].",
+  "zone.usage": "{Gold}[CarbonStealth]{Default} Застани на мястото: {Lime}!zone add <име> [радиус]{Default} ({0}–{1}, по подразбиране {2}) · {Lime}!zone remove <id>{Default} · {Lime}!zone list{Default} · името: латиница, цифри, интервал, _ и -",
+  "zone.item": "{Gold}[CarbonStealth]{Default} #{0} {Gold}{1}{Default} · радиус {2} · на {3} единици",
+  "zone.none": "{Gold}[CarbonStealth]{Default} Няма такава гореща зона.",
+  "zone.fallback": "{Gold}[CarbonStealth]{Default} На картата няма зони — ползва се най-оживеното място от последните 7 дни: {Gold}{0}{Default}",
+  "zone.alive": "{Gold}[CarbonStealth]{Default} {Red}Бъди жив и застани на мястото{Default} — центърът на зоната е там, където стоиш.",
+  "zone.added": "{Gold}[CarbonStealth]{Default} {Green}Гореща зона #{0} ({1}, радиус {2}) е добавена.{Default} Влиза в редуването на тази карта.",
+  "zone.removed": "{Gold}[CarbonStealth]{Default} Гореща зона #{0} е премахната.",
+  "zone.start": "{Gold}[CarbonStealth]{Default} {Orange}ГОРЕЩА ЗОНА{Default} сега е {Gold}{0}{Default} — убийствата отвътре дават {Lime}×{1} XP{Default} за {2} минути. Който убие най-много вътре, е Кралят на зоната!",
+  "zone.warn": "{Gold}[CarbonStealth]{Default} {Orange}Горещата зона {0}{Default} свършва след {Lime}{1} s{Default}",
+  "zone.end": "{Gold}[CarbonStealth]{Default} Горещата зона {Gold}{0}{Default} свърши.",
+  "zone.king": "{Gold}[CarbonStealth]{Default} {Green}{0}{Default} е {Gold}Кралят на зоната{Default} — {1} убийства в {2}. Значката е в профила.",
+  "zone.noking": "{Gold}[CarbonStealth]{Default} Този път няма Крал на зоната — нужни са поне {0} убийства вътре.",
+  "hud.zone.start": "ГОРЕЩА ЗОНА: {0} · XP ×{1}",
+  "hud.zone.warn": "Горещата зона {0} · остават {1} s",
+  "hud.zone.end": "Горещата зона {0} свърши"
 }

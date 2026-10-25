@@ -49,6 +49,15 @@ public static class Progression
     /// </summary>
     public static int BotKillXp(int xp) => Math.Max(0, xp) / BotXpDivisor;
 
+    /// <summary>Горещата зона (CONTRACT.md §15) — същото като HOT_ZONE.multiplier в levels.ts.</summary>
+    public const int HotZoneMultiplier = 2;
+
+    /// <summary>
+    /// Убиец в активната гореща зона: XP-то за убийството (след живия множител, при бот — и след делението)
+    /// × 2. Тестови стойности: 15 → 30 · бот 15 → 7 → 14 · извън зоната 15 → 15. Същото като hotZoneXp в TS.
+    /// </summary>
+    public static int HotZoneXp(int xp, bool inZone) => Math.Max(0, xp) * (inZone ? HotZoneMultiplier : 1);
+
     /// <summary>Ниво n иска общо 100·n·(n−1)/2 XP → level = floor((1 + √(1 + 8·xp/100)) / 2).</summary>
     public static int LevelFromXp(long xp)
     {

@@ -24,6 +24,24 @@ test("plugin-config: полетата съвпадат с PluginConfig.cs", () =
   assert.equal(cfg.AfkSeconds, 90);
   assert.equal(cfg.MaxPing, 150);
   assert.equal(cfg.SpawnProtectionSeconds, 5);
+  assert.equal(cfg.HotZoneEveryMinutes, 8);
+});
+
+test("plugin-config: горещата зона — 0 изключва, 4–60, иначе спира; плъгинът и env шаблонът знаят", () => {
+  assert.equal(buildConfig({ ...env, CS2DM_HOTZONE_EVERY: "0" }).HotZoneEveryMinutes, 0);
+  assert.equal(buildConfig({ ...env, CS2DM_HOTZONE_EVERY: "12" }).HotZoneEveryMinutes, 12);
+  for (const bad of ["3", "61", "-1", "x", "7.5"]) {
+    assert.throws(() => buildConfig({ ...env, CS2DM_HOTZONE_EVERY: bad }), /CS2DM_HOTZONE_EVERY/, bad);
+  }
+  assert.match(read("plugins/src/CarbonStealth/CarbonStealthPlugin.cs"),
+    /config\.HotZoneEveryMinutes is not 0 and \(< HotZoneRules\.MinEveryMinutes or > HotZoneRules\.MaxEveryMinutes\)/);
+  const rules = read("plugins/src/CarbonStealth.Logic/HotZone.cs");
+  assert.match(rules, /MinEveryMinutes = 4;/);
+  assert.match(rules, /MaxEveryMinutes = 60;/);
+  assert.match(rules, /DefaultEveryMinutes = 8;/);
+  assert.match(read("plugins/src/CarbonStealth/PluginConfig.cs"), /HotZoneEveryMinutes \{ get; set; \} = 8;/);
+  assert.match(read("server/mods/install-plugins.sh"), /CS2DM_HOTZONE_EVERY="\$\(env_value CS2DM_HOTZONE_EVERY\)"/);
+  assert.ok(read("server/cs2.env.example").includes("\nCS2DM_HOTZONE_EVERY=8\n"));
 });
 
 test("plugin-config: защита при поява — 0 изключва, 1–15, иначе спира; плъгинът и env шаблонът знаят", () => {

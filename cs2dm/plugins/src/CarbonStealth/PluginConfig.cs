@@ -45,4 +45,7 @@ public sealed class PluginConfig : BasePluginConfig
 
     /// <summary>Защита при поява в секунди — сваля я първият изстрел (0 = изключено, иначе 1–15). CS2DM_SPAWN_PROTECTION.</summary>
     [JsonPropertyName("SpawnProtectionSeconds")] public int SpawnProtectionSeconds { get; set; } = 5;
+
+    /// <summary>Горещата зона на всеки N минути, активна 3 (0 = изключено, иначе 4–60). CS2DM_HOTZONE_EVERY.</summary>
+    [JsonPropertyName("HotZoneEveryMinutes")] public int HotZoneEveryMinutes { get; set; } = 8;
 }

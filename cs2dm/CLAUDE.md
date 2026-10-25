@@ -38,7 +38,7 @@ npm run dev                            # локално на :4330 (DATABASE_URL
 `test/agent.test.mjs` ползва фалшив RESP сървър (CI е без Redis); ако има Redis на `127.0.0.1:6379`
 (`CS2DM_TEST_REDIS_PORT`), тича и срещу него — база 14, канали `cs2dm-test:<uuid>:…`, чисти след себе си. Без `DATABASE_URL` интеграционните тестове се пропускат чисто; със — създават само
 SteamID-та `76561190000990xxx` (панелът — `991xxx`…`995xxx`, настройките — `996xxx`, статистиките и SQL-ът на плъгина — `997xxx`,
-събитията — `998xxx`; те трият и своите събития) и ги трият преди и след себе си; одитът
+събитията — `998xxx`; те трият и своите събития; режимите на арената — `988xxx`, убийствата им са в 2099 г.) и ги трият преди и след себе си; одитът
 остава (веригата не се реже). Локално: `REDIS_TEST_URL=redis://127.0.0.1:6379/<база>`.
 
 ## Структура
@@ -70,7 +70,8 @@ server/agent/50-cs2dm-agent.rules    polkit: cs2agent САМО start/stop/restar
                                      start cs2-plugins@(install|remove|enable|disable)-<id>.service, иначе NO
 server/agent/install-agent.sh        потребител · файлове · ключове (agent.env + app.env) · unit · polkit · самопроверка
 plugins/src/CarbonStealth.Logic/     чиста логика без CSS (XP, роли, срокове, мост/HMAC, банери, CSS права,
-                                     AFK/пинг, настройки, събития, карта на мача, каталог на плъгините) — xunit тестове (един файл
+                                     AFK/пинг, настройки, събития, карта на мача, каталог на плъгините, гореща зона +
+                                     решетката на Dust2) — xunit тестове (един файл
                                      с тестове на тема)
 plugins/src/CarbonStealth/           плъгинът: един partial клас по тема (Admin, AdminMenu, Banners, Adverts = живите
                                      настройки + рекламите, BridgeCommands, Chat, Connection, Stats, CssFlags, FairPlay,
@@ -209,6 +210,11 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
 - **Здраве на тика (`TickPerf.cs` + `CarbonStealth.Logic/TickHealth.cs`, CONTRACT §5):** в OnTick само едно
   изваждане на Stopwatch; минутата → `cs2dm:perf` (LPUSH/LTRIM 1440) през `BridgeClient.PushPerf` и `perf` в
   `cs2dm:live`. Панелът: `app/src/admin/perf.ts` (zod, сървърен SVG без inline стил) в `/admin/server`.
+- **Горещата зона (§15, `HotZone.cs` + `CarbonStealth.Logic/HotZone.cs`, SQL в `Data/ZoneStore.cs`):** часовникът е по
+  времето на играта (`Server.CurrentTime`); двойното XP е последната стъпка (`Progression.HotZoneXp` след множителя/делението);
+  кралят брои само убийства на хора. Маркерът е `point_worldtext` без `DepthOffset` — никога нещо, което се вижда през
+  стени. `!zone` е с правото на банерите (HEADADMIN+) и одит. Решетката (`Dust2Grid`) = `heatmap.ts` — тест чете `.cs`.
+  Обявите на режимите — `Announce(chat, center)` (`Announce.cs`): отворено WASD меню не получава център.
 - Нова колона/таблица → миграция в `app/prisma` (Prisma е собственикът на схемата), после SQL-а в `Data/`.
 - **Статистиките са `+=` с епоха (§3).** Нов агрегат → колона + `PlayerDelta` + `StatsWriter` (с
   `WHERE ред.stats_epoch <= EXCLUDED.stats_epoch`) + полето в редактора на панела (`stats-edit.ts`). Партидата

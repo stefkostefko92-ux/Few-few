@@ -39,6 +39,21 @@ export function botKillXp(xp: number): number {
   return Math.floor(Math.max(0, Math.trunc(xp)) / BOT_XP_DIVISOR);
 }
 
+/**
+ * Горещата зона (CONTRACT §15): за `activeMinutes` убиецът вътре взема XP-то за убийството × `multiplier`
+ * (след живия множител; при убийство на бот — след делението). „Крал на зоната“ — най-много убийства вътре,
+ * поне `kingMinKills`. Същото като `Progression.HotZoneMultiplier` и `HotZoneRules` в C#.
+ */
+export const HOT_ZONE = { multiplier: 2, activeMinutes: 3, kingMinKills: 3 } as const;
+
+/** XP в горещата зона — същото като `Progression.HotZoneXp`. Тестови стойности: 15→30 · 7→14 · извън 15→15. */
+export function hotZoneXp(xp: number, inZone: boolean): number {
+  return Math.max(0, Math.trunc(xp)) * (inZone ? HOT_ZONE.multiplier : 1);
+}
+
+/** Режимите на арената (CONTRACT §15) — за таблицата „Как се смята“ и началната страница. */
+export const ARENA = { hotZone: HOT_ZONE } as const;
+
 /** Баунти: серия ≥ 5 → `min(25 · (серия − 4), 250)` XP. */
 export const BOUNTY = { minStreak: 5, perKill: 25, cap: 250 } as const;
 

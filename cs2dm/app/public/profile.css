@@ -211,3 +211,27 @@
     font-size: 22px;
   }
 }
+
+/* Отличията (CONTRACT §15): значките от режимите на арената. */
+.honor-list {
+  margin: 14px 0 0;
+  padding: 0;
+  border-top: 3px solid var(--ink);
+  list-style: none;
+}
+.honor-list > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 16px;
+  padding: 12px 2px;
+  border-bottom: 1px solid var(--rule);
+}
+.honor-list strong {
+  font: 800 20px/1 var(--display);
+  text-transform: uppercase;
+}
+.badge-zone_king .badge-mark {
+  background: #ff7a18;
+  box-shadow: 0 0 0 2px var(--red-deep);
+}

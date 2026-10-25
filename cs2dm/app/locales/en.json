@@ -377,7 +377,11 @@
       "bountyValue": "the bounty's value",
       "level": "Your level comes from your total XP: level n needs 100 · n · (n − 1) / 2 XP — 100 for level 2, 300 for level 3, 4500 for level 10.",
       "bounty": "A streak of {min} kills without dying puts a bounty on your head: 25 XP for every kill after the fourth, up to {cap} XP. Whoever takes you down claims it.",
-      "revenge": "If someone has killed you at least 3 times in a row and you take them down, that is revenge — +5 XP."
+      "revenge": "If someone has killed you at least 3 times in a row and you take them down, that is revenge — +5 XP.",
+      "arena": {
+        "hotZoneRow": "Kill from inside the hot zone",
+        "hotZone": "Hot zone: every few minutes one spot on Dust2 lights up for {minutes} minutes. Every kill while you are inside gives ×{multiplier} XP. Whoever gets the most kills inside (at least {king}) becomes King of the Zone — the badge stays on their profile."
+      }
     },
     "pager": {
       "label": "Pages",
@@ -454,6 +458,23 @@
       },
       "empty": "No data for the last {days} days.",
       "legend": "A denser colour means more events in the cell. The A–H × 1–8 grid is ours, not the in-game radar."
+    },
+    "honors": {
+      "title": "Honours",
+      "lead": "Badges from the arena modes stay on the profile for as long as the profile exists.",
+      "empty": "No honours yet. Get the most kills inside the hot zone and the “King of the Zone” badge is yours.",
+      "kinds": {
+        "zone_king": "King of the Zone"
+      },
+      "times": {
+        "one": "{count} time",
+        "other": "{count} times"
+      },
+      "last": "latest",
+      "best": {
+        "one": "record: {count} kill in the zone",
+        "other": "record: {count} kills in the zone"
+      }
     }
   },
   "bans": {
@@ -597,7 +618,8 @@
           "SourceTV recordings (demos) of matches while people are on the server: nickname, SteamID64, movement, shots and chat messages — to review reports of cheating and rule breaking; voice chat is not recorded. We keep them for up to {demosDays} days.",
           "If you mute the kill-streak sounds (!qs) or change the language (!lang), the server remembers your SteamID64 with that choice until the next update of the server mods.",
           "Penalties: type, category, expiry and an internal reason that only admins can see.",
-          "Roughly the last 2000 server events (joins, kills, chat) are held briefly in working memory for moderation and are overwritten continuously; chat is not stored in the database."
+          "Roughly the last 2000 server events (joins, kills, chat) are held briefly in working memory for moderation and are overwritten continuously; chat is not stored in the database.",
+          "Honours from the arena modes (for example “King of the Zone” — the map, the zone and the number of kills) — shown on your profile."
         ]
       },
       "website": {
@@ -628,7 +650,8 @@
           "Stats — for as long as the server runs or until you ask for them to be deleted.",
           "Penalties — for as long as they are needed for the security of the server.",
           "Invoice details for VIP — as long as the Bulgarian Accountancy Act requires.",
-          "Match cards (nickname and result in each match) — {matchesDays} days, then deleted automatically."
+          "Match cards (nickname and result in each match) — {matchesDays} days, then deleted automatically.",
+          "Honours (badges such as “King of the Zone”) — for as long as your profile exists; they are deleted together with it."
         ]
       },
       "recipients": {
@@ -1412,7 +1435,9 @@
         "kills": "Latest kills and deaths",
         "auditAbout": "Audit about them",
         "banners": "Banners placed by them",
-        "matches": "Matches (cards — 90 days)"
+        "matches": "Matches (cards — 90 days)",
+        "badges": "Badges (honours)",
+        "zones": "Hot zones placed by them"
       }
     },
     "events": {

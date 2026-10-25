@@ -4,6 +4,7 @@ import {
   applyXpMultiplier,
   botKillXp,
   bountyFor,
+  hotZoneXp,
   levelForXp,
   levelProgress,
   xpForLevel,
@@ -85,4 +86,14 @@ test('убийство на бот дава половината XP надолу
   for (const [xp, expected] of cases) assert.equal(botKillXp(xp), expected, `${xp} XP`);
   // Множителят е преди делението: 15 × 2,0 = 30 → 15.
   assert.equal(botKillXp(applyXpMultiplier(15, 20)), 15);
+});
+
+test('горещата зона удвоява XP-то за убийството — същите стойности като C# (HotZoneTests)', () => {
+  assert.equal(hotZoneXp(15, true), 30);
+  assert.equal(hotZoneXp(15, false), 15);
+  assert.equal(hotZoneXp(7, true), 14);
+  assert.equal(hotZoneXp(-3, true), 0);
+  // След живия множител и след делението за бот: 15×1,5 → 22 → 44 · бот 15 → 7 → 14.
+  assert.equal(hotZoneXp(applyXpMultiplier(15, 15), true), 44);
+  assert.equal(hotZoneXp(botKillXp(15), true), 14);
 });

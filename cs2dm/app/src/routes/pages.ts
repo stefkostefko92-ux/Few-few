@@ -34,7 +34,7 @@ import {
   renderHeatmapSvg,
 } from '../heatmap.js';
 import { translatorFor, type Locale, type Translator } from '../i18n.js';
-import { BOUNTY, XP_REWARDS, levelForXp, levelProgress } from '../levels.js';
+import { ARENA, BOUNTY, XP_REWARDS, levelForXp, levelProgress } from '../levels.js';
 import type { LiveSource, LiveStatus } from '../live.js';
 import { logger } from '../logger.js';
 import { MASTERY_TIERS, masteryFor, weaponLabel } from '../mastery.js';
@@ -282,6 +282,7 @@ export function pagesRouter(locale: Locale, deps: PageDeps): Router {
       modes: HOME_MODES,
       xpRewards: XP_REWARDS,
       bounty: BOUNTY,
+      arena: ARENA,
       masteryTiers: MASTERY_TIERS,
     });
   });
@@ -347,6 +348,7 @@ export function pagesRouter(locale: Locale, deps: PageDeps): Router {
       minKills: RATIO_MIN_KILLS,
       xpRewards: XP_REWARDS,
       bounty: BOUNTY,
+      arena: ARENA,
     });
   });
 
@@ -360,10 +362,11 @@ export function pagesRouter(locale: Locale, deps: PageDeps): Router {
     const fmt = formattersFor(locale, config().DISPLAY_TZ);
     const season = await deps.repo.currentSeason();
     const seasonIds = season.id === 0 ? [0] : [0, season.id];
-    const [stats, weapons, heat] = await Promise.all([
+    const [stats, weapons, heat, honors] = await Promise.all([
       deps.repo.playerStats(steamId, seasonIds),
       deps.repo.weaponStats(steamId),
       deps.repo.heatmap(steamId, heatmapWindow(now())),
+      deps.repo.honors(steamId),
     ]);
     const name = displayName(player.name, steamId);
     const allTime = statView(stats.find((line) => line.seasonId === 0) ?? null);
@@ -456,6 +459,7 @@ export function pagesRouter(locale: Locale, deps: PageDeps): Router {
       progress,
       mastery,
       masteryTiers: MASTERY_TIERS,
+      honors,
       heatmaps,
       heatmapInfo: {
         days: HEATMAP_WINDOW_DAYS,

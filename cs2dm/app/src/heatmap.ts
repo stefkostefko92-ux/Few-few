@@ -84,9 +84,21 @@ function escapeXml(text: string): string {
     .replace(/'/g, '&#39;');
 }
 
-const SECTORS = 8;
+/** Сектори 8 × 8 с подписи A–H / 1–8 — същите като `Dust2Grid` в C# (горещата зона, §15). */
+export const SECTORS = 8;
 const SECTOR_PX = DUST2_OVERVIEW.size / SECTORS;
-const COLUMNS = 'ABCDEFGH';
+export const COLUMNS = 'ABCDEFGH';
+
+function sectorOfCell(cx: number, cy: number): string {
+  const per = GRID / SECTORS;
+  return `${COLUMNS[Math.floor(cx / per)]}${Math.floor(cy / per) + 1}`;
+}
+
+/** Секторът на световна точка („C4“) или null извън радара — същото като `Dust2Grid.SectorLabel`. */
+export function sectorLabel(x: number, y: number): string | null {
+  const cell = cellOf(x, y);
+  return cell ? sectorOfCell(cell.cx, cell.cy) : null;
+}
 
 export interface HeatmapSvgOptions {
   id: string;
@@ -139,9 +151,8 @@ export function renderHeatmapSvg(options: HeatmapSvgOptions): string {
 /** Най-гъстата клетка като „C4“ (сектор 8 × 8) — за текстовото резюме до картата. */
 export function hottestSector(cells: ReadonlyArray<HeatCell>): string | null {
   const sectors = new Map<string, number>();
-  const per = GRID / SECTORS;
   for (const cell of cleanCells(cells)) {
-    const key = `${COLUMNS[Math.floor(cell.cx / per)]}${Math.floor(cell.cy / per) + 1}`;
+    const key = sectorOfCell(cell.cx, cell.cy);
     sectors.set(key, (sectors.get(key) ?? 0) + cell.n);
   }
   let best: string | null = null;

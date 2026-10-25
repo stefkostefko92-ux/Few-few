@@ -53,7 +53,9 @@ public sealed partial class CarbonStealthPlugin
         var outcome = _streaks.RecordKill(a.SteamId, v.SteamId);
         var weapon = Progression.NormalizeWeapon(e.Weapon);
         var facts = FactsOf(e, outcome.Revenge, outcome.BountyClaimed);
-        var xp = Progression.ApplyMultiplier(Progression.XpForKill(facts), XpTenths());
+        var inZone = InHotZone(attacker);
+        var xp = Progression.HotZoneXp(Progression.ApplyMultiplier(Progression.XpForKill(facts), XpTenths()), inZone);
+        if (inZone) _zoneRound.Kill(a.SteamId64, a.Name);
         var levelBefore = a.Level;
         a.Xp += xp;
         a.SessionKills++;
@@ -101,13 +103,14 @@ public sealed partial class CarbonStealthPlugin
         BountyClaimed: bountyClaimed);
 
     /// <summary>
-    /// Убит бот: половината XP (CONTRACT.md §3) и нищо друго — убийство, K/D, серия, баунти, оръжия и
-    /// heatmap остават само между хора, за да не се „ферми“ класацията на празен сървър.
+    /// Убит бот: половината XP (CONTRACT.md §3; в горещата зона — × 2, §15) и нищо друго — убийство, K/D,
+    /// серия, баунти, оръжия и heatmap остават само между хора, за да не се „ферми“ класацията на празен сървър.
     /// </summary>
     private void RewardBotKill(CCSPlayerController attacker, PlayerState a, EventPlayerDeath e)
     {
-        var xp = Progression.BotKillXp(
-            Progression.ApplyMultiplier(Progression.XpForKill(FactsOf(e, revenge: false, bountyClaimed: 0)), XpTenths()));
+        var xp = Progression.HotZoneXp(Progression.BotKillXp(
+            Progression.ApplyMultiplier(Progression.XpForKill(FactsOf(e, revenge: false, bountyClaimed: 0)), XpTenths())),
+            InHotZone(attacker));
         if (xp <= 0) return;
         var levelBefore = a.Level;
         a.Xp += xp;

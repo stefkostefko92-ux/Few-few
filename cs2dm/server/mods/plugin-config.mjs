@@ -56,6 +56,8 @@ export function buildConfig(env) {
     MaxPing: intIn(env.CS2DM_MAX_PING, 'CS2DM_MAX_PING', 150, 50, 1000),
     // Защитата при поява е в CarbonStealth (тази на Deathmatch 1.3.6 не тръгва — виж SpawnProtection.cs).
     SpawnProtectionSeconds: intIn(env.CS2DM_SPAWN_PROTECTION, 'CS2DM_SPAWN_PROTECTION', 5, 1, 15),
+    // Горещата зона (CONTRACT §15): на всеки N минути за 3 минути двойно XP вътре. 0 = изключено.
+    HotZoneEveryMinutes: intIn(env.CS2DM_HOTZONE_EVERY, 'CS2DM_HOTZONE_EVERY', 8, 4, 60),
     ConfigVersion: 1,
   };
 }

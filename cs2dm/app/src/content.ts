@@ -8,7 +8,7 @@ export const CONTENT_UPDATED = '2026-10-24';
 
 /** Последна промяна на всеки правен текст — показва се на страницата и отива в sitemap. */
 export const LEGAL_UPDATED = {
-  privacy: '2026-10-24',
+  privacy: '2026-10-25',
   vipTerms: '2026-10-24',
   rules: '2026-10-24',
   imprint: '2026-10-24',

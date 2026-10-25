@@ -134,6 +134,19 @@ export interface MatchDetail extends Omit<MatchListRow, 'top'> {
   rows: MatchRow[];
 }
 
+/** Значка на профила (CONTRACT §15): вид, колко пъти, последната и рекордът в убийства (ако има). */
+export interface BadgeSummary {
+  kind: 'zone_king';
+  count: number;
+  lastAt: Date;
+  bestKills: number | null;
+}
+
+/** Отличията на играча за публичния профил (§15). */
+export interface PlayerHonors {
+  badges: BadgeSummary[];
+}
+
 export interface SitemapPlayer {
   steamId: string;
   updatedAt: Date;
@@ -168,6 +181,8 @@ export interface Repo {
   recentMatches(limit: number): Promise<MatchListRow[]>;
   /** Един мач с всички редове по място; няма → null. */
   match(id: number): Promise<MatchDetail | null>;
+  /** Значките на играча (§15) — профилът е публичен само за нескрит играч. */
+  honors(steamId: string): Promise<PlayerHonors>;
 }
 
 export function pagesFor(total: number, pageSize: number): number {

@@ -45,6 +45,10 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
         if (config.AfkSeconds is not 0 and (< 30 or > 3600)) config.AfkSeconds = 90;
         if (config.MaxPing is not 0 and (< 50 or > 1000)) config.MaxPing = 150;
         if (config.SpawnProtectionSeconds is not 0 and (< 1 or > SpawnShield.MaxSeconds)) config.SpawnProtectionSeconds = 5;
+        if (config.HotZoneEveryMinutes is not 0 and (< HotZoneRules.MinEveryMinutes or > HotZoneRules.MaxEveryMinutes))
+        {
+            config.HotZoneEveryMinutes = HotZoneRules.DefaultEveryMinutes;
+        }
         // Пътищата отиват в манифеста за precache — само наши модели, без „..“.
         foreach (var (key, model) in config.BannerModels.ToList())
         {
@@ -86,6 +90,7 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
         RegisterFairPlay();
         RegisterSpawnProtection();
         RegisterTickHealth();
+        RegisterHotZone();
         RegisterEvents();
         RegisterMatch();
 
@@ -119,6 +124,7 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
     public override void Unload(bool hotReload)
     {
         RemoveBannerEntities();
+        RemoveZoneMarker();
         UntintAll();
         foreach (var slot in _huds.Keys.ToList()) CloseHud(slot);
         ClearCssFlags();

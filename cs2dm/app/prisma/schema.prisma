@@ -103,6 +103,9 @@ model Player {
   webSessions   WebSession[]
   recoveryCodes WebRecoveryCode[]
   matches       MatchPlayer[]
+  badges        PlayerBadge[]
+  duelWins      Duel[]              @relation("duelWinner")
+  duelLosses    Duel[]              @relation("duelLoser")
 
   @@index([lastSeenAt])
   @@index([role])
@@ -490,4 +493,56 @@ model MatchPlayer {
   @@id([matchId, steamId])
   @@index([steamId])
   @@map("match_players")
+}
+
+/// „Горещата зона“ (CONTRACT §15): точките, които HEADADMIN+ задава в играта с `!zone add`. Без FK към
+/// автора — като `map_banners`: одитът пази кой, зоната остава и след изтриване на автора.
+model MapZone {
+  id        Int      @id @default(autoincrement())
+  map       String   @db.VarChar(64)
+  name      String   @db.VarChar(24)
+  x         Float    @db.Real
+  y         Float    @db.Real
+  z         Float    @db.Real
+  /// Радиус в единици на играта (100–800); височината е ±160 от центъра.
+  radius    Int
+  createdBy String?  @map("created_by") @db.VarChar(17)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([map])
+  @@map("map_zones")
+}
+
+/// Значките на играча (CONTRACT §15) — „Крал на зоната“ (`zone_king`). Пазят се, докато играчът съществува.
+model PlayerBadge {
+  id       BigInt   @id @default(autoincrement())
+  steamId  String   @map("steam_id") @db.VarChar(17)
+  kind     String   @db.VarChar(32)
+  earnedAt DateTime @default(now()) @map("earned_at") @db.Timestamptz(3)
+  /// `{map, zone, kills}` за `zone_king` — само числа и имена на зони, никакви лични данни.
+  details  Json     @default("{}")
+  player   Player   @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+
+  @@index([steamId, earnedAt])
+  @@map("player_badges")
+}
+
+/// Дуелите в FFA (CONTRACT §15): до 5 убийства един срещу друг или 3 минути. При равенство (`draw`) редът
+/// на двамата е произволен. Срок 90 дни (§7).
+model Duel {
+  id          Int      @id @default(autoincrement())
+  winnerId    String   @map("winner_id") @db.VarChar(17)
+  loserId     String   @map("loser_id") @db.VarChar(17)
+  winnerScore Int      @map("winner_score")
+  loserScore  Int      @map("loser_score")
+  draw        Boolean  @default(false)
+  startedAt   DateTime @map("started_at") @db.Timestamptz(3)
+  endedAt     DateTime @map("ended_at") @db.Timestamptz(3)
+  winner      Player   @relation("duelWinner", fields: [winnerId], references: [steamId], onDelete: Cascade)
+  loser       Player   @relation("duelLoser", fields: [loserId], references: [steamId], onDelete: Cascade)
+
+  @@index([winnerId])
+  @@index([loserId])
+  @@index([endedAt])
+  @@map("duels")
 }

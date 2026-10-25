@@ -60,6 +60,23 @@
     </aside>
   </div>
 
+  <section class="card spaced honors" aria-labelledby="honors-title">
+    <h2 id="honors-title"><%= t('player.honors.title') %></h2>
+    <p><%= t('player.honors.lead') %></p>
+    <% if (honors.badges.length === 0) { %>
+    <p class="muted"><%= t('player.honors.empty') %></p>
+    <% } else { %>
+    <ul class="honor-list">
+      <% honors.badges.forEach((badge) => { %><li>
+        <span class="badge badge-<%= badge.kind %>"><span class="badge-mark" aria-hidden="true"></span><%= t('player.honors.kinds.' + badge.kind) %></span>
+        <strong><%= t.plural('player.honors.times', badge.count) %></strong>
+        <span class="muted"><%= t('player.honors.last') %> <time datetime="<%= fmt.iso(badge.lastAt) %>"><%= fmt.date(badge.lastAt) %></time><% if (badge.bestKills !== null) { %> · <%= t.plural('player.honors.best', badge.bestKills) %><% } %></span>
+      </li>
+      <% }) %>
+    </ul>
+    <% } %>
+  </section>
+
   <section class="card spaced" aria-labelledby="mastery-title">
     <h2 id="mastery-title"><%= t('player.mastery.title') %></h2>
     <p><%= t('player.mastery.lead') %></p>

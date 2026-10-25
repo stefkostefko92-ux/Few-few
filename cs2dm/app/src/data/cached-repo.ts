@@ -63,5 +63,6 @@ export function withCache(repo: Repo, cache = new TtlCache()): Repo {
     recentMatches: (limit) => cache.get(`mt:${limit}`, SHORT, () => repo.recentMatches(limit)),
     // Завършил мач не се променя — дълъг кеш.
     match: (id) => cache.get(`m:${id}`, LONG, () => repo.match(id)),
+    honors: (id) => cache.get(`hn:${id}`, SHORT, () => repo.honors(id)),
   };
 }

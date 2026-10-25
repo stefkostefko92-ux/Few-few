@@ -140,5 +140,21 @@
   "hud.event.end": "The event {0} is over",
   "match.summary": "{Gold}[CarbonStealth]{Default} {Lime}Match over{Default} · {0} kills · {1} players · top 3:",
   "match.line": "{Gold}#{0}{Default} {1} — {Green}{2}{Default} kills / {3} deaths · HS {4} · best streak {5}",
-  "match.link": "{Gold}[CarbonStealth]{Default} Match card: {Lime}{0}{Default}"
+  "match.link": "{Gold}[CarbonStealth]{Default} Match card: {Lime}{0}{Default}",
+  "zone.ingame": "Hot zones are set in game: stand at the spot and type !zone add <name> [radius].",
+  "zone.usage": "{Gold}[CarbonStealth]{Default} Stand at the spot: {Lime}!zone add <name> [radius]{Default} ({0}–{1}, default {2}) · {Lime}!zone remove <id>{Default} · {Lime}!zone list{Default} · name: letters, digits, space, _ and -",
+  "zone.item": "{Gold}[CarbonStealth]{Default} #{0} {Gold}{1}{Default} · radius {2} · {3} units away",
+  "zone.none": "{Gold}[CarbonStealth]{Default} No hot zone found.",
+  "zone.fallback": "{Gold}[CarbonStealth]{Default} No zones on this map — the busiest spot of the last 7 days is used: {Gold}{0}{Default}",
+  "zone.alive": "{Gold}[CarbonStealth]{Default} {Red}Be alive and stand at the spot{Default} — the zone is centred on you.",
+  "zone.added": "{Gold}[CarbonStealth]{Default} {Green}Hot zone #{0} ({1}, radius {2}) added.{Default} It joins the rotation on this map.",
+  "zone.removed": "{Gold}[CarbonStealth]{Default} Hot zone #{0} removed.",
+  "zone.start": "{Gold}[CarbonStealth]{Default} {Orange}HOT ZONE{Default} is now {Gold}{0}{Default} — kills from inside give {Lime}×{1} XP{Default} for {2} minutes. Most kills inside is the King of the Zone!",
+  "zone.warn": "{Gold}[CarbonStealth]{Default} {Orange}Hot zone {0}{Default} ends in {Lime}{1} s{Default}",
+  "zone.end": "{Gold}[CarbonStealth]{Default} The hot zone {Gold}{0}{Default} is over.",
+  "zone.king": "{Gold}[CarbonStealth]{Default} {Green}{0}{Default} is the {Gold}King of the Zone{Default} — {1} kills in {2}. The badge is on the profile.",
+  "zone.noking": "{Gold}[CarbonStealth]{Default} No King of the Zone this time — it takes at least {0} kills inside.",
+  "hud.zone.start": "HOT ZONE: {0} · XP ×{1}",
+  "hud.zone.warn": "Hot zone {0} · {1} s left",
+  "hud.zone.end": "Hot zone {0} is over"
 }

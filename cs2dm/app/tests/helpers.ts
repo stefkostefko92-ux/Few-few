@@ -3,6 +3,7 @@ import type {
   Repo,
   LeaderRow,
   MatchDetail,
+  PlayerHonors,
   PublicBan,
   PublicPlayer,
   StatLine,
@@ -21,6 +22,7 @@ export interface FakeData {
   tiers: Awaited<ReturnType<Repo['vipTiers']>>;
   events?: PublicEvent[];
   matches?: MatchDetail[];
+  honors?: PlayerHonors;
 }
 
 export const PLAYER_ID = '76561198000000001';
@@ -166,6 +168,7 @@ export function fakeRepo(data: FakeData, calls: string[] = []): Repo {
           : null,
       })),
     match: async (id) => (data.matches ?? []).find((match) => match.id === id) ?? null,
+    honors: async () => data.honors ?? { badges: [] },
   };
 }
 

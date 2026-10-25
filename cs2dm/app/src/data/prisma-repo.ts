@@ -2,6 +2,7 @@ import { Prisma, type PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import type { PublicEvent } from '../events.js';
 import { CELL_PX, DUST2_OVERVIEW, cleanCells, type HeatCell } from '../heatmap.js';
+import { loadHonors } from './honors.js';
 import { loadEvents, loadMatch, loadRecentMatches } from './public-extra.js';
 import {
   RATIO_MIN_KILLS,
@@ -10,6 +11,7 @@ import {
   type MatchDetail,
   type MatchListRow,
   type Paged,
+  type PlayerHonors,
   type PublicBan,
   type PublicPlayer,
   type PublicVipTier,
@@ -260,6 +262,10 @@ export class PrismaRepo implements Repo {
 
   match(id: number): Promise<MatchDetail | null> {
     return loadMatch(this.db, id);
+  }
+
+  honors(steamId: string): Promise<PlayerHonors> {
+    return loadHonors(this.db, steamId);
   }
 
   async lastStatsUpdate(): Promise<Date | null> {

@@ -72,6 +72,8 @@ export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
           auditBy,
           banners,
           matches,
+          badges,
+          zones,
         ] = await Promise.all([
           ctx.db.session.findMany({ where: { steamId }, ...byTime }),
           ctx.db.webSession.findMany({
@@ -112,6 +114,8 @@ export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
             take,
             include: { match: { select: { endedAt: true, map: true } } },
           }),
+          ctx.db.playerBadge.findMany({ where: { steamId }, ...byTime }),
+          ctx.db.mapZone.findMany({ where: { createdBy: steamId }, ...byTime }),
         ]);
         const { totpSecretEnc, ...rest } = player;
         const profile = { ...rest, totpSecretStored: totpSecretEnc !== null };
@@ -263,6 +267,8 @@ export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
               'topWeapon',
             ],
           ),
+          section('badges', badges, ['kind', 'earnedAt', 'details']),
+          section('zones', zones, ['id', 'map', 'name', 'radius', 'createdAt']),
         ];
         renderAdmin(req, res, 'player-data', {
           current: 'players',

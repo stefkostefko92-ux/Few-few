@@ -71,6 +71,31 @@ test('профилът: ниво, K/D, точност, майсторство, h
   }
 });
 
+test('профилът: отличията (§15) — значката с брой и рекорд, празно състояние без значки', async () => {
+  const data = sampleData();
+  data.honors = {
+    badges: [
+      { kind: 'zone_king', count: 3, lastAt: new Date('2026-10-24T18:00:00Z'), bestKills: 7 },
+    ],
+  };
+  const app = await start({ repo: fakeRepo(data) });
+  const empty = await start({ repo: fakeRepo(sampleData()) });
+  try {
+    const html = await (await app.get(`/bg/player/${PLAYER_ID}`)).text();
+    assert.match(html, /<h2 id="honors-title">Отличия<\/h2>/);
+    assert.match(html, /badge-zone_king/);
+    assert.match(html, /Крал на зоната/);
+    assert.match(html, /<strong>3 пъти<\/strong>/);
+    assert.match(html, /рекорд: 7 убийства в зоната/);
+    const none = await (await empty.get(`/en/player/${PLAYER_ID}`)).text();
+    assert.match(none, /No honours yet/);
+    assert.doesNotMatch(none, /badge-zone_king/);
+  } finally {
+    await app.close();
+    await empty.close();
+  }
+});
+
 test('аватар само от CDN-а на Steam по HTTPS', async () => {
   assert.equal(
     safeAvatar('https://avatars.steamstatic.com/abc_full.jpg'),

@@ -377,7 +377,11 @@
       "bountyValue": "il valore della taglia",
       "level": "Il livello deriva dagli XP totali: il livello n richiede 100 · n · (n − 1) / 2 XP — 100 per il livello 2, 300 per il livello 3, 4500 per il livello 10.",
       "bounty": "Una serie di {min} uccisioni senza morire mette una taglia sulla Sua testa: 25 XP per ogni uccisione dopo la quarta, fino a {cap} XP. Chi La abbatte la riscuote.",
-      "revenge": "Se qualcuno L'ha uccisa almeno 3 volte di fila e Lei lo abbatte, è una vendetta: +5 XP."
+      "revenge": "Se qualcuno L'ha uccisa almeno 3 volte di fila e Lei lo abbatte, è una vendetta: +5 XP.",
+      "arena": {
+        "hotZoneRow": "Uccisione dall'interno della zona calda",
+        "hotZone": "Zona calda: ogni pochi minuti un punto di Dust2 si accende per {minutes} minuti. Ogni uccisione mentre è all'interno vale ×{multiplier} XP. Chi fa più uccisioni all'interno (almeno {king}) diventa il Re della zona: il distintivo resta sul suo profilo."
+      }
     },
     "pager": {
       "label": "Pagine",
@@ -454,6 +458,23 @@
       },
       "empty": "Nessun dato negli ultimi {days} giorni.",
       "legend": "Un colore più intenso indica più eventi nella cella. La griglia A–H × 1–8 è nostra, non il radar del gioco."
+    },
+    "honors": {
+      "title": "Riconoscimenti",
+      "lead": "I distintivi delle modalità dell'arena restano sul profilo finché il profilo esiste.",
+      "empty": "Ancora nessun riconoscimento. Faccia più uccisioni di tutti nella zona calda e il distintivo «Re della zona» è Suo.",
+      "kinds": {
+        "zone_king": "Re della zona"
+      },
+      "times": {
+        "one": "{count} volta",
+        "other": "{count} volte"
+      },
+      "last": "ultima volta",
+      "best": {
+        "one": "record: {count} uccisione nella zona",
+        "other": "record: {count} uccisioni nella zona"
+      }
     }
   },
   "bans": {
@@ -597,7 +618,8 @@
           "Registrazioni SourceTV (demo) delle partite mentre ci sono persone sul server: nickname, SteamID64, movimenti, colpi e messaggi in chat, per verificare le segnalazioni di cheat e di violazioni; la chat vocale non viene registrata. Le conserviamo fino a {demosDays} giorni.",
           "Se disattiva i suoni delle serie di uccisioni (!qs) o cambia lingua (!lang), il server ricorda il Suo SteamID64 con questa scelta fino al prossimo aggiornamento delle mod del server.",
           "Sanzioni: tipo, categoria, scadenza e un motivo interno visibile solo agli amministratori.",
-          "Gli ultimi 2000 eventi circa del server (ingressi, uccisioni, chat) restano brevemente nella memoria operativa per la moderazione e vengono sovrascritti di continuo; la chat non viene salvata nel database."
+          "Gli ultimi 2000 eventi circa del server (ingressi, uccisioni, chat) restano brevemente nella memoria operativa per la moderazione e vengono sovrascritti di continuo; la chat non viene salvata nel database.",
+          "Riconoscimenti delle modalità dell'arena (ad esempio «Re della zona»: la mappa, la zona e il numero di uccisioni), mostrati sul Suo profilo."
         ]
       },
       "website": {
@@ -628,7 +650,8 @@
           "Statistiche: finché il server è attivo o finché non ne chiede la cancellazione.",
           "Sanzioni: finché sono necessarie per la sicurezza del server.",
           "Dati di fatturazione per il VIP: per il tempo richiesto dalla legge bulgara sulla contabilità.",
-          "Schede delle partite (nickname e risultato in ogni partita) — {matchesDays} giorni, poi cancellate automaticamente."
+          "Schede delle partite (nickname e risultato in ogni partita) — {matchesDays} giorni, poi cancellate automaticamente.",
+          "Riconoscimenti (distintivi come «Re della zona»): finché esiste il Suo profilo; vengono cancellati insieme a esso."
         ]
       },
       "recipients": {
@@ -1412,7 +1435,9 @@
         "kills": "Ultime uccisioni e morti",
         "auditAbout": "Registro su di lui",
         "banners": "Banner posizionati da lui",
-        "matches": "Partite (schede — 90 giorni)"
+        "matches": "Partite (schede — 90 giorni)",
+        "badges": "Distintivi (riconoscimenti)",
+        "zones": "Zone calde create dal giocatore"
       }
     },
     "events": {
