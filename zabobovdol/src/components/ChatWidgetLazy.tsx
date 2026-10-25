@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ComponentType } from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { ChatFab } from "@/components/ChatFab";
@@ -8,8 +8,23 @@ import { ChatFab } from "@/components/ChatFab";
 // Целият чат (разговор, поток, списъци) е отделен чънк и не влиза в JS на
 // страницата. Бутонът е видим веднага; чатът се зарежда след натискане или
 // когато браузърът е свободен (idle), което стане първо.
-const ChatWidget = dynamic(
-  () => import("@/components/ChatWidget").then((m) => m.ChatWidget),
+//
+// Ако чънкът не се зареди (слаба мобилна мрежа; нов деплой — старият адрес дава
+// 404), грешката НЕ стига до коренния layout: там няма граница за грешки и
+// global-error би подменил цялата, вече ползваема страница с „Възникна
+// временен проблем“. Остава бутонът; натискането презарежда страницата.
+type ChatProps = { initialOpen?: boolean };
+
+// Същите props като ChatWidget (initialOpen не се ползва — няма какво да отвори).
+const ChatUnavailable: ComponentType<ChatProps> = () => (
+  <ChatFab onClick={() => window.location.reload()} />
+);
+
+const ChatWidget = dynamic<ChatProps>(
+  () =>
+    import("@/components/ChatWidget")
+      .then((m) => m.ChatWidget)
+      .catch(() => ChatUnavailable),
   { ssr: false },
 );
 
