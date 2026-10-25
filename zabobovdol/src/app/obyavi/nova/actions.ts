@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { isPhoneInput, normalizePhoneInput } from "@/lib/phone";
 import { prisma } from "@/lib/prisma";
 import { slugify, uniqueSlug } from "@/lib/slug";
 import { logAudit } from "@/lib/audit";
@@ -33,7 +34,16 @@ const schema = z.object({
     .min(10, "Описанието е твърде кратко — поне 10 знака.")
     .max(4000, "Описанието е твърде дълго — до 4000 знака."),
   contactName: z.string().trim().max(80).optional().default(""),
-  contactPhone: z.string().trim().max(40).optional().default(""),
+  // Непълен номер не стига до публикуване — иначе на мястото му стои
+  // „Телефонът се проверява“. „359…“ и мобилен без 0 се допълват.
+  contactPhone: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .default("")
+    .transform(normalizePhoneInput)
+    .refine((v) => v === "" || isPhoneInput(v), MSG.phone),
   contactEmail: z
     .string()
     .trim()

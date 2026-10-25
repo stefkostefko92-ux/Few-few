@@ -9,7 +9,7 @@
 
 import { Phone } from "@/components/icons";
 import { TelLink } from "@/components/TelLink";
-import { NOT_DIALABLE, formatPhoneBg, isDialablePhone } from "@/lib/phone";
+import { NOT_DIALABLE, formatPhoneBg, isDialablePhone, splitPhones } from "@/lib/phone";
 
 const VARIANT = {
   primary: "btn-primary",
@@ -34,6 +34,27 @@ export function PhoneButton({
   className?: string;
   "aria-label"?: string;
 }) {
+  // Няколко номера в едно поле („0888 123 456 / 0702 62323“) → бутон за
+  // всеки; един общ tel: от слепените цифри не свързва с никого.
+  const parts = splitPhones(phone);
+  if (parts.length > 1) {
+    const whole = formatPhoneBg(phone);
+    const dialable = parts.filter(isDialablePhone);
+    return (
+      <span className={`flex flex-col gap-2 sm:flex-row sm:flex-wrap ${className}`.trim()}>
+        {(dialable.length ? dialable : parts.slice(0, 1)).map((p) => (
+          <PhoneButton
+            key={p}
+            phone={p}
+            label={label}
+            variant={variant}
+            full={full}
+            aria-label={ariaLabel?.includes(whole) ? ariaLabel.replace(whole, formatPhoneBg(p)) : undefined}
+          />
+        ))}
+      </span>
+    );
+  }
   const number = formatPhoneBg(phone);
   // Без цифри (напр. „няма“) не е бутон — просто текст.
   if (!/\d/.test(phone)) return <span className={className}>{phone}</span>;

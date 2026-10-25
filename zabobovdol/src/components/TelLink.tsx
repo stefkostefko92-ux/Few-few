@@ -6,7 +6,7 @@
 
 import type { ReactNode } from "react";
 import { track } from "@/lib/events";
-import { NOT_DIALABLE, formatPhoneBg, isDialablePhone } from "@/lib/phone";
+import { NOT_DIALABLE, formatPhoneBg, isDialablePhone, splitPhones } from "@/lib/phone";
 
 export function TelLink({
   phone,
@@ -19,15 +19,31 @@ export function TelLink({
   children?: ReactNode;
   "aria-label"?: string;
 }) {
+  // Няколко номера в едно поле → отделна връзка за всеки (слепените цифри
+  // не свързват). С подаден текст (children) — връзката води към първия.
+  const parts = splitPhones(phone);
+  if (parts.length > 1 && children == null) {
+    return (
+      <>
+        {parts.map((p, i) => (
+          <span key={p}>
+            {i > 0 && ", "}
+            <TelLink phone={p} className={className} />
+          </span>
+        ))}
+      </>
+    );
+  }
+  const one = parts.length > 1 ? (parts.find(isDialablePhone) ?? parts[0]) : phone;
   // В tel: остават само цифрите и „+“ — интервалите и думите („централа“)
   // объркват някои телефони.
-  const digits = phone.replace(/[^\d+]/g, "");
+  const digits = one.replace(/[^\d+]/g, "");
   // Номер с грешна дължина („0702 2016“) не свързва — не е връзка и не се
   // показва като номер, докато админът не го поправи.
-  if (digits && !isDialablePhone(phone)) {
+  if (digits && !isDialablePhone(one)) {
     return <span className="text-slate-600">{children ?? NOT_DIALABLE}</span>;
   }
-  const shown = children ?? formatPhoneBg(phone);
+  const shown = children ?? formatPhoneBg(one);
   if (!digits) return <span className={className}>{shown}</span>;
   return (
     <a

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { formatPhoneBg, isDialablePhone, nationalDigits } from "@/lib/phone";
+import { formatPhoneBg, isDialablePhone, nationalDigits, splitPhones } from "@/lib/phone";
 
 test("formatPhoneBg: мобилни от +359, 00359 и 0 → „0XXX XXX XXX“", () => {
   assert.equal(formatPhoneBg("+359877414874"), "0877 414 874");
@@ -82,4 +82,36 @@ test("nationalDigits дава националния запис само с ци
   assert.equal(nationalDigits("00359 702 62323"), "070262323");
   assert.equal(nationalDigits("+44 20 7946 0958"), null);
   assert.equal(nationalDigits("няма"), null);
+});
+
+test("кратките европейски 116 XXX са верни и остават без промяна", () => {
+  for (const n of ["116 111", "116000", "116 123"]) {
+    assert.equal(isDialablePhone(n), true, n);
+    assert.equal(formatPhoneBg(n), n);
+  }
+});
+
+test("splitPhones: няколко номера в едно поле → всеки поотделно", () => {
+  assert.deepEqual(splitPhones("0888 123 456 / 0702 62323"), ["0888 123 456", "0702 62323"]);
+  assert.deepEqual(splitPhones("0888123456/0888654321"), ["0888123456", "0888654321"]);
+  assert.deepEqual(splitPhones("0702 62323, 0702 62115"), ["0702 62323", "0702 62115"]);
+  assert.deepEqual(splitPhones("0702 62323; 0888 123 456"), ["0702 62323", "0888 123 456"]);
+  // Само абонатният номер → кодът на предния.
+  assert.deepEqual(splitPhones("0702 62323 / 62324"), ["0702 62323", "0702 62324"]);
+  assert.deepEqual(splitPhones("078 55 97 00 / 55 97 01"), ["078 55 97 00", "078 55 97 01"]);
+  // „/“ като разделител на кода — един номер.
+  assert.deepEqual(splitPhones("0702/6 23 23"), ["0702/6 23 23"]);
+  assert.deepEqual(splitPhones("02/931 11 11"), ["02/931 11 11"]);
+  assert.deepEqual(splitPhones("0877 414 874"), ["0877 414 874"]);
+});
+
+test("няколко номера: не се слепват в един невалиден, всеки се съди поотделно", () => {
+  for (const raw of ["0888 123 456 / 0702 62323", "0888123456/0888654321", "0702 62323 / 62324"]) {
+    assert.equal(nationalDigits(raw), null, raw);
+    assert.equal(isDialablePhone(raw), true, raw);
+    assert.equal(formatPhoneBg(raw), raw);
+    for (const p of splitPhones(raw)) assert.equal(isDialablePhone(p), true, p);
+  }
+  assert.equal(nationalDigits("0702/6 23 23"), "070262323");
+  assert.equal(formatPhoneBg("0702/6 23 23"), "0702 6 23 23");
 });

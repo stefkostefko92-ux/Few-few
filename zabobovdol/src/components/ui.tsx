@@ -11,6 +11,7 @@ import {
   Inbox,
   Info,
   Mail,
+  Phone,
   ShieldAlert,
   type LucideIcon,
 } from "@/components/icons";
@@ -20,6 +21,7 @@ import { PhoneButton } from "@/components/PhoneButton";
 import { PrintButton } from "@/components/PrintButton";
 import { ShareButton } from "@/components/ShareButton";
 import { breadcrumbLd } from "@/lib/seo";
+import { isDialablePhone } from "@/lib/phone";
 import { formatDate, isoDate, type DateInput } from "@/lib/format-date";
 
 /**
@@ -667,6 +669,7 @@ function EmailText({ email }: { email: string }) {
 /**
  * „Контакт“ в детайла на обява, пътуване или зов: името, голям бутон
  * „Обадете се: …“ и „Пишете имейл“ (адресът — под бутона, пренася се при „@“).
+ * Само за съдържание от посетители: непълен номер се показва като текст.
  * Без телефон и имейл — изречение вместо празна кутия. children — допълнително
  * съдържание отдолу.
  */
@@ -696,7 +699,20 @@ export function ContactPanel({
       {name && <p className="mt-1 text-base text-slate-700">{name}</p>}
       {phone || email ? (
         <div className="mt-4 flex flex-col gap-3">
-          {phone && <PhoneButton phone={phone} label="Обадете се:" variant="primary" full />}
+          {phone &&
+            (isDialablePhone(phone) ? (
+              <PhoneButton phone={phone} label="Обадете се:" variant="primary" full />
+            ) : (
+              // Номерът е въведен от подателя и никой не го проверява — ако
+              // изглежда непълен, го показваме както е (без tel: бутон, който
+              // не би свързал), вместо да го скрием.
+              <p className="flex items-center gap-2 text-lg font-semibold text-slate-800">
+                <Phone className="h-5 w-5 shrink-0 text-slate-500" aria-hidden />
+                <span>
+                  Телефон: <span className="tabular-nums [overflow-wrap:anywhere]">{phone}</span>
+                </span>
+              </p>
+            ))}
           {email && (
             <div>
               <a href={`mailto:${email}`} className="btn-secondary w-full">

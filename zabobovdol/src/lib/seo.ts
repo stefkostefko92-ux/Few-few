@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SITE } from "@/lib/site";
 import { isoDateTime } from "@/lib/format-date";
-import { isDialablePhone } from "@/lib/phone";
+import { isDialablePhone, splitPhones } from "@/lib/phone";
 
 /**
  * Картинката при споделяне (Viber, Facebook) по подразбиране: името на
@@ -317,8 +317,9 @@ export function localBusinessLd(b: {
     name: b.name,
     ...(b.description ? { description: b.description } : {}),
     ...(b.website ? { url: b.website } : b.url ? { url: b.url } : {}),
-    // Номер с грешна дължина („0702 2016“) не отива в търсачките.
-    ...(b.phone && isDialablePhone(b.phone) ? { telephone: b.phone } : {}),
+    // Номер с грешна дължина („0702 2016“) не отива в търсачките; от няколко
+    // номера в едно поле — първият верен (telephone е един номер).
+    ...((t) => (t ? { telephone: t } : {}))(b.phone ? splitPhones(b.phone).find(isDialablePhone) : undefined),
     address: {
       "@type": "PostalAddress",
       streetAddress: b.address || undefined,
