@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { search, recordMiss, type SearchResult } from "@/lib/search";
+import { dedupeResults, search, recordMiss, type SearchResult } from "@/lib/search";
+import { getGuideIndex } from "@/lib/howto-index";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
 import { SearchBar } from "@/components/SearchBar";
@@ -37,18 +38,6 @@ function resultsLabel(n: number): string {
   return `${n.toLocaleString("bg-BG")} ${n === 1 ? "резултат" : "резултата"}`;
 }
 
-// Един и същ въпрос понякога съществува два пъти (две статии с еднакво
-// заглавие) — показваме го веднъж: първото срещане е с по-висок резултат.
-function dedupe(results: SearchResult[]): SearchResult[] {
-  const seen = new Set<string>();
-  return results.filter((r) => {
-    const key = `${r.type}:${r.title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim()}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
 export default async function SearchPage({
   searchParams,
 }: {
@@ -56,7 +45,9 @@ export default async function SearchPage({
 }) {
   const { q } = await searchParams;
   const query = (q ?? "").trim();
-  const results = query.length >= 2 ? dedupe(await search(query, 30)) : [];
+  // Дублите на ръководства → каноничният адрес, по веднъж (виж dedupeResults).
+  const results =
+    query.length >= 2 ? dedupeResults(await search(query, 30), (await getGuideIndex()).redirects) : [];
   // Записваме търсения без резултат, за да виждаме какво търсят хората.
   if (query.length >= 2 && results.length === 0) await recordMiss(query);
 
