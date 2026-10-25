@@ -1,0 +1,43 @@
+/* YouTube's in-page ad surfaces (home, feed, search, overlays, premium nags) and the
+   ad-blocker warning snackbar. Registered by the service worker together with youtube_main.js
+   (sa-youtube-css): absent while the YouTube feature is off, on an allowed site and for the
+   whole YouTube session bypass — a "clean" client must not keep hiding ad containers
+   (YouTube can detect that), and with no stylesheet there is nothing for us to mark on the
+   page. The html[data-tbab-yt-bypass] gate is left only for the rare case where the bypass
+   could not be armed and YouTube's own dialog has to be shown (youtube_skip.js). */
+
+html:not([data-tbab-yt-bypass]) #masthead-ad,
+html:not([data-tbab-yt-bypass]) ytd-display-ad-renderer,
+html:not([data-tbab-yt-bypass]) ytd-rich-item-renderer:has(ytd-display-ad-renderer),
+html:not([data-tbab-yt-bypass]) ytd-rich-item-renderer:has(ytd-ad-slot-renderer),
+html:not([data-tbab-yt-bypass]) ytd-ad-slot-renderer,
+html:not([data-tbab-yt-bypass]) ytd-in-feed-ad-layout-renderer,
+html:not([data-tbab-yt-bypass]) ytd-banner-promo-renderer,
+html:not([data-tbab-yt-bypass]) ytd-statement-banner-renderer,
+html:not([data-tbab-yt-bypass]) ytd-promoted-sparkles-web-renderer,
+html:not([data-tbab-yt-bypass]) ytd-promoted-video-renderer,
+html:not([data-tbab-yt-bypass]) ytd-compact-promoted-video-renderer,
+html:not([data-tbab-yt-bypass]) ytd-action-companion-ad-renderer,
+html:not([data-tbab-yt-bypass]) ytd-player-legacy-desktop-watch-ads-renderer,
+html:not([data-tbab-yt-bypass]) ytd-search-pyv-renderer,
+html:not([data-tbab-yt-bypass]) ytd-promoted-sparkles-text-search-renderer,
+html:not([data-tbab-yt-bypass]) .ytp-ad-overlay-container,
+html:not([data-tbab-yt-bypass]) .ytp-ad-overlay-slot,
+html:not([data-tbab-yt-bypass]) .ytp-ad-image-overlay,
+html:not([data-tbab-yt-bypass]) .ytp-ad-text-overlay,
+html:not([data-tbab-yt-bypass]) .video-ads.ytp-ad-module,
+html:not([data-tbab-yt-bypass]) ytd-mealbar-promo-renderer,
+html:not([data-tbab-yt-bypass]) ytmusic-mealbar-promo-renderer,
+html:not([data-tbab-yt-bypass]) tp-yt-paper-dialog:has(ytd-enforcement-message-view-model),
+html:not([data-tbab-yt-bypass]) ytd-popup-container:has(ytd-enforcement-message-view-model),
+html:not([data-tbab-yt-bypass]) .ytd-enforcement-message-view-model,
+html:not([data-tbab-yt-bypass]) ytd-enforcement-message-view-model,
+/* the "ad blockers are not allowed" snackbar (selector of the uBO quick fixes, 2026-10). Not their
+   #toast:has(… yt-notification-action-renderer) rule: that structure is every toast ("Saved to Watch later"). */
+html:not([data-tbab-yt-bypass]) .ytSnackbarContainerOpened:has(> .snackbarViewModelSwipeable > .snackbarViewModelEngagementBarWrapper .ytAttributedStringWhiteSpacePreWrap[style]) {
+  display: none !important;
+}
+
+html:not([data-tbab-yt-bypass]) .ad-showing video {
+  display: block !important;
+}
