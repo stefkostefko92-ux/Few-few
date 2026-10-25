@@ -11,6 +11,7 @@
           <% if (row.steamId) { %><a class="match-name" href="<%= playerHref(row.steamId) %>"><%= row.name %></a><% } else { %><span class="match-name"><%= row.name %></span><% } %>
           <span class="match-line"><%= t('match.line', { kills: fmt.int(row.kills), deaths: fmt.int(row.deaths), hs: fmt.int(row.headshots), streak: fmt.int(row.bestStreak) }) %></span>
           <% if (row.weapon) { %><span class="match-line"><%= t('match.weapon', { weapon: row.weapon, kills: fmt.int(row.topWeaponKills) }) %></span><% } %>
+          <% if (row.steamId) { %><a class="match-line" href="<%= reportHref(match.id, row.steamId) %>"><%= t('match.reportFor', { name: row.name }) %></a><% } %>
         </li>
         <% }) %>
       </ol>
@@ -44,6 +45,7 @@
             <th scope="col" class="c-num opt"><%= t('match.col.bounties') %></th>
             <th scope="col" class="c-num"><%= t('table.xp') %></th>
             <th scope="col" class="opt"><%= t('match.col.weapon') %></th>
+            <th scope="col"><%= t('match.col.report') %></th>
           </tr>
         </thead>
         <tbody>
@@ -57,6 +59,7 @@
             <td class="c-num opt"><%= fmt.int(row.bountiesClaimed) %></td>
             <td class="c-num"><%= fmt.int(row.xp) %></td>
             <td class="opt"><%= row.weapon ? row.weapon + ' · ' + fmt.int(row.topWeaponKills) : '—' %></td>
+            <td><% if (row.steamId) { %><a href="<%= reportHref(match.id, row.steamId) %>" aria-label="<%= t('match.reportFor', { name: row.name }) %>"><%= t('match.reportLink') %></a><% } else { %>—<% } %></td>
           </tr>
           <% }) %>
         </tbody>

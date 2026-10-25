@@ -14,7 +14,11 @@ test('§13: хайлайтите на мача — серии, колекция�
     assert.ok(html.includes('на 12:31 от началото'));
     assert.ok(html.includes('Без мерник') && html.includes('През дим'));
     assert.ok(html.includes('52,3 м') && html.includes('AWP'));
-    assert.ok(html.includes(`href="/bg/player/${PLAYER_ID}"`), 'линк към профила');
+    assert.ok(html.includes(`href="/bg/match/41/player/${PLAYER_ID}"`), 'линк към отчета');
+    assert.ok(
+      html.includes('href="/bg/match/41/player/76561198000000002"'),
+      'видимият играч от таблицата има отчет',
+    );
     assert.ok(!html.includes('/player/null'), 'скритият няма линк');
     const none = await start({ repo: fakeRepo({ ...sampleData(), highlights: {} }) });
     try {

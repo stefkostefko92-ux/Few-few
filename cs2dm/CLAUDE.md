@@ -38,7 +38,7 @@ npm run dev                            # локално на :4330 (DATABASE_URL
 `test/agent.test.mjs` ползва фалшив RESP сървър (CI е без Redis); ако има Redis на `127.0.0.1:6379`
 (`CS2DM_TEST_REDIS_PORT`), тича и срещу него — база 14, канали `cs2dm-test:<uuid>:…`, чисти след себе си. Без `DATABASE_URL` интеграционните тестове се пропускат чисто; със — създават само
 SteamID-та `76561190000990xxx` (панелът — `991xxx`…`995xxx`, настройките — `996xxx`, статистиките и SQL-ът на плъгина — `997xxx`,
-събитията — `998xxx`; те трият и своите събития) и ги трият преди и след себе си; одитът
+събитията — `998xxx`; те трият и своите събития; анализите на мача — `987xxx`, трият и своите `kills`) и ги трият преди и след себе си; одитът
 остава (веригата не се реже). Локално: `REDIS_TEST_URL=redis://127.0.0.1:6379/<база>`.
 
 ## Структура
@@ -85,8 +85,9 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   prisma/schema.prisma + migrations/ ЕДИНСТВЕНИЯТ източник на схемата (C# плъгинът пише по @map имената)
   src/index.ts · src/worker.ts       уеб процесът · BullMQ работникът (чистене по CONTRACT §7, на 6 ч)
   src/server.ts                      Express 5: helmet (строг CSP с nonce), rate limit, pino без IP, 404/500
-  src/routes/pages.ts                /{bg|en|it}/: начало, leaderboard, player/:steamId64, bans, vip, правни
+  src/routes/pages.ts                /{bg|en|it}/: начало, leaderboard, bans, vip, правни · player.ts — профилът + последни мачове
   src/routes/matches.ts              /{bg|en|it}/matches и /match/:id (§13) · match-view.ts · event-seo.ts (§12 JSON-LD)
+  src/routes/report.ts               /{bg|en|it}/match/:id/player/:steamId64 — личният отчет (§13, noindex) · report-view.ts
   src/routes/root.ts                 / → език · robots.txt · sitemap.xml · llms.txt · IndexNow · /bans без език
   src/routes/health.ts               /health — база + Redis, JSON, 200/503
   src/data/repo.ts                   интерфейсът (само публичните полета) · prisma-repo.ts · cached-repo.ts
@@ -94,6 +95,7 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   src/settings.ts                    живите настройки (§11): ключове, строги zod схеми, стойности по подразбиране
   src/events.ts                      събитията (§12): видове, тавани, местно време ↔ UTC (DISPLAY_TZ, без библиотека)
   src/data/public-extra.ts           публичното четене след етап 1 (събития, мачове) — PrismaRepo само препраща
+  src/data/match-analytics.ts        хайлайти, личен отчет, последни мачове (§13) · чистата логика — src/highlights.ts
   src/live.ts                        `cs2dm:live` (< 60 s) → `cs2dm:a2s` (< 30 s, агентът) → НЕИЗВЕСТЕН; списъкът за панела
   src/admin/                         панелът /admin (етап 2): index.ts сглобява · routes/ (един файл на раздел) ·
                                      sessions · totp(-service) · steam-openid · rbac (§1) · guards (CSRF, лимити) ·
@@ -259,7 +261,7 @@ zod); код между продуктите не се споделя — сам
   само активните (CONTRACT §2). `PUBLIC_BAN_SELECT` в `prisma-repo.ts` изброява полетата; типът
   `PublicBan` няма `reason`; тестът подава ред С причина, IP и админ и доказва, че не стигат до HTML.
   Банлистът е `noindex` (мета + `X-Robots-Tag`) и не е в sitemap. Нов публичен ред → нов тест.
-- **`hidden_from_leaderboards = true`** (чл. 21 GDPR) скрива играча от класацията, профила (404) и sitemap.
+- **`hidden_from_leaderboards = true`** (чл. 21 GDPR) скрива играча от класацията, профила и личния отчет (404) и sitemap.
 - **Статусът на живо никога не се измисля.** Пресен `cs2dm:live` (< 60 s), иначе `cs2dm:a2s` от агента
   (< 30 s; `online: false` → „изключен“, `OfflineTemporarily`), иначе „неизвестен“ и `GameServer` без
   `serverStatus`. `players` в A2S включва ботовете.

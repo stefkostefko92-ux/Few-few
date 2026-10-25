@@ -1,4 +1,4 @@
-/* Хайлайтите на мача (CONTRACT §13) — същият печатен език като профила: туш, червено, моно етикети. */
+/* Хайлайтите на мача и личният отчет (CONTRACT §13) — същият печатен език като профила: туш, червено, моно етикети. */
 
 .hl-grid {
   display: grid;
@@ -41,6 +41,52 @@
 .hl-list a {
   color: var(--red);
   text-underline-offset: 3px;
+}
+
+/* Личният отчет. */
+.report-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.report-links li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+  font: 700 13px/1.4 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.report-links li::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 3px;
+  margin: 0 10px 3px 0;
+  background: var(--red);
+  vertical-align: middle;
+}
+.compare-table .delta {
+  font-weight: 800;
+}
+.delta-better {
+  color: #2f6b2a;
+}
+.delta-worse {
+  color: var(--red);
+}
+.delta-even {
+  color: var(--muted);
+}
+.report-heat {
+  max-width: 560px;
+}
+.report-note {
+  margin: 26px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+.recent-table time {
+  white-space: nowrap;
 }
 
 @media (max-width: 760px) {

@@ -150,6 +150,44 @@ export interface MatchHighlights {
   longest: (MatchName & { weapon: string; meters: number; offsetMs: number }) | null;
 }
 
+/** Средното на играча за мач в 7-те дни преди този (за сравнение в личния отчет). */
+export interface MatchBaseline {
+  matches: number;
+  kills: number;
+  deaths: number;
+  headshots: number;
+  xp: number;
+}
+
+/** Личният отчет за мача — само за видим играч, който е в картата на мача. */
+export interface MatchReport {
+  match: Omit<MatchListRow, 'top'>;
+  steamId: string;
+  name: string;
+  row: Pick<
+    MatchRow,
+    'place' | 'kills' | 'deaths' | 'headshots' | 'bestStreak' | 'bountiesClaimed' | 'xp'
+  >;
+  /** Има ли запазени убийства/смърти на играча в мача. */
+  recorded: boolean;
+  weapons: WeaponLine[];
+  multiKills: Array<{ kills: number; offsetMs: number; weapons: string[] }>;
+  /** Смъртите му в мача по клетки (§4) — шаблонът ги показва чак след закъснението. */
+  deathCells: HeatCell[];
+  baseline: MatchBaseline | null;
+}
+
+/** Ред в „последни мачове“ на профила. */
+export interface PlayerMatchRow {
+  id: number;
+  endedAt: Date;
+  place: number;
+  players: number;
+  kills: number;
+  deaths: number;
+  xp: number;
+}
+
 export interface SitemapPlayer {
   steamId: string;
   updatedAt: Date;
@@ -186,6 +224,10 @@ export interface Repo {
   match(id: number): Promise<MatchDetail | null>;
   /** Хайлайтите на мача; няма мач → null. */
   matchHighlights(id: number): Promise<MatchHighlights | null>;
+  /** Личният отчет; няма мач, играчът не е в него или е скрит → null. */
+  matchReport(id: number, steamId: string): Promise<MatchReport | null>;
+  /** Последните мачове на играч, най-новият първи; скрит или непознат → []. */
+  playerMatches(steamId: string, limit: number): Promise<PlayerMatchRow[]>;
 }
 
 export function pagesFor(total: number, pageSize: number): number {

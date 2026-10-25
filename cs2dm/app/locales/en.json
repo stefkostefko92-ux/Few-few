@@ -105,6 +105,11 @@
       "title": "Match #{id} on {map} — won by {name}",
       "description": "The match of {date} on the CS2 server Dust2 DM: {kills} kills, {players} players. {name} came first with {topKills} kills.",
       "keywords": "CS2 match, match results, Dust2 Deathmatch, CS2 statistics, top players, Carbon Stealth"
+    },
+    "report": {
+      "title": "{name} in match #{id} — personal report",
+      "description": "{name}'s personal report from the match on {date} on Dust2 DM: {kills} kills, {deaths} deaths, K/D {kd}, {hs} headshots, place {place} of {players}.",
+      "keywords": "CS2 personal report, match statistics, Dust2 Deathmatch, K/D, CS2 server, Carbon Stealth"
     }
   },
   "season": {
@@ -418,6 +423,15 @@
     },
     "noStats": "No stats recorded for this period.",
     "duration": "{h} h {m} min",
+    "recent": {
+      "title": "Recent matches",
+      "empty": "No matches on record yet (we keep them for {days} days).",
+      "caption": "{name}'s recent matches",
+      "match": "Match",
+      "date": "Ended",
+      "placeOf": "{place} of {players}",
+      "reportLabel": "Personal report for match #{id}"
+    },
     "mastery": {
       "title": "Weapon mastery",
       "lead": "All time. The badge reflects kills with the weapon: Bronze 100, Silver 500, Gold 1500, Platinum 4000, Diamond 10,000.",
@@ -1543,6 +1557,8 @@
     "weapon": "Best weapon: {weapon} ({kills})",
     "note": "Place is by kills, then fewer deaths and more headshots.",
     "back": "All matches",
+    "reportLink": "Report",
+    "reportFor": "{name}'s personal report",
     "facts": {
       "kills": "Kills",
       "players": "Players",
@@ -1555,7 +1571,69 @@
       "hs": "Headshots",
       "streak": "Streak",
       "bounties": "Bounties",
-      "weapon": "Weapon"
+      "weapon": "Weapon",
+      "report": "Report"
+    }
+  },
+  "report": {
+    "h1": "{name}'s report",
+    "lead": "Match #{id} on {map} · place {place} of {players}",
+    "aside": "This report comes from the match record. We keep matches and kill details for {days} days.",
+    "toProfile": "{name}'s profile",
+    "toMatch": "The whole match #{id}",
+    "notRecorded": "No kill details were recorded for this match.",
+    "multiEmpty": "No streak of 3 or more kills in this match.",
+    "note": "The comparison is with the average per match in the days before this one, not with the best day.",
+    "score": {
+      "title": "Score",
+      "place": "Place",
+      "placeOf": "{place} of {players}",
+      "kills": "Kills",
+      "deaths": "Deaths",
+      "kd": "K/D",
+      "hs": "Headshots",
+      "bestStreak": "Best streak",
+      "bounties": "Bounties",
+      "xp": "XP"
+    },
+    "compare": {
+      "title": "Compared with usual",
+      "lead": {
+        "one": "The average is from {count} match in the {days} days before this one.",
+        "other": "The average is from {count} matches in the {days} days before this one."
+      },
+      "none": "No matches in the {days} days before this one — nothing to compare with.",
+      "metric": "Metric",
+      "now": "This match",
+      "average": "Average per match",
+      "delta": "Difference",
+      "metrics": {
+        "kills": "Kills",
+        "deaths": "Deaths",
+        "kd": "K/D",
+        "hs": "Headshots",
+        "xp": "XP"
+      },
+      "points": "{value} pp",
+      "tone": {
+        "better": "better than usual",
+        "worse": "worse than usual",
+        "even": "same as usual"
+      }
+    },
+    "weapons": {
+      "title": "Weapons in the match",
+      "empty": "No kills in this match."
+    },
+    "heat": {
+      "title": "Deaths in this match",
+      "lead": "Aggregated cells on our A–H × 1–8 grid only, never live positions.",
+      "pending": "The map appears {hours} h after the match ends.",
+      "empty": "No deaths in this match.",
+      "desc": {
+        "one": "{count} death in the match; most in sector {sector}.",
+        "other": "{count} deaths in the match; most in sector {sector}."
+      }
     }
   },
   "highlights": {

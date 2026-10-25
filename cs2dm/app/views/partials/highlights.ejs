@@ -14,7 +14,7 @@
       <ol class="hl-list">
         <% highlights.multiKills.forEach((run) => { %><li>
           <span class="hl-kind"><%= run.kind %></span>
-          <span class="hl-main"><% if (run.steamId) { %><a href="<%= playerHref(run.steamId) %>"><%= run.name %></a><% } else { %><%= run.name %><% } %></span>
+          <span class="hl-main"><% if (run.steamId) { %><a href="<%= reportHref(matchId, run.steamId) %>"><%= run.name %></a><% } else { %><%= run.name %><% } %></span>
           <span class="hl-meta"><%= t('highlights.at', { time: run.time }) %> · <%= run.weapons %></span>
         </li>
         <% }) %>
@@ -27,13 +27,13 @@
         <% highlights.collections.forEach((line) => { %><li>
           <span class="hl-kind"><%= fmt.int(line.count) %></span>
           <span class="hl-main"><%= t('highlights.collection.kinds.' + line.kind) %></span>
-          <span class="hl-meta"><%= t('highlights.collection.most', { count: fmt.int(line.leaderCount) }) %> <% if (line.leader.steamId) { %><a href="<%= playerHref(line.leader.steamId) %>"><%= line.leader.name %></a><% } else { %><%= line.leader.name %><% } %></span>
+          <span class="hl-meta"><%= t('highlights.collection.most', { count: fmt.int(line.leaderCount) }) %> <% if (line.leader.steamId) { %><a href="<%= reportHref(matchId, line.leader.steamId) %>"><%= line.leader.name %></a><% } else { %><%= line.leader.name %><% } %></span>
         </li>
         <% }) %>
         <% if (highlights.longest) { %><li>
           <span class="hl-kind"><%= t('highlights.longest.meters', { meters: highlights.longest.meters }) %></span>
           <span class="hl-main"><%= t('highlights.longest.title') %></span>
-          <span class="hl-meta"><% if (highlights.longest.steamId) { %><a href="<%= playerHref(highlights.longest.steamId) %>"><%= highlights.longest.name %></a><% } else { %><%= highlights.longest.name %><% } %> · <%= highlights.longest.weapon %> · <%= t('highlights.at', { time: highlights.longest.time }) %></span>
+          <span class="hl-meta"><% if (highlights.longest.steamId) { %><a href="<%= reportHref(matchId, highlights.longest.steamId) %>"><%= highlights.longest.name %></a><% } else { %><%= highlights.longest.name %><% } %> · <%= highlights.longest.weapon %> · <%= t('highlights.at', { time: highlights.longest.time }) %></span>
         </li><% } %>
       </ol>
       <% if (highlights.collections.length === 0) { %><p><%= t('highlights.collection.empty') %></p><% } %>

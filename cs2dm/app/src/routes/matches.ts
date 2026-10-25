@@ -16,7 +16,7 @@ import { fitWithName, type PageDeps } from './pages.js';
  */
 export const MATCHES_LIST_SIZE = 30;
 /** Само цифри, без водеща нула — иначе 404 без заявка към базата. */
-const MATCH_ID = /^[1-9]\d{0,9}$/;
+export const MATCH_ID = /^[1-9]\d{0,9}$/;
 
 function crumbs(t: Translator, locale: Locale): Crumb[] {
   return [

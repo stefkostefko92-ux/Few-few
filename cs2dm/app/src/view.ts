@@ -8,7 +8,7 @@ import { PAGES, type PageId } from './content.js';
 import { formattersFor, type Formatters } from './format.js';
 import { translatorFor, type Locale, type Translator } from './i18n.js';
 import type { Season } from './data/repo.js';
-import { SITE_NAME, matchPath, pagePath, playerPath, type Head } from './seo.js';
+import { SITE_NAME, matchPath, pagePath, playerPath, reportPath, type Head } from './seo.js';
 
 export const PUBLIC_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'public');
 
@@ -45,6 +45,7 @@ export interface CommonLocals {
   current: NavId;
   playerHref: (steamId: string) => string;
   matchHref: (id: number) => string;
+  reportHref: (id: number, steamId: string) => string;
   seasonLabel: (season: Pick<Season, 'id'>) => string;
   siteName: string;
   server: { address: string; connectUrl: string; command: string };
@@ -68,6 +69,7 @@ export function commonLocals(locale: Locale, current: NavId): CommonLocals {
     current,
     playerHref: (steamId) => playerPath(locale, steamId),
     matchHref: (id) => matchPath(locale, id),
+    reportHref: (id, steamId) => reportPath(locale, id, steamId),
     seasonLabel: (season) =>
       season.id === 0 ? t('season.allTime') : t('season.numbered', { n: season.id }),
     siteName: SITE_NAME,

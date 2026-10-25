@@ -1,0 +1,132 @@
+<%- include('partials/head') %>
+<%# Личният отчет за мача (CONTRACT §13): резултат, сравнение с 7-те дни преди, оръжия, серии, карта на смъртите (§4). %>
+<%
+  const row = report.row;
+  const scoreRows = [
+    { id: 'place', value: t('report.score.placeOf', { place: row.place, players: params.players }) },
+    { id: 'kills', value: fmt.int(row.kills) },
+    { id: 'deaths', value: fmt.int(row.deaths) },
+    { id: 'kd', value: fmt.kd(row.kills, row.deaths) },
+    { id: 'hs', value: fmt.percent(row.headshots, row.kills) },
+    { id: 'bestStreak', value: fmt.int(row.bestStreak) },
+    { id: 'bounties', value: fmt.int(row.bountiesClaimed) },
+    { id: 'xp', value: fmt.int(row.xp) },
+  ];
+%>
+<%- include('partials/page-hero', { title: t('report.h1', { name: report.name }), here: report.name, lead: t('report.lead', params), meta: fmt.dateTime(report.match.endedAt), trail: [{ href: nav.matches, name: t('nav.matches') }, { href: matchHref(report.match.id), name: t('match.h1', { id: report.match.id }) }] }) %>
+<div class="wrap page-content">
+  <div class="content-grid">
+    <section class="card" aria-labelledby="score-title">
+      <h2 id="score-title"><%= t('report.score.title') %></h2>
+      <dl class="stats">
+        <% scoreRows.forEach((stat) => { %><div><dt><%= t('report.score.' + stat.id) %></dt><dd><%= stat.value %></dd></div>
+        <% }) %>
+      </dl>
+    </section>
+    <aside class="card report-aside">
+      <p><%= t('report.aside', { days: retentionDays }) %></p>
+      <ul class="report-links">
+        <li><a href="<%= playerHref(report.steamId) %>"><%= t('report.toProfile', { name: report.name }) %></a></li>
+        <li><a href="<%= matchHref(report.match.id) %>"><%= t('report.toMatch', { id: report.match.id }) %></a></li>
+      </ul>
+    </aside>
+  </div>
+
+  <section class="card spaced" aria-labelledby="compare-title">
+    <h2 id="compare-title"><%= t('report.compare.title') %></h2>
+    <% if (compare) { %>
+    <p><%= t.plural('report.compare.lead', compare.matches, { days: baselineDays }) %></p>
+    <div class="table-wrap">
+      <table class="data-table compare-table">
+        <thead>
+          <tr>
+            <th scope="col"><%= t('report.compare.metric') %></th>
+            <th scope="col" class="c-num"><%= t('report.compare.now') %></th>
+            <th scope="col" class="c-num"><%= t('report.compare.average') %></th>
+            <th scope="col" class="c-num"><%= t('report.compare.delta') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% compare.rows.forEach((line) => { %><tr>
+            <th scope="row"><%= t('report.compare.metrics.' + line.id) %></th>
+            <td class="c-num"><%= line.value %></td>
+            <td class="c-num"><%= line.average %></td>
+            <td class="c-num delta<% if (line.tone) { %> delta-<%= line.tone %><% } %>"><%= line.delta %><% if (line.tone) { %><span class="sr-only"> — <%= t('report.compare.tone.' + line.tone) %></span><% } %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } else { %>
+    <p><%= t('report.compare.none', { days: baselineDays }) %></p>
+    <% } %>
+  </section>
+
+  <section class="card spaced" aria-labelledby="weapons-title">
+    <h2 id="weapons-title"><%= t('report.weapons.title') %></h2>
+    <% if (!report.recorded) { %>
+    <p><%= t('report.notRecorded') %></p>
+    <% } else if (weapons.length === 0) { %>
+    <p><%= t('report.weapons.empty') %></p>
+    <% } else { %>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th scope="col"><%= t('player.mastery.weapon') %></th>
+            <th scope="col" class="c-num"><%= t('player.mastery.kills') %></th>
+            <th scope="col" class="c-num"><%= t('player.mastery.hs') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% weapons.forEach((line) => { %><tr>
+            <th scope="row"><%= line.label %></th>
+            <td class="c-num"><%= fmt.int(line.kills) %></td>
+            <td class="c-num"><%= fmt.percent(line.headshots, line.kills) %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </section>
+
+  <section class="card spaced" aria-labelledby="multi-title">
+    <h2 id="multi-title"><%= t('highlights.multi.title') %></h2>
+    <p><%= t('highlights.multi.lead', { seconds: multiGapSeconds }) %></p>
+    <% if (!report.recorded) { %>
+    <p><%= t('report.notRecorded') %></p>
+    <% } else if (multiKills.length === 0) { %>
+    <p><%= t('report.multiEmpty') %></p>
+    <% } else { %>
+    <ol class="hl-list">
+      <% multiKills.forEach((run) => { %><li>
+        <span class="hl-kind"><%= run.kind %></span>
+        <span class="hl-main"><%= t('highlights.at', { time: run.time }) %></span>
+        <span class="hl-meta"><%= run.weapons %></span>
+      </li>
+      <% }) %>
+    </ol>
+    <% } %>
+  </section>
+
+  <section class="card spaced heat" aria-labelledby="heat-title">
+    <h2 id="heat-title"><%= t('report.heat.title') %></h2>
+    <p><%= t('report.heat.lead') %></p>
+    <% if (!heat.ready) { %>
+    <p class="notice"><%= t('report.heat.pending', { hours: heatDelayHours }) %></p>
+    <% } else if (!heat.svg) { %>
+    <p><%= report.recorded ? t('report.heat.empty') : t('report.notRecorded') %></p>
+    <% } else { %>
+    <figure class="heat-fig report-heat">
+      <figcaption><span class="heat-key heat-key-deaths" aria-hidden="true"></span><%= t('player.heatmap.deathsTitle') %></figcaption>
+      <%- heat.svg %>
+      <p class="heat-sum"><%= t.plural('report.heat.desc', heat.total, { sector: heat.sector }) %></p>
+    </figure>
+    <p class="heat-legend"><%= t('player.heatmap.legend') %></p>
+    <% } %>
+  </section>
+
+  <p class="report-note"><%= t('report.note') %></p>
+</div>
+<%- include('partials/foot') %>

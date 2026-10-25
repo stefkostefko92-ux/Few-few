@@ -105,6 +105,11 @@
       "title": "Partita n. {id} su {map} — vince {name}",
       "description": "La partita del {date} sul server CS2 Dust2 DM: {kills} uccisioni, {players} giocatori. Primo è {name} con {topKills} uccisioni.",
       "keywords": "partita CS2, risultati della partita, Dust2 Deathmatch, statistiche CS2, migliori giocatori, Carbon Stealth"
+    },
+    "report": {
+      "title": "{name} nella partita n. {id} — resoconto personale",
+      "description": "Il resoconto personale di {name} della partita del {date} su Dust2 DM: {kills} uccisioni, {deaths} morti, K/D {kd}, {hs} headshot, posizione {place} su {players}.",
+      "keywords": "resoconto personale CS2, statistiche della partita, Dust2 Deathmatch, K/D, server CS2, Carbon Stealth"
     }
   },
   "season": {
@@ -418,6 +423,15 @@
     },
     "noStats": "Nessuna statistica registrata per questo periodo.",
     "duration": "{h} h {m} min",
+    "recent": {
+      "title": "Ultime partite",
+      "empty": "Ancora nessuna partita registrata (le conserviamo per {days} giorni).",
+      "caption": "Le ultime partite di {name}",
+      "match": "Partita",
+      "date": "Fine",
+      "placeOf": "{place} su {players}",
+      "reportLabel": "Resoconto personale della partita n. {id}"
+    },
     "mastery": {
       "title": "Maestria con le armi",
       "lead": "Di sempre. Il distintivo dipende dalle uccisioni con l'arma: Bronze 100, Silver 500, Gold 1500, Platinum 4000, Diamond 10.000.",
@@ -1543,6 +1557,8 @@
     "weapon": "Arma migliore: {weapon} ({kills})",
     "note": "La posizione è per uccisioni, poi meno morti e più headshot.",
     "back": "Tutte le partite",
+    "reportLink": "Resoconto",
+    "reportFor": "Il resoconto personale di {name}",
     "facts": {
       "kills": "Uccisioni",
       "players": "Giocatori",
@@ -1555,7 +1571,69 @@
       "hs": "Headshot",
       "streak": "Serie",
       "bounties": "Taglie",
-      "weapon": "Arma"
+      "weapon": "Arma",
+      "report": "Resoconto"
+    }
+  },
+  "report": {
+    "h1": "Il resoconto di {name}",
+    "lead": "Partita n. {id} su {map} · posizione {place} su {players}",
+    "aside": "Questo resoconto viene dalla registrazione della partita. Conserviamo le partite e i dettagli delle uccisioni per {days} giorni.",
+    "toProfile": "Il profilo di {name}",
+    "toMatch": "L'intera partita n. {id}",
+    "notRecorded": "Per questa partita non sono registrati dettagli delle uccisioni.",
+    "multiEmpty": "In questa partita non c'è stata una serie di 3 o più uccisioni.",
+    "note": "Il confronto è con la media per partita nei giorni precedenti, non con la giornata migliore.",
+    "score": {
+      "title": "Risultato",
+      "place": "Posizione",
+      "placeOf": "{place} su {players}",
+      "kills": "Uccisioni",
+      "deaths": "Morti",
+      "kd": "K/D",
+      "hs": "Headshot",
+      "bestStreak": "Serie migliore",
+      "bounties": "Taglie",
+      "xp": "XP"
+    },
+    "compare": {
+      "title": "Rispetto al solito",
+      "lead": {
+        "one": "La media è di {count} partita nei {days} giorni precedenti.",
+        "other": "La media è di {count} partite nei {days} giorni precedenti."
+      },
+      "none": "Nessuna partita nei {days} giorni precedenti: non c'è nulla con cui confrontare.",
+      "metric": "Indicatore",
+      "now": "Questa partita",
+      "average": "Media per partita",
+      "delta": "Differenza",
+      "metrics": {
+        "kills": "Uccisioni",
+        "deaths": "Morti",
+        "kd": "K/D",
+        "hs": "Headshot",
+        "xp": "XP"
+      },
+      "points": "{value} p.p.",
+      "tone": {
+        "better": "meglio del solito",
+        "worse": "peggio del solito",
+        "even": "come al solito"
+      }
+    },
+    "weapons": {
+      "title": "Le armi nella partita",
+      "empty": "Nessuna uccisione in questa partita."
+    },
+    "heat": {
+      "title": "Le morti in questa partita",
+      "lead": "Solo celle aggregate sulla nostra griglia A–H × 1–8, mai posizioni in tempo reale.",
+      "pending": "La mappa compare {hours} h dopo la fine della partita.",
+      "empty": "Nessuna morte in questa partita.",
+      "desc": {
+        "one": "{count} morte nella partita; la maggior parte nel settore {sector}.",
+        "other": "{count} morti nella partita; la maggior parte nel settore {sector}."
+      }
     }
   },
   "highlights": {

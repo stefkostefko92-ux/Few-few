@@ -1,13 +1,18 @@
 /**
- * Анализите на мача (§13) срещу истинската база: хайлайтите от `kills` в прозореца на мача. Скритият
- * играч (чл. 21 GDPR) не излиза с име или SteamID. SteamID-та 76561190000987101…103; `kills` няма FK към
+ * Анализите на мача (§13) срещу истинската база: хайлайтите от `kills` в прозореца на мача, личният
+ * отчет със сравнение спрямо 7-те дни преди него и „последните мачове“ на профила. Скритият играч
+ * (чл. 21 GDPR) не излиза с име или SteamID. SteamID-та 76561190000987101…103; `kills` няма FK към
  * играчите → тестът трие своите убийства сам, преди и след себе си.
  */
 import './env.js';
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';
 import { PrismaClient } from '@prisma/client';
-import { loadMatchHighlights } from '../src/data/match-analytics.js';
+import {
+  loadMatchHighlights,
+  loadMatchReport,
+  loadPlayerMatches,
+} from '../src/data/match-analytics.js';
 import { cleanup, enabled } from './admin-harness.js';
 
 const A = '76561190000987101';
@@ -105,7 +110,7 @@ describe(
         },
       });
       matchId = match.id;
-      // Ден по-рано — убийствата му не са в прозореца на мача.
+      // Мачът, с който се сравнява: ден по-рано, в 7-те дни преди.
       const earlier = await db.match.create({
         data: {
           map: 'de_dust2',
@@ -171,6 +176,51 @@ describe(
       assert.ok(!JSON.stringify(data).includes(HIDDEN), 'скритият SteamID не излиза');
       assert.ok(!JSON.stringify(data).includes('IT Hidden'));
       assert.equal(await loadMatchHighlights(db, 2_000_000_000), null);
+    });
+
+    test('личният отчет: числата, оръжията, сериите, смъртите и сравнението', async () => {
+      const report = await loadMatchReport(db, matchId, A);
+      assert.ok(report);
+      assert.equal(report.name, 'IT Alpha');
+      assert.equal(report.row.place, 1);
+      assert.equal(report.row.kills, 4);
+      assert.deepEqual(report.weapons, [
+        { weapon: 'ak47', kills: 2, headshots: 1 },
+        { weapon: 'awp', kills: 2, headshots: 0 },
+      ]);
+      assert.deepEqual(report.multiKills, [
+        { kills: 3, offsetMs: 60_000, weapons: ['ak47', 'awp'] },
+      ]);
+      assert.equal(
+        report.deathCells.reduce((sum, cell) => sum + cell.n, 0),
+        2,
+        'двете му смърти в мача',
+      );
+      assert.deepEqual(report.baseline, {
+        matches: 1,
+        kills: 10,
+        deaths: 5,
+        headshots: 4,
+        xp: 150,
+      });
+      const first = await loadMatchReport(db, earlierId, A);
+      assert.equal(first?.baseline, null, 'преди първия мач няма с какво да сравним');
+      assert.equal(first?.recorded, false);
+    });
+
+    test('скрит или неиграл играч → няма отчет; последните мачове', async () => {
+      assert.equal(await loadMatchReport(db, matchId, HIDDEN), null);
+      assert.equal(await loadMatchReport(db, earlierId, B), null);
+      const recent = await loadPlayerMatches(db, A, 10);
+      assert.deepEqual(
+        recent.map((row) => [row.id, row.place, row.players, row.kills]),
+        [
+          [matchId, 1, 3, 4],
+          [earlierId, 1, 2, 10],
+        ],
+      );
+      assert.equal((await loadPlayerMatches(db, A, 1)).length, 1);
+      assert.deepEqual(await loadPlayerMatches(db, HIDDEN, 10), []);
     });
   },
 );

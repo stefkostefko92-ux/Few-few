@@ -15,6 +15,8 @@ import { httpLogOptions, logger } from './logger.js';
 import { healthRouter, type HealthChecks } from './routes/health.js';
 import { matchesRouter } from './routes/matches.js';
 import { AVATAR_ORIGINS, pagesRouter } from './routes/pages.js';
+import { playerRouter } from './routes/player.js';
+import { reportRouter } from './routes/report.js';
 import { rootRouter } from './routes/root.js';
 import { buildHead, pagePath } from './seo.js';
 import { PUBLIC_DIR, renderPage } from './view.js';
@@ -167,6 +169,14 @@ export function createServer(deps: ServerDeps): Express {
     app.use(
       `/${locale}`,
       matchesRouter(locale, { repo: deps.repo, live: deps.live, now: deps.now }),
+    );
+    app.use(
+      `/${locale}`,
+      playerRouter(locale, { repo: deps.repo, live: deps.live, now: deps.now }),
+    );
+    app.use(
+      `/${locale}`,
+      reportRouter(locale, { repo: deps.repo, live: deps.live, now: deps.now }),
     );
   }
 
