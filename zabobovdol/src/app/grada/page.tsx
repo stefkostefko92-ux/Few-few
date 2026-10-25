@@ -92,7 +92,7 @@ function Section({
         className="flex items-start gap-2 text-2xl font-bold text-slate-900"
       >
         <Icon className="mt-1 h-6 w-6 shrink-0 text-brand-700" aria-hidden />
-        <span>{title}</span>
+        <span className="min-w-0 [overflow-wrap:break-word]">{title}</span>
       </h2>
       <div className="prose-content mt-3 text-slate-700">{children}</div>
       {after}
@@ -192,7 +192,7 @@ export default async function CityPage() {
 
         <Section
           id="zabelezhitelnosti"
-          title="Забележителности и природа"
+          title={"Забележи\u00ADтелности и природа"}
           icon={TreePine}
           after={
             <ul role="list" className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

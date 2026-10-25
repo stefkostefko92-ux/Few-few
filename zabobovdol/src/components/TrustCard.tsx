@@ -31,6 +31,23 @@ export function breakableAddress(text: string): ReactNode {
   );
 }
 
+/**
+ * Текст, в който се споменава домейнът на сайта („Отворете
+ * zabobovdol.carbonstealth.eu в Safari…“): домейнът се пренася само след
+ * „zabobovdol.“ (breakableAddress) — иначе на 320px той е по-широк от
+ * колоната и страницата прелива.
+ */
+export function withBreakableDomain(text: string): ReactNode {
+  const parts = text.split(SITE.domain);
+  if (parts.length === 1) return text;
+  return parts.map((p, i) => (
+    <Fragment key={i}>
+      {p}
+      {i < parts.length - 1 && breakableAddress(SITE.domain)}
+    </Fragment>
+  ));
+}
+
 export async function TrustCard({
   variant = "full",
   className = "",

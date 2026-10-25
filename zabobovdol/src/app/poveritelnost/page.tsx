@@ -15,6 +15,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { SECTION } from "@/lib/section-names";
 import { SITE } from "@/lib/site";
 import { UI_LABEL, quoted } from "@/lib/ui-labels";
+import { breakableAddress } from "@/components/TrustCard";
 
 // Динамична: редът „отпечатано на …“ на хартия (PrintSourceLine) е денят на
 // зареждане, не денят на билда.
@@ -85,7 +86,7 @@ export default function PrivacyPage() {
       <LegalLayout toc={TOC} path="/poveritelnost">
         <p className="text-lg text-slate-700">
           Тази политика обяснява какви лични данни събира сайтът{" "}
-          <strong className="font-semibold">{SITE.name}</strong> ({SITE.domain}), за какви
+          <strong className="font-semibold">{SITE.name}</strong> ({breakableAddress(SITE.domain)}), за какви
           цели, на какво правно основание, с кого ги споделяме, колко дълго ги пазим и какви
           права имате. Старали сме се да опишем нещата ясно и честно, така че да са
           разбираеми за всеки.

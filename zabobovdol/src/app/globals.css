@@ -291,6 +291,8 @@ h4,
     @apply font-sans text-lg font-semibold leading-snug text-slate-900;
     letter-spacing: normal;
     text-wrap: pretty;
+    /* Предпазител: дълга дума на 320px при шрифт 125% не разпъва страницата. */
+    overflow-wrap: break-word;
   }
   /* Подзаглавие в документ или кутия. */
   .h-sub {
@@ -335,9 +337,11 @@ h4,
      админа). Цветовете са пренасочени — тъмен режим и контраст идват сами. */
   .field-hint {
     @apply mt-1.5 text-base text-slate-600;
+    overflow-wrap: break-word; /* имейл/адрес в подсказката */
   }
   .field-error {
     @apply mt-1.5 flex items-start gap-1.5 text-base font-medium text-crimson-700;
+    overflow-wrap: break-word;
   }
 
   /* Номер на стъпка (StepList): плътен кръг. */

@@ -287,7 +287,9 @@ export default async function HomePage() {
           админа (и на телефон), после връзка към всички телефони. */}
       <section aria-label="Спешни телефони" className="border-b border-crimson-200 bg-crimson-50">
         <div className="container-content flex flex-wrap items-center gap-x-5 gap-y-1 py-2.5">
-          <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-start sm:gap-5">
+          {/* flex-wrap: на 320px при шрифт 125% бутонът минава под „При
+              спешност“ (иначе редът беше 383px при колона 288px). */}
+          <div className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-2 sm:w-auto sm:justify-start sm:gap-x-5">
             <p className="text-lg font-bold text-crimson-700">При спешност</p>
             <TelLink phone="112" className="btn-danger shrink-0 px-4 tabular-nums sm:px-5">
               <Phone className="h-5 w-5 shrink-0" aria-hidden />

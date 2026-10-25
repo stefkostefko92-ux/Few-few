@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageHero, StepList } from "@/components/ui";
 import { QrCode } from "@/components/QrCode";
 import { ShareButton } from "@/components/ShareButton";
-import { TrustCard } from "@/components/TrustCard";
+import { TrustCard, breakableAddress } from "@/components/TrustCard";
 import { InstallButton } from "@/components/InstallBanner";
 import { buildMetadata } from "@/lib/seo";
 import { getFacebookUrl, getViberChannelUrl } from "@/lib/settings";
@@ -70,7 +70,7 @@ export default async function ForFamilyPage() {
                 телефон.
               </p>
               <p className="text-slate-700">
-                Или просто напишете на нейния телефон: <strong>{SITE.domain}</strong>
+                Или просто напишете на нейния телефон: <strong>{breakableAddress(SITE.domain)}</strong>
               </p>
             </div>
           </div>
@@ -85,7 +85,7 @@ export default async function ForFamilyPage() {
               steps={[
                 <>
                   <strong>Отворете сайта</strong> на нейния телефон — с квадратчето отгоре или
-                  като напишете {SITE.domain}.
+                  като напишете {breakableAddress(SITE.domain)}.
                 </>,
                 <>
                   <strong>Сложете иконата на началния екран.</strong> На Android: трите точки ⋮

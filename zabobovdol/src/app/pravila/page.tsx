@@ -8,6 +8,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { SECTION } from "@/lib/section-names";
 import { SITE } from "@/lib/site";
 import { UI_LABEL, quoted } from "@/lib/ui-labels";
+import { breakableAddress } from "@/components/TrustCard";
 
 // Динамична: редът „отпечатано на …“ на хартия (PrintSourceLine) е денят на
 // зареждане, не денят на билда.
@@ -77,7 +78,7 @@ export default function TermsPage() {
         <div className="prose-content text-slate-700">
           <p>
             Тези общи условия уреждат ползването на сайта{" "}
-            <strong>{SITE.name}</strong> ({SITE.domain}). С достъпа до сайта
+            <strong>{SITE.name}</strong> ({breakableAddress(SITE.domain)}). С достъпа до сайта
             приемате условията по-долу.
           </p>
 

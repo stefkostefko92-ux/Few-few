@@ -82,7 +82,7 @@ export default async function WasteSchedulePage() {
               </span>
               <div className="min-w-0">
                 <h2 id="smetishte-zaglavie" className="h-card">
-                  Видяхте нерегламентирано сметище?
+                  Видяхте нерегла&shy;ментирано сметище?
                 </h2>
                 <p className="mt-1 text-base text-slate-700">
                   Подайте сигнал с място и описание — ще го препратим към общината.

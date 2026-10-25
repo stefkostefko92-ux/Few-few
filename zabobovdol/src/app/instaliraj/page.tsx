@@ -4,6 +4,7 @@ import { PageHero } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { ShareButton } from "@/components/ShareButton";
 import { InstallButton } from "@/components/InstallBanner";
+import { breakableAddress, withBreakableDomain } from "@/components/TrustCard";
 import { buildMetadata, howToLd } from "@/lib/seo";
 import { getPlayStoreUrl } from "@/lib/settings";
 import { SITE } from "@/lib/site";
@@ -94,7 +95,7 @@ export default async function InstallPage() {
             Android
           </h2>
           <ol role="list" className="space-y-4">
-            <Step n={1}>{ANDROID_STEPS[0]}</Step>
+            <Step n={1}>{withBreakableDomain(ANDROID_STEPS[0])}</Step>
             <Step n={2} picture={<AndroidMenuPicture />}>
               {ANDROID_STEPS[1]}
             </Step>
@@ -134,7 +135,7 @@ export default async function InstallPage() {
             iPhone
           </h2>
           <ol role="list" className="space-y-4">
-            <Step n={1}>{IPHONE_STEPS[0]}</Step>
+            <Step n={1}>{withBreakableDomain(IPHONE_STEPS[0])}</Step>
             <Step n={2} picture={<IphoneSharePicture />}>
               {IPHONE_STEPS[1]}
             </Step>
@@ -173,7 +174,7 @@ export default async function InstallPage() {
             </li>
             <li>
               Иконата не ви трябва? Сайтът работи и без нея — просто напишете{" "}
-              <strong>{SITE.domain}</strong>.
+              <strong>{breakableAddress(SITE.domain)}</strong>.
             </li>
           </ul>
         </section>
