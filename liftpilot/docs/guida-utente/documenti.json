@@ -74,7 +74,7 @@
       },
       {
        "label": "Riduci (−) e Ingrandisci (+)",
-       "help": "Cambiano l’ingrandimento a passi di un quarto (1,25 volte) tra il 100 % e l’800 %; la cifra in percentuale è mostrata tra i due pulsanti («Ingrandimento ‹n› %»).",
+       "help": "Ogni clic moltiplica (+) o divide (−) l’ingrandimento per 1,25, tra il 100 % e l’800 %; la cifra in percentuale è mostrata tra i due pulsanti («Ingrandimento ‹n› %»).",
        "src": "src/components/drawing/DrawingFigure.tsx:51"
       },
       {
@@ -114,7 +114,7 @@
       },
       {
        "label": "SVG della serie (ZIP)",
-       "help": "Scarica gli SVG: con un solo foglio ottieni il file SVG; con più fogli ottieni un archivio ZIP «tavole-‹numero›-svg.zip» con un file «tavole-‹numero›-foglio-NN.svg» per ciascun foglio. Gli SVG sono contenuto attivo: aprili solo se ti fidi della serie.",
+       "help": "Scarica gli SVG: con un solo foglio ottieni il file SVG; con più fogli ottieni un archivio ZIP «tavole-‹numero›-svg.zip» con un file «tavole-‹numero›-foglio-NN.svg» per ciascun foglio.",
        "src": "src/app/[locale]/app/drawing-sets/[id]/page.tsx:103"
       }
      ],
@@ -719,7 +719,7 @@
        "required": "sì all’emissione (scelta, oppure derivata dall’anno e confermata)",
        "help": [
         "La legge con cui l’ascensore fu approvato: «D.Lgt. 600/1945», «DPR 1497/1963», «DM 587/1987», «DPR 268/1994» oppure «DPR 162/1999 (marcatura CE)». L’elenco mostra solo le leggi compatibili con la parte della UNI 10411 della relazione: con la UNI 10411-1 le prime quattro, con la UNI 10411-11 solo il DPR 162/1999.",
-        "Se non scegli, il software propone la legge dall’anno di installazione: 1945–1962 D.Lgt. 600/1945; 1963–1987 DPR 1497/1963; 1988–1998 DM 587/1987; con la UNI 10411-11 sempre DPR 162/1999. Per il DPR 268/1994, per il 1999 o per anni anteriori al 1945 non c’è proposta: scegli tu. La voce proposta compare come «‹sigla› (dall’anno di installazione)»; sotto leggi «Derivata dall’anno di installazione: confermala sul libretto.»",
+        "Se non scegli, il software propone la legge dall’anno di installazione. Con la UNI 10411-1: dal 1945 al 1962 D.Lgt. 600/1945; dal 1963 al 1987 DPR 1497/1963; dal 1988 al 1998 DM 587/1987. Non propone mai il DPR 268/1994 e non propone nulla per il 1999, per gli anni dal 1999 in poi, per gli anni prima del 1945 o se l’anno manca: in questi casi scegli tu. Con la UNI 10411-11 propone sempre DPR 162/1999 (marcatura CE), qualunque sia l’anno. La voce proposta compare come «‹sigla› (dall’anno di installazione)»; sotto leggi «Derivata dall’anno di installazione: confermala sul libretto.»",
         "Se la legge scelta non corrisponde alla marcatura CE del Calcolo argano, l’emissione è rifiutata («La legge di approvazione non corrisponde alla marcatura CE del Calcolo argano: correggi l’anagrafica dell’impianto o il calcolo.»). Il DPR 268/1994 reca la nota «non più citato nello scopo della UNI 10411-1 dal 2013»."
        ],
        "src": "src/components/rt/AnagraficaForm.tsx:70"
@@ -1218,7 +1218,7 @@
        "help": [
         "Il profilo delle guide: scegli un profilo del catalogo o «profilo inserito a mano» (allora compaiono i campi del profilo: sigla, area, momenti, moduli, raggio, spessore e massa).",
         "Serve alle verifiche di resistenza e deformazione delle guide.",
-        "I valori del profilo inserito a mano (area, momenti, moduli, raggio, spessore, massa) devono essere maggiori di zero; i momenti e i moduli si inseriscono in mm⁴ e mm³."
+        "I valori del profilo inserito a mano (area, momenti, moduli, raggio, spessore, massa) devono essere maggiori di zero (lo zero è rifiutato); i momenti e i moduli si inseriscono in mm⁴ e mm³."
        ],
        "src": "src/components/rt/campi.ts:78"
       },
@@ -1238,7 +1238,7 @@
        "label": "Area della sezione A [mm²]",
        "kind": "numero",
        "unit": "mm²",
-       "values": "0 – 50000",
+       "values": "maggiore di 0 fino a 50000",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1251,7 +1251,7 @@
        "label": "Momento d’inerzia Ix [mm⁴]",
        "kind": "numero",
        "unit": "mm⁴",
-       "values": "0 – 1000000000",
+       "values": "maggiore di 0 fino a 1000000000",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1264,7 +1264,7 @@
        "label": "Momento d’inerzia Iy [mm⁴]",
        "kind": "numero",
        "unit": "mm⁴",
-       "values": "0 – 1000000000",
+       "values": "maggiore di 0 fino a 1000000000",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1277,7 +1277,7 @@
        "label": "Modulo di resistenza Wx [mm³]",
        "kind": "numero",
        "unit": "mm³",
-       "values": "0 – 10000000",
+       "values": "maggiore di 0 fino a 10000000",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1290,7 +1290,7 @@
        "label": "Modulo di resistenza Wy [mm³]",
        "kind": "numero",
        "unit": "mm³",
-       "values": "0 – 10000000",
+       "values": "maggiore di 0 fino a 10000000",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1303,7 +1303,7 @@
        "label": "Raggio d’inerzia minimo [mm]",
        "kind": "numero",
        "unit": "mm",
-       "values": "0 – 500",
+       "values": "maggiore di 0 fino a 500",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1316,7 +1316,7 @@
        "label": "Spessore del gambo c [mm]",
        "kind": "numero",
        "unit": "mm",
-       "values": "0 – 100",
+       "values": "maggiore di 0 fino a 100",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1329,7 +1329,7 @@
        "label": "Massa per metro q [kg/m]",
        "kind": "numero",
        "unit": "kg/m",
-       "values": "0 – 200",
+       "values": "maggiore di 0 fino a 200",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1551,7 +1551,7 @@
        "help": [
         "Il profilo delle guide: scegli un profilo del catalogo o «profilo inserito a mano» (allora compaiono i campi del profilo: sigla, area, momenti, moduli, raggio, spessore e massa).",
         "Serve alle verifiche di resistenza e deformazione delle guide.",
-        "I valori del profilo inserito a mano (area, momenti, moduli, raggio, spessore, massa) devono essere maggiori di zero; i momenti e i moduli si inseriscono in mm⁴ e mm³."
+        "I valori del profilo inserito a mano (area, momenti, moduli, raggio, spessore, massa) devono essere maggiori di zero (lo zero è rifiutato); i momenti e i moduli si inseriscono in mm⁴ e mm³."
        ],
        "src": "src/components/rt/campi.ts:87"
       },
@@ -1571,7 +1571,7 @@
        "label": "Area della sezione A [mm²]",
        "kind": "numero",
        "unit": "mm²",
-       "values": "0 – 50000",
+       "values": "maggiore di 0 fino a 50000",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1584,7 +1584,7 @@
        "label": "Momento d’inerzia Ix [mm⁴]",
        "kind": "numero",
        "unit": "mm⁴",
-       "values": "0 – 1000000000",
+       "values": "maggiore di 0 fino a 1000000000",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1597,7 +1597,7 @@
        "label": "Momento d’inerzia Iy [mm⁴]",
        "kind": "numero",
        "unit": "mm⁴",
-       "values": "0 – 1000000000",
+       "values": "maggiore di 0 fino a 1000000000",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1610,7 +1610,7 @@
        "label": "Modulo di resistenza Wx [mm³]",
        "kind": "numero",
        "unit": "mm³",
-       "values": "0 – 10000000",
+       "values": "maggiore di 0 fino a 10000000",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1623,7 +1623,7 @@
        "label": "Modulo di resistenza Wy [mm³]",
        "kind": "numero",
        "unit": "mm³",
-       "values": "0 – 10000000",
+       "values": "maggiore di 0 fino a 10000000",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1636,7 +1636,7 @@
        "label": "Raggio d’inerzia minimo [mm]",
        "kind": "numero",
        "unit": "mm",
-       "values": "0 – 500",
+       "values": "maggiore di 0 fino a 500",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1649,7 +1649,7 @@
        "label": "Spessore del gambo c [mm]",
        "kind": "numero",
        "unit": "mm",
-       "values": "0 – 100",
+       "values": "maggiore di 0 fino a 100",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -1662,7 +1662,7 @@
        "label": "Massa per metro q [kg/m]",
        "kind": "numero",
        "unit": "kg/m",
-       "values": "0 – 200",
+       "values": "maggiore di 0 fino a 200",
        "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
        "required": "no; compare solo con «profilo inserito a mano»",
        "help": [
@@ -2522,7 +2522,7 @@
      "title": "4 · Allegati",
      "intro": [
       "Quarta carta: i documenti che la relazione si aspetta e i file che la accompagneranno. Gli allegati si aggiungono in coda alla relazione, nell’ordine che scegli. Sotto la carta c’è il riquadro «Documenti caricati» (pagina descritta separatamente), con cui carichi, modifichi ed elimini i file dell’impianto.",
-      "«Documenti attesi per questa modifica» elenca ciò che la norma richiede per le parti e i casi della modifica. Sono al massimo diciassette documenti: schema elettrico del quadro di manovra; dichiarazioni e certificati dei dispositivi elettrici di sicurezza del quadro; dati e dichiarazioni del costruttore della macchina; relazione sulla taratura del variatore di frequenza; certificati delle funi di trazione; dichiarazione UE, certificato d’esame del tipo e certificato della fune del limitatore di velocità; certificato d’esame del tipo e dichiarazione del paracadute; certificati e dichiarazioni dei dispositivi ACOP e UCM; certificato e dichiarazione degli ammortizzatori non lineari o idraulici; certificati d’esame del tipo delle serrature di piano; certificato della classe di resistenza al fuoco delle porte di piano; dichiarazione del proprietario sull’idoneità delle strutture; dichiarazione di idoneità degli ancoraggi delle guide; attestazione del dispositivo di allarme di emergenza; copia del libretto o dell’ultimo verbale di verifica (consigliato). Quali compaiono dipende dalla modifica; ciascuno riporta il riferimento alla norma (numero di punto). Se nessuno è atteso: «Nessun documento particolare atteso per questa modifica.»"
+      "«Documenti attesi per questa modifica» elenca ciò che la norma richiede per le parti e i casi della modifica. Sono al massimo diciassette documenti, qui raggruppati in quindici voci (per il limitatore di velocità sono tre: dichiarazione UE, certificato d’esame del tipo e certificato della fune): schema elettrico del quadro di manovra; dichiarazioni e certificati dei dispositivi elettrici di sicurezza del quadro; dati e dichiarazioni del costruttore della macchina; relazione sulla taratura del variatore di frequenza; certificati delle funi di trazione; dichiarazione UE, certificato d’esame del tipo e certificato della fune del limitatore di velocità; certificato d’esame del tipo e dichiarazione del paracadute; certificati e dichiarazioni dei dispositivi ACOP e UCM; certificato d’esame del tipo e dichiarazione degli ammortizzatori non lineari o idraulici (titolo del documento atteso: compare con ammortizzatori in poliuretano o idraulici, non con quelli a molla); certificati d’esame del tipo delle serrature di piano; certificato della classe di resistenza al fuoco delle porte di piano; dichiarazione del proprietario sull’idoneità delle strutture; dichiarazione di idoneità degli ancoraggi delle guide; attestazione del dispositivo di allarme di emergenza; copia del libretto o dell’ultimo verbale di verifica (consigliato). Quali compaiono dipende dalla modifica; ciascuno riporta il riferimento alla norma (numero di punto). Se nessuno è atteso: «Nessun documento particolare atteso per questa modifica.»"
      ],
      "fields": [
       {
@@ -2581,7 +2581,7 @@
       "Se un file viene eliminato dall’impianto, esce anche dalla bozza; uno nuovo caricato mentre lavori si aggiunge in coda."
      ],
      "warnings": [
-      "Oltre ai 40 file e alle 400 pagine, gli allegati hanno un limite totale di 120 MiB e, per i PNG con trasparenza o interlacciati, di 300 megapixel in tutto: oltre questi limiti l’emissione è rifiutata («I documenti allegati superano i limiti della relazione (40 file, 400 pagine, 120 MiB; le immagini PNG con trasparenza o interlacciate al più 300 megapixel in tutto): togline qualcuno.»)."
+      "Oltre ai 40 file e alle 400 pagine, gli allegati hanno un limite totale di 120 MB e, per i PNG con trasparenza o interlacciati, di 300 megapixel in tutto: oltre questi limiti l’emissione è rifiutata con un messaggio che indica i limiti della relazione e ti chiede di toglierne qualcuno."
      ]
     },
     {
@@ -2797,8 +2797,8 @@
    "reach": "Nella pagina «Relazione tecnica di modifica», subito sotto la carta «4 · Allegati». Se la relazione non si può fare (manca il calcolo o il progetto) il riquadro compare comunque al posto delle carte.",
    "purpose": [
     "Qui carichi le dichiarazioni, i certificati, gli schemi e le fotografie dell’impianto: il testo del riquadro dice «Dichiarazioni, certificati, schemi e fotografie dell’impianto. La relazione tecnica di modifica li elenca e li allega in coda, nell’ordine che scegli.»",
-    "Il tipo del file si riconosce dal contenuto, non dal nome: sono accettati PDF, JPEG, PNG e HEIC (le foto HEIC dell’iPhone si convertono in JPEG), fino a 20 MB per file (20 MiB, cioè 20 971 520 byte). Dalle fotografie si tolgono i metadati (posizione GPS, fotocamera, autore) prima di conservarle, perciò l’impronta SHA-256 indicata è quella della copia conservata. I PDF si conservano come caricati, compresi i loro metadati (autore, programma): toglili prima del caricamento se devono restare riservati. Non caricare fotografie con persone riconoscibili né documenti con dati sanitari.",
-    "I limiti sono 20 MB (20 MiB) per file, 60 file per impianto e 500 MB per l’intera azienda; un PDF ha al massimo 200 pagine, un’immagine al massimo 40 megapixel e 12 000 pixel per lato. PDF protetti da password o con moduli compilabili (XFA) sono rifiutati."
+    "Il tipo del file si riconosce dal contenuto, non dal nome: sono accettati PDF, JPEG, PNG e HEIC (le foto HEIC dell’iPhone si convertono in JPEG), fino a 20 MB per file. Dalle fotografie si tolgono i metadati (posizione GPS, fotocamera, autore) prima di conservarle, perciò l’impronta SHA-256 indicata è quella della copia conservata. I PDF si conservano come caricati, compresi i loro metadati (autore, programma): toglili prima del caricamento se devono restare riservati. Non caricare fotografie con persone riconoscibili né documenti con dati sanitari.",
+    "I limiti sono 20 MB per file, 60 file per impianto e 500 MB per l’intera azienda; un PDF ha al massimo 200 pagine, un’immagine al massimo 40 megapixel e 12 000 pixel per lato. PDF protetti da password o con moduli compilabili (XFA) sono rifiutati."
    ],
    "shots": [
     {

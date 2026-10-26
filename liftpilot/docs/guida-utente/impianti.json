@@ -1359,7 +1359,7 @@
               "default": "Il valore attuale.",
               "required": "no",
               "help": [
-                "Il committente, che finisce nel cartiglio delle tavole emesse dopo."
+                "Il committente: compare nel cartiglio delle tavole emesse da questo momento in poi."
               ],
               "src": "src/components/ProjectForm.tsx:21"
             },
@@ -1397,9 +1397,9 @@
       "title": "Dati dell’impianto",
       "path": "/it/app/projects/‹id›/impianto",
       "access": "La vedono tutti i ruoli che vedono gli impianti («projects:view»). Li modifica chi può modificare i dati dell’impianto («projects:edit»: predefinito Capotecnico, Progettista e Tecnico, oltre al Titolare), purché l’impianto non sia archiviato e l’azienda non sia in sola lettura; per gli altri i campi sono disattivati e non ci sono i pulsanti di salvataggio. Il Titolare può cambiare la matrice dei permessi.",
-      "reach": "Dalla pagina dell’impianto, sezione «Tavole emesse», pulsante «Dati dell’impianto»; oppure dai link «Apri i dati dell’impianto» e «Modifica nei dati dell’impianto» nei moduli di emissione e nella relazione tecnica.",
+      "reach": "Dalla pagina dell’impianto, sezione «Tavole emesse», pulsante «Dati dell’impianto»; oppure dai collegamenti «Apri i dati dell’impianto» e «Modifica nei dati dell’impianto» nei moduli di emissione e nella relazione tecnica.",
       "purpose": [
-        "Qui inserisci i dati che né il calcolo né il progetto del vano conoscono e che il foglio 1 delle tavole (e in parte la relazione tecnica) stampa. Tutti i campi sono facoltativi: un campo vuoto va in tavola come trattino o con l’ipotesi del software. Il server convalida tutto lo stesso schema prima di salvare; un numero fuori campo fa rifiutare il salvataggio intero.",
+        "Qui inserisci i dati che né il calcolo né il progetto del vano conoscono e che il foglio 1 delle tavole (e in parte la relazione tecnica) stampa. Tutti i campi sono facoltativi: un campo vuoto va in tavola come trattino o con l’ipotesi del software. Prima di salvare, il server controlla tutti i campi con le stesse regole; un numero fuori dai limiti fa rifiutare l’intero salvataggio.",
         "I dati si salvano sull’impianto (uno per impianto) e valgono per le tavole che emetti dopo: le tavole già emesse restano come sono state emesse. Se i dati cambiano dopo un’emissione, l’elenco delle tavole lo segnala («I dati dell’impianto del progetto sono cambiati dopo l’emissione di queste tavole…»): per allinearle emetti una nuova revisione.",
         "Il modulo mostra solo i campi che i documenti dell’impianto leggono. Per un impianto completo (progetto dell’ascensore, o calcolo il cui Progetto disegna il vano) vedi anche vano, rivestimento della cabina, uso, paracadute del contrappeso, correnti, passi delle staffe e masse della cabina. Per la sola sostituzione dell’argano in un locale esistente vedi una parte ridotta; i dati dell’impianto completo già inseriti restano salvati ma queste tavole non li usano né li stampano (messaggio: «I dati del vano, della cabina, delle correnti e delle staffe inseriti per un impianto completo restano salvati: queste tavole del locale macchina non li usano né li stampano.»)."
       ],
@@ -1438,7 +1438,7 @@
           "actions": [
             {
               "label": "Carica il logo",
-              "help": "Carica il file. Il nuovo logo diventa quello del committente per le serie emesse da ora; le serie già emesse tengono quello con cui sono state emesse. Conferma «Logo salvato.»",
+              "help": "Carica il file. Il nuovo logo diventa quello del committente per le serie emesse da ora; le serie già emesse tengono quello con cui sono state emesse. A caricamento riuscito leggi «Logo salvato.»",
               "src": "src/components/tavole/ClientLogoForm.tsx:52"
             },
             {
@@ -1514,7 +1514,7 @@
               "kind": "scelta",
               "unit": null,
               "values": "— · Persone · Merci accompagnate · Merci accompagnate con mezzi pesanti",
-              "default": "— (ipotesi del software come sopra)",
+              "default": "— (il software usa un’ipotesi: vedi sotto)",
               "required": "no; solo impianto completo",
               "help": [
                 "A che cosa serve l’impianto: decide la forza sulla soglia di cabina durante il carico, nella verifica delle guide (UNI EN 81-20, 5.7.2.3.6). Compare solo per un impianto completo e anche nella relazione tecnica.",
@@ -1653,7 +1653,7 @@
         {
           "title": "Facoltativi",
           "intro": [
-            "Riquadro a scomparsa. Si apre da solo quando il nome dell’argano contraddice già quello del calcolo."
+            "Riquadro a scomparsa. Si apre da solo quando il nome dell’argano non corrisponde già a quello del calcolo."
           ],
           "fields": [
             {
@@ -1674,12 +1674,12 @@
               "label": "Passo staffe cabina (mm)",
               "kind": "numero",
               "unit": "mm",
-              "values": "300 – 10000",
+              "values": "300 – 10.000",
               "default": "2000 mm (regola del software)",
               "required": "no; solo impianto completo",
               "help": [
                 "La distanza tra le staffe delle guide di cabina. Il numero delle staffe si calcola da solo: per ogni guida una ogni 2000 mm (o il passo inserito), più la prima e l’ultima.",
-                "Valori da 300 a 10000 mm. Nel campo vuoto vedi 2000 come suggerimento. Compare solo per un impianto completo."
+                "Valori da 300 a 10.000 mm. Nel campo vuoto vedi 2000 come suggerimento. Compare solo per un impianto completo."
               ],
               "src": "src/components/tavole/PlantForm.tsx:134"
             },
@@ -1687,7 +1687,7 @@
               "label": "Passo staffe contrappeso (mm)",
               "kind": "numero",
               "unit": "mm",
-              "values": "300 – 10000",
+              "values": "300 – 10.000",
               "default": "2000 mm (regola del software)",
               "required": "no; solo impianto completo",
               "help": [
@@ -1699,7 +1699,7 @@
               "label": "Cabina (kg)",
               "kind": "numero",
               "unit": "kg",
-              "values": "0 – 10000",
+              "values": "0 – 10.000",
               "default": "vuoto: un trattino nella tabella dei carichi",
               "required": "no; solo impianto completo",
               "help": [
@@ -1712,7 +1712,7 @@
               "label": "Pavimento del cliente, massimo (kg)",
               "kind": "numero",
               "unit": "kg",
-              "values": "0 – 10000",
+              "values": "0 – 10.000",
               "default": "vuoto: un trattino",
               "required": "no; solo impianto completo",
               "help": [
@@ -1724,7 +1724,7 @@
               "label": "Operatore e ante (kg)",
               "kind": "numero",
               "unit": "kg",
-              "values": "0 – 10000",
+              "values": "0 – 10.000",
               "default": "vuoto: un trattino",
               "required": "no; solo impianto completo",
               "help": [
@@ -1736,7 +1736,7 @@
               "label": "Arcata (kg)",
               "kind": "numero",
               "unit": "kg",
-              "values": "0 – 10000",
+              "values": "0 – 10.000",
               "default": "vuoto: un trattino",
               "required": "no; solo impianto completo",
               "help": [
@@ -1773,7 +1773,7 @@
     },
     {
       "term": "Rilievo (scheda di rilievo)",
-      "def": "La scheda scritta in sopralluogo sull’impianto esistente; si collega a un impianto e dà i valori «dal rilievo»."
+      "def": "La scheda compilata durante il sopralluogo sull’impianto esistente; si collega a un impianto e dà i valori «dal rilievo»."
     },
     {
       "term": "Calcolo argano",

@@ -4,7 +4,7 @@
   "intro": [
     "Questo capitolo è riservato all’Amministratore della piattaforma, il ruolo di chi gestisce LiftPilot per conto di Carbon Stealth VCC. Le aziende clienti, i loro Titolari e i loro colleghi non vedono queste pagine e non hanno modo di aprirle.",
     "L’area ha tre pagine: «Aziende» (l’elenco delle aziende clienti, la creazione di una nuova azienda con il suo Titolare e gli «Inviti alla beta»), «Permessi · nome azienda» (la matrice dei permessi di un’azienda cliente) e «Segnalazioni» (i messaggi inviati dagli utenti con «Segnala un problema»). Nel menu «Gestione» la prima compare come «Aziende»; le altre due si raggiungono dai pulsanti della prima.",
-    "Regole di condotta valide per tutta l’area. Invita alla beta solo chi ha chiesto di partecipare, e scrivi nella nota la data e il canale della richiesta. Cambia i permessi di un’azienda solo su richiesta scritta del suo Titolare, e scrivi nel salvataggio il riferimento di quella richiesta. Non scrivere mai nelle note o nei riferimenti password, link o dati che non servono: le note sono dati personali che la persona interessata può chiedere di vedere.",
+    "Regole di condotta, valide per tutta l’area. Invita alla beta solo chi ha chiesto di partecipare e scrivi nella nota la data e il canale della richiesta. Cambia i permessi di un’azienda solo su richiesta scritta del suo Titolare e, al salvataggio, scrivi il riferimento di quella richiesta. Nelle note e nei riferimenti non scrivere mai password, link o dati non necessari: le note sono dati personali che la persona interessata può chiedere di vedere.",
     "Negli esempi di questa guida gli indirizzi sono sempre «nome@esempio.it»."
   ],
   "pages": [
@@ -12,11 +12,11 @@
       "id": "admin-aziende",
       "title": "Aziende",
       "path": "/it/app/admin",
-      "access": "La vede e agisce solo chi ha il diritto «platform:admin», cioè il ruolo Amministratore della piattaforma. Questo diritto non entra nella matrice dei permessi e non si assegna a nessun collega di nessuna azienda, nemmeno un Titolare.",
+      "access": "La vede e la usa solo l’amministratore della piattaforma. Questo diritto non entra nella matrice dei permessi e non si assegna a nessun collega di nessuna azienda, nemmeno al Titolare.",
       "reach": "Dal menu «Gestione» → «Aziende».",
       "purpose": [
         "È il pannello di controllo della piattaforma. Dall’alto in basso: due pulsanti di collegamento, gli «Inviti alla beta», l’elenco delle aziende con le azioni su ogni riga e il modulo «Nuova azienda».",
-        "Sotto il titolo compare l’etichetta «Amministrazione della piattaforma» e la frase: «Le aziende di installatori che usano LiftPilot. Una nuova azienda nasce con il suo Titolare.»",
+        "Sotto il titolo compaiono l’etichetta «Amministrazione della piattaforma» e la frase: «Le aziende di installatori che usano LiftPilot. Una nuova azienda nasce con il suo Titolare.»",
         "Nota: la pagina non ha un pannello di gestione degli utenti di un’azienda. Gli utenti (colleghi) li invita e li gestisce il Titolare di ciascuna azienda dalla sua pagina «Utenti»; tu ne vedi solo il numero nella colonna «Utenti» e crei il Titolare quando crei l’azienda."
       ],
       "shots": [
@@ -53,16 +53,16 @@
         {
           "title": "Inviti alla beta",
           "intro": [
-            "Durante la beta la registrazione di una nuova azienda avviene, di norma, solo dal link di un invito. Questo pannello serve a invitare un tester, a vedere che fine ha fatto ogni invito e a ritirarlo o rimandarlo.",
-            "Sotto il titolo il pannello ti dice in quale modalità è la registrazione. Se è su invito leggi: «La registrazione è su invito: un’azienda si registra solo dal link del suo invito e con l’indirizzo invitato. Il link vale 30 giorni e serve per una sola azienda.» Se è aperta a tutti leggi: «La registrazione è aperta a tutti: gli inviti funzionano comunque e restano legati all’azienda che li usa.» La modalità non si cambia da qui: è una impostazione del server.",
-            "Segue sempre l’avviso: «Gli inviti vanno solo a chi ha chiesto di partecipare alla beta: l’e-mail dell’invito dice al tester che l’ha chiesto e per quanto conserviamo il suo indirizzo.» Ragione: la lettera d’invito è comunicazione promozionale, e verso un indirizzo italiano che non l’ha chiesta serve un consenso. Per questo l’invito si manda solo su richiesta scritta della persona, e la richiesta resta nel tuo archivio."
+            "Durante la beta la registrazione di una nuova azienda avviene, di norma, solo dal link di un invito. Questo pannello serve a invitare un tester, a seguire lo stato di ogni invito e a ritirarlo o rimandarlo.",
+            "Sotto il titolo il pannello ti dice in quale modalità è la registrazione. Se è su invito leggi: «La registrazione è su invito: un’azienda si registra solo dal link del suo invito e con l’indirizzo invitato. Il link vale 30 giorni e serve per una sola azienda.» Se è aperta a tutti leggi: «La registrazione è aperta a tutti: gli inviti funzionano comunque e restano legati all’azienda che li usa.» La modalità non si cambia da qui: è un’impostazione del server.",
+            "Segue sempre l’avviso: «Gli inviti vanno solo a chi ha chiesto di partecipare alla beta: l’e-mail dell’invito dice al tester che l’ha chiesto e per quanto conserviamo il suo indirizzo.» Regola di lavoro della piattaforma: inviti solo chi ha chiesto per iscritto di partecipare, e nella «Nota (facoltativa)» scrivi il riferimento di quella richiesta (data e canale). La richiesta resta nel tuo archivio."
           ],
           "fields": [
             {
               "label": "E-mail",
               "kind": "email",
               "unit": null,
-              "values": "Indirizzo e-mail valido, al massimo 254 caratteri; maiuscole e spazi ai lati sono eliminati e l’indirizzo è salvato in minuscolo.",
+              "values": "Indirizzo e-mail valido, al massimo 254 caratteri; gli spazi iniziali e finali sono eliminati e l’indirizzo è salvato in minuscolo.",
               "default": null,
               "required": "sì (nel modulo è segnato con *)",
               "help": [
@@ -88,7 +88,7 @@
           "actions": [
             {
               "label": "Invita",
-              "help": "Crea l’invito e manda al tester un’e-mail con il link della registrazione. Se l’invio delle e-mail non è attivo il link non parte, ma compare comunque sullo schermo. Il pulsante si disattiva mentre l’invio è in corso. Limite: al massimo 60 inviti (nuovi o rimandati) all’ora per amministratore; oltre compare «Troppi tentativi. Riprova tra qualche minuto.» Se non hai il diritto di amministratore compare «Non hai i permessi per questa operazione.»",
+              "help": "Crea l’invito e manda al tester un’e-mail con il link della registrazione. Se l’invio delle e-mail non è attivo, l’e-mail non parte, ma il link compare comunque sullo schermo. Il pulsante si disattiva mentre l’invio è in corso. Limite: al massimo 60 inviti (nuovi o rimandati) all’ora per amministratore; oltre compare «Troppi tentativi. Riprova tra qualche minuto.» Se non hai il diritto di amministratore compare «Non hai i permessi per questa operazione.»",
               "src": "src/components/admin/BetaInviteForm.tsx:130"
             }
           ],
@@ -151,7 +151,7 @@
               "default": null,
               "required": "sì",
               "help": [
-                "Per un invito «In attesa» o «Scaduto» trovi i pulsanti «Invia di nuovo» e «Revoca». Per un invito «Usato» trovi solo un trattino: resta come registro dell’azienda che ha creato e non si può né rimandare né revocare."
+                "Per un invito «In attesa» o «Scaduto» trovi i pulsanti «Invia di nuovo» e «Revoca». Per un invito «Usato» trovi solo un trattino: resta come traccia dell’azienda che ha creato e non si può né rimandare né revocare."
               ],
               "src": "src/components/admin/BetaInvites.tsx:70"
             }
@@ -190,7 +190,7 @@
               "default": null,
               "required": "sì",
               "help": [
-                "Ragione sociale, con sotto Partita IVA e Comune se li hai inseriti alla creazione. Nella stessa cella c’è il pulsante «Permessi»."
+                "Ragione sociale, con sotto Partita IVA e Comune, se sono stati inseriti alla creazione. Nella stessa cella c’è il pulsante «Permessi»."
               ],
               "src": "src/app/[locale]/app/admin/page.tsx:41"
             },
@@ -238,7 +238,7 @@
               "default": null,
               "required": "sì",
               "help": [
-                "Quanti calcoli dell’argano l’azienda ha salvato."
+                "Quanti calcoli argano ha salvato l’azienda."
               ],
               "src": "src/app/[locale]/app/admin/page.tsx:50"
             },
@@ -246,7 +246,7 @@
               "label": "Abbonamento",
               "kind": "tabella",
               "unit": null,
-              "values": "Stato: «Senza fatturazione», «In prova», «Attivo», «Pagamento in sospeso», «Sola lettura»; poi, se l’azienda ha un pacchetto di posti, «5 posti», «10 posti» o «Posti illimitati» (per «Titolare», cioè nessun pacchetto, non si scrive nulla)",
+              "values": "Stato: «Senza fatturazione», «In prova», «Attivo», «Pagamento in sospeso», «Sola lettura»; dopo un punto centrale, solo se l’azienda ha un pacchetto di posti, «5 posti», «10 posti» o «Posti illimitati». Un’azienda senza pacchetto di posti mostra soltanto lo stato",
               "default": null,
               "required": "sì",
               "help": [
@@ -275,22 +275,22 @@
             },
             {
               "label": "Esenta dal pagamento",
-              "help": "Nella colonna «Abbonamento» di un’altra azienda. L’azienda non viene più fatturata (per esempio un partner). Il pulsante diventa «Torna a pagamento». Non c’è per la tua azienda.",
+              "help": "Si trova nella colonna «Abbonamento» delle altre aziende. Esclude l’azienda dalla fatturazione (per esempio un partner) e il pulsante diventa «Torna a pagamento». Non c’è per la tua azienda.",
               "src": "src/app/[locale]/app/admin/page.tsx:59"
             },
             {
               "label": "Torna a pagamento",
-              "help": "Rimette l’azienda a pagamento. Se non aveva mai avuto la prova gratuita, questa parte da adesso. Se i colleghi attivi e gli inviti in attesa superano i posti pagati, gli inviti in attesa sono annullati e i colleghi più recenti oltre il limite sono disattivati (con la sessione chiusa). Durante la prova gratuita senza abbonamento nessuno viene disattivato. La modifica resta scritta nel registro attività.",
+              "help": "Rimette l’azienda a pagamento. Se non aveva mai avuto la prova gratuita, questa parte da adesso. Se i colleghi attivi e gli inviti in attesa superano i posti pagati, gli inviti in attesa sono annullati e i colleghi più recenti oltre il limite sono disattivati e le loro sessioni vengono chiuse. Durante la prova gratuita senza abbonamento nessuno viene disattivato. La modifica resta scritta nel registro attività.",
               "src": "src/app/[locale]/app/admin/page.tsx:59"
             },
             {
               "label": "Disattiva",
-              "help": "Nella colonna «Stato» di un’altra azienda. Disattiva l’azienda e chiude subito le sessioni di tutti i suoi utenti: nessuno può più lavorare finché non la riattivi. I dati non vengono cancellati. Non c’è per la tua azienda.",
+              "help": "Si trova nella colonna «Stato» delle altre aziende. Disattiva l’azienda e chiude subito le sessioni di tutti i suoi utenti: nessuno può più lavorare finché non la riattivi. I dati non vengono cancellati. Non c’è per la tua azienda.",
               "src": "src/app/[locale]/app/admin/page.tsx:71"
             },
             {
               "label": "Riattiva",
-              "help": "Il contrario: l’azienda torna «attiva» e i suoi utenti possono accedere di nuovo.",
+              "help": "Fa l’opposto di «Disattiva»: l’azienda torna «attiva» e i suoi utenti possono accedere di nuovo.",
               "src": "src/app/[locale]/app/admin/page.tsx:71"
             }
           ],
@@ -327,7 +327,7 @@
               "default": null,
               "required": "no",
               "help": [
-                "Partita IVA dell’azienda, scritta come sai. Non viene verificata dal sistema."
+                "Partita IVA dell’azienda, come ti è stata comunicata. Il sistema non la verifica."
               ],
               "src": "src/components/CreateCompanyForm.tsx:20"
             },
@@ -382,13 +382,13 @@
             "La creazione viene scritta nel registro attività della nuova azienda."
           ],
           "warnings": [
-            "La password si vede una sola volta: non è salvata in chiaro e non viene mandata per e-mail. Copiala subito e consegnala al Titolare di persona o con un canale sicuro, mai insieme al suo indirizzo in una lettera aperta. Se la perdi non si può rivedere: il Titolare può chiederne una nuova con «Password dimenticata?» dalla pagina di accesso."
+            "La password si vede una sola volta: non è salvata in chiaro e non viene mandata per e-mail. Copiala subito e consegnala al Titolare di persona o con un canale sicuro, come dice il riquadro stesso. Se la perdi non si può rivedere: il Titolare può chiederne una nuova con «Password dimenticata?» dalla pagina di accesso."
           ]
         }
       ],
       "tips": [
         "Per un tester che ha chiesto la beta usa «Inviti alla beta»: il link serve una sola volta e l’azienda si registra e conferma l’e-mail da sola. Per un’azienda che devi avviare tu usa «Nuova azienda».",
-        "Prima di esentare o disattivare un’azienda controlla la colonna «Abbonamento» e la riga corretta: le azioni agiscono subito."
+        "Prima di esentare o disattivare un’azienda controlla la colonna «Abbonamento» e di essere sulla riga giusta: le azioni hanno effetto immediato."
       ]
     },
     {
@@ -398,7 +398,7 @@
       "access": "La vede e la modifica solo l’Amministratore della piattaforma. Il Titolare dell’azienda vede la stessa matrice nella sua pagina «Permessi», dove la cambia da solo.",
       "reach": "Dalla pagina «Aziende», pulsante «Permessi» nella riga dell’azienda. Se apri l’indirizzo della tua stessa azienda vieni rimandato alla pagina «Permessi» della tua azienda; se l’azienda non esiste compare «Pagina non trovata».",
       "purpose": [
-        "Mostra e permette di cambiare la matrice dei permessi di un’azienda cliente: per ogni azione e per ogni ruolo dei colleghi (Capotecnico, Progettista, Tecnico, Commerciale) dice se il diritto è concesso. Il Titolare ha sempre tutto.",
+        "Mostra la matrice dei permessi di un’azienda cliente e permette di cambiarla: per ogni azione e per ogni ruolo dei colleghi (Capotecnico, Progettista, Tecnico, Commerciale) dice se il diritto è concesso. Il Titolare ha sempre tutto.",
         "Il titolo è «Permessi · » seguito dal nome dell’azienda. Sotto leggi la regola: «La matrice dei permessi di un’azienda cliente: si cambia solo su richiesta scritta del suo Titolare (condizioni d’uso, artt. 4 e 9), il cui riferimento si scrive al salvataggio. Ogni modifica vale dalla prossima pagina aperta dai suoi colleghi e compare nel registro attività dell’azienda, attribuita alla piattaforma, con il riferimento della richiesta.»",
         "In pratica: il Titolare ti scrive (e-mail) chiedendo il cambiamento; tu conservi la lettera; fai la modifica e al salvataggio scrivi la data e l’oggetto di quella e-mail. Nel registro attività dell’azienda la modifica appare come «Piattaforma LiftPilot», con «su richiesta del Titolare: …» e il tuo riferimento. Non modificare mai senza una richiesta scritta."
       ],
@@ -464,7 +464,7 @@
               "default": "La matrice predefinita della piattaforma, finché l’azienda non l’ha cambiata. Predefinito: tutti vedono rilievi, impianti e download; Capotecnico, Progettista e Tecnico compilano rilievi, creano impianti, collegano rilievi, modificano gli impianti e fanno i calcoli; Capotecnico e Progettista spostano i rilievi nel cestino, archiviano gli impianti, mettono il visto, disegnano il progetto ed emettono le tavole; il Capotecnico gestisce il cestino e vede il registro attività; Capotecnico e Commerciale vedono i prezzi; nessun collega modifica il listino, il logo, l’esportazione, gli utenti, i permessi o l’abbonamento.",
               "required": "no",
               "help": [
-                "Spunta per concedere il diritto a quel ruolo, togli la spunta per toglierlo. La colonna del Titolare è sempre spuntata e bloccata (lucchetto). Le caselle bloccate con lucchetto non si spostano: «Solo del Titolare» (utenti, permessi, abbonamento, mai ai colleghi) e «Si assegna solo al Capotecnico» (logo e ordine delle sezioni dell’azienda, esportazione dei dati).",
+                "Spunta per concedere il diritto a quel ruolo, togli la spunta per toglierlo. La colonna del Titolare è sempre spuntata e bloccata (lucchetto). Le caselle bloccate con il lucchetto non si possono cambiare: «Solo del Titolare» (utenti, permessi, abbonamento, mai ai colleghi) e «Si assegna solo al Capotecnico» (logo e ordine delle sezioni dell’azienda, esportazione dei dati).",
                 "Concedere un diritto concede anche quelli da cui dipende: una riga sotto la matrice dice quali altri si sono mossi («Concessi anche a …, perché servono: …»). Togliere un diritto toglie anche quelli che ne dipendono («Tolti anche a …, perché ne dipendono: …»).",
                 "Il segno di ogni casella: spunta = concesso; casella vuota = non concesso; lucchetto = bloccata dalle regole; punto = diverso dal predefinito; anello tratteggiato = modifica non salvata. Le stesse voci sono nella legenda sotto la matrice: «concesso», «sempre concesso (Titolare)», «non concesso», «bloccato dalle regole», «diverso dal predefinito», «modifica non salvata»."
               ],
@@ -479,8 +479,8 @@
             }
           ],
           "notes": [
-            "La colonna del Titolare riporta «sempre tutto»: nessuno, nemmeno tu, può toglierle un diritto.",
-            "Il tetto delle regole è fissato nel software: non puoi concedere a un collega diritti riservati al Titolare né i diritti della piattaforma."
+            "La colonna del Titolare riporta «sempre tutto»: nessuno, nemmeno tu, può togliere un diritto al Titolare.",
+            "I limiti delle regole sono fissati nel software: non puoi concedere a un collega diritti riservati al Titolare né i diritti della piattaforma."
           ]
         },
         {
@@ -495,7 +495,7 @@
               "unit": null,
               "values": "Da 4 a 200 caratteri (spazi ai lati esclusi)",
               "default": null,
-              "required": "sì, sempre, per una azienda diversa dalla tua; nel salvataggio sulla tua azienda il campo non compare",
+              "required": "sì, sempre, per un’azienda diversa dalla tua; nel salvataggio sulla tua azienda il campo non compare",
               "help": [
                 "Compare nella finestra di conferma, sotto l’elenco delle modifiche. Guida: «La data e l’oggetto dell’e-mail del Titolare, per esempio «12/10/2026 — permessi del Tecnico». Resta nel registro attività dell’azienda.»",
                 "Finché il campo ha meno di 4 caratteri il pulsante «Conferma e salva» resta disattivato, e anche il server rifiuta il salvataggio con «Scrivi il riferimento della richiesta scritta del Titolare (almeno 4 caratteri).» Scrivi solo il riferimento (data e oggetto), non il testo della lettera né dati personali.",
@@ -507,7 +507,7 @@
           "actions": [
             {
               "label": "Salva i permessi",
-              "help": "Apre la finestra di conferma «Salvare i permessi?». Si attiva solo se hai modifiche non salvate. La finestra dice «Cambia 1 permesso» o «Cambiano n permessi. Valgono dalla prossima pagina che ogni collega apre e restano nel registro attività.» e elenca, ruolo per ruolo, ogni modifica nella forma «concesso → non concesso» o viceversa.",
+              "help": "Apre la finestra di conferma «Salvare i permessi?». Si attiva solo se hai modifiche non salvate. La finestra dice «Cambia 1 permesso» o «Cambiano n permessi. Valgono dalla prossima pagina che ogni collega apre e restano nel registro attività.» ed elenca, ruolo per ruolo, ogni modifica nella forma «concesso → non concesso» o viceversa.",
               "src": "src/components/permessi/PermissionsMatrix.tsx:181"
             },
             {
@@ -538,17 +538,17 @@
       ],
       "tips": [
         "Conserva l’e-mail del Titolare nel tuo archivio: il riferimento che scrivi deve permettere di ritrovarla (data e oggetto).",
-        "Se il Titolare vuole solo un cambio di prova, ricordagli che può farlo da solo dalla sua pagina «Permessi» e che a te non serve intervenire."
+        "Se il Titolare vuole solo un cambio di prova, ricordagli che può farlo da solo dalla sua pagina «Permessi» e che il tuo intervento non serve."
       ]
     },
     {
       "id": "admin-segnalazioni",
       "title": "Segnalazioni",
       "path": "/it/app/admin/segnalazioni",
-      "access": "La vede e agisce solo l’Amministratore della piattaforma. Gli utenti delle aziende possono solo inviare le segnalazioni, non leggere quelle degli altri.",
+      "access": "La vede e la usa solo l’Amministratore della piattaforma. Gli utenti delle aziende possono solo inviare le segnalazioni, non leggere quelle degli altri.",
       "reach": "Dalla pagina «Aziende», pulsante «Segnalazioni · n da gestire». Dall’altra parte, gli utenti inviano le segnalazioni dal menu «Segnala un problema» o dal pulsante «Segnala il problema» di una pagina di errore.",
       "purpose": [
-        "Elenca quello che gli utenti hanno inviato da «Segnala un problema»: un problema, un suggerimento o una domanda, dal più recente. Il testo si legge solo qui: la e-mail che arriva agli amministratori dice soltanto che è arrivata una segnalazione e di che tipo, non il suo contenuto.",
+        "Elenca quello che gli utenti hanno inviato da «Segnala un problema»: un problema, un suggerimento o una domanda, dal più recente. Il testo si legge solo qui: l’e-mail che arriva agli amministratori dice soltanto che è arrivata una segnalazione e di che tipo, non il suo contenuto.",
         "Il testo sotto il titolo: «Quello che gli utenti hanno inviato da «Segnala un problema», dal più recente. Il testo resta qui: l’e-mail agli amministratori dice solo che è arrivata una segnalazione.»",
         "Attenzione ai dati: il messaggio può contenere dati personali scritti dall’utente. Usalo solo per rispondere e correggere il servizio. Le segnalazioni sono conservate finché esiste l’azienda e cancellate 24 mesi dopo che le hai segnate come gestite."
       ],
@@ -739,7 +739,7 @@
   "glossary": [
     {
       "term": "Amministratore della piattaforma",
-      "def": "Il ruolo di chi gestisce LiftPilot (diritto «platform:admin»). Non appartiene a nessuna azienda cliente e non si assegna ai colleghi."
+      "def": "Il ruolo di chi gestisce LiftPilot (il diritto di amministrare la piattaforma). Non appartiene a nessuna azienda cliente e non si assegna ai colleghi."
     },
     {
       "term": "Titolare",
