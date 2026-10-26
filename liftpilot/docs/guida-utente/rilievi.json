@@ -1,0 +1,3112 @@
+{
+ "key": "rilievi",
+ "title": "Rilievi: le schede di rilievo e i moduli dei fornitori",
+ "intro": [
+  "Il rilievo è la scheda che compili sul posto, davanti all’impianto esistente: identificazione e targa, ubicazione e accesso, tipologia, quadro, argano (o centralina), funi e tiranti, limitatore, cavi, serrature o sospensioni, allarme e telesoccorso, note e lavori. Puoi compilarla anche dal telefono.",
+  "Le domande seguono l’impianto: con un impianto idraulico la centralina prende il posto di argano e limitatore; serrature e pattino retrattile si chiedono con porte manuali o semiautomatiche, le sospensioni solo con porte automatiche. Serve la data e almeno uno tra indirizzo, matricola e n° impianto.",
+  "Dalla scheda apri i moduli dei fornitori — l’ordine del quadro Pelazza, MoviLift o Mastech (NG120 o QI Touch), il modulo rilievi dati argani e il modulo 2SG per operatore e sospensioni — già compilati con i dati della scheda; ogni modulo si scarica come PDF a parte. In fondo alla scheda scegli che cosa mettere nella stampa e nel PDF.",
+  "Le schede eliminate vanno nel cestino, da cui si ripristinano o si eliminano per sempre. Il rilievo si può collegare a un impianto, che riparte dai valori misurati."
+ ],
+ "pages": [
+  {
+   "id": "rilievi-elenco",
+   "title": "Schede",
+   "path": "/it/app/rilievi",
+   "access": "Tutti i ruoli con il diritto «Vedere le schede di rilievo e scaricarne i PDF»: con la matrice predefinita Capotecnico, Progettista, Tecnico e Commerciale; il Titolare ha sempre tutti i diritti. Compilare e modificare: Capotecnico, Progettista, Tecnico (diritto «Compilare e modificare le schede e i moduli dei fornitori»). Il pulsante «Cestino» lo vede solo chi gestisce il cestino: con la matrice predefinita il Capotecnico. Il Titolare può cambiare la matrice in «Permessi».",
+   "reach": "Dal menu «Rilievi» → «Schede». Dopo aver salvato, spostato nel cestino o eliminato una scheda l’app ti riporta qui.",
+   "purpose": [
+    "L’elenco delle schede di rilievo della tua azienda, dalla più recente: ogni scheda è il rilievo di un impianto esistente. Da qui cerchi una scheda, la apri o ne crei una nuova.",
+    "Sotto il titolo vedi il suggerimento «Cerca per n° impianto, matricola, indirizzo, marca, buono di lavoro o note.» e il numero di schede («1 scheda» / «N schede», oppure «N schede per «testo»» quando cerchi)."
+   ],
+   "shots": [
+    {
+     "id": "rilievi-elenco",
+     "what": "L’elenco con alcune schede, la barra di ricerca e i pulsanti «Nuova scheda» e «Cestino»"
+    },
+    {
+     "id": "rilievi-elenco-ricerca",
+     "what": "L’elenco dopo una ricerca, con le parole trovate evidenziate"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Intestazione della pagina",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Nuova scheda",
+       "help": "Apre il modulo di una scheda nuova. Lo vede solo chi può compilare e modificare le schede.",
+       "src": "src/app/[locale]/app/rilievi/page.tsx:43"
+      },
+      {
+       "label": "Cestino",
+       "help": "Apre il cestino. Lo vede solo chi gestisce il cestino.",
+       "src": "src/app/[locale]/app/rilievi/page.tsx:44"
+      },
+      {
+       "label": "Crea la prima scheda",
+       "help": "Compare al posto della tabella quando non c’è ancora nessuna scheda («Ancora nessuna scheda.»), per chi può crearne una.",
+       "src": "src/components/rilievi/Results.tsx:23"
+      }
+     ]
+    },
+    {
+     "title": "Barra di ricerca",
+     "intro": [
+      "La ricerca segue la digitazione: circa un quarto di secondo dopo l’ultimo tasto l’elenco si aggiorna, senza ricaricare la pagina. Invio cerca subito. Premi «/» in qualsiasi punto della pagina (fuori da un campo di testo) per andare alla ricerca. Senza JavaScript funziona comunque come un normale modulo di ricerca."
+     ],
+     "fields": [
+      {
+       "label": "Cerca nelle schede",
+       "kind": "testo",
+       "unit": null,
+       "values": "al massimo 100 caratteri; fino a 8 parole",
+       "default": "vuoto (elenco completo)",
+       "required": "no",
+       "help": [
+        "Scrivi parti di numero impianto, matricola, indirizzo, marca, buono di lavoro o delle note: segnaposto «N° impianto, matricola, indirizzo…». Ogni parola scritta deve comparire nella scheda; maiuscole e accenti non contano («citta» trova «Città»).",
+        "Si cerca in: N° impianto, Matricola, Indirizzo, Marca impianto, Buono di lavoro, Parcheggio, i tipi e le note di quadro, argano, centralina, tiranti, limitatore, serrature, pattino retrattile, le note del quadretto e dell’impianto, la nota sulla luce vano e i lavori extra. Simboli e punteggiatura vengono ignorati.",
+        "I risultati con n° impianto o matricola esattamente uguali al testo scritto vengono per primi, poi quelli che iniziano così, poi gli altri per data decrescente. Le parole trovate sono evidenziate."
+       ],
+       "src": "src/components/rilievi/LiveSearch.tsx:58"
+      }
+     ],
+     "notes": [
+      "Nessun risultato: compare «Nessuna scheda per «testo».» con il consiglio «Prova con una parte del numero, della matricola o della via: maiuscole e accenti non contano.»"
+     ]
+    },
+    {
+     "title": "Tabella delle schede",
+     "intro": [
+      "25 schede per pagina, dalla più recente (per data del rilievo). Su telefono ogni riga diventa una scheda a sé. Tocca o clicca il numero impianto per aprire la scheda."
+     ],
+     "fields": [
+      {
+       "label": "N° impianto",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Il numero è il collegamento che apre la scheda («Apri la scheda …»; per i lettori di schermo il nome usa il n° impianto, altrimenti matricola, indirizzo o data)."
+       ],
+       "src": "src/components/rilievi/Results.tsx:43"
+      },
+      {
+       "label": "Matricola",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Matricola della scheda."
+       ],
+       "src": "src/components/rilievi/Results.tsx:44"
+      },
+      {
+       "label": "Indirizzo",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Indirizzo dell’impianto."
+       ],
+       "src": "src/components/rilievi/Results.tsx:45"
+      },
+      {
+       "label": "Marca impianto",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Marca dell’impianto."
+       ],
+       "src": "src/components/rilievi/Results.tsx:46"
+      },
+      {
+       "label": "Tipo impianto",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Elettrico, Idraulico, MRL",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Il tipo impianto scelto nella scheda; «—» se non l’hai scelto."
+       ],
+       "src": "src/components/rilievi/Results.tsx:47"
+      },
+      {
+       "label": "Data",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "La data del rilievo."
+       ],
+       "src": "src/components/rilievi/Results.tsx:48"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Precedente / Successiva",
+       "help": "Cambiano pagina; tra i due vedi «Pagina N di M». Compaiono solo se le pagine sono più di una e mantengono il testo cercato.",
+       "src": "src/components/rilievi/parts.tsx:78"
+      }
+     ],
+     "notes": [
+      "I valori mancanti si vedono come «—»."
+     ]
+    }
+   ],
+   "tips": [
+    "In cima alla pagina compaiono gli avvisi dopo un’azione: «Scheda salvata.», «Modifiche salvate.», «Scheda spostata nel cestino.», «Scheda ripristinata.», «Scheda eliminata definitivamente.»"
+   ]
+  },
+  {
+   "id": "rilievi-nuovo",
+   "title": "Nuova scheda",
+   "path": "/it/app/rilievi/nuovo",
+   "access": "Chi può compilare e modificare le schede: con la matrice predefinita Capotecnico, Progettista e Tecnico (il Titolare sempre). Gli altri ruoli vedono la pagina «Permesso non concesso». Se l’azienda è in sola lettura le schede si consultano e si scaricano, ma non si modificano. Il Titolare può cambiare la matrice in «Permessi».",
+   "reach": "Dall’elenco «Schede» con «Nuova scheda» (o «Crea la prima scheda» se non ce ne sono).",
+   "purpose": [
+    "Il modulo per registrare un sopralluogo: la scheda di rilievo dell’impianto esistente, anche dal telefono sul posto. Sotto il titolo vedi «La data è quella di oggi: cambiala se il rilievo è di un altro giorno.»",
+    "Le domande seguono l’impianto: alcune sezioni e campi compaiono solo in certi casi (tipo impianto, tipo di porte, risposte Sì/No). Le sezioni sono numerate nell’ordine dell’azienda e a fianco c’è l’indice «Sezioni della scheda» che porta a ciascuna; una sezione nascosta sparisce anche dall’indice e i numeri si aggiustano.",
+    "Ordine predefinito delle sezioni: Impianto, Ubicazione e accesso, Tipologia, Quadro, Argano (o Centralina), Funi e tiranti, Limitatore, Cavi, Serrature o sospensioni, Allarme e telesoccorso, Note e lavori. «Impianto» resta sempre in cima; il Titolare cambia l’ordine delle altre dalla pagina dell’azienda («Ordine delle sezioni della scheda»), e vale per tutte le schede: modulo, pagina, stampa e PDF.",
+    "Campo per campo trovi qui sotto: etichetta, tipo, limiti e quando compare. I campi Sì/No hanno due pulsanti: un secondo clic sulla voce scelta torna a «nessuna risposta»."
+   ],
+   "shots": [
+    {
+     "id": "rilievi-nuovo",
+     "what": "Il modulo vuoto: sezione «Impianto» con la data di oggi e l’indice delle sezioni a fianco"
+    },
+    {
+     "id": "rilievi-nuovo-idraulico",
+     "what": "Il modulo con tipo impianto «Idraulico»: la sezione «Centralina» al posto di «Argano»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Impianto",
+     "fields": [
+      {
+       "label": "Data",
+       "kind": "data",
+       "unit": null,
+       "values": "dal 01/01/1950 al 31/12/2099",
+       "default": "la data di oggi (fuso orario di Roma)",
+       "required": "sì (se la lasci vuota: «Indica la data del rilievo.»)",
+       "help": [
+        "È il giorno del sopralluogo. Il modulo propone la data di oggi (fuso orario di Roma): cambiala se il rilievo è di un altro giorno.",
+        "Compare in testa alla scheda, nella stampa e nel PDF, e riempie il campo «data» dei moduli dei fornitori che lo prevedono (nel formato gg/mm/aaaa)."
+       ],
+       "src": "src/lib/rilievi/fields.ts:24"
+      },
+      {
+       "label": "Indirizzo",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 200 caratteri",
+       "default": null,
+       "required": "quasi: serve almeno uno tra indirizzo, matricola e n° impianto",
+       "help": [
+        "Via e comune dell’impianto. È uno dei tre identificativi della scheda (indirizzo, matricola, n° impianto): ne serve almeno uno.",
+        "Compare in targa, nell’intestazione della stampa e nel PDF. Se mancano n° impianto e matricola, è anche il titolo della scheda. Si può cercare nell’elenco e riempie «Indirizzo» del modulo Dati argano."
+       ],
+       "src": "src/lib/rilievi/fields.ts:25"
+      },
+      {
+       "label": "Buono di lavoro",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 60 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Numero o riferimento del buono di lavoro per cui fai il rilievo. Puoi lasciarlo vuoto.",
+        "Nella stampa compare in alto a destra come «Buono di lavoro»; si può cercare nell’elenco."
+       ],
+       "src": "src/lib/rilievi/fields.ts:27"
+      },
+      {
+       "label": "Matricola",
+       "kind": "testo",
+       "unit": null,
+       "values": "solo cifre, al massimo 20 (altrimenti «Solo cifre, senza lettere o simboli.»)",
+       "default": null,
+       "required": "quasi: serve almeno uno tra indirizzo, matricola e n° impianto",
+       "help": [
+        "Matricola dell’ascensore, come sulla targa o sul libretto. Scrivi solo cifre: gli spazi vengono tolti e gli zeri iniziali restano.",
+        "È un identificativo della scheda. Nell’elenco una corrispondenza esatta di matricola porta la scheda in cima ai risultati. Riempie «Matr.» del modulo Dati argano e il riferimento impianto dei moduli."
+       ],
+       "src": "src/lib/rilievi/fields.ts:28"
+      },
+      {
+       "label": "N° impianto",
+       "kind": "testo",
+       "unit": null,
+       "values": "solo cifre, al massimo 20",
+       "default": null,
+       "required": "quasi: serve almeno uno tra indirizzo, matricola e n° impianto",
+       "help": [
+        "Il numero con cui la tua ditta o il condominio identifica l’impianto. Solo cifre; gli zeri iniziali restano.",
+        "Se c’è, è il titolo della scheda («Impianto n° …») e la prima colonna dell’elenco. Riempie «N° Impianto» del modulo MoviLift e «N° imp.» del modulo Dati argano."
+       ],
+       "src": "src/lib/rilievi/fields.ts:29"
+      },
+      {
+       "label": "Portata",
+       "kind": "numero",
+       "unit": "kg",
+       "values": "numero intero da 0 a 100000",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Portata nominale riportata in targa della cabina.",
+        "Compare nella targa della scheda. Riempie la portata dei moduli MoviLift, Mastech QI Touch («Portata nominale [kg]») e Dati argano."
+       ],
+       "src": "src/lib/rilievi/fields.ts:30"
+      },
+      {
+       "label": "Capienza",
+       "kind": "numero",
+       "unit": "persone",
+       "values": "numero intero da 0 a 1000",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Numero di persone indicato in targa.",
+        "Compare nella targa della scheda. Riempie «Capienza» del modulo MoviLift e «Persone n°» del modulo Dati argano."
+       ],
+       "src": "src/lib/rilievi/fields.ts:31"
+      },
+      {
+       "label": "Fermate",
+       "kind": "numero",
+       "unit": null,
+       "values": "numero intero da 0 a 300",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Numero di fermate (piani serviti). Nella targa e nei moduli dei fornitori è lo stesso dato.",
+        "Con «Vuoi inserire le misure delle bottoniere vecchie?» su «Sì», il numero di fermate decide quante righe compaiono nella tabella delle misure (da 1 a 300)."
+       ],
+       "src": "src/lib/rilievi/fields.ts:32"
+      },
+      {
+       "label": "Marca impianto",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Marca dell’impianto (il costruttore dell’ascensore).",
+        "Compare in targa e nell’elenco. Riempie «Marca» del modulo Dati argano."
+       ],
+       "src": "src/lib/rilievi/fields.ts:33"
+      }
+     ],
+     "intro": [
+      "La sezione si presenta come la testa e la targa della scheda cartacea. Sopra i campi trovi il promemoria: «Compila almeno uno tra indirizzo, matricola e n° impianto: servono per ritrovare la scheda.»"
+     ],
+     "notes": [
+      "Il testo dei campi è ripulito al salvataggio: i caratteri di controllo spariscono e, nei campi a una riga, gli spazi multipli diventano uno solo."
+     ],
+     "warnings": [
+      "Serve almeno uno tra indirizzo, matricola e n° impianto: senza nessuno dei tre la scheda non si salva, perché non si potrebbe più ritrovare."
+     ]
+    },
+    {
+     "title": "Ubicazione e accesso",
+     "fields": [
+      {
+       "label": "Ubicazione macchina",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Alto, Basso (si possono spuntare entrambe)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dove si trova la macchina rispetto al vano: in alto o in basso. Puoi spuntare entrambe le voci.",
+        "Riempie «Locale macchina» del modulo MoviLift e il campo «Macchina basso/alto» del modulo Dati argano. Se il rilievo indica solo «in alto», verifica poi se l’argano ha la puleggia di rinvio."
+       ],
+       "src": "src/lib/rilievi/fields.ts:39"
+      },
+      {
+       "label": "Ubicazione cassettina",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dove si trova la cassettina (ad esempio «Piano -1, vano contatori»), in parole tue."
+       ],
+       "src": "src/lib/rilievi/fields.ts:41"
+      },
+      {
+       "label": "Parcheggio",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 300 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dove si può parcheggiare il mezzo per l’intervento e come si accede al cantiere: annotalo per chi dovrà tornare sul posto.",
+        "È cercabile dall’elenco."
+       ],
+       "src": "src/lib/rilievi/fields.ts:42"
+      }
+     ]
+    },
+    {
+     "title": "Tipologia",
+     "fields": [
+      {
+       "label": "Tipo impianto",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Elettrico, Idraulico, MRL (una sola)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Scegli una sola voce. «MRL» è l’impianto senza locale macchina. Un secondo clic sulla voce scelta la toglie.",
+        "Decide quali sezioni vedi: con «Idraulico» compare «Centralina» al posto di «Argano» e «Limitatore», e nei tiranti compaiono quelli in fossa al posto di quelli del contrappeso. Senza nessuna scelta restano visibili «Argano» e «Limitatore» e non c’è «Centralina».",
+        "Compare anche nell’elenco. Riempie «Tipologia» del modulo MoviLift e «Tipo impianto» del modulo Mastech QI Touch; con «Idraulico» spunta «Idraulico» in «Tipo di Quadro» del modulo Pelazza."
+       ],
+       "src": "src/lib/rilievi/fields.ts:52"
+      },
+      {
+       "label": "Tipo porte",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Automatiche, Semiautomatiche, Manuali (una sola)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Tipo di porte dell’impianto; scegline una sola. Un secondo clic sulla voce scelta la toglie.",
+        "Decide le domande di «Serrature o sospensioni»: serrature e pattino retrattile si chiedono con porte manuali o semiautomatiche, le sospensioni solo con porte automatiche. Compare anche «Accessi».",
+        "Riempie il tipo di porte dei moduli MoviLift («Tipo Porte»), Pelazza (Manuali / Automatiche / Semiautomatiche), Mastech QI Touch («Tipo operatore 1») e il primo operatore dell’NG120."
+       ],
+       "src": "src/lib/rilievi/fields.ts:53"
+      },
+      {
+       "label": "Accessi",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "1, 2 (un secondo clic toglie la scelta)",
+       "default": null,
+       "required": "no; compare dopo aver scelto il tipo di porte (qualunque, anche manuali)",
+       "help": [
+        "Quanti accessi ha la cabina: 1 oppure 2.",
+        "Il dato diventa il numero di accessi di Pelazza («N° Accessi:») e Mastech QI Touch («Numero accessi») e l’«Ingresso» del modulo MoviLift (operatore unico o doppio ingresso)."
+       ],
+       "src": "src/lib/rilievi/fields.ts:55"
+      }
+     ]
+    },
+    {
+     "title": "Quadro",
+     "fields": [
+      {
+       "label": "Marca quadro",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Pelazza, Movilift, DMG, Mastech, Altro (una sola)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Marca del quadro di manovra da ordinare. Un secondo clic sulla voce scelta la toglie.",
+        "Con Pelazza, MoviLift o Mastech compare la domanda «Vuoi compilare la scheda per l’ordine quadro?»; con DMG e Altro non c’è un modulo d’ordine."
+       ],
+       "src": "src/lib/rilievi/fields.ts:63"
+      },
+      {
+       "label": "Altra marca quadro",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "quando la marca è «Altro»",
+       "help": [
+        "Scrivi la marca se non è nell’elenco."
+       ],
+       "src": "src/lib/rilievi/fields.ts:64"
+      },
+      {
+       "label": "Tipologia quadro",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "NG120, QI Touch",
+       "default": null,
+       "required": "quando la marca è «Mastech» (obbligatorio se vuoi il modulo d’ordine)",
+       "help": [
+        "Per Mastech scegli il modello del quadro: ognuno ha il suo modulo d’ordine.",
+        "Se rispondi «Sì» all’ordine quadro con Mastech e non hai scelto il modello, il salvataggio si ferma con l’avviso «Scegli la tipologia del quadro (NG120 o QI Touch) per compilare il suo modulo d’ordine.»"
+       ],
+       "src": "src/lib/rilievi/fields.ts:65"
+      },
+      {
+       "label": "Fossa ridotta",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Indica se la fossa è ridotta: serve a chi ordina il quadro."
+       ],
+       "src": "src/lib/rilievi/fields.ts:66"
+      },
+      {
+       "label": "Testata ridotta",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Indica se la testata è ridotta: serve a chi ordina il quadro."
+       ],
+       "src": "src/lib/rilievi/fields.ts:67"
+      },
+      {
+       "label": "Vuoi compilare la scheda per l’ordine quadro?",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no; compare con marca Pelazza, MoviLift o Mastech",
+       "help": [
+        "Con «Sì» si apre, subito sotto, il modulo d’ordine del fornitore: Pelazza, MoviLift oppure, per Mastech, quello del modello scelto (NG120 o QI Touch). È già compilato con i dati della scheda; lo scarichi come PDF a parte dalla pagina della scheda.",
+        "Con «No», o senza risposta, il modulo non si apre e non viene salvato."
+       ],
+       "src": "src/lib/rilievi/fields.ts:69"
+      },
+      {
+       "label": "Note quadro",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "testo libero su più righe, al massimo 4000 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Appunti sul quadro. Con il modulo aperto, le note stanno sotto il modulo.",
+        "Sono cercabili dall’elenco."
+       ],
+       "src": "src/lib/rilievi/fields.ts:77"
+      }
+     ],
+     "intro": [
+      "Il quadro da ordinare: marca (e modello per Mastech), fossa e testata ridotte, il modulo d’ordine del fornitore, le note."
+     ]
+    },
+    {
+     "title": "Modulo d'ordine quadri · Pelazza Peppino",
+     "intro": [
+      "Si apre con marca «Pelazza» e «Sì» a «Vuoi compilare la scheda per l’ordine quadro?».",
+      "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
+      "Le etichette sono quelle del modulo cartaceo del fornitore, in italiano, e non cambiano. Sotto, ogni gruppo del modulo è un elemento: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano, i testi hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
+      "Se un testo è più lungo del riquadro del modulo originale, nel PDF si rimpicciolisce fino a 5 punti e, se non basta, viene tagliato: tieni i testi brevi."
+     ],
+     "fields": [
+      {
+       "label": "Intestazione",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "OFFERTA · ORDINE · Data: (max 43 car.; dalla scheda: la data del rilievo (gg/mm/aaaa)) | Cliente: (max 77 car.; dalla scheda: il nome della tua azienda) · Rif. Impianto: (max 58 car.; dalla scheda: il riferimento impianto «N° … — Matr. … — indirizzo» (solo i dati che hai scritto)) | Quantità: (max 5 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Tipo di Quadro",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "1 Velocità (dato collegato «Tipo di velocità») | 2 Velocità (dato collegato «Tipo di velocità») | Idraulico (dato collegato «Tipo impianto») | Piattaforma elevatrice | VVVF solo anello aperto (dato collegato «Tipo di velocità») · DELTA MS300 · MITSUBISHI FRD-700 · FUJI ACE | VVVF anello aperto/chiuso (dato collegato «Tipo di velocità») · OMRON L1000A · FUJI LM2A · ZIEHL-ABEGG",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Porte",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Manuali (dato collegato «Porte») · Automatiche (dato collegato «Porte») · Semiautomatiche (dato collegato «Porte») | Corsa Mt. (max 26 car.; dato collegato «Corsa (m)») · H min. piano (max 26 car.) · Velocità m/s (max 26 car.; dato collegato «Velocità (m/s)») | N° Fermate: (max 27 car.; dato collegato «Fermate») · N° Accessi: (max 23 car.; dato collegato «Accessi») · N° Servizi: (max 18 car.; dato collegato «Servizi»)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Quadro",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Quadro a PLC | Quadro a Microprocessore",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Manovra",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Universale | Simplex · Prenotazione solo discesa · Prenotazione salita e discesa | Duplex · Prenotazione solo discesa · Prenotazione salita e discesa | Triplex · Prenotazione solo discesa · Prenotazione salita e discesa | Imp. in coppia · Con arrivo del più vicino · Con interferenza delle chiamate",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Circuiti",
+       "kind": "testo",
+       "unit": null,
+       "values": "Circuito del Freno Vcc: (max 47 car.; dato collegato «Tensione freno») | Circuito per N° (max 8 car.) · Pattini Retrattili Vcc: (max 18 car.) | Circuito Elettrovalvole Vcc: (max 14 car.) · Valvola emergenza Vcc: (max 23 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Emergenza",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "solo discesa · per discesa ed apertura porte automatiche | Riporto al piano e apertura porte per sbilanciamento MRL · Dispositivo di emergenza ARD",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Operatore Porte",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Vca · Vca (valore) (max 25 car.; senza etichetta propria, accanto alla voce precedente) · trifase · monofase | con rallentamento Vcc · con rallentamento Vcc (valore) (max 23 car.; senza etichetta propria, accanto alla voce precedente) | Vcc · Vcc (valore) (max 25 car.; senza etichetta propria, accanto alla voce precedente) | Modello (max 44 car.; dato collegato «Marca operatore») · sotto tensione in marcia | Operatore 1 apre ai piani (max 30 car.) · Operatore 2 apre ai piani (max 25 car.) | Apertura selettiva · Apertura contemporanea",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Centralina",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "OMAR · GMV · MORIS · 2MC · TULFER | ALTRO: · ALTRO: (quale) (max 27 car.; senza etichetta propria, accanto alla voce precedente) | Avviamento: diretto · Avviamento: diretto con valvola motorizzata · Avviamento: stella-triangolo | Avviamento: con Soft Starter · Avviamento: con Soft Starter ed elettrovalvola di avviamento · Fermata Soft Stop",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Motore",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Hp (max 17 car.) | Vca (max 17 car.; dato collegato «Tensione motore») · Trifase · Monofase | In (A) (max 15 car.; dato collegato «Corrente motore (A)») | Salvamotori: Motore principale con termistori | Salvamotori: Termico · Termico — Ampere Motore princ (max 15 car.; senza etichetta propria, accanto alla voce precedente) | Salvamotori: Protezione Motore Porte",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Segnalazioni in cabina com +",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Volt (max 21 car.) | posizione · prenotato · direzione · sovraccarico | gong · attendente - lift · luce emergenza · sintesi vocale | Encoder display: Tipo (max 21 car.) · Fotocellula: Volt (max 21 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Segnalazioni ai piani",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "presente · dalle serrature · dal quadro | occupato · fisso · lampeggiante | in arrivo · fuori servizio · prenotato · direzione · gong | posizione al piano principale · posizione a tutti i piani",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Manovra pompieri con chiave in cabina",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "con ritorno alla fermata · con ritorno alla fermata (quale) (max 18 car.; senza etichetta propria, accanto alla voce precedente) | Manovra ospedaliera",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Norme",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "EN 81-20/50 · 10411:2024 · Legge 13 · EN 81-70 · EN 81-72 · EN 81-73 · Emend. A3",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Stazionamento porte",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Aperte · Chiuse | Ritorno automatico per parcheggio alla fermata: · Ritorno automatico per parcheggio alla fermata (quale) (max 23 car.; senza etichetta propria, accanto alla voce precedente)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Ventilazione Forzata Vca",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Ventilazione Forzata Vca (max 17 car.) | monofase · trifase | autonomo · con teleruttore nel quadro",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Dimensioni quadro",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "per locale macchina · per armadio centralina · per MRL 400 x 2220",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Accessori",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "MANAGERLIFT controllo da remoto · Modulo Bluetooth per APP | Combin. Telefonico linea fissa EN 81-28 · Combin. Telefonico GSM EN 81-28 · Solo filtro allarme | sensori magnetici · encoder LIMAX | predisp. encoder · encoder 1024 imp/giro · termostato ambiente | Fondo mobile · Pieno carico · 30 Kg | Precablato | Portaschemi | Cavo schermato · Cavo schermato Mt (max 12 car.; senza etichetta propria, accanto alla voce precedente)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      },
+      {
+       "label": "Consegna e note",
+       "kind": "testo",
+       "unit": null,
+       "values": "CONSEGNA RICHIESTA : (max 92 car.) | NOTE: (max 600 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
+      }
+     ],
+     "notes": [
+      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori sopra: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per stampare con «Stampa» (voci sotto la domanda del modulo)."
+     ]
+    },
+    {
+     "title": "Modulo ordine quadro (Scelta v2.6) · MoviLift",
+     "intro": [
+      "Si apre con marca «Movilift» e «Sì» a «Vuoi compilare la scheda per l’ordine quadro?».",
+      "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
+      "Le etichette sono quelle del modulo cartaceo del fornitore, in italiano, e non cambiano. Sotto, ogni gruppo del modulo è un elemento: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano, i testi hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
+      "Se un testo è più lungo del riquadro del modulo originale, nel PDF si rimpicciolisce fino a 5 punti e, se non basta, viene tagliato: tieni i testi brevi."
+     ],
+     "fields": [
+      {
+       "label": "Dati cliente",
+       "kind": "testo",
+       "unit": null,
+       "values": "Riferimento (max 78 car.; dalla scheda: il riferimento impianto «N° … — Matr. … — indirizzo» (solo i dati che hai scritto)) | Ragione Sociale (max 78 car.; dalla scheda: il nome della tua azienda) | Indirizzo (max 78 car.) | Città (max 52 car.) · Prov (max 11 car.) · C.A.P (max 11 car.) | Telefono (max 22 car.) · Fax (max 20 car.) · email (max 38 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      },
+      {
+       "label": "Impianto",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Quantità (max 20 car.) · Velocità (max 20 car.; dato collegato «Velocità (m/s)») | Tipologia (max 20 car.; dalla scheda: il tipo impianto della scheda, a parole) · Fermate (max 20 car.; dato collegato «Fermate») | Controllo (una sola voce tra: PLC / SCHEDA; proposto: SCHEDA) · Tipo Porte (max 20 car.; dalla scheda: il tipo di porte della scheda, a parole) | Portata (max 20 car.; dato collegato «Portata (kg)») · Capienza (max 20 car.; dato collegato «Capienza (persone)») · N° Impianto (max 20 car.; dato collegato «N° impianto») | Fornitura (una sola voce tra: Solo Quadro / Precablato / Parte Elettrica Completa; proposto: Solo Quadro; gruppo senza titolo visibile)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      },
+      {
+       "label": "Specifiche",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Pot. Mot (max 14 car.) · Manovra (max 36 car.) · Inverter (max 26 car.) | Emergenza (max 61 car.) · Manovra Pompieri | Avviamento (una sola voce tra: Avv. Diretto / Stella - Triangolo / Soft Start; gruppo senza titolo visibile) | Rall. Op. Porte · Sonda Temp. Loc. Macchina · Citofono Installato | Rall. Op. Porte con Res. · Fondo Mobile · Comb. Bidirezionale 95/16 | Elettr. Pattino (dalla scheda: si spunta se «Pattino retrattile da cambiare» è «Sì») · Elettr. Pattino V (max 9 car.; dato collegato «Tensione pattino retrattile»; senza etichetta propria, accanto alla voce precedente) · Scheda Seriale Tetto Cabina · Fotocellula · Fotocellula V (max 9 car.; senza etichetta propria, accanto alla voce precedente) | Scivoletto Fisso · El. Serratura 24V · Kit Info Vano | Ventola Raffr. Motore · Cavo Piatto Speciale · EN81.70",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      },
+      {
+       "label": "Varie",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Ingressi (una sola voce tra: Operatore Unico / Doppio Ingresso / Doppio Ingresso Selezionato; dato collegato «Accessi»; proposto: Operatore Unico; gruppo senza titolo visibile) | Marca Op (lato A) (elenco a discesa: 2SG, CMM, DAPA, FIAM, IGV, PRISMA, SELCOM, VICTORY (vuoto: «—»); dato collegato «Marca operatore») · VOLT (lato A) (elenco a discesa: 24Vcc, 48Vcc, 96Vca, 125Vca, 220mono, 220tri (vuoto: «—»)) | Marca Op (lato B) (elenco a discesa: 2SG, CMM, DAPA, FIAM, IGV, PRISMA, SELCOM, VICTORY (vuoto: «—»)) · VOLT (lato B) (elenco a discesa: 24Vcc, 48Vcc, 96Vca, 125Vca, 220mono, 220tri (vuoto: «—»)) | Operatore lato A (una sola voce tra: Oper. alimentato in Marcia / Oper. con Limiti / Oper. senza Limiti; proposto: Oper. con Limiti) · Operatore lato B (una sola voce tra: Oper. Alimentato in Marcia / Oper. con Limiti / Oper. senza Limiti)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      },
+      {
+       "label": "Denominazione Piani Lato A",
+       "kind": "testo",
+       "unit": null,
+       "values": "Piano 1 … Piano 16 (16 campi, max 2 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      },
+      {
+       "label": "Denominazione Piani Lato B",
+       "kind": "testo",
+       "unit": null,
+       "values": "Piano 1 … Piano 16 (16 campi, max 2 car.; il primo è proposto «-»)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      },
+      {
+       "label": "Vano e locale macchina",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Fossa mt (max 10 car.) · Testata mt (max 13 car.) · Corsa mt (max 11 car.; dato collegato «Corsa (m)») · Dist. Loc. Macchina mt (max 11 car.) | Locale macchina (una sola voce tra: Loc. Macc. in ALTO / Loc. Macc. in BASSO; dato collegato «Posizione macchina»; proposto: Loc. Macc. in ALTO; gruppo senza titolo visibile) · Cavo Schermato mt (max 11 car.) | Interpiani standard (già spuntata) · Piano Corto · Piano Corto (1) (max 2 car.) · Piano Corto (2) (max 2 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      },
+      {
+       "label": "Fune",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Argano (max 11 car.) · Freno (max 10 car.) | Num Giri (max 10 car.; dato collegato «Giri motore (giri/min)») · Enc g/m (max 9 car.) | Velocità (max 9 car.) · Tens. (max 9 car.; dato collegato «Tensione motore») | Pot. Mot. (max 9 car.) · Amp. (max 8 car.; dato collegato «Corrente motore (A)») | Encoder Anello Chiuso",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      },
+      {
+       "label": "Idraulico",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Centralina (max 27 car.; dato collegato «Marca centralina») | ElettroValv. (max 11 car.) · N° (max 8 car.) | Elettrov. Emerg. (max 22 car.) | Pot. Mot. (max 13 car.) · Tens (max 8 car.) | Termistori · Termiche",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      },
+      {
+       "label": "Armadio",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Armadio (una sola voce tra: Armadio Standard / Armadio Box Centr. / Armadio MRL; proposto: Armadio Standard; gruppo senza titolo visibile) | Quadr. Distribuzione | Anta (una sola voce tra: Anta SX / Anta DX; proposto: Anta SX; gruppo senza titolo visibile)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      },
+      {
+       "label": "Uscita display",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Uscita display (una sola voce tra: 1 Polo Piano / 7 Segmenti / Binario; proposto: 1 Polo Piano; gruppo senza titolo visibile) | Encoder DMG · Sintesi Voc. · Fr Direz | Comune (una sola voce tra: COM. POS / COM. NEG.; proposto: COM. NEG.; gruppo senza titolo visibile) | Tensione (max 10 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      },
+      {
+       "label": "Segnalazioni",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Gong · Legge 13 · Sovraccarico · Fuori Servizio | In Arrivo · Ai Piani | Su Occup. · In Cabina | Occupato Lampeggiante",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      },
+      {
+       "label": "Combinatore",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Combinatore (una sola voce tra: Microcall / Teledif / Predisposizione; proposto: Predisposizione; gruppo senza titolo visibile) | Tranquillo",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      },
+      {
+       "label": "Note",
+       "kind": "testo",
+       "unit": null,
+       "values": "Note (max 103 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
+      }
+     ],
+     "notes": [
+      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori sopra: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per stampare con «Stampa» (voci sotto la domanda del modulo)."
+     ]
+    },
+    {
+     "title": "Modulo d'ordine per Quadro di Manovra NG120 · Mastech",
+     "intro": [
+      "Si apre con marca «Mastech», tipologia quadro «NG120» e «Sì» a «Vuoi compilare la scheda per l’ordine quadro?». È il modulo per ascensore elettrico a fune.",
+      "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
+      "Le etichette sono quelle del modulo cartaceo del fornitore, in italiano, e non cambiano. Sotto, ogni gruppo del modulo è un elemento: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano, i testi hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
+      "Se un testo è più lungo del riquadro del modulo originale, nel PDF si rimpicciolisce fino a 5 punti e, se non basta, viene tagliato: tieni i testi brevi."
+     ],
+     "fields": [
+      {
+       "label": "Informazione Cliente",
+       "kind": "testo",
+       "unit": null,
+       "values": "Riferimento n° (max 40 car.) · Data Ordine (max 20 car.; dalla scheda: la data del rilievo (gg/mm/aaaa)) · Cliente (max 90 car.; dalla scheda: il nome della tua azienda) | Destinazione (max 60 car.) · Data Consegna (max 20 car.) · Ref. Cliente (max 90 car.; dalla scheda: il riferimento impianto «N° … — Matr. … — indirizzo» (solo i dati che hai scritto)) · Quantità (max 10 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+       ],
+       "src": "assets/moduli/mastech-ng120.json"
+      },
+      {
+       "label": "Dati Impianto",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "[Norme di riferimento] EN81.1 · EN81.28 · EN81.70 · EN81.72 · EN81.80 · DM236 (Legge 13) · Normativa 95/16 · Altro · Altro (specificare) (max 20 car.) | [Forza Motrice] 3x400Vac · 3x230Vac · 1x230Vac · Altro · Altro (specificare) (max 14 car.) | Luce cabina [Vac] (max 8 car.) | [Schema elettrico in lingua] Italiana · Inglese | [Tipo di Impianto] VVVF (dato collegato «Tipo di velocità») · 1 Velocità (dato collegato «Tipo di velocità») · 2 Velocità (dato collegato «Tipo di velocità») | Alta velocità [RPM] (max 6 car.) · Bassa velocità [RPM] (max 6 car.) | Velocità Impianto [m/s] (max 8 car.; dato collegato «Velocità (m/s)») · Corsa [m] (max 10 car.; dato collegato «Corsa (m)») · Interpiano minimo [m] (max 8 car.) | Ritorno al piano in emergenza · Ritorno al piano senza Apertura porte · Ritorno al piano con Apertura porte · Controllo sequenza fasi 400Vac | [Precablaggio] Sì · No | [Taglie] 1:1 (dato collegato «Taglia») · 2:1 (dato collegato «Taglia»)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/mastech-ng120.json"
+      },
+      {
+       "label": "Motore e Argano",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Motore (max 40 car.) · Modello motore (max 30 car.) · N° Poli (max 6 car.; dato collegato «Poli motore») · Potenza [HP] (max 8 car.) · Potenza [kW] (max 8 car.; dato collegato «Potenza motore (kW)») · Corrente Nominale [A] (max 8 car.; dato collegato «Corrente motore (A)») | [Encoder Motore] fornitura Mastech (1024 Impulsi Ø10 Albero Cavo) · fornitura Cliente · fornitura Cliente (tipo) (max 60 car.) · senza encoder | Argano (max 60 car.) · Modello argano (max 30 car.) · Diametro della puleggia [mm] (max 6 car.; dato collegato «Diametro puleggia (mm)») · Rapporto di riduzione (max 10 car.; dato collegato «Rapporto di riduzione») | [Contatto Termico Motore] Normalmente Aperto - N.O. · Normalmente Chiuso - N.C. | Tensione Freno [Vcc] (max 8 car.; dato collegato «Tensione freno») · Corrente Freno [A] (max 8 car.) | [Ventilazione forzata] 1x230Vac · 3x400Vac",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/mastech-ng120.json"
+      },
+      {
+       "label": "Operatore",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "[Tipo di Operatore 1] Automatico (dato collegato «Porte») · Semiautomatico (dato collegato «Porte») · Manuale (dato collegato «Porte») | [Tensione Operatore 1] 3x125Vac · 230Vac VVVF · 3x400Vac · Altro · Altro (specificare) (max 10 car.) | [Tipo di Operatore 2] Automatico · Semiautomatico · Manuale | [Tensione Operatore 2] 3x125Vac · 230Vac VVVF · 3x400Vac · Altro · Altro (specificare) (max 10 car.) | [Tensione Fotocellula o Barriera] 6V · 12V · 24V | Fotocellula · Barriera | Tensione Pattino retrattile [Vcc] (max 8 car.; dato collegato «Tensione pattino retrattile») · Corrente Pattino retrattile [A] (max 8 car.) | [Opzioni] Alimentato in marcia · Stazionamento porte aperte · Stazionamento porte chiuse · Finecorsa apertura · Finecorsa chiusura | Rallentamento apertura [Vcc] (max 8 car.) · Rallentamento chiusura [Vcc] (max 8 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/mastech-ng120.json"
+      },
+      {
+       "label": "Fermate",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "N° Fermate (max 4 car.; dato collegato «Fermate») · N° Servizi (max 4 car.; dato collegato «Servizi») | [Apertura accesso A e Denominazione piani] piani -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8 (spunti il numero del piano: sul modulo stampato viene cerchiato) · Altro piano 1 … Altro piano 12 (12 campi, max 3 car.); senza etichetta propria, accanto alle caselle | [Apertura accesso B e Denominazione piani] piani -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8 (spunti il numero del piano: sul modulo stampato viene cerchiato) · Altro piano 1 … Altro piano 12 (12 campi, max 3 car.); senza etichetta propria, accanto alle caselle | [Tipo di Manovra] Universale · Collettiva Discesa · Collettiva Completa · Contemporanea · Selettiva · Simplex · Duplex | [Tensione di Manovra] 48Vdc · 60Vdc · 110Vac · Altro · Altro (specificare) (max 10 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/mastech-ng120.json"
+      },
+      {
+       "label": "Segnalazioni di Cabina",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "[Tensione Segnalazioni e Display] 6V · 12V · 24V | [Tipo di Display] Seriale MEA · Seriale AUTINOR · 1 filo per piano · Comune + · Comune - · Altro · Altro (specificare) (max 10 car.) | Sovraccarico · Pieno carico · Altro · Altro (specificare) (max 30 car.) · Luce Automatica o Ventilatore Automatico - 230Vac · Frecce di direzione · Gong",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/mastech-ng120.json"
+      },
+      {
+       "label": "Segnalazioni al Piano",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "[Tensione Occupato e Display] 6V · 12V · 24V | [Tipo di Display] Seriale MEA · Seriale AUTINOR · 1 filo per piano · Comune + · Comune - · Altro · Altro (specificare) (max 10 car.) | [Posizione Display] Display al piano principale · Display a tutti i piani | Occupato · Presente da Quadro · Presente da Serratura · Fuori Servizio · Frecce di direzione · Frecce di prossima direzione",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/mastech-ng120.json"
+      },
+      {
+       "label": "Opzioni",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "[Tensione Allarme] 6V · 12V · 24V | [Bottoniera di ispezione nel Quadro di Manovra] Sì · No | [Tipo manovra Pompieri] Inglese · Svizzera · Francese · Altro · Altro (specificare) (max 10 car.) | [Fuori Servizio] Chiave nel Quadro di Manovra · Chiave al Piano | [Gemma Fuori Servizio] al Piano Principale · a tutti i Piani | Cavo Alimentazione Freno · Cavo Alimentazione Freno [m] (max 6 car.) · Cavo schermato Alimentazione Motore · Cavo schermato Alimentazione Motore [m] (max 6 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/mastech-ng120.json"
+      },
+      {
+       "label": "Note",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "Note (max 600 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/mastech-ng120.json"
+      }
+     ],
+     "notes": [
+      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori sopra: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per stampare con «Stampa» (voci sotto la domanda del modulo)."
+     ]
+    },
+    {
+     "title": "Modulo Mastech QI Touch · Mastech",
+     "intro": [
+      "Si apre con marca «Mastech», tipologia quadro «QI Touch» e «Sì» a «Vuoi compilare la scheda per l’ordine quadro?». Il modulo ha due pagine; i gruppi dalla pagina 2 sono indicati.",
+      "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
+      "Le etichette sono quelle del modulo cartaceo del fornitore, in italiano, e non cambiano. Sotto, ogni gruppo del modulo è un elemento: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano, i testi hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
+      "Se un testo è più lungo del riquadro del modulo originale, nel PDF si rimpicciolisce fino a 5 punti e, se non basta, viene tagliato: tieni i testi brevi."
+     ],
+     "fields": [
+      {
+       "label": "Informazioni clienti",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Offerta · Offerta Nr. (max 20 car.) · Ordine · Ordine Nr. (max 20 car.) | Cliente (max 60 car.; dalla scheda: il nome della tua azienda) · Data ordine (max 20 car.; dalla scheda: la data del rilievo (gg/mm/aaaa)) | Rif. cliente (max 60 car.; dalla scheda: il riferimento impianto «N° … — Matr. … — indirizzo» (solo i dati che hai scritto)) · Data consegna (max 20 car.) · 48h | Commessa (max 40 car.) · Destinazione (max 60 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+       ],
+       "src": "assets/moduli/mastech-qi-touch.json"
+      },
+      {
+       "label": "Dati impianto",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "[Norme di riferimento] EN81-1 · A3:2009 · Normativa 95/16 · DM236 (Legge 13) · DM2005 · EN81-21 · EN81-70 · EN81-72 · EN81-73 · Altro 1 · Altro 1 (specificare) (max 12 car.) · Altro 2 · Altro 2 (specificare) (max 40 car.) | Tipo impianto (max 40 car.; dalla scheda: il tipo impianto della scheda, a parole) · Tipo avviamento (max 40 car.) | Portata nominale [kg] (max 8 car.; dato collegato «Portata (kg)») · Velocità impianto [m/s] (max 8 car.; dato collegato «Velocità (m/s)») | Forza motrice (max 40 car.) · Taglia (max 20 car.) | Tipo fornitura (max 40 car.) · Impianto precablato (max 30 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/mastech-qi-touch.json"
+      },
+      {
+       "label": "Manovra e fermate",
+       "kind": "testo",
+       "unit": null,
+       "values": "Numero fermate (max 4 car.; dato collegato «Fermate») · Numero accessi (max 4 car.; dato collegato «Accessi») | Numero servizi (max 4 car.; dato collegato «Servizi») · Tipo accesso (max 40 car.) | Tensione manovra (max 20 car.) · Tipo manovra (max 40 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/mastech-qi-touch.json"
+      },
+      {
+       "label": "Motore",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Modello motore (max 40 car.) · Numero poli (max 6 car.; dato collegato «Poli motore») | Potenza motore [kW] (max 8 car.; dato collegato «Potenza motore (kW)») · Corrente motore [A] (max 8 car.; dato collegato «Corrente motore (A)») | Tensione freno (max 20 car.; dato collegato «Tensione freno») · Fornitura encoder (max 30 car.) | Tipo encoder (max 30 car.) · Scheda encoder (max 30 car.) | [Opzioni] Contatto termico N.C. · Altro 1 · Altro 1 (specificare) (max 30 car.) · Altro 2 · Altro 2 (specificare) (max 30 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/mastech-qi-touch.json"
+      },
+      {
+       "label": "Operatore porte",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Tipo operatore 1 (max 40 car.; dalla scheda: il tipo di porte della scheda, a parole) · Modello operatore 1 (max 40 car.; dato collegato «Marca operatore») | Tipo operatore 2 (max 40 car.) · Modello operatore 2 (max 40 car.) | Dispositivo fotocellula/barriera (max 40 car.) · Tensione pattino retrattile (max 20 car.; dato collegato «Tensione pattino retrattile») | Rallentamento apertura (max 20 car.) · Rallentamento chiusura (max 20 car.) | [Opzioni] Alimentato in marcia · Stazionamento porte aperte · Stazionamento porte chiuse · Finecorsa apertura · Finecorsa chiusura",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/mastech-qi-touch.json"
+      },
+      {
+       "label": "Opzioni",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Tensione allarme (max 20 car.) · Chiave fuori servizio (max 30 car.) | Ritorno al piano in emergenza (max 30 car.) · Limitatore di velocità (max 30 car.) | Modello pesacarico (max 30 car.) · Fornitura pesacarico (max 30 car.) | [Opzioni] Controllo sequenza fasi · Bottoniera di ispezione nel quadro di manovra · Combinatore telefonico · Altro · Altro (specificare) (max 60 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/mastech-qi-touch.json"
+      },
+      {
+       "label": "Note",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "Note (max 450 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/mastech-qi-touch.json"
+      },
+      {
+       "label": "Rilievi",
+       "kind": "testo",
+       "unit": null,
+       "values": "[Sezione vano 1] Fossa (max 6 car.) · Interpiano 1 … Interpiano 5 (5 campi, max 6 car.) | [Sezione vano 2] Interpiano 6 … Interpiano 9 (4 campi, max 6 car.) · Testata (max 6 car.) | [Pianta vano 1] Larghezza vano (max 8 car.) · Profondità vano (max 8 car.) | [Pianta vano 2] Larghezza vano (max 8 car.) · Profondità vano (max 8 car.) | Fossa e testata [mm] (max 20 car.) · Corsa [mm] (max 8 car.) | Posizione quadro di manovra (max 40 car.) · Distanza quadro di manovra - vano [mm] (max 8 car.) | Fornitura cavi di potenza (max 40 car.) · Distanza quadro di manovra - motore [mm] (max 8 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo (pagina 2 del modulo). Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/mastech-qi-touch.json"
+      },
+      {
+       "label": "Bottoniera di cabina",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Tipo fornitura (max 40 car.) · Modello bottoniera (max 40 car.) | Tipo display (max 40 car.) · Segnalazioni (max 40 car.) | [Opzioni] Sovraccarico · Pieno carico · Frecce di direzione · Gong · Altro · Altro (specificare) (max 60 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo (pagina 2 del modulo). Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/mastech-qi-touch.json"
+      },
+      {
+       "label": "Bottoniere di piano",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Tipo fornitura (max 40 car.) · Modello bottoniere (max 40 car.) | Tipo display (max 40 car.) · Segnalazioni (max 40 car.) | Posizione display (max 40 car.) | [Segnalazioni] Segnalazione 1 · Segnalazione 1 (specificare) (max 30 car.) · Segnalazione 2 · Segnalazione 2 (specificare) (max 30 car.) · Segnalazione 3 · Segnalazione 3 (specificare) (max 30 car.) · Segnalazione 4 · Segnalazione 4 (specificare) (max 60 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo (pagina 2 del modulo). Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/mastech-qi-touch.json"
+      },
+      {
+       "label": "Note (pagina 2)",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "Note (max 300 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo (pagina 2 del modulo). Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/mastech-qi-touch.json"
+      }
+     ],
+     "notes": [
+      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori sopra: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per stampare con «Stampa» (voci sotto la domanda del modulo)."
+     ]
+    },
+    {
+     "title": "Argano",
+     "fields": [
+      {
+       "label": "Argano da sostituire?",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Con «Sì» si apre il modulo «Modulo rilievi dati argani», valido per ogni tipo di argano, già compilato con i dati della scheda; lo scarichi come PDF a parte.",
+        "Con «No» compaiono le domande su ciò che resta e su ciò che va cambiato sul freno."
+       ],
+       "src": "src/lib/rilievi/fields-argano.ts:14"
+      },
+      {
+       "label": "Tipo argano esistente",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "quando «Argano da sostituire?» è «No»",
+       "help": [
+        "Tipo dell’argano che resta in opera.",
+        "È cercabile dall’elenco."
+       ],
+       "src": "src/lib/rilievi/fields-argano.ts:15"
+      },
+      {
+       "label": "Ganasce freno da cambiare",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "quando «Argano da sostituire?» è «No»",
+       "help": [
+        "Segna «Sì» se vanno cambiate le ganasce del freno."
+       ],
+       "src": "src/lib/rilievi/fields-argano.ts:16"
+      },
+      {
+       "label": "Kit controllo ganasce",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "quando «Argano da sostituire?» è «No»",
+       "help": [
+        "Segna «Sì» se va aggiunto il kit di controllo delle ganasce."
+       ],
+       "src": "src/lib/rilievi/fields-argano.ts:17"
+      },
+      {
+       "label": "Tipo controllo ganasce",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "quando «Kit controllo ganasce» è «Sì»",
+       "help": [
+        "Tipo del kit di controllo ganasce, scritto a mano."
+       ],
+       "src": "src/lib/rilievi/fields-argano.ts:18"
+      },
+      {
+       "label": "Controllo su quadro manovra",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "quando «Argano da sostituire?» è «No»",
+       "help": [
+        "Segna «Sì» se serve un controllo sul quadro di manovra."
+       ],
+       "src": "src/lib/rilievi/fields-argano.ts:19"
+      },
+      {
+       "label": "Tipo controllo",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "quando «Controllo su quadro manovra» è «Sì»",
+       "help": [
+        "Tipo di controllo, scritto a mano."
+       ],
+       "src": "src/lib/rilievi/fields-argano.ts:20"
+      },
+      {
+       "label": "Note argano",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "testo libero su più righe, al massimo 4000 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Appunti sull’argano; con il modulo aperto stanno sotto il modulo."
+       ],
+       "src": "src/lib/rilievi/fields-argano.ts:21"
+      }
+     ],
+     "intro": [
+      "Questa sezione non compare se il tipo impianto è «Idraulico»: nell’idraulico la «Centralina» prende il suo posto."
+     ]
+    },
+    {
+     "title": "Modulo rilievi dati argani",
+     "intro": [
+      "Si apre con «Sì» a «Argano da sostituire?», con qualunque marca di quadro e con qualunque tipo di argano.",
+      "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
+      "Le etichette sono quelle del modulo cartaceo del fornitore, in italiano, e non cambiano. Sotto, ogni gruppo del modulo è un elemento: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano, i testi hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
+      "Se un testo è più lungo del riquadro del modulo originale, nel PDF si rimpicciolisce fino a 5 punti e, se non basta, viene tagliato: tieni i testi brevi."
+     ],
+     "fields": [
+      {
+       "label": "Impianto",
+       "kind": "testo",
+       "unit": null,
+       "values": "Indirizzo (max 120 car.; dato collegato «Indirizzo») | Matr. (max 40 car.; dato collegato «Matricola») · N° imp. (max 40 car.; dato collegato «N° impianto») | Marca (max 80 car.; dato collegato «Marca impianto»)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/rilievo-dati-argani.json"
+      },
+      {
+       "label": "Cabina e corsa",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Peso cabina (KG) (max 12 car.) · Peso c/p (KG) (max 12 car.) · Portata (KG) (max 12 car.; dato collegato «Portata (kg)») | Velocità (m/s) (max 12 car.; dato collegato «Velocità (m/s)») · Taglia 1:1 (dato collegato «Taglia») · Taglia 1:2 (dato collegato «Taglia») | Persone n° (max 12 car.; dato collegato «Capienza (persone)») · Corsa Mt (max 12 car.; dato collegato «Corsa (m)») · Piani n° (max 12 car.; dato collegato «Fermate») | Macchina basso/alto (max 40 car.; dalla scheda: la posizione macchina della scheda, a parole)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/rilievo-dati-argani.json"
+      },
+      {
+       "label": "Trazione e funi",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "D puleggia di trazione (max 20 car.; dato collegato «Diametro puleggia (mm)») · Mano (max 20 car.) | N° gole (max 12 car.) · Cuneo - gradi (max 20 car.) | Avvolgimento (max 40 car.) · Puleggia di rinvio (max 40 car.) | Catena compensazione: sì · Catena compensazione: no | N° funi (max 12 car.; dato collegato «Numero funi») · Diametro funi (max 12 car.; dato collegato «Diametro funi (mm)») · Trefoli (max 12 car.; dato collegato «Trefoli funi») | Rap/rid argano (max 30 car.; dato collegato «Rapporto di riduzione»)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/rilievo-dati-argani.json"
+      },
+      {
+       "label": "Motore",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "AC1 (dato collegato «Tipo di velocità») · AC2 (dato collegato «Tipo di velocità») · Inverter (dato collegato «Tipo di velocità») · Potenza inverter (Kw) (max 12 car.) | Potenza motore (Kw) (max 12 car.; dato collegato «Potenza motore (kW)») · Potenza motore (Cv) (max 12 car.) · Corrente (A) (max 12 car.; dato collegato «Corrente motore (A)») | Giri/min (max 12 car.; dato collegato «Giri motore (giri/min)») · Poli (max 12 car.; dato collegato «Poli motore») | Tensione freno (V) (max 12 car.; dato collegato «Tensione freno»)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/rilievo-dati-argani.json"
+      }
+     ],
+     "notes": [
+      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori sopra: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per stampare con «Stampa» (voci sotto la domanda del modulo)."
+     ]
+    },
+    {
+     "title": "Centralina",
+     "fields": [
+      {
+       "label": "Centralina da sostituire?",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Domanda principale della sezione. Rispondi «Sì» o «No»."
+       ],
+       "src": "src/lib/rilievi/fields-centralina.ts:14"
+      },
+      {
+       "label": "Marca e modello centralina",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "compare dopo aver risposto «Sì» o «No» a «Centralina da sostituire?»",
+       "help": [
+        "Marca e modello della centralina, con qualunque risposta alla domanda precedente.",
+        "Riempie «Centralina» del modulo MoviLift (come proposta)."
+       ],
+       "src": "src/lib/rilievi/fields-centralina.ts:15"
+      },
+      {
+       "label": "Emendamento A3 da installare",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "quando «Centralina da sostituire?» è «No»",
+       "help": [
+        "Se non sostituisci la centralina, indica se va installato l’emendamento A3."
+       ],
+       "src": "src/lib/rilievi/fields-centralina.ts:16"
+      },
+      {
+       "label": "Installare tubo flessibile",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "quando «Emendamento A3 da installare» è «Sì»",
+       "help": [
+        "Con «Sì» compaiono diametro, lunghezza e note del tubo flessibile."
+       ],
+       "src": "src/lib/rilievi/fields-centralina.ts:17"
+      },
+      {
+       "label": "Diametro tubo flessibile",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "numero da 0 a 1000, al massimo 2 decimali; scrivi 6,5 oppure 6.5 (senza separatore delle migliaia)",
+       "default": null,
+       "required": "quando «Installare tubo flessibile» è «Sì»",
+       "help": [
+        "Diametro del tubo flessibile da installare."
+       ],
+       "src": "src/lib/rilievi/fields-centralina.ts:18"
+      },
+      {
+       "label": "Lunghezza tubo flessibile",
+       "kind": "numero",
+       "unit": "m",
+       "values": "numero da 0 a 1000, al massimo 2 decimali; scrivi 6,5 oppure 6.5 (senza separatore delle migliaia)",
+       "default": null,
+       "required": "quando «Installare tubo flessibile» è «Sì»",
+       "help": [
+        "Lunghezza del tubo flessibile da installare."
+       ],
+       "src": "src/lib/rilievi/fields-centralina.ts:19"
+      },
+      {
+       "label": "Note tubo flessibile",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "testo libero su più righe, al massimo 4000 caratteri",
+       "default": null,
+       "required": "quando «Installare tubo flessibile» è «Sì»",
+       "help": [
+        "Note sul tubo flessibile."
+       ],
+       "src": "src/lib/rilievi/fields-centralina.ts:20"
+      },
+      {
+       "label": "Note centralina",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "testo libero su più righe, al massimo 4000 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Note sulla centralina, sempre disponibili."
+       ],
+       "src": "src/lib/rilievi/fields-centralina.ts:21"
+      }
+     ],
+     "intro": [
+      "Compare solo con tipo impianto «Idraulico», al posto di «Argano» e «Limitatore»."
+     ]
+    },
+    {
+     "title": "Funi e tiranti",
+     "fields": [
+      {
+       "label": "Diametro funi",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "numero da 0 a 100, al massimo 2 decimali; scrivi 6,5 oppure 6.5 (senza separatore delle migliaia)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Diametro delle funi di trazione, misurato sul posto.",
+        "Riempie «Diametro funi» del modulo Dati argano."
+       ],
+       "src": "src/lib/rilievi/fields.ts:87"
+      },
+      {
+       "label": "Trefoli funi",
+       "kind": "numero",
+       "unit": null,
+       "values": "numero intero da 0 a 100",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Numero di trefoli della fune.",
+        "Riempie «Trefoli» del modulo Dati argano."
+       ],
+       "src": "src/lib/rilievi/fields.ts:88"
+      },
+      {
+       "label": "Numero funi",
+       "kind": "numero",
+       "unit": null,
+       "values": "numero intero da 0 a 100",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Numero di funi.",
+        "Riempie «N° funi» del modulo Dati argano."
+       ],
+       "src": "src/lib/rilievi/fields.ts:89"
+      },
+      {
+       "label": "Lunghezza funi",
+       "kind": "numero",
+       "unit": "m",
+       "values": "numero da 0 a 10000, al massimo 2 decimali; scrivi 6,5 oppure 6.5 (senza separatore delle migliaia)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Lunghezza delle funi."
+       ],
+       "src": "src/lib/rilievi/fields.ts:90"
+      },
+      {
+       "label": "Quantità tiranti cabina",
+       "kind": "numero",
+       "unit": null,
+       "values": "numero intero da 0 a 100",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Quantità dei tiranti della cabina."
+       ],
+       "src": "src/lib/rilievi/fields.ts:91"
+      },
+      {
+       "label": "Tipo tiranti cabina",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Tipo dei tiranti della cabina. È cercabile dall’elenco."
+       ],
+       "src": "src/lib/rilievi/fields.ts:92"
+      },
+      {
+       "label": "Quantità tiranti contrappeso",
+       "kind": "numero",
+       "unit": null,
+       "values": "numero intero da 0 a 100",
+       "default": null,
+       "required": "quando il tipo impianto non è «Idraulico» (compreso nessuna scelta)",
+       "help": [
+        "Quantità dei tiranti del contrappeso."
+       ],
+       "src": "src/lib/rilievi/fields.ts:93"
+      },
+      {
+       "label": "Tipo tiranti contrappeso",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "quando il tipo impianto non è «Idraulico»",
+       "help": [
+        "Tipo dei tiranti del contrappeso."
+       ],
+       "src": "src/lib/rilievi/fields.ts:94"
+      },
+      {
+       "label": "Quantità tiranti in fossa",
+       "kind": "numero",
+       "unit": null,
+       "values": "numero intero da 0 a 100",
+       "default": null,
+       "required": "quando il tipo impianto è «Idraulico»",
+       "help": [
+        "Quantità dei tiranti fissati in fossa (l’idraulico non ha contrappeso)."
+       ],
+       "src": "src/lib/rilievi/fields.ts:95"
+      },
+      {
+       "label": "Tipo tiranti in fossa",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "quando il tipo impianto è «Idraulico»",
+       "help": [
+        "Tipo dei tiranti in fossa."
+       ],
+       "src": "src/lib/rilievi/fields.ts:96"
+      }
+     ]
+    },
+    {
+     "title": "Limitatore",
+     "fields": [
+      {
+       "label": "Tipo limitatore",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Tipo del limitatore di velocità. È cercabile dall’elenco."
+       ],
+       "src": "src/lib/rilievi/fields.ts:103"
+      },
+      {
+       "label": "Diametro funicella",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "numero da 0 a 100, al massimo 2 decimali; scrivi 6,5 oppure 6.5 (senza separatore delle migliaia)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Diametro della funicella del limitatore."
+       ],
+       "src": "src/lib/rilievi/fields.ts:104"
+      },
+      {
+       "label": "Lunghezza funicella",
+       "kind": "numero",
+       "unit": "m",
+       "values": "numero da 0 a 10000, al massimo 2 decimali; scrivi 6,5 oppure 6.5 (senza separatore delle migliaia)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Lunghezza della funicella del limitatore."
+       ],
+       "src": "src/lib/rilievi/fields.ts:105"
+      },
+      {
+       "label": "Tenditore",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Tipo del tenditore."
+       ],
+       "src": "src/lib/rilievi/fields.ts:106"
+      }
+     ],
+     "intro": [
+      "Questa sezione non compare con tipo impianto «Idraulico»."
+     ]
+    },
+    {
+     "title": "Cavi",
+     "fields": [
+      {
+       "label": "Numero cavi",
+       "kind": "numero",
+       "unit": null,
+       "values": "numero intero da 0 a 100",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Numero di cavi."
+       ],
+       "src": "src/lib/rilievi/fields.ts:112"
+      },
+      {
+       "label": "Conduttori cavi",
+       "kind": "numero",
+       "unit": null,
+       "values": "numero intero da 0 a 1000",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Numero di conduttori dei cavi."
+       ],
+       "src": "src/lib/rilievi/fields.ts:113"
+      },
+      {
+       "label": "Lunghezza cavi",
+       "kind": "numero",
+       "unit": "m",
+       "values": "numero da 0 a 10000, al massimo 2 decimali; scrivi 6,5 oppure 6.5 (senza separatore delle migliaia)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Lunghezza dei cavi."
+       ],
+       "src": "src/lib/rilievi/fields.ts:114"
+      }
+     ]
+    },
+    {
+     "title": "Serrature o sospensioni",
+     "fields": [
+      {
+       "label": "Serrature da cambiare",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no; compare con porte manuali o semiautomatiche",
+       "help": [
+        "Indica se vanno cambiate le serrature."
+       ],
+       "src": "src/lib/rilievi/fields.ts:124"
+      },
+      {
+       "label": "Numero serrature",
+       "kind": "numero",
+       "unit": null,
+       "values": "numero intero da 0 a 999",
+       "default": null,
+       "required": "quando «Serrature da cambiare» è «Sì»",
+       "help": [
+        "Quante serrature vanno cambiate."
+       ],
+       "src": "src/lib/rilievi/fields.ts:125"
+      },
+      {
+       "label": "Tipo serrature",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "quando «Serrature da cambiare» è «Sì»",
+       "help": [
+        "Tipo di serrature, scritto a mano."
+       ],
+       "src": "src/lib/rilievi/fields.ts:126"
+      },
+      {
+       "label": "Pattino retrattile da cambiare",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no; compare con porte manuali o semiautomatiche",
+       "help": [
+        "Indica se va cambiato il pattino retrattile. Con «Sì», nel modulo MoviLift si spunta «Elettr. Pattino»."
+       ],
+       "src": "src/lib/rilievi/fields.ts:129"
+      },
+      {
+       "label": "Tipo di pattino retrattile",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 120 caratteri",
+       "default": null,
+       "required": "quando «Pattino retrattile da cambiare» è «Sì»",
+       "help": [
+        "Tipo di pattino retrattile, scritto a mano."
+       ],
+       "src": "src/lib/rilievi/fields.ts:130"
+      },
+      {
+       "label": "Sospensioni da cambiare?",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no; compare con porte automatiche",
+       "help": [
+        "Con «Sì» si apre il modulo 2SG per operatore e sospensioni delle porte, già compilato con i dati della scheda; lo scarichi come PDF a parte."
+       ],
+       "src": "src/lib/rilievi/fields.ts:131"
+      },
+      {
+       "label": "Numero sospensioni",
+       "kind": "numero",
+       "unit": null,
+       "values": "numero intero da 0 a 999",
+       "default": null,
+       "required": "quando «Sospensioni da cambiare?» è «Sì»",
+       "help": [
+        "Quante sospensioni vanno cambiate."
+       ],
+       "src": "src/lib/rilievi/fields.ts:132"
+      },
+      {
+       "label": "Note serrature e sospensioni",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "testo libero su più righe, al massimo 4000 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Note su serrature e sospensioni, sempre disponibili. Con il modulo 2SG aperto, stanno sotto il modulo."
+       ],
+       "src": "src/lib/rilievi/fields.ts:133"
+      }
+     ],
+     "intro": [
+      "Le domande dipendono dal tipo di porte scelto in «Tipologia»: porte manuali o semiautomatiche → serrature e pattino retrattile; porte automatiche → sospensioni. Senza tipo di porte restano solo le note."
+     ]
+    },
+    {
+     "title": "Modulo ordine operatori e sospensioni · 2SG S.r.l.",
+     "intro": [
+      "Si apre con «Sì» a «Sospensioni da cambiare?» (solo con porte automatiche). Contiene l’ordine per l’operatore di cabina e per le sospensioni delle porte di piano.",
+      "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
+      "Le etichette sono quelle del modulo cartaceo del fornitore, in italiano, e non cambiano. Sotto, ogni gruppo del modulo è un elemento: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano, i testi hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
+      "Se un testo è più lungo del riquadro del modulo originale, nel PDF si rimpicciolisce fino a 5 punti e, se non basta, viene tagliato: tieni i testi brevi."
+     ],
+     "fields": [
+      {
+       "label": "Intestazione",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "MITTENTE: (max 200 car.; dalla scheda: il nome della tua azienda) | DATA: (max 20 car.; dalla scheda: la data del rilievo (gg/mm/aaaa)) · ORD No: (max 20 car.) | RIFERIMENTO ORDINE: (max 90 car.; dalla scheda: il riferimento impianto «N° … — Matr. … — indirizzo» (solo i dati che hai scritto)) | CONSEGNA OPERATORI: (max 30 car.) · CONSEGNA SOSPENSIONI: (max 30 car.) | CORRIERE: (max 90 car.) · IMBALLO: SI · IMBALLO: NO | DESTINAZIONE MERCE: (max 120 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+       ],
+       "src": "assets/moduli/2sg-ordine-porte.json"
+      },
+      {
+       "label": "Porte di cabina (operatore)",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "AUTOMATICO (dato collegato «Porte») · SEMIAUTOMATICO (dato collegato «Porte») | EXTRACORSA · BLOCCO FUORI PIANO · PARAMENTO DI CABINA | PORTE PESANTI => 60Kg | OPERATORE TRIFASE 127Vca: OPERATORE A BRACCIO OP93 | OPERATORE MONOFASE 230Vca: OPERATORE LINEARE \"LOUIS\" · OPERATORE MONOFASE 230Vca: OPERATORE PWM \"FLY\" | MOTORE 125/220VCA · MOTORE 48 VCC | MOTORE : VCA (max 10 car.) · HZ (max 10 car.) | NON FORNIRE SOGLIA · SOGLIA RINFORZATA H90 | SOGLIE CENTRALI 2AO: H50 · SOGLIE CENTRALI 2AO: H70 | SOGLIE TELESCOPICA 2AT/4AO: H75 · SOGLIE TELESCOPICA 2AT/4AO: H90 | SOGLIE TELESCOPICA 3AT/6AT: H120 | NOTE: (max 160 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
+        "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
+       ],
+       "src": "assets/moduli/2sg-ordine-porte.json"
+      },
+      {
+       "label": "Porte di piano (sospensioni)",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "NON FORNIRE SOGLIA · SOGLIA RINFORZATA H90 | H50 · H70 · H75 · H90 · H120 | TELAI: NO · TELAI: SI · NR. (max 4 car.) | VERNICIATI IN ANTIRUGGINE RAL 9002 | VERNICIATI A FUOCO BUCCIATI · RAL NR. (max 10 car.) | RIVESTITI IN (max 60 car.) | TELAI DI DIMENSIONI SPECIALI: (ALLEGARE DISEGNO) | EXTRACORSA: NO · EXTRACORSA: SI | SCASSO BOTTONIERA: NO · SCASSO BOTTONIERA: SI · LxH: (max 8 car.) · X (max 8 car.) | ALETTE DI FISSAGGIO: NO · ALETTE DI FISSAGGIO: SI · MM: (max 10 car.) | ALTEZZA DA TERRA (mm): (max 12 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/2sg-ordine-porte.json"
+      },
+      {
+       "label": "Ante",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "ANTE DI CABINA: NR. (max 4 car.) · ANTE DI PIANO: NR. (max 4 car.) | GREZZE (VERN. ALL'INTERNO) · ANTIRUGGINE RAL 9002 · VERNICIATE A FUOCO BUCCIATE · RAL NR. (max 10 car.) | RIVESTITE IN : (max 60 car.) | PROFILI DI BATTUTA IN ALLUMINIO · PROFILI DI BATTUTA IN INOX: SCOTCH BRITE · PROFILI DI BATTUTA IN INOX: LUCIDO BA · PROFILI DI BATTUTA IN INOX: SPECCHIO",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/2sg-ordine-porte.json"
+      },
+      {
+       "label": "Porte di cabina",
+       "kind": "testo",
+       "unit": null,
+       "values": "LUCE PORTA: (max 8 car.) · x (max 8 car.) | 1AT CD NR. (max 4 car.) | 1AT CS NR. (max 4 car.) | 2AO NR. (max 4 car.) | 2AT CD NR. (max 4 car.) | 2AT CS NR. (max 4 car.) | 3AT CD NR. (max 4 car.) | 3AT CS NR. (max 4 car.) | 4AT NR. (max 4 car.) | 6AT NR. (max 4 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/2sg-ordine-porte.json"
+      },
+      {
+       "label": "Porte di piano",
+       "kind": "testo",
+       "unit": null,
+       "values": "LUCE PORTA: (max 8 car.) · x (max 8 car.) | 1AT CD NR. (max 4 car.) | 1AT CS NR. (max 4 car.) | 2AO NR. (max 4 car.) | 2AT CD NR. (max 4 car.) | 2AT CS NR. (max 4 car.) | 3AT CD NR. (max 4 car.) | 3AT CS NR. (max 4 car.) | 4AT NR. (max 4 car.) | 6AT NR. (max 4 car.)",
+       "default": null,
+       "required": "no; il gruppo si vede solo con il modulo aperto",
+       "help": [
+        "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale."
+       ],
+       "src": "assets/moduli/2sg-ordine-porte.json"
+      }
+     ],
+     "notes": [
+      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori sopra: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per stampare con «Stampa» (voci sotto la domanda del modulo)."
+     ]
+    },
+    {
+     "title": "Allarme e telesoccorso",
+     "fields": [
+      {
+       "label": "Telesoccorso da installare",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Indica se va installato il telesoccorso."
+       ],
+       "src": "src/lib/rilievi/fields.ts:142"
+      },
+      {
+       "label": "Periferica sotto cabina da installare",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Indica se va installata la periferica sotto la cabina."
+       ],
+       "src": "src/lib/rilievi/fields.ts:143"
+      },
+      {
+       "label": "Cornetta nel locale da installare",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Indica se va installata la cornetta nel locale."
+       ],
+       "src": "src/lib/rilievi/fields.ts:144"
+      },
+      {
+       "label": "Allarme in portineria",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Indica se serve l’allarme in portineria."
+       ],
+       "src": "src/lib/rilievi/fields.ts:145"
+      },
+      {
+       "label": "Display in portineria",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Indica se serve il display in portineria."
+       ],
+       "src": "src/lib/rilievi/fields.ts:146"
+      }
+     ]
+    },
+    {
+     "title": "Note e lavori",
+     "fields": [
+      {
+       "label": "Note quadretto elettrico",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "testo libero su più righe, al massimo 4000 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Appunti sul quadretto elettrico."
+       ],
+       "src": "src/lib/rilievi/fields.ts:152"
+      },
+      {
+       "label": "Note impianto",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "testo libero su più righe, al massimo 4000 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Appunti generali sull’impianto."
+       ],
+       "src": "src/lib/rilievi/fields.ts:153"
+      },
+      {
+       "label": "Luce vano da sostituire",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Indica se la luce del vano va sostituita. Con «Sì» compare il campo per la nota."
+       ],
+       "src": "src/lib/rilievi/fields.ts:156"
+      },
+      {
+       "label": "Note luce vano",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "testo libero su più righe, al massimo 4000 caratteri",
+       "default": null,
+       "required": "quando «Luce vano da sostituire» è «Sì»",
+       "help": [
+        "Nota sulla luce del vano, scritta a mano."
+       ],
+       "src": "src/lib/rilievi/fields.ts:157"
+      },
+      {
+       "label": "Note bottoniere in opera",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "testo libero su più righe, al massimo 4000 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Appunti sulle bottoniere in opera."
+       ],
+       "src": "src/lib/rilievi/fields.ts:158"
+      },
+      {
+       "label": "Vuoi inserire le misure delle bottoniere vecchie?",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (puoi anche lasciare senza risposta: un secondo clic sulla voce scelta la toglie)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Con «Sì» compare, sotto la domanda, una tabella con una riga per fermata, per annotare le misure delle bottoniere vecchie (vedi «Misure delle bottoniere vecchie, per fermata»)."
+       ],
+       "src": "src/lib/rilievi/fields.ts:159"
+      },
+      {
+       "label": "Lavori extra (buono di lavoro)",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "testo libero su più righe, al massimo 4000 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Lavori extra richiesti dal buono di lavoro."
+       ],
+       "src": "src/lib/rilievi/fields.ts:160"
+      }
+     ]
+    },
+    {
+     "title": "Misure delle bottoniere vecchie, per fermata",
+     "intro": [
+      "Compare sotto «Vuoi inserire le misure delle bottoniere vecchie?» quando rispondi «Sì». C’è una riga per ogni fermata (la fermata 1 è la più bassa), tante quante indichi in «Fermate». Ogni riga si intitola «Fermata 1», «Fermata 2»…",
+      "Se non hai ancora indicato le fermate, vedi il promemoria «Indica prima le fermate in «Impianto»: qui compare una riga per ogni fermata.» Quando scrivi il numero di fermate le righe mancanti si aggiungono; se lo riduci le righe in più si nascondono ma non si perdono, così uno sbaglio di battitura non cancella nulla. Al salvataggio contano solo le righe da 1 al numero di fermate."
+     ],
+     "fields": [
+      {
+       "label": "Piano",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 20 caratteri",
+       "default": "il numero della fermata",
+       "required": "no",
+       "help": [
+        "Nome del piano a quella fermata («T», «S1»…). Se lasci il numero della fermata non viene salvato come nome: nella tabella comparirà comunque il numero."
+       ],
+       "src": "src/lib/rilievi/misure.ts:15"
+      },
+      {
+       "label": "Lunghezza",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "numero da 0 a 5000, al massimo 2 decimali (6,5 oppure 6.5)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Lunghezza della bottoniera vecchia a quella fermata."
+       ],
+       "src": "src/lib/rilievi/misure.ts:16"
+      },
+      {
+       "label": "Larghezza",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "numero da 0 a 5000, al massimo 2 decimali",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Larghezza della bottoniera vecchia a quella fermata."
+       ],
+       "src": "src/lib/rilievi/misure.ts:17"
+      },
+      {
+       "label": "Interasse foro superiore",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 60 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Interasse del foro superiore, scritto come lo leggi (può contenere più misure)."
+       ],
+       "src": "src/lib/rilievi/misure.ts:18"
+      },
+      {
+       "label": "Interasse foro inferiore",
+       "kind": "testo",
+       "unit": null,
+       "values": "testo libero, al massimo 60 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Interasse del foro inferiore."
+       ],
+       "src": "src/lib/rilievi/misure.ts:19"
+      },
+      {
+       "label": "Display",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "Sì / No (un secondo clic toglie la scelta)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Indica se la bottoniera vecchia ha il display."
+       ],
+       "src": "src/lib/rilievi/misure.ts:20"
+      }
+     ],
+     "notes": [
+      "Una riga completamente vuota non viene salvata. Nella pagina della scheda, nella stampa e nel PDF le righe diventano una tabella con le colonne «Fermata», «Piano», «Lunghezza (mm)», «Larghezza (mm)», «Interasse foro superiore», «Interasse foro inferiore», «Display».",
+      "Gli errori di una cella appaiono nel riepilogo come «Lunghezza, fermata 2: …»."
+     ],
+     "warnings": [
+      "Le misure si salvano solo con «Sì» a «Vuoi inserire le misure delle bottoniere vecchie?»: se cambi risposta in «No» le righe non vengono salvate. Le righe oltre il numero di fermate indicato non vengono salvate."
+     ]
+    },
+    {
+     "title": "Dati collegati tra scheda e moduli",
+     "intro": [
+      "Uno stesso dato dell’impianto compare spesso in più posti: nella scheda e nei moduli dei fornitori (Pelazza, MoviLift, Mastech NG120 o QI Touch, Dati argano, 2SG). Il software lo tiene allineato così: un campo che non hai scritto a mano si riempie dagli altri, in ogni direzione e mentre digiti; il campo in cui scrivi tu resta tuo. Un numero vale anche scritto in modo diverso («1.000», «1000»; «1,6» e «1.6»; «400 V» e «400»).",
+      "Se due posti compilati dicono cose diverse, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e, in pagina scheda, «Questi dati sono diversi tra la scheda e gli ordini:». Al salvataggio ti viene chiesta conferma (vedi «Dati che non coincidono»). Un campo vuoto o nascosto (un modulo chiuso, una domanda che non compare) non conta come affermazione e non viene confrontato.",
+      "Ogni elemento qui sotto è uno di questi dati: la riga «Valori» elenca dove compare."
+     ],
+     "fields": [
+      {
+       "label": "Fermate",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Fermate» · Pelazza: «N° Fermate:» · MoviLift: «Fermate» · Mastech NG120: «N° Fermate» · Mastech QI Touch: «Numero fermate» · Dati argano: «Piani n°»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Velocità (m/s)",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Pelazza: «Velocità m/s» · MoviLift: «Velocità» · Mastech NG120: «Velocità Impianto [m/s]» · Mastech QI Touch: «Velocità impianto [m/s]» · Dati argano: «Velocità (m/s)»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Tipo di velocità",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Pelazza: «1 Velocità», «2 Velocità», «VVVF solo anello aperto», «VVVF anello aperto/chiuso» · Mastech NG120: «1 Velocità», «2 Velocità», «VVVF» · Dati argano: «AC1», «AC2», «Inverter»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Corsa (m)",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Pelazza: «Corsa Mt.» · MoviLift: «Corsa mt» · Mastech NG120: «Corsa [m]» · Dati argano: «Corsa Mt»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Portata (kg)",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Portata» · MoviLift: «Portata» · Mastech QI Touch: «Portata nominale [kg]» · Dati argano: «Portata (KG)»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Capienza (persone)",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Capienza» · MoviLift: «Capienza» · Dati argano: «Persone n°»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "N° impianto",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «N° impianto» · MoviLift: «N° Impianto» · Dati argano: «N° imp.»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Tensione motore",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Pelazza: «Vca» · MoviLift: «Tens.»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Tensione freno",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Pelazza: «Circuito del Freno Vcc:» · Mastech NG120: «Tensione Freno [Vcc]» · Mastech QI Touch: «Tensione freno» · Dati argano: «Tensione freno (V)»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Porte",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Tipo porte» · Pelazza: «Automatiche», «Semiautomatiche», «Manuali» · Mastech NG120: «Automatico», «Semiautomatico», «Manuale» · 2SG: «AUTOMATICO», «SEMIAUTOMATICO»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Accessi",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Accessi» · Pelazza: «N° Accessi:» · Mastech QI Touch: «Numero accessi»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Accessi",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Accessi» · MoviLift: «Ingressi»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Posizione macchina",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Ubicazione macchina» · MoviLift: «Locale macchina»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Numero funi",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Numero funi» · Dati argano: «N° funi»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Diametro funi (mm)",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Diametro funi» · Dati argano: «Diametro funi»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Trefoli funi",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Trefoli funi» · Dati argano: «Trefoli»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Indirizzo",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Indirizzo» · Dati argano: «Indirizzo»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Matricola",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Matricola» · Dati argano: «Matr.»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Marca impianto",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Marca impianto» · Dati argano: «Marca»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Tipo impianto",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Tipo impianto» · Pelazza: «Idraulico»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Marca operatore",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Pelazza: «Modello» · MoviLift: «Marca Op (lato A)» · Mastech QI Touch: «Modello operatore 1»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Qui i posti scrivono lo stesso dato in modo diverso (ad esempio «Selcom» e «Selcom Midi Supra»): serve solo a proporre il valore, non viene mai segnalato come differenza."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Corrente motore (A)",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Pelazza: «In (A)» · MoviLift: «Amp.» · Mastech NG120: «Corrente Nominale [A]» · Mastech QI Touch: «Corrente motore [A]» · Dati argano: «Corrente (A)»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Giri motore (giri/min)",
+       "kind": "tabella",
+       "unit": null,
+       "values": "MoviLift: «Num Giri» · Dati argano: «Giri/min»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
+      },
+      {
+       "label": "Servizi",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Pelazza: «N° Servizi:» · Mastech NG120: «N° Servizi» · Mastech QI Touch: «Numero servizi»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
+      },
+      {
+       "label": "Poli motore",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Mastech NG120: «N° Poli» · Mastech QI Touch: «Numero poli» · Dati argano: «Poli»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
+      },
+      {
+       "label": "Potenza motore (kW)",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Mastech NG120: «Potenza [kW]» · Mastech QI Touch: «Potenza motore [kW]» · Dati argano: «Potenza motore (Kw)»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
+      },
+      {
+       "label": "Taglia",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Mastech NG120: «1:1», «2:1» · Dati argano: «Taglia 1:1», «Taglia 1:2»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
+      },
+      {
+       "label": "Diametro puleggia (mm)",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Mastech NG120: «Diametro della puleggia [mm]» · Dati argano: «D puleggia di trazione»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
+      },
+      {
+       "label": "Rapporto di riduzione",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Mastech NG120: «Rapporto di riduzione» · Dati argano: «Rap/rid argano»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
+      },
+      {
+       "label": "Tensione pattino retrattile",
+       "kind": "tabella",
+       "unit": null,
+       "values": "MoviLift: «Elettr. Pattino V» · Mastech NG120: «Tensione Pattino retrattile [Vcc]» · Mastech QI Touch: «Tensione pattino retrattile»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
+      },
+      {
+       "label": "Marca centralina",
+       "kind": "tabella",
+       "unit": null,
+       "values": "Scheda: «Marca e modello centralina» · MoviLift: «Centralina»",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Qui i posti scrivono lo stesso dato in modo diverso (ad esempio «Selcom» e «Selcom Midi Supra»): serve solo a proporre il valore, non viene mai segnalato come differenza."
+       ],
+       "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
+      }
+     ],
+     "notes": [
+      "Il confronto dei collegamenti «Marca operatore» e «Marca centralina» è disattivato: i posti scrivono lo stesso dato in modo lecitamente diverso, e il software lo usa solo per proporre il valore."
+     ]
+    },
+    {
+     "title": "Stampa e PDF",
+     "intro": [
+      "In fondo al modulo scegli che cosa entra nella stampa e nel PDF della scheda. La scelta si salva con la scheda."
+     ],
+     "fields": [
+      {
+       "label": "Sezioni nella stampa e nel PDF",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "una casella per ogni sezione tranne «Impianto», nell’ordine dell’azienda: Ubicazione e accesso, Tipologia, Quadro, Argano, Centralina, Funi e tiranti, Limitatore, Cavi, Serrature o sospensioni, Allarme e telesoccorso, Note e lavori",
+       "default": "tutte spuntate (sezione nuova inclusa)",
+       "required": "no",
+       "help": [
+        "Togli la spunta alle sezioni da lasciare fuori dal foglio stampato. L’intestazione con indirizzo, matricola e n° impianto c’è sempre.",
+        "Le sezioni nascoste dal tipo impianto (ad esempio «Argano» con l’idraulico) nascondono anche la loro casella; la loro scelta resta com’è e non vale come «lasciata fuori». Le sezioni lasciate fuori sono memorizzate: una sezione aggiunta in futuro entra nella stampa da sola."
+       ],
+       "src": "src/components/rilievi/StampaScelta.tsx:38"
+      },
+      {
+       "label": "Dati dei moduli nella stampa e nel PDF",
+       "kind": "scelta multipla",
+       "unit": null,
+       "values": "Ordine quadro, Dati argano, Ordine 2SG (operatori e sospensioni)",
+       "default": "nessuna spuntata",
+       "required": "no",
+       "help": [
+        "Spunta i moduli da aggiungere in fondo al foglio: entra solo quello che è compilato. I moduli restano anche come PDF a parte.",
+        "Spuntare un modulo aggiunge in fondo al foglio stampato e al PDF della scheda un riepilogo di ciò che è compilato nel modulo (caselle spuntate e testi scritti, gruppo per gruppo). I moduli restano comunque PDF a parte, identici all’originale, e non entrano mai nel PDF della scheda."
+       ],
+       "src": "src/components/rilievi/StampaScelta.tsx:50"
+      }
+     ]
+    },
+    {
+     "title": "Barra di salvataggio",
+     "intro": [
+      "In fondo alla pagina c’è sempre la barra dei pulsanti."
+     ],
+     "fields": [],
+     "actions": [
+      {
+       "label": "Salva scheda",
+       "help": "Salva la scheda nuova e ti porta alla sua pagina con l’avviso «Scheda salvata.» (in modifica il pulsante si chiama «Salva modifiche» e l’avviso è «Modifiche salvate.»). Prima controlla i dati: se c’è un errore, il modulo resta com’è e in cima compare l’elenco «Correggi N campi».",
+       "src": "src/components/rilievi/SchedaFormBody.tsx:123"
+      },
+      {
+       "label": "Salva comunque",
+       "help": "Compare solo dopo un «Salva» fermato da dati che non coincidono tra scheda e moduli. Salva la scheda con quei valori così come sono.",
+       "src": "src/components/rilievi/SchedaFormBody.tsx:125"
+      },
+      {
+       "label": "Annulla",
+       "help": "Esce senza salvare: torna all’elenco (scheda nuova) o alla pagina della scheda (modifica). Se hai modificato qualcosa, il browser chiede prima conferma.",
+       "src": "src/components/rilievi/SchedaFormBody.tsx:126"
+      },
+      {
+       "label": "Modifiche non salvate",
+       "help": "Indicatore (non è un pulsante): compare appena cambi qualcosa nel modulo, o quando il modulo ti torna indietro non salvato dopo un errore, un conflitto o la richiesta di conferma.",
+       "src": "src/components/rilievi/SchedaFormBody.tsx:127"
+      }
+     ],
+     "warnings": [
+      "Se tenti di lasciare la pagina con modifiche non salvate, il browser chiede se vuoi davvero uscire."
+     ]
+    },
+    {
+     "title": "Errori e avvisi",
+     "fields": [],
+     "notes": [
+      "Un errore in un campo non cancella nulla: il modulo ti torna com’è e in cima compare l’elenco «Correggi N campi». Ogni voce porta al campo e dice cosa non va. Messaggi: «Indica la data del rilievo.», «Data non valida.», «Massimo N caratteri.», «Solo cifre, senza lettere o simboli.», «Inserisci un numero intero.», «Inserisci un numero, ad esempio 6,5.», «Al massimo 2 decimali.», «Inserisci un valore tra X e Y.», «Scelta non valida.», «Compila almeno indirizzo, matricola o n° impianto.»."
+     ],
+     "warnings": [
+      "Se manca la connessione o la sessione scade mentre salvi, i dati restano nel modulo: premi di nuovo «Salva scheda» quando c’è segnale, o dopo aver fatto di nuovo l’accesso in un’altra scheda del browser. Se il primo salvataggio era già arrivato, non si crea una seconda scheda.",
+      "Un errore in un campo blocca il salvataggio: non si salva niente finché non correggi tutti i campi elencati in «Correggi N campi»."
+     ]
+    }
+   ],
+   "tips": [
+    "Compila prima «Impianto» e «Tipologia»: il tipo impianto e il tipo di porte decidono le sezioni e le domande che seguono.",
+    "Salva anche a metà: serve solo la data e uno tra indirizzo, matricola e n° impianto; il resto puoi completarlo con «Modifica»."
+   ]
+  },
+  {
+   "id": "rilievi-modifica",
+   "title": "Modifica scheda",
+   "path": "/it/app/rilievi/‹id›/modifica",
+   "access": "Chi può compilare e modificare le schede: con la matrice predefinita Capotecnico, Progettista e Tecnico (il Titolare sempre). Gli altri ruoli vedono la pagina «Permesso non concesso». Se l’azienda è in sola lettura le schede si consultano e si scaricano, ma non si modificano. Il Titolare può cambiare la matrice in «Permessi». Una scheda di un’altra azienda, inesistente o nel cestino dà «Pagina non trovata».",
+   "reach": "Dalla pagina della scheda con «Modifica».",
+   "purpose": [
+    "È lo stesso modulo di «Nuova scheda», aperto sui dati salvati: tutte le sezioni, i campi, i moduli dei fornitori e le scelte di stampa funzionano allo stesso modo (vedi la pagina «Nuova scheda»). Cambiano il titolo («Modifica scheda»), il pulsante principale («Salva modifiche») e la riga sotto il titolo: «Ultima modifica di ‹nome› il ‹data e ora›».",
+    "Un modulo del fornitore mai compilato si apre precompilato con i dati della scheda; se l’avevi già compilato, trovi i valori salvati. I dati che la scheda e i moduli dicono in modo diverso sono già elencati sotto i gruppi."
+   ],
+   "shots": [
+    {
+     "id": "rilievi-modifica",
+     "what": "Il modulo di modifica con la riga «Ultima modifica di … il …»"
+    },
+    {
+     "id": "rilievi-conflitto",
+     "what": "L’avviso «Qualcuno ha modificato questa scheda mentre la stavi compilando.»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Conflitto di versione",
+     "intro": [
+      "Il modulo ricorda la versione della scheda su cui l’hai aperto. Se, mentre lavori, un collega salva la stessa scheda, il tuo salvataggio non sovrascrive niente in silenzio: il modulo ti torna con i tuoi dati e compare l’avviso «Qualcuno ha modificato questa scheda mentre la stavi compilando.».",
+      "Il testo spiega: «I tuoi dati sono ancora qui sotto. Apri la versione attuale in un'altra scheda del browser e confronta: se salvi ora, sostituisci le modifiche dell'altra persona.» Il pulsante «Apri la versione attuale» apre la scheda salvata in una nuova scheda del browser, così puoi confrontare. La riga sotto il titolo si aggiorna e nomina chi ha salvato per ultimo e quando.",
+      "Se premi di nuovo «Salva modifiche» dopo l’avviso, salvi la tua versione e sostituisci quella dell’altra persona. Per non perdere nulla, confronta prima."
+     ],
+     "fields": [],
+     "actions": [
+      {
+       "label": "Apri la versione attuale",
+       "help": "Apre la versione attuale della scheda in un’altra scheda del browser, lasciando intatto il modulo con i tuoi dati.",
+       "src": "src/components/rilievi/SchedaForm.tsx:122"
+      }
+     ],
+     "notes": [
+      "Se il tuo salvataggio precedente era già arrivato e si è perso solo l’esito (niente segnale), un nuovo «Salva modifiche» dello stesso modulo viene riconosciuto come lo stesso invio: non è un conflitto e non scrive due volte."
+     ],
+     "warnings": [
+      "Se premi di nuovo «Salva modifiche» dopo l’avviso di conflitto, sostituisci le modifiche dell’altra persona con la tua versione: apri prima la versione attuale e confronta."
+     ]
+    },
+    {
+     "title": "Dati che non coincidono tra scheda e moduli",
+     "intro": [
+      "Se, al salvataggio, la scheda e i moduli compilati dicono cose diverse sullo stesso dato (ad esempio le fermate), la scheda non viene salvata subito: in cima compare «Un dato non coincide tra scheda e ordini / N dati non coincidono tra scheda e ordini» con l’elenco dei valori, uno per posto («Scheda: 5 · Ordine quadro: 6 · Dati argano: 5»).",
+      "Il testo dice: «Controlla i valori qui sotto. Se sono giusti così, premi «Salva comunque» nella barra in basso; altrimenti correggili e salva di nuovo.» Se i valori vanno bene così, premi «Salva comunque»; altrimenti correggili e premi «Salva modifiche». La conferma vale solo per quelle differenze esatte: se ne cambia una o ne nasce una nuova, ti viene chiesta di nuovo. Le differenze già confermate in un salvataggio precedente non si richiedono."
+     ],
+     "fields": [],
+     "actions": [
+      {
+       "label": "Salva comunque",
+       "help": "Salva la scheda con i valori diversi, confermando che sono voluti.",
+       "src": "src/components/rilievi/SchedaFormBody.tsx:125"
+      }
+     ],
+     "notes": [
+      "Dopo il salvataggio, le differenze ancora presenti restano segnalate nella pagina della scheda («Questi dati sono diversi tra la scheda e gli ordini:»).",
+      "Il pulsante «Salva comunque» sta dopo «Salva» di proposito: premere Invio in un campo non conferma mai."
+     ],
+     "warnings": [
+      "«Salva comunque» registra nella scheda valori che non coincidono tra loro: usalo solo se la differenza è voluta."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "rilievi-scheda",
+   "title": "Scheda rilievo impianto",
+   "path": "/it/app/rilievi/‹id›",
+   "access": "Tutti i ruoli con il diritto «Vedere le schede di rilievo e scaricarne i PDF»: con la matrice predefinita Capotecnico, Progettista, Tecnico e Commerciale; il Titolare ha sempre tutti i diritti. Modificare: Capotecnico, Progettista, Tecnico. Spostare nel cestino: Capotecnico e Progettista. Collegare il rilievo a un impianto: Capotecnico, Progettista, Tecnico. Una scheda nel cestino la vedono solo il Titolare e chi gestisce il cestino (con la matrice predefinita il Capotecnico). Una scheda di un’altra azienda o inesistente dà «Pagina non trovata».",
+   "reach": "Dall’elenco cliccando il numero impianto; dopo ogni salvataggio; dal collegamento «Apri scheda» del registro attività; dal cestino per le schede eliminate.",
+   "purpose": [
+    "La scheda salvata, leggibile per intero. Il titolo (h1) è «Impianto n° …» se c’è il numero impianto, altrimenti «Matricola …», altrimenti l’indirizzo, altrimenti «Scheda rilievo impianto». Sotto vedi «Rilievo del …» con la data.",
+    "Le sezioni seguono l’ordine dell’azienda e mostrano solo i campi che hanno senso per questa scheda (ad esempio nessun «Argano» con l’idraulico); un campo senza risposta si legge «—». I campi Sì/No dicono «Sì» o «No», i valori con unità hanno l’unità (kg, persone, mm, m)."
+   ],
+   "shots": [
+    {
+     "id": "rilievi-scheda",
+     "what": "La pagina di una scheda con targa, indice delle sezioni e pulsanti in alto"
+    },
+    {
+     "id": "rilievi-scheda-collegamento",
+     "what": "Il riquadro «Collegamento all’impianto» con gli impianti suggeriti"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Intestazione e pulsanti",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Modifica",
+       "help": "Apre «Modifica scheda». Solo per chi può compilare e modificare; non c’è per le schede nel cestino.",
+       "src": "src/app/[locale]/app/rilievi/[id]/page.tsx:65"
+      },
+      {
+       "label": "Stampa",
+       "help": "Apre la pagina di stampa e avvia da sola la stampa del browser (una volta). Per tutti i ruoli che vedono la scheda.",
+       "src": "src/app/[locale]/app/rilievi/[id]/page.tsx:66"
+      },
+      {
+       "label": "Scarica PDF",
+       "help": "Scarica il PDF della scheda (A4, stesso contenuto della stampa). Non include i moduli dei fornitori, che si scaricano a parte. Il limite è di 30 scaricamenti ogni 10 minuti per utente, contando insieme i PDF della scheda e dei moduli; oltre, il server risponde «Troppe richieste».",
+       "src": "src/app/[locale]/app/rilievi/[id]/page.tsx:67"
+      },
+      {
+       "label": "Elimina",
+       "help": "Porta alla conferma «Spostare la scheda nel cestino?». Solo per Capotecnico e Progettista (diritto «Spostare una scheda nel cestino»); non c’è per le schede già nel cestino.",
+       "src": "src/app/[locale]/app/rilievi/[id]/page.tsx:68"
+      },
+      {
+       "label": "Tutte le schede",
+       "help": "Torna all’elenco.",
+       "src": "src/components/rilievi/RilieviHead.tsx:7"
+      }
+     ],
+     "notes": [
+      "Dopo il salvataggio compare l’avviso «Scheda salvata.» o «Modifiche salvate.»."
+     ]
+    },
+    {
+     "title": "Collegamento all’impianto",
+     "intro": [
+      "Riquadro sopra la scheda, separato dal suo contenuto: non entra mai nella stampa o nel PDF. Collega il rilievo all’impianto (la cartella del lavoro con calcolo, progetto e documenti): il «Calcolo argano» e il Progetto partono allora dai valori misurati e puoi confrontarli con quanto salvato."
+     ],
+     "fields": [
+      {
+       "label": "Cerca un altro impianto",
+       "kind": "testo",
+       "unit": null,
+       "values": "al massimo 80 caratteri",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Compare quando il rilievo non è collegato e puoi collegare. Segnaposto: «Nome, indirizzo, comune, matricola o n° impianto». Cerca tra gli impianti attivi dell’azienda e mostra «Impianti trovati per «testo»», oltre agli impianti già suggeriti."
+       ],
+       "src": "src/components/collega/LinkPanel.tsx:111"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Collega",
+       "help": "Accanto a ogni impianto suggerito o trovato: collega il rilievo a quell’impianto («Rilievo collegato all’impianto.»). Gli impianti suggeriti hanno la stessa matricola, lo stesso n° impianto o lo stesso indirizzo (la ragione è mostrata: «stessa matricola», «stesso n° impianto di un suo rilievo», «stesso indirizzo»).",
+       "src": "src/components/collega/LinkPanel.tsx:36"
+      },
+      {
+       "label": "Crea impianto",
+       "help": "Apre «Nuovo impianto» già partito da questo rilievo: nome, indirizzo e matricola vengono dal rilievo; il tipo di intervento si sceglie poi nel Calcolo argano. Serve anche il diritto di creare impianti.",
+       "src": "src/components/collega/LinkPanel.tsx:97"
+      },
+      {
+       "label": "Cerca",
+       "help": "Esegue la ricerca di un altro impianto.",
+       "src": "src/components/collega/LinkPanel.tsx:114"
+      },
+      {
+       "label": "Vedi il confronto",
+       "help": "Con il rilievo già collegato, apre il confronto con l’ultimo calcolo e l’ultimo progetto salvati.",
+       "src": "src/components/collega/LinkPanel.tsx:79"
+      },
+      {
+       "label": "Scollega",
+       "help": "Toglie il collegamento («Rilievo scollegato dall’impianto.»). Non c’è se l’impianto è archiviato.",
+       "src": "src/components/collega/LinkPanel.tsx:85"
+      }
+     ],
+     "notes": [
+      "Stati del riquadro: «Questo rilievo non è collegato a un impianto.» con il consiglio «Collegalo per partire dai valori misurati nel calcolo e nel progetto e per confrontarli con quello che è stato salvato.»; oppure «Collegato all’impianto» seguito dal nome dell’impianto. Se l’impianto è archiviato, il rilievo resta collegato ma è in sola lettura («L’impianto è archiviato, quindi in sola lettura: il rilievo resta collegato.»).",
+      "Chi non può collegare vede solo lo stato. Se l’azienda è in sola lettura, compare «L’azienda è in sola lettura: il collegamento non si cambia.».",
+      "Avvisi possibili dopo un collegamento: «Nel frattempo il collegamento di questo rilievo è stato cambiato da un’altra persona: nulla è cambiato. Controlla e riprova.», «Impianto non trovato o archiviato: nessun collegamento è cambiato.», «Troppe operazioni in un minuto: riprova tra poco.»."
+     ]
+    },
+    {
+     "title": "Avvisi sopra la scheda",
+     "fields": [],
+     "notes": [
+      "Scheda nel cestino: una fascia gialla dice «Nel cestino dal … (eliminata da …).». Chi gestisce il cestino vede «Ripristina» (rimette subito la scheda tra le altre, «Scheda ripristinata.») ed «Elimina definitivamente» (porta alla conferma).",
+      "Dati diversi: se la scheda e i suoi moduli dicono cose diverse (confermate al salvataggio o presenti da prima), compare «Questi dati sono diversi tra la scheda e gli ordini:» con l’elenco: il nome del dato in grassetto e, per ciascun posto, il valore («Scheda: 5 · Ordine quadro: 6»)."
+     ]
+    },
+    {
+     "title": "Targa e indice",
+     "intro": [
+      "La targa riassume la scheda: Matricola e N° impianto in grande, l’indirizzo («Indirizzo non indicato» se manca), poi Portata, Capienza, Fermate e Marca impianto. A fianco, su schermo largo, l’indice «Sezioni della scheda»: i collegamenti portano alle sezioni e quella sullo schermo è evidenziata."
+     ],
+     "fields": []
+    },
+    {
+     "title": "Sezioni della scheda",
+     "intro": [
+      "Una sezione per ognuna di quelle del modulo (vedi «Nuova scheda» per i campi). Valori e unità sono quelli salvati; per i campi con scelta si legge la voce («Elettrico», «Manuali», «Accessi: 2»).",
+      "Sotto una domanda a cui hai risposto «Sì» con un modulo del fornitore compilato, la scheda mostra il nome del modulo con due pulsanti:"
+     ],
+     "fields": [],
+     "actions": [
+      {
+       "label": "Scarica PDF",
+       "help": "Scarica il PDF del modulo del fornitore compilato (identico all’originale con i tuoi valori).",
+       "src": "src/app/[locale]/app/rilievi/[id]/page.tsx:37"
+      },
+      {
+       "label": "Stampa",
+       "help": "Apre lo stesso PDF in una nuova scheda del browser, pronto da stampare.",
+       "src": "src/app/[locale]/app/rilievi/[id]/page.tsx:38"
+      }
+     ],
+     "notes": [
+      "«Vuoi inserire le misure delle bottoniere vecchie?» con «Sì» mostra la tabella delle misure per fermata sotto la risposta.",
+      "In fondo: «Creata da … il …» e «Ultima modifica di … il …»."
+     ]
+    }
+   ],
+   "tips": [
+    "I moduli dei fornitori si scaricano solo da qui o dalla stampa: il PDF della scheda ne riporta, se lo scegli, un riepilogo."
+   ]
+  },
+  {
+   "id": "rilievi-stampa",
+   "title": "Scheda rilievo impianto (stampa)",
+   "path": "/it/app/rilievi/‹id›/stampa",
+   "access": "Tutti i ruoli con il diritto «Vedere le schede di rilievo e scaricarne i PDF»: con la matrice predefinita Capotecnico, Progettista, Tecnico e Commerciale; il Titolare ha sempre tutti i diritti. Non occorre il diritto di modifica.",
+   "reach": "Dalla scheda con «Stampa» (la stampa del browser parte da sola) oppure aprendo la pagina direttamente.",
+   "purpose": [
+    "La scheda su carta A4, in bianco su sfondo bianco anche a schermo. Su carta esce solo il foglio. Sullo schermo, sopra il foglio, c’è la barra con i pulsanti.",
+    "Che cosa esce lo decidi nella scheda («Modifica» → «Stampa e PDF» in fondo al modulo): quali sezioni e quali moduli dei fornitori. Qui si applica la scelta salvata; non c’è nessuna scelta da fare in questa pagina."
+   ],
+   "shots": [
+    {
+     "id": "rilievi-stampa",
+     "what": "Il foglio A4 con intestazione, targa e sezioni, con la barra «Stampa / Scarica PDF / Torna alla scheda»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Barra degli strumenti",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Stampa",
+       "help": "Apre la stampa del browser. Arrivando dal pulsante «Stampa» della scheda parte da sola una volta (il segno «auto» sparisce dall’indirizzo, così ricaricare non stampa di nuovo).",
+       "src": "src/app/[locale]/app/rilievi/[id]/stampa/page.tsx:46"
+      },
+      {
+       "label": "Scarica PDF",
+       "help": "Scarica il PDF della scheda, con lo stesso contenuto del foglio.",
+       "src": "src/app/[locale]/app/rilievi/[id]/stampa/page.tsx:47"
+      },
+      {
+       "label": "Torna alla scheda",
+       "help": "Torna alla pagina della scheda.",
+       "src": "src/app/[locale]/app/rilievi/[id]/stampa/page.tsx:48"
+      }
+     ],
+     "intro": []
+    },
+    {
+     "title": "Il foglio",
+     "intro": [
+      "In alto: il logo dell’azienda (senza logo, il suo nome) e, a destra, «Data: …» e «Compilata da …» (più «Ultima modifica di … il …» se la scheda è stata modificata dopo la creazione). Al centro il titolo «Scheda rilievo impianto». Sotto: l’indirizzo (o «Indirizzo non indicato») a sinistra e «Buono di lavoro» a destra («—» se vuoto). Poi la targa con matricola, N° impianto, portata, capienza, fermate e marca.",
+      "«Impianto» non si stampa come sezione, perché tutto è nell’intestazione e nella targa. Seguono le sezioni, nell’ordine dell’azienda, senza quelle lasciate fuori dalla scelta «Sezioni nella stampa e nel PDF». Ogni opzione è una casella, spuntata o no; le domande Sì/No mostrano le risposte; la tabella delle misure delle bottoniere compare sotto la sua risposta.",
+      "Dopo le sezioni, un riepilogo per ogni modulo scelto in «Dati dei moduli nella stampa e nel PDF» (con il nome del modulo): per ogni gruppo le caselle spuntate e i testi scritti; entra solo ciò che è compilato.",
+      "In fondo il piè di pagina: «Generato il … da …» con il nome di chi stampa e il credito «Created and Designed by Carbon Stealth VCC»."
+     ],
+     "fields": []
+    }
+   ],
+   "tips": [
+    "Per cambiare cosa esce sul foglio, apri «Modifica» e vai in fondo al modulo, a «Stampa e PDF»."
+   ]
+  },
+  {
+   "id": "rilievi-elimina",
+   "title": "Spostare la scheda nel cestino?",
+   "path": "/it/app/rilievi/‹id›/elimina",
+   "access": "Chi ha il diritto «Spostare una scheda nel cestino»: con la matrice predefinita Capotecnico e Progettista (il Titolare sempre). Se l’azienda è in sola lettura le schede si consultano e si scaricano, ma non si modificano. Una scheda di un’altra azienda, inesistente o già nel cestino dà «Pagina non trovata».",
+   "reach": "Dalla pagina della scheda con «Elimina».",
+   "purpose": [
+    "Conferma prima di spostare la scheda nel cestino. Non cancella niente: «Dal cestino potranno ripristinarla il Titolare e chi ha il permesso di gestire il cestino.»",
+    "La pagina mostra il nome della scheda (ad esempio «Impianto n° …») e sotto indirizzo e data."
+   ],
+   "shots": [
+    {
+     "id": "rilievi-elimina",
+     "what": "La conferma con il nome della scheda e i pulsanti «Sposta nel cestino» e «Annulla»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Conferma",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Sposta nel cestino",
+       "help": "Sposta la scheda nel cestino e ti riporta all’elenco con l’avviso «Scheda spostata nel cestino.». Eventuali errori compaiono accanto al pulsante.",
+       "src": "src/components/rilievi/Confirm.tsx:18"
+      },
+      {
+       "label": "Annulla",
+       "help": "Torna alla scheda senza cambiare nulla.",
+       "src": "src/components/rilievi/Confirm.tsx:20"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "rilievi-cestino",
+   "title": "Cestino",
+   "path": "/it/app/rilievi/cestino",
+   "access": "Chi gestisce il cestino: con la matrice predefinita il Capotecnico, oltre al Titolare (diritto «Gestire il cestino: ripristinare o eliminare per sempre»). Gli altri ruoli vedono «Permesso non concesso».",
+   "reach": "Dall’elenco «Schede» con il pulsante «Cestino».",
+   "purpose": [
+    "Le schede eliminate, dalla più recente eliminata. Sotto il titolo: «Schede eliminate: ripristinale o eliminale definitivamente.». Un cestino senza schede dice «Il cestino è vuoto.»."
+   ],
+   "shots": [
+    {
+     "id": "rilievi-cestino",
+     "what": "Il cestino con alcune schede, la colonna «Eliminata il» e i pulsanti di ogni riga"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Ricerca",
+     "intro": [
+      "Stessa ricerca dell’elenco (vedi «Schede»), ma come modulo semplice: scrivi e premi Invio, senza aggiornamento mentre digiti. Cerca solo tra le schede del cestino."
+     ],
+     "fields": [
+      {
+       "label": "Cerca nelle schede",
+       "kind": "testo",
+       "unit": null,
+       "values": "al massimo 100 caratteri",
+       "default": "vuoto",
+       "required": "no",
+       "help": [
+        "Segnaposto: «N° impianto, matricola, indirizzo…»."
+       ],
+       "src": "src/components/rilievi/LiveSearch.tsx:58"
+      }
+     ]
+    },
+    {
+     "title": "Tabella del cestino",
+     "intro": [
+      "Colonne: N° impianto, Matricola, Indirizzo, Marca impianto, Tipo impianto, «Eliminata il» (data e ora) e le azioni di riga. 25 schede per pagina, con «Precedente»/«Successiva»."
+     ],
+     "fields": [],
+     "actions": [
+      {
+       "label": "Ripristina",
+       "help": "Rimette subito la scheda tra le altre, senza conferma, e ti porta alla sua pagina con l’avviso «Scheda ripristinata.».",
+       "src": "src/components/rilievi/Results.tsx:66"
+      },
+      {
+       "label": "Elimina definitivamente",
+       "help": "Porta alla conferma «Eliminare definitivamente la scheda?».",
+       "src": "src/components/rilievi/Results.tsx:67"
+      }
+     ]
+    }
+   ],
+   "tips": [
+    "Dalla scheda stessa nel cestino puoi fare le stesse due azioni."
+   ]
+  },
+  {
+   "id": "rilievi-elimina-definitiva",
+   "title": "Eliminare definitivamente la scheda?",
+   "path": "/it/app/rilievi/cestino/‹id›/elimina",
+   "access": "Chi gestisce il cestino (Capotecnico con la matrice predefinita, e il Titolare). Solo per schede che sono nel cestino; altrimenti «Pagina non trovata».",
+   "reach": "Dal cestino, o dalla scheda nel cestino, con «Elimina definitivamente».",
+   "purpose": [
+    "Ultima conferma prima di cancellare per sempre una scheda. «L'operazione non si può annullare: la scheda sparirà dal portale.» La scheda e le sue misure spariscono; resta solo la traccia nel registro attività."
+   ],
+   "shots": [
+    {
+     "id": "rilievi-elimina-definitiva",
+     "what": "La conferma con il nome della scheda e il pulsante rosso «Elimina definitivamente»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Conferma",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Elimina definitivamente",
+       "help": "Elimina la scheda per sempre e ti porta al cestino con l’avviso «Scheda eliminata definitivamente.».",
+       "src": "src/components/rilievi/Confirm.tsx:18"
+      },
+      {
+       "label": "Annulla",
+       "help": "Torna alla scheda senza cancellare nulla.",
+       "src": "src/components/rilievi/Confirm.tsx:20"
+      }
+     ],
+     "warnings": [
+      "L’eliminazione definitiva non si può annullare: la scheda e le sue misure spariscono dal portale. Resta solo la traccia nel registro attività."
+     ]
+    }
+   ]
+  }
+ ],
+ "glossary": [
+  {
+   "term": "Scheda di rilievo",
+   "def": "Il modulo compilato sul posto per un impianto esistente; ha una data e almeno un identificativo."
+  },
+  {
+   "term": "Modulo del fornitore",
+   "def": "Il modulo d’ordine o dati originale di un fornitore (Pelazza, MoviLift, Mastech, 2SG) o il modulo dati argano, compilato con i dati della scheda e scaricabile come PDF identico all’originale."
+  },
+  {
+   "term": "Dati collegati",
+   "def": "Lo stesso dato dell’impianto scritto in più posti (scheda e moduli): si riempie dagli altri posti finché non lo scrivi tu e, se due posti dicono cose diverse, viene segnalato."
+  },
+  {
+   "term": "MRL",
+   "def": "Il tipo impianto senza locale macchina, scelto in «Tipo impianto»."
+  },
+  {
+   "term": "Cestino",
+   "def": "Dove vanno le schede eliminate: si ripristinano o si eliminano definitivamente."
+  },
+  {
+   "term": "Targa",
+   "def": "Il riquadro in testa alla scheda con matricola, n° impianto, indirizzo, portata, capienza, fermate e marca."
+  },
+  {
+   "term": "Conflitto di versione",
+   "def": "Succede se un collega salva la stessa scheda mentre la stai modificando: il tuo modulo resta e ti viene detto, prima di sovrascrivere."
+  }
+ ],
+ "verify": [
+  "Il menu laterale e il percorso di navigazione mostrano «Rilievi» e poi «Schede» come descritto in «Come ci arrivi» dell'elenco?",
+  "Il pulsante «Ripristina» dell'elenco cestino porta davvero alla pagina della scheda con l'avviso «Scheda ripristinata.»?"
+ ]
+}

@@ -1,0 +1,1650 @@
+{
+ "key": "accesso",
+ "title": "Accesso, registrazione e account",
+ "intro": [
+  "Questo capitolo copre le pagine che incontri prima di entrare in LiftPilot (la pagina iniziale, i prezzi, l’accesso, la registrazione, la conferma dell’indirizzo, il recupero della password, l’invito di un collega, le pagine su privacy e dati, la guida rapida e la pagina «Pagina non trovata») e quelle che riguardano il tuo account una volta dentro (le condizioni d’uso, l’account, «Segnala un problema» e «Permesso non concesso»).",
+  "Regola della password: almeno 12 caratteri (al massimo 200), con almeno una lettera e una cifra. Vale per la registrazione, per l’invito, per il recupero e per il cambio password.",
+  "Durante la beta la registrazione di una nuova azienda è su invito: ricevi per e-mail il link che apre il modulo. Chi registra l’azienda ne diventa il Titolare e accetta le condizioni d’uso; i colleghi entrano con l’invito del Titolare. LiftPilot usa un solo cookie tecnico, quello della sessione (al massimo 12 ore)."
+ ],
+ "pages": [
+  {
+   "id": "home",
+   "title": "Progettazione dell’ascensore e verifica dell’argano",
+   "path": "/it",
+   "access": "Pubblica: la vede chiunque, anche senza account. Non contiene campi da compilare e nessuno la modifica dall’interfaccia. Se hai già una sessione aperta, la pagina resta visibile; per tornare al lavoro usa «Accedi».",
+   "reach": "Digita l’indirizzo di LiftPilot oppure clicca il logo in alto a sinistra, o il logo nel piè di pagina, da qualsiasi pagina pubblica.",
+   "purpose": [
+    "È la vetrina del prodotto: spiega in breve che cosa fa LiftPilot (dal rilievo del vano alla relazione di calcolo) e porta alla registrazione o all’accesso. Tutti i risultati mostrati sono esempi generati dal software per un impianto dimostrativo.",
+    "Non è una pagina di lavoro: per usare LiftPilot devi avere un account. I numeri e gli esempi che vedi (verifiche, tavole, simulazione) servono a darti un’idea del risultato."
+   ],
+   "shots": [
+    {
+     "id": "home",
+     "what": "Pagina iniziale intera, schermo largo, dall’intestazione fino alla sezione dei prezzi"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Intestazione fissa",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Funzionalità",
+       "help": "Salta alla sezione delle funzioni sulla stessa pagina.",
+       "src": "src/components/SiteHeader.tsx:5"
+      },
+      {
+       "label": "Prodotto",
+       "help": "Salta alla sezione con gli esempi generati dal software.",
+       "src": "src/components/SiteHeader.tsx:5"
+      },
+      {
+       "label": "Prezzi",
+       "help": "Sulla home salta alla sezione dei piani; dalle altre pagine pubbliche apre la pagina Prezzi.",
+       "src": "src/components/SiteHeader.tsx:5"
+      },
+      {
+       "label": "Norme",
+       "help": "Salta alla sezione delle norme di riferimento.",
+       "src": "src/components/SiteHeader.tsx:5"
+      },
+      {
+       "label": "FAQ",
+       "help": "Salta alle domande frequenti.",
+       "src": "src/components/SiteHeader.tsx:5"
+      },
+      {
+       "label": "Accedi",
+       "help": "Apre la pagina di accesso.",
+       "src": "src/components/SiteHeader.tsx:45"
+      },
+      {
+       "label": "Registrati",
+       "help": "Apre la pagina di registrazione.",
+       "src": "src/components/SiteHeader.tsx:46"
+      },
+      {
+       "label": "Menu",
+       "help": "Sui telefoni e sugli schermi stretti apre un pannello con le stesse voci e i pulsanti «Accedi» e «Registrati».",
+       "src": "src/components/SiteHeader.tsx:48"
+      },
+      {
+       "label": "Vai al contenuto",
+       "help": "Link nascosto, visibile con la tastiera (Tab): porta direttamente al contenuto della pagina.",
+       "src": "src/components/SiteHeader.tsx:26"
+      }
+     ],
+     "notes": [
+      "Su schermi molto stretti resta visibile un solo pulsante di ingresso accanto al menu."
+     ]
+    },
+    {
+     "title": "Apertura (progettazione dell’ascensore e verifica dell’argano)",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Registra la tua azienda",
+       "help": "Apre la registrazione.",
+       "src": "src/components/landing/Hero.tsx:62"
+      },
+      {
+       "label": "Scopri il prodotto",
+       "help": "Scorre alla sezione con gli esempi generati dal software.",
+       "src": "src/components/landing/Hero.tsx:65"
+      }
+     ],
+     "notes": [
+      "Finché l’abbonamento non è attivo sul servizio compare l’etichetta «Beta»: «Gratuito durante la beta, con tutte le funzioni e i colleghi senza limite.»",
+      "La frase «I risultati sono bozze da verificare e firmare da un tecnico abilitato…» ricorda che ogni calcolo, tavola e relazione resta una bozza fino alla firma di un tecnico abilitato; i valori ancora da verificare sono marcati ⚠."
+     ],
+     "intro": [
+      "Titolo e testo introduttivo; un riquadro con alcuni numeri del software (verifiche automatiche, valori con fonte e stato, viste in DXF e DWG, scenari della simulazione 3D); il profilo normativo e la versione del motore di calcolo in uso."
+     ]
+    },
+    {
+     "title": "Dal rilievo al calcolo argano al progetto e ai documenti",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Guarda cosa produce",
+       "help": "Scorre agli esempi generati dal software.",
+       "src": "src/components/landing/Features.tsx"
+      }
+     ],
+     "notes": [],
+     "intro": [
+      "Quattro schede: «Calcolo argano», «Progetto», «Tavole, DXF e DWG», «Relazione e documenti», con la spiegazione di che cosa produce ciascun passo."
+     ]
+    },
+    {
+     "title": "Rileva. Verifica. Documenta.",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Un’esposizione a schede (Rilievo, Progetto, Argano, Simulazione, Documenti) con pianta, sezione, tabella delle verifiche, grafici della simulazione e pagine di esempio, tutte per un «Impianto di esempio». Sono immagini e tabelle generate dal software per mostrare il risultato: non si compilano."
+     ]
+    },
+    {
+     "title": "Un prezzo per il Titolare. I colleghi a pacchetti.",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Prezzi e condizioni",
+       "help": "Apre la pagina Prezzi.",
+       "src": "src/components/landing/Pricing.tsx:27"
+      }
+     ],
+     "notes": [],
+     "intro": [
+      "Quattro piani: «Solo il Titolare», «Titolare + 5 colleghi», «Titolare + 10 colleghi» e «Titolare + colleghi senza limite», con il prezzo reale se l’abbonamento è attivo, «Su richiesta» se il prezzo non è disponibile, «Gratuito durante la beta» altrimenti."
+     ]
+    },
+    {
+     "title": "Su quali norme si basa?",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Elenco del profilo normativo italiano (UNI EN 81-20, UNI EN 81-50, UNI 10411, DPR 162/1999) con una nota: ogni valore usato dal software ha documento, clausola e stato nel registro delle norme; il segno ⚠ indica stime, scelte del software e valori ancora da verificare sul testo vigente. L’illustrazione è schematica e non in scala."
+     ]
+    },
+    {
+     "title": "Domande frequenti",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Scrivi al team",
+       "help": "Apre il programma di posta per scrivere al supporto.",
+       "src": "src/components/landing/Faq.tsx"
+      }
+     ],
+     "notes": [],
+     "intro": [
+      "Otto domande con risposta: se è un software di progettazione, quali file CAD si possono usare (DXF e DWG), se si può esportare il progetto salvato, se sostituisce la relazione firmata (no), la macchina in basso, le funi esistenti, dove sono i dati (server nell’Unione europea), la lingua (solo italiano)."
+     ]
+    },
+    {
+     "title": "Porta il prossimo impianto su LiftPilot",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Registra la tua azienda",
+       "help": "Apre la registrazione.",
+       "src": "src/components/landing/Closing.tsx:28"
+      },
+      {
+       "label": "Accedi",
+       "help": "Apre la pagina di accesso.",
+       "src": "src/components/landing/Closing.tsx:29"
+      }
+     ],
+     "notes": []
+    },
+    {
+     "title": "Piè di pagina",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Guida rapida",
+       "help": "Apre la guida rapida pubblica.",
+       "src": "src/components/FooterView.tsx:29"
+      },
+      {
+       "label": "Privacy e condizioni",
+       "help": "Apre l’informativa sulla privacy e le condizioni d’uso.",
+       "src": "src/components/FooterView.tsx:30"
+      },
+      {
+       "label": "Prezzi",
+       "help": "Apre la pagina Prezzi.",
+       "src": "src/components/FooterView.tsx:31"
+      },
+      {
+       "label": "Dati e formati",
+       "help": "Apre la pagina su dati, formati e giurisdizione.",
+       "src": "src/components/FooterView.tsx:32"
+      }
+     ],
+     "notes": [
+      "Il piè di pagina è identico su tutte le pagine pubbliche e dentro l’applicazione."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pricing",
+   "title": "Prezzi di LiftPilot",
+   "path": "/it/pricing",
+   "access": "Pubblica: la vede chiunque. Nessun campo e nessuna modifica.",
+   "reach": "Dal menu «Prezzi» dell’intestazione (dalle pagine pubbliche diverse dalla home), dal link «Prezzi e condizioni» della home o dal link «Prezzi» nel piè di pagina.",
+   "purpose": [
+    "Spiega in poche righe quanto costa LiftPilot: un prezzo mensile per il Titolare e, per i colleghi, pacchetti di posti calcolati come quota del prezzo mensile. Il testo sotto il titolo cambia secondo lo stato del servizio: prezzo reale con giorni di prova, «prezzo su richiesta» oppure beta gratuita.",
+    "Il prezzo non è mai scritto a mano nella pagina: quando c’è, viene dal sistema di pagamento; se il sistema non risponde compare «Su richiesta»."
+   ],
+   "shots": [
+    {
+     "id": "pricing",
+     "what": "Pagina Prezzi con le quattro schede di piano"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Intestazione della pagina",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Piani e prezzi, titolo «Prezzi di LiftPilot» e una risposta di una frase: con abbonamento attivo indica il prezzo mensile, i pacchetti di posti e i giorni di prova gratuita senza carta di credito; durante la beta dice che l’uso è gratuito e che il prezzo e la fine della beta saranno comunicati al Titolare per e-mail almeno 30 giorni prima."
+     ]
+    },
+    {
+     "title": "Quanto costano i colleghi?",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Registra l’azienda",
+       "help": "Apre la registrazione (su ogni scheda se l’abbonamento è attivo, una sola volta sotto le schede durante la beta).",
+       "src": "src/app/[locale]/pricing/page.tsx:89"
+      }
+     ],
+     "notes": [
+      "Durante la beta ogni scheda mostra «Gratuito» e «durante la beta»; per i pacchetti compare «Dopo la beta: +… % del prezzo mensile».",
+      "Se il prezzo è noto, sotto le schede una nota dice se è IVA inclusa o esclusa."
+     ],
+     "intro": [
+      "Quattro schede di piano: «Solo il Titolare», «Titolare + 5 colleghi», «Titolare + 10 colleghi», «Titolare + colleghi senza limite». Il prezzo mensile comprende il Titolare; ogni collega attivo e ogni invito in attesa occupa un posto del pacchetto. Le quote sono +50 %, +80 % e +100 % del prezzo mensile."
+     ]
+    },
+    {
+     "title": "C’è una prova gratuita?",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Registra l’azienda",
+       "help": "Apre la registrazione.",
+       "src": "src/app/[locale]/pricing/page.tsx:104"
+      }
+     ],
+     "notes": [],
+     "intro": [
+      "Con l’abbonamento attivo: una nuova azienda ha i giorni di prova gratuita dal primo accesso, con tutte le funzioni e senza carta di credito; la prova finisce da sola e non diventa a pagamento. Durante la beta non serve: l’uso è gratuito e, quando il servizio diventerà a pagamento, ogni azienda già registrata avrà almeno 14 giorni di prova."
+     ]
+    },
+    {
+     "title": "In ogni piano",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Elenco: tutte le funzioni (calcolo argano per solo argano, ammodernamento e trasformazione completa, progetto dell’impianto, relazione, tavole, DXF/DWG e simulazione 3D), il registro delle norme con fonte e stato, i dati dell’azienda sempre scaricabili in un file JSON, bozze da verificare e firmare da un tecnico abilitato."
+     ]
+    },
+    {
+     "title": "L’abbonamento in breve",
+     "fields": [],
+     "actions": [],
+     "notes": [
+      "Una nota rimanda alle condizioni d’uso e alla pagina «Dati e formati»."
+     ],
+     "intro": [
+      "Cinque punti: composizione del prezzo e dei posti; rinnovo automatico e disdetta da «Pagamento, fatture e disdetta» (effetto a fine periodo pagato, senza rimborso della parte non usata); cambio di pacchetto; che cosa succede senza abbonamento (progetti in sola lettura, colleghi oltre i posti disattivati); modifica del prezzo con preavviso di almeno 30 giorni."
+     ]
+    },
+    {
+     "title": "Domande sui prezzi",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Cinque domande con risposta: se il prezzo comprende tutte le funzioni, come si paga (tramite Stripe, LiftPilot non vede né conserva i dati della carta), come si disdice, se il prezzo può cambiare, che cosa fare con molti utenti o più aziende (scrivere al supporto)."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "login",
+   "title": "Accesso",
+   "path": "/it/login",
+   "access": "Pubblica. Se hai già una sessione aperta vieni portato direttamente all’area di lavoro. Nessuna modifica di dati: il modulo apre una sessione.",
+   "reach": "Dal pulsante «Accedi» in alto, dal link «Accedi» della home o di «Registra la tua azienda», o aprendo una pagina dell’applicazione senza sessione. Dopo aver scelto una nuova password dal link ricevuto per e-mail arrivi qui con un avviso verde.",
+   "purpose": [
+    "Qui entri in LiftPilot con l’e-mail e la password del tuo account: «Accedi con l’e-mail e la password del tuo account.» Nella colonna a destra (da schermi larghi) trovi un riepilogo di che cosa fa LiftPilot, le norme di riferimento e l’avviso che calcoli, tavole e relazioni sono bozze finché un tecnico abilitato non le verifica e firma.",
+    "Una sessione dura al massimo 12 ore: poi devi accedere di nuovo. LiftPilot usa un solo cookie tecnico, quello della sessione."
+   ],
+   "shots": [
+    {
+     "id": "login",
+     "what": "Pagina di accesso con il modulo vuoto e la colonna a destra"
+    },
+    {
+     "id": "login-error",
+     "what": "Modulo con il messaggio rosso «E-mail o password non corretti.»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Modulo di accesso",
+     "fields": [
+      {
+       "label": "E-mail",
+       "kind": "email",
+       "unit": null,
+       "values": "Indirizzo valido, al massimo 254 caratteri; maiuscole e minuscole non contano.",
+       "default": null,
+       "required": "sì",
+       "help": "È l’indirizzo con cui il tuo account è stato creato (il Titolare lo inserisce alla registrazione; i colleghi usano l’indirizzo dell’invito).",
+       "src": "src/components/LoginForm.tsx:23"
+      },
+      {
+       "label": "Password",
+       "kind": "password",
+       "unit": null,
+       "values": "Fino a 200 caratteri.",
+       "default": null,
+       "required": "sì",
+       "help": "La password scelta alla registrazione, all’accettazione dell’invito o dopo il recupero. Non viene mai mostrata.",
+       "src": "src/components/LoginForm.tsx:27"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Accedi",
+       "help": "Controlla e-mail e password e apre la sessione. Durante l’invio il pulsante diventa «Accesso…». Se la password è stata assegnata da un’altra persona vai subito alla pagina Account per sceglierne una nuova; altrimenti vai all’area di lavoro.",
+       "src": "src/components/LoginForm.tsx:30"
+      },
+      {
+       "label": "Password dimenticata?",
+       "help": "Apre il recupero della password.",
+       "src": "src/components/LoginForm.tsx:31"
+      },
+      {
+       "label": "Registra la tua azienda",
+       "help": "Apre la registrazione (accanto a «Non hai un account?»).",
+       "src": "src/components/LoginForm.tsx:33"
+      }
+     ],
+     "notes": [
+      "Dopo un cambio password dal link ricevuto compare «Password aggiornata: accedi con quella nuova.»",
+      "Se e-mail o password non coincidono leggi «E-mail o password non corretti.»: il messaggio è lo stesso anche se l’indirizzo non ha un account.",
+      "Dopo troppi tentativi sbagliati (da una stessa rete, o con lo stesso indirizzo) leggi «Troppi tentativi. Riprova tra qualche minuto.»",
+      "Se hai registrato l’azienda ma non hai ancora confermato l’indirizzo, e-mail e password giusti non ti fanno entrare: leggi «Conferma prima il tuo indirizzo e-mail: ti abbiamo inviato un nuovo link (controlla anche lo spam).»"
+     ],
+     "warnings": [
+      "Se non confermi l’indirizzo entro 30 giorni l’account è cancellato: «Questo account non è stato confermato in tempo e viene cancellato: registrati di nuovo, oppure chiedi al Titolare della tua azienda di aggiungerti di nuovo.»"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "register",
+   "title": "Registra la tua azienda",
+   "path": "/it/register",
+   "access": "Pubblica; se hai già una sessione vieni portato all’area di lavoro. Chi registra l’azienda ne diventa il Titolare, il ruolo con tutti i diritti.",
+   "reach": "Dai pulsanti «Registrati» e «Registra la tua azienda» (intestazione, home, Prezzi, accesso, guida) oppure dal link di invito ricevuto per e-mail durante la beta.",
+   "purpose": [
+    "Crea l’account della tua azienda: una sola registrazione per azienda, di cui sei Titolare. Poi inviti i colleghi dalla pagina Utenti con il ruolo di Capotecnico, Progettista, Tecnico o Commerciale e decidi che cosa può fare ciascun ruolo.",
+    "Durante la beta la registrazione è su invito: il modulo si apre solo dal link di invito ricevuto per e-mail, e l’indirizzo e-mail è quello dell’invito (non si può cambiare). Senza un invito valido la pagina mostra «La registrazione è su invito durante la beta» e spiega come chiederne uno. Quando la registrazione sarà aperta a tutti il modulo si vedrà anche senza invito; un invito valido fissa comunque l’indirizzo.",
+    "La registrazione si completa in due passi: prima compili questo modulo, poi apri il link ricevuto per e-mail (pagina «Conferma l’indirizzo e-mail») e approvi le clausole con la password scelta qui. Solo allora l’account è attivo."
+   ],
+   "shots": [
+    {
+     "id": "register-form",
+     "what": "Modulo di registrazione aperto da un link di invito, con l’e-mail già compilata e fissa"
+    },
+    {
+     "id": "register-invite-only",
+     "what": "Pagina senza invito: riquadro «La registrazione è su invito durante la beta»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Senza invito valido (beta su invito)",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Accedi",
+       "help": "Apre la pagina di accesso.",
+       "src": "src/components/RegisterEntry.tsx:54"
+      }
+     ],
+     "notes": [
+      "Se il link è sbagliato, già usato o scaduto compare in più «Il link di invito non è valido, è già stato usato o è scaduto.» Un invito di prova vale 30 giorni.",
+      "Se il servizio non può ancora inviare e-mail, al posto del modulo compare «La registrazione non è ancora attiva…» con l’indirizzo di assistenza a cui scrivere."
+     ],
+     "intro": [
+      "Compare un riquadro «La registrazione è su invito durante la beta» con quattro righe: l’invito arriva per e-mail con il link che apre la registrazione per l’indirizzo a cui è stato mandato; se hai ricevuto un invito riapri il link dall’e-mail; per chiederne uno scrivi al supporto indicando ragione sociale e città dell’azienda; «Hai già un account?»."
+     ]
+    },
+    {
+     "title": "Azienda",
+     "fields": [
+      {
+       "label": "Ragione sociale",
+       "kind": "testo",
+       "unit": null,
+       "values": "Da 2 a 160 caratteri; spazi iniziali e finali e i caratteri di controllo vengono tolti.",
+       "default": null,
+       "required": "sì",
+       "help": "Il nome dell’impresa o dello studio professionale che usa LiftPilot, come lo scriveresti su un documento. Compare nell’intestazione dell’account e dei documenti.",
+       "src": "src/components/RegisterForm.tsx:62"
+      },
+      {
+       "label": "Partita IVA (facoltativa)",
+       "kind": "testo",
+       "unit": null,
+       "values": "Fino a 40 caratteri.",
+       "default": null,
+       "required": "no",
+       "help": "La partita IVA dell’azienda, se vuoi indicarla. Non viene controllata nel formato.",
+       "src": "src/components/RegisterForm.tsx:64"
+      },
+      {
+       "label": "Città (facoltativa)",
+       "kind": "testo",
+       "unit": null,
+       "values": "Fino a 120 caratteri.",
+       "default": null,
+       "required": "no",
+       "help": "La città della sede dell’azienda.",
+       "src": "src/components/RegisterForm.tsx:65"
+      }
+     ],
+     "actions": [],
+     "notes": []
+    },
+    {
+     "title": "Titolare dell’account",
+     "fields": [
+      {
+       "label": "Nome e cognome",
+       "kind": "testo",
+       "unit": null,
+       "values": "Da 2 a 120 caratteri.",
+       "default": null,
+       "required": "sì",
+       "help": "Il tuo nome: compare nel profilo, nel registro attività e come autore dei documenti che prepari.",
+       "src": "src/components/RegisterForm.tsx:70"
+      },
+      {
+       "label": "E-mail",
+       "kind": "email",
+       "unit": null,
+       "values": "Indirizzo valido, al massimo 254 caratteri; viene salvato in minuscolo. Un indirizzo appartiene a una sola azienda.",
+       "default": null,
+       "required": "sì",
+       "help": "L’indirizzo del tuo account: serve per accedere e per ricevere il link di conferma. Nella beta su invito è già compilato con l’indirizzo dell’invito e non si può modificare («È l’indirizzo dell’invito: l’account si registra con questo.»).",
+       "src": "src/components/RegisterForm.tsx:71"
+      },
+      {
+       "label": "Password",
+       "kind": "password",
+       "unit": null,
+       "values": "Almeno 12 caratteri (al massimo 200), con almeno una lettera e almeno una cifra.",
+       "default": null,
+       "required": "sì",
+       "help": "La password dell’account. Ti servirà anche nel passo successivo, per confermare l’indirizzo e approvare le clausole. Sotto il campo: «Almeno 12 caratteri, con lettere e cifre.»",
+       "src": "src/components/RegisterForm.tsx:75"
+      },
+      {
+       "label": "Ripeti la password",
+       "kind": "password",
+       "unit": null,
+       "values": "Uguale alla password; al massimo 200 caratteri.",
+       "default": null,
+       "required": "sì",
+       "help": "Riscrivi la stessa password: se non coincide leggi «Le due password nuove non coincidono.»",
+       "src": "src/components/RegisterForm.tsx:81"
+      }
+     ],
+     "actions": [],
+     "notes": []
+    },
+    {
+     "title": "Conferme",
+     "fields": [
+      {
+       "label": "Ho letto e accetto le condizioni d’uso (versione 6 del 21 ottobre 2026), compreso l’accordo sul trattamento dei dati per conto dell’azienda (art. 9).",
+       "kind": "casella",
+       "unit": null,
+       "values": "Da spuntare.",
+       "default": "non spuntata",
+       "required": "sì",
+       "help": "Accettazione delle condizioni d’uso e dell’accordo sul trattamento dei dati (art. 28 GDPR) per conto dell’azienda. «condizioni d’uso» è un link che apre il testo in una nuova scheda.",
+       "src": "src/components/RegisterForm.tsx:89"
+      },
+      {
+       "label": "Dichiaro di registrarmi per conto dell’impresa o dello studio professionale indicato, di avere il potere di vincolarlo e di non agire come consumatore.",
+       "kind": "casella",
+       "unit": null,
+       "values": "Da spuntare.",
+       "default": "non spuntata",
+       "required": "sì",
+       "help": "Conferma che usi LiftPilot per lavoro, non come privato.",
+       "src": "src/components/RegisterForm.tsx:89"
+      },
+      {
+       "label": "Accetto che calcoli, tavole, relazioni, simulazioni, consigli sugli argani e bozze d’ordine di LiftPilot siano bozze…",
+       "kind": "casella",
+       "unit": null,
+       "values": "Da spuntare.",
+       "default": "non spuntata",
+       "required": "sì",
+       "help": "Conferma che ciò che LiftPilot produce è una bozza: diventa documento solo quando un tecnico abilitato lo verifica e lo firma, e la responsabilità resta sua. Il testo continua: «…e la responsabilità resta sua.»",
+       "src": "src/components/RegisterForm.tsx:89"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Crea l’account",
+       "help": "Invia il modulo. Durante l’invio diventa «Creazione…». Se tutto è corretto il modulo lascia il posto a «Controlla la tua e-mail».",
+       "src": "src/components/RegisterForm.tsx:99"
+      },
+      {
+       "label": "Accedi",
+       "help": "Apre l’accesso (accanto a «Hai già un account?»).",
+       "src": "src/components/RegisterForm.tsx:100"
+      }
+     ],
+     "notes": [
+      "Sotto le caselle: «L’approvazione specifica delle clausole (artt. 1341 e 1342 del codice civile) la darai dopo, quando confermi l’indirizzo dal link dell’e-mail, con la password che scegli qui.»",
+      "Se un campo è sbagliato, compare «Da correggere» sotto il campo, il bordo diventa rosso e il cursore va al primo campo da sistemare; i dati scritti restano, le password vanno riscritte. Messaggi possibili in alto: «Controlla i campi evidenziati.», «La password deve avere almeno 12 caratteri, con lettere e cifre.», «Le due password nuove non coincidono.», «Per continuare spunta tutte le conferme.»",
+      "Se da una rete sono state inviate troppe registrazioni leggi «Troppi tentativi di registrazione da questa rete. Riprova tra un’ora.» Senza un invito valido, durante la beta: «Durante la beta ci si registra solo dal link di un invito e con l’indirizzo e-mail a cui è stato mandato…»"
+     ],
+     "intro": [
+      "Sopra le caselle trovi la nota sul periodo di prova (con l’abbonamento attivo: «Prova gratuita di … giorni dal primo accesso; poi, per continuare a lavorare, l’abbonamento mensile») oppure, durante la beta, «Versione beta: l’uso è gratuito, con tutte le funzioni e senza limite di colleghi…» e il link all’informativa sulla privacy (si apre in una nuova scheda)."
+     ],
+     "warnings": [
+      "La password che scegli qui ti serve subito dopo, per confermare l’indirizzo e firmare l’approvazione delle clausole: se la dimentichi prima di confermare, la registrazione non si completa."
+     ]
+    },
+    {
+     "title": "Controlla la tua e-mail",
+     "fields": [],
+     "actions": [],
+     "notes": [
+      "Il messaggio è lo stesso anche se l’indirizzo ha già un account: in quel caso la persona titolare dell’indirizzo riceve un’e-mail che glielo dice."
+     ],
+     "intro": [
+      "Dopo l’invio il modulo è sostituito da questo messaggio: «Abbiamo scritto a … Apri il link del messaggio e inserisci la password che hai scelto: così l’account si attiva. Il link vale 48 ore; se non arriva, controlla lo spam.»"
+     ],
+     "warnings": [
+      "Finché non apri il link l’azienda non esiste: una registrazione non confermata viene cancellata dopo 30 giorni e dovrai registrarti di nuovo."
+     ]
+    }
+   ],
+   "tips": [
+    "Scegli una password lunga e unica: servirà subito dopo per firmare l’approvazione delle clausole.",
+    "Usa un indirizzo che leggi tutti i giorni: il link di conferma vale 48 ore."
+   ]
+  },
+  {
+   "id": "verify-email",
+   "title": "Conferma l’indirizzo e-mail",
+   "path": "/it/verify-email",
+   "access": "Pubblica, ma si apre solo dal link dell’e-mail di registrazione. Aprendo l’indirizzo senza il link leggi «Questa pagina si apre dal link dell’e-mail di registrazione…» con il collegamento «Vai all’accesso».",
+   "reach": "Dal link nell’e-mail «conferma l’indirizzo» inviata dopo la registrazione (o dopo che un’azienda ti ha aggiunto come collega). Il codice del link sta nella parte finale dell’indirizzo e non viene mai inviato al server finché non invii il modulo.",
+   "purpose": [
+    "Qui provi di essere il titolare dell’indirizzo e attivi l’account: «Inserisci la password del tuo account: l’account si attiva ed entri subito.» Per una nuova azienda il passo comprende anche l’approvazione specifica delle clausole delle condizioni d’uso (artt. 1341 e 1342 del codice civile): il link ricevuto e la tua password valgono come firma elettronica dell’approvazione.",
+    "La pagina cambia secondo ciò che il link apre: una registrazione in attesa (compaiono le clausole), una registrazione fatta con una versione precedente delle condizioni (compare anche l’accettazione della versione in vigore), oppure l’account di un collega aggiunto dall’azienda (solo la password). Se il link non è valido, è già stato usato o è scaduto leggi «Il link non è valido, è già stato usato o è scaduto: chiedine uno nuovo.»"
+   ],
+   "shots": [
+    {
+     "id": "verify-email",
+     "what": "Pagina aperta dal link di una nuova registrazione, con le clausole e il campo Password"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Condizioni d’uso in vigore",
+     "fields": [
+      {
+       "label": "Ho letto e accetto le condizioni d’uso (versione 6 del 21 ottobre 2026), compreso l’accordo sul trattamento dei dati per conto dell’azienda (art. 9).",
+       "kind": "casella",
+       "unit": null,
+       "values": "Da spuntare.",
+       "default": "non spuntata",
+       "required": "solo se la registrazione è stata fatta con una versione precedente delle condizioni",
+       "help": "Accettazione della versione in vigore delle condizioni d’uso e dell’accordo sul trattamento dei dati.",
+       "src": "src/components/VerifyEmailForm.tsx:62"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Compare solo se hai registrato l’azienda con una versione precedente delle condizioni. Spiega che dopo la tua registrazione è stata pubblicata una nuova versione e che, per attivare l’account, devi accettare quella in vigore."
+     ]
+    },
+    {
+     "title": "Approvazione specifica delle clausole",
+     "fields": [
+      {
+       "label": "Ai sensi degli artt. 1341 e 1342 del codice civile approvo specificamente le seguenti clausole delle condizioni d’uso: art. 4 (sospensione e recesso del fornitore), art. 6 (divieto di cessione e di messa a disposizione di terzi), art. 7 (rinnovo automatico, modifica del prezzo, nessun rimborso del periodo non usato, disattivazione dei colleghi in eccesso), art. 8 (limiti di responsabilità e manleva), art. 10 (cancellazione dei dati alla cessazione), art. 12 (modifiche delle condizioni e del servizio, sola lettura fino all’accettazione), art. 13 (cessione del contratto), art. 15 (legge applicabile e foro esclusivo).",
+       "kind": "casella",
+       "unit": null,
+       "values": "Da spuntare.",
+       "default": "non spuntata",
+       "required": "sì, per le registrazioni in attesa",
+       "help": "Approvazione specifica, una per una, delle clausole che il codice civile richiede di approvare a parte. Non è una spunta generica: le clausole sono quelle elencate nel testo della casella e per intero nelle condizioni d’uso (link che si apre in una nuova scheda).",
+       "src": "src/components/VerifyEmailForm.tsx:67"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Compare per le registrazioni in attesa. Testo: «Ultimo passo: le clausole elencate qui sotto, che trovi per intero nelle condizioni d’uso, vanno approvate specificamente con la password scelta alla registrazione…»"
+     ],
+     "warnings": [
+      "L’approvazione delle clausole con la password è la tua firma elettronica: leggi prima il testo completo nelle condizioni d’uso (il link si apre in una nuova scheda)."
+     ]
+    },
+    {
+     "title": "Password",
+     "fields": [
+      {
+       "label": "Password",
+       "kind": "password",
+       "unit": null,
+       "values": "Fino a 200 caratteri.",
+       "default": null,
+       "required": "sì",
+       "help": "La password scelta alla registrazione (o, per un collega aggiunto dall’azienda, quella assegnata). Con il link prova che l’account è tuo.",
+       "src": "src/components/VerifyEmailForm.tsx:72"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Approvo le clausole e attivo l’account",
+       "help": "Crea l’azienda e il tuo account di Titolare, registra l’approvazione e ti porta nell’area di lavoro con la sessione già aperta. Durante l’invio il pulsante diventa «Conferma…».",
+       "src": "src/components/VerifyEmailForm.tsx:77"
+      },
+      {
+       "label": "Conferma ed entra",
+       "help": "Stesso pulsante per l’account di un collega: conferma l’indirizzo e apre la sessione.",
+       "src": "src/components/VerifyEmailForm.tsx:77"
+      },
+      {
+       "label": "Vai all’accesso",
+       "help": "Compare con i messaggi sul link mancante o non valido.",
+       "src": "src/components/VerifyEmailForm.tsx:35"
+      }
+     ],
+     "notes": [
+      "Errori possibili: «Inserisci la tua password.», «La password non è corretta.», «Per continuare spunta tutte le conferme.», «Esiste già un account con questa e-mail.», «Troppi tentativi. Riprova tra qualche minuto.»",
+      "Se la registrazione è stata fatta prima della beta su invito, e senza invito, la pagina dice «La registrazione è ora su invito: scrivi a … per partecipare.»"
+     ]
+    }
+   ],
+   "tips": [
+    "Se il link è scaduto, accedi con e-mail e password: se l’account o la registrazione è ancora in attesa, ricevi un nuovo link di conferma."
+   ]
+  },
+  {
+   "id": "forgot-password",
+   "title": "Password dimenticata",
+   "path": "/it/forgot-password",
+   "access": "Pubblica: la vede chiunque.",
+   "reach": "Dal link «Password dimenticata?» nella pagina di accesso, o da «Chiedi un nuovo link» quando il link per scegliere una nuova password è scaduto.",
+   "purpose": [
+    "Se non ricordi la password inserisci l’e-mail dell’account: «ti mandiamo un link per scegliere una nuova password.» Il link vale 1 ora e si usa una volta sola.",
+    "La risposta è sempre la stessa, che l’indirizzo abbia un account o no: così nessuno può scoprire chi è registrato. Se il servizio non può inviare e-mail leggi «L’invio delle e-mail non è ancora attivo: riprova più tardi…» al posto del modulo."
+   ],
+   "shots": [
+    {
+     "id": "forgot-password",
+     "what": "Modulo con il messaggio verde di invio"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Modulo",
+     "fields": [
+      {
+       "label": "E-mail",
+       "kind": "email",
+       "unit": null,
+       "values": "Indirizzo valido, al massimo 254 caratteri.",
+       "default": null,
+       "required": "sì",
+       "help": "L’indirizzo del tuo account LiftPilot.",
+       "src": "src/components/ForgotPasswordForm.tsx:22"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Invia il link",
+       "help": "Richiede l’e-mail con il link. Durante l’invio diventa «Invio…». Compare: «Se … ha un account LiftPilot, a breve riceverai un’e-mail con il link. Il link vale un’ora; se non arriva, controlla lo spam.»",
+       "src": "src/components/ForgotPasswordForm.tsx:24"
+      },
+      {
+       "label": "Torna all’accesso",
+       "help": "Apre la pagina di accesso.",
+       "src": "src/components/ForgotPasswordForm.tsx:25"
+      }
+     ],
+     "notes": [
+      "Dopo troppe richieste leggi «Troppi tentativi. Riprova tra qualche minuto.»",
+      "Un collega aggiunto dall’azienda che non ha ancora confermato l’indirizzo non riceve il link di recupero: deve usare il link di conferma."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "reset-password",
+   "title": "Scegli una nuova password",
+   "path": "/it/reset-password",
+   "access": "Pubblica, ma si apre solo dal link dell’e-mail di recupero. Senza il link leggi «Questa pagina si apre dal link dell’e-mail. Se il link è scaduto, chiedine uno nuovo.» con il collegamento «Chiedi un nuovo link».",
+   "reach": "Dal link nell’e-mail ricevuta da «Password dimenticata».",
+   "purpose": [
+    "Scegli la nuova password: «La nuova password chiude tutte le sessioni aperte del tuo account.» Al termine vai alla pagina di accesso con l’avviso «Password aggiornata: accedi con quella nuova.»"
+   ],
+   "shots": [
+    {
+     "id": "reset-password",
+     "what": "Modulo aperto da un link valido"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Modulo",
+     "fields": [
+      {
+       "label": "Nuova password",
+       "kind": "password",
+       "unit": null,
+       "values": "Almeno 12 caratteri (al massimo 200), con almeno una lettera e almeno una cifra.",
+       "default": null,
+       "required": "sì",
+       "help": "La password che userai da ora.",
+       "src": "src/components/ResetPasswordForm.tsx:30"
+      },
+      {
+       "label": "Ripeti la nuova password",
+       "kind": "password",
+       "unit": null,
+       "values": "Uguale alla nuova password; al massimo 200 caratteri.",
+       "default": null,
+       "required": "sì",
+       "help": "Riscrivi la stessa password.",
+       "src": "src/components/ResetPasswordForm.tsx:34"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Salva la password",
+       "help": "Salva la nuova password e chiude tutte le sessioni aperte. Durante l’invio diventa «Salvataggio…».",
+       "src": "src/components/ResetPasswordForm.tsx:37"
+      },
+      {
+       "label": "Chiedi un nuovo link",
+       "help": "Compare se il link non è valido, è già stato usato o è scaduto.",
+       "src": "src/components/ResetPasswordForm.tsx:25"
+      }
+     ],
+     "notes": [
+      "Messaggi: «La password deve avere almeno 12 caratteri, con lettere e cifre.», «Le due password nuove non coincidono.», «Il link non è valido, è già stato usato o è scaduto: chiedine uno nuovo.», «Troppi tentativi. Riprova tra qualche minuto.»",
+      "Il link vale 1 ora e si usa una sola volta."
+     ],
+     "warnings": [
+      "La nuova password chiude tutte le sessioni aperte del tuo account, anche su altri dispositivi, e il link non si può riusare."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "invite",
+   "title": "Accetta l’invito",
+   "path": "/it/invite",
+   "access": "Pubblica, ma si apre solo dal link dell’e-mail di invito. Se il link è scaduto o già usato leggi «Questa pagina si apre dal link dell’e-mail di invito. Se il link è scaduto o è già stato usato, chiedi all’azienda di inviare di nuovo l’invito.»",
+   "reach": "Dal link nell’e-mail con cui il Titolare (o chi può gestire gli utenti) ti ha invitato come collega. Il link vale 7 giorni.",
+   "purpose": [
+    "Sei un collega invitato da un’azienda: scegli la password e il tuo account nasce. «Scegli la password del tuo account: con questa entri in LiftPilot nell’azienda che ti invita.»",
+    "In cima vedi chi ti invita: «… ti invita su LiftPilot come …, con l’indirizzo …» con il nome dell’azienda, il ruolo (Capotecnico, Progettista, Tecnico o Commerciale) e l’indirizzo e-mail dell’invito. Il ruolo e l’indirizzo li ha scelti l’azienda: non si cambiano qui. I diritti di ogni ruolo li decide il Titolare."
+   ],
+   "shots": [
+    {
+     "id": "invite",
+     "what": "Pagina dell’invito con la riga «ti invita su LiftPilot come…» e i due campi password"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Modulo",
+     "fields": [
+      {
+       "label": "Password",
+       "kind": "password",
+       "unit": null,
+       "values": "Almeno 12 caratteri (al massimo 200), con almeno una lettera e almeno una cifra.",
+       "default": null,
+       "required": "sì",
+       "help": "La password del tuo nuovo account. La scegli tu: nessuno la conosce.",
+       "src": "src/components/InviteAcceptForm.tsx:36"
+      },
+      {
+       "label": "Ripeti la password",
+       "kind": "password",
+       "unit": null,
+       "values": "Uguale alla password; al massimo 200 caratteri.",
+       "default": null,
+       "required": "sì",
+       "help": "Riscrivi la stessa password.",
+       "src": "src/components/InviteAcceptForm.tsx:40"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Accetta ed entra",
+       "help": "Crea il tuo account già confermato (il link ha provato l’indirizzo), apre la sessione e ti porta nell’area di lavoro. Durante l’invio diventa «Attendere…».",
+       "src": "src/components/InviteAcceptForm.tsx:44"
+      }
+     ],
+     "notes": [
+      "Sotto la regola compare il rimando all’informativa sulla privacy, che si apre in una nuova scheda.",
+      "Messaggi: «L’azienda in questo momento non può aggiungere colleghi: avvisa il Titolare, che può rimediare dalla pagina Abbonamento, poi riapri il link dell’invito.»; «Questo indirizzo ha già un account LiftPilot e un indirizzo appartiene a una sola azienda: chiedi all’azienda di invitarti con un altro indirizzo.»; «Il link non è valido, è già stato usato o è scaduto: chiedine uno nuovo.»",
+      "Non accetti condizioni d’uso con questo modulo: le accetta il Titolare per l’azienda."
+     ],
+     "warnings": [
+      "Il link si usa una sola volta e vale 7 giorni: dopo l’accettazione, o se scade, devi farti invitare di nuovo. Un indirizzo appartiene a una sola azienda."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "privacy",
+   "title": "Privacy e condizioni d’uso",
+   "path": "/it/privacy",
+   "access": "Pubblica: la vede chiunque. Sola lettura.",
+   "reach": "Dal link «Privacy e condizioni» nel piè di pagina, dal rimando nella registrazione, nell’invito e nelle condizioni d’uso da accettare, o dal link «condizioni d’uso» (si apre nella parte «Condizioni d’uso» della pagina).",
+   "purpose": [
+    "Contiene in un’unica pagina l’informativa sulla privacy e le condizioni d’uso del servizio, nella versione in vigore. È il testo che accetta il Titolare alla registrazione e di cui approva le clausole con la password.",
+    "In questa guida non riportiamo il testo: descriviamo solo come è organizzata la pagina. Per il contenuto vale sempre la pagina."
+   ],
+   "shots": [
+    {
+     "id": "privacy",
+     "what": "Pagina Privacy e condizioni d’uso con la testata e l’elenco delle versioni precedenti"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Testata",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Stampa o salva in PDF",
+       "help": "Apre la finestra di stampa del browser, da cui puoi anche salvare la pagina in PDF.",
+       "src": "src/components/PrintButton.tsx"
+      }
+     ],
+     "notes": [
+      "«Versioni precedenti»: elenco di collegamenti alle versioni archiviate, dalla più recente: Versione 5 del 14 ottobre 2026 · Versione 4 del 6 ottobre 2026 · Versione 3 del 6 ottobre 2026 · Versione 2 del 2 ottobre 2026 · Versione 1 del 2 ottobre 2026.",
+      "A sinistra o in alto trovi l’indice «In questa pagina» con le due parti e le singole voci."
+     ],
+     "intro": [
+      "«Privacy e condizioni d’uso»; sotto la riga «Versione 6 del 21 ottobre 2026»."
+     ]
+    },
+    {
+     "title": "Informativa sulla privacy",
+     "fields": [],
+     "actions": [],
+     "notes": [
+      "LiftPilot usa un solo cookie tecnico, quello della sessione (al massimo 12 ore), e non serve un banner di consenso."
+     ],
+     "intro": [
+      "Otto domande con risposta: «Chi è il titolare del trattamento?», «Quali dati trattiamo e perché?», «Qual è il nostro legittimo interesse e come puoi opporti?», «E i dati degli impianti?», «A chi vengono comunicati?», «Quali cookie usa LiftPilot?», «Per quanto tempo li conserviamo?», «Quali sono i tuoi diritti?»"
+     ]
+    },
+    {
+     "title": "Condizioni d’uso",
+     "fields": [],
+     "actions": [],
+     "notes": [
+      "Le clausole che si approvano a parte (artt. 1341 e 1342 del codice civile) sono gli articoli 4, 6, 7, 8, 10, 12, 13 e 15; l’accordo sul trattamento dei dati è l’articolo 9."
+     ],
+     "intro": [
+      "Quindici articoli numerati («Art. 1» … «Art. 15»), in quest’ordine: Art. 1 — Oggetto e destinatari del servizio; Art. 2 — Conclusione del contratto e versioni delle condizioni; Art. 3 — Risultati del software e responsabilità del tecnico; Art. 4 — Account, sospensione e recesso; Art. 5 — Contenuti, segnalazioni e provvedimenti; Art. 6 — Licenza e proprietà intellettuale; Art. 7 — Prezzo, prova, pagamento e rinnovo; Art. 8 — Limiti di responsabilità e manleva; Art. 9 — Trattamento dei dati per conto dell’azienda (art. 28 GDPR); Art. 10 — Disdetta, cambio di fornitore e restituzione dei dati; Art. 11 — Marchi e dati dei costruttori; Art. 12 — Modifiche delle condizioni e del servizio; Art. 13 — Disposizioni varie; Art. 14 — Fornitore e contatti; Art. 15 — Legge applicabile e foro competente."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "privacy-version",
+   "title": "Versione ‹n› del ‹data›",
+   "path": "/it/privacy/‹versione›",
+   "access": "Pubblica, in sola lettura. Non è indicizzata dai motori di ricerca: la pagina che conta è «Privacy e condizioni d’uso».",
+   "reach": "Dai link «Versioni precedenti» in cima alla pagina Privacy e condizioni d’uso.",
+   "purpose": [
+    "Mostra, parola per parola, una versione precedente dell’informativa e delle condizioni d’uso. Serve perché un’azienda il cui Titolare non ha ancora accettato la versione in vigore resta vincolata alla versione che aveva accettato, fino al giorno in cui entra in vigore la successiva.",
+    "Se apri l’indirizzo della versione in vigore vieni portato alla pagina Privacy e condizioni d’uso; se la versione non esiste vedi «Pagina non trovata». Le versioni sono 1, 2, 3, 4 e 5; la 6 è in vigore."
+   ],
+   "shots": [
+    {
+     "id": "privacy-version",
+     "what": "Una versione archiviata, con testata e primo articolo"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Testata",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Versione in vigore",
+       "help": "Apre la pagina Privacy e condizioni d’uso.",
+       "src": "src/app/[locale]/privacy/[version]/page.tsx:134"
+      }
+     ],
+     "notes": [
+      "Solo le versioni 1, 2, 3 e 4, accettate quando LiftPilot era disponibile anche in inglese e in bulgaro, hanno due collegamenti in più, «testo in inglese» e «testo in bulgaro»: sono documenti d’archivio, consultabili parola per parola come furono accettati."
+     ],
+     "intro": [
+      "Titolo «Versione 5 del 14 ottobre 2026» (esempio) e il testo: «Testo archiviato della versione … del …, parola per parola. Per un’azienda già registrata vale fino al giorno in cui entra in vigore la versione successiva che il Titolare ha accettato o che lo vincola (art. 12).»"
+     ]
+    },
+    {
+     "title": "Testo",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Le parti e gli articoli di quella versione, in titoli e paragrafi, così come sono stati archiviati."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "data",
+   "title": "Dati, formati e giurisdizione",
+   "path": "/it/data",
+   "access": "Pubblica: la vede chiunque. Sola lettura.",
+   "reach": "Dal link «Dati e formati» nel piè di pagina, dalla pagina Prezzi (nota «dati e formati»), o dalle condizioni d’uso (articolo sulla disdetta e il cambio di fornitore).",
+   "purpose": [
+    "È il registro che il Regolamento (UE) 2023/2854 (Data Act) chiede a un servizio come LiftPilot: quali dati un’azienda può portare con sé e in che formato, com’è fatto il file JSON, come si cambia fornitore, dove sono i server e come i dati sono protetti dall’accesso di autorità di paesi terzi.",
+    "Per l’utente è la pagina da consultare quando vuoi sapere che cosa puoi scaricare, in quali formati e per quanto tempo dopo la fine dell’abbonamento (almeno 30 giorni)."
+   ],
+   "shots": [
+    {
+     "id": "data",
+     "what": "Pagina Dati con le due tabelle iniziali"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Testata",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Titolo «Dati, formati e giurisdizione», riga «Aggiornata il 22 ottobre 2026», testo introduttivo e indice «In questa pagina»."
+     ]
+    },
+    {
+     "title": "Quali dati si possono scaricare, e in che formato?",
+     "fields": [],
+     "actions": [],
+     "notes": [
+      "Un record che la versione attuale del software non riproduce più («da aggiornare») si scarica dopo averlo rifatto con un clic, anche in sola lettura; i dati inseriti e i risultati di ogni record sono sempre nel file JSON."
+     ],
+     "intro": [
+      "Tabella a due colonne, «Che cosa» e «Formato»:",
+      "Relazioni di calcolo, relazioni tecniche di modifica con i documenti allegati, tavole emesse, progetti — PDF.",
+      "Bozze d’ordine — PDF e DOCX.",
+      "Disegni del vano e del progetto — DXF, DWG e SVG (un file per foglio; più fogli in un archivio ZIP).",
+      "Tutti i dati dell’azienda, con i documenti caricati (pagina Azienda) — JSON."
+     ]
+    },
+    {
+     "title": "Com’è fatto il file JSON dell’azienda?",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Descrive il formato (nome e versione), le unità (importi in centesimi di euro senza IVA, lunghezze in millimetri, date in ISO 8601), poi una tabella «Chiave» / «Contenuto» con una riga per ogni chiave del file, l’elenco di ciò che contiene ogni progetto e la storia delle versioni del formato."
+     ]
+    },
+    {
+     "title": "Che cosa non si può esportare?",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "I dati che sono del software e non dell’azienda (cataloghi dei costruttori, registro delle norme, motori di calcolo) e i dati di sicurezza (impronte delle password, link di accesso, sessioni)."
+     ]
+    },
+    {
+     "title": "Come si passa a un altro fornitore?",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "La disdetta si fa in qualsiasi momento da «Pagamento, fatture e disdetta»; la transizione dura al massimo 30 giorni e l’assistenza è su richiesta; su richiesta del Titolare si cancella l’azienda con tutti i suoi dati entro 30 giorni."
+     ]
+    },
+    {
+     "title": "C’è un’interfaccia per l’esportazione?",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Sì, gratuita: la stessa richiesta del pulsante della pagina Azienda, riservata al Titolare e, se il Titolare lo permette, al Capotecnico, al massimo 6 volte all’ora per azienda."
+     ]
+    },
+    {
+     "title": "Dove sono i dati e a quale giurisdizione sono soggetti?",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "I server e le copie di sicurezza sono in Germania; il fornitore è una società bulgara, quindi soggetta al diritto dell’Unione europea. Se sul servizio è attiva la lettura automatica degli schizzi di rilievo, un paragrafo in più nomina il sottoresponsabile che la esegue."
+     ]
+    },
+    {
+     "title": "Come proteggiamo i dati dall’accesso di autorità di paesi terzi?",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Misure tecniche, contrattuali e organizzative."
+     ]
+    },
+    {
+     "title": "A chi scrivere?",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Indirizzo e-mail e telefoni del fornitore, in italiano."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "guida",
+   "title": "Come si lavora con LiftPilot",
+   "path": "/it/guida",
+   "access": "Pubblica: la vede chiunque, anche senza account. Sola lettura.",
+   "reach": "Dal link «Guida rapida» nel piè di pagina, o da «Guida» nel menu laterale dell’applicazione (in basso, si apre in una nuova scheda).",
+   "purpose": [
+    "È la guida rapida pubblica: il flusso reale del lavoro con le parole dell’interfaccia, dal sopralluogo ai documenti. Ogni parte è una domanda con la sua risposta; l’indice «In questa guida» in cima porta a ciascuna.",
+    "Non sostituisce questa guida utente: riassume i passi e ricorda che ogni relazione e ogni tavola è una bozza che un tecnico abilitato verifica e firma."
+   ],
+   "shots": [
+    {
+     "id": "guida",
+     "what": "Pagina guida rapida con l’indice"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Testata e indice",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Etichetta «Guida rapida», titolo «Come si lavora con LiftPilot» e una frase introduttiva. L’indice elenca: L’azienda e i colleghi · La scheda di rilievo · L’impianto · Calcolo argano · Progetto · Documenti e ordini · Che cosa resta al tecnico?"
+     ]
+    },
+    {
+     "title": "Le sei parti del lavoro",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "«Come si prepara l’azienda?» (il Titolare registra l’azienda e invita i colleghi da «Utenti» → «Invita un collega»; i quattro ruoli con le loro note; da «Permessi» il Titolare decide che cosa può fare ciascun ruolo).",
+      "«Come si registra un sopralluogo?» (la scheda di rilievo da «Rilievi» → «Nuovo rilievo», anche dal telefono).",
+      "«Che cos’è un impianto in LiftPilot?» (la cartella del lavoro, con i passi Rilievo, Calcolo argano, Progetto, Documenti e ordini).",
+      "«Come si fa il calcolo dell’argano?» (i tre tipi di intervento: Solo argano, Ammodernamento, Trasformazione completa).",
+      "«Che cosa si disegna nel Progetto?».",
+      "«Quali documenti e ordini escono?»."
+     ]
+    },
+    {
+     "title": "Che cosa resta al tecnico?",
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "La firma e la verifica: spiega perché ogni relazione è una bozza, come leggere l’avviso «nessuna coppia tiene l’aderenza reale» e che cos’è il registro delle norme (con la «Lista di verifica (Excel)» scaricabile dalla pagina «Norme»)."
+     ]
+    },
+    {
+     "title": "Qualcosa non funziona?",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Segnala un problema",
+       "help": "Apre la pagina Segnala un problema; se non hai una sessione ti chiede prima di accedere.",
+       "src": "src/app/[locale]/guida/page.tsx:365"
+      },
+      {
+       "label": "Prova LiftPilot",
+       "help": "Apre la registrazione.",
+       "src": "src/app/[locale]/guida/page.tsx:366"
+      }
+     ],
+     "notes": [],
+     "intro": [
+      "Ricorda che dentro LiftPilot c’è «Segnala un problema» e indica l’indirizzo e-mail del supporto."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "404",
+   "title": "Pagina non trovata",
+   "path": "(qualsiasi indirizzo non esistente sotto /it)",
+   "access": "Pubblica. Compare anche quando apri un indirizzo di un’altra azienda o che il tuo account non può vedere: il testo non dice quale dei due casi sia.",
+   "reach": "Digitando un indirizzo sbagliato, seguendo un link vecchio o aprendo un elemento di un’altra azienda.",
+   "purpose": [
+    "Mostra «404» disegnato come una quota sulla griglia del disegno tecnico, il titolo «Pagina non trovata» e il testo «L’indirizzo non esiste oppure non è accessibile con il tuo account.»"
+   ],
+   "shots": [
+    {
+     "id": "404",
+     "what": "Pagina «Pagina non trovata»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Pulsanti",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Vai agli impianti",
+       "help": "Compare solo se hai una sessione e il diritto di vedere gli impianti; apre l’elenco degli impianti.",
+       "src": "src/app/[locale]/not-found.tsx:34"
+      },
+      {
+       "label": "Pagina iniziale",
+       "help": "Compare se hai una sessione: porta alla home.",
+       "src": "src/app/[locale]/not-found.tsx:35"
+      },
+      {
+       "label": "Torna alla home",
+       "help": "Compare se non hai una sessione: porta alla home.",
+       "src": "src/app/[locale]/not-found.tsx:36"
+      }
+     ],
+     "notes": [
+      "L’intestazione non ha il pulsante «Accedi»: per entrare torna alla home."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "app-terms",
+   "title": "Condizioni d’uso (o «Condizioni d’uso aggiornate»)",
+   "path": "/it/app/terms",
+   "access": "Dentro l’applicazione, solo per il Titolare: è lui che accetta le condizioni per l’azienda. Un collega che apre l’indirizzo viene riportato all’area di lavoro; anche il Titolare viene riportato indietro se non ha nulla da accettare. Se la tua password è stata assegnata da un’altra persona devi prima cambiarla dalla pagina Account: finché non l’hai fatto non puoi accettare.",
+   "reach": "Il Titolare che non ha mai accettato nessuna versione viene portato qui da qualsiasi pagina al primo accesso. Se le condizioni cambiano, parte un avviso (banner) sotto la barra in alto con il pulsante «Leggi e accetta».",
+   "purpose": [
+    "Il Titolare accetta per l’azienda la versione in vigore delle condizioni d’uso e dell’informativa sulla privacy, e approva specificamente le clausole con la sua password (la password vale come firma elettronica dell’approvazione). Il titolo è «Condizioni d’uso» al primo accesso, «Condizioni d’uso aggiornate» quando la versione è cambiata.",
+    "Cosa succede nel frattempo. Prima che la nuova versione vincoli l’azienda (avviso in arrivo o data già fissata) LiftPilot funziona come sempre e puoi accettarla già ora, oppure disdire l’abbonamento senza costi e scaricare i dati. Dal giorno in cui vincola, l’azienda lavora in sola lettura: puoi consultare e scaricare i progetti, scaricare i dati dell’azienda e gestire o disdire l’abbonamento. Il preavviso è di almeno 30 giorni dall’e-mail con cui te lo comunichiamo."
+   ],
+   "shots": [
+    {
+     "id": "app-terms",
+     "what": "Pagina delle condizioni con le quattro caselle e il campo password"
+    },
+    {
+     "id": "terms-banner",
+     "what": "Avviso sotto la barra in alto con il pulsante «Leggi e accetta»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Avviso sotto la barra in alto (banner)",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Leggi e accetta",
+       "help": "Apre questa pagina (solo per il Titolare).",
+       "src": "src/components/TermsBanner.tsx:27"
+      }
+     ],
+     "notes": [],
+     "intro": [
+      "Cambia secondo il caso. Al Titolare: «Le condizioni d’uso sono cambiate il …: accettale per continuare a lavorare. Fino ad allora LiftPilot è in sola lettura.»; oppure, con la nuova versione non ancora vincolante, «Nuove condizioni d’uso: per la tua azienda entrano in vigore il …» o «Sono pubblicate nuove condizioni d’uso: ti scriveremo il giorno in cui entrano in vigore per la tua azienda, almeno 30 giorni prima.»",
+      "Ai colleghi: «Il Titolare dell’azienda non ha ancora accettato le condizioni d’uso in vigore: fino ad allora LiftPilot è in sola lettura.» (senza pulsante)."
+     ]
+    },
+    {
+     "title": "Testata",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Leggi le condizioni d’uso e l’informativa sulla privacy",
+       "help": "Apre la pagina Privacy e condizioni d’uso in una nuova scheda.",
+       "src": "src/components/TermsGate.tsx:41"
+      }
+     ],
+     "notes": [],
+     "intro": [
+      "Il testo introduttivo cambia: «Per usare LiftPilot, il Titolare accetta per l’azienda le condizioni d’uso: versione 6 del 21 ottobre 2026.» al primo accesso; «Le condizioni d’uso e l’informativa sulla privacy sono cambiate…» quando sono cambiate e vincolano; «Abbiamo aggiornato le condizioni d’uso… Per la tua azienda entrano in vigore il …» quando c’è già una data."
+     ]
+    },
+    {
+     "title": "Conferme",
+     "fields": [
+      {
+       "label": "Ho letto e accetto le condizioni d’uso (versione 6 del 21 ottobre 2026), compreso l’accordo sul trattamento dei dati per conto dell’azienda (art. 9).",
+       "kind": "casella",
+       "unit": null,
+       "values": "Da spuntare.",
+       "default": "non spuntata",
+       "required": "sì",
+       "help": "Accettazione delle condizioni d’uso e dell’accordo sul trattamento dei dati.",
+       "src": "src/components/TermsGate.tsx:44"
+      },
+      {
+       "label": "Dichiaro di agire per conto dell’impresa o dello studio professionale titolare dell’account, di avere il potere di vincolarlo e di non operare come consumatore.",
+       "kind": "casella",
+       "unit": null,
+       "values": "Da spuntare.",
+       "default": "non spuntata",
+       "required": "sì",
+       "help": "Come in registrazione: agisci per l’impresa, non come privato.",
+       "src": "src/components/TermsGate.tsx:51"
+      },
+      {
+       "label": "Accetto che calcoli, tavole, relazioni, simulazioni, consigli sugli argani e bozze d’ordine di LiftPilot siano bozze…",
+       "kind": "casella",
+       "unit": null,
+       "values": "Da spuntare.",
+       "default": "non spuntata",
+       "required": "sì",
+       "help": "I risultati sono bozze finché un tecnico abilitato non li verifica e firma.",
+       "src": "src/components/TermsGate.tsx:51"
+      },
+      {
+       "label": "Ai sensi degli artt. 1341 e 1342 del codice civile approvo specificamente le seguenti clausole delle condizioni d’uso: art. 4, 6, 7, 8, 10, 12, 13, 15 (ognuna con il suo oggetto indicato nel testo).",
+       "kind": "casella",
+       "unit": null,
+       "values": "Da spuntare.",
+       "default": "non spuntata",
+       "required": "sì",
+       "help": "Approvazione specifica delle clausole indicate nel testo della casella, che trovi per intero nelle condizioni d’uso.",
+       "src": "src/components/TermsGate.tsx:51"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "intro": [
+      "Sopra le caselle il rimando all’informativa sulla privacy. Poi quattro caselle, tutte da spuntare:"
+     ]
+    },
+    {
+     "title": "La tua password",
+     "fields": [
+      {
+       "label": "La tua password",
+       "kind": "password",
+       "unit": null,
+       "values": "Fino a 200 caratteri; deve essere quella corretta.",
+       "default": null,
+       "required": "sì",
+       "help": "La tua password attuale. Serve ad approvare specificamente le clausole: la password vale come firma elettronica dell’approvazione. Sotto il campo c’è la stessa spiegazione.",
+       "src": "src/components/TermsGate.tsx:56"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Accetto e continuo",
+       "help": "Registra l’accettazione (versione, data, conferme) e ti riporta all’area di lavoro.",
+       "src": "src/components/TermsGate.tsx:60"
+      }
+     ],
+     "notes": [
+      "Se manca una conferma leggi «Per continuare spunta tutte le conferme.»; senza password «Inserisci la tua password per approvare le clausole.»; con password sbagliata «La password non è corretta: le condizioni non sono state accettate.» Troppi tentativi: «Troppi tentativi. Riprova tra qualche minuto.»",
+      "Se non vuoi accettare, sotto il pulsante hai due scelte: «Abbonamento» (per disdire; rimborsiamo la parte non usata su richiesta al supporto) e «Dati dell’azienda» (per scaricare i dati). Se non hai mai accettato nessuna versione, la nota dice di scrivere al supporto per avere i tuoi dati o cancellare l’account."
+     ],
+     "warnings": [
+      "Dal giorno in cui la nuova versione vincola l’azienda e finché il Titolare non l’accetta, tutta l’azienda lavora in sola lettura: nessuno, colleghi compresi, può modificare dati.",
+      "L’approvazione delle clausole con la password è una firma elettronica e viene registrata con la versione e l’impronta del testo."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "app-terms-clauses",
+   "title": "Approvazione specifica delle clausole",
+   "path": "/it/app/terms",
+   "access": "Dentro l’applicazione, solo per il Titolare che ha già accettato la versione in vigore con una semplice spunta (prima dell’introduzione dell’approvazione con password) e deve approvare le clausole una volta sola. Non blocca nulla: puoi continuare a lavorare.",
+   "reach": "Dall’avviso giallo sotto la barra in alto: «Manca un passo per le condizioni d’uso che hai accettato: l’approvazione specifica delle clausole (artt. 1341 e 1342 del codice civile) con la tua password. Puoi continuare a lavorare: serve un minuto.» con il pulsante «Approva le clausole».",
+   "purpose": [
+    "È la stessa pagina «Condizioni d’uso», in una forma ridotta: serve solo l’approvazione specifica delle clausole con la password, una sola volta. Il testo dice: «Hai accettato le condizioni d’uso in vigore con una spunta. Le clausole elencate qui sotto… vanno approvate specificamente: spunta e conferma con la tua password, che vale come firma elettronica dell’approvazione. Te lo chiediamo una sola volta.»"
+   ],
+   "shots": [
+    {
+     "id": "app-terms-clauses",
+     "what": "Pagina «Approvazione specifica delle clausole» con la casella e il campo password"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Modulo",
+     "fields": [
+      {
+       "label": "Ai sensi degli artt. 1341 e 1342 del codice civile approvo specificamente le seguenti clausole delle condizioni d’uso: art. 4, 6, 7, 8, 10, 12, 13, 15 (ognuna con il suo oggetto indicato nel testo).",
+       "kind": "casella",
+       "unit": null,
+       "values": "Da spuntare.",
+       "default": "non spuntata",
+       "required": "sì",
+       "help": "Approvazione specifica delle clausole elencate.",
+       "src": "src/components/ClausesApproval.tsx:36"
+      },
+      {
+       "label": "La tua password",
+       "kind": "password",
+       "unit": null,
+       "values": "Fino a 200 caratteri; deve essere quella corretta.",
+       "default": null,
+       "required": "sì",
+       "help": "La tua password attuale: vale come firma elettronica dell’approvazione.",
+       "src": "src/components/ClausesApproval.tsx:42"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Approvo le clausole",
+       "help": "Registra l’approvazione e ti riporta all’area di lavoro.",
+       "src": "src/components/ClausesApproval.tsx:46"
+      },
+      {
+       "label": "Più tardi",
+       "help": "Torna all’area di lavoro senza approvare («Nel frattempo LiftPilot funziona come sempre.»); l’avviso resta.",
+       "src": "src/components/ClausesApproval.tsx:47"
+      }
+     ],
+     "notes": [
+      "Messaggi come nella pagina delle condizioni: «Per continuare spunta tutte le conferme.», «Inserisci la tua password per approvare le clausole.», «La password non è corretta: le condizioni non sono state accettate.»"
+     ],
+     "warnings": [
+      "L’approvazione con la password è una firma elettronica e viene registrata: leggi prima le clausole nelle condizioni d’uso."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "app-account",
+   "title": "Account",
+   "path": "/it/app/account",
+   "access": "Dentro l’applicazione, per ogni utente con una sessione, qualunque ruolo e anche con l’azienda in sola lettura. Ciascuno modifica solo la propria password; nome, e-mail, azienda e ruolo sono solo da leggere.",
+   "reach": "Clicca il tuo nome in alto a destra nella barra, oppure la scheda con il tuo nome e il ruolo in fondo al menu laterale (accanto c’è «Esci», che chiude la sessione). Se la password ti è stata assegnata da un’altra persona, dopo l’accesso vieni portato qui prima di qualsiasi altra pagina.",
+   "purpose": [
+    "Sopra il titolo leggi «Il tuo profilo». La pagina mostra chi sei e ti fa cambiare la password. Se la password è stata assegnata da qualcuno, compare «La password ti è stata assegnata da un’altra persona: scegline una nuova per continuare.» e finché non la cambi le altre pagine non si aprono."
+   ],
+   "shots": [
+    {
+     "id": "app-account",
+     "what": "Pagina Account con i quattro dati e il modulo «Cambia la password»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Dati dell’account (sola lettura)",
+     "fields": [
+      {
+       "label": "Nome",
+       "kind": "testo",
+       "unit": null,
+       "values": "Solo lettura.",
+       "default": null,
+       "required": "no",
+       "help": "Il tuo nome e cognome, come inserito alla registrazione o dal Titolare.",
+       "src": "src/app/[locale]/app/account/page.tsx:49"
+      },
+      {
+       "label": "E-mail",
+       "kind": "testo",
+       "unit": null,
+       "values": "Solo lettura.",
+       "default": null,
+       "required": "no",
+       "help": "L’indirizzo con cui accedi.",
+       "src": "src/app/[locale]/app/account/page.tsx:50"
+      },
+      {
+       "label": "Azienda",
+       "kind": "testo",
+       "unit": null,
+       "values": "Solo lettura.",
+       "default": null,
+       "required": "no",
+       "help": "La ragione sociale dell’azienda a cui appartieni.",
+       "src": "src/app/[locale]/app/account/page.tsx:51"
+      },
+      {
+       "label": "Ruolo",
+       "kind": "testo",
+       "unit": null,
+       "values": "Solo lettura.",
+       "default": null,
+       "required": "no",
+       "help": "Il tuo ruolo: Titolare, Capotecnico, Progettista, Tecnico o Commerciale (o Amministratore della piattaforma). Decide che cosa puoi fare: i diritti li stabilisce il Titolare dalla pagina Permessi.",
+       "src": "src/app/[locale]/app/account/page.tsx:52"
+      }
+     ],
+     "actions": [],
+     "notes": [
+      "Nome ed e-mail non si cambiano dall’interfaccia. Il ruolo lo può cambiare il Titolare dalla pagina Utenti."
+     ]
+    },
+    {
+     "title": "Cambia la password",
+     "fields": [
+      {
+       "label": "Password attuale",
+       "kind": "password",
+       "unit": null,
+       "values": "Fino a 200 caratteri.",
+       "default": null,
+       "required": "sì",
+       "help": "La password che usi adesso: serve a provare che sei tu.",
+       "src": "src/components/ChangePasswordForm.tsx:19"
+      },
+      {
+       "label": "Nuova password",
+       "kind": "password",
+       "unit": null,
+       "values": "Almeno 12 caratteri (al massimo 200), con almeno una lettera e almeno una cifra.",
+       "default": null,
+       "required": "sì",
+       "help": "La nuova password. Deve essere diversa dall’attuale. Sotto i campi: «Almeno 12 caratteri, con lettere e cifre.»",
+       "src": "src/components/ChangePasswordForm.tsx:20"
+      },
+      {
+       "label": "Ripeti la nuova password",
+       "kind": "password",
+       "unit": null,
+       "values": "Uguale alla nuova password; al massimo 200 caratteri.",
+       "default": null,
+       "required": "sì",
+       "help": "Riscrivi la nuova password.",
+       "src": "src/components/ChangePasswordForm.tsx:21"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Cambia password",
+       "help": "Cambia la password e chiude tutte le altre sessioni (questa resta aperta). Compare «Password cambiata. Le altre sessioni sono state chiuse.» con il link «Continua».",
+       "src": "src/components/ChangePasswordForm.tsx:23"
+      }
+     ],
+     "notes": [
+      "Messaggi: «La password attuale non è corretta.», «La nuova password deve essere diversa da quella attuale.», «La password deve avere almeno 12 caratteri, con lettere e cifre.», «Le due password nuove non coincidono.», «Troppi tentativi. Riprova tra qualche minuto.»"
+     ],
+     "warnings": [
+      "Cambiare la password chiude tutte le altre sessioni: i dispositivi dove eri connesso dovranno accedere di nuovo."
+     ]
+    }
+   ],
+   "tips": [
+    "Cambia la password se pensi che qualcun altro la conosca: tutte le altre sessioni, per esempio quelle su altri dispositivi, si chiudono."
+   ]
+  },
+  {
+   "id": "app-segnala",
+   "title": "Segnala un problema",
+   "path": "/it/app/segnala",
+   "access": "Dentro l’applicazione, per ogni utente con una sessione, qualunque ruolo e anche con l’azienda in sola lettura (non scrive nulla del lavoro dell’azienda). Fa eccezione chi deve ancora scegliere la password personale.",
+   "reach": "Da «Segnala un problema» nel menu laterale (in basso, sopra la scheda del tuo nome; da una pagina porta con sé quella pagina), dal collegamento «Segnala il problema» nella pagina di errore (che porta con sé il codice dell’errore) o dalla guida rapida.",
+   "purpose": [
+    "«Un problema, un suggerimento o una domanda su LiftPilot: la leggono gli amministratori di LiftPilot (Carbon Stealth VCC) per risponderti, se serve all’indirizzo del tuo account, e correggere il servizio.» La segnalazione arriva agli amministratori con il tuo nome, la tua azienda e la pagina da cui scrivi."
+   ],
+   "shots": [
+    {
+     "id": "app-segnala",
+     "what": "Modulo «Segnala un problema» con Tipo e Messaggio"
+    },
+    {
+     "id": "app-segnala-sent",
+     "what": "Conferma «Segnalazione inviata»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Modulo",
+     "fields": [
+      {
+       "label": "Pagina",
+       "kind": "testo",
+       "unit": null,
+       "values": "Solo lettura; solo un indirizzo di LiftPilot (al massimo 300 caratteri).",
+       "default": null,
+       "required": "no",
+       "help": "La pagina da cui hai aperto la segnalazione, scritta come indirizzo (per esempio «/app/impianti»). È solo informativa: non si modifica. Se hai aperto la segnalazione dal menu leggi «dal menu».",
+       "src": "src/components/FeedbackForm.tsx:80"
+      },
+      {
+       "label": "Codice dell’errore",
+       "kind": "testo",
+       "unit": null,
+       "values": "Solo lettura; lettere, cifre e trattini (al massimo 64).",
+       "default": null,
+       "required": "compare solo se arrivi dalla pagina di errore",
+       "help": "Compare solo se arrivi dalla pagina di errore: è il codice che aiuta gli amministratori a ritrovare il problema. Non si modifica.",
+       "src": "src/components/FeedbackForm.tsx:81"
+      },
+      {
+       "label": "Tipo",
+       "kind": "scelta",
+       "unit": null,
+       "values": "Problema · Suggerimento · Domanda",
+       "default": "Problema",
+       "required": "sì",
+       "help": "Che cosa vuoi dirci. Scegli «Problema» se qualcosa non funziona, «Suggerimento» per un’idea, «Domanda» per chiedere.",
+       "src": "src/components/FeedbackForm.tsx:85"
+      },
+      {
+       "label": "Messaggio",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "Da 1 a 4000 caratteri (gli spazi iniziali e finali non contano). Sotto il campo: «Che cosa stavi facendo, che cosa è successo e che cosa ti aspettavi. Al massimo 4000 caratteri.»",
+       "default": null,
+       "required": "sì",
+       "help": "Che cosa stavi facendo, che cosa è successo e che cosa ti aspettavi. Più è preciso, più è facile correggere.",
+       "src": "src/components/FeedbackForm.tsx:92"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Invia la segnalazione",
+       "help": "Invia la segnalazione agli amministratori. Se va a buon fine il modulo diventa «Segnalazione inviata» con «Grazie: la segnalazione è arrivata agli amministratori di LiftPilot.» e due pulsanti: «Torna alla pagina» (se arrivi da una pagina dell’applicazione) e «Invia un’altra segnalazione» (svuota il modulo).",
+       "src": "src/components/FeedbackForm.tsx:97"
+      }
+     ],
+     "notes": [
+      "Sopra il pulsante c’è la nota sulla privacy: il Titolare e chi vede il registro attività vedono che hai inviato una segnalazione e di che tipo; il testo è anche nell’esportazione dei dati dell’azienda; le segnalazioni restano nel database finché esiste l’azienda e si cancellano 24 mesi dopo che sono state gestite. Non inserire dati personali dei clienti se non servono.",
+      "Errori: «Scrivi il messaggio: al massimo 4000 caratteri.»; «Scegli il tipo.»; «La pagina indicata non è valida: riapri «Segnala un problema» dal menu.»; «Prima scegli la tua password personale dalla pagina «Account».»; «Hai già inviato 10 segnalazioni nell’ultima ora: riprova più tardi oppure scrivi al supporto.»",
+      "Se la sessione scade mentre scrivi, il messaggio resta nel modulo: accedi di nuovo in un’altra scheda (il link è nel messaggio), poi torna qui e premi di nuovo «Invia la segnalazione». Lo stesso se la connessione si interrompe."
+     ],
+     "warnings": [
+      "Non inserire dati personali dei clienti se non servono: il testo è visibile agli amministratori e resta nell’esportazione dei dati dell’azienda.",
+      "Se la connessione si interrompe e la segnalazione era già partita, premere di nuovo «Invia la segnalazione» la invia due volte."
+     ]
+    }
+   ],
+   "tips": [
+    "Una segnalazione sola per problema, con i passi che hai fatto: aiuta a riprodurlo."
+   ]
+  },
+  {
+   "id": "app-permesso",
+   "title": "Permesso non concesso",
+   "path": "/it/app/permesso",
+   "access": "Dentro l’applicazione, per i colleghi (Capotecnico, Progettista, Tecnico, Commerciale). Non ha campi. Il Titolare non la vede mai: ha tutti i diritti. Se il diritto è già tuo o non si può concedere al tuo ruolo vieni riportato alla pagina di lavoro.",
+   "reach": "Compare da sola quando apri una pagina per cui la tua azienda non ha dato il diritto al tuo ruolo (per esempio il listino o il registro attività). L’indirizzo è lo stesso per qualsiasi elemento, quindi non rivela nulla degli elementi di altre aziende.",
+   "purpose": [
+    "Dice quale diritto manca e chi lo decide. Sopra il titolo leggi il tuo ruolo (per esempio «Progettista»). Sotto: «Il tuo ruolo (…) non ha il permesso «…» in questa azienda.»; poi «I permessi di ogni ruolo li decide il Titolare dell’azienda: se te ne serve uno, chiedilo al Titolare.»",
+    "I diritti di ogni ruolo li decide il Titolare dalla pagina Permessi, entro regole fisse: gli utenti, i permessi e l’abbonamento restano sempre al Titolare."
+   ],
+   "shots": [
+    {
+     "id": "app-permesso",
+     "what": "Pagina «Permesso non concesso» con il diritto mancante"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Contenuto",
+     "fields": [],
+     "actions": [
+      {
+       "label": "Torna al lavoro",
+       "help": "Ti riporta alla pagina iniziale del tuo ruolo.",
+       "src": "src/app/[locale]/app/permesso/page.tsx:130"
+      }
+     ],
+     "notes": [
+      "Altri casi in cui non vedi una pagina (sola lettura dell’azienda, diritti che nessun collega ha, pagine della piattaforma) mostrano «Pagina non trovata»."
+     ]
+    }
+   ]
+  }
+ ],
+ "glossary": [
+  {
+   "term": "Titolare",
+   "def": "Chi registra l’azienda: ha tutti i diritti, accetta le condizioni d’uso e gestisce utenti, permessi e abbonamento."
+  },
+  {
+   "term": "Ruolo",
+   "def": "Titolare, Capotecnico, Progettista, Tecnico o Commerciale: decide che cosa puoi fare; i diritti dei colleghi li stabilisce il Titolare dalla pagina Permessi."
+  },
+  {
+   "term": "Invito",
+   "def": "Messaggio con un link per entrare: nella beta per registrare l’azienda (vale 30 giorni), per un collega nella sua azienda (vale 7 giorni)."
+  },
+  {
+   "term": "Link di conferma",
+   "def": "Link ricevuto per e-mail dopo la registrazione: prova che l’indirizzo è tuo. Vale 48 ore."
+  },
+  {
+   "term": "Clausole 1341–1342 c.c.",
+   "def": "Le clausole delle condizioni d’uso che il codice civile richiede di approvare specificamente (artt. 4, 6, 7, 8, 10, 12, 13, 15)."
+  },
+  {
+   "term": "Sola lettura",
+   "def": "Stato dell’azienda in cui puoi consultare e scaricare ma non modificare; accade quando le condizioni aggiornate non sono state accettate o senza abbonamento."
+  },
+  {
+   "term": "Beta",
+   "def": "Fase in cui LiftPilot è gratuito e la registrazione è su invito."
+  },
+  {
+   "term": "Bozza",
+   "def": "Ogni risultato di LiftPilot: diventa documento quando un tecnico abilitato lo verifica e lo firma."
+  }
+ ],
+ "verify": [
+  "Home: con l’abbonamento non attivo compare l’etichetta «Beta» e i piani mostrano «Gratuito / durante la beta»; con Stripe attivo, i prezzi reali. Quale dei due stati è quello da fotografare per la guida?",
+  "Registrazione e conferma: se il link da 48 ore scade senza essere aperto, accedere con e-mail e password invia davvero un nuovo link (il codice cerca la registrazione in attesa solo finché non è scaduta)? Controllare il messaggio che compare.",
+  "Pagina /app/terms: i numeri degli articoli nel testo della casella delle clausole sono 4, 6, 7, 8, 10, 12, 13, 15 (art. 9 per l’accordo sul trattamento dei dati) e la versione è la 6 del 21 ottobre 2026: confermare a schermo.",
+  "Privacy e condizioni: l’ordine delle otto domande dell’informativa e dei quindici articoli a schermo coincide con quello scritto nel capitolo?",
+  "Home: i testi dei riquadri Showcase (Impianto di esempio, Scala, Formati…) e la sezione delle norme sono descritti solo in sintesi; c’è qualcosa di cliccabile che non ho elencato?"
+ ]
+}

@@ -1,0 +1,3288 @@
+{
+ "key": "documenti",
+ "title": "Tavole, relazione tecnica di modifica e documenti",
+ "intro": [
+  "Questo capitolo spiega i documenti che LiftPilot produce a partire dal progetto: la serie di tavole in formato A4 (con il cartiglio, i dati dell’impianto e i loghi), la relazione tecnica di modifica con i suoi allegati e le firme, e i documenti che carichi tu (dichiarazioni, certificati, schemi, fotografie, schizzi di rilievo).",
+  "Le tavole e la relazione sono documenti numerati e non modificabili: una volta emessi ricevono un numero nella forma AA-NNN (le ultime due cifre dell’anno e un progressivo dell’azienda, per esempio 26-001). Per correggerli emetti una revisione, che tiene lo stesso numero e aggiunge R1, R2… Il PDF emesso resta scaricabile com’è, anche se in seguito il software cambia.",
+  "Per capire chi può fare che cosa: vedere gli impianti è di tutti i ruoli; modificare i dati dell’impianto e caricare i documenti spetta a Capotecnico, Progettista e Tecnico; preparare la bozza della relazione e disegnare il progetto spetta a Capotecnico e Progettista; emettere tavole e relazioni spetta a Capotecnico e Progettista; scaricare i PDF spetta a tutti. Il Titolare ha tutti i diritti e può cambiare questa matrice per l’azienda.",
+  "L’ordine del capitolo segue il lavoro: la serie di tavole emessa e il suo modulo di emissione, le quote che cambi sui disegni del progetto, la relazione tecnica di modifica, il riquadro dei documenti caricati e la relazione emessa. I dati dell’impianto e il logo del committente che finiscono nel cartiglio sono nella pagina «Dati dell’impianto» (vedi il capitolo L’area di lavoro e gli impianti); il logo dell’azienda è nella pagina «Azienda» (vedi il capitolo L’azienda)."
+ ],
+ "pages": [
+  {
+   "id": "serie-tavole",
+   "title": "Tavole di progetto · ‹numero› (per esempio «Tavole di progetto · 26-001 R1»)",
+   "path": "/it/app/drawing-sets/‹id›",
+   "access": "La vedono tutti i colleghi che vedono gli impianti (diritto «calc:view», che segue «projects:view»: per impostazione predefinita Capotecnico, Progettista, Tecnico e Commerciale; il Titolare ha tutto). Il PDF e i file CAD li scarica chi ha il permesso di scaricare i documenti (predefinito: tutti i ruoli). La nuova revisione la emette chi ha il permesso di emettere i documenti («drawings:issue»: predefinito Capotecnico e Progettista) e solo se l’impianto non è archiviato. Il Titolare può cambiare la matrice dei permessi.",
+   "reach": "Dalla pagina dell’impianto, nella sezione «Tavole emesse», clicca «Disegno n° ‹numero›»; oppure dall’elenco delle tavole emesse nella pagina del calcolo o del rilievo del locale; oppure, dopo aver emesso le tavole, ci arrivi da solo.",
+   "purpose": [
+    "Qui trovi una serie di tavole già emessa: il suo numero e la sua revisione, i fogli A4 disegnati uno alla volta, il PDF così com’è stato emesso, i file CAD (DXF, DWG, SVG) e lo storico delle revisioni. Da qui emetti anche una nuova revisione.",
+    "Il numero della serie ha la forma AA-NNN (le ultime due cifre dell’anno e un progressivo dell’azienda, per esempio 26-001). Una revisione tiene lo stesso numero e aggiunge R1, R2… La serie emessa non si modifica mai: per correggere si emette una revisione.",
+    "Le tavole sono di due tipi: la serie di un impianto completo (nasce da un calcolo fatto con un progetto del vano) e la serie di una sostituzione dell’argano (nasce dal rilievo del locale macchina salvato; in questo caso compare anche il pulsante «Progetto della sostituzione»)."
+   ],
+   "shots": [
+    {
+     "id": "serie-tavole-foglio",
+     "what": "Pagina di una serie emessa con il foglio 1 visibile, i numeri dei fogli e i pulsanti in alto"
+    },
+    {
+     "id": "serie-tavole-cad",
+     "what": "Il riquadro «File CAD della serie emessa» e l’elenco «Revisioni» con il modulo «Nuova revisione»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Intestazione e pulsanti",
+     "intro": [
+      "Sopra c’è il percorso (Impianti › nome dell’impianto › Disegno n° ‹numero›). Il titolo è «Tavole di progetto · ‹numero›», con « R‹n›» se è una revisione; sotto si legge «Emesse il ‹data e ora› da ‹nome›» (se l’autore non c’è più, le sue iniziali) e il numero dei fogli («‹n› tavole»)."
+     ],
+     "fields": [],
+     "actions": [
+      {
+       "label": "Scarica PDF",
+       "help": "Scarica il PDF della serie esattamente come è stato emesso. Compare se il PDF è conservato oppure se il software attuale sa ridisegnare la serie, e solo per chi può scaricare i documenti.",
+       "src": "src/app/[locale]/app/drawing-sets/[id]/page.tsx:76"
+      },
+      {
+       "label": "Progetto della sostituzione",
+       "help": "Solo nelle serie di una sostituzione dell’argano: apre il rilievo del locale macchina da cui la serie è stata disegnata.",
+       "src": "src/app/[locale]/app/drawing-sets/[id]/page.tsx:77"
+      },
+      {
+       "label": "Calcolo",
+       "help": "Apre il calcolo dell’argano da cui la serie è stata fatta.",
+       "src": "src/app/[locale]/app/drawing-sets/[id]/page.tsx:78"
+      }
+     ],
+     "warnings": [
+      "Avviso giallo «I motori attuali non riproducono queste tavole: emetti una nuova revisione.»: il software è cambiato dopo l’emissione e non sa più ridisegnare la serie. Se il PDF è conservato l’avviso dice che il PDF resta scaricabile com’è stato emesso e che i fogli a schermo e i file CAD non sono più disponibili: per modificarle emetti una nuova revisione.",
+      "Avviso giallo «Il calcolo e il progetto del vano non coincidono…»: elenca le differenze (corsa, velocità, portata, massa della cabina). Le tavole usano la geometria del progetto del vano e la macchina del calcolo; correggi il dato dove è sbagliato ed emetti una revisione.",
+      "Avviso giallo «I dati dell’impianto del progetto sono cambiati dopo l’emissione di queste tavole…»: il foglio 1 resta com’è stato emesso (come le relazioni tecniche di modifica già emesse), mentre la relazione di calcolo legge i dati attuali. Per allinearli emetti una nuova revisione."
+     ],
+     "notes": []
+    },
+    {
+     "title": "Fogli della serie",
+     "intro": [
+      "Una riga di numeri (1, 2, 3…), una per ogni foglio, con il nome «Tavole»: clicca un numero per aprire quel foglio (il foglio aperto è in evidenza). Sotto compare il foglio disegnato, con la didascalia «Tavola ‹n› di ‹totale›». Il disegno è lo stesso che finisce nel PDF."
+     ],
+     "fields": [],
+     "actions": [
+      {
+       "label": "Schermo intero",
+       "help": "Porta il foglio a tutto schermo (o, dove il browser non lo permette, per esempio su iPhone, in un livello sopra la pagina). A tutto schermo compaiono una barra con il titolo del foglio e i comandi di ingrandimento.",
+       "src": "src/components/drawing/DrawingFigure.tsx:94"
+      },
+      {
+       "label": "Riduci (−) e Ingrandisci (+)",
+       "help": "Cambiano l’ingrandimento a passi di un quarto (1,25 volte) tra il 100 % e l’800 %; la cifra in percentuale è mostrata tra i due pulsanti («Ingrandimento ‹n› %»).",
+       "src": "src/components/drawing/DrawingFigure.tsx:51"
+      },
+      {
+       "label": "Adatta",
+       "help": "Riporta il foglio alla misura dello schermo (anche con il tasto 0). È disattivato quando il foglio è già adattato.",
+       "src": "src/components/drawing/DrawingFigure.tsx:51"
+      },
+      {
+       "label": "Esci",
+       "help": "Chiude lo schermo intero e riporta il foglio nella pagina (anche con il tasto Esc).",
+       "src": "src/components/drawing/DrawingFigure.tsx:67"
+      }
+     ],
+     "notes": [
+      "A tutto schermo trascina il disegno per spostarlo; usa i tasti + e −, Ctrl con la rotella o due dita per ingrandire, 0 per adattare allo schermo, Esc per uscire. Nella pagina nessun ingrandimento o trascinamento cambia: il foglio resta com’è.",
+      "I fogli di una serie emessa non hanno quote modificabili: per cambiare una misura apri il Progetto (vedi «Disegni del progetto: cambia le quote») ed emetti una revisione."
+     ],
+     "warnings": []
+    },
+    {
+     "title": "File CAD della serie emessa",
+     "intro": [
+      "Il riquadro compare solo se il software attuale sa ridisegnare la serie e solo per chi può scaricare i documenti. Spiega: tutti i fogli del PDF in DXF, DWG e SVG, da inviare al posto della bozza. In DXF e DWG trovi le viste in scala reale con le loro legende e note, il foglio 1 con il cartiglio del numero e della revisione, le verifiche del progetto e i muri campiti. In SVG trovi un file per foglio, in millimetri alla scala di stampa, con il carattere incorporato.",
+      "I file sono ridisegnati dal server a partire da ciò che la serie conteneva e coincidono con il PDF: se i motori di calcolo sono cambiati, il server rifiuta lo scarico (errore 409) e devi emettere una revisione."
+     ],
+     "fields": [],
+     "actions": [
+      {
+       "label": "DXF della serie",
+       "help": "Scarica un unico file DXF con tutti i fogli (formato AutoCAD 2007). Il file si chiama «tavole-‹numero›.dxf», con «-R‹n›» per una revisione.",
+       "src": "src/app/[locale]/app/drawing-sets/[id]/page.tsx:101"
+      },
+      {
+       "label": "DWG della serie",
+       "help": "Scarica un unico file DWG con tutti i fogli (formato AutoCAD 2000), generato da LiftPilot. Il file si chiama «tavole-‹numero›.dwg».",
+       "src": "src/app/[locale]/app/drawing-sets/[id]/page.tsx:102"
+      },
+      {
+       "label": "SVG della serie (ZIP)",
+       "help": "Scarica gli SVG: con un solo foglio ottieni il file SVG; con più fogli ottieni un archivio ZIP «tavole-‹numero›-svg.zip» con un file «tavole-‹numero›-foglio-NN.svg» per ciascun foglio. Gli SVG sono contenuto attivo: aprili solo se ti fidi della serie.",
+       "src": "src/app/[locale]/app/drawing-sets/[id]/page.tsx:103"
+      }
+     ],
+     "notes": [
+      "Non confondere questi file con i disegni DXF/DWG che carichi tu per misurare il vano o il locale: quelli si leggono soltanto nel tuo browser e al server arrivano solo le misure prese, l’impronta SHA-256 del file e la descrizione della misura, mai il disegno. I file CAD di questa pagina sono invece le tavole di LiftPilot, generate dal server."
+     ],
+     "warnings": []
+    },
+    {
+     "title": "Revisioni",
+     "intro": [
+      "L’elenco ha una riga per ogni emissione del numero: «prima emissione», poi R1, R2… con la data e, per le revisioni, la nota che hai scritto («Cosa cambia»). La riga della serie che stai guardando è in grassetto; le altre sono link.",
+      "Sotto, se puoi emettere i documenti e l’impianto non è archiviato e c’è almeno un calcolo (o un rilievo del locale) da cui ridisegnare, trovi il titolo «Nuova revisione» e il modulo qui sotto. Per una serie di impianto completo il modulo elenca i calcoli fatti da un progetto del vano; per una sostituzione, i rilievi del locale salvati.",
+      "I dati dell’impianto che il foglio 1 legge si inseriscono nella pagina «Dati dell’impianto» (vedi il capitolo L’area di lavoro e gli impianti); il logo dell’azienda nella pagina «Azienda» (vedi il capitolo L’azienda)."
+     ],
+     "fields": [
+      {
+       "label": "Dal calcolo",
+       "kind": "scelta",
+       "unit": null,
+       "values": "elenco dei calcoli dell’impianto",
+       "default": "il calcolo più recente della lista",
+       "required": "sì (vincolo del campo; non puoi emettere senza una scelta)",
+       "help": [
+        "Il calcolo da cui ridisegnare la revisione. Ogni voce è «data e ora · etichetta · riepilogo». Sono elencati solo i calcoli dell’impianto fatti da un progetto del vano (a 200 al massimo), dal più recente.",
+        "La revisione tiene il numero del disegno e prende il calcolo scelto, il suo progetto del vano, i dati dell’impianto e il logo di oggi."
+       ],
+       "src": "src/components/tavole/IssueForm.tsx:53"
+      },
+      {
+       "label": "Rilievo del locale da cui disegnare la revisione",
+       "kind": "scelta",
+       "unit": null,
+       "values": "elenco dei rilievi del locale dell’impianto, dal più recente",
+       "default": "il rilievo più recente (l’elenco è dal più recente, fino a 100 voci)",
+       "required": "sì",
+       "help": [
+        "Al posto di «Dal calcolo», nelle serie di una sostituzione dell’argano: il rilievo del locale macchina salvato da cui ridisegnare. Ogni voce è «data e ora · etichetta · riepilogo del rilievo».",
+        "Vale la stessa regola: numero invariato, dati dell’impianto e logo di oggi."
+       ],
+       "src": "src/components/tavole/IssueForm.tsx:53"
+      },
+      {
+       "label": "Cosa cambia (va nel cartiglio)",
+       "kind": "testo",
+       "unit": null,
+       "values": "da 3 a 120 caratteri",
+       "default": null,
+       "required": "sì",
+       "help": [
+        "La nota della revisione: una frase che dice che cosa è cambiato rispetto alla revisione precedente. Finisce nel cartiglio del foglio 1 e nell’elenco «Revisioni».",
+        "Da 3 a 120 caratteri. Il testo sotto il campo ricorda cosa prende la revisione dal progetto."
+       ],
+       "src": "src/components/tavole/IssueForm.tsx:61"
+      },
+      {
+       "label": "Iniziali di chi disegna",
+       "kind": "testo",
+       "unit": null,
+       "values": "1–12 caratteri; inizia con una lettera",
+       "default": "iniziali del tuo nome (fino a 3 lettere, con il punto)",
+       "required": "sì",
+       "help": [
+        "Le iniziali che vanno nel cartiglio come autore del disegno. Il campo si riempie con le iniziali del tuo nome (per esempio «G.F.»); puoi cambiarle.",
+        "Massimo 12 caratteri: lettere, punti, spazi, apostrofi e trattini, e il primo carattere deve essere una lettera."
+       ],
+       "src": "src/components/tavole/IssueForm.tsx:66"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Nuova revisione",
+       "help": "Emette la revisione: la serie diventa R‹n+1›, con lo stesso numero, e ti porta alla sua pagina. Mentre lavora il pulsante dice «Emissione…». Resta disattivato se non hai scelto il calcolo (o il rilievo) o se il nome dell’argano nei dati dell’impianto contraddice il calcolo.",
+       "src": "src/components/tavole/IssueForm.tsx:86"
+      }
+     ],
+     "notes": [
+      "Prima di emettere, il modulo ti segnala ciò che il cartiglio scriverebbe sbagliato o lascerebbe vuoto: la matricola mancante di un impianto esistente (le tavole scriveranno «DA COMUNICARE»), il committente mancante (nel cartiglio resta un trattino), i dati dell’impianto che il foglio 1 legge e nessuno ha inserito («Dati dell’impianto non inseriti (‹n›): …») oppure «I dati dell’impianto che il foglio 1 legge sono tutti inseriti.» Ogni messaggio ha il suo link («Modifica anagrafica» per matricola e committente, «Apri i dati dell’impianto» per gli altri).",
+      "Se un’altra emissione avviene nello stesso momento ricevi «Un’altra emissione è avvenuta nello stesso momento: riprova.»",
+      "L’emissione della prima serie (revisione 0) non si fa da questa pagina: si fa dalla pagina del calcolo, del progetto o del rilievo del locale, con lo stesso modulo senza i due campi della revisione (vedi «Emissione di una serie di tavole»)."
+     ],
+     "warnings": [
+      "Una revisione emessa non si modifica e non si cancella: se è sbagliata, ne emetti un’altra.",
+      "Solo il nome dell’argano nei dati dell’impianto in contraddizione con il calcolo blocca l’emissione («I dati dell’impianto chiamano l’argano «…», ma il calcolo verifica il …»). Gli altri controlli sono avvisi e l’emissione resta possibile."
+     ]
+    }
+   ],
+   "tips": [
+    "Se un numero di matricola o il committente mancano, completali prima di emettere la prima serie: sono nel cartiglio e correggerli dopo vuol dire una revisione."
+   ]
+  },
+  {
+   "id": "emissione-tavole",
+   "title": "Emissione di una serie di tavole (modulo «Emetti le tavole»)",
+   "path": "/it/app/calculations/‹id›, /it/app/lift-designs/‹id› e /it/app/room-designs/‹id› (il modulo è lo stesso)",
+   "access": "Lo vede e lo usa chi può emettere i documenti («drawings:issue»: predefinito Capotecnico e Progettista, oltre al Titolare); l’impianto non deve essere archiviato. Il Titolare può cambiare la matrice dei permessi.",
+   "reach": "Dal calcolo salvato, dal progetto dell’ascensore o dal rilievo del locale macchina (pagine descritte negli altri capitoli): in fondo trovi «Emetti le tavole». La lista di cosa serve è in «Tavole emesse» della pagina dell’impianto: «Le tavole si emettono dal progetto dell’impianto (Documenti) o da un calcolo fatto da un progetto del vano.»",
+   "purpose": [
+    "Questo modulo dà il numero alla serie (AA-NNN, per esempio 26-001) e la conserva con il suo PDF. Il numero progressivo è dell’azienda e dell’anno e lo assegna il server nel momento dell’emissione.",
+    "Prima di emettere, il modulo controlla ciò che il cartiglio scriverebbe sbagliato o lascerebbe vuoto, con gli stessi avvisi descritti nella pagina «Tavole di progetto»."
+   ],
+   "shots": [
+    {
+     "id": "emissione-tavole-modulo",
+     "what": "Il modulo «Emetti le tavole» con le iniziali compilate e un avviso sui dati dell’impianto non inseriti"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Emetti le tavole",
+     "fields": [
+      {
+       "label": "Iniziali di chi disegna",
+       "kind": "testo",
+       "unit": null,
+       "values": "1–12 caratteri",
+       "default": "iniziali del tuo nome",
+       "required": "sì",
+       "help": [
+        "Le iniziali dell’autore nel cartiglio. Sono proposte dal tuo nome e puoi cambiarle.",
+        "Massimo 12 caratteri; lettere, punti, spazi, apostrofi e trattini; il primo carattere è una lettera."
+       ],
+       "src": "src/components/tavole/IssueForm.tsx:66"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Emetti le tavole",
+       "help": "Emette la serie e ti porta alla sua pagina. Mentre lavora dice «Emissione…». Si disattiva se il nome dell’argano nei dati dell’impianto contraddice quello del calcolo. Dopo troppe emissioni ravvicinate (più di 30 in 10 minuti per utente) il server risponde «Troppi tentativi. Riprova tra qualche minuto.»",
+       "src": "src/components/tavole/IssueForm.tsx:86"
+      }
+     ],
+     "warnings": [
+      "Una serie emessa ha un numero e non si modifica né si cancella: per correggerla emetti una revisione.",
+      "Il server rifiuta anche l’emissione quando il nome dell’argano nei dati dell’impianto non è la macchina verificata dal calcolo («Il nome dell’argano nei dati dell’impianto non è la macchina verificata dal calcolo: correggilo prima di emettere le tavole.»)."
+     ],
+     "notes": []
+    }
+   ]
+  },
+  {
+   "id": "quote-modificabili",
+   "title": "Disegni del progetto: cambia le quote",
+   "path": "/it/app/projects/‹id›/progetto (riquadro «Disegni del progetto: cambia le quote») e, per la sostituzione dell’argano, /it/app/calculations/‹id›/locale (riquadro «Pianta e sezione del locale»)",
+   "access": "Il riquadro è parte del Progetto: lo vede chi vede l’impianto e lo usa chi può disegnare il progetto («progetto:edit»: predefinito Capotecnico e Progettista, oltre al Titolare). Anche la pagina del rilievo del locale richiede «progetto:edit». Il Titolare può cambiare la matrice dei permessi.",
+   "reach": "Dal Progetto dell’ascensore (impianto completo) o dal rilievo del locale macchina (sostituzione): nel punto in cui il progetto è disegnato. Il riquadro compare quando il progetto ha tutti i dati per essere disegnato; altrimenti leggi «Questa vista non si può disegnare con questi dati.» (vano) o «Il locale non si può disegnare con questi valori.» (locale).",
+   "purpose": [
+    "Le quote scritte sul disegno sono pulsanti: cliccandone una (o raggiungendola con Tab e premendo Invio) si apre un campo sul punto con la lunghezza attuale, scrivi il valore, premi Invio e il progetto si ridisegna con le sue verifiche. Quello che cambi sul disegno cambia il dato corrispondente del modulo, con la stessa convalida del salvataggio.",
+    "Le tavole emesse nascono da questi stessi disegni: le modifiche fatte qui entrano nelle tavole solo quando salvi il progetto ed emetti una serie o una revisione.",
+    "Attenzione al disegno CAD in ingresso: se misuri il vano o il locale su un DXF o DWG, il disegno si legge soltanto nel tuo browser e al server arrivano solo le misure prese, l’impronta SHA-256 del file e la descrizione della misura, mai il disegno."
+   ],
+   "shots": [
+    {
+     "id": "quote-pianta",
+     "what": "La pianta al piano principale con le quote cliccabili e la scheda «Vista»"
+    },
+    {
+     "id": "quote-campo",
+     "what": "Una quota aperta con il campo «Nuovo valore della quota», i pulsanti «Applica» e «Annulla» e il testo «Cambia: …»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Vista e disegno",
+     "intro": [
+      "Sotto il titolo e la guida («Clicca una quota (o raggiungila con Tab e premi Invio), scrivi il valore e premi Invio: il progetto si ridisegna con le sue verifiche. Le quote della pianta cambiate a mano restano finché non le ripristini; le altre cambiano il dato corrispondente del modulo.») trovi le schede con nome «Vista». Le viste disponibili, nell’ordine: «Pianta al piano principale», «Pianta in testata», «Pianta della fossa», «Sezione A-A», «Sezione in testata», «Cabina al piano», «Sezione in fossa». Con un locale macchina sopra il vano (e una macchina) si aggiungono «Locale macchina» e «Sezione B-B»; con la macchina in basso, «Locale macchina in basso: pianta» e «Locale macchina in basso: sezione C-C».",
+      "Sotto la scheda c’è il disegno con la didascalia «Scala 1:‹n› sul foglio A4 · ‹n› quote modificabili». Il disegno ha il pulsante «Schermo intero» con ingrandimento, adattamento e uscita come nel foglio di una serie emessa.",
+      "Nella sostituzione dell’argano le viste sono due: «Locale macchina» (pianta) e «Sezione B-B»."
+     ],
+     "fields": [],
+     "actions": [],
+     "notes": [
+      "Le quote impostate a mano sono evidenziate. Sotto le viste del vano c’è il riquadro a scomparsa «Quote della pianta fissate a mano (‹n›)»: una tabella con le colonne «Quota», «Valore (mm)» e «Origine» («calcolata» o «a mano») per ogni distanza della pianta. Scrivi un valore per fissarlo (Invio o uscita dal campo); «Ripristina» torna al valore calcolato dal software e «Ripristina tutte le quote calcolate» li ripristina tutti. Il riquadro è aperto quando almeno una quota è a mano."
+     ],
+     "warnings": []
+    },
+    {
+     "title": "Come si cambia una quota",
+     "intro": [
+      "Ogni quota è un pulsante sopra il disegno con il testo «‹valore› mm · Cambia: ‹nome del dato›»; i pulsanti piccoli sono ingranditi fino a 24 pixel per un dito, senza coprire quelli vicini. Il gruppo si chiama «Quote modificabili»."
+     ],
+     "fields": [
+      {
+       "label": "Nuovo valore della quota",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "numero intero di millimetri ≥ 0; i limiti dipendono dal dato",
+       "default": "la lunghezza attuale della quota",
+       "required": "sì per applicare",
+       "help": [
+        "Il campo si apre sul punto della quota con la lunghezza attuale selezionata. Scrivi la nuova lunghezza in millimetri: va intera (i decimali sono arrotondati al millimetro), non negativa, con la virgola o il punto.",
+        "Premi Invio (o «Applica») per applicare, Esc (o «Annulla», o un clic fuori dal campo) per lasciare. Il testo sotto il campo («Cambia: ‹nome del dato›») dice quale dato del modulo cambia.",
+        "Un valore non accettato resta nel campo con il motivo: «Valore fuori campo: da ‹min› a ‹max› mm», «Il valore minimo è ‹min› mm», «Il valore massimo è ‹max› mm» oppure «Valore non accettato». I limiti sono quelli del dato corrispondente nel modulo."
+       ],
+       "src": "src/components/drawing/EditableDrawing.tsx:157"
+      },
+      {
+       "label": "Scegli dal catalogo o dalla tabella",
+       "kind": "scelta",
+       "unit": null,
+       "values": "voci del catalogo o della tabella",
+       "default": "la voce attuale",
+       "required": "sì per applicare",
+       "help": [
+        "Per le quote che il catalogo o una tabella determinano il campo è un elenco di voci al posto del numero. Sono quelle dei profili delle guide («Guide di cabina», «Guide del contrappeso»), degli spazi di rifugio («Spazio di rifugio sul tetto di cabina», «Spazio di rifugio in fossa»), del profilato del basamento («Basamento: profilato») e delle putrelle HEB («Putrelle HEB sui muri del vano: profilo e direzione (le più corte per prime)»).",
+        "Scegli la voce e premi Invio o «Applica»."
+       ],
+       "src": "src/components/drawing/EditableDrawing.tsx:146"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Applica",
+       "help": "Applica il nuovo valore e ridisegna il progetto.",
+       "src": "src/components/drawing/EditableDrawing.tsx:166"
+      },
+      {
+       "label": "Annulla",
+       "help": "Chiude il campo senza cambiare nulla.",
+       "src": "src/components/drawing/EditableDrawing.tsx:167"
+      }
+     ],
+     "notes": [
+      "Con la tastiera: Tab raggiunge le quote, Invio o Spazio apre il campo, Invio applica, Esc annulla e riporta il fuoco sulla quota."
+     ],
+     "warnings": [
+      "Cambiare una quota cambia il dato del modulo che sta dietro: le modifiche non sono salvate finché non salvi il progetto.",
+      "Un valore fuori dai limiti è rifiutato e non cambia nulla: il campo resta aperto con il messaggio di errore."
+     ]
+    },
+    {
+     "title": "Quali quote si possono cambiare, per gruppo",
+     "intro": [
+      "Le quote cliccabili sono quelle dei gruppi seguenti; nel disegno compaiono solo quelle che la vista mostra. Il nome tra virgolette è quello del dato nel modulo e compare dopo «Cambia:». Le misure sono in millimetri, salvo dove è scritto.",
+      "I limiti qui sotto sono quelli del dato salvato. Il messaggio «Valore fuori campo: da … a … mm» mostra i limiti della quota così come è disegnata (convertiti dal dato), che per una quota calcolata come distanza da un’altra misura possono differire. Per le distanze della pianta vale una regola in più: nessun elemento (cabina, contrappeso, apertura di una porta, ammortizzatori, fune del limitatore) può uscire dalle pareti del vano; se ne esce il valore è rifiutato con l’intervallo ammesso."
+     ],
+     "fields": [
+      {
+       "label": "Vano e porte",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "larghezza e profondità 500 – 10000; spessore pareti 50 – 1000; luce porta 500 – 2500; altezza porta 1800 – 3000",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Larghezza del vano, lato porte (mm)», «Profondità del vano (mm)», «Spessore delle pareti del vano (mm)», «Luce netta della porta (mm)», «Altezza della porta (mm)»."
+       ],
+       "src": "src/lib/shaft-input.ts:141"
+      },
+      {
+       "label": "Giochi e ingombri del software",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "nell’ordine: 0–500 · 0–200 · 0–500 · 0–200 · 0–800 · 0–500 · 50–600 · 0–800 · 0–800 · 0–300 · 0–500",
+       "default": "80 · 30 · 80 · 35 · 165 · 60 · 140 · 80 · 60 · 30 · 85 mm (nell’ordine sopra)",
+       "required": "no",
+       "help": [
+        "«Profondità della porta di piano», «Gioco tra le soglie», «Porta di cabina», «Pareti della cabina», «Guide e staffe della cabina, per lato», «Cabina–contrappeso», «Spessore del contrappeso», «Guide e staffe del contrappeso», «Cabina–parete di fondo», «Punta della guida–cabina», «Contrappeso laterale–piede della guida di cabina».",
+        "Cambiandoli sul disegno li imposti a mano."
+       ],
+       "src": "src/lib/shaft-input.ts:107"
+      },
+      {
+       "label": "Pianta (distanze impostabili a mano)",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "cabina larghezza e profondità 300 – 6000; operatore 300 – 6000; fune del limitatore dalla parete 0 – 3000; interasse ammortizzatori 100 – 5000; lunghezza contrappeso 100 – 3000; D.F.G. 100 – 10000; tutte le altre 0 – 10000",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Cabina: larghezza interna», «Cabina: profondità interna», «Piattaforma: distanza dalla parete sinistra», «Porta di cabina A/B: inizio della luce dall’angolo», «Porta di piano A/B: inizio della luce dall’angolo», «Operatore della porta di cabina: lunghezza», «Guide di cabina: asse dalla parete delle porte» (con arcata a zaino: «Arcata a zaino: punta della guida anteriore dalla parete delle porte»), «Arcata a zaino: distanza fra le guide (D.F.G.)», «Contrappeso: lunghezza in pianta», «Contrappeso: inizio lungo la sua parete», «Ammortizzatori di cabina: mezzeria dalla parete sinistra / fila dalla parete delle porte / interasse», «Ammortizzatore del contrappeso: posizione lungo la sua parete», «Fune del limitatore: distanza dalla parete del suo lato / ramo agganciato alla cabina dalla parete delle porte».",
+        "Restano impostate a mano (evidenziate) finché non le ripristini; se le lasci vuote il software le ricalcola."
+       ],
+       "src": "src/lib/shaft-input.ts:112"
+      },
+      {
+       "label": "Guide (scelta)",
+       "kind": "scelta",
+       "unit": null,
+       "values": "12 profili del catalogo",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Guide di cabina» e «Guide del contrappeso»: scegli il profilo dall’elenco dei profili (T45/A, T50/A, T70-1/A, T75-3/B, T82/B, T89/B, T90/B, T114/B, T125/B, T127-1/B, T45x45x5, T70x70x8)."
+       ],
+       "src": "src/shaft/rails.ts:5"
+      },
+      {
+       "label": "Dati verticali",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "fossa 100 – 10000; testata 1000 – 20000; altezza interna cabina 1000 – 5000; altezza esterna 1000 – 6000; piattaforma 0 – 500; ingombro operatore 0 – 6000; arcata sopra 1000 – 8000; arcata sotto 0 – 3000; balaustra 0 – 2000; altezza contrappeso 300 – 10000; extracorsa 0 – 2000; protezione contrappeso 300 – 6000; superficie sul tetto 100 – 3000 (larghezza e profondità); zona sbloccaggio 50 – 350; ammortizzatori: altezza 50 – 3000, corsa 10 – 2000, supporto 0 – 3000",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Fossa (mm)», «Testata (mm)», «Altezza interna cabina (mm)», «Altezza esterna cabina (mm)», «Piattaforma (mm)», «Ingombro massimo operatore (mm)», «Arcata sopra il pavimento (mm)», «Arcata sotto il pavimento (mm)», «Balaustra (mm, 0 = nessuna)», «Altezza contrappeso (mm)», «Extracorsa del contrappeso (mm)», «Protezione del contrappeso in fossa: altezza (mm)», «Superficie per stare sul tetto di cabina: larghezza / profondità (mm)», «Zona di sbloccaggio delle porte di piano, sopra e sotto il piano (mm)».",
+        "Ammortizzatori: altezza, corsa e supporto, per la cabina e per il contrappeso. Con velocità oltre 1 m/s un ammortizzatore modificato senza tipo scelto parte dallo standard che il disegno mostra.",
+        "L’altezza esterna della cabina non può essere minore di quella interna."
+       ],
+       "src": "src/lib/shaft-input.ts:16"
+      },
+      {
+       "label": "Spazi di rifugio (scelta)",
+       "kind": "scelta",
+       "unit": null,
+       "values": "tetto: 1 o 2; fossa: 1, 2 o 3",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Spazio di rifugio sul tetto di cabina» (2 voci) e «Spazio di rifugio in fossa» (3 voci) si scelgono dall’elenco."
+       ],
+       "src": "src/lib/shaft-input.ts:47"
+      },
+      {
+       "label": "Interpiano",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "0 – 20000; almeno l’altezza della porta quando le due fermate hanno una porta sullo stesso lato, altrimenti almeno 1",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Interpiano (fino alla fermata sopra)»: la distanza tra una fermata e la successiva; l’ultima fermata non ne ha."
+       ],
+       "src": "src/lib/shaft-input.ts:15"
+      },
+      {
+       "label": "Nicchie nel vano",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "dall’angolo 0 – 10000; larghezza 50 – 5000; profondità 10 – 1000",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Dall’angolo (mm)», «Larghezza (mm)», «Profondità (mm)» di ogni nicchia. La distanza dall’angolo è misurata sulle pareti davanti e dietro dall’angolo sinistro, sulle pareti laterali da quello davanti."
+       ],
+       "src": "src/lib/shaft-input.ts:134"
+      },
+      {
+       "label": "Bottoniera di piano",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "distanza 0 – 2000; altezza 600 – 2000",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Dal vano della porta al centro (mm)» e «Altezza del pulsante più alto (mm)»."
+       ],
+       "src": "src/lib/shaft-input.ts:168"
+      },
+      {
+       "label": "Vano all’ultimo piano e in testata",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "−500 – +500 per ciascuna parete",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Parete anteriore / posteriore / sinistra / destra in testata (mm)»: quanto ogni parete sta più dentro (+) o più fuori (−) che al piano principale, per edifici esistenti. Si cambiano anche sulla pianta in testata."
+       ],
+       "src": "src/lib/shaft-input.ts:177"
+      },
+      {
+       "label": "Imbotti delle porte di piano",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "imbotti 0 – 1500 ciascuno",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Imbotto sinistro», «Imbotto destro», «Imbotto superiore», «Distanza tra i marmi (i due imbotti laterali uguali)», «Altezza sotto il marmo superiore»."
+       ],
+       "src": "src/lib/shaft-input.ts:179"
+      },
+      {
+       "label": "Telaio delle porte di piano",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "25 – 600 per ciascuna misura (lo spessore resta dentro la profondità della porta di piano)",
+       "default": "120 · 220 · 50 mm",
+       "required": "no",
+       "help": [
+        "«Montanti del telaio: larghezza», «Frontalino del telaio sopra la luce: altezza», «Telaio: spessore nel vano di corsa». Il telaio standard ha montanti da 120 mm, frontalino da 220 mm e spessore 50 mm. Vale per tutte le porte di piano."
+       ],
+       "src": "src/lib/shaft-input.ts:182"
+      },
+      {
+       "label": "Locale macchina sopra il vano",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "larghezza e profondità 1000 – 20000; vano dalla parete 0 – 20000; altezza libera 1500 – 10000; colmo 0 – 15000; soletta 100 – 1000; porta dall’angolo 0 – 20000; larghezza porta 500 – 3000; altezza porta 1400 – 3000; quadro dall’angolo 0 – 20000; larghezza quadro 200 – 3000; profondità quadro 100 – 1000; altezza quadro 500 – 3000",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Larghezza interna», «Profondità interna», «Vano dalla parete sinistra del locale», «Vano dalla parete anteriore del locale», «Altezza libera», «Altezza al colmo (mm, 0 = tetto piano)», «Soletta sul vano», «Porta dall’angolo», «Larghezza porta», «Altezza porta», «Quadro dall’angolo», «Larghezza quadro», «Profondità quadro», «Altezza quadro».",
+        "Se lasci la posizione del quadro al software, spostando il quadro sul disegno la posizione diventa inserita («Posizione del quadro dal software»)."
+       ],
+       "src": "src/lib/shaft-input.ts:68"
+      },
+      {
+       "label": "Basamento, telaio con rinvio, putrelle HEB",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "altezza 0 – 3000 (piano del telaio con rinvio: almeno 0); lunghezza 300 – 5000",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Basamento: altezza sul pavimento», «Basamento: lunghezza lungo la calata», «Piano del telaio con rinvio sul pavimento»; «Basamento: profilato» e «Putrelle HEB sui muri del vano: profilo e direzione (le più corte per prime)» si scelgono dall’elenco.",
+        "Un basamento a telaio o a putrelle non può essere più basso del suo profilato."
+       ],
+       "src": "src/lib/shaft-input.ts:59"
+      },
+      {
+       "label": "Locale della macchina in basso",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "larghezza e profondità 1000 – 20000; altezza libera 1800 – 10000; porta dall’angolo 0 – 20000; larghezza porta 500 – 3000; altezza porta 1500 – 3000",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Locale della macchina in basso: larghezza (lungo la parete delle porte) / profondità / altezza libera / porta, inizio della luce dall’angolo / larghezza della porta / altezza della porta»."
+       ],
+       "src": "src/lib/shaft-input.ts:184"
+      },
+      {
+       "label": "Dato del calcolo",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "il limite lo decide la pagina del calcolo",
+       "default": null,
+       "required": "no",
+       "help": [
+        "«Puleggia di rinvio: dislivello sotto la puleggia di frizione (h)» (disegno del locale): è un valore del calcolo, applicato dalla pagina che lo contiene; se la pagina non lo accetta la quota è rifiutata."
+       ],
+       "src": "src/shaft/edit.ts:47"
+      },
+      {
+       "label": "Sostituzione dell’argano: calate",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "calate 0 – 10000 (il contrappeso non può andare sotto 0)",
+       "default": null,
+       "required": "no",
+       "help": [
+        "Nel riquadro «Pianta e sezione del locale» le quote del locale, del basamento e del vano sotto il locale seguono i gruppi sopra; in più «Calate dal muro del vano (x)» e «Calate dal muro del vano (y)» spostano le calate insieme. La distanza tra le calate e «h» dipendono dal calcolo e non si cambiano qui. Nel rilievo del locale il vano ha larghezza e profondità 500 – 10000 e spessore delle pareti 50 – 1000."
+       ],
+       "src": "src/lib/room/survey.ts:12"
+      }
+     ],
+     "actions": [],
+     "notes": [
+      "Quali quote sono cliccabili in ogni vista lo decide il disegno; il numero è nella didascalia («‹n› quote modificabili»)."
+     ],
+     "warnings": []
+    }
+   ]
+  },
+  {
+   "id": "relazione-tecnica",
+   "title": "Relazione tecnica di modifica",
+   "path": "/it/app/projects/‹id›/relazione-tecnica",
+   "access": "La vedono tutti i ruoli che vedono l’impianto («projects:view»). I dati dell’impianto e i documenti caricati li modifica chi può modificare l’impianto («projects:edit»: predefinito Capotecnico, Progettista e Tecnico); la bozza della relazione (carte 2, 3, 4 e 5) la prepara chi disegna il progetto («progetto:edit»: predefinito Capotecnico e Progettista); la relazione la emette chi può emettere i documenti («drawings:issue»: predefinito Capotecnico e Progettista). L’elenco emesse lo scarica chi può scaricare i documenti («report:download»: predefinito tutti i ruoli). Se l’impianto è archiviato tutto è in sola lettura. Il Titolare può cambiare la matrice dei permessi.",
+   "reach": "Dalla pagina dell’impianto, sezione «Tavole emesse», pulsante «Relazione tecnica di modifica»; dalla pagina del progetto dell’ascensore e da quella del rilievo del locale, pulsante «Relazione tecnica di modifica»; dalla relazione emessa, il percorso in alto.",
+   "purpose": [
+    "Qui prepari ed emetti la relazione tecnica di modifica (RT) dell’impianto: il documento che raccoglie, per una modifica di un ascensore esistente, i dati dell’impianto, le sezioni dei componenti toccati, le verifiche, i documenti allegati e le firme. Segue la UNI 10411-1 (impianti non marcati CE) o la UNI 10411-11 (impianti con marcatura CE); lo decide il Calcolo argano.",
+    "La relazione parte sempre dall’ultimo Calcolo argano e dal suo Progetto (il progetto dell’ascensore o il rilievo del locale macchina). La pagina lo dice sotto il titolo: «Relazione sul progetto dell’ascensore» oppure «Relazione sul rilievo del locale del macchinario», con i link al progetto e al calcolo. Il software ricava da solo sezioni, verifiche e documenti attesi; tu aggiungi quello che i documenti di base non hanno.",
+    "Non tutti gli interventi hanno una relazione di modifica: con la «Trasformazione completa» (l’impianto è trattato come un ascensore nuovo) o con un calcolo secondo la UNI EN 81-20/50 valgono i documenti dell’ascensore nuovo. La pagina lo spiega e non offre i moduli.",
+    "Quello che scrivi si salva da solo come bozza mentre lo digiti; il riepilogo (sezioni, verifiche, dati mancanti, documenti attesi) si aggiorna circa un secondo dopo l’ultima modifica. Una relazione emessa non si modifica più: una correzione è una nuova revisione."
+   ],
+   "shots": [
+    {
+     "id": "rt-esito",
+     "what": "Il barra con i cinque link, il riepilogo «Verifiche della relazione / Sezioni / Documenti attesi / Legge di approvazione» e la carta 2 «Modifica»"
+    },
+    {
+     "id": "rt-firme",
+     "what": "La carta 5 «Firme ed emissione» con il riquadro di conferma aperto"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Intestazione e base della relazione",
+     "intro": [
+      "In alto, sopra il titolo, una etichetta di stato: «Non ancora emessa», «Bozza in corso», «Emessa · RT ‹numero› R‹n›» oppure «Ultima RT da aggiornare» (se il software non riproduce più l’ultima emessa). Il titolo è «Relazione tecnica di modifica»; sotto compaiono il nome dell’impianto, la norma («UNI 10411-1» o «UNI 10411-11») e il tipo di intervento («Solo argano» o «Ammodernamento»).",
+      "Il pulsante «Torna all’impianto» riporta alla pagina dell’impianto.",
+      "La riga di base dice da che cosa nasce la relazione: «Relazione sul progetto dell’ascensore: ‹Progetto dell’ascensore del …› · ‹Calcolo argano del …›» oppure «Relazione sul rilievo del locale del macchinario: ‹Rilievo del locale del …› · ‹Calcolo argano del …›»."
+     ],
+     "fields": [],
+     "actions": [
+      {
+       "label": "Vai al Calcolo argano",
+       "help": "Compare quando manca il Calcolo argano («Manca il Calcolo argano: la relazione parte dal calcolo dell’intervento.»).",
+       "src": "src/components/rt/BaseStato.tsx:33"
+      },
+      {
+       "label": "Prepara il Progetto",
+       "help": "Compare quando manca il Progetto sull’ultimo calcolo, o quando è stato fatto su un calcolo precedente («rifallo sull’ultimo calcolo»).",
+       "src": "src/components/rt/BaseStato.tsx:34"
+      },
+      {
+       "label": "Rileva il locale del macchinario",
+       "help": "Come sopra, ma per gli interventi che riguardano il solo locale macchina.",
+       "src": "src/components/rt/BaseStato.tsx:34"
+      }
+     ],
+     "notes": [
+      "Se stai preparando una revisione leggi «Stai preparando la revisione R‹n› della RT ‹numero›: stesso numero, con la nota di revisione.» con il link «Apri la revisione emessa».",
+      "Se un documento della bozza è stato eliminato dall’impianto lo vedi in giallo: «Un documento della bozza è stato eliminato dall’impianto ed è uscito dalla relazione.»",
+      "Quando la pagina è in sola lettura, in fondo ai moduli leggi: «Sola lettura: la relazione la prepara chi può modificare il progetto e la emette chi può emettere i documenti (i permessi li assegna il Titolare).» oppure, con l’impianto archiviato, «L’impianto è archiviato: le relazioni emesse si consultano, una nuova non si prepara.»"
+     ],
+     "warnings": [
+      "Se il Calcolo argano o il Progetto non sono riprodotti dal software attuale la relazione non si prepara né si emette: «Il software è cambiato da quando il documento di base è stato salvato: aprilo, usa «Aggiorna con il software attuale», poi torna qui.»",
+      "Con la «Trasformazione completa» o con un calcolo secondo la UNI EN 81-20/50 la relazione di modifica non si applica: valgono i documenti dell’ascensore nuovo.",
+      "Con l’impianto archiviato le relazioni emesse si consultano e si scaricano, ma una nuova non si prepara."
+     ]
+    },
+    {
+     "title": "1 · Dati dell’impianto",
+     "intro": [
+      "Prima carta, sempre visibile. Il testo: «L’anagrafica si salva con l’impianto e serve a ogni relazione: ciascuna relazione emessa ne conserva la sua copia.» Salvi l’anagrafica con il suo pulsante, a parte dal resto della relazione. Tutti i campi sono facoltativi mentre scrivi; all’emissione servono il nome del proprietario, la legge di approvazione e, se hai inserito dati documentati prima della modifica, la loro fonte."
+     ],
+     "fields": [
+      {
+       "label": "Proprietario",
+       "kind": "testo",
+       "unit": null,
+       "values": "2–160 caratteri",
+       "default": "vuoto",
+       "required": "sì all’emissione",
+       "help": [
+        "Il nome del proprietario dell’ascensore (condominio, società o persona). Da 2 a 160 caratteri.",
+        "Compare nel frontespizio della relazione."
+       ],
+       "src": "src/components/rt/AnagraficaForm.tsx:58"
+      },
+      {
+       "label": "È il committente (‹nome›)",
+       "kind": "casella",
+       "unit": null,
+       "values": "spuntata / non spuntata",
+       "default": "non spuntata",
+       "required": "no",
+       "help": [
+        "Compare solo se l’impianto ha un committente. Se la spunti copia il nome del committente nel campo «Proprietario»; si spunta da sola quando i due nomi coincidono."
+       ],
+       "src": "src/components/rt/AnagraficaForm.tsx:62"
+      },
+      {
+       "label": "Indirizzo del proprietario",
+       "kind": "testo",
+       "unit": null,
+       "values": "1–200 caratteri",
+       "default": "vuoto",
+       "required": "no",
+       "help": [
+        "L’indirizzo del proprietario. Fino a 200 caratteri."
+       ],
+       "src": "src/components/rt/AnagraficaForm.tsx:65"
+      },
+      {
+       "label": "Ditta di manutenzione",
+       "kind": "testo",
+       "unit": null,
+       "values": "2–160 caratteri",
+       "default": "vuoto",
+       "required": "no",
+       "help": [
+        "La ditta che ha in carico la manutenzione. Da 2 a 160 caratteri."
+       ],
+       "src": "src/components/rt/AnagraficaForm.tsx:66"
+      },
+      {
+       "label": "Numero di fabbrica",
+       "kind": "testo",
+       "unit": null,
+       "values": "1–40 caratteri",
+       "default": "vuoto",
+       "required": "no",
+       "help": [
+        "Il numero di fabbrica dell’ascensore, dalla targa o dal libretto. Fino a 40 caratteri."
+       ],
+       "src": "src/components/rt/AnagraficaForm.tsx:67"
+      },
+      {
+       "label": "Anno di installazione",
+       "kind": "numero",
+       "unit": "anno",
+       "values": "1900 – anno corrente (intero)",
+       "default": "vuoto",
+       "required": "no",
+       "help": [
+        "L’anno di installazione dell’ascensore, dal libretto.",
+        "Numero intero da 1900 all’anno corrente. Serve a proporre la legge di approvazione."
+       ],
+       "src": "src/components/rt/AnagraficaForm.tsx:68"
+      },
+      {
+       "label": "Approvato secondo",
+       "kind": "scelta",
+       "unit": null,
+       "values": "D.Lgt. 600/1945 · DPR 1497/1963 · DM 587/1987 · DPR 268/1994 · DPR 162/1999 (marcatura CE)",
+       "default": "Scegli… oppure «‹sigla› (dall’anno di installazione)»",
+       "required": "sì all’emissione (scelta, oppure derivata dall’anno e confermata)",
+       "help": [
+        "La legge con cui l’ascensore fu approvato: «D.Lgt. 600/1945», «DPR 1497/1963», «DM 587/1987», «DPR 268/1994» oppure «DPR 162/1999 (marcatura CE)». L’elenco mostra solo le leggi compatibili con la parte della UNI 10411 della relazione: con la UNI 10411-1 le prime quattro, con la UNI 10411-11 solo il DPR 162/1999.",
+        "Se non scegli, il software propone la legge dall’anno di installazione: 1945–1962 D.Lgt. 600/1945; 1963–1987 DPR 1497/1963; 1988–1998 DM 587/1987; con la UNI 10411-11 sempre DPR 162/1999. Per il DPR 268/1994, per il 1999 o per anni anteriori al 1945 la proposta non c’è: scegli tu. La voce proposta compare come «‹sigla› (dall’anno di installazione)»; sotto leggi «Derivata dall’anno di installazione: confermala sul libretto.»",
+        "Se la legge scelta non corrisponde alla marcatura CE del Calcolo argano, l’emissione è rifiutata («La legge di approvazione non corrisponde alla marcatura CE del Calcolo argano: correggi l’anagrafica dell’impianto o il calcolo.»). Il DPR 268/1994 reca la nota «non più citato nello scopo della UNI 10411-1 dal 2013»."
+       ],
+       "src": "src/components/rt/AnagraficaForm.tsx:70"
+      },
+      {
+       "label": "Legge di approvazione confermata sul libretto",
+       "kind": "casella",
+       "unit": null,
+       "values": "spuntata / non spuntata",
+       "default": "non spuntata",
+       "required": "sì all’emissione se la legge è solo quella proposta dall’anno",
+       "help": [
+        "Spunta quando hai controllato sul libretto che la legge, scelta o proposta dall’anno, è davvero quella. Una legge proposta dall’anno non confermata blocca l’emissione; una legge scelta da te no."
+       ],
+       "src": "src/components/rt/AnagraficaForm.tsx:79"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": [
+      "Se la legge di approvazione non corrisponde alla marcatura CE del Calcolo argano, o è solo quella proposta dall’anno e non è confermata sul libretto, la relazione non si emette."
+     ]
+    },
+    {
+     "title": "1 · Dati dell’impianto — Dati documentati prima della modifica",
+     "intro": [
+      "Riquadro «Dati documentati prima della modifica». Il testo: «Capienza, fermate e superficie della cabina come risultano dai documenti, con la loro fonte: la relazione li confronta con quelli dopo la modifica.» Se un rilievo è collegato all’impianto, sotto compare «Il rilievo collegato riporta la matricola ‹m›.»"
+     ],
+     "fields": [
+      {
+       "label": "Capienza (persone)",
+       "kind": "numero",
+       "unit": "persone",
+       "values": "1 – 100 (intero)",
+       "default": "vuoto; suggerimento dal rilievo collegato",
+       "required": "no; se lo inserisci serve anche la fonte",
+       "help": [
+        "Il numero di persone dichiarato nei documenti prima della modifica (libretto o targa). Numero intero da 1 a 100.",
+        "Se il rilievo collegato ha il dato, accanto al campo compare «dal rilievo: ‹n›» e il pulsante «Usa», che lo copia nel campo."
+       ],
+       "src": "src/components/rt/AnagraficaForm.tsx:87"
+      },
+      {
+       "label": "Fermate",
+       "kind": "numero",
+       "unit": null,
+       "values": "2 – 60 (intero)",
+       "default": "vuoto; suggerimento dal rilievo collegato",
+       "required": "no; se lo inserisci serve anche la fonte",
+       "help": [
+        "Il numero di fermate prima della modifica. Numero intero da 2 a 60. Anche qui «dal rilievo: ‹n›» e «Usa» quando il rilievo collegato ha il dato."
+       ],
+       "src": "src/components/rt/AnagraficaForm.tsx:88"
+      },
+      {
+       "label": "Superficie utile della cabina [m²]",
+       "kind": "numero",
+       "unit": "m²",
+       "values": "0,1 – 20 (due decimali)",
+       "default": "vuoto",
+       "required": "no; se lo inserisci serve anche la fonte",
+       "help": [
+        "La superficie utile della cabina prima della modifica, in metri quadri, con al massimo due decimali (centesimi).",
+        "Valori da 0,1 a 20 m²."
+       ],
+       "src": "src/components/rt/AnagraficaForm.tsx:89"
+      },
+      {
+       "label": "Fonte dei dati",
+       "kind": "scelta",
+       "unit": null,
+       "values": "Scegli… · libretto · verbale di verifica · rilievo in sito · dichiarazione",
+       "default": "Scegli…",
+       "required": "sì, se hai inserito capienza, fermate o superficie",
+       "help": [
+        "Dove hai letto i tre dati sopra: libretto, verbale di verifica, rilievo in sito o dichiarazione.",
+        "Se inserisci almeno uno dei tre dati la fonte è obbligatoria."
+       ],
+       "src": "src/components/rt/AnagraficaForm.tsx:91"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Usa",
+       "help": "Copia nel campo accanto il valore letto dal rilievo collegato (capienza o fermate).",
+       "src": "src/components/rt/AnagraficaForm.tsx:51"
+      },
+      {
+       "label": "Salva l’anagrafica",
+       "help": "Salva l’anagrafica dell’impianto («Anagrafica salvata.»). Resta disattivato finché c’è un campo non valido («Controlla i campi evidenziati.»). Non compare se non puoi modificare i dati dell’impianto.",
+       "src": "src/components/rt/AnagraficaForm.tsx:35"
+      }
+     ],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "1 · Dati dell’impianto — Dati che la relazione legge dall’impianto e dal Calcolo argano",
+     "intro": [
+      "Elenco di sola lettura: la relazione stampa questi dati da dove vivono, uno solo in un posto. Vedi: «Ascensore per» (persone, merci accompagnate…), «Paracadute», «Passo delle staffe (cabina · contrappeso)», «Manovra», «Marcatura CE» (presente · assente · non nota, da confermare), «Carichi documentati» (Q, P, Mcw in kg), «Dati del libretto» (v in m/s, H in m). Un trattino significa che il dato non è stato inserito."
+     ],
+     "fields": [],
+     "actions": [
+      {
+       "label": "Modifica nei dati dell’impianto",
+       "help": "Apre la pagina «Dati dell’impianto» (uso, paracadute, passo delle staffe, manovra). (vedi il capitolo L’area di lavoro e gli impianti)",
+       "src": "src/components/rt/CardAnagrafica.tsx:37"
+      },
+      {
+       "label": "Modifica nel Calcolo argano",
+       "help": "Apre il Calcolo argano (marcatura CE, carichi documentati, dati del libretto). Compare solo se esiste un calcolo.",
+       "src": "src/components/rt/CardAnagrafica.tsx:38"
+      }
+     ],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "Barra della relazione e riepilogo",
+     "intro": [
+      "Compare quando la relazione ha una base. La barra ha i cinque link «1 · Impianto», «2 · Modifica», «3 · Sezioni», «4 · Allegati», «5 · Firme» (nome «Parti della relazione»), una riga di stato («Riepilogo aggiornato», «Aggiornamento del riepilogo…», oppure «Un campo da correggere: il riepilogo resta all’ultimo dato valido.» / «‹n› campi da correggere…») e, se puoi preparare la bozza, la barra della bozza.",
+      "La barra della bozza dice «Bozza salvata alle ‹ora›.» (o «Bozza ripresa, salvata il ‹data›.»); se non riesce a salvare dice «La bozza non è stata salvata: riprova tra poco.»",
+      "Sotto, il riepilogo «Stato della relazione» ha quattro indicatori: «Verifiche della relazione» («Tutte soddisfatte», «‹n› non soddisfatte, ‹m› con avviso» o «‹n› con avviso»), «Sezioni» (quante), «Documenti attesi» («Nessuno da allegare» oppure «‹n› da allegare») e «Legge di approvazione» (la sigla, con «(da confermare sul libretto)» se è solo quella proposta dall’anno, oppure «Da indicare»). Se mancano dati senza i quali non si emette, l’elenco è in giallo: «Mancano ‹n› dati senza i quali la relazione non si emette:». Gli altri dati non indicati sono in un riquadro a scomparsa: «‹n› dati non indicati: la relazione li stampa come «da indicare ⚠»». Se la legge indicata non corrisponde alla marcatura CE del calcolo, un avviso rosso dice di correggere l’una o l’altra prima di emettere."
+     ],
+     "fields": [],
+     "actions": [
+      {
+       "label": "Scarta la bozza",
+       "help": "Nella barra della bozza: dopo il «Scarta la bozza» il sistema chiede «Scartare la bozza e ripartire dai dati salvati?» con «Sì, scarta» e «No»; con il sì la pagina si riapre dall’ultimo documento dell’impianto o vuota.",
+       "src": "src/components/draft/DraftBar.tsx:35"
+      }
+     ],
+     "notes": [],
+     "warnings": [
+      "«Scarta la bozza» cancella tutto quello che hai scritto nella relazione e la riapre dai dati salvati: non si può annullare."
+     ]
+    },
+    {
+     "title": "2 · Modifica",
+     "intro": [
+      "Seconda carta: che cosa è la modifica e le risposte sulle strutture dell’edificio."
+     ],
+     "fields": [
+      {
+       "label": "Data della relazione",
+       "kind": "data",
+       "unit": null,
+       "values": "da oggi indietro fino alla data del Calcolo argano",
+       "default": "vuoto: la data dell’emissione",
+       "required": "no",
+       "help": [
+        "Il giorno scritto sulla relazione. Se lo lasci vuoto è il giorno dell’emissione (giorno italiano). Il suggerimento sotto il campo dice: «Se resta vuota è la data dell’emissione.»",
+        "Non può essere futura né precedente al Calcolo argano; altrimenti l’emissione è rifiutata («La data della relazione non è valida: non può essere futura né precedente al Calcolo argano.»)."
+       ],
+       "src": "src/components/rt/CardModifica.tsx:72"
+      },
+      {
+       "label": "Commessa",
+       "kind": "testo",
+       "unit": null,
+       "values": "1–40 caratteri",
+       "default": "vuoto",
+       "required": "no",
+       "help": [
+        "Il numero o il nome della commessa. Fino a 40 caratteri."
+       ],
+       "src": "src/components/rt/CardModifica.tsx:76"
+      },
+      {
+       "label": "Descrizione della modifica",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "20–4000 caratteri",
+       "default": "vuoto",
+       "required": "sì all’emissione",
+       "help": [
+        "Che cosa si modifica, in parole tue: parti sostituite, motivo, risultato. È il testo principale della relazione.",
+        "Da 20 a 4000 caratteri. Sotto il campo il contatore dice «‹n› caratteri: per emettere ne servono almeno 20.» e poi «‹n› caratteri.»"
+       ],
+       "src": "src/components/rt/CardModifica.tsx:77"
+      },
+      {
+       "label": "La disposizione delle apparecchiature cambia rispetto a quella esistente",
+       "kind": "casella",
+       "unit": null,
+       "values": "spuntata / non spuntata",
+       "default": "non spuntata",
+       "required": "no",
+       "help": [
+        "Spunta se spostando o aggiungendo apparecchiature la disposizione del locale o del vano cambia. Cambia anche le domande sulle strutture (vedi sotto)."
+       ],
+       "src": "src/components/rt/CardModifica.tsx:79"
+      },
+      {
+       "label": "Come cambia la disposizione",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "1–500 caratteri",
+       "default": "vuoto",
+       "required": "no; compare solo con la casella precedente spuntata",
+       "help": [
+        "Descrivi come cambia la disposizione delle apparecchiature."
+       ],
+       "src": "src/components/rt/CardModifica.tsx:83"
+      },
+      {
+       "label": "Nota della prima pagina",
+       "kind": "testo lungo",
+       "unit": null,
+       "values": "1–600 caratteri",
+       "default": "vuoto",
+       "required": "no",
+       "help": [
+        "Una nota che la relazione stampa nella prima pagina. Facoltativa, fino a 600 caratteri."
+       ],
+       "src": "src/components/rt/CardModifica.tsx:84"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "2 · Modifica — Strutture dell’edificio",
+     "intro": [
+      "Sotto il titolo «Strutture dell’edificio» una frase dice che cosa chiede la norma per questa modifica: il documento sulle strutture portanti compare tra i documenti attesi; basta la dichiarazione del tecnico; la regola non si applica; devi rispondere sotto; oppure nessuna regola richiama le strutture.",
+      "Le domande compaiono solo quando la regola le chiede, in base ai carichi e alle parti sostituite."
+     ],
+     "fields": [
+      {
+       "label": "Con la modifica, le forze sulle strutture portanti dell’edificio",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "aumentano · non aumentano",
+       "default": "nessuna risposta",
+       "required": "sì quando la domanda compare (altrimenti il dato manca)",
+       "help": [
+        "Scegli tra «aumentano» e «non aumentano». Dalla risposta dipende se serve il documento sulle strutture o basta la dichiarazione. Nel caso di macchina nuova, apparecchiature del locale spostate o disposizione cambiata."
+       ],
+       "src": "src/components/rt/CardModifica.tsx:88"
+      },
+      {
+       "label": "Con il contrappeso fuori dal prospetto 2, la dichiarazione del proprietario è pertinente?",
+       "kind": "pulsanti di scelta",
+       "unit": null,
+       "values": "sì, è pertinente · no",
+       "default": "nessuna risposta",
+       "required": "sì quando la domanda compare",
+       "help": [
+        "Scegli tra «sì, è pertinente» e «no». Compare solo quando la regola la chiede (contrappeso oltre il prospetto 2, o carichi aumentati senza esito certo dai documenti)."
+       ],
+       "src": "src/components/rt/CardModifica.tsx:99"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "3 · Sezioni e componenti",
+     "intro": [
+      "Terza carta. Il testo: «Le sezioni portate dalle parti sostituite o modificate e dalle regole della norma sono fisse, ciascuna con il suo motivo; altre si aggiungono indicando perché. In ogni sezione: i dati del componente che i documenti di base non hanno e le verifiche come le stampa la relazione.»",
+      "Le sezioni possibili sono dodici, nell’ordine del documento: «Quadro di manovra», «Cabina e carichi», «Funi di trazione», «Argano», «Locale del macchinario» (solo sul percorso del locale, o con un locale disegnato sopra il vano), «Guide della cabina», «Guide del contrappeso», «Ammortizzatori», «Limitatore di velocità e paracadute», «Porte di piano e di cabina», «Contrappeso», «Vano, fossa e testata» (solo sul percorso del progetto del vano).",
+      "Ogni sezione in relazione ha un’etichetta: «dalla regola» (fissa) o «aggiunta dal tecnico». Quelle «dalla regola» mostrano sotto «Perché è nella relazione» i motivi: la parte sostituita (per esempio «Macchina (argano)», «Funi», «Quadro di manovra», «Limitatore di velocità») o il caso della variazione (velocità, portata, corsa), con il riferimento alla norma (numeri di punto). Le sezioni dalla regola non si possono togliere.",
+      "Ogni sezione ha poi i campi dei dati del componente (blocchi descritti qui sotto: solo Quadro, Cabina, Guide, Ammortizzatori, Limitatore, Porte e Contrappeso ne hanno; Funi, Argano, Locale e Vano mostrano solo le verifiche) e la tabella delle verifiche con le colonne «Verifica», «Valore», «Limite», «Esito» e «Riferimento»."
+     ],
+     "fields": [
+      {
+       "label": "Motivo dell’aggiunta",
+       "kind": "testo",
+       "unit": null,
+       "values": "3–300 caratteri",
+       "default": "il motivo scritto all’aggiunta",
+       "required": "sì (per una sezione aggiunta)",
+       "help": [
+        "Compare per le sezioni «aggiunte dal tecnico»: il motivo per cui l’hai aggiunta, che la relazione stampa nella sezione. Da 3 a 300 caratteri; con meno di 3 caratteri il campo è segnato in errore."
+       ],
+       "src": "src/components/rt/CardSezioni.tsx:114"
+      },
+      {
+       "label": "Perché aggiungi «‹titolo›»",
+       "kind": "testo",
+       "unit": null,
+       "values": "3–300 caratteri",
+       "default": "vuoto",
+       "required": "sì per confermare l’aggiunta",
+       "help": [
+        "Il motivo, scritto al momento dell’aggiunta di una sezione dall’elenco «Altre sezioni». Suggerimento: «Almeno 3 caratteri: la relazione stampa il motivo nella sezione.»"
+       ],
+       "src": "src/components/rt/CardSezioni.tsx:80"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Aggiungi «‹titolo›»",
+       "help": "Nell’elenco «Altre sezioni» (le sezioni non richieste dalla regola per questa modifica: «aggiungile se il componente è comunque interessato»): apre il campo del motivo.",
+       "src": "src/components/rt/CardSezioni.tsx:77"
+      },
+      {
+       "label": "Aggiungi alla relazione",
+       "help": "Conferma l’aggiunta. Resta disattivato finché il motivo ha meno di 3 caratteri. La sezione entra nella relazione al successivo aggiornamento del riepilogo.",
+       "src": "src/components/rt/CardSezioni.tsx:84"
+      },
+      {
+       "label": "Annulla",
+       "help": "Chiude il campo del motivo senza aggiungere.",
+       "src": "src/components/rt/CardSezioni.tsx:85"
+      },
+      {
+       "label": "Togli dalla relazione",
+       "help": "Toglie una sezione aggiunta da te (non quelle «dalla regola»). Vale anche per una sezione ancora «in attesa» («‹titolo› entra nella relazione al prossimo aggiornamento del riepilogo, con un motivo di almeno 3 caratteri.»).",
+       "src": "src/components/rt/CardSezioni.tsx:117"
+      }
+     ],
+     "notes": [
+      "Alcuni campi dei blocchi compaiono solo sul percorso del rilievo del locale («solo locale»): sul percorso del progetto del vano il progetto conosce già quelle misure e non le richiede. Altri compaiono solo con la UNI 10411-1.",
+      "I numeri hanno il loro intervallo scritto sotto il campo («Valori ammessi: da … a … ‹unità›»); fuori dall’intervallo il suggerimento diventa «Fuori dai valori ammessi: da … a … ‹unità›» in rosso. I testi hanno una lunghezza massima («Al massimo ‹n› caratteri.»).",
+      "I nomi dei campi con unità mostrano l’unità tra parentesi quadre nell’etichetta, per esempio «Tensione dei circuiti di comando [V]»."
+     ],
+     "warnings": [
+      "Un dato componente inserito a mano senza la sua fonte (tipo di documento e riferimento di 3–160 caratteri) blocca l’emissione.",
+      "Le sezioni «dalla regola» non si possono togliere; «Togli dalla relazione» cancella il motivo che avevi scritto per una sezione aggiunta."
+     ]
+    },
+    {
+     "title": "3 · Sezioni e componenti — Quadro di manovra (dati del componente)",
+     "intro": [
+      "Compare nella sezione «Quadro di manovra» dell’elenco, quando la relazione la contiene. Chiede ciò che i documenti di base non hanno. I campi con la dicitura «solo UNI 10411-1» compaiono soltanto se la relazione segue la UNI 10411-1; con la UNI 10411-11 non vengono chiesti."
+     ],
+     "fields": [
+      {
+       "label": "Tensione dei circuiti di comando [V]",
+       "kind": "numero",
+       "unit": "V",
+       "values": "12 – 400",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La tensione dei circuiti di comando del quadro, dalla targa o dallo schema elettrico.",
+        "Valori ammessi: da 12 a 400 V."
+       ],
+       "src": "src/components/rt/campi.ts:71"
+      },
+      {
+       "label": "Corrente dei circuiti di comando",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "corrente alternata",
+        "corrente continua"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no",
+       "help": [
+        "Il tipo di corrente dei circuiti di comando."
+       ],
+       "src": "src/components/rt/campi.ts:71"
+      },
+      {
+       "label": "Tensione dei contatti delle serrature di piano [V]",
+       "kind": "numero",
+       "unit": "V",
+       "values": "12 – 400",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo con la UNI 10411-1",
+       "help": [
+        "La tensione ai contatti delle serrature di piano.",
+        "Valori ammessi: da 12 a 400 V."
+       ],
+       "src": "src/components/rt/campi.ts:71"
+      },
+      {
+       "label": "Corrente dei contatti delle serrature",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "corrente alternata",
+        "corrente continua"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no; solo con la UNI 10411-1",
+       "help": [
+        "Il tipo di corrente ai contatti delle serrature."
+       ],
+       "src": "src/components/rt/campi.ts:71"
+      },
+      {
+       "label": "Parte elettrica esistente",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "rifatta",
+        "compatibile, con i conduttori contrassegnati"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no; solo con la UNI 10411-1",
+       "help": [
+        "Che cosa succede alla parte elettrica esistente: rifatta, oppure compatibile con i conduttori contrassegnati."
+       ],
+       "src": "src/components/rt/campi.ts:71"
+      },
+      {
+       "label": "Costruttore del quadro",
+       "kind": "testo",
+       "unit": null,
+       "values": "fino a 80 caratteri",
+       "default": "vuoto",
+       "required": "no",
+       "help": [
+        "Il costruttore del quadro, dalla targa."
+       ],
+       "src": "src/components/rt/campi.ts:71"
+      },
+      {
+       "label": "Modello del quadro",
+       "kind": "testo",
+       "unit": null,
+       "values": "fino a 80 caratteri",
+       "default": "vuoto",
+       "required": "no",
+       "help": [
+        "Il modello del quadro, dalla targa."
+       ],
+       "src": "src/components/rt/campi.ts:71"
+      },
+      {
+       "label": "Fonte dei dati del quadro",
+       "kind": "testo",
+       "unit": null,
+       "values": "tipo + riferimento (3–160 caratteri) + file facoltativo",
+       "default": "vuoto",
+       "required": "sì all’emissione, se nel blocco hai inserito dati che richiedono la fonte",
+       "help": [
+        "Da dove hai preso i dati del quadro (targa, schema, libretto…). Richiesta se inserisci tensione dei circuiti di comando, tensione dei contatti delle serrature, costruttore o modello.",
+        "La fonte ha tre campi: «Tipo di documento» (Scegli… · targa · certificato · scheda tecnica · libretto · verbale · rilievo in sito · dichiarazione · altro), «Riferimento» (fino a 160 caratteri; suggerimento: «Ad esempio il numero del certificato, la targa o la pagina del libretto.») e «Documento allegato» (uno dei file della relazione, «Allegato n · titolo», oppure «Nessun documento allegato»; il campo è disattivato, con «Nessun documento nella relazione», se la relazione non ha ancora file).",
+        "All’emissione la fonte è obbligatoria quando nel blocco hai inserito almeno uno dei dati che la richiedono: il tipo di documento e il riferimento (da 3 a 160 caratteri) sono necessari, il file è facoltativo. Se manca, l’emissione resta bloccata e il campo è segnalato."
+       ],
+       "src": "src/components/rt/campi.ts:71"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "3 · Sezioni e componenti — Cabina (dati del componente)",
+     "intro": [
+      "Compare nella sezione «Cabina e carichi», solo sul percorso del locale."
+     ],
+     "fields": [
+      {
+       "label": "Superficie utile della cabina [m²]",
+       "kind": "numero",
+       "unit": "m²",
+       "values": "0,1 – 20",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "La superficie utile della cabina dopo la modifica. Si inserisce con due decimali al massimo (centesimi di m²).",
+        "Valori ammessi: da 0,1 a 20 m²."
+       ],
+       "src": "src/components/rt/campi.ts:75"
+      },
+      {
+       "label": "Fonte della superficie",
+       "kind": "testo",
+       "unit": null,
+       "values": "tipo + riferimento (3–160 caratteri) + file facoltativo",
+       "default": "vuoto",
+       "required": "sì all’emissione, se nel blocco hai inserito dati che richiedono la fonte; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "Da dove hai preso la superficie (misura in sito, scheda, libretto…). Richiesta se inserisci la superficie.",
+        "La fonte ha tre campi: «Tipo di documento» (Scegli… · targa · certificato · scheda tecnica · libretto · verbale · rilievo in sito · dichiarazione · altro), «Riferimento» (fino a 160 caratteri; suggerimento: «Ad esempio il numero del certificato, la targa o la pagina del libretto.») e «Documento allegato» (uno dei file della relazione, «Allegato n · titolo», oppure «Nessun documento allegato»; il campo è disattivato, con «Nessun documento nella relazione», se la relazione non ha ancora file).",
+        "All’emissione la fonte è obbligatoria quando nel blocco hai inserito almeno uno dei dati che la richiedono: il tipo di documento e il riferimento (da 3 a 160 caratteri) sono necessari, il file è facoltativo. Se manca, l’emissione resta bloccata e il campo è segnalato."
+       ],
+       "src": "src/components/rt/campi.ts:75"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "3 · Sezioni e componenti — Guide della cabina (dati del componente)",
+     "intro": [
+      "Compare nella sezione «Guide della cabina». I campi «solo locale» si chiedono sul percorso del rilievo del locale; sul percorso del progetto del vano il progetto li conosce già."
+     ],
+     "fields": [
+      {
+       "label": "Profilo delle guide",
+       "kind": "scelta",
+       "unit": null,
+       "values": "T45/A · T50/A · T70-1/A · T75-3/B · T82/B · T89/B · T90/B · T114/B · T125/B · T127-1/B · T45x45x5 · T70x70x8 · profilo inserito a mano",
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no",
+       "help": [
+        "Il profilo delle guide: scegli un profilo del catalogo o «profilo inserito a mano» (allora compaiono i campi della sezione). I profili del catalogo sono T45/A · T50/A · T70-1/A · T75-3/B · T82/B · T89/B · T90/B · T114/B · T125/B · T127-1/B · T45x45x5 · T70x70x8 · profilo inserito a mano.",
+        "Serve alle verifiche di resistenza e deformazione delle guide.",
+        "I valori del profilo inserito a mano (area, momenti, moduli, raggio, spessore, massa) devono essere maggiori di zero; i momenti e i moduli si inseriscono in mm⁴ e mm³."
+       ],
+       "src": "src/components/rt/campi.ts:78"
+      },
+      {
+       "label": "Sigla del profilo",
+       "kind": "testo",
+       "unit": null,
+       "values": "fino a 40 caratteri",
+       "default": "vuoto",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "La sigla con cui chiami il profilo inserito a mano."
+       ],
+       "src": "src/components/rt/campi.ts:79"
+      },
+      {
+       "label": "Area della sezione A [mm²]",
+       "kind": "numero",
+       "unit": "mm²",
+       "values": "0 – 50000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "L’area della sezione del profilo inserito a mano, dalla scheda tecnica.",
+        "Valori ammessi: da 0 a 50000 mm²."
+       ],
+       "src": "src/components/rt/campi.ts:79"
+      },
+      {
+       "label": "Momento d’inerzia Ix [mm⁴]",
+       "kind": "numero",
+       "unit": "mm⁴",
+       "values": "0 – 1000000000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "Momento d’inerzia attorno all’asse x del profilo inserito a mano (se la scheda lo dà in cm⁴, convertilo: 1 cm⁴ = 10 000 mm⁴).",
+        "Valori ammessi: da 0 a 1000000000 mm⁴."
+       ],
+       "src": "src/components/rt/campi.ts:79"
+      },
+      {
+       "label": "Momento d’inerzia Iy [mm⁴]",
+       "kind": "numero",
+       "unit": "mm⁴",
+       "values": "0 – 1000000000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "Come Ix, attorno all’asse y.",
+        "Valori ammessi: da 0 a 1000000000 mm⁴."
+       ],
+       "src": "src/components/rt/campi.ts:79"
+      },
+      {
+       "label": "Modulo di resistenza Wx [mm³]",
+       "kind": "numero",
+       "unit": "mm³",
+       "values": "0 – 10000000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "Modulo di resistenza attorno all’asse x del profilo inserito a mano (1 cm³ = 1000 mm³).",
+        "Valori ammessi: da 0 a 10000000 mm³."
+       ],
+       "src": "src/components/rt/campi.ts:79"
+      },
+      {
+       "label": "Modulo di resistenza Wy [mm³]",
+       "kind": "numero",
+       "unit": "mm³",
+       "values": "0 – 10000000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "Come Wx, attorno all’asse y.",
+        "Valori ammessi: da 0 a 10000000 mm³."
+       ],
+       "src": "src/components/rt/campi.ts:79"
+      },
+      {
+       "label": "Raggio d’inerzia minimo [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "0 – 500",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "Il raggio d’inerzia minimo del profilo inserito a mano.",
+        "Valori ammessi: da 0 a 500 mm."
+       ],
+       "src": "src/components/rt/campi.ts:79"
+      },
+      {
+       "label": "Spessore del gambo c [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "0 – 100",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "Lo spessore del gambo del profilo inserito a mano.",
+        "Valori ammessi: da 0 a 100 mm."
+       ],
+       "src": "src/components/rt/campi.ts:79"
+      },
+      {
+       "label": "Massa per metro q [kg/m]",
+       "kind": "numero",
+       "unit": "kg/m",
+       "values": "0 – 200",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "La massa per metro di guida del profilo inserito a mano.",
+        "Valori ammessi: da 0 a 200 kg/m."
+       ],
+       "src": "src/components/rt/campi.ts:79"
+      },
+      {
+       "label": "Resistenza a trazione dell’acciaio Rm [N/mm²]",
+       "kind": "numero",
+       "unit": "N/mm²",
+       "values": "370 – 520",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La resistenza a trazione dell’acciaio delle guide (dal certificato o dalla scheda).",
+        "Valori ammessi: da 370 a 520 N/mm²."
+       ],
+       "src": "src/components/rt/campi.ts:80"
+      },
+      {
+       "label": "Allungamento dell’acciaio",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "oltre il 12 %",
+        "dall’8 al 12 %"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no",
+       "help": [
+        "L’allungamento a rottura dell’acciaio delle guide, dal certificato."
+       ],
+       "src": "src/components/rt/campi.ts:80"
+      },
+      {
+       "label": "Arcata",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "centrale",
+        "a zaino"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "Il tipo di arcata della cabina."
+       ],
+       "src": "src/components/rt/campi.ts:79"
+      },
+      {
+       "label": "Larghezza interna della cabina A [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "400 – 3000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "La larghezza interna della cabina, lato porte.",
+        "Valori ammessi: da 400 a 3000 mm."
+       ],
+       "src": "src/components/rt/campi.ts:79"
+      },
+      {
+       "label": "Profondità interna della cabina B [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "400 – 3000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "La profondità interna della cabina.",
+        "Valori ammessi: da 400 a 3000 mm."
+       ],
+       "src": "src/components/rt/campi.ts:79"
+      },
+      {
+       "label": "Centro della cabina dall’asse delle guide, x [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "-2000 – 2000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "La distanza del centro della cabina dall’asse delle guide, in direzione x (può essere negativa).",
+        "Valori ammessi: da -2000 a 2000 mm."
+       ],
+       "src": "src/components/rt/campi.ts:80"
+      },
+      {
+       "label": "Centro della cabina dall’asse delle guide, y [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "-2000 – 2000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "Come sopra, in direzione y.",
+        "Valori ammessi: da -2000 a 2000 mm."
+       ],
+       "src": "src/components/rt/campi.ts:80"
+      },
+      {
+       "label": "Punto di sospensione dall’asse delle guide, x [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "-2000 – 2000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La posizione del punto di sospensione rispetto all’asse delle guide, in x. Si chiede su entrambi i percorsi.",
+        "Valori ammessi: da -2000 a 2000 mm."
+       ],
+       "src": "src/components/rt/campi.ts:81"
+      },
+      {
+       "label": "Punto di sospensione dall’asse delle guide, y [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "-2000 – 2000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "Come sopra, in y. Su entrambi i percorsi.",
+        "Valori ammessi: da -2000 a 2000 mm."
+       ],
+       "src": "src/components/rt/campi.ts:81"
+      },
+      {
+       "label": "Distanza tra i pattini h [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "800 – 6000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "La distanza tra i pattini della cabina.",
+        "Valori ammessi: da 800 a 6000 mm."
+       ],
+       "src": "src/components/rt/campi.ts:82"
+      },
+      {
+       "label": "Pattini",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "a rulli",
+        "a strisciamento"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "Il tipo di pattini della cabina."
+       ],
+       "src": "src/components/rt/campi.ts:82"
+      },
+      {
+       "label": "Accessi della cabina",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "un accesso",
+        "due accessi opposti",
+        "due accessi a 90°"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "Quanti accessi ha la cabina e come sono disposti."
+       ],
+       "src": "src/components/rt/campi.ts:83"
+      },
+      {
+       "label": "Lunghezza della colonna di guide [m]",
+       "kind": "numero",
+       "unit": "m",
+       "values": "2 – 300",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "La lunghezza complessiva della colonna di guide (si ammette un decimale).",
+        "Valori ammessi: da 2 a 300 m."
+       ],
+       "src": "src/components/rt/campi.ts:83"
+      },
+      {
+       "label": "Fonte dei dati delle guide",
+       "kind": "testo",
+       "unit": null,
+       "values": "tipo + riferimento (3–160 caratteri) + file facoltativo",
+       "default": "vuoto",
+       "required": "sì all’emissione, se nel blocco hai inserito dati che richiedono la fonte",
+       "help": [
+        "Da dove hai preso i dati delle guide. Richiesta se inserisci un profilo a mano o la resistenza Rm.",
+        "La fonte ha tre campi: «Tipo di documento» (Scegli… · targa · certificato · scheda tecnica · libretto · verbale · rilievo in sito · dichiarazione · altro), «Riferimento» (fino a 160 caratteri; suggerimento: «Ad esempio il numero del certificato, la targa o la pagina del libretto.») e «Documento allegato» (uno dei file della relazione, «Allegato n · titolo», oppure «Nessun documento allegato»; il campo è disattivato, con «Nessun documento nella relazione», se la relazione non ha ancora file).",
+        "All’emissione la fonte è obbligatoria quando nel blocco hai inserito almeno uno dei dati che la richiedono: il tipo di documento e il riferimento (da 3 a 160 caratteri) sono necessari, il file è facoltativo. Se manca, l’emissione resta bloccata e il campo è segnalato."
+       ],
+       "src": "src/components/rt/campi.ts:84"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "3 · Sezioni e componenti — Guide del contrappeso (dati del componente)",
+     "intro": [
+      "Compare nella sezione «Guide del contrappeso». Il profilo, la resistenza e l’allungamento sono come per le guide della cabina; i campi «solo locale» si chiedono sul percorso del locale."
+     ],
+     "fields": [
+      {
+       "label": "Profilo delle guide",
+       "kind": "scelta",
+       "unit": null,
+       "values": "T45/A · T50/A · T70-1/A · T75-3/B · T82/B · T89/B · T90/B · T114/B · T125/B · T127-1/B · T45x45x5 · T70x70x8 · profilo inserito a mano",
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no",
+       "help": [
+        "Il profilo delle guide: scegli un profilo del catalogo o «profilo inserito a mano» (allora compaiono i campi della sezione). I profili del catalogo sono T45/A · T50/A · T70-1/A · T75-3/B · T82/B · T89/B · T90/B · T114/B · T125/B · T127-1/B · T45x45x5 · T70x70x8 · profilo inserito a mano.",
+        "Serve alle verifiche di resistenza e deformazione delle guide.",
+        "I valori del profilo inserito a mano (area, momenti, moduli, raggio, spessore, massa) devono essere maggiori di zero; i momenti e i moduli si inseriscono in mm⁴ e mm³."
+       ],
+       "src": "src/components/rt/campi.ts:87"
+      },
+      {
+       "label": "Sigla del profilo",
+       "kind": "testo",
+       "unit": null,
+       "values": "fino a 40 caratteri",
+       "default": "vuoto",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "La sigla con cui chiami il profilo inserito a mano."
+       ],
+       "src": "src/components/rt/campi.ts:88"
+      },
+      {
+       "label": "Area della sezione A [mm²]",
+       "kind": "numero",
+       "unit": "mm²",
+       "values": "0 – 50000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "L’area della sezione del profilo inserito a mano, dalla scheda tecnica.",
+        "Valori ammessi: da 0 a 50000 mm²."
+       ],
+       "src": "src/components/rt/campi.ts:88"
+      },
+      {
+       "label": "Momento d’inerzia Ix [mm⁴]",
+       "kind": "numero",
+       "unit": "mm⁴",
+       "values": "0 – 1000000000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "Momento d’inerzia attorno all’asse x del profilo inserito a mano (se la scheda lo dà in cm⁴, convertilo: 1 cm⁴ = 10 000 mm⁴).",
+        "Valori ammessi: da 0 a 1000000000 mm⁴."
+       ],
+       "src": "src/components/rt/campi.ts:88"
+      },
+      {
+       "label": "Momento d’inerzia Iy [mm⁴]",
+       "kind": "numero",
+       "unit": "mm⁴",
+       "values": "0 – 1000000000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "Come Ix, attorno all’asse y.",
+        "Valori ammessi: da 0 a 1000000000 mm⁴."
+       ],
+       "src": "src/components/rt/campi.ts:88"
+      },
+      {
+       "label": "Modulo di resistenza Wx [mm³]",
+       "kind": "numero",
+       "unit": "mm³",
+       "values": "0 – 10000000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "Modulo di resistenza attorno all’asse x del profilo inserito a mano (1 cm³ = 1000 mm³).",
+        "Valori ammessi: da 0 a 10000000 mm³."
+       ],
+       "src": "src/components/rt/campi.ts:88"
+      },
+      {
+       "label": "Modulo di resistenza Wy [mm³]",
+       "kind": "numero",
+       "unit": "mm³",
+       "values": "0 – 10000000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "Come Wx, attorno all’asse y.",
+        "Valori ammessi: da 0 a 10000000 mm³."
+       ],
+       "src": "src/components/rt/campi.ts:88"
+      },
+      {
+       "label": "Raggio d’inerzia minimo [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "0 – 500",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "Il raggio d’inerzia minimo del profilo inserito a mano.",
+        "Valori ammessi: da 0 a 500 mm."
+       ],
+       "src": "src/components/rt/campi.ts:88"
+      },
+      {
+       "label": "Spessore del gambo c [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "0 – 100",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "Lo spessore del gambo del profilo inserito a mano.",
+        "Valori ammessi: da 0 a 100 mm."
+       ],
+       "src": "src/components/rt/campi.ts:88"
+      },
+      {
+       "label": "Massa per metro q [kg/m]",
+       "kind": "numero",
+       "unit": "kg/m",
+       "values": "0 – 200",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; compare solo con «profilo inserito a mano»",
+       "help": [
+        "La massa per metro di guida del profilo inserito a mano.",
+        "Valori ammessi: da 0 a 200 kg/m."
+       ],
+       "src": "src/components/rt/campi.ts:88"
+      },
+      {
+       "label": "Resistenza a trazione dell’acciaio Rm [N/mm²]",
+       "kind": "numero",
+       "unit": "N/mm²",
+       "values": "370 – 520",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La resistenza a trazione dell’acciaio delle guide (dal certificato o dalla scheda).",
+        "Valori ammessi: da 370 a 520 N/mm²."
+       ],
+       "src": "src/components/rt/campi.ts:89"
+      },
+      {
+       "label": "Allungamento dell’acciaio",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "oltre il 12 %",
+        "dall’8 al 12 %"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no",
+       "help": [
+        "L’allungamento a rottura dell’acciaio delle guide, dal certificato."
+       ],
+       "src": "src/components/rt/campi.ts:89"
+      },
+      {
+       "label": "Larghezza del contrappeso tra le guide [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "100 – 2000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "La larghezza del contrappeso tra le guide.",
+        "Valori ammessi: da 100 a 2000 mm."
+       ],
+       "src": "src/components/rt/campi.ts:88"
+      },
+      {
+       "label": "Profondità del contrappeso [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "50 – 400",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "La profondità del contrappeso.",
+        "Valori ammessi: da 50 a 400 mm."
+       ],
+       "src": "src/components/rt/campi.ts:88"
+      },
+      {
+       "label": "Distanza tra i pattini h [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "500 – 4000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "La distanza tra i pattini del contrappeso (etichetta «Distanza tra i pattini h»).",
+        "Valori ammessi: da 500 a 4000 mm."
+       ],
+       "src": "src/components/rt/campi.ts:89"
+      },
+      {
+       "label": "Sotto la fossa c’è uno spazio accessibile alle persone",
+       "kind": "casella",
+       "unit": null,
+       "values": "spuntata / non spuntata",
+       "default": "non spuntata",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "Spunta se sotto la fossa c’è uno spazio raggiungibile dalle persone: cambia le verifiche del paracadute del contrappeso."
+       ],
+       "src": "src/components/rt/campi.ts:89"
+      },
+      {
+       "label": "Lunghezza della colonna di guide [m]",
+       "kind": "numero",
+       "unit": "m",
+       "values": "2 – 300",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "La lunghezza della colonna di guide del contrappeso.",
+        "Valori ammessi: da 2 a 300 m."
+       ],
+       "src": "src/components/rt/campi.ts:90"
+      },
+      {
+       "label": "Fonte dei dati delle guide",
+       "kind": "testo",
+       "unit": null,
+       "values": "tipo + riferimento (3–160 caratteri) + file facoltativo",
+       "default": "vuoto",
+       "required": "sì all’emissione, se nel blocco hai inserito dati che richiedono la fonte",
+       "help": [
+        "Da dove hai preso i dati delle guide del contrappeso. Richiesta se inserisci un profilo a mano o la resistenza Rm.",
+        "La fonte ha tre campi: «Tipo di documento» (Scegli… · targa · certificato · scheda tecnica · libretto · verbale · rilievo in sito · dichiarazione · altro), «Riferimento» (fino a 160 caratteri; suggerimento: «Ad esempio il numero del certificato, la targa o la pagina del libretto.») e «Documento allegato» (uno dei file della relazione, «Allegato n · titolo», oppure «Nessun documento allegato»; il campo è disattivato, con «Nessun documento nella relazione», se la relazione non ha ancora file).",
+        "All’emissione la fonte è obbligatoria quando nel blocco hai inserito almeno uno dei dati che la richiedono: il tipo di documento e il riferimento (da 3 a 160 caratteri) sono necessari, il file è facoltativo. Se manca, l’emissione resta bloccata e il campo è segnalato."
+       ],
+       "src": "src/components/rt/campi.ts:90"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "3 · Sezioni e componenti — Ammortizzatori della cabina (dati del componente)",
+     "intro": [
+      "Compare nella sezione «Ammortizzatori». Un blocco per la cabina e uno per il contrappeso. Per gli ammortizzatori lineari a molla il calcolo è la sezione stessa e non serve un file; per quelli in poliuretano o idraulici la relazione si aspetta il certificato d’esame del tipo (vedi «Allegati»)."
+     ],
+     "fields": [
+      {
+       "label": "Tipo",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "a molla",
+        "in poliuretano",
+        "idraulici"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "Il tipo di ammortizzatore."
+       ],
+       "src": "src/components/rt/campi.ts:53"
+      },
+      {
+       "label": "Numero",
+       "kind": "numero",
+       "unit": null,
+       "values": "1 – 4 (intero)",
+       "default": "vuoto",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "Quanti ammortizzatori ci sono per quel lato. Numero intero da 1 a 4."
+       ],
+       "src": "src/components/rt/campi.ts:53"
+      },
+      {
+       "label": "Corsa [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "10 – 1500",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "La corsa dell’ammortizzatore.",
+        "Valori ammessi: da 10 a 1500 mm."
+       ],
+       "src": "src/components/rt/campi.ts:53"
+      },
+      {
+       "label": "Altezza [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "20 – 2500",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "L’altezza dell’ammortizzatore a riposo.",
+        "Valori ammessi: da 20 a 2500 mm."
+       ],
+       "src": "src/components/rt/campi.ts:53"
+      },
+      {
+       "label": "Forza a corsa completa [N]",
+       "kind": "numero",
+       "unit": "N",
+       "values": "1 – 500000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La forza a corsa completa, dal catalogo o dal certificato.",
+        "Valori ammessi: da 1 a 500000 N."
+       ],
+       "src": "src/components/rt/campi.ts:54"
+      },
+      {
+       "label": "Certificato d’esame del tipo, numero",
+       "kind": "testo",
+       "unit": null,
+       "values": "fino a 80 caratteri",
+       "default": "vuoto",
+       "required": "no",
+       "help": [
+        "Il numero del certificato d’esame del tipo."
+       ],
+       "src": "src/components/rt/campi.ts:54"
+      },
+      {
+       "label": "Velocità d’urto massima del certificato [m/s]",
+       "kind": "numero",
+       "unit": "m/s",
+       "values": "0,1 – 10",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La velocità d’urto massima coperta dal certificato.",
+        "Valori ammessi: da 0,1 a 10 m/s."
+       ],
+       "src": "src/components/rt/campi.ts:54"
+      },
+      {
+       "label": "Massa minima del certificato [kg]",
+       "kind": "numero",
+       "unit": "kg",
+       "values": "1 – 20000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La massa minima coperta dal certificato. Non può superare la massa massima.",
+        "Valori ammessi: da 1 a 20000 kg."
+       ],
+       "src": "src/components/rt/campi.ts:54"
+      },
+      {
+       "label": "Massa massima del certificato [kg]",
+       "kind": "numero",
+       "unit": "kg",
+       "values": "1 – 20000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La massa massima coperta dal certificato.",
+        "Valori ammessi: da 1 a 20000 kg."
+       ],
+       "src": "src/components/rt/campi.ts:54"
+      },
+      {
+       "label": "Fonte dei dati degli ammortizzatori",
+       "kind": "testo",
+       "unit": null,
+       "values": "tipo + riferimento (3–160 caratteri) + file facoltativo",
+       "default": "vuoto",
+       "required": "sì all’emissione, se nel blocco hai inserito dati che richiedono la fonte",
+       "help": [
+        "Da dove hai preso i dati. Richiesta se inserisci la forza a corsa completa o i dati del certificato.",
+        "La fonte ha tre campi: «Tipo di documento» (Scegli… · targa · certificato · scheda tecnica · libretto · verbale · rilievo in sito · dichiarazione · altro), «Riferimento» (fino a 160 caratteri; suggerimento: «Ad esempio il numero del certificato, la targa o la pagina del libretto.») e «Documento allegato» (uno dei file della relazione, «Allegato n · titolo», oppure «Nessun documento allegato»; il campo è disattivato, con «Nessun documento nella relazione», se la relazione non ha ancora file).",
+        "All’emissione la fonte è obbligatoria quando nel blocco hai inserito almeno uno dei dati che la richiedono: il tipo di documento e il riferimento (da 3 a 160 caratteri) sono necessari, il file è facoltativo. Se manca, l’emissione resta bloccata e il campo è segnalato."
+       ],
+       "src": "src/components/rt/campi.ts:55"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "3 · Sezioni e componenti — Ammortizzatori del contrappeso (dati del componente)",
+     "intro": [
+      "Compare nella sezione «Ammortizzatori». Un blocco per la cabina e uno per il contrappeso. Per gli ammortizzatori lineari a molla il calcolo è la sezione stessa e non serve un file; per quelli in poliuretano o idraulici la relazione si aspetta il certificato d’esame del tipo (vedi «Allegati»)."
+     ],
+     "fields": [
+      {
+       "label": "Tipo",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "a molla",
+        "in poliuretano",
+        "idraulici"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "Il tipo di ammortizzatore."
+       ],
+       "src": "src/components/rt/campi.ts:53"
+      },
+      {
+       "label": "Numero",
+       "kind": "numero",
+       "unit": null,
+       "values": "1 – 4 (intero)",
+       "default": "vuoto",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "Quanti ammortizzatori ci sono per quel lato. Numero intero da 1 a 4."
+       ],
+       "src": "src/components/rt/campi.ts:53"
+      },
+      {
+       "label": "Corsa [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "10 – 1500",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "La corsa dell’ammortizzatore.",
+        "Valori ammessi: da 10 a 1500 mm."
+       ],
+       "src": "src/components/rt/campi.ts:53"
+      },
+      {
+       "label": "Altezza [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "20 – 2500",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "L’altezza dell’ammortizzatore a riposo.",
+        "Valori ammessi: da 20 a 2500 mm."
+       ],
+       "src": "src/components/rt/campi.ts:53"
+      },
+      {
+       "label": "Forza a corsa completa [N]",
+       "kind": "numero",
+       "unit": "N",
+       "values": "1 – 500000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La forza a corsa completa, dal catalogo o dal certificato.",
+        "Valori ammessi: da 1 a 500000 N."
+       ],
+       "src": "src/components/rt/campi.ts:54"
+      },
+      {
+       "label": "Certificato d’esame del tipo, numero",
+       "kind": "testo",
+       "unit": null,
+       "values": "fino a 80 caratteri",
+       "default": "vuoto",
+       "required": "no",
+       "help": [
+        "Il numero del certificato d’esame del tipo."
+       ],
+       "src": "src/components/rt/campi.ts:54"
+      },
+      {
+       "label": "Velocità d’urto massima del certificato [m/s]",
+       "kind": "numero",
+       "unit": "m/s",
+       "values": "0,1 – 10",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La velocità d’urto massima coperta dal certificato.",
+        "Valori ammessi: da 0,1 a 10 m/s."
+       ],
+       "src": "src/components/rt/campi.ts:54"
+      },
+      {
+       "label": "Massa minima del certificato [kg]",
+       "kind": "numero",
+       "unit": "kg",
+       "values": "1 – 20000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La massa minima coperta dal certificato. Non può superare la massa massima.",
+        "Valori ammessi: da 1 a 20000 kg."
+       ],
+       "src": "src/components/rt/campi.ts:54"
+      },
+      {
+       "label": "Massa massima del certificato [kg]",
+       "kind": "numero",
+       "unit": "kg",
+       "values": "1 – 20000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La massa massima coperta dal certificato.",
+        "Valori ammessi: da 1 a 20000 kg."
+       ],
+       "src": "src/components/rt/campi.ts:54"
+      },
+      {
+       "label": "Fonte dei dati degli ammortizzatori",
+       "kind": "testo",
+       "unit": null,
+       "values": "tipo + riferimento (3–160 caratteri) + file facoltativo",
+       "default": "vuoto",
+       "required": "sì all’emissione, se nel blocco hai inserito dati che richiedono la fonte",
+       "help": [
+        "Da dove hai preso i dati. Richiesta se inserisci la forza a corsa completa o i dati del certificato.",
+        "La fonte ha tre campi: «Tipo di documento» (Scegli… · targa · certificato · scheda tecnica · libretto · verbale · rilievo in sito · dichiarazione · altro), «Riferimento» (fino a 160 caratteri; suggerimento: «Ad esempio il numero del certificato, la targa o la pagina del libretto.») e «Documento allegato» (uno dei file della relazione, «Allegato n · titolo», oppure «Nessun documento allegato»; il campo è disattivato, con «Nessun documento nella relazione», se la relazione non ha ancora file).",
+        "All’emissione la fonte è obbligatoria quando nel blocco hai inserito almeno uno dei dati che la richiedono: il tipo di documento e il riferimento (da 3 a 160 caratteri) sono necessari, il file è facoltativo. Se manca, l’emissione resta bloccata e il campo è segnalato."
+       ],
+       "src": "src/components/rt/campi.ts:55"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "3 · Sezioni e componenti — Limitatore di velocità (dati del componente)",
+     "intro": [
+      "Compare nella sezione «Limitatore di velocità e paracadute». Le voci con un valore e una fonte sono gruppi: «Valore» più «Fonte del valore»."
+     ],
+     "fields": [
+      {
+       "label": "Modello del limitatore",
+       "kind": "scelta",
+       "unit": null,
+       "values": "modelli del catalogo · altro modello, dati a mano",
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "Il modello del limitatore tra quelli del catalogo di LiftPilot (si legge la sigla del modello) oppure «altro modello, dati a mano» (allora compaiono i tre campi sotto)."
+       ],
+       "src": "src/components/rt/campi.ts:94"
+      },
+      {
+       "label": "Diametro della puleggia [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "100 – 600",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina); compare solo con «altro modello, dati a mano»",
+       "help": [
+        "Il diametro della puleggia del limitatore.",
+        "Valori ammessi: da 100 a 600 mm."
+       ],
+       "src": "src/components/rt/campi.ts:95"
+      },
+      {
+       "label": "Diametro della fune [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "4 – 16",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina); compare solo con «altro modello, dati a mano»",
+       "help": [
+        "Il diametro della fune del limitatore (un decimale).",
+        "Valori ammessi: da 4 a 16 mm."
+       ],
+       "src": "src/components/rt/campi.ts:96"
+      },
+      {
+       "label": "Fonte dei dati della puleggia",
+       "kind": "testo",
+       "unit": null,
+       "values": "tipo + riferimento (3–160 caratteri) + file facoltativo",
+       "default": "vuoto",
+       "required": "sì all’emissione, se nel blocco hai inserito dati che richiedono la fonte; solo sul percorso del locale (rilievo del locale macchina); compare solo con «altro modello, dati a mano»",
+       "help": [
+        "Da dove hai preso i dati della puleggia e della fune del modello a mano.",
+        "La fonte ha tre campi: «Tipo di documento» (Scegli… · targa · certificato · scheda tecnica · libretto · verbale · rilievo in sito · dichiarazione · altro), «Riferimento» (fino a 160 caratteri; suggerimento: «Ad esempio il numero del certificato, la targa o la pagina del libretto.») e «Documento allegato» (uno dei file della relazione, «Allegato n · titolo», oppure «Nessun documento allegato»; il campo è disattivato, con «Nessun documento nella relazione», se la relazione non ha ancora file).",
+        "All’emissione la fonte è obbligatoria quando nel blocco hai inserito almeno uno dei dati che la richiedono: il tipo di documento e il riferimento (da 3 a 160 caratteri) sono necessari, il file è facoltativo. Se manca, l’emissione resta bloccata e il campo è segnalato."
+       ],
+       "src": "src/components/rt/campi.ts:97"
+      },
+      {
+       "label": "Velocità d’intervento di targa",
+       "kind": "numero",
+       "unit": "m/s",
+       "values": "0,2 – 12",
+       "default": "vuoto",
+       "required": "no; se lo inserisci servono anche tipo di documento e riferimento",
+       "help": [
+        "La velocità d’intervento del limitatore scritta sulla targa.",
+        "Il campo è un gruppo: «Valore [m/s]» (da 0,2 a 12 m/s) e «Fonte del valore» con «Tipo di documento», «Riferimento» e «Documento allegato». Un valore letto su un documento porta sempre la sua fonte: all’emissione servono il valore e la fonte insieme."
+       ],
+       "src": "src/components/rt/campi.ts:98"
+      },
+      {
+       "label": "Diametro della fune del limitatore [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "4 – 16",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "Il diametro della fune del limitatore, dal certificato della fune.",
+        "Valori ammessi: da 4 a 16 mm."
+       ],
+       "src": "src/components/rt/campi.ts:99"
+      },
+      {
+       "label": "Carico di rottura della fune [N]",
+       "kind": "numero",
+       "unit": "N",
+       "values": "5000 – 100000",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "Il carico di rottura della fune del limitatore, dal certificato.",
+        "Valori ammessi: da 5000 a 100000 N."
+       ],
+       "src": "src/components/rt/campi.ts:99"
+      },
+      {
+       "label": "Formazione della fune",
+       "kind": "testo",
+       "unit": null,
+       "values": "fino a 40 caratteri",
+       "default": "vuoto",
+       "required": "no",
+       "help": [
+        "La formazione della fune (per esempio il numero e la composizione dei trefoli)."
+       ],
+       "src": "src/components/rt/campi.ts:100"
+      },
+      {
+       "label": "Fonte dei dati della fune",
+       "kind": "testo",
+       "unit": null,
+       "values": "tipo + riferimento (3–160 caratteri) + file facoltativo",
+       "default": "vuoto",
+       "required": "sì all’emissione, se nel blocco hai inserito dati che richiedono la fonte",
+       "help": [
+        "Da dove hai preso i dati della fune del limitatore (certificato…).",
+        "La fonte ha tre campi: «Tipo di documento» (Scegli… · targa · certificato · scheda tecnica · libretto · verbale · rilievo in sito · dichiarazione · altro), «Riferimento» (fino a 160 caratteri; suggerimento: «Ad esempio il numero del certificato, la targa o la pagina del libretto.») e «Documento allegato» (uno dei file della relazione, «Allegato n · titolo», oppure «Nessun documento allegato»; il campo è disattivato, con «Nessun documento nella relazione», se la relazione non ha ancora file).",
+        "All’emissione la fonte è obbligatoria quando nel blocco hai inserito almeno uno dei dati che la richiedono: il tipo di documento e il riferimento (da 3 a 160 caratteri) sono necessari, il file è facoltativo. Se manca, l’emissione resta bloccata e il campo è segnalato."
+       ],
+       "src": "src/components/rt/campi.ts:100"
+      },
+      {
+       "label": "Forza di trazione del limitatore sulla fune",
+       "kind": "numero",
+       "unit": "N",
+       "values": "100 – 20000",
+       "default": "vuoto",
+       "required": "no; se lo inserisci servono anche tipo di documento e riferimento",
+       "help": [
+        "La forza con cui il limitatore tira la fune, dalla scheda tecnica.",
+        "Il campo è un gruppo: «Valore [N]» (da 100 a 20000 N) e «Fonte del valore» con «Tipo di documento», «Riferimento» e «Documento allegato». Un valore letto su un documento porta sempre la sua fonte: all’emissione servono il valore e la fonte insieme."
+       ],
+       "src": "src/components/rt/campi.ts:101"
+      },
+      {
+       "label": "Forza che serve ad azionare il paracadute",
+       "kind": "numero",
+       "unit": "N",
+       "values": "50 – 10000",
+       "default": "vuoto",
+       "required": "no; se lo inserisci servono anche tipo di documento e riferimento",
+       "help": [
+        "La forza necessaria ad azionare il paracadute, dal certificato.",
+        "Il campo è un gruppo: «Valore [N]» (da 50 a 10000 N) e «Fonte del valore» con «Tipo di documento», «Riferimento» e «Documento allegato». Un valore letto su un documento porta sempre la sua fonte: all’emissione servono il valore e la fonte insieme."
+       ],
+       "src": "src/components/rt/campi.ts:101"
+      },
+      {
+       "label": "Velocità d’intervento massima della regola d’origine",
+       "kind": "numero",
+       "unit": "m/s",
+       "values": "0,2 – 12",
+       "default": "vuoto",
+       "required": "no; se lo inserisci servono anche tipo di documento e riferimento; solo con la UNI 10411-1",
+       "help": [
+        "La velocità massima d’intervento del limitatore secondo la regola con cui l’impianto fu approvato.",
+        "Il campo è un gruppo: «Valore [m/s]» (da 0,2 a 12 m/s) e «Fonte del valore» con «Tipo di documento», «Riferimento» e «Documento allegato». Un valore letto su un documento porta sempre la sua fonte: all’emissione servono il valore e la fonte insieme."
+       ],
+       "src": "src/components/rt/campi.ts:102"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "3 · Sezioni e componenti — Porte di piano (dati del componente)",
+     "intro": [
+      "Compare nella sezione «Porte di piano e di cabina»; qui il blocco «Porte di piano». Le due classi di resistenza al fuoco si chiedono solo per le porte di piano."
+     ],
+     "fields": [
+      {
+       "label": "Tipo di porte",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "scorrevoli automatiche",
+        "scorrevoli manuali",
+        "a battente",
+        "altro"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "Il tipo di porte."
+       ],
+       "src": "src/components/rt/campi.ts:60"
+      },
+      {
+       "label": "Classe di resistenza al fuoco delle porte esistenti",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "nessuna",
+        "E30",
+        "E60",
+        "E120",
+        "EI30",
+        "EI60",
+        "EI120"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no",
+       "help": [
+        "La classe di resistenza al fuoco delle porte di piano esistenti (certificato o targa)."
+       ],
+       "src": "src/components/rt/campi.ts:61"
+      },
+      {
+       "label": "Classe di resistenza al fuoco richiesta per le porte nuove",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "nessuna",
+        "E30",
+        "E60",
+        "E120",
+        "EI30",
+        "EI60",
+        "EI120"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no",
+       "help": [
+        "La classe richiesta per le porte nuove. Se una delle due classi non è «nessuna», la relazione si aspetta il certificato della classe."
+       ],
+       "src": "src/components/rt/campi.ts:61"
+      },
+      {
+       "label": "Altezza di passaggio esistente [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "1500 – 2500",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "L’altezza di passaggio delle porte esistenti.",
+        "Valori ammessi: da 1500 a 2500 mm."
+       ],
+       "src": "src/components/rt/campi.ts:62"
+      },
+      {
+       "label": "Altezza di passaggio dopo la modifica [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "1500 – 2500",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "L’altezza di passaggio dopo la modifica.",
+        "Valori ammessi: da 1500 a 2500 mm."
+       ],
+       "src": "src/components/rt/campi.ts:62"
+      },
+      {
+       "label": "Tensione dell’operatore [V]",
+       "kind": "numero",
+       "unit": "V",
+       "values": "12 – 400",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La tensione dell’operatore porte.",
+        "Valori ammessi: da 12 a 400 V."
+       ],
+       "src": "src/components/rt/campi.ts:63"
+      },
+      {
+       "label": "Corrente dell’operatore",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "corrente alternata",
+        "corrente continua"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no",
+       "help": [
+        "Il tipo di corrente dell’operatore porte."
+       ],
+       "src": "src/components/rt/campi.ts:63"
+      },
+      {
+       "label": "Le serrature si sostituiscono",
+       "kind": "casella",
+       "unit": null,
+       "values": "spuntata / non spuntata",
+       "default": "non spuntata",
+       "required": "no",
+       "help": [
+        "Spunta se le serrature di piano (o di cabina) vengono sostituite: la relazione si aspetta i certificati d’esame del tipo delle serrature."
+       ],
+       "src": "src/components/rt/campi.ts:63"
+      },
+      {
+       "label": "Fonte dei dati delle porte",
+       "kind": "testo",
+       "unit": null,
+       "values": "tipo + riferimento (3–160 caratteri) + file facoltativo",
+       "default": "vuoto",
+       "required": "sì all’emissione, se nel blocco hai inserito dati che richiedono la fonte",
+       "help": [
+        "Da dove hai preso i dati delle porte. Richiesta se inserisci classe al fuoco, altezza di passaggio esistente o tensione dell’operatore.",
+        "La fonte ha tre campi: «Tipo di documento» (Scegli… · targa · certificato · scheda tecnica · libretto · verbale · rilievo in sito · dichiarazione · altro), «Riferimento» (fino a 160 caratteri; suggerimento: «Ad esempio il numero del certificato, la targa o la pagina del libretto.») e «Documento allegato» (uno dei file della relazione, «Allegato n · titolo», oppure «Nessun documento allegato»; il campo è disattivato, con «Nessun documento nella relazione», se la relazione non ha ancora file).",
+        "All’emissione la fonte è obbligatoria quando nel blocco hai inserito almeno uno dei dati che la richiedono: il tipo di documento e il riferimento (da 3 a 160 caratteri) sono necessari, il file è facoltativo. Se manca, l’emissione resta bloccata e il campo è segnalato."
+       ],
+       "src": "src/components/rt/campi.ts:63"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "3 · Sezioni e componenti — Porte di cabina (dati del componente)",
+     "intro": [
+      "Compare nella sezione «Porte di piano e di cabina»; qui il blocco «Porte di cabina»."
+     ],
+     "fields": [
+      {
+       "label": "Tipo di porte",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "scorrevoli automatiche",
+        "scorrevoli manuali",
+        "a battente",
+        "altro"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "Il tipo di porte."
+       ],
+       "src": "src/components/rt/campi.ts:60"
+      },
+      {
+       "label": "Altezza di passaggio esistente [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "1500 – 2500",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "L’altezza di passaggio delle porte esistenti.",
+        "Valori ammessi: da 1500 a 2500 mm."
+       ],
+       "src": "src/components/rt/campi.ts:62"
+      },
+      {
+       "label": "Altezza di passaggio dopo la modifica [mm]",
+       "kind": "numero",
+       "unit": "mm",
+       "values": "1500 – 2500",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
+       "help": [
+        "L’altezza di passaggio dopo la modifica.",
+        "Valori ammessi: da 1500 a 2500 mm."
+       ],
+       "src": "src/components/rt/campi.ts:62"
+      },
+      {
+       "label": "Tensione dell’operatore [V]",
+       "kind": "numero",
+       "unit": "V",
+       "values": "12 – 400",
+       "default": "vuoto: il dato resta «da indicare ⚠» nella relazione",
+       "required": "no",
+       "help": [
+        "La tensione dell’operatore porte.",
+        "Valori ammessi: da 12 a 400 V."
+       ],
+       "src": "src/components/rt/campi.ts:63"
+      },
+      {
+       "label": "Corrente dell’operatore",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "corrente alternata",
+        "corrente continua"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no",
+       "help": [
+        "Il tipo di corrente dell’operatore porte."
+       ],
+       "src": "src/components/rt/campi.ts:63"
+      },
+      {
+       "label": "Le serrature si sostituiscono",
+       "kind": "casella",
+       "unit": null,
+       "values": "spuntata / non spuntata",
+       "default": "non spuntata",
+       "required": "no",
+       "help": [
+        "Spunta se le serrature di piano (o di cabina) vengono sostituite: la relazione si aspetta i certificati d’esame del tipo delle serrature."
+       ],
+       "src": "src/components/rt/campi.ts:63"
+      },
+      {
+       "label": "Fonte dei dati delle porte",
+       "kind": "testo",
+       "unit": null,
+       "values": "tipo + riferimento (3–160 caratteri) + file facoltativo",
+       "default": "vuoto",
+       "required": "sì all’emissione, se nel blocco hai inserito dati che richiedono la fonte",
+       "help": [
+        "Da dove hai preso i dati delle porte. Richiesta se inserisci classe al fuoco, altezza di passaggio esistente o tensione dell’operatore.",
+        "La fonte ha tre campi: «Tipo di documento» (Scegli… · targa · certificato · scheda tecnica · libretto · verbale · rilievo in sito · dichiarazione · altro), «Riferimento» (fino a 160 caratteri; suggerimento: «Ad esempio il numero del certificato, la targa o la pagina del libretto.») e «Documento allegato» (uno dei file della relazione, «Allegato n · titolo», oppure «Nessun documento allegato»; il campo è disattivato, con «Nessun documento nella relazione», se la relazione non ha ancora file).",
+        "All’emissione la fonte è obbligatoria quando nel blocco hai inserito almeno uno dei dati che la richiedono: il tipo di documento e il riferimento (da 3 a 160 caratteri) sono necessari, il file è facoltativo. Se manca, l’emissione resta bloccata e il campo è segnalato."
+       ],
+       "src": "src/components/rt/campi.ts:63"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "3 · Sezioni e componenti — Contrappeso (dati del componente)",
+     "intro": [
+      "Compare nella sezione «Contrappeso»."
+     ],
+     "fields": [
+      {
+       "label": "Intervento sul contrappeso",
+       "kind": "scelta",
+       "unit": null,
+       "values": [
+        "nessuno",
+        "zavorre aggiunte o tolte",
+        "contrappeso sostituito"
+       ],
+       "default": "Scegli… (nessuna scelta)",
+       "required": "no",
+       "help": [
+        "Che cosa fai al contrappeso nella modifica."
+       ],
+       "src": "src/components/rt/campi.ts:92"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "4 · Allegati",
+     "intro": [
+      "Quarta carta: i documenti che la relazione si aspetta e i file che la accompagneranno. Gli allegati si aggiungono in coda alla relazione, nell’ordine che scegli. Sotto la carta c’è il riquadro «Documenti caricati» (pagina descritta separatamente), con cui carichi, modifichi ed elimini i file dell’impianto.",
+      "«Documenti attesi per questa modifica» elenca ciò che la norma richiede per le parti e i casi della modifica. Sono al massimo diciassette documenti: schema elettrico del quadro di manovra; dichiarazioni e certificati dei dispositivi elettrici di sicurezza del quadro; dati e dichiarazioni del costruttore della macchina; relazione sulla taratura del variatore di frequenza; certificati delle funi di trazione; dichiarazione UE, certificato d’esame del tipo e certificato della fune del limitatore di velocità; certificato d’esame del tipo e dichiarazione del paracadute; certificati e dichiarazioni dei dispositivi ACOP e UCM; certificato e dichiarazione degli ammortizzatori non lineari o idraulici; certificati d’esame del tipo delle serrature di piano; certificato della classe di resistenza al fuoco delle porte di piano; dichiarazione del proprietario sull’idoneità delle strutture; dichiarazione di idoneità degli ancoraggi delle guide; attestazione del dispositivo di allarme di emergenza; copia del libretto o dell’ultimo verbale di verifica (consigliato). Quali compaiono dipende dalla modifica; ciascuno riporta il riferimento alla norma (numero di punto). Se nessuno è atteso: «Nessun documento particolare atteso per questa modifica.»"
+     ],
+     "fields": [
+      {
+       "label": "Quale file è «‹titolo›»",
+       "kind": "scelta",
+       "unit": null,
+       "values": "Riconosciuto in automatico · Allegato n · titolo · Consegnato separatamente",
+       "default": "Riconosciuto in automatico",
+       "required": "no",
+       "help": [
+        "Per ogni documento atteso: dice a quale file corrisponde. La scelta predefinita «Riconosciuto in automatico» abbina il file del giusto tipo e della giusta sezione, se ne esiste uno solo (due documenti che lo stesso file potrebbe soddisfare, come il certificato del limitatore e quello del paracadute, aspettano la tua scelta).",
+        "Puoi scegliere «Allegato ‹n› · ‹titolo›» (uno dei file inseriti nella relazione) oppure «Consegnato separatamente». Un documento atteso senza file e non consegnato separatamente la relazione lo stampa come «da allegare ⚠» e non blocca l’emissione.",
+        "Accanto a ogni documento una etichetta ne mostra lo stato: «Allegato ‹n›», «consegnato separatamente» o «da allegare ⚠»; per i documenti consigliati compare «(consigliato)»."
+       ],
+       "src": "src/components/rt/CardAllegati.tsx:55"
+      },
+      {
+       "label": "Carica questo documento (apre il modulo di caricamento)",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Un riquadro a scomparsa per ogni documento atteso (se puoi caricare file e la relazione non è in sola lettura): mostra il modulo di caricamento del file con il tipo, la sezione e il titolo già impostati e il titolo «Carica «‹titolo›»». I campi sono quelli del riquadro «Documenti caricati»."
+       ],
+       "src": "src/components/rt/CardAllegati.tsx:61"
+      }
+     ],
+     "actions": [
+      {
+       "label": "↑ (Sposta prima «‹titolo›»)",
+       "help": "Sposta il file un posto più in alto nell’ordine degli allegati. Disattivato per il primo.",
+       "src": "src/components/rt/CardAllegati.tsx:84"
+      },
+      {
+       "label": "↓ (Sposta dopo «‹titolo›»)",
+       "help": "Sposta il file un posto più in basso. Disattivato per l’ultimo.",
+       "src": "src/components/rt/CardAllegati.tsx:84"
+      },
+      {
+       "label": "Togli",
+       "help": "Toglie il file dalla relazione (non lo elimina dall’impianto). Il nome completo è «Togli «‹titolo›» dalla relazione».",
+       "src": "src/components/rt/CardAllegati.tsx:86"
+      },
+      {
+       "label": "Allega",
+       "help": "Nel riquadro «Documenti dell’impianto non allegati»: aggiunge il file alla relazione (in coda). Il nome completo è «Allega «‹titolo›» alla relazione».",
+       "src": "src/components/rt/CardAllegati.tsx:100"
+      }
+     ],
+     "notes": [
+      "Sotto «Documenti allegati alla relazione, in ordine» un contatore dice «‹n› file, ‹p› pagine (al massimo 40 file e 400 pagine).»; diventa rosso se superi i limiti.",
+      "Ogni allegato è indicato come «Allegato ‹n›» con il titolo, il tipo e le pagine («‹n› pagine»). Se non ce n’è nessuno: «Nessun documento allegato.»",
+      "Una nuova relazione prende da sola tutti i file dell’impianto, nell’ordine di caricamento, tranne le fotografie, gli schizzi di rilievo e gli «Altri documenti»: questi tre tipi entrano solo se li aggiungi tu con «Allega». Il titolo «Documenti dell’impianto non allegati» ha la nota: «Fotografie e documenti «Altro» non entrano da soli nella relazione: allegali solo se servono, perché possono mostrare persone, firme o note interne e il fascicolo va al proprietario e all’organismo di verifica.»",
+      "Se un file viene eliminato dall’impianto, esce anche dalla bozza; uno nuovo caricato mentre lavori si aggiunge in coda."
+     ],
+     "warnings": [
+      "Sotto «Documenti allegati alla relazione, in ordine» un contatore dice «‹n› file, ‹p› pagine (al massimo 40 file e 400 pagine).»; diventa rosso se superi i limiti. Il limite totale è anche di 120 MiB e, per i PNG con trasparenza o interlacciati, di 300 megapixel in tutto: oltre, l’emissione è rifiutata («I documenti allegati superano i limiti della relazione (40 file, 400 pagine, 120 MiB; le immagini PNG con trasparenza o interlacciate al più 300 megapixel in tutto): togline qualcuno.»)."
+     ]
+    },
+    {
+     "title": "5 · Firme ed emissione",
+     "intro": [
+      "Quinta carta: chi redige, chi verifica, la nota di revisione (se prepari una revisione), l’anteprima e l’emissione. Un ingegnere iscritto all’Ordine firma come «Verificato da»."
+     ],
+     "fields": [
+      {
+       "label": "Nome e cognome (Redatto da)",
+       "kind": "testo",
+       "unit": null,
+       "values": "2–120 caratteri",
+       "default": "il tuo nome",
+       "required": "sì all’emissione",
+       "help": [
+        "Il nome di chi ha redatto la relazione. Da 2 a 120 caratteri."
+       ],
+       "src": "src/components/rt/CardFirme.tsx:70"
+      },
+      {
+       "label": "Qualifica (Redatto da)",
+       "kind": "testo",
+       "unit": null,
+       "values": "1–80 caratteri",
+       "default": "vuoto",
+       "required": "no",
+       "help": [
+        "La qualifica di chi ha redatto (per esempio «Tecnico installatore»). Fino a 80 caratteri."
+       ],
+       "src": "src/components/rt/CardFirme.tsx:71"
+      },
+      {
+       "label": "Titolo (Verificato da)",
+       "kind": "scelta",
+       "unit": null,
+       "values": "Scegli… · Ing. · Dott. Ing.",
+       "default": "quello dell’ultima relazione emessa dall’azienda, se c’è",
+       "required": "sì all’emissione",
+       "help": [
+        "Il titolo dell’ingegnere che verifica: «Ing.» o «Dott. Ing.»."
+       ],
+       "src": "src/components/rt/CardFirme.tsx:79"
+      },
+      {
+       "label": "Nome e cognome dell’ingegnere",
+       "kind": "testo",
+       "unit": null,
+       "values": "2–120 caratteri",
+       "default": "quello dell’ultima relazione emessa dall’azienda",
+       "required": "sì all’emissione",
+       "help": [
+        "Nome e cognome dell’ingegnere che verifica. Da 2 a 120 caratteri."
+       ],
+       "src": "src/components/rt/CardFirme.tsx:85"
+      },
+      {
+       "label": "Ordine degli Ingegneri della Provincia di",
+       "kind": "testo",
+       "unit": null,
+       "values": "2–40 caratteri",
+       "default": "quella dell’ultima relazione emessa dall’azienda",
+       "required": "sì all’emissione",
+       "help": [
+        "La provincia dell’Ordine degli Ingegneri a cui l’ingegnere è iscritto. Da 2 a 40 caratteri."
+       ],
+       "src": "src/components/rt/CardFirme.tsx:86"
+      },
+      {
+       "label": "Numero di iscrizione",
+       "kind": "testo",
+       "unit": null,
+       "values": "1–20 caratteri tra lettere, cifre e / . -",
+       "default": "quello dell’ultima relazione emessa dall’azienda",
+       "required": "sì all’emissione",
+       "help": [
+        "Il numero di iscrizione all’Ordine.",
+        "Lettere, cifre e i segni / . - (al massimo 20 caratteri)."
+       ],
+       "src": "src/components/rt/CardFirme.tsx:87"
+      },
+      {
+       "label": "Sezione dell’albo",
+       "kind": "scelta",
+       "unit": null,
+       "values": "Non indicata · A · B",
+       "default": "Non indicata",
+       "required": "no",
+       "help": [
+        "La sezione dell’albo dell’ingegnere: A o B. Facoltativa."
+       ],
+       "src": "src/components/rt/CardFirme.tsx:89"
+      },
+      {
+       "label": "Nota di revisione (rispetto a ‹RT n› R‹r›)",
+       "kind": "testo",
+       "unit": null,
+       "values": "3–120 caratteri",
+       "default": "vuoto",
+       "required": "sì, solo per una revisione",
+       "help": [
+        "Che cosa cambia in questa revisione. Compare solo quando prepari una revisione. La relazione la stampa nell’elenco delle revisioni.",
+        "Da 3 a 120 caratteri."
+       ],
+       "src": "src/components/rt/CardFirme.tsx:100"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Anteprima PDF",
+       "help": "Prepara il PDF della bozza con la scritta «BOZZA — non emessa, non valida per la firma» su ogni pagina, senza numero e senza file allegati. Salva prima la bozza. Non è un documento emesso: non si conserva e non è registrato. Lo vede chi prepara la relazione; massimo 20 anteprime in 10 minuti. Se la base va aggiornata o l’intervento non ha la relazione, il server risponde con un errore.",
+       "src": "src/components/rt/CardFirme.tsx:110"
+      },
+      {
+       "label": "Emetti la relazione",
+       "help": "Apre il riquadro di conferma; nel caso di una revisione si chiama «Emetti la revisione». Compare solo a chi può emettere i documenti (per gli altri: «Emette la relazione chi ha il permesso di emettere i documenti (lo assegna il Titolare).»). Resta disattivato finché mancano i dati senza cui non si emette.",
+       "src": "src/components/rt/CardFirme.tsx:112"
+      },
+      {
+       "label": "Confermo ed emetto",
+       "help": "Nel riquadro «Emettere la relazione?» (o «Emettere la revisione?»): emette. La relazione ha un numero (RT AA-NNN R0) e non si modifica più; ti porta alla sua pagina. Il testo dice: «La relazione emessa ha un numero e non si modifica più: una correzione si fa con una nuova revisione. La relazione stampa quanto segue così com’è.» Seguono gli elenchi «‹n› verifiche non soddisfatte», «‹n› dati da indicare», «‹n› documenti da allegare»; se non ce n’è nessuno: «Tutte le verifiche sono soddisfatte e non manca nessun dato né documento.»",
+       "src": "src/components/rt/CardFirme.tsx:133"
+      },
+      {
+       "label": "Annulla",
+       "help": "Chiude il riquadro senza emettere.",
+       "src": "src/components/rt/CardFirme.tsx:134"
+      }
+     ],
+     "notes": [
+      "Se l’emissione è rifiutata, un riquadro rosso spiega perché e, quando serve, elenca i campi: per esempio «Prima di emettere conferma quello che la relazione stampa come non soddisfatto, mancante o da allegare.», «Un documento indicato non è tra quelli di questo impianto: aggiorna la pagina e riprova.», «Si rivede solo l’ultima revisione di una relazione: è stata emessa una revisione più recente.», «Scrivi la nota di revisione (da 3 a 120 caratteri).», «Per emettere la relazione mancano dati obbligatori (dati dell’impianto, descrizione della modifica o firme): completali nei campi evidenziati.»"
+     ],
+     "warnings": [
+      "Una relazione emessa ha un numero (RT AA-NNN R0) e non si modifica né si cancella: una correzione è una nuova revisione.",
+      "Restano bloccanti: la descrizione della modifica (almeno 20 caratteri), il nome di chi redige, titolo, nome, provincia e numero dell’ingegnere, le fonti dei dati componenti inseriti a mano.",
+      "L’emissione è rifiutata se la base (Calcolo argano o Progetto) non è riprodotta dal software attuale, se l’intervento non ha la relazione, se l’impianto è archiviato, se la data non è valida o se gli allegati superano i limiti."
+     ]
+    },
+    {
+     "title": "Relazioni tecniche di modifica emesse",
+     "intro": [
+      "Ultimo riquadro, sempre visibile. Se non ce n’è nessuna: «Nessuna relazione tecnica di modifica emessa per questo impianto.» Ogni riga riporta:"
+     ],
+     "fields": [
+      {
+       "label": "RT ‹numero› R‹revisione›",
+       "kind": "testo",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Il numero (AA-NNN, per esempio RT 26-001) e la revisione; è un link alla pagina della relazione."
+       ],
+       "src": "src/components/rt/RelazioniEmesse.tsx:20"
+      },
+      {
+       "label": "Giorno, ora e autore",
+       "kind": "testo",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Quando è stata emessa e da chi."
+       ],
+       "src": "src/components/rt/RelazioniEmesse.tsx:21"
+      },
+      {
+       "label": "Esito delle verifiche",
+       "kind": "testo",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "L’esito conservato all’emissione (verifiche soddisfatte, con avviso o non soddisfatte)."
+       ],
+       "src": "src/components/rt/RelazioniEmesse.tsx:22"
+      },
+      {
+       "label": "da aggiornare",
+       "kind": "testo",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Etichetta che compare se il software attuale non riproduce più quella relazione: il PDF emesso resta scaricabile."
+       ],
+       "src": "src/components/rt/RelazioniEmesse.tsx:23"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Scarica il PDF",
+       "help": "Scarica il PDF della relazione emessa. Compare a chi può scaricare i documenti, quando il PDF è conservato o il software sa ancora riprodurre la relazione.",
+       "src": "src/components/rt/RelazioniEmesse.tsx:24"
+      }
+     ],
+     "notes": [
+      "Sotto ogni riga una frase riassume la relazione (per esempio «Solo argano · 7 sezioni · 2 allegati · R0»)."
+     ],
+     "warnings": []
+    }
+   ]
+  },
+  {
+   "id": "documenti-caricati",
+   "title": "Documenti caricati",
+   "path": "/it/app/projects/‹id›/relazione-tecnica (riquadro «Documenti caricati», in coda alla carta 4)",
+   "access": "Lo vede chi vede l’impianto. Carica, modifica ed elimina chi può modificare l’impianto («projects:edit»: predefinito Capotecnico, Progettista e Tecnico) se l’impianto non è archiviato; scarica chi può scaricare i documenti («report:download»: predefinito tutti i ruoli). Per gli altri: «Qui i documenti si possono solo consultare e scaricare: l’impianto è archiviato, oppure il tuo accesso non prevede modifiche.» Il Titolare può cambiare la matrice dei permessi.",
+   "reach": "Nella pagina «Relazione tecnica di modifica», subito sotto la carta «4 · Allegati». Se la relazione non si può fare (manca il calcolo o il progetto) il riquadro compare comunque al posto delle carte.",
+   "purpose": [
+    "Qui carichi le dichiarazioni, i certificati, gli schemi e le fotografie dell’impianto: il testo del riquadro dice «Dichiarazioni, certificati, schemi e fotografie dell’impianto. La relazione tecnica di modifica li elenca e li allega in coda, nell’ordine che scegli.»",
+    "Il tipo del file si riconosce dal contenuto, non dal nome: sono accettati PDF, JPEG, PNG e HEIC (le foto HEIC dell’iPhone si convertono in JPEG), fino a 20 MB per file (20 MiB, cioè 20 971 520 byte). Dalle fotografie si tolgono i metadati (posizione GPS, fotocamera, autore) prima di conservarle, perciò l’impronta SHA-256 indicata è quella della copia conservata. I PDF si conservano come caricati, compresi i loro metadati (autore, programma): toglili prima del caricamento se devono restare riservati. Non caricare fotografie con persone riconoscibili né documenti con dati sanitari.",
+    "I limiti sono 20 MB (20 MiB) per file, 60 file per impianto e 500 MB per l’intera azienda; un PDF ha al massimo 200 pagine, un’immagine al massimo 40 megapixel e 12 000 pixel per lato. PDF protetti da password o con moduli compilabili (XFA) sono rifiutati."
+   ],
+   "shots": [
+    {
+     "id": "allegati-pannello",
+     "what": "Il riquadro «Documenti caricati» con il modulo di caricamento, le due barre dello spazio e l’elenco con tre documenti"
+    },
+    {
+     "id": "allegati-modifica",
+     "what": "Una riga dell’elenco in modifica (Titolo, Tipo, Sezione) e un’altra con la conferma di eliminazione"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Carica un documento",
+     "intro": [
+      "Il modulo compare solo a chi può modificare l’impianto. Il modulo si apre preimpostato (tipo, sezione e titolo) quando lo apri dal pulsante «Carica questo documento» di un documento atteso."
+     ],
+     "fields": [
+      {
+       "label": "File",
+       "kind": "file",
+       "unit": "MB",
+       "values": "PDF, JPEG, PNG, HEIC; ≤ 20 MB",
+       "default": null,
+       "required": "sì",
+       "help": [
+        "Il file da caricare: PDF, JPEG, PNG o HEIC (iPhone), al massimo 20 MB. Se scegli un file senza aver inserito il titolo, il titolo si riempie con il nome del file.",
+        "Un file già presente tra i documenti dell’impianto non viene caricato due volte: leggi «Questo file è già tra i documenti dell’impianto: «‹titolo›».»"
+       ],
+       "src": "src/components/allegati/AllegatoUpload.tsx:71"
+      },
+      {
+       "label": "Tipo di documento",
+       "kind": "scelta",
+       "unit": null,
+       "values": "Scegli il tipo… · 11 tipi (vedi sopra)",
+       "default": "Scegli il tipo… (Fotografia per le immagini)",
+       "required": "sì (altrimenti «Scegli il tipo di documento.»)",
+       "help": [
+        "Il tipo del documento, obbligatorio. Le scelte, dopo «Scegli il tipo…», sono: «Dichiarazione UE di conformità», «Certificato d’esame UE del tipo», «Certificato o scheda di un componente», «Schema elettrico», «Dichiarazione di idoneità», «Relazione di taratura», «Libretto o verbale», «Disegno», «Fotografia», «Schizzo di rilievo (a mano)», «Altro documento».",
+        "Se scegli un file immagine e non hai ancora scelto il tipo, il tipo diventa «Fotografia». «Schizzo di rilievo (a mano)» è il tipo degli schizzi fatti in sito che si leggono accanto ai moduli del Progetto e del rilievo del locale: da lì si caricano in automatico con quel tipo e con la sezione «Vano, fossa e testata» o «Locale del macchinario».",
+        "Il tipo e la sezione fanno riconoscere in automatico il file come documento atteso della relazione."
+       ],
+       "src": "src/components/allegati/AllegatoUpload.tsx:77"
+      },
+      {
+       "label": "Sezione della relazione",
+       "kind": "scelta",
+       "unit": null,
+       "values": "Nessuna sezione · 12 sezioni · Impianto nel suo insieme · Edificio e strutture",
+       "default": "Nessuna sezione",
+       "required": "no",
+       "help": [
+        "A quale parte della relazione appartiene il file: «Nessuna sezione», una delle dodici sezioni («Quadro di manovra», «Cabina e carichi»…), «Impianto nel suo insieme» oppure «Edificio e strutture».",
+        "Serve per abbinare il file al documento atteso della sezione giusta."
+       ],
+       "src": "src/components/allegati/AllegatoUpload.tsx:84"
+      },
+      {
+       "label": "Titolo",
+       "kind": "testo",
+       "unit": null,
+       "values": "fino a 160 caratteri",
+       "default": "il nome del file",
+       "required": "no",
+       "help": [
+        "Il titolo con cui il documento compare nell’elenco e nella relazione. Fino a 160 caratteri; se resta vuoto si usa il nome del file senza estensione.",
+        "Il suggerimento sotto il campo dice: «Se resta vuoto si usa il nome del file.»"
+       ],
+       "src": "src/components/allegati/AllegatoUpload.tsx:91"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Carica il documento",
+       "help": "Invia il file e lo fa verificare dal server («Invio del file: ‹n› %», poi «Verifica del file in corso…»). A caricamento riuscito leggi «Documento caricato: «‹titolo›».» Se qualcosa non va compare un errore, per esempio «Scegli un file da caricare.», «Il file supera 20 MB: carica una copia più leggera…», «Il file non è un PDF, JPEG, PNG o HEIC valido…», «Il PDF è protetto da password o cifrato: carica una copia senza protezione.», «Spazio per i documenti esaurito…».",
+       "src": "src/components/allegati/AllegatoUpload.tsx:97"
+      }
+     ],
+     "notes": [],
+     "warnings": [
+      "I PDF si conservano come caricati, con i loro metadati (autore, programma): toglili prima del caricamento se devono restare riservati.",
+      "Non caricare fotografie con persone riconoscibili né documenti con dati sanitari."
+     ]
+    },
+    {
+     "title": "Spazio per i documenti",
+     "intro": [
+      "Due barre di avanzamento (nome «Spazio per i documenti»): «File di questo impianto: ‹n› di 60» e «Spazio usato dall’azienda: ‹x› di 500 MB». Quando uno dei due limiti è raggiunto non puoi caricare altro: elimina i documenti che non servono più."
+     ],
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "Elenco dei documenti",
+     "intro": [
+      "Tabella «Documenti caricati per l’impianto». Se è vuota: «Nessun documento caricato per questo impianto.» Le colonne:"
+     ],
+     "fields": [
+      {
+       "label": "Documento",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Il titolo e, sotto, il nome del file caricato."
+       ],
+       "src": "src/components/allegati/AllegatiList.tsx:88"
+      },
+      {
+       "label": "Tipo",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Il tipo del documento."
+       ],
+       "src": "src/components/allegati/AllegatiList.tsx:89"
+      },
+      {
+       "label": "Sezione",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "La sezione della relazione, o «—»."
+       ],
+       "src": "src/components/allegati/AllegatiList.tsx:90"
+      },
+      {
+       "label": "Pagine",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Il numero di pagine (un’immagine conta una pagina)."
+       ],
+       "src": "src/components/allegati/AllegatiList.tsx:91"
+      },
+      {
+       "label": "Dimensione",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "La dimensione, in KB o MB (1 MB = 1024 KB)."
+       ],
+       "src": "src/components/allegati/AllegatiList.tsx:91"
+      },
+      {
+       "label": "SHA-256",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "I primi 12 caratteri dell’impronta SHA-256 del file conservato; con il mouse sopra, o con il lettore di schermo, si legge l’impronta completa."
+       ],
+       "src": "src/components/allegati/AllegatiList.tsx:92"
+      },
+      {
+       "label": "Caricato",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Chi e quando: «‹nome›, ‹data›»; se l’utente non c’è più «Utente non più presente, ‹data›»."
+       ],
+       "src": "src/components/allegati/AllegatiList.tsx:93"
+      },
+      {
+       "label": "Azioni",
+       "kind": "tabella",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Compare se puoi scaricare o modificare."
+       ],
+       "src": "src/components/allegati/AllegatiList.tsx:95"
+      },
+      {
+       "label": "Titolo (in modifica)",
+       "kind": "testo",
+       "unit": null,
+       "values": "1–160 caratteri",
+       "default": "il titolo attuale",
+       "required": "sì",
+       "help": [
+        "Il nuovo titolo del documento (obbligatorio, fino a 160 caratteri)."
+       ],
+       "src": "src/components/allegati/AllegatiList.tsx:40"
+      },
+      {
+       "label": "Tipo di documento (in modifica)",
+       "kind": "scelta",
+       "unit": null,
+       "values": "gli 11 tipi",
+       "default": "il tipo attuale",
+       "required": "sì",
+       "help": [
+        "Il nuovo tipo del documento."
+       ],
+       "src": "src/components/allegati/AllegatiList.tsx:41"
+      },
+      {
+       "label": "Sezione della relazione (in modifica)",
+       "kind": "scelta",
+       "unit": null,
+       "values": "Nessuna sezione · sezioni",
+       "default": "la sezione attuale",
+       "required": "no",
+       "help": [
+        "La nuova sezione, o «Nessuna sezione»."
+       ],
+       "src": "src/components/allegati/AllegatiList.tsx:44"
+      }
+     ],
+     "actions": [
+      {
+       "label": "Scarica",
+       "help": "Scarica il documento. Compare a chi può scaricare i documenti.",
+       "src": "src/components/allegati/AllegatiList.tsx:102"
+      },
+      {
+       "label": "Modifica",
+       "help": "Apre la modifica in linea di titolo, tipo e sezione (solo questi tre dati possono cambiare): «Modifica titolo, tipo e sezione di «‹titolo›»». Il file stesso non si cambia. Compare a chi può modificare l’impianto.",
+       "src": "src/components/allegati/AllegatiList.tsx:103"
+      },
+      {
+       "label": "Salva",
+       "help": "Salva le modifiche («Modifiche salvate.»).",
+       "src": "src/components/allegati/AllegatiList.tsx:51"
+      },
+      {
+       "label": "Annulla",
+       "help": "Chiude la modifica senza salvare.",
+       "src": "src/components/allegati/AllegatiList.tsx:52"
+      },
+      {
+       "label": "Elimina",
+       "help": "Chiede conferma («Eliminare definitivamente «‹titolo›»? Il file non si potrà recuperare.») con «Sì, elimina» e «Annulla»; conferma «Documento eliminato.» Non compare per un documento allegato a una relazione già emessa.",
+       "src": "src/components/allegati/AllegatiList.tsx:108"
+      }
+     ],
+     "notes": [
+      "Un documento allegato a una relazione emessa non si elimina: al posto del pulsante «Elimina» leggi «Allegato a una relazione emessa: si possono cambiare titolo, tipo e sezione, non eliminarlo.»"
+     ],
+     "warnings": [
+      "«Elimina» cancella il file per sempre e non si recupera; non è possibile se il file è allegato a una relazione emessa."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "relazione-emessa",
+   "title": "Relazione tecnica di modifica · RT ‹numero› R‹revisione›",
+   "path": "/it/app/relazioni/‹id›",
+   "access": "La vedono tutti i ruoli che vedono l’impianto («projects:view»); una relazione di un’altra azienda dà «non trovato». Il PDF e gli allegati li scarica chi può scaricare i documenti («report:download»: predefinito tutti i ruoli). «Nuova revisione» compare a chi può emettere i documenti («drawings:issue»: predefinito Capotecnico e Progettista) se l’impianto non è archiviato. Il Titolare può cambiare la matrice dei permessi.",
+   "reach": "Dall’elenco «Relazioni tecniche di modifica emesse» nella pagina della relazione tecnica o nella pagina dell’impianto: clicca «RT ‹numero› R‹n›»; oppure dopo aver emesso la relazione.",
+   "purpose": [
+    "Questa pagina mostra una relazione già emessa: cosa contiene, come è stata fatta, quali revisioni ha, e ti dà il PDF. Una relazione emessa non si cambia: una correzione è una nuova revisione, con lo stesso numero.",
+    "Il numero ha la forma AA-NNN (per esempio RT 26-001) e la revisione parte da R0. Il numero è dell’azienda e dell’anno."
+   ],
+   "shots": [
+    {
+     "id": "rel-testata",
+     "what": "La testata della pagina con il titolo, «Scarica il PDF», «Nuova revisione» e il riquadro con esito, base, versione del software e impronta"
+    },
+    {
+     "id": "rel-sezioni-allegati",
+     "what": "I riquadri «Sezioni della relazione», «Documenti allegati» e «Revisioni»"
+    }
+   ],
+   "sections": [
+    {
+     "title": "Intestazione e pulsanti",
+     "intro": [
+      "Il titolo è «Relazione tecnica di modifica · RT ‹numero› R‹n›»; sotto leggi «Emessa il ‹data e ora› da ‹nome›» e il riepilogo della relazione (per esempio «Solo argano · 7 sezioni · 2 allegati · R0»)."
+     ],
+     "fields": [],
+     "actions": [
+      {
+       "label": "Scarica il PDF",
+       "help": "Scarica il PDF della relazione: quello conservato all’emissione oppure, se il software sa ancora ridisegnare la relazione, quello rifatto. Compare solo se uno dei due esiste e se puoi scaricare i documenti.",
+       "src": "src/app/[locale]/app/relazioni/[id]/page.tsx:61"
+      },
+      {
+       "label": "Nuova revisione",
+       "help": "Apre la pagina della relazione tecnica con la bozza della revisione: stesso numero, con la nota di revisione (vedi «5 · Firme ed emissione»). Compare solo sull’ultima revisione di un numero, se puoi emettere i documenti e l’impianto non è archiviato.",
+       "src": "src/app/[locale]/app/relazioni/[id]/page.tsx:62"
+      }
+     ],
+     "notes": [
+      "Avviso azzurro: «Questa non è l’ultima revisione della relazione: le revisioni sono elencate qui sotto.»"
+     ],
+     "warnings": [
+      "Avviso giallo: «Emessa con una versione precedente del software: il PDF emesso resta valido e scaricabile; una nuova revisione la rifà con il software attuale.» Se il PDF non è conservato: «…senza un PDF conservato: non si può più generare. Una nuova revisione la rifà con il software attuale.»",
+      "Avviso giallo: «I dati o l’anagrafica dell’impianto sono cambiati dopo l’emissione: la relazione riporta quelli del giorno in cui è stata emessa; per i nuovi serve una nuova revisione.»"
+     ]
+    },
+    {
+     "title": "Scheda della relazione",
+     "intro": [
+      "Un riquadro con:"
+     ],
+     "fields": [
+      {
+       "label": "Verifiche",
+       "kind": "testo",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "L’esito conservato all’emissione (verifiche soddisfatte, con avviso o non soddisfatte, con i conteggi)."
+       ],
+       "src": "src/app/[locale]/app/relazioni/[id]/page.tsx:69"
+      },
+      {
+       "label": "Documenti di base",
+       "kind": "testo",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "I link al Progetto dell’ascensore («Progetto dell’ascensore del …») o al Rilievo del locale («Rilievo del locale del …») e al «Calcolo argano del …» da cui nasce la relazione."
+       ],
+       "src": "src/app/[locale]/app/relazioni/[id]/page.tsx:70"
+      },
+      {
+       "label": "Versione del software della relazione",
+       "kind": "testo",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "La versione dei motori di calcolo con cui è stata fatta la relazione."
+       ],
+       "src": "src/app/[locale]/app/relazioni/[id]/page.tsx:75"
+      },
+      {
+       "label": "Impronta SHA-256 della relazione",
+       "kind": "testo",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "L’impronta crittografica della relazione: serve a provare che il contenuto non è cambiato dopo l’emissione."
+       ],
+       "src": "src/app/[locale]/app/relazioni/[id]/page.tsx:76"
+      },
+      {
+       "label": "PDF conservato",
+       "kind": "testo",
+       "unit": null,
+       "values": null,
+       "default": null,
+       "required": "no",
+       "help": [
+        "Quando c’è: il numero di pagine «senza i documenti allegati» e l’impronta SHA-256 del PDF conservato."
+       ],
+       "src": "src/app/[locale]/app/relazioni/[id]/page.tsx:77"
+      }
+     ],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "Sezioni della relazione",
+     "intro": [
+      "Un elenco con una riga per sezione: il titolo (per esempio «Argano»), l’etichetta «dalla regola» o «aggiunta dal tecnico» e i motivi, separati da punto e virgola, ciascuno con il riferimento alla norma (numero di punto) fra parentesi. Compare solo se il contenuto conservato è leggibile."
+     ],
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "Documenti allegati",
+     "intro": [
+      "L’elenco ordinato degli allegati della relazione emessa: «Allegato ‹n›», il titolo, il numero di pagine e i primi 16 caratteri dell’impronta SHA-256. Se non ce ne sono: «Nessun documento allegato.»",
+      "Sotto, quando ci sono, «Documenti indicati come da allegare»: i documenti attesi che la relazione ha stampato come «da allegare ⚠»."
+     ],
+     "fields": [],
+     "actions": [
+      {
+       "label": "Scarica",
+       "help": "Scarica il file allegato. Compare a chi può scaricare i documenti.",
+       "src": "src/app/[locale]/app/relazioni/[id]/page.tsx:98"
+      }
+     ],
+     "notes": [],
+     "warnings": []
+    },
+    {
+     "title": "Revisioni",
+     "intro": [
+      "L’elenco delle revisioni del numero: R0, R1…, ciascuna con la data e la nota di revisione. La revisione che stai guardando è in grassetto, le altre sono link. Se l’elenco non si legge con il software attuale: «L’elenco delle revisioni di questa relazione non si legge con il software attuale.»"
+     ],
+     "fields": [],
+     "actions": [],
+     "notes": [],
+     "warnings": []
+    }
+   ]
+  }
+ ],
+ "glossary": [
+  {
+   "term": "Serie di tavole",
+   "def": "L’insieme dei fogli A4 che LiftPilot disegna dal progetto dell’impianto (o dal rilievo del locale macchina). Ha un numero AA-NNN e una revisione."
+  },
+  {
+   "term": "Cartiglio",
+   "def": "Il riquadro di ogni foglio con numero e revisione del disegno, nome dell’impianto, committente, azienda, loghi e iniziali di chi disegna."
+  },
+  {
+   "term": "Revisione (R1, R2…)",
+   "def": "Una nuova emissione dello stesso numero con una nota che dice cosa cambia. La prima emissione è la «prima emissione» (R0)."
+  },
+  {
+   "term": "Quota",
+   "def": "Una misura scritta sul disegno. Nel riquadro «Disegni del progetto: cambia le quote» le quote sono pulsanti che cambiano il dato corrispondente."
+  },
+  {
+   "term": "Relazione tecnica di modifica (RT)",
+   "def": "Il documento che accompagna la modifica di un ascensore esistente: dati dell’impianto, sezioni dei componenti toccati, verifiche, allegati e firme."
+  },
+  {
+   "term": "UNI 10411-1 / UNI 10411-11",
+   "def": "Le due parti della norma di riferimento delle modifiche agli ascensori esistenti: la parte 1 per gli impianti senza marcatura CE, la parte 11 per quelli con marcatura CE (DPR 162/1999). Il Calcolo argano decide quale vale."
+  },
+  {
+   "term": "Sezione (della relazione)",
+   "def": "Una parte della relazione dedicata a un componente (quadro, cabina, funi, argano, locale, guide, ammortizzatori, limitatore, porte, contrappeso, vano). Può essere «dalla regola» o «aggiunta dal tecnico»."
+  },
+  {
+   "term": "Fonte",
+   "def": "Dove hai letto un dato inserito a mano: tipo di documento, riferimento e, se vuoi, il file allegato. Un dato a mano porta sempre la sua fonte."
+  },
+  {
+   "term": "Allegato",
+   "def": "Un file (PDF, JPEG, PNG; le foto HEIC dell’iPhone diventano JPEG) caricato per l’impianto e inserito in coda alla relazione, nell’ordine scelto."
+  },
+  {
+   "term": "Legge di approvazione",
+   "def": "La legge con cui l’ascensore fu approvato (D.Lgt. 600/1945, DPR 1497/1963, DM 587/1987, DPR 268/1994, DPR 162/1999). Dipende dall’anno di installazione e dalla marcatura CE."
+  },
+  {
+   "term": "SHA-256",
+   "def": "L’impronta del contenuto di un file o di un documento emesso: se il contenuto cambia, cambia l’impronta. Serve a provare che nulla è stato modificato dopo l’emissione."
+  },
+  {
+   "term": "DXF / DWG / SVG",
+   "def": "Formati di disegno CAD (DXF e DWG) e vettoriale (SVG). Quelli delle tavole emesse li genera il server; quelli che carichi per misurare si leggono soltanto nel tuo browser."
+  },
+  {
+   "term": "Bozza",
+   "def": "Quello che scrivi nella relazione prima di emetterla: si salva da solo, puoi riprenderlo o scartarlo. Il PDF di anteprima della bozza porta la scritta «BOZZA — non emessa, non valida per la firma»."
+  }
+ ],
+ "verify": [
+  "Aprendo il Progetto di un impianto completo: quante quote compaiono (didascalia «‹n› quote modificabili») e quali gruppi del capitolo sono presenti in ciascuna delle 11 viste, da «Pianta al piano principale» a «Locale macchina in basso: sezione C-C»?",
+  "Nel riquadro «Pianta e sezione del locale» (rilievo del locale), quale intervallo mostra il messaggio di rifiuto per la quota «Puleggia di rinvio: dislivello sotto la puleggia di frizione (h)»?"
+ ]
+}

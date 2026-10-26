@@ -1,0 +1,1606 @@
+{
+  "key": "progetto-a",
+  "title": "Progetto: il vano di corsa",
+  "intro": [
+    "Il Progetto disegna il vano di corsa dell’impianto sopra un Calcolo argano già salvato. Il calcolo fornisce portata, velocità, argano, funi e collaudo; il Progetto aggiunge solo la geometria: il vano, le porte, il contrappeso, i piani, il locale e le funi nel disegno. Tutto il resto lo ricava il software, lo disegna (piante, sezioni, 3D) e lo verifica.",
+    "Questa parte descrive la pagina dall’alto fino alla sezione «Vano, porte e contrappeso», più il pannello dello schizzo, l’elenco dei dati mancanti, il confronto con il calcolo, l’editor delle quote e la barra di salvataggio. Le sezioni «Piani, fossa e testata» e «Funi e rinvii», le verifiche, la simulazione 3D e le pagine dei progetti salvati sono descritte altrove nella guida."
+  ],
+  "pages": [
+    {
+      "id": "progetto",
+      "title": "Progetto e simulazione",
+      "path": "/it/app/projects/‹id›/progetto",
+      "access": "La pagina si apre a chi ha il diritto «progetto:edit». Nella matrice predefinita lo hanno il Capotecnico e il Progettista; il Titolare ha tutti i diritti. Il Titolare può cambiare la matrice nella pagina Permessi, quindi nella tua azienda l’elenco può essere diverso. Chi non ha il diritto non entra. Se l’azienda è in sola lettura (nessun abbonamento dopo la prova o condizioni non accettate), il Progetto non si può salvare. Il pulsante «Porta nel calcolo» e i link «Modifica nel calcolo argano» e «Calcola l’argano» compaiono solo a chi ha il diritto di fare i calcoli (predefinito: Capotecnico, Progettista, Tecnico). Caricare uno schizzo spetta a chi modifica i dati dell’impianto (predefinito: Capotecnico, Progettista, Tecnico); «Leggi lo schizzo» è per chi disegna il progetto.",
+      "reach": "Dalla pagina dell’impianto con «Disegna il progetto» (o «Disegna l’intero impianto» quando l’intervento è solo del locale macchina), dalla scheda «Calcolo argano» salvato, oppure da un progetto già salvato con «Modifica il disegno». Il Progetto si apre sull’ultimo Calcolo argano dell’impianto; per disegnare su un altro calcolo si apre dal calcolo scelto.",
+      "purpose": [
+        "Qui fai il disegno del vano di corsa e dei piani sul Calcolo argano scelto. Ogni dato che inserisci cambia subito le piante, le sezioni, il 3D e le verifiche sulla destra. Il Progetto parte vuoto: finché mancano i dati obbligatori il software non calcola e non disegna nulla, e a destra compare l’elenco di quello che manca.",
+        "Quando i dati ci sono, salvi: il server rifà tutto il disegno sul calcolo, rifà tutti i calcoli e salva insieme il progetto del vano e il calcolo del progetto, con l’impronta SHA-256.",
+        "Sullo schermo trovi a sinistra il modulo (il calcolo di partenza, poi le sezioni da compilare) e a destra tutto ciò che il software ricava. In basso resta fissa la barra di salvataggio."
+      ],
+      "shots": [
+        {
+          "id": "progetto-vuoto",
+          "what": "Progetto appena aperto: modulo a sinistra con «Dal calcolo argano» e i campi vuoti segnati, a destra il riquadro «Dati del progetto da inserire», in basso la barra di salvataggio."
+        },
+        {
+          "id": "progetto-editor",
+          "what": "Riquadro «Disegni del progetto: cambia le quote» con una quota aperta per la modifica e sotto la tabella delle quote fissate a mano."
+        },
+        {
+          "id": "progetto-cad",
+          "what": "Sezione «Misura dal disegno CAD (DXF o DWG)» aperta con un disegno caricato, il rettangolo del vano misurato e il lato delle porte scelto."
+        }
+      ],
+      "sections": [
+        {
+          "title": "In cima alla pagina",
+          "intro": [
+            "Sopra il modulo trovi il percorso (Impianti › nome dell’impianto › Progetto e simulazione), il titolo «Progetto e simulazione» e la frase che spiega il lavoro: il vano, le porte, i piani e il locale sono disegnati sul calcolo argano; portata, velocità, argano, funi e collaudo vengono dal calcolo, il resto lo calcola il software e la simulazione 3D lo mostra.",
+            "In base allo stato dell’impianto, al posto del modulo o sopra di esso può comparire un avviso."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Calcola l’argano",
+              "help": "Compare nel riquadro «Il progetto parte dal calcolo argano», quando l’impianto non ha ancora nessun Calcolo argano: prima si sceglie il tipo di intervento e si calcola l’argano, poi il Progetto disegna su quel calcolo. Apre la pagina del calcolo. Chi non può fare i calcoli legge invece «Il calcolo dell’argano lo fa un collega che ne ha il permesso.»",
+              "src": "src/app/[locale]/app/projects/[id]/progetto/page.tsx:90-98"
+            },
+            {
+              "label": "Porta i dati del progetto nel calcolo argano",
+              "help": "Compare con l’avviso «Questo impianto ha un progetto del modulo unico: porta i suoi dati nel calcolo argano, poi ridisegnalo.» quando esiste un progetto del vecchio modulo unico più recente dell’ultimo calcolo (o nessun calcolo). Apre il calcolo con i dati di quel progetto; da lì rifai il disegno.",
+              "src": "src/app/[locale]/app/projects/[id]/progetto/page.tsx:72-82"
+            },
+            {
+              "label": "Apri il calcolo",
+              "help": "Nell’avviso «Il calcolo argano va aggiornato con il software attuale prima di disegnarci sopra.»: il calcolo di partenza non è più riprodotto dal software attuale. Apri il calcolo e aggiornalo con «Aggiorna con il software attuale»; solo dopo puoi disegnarci sopra.",
+              "src": "src/app/[locale]/app/projects/[id]/progetto/page.tsx:101-106"
+            },
+            {
+              "label": "Rileva il locale macchina",
+              "help": "Link dentro l’avviso blu che compare quando l’intervento è la sola sostituzione dell’argano («Per la sola sostituzione dell’argano basta il rilievo del locale macchina.») o riguarda solo le parti del locale macchina («Se nel vano non cambia nulla (solo le parti del locale macchina: argano, funi, quadro), basta il rilievo del locale macchina.»). Apre il rilievo del locale macchina. Il disegno completo del vano resta possibile.",
+              "src": "src/app/[locale]/app/projects/[id]/progetto/page.tsx:117-120"
+            }
+          ],
+          "notes": [
+            "Se il Progetto parte da un rilievo collegato all’impianto, sopra il modulo compare un riquadro con il titolo del rilievo, la data e il link «Apri il rilievo»: i valori segnati «dal rilievo» sono quelli misurati, quelli che scrivi tu restano tuoi. Dopo «usa il valore del rilievo» il riquadro dice che cosa è stato inserito e che non è ancora salvato.",
+            "Il disegno parte da: un progetto salvato scelto («Modifica il disegno»), altrimenti la bozza dell’impianto, altrimenti i dati portati dall’ultimo progetto o dai record dell’impianto, altrimenti vuoto. Con un rilievo collegato le misure che il rilievo ha partono già inserite e segnate «dal rilievo».",
+            "Se hai aperto la pagina con «Aggiorna con il software attuale» su un progetto che il software attuale non riesce più a salvare da solo, in cima compare «Aggiornamento con il software attuale: dati da correggere» con l’elenco dei dati, ognuno con il link al suo campo: correggi e salva, il salvataggio crea una nuova versione e quella vecchia resta com’era."
+          ],
+          "warnings": [
+            "Se leggi «Il calcolo argano va aggiornato con il software attuale prima di disegnarci sopra.» il modulo non si apre: il calcolo di partenza non è più riprodotto dal software attuale e un salvataggio sarebbe rifiutato. Aggiornalo prima dal calcolo.",
+            "Se l’azienda è in sola lettura il Progetto non si può salvare."
+          ]
+        },
+        {
+          "title": "Dal calcolo argano",
+          "intro": [
+            "Primo blocco del modulo, in sola lettura: ti ricorda su quale calcolo stai disegnando (con la data e l’ora in cui è stato salvato) e che cosa ne prende il Progetto. Per cambiare uno di questi dati devi cambiare il calcolo: il progetto non li modifica."
+          ],
+          "fields": [
+            {
+              "label": "Tipo di intervento (etichetta con scala a tre tacche)",
+              "kind": "testo",
+              "unit": null,
+              "values": "Solo argano · Ammodernamento · Trasformazione completa",
+              "default": "dal calcolo",
+              "required": "no (sola lettura)",
+              "help": [
+                "Mostra il tipo di intervento scelto nel calcolo. Le tacche piene indicano la scala: una per «Solo argano», due per «Ammodernamento», tre per «Trasformazione completa».",
+                "Accanto trovi la norma del collaudo (per esempio UNI 10411-1:2024 oppure UNI EN 81-20:2020 e UNI EN 81-50:2020) e, quando c’è, l’etichetta «Rifacimento con l’arcata esistente».",
+                "Il tipo decide che cosa si disegna nel Progetto e quali verifiche valgono."
+              ],
+              "src": "src/components/lift/DalCalcolo.tsx:48-55"
+            },
+            {
+              "label": "Parti sostituite o modificate: …",
+              "kind": "testo",
+              "unit": null,
+              "values": null,
+              "default": "dal calcolo",
+              "required": "compare quando il collaudo non è UNI EN 81-20",
+              "help": [
+                "Elenca le parti a cui hai risposto «Sì» nel calcolo (per esempio funi, cabina, arcata, guide, porte di piano, ammortizzatori, limitatore…).",
+                "Sono le parti che il collaudo considera sostituite o variate."
+              ],
+              "src": "src/components/lift/DalCalcolo.tsx:56"
+            },
+            {
+              "label": "Portata Q",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "intero",
+              "default": "dal calcolo",
+              "required": "no (sola lettura)",
+              "help": [
+                "La portata nominale del calcolo. Il disegno la usa per dimensionare la cabina (superficie massima ammessa dalla portata) e per le verifiche del vano."
+              ],
+              "src": "src/components/lift/DalCalcolo.tsx:58"
+            },
+            {
+              "label": "Velocità nominale v",
+              "kind": "numero",
+              "unit": "m/s",
+              "values": "due decimali",
+              "default": "dal calcolo",
+              "required": "no (sola lettura)",
+              "help": [
+                "La velocità nominale del calcolo. Il Progetto la usa per il tipo di ammortizzatori, la corsa necessaria, il limitatore di velocità e le distanze di sicurezza di fossa e testata."
+              ],
+              "src": "src/components/lift/DalCalcolo.tsx:59"
+            },
+            {
+              "label": "Massa cabina completa P",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "intero",
+              "default": "dal calcolo",
+              "required": "no (sola lettura)",
+              "help": [
+                "La massa della cabina completa usata dal calcolo."
+              ],
+              "src": "src/components/lift/DalCalcolo.tsx:60"
+            },
+            {
+              "label": "Taglia",
+              "kind": "testo",
+              "unit": null,
+              "values": "per esempio 2:1",
+              "default": "dal calcolo",
+              "required": "no (sola lettura)",
+              "help": [
+                "La taglia (rapporto di sospensione) del calcolo, scritta come rapporto, per esempio 1:1 o 2:1."
+              ],
+              "src": "src/components/lift/DalCalcolo.tsx:61"
+            },
+            {
+              "label": "Posizione della macchina",
+              "kind": "testo",
+              "unit": null,
+              "values": "In alto, tiro diretto (senza rinvio) · In alto, con rinvio · In basso, rinvii in testata",
+              "default": "dal calcolo",
+              "required": "no (sola lettura)",
+              "help": [
+                "Dice dove sta l’argano. Da questo dipende se nel Progetto compare il locale macchina sopra il vano (macchina in alto) o il locale delle pulegge (macchina in basso, schema «locale pulegge»)."
+              ],
+              "src": "src/components/lift/DalCalcolo.tsx:62"
+            },
+            {
+              "label": "Funi nuove (oppure «Funi esistenti (restano)»)",
+              "kind": "testo",
+              "unit": "mm",
+              "values": "numero × Ø diametro",
+              "default": "dal calcolo",
+              "required": "no (sola lettura)",
+              "help": [
+                "Numero e diametro delle funi, per esempio 6 × Ø10,0 mm. Se il calcolo lascia le funi come sono (per esempio un «Solo argano» con funi a «No»), l’etichetta diventa «Funi esistenti (restano)» e le funi non sono mai presentate come nuove."
+              ],
+              "src": "src/components/lift/DalCalcolo.tsx:63-64"
+            },
+            {
+              "label": "Argano verificato nel calcolo",
+              "kind": "testo",
+              "unit": null,
+              "values": null,
+              "default": "dal calcolo",
+              "required": "no (sola lettura)",
+              "help": [
+                "Sintesi della macchina che il calcolo ha verificato (marca, modello e dati principali)."
+              ],
+              "src": "src/components/lift/DalCalcolo.tsx:65"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Apri il calcolo",
+              "help": "Apre la pagina del Calcolo argano su cui stai disegnando.",
+              "src": "src/components/lift/DalCalcolo.tsx:70"
+            },
+            {
+              "label": "Modifica nel calcolo argano",
+              "help": "Apre il calcolo per cambiarlo (solo per chi può fare i calcoli). Il Progetto non cambia i dati del calcolo.",
+              "src": "src/components/lift/DalCalcolo.tsx:71"
+            }
+          ],
+          "notes": [
+            "Se il calcolo aggiunge il DM 236/89 al collaudo compare la nota «Il calcolo argano aggiunge il DM 236/89 al collaudo: il caso si sceglie qui, nell’accessibilità del vano.» (vedi il campo «Accessibilità»)."
+          ]
+        },
+        {
+          "title": "Vano, porte e contrappeso",
+          "intro": [
+            "Sezione principale del modulo. Tutti i campi nascono vuoti e segnati come da compilare; i valori del software (guide, ingombri, altezze…) compaiono solo quando i dati del progetto sono completi. Le misure sono in millimetri; il campo accetta anche la virgola e arrotonda al millimetro."
+          ],
+          "fields": [
+            {
+              "label": "Larghezza del vano, lato porte (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 500 a 10 000, passo 10; intero",
+              "default": "vuoto (da inserire); dopo la misura CAD, il valore misurato",
+              "required": "sì",
+              "help": [
+                "Larghezza interna libera del vano, misurata lungo la parete delle porte di piano (parete anteriore), tra i muri finiti. Misurala in cantiere con il rilievo del vano oppure prendila dalla pianta CAD con la misura dal disegno.",
+                "Con la larghezza e la profondità il software propone la cabina più grande che entra, con le guide e il contrappeso intorno. Se cambi la misura dopo una misura dal CAD, il riferimento al file CAD cade e sotto compare «Misure inserite o modificate a mano».",
+                "Cambiando le dimensioni del vano le quote della pianta fissate a mano si perdono, tranne la posizione delle porte, che resta finché le porte aprono ancora sulla nuova cabina."
+              ],
+              "src": "src/components/lift/ProgettoForm.tsx:74-80"
+            },
+            {
+              "label": "Profondità del vano (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 500 a 10 000, passo 10; intero",
+              "default": "vuoto (da inserire); dopo la misura CAD, il valore misurato",
+              "required": "sì",
+              "help": [
+                "Profondità interna libera del vano, dalla parete delle porte alla parete di fondo. Come per la larghezza: rilievo in cantiere o misura dal disegno CAD.",
+                "Insieme alla larghezza decide la cabina massima: il riquadro «Il progetto completa il calcolo» dice quanti kg consente al massimo il vano disegnato."
+              ],
+              "src": "src/components/lift/ProgettoForm.tsx:74-80"
+            },
+            {
+              "label": "Portata (kg)",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "sola lettura",
+              "default": "dal calcolo (badge «dal calcolo»)",
+              "required": "no (non si inserisce qui)",
+              "help": [
+                "Nel Progetto la portata è quella del Calcolo argano: la vedi qui, ma si cambia solo nel calcolo.",
+                "Serve a dimensionare la superficie della cabina (la massima ammessa per questa portata) e il numero di persone."
+              ],
+              "src": "src/components/shaft/ShaftOptions.tsx:41-46"
+            },
+            {
+              "label": "Accessi",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Uno · Due opposti · Due adiacenti a 90°",
+              "default": "nessuno (da scegliere)",
+              "required": "sì",
+              "help": [
+                "Quante porte di piano ha ogni fermata e dove stanno: una sola, due sulle pareti opposte, oppure due su pareti adiacenti (a 90°).",
+                "Con due accessi il contrappeso non può stare su una parete con la porta; scegliendo due accessi, a ogni fermata devi indicare quale accesso ha (campo «Accesso» nella sezione dei piani)."
+              ],
+              "src": "src/components/shaft/ShaftOptions.tsx:57-59"
+            },
+            {
+              "label": "Secondo accesso sulla parete",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "A sinistra · A destra",
+              "default": "nessuno (da scegliere)",
+              "required": "quando «Accessi» è «Due adiacenti a 90°»",
+              "help": [
+                "Indica su quale parete laterale sta la seconda porta (a sinistra o a destra, guardando la pianta con la parete delle porte in basso)."
+              ],
+              "src": "src/components/shaft/ShaftOptions.tsx:60-63"
+            },
+            {
+              "label": "Porte",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Telescopiche, 2 ante · Centrali, 2 ante",
+              "default": "nessuno (da scegliere)",
+              "required": "sì",
+              "help": [
+                "Il tipo di apertura delle porte di cabina e di piano. Decide la lunghezza e l’ingombro dell’operatore di cabina, le guide delle ante e la sovrapposizione degli operatori nelle porte adiacenti."
+              ],
+              "src": "src/components/shaft/ShaftOptions.tsx:64-65"
+            },
+            {
+              "label": "Luce netta della porta (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 500 a 2 500, passo 50",
+              "default": "vuoto (da inserire)",
+              "required": "sì",
+              "help": [
+                "Larghezza netta di passaggio della porta di piano e di cabina. È la misura da targa o da rilievo della porta.",
+                "Insieme ai montanti del portale (50 mm per lato) o del telaio decide il vano nel muro e se la porta sta nella parete."
+              ],
+              "src": "src/components/shaft/ShaftOptions.tsx:31-37, 67"
+            },
+            {
+              "label": "Altezza della porta (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 1 800 a 3 000, passo 50",
+              "default": "vuoto (da inserire)",
+              "required": "sì",
+              "help": [
+                "Altezza netta di passaggio delle porte. Gli interpiani devono essere almeno alti quanto la porta quando due fermate consecutive hanno una porta sulla stessa parete.",
+                "La usano la sezione A-A, la verifica dell’altezza libera degli accessi e la posizione della soglia."
+              ],
+              "src": "src/components/shaft/ShaftOptions.tsx:68"
+            },
+            {
+              "label": "Contrappeso",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Sul fondo · A sinistra · A destra",
+              "default": "nessuno (da scegliere)",
+              "required": "quando «Accessi» è «Uno» (o ancora da scegliere)",
+              "help": [
+                "Su quale parete sta il contrappeso. Con un solo accesso scegli tu; con due accessi il campo sparisce e compare la frase «Con due accessi il contrappeso va dove non ci sono porte: …» con il lato scelto dal software (con due accessi opposti e «Sul fondo» scelto prima, il lato diventa sinistro).",
+                "La parete decide dove stanno le guide del contrappeso, le nicchie del contrappeso e la distanza cabina–contrappeso."
+              ],
+              "src": "src/components/shaft/ShaftOptions.tsx:70-73"
+            },
+            {
+              "label": "Spessore delle pareti del vano (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 50 a 1 000, passo 10",
+              "default": "vuoto (da inserire)",
+              "required": "sì",
+              "help": [
+                "Spessore dei muri del vano, per disegnarli in pianta e in sezione."
+              ],
+              "src": "src/components/shaft/ShaftOptions.tsx:75"
+            },
+            {
+              "label": "Accessibilità",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Nessun requisito · DM 236/89 — edificio esistente · DM 236/89 — edificio residenziale nuovo · DM 236/89 — edificio non residenziale nuovo",
+              "default": "«— scegli —» finché non scegli",
+              "required": "sì; se il calcolo aggiunge il DM 236/89 al collaudo, «Nessun requisito» non basta e il campo resta da compilare",
+              "help": [
+                "Scegli quale caso del DM 236/1989 vale per l’impianto. Con «Nessun requisito» non c’è nessuna di queste verifiche. Con un caso scelto, la cabina minima, la porta minima e il lato corto sono controllati, e la cabina proposta non scende sotto la misura minima del caso.",
+                "Misure minime della cabina e passaggio della porta (registro KV, dm236*): edificio esistente 800 × 1200 mm e 750 mm; residenziale nuovo 950 × 1300 mm e 800 mm; non residenziale nuovo 1100 × 1400 mm e 800 mm. Il pulsante più alto delle bottoniere deve stare tra 1100 e 1400 mm (DM 236/1989, 8.1.12; è un avviso, perché le bottoniere si fissano in cantiere).",
+                "Con un solo accesso la cabina proposta ha il lato della porta non più largo della profondità. Con due accessi adiacenti il DM chiede la porta sul lato corto: se la cabina non è quadrata compare un avviso.",
+                "Per «edificio esistente» vale il caso b) con le misure del residenziale nuovo; se la cabina ottenuta è più piccola (cabina sotto 950 × 1300 mm o porta sotto 800 mm) vale il caso c) e compare il campo «Perché non è possibile una cabina più grande (caso c)»."
+              ],
+              "src": "src/components/shaft/ShaftOptions.tsx:76-84"
+            },
+            {
+              "label": "Perché non è possibile una cabina più grande (caso c)",
+              "kind": "testo",
+              "unit": null,
+              "values": "al massimo 300 caratteri; almeno 10 lettere; niente caratteri nascosti",
+              "default": "vuoto",
+              "required": "compare quando «Accessibilità» è «DM 236/89 — edificio esistente»; la verifica del caso c) è richiesta solo se la cabina è più piccola di 950 × 1300 mm o la porta è sotto 800 mm",
+              "help": [
+                "Scrivi in parole il motivo per cui l’edificio non consente una cabina più grande. Il testo va nel progetto e nella relazione così come lo scrivi.",
+                "I caratteri di controllo incollati insieme al testo (per esempio spazi di larghezza zero) vengono tolti. La verifica del caso c) è un avviso finché il motivo non ha almeno 10 lettere."
+              ],
+              "src": "src/components/shaft/ShaftOptions.tsx:85-92"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "Sotto «Larghezza» e «Profondità» una riga dice come sono state prese le misure: «Misure inserite o modificate a mano» oppure «‹file› (DXF/DWG), misurato sul disegno».",
+            "Quando mancano dei dati, il software non disegna: guarda il riquadro «Dati del progetto da inserire» sulla destra, con un link per ogni campo mancante."
+          ],
+          "warnings": [
+            "Quando cambi larghezza o profondità del vano, la cabina, le guide e il contrappeso vengono proposti di nuovo e le quote della pianta fissate a mano si perdono (restano solo le posizioni delle porte, finché aprono ancora sulla nuova cabina).",
+            "Quando cambi «Accessi» o il lato del «Contrappeso», le quote della pianta che dipendono da quella disposizione (seconda porta, guide di cabina, contrappeso, ammortizzatore del contrappeso, fune del limitatore) si perdono."
+          ]
+        },
+        {
+          "title": "Misura dal disegno CAD (DXF o DWG)",
+          "intro": [
+            "Sotto le due misure del vano trovi il blocco richiudibile «Misura dal disegno CAD (DXF o DWG)». Serve a prendere larghezza e profondità del vano da una pianta già disegnata, invece di digitarle. Il file viene letto solo nel tuo browser: al server arrivano la misura, il nome del file, l’impronta e la descrizione del punto cliccato, non il disegno."
+          ],
+          "fields": [
+            {
+              "label": "Disegno DXF o DWG",
+              "kind": "file",
+              "unit": null,
+              "values": "file .dxf o .dwg; al massimo 60 MB; i DWG più vecchi della versione 2000 non si leggono",
+              "default": "nessun file",
+              "required": "no",
+              "help": [
+                "Scegli la pianta del vano o dell’edificio. Il software legge i segmenti dallo spazio modello, calcola l’impronta SHA-256 del file e mostra il disegno. Sotto il campo leggi: «Il disegno resta sul tuo computer: al server arrivano solo le misure prese e l’impronta del file.»",
+                "Durante la lettura compare «Lettura del disegno…»; poi una riga riassume formato, versione, numero di segmenti e di layer. Un disegno molto grande viene letto solo in parte («letti i primi … segmenti»).",
+                "Errori possibili: «File troppo grande (massimo 60 MB).», «DWG … troppo vecchio: salvalo come DWG 2000 o successivo, o esportalo in DXF.», «Il file non si legge come DXF o DWG.», «Il disegno non contiene linee da misurare nello spazio modello.»"
+              ],
+              "src": "src/components/shaft/SurveyPanel.tsx:95-98"
+            },
+            {
+              "label": "Unità del disegno",
+              "kind": "scelta",
+              "unit": null,
+              "values": "millimetri · centimetri · decimetri · metri · pollici · piedi",
+              "default": "quella scritta nel file; se il file non la indica, millimetri",
+              "required": "compare dopo aver caricato un disegno",
+              "help": [
+                "Dice in che unità è disegnata la pianta. Se il file non indica l’unità compare l’avviso «Il disegno non indica l’unità: controlla che sia quella giusta.» e il software parte da millimetri: controlla confrontando la misura con una quota nota.",
+                "Cambiando unità dopo una misura, larghezza e profondità si ricalcolano subito."
+              ],
+              "src": "src/components/shaft/SurveyPanel.tsx:107-112"
+            },
+            {
+              "label": "Lato delle porte di piano",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "In basso · In alto · A sinistra · A destra",
+              "default": "In basso",
+              "required": "compare dopo aver caricato un disegno",
+              "help": [
+                "Indica quale lato del rettangolo misurato, così come lo vedi sullo schermo, è la parete delle porte di piano. Da questo dipende quale misura è la larghezza («lato porte») e quale la profondità.",
+                "Il lato scelto è evidenziato con un tratto spesso sul rettangolo. Vale come lo vedi a schermo anche se la pianta è ruotata di pochi gradi."
+              ],
+              "src": "src/components/shaft/SurveyPanel.tsx:113-123"
+            },
+            {
+              "label": "Layer usati per la misura",
+              "kind": "scelta multipla",
+              "unit": null,
+              "values": "una casella per layer, con il nome e il numero di segmenti",
+              "default": "tutti i layer attivi tranne quelli nascosti nel file",
+              "required": "no",
+              "help": [
+                "Il titolo mostra quanti layer sono attivi su quanti totali, per esempio (4/6). Togli la spunta ai layer di quote, testi e arredi: la misura si ferma sulle linee dei layer attivi. I layer tolti sono disegnati in grigio chiaro.",
+                "Cambiando i layer la misura già presa viene azzerata: clicca di nuovo nel vano."
+              ],
+              "src": "src/components/shaft/SurveyPanel.tsx:129-139"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Clic sul disegno (dentro il vano)",
+              "help": "Clicca (o tocca) dentro il vano: il software misura la distanza fino alle pareti nelle quattro direzioni, anche davanti al vano porta, e ne ricava larghezza e profondità. La misura appare come «Misurato sul disegno: … × … mm» e viene scritta nei campi del vano. Se il punto non è chiuso da pareti in tutte le direzioni compare «Il punto non è chiuso da pareti in tutte le direzioni: clicca dentro il vano o togli i layer che non sono pareti.». Sul disegno vedi il rettangolo misurato, i quattro raggi e il lato delle porte.",
+              "src": "src/components/shaft/CadViewer.tsx:152-205"
+            },
+            {
+              "label": "Trascina, rotella, due dita",
+              "help": "Trascina con il mouse per spostare il disegno; la rotella o il pizzico a due dita ingrandiscono e riducono. Un clic senza spostamento è una misura.",
+              "src": "src/components/shaft/CadViewer.tsx:152-205"
+            },
+            {
+              "label": "+",
+              "help": "Ingrandisce il disegno attorno al centro (accessibile come «Ingrandisci»).",
+              "src": "src/components/shaft/CadViewer.tsx:213"
+            },
+            {
+              "label": "−",
+              "help": "Riduce il disegno (accessibile come «Riduci»).",
+              "src": "src/components/shaft/CadViewer.tsx:214"
+            },
+            {
+              "label": "Adatta",
+              "help": "Riporta il disegno intero nella finestra.",
+              "src": "src/components/shaft/CadViewer.tsx:215"
+            }
+          ],
+          "notes": [
+            "Prima di cliccare, il software dice «Clicca dentro il vano: il software misura fino alle pareti, anche davanti al vano porta.». Dopo il clic la riga diventa «Misurato sul disegno: … × … mm».",
+            "Guarda il rettangolo disegnato per capire se è davvero il vano."
+          ],
+          "warnings": [
+            "Le misure prese dal disegno vanno sempre controllate in cantiere: scrivono larghezza e profondità del vano nel progetto. Se poi digiti un’altra misura, il riferimento al file CAD cade."
+          ]
+        },
+        {
+          "title": "Scelte del software nel vano",
+          "intro": [
+            "Questo blocco compare sotto «Accessibilità» solo quando i dati del progetto sono completi. Il software ha già scelto un valore tipico per ognuno di questi campi: finché non lo cambi vedi il badge «standard» (valore standard del software, non inserito: cambialo se il progetto è diverso). Appena cambi un valore il badge sparisce."
+          ],
+          "fields": [
+            {
+              "label": "Operatore della porta di cabina",
+              "kind": "scelta",
+              "unit": null,
+              "values": "generico (il più lungo e profondo dei cataloghi) · 2SG FLY / LIKE · Fermator 40/10 · Dapa LOWER",
+              "default": "generico (badge «standard»)",
+              "required": "no",
+              "help": [
+                "Il costruttore dell’operatore di cabina. Cambia la lunghezza e la profondità dell’operatore disegnato sul tetto di cabina e in pianta. Se non sai quale sia, lascia «generico»: usa il caso peggiore dei cataloghi."
+              ],
+              "src": "src/components/shaft/ShaftTechOptions.tsx:144-149"
+            },
+            {
+              "label": "Bottoniera di piano — Lato, guardando la porta dal pianerottolo",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Sinistra · Destra",
+              "default": "Destra (badge «standard»)",
+              "required": "no",
+              "help": [
+                "Il lato della bottoniera di piano, visto dal pianerottolo guardando la porta. È uguale a tutti i piani."
+              ],
+              "src": "src/components/shaft/ShaftTechOptions.tsx:150-159"
+            },
+            {
+              "label": "Dal vano della porta al centro (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 2 000, passo 10",
+              "default": "150 mm",
+              "required": "no",
+              "help": [
+                "Distanza tra il bordo del portale (o del telaio) della porta e il centro della bottoniera, dal lato scelto."
+              ],
+              "src": "src/components/shaft/ShaftTechOptions.tsx:160-168"
+            },
+            {
+              "label": "Altezza del pulsante più alto (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 600 a 2 000, passo 10",
+              "default": "1 100 mm",
+              "required": "no",
+              "help": [
+                "Altezza del pulsante più alto sul pavimento del piano. Il progetto verifica che stia tra 1100 e 1400 mm (DM 236/1989, 8.1.12)."
+              ],
+              "src": "src/components/shaft/ShaftTechOptions.tsx:160-168"
+            },
+            {
+              "label": "Guide di cabina",
+              "kind": "scelta",
+              "unit": null,
+              "values": "T45/A · T50/A · T70-1/A · T75-3/B · T82/B · T89/B · T90/B · T114/B · T125/B · T127-1/B · T 45x45x5 · T 70x70x8",
+              "default": "T70-1/A (badge «standard» finché non cambi)",
+              "required": "no",
+              "help": [
+                "Il profilo delle guide di cabina. Decide l’ingombro delle guide e delle staffe nel vano e le verifiche di tensione, flessione e freccia delle guide con il paracadute e in marcia (UNI EN 81-50, 5.10)."
+              ],
+              "src": "src/components/shaft/ShaftTechOptions.tsx:170-179"
+            },
+            {
+              "label": "Guide del contrappeso",
+              "kind": "scelta",
+              "unit": null,
+              "values": "gli stessi profili delle guide di cabina",
+              "default": "T45/A (badge «standard» finché non cambi)",
+              "required": "no",
+              "help": [
+                "Il profilo delle guide del contrappeso, con le stesse conseguenze delle guide di cabina sul contrappeso."
+              ],
+              "src": "src/components/shaft/ShaftTechOptions.tsx:170-179"
+            },
+            {
+              "label": "Limitatore di velocità",
+              "kind": "scelta",
+              "unit": null,
+              "values": "«secondo la velocità (PFB …)» oppure un modello dell’elenco, con marca, diametro Ø e campo di velocità in m/s; l’elenco mostra solo i modelli che accettano la velocità nominale",
+              "default": "secondo la velocità: il modello più piccolo che accetta la velocità del calcolo",
+              "required": "no",
+              "help": [
+                "Il limitatore di velocità. Lasciando «secondo la velocità» il software sceglie da solo; scegliendo un modello ne usa il diametro per disegnare le pulegge e per le distanze della fune.",
+                "Vale anche per la verifica del diametro primitivo delle pulegge sul diametro della fune (UNI EN 81-20, 5.6.2.2.1.3 c))."
+              ],
+              "src": "src/components/shaft/ShaftTechOptions.tsx:180-186"
+            },
+            {
+              "label": "Lato della fune del limitatore",
+              "kind": "scelta",
+              "unit": null,
+              "values": "automatico (…) · sinistra · destra",
+              "default": "automatico (badge «standard»): l’ultimo lato libero, o l’altro quando solo lì il limitatore resta fuori dall’argano nel locale macchina",
+              "required": "compare solo con l’arcata centrale e almeno una parete laterale libera da porte e contrappeso",
+              "help": [
+                "Su quale parete laterale passa la fune del limitatore. La distanza della fune dalla parete e il ramo agganciato alla cabina si cambiano cliccando le loro quote sulla pianta del vano e del locale macchina (vedi l’editor delle quote)."
+              ],
+              "src": "src/components/shaft/ShaftTechOptions.tsx:187-196"
+            },
+            {
+              "label": "Staffe delle guide del contrappeso",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Panev SU/SD + SG (catalogo) · Generiche",
+              "default": "Panev SU/SD + SG (catalogo)",
+              "required": "no",
+              "help": [
+                "Il tipo di staffe delle guide del contrappeso: gli articoli del catalogo Panev o staffe generiche. Cambia lo spazio che le staffe occupano dietro le guide e la nicchia del contrappeso."
+              ],
+              "src": "src/components/shaft/ShaftTechOptions.tsx:197-198"
+            },
+            {
+              "label": "Supporto delle guide del contrappeso",
+              "kind": "scelta",
+              "unit": null,
+              "values": "«Automatico: SU o SD, SC in un angolo» · supporti SU/SD (SU 220 160 … SD 220 200) · supporti SC (SC 50 200 … SC 90 220) · soluzioni «su disegno» (SC 50 170 + SG 225 50; SN 60 65 + SN 65 200 + BRACCIO 160 190)",
+              "default": "Automatico",
+              "required": "compare solo con le staffe Panev",
+              "help": [
+                "Scegli un articolo del catalogo Panev per le guide del contrappeso. Le soluzioni «su disegno» sono fatte sul disegno esecutivo del cantiere. Con «Automatico» il software sceglie SU o SD e usa SC in un angolo. La verifica «Staffe Panev delle guide del contrappeso» controlla che ogni guida abbia una staffa del catalogo."
+              ],
+              "src": "src/components/shaft/ShaftTechOptions.tsx:199-209"
+            },
+            {
+              "label": "Staffe delle porte di piano (Panev)",
+              "kind": "scelta",
+              "unit": null,
+              "values": "«Automatico: …» oppure una delle coppie A + B del catalogo (serie 37, 45, 65)",
+              "default": "Automatico: A 65 170 7 + B 65 320",
+              "required": "no",
+              "help": [
+                "La coppia di staffe A + B che fissa le porte di piano alla parete. Le coppie di una stessa serie non sono intercambiabili con quelle di un’altra. La scelta incide sull’elenco materiali e sulla verifica del muro libero sopra le porte."
+              ],
+              "src": "src/components/shaft/ShaftTechOptions.tsx:210-216"
+            },
+            {
+              "label": "Ingombri (valori tipici, modificabili)",
+              "kind": "tabella",
+              "unit": "mm",
+              "values": "11 campi numerici, passo 5, con questi limiti: Profondità della porta di piano 0–500; Gioco tra le soglie 0–200; Porta di cabina 0–500; Pareti della cabina 0–200; Guide e staffe della cabina, per lato 0–800; Cabina–contrappeso 0–500; Spessore del contrappeso 50–600; Guide e staffe del contrappeso 0–800; Cabina–parete di fondo 0–800; Punta della guida–cabina 0–300; Contrappeso laterale–piede della guida di cabina 0–500",
+              "default": "valori tipici: 80, 30, 80, 35, 165, 60, 140, 80, 60, 30, 85 mm (nell’ordine dell’elenco sopra); badge «standard» finché uguale al tipico",
+              "required": "no",
+              "help": [
+                "Blocco richiudibile con titolo «Ingombri (valori tipici, modificabili)». Sono le tolleranze e gli spessori che il software usa per mettere cabina, guide e contrappeso nel vano. Cambia un valore solo se hai il dato del fornitore di guide, porte, arcata o cabina.",
+                "Il pulsante «Ripristina i valori tipici» riporta tutti e undici i valori a quelli tipici.",
+                "Questi valori si cambiano anche cliccando le quote sulla pianta (vedi l’editor delle quote). Il modello è semplificato: arcata, operatori, ammortizzatori e macchina hanno posizioni e ingombri tipici da confermare con i fornitori."
+              ],
+              "src": "src/components/shaft/ShaftTechOptions.tsx:40-46, 122-126"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Ripristina i valori tipici",
+              "help": "Rimette i valori tipici in tutti gli undici ingombri.",
+              "src": "src/components/shaft/ShaftTechOptions.tsx:126"
+            }
+          ],
+          "notes": [
+            "Le etichette dei campi «Ingombri» sono, nell’ordine: Profondità della porta di piano, Gioco tra le soglie, Porta di cabina, Pareti della cabina, Guide e staffe della cabina per lato, Cabina–contrappeso, Spessore del contrappeso, Guide e staffe del contrappeso, Cabina–parete di fondo, Punta della guida–cabina, Contrappeso laterale–piede della guida di cabina."
+          ]
+        },
+        {
+          "title": "Nicchie nel vano",
+          "intro": [
+            "Blocco richiudibile (aperto quando esiste almeno una nicchia). Descrive le nicchie scavate nei muri del vano: il contrappeso nella sua nicchia (la cabina guadagna la profondità della nicchia), una nicchia per ogni lampada della luce del vano e la traccia della canalina dei cavi. Si possono avere al massimo 8 nicchie."
+          ],
+          "fields": [
+            {
+              "label": "Uso",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Contrappeso in nicchia · Luce del vano in nicchia · Canalina in nicchia",
+              "default": "quello del pulsante che hai premuto per aggiungerla",
+              "required": "per ogni nicchia",
+              "help": [
+                "Che cosa ospita la nicchia. Le lampade stanno a 1,5 m sopra ogni piano e la più alta a 80 mm sotto la soletta."
+              ],
+              "src": "src/components/shaft/NicheOptions.tsx:53-58"
+            },
+            {
+              "label": "Parete",
+              "kind": "scelta",
+              "unit": null,
+              "values": "anteriore · posteriore · sinistra · destra",
+              "default": "proposta dal software alla creazione",
+              "required": "per ogni nicchia",
+              "help": [
+                "Il muro in cui si trova la nicchia."
+              ],
+              "src": "src/components/shaft/NicheOptions.tsx:59-64"
+            },
+            {
+              "label": "Dall’angolo (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 10 000, passo 10",
+              "default": "proposta dal software",
+              "required": "per ogni nicchia",
+              "help": [
+                "Da dove inizia la nicchia lungo il muro. Sulle pareti davanti e dietro si misura dall’angolo sinistro, sulle pareti laterali dall’angolo davanti."
+              ],
+              "src": "src/components/shaft/NicheOptions.tsx:39-45, 65"
+            },
+            {
+              "label": "Larghezza (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 50 a 5 000, passo 10",
+              "default": "proposta dal software: 300 per la luce, 200 per la canalina, per il contrappeso la sua lunghezza più lo spazio per pattini, guide e staffe",
+              "required": "per ogni nicchia",
+              "help": [
+                "Larghezza della nicchia lungo il muro."
+              ],
+              "src": "src/components/shaft/NicheOptions.tsx:66"
+            },
+            {
+              "label": "Profondità (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 10 a 1 000, passo 10",
+              "default": "proposta dal software: al massimo lo spessore del muro meno 50 mm; 100 per luce e canalina",
+              "required": "per ogni nicchia",
+              "help": [
+                "Quanto la nicchia entra nel muro. Dietro la nicchia deve restare muro (il software ne lascia almeno 50 mm). La verifica «Nicchie nelle pareti» controlla che la nicchia sia dentro la parete, fuori dai telai delle porte e che il contrappeso stia nella sua nicchia."
+              ],
+              "src": "src/components/shaft/NicheOptions.tsx:67"
+            }
+          ],
+          "actions": [
+            {
+              "label": "+ Contrappeso",
+              "help": "Aggiunge una nicchia per il contrappeso sulla parete del contrappeso, già dimensionata attorno al contrappeso. Disattivo con 8 nicchie.",
+              "src": "src/components/shaft/NicheOptions.tsx:72-76"
+            },
+            {
+              "label": "+ Luce",
+              "help": "Aggiunge la nicchia di una lampada su una parete laterale libera da porte e contrappeso (altrimenti sul fondo). Disattivo con 8 nicchie.",
+              "src": "src/components/shaft/NicheOptions.tsx:72-76"
+            },
+            {
+              "label": "+ Canalina",
+              "help": "Aggiunge la traccia della canalina dei cavi su una parete libera. Disattivo con 8 nicchie.",
+              "src": "src/components/shaft/NicheOptions.tsx:72-76"
+            },
+            {
+              "label": "Togli la nicchia",
+              "help": "Elimina quella nicchia.",
+              "src": "src/components/shaft/NicheOptions.tsx:69"
+            }
+          ],
+          "notes": [
+            "Sotto il blocco leggi la nota con la regola delle distanze dall’angolo. Le quote delle nicchie si cambiano anche cliccandole sulla pianta."
+          ]
+        },
+        {
+          "title": "Vano all’ultimo piano e in testata (edifici esistenti)",
+          "intro": [
+            "Blocco richiudibile (aperto quando almeno una parete è spostata). Negli edifici vecchi i muri all’ultimo piano e in testata possono stare in posizione diversa da quella del piano principale. Qui indichi di quanto ogni parete sta più dentro o più fuori. Cabina, guide e contrappeso restano a piombo; la porta di piano dell’ultima fermata resta in linea con la cabina."
+          ],
+          "fields": [
+            {
+              "label": "Parete anteriore in testata (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da −500 a +500, passo 5; + = parete più dentro, − = più fuori",
+              "default": "0 (come al piano principale)",
+              "required": "no",
+              "help": [
+                "Spostamento della parete anteriore (quella delle porte) in testata rispetto al piano principale."
+              ],
+              "src": "src/components/shaft/HeadOptions.tsx:26-33"
+            },
+            {
+              "label": "Parete posteriore in testata (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da −500 a +500, passo 5",
+              "default": "0",
+              "required": "no",
+              "help": [
+                "Come sopra, per la parete di fondo."
+              ],
+              "src": "src/components/shaft/HeadOptions.tsx:26-33"
+            },
+            {
+              "label": "Parete sinistra in testata (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da −500 a +500, passo 5",
+              "default": "0",
+              "required": "no",
+              "help": [
+                "Come sopra, per la parete sinistra."
+              ],
+              "src": "src/components/shaft/HeadOptions.tsx:26-33"
+            },
+            {
+              "label": "Parete destra in testata (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da −500 a +500, passo 5",
+              "default": "0",
+              "required": "no",
+              "help": [
+                "Come sopra, per la parete destra. Le quattro quote servono a disegnare la «Pianta in testata» e la «Sezione in testata» e alla verifica che cabina e contrappeso passino lontano dalle pareti spostate."
+              ],
+              "src": "src/components/shaft/HeadOptions.tsx:26-33"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Come al piano principale",
+              "help": "Azzera le quattro quote (compare solo quando almeno una è diversa da zero).",
+              "src": "src/components/shaft/HeadOptions.tsx:35"
+            }
+          ],
+          "notes": [
+            "Le quote si cambiano anche sulla pianta in testata."
+          ]
+        },
+        {
+          "title": "Telaio delle porte di piano",
+          "intro": [
+            "Blocco richiudibile. Di norma le porte di piano hanno un portale attorno alla luce netta (montanti da 50 mm, frontalino da 60 mm). Se invece usi il telaio proprio della porta (telaio di piano), lo attivi qui. Il telaio sta tutto nel vano di corsa, contro la parete, e vale per tutte le porte di piano."
+          ],
+          "fields": [
+            {
+              "label": "Porte di piano con il loro telaio (al posto del portale)",
+              "kind": "casella",
+              "unit": null,
+              "values": "attiva / disattiva",
+              "default": "disattiva (portale)",
+              "required": "no",
+              "help": [
+                "Attivandola il telaio parte dal tipo standard: montanti da 120 mm, frontalino da 220 mm, spessore 50 mm. Soglia e sospensione della porta sono fissate al telaio e le staffe Panev lo tengono alla parete.",
+                "Il vano nel muro è largo la luce più i due montanti e alto la luce più il frontalino; gli imbotti stanno sul pavimento del pianerottolo."
+              ],
+              "src": "src/components/shaft/FrameOptions.tsx:33-36"
+            },
+            {
+              "label": "Montanti del telaio: larghezza (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 25 a 600, passo 5",
+              "default": "120 mm",
+              "required": "compare con il telaio attivo",
+              "help": [
+                "Larghezza dei montanti ai lati della luce. Il valore minimo, 25 mm, è quello di un telaio fatto su misura."
+              ],
+              "src": "src/components/shaft/FrameOptions.tsx:19-29, 37"
+            },
+            {
+              "label": "Frontalino del telaio sopra la luce: altezza (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 25 a 600, passo 5",
+              "default": "220 mm",
+              "required": "compare con il telaio attivo",
+              "help": [
+                "Altezza del frontalino sopra la luce. Incide sull’altezza dell’apertura nel muro e sulle staffe sopra le porte."
+              ],
+              "src": "src/components/shaft/FrameOptions.tsx:19-29, 37"
+            },
+            {
+              "label": "Telaio: spessore nel vano di corsa (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 25 a 600, passo 5",
+              "default": "50 mm",
+              "required": "compare con il telaio attivo",
+              "help": [
+                "Quanto il telaio entra nel vano. Deve stare dentro la profondità della porta di piano (campo «Profondità della porta di piano» negli ingombri): le ante scorrono dietro il telaio; la verifica «Telaio della porta di piano» lo controlla."
+              ],
+              "src": "src/components/shaft/FrameOptions.tsx:19-29, 37"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "Quando digiti un valore a metà (per esempio 1 per arrivare a 150) il campo lo tiene; il modulo segna un valore fuori dai limiti. Le misure si cambiano anche sulle quote della pianta e della sezione."
+          ]
+        },
+        {
+          "title": "Imbotti delle porte di piano",
+          "intro": [
+            "Blocco richiudibile (aperto quando c’è almeno un imbotto). Serve quando la porta nuova ha una luce più piccola del vano esistente tra i marmi: gli imbotti coprono la parte che resta scoperta, ai lati (sul pianerottolo, accanto al portale) e sopra il portale. Valgono per tutte le porte di piano."
+          ],
+          "fields": [
+            {
+              "label": "Imbotto sinistro (guardando dal pianerottolo) (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 1 500, passo 5",
+              "default": "0 (nessun imbotto)",
+              "required": "no",
+              "help": [
+                "Larghezza dell’imbotto a sinistra del portale, guardando dal pianerottolo."
+              ],
+              "src": "src/components/shaft/ImbottiOptions.tsx:27-33, 38"
+            },
+            {
+              "label": "Imbotto destro (guardando dal pianerottolo) (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 1 500, passo 5",
+              "default": "0",
+              "required": "no",
+              "help": [
+                "Larghezza dell’imbotto a destra del portale."
+              ],
+              "src": "src/components/shaft/ImbottiOptions.tsx:27-33, 39"
+            },
+            {
+              "label": "Imbotto superiore (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 1 500, passo 5",
+              "default": "0",
+              "required": "no",
+              "help": [
+                "Altezza dell’imbotto sopra il portale."
+              ],
+              "src": "src/components/shaft/ImbottiOptions.tsx:27-33, 40"
+            },
+            {
+              "label": "Distanza tra i marmi (i due imbotti laterali uguali) (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 4 000, passo 5",
+              "default": "luce + 2 montanti (senza imbotti)",
+              "required": "no",
+              "help": [
+                "Alternativa a sinistro e destro: inserisci la distanza tra i marmi dell’apertura esistente e i due imbotti laterali si dividono in parti uguali quello che resta (il millimetro dispari va a destra)."
+              ],
+              "src": "src/components/shaft/ImbottiOptions.tsx:27-33, 41"
+            },
+            {
+              "label": "Altezza sotto il marmo superiore (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 4 000, passo 5",
+              "default": "altezza porta + frontalino (senza imbotto superiore)",
+              "required": "no",
+              "help": [
+                "Alternativa a «Imbotto superiore»: l’imbotto superiore prende l’altezza che manca fino al marmo."
+              ],
+              "src": "src/components/shaft/ImbottiOptions.tsx:27-33, 42"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Nessun imbotto",
+              "help": "Azzera tutti gli imbotti (compare quando ce n’è almeno uno).",
+              "src": "src/components/shaft/ImbottiOptions.tsx:44"
+            }
+          ],
+          "notes": [
+            "Un valore che porterebbe un imbotto sotto zero (apertura più stretta della porta nuova) o oltre 1 500 mm non viene accettato. Le quote si cambiano anche sulla pianta e sulla sezione A-A."
+          ]
+        },
+        {
+          "title": "Schizzo di rilievo",
+          "intro": [
+            "Pannello richiudibile in cima alla colonna di destra (aperto quando mancano dati o ci sono già schizzi). Mostra gli schizzi fatti in cantiere dell’impianto accanto al modulo: «Lo schizzo fatto in sito, accanto al modulo: inserisci le misure guardandolo; appena ci sono tutte, il software disegna il vano.»",
+            "L’elenco degli schizzi dell’impianto mette per primi quelli del «Vano di corsa», poi gli altri con la parte per cui sono stati fatti. Scegli uno schizzo per vederlo; i PDF si sfogliano pagina per pagina, con ingrandimento («Adatta», «100 %») e senza i dati della foto."
+          ],
+          "fields": [
+            {
+              "label": "Foto, scansione o PDF dello schizzo",
+              "kind": "file",
+              "unit": null,
+              "values": "JPEG, PNG, HEIC (iPhone) o PDF, al massimo 20 MB",
+              "default": "nessun file",
+              "required": "sì per caricare",
+              "help": [
+                "Carica lo schizzo del vano fatto in sito. I dati della foto (posizione, dispositivo) vengono tolti. Se il file è già stato caricato lo dice; se era stato caricato come altro documento puoi usarlo come schizzo con «Usalo come schizzo».",
+                "Compare solo a chi modifica i dati dell’impianto; agli altri: «Caricare gli schizzi spetta a chi modifica i dati dell’impianto.»"
+              ],
+              "src": "src/components/schizzi/SchizzoUpload.tsx:76-79"
+            },
+            {
+              "label": "Titolo (facoltativo)",
+              "kind": "testo",
+              "unit": null,
+              "values": null,
+              "default": "vuoto",
+              "required": "no",
+              "help": [
+                "Un nome per riconoscere lo schizzo nell’elenco."
+              ],
+              "src": "src/components/schizzi/SchizzoUpload.tsx:82"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Carica",
+              "help": "Invia lo schizzo (con avanzamento e controllo del file) e lo aggiunge all’elenco con parte «Vano di corsa».",
+              "src": "src/components/schizzi/SchizzoUpload.tsx:86"
+            },
+            {
+              "label": "Usalo come schizzo",
+              "help": "Compare se il file era già nell’impianto come altro documento: lo trasforma in schizzo di rilievo.",
+              "src": "src/components/schizzi/SchizzoUpload.tsx:94"
+            },
+            {
+              "label": "Leggi lo schizzo",
+              "help": "Lettura automatica dello schizzo con l’intelligenza artificiale (Claude, tramite Google Cloud Vertex AI, UE). Propone una tabella di misure con affidabilità; nessun valore entra nel modulo finché non spunti «Confermo» e premi «Applica i valori confermati». Il pulsante compare solo se la lettura automatica è attiva sul server e hai il diritto di disegnare il progetto; senza lettura automatica il pulsante non c’è e una nota dice «Lettura automatica non attiva: inserisci le misure guardando lo schizzo.»",
+              "src": "src/components/schizzi/SchizzoPanel.tsx:74-77; src/components/schizzi/LetturaSchizzo.tsx:98"
+            }
+          ],
+          "notes": [
+            "Le misure che puoi ricevere da uno schizzo del vano sono: larghezza e profondità interne, spessore delle pareti, porte, luce e altezza della porta, accessi, secondo accesso, contrappeso, fossa, testata, numero di fermate, interpiani, accesso di ogni fermata e fermata principale. Quelle applicate entrano nel modulo come se le avessi digitate (una nuova misura del vano fa cadere la misura dal CAD).",
+            "Quando la lettura è attiva compare l’avviso «Valori proposti dall’intelligenza artificiale (Claude, tramite Google Cloud Vertex AI, UE): verifica ogni valore sullo schizzo prima di confermarlo.»"
+          ],
+          "warnings": [
+            "I valori proposti dalla lettura automatica sono da verificare uno per uno sullo schizzo prima di spuntare «Confermo»: i valori applicati entrano nel modulo come se li avessi digitati."
+          ]
+        },
+        {
+          "title": "Dati del progetto da inserire",
+          "intro": [
+            "Riquadro giallo sulla destra, al posto di tutti i risultati, finché il progetto non ha tutti i dati. Il testo dice: «Un progetto nuovo parte vuoto: il software non calcola e non disegna nulla finché mancano questi dati.»",
+            "Elenca ogni campo ancora da compilare, nell’ordine del modulo: larghezza e profondità, accessi, secondo accesso, porte, luce e altezza della porta, contrappeso, spessore delle pareti, accessibilità, velocità-fossa-testata e fermate (sezione «Piani, fossa e testata»), locale macchina, e così via. Ogni voce è un link: aprendolo si apre il blocco e il cursore va nel campo."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "Compaiono solo i dati che servono con le scelte fatte: per esempio il «Secondo accesso sulla parete» solo con due accessi adiacenti, il «Contrappeso» solo con un accesso.",
+            "Le voci del locale macchina cambiano con la posizione della macchina del calcolo; con macchina in basso e schema «locale pulegge» si chiedono le misure del locale delle pulegge.",
+            "Nella barra di salvataggio, mentre mancano dati, leggi «Mancano … dati del progetto: sono elencati nel riquadro dei dati da inserire.».",
+            "Quando l’elenco è vuoto, al suo posto compaiono i riquadri con i risultati del progetto (riepilogo, confronto con il calcolo, simulazione, quote, verifiche)."
+          ]
+        },
+        {
+          "title": "Il progetto completa il calcolo",
+          "intro": [
+            "Compare sulla destra quando i dati sono completi (dopo il riepilogo del software). Mette accanto, in tabella, i valori che il disegno dà al calcolo e quelli del Calcolo argano salvato. Se il calcolo tiene l’argano esistente, il disegno dà al calcolo solo la corsa; fune oltre la corsa e rinvio restano quelli del calcolo."
+          ],
+          "fields": [
+            {
+              "label": "Valore / Calcolo argano / Disegno",
+              "kind": "tabella",
+              "unit": "m",
+              "values": "righe: Corsa H, Fune oltre la corsa per lato, Rinvio: distanza orizzontale dal centro puleggia, Rinvio: distanza verticale dal centro puleggia, Distanza verticale testata – puleggia di frizione, Flessioni semplici in più",
+              "default": "dal calcolo e dal disegno",
+              "required": "no (sola lettura)",
+              "help": [
+                "Per ogni valore la colonna «Calcolo argano» mostra quello salvato e «Disegno» quello che il disegno gli darebbe. Le differenze oltre la tolleranza di schermo sono segnate «diverso» (corsa 0,01 m; fune oltre la corsa e altezza delle pulegge di una macchina in basso 0,05 m; distanza e altezza del rinvio 5 mm). Le flessioni in più sono un numero intero.",
+                "Sotto trovi «Verifiche dell’argano:» con l’esito del calcolo e quello del disegno, e la frase «La cabina più grande che il vano consente: … kg.».",
+                "Le flessioni in più delle pulegge in testata di una macchina in basso sono elencate (la riga porta «(con le pulegge in testata del disegno)» quando le pulegge sono più di due) e non sono mai da sole una differenza."
+              ],
+              "src": "src/components/lift/DifferenzeCalcolo.tsx:135-155"
+            },
+            {
+              "label": "Verifiche dell’argano: Calcolo argano / Disegno",
+              "kind": "testo",
+              "unit": null,
+              "values": "OK · Attenzione · Non soddisfatta · Info",
+              "default": "calcolate dal software",
+              "required": "no (sola lettura)",
+              "help": [
+                "Due etichette di esito: quello della macchina con i valori del calcolo salvato e quello con i valori del disegno. Quando il rapporto dei carichi cambia, nel calcolo contano anche le verifiche D.1 e D.2 (UNI 10411-1)."
+              ],
+              "src": "src/components/lift/DifferenzeCalcolo.tsx:149-153"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Porta nel calcolo",
+              "help": "Compare quando c’è una differenza (o il tipo da rivedere). Salva subito la bozza e apre il calcolo con i valori del disegno; solo per chi può fare i calcoli.",
+              "src": "src/components/lift/DifferenzeCalcolo.tsx:157-158"
+            }
+          ],
+          "notes": [
+            "Quando non ci sono differenze leggi «Calcolo e progetto coincidono.».",
+            "Se la corsa disegnata differisce da quella del libretto, la corsa entra tra le parti variate del collaudo («La corsa disegnata è diversa da quella del libretto (… m)…»); se torna uguale, ne esce."
+          ],
+          "warnings": [
+            "Su un calcolo «Solo argano», se la corsa o la velocità del disegno sono diverse da quelle del libretto il calcolo non è più un «Solo argano»: compare «Il calcolo argano è un «Solo argano»: con questa corsa (o velocità) diversa dal libretto non lo è più. Porta i valori nel calcolo e rivedi il tipo di intervento.» e il salvataggio resta bloccato fino alla revisione nel calcolo."
+          ]
+        },
+        {
+          "title": "Disegni del progetto: cambia le quote",
+          "intro": [
+            "Riquadro sulla destra con le piante e le sezioni del progetto (editor delle quote). Ogni quota è un pulsante: la clicchi (o la raggiungi con Tab e premi Invio), scrivi il valore e premi Invio; il progetto si ridisegna con le sue verifiche. Le quote della pianta cambiate a mano restano finché non le ripristini; le altre cambiano il dato corrispondente del modulo.",
+            "Ogni valore passa dalla stessa validazione del salvataggio: quello che imposti dal disegno si può sempre salvare. Se un valore è fuori campo il messaggio dice il campo (per esempio «Valore fuori campo: da … a … mm», «Il valore minimo è … mm», «Il valore massimo è … mm» o «Valore non accettato»), e il limite è espresso come lunghezza della quota che stai modificando.",
+            "Il disegno non è animato: si ridisegna soltanto."
+          ],
+          "fields": [
+            {
+              "label": "Vista",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Pianta al piano principale · Pianta in testata · Pianta della fossa · Sezione A-A · Sezione in testata · Cabina al piano · Sezione in fossa · Locale macchina · Sezione B-B · Locale macchina in basso: pianta · Locale macchina in basso: sezione C-C",
+              "default": "Pianta al piano principale",
+              "required": "no",
+              "help": [
+                "Scegli quale disegno vedere. «Locale macchina» e «Sezione B-B» compaiono solo con una macchina in alto e un locale macchina; le viste «Locale macchina in basso» solo con una macchina in basso.",
+                "Sotto il disegno leggi la scala (1:n sul foglio A4) e «n quote modificabili»."
+              ],
+              "src": "src/components/shaft/PlanEditor.tsx:36-67"
+            },
+            {
+              "label": "Nuovo valore della quota",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero ≥ 0 (con la virgola il numero viene arrotondato); i limiti di ogni quota sono nelle tabelle sotto",
+              "default": "il valore attuale della quota",
+              "required": "sì per applicare",
+              "help": [
+                "Compare in una finestrella sulla quota aperta, con il testo «Cambia: …» e il nome del dato che viene cambiato (lo stesso nome del modulo). Se la quota è una scelta da catalogo o da tabella (guide, spazi di rifugio, profilato del basamento, putrelle HEB), al posto del numero compare «Scegli dal catalogo o dalla tabella» con l’elenco delle voci."
+              ],
+              "src": "src/components/drawing/EditableDrawing.tsx:104-130"
+            },
+            {
+              "label": "Quote che trovi in ogni vista",
+              "kind": "tabella",
+              "unit": "mm",
+              "values": "vedi l’elenco",
+              "default": "—",
+              "required": "dipende dalla disposizione",
+              "help": [
+                "Pianta al piano principale: Cabina larghezza e profondità, Piattaforma, porte di cabina e di piano (inizio della luce), lunghezza dell’operatore, luce netta della porta, guide di cabina (asse), D.F.G. con arcata a zaino, lunghezza e inizio del contrappeso, fune del limitatore, ingombri (Profondità della porta di piano, Gioco tra le soglie, Porta di cabina, Pareti della cabina, Punta della guida–cabina, Guide e staffe del contrappeso, Spessore del contrappeso), larghezza e profondità del vano, bottoniera (distanza dal vano della porta), nicchie, imbotti laterali e distanza tra i marmi, montanti del telaio di piano (con il telaio attivo e senza imbotti), scelta dei profili delle guide.",
+                "Pianta in testata: le quattro pareti in testata, le quote della cabina e del contrappeso, la porta, lo spazio di rifugio sul tetto di cabina (tipo e superficie per stare in piedi).",
+                "Pianta della fossa: come la pianta al piano principale più gli ammortizzatori (mezzeria, fila, interasse, posizione dell’ammortizzatore del contrappeso) e il tipo di spazio di rifugio in fossa.",
+                "Sezione A-A: interpiani, fossa, testata, altezza e corsa dell’ammortizzatore del contrappeso, supporto, extracorsa e altezza del contrappeso, protezione del contrappeso.",
+                "Sezione in testata e Cabina al piano: altezza interna ed esterna della cabina, piattaforma, arcata sopra il pavimento, balaustra, ingombro massimo dell’operatore, altezza della porta, altezza del pulsante più alto, extracorsa del contrappeso, imbotto superiore e altezza sotto il marmo, frontalino del telaio; nella cabina al piano anche la zona di sbloccaggio.",
+                "Sezione in fossa: fossa, arcata sotto il pavimento, altezza, corsa e supporto degli ammortizzatori di cabina e del contrappeso, protezione del contrappeso, tipo di spazio di rifugio.",
+                "Locale macchina e Sezione B-B, Locale macchina in basso (pianta e sezione C-C): le misure del locale, della porta, del quadro, il basamento e le putrelle HEB (scelta dall’elenco)."
+              ],
+              "src": "verificato sulle viste prodotte da screenView"
+            },
+            {
+              "label": "Quote che si cambiano solo nel modulo",
+              "kind": "testo",
+              "unit": null,
+              "values": null,
+              "default": "—",
+              "required": "no",
+              "help": [
+                "Quattro ingombri non hanno una quota sul disegno: Guide e staffe della cabina per lato, Cabina–contrappeso, Cabina–parete di fondo e Contrappeso laterale–piede della guida di cabina. Anche lo spessore del telaio di piano si cambia solo nel modulo."
+              ],
+              "src": "src/shaft/edit.ts:79"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Applica",
+              "help": "Applica il valore e ridisegna (anche con Invio).",
+              "src": "src/components/drawing/EditableDrawing.tsx:151"
+            },
+            {
+              "label": "Annulla",
+              "help": "Chiude la finestrella senza cambiare nulla (anche con Esc o con un clic fuori).",
+              "src": "src/components/drawing/EditableDrawing.tsx:152"
+            }
+          ],
+          "notes": [
+            "Le quote cambiate a mano sono marcate sul disegno.",
+            "Le quote della pianta fissate a mano si perdono quando cambi accessi o lato del contrappeso, o larghezza e profondità del vano (vedi gli avvisi di «Vano, porte e contrappeso»)."
+          ],
+          "warnings": [
+            "Una quota fuori campo viene rifiutata con il messaggio dei limiti e nulla cambia."
+          ]
+        },
+        {
+          "title": "Quote della pianta fissate a mano",
+          "intro": [
+            "Sotto il disegno c’è la tabella «Quote della pianta fissate a mano (n)» (aperta quando ce n’è almeno una). Le colonne sono «Quota», «Valore (mm)», «Origine» («calcolata» oppure «a mano») e il pulsante «Ripristina». Elenca le distanze della pianta con il valore attuale, calcolato dal software o fissato da te: «Il valore di ogni quota, calcolato dal software o fissato a mano. Scrivine uno per fissarlo; «Ripristina» torna a quello calcolato.»",
+            "Scrivi il numero nella casella e premi Invio o esci dal campo per fissarlo. Un valore uguale a quello calcolato non fissa nulla; un valore non numerico o vuoto è rifiutato. Se il valore porta una parte fuori dal vano (cabina, contrappeso, apertura di una porta, ammortizzatori, fune del limitatore), il campo mostra i limiti ammessi."
+          ],
+          "fields": [
+            {
+              "label": "Cabina: larghezza interna",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 300 a 6 000",
+              "default": "calcolata: la cabina più grande che entra nel vano per la portata",
+              "required": "no",
+              "help": [
+                "Larghezza interna della cabina (lungo la parete delle porte). Fissarla sostituisce la misura che il software propone."
+              ],
+              "src": "src/lib/shaft-input.ts:106; src/components/shaft/PlanFixes.tsx:54-77"
+            },
+            {
+              "label": "Cabina: profondità interna",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 300 a 6 000",
+              "default": "calcolata",
+              "required": "no",
+              "help": [
+                "Profondità interna della cabina."
+              ],
+              "src": "src/lib/shaft-input.ts:107"
+            },
+            {
+              "label": "Piattaforma: distanza dalla parete sinistra",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 10 000",
+              "default": "calcolata",
+              "required": "no",
+              "help": [
+                "Dove sta la piattaforma della cabina, misurata dalla parete sinistra."
+              ],
+              "src": "src/lib/shaft-input.ts:108"
+            },
+            {
+              "label": "Porta di cabina A: inizio della luce dall’angolo",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 10 000",
+              "default": "calcolata",
+              "required": "no",
+              "help": [
+                "Dove inizia la luce della porta di cabina sulla parete A, dall’angolo di quella parete."
+              ],
+              "src": "src/lib/shaft-input.ts:109"
+            },
+            {
+              "label": "Porta di cabina B: inizio della luce dall’angolo",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 10 000",
+              "default": "calcolata",
+              "required": "compare solo con due accessi",
+              "help": [
+                "Come sopra, per la seconda porta."
+              ],
+              "src": "src/lib/shaft-input.ts:110"
+            },
+            {
+              "label": "Porta di piano A: inizio della luce dall’angolo",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 10 000",
+              "default": "calcolata",
+              "required": "no",
+              "help": [
+                "Dove inizia la luce della porta di piano A. La verifica del disassamento dalla porta di cabina lo controlla."
+              ],
+              "src": "src/lib/shaft-input.ts:111"
+            },
+            {
+              "label": "Porta di piano B: inizio della luce dall’angolo",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 10 000",
+              "default": "calcolata",
+              "required": "compare solo con due accessi",
+              "help": [
+                "Come sopra, per la porta di piano B."
+              ],
+              "src": "src/lib/shaft-input.ts:112"
+            },
+            {
+              "label": "Operatore della porta di cabina: lunghezza",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 300 a 6 000",
+              "default": "calcolata dal tipo di porta e dal costruttore dell’operatore",
+              "required": "no",
+              "help": [
+                "Lunghezza dell’operatore sul tetto di cabina. Serve alle verifiche di sovrapposizione degli operatori e dello spazio di rifugio."
+              ],
+              "src": "src/lib/shaft-input.ts:113"
+            },
+            {
+              "label": "Guide di cabina: asse dalla parete delle porte",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 10 000",
+              "default": "calcolata",
+              "required": "no",
+              "help": [
+                "Dove sta l’asse delle guide di cabina, misurato dalla parete delle porte. Con l’arcata a zaino la quota si chiama «Arcata a zaino: punta della guida anteriore dalla parete delle porte»."
+              ],
+              "src": "src/lib/shaft-input.ts:114"
+            },
+            {
+              "label": "Arcata a zaino: distanza fra le guide (D.F.G.)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 100 a 10 000",
+              "default": "calcolata",
+              "required": "compare solo con l’arcata a zaino",
+              "help": [
+                "Distanza tra le guide con arcata a zaino (a sbalzo)."
+              ],
+              "src": "src/lib/shaft-input.ts:115"
+            },
+            {
+              "label": "Contrappeso: lunghezza in pianta",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 100 a 3 000",
+              "default": "calcolata",
+              "required": "no",
+              "help": [
+                "Lunghezza del contrappeso lungo la sua parete. La verifica «Lunghezza del contrappeso in pianta» la controlla."
+              ],
+              "src": "src/lib/shaft-input.ts:116"
+            },
+            {
+              "label": "Contrappeso: inizio lungo la sua parete",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 10 000",
+              "default": "calcolata",
+              "required": "no",
+              "help": [
+                "Dove inizia il contrappeso lungo la parete."
+              ],
+              "src": "src/lib/shaft-input.ts:117"
+            },
+            {
+              "label": "Ammortizzatori di cabina: mezzeria dalla parete sinistra",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 10 000",
+              "default": "calcolata",
+              "required": "no",
+              "help": [
+                "Posizione degli ammortizzatori di cabina in fossa, dalla parete sinistra."
+              ],
+              "src": "src/lib/shaft-input.ts:118"
+            },
+            {
+              "label": "Ammortizzatori di cabina: fila dalla parete delle porte",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 10 000",
+              "default": "calcolata",
+              "required": "no",
+              "help": [
+                "Posizione della fila degli ammortizzatori di cabina dalla parete delle porte."
+              ],
+              "src": "src/lib/shaft-input.ts:119"
+            },
+            {
+              "label": "Ammortizzatori di cabina: interasse",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 100 a 5 000",
+              "default": "calcolata",
+              "required": "compare solo con più di un ammortizzatore di cabina",
+              "help": [
+                "Distanza fra gli ammortizzatori di cabina."
+              ],
+              "src": "src/lib/shaft-input.ts:120"
+            },
+            {
+              "label": "Ammortizzatore del contrappeso: posizione lungo la sua parete",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 10 000",
+              "default": "calcolata",
+              "required": "no",
+              "help": [
+                "Dove sta l’ammortizzatore del contrappeso lungo la sua parete. La verifica degli ammortizzatori controlla che stiano sotto cabina e contrappeso, fuori dallo spazio di rifugio in fossa."
+              ],
+              "src": "src/lib/shaft-input.ts:121"
+            },
+            {
+              "label": "Fune del limitatore: distanza dalla parete del suo lato",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 3 000",
+              "default": "calcolata",
+              "required": "compare solo con l’arcata centrale e un lato libero per la fune",
+              "help": [
+                "Distanza della fune del limitatore dalla parete laterale scelta."
+              ],
+              "src": "src/lib/shaft-input.ts:122"
+            },
+            {
+              "label": "Fune del limitatore: ramo agganciato alla cabina dalla parete delle porte",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 10 000",
+              "default": "calcolata",
+              "required": "come sopra",
+              "help": [
+                "Posizione del ramo della fune che si aggancia alla cabina, dalla parete delle porte. Le verifiche «Fune del limitatore lontana da cabina, pareti…» e «Ramo agganciato alla cabina…» la usano."
+              ],
+              "src": "src/lib/shaft-input.ts:123"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Ripristina",
+              "help": "In una riga: torna al valore calcolato per quella quota (compare solo per le quote fissate a mano).",
+              "src": "src/components/shaft/PlanFixes.tsx:147"
+            },
+            {
+              "label": "Ripristina tutte le quote calcolate",
+              "help": "Toglie tutte le quote fissate a mano (compare solo se ce n’è almeno una).",
+              "src": "src/components/shaft/PlanFixes.tsx:78"
+            }
+          ],
+          "notes": [
+            "Una riga compare solo se la quota esiste in quella disposizione: le quote B appaiono con due accessi; D.F.G. con l’arcata a zaino; interasse con più ammortizzatori; la fune del limitatore con l’arcata centrale.",
+            "Le quote della pianta fissate a mano si perdono quando cambi il numero di accessi o il lato del contrappeso (quelle di disposizione) e quando cambi larghezza o profondità del vano (restano solo le posizioni delle porte, se ancora aprono sulla cabina). Un valore fissato a mano che porta una parte fuori dal vano viene rifiutato."
+          ]
+        },
+        {
+          "title": "Altre quote modificabili sui disegni",
+          "intro": [
+            "Oltre alle quote della tabella, i disegni permettono di cambiare direttamente questi dati del modulo. Ogni quota ha il nome del campo corrispondente e i limiti del campo (gli stessi accettati dal salvataggio). Cambiare un valore dal disegno è uguale a cambiarlo nel modulo."
+          ],
+          "fields": [
+            {
+              "label": "Misure del vano e delle porte",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "Larghezza del vano 500–10 000; Profondità del vano 500–10 000; Luce netta della porta 500–2 500; Altezza della porta 1 800–3 000; Spessore delle pareti del vano 50–1 000",
+              "default": "come nel modulo",
+              "required": "no",
+              "help": [
+                "Sono i campi di «Vano, porte e contrappeso»."
+              ],
+              "src": "src/shaft/edit.ts:36; src/lib/shaft-input.ts:138-152"
+            },
+            {
+              "label": "Ingombri",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "gli undici ingombri con i limiti già elencati",
+              "default": "valori tipici",
+              "required": "no",
+              "help": [
+                "Per esempio «Cabina–contrappeso», «Guide e staffe della cabina, per lato», «Spessore del contrappeso», «Profondità della porta di piano»."
+              ],
+              "src": "src/shaft/edit.ts:79"
+            },
+            {
+              "label": "Dati verticali",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "Fossa 100–10 000; Testata 1 000–20 000; Altezza interna cabina 1 000–5 000; Altezza esterna cabina 1 000–6 000 (almeno quella interna); Piattaforma 0–500; Ingombro massimo operatore 0–6 000; Arcata sopra il pavimento 1 000–8 000; Arcata sotto il pavimento 0–3 000; Balaustra 0–2 000 (0 = nessuna); Altezza contrappeso 300–10 000; Altezza, Corsa e Supporto dell’ammortizzatore di cabina 50–3 000, 10–2 000, 0–3 000; gli stessi tre del contrappeso; Extracorsa del contrappeso 0–2 000; Protezione del contrappeso in fossa: altezza 300–6 000; Superficie per stare sul tetto di cabina: larghezza e profondità 100–3 000; Zona di sbloccaggio delle porte di piano 50–350; Interpiano 0–20 000",
+              "default": "come nel modulo (sezione «Piani, fossa e testata»)",
+              "required": "no",
+              "help": [
+                "Sono i campi della sezione «Piani, fossa e testata», cliccabili nella sezione A-A, nella pianta della fossa, nella sezione in testata e nella cabina al piano."
+              ],
+              "src": "src/lib/shaft-input.ts:19-52"
+            },
+            {
+              "label": "Spazi di rifugio e tipo di profilato",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Spazio di rifugio sul tetto di cabina: tipo 1, in piedi · tipo 2, accucciato; Spazio di rifugio in fossa: tipo 1, in piedi · tipo 2, accucciato · tipo 3, disteso; guide di cabina e del contrappeso; profilato e lunghezza del basamento",
+              "default": "come nel modulo",
+              "required": "no",
+              "help": [
+                "Per queste quote il disegno apre l’elenco «Scegli dal catalogo o dalla tabella»."
+              ],
+              "src": "src/shaft/edit.ts:44-45"
+            },
+            {
+              "label": "Locale macchina sopra il vano",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "Larghezza e Profondità interne 1 000–20 000; Vano dalla parete sinistra e anteriore del locale 0–20 000; Altezza libera 1 500–10 000; Altezza al colmo 0–15 000 (0 = tetto piano); Soletta sul vano 100–1 000; Porta dall’angolo 0–20 000; Larghezza porta 500–3 000; Altezza porta 1 400–3 000; Quadro dall’angolo 0–20 000; Larghezza quadro 200–3 000; Profondità quadro 100–1 000; Altezza quadro 500–3 000",
+              "default": "come nel modulo",
+              "required": "compare con il locale macchina",
+              "help": [
+                "Sono i campi della sezione del locale macchina; si cambiano dalle viste «Locale macchina» e «Sezione B-B»."
+              ],
+              "src": "src/lib/shaft-input.ts:68-85"
+            },
+            {
+              "label": "Basamento dell’argano",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "Basamento: altezza sul pavimento 0–3 000; Basamento: lunghezza lungo la calata 300–5 000; Piano del telaio con rinvio sul pavimento (non sotto 0)",
+              "default": "come nel modulo",
+              "required": "compare con il locale macchina",
+              "help": [
+                "Un profilato o una putrella non può stare più in basso del proprio profilo."
+              ],
+              "src": "src/lib/shaft-input.ts:59-66, 228-232"
+            },
+            {
+              "label": "Nicchie, bottoniera, testata, imbotti, telaio",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "come nei rispettivi blocchi sopra",
+              "default": "come nel modulo",
+              "required": "compare se il dato esiste",
+              "help": [
+                "Dall’angolo, Larghezza, Profondità di una nicchia; Dal vano della porta al centro e Altezza del pulsante più alto della bottoniera; le quattro pareti in testata; i cinque dati degli imbotti; i tre del telaio."
+              ],
+              "src": "src/shaft/edit.ts:37-41"
+            },
+            {
+              "label": "Locale della macchina in basso",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "larghezza e profondità 1 000–20 000; altezza libera 1 800–10 000; porta dall’angolo 0–20 000; larghezza porta 500–3 000; altezza porta 1 500–3 000",
+              "default": "proposto dal software",
+              "required": "compare con la macchina in basso",
+              "help": [
+                "Dimensioni del locale della macchina in basso, cliccabili sulla pianta e sulla sezione C-C."
+              ],
+              "src": "src/lib/shaft-input.ts:184-185"
+            },
+            {
+              "label": "Puleggia di rinvio: dislivello sotto la puleggia di frizione (h)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 3 000",
+              "default": "del calcolo o proposto",
+              "required": "compare nelle viste del locale macchina con rinvio",
+              "help": [
+                "Dato del calcolo mostrato dal disegno. Cambiandolo si cambia l’altezza «h» del progetto, che poi si porta nel calcolo con «Porta nel calcolo»."
+              ],
+              "src": "src/components/lift/ProgettoWorkspace.tsx:86, 155-162"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "Questa tabella riassume le quote dei disegni; i campi veri sono descritti nelle rispettive sezioni del modulo.",
+            "Il Progetto non cambia i dati del calcolo (portata, velocità, argano, funi): le quote che li riguardano si cambiano nel calcolo."
+          ]
+        },
+        {
+          "title": "Barra di salvataggio",
+          "intro": [
+            "Barra fissa in fondo alla pagina, sempre visibile."
+          ],
+          "fields": [
+            {
+              "label": "Nome del progetto (facoltativo)",
+              "kind": "testo",
+              "unit": null,
+              "values": "al massimo 120 caratteri",
+              "default": "vuoto",
+              "required": "no",
+              "help": [
+                "Un nome per ritrovare questa versione tra i progetti dell’impianto (per esempio «Variante con nicchia»)."
+              ],
+              "src": "src/components/lift/ProgettoWorkspace.tsx:252"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Salva il progetto",
+              "help": "Salva il disegno: il server ricompone il disegno sul calcolo argano, rifà tutti i calcoli e salva insieme progetto del vano e calcolo del progetto. Poi apre la pagina del progetto salvato. Resta disattivo («Salvataggio…» durante il salvataggio) finché mancano dati, il disegno non si è aggiornato, c’è un valore da correggere oppure il tipo di intervento va rivisto nel calcolo. Se il salvataggio viene rifiutato, il motivo compare accanto al pulsante.",
+              "src": "src/components/lift/ProgettoWorkspace.tsx:253"
+            },
+            {
+              "label": "Da correggere per salvare:",
+              "help": "Elenco dei valori che il server rifiuterebbe, ognuno un link al campo da correggere (anche i valori del calcolo fuori campo, i problemi delle calate esistenti e i valori del vano fuori dai limiti). Con la barra in ordine leggi invece «Il server ricompone il disegno sul calcolo argano, rifà tutti i calcoli e salva progetto del vano e calcolo del progetto insieme.»",
+              "src": "src/components/lift/ProgettoWorkspace.tsx:254-259"
+            },
+            {
+              "label": "Scarta la bozza",
+              "help": "Compare dopo il primo salvataggio della bozza. Chiede conferma («Scartare la bozza e ripartire dai dati salvati?», «Sì, scarta» / «No»): scartata, la pagina si riapre dall’ultimo progetto dell’impianto o vuota. Se non riesce: «Non è stato possibile scartare la bozza.»",
+              "src": "src/components/draft/DraftBar.tsx:21-39"
+            }
+          ],
+          "notes": [
+            "Il progetto che compili viene tenuto come bozza mentre lavori: circa un secondo e mezzo dopo l’ultima modifica (e quando lasci la scheda) vedi «Bozza salvata alle …». La bozza non viene salvata mentre un valore è fuori campo. Riaprendo la pagina leggi «Bozza ripresa, salvata il …». Se non riesce: «La bozza non è stata salvata: riprova tra poco.». La bozza vale per l’impianto e riporta anche quali valori vengono dal rilievo.",
+            "«Porta nel calcolo» (nel riquadro «Il progetto completa il calcolo» e vicino ad alcuni avvisi sulle funi) salva subito la bozza e apre il calcolo con i valori del disegno."
+          ],
+          "warnings": [
+            "«Scarta la bozza» cancella la bozza: la pagina si riapre dall’ultimo progetto dell’impianto o vuota, e quello che avevi inserito e non salvato va perso."
+          ]
+        }
+      ],
+      "tips": [
+        "Compila i campi nell’ordine del modulo: il riquadro «Dati del progetto da inserire» ti porta al primo che manca con un clic.",
+        "Per un vano vecchio, misura la pianta con il CAD e poi controlla in cantiere larghezza e profondità: la misura dal disegno non sostituisce il rilievo.",
+        "Usa l’editor delle quote per le rifiniture (posizione delle porte, della cabina, del contrappeso, degli ammortizzatori): sono le quote che il software normalmente calcola da solo.",
+        "Se la verifica di una distanza non passa, cambia la quota giusta sul disegno e guarda l’esito delle verifiche a destra. Se il valore è fuori campo, il messaggio ti dice da quanto a quanto."
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Vano di corsa",
+      "def": "Lo spazio in cui scorrono cabina e contrappeso, dalla fossa alla testata."
+    },
+    {
+      "term": "Fossa",
+      "def": "La parte del vano sotto il piano più basso."
+    },
+    {
+      "term": "Testata",
+      "def": "La parte del vano sopra l’ultimo piano servito."
+    },
+    {
+      "term": "Imbotto",
+      "def": "Lamiera che copre la parte dell’apertura esistente tra i marmi lasciata scoperta da una porta nuova più stretta."
+    },
+    {
+      "term": "Arcata",
+      "def": "Il telaio che porta la cabina; può essere centrale o a zaino (a sbalzo)."
+    },
+    {
+      "term": "Telaio di piano",
+      "def": "Il telaio proprio della porta di piano, usato al posto del portale attorno alla luce netta."
+    },
+    {
+      "term": "D.F.G.",
+      "def": "Distanza fra le guide di cabina con arcata a zaino."
+    },
+    {
+      "term": "Quota fissata a mano",
+      "def": "Distanza della pianta che hai scritto tu al posto di quella calcolata dal software."
+    },
+    {
+      "term": "Luce netta",
+      "def": "Larghezza (o altezza) libera di passaggio della porta."
+    },
+    {
+      "term": "Calata",
+      "def": "La verticale delle funi dalla puleggia alla cabina o al contrappeso."
+    }
+  ],
+  "verify": [
+    "Schermata: con la lettura automatica spenta, la nota «Lettura automatica non attiva…» compare davvero sotto uno schizzo selezionato e solo allora (SchizzoPanel.tsx:77)?",
+    "Schermata: il riquadro blu «Per la sola sostituzione dell’argano basta il rilievo…» compare con i tipi di intervento descritti (page.tsx:117-120, disegnoDi in src/lib/lift/intervento.ts non riletto)?",
+    "Schermata: le viste «Locale macchina», «Sezione B-B» e «Locale macchina in basso» mostrano le quote elencate nel campo «Quote che trovi in ogni vista» (verificato a codice per le viste senza macchina, non per le viste del locale)."
+  ]
+}

@@ -1,0 +1,781 @@
+{
+  "key": "admin",
+  "title": "Amministrazione della piattaforma (riservata)",
+  "intro": [
+    "Questo capitolo è riservato all’Amministratore della piattaforma, il ruolo di chi gestisce LiftPilot per conto di Carbon Stealth VCC. Le aziende clienti, i loro Titolari e i loro colleghi non vedono queste pagine e non hanno modo di aprirle.",
+    "L’area ha tre pagine: «Aziende» (l’elenco delle aziende clienti, la creazione di una nuova azienda con il suo Titolare e gli «Inviti alla beta»), «Permessi · nome azienda» (la matrice dei permessi di un’azienda cliente) e «Segnalazioni» (i messaggi inviati dagli utenti con «Segnala un problema»). Nel menu «Gestione» la prima compare come «Aziende»; le altre due si raggiungono dai pulsanti della prima.",
+    "Regole di condotta valide per tutta l’area. Invita alla beta solo chi ha chiesto di partecipare, e scrivi nella nota la data e il canale della richiesta. Cambia i permessi di un’azienda solo su richiesta scritta del suo Titolare, e scrivi nel salvataggio il riferimento di quella richiesta. Non scrivere mai nelle note o nei riferimenti password, link o dati che non servono: le note sono dati personali che la persona interessata può chiedere di vedere.",
+    "Negli esempi di questa guida gli indirizzi sono sempre «nome@esempio.it»."
+  ],
+  "pages": [
+    {
+      "id": "admin-aziende",
+      "title": "Aziende",
+      "path": "/it/app/admin",
+      "access": "La vede e agisce solo chi ha il diritto «platform:admin», cioè il ruolo Amministratore della piattaforma. Questo diritto non entra nella matrice dei permessi e non si assegna a nessun collega di nessuna azienda, nemmeno un Titolare.",
+      "reach": "Dal menu «Gestione» → «Aziende».",
+      "purpose": [
+        "È il pannello di controllo della piattaforma. Dall’alto in basso: due pulsanti di collegamento, gli «Inviti alla beta», l’elenco delle aziende con le azioni su ogni riga e il modulo «Nuova azienda».",
+        "Sotto il titolo compare l’etichetta «Amministrazione della piattaforma» e la frase: «Le aziende di installatori che usano LiftPilot. Una nuova azienda nasce con il suo Titolare.»",
+        "Nota: la pagina non ha un pannello di gestione degli utenti di un’azienda. Gli utenti (colleghi) li invita e li gestisce il Titolare di ciascuna azienda dalla sua pagina «Utenti»; tu ne vedi solo il numero nella colonna «Utenti» e crei il Titolare quando crei l’azienda."
+      ],
+      "shots": [
+        {
+          "id": "admin-top",
+          "what": "pagina «Aziende» dall’alto: titolo, i due pulsanti «Segnalazioni · n da gestire» e «Inviti alla beta», pannello degli inviti"
+        },
+        {
+          "id": "admin-table",
+          "what": "tabella delle aziende con le colonne e i pulsanti «Permessi», «Esenta dal pagamento» e «Disattiva» su una riga"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Pulsanti in alto",
+          "intro": [
+            "Nella testata della pagina ci sono due collegamenti rapidi."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Segnalazioni · n da gestire",
+              "help": "Apre la pagina «Segnalazioni». Dopo il punto centrale il pulsante dice quante segnalazioni aspettano ancora di essere gestite: «nessuna da gestire», «1 da gestire», «5 da gestire» e così via.",
+              "src": "src/app/[locale]/app/admin/page.tsx:30"
+            },
+            {
+              "label": "Inviti alla beta",
+              "help": "Non cambia pagina: scorre fino al pannello «Inviti alla beta» che si trova più in basso, nella stessa pagina.",
+              "src": "src/app/[locale]/app/admin/page.tsx:31"
+            }
+          ],
+          "notes": []
+        },
+        {
+          "title": "Inviti alla beta",
+          "intro": [
+            "Durante la beta la registrazione di una nuova azienda avviene, di norma, solo dal link di un invito. Questo pannello serve a invitare un tester, a vedere che fine ha fatto ogni invito e a ritirarlo o rimandarlo.",
+            "Sotto il titolo il pannello ti dice in quale modalità è la registrazione. Se è su invito leggi: «La registrazione è su invito: un’azienda si registra solo dal link del suo invito e con l’indirizzo invitato. Il link vale 30 giorni e serve per una sola azienda.» Se è aperta a tutti leggi: «La registrazione è aperta a tutti: gli inviti funzionano comunque e restano legati all’azienda che li usa.» La modalità non si cambia da qui: è una impostazione del server.",
+            "Segue sempre l’avviso: «Gli inviti vanno solo a chi ha chiesto di partecipare alla beta: l’e-mail dell’invito dice al tester che l’ha chiesto e per quanto conserviamo il suo indirizzo.» Ragione: la lettera d’invito è comunicazione promozionale, e verso un indirizzo italiano che non l’ha chiesta serve un consenso. Per questo l’invito si manda solo su richiesta scritta della persona, e la richiesta resta nel tuo archivio."
+          ],
+          "fields": [
+            {
+              "label": "E-mail",
+              "kind": "email",
+              "unit": null,
+              "values": "Indirizzo e-mail valido, al massimo 254 caratteri; maiuscole e spazi ai lati sono eliminati e l’indirizzo è salvato in minuscolo.",
+              "default": null,
+              "required": "sì (nel modulo è segnato con *)",
+              "help": [
+                "È l’indirizzo del tester che ha chiesto di partecipare, per esempio «nome@esempio.it». L’invito è legato a questo indirizzo: l’azienda potrà registrarsi solo con questo indirizzo, che nel modulo di registrazione compare già compilato e non si può cambiare.",
+                "Se esiste già un account LiftPilot con questo indirizzo il modulo non invia l’invito e mostra «Esiste già un account con questa e-mail.» (un indirizzo appartiene a una sola azienda). Se l’indirizzo non è valido compare «Controlla i campi evidenziati.»"
+              ],
+              "src": "src/components/admin/BetaInviteForm.tsx:121"
+            },
+            {
+              "label": "Nota (facoltativa)",
+              "kind": "testo",
+              "unit": null,
+              "values": "Al massimo 200 caratteri; se la lasci vuota non viene salvata.",
+              "default": null,
+              "required": "no per il sistema; per la regola di lavoro della piattaforma sì: la nota deve richiamare la richiesta scritta del tester",
+              "help": [
+                "Sotto il campo leggi la guida: «Annota la richiesta (data e canale). È visibile solo agli amministratori; è un dato personale che il tester può chiedere: scrivi solo il necessario.» Scrivi per esempio «richiesta e-mail del 12/10/2026». La nota non viene mai inviata al tester.",
+                "La nota compare poi nell’elenco degli inviti, sotto l’indirizzo."
+              ],
+              "src": "src/components/admin/BetaInviteForm.tsx:125"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Invita",
+              "help": "Crea l’invito e manda al tester un’e-mail con il link della registrazione. Se l’invio delle e-mail non è attivo il link non parte, ma compare comunque sullo schermo. Il pulsante si disattiva mentre l’invio è in corso. Limite: al massimo 60 inviti (nuovi o rimandati) all’ora per amministratore; oltre compare «Troppi tentativi. Riprova tra qualche minuto.» Se non hai il diritto di amministratore compare «Non hai i permessi per questa operazione.»",
+              "src": "src/components/admin/BetaInviteForm.tsx:130"
+            }
+          ],
+          "notes": [
+            "Dopo l’invio compare un riquadro verde: «Link di invito per nome@esempio.it:», il link, e sotto «L’abbiamo mandato per e-mail. Lo vedi solo ora: se serve, consegnalo anche in un altro modo.» Se le e-mail non sono attive il testo è invece «L’invio delle e-mail non è attivo: consegna tu questo link. Lo vedi solo ora.» Il link si vede una sola volta: se lo perdi, usa «Invia di nuovo».",
+            "Il link vale 30 giorni e serve per una sola azienda. Il codice del link sta dopo il simbolo # dell’indirizzo, così non passa nei registri del server.",
+            "Ogni invito inviato, rimandato o revocato viene scritto nel registro attività dell’azienda della piattaforma (senza l’indirizzo del tester)."
+          ],
+          "warnings": [
+            "Il link dell’invito si vede una sola volta sullo schermo; «Invia di nuovo» rende inutilizzabile quello precedente."
+          ]
+        },
+        {
+          "title": "Elenco degli inviti",
+          "intro": [
+            "Sotto il modulo c’è la tabella degli inviti, dal più recente (fino a 500). Se non ce n’è nessuno leggi «Nessun invito finora.»"
+          ],
+          "fields": [
+            {
+              "label": "E-mail",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Colonna con l’indirizzo invitato in grassetto e, sotto, la nota che hai scritto (se c’è)."
+              ],
+              "src": "src/components/admin/BetaInvites.tsx:58"
+            },
+            {
+              "label": "Stato",
+              "kind": "tabella",
+              "unit": null,
+              "values": "«In attesa» (arancione) · «Usato — nome azienda» (verde; solo «Usato» se l’azienda creata è stata poi cancellata) · «Scaduto» (rosso)",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "«In attesa»: il link non è stato ancora usato e non è scaduto. «Usato — …»: con quel link si è registrata un’azienda, di cui leggi il nome. «Scaduto»: sono passati i 30 giorni senza che il link fosse usato."
+              ],
+              "src": "src/components/admin/BetaInvites.tsx:59"
+            },
+            {
+              "label": "Date",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Due righe: «Inviato il …» (data di creazione) e, sotto, «Valido fino al …» finché l’invito è in attesa o scaduto, oppure «Usato il …» quando è stato usato."
+              ],
+              "src": "src/components/admin/BetaInvites.tsx:64"
+            },
+            {
+              "label": "Azioni",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Per un invito «In attesa» o «Scaduto» trovi i pulsanti «Invia di nuovo» e «Revoca». Per un invito «Usato» trovi solo un trattino: resta come registro dell’azienda che ha creato e non si può né rimandare né revocare."
+              ],
+              "src": "src/components/admin/BetaInvites.tsx:70"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Invia di nuovo",
+              "help": "Genera un nuovo link per lo stesso invito, valido altri 30 giorni da oggi, e lo rimanda per e-mail. Il link precedente smette di funzionare e il riquadro verde lo ricorda: «Il link precedente non vale più.» Il nuovo link compare una sola volta sotto il pulsante. Se l’invito nel frattempo è stato usato o non esiste più compare «Elemento non trovato.» Vale lo stesso limite di 60 invii all’ora. Serve anche per riattivare un invito scaduto.",
+              "src": "src/components/admin/BetaInviteForm.tsx:171"
+            },
+            {
+              "label": "Revoca",
+              "help": "Ritira l’invito in due passi. Al primo clic compare «Revocare l’invito? Il suo link smette di funzionare.» con i pulsanti «Sì, revoca» (conferma) e «Annulla» (torna indietro senza cambiare nulla). Dopo la conferma l’invito e le registrazioni in attesa legate a quell’invito vengono cancellati.",
+              "src": "src/components/admin/BetaInviteForm.tsx:148"
+            }
+          ],
+          "notes": [
+            "Dopo una revoca la pagina si riapre sul pannello con il messaggio verde «Invito revocato: il suo link non funziona più.» Se nel frattempo l’invito è stato usato o non esiste più, il messaggio arancione è «L’invito non è stato revocato: nel frattempo è stato usato o non esiste più.»",
+            "Conservazione: un invito non usato viene cancellato 30 giorni dopo la fine del suo link; uno usato resta finché esiste l’azienda che ha creato e viene cancellato con lei."
+          ],
+          "warnings": [
+            "«Revoca» cancella l’invito e le registrazioni in attesa legate a quel link, e non si può annullare: per riavere un invito devi crearne uno nuovo. Un invito già usato non si revoca."
+          ]
+        },
+        {
+          "title": "Elenco delle aziende",
+          "intro": [
+            "La tabella elenca tutte le aziende clienti, compresa quella della piattaforma. Ogni riga ha il nome dell’azienda in grassetto; sotto il nome leggi Partita IVA e Comune separati da un punto centrale, oppure un trattino se non ci sono."
+          ],
+          "fields": [
+            {
+              "label": "Azienda",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Ragione sociale, con sotto Partita IVA e Comune se li hai inseriti alla creazione. Nella stessa cella c’è il pulsante «Permessi»."
+              ],
+              "src": "src/app/[locale]/app/admin/page.tsx:41"
+            },
+            {
+              "label": "Creata",
+              "kind": "tabella",
+              "unit": null,
+              "values": "data nel formato dell’interfaccia (per esempio 12 ott 2026)",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Data in cui l’azienda è stata creata, dal pannello o dalla registrazione."
+              ],
+              "src": "src/app/[locale]/app/admin/page.tsx:47"
+            },
+            {
+              "label": "Utenti",
+              "kind": "tabella",
+              "unit": "numero",
+              "values": null,
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Quanti utenti ha l’azienda (il Titolare e i colleghi)."
+              ],
+              "src": "src/app/[locale]/app/admin/page.tsx:48"
+            },
+            {
+              "label": "Impianti",
+              "kind": "tabella",
+              "unit": "numero",
+              "values": null,
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Quanti impianti sono stati creati dall’azienda."
+              ],
+              "src": "src/app/[locale]/app/admin/page.tsx:49"
+            },
+            {
+              "label": "Calcoli",
+              "kind": "tabella",
+              "unit": "numero",
+              "values": null,
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Quanti calcoli dell’argano l’azienda ha salvato."
+              ],
+              "src": "src/app/[locale]/app/admin/page.tsx:50"
+            },
+            {
+              "label": "Abbonamento",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Stato: «Senza fatturazione», «In prova», «Attivo», «Pagamento in sospeso», «Sola lettura»; poi, se l’azienda ha un pacchetto di posti, «5 posti», «10 posti» o «Posti illimitati» (per «Titolare», cioè nessun pacchetto, non si scrive nulla)",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Riassume la situazione di abbonamento dell’azienda. Sotto, per le aziende diverse dalla tua, c’è il pulsante che la esenta dal pagamento o la rimette a pagamento (vedi sotto)."
+              ],
+              "src": "src/app/[locale]/app/admin/page.tsx:53"
+            },
+            {
+              "label": "Stato",
+              "kind": "tabella",
+              "unit": null,
+              "values": "«attiva» (verde) · «disattivata» (rosso)",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Dice se l’azienda può lavorare. Per la tua azienda (quella della piattaforma) vedi sempre «attiva» e nessun pulsante: non puoi disattivarla."
+              ],
+              "src": "src/app/[locale]/app/admin/page.tsx:64"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Permessi",
+              "help": "Apre la matrice dei permessi dell’azienda (pagina «Permessi · nome azienda», descritta più avanti). Nella riga della tua azienda il pulsante porta invece alla pagina «Permessi» della tua azienda, dove decidi tu e non serve alcuna richiesta.",
+              "src": "src/app/[locale]/app/admin/page.tsx:45"
+            },
+            {
+              "label": "Esenta dal pagamento",
+              "help": "Nella colonna «Abbonamento» di un’altra azienda. L’azienda non viene più fatturata (per esempio un partner). Il pulsante diventa «Torna a pagamento». Non c’è per la tua azienda.",
+              "src": "src/app/[locale]/app/admin/page.tsx:59"
+            },
+            {
+              "label": "Torna a pagamento",
+              "help": "Rimette l’azienda a pagamento. Se non aveva mai avuto la prova gratuita, questa parte da adesso. Se i colleghi attivi e gli inviti in attesa superano i posti pagati, gli inviti in attesa sono annullati e i colleghi più recenti oltre il limite sono disattivati (con la sessione chiusa). Durante la prova gratuita senza abbonamento nessuno viene disattivato. La modifica resta scritta nel registro attività.",
+              "src": "src/app/[locale]/app/admin/page.tsx:59"
+            },
+            {
+              "label": "Disattiva",
+              "help": "Nella colonna «Stato» di un’altra azienda. Disattiva l’azienda e chiude subito le sessioni di tutti i suoi utenti: nessuno può più lavorare finché non la riattivi. I dati non vengono cancellati. Non c’è per la tua azienda.",
+              "src": "src/app/[locale]/app/admin/page.tsx:71"
+            },
+            {
+              "label": "Riattiva",
+              "help": "Il contrario: l’azienda torna «attiva» e i suoi utenti possono accedere di nuovo.",
+              "src": "src/app/[locale]/app/admin/page.tsx:71"
+            }
+          ],
+          "notes": [
+            "Ogni modifica di stato o di esenzione viene scritta nel registro attività dell’azienda interessata."
+          ],
+          "warnings": [
+            "Disattivare un’azienda è un’azione immediata e senza conferma: controlla bene la riga prima di premere."
+          ]
+        },
+        {
+          "title": "Nuova azienda",
+          "intro": [
+            "In fondo alla pagina il modulo crea un’azienda cliente insieme al suo Titolare, senza passare dall’invito alla beta. È utile per un partner o quando la registrazione autonoma non è possibile. I campi segnati con * sono obbligatori."
+          ],
+          "fields": [
+            {
+              "label": "Azienda",
+              "kind": "testo",
+              "unit": null,
+              "values": "1–160 caratteri, su una riga sola (gli a capo sono sostituiti da spazi)",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Ragione sociale dell’impresa di ascensori. Compare nell’elenco, nei documenti e nel registro attività."
+              ],
+              "src": "src/components/CreateCompanyForm.tsx:19"
+            },
+            {
+              "label": "Partita IVA",
+              "kind": "testo",
+              "unit": null,
+              "values": "Al massimo 40 caratteri; vuoto = non indicata",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Partita IVA dell’azienda, scritta come sai. Non viene verificata dal sistema."
+              ],
+              "src": "src/components/CreateCompanyForm.tsx:20"
+            },
+            {
+              "label": "Comune",
+              "kind": "testo",
+              "unit": null,
+              "values": "Al massimo 120 caratteri; vuoto = non indicato",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Comune della sede dell’azienda."
+              ],
+              "src": "src/components/CreateCompanyForm.tsx:21"
+            },
+            {
+              "label": "Titolare: nome",
+              "kind": "testo",
+              "unit": null,
+              "values": "1–120 caratteri, su una riga sola",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Nome e cognome della persona che sarà il Titolare, cioè il ruolo che ha sempre tutti i permessi e gestisce utenti, permessi e abbonamento."
+              ],
+              "src": "src/components/CreateCompanyForm.tsx:22"
+            },
+            {
+              "label": "Titolare: e-mail",
+              "kind": "email",
+              "unit": null,
+              "values": "Indirizzo valido, al massimo 254 caratteri, salvato in minuscolo; non deve avere già un account LiftPilot",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Serve al Titolare per accedere. Se l’indirizzo ha già un account compare «Esiste già un account con questa e-mail.» e non si crea nulla. Gli errori nei campi compaiono sopra il modulo come «Controlla i campi evidenziati.»"
+              ],
+              "src": "src/components/CreateCompanyForm.tsx:23"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Crea azienda",
+              "help": "Crea in un solo passo l’azienda e il Titolare. L’indirizzo del Titolare risulta già confermato e il suo account ha una password temporanea che il sistema genera: 16 caratteri tra lettere e cifre, con almeno una lettera e una cifra, senza i caratteri facili da confondere. Il pulsante si disattiva mentre la richiesta è in corso.",
+              "src": "src/components/CreateCompanyForm.tsx:25"
+            }
+          ],
+          "notes": [
+            "Dopo la creazione compare, sopra i campi, un riquadro verde: «Password temporanea per nome@esempio.it (mostrata una sola volta):», la password, e sotto «Consegnala di persona o con un canale sicuro. Al primo accesso l’utente sceglie la propria password.»",
+            "Al primo accesso il Titolare viene portato alla pagina «Account» e deve scegliere una propria password prima di usare il resto dell’applicazione.",
+            "Il modulo non crea colleghi: dopo il primo accesso li invita il Titolare dalla pagina «Utenti».",
+            "La creazione viene scritta nel registro attività della nuova azienda."
+          ],
+          "warnings": [
+            "La password si vede una sola volta: non è salvata in chiaro e non viene mandata per e-mail. Copiala subito e consegnala al Titolare di persona o con un canale sicuro, mai insieme al suo indirizzo in una lettera aperta. Se la perdi non si può rivedere: il Titolare può chiederne una nuova con «Password dimenticata?» dalla pagina di accesso."
+          ]
+        }
+      ],
+      "tips": [
+        "Per un tester che ha chiesto la beta usa «Inviti alla beta»: il link serve una sola volta e l’azienda si registra e conferma l’e-mail da sola. Per un’azienda che devi avviare tu usa «Nuova azienda».",
+        "Prima di esentare o disattivare un’azienda controlla la colonna «Abbonamento» e la riga corretta: le azioni agiscono subito."
+      ]
+    },
+    {
+      "id": "admin-permessi",
+      "title": "Permessi · nome azienda",
+      "path": "/it/app/admin/permessi/‹id azienda›",
+      "access": "La vede e la modifica solo l’Amministratore della piattaforma. Il Titolare dell’azienda vede la stessa matrice nella sua pagina «Permessi», dove la cambia da solo.",
+      "reach": "Dalla pagina «Aziende», pulsante «Permessi» nella riga dell’azienda. Se apri l’indirizzo della tua stessa azienda vieni rimandato alla pagina «Permessi» della tua azienda; se l’azienda non esiste compare «Pagina non trovata».",
+      "purpose": [
+        "Mostra e permette di cambiare la matrice dei permessi di un’azienda cliente: per ogni azione e per ogni ruolo dei colleghi (Capotecnico, Progettista, Tecnico, Commerciale) dice se il diritto è concesso. Il Titolare ha sempre tutto.",
+        "Il titolo è «Permessi · » seguito dal nome dell’azienda. Sotto leggi la regola: «La matrice dei permessi di un’azienda cliente: si cambia solo su richiesta scritta del suo Titolare (condizioni d’uso, artt. 4 e 9), il cui riferimento si scrive al salvataggio. Ogni modifica vale dalla prossima pagina aperta dai suoi colleghi e compare nel registro attività dell’azienda, attribuita alla piattaforma, con il riferimento della richiesta.»",
+        "In pratica: il Titolare ti scrive (e-mail) chiedendo il cambiamento; tu conservi la lettera; fai la modifica e al salvataggio scrivi la data e l’oggetto di quella e-mail. Nel registro attività dell’azienda la modifica appare come «Piattaforma LiftPilot», con «su richiesta del Titolare: …» e il tuo riferimento. Non modificare mai senza una richiesta scritta."
+      ],
+      "shots": [
+        {
+          "id": "admin-permessi-matrix",
+          "what": "matrice con una casella cambiata e non ancora salvata (anello tratteggiato), barra in basso con «Salva i permessi»"
+        },
+        {
+          "id": "admin-permessi-confirm",
+          "what": "finestra «Salvare i permessi?» con l’elenco delle modifiche e il campo «Riferimento della richiesta scritta del Titolare» compilato"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Testata",
+          "intro": [],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Torna alle aziende",
+              "help": "Torna alla pagina «Aziende». Se hai modifiche non salvate il browser prima ti chiede se vuoi davvero lasciare la pagina.",
+              "src": "src/app/[locale]/app/admin/permessi/[id]/page.tsx:34"
+            }
+          ],
+          "notes": []
+        },
+        {
+          "title": "Permessi per ruolo",
+          "intro": [
+            "La matrice ha le azioni in righe, raggruppate in sette gruppi: Rilievi, Impianti, Calcolo argano, Progetto, Documenti, Prezzi, Azienda. In colonna ci sono i ruoli: Titolare, Capotecnico, Progettista, Tecnico, Commerciale. Ogni gruppo ripete i nomi dei ruoli sopra le sue caselle."
+          ],
+          "fields": [
+            {
+              "label": "Ruolo mostrato",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Titolare · Capotecnico · Progettista · Tecnico · Commerciale",
+              "default": "Capotecnico",
+              "required": "no",
+              "help": [
+                "Compare come gruppo di pulsanti sopra la matrice. Serve sugli schermi stretti (telefono), dove si vede un ruolo alla volta: scegli quale mostrare. Sugli schermi larghi le colonne sono tutte visibili."
+              ],
+              "src": "src/components/permessi/PermissionsMatrix.tsx:104"
+            },
+            {
+              "label": "Azione",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Prima colonna: la descrizione del diritto, per esempio «Vedere le schede di rilievo e scaricarne i PDF» o «Gestire l’abbonamento». Sotto alcune azioni leggi una regola: «Richiede: …» (il diritto presuppone altri diritti di sola visione, per esempio «Vedere gli impianti»), «Solo del Titolare: non si assegna ai colleghi.» o «Si assegna solo al Capotecnico.»"
+              ],
+              "src": "src/components/permessi/PermissionsMatrix.tsx:116"
+            },
+            {
+              "label": "Casella di un ruolo (una per ogni azione e ruolo)",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "La matrice predefinita della piattaforma, finché l’azienda non l’ha cambiata. Predefinito: tutti vedono rilievi, impianti e download; Capotecnico, Progettista e Tecnico compilano rilievi, creano impianti, collegano rilievi, modificano gli impianti e fanno i calcoli; Capotecnico e Progettista spostano i rilievi nel cestino, archiviano gli impianti, mettono il visto, disegnano il progetto ed emettono le tavole; il Capotecnico gestisce il cestino e vede il registro attività; Capotecnico e Commerciale vedono i prezzi; nessun collega modifica il listino, il logo, l’esportazione, gli utenti, i permessi o l’abbonamento.",
+              "required": "no",
+              "help": [
+                "Spunta per concedere il diritto a quel ruolo, togli la spunta per toglierlo. La colonna del Titolare è sempre spuntata e bloccata (lucchetto). Le caselle bloccate con lucchetto non si spostano: «Solo del Titolare» (utenti, permessi, abbonamento, mai ai colleghi) e «Si assegna solo al Capotecnico» (logo e ordine delle sezioni dell’azienda, esportazione dei dati).",
+                "Concedere un diritto concede anche quelli da cui dipende: una riga sotto la matrice dice quali altri si sono mossi («Concessi anche a …, perché servono: …»). Togliere un diritto toglie anche quelli che ne dipendono («Tolti anche a …, perché ne dipendono: …»).",
+                "Il segno di ogni casella: spunta = concesso; casella vuota = non concesso; lucchetto = bloccata dalle regole; punto = diverso dal predefinito; anello tratteggiato = modifica non salvata. Le stesse voci sono nella legenda sotto la matrice: «concesso», «sempre concesso (Titolare)», «non concesso», «bloccato dalle regole», «diverso dal predefinito», «modifica non salvata»."
+              ],
+              "src": "src/components/permessi/PermissionsMatrix.tsx:155"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Ripristina predefiniti",
+              "help": "Nell’intestazione di ogni ruolo dei colleghi. Riporta quella colonna ai valori predefiniti; si disattiva se la colonna è già predefinita. Sotto il nome del ruolo leggi «predefinito» oppure, se è cambiata, «n diverso dal predefinito» (n = numero di diritti diversi).",
+              "src": "src/components/permessi/PermissionsMatrix.tsx:125"
+            }
+          ],
+          "notes": [
+            "La colonna del Titolare riporta «sempre tutto»: nessuno, nemmeno tu, può toglierle un diritto.",
+            "Il tetto delle regole è fissato nel software: non puoi concedere a un collega diritti riservati al Titolare né i diritti della piattaforma."
+          ]
+        },
+        {
+          "title": "Salvataggio e riferimento della richiesta",
+          "intro": [
+            "Finché non salvi, nulla cambia per l’azienda. La barra in basso dice «Nessuna modifica da salvare» oppure «n modifiche non salvate»."
+          ],
+          "fields": [
+            {
+              "label": "Riferimento della richiesta scritta del Titolare",
+              "kind": "testo",
+              "unit": null,
+              "values": "Da 4 a 200 caratteri (spazi ai lati esclusi)",
+              "default": null,
+              "required": "sì, sempre, per una azienda diversa dalla tua; nel salvataggio sulla tua azienda il campo non compare",
+              "help": [
+                "Compare nella finestra di conferma, sotto l’elenco delle modifiche. Guida: «La data e l’oggetto dell’e-mail del Titolare, per esempio «12/10/2026 — permessi del Tecnico». Resta nel registro attività dell’azienda.»",
+                "Finché il campo ha meno di 4 caratteri il pulsante «Conferma e salva» resta disattivato, e anche il server rifiuta il salvataggio con «Scrivi il riferimento della richiesta scritta del Titolare (almeno 4 caratteri).» Scrivi solo il riferimento (data e oggetto), non il testo della lettera né dati personali.",
+                "Il riferimento è salvato con ogni singola modifica nel registro attività dell’azienda, dove il Titolare lo legge come «su richiesta del Titolare: …»."
+              ],
+              "src": "src/components/permessi/ConfirmSave.tsx:51"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Salva i permessi",
+              "help": "Apre la finestra di conferma «Salvare i permessi?». Si attiva solo se hai modifiche non salvate. La finestra dice «Cambia 1 permesso» o «Cambiano n permessi. Valgono dalla prossima pagina che ogni collega apre e restano nel registro attività.» e elenca, ruolo per ruolo, ogni modifica nella forma «concesso → non concesso» o viceversa.",
+              "src": "src/components/permessi/PermissionsMatrix.tsx:181"
+            },
+            {
+              "label": "Conferma e salva",
+              "help": "Salva le modifiche con il riferimento scritto. Valgono dalla prossima pagina aperta da ogni collega, senza altro da fare. Esito: «n permessi salvati. Valgono dalla prossima pagina che ogni collega apre.» (o «1 permesso salvato.»).",
+              "src": "src/components/permessi/ConfirmSave.tsx:57"
+            },
+            {
+              "label": "Torna alla matrice",
+              "help": "Chiude la finestra senza salvare e ti lascia sulla matrice con le modifiche ancora da salvare.",
+              "src": "src/components/permessi/ConfirmSave.tsx:58"
+            },
+            {
+              "label": "Annulla le modifiche",
+              "help": "Scarta tutte le modifiche non salvate e riporta la matrice a quella in vigore.",
+              "src": "src/components/permessi/PermissionsMatrix.tsx:180"
+            }
+          ],
+          "notes": [
+            "Altri messaggi di errore: «La matrice inviata non è valida: ricarica la pagina.», «Troppi salvataggi. Riprova tra qualche minuto.», «Azienda non trovata.», «Sessione scaduta: accedi di nuovo.», «Non hai i permessi per cambiare questa matrice.»",
+            "Ogni modifica diventa una riga del registro attività dell’azienda («Piattaforma LiftPilot»), con ruolo, diritto, valore prima e dopo e il riferimento della richiesta."
+          ],
+          "warnings": [
+            "Se mentre lavoravi qualcun altro (il Titolare o un altro amministratore) ha cambiato i permessi, il salvataggio è rifiutato con «Nel frattempo i permessi sono stati cambiati da qualcun altro: la matrice mostra ora quelli in vigore. Rifai le modifiche e salva di nuovo.»",
+            "Se lasci la pagina con modifiche non salvate il browser chiede conferma."
+          ]
+        }
+      ],
+      "tips": [
+        "Conserva l’e-mail del Titolare nel tuo archivio: il riferimento che scrivi deve permettere di ritrovarla (data e oggetto).",
+        "Se il Titolare vuole solo un cambio di prova, ricordagli che può farlo da solo dalla sua pagina «Permessi» e che a te non serve intervenire."
+      ]
+    },
+    {
+      "id": "admin-segnalazioni",
+      "title": "Segnalazioni",
+      "path": "/it/app/admin/segnalazioni",
+      "access": "La vede e agisce solo l’Amministratore della piattaforma. Gli utenti delle aziende possono solo inviare le segnalazioni, non leggere quelle degli altri.",
+      "reach": "Dalla pagina «Aziende», pulsante «Segnalazioni · n da gestire». Dall’altra parte, gli utenti inviano le segnalazioni dal menu «Segnala un problema» o dal pulsante «Segnala il problema» di una pagina di errore.",
+      "purpose": [
+        "Elenca quello che gli utenti hanno inviato da «Segnala un problema»: un problema, un suggerimento o una domanda, dal più recente. Il testo si legge solo qui: la e-mail che arriva agli amministratori dice soltanto che è arrivata una segnalazione e di che tipo, non il suo contenuto.",
+        "Il testo sotto il titolo: «Quello che gli utenti hanno inviato da «Segnala un problema», dal più recente. Il testo resta qui: l’e-mail agli amministratori dice solo che è arrivata una segnalazione.»",
+        "Attenzione ai dati: il messaggio può contenere dati personali scritti dall’utente. Usalo solo per rispondere e correggere il servizio. Le segnalazioni sono conservate finché esiste l’azienda e cancellate 24 mesi dopo che le hai segnate come gestite."
+      ],
+      "shots": [
+        {
+          "id": "admin-segnalazioni-list",
+          "what": "pagina «Segnalazioni» con il filtro «Da gestire» attivo e due segnalazioni (una «Problema», una «Domanda»)"
+        },
+        {
+          "id": "admin-segnalazioni-all",
+          "what": "filtro «Tutte» con una segnalazione «gestita il …» e il pulsante «Riapri»"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Filtro",
+          "intro": [
+            "Sotto il titolo un piccolo menu di due voci (gruppo «Quali segnalazioni») sceglie quali segnalazioni mostrare. La voce attiva è evidenziata."
+          ],
+          "fields": [
+            {
+              "label": "Da gestire",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Da gestire · Tutte",
+              "default": "Da gestire",
+              "required": "no",
+              "help": [
+                "Mostra solo le segnalazioni che non hai ancora segnato come gestite. Sotto leggi: «Una segnalazione segnata come gestita esce da questo elenco e resta in «Tutte», dove si può riaprire.» Se non ce n’è nessuna: «Nessuna segnalazione da gestire.»"
+              ],
+              "src": "src/app/[locale]/app/admin/segnalazioni/page.tsx:39"
+            },
+            {
+              "label": "Tutte",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "Mostra tutte le segnalazioni, gestite e no. Se non ce n’è nessuna: «Nessuna segnalazione.»"
+              ],
+              "src": "src/app/[locale]/app/admin/segnalazioni/page.tsx:40"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Aziende",
+              "help": "Pulsante in testata, in alto a destra: torna alla pagina «Aziende».",
+              "src": "src/app/[locale]/app/admin/segnalazioni/page.tsx:37"
+            }
+          ],
+          "notes": [
+            "L’elenco mostra al massimo le 200 segnalazioni più recenti; se sono arrivate a quel numero leggi «Sono mostrate le 200 più recenti.»"
+          ]
+        },
+        {
+          "title": "Una segnalazione",
+          "intro": [
+            "Ogni segnalazione è una scheda. In alto, tre indicatori; poi i dati di chi l’ha inviata; poi il testo; infine il pulsante di stato."
+          ],
+          "fields": [
+            {
+              "label": "Tipo",
+              "kind": "tabella",
+              "unit": null,
+              "values": "«Problema» (rosso) · «Suggerimento» (azzurro) · «Domanda» (arancione)",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Il tipo scelto dall’utente nel modulo «Segnala un problema»."
+              ],
+              "src": "src/app/[locale]/app/admin/segnalazioni/page.tsx:48"
+            },
+            {
+              "label": "Stato",
+              "kind": "tabella",
+              "unit": null,
+              "values": "«da gestire» (arancione) · «gestita il …» con la data (verde)",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Una segnalazione nuova è «da gestire». Quando la segni come gestita diventa «gestita il» con la data di oggi."
+              ],
+              "src": "src/app/[locale]/app/admin/segnalazioni/page.tsx:49"
+            },
+            {
+              "label": "Data e ora",
+              "kind": "tabella",
+              "unit": null,
+              "values": "data e ora brevi",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Quando la segnalazione è stata inviata. È l’indicatore a destra, senza etichetta. L’elenco è ordinato da questa data, dalla più recente."
+              ],
+              "src": "src/app/[locale]/app/admin/segnalazioni/page.tsx:50"
+            },
+            {
+              "label": "Azienda",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Nome dell’azienda a cui appartiene l’utente che ha scritto."
+              ],
+              "src": "src/app/[locale]/app/admin/segnalazioni/page.tsx:53"
+            },
+            {
+              "label": "Utente",
+              "kind": "tabella",
+              "unit": null,
+              "values": "nome · e-mail, oppure «utente eliminato»",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Chi ha inviato la segnalazione, con il suo indirizzo: puoi rispondere a quell’indirizzo. Se l’account è stato cancellato nel frattempo leggi «utente eliminato»."
+              ],
+              "src": "src/app/[locale]/app/admin/segnalazioni/page.tsx:54"
+            },
+            {
+              "label": "Pagina",
+              "kind": "tabella",
+              "unit": null,
+              "values": "percorso della pagina, senza lingua né parametri (per esempio «/app/impianti»); «/app/segnala» se l’utente ha aperto il modulo dal menu",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "La pagina di LiftPilot da cui l’utente ha inviato la segnalazione: ti dice dove si trovava. Se ha aperto «Segnala un problema» dal menu leggi «/app/segnala», cioè nessuna pagina in particolare. Dal pulsante «Segnala il problema» di una pagina di errore, il modulo riporta la pagina e il codice dell’errore."
+              ],
+              "src": "src/app/[locale]/app/admin/segnalazioni/page.tsx:55"
+            },
+            {
+              "label": "Codice",
+              "kind": "tabella",
+              "unit": null,
+              "values": "fino a 64 caratteri tra lettere, cifre e trattini",
+              "default": null,
+              "required": "solo quando la segnalazione parte da una pagina di errore",
+              "help": [
+                "Il codice dell’errore mostrato all’utente nella schermata «Si è verificato un errore»: ti serve per ritrovare l’errore nei registri del server. Per segnalazioni normali la riga non compare."
+              ],
+              "src": "src/app/[locale]/app/admin/segnalazioni/page.tsx:56"
+            },
+            {
+              "label": "Messaggio",
+              "kind": "testo lungo",
+              "unit": "caratteri",
+              "values": "fino a 4000 caratteri",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Il testo come l’ha scritto l’utente, con gli a capo conservati. Non ha un’etichetta a schermo: è il paragrafo sotto i dati. È l’unico posto in cui il testo si legge."
+              ],
+              "src": "src/app/[locale]/app/admin/segnalazioni/page.tsx:58"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Segna come gestita",
+              "help": "Pulsante blu su una segnalazione «da gestire». La segnalazione risulta «gestita il» con la data di oggi, esce dall’elenco «Da gestire» e resta in «Tutte». La data di gestione avvia il conto dei 24 mesi dopo i quali la segnalazione viene cancellata.",
+              "src": "src/app/[locale]/app/admin/segnalazioni/page.tsx:63"
+            },
+            {
+              "label": "Riapri",
+              "help": "Pulsante grigio su una segnalazione già gestita (visibile in «Tutte»). La segnalazione torna «da gestire» e la data di gestione è cancellata.",
+              "src": "src/app/[locale]/app/admin/segnalazioni/page.tsx:63"
+            }
+          ],
+          "notes": [
+            "Quando un utente invia una segnalazione ogni amministratore attivo riceve un’e-mail breve che dice solo che è arrivata, di che tipo, e dove leggerla.",
+            "Il pulsante agisce subito e senza conferma; ogni cambio di stato è scritto nel registro attività dell’azienda della piattaforma.",
+            "Un utente può inviare al massimo 10 segnalazioni all’ora."
+          ],
+          "warnings": [
+            "Una segnalazione gestita viene cancellata definitivamente 24 mesi dopo la data di gestione; «Riapri» annulla il conto."
+          ]
+        }
+      ],
+      "tips": [
+        "Rispondi all’utente all’indirizzo mostrato in «Utente» e segna la segnalazione come gestita solo quando hai finito: da quel momento parte il termine di cancellazione.",
+        "Non copiare il testo delle segnalazioni in altri strumenti e non girarlo a terzi: può contenere dati personali dei clienti dell’azienda."
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Amministratore della piattaforma",
+      "def": "Il ruolo di chi gestisce LiftPilot (diritto «platform:admin»). Non appartiene a nessuna azienda cliente e non si assegna ai colleghi."
+    },
+    {
+      "term": "Titolare",
+      "def": "Il ruolo che ha sempre tutti i permessi della propria azienda e ne gestisce utenti, permessi e abbonamento."
+    },
+    {
+      "term": "Beta su invito",
+      "def": "Fase in cui un’azienda si registra solo dal link di un invito, con l’indirizzo e-mail invitato."
+    },
+    {
+      "term": "Invito alla beta",
+      "def": "Link personale, valido 30 giorni e per una sola azienda, mandato per e-mail a chi ha chiesto di partecipare."
+    },
+    {
+      "term": "Matrice dei permessi",
+      "def": "La tabella che dice, per ogni azione e per ogni ruolo dei colleghi, se il diritto è concesso."
+    },
+    {
+      "term": "Riferimento della richiesta",
+      "def": "Data e oggetto dell’e-mail con cui il Titolare ha chiesto una modifica dei permessi; si scrive al salvataggio e resta nel registro attività dell’azienda."
+    },
+    {
+      "term": "Registro attività",
+      "def": "L’elenco delle azioni importanti compiute in un’azienda, con chi le ha fatte; le modifiche della piattaforma compaiono come «Piattaforma LiftPilot»."
+    },
+    {
+      "term": "Esenzione dal pagamento",
+      "def": "Impostazione che esclude un’azienda dalla fatturazione (per esempio un partner)."
+    },
+    {
+      "term": "Segnalazione",
+      "def": "Messaggio inviato da un utente con «Segnala un problema»: un problema, un suggerimento o una domanda."
+    }
+  ],
+  "verify": [
+    "Colonna «Abbonamento» di un’azienda senza pacchetto di posti (seatPack NONE): a schermo si vede solo lo stato (per esempio «Attivo») senza altro testo? (page.tsx:53)",
+    "Formato delle date «Creata», «Inviato il …», «gestita il …» sullo schermo reale (dateFormat, stile medium): copiare un esempio per le figure."
+  ]
+}
