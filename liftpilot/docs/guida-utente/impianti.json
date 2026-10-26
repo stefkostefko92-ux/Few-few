@@ -141,7 +141,7 @@
           "fields": [],
           "actions": [],
           "notes": [
-            "Un passo non risulta «fatto» se un passo precedente non lo è: per esempio, «Documenti e ordini» non è mai «fatto» finché il Progetto non è salvato."
+            "Ogni passo ha il suo stato, calcolato dal proprio record: «Calcolo argano» e «Progetto» non dipendono dai passi precedenti. Solo «Documenti e ordini» dipende dagli altri: è «fatto» soltanto se c’è un Progetto salvato, nessun record da cui nascono i documenti è «da aggiornare» o in «differenze», e la serie di tavole emessa (se c’è) non è più vecchia dell’ultimo record; senza record salvati è «da fare». Il passo corrente è il primo non «fatto» quando tutti quelli prima sono «fatto»."
           ]
         },
         {
@@ -1443,7 +1443,7 @@
             },
             {
               "label": "Togli il logo",
-              "help": "Compare solo se c’è un logo. Lo scollega dal progetto (il file resta per le serie già emesse): nel cartiglio tornerà solo il nome del committente.",
+              "help": "Compare solo se c’è un logo. Lo scollega dall’impianto (il file resta per le serie già emesse): nel cartiglio tornerà solo il nome del committente.",
               "src": "src/components/tavole/ClientLogoForm.tsx:53"
             }
           ],
@@ -1519,7 +1519,7 @@
               "help": [
                 "A che cosa serve l’impianto: decide la forza sulla soglia di cabina durante il carico, nella verifica delle guide (UNI EN 81-20, 5.7.2.3.6). Compare solo per un impianto completo e anche nella relazione tecnica.",
                 "Le tre scelte sono «Persone (0,4·g·Q)», «Merci accompagnate (0,6·g·Q)» e «Merci accompagnate, mezzi di carico pesanti fuori portata (0,85·g·Q)».",
-                "Se non indichi nulla il software usa, secondo la portata, 0,6·g·Q da 2500 kg (UNI EN 81-1, G.2.5)."
+                "Se non indichi nulla il software sceglie dalla portata Q, come nella UNI EN 81-1:2008, G.2.5: 0,6·g·Q per Q da 2500 kg in su, 0,4·g·Q sotto i 2500 kg."
               ],
               "src": "src/components/tavole/PlantForm.tsx:85"
             },

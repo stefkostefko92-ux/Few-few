@@ -14,7 +14,7 @@
       "title": "Progetto — piani, locale macchina e funi",
       "path": "/it/app/projects/‹id›/progetto",
       "access": "Vedono e modificano la pagina il Titolare e, con la matrice predefinita dei diritti, il Capotecnico e il Progettista (permesso «Progetto: disegnare il vano o rilevare il locale macchina»). Tecnico e Commerciale non la aprono (vengono mandati alla pagina «senza permesso»). Il Titolare può cambiare la matrice in «Permessi». Un impianto archiviato non si apre. I prezzi nella distinta staffe si vedono solo con il diritto sui prezzi (predefinito: Titolare, Capotecnico, Commerciale).",
-      "reach": "Dalla pagina dell’impianto, passo «Progetto» (dopo il «Calcolo argano»). Il Progetto parte sull’ultimo calcolo argano dell’impianto; con l’indirizzo che termina con ?calc=‹id calcolo› si sceglie un altro calcolo, con ?from=‹id progetto› si riapre un progetto salvato. Dal progetto salvato si arriva anche con «Modifica il disegno».",
+      "reach": "Dalla pagina dell’impianto, passo «Progetto» (dopo il «Calcolo argano»). Il Progetto parte sull’ultimo calcolo argano dell’impianto. Per riaprire una versione salvata, o per disegnare su un altro calcolo, usa «Modifica il disegno» nella pagina del progetto salvato (o «Apri il Progetto sull’ultimo calcolo» quando c’è un calcolo più recente).",
       "purpose": [
         "Qui inserisci i dati verticali dell’impianto (fermate, fossa, testata, cabina, ammortizzatori), il locale macchina o il locale delle pulegge e le scelte sulle funi nel disegno. Il software ne ricava il progetto del vano, tutte le verifiche e la simulazione 3D.",
         "Questa parte della pagina comprende le sezioni «Piani, fossa e testata», «Funi e rinvii» e il locale macchina che sta tra le due. La sezione «Vano, porte e contrappeso» e i riquadri in alto sono descritti nel capitolo precedente.",
@@ -119,7 +119,7 @@
               "label": "Alla fermata sopra (mm)",
               "kind": "numero",
               "unit": "mm",
-              "values": "da 0 a 20.000, passo 10. Il server rifiuta una quota inferiore all’altezza della porta di piano quando due fermate consecutive hanno una porta sullo stesso lato (e comunque 0); nell’ultima riga compare «—».",
+              "values": "da 0 a 20.000, passo 10. Il salvataggio rifiuta un interpiano inferiore a 1 mm; se le due fermate hanno una porta sullo stesso lato (A con A, B con B) l’interpiano deve essere almeno pari al campo «Altezza della porta (mm)» del vano, perché le porte di una stessa parete non si sovrappongano. Il valore 0 è ammesso solo nell’ultima riga, dove compare «—».",
               "default": "Vuoto fino all’inserimento.",
               "required": "sì, per ogni fermata tranne l’ultima",
               "help": [
@@ -979,7 +979,7 @@
               "src": "src/components/lift/LiftFacts.tsx:98"
             },
             {
-              "label": "Badge delle norme",
+              "label": "Sigle delle norme accanto al verdetto (senza titolo a schermo)",
               "kind": "testo",
               "unit": null,
               "values": "una sigla per ogni norma del collaudo; «arcata esistente» per il rifacimento",
@@ -1348,7 +1348,7 @@
       "id": "progetto-salvato",
       "title": "Progetto dell’impianto",
       "path": "/it/app/lift-designs/‹id›",
-      "access": "La vedono tutti i ruoli con il permesso «Vedere gli impianti con calcoli, progetti e tavole» (Titolare, Capotecnico, Progettista, Tecnico, Commerciale). «Modifica il disegno» e «Aggiorna con il software attuale» solo con «Progetto: disegnare il vano o rilevare il locale macchina» (Capotecnico, Progettista, Titolare) e su impianto non archiviato. Scaricare PDF, DXF, DWG, SVG e relazione: «Scaricare relazioni, tavole, DXF, DWG e SVG, bozze d’ordine e documenti caricati» (tutti). L’emissione delle tavole: «Emettere le tavole e le relazioni tecniche di modifica, con le loro revisioni» (Capotecnico, Progettista). I prezzi: «Vedere i prezzi e il listino» (Capotecnico, Commerciale). Il Titolare può cambiare la matrice.",
+      "access": "La vedono tutti i ruoli con il permesso «Vedere gli impianti con calcoli, progetti e tavole» (Titolare, Capotecnico, Progettista, Tecnico, Commerciale). «Modifica il disegno» e «Aggiorna con il software attuale» solo con «Progetto: disegnare il vano o rilevare il locale macchina» (Capotecnico, Progettista, Titolare) e su impianto non archiviato. Scaricare PDF, DXF, DWG, SVG e relazione: «Scaricare relazioni, tavole, DXF, DWG e SVG, bozze d’ordine e documenti caricati» (tutti). L’emissione delle tavole: «Emettere le tavole e le relazioni tecniche di modifica, con le loro revisioni» (Capotecnico, Progettista). I prezzi: «Vedere i prezzi e il listino» (Titolare, Capotecnico, Commerciale). Il Titolare ha tutti i permessi e può cambiare la matrice.",
       "reach": "Dopo «Salva il progetto»; dalla pagina dell’impianto con «Apri il progetto» (ultima versione), oppure dalla tabella «Versioni salvate» (compare con più di una versione).",
       "purpose": [
         "La versione salvata del progetto, in sola lettura: lo stesso 3D e le stesse verifiche della pagina Progetto, ricalcolati dai dati inseriti, con i documenti prodotti dai suoi dati. Sotto l’intestazione trovi la data, l’autore e l’esito.",
@@ -1464,7 +1464,7 @@
             },
             {
               "label": "Bozza d’ordine Word (DOCX)",
-              "help": "Nel riquadro «Bozza d’ordine dell’argano»: l’argano con i dati per il costruttore. Mostra se la macchina è quella verificata o la prima del confronto SICOR / Montanari; i campi esecuzione, prezzo e consegna restano vuoti. Con un argano che resta e senza un argano a catalogo adatto non c’è la bozza.",
+              "help": "Nel riquadro «Bozza d’ordine dell’argano»: l’argano con i dati per il costruttore. Mostra se la macchina è quella verificata o la prima del confronto SICOR / Montanari; i campi esecuzione, prezzo e consegna restano vuoti. La bozza non c’è se l’argano esistente resta (nessun ordine) oppure se nessun argano SICOR o Montanari a catalogo prende l’impianto («Nessun argano SICOR o Montanari a catalogo prende questo impianto: niente bozza d’ordine»).",
               "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:166"
             },
             {

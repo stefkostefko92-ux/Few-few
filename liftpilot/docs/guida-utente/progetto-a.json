@@ -10,7 +10,7 @@
       "id": "progetto",
       "title": "Progetto e simulazione",
       "path": "/it/app/projects/‹id›/progetto",
-      "access": "La pagina si apre a chi ha il permesso «Progetto: disegnare il vano o rilevare il locale macchina». Nella matrice predefinita lo hanno il Capotecnico e il Progettista; il Titolare ha tutti i diritti. Il Titolare può cambiare la matrice nella pagina Permessi, quindi nella tua azienda l’elenco può essere diverso. Chi non ha il diritto non può aprirla. Se l’azienda è in sola lettura (nessun abbonamento dopo la prova o condizioni non accettate), il Progetto non si può salvare. Il pulsante «Porta nel calcolo» e i collegamenti «Modifica nel calcolo argano» e «Calcola l’argano» compaiono solo a chi ha il diritto di fare i calcoli (predefinito: Capotecnico, Progettista, Tecnico). Caricare uno schizzo spetta a chi modifica i dati dell’impianto (predefinito: Capotecnico, Progettista, Tecnico); «Leggi lo schizzo» è per chi disegna il progetto.",
+      "access": "La pagina si apre a chi ha il permesso «Progetto: disegnare il vano o rilevare il locale macchina». Nella matrice predefinita lo hanno il Capotecnico e il Progettista; il Titolare ha tutti i diritti. Il Titolare può cambiare la matrice nella pagina Permessi, quindi nella tua azienda l’elenco può essere diverso. Chi non ha il diritto non può aprirla. Se l’azienda è in sola lettura (nessun abbonamento dopo la prova o condizioni non accettate), il Progetto non si può salvare. Il pulsante «Porta nel calcolo» e i collegamenti «Modifica nel calcolo argano» e «Calcola l’argano» compaiono solo a chi ha il diritto di fare i calcoli (predefinito: Capotecnico, Progettista, Tecnico). Caricare uno schizzo spetta a chi modifica i dati dell’impianto; il Tecnico ha questo permesso, ma non può aprire questa pagina, quindi qui di fatto carica gli schizzi solo il Capotecnico, il Progettista o il Titolare (con la matrice predefinita). «Leggi lo schizzo» è per chi disegna il progetto.",
       "reach": "Dalla pagina dell’impianto con «Disegna il progetto» (o «Disegna l’intero impianto» quando l’intervento è solo del locale macchina), dalla pagina di un «Calcolo argano» salvato, oppure da un progetto già salvato con «Modifica il disegno». Il Progetto si apre sull’ultimo Calcolo argano dell’impianto; per disegnare su un altro calcolo, apri il Progetto dalla pagina di quel calcolo.",
       "purpose": [
         "Qui disegni il vano di corsa e i piani sul Calcolo argano scelto. Ogni dato che inserisci cambia subito le piante, le sezioni, il 3D e le verifiche sulla destra. Il Progetto parte vuoto: finché mancano i dati obbligatori il software non calcola e non disegna nulla, e a destra compare l’elenco di quello che manca.",
@@ -1595,7 +1595,7 @@
     },
     {
       "term": "Calata",
-      "def": "La verticale delle funi dalla puleggia alla cabina o al contrappeso."
+      "def": "Il tratto di funi che scende dalla puleggia di trazione alla cabina o al contrappeso. La quota «Calata» della pianta è l’interasse tra le due calate; nel tiro diretto, senza rinvio, deve essere uguale al diametro della puleggia."
     }
   ],
   "verify": [
