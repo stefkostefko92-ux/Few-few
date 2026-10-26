@@ -70,7 +70,7 @@
       },
       {
        "label": "Vai al contenuto",
-       "help": "Link nascosto, visibile con la tastiera (Tab): porta direttamente al contenuto della pagina.",
+       "help": "Collegamento nascosto che compare quando navighi con la tastiera (Tab): porta direttamente al contenuto della pagina.",
        "src": "src/components/SiteHeader.tsx:26"
       }
      ],
@@ -122,7 +122,7 @@
      "actions": [],
      "notes": [],
      "intro": [
-      "Un’esposizione a schede (Rilievo, Progetto, Argano, Simulazione, Documenti) con pianta, sezione, tabella delle verifiche, grafici della simulazione e pagine di esempio, tutte per un «Impianto di esempio». Sono immagini e tabelle generate dal software per mostrare il risultato: non si compilano."
+      "Una vetrina a schede (Rilievo, Progetto, Argano, Simulazione, Documenti) con pianta, sezione, tabella delle verifiche, grafici della simulazione e pagine di esempio, tutte per un «Impianto di esempio». Sono immagini e tabelle generate dal software per mostrare il risultato: non si compilano."
      ]
     },
     {
@@ -235,7 +235,7 @@
      "actions": [],
      "notes": [],
      "intro": [
-      "Piani e prezzi, titolo «Prezzi di LiftPilot» e una risposta di una frase: con abbonamento attivo indica il prezzo mensile, i pacchetti di posti e i giorni di prova gratuita senza carta di credito; durante la beta dice che l’uso è gratuito e che il prezzo e la fine della beta saranno comunicati al Titolare per e-mail almeno 30 giorni prima."
+      "L’etichetta «Piani e prezzi», il titolo «Prezzi di LiftPilot» e una risposta di una frase: con abbonamento attivo indica il prezzo mensile, i pacchetti di posti e i giorni di prova gratuita senza carta di credito; durante la beta dice che l’uso è gratuito e che il prezzo e la fine della beta saranno comunicati al Titolare per e-mail almeno 30 giorni prima."
      ]
     },
     {
@@ -297,7 +297,7 @@
      "actions": [],
      "notes": [],
      "intro": [
-      "Cinque domande con risposta: se il prezzo comprende tutte le funzioni, come si paga (tramite Stripe, LiftPilot non vede né conserva i dati della carta), come si disdice, se il prezzo può cambiare, che cosa fare con molti utenti o più aziende (scrivere al supporto)."
+      "Cinque domande con risposta: se il prezzo comprende tutte le funzioni, come si paga (tramite Stripe: LiftPilot non vede né conserva i dati della carta), come si disdice, se il prezzo può cambiare, che cosa fare con molti utenti o più aziende (scrivere al supporto)."
      ]
     }
    ]
@@ -307,9 +307,9 @@
    "title": "Accesso",
    "path": "/it/login",
    "access": "Pubblica. Se hai già una sessione aperta vieni portato direttamente all’area di lavoro. Nessuna modifica di dati: il modulo apre una sessione.",
-   "reach": "Dal pulsante «Accedi» in alto, dal link «Accedi» della home o di «Registra la tua azienda», o aprendo una pagina dell’applicazione senza sessione. Dopo aver scelto una nuova password dal link ricevuto per e-mail arrivi qui con un avviso verde.",
+   "reach": "Dal pulsante «Accedi» in alto, dal link «Accedi» della home o della pagina «Registra la tua azienda», o aprendo una pagina dell’applicazione senza sessione. Dopo aver scelto una nuova password dal link ricevuto per e-mail arrivi qui con un avviso verde.",
    "purpose": [
-    "Qui entri in LiftPilot con l’e-mail e la password del tuo account: «Accedi con l’e-mail e la password del tuo account.» Nella colonna a destra (da schermi larghi) trovi un riepilogo di che cosa fa LiftPilot, le norme di riferimento e l’avviso che calcoli, tavole e relazioni sono bozze finché un tecnico abilitato non le verifica e firma.",
+    "Qui entri in LiftPilot con l’e-mail e la password del tuo account: «Accedi con l’e-mail e la password del tuo account.» Nella colonna a destra (su schermi larghi) trovi un riepilogo di che cosa fa LiftPilot, le norme di riferimento e l’avviso che calcoli, tavole e relazioni sono bozze finché un tecnico abilitato non le verifica e firma.",
     "Una sessione dura al massimo 12 ore: poi devi accedere di nuovo. LiftPilot usa un solo cookie tecnico, quello della sessione."
    ],
    "shots": [
@@ -366,9 +366,9 @@
      ],
      "notes": [
       "Dopo un cambio password dal link ricevuto compare «Password aggiornata: accedi con quella nuova.»",
-      "Se e-mail o password non coincidono leggi «E-mail o password non corretti.»: il messaggio è lo stesso anche se l’indirizzo non ha un account.",
+      "Se e-mail o password sono sbagliate leggi «E-mail o password non corretti.»: il messaggio è lo stesso anche se l’indirizzo non ha un account.",
       "Dopo troppi tentativi sbagliati (da una stessa rete, o con lo stesso indirizzo) leggi «Troppi tentativi. Riprova tra qualche minuto.»",
-      "Se hai registrato l’azienda ma non hai ancora confermato l’indirizzo, e-mail e password giusti non ti fanno entrare: leggi «Conferma prima il tuo indirizzo e-mail: ti abbiamo inviato un nuovo link (controlla anche lo spam).»"
+      "Se hai registrato l’azienda ma non hai ancora confermato l’indirizzo, non entri neanche con e-mail e password corrette: leggi «Conferma prima il tuo indirizzo e-mail: ti abbiamo inviato un nuovo link (controlla anche lo spam).»"
      ],
      "warnings": [
       "Se non confermi l’indirizzo entro 30 giorni l’account è cancellato: «Questo account non è stato confermato in tempo e viene cancellato: registrati di nuovo, oppure chiedi al Titolare della tua azienda di aggiungerti di nuovo.»"
@@ -409,7 +409,7 @@
       }
      ],
      "notes": [
-      "Se il link è sbagliato, già usato o scaduto compare in più «Il link di invito non è valido, è già stato usato o è scaduto.» Un invito di prova vale 30 giorni.",
+      "Se il link è sbagliato, già usato o scaduto compare anche «Il link di invito non è valido, è già stato usato o è scaduto.» Un invito alla beta vale 30 giorni.",
       "Se il servizio non può ancora inviare e-mail, al posto del modulo compare «La registrazione non è ancora attiva…» con l’indirizzo di assistenza a cui scrivere."
      ],
      "intro": [
@@ -436,7 +436,7 @@
        "values": "Fino a 40 caratteri.",
        "default": null,
        "required": "no",
-       "help": "La partita IVA dell’azienda, se vuoi indicarla. Non viene controllata nel formato.",
+       "help": "La partita IVA dell’azienda, se vuoi indicarla. Il software non ne controlla il formato.",
        "src": "src/components/RegisterForm.tsx:64"
       },
       {
@@ -530,7 +530,7 @@
        "values": "Da spuntare.",
        "default": "non spuntata",
        "required": "sì",
-       "help": "Conferma che ciò che LiftPilot produce è una bozza: diventa documento solo quando un tecnico abilitato lo verifica e lo firma, e la responsabilità resta sua. Il testo continua: «…e la responsabilità resta sua.»",
+       "help": "Conferma che ciò che LiftPilot produce è una bozza: diventa documento solo quando un tecnico abilitato lo verifica e lo firma. Il testo della casella finisce con «…e la responsabilità resta sua.»",
        "src": "src/components/RegisterForm.tsx:89"
       }
      ],
@@ -548,7 +548,7 @@
      ],
      "notes": [
       "Sotto le caselle: «L’approvazione specifica delle clausole (artt. 1341 e 1342 del codice civile) la darai dopo, quando confermi l’indirizzo dal link dell’e-mail, con la password che scegli qui.»",
-      "Se un campo è sbagliato, compare «Da correggere» sotto il campo, il bordo diventa rosso e il cursore va al primo campo da sistemare; i dati scritti restano, le password vanno riscritte. Messaggi possibili in alto: «Controlla i campi evidenziati.», «La password deve avere almeno 12 caratteri, con lettere e cifre.», «Le due password nuove non coincidono.», «Per continuare spunta tutte le conferme.»",
+      "Se un campo è sbagliato, compare «Da correggere» sotto il campo, il bordo diventa rosso e il cursore va al primo campo da correggere; i dati scritti restano, le password vanno riscritte. Messaggi possibili in alto: «Controlla i campi evidenziati.», «La password deve avere almeno 12 caratteri, con lettere e cifre.», «Le due password nuove non coincidono.», «Per continuare spunta tutte le conferme.»",
       "Se da una rete sono state inviate troppe registrazioni leggi «Troppi tentativi di registrazione da questa rete. Riprova tra un’ora.» Senza un invito valido, durante la beta: «Durante la beta ci si registra solo dal link di un invito e con l’indirizzo e-mail a cui è stato mandato…»"
      ],
      "intro": [
@@ -660,7 +660,7 @@
       },
       {
        "label": "Conferma ed entra",
-       "help": "Stesso pulsante per l’account di un collega: conferma l’indirizzo e apre la sessione.",
+       "help": "È lo stesso pulsante, con questa etichetta, per l’account di un collega: conferma l’indirizzo e apre la sessione.",
        "src": "src/components/VerifyEmailForm.tsx:77"
       },
       {
@@ -671,7 +671,7 @@
      ],
      "notes": [
       "Errori possibili: «Inserisci la tua password.», «La password non è corretta.», «Per continuare spunta tutte le conferme.», «Esiste già un account con questa e-mail.», «Troppi tentativi. Riprova tra qualche minuto.»",
-      "Se la registrazione è stata fatta prima della beta su invito, e senza invito, la pagina dice «La registrazione è ora su invito: scrivi a … per partecipare.»"
+      "Se la registrazione è stata fatta senza invito, prima che la beta diventasse su invito, la pagina dice «La registrazione è ora su invito: scrivi a … per partecipare.»"
      ]
     }
    ],
@@ -713,7 +713,7 @@
      "actions": [
       {
        "label": "Invia il link",
-       "help": "Richiede l’e-mail con il link. Durante l’invio diventa «Invio…». Compare: «Se … ha un account LiftPilot, a breve riceverai un’e-mail con il link. Il link vale un’ora; se non arriva, controlla lo spam.»",
+       "help": "Richiede l’e-mail con il link. Durante l’invio diventa «Invio…». Poi compare: «Se … ha un account LiftPilot, a breve riceverai un’e-mail con il link. Il link vale un’ora; se non arriva, controlla lo spam.»",
        "src": "src/components/ForgotPasswordForm.tsx:24"
       },
       {
@@ -840,7 +840,7 @@
       }
      ],
      "notes": [
-      "Sotto la regola compare il rimando all’informativa sulla privacy, che si apre in una nuova scheda.",
+      "Sotto la regola della password compare il rimando all’informativa sulla privacy, che si apre in una nuova scheda.",
       "Messaggi: «L’azienda in questo momento non può aggiungere colleghi: avvisa il Titolare, che può rimediare dalla pagina Abbonamento, poi riapri il link dell’invito.»; «Questo indirizzo ha già un account LiftPilot e un indirizzo appartiene a una sola azienda: chiedi all’azienda di invitarti con un altro indirizzo.»; «Il link non è valido, è già stato usato o è scaduto: chiedine uno nuovo.»",
       "Non accetti condizioni d’uso con questo modulo: le accetta il Titolare per l’azienda."
      ],
@@ -882,7 +882,7 @@
       "A sinistra o in alto trovi l’indice «In questa pagina» con le due parti e le singole voci."
      ],
      "intro": [
-      "«Privacy e condizioni d’uso»; sotto la riga «Versione 6 del 21 ottobre 2026»."
+      "Titolo «Privacy e condizioni d’uso» e, sotto, la riga «Versione 6 del 21 ottobre 2026»."
      ]
     },
     {
@@ -961,8 +961,8 @@
    "access": "Pubblica: la vede chiunque. Sola lettura.",
    "reach": "Dal link «Dati e formati» nel piè di pagina, dalla pagina Prezzi (nota «dati e formati»), o dalle condizioni d’uso (articolo sulla disdetta e il cambio di fornitore).",
    "purpose": [
-    "È il registro che il Regolamento (UE) 2023/2854 (Data Act) chiede a un servizio come LiftPilot: quali dati un’azienda può portare con sé e in che formato, com’è fatto il file JSON, come si cambia fornitore, dove sono i server e come i dati sono protetti dall’accesso di autorità di paesi terzi.",
-    "Per l’utente è la pagina da consultare quando vuoi sapere che cosa puoi scaricare, in quali formati e per quanto tempo dopo la fine dell’abbonamento (almeno 30 giorni)."
+    "Raccoglie le informazioni che il Regolamento (UE) 2023/2854 (Data Act) chiede a un servizio come LiftPilot: quali dati un’azienda può portare con sé e in che formato, com’è fatto il file JSON, come si cambia fornitore, dove sono i server e come i dati sono protetti dall’accesso di autorità di paesi terzi.",
+    "È la pagina da consultare quando vuoi sapere che cosa puoi scaricare, in quali formati e per quanto tempo dopo la fine dell’abbonamento (almeno 30 giorni)."
    ],
    "shots": [
     {
@@ -1178,10 +1178,10 @@
    "title": "Condizioni d’uso (o «Condizioni d’uso aggiornate»)",
    "path": "/it/app/terms",
    "access": "Dentro l’applicazione, solo per il Titolare: è lui che accetta le condizioni per l’azienda. Un collega che apre l’indirizzo viene riportato all’area di lavoro; anche il Titolare viene riportato indietro se non ha nulla da accettare. Se la tua password è stata assegnata da un’altra persona devi prima cambiarla dalla pagina Account: finché non l’hai fatto non puoi accettare.",
-   "reach": "Il Titolare che non ha mai accettato nessuna versione viene portato qui da qualsiasi pagina al primo accesso. Se le condizioni cambiano, parte un avviso (banner) sotto la barra in alto con il pulsante «Leggi e accetta».",
+   "reach": "Il Titolare che non ha mai accettato nessuna versione viene portato qui da qualsiasi pagina al primo accesso. Se le condizioni cambiano, compare un avviso (banner) sotto la barra in alto con il pulsante «Leggi e accetta».",
    "purpose": [
     "Il Titolare accetta per l’azienda la versione in vigore delle condizioni d’uso e dell’informativa sulla privacy, e approva specificamente le clausole con la sua password (la password vale come firma elettronica dell’approvazione). Il titolo è «Condizioni d’uso» al primo accesso, «Condizioni d’uso aggiornate» quando la versione è cambiata.",
-    "Cosa succede nel frattempo. Prima che la nuova versione vincoli l’azienda (avviso in arrivo o data già fissata) LiftPilot funziona come sempre e puoi accettarla già ora, oppure disdire l’abbonamento senza costi e scaricare i dati. Dal giorno in cui vincola, l’azienda lavora in sola lettura: puoi consultare e scaricare i progetti, scaricare i dati dell’azienda e gestire o disdire l’abbonamento. Il preavviso è di almeno 30 giorni dall’e-mail con cui te lo comunichiamo."
+    "Che cosa succede nel frattempo? Prima che la nuova versione vincoli l’azienda (avviso in arrivo o data già fissata) LiftPilot funziona come sempre e puoi accettarla già ora, oppure disdire l’abbonamento senza costi e scaricare i dati. Dal giorno in cui vincola, l’azienda lavora in sola lettura: puoi consultare e scaricare i progetti, scaricare i dati dell’azienda e gestire o disdire l’abbonamento. Il preavviso è di almeno 30 giorni dall’e-mail con cui te lo comunichiamo."
    ],
    "shots": [
     {
@@ -1245,7 +1245,7 @@
        "values": "Da spuntare.",
        "default": "non spuntata",
        "required": "sì",
-       "help": "Come in registrazione: agisci per l’impresa, non come privato.",
+       "help": "Come nella registrazione: confermi che agisci per l’impresa, non come privato.",
        "src": "src/components/TermsGate.tsx:51"
       },
       {
@@ -1298,7 +1298,7 @@
      ],
      "notes": [
       "Se manca una conferma leggi «Per continuare spunta tutte le conferme.»; senza password «Inserisci la tua password per approvare le clausole.»; con password sbagliata «La password non è corretta: le condizioni non sono state accettate.» Troppi tentativi: «Troppi tentativi. Riprova tra qualche minuto.»",
-      "Se non vuoi accettare, sotto il pulsante hai due scelte: «Abbonamento» (per disdire; rimborsiamo la parte non usata su richiesta al supporto) e «Dati dell’azienda» (per scaricare i dati). Se non hai mai accettato nessuna versione, la nota dice di scrivere al supporto per avere i tuoi dati o cancellare l’account."
+      "Se non vuoi accettare, sotto il pulsante hai due scelte: «Abbonamento» (per disdire: solo se non accetti le nuove condizioni, il supporto rimborsa su richiesta la parte non usata; nei casi normali la disdetta ha effetto a fine periodo pagato, senza rimborso) e «Dati dell’azienda» (per scaricare i dati). Se non hai mai accettato nessuna versione, la nota dice di scrivere al supporto per avere i tuoi dati o cancellare l’account."
      ],
      "warnings": [
       "Dal giorno in cui la nuova versione vincola l’azienda e finché il Titolare non l’accetta, tutta l’azienda lavora in sola lettura: nessuno, colleghi compresi, può modificare dati.",
@@ -1372,7 +1372,7 @@
    "id": "app-account",
    "title": "Account",
    "path": "/it/app/account",
-   "access": "Dentro l’applicazione, per ogni utente con una sessione, qualunque ruolo e anche con l’azienda in sola lettura. Ciascuno modifica solo la propria password; nome, e-mail, azienda e ruolo sono solo da leggere.",
+   "access": "Dentro l’applicazione, per ogni utente con una sessione, qualunque ruolo e anche con l’azienda in sola lettura. Ciascuno modifica solo la propria password; nome, e-mail, azienda e ruolo sono in sola lettura.",
    "reach": "Clicca il tuo nome in alto a destra nella barra, oppure la scheda con il tuo nome e il ruolo in fondo al menu laterale (accanto c’è «Esci», che chiude la sessione). Se la password ti è stata assegnata da un’altra persona, dopo l’accesso vieni portato qui prima di qualsiasi altra pagina.",
    "purpose": [
     "Sopra il titolo leggi «Il tuo profilo». La pagina mostra chi sei e ti fa cambiare la password. Se la password è stata assegnata da qualcuno, compare «La password ti è stata assegnata da un’altra persona: scegline una nuova per continuare.» e finché non la cambi le altre pagine non si aprono."
@@ -1478,7 +1478,7 @@
       "Messaggi: «La password attuale non è corretta.», «La nuova password deve essere diversa da quella attuale.», «La password deve avere almeno 12 caratteri, con lettere e cifre.», «Le due password nuove non coincidono.», «Troppi tentativi. Riprova tra qualche minuto.»"
      ],
      "warnings": [
-      "Cambiare la password chiude tutte le altre sessioni: i dispositivi dove eri connesso dovranno accedere di nuovo."
+      "Cambiare la password chiude tutte le altre sessioni: sugli altri dispositivi dovrai accedere di nuovo."
      ]
     }
    ],
@@ -1546,7 +1546,7 @@
        "values": "Da 1 a 4000 caratteri (gli spazi iniziali e finali non contano). Sotto il campo: «Che cosa stavi facendo, che cosa è successo e che cosa ti aspettavi. Al massimo 4000 caratteri.»",
        "default": null,
        "required": "sì",
-       "help": "Che cosa stavi facendo, che cosa è successo e che cosa ti aspettavi. Più è preciso, più è facile correggere.",
+       "help": "Che cosa stavi facendo, che cosa è successo e che cosa ti aspettavi. Più sei preciso, più è facile correggere il problema.",
        "src": "src/components/FeedbackForm.tsx:92"
       }
      ],
@@ -1564,7 +1564,7 @@
      ],
      "warnings": [
       "Non inserire dati personali dei clienti se non servono: il testo è visibile agli amministratori e resta nell’esportazione dei dati dell’azienda.",
-      "Se la connessione si interrompe e la segnalazione era già partita, premere di nuovo «Invia la segnalazione» la invia due volte."
+      "Se la connessione si interrompe ma la segnalazione era già partita, premendo di nuovo «Invia la segnalazione» la invii due volte."
      ]
     }
    ],

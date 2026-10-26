@@ -4,7 +4,7 @@
  "intro": [
   "Questo capitolo spiega i documenti che LiftPilot produce a partire dal progetto: la serie di tavole in formato A4 (con il cartiglio, i dati dell’impianto e i loghi), la relazione tecnica di modifica con i suoi allegati e le firme, e i documenti che carichi tu (dichiarazioni, certificati, schemi, fotografie, schizzi di rilievo).",
   "Le tavole e la relazione sono documenti numerati e non modificabili: una volta emessi ricevono un numero nella forma AA-NNN (le ultime due cifre dell’anno e un progressivo dell’azienda, per esempio 26-001). Per correggerli emetti una revisione, che tiene lo stesso numero e aggiunge R1, R2… Il PDF emesso resta scaricabile com’è, anche se in seguito il software cambia.",
-  "Per capire chi può fare che cosa: vedere gli impianti è di tutti i ruoli; modificare i dati dell’impianto e caricare i documenti spetta a Capotecnico, Progettista e Tecnico; preparare la bozza della relazione e disegnare il progetto spetta a Capotecnico e Progettista; emettere tavole e relazioni spetta a Capotecnico e Progettista; scaricare i PDF spetta a tutti. Il Titolare ha tutti i diritti e può cambiare questa matrice per l’azienda.",
+  "Per capire chi può fare che cosa: vedere gli impianti è di tutti i ruoli; modificare i dati dell’impianto e caricare i documenti spetta a Capotecnico, Progettista e Tecnico; preparare la bozza della relazione, disegnare il progetto ed emettere tavole e relazioni spetta a Capotecnico e Progettista; scaricare i PDF spetta a tutti. Il Titolare ha tutti i diritti e può cambiare questa matrice per l’azienda.",
   "L’ordine del capitolo segue il lavoro: la serie di tavole emessa e il suo modulo di emissione, le quote che cambi sui disegni del progetto, la relazione tecnica di modifica, il riquadro dei documenti caricati e la relazione emessa. I dati dell’impianto e il logo del committente che finiscono nel cartiglio sono nella pagina «Dati dell’impianto» (vedi il capitolo L’area di lavoro e gli impianti); il logo dell’azienda è nella pagina «Azienda» (vedi il capitolo L’azienda)."
  ],
  "pages": [
@@ -13,7 +13,7 @@
    "title": "Tavole di progetto · ‹numero› (per esempio «Tavole di progetto · 26-001 R1»)",
    "path": "/it/app/drawing-sets/‹id›",
    "access": "La vedono tutti i colleghi che vedono gli impianti (diritto «calc:view», che segue «projects:view»: per impostazione predefinita Capotecnico, Progettista, Tecnico e Commerciale; il Titolare ha tutto). Il PDF e i file CAD li scarica chi ha il permesso di scaricare i documenti (predefinito: tutti i ruoli). La nuova revisione la emette chi ha il permesso di emettere i documenti («drawings:issue»: predefinito Capotecnico e Progettista) e solo se l’impianto non è archiviato. Il Titolare può cambiare la matrice dei permessi.",
-   "reach": "Dalla pagina dell’impianto, nella sezione «Tavole emesse», clicca «Disegno n° ‹numero›»; oppure dall’elenco delle tavole emesse nella pagina del calcolo o del rilievo del locale; oppure, dopo aver emesso le tavole, ci arrivi da solo.",
+   "reach": "Dalla pagina dell’impianto, nella sezione «Tavole emesse», clicca «Disegno n° ‹numero›»; oppure dall’elenco delle tavole emesse nella pagina del calcolo o del rilievo del locale; oppure ci arrivi direttamente dopo aver emesso le tavole.",
    "purpose": [
     "Qui trovi una serie di tavole già emessa: il suo numero e la sua revisione, i fogli A4 disegnati uno alla volta, il PDF così com’è stato emesso, i file CAD (DXF, DWG, SVG) e lo storico delle revisioni. Da qui emetti anche una nuova revisione.",
     "Il numero della serie ha la forma AA-NNN (le ultime due cifre dell’anno e un progressivo dell’azienda, per esempio 26-001). Una revisione tiene lo stesso numero e aggiunge R1, R2… La serie emessa non si modifica mai: per correggere si emette una revisione.",
@@ -63,7 +63,7 @@
     {
      "title": "Fogli della serie",
      "intro": [
-      "Una riga di numeri (1, 2, 3…), una per ogni foglio, con il nome «Tavole»: clicca un numero per aprire quel foglio (il foglio aperto è in evidenza). Sotto compare il foglio disegnato, con la didascalia «Tavola ‹n› di ‹totale›». Il disegno è lo stesso che finisce nel PDF."
+      "Una riga di numeri (1, 2, 3…), uno per ogni foglio, con l’etichetta «Tavole»: clicca un numero per aprire quel foglio (il foglio aperto è in evidenza). Sotto compare il foglio disegnato, con la didascalia «Tavola ‹n› di ‹totale›». Il disegno è lo stesso che finisce nel PDF."
      ],
      "fields": [],
      "actions": [
@@ -89,7 +89,7 @@
       }
      ],
      "notes": [
-      "A tutto schermo trascina il disegno per spostarlo; usa i tasti + e −, Ctrl con la rotella o due dita per ingrandire, 0 per adattare allo schermo, Esc per uscire. Nella pagina nessun ingrandimento o trascinamento cambia: il foglio resta com’è.",
+      "A tutto schermo trascina il disegno per spostarlo; usa i tasti + e −, Ctrl con la rotella o due dita per ingrandire, 0 per adattare allo schermo, Esc per uscire. Nella pagina, invece, il foglio non si ingrandisce né si sposta: resta com’è.",
       "I fogli di una serie emessa non hanno quote modificabili: per cambiare una misura apri il Progetto (vedi «Disegni del progetto: cambia le quote») ed emetti una revisione."
      ],
      "warnings": []
@@ -97,8 +97,8 @@
     {
      "title": "File CAD della serie emessa",
      "intro": [
-      "Il riquadro compare solo se il software attuale sa ridisegnare la serie e solo per chi può scaricare i documenti. Spiega: tutti i fogli del PDF in DXF, DWG e SVG, da inviare al posto della bozza. In DXF e DWG trovi le viste in scala reale con le loro legende e note, il foglio 1 con il cartiglio del numero e della revisione, le verifiche del progetto e i muri campiti. In SVG trovi un file per foglio, in millimetri alla scala di stampa, con il carattere incorporato.",
-      "I file sono ridisegnati dal server a partire da ciò che la serie conteneva e coincidono con il PDF: se i motori di calcolo sono cambiati, il server rifiuta lo scarico (errore 409) e devi emettere una revisione."
+      "Il riquadro compare solo se il software attuale sa ridisegnare la serie e solo per chi può scaricare i documenti. Il testo del riquadro dice: tutti i fogli del PDF in DXF, DWG e SVG, da inviare al posto della bozza. In DXF e DWG trovi le viste in scala reale con le loro legende e note, il foglio 1 con il cartiglio del numero e della revisione, le verifiche del progetto e i muri campiti. In SVG trovi un file per foglio, in millimetri alla scala di stampa, con il carattere incorporato.",
+      "I file sono ridisegnati dal server a partire da ciò che la serie conteneva e coincidono con il PDF: se i motori di calcolo sono cambiati, il server rifiuta il download (errore 409) e devi emettere una revisione."
      ],
      "fields": [],
      "actions": [
@@ -139,8 +139,8 @@
        "default": "il calcolo più recente della lista",
        "required": "sì (vincolo del campo; non puoi emettere senza una scelta)",
        "help": [
-        "Il calcolo da cui ridisegnare la revisione. Ogni voce è «data e ora · etichetta · riepilogo». Sono elencati solo i calcoli dell’impianto fatti da un progetto del vano (a 200 al massimo), dal più recente.",
-        "La revisione tiene il numero del disegno e prende il calcolo scelto, il suo progetto del vano, i dati dell’impianto e il logo di oggi."
+        "Il calcolo da cui ridisegnare la revisione. Ogni voce è «data e ora · etichetta · riepilogo». Sono elencati solo i calcoli dell’impianto fatti da un progetto del vano (al massimo 200), dal più recente.",
+        "La revisione tiene il numero del disegno e prende il calcolo scelto, il suo progetto del vano, i dati dell’impianto e il logo attuali."
        ],
        "src": "src/components/tavole/IssueForm.tsx:53"
       },
@@ -153,7 +153,7 @@
        "required": "sì",
        "help": [
         "Al posto di «Dal calcolo», nelle serie di una sostituzione dell’argano: il rilievo del locale macchina salvato da cui ridisegnare. Ogni voce è «data e ora · etichetta · riepilogo del rilievo».",
-        "Vale la stessa regola: numero invariato, dati dell’impianto e logo di oggi."
+        "Vale la stessa regola: numero invariato, dati dell’impianto e logo attuali."
        ],
        "src": "src/components/tavole/IssueForm.tsx:53"
       },
@@ -187,7 +187,7 @@
      "actions": [
       {
        "label": "Nuova revisione",
-       "help": "Emette la revisione: la serie diventa R‹n+1›, con lo stesso numero, e ti porta alla sua pagina. Mentre lavora il pulsante dice «Emissione…». Resta disattivato se non hai scelto il calcolo (o il rilievo) o se il nome dell’argano nei dati dell’impianto contraddice il calcolo.",
+       "help": "Emette la revisione: la serie diventa R‹n+1›, con lo stesso numero, e ti porta alla sua pagina. Durante l’emissione il pulsante mostra «Emissione…». Resta disattivato se non hai scelto il calcolo (o il rilievo) o se il nome dell’argano nei dati dell’impianto contraddice il calcolo.",
        "src": "src/components/tavole/IssueForm.tsx:86"
       }
      ],
@@ -203,7 +203,7 @@
     }
    ],
    "tips": [
-    "Se un numero di matricola o il committente mancano, completali prima di emettere la prima serie: sono nel cartiglio e correggerli dopo vuol dire una revisione."
+    "Se mancano la matricola o il committente, completali prima di emettere la prima serie: compaiono nel cartiglio e correggerli dopo richiede una revisione."
    ]
   },
   {
@@ -213,7 +213,7 @@
    "access": "Lo vede e lo usa chi può emettere i documenti («drawings:issue»: predefinito Capotecnico e Progettista, oltre al Titolare); l’impianto non deve essere archiviato. Il Titolare può cambiare la matrice dei permessi.",
    "reach": "Dal calcolo salvato, dal progetto dell’ascensore o dal rilievo del locale macchina (pagine descritte negli altri capitoli): in fondo trovi «Emetti le tavole». La lista di cosa serve è in «Tavole emesse» della pagina dell’impianto: «Le tavole si emettono dal progetto dell’impianto (Documenti) o da un calcolo fatto da un progetto del vano.»",
    "purpose": [
-    "Questo modulo dà il numero alla serie (AA-NNN, per esempio 26-001) e la conserva con il suo PDF. Il numero progressivo è dell’azienda e dell’anno e lo assegna il server nel momento dell’emissione.",
+    "Questo modulo dà il numero alla serie (AA-NNN, per esempio 26-001) e la conserva con il suo PDF. Il progressivo è per azienda e per anno e lo assegna il server al momento dell’emissione.",
     "Prima di emettere, il modulo controlla ciò che il cartiglio scriverebbe sbagliato o lascerebbe vuoto, con gli stessi avvisi descritti nella pagina «Tavole di progetto»."
    ],
    "shots": [
@@ -243,7 +243,7 @@
      "actions": [
       {
        "label": "Emetti le tavole",
-       "help": "Emette la serie e ti porta alla sua pagina. Mentre lavora dice «Emissione…». Si disattiva se il nome dell’argano nei dati dell’impianto contraddice quello del calcolo. Dopo troppe emissioni ravvicinate (più di 30 in 10 minuti per utente) il server risponde «Troppi tentativi. Riprova tra qualche minuto.»",
+       "help": "Emette la serie e ti porta alla sua pagina. Durante l’emissione il pulsante mostra «Emissione…». Si disattiva se il nome dell’argano nei dati dell’impianto contraddice quello del calcolo. Dopo troppe emissioni ravvicinate (più di 30 in 10 minuti per utente) il server risponde «Troppi tentativi. Riprova tra qualche minuto.»",
        "src": "src/components/tavole/IssueForm.tsx:86"
       }
      ],
@@ -262,7 +262,7 @@
    "access": "Il riquadro è parte del Progetto: lo vede chi vede l’impianto e lo usa chi può disegnare il progetto («progetto:edit»: predefinito Capotecnico e Progettista, oltre al Titolare). Anche la pagina del rilievo del locale richiede «progetto:edit». Il Titolare può cambiare la matrice dei permessi.",
    "reach": "Dal Progetto dell’ascensore (impianto completo) o dal rilievo del locale macchina (sostituzione): nel punto in cui il progetto è disegnato. Il riquadro compare quando il progetto ha tutti i dati per essere disegnato; altrimenti leggi «Questa vista non si può disegnare con questi dati.» (vano) o «Il locale non si può disegnare con questi valori.» (locale).",
    "purpose": [
-    "Le quote scritte sul disegno sono pulsanti: cliccandone una (o raggiungendola con Tab e premendo Invio) si apre un campo sul punto con la lunghezza attuale, scrivi il valore, premi Invio e il progetto si ridisegna con le sue verifiche. Quello che cambi sul disegno cambia il dato corrispondente del modulo, con la stessa convalida del salvataggio.",
+    "Le quote scritte sul disegno sono pulsanti: clicca una quota (o raggiungila con Tab e premi Invio) e sul punto si apre un campo con la lunghezza attuale; scrivi il valore e premi Invio: il progetto si ridisegna con le sue verifiche. Quello che cambi sul disegno cambia il dato corrispondente del modulo, con la stessa convalida del salvataggio.",
     "Le tavole emesse nascono da questi stessi disegni: le modifiche fatte qui entrano nelle tavole solo quando salvi il progetto ed emetti una serie o una revisione.",
     "Attenzione al disegno CAD in ingresso: se misuri il vano o il locale su un DXF o DWG, il disegno si legge soltanto nel tuo browser e al server arrivano solo le misure prese, l’impronta SHA-256 del file e la descrizione della misura, mai il disegno."
    ],
@@ -294,7 +294,7 @@
     {
      "title": "Come si cambia una quota",
      "intro": [
-      "Ogni quota è un pulsante sopra il disegno con il testo «‹valore› mm · Cambia: ‹nome del dato›»; i pulsanti piccoli sono ingranditi fino a 24 pixel per un dito, senza coprire quelli vicini. Il gruppo si chiama «Quote modificabili»."
+      "Ogni quota è un pulsante sopra il disegno con il testo «‹valore› mm · Cambia: ‹nome del dato›»; i pulsanti piccoli sono ingranditi fino a 24 pixel, perché si possano toccare con un dito, senza coprire quelli vicini. Il gruppo si chiama «Quote modificabili»."
      ],
      "fields": [
       {
@@ -305,8 +305,8 @@
        "default": "la lunghezza attuale della quota",
        "required": "sì per applicare",
        "help": [
-        "Il campo si apre sul punto della quota con la lunghezza attuale selezionata. Scrivi la nuova lunghezza in millimetri: va intera (i decimali sono arrotondati al millimetro), non negativa, con la virgola o il punto.",
-        "Premi Invio (o «Applica») per applicare, Esc (o «Annulla», o un clic fuori dal campo) per lasciare. Il testo sotto il campo («Cambia: ‹nome del dato›») dice quale dato del modulo cambia.",
+        "Il campo si apre sul punto della quota con la lunghezza attuale selezionata. Scrivi la nuova lunghezza in millimetri, zero o positiva: puoi usare la virgola o il punto, ma i decimali sono arrotondati al millimetro.",
+        "Premi Invio (o «Applica») per applicare, Esc (o «Annulla», o un clic fuori dal campo) per rinunciare. Il testo sotto il campo («Cambia: ‹nome del dato›») dice quale dato del modulo cambia.",
         "Un valore non accettato resta nel campo con il motivo: «Valore fuori campo: da ‹min› a ‹max› mm», «Il valore minimo è ‹min› mm», «Il valore massimo è ‹max› mm» oppure «Valore non accettato». I limiti sono quelli del dato corrispondente nel modulo."
        ],
        "src": "src/components/drawing/EditableDrawing.tsx:157"
@@ -319,7 +319,7 @@
        "default": "la voce attuale",
        "required": "sì per applicare",
        "help": [
-        "Per le quote che il catalogo o una tabella determinano il campo è un elenco di voci al posto del numero. Sono quelle dei profili delle guide («Guide di cabina», «Guide del contrappeso»), degli spazi di rifugio («Spazio di rifugio sul tetto di cabina», «Spazio di rifugio in fossa»), del profilato del basamento («Basamento: profilato») e delle putrelle HEB («Putrelle HEB sui muri del vano: profilo e direzione (le più corte per prime)»).",
+        "Per le quote determinate dal catalogo o da una tabella, al posto del numero il campo è un elenco di voci. Sono le quote dei profili delle guide («Guide di cabina», «Guide del contrappeso»), degli spazi di rifugio («Spazio di rifugio sul tetto di cabina», «Spazio di rifugio in fossa»), del profilato del basamento («Basamento: profilato») e delle putrelle HEB («Putrelle HEB sui muri del vano: profilo e direzione (le più corte per prime)»).",
         "Scegli la voce e premi Invio o «Applica»."
        ],
        "src": "src/components/drawing/EditableDrawing.tsx:146"
@@ -411,7 +411,7 @@
        "required": "no",
        "help": [
         "«Fossa (mm)», «Testata (mm)», «Altezza interna cabina (mm)», «Altezza esterna cabina (mm)», «Piattaforma (mm)», «Ingombro massimo operatore (mm)», «Arcata sopra il pavimento (mm)», «Arcata sotto il pavimento (mm)», «Balaustra (mm, 0 = nessuna)», «Altezza contrappeso (mm)», «Extracorsa del contrappeso (mm)», «Protezione del contrappeso in fossa: altezza (mm)», «Superficie per stare sul tetto di cabina: larghezza / profondità (mm)», «Zona di sbloccaggio delle porte di piano, sopra e sotto il piano (mm)».",
-        "Ammortizzatori: altezza, corsa e supporto, per la cabina e per il contrappeso. Con velocità oltre 1 m/s un ammortizzatore modificato senza tipo scelto parte dallo standard che il disegno mostra.",
+        "Ammortizzatori: altezza, corsa e supporto, per la cabina e per il contrappeso. Con velocità oltre 1 m/s, se modifichi un ammortizzatore senza averne scelto il tipo, il valore parte da quello standard mostrato nel disegno.",
         "L’altezza esterna della cabina non può essere minore di quella interna."
        ],
        "src": "src/lib/shaft-input.ts:16"
@@ -509,7 +509,7 @@
        "required": "no",
        "help": [
         "«Larghezza interna», «Profondità interna», «Vano dalla parete sinistra del locale», «Vano dalla parete anteriore del locale», «Altezza libera», «Altezza al colmo (mm, 0 = tetto piano)», «Soletta sul vano», «Porta dall’angolo», «Larghezza porta», «Altezza porta», «Quadro dall’angolo», «Larghezza quadro», «Profondità quadro», «Altezza quadro».",
-        "Se lasci la posizione del quadro al software, spostando il quadro sul disegno la posizione diventa inserita («Posizione del quadro dal software»)."
+        "Se la posizione del quadro è lasciata al software («Posizione del quadro dal software») e sposti il quadro sul disegno, la posizione diventa un valore inserito da te."
        ],
        "src": "src/lib/shaft-input.ts:68"
       },
@@ -586,7 +586,7 @@
    "shots": [
     {
      "id": "rt-esito",
-     "what": "Il barra con i cinque link, il riepilogo «Verifiche della relazione / Sezioni / Documenti attesi / Legge di approvazione» e la carta 2 «Modifica»"
+     "what": "La barra con i cinque link, il riepilogo «Verifiche della relazione / Sezioni / Documenti attesi / Legge di approvazione» e la carta 2 «Modifica»"
     },
     {
      "id": "rt-firme",
@@ -597,7 +597,7 @@
     {
      "title": "Intestazione e base della relazione",
      "intro": [
-      "In alto, sopra il titolo, una etichetta di stato: «Non ancora emessa», «Bozza in corso», «Emessa · RT ‹numero› R‹n›» oppure «Ultima RT da aggiornare» (se il software non riproduce più l’ultima emessa). Il titolo è «Relazione tecnica di modifica»; sotto compaiono il nome dell’impianto, la norma («UNI 10411-1» o «UNI 10411-11») e il tipo di intervento («Solo argano» o «Ammodernamento»).",
+      "In alto, sopra il titolo, un’etichetta di stato: «Non ancora emessa», «Bozza in corso», «Emessa · RT ‹numero› R‹n›» oppure «Ultima RT da aggiornare» (se il software non riproduce più l’ultima emessa). Il titolo è «Relazione tecnica di modifica»; sotto compaiono il nome dell’impianto, la norma («UNI 10411-1» o «UNI 10411-11») e il tipo di intervento («Solo argano» o «Ammodernamento»).",
       "Il pulsante «Torna all’impianto» riporta alla pagina dell’impianto.",
       "La riga di base dice da che cosa nasce la relazione: «Relazione sul progetto dell’ascensore: ‹Progetto dell’ascensore del …› · ‹Calcolo argano del …›» oppure «Relazione sul rilievo del locale del macchinario: ‹Rilievo del locale del …› · ‹Calcolo argano del …›»."
      ],
@@ -633,7 +633,7 @@
     {
      "title": "1 · Dati dell’impianto",
      "intro": [
-      "Prima carta, sempre visibile. Il testo: «L’anagrafica si salva con l’impianto e serve a ogni relazione: ciascuna relazione emessa ne conserva la sua copia.» Salvi l’anagrafica con il suo pulsante, a parte dal resto della relazione. Tutti i campi sono facoltativi mentre scrivi; all’emissione servono il nome del proprietario, la legge di approvazione e, se hai inserito dati documentati prima della modifica, la loro fonte."
+      "Prima carta, sempre visibile. Il testo: «L’anagrafica si salva con l’impianto e serve a ogni relazione: ciascuna relazione emessa ne conserva la sua copia.» L’anagrafica si salva con il suo pulsante, separatamente dal resto della relazione. Tutti i campi sono facoltativi mentre scrivi; all’emissione servono il nome del proprietario, la legge di approvazione e, se hai inserito dati documentati prima della modifica, la loro fonte."
      ],
      "fields": [
       {
@@ -719,7 +719,7 @@
        "required": "sì all’emissione (scelta, oppure derivata dall’anno e confermata)",
        "help": [
         "La legge con cui l’ascensore fu approvato: «D.Lgt. 600/1945», «DPR 1497/1963», «DM 587/1987», «DPR 268/1994» oppure «DPR 162/1999 (marcatura CE)». L’elenco mostra solo le leggi compatibili con la parte della UNI 10411 della relazione: con la UNI 10411-1 le prime quattro, con la UNI 10411-11 solo il DPR 162/1999.",
-        "Se non scegli, il software propone la legge dall’anno di installazione: 1945–1962 D.Lgt. 600/1945; 1963–1987 DPR 1497/1963; 1988–1998 DM 587/1987; con la UNI 10411-11 sempre DPR 162/1999. Per il DPR 268/1994, per il 1999 o per anni anteriori al 1945 la proposta non c’è: scegli tu. La voce proposta compare come «‹sigla› (dall’anno di installazione)»; sotto leggi «Derivata dall’anno di installazione: confermala sul libretto.»",
+        "Se non scegli, il software propone la legge dall’anno di installazione: 1945–1962 D.Lgt. 600/1945; 1963–1987 DPR 1497/1963; 1988–1998 DM 587/1987; con la UNI 10411-11 sempre DPR 162/1999. Per il DPR 268/1994, per il 1999 o per anni anteriori al 1945 non c’è proposta: scegli tu. La voce proposta compare come «‹sigla› (dall’anno di installazione)»; sotto leggi «Derivata dall’anno di installazione: confermala sul libretto.»",
         "Se la legge scelta non corrisponde alla marcatura CE del Calcolo argano, l’emissione è rifiutata («La legge di approvazione non corrisponde alla marcatura CE del Calcolo argano: correggi l’anagrafica dell’impianto o il calcolo.»). Il DPR 268/1994 reca la nota «non più citato nello scopo della UNI 10411-1 dal 2013»."
        ],
        "src": "src/components/rt/AnagraficaForm.tsx:70"
@@ -732,7 +732,7 @@
        "default": "non spuntata",
        "required": "sì all’emissione se la legge è solo quella proposta dall’anno",
        "help": [
-        "Spunta quando hai controllato sul libretto che la legge, scelta o proposta dall’anno, è davvero quella. Una legge proposta dall’anno non confermata blocca l’emissione; una legge scelta da te no."
+        "Spuntala quando hai controllato sul libretto che la legge, scelta o proposta dall’anno, è quella giusta. Una legge proposta dall’anno non confermata blocca l’emissione; una legge scelta da te no."
        ],
        "src": "src/components/rt/AnagraficaForm.tsx:79"
       }
@@ -819,13 +819,13 @@
     {
      "title": "1 · Dati dell’impianto — Dati che la relazione legge dall’impianto e dal Calcolo argano",
      "intro": [
-      "Elenco di sola lettura: la relazione stampa questi dati da dove vivono, uno solo in un posto. Vedi: «Ascensore per» (persone, merci accompagnate…), «Paracadute», «Passo delle staffe (cabina · contrappeso)», «Manovra», «Marcatura CE» (presente · assente · non nota, da confermare), «Carichi documentati» (Q, P, Mcw in kg), «Dati del libretto» (v in m/s, H in m). Un trattino significa che il dato non è stato inserito."
+      "Elenco di sola lettura: la relazione stampa questi dati prendendoli dall’unico punto in cui sono inseriti. Trovi: «Ascensore per» (persone, merci accompagnate…), «Paracadute», «Passo delle staffe (cabina · contrappeso)», «Manovra», «Marcatura CE» (presente · assente · non nota, da confermare), «Carichi documentati» (Q, P, Mcw in kg), «Dati del libretto» (v in m/s, H in m). Un trattino significa che il dato non è stato inserito."
      ],
      "fields": [],
      "actions": [
       {
        "label": "Modifica nei dati dell’impianto",
-       "help": "Apre la pagina «Dati dell’impianto» (uso, paracadute, passo delle staffe, manovra). (vedi il capitolo L’area di lavoro e gli impianti)",
+       "help": "Apre la pagina «Dati dell’impianto» (uso, paracadute, passo delle staffe, manovra; vedi il capitolo L’area di lavoro e gli impianti).",
        "src": "src/components/rt/CardAnagrafica.tsx:37"
       },
       {
@@ -848,7 +848,7 @@
      "actions": [
       {
        "label": "Scarta la bozza",
-       "help": "Nella barra della bozza: dopo il «Scarta la bozza» il sistema chiede «Scartare la bozza e ripartire dai dati salvati?» con «Sì, scarta» e «No»; con il sì la pagina si riapre dall’ultimo documento dell’impianto o vuota.",
+       "help": "Nella barra della bozza: dopo «Scarta la bozza» il programma chiede «Scartare la bozza e ripartire dai dati salvati?» con «Sì, scarta» e «No»; se confermi, la pagina si riapre dall’ultimo documento dell’impianto o vuota.",
        "src": "src/components/draft/DraftBar.tsx:35"
       }
      ],
@@ -871,7 +871,7 @@
        "default": "vuoto: la data dell’emissione",
        "required": "no",
        "help": [
-        "Il giorno scritto sulla relazione. Se lo lasci vuoto è il giorno dell’emissione (giorno italiano). Il suggerimento sotto il campo dice: «Se resta vuota è la data dell’emissione.»",
+        "Il giorno scritto sulla relazione. Se lo lasci vuoto vale il giorno dell’emissione (secondo l’ora italiana). Il suggerimento sotto il campo dice: «Se resta vuota è la data dell’emissione.»",
         "Non può essere futura né precedente al Calcolo argano; altrimenti l’emissione è rifiutata («La data della relazione non è valida: non può essere futura né precedente al Calcolo argano.»)."
        ],
        "src": "src/components/rt/CardModifica.tsx:72"
@@ -896,7 +896,7 @@
        "default": "vuoto",
        "required": "sì all’emissione",
        "help": [
-        "Che cosa si modifica, in parole tue: parti sostituite, motivo, risultato. È il testo principale della relazione.",
+        "Che cosa si modifica, con parole tue: parti sostituite, motivo, risultato. È il testo principale della relazione.",
         "Da 20 a 4000 caratteri. Sotto il campo il contatore dice «‹n› caratteri: per emettere ne servono almeno 20.» e poi «‹n› caratteri.»"
        ],
        "src": "src/components/rt/CardModifica.tsx:77"
@@ -909,7 +909,7 @@
        "default": "non spuntata",
        "required": "no",
        "help": [
-        "Spunta se spostando o aggiungendo apparecchiature la disposizione del locale o del vano cambia. Cambia anche le domande sulle strutture (vedi sotto)."
+        "Spuntala se, spostando o aggiungendo apparecchiature, cambia la disposizione del locale o del vano. La casella cambia anche le domande sulle strutture (vedi sotto)."
        ],
        "src": "src/components/rt/CardModifica.tsx:79"
       },
@@ -957,7 +957,7 @@
        "default": "nessuna risposta",
        "required": "sì quando la domanda compare (altrimenti il dato manca)",
        "help": [
-        "Scegli tra «aumentano» e «non aumentano». Dalla risposta dipende se serve il documento sulle strutture o basta la dichiarazione. Nel caso di macchina nuova, apparecchiature del locale spostate o disposizione cambiata."
+        "Scegli tra «aumentano» e «non aumentano». Dalla risposta dipende se serve il documento sulle strutture o basta la dichiarazione. Riguarda i casi di macchina nuova, apparecchiature del locale spostate o disposizione cambiata."
        ],
        "src": "src/components/rt/CardModifica.tsx:88"
       },
@@ -1040,7 +1040,7 @@
       "I nomi dei campi con unità mostrano l’unità tra parentesi quadre nell’etichetta, per esempio «Tensione dei circuiti di comando [V]»."
      ],
      "warnings": [
-      "Un dato componente inserito a mano senza la sua fonte (tipo di documento e riferimento di 3–160 caratteri) blocca l’emissione.",
+      "Un dato del componente inserito a mano senza la sua fonte (tipo di documento e riferimento di 3–160 caratteri) blocca l’emissione.",
       "Le sezioni «dalla regola» non si possono togliere; «Togli dalla relazione» cancella il motivo che avevi scritto per una sezione aggiunta."
      ]
     },
@@ -1216,7 +1216,7 @@
        "default": "Scegli… (nessuna scelta)",
        "required": "no",
        "help": [
-        "Il profilo delle guide: scegli un profilo del catalogo o «profilo inserito a mano» (allora compaiono i campi della sezione). I profili del catalogo sono T45/A · T50/A · T70-1/A · T75-3/B · T82/B · T89/B · T90/B · T114/B · T125/B · T127-1/B · T45x45x5 · T70x70x8 · profilo inserito a mano.",
+        "Il profilo delle guide: scegli un profilo del catalogo o «profilo inserito a mano» (allora compaiono i campi del profilo: sigla, area, momenti, moduli, raggio, spessore e massa).",
         "Serve alle verifiche di resistenza e deformazione delle guide.",
         "I valori del profilo inserito a mano (area, momenti, moduli, raggio, spessore, massa) devono essere maggiori di zero; i momenti e i moduli si inseriscono in mm⁴ e mm³."
        ],
@@ -1549,7 +1549,7 @@
        "default": "Scegli… (nessuna scelta)",
        "required": "no",
        "help": [
-        "Il profilo delle guide: scegli un profilo del catalogo o «profilo inserito a mano» (allora compaiono i campi della sezione). I profili del catalogo sono T45/A · T50/A · T70-1/A · T75-3/B · T82/B · T89/B · T90/B · T114/B · T125/B · T127-1/B · T45x45x5 · T70x70x8 · profilo inserito a mano.",
+        "Il profilo delle guide: scegli un profilo del catalogo o «profilo inserito a mano» (allora compaiono i campi del profilo: sigla, area, momenti, moduli, raggio, spessore e massa).",
         "Serve alle verifiche di resistenza e deformazione delle guide.",
         "I valori del profilo inserito a mano (area, momenti, moduli, raggio, spessore, massa) devono essere maggiori di zero; i momenti e i moduli si inseriscono in mm⁴ e mm³."
        ],
@@ -1746,7 +1746,7 @@
        "default": "non spuntata",
        "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
        "help": [
-        "Spunta se sotto la fossa c’è uno spazio raggiungibile dalle persone: cambia le verifiche del paracadute del contrappeso."
+        "Spuntala sesotto la fossa c’è uno spazio raggiungibile dalle persone: cambia le verifiche del paracadute del contrappeso."
        ],
        "src": "src/components/rt/campi.ts:89"
       },
@@ -1785,7 +1785,7 @@
     {
      "title": "3 · Sezioni e componenti — Ammortizzatori della cabina (dati del componente)",
      "intro": [
-      "Compare nella sezione «Ammortizzatori». Un blocco per la cabina e uno per il contrappeso. Per gli ammortizzatori lineari a molla il calcolo è la sezione stessa e non serve un file; per quelli in poliuretano o idraulici la relazione si aspetta il certificato d’esame del tipo (vedi «Allegati»)."
+      "Compare nella sezione «Ammortizzatori». Un blocco per la cabina e uno per il contrappeso. Per gli ammortizzatori lineari a molla il calcolo è contenuto nella sezione stessa e non serve allegare un file; per quelli in poliuretano o idraulici la relazione si aspetta il certificato d’esame del tipo (vedi «Allegati»)."
      ],
      "fields": [
       {
@@ -1928,7 +1928,7 @@
     {
      "title": "3 · Sezioni e componenti — Ammortizzatori del contrappeso (dati del componente)",
      "intro": [
-      "Compare nella sezione «Ammortizzatori». Un blocco per la cabina e uno per il contrappeso. Per gli ammortizzatori lineari a molla il calcolo è la sezione stessa e non serve un file; per quelli in poliuretano o idraulici la relazione si aspetta il certificato d’esame del tipo (vedi «Allegati»)."
+      "Compare nella sezione «Ammortizzatori». Un blocco per la cabina e uno per il contrappeso. Per gli ammortizzatori lineari a molla il calcolo è contenuto nella sezione stessa e non serve allegare un file; per quelli in poliuretano o idraulici la relazione si aspetta il certificato d’esame del tipo (vedi «Allegati»)."
      ],
      "fields": [
       {
@@ -2082,7 +2082,7 @@
        "default": "Scegli… (nessuna scelta)",
        "required": "no; solo sul percorso del locale (rilievo del locale macchina)",
        "help": [
-        "Il modello del limitatore tra quelli del catalogo di LiftPilot (si legge la sigla del modello) oppure «altro modello, dati a mano» (allora compaiono i tre campi sotto)."
+        "Il modello del limitatore tra quelli del catalogo di LiftPilot (nell’elenco compare la sigla del modello) oppure «altro modello, dati a mano» (allora compaiono i tre campi sotto)."
        ],
        "src": "src/components/rt/campi.ts:94"
       },
@@ -2120,7 +2120,7 @@
        "default": "vuoto",
        "required": "sì all’emissione, se nel blocco hai inserito dati che richiedono la fonte; solo sul percorso del locale (rilievo del locale macchina); compare solo con «altro modello, dati a mano»",
        "help": [
-        "Da dove hai preso i dati della puleggia e della fune del modello a mano.",
+        "Da dove hai preso i dati della puleggia e della fune del modello inserito a mano.",
         "La fonte ha tre campi: «Tipo di documento» (Scegli… · targa · certificato · scheda tecnica · libretto · verbale · rilievo in sito · dichiarazione · altro), «Riferimento» (fino a 160 caratteri; suggerimento: «Ad esempio il numero del certificato, la targa o la pagina del libretto.») e «Documento allegato» (uno dei file della relazione, «Allegato n · titolo», oppure «Nessun documento allegato»; il campo è disattivato, con «Nessun documento nella relazione», se la relazione non ha ancora file).",
         "All’emissione la fonte è obbligatoria quando nel blocco hai inserito almeno uno dei dati che la richiedono: il tipo di documento e il riferimento (da 3 a 160 caratteri) sono necessari, il file è facoltativo. Se manca, l’emissione resta bloccata e il campo è segnalato."
        ],
@@ -2360,7 +2360,7 @@
        "default": "non spuntata",
        "required": "no",
        "help": [
-        "Spunta se le serrature di piano (o di cabina) vengono sostituite: la relazione si aspetta i certificati d’esame del tipo delle serrature."
+        "Spuntala sele serrature di piano (o di cabina) vengono sostituite: la relazione si aspetta i certificati d’esame del tipo delle serrature."
        ],
        "src": "src/components/rt/campi.ts:63"
       },
@@ -2468,7 +2468,7 @@
        "default": "non spuntata",
        "required": "no",
        "help": [
-        "Spunta se le serrature di piano (o di cabina) vengono sostituite: la relazione si aspetta i certificati d’esame del tipo delle serrature."
+        "Spuntala sele serrature di piano (o di cabina) vengono sostituite: la relazione si aspetta i certificati d’esame del tipo delle serrature."
        ],
        "src": "src/components/rt/campi.ts:63"
       },
@@ -2534,8 +2534,8 @@
        "required": "no",
        "help": [
         "Per ogni documento atteso: dice a quale file corrisponde. La scelta predefinita «Riconosciuto in automatico» abbina il file del giusto tipo e della giusta sezione, se ne esiste uno solo (due documenti che lo stesso file potrebbe soddisfare, come il certificato del limitatore e quello del paracadute, aspettano la tua scelta).",
-        "Puoi scegliere «Allegato ‹n› · ‹titolo›» (uno dei file inseriti nella relazione) oppure «Consegnato separatamente». Un documento atteso senza file e non consegnato separatamente la relazione lo stampa come «da allegare ⚠» e non blocca l’emissione.",
-        "Accanto a ogni documento una etichetta ne mostra lo stato: «Allegato ‹n›», «consegnato separatamente» o «da allegare ⚠»; per i documenti consigliati compare «(consigliato)»."
+        "Puoi scegliere «Allegato ‹n› · ‹titolo›» (uno dei file inseriti nella relazione) oppure «Consegnato separatamente». Se un documento atteso non ha un file e non è consegnato separatamente, la relazione lo stampa come «da allegare ⚠»; questo non blocca l’emissione.",
+        "Accanto a ogni documento un’etichetta ne mostra lo stato: «Allegato ‹n›», «consegnato separatamente» o «da allegare ⚠»; per i documenti consigliati compare «(consigliato)»."
        ],
        "src": "src/components/rt/CardAllegati.tsx:55"
       },
@@ -2581,7 +2581,7 @@
       "Se un file viene eliminato dall’impianto, esce anche dalla bozza; uno nuovo caricato mentre lavori si aggiunge in coda."
      ],
      "warnings": [
-      "Sotto «Documenti allegati alla relazione, in ordine» un contatore dice «‹n› file, ‹p› pagine (al massimo 40 file e 400 pagine).»; diventa rosso se superi i limiti. Il limite totale è anche di 120 MiB e, per i PNG con trasparenza o interlacciati, di 300 megapixel in tutto: oltre, l’emissione è rifiutata («I documenti allegati superano i limiti della relazione (40 file, 400 pagine, 120 MiB; le immagini PNG con trasparenza o interlacciate al più 300 megapixel in tutto): togline qualcuno.»)."
+      "Oltre ai 40 file e alle 400 pagine, gli allegati hanno un limite totale di 120 MiB e, per i PNG con trasparenza o interlacciati, di 300 megapixel in tutto: oltre questi limiti l’emissione è rifiutata («I documenti allegati superano i limiti della relazione (40 file, 400 pagine, 120 MiB; le immagini PNG con trasparenza o interlacciate al più 300 megapixel in tutto): togline qualcuno.»)."
      ]
     },
     {
@@ -2692,12 +2692,12 @@
      "actions": [
       {
        "label": "Anteprima PDF",
-       "help": "Prepara il PDF della bozza con la scritta «BOZZA — non emessa, non valida per la firma» su ogni pagina, senza numero e senza file allegati. Salva prima la bozza. Non è un documento emesso: non si conserva e non è registrato. Lo vede chi prepara la relazione; massimo 20 anteprime in 10 minuti. Se la base va aggiornata o l’intervento non ha la relazione, il server risponde con un errore.",
+       "help": "Salva la bozza, poi prepara il suo PDF con la scritta «BOZZA — non emessa, non valida per la firma» su ogni pagina, senza numero e senza file allegati. Non è un documento emesso: non si conserva e non è registrato. Il pulsante è per chi prepara la relazione; al massimo 20 anteprime in 10 minuti. Se la base va aggiornata o l’intervento non ha la relazione, il server risponde con un errore.",
        "src": "src/components/rt/CardFirme.tsx:110"
       },
       {
        "label": "Emetti la relazione",
-       "help": "Apre il riquadro di conferma; nel caso di una revisione si chiama «Emetti la revisione». Compare solo a chi può emettere i documenti (per gli altri: «Emette la relazione chi ha il permesso di emettere i documenti (lo assegna il Titolare).»). Resta disattivato finché mancano i dati senza cui non si emette.",
+       "help": "Apre il riquadro di conferma; nel caso di una revisione si chiama «Emetti la revisione». Compare solo a chi può emettere i documenti (per gli altri: «Emette la relazione chi ha il permesso di emettere i documenti (lo assegna il Titolare).»). Resta disattivato finché mancano i dati senza i quali la relazione non si emette.",
        "src": "src/components/rt/CardFirme.tsx:112"
       },
       {
@@ -2716,7 +2716,7 @@
      ],
      "warnings": [
       "Una relazione emessa ha un numero (RT AA-NNN R0) e non si modifica né si cancella: una correzione è una nuova revisione.",
-      "Restano bloccanti: la descrizione della modifica (almeno 20 caratteri), il nome di chi redige, titolo, nome, provincia e numero dell’ingegnere, le fonti dei dati componenti inseriti a mano.",
+      "Restano bloccanti: la descrizione della modifica (almeno 20 caratteri), il nome di chi redige, titolo, nome, provincia e numero dell’ingegnere, le fonti dei dati dei componenti inseriti a mano.",
       "L’emissione è rifiutata se la base (Calcolo argano o Progetto) non è riprodotta dal software attuale, se l’intervento non ha la relazione, se l’impianto è archiviato, se la data non è valida o se gli allegati superano i limiti."
      ]
     },
@@ -2814,7 +2814,7 @@
     {
      "title": "Carica un documento",
      "intro": [
-      "Il modulo compare solo a chi può modificare l’impianto. Il modulo si apre preimpostato (tipo, sezione e titolo) quando lo apri dal pulsante «Carica questo documento» di un documento atteso."
+      "Il modulo compare solo a chi può modificare l’impianto. Si apre con tipo, sezione e titolo già impostati quando ci arrivi dal pulsante «Carica questo documento» di un documento atteso."
      ],
      "fields": [
       {
@@ -2834,13 +2834,13 @@
        "label": "Tipo di documento",
        "kind": "scelta",
        "unit": null,
-       "values": "Scegli il tipo… · 11 tipi (vedi sopra)",
+       "values": "Scegli il tipo… · 11 tipi (elencati sotto)",
        "default": "Scegli il tipo… (Fotografia per le immagini)",
        "required": "sì (altrimenti «Scegli il tipo di documento.»)",
        "help": [
         "Il tipo del documento, obbligatorio. Le scelte, dopo «Scegli il tipo…», sono: «Dichiarazione UE di conformità», «Certificato d’esame UE del tipo», «Certificato o scheda di un componente», «Schema elettrico», «Dichiarazione di idoneità», «Relazione di taratura», «Libretto o verbale», «Disegno», «Fotografia», «Schizzo di rilievo (a mano)», «Altro documento».",
         "Se scegli un file immagine e non hai ancora scelto il tipo, il tipo diventa «Fotografia». «Schizzo di rilievo (a mano)» è il tipo degli schizzi fatti in sito che si leggono accanto ai moduli del Progetto e del rilievo del locale: da lì si caricano in automatico con quel tipo e con la sezione «Vano, fossa e testata» o «Locale del macchinario».",
-        "Il tipo e la sezione fanno riconoscere in automatico il file come documento atteso della relazione."
+        "Grazie al tipo e alla sezione il file viene riconosciuto in automatico come documento atteso della relazione."
        ],
        "src": "src/components/allegati/AllegatoUpload.tsx:77"
       },
@@ -3041,7 +3041,7 @@
       },
       {
        "label": "Modifica",
-       "help": "Apre la modifica in linea di titolo, tipo e sezione (solo questi tre dati possono cambiare): «Modifica titolo, tipo e sezione di «‹titolo›»». Il file stesso non si cambia. Compare a chi può modificare l’impianto.",
+       "help": "Rende modificabili nella riga titolo, tipo e sezione (solo questi tre dati possono cambiare): «Modifica titolo, tipo e sezione di «‹titolo›»». Il file stesso non si cambia. Compare a chi può modificare l’impianto.",
        "src": "src/components/allegati/AllegatiList.tsx:103"
       },
       {
@@ -3076,8 +3076,8 @@
    "access": "La vedono tutti i ruoli che vedono l’impianto («projects:view»); una relazione di un’altra azienda dà «non trovato». Il PDF e gli allegati li scarica chi può scaricare i documenti («report:download»: predefinito tutti i ruoli). «Nuova revisione» compare a chi può emettere i documenti («drawings:issue»: predefinito Capotecnico e Progettista) se l’impianto non è archiviato. Il Titolare può cambiare la matrice dei permessi.",
    "reach": "Dall’elenco «Relazioni tecniche di modifica emesse» nella pagina della relazione tecnica o nella pagina dell’impianto: clicca «RT ‹numero› R‹n›»; oppure dopo aver emesso la relazione.",
    "purpose": [
-    "Questa pagina mostra una relazione già emessa: cosa contiene, come è stata fatta, quali revisioni ha, e ti dà il PDF. Una relazione emessa non si cambia: una correzione è una nuova revisione, con lo stesso numero.",
-    "Il numero ha la forma AA-NNN (per esempio RT 26-001) e la revisione parte da R0. Il numero è dell’azienda e dell’anno."
+    "Questa pagina mostra una relazione già emessa: cosa contiene, come è stata fatta, quali revisioni ha; da qui scarichi il PDF. Una relazione emessa non si cambia: una correzione è una nuova revisione, con lo stesso numero.",
+    "Il numero ha la forma AA-NNN (per esempio RT 26-001) e la revisione parte da R0. Il progressivo è per azienda e per anno."
    ],
    "shots": [
     {
@@ -3238,7 +3238,7 @@
   },
   {
    "term": "Revisione (R1, R2…)",
-   "def": "Una nuova emissione dello stesso numero con una nota che dice cosa cambia. La prima emissione è la «prima emissione» (R0)."
+   "def": "Una nuova emissione dello stesso numero con una nota che dice cosa cambia. La prima emissione compare come «prima emissione» (R0)."
   },
   {
    "term": "Quota",
@@ -3258,7 +3258,7 @@
   },
   {
    "term": "Fonte",
-   "def": "Dove hai letto un dato inserito a mano: tipo di documento, riferimento e, se vuoi, il file allegato. Un dato a mano porta sempre la sua fonte."
+   "def": "Dove hai letto un dato inserito a mano: tipo di documento, riferimento e, se vuoi, il file allegato. Un dato inserito a mano porta sempre la sua fonte."
   },
   {
    "term": "Allegato",

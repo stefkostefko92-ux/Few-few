@@ -3,9 +3,9 @@
  "title": "Rilievi: le schede di rilievo e i moduli dei fornitori",
  "intro": [
   "Il rilievo è la scheda che compili sul posto, davanti all’impianto esistente: identificazione e targa, ubicazione e accesso, tipologia, quadro, argano (o centralina), funi e tiranti, limitatore, cavi, serrature o sospensioni, allarme e telesoccorso, note e lavori. Puoi compilarla anche dal telefono.",
-  "Le domande seguono l’impianto: con un impianto idraulico la centralina prende il posto di argano e limitatore; serrature e pattino retrattile si chiedono con porte manuali o semiautomatiche, le sospensioni solo con porte automatiche. Serve la data e almeno uno tra indirizzo, matricola e n° impianto.",
+  "Le domande seguono l’impianto: con un impianto idraulico la centralina prende il posto di argano e limitatore; serrature e pattino retrattile si chiedono con porte manuali o semiautomatiche, le sospensioni solo con porte automatiche. Servono la data e almeno uno tra indirizzo, matricola e n° impianto.",
   "Dalla scheda apri i moduli dei fornitori — l’ordine del quadro Pelazza, MoviLift o Mastech (NG120 o QI Touch), il modulo rilievi dati argani e il modulo 2SG per operatore e sospensioni — già compilati con i dati della scheda; ogni modulo si scarica come PDF a parte. In fondo alla scheda scegli che cosa mettere nella stampa e nel PDF.",
-  "Le schede eliminate vanno nel cestino, da cui si ripristinano o si eliminano per sempre. Il rilievo si può collegare a un impianto, che riparte dai valori misurati."
+  "Le schede eliminate finiscono nel cestino, da cui si ripristinano o si eliminano per sempre. Puoi collegare il rilievo a un impianto: il calcolo e il progetto partiranno dai valori misurati."
  ],
  "pages": [
   {
@@ -53,7 +53,7 @@
     {
      "title": "Barra di ricerca",
      "intro": [
-      "La ricerca segue la digitazione: circa un quarto di secondo dopo l’ultimo tasto l’elenco si aggiorna, senza ricaricare la pagina. Invio cerca subito. Premi «/» in qualsiasi punto della pagina (fuori da un campo di testo) per andare alla ricerca. Senza JavaScript funziona comunque come un normale modulo di ricerca."
+      "La ricerca parte mentre scrivi: circa un quarto di secondo dopo l’ultimo tasto l’elenco si aggiorna, senza ricaricare la pagina. Premi Invio per cercare subito. Premi «/» in qualsiasi punto della pagina (fuori da un campo di testo) per spostarti nella ricerca. Se nel browser JavaScript è disattivato, la ricerca funziona come un normale modulo."
      ],
      "fields": [
       {
@@ -64,9 +64,9 @@
        "default": "vuoto (elenco completo)",
        "required": "no",
        "help": [
-        "Scrivi parti di numero impianto, matricola, indirizzo, marca, buono di lavoro o delle note: segnaposto «N° impianto, matricola, indirizzo…». Ogni parola scritta deve comparire nella scheda; maiuscole e accenti non contano («citta» trova «Città»).",
+        "Scrivi una parte del n° impianto, della matricola, dell’indirizzo, della marca, del buono di lavoro o delle note; il segnaposto è «N° impianto, matricola, indirizzo…». Ogni parola scritta deve comparire nella scheda; maiuscole e accenti non contano («citta» trova «Città»).",
         "Si cerca in: N° impianto, Matricola, Indirizzo, Marca impianto, Buono di lavoro, Parcheggio, i tipi e le note di quadro, argano, centralina, tiranti, limitatore, serrature, pattino retrattile, le note del quadretto e dell’impianto, la nota sulla luce vano e i lavori extra. Simboli e punteggiatura vengono ignorati.",
-        "I risultati con n° impianto o matricola esattamente uguali al testo scritto vengono per primi, poi quelli che iniziano così, poi gli altri per data decrescente. Le parole trovate sono evidenziate."
+        "I risultati con n° impianto o matricola esattamente uguali al testo scritto compaiono per primi, poi quelli che iniziano con quel testo, poi gli altri per data decrescente. Le parole trovate sono evidenziate."
        ],
        "src": "src/components/rilievi/LiveSearch.tsx:58"
       }
@@ -78,7 +78,7 @@
     {
      "title": "Tabella delle schede",
      "intro": [
-      "25 schede per pagina, dalla più recente (per data del rilievo). Su telefono ogni riga diventa una scheda a sé. Tocca o clicca il numero impianto per aprire la scheda."
+      "25 schede per pagina, dalla più recente (per data del rilievo). Sul telefono ogni riga diventa un riquadro a sé. Tocca o clicca il numero impianto per aprire la scheda."
      ],
      "fields": [
       {
@@ -89,7 +89,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Il numero è il collegamento che apre la scheda («Apri la scheda …»; per i lettori di schermo il nome usa il n° impianto, altrimenti matricola, indirizzo o data)."
+        "Il numero è il collegamento che apre la scheda. Per i lettori di schermo il collegamento si chiama «Apri la scheda …», seguito dal n° impianto o, se manca, dalla matricola, dall’indirizzo o dalla data."
        ],
        "src": "src/components/rilievi/Results.tsx:43"
       },
@@ -101,7 +101,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Matricola della scheda."
+        "La matricola dell’impianto."
        ],
        "src": "src/components/rilievi/Results.tsx:44"
       },
@@ -137,7 +137,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Il tipo impianto scelto nella scheda; «—» se non l’hai scelto."
+        "Il tipo impianto scelto nella scheda; «—» se non è stato scelto."
        ],
        "src": "src/components/rilievi/Results.tsx:47"
       },
@@ -157,7 +157,7 @@
      "actions": [
       {
        "label": "Precedente / Successiva",
-       "help": "Cambiano pagina; tra i due vedi «Pagina N di M». Compaiono solo se le pagine sono più di una e mantengono il testo cercato.",
+       "help": "Portano alla pagina precedente o successiva; tra i due pulsanti vedi «Pagina N di M». Compaiono solo se le pagine sono più di una e conservano il testo cercato.",
        "src": "src/components/rilievi/parts.tsx:78"
       }
      ],
@@ -167,20 +167,20 @@
     }
    ],
    "tips": [
-    "In cima alla pagina compaiono gli avvisi dopo un’azione: «Scheda salvata.», «Modifiche salvate.», «Scheda spostata nel cestino.», «Scheda ripristinata.», «Scheda eliminata definitivamente.»"
+    "Dopo un’azione, in cima alla pagina compare un avviso: «Scheda salvata.», «Modifiche salvate.», «Scheda spostata nel cestino.», «Scheda ripristinata.», «Scheda eliminata definitivamente.»"
    ]
   },
   {
    "id": "rilievi-nuovo",
    "title": "Nuova scheda",
    "path": "/it/app/rilievi/nuovo",
-   "access": "Chi può compilare e modificare le schede: con la matrice predefinita Capotecnico, Progettista e Tecnico (il Titolare sempre). Gli altri ruoli vedono la pagina «Permesso non concesso». Se l’azienda è in sola lettura le schede si consultano e si scaricano, ma non si modificano. Il Titolare può cambiare la matrice in «Permessi».",
+   "access": "Chi può compilare e modificare le schede: con la matrice predefinita Capotecnico, Progettista e Tecnico (il Titolare sempre). Gli altri ruoli vedono la pagina «Permesso non concesso». Se l’azienda è in sola lettura, le schede si consultano e si scaricano, ma non si modificano. Il Titolare può cambiare la matrice in «Permessi».",
    "reach": "Dall’elenco «Schede» con «Nuova scheda» (o «Crea la prima scheda» se non ce ne sono).",
    "purpose": [
     "Il modulo per registrare un sopralluogo: la scheda di rilievo dell’impianto esistente, anche dal telefono sul posto. Sotto il titolo vedi «La data è quella di oggi: cambiala se il rilievo è di un altro giorno.»",
-    "Le domande seguono l’impianto: alcune sezioni e campi compaiono solo in certi casi (tipo impianto, tipo di porte, risposte Sì/No). Le sezioni sono numerate nell’ordine dell’azienda e a fianco c’è l’indice «Sezioni della scheda» che porta a ciascuna; una sezione nascosta sparisce anche dall’indice e i numeri si aggiustano.",
-    "Ordine predefinito delle sezioni: Impianto, Ubicazione e accesso, Tipologia, Quadro, Argano (o Centralina), Funi e tiranti, Limitatore, Cavi, Serrature o sospensioni, Allarme e telesoccorso, Note e lavori. «Impianto» resta sempre in cima; il Titolare cambia l’ordine delle altre dalla pagina dell’azienda («Ordine delle sezioni della scheda»), e vale per tutte le schede: modulo, pagina, stampa e PDF.",
-    "Campo per campo trovi qui sotto: etichetta, tipo, limiti e quando compare. I campi Sì/No hanno due pulsanti: un secondo clic sulla voce scelta torna a «nessuna risposta»."
+    "Le domande seguono l’impianto: alcune sezioni e campi compaiono solo in certi casi (tipo impianto, tipo di porte, risposte Sì/No). Le sezioni sono numerate nell’ordine scelto dall’azienda e a fianco c’è l’indice «Sezioni della scheda», che porta a ciascuna; una sezione nascosta sparisce anche dall’indice e la numerazione si aggiorna.",
+    "Ordine predefinito delle sezioni: Impianto, Ubicazione e accesso, Tipologia, Quadro, Argano (o Centralina), Funi e tiranti, Limitatore, Cavi, Serrature o sospensioni, Allarme e telesoccorso, Note e lavori. «Impianto» resta sempre in cima; il Titolare cambia l’ordine delle altre dalla pagina dell’azienda («Ordine delle sezioni della scheda»). L’ordine vale per tutte le schede: modulo, pagina, stampa e PDF.",
+    "Qui sotto trovi, campo per campo, l’etichetta, il tipo, i limiti e quando compare. I campi Sì/No hanno due pulsanti: un secondo clic sulla voce scelta torna a «nessuna risposta»."
    ],
    "shots": [
     {
@@ -205,7 +205,7 @@
        "required": "sì (se la lasci vuota: «Indica la data del rilievo.»)",
        "help": [
         "È il giorno del sopralluogo. Il modulo propone la data di oggi (fuso orario di Roma): cambiala se il rilievo è di un altro giorno.",
-        "Compare in testa alla scheda, nella stampa e nel PDF, e riempie il campo «data» dei moduli dei fornitori che lo prevedono (nel formato gg/mm/aaaa)."
+        "Compare in testa alla scheda, nella stampa e nel PDF, e riempie la data dei moduli dei fornitori che la prevedono (nel formato gg/mm/aaaa)."
        ],
        "src": "src/lib/rilievi/fields.ts:24"
       },
@@ -215,10 +215,10 @@
        "unit": null,
        "values": "testo libero, al massimo 200 caratteri",
        "default": null,
-       "required": "quasi: serve almeno uno tra indirizzo, matricola e n° impianto",
+       "required": "sì, se mancano matricola e n° impianto (serve almeno uno dei tre)",
        "help": [
         "Via e comune dell’impianto. È uno dei tre identificativi della scheda (indirizzo, matricola, n° impianto): ne serve almeno uno.",
-        "Compare in targa, nell’intestazione della stampa e nel PDF. Se mancano n° impianto e matricola, è anche il titolo della scheda. Si può cercare nell’elenco e riempie «Indirizzo» del modulo Dati argano."
+        "Compare nella targa, nell’intestazione della stampa e nel PDF. Se mancano n° impianto e matricola, è anche il titolo della scheda. È cercabile dall’elenco e riempie il campo «Indirizzo» del modulo Dati argano."
        ],
        "src": "src/lib/rilievi/fields.ts:25"
       },
@@ -231,7 +231,7 @@
        "required": "no",
        "help": [
         "Numero o riferimento del buono di lavoro per cui fai il rilievo. Puoi lasciarlo vuoto.",
-        "Nella stampa compare in alto a destra come «Buono di lavoro»; si può cercare nell’elenco."
+        "Nella stampa compare in alto a destra come «Buono di lavoro»; è cercabile dall’elenco."
        ],
        "src": "src/lib/rilievi/fields.ts:27"
       },
@@ -241,10 +241,10 @@
        "unit": null,
        "values": "solo cifre, al massimo 20 (altrimenti «Solo cifre, senza lettere o simboli.»)",
        "default": null,
-       "required": "quasi: serve almeno uno tra indirizzo, matricola e n° impianto",
+       "required": "sì, se mancano indirizzo e n° impianto (serve almeno uno dei tre)",
        "help": [
         "Matricola dell’ascensore, come sulla targa o sul libretto. Scrivi solo cifre: gli spazi vengono tolti e gli zeri iniziali restano.",
-        "È un identificativo della scheda. Nell’elenco una corrispondenza esatta di matricola porta la scheda in cima ai risultati. Riempie «Matr.» del modulo Dati argano e il riferimento impianto dei moduli."
+        "È un identificativo della scheda. Nell’elenco una corrispondenza esatta di matricola porta la scheda in cima ai risultati. Riempie il campo «Matr.» del modulo Dati argano e il riferimento impianto dei moduli d’ordine."
        ],
        "src": "src/lib/rilievi/fields.ts:28"
       },
@@ -254,10 +254,10 @@
        "unit": null,
        "values": "solo cifre, al massimo 20",
        "default": null,
-       "required": "quasi: serve almeno uno tra indirizzo, matricola e n° impianto",
+       "required": "sì, se mancano indirizzo e matricola (serve almeno uno dei tre)",
        "help": [
-        "Il numero con cui la tua ditta o il condominio identifica l’impianto. Solo cifre; gli zeri iniziali restano.",
-        "Se c’è, è il titolo della scheda («Impianto n° …») e la prima colonna dell’elenco. Riempie «N° Impianto» del modulo MoviLift e «N° imp.» del modulo Dati argano."
+        "Il numero con cui la tua azienda o il condominio identifica l’impianto. Scrivi solo cifre; gli zeri iniziali restano.",
+        "Se c’è, è il titolo della scheda («Impianto n° …») e la prima colonna dell’elenco. Riempie il campo «N° Impianto» del modulo MoviLift e «N° imp.» del modulo Dati argano."
        ],
        "src": "src/lib/rilievi/fields.ts:29"
       },
@@ -269,7 +269,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Portata nominale riportata in targa della cabina.",
+        "Portata nominale in kg, come indicata sulla targa in cabina.",
         "Compare nella targa della scheda. Riempie la portata dei moduli MoviLift, Mastech QI Touch («Portata nominale [kg]») e Dati argano."
        ],
        "src": "src/lib/rilievi/fields.ts:30"
@@ -282,8 +282,8 @@
        "default": null,
        "required": "no",
        "help": [
-        "Numero di persone indicato in targa.",
-        "Compare nella targa della scheda. Riempie «Capienza» del modulo MoviLift e «Persone n°» del modulo Dati argano."
+        "Numero di persone indicato sulla targa in cabina.",
+        "Compare nella targa della scheda. Riempie il campo «Capienza» del modulo MoviLift e «Persone n°» del modulo Dati argano."
        ],
        "src": "src/lib/rilievi/fields.ts:31"
       },
@@ -295,7 +295,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Numero di fermate (piani serviti). Nella targa e nei moduli dei fornitori è lo stesso dato.",
+        "Numero di fermate (piani serviti). È lo stesso dato della targa e dei moduli dei fornitori.",
         "Con «Vuoi inserire le misure delle bottoniere vecchie?» su «Sì», il numero di fermate decide quante righe compaiono nella tabella delle misure (da 1 a 300)."
        ],
        "src": "src/lib/rilievi/fields.ts:32"
@@ -309,7 +309,7 @@
        "required": "no",
        "help": [
         "Marca dell’impianto (il costruttore dell’ascensore).",
-        "Compare in targa e nell’elenco. Riempie «Marca» del modulo Dati argano."
+        "Compare nella targa e nell’elenco. Riempie il campo «Marca» del modulo Dati argano."
        ],
        "src": "src/lib/rilievi/fields.ts:33"
       }
@@ -336,7 +336,7 @@
        "required": "no",
        "help": [
         "Dove si trova la macchina rispetto al vano: in alto o in basso. Puoi spuntare entrambe le voci.",
-        "Riempie «Locale macchina» del modulo MoviLift e il campo «Macchina basso/alto» del modulo Dati argano. Se il rilievo indica solo «in alto», verifica poi se l’argano ha la puleggia di rinvio."
+        "Riempie «Locale macchina» del modulo MoviLift e il campo «Macchina basso/alto» del modulo Dati argano. Se il rilievo indica solo «Alto», verifica poi se l’argano ha la puleggia di rinvio."
        ],
        "src": "src/lib/rilievi/fields.ts:39"
       },
@@ -348,7 +348,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dove si trova la cassettina (ad esempio «Piano -1, vano contatori»), in parole tue."
+        "Dove si trova la cassettina, descritto a parole (ad esempio «Piano -1, vano contatori»)."
        ],
        "src": "src/lib/rilievi/fields.ts:41"
       },
@@ -392,8 +392,8 @@
        "default": null,
        "required": "no",
        "help": [
-        "Tipo di porte dell’impianto; scegline una sola. Un secondo clic sulla voce scelta la toglie.",
-        "Decide le domande di «Serrature o sospensioni»: serrature e pattino retrattile si chiedono con porte manuali o semiautomatiche, le sospensioni solo con porte automatiche. Compare anche «Accessi».",
+        "Tipo di porte dell’impianto: scegli una sola voce. Un secondo clic sulla voce scelta la toglie.",
+        "Decide le domande di «Serrature o sospensioni»: serrature e pattino retrattile si chiedono con porte manuali o semiautomatiche, le sospensioni solo con porte automatiche. Dopo la scelta compare anche «Accessi».",
         "Riempie il tipo di porte dei moduli MoviLift («Tipo Porte»), Pelazza (Manuali / Automatiche / Semiautomatiche), Mastech QI Touch («Tipo operatore 1») e il primo operatore dell’NG120."
        ],
        "src": "src/lib/rilievi/fields.ts:53"
@@ -407,7 +407,7 @@
        "required": "no; compare dopo aver scelto il tipo di porte (qualunque, anche manuali)",
        "help": [
         "Quanti accessi ha la cabina: 1 oppure 2.",
-        "Il dato diventa il numero di accessi di Pelazza («N° Accessi:») e Mastech QI Touch («Numero accessi») e l’«Ingresso» del modulo MoviLift (operatore unico o doppio ingresso)."
+        "Riempie il numero di accessi dei moduli Pelazza («N° Accessi:») e Mastech QI Touch («Numero accessi») e la scelta «Ingressi» del modulo MoviLift (operatore unico o doppio ingresso)."
        ],
        "src": "src/lib/rilievi/fields.ts:55"
       }
@@ -499,7 +499,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Appunti sul quadro. Con il modulo aperto, le note stanno sotto il modulo.",
+        "Appunti sul quadro. Con il modulo d’ordine aperto, le note compaiono sotto il modulo.",
         "Sono cercabili dall’elenco."
        ],
        "src": "src/lib/rilievi/fields.ts:77"
@@ -510,12 +510,12 @@
      ]
     },
     {
-     "title": "Modulo d'ordine quadri · Pelazza Peppino",
+     "title": "Modulo d’ordine quadri · Pelazza Peppino",
      "intro": [
       "Si apre con marca «Pelazza» e «Sì» a «Vuoi compilare la scheda per l’ordine quadro?».",
-      "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
-      "Le etichette sono quelle del modulo cartaceo del fornitore, in italiano, e non cambiano. Sotto, ogni gruppo del modulo è un elemento: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano, i testi hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
-      "Se un testo è più lungo del riquadro del modulo originale, nel PDF si rimpicciolisce fino a 5 punti e, se non basta, viene tagliato: tieni i testi brevi."
+      "È il modulo originale del fornitore, con gli stessi campi nello stesso ordine. I dati già presenti nella scheda o negli altri moduli si compilano da soli. Il modulo si scarica come PDF a parte, identico all’originale.",
+      "Le etichette sono quelle del modulo cartaceo del fornitore e restano invariate. Qui sotto ogni gruppo del modulo è una voce: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano; i campi di testo hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
+      "Se un testo è più lungo del riquadro del modulo originale, nel PDF il carattere si rimpicciolisce fino a 5 punti; se non basta, il testo viene tagliato. Tieni i testi brevi."
      ],
      "fields": [
       {
@@ -527,7 +527,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più."
        ],
        "src": "assets/moduli/pelazza-ordine-quadri-032026.json"
       },
@@ -754,16 +754,16 @@
       }
      ],
      "notes": [
-      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori sopra: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per stampare con «Stampa» (voci sotto la domanda del modulo)."
+      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per la stampa con «Stampa» (i due pulsanti sono sotto la domanda che apre il modulo)."
      ]
     },
     {
      "title": "Modulo ordine quadro (Scelta v2.6) · MoviLift",
      "intro": [
       "Si apre con marca «Movilift» e «Sì» a «Vuoi compilare la scheda per l’ordine quadro?».",
-      "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
-      "Le etichette sono quelle del modulo cartaceo del fornitore, in italiano, e non cambiano. Sotto, ogni gruppo del modulo è un elemento: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano, i testi hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
-      "Se un testo è più lungo del riquadro del modulo originale, nel PDF si rimpicciolisce fino a 5 punti e, se non basta, viene tagliato: tieni i testi brevi."
+      "È il modulo originale del fornitore, con gli stessi campi nello stesso ordine. I dati già presenti nella scheda o negli altri moduli si compilano da soli. Il modulo si scarica come PDF a parte, identico all’originale.",
+      "Le etichette sono quelle del modulo cartaceo del fornitore e restano invariate. Qui sotto ogni gruppo del modulo è una voce: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano; i campi di testo hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
+      "Se un testo è più lungo del riquadro del modulo originale, nel PDF il carattere si rimpicciolisce fino a 5 punti; se non basta, il testo viene tagliato. Tieni i testi brevi."
      ],
      "fields": [
       {
@@ -775,7 +775,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più."
        ],
        "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
       },
@@ -788,7 +788,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più.",
         "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
        ],
        "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
@@ -802,7 +802,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più.",
         "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
        ],
        "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
@@ -816,7 +816,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più.",
         "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
        ],
        "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
@@ -842,7 +842,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più."
        ],
        "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
       },
@@ -855,7 +855,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più.",
         "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
        ],
        "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
@@ -895,7 +895,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più."
        ],
        "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
       },
@@ -908,7 +908,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più."
        ],
        "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
       },
@@ -933,7 +933,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più."
        ],
        "src": "assets/moduli/movilift-modulo-ordine-scelta-v2-6.json"
       },
@@ -951,16 +951,16 @@
       }
      ],
      "notes": [
-      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori sopra: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per stampare con «Stampa» (voci sotto la domanda del modulo)."
+      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per la stampa con «Stampa» (i due pulsanti sono sotto la domanda che apre il modulo)."
      ]
     },
     {
-     "title": "Modulo d'ordine per Quadro di Manovra NG120 · Mastech",
+     "title": "Modulo d’ordine per Quadro di Manovra NG120 · Mastech",
      "intro": [
       "Si apre con marca «Mastech», tipologia quadro «NG120» e «Sì» a «Vuoi compilare la scheda per l’ordine quadro?». È il modulo per ascensore elettrico a fune.",
-      "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
-      "Le etichette sono quelle del modulo cartaceo del fornitore, in italiano, e non cambiano. Sotto, ogni gruppo del modulo è un elemento: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano, i testi hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
-      "Se un testo è più lungo del riquadro del modulo originale, nel PDF si rimpicciolisce fino a 5 punti e, se non basta, viene tagliato: tieni i testi brevi."
+      "È il modulo originale del fornitore, con gli stessi campi nello stesso ordine. I dati già presenti nella scheda o negli altri moduli si compilano da soli. Il modulo si scarica come PDF a parte, identico all’originale.",
+      "Le etichette sono quelle del modulo cartaceo del fornitore e restano invariate. Qui sotto ogni gruppo del modulo è una voce: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano; i campi di testo hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
+      "Se un testo è più lungo del riquadro del modulo originale, nel PDF il carattere si rimpicciolisce fino a 5 punti; se non basta, il testo viene tagliato. Tieni i testi brevi."
      ],
      "fields": [
       {
@@ -972,7 +972,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più."
        ],
        "src": "assets/moduli/mastech-ng120.json"
       },
@@ -1078,16 +1078,16 @@
       }
      ],
      "notes": [
-      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori sopra: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per stampare con «Stampa» (voci sotto la domanda del modulo)."
+      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per la stampa con «Stampa» (i due pulsanti sono sotto la domanda che apre il modulo)."
      ]
     },
     {
      "title": "Modulo Mastech QI Touch · Mastech",
      "intro": [
-      "Si apre con marca «Mastech», tipologia quadro «QI Touch» e «Sì» a «Vuoi compilare la scheda per l’ordine quadro?». Il modulo ha due pagine; i gruppi dalla pagina 2 sono indicati.",
-      "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
-      "Le etichette sono quelle del modulo cartaceo del fornitore, in italiano, e non cambiano. Sotto, ogni gruppo del modulo è un elemento: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano, i testi hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
-      "Se un testo è più lungo del riquadro del modulo originale, nel PDF si rimpicciolisce fino a 5 punti e, se non basta, viene tagliato: tieni i testi brevi."
+      "Si apre con marca «Mastech», tipologia quadro «QI Touch» e «Sì» a «Vuoi compilare la scheda per l’ordine quadro?». Il modulo ha due pagine; i gruppi della pagina 2 sono indicati come tali.",
+      "È il modulo originale del fornitore, con gli stessi campi nello stesso ordine. I dati già presenti nella scheda o negli altri moduli si compilano da soli. Il modulo si scarica come PDF a parte, identico all’originale.",
+      "Le etichette sono quelle del modulo cartaceo del fornitore e restano invariate. Qui sotto ogni gruppo del modulo è una voce: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano; i campi di testo hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
+      "Se un testo è più lungo del riquadro del modulo originale, nel PDF il carattere si rimpicciolisce fino a 5 punti; se non basta, il testo viene tagliato. Tieni i testi brevi."
      ],
      "fields": [
       {
@@ -1099,7 +1099,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più."
        ],
        "src": "assets/moduli/mastech-qi-touch.json"
       },
@@ -1112,7 +1112,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più.",
         "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
        ],
        "src": "assets/moduli/mastech-qi-touch.json"
@@ -1152,7 +1152,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più.",
         "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
        ],
        "src": "assets/moduli/mastech-qi-touch.json"
@@ -1231,7 +1231,7 @@
       }
      ],
      "notes": [
-      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori sopra: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per stampare con «Stampa» (voci sotto la domanda del modulo)."
+      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per la stampa con «Stampa» (i due pulsanti sono sotto la domanda che apre il modulo)."
      ]
     },
     {
@@ -1245,8 +1245,8 @@
        "default": null,
        "required": "no",
        "help": [
-        "Con «Sì» si apre il modulo «Modulo rilievi dati argani», valido per ogni tipo di argano, già compilato con i dati della scheda; lo scarichi come PDF a parte.",
-        "Con «No» compaiono le domande su ciò che resta e su ciò che va cambiato sul freno."
+        "Con «Sì» si apre il «Modulo rilievi dati argani», valido per qualunque tipo di argano e già compilato con i dati della scheda; lo scarichi come PDF a parte.",
+        "Con «No» compaiono le domande sull’argano che resta in opera e sugli interventi sul freno."
        ],
        "src": "src/lib/rilievi/fields-argano.ts:14"
       },
@@ -1295,7 +1295,7 @@
        "default": null,
        "required": "quando «Kit controllo ganasce» è «Sì»",
        "help": [
-        "Tipo del kit di controllo ganasce, scritto a mano."
+        "Tipo del kit di controllo delle ganasce, in testo libero."
        ],
        "src": "src/lib/rilievi/fields-argano.ts:18"
       },
@@ -1319,7 +1319,7 @@
        "default": null,
        "required": "quando «Controllo su quadro manovra» è «Sì»",
        "help": [
-        "Tipo di controllo, scritto a mano."
+        "Tipo di controllo, in testo libero."
        ],
        "src": "src/lib/rilievi/fields-argano.ts:20"
       },
@@ -1331,22 +1331,22 @@
        "default": null,
        "required": "no",
        "help": [
-        "Appunti sull’argano; con il modulo aperto stanno sotto il modulo."
+        "Appunti sull’argano. Con il modulo dati argani aperto, le note compaiono sotto il modulo."
        ],
        "src": "src/lib/rilievi/fields-argano.ts:21"
       }
      ],
      "intro": [
-      "Questa sezione non compare se il tipo impianto è «Idraulico»: nell’idraulico la «Centralina» prende il suo posto."
+      "Questa sezione non compare se il tipo impianto è «Idraulico»: con l’idraulico al suo posto c’è la sezione «Centralina»."
      ]
     },
     {
      "title": "Modulo rilievi dati argani",
      "intro": [
-      "Si apre con «Sì» a «Argano da sostituire?», con qualunque marca di quadro e con qualunque tipo di argano.",
-      "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
-      "Le etichette sono quelle del modulo cartaceo del fornitore, in italiano, e non cambiano. Sotto, ogni gruppo del modulo è un elemento: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano, i testi hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
-      "Se un testo è più lungo del riquadro del modulo originale, nel PDF si rimpicciolisce fino a 5 punti e, se non basta, viene tagliato: tieni i testi brevi."
+      "Si apre con «Sì» ad «Argano da sostituire?», con qualunque marca di quadro e qualunque tipo di argano.",
+      "È il modulo originale del fornitore, con gli stessi campi nello stesso ordine. I dati già presenti nella scheda o negli altri moduli si compilano da soli. Il modulo si scarica come PDF a parte, identico all’originale.",
+      "Le etichette sono quelle del modulo cartaceo del fornitore e restano invariate. Qui sotto ogni gruppo del modulo è una voce: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano; i campi di testo hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
+      "Se un testo è più lungo del riquadro del modulo originale, nel PDF il carattere si rimpicciolisce fino a 5 punti; se non basta, il testo viene tagliato. Tieni i testi brevi."
      ],
      "fields": [
       {
@@ -1371,7 +1371,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato.",
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più.",
         "Le voci con «dato collegato» seguono la scheda e gli altri moduli (vedi «Dati collegati tra scheda e moduli»); sotto il gruppo compare l’elenco dei valori diversi, se ce ne sono."
        ],
        "src": "assets/moduli/rilievo-dati-argani.json"
@@ -1404,7 +1404,7 @@
       }
      ],
      "notes": [
-      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori sopra: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per stampare con «Stampa» (voci sotto la domanda del modulo)."
+      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per la stampa con «Stampa» (i due pulsanti sono sotto la domanda che apre il modulo)."
      ]
     },
     {
@@ -1418,7 +1418,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Domanda principale della sezione. Rispondi «Sì» o «No»."
+        "Indica se la centralina va sostituita. Dopo la risposta compare «Marca e modello centralina»; con «No» compare anche «Emendamento A3 da installare»."
        ],
        "src": "src/lib/rilievi/fields-centralina.ts:14"
       },
@@ -1430,8 +1430,8 @@
        "default": null,
        "required": "compare dopo aver risposto «Sì» o «No» a «Centralina da sostituire?»",
        "help": [
-        "Marca e modello della centralina, con qualunque risposta alla domanda precedente.",
-        "Riempie «Centralina» del modulo MoviLift (come proposta)."
+        "Marca e modello della centralina; compare con entrambe le risposte alla domanda precedente.",
+        "Propone il valore del campo «Centralina» del modulo MoviLift."
        ],
        "src": "src/lib/rilievi/fields-centralina.ts:15"
       },
@@ -1467,7 +1467,7 @@
        "default": null,
        "required": "quando «Installare tubo flessibile» è «Sì»",
        "help": [
-        "Diametro del tubo flessibile da installare."
+        "Diametro del tubo flessibile da installare, in mm."
        ],
        "src": "src/lib/rilievi/fields-centralina.ts:18"
       },
@@ -1479,7 +1479,7 @@
        "default": null,
        "required": "quando «Installare tubo flessibile» è «Sì»",
        "help": [
-        "Lunghezza del tubo flessibile da installare."
+        "Lunghezza del tubo flessibile da installare, in metri."
        ],
        "src": "src/lib/rilievi/fields-centralina.ts:19"
       },
@@ -1503,7 +1503,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Note sulla centralina, sempre disponibili."
+        "Note sulla centralina; il campo è sempre visibile."
        ],
        "src": "src/lib/rilievi/fields-centralina.ts:21"
       }
@@ -1549,7 +1549,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Numero di funi.",
+        "Numero delle funi.",
         "Riempie «N° funi» del modulo Dati argano."
        ],
        "src": "src/lib/rilievi/fields.ts:89"
@@ -1596,7 +1596,7 @@
        "unit": null,
        "values": "numero intero da 0 a 100",
        "default": null,
-       "required": "quando il tipo impianto non è «Idraulico» (compreso nessuna scelta)",
+       "required": "quando il tipo impianto non è «Idraulico» (anche senza nessuna scelta)",
        "help": [
         "Quantità dei tiranti del contrappeso."
        ],
@@ -1608,7 +1608,7 @@
        "unit": null,
        "values": "testo libero, al massimo 120 caratteri",
        "default": null,
-       "required": "quando il tipo impianto non è «Idraulico»",
+       "required": "quando il tipo impianto non è «Idraulico» (anche senza nessuna scelta)",
        "help": [
         "Tipo dei tiranti del contrappeso."
        ],
@@ -1687,7 +1687,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Tipo del tenditore."
+        "Tipo del tenditore della funicella."
        ],
        "src": "src/lib/rilievi/fields.ts:106"
       }
@@ -1707,7 +1707,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Numero di cavi."
+        "Numero dei cavi."
        ],
        "src": "src/lib/rilievi/fields.ts:112"
       },
@@ -1772,7 +1772,7 @@
        "default": null,
        "required": "quando «Serrature da cambiare» è «Sì»",
        "help": [
-        "Tipo di serrature, scritto a mano."
+        "Tipo di serrature, in testo libero."
        ],
        "src": "src/lib/rilievi/fields.ts:126"
       },
@@ -1796,7 +1796,7 @@
        "default": null,
        "required": "quando «Pattino retrattile da cambiare» è «Sì»",
        "help": [
-        "Tipo di pattino retrattile, scritto a mano."
+        "Tipo di pattino retrattile, in testo libero."
        ],
        "src": "src/lib/rilievi/fields.ts:130"
       },
@@ -1832,7 +1832,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Note su serrature e sospensioni, sempre disponibili. Con il modulo 2SG aperto, stanno sotto il modulo."
+        "Note su serrature e sospensioni; il campo è sempre visibile. Con il modulo 2SG aperto, le note compaiono sotto il modulo."
        ],
        "src": "src/lib/rilievi/fields.ts:133"
       }
@@ -1845,9 +1845,9 @@
      "title": "Modulo ordine operatori e sospensioni · 2SG S.r.l.",
      "intro": [
       "Si apre con «Sì» a «Sospensioni da cambiare?» (solo con porte automatiche). Contiene l’ordine per l’operatore di cabina e per le sospensioni delle porte di piano.",
-      "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
-      "Le etichette sono quelle del modulo cartaceo del fornitore, in italiano, e non cambiano. Sotto, ogni gruppo del modulo è un elemento: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano, i testi hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
-      "Se un testo è più lungo del riquadro del modulo originale, nel PDF si rimpicciolisce fino a 5 punti e, se non basta, viene tagliato: tieni i testi brevi."
+      "È il modulo originale del fornitore, con gli stessi campi nello stesso ordine. I dati già presenti nella scheda o negli altri moduli si compilano da soli. Il modulo si scarica come PDF a parte, identico all’originale.",
+      "Le etichette sono quelle del modulo cartaceo del fornitore e restano invariate. Qui sotto ogni gruppo del modulo è una voce: le righe sono separate da «|», i campi della stessa riga da «·». Le caselle si spuntano; i campi di testo hanno un numero massimo di caratteri; tra parentesi trovi da dove arriva il valore proposto.",
+      "Se un testo è più lungo del riquadro del modulo originale, nel PDF il carattere si rimpicciolisce fino a 5 punti; se non basta, il testo viene tagliato. Tieni i testi brevi."
      ],
      "fields": [
       {
@@ -1859,7 +1859,7 @@
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
         "Gruppo del modulo. Compila solo ciò che serve: nel PDF finale le voci non compilate restano vuote come sul foglio originale.",
-        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e le puoi cambiare: dopo che scrivi tu, il campo non viene più toccato."
+        "Le voci con «dalla scheda» o «proposto» si compilano da sole all’apertura del modulo e puoi cambiarle: quando scrivi tu in un campo, il software non lo modifica più."
        ],
        "src": "assets/moduli/2sg-ordine-porte.json"
       },
@@ -1926,7 +1926,7 @@
       }
      ],
      "notes": [
-      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori sopra: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per stampare con «Stampa» (voci sotto la domanda del modulo)."
+      "Il PDF del modulo è identico all’originale del fornitore, con i tuoi valori: lo scarichi dalla pagina della scheda con «Scarica PDF» o lo apri per la stampa con «Stampa» (i due pulsanti sono sotto la domanda che apre il modulo)."
      ]
     },
     {
@@ -2029,7 +2029,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Indica se la luce del vano va sostituita. Con «Sì» compare il campo per la nota."
+        "Indica se la luce del vano va sostituita. Con «Sì» compare «Note luce vano»."
        ],
        "src": "src/lib/rilievi/fields.ts:156"
       },
@@ -2041,7 +2041,7 @@
        "default": null,
        "required": "quando «Luce vano da sostituire» è «Sì»",
        "help": [
-        "Nota sulla luce del vano, scritta a mano."
+        "Nota sulla luce del vano, in testo libero."
        ],
        "src": "src/lib/rilievi/fields.ts:157"
       },
@@ -2087,7 +2087,7 @@
      "title": "Misure delle bottoniere vecchie, per fermata",
      "intro": [
       "Compare sotto «Vuoi inserire le misure delle bottoniere vecchie?» quando rispondi «Sì». C’è una riga per ogni fermata (la fermata 1 è la più bassa), tante quante indichi in «Fermate». Ogni riga si intitola «Fermata 1», «Fermata 2»…",
-      "Se non hai ancora indicato le fermate, vedi il promemoria «Indica prima le fermate in «Impianto»: qui compare una riga per ogni fermata.» Quando scrivi il numero di fermate le righe mancanti si aggiungono; se lo riduci le righe in più si nascondono ma non si perdono, così uno sbaglio di battitura non cancella nulla. Al salvataggio contano solo le righe da 1 al numero di fermate."
+      "Se non hai ancora indicato le fermate, vedi il promemoria «Indica prima le fermate in «Impianto»: qui compare una riga per ogni fermata.» Quando scrivi il numero di fermate le righe mancanti si aggiungono; se lo riduci le righe in più si nascondono ma non si perdono, così un errore di battitura non cancella nulla. Al salvataggio contano solo le righe da 1 al numero di fermate."
      ],
      "fields": [
       {
@@ -2168,14 +2168,14 @@
       "Gli errori di una cella appaiono nel riepilogo come «Lunghezza, fermata 2: …»."
      ],
      "warnings": [
-      "Le misure si salvano solo con «Sì» a «Vuoi inserire le misure delle bottoniere vecchie?»: se cambi risposta in «No» le righe non vengono salvate. Le righe oltre il numero di fermate indicato non vengono salvate."
+      "Le misure si salvano solo con «Sì» a «Vuoi inserire le misure delle bottoniere vecchie?»: se cambi la risposta in «No», le righe non vengono salvate. Le righe oltre il numero di fermate indicato non vengono salvate."
      ]
     },
     {
      "title": "Dati collegati tra scheda e moduli",
      "intro": [
-      "Uno stesso dato dell’impianto compare spesso in più posti: nella scheda e nei moduli dei fornitori (Pelazza, MoviLift, Mastech NG120 o QI Touch, Dati argano, 2SG). Il software lo tiene allineato così: un campo che non hai scritto a mano si riempie dagli altri, in ogni direzione e mentre digiti; il campo in cui scrivi tu resta tuo. Un numero vale anche scritto in modo diverso («1.000», «1000»; «1,6» e «1.6»; «400 V» e «400»).",
-      "Se due posti compilati dicono cose diverse, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e, in pagina scheda, «Questi dati sono diversi tra la scheda e gli ordini:». Al salvataggio ti viene chiesta conferma (vedi «Dati che non coincidono»). Un campo vuoto o nascosto (un modulo chiuso, una domanda che non compare) non conta come affermazione e non viene confrontato.",
+      "Uno stesso dato dell’impianto compare spesso in più posti: nella scheda e nei moduli dei fornitori (Pelazza, MoviLift, Mastech NG120 o QI Touch, Dati argano, 2SG). Il software lo tiene allineato così: un campo che non hai compilato tu si riempie dagli altri, in ogni direzione e mentre digiti; il campo in cui scrivi tu resta tuo. Un numero è considerato uguale anche se scritto in modo diverso («1.000» e «1000»; «1,6» e «1.6»; «400 V» e «400»).",
+      "Se due posti compilati dicono cose diverse, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e, nella pagina della scheda, «Questi dati sono diversi tra la scheda e gli ordini:». Al salvataggio ti viene chiesta conferma (vedi «Dati che non coincidono»). Un campo vuoto o nascosto (un modulo chiuso, una domanda che non compare) non conta come affermazione e non viene confrontato.",
       "Ogni elemento qui sotto è uno di questi dati: la riga «Valori» elenca dove compare."
      ],
      "fields": [
@@ -2187,7 +2187,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2200,7 +2200,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2213,7 +2213,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2226,7 +2226,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2239,7 +2239,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2252,7 +2252,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2265,7 +2265,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2278,7 +2278,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2291,7 +2291,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2304,7 +2304,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2317,7 +2317,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2330,7 +2330,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2343,7 +2343,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2356,7 +2356,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2369,7 +2369,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2382,7 +2382,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2395,7 +2395,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2408,7 +2408,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2421,7 +2421,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2434,7 +2434,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2447,7 +2447,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Qui i posti scrivono lo stesso dato in modo diverso (ad esempio «Selcom» e «Selcom Midi Supra»): serve solo a proporre il valore, non viene mai segnalato come differenza."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2460,7 +2460,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2473,7 +2473,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-elenco.ts"
@@ -2486,7 +2486,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
@@ -2499,7 +2499,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
@@ -2512,7 +2512,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
@@ -2525,7 +2525,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
@@ -2538,7 +2538,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
@@ -2551,7 +2551,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
@@ -2564,7 +2564,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Se due posti compilati hanno valori diversi, sotto il gruppo del modulo compare «Dati diversi tra scheda e ordini» e al salvataggio ti viene chiesta conferma."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
@@ -2577,7 +2577,7 @@
        "default": null,
        "required": "no",
        "help": [
-        "Dato presente in più posti. Quello che non hai ancora scritto a mano si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
+        "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
         "Qui i posti scrivono lo stesso dato in modo diverso (ad esempio «Selcom» e «Selcom Midi Supra»): serve solo a proporre il valore, non viene mai segnalato come differenza."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
@@ -2598,11 +2598,11 @@
        "kind": "scelta multipla",
        "unit": null,
        "values": "una casella per ogni sezione tranne «Impianto», nell’ordine dell’azienda: Ubicazione e accesso, Tipologia, Quadro, Argano, Centralina, Funi e tiranti, Limitatore, Cavi, Serrature o sospensioni, Allarme e telesoccorso, Note e lavori",
-       "default": "tutte spuntate (sezione nuova inclusa)",
+       "default": "tutte spuntate (anche le sezioni aggiunte in futuro)",
        "required": "no",
        "help": [
         "Togli la spunta alle sezioni da lasciare fuori dal foglio stampato. L’intestazione con indirizzo, matricola e n° impianto c’è sempre.",
-        "Le sezioni nascoste dal tipo impianto (ad esempio «Argano» con l’idraulico) nascondono anche la loro casella; la loro scelta resta com’è e non vale come «lasciata fuori». Le sezioni lasciate fuori sono memorizzate: una sezione aggiunta in futuro entra nella stampa da sola."
+        "Quando il tipo impianto nasconde una sezione (ad esempio «Argano» con l’idraulico), sparisce anche la sua casella; la scelta fatta resta memorizzata e la sezione non conta come esclusa. Il software memorizza le sezioni escluse: una sezione aggiunta in futuro entra da sola nella stampa."
        ],
        "src": "src/components/rilievi/StampaScelta.tsx:38"
       },
@@ -2614,8 +2614,8 @@
        "default": "nessuna spuntata",
        "required": "no",
        "help": [
-        "Spunta i moduli da aggiungere in fondo al foglio: entra solo quello che è compilato. I moduli restano anche come PDF a parte.",
-        "Spuntare un modulo aggiunge in fondo al foglio stampato e al PDF della scheda un riepilogo di ciò che è compilato nel modulo (caselle spuntate e testi scritti, gruppo per gruppo). I moduli restano comunque PDF a parte, identici all’originale, e non entrano mai nel PDF della scheda."
+        "Spunta i moduli di cui vuoi un riepilogo in fondo al foglio.",
+        "Il riepilogo, aggiunto al foglio stampato e al PDF della scheda, riporta solo ciò che è compilato nel modulo (caselle spuntate e testi scritti, gruppo per gruppo). I moduli restano comunque PDF a parte, identici all’originale, e non entrano mai nel PDF della scheda."
        ],
        "src": "src/components/rilievi/StampaScelta.tsx:50"
       }
@@ -2630,12 +2630,12 @@
      "actions": [
       {
        "label": "Salva scheda",
-       "help": "Salva la scheda nuova e ti porta alla sua pagina con l’avviso «Scheda salvata.» (in modifica il pulsante si chiama «Salva modifiche» e l’avviso è «Modifiche salvate.»). Prima controlla i dati: se c’è un errore, il modulo resta com’è e in cima compare l’elenco «Correggi N campi».",
+       "help": "Salva la scheda nuova e ti porta alla sua pagina con l’avviso «Scheda salvata.» (in modifica il pulsante si chiama «Salva modifiche» e l’avviso è «Modifiche salvate.»). Prima del salvataggio i dati vengono controllati: se c’è un errore, il modulo resta com’è e in cima compare l’elenco «Correggi N campi».",
        "src": "src/components/rilievi/SchedaFormBody.tsx:123"
       },
       {
        "label": "Salva comunque",
-       "help": "Compare solo dopo un «Salva» fermato da dati che non coincidono tra scheda e moduli. Salva la scheda con quei valori così come sono.",
+       "help": "Compare solo quando il salvataggio si è fermato perché alcuni dati non coincidono tra scheda e moduli. Salva la scheda con i valori così come sono.",
        "src": "src/components/rilievi/SchedaFormBody.tsx:125"
       },
       {
@@ -2645,7 +2645,7 @@
       },
       {
        "label": "Modifiche non salvate",
-       "help": "Indicatore (non è un pulsante): compare appena cambi qualcosa nel modulo, o quando il modulo ti torna indietro non salvato dopo un errore, un conflitto o la richiesta di conferma.",
+       "help": "Indicatore (non è un pulsante): compare appena cambi qualcosa nel modulo, o quando il modulo torna non salvato dopo un errore, un conflitto o una richiesta di conferma.",
        "src": "src/components/rilievi/SchedaFormBody.tsx:127"
       }
      ],
@@ -2657,7 +2657,7 @@
      "title": "Errori e avvisi",
      "fields": [],
      "notes": [
-      "Un errore in un campo non cancella nulla: il modulo ti torna com’è e in cima compare l’elenco «Correggi N campi». Ogni voce porta al campo e dice cosa non va. Messaggi: «Indica la data del rilievo.», «Data non valida.», «Massimo N caratteri.», «Solo cifre, senza lettere o simboli.», «Inserisci un numero intero.», «Inserisci un numero, ad esempio 6,5.», «Al massimo 2 decimali.», «Inserisci un valore tra X e Y.», «Scelta non valida.», «Compila almeno indirizzo, matricola o n° impianto.»."
+      "Un errore in un campo non cancella nulla: il modulo resta com’è e in cima compare l’elenco «Correggi N campi». Ogni voce porta al campo e dice che cosa non va. Messaggi: «Indica la data del rilievo.», «Data non valida.», «Massimo N caratteri.», «Solo cifre, senza lettere o simboli.», «Inserisci un numero intero.», «Inserisci un numero, ad esempio 6,5.», «Al massimo 2 decimali.», «Inserisci un valore tra X e Y.», «Scelta non valida.», «Compila almeno indirizzo, matricola o n° impianto.»"
      ],
      "warnings": [
       "Se manca la connessione o la sessione scade mentre salvi, i dati restano nel modulo: premi di nuovo «Salva scheda» quando c’è segnale, o dopo aver fatto di nuovo l’accesso in un’altra scheda del browser. Se il primo salvataggio era già arrivato, non si crea una seconda scheda.",
@@ -2667,18 +2667,18 @@
    ],
    "tips": [
     "Compila prima «Impianto» e «Tipologia»: il tipo impianto e il tipo di porte decidono le sezioni e le domande che seguono.",
-    "Salva anche a metà: serve solo la data e uno tra indirizzo, matricola e n° impianto; il resto puoi completarlo con «Modifica»."
+    "Puoi salvare anche a metà: servono solo la data e uno tra indirizzo, matricola e n° impianto; il resto puoi completarlo con «Modifica»."
    ]
   },
   {
    "id": "rilievi-modifica",
    "title": "Modifica scheda",
    "path": "/it/app/rilievi/‹id›/modifica",
-   "access": "Chi può compilare e modificare le schede: con la matrice predefinita Capotecnico, Progettista e Tecnico (il Titolare sempre). Gli altri ruoli vedono la pagina «Permesso non concesso». Se l’azienda è in sola lettura le schede si consultano e si scaricano, ma non si modificano. Il Titolare può cambiare la matrice in «Permessi». Una scheda di un’altra azienda, inesistente o nel cestino dà «Pagina non trovata».",
+   "access": "Chi può compilare e modificare le schede: con la matrice predefinita Capotecnico, Progettista e Tecnico (il Titolare sempre). Gli altri ruoli vedono la pagina «Permesso non concesso». Se l’azienda è in sola lettura, le schede si consultano e si scaricano, ma non si modificano. Il Titolare può cambiare la matrice in «Permessi». Una scheda di un’altra azienda, inesistente o nel cestino dà «Pagina non trovata».",
    "reach": "Dalla pagina della scheda con «Modifica».",
    "purpose": [
     "È lo stesso modulo di «Nuova scheda», aperto sui dati salvati: tutte le sezioni, i campi, i moduli dei fornitori e le scelte di stampa funzionano allo stesso modo (vedi la pagina «Nuova scheda»). Cambiano il titolo («Modifica scheda»), il pulsante principale («Salva modifiche») e la riga sotto il titolo: «Ultima modifica di ‹nome› il ‹data e ora›».",
-    "Un modulo del fornitore mai compilato si apre precompilato con i dati della scheda; se l’avevi già compilato, trovi i valori salvati. I dati che la scheda e i moduli dicono in modo diverso sono già elencati sotto i gruppi."
+    "Un modulo del fornitore mai compilato si apre precompilato con i dati della scheda; se l’avevi già compilato, trovi i valori salvati. I dati che non coincidono tra scheda e moduli sono già elencati sotto i gruppi."
    ],
    "shots": [
     {
@@ -2694,7 +2694,7 @@
     {
      "title": "Conflitto di versione",
      "intro": [
-      "Il modulo ricorda la versione della scheda su cui l’hai aperto. Se, mentre lavori, un collega salva la stessa scheda, il tuo salvataggio non sovrascrive niente in silenzio: il modulo ti torna con i tuoi dati e compare l’avviso «Qualcuno ha modificato questa scheda mentre la stavi compilando.».",
+      "Il modulo tiene conto della versione della scheda che hai aperto. Se, mentre lavori, un collega salva la stessa scheda, il tuo salvataggio non sovrascrive niente senza avvisarti: il modulo resta aperto con i tuoi dati e compare l’avviso «Qualcuno ha modificato questa scheda mentre la stavi compilando.»",
       "Il testo spiega: «I tuoi dati sono ancora qui sotto. Apri la versione attuale in un'altra scheda del browser e confronta: se salvi ora, sostituisci le modifiche dell'altra persona.» Il pulsante «Apri la versione attuale» apre la scheda salvata in una nuova scheda del browser, così puoi confrontare. La riga sotto il titolo si aggiorna e nomina chi ha salvato per ultimo e quando.",
       "Se premi di nuovo «Salva modifiche» dopo l’avviso, salvi la tua versione e sostituisci quella dell’altra persona. Per non perdere nulla, confronta prima."
      ],
@@ -2707,7 +2707,7 @@
       }
      ],
      "notes": [
-      "Se il tuo salvataggio precedente era già arrivato e si è perso solo l’esito (niente segnale), un nuovo «Salva modifiche» dello stesso modulo viene riconosciuto come lo stesso invio: non è un conflitto e non scrive due volte."
+      "Se il tuo salvataggio precedente era già arrivato e si è perso solo l’esito (per esempio per mancanza di segnale), un nuovo «Salva modifiche» dello stesso modulo viene riconosciuto come lo stesso invio: non è un conflitto e non scrive due volte."
      ],
      "warnings": [
       "Se premi di nuovo «Salva modifiche» dopo l’avviso di conflitto, sostituisci le modifiche dell’altra persona con la tua versione: apri prima la versione attuale e confronta."
@@ -2717,7 +2717,7 @@
      "title": "Dati che non coincidono tra scheda e moduli",
      "intro": [
       "Se, al salvataggio, la scheda e i moduli compilati dicono cose diverse sullo stesso dato (ad esempio le fermate), la scheda non viene salvata subito: in cima compare «Un dato non coincide tra scheda e ordini / N dati non coincidono tra scheda e ordini» con l’elenco dei valori, uno per posto («Scheda: 5 · Ordine quadro: 6 · Dati argano: 5»).",
-      "Il testo dice: «Controlla i valori qui sotto. Se sono giusti così, premi «Salva comunque» nella barra in basso; altrimenti correggili e salva di nuovo.» Se i valori vanno bene così, premi «Salva comunque»; altrimenti correggili e premi «Salva modifiche». La conferma vale solo per quelle differenze esatte: se ne cambia una o ne nasce una nuova, ti viene chiesta di nuovo. Le differenze già confermate in un salvataggio precedente non si richiedono."
+      "Il testo dice: «Controlla i valori qui sotto. Se sono giusti così, premi «Salva comunque» nella barra in basso; altrimenti correggili e salva di nuovo.» Se i valori vanno bene così, premi «Salva comunque»; altrimenti correggili e premi «Salva modifiche». La conferma vale solo per quelle differenze esatte: se ne cambia una o ne nasce una nuova, la conferma ti viene chiesta di nuovo. Per le differenze già confermate in un salvataggio precedente non viene chiesta di nuovo."
      ],
      "fields": [],
      "actions": [
@@ -2729,7 +2729,7 @@
      ],
      "notes": [
       "Dopo il salvataggio, le differenze ancora presenti restano segnalate nella pagina della scheda («Questi dati sono diversi tra la scheda e gli ordini:»).",
-      "Il pulsante «Salva comunque» sta dopo «Salva» di proposito: premere Invio in un campo non conferma mai."
+      "Il pulsante «Salva comunque» sta di proposito dopo il pulsante di salvataggio: premere Invio in un campo non conferma mai."
      ],
      "warnings": [
       "«Salva comunque» registra nella scheda valori che non coincidono tra loro: usalo solo se la differenza è voluta."
@@ -2769,7 +2769,7 @@
       },
       {
        "label": "Stampa",
-       "help": "Apre la pagina di stampa e avvia da sola la stampa del browser (una volta). Per tutti i ruoli che vedono la scheda.",
+       "help": "Apre la pagina di stampa e avvia automaticamente, una sola volta, la stampa del browser. È disponibile per tutti i ruoli che vedono la scheda.",
        "src": "src/app/[locale]/app/rilievi/[id]/page.tsx:66"
       },
       {
@@ -2789,7 +2789,7 @@
       }
      ],
      "notes": [
-      "Dopo il salvataggio compare l’avviso «Scheda salvata.» o «Modifiche salvate.»."
+      "Dopo il salvataggio compare l’avviso «Scheda salvata.» o «Modifiche salvate.»"
      ]
     },
     {
@@ -2819,7 +2819,7 @@
       },
       {
        "label": "Crea impianto",
-       "help": "Apre «Nuovo impianto» già partito da questo rilievo: nome, indirizzo e matricola vengono dal rilievo; il tipo di intervento si sceglie poi nel Calcolo argano. Serve anche il diritto di creare impianti.",
+       "help": "Apre «Nuovo impianto» già compilato a partire da questo rilievo: nome, indirizzo e matricola vengono dal rilievo; il tipo di intervento si sceglie poi nel Calcolo argano. Serve anche il diritto di creare impianti.",
        "src": "src/components/collega/LinkPanel.tsx:97"
       },
       {
@@ -2840,15 +2840,15 @@
      ],
      "notes": [
       "Stati del riquadro: «Questo rilievo non è collegato a un impianto.» con il consiglio «Collegalo per partire dai valori misurati nel calcolo e nel progetto e per confrontarli con quello che è stato salvato.»; oppure «Collegato all’impianto» seguito dal nome dell’impianto. Se l’impianto è archiviato, il rilievo resta collegato ma è in sola lettura («L’impianto è archiviato, quindi in sola lettura: il rilievo resta collegato.»).",
-      "Chi non può collegare vede solo lo stato. Se l’azienda è in sola lettura, compare «L’azienda è in sola lettura: il collegamento non si cambia.».",
-      "Avvisi possibili dopo un collegamento: «Nel frattempo il collegamento di questo rilievo è stato cambiato da un’altra persona: nulla è cambiato. Controlla e riprova.», «Impianto non trovato o archiviato: nessun collegamento è cambiato.», «Troppe operazioni in un minuto: riprova tra poco.»."
+      "Chi non può collegare vede solo lo stato. Se l’azienda è in sola lettura, compare «L’azienda è in sola lettura: il collegamento non si cambia.»",
+      "Avvisi possibili dopo un collegamento: «Nel frattempo il collegamento di questo rilievo è stato cambiato da un’altra persona: nulla è cambiato. Controlla e riprova.», «Impianto non trovato o archiviato: nessun collegamento è cambiato.», «Troppe operazioni in un minuto: riprova tra poco.»"
      ]
     },
     {
      "title": "Avvisi sopra la scheda",
      "fields": [],
      "notes": [
-      "Scheda nel cestino: una fascia gialla dice «Nel cestino dal … (eliminata da …).». Chi gestisce il cestino vede «Ripristina» (rimette subito la scheda tra le altre, «Scheda ripristinata.») ed «Elimina definitivamente» (porta alla conferma).",
+      "Scheda nel cestino: una fascia gialla dice «Nel cestino dal … (eliminata da …).» Chi gestisce il cestino vede «Ripristina» (rimette subito la scheda tra le altre, «Scheda ripristinata.») ed «Elimina definitivamente» (porta alla conferma).",
       "Dati diversi: se la scheda e i suoi moduli dicono cose diverse (confermate al salvataggio o presenti da prima), compare «Questi dati sono diversi tra la scheda e gli ordini:» con l’elenco: il nome del dato in grassetto e, per ciascun posto, il valore («Scheda: 5 · Ordine quadro: 6»)."
      ]
     },
@@ -2895,7 +2895,7 @@
    "access": "Tutti i ruoli con il diritto «Vedere le schede di rilievo e scaricarne i PDF»: con la matrice predefinita Capotecnico, Progettista, Tecnico e Commerciale; il Titolare ha sempre tutti i diritti. Non occorre il diritto di modifica.",
    "reach": "Dalla scheda con «Stampa» (la stampa del browser parte da sola) oppure aprendo la pagina direttamente.",
    "purpose": [
-    "La scheda su carta A4, in bianco su sfondo bianco anche a schermo. Su carta esce solo il foglio. Sullo schermo, sopra il foglio, c’è la barra con i pulsanti.",
+    "La scheda su foglio A4, su sfondo bianco anche sullo schermo. Sulla carta esce solo il foglio. Sullo schermo, sopra il foglio, c’è la barra con i pulsanti.",
     "Che cosa esce lo decidi nella scheda («Modifica» → «Stampa e PDF» in fondo al modulo): quali sezioni e quali moduli dei fornitori. Qui si applica la scelta salvata; non c’è nessuna scelta da fare in questa pagina."
    ],
    "shots": [
@@ -2911,7 +2911,7 @@
      "actions": [
       {
        "label": "Stampa",
-       "help": "Apre la stampa del browser. Arrivando dal pulsante «Stampa» della scheda parte da sola una volta (il segno «auto» sparisce dall’indirizzo, così ricaricare non stampa di nuovo).",
+       "help": "Apre la stampa del browser. Arrivando dal pulsante «Stampa» della scheda parte da sola una volta (il parametro «auto» sparisce dall’indirizzo, così se ricarichi la pagina la stampa non riparte).",
        "src": "src/app/[locale]/app/rilievi/[id]/stampa/page.tsx:46"
       },
       {
@@ -2946,7 +2946,7 @@
    "id": "rilievi-elimina",
    "title": "Spostare la scheda nel cestino?",
    "path": "/it/app/rilievi/‹id›/elimina",
-   "access": "Chi ha il diritto «Spostare una scheda nel cestino»: con la matrice predefinita Capotecnico e Progettista (il Titolare sempre). Se l’azienda è in sola lettura le schede si consultano e si scaricano, ma non si modificano. Una scheda di un’altra azienda, inesistente o già nel cestino dà «Pagina non trovata».",
+   "access": "Chi ha il diritto «Spostare una scheda nel cestino»: con la matrice predefinita Capotecnico e Progettista (il Titolare sempre). Se l’azienda è in sola lettura, le schede si consultano e si scaricano, ma non si modificano. Una scheda di un’altra azienda, inesistente o già nel cestino dà «Pagina non trovata».",
    "reach": "Dalla pagina della scheda con «Elimina».",
    "purpose": [
     "Conferma prima di spostare la scheda nel cestino. Non cancella niente: «Dal cestino potranno ripristinarla il Titolare e chi ha il permesso di gestire il cestino.»",
@@ -2965,7 +2965,7 @@
      "actions": [
       {
        "label": "Sposta nel cestino",
-       "help": "Sposta la scheda nel cestino e ti riporta all’elenco con l’avviso «Scheda spostata nel cestino.». Eventuali errori compaiono accanto al pulsante.",
+       "help": "Sposta la scheda nel cestino e ti riporta all’elenco con l’avviso «Scheda spostata nel cestino.» Eventuali errori compaiono accanto al pulsante.",
        "src": "src/components/rilievi/Confirm.tsx:18"
       },
       {
@@ -2984,7 +2984,7 @@
    "access": "Chi gestisce il cestino: con la matrice predefinita il Capotecnico, oltre al Titolare (diritto «Gestire il cestino: ripristinare o eliminare per sempre»). Gli altri ruoli vedono «Permesso non concesso».",
    "reach": "Dall’elenco «Schede» con il pulsante «Cestino».",
    "purpose": [
-    "Le schede eliminate, dalla più recente eliminata. Sotto il titolo: «Schede eliminate: ripristinale o eliminale definitivamente.». Un cestino senza schede dice «Il cestino è vuoto.»."
+    "Le schede eliminate, a partire dall’ultima eliminata. Sotto il titolo: «Schede eliminate: ripristinale o eliminale definitivamente.» Un cestino senza schede dice «Il cestino è vuoto.»"
    ],
    "shots": [
     {
@@ -3007,7 +3007,7 @@
        "default": "vuoto",
        "required": "no",
        "help": [
-        "Segnaposto: «N° impianto, matricola, indirizzo…»."
+        "Scrivi il testo e premi Invio. Il segnaposto è «N° impianto, matricola, indirizzo…»."
        ],
        "src": "src/components/rilievi/LiveSearch.tsx:58"
       }
@@ -3022,7 +3022,7 @@
      "actions": [
       {
        "label": "Ripristina",
-       "help": "Rimette subito la scheda tra le altre, senza conferma, e ti porta alla sua pagina con l’avviso «Scheda ripristinata.».",
+       "help": "Rimette subito la scheda tra le altre, senza conferma, e ti porta alla sua pagina con l’avviso «Scheda ripristinata.»",
        "src": "src/components/rilievi/Results.tsx:66"
       },
       {
@@ -3034,7 +3034,7 @@
     }
    ],
    "tips": [
-    "Dalla scheda stessa nel cestino puoi fare le stesse due azioni."
+    "Le stesse due azioni sono disponibili anche nella pagina della scheda nel cestino."
    ]
   },
   {
@@ -3059,7 +3059,7 @@
      "actions": [
       {
        "label": "Elimina definitivamente",
-       "help": "Elimina la scheda per sempre e ti porta al cestino con l’avviso «Scheda eliminata definitivamente.».",
+       "help": "Elimina la scheda per sempre e ti porta al cestino con l’avviso «Scheda eliminata definitivamente.»",
        "src": "src/components/rilievi/Confirm.tsx:18"
       },
       {
@@ -3102,7 +3102,7 @@
   },
   {
    "term": "Conflitto di versione",
-   "def": "Succede se un collega salva la stessa scheda mentre la stai modificando: il tuo modulo resta e ti viene detto, prima di sovrascrivere."
+   "def": "Succede quando un collega salva la stessa scheda mentre la stai modificando: il tuo modulo resta aperto con i tuoi dati e un avviso te lo segnala prima che tu sovrascriva le sue modifiche."
   }
  ],
  "verify": [
