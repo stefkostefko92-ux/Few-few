@@ -2887,7 +2887,7 @@
     },
     {
       "term": "Calata",
-      "def": "Il punto in cui le funi, lato cabina o lato contrappeso, attraversano la soletta del locale macchina."
+      "def": "Il tratto di funi che scende dalla puleggia di trazione alla cabina o al contrappeso, e il punto in cui attraversa la soletta del locale macchina. La quota «Calata» della pianta è l’interasse tra le due calate; nel tiro diretto, senza rinvio, deve essere uguale al diametro della puleggia."
     },
     {
       "term": "Taglia 1:1 / 2:1",
@@ -2923,7 +2923,7 @@
     },
     {
       "term": "SHA-256",
-      "def": "Impronta del calcolo o del rilievo salvato: se il software lo riproduce uguale, compare «riprodotto»."
+      "def": "L’impronta del contenuto di un record salvato, di un file o di un documento emesso: se il contenuto cambia, cambia l’impronta. Accanto a un record salvato, «riprodotto» dice che il software attuale lo rifà uguale; serve anche a provare che un documento non è stato modificato dopo l’emissione."
     },
     {
       "term": "da aggiornare",

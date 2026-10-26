@@ -1797,7 +1797,7 @@
     },
     {
       "term": "Bozza",
-      "def": "Quello che hai scritto in un modulo, conservato automaticamente prima del salvataggio; si cancella con «Scarta la bozza»."
+      "def": "Due usi. Quello che scrivi in un modulo, conservato da solo finché non salvi: si riprende o si cancella con «Scarta la bozza». E ogni risultato di LiftPilot rispetto al documento: diventa documento quando un tecnico abilitato lo verifica e lo firma; l’anteprima di una relazione non emessa porta la scritta «BOZZA — non emessa, non valida per la firma»."
     },
     {
       "term": "Record",
@@ -1809,7 +1809,7 @@
     },
     {
       "term": "Cartiglio",
-      "def": "Il riquadro con i dati dell’impianto, in cima alla pagina dell’impianto e nelle tavole."
+      "def": "Il riquadro di ogni foglio delle tavole con numero e revisione del disegno, impianto, committente, azienda, loghi e iniziali di chi disegna. In cima alla pagina dell’impianto i dati dell’impianto stanno in un riquadro dello stesso tipo."
     },
     {
       "term": "Foglio 1",

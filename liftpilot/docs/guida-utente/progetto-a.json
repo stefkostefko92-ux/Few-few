@@ -1595,7 +1595,7 @@
     },
     {
       "term": "Calata",
-      "def": "Il tratto di funi che scende dalla puleggia di trazione alla cabina o al contrappeso. La quota «Calata» della pianta è l’interasse tra le due calate; nel tiro diretto, senza rinvio, deve essere uguale al diametro della puleggia."
+      "def": "Il tratto di funi che scende dalla puleggia di trazione alla cabina o al contrappeso, e il punto in cui attraversa la soletta del locale macchina. La quota «Calata» della pianta è l’interasse tra le due calate; nel tiro diretto, senza rinvio, deve essere uguale al diametro della puleggia."
     }
   ],
   "verify": [
