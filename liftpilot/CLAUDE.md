@@ -82,6 +82,8 @@ MAILBOX_PORT=2526 … npm run smoke                     # + регистраци
                                                       # всеки пълен прогон — нов процес на сървъра (или час): 3 регистрации, таванът е 5 на час от адрес (в паметта)
 BASE_URL=… ADMIN_PASSWORD=… node scripts/smoke-allegati.mjs   # качените файлове: откази, права, изолация (сървърът с PUBLIC_BASE_URL = BASE_URL)
 BASE_URL=… ADMIN_PASSWORD=… node scripts/smoke-schizzi.mjs    # схиците: PNG/HEIC, прегледът, четенето изключено (503), панелът, DXF → машинното, Tecnico 403, друга фирма 404 (нужни heif-convert и pdftoppm)
+BASE_URL=… ADMIN_PASSWORD=… MAILBOX_PORT=… OUT=… CHAPTERS=docs/guida-utente node scripts/guida-utente/screenshot.mjs   # снимките на ръководството (празна база, измислена фирма)
+python3 -I scripts/guida-utente/pdf.py --shots … --out LiftPilot-Guida-utente.pdf [--admin]   # ръководството на италиански (PDF; --admin — приложението за администратора); docs/guida-utente/README.md
 python3 -I scripts/brand-assets.py [--og]             # логото, емблемата, favicon/иконите (и с --og og-it.png) от brand/premium/
 python3 -I scripts/icons-build.py                     # рисуваните икони → public/icons/*-48|96.webp + src/components/icon-names.ts
 python3 -I scripts/premium-images.py                  # илюстрациите на шаблона → public/img/premium/ (AVIF + WebP)
@@ -215,5 +217,7 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
 - **Производителност:** съветът прави ~30 извеждания в браузъра — едно `deriveLift` остава десетки ms; рендерите на
   PDF/DOCX — най-много 2 наведнъж и 8 на опашка (`RendererBusy` → 503); 3D рисува само докато нещо се движи.
 - **Артефактът** (`npm run artifact`) се сглобява в гейта, но се публикува само когато собственикът го поиска.
+- **Ръководството** (кръг 51, `docs/guida-utente/`, PDF на италиански): страница, поле или бутон, сменени в приложението,
+  се сменят и в главата, която ги описва, в същата промяна; етикетите — както в `messages/it.json`.
 - Коментарите в кода са на английски, текстовете за инженера и отчета — на италиански, комитите — на български. Без CI
   workflow (решение на собственика); гейтът се пуска локално. Файл над 300 реда се разделя, преди да се добавя.

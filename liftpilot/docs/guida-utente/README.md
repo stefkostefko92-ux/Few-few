@@ -9,13 +9,18 @@
   `warnings` → «Attenzione»), съветите, снимките (`shots`) и речникът. `src` (файл:ред в кода) и `verify` не се
   печатат: те са за този, който обновява ръководството.
 
+Снимките (`scripts/guida-utente/screenshot.mjs` и сцените в `scatti/`) се правят от празна база с измислена фирма
+(«Ascensori Esempio S.r.l.», адреси на домейна `.example`); паролите и временните връзки се скриват в DOM-а преди всяка
+снимка. Без Stripe на сървъра лентата за абонамента не съществува, затова такава снимка няма.
+
 Правилата на текста: само каквото прави кодът; етикетите — от `messages/it.json`; никакъв текст на норми (номер на точка
 и стойност); на „ти“ („tu“), както интерфейсът; никакви лични данни (примерната фирма е измислена).
 
 ## Наново
 
 ```bash
-# 1. снимките: LiftPilot пуснат върху празна база (само администраторът), пощата към sink на MAILBOX_PORT
+# 1. снимките: LiftPilot пуснат върху празна база (само администраторът), пощата към sink на MAILBOX_PORT;
+#    DEMO_DATABASE_URL (по желание, база с име lp_demo) — за двете състояния на условията, до които страниците не стигат
 BASE_URL=http://localhost:3520 ADMIN_PASSWORD=… MAILBOX_PORT=2630 OUT=/път/shots CHAPTERS=docs/guida-utente \
   node scripts/guida-utente/screenshot.mjs
 # 2. PDF-ите (ReportLab, Pillow; DejaVu от REPORT_FONT_DIR)
