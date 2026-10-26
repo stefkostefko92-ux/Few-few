@@ -488,7 +488,7 @@
               "required": "no",
               "help": [
                 "Attivala se sopra il vano c’è un locale macchina da disegnare e verificare (pianta, sezione B-B, altezza, area libera davanti al quadro, porta, putrelle). Attivandola compaiono i campi del locale, tutti da inserire tranne la posizione del quadro quando la sceglie il software.",
-                "Questa casella non esiste nel locale delle pulegge: lì c’è sempre."
+                "Questa casella non esiste nel locale delle pulegge: lì il locale c’è sempre."
               ],
               "src": "src/components/shaft/RoomOptions.tsx:268"
             },
@@ -496,7 +496,7 @@
               "label": "Larghezza interna (mm)",
               "kind": "numero",
               "unit": "mm",
-              "values": "da 1000 a 20 000, passo 10",
+              "values": "da 1000 a 20.000, passo 10",
               "default": "Vuoto fino all’inserimento.",
               "required": "sì, quando il locale c’è",
               "help": [
@@ -508,7 +508,7 @@
               "label": "Profondità interna (mm)",
               "kind": "numero",
               "unit": "mm",
-              "values": "da 1000 a 20 000, passo 10",
+              "values": "da 1000 a 20.000, passo 10",
               "default": "Vuoto fino all’inserimento.",
               "required": "sì, quando il locale c’è",
               "help": [
@@ -520,7 +520,7 @@
               "label": "Vano dalla parete sinistra del locale (mm)",
               "kind": "numero",
               "unit": "mm",
-              "values": "da 0 a 20 000, passo 10",
+              "values": "da 0 a 20.000, passo 10",
               "default": "Vuoto fino all’inserimento.",
               "required": "sì, quando il locale c’è",
               "help": [
@@ -532,7 +532,7 @@
               "label": "Vano dalla parete anteriore del locale (mm)",
               "kind": "numero",
               "unit": "mm",
-              "values": "da 0 a 20 000, passo 10",
+              "values": "da 0 a 20.000, passo 10",
               "default": "Vuoto fino all’inserimento.",
               "required": "sì, quando il locale c’è",
               "help": [
@@ -544,7 +544,7 @@
               "label": "Altezza libera (mm)",
               "kind": "numero",
               "unit": "mm",
-              "values": "da 1500 a 10 000, passo 10",
+              "values": "da 1500 a 10.000, passo 10",
               "default": "Vuoto fino all’inserimento.",
               "required": "sì, quando il locale c’è",
               "help": [
@@ -556,7 +556,7 @@
               "label": "Altezza al colmo (mm, 0 = tetto piano)",
               "kind": "numero",
               "unit": "mm",
-              "values": "da 0 a 15 000, passo 10; 0 o vuoto = tetto piano",
+              "values": "da 0 a 15.000, passo 10; 0 o vuoto = tetto piano",
               "default": "0 (tetto piano).",
               "required": "no",
               "help": [
@@ -592,7 +592,7 @@
               "label": "Porta dall’angolo (mm)",
               "kind": "numero",
               "unit": "mm",
-              "values": "da 0 a 20 000, passo 10",
+              "values": "da 0 a 20.000, passo 10",
               "default": "Vuoto fino all’inserimento.",
               "required": "sì, quando il locale c’è",
               "help": [
@@ -632,8 +632,8 @@
               "default": "Attiva (il software sceglie la parete e la posizione).",
               "required": "no",
               "help": [
-                "Attiva: il software mette il quadro contro una parete, fuori dall’ingombro di argano, limitatore e interruttore generale, con la superficie libera davanti (UNI EN 81-20, 5.2.6.3.2.1: 0,70 × 0,50 m) e un percorso di almeno 500 mm dalla porta (5.2.6.3.2.2), il più vicino possibile alla porta. Parete e posizione compaiono con il marchio «automatico».",
-                "Se sposti il quadro sul disegno, o se disattivi la casella, la posizione diventa inserita e resta dove era. Non compare nel locale delle pulegge."
+                "Attiva: il software mette il quadro contro una parete, fuori dall’ingombro di argano, limitatore e interruttore generale, con la superficie libera davanti (UNI EN 81-20, 5.2.6.3.2.1: 0,70 × 0,50 m) e un percorso di almeno 500 mm dalla porta (5.2.6.3.2.2), il più vicino possibile alla porta. Parete e posizione compaiono con l’etichetta «automatico».",
+                "Se sposti il quadro sul disegno, o se disattivi la casella, la posizione diventa un valore inserito da te e resta dov’era. Non compare nel locale delle pulegge."
               ],
               "src": "src/components/shaft/RoomFields.tsx:185"
             },
@@ -653,7 +653,7 @@
               "label": "Quadro dall’angolo (mm)",
               "kind": "numero",
               "unit": "mm",
-              "values": "da 0 a 20 000, passo 10. Con la posizione automatica è mostrato come valore «automatico».",
+              "values": "da 0 a 20.000, passo 10. Con la posizione automatica è mostrato come valore «automatico».",
               "default": "Vuoto in un locale nuovo; con la casella attiva, scelto dal software.",
               "required": "sì, quando la posizione non è del software",
               "help": [
@@ -706,7 +706,7 @@
               "required": "no",
               "help": [
                 "Su che cosa poggia l’argano. Un nuovo tipo parte dal profilato, dall’altezza e dalla lunghezza tipici. Il rinvio sta sempre nel locale, mai nel vano.",
-                "Il campo compare sotto il titolo «Basamento dell’argano», quando i dati del progetto sono completi e la macchina è definita. L’altezza del basamento porta l’asse della puleggia: il calcolo, i disegni del locale e il 3D la seguono."
+                "Il campo compare sotto il titolo «Basamento dell’argano», quando i dati del progetto sono completi e la macchina è definita. L’altezza del basamento determina la quota dell’asse della puleggia: il calcolo, i disegni del locale e il 3D la seguono."
               ],
               "src": "src/components/shaft/RoomFields.tsx:122"
             },
@@ -727,7 +727,7 @@
               "kind": "numero",
               "unit": "mm",
               "values": "da 0 a 3000, passo 5. Non compare con il telaio con rinvio del costruttore. Con profilato e putrelle non può essere inferiore all’altezza del profilato.",
-              "default": "Calcolata: spessori = quanto dà l’asse della puleggia scelto dal software (0,9·D sul pavimento); profilato = altezza del profilato; piastre 20 mm; plinto 250 mm.",
+              "default": "Calcolata: con gli spessori, l’altezza che porta l’asse della puleggia alla quota scelta dal software (0,9·D sul pavimento); con il profilato, l’altezza del profilato; con le piastre, 20 mm; con il plinto, 250 mm.",
               "required": "no",
               "help": [
                 "Quota della faccia superiore del basamento sul pavimento del locale, dove poggiano gli appoggi dell’argano. Con le putrelle puoi alzarle dal pavimento (argano non a terra): vengono verificate a tensione e freccia."
@@ -799,14 +799,14 @@
           ],
           "actions": [],
           "notes": [
-            "Con la macchina in basso e lo schema «Locale pulegge sopra il vano» il riquadro si intitola «Locale delle pulegge sopra il vano» e mostra «standard» se il progetto non ha un locale proprio: viene disegnato e verificato come il locale standard del software (grande quanto il vano, altezza e porta standard). Inserendo una misura il locale diventa quello del progetto.",
+            "Con la macchina in basso e lo schema «Locale pulegge sopra il vano» il riquadro si intitola «Locale delle pulegge sopra il vano» e mostra l’etichetta «standard» se il progetto non ha un locale proprio: viene disegnato e verificato come il locale standard del software (grande quanto il vano, altezza e porta standard). Inserendo una misura il locale diventa quello del progetto.",
             "In quel locale non ci sono argano né quadro: servono solo dimensioni, altezza, soletta e porta. Si verificano l’altezza libera (almeno 1500 mm), la porta (almeno 600 × 1400 mm) e lo spazio sopra le pulegge senza protezione (almeno 300 mm)."
           ]
         },
         {
           "title": "Funi e rinvii",
           "intro": [
-            "Il riquadro «Funi nel disegno» è aperto. Mostra ciò che il disegno completa del calcolo argano. Ogni valore ha un interruttore: acceso, vale il valore del disegno; spento, resta quello del calcolo argano come salvato, che si cambia nel calcolo.",
+            "Il riquadro «Funi nel disegno» è aperto. Mostra i valori del calcolo argano che il disegno completa. Ogni valore ha un interruttore: acceso, vale il valore del disegno; spento, resta quello del calcolo argano come salvato, che si cambia nel calcolo.",
             "Gli avvisi rossi spiegano cosa non torna e, dove il calcolo risolve il problema, compare «Porta nel calcolo», che apre il calcolo con i valori del disegno (se hai il diritto di fare i calcoli)."
           ],
           "fields": [
@@ -839,7 +839,7 @@
               "label": "Fune oltre la corsa, per lato",
               "kind": "numero",
               "unit": "m",
-              "values": "sola lettura, 2 decimali; marchio «automatico» o «dal calcolo»",
+              "values": "sola lettura, 2 decimali; etichetta «automatico» o «dal calcolo»",
               "default": "Dal disegno se l’interruttore è acceso.",
               "required": "no",
               "help": [
@@ -864,7 +864,7 @@
               "label": "Rinvio: distanza orizzontale dal centro puleggia",
               "kind": "numero",
               "unit": "m",
-              "values": "sola lettura, 3 decimali; marchio «automatico» o «dal calcolo»",
+              "values": "sola lettura, 3 decimali; etichetta «automatico» o «dal calcolo»",
               "default": "Dalla pianta con l’interruttore acceso.",
               "required": "no",
               "help": [
@@ -876,7 +876,7 @@
               "label": "Rinvio: distanza verticale dal centro puleggia",
               "kind": "numero",
               "unit": "m",
-              "values": "sola lettura, 3 decimali; marchio «automatico», «dalla pianta» o «dal calcolo»",
+              "values": "sola lettura, 3 decimali; etichetta «automatico», «dalla pianta» o «dal calcolo»",
               "default": "Dal telaio con rinvio se la macchina lo ha e l’interruttore è acceso; «dalla pianta» se hai impostato h sulla pianta con l’interruttore spento.",
               "required": "no",
               "help": [
@@ -901,7 +901,7 @@
               "label": "Distanza verticale testata – puleggia di frizione",
               "kind": "numero",
               "unit": "m",
-              "values": "sola lettura, 2 decimali; marchio «automatico» o «dal calcolo»",
+              "values": "sola lettura, 2 decimali; etichetta «automatico» o «dal calcolo»",
               "default": "Dal disegno se l’interruttore è acceso.",
               "required": "no",
               "help": [
@@ -942,11 +942,11 @@
       "id": "progetto-verifiche",
       "title": "Progetto — verifiche, 3D e simulazione",
       "path": "/it/app/projects/‹id›/progetto",
-      "access": "Stessa pagina di prima: la vedono e la modificano Titolare, Capotecnico e Progettista (diritto «progetto:edit»). Il salvataggio è del Titolare e dei ruoli con quel diritto. La distinta con i prezzi si vede con il diritto sui prezzi.",
+      "access": "Stessa pagina di prima: la vedono e la modificano Titolare, Capotecnico e Progettista (diritto «progetto:edit»). Possono salvare il Titolare e i ruoli con quel diritto. La distinta con i prezzi si vede con il diritto sui prezzi.",
       "reach": "È la parte destra della pagina «Progetto e simulazione» e la barra in fondo allo schermo; i riquadri compaiono appena i dati del progetto sono completi.",
       "purpose": [
         "A destra il software mostra, in tempo reale, ciò che ha ricavato dai tuoi dati: i valori calcolati, la simulazione 3D con i grafici, l’elenco di tutte le verifiche e la distinta delle staffe. Il riquadro «Dati del progetto da inserire» e il confronto «Il progetto completa il calcolo» sono descritti nel capitolo precedente.",
-        "In fondo alla pagina c’è la barra del salvataggio."
+        "In fondo alla pagina c’è la barra di salvataggio."
       ],
       "shots": [
         {
@@ -1010,7 +1010,7 @@
               "default": "Dal calcolo.",
               "required": "no",
               "help": [
-                "La portata del calcolo con le persone corrispondenti. Il marchio indica l’origine."
+                "La portata del calcolo con le persone corrispondenti. L’etichetta indica l’origine."
               ],
               "src": "src/components/lift/LiftFacts.tsx:110"
             },
@@ -1018,7 +1018,7 @@
               "label": "Massa della cabina",
               "kind": "testo",
               "unit": "kg",
-              "values": "valore in kg con marchio «stimato» o «automatico»",
+              "values": "valore in kg con l’etichetta «stimato» o «automatico»",
               "default": "Dal calcolo; «stimato» se è la stima di partenza (1,1·Q).",
               "required": "no",
               "help": [
@@ -1055,7 +1055,7 @@
               "kind": "testo",
               "unit": null,
               "values": "marca e modello (se di catalogo), gola, diametro, funi, rapporto, potenza, freni",
-              "default": "Dal calcolo; marchio «automatico» se proposta dal software.",
+              "default": "Dal calcolo; etichetta «automatico» se proposta dal software.",
               "required": "no",
               "help": [
                 "La macchina verificata nel calcolo con i suoi dati principali. Si cambia nel calcolo argano."
