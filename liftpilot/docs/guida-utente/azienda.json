@@ -24,7 +24,7 @@
         },
         {
           "id": "azienda-sola-lettura",
-          "what": "La stessa pagina con l’azienda in sola lettura: nota sul logo e ordine delle sezioni senza frecce"
+          "what": "La stessa pagina per un Capotecnico con il solo permesso di esportare: il logo non si cambia e l’ordine delle sezioni non compare"
         }
       ],
       "sections": [
@@ -153,7 +153,7 @@
         },
         {
           "id": "utenti-password",
-          "what": "Il riquadro verde con la password temporanea mostrata una sola volta"
+          "what": "Il riquadro verde con la password temporanea, mostrata una sola volta (server senza posta attiva)"
         }
       ],
       "sections": [
@@ -777,20 +777,7 @@
           "intro": [
             "Nessuna modifica vale finché non la salvi. In basso una barra mostra lo stato: «Nessuna modifica da salvare» oppure «‹n› modifiche non salvate». Se lasci la pagina con modifiche non salvate il browser ti chiede conferma."
           ],
-          "fields": [
-            {
-              "label": "Riferimento della richiesta scritta del Titolare",
-              "kind": "testo",
-              "unit": null,
-              "values": "Da 4 a 200 caratteri.",
-              "default": null,
-              "required": "solo quando la piattaforma LiftPilot modifica la matrice di un’azienda cliente su richiesta scritta del Titolare; nella tua pagina non compare",
-              "help": [
-                "Si indicano la data e l’oggetto dell’e-mail del Titolare, per esempio «12/10/2026 — permessi del Tecnico». Resta nel registro attività dell’azienda."
-              ],
-              "src": "src/components/permessi/ConfirmSave.tsx:48"
-            }
-          ],
+          "fields": [],
           "actions": [
             {
               "label": "Ripristina predefiniti",
@@ -819,7 +806,8 @@
             }
           ],
           "notes": [
-            "Se fai troppi salvataggi di fila compare «Troppi salvataggi. Riprova tra qualche minuto.»"
+            "Se fai troppi salvataggi di fila compare «Troppi salvataggi. Riprova tra qualche minuto.»",
+            "Quando è la piattaforma LiftPilot a cambiare i permessi della tua azienda, su tua richiesta scritta, nella sua finestra di conferma indica il riferimento della richiesta (data e oggetto della tua e-mail), che resta nel registro attività dell’azienda."
           ],
           "warnings": [
             "Una modifica salvata vale subito, dalla prossima pagina che ogni collega apre: togliere un permesso può impedire a un collega di proseguire un lavoro in corso.",
@@ -1034,11 +1022,7 @@
       "shots": [
         {
           "id": "abbonamento-pagina",
-          "what": "La pagina Abbonamento in prova con lo stato e la scelta dei pacchetti"
-        },
-        {
-          "id": "abbonamento-fascia",
-          "what": "La fascia in alto con il pulsante «Abbonamento» durante la prova"
+          "what": "La pagina Abbonamento durante la beta gratuita: stato «Senza fatturazione» e condizioni in breve"
         }
       ],
       "sections": [

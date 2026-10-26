@@ -13,7 +13,7 @@
    "title": "Schede",
    "path": "/it/app/rilievi",
    "access": "Tutti i ruoli con il diritto «Vedere le schede di rilievo e scaricarne i PDF»: con la matrice predefinita Capotecnico, Progettista, Tecnico e Commerciale; il Titolare ha sempre tutti i diritti. Compilare e modificare: Capotecnico, Progettista, Tecnico (diritto «Compilare e modificare le schede e i moduli dei fornitori»). Il pulsante «Cestino» lo vede solo chi gestisce il cestino: con la matrice predefinita il Capotecnico. Il Titolare può cambiare la matrice in «Permessi».",
-   "reach": "Dal menu «Rilievi» → «Schede». Dopo aver salvato, spostato nel cestino o eliminato una scheda l’app ti riporta qui.",
+   "reach": "Dal menu laterale, gruppo «Area di lavoro», voce «Rilievi»: si apre l’elenco «Schede». Dopo aver salvato, spostato nel cestino o eliminato una scheda l’app ti riporta qui.",
    "purpose": [
     "L’elenco delle schede di rilievo della tua azienda, dalla più recente: ogni scheda è il rilievo di un impianto esistente. Da qui cerchi una scheda, la apri o ne crei una nuova.",
     "Sotto il titolo vedi il suggerimento «Cerca per n° impianto, matricola, indirizzo, marca, buono di lavoro o note.» e il numero di schede («1 scheda» / «N schede», oppure «N schede per «testo»» quando cerchi)."

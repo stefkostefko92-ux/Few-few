@@ -25,7 +25,7 @@
         },
         {
           "id": "calc-risultati",
-          "what": "Colonna dei risultati con esito, proposta del software ed esito in breve dopo aver caricato l’Esempio B"
+          "what": "Colonna dei risultati dopo aver caricato l’Esempio B: proposta del software, esito (qui una verifica non superata) e valori chiave"
         }
       ],
       "sections": [
@@ -1575,7 +1575,7 @@
       "shots": [
         {
           "id": "calc-saved",
-          "what": "Pagina di un calcolo salvato: intestazione con tipo di intervento, dati d’identità, consiglio dell’argano e pannello Progetto"
+          "what": "Pagina di un calcolo salvato: intestazione con tipo di intervento, dati d’identità e consiglio dell’argano"
         }
       ],
       "sections": [
