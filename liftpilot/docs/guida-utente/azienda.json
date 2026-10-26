@@ -910,7 +910,7 @@
               "label": "Prezzo",
               "kind": "numero",
               "unit": "€ per l’unità dell’articolo (€/pz, €/m, €/kg, €/fermata, € a corpo)",
-              "values": "Cifre con al massimo due decimali, separatore decimale la virgola (o il punto); le migliaia con il punto («1.250,50») o con lo spazio; il simbolo € è ammesso. Da 0 a 10 000 000 €. Al massimo 16 caratteri. IVA esclusa.",
+              "values": "Cifre con al massimo due decimali, separatore decimale la virgola (o il punto); le migliaia con il punto («1.250,50») o con lo spazio; il simbolo € è ammesso. Da 0 a 10.000.000 €. Al massimo 16 caratteri. IVA esclusa.",
               "default": "Per gli articoli Panev, il prezzo del listino Panev 2026; per tutti gli altri nessun prezzo.",
               "required": "no (un articolo senza prezzo non entra nel totale del costo)",
               "help": [
@@ -961,7 +961,7 @@
               "label": "Prezzo",
               "kind": "numero",
               "unit": "€ per l’unità scelta nella colonna «Quantità» (€ a corpo, €/fermata, €/m)",
-              "values": "Come per i prezzi degli articoli: al massimo due decimali, da 0 a 10 000 000 €, IVA esclusa.",
+              "values": "Come per i prezzi degli articoli: al massimo due decimali, da 0 a 10.000.000 €, IVA esclusa.",
               "default": null,
               "required": "sì, se la riga ha una descrizione",
               "help": [

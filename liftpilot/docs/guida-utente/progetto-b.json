@@ -13,7 +13,7 @@
       "id": "progetto-piani",
       "title": "Progetto — piani, locale macchina e funi",
       "path": "/it/app/projects/‹id›/progetto",
-      "access": "Vedono e modificano la pagina il Titolare e, con la matrice predefinita dei diritti, il Capotecnico e il Progettista (diritto «progetto:edit»). Tecnico e Commerciale non la aprono (vengono mandati alla pagina «senza permesso»). Il Titolare può cambiare la matrice in «Permessi». Un impianto archiviato non si apre. I prezzi nella distinta staffe si vedono solo con il diritto sui prezzi (predefinito: Titolare, Capotecnico, Commerciale).",
+      "access": "Vedono e modificano la pagina il Titolare e, con la matrice predefinita dei diritti, il Capotecnico e il Progettista (permesso «Progetto: disegnare il vano o rilevare il locale macchina»). Tecnico e Commerciale non la aprono (vengono mandati alla pagina «senza permesso»). Il Titolare può cambiare la matrice in «Permessi». Un impianto archiviato non si apre. I prezzi nella distinta staffe si vedono solo con il diritto sui prezzi (predefinito: Titolare, Capotecnico, Commerciale).",
       "reach": "Dalla pagina dell’impianto, passo «Progetto» (dopo il «Calcolo argano»). Il Progetto parte sull’ultimo calcolo argano dell’impianto; con l’indirizzo che termina con ?calc=‹id calcolo› si sceglie un altro calcolo, con ?from=‹id progetto› si riapre un progetto salvato. Dal progetto salvato si arriva anche con «Modifica il disegno».",
       "purpose": [
         "Qui inserisci i dati verticali dell’impianto (fermate, fossa, testata, cabina, ammortizzatori), il locale macchina o il locale delle pulegge e le scelte sulle funi nel disegno. Il software ne ricava il progetto del vano, tutte le verifiche e la simulazione 3D.",
@@ -942,7 +942,7 @@
       "id": "progetto-verifiche",
       "title": "Progetto — verifiche, 3D e simulazione",
       "path": "/it/app/projects/‹id›/progetto",
-      "access": "Stessa pagina di prima: la vedono e la modificano Titolare, Capotecnico e Progettista (diritto «progetto:edit»). Possono salvare il Titolare e i ruoli con quel diritto. La distinta con i prezzi si vede con il diritto sui prezzi.",
+      "access": "Stessa pagina di prima: la vedono e la modificano Titolare, Capotecnico e Progettista (permesso «Progetto: disegnare il vano o rilevare il locale macchina»). Possono salvare il Titolare e i ruoli con quel diritto. La distinta con i prezzi si vede con il diritto sui prezzi.",
       "reach": "È la parte destra della pagina «Progetto e simulazione» e la barra in fondo allo schermo; i riquadri compaiono appena i dati del progetto sono completi.",
       "purpose": [
         "A destra il software mostra, in tempo reale, ciò che ha ricavato dai tuoi dati: i valori calcolati, la simulazione 3D con i grafici, l’elenco di tutte le verifiche e la distinta delle staffe. Il riquadro «Dati del progetto da inserire» e il confronto «Il progetto completa il calcolo» sono descritti nel capitolo precedente.",
@@ -1348,7 +1348,7 @@
       "id": "progetto-salvato",
       "title": "Progetto dell’impianto",
       "path": "/it/app/lift-designs/‹id›",
-      "access": "La vedono tutti i ruoli con il diritto «projects:view» (Titolare, Capotecnico, Progettista, Tecnico, Commerciale). «Modifica il disegno» e «Aggiorna con il software attuale» solo con «progetto:edit» (Capotecnico, Progettista, Titolare) e su impianto non archiviato. Scaricare PDF, DXF, DWG, SVG e relazione: «report:download» (tutti). L’emissione delle tavole: «drawings:issue» (Capotecnico, Progettista). I prezzi: «prices:view» (Capotecnico, Commerciale). Il Titolare può cambiare la matrice.",
+      "access": "La vedono tutti i ruoli con il permesso «Vedere gli impianti con calcoli, progetti e tavole» (Titolare, Capotecnico, Progettista, Tecnico, Commerciale). «Modifica il disegno» e «Aggiorna con il software attuale» solo con «Progetto: disegnare il vano o rilevare il locale macchina» (Capotecnico, Progettista, Titolare) e su impianto non archiviato. Scaricare PDF, DXF, DWG, SVG e relazione: «Scaricare relazioni, tavole, DXF, DWG e SVG, bozze d’ordine e documenti caricati» (tutti). L’emissione delle tavole: «Emettere le tavole e le relazioni tecniche di modifica, con le loro revisioni» (Capotecnico, Progettista). I prezzi: «Vedere i prezzi e il listino» (Capotecnico, Commerciale). Il Titolare può cambiare la matrice.",
       "reach": "Dopo «Salva il progetto»; dalla pagina dell’impianto con «Apri il progetto» (ultima versione), oppure dalla tabella «Versioni salvate» (compare con più di una versione).",
       "purpose": [
         "La versione salvata del progetto, in sola lettura: lo stesso 3D e le stesse verifiche della pagina Progetto, ricalcolati dai dati inseriti, con i documenti prodotti dai suoi dati. Sotto l’intestazione trovi la data, l’autore e l’esito.",
@@ -1516,7 +1516,7 @@
       "id": "progetto-vano-salvato",
       "title": "Progetto del vano",
       "path": "/it/app/shaft-designs/‹id›",
-      "access": "La vedono tutti i ruoli con il diritto di vedere i calcoli (derivato da «projects:view»). I download richiedono «report:download» (tutti). «Apri il modulo del progetto» solo con «progetto:edit» su un impianto non archiviato.",
+      "access": "La vedono tutti i ruoli con il diritto di vedere i calcoli (derivato da «Vedere gli impianti con calcoli, progetti e tavole»). I download richiedono «Scaricare relazioni, tavole, DXF, DWG e SVG, bozze d’ordine e documenti caricati» (tutti). «Apri il modulo del progetto» solo con «Progetto: disegnare il vano o rilevare il locale macchina» su un impianto non archiviato.",
       "reach": "Da «Progetto del vano» nella pagina del progetto dell’impianto o dalla pagina dell’impianto.",
       "purpose": [
         "Mostra il solo vano del progetto salvato, in sola lettura: pianta, sezione A-A, risultati e verifiche e la distinta delle staffe."
