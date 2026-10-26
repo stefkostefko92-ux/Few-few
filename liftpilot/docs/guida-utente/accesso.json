@@ -1637,7 +1637,7 @@
   },
   {
    "term": "Bozza",
-   "def": "Due usi. Quello che scrivi in un modulo, conservato da solo finché non salvi: si riprende o si cancella con «Scarta la bozza». E ogni risultato di LiftPilot rispetto al documento: diventa documento quando un tecnico abilitato lo verifica e lo firma; l’anteprima di una relazione non emessa porta la scritta «BOZZA — non emessa, non valida per la firma»."
+   "def": "Ogni risultato di LiftPilot prima della firma: diventa documento quando un tecnico abilitato lo verifica e lo firma. L’anteprima di una relazione non emessa porta la scritta «BOZZA — non emessa, non valida per la firma». Quello che scrivi in un modulo prima di salvare è la «Bozza (del modulo)»."
   }
  ],
  "verify": [

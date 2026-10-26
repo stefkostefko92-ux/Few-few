@@ -23,7 +23,7 @@ from reportlab.platypus import (BaseDocTemplate, CondPageBreak, Frame, NextPageT
 from reportlab.platypus.tableofcontents import TableOfContents  # noqa: E402
 
 import stili  # noqa: E402
-from blocchi import (actions_table, callout, facts_box, fields_table, figure, glossary_table, md, para,  # noqa: E402
+from blocchi import (actions_table, as_list, callout, facts_box, fields_table, figure, glossary_table, md, para,  # noqa: E402
                      paras)
 from stili import (BODY, BOTTOM, CHAPTER, CHAPTER_NO, COVER_SMALL, COVER_SUB, COVER_TITLE, DARK, DARK_2, H1, H2, H3,  # noqa: E402
                    MARGIN, MUTED, PAGE_H, PAGE_W, RULE, TOC_0, TOC_1, TOP, WIDTH)
@@ -170,7 +170,7 @@ def page_story(page, shots, figures):
         path = os.path.join(shots, shot["id"] + ".png") if shots else None
         if path and os.path.exists(path):
             figures[0] += 1
-            out.append(figure(path, "Figura %d — %s" % (figures[0], shot.get("caption") or page["title"])))
+            out.append(figure(path, "Figura %d — %s" % (figures[0], shot.get("caption") or shot.get("what") or page["title"])))
     for s in page.get("sections") or []:
         out.append(CondPageBreak(30 * mm))
         if s.get("title"):
@@ -181,9 +181,9 @@ def page_story(page, shots, figures):
         if s.get("actions"):
             out += [actions_table(s["actions"]), Spacer(1, 5)]
         for kind, items in (("warn", s.get("warnings")), ("note", s.get("notes"))):
-            for n in items or []:
+            for n in as_list(items):
                 out += [callout(n, kind), Spacer(1, 3)]
-    tips = page.get("tips") or []
+    tips = as_list(page.get("tips"))
     if tips:
         out.append(Paragraph("Consigli pratici", H3))
         for t in tips:

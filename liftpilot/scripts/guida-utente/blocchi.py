@@ -28,12 +28,17 @@ def para(text, style):
     return Paragraph(md(text), style)
 
 
+def as_list(items):
+    """A text field of the chapters is a list of paragraphs or, written short, a single string."""
+    return [items] if isinstance(items, str) else (items or [])
+
+
 def paras(items, style):
-    return [para(t, style) for t in (items or []) if t]
+    return [para(t, style) for t in as_list(items) if t]
 
 
 def _joined(items):
-    return " ".join(md(t) for t in (items or []) if t)
+    return " ".join(md(t) for t in as_list(items) if t)
 
 
 def _grid(widths, rows, head=True):
@@ -61,6 +66,8 @@ def _facts(f):
     lines = []
     for key, name in (("unit", "Unità"), ("values", "Valori"), ("default", "Proposto"), ("required", "Obbligatorio")):
         v = f.get(key)
+        if isinstance(v, list):
+            v = ", ".join(str(x) for x in v)
         if v not in (None, "", "null"):
             lines.append("<b>%s:</b> %s" % (name, md(v)))
     return Paragraph("<br/>".join(lines) or "—", CELL)
@@ -78,7 +85,7 @@ def fields_table(fields):
 
 def actions_table(actions):
     head = [Paragraph("Pulsante o azione", CELL_HEAD), Paragraph("Che cosa fa", CELL_HEAD)]
-    rows = [head] + [[para(a.get("label", ""), CELL_B), Paragraph(md(a.get("help", "")), CELL)] for a in actions]
+    rows = [head] + [[para(a.get("label", ""), CELL_B), Paragraph(_joined(a.get("help")) or "—", CELL)] for a in actions]
     return _grid([50 * mm, WIDTH - 50 * mm], rows)
 
 
@@ -149,5 +156,5 @@ def muted(text):
     return Paragraph(md(text), TINY)
 
 
-__all__ = ["actions_table", "callout", "facts_box", "fields_table", "figure", "glossary_table", "md", "muted", "para",
+__all__ = ["actions_table", "as_list", "callout", "facts_box", "fields_table", "figure", "glossary_table", "md", "muted", "para",
            "paras", "colors", "INK_2", "MUTED"]
