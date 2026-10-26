@@ -998,7 +998,7 @@
               "default": "Calcolata dal software per il vano e la portata.",
               "required": "no",
               "help": [
-                "Dimensioni interne della cabina ricavate dal vano e dalla portata. "
+                "Dimensioni interne della cabina ricavate dal vano e dalla portata."
               ],
               "src": "src/components/lift/LiftFacts.tsx:109"
             },
@@ -1069,7 +1069,7 @@
         {
           "title": "Simulazione 3D",
           "intro": [
-            "La scena mostra vano, cabina, contrappeso, funi e macchina. Trascina per ruotare, tasto destro o due dita per spostare, rotella o pizzico per avvicinare; da tastiera frecce per spostare, Maiusc + frecce per ruotare, + e − per avvicinare; doppio clic per tornare alla vista.",
+            "La scena mostra vano, cabina, contrappeso, funi e macchina. Trascina per ruotare, tasto destro o due dita per spostare, rotella o pizzico per ingrandire; da tastiera frecce per spostare, Maiusc + frecce per ruotare, + e − per ingrandire o ridurre; doppio clic per tornare alla vista iniziale.",
             "Se il dispositivo non supporta la grafica 3D compare «La vista 3D non è disponibile su questo dispositivo»: la simulazione continua nei grafici e nei valori. Il 3D si anima solo mentre qualcosa si muove."
           ],
           "fields": [
@@ -1138,7 +1138,7 @@
               "label": "Carico",
               "kind": "numero",
               "unit": "kg",
-              "values": "cursore da 0 alla portata; passo max(5, portata/40)",
+              "values": "cursore da 0 alla portata; passo pari al maggiore tra 5 kg e portata/40",
               "default": "La portata.",
               "required": "no",
               "help": [
@@ -1247,13 +1247,13 @@
           "notes": [
             "Sopra la scena una striscia mostra in tempo reale Piano, Velocità, «T1/T2 · limite» (rapporto delle trazioni e limite di aderenza), Carico; compaiono le segnalazioni «Le funi slittano» e «Freno chiuso».",
             "Sotto i comandi, l’esito della prova in parole e numeri («OK», «Avviso», «Non passa») con la frase di riepilogo. Nei grafici: velocità della cabina, accelerazione, aderenza T1/T2 con il limite e^(f·α), coppia sull’albero motore, carico in cabina, compressione e decelerazione sull’ammortizzatore. Passando il mouse leggi i valori; un clic sposta la simulazione in quell’istante.",
-            "La nota in fondo avverte che la simulazione usa le stesse forze delle verifiche ma non sostituisce le prove in sito, e che la scena 3D è una rappresentazione, non un rilievo."
+            "La nota in fondo avverte che la simulazione usa le stesse forze delle verifiche ma non sostituisce le prove sull’impianto, e che la scena 3D è una rappresentazione, non un rilievo."
           ]
         },
         {
           "title": "Verifiche",
           "intro": [
-            "Un’unica tabella con tutte le verifiche: prima quelle della macchina (trazione, funi, azionamento, freno, soccorso), poi quelle del vano (pianta, sezione, locale macchina, putrelle sotto la macchina). Il titolo ha come sopratitolo la norma del collaudo."
+            "Un’unica tabella con tutte le verifiche: prima quelle della macchina (trazione, funi, azionamento, freno, soccorso), poi quelle del vano (pianta, sezione, locale macchina, putrelle sotto la macchina). Sopra il titolo è indicata la norma del collaudo."
           ],
           "fields": [
             {
@@ -1273,7 +1273,7 @@
           "actions": [
             {
               "label": "▶ Simula",
-              "help": "Dove la simulazione può riprodurre una verifica (trazione, freno, ammortizzatori, rifugi, carico al 125%, blocco) il pulsante porta in alto il simulatore e rifà quella prova nella vista adatta.",
+              "help": "Dove la simulazione può riprodurre una verifica (trazione, freno, ammortizzatori, rifugi, carico al 125 %, blocco) il pulsante porta in alto il simulatore e rifà quella prova nella vista adatta.",
               "src": "src/components/lift/LiftChecks.tsx:29"
             }
           ],
@@ -1305,7 +1305,7 @@
           ]
         },
         {
-          "title": "Barra del salvataggio",
+          "title": "Barra di salvataggio",
           "intro": [
             "In fondo allo schermo. Il server ricompone il disegno sul calcolo argano, rifà tutti i calcoli e salva progetto del vano e calcolo insieme: non prende nulla di calcolato dal browser."
           ],
@@ -1335,7 +1335,7 @@
           ],
           "warnings": [
             "Il salvataggio crea un record immutabile: salvare di nuovo crea una nuova versione, la precedente resta.",
-            "Il pulsante resta spento con dati mancanti, voci da correggere o tipo di intervento da rivedere («Solo argano» con corsa o velocità diverse dal libretto): porta i valori nel calcolo."
+            "Il pulsante resta disattivato con dati mancanti, voci da correggere o tipo di intervento da rivedere («Solo argano» con corsa o velocità diverse dal libretto): porta i valori nel calcolo."
           ]
         }
       ],
@@ -1348,11 +1348,11 @@
       "id": "progetto-salvato",
       "title": "Progetto dell’impianto",
       "path": "/it/app/lift-designs/‹id›",
-      "access": "La vedono tutti i ruoli con il diritto «projects:view» (Titolare, Capotecnico, Progettista, Tecnico, Commerciale). «Modifica il disegno» e «Aggiorna con il software attuale» solo con «progetto:edit» (Capotecnico, Progettista, Titolare) e su impianto non archiviato. Scarichi PDF, DXF, DWG, SVG e relazione: «report:download» (tutti). L’emissione delle tavole: «drawings:issue» (Capotecnico, Progettista). I prezzi: «prices:view» (Capotecnico, Commerciale). Il Titolare può cambiare la matrice.",
+      "access": "La vedono tutti i ruoli con il diritto «projects:view» (Titolare, Capotecnico, Progettista, Tecnico, Commerciale). «Modifica il disegno» e «Aggiorna con il software attuale» solo con «progetto:edit» (Capotecnico, Progettista, Titolare) e su impianto non archiviato. Scaricare PDF, DXF, DWG, SVG e relazione: «report:download» (tutti). L’emissione delle tavole: «drawings:issue» (Capotecnico, Progettista). I prezzi: «prices:view» (Capotecnico, Commerciale). Il Titolare può cambiare la matrice.",
       "reach": "Dopo «Salva il progetto»; dalla pagina dell’impianto con «Apri il progetto» (ultima versione), oppure dalla tabella «Versioni salvate» (compare con più di una versione).",
       "purpose": [
         "La versione salvata del progetto, in sola lettura: lo stesso 3D e le stesse verifiche della pagina Progetto, ricalcolati dai dati inseriti, con i documenti prodotti dai suoi dati. Sotto l’intestazione trovi la data, l’autore e l’esito.",
-        "I documenti si generano solo finché il software attuale riproduce lo stesso progetto (stesso hash). Se il software è cambiato compare l’avviso e va rifatto con «Aggiorna con il software attuale»."
+        "I documenti si generano solo finché il software attuale riproduce lo stesso progetto (stessa impronta SHA-256). Se il software è cambiato compare un avviso e il progetto va rifatto con «Aggiorna con il software attuale»."
       ],
       "shots": [
         {
@@ -1399,7 +1399,7 @@
         {
           "title": "Valori, 3D, verifiche e distinta",
           "intro": [
-            "Seguono gli stessi riquadri della pagina Progetto, ma di sola lettura: «Valori calcolati», «Simulazione 3D», «Verifiche» (con «▶ Simula») e «Distinta staffe Panev». Poi, se hai il diritto, il costo con la tua lista prezzi e il consiglio di macchina."
+            "Seguono gli stessi riquadri della pagina Progetto, ma di sola lettura: «Valori calcolati», «Simulazione 3D», «Verifiche» (con «▶ Simula») e «Distinta staffe Panev». Poi, se hai il diritto, il costo calcolato con il listino dell’azienda e il consiglio sulla macchina."
           ],
           "fields": [],
           "actions": [],
@@ -1414,7 +1414,7 @@
           "actions": [
             {
               "label": "Relazione di calcolo (PDF)",
-              "help": "Scarica la relazione di calcolo del calcolo argano. Diritto di scarico.",
+              "help": "Scarica la relazione di calcolo del calcolo argano. Serve il diritto di scaricare i documenti.",
               "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:136"
             },
             {
@@ -1444,7 +1444,7 @@
             },
             {
               "label": "PDF delle tavole (bozza)",
-              "help": "Il PDF delle tavole non emesso. Sotto «Esporta il progetto».",
+              "help": "Il PDF delle tavole non ancora emesse, sotto il titolo «Esporta il progetto».",
               "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:150"
             },
             {
@@ -1464,7 +1464,7 @@
             },
             {
               "label": "Bozza d’ordine Word (DOCX)",
-              "help": "Nel riquadro «Bozza d’ordine dell’argano»: l’argano con i dati per il costruttore. Mostra se la macchina è quella verificata o il primo del confronto SICOR / Montanari; i campi esecuzione, prezzo e consegna restano vuoti. Con un argano che resta e senza un argano a catalogo adatto non c’è la bozza.",
+              "help": "Nel riquadro «Bozza d’ordine dell’argano»: l’argano con i dati per il costruttore. Mostra se la macchina è quella verificata o la prima del confronto SICOR / Montanari; i campi esecuzione, prezzo e consegna restano vuoti. Con un argano che resta e senza un argano a catalogo adatto non c’è la bozza.",
               "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:166"
             },
             {
@@ -1481,7 +1481,7 @@
         {
           "title": "Tavole di progetto (emissione)",
           "intro": [
-            "Per Capotecnico, Progettista e Titolare compare il riquadro «Tavole di progetto»: «Il progetto dell’ascensore in tavole A4: dati dell’impianto, piante e sezioni del vano, locale macchina, carichi sull’edificio». Qui si ha il punto d’ingresso dell’emissione."
+            "Per Capotecnico, Progettista e Titolare compare il riquadro «Tavole di progetto»: «Il progetto dell’ascensore in tavole A4: dati dell’impianto, piante e sezioni del vano, locale macchina, carichi sull’edificio». Da qui parte l’emissione."
           ],
           "fields": [
             {
@@ -1500,13 +1500,13 @@
           "actions": [
             {
               "label": "Emetti le tavole",
-              "help": "Emette il set di tavole con numero e revisione. Prima dell’emissione il riquadro segnala dati dell’impianto mancanti (matricola, committente) e il nome della macchina che non coincide con quella del calcolo.",
+              "help": "Emette la serie di tavole con numero e revisione. Prima dell’emissione il riquadro segnala i dati dell’impianto mancanti (matricola, committente) e il nome della macchina che non coincide con quella del calcolo.",
               "src": "src/components/tavole/IssueForm.tsx:86"
             }
           ],
           "notes": [],
           "warnings": [
-            "L’emissione crea un set di tavole con numero e revisione: un’emissione non si cancella."
+            "L’emissione crea una serie di tavole con numero e revisione: un’emissione non si cancella."
           ]
         }
       ],
@@ -1553,7 +1553,7 @@
           ],
           "notes": [],
           "warnings": [
-            "Se il motore è cambiato compare l’avviso: la pianta in DXF non si rigenera e si rifà dal progetto dell’impianto con «Aggiorna con il software attuale»."
+            "Se il motore di calcolo è cambiato compare un avviso: la pianta in DXF non si rigenera e si rifà dal progetto dell’impianto con «Aggiorna con il software attuale»."
           ]
         },
         {
@@ -1578,11 +1578,11 @@
     },
     {
       "term": "Fossa",
-      "def": "Parte del vano sotto il piano più basso."
+      "def": "La parte del vano sotto il piano più basso."
     },
     {
       "term": "Testata",
-      "def": "Parte del vano sopra il piano più alto."
+      "def": "La parte del vano sopra il piano più alto."
     },
     {
       "term": "Rinvio",
@@ -1594,7 +1594,7 @@
     },
     {
       "term": "L0",
-      "def": "Fune oltre la corsa, per lato."
+      "def": "La lunghezza di fune oltre la corsa, per lato."
     },
     {
       "term": "HEB",

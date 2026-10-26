@@ -336,7 +336,7 @@
        "required": "no",
        "help": [
         "Dove si trova la macchina rispetto al vano: in alto o in basso. Puoi spuntare entrambe le voci.",
-        "Riempie «Locale macchina» del modulo MoviLift e il campo «Macchina basso/alto» del modulo Dati argano. Se il rilievo indica solo «Alto», verifica poi se l’argano ha la puleggia di rinvio."
+        "Riempie «Locale macchina» del modulo MoviLift e il campo «Macchina basso/alto» del modulo Dati argano. Il dato serve anche all’impianto collegato: se il Calcolo argano parte dal rilievo e la scheda dice solo «Alto», senza altri dati che chiariscano come è fatto l’argano, compare l’avviso «Il rilievo dice solo «in alto»: verifica se l’argano ha la puleggia di rinvio.»"
        ],
        "src": "src/lib/rilievi/fields.ts:39"
       },
@@ -407,7 +407,7 @@
        "required": "no; compare dopo aver scelto il tipo di porte (qualunque, anche manuali)",
        "help": [
         "Quanti accessi ha la cabina: 1 oppure 2.",
-        "Riempie il numero di accessi dei moduli Pelazza («N° Accessi:») e Mastech QI Touch («Numero accessi») e la scelta «Ingressi» del modulo MoviLift (operatore unico o doppio ingresso)."
+        "Il dato diventa il numero di accessi dei moduli Pelazza («N° Accessi:») e Mastech QI Touch («Numero accessi») e sceglie la voce del modulo MoviLift, gruppo «Varie»: con 1 «Operatore Unico», con 2 «Doppio Ingresso»."
        ],
        "src": "src/lib/rilievi/fields.ts:55"
       }
@@ -425,7 +425,8 @@
        "required": "no",
        "help": [
         "Marca del quadro di manovra da ordinare. Un secondo clic sulla voce scelta la toglie.",
-        "Con Pelazza, MoviLift o Mastech compare la domanda «Vuoi compilare la scheda per l’ordine quadro?»; con DMG e Altro non c’è un modulo d’ordine."
+        "Con Pelazza, MoviLift o Mastech compare la domanda «Vuoi compilare la scheda per l’ordine quadro?»; con DMG e Altro non c’è un modulo d’ordine.",
+        "Nella scelta la marca si legge «Movilift»; il fornitore e il suo modulo si chiamano MoviLift."
        ],
        "src": "src/lib/rilievi/fields.ts:63"
       },
@@ -783,7 +784,7 @@
        "label": "Impianto",
        "kind": "pulsanti di scelta",
        "unit": null,
-       "values": "Quantità (max 20 car.) · Velocità (max 20 car.; dato collegato «Velocità (m/s)») | Tipologia (max 20 car.; dalla scheda: il tipo impianto della scheda, a parole) · Fermate (max 20 car.; dato collegato «Fermate») | Controllo (una sola voce tra: PLC / SCHEDA; proposto: SCHEDA) · Tipo Porte (max 20 car.; dalla scheda: il tipo di porte della scheda, a parole) | Portata (max 20 car.; dato collegato «Portata (kg)») · Capienza (max 20 car.; dato collegato «Capienza (persone)») · N° Impianto (max 20 car.; dato collegato «N° impianto») | Fornitura (una sola voce tra: Solo Quadro / Precablato / Parte Elettrica Completa; proposto: Solo Quadro; gruppo senza titolo visibile)",
+       "values": "Quantità (max 20 car.) · Velocità (max 20 car.; dato collegato «Velocità (m/s)») | Tipologia (max 20 car.; dalla scheda: il tipo impianto della scheda, a parole) · Fermate (max 20 car.; dato collegato «Fermate») | Controllo (una sola voce tra: PLC / SCHEDA; proposto: SCHEDA) · Tipo Porte (max 20 car.; dalla scheda: il tipo di porte della scheda, a parole) | Portata (max 20 car.; dato collegato «Portata (kg)») · Capienza (max 20 car.; dato collegato «Capienza (persone)») · N° Impianto (max 20 car.; dato collegato «N° impianto») |voci senza titolo visibile, una sola: Solo Quadro / Precablato / Parte Elettrica Completa; proposto: Solo Quadro (per i lettori di schermo: «Fornitura») ",
        "default": null,
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
@@ -797,7 +798,7 @@
        "label": "Specifiche",
        "kind": "pulsanti di scelta",
        "unit": null,
-       "values": "Pot. Mot (max 14 car.) · Manovra (max 36 car.) · Inverter (max 26 car.) | Emergenza (max 61 car.) · Manovra Pompieri | Avviamento (una sola voce tra: Avv. Diretto / Stella - Triangolo / Soft Start; gruppo senza titolo visibile) | Rall. Op. Porte · Sonda Temp. Loc. Macchina · Citofono Installato | Rall. Op. Porte con Res. · Fondo Mobile · Comb. Bidirezionale 95/16 | Elettr. Pattino (dalla scheda: si spunta se «Pattino retrattile da cambiare» è «Sì») · Elettr. Pattino V (max 9 car.; dato collegato «Tensione pattino retrattile»; senza etichetta propria, accanto alla voce precedente) · Scheda Seriale Tetto Cabina · Fotocellula · Fotocellula V (max 9 car.; senza etichetta propria, accanto alla voce precedente) | Scivoletto Fisso · El. Serratura 24V · Kit Info Vano | Ventola Raffr. Motore · Cavo Piatto Speciale · EN81.70",
+       "values": "Pot. Mot (max 14 car.) · Manovra (max 36 car.) · Inverter (max 26 car.) | Emergenza (max 61 car.) · Manovra Pompieri |voci senza titolo visibile, una sola: Avv. Diretto / Stella - Triangolo / Soft Start (per i lettori di schermo: «Avviamento») | Rall. Op. Porte · Sonda Temp. Loc. Macchina · Citofono Installato | Rall. Op. Porte con Res. · Fondo Mobile · Comb. Bidirezionale 95/16 | Elettr. Pattino (dalla scheda: si spunta se «Pattino retrattile da cambiare» è «Sì») · Elettr. Pattino V (max 9 car.; dato collegato «Tensione pattino retrattile»; senza etichetta propria, accanto alla voce precedente) · Scheda Seriale Tetto Cabina · Fotocellula · Fotocellula V (max 9 car.; senza etichetta propria, accanto alla voce precedente) | Scivoletto Fisso · El. Serratura 24V · Kit Info Vano | Ventola Raffr. Motore · Cavo Piatto Speciale · EN81.70",
        "default": null,
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
@@ -811,7 +812,7 @@
        "label": "Varie",
        "kind": "pulsanti di scelta",
        "unit": null,
-       "values": "Ingressi (una sola voce tra: Operatore Unico / Doppio Ingresso / Doppio Ingresso Selezionato; dato collegato «Accessi»; proposto: Operatore Unico; gruppo senza titolo visibile) | Marca Op (lato A) (elenco a discesa: 2SG, CMM, DAPA, FIAM, IGV, PRISMA, SELCOM, VICTORY (vuoto: «—»); dato collegato «Marca operatore») · VOLT (lato A) (elenco a discesa: 24Vcc, 48Vcc, 96Vca, 125Vca, 220mono, 220tri (vuoto: «—»)) | Marca Op (lato B) (elenco a discesa: 2SG, CMM, DAPA, FIAM, IGV, PRISMA, SELCOM, VICTORY (vuoto: «—»)) · VOLT (lato B) (elenco a discesa: 24Vcc, 48Vcc, 96Vca, 125Vca, 220mono, 220tri (vuoto: «—»)) | Operatore lato A (una sola voce tra: Oper. alimentato in Marcia / Oper. con Limiti / Oper. senza Limiti; proposto: Oper. con Limiti) · Operatore lato B (una sola voce tra: Oper. Alimentato in Marcia / Oper. con Limiti / Oper. senza Limiti)",
+       "values": "voci senza titolo visibile, una sola: Operatore Unico / Doppio Ingresso / Doppio Ingresso Selezionato; dato collegato «Accessi»; proposto: Operatore Unico (per i lettori di schermo: «Ingressi») | Marca Op (lato A) (elenco a discesa: 2SG, CMM, DAPA, FIAM, IGV, PRISMA, SELCOM, VICTORY (vuoto: «—»); dato collegato «Marca operatore») · VOLT (lato A) (elenco a discesa: 24Vcc, 48Vcc, 96Vca, 125Vca, 220mono, 220tri (vuoto: «—»)) | Marca Op (lato B) (elenco a discesa: 2SG, CMM, DAPA, FIAM, IGV, PRISMA, SELCOM, VICTORY (vuoto: «—»)) · VOLT (lato B) (elenco a discesa: 24Vcc, 48Vcc, 96Vca, 125Vca, 220mono, 220tri (vuoto: «—»)) | Operatore lato A (una sola voce tra: Oper. alimentato in Marcia / Oper. con Limiti / Oper. senza Limiti; proposto: Oper. con Limiti) · Operatore lato B (una sola voce tra: Oper. Alimentato in Marcia / Oper. con Limiti / Oper. senza Limiti)",
        "default": null,
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
@@ -850,7 +851,7 @@
        "label": "Vano e locale macchina",
        "kind": "pulsanti di scelta",
        "unit": null,
-       "values": "Fossa mt (max 10 car.) · Testata mt (max 13 car.) · Corsa mt (max 11 car.; dato collegato «Corsa (m)») · Dist. Loc. Macchina mt (max 11 car.) | Locale macchina (una sola voce tra: Loc. Macc. in ALTO / Loc. Macc. in BASSO; dato collegato «Posizione macchina»; proposto: Loc. Macc. in ALTO; gruppo senza titolo visibile) · Cavo Schermato mt (max 11 car.) | Interpiani standard (già spuntata) · Piano Corto · Piano Corto (1) (max 2 car.) · Piano Corto (2) (max 2 car.)",
+       "values": "Fossa mt (max 10 car.) · Testata mt (max 13 car.) · Corsa mt (max 11 car.; dato collegato «Corsa (m)») · Dist. Loc. Macchina mt (max 11 car.) |voci senza titolo visibile, una sola: Loc. Macc. in ALTO / Loc. Macc. in BASSO; dato collegato «Posizione macchina»; proposto: Loc. Macc. in ALTO (per i lettori di schermo: «Locale macchina») · Cavo Schermato mt (max 11 car.) | Interpiani standard (già spuntata) · Piano Corto · Piano Corto (1) (max 2 car.) · Piano Corto (2) (max 2 car.)",
        "default": null,
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
@@ -890,7 +891,7 @@
        "label": "Armadio",
        "kind": "pulsanti di scelta",
        "unit": null,
-       "values": "Armadio (una sola voce tra: Armadio Standard / Armadio Box Centr. / Armadio MRL; proposto: Armadio Standard; gruppo senza titolo visibile) | Quadr. Distribuzione | Anta (una sola voce tra: Anta SX / Anta DX; proposto: Anta SX; gruppo senza titolo visibile)",
+       "values": "voci senza titolo visibile, una sola: Armadio Standard / Armadio Box Centr. / Armadio MRL; proposto: Armadio Standard (per i lettori di schermo: «Armadio») | Quadr. Distribuzione |voci senza titolo visibile, una sola: Anta SX / Anta DX; proposto: Anta SX (per i lettori di schermo: «Anta») ",
        "default": null,
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
@@ -903,7 +904,7 @@
        "label": "Uscita display",
        "kind": "pulsanti di scelta",
        "unit": null,
-       "values": "Uscita display (una sola voce tra: 1 Polo Piano / 7 Segmenti / Binario; proposto: 1 Polo Piano; gruppo senza titolo visibile) | Encoder DMG · Sintesi Voc. · Fr Direz | Comune (una sola voce tra: COM. POS / COM. NEG.; proposto: COM. NEG.; gruppo senza titolo visibile) | Tensione (max 10 car.)",
+       "values": "voci senza titolo visibile, una sola: 1 Polo Piano / 7 Segmenti / Binario; proposto: 1 Polo Piano (per i lettori di schermo: «Uscita display») | Encoder DMG · Sintesi Voc. · Fr Direz |voci senza titolo visibile, una sola: COM. POS / COM. NEG.; proposto: COM. NEG. (per i lettori di schermo: «Comune») | Tensione (max 10 car.)",
        "default": null,
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
@@ -928,7 +929,7 @@
        "label": "Combinatore",
        "kind": "pulsanti di scelta",
        "unit": null,
-       "values": "Combinatore (una sola voce tra: Microcall / Teledif / Predisposizione; proposto: Predisposizione; gruppo senza titolo visibile) | Tranquillo",
+       "values": "voci senza titolo visibile, una sola: Microcall / Teledif / Predisposizione; proposto: Predisposizione (per i lettori di schermo: «Combinatore») | Tranquillo",
        "default": null,
        "required": "no; il gruppo si vede solo con il modulo aperto",
        "help": [
@@ -1443,7 +1444,8 @@
        "default": null,
        "required": "quando «Centralina da sostituire?» è «No»",
        "help": [
-        "Se non sostituisci la centralina, indica se va installato l’emendamento A3."
+        "Segna «Sì» se sull’impianto va installato l’emendamento A3, cioè l’adeguamento con i dispositivi contro il movimento incontrollato della cabina. L’interfaccia non chiede altro: dice solo «Emendamento A3 da installare».",
+        "Compare solo se hai risposto «No» a «Centralina da sostituire?». Con «Sì» si aprono le domande sul tubo flessibile da installare (diametro, lunghezza, note)."
        ],
        "src": "src/lib/rilievi/fields-centralina.ts:16"
       },
@@ -1596,7 +1598,7 @@
        "unit": null,
        "values": "numero intero da 0 a 100",
        "default": null,
-       "required": "quando il tipo impianto non è «Idraulico» (anche senza nessuna scelta)",
+       "required": "no; compare quando il tipo impianto non è «Idraulico», compreso quando non hai scelto nessun tipo impianto",
        "help": [
         "Quantità dei tiranti del contrappeso."
        ],
@@ -1608,7 +1610,7 @@
        "unit": null,
        "values": "testo libero, al massimo 120 caratteri",
        "default": null,
-       "required": "quando il tipo impianto non è «Idraulico» (anche senza nessuna scelta)",
+       "required": "no; compare quando il tipo impianto non è «Idraulico», compreso quando non hai scelto nessun tipo impianto",
        "help": [
         "Tipo dei tiranti del contrappeso."
        ],
@@ -2326,7 +2328,7 @@
        "label": "Accessi",
        "kind": "tabella",
        "unit": null,
-       "values": "Scheda: «Accessi» · MoviLift: «Ingressi»",
+       "values": "Scheda: «Accessi» (1 o 2) · MoviLift, gruppo «Varie», voci senza titolo: «Operatore Unico», «Doppio Ingresso», «Doppio Ingresso Selezionato»",
        "default": null,
        "required": "no",
        "help": [
@@ -2578,7 +2580,7 @@
        "required": "no",
        "help": [
         "Dato presente in più posti. Un campo che non hai ancora compilato tu si riempie da solo dagli altri, in ogni direzione e mentre digiti; appena scrivi tu in un campo, quel campo resta tuo.",
-        "Qui i posti scrivono lo stesso dato in modo diverso (ad esempio «Selcom» e «Selcom Midi Supra»): serve solo a proporre il valore, non viene mai segnalato come differenza."
+        "Qui i due posti possono scrivere lo stesso dato in modo diverso: la scheda ha «Marca e modello centralina», il campo «Centralina» di MoviLift può contenere anche solo il modello. Serve solo a proporre il valore, non viene mai segnalato come differenza."
        ],
        "src": "src/lib/rilievi/ordini/collegamenti-aggiunti.ts"
       }
@@ -2885,7 +2887,7 @@
     }
    ],
    "tips": [
-    "I moduli dei fornitori si scaricano solo da qui o dalla stampa: il PDF della scheda ne riporta, se lo scegli, un riepilogo."
+    "I PDF dei moduli dei fornitori si scaricano solo da questa pagina, sotto la domanda del modulo («Scarica PDF» e «Stampa»). La pagina di stampa e il PDF della scheda ne riportano, se lo scegli, solo un riepilogo."
    ]
   },
   {
@@ -2895,7 +2897,7 @@
    "access": "Tutti i ruoli con il diritto «Vedere le schede di rilievo e scaricarne i PDF»: con la matrice predefinita Capotecnico, Progettista, Tecnico e Commerciale; il Titolare ha sempre tutti i diritti. Non occorre il diritto di modifica.",
    "reach": "Dalla scheda con «Stampa» (la stampa del browser parte da sola) oppure aprendo la pagina direttamente.",
    "purpose": [
-    "La scheda su foglio A4, su sfondo bianco anche sullo schermo. Sulla carta esce solo il foglio. Sullo schermo, sopra il foglio, c’è la barra con i pulsanti.",
+    "La scheda su foglio A4, sempre nero su bianco: anche con il resto dell’app scuro, il foglio resta bianco, con un bordo sottile e un’ombra. Sulla carta esce solo il foglio. Sullo schermo, sopra il foglio, c’è la barra con i pulsanti.",
     "Che cosa esce lo decidi nella scheda («Modifica» → «Stampa e PDF» in fondo al modulo): quali sezioni e quali moduli dei fornitori. Qui si applica la scelta salvata; non c’è nessuna scelta da fare in questa pagina."
    ],
    "shots": [
