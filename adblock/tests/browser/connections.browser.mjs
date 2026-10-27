@@ -39,7 +39,7 @@ const hosts = ["www.news-site.org", "static.news-site.org", "www.shop-site.org",
 const profile = mkdtempSync(join(tmpdir(), "sa-conn-"));
 const ctx = await chromium.launchPersistentContext(profile, {
   channel: "chromium", headless: true,
-  args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`, `--host-resolver-rules=${hosts.map((h) => `MAP ${h} 127.0.0.1:${port}`).join(", ")}`],
+  args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`, `--host-resolver-rules=${hosts.map((h) => `MAP ${h} 127.0.0.1:${port}`).join(", ")}`, "--no-proxy-server"],
 });
 try {
   const sw = ctx.serviceWorkers()[0] || await ctx.waitForEvent("serviceworker", { timeout: 20000 });

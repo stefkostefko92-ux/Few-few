@@ -39,7 +39,7 @@ const profile = mkdtempSync(join(tmpdir(), "sa-danger-"));
 const ctx = await chromium.launchPersistentContext(profile, {
   channel: "chromium", headless: true,
   args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`,
-    `--host-resolver-rules=MAP ${BAD} 127.0.0.1:${port}, MAP www.${BAD} 127.0.0.1:${port}, MAP www.frame-site.org 127.0.0.1:${port}`],
+    `--host-resolver-rules=MAP ${BAD} 127.0.0.1:${port}, MAP www.${BAD} 127.0.0.1:${port}, MAP www.frame-site.org 127.0.0.1:${port}`, "--no-proxy-server"],
 });
 try {
   ok(`a test domain from the bundled URLhaus list (${BAD})`, !!BAD);

@@ -29,7 +29,7 @@ const profile = mkdtempSync(join(tmpdir(), "sa-review-"));
 const ctx = await chromium.launchPersistentContext(profile, {
   channel: "chromium", headless: true,
   // a tab the extension opens is not routable by Playwright — the store host resolves nowhere instead
-  args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`, "--host-resolver-rules=MAP chromewebstore.google.com ~NOTFOUND"],
+  args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`, "--host-resolver-rules=MAP chromewebstore.google.com ~NOTFOUND", "--no-proxy-server"],
 });
 try {
   const sw = ctx.serviceWorkers()[0] || await ctx.waitForEvent("serviceworker", { timeout: 20000 });
@@ -108,10 +108,14 @@ try {
   // 5) „Оставете отзив“ → страницата с отзивите в нов раздел, после никога
   await due();
   p = await popup();
+  // the store host resolves nowhere, so the tab ends on chrome-error:// — what counts is the address the
+  // new tab was created with (tabs.onCreated → pendingUrl), not whether the store loaded
+  await sw.evaluate(() => { self.__tabUrls = []; self.__tabSpy = (t) => self.__tabUrls.push(t.pendingUrl || t.url); chrome.tabs.onCreated.addListener(self.__tabSpy); });
   const opened = ctx.waitForEvent("page", { timeout: 5000 });
   await p.click("#reviewGo");
   const tab = await opened; await tab.waitForLoadState("domcontentloaded").catch(() => {});
-  ok(`„Leave a review“ opens the store's reviews page in a new tab (${tab.url()})`, STORE.test(tab.url()));
+  const sent = await sw.evaluate(() => { chrome.tabs.onCreated.removeListener(self.__tabSpy); return self.__tabUrls; });
+  ok(`„Leave a review“ opens the store's reviews page in a new tab (${sent.join(", ")})`, sent.length === 1 && STORE.test(sent[0]));
   ok("…and the card never comes back", (await get("review")).review.never === true);
   await tab.close(); if (!p.isClosed()) await p.close();
 
