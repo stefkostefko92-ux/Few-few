@@ -66,11 +66,22 @@ try {
   // the installations' page offers one new installation and the four steps of its work (round 45); a new installation
   // has no module: it opens straight on its «Calcolo argano», where the type of intervention is chosen
   await page.goto(`${BASE}/it/app/impianti`);
+  // the interface's mode (round 52): chosen in the top bar, each way, and kept with the user; the rest of the run in
+  // «Esperto» (it fills every field, the expert ones too)
+  await hydrated(page, '#ws-mode-esperto');
+  for (const m of ['semplice', 'esperto']) {
+    await page.click(`label[for="ws-mode-${m}"]`);
+    await page.waitForSelector(`[data-modalita="${m}"]`);
+    await page.waitForTimeout(500);
+    await page.reload();
+    assert.equal(await page.locator(`[data-modalita="${m}"]`).count(), 1, `«${m}» kept with the user`);
+    await hydrated(page, '#ws-mode-esperto');
+  }
   assert.equal(await page.locator('main .dash-nuovo a[href$="/app/projects/new"]').count(), 1, 'one new installation');
   assert.equal(await page.locator('main .dash-nuovo .dash-passi li').count(), 4, 'the four steps');
   await page.goto(`${BASE}/it/app/projects/new?kind=replacement`);
   assert.equal(await page.locator('main input[name="kind"]').count(), 0, 'no module to choose (an old ?kind= is ignored)');
-  assert.match(await page.textContent('main form'), /Il tipo di intervento si sceglie nel Calcolo argano/);
+  assert.match(await page.textContent('main form'), /Il tipo di intervento e i dati tecnici si danno dopo, nel Calcolo argano/);
   await page.fill('input[name="name"]', `Smoke ${stamp}`);
   await page.fill('input[name="city"]', 'Milano');
   await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);

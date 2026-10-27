@@ -161,6 +161,13 @@ html.ws-drawer-open { overflow: hidden; }
   .ws-search-narrow { display: block; }
   .ws-top-actions { gap: 8px; }
 }
+/* a phone: the bar holds the menu, the brand's emblem, the search, the mode's switch (round 52) and the avatar within
+   360 px — the brand's word goes, the avatar never shrinks */
+.ws-user-top { flex: none; }
+@media (max-width: 479px) {
+  .ws-topbar { gap: 8px; padding-inline: 12px; }
+  .ws-topbrand > span { display: none; }
+}
 
 /* from 1024 px: the sidebar beside the page, the top bar with the path */
 @media screen and (min-width: 1024px) {

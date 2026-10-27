@@ -31,11 +31,11 @@ export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   await page.waitForSelector('.alert-ok');
   // the owner of a company the platform made accepts the terms before working
   await page.goto(`${BASE}/it/app`);
-  await hydrated(page, 'main form:has(input[name="clauses"]) button');
+  await hydrated(page, 'main form:has(input[name="clauses"]) button[type="submit"]');
   for (const k of ['accept', 'business', 'drafts', 'clauses']) await page.check(`main input[name="${k}"]`);
   // the specific approval of the clauses is signed with the current password (round 48)
   await page.fill('main form:has(input[name="clauses"]) input[name="password"]', ownerNext);
-  await page.click('main form:has(input[name="clauses"]) button');
+  await page.click('main form:has(input[name="clauses"]) button[type="submit"]');
   await page.waitForSelector('main form:has(input[name="clauses"])', { state: 'detached' });
   // a company with nothing yet: «Primi passi» on its Rilievi home (round 48)
   await firstSteps({ BASE, page });

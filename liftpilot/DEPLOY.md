@@ -172,6 +172,32 @@ docker exec liftpilot-app-1 npm run engine:notice -- --send --motivo "<какв�
 не праща на вече уведомените, а неизпратените (грешка на релея) се пращат при следващото. Без пощенски настройки
 `--send` спира, без да праща.
 
+## Кръг 52 — редът на деплоя (relazione tecnica по модела на собственика, «?», режимът, листът «Funi»)
+
+Един release. Миграциите — `30_modalita` (enum `Modalita` и колона `User.modalita` с подразбиране `SEMPLICE`) и
+`31_rt_modello` (CHECK-ът на `TechnicalReport` се сменя: 2.x без основа на проекта, 1.x — точно една); и двете адитивни,
+не пренаписват ред; връщането — в коментарите им (на 31 — само докато няма ред 2.x). Entrypoint-ът ги пуска в ред.
+**Двигателите се сменят** (ENGINE 1.9.0, LIFT 1.34.0, ROOM 1.18.0, SHAFT 2.28.0, RT 1.1.0; новият RT2 2.0.0): всеки запис
+става „da aggiornare“ — затова **преди** деплоя `npm run pdf:keep` на работещия release (пази телата на издадените комплекти
+и relazioni, за да се свалят и след смяната). **Писма няма** — нито `engine:notice --send`, нито други (решение на
+собственика); `engine:notice` без `--send` може да покаже кои фирми имат документи с друг резултат.
+
+0. **Преди:** бекъп (скриптът го прави) и `pdf:keep`:
+   ```bash
+   cd /opt/few-few/liftpilot-current && docker compose exec -T app npm run pdf:keep -- --dry-run
+   docker compose exec -T app npm run pdf:keep
+   ```
+1. **Деплоят:** `REF=<SHA на кръг 52> PROJECTS="liftpilot"` (с `fetch-deploy.sh` от същия SHA). Проверка:
+   ```bash
+   curl -fsS http://127.0.0.1:4330/api/health
+   docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc 'SELECT migration_name FROM "_prisma_migrations" ORDER BY finished_at DESC LIMIT 2'   # 31_rt_modello, 30_modalita
+   docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc "SELECT conname FROM pg_constraint WHERE conname LIKE 'TechnicalReport_%base%'"   # TechnicalReport_base_check
+   docker compose exec app test -f report/fascicolo.py && echo fascicolo ok
+   ```
+2. **След:** издадена relazione 1.x се сваля (пазеното тяло); нова relazione — от «Relazione tecnica» на съоръжението по
+   стъпките, с «BOZZA» в прегледа; записите „da aggiornare“ се обновяват с «Aggiorna con il software attuale».
+3. **IndexNow:** ръководството (`/guida`) е сменено; докато `ALLOW_INDEXING=false` — нищо.
+
 ## Кръг 50 Б — схиците: HEIC, прегледът и четенето (Vertex AI), изключено по подразбиране
 
 Миграция `29_schizzi` — само нова стойност `SCHIZZO` в enum-а `AttachmentKind` (пробвана на копие на базата:

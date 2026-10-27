@@ -47,7 +47,7 @@ export async function collegaFlow({ BASE, page, hydrated, stamp }) {
   assert.equal(await page.inputValue('input[name="plantNumber"]'), matricola, 'the «Numero di matricola» from the survey');
   assert.ok(await page.locator('main form .badge.rilievo').count() >= 2, 'marked «dal rilievo»');
   assert.equal(await page.locator('main input[name="kind"]').count(), 0, 'no module to choose (round 45)');
-  assert.match(await page.textContent('main form'), /Il tipo di intervento si sceglie nel Calcolo argano/);
+  assert.match(await page.textContent('main form'), /Il tipo di intervento e i dati tecnici si danno dopo, nel Calcolo argano/);
   await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
   const projectUrl = page.url().replace(/\/calc$/, '');
 

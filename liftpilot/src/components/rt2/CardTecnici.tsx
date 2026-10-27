@@ -27,8 +27,10 @@ export interface TecniciValori {
   dopo: { azionamento?: '1v' | '2v' | 'vvvf'; capienza?: number; fermate?: number; superficie?: number };
 }
 
-export default function CardTecnici({ n, ctx, x, set, readOnly, chiediAzPrima, calcHref }: {
+export default function CardTecnici({ n, ctx, x, set, readOnly, chiediAzPrima, calcHref, mancanti }: {
   n: number; ctx: ContestoRt2; x: TecniciValori; set: (path: string, v: ValoreRt2 | undefined) => void; readOnly: boolean; chiediAzPrima: boolean; calcHref: string;
+  /** the technical data still to give («tecnici.<path>»): marked, and shown in «Semplice» too */
+  mancanti: ReadonlySet<string>;
 }) {
   const campi: [string, Exclude<Spec, { t: 'gruppo' }>, ValoreRt2 | undefined, ValoreRt2 | undefined][] = [
     ['prima.r', { id: 'r', t: 'scelta', label: '9. Sospensione prima della modifica:', opzioni: [{ v: '1', t: 'Diretto' }, { v: '2', t: 'Indiretto 1:2' }, { v: '4', t: 'Indiretto 1:4' }] },
@@ -60,7 +62,7 @@ export default function CardTecnici({ n, ctx, x, set, readOnly, chiediAzPrima, c
       <div className="rt2-campi">
         {campi.map(([path, spec, value, prop]) => (
           <CampoRt2 key={path} spec={spec} chiave={`tecnici.${path}`} value={value} proposta={prop} set={(v) => set(`tecnici.${path}`, toVal(path, v))}
-            need={false} bad={false} readOnly={readOnly} />
+            need={mancanti.has(`tecnici.${path}`)} bad={false} readOnly={readOnly} />
         ))}
       </div>
     </section>

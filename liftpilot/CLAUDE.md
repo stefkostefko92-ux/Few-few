@@ -52,6 +52,13 @@ TermsGate с паролата (`User.clausesApprovedAt` + одит в същат
 ГГ-NNN и ревизии, `drawings:issue`) е неизменима и пази тялото на PDF-а си (`TechnicalReportPdf`); файловете се прилагат
 при всяко сваляне (`report/pdf-tool.mjs`, отделен процес). Никакви имейли и известия. Старата relazione tecnica на
 машинното я няма (404). Подробно — `docs/rules.md` → „Relazione tecnica di modifica“ и „Качените документи“.
+**От кръг 52 новите relazioni са по модела на собственика** (файлът «RT-E MOD - 10411-1», 1:1, грешките срещу нормата
+поправени и изброени в `docs/relazione-tecnica-differenze.md`): RT 2.0.0, `src/lib/rt2/`, `src/lib/report/rt2/`,
+`report/fascicolo.py`, `src/server/rt2/`, работното място по стъпки `src/components/rt2/`, миграция `31_rt_modello`;
+1.x остават за издадените. Calcolo argano по UNI 10411-1 брои проверките на листа «Funi» (`lift/funi-modello.ts`,
+z вместо S_f с D.2 изпълнена). До всяко поле — «?» с обяснение (`messages/aiuto/`), режим Semplice/Esperto
+(`User.modalita`). Подробно — `docs/rules.md` → „Relazione tecnica по модела на собственика“, „Calcolo argano по листа
+«Funi»“, „«?» и режимът“.
 
 **Схиците на рилевото** (кръг 50, `src/lib/schizzi/`, `src/server/schizzi/`): вид `SCHIZZO` на качения документ (миграция
 29); HEIC от iPhone се превръща в JPEG още при качването (`src/lib/allegati/heic.ts` проверява кутиите преди декодиране,
@@ -117,7 +124,7 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
 - **Хешът покрива версията на двигателя** (`ENGINE_VERSION`, `SHAFT_ENGINE_VERSION`, `LIFT_ENGINE_VERSION`,
   `ROOM_ENGINE_VERSION`): всяко вдигане прави старите записи „da aggiornare“. Обхватът на изпитването (коя част коя проверка
   внася, задълженията, KL на изменението) е извън хеша на изчислението, но стига до документите: смяна в него иска вдигане
-  на четирите версии — тестът `ambito-version` пада иначе (кръг 48: ENGINE 1.8.0, LIFT 1.33.0, ROOM 1.17.0, SHAFT 2.27.0,
+  на четирите версии — тестът `ambito-version` пада иначе (кръг 52: ENGINE 1.9.0, LIFT 1.34.0, ROOM 1.18.0, SHAFT 2.28.0,
   вдигнати заедно; преди деплой, който мени двигател — `npm run pdf:keep` на продукция). Страниците им се виждат (стойностите —
   преизчислени), документите — не. Ново поле във входа се добавя така, че каноничните входове без него да останат
   същите (старите записи се четат), но хешът пак се сменя с версията. Промяна в извеждането → вдигни версията.

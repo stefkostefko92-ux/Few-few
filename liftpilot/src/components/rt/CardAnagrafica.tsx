@@ -20,7 +20,7 @@ export default async function CardAnagrafica({ projectId, anagrafica, client, pl
   const vals = (k: 'liftUse' | 'safetyGear'): string => (plant[k] ? t(`impianto.${k}.${plant[k]}`) : '—');
   return (
     <section className="panel rt-card" id="rt-anagrafica" aria-labelledby="rt-anagrafica-h">
-      <h2 id="rt-anagrafica-h" className="rt-card-title"><span className="rt-step" aria-hidden="true">1</span>{t('card.anagrafica')}</h2>
+      <h2 id="rt-anagrafica-h" className="rt-card-title">{t('card.anagrafica')}</h2>
       <p className="note">{t('anagrafica.lead')}</p>
       <AnagraficaForm projectId={projectId} initial={anagrafica} client={client} norma={norma} readOnly={readOnly} hints={hints} />
       <h3>{t('anagrafica.altrove')}</h3>

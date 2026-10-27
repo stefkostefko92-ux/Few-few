@@ -62,12 +62,14 @@ export default function Rt2Workspace(p: Rt2WorkspaceProps) {
   const ro = !p.canEdit;
 
   const richiesti = useMemo(() => new Map(d.richiesti.map((r) => [r.id, r.motivi])), [d.richiesti]);
-  const mancantiDi = (dove: (x: string) => boolean): number => d.mancanti.filter((m) => dove(m.dove)).length;
+  // a component's need of the technical data (the car's area and capacity) is filled in «Dati tecnici»: counted there
+  const tecnico = (campo: string): boolean => campo.startsWith('tecnici.');
+  const mancantiDi = (dove: (x: string, campo: string) => boolean): number => d.mancanti.filter((m) => dove(m.dove, m.campo)).length;
   const steps: { href: string; label: string; manca: number }[] = [
     { href: '#rt2-generale', label: 'Dati generali', manca: mancantiDi((x) => x === 'doc' || x === 'anagrafica') },
-    { href: '#rt2-tecnici', label: 'Dati tecnici', manca: mancantiDi((x) => x === 'base' || x === 'tecnici') },
+    { href: '#rt2-tecnici', label: 'Dati tecnici', manca: mancantiDi((x, campo) => x === 'base' || x === 'tecnici' || tecnico(campo)) },
     { href: '#rt2-componenti', label: 'Componenti', manca: 0 },
-    ...d.componenti.map((c) => ({ href: `#rt2-${c}`, label: TITOLI_RT2[c], manca: mancantiDi((x) => x === c) })),
+    ...d.componenti.map((c) => ({ href: `#rt2-${c}`, label: TITOLI_RT2[c], manca: mancantiDi((x, campo) => x === c && !tecnico(campo)) })),
     { href: '#rt2-allegati', label: 'Allegati', manca: 0 },
     { href: '#rt2-firme', label: 'Firme ed emissione', manca: mancantiDi((x) => x === 'firme') },
   ];
@@ -85,7 +87,8 @@ export default function Rt2Workspace(p: Rt2WorkspaceProps) {
         {target ? <DraftBar target={target} draft={draft} /> : null}
       </div>
       <CardGenerale n={1} doc={inputs.doc ?? {}} set={(k, v) => set(`doc.${k}`, v)} mancanti={new Set(d.mancanti.map((m) => m.campo))} readOnly={ro} oggi={p.oggi} />
-      <CardTecnici n={2} ctx={d.ctx} x={tecnici} set={set} readOnly={ro} chiediAzPrima={!p.base.C.regolazione} calcHref={p.calcHref} />
+      <CardTecnici n={2} ctx={d.ctx} x={tecnici} set={set} readOnly={ro} chiediAzPrima={!p.base.C.regolazione} calcHref={p.calcHref}
+        mancanti={new Set(d.mancanti.map((m) => m.campo).filter(tecnico))} />
       <CardComponenti n={3} richiesti={richiesti} aggiunti={inputs.aggiunti ?? []} disponibili={DISPONIBILI} readOnly={ro}
         set={(c: ComponenteRt2, on: boolean) => {
           const prev = inputs.aggiunti ?? [], next = on ? [...prev.filter((x) => x !== c), c] : prev.filter((x) => x !== c);

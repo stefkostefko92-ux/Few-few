@@ -3,7 +3,7 @@
   "quadro.tensioneForzaMotrice": "Scrivi la tensione della linea di forza motrice che alimenta il quadro, in volt (di solito 380 o 400 V). La frequenza stampata è 50 Hz.",
   "quadro.tensioneLuce": "Scrivi la tensione della linea luce, in volt (di solito 220 o 230 V). La frequenza stampata è 50 Hz.",
   "quadro.tensioneManovra": "Scrivi la tensione più alta dei circuiti di comando e di sicurezza del quadro, in volt, dalla scheda del quadro. Con il quadro nuovo non deve superare 250 V.",
-  "quadro.frequenzaManovra": "Scegli «50» se i circuiti di manovra sono in corrente alternata, «c.c.» se sono in corrente continua. Con le serrature esistenti decide il limite dei loro contatti (25 V in alternata, 50 V in continua).",
+  "quadro.frequenzaManovra": "Scegli «50» se i circuiti di manovra sono in corrente alternata, «c.c.» se sono in corrente continua. Si stampa accanto alla tensione max. di manovra; per le serrature conta la corrente ai loro contatti, che scegli sotto.",
   "quadro.tensioneOperatore": "Scrivi la tensione del motore dell’operatore porte, in volt. È lo stesso dato della pagina «Porte»: lo scrivi una volta sola.",
   "quadro.frequenzaOperatore": "Scegli la frequenza del motore dell’operatore porte: «50» in alternata, «c.c.» in continua. È lo stesso dato della pagina «Porte».",
   "quadro.contattiAccessibili": "Rispondi «Sì» se i contatti delle serrature di piano esistenti si possono toccare con il dito di prova. In quel caso la loro tensione non deve superare 25 V in alternata o 50 V in continua.",

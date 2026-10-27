@@ -1,12 +1,14 @@
-// The relazione tecnica di modifica (round 49, RT plan §7, §11) in the smoke test, on the installations the run made:
-// the replacement's machine room (scripts/smoke-replacement.mjs, the room path): from its page to the workspace, the
-// registry with the year 1978 (DPR 1497/1963 derived, then confirmed on the logbook), a 2-page PDF and a phone photo
-// uploaded, a section added by hand with its reason, the description and the signatures typed (the draft kept), the
-// draft's PDF, the issue after the dialog (Esc closes it, the confirmation issues), the RT's page, its PDF = its body +
-// the files' pages, a revision R1 with its note; the Progetto of the main installation (the shaft path): its automatic
-// sections with the clause of each reason, the registry's owner missing blocks the issue, the issue; a «Trasformazione
-// completa» says why it has none; the old relazione tecnica of the machine room is gone (404); the workspace fits a phone.
+// The relazione tecnica di modifica in the smoke test (round 52: after the owner's model, RT 2.x), on the installations
+// the run made: the replacement (scripts/smoke-replacement.mjs): from its machine room's page to the workspace on its
+// «Calcolo argano», the registry with the year 1978 (DPR 1497/1963 derived, then confirmed on the logbook), a 2-page PDF
+// and a phone photo uploaded (the document joins on its own, the photo when ticked), the steps with what each still
+// needs, the first page and the signatures typed (the draft kept), the draft's PDF with «BOZZA», the issue (the checks not
+// met or with «Attenzione» confirmed first), the RT's page with its components, its PDF = the fascicolo + the files'
+// pages, a revision R1 with its note; the main installation (its modernisation): the owner missing blocks the issue, the
+// components' required fields filled, issued; a «Trasformazione completa» says why it has none; the old relazione
+// tecnica of the machine room is gone (404); the workspace fits a phone.
 import { Buffer } from 'node:buffer';
+import { spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { PDFDocument } from 'pdf-lib';
 import { step } from './smoke-kit.mjs';
@@ -27,96 +29,141 @@ async function pdf(pages, label) {
 }
 const pagesOf = async (bytes) => (await PDFDocument.load(bytes, { updateMetadata: false })).getPageCount();
 
-/** The description and the signatures of «Verificato da», then the live summary and the draft settled. */
-async function compila(page, hydrated, descrizione) {
-  await hydrated(page, '#rt-descr');
-  await page.fill('#rt-descr', descrizione);
-  await page.selectOption('#rt-ver-tit', 'Ing.');
-  await page.fill('#rt-ver-nome', 'Laura Bianchi');
-  await page.fill('#rt-ver-prov', 'Milano');
-  await page.fill('#rt-ver-num', 'A12345');
-  assert.notEqual(await page.inputValue('#rt-red-nome'), '', '«Redatto da»: the user, prefilled');
-  // the draft kept (or taken up again, the same values typed)
-  await page.waitForFunction(() => /Bozza (salvata|ripresa)/.test(globalThis.document.querySelector('.rt-bar .draft-bar')?.textContent ?? ''), null, { timeout: 20000 });
-  await page.waitForFunction(() => /Riepilogo aggiornato/.test(globalThis.document.querySelector('.rt-live')?.textContent ?? ''), null, { timeout: 20000 });
+/** The text of a PDF (pdftotext of poppler-utils), or null where the tool is missing. */
+function pdfText(bytes) {
+  const r = spawnSync('pdftotext', ['-layout', '-', '-'], { input: bytes, maxBuffer: 64 * 1024 * 1024 });
+  return r.status === 0 ? r.stdout.toString('utf8') : null;
 }
 
-/** The issue: the dialog lists what is printed as not satisfied, missing or to attach; Esc closes it; confirmed, the RT's page. */
+const ws = (page) => page.locator('[data-rt="workspace2"]');
+const mancanti = async (page) => (await page.locator('#rt2-firme .rt-mancanti li').allTextContents()).map((x) => x.trim());
+
+/** The registry: the owner, the maintenance and the law of the approval confirmed on the logbook (`legge`: the derived
+ *  law it must offer first), saved; the page read again. */
+async function anagrafica(page, hydrated, { anno, legge, proprietario }) {
+  await hydrated(page, '#rt-prop');
+  if (anno) await page.fill('#rt-anno', anno);
+  assert.match(await page.textContent('#rt-legge option:first-child'), legge, 'the law derived');
+  await page.check('#rt-legge-ok');
+  await page.fill('#rt-prop', proprietario);
+  await page.fill('#rt-man', 'Ascensori Brianza');
+  await page.click('form.rt-anagrafica button[type="submit"]');
+  await page.waitForSelector('form.rt-anagrafica .note:has-text("Anagrafica salvata.")');
+  await page.reload();
+  await hydrated(page, '#rt2-firme');
+  assert.ok(!(await mancanti(page)).some((m) => m.startsWith('Dati dell’impianto')), 'the registry complete');
+}
+
+/** «Dati generali» and the engineer of «Verificato da» typed («Redatto da»: the user, prefilled); the draft kept. */
+async function compila(page, hydrated, descrizione) {
+  const g = page.locator('#rt2-generale'), f = page.locator('#rt2-firme');
+  await hydrated(page, '#rt2-generale select');
+  await g.getByLabel('Ascensore di costruzione:', { exact: true }).fill('Esempio Elevatori');
+  await g.getByLabel('Utenti autorizzati ed esperti:', { exact: true }).selectOption('no');
+  await g.getByLabel('Componenti modificati o tipologia modifica:', { exact: true }).fill(descrizione);
+  const red = f.locator('.rt2-campi').nth(0), ver = f.locator('.rt2-campi').nth(1);
+  assert.notEqual(await red.getByLabel('Nome e cognome', { exact: true }).inputValue(), '', '«Redatto da»: the user, prefilled');
+  await ver.getByLabel('Titolo', { exact: true }).selectOption('Ing.');
+  await ver.getByLabel('Nome e cognome', { exact: true }).fill('Laura Bianchi');
+  await ver.getByLabel('Provincia dell’Ordine', { exact: true }).fill('Milano');
+  await ver.getByLabel('Numero di iscrizione', { exact: true }).fill('A12345');
+  await page.waitForFunction(() => /Bozza (salvata|ripresa)/.test(globalThis.document.querySelector('.rt-bar .draft-bar')?.textContent ?? ''), null, { timeout: 20000 });
+}
+
+/** Every component field still to fill (marked by the workspace): a choice its first option, a number its least value,
+ *  a text a word — the smoke's data, not a lift's; the checks they give are confirmed at the issue. */
+async function riempi(page) {
+  const need = page.locator('[data-rt="workspace2"] section.rt-card:not(#rt2-generale):not(#rt2-firme) .field.need');
+  for (let i = 0; i < 40 && await need.count(); i++) {
+    const f = need.first(), sel = f.locator('select'), num = f.locator('input[type="number"]');
+    if (await sel.count()) await sel.selectOption((await sel.locator('option').nth(1).getAttribute('value')) ?? '');
+    else if (await num.count()) await num.fill((await num.getAttribute('min')) ?? '1');
+    else await f.locator('input, textarea').first().fill('Dato della prova');
+  }
+  assert.equal(await need.count(), 0, 'every component field filled');
+}
+
+/** The issue: with checks not met or with «Attenzione» the engineer confirms them first («Annulla» goes back); the RT's
+ *  page. */
 async function emetti(page, label) {
-  const button = `#rt-firme button.btn-primary:has-text("${label}")`;
-  await page.click(button);
-  await page.waitForSelector('dialog.rt-dialog[open]');
-  await page.keyboard.press('Escape');
-  await page.waitForSelector('dialog.rt-dialog[open]', { state: 'detached' });
-  await page.click(button);
-  await page.waitForSelector('dialog.rt-dialog[open]');
-  const lists = await page.locator('dialog.rt-dialog .rt-dlg-group').count();
-  assert.ok(lists > 0 || /non manca nessun dato/.test(await page.textContent('dialog.rt-dialog')), 'what the RT prints as missing, listed');
-  await Promise.all([page.waitForURL(/\/app\/relazioni\/[a-z0-9]+$/, { timeout: 90000 }), page.click('dialog.rt-dialog button:has-text("Confermo ed emetto")')]);
+  const button = page.locator(`#rt2-firme button.btn-primary:has-text("${label}")`);
+  assert.equal(await button.isDisabled(), false, `«${label}» enabled: ${(await mancanti(page)).join('; ')}`);
+  const conferma = page.locator('#rt2-firme [role="alertdialog"]');
+  await button.click();
+  const esito = await Promise.race([page.waitForURL(/\/app\/relazioni\/[a-z0-9]+$/, { timeout: 90000 }).then(() => 'emessa'), conferma.waitFor({ timeout: 90000 }).then(() => 'conferma')]);
+  if (esito === 'conferma') {
+    assert.ok(await conferma.locator('li').count() > 0, 'the checks to confirm, listed');
+    await conferma.locator('button:has-text("Annulla")').click();
+    await conferma.waitFor({ state: 'detached' });
+    await button.click();
+    await conferma.waitFor();
+    await Promise.all([page.waitForURL(/\/app\/relazioni\/[a-z0-9]+$/, { timeout: 90000 }), conferma.locator('button:has-text("Emetti comunque")').click()]);
+  }
   return page.url();
 }
 
-/** The room path, on the replacement's machine room while its «Solo argano» is the installation's latest calculation. */
+/** The replacement's RT, from its machine room's page while its «Solo argano» is the installation's latest calculation. */
 export async function rtRoom({ BASE, page, hydrated, stamp, roomUrl, roomId }) {
   step('RT: the old relazione tecnica of the machine room is gone; its page leads to the relazione tecnica di modifica');
   assert.equal((await page.request.get(`${BASE}/api/room-designs/${roomId}/relazione`)).status(), 404, 'old room relazione: 404');
   await page.goto(roomUrl);
   await Promise.all([page.waitForURL(/\/relazione-tecnica$/), page.click('.page-head .actions a[href$="/relazione-tecnica"]')]);
   const wsUrl = page.url(), projectId = wsUrl.split('/').at(-2);
-  assert.equal(await page.locator('[data-rt-base="locale"]').count(), 1, 'the room path: its base is the machine room surveyed');
+  assert.equal(await page.locator('[data-rt-base="calcolo"]').count(), 1, 'made on the «Calcolo argano»');
+  assert.equal(await ws(page).count(), 1, 'the workspace after the owner’s model');
 
-  step('RT: the registry — 1978 gives DPR 1497/1963 to confirm on the logbook, confirmed and saved');
-  await hydrated(page, '#rt-anno');
-  await page.fill('#rt-anno', '1978');
-  assert.match(await page.textContent('#rt-legge option:first-child'), /DPR 1497\/1963 \(dall’anno di installazione\)/, 'the law derived from the year');
-  assert.match(await page.textContent('#rt-legge-h'), /confermala sul libretto/);
-  await page.check('#rt-legge-ok');
-  await page.fill('#rt-prop', 'Condominio Via Roma 1');
-  await page.fill('#rt-man', 'Ascensori Brianza');
-  await page.click('form.rt-anagrafica button[type="submit"]');
-  await page.waitForSelector('form.rt-anagrafica .note:has-text("Anagrafica salvata.")');
-  await page.waitForFunction(() => /DPR 1497\/1963/.test(globalThis.document.querySelector('[data-rt="esito"] .rt-kpi')?.textContent ?? ''), null, { timeout: 20000 });
+  step('RT: the steps with what each needs; the registry — 1978 gives DPR 1497/1963 to confirm on the logbook');
+  const nav = (await page.locator('.rt-nav a').allTextContents()).join(' | ');
+  assert.match(nav, /Dati generali \(mancano \d+\)/, nav);
+  assert.match(nav, /Funi di trazione/, 'the ropes replaced bring their pages');
+  assert.match(nav, /Macchina/, 'the machine replaced brings its page');
+  await anagrafica(page, hydrated, { anno: '1978', legge: /DPR 1497\/1963 \(dall’anno di installazione\)/, proprietario: 'Condominio Via Roma 1' });
 
-  step('RT: two files of the installation (a 2-page PDF, a phone photo): the document joins on its own, the photo when added');
+  step('RT: two files of the installation (a 2-page PDF, a phone photo): the document joins on its own, the photo when ticked');
   const post = (file, fields) => page.request.post(`${BASE}/api/projects/${projectId}/allegati`, { headers: { Origin: BASE }, multipart: { ...fields, file } });
   const doc = await pdf(2, `Libretto RT ${stamp}`);
   assert.equal((await post({ name: 'libretto.pdf', mimeType: 'application/pdf', buffer: doc }, { kind: 'LIBRETTO_VERBALE', title: 'Libretto e verbali' })).status(), 201);
   assert.equal((await post({ name: 'foto.jpg', mimeType: 'image/jpeg', buffer: phoneJpeg(stamp) }, { kind: 'FOTO', title: 'Fotografia del locale' })).status(), 201);
   await page.goto(wsUrl);
-  await page.waitForSelector('#rt-allegati ol.rt-ordine li');
-  assert.equal(await page.locator('#rt-allegati ol.rt-ordine > li').count(), 1, 'the document only: a photo is never attached on its own');
-  await hydrated(page, '#rt-allegati button[aria-label="Allega «Fotografia del locale» alla relazione"]');
-  await page.click('#rt-allegati button[aria-label="Allega «Fotografia del locale» alla relazione"]');
-  await page.waitForFunction(() => globalThis.document.querySelectorAll('#rt-allegati ol.rt-ordine > li').length === 2, null, { timeout: 20000 });
-  assert.equal(await page.locator('#rt-allegati ol.rt-ordine > li').count(), 2, 'both files in the relazione');
-  assert.match(await page.textContent('#rt-allegati ol.rt-ordine > li:first-child'), /Libretto e verbali/);
-  assert.ok(await page.locator('#rt-sezioni article.rt-sezione .chip.rt-auto').count() > 0, 'sections brought by the rule');
-  // a section the rule does not bring, added with its reason
-  await hydrated(page, '.rt-aggiungibili li button');
-  const extra = (await page.locator('.rt-aggiungibili li').first().locator('span').first().textContent()) ?? '';
-  await page.click('.rt-aggiungibili li:first-child button');
-  await page.fill('.rt-aggiungi input', 'Verificata comunque per scelta del tecnico');
-  await page.click('.rt-aggiungi button:has-text("Aggiungi alla relazione")');
-  await page.waitForSelector(`#rt-sezioni article.rt-sezione:has(h3:text-is("${extra}")) .chip.rt-man`, { timeout: 20000 });
+  await hydrated(page, '#rt2-allegati ol.rt2-dich input');
+  const file = (t) => page.locator(`#rt2-allegati ol.rt2-dich li:has-text("${t}") input`);
+  assert.equal(await file('Libretto e verbali').isChecked(), true, 'the document, on its own');
+  assert.equal(await file('Fotografia del locale').isChecked(), false, 'a photo is never attached on its own');
+  await file('Fotografia del locale').check();
+  // the documents the fascicolo declares attached: the machine's and the ropes' proposed
+  assert.ok(await page.locator('#rt2-allegati ul.rt2-dich input:checked').count() >= 2, 'the documents proposed');
 
-  step('RT: description and signatures typed (the draft kept), the draft’s PDF');
+  step('RT: first page and signatures typed (the draft kept); the draft’s PDF with «BOZZA»');
   await compila(page, hydrated, `Sostituzione dell’argano esistente con uno nuovo, prova ${stamp}: funi sostituite, quadro esistente.`);
-  const [preview] = await Promise.all([page.waitForEvent('download', { timeout: 90000 }), page.click('#rt-firme button:has-text("Anteprima PDF")')]);
-  const draftPdf = await preview.createReadStream().then(async (s) => { const c = []; for await (const x of s) c.push(x); return Buffer.concat(c); });
-  assert.equal(draftPdf.subarray(0, 5).toString('latin1'), '%PDF-', 'the draft’s PDF');
+  await riempi(page);
+  assert.deepEqual(await mancanti(page), [], 'nothing missing');
+  assert.match((await page.locator('.rt-nav a').allTextContents()).join(' | '), /Firme ed emissione ✓/);
+  const preview = await page.request.get(`${BASE}/api/projects/${projectId}/relazione-tecnica/anteprima`);
+  assert.equal(preview.status(), 200, 'the draft’s PDF');
+  const draftPdf = await preview.body();
+  assert.equal(draftPdf.subarray(0, 5).toString('latin1'), '%PDF-');
+  const bozza = pdfText(draftPdf);
+  if (bozza !== null) assert.match(bozza, /BOZZA/, 'the draft says it is one');
   await page.goto(wsUrl);
   assert.match(await page.textContent('.rt-bar .draft-bar'), /Bozza ripresa/, 'the draft taken up again');
 
-  step('RT: issued after the dialog; its page; its PDF is its body and the files’ pages');
-  await hydrated(page, '#rt-firme button.btn-primary');
+  step('RT: issued (the checks confirmed first); its page with its components; its PDF is the fascicolo and the files’ pages');
+  await hydrated(page, '#rt2-firme button.btn-primary');
   const rtUrl = await emetti(page, 'Emetti la relazione'), rtId = rtUrl.split('/').pop();
   const numero = /RT (\d{2}-\d{3}) R0$/.exec(await page.textContent('h1'))?.[1];
   assert.ok(numero, 'number and revision');
-  assert.ok(((await page.textContent('main section[aria-labelledby="rt-p-sezioni"]')) ?? '').includes(`${extra}aggiunta dal tecnico`), 'the section added, on its page');
+  const comp = (await page.locator('section[aria-labelledby="rt-p-componenti"] li').allTextContents()).join(' | ');
+  assert.match(comp, /Funi di trazione/, comp);
+  assert.match(comp, /Macchina/, comp);
   const res = await page.request.get(`${BASE}/api/relazioni/${rtId}/pdf`);
   assert.equal(res.status(), 200);
   assert.match(res.headers()['content-disposition'] ?? '', /RT-\d{2}-\d{3}-R0-/);
-  const total = await pagesOf(await res.body());
+  const body = await res.body(), total = await pagesOf(body);
+  const testo = pdfText(body);
+  if (testo !== null) {
+    for (const x of ['Matricola n°', 'Funi di trazione', 'Created and Designed by Carbon Stealth VCC', `${numero}`]) assert.ok(testo.includes(x), `«${x}» in the PDF`);
+    assert.ok(!/BOZZA/.test(testo), 'an issued RT is no draft');
+  }
   await page.reload();
   const kept = Number(/(\d+) pagin[ae] senza i documenti allegati/.exec(await page.textContent('dl.cartiglio'))?.[1] ?? NaN);
   assert.equal(total, kept + 3, `body ${kept} + PDF 2 + photo 1 = ${total}`);
@@ -128,8 +175,8 @@ export async function rtRoom({ BASE, page, hydrated, stamp, roomUrl, roomId }) {
   await page.goto(rtUrl);
   await Promise.all([page.waitForURL(/\/relazione-tecnica\?revisione=/), page.click('.page-head a:has-text("Nuova revisione")')]);
   assert.match(await page.textContent('main .alert-info'), /revisione R1/);
-  await hydrated(page, '#rt-rev');
-  await page.fill('#rt-rev', 'Corretta la descrizione della modifica');
+  await hydrated(page, '#rt2-firme input');
+  await page.locator('#rt2-firme').getByLabel(/^Che cosa cambia rispetto a /).fill('Corretta la descrizione della modifica');
   await page.waitForFunction(() => /Bozza salvata/.test(globalThis.document.querySelector('.rt-bar .draft-bar')?.textContent ?? ''), null, { timeout: 20000 });
   const r1Url = await emetti(page, 'Emetti la revisione');
   assert.match(await page.textContent('h1'), new RegExp(`RT ${numero} R1$`), 'the same number, revision 1');
@@ -149,26 +196,20 @@ export async function rtRoom({ BASE, page, hydrated, stamp, roomUrl, roomId }) {
   return { rtId, rtUrl, wsUrl, projectId };
 }
 
-/** The shaft path, on the Progetto of the main installation (its modernisation to UNI 10411-11). */
+/** The main installation's RT, on its modernisation: the owner missing blocks the issue; its components filled; issued. */
 export async function rtVano({ page, hydrated, stamp, projectUrl }) {
-  step('RT: the Progetto of an installation (the shaft path) — sections by rule with their clauses, issued');
+  step('RT: the main installation’s modernisation — the owner missing blocks the issue; its components filled; issued');
   await page.goto(`${projectUrl}/relazione-tecnica`);
-  assert.equal(await page.locator('[data-rt-base="vano"]').count(), 1, 'the shaft path: its base is the lift design');
-  const motivi = page.locator('#rt-sezioni article.rt-sezione:has(.chip.rt-auto) .rt-motivi li');
-  assert.ok(await motivi.count() > 0, 'automatic sections with their reasons');
-  assert.ok(await page.locator('#rt-sezioni .rt-motivi .rt-clausola').count() > 0, 'each reason with its clause');
-  // without the owner in the registry and its law confirmed the issue is blocked: the button waits for them
-  await hydrated(page, '#rt-prop');
-  assert.ok(await page.locator('#rt-firme .rt-issue button.btn-primary').isDisabled(), 'blocked without the owner');
-  await page.fill('#rt-prop', 'Condominio Via Verdi 3');
+  assert.equal(await page.locator('[data-rt-base="calcolo"]').count(), 1, 'made on the «Calcolo argano»');
+  await hydrated(page, '#rt2-firme button.btn-primary');
+  assert.ok(await page.locator('#rt2-firme button.btn-primary').isDisabled(), 'blocked without the owner');
+  assert.ok((await mancanti(page)).some((m) => m.startsWith('Dati dell’impianto: proprietario')), 'the owner listed as missing');
   // a CE-marked lift: DPR 162/1999, derived, confirmed on the logbook
-  assert.match(await page.textContent('#rt-legge option:first-child'), /DPR 162\/1999/);
-  await page.check('#rt-legge-ok');
-  await page.click('form.rt-anagrafica button[type="submit"]');
-  await page.waitForSelector('form.rt-anagrafica .note:has-text("Anagrafica salvata.")');
+  await anagrafica(page, hydrated, { legge: /DPR 162\/1999/, proprietario: 'Condominio Via Verdi 3' });
   await compila(page, hydrated, `Ammodernamento dell’impianto esistente, prova ${stamp}: argano, quadro e parti indicate nel calcolo.`);
+  await riempi(page);
   await emetti(page, 'Emetti la relazione');
-  assert.ok(await page.locator('main section[aria-labelledby="rt-p-sezioni"] li').count() > 0, 'its sections on the RT’s page');
+  assert.ok(await page.locator('section[aria-labelledby="rt-p-componenti"] li').count() > 0, 'its components on the RT’s page');
 }
 
 /** A «Trasformazione completa» has the new lift's documents, not a relazione tecnica di modifica: said in words. */
@@ -177,5 +218,5 @@ export async function rtTrasformazione({ page, projectUrl }) {
   await page.goto(`${projectUrl}/relazione-tecnica`);
   assert.equal(await page.locator('[data-rt-motivo="trasformazione"]').count(), 1);
   assert.match(await page.textContent('[data-rt-motivo]'), /ascensore nuovo/);
-  assert.equal(await page.locator('[data-rt="workspace"]').count(), 0, 'no workspace');
+  assert.equal(await page.locator('[data-rt="workspace2"]').count(), 0, 'no workspace');
 }

@@ -27,6 +27,8 @@
           "‹id› in un indirizzo è il codice dell’impianto, del calcolo o del documento: lo vedi nella barra degli indirizzi del browser.",
           "I numeri usano la virgola decimale (1,6 m/s). Le misure sono in millimetri, salvo dove è indicata un’altra unità.",
           "«Attenzione» segnala ciò che può bloccare un salvataggio o cambiare un documento; «Consiglio» un modo più rapido o più sicuro di lavorare.",
+          "Accanto al nome di quasi ogni campo trovi un «?» con una spiegazione breve, la stessa di questa guida: porta il mouse sul nome del campo o sul «?», portaci il fuoco con la tastiera oppure toccalo; con Esc la spiegazione si nasconde.",
+          "Il selettore «Semplice» / «Esperto» nella barra in alto decide se vedi anche i campi per esperti: «Semplice» li nasconde e lascia i valori del software, ma non nasconde mai un campo ancora da compilare o con un valore sbagliato. La scelta resta con il tuo utente.",
           "I riferimenti alle norme riportano solo il numero del punto e il valore: il testo delle norme UNI ed EN va letto nelle edizioni ufficiali.",
           "I diritti indicati per ogni pagina sono quelli predefiniti: il Titolare dell’azienda può cambiarli nella pagina «Permessi»."
         ]

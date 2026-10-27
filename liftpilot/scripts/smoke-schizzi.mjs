@@ -197,10 +197,10 @@ export async function schizziFlow({ BASE, browser, kit, ADMIN, stamp }) {
   await other.page.click('main form button[type="submit"]');
   await other.page.waitForSelector('.alert-ok');
   await other.page.goto(`${BASE}/it/app`);
-  await hydrated(other.page, 'main form:has(input[name="clauses"]) button');
+  await hydrated(other.page, 'main form:has(input[name="clauses"]) button[type="submit"]');
   for (const k of ['accept', 'business', 'drafts', 'clauses']) await other.page.check(`main input[name="${k}"]`);
   await other.page.fill('main form:has(input[name="clauses"]) input[name="password"]', ownerNext);
-  await other.page.click('main form:has(input[name="clauses"]) button');
+  await other.page.click('main form:has(input[name="clauses"]) button[type="submit"]');
   await other.page.waitForSelector('main form:has(input[name="clauses"])', { state: 'detached' });
   assert.equal((await other.ctx.request.get(`${BASE}/api/projects/${projectId}/schizzi`)).status(), 404, 'the list');
   assert.equal((await other.ctx.request.get(`${BASE}/api/allegati/${vano.id}/anteprima`)).status(), 404, 'the preview');

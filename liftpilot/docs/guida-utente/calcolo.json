@@ -55,14 +55,15 @@
               "kind": "pulsanti di scelta",
               "unit": null,
               "values": "Semplice | Esperto",
-              "default": "Semplice",
+              "default": "Semplice (la scelta è della barra in alto, vale per tutte le pagine e resta con il tuo utente)",
               "required": "no",
               "help": [
-                "In modalità «Semplice» le righe meno comuni sono nascoste: fune oltre la corsa, inerzie, rendimenti del vano e inverso, poli, frequenza, flessioni in più e tutto il gruppo «Servizio e soccorso». Per quei dati valgono i valori caricati o tipici.",
-                "Passa a «Esperto» per vederli e cambiarli. Una riga nascosta compare comunque da sola, anche in «Semplice», se il suo valore è ancora da inserire o è fuori campo.",
+                "È la stessa modalità «Semplice» / «Esperto» della barra in alto: la scelgi in un punto e vale ovunque, anche per il Calcolo argano e per i calcoli salvati, e resta con il tuo utente.",
+                "In modalità «Semplice» le righe meno comuni sono nascoste: fune oltre la corsa, inerzie, rendimenti del vano e inverso, poli, frequenza, flessioni in più, la massa del cavo flessibile e la decelerazione ridotta della D.1 (gruppo «Funi e compensazione (relazione tecnica)»), e tutto il gruppo «Servizio e soccorso». Per quei dati valgono i valori caricati o tipici.",
+                "Passa a «Esperto» per vederli e cambiarli: il gruppo «Servizio e soccorso» si apre da solo. Una riga nascosta compare comunque da sola, anche in «Semplice», se il suo valore è ancora da inserire o è fuori campo (in quel caso anche il gruppo «Servizio e soccorso» si mostra aperto).",
                 "Sotto il modulo, in «Semplice», il software elenca i valori standard che sta usando sulle righe nascoste («Valori standard in uso (si cambiano in modalità esperto): …»). In «Semplice» le tabelle tecniche dei risultati sono richiuse sotto «Dettagli tecnici: tabelle e valori intermedi»."
               ],
-              "src": "src/components/calc/ModoCalc.tsx; src/components/calc/CalcForm.tsx:43"
+              "src": "src/components/calc/ModoCalc.tsx:14-21; src/components/shell/Modalita.tsx; src/components/calc/CalcForm.tsx:45-48,102-104"
             }
           ],
           "actions": [
@@ -1030,9 +1031,157 @@
           "warnings": []
         },
         {
+          "title": "Funi e compensazione (relazione tecnica)",
+          "intro": [
+            "Gruppo che compare per un impianto esistente («Solo argano» o «Ammodernamento»), dopo «Funi nuove» e prima di «Servizio e soccorso»; con la «Trasformazione completa» non c’è. Il suggerimento sotto il titolo dice: «I dati delle funi come li chiede la relazione tecnica di modifica: la fune dagli elenchi del modello, la compensazione, il cavo flessibile.» Finché non scegli il tipo di intervento le righe non si vedono.",
+            "Questi dati servono a due cose: alle pagine «Funi di trazione» della relazione tecnica di modifica (tensioni, stabilità allo scorrimento, pressione specifica) e all’esito del Calcolo argano con la UNI 10411-1 (vedi «Funi: le verifiche del foglio «Funi» nell’esito»). Nessuna riga è obbligatoria: quelle vuote valgono come indicato nel campo."
+          ],
+          "fields": [
+            {
+              "label": "Fune dagli elenchi",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Inserita a mano (diametro, carico di rottura, massa) · le funi degli elenchi Donati e Telcal (nome: marca e tipo)",
+              "default": "Inserita a mano (diametro, carico di rottura, massa)",
+              "required": "no",
+              "help": [
+                "La fune dagli elenchi della relazione tecnica (Donati, Telcal): sceglila e diametro, carico di rottura e massa al metro si riempiono da soli nel gruppo «Funi nuove». Se cambi uno di questi valori a mano, la fune torna «inserita a mano».",
+                "Con una fune inserita a mano la relazione tecnica chiede, nella pagina «Funi di trazione», numero di trefoli, formazione, classe di resistenza e sezione.",
+                "Compare per un impianto esistente."
+              ],
+              "src": "src/components/calc/fields.ts:70; src/components/calc/Calculator.tsx:145-147"
+            },
+            {
+              "label": "Tipo di compensazione",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Nessuna · Funi · Catene",
+              "default": "— scegli — (vuoto vale «Nessuna»)",
+              "required": "no",
+              "help": [
+                "La compensazione dell’impianto: nessuna, funi o catene appese tra cabina e contrappeso. Serve alle verifiche delle funi della relazione tecnica (tensioni e stabilità allo scorrimento).",
+                "Con «Nessuna» (o vuoto) le righe seguenti non compaiono e la relazione stampa la compensazione come «Nessuna». Compare per un impianto esistente."
+              ],
+              "src": "src/components/calc/fields.ts:71; src/lib/rt2/funi-calc.ts:31-39"
+            },
+            {
+              "label": "Fune di compensazione",
+              "kind": "scelta",
+              "unit": null,
+              "values": "10 voci, da «8 mm · 0,22 kg/m» a «17 mm · 0,99 kg/m» (diametro e massa al metro)",
+              "default": "— scegli —",
+              "required": "no",
+              "help": [
+                "La fune di compensazione dall’elenco: diametro in mm e massa al metro in kg/m.",
+                "Compare solo con il tipo «Funi». Se non scegli, diametro e massa contano 0."
+              ],
+              "src": "src/components/calc/fields.ts:72"
+            },
+            {
+              "label": "Catena di compensazione",
+              "kind": "scelta",
+              "unit": null,
+              "values": "9 voci, da «5,4 mm · 0,5 kg/m» a «20 mm · 8 kg/m» (diametro della maglia e massa al metro)",
+              "default": "— scegli —",
+              "required": "no",
+              "help": [
+                "La catena di compensazione dall’elenco: diametro della maglia in mm e massa al metro in kg/m.",
+                "Compare solo con il tipo «Catene». Se non scegli, diametro e massa contano 0."
+              ],
+              "src": "src/components/calc/fields.ts:73"
+            },
+            {
+              "label": "Numero funi/catene di compensazione",
+              "kind": "numero",
+              "unit": "",
+              "values": "numero; passo 1; vuoto vale 0",
+              "default": "vuoto (0)",
+              "required": "no",
+              "help": [
+                "Quante funi o catene di compensazione ci sono.",
+                "Compare con il tipo «Funi» o «Catene». Un valore negativo conta 0."
+              ],
+              "src": "src/components/calc/fields.ts:74; src/lib/rt2/funi-calc.ts:36"
+            },
+            {
+              "label": "Massa tenditore compensazione",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "numero; passo 1; vuoto vale 0",
+              "default": "vuoto (0)",
+              "required": "no",
+              "help": [
+                "La massa del tenditore della compensazione in kg: metà si conta sul lato cabina, metà sul lato contrappeso. Senza tenditore lascia 0.",
+                "Compare con il tipo «Funi» o «Catene»."
+              ],
+              "src": "src/components/calc/fields.ts:74"
+            },
+            {
+              "label": "Diametro puleggia tenditore compensazione",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero; passo 10; vuoto vale 0",
+              "default": "vuoto (0)",
+              "required": "no",
+              "help": [
+                "Il diametro della puleggia del tenditore in mm: il rapporto con il diametro della fune di compensazione deve essere almeno 30.",
+                "Compare solo con il tipo «Funi». Il rapporto entra nell’esito (vedi «Funi: le verifiche del foglio «Funi» nell’esito»)."
+              ],
+              "src": "src/components/calc/fields.ts:74"
+            },
+            {
+              "label": "Catene da metà corsa al contrappeso",
+              "kind": "casella",
+              "unit": null,
+              "values": "spuntata | non spuntata",
+              "default": "non spuntata",
+              "required": "no",
+              "help": [
+                "Spunta se le catene pendono da metà corsa al solo contrappeso: allora sul lato contrappeso si conta metà della loro massa e nessuna sul lato cabina.",
+                "Compare solo con il tipo «Catene»."
+              ],
+              "src": "src/components/calc/fields.ts:74"
+            },
+            {
+              "label": "Massa del cavo flessibile",
+              "kind": "numero",
+              "unit": "kg/m",
+              "values": "numero; passo 0,1; vuoto = 0,8",
+              "default": "vuoto: 0,8 kg/m",
+              "required": "no",
+              "help": [
+                "La massa al metro del cavo flessibile in kg/m, contata su metà corsa nella tensione lato cabina in alto. Vuoto: 0,8 kg/m.",
+                "Riga per esperti: in «Semplice» non compare e vale 0,8 kg/m."
+              ],
+              "src": "src/components/calc/fields.ts:75; src/lib/rt2/funi-calc.ts:56"
+            },
+            {
+              "label": "Decelerazione ridotta nella D.1 (a = 0,5 m/s²)",
+              "kind": "casella",
+              "unit": null,
+              "values": "spuntata | non spuntata",
+              "default": "non spuntata",
+              "required": "no",
+              "help": [
+                "Spunta solo se la decelerazione di frenata è ridotta (a = 0,5 m/s²): il coefficiente C1 della D.1 scende allora al minimo della fascia di velocità, mai sotto.",
+                "Riga per esperti: in «Semplice» non compare e la casella resta non spuntata."
+              ],
+              "src": "src/components/calc/fields.ts:75"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "In «Semplice» restano nascoste le due righe per esperti («Massa del cavo flessibile» e «Decelerazione ridotta nella D.1 (a = 0,5 m/s²)»): valgono 0,8 kg/m e la decelerazione del calcolo.",
+            "Il gruppo non ha il segno «da inserire»: nessuna riga è obbligatoria e nessun valore è proposto dal software, tranne i 0,8 kg/m del cavo flessibile quando lo lasci vuoto."
+          ],
+          "warnings": [
+            "I valori di questo gruppo si salvano con il calcolo e passano alla relazione tecnica: una compensazione dimenticata cambia le tensioni e la stabilità allo scorrimento stampate. Se l’impianto ha funi o catene di compensazione, indicale qui."
+          ]
+        },
+        {
           "title": "Servizio e soccorso",
           "intro": [
-            "Gruppo richiuso in modalità «Semplice», aperto in «Esperto». Si apre da solo anche in «Semplice» se un suo valore è ancora da inserire o fuori campo."
+            "Gruppo riservato alla modalità «Esperto»: in «Semplice» non compare; in «Esperto» si apre da solo. Compare aperto anche in «Semplice» se un suo valore è ancora da inserire o fuori campo."
           ],
           "fields": [
             {
@@ -1468,6 +1617,24 @@
             "Questa schermata è un’anteprima in diretta nel browser; al salvataggio il server ricalcola tutto con gli stessi motori e conserva il calcolo. Un valore fuori campo non blocca l’anteprima (il calcolo usa un valore predefinito), ma nessun risultato è ufficiale finché c’è un campo in rosso."
           ],
           "warnings": []
+        },
+        {
+          "title": "Funi: le verifiche del foglio «Funi» nell’esito (UNI 10411-1)",
+          "intro": [
+            "Con un collaudo secondo la UNI 10411-1 e almeno una delle parti argano, funi, portata o velocità sostituita o cambiata, l’esito del Calcolo argano conta anche le verifiche del foglio «Funi» della relazione tecnica, calcolate con i dati del gruppo «Funi e compensazione (relazione tecnica)». Con la UNI 10411-11 e con un impianto collaudato come nuovo (UNI EN 81-20/50) queste righe non entrano nell’esito. Non hai niente da compilare qui: le righe compaiono nell’elenco delle verifiche non superate («Non soddisfatta» o «Attenzione») con il loro nome."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "«Funi (UNI 10411-1): z ≥ 12, 16 con due funi, con la D.2 verificata (UNI 10411-1, 14.1)»: quando la pressione specifica nelle gole della D.2 è nei limiti e le funi sono almeno due, il coefficiente di sicurezza z della fune si confronta con 12 (16 con due funi) al posto del coefficiente S_f della UNI EN 81-50. In quel caso S_f non è conteggiato e sotto l’esito leggi: «S_f (UNI EN 81-50, 5.12) non conteggiato: con la pressione specifica della D.2 verificata vale z ≥ 12 (16 con due funi), come nel foglio funi della relazione tecnica (UNI 10411-1:2024, 14.1 c) e d)).» (la frase compare quando S_f, da solo, non sarebbe soddisfatto). Se la D.2 non è nei limiti, vale S_f e questa riga non c’è.",
+            "«Funi (UNI 10411-1): stabilità allo scorrimento del foglio funi, caso peggiore (UNI 10411-1, D.1)»: compare quando il rapporto tra i carichi sospesi non cambia con la modifica. Se non è soddisfatta è un «Attenzione», non una verifica «Non soddisfatta». Quando il rapporto cambia, la D.1 e la D.2 sono invece verifiche vere dell’esito («tr_d1» e «tr_d2» del Calcolo argano) e queste due righe del foglio non compaiono.",
+            "«Funi (UNI 10411-1): pressione specifica del foglio funi, decide tra z e S_f (UNI 10411-1, D.2)»: compare con il rapporto dei carichi invariato. Se non è nei limiti è solo «Informazione» e per le funi vale S_f.",
+            "«Funi (UNI 10411-1): D/d della puleggia tenditrice della compensazione ≥ 30 (UNI EN 81-20, 5.5.6)»: compare solo con una compensazione a funi e il diametro della puleggia del tenditore inserito; il valore è D/d tra la puleggia del tenditore e la fune di compensazione.",
+            "Nessuna di queste righe compare finché mancano i dati delle funi o dell’impianto che il calcolatore segna in rosso."
+          ],
+          "warnings": [
+            "Le righe valgono per l’esito del Calcolo argano; non cambiano le verifiche sul numero e sul diametro delle funi e sul rapporto D/d della puleggia di frizione, che restano quelle di prima."
+          ]
         },
         {
           "title": "Argano consigliato dal software",
@@ -2941,6 +3108,9 @@
     "Il pannello «Verifiche non superate» del pulsante dell’esito si apre già al passaggio del mouse o solo al clic/focus? (VerdictChecks usa un’anteprima con puntatore e focus: descritto come «passandoci sopra o premendolo»).",
     "Campo «Altezza porta» del rilievo: l’input accetta da 1400 mm ma la verifica chiede 2000 mm; confermare che a 1400–1999 mm compaia «Non soddisfatta» sulla porta.",
     "Per il Tecnico (progetto:edit tolto di default) la pagina del rilievo del locale dà «permesso negato»? (requireCapability progetto:edit, descritto così).",
-    "Campo k con «Carico di equilibrio misurato» compilato: il modulo continua a segnare k come necessario (readInputs lo richiede sempre); confermare a video il testo dell’elenco dei dati mancanti."
+    "Campo k con «Carico di equilibrio misurato» compilato: il modulo continua a segnare k come necessario (readInputs lo richiede sempre); confermare a video il testo dell’elenco dei dati mancanti.",
+    "Funi e compensazione (relazione tecnica): Le righe della compensazione compaiono solo dopo aver scelto il tipo; «Massa del cavo flessibile» e «Decelerazione ridotta nella D.1» solo in «Esperto»; il gruppo sparisce con «Trasformazione completa».",
+    "Funi: le verifiche del foglio «Funi» nell’esito (UNI 10411-1): Confermare a schermo i nomi delle pillole con una modifica UNI 10411-1 con D.2 nei limiti e con D.2 fuori limite; la frase «S_f … non conteggiato» compare solo se r_sfa non è ok (Verdict.tsx:42).",
+    "Esempi e modalità / Modalità: Con «Semplice» il gruppo «Servizio e soccorso» non si vede affatto (classe adv) e con «Esperto» si apre; confermare a schermo."
   ]
 }

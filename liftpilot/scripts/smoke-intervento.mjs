@@ -145,7 +145,9 @@ export async function documentiNo({ BASE, page, hydrated, stamp }) {
   await page.click('label.intervento-tipo[data-tipo="AMMODERNAMENTO"]');
   await page.click('.parti-sino .rif-preset button');
   await page.waitForSelector('.parti-sino .rif-preset button.on');
-  assert.match(await page.textContent('.parti-sino .rif-preset .note'), /Velocità, portata e corsa seguono i documenti/);
+  // round 52: the note short, the documents' rule in its «?»
+  assert.match(await page.textContent('.parti-sino .rif-preset .note'), /tutte le parti sostituite tranne l’arcata/);
+  assert.match(await page.textContent('.parti-sino .rif-preset .aiuto-testo'), /Velocità, portata e corsa seguono i documenti/);
   const VAR = ['speed', 'load', 'travel'];
   for (const p of VAR) await page.waitForSelector(`.parti-sino li.da[data-part="${p}"]`);
   const missing = await page.textContent('.missing-list');

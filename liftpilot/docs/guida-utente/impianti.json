@@ -30,7 +30,8 @@
           "title": "La cornice: menu, barra in alto e ricerca",
           "intro": [
             "Il menu a sinistra raggruppa le sezioni in tre gruppi: «Area di lavoro», «Libreria» e «Gestione». Un gruppo compare solo se contiene almeno una voce che il tuo ruolo può usare. Sotto i gruppi, fissi in basso, ci sono «Aiuto», la tua scheda utente con «Esci» e, in fondo, l’indicazione «Beta gratuita» (finché la fatturazione non è attiva) con il profilo normativo in uso.",
-            "Sotto i 1024 pixel di larghezza il menu diventa un pannello a scomparsa: lo apri con il pulsante «Menu» nella barra in alto e lo chiudi con «Chiudi il menu», con il tasto Esc, toccando fuori dal pannello o seguendo un collegamento. Con il pannello aperto la pagina sottostante è bloccata. Il collegamento «Vai al contenuto» (per chi naviga da tastiera) porta direttamente alla pagina."
+            "Sotto i 1024 pixel di larghezza il menu diventa un pannello a scomparsa: lo apri con il pulsante «Menu» nella barra in alto e lo chiudi con «Chiudi il menu», con il tasto Esc, toccando fuori dal pannello o seguendo un collegamento. Con il pannello aperto la pagina sottostante è bloccata. Il collegamento «Vai al contenuto» (per chi naviga da tastiera) porta direttamente alla pagina.",
+            "Nella barra in alto, a destra, trovi anche il selettore «Modalità» con «Semplice» e «Esperto»; i dettagli sono nella sezione «Il «?» accanto ai campi e la modalità Semplice / Esperto»."
           ],
           "fields": [
             {
@@ -46,6 +47,19 @@
                 "Il campo c’è solo se il tuo ruolo vede gli impianti."
               ],
               "src": "src/components/shell/ShellSearch.tsx:112"
+            },
+            {
+              "label": "Modalità",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Semplice | Esperto",
+              "default": "Semplice",
+              "required": "no",
+              "help": [
+                "Cambia subito quanti campi vedi in tutta l'area di lavoro: «Semplice» mostra solo i campi che servono quasi sempre e lascia agli altri i valori del software; «Esperto» li mostra tutti. Passando il mouse sul selettore leggi: «Semplice: solo i campi che servono quasi sempre, gli altri restano ai valori del software. Esperto: tutti i campi.»",
+                "La scelta resta con il tuo utente (non nel browser): la ritrovi alla prossima sessione e su un altro dispositivo. Vale anche per un'azienda in sola lettura. Se il salvataggio non riesce (sessione scaduta, oltre 30 cambi al minuto) il selettore torna alla scelta di prima."
+              ],
+              "src": "src/components/AppShell.tsx:112; src/components/shell/Modalita.tsx:33; src/server/modalita-actions.ts:11"
             }
           ],
           "actions": [
@@ -167,6 +181,46 @@
             "Un asterisco (*) dopo il nome di un campo indica che il campo è obbligatorio.",
             "I numeri sono scritti all’italiana, con la virgola decimale (1,6 m/s); nei campi numerici puoi scrivere sia la virgola sia il punto."
           ]
+        },
+        {
+          "title": "Il «?» accanto ai campi e la modalità Semplice / Esperto",
+          "intro": [
+            "Accanto al nome di quasi ogni campo (dove c'è qualcosa da spiegare) trovi un piccolo «?» rotondo: è la spiegazione breve di che cosa chiede il campo, di dove prendere il valore e di quali limiti ha. Il testo è lo stesso di questa guida.",
+            "La modalità «Semplice» / «Esperto» (selettore «Modalità» nella barra in alto) decide quali campi vedi. In «Semplice» i campi per esperti sono nascosti e valgono i valori proposti dal software; in «Esperto» li vedi tutti e puoi cambiarli. Quali sono i campi per esperti è scritto, pagina per pagina, nei capitoli (per esempio nel Calcolo argano e nella relazione tecnica di modifica)."
+          ],
+          "fields": [
+            {
+              "label": "«?» (accanto al nome del campo)",
+              "kind": "pulsante",
+              "unit": null,
+              "values": "spiegazione breve del campo",
+              "default": "chiuso",
+              "required": "no",
+              "help": [
+                "Per leggere la spiegazione porta il mouse sul nome del campo o sul «?», oppure portaci il fuoco con la tastiera (Tab), oppure toccalo (o cliccalo) sullo schermo tattile: la spiegazione resta aperta finché tocchi altrove. Con il tasto Esc la spiegazione si nasconde.",
+                "Vicino al margine destro dello schermo il testo si apre verso sinistra, così la pagina non scorre di lato. Il nome accessibile del pulsante è «Che cos'è «‹nome del campo›»» e il testo è letto dagli screen reader come descrizione del pulsante. Il «?» non si stampa."
+              ],
+              "src": "src/components/aiuto/Aiuto.tsx:15-60; src/components/aiuto/Etichetta.tsx; src/app/aiuto.css:1-24"
+            },
+            {
+              "label": "Modalità: Semplice | Esperto",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Semplice | Esperto",
+              "default": "Semplice",
+              "required": "no",
+              "help": [
+                "«Semplice» nasconde i campi per esperti, ma mai un campo che devi ancora compilare (segnato come «da inserire») o che ha un valore sbagliato (fuori dai limiti): quello resta sempre in vista. Il valore di un campo nascosto non si perde: se lo avevi già inserito resta com'è e lo ritrovi passando a «Esperto».",
+                "«Esperto» mostra tutti i campi. Il Calcolo argano ha il suo selettore, che è lo stesso della barra in alto: cambiandone uno cambia anche l'altro."
+              ],
+              "src": "src/components/shell/Modalita.tsx:1-31; src/app/aiuto.css:25-28"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "La modalità è una preferenza personale: non cambia i dati dell'azienda né quelli degli altri colleghi."
+          ],
+          "warnings": []
         },
         {
           "title": "Un progetto nuovo parte vuoto",
@@ -1824,6 +1878,7 @@
   "verify": [
     "Sulla pagina dell’impianto, il passo corrente dei quattro passi è evidenziato anche visivamente, o solo per gli screen reader (aria-current='step', Passi.tsx:37)?",
     "Nell’elenco Impianti su schermo stretto l’anteprima sta davvero sotto l’elenco (assunto dal layout a una colonna, ProjectList/dashboard.css)?",
-    "Nel Confronto su telefono ogni riga diventa una scheda (classe «stack» di data-table): confermare a schermo."
+    "Nel Confronto su telefono ogni riga diventa una scheda (classe «stack» di data-table): confermare a schermo.",
+    "Il «?» accanto ai campi e la modalità Semplice / Esperto: Il «?» non compare dove il campo non ha una spiegazione (Etichetta.tsx); confermare a schermo il comportamento al tocco e con Esc."
   ]
 }

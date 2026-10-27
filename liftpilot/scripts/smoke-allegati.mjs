@@ -182,10 +182,10 @@ export async function allegatiFlow({ BASE, browser, kit, ADMIN, stamp }) {
   await other.page.click('main form button[type="submit"]');
   await other.page.waitForSelector('.alert-ok');
   await other.page.goto(`${BASE}/it/app`);
-  await hydrated(other.page, 'main form:has(input[name="clauses"]) button');
+  await hydrated(other.page, 'main form:has(input[name="clauses"]) button[type="submit"]');
   for (const k of ['accept', 'business', 'drafts', 'clauses']) await other.page.check(`main input[name="${k}"]`);
   await other.page.fill('main form:has(input[name="clauses"]) input[name="password"]', ownerNext);
-  await other.page.click('main form:has(input[name="clauses"]) button');
+  await other.page.click('main form:has(input[name="clauses"]) button[type="submit"]');
   await other.page.waitForSelector('main form:has(input[name="clauses"])', { state: 'detached' });
   for (const id of [a1.id, a2.id]) assert.equal((await other.ctx.request.get(`${BASE}/api/allegati/${id}`)).status(), 404, 'another company’s file');
   assert.equal((await post(other, projectId, file(png(40, 30, 2), 'y.png'), { kind: 'FOTO' })).status(), 404, 'another company’s installation');
