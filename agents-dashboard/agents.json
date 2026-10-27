@@ -3039,7 +3039,7 @@
           "Sandi Metz „The Wrong Abstraction“ + Page-Jones connascence",
           "Google eng-practices (code review/readability); граница спрямо .claude/agents/kodadjiyata.md"
         ],
-        "lessons": 122
+        "lessons": 123
       },
       "evolution": [
         {
@@ -3101,9 +3101,20 @@
           "date": "2026-10-27",
           "event": "v20.7 — учене",
           "detail": "Научи: ospedalitrasparenti: прагът за раздробяване 40_000 е зададен независимо на две места (f…"
+        },
+        {
+          "version": "20.8.0",
+          "date": "2026-10-27",
+          "event": "v20.8 — учене",
+          "detail": "Научи: oversee.mjs е скрипт, който се изпълнява при зареждане, без нито една функция и без mai…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „oversee.mjs е скрипт, който се изпълнява при зареждане, без нито една функция и без mai…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
