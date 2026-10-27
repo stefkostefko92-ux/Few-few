@@ -2468,6 +2468,11 @@
       "activity": [
         {
           "date": "2026-10-27",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „dod-check не намира блока ПРЕДАВАНЕ, ако след него следва learn блок — ПРЕДАВАНЕ трябва…\""
+        },
+        {
+          "date": "2026-10-27",
           "type": "learning",
           "summary": "Научи: „Агентът-тестер се адресира в ПРЕДАВАНЕ с id izpitatelya (не izpitatelyat) — dod-check о…\""
         },
