@@ -45,6 +45,8 @@ if (m.options_ui?.page) refs.add(m.options_ui.page);
 refs.add("scriptlets/main.js");
 refs.add("scriptlets/policy.js"); // importScripts() in the service worker
 refs.add("youtube_main.js");          // registered by the service worker (MAIN world, YouTube)
+refs.add("youtube_ads.css");          // registered by the service worker with it (sa-youtube-css)
+refs.add("twitch_main.js");           // registered by the service worker (MAIN world, Twitch)
 refs.add("lib/abp2dnr.js");       // importScripts() — author-hosted lists
 refs.add("gpc.js");               // registered by the service worker (MAIN world, Global Privacy Control)
 refs.add("scriptlets/entities-off.js"); // registered by the SW while the uBO list is off
@@ -60,6 +62,15 @@ const has = (f) => f.endsWith("/*")
   : zipFiles.includes(f);
 const missing = [...refs].filter(f => !has(f));
 if (missing.length) { console.error("MISSING from package:", missing); process.exit(1); }
+// Every licence text the shipped notices point to must ship too (GPL/AGPL/CC BY-SA/MPL/Apache/MIT
+// ask for the text with the work) — "licenses/ is not empty" used to be the whole check.
+const notices = execSync(`unzip -p "${process.argv[2]}" THIRD_PARTY_NOTICES.txt`).toString();
+const named = [...new Set([...notices.matchAll(/licenses\/[\w.-]+\.txt/g)].map((x) => x[0]))];
+const noText = named.filter((f) => !zipFiles.includes(f));
+if (!named.length || noText.length) { console.error("Licence texts named in THIRD_PARTY_NOTICES.txt but not in the package:", noText.length ? noText : "(none named)"); process.exit(1); }
+// A bundled list without any licence text must at least carry the author's recorded terms.
+const bare = notices.split("\n\n").filter((b) => /\n  Retrieved /.test(b) && !/full text: licenses\//.test(b)).map((b) => b.split("\n")[0]);
+if (bare.length) { console.error("Bundled lists with no licence text in licenses/:", bare); process.exit(1); }
 // Dev-only trees must never ship, and packaged JS must be eval-free (Web Store: no remote code).
 const devLeak = zipFiles.filter(z => /^(tests|tools|docs|store|server|dist|node_modules)\//.test(z));
 // „_" в началото е запазено за Chrome: _metadata/ е локалният DNR кеш, който Chrome пише

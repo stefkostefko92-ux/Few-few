@@ -1791,8 +1791,8 @@ async function renderSettings() {
           const code = el('input', { type: 'text', placeholder: '6-цифрен код', maxlength: '6', style: 'width:130px' });
           box.appendChild(el('div', { style: 'margin-top:12px' }, [
             el('div', { class: 'metric-sub', text: '1) Добави тайната в Google Authenticator / Aegis / 1Password (ръчно въвеждане или отвори връзката на телефона):' }),
-            el('pre', { class: 'term-out', style: 'user-select:all', text: s.secret }),
-            el('div', {}, [el('a', { href: s.uri, class: 'mono', text: s.uri, style: 'word-break:break-all;font-size:11px' })]),
+            el('pre', { class: 'term-out', style: 'user-select:all', raw: s.secret }),
+            el('div', {}, [el('a', { href: s.uri, class: 'mono', raw: s.uri, style: 'word-break:break-all;font-size:11px' })]),
             el('div', { class: 'metric-sub', style: 'margin-top:10px', text: '2) Въведи кода, който показва приложението:' }),
             el('div', { class: 'toolbar' }, [code, el('button', {
               class: 'btn btn-primary btn-sm', text: 'Потвърди и включи',
@@ -1914,7 +1914,7 @@ async function renderServices() {
       .map((s) =>
         el('tr', {}, [
           el('td', {}, [el('input', {
-            type: 'checkbox', class: 'bulk-pick', value: s.unit,
+            type: 'checkbox', class: 'bulk-pick', value: s.unit, 'aria-label': `Избери ${s.unit}`,
             checked: selected.has(s.unit),
             onchange: (e) => {
               if (e.target.checked) selected.add(s.unit);
@@ -2143,7 +2143,7 @@ async function renderDocker() {
           const running = c.state === 'running';
           return el('tr', {}, [
             el('td', {}, [el('input', {
-              type: 'checkbox', class: 'bulk-pick', value: c.id,
+              type: 'checkbox', class: 'bulk-pick', value: c.id, 'aria-label': `Избери ${c.name}`,
               onchange: (e) => {
                 if (e.target.checked) selected.add(c.id);
                 else selected.delete(c.id);
@@ -3895,6 +3895,7 @@ async function renderSecurity() {
           el('div', { class: 'finding', style: 'margin-top:10px;padding-left:10px;border-left:3px solid var(--' + (p.severity === 'critical' ? 'danger' : p.severity === 'high' ? 'warn' : 'txt-dim') + ')' }, [
             el('div', {}, [pill(p.severity === 'critical' ? 'bad' : p.severity === 'high' ? 'warn' : 'dim', p.severity), document.createTextNode(' '), el('strong', { text: p.title })]),
             el('div', { class: 'metric-sub', text: p.why }),
+            p.where ? el('div', { class: 'mono metric-sub', raw: p.where }) : '',
             p.fix ? el('div', { class: 'mono metric-sub', text: '→ ' + p.fix }) : '',
             p.note ? el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: '⚠ ' + p.note }) : '',
           ])
@@ -4433,7 +4434,10 @@ async function renderCron() {
         tableEl(['Разписание', 'Команда', ''], (jobs.jobs || []).map((j) =>
           el('tr', {}, [
             el('td', { class: 'mono', text: j.schedule }),
-            el('td', { class: 'mono', text: j.command }),
+            el('td', { class: 'mono' }, [
+              el('div', { raw: j.command }),
+              j.comment ? el('div', { class: 'metric-sub', raw: j.comment }) : '',
+            ]),
             el('td', {}, [
               el('button', {
                 class: 'btn btn-sm btn-danger', text: 'Изтрий',
@@ -4769,7 +4773,9 @@ async function renderRedis() {
         ]),
         i.maxMemory ? barEl(i.memoryPct || 0) : '',
         kv({
-          Памет: `${i.usedMemoryHuman || '—'}${i.maxMemory ? ` от ${Math.round(i.maxMemory / 1048576)} MB` : ' (без таван)'}`,
+          // Числото и „(без таван)" се превеждат ПООТДЕЛНО: „966.12K"/„1.20M" носят
+          // буква на Redis, а не наша единица, и цялото не съвпада с шаблон.
+          Памет: `${i.usedMemoryHuman || '—'}${i.maxMemory ? ` от ${Math.round(i.maxMemory / 1048576)} MB` : ' ' + t('(без таван)')}`,
           Политика: i.policy || '—',
           Ключове: `${i.totalKeys} (${i.keyspace.map((k) => `${k.db}: ${k.keys}`).join(', ') || 'празно'})`,
           'Изхвърлени ключове': i.evictedKeys,
@@ -4779,7 +4785,7 @@ async function renderRedis() {
           'Отказани връзки': i.rejectedConnections,
           'Последна снимка': i.rdbLastSaveTime ? fmtWhen(new Date(i.rdbLastSaveTime * 1000).toISOString()) : '—',
           'Промени след снимка': i.rdbChangesSinceSave ?? '—',
-          Том: i.volume ? `${i.volume.name || i.volume.source} (${i.volume.type})` : 'няма /data том',
+          Том: i.volume ? `${i.volume.name || i.volume.source} (${i.volume.type})` : i.host ? '/var/lib/redis (системна услуга)' : 'няма /data том',
         }),
         i.evictedKeys > 0
           ? el('div', { class: 'metric-sub', style: 'color:var(--warn)', text:
@@ -4899,8 +4905,12 @@ async function renderTraffic() {
     'Всяко зареждане чете само НОВОТО — ротацията се разпознава по inode, за да не се броят редове двойно. ' +
     'Адресите са групирани по форма (/order/8123 и /order/9044 са един адрес).' }));
   if (files.files?.length) {
-    view.appendChild(el('div', { class: 'metric-sub', style: 'margin-bottom:10px', text:
-      'Четени файлове: ' + files.files.map((f) => `${f.path} (${fmtBytes(f.sizeBytes)})`).join(' · ') }));
+    // Етикетът е наш низ, пътищата и размерите — данни: слепени, никога не съвпадат
+    // с шаблон (всеки сървър има други пътища).
+    view.appendChild(el('div', { class: 'metric-sub', style: 'margin-bottom:10px' }, [
+      el('span', { text: 'Четени файлове:' }),
+      el('span', { raw: ' ' + files.files.map((f) => `${f.path} (${fmtBytes(f.sizeBytes)})`).join(' · ') }),
+    ]));
   }
 
   if (d.timingHint) {
@@ -4908,7 +4918,8 @@ async function renderTraffic() {
       el('div', { class: 'card', style: 'margin-bottom:12px;border-left:3px solid var(--warn)' }, [
         el('strong', { text: '⚠ Логът не съдържа време за заявка' }),
         el('div', { class: 'metric-sub', text: 'Без него „кой адрес е бавен" не може да се отговори. Добави в nginx конфига:' }),
-        el('pre', { class: 'term-out', style: 'max-height:110px', text: d.timingHint.replace(/^.*?nginx: /, '') }),
+        // Само конфигурация (raw): двете директиви на отделни редове, без българското „и" помежду им.
+        el('pre', { class: 'term-out', style: 'max-height:110px', raw: d.timingHint.replace(/^.*?nginx: /, '').replace('; и access_log', ';\naccess_log') }),
       ])
     );
   }
@@ -4989,7 +5000,7 @@ async function renderIntegrity() {
   const d = await api('/security/integrity');
   view.innerHTML = '';
   view.appendChild(el('p', { class: 'section-desc', text:
-    'Отпечатък на важните файлове в /etc (SSH, sudoers, fstab, systemd units, Nginx sites, cron). ' +
+    'Отпечатък на важните файлове в /etc (SSH, sudoers, fstab, systemd units, Nginx sites, cron) и на SSH ключовете на root. ' +
     'Не е антивирус — root може да пренапише и самия отпечатък. Отговаря на въпроса „какво се е променило, откакто работеше".' }));
 
   const snapBtn = el('button', {
@@ -5019,6 +5030,14 @@ async function renderIntegrity() {
   }
 
   const total = d.added.length + d.removed.length + d.changed.length;
+  // Файлове под пътища, добавени към наблюдението СЛЕД отпечатъка — не са промяна,
+  // а нови за следене. Казва се, за да не останат невидими до следващия отпечатък.
+  if ((d.newlyTracked || []).length) {
+    view.appendChild(el('div', { class: 'card' }, [
+      el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: `Нови за следене: ${plural(d.newlyTracked.length, 'файл', 'файла')}. Още не са в отпечатъка — направи нов, когато си сигурен, че сървърът е в ред.` }),
+      el('div', { class: 'mono metric-sub', raw: d.newlyTracked.slice(0, 12).join('  ') }),
+    ]));
+  }
   view.appendChild(
     el('div', { class: 'card' }, [
       el('div', { class: 'card-head' }, [
@@ -5082,6 +5101,9 @@ async function renderFail2ban() {
                     el('button', {
                       class: 'btn btn-sm', text: 'Разблокирай',
                       onclick: async (e) => {
+                        // Клас B: разблокираният адрес получава НОВИ опити веднага —
+                        // ако е на атакуващ, това е подарък. Еднократно „да".
+                        if (!confirm(`${t('Разблокирай адреса? Ако е на атакуващ, той получава нови опити веднага.')}\n${ip}`)) return;
                         e.target.disabled = true;
                         try {
                           await api('/security/fail2ban', { method: 'POST', body: { jail: j.name, ip, action: 'unbanip' } });
@@ -5150,20 +5172,54 @@ async function renderAccess() {
   // да го пипне (сървърът го отказва), затова картата я няма при избран съсед.
   if (state.node !== 'local') return;
   const p = await api('/settings/peer');
-  const scopeSel = el('select', { 'aria-label': 'Достъп на съседа' }, [
-    el('option', { value: 'read', text: 'само четене' }),
-    el('option', { value: 'full', text: 'пълен контрол' }),
+  const solo = !p.tokenSet && !p.peers.length;
+  const head = el('div', { class: 'card-head' }, [
+    el('h3', { text: 'Достъп на съседа' }),
+    solo ? pill('ok', 'един сървър') : p.scope === 'full' ? pill('warn', 'пълен контрол') : pill('ok', 'само четене'),
   ]);
-  scopeSel.value = p.scope;
-  view.appendChild(
-    el('div', { class: 'card' }, [
-      el('div', { class: 'card-head' }, [
-        el('h3', { text: 'Достъп на съседа' }),
-        p.scope === 'full' ? pill('warn', 'пълен контрол') : pill('ok', 'само четене'),
-      ]),
-      el('div', { class: 'metric-sub', text: p.tokenSet
-        ? 'Колко може другият VPS, когато го управляваш ОТТАМ. „Само четене": вижда състоянието и не пипа нищо опасно. „Пълен контрол": терминал, деплой, файлове, firewall, одобрения — всичко като тук. Паролата и 2FA за опасните действия се искат от ДРУГИЯ панел, а в одита тук стои кой човек оттам е действал.'
-        : 'Няма зададен peerToken — никой съсед не може да вика този панел.' }),
+  const card = el('div', { class: 'card' }, [head]);
+  view.appendChild(card);
+  if (solo) {
+    card.appendChild(el('div', { class: 'metric-sub', text: 'Един сървър — федерацията е изключена: няма съседи и няма входящ жетон, тоест никой не вика този панел с Bearer.' }));
+    return;
+  }
+
+  // Съседите, които ТОЗИ панел вика (превключвателя горе, бекъп и одит извън
+  // машината). Сървър, който вече го няма, се маха оттук — иначе стар DNS запис
+  // може да сочи към чужд или към нас самите.
+  if (p.peers.length) {
+    card.appendChild(el('h3', { class: 'muted', text: 'Съседи, които този панел вика', style: 'margin-top:8px' }));
+    card.appendChild(tableEl(['Възел', 'Адрес', ''], p.peers.map((x) => el('tr', {}, [
+      el('td', { raw: `${x.name || x.id} (${x.id})` }),
+      el('td', { class: 'mono', raw: x.host || '—' }),
+      el('td', {}, [el('button', {
+        class: 'btn btn-sm btn-danger', text: 'Махни',
+        onclick: async () => {
+          const ok = await confirmDanger({
+            title: 'Махни съседа',
+            what: ['Панелът спира да го вика: изчезва от превключвателя, бекъпът и одитът спират да се пращат натам.', 'Връща се само с ръчно добавяне в конфига.'],
+            expect: x.id,
+          });
+          if (!ok) return;
+          try {
+            await api('/settings/peer', { method: 'POST', body: { removePeer: x.id } });
+            toast('Съседът е махнат', 'ok');
+            go('access');
+          } catch (err) { toast(err.message, 'bad'); }
+        },
+      })]),
+    ]))));
+  }
+
+  // Входящият жетон: с него ДРУГ панел вика този.
+  if (p.tokenSet) {
+    const scopeSel = el('select', { 'aria-label': 'Достъп на съседа' }, [
+      el('option', { value: 'read', text: 'само четене' }),
+      el('option', { value: 'full', text: 'пълен контрол' }),
+    ]);
+    scopeSel.value = p.scope;
+    card.append(
+      el('div', { class: 'metric-sub', style: 'margin-top:10px', text: 'Колко може другият VPS, когато го управляваш ОТТАМ. „Само четене": вижда състоянието и не пипа нищо опасно. „Пълен контрол": терминал, деплой, файлове, firewall, одобрения — всичко като тук. Паролата и 2FA за опасните действия се искат от ДРУГИЯ панел, а в одита тук стои кой човек оттам е действал.' }),
       el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: 'Цената на „пълен контрол": който вземе другия панел, взема и този сървър. Включвай го само ако 2FA е включено и на двата възела.' }),
       el('div', { class: 'toolbar', style: 'margin-top:12px' }, [
         scopeSel,
@@ -5188,9 +5244,27 @@ async function renderAccess() {
             e.target.disabled = false;
           },
         }),
-      ]),
-    ])
-  );
+        el('button', {
+          class: 'btn btn-sm btn-danger', text: 'Изключи входящия жетон',
+          onclick: async () => {
+            const ok = await confirmDanger({
+              title: 'Изключи входящия жетон',
+              what: ['Никой друг панел няма да може да вика този — нито за четене, нито за управление.', 'Обхватът се връща на „само четене".'],
+              expect: 'изключи',
+            });
+            if (!ok) return;
+            try {
+              await api('/settings/peer', { method: 'POST', body: { inbound: 'off' } });
+              toast('Входящият жетон е изключен', 'ok');
+              go('access');
+            } catch (err) { toast(err.message, 'bad'); }
+          },
+        }),
+      ])
+    );
+  } else {
+    card.appendChild(el('div', { class: 'metric-sub', style: 'margin-top:10px', text: 'Няма зададен peerToken — никой съсед не може да вика този панел.' }));
+  }
 }
 
 // ── Променливи на средата (.env) ──────────────────────────────────────────────────
@@ -6134,6 +6208,9 @@ document.getElementById('modal').addEventListener('click', (e) => {
 });
 document.getElementById('modal-kill').addEventListener('click', async () => {
   if (!modalJobId) return;
+  // Клас B: задачата може да е деплой или възстановяване по средата — спряна там,
+  // оставя наполовина сменен release. Еднократно „да", не изписване.
+  if (!confirm(t('Да спра задачата? Ако е деплой или възстановяване, тя спира по средата.'))) return;
   try {
     await api(`/jobs/${modalJobId}/kill`, { method: 'POST' });
     toast('Задачата е спряна');

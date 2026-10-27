@@ -4,6 +4,7 @@ import { Badge, Button, Panel, cn } from "../../ui";
 import { useAuthStore } from "../../lib/store";
 import { isAdmin } from "../../app/RequireRole";
 import { adminApi, type AdminAnnouncement } from "./adminApi";
+import { ConfirmButton } from "./ConfirmButton";
 import { ErrorPanel, errorMessage, useLoad } from "./load";
 
 const field =
@@ -58,6 +59,19 @@ export function AdminAnnouncements() {
     try {
       const r = await adminApi.setAnnouncementActive(a.id, !a.active);
       setRows((prev) => prev.map((x) => (x.id === a.id ? r.announcement : x)));
+    } catch (e) {
+      setNotice(errorMessage(e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function remove(a: AdminAnnouncement) {
+    setBusy(a.id);
+    setNotice(null);
+    try {
+      await adminApi.deleteAnnouncement(a.id);
+      setRows((prev) => prev.filter((x) => x.id !== a.id));
     } catch (e) {
       setNotice(errorMessage(e));
     } finally {
@@ -124,9 +138,17 @@ export function AdminAnnouncements() {
                 </p>
               </div>
               {canWrite ? (
-                <Button variant="ghost" loading={busy === a.id} onClick={() => toggle(a)}>
-                  {a.active ? t("admin.annDeactivate", "Спри") : t("admin.annActivate", "Пусни")}
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button variant="ghost" loading={busy === a.id} onClick={() => toggle(a)}>
+                    {a.active ? t("admin.annDeactivate", "Спри") : t("admin.annActivate", "Пусни")}
+                  </Button>
+                  <ConfirmButton
+                    label={t("admin.delete", "Изтрий")}
+                    question={t("admin.annDeleteQ", "Изтрий обявата завинаги?")}
+                    busy={busy === a.id}
+                    onConfirm={() => void remove(a)}
+                  />
+                </div>
               ) : null}
             </Panel>
           ))}

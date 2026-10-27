@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bloker annoncer overalt: YouTube-videoannoncer, bannere, pop op-vinduer, trackere, cookiebannere og anti-adblock-mure."
+    "message": "Annonceblokker til YouTube og nettet: videoannoncer, bannere, pop op-vinduer, trackere, cookiebannere og anti-adblock-mure."
   },
   "byCarbon": {
     "message": "af Carbon Stealth"
@@ -647,6 +647,12 @@
     "message": "Klik på puslespilsikonet ved siden af adresselinjen, og fastgør Supreme AdBlock. Så viser ét klik, hvad der blev blokeret på siden.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Fastgjort til værktøjslinjen"
+  },
+  "welPinnedText": {
+    "message": "Ét klik på ikonet viser, hvad der blev blokeret på siden."
+  },
   "welBrokenTitle": {
     "message": "Hvis et websted ser forkert ud",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Regelkapacitet"
+  },
+  "helpTitle": {
+    "message": "Virker websteder ikke?"
+  },
+  "helpText": {
+    "message": "Ét websted ad gangen er nok: tillad annoncerne der i en time, eller slå skjulning af elementer fra kun der. Giver du os besked, retter vi det for alle."
+  },
+  "helpFix": {
+    "message": "Ret dette websted"
+  },
+  "cardNever": {
+    "message": "Vis ikke igen"
+  },
+  "cardClose": {
+    "message": "Luk"
+  },
+  "receiptTitle": {
+    "message": "Dine seneste 30 dage"
+  },
+  "receiptText": {
+    "message": "$1 forespørgsler blokeret · $2 cookiebannere besvaret · cirka $3 data sparet (et skøn)"
+  },
+  "share": {
+    "message": "Del"
+  },
+  "shareTitle": {
+    "message": "Kopiér linket til Supreme AdBlock i Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Linket er kopieret"
+  },
+  "rep_fixed_q": {
+    "message": "Blev webstedet rettet?"
+  },
+  "rep_fixed_yes": {
+    "message": "Ja, det virker"
+  },
+  "rep_fixed_no": {
+    "message": "Nej, virker stadig ikke"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Godt, at det virker. Giver du os besked nedenfor, viser rapporten, hvilken løsning der virkede, så vi kan rette webstedet for alle."
+  },
+  "rep_fixed_next": {
+    "message": "Prøv den næste: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Giv os så besked nedenfor: vi kigger på webstedet."
+  },
+  "rep_webmail": {
+    "message": "Ingen mailapp? Kopiér rapporten, og send den til $1 fra din webmail."
+  },
+  "blk_mistake": {
+    "message": "Tror du, det er en fejl? Giv os besked"
+  },
+  "welTest": {
+    "message": "Se det virke på en testside"
   }
 }

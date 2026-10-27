@@ -9,25 +9,31 @@ import {
 } from "@aso/shared";
 import { env } from "../env.js";
 
-interface RefreshClaims {
+export interface RefreshClaims {
   sub: string;
+  /** Версия на сесиите (User.tokenVersion) при издаване; липсва в стари токени → 0. */
+  tv?: number;
+  iat?: number;
 }
+
+/** Access claims + стандартното `iat` (сек.), нужно за денилиста по време. */
+export type VerifiedAccessClaims = AccessTokenClaims & { iat?: number };
 
 export function signAccessToken(claims: AccessTokenClaims): string {
   return jwt.sign(claims, env.JWT_SECRET, { expiresIn: ACCESS_TOKEN_TTL_SEC, algorithm: "HS256" });
 }
 
-export function signRefreshToken(userId: string): string {
-  return jwt.sign({ sub: userId } satisfies RefreshClaims, env.JWT_REFRESH_SECRET, {
+export function signRefreshToken(userId: string, tokenVersion = 0): string {
+  return jwt.sign({ sub: userId, tv: tokenVersion } satisfies RefreshClaims, env.JWT_REFRESH_SECRET, {
     expiresIn: REFRESH_TOKEN_TTL_SEC,
     algorithm: "HS256",
   });
 }
 
-export function verifyAccessToken(token: string): AccessTokenClaims {
+export function verifyAccessToken(token: string): VerifiedAccessClaims {
   // Pin the algorithm so a forged token can't downgrade to `alg:none` or trigger
   // an HS/RS algorithm-confusion attack.
-  return jwt.verify(token, env.JWT_SECRET, { algorithms: ["HS256"] }) as AccessTokenClaims;
+  return jwt.verify(token, env.JWT_SECRET, { algorithms: ["HS256"] }) as VerifiedAccessClaims;
 }
 
 export function verifyRefreshToken(token: string): RefreshClaims {

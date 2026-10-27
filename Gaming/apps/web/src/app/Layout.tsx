@@ -11,6 +11,7 @@ import { CosmeticsModal } from "../features/shop/CosmeticsModal";
 import { InviteWatcher } from "../features/social/InviteWatcher";
 import { LobbyWatcher } from "../features/lobby/LobbyWatcher";
 import { ErrorToasts } from "./ErrorToasts";
+import { RealityCheck } from "../features/account/RealityCheck";
 
 /** Authenticated app chrome: skip-link + header + routed content + footer. */
 export function Layout() {
@@ -43,6 +44,7 @@ export function Layout() {
       <InviteWatcher />
       <LobbyWatcher />
       <ErrorToasts />
+      <RealityCheck />
     </div>
   );
 }

@@ -52,6 +52,14 @@ test("AWS Access Key ID се хваща", () => {
   assert.match(r.out, /AWS/);
 });
 
+test("abuse.ch Auth-Key в URL на експорта се хваща, плейсхолдърът — не", () => {
+  const url = A("https://urlhaus-api.abuse.ch/v2/files/", "exports/", "0123456789abcdef", "0123456789abcdef01234567", "/hostfile.txt");
+  const r = scan(`fetch("${url}")`);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /abuse\.ch/);
+  assert.equal(scan(A("https://urlhaus-api.abuse.ch/v2/files/", "exports/<Auth-Key>/hostfile.txt")).code, 0);
+});
+
 test("Stripe live secret се хваща", () => {
   const key = A("sk", "_live_", "0123456789abcdefghij");
   const r = scan(`STRIPE=${key}`);

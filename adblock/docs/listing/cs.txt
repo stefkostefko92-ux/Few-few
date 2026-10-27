@@ -1,14 +1,14 @@
 Supreme AdBlock blokuje reklamy všude — videoreklamy na YouTube, bannery, vyskakovací okna a trackery — a nesleduje, co děláte.
 
+• Podepsané aktualizace filtrů dvakrát denně: nové reklamní sítě jsou vyřešeny během několika hodin, bez vzdáleného kódu.
 • Reklamy na YouTube se zastaví už u zdroje, takže se videa prostě přehrají.
+• Cookie lišty: stiskne za vás „Odmítnout“, pokud lišta toto tlačítko nabízí, a „Přijmout“ jen tehdy, když ji jinak zavřít nelze; odstraní zbylé rozmazání a zámek posouvání a nikdy nestiskne tlačítko pro přihlášení, OAuth ani platbu.
+• Žádný účet, žádná telemetrie, žádný sběr dat a žádná reklama neprojde za úplatu. Global Privacy Control žádá každý web, aby vaše údaje neprodával ani nesdílel.
 • Obsahuje EasyList, EasyPrivacy a další otevřené seznamy filtrů a k tomu seznam pro váš jazyk (31 regionálních seznamů).
 • Sponzorované příspěvky na Facebooku, Instagramu a Threads jsou skryté.
-• Cookie lišty: stiskne za vás „Odmítnout“, odstraní zbylé rozmazání a zámek posouvání a nikdy nestiskne tlačítko pro přihlášení, OAuth ani platbu.
 • Režim soustředění: skryje bubliny chatu, vyskakovací okna newsletterů, výzvy k oznámením, sociální widgety, vyskakovací AI asistenty a YouTube Shorts.
 • Anti-adblock zdi a pop-under okna jsou zneškodněny.
 • Nebezpečné weby: místo známého škodlivého webu se otevře varovná stránka a vy rozhodnete, zda pokračovat.
 • Nefunguje web? Jedno kliknutí ho opraví — nebo nám dejte vědět; nic se neodešle, dokud to sami neuvidíte.
 • Přecházíte z uBlock Origin, AdGuard nebo Adblock Plus? Přeneste povolené weby a filtry jedním souborem.
 • Podívejte se, k jakým dalším webům se stránka připojuje, a jedním kliknutím kterýkoli z nich zablokujte jen tam.
-• Podepsané aktualizace filtrů dvakrát denně: nové reklamní sítě jsou vyřešeny během několika hodin, bez vzdáleného kódu.
-• Žádný účet, žádná telemetrie, žádný sběr dat a Global Privacy Control žádá každý web, aby vaše údaje neprodával ani nesdílel.

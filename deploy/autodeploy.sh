@@ -24,7 +24,7 @@ set -euo pipefail
 # PROJECTS_GIVEN: списъкът, даден изрично при пускането (празно — подразбиращият се). Продукт, поискан по име, който
 # липсва в архива, е провал, не пропуск: иначе грешен REF (напр. main без liftpilot/) завършваше с „Деплой готов“.
 PROJECTS_GIVEN="${PROJECTS:-}"
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma liftpilot korpora}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma liftpilot korpora gaming}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -151,6 +151,9 @@ PIUMA_HEALTH_URL="${PIUMA_HEALTH_URL:-http://127.0.0.1:4310/health}"
 # сочи към release без piuma/, тоест „пренеси от текущия" няма откъде; без този път
 # инструкцията „сложи го в current/piuma/.env" сочеше папка, която още не съществува.
 PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
+# gaming (АСО) — собственият му infra/autodeploy.sh държи стека в GAMING_DIR (.env + Docker
+# обемите живеят там и оцеляват между release-ите). Нов сървър: GAMING_BOOTSTRAP=1 веднъж.
+GAMING_DIR="${GAMING_DIR:-/root/aso}"
 
 # liftpilot (Docker Compose: app + db, host nginx + Let's Encrypt). Тайните са в стабилния път извън releases/ (600);
 # при пръв деплой liftpilot/deploy/deploy.sh ги генерира (паролата на администратора — от LIFTPILOT_ADMIN_PASSWORD
@@ -1429,7 +1432,28 @@ liftpilot_mark_good() {
   fi
 }
 
-# ── 3к) korpora — Docker Compose (db + app); стъпките са в korpora/deploy/deploy.sh ──
+# ── 3к) gaming (АСО) — Docker Compose; стъпките са в Gaming/infra/autodeploy.sh ──
+# Скриптът на продукта прави всичко сам: билд докато старото върви, pg_dump бекъп преди
+# миграцията, health на 4-те услуги и откат към предишните образи (код 1). Тук само го
+# викаме върху кода от ТОЗИ release. Без .env в GAMING_DIR машината още не е настроена →
+# пропуск, не провал (както при piuma); първото пускане е изрично: GAMING_BOOTSTRAP=1.
+deploy_gaming() {
+  local d="$SRC/Gaming"
+  [ -f "$d/infra/autodeploy.sh" ] || { warn "Няма Gaming/infra/autodeploy.sh в архива — пропускам gaming."; return; }
+  if [ ! -f "$GAMING_DIR/.env" ] && [ "${GAMING_BOOTSTRAP:-0}" != "1" ]; then
+    warn "Няма $GAMING_DIR/.env — пропускам gaming (машината още не е настроена)."
+    warn "  Първо пускане: sudo GAMING_BOOTSTRAP=1 PROJECTS=gaming bash $0 (генерира тайните сам, права 600)."
+    return
+  fi
+  log "Разгръщам gaming (АСО) → $GAMING_DIR…"
+  command -v docker >/dev/null || { warn "gaming: липсва docker — пропускам."; deploy_failed=1; return; }
+  # `|| { … }` не е украса: под `set -euo pipefail` ненулев изход би убил целия autodeploy.
+  DEPLOY_DIR="$GAMING_DIR" bash "$d/infra/autodeploy.sh" \
+    || { warn "gaming: деплоят не мина (скриптът на продукта е върнал предишната версия, ако е имало такава)."; deploy_failed=1; return; }
+  ok "gaming: жив — https://${GAMING_DOMAIN:-gaming.carbonstealth.eu}"
+}
+
+# ── 3л) korpora — Docker Compose (db + app); стъпките са в korpora/deploy/deploy.sh ──
 # Кодовете на deploy.sh: 0 — жив; 3 — няма .env (машината още не е настроена: пропуск, не провал,
 # както при piuma); 4 — контейнерите са сменени, но Korpora не отговаря → откат; друго — спрян
 # преди смяната на контейнерите (работещите не са пипани).
@@ -1621,7 +1645,8 @@ deploy_adblock() {
   # затова не ползваме --delete: други файлове в root-а (ако има) остават непокътнати.
   mkdir -p "$ADBLOCK_WWW"
   # filters.json НЕ е тук: той се публикува ЗАЕДНО с подписа си (стъпка 1а).
-  for f in index.html privacy.html support.html youtube-ad-blocker.html cookie-banner-blocker.html \
+  for f in index.html privacy.html support.html youtube-ad-blocker.html cookie-banner-blocker.html bye.html \
+           status.html accessibility.html for-it-admins.html ublock-origin-alternative.html press.html how-we-measure.html test.html \
            robots.txt sitemap.xml llms.txt \
            og.png favicon-48.png apple-touch-icon.png icon-512.png shield-380.webp shield-96.webp popup-shot.webp; do
     [ -f "$d/$f" ] && rsync -a "$d/$f" "$ADBLOCK_WWW"/
@@ -1635,6 +1660,22 @@ deploy_adblock() {
   done
   # favicon.svg беше старото лого (заменено с бранд щита) — да не остане да виси.
   rm -f "$ADBLOCK_WWW/favicon.svg"
+  # Точните текстове на вградените филтър-листи (по SHA-256 — THIRD_PARTY_NOTICES.txt ги сочи):
+  # GPL/AGPL/MPL искат изходният вид да е достъпен, докато версията се разпространява. БЕЗ --delete:
+  # текстовете на по-стари версии остават, имената са хешове и никога не се презаписват.
+  if [ -d "$d/sources" ]; then
+    mkdir -p "$ADBLOCK_WWW/sources"
+    rsync -a "$d/sources/" "$ADBLOCK_WWW/sources/"
+    chmod 755 "$ADBLOCK_WWW/sources"
+    find "$ADBLOCK_WWW/sources" -maxdepth 1 -type f -exec chmod 644 {} +
+  fi
+  # /test: пробите на демонстрационната страница (server/test/*.js) — само собствени файлове
+  if [ -d "$d/test" ]; then
+    mkdir -p "$ADBLOCK_WWW/test"
+    rsync -a --delete "$d/test/" "$ADBLOCK_WWW/test/"
+    chmod 755 "$ADBLOCK_WWW/test"
+    find "$ADBLOCK_WWW/test" -maxdepth 1 -type f -exec chmod 644 {} +
+  fi
   # .well-known/ (security.txt и др.)
   if [ -d "$d/.well-known" ]; then
     mkdir -p "$ADBLOCK_WWW/.well-known"
@@ -1672,6 +1713,9 @@ deploy_adblock() {
       mv -f "$ADBLOCK_WWW/filters.json.sig.new" "$ADBLOCK_WWW/filters.json.sig"
       if id caddy >/dev/null 2>&1; then chown caddy:caddy "$ADBLOCK_WWW/filters.json" "$ADBLOCK_WWW/filters.json.sig"; fi
       ok "adblock: filters.json + filters.json.sig публикувани като подписана двойка"
+    elif [ -f "$ADBLOCK_WWW/filters.json" ] && [ -f "$ADBLOCK_WWW/filters.json.sig" ] && cmp -s "$stage/filters.json" "$ADBLOCK_WWW/filters.json"; then
+      # Същият текст → публикуваният подпис е за точно него: нищо за подписване, нищо не е счупено.
+      ok "adblock: filters.json е непроменен — публикуваната подписана двойка остава вярна (без ключ този път)."
     elif [ -f "$ADBLOCK_WWW/filters.json" ] && [ -f "$ADBLOCK_WWW/filters.json.sig" ]; then
       warn "adblock: НЯМА подпис (ключ: $ADBLOCK_SIGNING_KEY) — оставям предишната подписана двойка filters.json/.sig; новият filters.json НЕ е публикуван."
       deploy_failed=1
@@ -1688,31 +1732,55 @@ deploy_adblock() {
   # останалите продукти тук) инсталираме Nginx vhost + certbot. Без нито един —
   # файловете остават на място с предупреждение (не чупим другите проекти).
   if ! command -v caddy >/dev/null && command -v nginx >/dev/null; then
-    local nsite="/etc/nginx/sites-available/adblock.conf"
-    [ -f "$nsite" ] && cp -a "$nsite" "${nsite}.bak-$TS"
+    local nsite="/etc/nginx/sites-available/adblock.conf" nbak=""
+    if [ -f "$nsite" ]; then nbak="${nsite}.bak-$TS"; cp -a "$nsite" "$nbak"; fi
     install -m 644 "$d/nginx.conf" "$nsite"
     ln -sf "$nsite" /etc/nginx/sites-enabled/adblock.conf
     if nginx -t >/dev/null 2>&1; then
       systemctl reload nginx 2>/dev/null || nginx -s reload
-      rm -f "${nsite}.bak-$TS"
       ok "adblock: Nginx vhost инсталиран и презареден ($ADBLOCK_DOMAIN)."
-      # TLS през certbot. Пускаме го при ВСЕКИ деплой (идемпотентно): нашият
-      # vhost темплейт е само HTTP, а всеки деплой го презаписва — затова
-      # трябва отново да инжектираме SSL блока. При съществуващ валиден
-      # сертификат certbot само преинсталира конфига и НЕ иска нов
-      # (--keep-until-expiring), значи не удря rate limits.
+      # TLS през certbot при ВСЕКИ деплой: нашият vhost темплейт е само HTTP и всеки деплой го
+      # презаписва, затова SSL блокът трябва да се върне. Има ли вече сертификат — само
+      # `certbot install` (без Let's Encrypt, без rate limits); иначе издаване.
+      # ЗАСЯЧЕНО НА ЖИВО (25.10.2026): certbot падна, HTTP шаблонът остана сам и HTTPS изчезна —
+      # Privacy/Support адресите от листинга и ъпдейтите на филтрите. Затова бекъпът с HTTPS се
+      # пази до успешен certbot и се връща, ако той не мине; изходът на certbot вече се вижда.
+      # Сървърът има ДВА акаунта при Let's Encrypt: без --account неинтерактивният certbot спира на
+      # „Please choose an account“ (това беше причината на 25.10.2026). Акаунтът на сертификата е в
+      # renewal конфига му.
+      local tls_ok=0 clog="/var/log/few-few-certbot-adblock.log" acct=""
+      acct="$(sed -n 's/^account *= *//p' "/etc/letsencrypt/renewal/$ADBLOCK_DOMAIN.conf" 2>/dev/null | head -n1 || true)"
       if command -v certbot >/dev/null; then
-        if certbot --nginx -d "$ADBLOCK_DOMAIN" -n --agree-tos --redirect --keep-until-expiring >/dev/null 2>&1; then
-          ok "adblock: TLS активен (certbot преинсталира SSL конфига)."
-          systemctl reload nginx 2>/dev/null || nginx -s reload
+        if [ -s "/etc/letsencrypt/live/$ADBLOCK_DOMAIN/fullchain.pem" ]; then
+          certbot install --nginx --cert-name "$ADBLOCK_DOMAIN" -n --redirect >"$clog" 2>&1 && tls_ok=1
+        fi
+        [ "$tls_ok" = 1 ] || { certbot --nginx -d "$ADBLOCK_DOMAIN" -n --agree-tos --redirect --keep-until-expiring \
+          ${acct:+--account "$acct"} >>"$clog" 2>&1 && tls_ok=1; }
+      fi
+      if [ "$tls_ok" = 1 ]; then
+        systemctl reload nginx 2>/dev/null || nginx -s reload
+        ok "adblock: TLS активен (certbot върна SSL конфига)."
+      else
+        deploy_failed=1
+        warn "adblock: certbot не успя — последните редове от $clog:"
+        [ -f "$clog" ] && tail -n 8 "$clog" | sed 's/^/    /'
+        if [ -n "$nbak" ] && grep -q "ssl_certificate" "$nbak"; then
+          cp -a "$nbak" "$nsite"
+          if nginx -t >/dev/null 2>&1; then
+            systemctl reload nginx 2>/dev/null || nginx -s reload
+            warn "adblock: върнах предишния vhost с HTTPS — новите файлове са в $ADBLOCK_WWW, само новите nginx правила чакат. Оправи certbot и деплойни пак."
+          else
+            warn "adblock: и предишният vhost не минава nginx -t — HTTPS остава изключен. Ръчно: certbot --nginx -d $ADBLOCK_DOMAIN"
+          fi
         else
-          warn "adblock: certbot не успя (DNS още не сочи насам?). Пусни ръчно: certbot --nginx -d $ADBLOCK_DOMAIN"
+          warn "adblock: няма предишен vhost с HTTPS за връщане. Ръчно: certbot --nginx -d $ADBLOCK_DOMAIN"
         fi
       fi
+      rm -f "$nbak"
     else
       deploy_failed=1
       warn "adblock: nginx -t провал — връщам стария vhost, НЕ презареждам."
-      if [ -f "${nsite}.bak-$TS" ]; then mv -f "${nsite}.bak-$TS" "$nsite"; else rm -f "$nsite" /etc/nginx/sites-enabled/adblock.conf; fi
+      if [ -n "$nbak" ]; then mv -f "$nbak" "$nsite"; else rm -f "$nsite" /etc/nginx/sites-enabled/adblock.conf; fi
       return
     fi
     if curl -fsS -o /dev/null --max-time 5 "$ADBLOCK_HEALTH_URL"; then
@@ -1810,7 +1878,7 @@ health() {
 indexnow_ping() {
   local key="$1"; [ -n "$key" ] || return 0
   local base="https://$ADBLOCK_DOMAIN"
-  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/youtube-ad-blocker"'","'"$base/cookie-banner-blocker"'","'"$base/support"'","'"$base/privacy"'","'"$base/bg/"'","'"$base/de/"'","'"$base/it/"'","'"$base/es/"'","'"$base/fr/"'","'"$base/pt-br/"'"]}'
+  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/youtube-ad-blocker"'","'"$base/cookie-banner-blocker"'","'"$base/support"'","'"$base/privacy"'","'"$base/status"'","'"$base/accessibility"'","'"$base/for-it-admins"'","'"$base/ublock-origin-alternative"'","'"$base/press"'","'"$base/how-we-measure"'","'"$base/test"'","'"$base/bg/"'","'"$base/de/"'","'"$base/it/"'","'"$base/es/"'","'"$base/fr/"'","'"$base/pt-br/"'"]}'
   if curl -fsS -m 10 -H "Content-Type: application/json" -d "$body" https://api.indexnow.org/indexnow >/dev/null 2>&1; then
     ok "adblock: IndexNow уведоми Bing/Yandex/Seznam (submit)."
   else
@@ -1838,6 +1906,7 @@ for p in $PROJECTS; do
     piuma)      deploy_piuma ;;
     liftpilot)  deploy_liftpilot ;;
     korpora)   deploy_korpora ;;
+    gaming|Gaming|aso) deploy_gaming ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;

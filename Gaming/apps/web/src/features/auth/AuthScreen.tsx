@@ -1,18 +1,19 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { LOCALES, type Locale } from "@aso/shared";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button, Field, Panel } from "../../ui";
 import { ApiError, api } from "../../lib/api";
-import { useAuthStore } from "../../lib/store";
+import { afterLogin } from "../../lib/session";
 import { LanguageSwitcher } from "../../app/LanguageSwitcher";
 import { OAuthButtons } from "./OAuthButtons";
+import { bannedMessage, fieldErrorsFrom, type AuthField } from "./authErrors";
 
 type Mode = "login" | "register";
 
 export function AuthScreen({ mode }: { mode: Mode }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const setUser = useAuthStore((s) => s.setUser);
   const [params] = useSearchParams();
 
   const [email, setEmail] = useState("");
@@ -20,6 +21,7 @@ export function AuthScreen({ mode }: { mode: Mode }) {
   const [displayName, setDisplayName] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<AuthField, string>>>({});
   const [busy, setBusy] = useState(false);
   // Mirror OAuthButtons' provider gate so the 18+/ToS notice only shows when the
   // Google/Facebook buttons actually render (both hide when none are configured).
@@ -45,38 +47,46 @@ export function AuthScreen({ mode }: { mode: Mode }) {
     if (err.code === "unauthorized") return t("auth.errorCredentials");
     if (err.code === "email_taken") return t("auth.errorEmailTaken");
     if (err.code === "banned") {
-      // DSA art. 17: surface the staff reason (if any) plus how to appeal.
-      const reason = err.message.trim();
-      return [
-        t("auth.errorBanned"),
-        reason ? t("auth.banReason", { reason }) : null,
-        t("auth.banAppeal"),
-      ]
-        .filter(Boolean)
-        .join(" ");
+      // DSA art. 17: surface the staff reason (if any), the expiry of a temp ban
+      // and how to appeal.
+      return bannedMessage(t, i18n.resolvedLanguage, err.message, err.details.until);
     }
+    if (err.code === "rate_limited") return t("errors.rate_limited");
+    if (err.code === "validation_error") return t("auth.errorValidation");
     return t("auth.errorGeneric");
   }
 
   function oauthMessageFor(code: string): string {
     if (code === "oauth_no_email") return t("auth.oauthNoEmail");
     if (code === "oauth_unavailable") return t("auth.oauthUnavailable");
+    // Блокиран акаунт през Google/Facebook — същият текст като при вход с парола
+    // (причината не пътува в URL-а на пренасочването).
+    if (code === "banned") return bannedMessage(t, i18n.resolvedLanguage);
     return t("auth.oauthFailed");
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
     setBusy(true);
     try {
+      // Езикът на интерфейса става езикът на акаунта (имейли, известия) — само bg/en/it.
+      const lang = i18n.resolvedLanguage;
+      const locale = (LOCALES as readonly string[]).includes(lang ?? "") ? (lang as Locale) : undefined;
       const res =
         mode === "login"
           ? await api.login({ email, password })
-          : await api.register({ email, password, displayName, acceptedTerms: true });
-      setUser(res.user);
+          : await api.register({ email, password, displayName, acceptedTerms: true, locale });
+      await afterLogin(res.user);
       navigate("/", { replace: true });
     } catch (err) {
-      setError(err instanceof ApiError ? messageFor(err) : t("auth.errorGeneric"));
+      if (err instanceof ApiError) {
+        setFieldErrors(fieldErrorsFrom(err, t));
+        setError(messageFor(err));
+      } else {
+        setError(t("auth.errorGeneric"));
+      }
     } finally {
       setBusy(false);
     }
@@ -107,6 +117,8 @@ export function AuthScreen({ mode }: { mode: Mode }) {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               autoComplete="nickname"
+              hint={t("auth.rulesDisplayName")}
+              error={fieldErrors.displayName}
               required
             />
           )}
@@ -116,6 +128,8 @@ export function AuthScreen({ mode }: { mode: Mode }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
+            hint={mode === "register" ? t("auth.rulesEmail") : undefined}
+            error={fieldErrors.email}
             required
           />
           <Field
@@ -124,6 +138,8 @@ export function AuthScreen({ mode }: { mode: Mode }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete={mode === "login" ? "current-password" : "new-password"}
+            hint={mode === "register" ? t("auth.rulesPassword") : undefined}
+            error={fieldErrors.password}
             required
           />
 

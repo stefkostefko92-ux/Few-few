@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Reklamları hər yerdə bloklayır: YouTube reklamları, bannerlər, popaplar, izləyicilər, kuki sorğuları və anti-adblock divarları."
+    "message": "Reklam bloklayıcı (YouTube və veb): video reklamlar, bannerlər, popaplar, izləyicilər, kuki bannerləri, anti-adblock divarları."
   },
   "byCarbon": {
     "message": "Carbon Stealth tərəfindən"
@@ -647,6 +647,12 @@
     "message": "Ünvan sətrinin yanındakı tapmaca parçası ikonuna klikləyin və Supreme AdBlock-u bərkidin. Sonra bir kliklə səhifədə nəyin bloklandığını görəcəksiniz.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Alətlər panelinə bərkidilib"
+  },
+  "welPinnedText": {
+    "message": "İkonuna bir klik səhifədə nəyin bloklandığını göstərir."
+  },
   "welBrokenTitle": {
     "message": "Sayt düzgün görünmürsə",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Qayda tutumu"
+  },
+  "helpTitle": {
+    "message": "Saytlar pozulur?"
+  },
+  "helpText": {
+    "message": "Hər dəfə bir sayt kifayətdir: orada reklamlara bir saatlıq icazə verin və ya elementlərin gizlədilməsini yalnız orada söndürün. Bizə bildirsəniz, sayt hamı üçün düzələcək."
+  },
+  "helpFix": {
+    "message": "Bu saytı düzəlt"
+  },
+  "cardNever": {
+    "message": "Bir daha göstərmə"
+  },
+  "cardClose": {
+    "message": "Bağla"
+  },
+  "receiptTitle": {
+    "message": "Son 30 gününüz"
+  },
+  "receiptText": {
+    "message": "$1 sorğu bloklandı · $2 kuki bannerinə cavab verildi · təxminən $3 data qənaət olundu (təxmini hesablama)"
+  },
+  "share": {
+    "message": "Paylaş"
+  },
+  "shareTitle": {
+    "message": "Chrome Web Store-da Supreme AdBlock keçidini kopyala"
+  },
+  "shareCopied": {
+    "message": "Keçid kopyalandı"
+  },
+  "rep_fixed_q": {
+    "message": "Sayt düzəldi?"
+  },
+  "rep_fixed_yes": {
+    "message": "Bəli, işləyir"
+  },
+  "rep_fixed_no": {
+    "message": "Xeyr, hələ də pozuqdur"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Şadıq ki, işləyir. Aşağıda bizə bildirsəniz, hesabatda hansı düzəlişin kömək etdiyi görünəcək və saytı hamı üçün düzəldə biləcəyik."
+  },
+  "rep_fixed_next": {
+    "message": "Növbətini sınayın: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Onda lütfən aşağıda bizə bildirin: sayta baxacağıq."
+  },
+  "rep_webmail": {
+    "message": "E-poçt tətbiqi yoxdur? Hesabatı kopyalayın və veb-poçtunuzdan $1 ünvanına göndərin."
+  },
+  "blk_mistake": {
+    "message": "Bunun səhv olduğunu düşünürsünüz? Bizə bildirin"
+  },
+  "welTest": {
+    "message": "Test səhifəsində necə işlədiyini görün"
   }
 }

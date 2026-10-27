@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "يحظر الإعلانات وإعلانات YouTube واللافتات والنوافذ المنبثقة وأدوات التتبع ونوافذ ملفات تعريف الارتباط وجدران مكافحة الحظر."
+    "message": "مانع إعلانات لـ YouTube والويب: إعلانات فيديو ولافتات ونوافذ منبثقة وأدوات تتبع ولافتات ملفات تعريف الارتباط وجدران مكافحة الحظر."
   },
   "byCarbon": {
     "message": "من Carbon Stealth"
@@ -647,6 +647,12 @@
     "message": "انقر على رمز قطعة الأحجية بجوار شريط العناوين وثبّت Supreme AdBlock. بعد ذلك تعرض لك نقرة واحدة ما تم حظره في الصفحة.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "الإضافة مثبّتة في شريط الأدوات"
+  },
+  "welPinnedText": {
+    "message": "نقرة واحدة على رمزها تعرض لك ما تم حظره في الصفحة."
+  },
   "welBrokenTitle": {
     "message": "إذا بدا موقع ما معطّلًا",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "سعة القواعد"
+  },
+  "helpTitle": {
+    "message": "هل تتعطل المواقع؟"
+  },
+  "helpText": {
+    "message": "يكفي موقع واحد في كل مرة: اسمح بإعلاناته لمدة ساعة، أو أوقف إخفاء العناصر فيه فقط. إذا أخبرتنا، نُصلحه للجميع."
+  },
+  "helpFix": {
+    "message": "إصلاح هذا الموقع"
+  },
+  "cardNever": {
+    "message": "لا تعرض هذا مجددًا"
+  },
+  "cardClose": {
+    "message": "إغلاق"
+  },
+  "receiptTitle": {
+    "message": "آخر 30 يومًا لديك"
+  },
+  "receiptText": {
+    "message": "الطلبات المحظورة: $1 · لافتات ملفات تعريف الارتباط التي تم الرد عليها: $2 · البيانات الموفّرة: نحو $3 (تقدير)"
+  },
+  "share": {
+    "message": "مشاركة"
+  },
+  "shareTitle": {
+    "message": "نسخ رابط Supreme AdBlock في Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "تم نسخ الرابط"
+  },
+  "rep_fixed_q": {
+    "message": "هل أُصلح الموقع؟"
+  },
+  "rep_fixed_yes": {
+    "message": "نعم، يعمل"
+  },
+  "rep_fixed_no": {
+    "message": "لا، ما زال معطّلًا"
+  },
+  "rep_fixed_yes_note": {
+    "message": "يسعدنا أنه يعمل. إذا أخبرتنا أدناه، فسيذكر البلاغ الإصلاح الذي نجح، لنُصلح الموقع للجميع."
+  },
+  "rep_fixed_next": {
+    "message": "جرّب الإصلاح التالي: $1"
+  },
+  "rep_fixed_none": {
+    "message": "إذن أخبرنا أدناه من فضلك: سنفحص الموقع."
+  },
+  "rep_webmail": {
+    "message": "لا يوجد تطبيق بريد؟ انسخ البلاغ وأرسله إلى $1 من بريدك على الويب."
+  },
+  "blk_mistake": {
+    "message": "تعتقد أن هذا خطأ؟ أخبرنا"
+  },
+  "welTest": {
+    "message": "شاهده يعمل على صفحة اختبار"
   }
 }

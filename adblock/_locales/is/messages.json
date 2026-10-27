@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Lokar á auglýsingar alls staðar: YouTube-auglýsingar, borða, sprettiglugga, rekjara, kökuborða og anti-adblock-veggi."
+    "message": "Auglýsingavörn fyrir YouTube og netið: myndbönd, borðar, sprettigluggar, rekjarar, vafrakökuborðar og anti-adblock-veggir."
   },
   "byCarbon": {
     "message": "frá Carbon Stealth"
@@ -647,6 +647,12 @@
     "message": "Smelltu á púsluspilstáknið við hliðina á veffangastikunni og festu Supreme AdBlock. Þá sýnir einn smellur hvað var lokað á síðunni.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Fest á tækjastikunni"
+  },
+  "welPinnedText": {
+    "message": "Einn smellur á táknið sýnir hvað var lokað á síðunni."
+  },
   "welBrokenTitle": {
     "message": "Ef vefsvæði lítur bilað út",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Rými fyrir reglur"
+  },
+  "helpTitle": {
+    "message": "Virka vefsvæði ekki?"
+  },
+  "helpText": {
+    "message": "Eitt vefsvæði í einu dugar: leyfðu auglýsingar þar í klukkustund eða slökktu á felingu eininga bara þar. Ef þú lætur okkur vita lögum við það fyrir alla."
+  },
+  "helpFix": {
+    "message": "Laga þetta vefsvæði"
+  },
+  "cardNever": {
+    "message": "Ekki sýna þetta aftur"
+  },
+  "cardClose": {
+    "message": "Loka"
+  },
+  "receiptTitle": {
+    "message": "Síðustu 30 dagarnir þínir"
+  },
+  "receiptText": {
+    "message": "$1 beiðnir útilokaðar · $2 vafrakökuborðum svarað · um það bil $3 af gögnum sparað (áætlun)"
+  },
+  "share": {
+    "message": "Deila"
+  },
+  "shareTitle": {
+    "message": "Afrita tengilinn á Supreme AdBlock í Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Tengill afritaður"
+  },
+  "rep_fixed_q": {
+    "message": "Lagaði þetta vefsvæðið?"
+  },
+  "rep_fixed_yes": {
+    "message": "Já, það virkar"
+  },
+  "rep_fixed_no": {
+    "message": "Nei, virkar enn ekki"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Gott að það virkar. Ef þú lætur okkur vita hér fyrir neðan sýnir skýrslan hvaða lagfæring virkaði, svo við getum lagað vefsvæðið fyrir alla."
+  },
+  "rep_fixed_next": {
+    "message": "Prófaðu næstu: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Láttu okkur þá vita hér fyrir neðan: við skoðum vefsvæðið."
+  },
+  "rep_webmail": {
+    "message": "Ekkert póstforrit? Afritaðu skýrsluna og sendu hana á $1 úr vefpóstinum þínum."
+  },
+  "blk_mistake": {
+    "message": "Heldurðu að þetta séu mistök? Láttu okkur vita"
+  },
+  "welTest": {
+    "message": "Sjáðu það virka á prófunarsíðu"
   }
 }

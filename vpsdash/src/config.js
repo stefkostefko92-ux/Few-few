@@ -186,6 +186,10 @@ const DEFAULTS = {
     { name: 'supreme', url: 'http://127.0.0.1:8080/' },
     { name: 'eternaltouch', url: 'http://127.0.0.1:4300/healthz' },
     { name: 'ospedali', url: 'http://127.0.0.1:8788/healthz' },
+    // АСО (gaming): api на портала; /health/ready проверява и базата.
+    { name: 'gaming', url: 'http://127.0.0.1:4500/health/ready' },
+    // LiftPilot: app на 127.0.0.1:4330 (APP_PORT в .env на продукта), /api/health казва и базата.
+    { name: 'liftpilot', url: 'http://127.0.0.1:4330/api/health' },
     // Статичен сайт зад Caddy (root /var/www/adblock) — няма собствен процес,
     // затова проверката минава през самия Caddy с правилния Host.
     { name: 'adblock', url: 'http://127.0.0.1/', host: 'adblock.carbonstealth.eu' },

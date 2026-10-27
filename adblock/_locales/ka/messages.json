@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "ბლოკავს რეკლამას: YouTube-ის ვიდეორეკლამებს, ბანერებს, ამომხტარ ფანჯრებს, ტრეკერებს, ქუქი-მოთხოვნებს და ანტი-ადბლოკ კედლებს."
+    "message": "რეკლამის ბლოკერი (YouTube და ვები): ვიდეორეკლამები, ბანერები, ამომხტარი ფანჯრები, ტრეკერები, ქუქი-ბანერები, ანტი-ადბლოკ კედლები."
   },
   "byCarbon": {
     "message": "Carbon Stealth-ისგან"
@@ -647,6 +647,12 @@
     "message": "დააწკაპუნეთ მისამართის ზოლის გვერდით თავსატეხის ნაწილის ხატულაზე და მიამაგრეთ Supreme AdBlock. შემდეგ ერთი დაწკაპუნებით ნახავთ, რა დაიბლოკა გვერდზე.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "მიმაგრებულია ხელსაწყოთა ზოლზე"
+  },
+  "welPinnedText": {
+    "message": "მის ხატულაზე ერთი დაწკაპუნება აჩვენებს, რა დაიბლოკა გვერდზე."
+  },
   "welBrokenTitle": {
     "message": "თუ საიტი გაფუჭებულად გამოიყურება",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "წესების ტევადობა"
+  },
+  "helpTitle": {
+    "message": "საიტები ფუჭდება?"
+  },
+  "helpText": {
+    "message": "ერთ ჯერზე ერთი საიტი საკმარისია: დაუშვით იქ რეკლამა ერთი საათით ან გამორთეთ ელემენტების დამალვა მხოლოდ იქ. თუ შეგვატყობინებთ, საიტს ყველასთვის გავასწორებთ."
+  },
+  "helpFix": {
+    "message": "ამ საიტის გასწორება"
+  },
+  "cardNever": {
+    "message": "აღარ მაჩვენო"
+  },
+  "cardClose": {
+    "message": "დახურვა"
+  },
+  "receiptTitle": {
+    "message": "თქვენი ბოლო 30 დღე"
+  },
+  "receiptText": {
+    "message": "$1 მოთხოვნა დაიბლოკა · $2 ქუქი-ბანერს გაეცა პასუხი · დაიზოგა დაახლოებით $3 მონაცემი (მიახლოებითი შეფასება)"
+  },
+  "share": {
+    "message": "გაზიარება"
+  },
+  "shareTitle": {
+    "message": "Supreme AdBlock-ის Chrome Web Store ბმულის კოპირება"
+  },
+  "shareCopied": {
+    "message": "ბმული დაკოპირდა"
+  },
+  "rep_fixed_q": {
+    "message": "გასწორდა საიტი?"
+  },
+  "rep_fixed_yes": {
+    "message": "დიახ, მუშაობს"
+  },
+  "rep_fixed_no": {
+    "message": "არა, ისევ გაფუჭებულია"
+  },
+  "rep_fixed_yes_note": {
+    "message": "გვიხარია, რომ მუშაობს. თუ ქვემოთ შეგვატყობინებთ, ანგარიშში ჩანს, რომელმა გამოსწორებამ იმუშავა, და საიტს ყველასთვის გავასწორებთ."
+  },
+  "rep_fixed_next": {
+    "message": "სცადეთ შემდეგი: $1"
+  },
+  "rep_fixed_none": {
+    "message": "მაშინ, გთხოვთ, შეგვატყობინეთ ქვემოთ: საიტს გადავხედავთ."
+  },
+  "rep_webmail": {
+    "message": "ელფოსტის აპი არ გაქვთ? დააკოპირეთ ანგარიში და გაგზავნეთ მისამართზე $1 თქვენი ვებფოსტიდან."
+  },
+  "blk_mistake": {
+    "message": "ფიქრობთ, რომ ეს შეცდომაა? შეგვატყობინეთ"
+  },
+  "welTest": {
+    "message": "ნახეთ, როგორ მუშაობს, სატესტო გვერდზე"
   }
 }
