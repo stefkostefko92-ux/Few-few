@@ -18213,7 +18213,7 @@
           "Домакинско предимство: CIES Football Observatory + COVID естествен експеримент (Frontiers 2021); Nevill (2002) съдийски уклон",
           "Closing Line Value и ефективност на пазара (Pinnacle; Constantinou & Fenton 2013)"
         ],
-        "lessons": 152
+        "lessons": 153
       },
       "evolution": [
         {
@@ -18275,9 +18275,20 @@
           "date": "2026-10-27",
           "event": "v20.8 — учене",
           "detail": "Научи: При тотал/хендикап с push (цяла или четвърт линия) EV = p_win·коеф − 1 + p_push, а Kell…"
+        },
+        {
+          "version": "20.9.0",
+          "date": "2026-10-27",
+          "event": "v20.9 — учене",
+          "detail": "Научи: Ако в DC напасване centre-ваш и log-att, и log-def до средна 0, а отместването отива са…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Ако в DC напасване centre-ваш и log-att, и log-def до средна 0, а отместването отива са…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
