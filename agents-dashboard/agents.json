@@ -1200,7 +1200,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 539
+        "lessons": 540
       },
       "evolution": [
         {
@@ -2042,9 +2042,20 @@
           "date": "2026-10-27",
           "event": "v42.1 — учене",
           "detail": "Научи: Ivan/backend express@4.22.3 изисква body-parser ~1.20.5, а body-parser 1.20.x в lock-а …"
+        },
+        {
+          "version": "42.2.0",
+          "date": "2026-10-27",
+          "event": "v42.2 — учене",
+          "detail": "Научи: agentgw парсва тяло само с express.json (limit 128kb, type application/json) и няма url…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „agentgw парсва тяло само с express.json (limit 128kb, type application/json) и няма url…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
