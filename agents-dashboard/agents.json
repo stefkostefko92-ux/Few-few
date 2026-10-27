@@ -1233,7 +1233,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 580
+        "lessons": 581
       },
       "evolution": [
         {
@@ -2261,9 +2261,20 @@
           "date": "2026-10-27",
           "event": "v46.2 — учене",
           "detail": "Научи: .pr-review/307.diff е отрязан (последен файл rilievi/locales/it/schede.json при 377 фай… (+2 още)"
+        },
+        {
+          "version": "46.3.0",
+          "date": "2026-10-27",
+          "event": "v46.3 — учене",
+          "detail": "Научи: Архивите от codeload винаги имат горна папка, затова release-ите са releases/<TS>/<коре…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Архивите от codeload винаги имат горна папка, затова release-ите са releases/<TS>/<коре…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
