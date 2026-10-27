@@ -31,9 +31,11 @@ interface Props {
   /** a modernisation that keeps the machine (round 45): the machine's group is the existing machine's, with its title
    *  and hint, and the ropes' group the existing ropes' when they stay too (`funi`: its title); null: the new machine */
   resta?: { title: string; hint: string; funi: string | null } | null;
+  /** the mode «Esperto» (ModoCalc.tsx): the service's group opens by itself */
+  esperto?: boolean;
 }
 
-export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopesHint, need, texts, esistente = V.context === 'repl', resta = null }: Props) {
+export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopesHint, need, texts, esistente = V.context === 'repl', resta = null, esperto = false }: Props) {
   const { t } = P;
   const row = (f: Field) => <FieldRow key={f.id} P={P} f={f} V={V} bad={bad} set={set} need={need.has(f.id)} std={isStandard(V, f.id)} texts={texts}
     aiuto={testoAiuto(AIUTO, f.key ?? f.id)} />;
@@ -45,8 +47,8 @@ export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopes
   const stdNote = texts.stdInUse && expert.length
     ? texts.stdInUse(expert.map((f) => `${t((f.key ?? f.id) as CalcKey)}${f.id.startsWith('o_') ? ` (${t('g_old')})` : ''} ${String(V[f.id])}${f.kind === 'num' && f.unit ? ` ${f.unit}` : ''}`).join(', '))
     : '';
-  // the service's group, expert only and closed: open and shown in the simple mode too while a value of it is still to
-  // enter or out of range
+  // the service's group, expert only: open in «Esperto», and open and shown in the simple mode too while a value of it
+  // is still to enter or out of range
   const service = SERVICE.some((f) => need.has(f.id) || bad.has(f.id));
   const check = (id: 'compare' | 'keepD' | 'keepRopes') => (
     <div className="row check" hidden={!shown(id, V) || (id === 'keepRopes' && !!resta)}>
@@ -95,7 +97,7 @@ export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopes
         <summary>{t('g_funi10411')}</summary>
         <div className="rows"><div className="hint">{t('hint_funi10411')}</div>{rows(FUNI_10411.filter((f) => shown(f.id, V)))}</div>
       </details>
-      <details className={`group${service ? '' : ' adv'}`} open={service || undefined}>
+      <details className={`group${service ? '' : ' adv'}`} open={service || esperto || undefined}>
         <summary>{t('g_service')}</summary><div className="rows">{rows(SERVICE)}</div>
       </details>
       <p className="note simple-only">{t('simple_note')}</p>

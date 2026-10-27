@@ -221,7 +221,8 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
       </InterventoChoice>
       <div className="layout">
         <CalcForm P={P} V={values} bad={bad} set={set} onEstimate={onEstimate} estMsg={estMsg} keepRopesHint={keepRopesHint} need={need} texts={texts}
-          esistente={repl || tipo === null} resta={resta ? { title: ti('argano_resta'), hint: ti('argano_resta_hint'), funi: collaudo.parti.includes('ropes') ? null : ti('funi_restano') } : null} />
+          esistente={repl || tipo === null} resta={resta ? { title: ti('argano_resta'), hint: ti('argano_resta_hint'), funi: collaudo.parti.includes('ropes') ? null : ti('funi_restano') } : null}
+          esperto={mode === 'expert'} />
         <section className="summary">
           {complete ? (
             <>

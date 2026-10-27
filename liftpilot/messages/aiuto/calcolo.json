@@ -95,7 +95,7 @@
   "norma_en81-73": "Comportamento in caso d’incendio: su comando della rivelazione la cabina va al piano prestabilito e fa uscire i passeggeri. Spunta quando la compartimentazione dell’edificio lo richiede.",
   "norma_en81-76": "Evacuazione delle persone con disabilità con l’ascensore: requisiti in più rispetto alla EN 81-20, per manovra e alimentazione. Spunta solo se l’ascensore è destinato a questo uso.",
   "norma_en81-77": "Ascensori soggetti ad azioni sismiche: spunta quando il progetto chiede la verifica sismica dell’impianto.",
-  "norma_en81-80": "Miglioramento della sicurezza degli ascensori esistenti. È una scelta volontaria: nessun obbligo nazionale di adeguamento risulta in vigore.",
+  "norma_en81-80": "Miglioramento della sicurezza degli ascensori esistenti. È una scelta volontaria: non risulta in vigore un obbligo nazionale di adeguamento, da confermare sul caso.",
   "norma_en81-82": "Miglioramento dell’accessibilità degli ascensori esistenti per le persone con disabilità. È una scelta volontaria.",
   "norma_en81-83": "Miglioramento della resistenza agli atti vandalici degli ascensori esistenti. È una scelta volontaria.",
   "norma_dm236": "Barriere architettoniche (DM 236/1989): le verifiche sono nel vano, per il caso che scegli nel Progetto. Non si offre per «Solo argano», che non tocca il vano.",

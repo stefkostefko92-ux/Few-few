@@ -17,6 +17,8 @@
   letter-spacing: 0; text-transform: none; box-shadow: var(--shadow); }
 .lbl:hover .aiuto-testo, .aiuto-btn:focus-visible + .aiuto-testo, .aiuto[data-aperto] .aiuto-testo { display: block; }
 .aiuto[data-zitto]:not([data-aperto]) .aiuto-testo { display: none; }
+/* near the screen's right edge (Aiuto.tsx measures it): opened from the box's right edge, towards the left */
+.aiuto[data-sinistra] .aiuto-testo { left: auto; right: 0; }
 @media print { .aiuto { display: none; } }
 
 /* The interface's mode (round 52, components/shell/Modalita.tsx). The provider's box has no box of its own; a field or a
