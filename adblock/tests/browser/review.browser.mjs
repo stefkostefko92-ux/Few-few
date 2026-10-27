@@ -29,7 +29,7 @@ const profile = mkdtempSync(join(tmpdir(), "sa-review-"));
 const ctx = await chromium.launchPersistentContext(profile, {
   channel: "chromium", headless: true,
   // a tab the extension opens is not routable by Playwright — the store host resolves nowhere instead
-  args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`, "--host-resolver-rules=MAP chromewebstore.google.com ~NOTFOUND"],
+  args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`, "--host-resolver-rules=MAP chromewebstore.google.com ~NOTFOUND", "--no-proxy-server"],
 });
 try {
   const sw = ctx.serviceWorkers()[0] || await ctx.waitForEvent("serviceworker", { timeout: 20000 });
