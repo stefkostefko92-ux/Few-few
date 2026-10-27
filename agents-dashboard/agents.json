@@ -17828,7 +17828,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 143
+        "lessons": 145
       },
       "evolution": [
         {
@@ -17890,9 +17890,20 @@
           "date": "2026-10-27",
           "event": "v23.7 — учене",
           "detail": "Научи: В linketto webhook-ът сваля User.plan само при customer.subscription.deleted; customer.…"
+        },
+        {
+          "version": "23.9.0",
+          "date": "2026-10-27",
+          "event": "v23.9 — учене",
+          "detail": "Научи: В CSPos продажбата зачита клиентския priceLockedCents за ЛЮБА стока; гейтът (само тегло… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „В CSPos продажбата зачита клиентския priceLockedCents за ЛЮБА стока; гейтът (само тегло…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
