@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-27:** Във vizitka JSON-LD се сериализира с jsonLdSafe, който екранира само < > & (без U+2028/U+2029), а organizationNode се рендира на началната страница и в още един граф _(ревю на JSON-LD с потребителски полета във vizitka; verified; vizitka/src/seo.js:195-196,202,254,332)_
 - **2026-10-27:** В eternaltouch EJS изгледите и partials могат да ползват `lang` без локален const, защото res.locals.lang винаги е зададен (по подразбиране 'en' в server.js, после истинският език от languageMiddleware), включително за страниците за грешки _(ревю на шаблони в eternaltouch, които ползват lang; verified; eternaltouch/src/server.js:170; eternaltouch/src/middleware/language.js:142)_
 - **2026-10-27:** Smoke тестовете на eternaltouch по пътища без езиков префикс рендират bg, защото DEFAULT_LANG='bg', а detectByIp пропуска 127.0.0.1 _(оценка на тестове с fetch към eternaltouch без префикс; verified; eternaltouch/src/middleware/language.js:13,37)_
 - **2026-10-27:** В Nexus клиента OPERATOR от lib/legal.ts се ползва само в pages/Terms.tsx и pages/Privacy.tsx, а JSON-LD в client/index.html е статичен и не чете OPERATOR _(ревю на промени в правните данни на Nexus; verified; Grep "OPERATOR\.|from '.*lib/legal'" и "ld\+json" в Nexus/ (Nexus/client/index.html:57))_
