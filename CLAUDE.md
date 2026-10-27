@@ -102,8 +102,8 @@ secrets/PII, fail closed. Agents start without this file (`omitClaudeMd: true`; 
 Invoke via the Agent tool (*„пусни Кодаджията върху промените“*); a hook puts
 each agent's HANDOFF (next agent · blocker · human decision) in front of the orchestrator (foreground runs;
 a background run's completion notice carries the same block). **AI-джията**
-is the lead. **Teams:** 9 lean teams (`.claude/agents/_teams.json` → `_teams.md`), each agent in exactly one, with lead · ≤3-step flow · human checkpoint; start with `node tools/agents/teams.mjs --route "<task>"`. Run `node tools/agents/oversee.mjs` after any change to the agent layer, and the full gate
-`node tools/agents/gate.mjs` before calling it done. **Cost lives in the tool loop, not the prompt**
+is the lead. **Teams:** 9 lean teams (`.claude/agents/_teams.json` → `_teams.md`), each agent in exactly one, with lead · ≤3-step flow · human checkpoint; start with `node tools/agents/teams.mjs --route "<task>"`. Run `node tools/agents/oversee.mjs` after any change to the agent layer, then **prove it live**
+(`node tools/agents/live-gate.mjs`; gate check `live-fresh`), and the full gate `node tools/agents/gate.mjs` before calling it done. **Cost lives in the tool loop, not the prompt**
 (measured: >90%) — keep agent runs short and targeted; generic agents also start heavier (they see
 every MCP tool); real spend: `node tools/agents/usage-report.mjs`.
 **Full doctrine** (loops, trajectories, defect rate, collaboration, versions/claims freshness, deep audit,
@@ -111,7 +111,7 @@ cost, caching, memory retrieval) → `tools/agents/CLAUDE.md` (loads on demand);
 `.claude/agents/README.md`; hooks → `.claude/hooks/README.md`. Keep `agents-dashboard/agents.json` in sync.
 
 **Owner's rules for agents (2026-10-27):**
-- **When a task needs an agent, use OUR agents** (`.claude/agents/`, route with `teams.mjs --route`) — never
+- **When a task needs an agent, use OUR agents** (`.claude/agents/`; the `route-hint` hook names ours on every prompt) — never
   general-purpose/Explore/fork while one of ours fits. Every run teaches the fleet (memory, flow ledger, usage);
   a generic agent's run teaches nothing. No fit at all → say so and propose the gap as a new agent or skill.
 - **Weak run or missing capability → train the agent, don't route around it:** record it in
@@ -141,9 +141,8 @@ secrets/PII leaving via any net verb, interpreter or **MCP tool argument**) · `
 without Write/Edit can't write through Bash). One secret list (`tools/lib/secret-patterns.mjs`), sanitized
 input, fail-open on hook error, fail-closed on a hit (`onFailure: "block"` on exfil/dangerous: a guard that
 can't start blocks), red-teamed through the CLI. Plus standard `permissions.deny` for `.env`/keys
-(`.env.example` stays readable). **Hook context reaches agents only under 10,000 chars per value** — the
-harness swaps a longer `additionalContext` for a 2 KB preview, so the static doctrine travels as the
-`agent-doctrine` skill and `memory-preload` injects only `--part=shared|agent` (gate: `tools/hooks/preload-size.test.mjs`). **Learning ⇒ the fleet Artifact is republished, always** (owner's rule): the
+(`.env.example` stays readable). **Hook context over 10,000 chars never reaches an agent** (2 KB preview) —
+the doctrine travels as the `agent-doctrine` skill (gate: `tools/hooks/preload-size.test.mjs`). **Learning ⇒ the fleet Artifact is republished, always** (owner's rule): the
 `artifact-sync` Stop hook sends a session back once when this clone learned something not yet published.
 Details → `.claude/hooks/README.md`.
 

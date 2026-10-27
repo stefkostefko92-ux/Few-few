@@ -27,6 +27,9 @@ const SERIAL = argv.includes("--serial");
 const CHECKS = [
   // Пръв по ред: ако наш файл не се парсва, всички следващи проверки падат по объркваща причина.
   { id: "syntax", desc: "всеки наш .mjs се парсва (права кавичка в „ … “ чупи низа)", cmd: ["tools/lib/syntax-check.mjs"] },
+  // 2026-10-27: агентите 3 месеца не виждаха паметта и процедурата при зелени тестове — те мереха какво
+  // връща куката, не какво вижда агентът. Промяна по агентския слой минава само с жива проверка.
+  { id: "live-fresh", desc: "агентският слой е проверен НА ЖИВО след последната си промяна (live-gate.mjs: проба на контекста + pass^k)", cmd: ["tools/agents/live-gate.mjs", "--check"] },
   { id: "doctrine-skill", desc: "умението agent-doctrine е байт в байт _memory/SECURITY.md + PROCEDURE.md (то носи доктрината до агентите)", cmd: ["tools/agents/doctrine-skill.mjs"] },
   { id: "oversee", desc: "надзор над екипа (цялост дефиниция↔памет↔agents.json↔settings)", cmd: ["tools/agents/oversee.mjs"] },
   { id: "deep-audit", desc: "дупки: регистър↔дефиниция · инжекции · счупени препратки · продукти", cmd: ["tools/agents/deep-audit.mjs", "--check"] },

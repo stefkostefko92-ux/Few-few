@@ -31,7 +31,7 @@ export function loadTeams(file = TEAMS_FILE) {
   return JSON.parse(readFileSync(file, "utf8"));
 }
 
-function names() {
+export function names() {
   try {
     return Object.fromEntries(JSON.parse(readFileSync(DASH, "utf8")).agents.map((a) => [a.id, a.name]));
   } catch { return {}; }
