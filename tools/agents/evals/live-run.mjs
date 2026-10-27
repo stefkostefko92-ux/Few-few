@@ -10,7 +10,11 @@
 //   • главната сесия пуска агента през Agent tool — минава SubagentStart/SubagentStop куките, умението
 //     agent-doctrine, картата и паметта, т.е. целия продукционен път;
 //   • Stop куките на оркестратора (session-dod, artifact-sync) са махнати само в копието: те съдят главната
-//     сесия и подменяха отговора; AGENT_MEMORY_SYNC=0 — оценката мери, не пише в паметта.
+//     сесия и подменяха отговора;
+//   • оценката мери, не учи: копието е в eval режим (tools/lib/eval-mode.mjs, файл в .git/worktrees/<копие>/),
+//     иначе memory-capture публикува поуки в agents/memory направо от копието (общи refs) и опит 2 от pass^k
+//     извлича поуката на опит 1. AGENT_MEMORY_SYNC=0 НЕ стига — спира само фоновия sync (хванато на 27.10).
+//     Прегледът на PR (pr-review.mjs) е продукционна работа и учи — той не пуска eval режим.
 //
 //   node tools/agents/evals/live-run.mjs --jobs kasadjiyata:kasadjiyata:3,seo:seo --out <папка> [--ref HEAD]
 //     job = <агент>:<spec id>[:опити]  → <папка>/<spec>.txt или <spec>.<n>.txt
@@ -22,6 +26,7 @@ import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, rmSync, existsSync
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
+import { setEvalMode } from "../../lib/eval-mode.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const ROOT = join(HERE, "..", "..", "..");
@@ -68,12 +73,14 @@ export function claudeAvailable() {
 }
 
 /** Изолирано копие на ref-а с махнати Stop куки на оркестратора. Връща пътя и функция за почистване.
- *  overlay: {from, paths} — тези пътища идват от друг ref (преглед на стар PR с ТЕКУЩИЯ агентски слой). */
-export function makeWorktree(ref = "HEAD", overlay = null) {
+ *  overlay: {from, paths} — тези пътища идват от друг ref (преглед на стар PR с ТЕКУЩИЯ агентски слой).
+ *  measure: true (по подразбиране) — eval режим в копието: паметта се чете, но нищо не се записва. */
+export function makeWorktree(ref = "HEAD", overlay = null, { measure = true } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "live-run-"));
   rmSync(dir, { recursive: true, force: true });
   execFileSync("git", ["-C", ROOT, "worktree", "add", "--detach", dir, ref], { stdio: "ignore" });
   if (overlay) execFileSync("git", ["-C", dir, "checkout", overlay.from, "--", ...overlay.paths], { stdio: "ignore" });
+  if (measure) setEvalMode(dir, { label: "live-run", memory: "on", minutes: 180 });
   const sp = join(dir, ".claude", "settings.json");
   writeFileSync(sp, JSON.stringify(stripOrchestratorStop(JSON.parse(readFileSync(sp, "utf8"))), null, 2) + "\n");
   const cleanup = () => { try { execFileSync("git", ["-C", ROOT, "worktree", "remove", "--force", dir], { stdio: "ignore" }); } catch { rmSync(dir, { recursive: true, force: true }); } };
