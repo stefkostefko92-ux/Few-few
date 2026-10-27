@@ -252,3 +252,21 @@ test("нарушен блок ПРЕДАВАНЕ връща агента с ис
   assert.match(msg, /Изход\/артефакт:/);
   assert.doesNotMatch(msg, /DoD гейт НЕ е пуснат/, "не бива да праща агента да „пуска гейт“");
 });
+
+// Пълната оценка 27.10.2026: Геймъра, записите отказани от правата → куката искаше manifest-lint за
+// несъществуващи файлове, агентът отговори само на връщането и ресурсът се изгуби.
+test("отказан Write (tool_result is_error) не е запис → няма връщане за гейт", () => {
+  const uses = collectToolUses(jl([
+    { message: { content: [{ type: "tool_use", id: "t1", name: "Write", input: { file_path: "fivem-resources/cs_shop/server/main.lua" } }] } },
+    { message: { content: [{ type: "tool_result", tool_use_id: "t1", is_error: true, content: "Permission to use Write has been denied." }] } },
+    { message: { content: [{ type: "tool_use", id: "t2", name: "Write", input: { file_path: "resources/shop/server.lua" } }] } },
+    { message: { content: [{ type: "tool_result", tool_use_id: "t2", content: "File created successfully" }] } },
+  ]));
+  assert.deepEqual(uses.filter((u) => u.name === "Write").map((u) => u.input.file_path), ["resources/shop/server.lua"]);
+});
+
+test("всяко връщане (не само за ПРЕДАВАНЕ) иска целия отговор наново", async () => {
+  const { REPEAT_ALL } = await import("../../.claude/hooks/dod-check.mjs");
+  assert.match(REPEAT_ALL, /ЦЕЛИЯ си отговор/);
+  assert.match(REPEAT_ALL, /предишното ми съобщение/);
+});
