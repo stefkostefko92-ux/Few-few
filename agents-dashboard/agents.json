@@ -1233,7 +1233,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 587
+        "lessons": 588
       },
       "evolution": [
         {
@@ -2285,9 +2285,20 @@
           "date": "2026-10-27",
           "event": "v46.9 — учене",
           "detail": "Научи: В Ivan фронтендът изпраща PUT /api/settings само от раздела за настройки, който се пока… (+1 още)"
+        },
+        {
+          "version": "47.0.0",
+          "date": "2026-10-27",
+          "event": "v47.0 — учене",
+          "detail": "Научи: Състоянието на публикувания артефакт (.git/agents-artifact.json през statePath) е локал…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Състоянието на публикувания артефакт (.git/agents-artifact.json през statePath) е локал…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
