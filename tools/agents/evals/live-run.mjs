@@ -22,7 +22,7 @@
 // Изисква `claude` CLI с вход (локално или в облачна сесия). Без него → изход 2 с ясно съобщение.
 
 import { execFile, execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, statSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -74,6 +74,32 @@ export function parseResult(out) {
   catch { return { text: String(out || ""), costUsd: 0 }; }
 }
 
+// 27.10.2026 (жив гейт): при отказан запис в репото агентът пише в scratchpad-а на сесията и посочва пътя —
+// правилно поведение, но оценителят виждаше само текста и „коректен fxmanifest“ падаше за файл, който съществува.
+// Посочените файлове от scratchpad-а на копието се прикачват към оценявания изход (с таван).
+export const SCRATCH_RE = /\/tmp\/claude-0\/-tmp-live-run-[^\s`'"“”)]+?\/scratchpad(?:\/[^\s`'"“”)]*)?/g;
+const FILE_CAP = 20_000, TOTAL_CAP = 80_000, MAX_FILES = 20;
+
+/** Текстът + съдържанието на посочените файлове от scratchpad-а (папка → файловете в нея, рекурсивно). */
+export function attachScratchpad(text) {
+  const files = [];
+  const walk = (p) => {
+    if (files.length >= MAX_FILES || !existsSync(p)) return;
+    const st = statSync(p);
+    if (st.isDirectory()) { for (const e of readdirSync(p).sort()) walk(join(p, e)); }
+    else if (st.isFile() && !files.includes(p)) files.push(p);
+  };
+  for (const m of new Set(String(text).match(SCRATCH_RE) || [])) walk(m.replace(/[.,;:]+$/, ""));
+  let out = String(text), total = 0;
+  for (const f of files) {
+    if (total >= TOTAL_CAP) break;
+    const body = readFileSync(f, "utf8").slice(0, FILE_CAP);
+    total += body.length;
+    out += `\n\n--- приложен файл от scratchpad: ${f} ---\n${body}`;
+  }
+  return out;
+}
+
 export function claudeAvailable() {
   try { execFileSync("claude", ["--version"], { stdio: "ignore" }); return true; } catch { return false; }
 }
@@ -103,6 +129,7 @@ export async function runJobs(jobs, { wt, concurrency = 3, timeoutMs = 900000, e
       { cwd: wt, timeout: timeoutMs, maxBuffer: 1 << 26, env: { ...process.env, CLAUDE_PROJECT_DIR: wt, AGENT_MEMORY_SYNC: "0" } },
       (err, stdout, stderr) => {
         const r = parseResult(stdout);
+        if (r.text) r.text = attachScratchpad(r.text);
         resolve({ ...j, ok: !err && !!r.text.trim(), text: r.text, costUsd: r.costUsd, err: err ? String(stderr || err.message).slice(0, 300) : "", seconds: Math.round((Date.now() - t0) / 1000) });
       });
   });

@@ -41,3 +41,19 @@ test("копието за оценка е в eval режим (не учи), ко
   } finally { measured.cleanup(); learning.cleanup(); }
   assert.equal(existsSync(measured.dir), false);
 });
+
+// Живият гейт 27.10.2026: файловете на агента в scratchpad-а стигат до оценителя.
+test("посочените файлове от scratchpad-а се прикачват към изхода", async () => {
+  const { attachScratchpad } = await import("./live-run.mjs");
+  const { mkdirSync, writeFileSync, rmSync } = await import("node:fs");
+  const dir = "/tmp/claude-0/-tmp-live-run-TEST01/abc/scratchpad/cs_shop";
+  mkdirSync(dir + "/server", { recursive: true });
+  writeFileSync(dir + "/fxmanifest.lua", "fx_version 'cerulean'\n");
+  writeFileSync(dir + "/server/main.lua", "-- сървър\n");
+  try {
+    const out = attachScratchpad("Файловете са в `" + dir + "/`:\n- fxmanifest.lua");
+    assert.match(out, /fx_version 'cerulean'/);
+    assert.match(out, /-- сървър/);
+    assert.equal(attachScratchpad("без пътища"), "без пътища");
+  } finally { rmSync("/tmp/claude-0/-tmp-live-run-TEST01", { recursive: true, force: true }); }
+});
