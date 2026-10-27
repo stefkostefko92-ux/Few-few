@@ -192,7 +192,8 @@ async function run() {
       probe.push({ agent: r.agent, ...j });
       console.log(`  ${j.ok ? "✓" : "✗"} проба ${r.agent}${j.ok ? "" : ": " + j.problems.join(" · ")}`);
     }
-    for (const r of results.filter((x) => !x.name.startsWith("probe-") && x.ok)) writeFileSync(join(out, r.name), r.text);
+    // Всички изходи (и на пробите) остават за четене: „няма JSON в отговора“ без самия отговор не се диагностицира (27.10).
+    for (const r of results.filter((x) => x.ok)) writeFileSync(join(out, r.name), r.text);
     let evalSummary = null;
     try { evalSummary = JSON.parse(execFileSync("node", [join(HERE, "evals", "eval.mjs"), "--run", out, "--json"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })); }
     catch (e) { evalSummary = (() => { try { return JSON.parse(String(e.stdout || "")); } catch { return null; } })(); }
