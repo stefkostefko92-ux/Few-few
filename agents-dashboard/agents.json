@@ -7029,7 +7029,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 243
+        "lessons": 244
       },
       "evolution": [
         {
@@ -7439,9 +7439,20 @@
           "date": "2026-10-27",
           "event": "v20.8 — учене",
           "detail": "Научи: vpsdash shellspec scriptOf разпознава само spec.shell и cmd==='bash'; spec с cmd 'sh' и…"
+        },
+        {
+          "version": "20.9.0",
+          "date": "2026-10-27",
+          "event": "v20.9 — учене",
+          "detail": "Научи: cs2dm/app (PR #321) пуска prisma migrate deploy при всеки старт на контейнера през dock…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „cs2dm/app (PR #321) пуска prisma migrate deploy при всеки старт на контейнера през dock…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
