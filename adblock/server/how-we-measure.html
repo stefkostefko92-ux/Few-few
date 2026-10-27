@@ -44,7 +44,7 @@
       "publisher": { "@id": "https://carbonstealth.eu/#organization" },
       "breadcrumb": { "@id": "https://adblock.carbonstealth.eu/how-we-measure#breadcrumb" },
       "datePublished": "2026-10-23",
-      "dateModified": "2026-10-23"
+      "dateModified": "2026-10-27"
     },
     {
       "@type": "BreadcrumbList",
@@ -194,7 +194,7 @@
     <header class="hero">
       <div class="wrap">
         <h1>How we measure</h1>
-        <p class="lead">The numbers on the <a href="/#measured">home page</a> come from <b>two public test pages</b>, run on <b>25 September 2026</b> in headless Chromium, with every blocker on its default settings. This page gives the method, the command to rerun it, and what the numbers do not show.</p>
+        <p class="lead">The numbers on the <a href="/#measured">home page</a> come from <b>two public test pages</b>, run on <b>27 October 2026</b> in headless Chromium, with every blocker on its default settings. This page gives the method, the command to rerun it, and what the numbers do not show.</p>
       </div>
     </header>
 
@@ -202,7 +202,7 @@
       <div class="wrap prose">
         <h2>What is measured</h2>
         <ul class="dots">
-          <li><a href="https://adblock.turtlecute.org/" target="_blank" rel="noopener">Turtlecute</a>: the "blocked" count out of the "Total" its page showed on the day (132 on 25 September 2026).</li>
+          <li><a href="https://adblock.turtlecute.org/" target="_blank" rel="noopener">Turtlecute</a>: the "blocked" count out of the "Total" its page showed on the day (132 on 27 October 2026).</li>
           <li><a href="https://adblock-tester.com/" target="_blank" rel="noopener">adblock-tester</a>: its score out of 100.</li>
         </ul>
         <p>Both pages belong to other people. We did not write them and we do not control them.</p>
@@ -218,33 +218,50 @@
           <li>The script waits 60 seconds so the blocker can download and compile its lists.</li>
           <li>It opens Turtlecute, waits 30 seconds, and reads the count of blocked hosts from the page text.</li>
           <li>It opens adblock-tester, waits 35 seconds, and reads the score from the page text.</li>
-          <li>Each blocker was run twice. The two rounds matched for every blocker except AdGuard and Adblock Plus, whose Turtlecute counts differed between rounds; the table shows that range. The raw output of those runs is not published.</li>
+          <li>Each blocker was run twice. The two rounds matched for every blocker except Ghostery, AdGuard and Adblock Plus, whose Turtlecute counts differed by one or two between rounds; the table shows that range.</li>
         </ol>
         <p>The browser is Chromium driven by Playwright, headless, with a 1280 × 900 window. A run with no blocker is included as the baseline. The script is <a href="https://github.com/stefkostefko92-ux/Few-few/blob/main/adblock/tools/compare_blockers.mjs" target="_blank" rel="noopener"><code>tools/compare_blockers.mjs</code></a> in our public repository.</p>
+        <p>Each competitor is the release the Chrome Web Store served on 27 October 2026, unpacked from its store package; the version is in the table.</p>
+        <p><b>The network.</b> This run was made from a cloud machine whose network refused a few ad and tracker hosts by itself. So even with no blocker, Turtlecute counted 10 of 132 as blocked, and adblock-tester gave 41. On 25 September 2026, on a different connection, the same baseline was 4 and 48. Every blocker in a run shares the same network, so the rows compare with each other; numbers from the two dates do not compare directly.</p>
       </div>
     </section>
 
     <section class="blk" id="results">
       <div class="wrap prose">
         <h2>The numbers, copied from the home page</h2>
-        <p>Measured on 25 September 2026. Higher is better. Supreme AdBlock was version 5.1.2 in that run; the current release is 5.5.1, and we have not rerun the table for it.</p>
+        <p>Measured on 27 October 2026. Higher is better.</p>
         <div class="tablewrap">
           <table>
-            <caption class="sr">Results of two public ad-blocking tests, 25 September 2026</caption>
+            <caption class="sr">Results of two public ad-blocking tests, 27 October 2026</caption>
             <thead><tr><th scope="col">Blocker (default settings)</th><th scope="col">Turtlecute (hosts blocked)</th><th scope="col">adblock-tester (score out of 100)</th></tr></thead>
             <tbody>
-              <tr><th scope="row">No blocker</th><td>4 / 132</td><td>48</td></tr>
-              <tr class="us"><th scope="row">Supreme AdBlock 5.1.2</th><td>130 / 132</td><td>95</td></tr>
-              <tr><th scope="row">uBlock Origin Lite</th><td>82 / 132</td><td>91</td></tr>
-              <tr><th scope="row">Ghostery</th><td>98 / 132</td><td>96</td></tr>
-              <tr><th scope="row">AdGuard</th><td>24–26 / 132</td><td>77</td></tr>
-              <tr><th scope="row">Adblock Plus</th><td>25–26 / 132</td><td>77</td></tr>
+              <tr><th scope="row">No blocker</th><td>10 / 132</td><td>41</td></tr>
+              <tr class="us"><th scope="row">Supreme AdBlock 5.7.0</th><td>130 / 132</td><td>95</td></tr>
+              <tr><th scope="row">uBlock Origin Lite 2026.1026.1812</th><td>83 / 132</td><td>91</td></tr>
+              <tr><th scope="row">Ghostery 10.6.9</th><td>98–100 / 132</td><td>96</td></tr>
+              <tr><th scope="row">AdGuard 5.5.3.28</th><td>30–31 / 132</td><td>75</td></tr>
+              <tr><th scope="row">Adblock Plus 4.48.0</th><td>31–32 / 132</td><td>75</td></tr>
             </tbody>
           </table>
         </div>
         <div class="limit">
-          <p><b>Where we lose.</b> Ghostery scored 96 on adblock-tester; Supreme AdBlock scored 95. That is one point behind.</p>
+          <p><b>Where we lose.</b> Ghostery scored 96 on adblock-tester; Supreme AdBlock scored 95. That is one point behind, the same gap as on 25 September 2026.</p>
         </div>
+        <h3>The script's output, as printed</h3>
+<pre><code>date 2026-10-27 · headless Chromium · default settings · 60 s setup · rounds 2
+No blocker           turtlecute  10/132 blocked · adblock-tester  41/100
+No blocker           turtlecute  10/132 blocked · adblock-tester  41/100
+Supreme AdBlock      turtlecute 130/132 blocked · adblock-tester  95/100
+Supreme AdBlock      turtlecute 130/132 blocked · adblock-tester  95/100
+uBlock Origin Lite 2026.1026.1812 turtlecute  83/132 blocked · adblock-tester  91/100
+uBlock Origin Lite 2026.1026.1812 turtlecute  83/132 blocked · adblock-tester  91/100
+Ghostery 10.6.9      turtlecute  98/132 blocked · adblock-tester  96/100
+Ghostery 10.6.9      turtlecute 100/132 blocked · adblock-tester  96/100
+AdGuard 5.5.3.28     turtlecute  30/132 blocked · adblock-tester  75/100
+AdGuard 5.5.3.28     turtlecute  31/132 blocked · adblock-tester  75/100
+Adblock Plus 4.48.0  turtlecute  32/132 blocked · adblock-tester  75/100
+Adblock Plus 4.48.0  turtlecute  31/132 blocked · adblock-tester  75/100</code></pre>
+        <p>The previous run, on 25 September 2026 with Supreme AdBlock 5.1.2 (competitor versions were not recorded then), gave: no blocker 4 / 132 and 48, Supreme AdBlock 130 / 132 and 95, uBlock Origin Lite 82 / 132 and 91, Ghostery 98 / 132 and 96, AdGuard 24–26 / 132 and 77, Adblock Plus 25–26 / 132 and 77.</p>
       </div>
     </section>
 
@@ -265,8 +282,8 @@
           <li><b>Defaults only.</b> AdGuard and Adblock Plus may do better with extra lists switched on or after a longer set-up. We report their defaults.</li>
           <li><b>Lab, not field.</b> A headless browser opening two test pages is not your daily browsing. It does not show broken sites, missed ads on real pages, or how a blocker behaves after months of use.</li>
           <li><b>Two tests are a narrow view.</b> They do not measure YouTube, cookie banners, memory use or page speed.</li>
-          <li><b>Versions move.</b> The table is a snapshot of 25 September 2026, not of today's releases.</li>
-          <li><b>Competitor versions were not recorded.</b> We tested the releases that were current on 25 September 2026 but did not write down their version numbers, so a rerun with today's releases may give different numbers.</li>
+          <li><b>Versions move.</b> The table is a snapshot of 27 October 2026 and the versions named in it, not of later releases.</li>
+          <li><b>The network matters.</b> A network that refuses some ad hosts by itself (as the one for this run did) raises every row, the baseline included. Compare rows from the same run, not numbers from different days.</li>
         </ul>
         <p>The home page also says "60,000+ rules, 36 lists". That is a count of what is built in, not a test result, and a larger count does not mean better blocking.</p>
       </div>
