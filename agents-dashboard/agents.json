@@ -10942,7 +10942,7 @@
           "OrcaSlicer / Creality Print — K2 Plus профили, 3MF, flush/калибрация",
           "UltiMaker/Stratasys/Protolabs/Hubs/Markforged/Prusa — DfAM правила (толеранси, надвеси, inserts, elephant foot)"
         ],
-        "lessons": 172
+        "lessons": 173
       },
       "evolution": [
         {
@@ -11256,9 +11256,20 @@
           "date": "2026-10-25",
           "event": "v20.3 — учене",
           "detail": "Научи: Официалният профил „Generic ABS @K2 Plus-all.json“ (OrcaSlicer) задава за ABS: камера 5…"
+        },
+        {
+          "version": "20.4.0",
+          "date": "2026-10-27",
+          "event": "v20.4 — учене",
+          "detail": "Научи: Фикстурата injection-web-page.md е във tools/agents/evals/fixtures/, не в fixtures/ в к…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Фикстурата injection-web-page.md е във tools/agents/evals/fixtures/, не в fixtures/ в к…\""
+        },
         {
           "date": "2026-10-25",
           "type": "learning",
