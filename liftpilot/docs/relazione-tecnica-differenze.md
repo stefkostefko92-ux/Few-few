@@ -118,7 +118,7 @@ Totale: 136 punti.
 
 | Id | Nel file | In LiftPilot | Norma |
 |---|---|---|---|
-| E-1 | σ all’intervento del paracadute calcolata come (σm + Fk)/A: circa un centesimo del valore giusto, verifica sempre soddisfatta | σ = σm + Fk/A, come la formula stampata | UNI EN 81-50:2020, 5.10.4 |
+| E-1 | σ all’intervento del paracadute calcolata come (σm + Fk)/A: anche la flessione σm è divisa per l’area e quasi sparisce (σ ≈ Fk/A; nell’esempio 23,0 invece di 102,6 N/mm²), la verifica passa con la guida sovraccaricata | σ = σm + Fk/A, come la formula stampata | UNI EN 81-50:2020, 5.10.4 |
 | E-2 | freccia delle guide di cabina entro 10 mm in marcia e al carico al piano | entro 5 mm in ogni caso: le guide di cabina portano sempre il paracadute | UNI EN 81-20:2020, 5.7.4.6 |
 | E-3 | frecce all’intervento del paracadute stampate con il limite ma senza verifica | verificate entro 5 mm con l’esito sulla riga | UNI EN 81-20:2020, 5.7.4.6 |
 | E-4 | raggio d’inerzia √(Jy/A): per T125/A, T125/B, T127-2/A e T127-2/B (Jy > Jx) snellezza e ω troppo bassi | raggio d’inerzia minimo √(min(Jx, Jy)/A), anche per il contrappeso | UNI EN 81-50:2020, 5.10.3 |

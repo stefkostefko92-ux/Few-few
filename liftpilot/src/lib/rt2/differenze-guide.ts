@@ -7,7 +7,7 @@
 const C = 'guideCabina', W = 'contrappeso';
 
 export const DIFFERENZE_GUIDE: readonly { id: string; componente: string; modello: string; correzione: string; norma?: string }[] = [
-  { id: 'E-1', componente: C, modello: 'σ all’intervento del paracadute calcolata come (σm + Fk)/A: circa un centesimo del valore giusto, verifica sempre soddisfatta',
+  { id: 'E-1', componente: C, modello: 'σ all’intervento del paracadute calcolata come (σm + Fk)/A: anche la flessione σm è divisa per l’area e quasi sparisce (σ ≈ Fk/A; nell’esempio 23,0 invece di 102,6 N/mm²), la verifica passa con la guida sovraccaricata',
     correzione: 'σ = σm + Fk/A, come la formula stampata', norma: 'UNI EN 81-50:2020, 5.10.4' },
   { id: 'E-2', componente: C, modello: 'freccia delle guide di cabina entro 10 mm in marcia e al carico al piano',
     correzione: 'entro 5 mm in ogni caso: le guide di cabina portano sempre il paracadute', norma: 'UNI EN 81-20:2020, 5.7.4.6' },
