@@ -12313,7 +12313,7 @@
           "Mozilla web-ext lint — статична проверка (валидна и за Chrome пакети)",
           "chromestatus.com — наличност на API по Chrome milestone"
         ],
-        "lessons": 226
+        "lessons": 227
       },
       "evolution": [
         {
@@ -12687,9 +12687,20 @@
           "date": "2026-10-06",
           "event": "v20.6 — учене",
           "detail": "Научи: declarativeNetRequest.getMatchedRules има твърда квота MAX_GETMATCHEDRULES_CALLS_PER_IN… (+50 още)"
+        },
+        {
+          "version": "20.7.0",
+          "date": "2026-10-27",
+          "event": "v20.7 — учене",
+          "detail": "Научи: PR #340 (adblock 5.7.0) променя само adblock/tests/browser/*.browser.mjs (8 файла); met…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „PR #340 (adblock 5.7.0) променя само adblock/tests/browser/*.browser.mjs (8 файла); met…\""
+        },
         {
           "date": "2026-10-27",
           "type": "quarantine",

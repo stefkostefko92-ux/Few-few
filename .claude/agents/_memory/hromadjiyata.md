@@ -7,6 +7,7 @@
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
 ## Проверени поуки (verified)
+- **2026-10-27:** PR #340 (adblock 5.7.0) променя само adblock/tests/browser/*.browser.mjs (8 файла); meta тестът минава на HTTPS със самоподписан openssl сертификат, защото Chromium вдига facebook/instagram/threads към https (HSTS preload); без промяна в manifest/права/CSP. _(преглед на PR-ове за adblock, които засягат само тестове; verified; .pr-review/340.diff:127-128,145-152,171,185)_
 - **2026-09-24:** declarativeNetRequest.getMatchedRules има твърда квота MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL=20 повиквания за GETMATCHEDRULES_QUOTA_INTERVAL=10 минути; повиквания, свързани с user gesture, са освободени от квотата — но tabs.onUpdated/tabs.onActivated НЕ са user gesture _(adblock; verified; https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest)_
 - **2026-09-24:** setExtensionActionOptions({displayActionCountAsBadgeText}) НЕ изисква declarativeNetRequestFeedback право и е напълно извън getMatchedRules квотата — валидна безквотна алтернатива за badgeброене _(adblock; verified; https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest)_
 - **2026-09-24:** getMatchedRules има и втори път за достъп освен declarativeNetRequestFeedback: activeTab право стига, ако филтърът подаде конкретен tabId _(adblock; verified; https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest)_
