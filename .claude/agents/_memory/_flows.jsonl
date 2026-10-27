@@ -308,3 +308,5 @@
 {"t":"handoff","ts":"2026-10-27T09:58:20.959Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"блокер (гейтът е червен по причина извън моя обхват; моята част е готова)","run":"12d849bd"}
 {"t":"handoff","ts":"2026-10-27T09:58:54.854Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"блокер","run":"9f8655cb"}
 {"t":"handoff","ts":"2026-10-27T10:02:02.255Z","id":"red60c781","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"b7c5ad1e"}
+{"t":"start","ts":"2026-10-25T14:31:24.150Z","id":"rfccf1a0e","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-10-25T14:31:24.150Z","id":"rfccf1a0e","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"f23898b1"}
