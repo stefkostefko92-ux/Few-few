@@ -249,7 +249,7 @@ const FALLBACK = {
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-10-25",
+    "updated": "2026-10-27",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -293,7 +293,7 @@ const FALLBACK = {
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 417
+        "lessons": 418
       },
       "evolution": [
         {
@@ -859,9 +859,25 @@ const FALLBACK = {
           "date": "2026-10-25",
           "event": "v32.9 — учене",
           "detail": "Научи: WCAG 2.2 SC 1.2.2 Captions (Prerecorded) е ниво A; надписите трябва да посочват кой гов… (+2 още)"
+        },
+        {
+          "version": "33.0.0",
+          "date": "2026-10-27",
+          "event": "v33.0 — учене",
+          "detail": "Научи: Към 27.10.2026 EUR-Lex (eli/reg/2026/1744/oj и TXT/PDF OJ:L_202601744) връща празно съд…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Към 27.10.2026 EUR-Lex (eli/reg/2026/1744/oj и TXT/PDF OJ:L_202601744) връща празно съд…\""
+        },
+        {
+          "date": "2026-10-27",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Общият съд отхвърля иска срещу DPF (T-553/23 Latombe, 03.09.2025); жалбата пред Съда на…\""
+        },
         {
           "date": "2026-10-25",
           "type": "learning",
@@ -4031,7 +4047,7 @@ const FALLBACK = {
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 232
+        "lessons": 233
       },
       "evolution": [
         {
@@ -4471,9 +4487,25 @@ const FALLBACK = {
           "date": "2026-09-25",
           "event": "v20.7 — възстановяване",
           "detail": "Версията беше свалена от 20.1 при сгъване на main в паметта (сливането взе по-стара история). Върната на 20.4 + 0.1 × 3 нови поуки."
+        },
+        {
+          "version": "20.8.0",
+          "date": "2026-10-27",
+          "event": "v20.8 — учене",
+          "detail": "Научи: HowTo rich results са премахнати на 14.09.2023, а FAQ rich results спряха на 07.05.2026…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Блокът ПРЕДАВАНЕ приема само един id в „Към“; допълнителен текст там (напр. „X не е нуж…\""
+        },
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „HowTo rich results са премахнати на 14.09.2023, а FAQ rich results спряха на 07.05.2026…\""
+        },
         {
           "date": "2026-10-25",
           "type": "quarantine",
@@ -14235,7 +14267,7 @@ const FALLBACK = {
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 232
+        "lessons": 244
       },
       "evolution": [
         {
@@ -14309,9 +14341,86 @@ const FALLBACK = {
           "date": "2026-10-25",
           "event": "v22.1 — учене",
           "detail": "Научи: Gemini 2.0 Flash е „(Shut down)“ в списъка с модели; 2.5 моделите не са депрекирани, но… (+12 още)"
+        },
+        {
+          "version": "22.2.0",
+          "date": "2026-10-27",
+          "event": "v22.2 — учене",
+          "detail": "Научи: memory-preload инжектира само редове, започващи с „- “ под `## Процедура`/`## Доктрина`…"
+        },
+        {
+          "version": "22.4.0",
+          "date": "2026-10-27",
+          "event": "v22.4 — учене",
+          "detail": "Научи: zabobovdol в deploy/autodeploy.sh има автоматичен откат само на кода (zbd_rollback вдиг… (+1 още)"
+        },
+        {
+          "version": "22.6.0",
+          "date": "2026-10-27",
+          "event": "v22.6 — учене",
+          "detail": "Научи: Claude Code маха блоковите HTML коментари (<!-- -->) от CLAUDE.md преди инжекцията в ко… (+1 още)"
+        },
+        {
+          "version": "22.8.0",
+          "date": "2026-10-27",
+          "event": "v22.8 — учене",
+          "detail": "Научи: При ревю промпт за Opus/Sonnet 5.x качествен праг („по-добре 60% с нула фалшиви тревоги… (+1 още)"
+        },
+        {
+          "version": "23.0.0",
+          "date": "2026-10-27",
+          "event": "v23.0 — учене",
+          "detail": "Научи: tools/discord/discord-lint.mjs няма флагове --embeds/--slash-schema/--perm-diff (чете с… (+1 още)"
+        },
+        {
+          "version": "23.2.0",
+          "date": "2026-10-27",
+          "event": "v23.2 — учене",
+          "detail": "Научи: oversee проверява description само за YAML опасности („ #“, „: “, водещ индикатор) и дъ… (+1 още)"
+        },
+        {
+          "version": "23.3.0",
+          "date": "2026-10-27",
+          "event": "v23.3 — учене",
+          "detail": "Научи: flow-cost извежда тавана на префикса от размера на дефинициите в потока (cap = 0.45·wor…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „flow-cost извежда тавана на префикса от размера на дефинициите в потока (cap = 0.45·wor…\""
+        },
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „oversee проверява description само за YAML опасности („ #“, „: “, водещ индикатор) и дъ…\" (+1 още)"
+        },
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „tools/discord/discord-lint.mjs няма флагове --embeds/--slash-schema/--perm-diff (чете с…\" (+1 още)"
+        },
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „При ревю промпт за Opus/Sonnet 5.x качествен праг („по-добре 60% с нула фалшиви тревоги…\" (+1 още)"
+        },
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Claude Code маха блоковите HTML коментари (<!-- -->) от CLAUDE.md преди инжекцията в ко…\" (+1 още)"
+        },
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „zabobovdol в deploy/autodeploy.sh има автоматичен откат само на кода (zbd_rollback вдиг…\" (+1 още)"
+        },
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „memory-preload инжектира само редове, започващи с „- “ под `## Процедура`/`## Доктрина`…\""
+        },
         {
           "date": "2026-10-25",
           "type": "learning",
@@ -14466,7 +14575,7 @@ const FALLBACK = {
           "ЗДДС (ставки 20%/9%, чл. 114), ЗЗП (обозначаване на цени), GDPR (чл. 6), ЗСч (чл. 12), КТ (чл. 207)",
           "Код: CSPos/src/lib/{money,unp,auth,settings,promotions}.ts + src/lib/fiscal/* + src/lib/terminal/*"
         ],
-        "lessons": 157
+        "lessons": 159
       },
       "evolution": [
         {
@@ -14534,9 +14643,20 @@ const FALLBACK = {
           "date": "2026-10-25",
           "event": "v20.5 — учене",
           "detail": "Научи: ErpNet.FP има отделни крайни точки /printers/{id}/deposit и /printers/{id}/withdraw за … (+2 още)"
+        },
+        {
+          "version": "20.7.0",
+          "date": "2026-10-27",
+          "event": "v20.7 — учене",
+          "detail": "Научи: ЗВЕРБ чл. 24 — левът е законно платежно средство само един месец от въвеждането на евро… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „ЗВЕРБ чл. 24 — левът е законно платежно средство само един месец от въвеждането на евро…\" (+1 още)"
+        },
         {
           "date": "2026-10-25",
           "type": "learning",
