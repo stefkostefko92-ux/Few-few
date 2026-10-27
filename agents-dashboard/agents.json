@@ -1200,7 +1200,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 544
+        "lessons": 546
       },
       "evolution": [
         {
@@ -2066,9 +2066,20 @@
           "date": "2026-10-27",
           "event": "v42.6 — учене",
           "detail": "Научи: eternaltouch ползва app.set('trust proxy', 1) (брой hop-ове, не подмрежа), затова бъгов…"
+        },
+        {
+          "version": "42.8.0",
+          "date": "2026-10-27",
+          "event": "v42.8 — учене",
+          "detail": "Научи: panev записва всяка заявка от /api/contact в SQLite (db.insertMessage), преди да прати … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „panev записва всяка заявка от /api/contact в SQLite (db.insertMessage), преди да прати …\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
