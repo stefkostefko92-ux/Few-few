@@ -9925,7 +9925,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 242
+        "lessons": 244
       },
       "evolution": [
         {
@@ -10335,9 +10335,20 @@
           "date": "2026-10-27",
           "event": "v22.7 — учене",
           "detail": "Научи: Фикстурата probe-prodavacha.md (tools/agents/evals/fixtures/) съдържа абонаментен Check…"
+        },
+        {
+          "version": "22.9.0",
+          "date": "2026-10-27",
+          "event": "v22.9 — учене",
+          "detail": "Научи: Nexus checkout ограничава payment_method_types до card, затова липсата на payment_statu… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Nexus checkout ограничава payment_method_types до card, затова липсата на payment_statu…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
