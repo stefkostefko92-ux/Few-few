@@ -6,7 +6,7 @@
 import { str } from '../campi';
 import { AUTAN, IDRAULICI, MOLLE } from '../cataloghi/ammortizzatori';
 import type { CampoRt2, DatiRt2 } from '../types';
-import type { LatoId, TipoAmm } from './amm-calcolo';
+import { riducibile, type LatoId, type TipoAmm } from './amm-calcolo';
 
 /** A side of the lift: the cabin's sheets or the counterweight's copies. */
 export interface LatoAmm {
@@ -76,6 +76,10 @@ export function campiAmm(l: LatoAmm): readonly CampoRt2[] {
     { id: 'g_idr', t: 'gruppo', label: 'Inserire i seguenti dati dell\' ammortizzatore idraulico', show: altro('idraulici', 'hydrModel') },
     { id: 'hydrStroke', t: 'num', label: L.hydrStroke, ...mm, min: 20, max: 2000, step: 1, req: true, show: altro('idraulici', 'hydrModel') },
     { id: 'hydrSlowdown', t: 'scelta', label: L.hydrSlowdown, req: true, show: di('idraulici'), opzioni: [{ v: 'con', t: 'CON' }, { v: 'senza', t: 'SENZA' }] },
+    // the reduced stroke goes by the contact speed the monitored slowdown guarantees, over 2,5 m/s only (UNI EN 81-20:2020
+    // 5.8.2.2.2; norm expert's answer 2)
+    { id: 'hydrVContatto', t: 'num', label: 'Velocità di contatto con l\'ammortizzatore garantita dal controllo del rallentamento:', unit: 'm/s',
+      min: 0.1, max: 15, step: 0.01, req: true, show: (x, ctx) => di('idraulici')(x) && riducibile(ctx.dopo.v, str(x, 'hydrSlowdown') === 'con') },
     // the type-examination certificate (our addition: A1, H4)
     { id: 'g_cert', t: 'gruppo', label: 'Certificato di esame del tipo dell\'ammortizzatore', show: certificato },
     { id: 'certVUrto', t: 'num', label: 'Velocità d\'urto massima del certificato:', unit: 'm/s', min: 0.1, max: 15, step: 0.01, req: certRichiesto, show: certificato },

@@ -60,8 +60,8 @@ export const VOCI_GUIDE: readonly VoceRt2[] = [
       + `σc = σk + ${it(KV_GUIDE.railCombine)}·σm; carico al piano Fs = ${it(KV_GUIDE.sillLoad)}·g·Q (persone), ${it(KV_GUIDE.sillLoadHeavy)}·g·Q (merci), `
       + `${it(KV_GUIDE.sillLoadDevices)}·g·Q (merci con carrelli) a ogni accesso; in marcia e al carico anche σ = σm + (Mg·g + Fp)/A. Tensione ammissibile `
       + `Rm/St: St = ${it(KV_GUIDE.railStRun)} in marcia e al carico, ${it(KV_GUIDE.railStGear)} all’intervento del paracadute (A5 oltre 12 %), `
-      + `${it(KR.railStRun812)} e ${it(KR.railStGear812)} (A5 da 8 a 12 %), sotto 8 % non ammesso; ω con λ = l/i, i = √(min(Jx, Jy)/A), λ arrotondato `
-      + `all’intero come il modello, per Rm da ${KR.railRmMin} a ${KR.railRmMax} N/mm² interpolato (fuori non applicabile), λ sotto 20 come 20, oltre `
+      + `${it(KR.railStRun812)} e ${it(KR.railStGear812)} (A5 da 8 a 12 %), sotto 8 % non ammesso; ω con λ = l/i, i = √(min(Jx, Jy)/A), λ esatto `
+      + `(il modello lo arrotondava all’intero: corretto), per Rm da ${KR.railRmMin} a ${KR.railRmMax} N/mm² interpolato (fuori non applicabile), λ sotto 20 come 20, oltre `
       + `${ultimoLambda} non applicabile; la portata spostata dal centro della cabina di XQ e YQ (1/8 della cabina) nel verso più gravoso`,
     riferimento: `${T50}, 5.10.2–5.10.6; ${T20}, 5.7.2.3.4–5.7.2.3.6, 5.7.4.5 (prospetto 15), 5.7.4.6 e prospetto 14`,
     fonte: `voci vano.guide.verifica (KV_GUIDE), rt.guide.rm e rt.guide.fp (KR) già confermate; ${MODELLO}`, stato: 'confermato',
@@ -115,7 +115,9 @@ export const VOCI_GUIDE: readonly VoceRt2[] = [
       + `cabina, maggiore di ${it(K_GUIDE.vcBase)} m + ${it(K_GUIDE.vcV2)}·v² m più ${K_GUIDE.vcTiranti} mm di ingombro dei tiranti; extracorse proposte `
       + `${K_GUIDE.vcExtracorsa} mm`,
     riferimento: RIF_GUIDE.margine, fonte: MODELLO, stato: 'prassi', costanti: ['vcExtracorsa', 'vcTiranti', 'vcBase', 'vcV2'], verifiche: ['contrappeso.margine'],
-    nota: 'Verifica interna del modello senza un punto di norma: il non verificato è un’attenzione. Il significato del margine (0,3 m + 0,035·v²) e dei '
-      + '600 mm va confermato dall’esperto di norme.',
+    nota: 'Verifica interna del modello senza un punto di norma: il non verificato è un’attenzione. 0,3 m + 0,035·v² è la distanza delle '
+      + 'apparecchiature sul tetto della cabina (UNI EN 81-1:1998, 5.7.1.1 c) 1); UNI 10411-1:2024, 13.1.3 b)); per il contrappeso valgono il '
+      + 'prospetto 2 della UNI EN 81-20:2020 (+ 0,035·v²) e la corsa guidata ulteriore di almeno 0,10 m (5.2.5.6.2); i 600 mm dei tiranti non hanno '
+      + 'un punto di norma (risposta 11 dell’esperto di norme).',
   },
 ];

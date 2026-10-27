@@ -77,11 +77,14 @@ export function pagineCabina(ctx: ContestoRt2, x: DatiRt2, e: EsitoRt2, p: Pagin
   const uno = ctx.norma === '10411-1', norma = uno ? 'UNI 10411.1 : 2024' : 'UNI 10411-11 : 2024';
   const nulla = !!s && !s.p1 && !s.calo && !s.rapporto && s.dT <= (s.tolT ?? 0) + 1e-9;
   const verdetto: string[] = s ? [...verdettoT(s, uno, nulla), ...(uno ? ['', ...verdettoQ(s, nulla)] : []), ...altriCasi(s, norma)] : [];
-  const dichiarazione = !s ? [] : !s.p1
-    ? ['Si dichiara che la variazione delle forze statiche e/o dinamiche agenti sulle strutture portanti dell\'edificio',
-      'sono ritenute non significative a sfavore della loro sicurezza e integrità nei loro punti di applicazione.']
-    : [`Le modifiche apportate aumentano i carichi ${uno ? 'oltre il prospetto 1 della norma' : 'rispetto a quelli documentati'}: si allega la`,
-      'dichiarazione di idoneità statica delle strutture portanti dell\'edificio.'];
+  const dichiarazione = !s ? [] : s.p1
+    ? [`Le modifiche apportate aumentano i carichi ${uno ? 'oltre il prospetto 1 della norma' : 'rispetto a quelli documentati'}: si allega la`,
+      'dichiarazione di idoneità statica delle strutture portanti dell\'edificio.']
+    : p.idoneitaAllegata
+    ? ['Le modifiche apportate variano i carichi sulle strutture portanti dell\'edificio: si allega la',
+      'dichiarazione di idoneità statica delle strutture portanti dell\'edificio.']
+    : ['Si dichiara che la variazione delle forze statiche e/o dinamiche agenti sulle strutture portanti dell\'edificio',
+      'sono ritenute non significative a sfavore della loro sicurezza e integrità nei loro punti di applicazione.'];
   return [
     { t: 'pagina' }, { t: 'titolo', s: p.titolo },
     { t: 'sez', l: 'Cabina:', righe: nuova

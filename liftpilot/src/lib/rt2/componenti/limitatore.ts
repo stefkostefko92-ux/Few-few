@@ -3,21 +3,23 @@
 // safety factor, the sheave over the rope), the tripping speed's limits for the car's safety gear and the rule at the
 // installation's date. The model's lists and its «altro» inputs; the rated speed is the context's; the car's safety gear
 // is the field shared with «Cabina»; added (the model did not ask them): the plate tripping speed (E-L7) and the force
-// that makes the gear engage (E-L2). A governor that stays is described as existing, not certified as installed to
-// UNI EN 81-20 (E-L13). Pure.
+// that makes the gear engage (E-L2), and under UNI 10411-1 with a new governor or the speed reduced the limit of the
+// rule at the installation with its source (18, 15.17; round 52). A governor that stays is described as existing, not
+// certified as installed to UNI EN 81-20 (E-L13). Pure.
 import { KV_GOV } from '@/shaft/norme-limitatore';
 import type { FBlock, FRiga } from '../../report/rt2/model';
 import { KR } from '../../rt/norme';
-import { fmt, mancantiCampi, num } from '../campi';
+import { fmt, mancantiCampi, num, str } from '../campi';
 import { FUNE_ALTRA, FUNI_LIMITATORE, LIMITATORE_ALTRO, LIMITATORI } from '../cataloghi/cqpl';
 import type { CampoRt2, ContestoRt2, DatiRt2, EsitoRt2, ModuloRt2, PaginaCtx } from '../types';
 import { avvisiParacadute, campoParacadute, paracaduteDi } from './cabina-paracadute';
-import { limitatoreDi, limitatoreRichiesto, verificheLimitatore } from './limitatore-calcolo';
+import { limitatoreDi, limitatoreRichiesto, origineRichiesta, verificheLimitatore } from './limitatore-calcolo';
 import { valore } from './righe';
 
 const altro = (x: DatiRt2): boolean => x.tipo === LIMITATORE_ALTRO.v;
 const altraFune = (x: DatiRt2): boolean => x.fune === FUNE_ALTRA.v;
 const richiesto = (_x: DatiRt2, ctx: ContestoRt2): boolean => limitatoreRichiesto(ctx);
+const origine = (_x: DatiRt2, ctx: ContestoRt2): boolean => origineRichiesta(ctx);
 
 const CAMPI: readonly CampoRt2[] = [
   { id: 'tipo', t: 'scelta', label: '90. Tipo di limitatore:', req: true, opzioni: [...LIMITATORI, LIMITATORE_ALTRO].map((g) => ({ v: g.v, t: g.t })) },
@@ -34,6 +36,10 @@ const CAMPI: readonly CampoRt2[] = [
   campoParacadute(true),
   { id: 'vScatto', t: 'num', label: 'Velocità d\'intervento del limitatore (targa):', unit: 'm/s', min: 0.1, max: 12, step: 0.01, req: richiesto },
   { id: 'forzaPresa', t: 'num', label: 'Forza necessaria a far intervenire il paracadute:', unit: 'N', min: 10, max: 20000, step: 1, req: richiesto },
+  // the rule at the installation (UNI 10411-1:2024 18 and 15.17, note 9): its limit with its source, the engineer's
+  { id: 'g_origine', t: 'gruppo', label: 'Regola in vigore alla data di installazione', show: origine },
+  { id: 'limiteOrigine', t: 'num', label: 'Velocità d\'intervento massima della regola all\'installazione:', unit: 'm/s', min: 0.1, max: 12, step: 0.01, req: true, show: origine },
+  { id: 'fonteOrigine', t: 'testo', label: 'Regola e punto da cui è preso il limite:', max: 120, req: true, show: origine },
 ];
 
 /** The model's defaults (Limitatore!S72 = 1, S88 = 5). */
@@ -88,6 +94,8 @@ function pagine(ctx: ContestoRt2, x: DatiRt2, e: EsitoRt2, p: PaginaCtx): FBlock
       ...(dm587 ? [T('rispetto al paragrafo 5.6.2.2.1.1 punti a) b) c) d)'), T('della norma UNI EN 81.20 : 2020')] : [T('UNI EN 81.20 : 2020 punto 5.6.2.2.1.1')]),
       valore('Velocità d\'intervento del limitatore (targa):', '', fmt(num(x, 'vScatto'), 2), 'm/sec', w?.esito),
       valore('Tipo Paracadute:', '', par?.t ?? '—'),
+      ...(origineRichiesta(ctx) ? [valore('Limite della regola all\'installazione:', '', fmt(num(x, 'limiteOrigine'), 2), 'm/sec max', es('limitatore.origine')),
+        T(`(${str(x, 'fonteOrigine') ?? '—'})`)] : []),
     ] },
     { t: 'sez', l: '', righe: [
       T('Il limitatore di velocità è considerato un componente di sicurezza e  deve'), T('essere verificato in conformità ai requisiti della norma'),

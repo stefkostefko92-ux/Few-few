@@ -87,15 +87,17 @@ export function datiIdraulico(x: DatiRt2): { cat: IdraulicoCat | null; nome: str
   return { cat: c, nome: c ? `${c.codice} (${c.tipo})` : null, f: c ? c.corsa : null };
 }
 
+/** Whether the stroke of a hydraulic buffer can be reduced at the rated speed `vc` [m/s] with the slowdown monitored:
+ *  over K_AMM.ridottaSoglia only (UNI EN 81-20:2020 5.8.2.2.2). */
+export const riducibile = (vc: number | null, con: boolean): boolean => con && vc !== null && vc > K_AMM.ridottaSoglia + 1e-9;
+
 /** The least stroke of a hydraulic buffer at vc [m/s] [mm]: 0,0674·vc² (the model's Y67); with the slowdown monitored
- *  («CON», UNI EN 81-20:2020 5.8.2.2.2) the reduced one — K_AMM.ridotta1 of it up to K_AMM.ridottaSoglia m/s, a third
- *  over (the model: 0,333), never under K_AMM.ridottaMin1/ridottaMin2 mm (the model: none), never over the full one —
- *  and the text the page prints after «fmin =». */
-export function corsaMinIdraulico(vc: number, con: boolean): { fmin: number; piena: number; testo: string } {
+ *  («CON») over K_AMM.ridottaSoglia, the reduced one with the contact speed `vi` the monitoring guarantees — 0,0674·vi²,
+ *  never under K_AMM.ridottaMin mm nor over the full one (UNI EN 81-20:2020 5.8.2.2.2; the model's 50 % and a third at
+ *  any speed are UNI EN 81-1's, corrected) — and the text the page prints after «fmin =»; `vi` not given: the full one. */
+export function corsaMinIdraulico(vc: number, con: boolean, vi: number | null = null): { fmin: number; piena: number; testo: string; ridotta: boolean } {
   const piena = 1000 * KV_VERT.oilStrokeK * vc ** 2;
-  if (!con) return { fmin: piena, piena, testo: '0,0674 x vc^2' };
-  const basso = vc <= K_AMM.ridottaSoglia;
-  const k = basso ? K_AMM.ridotta1 : 1 / K_AMM.ridotta2Den, floor = basso ? K_AMM.ridottaMin1 : K_AMM.ridottaMin2;
-  const ridotta = 1000 * k * (KV_VERT.oilStrokeK * vc ** 2);
-  return { fmin: Math.min(piena, Math.max(ridotta, floor)), piena, testo: basso ? '0,5 x (0,0674 x vc^2)' : '1/3 x (0,0674 x vc^2)' };
+  if (!riducibile(vc, con) || vi === null) return { fmin: piena, piena, testo: '0,0674 x vc^2', ridotta: false };
+  const ridotta = 1000 * KV_VERT.oilStrokeK * vi ** 2;
+  return { fmin: Math.min(piena, Math.max(ridotta, K_AMM.ridottaMin)), piena, testo: '0,0674 x vi^2', ridotta: true };
 }

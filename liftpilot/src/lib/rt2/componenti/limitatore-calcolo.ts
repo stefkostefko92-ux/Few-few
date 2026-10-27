@@ -63,6 +63,12 @@ export function limitatoreDi(ctx: ContestoRt2, x: DatiRt2, p: Paracadute | null)
   };
 }
 
+/** Under UNI 10411-1 a new governor (18) or the speed reduced (15.17 with 15.16) trips within the limits of the rule in
+ *  force at the installation, in any case (its note 9: D.Lgt. 600/1945, DPR 1497/1963, DM 587/1987 before UNI EN
+ *  81-1:1999): the engineer states that limit with its source (round 52, norm expert's answer 8; the first RT's
+ *  rt_gov_origin) — their values are not in the software. */
+export const origineRichiesta = (ctx: ContestoRt2): boolean => ctx.norma === '10411-1' && (ctx.parti.includes('governor') || !!ctx.velocita?.calo);
+
 /** The governor's checks are the RT's requirement with the governor or the gear replaced or the speed changed; else
  *  information on the existing one. */
 export const limitatoreRichiesto = (ctx: ContestoRt2): boolean =>
@@ -73,8 +79,10 @@ const T20 = 'UNI EN 81-20:2020';
 export function verificheLimitatore(ctx: ContestoRt2, x: DatiRt2, o: LimitatoreOut, p: Paracadute | null): VerificaRt2[] {
   const info = !limitatoreRichiesto(ctx), presa = num(x, 'forzaPresa'), scatto = num(x, 'vScatto');
   const out = [
+    // 6 mm is UNI EN 81-1's (9.9.6.3), not UNI EN 81-20:2020's: «Attenzione», never a check not met (norm expert's
+    // answer 9)
     verifica('limitatore.funeDiametro', 'Diametro della fune del limitatore', o.d, '>=', K_CQPL.funeLimDiamMin,
-      { unita: 'mm', dec: 1, info, rif: 'prassi del modello (regola della UNI EN 81-1)' }),
+      { unita: 'mm', dec: 1, info, warn: true, rif: 'UNI EN 81-1:1998, 9.9.6.3 (non nella UNI EN 81-20:2020)' }),
     verifica('limitatore.funeSicurezza', 'Coefficiente di sicurezza della fune x = FRm/Fad', o.x, '>=', KR.govRopeSf, { dec: 1, info, rif: `${T20}, 5.6.2.2.1.3 b)` }),
     verifica('limitatore.Dd', 'Rapporto diametri puleggia del limitatore / fune', o.rapportoD, '>=', KV_GOV.govSheaveRatio, { dec: 2, info, rif: `${T20}, 5.6.2.2.1.3 c)` }),
   ];
@@ -86,5 +94,10 @@ export function verificheLimitatore(ctx: ContestoRt2, x: DatiRt2, o: LimitatoreO
     id: 'limitatore.scatto', testo: 'Velocità d\'intervento del limitatore', valore: scatto, limite: w?.limitMin ?? null, limite2: w?.limit ?? null,
     confronto: 'tra', unita: 'm/s', dec: 2, esito: info ? 'info' : w?.status === 'ok' ? 'ok' : 'fail', rif: `${T20}, 5.6.2.2.1.1 a)`,
   });
+  if (origineRichiesta(ctx)) {
+    const fonte = str(x, 'fonteOrigine');
+    out.push(verifica('limitatore.origine', 'Velocità d\'intervento entro il limite della regola all\'installazione', scatto, '<=', num(x, 'limiteOrigine'),
+      { unita: 'm/s', dec: 2, rif: `UNI 10411-1:2024, 18 e 15.17${fonte ? `; ${fonte}` : ''}` }));
+  }
   return out;
 }

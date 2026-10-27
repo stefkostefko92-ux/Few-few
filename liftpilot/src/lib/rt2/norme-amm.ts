@@ -14,13 +14,11 @@ export const K_AMM = {
   spireEstremi: 1.5,
   frecciaSpire: 1.1,
   // UNI EN 81-20:2020, 5.8.2.2.2 (the slowdown at the terminal floors monitored, 5.12.1.3): the hydraulic buffer's stroke
-  // reduced to at least this share of 0,0674·v² up to `ridottaSoglia` m/s, one over `ridotta2Den` over it, never under
-  // `ridottaMin1` / `ridottaMin2` mm — the model's 50 % and 0,333; the floors and the third to confirm
-  ridotta1: 0.5,
-  ridotta2Den: 3,
-  ridottaSoglia: 4,
-  ridottaMin1: 420,
-  ridottaMin2: 540,
+  // reduced only over `ridottaSoglia` m/s, computed with the speed at which the car or the counterweight reaches the
+  // buffer instead of 115 % of the rated one, never under `ridottaMin` mm (round 52, norm expert's answer 2: the
+  // model's 50 % and a third, with the floors 420/540 mm, are UNI EN 81-1:1998 10.4.3.2's)
+  ridottaSoglia: 2.5,
+  ridottaMin: 420,
 } as const;
 export type CostanteAmm = keyof typeof K_AMM;
 
@@ -89,13 +87,14 @@ export const VOCI_AMM: readonly VoceRt2[] = [
   },
   {
     id: 'rt2.amm.idraulici.ridotta', area: 'ammortizzatori', titolo: 'Ammortizzatori idraulici: corsa ridotta con il rallentamento controllato',
-    valore: `con il rallentamento controllato («CON»): corsa ≥ ${it(K_AMM.ridotta1)}·${it(KV_VERT.oilStrokeK)}·v² fino a ${K_AMM.ridottaSoglia} m/s e `
-      + `≥ 1/${K_AMM.ridotta2Den}·${it(KV_VERT.oilStrokeK)}·v² oltre, comunque non meno di ${K_AMM.ridottaMin1} mm (fino a ${K_AMM.ridottaSoglia} m/s) e `
-      + `${K_AMM.ridottaMin2} mm (oltre), mai più della corsa piena ${it(KV_VERT.oilStrokeK)}·v²`,
-    riferimento: `${T20}, 5.8.2.2.2 e 5.12.1.3`, fonte: `${MODELLO}; i minimi assoluti dalla EN 81-1:1998, 10.4.3.2`, stato: 'da_verificare',
-    costanti: ['ridotta1', 'ridotta2Den', 'ridottaSoglia', 'ridottaMin1', 'ridottaMin2'], verifiche: ver('idrCorsa'),
-    nota: 'Il modello usa 50 % e 0,333 senza minimo assoluto; il software usa 1/3 e i minimi di 420 e 540 mm (correzione H2). Valori da confermare '
-      + 'sul testo in vigore; la norma riduce la corsa con la velocità di contatto controllata: il modello (e il software) prendono il solo minimo.',
+    valore: `con il rallentamento controllato («CON») e la velocità nominale oltre ${it(K_AMM.ridottaSoglia)} m/s: corsa ≥ ${it(KV_VERT.oilStrokeK)}·vi², `
+      + `con vi la velocità di contatto con l’ammortizzatore garantita dal controllo (al posto del 115 % della nominale), comunque non meno di `
+      + `${K_AMM.ridottaMin} mm né più della corsa piena ${it(KV_VERT.oilStrokeK)}·v²; fino a ${it(K_AMM.ridottaSoglia)} m/s nessuna riduzione`,
+    riferimento: `${T20}, 5.8.2.2.2 e 5.12.1.3`, fonte: `${letto(T20, 'p. 99')}; ${MODELLO}`, stato: 'confermato',
+    costanti: ['ridottaSoglia', 'ridottaMin'], verifiche: ver('idrCorsa'),
+    nota: 'Il modello riduceva la corsa al 50 % (a un terzo oltre 4 m/s) a ogni velocità: sono le regole della UNI EN 81-1:1998, 10.4.3.2 '
+      + '(con i minimi di 420 e 540 mm), non della UNI EN 81-20:2020 — corretto. Con vi la formula tiene il fattore 0,0674 della corsa piena '
+      + '(lettura a favore di sicurezza; senza il 115 % sarebbe vi²/(2·g)): da confermare con il soggetto della verifica.',
   },
   {
     id: 'rt2.amm.cataloghi', area: 'ammortizzatori', titolo: 'Cataloghi degli ammortizzatori del modello',

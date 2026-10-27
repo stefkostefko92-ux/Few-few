@@ -8,7 +8,8 @@ import { KV_VERT } from '@/shaft/norme-vert';
 import { KR } from '../../rt/norme';
 import { conProposte, mancantiCampi, num, str, verifica } from '../campi';
 import type { CampoRt2, ContestoRt2, DatiRt2, EsitoRt2, VerificaRt2 } from '../types';
-import { caricoStatico, corsaMinIdraulico, datiAutan, datiIdraulico, geometriaMolla, mollaDi } from './amm-calcolo';
+import { K_AMM } from '../norme-amm';
+import { caricoStatico, corsaMinIdraulico, datiAutan, datiIdraulico, geometriaMolla, mollaDi, riducibile } from './amm-calcolo';
 import { proposteAmm, type LatoAmm } from './amm-campi';
 
 const T20 = 'UNI EN 81-20:2020', T50 = 'UNI EN 81-50:2020';
@@ -74,25 +75,28 @@ export function esitoAmm(l: LatoAmm, campi: readonly CampoRt2[], ctx: ContestoRt
   }
 
   if (tipo === 'idraulici') {
-    const h = datiIdraulico(x), con = str(x, 'hydrSlowdown') === 'con', cm = v !== null ? corsaMinIdraulico(v, con) : null;
+    const h = datiIdraulico(x), con = str(x, 'hydrSlowdown') === 'con', cm = v !== null ? corsaMinIdraulico(v, con, num(x, 'hydrVContatto')) : null;
     // without the certificate's data, a buffer of the model's catalogue is taken at its catalogue's (H4)
     const vUrto = num(x, 'certVUrto') ?? (h.cat ? KR.bufImpactRatio * h.cat.vNomMax : null);
     const mMin = num(x, 'certMassaMin') ?? h.cat?.massaMin ?? null, mMax = num(x, 'certMassaMax') ?? h.cat?.massaMax ?? null;
-    if (con) {
+    if (con && !riducibile(v, con)) {
+      avvisi.push(`Con «CON» la corsa si riduce solo oltre ${String(K_AMM.ridottaSoglia).replace('.', ',')} m/s (UNI EN 81-20:2020, 5.8.2.2.2): `
+        + 'qui vale la corsa piena.');
+    } else if (cm?.ridotta) {
       avvisi.push('Con «CON» la corsa minima è quella ridotta (UNI EN 81-20:2020, 5.8.2.2.2): documenta il controllo del rallentamento ai piani '
-        + 'estremi (5.12.1.3) e verifica che la velocità di contatto con l\'ammortizzatore non chieda una corsa maggiore.');
+        + 'estremi (5.12.1.3) e la velocità di contatto con l\'ammortizzatore che garantisce.');
     }
-    const rifCorsa = con ? `${T20}, 5.8.2.2.1 e 5.8.2.2.2` : `${T20}, 5.8.2.2.1`, rif = `${T20}, 5.8.2.2.3; ${T50}, 5.5.4`;
+    const rid = !!cm?.ridotta, rifCorsa = rid ? `${T20}, 5.8.2.2.1 e 5.8.2.2.2` : `${T20}, 5.8.2.2.1`, rif = `${T20}, 5.8.2.2.3; ${T50}, 5.5.4`;
     return {
       mancanti, avvisi,
       verifiche: [
-        verifica(id('idrCorsa'), con ? 'Corsa dell\'ammortizzatore idraulico: f ≥ corsa ridotta' : 'Corsa dell\'ammortizzatore idraulico: f ≥ 0,0674·v²', h.f, '>=',
+        verifica(id('idrCorsa'), rid ? 'Corsa dell\'ammortizzatore idraulico: f ≥ corsa ridotta' : 'Corsa dell\'ammortizzatore idraulico: f ≥ 0,0674·v²', h.f, '>=',
           cm?.fmin ?? null, { unita: 'mm', dec: 1, rif: rifCorsa }),
         urto(id('idrUrto'), v, vUrto, rif), ...masse(l, ctx, Na, 'idr', mMin, mMax, `${T50}, 5.5.4; ${T20}, 5.8.2.2.3`),
       ],
       valori: {
         tipo, modello: h.nome, Ftot, Na, Fris, vc: v, f: h.f, rallentamento: con ? 'CON' : 'SENZA', fmin: cm?.fmin ?? null, fminPiena: cm?.piena ?? null,
-        fminTesto: cm?.testo ?? (con ? '0,5 x (0,0674 x vc^2)' : '0,0674 x vc^2'), vImpatto: v !== null ? KR.bufImpactRatio * v : null, vUrto,
+        fminTesto: cm?.testo ?? '0,0674 x vc^2', ridotta: rid ? 'si' : 'no', vContatto: rid ? num(x, 'hydrVContatto') : null, vImpatto: v !== null ? KR.bufImpactRatio * v : null, vUrto,
         massaMin: mMin, massaMax: mMax,
       },
     };

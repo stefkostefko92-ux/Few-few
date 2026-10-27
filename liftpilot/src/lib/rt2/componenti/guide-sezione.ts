@@ -70,8 +70,9 @@ export function ammissibili(Rm: number, a5: Allungamento): { run: number | null;
 
 /** The radius of gyration [mm]: the least of the two axes (E-4; the model √(Jy/A)). */
 export const raggioInerzia = (S: Pick<SezioneGuida, 'Jx' | 'Jy' | 'A'>): number => (Math.min(S.Jx, S.Jy) / S.A) ** 0.5;
-/** The slenderness rounded to the integer, as the model (its ω tables go by integer λ). */
-export const snellezza = (l: number, i: number): number => Math.round(l / i);
+/** The slenderness λ = l/i, exact: UNI EN 81-50:2020 5.10.3 gives ω by continuous formulas (the model rounded it to
+ *  the integer, which can lower ω — corrected, round 52, norm expert's answer 13; the page prints it rounded). */
+export const snellezza = (l: number, i: number): number => l / i;
 
 /** Why ω cannot be given: λ beyond the table, or a steel outside the method's Rm. */
 export type OmegaNo = 'lambda' | 'rm';

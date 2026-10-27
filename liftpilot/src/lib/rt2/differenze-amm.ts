@@ -88,8 +88,9 @@ export const DIFFERENZE_AMM: readonly DifferenzaAmm[] = [
     id: 'H2', componente: AMB,
     modello: 'Rallentamento «CON» come valore iniziale: corsa minima 0,5 × 0,0674·v² fino a 4 m/s e 0,333 × oltre, senza minimo assoluto, '
       + 'su sola dichiarazione.',
-    correzione: 'Proposto «SENZA»; con «CON» la corsa ridotta è 1/2 o 1/3 di 0,0674·v², mai meno di 420 mm (fino a 4 m/s) o 540 mm (oltre) e mai '
-      + 'più della corsa piena, con l’avviso di documentare il controllo del rallentamento (valori da confermare con l’esperto di norme).',
+    correzione: 'Proposto «SENZA»; con «CON» la corsa si riduce solo oltre 2,5 m/s, calcolata con la velocità di contatto garantita dal controllo '
+      + '(0,0674·vi²), mai meno di 420 mm né più della corsa piena, con l’avviso di documentare il controllo del rallentamento; 50 %, un terzo e '
+      + '540 mm sono della UNI EN 81-1:1998 (10.4.3.2), non della UNI EN 81-20:2020.',
     norma: `${T20}, 5.8.2.2.2 e 5.12.1.3`,
   },
   {

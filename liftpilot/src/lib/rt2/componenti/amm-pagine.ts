@@ -80,7 +80,7 @@ function autan(l: LatoAmm, e: EsitoRt2, p: PaginaCtx): FBlock[] {
 }
 
 function idraulici(l: LatoAmm, e: EsitoRt2, p: PaginaCtx, es: (nome: string) => VerificaRt2 | undefined): FBlock[] {
-  const con = s(e, 'rallentamento') === 'CON', vc = n(e, 'vc'), alto = vc !== null && vc > K_AMM.ridottaSoglia;
+  const ridotta = s(e, 'ridotta') === 'si', vc = n(e, 'vc');
   return [
     ...testa(l, p, 'a dissipazione di energia (idraulici)', e),
     { t: 'sez', l: '', righe: [
@@ -93,7 +93,8 @@ function idraulici(l: LatoAmm, e: EsitoRt2, p: PaginaCtx, es: (nome: string) => 
       valore('Freccia minima:', 'fmin:', fmt(n(e, 'fmin'), 2), 'mm'),
       testo('essendo:'),
       valore('', 'fmin =', s(e, 'fminTesto') ?? '—'),
-      ...(con ? [testo(`e comunque non minore di ${alto ? K_AMM.ridottaMin2 : K_AMM.ridottaMin1} mm, né maggiore di 0,0674 x vc^2`)] : []),
+      ...(ridotta ? [valore('Velocità di contatto garantita:', 'vi:', fmt(n(e, 'vContatto'), 2), 'm/s'),
+        testo(`e comunque non minore di ${K_AMM.ridottaMin} mm, né maggiore di 0,0674 x vc^2`)] : []),
     ] },
     { t: 'sez', l: 'Nota per il calcolo:', righe: [
       testo('Gli ammortizzatori a dissipazione di energia sono conformi alla'), testo('norma UNI EN 81.20 : 2020 - punto 5.8.2.2'),

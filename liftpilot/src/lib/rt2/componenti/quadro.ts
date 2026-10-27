@@ -4,7 +4,8 @@
 // the door operator's voltage and frequency shared with «Porte» under the same ids (one value: E-Q8) — and its texts;
 // a controller that stays is not declared new (E-Q11). Added: the control and safety circuits' voltage of a new
 // controller (UNI EN 81-20:2020, 5.10.1.3.2, E-Q9) and, under UNI 10411-1 with the existing landing doors kept, their
-// locks' contacts (11.1.2, E-Q10) — the first RT's rules (KR). Pure.
+// locks' contacts (11.1.2, E-Q10: the voltage on the contacts with its own current, a.c. when not said) — the first
+// RT's rules (KR). Pure.
 import type { FBlock, FRiga } from '../../report/rt2/model';
 import { KR } from '../../rt/norme';
 import { bool, fmt, mancantiCampi, num, str, verifica } from '../campi';
@@ -13,6 +14,9 @@ import type { CampoRt2, ContestoRt2, DatiRt2, EsitoRt2, ModuloRt2, PaginaCtx, Ve
 import { valore } from './righe';
 
 const OPZ_FREQ = FREQUENZE.map((f) => ({ v: f.v, t: f.t }));
+/** The current at the locks' contacts (UNI 10411-1:2024 11.1.2 limits a.c. and d.c. or rectified apart); not said: the
+ *  a.c. limit, the lower. */
+const CORRENTI = [{ v: 'ca', t: 'alternata' }, { v: 'cc', t: 'continua o raddrizzata' }];
 
 /** The door operator's voltage and frequency (the model's «36, 86» and «37, 87», asked on both pages): the same ids on
  *  «Quadro di manovra» and «Porte», each page with the model's label. */
@@ -36,7 +40,9 @@ const CAMPI: readonly CampoRt2[] = [
   ...campiOperatore('36, 86. Tensione motore porte:', '37, 87. Frequenza motore porte:'),
   { id: 'g_serrature', t: 'gruppo', label: 'Serrature delle porte di piano esistenti', show: contatti },
   { id: 'contattiAccessibili', t: 'si_no', label: 'Contatti delle serrature raggiungibili dal dito di prova:', req: true, show: contatti },
-  { id: 'tensioneContatti', t: 'num', label: 'Tensione ai contatti delle serrature:', unit: 'V', min: 5, max: 500, step: 1, esperto: true,
+  { id: 'tensioneContatti', t: 'num', label: 'Tensione ai contatti delle serrature:', unit: 'V', min: 5, max: 500, step: 1, req: true,
+    show: (x, ctx) => contatti(x, ctx) && x.contattiAccessibili === true },
+  { id: 'correnteContatti', t: 'scelta', label: 'Corrente ai contatti delle serrature:', opzioni: CORRENTI,
     show: (x, ctx) => contatti(x, ctx) && x.contattiAccessibili === true },
 ];
 
@@ -44,12 +50,15 @@ const CAMPI: readonly CampoRt2[] = [
 const proposte = (): DatiRt2 => ({ tipoManovra: '1', tensioneForzaMotrice: 380, tensioneLuce: 220, frequenzaManovra: '50', ...PROPOSTE_OPERATORE });
 
 function calcola(ctx: ContestoRt2, x: DatiRt2): EsitoRt2 {
-  const nuovo = ctx.parti.includes('controller'), V = num(x, 'tensioneManovra'), cc = voceDi(FREQUENZE, str(x, 'frequenzaManovra'))?.cc ?? false;
+  const nuovo = ctx.parti.includes('controller'), V = num(x, 'tensioneManovra');
   const verifiche: VerificaRt2[] = [verifica('quadro.tensioneManovra', 'Tensione dei circuiti di comando e di sicurezza', V, '<=', KR.ctrlVoltageMax,
     { unita: 'V', dec: 0, info: !nuovo, rif: 'UNI EN 81-20:2020, 5.10.1.3.2' })];
+  // the voltage of the circuit the contacts are in, by its own current — never the controller's control voltage, whose
+  // current may differ (norm expert's answer 5)
   if (contatti(x, ctx) && bool(x, 'contattiAccessibili') === true) {
-    verifiche.push(verifica('quadro.contattiSerrature', `Tensione ai contatti delle serrature di piano esistenti (${cc ? 'c.c.' : 'c.a.'})`,
-      num(x, 'tensioneContatti') ?? V, '<=', cc ? KR.lockContactDc : KR.lockContactAc, { unita: 'V', dec: 0, rif: 'UNI 10411-1:2024, 11.1.2' }));
+    const ccContatti = str(x, 'correnteContatti') === 'cc';
+    verifiche.push(verifica('quadro.contattiSerrature', `Tensione ai contatti delle serrature di piano esistenti (${ccContatti ? 'c.c.' : 'c.a.'})`,
+      num(x, 'tensioneContatti'), '<=', ccContatti ? KR.lockContactDc : KR.lockContactAc, { unita: 'V', dec: 0, rif: 'UNI 10411-1:2024, 11.1.2' }));
   }
   return { verifiche, mancanti: mancantiCampi(CAMPI, x, ctx), avvisi: [], valori: { tensioneManovra: V, nuovo: nuovo ? 'si' : 'no' } };
 }

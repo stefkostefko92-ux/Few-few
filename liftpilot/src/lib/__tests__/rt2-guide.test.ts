@@ -57,11 +57,30 @@ const CARS: Car[] = [
 ];
 const ctxCar = (c: Car, V: Record<string, string> = {}): ContestoRt2 => ctxDi({ V: { ...c.V, ...V }, liftUse: c.use });
 
+/** The model rounds λ to the integer before ω (round 52, norm expert's answer 13: λ exact): λ, ω and what ω gives (σk,
+ *  σc) are checked against the model's by the correction — λ = l/i within half a unit of the model's, ω moving with it
+ *  (by at most 2 %), σk/ω and σc − σk as the model's — every other value as LibreOffice gives it. */
+const DA_LAMBDA = new Set(['lambda', 'omega', 'sk', 'sc']);
+function vettore(tag: string, l: number, valori: Record<string, unknown>, out: Record<string, number | null>): void {
+  for (const [k, v] of Object.entries(out)) {
+    if (v === null) assert.equal(valori[k], null, `${tag} ${k}`);
+    else if (k === 'lambda') assert.ok(Math.abs((valori.lambda as number) - v) <= 0.5 + 1e-9, `${tag} λ ${String(valori.lambda)} / ${v}`);
+    else if (!DA_LAMBDA.has(k) || out.omega === null) near(valori[k], v, 1e-9, `${tag} ${k}`);
+  }
+  const lm = out.lambda, wm = out.omega, la = valori.lambda as number, w = valori.omega as number | null;
+  if (typeof lm !== 'number' || typeof wm !== 'number' || w === null) return;
+  near(la, l / (valori.i as number), 1e-12, `${tag} λ esatto`);
+  assert.ok(Math.abs(la - lm) <= 0.5 + 1e-9 && Math.sign(w - wm) === Math.sign(la - lm) && Math.abs(w - wm) <= 0.02 * wm, `${tag} ω ${w} / ${wm}`);
+  const skm = out.sk, scm = out.sc;
+  if (typeof skm === 'number') near((valori.sk as number) / w, skm / wm, 1e-9, `${tag} σk/ω`);
+  if (typeof skm === 'number' && typeof scm === 'number') near((valori.sc as number) - (valori.sk as number), scm - skm, 1e-9, `${tag} σc − σk`);
+}
+
 test('rt2-guide: guide di cabina — i vettori del modello (LibreOffice) dove nessuna correzione cambia il valore', () => {
   for (const [n, c] of CARS.entries()) {
     const e = GUIDE_CABINA.calcola(ctxCar(c), c.x);
     assert.deepEqual(e.mancanti, [], `C${n + 1}`);
-    for (const [k, v] of Object.entries(c.out)) near(e.valori[k], v, 1e-9, `C${n + 1} ${k}`);
+    vettore(`C${n + 1}`, c.x.l as number, e.valori, c.out);
   }
 });
 
@@ -97,9 +116,10 @@ test('rt2-guide: guide di cabina — correzioni E-1, E-2, E-4, E-5, E-6, E-7, E-
   assert.equal(lungo.valori.omega, null); assert.ok(lungo.avvisi.some((a) => a.includes('VERIFICA GUIDE e/o STAFFE')));
   // E-13: T75-3/B (Rm 430) at λ 100: ω520 of the 520 ranges (0,0002533·λ²), the model the 370 ranges (0,00002447·λ^2,36 + 1,03)
   const t75 = GUIDE_CABINA.calcola(ctx, { ...c1.x, profilo: '14', l: Math.round(100 * Math.sqrt(264900 / 1099)) });
-  assert.equal(t75.valori.lambda, 100);
-  const w370 = 0.00001711 * 100 ** 2.35 + 1.04;
-  near(t75.valori.omega, w370 + (60 / 150) * (0.0002533 * 100 ** 2 - w370), 1e-12, 'ω 430');
+  const l75 = t75.valori.lambda as number;
+  near(l75, 100, 1e-2, 'λ 100');
+  const w370 = 0.00001711 * l75 ** 2.35 + 1.04;
+  near(t75.valori.omega, w370 + (60 / 150) * (0.0002533 * l75 ** 2 - w370), 1e-12, 'ω 430');
   // E-17: over 40 m of travel Fp is asked; E-18: σ = σm + Mg·g/A in running
   assert.ok(GUIDE_CABINA.calcola(ctxCar(c4), { ...c4.x, fp: undefined }).mancanti.includes('fp'));
   near(e.valori.sMarcia, 31.88549943797983 + (164.33818 * 9.81) / 1052, 1e-9, 'σ marcia');
@@ -147,10 +167,7 @@ test('rt2-guide: contrappeso — i vettori del modello (LibreOffice) dove nessun
   for (const [n, c] of CWS.entries()) {
     const ctx = ctxCw(c), e = CONTRAPPESO.calcola(ctx, c.x);
     assert.deepEqual(e.mancanti, [], `W${n + 1}`);
-    for (const [k, v] of Object.entries(c.out)) {
-      if (v === null) assert.equal(e.valori[k], null, k);
-      else near(e.valori[k], v, 1e-9, `W${n + 1} ${k}`);
-    }
+    vettore(`W${n + 1}`, c.x.l as number, e.valori, c.out);
     const txt = JSON.stringify(CONTRAPPESO.pagine(ctx, c.x, e, P));
     assert.ok(txt.includes(`Il nuovo valore del carico statico Tcp, nel tratto delle funi lato contrappeso, ${c.testo}`), `W${n + 1} testo`);
     assert.ok(txt.includes(EDIZIONE), 'E-36');

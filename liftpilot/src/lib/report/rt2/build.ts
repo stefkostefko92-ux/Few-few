@@ -23,7 +23,7 @@ export interface FascicoloMeta {
 
 export function buildFascicolo(d: Rt2Derivato, x: Rt2Inputs, id: IdentRt2, files: readonly FileAllegato[], m: FascicoloMeta,
   logo: { mime: string; data: string } | null): FascicoloDoc {
-  const p: PaginaCtx = { titolo: TITOLO_PAGINA[d.ctx.norma], norma: NORMA_STAMPA[d.ctx.norma] };
+  const p: PaginaCtx = { titolo: TITOLO_PAGINA[d.ctx.norma], norma: NORMA_STAMPA[d.ctx.norma], idoneitaAllegata: d.allegati.includes('idoneitaEdificio') };
   const pagine: FBlock[] = d.componenti.flatMap((c) => {
     const mod = moduloDi(c), e = d.esiti[c];
     return mod && e ? mod.pagine(d.ctx, d.dati[c] ?? {}, e, p) : [];

@@ -30,6 +30,8 @@ export const DIFFERENZE_GUIDE: readonly { id: string; componente: string; modell
     correzione: 'n dal dato «39. Numero guide:» (proposto 2); così anche per il contrappeso' },
   { id: 'E-11', componente: C, modello: 'paracadute di cabina «senza» selezionabile (K1 = 0: verifiche all’intervento soddisfatte con zeri); dati vuoti come zero',
     correzione: '«senza» tolto dalla lista della cabina; un dato vuoto è un dato mancante e nulla si calcola', norma: 'UNI EN 81-20:2020, 5.6.1' },
+  { id: 'E-λ', componente: C, modello: 'snellezza λ arrotondata all’intero prima di ω (ω può risultare più basso)',
+    correzione: 'λ = l/i esatto; stampato arrotondato', norma: 'UNI EN 81-50:2020, 5.10.3' },
   { id: 'E-12', componente: C, modello: 'λ sotto 20: ω #N/D; λ oltre 250: errore senza messaggio sulla pagina della cabina',
     correzione: 'λ sotto 20 come 20; oltre 250 ω non applicabile, verifica a carico di punta non soddisfatta e «VERIFICA GUIDE e/o STAFFE»',
     norma: 'UNI EN 81-50:2020, 5.10.3' },

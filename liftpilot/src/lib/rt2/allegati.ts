@@ -48,7 +48,9 @@ export function allegatiProposti(ctx: ContestoRt2, componenti: readonly Componen
     if (amm[k] === 'molla') out.add('molle');
     else out.add('ammortizzatori');
   }
-  if (ctx.carico?.p1) out.add('idoneitaEdificio');
+  // beyond prospetto 1 the structures (6.3) always; the counterweight beyond prospetto 2 «se pertinente» (UNI 10411-1:2024
+  // appendix C, norm expert's answer 6): proposed, the engineer may leave it out — then the pages declare the forces
+  if (ctx.carico?.p1 || ctx.carico?.p2) out.add('idoneitaEdificio');
   if (ctx.parti.includes('alarm')) out.add('telesoccorso');
   out.add('libretto');
   return out;

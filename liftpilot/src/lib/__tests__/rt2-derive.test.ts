@@ -32,6 +32,20 @@ test('rt2-derive: velocità oltre il 5 % e carico oltre il prospetto 1 portano i
   assert.ok(d.allegati.includes('idoneitaEdificio'));
 });
 
+test('rt2-derive: contrappeso oltre il prospetto 2 — la dichiarazione dell’edificio proposta, le pagine rimandano a essa (risposta 6)', () => {
+  const x = { doc: DOC, firme: FIRME }, b = base({ documentato: { Q: 630, P: 900, Mcw: 1000 }, libretto: { v: 1, H: 20 } });
+  const d = deriveRt2(b, x);
+  assert.ok(d.ctx.carico?.p2 && !d.ctx.carico.p1);
+  assert.ok(d.allegati.includes('idoneitaEdificio'), 'proposta «se pertinente»');
+  const testo = (y: Rt2Inputs, dd = deriveRt2(b, y)): string => JSON.stringify(buildFascicolo(dd, y, { matricola: 'BS 1', indirizzo: 'Via Roma 1', capCitta: '25100 Brescia (BS)',
+    proprietario: 'Condominio Esempio', azienda: 'Elevatori Esempio S.r.l.', logo: null, numero: 'RT 26-002 R0' }, [], { code: 'RT 26-002 R0' }, null).blocks);
+  const con = testo(x);
+  assert.ok(con.includes('variano i carichi sulle strutture portanti') && !con.includes('ritenute non significative'), 'allegata: rimanda');
+  // the engineer leaves it out: the pages declare the forces non-significant
+  const senza = testo({ ...x, dichiarati: { idoneitaEdificio: false } });
+  assert.ok(senza.includes('ritenute non significative') && !senza.includes('variano i carichi sulle strutture portanti'), 'tolta: dichiara');
+});
+
 test('rt2-derive: mancano le firme e la descrizione, il proprietario e la norma di collaudo', () => {
   const C = collaudoOf(V_BASE, { norma: '10411-1', parti: ['machine'] } as Collaudo);
   const d = deriveRt2({ V: V_BASE, C, res: null, anagrafica: {} }, {});

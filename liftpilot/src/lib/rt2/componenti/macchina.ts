@@ -106,6 +106,9 @@ function pagine(ctx: ContestoRt2, _x: DatiRt2, e: EsitoRt2, p: PaginaCtx): FBloc
   const strutture: FRiga[] = ctx.carico?.p1
     ? [{ t: 'testo', s: 'Le modifiche apportate aumentano i carichi oltre il prospetto 1 della norma: si allega la' },
       { t: 'testo', s: 'dichiarazione di idoneità statica delle strutture portanti dell\'edificio.' }]
+    : p.idoneitaAllegata
+    ? [{ t: 'testo', s: 'Le modifiche apportate variano i carichi sulle strutture portanti dell\'edificio: si allega la' },
+      { t: 'testo', s: 'dichiarazione di idoneità statica delle strutture portanti dell\'edificio.' }]
     : [{ t: 'testo', s: 'Si dichiara che le modifiche apportate all\'impianto preesistente ' }, { t: 'testo', s: 'sono ritenute non significative a sfavore della sicurezza e ' },
       { t: 'testo', s: 'integrità nei loro punti di applicazione' }];
   const nota = notaInverter(ctx);

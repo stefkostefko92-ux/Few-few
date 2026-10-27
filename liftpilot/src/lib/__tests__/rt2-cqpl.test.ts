@@ -155,10 +155,14 @@ test('rt2-cqpl: Quadro — testi del modello e tensioni (E-Q7, E-Q9, E-Q10)', ()
   assert.ok(a.testo.includes('Universale a pulsanti') && a.testo.includes('Durante il movimento della cabina, per non meno di 4 secondi dopo la'));
   assert.ok(a.testo.includes('fermata della cabina e dopo la chiusura delle porte') && a.testo.includes('sono conformi alla normativa UNI EN 81-20 : 2020'));
   assert.ok(a.testo.includes('Il nuovo quadro di manovra è conforme alla norma UNI EN 81-20 : 2020') && a.testo.includes('380 V   50 Hz'));
-  const b = run(QUADRO, nuovo, { tipoManovra: '3', tensioneManovra: 300, frequenzaManovra: 'cc', contattiAccessibili: true, tensioneContatti: 48 });
+  const b = run(QUADRO, nuovo, { tipoManovra: '3', tensioneManovra: 300, frequenzaManovra: 'cc', contattiAccessibili: true, tensioneContatti: 48, correnteContatti: 'cc' });
   assert.ok(b.testo.includes('Simplex - Prenotazione salita/discesa') && b.testo.includes('Non esiste; manovra con prenotazione'));
   assert.equal(b.esito('quadro.tensioneManovra'), 'fail'); assert.equal(b.esito('quadro.contattiSerrature'), 'ok', '48 V c.c. ≤ 50 V');
-  assert.equal(run(QUADRO, nuovo, { tensioneManovra: 48, contattiAccessibili: true }).esito('quadro.contattiSerrature'), 'fail', '48 V c.a. > 25 V');
+  // the contacts' own voltage and current, never the control voltage's (norm expert's answer 5): 48 V c.c. of control,
+  // the chain 42 V without its current said → the a.c. limit 25 V
+  assert.equal(run(QUADRO, nuovo, { tensioneManovra: 48, frequenzaManovra: 'cc', contattiAccessibili: true, tensioneContatti: 42 }).esito('quadro.contattiSerrature'), 'fail', '42 V c.a. > 25 V');
+  assert.equal(run(QUADRO, nuovo, { tensioneManovra: 48, contattiAccessibili: true, tensioneContatti: 24 }).esito('quadro.contattiSerrature'), 'ok', '24 V c.a. ≤ 25 V');
+  assert.ok(QUADRO.calcola(nuovo, { tensioneManovra: 48, contattiAccessibili: true }).mancanti.includes('tensioneContatti'), 'tensione ai contatti richiesta');
   const esistente = run(QUADRO, ctxDi(), { tensioneManovra: 300 });
   assert.equal(esistente.esito('quadro.tensioneManovra'), 'info'); assert.ok(!esistente.testo.includes('del nuovo'));
 });
@@ -185,7 +189,7 @@ test('rt2-cqpl: Porte — testi del modello (LibreOffice) e correzioni', () => {
 
 test('rt2-cqpl: pagine senza testi rotti, esiti sulle righe delle verifiche', () => {
   const ctx = ctxDi({ collaudo: { parti: ['controller', 'car', 'governor', 'landingDoors', 'carDoors', 'safetyGear'], documentato: DOC }, tecnici: { dopo: { superficie: 1.66, capienza: 8 } } });
-  const dati: Record<string, DatiRt2> = { quadro: { tensioneManovra: 48 }, cabina: { paracadute: '3' }, limitatore: { paracadute: '3', vScatto: 1.3, forzaPresa: 300 },
+  const dati: Record<string, DatiRt2> = { quadro: { tensioneManovra: 48 }, cabina: { paracadute: '3' }, limitatore: { paracadute: '3', vScatto: 1.3, forzaPresa: 300, limiteOrigine: 1.4, fonteOrigine: 'DM 587/1987, art. 8' },
     porte: { fuocoEsistente: '1', altezzaEsistenti: 2000, altezzaNuove: 2000 } };
   for (const m of MODULI) {
     const r = run(m, ctx, dati[m.id] ?? {});
@@ -197,13 +201,19 @@ test('rt2-cqpl: pagine senza testi rotti, esiti sulle righe delle verifiche', ()
     }
   }
   assert.ok(run(LIMITATORE, ctx, dati.limitatore).righe.some((k) => k.t === 'val' && k.l === 'Coefficiente di sicurezza:' && k.esito === 'ok'));
+  // a new governor under UNI 10411-1: the limit of the rule at the installation with its source (18, 15.17; norm expert's
+  // answer 8), not met over it; none with a governor that stays and the speed as documented
+  const oltre = run(LIMITATORE, ctx, { ...dati.limitatore, limiteOrigine: 1.25 });
+  assert.equal(oltre.esito('limitatore.origine'), 'fail');
+  assert.ok(oltre.testo.includes('(DM 587/1987, art. 8)'));
+  assert.equal(run(LIMITATORE, ctxDi(), { paracadute: '3', vScatto: 1.3 }).esito('limitatore.origine'), undefined);
 });
 
 test('rt2-cqpl: campi — lo schema accetta un dato completo e rifiuta uno fuori campo', () => {
   const pieni: Record<string, DatiRt2> = {
-    quadro: { tipoManovra: '2', tensioneForzaMotrice: 400, tensioneLuce: 230, tensioneManovra: 48, frequenzaManovra: 'cc', tensioneOperatore: 230, frequenzaOperatore: '50', contattiAccessibili: true, tensioneContatti: 24 },
+    quadro: { tipoManovra: '2', tensioneForzaMotrice: 400, tensioneLuce: 230, tensioneManovra: 48, frequenzaManovra: 'cc', tensioneOperatore: 230, frequenzaOperatore: '50', contattiAccessibili: true, tensioneContatti: 24, correnteContatti: 'cc' },
     cabina: { funiPreesNumero: 4, funiPreesMassa: 0.39, paracadute: '4' },
-    limitatore: { tipo: '7', altroForza: 600, altroDiametro: 240, fune: '7', funeDiametro: 8, funeTrefoli: 6, funeFormazione: '6x19', funeRottura: 30000, paracadute: '3', vScatto: 1.2, forzaPresa: 250 },
+    limitatore: { tipo: '7', altroForza: 600, altroDiametro: 240, fune: '7', funeDiametro: 8, funeTrefoli: 6, funeFormazione: '6x19', funeRottura: 30000, paracadute: '3', vScatto: 1.2, forzaPresa: 250, limiteOrigine: 1.4, fonteOrigine: 'DM 587/1987' },
     porte: { tipoPortaCabina: '1', tensioneOperatore: 230, frequenzaOperatore: '50', tipoPortePiano: '1', protezioneFuoco: '2', fuocoEsistente: '2', altezzaEsistenti: 2000, altezzaNuove: 2000 },
   };
   const fuori: Record<string, DatiRt2> = { quadro: { tensioneManovra: 5000 }, cabina: { funiPreesNumero: 2.5 }, limitatore: { vScatto: 50 }, porte: { altezzaNuove: 900 } };

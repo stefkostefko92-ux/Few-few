@@ -122,19 +122,25 @@ test('rt2-amm: correzioni degli idraulici (H1, H2, H3, H4)', () => {
   const h1 = AMM_CABINA.calcola(ctxCon({ Q: 630, P: 900, v: 1.6 }), { tipo: 'idraulici', hydrModel: '150510' });
   near(h1.valori.Fris, 7504.650000000001, 1e-9, 'H1 Fris');
   assert.equal(h1.valori.rallentamento, 'SENZA', 'H2: proposta SENZA');
-  // H2: «CON» at 1,6 m/s: the model 0,5·172,544 = 86,272 mm (LibreOffice); the floor 420 mm over the full stroke → 172,544
+  // H2: «CON» at 1,6 m/s: the model 0,5·172,544 = 86,272 mm (LibreOffice); UNI EN 81-20:2020 5.8.2.2.2 reduces only over
+  // 2,5 m/s (norm expert's answer 2): the full stroke 172,544
   const con = { tipo: 'idraulici', na: 2, hydrModel: 'altro', hydrStroke: 100, hydrSlowdown: 'con', certVUrto: 2, certMassaMin: 300, certMassaMax: 2000 };
   const h2 = AMM_CABINA.calcola(ctxCon({ Q: 630, P: 900, v: 1.6 }), con);
   near(h2.valori.fmin, 172.54400000000004, 1e-9, 'H2 fmin');
   assert.equal(esito(h2, 'idrCorsa'), 'fail', 'f = 100 mm: il modello «OK»');
-  assert.ok(h2.avvisi.length === 1);
-  // over 4 m/s a third, not 0,333: 5 m/s → 1685/3 = 561,67 mm (the model 561,105: f = 561,3 «OK»)
-  const c5 = corsaMinIdraulico(5, true);
-  near(c5.fmin, 1685 / 3, 1e-9, 'H2 1/3');
-  assert.equal(c5.testo, '1/3 x (0,0674 x vc^2)');
-  assert.equal(esito(AMM_CABINA.calcola(ctxCon({ Q: 630, P: 900, v: 5 }), { ...con, hydrStroke: 561.3, certVUrto: 6 }), 'idrCorsa'), 'fail');
-  // and at 6 m/s the third (808,8 mm) is over the floor 540: 1/3 of 2426,4
-  near(corsaMinIdraulico(6, true).fmin, 2426.4 / 3, 1e-9, 'H2 6 m/s');
+  assert.ok(h2.avvisi.length === 1 && h2.avvisi[0]?.includes('solo oltre 2,5 m/s'));
+  assert.ok(!h2.mancanti.includes('hydrVContatto'), 'la velocità di contatto non serve fino a 2,5 m/s');
+  // over 2,5 m/s with the contact speed guaranteed: 0,0674·vi², never under 420 mm nor over the full stroke (the model's
+  // third at 5 m/s, 561,105 mm, is UNI EN 81-1's)
+  near(corsaMinIdraulico(5, true, 3).fmin, 1000 * 0.0674 * 9, 1e-9, 'vi 3 m/s');
+  assert.equal(corsaMinIdraulico(5, true, 3).testo, '0,0674 x vi^2');
+  near(corsaMinIdraulico(5, true, 1).fmin, 420, 1e-9, 'minimo 420 mm');
+  near(corsaMinIdraulico(5, true, 6).fmin, 1685, 1e-9, 'mai oltre la corsa piena');
+  near(corsaMinIdraulico(5, true).fmin, 1685, 1e-9, 'senza vi la corsa piena');
+  const h5 = AMM_CABINA.calcola(ctxCon({ Q: 630, P: 900, v: 5 }), { ...con, hydrStroke: 561.3, certVUrto: 6 });
+  assert.ok(h5.mancanti.includes('hydrVContatto'), 'oltre 2,5 m/s con «CON» si chiede vi');
+  assert.equal(esito(AMM_CABINA.calcola(ctxCon({ Q: 630, P: 900, v: 5 }), { ...con, hydrStroke: 561.3, certVUrto: 6, hydrVContatto: 3 }), 'idrCorsa'), 'fail');
+  assert.equal(esito(AMM_CABINA.calcola(ctxCon({ Q: 630, P: 900, v: 5 }), { ...con, hydrStroke: 610, certVUrto: 6, hydrVContatto: 3 }), 'idrCorsa'), 'ok');
   // H3: 60 mm at 0,5 m/s: fmin = 16,85 mm (the model also asks f > 65: «NO!»)
   const h3 = AMM_CWT.calcola(ctxCon({ Mcw: 1215, v: 0.5 }), { ...con, hydrStroke: 60, hydrSlowdown: 'senza' });
   assert.equal(esito(h3, 'idrCorsa'), 'ok');
@@ -172,7 +178,10 @@ test('rt2-amm: le pagine stampate', () => {
         'MAA 320 H2 (300 172)', 'Verifiche secondo la norma:']],
     [AMM_CABINA, ctxCon({ Q: 630, P: 900, v: 1.6 }), { tipo: 'idraulici', na: 2, hydrModel: '150510', hydrSlowdown: 'con' },
       ['a dissipazione di energia (idraulici)', 'Gli ammortizzatori a dissipazione di energia sono conformi alla', 'norma UNI EN 81.20 : 2020 - punto 5.8.2.2',
-        'Si allega certificato di esame di tipo dell\'ammortizzatore in oggetto', '0,5 x (0,0674 x vc^2)', 'e comunque non minore di 420 mm', 'CON', '172,54']],
+        'Si allega certificato di esame di tipo dell\'ammortizzatore in oggetto', '0,0674 x vc^2', 'CON', '172,54']],
+    [AMM_CABINA, ctxCon({ Q: 630, P: 900, v: 3 }), { tipo: 'idraulici', na: 2, hydrModel: 'altro', hydrStroke: 500, hydrSlowdown: 'con', hydrVContatto: 2.4,
+      certVUrto: 3.5, certMassaMin: 300, certMassaMax: 2000 },
+      ['0,0674 x vi^2', 'Velocità di contatto garantita:', '2,40', 'e comunque non minore di 420 mm', '420,00']],
   ];
   for (const [m, ctx, x, frasi] of casi) {
     const e = m.calcola(ctx, x), blocks = m.pagine(ctx, x, e, P0), text = JSON.stringify(blocks);

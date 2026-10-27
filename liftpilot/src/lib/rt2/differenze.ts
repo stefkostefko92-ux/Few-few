@@ -64,5 +64,5 @@ export const DIFFERENZE_MACCHINA: readonly Differenza[] = [
   { id: 'E-M3/E-M4', componente: MA, modello: '«preesistente» mai stampato per puleggia e funi; tipo di gola inserito due volte.', correzione: 'Dati della macchina dal Calcolo argano, una volta sola; «preesistente» con la macchina che resta.' },
   { id: 'E-M5', componente: MA, modello: 'Descrizione fissa dell’argano, nessun dato del freno.', correzione: 'Con l’argano nuovo: modello e verifiche del freno del Calcolo argano.', norma: `${T20}, 5.9.2` },
   { id: 'E-M9', componente: MA, modello: 'Frequenza VVVF dai «giri per VF» 1000/1500.', correzione: 'Frequenza dai poli del motore del Calcolo argano.' },
-  { id: 'E-M10', componente: MA, modello: 'Dichiarazione sulle strutture portanti sempre stampata.', correzione: 'Con i carichi oltre il prospetto 1 la pagina rimanda alla dichiarazione di idoneità dell’edificio allegata.', norma: `${U1}, 6.1` },
+  { id: 'E-M10', componente: MA, modello: 'Dichiarazione sulle strutture portanti sempre stampata.', correzione: 'Con i carichi oltre il prospetto 1 la pagina rimanda alla dichiarazione di idoneità dell’edificio allegata; con il contrappeso oltre il prospetto 2 la dichiarazione è proposta («se pertinente») e, se allegata, la pagina rimanda a essa invece di dichiarare le forze non significative.', norma: `${U1}, 6.1 e appendice C` },
 ];

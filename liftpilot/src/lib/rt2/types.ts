@@ -137,6 +137,9 @@ export interface PaginaCtx {
   titolo: string;
   /** the standard of reference as printed («UNI 10411-1:2024») */
   norma: string;
+  /** the declaration of fitness of the building's structures among the attachments (allegati.ts idoneitaEdificio): the
+   *  pages that state the forces on the structures refer to it instead of declaring them non-significant */
+  idoneitaAllegata?: boolean;
 }
 
 /** A component of the fascicolo. */
