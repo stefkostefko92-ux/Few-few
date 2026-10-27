@@ -1255,7 +1255,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 629
+        "lessons": 631
       },
       "evolution": [
         {
@@ -2445,9 +2445,20 @@
           "date": "2026-10-27",
           "event": "v51.1 — учене",
           "detail": "Научи: id-то на Конвейерът в ПРЕДАВАНЕ е konveyera (не konveyerat) — dod-check.mjs отхвърля гр…"
+        },
+        {
+          "version": "51.3.0",
+          "date": "2026-10-27",
+          "event": "v51.3 — учене",
+          "detail": "Научи: .pr-review/339.diff съдържа само hunk-ове за .claude/ и agents-dashboard/ (последният е… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „.pr-review/339.diff съдържа само hunk-ове за .claude/ и agents-dashboard/ (последният е…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
