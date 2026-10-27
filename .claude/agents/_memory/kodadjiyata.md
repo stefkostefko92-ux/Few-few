@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-27:** Полето „Към“ в ПРЕДАВАНЕ трябва да е id от .claude/agents/*.md (напр. izpitatelya, kachestveniyat), не българското име — dod-check.mjs отхвърля „Изпитателя“. _(всеки HANDOFF блок; verified; Stop hook dod-check.mjs изход 2026-10-27; .claude/agents/izpitatelya.md)_
 - **2026-10-27:** medqr audit() приема req като първи аргумент (audit(req, event, {userId, detail})); ако му се подаде число (req.user.id), не хвърля, а записва user_id=null и ip='' — тихо обезценен одит запис. _(ревю на всеки нов medqr маршрут, който вика audit; verified; medqr/src/audit.js:14-16)_
 - **2026-10-27:** medqr CSRF е глобален middleware (server.js:184) преди всички рутери (:293-296) — липса на CSRF в отделен маршрут не е находка. _(medqr CSRF ревюта; verified; medqr/src/server.js:184,293-296; medqr/src/csrf.js:20-28)_
 - **2026-10-24:** Към 2026-10-24 OSV дава за next@15.5.20 14 записа и за next@16.3.5 11, вкл. Critical RCE GHSA-2464-fhr4-w9xw (Image Optimization), закърпено в 15.5.28 / 16.4.1; старият праг 15.5.21/16.2.11 не стига. _(версия-наясно находки за всички Next продукти; verified; https://api.osv.dev/v1/query за next@15.5.20, next@16.2.9, next@16.3.5 (2026-10-24); re-verify: 2026-11-24)_
