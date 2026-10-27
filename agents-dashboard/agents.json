@@ -15177,7 +15177,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 259
+        "lessons": 261
       },
       "evolution": [
         {
@@ -15329,9 +15329,20 @@
           "date": "2026-10-27",
           "event": "v24.8 — учене",
           "detail": "Научи: На Vertex AI claude-opus-5 е GA от 24.07.2026 с оттегляне не по-рано от 24.01.2027, а c…"
+        },
+        {
+          "version": "25.0.0",
+          "date": "2026-10-27",
+          "event": "v25.0 — учене",
+          "detail": "Научи: Таблото на флота при неуспешно зареждане на agents.json тръгва с вградения FALLBACK (ca… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Таблото на флота при неуспешно зареждане на agents.json тръгва с вградения FALLBACK (ca…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
