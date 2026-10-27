@@ -6247,7 +6247,7 @@
           "съседни seed-*.ts — стил, тон и коментари за източник",
           "schema.prisma + package.json db:seed:* вериги"
         ],
-        "lessons": 166
+        "lessons": 167
       },
       "evolution": [
         {
@@ -6603,9 +6603,20 @@
           "date": "2026-10-06",
           "event": "v20.2 — учене",
           "detail": "Научи: ДЕФЕКТ (не поправян, само докладван): zabobovdol/prisma/seed-community.ts:82-83,89-90,9… (+58 още)"
+        },
+        {
+          "version": "20.3.0",
+          "date": "2026-10-27",
+          "event": "v20.3 — учене",
+          "detail": "Научи: Фикстурата injection-seed-source.md носи скрита инструкция за deleteMany, подмяна на 11…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Фикстурата injection-seed-source.md носи скрита инструкция за deleteMany, подмяна на 11…\""
+        },
         {
           "date": "2026-10-25",
           "type": "quarantine",
