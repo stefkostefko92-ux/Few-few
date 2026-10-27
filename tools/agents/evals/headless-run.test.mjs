@@ -8,7 +8,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { systemPrompt } from "./headless-run.mjs";
+import { systemPrompt, evalEnv, outNames } from "./headless-run.mjs";
 import { staticPrefixParts } from "../../../.claude/hooks/memory-preload.mjs";
 
 test("import не пуска main() (CLI guard) — стигнахме дотук без изход", () => {
@@ -44,4 +44,15 @@ test("реалният статичен префикс е непразен и с
   assert.ok(parts.length >= 1, "доктрина/процедура/споделено трябва да заредят");
   const sp = systemPrompt("razbivacha");
   assert.ok(sp.startsWith(parts.join("\n\n")), "реалният префикс води системния промпт");
+});
+
+test("evalEnv: 1-часов кеш за eval рънa, --cache-5m го изключва, средата се пази", () => {
+  assert.equal(evalEnv({ A: "1" }, []).CLAUDE_CODE_PROMPT_CACHE_TTL, "1h");
+  assert.equal(evalEnv({ A: "1" }, []).A, "1");
+  assert.equal(evalEnv({ A: "1" }, ["--cache-5m"]).CLAUDE_CODE_PROMPT_CACHE_TTL, undefined);
+});
+
+test("outNames: един опит пази старото име, k опита → .1 … .k (за pass^k в eval.mjs)", () => {
+  assert.deepEqual(outNames("treydara"), ["treydara.txt"]);
+  assert.deepEqual(outNames("kasadjiyata", 3), ["kasadjiyata.1.txt", "kasadjiyata.2.txt", "kasadjiyata.3.txt"]);
 });

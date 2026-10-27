@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { toMatcher, evalCheck, scoreOutput, validateSpec, summarize } from "./eval-lib.mjs";
+import { toMatcher, evalCheck, scoreOutput, validateSpec, summarize, trialStats, trialFiles } from "./eval-lib.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SPECS_DIR = join(HERE, "specs");
@@ -61,4 +61,19 @@ test("summarize брои правилно", () => {
   assert.equal(s.fullPass, 1);
   assert.equal(s.checkPass, 3);
   assert.equal(s.checkTotal, 5);
+});
+
+test("trialFiles: намира единичния и номерираните опити, но не съседен spec", () => {
+  const files = ["kasadjiyata.txt", "kasadjiyata.2.txt", "kasadjiyata.10.txt", "kasadjiyata.1.txt", "kasadjiyata-2.txt", "x.txt"];
+  assert.deepEqual(trialFiles(files, "kasadjiyata"), ["kasadjiyata.txt", "kasadjiyata.1.txt", "kasadjiyata.2.txt", "kasadjiyata.10.txt"]);
+  assert.deepEqual(trialFiles(files, "kasadjiyata-2"), ["kasadjiyata-2.txt"]);
+});
+
+test("trialStats: pass@k = поне един опит, pass^k = всички опити", () => {
+  const r = (id, ok) => ({ id, agent: "a", ok, passed: ok ? 1 : 0, total: 1 });
+  const t = trialStats([r("каса", true), r("каса", false), r("каса", true), r("плащане", true), r("плащане", true)]);
+  const kasa = t.perSpec.find((s) => s.id === "каса");
+  assert.deepEqual([kasa.k, kasa.passes, kasa.passAtK, kasa.passHatK], [3, 2, true, false]);
+  assert.equal(t.passAtK, 2);
+  assert.equal(t.passHatK, 1, "един пропуснат опит на три = провал по pass^k");
 });

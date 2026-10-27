@@ -11,6 +11,7 @@
 //   node tools/agents/evals/eval.mjs --task <specId>     # покажи входа, който да подадеш на агента
 //   node tools/agents/evals/eval.mjs <specId> <outFile>  # скорирай реалния изход на агента
 //   node tools/agents/evals/eval.mjs --run <dir>         # батч: <dir>/<specId>.txt за всеки spec
+//                                                        #   (или <specId>.1.txt … .k.txt — k опита → pass@k и pass^k)
 //   node tools/agents/evals/eval.mjs --json …            # машинен изход
 //
 // Изход код: 0 = ok/чисто; 1 = провал/невалиден spec. `--check` НИКОГА не пуска агент → безопасен за CI.
@@ -18,7 +19,7 @@
 import { readdirSync, readFileSync, existsSync, appendFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { scoreOutput, validateSpec, summarize } from "./eval-lib.mjs";
+import { scoreOutput, validateSpec, summarize, trialStats, trialFiles } from "./eval-lib.mjs";
 import { emitJsonNow } from "../../lib/emit.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -109,27 +110,36 @@ if (has("--task")) {
 }
 
 // ── скоринг ──
+const TAGS = { none: "капан", all: "всички", any: "поне-1", path: "ред", mustVisit: "спирки", forbid: "забрана", maxSteps: "стъпки" };
 function report(results) {
-  if (JSON_OUT) { console.log(JSON.stringify({ results, summary: summarize(results) }, null, 2)); return; }
+  const trials = trialStats(results);
+  const multi = trials.perSpec.some((s) => s.k > 1);
+  if (JSON_OUT) { console.log(JSON.stringify({ results, summary: summarize(results), ...(multi ? { trials } : {}) }, null, 2)); return; }
   for (const r of results) {
-    console.log(`\n${r.ok ? green("✓") : red("✗")} ${r.id} ${dim("· " + r.agent + " · " + r.passed + "/" + r.total)}`);
+    console.log(`\n${r.ok ? green("✓") : red("✗")} ${r.id}${r.trial ? " #" + r.trial : ""} ${dim("· " + r.agent + " · " + r.passed + "/" + r.total)}`);
     for (const c of r.checks) {
-      const tag = c.kind === "none" ? "капан" : c.kind === "all" ? "всички" : "поне-1";
-      console.log(`    ${c.ok ? green("✓") : red("✗")} [${tag}] ${c.label}` + (c.ok ? "" : dim(c.kind === "none" ? ` ← намери: ${c.hits.join(", ")}` : ` ← липсва: ${c.misses.join(", ")}`)));
+      const tag = (TAGS[c.kind] || c.kind) + (c.advisory ? ", съвет" : "");
+      const mark = c.ok ? green("✓") : c.advisory ? dim("·") : red("✗");
+      console.log(`    ${mark} [${tag}] ${c.label}` + (c.ok ? "" : dim(c.kind === "none" || c.kind === "forbid" ? ` ← намери: ${c.hits.join(", ")}` : ` ← липсва: ${c.misses.join(", ")}`)));
     }
   }
   const s = summarize(results);
-  console.log(`\nИтог: ${s.fullPass}/${s.specs} spec-а пълно минати · ${s.checkPass}/${s.checkTotal} проверки · rate ${(s.rate * 100).toFixed(0)}%`);
+  console.log(`\nИтог: ${s.fullPass}/${s.specs} изхода пълно минати · ${s.checkPass}/${s.checkTotal} проверки · rate ${(s.rate * 100).toFixed(0)}%`);
+  if (multi) {
+    console.log(`pass^k (всички опити верни): ${trials.passHatK}/${trials.specs} spec-а · pass@k (поне един): ${trials.passAtK}/${trials.specs}`);
+    for (const t of trials.perSpec.filter((x) => x.k > 1)) console.log(`    ${t.passHatK ? green("✓") : red("✗")} ${t.id} ${dim(`${t.passes}/${t.k} опита`)}`);
+  }
 }
 
 let results = [];
 if (has("--run")) {
   const dir = val("--run");
+  const files = existsSync(dir) ? readdirSync(dir) : [];
   for (const s of specs) {
     if (!s.id) continue;
-    const f = join(dir, s.id + ".txt");
-    if (!existsSync(f)) { console.error(dim(`… пропуснат ${s.id} (няма ${s.id}.txt)`)); continue; }
-    results.push(scoreOutput(readFileSync(f, "utf8"), s));
+    const mine = trialFiles(files, s.id);
+    if (!mine.length) { console.error(dim(`… пропуснат ${s.id} (няма ${s.id}.txt)`)); continue; }
+    mine.forEach((f, i) => results.push({ ...scoreOutput(readFileSync(join(dir, f), "utf8"), s), ...(mine.length > 1 ? { trial: i + 1 } : {}) }));
   }
 } else {
   const [id, outFile] = argv.filter((a) => !a.startsWith("--"));
@@ -147,7 +157,9 @@ report(results);
 if (has("--record") && results.length) {
   const s = summarize(results);
   const stamp = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
-  appendFileSync(join(HERE, "trend.jsonl"), JSON.stringify({ date: stamp, ...(val("--label") ? { label: val("--label") } : {}), ...s, perSpec: results.map((r) => ({ id: r.id, passed: r.passed, total: r.total })) }) + "\n");
+  const t = trialStats(results);
+  const passK = t.perSpec.some((x) => x.k > 1) ? { passHatK: t.passHatK, passAtK: t.passAtK, trialSpecs: t.specs } : {};
+  appendFileSync(join(HERE, "trend.jsonl"), JSON.stringify({ date: stamp, ...(val("--label") ? { label: val("--label") } : {}), ...s, ...passK, perSpec: results.map((r) => ({ id: r.id, ...(r.trial ? { trial: r.trial } : {}), passed: r.passed, total: r.total })) }) + "\n");
   if (!JSON_OUT) console.log(dim("↳ записано в trend.jsonl (тренд на качеството)"));
 }
 
