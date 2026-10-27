@@ -23,6 +23,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { ROOT, ALLOWED, makeWorktree, runJobs, claudeAvailable } from "./evals/live-run.mjs";
 import { LEDGER, triage, changedFiles, loadLedger } from "./pr-triage.mjs";
+import { startBatch, endBatch } from "../lib/learning-batch.mjs";
 
 export const DIFF_CAP = 350_000; // знака — над това агентът чете файловете в дървото по статистиката
 export const LOCKS = [":(exclude,glob)**/package-lock.json", ":(exclude,glob)**/pnpm-lock.yaml", ":(exclude,glob)**/yarn.lock", ":(exclude,glob)**/npm-shrinkwrap.json"];
@@ -167,6 +168,9 @@ async function main(argv) {
   const head = git(["rev-parse", "HEAD"]).trim();
   let spent = 0, i = 0;
   const all = [];
+  // Прегледите учат агентите на всеки няколко минути — artifact-sync чака края на партидата.
+  startBatch(ROOT, { label: "pr-review", minutes: Math.min(240, 10 + plan.length * 4) });
+  process.on("exit", () => endBatch(ROOT));
   console.log(`pr-review · ${plan.length} PR · ${plan.reduce((a, p) => a + p.agents.length, 0)} прегледа · таван $${budget} (на пускане $${perRun})`);
   await Promise.all(Array.from({ length: Math.min(conc, plan.length) }, async () => {
     while (i < plan.length) {

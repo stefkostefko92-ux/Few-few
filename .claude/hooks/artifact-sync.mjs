@@ -14,6 +14,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { publishedTip, ARTIFACT_URL } from "../../tools/docs/build-artifact.mjs";
+import { activeBatch } from "../../tools/lib/learning-batch.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -53,6 +54,9 @@ function main() {
   const same = tip && published && dashboardTree(ROOT, tip) && dashboardTree(ROOT, tip) === dashboardTree(ROOT, published);
   const msg = same ? null : artifactDue(tip, published);
   if (!msg) process.exit(0);
+  // Тече партида учене (tools/lib/learning-batch.mjs) — артефакт след нея, не на всяко спиране по средата.
+  const batch = activeBatch(ROOT);
+  if (batch) { console.log(`⚠ Партида учене „${batch.label}“ тече до ${batch.until} — артефактът се обновява след нея. ${msg}`); process.exit(0); }
   if (payload.stop_hook_active) { console.log(`⚠ ${msg}`); process.exit(0); }
   console.error(msg);
   process.exit(2); // върни сесията веднъж
