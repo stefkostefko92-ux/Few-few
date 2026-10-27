@@ -1255,7 +1255,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 613
+        "lessons": 616
       },
       "evolution": [
         {
@@ -2397,9 +2397,20 @@
           "date": "2026-10-27",
           "event": "v49.5 — учене",
           "detail": "Научи: .pr-review/232.diff (portfolio) е отрязан на 566 от 662 файла (последен portfolio/src/a…"
+        },
+        {
+          "version": "49.8.0",
+          "date": "2026-10-27",
+          "event": "v49.8 — учене",
+          "detail": "Научи: В FiveM approveSubmissionAction поема съществуващ листинг само по публичния cfx код или… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „В FiveM approveSubmissionAction поема съществуващ листинг само по публичния cfx код или…\" (+2 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
