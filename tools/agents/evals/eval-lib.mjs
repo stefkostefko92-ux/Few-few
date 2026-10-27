@@ -45,13 +45,32 @@ export function toMatcher(marker) {
   return (hay) => hay.toLowerCase().includes(needle);
 }
 
+// Капанът („none“) хваща ДЕЙСТВИЕ, не отричането му: „без float“, „Никога 0.2 mm“, „Няма cloaking“,
+// „анти-cloaking“ са точно правилното поведение (пълната оценка на 27.10: седем фалшиви провала).
+// Отрицание непосредствено пред маркера (до една дума между тях) изключва това срещане; ако всички
+// срещания са отречени — капанът не е хванат. Изричните /регулярни/ маркери не се пипат.
+const NEGATION_BEFORE = /(^|[^а-яёa-z])(без|никога|няма|нито|не|анти|no|never|without|non|zero|нула)[\s-]+(\S+\s+)?$/i;
+
+/** Има ли срещане на низовия маркер, което НЕ е непосредствено отречено? */
+export function affirmedHit(hay, marker) {
+  const h = hay.toLowerCase(), n = String(marker).toLowerCase();
+  for (let i = h.indexOf(n); i >= 0; i = h.indexOf(n, i + 1)) {
+    if (!NEGATION_BEFORE.test(h.slice(Math.max(0, i - 24), i))) return true;
+  }
+  return false;
+}
+
 /** Оценява една проверка спрямо изхода. Връща { ok, kind, label, hits, misses }. */
 export function evalCheck(check, output) {
   const hay = String(output || "");
   const kind = check.any ? "any" : check.all ? "all" : check.none ? "none" : "unknown";
   const markers = check[kind] || [];
   const hits = [], misses = [];
-  for (const m of markers) (toMatcher(m)(hay) ? hits : misses).push(String(m));
+  const isRe = (m) => m instanceof RegExp || /^\/.*\/[a-z]*$/i.test(String(m));
+  for (const m of markers) {
+    const hit = kind === "none" && !isRe(m) ? affirmedHit(hay, m) : toMatcher(m)(hay);
+    (hit ? hits : misses).push(String(m));
+  }
   let ok;
   if (kind === "any") ok = hits.length > 0;
   else if (kind === "all") ok = misses.length === 0;

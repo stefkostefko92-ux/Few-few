@@ -1,7 +1,7 @@
 {
   "id": "letopisetsa",
   "agent": "letopisetsa",
-  "task": "Напиши README за нов модул в medqr.",
+  "task": "Напиши README за модула medqr/src/webauthn.js — за разработчик, който ще го ползва или поддържа.",
   "expect": [
     {
       "any": [

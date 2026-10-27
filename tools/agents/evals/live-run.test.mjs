@@ -10,6 +10,8 @@ test("обвивката пуска агента по id и иска досло�
   assert.match(p, /subagent_type: seo/);
   assert.match(p, /дословно/);
   assert.match(p, /провери sitemap$/);
+  assert.match(p, /ВЕДНЪЖ/);
+  assert.match(p, /никога бележка за дубликата/);
 });
 
 test("от Stop куките отпадат само тези на оркестратора", () => {
