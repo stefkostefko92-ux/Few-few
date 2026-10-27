@@ -6,6 +6,8 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-27:** В eternaltouch EJS изгледите и partials могат да ползват `lang` без локален const, защото res.locals.lang винаги е зададен (по подразбиране 'en' в server.js, после истинският език от languageMiddleware), включително за страниците за грешки _(ревю на шаблони в eternaltouch, които ползват lang; verified; eternaltouch/src/server.js:170; eternaltouch/src/middleware/language.js:142)_
+- **2026-10-27:** Smoke тестовете на eternaltouch по пътища без езиков префикс рендират bg, защото DEFAULT_LANG='bg', а detectByIp пропуска 127.0.0.1 _(оценка на тестове с fetch към eternaltouch без префикс; verified; eternaltouch/src/middleware/language.js:13,37)_
 - **2026-10-27:** В Nexus клиента OPERATOR от lib/legal.ts се ползва само в pages/Terms.tsx и pages/Privacy.tsx, а JSON-LD в client/index.html е статичен и не чете OPERATOR _(ревю на промени в правните данни на Nexus; verified; Grep "OPERATOR\.|from '.*lib/legal'" и "ld\+json" в Nexus/ (Nexus/client/index.html:57))_
 - **2026-10-27:** В deploy/cert-watch/cert-watch.sh pid файлът на nginx се touch-ва безусловно след reload_nginx, затова провален reload губи сигнала stale от следващото пускане _(ревю на cert-watch и логика за презареждане на nginx в deploy/; verified; .pr-review/292.diff:190-193)_
 - **2026-10-27:** В chatchat PATCH /cases/:id/context записва в хронологията суровия контекст (to: body.data.context), а самия случай маскиран с redactContext _(ревю на PII и хронологията в chatchat; verified; chatchat/src/routes/cases.ts:183-188)_

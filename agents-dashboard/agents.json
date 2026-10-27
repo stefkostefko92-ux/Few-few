@@ -1244,7 +1244,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 598
+        "lessons": 600
       },
       "evolution": [
         {
@@ -2338,9 +2338,20 @@
           "date": "2026-10-27",
           "event": "v48.0 — учене",
           "detail": "Научи: В Nexus клиента OPERATOR от lib/legal.ts се ползва само в pages/Terms.tsx и pages/Priva…"
+        },
+        {
+          "version": "48.2.0",
+          "date": "2026-10-27",
+          "event": "v48.2 — учене",
+          "detail": "Научи: В eternaltouch EJS изгледите и partials могат да ползват `lang` без локален const, защо… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „В eternaltouch EJS изгледите и partials могат да ползват `lang` без локален const, защо…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
