@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-27:** В ПРЕДАВАНЕ полето Към трябва да е id на агента (напр. izpitatelya), не името на кирилица — dod-check.mjs отхвърля „Изпитателя“ _(всеки HANDOFF блок; verified; Stop hook dod-check.mjs в тази сесия; .claude/agents/izpitatelya.md)_
 - **2026-10-27:** Агентът-тестер се адресира в ПРЕДАВАНЕ с id izpitatelya (не izpitatelyat) — dod-check отхвърля непознат адресат _(всеки ПРЕДАВАНЕ блок към Изпитателя; verified; .claude/agents/izpitatelya.md (Glob) + Stop hook dod-check.mjs отказ за „izpitatelyat“)_
 - **2026-10-27:** Id-то на Изпитателя в полето Към на ПРЕДАВАНЕ е izpitatelya (не izpitatelyat) — грешно id проваля dod-check _(блок ПРЕДАВАНЕ към Изпитателя; verified; Glob .claude/agents/*.md → .claude/agents/izpitatelya.md)_
 - **2026-10-27:** .pr-review/339.diff съдържа само hunk-ове за .claude/ и agents-dashboard/ (последният е docs.js), а 339.stat изброява 369 файла с zabobovdol — генерираният diff може да е отрязан; сверявай grep '^diff --git' срещу stat, преди да ревюираш само по diff-а. _(всяко ревю на PR по .pr-review/<N>.diff; verified; Grep '^diff --git' в .pr-review/339.diff (8 файла) срещу .pr-review/339.stat (369 файла))_
