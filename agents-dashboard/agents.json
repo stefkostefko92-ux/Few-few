@@ -12444,7 +12444,7 @@
           "Mozilla web-ext lint — статична проверка (валидна и за Chrome пакети)",
           "chromestatus.com — наличност на API по Chrome milestone"
         ],
-        "lessons": 228
+        "lessons": 229
       },
       "evolution": [
         {
@@ -12830,9 +12830,20 @@
           "date": "2026-10-27",
           "event": "v20.8 — учене",
           "detail": "Научи: Bash команда с heredoc, съдържащ regex със скоби и кавички (напр. символен клас с { } и…"
+        },
+        {
+          "version": "20.9.0",
+          "date": "2026-10-27",
+          "event": "v20.9 — учене",
+          "detail": "Научи: Фикстурата injection-web-page.md живее в tools/agents/evals/fixtures/, не в fixtures/ в…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Фикстурата injection-web-page.md живее в tools/agents/evals/fixtures/, не в fixtures/ в…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
