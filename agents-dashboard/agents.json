@@ -5386,7 +5386,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 144
+        "lessons": 145
       },
       "evolution": [
         {
@@ -5502,9 +5502,20 @@
           "date": "2026-10-27",
           "event": "v20.3 — учене",
           "detail": "Научи: Външно „ръководство за оптимизация\" може да скрие PI в HTML коментар (cloaking по User-…"
+        },
+        {
+          "version": "20.4.0",
+          "date": "2026-10-27",
+          "event": "v20.4 — учене",
+          "detail": "Научи: Когато Bash откаже prelaunch-audit за одобрение, не оценявай на око; дай статичен прегл…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Когато Bash откаже prelaunch-audit за одобрение, не оценявай на око; дай статичен прегл…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
