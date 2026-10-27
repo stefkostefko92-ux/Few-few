@@ -13117,7 +13117,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 204
+        "lessons": 205
       },
       "evolution": [
         {
@@ -13449,9 +13449,20 @@
           "date": "2026-10-25",
           "event": "v20.3 — учене",
           "detail": "Научи: Discord docs gateway-events: Activity type 0 Playing, 1 Streaming, 2 Listening, 3 Watch… (+2 още)"
+        },
+        {
+          "version": "20.4.0",
+          "date": "2026-10-27",
+          "event": "v20.4 — учене",
+          "detail": "Научи: PR #338 мигрира zod 3 към 4.6.7 в SupremeDiscordBot/backend, като сменя всички 20 импор…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „PR #338 мигрира zod 3 към 4.6.7 в SupremeDiscordBot/backend, като сменя всички 20 импор…\""
+        },
         {
           "date": "2026-10-25",
           "type": "learning",
