@@ -1200,7 +1200,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 553
+        "lessons": 555
       },
       "evolution": [
         {
@@ -2114,9 +2114,20 @@
           "date": "2026-10-27",
           "event": "v43.5 — учене",
           "detail": "Научи: linketto lock след PR 325 е с next 15.5.28 и react/react-dom 19.2.7, вложеното next/nod…"
+        },
+        {
+          "version": "43.7.0",
+          "date": "2026-10-27",
+          "event": "v43.7 — учене",
+          "detail": "Научи: mastilko след PR 323 е на zod 4.6.7 пакет, но всички 23 src импорта са zod/v3 (класичес… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „mastilko след PR 323 е на zod 4.6.7 пакет, но всички 23 src импорта са zod/v3 (класичес…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
