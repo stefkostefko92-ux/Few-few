@@ -11444,7 +11444,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 231
+        "lessons": 232
       },
       "evolution": [
         {
@@ -11878,9 +11878,20 @@
           "date": "2026-09-28",
           "event": "v21.2 — учене",
           "detail": "Научи: userData.excludeFromFraming спира мрежа от bounding-box изчислението за камерата, но НЕ… (+10 още)"
+        },
+        {
+          "version": "21.3.0",
+          "date": "2026-10-27",
+          "event": "v21.3 — учене",
+          "detail": "Научи: zabobovdol hero (page.tsx:158-168) вече е relative overflow-hidden със статичен SVG рел…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „zabobovdol hero (page.tsx:158-168) вече е relative overflow-hidden със статичен SVG рел…\""
+        },
         {
           "date": "2026-10-25",
           "type": "quarantine",
