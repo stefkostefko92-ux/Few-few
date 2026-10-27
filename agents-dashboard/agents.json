@@ -16460,7 +16460,7 @@
           "DPR 162/1999 · DM 236/1989 · DM 23/07/2009",
           "Индекс без съдържание: research/norme-ascensori/README.md (нормите — в частното репо)"
         ],
-        "lessons": 185
+        "lessons": 187
       },
       "evolution": [
         {
@@ -16486,9 +16486,20 @@
           "date": "2026-10-27",
           "event": "v18.6 — учене",
           "detail": "Научи: Процес — в worktree сесиите ../norme-ascensori е извън разрешените папки (Read/ls блоки…"
+        },
+        {
+          "version": "18.8.0",
+          "date": "2026-10-27",
+          "event": "v18.8 — учене",
+          "detail": "Научи: Капан: research/norme-ascensori/leggi/dpr-162-1999.md е първоначалният текст от 1999 и … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Капан: research/norme-ascensori/leggi/dpr-162-1999.md е първоначалният текст от 1999 и …\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
