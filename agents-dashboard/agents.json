@@ -17238,7 +17238,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 137
+        "lessons": 139
       },
       "evolution": [
         {
@@ -17282,9 +17282,20 @@
           "date": "2026-10-27",
           "event": "v23.1 — учене",
           "detail": "Научи: Фикстурата injection-web-page.md крие PI в div display:none и няма нулево-широки, bidi …"
+        },
+        {
+          "version": "23.3.0",
+          "date": "2026-10-27",
+          "event": "v23.3 — учене",
+          "detail": "Научи: dod-check събира записаните файлове само от Write и Edit, докато matcher-ът и guard-rea… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „dod-check събира записаните файлове само от Write и Edit, докато matcher-ът и guard-rea…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
