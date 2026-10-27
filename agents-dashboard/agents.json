@@ -7127,7 +7127,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 244
+        "lessons": 245
       },
       "evolution": [
         {
@@ -7543,9 +7543,20 @@
           "date": "2026-10-27",
           "event": "v20.9 — учене",
           "detail": "Научи: cs2dm/app (PR #321) пуска prisma migrate deploy при всеки старт на контейнера през dock…"
+        },
+        {
+          "version": "21.0.0",
+          "date": "2026-10-27",
+          "event": "v21.0 — учене",
+          "detail": "Научи: zabobovdol/backups/.gitkeep е в git, значи всеки release има ИСТИНСКА папка backups/; п…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „zabobovdol/backups/.gitkeep е в git, значи всеки release има ИСТИНСКА папка backups/; п…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
