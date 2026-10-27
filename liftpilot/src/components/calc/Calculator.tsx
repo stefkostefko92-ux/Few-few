@@ -25,6 +25,7 @@ import { calcDraftSchema } from '@/lib/draft-input';
 import { bozzaRilievo } from '@/lib/collega/formato';
 import { collaudoOf, interventoDi, interventoTo, type Collaudo, type Parte, type TipoIntervento } from '@/lib/lift';
 import { calcExtra } from '@/lib/lift/calc-verdict';
+import { funeDi } from '@/lib/rt2/cataloghi/funi';
 import { esempioCollaudo, esitoParte, partiDi } from '@/lib/lift/risposte';
 import MissingPanel from '@/components/MissingPanel';
 import { useDraft, type DraftTarget } from '@/components/draft/useDraft';
@@ -139,7 +140,13 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const draftData = { values, collaudo: I.chosen ?? null, ...(tipo ? { intervento: tipo } : {}), risposte: I.risposte, ...bozzaRilievo(vista, (id) => values[id]) };
   const draftHandle = useDraft(draft, draftData, calcDraftSchema.safeParse(draftData).success);
 
-  const set = (id: string, v: string | boolean): void => edit({ [id]: v });
+  // the rope of the model's lists fills its diameter, breaking load and mass; editing one of them by hand leaves the list
+  const set = (id: string, v: string | boolean): void => {
+    const f = id === 'n_cat' ? funeDi(v) : null;
+    if (f) edit({ n_cat: f.id, n_d: String(f.d), n_Fmin: String(f.MBL / 1000), n_qf: String(f.q) });
+    else if ((id === 'n_d' || id === 'n_Fmin' || id === 'n_qf') && values.n_cat) edit({ [id]: v, n_cat: '' });
+    else edit({ [id]: v });
+  };
   const loadPreset = (k: PresetKey): void => {
     setValues(mirrorRopes(PRESETS[k]));
     I.esempio(PRESETS[k]);

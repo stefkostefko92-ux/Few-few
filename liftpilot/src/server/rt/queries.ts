@@ -22,6 +22,7 @@ export const RT_ROW = {
   project: { select: { id: true, name: true, archivedAt: true, plant: true, anagrafica: true, plantNumber: true, client: true, address: true, city: true, province: true } },
   roomDesign: { select: ROOM_BASE },
   liftDesign: { select: LIFT_BASE },
+  calculation: { select: { id: true, sha256: true, inputs: true, collaudo: true, intervento: true, createdAt: true, engineVersion: true } },
   logo: { select: { mime: true, data: true, sha256: true } },
   pdf: { select: { sha256: true, pages: true, createdAt: true } },
   // the snapshot of each file (TechnicalReportAttachment) with the immutable columns of the file it names
@@ -36,6 +37,7 @@ export type RtRow = NonNullable<Awaited<ReturnType<typeof getRt>>>;
 /** The engine versions an RT is told outdated by (records.ts outdated.rt), without its JSON. */
 export const RT_VERSIONS = {
   engineVersion: true,
+  calculation: { select: { engineVersion: true } },
   roomDesign: { select: { engineVersion: true, calculation: { select: { engineVersion: true } } } },
   liftDesign: { select: { engineVersion: true, calculation: { select: { engineVersion: true } }, shaftDesign: { select: { engineVersion: true } } } },
 } as const;

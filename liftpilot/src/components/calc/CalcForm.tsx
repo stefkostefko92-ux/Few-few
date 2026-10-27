@@ -9,7 +9,7 @@ import { isStandard } from '@/lib/calc-blank';
 import { testoAiuto } from '@/lib/aiuto';
 import AIUTO from '../../../messages/aiuto/calcolo.json';
 import Etichetta from '../aiuto/Etichetta';
-import { LAYOUT, MACHINE, PLANT, ROPES, SERVICE, shown, type Field } from './fields';
+import { FUNI_10411, LAYOUT, MACHINE, PLANT, ROPES, SERVICE, shown, type Field } from './fields';
 import FieldRow, { type BlankTexts } from './FieldRow';
 
 export type Prefix = 'n_' | 'o_';
@@ -90,6 +90,10 @@ export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopes
           {rows(ROPES('n_'))}
           {estimate('n_')}
         </div>
+      </details>
+      <details className="group" open hidden={!esistente}>
+        <summary>{t('g_funi10411')}</summary>
+        <div className="rows"><div className="hint">{t('hint_funi10411')}</div>{rows(FUNI_10411.filter((f) => shown(f.id, V)))}</div>
       </details>
       <details className={`group${service ? '' : ' adv'}`} open={service || undefined}>
         <summary>{t('g_service')}</summary><div className="rows">{rows(SERVICE)}</div>

@@ -2,6 +2,7 @@
 // the same visibility rules (syncVisibility).
 import type { FormValues } from '@/calc/types';
 import type { CalcKey } from '@/lib/present/tr';
+import { CATENE_COMP, FUNI_CATALOGO, FUNI_COMP, nomeFune } from '@/lib/rt2/cataloghi/funi';
 
 interface Base {
   id: string;
@@ -61,9 +62,22 @@ export const MACHINE = (p: 'n_' | 'o_'): readonly Field[] => [
 export const SERVICE: readonly Field[] = [num('aDesign', 'm/s²', 0.05), { id: 'buffers', kind: 'check' }, num('ae', 'm/s²', 0.05, { hint: 'hint_ae' }),
   num('aBrake', 'm/s²', 0.05), num('rh', 'm', 0.01), { id: 'stallDevice', kind: 'check', hint: 'hint_stallDevice' }];
 
+const it = (x: number): string => String(x).replace('.', ',');
+/** The rope data of the owner's model for a modification (round 52, the RT's rope pages and the model's rope checks):
+ *  the rope from its lists (filling diameter, breaking load and mass), the compensation, the travelling cable, the
+ *  reduced deceleration of D.1 (lib/rt2/funi-calc.ts reads them). */
+export const FUNI_10411: readonly Field[] = [
+  { id: 'n_cat', kind: 'select', options: [opt('', 'cat_mano'), ...FUNI_CATALOGO.map((f) => lit(f.id, nomeFune(f)))], wide: true },
+  { id: 'compTipo', kind: 'select', options: [opt('nessuna', 'comp_nessuna'), opt('funi', 'comp_funi'), opt('catene', 'comp_catene')] },
+  { id: 'compFune', kind: 'select', options: FUNI_COMP.map((c, i) => lit(String(i + 1), `${it(c.d)} mm · ${it(c.q)} kg/m`)) },
+  { id: 'compCatena', kind: 'select', options: CATENE_COMP.map((c, i) => lit(String(i + 1), `${it(c.d)} mm · ${it(c.q)} kg/m`)) },
+  num('compN', '', 1), num('compMt', 'kg', 1), num('compDt', 'mm', 10), { id: 'compCwt', kind: 'check' },
+  num('caviQ', 'kg/m', 0.1, { adv: true }), { id: 'aRidotta', kind: 'check', adv: true },
+];
+
 /** Every id the form can send (the server accepts nothing else). */
 export const FIELD_IDS: readonly string[] = [
-  ...[PLANT, LAYOUT, MACHINE('n_'), MACHINE('o_'), ROPES('n_'), ROPES('o_'), SERVICE].flat().map((f) => f.id),
+  ...[PLANT, LAYOUT, MACHINE('n_'), MACHINE('o_'), ROPES('n_'), ROPES('o_'), SERVICE, FUNI_10411].flat().map((f) => f.id),
   'compare', 'keepD', 'keepRopes',
   // the catalogue's maker and model taken from the advice ("SICOR SH160"): two models of equal data stay apart
   'n_model',
@@ -102,6 +116,11 @@ export function shown(id: string, V: FormValues): boolean {
     case 'keepD': return !!V.compare && V.context === 'repl';
     case 'keepRopes': return V.context === 'repl';
     case 'n_n': case 'n_d': return !(V.context === 'repl' && !!V.keepRopes && !!V.compare);
+    // the model's rope data: a modification only; the compensation's by its kind
+    case 'n_cat': case 'compTipo': case 'caviQ': case 'aRidotta': return V.context === 'repl';
+    case 'compFune': case 'compDt': return V.context === 'repl' && V.compTipo === 'funi';
+    case 'compCatena': case 'compCwt': return V.context === 'repl' && V.compTipo === 'catene';
+    case 'compN': case 'compMt': return V.context === 'repl' && (V.compTipo === 'funi' || V.compTipo === 'catene');
     default: return true;
   }
 }

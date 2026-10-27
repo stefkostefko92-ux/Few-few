@@ -14,6 +14,7 @@ import { collaudoReadSchema } from '@/lib/lift-input';
 import { liftRecord, type LiftRecord } from '@/lib/lift-record';
 import { LIFT_ENGINE_VERSION } from '@/lib/lift/version';
 import { ROOM_ENGINE_VERSION } from '@/lib/room/snapshot';
+import { isRt2, RT2_ENGINE_VERSION } from '@/lib/rt2/version';
 import { RT_ENGINE_VERSION } from '@/lib/rt/version';
 import type { ReportDesign } from '@/lib/report/shaft';
 import { reproduceDesign, type StoredDesign } from '@/lib/shaft-hash';
@@ -83,6 +84,9 @@ export const outdated = {
   room: oldRoom,
   /** an issued relazione tecnica di modifica (round 49): its RT engine, or the base it was made from (the machine room or
    *  the lift design with their records); its kept PDF stays downloadable, a new revision makes it again */
-  rt: (r: Versioned & { roomDesign: (Versioned & { calculation: Versioned }) | null; liftDesign: (Versioned & { calculation: Versioned; shaftDesign: Versioned }) | null }): boolean =>
-    r.engineVersion !== RT_ENGINE_VERSION || (!!r.roomDesign && oldRoom(r.roomDesign)) || (!!r.liftDesign && oldLift(r.liftDesign)),
+  rt: (r: Versioned & { roomDesign: (Versioned & { calculation: Versioned }) | null; liftDesign: (Versioned & { calculation: Versioned; shaftDesign: Versioned }) | null;
+    calculation?: Versioned | null }): boolean =>
+    // after the owner's model (round 52): its engine and the calculation it is made on
+    isRt2(r.engineVersion) ? r.engineVersion !== RT2_ENGINE_VERSION || (!!r.calculation && oldCalc(r.calculation))
+      : r.engineVersion !== RT_ENGINE_VERSION || (!!r.roomDesign && oldRoom(r.roomDesign)) || (!!r.liftDesign && oldLift(r.liftDesign)),
 };

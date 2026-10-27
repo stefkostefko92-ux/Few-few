@@ -88,7 +88,8 @@
     "scaricaFile": "Scarica",
     "daAllegare": "Documenti indicati come da allegare",
     "revisioni": "Revisioni",
-    "revisioniIlleggibili": "L’elenco delle revisioni di questa relazione non si legge con il software attuale."
+    "revisioniIlleggibili": "L’elenco delle revisioni di questa relazione non si legge con il software attuale.",
+    "componenti": "Componenti della relazione"
   },
   "esito": {
     "titolo": "Stato della relazione",

@@ -428,5 +428,21 @@
   "hint_Dp": "Con pulegge di diametro diverso inserisci la più piccola: vale per D/d e, dal lato della sicurezza, per N_equiv.",
   "a_assess": "Valutazione della sicurezza della modifica su tre piani: il componente cambiato, quelli che la modifica tocca e l’impianto nel suo insieme (punto 4).",
   "a_ropes": "Con funi nuove (UNI EN 81-20, 5.5.1) si controllano sempre anche gli attacchi d’estremità su cabina, contrappeso e punti fissi: secondo la 5.5.2.3.1 o, se già dello stesso tipo, a testa fusa (UNI EN 13411-4) o con morsetti a cavallotto (UNI EN 13411-5) (17.1).",
-  "a_docs": "Documenti della sostituzione (appendice C, 14): dati della macchina nuova, taratura del variatore di frequenza per la velocità dichiarata, calcolo di aderenza e del coefficiente di sicurezza delle funi (e della pressione specifica, se serve), compatibilità con gli ACOP e gli UCM esistenti, esame del tipo e dichiarazione di conformità di ACOP o UCM nuovi; quando pertinenti, i documenti dei punti 5 (strutture dell’edificio: l’idoneità la dimostra il proprietario, con i nuovi carichi), 9 (disegno quotato del locale del macchinario con accessi e spazi di manutenzione), 10 (linee elettriche rifatte o estese) e 15 (velocità nominale cambiata); i manuali della macchina e dei componenti nuovi (25.5)."
+  "a_docs": "Documenti della sostituzione (appendice C, 14): dati della macchina nuova, taratura del variatore di frequenza per la velocità dichiarata, calcolo di aderenza e del coefficiente di sicurezza delle funi (e della pressione specifica, se serve), compatibilità con gli ACOP e gli UCM esistenti, esame del tipo e dichiarazione di conformità di ACOP o UCM nuovi; quando pertinenti, i documenti dei punti 5 (strutture dell’edificio: l’idoneità la dimostra il proprietario, con i nuovi carichi), 9 (disegno quotato del locale del macchinario con accessi e spazi di manutenzione), 10 (linee elettriche rifatte o estese) e 15 (velocità nominale cambiata); i manuali della macchina e dei componenti nuovi (25.5).",
+  "g_funi10411": "Funi e compensazione (relazione tecnica)",
+  "hint_funi10411": "I dati delle funi come li chiede la relazione tecnica di modifica: la fune dagli elenchi del modello, la compensazione, il cavo flessibile.",
+  "n_cat": "Fune dagli elenchi",
+  "cat_mano": "Inserita a mano (diametro, carico di rottura, massa)",
+  "compTipo": "Tipo di compensazione",
+  "comp_nessuna": "Nessuna",
+  "comp_funi": "Funi",
+  "comp_catene": "Catene",
+  "compFune": "Fune di compensazione",
+  "compCatena": "Catena di compensazione",
+  "compN": "Numero funi/catene di compensazione",
+  "compMt": "Massa tenditore compensazione",
+  "compDt": "Diametro puleggia tenditore compensazione",
+  "compCwt": "Catene da metà corsa al contrappeso",
+  "caviQ": "Massa del cavo flessibile",
+  "aRidotta": "Decelerazione ridotta nella D.1 (a = 0,5 m/s²)"
 }

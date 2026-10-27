@@ -13,10 +13,11 @@ import { PARTI } from './lift/collaudo';
 import { TIPI_INTERVENTO } from './lift/intervento';
 import { isSurveyField, surveySchema, type SurveyField } from './room/survey';
 import { rtDraftSchema } from './rt/input';
+import { rt2DraftSchema } from './rt2/input';
 
 /** "lift" (the Progetto's drawing), "calc" («Calcolo argano»), "room:<calculation>" (its machine room's survey), "rt"
- *  (the installation's relazione tecnica di modifica, round 49). */
-export const draftScopeSchema = z.union([z.literal('lift'), z.literal('calc'), z.literal('rt'), z.string().regex(/^room:[a-z0-9]{1,40}$/i)]);
+ *  (the installation's relazione tecnica di modifica, round 49), "rt2" (the same after the owner's model, round 52). */
+export const draftScopeSchema = z.union([z.literal('lift'), z.literal('calc'), z.literal('rt'), z.literal('rt2'), z.string().regex(/^room:[a-z0-9]{1,40}$/i)]);
 export type DraftScope = z.infer<typeof draftScopeSchema>;
 
 /** The fields of the form still marked «dal rilievo» (round 44): the start reads them again only where the value is
@@ -53,9 +54,12 @@ export const surveyDraftSchema = z.object({
 export const rtDraftDataSchema = z.object({ inputs: rtDraftSchema, revisionOf: z.string().regex(/^[a-z0-9]{1,40}$/i).optional() }).strict();
 export type RtDraftData = z.infer<typeof rtDraftDataSchema>;
 
+export const rt2DraftDataSchema = z.object({ inputs: rt2DraftSchema, revisionOf: z.string().regex(/^[a-z0-9]{1,40}$/i).optional() }).strict();
+export type Rt2DraftData = z.infer<typeof rt2DraftDataSchema>;
+
 /** The schema of a scope's draft. */
 export const draftSchemaOf = (scope: DraftScope) => (scope === 'lift' ? liftDraftSchema : scope === 'calc' ? calcDraftSchema : scope === 'rt' ? rtDraftDataSchema
-  : surveyDraftSchema);
+  : scope === 'rt2' ? rt2DraftDataSchema : surveyDraftSchema);
 
 /** The largest draft kept [characters of its JSON]. */
 export const DRAFT_MAX = 200_000;

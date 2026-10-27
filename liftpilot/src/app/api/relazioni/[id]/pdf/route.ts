@@ -7,6 +7,9 @@ import { getRt } from '@/server/rt/queries';
 import { fascicolo, keepRtPdf, keptRtPdf } from '@/server/rt/pdf';
 import { rtFileName } from '@/server/rt/file-name';
 import { rtRecord } from '@/server/rt/record';
+import { rt2Record } from '@/server/rt2/record';
+import { keepRt2Pdf } from '@/server/rt2/pdf';
+import { isRt2 } from '@/lib/rt2/version';
 import { RendererBusy, busyResponse } from '@/lib/report/render';
 import { ANSWER } from '@/lib/answers';
 
@@ -32,9 +35,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if (!r) return text(404, ANSWER.notFound);
     let body = await keptRtPdf(r.id);
     if (!body) {
-      const rec = await rtRecord(r);
-      if (!rec.ok) return text(409, ANSWER.stale);
-      body = await keepRtPdf(r.id, rec.composed.doc, r.createdAt);
+      // after the owner's model (round 52) or the first RT: each made again by its own engine and renderer
+      if (isRt2(r.engineVersion)) {
+        const rec = rt2Record(r);
+        if (!rec.ok) return text(409, ANSWER.stale);
+        body = await keepRt2Pdf(r.id, rec.composed.doc, r.createdAt);
+      } else {
+        const rec = await rtRecord(r);
+        if (!rec.ok) return text(409, ANSWER.stale);
+        body = await keepRtPdf(r.id, rec.composed.doc, r.createdAt);
+      }
     }
     const out = await fascicolo(r, body);
     await audit({ companyId: user.companyId, userId: user.id, action: 'REPORT_DOWNLOADED', entity: 'TechnicalReport', entityId: r.id, meta: { number: r.number, revision: r.revision } });

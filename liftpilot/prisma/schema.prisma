@@ -1085,8 +1085,9 @@ model TechnicalReportCounter {
 }
 
 /// An issued relazione tecnica di modifica, immutable like a drawing set: the number YY-NNN of the company and year, the
-/// revision (0 = first issue; a revision is a new row with the same number), the base it is made from (a room design or
-/// a lift design — exactly one, CHECK — and its calculation), the inputs, the registry, the project, the installation
+/// revision (0 = first issue; a revision is a new row with the same number), the base it is made from (engine 1.x: a room
+/// design or a lift design — exactly one — and its calculation; engine 2.x, after the owner's model, round 52: the
+/// calculation alone; never both designs — CHECK, migration 31), the inputs, the registry, the project, the installation
 /// and the company as printed, the derived results, the RT engine's version and the SHA-256 of the canonical snapshot.
 model TechnicalReport {
   id            String                      @id @default(cuid())

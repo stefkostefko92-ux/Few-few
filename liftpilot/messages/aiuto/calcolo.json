@@ -103,5 +103,15 @@
   "norma_ntc2018": "Norme tecniche per le costruzioni 2018: carichi sulle strutture dell’edificio e azioni sismiche. Spunta quando l’intervento cambia i carichi sulle strutture o il progetto chiede la verifica sismica.",
   "label": "Facoltativa, fino a 120 caratteri (per esempio «variante D 600»): compare nel titolo del calcolo salvato e nelle liste. Al salvataggio il server ricalcola tutto e conserva il calcolo con la sua impronta.",
   "review_note": "Facoltativa, fino a 1000 caratteri: resta con il tuo visto, il tuo nome e la data. Il visto è un controllo interno, non una firma.",
-  "progetto": "Il Progetto disegna su questo calcolo. Con il rilievo del locale macchina il software sistema l’argano sulle calate esistenti, verifica locale, basamento e calate e prepara le tavole. Nel progetto del vano portata, velocità, argano, funi e collaudo vengono dal calcolo, la geometria dal disegno."
+  "progetto": "Il Progetto disegna su questo calcolo. Con il rilievo del locale macchina il software sistema l’argano sulle calate esistenti, verifica locale, basamento e calate e prepara le tavole. Nel progetto del vano portata, velocità, argano, funi e collaudo vengono dal calcolo, la geometria dal disegno.",
+  "n_cat": "La fune dagli elenchi della relazione tecnica (Donati, Telcal): sceglila e diametro, carico di rottura e massa al metro si riempiono da soli. Se cambi uno di questi valori a mano, la fune torna «inserita a mano».",
+  "compTipo": "La compensazione dell’impianto: nessuna, funi o catene appese tra cabina e contrappeso. Serve alle verifiche delle funi della relazione tecnica (tensioni e stabilità allo scorrimento).",
+  "compFune": "La fune di compensazione dall’elenco: diametro in mm e massa al metro in kg/m.",
+  "compCatena": "La catena di compensazione dall’elenco: diametro della maglia in mm e massa al metro in kg/m.",
+  "compN": "Quante funi o catene di compensazione ci sono.",
+  "compMt": "La massa del tenditore della compensazione in kg: metà si conta sul lato cabina, metà sul lato contrappeso. Senza tenditore lascia 0.",
+  "compDt": "Il diametro della puleggia del tenditore in mm: il rapporto con il diametro della fune di compensazione deve essere almeno 30.",
+  "compCwt": "Spunta se le catene pendono da metà corsa al solo contrappeso: allora sul lato contrappeso si conta metà della loro massa e nessuna sul lato cabina.",
+  "caviQ": "La massa al metro del cavo flessibile in kg/m, contata su metà corsa nella tensione lato cabina in alto. Vuoto: 0,8 kg/m.",
+  "aRidotta": "Spunta solo se la decelerazione di frenata è ridotta (a = 0,5 m/s²): il coefficiente C1 della D.1 scende allora al minimo della fascia di velocità, mai sotto."
 }

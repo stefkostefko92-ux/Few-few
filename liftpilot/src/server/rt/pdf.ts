@@ -30,13 +30,13 @@ async function pagesOf(pdf: Uint8Array): Promise<number> {
   return (await PDFDocument.load(pdf, { updateMetadata: false })).getPageCount();
 }
 
-/** The body rendered (dated `issuedAt`, the RT's issue) and kept, once per RT at a time; when another process kept it
- *  first, that one. */
-export function keepRtPdf(reportId: string, doc: ReportDoc<PdfBlock>, issuedAt: Date): Promise<Uint8Array<ArrayBuffer>> {
+/** The body made by `make` and kept, once per RT at a time; when another process kept it first, that one (the first RT's
+ *  and the one after the owner's model, round 52, each with its renderer). */
+export function keepPdfWith(reportId: string, make: () => Promise<Buffer>): Promise<Uint8Array<ArrayBuffer>> {
   const running = inFlight.get(reportId);
   if (running) return running;
   const job = (async () => {
-    const pdf = new Uint8Array(await renderPdf(doc, issuedAt));
+    const pdf = new Uint8Array(await make());
     const sha256 = createHash('sha256').update(pdf).digest('hex'), pages = await pagesOf(pdf);
     const made = await prisma.technicalReportPdf.createMany({ data: [{ reportId, sha256, pages, data: pdf }], skipDuplicates: true });
     if (made.count) return pdf;
@@ -46,6 +46,10 @@ export function keepRtPdf(reportId: string, doc: ReportDoc<PdfBlock>, issuedAt: 
   inFlight.set(reportId, job);
   return job;
 }
+
+/** The body rendered (dated `issuedAt`, the RT's issue) and kept. */
+export const keepRtPdf = (reportId: string, doc: ReportDoc<PdfBlock>, issuedAt: Date): Promise<Uint8Array<ArrayBuffer>> =>
+  keepPdfWith(reportId, () => renderPdf(doc, issuedAt));
 
 /** After an issue or a revision, once the answer is sent: the body kept (with the renderers busy, the first download
  *  keeps it). */
@@ -63,6 +67,7 @@ export async function keptRtPdf(reportId: string): Promise<Uint8Array<ArrayBuffe
 
 type StampRow = Pick<RtRow, 'number' | 'revision' | 'companyName' | 'createdAt'> & {
   projectData: unknown;
+  calculation?: { sha256: string } | null;
   roomDesign: { sha256: string; calculation: { sha256: string } } | null;
   liftDesign: { sha256: string; calculation: { sha256: string } } | null;
 };
@@ -75,7 +80,7 @@ export const projectName = (pd: unknown): string => (pd && typeof pd === 'object
  *  the PDF's information, read from the record. */
 export function stampOf(r: StampRow): { header: string; code: string; notice: string; info: { title: string; author: string; subject: string; created: Date } } {
   const name = projectName(r.projectData), short = name.length > 60 ? `${name.slice(0, 59)}…` : name, numero = `${numeroRt(r.number)} R${r.revision}`;
-  const calc = r.roomDesign?.calculation ?? r.liftDesign?.calculation;
+  const calc = r.roomDesign?.calculation ?? r.liftDesign?.calculation ?? r.calculation;
   const impronte = [...(calc ? [`calcolo ${sha16(calc.sha256)}…`] : []), ...(r.roomDesign ? [`rilievo ${sha16(r.roomDesign.sha256)}…`] : []),
     ...(r.liftDesign ? [`progetto ${sha16(r.liftDesign.sha256)}…`] : [])].join(' · ');
   return {

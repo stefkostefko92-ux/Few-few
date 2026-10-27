@@ -7,6 +7,7 @@ import path from 'node:path';
 import { env } from '../env';
 import type { DrawingDoc } from '@/drawing';
 import type { PdfBlock, ReportDoc } from './model';
+import type { FascicoloDoc } from './rt2/model';
 import { rendererInput } from './payload';
 import { ANSWER } from '@/lib/answers';
 
@@ -76,6 +77,11 @@ export const busyResponse = (): Response => new Response(ANSWER.busy, {
 export const renderPdf = (doc: ReportDoc<PdfBlock>, at: Date): Promise<Buffer> =>
   runRenderer('relazione.py', rendererInput(doc as ReportDoc, at));
 
+/** The relazione tecnica di modifica after the owner's model (round 52): report/fascicolo.py lays out its blocks
+ *  (src/lib/report/rt2/model.ts); the PDF dated `at`, its record's date. */
+export const renderFascicolo = (doc: FascicoloDoc, at: Date): Promise<Buffer> =>
+  runRenderer('fascicolo.py', JSON.stringify({ ...doc, meta: { ...doc.meta, created: at.toISOString() } }));
+
 /** The drawing set: report/tavole.py paints the sheets laid out by the drawing kernel; the PDF dated `at` (the set's
  *  issue, a draft's record). */
 export const renderTavole = (doc: DrawingDoc, at: Date): Promise<Buffer> => runRenderer('tavole.py', rendererInput(doc, at));
@@ -93,7 +99,7 @@ const isPdf = (b: Buffer): boolean => b.subarray(0, 5).toString('latin1') === '%
 
 // A renderer of report/ draws the model (JSON on stdin: payload.ts; the document on stdout, which `ok` recognises); no
 // shell, fixed arguments, bounded time and size, a few at a time.
-async function runRenderer(name: 'relazione.py' | 'tavole.py' | 'raster.py', input: string, ok: (b: Buffer) => boolean = isPdf): Promise<Buffer> {
+async function runRenderer(name: 'relazione.py' | 'tavole.py' | 'raster.py' | 'fascicolo.py', input: string, ok: (b: Buffer) => boolean = isPdf): Promise<Buffer> {
   await slot();
   try {
     const { PYTHON_BIN, REPORT_FONT_DIR } = env();

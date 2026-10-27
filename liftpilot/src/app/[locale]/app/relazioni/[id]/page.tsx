@@ -14,6 +14,9 @@ import { canonHash } from '@/lib/canon-hash';
 import { outdated } from '@/server/records';
 import { getRt, listRtRevisions } from '@/server/rt/queries';
 import { rtRecord } from '@/server/rt/record';
+import { rt2Record } from '@/server/rt2/record';
+import { isRt2 } from '@/lib/rt2/version';
+import { titoloComponente } from '@/lib/rt2/titoli';
 import Crumbs from '@/components/Crumbs';
 import VerdictPill from '@/components/VerdictPill';
 import SectionTitle from '@/components/project/SectionTitle';
@@ -25,6 +28,10 @@ export async function generateMetadata() {
 }
 
 const revisioni = z.array(z.object({ mark: z.string(), text: z.string(), date: z.string() }).passthrough());
+const risultati2 = z.object({
+  richiesti: z.array(z.object({ id: z.string(), motivi: z.array(z.object({ testo: z.string() }).passthrough()) }).passthrough()),
+  componenti: z.array(z.string()),
+}).passthrough();
 const risultati = z.object({
   sezioni: z.array(z.object({ key: z.string(), automatica: z.boolean(), motivi: z.array(z.object({ testo: z.string(), clausola: z.string() }).passthrough()) }).passthrough()),
   documenti: z.array(z.object({ id: z.string(), titolo: z.string(), stato: z.string(), consigliato: z.boolean(), allegato: z.object({ position: z.number() }).passthrough().optional() }).passthrough()),
@@ -42,8 +49,8 @@ export default async function RelazionePage({ params }: { params: Promise<{ loca
   const rid = idSchema.safeParse(id), r = rid.success ? await getRt(user, rid.data) : null;
   if (!r) notFound();
   const [t, tp, history] = await Promise.all([getTranslations('rt'), getTranslations('projects'), listRtRevisions(user, r.year, r.seq)]);
-  const fd = dateFormat(locale), old = outdated.rt(r), riprodotta = !old && (await rtRecord(r)).ok;
-  const res = risultati.safeParse(r.results), revs = revisioni.safeParse(r.revisions);
+  const v2 = isRt2(r.engineVersion), fd = dateFormat(locale), old = outdated.rt(r), riprodotta = !old && (v2 ? rt2Record(r).ok : (await rtRecord(r)).ok);
+  const res = v2 ? null : risultati.safeParse(r.results), res2 = v2 ? risultati2.safeParse(r.results) : null, revs = revisioni.safeParse(r.revisions);
   const plantMoved = plantDiff(plantData(r.plant), plantData(r.project.plant)).length > 0;
   const anagMoved = canonHash(anagraficaData(r.anagrafica)) !== canonHash(anagraficaData(r.project.anagrafica));
   const ultima = history[history.length - 1]?.id === r.id, live = !r.project.archivedAt;
@@ -71,12 +78,28 @@ export default async function RelazionePage({ params }: { params: Promise<{ loca
           {r.roomDesign ? <Link href={`/app/room-designs/${r.roomDesign.id}`}>{t('base.rilievo', { data: fd.dateTime(r.roomDesign.createdAt) })}</Link> : null}
           {r.liftDesign ? <Link href={`/app/lift-designs/${r.liftDesign.id}`}>{t('base.progetto', { data: fd.dateTime(r.liftDesign.createdAt) })}</Link> : null}
           {base ? <> · <Link href={`/app/calculations/${r.calculationId}`}>{t('base.calcolo', { data: fd.dateTime(base.calculation.createdAt) })}</Link></> : null}
+          {!base && r.calculation ? <Link href={`/app/calculations/${r.calculationId}`}>{t('base.calcolo', { data: fd.dateTime(r.calculation.createdAt) })}</Link> : null}
         </dd></div>
         <div><dt>{t('pagina.motore')}</dt><dd className="num">{r.engineVersion}</dd></div>
         <div className="wide"><dt>{t('pagina.impronta')}</dt><dd className="hash">{r.sha256}</dd></div>
         {r.pdf ? <div className="wide"><dt>{t('pagina.pdf')}</dt><dd className="hash">{t('pagina.pdfConservato', { pagine: r.pdf.pages })} · {r.pdf.sha256}</dd></div> : null}
       </dl>
-      {res.success ? (
+      {res2?.success ? (
+        <section className="panel flex flex-col gap-3" aria-labelledby="rt-p-componenti">
+          <SectionTitle id="rt-p-componenti" icon="list-checks">{t('pagina.componenti')}</SectionTitle>
+          <ul className="rec-list">
+            {res2.data.componenti.map((c) => {
+              const req = res2.data.richiesti.find((x) => x.id === c);
+              return (
+                <li key={c}><b>{titoloComponente(c)}</b>
+                  <span className="chip">{t(req ? 'sezioni.automatica' : 'sezioni.manuale')}</span>
+                  {req ? <span className="rec-text">{req.motivi.map((m) => m.testo).join('; ')}</span> : null}</li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
+      {res?.success ? (
         <section className="panel flex flex-col gap-3" aria-labelledby="rt-p-sezioni">
           <SectionTitle id="rt-p-sezioni" icon="list-checks">{t('pagina.sezioni')}</SectionTitle>
           <ul className="rec-list">
@@ -99,7 +122,7 @@ export default async function RelazionePage({ params }: { params: Promise<{ loca
             ))}
           </ol>
         ) : <p className="note">{t('allegati.vuoto')}</p>}
-        {res.success && res.data.documenti.some((d) => d.stato === 'da_allegare' && !d.consigliato) ? (
+        {res?.success && res.data.documenti.some((d) => d.stato === 'da_allegare' && !d.consigliato) ? (
           <>
             <h3>{t('pagina.daAllegare')}</h3>
             <ul className="rt-list-plain">{res.data.documenti.filter((d) => d.stato === 'da_allegare' && !d.consigliato).map((d) => <li key={d.id}>{d.titolo}</li>)}</ul>
