@@ -30,7 +30,9 @@ export const LOCKS = [":(exclude,glob)**/package-lock.json", ":(exclude,glob)**/
 export const LAYER = [".claude", "tools"]; // агентският слой — винаги от HEAD
 // Само четящи команди: прегледът вижда историята и пуска статичния скенер и верификатора, нищо друго.
 export const REVIEW_ALLOWED = [...ALLOWED, "Bash(git diff *)", "Bash(git log *)", "Bash(git show *)",
-  "Bash(bash tools/code/scan.sh *)", "Bash(node tools/agents/verifier.mjs *)"];
+  "Bash(bash tools/code/scan.sh *)", "Bash(node tools/agents/verifier.mjs *)",
+  // Регистърът, само четене: „махнат @types пакет чупи build“ се доказва от самия пакет (27.10: #327/#329).
+  "Bash(npm view *)", "Bash(npm pack * --dry-run*)"];
 
 // Фокусът на всеки агент при преглед на PR (едно изречение — останалото е в дефиницията му).
 export const FOCUS = {

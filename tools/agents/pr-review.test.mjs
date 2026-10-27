@@ -59,5 +59,5 @@ test("поуките от прегледа стигат до учебния hook
 test("прегледът получава само четящи Bash команди", () => {
   const bash = REVIEW_ALLOWED.filter((a) => a.startsWith("Bash"));
   assert.ok(bash.length >= 3);
-  for (const b of bash) assert.match(b, /^Bash\((git (diff|log|show)|bash tools\/code\/scan\.sh|node tools\/agents\/verifier\.mjs) \*\)$/);
+  for (const b of bash) assert.match(b, /^Bash\((git (diff|log|show)|bash tools\/code\/scan\.sh|node tools\/agents\/verifier\.mjs|npm view|npm pack \* --dry-run)\s?\*\)$/);
 });
