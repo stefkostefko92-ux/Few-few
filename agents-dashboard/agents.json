@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 422
+        "lessons": 423
       },
       "evolution": [
         {
@@ -632,9 +632,20 @@
           "date": "2026-10-27",
           "event": "v33.4 — учене",
           "detail": "Научи: Условията на Gemini API позволяват само Paid Services, когато API клиент се предоставя … (+2 още)"
+        },
+        {
+          "version": "33.5.0",
+          "date": "2026-10-27",
+          "event": "v33.5 — учене",
+          "detail": "Научи: ЗЕТ чл. 4а, ал. 1 транспонира ePrivacy чл. 5(3) като „информация по чл. 13 GDPR + възмо…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „ЗЕТ чл. 4а, ал. 1 транспонира ePrivacy чл. 5(3) като „информация по чл. 13 GDPR + възмо…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
