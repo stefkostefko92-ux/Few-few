@@ -9213,7 +9213,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 227
+        "lessons": 228
       },
       "evolution": [
         {
@@ -9569,9 +9569,20 @@
           "date": "2026-10-25",
           "event": "v21.2 — учене",
           "detail": "Научи: Stripe Checkout Session при абонамент с безплатен trial има payment_status=paid (обрабо… (+2 още)"
+        },
+        {
+          "version": "21.3.0",
+          "date": "2026-10-27",
+          "event": "v21.3 — учене",
+          "detail": "Научи: panev има Stripe само с еднократно плащане (checkout mode payment), без абонаментен пот…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „panev има Stripe само с еднократно плащане (checkout mode payment), без абонаментен пот…\""
+        },
         {
           "date": "2026-10-25",
           "type": "learning",
