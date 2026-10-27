@@ -7594,7 +7594,7 @@
           "prs-eth/point2cad + mikacuy/point2cyl — сегментация в призматични/freeform features",
           "QuickSurface Pro docs + easycomposites — числа за draft/offset/фланци"
         ],
-        "lessons": 187
+        "lessons": 188
       },
       "evolution": [
         {
@@ -8010,9 +8010,20 @@
           "date": "2026-10-25",
           "event": "v20.3 — учене",
           "detail": "Научи: trimesh pyproject.toml (main, версия 5.2.0) има единствена твърда зависимост numpy>=1.2…"
+        },
+        {
+          "version": "20.4.0",
+          "date": "2026-10-27",
+          "event": "v20.4 — учене",
+          "detail": "Научи: clean_and_validate.py смята unsigned closest-point разстояние (без знак, без σ/3σ, без …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „clean_and_validate.py смята unsigned closest-point разстояние (без знак, без σ/3σ, без …\""
+        },
         {
           "date": "2026-10-25",
           "type": "learning",
