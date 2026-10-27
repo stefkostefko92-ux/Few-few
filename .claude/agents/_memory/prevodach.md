@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-27:** Глосарът няма одобрени BG/EN/IT редове за DNR и за инсулинозависим диабет, а каноничната BG форма за спешен контакт там е „Спешен контакт“ (не „Контакт при спешност“) _(превод на спешния профил на medqr към IT/EN; verified; .claude/agents/_shared/glossary.md:37 (Grep за DNR|реаним|insulin|инсулин върху glossary.md = 0 съвпадения))_
 - **2026-10-27:** medqr записва избора „Не знам“ за кръвна група като суров BG низ и emergency/sos/dashboard го показват без clin(), така че EN режимът показва кирилица; поправката е clin(profile.blood_type) _(medqr локализация на кръвна група (EN и бъдещ IT); verified; medqr/src/views/profile-edit.ejs:37; medqr/src/views/emergency.ejs:132; medqr/src/views/sos.ejs:21; medqr/src/views/dashboard.ejs:27)_
 - **2026-10-27:** medqr medical.js labelOf връща BG за всеки език, различен от en, и ALLERGIES/CONDITIONS имат само bg/en полета — IT не може да се активира, преди тези списъци да имат проверен IT превод _(въвеждане на нов език в medqr; verified; medqr/src/medical.js:274-277)_
 - **2026-10-27:** glossary-check.mjs парсва като одобрени само редове от таблици с точно 3 колони (BG|EN|IT); редове с 4 колони (напр. LiftPilot) се пропускат _(добавяне на чакащи/неодобрени термини в глосара без да станат „одобрени“; verified; tools/i18n/glossary-check.mjs:22)_
