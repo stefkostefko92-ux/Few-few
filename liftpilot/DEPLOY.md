@@ -186,17 +186,18 @@ docker exec liftpilot-app-1 npm run engine:notice -- --send --motivo "<какв�
 и relazioni, за да се свалят и след смяната). **Писма няма** — нито `engine:notice --send`, нито други (решение на
 собственика); `engine:notice` без `--send` може да покаже кои фирми имат документи с друг резултат.
 
-0. **Преди:** бекъп (скриптът го прави) и `pdf:keep`:
+0. **Преди:** бекъп (скриптът го прави) и `pdf:keep` — по името на контейнера, без папката на release-а (на продукцията
+   на 2026-10-27 `cd /opt/few-few/liftpilot-current` падна — „Папката на работещия LiftPilot“):
    ```bash
-   cd /opt/few-few/liftpilot-current && docker compose exec -T app npm run pdf:keep -- --dry-run
-   docker compose exec -T app npm run pdf:keep
+   docker exec liftpilot-app-1 npm run pdf:keep -- --dry-run
+   docker exec liftpilot-app-1 npm run pdf:keep
    ```
 1. **Деплоят:** `REF=<SHA на кръг 52> PROJECTS="liftpilot"` (с `fetch-deploy.sh` от същия SHA). Проверка:
    ```bash
    curl -fsS http://127.0.0.1:4330/api/health
    docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc 'SELECT migration_name FROM "_prisma_migrations" ORDER BY finished_at DESC LIMIT 2'   # 31_rt_modello, 30_modalita
    docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc "SELECT conname FROM pg_constraint WHERE conname LIKE 'TechnicalReport_%base%'"   # TechnicalReport_base_check
-   docker compose exec app test -f report/fascicolo.py && echo fascicolo ok
+   docker exec liftpilot-app-1 test -f report/fascicolo.py && echo fascicolo ok
    ```
 2. **След:** издадена relazione 1.x се сваля (пазеното тяло); нова relazione — от «Relazione tecnica» на съоръжението по
    стъпките, с «BOZZA» в прегледа; записите „da aggiornare“ се обновяват с «Aggiorna con il software attuale».
