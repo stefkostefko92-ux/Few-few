@@ -100,7 +100,7 @@ maxTurns: 80
 ## Хардънинг в кода и пример
 - **Хардънингът вече е в скрипта:** `deploy/autodeploy.sh` прави по избор **sha256 проверка** на архива (`<архив>.sha256`), **авто-засича порта** от `zabobovdol/.env` (`HTTP_PORT`) и пази rollback. Поддържай кода, не дублирай съвет в текст.
 - **Пример (съкратено):** „Преди миграция: `pg_dump` бекъп → `docker compose up -d --build` → изчакай health (2xx **+ маркер на приложението** в тялото; 3xx = провал) → при провал rollback към предишния release. TLS: ARI авто-подновяване; нищо разрушително без потвърждение."
-- посл. проверено: 2026-10-27 (sha256 гейт `deploy/autodeploy.sh:224-230`; порт от `HTTP_PORT` `:328-336`; health с маркер `:1745-1765`).
+- посл. проверено: 2026-10-27 (sha256 гейт `deploy/autodeploy.sh:224-230`; порт от `HTTP_PORT` `:328-336`; health с маркер `:1766-1798`).
 
 ## IaC, бекъпи, мониторинг
 - **IaC:** `tools/vps/ansible/site.yml` (rebuildable хост, не snowflake). **Бекъп+restore:** `bash tools/vps/backup-verify.sh verify` (restic check + **test-restore** — бекъп без тестван restore не е бекъп). **Мониторинг:** `tools/vps/monitoring/docker-compose.monitoring.yml` (Beszel + Uptime Kuma + алерти).
