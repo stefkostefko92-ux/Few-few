@@ -16704,7 +16704,7 @@
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 219
+        "lessons": 220
       },
       "evolution": [
         {
@@ -16802,9 +16802,20 @@
           "date": "2026-10-27",
           "event": "v20.9 — учене",
           "detail": "Научи: PR 232 (portfolio.yml) е нов workflow с permissions contents:read, path филтри, concurr…"
+        },
+        {
+          "version": "21.0.0",
+          "date": "2026-10-27",
+          "event": "v21.0 — учене",
+          "detail": "Научи: PR 137 (erp-ascensori.yml) пак следва шаблона на новите продуктови workflow-и, с минима…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „PR 137 (erp-ascensori.yml) пак следва шаблона на новите продуктови workflow-и, с минима…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
