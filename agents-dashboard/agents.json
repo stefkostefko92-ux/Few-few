@@ -10083,7 +10083,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 247
+        "lessons": 249
       },
       "evolution": [
         {
@@ -10511,9 +10511,20 @@
           "date": "2026-10-27",
           "event": "v23.2 — учене",
           "detail": "Научи: Официалният Stripe fulfillment гайд иска една идемпотентна fulfill_checkout(session_id)…"
+        },
+        {
+          "version": "23.4.0",
+          "date": "2026-10-27",
+          "event": "v23.4 — учене",
+          "detail": "Научи: linketto eraseUser (admin изтриване на акаунт) не спира Stripe абонамента на плана, а п… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „linketto eraseUser (admin изтриване на акаунт) не спира Stripe абонамента на плана, а п…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
