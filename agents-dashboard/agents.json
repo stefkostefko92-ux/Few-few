@@ -1222,7 +1222,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 573
+        "lessons": 574
       },
       "evolution": [
         {
@@ -2220,9 +2220,20 @@
           "date": "2026-10-27",
           "event": "v45.5 — учене",
           "detail": "Научи: Тестовете tools/**/*.test.mjs (вкл. tools/vps/autodeploy-*.test.mjs) се пускат в CI от …"
+        },
+        {
+          "version": "45.6.0",
+          "date": "2026-10-27",
+          "event": "v45.6 — учене",
+          "detail": "Научи: deploy/autodeploy.sh deploy_vizitka не пипа nginx (nginx се появява само при panev и ad…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „deploy/autodeploy.sh deploy_vizitka не пипа nginx (nginx се появява само при panev и ad…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
