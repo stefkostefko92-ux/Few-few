@@ -14363,7 +14363,7 @@
           "ЗДДС (ставки 20%/9%, чл. 114), ЗЗП (обозначаване на цени), GDPR (чл. 6), ЗСч (чл. 12), КТ (чл. 207)",
           "Код: CSPos/src/lib/{money,unp,auth,settings,promotions}.ts + src/lib/fiscal/* + src/lib/terminal/*"
         ],
-        "lessons": 168
+        "lessons": 169
       },
       "evolution": [
         {
@@ -14449,9 +14449,20 @@
           "date": "2026-10-27",
           "event": "v21.6 — учене",
           "detail": "Научи: ErpNet.FP PROTOCOL.md дава \"ok\": \"true\" (низ) в примера за отговор на бон и ok: true (б…"
+        },
+        {
+          "version": "21.7.0",
+          "date": "2026-10-27",
+          "event": "v21.7 — учене",
+          "detail": "Научи: ErpNet.FP връща \"ok\" при бон като НИЗ (\"true\"/\"false\"), а при status като boolean; пров…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „ErpNet.FP връща \"ok\" при бон като НИЗ (\"true\"/\"false\"), а при status като boolean; пров…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
