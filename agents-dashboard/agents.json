@@ -1244,7 +1244,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 596
+        "lessons": 597
       },
       "evolution": [
         {
@@ -2326,9 +2326,20 @@
           "date": "2026-10-27",
           "event": "v47.8 — учене",
           "detail": "Научи: В chatchat PATCH /cases/:id/context записва в хронологията суровия контекст (to: body.d… (+2 още)"
+        },
+        {
+          "version": "47.9.0",
+          "date": "2026-10-27",
+          "event": "v47.9 — учене",
+          "detail": "Научи: В deploy/cert-watch/cert-watch.sh pid файлът на nginx се touch-ва безусловно след reloa…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „В deploy/cert-watch/cert-watch.sh pid файлът на nginx се touch-ва безусловно след reloa…\""
+        },
         {
           "date": "2026-10-27",
           "type": "quarantine",

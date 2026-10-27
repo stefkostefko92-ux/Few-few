@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-27:** В deploy/cert-watch/cert-watch.sh pid файлът на nginx се touch-ва безусловно след reload_nginx, затова провален reload губи сигнала stale от следващото пускане _(ревю на cert-watch и логика за презареждане на nginx в deploy/; verified; .pr-review/292.diff:190-193)_
 - **2026-10-27:** В chatchat PATCH /cases/:id/context записва в хронологията суровия контекст (to: body.data.context), а самия случай маскиран с redactContext _(ревю на PII и хронологията в chatchat; verified; chatchat/src/routes/cases.ts:183-188)_
 - **2026-10-27:** В chatchat eraseSubject трие само известията на изтрития като получател, а payload.actor.name в известията на другите остава _(ревю на GDPR изтриване и известия в chatchat; verified; chatchat/src/services/subject.ts:209; chatchat/src/services/collab/messages.ts:158)_
 - **2026-10-27:** Клонът на PR 294 (chatchat) изостава от main; git diff main показва като изтрити одит поправките в autodeploy.sh, а собствената промяна се вижда с git diff main...HEAD _(PR ревю в live-run worktree при стар клон; verified; git diff main -- deploy/autodeploy.sh срещу git diff main...HEAD -- deploy/autodeploy.sh)_
