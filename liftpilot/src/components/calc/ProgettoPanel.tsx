@@ -1,8 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import SectionTitle from '@/components/project/SectionTitle';
+import { testoAiuto } from '@/lib/aiuto';
 import { dateFormat } from '@/lib/dates';
 import type { Disegno } from '@/lib/lift/intervento';
+import AIUTO from '../../../messages/aiuto/calcolo.json';
+import { ConAiuto } from '../shaft/Campo';
 
 interface Rec {
   id: string;
@@ -16,7 +19,8 @@ interface Rec {
  *  machine room's survey offered on an existing lift (it does not verify the parts in the shaft). The machine rooms
  *  surveyed and the lift designs drawn on this calculation are listed; the buttons are for whoever draws the project,
  *  on a live installation and a calculation the running engine reproduces; a role without that right reads whose the
- *  step is (`handoff`, as on the installation's page). */
+ *  step is (`handoff`, as on the installation's page). Round 52: the leads say what the Progetto is, the «?» beside the
+ *  title how it uses the calculation. */
 export default async function ProgettoPanel({ calcId, projectId, disegno, repl, below, rooms, progetti, draws, handoff = false, locale }: {
   calcId: string;
   projectId: string;
@@ -48,7 +52,9 @@ export default async function ProgettoPanel({ calcId, projectId, disegno, repl, 
   ) : null);
   return (
     <section className="panel" aria-labelledby="calc-progetto">
-      <SectionTitle id="calc-progetto" icon="building-gear">{t('title')}</SectionTitle>
+      <ConAiuto aiuto={testoAiuto(AIUTO, 'progetto')} nome={t('title')} block>
+        <SectionTitle id="calc-progetto" icon="building-gear">{t('title')}</SectionTitle>
+      </ConAiuto>
       <p className="note">{disegno === 'locale' ? t('leadLocale') : below && repl ? tm('calcBelow') : t('leadVano')}</p>
       {list(t('locali'), (id) => `/app/room-designs/${id}`, rooms)}
       {list(t('progetti'), (id) => `/app/lift-designs/${id}`, progetti)}

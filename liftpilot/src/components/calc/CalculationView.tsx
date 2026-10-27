@@ -3,8 +3,8 @@
 // A saved calculation, shown with the same components as the calculator (read only): the browser recomputes
 // the stored values with the same engine; the server has already checked that the stored hash is reproduced. One made
 // from a shaft design (`design`) proposes on a direct pull only the sheave its plan hangs the falls from, as its
-// relazione (lift/direct.ts).
-import { useMemo, useState } from 'react';
+// relazione (lift/direct.ts). Round 52: its results open in the workspace's mode, as the calculator's (ModoCalc.tsx).
+import { useMemo } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
@@ -19,6 +19,7 @@ import Diagram from './Diagram';
 import Verdict from './Verdict';
 import Results from './Results';
 import LegalNotice from './LegalNotice';
+import { ModoSwitch, useModo } from './ModoCalc';
 
 /** `id`: the anchor of its checks — the verdict that names those not passed and those with a warning (the result pill's
  *  panel leads there). `tipo`: the type declared with it (round 45), named by the copied summary; `resta`: a
@@ -32,17 +33,11 @@ export default function CalculationView({ id, values, brand, collaudo, design = 
   const a = useMemo(() => analyse(values, design), [values, design]);
   // D.1 and D.2 with the ratio of the loads changed, counted in its result as its save counted them (calc-verdict.ts)
   const extra = useMemo(() => calcExtra(collaudo, values), [collaudo, values]);
-  const [mode, setMode] = useState<'simple' | 'expert'>('simple');
-  const { t } = P;
+  const [mode, setMode] = useModo();
   return (
     <div className={`calc${mode === 'simple' ? ' simple' : ''}`}>
-      <div className="flex justify-end">
-        <div className="seg" role="radiogroup" aria-label={t('aria_mode')}>
-          <input type="radio" name="mode" id="v-simple" checked={mode === 'simple'} onChange={() => setMode('simple')} />
-          <label htmlFor="v-simple">{t('mode_simple')}</label>
-          <input type="radio" name="mode" id="v-expert" checked={mode === 'expert'} onChange={() => setMode('expert')} />
-          <label htmlFor="v-expert">{t('mode_expert')}</label>
-        </div>
+      <div className="calc-top flex justify-end">
+        <ModoSwitch P={P} mode={mode} setMode={setMode} id="v" />
       </div>
       <LegalNotice P={P} />
       <div className="layout readonly">

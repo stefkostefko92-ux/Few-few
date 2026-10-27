@@ -2,13 +2,16 @@
 
 // The loads the last report documents (Q, P, counterweight) against the design's: their change, under the part of UNI
 // 10411 of the test, can bring the checks of the load (src/lib/lift/modifica.ts variazioneCarico). Typed as text; stored
-// once all three are numbers.
+// once all three are numbers. Round 52: each with its «?» (messages/aiuto/calcolo.json), a label of its own (shaft/Campo).
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FormValues } from '@/calc/types';
+import { testoAiuto } from '@/lib/aiuto';
 import { KL, type Collaudo } from '@/lib/lift';
 import { carichiOf, variazioneCarico, type Carichi } from '@/lib/lift/modifica';
 import type { Pres } from '@/lib/present/tr';
+import AIUTO from '../../../messages/aiuto/calcolo.json';
+import Campo from '../shaft/Campo';
 
 type DocKey = keyof Carichi;
 const DOC_KEYS: readonly DocKey[] = ['Q', 'P', 'Mcw'];
@@ -35,15 +38,15 @@ export default function CarichiDocumentati({ P, value, calc, set }: Props) {
   const ora = calc ? carichiOf(calc) : null, norma11 = value.norma === '10411-1' || value.norma === '10411-11' ? value.norma : null;
   const v = norma11 && value.documentato && ora ? variazioneCarico(norma11, value.documentato, ora) : null;
   const pct = (x: number): string => `${x < 0 ? '−' : '+'}${P.fmt(Math.abs(x) * 100, 1)} %`;
+  const aiuto: Readonly<Record<DocKey, string | null>> = { Q: testoAiuto(AIUTO, 'doc_Q'), P: testoAiuto(AIUTO, 'doc_P'), Mcw: testoAiuto(AIUTO, 'doc_Mcw') };
   return (
     <fieldset className="parti">
       <legend>{t('doc_title')}</legend>
       <div className="form-grid">
         {DOC_KEYS.map((k) => (
-          <label className="field" key={k}>
-            <span>{t(`doc_${k}`)}</span>
-            <input className="input num" type="number" inputMode="numeric" min={1} max={100000} step={1} value={doc[k]} onChange={(e) => type(k, e.target.value)} />
-          </label>
+          <Campo key={k} id={`doc-${k}`} nome={t(`doc_${k}`)} aiuto={aiuto[k]}>
+            <input id={`doc-${k}`} className="input num" type="number" inputMode="numeric" min={1} max={100000} step={1} value={doc[k]} onChange={(e) => type(k, e.target.value)} />
+          </Campo>
         ))}
       </div>
       {v ? (

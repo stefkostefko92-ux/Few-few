@@ -351,7 +351,7 @@
   "step1": "Dati dell’impianto",
   "step2": "Argano esistente e argano nuovo (o la proposta)",
   "step3": "Esito in breve e PDF",
-  "simple_note": "Modalità semplice: per i dati meno comuni (fune oltre la corsa, inerzie, rendimenti del vano e inverso, poli, frequenza, flessioni in più, servizio) valgono i valori caricati o tipici. Passa a «Esperto» per vederli e cambiarli.",
+  "simple_note": "Modalità semplice: per i dati meno comuni valgono i valori caricati o tipici. Passa a «Esperto» per vederli e cambiarli.",
   "q_title": "Argano nuovo: esito in breve",
   "q_more": "Dettagli tecnici: tabelle e valori intermedi",
   "q_norm": "Il segno ⚠ indica stime, scelte del software e valori ancora da verificare sulle norme: l’elenco è nei dettagli tecnici.",

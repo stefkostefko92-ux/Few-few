@@ -255,6 +255,11 @@ html.sim-full-open { overflow: hidden; }
    it — the save bar over the list, a narrow window — and the whole label row taller than that */
 .collaudo .parti-grid.wide label { min-height: 32px; }
 .collaudo .parti-grid.wide input { width: 24px; height: 24px; }
+/* round 52: a field's name with its «?» (shaft/Campo) — the name wraps in a narrow column, the «?» stays beside it */
+.collaudo .field > .lbl { flex-wrap: nowrap; }
+/* round 52: an added standard's box with its «?» beside the label, never inside it (NormeAggiunte.tsx) */
+.collaudo .parti-grid > .norma-check { justify-self: start; flex-wrap: nowrap; max-width: 100%; }
+.collaudo .parti-grid > .norma-check > label { min-width: 0; }
 .lift-verdict .norms { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 .lift-verdict .badge.ok { color: var(--ok); background: var(--ok-bg); }
 .lift-verdict .badge.warn { color: var(--warn); background: var(--warn-bg); }

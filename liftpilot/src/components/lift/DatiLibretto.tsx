@@ -7,14 +7,18 @@
 // the speed each change is measured from (an increase the reference, a decrease the logbook's speed). Typed as
 // text; each value stored once it is a valid number (none: nothing stored), as CarichiDocumentati. The linked survey's
 // value only as a reference beside the field («nel rilievo: …»), never filled in. Round 47: the live sentences are
-// frasi-libretto.ts's, said again beside a «No» from the documents.
+// frasi-libretto.ts's, said again beside a «No» from the documents. Round 52: each with its «?» (messages/aiuto/
+// calcolo.json: the rule of the speed and of the travel), a label of its own (shaft/Campo).
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FormValues } from '@/calc/types';
+import { testoAiuto } from '@/lib/aiuto';
 import type { Collaudo } from '@/lib/lift';
 import { corsaOf, velocitaOf, type Libretto } from '@/lib/lift/modifica';
 import type { Pres } from '@/lib/present/tr';
+import AIUTO from '../../../messages/aiuto/calcolo.json';
 import { useValoreRilievo } from '../collega/origine';
+import Campo from '../shaft/Campo';
 import { fraseCorsa, fraseVelocita } from './frasi-libretto';
 
 type LibKey = keyof Libretto;
@@ -36,6 +40,7 @@ export default function DatiLibretto({ P, value, calc, set }: Props) {
   const [lib, setLib] = useState<Record<LibKey, string>>(() => text(value.libretto));
   const uno = value.norma === '10411-1', keys: readonly LibKey[] = uno ? ['v', 'v50', 'H'] : ['v', 'H'];
   const rilievo: Partial<Record<LibKey, string | undefined>> = { v: useValoreRilievo('v'), H: useValoreRilievo('H') };
+  const aiuto: Readonly<Record<LibKey, string | null>> = { v: testoAiuto(AIUTO, 'lib_v'), v50: testoAiuto(AIUTO, 'lib_v50'), H: testoAiuto(AIUTO, 'lib_H') };
   const type = (k: LibKey, s: string): void => {
     const next = { ...lib, [k]: s };
     setLib(next);
@@ -55,12 +60,12 @@ export default function DatiLibretto({ P, value, calc, set }: Props) {
       <legend>{t('lib_title')}</legend>
       <div className="form-grid">
         {keys.map((k) => (
-          <label className="field" key={k}>
-            <span>{t(k === 'H' && !uno ? 'lib_H11' : `lib_${k}`)}</span>
-            <input className="input num" type="number" inputMode="decimal" min={RANGE[k][0]} max={RANGE[k][1]} step="any" value={lib[k]} data-lib={k}
-              onChange={(e) => type(k, e.target.value)} />
-            {rilievo[k] ? <span className="note">{t('lib_rilievo', { valore: `${rilievo[k]} ${k === 'H' ? 'm' : 'm/s'}` })}</span> : null}
-          </label>
+          <Campo key={k} id={`lib-${k}`} nome={t(k === 'H' && !uno ? 'lib_H11' : `lib_${k}`)} aiuto={aiuto[k]}>
+            {/* the survey's value, once part of the wrapping label's name, now its description */}
+            <input id={`lib-${k}`} className="input num" type="number" inputMode="decimal" min={RANGE[k][0]} max={RANGE[k][1]} step="any" value={lib[k]} data-lib={k}
+              aria-describedby={rilievo[k] ? `lib-${k}-rilievo` : undefined} onChange={(e) => type(k, e.target.value)} />
+            {rilievo[k] ? <span className="note" id={`lib-${k}-rilievo`}>{t('lib_rilievo', { valore: `${rilievo[k]} ${k === 'H' ? 'm' : 'm/s'}` })}</span> : null}
+          </Campo>
         ))}
       </div>
       {fv ? <p className={`note${fv.variata ? ' bad' : ''}`} role="status" data-var="velocita">{t(fv.key, fv.values)}</p> : null}

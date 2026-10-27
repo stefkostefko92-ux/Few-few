@@ -16,16 +16,20 @@
 // the documents says that the relazione leaves it for the engineer to confirm; a change the documents do not decide, or
 // none documented, stays to answer, the list of what is missing naming what is needed (mancaParte).
 // Each pair is two native radio buttons of one group (arrow keys move and answer, one tab stop per part, as the type
-// cards above); none is checked while the part is still to answer.
+// cards above); none is checked while the part is still to answer. Round 52: each part, the renovation and the list's
+// title with their «?» (messages/aiuto/calcolo.json); the names stay the radio groups' and the list's accessible names.
 import { useTranslations } from 'next-intl';
 import type { FormValues } from '@/calc/types';
+import { testoAiuto } from '@/lib/aiuto';
 import { parteId } from '@/lib/calc-blank';
 import type { Collaudo, Parte } from '@/lib/lift';
 import { carichiOf, corsaOf, portataVariata, variazioneCorsa, variazioneVelocita, velocitaOf, type EsitoDoc } from '@/lib/lift/modifica';
 import { bloccata, esitoParte, facoltativeDi, partiDi, type Bloccata } from '@/lib/lift/risposte';
 import type { Fmt } from '@/lib/present/tr';
 import type { Regolazione } from '@/lib/lift/modifica';
+import AIUTO from '../../../messages/aiuto/calcolo.json';
 import { fraseCorsa, fraseVelocita } from '../lift/frasi-libretto';
+import { ConAiuto } from '../shaft/Campo';
 import AltreParti from './AltreParti';
 import { etichettaParte } from './etichette-parti';
 import RegolazioneQuadro from './RegolazioneQuadro';
@@ -102,7 +106,9 @@ export default function PartiSiNo({ tipo, chosen, value, V, risposte, answer, ri
     const described = [why ? whyId : '', doc && si ? controId : ''].filter(Boolean).join(' ') || undefined;
     return (
       <li key={p} className={`parte${answered || e === 'attesa' ? '' : ' da'}`} data-part={p} data-doc={e ?? undefined}>
-        <span className="parte-nome" id={`${parteId(p)}-label`}>{label(p)}</span>
+        <ConAiuto aiuto={testoAiuto(AIUTO, `parte_${p}`)} nome={label(p)} className="parte-lbl">
+          <span className="parte-nome" id={`${parteId(p)}-label`}>{label(p)}</span>
+        </ConAiuto>
         {lock ? (
           <span className={`parte-regola ${lock.si ? 'si' : 'no'}`} aria-describedby={why ? whyId : undefined}>
             {t(AUTO_LABEL[lock.perche] ?? 'si')}
@@ -125,12 +131,13 @@ export default function PartiSiNo({ tipo, chosen, value, V, risposte, answer, ri
     );
   };
   return (
-    <fieldset className="parti-sino">
-      <legend>{t('parti_title')}</legend>
+    <fieldset className="parti-sino" aria-labelledby="parti-sino-title">
+      <legend><ConAiuto aiuto={solo ? null : testoAiuto(AIUTO, 'parti')} nome={t('parti_title')}><span id="parti-sino-title">{t('parti_title')}</span></ConAiuto></legend>
       <p className="note">{solo ? t('parti_lead_solo') : t('parti_lead')}</p>
       {rifacimento ? (
         <div className="rif-preset">
           <button type="button" className={`btn btn-sm${rifacimento.on ? ' on' : ''}`} aria-pressed={rifacimento.on} onClick={() => rifacimento.set(!rifacimento.on)}>{t('rif_preset')}</button>
+          <ConAiuto aiuto={testoAiuto(AIUTO, 'rifacimento')} nome={t('rif_preset')} />
           {rifacimento.on ? <span className="note">{t('rif_on')}</span> : null}
         </div>
       ) : null}

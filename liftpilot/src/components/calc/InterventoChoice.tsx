@@ -3,10 +3,15 @@
 // «Tipo di intervento», the first thing «Calcolo argano» asks (round 45): «Solo argano», «Ammodernamento», «Trasformazione
 // completa», each with its line and the base of its acceptance test. The scale under each name is how much of the lift
 // the intervention takes into its test — the machine, the parts answered, the whole lift. Nothing is proposed, advised
-// or judged before a type is chosen; the parts and the warnings of the type follow in the same card.
+// or judged before a type is chosen; the parts and the warnings of the type follow in the same card. Round 52: the «?»
+// beside the title says what each type means (the cards are labels: no «?» inside them); the radio group keeps the
+// title alone as its name.
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
 import { TIPI_INTERVENTO, type TipoIntervento } from '@/lib/lift';
+import AIUTO from '../../../messages/aiuto/calcolo.json';
+import { ConAiuto } from '../shaft/Campo';
 
 interface Props {
   tipo: TipoIntervento | null;
@@ -19,7 +24,7 @@ export default function InterventoChoice({ tipo, choose, children }: Props) {
   return (
     <section className={`panel intervento${tipo ? '' : ' da'}`} aria-labelledby="intervento-title">
       <div className="intervento-head">
-        <h2 id="intervento-title">{t('title')}</h2>
+        <ConAiuto aiuto={testoAiuto(AIUTO, 'tipo')} nome={t('title')} block><h2 id="intervento-title">{t('title')}</h2></ConAiuto>
         <p className="note">{t('lead')}</p>
       </div>
       <div className="intervento-tipi" role="radiogroup" aria-labelledby="intervento-title">

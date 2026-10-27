@@ -14,7 +14,7 @@
       "access": "La apre chi può fare i calcoli (con i permessi predefiniti: Titolare, Capotecnico, Progettista e Tecnico; il Commerciale no). Gli altri ruoli vedono i calcoli salvati ma non questo modulo. Su un impianto archiviato la pagina non è disponibile, e con l’abbonamento scaduto l’azienda è in sola lettura. Il Titolare può cambiare la matrice dei permessi.",
       "reach": "Dalla pagina dell’impianto: pulsante «Calcola l’argano» finché l’impianto non ha un calcolo, «Nuovo calcolo» quando calcolo e Progetto sono già fatti (e nella sezione dei calcoli). Anche la pagina del Progetto ha «Calcola l’argano» se manca il calcolo. Dalla pagina di un calcolo salvato: «Nuovo calcolo da questi dati» (parte dai valori di quel calcolo). Dal Progetto: «Porta nel calcolo» e il collegamento per un calcolo preliminare.",
       "purpose": [
-        "Il Calcolo argano è il secondo passo dopo il Rilievo: calcola la macchina (aderenza, funi, motore, freno, soccorso, albero) e fissa il tipo di intervento, il collaudo, la portata, la velocità, la massa e le funi. Il Progetto, che viene dopo, si limita a disegnare su questo calcolo. Titolo della pagina: «Calcolo argano»; testo: «Prima il tipo di intervento, poi i dati dell’impianto: i risultati si aggiornano mentre scrivi. Al salvataggio il server ricalcola tutto e conserva il calcolo con la sua impronta.»",
+        "Il Calcolo argano è il secondo passo dopo il Rilievo: calcola la macchina (aderenza, funi, motore, freno, soccorso, albero) e fissa il tipo di intervento, il collaudo, la portata, la velocità, la massa e le funi. Il Progetto, che viene dopo, si limita a disegnare su questo calcolo. Titolo della pagina: «Calcolo argano»; testo: «Prima il tipo di intervento, poi i dati dell’impianto: i risultati si aggiornano mentre scrivi.» Al salvataggio il server ricalcola tutto e conserva il calcolo con la sua impronta.",
         "Il modulo si apre con i dati del calcolo scelto con «Nuovo calcolo da questi dati»; in mancanza, con la bozza del modulo; in mancanza anche di questa, con l’ultimo calcolo dell’impianto. Se non c’è nessuno dei tre, parte vuoto: nessun dato dell’impianto o delle macchine, e il tipo di intervento da scegliere per primo. Se all’impianto è collegato un rilievo, i valori misurati entrano nei campi ancora vuoti, segnati «dal rilievo». Il modulo ha una modalità «Semplice» e una «Esperto»; i risultati si aggiornano in diretta, ma sono un’anteprima: conta solo il calcolo salvato.",
         "Il risultato non sostituisce la relazione di calcolo firmata: il software applica le formule e i valori del registro delle norme, ciascuno con la sua clausola e il suo stato, ma non verifica i dati che inserisci. Il segno ⚠ indica ciò che il tecnico deve controllare."
       ],
@@ -62,7 +62,7 @@
                 "Passa a «Esperto» per vederli e cambiarli. Una riga nascosta compare comunque da sola, anche in «Semplice», se il suo valore è ancora da inserire o è fuori campo.",
                 "Sotto il modulo, in «Semplice», il software elenca i valori standard che sta usando sulle righe nascoste («Valori standard in uso (si cambiano in modalità esperto): …»). In «Semplice» le tabelle tecniche dei risultati sono richiuse sotto «Dettagli tecnici: tabelle e valori intermedi»."
               ],
-              "src": "src/components/calc/Calculator.tsx:202; src/components/calc/CalcForm.tsx:36"
+              "src": "src/components/calc/ModoCalc.tsx; src/components/calc/CalcForm.tsx:43"
             }
           ],
           "actions": [
@@ -110,7 +110,7 @@
         {
           "title": "Tipo di intervento",
           "intro": [
-            "È la prima cosa che il Calcolo argano chiede: «Si sceglie una volta: decide la norma del collaudo, le parti da verificare e che cosa si disegna nel Progetto.» Finché non scegli, il software non propone e non giudica nulla. Il tipo diventa un dato del calcolo salvato."
+            "È la prima cosa che il Calcolo argano chiede: «Va scelto per primo: decide il collaudo, le parti da verificare e il Progetto.» Si sceglie una volta: decide la norma del collaudo, le parti da verificare e che cosa si disegna nel Progetto. Finché non scegli, il software non propone e non giudica nulla. Il tipo diventa un dato del calcolo salvato."
           ],
           "fields": [
             {
@@ -138,7 +138,7 @@
         {
           "title": "Parti sostituite o modificate",
           "intro": [
-            "Compare per «Solo argano» e «Ammodernamento» (non per la trasformazione). Il testo sullo schermo dice: per ogni parte «Sì» o «No»; una parte senza risposta non conta come «No», e il calcolo si salva quando sono tutte indicate; velocità, portata e corsa le decidono i documenti dell’impianto (libretto, carichi documentati) quando ci sono, e il «No» dai documenti si può cambiare. Per «Solo argano» il testo è: «L’argano è sostituito: indica se lo sono anche le funi.»",
+            "Compare per «Solo argano» e «Ammodernamento» (non per la trasformazione). Il testo sullo schermo dice: per ogni parte «Sì» o «No»; una parte senza risposta non conta come «No», e il calcolo si salva quando sono tutte indicate. Velocità, portata e corsa le decidono i documenti dell’impianto (libretto, carichi documentati) quando ci sono, e il «No» dai documenti si può cambiare. Per «Solo argano» il testo è: «L’argano è sostituito: indica se lo sono anche le funi.»",
             "Ogni parte è una coppia di pulsanti di scelta «Sì»/«No»: con i tasti freccia passi dall’uno all’altro e rispondi. Una parte ancora senza risposta porta la scritta «Da indicare». Alcune risposte le dà la regola e non si cambiano: al posto dei pulsanti vedi la risposta e il motivo."
           ],
           "fields": [
@@ -259,7 +259,7 @@
           "actions": [
             {
               "label": "Rifacimento con l’arcata esistente",
-              "help": "Interruttore solo per l’«Ammodernamento»: risponde in una volta sola a tutte le parti che il rifacimento sostituisce — argano, funi, cabina, contrappeso, guide, porte di piano e di cabina, ammortizzatori, limitatore, quadro — tranne l’arcata, che resta («No — resta l’arcata esistente»). Le funi diventano libere dal numero e dal diametro esistenti. Velocità, portata e corsa seguono i documenti; senza documenti restano da indicare. Per prassi l’intervento resta una modifica dell’impianto (DPR 162/1999, art. 2) e si collauda con la UNI 10411, non come impianto nuovo. Sotto compare la nota «Rifacimento: tutte le parti sostituite tranne l’arcata, con funi nuove…». Premendolo di nuovo torni alla sola macchina; le «Altre parti (facoltative)» non sono toccate.",
+              "help": "Interruttore solo per l’«Ammodernamento»: risponde in una volta sola a tutte le parti che il rifacimento sostituisce — argano, funi, cabina, contrappeso, guide, porte di piano e di cabina, ammortizzatori, limitatore, quadro — tranne l’arcata, che resta («No — resta l’arcata esistente»). Le funi diventano libere dal numero e dal diametro esistenti. Velocità, portata e corsa seguono i documenti; senza documenti restano da indicare. Per prassi l’intervento resta una modifica dell’impianto (DPR 162/1999, art. 2) e si collauda con la UNI 10411, non come impianto nuovo. Sotto compare la nota «Rifacimento: tutte le parti sostituite tranne l’arcata, con funi nuove.». Premendolo di nuovo torni alla sola macchina; le «Altre parti (facoltative)» non sono toccate.",
               "src": "src/components/calc/PartiSiNo.tsx:131-136; src/lib/lift/intervento.ts:100"
             }
           ],
@@ -301,7 +301,7 @@
         {
           "title": "Altre parti (facoltative)",
           "intro": [
-            "Solo per l’«Ammodernamento». Il testo dice: «Indica «Sì» solo per ciò che l’intervento sostituisce o modifica: senza risposta resta «No». Il rifacimento con l’arcata esistente non le comprende.» Non sono mai nell’elenco dei dati mancanti e partono tutte su «No»."
+            "Solo per l’«Ammodernamento». Il testo dice: «Indica «Sì» solo per ciò che l’intervento sostituisce o modifica: senza risposta resta «No».» Il rifacimento con l’arcata esistente non le comprende. Non sono mai nell’elenco dei dati mancanti e partono tutte su «No»."
           ],
           "fields": [
             {
@@ -1790,7 +1790,7 @@
         {
           "title": "Progetto",
           "intro": [
-            "Pannello che rimanda al passo successivo, il Progetto, secondo quello che disegna l’intervento. Per «Solo argano» e per un ammodernamento che tocca solo le parti del locale (macchina, funi, quadro, locale del macchinario, allarme, UCM) il Progetto è il rilievo del locale macchina: «il software sistema l’argano sulle calate esistenti, verifica locale, basamento e calate e prepara le tavole; il rilievo è la base della relazione tecnica di modifica. Si può disegnare anche l’intero impianto.» Negli altri casi il Progetto disegna il vano e la cabina su questo calcolo: portata, velocità, argano, funi e collaudo vengono dal calcolo, la geometria dal disegno. Con la macchina in basso il locale non si disegna: «Argano in basso: il software non disegna il locale della macchina… Relazione di calcolo e bozza d’ordine restano disponibili.»"
+            "Pannello che rimanda al passo successivo, il Progetto, secondo quello che disegna l’intervento. Per «Solo argano» e per un ammodernamento che tocca solo le parti del locale (macchina, funi, quadro, locale del macchinario, allarme, UCM) il Progetto è il rilievo del locale macchina: «Per questo intervento il Progetto è il rilievo del locale macchina, base delle tavole e della relazione tecnica di modifica. Si può disegnare anche l’intero impianto.» Il software sistema l’argano sulle calate esistenti, verifica locale, basamento e calate e prepara le tavole. Negli altri casi: «Il Progetto disegna il vano e la cabina su questo calcolo.» Portata, velocità, argano, funi e collaudo vengono dal calcolo, la geometria dal disegno. Con la macchina in basso il locale non si disegna: «Argano in basso: il software non disegna il locale della macchina… Relazione di calcolo e bozza d’ordine restano disponibili.»"
           ],
           "fields": [],
           "actions": [
@@ -1836,9 +1836,9 @@
               "default": "Semplice",
               "required": "no",
               "help": [
-                "Come nel Calcolo argano: «Semplice» richiude le schede tecniche sotto «Dettagli tecnici: tabelle e valori intermedi», «Esperto» le mostra tutte."
+                "Come nel Calcolo argano: «Semplice» richiude le schede tecniche sotto «Dettagli tecnici: tabelle e valori intermedi», «Esperto» le mostra tutte. È la stessa modalità del Calcolo argano: la scelta vale anche lì."
               ],
-              "src": "src/components/calc/CalculationView.tsx:46-54"
+              "src": "src/components/calc/CalculationView.tsx:36-40; src/components/calc/ModoCalc.tsx"
             }
           ],
           "actions": [

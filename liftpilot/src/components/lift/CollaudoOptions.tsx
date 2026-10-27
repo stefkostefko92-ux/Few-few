@@ -11,8 +11,11 @@
 // Progetto. On the one form (no `mode`, until /progetto stops choosing the intervention) the parts are ticked here and DM
 // 236 is offered with a shaft, its case set when it is ticked; the renovation that keeps the existing sling
 // (src/lib/lift/intervento.ts) is a modification under UNI 10411 only: the sling stays out of the parts replaced.
+// Round 52: the base, the CE marking and its day with their «?» (messages/aiuto/calcolo.json); the base and the day are
+// fields with a label of their own (shaft/Campo), the marking's legend names its group alone.
 import { useTranslations } from 'next-intl';
 import type { FormValues } from '@/calc/types';
+import { testoAiuto } from '@/lib/aiuto';
 import { NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI, adeguamentiDovuti, ammessa, withAggiunta, type Collaudo, type NormaAggiuntiva, type NormaCollaudo,
   type Parte } from '@/lib/lift';
 import { choiceOf, documentiOf, esistenteOf } from '@/lib/lift/collaudo';
@@ -20,6 +23,8 @@ import { MARCATURE, isServiceDay } from '@/lib/lift/modifica';
 import type { Access } from '@/shaft';
 import { ADAPT } from '@/lib/present/adapt';
 import type { Pres } from '@/lib/present/tr';
+import AIUTO from '../../../messages/aiuto/calcolo.json';
+import Campo, { ConAiuto } from '../shaft/Campo';
 import CarichiDocumentati from './CarichiDocumentati';
 import DatiLibretto from './DatiLibretto';
 import NormeAggiunte from './NormeAggiunte';
@@ -91,21 +96,20 @@ export default function CollaudoOptions({ P, mode, isNew: isNewForm = false, cho
           <p className="norma-fissa">{t(KEY.en81)}</p>
         </div>
       ) : (
-        <label className="field">
-          <span>{t('norma_title')}</span>
-          <select className="input" value={value.norma} disabled={isNew} onChange={(e) => {
+        <Campo id="collaudo-norma" nome={t('norma_title')} aiuto={testoAiuto(AIUTO, 'norma')}>
+          <select id="collaudo-norma" className="input" value={value.norma} disabled={isNew} onChange={(e) => {
             const n = NORME_COLLAUDO.find((x) => x === e.target.value);
             if (n) setNorma(n);
           }}>
             {basi.map((n) => <option key={n} value={n}>{t(KEY[n])}</option>)}
           </select>
-        </label>
+        </Campo>
       )}
       {rif ? <p className="note">{t('rif_hint')}</p> : null}
       <p className="note">{isNew ? t('norma_new_hint') : uni ? t('norma_which') : t('norma_en81_hint')}</p>
       {uni ? (
-        <fieldset className="parti">
-          <legend>{t('ce_title')}</legend>
+        <fieldset className="parti" aria-labelledby="collaudo-ce">
+          <legend><ConAiuto aiuto={testoAiuto(AIUTO, 'marcatura')} nome={t('ce_title')}><span id="collaudo-ce">{t('ce_title')}</span></ConAiuto></legend>
           <div className="seg-row" role="radiogroup" aria-label={t('ce_title')}>
             {MARCATURE.map((m) => (
               <button key={m} type="button" role="radio" aria-checked={value.marcatura === m} className={value.marcatura === m ? 'on' : undefined}
@@ -113,12 +117,11 @@ export default function CollaudoOptions({ P, mode, isNew: isNewForm = false, cho
             ))}
           </div>
           {value.marcatura === 'incerta' ? (
-            <label className="field">
-              <span>{t('servizio')}</span>
+            <Campo id="collaudo-servizio" nome={t('servizio')} aiuto={testoAiuto(AIUTO, 'servizio')}>
               {/* a day of the calendar up to today (isServiceDay); today's date may differ between the server and the browser */}
-              <input type="date" className="input" min="1900-01-01" max={new Date().toISOString().slice(0, 10)} suppressHydrationWarning value={value.servizio ?? ''}
-                onChange={(e) => setKnown({ servizio: isServiceDay(e.target.value) ? e.target.value : undefined })} />
-            </label>
+              <input id="collaudo-servizio" type="date" className="input" min="1900-01-01" max={new Date().toISOString().slice(0, 10)} suppressHydrationWarning
+                value={value.servizio ?? ''} onChange={(e) => setKnown({ servizio: isServiceDay(e.target.value) ? e.target.value : undefined })} />
+            </Campo>
           ) : null}
           <p className={`note${value.marcatura === 'incerta' ? ' bad' : ''}`}>{t(value.marcatura === 'incerta' ? 'ce_incerta_hint' : 'ce_hint')}</p>
         </fieldset>

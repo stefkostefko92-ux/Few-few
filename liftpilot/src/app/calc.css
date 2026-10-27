@@ -20,6 +20,16 @@
 .calc .seg label:hover { color: var(--ink); background: var(--surface3); }
 .calc .seg input:checked + label { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
 .calc .seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: -2px; }
+/* round 52: the mode's «?» (ModoCalc.tsx) opens from the row's right edge, wherever the switch wraps */
+.calc .calc-top { position: relative; }
+.calc .calc-mode { display: inline-flex; align-items: center; gap: 6px; }
+.calc .calc-top .calc-mode .lbl { position: static; }
+.calc .calc-top .calc-mode .aiuto-testo { left: auto; right: 0; }
+/* the save bar's description and its «?» (CalcSaveBar.tsx) are one box; the explanation opens upward, over the page */
+.calc .savebar .calc-label { position: relative; display: flex; align-items: center; gap: 6px; flex: 1 1 12rem; max-width: calc(26rem + 26px); min-width: 0; }
+.calc .savebar .calc-label > .input { flex: 1 1 auto; max-width: none; min-width: 0; }
+.calc .savebar .calc-label > .lbl { position: static; }
+.calc .savebar .calc-label .aiuto-testo { top: auto; bottom: calc(100% + 6px); }
 .calc .layout { display: grid; gap: 18px; grid-template-columns: minmax(300px, 430px) minmax(0, 1fr); grid-template-rows: auto 1fr;
   grid-template-areas: "inputs summary" "inputs results"; align-items: start; }
 .calc .inputs { grid-area: inputs; display: flex; flex-direction: column; gap: 10px; }
@@ -40,6 +50,8 @@
 .calc .rows { display: flex; flex-direction: column; padding: 0 14px 12px; }
 .calc .row { display: grid; grid-template-columns: minmax(0, 1fr) 7.2rem 3.2rem; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px solid var(--rule-soft); }
 .calc .row label { font-size: 13.5px; color: var(--ink-2); }
+/* round 52: a row's name and its «?» (FieldRow): the name wraps in its column, the «?» stays beside it */
+.calc .row > .lbl { flex-wrap: nowrap; }
 .calc .row .unit { font: 12px/1 var(--font-mono); color: var(--muted); }
 .calc .row input[type=number], .calc .row input[type=text], .calc .row select { width: 100%; min-height: 36px; font: 500 14px/1.2 var(--font-mono); color: var(--ink); background: var(--bg-2);
   border: 1px solid var(--rule-input); border-radius: var(--radius-sm); padding: 7px 9px; text-align: right; font-variant-numeric: tabular-nums;

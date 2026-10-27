@@ -9,7 +9,6 @@
 // verifies it as it is, with no proposal or advice; the form's draft is kept as it is filled in.
 import { useCallback, useDeferredValue, useEffect, useMemo, useState, useTransition } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
-import { useModalita } from '../shell/Modalita';
 import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { PRESETS } from '@/calc/presets';
@@ -45,6 +44,7 @@ import PartiSiNo from './PartiSiNo';
 import { mancaParte } from './etichette-parti';
 import AvvisiIntervento from './AvvisiIntervento';
 import { useIntervento, type InterventoInit } from './useIntervento';
+import { ModoSwitch, useModo } from './ModoCalc';
 import { OrigineProvider, type OrigineRilievo } from '../collega/origine';
 
 type PresetKey = 'A' | 'B' | 'C';
@@ -94,10 +94,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
 
   const [values, setValues] = useState<FormValues>(() => mirrorRopes(initial));
   // the workspace's mode (round 52, kept with the user); the standalone artifact has none and keeps one of its own
-  const globale = useModalita();
-  const [modeLocale, setModeLocale] = useState<'simple' | 'expert'>('simple');
-  const mode = globale ? (globale.modalita === 'esperto' ? 'expert' : 'simple') : modeLocale;
-  const setMode = (m: 'simple' | 'expert') => (globale ? globale.set(m === 'expert' ? 'esperto' : 'semplice') : setModeLocale(m));
+  const [mode, setMode] = useModo();
   const [preset, setPreset] = useState<PresetKey | null>(initialPreset);
   const [propMsg, setPropMsg] = useState('');
   const [estMsg, setEstMsg] = useState<Partial<Record<Prefix, string>>>({});
@@ -200,16 +197,11 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   return (
     <OrigineProvider value={vista}>
     <div className={`calc${mode === 'simple' ? ' simple' : ''}`}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="calc-top flex flex-wrap items-center justify-between gap-3">
         <div className="controls">
           {(['A', 'B', 'C'] as const).map((k) => <button key={k} type="button" onClick={() => loadPreset(k)}>{t(`ex${k}`)}</button>)}
         </div>
-        <div className="seg" role="radiogroup" aria-label={t('aria_mode')}>
-          <input type="radio" name="mode" id="mode-simple" checked={mode === 'simple'} onChange={() => setMode('simple')} />
-          <label htmlFor="mode-simple">{t('mode_simple')}</label>
-          <input type="radio" name="mode" id="mode-expert" checked={mode === 'expert'} onChange={() => setMode('expert')} />
-          <label htmlFor="mode-expert">{t('mode_expert')}</label>
-        </div>
+        <ModoSwitch P={P} mode={mode} setMode={setMode} id="mode" />
       </div>
       {preset ? <p className="note" role="status">{t('loaded', { name: t(`ex${preset}name`) })} {tc('replaceExample')}</p> : null}
       <LegalNotice P={P} />

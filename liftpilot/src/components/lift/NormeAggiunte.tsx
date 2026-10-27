@@ -3,9 +3,13 @@
 // The standards added to the acceptance test's base (src/lib/lift/collaudo.ts, norme-collaudo.ts): only those that fit
 // it, grouped as the documents present them, with the notes some of them carry. DM 236/1989 has its checks in the
 // shaft, for the case chosen there: on the one form the case is set when it is ticked; in «Calcolo argano» the case is
-// chosen in the Progetto (`dm236Note`).
+// chosen in the Progetto (`dm236Note`). Round 52: each standard and the list's title with their «?» (messages/aiuto/
+// calcolo.json); the «?» sits beside the box's label, never inside it, and the legend still names the group alone.
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
 import type { NormaAggiuntiva } from '@/lib/lift';
+import AIUTO from '../../../messages/aiuto/calcolo.json';
+import { ConAiuto } from '../shaft/Campo';
 
 /** The standards that can be added, grouped as the documents present them. */
 const GROUPS: readonly { key: string; norme: readonly NormaAggiuntiva[] }[] = [
@@ -26,8 +30,8 @@ interface Props {
 export default function NormeAggiunte({ fits, added, toggle, dm236Note }: Props) {
   const t = useTranslations('lift');
   return (
-    <fieldset className="parti">
-      <legend>{t('aggiuntive_title')}</legend>
+    <fieldset className="parti" aria-labelledby="aggiuntive-title">
+      <legend><ConAiuto aiuto={testoAiuto(AIUTO, 'aggiuntive')} nome={t('aggiuntive_title')}><span id="aggiuntive-title">{t('aggiuntive_title')}</span></ConAiuto></legend>
       {GROUPS.map((g) => {
         const here = g.norme.filter(fits);
         return here.length ? (
@@ -35,10 +39,12 @@ export default function NormeAggiunte({ fits, added, toggle, dm236Note }: Props)
             <span className="norm-group-title">{t(g.key)}</span>
             <div className="parti-grid wide">
               {here.map((n) => (
-                <label key={n}>
-                  <input type="checkbox" checked={added.includes(n)} onChange={(e) => toggle(n, e.target.checked)} />
-                  <span>{t(`aggiunta_${n}`)}</span>
-                </label>
+                <ConAiuto key={n} aiuto={testoAiuto(AIUTO, `norma_${n}`)} nome={t(`aggiunta_${n}`)} className="norma-check">
+                  <label>
+                    <input type="checkbox" checked={added.includes(n)} onChange={(e) => toggle(n, e.target.checked)} />
+                    <span>{t(`aggiunta_${n}`)}</span>
+                  </label>
+                </ConAiuto>
               ))}
             </div>
           </div>

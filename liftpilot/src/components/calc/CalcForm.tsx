@@ -1,9 +1,14 @@
 // Input form of the prototype v12 (buildForm): installation, layout, existing machine, new machine, ropes,
 // service. Values are kept as typed (strings); the engine parses them. A value still to enter is marked as needed, a
-// standard value of the software carries its badge (src/lib/calc-blank.ts).
+// standard value of the software carries its badge (src/lib/calc-blank.ts). Round 52: every row and check box with its
+// «?» (messages/aiuto/calcolo.json, by the field's id without the n_/o_ of the new or the existing machine — the same
+// meaning for both); the «adv» rows stay the calculator's own mark of the simple mode, never `esperto` on top.
 import type { FormValues } from '@/calc/types';
 import type { CalcKey, Pres } from '@/lib/present/tr';
 import { isStandard } from '@/lib/calc-blank';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/calcolo.json';
+import Etichetta from '../aiuto/Etichetta';
 import { LAYOUT, MACHINE, PLANT, ROPES, SERVICE, shown, type Field } from './fields';
 import FieldRow, { type BlankTexts } from './FieldRow';
 
@@ -30,7 +35,9 @@ interface Props {
 
 export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopesHint, need, texts, esistente = V.context === 'repl', resta = null }: Props) {
   const { t } = P;
-  const row = (f: Field) => <FieldRow key={f.id} P={P} f={f} V={V} bad={bad} set={set} need={need.has(f.id)} std={isStandard(V, f.id)} texts={texts} />;
+  const row = (f: Field) => <FieldRow key={f.id} P={P} f={f} V={V} bad={bad} set={set} need={need.has(f.id)} std={isStandard(V, f.id)} texts={texts}
+    aiuto={testoAiuto(AIUTO, f.key ?? f.id)} />;
+  const aiutoCheck = { compare: testoAiuto(AIUTO, 'compare'), keepD: testoAiuto(AIUTO, 'keepD'), keepRopes: testoAiuto(AIUTO, 'keepRopes') };
   const rows = (fields: readonly Field[]) => fields.map(row);
   // the expert rows at the software's standard value, named in the simple mode where they are not shown
   const expert = [...PLANT, ...LAYOUT, ...MACHINE('n_'), ...(V.compare ? MACHINE('o_') : []), ...SERVICE]
@@ -44,7 +51,7 @@ export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopes
   const check = (id: 'compare' | 'keepD' | 'keepRopes') => (
     <div className="row check" hidden={!shown(id, V) || (id === 'keepRopes' && !!resta)}>
       <input type="checkbox" id={id} checked={!!V[id]} onChange={(e) => set(id, e.target.checked)} />
-      <label htmlFor={id}>{t(id)}</label>
+      <Etichetta htmlFor={id} aiuto={aiutoCheck[id]} nome={t(id)}>{t(id)}</Etichetta>
     </div>
   );
   const estimate = (p: Prefix) => (

@@ -41,6 +41,9 @@
 .parte.da { border-left-color: var(--warn); }
 .parte-nome { font-size: 13.5px; line-height: 1.35; color: var(--ink-2); }
 .parte.da .parte-nome { color: var(--ink); }
+/* round 52: a part's name with its «?» beside it — the name wraps, the «?» stays with it */
+.parte-lbl { justify-self: start; flex-wrap: nowrap; }
+.parte-lbl > .parte-nome { min-width: 0; }
 .parte.fissa { border-left-color: var(--accent-line); }
 .parte.fissa .parte-nome { color: var(--muted); }
 .parte-scelta > label { min-width: 3.4em; padding: 7px 12px; }

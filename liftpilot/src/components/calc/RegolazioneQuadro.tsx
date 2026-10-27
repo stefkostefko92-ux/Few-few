@@ -6,10 +6,13 @@
 // none checked until it is answered; unanswered it is in the list of what is missing (its first answer carries the id
 // the list links to). The software sizes every machine it proposes for a frequency converter: one or two speeds replace
 // the controller in a modernisation (the controller's row locked «Sì») and refuse a «Solo argano» («Passa ad
-// Ammodernamento con il quadro», AvvisiIntervento).
+// Ammodernamento con il quadro», AvvisiIntervento). Round 52: the question with its «?», its words still the group's name.
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
 import { REGOLAZIONE_ID } from '@/lib/calc-blank';
 import { REGOLAZIONI, type Regolazione } from '@/lib/lift/modifica';
+import AIUTO from '../../../messages/aiuto/calcolo.json';
+import { ConAiuto } from '../shaft/Campo';
 
 interface Props {
   value: Regolazione | undefined;
@@ -23,7 +26,9 @@ export default function RegolazioneQuadro({ value, set, norma }: Props) {
   const hintId = `${REGOLAZIONE_ID}-hint`;
   return (
     <li className={`parte regola${value ? '' : ' da'}`} data-part="regolazione">
-      <span className="parte-nome" id={`${REGOLAZIONE_ID}-label`}>{t('reg_domanda')}</span>
+      <ConAiuto aiuto={testoAiuto(AIUTO, 'regolazione')} nome={t('reg_domanda')} className="parte-lbl">
+        <span className="parte-nome" id={`${REGOLAZIONE_ID}-label`}>{t('reg_domanda')}</span>
+      </ConAiuto>
       <span className="seg-row parte-scelta" role="radiogroup" aria-labelledby={`${REGOLAZIONE_ID}-label`} aria-describedby={hintId}>
         {REGOLAZIONI.map((r, i) => (
           <label key={r} className={value === r ? 'on' : undefined}>
