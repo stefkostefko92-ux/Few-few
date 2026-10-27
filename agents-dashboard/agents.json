@@ -1244,7 +1244,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 601
+        "lessons": 602
       },
       "evolution": [
         {
@@ -2350,9 +2350,20 @@
           "date": "2026-10-27",
           "event": "v48.3 — учене",
           "detail": "Научи: Във vizitka JSON-LD се сериализира с jsonLdSafe, който екранира само < > & (без U+2028/…"
+        },
+        {
+          "version": "48.4.0",
+          "date": "2026-10-27",
+          "event": "v48.4 — учене",
+          "detail": "Научи: В medqr CONSENT_VERSION в routes/auth.js е твърдо '1.0' и не е вързан към LEGAL.version…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „В medqr CONSENT_VERSION в routes/auth.js е твърдо '1.0' и не е вързан към LEGAL.version…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
