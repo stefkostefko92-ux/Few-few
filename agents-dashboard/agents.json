@@ -1255,7 +1255,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 618
+        "lessons": 620
       },
       "evolution": [
         {
@@ -2409,9 +2409,20 @@
           "date": "2026-10-27",
           "event": "v50.0 — учене",
           "detail": "Научи: .pr-review/137.diff (erp-ascensori) е отрязан на 41 от 496 файла (последен docs/legale/… (+1 още)"
+        },
+        {
+          "version": "50.2.0",
+          "date": "2026-10-27",
+          "event": "v50.2 — учене",
+          "detail": "Научи: В live-run worktree tools/ е презаписан с текущия агентски слой от main — кодът на PR-а… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „В live-run worktree tools/ е презаписан с текущия агентски слой от main — кодът на PR-а…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
