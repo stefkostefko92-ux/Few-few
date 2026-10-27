@@ -15154,7 +15154,7 @@
           "MAR (Регл. 596/2014) — пазарна злоупотреба: spoofing, wash trading, layering",
           "Практики за честен бектест: look-ahead/survivorship bias, walk-forward, такси+slippage"
         ],
-        "lessons": 170
+        "lessons": 171
       },
       "evolution": [
         {
@@ -15276,9 +15276,20 @@
           "date": "2026-10-27",
           "event": "v20.9 — учене",
           "detail": "Научи: treydar/src не чете свободни текстови полета от отговора на борсата за решения; log.inf…"
+        },
+        {
+          "version": "21.0.0",
+          "date": "2026-10-27",
+          "event": "v21.0 — учене",
+          "detail": "Научи: trader-lint isEnvOrSample проверява целия абсолютен път с /test|sample|example|mock|fix…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „trader-lint isEnvOrSample проверява целия абсолютен път с /test|sample|example|mock|fix…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
