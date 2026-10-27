@@ -6,6 +6,8 @@ export class HttpError extends Error {
     public readonly status: number,
     public readonly code: string,
     message: string,
+    /** Допълнителни полета към `error` в отговора (напр. `until` при бан). */
+    public readonly details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "HttpError";

@@ -128,6 +128,16 @@ ZIP отпреди месец.
   `up -d` (миграциите — от entrypoint-а, `prisma migrate deploy`). Health + отделна проверка, че
   **работникът** тича; при празна база напомня `npm run owner:create` (собственикът не се създава
   автоматично) → `piuma/DEPLOY.md`.
+- **gaming** (АСО — портал с 21 игри): Docker Compose (postgres + redis + api + realtime + worker
+  + web + marketing, всичко на `127.0.0.1`). Стъпките са в `Gaming/infra/autodeploy.sh` — същият
+  скрипт и за ръчния деплой; стекът живее в `GAMING_DIR` (по подр. `/root/aso`), където остават
+  `.env` (права 600) и Docker обемите. Без `.env` там gaming се пропуска като „още ненастроен“;
+  първото пускане е изрично — `GAMING_BOOTSTRAP=1 PROJECTS=gaming` (тайните се генерират сами).
+  Билд докато старото върви → образите на работещата версия стават `:rollback` → `pg_dump`
+  (custom формат, последните 14 в `GAMING_DIR/backups`; провален дъмп спира деплоя) → `up -d`
+  (миграциите — при старта на api) → health на api/web/marketing/realtime → при провал откат
+  към `:rollback` и код 1. Nginx vhost се слага само първия път (портовете от `.env`), после
+  еднократно `certbot --nginx -d gaming.carbonstealth.eu` → `Gaming/LAUNCH.md`.
 - **korpora** (мебели в 3D, разкрой, CNC): Docker Compose (db + app на `127.0.0.1:4320`).
   Стъпките са в `korpora/deploy/deploy.sh` — същият скрипт и за ръчния деплой: тайните от
   `/opt/few-few/shared/korpora/.env` (не се генерират; без тях korpora се пропуска като „още
@@ -153,7 +163,7 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming` | кои проекти да се разгръщат тук |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |

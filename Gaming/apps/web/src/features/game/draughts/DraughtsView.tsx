@@ -177,7 +177,10 @@ export function DraughtsView({ title }: { title: string }) {
       <Announcements banners={banners} fixed />
       {state ? (
         <div className="flex flex-col items-center gap-4">
-          <ScorePill label={oppName} value="" />
+          <div className="flex items-center gap-4">
+            <ScorePill label={oppName} value="" />
+            <ScorePill label={t("draughts.variant", "Руска дама")} value="" />
+          </div>
           {useGL ? (
             <div
               ref={wrapRef}
@@ -186,7 +189,6 @@ export function DraughtsView({ title }: { title: string }) {
                 borderRadius: 16,
                 overflow: "hidden",
                 lineHeight: 0,
-                boxShadow: "0 16px 40px -16px rgba(0,0,0,.7)",
               }}
             >
               <canvas

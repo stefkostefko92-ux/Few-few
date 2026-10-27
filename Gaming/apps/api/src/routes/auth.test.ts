@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import request from "supertest";
+import jwt from "jsonwebtoken";
 
 // ── Module mocks ────────────────────────────────────────────────────────────
 // We exercise the real Express app + routers + middleware + zod + argon2, but
@@ -16,6 +17,9 @@ interface FakeUser {
   role: string;
   emailVerified: boolean;
   banned: boolean;
+  banReason: string | null;
+  banUntil: Date | null;
+  tokenVersion: number;
   deletedAt: Date | null;
   chips: bigint;
   gems: number;
@@ -54,6 +58,9 @@ vi.mock("@aso/db", () => {
         role: "PLAYER",
         emailVerified: false,
         banned: false,
+        banReason: null,
+        banUntil: null,
+        tokenVersion: 0,
         deletedAt: null,
         chips: 0n,
         gems: 0,
@@ -71,12 +78,29 @@ vi.mock("@aso/db", () => {
       if (where.email) return [...users.values()].find((u) => u.email === where.email) ?? null;
       return null;
     }),
-    update: vi.fn(async ({ where, data }: { where: { id: string }; data: Partial<FakeUser> }) => {
+    update: vi.fn(async ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
       const user = users.get(where.id);
       if (!user) throw new Error("user not found");
-      Object.assign(user, data);
+      // Поддържа Prisma `{ increment: n }` (напр. tokenVersion при нулиране на парола).
+      for (const [k, v] of Object.entries(data)) {
+        const cur = (user as unknown as Record<string, unknown>)[k];
+        (user as unknown as Record<string, unknown>)[k] =
+          v && typeof v === "object" && "increment" in v && typeof cur === "number"
+            ? cur + (v as { increment: number }).increment
+            : v;
+      }
       return user;
     }),
+    // Условното вдигане на изтекъл бан (isBanActive).
+    updateMany: vi.fn(
+      async ({ where, data }: { where: { id: string; banUntil?: { lte?: Date } }; data: Partial<FakeUser> }) => {
+        const user = users.get(where.id);
+        const lte = where.banUntil?.lte;
+        if (!user || !user.banned || !user.banUntil || (lte && user.banUntil > lte)) return { count: 0 };
+        Object.assign(user, data);
+        return { count: 1 };
+      },
+    ),
   };
 
   return {
@@ -91,6 +115,7 @@ vi.mock("@aso/db", () => {
 vi.mock("../redis.js", () => ({
   redis: {
     exists: vi.fn(async () => 0),
+    get: vi.fn(async () => null),
     set: vi.fn(async () => "OK"),
     del: vi.fn(async () => 1),
     call: vi.fn(async () => null),
@@ -327,5 +352,138 @@ describe("CSRF origin guard on /api/*", () => {
       .send({ email: "not-an-email", password: "" });
 
     expect(res.status).not.toBe(403);
+  });
+});
+
+// ── Временни банове: изтичат сами ─────────────────────────────────────────────
+
+describe("temp bans expire on their own (not only via the admin panel)", () => {
+  async function registerAndBan(banUntil: Date | null) {
+    const input = validRegister();
+    const reg = await request(app).post("/api/auth/register").set("Origin", ORIGIN).send(input);
+    const user = [...users.values()].find((u) => u.email === input.email)!;
+    Object.assign(user, { banned: true, banReason: "спам", banUntil });
+    return { input, user, cookies: reg.headers["set-cookie"] as unknown as string[] };
+  }
+
+  it("an expired temp ban lets the player log in and is lifted in the DB", async () => {
+    const { input, user } = await registerAndBan(new Date(Date.now() - 60_000));
+    const res = await request(app)
+      .post("/api/auth/login")
+      .set("Origin", ORIGIN)
+      .send({ email: input.email, password: input.password });
+    expect(res.status).toBe(200);
+    expect(user.banned).toBe(false);
+    expect(user.banReason).toBeNull();
+    expect(user.banUntil).toBeNull();
+  });
+
+  it("an active temp ban refuses login with the reason and the expiry", async () => {
+    const until = new Date(Date.now() + 86_400_000);
+    const { input, user } = await registerAndBan(until);
+    const res = await request(app)
+      .post("/api/auth/login")
+      .set("Origin", ORIGIN)
+      .send({ email: input.email, password: input.password });
+    expect(res.status).toBe(403);
+    expect(res.body.error).toMatchObject({ code: "banned", message: "спам", until: until.toISOString() });
+    expect(user.banned).toBe(true);
+  });
+
+  it("a permanent ban refuses login with until = null", async () => {
+    const { input } = await registerAndBan(null);
+    const res = await request(app)
+      .post("/api/auth/login")
+      .set("Origin", ORIGIN)
+      .send({ email: input.email, password: input.password });
+    expect(res.status).toBe(403);
+    expect(res.body.error.until).toBeNull();
+  });
+
+  it("refresh and /me also honor an expired ban (and still refuse an active one)", async () => {
+    const expired = await registerAndBan(new Date(Date.now() - 1000));
+    const refresh = await request(app).post("/api/auth/refresh").set("Origin", ORIGIN).set("Cookie", expired.cookies);
+    expect(refresh.status).toBe(200);
+    const me = await request(app).get("/api/auth/me").set("Cookie", expired.cookies);
+    expect(me.status).toBe(200);
+
+    const active = await registerAndBan(new Date(Date.now() + 60_000));
+    const refused = await request(app).post("/api/auth/refresh").set("Origin", ORIGIN).set("Cookie", active.cookies);
+    expect(refused.status).toBe(403);
+    expect(refused.body.error.code).toBe("banned");
+  });
+});
+
+// ── Нулиране на парола прекратява другите сесии ─────────────────────────────
+
+describe("password reset ends every other session (tokenVersion)", () => {
+  it("an old refresh cookie is 401 after a reset; a fresh login's cookie works", async () => {
+    const { consumeAuthToken } = await import("../auth/authTokens.js");
+    const input = validRegister();
+    const reg = await request(app).post("/api/auth/register").set("Origin", ORIGIN).send(input);
+    const oldCookies = reg.headers["set-cookie"] as unknown as string[];
+    const user = [...users.values()].find((u) => u.email === input.email)!;
+
+    vi.mocked(consumeAuthToken).mockResolvedValueOnce(user.id);
+    const reset = await request(app)
+      .post("/api/auth/reset-password")
+      .set("Origin", ORIGIN)
+      .send({ token: "reset-token-raw-value-1234567890", password: "brand-new-password-42" });
+    expect(reset.status).toBe(200);
+    expect(user.tokenVersion).toBe(1);
+
+    const stale = await request(app).post("/api/auth/refresh").set("Origin", ORIGIN).set("Cookie", oldCookies);
+    expect(stale.status).toBe(401);
+
+    const login = await request(app)
+      .post("/api/auth/login")
+      .set("Origin", ORIGIN)
+      .send({ email: input.email, password: "brand-new-password-42" });
+    expect(login.status).toBe(200);
+    const fresh = await request(app)
+      .post("/api/auth/refresh")
+      .set("Origin", ORIGIN)
+      .set("Cookie", login.headers["set-cookie"] as unknown as string[]);
+    expect(fresh.status).toBe(200);
+  });
+
+  it("a legacy refresh token without a version counts as version 0", async () => {
+    const input = validRegister();
+    await request(app).post("/api/auth/register").set("Origin", ORIGIN).send(input);
+    const user = [...users.values()].find((u) => u.email === input.email)!;
+    const legacy = jwt.sign({ sub: user.id }, process.env.JWT_REFRESH_SECRET!, { algorithm: "HS256", expiresIn: 60 });
+
+    const ok = await request(app).post("/api/auth/refresh").set("Origin", ORIGIN).set("Cookie", `aso_rt=${legacy}`);
+    expect(ok.status).toBe(200);
+
+    user.tokenVersion = 1; // напр. след нулиране на паролата
+    const stale = await request(app).post("/api/auth/refresh").set("Origin", ORIGIN).set("Cookie", `aso_rt=${legacy}`);
+    expect(stale.status).toBe(401);
+  });
+});
+
+// ── Денилист по време: отменя само вече издадените access токени ─────────────
+
+describe("revocation is time-based (role change must not lock the player out)", () => {
+  it("rejects an access token issued before the revocation, accepts one issued after", async () => {
+    const { redis } = await import("../redis.js");
+    const input = validRegister();
+    await request(app).post("/api/auth/register").set("Origin", ORIGIN).send(input);
+    const user = [...users.values()].find((u) => u.email === input.email)!;
+    const now = Math.floor(Date.now() / 1000);
+    const token = (iat: number) =>
+      jwt.sign({ sub: user.id, role: "PLAYER", locale: "bg", iat }, process.env.JWT_SECRET!, { algorithm: "HS256" });
+
+    vi.mocked(redis.get).mockResolvedValue(String(now));
+    const old = await request(app).get("/api/auth/me").set("Cookie", `aso_at=${token(now - 30)}`);
+    expect(old.status).toBe(401);
+    const fresh = await request(app).get("/api/auth/me").set("Cookie", `aso_at=${token(now + 1)}`);
+    expect(fresh.status).toBe(200);
+
+    // Легаси стойност „1“ (отпреди промяната) отменя всичко.
+    vi.mocked(redis.get).mockResolvedValue("1");
+    const legacy = await request(app).get("/api/auth/me").set("Cookie", `aso_at=${token(now + 1)}`);
+    expect(legacy.status).toBe(401);
+    vi.mocked(redis.get).mockResolvedValue(null);
   });
 });
