@@ -16242,7 +16242,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 239
+        "lessons": 243
       },
       "evolution": [
         {
@@ -16364,9 +16364,20 @@
           "date": "2026-10-27",
           "event": "v22.2 — учене",
           "detail": "Научи: Apple 5.1.1(ix) изрично включва healthcare сред силно регулираните области — медицински… (+1 още)"
+        },
+        {
+          "version": "22.6.0",
+          "date": "2026-10-27",
+          "event": "v22.6 — учене",
+          "detail": "Научи: Apple — скритите, неактивни и недокументирани функции (и обфускацията им) са по guideli… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Apple — скритите, неактивни и недокументирани функции (и обфускацията им) са по guideli…\" (+3 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
