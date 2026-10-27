@@ -12084,7 +12084,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 232
+        "lessons": 233
       },
       "evolution": [
         {
@@ -12524,9 +12524,20 @@
           "date": "2026-10-27",
           "event": "v21.3 — учене",
           "detail": "Научи: zabobovdol hero (page.tsx:158-168) вече е relative overflow-hidden със статичен SVG рел…"
+        },
+        {
+          "version": "21.4.0",
+          "date": "2026-10-27",
+          "event": "v21.4 — учене",
+          "detail": "Научи: zabobovdol вече има RM блокове в globals.css и matchMedia RM проверки в ChatWidget и In…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „zabobovdol вече има RM блокове в globals.css и matchMedia RM проверки в ChatWidget и In…\""
+        },
         {
           "date": "2026-10-27",
           "type": "quarantine",
