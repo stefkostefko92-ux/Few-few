@@ -12,7 +12,7 @@ allowed-tools: Bash(git status *)
 # Пусни quality gate на засегнатия продукт
 
 **Едно правило:** `cd` в продукта, пусни неговия пълен гейт, покажи изхода. Не смесвай продукти
-(няма root `package.json`). CI дублира точно това (path-филтрирано), затова зелено локално = зелено CI.
+(няма root `package.json`). CI пуска същото (path-филтрирано), затова зелено локално = зелен продуктов workflow в CI.
 
 ## Какво е пипнато в момента (вмъкнато при зареждане на умението)
 Първата папка на всеки ред е продуктът, чийто гейт пускаш. Празно → няма незаписани промени; тогава
@@ -21,16 +21,11 @@ allowed-tools: Bash(git status *)
 !`git status --short`
 
 ## Гейт по продукт (пусни от папката на продукта)
-| Продукт | Команди |
-|---------|---------|
-| `zabobovdol/` | `npm run lint` · `npm run typecheck` · `npm test` · `npm run build` |
-| `medqr/` | `npm run lint` · `npm run format:check` · `npm test` |
-| `Gaming/` | `pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm build` (turbo fans out) |
-| `linketto/`, `Minyor/`, `scuolabulgara/`, `mastilko/`, `CSPos/` | Next+TS: `npm run lint` · `npm run typecheck` · `npm test` · `npm run build` |
-| `SupremeDiscordBot/`, `treydar/`, `panev/`, `vizitka/`, `eternaltouch/` | plain ESM: `npm run lint` · `npm test` (виж product `package.json`) |
-
-Не помниш командите на конкретен продукт → **прочети неговия `CLAUDE.md`/`README`** (там е каноничният
-списък). Не гадай скриптове.
+Каноничният списък е в `<продукт>/CLAUDE.md`. Ако там го няма — пусни **всички налични** от `lint`,
+`typecheck`, `format:check`, `test`, `build`, `check` в `<продукт>/package.json` → `scripts` (продуктите се
+различават: напр. Minyor няма `test`, panev има само `test`). `Gaming/` е pnpm + turbo (`pnpm lint` …);
+`SupremeDiscordBot/` няма коренен `package.json` — гейтът е по подпапки (`backend/`, `bot/`, `frontend/`).
+Не гадай скриптове — липсващ скрипт не се брои за минал, казваш, че го няма.
 
 ## Агентен слой (ако си пипал `.claude/agents`, `.claude/hooks`, `.claude/skills`, `tools/agents|memory|hooks|skills`)
 ```bash

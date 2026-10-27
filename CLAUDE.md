@@ -42,7 +42,7 @@ file holds only what is true across all products. Keep it that way.
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
-hooks, rules).
+hooks, skills).
 
 ## Global rules
 
@@ -89,7 +89,7 @@ hooks, rules).
   owner's explicit request. Not covered: video that is a product feature (e.g. Piuma's content engine).
 - **Verification agents: hard cap 10.** Never spawn more than **10** generic/external
   agents (anything other than our custom `.claude/agents/`) for verification in a
-  task — it burns tokens. Prefer our purpose-built agents; verify inline when cheap.
+  task — it burns tokens. Our agents first (see the owner's rules below); verify inline when cheap.
 
 ## Custom agents — `.claude/agents/`
 
@@ -102,11 +102,22 @@ secrets/PII, fail closed. Invoke via the Agent tool (*„пусни Кодадж
 each agent's HANDOFF (next agent · blocker · human decision) in front of the orchestrator. **AI-джията**
 is the lead. **Teams:** 9 lean teams (`.claude/agents/_teams.json` → `_teams.md`), each agent in exactly one, with lead · ≤3-step flow · human checkpoint; start with `node tools/agents/teams.mjs --route "<task>"`. Run `node tools/agents/oversee.mjs` after any change to the agent layer, and the full gate
 `node tools/agents/gate.mjs` before calling it done. **Cost lives in the tool loop, not the prompt**
-(measured: >90%) — keep agent runs short and targeted; prefer our agents over generic ones (those see
+(measured: >90%) — keep agent runs short and targeted; generic agents also start heavier (they see
 every MCP tool); real spend: `node tools/agents/usage-report.mjs`.
 **Full doctrine** (loops, trajectories, defect rate, collaboration, versions/claims freshness, deep audit,
 cost, caching, memory retrieval) → `tools/agents/CLAUDE.md` (loads on demand); roster/loop/authoring →
 `.claude/agents/README.md`; hooks → `.claude/hooks/README.md`. Keep `agents-dashboard/agents.json` in sync.
+
+**Owner's rules for agents (2026-10-27):**
+- **When a task needs an agent, use OUR agents** (`.claude/agents/`, route with `teams.mjs --route`) — never
+  general-purpose/Explore/fork while one of ours fits. Every run teaches the fleet (memory, flow ledger, usage);
+  a generic agent's run teaches nothing. No fit at all → say so and propose the gap as a new agent or skill.
+- **Weak run or missing capability → train the agent, don't route around it:** record it in
+  `tools/agents/error-ledger.mjs add` with a regression (`--spec` behaviour, `--test` tool), fix the definition
+  or the doctrine, give it a verified lesson, add/extend its golden case, then re-run it. Repeated weakness in
+  a domain is a fleet gap → AI-джията proposes the fix.
+- **Every 5 days: check Anthropic/Claude docs for news** — `node tools/agents/anthropic-watch.mjs` (scheduled
+  task; new items → AI-джията evaluates against our fleet → PR, owner decides).
 
 **Communication style (caveman):** terse, fragment prose; every technical token (code, commands,
 `file:line`, error strings) exact; drop filler; **never** compress Bulgarian user-facing UI strings.

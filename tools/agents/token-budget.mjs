@@ -54,6 +54,12 @@ export const PREFIX_TOKEN_HARD = 6000;
 export const ROOT_DOC_TOKEN_HARD = 4800;
 const ROOT_DOC = process.env.TOKEN_BUDGET_ROOT_DOC || join(ROOT, "CLAUDE.md");
 
+// Харнесът маха блоковите HTML коментари от CLAUDE.md, преди да го подаде на модела (docs: memory,
+// „Block-level HTML comments … are stripped“; коментар в код блок остава). Мерим това, което се плаща.
+export function injectedText(md) {
+  return String(md).split(/(^```[\s\S]*?^```)/m).map((part, i) => (i % 2 ? part : part.replace(/<!--[\s\S]*?-->/g, ""))).join("");
+}
+
 // --- Cyrillic-aware евристичен токенизатор ---------------------------------
 // Claude токенизаторът дели кирилицата по-ситно от латиницата. Емпирично blended съотношение:
 // кирилична буква ≈ 1/2.2 токена, останалото (ASCII/код/пунктуация) ≈ 1/4 токена. Плюс отделни
@@ -167,7 +173,7 @@ export function computeBudget() {
   totals.prefixBullets = prefixBullets;
   totals.costPerPrefixBullet = prefixBullets ? Math.round((STATIC_PREFIX_TOKENS / prefixBullets) * rows.length) : 0;
   // Главната сесия на всеки ход: коренният CLAUDE.md + списъкът с описания на агентите.
-  const rootDocTokens = existsSync(ROOT_DOC) ? estTokens(readFileSync(ROOT_DOC, "utf8")) : 0;
+  const rootDocTokens = existsSync(ROOT_DOC) ? estTokens(injectedText(readFileSync(ROOT_DOC, "utf8"))) : 0;
   const descTokens = agentIds().reduce((s, id) => {
     const fm = readFileSync(join(AGENTS_DIR, id + ".md"), "utf8").split(/^---\s*$/m)[1] || "";
     return s + estTokens((fm.match(/^description:[ \t]*(.*)$/m) || [])[1] || "");

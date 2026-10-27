@@ -297,3 +297,14 @@
 {"t":"handoff","ts":"2026-10-24T06:36:10.110Z","id":"r606f816d","from":"prevodach","to":"човек","status":"наред","run":"0cc8e6c0"}
 {"t":"handoff","ts":"2026-10-24T06:39:15.140Z","id":"r606f816d","from":"izpitatelya","to":"ai-djiyata","status":"има бележки","run":"e6a786bd"}
 {"t":"handoff","ts":"2026-10-24T06:42:56.908Z","id":"r606f816d","from":"prevodach","to":"човек","status":"има бележки","run":"630be6d0"}
+{"t":"start","ts":"2026-10-27T09:52:36.519Z","id":"red60c781","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-10-27T09:52:36.519Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"има бележки","run":"6e2e0626"}
+{"t":"handoff","ts":"2026-10-27T09:53:17.881Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"има бележки","run":"4821e441"}
+{"t":"handoff","ts":"2026-10-27T09:55:26.295Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"има бележки","run":"468b4d61"}
+{"t":"handoff","ts":"2026-10-27T09:55:40.901Z","id":"red60c781","from":"seo","to":"ai-djiyata","status":"има бележки","run":"9e3f70c7"}
+{"t":"handoff","ts":"2026-10-27T09:56:27.589Z","id":"red60c781","from":"kasadjiyata","to":"kachestveniyat","status":"има бележки","run":"b7d511ff"}
+{"t":"handoff","ts":"2026-10-27T09:56:42.274Z","id":"red60c781","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"126193b3"}
+{"t":"handoff","ts":"2026-10-27T09:57:08.442Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"има бележки","run":"1e753e73"}
+{"t":"handoff","ts":"2026-10-27T09:58:20.959Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"блокер (гейтът е червен по причина извън моя обхват; моята част е готова)","run":"12d849bd"}
+{"t":"handoff","ts":"2026-10-27T09:58:54.854Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"блокер","run":"9f8655cb"}
+{"t":"handoff","ts":"2026-10-27T10:02:02.255Z","id":"red60c781","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"b7c5ad1e"}

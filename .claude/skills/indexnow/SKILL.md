@@ -33,10 +33,11 @@ node tools/seo/indexnow.mjs https://<live-domain> \
 > **Капанът, който струва деплой:** при SPA (`try_files … /index.html`) адресът
 > `/indexnow-key.txt` връща **200 с index.html**, не 404. Тоест „файлът отговаря" НЕ значи
 > „ключът е там" — проверявай съдържанието: `curl -s <url>/indexnow-key.txt` трябва да върне
-> само ключа. (Реален провал на Supreme, 07.08.2026.)
+> само ключа.
 
-`deploy/autodeploy.sh` пинга след здрав релийз за zabobovdol, SupremeDiscordBot, mastilko, ospedali и
-adblock — всеки по свой начин (общ ключ `INDEXNOW_<PROJ>` няма; проверено 2026-09-24). За останалите
+`deploy/autodeploy.sh` пинга след здрав релийз за zabobovdol, SupremeDiscordBot, mastilko, ospedali,
+adblock и korpora (само при променен sitemap, `korpora/deploy/deploy.sh`) — всеки по свой начин (общ ключ
+`INDEXNOW_<PROJ>` няма; проверено 2026-10-27). За останалите
 продукти пусни командата ръчно след релийз, засягащ откриваемостта; vizitka има и свой пинг в
 `vizitka/deploy/server-setup.sh`. Пусни ръчно и при промяна на живо между релийзи (напр. публикуване
 през админ панела).

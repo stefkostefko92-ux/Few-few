@@ -41,7 +41,7 @@ node tools/agents/scope-check.mjs --staged   # монорепо закон №1:
 
 ## Агентен слой
 Пипаш `.claude/agents|skills|hooks`, `tools/agents|memory|skills`, таблото → пусни допълнително:
-`node tools/agents/oversee.mjs` · `node tools/skills/lint.mjs` · `node --test $(find tools -name '*.test.mjs')`.
+`node tools/agents/gate.mjs` (включва oversee и уменията) · `node --test $(find tools -name '*.test.mjs')` — виж quality-gate.
 Собственик на CI/PR конвейера = агентът **Конвейерът**.
 
 ## Дефиниция на „готово"
