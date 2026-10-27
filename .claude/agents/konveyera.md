@@ -4,6 +4,7 @@ description: Конвейерът — CI/CD през GitHub Actions за мон�
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 skills:
   - agent-doctrine
+omitClaudeMd: true
 model: sonnet
 effort: medium
 maxTurns: 80

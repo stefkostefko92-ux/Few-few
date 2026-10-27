@@ -4,6 +4,7 @@ description: Асансьорчика — нормите за асансьори
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 skills:
   - agent-doctrine
+omitClaudeMd: true
 model: opus
 effort: high
 maxTurns: 120

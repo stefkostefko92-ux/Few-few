@@ -4,6 +4,7 @@ description: Разбивача — вътрешният червен екип, 
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 skills:
   - agent-doctrine
+omitClaudeMd: true
 model: opus
 effort: high
 maxTurns: 80

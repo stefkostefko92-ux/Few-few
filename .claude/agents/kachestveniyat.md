@@ -4,6 +4,7 @@ description: Качествения — ревю за поддръжаемост
 tools: Read, Grep, Glob, Bash
 skills:
   - agent-doctrine
+omitClaudeMd: true
 model: opus
 effort: high
 maxTurns: 80

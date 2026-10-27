@@ -198,6 +198,8 @@ for (const id of allIds) {
     const fmBlock = def.split(/^---\s*$/m)[1] || "";
     if (!/^skills:\s*\n(?:[ \t]+-[ \t]+\S+\s*\n)*?[ \t]+-[ \t]+agent-doctrine\s*$/m.test(fmBlock))
       r.hard.push("няма agent-doctrine в skills: — агентът тръгва без доктрината за сигурност и процедурата");
+    // Коренният CLAUDE.md (~4,7k т) не трябва на агента: общите му правила идват през _shared.md (A/B 2026-10-27).
+    if (!/^omitClaudeMd:\s*true\s*$/m.test(fmBlock)) r.warn.push("без omitClaudeMd: true — плаща коренния CLAUDE.md при всеки старт");
     if (repeatsLearnProtocol(def)) r.hard.push("дефиницията преповтаря цикъла за учене (```learn схема) — той живее само в _memory/PROCEDURE.md; остави един ред с доменния гейт за „verified“");
     // Описанието: по него главната сесия избира агента и го плаща на всеки ход.
     const desc = ((def.split(/^---\s*$/m)[1] || "").match(/^description:[ \t]*(.*)$/m) || [])[1];

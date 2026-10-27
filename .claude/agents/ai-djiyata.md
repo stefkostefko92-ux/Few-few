@@ -4,6 +4,7 @@ description: AI-джията — водещ („президент“) на аг
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 skills:
   - agent-doctrine
+omitClaudeMd: true
 model: opus
 effort: high
 maxTurns: 80

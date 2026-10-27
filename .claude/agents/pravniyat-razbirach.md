@@ -4,6 +4,7 @@ description: Правният Разбирач — одит на правна и
 tools: Read, Grep, Glob, WebFetch, WebSearch
 skills:
   - agent-doctrine
+omitClaudeMd: true
 model: opus
 effort: high
 maxTurns: 80

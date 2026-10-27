@@ -5,6 +5,7 @@ tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 skills:
   - agent-doctrine
   - frontend-design
+omitClaudeMd: true
 model: sonnet
 effort: medium
 maxTurns: 80

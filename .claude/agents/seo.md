@@ -4,6 +4,7 @@ description: SEO — откриваемост и класиране в търс�
 tools: Read, Grep, Glob, WebFetch, WebSearch
 skills:
   - agent-doctrine
+omitClaudeMd: true
 model: sonnet
 effort: medium
 maxTurns: 80

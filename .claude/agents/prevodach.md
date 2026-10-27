@@ -4,6 +4,7 @@ description: Преводач — локализация от български
 tools: Read, Write, Edit, Grep, Glob, WebFetch, WebSearch
 skills:
   - agent-doctrine
+omitClaudeMd: true
 model: opus
 effort: high
 maxTurns: 80

@@ -4,6 +4,7 @@ description: VPS-аджията — операторът на продукцио
 tools: Read, Write, Edit, Bash, Grep, Glob
 skills:
   - agent-doctrine
+omitClaudeMd: true
 model: opus
 effort: high
 maxTurns: 80

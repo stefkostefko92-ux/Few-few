@@ -4,6 +4,7 @@ description: Сийдъра — собственикът на съдържате
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 skills:
   - agent-doctrine
+omitClaudeMd: true
 model: sonnet
 effort: low
 maxTurns: 80
