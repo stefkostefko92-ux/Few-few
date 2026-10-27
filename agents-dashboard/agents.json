@@ -2149,6 +2149,11 @@
       "activity": [
         {
           "date": "2026-10-27",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „В PR-ревю worktree външна DNS проверка (getent/curl към DoH) изисква одобрение; при doc…\""
+        },
+        {
+          "date": "2026-10-27",
           "type": "learning",
           "summary": "Научи: „В mastilko MAX_SHEETS=100 (src/lib/print.ts) е мерен за „едно име = един А4 лист“; полз…\""
         },
