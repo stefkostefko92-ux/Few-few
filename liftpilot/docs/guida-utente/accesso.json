@@ -334,7 +334,7 @@
        "default": null,
        "required": "sì",
        "help": "È l’indirizzo con cui il tuo account è stato creato (il Titolare lo inserisce alla registrazione; i colleghi usano l’indirizzo dell’invito).",
-       "src": "src/components/LoginForm.tsx:23"
+       "src": "src/components/LoginForm.tsx:27"
       },
       {
        "label": "Password",
@@ -344,7 +344,7 @@
        "default": null,
        "required": "sì",
        "help": "La password scelta alla registrazione, all’accettazione dell’invito o dopo il recupero. Non viene mai mostrata.",
-       "src": "src/components/LoginForm.tsx:27"
+       "src": "src/components/LoginForm.tsx:31"
       }
      ],
      "actions": [
@@ -427,7 +427,7 @@
        "default": null,
        "required": "sì",
        "help": "Il nome dell’impresa o dello studio professionale che usa LiftPilot, come lo scriveresti su un documento. Compare nell’intestazione dell’account e dei documenti.",
-       "src": "src/components/RegisterForm.tsx:62"
+       "src": "src/components/RegisterForm.tsx:79"
       },
       {
        "label": "Partita IVA (facoltativa)",
@@ -437,7 +437,7 @@
        "default": null,
        "required": "no",
        "help": "La partita IVA dell’azienda, se vuoi indicarla. Il software non ne controlla il formato.",
-       "src": "src/components/RegisterForm.tsx:64"
+       "src": "src/components/RegisterForm.tsx:81"
       },
       {
        "label": "Città (facoltativa)",
@@ -447,7 +447,7 @@
        "default": null,
        "required": "no",
        "help": "La città della sede dell’azienda.",
-       "src": "src/components/RegisterForm.tsx:65"
+       "src": "src/components/RegisterForm.tsx:82"
       }
      ],
      "actions": [],
@@ -464,7 +464,7 @@
        "default": null,
        "required": "sì",
        "help": "Il tuo nome: compare nel profilo, nel registro attività e come autore dei documenti che prepari.",
-       "src": "src/components/RegisterForm.tsx:70"
+       "src": "src/components/RegisterForm.tsx:90"
       },
       {
        "label": "E-mail",
@@ -474,7 +474,7 @@
        "default": null,
        "required": "sì",
        "help": "L’indirizzo del tuo account: serve per accedere e per ricevere il link di conferma. Nella beta su invito è già compilato con l’indirizzo dell’invito e non si può modificare («È l’indirizzo dell’invito: l’account si registra con questo.»).",
-       "src": "src/components/RegisterForm.tsx:71"
+       "src": "src/components/RegisterForm.tsx:91"
       },
       {
        "label": "Password",
@@ -484,7 +484,7 @@
        "default": null,
        "required": "sì",
        "help": "La password dell’account. Ti servirà anche nel passo successivo, per confermare l’indirizzo e approvare le clausole. Sotto il campo: «Almeno 12 caratteri, con lettere e cifre.»",
-       "src": "src/components/RegisterForm.tsx:75"
+       "src": "src/components/RegisterForm.tsx:95"
       },
       {
        "label": "Ripeti la password",
@@ -494,7 +494,7 @@
        "default": null,
        "required": "sì",
        "help": "Riscrivi la stessa password: se non coincide leggi «Le due password nuove non coincidono.»",
-       "src": "src/components/RegisterForm.tsx:81"
+       "src": "src/components/RegisterForm.tsx:101"
       }
      ],
      "actions": [],
@@ -511,7 +511,7 @@
        "default": "non spuntata",
        "required": "sì",
        "help": "Accettazione delle condizioni d’uso e dell’accordo sul trattamento dei dati (art. 28 GDPR) per conto dell’azienda. «condizioni d’uso» è un link che apre il testo in una nuova scheda.",
-       "src": "src/components/RegisterForm.tsx:89"
+       "src": "src/components/RegisterForm.tsx:109"
       },
       {
        "label": "Dichiaro di registrarmi per conto dell’impresa o dello studio professionale indicato, di avere il potere di vincolarlo e di non agire come consumatore.",
@@ -521,7 +521,7 @@
        "default": "non spuntata",
        "required": "sì",
        "help": "Conferma che usi LiftPilot per lavoro, non come privato.",
-       "src": "src/components/RegisterForm.tsx:89"
+       "src": "src/components/RegisterForm.tsx:109"
       },
       {
        "label": "Accetto che calcoli, tavole, relazioni, simulazioni, consigli sugli argani e bozze d’ordine di LiftPilot siano bozze…",
@@ -531,7 +531,7 @@
        "default": "non spuntata",
        "required": "sì",
        "help": "Conferma che ciò che LiftPilot produce è una bozza: diventa documento solo quando un tecnico abilitato lo verifica e lo firma. Il testo della casella finisce con «…e la responsabilità resta sua.»",
-       "src": "src/components/RegisterForm.tsx:89"
+       "src": "src/components/RegisterForm.tsx:109"
       }
      ],
      "actions": [
@@ -606,7 +606,7 @@
        "default": "non spuntata",
        "required": "solo se la registrazione è stata fatta con una versione precedente delle condizioni",
        "help": "Accettazione della versione in vigore delle condizioni d’uso e dell’accordo sul trattamento dei dati.",
-       "src": "src/components/VerifyEmailForm.tsx:62"
+       "src": "src/components/VerifyEmailForm.tsx:79"
       }
      ],
      "actions": [],
@@ -626,7 +626,7 @@
        "default": "non spuntata",
        "required": "sì, per le registrazioni in attesa",
        "help": "Approvazione specifica, una per una, delle clausole che il codice civile richiede di approvare a parte. Non è una spunta generica: le clausole sono quelle elencate nel testo della casella e per intero nelle condizioni d’uso (link che si apre in una nuova scheda).",
-       "src": "src/components/VerifyEmailForm.tsx:67"
+       "src": "src/components/VerifyEmailForm.tsx:84"
       }
      ],
      "actions": [],
@@ -649,7 +649,7 @@
        "default": null,
        "required": "sì",
        "help": "La password scelta alla registrazione (o, per un collega aggiunto dall’azienda, quella assegnata). Con il link prova che l’account è tuo.",
-       "src": "src/components/VerifyEmailForm.tsx:72"
+       "src": "src/components/VerifyEmailForm.tsx:89"
       }
      ],
      "actions": [
@@ -707,7 +707,7 @@
        "default": null,
        "required": "sì",
        "help": "L’indirizzo del tuo account LiftPilot.",
-       "src": "src/components/ForgotPasswordForm.tsx:22"
+       "src": "src/components/ForgotPasswordForm.tsx:25"
       }
      ],
      "actions": [
@@ -756,7 +756,7 @@
        "default": null,
        "required": "sì",
        "help": "La password che userai da ora.",
-       "src": "src/components/ResetPasswordForm.tsx:30"
+       "src": "src/components/ResetPasswordForm.tsx:33"
       },
       {
        "label": "Ripeti la nuova password",
@@ -766,7 +766,7 @@
        "default": null,
        "required": "sì",
        "help": "Riscrivi la stessa password.",
-       "src": "src/components/ResetPasswordForm.tsx:34"
+       "src": "src/components/ResetPasswordForm.tsx:37"
       }
      ],
      "actions": [
@@ -819,7 +819,7 @@
        "default": null,
        "required": "sì",
        "help": "La password del tuo nuovo account. La scegli tu: nessuno la conosce.",
-       "src": "src/components/InviteAcceptForm.tsx:36"
+       "src": "src/components/InviteAcceptForm.tsx:39"
       },
       {
        "label": "Ripeti la password",
@@ -829,7 +829,7 @@
        "default": null,
        "required": "sì",
        "help": "Riscrivi la stessa password.",
-       "src": "src/components/InviteAcceptForm.tsx:40"
+       "src": "src/components/InviteAcceptForm.tsx:43"
       }
      ],
      "actions": [
@@ -1236,7 +1236,7 @@
        "default": "non spuntata",
        "required": "sì",
        "help": "Accettazione delle condizioni d’uso e dell’accordo sul trattamento dei dati.",
-       "src": "src/components/TermsGate.tsx:44"
+       "src": "src/components/TermsGate.tsx:57"
       },
       {
        "label": "Dichiaro di agire per conto dell’impresa o dello studio professionale titolare dell’account, di avere il potere di vincolarlo e di non operare come consumatore.",
@@ -1246,7 +1246,7 @@
        "default": "non spuntata",
        "required": "sì",
        "help": "Come nella registrazione: confermi che agisci per l’impresa, non come privato.",
-       "src": "src/components/TermsGate.tsx:51"
+       "src": "src/components/TermsGate.tsx:67"
       },
       {
        "label": "Accetto che calcoli, tavole, relazioni, simulazioni, consigli sugli argani e bozze d’ordine di LiftPilot siano bozze…",
@@ -1256,7 +1256,7 @@
        "default": "non spuntata",
        "required": "sì",
        "help": "I risultati sono bozze finché un tecnico abilitato non li verifica e firma.",
-       "src": "src/components/TermsGate.tsx:51"
+       "src": "src/components/TermsGate.tsx:67"
       },
       {
        "label": "Ai sensi degli artt. 1341 e 1342 del codice civile approvo specificamente le seguenti clausole delle condizioni d’uso: art. 4, 6, 7, 8, 10, 12, 13, 15 (ognuna con il suo oggetto indicato nel testo).",
@@ -1266,7 +1266,7 @@
        "default": "non spuntata",
        "required": "sì",
        "help": "Approvazione specifica delle clausole indicate nel testo della casella, che trovi per intero nelle condizioni d’uso.",
-       "src": "src/components/TermsGate.tsx:51"
+       "src": "src/components/TermsGate.tsx:67"
       }
      ],
      "actions": [],
@@ -1286,7 +1286,7 @@
        "default": null,
        "required": "sì",
        "help": "La tua password attuale. Serve ad approvare specificamente le clausole: la password vale come firma elettronica dell’approvazione. Sotto il campo c’è la stessa spiegazione.",
-       "src": "src/components/TermsGate.tsx:56"
+       "src": "src/components/TermsGate.tsx:75"
       }
      ],
      "actions": [
@@ -1334,7 +1334,7 @@
        "default": "non spuntata",
        "required": "sì",
        "help": "Approvazione specifica delle clausole elencate.",
-       "src": "src/components/ClausesApproval.tsx:36"
+       "src": "src/components/ClausesApproval.tsx:47"
       },
       {
        "label": "La tua password",
@@ -1344,7 +1344,7 @@
        "default": null,
        "required": "sì",
        "help": "La tua password attuale: vale come firma elettronica dell’approvazione.",
-       "src": "src/components/ClausesApproval.tsx:42"
+       "src": "src/components/ClausesApproval.tsx:55"
       }
      ],
      "actions": [
@@ -1395,7 +1395,7 @@
        "default": null,
        "required": "no",
        "help": "Il tuo nome e cognome, come inserito alla registrazione o dal Titolare.",
-       "src": "src/app/[locale]/app/account/page.tsx:49"
+       "src": "src/app/[locale]/app/account/page.tsx:22"
       },
       {
        "label": "E-mail",
@@ -1405,7 +1405,7 @@
        "default": null,
        "required": "no",
        "help": "L’indirizzo con cui accedi.",
-       "src": "src/app/[locale]/app/account/page.tsx:50"
+       "src": "src/app/[locale]/app/account/page.tsx:23"
       },
       {
        "label": "Azienda",
@@ -1415,7 +1415,7 @@
        "default": null,
        "required": "no",
        "help": "La ragione sociale dell’azienda a cui appartieni.",
-       "src": "src/app/[locale]/app/account/page.tsx:51"
+       "src": "src/app/[locale]/app/account/page.tsx:24"
       },
       {
        "label": "Ruolo",
@@ -1425,7 +1425,7 @@
        "default": null,
        "required": "no",
        "help": "Il tuo ruolo: Titolare, Capotecnico, Progettista, Tecnico o Commerciale (o Amministratore della piattaforma). Decide che cosa puoi fare: i diritti li stabilisce il Titolare dalla pagina Permessi.",
-       "src": "src/app/[locale]/app/account/page.tsx:52"
+       "src": "src/app/[locale]/app/account/page.tsx:25"
       }
      ],
      "actions": [],
@@ -1444,7 +1444,7 @@
        "default": null,
        "required": "sì",
        "help": "La password che usi adesso: serve a provare che sei tu.",
-       "src": "src/components/ChangePasswordForm.tsx:19"
+       "src": "src/components/ChangePasswordForm.tsx:24"
       },
       {
        "label": "Nuova password",
@@ -1454,7 +1454,7 @@
        "default": null,
        "required": "sì",
        "help": "La nuova password. Deve essere diversa dall’attuale. Sotto i campi: «Almeno 12 caratteri, con lettere e cifre.»",
-       "src": "src/components/ChangePasswordForm.tsx:20"
+       "src": "src/components/ChangePasswordForm.tsx:28"
       },
       {
        "label": "Ripeti la nuova password",
@@ -1464,7 +1464,7 @@
        "default": null,
        "required": "sì",
        "help": "Riscrivi la nuova password.",
-       "src": "src/components/ChangePasswordForm.tsx:21"
+       "src": "src/components/ChangePasswordForm.tsx:32"
       }
      ],
      "actions": [
@@ -1493,7 +1493,7 @@
    "access": "Dentro l’applicazione, per ogni utente con una sessione, qualunque ruolo e anche con l’azienda in sola lettura (non scrive nulla del lavoro dell’azienda). Fa eccezione chi deve ancora scegliere la password personale.",
    "reach": "Da «Segnala un problema» nel menu laterale (in basso, sopra la scheda del tuo nome; da una pagina porta con sé quella pagina), dal collegamento «Segnala il problema» nella pagina di errore (che porta con sé il codice dell’errore) o dalla guida rapida.",
    "purpose": [
-    "«Un problema, un suggerimento o una domanda su LiftPilot: la leggono gli amministratori di LiftPilot (Carbon Stealth VCC) per risponderti, se serve all’indirizzo del tuo account, e correggere il servizio.» La segnalazione arriva agli amministratori con il tuo nome, la tua azienda e la pagina da cui scrivi."
+    "«Un problema, un suggerimento o una domanda: la leggono gli amministratori di LiftPilot (Carbon Stealth VCC) per risponderti e correggere il servizio.» Se serve, ti rispondono all’indirizzo del tuo account. La segnalazione arriva agli amministratori con il tuo nome, la tua azienda e la pagina da cui scrivi."
    ],
    "shots": [
     {
@@ -1517,7 +1517,7 @@
        "default": null,
        "required": "no",
        "help": "La pagina da cui hai aperto la segnalazione, scritta come indirizzo (per esempio «/app/impianti»). È solo informativa: non si modifica. Se hai aperto la segnalazione dal menu leggi «dal menu».",
-       "src": "src/components/FeedbackForm.tsx:80"
+       "src": "src/components/FeedbackForm.tsx:83"
       },
       {
        "label": "Codice dell’errore",
@@ -1527,7 +1527,7 @@
        "default": null,
        "required": "compare solo se arrivi dalla pagina di errore",
        "help": "Compare solo se arrivi dalla pagina di errore: è il codice che aiuta gli amministratori a ritrovare il problema. Non si modifica.",
-       "src": "src/components/FeedbackForm.tsx:81"
+       "src": "src/components/FeedbackForm.tsx:84"
       },
       {
        "label": "Tipo",
@@ -1537,7 +1537,7 @@
        "default": "Problema",
        "required": "sì",
        "help": "Che cosa vuoi dirci. Scegli «Problema» se qualcosa non funziona, «Suggerimento» per un’idea, «Domanda» per chiedere.",
-       "src": "src/components/FeedbackForm.tsx:85"
+       "src": "src/components/FeedbackForm.tsx:88"
       },
       {
        "label": "Messaggio",
@@ -1547,7 +1547,7 @@
        "default": null,
        "required": "sì",
        "help": "Che cosa stavi facendo, che cosa è successo e che cosa ti aspettavi. Più sei preciso, più è facile correggere il problema.",
-       "src": "src/components/FeedbackForm.tsx:92"
+       "src": "src/components/FeedbackForm.tsx:95"
       }
      ],
      "actions": [

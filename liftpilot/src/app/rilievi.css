@@ -24,6 +24,11 @@
 .rv-search kbd { flex: none; padding: 3px 7px; border: 1px solid var(--rule-strong); border-radius: 4px; font: 500 12px/1 var(--font-mono); color: var(--muted); }
 /* the «/» shortcut means nothing on a touch screen */
 @media (hover: none), (pointer: coarse) { .rv-search kbd { display: none; } }
+/* the search's «?» beside its box (round 52): the box keeps its width, the explanation opens leftwards, inside the screen */
+.rv-search-row { display: flex; align-items: center; gap: 10px; max-width: 790px; min-width: 0; }
+.rv-search-row > .rv-search { flex: 1 1 auto; min-width: 0; }
+.rv-search-row > .lbl { flex: none; }
+.rv-search-row .aiuto-testo { left: auto; right: 0; }
 .rv-status { margin: -6px 0 0; font-size: 14px; color: var(--muted); }
 .rv-results { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .rv-results[aria-busy="true"] { opacity: .65; transition: opacity .15s; }

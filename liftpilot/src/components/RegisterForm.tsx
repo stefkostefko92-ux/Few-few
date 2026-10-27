@@ -9,9 +9,26 @@ import { PASSWORD_MIN_LENGTH } from '@/lib/password-policy';
 import { TOKEN_TTL_MS } from '@/lib/token-shape';
 import { TERMS_VERSION, legalValues } from '@/lib/legal';
 import { REGISTER_CONSENTS, type RegisterConsent } from '@/lib/consents';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../messages/aiuto/accesso.json';
+import Aiuto from './aiuto/Aiuto';
+import Etichetta from './aiuto/Etichetta';
 import { useErrorFocus } from './useErrorFocus';
 
 type Text = 'company' | 'vatNumber' | 'city' | 'name' | 'email';
+
+// The fields' «?» (round 52). A consent's «?» sits beside its box, outside the label (a button is not label content);
+// its name is a short one, the box's own text being the whole declaration.
+const AIUTO_TESTI: Readonly<Record<Text, string | null>> = {
+  company: testoAiuto(AIUTO, 'register.company'), vatNumber: testoAiuto(AIUTO, 'register.vatNumber'), city: testoAiuto(AIUTO, 'register.city'),
+  name: testoAiuto(AIUTO, 'register.name'), email: testoAiuto(AIUTO, 'register.email'),
+};
+const AIUTO_CONSENSI: Readonly<Record<RegisterConsent, { testo: string | null; nome: string }>> = {
+  accept: { testo: testoAiuto(AIUTO, 'consenso.accept'), nome: testoAiuto(AIUTO, 'nome.accept') ?? '' },
+  business: { testo: testoAiuto(AIUTO, 'consenso.business'), nome: testoAiuto(AIUTO, 'nome.business') ?? '' },
+  drafts: { testo: testoAiuto(AIUTO, 'consenso.drafts'), nome: testoAiuto(AIUTO, 'nome.drafts') ?? '' },
+};
+const AIUTO_TITOLARE = testoAiuto(AIUTO, 'register.owner');
 
 // The typed values are kept by React (controlled), so an error does not empty the form; the passwords are typed again.
 // The ticks are uncontrolled with `defaultChecked` following what was ticked: React 19 resets the form after the action,
@@ -45,12 +62,12 @@ export default function RegisterForm({ date, trialDays, invite, onSent }: {
     );
   }
   const text = (name: Text, type: 'text' | 'email', autoComplete: string, max: number, required = true, readOnly = false) => (
-    <label className="field">
-      <span>{t(name)}</span>
-      <input className="input" type={type} name={name} autoComplete={autoComplete} maxLength={max} required={required} aria-invalid={bad(name)}
+    <div className="field">
+      <Etichetta htmlFor={`reg-${name}`} aiuto={AIUTO_TESTI[name]} nome={t(name)}>{t(name)}</Etichetta>
+      <input id={`reg-${name}`} className="input" type={type} name={name} autoComplete={autoComplete} maxLength={max} required={required} aria-invalid={bad(name)}
         aria-describedby={said(name)} value={v[name]} readOnly={readOnly} onChange={(e) => setV({ ...v, [name]: e.target.value })} />
       {mark(name)}
-    </label>
+    </div>
   );
   return (
     <form ref={form} action={action} className="panel register-form" noValidate>
@@ -65,36 +82,45 @@ export default function RegisterForm({ date, trialDays, invite, onSent }: {
           {text('city', 'text', 'address-level2', 120, false)}
         </div>
       </fieldset>
-      <fieldset>
-        <legend>{t('ownerSection')}</legend>
+      {/* the group is named by the legend's words alone, not by its «?» */}
+      <fieldset aria-labelledby="reg-owner">
+        <legend>
+          <span className="lbl"><span id="reg-owner">{t('ownerSection')}</span>{AIUTO_TITOLARE ? <Aiuto testo={AIUTO_TITOLARE} nome={t('ownerSection')} /> : null}</span>
+        </legend>
         {text('name', 'text', 'name', 120)}
         {text('email', 'email', 'email', 254, true, invite !== null)}
         {invite ? <p className="note">{t('invitedEmail')}</p> : null}
-        <label className="field">
-          <span>{t('password')}</span>
-          <input className="input" type="password" name="password" autoComplete="new-password" minLength={PASSWORD_MIN_LENGTH} maxLength={200} required aria-invalid={bad('password')}
-            aria-describedby={said('password')} />
+        <div className="field">
+          <Etichetta htmlFor="reg-password" aiuto={testoAiuto(AIUTO, 'register.password')} nome={t('password')}>{t('password')}</Etichetta>
+          <input id="reg-password" className="input" type="password" name="password" autoComplete="new-password" minLength={PASSWORD_MIN_LENGTH} maxLength={200} required
+            aria-invalid={bad('password')} aria-describedby={said('password')} />
           {mark('password')}
-        </label>
-        <label className="field">
-          <span>{t('confirm')}</span>
-          <input className="input" type="password" name="confirm" autoComplete="new-password" maxLength={200} required aria-invalid={bad('confirm')}
+        </div>
+        <div className="field">
+          <Etichetta htmlFor="reg-confirm" aiuto={testoAiuto(AIUTO, 'password.confirm')} nome={t('confirm')}>{t('confirm')}</Etichetta>
+          <input id="reg-confirm" className="input" type="password" name="confirm" autoComplete="new-password" maxLength={200} required aria-invalid={bad('confirm')}
             aria-describedby={said('confirm')} />
           {mark('confirm')}
-        </label>
+        </div>
         <p className="note">{t('rule', { min: PASSWORD_MIN_LENGTH })}</p>
       </fieldset>
       <p className="note long">{trialDays !== null ? t('trial', { days: trialDays }) : t('beta', values)}</p>
       <p className="note">{t.rich('privacyNote', { link: (chunks) => <Link href="/privacy" target="_blank">{chunks}</Link> })}</p>
-      {REGISTER_CONSENTS.map((k) => (
-        <label key={k} className="check consent">
-          <input type="checkbox" name={k} defaultChecked={agreed[k]} onChange={(e) => setAgreed({ ...agreed, [k]: e.target.checked })} aria-invalid={bad(k)}
-            aria-describedby={said(k)} />
-          <span>{k === 'accept'
-            ? t.rich('accept', { ...values, link: (chunks) => <Link href="/privacy#terms" target="_blank">{chunks}</Link> })
-            : t(k, values)}{mark(k)}</span>
-        </label>
-      ))}
+      {REGISTER_CONSENTS.map((k) => {
+        const aiuto = AIUTO_CONSENSI[k];
+        return (
+          <div key={k} className="consent-row">
+            <label className="check consent">
+              <input type="checkbox" name={k} defaultChecked={agreed[k]} onChange={(e) => setAgreed({ ...agreed, [k]: e.target.checked })} aria-invalid={bad(k)}
+                aria-describedby={said(k)} />
+              <span>{k === 'accept'
+                ? t.rich('accept', { ...values, link: (chunks) => <Link href="/privacy#terms" target="_blank">{chunks}</Link> })
+                : t(k, values)}{mark(k)}</span>
+            </label>
+            {aiuto.testo ? <Aiuto testo={aiuto.testo} nome={aiuto.nome} /> : null}
+          </div>
+        );
+      })}
       <p className="note long">{t('clausesLater')}</p>
       <div><button type="submit" className="btn btn-primary" disabled={pending}>{pending ? t('submitting') : t('submit')}</button></div>
       <p className="note">{t('haveAccount')} <Link href="/login">{t('login')}</Link></p>

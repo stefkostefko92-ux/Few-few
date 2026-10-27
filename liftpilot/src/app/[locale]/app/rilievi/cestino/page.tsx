@@ -1,8 +1,10 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
+import { testoAiuto } from '@/lib/aiuto';
 import { flashOf } from '@/lib/rilievi/form-help';
 import { listParamsSchema } from '@/lib/rilievi/inputs';
 import type { RilieviT } from '@/lib/rilievi/t';
+import AIUTO from '../../../../../../messages/aiuto/rilievi.json';
 import { trashPage } from '@/server/rilievi/pages';
 import Crumbs from '@/components/Crumbs';
 import Flash from '@/components/rilievi/Flash';
@@ -35,7 +37,7 @@ export default async function RilieviTrashPage({ params, searchParams }: { param
       <RilieviHead title={t('trash.title')} lead={t('trash.subtitle')} />
       {flash ? <Flash text={t(`flash.${flash}`)} /> : null}
       <LiveSearch action={`/${locale}/app/rilievi/cestino`} base="/app/rilievi/cestino" query={q} label={t('schede.search.label')}
-        placeholder={t('schede.search.placeholder')} live={false} />
+        placeholder={t('schede.search.placeholder')} aiuto={testoAiuto(AIUTO, 'cercaCestino')} live={false} />
       <p className="rv-status" id="search-status" role="status">{status}</p>
       <div id="results" className="rv-results">
         <Results page={page} query={q} trash canCreate={false} base="/app/rilievi/cestino" status={status} t={rt} />

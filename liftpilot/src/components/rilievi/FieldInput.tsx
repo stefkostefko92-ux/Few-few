@@ -7,13 +7,18 @@
 // with one choice (`single` — «Tipo impianto», «Tipo porte») as radios a second click clears, the first of an old sheet's
 // two choices ticked. A field filled from a module that still follows its source carries `data-auto` (the linked data,
 // collegati-client.ts). A field with a condition (`when`, `not` too) sits in a wrapper the form hides while the condition
-// does not hold.
+// does not hold. Each field has its «?» by its key (messages/aiuto/rilievi.json; round 52): next to the label, or inside
+// the legend of a choice with the group named by its label alone (legenda.tsx).
 import type { ReactNode } from 'react';
+import { testoAiuto } from '@/lib/aiuto';
 import type { FieldErrorCode } from '@/lib/rilievi/field-parsers';
 import type { Condition } from '@/lib/rilievi/field-types';
 import { isOptionsField, type FieldDef } from '@/lib/rilievi/fields';
 import { errorTextOf, unitTextOf } from '@/lib/rilievi/form-help';
 import type { RilieviT } from '@/lib/rilievi/t';
+import AIUTO from '../../../messages/aiuto/rilievi.json';
+import Etichetta from '../aiuto/Etichetta';
+import { legenda } from './legenda';
 import { whenAttrs, type WhenAttrs } from './when';
 
 /** A wrapper for what shows only under a condition (fields.ts `when`, the measurements): `off` is how it opens; the form
@@ -49,6 +54,7 @@ export default function FieldInput({ field, value, error, auto, t }: {
 }) {
   const id = `f-${field.key}`, errId = `err-${field.key}`, unitId = `u-${field.key}`;
   const label = t(field.question ? `scheda.question.${field.key}` : `scheda.field.${field.key}`);
+  const aiuto = testoAiuto(AIUTO, field.key);
   const errText = error ? errorTextOf(field.key, error, t) : null;
   const unit = unitTextOf(field.key, t);
   const list = Array.isArray(value) ? value : typeof value === 'string' && field.kind === 'checks' ? [value] : [];
@@ -66,9 +72,10 @@ export default function FieldInput({ field, value, error, auto, t }: {
     const optionLabel = (o: string): string =>
       field.kind === 'yesno' && !risposte ? t(o === 'si' ? 'common.yes' : 'common.no') : t(`scheda.option.${field.key}.${o}`);
     const cls = `rv-choice${field.kind === 'yesno' ? ' compact' : ''}${field.wide ? ' rv-wide' : ''}`;
+    const nome = legenda(`nm-${field.key}`, label, aiuto);
     return (
-      <fieldset className={cls} id={id} data-campo={field.key} aria-describedby={errText ? errId : undefined}>
-        <legend>{label}</legend>
+      <fieldset className={cls} id={id} data-campo={field.key} aria-labelledby={nome.labelledBy} aria-describedby={errText ? errId : undefined}>
+        <legend>{nome.testo}</legend>
         <div className="rv-opts">
           {options.map((o) => (field.kind === 'checks' && !single
             ? <Tick key={o} type="checkbox" name={field.key} value={o} checked={list.includes(o)} label={optionLabel(o)} auto={auto} />
@@ -94,7 +101,7 @@ export default function FieldInput({ field, value, error, auto, t }: {
 
   return (
     <div className={field.wide ? 'rv-field rv-wide' : 'rv-field'} data-campo={field.key}>
-      <label className="rv-label" htmlFor={id}>{label}</label>
+      <Etichetta htmlFor={id} className="rv-label" aiuto={aiuto} nome={label}>{label}</Etichetta>
       {unit ? (
         <div className={unit.length > 3 ? 'rv-unit long' : 'rv-unit'}>
           {input}

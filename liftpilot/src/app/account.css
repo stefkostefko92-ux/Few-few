@@ -29,6 +29,12 @@
 .terms-gate label.check.consent { gap: 10px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--bg-2); color: var(--ink-2); line-height: 1.5; }
 .terms-gate label.check.consent:has(input:checked) { border-color: var(--accent-line); background: var(--accent-soft); color: var(--ink); }
 .terms-gate label.check.consent input { width: 18px; height: 18px; }
+/* a box and its «?» (round 52): the «?» outside the box's frame, level with its first line (as in public.css) */
+.terms-gate .consent-row { display: flex; align-items: flex-start; gap: 8px; }
+.terms-gate .consent-row > label { flex: 1 1 auto; min-width: 0; }
+.terms-gate .consent-row > .aiuto { position: relative; flex: none; margin-top: 13px; }
+.terms-gate .consent-row > .aiuto .aiuto-testo { left: auto; right: 0; }
+.terms-gate .consent-row > .aiuto:not([data-zitto]):hover .aiuto-testo { display: block; }
 .terms-gate .note a, .terms-gate .lead a { color: var(--accent); }
 .gate-actions { padding-top: 4px; }
 /* the link to the text in force: a long label wraps inside the panel instead of widening the page */

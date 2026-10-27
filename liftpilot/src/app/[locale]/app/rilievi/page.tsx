@@ -1,10 +1,12 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
+import { testoAiuto } from '@/lib/aiuto';
 import { can } from '@/lib/rbac';
 import { flashOf } from '@/lib/rilievi/form-help';
 import { listParamsSchema } from '@/lib/rilievi/inputs';
 import type { RilieviT } from '@/lib/rilievi/t';
+import AIUTO from '../../../../../messages/aiuto/rilievi.json';
 import { listPage } from '@/server/rilievi/pages';
 import Icon from '@/components/Icon';
 import Flash from '@/components/rilievi/Flash';
@@ -45,7 +47,8 @@ export default async function RilieviPage({ params, searchParams }: { params: Pr
         </>
       )} />
       {flash ? <Flash text={t(`flash.${flash}`)} /> : null}
-      <LiveSearch action={`/${locale}/app/rilievi`} base="/app/rilievi" query={q} label={t('schede.search.label')} placeholder={t('schede.search.placeholder')} />
+      <LiveSearch action={`/${locale}/app/rilievi`} base="/app/rilievi" query={q} label={t('schede.search.label')} placeholder={t('schede.search.placeholder')}
+        aiuto={testoAiuto(AIUTO, 'cerca')} />
       <p className="rv-status" id="search-status" role="status">{status}</p>
       <div id="results" className="rv-results">
         <Results page={page} query={q} trash={false} canCreate={canCreate} base="/app/rilievi" status={status} t={rt} />

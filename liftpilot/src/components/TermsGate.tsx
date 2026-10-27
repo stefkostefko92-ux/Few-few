@@ -7,15 +7,28 @@ import { acceptTermsAction } from '@/server/terms-actions';
 import { initialFormState } from '@/server/form';
 import { TERMS_VERSION, legalValues, type TermsState } from '@/lib/legal';
 import { CONSENTS, type Consent } from '@/lib/consents';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../messages/aiuto/accesso.json';
+import Aiuto from './aiuto/Aiuto';
+import Etichetta from './aiuto/Etichetta';
 import Icon from './Icon';
 import { useErrorFocus } from './useErrorFocus';
 import '@/app/account.css';
+
+// the boxes' «?» (round 52): a short name, the box's own text being the whole declaration
+const AIUTO_SPUNTE: Readonly<Record<Consent, { testo: string | null; nome: string }>> = {
+  accept: { testo: testoAiuto(AIUTO, 'consenso.accept'), nome: testoAiuto(AIUTO, 'nome.accept') ?? '' },
+  business: { testo: testoAiuto(AIUTO, 'consenso.businessGate'), nome: testoAiuto(AIUTO, 'nome.business') ?? '' },
+  drafts: { testo: testoAiuto(AIUTO, 'consenso.drafts'), nome: testoAiuto(AIUTO, 'nome.drafts') ?? '' },
+  clauses: { testo: testoAiuto(AIUTO, 'consenso.clauses'), nome: testoAiuto(AIUTO, 'nome.clauses') ?? '' },
+};
 
 // The terms' page of the owner: the version in force to read, the four confirmations — the specific approval of the
 // clauses signed with the current password, not a bare tick (src/server/terms-actions.ts) —, and
 // what the company can do without accepting — before a new version binds it (`pending`, `binding` its day when
 // announced) it works as before and may cancel at no cost; once it binds (`changed`) it works read-only, cancels and
-// downloads its data; an owner who never accepted any version writes to us instead.
+// downloads its data; an owner who never accepted any version writes to us instead. Each box and the password have their
+// «?» (round 52), beside the box and next to the label, never inside a label.
 export default function TermsGate({ date, state: terms, binding }: { date: string; state: Exclude<TermsState, 'ok'>; binding: string | null }) {
   const t = useTranslations('legal'), tr = useTranslations('register'), te = useTranslations('errors'), locale = useLocale(), router = useRouter();
   const [state, action, pending] = useActionState(acceptTermsAction, initialFormState);
@@ -41,22 +54,28 @@ export default function TermsGate({ date, state: terms, binding }: { date: strin
         <p><Link href="/privacy" target="_blank" className="btn btn-sm gate-read"><Icon name="file-text" size={18} />{t('gateRead')}</Link></p>
         {state.error ? <p id="terms-error" ref={alert} tabIndex={-1} className="alert alert-bad" role="alert">{te(state.error)}</p> : null}
         <p className="note">{tr.rich('privacyNote', { link: (chunks) => <Link href="/privacy" target="_blank">{chunks}</Link> })}</p>
-        {CONSENTS.map((k) => (
-          <label key={k} className="check consent">
-            <input type="checkbox" name={k} defaultChecked={agreed[k]} onChange={(e) => setAgreed({ ...agreed, [k]: e.target.checked })} aria-invalid={bad(k)}
-              aria-describedby={bad(k) ? 'terms-error' : undefined} />
-            <span>{k === 'accept'
-              ? tr.rich('accept', { ...values, link: (chunks) => <Link href="/privacy#terms" target="_blank">{chunks}</Link> })
-              // the owner acts for a company that exists already: the same declaration, not «registering»
-              : k === 'business' ? t('gateBusiness') : tr(k, values)}</span>
-          </label>
-        ))}
-        <label className="field">
-          <span>{t('gatePassword')}</span>
-          <input className="input" type="password" name="password" autoComplete="current-password" maxLength={200} required aria-invalid={bad('password')}
+        {CONSENTS.map((k) => {
+          const aiuto = AIUTO_SPUNTE[k];
+          return (
+            <div key={k} className="consent-row">
+              <label className="check consent">
+                <input type="checkbox" name={k} defaultChecked={agreed[k]} onChange={(e) => setAgreed({ ...agreed, [k]: e.target.checked })} aria-invalid={bad(k)}
+                  aria-describedby={bad(k) ? 'terms-error' : undefined} />
+                <span>{k === 'accept'
+                  ? tr.rich('accept', { ...values, link: (chunks) => <Link href="/privacy#terms" target="_blank">{chunks}</Link> })
+                  // the owner acts for a company that exists already: the same declaration, not «registering»
+                  : k === 'business' ? t('gateBusiness') : tr(k, values)}</span>
+              </label>
+              {aiuto.testo ? <Aiuto testo={aiuto.testo} nome={aiuto.nome} /> : null}
+            </div>
+          );
+        })}
+        <div className="field">
+          <Etichetta htmlFor="gate-password" aiuto={testoAiuto(AIUTO, 'gate.password')} nome={t('gatePassword')}>{t('gatePassword')}</Etichetta>
+          <input id="gate-password" className="input" type="password" name="password" autoComplete="current-password" maxLength={200} required aria-invalid={bad('password')}
             aria-describedby={bad('password') ? 'terms-error gate-password-note' : 'gate-password-note'} />
           <small id="gate-password-note" className="note">{t('gatePasswordNote')}</small>
-        </label>
+        </div>
         <div className="gate-actions"><button type="submit" className="btn btn-primary" disabled={pending}>{t('gateSubmit')}</button></div>
         {changed ? (
           <p className="note">

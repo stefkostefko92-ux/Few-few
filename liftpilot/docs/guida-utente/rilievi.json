@@ -16,7 +16,7 @@
    "reach": "Dal menu laterale, gruppo «Area di lavoro», voce «Rilievi»: si apre l’elenco «Schede». Dopo aver salvato, spostato nel cestino o eliminato una scheda l’app ti riporta qui.",
    "purpose": [
     "L’elenco delle schede di rilievo della tua azienda, dalla più recente: ogni scheda è il rilievo di un impianto esistente. Da qui cerchi una scheda, la apri o ne crei una nuova.",
-    "Sotto il titolo vedi il suggerimento «Cerca per n° impianto, matricola, indirizzo, marca, buono di lavoro o note.» e il numero di schede («1 scheda» / «N schede», oppure «N schede per «testo»» quando cerchi)."
+    "Sotto il titolo vedi il suggerimento «Cerca per n° impianto, matricola o indirizzo.» e il numero di schede («1 scheda» / «N schede», oppure «N schede per «testo»» quando cerchi)."
    ],
    "shots": [
     {
@@ -68,7 +68,7 @@
         "Si cerca in: N° impianto, Matricola, Indirizzo, Marca impianto, Buono di lavoro, Parcheggio, i tipi e le note di quadro, argano, centralina, tiranti, limitatore, serrature, pattino retrattile, le note del quadretto e dell’impianto, la nota sulla luce vano e i lavori extra. Simboli e punteggiatura vengono ignorati.",
         "I risultati con n° impianto o matricola esattamente uguali al testo scritto compaiono per primi, poi quelli che iniziano con quel testo, poi gli altri per data decrescente. Le parole trovate sono evidenziate."
        ],
-       "src": "src/components/rilievi/LiveSearch.tsx:58"
+       "src": "src/components/rilievi/LiveSearch.tsx:62"
       }
      ],
      "notes": [
@@ -177,7 +177,7 @@
    "access": "Chi può compilare e modificare le schede: con la matrice predefinita Capotecnico, Progettista e Tecnico (il Titolare sempre). Gli altri ruoli vedono la pagina «Permesso non concesso». Se l’azienda è in sola lettura, le schede si consultano e si scaricano, ma non si modificano. Il Titolare può cambiare la matrice in «Permessi».",
    "reach": "Dall’elenco «Schede» con «Nuova scheda» (o «Crea la prima scheda» se non ce ne sono).",
    "purpose": [
-    "Il modulo per registrare un sopralluogo: la scheda di rilievo dell’impianto esistente, anche dal telefono sul posto. Sotto il titolo vedi «La data è quella di oggi: cambiala se il rilievo è di un altro giorno.»",
+    "Il modulo per registrare un sopralluogo: la scheda di rilievo dell’impianto esistente, anche dal telefono sul posto. Sotto il titolo vedi «La data è quella di oggi: cambiala se serve.»",
     "Le domande seguono l’impianto: alcune sezioni e campi compaiono solo in certi casi (tipo impianto, tipo di porte, risposte Sì/No). Le sezioni sono numerate nell’ordine scelto dall’azienda e a fianco c’è l’indice «Sezioni della scheda», che porta a ciascuna; una sezione nascosta sparisce anche dall’indice e la numerazione si aggiorna.",
     "Ordine predefinito delle sezioni: Impianto, Ubicazione e accesso, Tipologia, Quadro, Argano (o Centralina), Funi e tiranti, Limitatore, Cavi, Serrature o sospensioni, Allarme e telesoccorso, Note e lavori. «Impianto» resta sempre in cima; il Titolare cambia l’ordine delle altre dalla pagina dell’azienda («Ordine delle sezioni della scheda»). L’ordine vale per tutte le schede: modulo, pagina, stampa e PDF.",
     "Qui sotto trovi, campo per campo, l’etichetta, il tipo, i limiti e quando compare. I campi Sì/No hanno due pulsanti: un secondo clic sulla voce scelta torna a «nessuna risposta»."
@@ -315,7 +315,7 @@
       }
      ],
      "intro": [
-      "La sezione si presenta come la testa e la targa della scheda cartacea. Sopra i campi trovi il promemoria: «Compila almeno uno tra indirizzo, matricola e n° impianto: servono per ritrovare la scheda.»"
+      "La sezione si presenta come la testa e la targa della scheda cartacea. Sopra i campi trovi il promemoria: «Compila almeno uno tra indirizzo, matricola e n° impianto.»"
      ],
      "notes": [
       "Il testo dei campi è ripulito al salvataggio: i caratteri di controllo spariscono e, nei campi a una riga, gli spazi multipli diventano uno solo."
@@ -2606,7 +2606,7 @@
         "Togli la spunta alle sezioni da lasciare fuori dal foglio stampato. L’intestazione con indirizzo, matricola e n° impianto c’è sempre.",
         "Quando il tipo impianto nasconde una sezione (ad esempio «Argano» con l’idraulico), sparisce anche la sua casella; la scelta fatta resta memorizzata e la sezione non conta come esclusa. Il software memorizza le sezioni escluse: una sezione aggiunta in futuro entra da sola nella stampa."
        ],
-       "src": "src/components/rilievi/StampaScelta.tsx:38"
+       "src": "src/components/rilievi/StampaScelta.tsx:45"
       },
       {
        "label": "Dati dei moduli nella stampa e nel PDF",
@@ -2619,7 +2619,7 @@
         "Spunta i moduli di cui vuoi un riepilogo in fondo al foglio.",
         "Il riepilogo, aggiunto al foglio stampato e al PDF della scheda, riporta solo ciò che è compilato nel modulo (caselle spuntate e testi scritti, gruppo per gruppo). I moduli restano comunque PDF a parte, identici all’originale, e non entrano mai nel PDF della scheda."
        ],
-       "src": "src/components/rilievi/StampaScelta.tsx:50"
+       "src": "src/components/rilievi/StampaScelta.tsx:58"
       }
      ]
     },
@@ -3011,7 +3011,7 @@
        "help": [
         "Scrivi il testo e premi Invio. Il segnaposto è «N° impianto, matricola, indirizzo…»."
        ],
-       "src": "src/components/rilievi/LiveSearch.tsx:58"
+       "src": "src/components/rilievi/LiveSearch.tsx:62"
       }
      ]
     },

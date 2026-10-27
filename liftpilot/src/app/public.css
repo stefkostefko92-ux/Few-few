@@ -78,6 +78,13 @@
 .auth-form .register-form fieldset + fieldset { padding-top: 14px; border-top: 1px solid var(--rule-soft); }
 .auth-form label.check.consent { gap: 10px; color: var(--ink-2); line-height: 1.5; }
 .auth-form label.check.consent input { width: 18px; height: 18px; }
+/* a consent and its «?» (round 52): the «?» beside the box, outside its label, level with the first line; its explanation
+   opens under the «?» towards the text (the box's own text is long: hovering it does not open the explanation) */
+.auth-form .consent-row { display: flex; align-items: flex-start; gap: 8px; }
+.auth-form .consent-row > label { flex: 1 1 auto; min-width: 0; }
+.auth-form .consent-row > .aiuto { position: relative; flex: none; margin-top: 1px; }
+.auth-form .consent-row > .aiuto .aiuto-testo { left: auto; right: 0; }
+.auth-form .consent-row > .aiuto:not([data-zitto]):hover .aiuto-testo { display: block; }
 .auth-form [role="status"].panel { border-color: var(--ok-line); }
 
 /* ---- pricing: the plans in the template's price cards ---------------------------------------------------------- */

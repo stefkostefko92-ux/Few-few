@@ -1644,7 +1644,7 @@
   "register": {
     "title": "Registra la tua azienda",
     "metaDescription": "Crea l’account LiftPilot della tua azienda di ascensori: verifica dell’argano geared, progetto del vano e relazione di calcolo.",
-    "lead": "Un account per la tua azienda, di cui sei Titolare: poi inviti i colleghi dalla pagina Utenti, con il ruolo di Capotecnico, Progettista, Tecnico o Commerciale, e decidi che cosa può fare ciascun ruolo.",
+    "lead": "Un account per la tua azienda, di cui sei Titolare: i colleghi li inviti dopo, dalla pagina Utenti.",
     "fieldError": "Da correggere",
     "companySection": "Azienda",
     "company": "Ragione sociale",
@@ -1665,7 +1665,7 @@
     "clausesLater": "L’approvazione specifica delle clausole (artt. 1341 e 1342 del codice civile) la darai dopo, quando confermi l’indirizzo dal link dell’e-mail, con la password che scegli qui.",
     "inviteOnlyTitle": "La registrazione è su invito durante la beta",
     "inviteOnlyBadLink": "Il link di invito non è valido, è già stato usato o è scaduto.",
-    "inviteOnlyText": "Durante la beta LiftPilot è aperto alle aziende invitate: l’invito arriva per e-mail, con il link che apre la registrazione per l’indirizzo a cui è stato mandato.",
+    "inviteOnlyText": "Durante la beta ci si registra solo dal link dell’invito ricevuto per e-mail, con l’indirizzo a cui è stato mandato.",
     "inviteOnlyReopen": "Se hai ricevuto un invito, riapri il link dall’e-mail.",
     "inviteOnlyAsk": "Per chiedere un invito scrivi a {email}, indicando la ragione sociale e la città dell’azienda.",
     "login": "Accedi",
@@ -2596,7 +2596,7 @@
   "rilievi": {
     "schede": {
       "title": "Schede",
-      "subtitle": "Cerca per n° impianto, matricola, indirizzo, marca, buono di lavoro o note.",
+      "subtitle": "Cerca per n° impianto, matricola o indirizzo.",
       "new": "Nuova scheda",
       "count": "{n, plural, one {1 scheda} other {{n} schede}}",
       "empty": "Ancora nessuna scheda.",
@@ -2613,7 +2613,7 @@
       },
       "create": {
         "title": "Nuova scheda",
-        "sub": "La data è quella di oggi: cambiala se il rilievo è di un altro giorno.",
+        "sub": "La data è quella di oggi: cambiala se serve.",
         "submit": "Salva scheda"
       },
       "edit": {
@@ -2640,7 +2640,7 @@
       "buonoRiferimento": "Buono di lavoro",
       "plateLabel": "Dati di targa",
       "identifiers": "Identificazione",
-      "identifiersHint": "Compila almeno uno tra indirizzo, matricola e n° impianto: servono per ritrovare la scheda.",
+      "identifiersHint": "Compila almeno uno tra indirizzo, matricola e n° impianto.",
       "errorSummary": "{n, plural, one {Correggi 1 campo} other {Correggi {n} campi}}",
       "meta": {
         "created": "Creata da {name} il {at}",
@@ -2839,7 +2839,7 @@
       "page": "Pagina {page} di {pages}"
     },
     "ordini": {
-      "hint": "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
+      "hint": "Si compila da solo con i dati già scritti; esce in un PDF a parte, identico all’originale.",
       "download": "Scarica PDF",
       "print": "Stampa",
       "errorLabel": "{label} ({fornitore})"
@@ -2947,7 +2947,7 @@
         "preventivoArgano": "Dati argano",
         "ordineSospensioni": "Ordine 2SG (operatori e sospensioni)"
       },
-      "hint": "Spunta i moduli da aggiungere in fondo al foglio: entra solo quello che è compilato. I moduli restano anche come PDF a parte.",
+      "hint": "Spunta i moduli da aggiungere in fondo al foglio.",
       "sezioni": "Sezioni nella stampa e nel PDF",
       "sezioniHint": "Togli la spunta alle sezioni da lasciare fuori dal foglio stampato. L’intestazione con indirizzo, matricola e n° impianto c’è sempre."
     },
@@ -3255,7 +3255,7 @@
   },
   "feedback": {
     "title": "Segnala un problema",
-    "lead": "Un problema, un suggerimento o una domanda su LiftPilot: la leggono gli amministratori di LiftPilot (Carbon Stealth VCC) per risponderti, se serve all’indirizzo del tuo account, e correggere il servizio.",
+    "lead": "Un problema, un suggerimento o una domanda: la leggono gli amministratori di LiftPilot (Carbon Stealth VCC) per risponderti e correggere il servizio.",
     "kind": "Tipo",
     "kinds": {
       "BUG": "Problema",

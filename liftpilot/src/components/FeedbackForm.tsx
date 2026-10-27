@@ -4,12 +4,15 @@
 // (they travel as hidden fields and the server checks them again). The note on personal data sits above the button. A
 // refusal (invalid, too many, an expired session) or a send that got no answer (no signal: keep-on-failure.ts) keeps
 // what was typed and says why, with the focus on the message; once sent, the form gives way to the thanks, the way back
-// to the page and «Invia un’altra segnalazione».
+// to the page and «Invia un’altra segnalazione». The kind and the message have their «?» next to the label (round 52).
 import { useActionState, useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { FEEDBACK_KINDS, FEEDBACK_MAX, FEEDBACK_PER_HOUR, initialFeedbackState, type FeedbackState } from '@/lib/feedback';
 import { sendFeedbackAction } from '@/server/feedback-actions';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../messages/aiuto/accesso.json';
+import Etichetta from './aiuto/Etichetta';
 import Icon from './Icon';
 import { useGuardedAction, type NoAnswer } from './keep-on-failure';
 
@@ -80,19 +83,19 @@ export default function FeedbackForm({ page, digest, back }: {
         <div><dt>{t('page')}</dt><dd className="mono">{page ?? t('pageMenu')}</dd></div>
         {digest ? <div><dt>{t('code')}</dt><dd className="mono">{digest}</dd></div> : null}
       </dl>
-      <label className="field">
-        <span>{t('kind')} *</span>
-        <select className="input" name="kind" required defaultValue={values?.kind && (FEEDBACK_KINDS as readonly string[]).includes(values.kind) ? values.kind : 'BUG'}
-          aria-invalid={bad('kind')}>
+      <div className="field">
+        <Etichetta htmlFor="feedback-kind" aiuto={testoAiuto(AIUTO, 'feedback.kind')} nome={t('kind')}>{t('kind')} *</Etichetta>
+        <select id="feedback-kind" className="input" name="kind" required
+          defaultValue={values?.kind && (FEEDBACK_KINDS as readonly string[]).includes(values.kind) ? values.kind : 'BUG'} aria-invalid={bad('kind')}>
           {FEEDBACK_KINDS.map((k) => <option key={k} value={k}>{t(`kinds.${k}`)}</option>)}
         </select>
-      </label>
-      <label className="field">
-        <span>{t('message')} *</span>
-        <textarea ref={message} className="input" name="message" rows={8} required maxLength={FEEDBACK_MAX} defaultValue={values?.message ?? ''}
+      </div>
+      <div className="field">
+        <Etichetta htmlFor="feedback-message" aiuto={testoAiuto(AIUTO, 'feedback.message')} nome={t('message')}>{t('message')} *</Etichetta>
+        <textarea id="feedback-message" ref={message} className="input" name="message" rows={8} required maxLength={FEEDBACK_MAX} defaultValue={values?.message ?? ''}
           aria-invalid={bad('message')} aria-describedby={bad('message') ? 'feedback-error feedback-hint' : 'feedback-hint'} />
         <small className="hint" id="feedback-hint">{t('messageHint', { max: FEEDBACK_MAX })}</small>
-      </label>
+      </div>
       <p className="note long m-0 flex items-start gap-2"><Icon name="shield-check" size={18} />{t('privacy')}</p>
       <div><button type="submit" className="btn btn-primary" disabled={pending}><Icon name="send" size={18} />{t('submit')}</button></div>
     </form>

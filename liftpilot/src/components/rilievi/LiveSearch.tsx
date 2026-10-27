@@ -3,13 +3,15 @@
 // The list's search (rilievi list.ejs + app.js live search): a GET form, so it works without JavaScript; with it, the
 // results follow the typing — 220 ms after the last key the address becomes `?q=…` (replaced, not pushed) and the server
 // renders the results again; Enter searches at once. «/» jumps to the field from anywhere on the page (not while typing
-// in a field). `live={false}` (the trash): the plain form only, as in rilievi.
+// in a field). `live={false}` (the trash): the plain form only, as in rilievi. Its «?» (round 52) sits beside the box,
+// not inside it: the box lights up while its field has the focus, never for the «?».
 import { useEffect, useRef, useTransition } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { MAX_QUERY_LENGTH } from '@/lib/rilievi/search';
+import Aiuto from '../aiuto/Aiuto';
 import Icon from '../Icon';
 
-export default function LiveSearch({ action, base, query, label, placeholder, live = true }: {
+export default function LiveSearch({ action, base, query, label, placeholder, aiuto, live = true }: {
   /** the form's own address (with the locale), for the browser without JavaScript */
   action: string;
   /** the same page for the router (without the locale) */
@@ -17,6 +19,8 @@ export default function LiveSearch({ action, base, query, label, placeholder, li
   query: string;
   label: string;
   placeholder: string;
+  /** what to type (the page's text, messages/aiuto/rilievi.json); none — no «?» */
+  aiuto?: string | null;
   live?: boolean;
 }) {
   const router = useRouter();
@@ -50,7 +54,7 @@ export default function LiveSearch({ action, base, query, label, placeholder, li
     document.getElementById('results')?.setAttribute('aria-busy', busy ? 'true' : 'false');
   }, [busy]);
 
-  return (
+  const form = (
     <form className="rv-search" role="search" method="get" action={action}
       onSubmit={live ? (e) => { e.preventDefault(); window.clearTimeout(timer.current); run(); } : undefined}>
       <label className="sr-only" htmlFor="q">{label}</label>
@@ -61,4 +65,6 @@ export default function LiveSearch({ action, base, query, label, placeholder, li
       <kbd aria-hidden="true">/</kbd>
     </form>
   );
+  if (!aiuto) return form;
+  return <div className="rv-search-row">{form}<span className="lbl"><Aiuto testo={aiuto} nome={label} /></span></div>;
 }

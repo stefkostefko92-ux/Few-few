@@ -13,13 +13,21 @@
 // riferimento») is a group for screen readers, the heading on its own line over the ticks it names. Under each group, the
 // linked data that say something else elsewhere (in a live region always on the page: one shown only with its first
 // difference is not read out by every screen reader). A row with the paper's arrow keeps what follows the arrow together
-// behind it: on a narrow screen it wraps as one piece.
+// behind it: on a narrow screen it wraps as one piece. The «?» (round 52): one next to the module's title (what the
+// module is), one in each group's legend (what the group holds, what fills itself) — the paper's labels stay as they are.
+import { testoAiuto } from '@/lib/aiuto';
 import type { FieldErrors, FormValues } from '@/lib/rilievi/field-parsers';
 import { errorTextOf, type ModuloLookup } from '@/lib/rilievi/form-help';
 import type { ModuloFieldSpec, ModuloSpec } from '@/lib/rilievi/ordini/form';
 import type { RilieviT } from '@/lib/rilievi/t';
+import AIUTO from '../../../messages/aiuto/rilievi.json';
+import Aiuto from '../aiuto/Aiuto';
 import { DiffItem, type DiffLine } from './DiffItem';
 import { Tick } from './FieldInput';
+import { legenda } from './legenda';
+
+/** What a supplier's module is, next to its title (the same for every module). */
+const AIUTO_MODULO = testoAiuto(AIUTO, 'modulo');
 
 interface FieldProps {
   f: ModuloFieldSpec; spec: ModuloSpec; values: FormValues; errors: FieldErrors; auto: ReadonlySet<string>; scritti: ReadonlySet<string>; t: RilieviT;
@@ -90,14 +98,18 @@ export default function ModuloBlock({ spec, values, errors, auto, scritti, marca
     <div className="rv-modulo" id={`f-${spec.prefix}`} data-when={spec.question} data-when-values="si" data-off={on ? undefined : ''} data-modulo={spec.prefix}>
       <input type="hidden" name={spec.shownName} value="1" />
       <div className="rv-modulo-head">
-        <p className="rv-modulo-title"><strong>{spec.titolo}</strong>{spec.fornitore ? ` · ${spec.fornitore}` : null}</p>
+        <div className="lbl">
+          <p className="rv-modulo-title"><strong>{spec.titolo}</strong>{spec.fornitore ? ` · ${spec.fornitore}` : null}</p>
+          {AIUTO_MODULO ? <Aiuto testo={AIUTO_MODULO} nome={spec.nome} /> : null}
+        </div>
         <p className="rv-hint">{t('ordini.hint')}</p>
       </div>
       {spec.gruppi.map((g, gi) => {
         const lines = g.diff.map((key) => diffs.find((d) => d.key === key)).filter((d): d is DiffLine => d !== undefined);
+        const nome = legenda(`nm-${spec.prefix}-${gi}`, g.titolo, testoAiuto(AIUTO, `gruppo.${spec.prefix}.${g.titolo}`));
         return (
-          <fieldset key={gi} className="rv-mgroup">
-            <legend>{g.titolo}</legend>
+          <fieldset key={gi} className="rv-mgroup" aria-labelledby={nome.labelledBy}>
+            <legend>{nome.testo}</legend>
             {g.righe.map((r, ri) => {
               const field = (f: ModuloFieldSpec) => <Field key={f.name} f={f} spec={spec} values={values} errors={errors} auto={auto} scritti={scritti} t={t} />;
               const after = r.freccia ? r.campi.slice(r.freccia) : [];

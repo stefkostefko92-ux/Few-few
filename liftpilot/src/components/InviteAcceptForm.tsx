@@ -6,6 +6,9 @@ import { Link } from '@/i18n/routing';
 import { acceptInviteAction, inviteInfoAction } from '@/server/account-actions';
 import { initialFormState } from '@/server/form';
 import { PASSWORD_MIN_LENGTH } from '@/lib/password-policy';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../messages/aiuto/accesso.json';
+import Etichetta from './aiuto/Etichetta';
 import { useLinkToken } from './useLinkToken';
 
 type Info = Awaited<ReturnType<typeof inviteInfoAction>>;
@@ -31,14 +34,14 @@ export default function InviteAcceptForm() {
       <input type="hidden" name="token" value={token} />
       <p>{t('who', { company: info?.company ?? '', email: info?.email ?? '', role: info ? troles(info.role as 'CHIEF_TECHNICIAN' | 'ENGINEER' | 'SALES' | 'TECHNICIAN') : '' })}</p>
       {state.error ? <p className="alert alert-bad" role="alert">{te(state.error, { min: PASSWORD_MIN_LENGTH })}</p> : null}
-      <label className="field">
-        <span>{t('next')}</span>
-        <input className="input" type="password" name="next" autoComplete="new-password" minLength={PASSWORD_MIN_LENGTH} maxLength={200} required />
-      </label>
-      <label className="field">
-        <span>{t('confirm')}</span>
-        <input className="input" type="password" name="confirm" autoComplete="new-password" maxLength={200} required />
-      </label>
+      <div className="field">
+        <Etichetta htmlFor="invite-next" aiuto={testoAiuto(AIUTO, 'invite.next')} nome={t('next')}>{t('next')}</Etichetta>
+        <input id="invite-next" className="input" type="password" name="next" autoComplete="new-password" minLength={PASSWORD_MIN_LENGTH} maxLength={200} required />
+      </div>
+      <div className="field">
+        <Etichetta htmlFor="invite-confirm" aiuto={testoAiuto(AIUTO, 'password.confirm')} nome={t('confirm')}>{t('confirm')}</Etichetta>
+        <input id="invite-confirm" className="input" type="password" name="confirm" autoComplete="new-password" maxLength={200} required />
+      </div>
       <p className="note">{t('rule', { min: PASSWORD_MIN_LENGTH })}</p>
       <p className="note">{tr.rich('privacyNote', { link: (chunks) => <Link href="/privacy" target="_blank">{chunks}</Link> })}</p>
       <div><button type="submit" className="btn btn-primary" disabled={pending}>{pending ? t('submitting') : t('submit')}</button></div>

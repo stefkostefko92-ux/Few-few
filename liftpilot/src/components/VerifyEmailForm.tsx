@@ -7,8 +7,18 @@ import { verifyEmailAction, verifyInfoAction, type VerifyInfo } from '@/server/a
 import { initialFormState } from '@/server/form';
 import { TERMS_VERSION, legalValues } from '@/lib/legal';
 import { PROVIDER } from '@/lib/provider';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../messages/aiuto/accesso.json';
+import Aiuto from './aiuto/Aiuto';
+import Etichetta from './aiuto/Etichetta';
 import { useErrorFocus } from './useErrorFocus';
 import { useLinkToken } from './useLinkToken';
+
+// the boxes' «?» (round 52): a short name, the box's own text being the whole declaration
+const AIUTO_SPUNTE = {
+  accept: { testo: testoAiuto(AIUTO, 'consenso.accept'), nome: testoAiuto(AIUTO, 'nome.accept') ?? '' },
+  clauses: { testo: testoAiuto(AIUTO, 'consenso.clauses'), nome: testoAiuto(AIUTO, 'nome.clauses') ?? '' },
+} as const;
 
 // The link of the confirmation e-mail opens this form. The server says first what the link is: a waiting registration
 // asks the specific approval of the clauses (arts. 1341–1342 c.c., the text of register.clauses) with the password
@@ -17,7 +27,8 @@ import { useLinkToken } from './useLinkToken';
 // it), so that the clauses approved and the terms accepted are the same text; one made before the beta by invitation
 // says it can no longer make a company; an account's link asks the password only. The ticks are uncontrolled with their
 // default following them, so the form's reset after an error shows them as the person left them; the focus goes to
-// what must be fixed — an empty password is a field to fill, only a bad link is said to be one.
+// what must be fixed — an empty password is a field to fill, only a bad link is said to be one. Each box and the password
+// have their «?» (round 52), beside the box and next to the label, never inside a label.
 export default function VerifyEmailForm({ date }: { date: string }) {
   const t = useTranslations('verify'), tr = useTranslations('register'), te = useTranslations('errors'), locale = useLocale();
   const token = useLinkToken();
@@ -41,13 +52,19 @@ export default function VerifyEmailForm({ date }: { date: string }) {
   const values = { ...legalValues(), version: TERMS_VERSION, date };
   const bad = (f: string): true | undefined => (state.fields?.includes(f) ? true : undefined);
   const said = (f: string): string | undefined => (bad(f) ? 'verify-error' : undefined);
-  const tick = (k: 'accept' | 'clauses', text: ReactNode) => (
-    <label className="check consent">
-      <input type="checkbox" name={k} required defaultChecked={approved[k]} onChange={(e) => setApproved({ ...approved, [k]: e.target.checked })}
-        aria-invalid={bad(k)} aria-describedby={said(k)} />
-      <span>{text}</span>
-    </label>
-  );
+  const tick = (k: 'accept' | 'clauses', text: ReactNode) => {
+    const aiuto = AIUTO_SPUNTE[k];
+    return (
+      <div className="consent-row">
+        <label className="check consent">
+          <input type="checkbox" name={k} required defaultChecked={approved[k]} onChange={(e) => setApproved({ ...approved, [k]: e.target.checked })}
+            aria-invalid={bad(k)} aria-describedby={said(k)} />
+          <span>{text}</span>
+        </label>
+        {aiuto.testo ? <Aiuto testo={aiuto.testo} nome={aiuto.nome} /> : null}
+      </div>
+    );
+  };
   return (
     <form ref={form} action={action} className="panel" noValidate>
       <input type="hidden" name="locale" value={locale} />
@@ -67,11 +84,11 @@ export default function VerifyEmailForm({ date }: { date: string }) {
           {tick('clauses', tr('clauses', legalValues()))}
         </>
       ) : null}
-      <label className="field">
-        <span>{t('password')}</span>
-        <input className="input" type="password" name="password" autoComplete="current-password" maxLength={200} required aria-invalid={bad('password')}
-          aria-describedby={said('password')} />
-      </label>
+      <div className="field">
+        <Etichetta htmlFor="verify-password" aiuto={testoAiuto(AIUTO, 'verify.password')} nome={t('password')}>{t('password')}</Etichetta>
+        <input id="verify-password" className="input" type="password" name="password" autoComplete="current-password" maxLength={200} required
+          aria-invalid={bad('password')} aria-describedby={said('password')} />
+      </div>
       <div>
         <button type="submit" className="btn btn-primary" disabled={pending}>
           {pending ? t('submitting') : registration ? t('submitClauses') : t('submit')}
