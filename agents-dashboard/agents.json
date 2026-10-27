@@ -14363,7 +14363,7 @@
           "ЗДДС (ставки 20%/9%, чл. 114), ЗЗП (обозначаване на цени), GDPR (чл. 6), ЗСч (чл. 12), КТ (чл. 207)",
           "Код: CSPos/src/lib/{money,unp,auth,settings,promotions}.ts + src/lib/fiscal/* + src/lib/terminal/*"
         ],
-        "lessons": 167
+        "lessons": 168
       },
       "evolution": [
         {
@@ -14443,9 +14443,20 @@
           "date": "2026-10-27",
           "event": "v21.5 — учене",
           "detail": "Научи: POST /api/sales в CSPos ползва requireSession, не requireRole — одиторският профил (rea… (+7 още)"
+        },
+        {
+          "version": "21.6.0",
+          "date": "2026-10-27",
+          "event": "v21.6 — учене",
+          "detail": "Научи: ErpNet.FP PROTOCOL.md дава \"ok\": \"true\" (низ) в примера за отговор на бон и ok: true (б…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „ErpNet.FP PROTOCOL.md дава \"ok\": \"true\" (низ) в примера за отговор на бон и ok: true (б…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
