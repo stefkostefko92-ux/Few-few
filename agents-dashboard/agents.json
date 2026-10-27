@@ -15007,7 +15007,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 257
+        "lessons": 258
       },
       "evolution": [
         {
@@ -15147,9 +15147,20 @@
           "date": "2026-10-27",
           "event": "v24.6 — учене",
           "detail": "Научи: При преглед на продуктов PR, който носи авто-комити „auto: <агент> научи“ от клона на з…"
+        },
+        {
+          "version": "24.7.0",
+          "date": "2026-10-27",
+          "event": "v24.7 — учене",
+          "detail": "Научи: GENERIC_RULE в secret-scan.mjs хваща само стойност в кавички с поне 12 знака след secre…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „GENERIC_RULE в secret-scan.mjs хваща само стойност в кавички с поне 12 знака след secre…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
