@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-27:** id-то на Конвейерът в ПРЕДАВАНЕ е konveyera (не konveyerat) — dod-check.mjs отхвърля грешното _(всеки HANDOFF блок към Конвейерът; verified; .claude/agents/konveyera.md; Stop hook dod-check.mjs изход 2026-10-27)_
 - **2026-10-27:** PR 15 (cs-revolution) е само добавки спрямо празен main (1116 файла) и .pr-review/15.diff е отрязан на 15 файла от .claude/, затова кодът на cs-revolution се чете от работното дърво _(ревю на PR 15 в live-run worktree; verified; Grep ^diff --git в .pr-review/15.diff (15 попадения) срещу .pr-review/15.stat (1116 files changed, 188340 insertions(+)))_
 - **2026-10-27:** В live-run worktree дори node tools/agents/*.mjs и heredoc запис в scratchpad искат одобрение, затова rubric/handoff/verifier не могат да се пуснат и тежестта се смята ръчно по tools/agents/rubric.mjs:19-25 _(ревю на PR в live-run worktree само с четене; verified; Bash отказ „This command requires approval“ за node tools/agents/rubric.mjs --help и парсерна грешка при heredoc + node handoff.mjs)_
 - **2026-10-27:** В hospis nginx.conf заглавките за сигурност са само на ниво server, а location блоковете ползват само expires, затова CSP, nosniff и XFO се наследяват; всеки нов add_header в location ги нулира _(ревю на промени в hospis/nginx.conf; verified; hospis/nginx.conf:32-37,50-68)_
