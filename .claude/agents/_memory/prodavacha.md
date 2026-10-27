@@ -6,6 +6,8 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-27:** panev съдържа Stripe Checkout код (sessions.create, webhook преди express.json), но маршрутът е гейтнат и живият поток е quote-first през /api/contact — двете стари поуки (има one-time checkout / няма онлайн плащане) са съвместими; panev не е кандидат за абонамент. _(избор на продукт при заявка за Stripe абонамент в монорепото; verified; panev/server.js:159,406-423,477)_
+- **2026-10-27:** Nexus е браузърна MMORPG (Express + better-sqlite3 + React), не мобилно приложение — Apple 3.1.1 IAP не важи за уеб Stripe абонамент там. _(Stripe абонамент в Nexus; verified; Nexus/CLAUDE.md:1-9)_
 - **2026-10-27:** В Nexus /api/payments/verify дава покупката по връщане от плащането чрез stripe.checkout.sessions.retrieve и payment_status=paid, успоредно с webhook-а — два пътя до един ефект, които трябва да делят един идемпотентен ключ. _(всяка промяна по даване на покупки или абонамент в Nexus; verified; Nexus/server/src/routes/payments.ts:313-343)_
 - **2026-10-27:** Gaming VIP абонаментът ползва mode isSubscription ? subscription : payment и спира втори активен абонамент на потребител преди checkout. _(образец за абонаментен Checkout в монорепото; verified; Gaming/apps/api/src/routes/shop.ts:96-123)_
 - **2026-10-27:** Nexus има Stripe само с еднократно плащане (checkout mode payment), webhook с constructEvent и API версия, заключена на 2024-06-20; няма абонаментен поток. _(избор на продукт при заявка за Stripe абонамент в монорепото; verified; Nexus/server/src/routes/payments.ts:36,189,384)_
