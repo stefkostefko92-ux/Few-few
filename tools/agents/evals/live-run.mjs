@@ -67,11 +67,13 @@ export function claudeAvailable() {
   try { execFileSync("claude", ["--version"], { stdio: "ignore" }); return true; } catch { return false; }
 }
 
-/** Изолирано копие на ref-а с махнати Stop куки на оркестратора. Връща пътя и функция за почистване. */
-export function makeWorktree(ref = "HEAD") {
+/** Изолирано копие на ref-а с махнати Stop куки на оркестратора. Връща пътя и функция за почистване.
+ *  overlay: {from, paths} — тези пътища идват от друг ref (преглед на стар PR с ТЕКУЩИЯ агентски слой). */
+export function makeWorktree(ref = "HEAD", overlay = null) {
   const dir = mkdtempSync(join(tmpdir(), "live-run-"));
   rmSync(dir, { recursive: true, force: true });
   execFileSync("git", ["-C", ROOT, "worktree", "add", "--detach", dir, ref], { stdio: "ignore" });
+  if (overlay) execFileSync("git", ["-C", dir, "checkout", overlay.from, "--", ...overlay.paths], { stdio: "ignore" });
   const sp = join(dir, ".claude", "settings.json");
   writeFileSync(sp, JSON.stringify(stripOrchestratorStop(JSON.parse(readFileSync(sp, "utf8"))), null, 2) + "\n");
   const cleanup = () => { try { execFileSync("git", ["-C", ROOT, "worktree", "remove", "--force", dir], { stdio: "ignore" }); } catch { rmSync(dir, { recursive: true, force: true }); } };
@@ -79,12 +81,12 @@ export function makeWorktree(ref = "HEAD") {
 }
 
 /** Пуска задачите (конкурентно) в копието. Връща [{...job, ok, text, costUsd, err, seconds}]. */
-export async function runJobs(jobs, { wt, concurrency = 3, timeoutMs = 900000, onDone = () => {} } = {}) {
+export async function runJobs(jobs, { wt, concurrency = 3, timeoutMs = 900000, extraArgs = [], allowed = ALLOWED, onDone = () => {} } = {}) {
   const results = new Array(jobs.length);
   let i = 0;
   const one = (j) => new Promise((resolve) => {
     const t0 = Date.now();
-    execFile("claude", ["-p", wrapperPrompt(j.agent, j.task), "--allowedTools", ...ALLOWED, "--output-format", "json"],
+    execFile("claude", ["-p", wrapperPrompt(j.agent, j.task), "--allowedTools", ...allowed, "--output-format", "json", ...extraArgs],
       { cwd: wt, timeout: timeoutMs, maxBuffer: 1 << 26, env: { ...process.env, CLAUDE_PROJECT_DIR: wt, AGENT_MEMORY_SYNC: "0" } },
       (err, stdout, stderr) => {
         const r = parseResult(stdout);

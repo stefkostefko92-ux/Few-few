@@ -39,10 +39,21 @@ node tools/agents/scope-check.mjs --staged   # монорепо закон №1:
 - Ако PR-ът е вече **merged** → нова работа е нов PR; рестартирай клона от последния `main` (не трупай
   върху merged история).
 
+## Преглед от нашите агенти (правило на собственика, 27.10.2026)
+PR с код или зависимости минава през НАШИТЕ агенти, преди да е готов — кои, решава пътят, не настроението:
+```bash
+node tools/agents/pr-review.mjs --pr <номер> --ref <клон> --title "<заглавие>" --out <scratchpad>/pr-review --record
+```
+Код → Кодаджията + до двама собственици на домейна (каса → Касаджията, плащания → Продавача, деплой →
+VPS-аджията …); само зависимости → Кодаджията; само документи → никой. Присъда „блокер“ или „поправки“ →
+оправи и пусни пак (дневникът `tools/agents/pr-reviews.json` пази кой sha е прегледан). Всеки отворен PR:
+`tools/agents/pr-triage.mjs --prs <списък от GitHub>` → `pr-review.mjs --plan`.
+
 ## Агентен слой
 Пипаш `.claude/agents|skills|hooks`, `tools/agents|memory|skills`, таблото → пусни допълнително:
 `node tools/agents/gate.mjs` (включва oversee и уменията) · `node --test $(find tools -name '*.test.mjs')` — виж quality-gate.
 Собственик на CI/PR конвейера = агентът **Конвейерът**.
 
 ## Дефиниция на „готово"
-secret-scan чисто · гейт зелен · conventional български commit на feature клон · PR (draft) с попълнен шаблон.
+secret-scan чисто · гейт зелен · conventional български commit на feature клон · PR (draft) с попълнен шаблон ·
+нашите агенти по `pr-triage` са прегледали PR-а без открит блокер.

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { kindOf, productsOf, agentsFor, decide, triage, parsePrs, STALE_DAYS } from "./pr-triage.mjs";
+import { kindOf, productsOf, agentsFor, decide, triage, parsePrs, rankProducts, STALE_DAYS } from "./pr-triage.mjs";
 
 test("видът идва от пътищата: документи · зависимости · код", () => {
   assert.equal(kindOf([]), "empty");
@@ -15,7 +15,7 @@ test("продуктите са папките от първо ниво, без 
 
 test("код → Кодаджията винаги + собственикът на домейна; документи → никой", () => {
   assert.deepEqual(agentsFor("code", ["CSPos"]), ["kodadjiyata", "kasadjiyata"]);
-  assert.deepEqual(agentsFor("deps", ["linketto"]), ["kodadjiyata", "prodavacha"]);
+  assert.deepEqual(agentsFor("deps", ["linketto"]), ["kodadjiyata"]);
   assert.deepEqual(agentsFor("code", ["Ivan"]), ["kodadjiyata"]);
   assert.deepEqual(agentsFor("docs", ["CSPos"]), []);
 });
@@ -47,4 +47,10 @@ test("tools/ се разпределя по подпапка; паметта н�
   assert.deepEqual(productsOf(["tools/betting/golad.mjs", "tools/agents/x.mjs"]), ["tools/agents", "tools/betting"]);
   assert.deepEqual(agentsFor("code", ["tools/betting", "tools/agents"]), ["kodadjiyata", "goladjiyata", "ai-djiyata"]);
   assert.equal(kindOf([".claude/agents/_memory/_flows.jsonl", "agents-dashboard/agents.json"]), "docs");
+});
+
+test("най-много двама собственици на домейн — най-засегнатите продукти първи", () => {
+  const files = ["zabobovdol/a.ts", "zabobovdol/b.ts", "zabobovdol/c.ts", "Gaming/x.ts", "Gaming/y.ts", "Nexus/z.ts", "Nexus/README.md", "Nexus/w.md"];
+  assert.deepEqual(rankProducts(files), ["zabobovdol", "Gaming", "Nexus"]);
+  assert.deepEqual(agentsFor("code", rankProducts(files)), ["kodadjiyata", "seo", "prodavacha"]);
 });

@@ -49,11 +49,25 @@ export function productsOf(files) {
   return [...new Set(files.map(top).filter(Boolean))].sort();
 }
 
-/** Нужните наши агенти: код/зависимости → Кодаджията + собствениците на домейна; документи → никой. */
-export function agentsFor(kind, products) {
+// Най-много толкова собственици на домейн на PR (освен Кодаджията): PR, който пипа шест продукта
+// заради една SEO поправка, не иска шест прегледа — взимат се продуктите с най-много променени файлове.
+export const MAX_DOMAIN = 2;
+
+/** Нужните наши агенти: код → Кодаджията + собствениците на домейна (по реда на products — най-засегнатият
+ *  първи); само зависимости → Кодаджията (уязвима или чупеща версия е негово; домейнът не се пипа);
+ *  документи → никой. */
+export function agentsFor(kind, products, max = MAX_DOMAIN) {
   if (kind === "docs" || kind === "empty") return [];
-  const domain = products.flatMap(owners);
-  return [...new Set(["kodadjiyata", ...domain])];
+  if (kind === "deps") return ["kodadjiyata"];
+  const domain = [...new Set(products.flatMap(owners))].filter((a) => a !== "kodadjiyata").slice(0, max);
+  return ["kodadjiyata", ...domain];
+}
+
+/** Продуктите по брой променени файлове с код (низходящо) — за избора на собственици на домейна. */
+export function rankProducts(files) {
+  const n = new Map();
+  for (const f of files) { if (DOC.test(f)) continue; const [p] = productsOf([f]); if (p) n.set(p, (n.get(p) || 0) + 1); }
+  return [...n.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([p]) => p);
 }
 
 // Застарял PR (последен комит преди повече дни) не се преглежда: кодът под него се е сменил и прегледът
@@ -91,7 +105,7 @@ export function triage(prs, info = changedFiles, ledger = {}) {
     let r;
     try { r = info(p.head.ref); } catch (e) { return { pr: p.number, title: p.title, ref: p.head.ref, error: String(e.message).slice(0, 120), agents: [], why: "грешка при git" }; }
     const kind = kindOf(r.files), products = productsOf(r.files);
-    const d = decide({ kind, products, ageDays: r.ageDays, reviewed: ledger[r.sha] || [] });
+    const d = decide({ kind, products: rankProducts(r.files), ageDays: r.ageDays, reviewed: ledger[r.sha] || [] });
     return { pr: p.number, title: p.title, ref: p.head.ref, sha: r.sha, kind, products, files: r.files.length, ageDays: r.ageDays, ...d };
   });
 }
