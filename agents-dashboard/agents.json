@@ -15680,7 +15680,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 271
+        "lessons": 272
       },
       "evolution": [
         {
@@ -15868,9 +15868,20 @@
           "date": "2026-10-27",
           "event": "v26.0 — учене",
           "detail": "Научи: Продуктов PR от стар клон, който носи tools/agents/versions.json, връща claude-models (… (+1 още)"
+        },
+        {
+          "version": "26.1.0",
+          "date": "2026-10-27",
+          "event": "v26.1 — учене",
+          "detail": "Научи: Стар PR, който носи целия .claude/settings.json отпреди октомври 2026, тихо маха permis…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Стар PR, който носи целия .claude/settings.json отпреди октомври 2026, тихо маха permis…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
