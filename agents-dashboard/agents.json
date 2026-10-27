@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 417
+        "lessons": 418
       },
       "evolution": [
         {
@@ -614,9 +614,20 @@
           "date": "2026-10-25",
           "event": "v32.9 — учене",
           "detail": "Научи: WCAG 2.2 SC 1.2.2 Captions (Prerecorded) е ниво A; надписите трябва да посочват кой гов… (+2 още)"
+        },
+        {
+          "version": "33.0.0",
+          "date": "2026-10-27",
+          "event": "v33.0 — учене",
+          "detail": "Научи: Към 27.10.2026 EUR-Lex (eli/reg/2026/1744/oj и TXT/PDF OJ:L_202601744) връща празно съд…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Към 27.10.2026 EUR-Lex (eli/reg/2026/1744/oj и TXT/PDF OJ:L_202601744) връща празно съд…\""
+        },
         {
           "date": "2026-10-27",
           "type": "quarantine",
