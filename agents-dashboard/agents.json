@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 419
+        "lessons": 422
       },
       "evolution": [
         {
@@ -626,9 +626,20 @@
           "date": "2026-10-27",
           "event": "v33.1 — учене",
           "detail": "Научи: DSA чл. 19(1) изключва онлайн платформи микро/малки (Препоръка 2003/361) от целия Разде…"
+        },
+        {
+          "version": "33.4.0",
+          "date": "2026-10-27",
+          "event": "v33.4 — учене",
+          "detail": "Научи: Условията на Gemini API позволяват само Paid Services, когато API клиент се предоставя … (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Условията на Gemini API позволяват само Paid Services, когато API клиент се предоставя …\" (+2 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
