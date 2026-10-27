@@ -6,6 +6,8 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-27:** В hospis nginx.conf заглавките за сигурност са само на ниво server, а location блоковете ползват само expires, затова CSP, nosniff и XFO се наследяват; всеки нов add_header в location ги нулира _(ревю на промени в hospis/nginx.conf; verified; hospis/nginx.conf:32-37,50-68)_
+- **2026-10-27:** В live-run worktree Bash команда с pipe и grep в hospis беше отказана; за проверка на HTML ползвай инструмента Grep _(PR ревю в изолиран live-run worktree; verified; Bash отказ в този run (grep -oE ... | head в hospis/))_
 - **2026-10-27:** В live-run worktree за ревю на PR #69 Bash изискваше одобрение дори за node tools/agents/rubric.mjs и pdftotext; тежестта се смята на ръка по формулата в tools/agents/rubric.mjs:28-31 и това се казва в покритието _(ревю на PR в live-run worktree с ограничени права; verified; отказ "This command requires approval" за node tools/agents/rubric.mjs --kind quality в /tmp/live-run-Qc0RL4)_
 - **2026-10-27:** В deja background.js записва текста от deja:page в chrome.storage.local (pending) преди проверката isDenied/paused, която е чак в indexPage _(ревю на поверителността и опашката в deja; verified; deja/src/background.js:103-104,156-163,444-446)_
 - **2026-10-27:** В deja firefox/embed-adapter.js runEmbed присвоява chain = chain.then(...) без catch, затова една грешка при embed отхвърля всички следващи; offscreen.js в Chrome го прави правилно _(ревю на embed пътя в deja (Chrome и Firefox); verified; deja/firefox/embed-adapter.js:84-91; deja/src/offscreen/offscreen.js:50-60)_
