@@ -27,7 +27,7 @@ const start = (): Promise<typeof import('../calc-start')> => import(src('server/
 const must = async <T,>(p: Promise<T | null>): Promise<T> => { const x = await p; assert.ok(x, 'a start'); return x; };
 const user: SessionUser = {
   id: 'u1', email: 'tecnico@example.com', name: 'Tecnico', role: 'TECHNICIAN', locale: 'it', companyId: 'c1', companyName: 'Ditta', mustChangePassword: false,
-  access: 'active', trialDays: 0, readOnly: false, caps: capsOf('TECHNICIAN'), terms: 'ok', termsBinding: null,
+  access: 'active', trialDays: 0, readOnly: false, caps: capsOf('TECHNICIAN'), terms: 'ok', termsBinding: null, modalita: 'semplice',
 };
 let n = 0;
 const calc = (x: Partial<Calc>): Calc => ({ id: `c${++n}`, projectId: 'p1', companyId: 'c1', createdAt: new Date(Date.UTC(2026, 9, 1, n)), inputs: { ...PRESETS.C },

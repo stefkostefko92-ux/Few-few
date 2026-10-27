@@ -6,6 +6,7 @@
 // first, also when the survey's value happens to be the standard (the measure says more than the default).
 import type { FormValues } from '@/calc/types';
 import type { CalcKey, Pres } from '@/lib/present/tr';
+import Etichetta from '../aiuto/Etichetta';
 import { DalRilievo, useDalRilievo } from '../collega/origine';
 import { shown, type Field } from './fields';
 
@@ -33,9 +34,11 @@ interface Props {
   /** the software's standard value, as it set it: its badge */
   std?: boolean;
   texts?: BlankTexts;
+  /** what the field is for (round 52): the «?» next to its label */
+  aiuto?: string | null;
 }
 
-export default function FieldRow({ P, f, V, bad, set, auto = null, extra = null, need = false, std = false, texts }: Props) {
+export default function FieldRow({ P, f, V, bad, set, auto = null, extra = null, need = false, std = false, texts, aiuto = null }: Props) {
   const { t } = P;
   const label = t((f.key ?? f.id) as CalcKey);
   // an expert row still to enter or out of range shows in the simple mode too (round 46: one out of range stayed hidden
@@ -50,7 +53,7 @@ export default function FieldRow({ P, f, V, bad, set, auto = null, extra = null,
       <>
         <div className="row check" hidden={hidden}>
           <input type="checkbox" id={f.id} checked={!!V[f.id]} onChange={(e) => set(f.id, e.target.checked)} />
-          <label htmlFor={f.id}>{label}{badge}</label>
+          <Etichetta htmlFor={f.id} aiuto={aiuto} nome={label}>{label}{badge}</Etichetta>
         </div>
         {hint}
       </>
@@ -61,7 +64,7 @@ export default function FieldRow({ P, f, V, bad, set, auto = null, extra = null,
     return (
       <>
         <div className={`row${f.wide ? ' wide' : ''}${adv}${needCls}`} hidden={hidden}>
-          <label htmlFor={f.id}>{label}{extra}{badge}</label>
+          <Etichetta htmlFor={f.id} aiuto={aiuto} nome={label}>{label}{extra}{badge}</Etichetta>
           <select id={f.id} value={value} onChange={(e) => set(f.id, e.target.value)} disabled={!!auto} aria-required={need || undefined}>
             {value === '' ? <option value="" disabled>{texts?.choose ?? '—'}</option> : null}
             {f.options.map((o) => <option key={o.value} value={o.value}>{o.literal ? o.label : t(o.label as CalcKey)}</option>)}
@@ -75,7 +78,7 @@ export default function FieldRow({ P, f, V, bad, set, auto = null, extra = null,
   return (
     <>
       <div className={`row${adv}${auto ? ' auto' : ''}${needCls}`} hidden={hidden}>
-        <label htmlFor={f.id}>{label}{extra}{badge}</label>
+        <Etichetta htmlFor={f.id} aiuto={aiuto} nome={label}>{label}{extra}{badge}</Etichetta>
         {auto ? (
           <output id={f.id} className="num auto-value">{auto.value} <span className="badge">{auto.badge}</span></output>
         ) : (

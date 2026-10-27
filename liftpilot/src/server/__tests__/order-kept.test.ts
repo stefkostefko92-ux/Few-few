@@ -35,7 +35,7 @@ mock.module(src('server/prices.ts'), { namedExports: { companyPrices: async () =
 
 const user: SessionUser = {
   id: 'u1', email: 'tecnico@example.com', name: 'Tecnico', role: 'TECHNICIAN', locale: 'it', companyId: 'c1', companyName: 'Ditta', mustChangePassword: false,
-  access: 'active', trialDays: 0, readOnly: false, caps: capsOf('TECHNICIAN'), terms: 'ok', termsBinding: null,
+  access: 'active', trialDays: 0, readOnly: false, caps: capsOf('TECHNICIAN'), terms: 'ok', termsBinding: null, modalita: 'semplice',
 };
 const s = snapshotOf(PRESETS.B);
 const calcOf = (collaudo: unknown, intervento: string | null): Row => ({

@@ -13,6 +13,7 @@ import NavLinks, { HelpLinks, ShellLink, type NavGroup, type NavItem } from './N
 import { DrawerPanel, DrawerRoot, DrawerToggle } from './shell/Drawer';
 import ShellCrumbs from './shell/ShellCrumbs';
 import ShellSearch from './shell/ShellSearch';
+import { ModalitaProvider, ModalitaSwitch } from './shell/Modalita';
 
 function Emblem() {
   // eslint-disable-next-line @next/next/no-img-element -- prebuilt sizes with a srcset (scripts/brand-assets.py)
@@ -67,6 +68,7 @@ export default async function AppShell({ user, banners, footer, children }: { us
   const who = `${user.name} · ${role} · ${user.companyName}`, beta = !billingConfigured();
   return (
     <DrawerRoot>
+      <ModalitaProvider iniziale={user.modalita}>
       <a className="skip-link" href="#main">{t('skip')}</a>
       <div className="ws-shell">
         <DrawerPanel label={t('menu')} closeLabel={t('close')}>
@@ -106,6 +108,8 @@ export default async function AppShell({ user, banners, footer, children }: { us
             <div className="ws-top-actions">
               {/* the search of the installations, for whoever sees them */}
               {projects ? <ShellSearch label={t('search')} placeholder={t('searchPlaceholder')} /> : null}
+              {/* the interface's mode for the whole workspace (round 52), kept with the user */}
+              <ModalitaSwitch label={t('modalita')} semplice={t('modalitaSemplice')} esperto={t('modalitaEsperto')} nota={t('modalitaNota')} />
               <ShellLink href="/app/account" className="ws-user-top" title={who}>
                 {avatar}
                 <span className="ws-who"><b>{user.name}</b><small>{role}</small></span>
@@ -117,6 +121,7 @@ export default async function AppShell({ user, banners, footer, children }: { us
           {footer}
         </div>
       </div>
+      </ModalitaProvider>
     </DrawerRoot>
   );
 }

@@ -62,7 +62,7 @@ const save = (): Promise<typeof import('../save')> => import(src('server/save.ts
 const verdict = (): Promise<typeof import('../verdict-checks')> => import(src('server/verdict-checks.ts'));
 const user: SessionUser = {
   id: 'u1', email: 'tecnico@example.com', name: 'Tecnico', role: 'ENGINEER', locale: 'it', companyId: 'c1', companyName: 'Ditta', mustChangePassword: false,
-  access: 'active', trialDays: 0, readOnly: false, caps: capsOf('ENGINEER'), terms: 'ok', termsBinding: null,
+  access: 'active', trialDays: 0, readOnly: false, caps: capsOf('ENGINEER'), terms: 'ok', termsBinding: null, modalita: 'semplice',
 };
 const other: SessionUser = { ...user, id: 'u2', companyId: 'c2' };
 const row = (m: Model, id: string): Row => { const r = db[m].find((x) => x.id === id); assert.ok(r, `${m} ${id}`); return r; };

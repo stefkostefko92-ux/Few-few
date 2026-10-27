@@ -38,6 +38,7 @@ await build({
   alias: {
     'next-intl': shim('next-intl.ts'), '@/i18n/routing': shim('routing.tsx'), 'server-only': shim('empty.ts'),
     '@/server/calc-actions': shim('actions.ts'), '@/server/lift-actions': shim('actions.ts'), '@/server/draft-actions': shim('actions.ts'),
+    '@/server/modalita-actions': shim('actions.ts'),
     '@/components/Icon': shim('icon.tsx'),
   },
 });

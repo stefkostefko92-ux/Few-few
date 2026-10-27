@@ -55,7 +55,7 @@ mock.module(src('lib/db.ts'), { namedExports: { prisma: { calculation: {
 const base = (): Promise<typeof import('../calcolo-base')> => import(src('server/calcolo-base.ts'));
 const user: SessionUser = {
   id: 'u1', email: 'tecnico@example.com', name: 'Tecnico', role: 'TECHNICIAN', locale: 'it', companyId: 'c1', companyName: 'Ditta', mustChangePassword: false,
-  access: 'active', trialDays: 0, readOnly: false, caps: capsOf('TECHNICIAN'), terms: 'ok', termsBinding: null,
+  access: 'active', trialDays: 0, readOnly: false, caps: capsOf('TECHNICIAN'), terms: 'ok', termsBinding: null, modalita: 'semplice',
 };
 
 test('calcoloBase: un calcolo di passo 2 del progetto attivo dell’azienda, quello chiesto o l’ultimo', async () => {

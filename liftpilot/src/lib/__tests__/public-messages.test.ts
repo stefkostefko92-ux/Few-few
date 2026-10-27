@@ -19,6 +19,8 @@ const MESSAGES: Record<string, unknown> = { ...it, calc, rt, allegati };
 const NAMESPACED: Record<string, string> = { calc: 'messages/calc/it.json', rt: 'messages/rt/ui.json', allegati: 'messages/rt/allegati.json' };
 /** The texts of a document, imported by its builder (src/lib/report/rt/), never by a page: not registered. */
 const DOCUMENT_TEXTS = ['messages/rt/doc.json'];
+/** The fields' «?» (round 52): imported by the components of their area (src/lib/aiuto.ts), checked by aiuto.test.ts. */
+const AIUTO_DIR = 'messages/aiuto/';
 
 /** Every source file of the application and of the standalone page (not the tests, not the built page). */
 function sources(dir: string): string[] {
@@ -143,7 +145,7 @@ function messageFiles(dir: string): string[] {
 
 test('messages: every message file of the pages is registered in request.ts under its own namespace', () => {
   const request = readFileSync(path.join(root, 'src/i18n/request.ts'), 'utf8');
-  const files = messageFiles(path.join(root, 'messages')).filter((f) => f !== 'messages/it.json' && !DOCUMENT_TEXTS.includes(f));
+  const files = messageFiles(path.join(root, 'messages')).filter((f) => f !== 'messages/it.json' && !DOCUMENT_TEXTS.includes(f) && !f.startsWith(AIUTO_DIR));
   assert.deepEqual(files.sort(), Object.values(NAMESPACED).sort(), 'a new message file is registered here and in request.ts');
   // `messages: { ...app, calc, rt, allegati }` — a namespace by its import's name, or `ns: name`
   const entries = (/messages:\s*\{([^}]*)\}/.exec(request)?.[1] ?? '').split(',').map((s) => s.trim()).filter((s) => s && !s.startsWith('...'));

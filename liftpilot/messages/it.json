@@ -142,7 +142,11 @@
     "groupHelp": "Aiuto",
     "guide": "Guida",
     "feedback": "Segnala un problema",
-    "newTab": "si apre in una nuova scheda"
+    "newTab": "si apre in una nuova scheda",
+    "modalita": "Modalità",
+    "modalitaSemplice": "Semplice",
+    "modalitaEsperto": "Esperto",
+    "modalitaNota": "Semplice: solo i campi che servono quasi sempre, gli altri restano ai valori del software. Esperto: tutti i campi."
   },
   "roles": {
     "OWNER": "Titolare",

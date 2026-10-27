@@ -1,0 +1,35 @@
+/* The «?» of a field and its explanation (round 52, components/aiuto). The label and the «?» sit together where the label
+   sat (.lbl takes the label's place in the row's grid); the explanation opens under them, inside the screen, on hovering
+   the field's name or the «?», on the «?»'s keyboard focus and when pinned by a click or a tap; Esc hides it. */
+.lbl { position: relative; display: inline-flex; align-items: center; gap: 6px; min-width: 0; flex-wrap: wrap; }
+.lbl > label { min-width: 0; }
+.aiuto { display: inline-flex; }
+.aiuto-btn { display: inline-grid; place-items: center; width: 20px; height: 20px; flex: none; padding: 0; border-radius: 50%;
+  border: 1px solid var(--rule-input); background: var(--bg-2); color: var(--ink-2); font: 700 12px/1 var(--font-body); cursor: help;
+  -webkit-tap-highlight-color: transparent; }
+.aiuto-btn:hover, .aiuto[data-aperto] .aiuto-btn { border-color: var(--accent); color: var(--accent); }
+.aiuto-btn:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--focus-halo); }
+/* a bigger target on touch screens (WCAG 2.5.8): the circle stays small, the hit area grows */
+@media (pointer: coarse) { .aiuto-btn { position: relative; } .aiuto-btn::after { content: ""; position: absolute; inset: -12px; } }
+.aiuto-testo { display: none; position: absolute; left: 0; top: calc(100% + 6px); z-index: 30; width: max-content;
+  max-width: min(360px, calc(100vw - 32px)); padding: 10px 12px; border: 1px solid var(--accent-line); border-radius: var(--radius-sm);
+  background: var(--surface3); color: var(--ink); font: 400 13px/1.5 var(--font-body); text-align: left; white-space: normal;
+  letter-spacing: 0; text-transform: none; box-shadow: var(--shadow); }
+.lbl:hover .aiuto-testo, .aiuto-btn:focus-visible + .aiuto-testo, .aiuto[data-aperto] .aiuto-testo { display: block; }
+.aiuto[data-zitto]:not([data-aperto]) .aiuto-testo { display: none; }
+@media print { .aiuto { display: none; } }
+
+/* The interface's mode (round 52, components/shell/Modalita.tsx). The provider's box has no box of its own; a field or a
+   block marked `esperto` hides in «Semplice» — never one still to fill in or wrong (a value the save would refuse must
+   stay in view), and never where the mode does not apply (outside the workspace). */
+.ws-modalita { display: contents; }
+[data-modalita="semplice"] .esperto:not(.need):not(:has(.need, [aria-invalid="true"])) { display: none !important; }
+.ws-mode { display: inline-flex; flex: none; gap: 1px; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); overflow: hidden;
+  background: var(--rule); }
+.ws-mode input { position: absolute; opacity: 0; pointer-events: none; }
+.ws-mode label { display: inline-flex; align-items: center; min-height: 34px; padding: 6px 10px; color: var(--ink-2); background: var(--surface);
+  font: 600 12.5px/1.2 var(--font-body); cursor: pointer; }
+.ws-mode label:hover { color: var(--ink); background: var(--surface3); }
+.ws-mode input:checked + label { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
+.ws-mode input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: -2px; }
+@media (max-width: 520px) { .ws-mode label { padding: 6px 8px; font-size: 12px; } }

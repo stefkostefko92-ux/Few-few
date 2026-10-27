@@ -45,7 +45,11 @@ export interface SessionUser {
   terms: TermsState;
   /** the day the version in force binds the company (`pending` once announced, `changed`), else null */
   termsBinding: Date | null;
+  /** the interface's mode the user chose in the top bar (round 52): «Semplice» hides the fields most jobs do not need */
+  modalita: Modalita;
 }
+
+export type Modalita = 'semplice' | 'esperto';
 
 export type { TermsState };
 
@@ -126,7 +130,7 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
     companyId: user.companyId, companyName: user.company.name, mustChangePassword: user.mustChangePassword,
     access, trialDays: daysLeft(billing.trialEndsAt, now), readOnly: access === 'readonly' || terms === 'changed' || terms === 'never',
     caps: capsOf(user.role, user.company.rolePermissions), terms,
-    termsBinding: binding,
+    termsBinding: binding, modalita: user.modalita === 'ESPERTO' ? 'esperto' : 'semplice',
   };
 });
 

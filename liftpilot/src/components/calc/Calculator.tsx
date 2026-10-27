@@ -9,6 +9,7 @@
 // verifies it as it is, with no proposal or advice; the form's draft is kept as it is filled in.
 import { useCallback, useDeferredValue, useEffect, useMemo, useState, useTransition } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
+import { useModalita } from '../shell/Modalita';
 import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { PRESETS } from '@/calc/presets';
@@ -92,7 +93,11 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const { t } = P;
 
   const [values, setValues] = useState<FormValues>(() => mirrorRopes(initial));
-  const [mode, setMode] = useState<'simple' | 'expert'>('simple');
+  // the workspace's mode (round 52, kept with the user); the standalone artifact has none and keeps one of its own
+  const globale = useModalita();
+  const [modeLocale, setModeLocale] = useState<'simple' | 'expert'>('simple');
+  const mode = globale ? (globale.modalita === 'esperto' ? 'expert' : 'simple') : modeLocale;
+  const setMode = (m: 'simple' | 'expert') => (globale ? globale.set(m === 'expert' ? 'esperto' : 'semplice') : setModeLocale(m));
   const [preset, setPreset] = useState<PresetKey | null>(initialPreset);
   const [propMsg, setPropMsg] = useState('');
   const [estMsg, setEstMsg] = useState<Partial<Record<Prefix, string>>>({});

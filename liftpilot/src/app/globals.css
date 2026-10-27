@@ -16,6 +16,7 @@
 @import './verdict.css';
 @import './collega.css';
 @import './intervento.css';
+@import './aiuto.css';
 
 @tailwind base;
 @tailwind components;

@@ -39,7 +39,7 @@ mock.module(src('lib/log.ts'), { namedExports: { log: { info: () => {}, warn: ()
 const save = (): Promise<typeof import('../save')> => import(src('server/save.ts'));
 const user: SessionUser = {
   id: 'u1', email: 'tecnico@example.com', name: 'Tecnico', role: 'TECHNICIAN', locale: 'it', companyId: 'c1', companyName: 'Ditta', mustChangePassword: false,
-  access: 'active', trialDays: 0, readOnly: false, caps: capsOf('TECHNICIAN'), terms: 'ok', termsBinding: null,
+  access: 'active', trialDays: 0, readOnly: false, caps: capsOf('TECHNICIAN'), terms: 'ok', termsBinding: null, modalita: 'semplice',
 };
 const row = (m: Model, id: string): Row => { const r = db[m].find((x) => x.id === id); assert.ok(r, `${m} ${id}`); return r; };
 const REPL = { ...PRESETS.A, context: 'repl' };

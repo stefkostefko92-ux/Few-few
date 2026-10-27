@@ -23,6 +23,12 @@ enum Role {
   SUPERADMIN
 }
 
+/// The interface's mode of a user (round 52, migration 30_modalita).
+enum Modalita {
+  SEMPLICE
+  ESPERTO
+}
+
 /// The slots for colleagues bought on top of the monthly subscription (src/lib/billing.ts): none, 5, 10, unlimited.
 enum SeatPack {
   NONE
@@ -158,6 +164,9 @@ model User {
   /// the owner approved the clauses of arts. 1341–1342 c.c. with the password (the e-mail link's page or the terms'
   /// page, round 48): null — never so (a tick before round 48), the app asks for it once
   clausesApprovedAt  DateTime?
+  /// the interface's mode (round 52): «Semplice» shows the fields most jobs need, «Esperto» every field; chosen in the
+  /// top bar
+  modalita           Modalita            @default(SEMPLICE)
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   projectsCreated    Project[]           @relation("ProjectCreatedBy")

@@ -7,3 +7,5 @@ export const saveCalculationAction = refused;
 export const saveLiftDesignAction = refused;
 export const saveDraftAction = refused;
 export const discardDraftAction = refused;
+// the workspace's mode is kept with the user; the standalone page has no workspace (the calculator keeps its own mode)
+export const setModalitaAction = refused;
