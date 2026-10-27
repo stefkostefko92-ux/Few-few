@@ -14,6 +14,7 @@
 //   node tools/agents/pr-triage.mjs --prs <файл> --json > plan.json
 //   node tools/agents/pr-review.mjs --plan plan.json --out <папка> [--only 338,326] [--budget 40] [--per-run 4]
 //                                   [--concurrency 2] [--record]
+//   … --collect --record   # само доклад + дневник + поуки от вече записаните изходи (прекъснато пускане)
 //   node tools/agents/pr-review.mjs --pr 412 --ref claude/<клон> --title "…" --out <папка> --record   # един PR
 //     (стъпката от умението commit-pr след push: разпределението и прегледът наведнъж)
 
@@ -161,6 +162,7 @@ async function main(argv) {
   for (const p of source) if (!p.agents?.length) console.log(`· #${p.pr} без агент — ${p.why || p.error}`);
   const plan = source.filter((p) => p.agents?.length && (!only.length || only.includes(p.pr)));
   const out = val("--out"); mkdirSync(out, { recursive: true });
+  if (argv.includes("--collect")) return finish(out, collect(out, plan), argv, 0);
   const budget = Number(val("--budget")) || 40, perRun = Number(val("--per-run")) || 4, conc = Number(val("--concurrency")) || 2;
   const head = git(["rev-parse", "HEAD"]).trim();
   let spent = 0, i = 0;
@@ -187,6 +189,21 @@ async function main(argv) {
       } finally { wt?.cleanup(); }
     }
   }));
+  finish(out, all, argv, spent);
+}
+
+/** Резултатите от вече записаните изходи (<pr>-<агент>.txt) — когато пускането е прекъснато преди записа. */
+export function collect(out, plan) {
+  const res = [];
+  for (const p of plan) for (const agent of p.agents) {
+    const f = join(out, `${p.pr}-${agent}.txt`);
+    const ok = existsSync(f);
+    res.push({ agent, pr: p.pr, sha: p.sha, title: p.title, name: `${p.pr}-${agent}.txt`, ok, text: ok ? readFileSync(f, "utf8") : "", costUsd: 0 });
+  }
+  return res.filter((r) => r.ok);
+}
+
+function finish(out, all, argv, spent) {
   writeFileSync(join(out, "REPORT.md"), renderReport(all));
   if (argv.includes("--record")) {
     harvest(out, all);
