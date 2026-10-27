@@ -1200,7 +1200,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 537
+        "lessons": 538
       },
       "evolution": [
         {
@@ -2030,9 +2030,20 @@
           "date": "2026-10-27",
           "event": "v41.9 — учене",
           "detail": "Научи: Ivan frontend прилага settings.lowStockThreshold само в таблото и в брояча в настройкит…"
+        },
+        {
+          "version": "42.0.0",
+          "date": "2026-10-27",
+          "event": "v42.0 — учене",
+          "detail": "Научи: При ревю на публикувани измервания (how-we-measure) сверявай каузалните твърдения в тек…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „При ревю на публикувани измервания (how-we-measure) сверявай каузалните твърдения в тек…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
