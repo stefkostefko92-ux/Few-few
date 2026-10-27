@@ -1211,7 +1211,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 569
+        "lessons": 571
       },
       "evolution": [
         {
@@ -2191,9 +2191,20 @@
           "date": "2026-10-27",
           "event": "v45.1 — учене",
           "detail": "Научи: tools/vps/migrate-backup.sh (PR 312) като root сканира /home,/opt,/srv,/var/www,/var/li… (+1 още)"
+        },
+        {
+          "version": "45.3.0",
+          "date": "2026-10-27",
+          "event": "v45.3 — учене",
+          "detail": "Научи: Nexus в продукция праща всеки адрес към Express :4000 (nginx и Caddy само проксират, не… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Nexus в продукция праща всеки адрес към Express :4000 (nginx и Caddy само проксират, не…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
