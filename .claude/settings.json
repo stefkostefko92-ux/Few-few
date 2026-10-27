@@ -7,7 +7,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-preload.mjs\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-preload.mjs\" --part=doctrine",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-preload.mjs\" --part=procedure",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-preload.mjs\" --part=agent",
             "timeout": 15
           }
         ]
