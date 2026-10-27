@@ -1200,7 +1200,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 550
+        "lessons": 551
       },
       "evolution": [
         {
@@ -2096,9 +2096,20 @@
           "date": "2026-10-27",
           "event": "v43.2 — учене",
           "detail": "Научи: Пътят на eval фикстурите е tools/agents/evals/fixtures/, не fixtures/ в корена; задача …"
+        },
+        {
+          "version": "43.3.0",
+          "date": "2026-10-27",
+          "event": "v43.3 — учене",
+          "detail": "Научи: next@15.5.28 в lockfile разрешава sharp \"^0.34.3 || ^0.35.5\", затова npm ресолвва sharp…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „next@15.5.28 в lockfile разрешава sharp \"^0.34.3 || ^0.35.5\", затова npm ресолвва sharp…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
