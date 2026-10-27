@@ -153,3 +153,11 @@ test("extractBlock спира на следващото заглавие, не �
   assert.ok(b.includes("Следваща стъпка"));
   assert.ok(!b.includes("Друга секция"));
 });
+
+test("адресат по българско име от регистъра се приема (агентите го пишат естествено)", () => {
+  const names = new Map([["кодаджията", "kodadjiyata"], ["правният разбирач", "pravniyat-razbirach"]]);
+  const o = { ...opts, agentNames: names };
+  assert.deepEqual(validateHandoff(OK.replace("Към: izpitatelya", "Към: Кодаджията"), o).problems.filter((p) => p.field === "Към"), []);
+  assert.deepEqual(validateHandoff(OK.replace("Към: izpitatelya", "Към: Правният Разбирач"), o).problems.filter((p) => p.field === "Към"), []);
+  assert.ok(validateHandoff(OK.replace("Към: izpitatelya", "Към: измисленджията"), o).problems.some((p) => p.field === "Към"));
+});

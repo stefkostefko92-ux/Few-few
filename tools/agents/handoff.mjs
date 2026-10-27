@@ -37,6 +37,20 @@ export function knownAgentIds(dir = AGENTS_DIR) {
   } catch { return null; }
 }
 
+// Българските имена от регистъра („Кодаджията“, „Правният Разбирач“) също са адресати — агентите ги пишат
+// естествено, а отказът заради име вместо id връщаше агента да преписва блока (и губеше отговора му).
+let _names = null;
+export function knownAgentNames(root = ROOT) {
+  if (_names && root === ROOT) return _names;
+  const m = new Map();
+  try {
+    const j = JSON.parse(readFileSync(join(root, "agents-dashboard", "agents.json"), "utf8"));
+    for (const a of j.agents || []) if (a.name && a.id) m.set(String(a.name).toLowerCase(), String(a.id));
+  } catch { /* без регистър — само id */ }
+  if (root === ROOT) _names = m;
+  return m;
+}
+
 // Извади блока ПРЕДАВАНЕ (последния, ако има няколко — предаването е ПОСЛЕДНОТО нещо в отговора).
 export function extractBlock(text) {
   const s = String(text || "");
@@ -66,7 +80,7 @@ const FILE_LINE = /\b[\w./-]+\.\w{1,6}:\d+\b/;
 const CONFIDENCE = /(?<!\p{L})(сигурно|вероятно|несигурно|verified|probable|unverified)(?!\p{L})/iu;
 
 // Чиста валидация — без I/O, за да е тестваема и преизползваема (hook + CLI + eval).
-export function validateHandoff(text, { agentIds = null, requireBlock = true } = {}) {
+export function validateHandoff(text, { agentIds = null, agentNames = null, requireBlock = true } = {}) {
   const problems = [];
   const block = extractBlock(text);
   if (!block) {
@@ -97,7 +111,9 @@ export function validateHandoff(text, { agentIds = null, requireBlock = true } =
   // Адресатът трябва да е познат агент или човек. Измислено име = веригата сочи в нищото.
   if (toV && agentIds) {
     const clean = toV.replace(/[„“"'`*]/g, "").trim().split(/[\s,(]/)[0];
-    if (!agentIds.has(clean) && !HUMAN_TARGETS.test(clean))
+    const full = toV.replace(/[„“"'`*]/g, "").trim().toLowerCase();
+    const byName = [...(agentNames || knownAgentNames()).keys()].some((n) => full === n || full.startsWith(n + " ") || full.startsWith(n + ","));
+    if (!agentIds.has(clean) && !HUMAN_TARGETS.test(clean) && !byName)
       problems.push({ field: "Към", msg: `непознат адресат „${clean}" — трябва да е id на наш агент или човек` });
   }
 

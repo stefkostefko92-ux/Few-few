@@ -242,3 +242,13 @@ test("Разбивача, мисия 4: релативни Bash записи о�
   const real = checkDoD([bash("echo x > medqr/a.txt && echo y > treydar/b.txt")], ROOT_DIR);
   assert.ok(real.some((v) => /СПРИ — пишеш в 2 продукта/.test(v.gate)), JSON.stringify(real));
 });
+
+test("нарушен блок ПРЕДАВАНЕ връща агента с искане за ЦЕЛИЯ отговор, не само за блока", async () => {
+  const { violationMessage } = await import("../../.claude/hooks/dod-check.mjs");
+  const v = checkHandoffViolation("Готово, оправих го.", AGENTS);
+  assert.equal(v.kind, "handoff");
+  const msg = violationMessage(v);
+  assert.match(msg, /ЦЕЛИЯ си отговор/);
+  assert.match(msg, /Изход\/артефакт:/);
+  assert.doesNotMatch(msg, /DoD гейт НЕ е пуснат/, "не бива да праща агента да „пуска гейт“");
+});
