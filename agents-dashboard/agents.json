@@ -14374,7 +14374,7 @@
           "ЗДДС (ставки 20%/9%, чл. 114), ЗЗП (обозначаване на цени), GDPR (чл. 6), ЗСч (чл. 12), КТ (чл. 207)",
           "Код: CSPos/src/lib/{money,unp,auth,settings,promotions}.ts + src/lib/fiscal/* + src/lib/terminal/*"
         ],
-        "lessons": 165
+        "lessons": 167
       },
       "evolution": [
         {
@@ -14472,9 +14472,20 @@
           "date": "2026-10-27",
           "event": "v21.3 — учене",
           "detail": "Научи: CSPos Sale.status е свободен String (default COMPLETED), затова write-ahead статуси PEN… (+1 още)"
+        },
+        {
+          "version": "21.5.0",
+          "date": "2026-10-27",
+          "event": "v21.5 — учене",
+          "detail": "Научи: POST /api/sales в CSPos ползва requireSession, не requireRole — одиторският профил (rea… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „POST /api/sales в CSPos ползва requireSession, не requireRole — одиторският профил (rea…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
