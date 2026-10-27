@@ -17275,7 +17275,7 @@
           "Sample Ratio Mismatch (en.wikipedia.org/wiki/Sample_ratio_mismatch); статистика на онлайн експерименти",
           "Това репо: CLAUDE.md; границата SEO (откриваемост), Продавача (Stripe), Наблюдателят (системни метрики), Правния (закон)"
         ],
-        "lessons": 211
+        "lessons": 214
       },
       "evolution": [
         {
@@ -17337,9 +17337,20 @@
           "date": "2026-10-27",
           "event": "v21.0 — учене",
           "detail": "Научи: Linketto обещава публично „Без бисквитки за посетителите“; A/B разпределение на посетит… (+1 още)"
+        },
+        {
+          "version": "21.3.0",
+          "date": "2026-10-27",
+          "event": "v21.3 — учене",
+          "detail": "Научи: В linketto click route-ът вече изнася собствен HEAD без запис (route.ts:26), така че HE… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „В linketto click route-ът вече изнася собствен HEAD без запис (route.ts:26), така че HE…\" (+2 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
