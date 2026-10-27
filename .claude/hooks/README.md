@@ -6,8 +6,13 @@ settings.json бяха регистрирани четири с други match
 съществува, е по-лош от липсващ (виж secret-parity: „зелено по слепота").
 
 ## Активни — цикълът на паметта
-- **`memory-preload.mjs`** (`SubagentStart`) — инжектира релевантните „Проверени поуки" + доктрината за
-  сигурност (`_memory/SECURITY.md`) + общата процедура (`_memory/PROCEDURE.md`) в контекста на всеки агент.
+- **`memory-preload.mjs`** (`SubagentStart`, три извиквания: `--part=doctrine` · `--part=procedure` ·
+  `--part=agent`) — инжектира доктрината за сигурност + споделените поуки, общата процедура, и картата +
+  релевантните „Проверени поуки" + схемата на `learn`. **Всяка част е отделна стойност под 9 500 знака:** от
+  Claude Code 2.1.89 стойност над 10 000 знака се заменя с път към файл + 2 000-знаков преглед и агентът не я
+  вижда. До 2026-10-27 изходът беше една стойност от ~25 000 знака — агентите тръгваха само с началото на
+  доктрината (проба на живо). Гейт: `tools/hooks/preload-size.test.mjs`. Без `--part` куката връща всичко в
+  една стойност — само за тестове и инструменти, никога в `settings.json`.
 - **`dod-check.mjs`** (`SubagentStop`) — налага блока `## ПРЕДАВАНЕ` (HANDOFF) и дневника на веригите;
   агент без валидно предаване не завършва тихо. Връща агента и когато блокът му ```learn няма да стигне до
   паметта: неразчетени поуки, липсващ `confidence:`/`source:`, многоредов текст, поле над тавана
@@ -30,9 +35,22 @@ settings.json бяха регистрирани четири с други match
 | Кука | Събитие · matcher | Какво блокира |
 |---|---|---|
 | **`guard-prompt.mjs`** | `UserPromptSubmit` | Случайно ПОСТАВЕНА тайна в промпта (клипборд) — да не влезе в история/логове. Байпас по избор: „[секрет-ок]". |
+| **`guard-readonly.mjs`** | `PreToolUse` · `Bash` | Агент, чиято дефиниция има Bash, но няма Write/Edit (днес Кодаджията, Качествения, Разбивача), да пише в репото през Bash: git записи, `sed -i`/`perl -i`, `>`/`>>`/`tee` към файл извън `/tmp`, `/dev/null` и scratchpad-а, rm/mv/cp/touch/chmod, `--write`/`--fix`, npm/pnpm/yarn, които сменят манифест/lockfile (`npm ci` и `--frozen-lockfile` минават). Агентът идва от `agent_type` в payload-а. На ниво settings, а не във frontmatter, защото frontmatter куките не тичат в `-p` сесии. Fail-open (ролева кука). |
 | **`guard-dangerous.mjs`** | `PreToolUse` · `Bash` | Само еднозначно катастрофалното: `rm -rf` на корен/дом/работно дърво (`/`, `~`, `$HOME`, `.`, `$PWD`), fork bomb, `mkfs`/`dd`/`wipefs`/`shred` върху `/dev` диск, `find / -delete`, `curl\|sh`, force push към main (`--force`, `-f`, `+refspec`), изтриване на main (`:main`, `--delete`), `gh repo delete`. |
 | **`guard-secrets.mjs`** | `PostToolUse` · `Write\|Edit\|MultiEdit\|NotebookEdit` | Тъкмо записан файл/бележник с високо-уверен credential (17 типа от `tools/lib/secret-patterns.mjs`). Пропуска fixture/test/eval/scratch пътища. Твърдият гейт остава `secret-scan.mjs` при commit/CI. |
 | **`guard-exfil.mjs`** | `PreToolUse` · `Bash\|WebFetch\|WebSearch\|mcp__.*` | ИЗНАСЯНЕ навън (lethal-trifecta изходът): литерална тайна или тайна env променлива към мрежов verb/интерпретатор; `.env`/ключ/credential файл през пайп, субституция `$(…)`, stdin редирект, `-d/-F/-T/--data-raw/--post-file`, scp/rsync, архив, четене от код (`readFileSync`, `open`); `/proc/*/environ`; пълен env dump; команди, които издават credential (`gh auth token`, `vault read`…) към мрежа; стажиране (env dump/тайна → файл, `git remote add` чужд URL); `git push` към чужд URL; `npm publish`; тайна в URL/търсене; **тайна в аргумент на MCP инструмент** (`mcp__github__*`, `mcp__Gmail__*`… — целият `tool_input` се сериализира и се търси по същия списък + секрет в URL query). |
+
+**Когато предпазителят не може да тръгне (`onFailure: "block"`, Claude Code ≥ 2.1.295).** Вътрешна грешка в
+предпазителя пак е fail-open (exit 0) — фалшивият блок изключва предпазители. Но ако скриптът изобщо не
+стартира (липсващ файл, счупен импорт, таймаут), без `onFailure` действието минава БЕЗ проверка. За
+`guard-exfil` и `guard-dangerous` това е блок: по-добре спряна работа, която всички виждат, отколкото тих
+пропуск. Не важи за Stop/SubagentStop.
+
+**Стандартният слой под куките — `permissions.deny`.** `Read(.env)`, `Read(.env.*)` с изключение
+`Read(!*.example)`, ключове (`*.pem`, `id_rsa*`, `id_ed25519*`) и `~/.ssh`, `~/.aws`, `~/.config/gh`,
+`~/.netrc`, `~/.claude/.credentials.json`. Deny правилата важат във всеки режим (и auto, и bypass) и хващат
+и `cat`/`ls` на файла. Проба на живо 2026-10-27: `.env.probe` → отказ, `.env.probe.example` → чете се.
+Скрипт, който сам отваря файла, не се хваща — затова `guard-exfil` остава.
 
 **Един източник за „какво е тайна":** `tools/lib/secret-patterns.mjs` (`CREDENTIAL`). Трите куки
 (`guard-secrets` → `guard-exfil`, `guard-prompt`) го ИМПОРТИРАТ; `secret-parity.test.mjs` пази и трите.

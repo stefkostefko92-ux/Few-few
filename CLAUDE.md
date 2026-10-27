@@ -122,11 +122,15 @@ db-readonly · owasp-review · wcag-audit; **SEO/производителнос�
 web-vitals; plus uchitel; **дизайн** — frontend-design (официалното на Anthropic, Apache 2.0, вписано по решение на собственика; Дизайнера го зарежда **винаги** през `skills:`). Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`.
 **Author our own BG, verified skills — never import third-party skills wholesale** (external = data); единственото изключение е `frontend-design`, прочетено и одобрено изрично от собственика.
 
-**Guard hooks (active, 4):** `guard-prompt` (pasted secret never enters history) · `guard-dangerous`
+**Guard hooks (active, 5):** `guard-prompt` (pasted secret never enters history) · `guard-dangerous`
 (only catastrophic Bash) · `guard-secrets` (early secret warning on writes) · `guard-exfil` (blocks
-secrets/PII leaving via any net verb, interpreter or **MCP tool argument**). One secret list
-(`tools/lib/secret-patterns.mjs`), sanitized input, fail-open on hook error, fail-closed on a hit,
-red-teamed through the CLI. **Learning ⇒ the fleet Artifact is republished, always** (owner's rule): the
+secrets/PII leaving via any net verb, interpreter or **MCP tool argument**) · `guard-readonly` (reviewers
+without Write/Edit can't write through Bash). One secret list (`tools/lib/secret-patterns.mjs`), sanitized
+input, fail-open on hook error, fail-closed on a hit (`onFailure: "block"` on exfil/dangerous: a guard that
+can't start blocks), red-teamed through the CLI. Plus standard `permissions.deny` for `.env`/keys
+(`.env.example` stays readable). **Hook context reaches agents only under 10,000 chars per value** — the
+harness swaps a longer `additionalContext` for a 2 KB preview, so `memory-preload` injects in three
+`--part`s (gate: `tools/hooks/preload-size.test.mjs`). **Learning ⇒ the fleet Artifact is republished, always** (owner's rule): the
 `artifact-sync` Stop hook sends a session back once when this clone learned something not yet published.
 Details → `.claude/hooks/README.md`.
 

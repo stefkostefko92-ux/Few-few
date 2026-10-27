@@ -5,9 +5,16 @@ description: >-
   commit, PR по шаблона. Ползвай когато трябва да комитваш, push-ваш, отваряш PR, или потребителят каже
   „запази промените", „вдигни", „направи PR". Никога тайни в commit; conventional заглавие; работи на
   feature клон, не директно на main без разрешение.
+allowed-tools: Bash(git branch *) Bash(git status *)
 ---
 
 # Commit & PR (конвенции на репото)
+
+## Състояние при зареждане (вмъкнато от git)
+- Клон: !`git branch --show-current`
+- Незаписани промени (по продукти — един продукт на commit):
+
+!`git status --short`
 
 ## Преди commit — винаги
 ```bash

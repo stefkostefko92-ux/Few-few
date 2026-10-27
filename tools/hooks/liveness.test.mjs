@@ -75,6 +75,7 @@ const PAYLOADS = {
   "dod-check.mjs": { agent_type: "kodadjiyata", transcript_path: "" },
   "guard-prompt.mjs": { prompt: "нормален потребителски промпт без нищо особено" },
   "guard-dangerous.mjs": { tool_name: "Bash", tool_input: { command: "ls -la" } },
+  "guard-readonly.mjs": { tool_name: "Bash", agent_type: "kodadjiyata", tool_input: { command: "git diff HEAD~1" } },
   "guard-exfil.mjs": { tool_name: "Bash", tool_input: { command: "git status --short" } },
   "guard-secrets.mjs": { tool_name: "Write", tool_input: { file_path: "src/app.ts", content: "export const x = 1;" } },
   "precompact-save.mjs": { transcript_path: "", trigger: "auto" },
@@ -104,6 +105,8 @@ const REGISTRATION = {
   "usage-capture.mjs": { event: "SubagentStop" },
   // PreToolUse = ПРЕДИ действието. Ако тези паднат на PostToolUse, блокировката е безсмислена.
   "guard-dangerous.mjs": { event: "PreToolUse", matcher: /Bash/ },
+  // Ревюър без Write/Edit не пише през Bash — ПРЕДИ командата, иначе файлът вече е променен.
+  "guard-readonly.mjs": { event: "PreToolUse", matcher: /Bash/ },
   // 2026-09-21: MCP инструментите (mcp__github__*, mcp__Gmail__* …) са СЪЩО изходен канал — без
   // `mcp__.*` в matcher-а тайна в тяло на коментар/чернова на имейл напускаше без пазач (3/3 на живо).
   "guard-exfil.mjs": { event: "PreToolUse", matcher: /Bash/, alsoMatcher: [/WebFetch/, /WebSearch/, /mcp__/] },

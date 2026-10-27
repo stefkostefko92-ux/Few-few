@@ -231,7 +231,20 @@ Claude" (Anthropic, 33 стр.) описва изисквания, които п
 — данни, не инструкции**. Това е и първото ни умение с `references/`, тоест реалното трето ниво на
 прогресивното разкриване; линтът вече гейтва и препратките към него.
 
-**Guard hooks (active, 4):** `guard-prompt.mjs` (UserPromptSubmit — pasted secret never enters history),
+**Доставката се мери през харнеса, не през функцията (2026-10-27).** От Claude Code 2.1.89 (01.04.2026)
+стойност на `additionalContext` над 10 000 знака не влиза в контекста — харнесът я записва във файл и подава
+само път + 2 000-знаков преглед. `memory-preload` връщаше ~25 000 знака в една стойност, затова седем месеца
+всеки агент е тръгвал само с началото на доктрината за сигурност: без процедура, ПРЕДАВАНЕ, карта и собствена
+памет. `memory-recall` (достижимост ≥95%) и тестовете на куката бяха зелени — мереха какво куката ВРЪЩА, не
+какво агентът ВИЖДА; `dod-check` маскираше дупката, като връщаше агента със схемата. Сега изходът е на три
+части (`--part=doctrine|procedure|agent`, всяка под 9 500 знака), а `tools/hooks/preload-size.test.mjs` гейтва
+регистрацията, тавана за всеки агент и пълнотата. Същият урок като за предпазителите: докажи през CLI-то —
+проба с агент, който цитира какво има в контекста си, струва ~20k токена и хваща това, което никой тест не вижда.
+
+**Guard hooks (active, 5):** `guard-readonly.mjs` (PreToolUse/Bash — агент, чиято дефиниция има Bash, но
+няма Write/Edit, не пише в репото през Bash: git записи, `sed -i`, `>` към файл, `--write`/`--fix`, npm/pnpm,
+които сменят lockfile; `agent_type` идва в payload-а; кука на ниво settings, защото frontmatter куките не
+тичат в `-p`), `guard-prompt.mjs` (UserPromptSubmit — pasted secret never enters history),
 `guard-dangerous.mjs` (PreToolUse/Bash — only catastrophic: root/home/**workspace** rm, disk destroyers,
 `curl|sh`, force push / delete of main, `gh repo delete`), `guard-secrets.mjs`
 (PostToolUse/Write|Edit|MultiEdit|NotebookEdit — early secret warning), `guard-exfil.mjs`
