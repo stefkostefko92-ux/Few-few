@@ -3,10 +3,13 @@
 import type { RefObject } from 'react';
 import { useTranslations } from 'next-intl';
 import { REQUEST_MIN, type PermissionChange } from '@/lib/permissions';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/admin.json';
+import Etichetta from '../aiuto/Etichetta';
 
 /** The question before a save (a native modal dialog: the focus stays in it, Esc closes it): how many rights change and
  *  each one, role by role, before → after. From the platform (`request`), also the reference of the owner's written
- *  request, without which the save stays disabled (the server refuses it too). */
+ *  request, without which the save stays disabled (the server refuses it too), with its «?» next to the label (round 52). */
 export default function ConfirmSave({ dialogRef, changes, busy, onConfirm, request }: {
   dialogRef: RefObject<HTMLDialogElement | null>; changes: PermissionChange[]; busy: boolean; onConfirm: () => void;
   request: { value: string; set: (v: string) => void } | null;
@@ -28,7 +31,7 @@ export default function ConfirmSave({ dialogRef, changes, busy, onConfirm, reque
       </ul>
       {request ? (
         <div className="field pm-request">
-          <label htmlFor="pm-request" className="field-label">{t('requestLabel')}</label>
+          <Etichetta htmlFor="pm-request" className="field-label" aiuto={testoAiuto(AIUTO, 'permessi.riferimento')} nome={t('requestLabel')}>{t('requestLabel')}</Etichetta>
           <input id="pm-request" className="input" name="request" type="text" required maxLength={200} autoComplete="off" value={request.value}
             aria-describedby="pm-request-hint" onChange={(e) => request.set(e.target.value)} />
           <span id="pm-request-hint" className="hint">{t('requestHint')}</span>

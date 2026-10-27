@@ -4,6 +4,9 @@ import { useActionState, useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { createBetaInviteAction, resendBetaInviteAction, revokeBetaInviteAction } from '@/server/beta-invite-actions';
 import { initialFormState, type FormState } from '@/server/form';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/admin.json';
+import Etichetta from '../aiuto/Etichetta';
 import SecretOnce from '../SecretOnce';
 import { useErrorFocus } from '../useErrorFocus';
 
@@ -18,7 +21,7 @@ function LinkOnce({ state, resent = false }: { state: FormState; resent?: boolea
 
 // The platform administrator invites a tester to the beta — only whoever asked for it —: the address and the
 // administrator's own note on the request (visible to the administrators only; personal data the tester may ask for);
-// the link goes by e-mail and appears here once.
+// the link goes by e-mail and appears here once. Each field has its «?» next to its label (round 52), outside the label.
 export default function BetaInviteForm() {
   const t = useTranslations('admin'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(createBetaInviteAction, initialFormState);
@@ -30,16 +33,16 @@ export default function BetaInviteForm() {
       {state.error ? <p id="beta-error" ref={alert} tabIndex={-1} className="alert alert-bad" role="alert">{te(state.error)}</p> : null}
       <LinkOnce state={state} />
       <div className="form-grid">
-        <label className="field">
-          <span>{t('betaEmail')} *</span>
-          <input className="input" type="email" name="email" maxLength={254} required autoComplete="off" aria-invalid={bad('email')}
+        <div className="field">
+          <Etichetta htmlFor="beta-email" className="field-label" aiuto={testoAiuto(AIUTO, 'aziende.betaEmail')} nome={t('betaEmail')}>{t('betaEmail')} *</Etichetta>
+          <input id="beta-email" className="input" type="email" name="email" maxLength={254} required autoComplete="off" aria-invalid={bad('email')}
             aria-describedby={bad('email') ? 'beta-error' : undefined} />
-        </label>
-        <label className="field">
-          <span>{t('betaNote')}</span>
-          <input className="input" name="note" maxLength={200} aria-invalid={bad('note')} aria-describedby="beta-note-hint" />
+        </div>
+        <div className="field">
+          <Etichetta htmlFor="beta-note" className="field-label" aiuto={testoAiuto(AIUTO, 'aziende.betaNota')} nome={t('betaNote')}>{t('betaNote')}</Etichetta>
+          <input id="beta-note" className="input" name="note" maxLength={200} aria-invalid={bad('note')} aria-describedby="beta-note-hint" />
           <small id="beta-note-hint" className="note">{t('betaNoteHint')}</small>
-        </label>
+        </div>
       </div>
       <div><button type="submit" className="btn btn-primary" disabled={pending}>{t('betaInvite')}</button></div>
     </form>

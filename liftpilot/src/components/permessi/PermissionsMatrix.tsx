@@ -8,6 +8,8 @@
 // outcome takes the focus; a save on a matrix someone changed meanwhile is refused and the page shows the matrix in
 // force. On a phone one role at a time, chosen above the matrix. The platform's save asks, in the dialog, for the
 // reference of the owner's written request (terms of use, artt. 4 and 9), kept with each change in the company's log.
+// Each action has its «?» (round 52): what the right lets a colleague do, beyond the words of the row; the roles' heads
+// have none — what a role may do is its column. On a phone the role picker says it only chooses what is shown.
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import type { Role } from '@prisma/client';
@@ -15,6 +17,9 @@ import { useRouter } from '@/i18n/routing';
 import { DEFAULT_GRANTS, REQUIRES, lockOf, type MatrixCapability, type MemberRole } from '@/lib/rbac';
 import { MATRIX_ROLES, PERMISSION_GROUPS, columnChanges, defaultColumn, toggle, type Grants } from '@/lib/permissions';
 import { savePermissionsAction } from '@/server/permission-actions';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/azienda.json';
+import Aiuto from '../aiuto/Aiuto';
 import ConfirmSave from './ConfirmSave';
 import MatrixCell, { type CellLock } from './MatrixCell';
 
@@ -93,6 +98,7 @@ export default function PermissionsMatrix({ companyId, stamp: savedStamp, grants
   });
 
   const lockText = (lock: CellLock): string | undefined => (lock ? t(`locks.${lock}`) : undefined);
+  const pick = testoAiuto(AIUTO, 'permessi.ruoloMostrato');
   const needs = (c: MatrixCapability): string | null => {
     const req = REQUIRES[c];
     return req ? t('requires', { rights: req.map((r) => t(`short.${r}` as 'short.projects:view')).join(', ') }) : null;
@@ -107,6 +113,7 @@ export default function PermissionsMatrix({ companyId, stamp: savedStamp, grants
             <button key={r} type="button" className={show === r ? 'on' : undefined} aria-pressed={show === r} onClick={() => setShow(r)}>{tr(r)}</button>
           ))}
         </div>
+        {pick ? <Aiuto testo={pick} nome={t('showRole')} /> : null}
       </div>
       <div className="table-panel pm-panel">
         <table className="pm-table">
@@ -140,11 +147,12 @@ export default function PermissionsMatrix({ companyId, stamp: savedStamp, grants
                 ))}
               </tr>
               {g.rows.map((c) => {
-                const rule = rowRule(c);
+                const rule = rowRule(c), name = t(`caps.${c}`), aiuto = testoAiuto(AIUTO, `permessi.${c}`);
                 return (
                   <tr key={c}>
                     <th scope="row" className="pm-action">
-                      <span className="pm-right">{t(`caps.${c}`)}</span>
+                      {aiuto ? <span className="lbl"><span className="pm-right">{name}</span><Aiuto testo={aiuto} nome={name} /></span>
+                        : <span className="pm-right">{name}</span>}
                       {needs(c) ? <span className="pm-needs">{needs(c)}</span> : null}
                       {rule ? <span className="pm-needs pm-rule">{t(`locks.${rule}`)}</span> : null}
                     </th>

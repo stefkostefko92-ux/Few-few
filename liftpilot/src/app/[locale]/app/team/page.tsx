@@ -13,6 +13,9 @@ import CreateUserForm from '@/components/CreateUserForm';
 import ResetPasswordButton from '@/components/ResetPasswordButton';
 import AccountHead from '@/components/AccountHead';
 import Icon from '@/components/Icon';
+import Aiuto from '@/components/aiuto/Aiuto';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../../../messages/aiuto/azienda.json';
 
 export async function generateMetadata() {
   const t = await getTranslations('team');
@@ -20,7 +23,8 @@ export async function generateMetadata() {
 }
 
 // The owner's colleagues: each has one of the four roles (Capotecnico, Progettista, Tecnico, Commerciale) and, while active, takes a slot of the subscription; so does
-// an invitation while it waits (the colleague chooses the password from the link of the e-mail).
+// an invitation while it waits (the colleague chooses the password from the link of the e-mail). The colleagues' table
+// has a «?» on each column's head (round 52): what the column holds and what its controls do.
 export default async function TeamPage({ params, searchParams }: {
   params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
@@ -34,6 +38,8 @@ export default async function TeamPage({ params, searchParams }: {
   const fd = dateFormat(locale);
   const roles = assignableRoles(me.role);
   const free = sub?.free ?? false, limit = sub && Number.isFinite(sub.limit) ? String(sub.limit) : '∞';
+  // a column's head with its «?»: the explanation shows on the name or on the «?»
+  const head = (name: string, testo: string | null) => (testo ? <span className="lbl">{name}<Aiuto testo={testo} nome={name} /></span> : name);
   return (
     <main className="page">
       <AccountHead area="company" title={t('title')} lead={t('lead')} />
@@ -53,7 +59,13 @@ export default async function TeamPage({ params, searchParams }: {
       </section>
       <div className="table-panel">
         <table className="data-table stack">
-          <thead><tr><th>{t('name')}</th><th>{t('role')}</th><th>{t('status')}</th><th>{t('lastLogin')}</th><th>{t('actions')}</th></tr></thead>
+          <thead>
+            <tr>
+              <th>{head(t('name'), testoAiuto(AIUTO, 'utenti.col.nome'))}</th><th>{head(t('role'), testoAiuto(AIUTO, 'utenti.col.ruolo'))}</th>
+              <th>{head(t('status'), testoAiuto(AIUTO, 'utenti.col.stato'))}</th><th>{head(t('lastLogin'), testoAiuto(AIUTO, 'utenti.col.accesso'))}</th>
+              <th>{head(t('actions'), testoAiuto(AIUTO, 'utenti.col.azioni'))}</th>
+            </tr>
+          </thead>
           <tbody>
             {users.map((u) => {
               const manage = u.id !== me.id && outranks(me.role, u.role);

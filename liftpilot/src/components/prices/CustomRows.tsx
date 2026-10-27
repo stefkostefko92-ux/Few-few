@@ -4,10 +4,13 @@
 // words and the price, how each project counts the quantity (once, by the stop, by the metre of travel) and which projects
 // take the line, adds and removes lines; whoever may only see the prices reads them. Every line is sent in its order with
 // how many there are (the search does not hide them: a line not sent would be deleted); a line left empty is dropped
-// when saved.
+// when saved. Each column's head has its «?» (round 52); the per-line fields keep their own names.
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CUSTOM_MAX, PRICE_BASES, PRICE_SCOPES, type PriceBasisName, type PriceScopeName, type PriceUnit } from '@/lib/prices/groups';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/azienda.json';
+import Aiuto from '../aiuto/Aiuto';
 
 export interface CustomRow {
   text: string;
@@ -21,6 +24,8 @@ const UNIT: Record<PriceBasisName, PriceUnit> = { LOT: 'lot', STOP: 'stop', TRAV
 
 const isBasis = (x: string): x is PriceBasisName => (PRICE_BASES as readonly string[]).includes(x);
 const isScope = (x: string): x is PriceScopeName => (PRICE_SCOPES as readonly string[]).includes(x);
+/** A column's head with its «?»: the explanation shows on the name or on the «?». */
+const head = (name: string, testo: string | null) => (testo ? <span className="lbl">{name}<Aiuto testo={testo} nome={name} /></span> : name);
 
 export default function CustomRows({ rows, editable, bad }: { rows: CustomRow[]; editable: boolean; bad: ReadonlySet<string> }) {
   const t = useTranslations('prices');
@@ -40,7 +45,10 @@ export default function CustomRows({ rows, editable, bad }: { rows: CustomRow[];
           <table className="data-table stack free-lines">
             <thead>
               <tr>
-                <th scope="col">{t('freeText')}</th><th scope="col" className="num">{t('price')}</th><th scope="col">{t('freeBasis')}</th><th scope="col">{t('freeScope')}</th>
+                <th scope="col">{head(t('freeText'), testoAiuto(AIUTO, 'listino.libera.descrizione'))}</th>
+                <th scope="col" className="num">{head(t('price'), testoAiuto(AIUTO, 'listino.libera.prezzo'))}</th>
+                <th scope="col">{head(t('freeBasis'), testoAiuto(AIUTO, 'listino.libera.quantita'))}</th>
+                <th scope="col">{head(t('freeScope'), testoAiuto(AIUTO, 'listino.libera.progetti'))}</th>
                 {editable ? <th scope="col"><span className="sr-only">{t('freeActions')}</span></th> : null}
               </tr>
             </thead>

@@ -1,0 +1,10 @@
+{
+  "aziende.betaEmail": "L’indirizzo del tester che ha chiesto di partecipare: l’azienda potrà registrarsi solo con questo indirizzo, che il modulo di registrazione mostra già compilato. Un indirizzo che ha già un account LiftPilot viene rifiutato.",
+  "aziende.betaNota": "Il riferimento della richiesta, per esempio «richiesta e-mail del 12/10/2026»: al massimo 200 caratteri. Compare nell’elenco degli inviti e non viene mai inviata al tester.",
+  "aziende.nome": "La ragione sociale dell’impresa di ascensori, come compare nell’elenco, nei documenti e nel registro attività: al massimo 160 caratteri.",
+  "aziende.piva": "La Partita IVA come ti è stata comunicata, al massimo 40 caratteri: il sistema non la verifica. Puoi lasciarla vuota.",
+  "aziende.comune": "Il Comune della sede dell’azienda, al massimo 120 caratteri. Puoi lasciarlo vuoto.",
+  "aziende.titolareNome": "Nome e cognome di chi sarà il Titolare: il ruolo che ha sempre tutti i permessi e gestisce utenti, permessi e abbonamento.",
+  "aziende.titolareEmail": "L’indirizzo con cui il Titolare accede: non deve avere già un account. Dopo «Crea azienda» la password temporanea compare una sola volta: consegnala di persona o con un canale sicuro.",
+  "permessi.riferimento": "Scrivi solo il riferimento, non il testo della lettera né dati personali: resta con ogni modifica nel registro attività dell’azienda. Con meno di 4 caratteri «Conferma e salva» resta disattivato."
+}

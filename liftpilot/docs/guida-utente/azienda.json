@@ -15,7 +15,7 @@
       "reach": "Dal menu laterale, gruppo «Gestione», voce «Azienda».",
       "purpose": [
         "Qui imposti come l’azienda compare nei documenti: il logo nel cartiglio (il riquadro con i dati in basso) delle tavole, e l’ordine in cui le sezioni compaiono nelle schede di rilievo. Da qui scarichi anche tutti i dati dell’azienda in un unico file, utile per un archivio o per passare a un altro fornitore.",
-        "Il titolo della pagina è «Azienda» seguito dal nome della tua azienda. Le sezioni compaiono in questo ordine: logo, ordine delle sezioni (solo con il permesso di modifica o, in sola lettura, mostrato senza frecce), dati dell’azienda (solo con il permesso di esportazione)."
+        "Il titolo della pagina è «Azienda» seguito dal nome della tua azienda. Le sezioni compaiono in questo ordine: logo, ordine delle sezioni (solo con il permesso di modifica e in modalità «Esperto»; in sola lettura, mostrato senza frecce), dati dell’azienda (solo con il permesso di esportazione)."
       ],
       "shots": [
         {
@@ -31,7 +31,7 @@
         {
           "title": "Logo nel cartiglio delle tavole",
           "intro": [
-            "Il logo compare nel cartiglio (il riquadro con i dati in basso) di tutte le tavole che emetti da quel momento. Il testo del riquadro dice: «PNG o JPEG, al massimo 300 KB. Senza logo il cartiglio porta il nome dell’azienda. Le tavole già emesse tengono il logo con cui sono state emesse.»",
+            "Il logo compare nel cartiglio (il riquadro con i dati in basso) di tutte le tavole che emetti da quel momento. Il testo del riquadro dice: «PNG o JPEG, al massimo 300 KB. Le tavole già emesse tengono il logo con cui sono state emesse.»",
             "Con un logo vedi l’anteprima «Logo attuale» con le sue dimensioni in pixel (‹larghezza› × ‹altezza› px); senza logo leggi «Nessun logo: il cartiglio porta il nome dell’azienda.»"
           ],
           "fields": [
@@ -104,6 +104,7 @@
             }
           ],
           "notes": [
+            "La sezione compare solo in modalità «Esperto»: in «Semplice» non si vede e le schede tengono l’ordine salvato.",
             "Con l’azienda in sola lettura vedi l’ordine ma senza frecce né pulsanti; il testo sotto l’elenco dice «L’ordine si cambia quando l’azienda non è in sola lettura.»",
             "Se l’ordine inviato non è valido, compare «L’ordine inviato non è valido. Ecco quello salvato: riprova.» con l’ordine salvato.",
             "Il testo di spiegazione del pannello è «Vale per tutte le schede dell’azienda: modulo, pagina della scheda, stampa e PDF.»; sotto l’elenco, per chi può modificare: «Sposta una sezione con le frecce, poi salva. Impianto resta in cima: identifica l’impianto.»"

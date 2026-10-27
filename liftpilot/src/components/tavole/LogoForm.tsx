@@ -6,6 +6,9 @@ import { useRef, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { removeLogoAction, uploadLogoAction } from '@/server/drawing-actions';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/azienda.json';
+import Etichetta from '../aiuto/Etichetta';
 
 export default function LogoForm({ hasLogo }: { hasLogo: boolean }) {
   const t = useTranslations('tavole'), te = useTranslations('errors'), router = useRouter();
@@ -24,10 +27,11 @@ export default function LogoForm({ hasLogo }: { hasLogo: boolean }) {
   };
   return (
     <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); run(() => uploadLogoAction(new FormData(e.currentTarget)), t('logoSaved')); }}>
-      <label className="field">
-        <span>{t('logoFile')}</span>
-        <input ref={file} className="input" type="file" name="logo" accept="image/png,image/jpeg" required />
-      </label>
+      {/* the «?» next to the label, outside it (round 52): the box names its input by the id */}
+      <div className="field">
+        <Etichetta htmlFor="logo-file" className="field-label" aiuto={testoAiuto(AIUTO, 'azienda.logo')} nome={t('logoFile')}>{t('logoFile')}</Etichetta>
+        <input id="logo-file" ref={file} className="input" type="file" name="logo" accept="image/png,image/jpeg" required />
+      </div>
       <div className="flex flex-wrap items-center gap-3">
         <button type="submit" className="btn btn-primary" disabled={pending}>{t('logoUpload')}</button>
         {hasLogo ? <button type="button" className="btn" disabled={pending} onClick={() => run(removeLogoAction, t('logoSaved'))}>{t('logoRemove')}</button> : null}

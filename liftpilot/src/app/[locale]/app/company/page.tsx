@@ -8,6 +8,9 @@ import LogoForm from '@/components/tavole/LogoForm';
 import AccountHead, { PanelHead } from '@/components/AccountHead';
 import Icon from '@/components/Icon';
 import SezioniForm from '@/components/rilievi/SezioniForm';
+import Aiuto from '@/components/aiuto/Aiuto';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../../../messages/aiuto/azienda.json';
 import '@/app/rilievi-sezioni.css';
 
 export async function generateMetadata() {
@@ -21,7 +24,9 @@ export async function generateMetadata() {
 // (always: also to leave the service). The owner's; a Capotecnico's when the company gives one of the two (round 42) —
 // held, read-only mode or not (src/lib/company-page.ts): the page shows what the rights allow, and why the logo cannot be
 // changed (the company is read-only, or the role lacks the right). The order of the sections is there only for a role
-// holding 'company:edit' (in read-only mode shown, unchanged).
+// holding 'company:edit' (in read-only mode shown, unchanged), and only in the «Esperto» mode (round 52): a rare
+// refinement — the sheets keep their order without it, and the rest of the page stands alone. The order and the file's
+// contents have their «?» next to the panel's line.
 export default async function CompanyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -47,14 +52,14 @@ export default async function CompanyPage({ params }: { params: Promise<{ locale
         {view.logo === 'form' ? <LogoForm hasLogo={logo !== null} />
           : <p className="note">{t(view.logo === 'readOnly' ? 'logoReadOnly' : 'logoNoRight')}</p>}
       </section>
-      {sezioni ? <section className="panel" aria-labelledby="sezioni-h">
+      {sezioni ? <section className="panel esperto" aria-labelledby="sezioni-h">
         <PanelHead icon="list-tree" id="sezioni-h">{tr('impostazioni.sezioni.title')}</PanelHead>
-        <p className="note">{tr('impostazioni.sezioni.text')}</p>
+        <p className="note relative">{tr('impostazioni.sezioni.text')} <Aiuto testo={testoAiuto(AIUTO, 'azienda.sezioni') ?? ''} nome={tr('impostazioni.sezioni.title')} /></p>
         <SezioniForm fisse={sezioni.fisse} ordine={sezioni.ordine} canEdit={view.sezioni === 'edit'} />
       </section> : null}
       {view.exports ? <section className="panel" aria-labelledby="export-h">
         <PanelHead icon="database" id="export-h">{t('exportTitle')}</PanelHead>
-        <p className="note">{t('exportText')}</p>
+        <p className="note relative">{t('exportText')} <Aiuto testo={testoAiuto(AIUTO, 'azienda.esporta') ?? ''} nome={t('exportTitle')} /></p>
         <p><a className="btn" href="/api/company/export" download><Icon name="download" size={18} />{t('exportButton')}</a></p>
         <p className="note"><Link href="/data" target="_blank">{t('exportFormat')}</Link></p>
       </section> : null}

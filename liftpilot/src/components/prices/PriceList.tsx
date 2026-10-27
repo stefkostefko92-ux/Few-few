@@ -5,6 +5,9 @@ import { useLocale, useTranslations } from 'next-intl';
 import { PRICE_GROUPS, type PriceGroup, type PriceUnit } from '@/lib/prices/groups';
 import { savePricesAction } from '@/server/price-actions';
 import { initialFormState } from '@/server/form';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/azienda.json';
+import Aiuto from '../aiuto/Aiuto';
 import CustomRows, { type CustomRow } from './CustomRows';
 
 /** An article of the list as the page sends it: what it is, its unit, where its price starts from, whether the company
@@ -21,6 +24,7 @@ export interface PriceRow {
 
 // The company's price list by group, with a search, and its free lines; whoever may edit the prices edits every one in
 // place (the search only hides articles: a hidden row is not sent and keeps its price), whoever may only see them reads it.
+// The search and each column's head have their «?» (round 52).
 export default function PriceList({ rows, values, custom, editable }: { rows: PriceRow[]; values: Record<string, string>; custom: CustomRow[]; editable: boolean }) {
   const t = useTranslations('prices'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(savePricesAction, initialFormState);
@@ -30,6 +34,9 @@ export default function PriceList({ rows, values, custom, editable }: { rows: Pr
   const find = q.trim().toLowerCase();
   const shown = find ? rows.filter((r) => label(r).toLowerCase().includes(find)) : rows;
   const save = editable ? <button type="submit" className="btn btn-primary" disabled={pending}>{t('save')}</button> : null;
+  // a column's head with its «?»: the explanation shows on the name or on the «?»
+  const head = (name: string, testo: string | null) => (testo ? <span className="lbl">{name}<Aiuto testo={testo} nome={name} /></span> : name);
+  const cerca = testoAiuto(AIUTO, 'listino.cerca');
   // sent by hand: after its own form action React resets the form, which puts every select back to the option it was
   // first drawn with (a free line's basis and projects) while the state keeps the chosen one; without JavaScript the
   // action still posts the form
@@ -41,8 +48,10 @@ export default function PriceList({ rows, values, custom, editable }: { rows: Pr
   return (
     <form action={action} onSubmit={submit} className="flex flex-col gap-4" noValidate>
       <input type="hidden" name="locale" value={locale} />
-      <div className="flex flex-wrap items-center gap-3">
+      {/* the row holds the search's «?» explanation, which opens under the search from its left edge */}
+      <div className="relative flex flex-wrap items-center gap-3">
         <input type="search" className="input w-auto grow" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('filter')} aria-label={t('filter')} />
+        {cerca ? <Aiuto testo={cerca} nome={t('filter')} /> : null}
         {save}
       </div>
       {state.ok ? <p className="alert alert-ok" role="status">{t('saved', { n: Number(state.message ?? 0) })}</p> : null}
@@ -55,7 +64,13 @@ export default function PriceList({ rows, values, custom, editable }: { rows: Pr
             <h2 id={`pg-${g}`}>{t(`groups.${g}`)} <span className="note">{t('priced', { n: rs.filter((r) => v[r.key]).length, of: rs.length })}</span></h2>
             <div className="table-scroll">
               <table className="data-table stack">
-                <thead><tr><th scope="col">{t('article')}</th><th scope="col" className="num">{t('price')}</th><th scope="col">{t('source')}</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th scope="col">{head(t('article'), testoAiuto(AIUTO, 'listino.articolo'))}</th>
+                    <th scope="col" className="num">{head(t('price'), testoAiuto(AIUTO, 'listino.prezzo'))}</th>
+                    <th scope="col">{head(t('source'), testoAiuto(AIUTO, 'listino.origine'))}</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {rs.map((r) => (
                     <tr key={r.key}>

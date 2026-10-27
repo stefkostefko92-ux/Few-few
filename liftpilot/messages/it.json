@@ -565,7 +565,7 @@
   },
   "team": {
     "title": "Utenti",
-    "lead": "Gli account dei colleghi della tua azienda: il Titolare li invita per e-mail, dà a ciascuno uno dei quattro ruoli e decide che cosa può fare ogni ruolo; ogni collega attivo e ogni invito in attesa occupa un posto dell’abbonamento.",
+    "lead": "Invita i colleghi per e-mail e dai a ciascuno un ruolo. Ogni collega attivo e ogni invito in attesa occupa un posto dell’abbonamento.",
     "name": "Nome",
     "email": "E-mail",
     "role": "Ruolo",
@@ -1333,7 +1333,7 @@
     "f_duty": "Intermittenza (%)",
     "companyTitle": "Azienda",
     "logoTitle": "Logo nel cartiglio delle tavole",
-    "logoHint": "PNG o JPEG, al massimo 300 KB. Senza logo il cartiglio porta il nome dell’azienda. Le tavole già emesse tengono il logo con cui sono state emesse.",
+    "logoHint": "PNG o JPEG, al massimo 300 KB. Le tavole già emesse tengono il logo con cui sono state emesse.",
     "logoCurrent": "Logo attuale",
     "logoNone": "Nessun logo: il cartiglio porta il nome dell’azienda.",
     "logoFile": "File del logo",
@@ -1345,7 +1345,7 @@
     "clientLogoAlt": "Logo del committente",
     "clientLogoNone": "Nessun logo del committente: nel cartiglio solo il nome.",
     "exportTitle": "Dati dell’azienda",
-    "exportText": "Tutti i dati inseriti dall’azienda — schede di rilievo, impianti, calcoli, progetti, tavole, listino, colleghi con i permessi dei ruoli e registro attività — in un file JSON, strutturato e leggibile da macchina. Serve anche per passare a un altro fornitore.",
+    "exportText": "Tutti i dati inseriti dall’azienda in un file JSON leggibile da macchina. Serve anche per passare a un altro fornitore.",
     "exportButton": "Scarica i dati (JSON)",
     "logoReadOnly": "Il logo si cambia quando l’azienda non è in sola lettura.",
     "logoNoRight": "Il logo dell’azienda lo cambia il Titolare o il Capotecnico a cui il Titolare ne ha dato il permesso.",
@@ -1978,7 +1978,7 @@
   },
   "billing": {
     "title": "Abbonamento",
-    "lead": "Il prezzo mensile comprende il Titolare; i colleghi occupano i posti dei pacchetti, acquistati in aggiunta al prezzo mensile.",
+    "lead": "Il prezzo mensile comprende il Titolare; i posti per i colleghi si acquistano a pacchetti.",
     "done": "Pagamento completato: l’abbonamento si attiva appena Stripe lo conferma, di solito in pochi secondi. Ricarica la pagina se lo stato non è cambiato.",
     "changed": "Pacchetto cambiato.",
     "statusTitle": "Stato",
@@ -2000,6 +2000,8 @@
     "seatsUsed": "Posti usati (colleghi attivi e inviti in attesa): {used} su {limit}.",
     "subscribeTitle": "Attiva l’abbonamento",
     "changeTitle": "Cambia il pacchetto di posti",
+    "packName": "Pacchetto di posti",
+    "acceptName": "Accettazione delle condizioni d’uso",
     "priceNote": "Prezzo per il Titolare: {base}.",
     "tax": {
       "exclusive": "Prezzi IVA esclusa.",
@@ -2072,9 +2074,9 @@
   },
   "prices": {
     "title": "Listino prezzi",
-    "lead": "I prezzi dell’azienda per ogni articolo che il software mette nei progetti, IVA esclusa. Gli articoli Panev partono dal listino Panev 2026; gli altri li inserisci tu. Li vedono il Titolare e i colleghi con il permesso di vedere i prezzi (con i permessi predefiniti, il Capotecnico e il Commerciale).",
+    "lead": "I prezzi dell’azienda per gli articoli dei progetti, IVA esclusa. Gli articoli Panev partono dal listino Panev 2026; gli altri li inserisci tu.",
     "leadView": "I prezzi dell’azienda, IVA esclusa: li modifica il Titolare o un collega a cui il Titolare ne ha dato il permesso.",
-    "scope": "Il costo di un progetto conta gli articoli che il software progetta e quelli che conta dal progetto (quadro, impianto elettrico, segnalazioni, manodopera), con le quantità calcolate in automatico, più le voci libere; una modifica secondo UNI 10411 solo le parti sostituite. Non comprende le opere murarie.",
+    "scope": "Il costo di un progetto conta questi articoli, con le quantità calcolate in automatico, più le voci libere. Non comprende le opere murarie.",
     "filter": "Cerca un articolo",
     "save": "Salva i prezzi",
     "saved": "Prezzi salvati ({n, plural, =0 {nessuna modifica} one {# modifica} other {# modifiche}}).",
@@ -2229,7 +2231,7 @@
       "REPLACEMENT": "Solo argano e ammodernamento (UNI 10411)"
     },
     "freeTitle": "Voci a stesura libera",
-    "freeLead": "Le tue voci, con la descrizione e il prezzo: il software le aggiunge da solo al costo dei progetti che scegli, con la quantità calcolata — una volta, per fermata o per metro di corsa. Una riga vuota si elimina quando salvi.",
+    "freeLead": "Le tue voci: il software le aggiunge da solo al costo dei progetti che scegli, con la quantità calcolata.",
     "freeCount": "{n, plural, =0 {nessuna voce} one {# voce} other {# voci}}",
     "freeText": "Descrizione",
     "freePlaceholder": "Per esempio: trasporto e scarico in cantiere",
@@ -2245,7 +2247,7 @@
     "skipped": "Voci libere per fermata non contate (la sostituzione dell’argano non conosce le fermate): {list}.",
     "uncounted": "Parti che il collaudo indica come sostituite e che questo costo non conta, perché senza il progetto dell’impianto non se ne conoscono le quantità: {list}. Aggiungile come voci libere, oppure fai il progetto dell’impianto.",
     "uncountedNew": "Impianto nuovo calcolato senza il suo progetto: questo costo non conta le parti dell’impianto di cui solo il progetto dà le quantità: {list}. Aggiungile come voci libere, oppure fai il progetto dell’impianto.",
-    "freeLeadView": "Le voci dell’azienda, con il prezzo: il software le aggiunge da solo al costo dei progetti indicati, con la quantità calcolata — una volta, per fermata o per metro di corsa. Le modifica il Titolare o un collega a cui il Titolare ne ha dato il permesso."
+    "freeLeadView": "Le voci dell’azienda: il software le aggiunge da solo al costo dei progetti indicati, con la quantità calcolata. Le modifica il Titolare o un collega a cui il Titolare ne ha dato il permesso."
   },
   "room": {
     "newTitle": "Rilievo del locale macchina",
@@ -2969,7 +2971,7 @@
   },
   "permessi": {
     "title": "Permessi",
-    "lead": "Cosa può fare ogni ruolo nella tua azienda. Il Titolare ha sempre tutti i permessi; la gestione degli utenti, dei permessi e dell’abbonamento resta solo sua.",
+    "lead": "Cosa può fare ogni ruolo nella tua azienda. Il Titolare ha sempre tutti i permessi.",
     "adminTitle": "Permessi · {company}",
     "adminLead": "La matrice dei permessi di un’azienda cliente: si cambia solo su richiesta scritta del suo Titolare (condizioni d’uso, artt. {accounts} e {dpa}), il cui riferimento si scrive al salvataggio. Ogni modifica vale dalla prossima pagina aperta dai suoi colleghi e compare nel registro attività dell’azienda, attribuita alla piattaforma, con il riferimento della richiesta.",
     "back": "Torna alle aziende",

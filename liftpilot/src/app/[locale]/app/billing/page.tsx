@@ -12,6 +12,9 @@ import { companySubscription } from '@/server/billing';
 import { changePackAction, portalAction, startCheckoutAction } from '@/server/billing-actions';
 import { Link } from '@/i18n/routing';
 import AccountHead, { PanelHead } from '@/components/AccountHead';
+import Aiuto from '@/components/aiuto/Aiuto';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../../../messages/aiuto/azienda.json';
 import '@/app/check-list.css';
 
 export async function generateMetadata() {
@@ -24,7 +27,9 @@ const ERRORS = ['forbidden', 'billingOff', 'rateLimited', 'invalid', 'terms', 't
 type BillingError = (typeof ERRORS)[number];
 const isError = (x: unknown): x is BillingError => typeof x === 'string' && (ERRORS as readonly string[]).includes(x);
 
-// The owner's subscription: its state, the slots used, the price from Stripe for every pack, and the payment.
+// The owner's subscription: its state, the slots used, the price from Stripe for every pack, and the payment. The packs
+// have their «?» on the price line over them, the consent its own beside the box, outside its label (round 52): the
+// terms' words stay as they are.
 export default async function BillingPage({ params, searchParams }: {
   params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
@@ -90,7 +95,8 @@ export default async function BillingPage({ params, searchParams }: {
             <p className="alert alert-warn">{t('e.termsDue')} <Link href="/app/terms">{t('termsAction')}</Link></p>
           ) : price ? (
             <>
-              <p className="note">{t('priceNote', { base: `${eur(price.cents)} ${per}` })} {t(`tax.${price.taxBehavior ?? 'unspecified'}`)}</p>
+              <p className="note relative">{t('priceNote', { base: `${eur(price.cents)} ${per}` })} {t(`tax.${price.taxBehavior ?? 'unspecified'}`)}{' '}
+                <Aiuto testo={testoAiuto(AIUTO, 'abbonamento.pacchetto') ?? ''} nome={t('packName')} /></p>
               {live ? (
                 <form action={changePackAction} className="flex flex-col gap-3">
                   <input type="hidden" name="locale" value={locale} />
@@ -102,10 +108,13 @@ export default async function BillingPage({ params, searchParams }: {
                 <form action={startCheckoutAction} className="flex flex-col gap-3">
                   <input type="hidden" name="locale" value={locale} />
                   {packChoice(null)}
-                  <label className="check consent">
-                    <input type="checkbox" name="terms" value="1" required />
-                    <span>{t.rich('accept', { terms: (c) => <a href={`/${locale}/privacy#terms`} target="_blank" rel="noopener">{c}</a> })}</span>
-                  </label>
+                  <div className="relative flex items-start gap-2">
+                    <label className="check consent">
+                      <input type="checkbox" name="terms" value="1" required />
+                      <span>{t.rich('accept', { terms: (c) => <a href={`/${locale}/privacy#terms`} target="_blank" rel="noopener">{c}</a> })}</span>
+                    </label>
+                    <Aiuto testo={testoAiuto(AIUTO, 'abbonamento.condizioni') ?? ''} nome={t('acceptName')} />
+                  </div>
                   <div><button type="submit" className="btn btn-primary">{t('subscribe')}</button></div>
                 </form>
               )}

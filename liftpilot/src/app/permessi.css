@@ -39,6 +39,12 @@ tbody:first-of-type .pm-group :is(th, td) { padding-top: 14px; }
 .pm-needs { display: block; margin-top: 2px; font-size: 12.5px; line-height: 1.4; color: var(--muted); }
 /* the hard rule of a row whose boxes are locked for colleagues: written out, not only on hover */
 .pm-rule { color: var(--dim); font-style: italic; }
+/* an action's «?» (round 52, aiuto.css): beside the first line of its words; its explanation over the boxes and above the
+   sticky cells of the rows below (each paints its own layer), upward on the last rows so the panel's scroll keeps it */
+.pm-table th.pm-action > .lbl { display: flex; align-items: flex-start; flex-wrap: nowrap; }
+.pm-table th.pm-action > .lbl .aiuto { margin-top: 1px; }
+.pm-table th.pm-action:is(:hover, :focus-within), .pm-table th.pm-action:has(.aiuto[data-aperto]) { z-index: 3; }
+.pm-table tbody:last-of-type tr:nth-last-child(-n+2) th.pm-action .aiuto-testo { top: auto; bottom: calc(100% + 6px); }
 .pm-table tbody tr:not(.pm-group):hover > :is(th, td) { background: var(--row-hover); }
 .pm-table tbody tr:not(.pm-group):hover > th.pm-action { background: var(--surface3); }
 
@@ -122,8 +128,9 @@ tbody:first-of-type .pm-group :is(th, td) { padding-top: 14px; }
 
 /* a phone: one role at a time, the action beside its box */
 @media (max-width: 719px) {
-  .pm-pick { display: block; }
-  .pm-pick .seg-row { width: 100%; }
+  /* the picker and its «?», whose explanation opens under the whole picker */
+  .pm-pick { position: relative; display: flex; align-items: center; gap: 8px; }
+  .pm-pick .seg-row { flex: 1 1 auto; min-width: 0; width: 100%; }
   .pm-pick .seg-row > button { flex: 1 1 30%; }
   .pm-table .pm-off { display: none; }
   .pm-table th.pm-action { min-width: 0; position: static; padding: 10px 12px; }
