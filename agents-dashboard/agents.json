@@ -1200,7 +1200,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 535
+        "lessons": 536
       },
       "evolution": [
         {
@@ -2030,9 +2030,20 @@
           "date": "2026-10-27",
           "event": "v41.7 — учене",
           "detail": "Научи: Полето „Към“ в ПРЕДАВАНЕ трябва да е id от .claude/agents/*.md (напр. izpitatelya, kach…"
+        },
+        {
+          "version": "41.8.0",
+          "date": "2026-10-27",
+          "event": "v41.8 — учене",
+          "detail": "Научи: medqr /forgot праща reset линка на users.email (auth.js:230,236-237), затова всяка неот…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „medqr /forgot праща reset линка на users.email (auth.js:230,236-237), затова всяка неот…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",

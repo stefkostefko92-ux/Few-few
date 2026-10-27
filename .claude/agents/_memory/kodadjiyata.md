@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-27:** medqr /forgot праща reset линка на users.email (auth.js:230,236-237), затова всяка неоторизирана промяна на users.email е директно превземане на акаунт; login/forgot нормализират с toLowerCase, а SQLite = различава главни и малки букви, така че имейл, записан без lowercase, заключва акаунта. _(medqr ревю на маршрути, които пишат users.email; verified; medqr/src/routes/auth.js:142-148,227-237)_
 - **2026-10-27:** Полето „Към“ в ПРЕДАВАНЕ трябва да е id от .claude/agents/*.md (напр. izpitatelya, kachestveniyat), не българското име — dod-check.mjs отхвърля „Изпитателя“. _(всеки HANDOFF блок; verified; Stop hook dod-check.mjs изход 2026-10-27; .claude/agents/izpitatelya.md)_
 - **2026-10-27:** medqr audit() приема req като първи аргумент (audit(req, event, {userId, detail})); ако му се подаде число (req.user.id), не хвърля, а записва user_id=null и ip='' — тихо обезценен одит запис. _(ревю на всеки нов medqr маршрут, който вика audit; verified; medqr/src/audit.js:14-16)_
 - **2026-10-27:** medqr CSRF е глобален middleware (server.js:184) преди всички рутери (:293-296) — липса на CSRF в отделен маршрут не е находка. _(medqr CSRF ревюта; verified; medqr/src/server.js:184,293-296; medqr/src/csrf.js:20-28)_
