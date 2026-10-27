@@ -18136,7 +18136,7 @@
           "Домакинско предимство: CIES Football Observatory + COVID естествен експеримент (Frontiers 2021); Nevill (2002) съдийски уклон",
           "Closing Line Value и ефективност на пазара (Pinnacle; Constantinou & Fenton 2013)"
         ],
-        "lessons": 151
+        "lessons": 152
       },
       "evolution": [
         {
@@ -18192,9 +18192,20 @@
           "date": "2026-10-25",
           "event": "v20.7 — учене",
           "detail": "Научи: Wheatcroft (2021, J. Quant. Anal. Sports 17(4):273-287) — при футболни прогнози локални…"
+        },
+        {
+          "version": "20.8.0",
+          "date": "2026-10-27",
+          "event": "v20.8 — учене",
+          "detail": "Научи: При тотал/хендикап с push (цяла или четвърт линия) EV = p_win·коеф − 1 + p_push, а Kell…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „При тотал/хендикап с push (цяла или четвърт линия) EV = p_win·коеф − 1 + p_push, а Kell…\""
+        },
         {
           "date": "2026-10-27",
           "type": "quarantine",
