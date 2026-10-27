@@ -16458,7 +16458,7 @@
           "Kubernetes probes docs (liveness/readiness/startup), graceful shutdown/SIGTERM",
           "Това репо: CLAUDE.md (продуктов стек), границата VPS-аджията (машина/деплой) и Конвейерът (CI)"
         ],
-        "lessons": 219
+        "lessons": 220
       },
       "evolution": [
         {
@@ -16526,9 +16526,20 @@
           "date": "2026-10-27",
           "event": "v20.8 — учене",
           "detail": "Научи: Портът на zabobovdol в продукция е динамичен — compose публикува ${HTTP_PORT:-80} и aut… (+1 още)"
+        },
+        {
+          "version": "20.9.0",
+          "date": "2026-10-27",
+          "event": "v20.9 — учене",
+          "detail": "Научи: pino-http със серийзърите по подразбиране (pino-std-serializers) логва res.getHeaders()…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „pino-http със серийзърите по подразбиране (pino-std-serializers) логва res.getHeaders()…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
