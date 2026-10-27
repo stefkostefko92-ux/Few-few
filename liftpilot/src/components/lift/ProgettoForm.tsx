@@ -7,9 +7,11 @@
 // the test, the machine and the calculation's values are changed in «Calcolo argano». A new drawing starts empty
 // (blankProgetto); the software's own values (rails, allowances, heights, niches, frames…) come once its data are in.
 // Round 52: every field with its «?» (messages/aiuto/progetto.json); the rare refinements (the software's choices in the
-// shaft, niches, headroom walls, frames, linings) are marked `esperto` in their components — hidden in «Semplice».
+// shaft, niches, headroom walls, frames, linings) are marked `esperto` in their components — hidden in «Semplice». The
+// sections carry their numbers in the bar of the steps (ProgettoWorkspace).
 import { useTranslations } from 'next-intl';
 import { testoAiuto } from '@/lib/aiuto';
+import { passoId, type PassoProgetto } from '@/lib/passi-moduli';
 import AIUTO from '../../../messages/aiuto/progetto.json';
 import SectionTitle from '@/components/project/SectionTitle';
 import { KL, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
@@ -65,9 +67,11 @@ interface Props {
   porta: { go(): void; pending: boolean } | null;
   /** the existing falls a direct pull keeps [mm] and the plan's drop set to them (round 46); null: none */
   calate?: { Do: number; fix(): void } | null;
+  /** the sections' numbers in the bar of the steps (round 52) */
+  numeri?: Partial<Record<PassoProgetto, number>>;
 }
 
-export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc, h, derived, blank, texts, source, setShaft, setSize, onSurvey, setAuto, setBottom, porta, calate = null }: Props) {
+export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc, h, derived, blank, texts, source, setShaft, setSize, onSurvey, setAuto, setBottom, porta, calate = null, numeri = {} }: Props) {
   const t = useTranslations('lift'), ts = useTranslations('shaft'), tp = useTranslations('progetto'), is = blank.is;
   // the machine room comes with a machine above; the pulley room with a machine below whose pulleys stand over the slab
   // (scheme room): the room the sheets and the 3D draw and the checks measure
@@ -82,11 +86,11 @@ export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc
         aria-required={is(key) || undefined} onChange={(e) => { const v = mmOf(e.target.value); if (v !== null) setSize(key, v); }} />
     </Campo>
   );
-  const fromCalc = tp('fromCalc');
+  const fromCalc = tp('fromCalc'), locale = { id: passoId('locale'), n: numeri.locale };
   return (
     <form className="lift-form panel" autoComplete="off" noValidate onSubmit={(e) => e.preventDefault()}>
-      <DalCalcolo P={P} X={X} base={base} projectId={projectId} when={when} canCalc={canCalc} />
-      <SectionTitle icon="building">{t('s_shaft')}</SectionTitle>
+      <DalCalcolo P={P} X={X} base={base} projectId={projectId} when={when} canCalc={canCalc} passo={numeri.base} />
+      <SectionTitle icon="building" id={passoId('vano')} className="passo-sez" passo={numeri.vano}>{t('s_shaft')}</SectionTitle>
       <div className="form-grid">
         {size('W')}
         {size('D')}
@@ -107,14 +111,14 @@ export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc
           <ImbottiOptions I={inp.shaft} set={setShaft} />
         </>
       ) : null}
-      <SectionTitle icon="layers">{t('s_floors')}</SectionTitle>
+      <SectionTitle icon="layers" id={passoId('piani')} className="passo-sez" passo={numeri.piani}>{t('s_floors')}</SectionTitle>
       <VerticalOptions I={inp.shaft} set={setShaft} open blank={blank} fixedV={{ ms: inp.shaft.vertical.v, label: fromCalc }} />
       {above ? (
-        <RoomOptions I={inp.shaft} set={setShaft} blank={blank}
+        <RoomOptions I={inp.shaft} set={setShaft} blank={blank} passo={locale}
           machine={derived ? { D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null, heb: derived.heb, turn: roomGeo(derived.layout, derived.machine)?.dir, kept } : undefined}
           panel={{ auto: !!inp.auto.panel, set: (on) => setAuto({ panel: on }), placed: derived && derived.origin.panel === 'auto' ? derived.shaft.room : null }} />
-      ) : pulley ? <RoomOptions I={inp.shaft} set={setShaft} blank={blank} pulley={pulley} /> : null}
-      <SectionTitle icon="gear">{t('s_funi')}</SectionTitle>
+      ) : pulley ? <RoomOptions I={inp.shaft} set={setShaft} blank={blank} pulley={pulley} passo={locale} /> : null}
+      <SectionTitle icon="gear" id={passoId('funi')} className="passo-sez" passo={numeri.funi}>{t('s_funi')}</SectionTitle>
       <ProgettoFuni P={P} base={base.values} auto={inp.auto} bottom={inp.bottom} h={h} derived={derived} blank={blank} texts={texts} setAuto={setAuto} setBottom={setBottom}
         t={(k, v) => t(k, v)} porta={porta ? { ...porta, label: tp('porta') } : null} calate={calate} kept={kept} />
     </form>

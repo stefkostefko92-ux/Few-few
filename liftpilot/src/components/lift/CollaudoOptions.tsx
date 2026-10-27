@@ -23,6 +23,7 @@ import { MARCATURE, isServiceDay } from '@/lib/lift/modifica';
 import type { Access } from '@/shaft';
 import { ADAPT } from '@/lib/present/adapt';
 import type { Pres } from '@/lib/present/tr';
+import { passoId } from '@/lib/passi-moduli';
 import AIUTO from '../../../messages/aiuto/calcolo.json';
 import Campo, { ConAiuto } from '../shaft/Campo';
 import CarichiDocumentati from './CarichiDocumentati';
@@ -89,7 +90,7 @@ export default function CollaudoOptions({ P, mode, isNew: isNewForm = false, cho
   const basi = NORME_COLLAUDO.filter((n) => n !== 'en81' || (!rif && !mode));
   const dm236Note = mode ? ti('dm236_progetto') : access?.value === 'none' ? t('aggiunta_dm236_case') : null;
   return (
-    <div className="collaudo" id="collaudo">
+    <div className="collaudo passo-sez" id={passoId('collaudo')}>
       {mode === 'trasformazione' ? (
         <div className="field">
           <span>{t('norma_title')}</span>

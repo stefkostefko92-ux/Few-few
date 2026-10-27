@@ -14,6 +14,7 @@ import AIUTO from '../../../messages/aiuto/progetto.json';
 import type { RoomInputs, ShaftInputs } from '@/shaft';
 import { ROOM_FIELDS, ROOM_PLACEHOLDER, filled, isBlankKey, ownPulleyRoom, roomAdded, type BlankKey } from '@/lib/lift/blank';
 import { NO_BLANK, StdBadge, type FormBlank, type ShaftSet } from '../blank';
+import { NumeroPasso } from '../passi/BarraPassi';
 import { ConAiuto } from './Campo';
 import RoomFields, { type RoomMachine, type RoomPanel } from './RoomFields';
 
@@ -39,9 +40,11 @@ interface Props {
   panel?: RoomPanel;
   /** the pulley room of a machine below (scheme room); missing: the machine room */
   pulley?: PulleyRoom;
+  /** the room as a step of the Progetto (round 52): its section's id and its number in the bar */
+  passo?: { id: string; n: number | undefined };
 }
 
-export default function RoomOptions({ I, set, open = false, machine, blank = NO_BLANK, panel, pulley }: Props) {
+export default function RoomOptions({ I, set, open = false, machine, blank = NO_BLANK, panel, pulley, passo }: Props) {
   const t = useTranslations('shaft'), tb = useTranslations('blank'), own = I.room;
   // a pulley room the design has not got: the software's standard one, until a measure is entered
   const std = own === null && pulley !== undefined, R = own ?? pulley?.standard ?? null;
@@ -55,8 +58,8 @@ export default function RoomOptions({ I, set, open = false, machine, blank = NO_
     if (base) set({ room: { ...base, ...patch } }, (b) => filled(b, keys(entered)));
   };
   return (
-    <details className="room-options" open={unfolded || undefined}>
-      <summary>{t(pulley ? 'rm_pulley_title' : 'rm_title')}{std ? <> <StdBadge /></> : null}</summary>
+    <details className={passo ? 'room-options passo-sez' : 'room-options'} id={passo?.id} open={unfolded || undefined}>
+      <summary><NumeroPasso n={passo?.n} />{t(pulley ? 'rm_pulley_title' : 'rm_title')}{std ? <> <StdBadge /></> : null}</summary>
       {pulley ? <p className="note">{t('rm_pulley_hint', { H: String(pulley.minH), W: String(pulley.doorW), D: String(pulley.doorH), above: String(pulley.above) })}</p> : (
         <ConAiuto aiuto={testoAiuto(AIUTO, 'rm_on')} nome={t('rm_on')}>
           <label className="check">

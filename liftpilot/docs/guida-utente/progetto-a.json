@@ -72,6 +72,25 @@
           ]
         },
         {
+          "title": "Passi del progetto",
+          "intro": [
+            "Sopra il modulo e i risultati compare la barra «Passi del progetto», con un collegamento per ogni parte nell’ordine in cui la compili: «Calcolo argano» (i dati che vengono dal calcolo), «Vano, porte e contrappeso», «Piani, fossa e testata», il locale («Locale macchina sopra il vano» con la macchina in alto, «Locale delle pulegge sopra il vano» con la macchina in basso e lo schema con il locale delle pulegge), «Funi e rinvii» e «Verifiche e simulazione». Lo stesso numero è davanti al titolo di ogni sezione del modulo.",
+            "Ogni voce dice cosa manca: «(manca 1)», «(mancano ‹n›)» oppure «✓» se il passo è completo; «Verifiche e simulazione» non ha un conteggio. Il passo da fare adesso è evidenziato nella barra e la riga di stato accanto dice «Ora: ‹n› · ‹passo›»; quando non manca più nulla dice «Tutti i dati inseriti»."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "‹n› · ‹passo›",
+              "help": "Porta al primo dato ancora da inserire di quel passo: apre il gruppo e mette il cursore nel campo. Se nel passo non manca nulla, porta all’inizio del passo.",
+              "src": "src/components/passi/BarraPassi.tsx; src/lib/passi-moduli.ts"
+            }
+          ],
+          "notes": [
+            "Un dato che manca nel passo «Calcolo argano» si inserisce nel Calcolo argano, non nel Progetto."
+          ],
+          "warnings": []
+        },
+        {
           "title": "Dal calcolo argano",
           "intro": [
             "Primo blocco del modulo, in sola lettura: ti ricorda su quale calcolo stai disegnando (con la data e l’ora in cui è stato salvato) e che cosa ne prende il Progetto. Per cambiare uno di questi dati devi cambiare il calcolo: il progetto non li modifica."
@@ -1532,6 +1551,11 @@
               "label": "Salva il progetto",
               "help": "Salva il disegno: il server ricompone il disegno sul calcolo argano, rifà tutti i calcoli e salva insieme progetto del vano e calcolo del progetto. Poi apre la pagina del progetto salvato. Resta disattivato finché mancano dati, il disegno non si è aggiornato, c’è un valore da correggere oppure il tipo di intervento va rivisto nel calcolo; durante il salvataggio mostra «Salvataggio…». Se il salvataggio viene rifiutato, il motivo compare accanto al pulsante.",
               "src": "src/components/lift/ProgettoWorkspace.tsx:253"
+            },
+            {
+              "label": "Ora: ‹n› · ‹passo› (‹quanti mancano›)",
+              "help": "Compare dopo «Mancano … dati del progetto» finché manca qualcosa: è il passo da fare adesso, con quanti dati mancano. Resta visibile mentre scorri la pagina; toccalo per andare al primo dato da inserire.",
+              "src": "src/components/lift/ProgettoWorkspace.tsx"
             },
             {
               "label": "Da correggere per salvare:",

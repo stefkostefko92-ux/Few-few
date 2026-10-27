@@ -4,7 +4,8 @@
 // «Dati tecnici», «Componenti», one card per component of the fascicolo, «Allegati», «Firme ed emissione» — over one
 // set of inputs (lib/rt2/input.ts), kept as the RT's draft as they are typed (FormDraft scope 'rt2'). The engine runs here
 // on the base the server gave (the calculation's values and test, the registry) for the live checks and what is missing;
-// the server derives everything again at the issue. The bar shows each step with what it still needs: the way through.
+// the server derives everything again at the issue. The bar shows each step with what it still needs: the way through
+// (components/passi, as «Calcolo argano» and «Progetto»: the step now marked).
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import type { FormValues } from '@/calc/types';
 import type { Collaudo } from '@/lib/lift/collaudo';
@@ -15,7 +16,9 @@ import { rt2DraftSchema, type Rt2Inputs } from '@/lib/rt2/input';
 import { risultatiDi } from '@/lib/rt2/risultati';
 import { COMPONENTI_RT2, type ComponenteRt2, type ValoreRt2 } from '@/lib/rt2/types';
 import { TITOLI_RT2 } from '@/lib/rt2/titoli';
+import type { Passo } from '@/lib/passi';
 import DraftBar from '@/components/draft/DraftBar';
+import BarraPassi from '@/components/passi/BarraPassi';
 import { useDraft, type DraftTarget } from '@/components/draft/useDraft';
 import { setPath } from '@/components/rt/paths';
 import CardAllegati, { type FileRt2 } from './CardAllegati';
@@ -65,27 +68,22 @@ export default function Rt2Workspace(p: Rt2WorkspaceProps) {
   // a component's need of the technical data (the car's area and capacity) is filled in «Dati tecnici»: counted there
   const tecnico = (campo: string): boolean => campo.startsWith('tecnici.');
   const mancantiDi = (dove: (x: string, campo: string) => boolean): number => d.mancanti.filter((m) => dove(m.dove, m.campo)).length;
-  const steps: { href: string; label: string; manca: number }[] = [
-    { href: '#rt2-generale', label: 'Dati generali', manca: mancantiDi((x) => x === 'doc' || x === 'anagrafica') },
-    { href: '#rt2-tecnici', label: 'Dati tecnici', manca: mancantiDi((x, campo) => x === 'base' || x === 'tecnici' || tecnico(campo)) },
-    { href: '#rt2-componenti', label: 'Componenti', manca: 0 },
-    ...d.componenti.map((c) => ({ href: `#rt2-${c}`, label: TITOLI_RT2[c], manca: mancantiDi((x, campo) => x === c && !tecnico(campo)) })),
-    { href: '#rt2-allegati', label: 'Allegati', manca: 0 },
-    { href: '#rt2-firme', label: 'Firme ed emissione', manca: mancantiDi((x) => x === 'firme') },
-  ];
+  const steps: Passo[] = [
+    { id: 'rt2-generale', label: 'Dati generali', manca: mancantiDi((x) => x === 'doc' || x === 'anagrafica') },
+    { id: 'rt2-tecnici', label: 'Dati tecnici', manca: mancantiDi((x, campo) => x === 'base' || x === 'tecnici' || tecnico(campo)) },
+    { id: 'rt2-componenti', label: 'Componenti', manca: 0 },
+    ...d.componenti.map((c) => ({ id: `rt2-${c}`, label: TITOLI_RT2[c], manca: mancantiDi((x, campo) => x === c && !tecnico(campo)) })),
+    { id: 'rt2-allegati', label: 'Allegati', manca: 0 },
+    { id: 'rt2-firme', label: 'Firme ed emissione', manca: mancantiDi((x) => x === 'firme') },
+  ].map((s, i) => ({ ...s, n: i + 1, primo: null }));
   const tecnici: TecniciValori = { prima: inputs.tecnici?.prima ?? {}, dopo: inputs.tecnici?.dopo ?? {} };
   const inclusi = (inputs.allegati ?? []).map((a) => a.attachmentId);
   return (
     <div className="rt-work" data-rt="workspace2">
-      <div className="rt-bar">
-        <nav className="seg-row rt-nav" aria-label="Passi della relazione">
-          {steps.map((s, i) => (
-            <a key={s.href} href={s.href} data-manca={s.manca || undefined}>{i + 1} · {s.label}{s.manca ? ` (mancano ${s.manca})` : ' ✓'}</a>
-          ))}
-        </nav>
-        <span className="note rt-live" role="status" aria-live="polite">{valid ? `${d.fails} non verificate · ${d.mancanti.length} dati mancanti` : `${bad.size} valori fuori dai limiti`}</span>
+      <BarraPassi className="rt-bar" passi={steps} label="Passi della relazione"
+        stato={valid ? `${d.fails} non verificate · ${d.mancanti.length} dati mancanti` : `${bad.size} valori fuori dai limiti`}>
         {target ? <DraftBar target={target} draft={draft} /> : null}
-      </div>
+      </BarraPassi>
       <CardGenerale n={1} doc={inputs.doc ?? {}} set={(k, v) => set(`doc.${k}`, v)} mancanti={new Set(d.mancanti.map((m) => m.campo))} readOnly={ro} oggi={p.oggi} />
       <CardTecnici n={2} ctx={d.ctx} x={tecnici} set={set} readOnly={ro} chiediAzPrima={!p.base.C.regolazione} calcHref={p.calcHref}
         mancanti={new Set(d.mancanti.map((m) => m.campo).filter(tecnico))} />

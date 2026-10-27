@@ -9,14 +9,15 @@
 // What the drawing completes of the calculation is set beside it (DifferenzeCalcolo); «Porta nel calcolo» keeps the
 // draft at once and opens the calculation with the drawing's values (?dal=progetto), for whoever makes it. Round 50: the
 // installation's survey sketches head the right side (SchizzoPanel); what is confirmed from one enters the form as if
-// typed (src/lib/schizzi/applica.ts) — a new size of the shaft drops the CAD measure, as typing it does.
+// typed (src/lib/schizzi/applica.ts) — a new size of the shaft drops the CAD measure, as typing it does. Round 52: the bar
+// of the steps over both sides, the step now in the save bar (components/passi).
 import { useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState, useTransition, type Ref } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { Edit } from '@/drawing';
 import { deriveLift, tipoDaRivedere, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
-import { bottomTo, enteredBy, filled, missingOf, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
+import { bottomTo, enteredBy, filled, isBlankKey, missingOf, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
 import { composto, dalComposto, type ProgettoAuto, type ProgettoDraft } from '@/lib/lift/progetto';
 import { calataVerso, calateAlCompleto, calateEsistenti } from '@/lib/lift/calata';
 import { macchinaEsistente } from '@/lib/lift/kept';
@@ -33,12 +34,14 @@ import { applicaVano, valoreVano } from '@/lib/schizzi/applica';
 import { saveLiftDesignAction } from '@/server/lift-actions';
 import { editValue, keptPlan, type ShaftInputs } from '@/shaft';
 import { testoAiuto } from '@/lib/aiuto';
+import { numeriDi, passiProgetto, passoId, type PassoProgetto } from '@/lib/passi-moduli';
 import AIUTO from '../../../messages/aiuto/progetto.json';
 import { asCalcDict } from '../calc/dict';
 import MissingPanel, { goToField } from '../MissingPanel';
 import RefreshNotice from '../RefreshNotice';
-import type { ShaftSet } from '../blank';
+import { fieldId, type ShaftSet } from '../blank';
 import DraftBar from '../draft/DraftBar';
+import BarraPassi, { PassoOra } from '../passi/BarraPassi';
 import { useDraft, type DraftTarget } from '../draft/useDraft';
 import { OrigineProvider, type OrigineRilievo } from '../collega/origine';
 import PanevBom from '../shaft/PanevBom';
@@ -95,6 +98,7 @@ export interface WorkspaceApi {
 
 export default function ProgettoWorkspace({ projectId, base, when, canCalc, initial, onDerived, api, prices, pitches, draft = null, refresh = false, origine = null, schizzi = null }: Props) {
   const locale = useLocale(), messages = useMessages(), t = useTranslations('lift'), ts = useTranslations('shaft'), te = useTranslations('errors'), tb = useTranslations('blank');
+  const tpa = useTranslations('passi');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
   const X = useMemo(() => textsFor(P), [P]);
@@ -229,14 +233,22 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
   };
   const items = (keys: readonly string[]) => missingItems(keys, dInp.shaft.vertical.floors, { shaft: (k, v) => ts(k, v), blank: (k, v) => tb(k, v), lift: (k, v) => t(k, v), calc: nameOf });
   const above = derived?.values.layout !== 'bottom';
+  // the steps (round 52): the room is one when the form shows it — the machine room above, the pulley room of scheme room
+  const sotto = inp.calc.layout === 'bottom', pulegge = sotto && !form.blank.includes('bottom') && inp.bottom === 'room';
+  const titoli: Record<PassoProgetto, string> = {
+    base: tpa('base'), vano: t('s_shaft'), piani: t('s_floors'), locale: ts(pulegge ? 'rm_pulley_title' : 'rm_title'), funi: t('s_funi'), verifiche: tpa('verifiche'),
+  };
+  const passi = passiProgetto(missing, { locale: !sotto || pulegge }, (k) => titoli[k], (k) => (isBlankKey(k) ? fieldId(k) : k));
+  const numeri = numeriDi<PassoProgetto>(passi);
   return (
     <OrigineProvider value={origine}>
     <div className="lift-work">
       {refresh ? <RefreshNotice kind="lift" items={[...items(missing), ...blockers]} /> : null}
+      <BarraPassi passi={passi} label={tpa('progetto')} />
       <ProgettoForm P={P} X={X} inp={inp} base={base} projectId={projectId} when={when} canCalc={canCalc} h={form.progetto.h} derived={derived} blank={blank}
         texts={texts} source={source} setShaft={setShaft} setSize={setSize} onSurvey={onSurvey} setAuto={setAuto} setBottom={setBottom}
-        porta={porta ? { go: porta, pending: leaving } : null} calate={calate} />
-      <div className="lift-main">
+        porta={porta ? { go: porta, pending: leaving } : null} calate={calate} numeri={numeri} />
+      <div className="lift-main passo-sez" id={passoId('verifiche')}>
         {schizzi ? <SchizzoPanel start={schizzi} target="vano" modulo={modulo} open={initial.blank.length > 0 || schizzi.initial.length > 0} /> : null}
         {!derived ? <MissingPanel title={tb('title')} lead={tb('lead')} items={items(missing)} /> : (
           <>
@@ -257,7 +269,7 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
           <button type="button" className="btn btn-primary" onClick={save} disabled={saving || !derived || !settled || refused.length > 0 || rivedere}>{saving ? t('saving') : t('save')}</button>
           <span className={derived && refused.length ? 'note bad' : 'note'}>
             {/* what to correct, each a link to where it is corrected (round 46: the falls by the plan's dimension) */}
-            {!derived ? tb('saveMissing', { n: missing.length }) : rivedere ? te('tipoDaRivedere') : refused.length ? <>{t('fix_list_lead')} {blockers.map((b, i) => (
+            {!derived ? <>{tb('saveMissing', { n: missing.length })} <PassoOra passi={passi} /></> : rivedere ? te('tipoDaRivedere') : refused.length ? <>{t('fix_list_lead')} {blockers.map((b, i) => (
               <span key={`${b.id ?? ''}${b.label}`}>{i ? ', ' : ''}{b.id ? <a href={`#${b.id}`} onClick={(e) => { e.preventDefault(); if (b.id) goToField(b.id); }}>{b.label}</a> : b.label}</span>
             ))}.</> : t('save_hint')}
           </span>

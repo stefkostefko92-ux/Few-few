@@ -28,11 +28,12 @@ body > main { flex: 1 0 auto; }
   --ws-avatar: linear-gradient(140deg, #c0e9ed, #6f9aa8); --ws-avatar-ink: #08202a; --ws-avatar-line: #244a59;
   --ws-scroll-hint: rgb(39 223 240 / .28); --ws-pop-shadow: 0 18px 34px -6px rgb(0 0 0 / .9);
   --ws-backdrop: rgb(1 7 11 / .82); --ws-drawer-shadow: 20px 0 70px rgb(0 0 0 / .65); --ws-beta-glow: 0 0 8px rgb(0 223 246 / .9);
-  /* what the top bar's right side takes, so that the page's own breadcrumbs placed in the bar stop before it */
-  --ws-top-reserve: calc(var(--ws-pad) + clamp(220px, 22vw, 300px) + 120px);
+  /* what the top bar's right side takes, so that the page's own breadcrumbs placed in the bar stop before it: the search,
+     the mode switch «Semplice / Esperto» (round 52, ~110 px with its gap) and the user */
+  --ws-top-reserve: calc(var(--ws-pad) + clamp(220px, 22vw, 300px) + 230px);
 }
 @media (min-width: 1024px) and (max-width: 1279px) { :root { --ws-side-w: 258px; } }
-@media (min-width: 1280px) { :root { --ws-top-reserve: calc(var(--ws-pad) + clamp(280px, 24vw, 340px) + 280px); } }
+@media (min-width: 1280px) { :root { --ws-top-reserve: calc(var(--ws-pad) + clamp(280px, 24vw, 340px) + 414px); } }
 
 .ws-shell { flex: 1 0 auto; display: flex; flex-direction: column; }
 .ws-main { position: relative; flex: 1 0 auto; min-width: 0; min-height: 100dvh; display: flex; flex-direction: column; }

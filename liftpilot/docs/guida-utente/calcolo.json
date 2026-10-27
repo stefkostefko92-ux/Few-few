@@ -109,6 +109,25 @@
           "warnings": []
         },
         {
+          "title": "Passi del calcolo",
+          "intro": [
+            "Sotto l’avvertenza compare la barra «Passi del calcolo», con un collegamento per ogni parte del modulo nell’ordine in cui la compili: «Tipo di intervento», «Collaudo e documenti» (dopo aver scelto il tipo), «Impianto», «Disposizione e geometria», «Argano esistente» (prima di scegliere il tipo e in una modifica che sostituisce l’argano), «Argano nuovo» (o «Argano esistente (resta)»), «Funi nuove» (o «Funi esistenti (restano)»), «Funi e compensazione (relazione tecnica)» (prima di scegliere il tipo e in una modifica), «Servizio e soccorso» (in modalità «Esperto» o quando un suo valore manca) ed «Esito e proposte». Lo stesso numero è davanti al titolo di ogni gruppo del modulo.",
+            "Ogni voce dice cosa manca: «(manca 1)», «(mancano ‹n›)» oppure «✓» se il passo è completo; «Collaudo e documenti» ed «Esito e proposte» non hanno un conteggio. Il passo da fare adesso è il primo con qualcosa da inserire: è evidenziato nella barra e la riga di stato accanto dice «Ora: ‹n› · ‹passo›»; quando non manca più nulla dice «Tutti i dati inseriti»."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "‹n› · ‹passo›",
+              "help": "Porta al primo dato ancora da inserire di quel passo: apre il gruppo e mette il cursore nel campo. Se nel passo non manca nulla, porta all’inizio del passo.",
+              "src": "src/components/passi/BarraPassi.tsx; src/lib/passi-moduli.ts"
+            }
+          ],
+          "notes": [
+            "Il tipo di intervento, le parti sostituite e la regolazione del quadro ancora da rispondere contano nel passo «Tipo di intervento»; i dati dell’argano esistente e delle sue funi nel passo «Argano esistente»."
+          ],
+          "warnings": []
+        },
+        {
           "title": "Tipo di intervento",
           "intro": [
             "È la prima cosa che il Calcolo argano chiede: «Va scelto per primo: decide il collaudo, le parti da verificare e il Progetto.» Si sceglie una volta: decide la norma del collaudo, le parti da verificare e che cosa si disegna nel Progetto. Finché non scegli, il software non propone e non giudica nulla. Il tipo diventa un dato del calcolo salvato."
@@ -1706,6 +1725,11 @@
               "label": "Salva calcolo",
               "help": "Salva il calcolo («Salvataggio…» durante l’invio) e apre la pagina del calcolo salvato. È bloccato se: ci sono dati ancora da inserire, ci sono valori fuori campo, o tipo di intervento e collaudo sono in contrasto. Vicino al pulsante il testo dice perché: «Manca N dato del progetto» / «Mancano N dati del progetto» (sono elencati nel riquadro dei dati da inserire), «Correggi i campi: …» con i nomi dei campi, «Tipo di intervento non coerente: …»; altrimenti «Un calcolo salvato non si modifica più: per una variante se ne salva uno nuovo.»",
               "src": "CalcSaveBar.tsx:31-36"
+            },
+            {
+              "label": "Ora: ‹n› · ‹passo› (‹quanti mancano›)",
+              "help": "Compare accanto a «Mancano … dati del progetto» finché manca qualcosa: è il passo da fare adesso, con quanti dati mancano. Resta visibile mentre scorri il modulo; toccalo per andare al primo dato da inserire.",
+              "src": "src/components/calc/CalcSaveBar.tsx"
             },
             {
               "label": "Scarta la bozza",

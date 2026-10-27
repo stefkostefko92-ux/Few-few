@@ -17,6 +17,7 @@
 @import './collega.css';
 @import './intervento.css';
 @import './aiuto.css';
+@import './passi.css';
 
 @tailwind base;
 @tailwind components;

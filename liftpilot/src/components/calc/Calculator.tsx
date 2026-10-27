@@ -27,7 +27,9 @@ import { collaudoOf, interventoDi, interventoTo, type Collaudo, type Parte, type
 import { calcExtra } from '@/lib/lift/calc-verdict';
 import { funeDi } from '@/lib/rt2/cataloghi/funi';
 import { esempioCollaudo, esitoParte, partiDi } from '@/lib/lift/risposte';
+import { numeriDi, passiCalcolo, passoId, type PassoCalcolo } from '@/lib/passi-moduli';
 import MissingPanel from '@/components/MissingPanel';
+import BarraPassi from '@/components/passi/BarraPassi';
 import { useDraft, type DraftTarget } from '@/components/draft/useDraft';
 import { saveCalculationAction } from '@/server/calc-actions';
 import { valuesCandidate, valuesWall, type AdviceModel, type MachineCandidate } from '@/lib/lift/advice';
@@ -46,6 +48,7 @@ import { mancaParte } from './etichette-parti';
 import AvvisiIntervento from './AvvisiIntervento';
 import { useIntervento, type InterventoInit } from './useIntervento';
 import { ModoSwitch, useModo } from './ModoCalc';
+import { SERVICE } from './fields';
 import { OrigineProvider, type OrigineRilievo } from '../collega/origine';
 
 type PresetKey = 'A' | 'B' | 'C';
@@ -87,7 +90,7 @@ interface Props {
 
 export default function Calculator({ projectId, initial, preset: initialPreset, brand, intervento, draft = null, origine = null, onBase, sheave = null }: Props) {
   const locale = useLocale(), messages = useMessages(), tc = useTranslations('calculations'), te = useTranslations('errors'), tb = useTranslations('blank');
-  const ti = useTranslations('calculations.intervento'), tl = useTranslations('lift');
+  const ti = useTranslations('calculations.intervento'), tl = useTranslations('lift'), tpa = useTranslations('passi');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
   const X = useMemo(() => textsFor(P), [P]);
@@ -200,6 +203,16 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   // the existing machine is a modification's; before a type is chosen it stays in view with what is still to enter
   // (a new calculation compares it, as the list of what is missing says)
   const repl = tipo === 'SOLO_ARGANO' || tipo === 'AMMODERNAMENTO';
+  // the steps (round 52): the sections in the screen's order, each with what it still needs; the service's group is one
+  // in «Esperto» or while a value of it is missing (CalcForm opens it then)
+  const funiRestano = resta && !collaudo.parti.includes('ropes');
+  const titoli: Record<PassoCalcolo, string> = {
+    tipo: ti('title'), collaudo: tpa('collaudo'), impianto: t('g_plant'), disposizione: t('g_layout'), esistente: t('g_old'),
+    nuovo: resta ? ti('argano_resta') : t('g_new'), funi: funiRestano ? ti('funi_restano') : t('g_ropes'), funi10411: t('g_funi10411'), servizio: t('g_service'), esito: tpa('esito'),
+  };
+  const servizio = mode === 'expert' || SERVICE.some((f) => need.has(f.id) || bad.has(f.id));
+  const passi = passiCalcolo(missing, { tipo: !!tipo, esistente: repl || tipo === null, resta, servizio }, (k) => titoli[k]);
+  const numeri = numeriDi<PassoCalcolo>(passi);
 
   return (
     <OrigineProvider value={vista}>
@@ -212,7 +225,8 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
       </div>
       {preset ? <p className="note" role="status">{t('loaded', { name: t(`ex${preset}name`) })} {tc('replaceExample')}</p> : null}
       <LegalNotice P={P} />
-      <InterventoChoice tipo={tipo} choose={I.choose}>
+      <BarraPassi passi={passi} label={tpa('calcolo')} />
+      <InterventoChoice tipo={tipo} choose={I.choose} passo={numeri.tipo}>
         {repl && I.chosen ? (
           <PartiSiNo tipo={tipo} chosen={I.chosen} value={collaudo} V={values} risposte={I.risposte} answer={I.answer} fmt={P.fmt}
             rifacimento={tipo === 'AMMODERNAMENTO' ? { on: I.rif, set: I.rifacimento } : undefined} regolazione={I.chiedi ? { set: I.regola } : null} />
@@ -221,9 +235,9 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
       </InterventoChoice>
       <div className="layout">
         <CalcForm P={P} V={values} bad={bad} set={set} onEstimate={onEstimate} estMsg={estMsg} keepRopesHint={keepRopesHint} need={need} texts={texts}
-          esistente={repl || tipo === null} resta={resta ? { title: ti('argano_resta'), hint: ti('argano_resta_hint'), funi: collaudo.parti.includes('ropes') ? null : ti('funi_restano') } : null}
-          esperto={mode === 'expert'} />
-        <section className="summary">
+          esistente={repl || tipo === null} resta={resta ? { title: ti('argano_resta'), hint: ti('argano_resta_hint'), funi: funiRestano ? ti('funi_restano') : null } : null}
+          esperto={mode === 'expert'} numeri={numeri} />
+        <section className="summary passo-sez" id={passoId('esito')}>
           {complete ? (
             <>
               <Diagram P={P} I={a.ctx.I} N={a.ctx.N} res={a.res} />
@@ -239,7 +253,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
           proposalOnly={!complete} vincolo={held ? tc('porta.sheave', { D: held }) : undefined} /> : null}
       </div>
       {ready && !resta ? <MachineAdvice evaluate={evaluate} alternative={null} wall={valuesWall(saved)} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="calc" /> : null}
-      <CalcSaveBar label={label} setLabel={setLabel} save={save} saving={saving} missing={missing.length}
+      <CalcSaveBar label={label} setLabel={setLabel} save={save} saving={saving} missing={missing.length} passi={passi}
         bad={[...bad].map(fieldLabel).join(', ')} incoerente={missing.length ? '' : named(I.incoerenze)}
         draft={draft} draftHandle={draftHandle} error={errorText} />
     </div>

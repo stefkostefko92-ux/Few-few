@@ -3578,5 +3578,17 @@
       "obliquo": "Le pareti del vano non sono parallele a quelle del locale: controlla le distanze del vano dalle pareti.",
       "canvas": "Disegno importato: clicca dentro il locale o dentro il vano per misurarlo"
     }
+  },
+  "passi": {
+    "calcolo": "Passi del calcolo",
+    "progetto": "Passi del progetto",
+    "manca": "{n, plural, one {manca #} other {mancano #}}",
+    "ora": "Ora: {n} · {passo}",
+    "oraManca": "Ora: {n} · {passo} ({manca})",
+    "fatto": "Tutti i dati inseriti",
+    "collaudo": "Collaudo e documenti",
+    "esito": "Esito e proposte",
+    "base": "Calcolo argano",
+    "verifiche": "Verifiche e simulazione"
   }
 }

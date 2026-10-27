@@ -57,8 +57,8 @@ TermsGate с паролата (`User.clausesApprovedAt` + одит в същат
 `report/fascicolo.py`, `src/server/rt2/`, работното място по стъпки `src/components/rt2/`, миграция `31_rt_modello`;
 1.x остават за издадените. Calcolo argano по UNI 10411-1 брои проверките на листа «Funi» (`lift/funi-modello.ts`,
 z вместо S_f с D.2 изпълнена). До всяко поле — «?» с обяснение (`messages/aiuto/`), режим Semplice/Esperto
-(`User.modalita`). Подробно — `docs/rules.md` → „Relazione tecnica по модела на собственика“, „Calcolo argano по листа
-«Funi»“, „«?» и режимът“.
+(`User.modalita`), стъпките на Calcolo argano, Progetto и relazione (`components/passi/`). Подробно — `docs/rules.md` →
+„Relazione tecnica по модела на собственика“, „Calcolo argano по листа «Funi»“, „«?» и режимът“ (и стъпките).
 
 **Схиците на рилевото** (кръг 50, `src/lib/schizzi/`, `src/server/schizzi/`): вид `SCHIZZO` на качения документ (миграция
 29); HEIC от iPhone се превръща в JPEG още при качването (`src/lib/allegati/heic.ts` проверява кутиите преди декодиране,

@@ -113,8 +113,8 @@ export async function rtRoom({ BASE, page, hydrated, stamp, roomUrl, roomId }) {
   assert.equal(await ws(page).count(), 1, 'the workspace after the owner’s model');
 
   step('RT: the steps with what each needs; the registry — 1978 gives DPR 1497/1963 to confirm on the logbook');
-  const nav = (await page.locator('.rt-nav a').allTextContents()).join(' | ');
-  assert.match(nav, /Dati generali \(mancano \d+\)/, nav);
+  const nav = (await page.locator('.passi-nav a').allTextContents()).join(' | ');
+  assert.match(nav, /Dati generali \((?:manca|mancano) \d+\)/, nav);
   assert.match(nav, /Funi di trazione/, 'the ropes replaced bring their pages');
   assert.match(nav, /Macchina/, 'the machine replaced brings its page');
   await anagrafica(page, hydrated, { anno: '1978', legge: /DPR 1497\/1963 \(dall’anno di installazione\)/, proprietario: 'Condominio Via Roma 1' });
@@ -137,7 +137,7 @@ export async function rtRoom({ BASE, page, hydrated, stamp, roomUrl, roomId }) {
   await compila(page, hydrated, `Sostituzione dell’argano esistente con uno nuovo, prova ${stamp}: funi sostituite, quadro esistente.`);
   await riempi(page);
   assert.deepEqual(await mancanti(page), [], 'nothing missing');
-  assert.match((await page.locator('.rt-nav a').allTextContents()).join(' | '), /Firme ed emissione ✓/);
+  assert.match((await page.locator('.passi-nav a').allTextContents()).join(' | '), /Firme ed emissione ✓/);
   const preview = await page.request.get(`${BASE}/api/projects/${projectId}/relazione-tecnica/anteprima`);
   assert.equal(preview.status(), 200, 'the draft’s PDF');
   const draftPdf = await preview.body();

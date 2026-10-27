@@ -18,6 +18,9 @@ export async function blankCalc({ page, hydrated, example }) {
   assert.equal(await page.locator('input[name="intervento"]:checked').count(), 0, 'no type chosen');
   assert.equal((await page.textContent('.summary .missing-list li:first-child'))?.trim(), 'Tipo di intervento', 'the type first');
   assert.equal(await page.locator('.verdict .big').count(), 0, 'nothing worked out');
+  // the steps (round 52): the type the step now, in the bar and in the save bar
+  assert.equal((await page.textContent('.calc .passi-nav a[aria-current="step"]'))?.trim(), '1 · Tipo di intervento (manca 1)', 'the type, the step now');
+  assert.equal((await page.textContent('.savebar .passo-ora'))?.trim(), 'Ora: 1 · Tipo di intervento (manca 1)');
   // «Solo argano»: the ropes still to answer, right after the type's place in the list
   await page.click('label.intervento-tipo[data-tipo="SOLO_ARGANO"]');
   assert.equal((await page.textContent('.summary .missing-list li:first-child'))?.trim(), 'Funi sostituite', 'the ropes to answer');
@@ -34,6 +37,12 @@ export async function blankCalc({ page, hydrated, example }) {
   if (vp) await page.setViewportSize(vp);
   await page.click('.parti-sino li[data-part="regolazione"] label:has-text("VVVF")');
   await page.waitForSelector('.parti-sino li[data-part="regolazione"]:not(.da)');
+  // the type answered: the installation the step now, the save bar's link to its first value still to enter
+  await page.waitForSelector('.calc .passi-nav a[aria-current="step"]:has-text("· Impianto (")');
+  assert.match((await page.textContent('.calc .passi-nav'))?.trim() ?? '', /1 · Tipo di intervento ✓/, 'the type done');
+  const primo = (await page.getAttribute('.savebar .passo-ora', 'href'))?.slice(1);
+  await page.click('.savebar .passo-ora');
+  assert.equal(await page.evaluate(() => globalThis.document.activeElement?.id), primo, 'to the first value of the installation');
   await page.fill('#Q', '630');
   await page.waitForSelector('.savebar .draft-bar:has-text("Bozza salvata")', { timeout: 15000 });
   await page.reload();
@@ -77,6 +86,11 @@ export async function projectData({ page, hydrated, shaft = true, bottom = null,
   await hydrated(page, '#bk-entrances');
   assert.equal(await page.locator('.lift-main .missing').count(), 1, 'what is still to enter');
   assert.equal(await page.locator('.lift-facts').count(), 0, 'nothing worked out');
+  // the steps (round 52): the shaft the step now (the calculation's values are the base's), its link to its first value
+  assert.match((await page.textContent('.lift-work .passi-nav a[aria-current="step"]'))?.trim() ?? '', /^2 · Vano, porte e contrappeso \((?:manca|mancano) \d+\)$/);
+  const primo = (await page.getAttribute('.lift-work .savebar .passo-ora', 'href'))?.slice(1);
+  await page.click('.lift-work .savebar .passo-ora');
+  assert.equal(await page.evaluate(() => globalThis.document.activeElement?.id), primo, 'to the first value of the shaft');
   if (shaft) {
     await page.fill('#bk-W', '1600');
     await page.fill('#bk-D', '1750');
@@ -108,6 +122,8 @@ export async function projectData({ page, hydrated, shaft = true, bottom = null,
   if (bottom) await page.selectOption('#bottom-scheme', bottom);
   await page.waitForSelector('.lift-facts .lift-verdict', { timeout: 60000 });
   assert.equal(await page.locator('.lift-main .missing').count(), 0, 'nothing left to enter');
+  assert.equal((await page.textContent('.lift-work .passi-live'))?.trim(), 'Tutti i dati inseriti', 'every step done');
+  assert.equal(await page.locator('.lift-work .passi-nav a[aria-current]').count(), 0);
 }
 
 /** Values as a user types them for each field the list of what is missing names (the examples'). */

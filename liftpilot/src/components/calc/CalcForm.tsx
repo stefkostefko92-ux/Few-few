@@ -7,8 +7,10 @@ import type { FormValues } from '@/calc/types';
 import type { CalcKey, Pres } from '@/lib/present/tr';
 import { isStandard } from '@/lib/calc-blank';
 import { testoAiuto } from '@/lib/aiuto';
+import { passoId, type PassoCalcolo } from '@/lib/passi-moduli';
 import AIUTO from '../../../messages/aiuto/calcolo.json';
 import Etichetta from '../aiuto/Etichetta';
+import { NumeroPasso } from '../passi/BarraPassi';
 import { FUNI_10411, LAYOUT, MACHINE, PLANT, ROPES, SERVICE, shown, type Field } from './fields';
 import FieldRow, { type BlankTexts } from './FieldRow';
 
@@ -33,10 +35,14 @@ interface Props {
   resta?: { title: string; hint: string; funi: string | null } | null;
   /** the mode «Esperto» (ModoCalc.tsx): the service's group opens by itself */
   esperto?: boolean;
+  /** the groups' numbers in the bar of the steps (round 52); absent: none */
+  numeri?: Partial<Record<PassoCalcolo, number>>;
 }
 
-export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopesHint, need, texts, esistente = V.context === 'repl', resta = null, esperto = false }: Props) {
+export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopesHint, need, texts, esistente = V.context === 'repl', resta = null, esperto = false, numeri = {} }: Props) {
   const { t } = P;
+  // a group as a step: its section's id and its number before its title
+  const passo = (k: PassoCalcolo) => ({ id: passoId(k), className: 'group passo-sez' });
   const row = (f: Field) => <FieldRow key={f.id} P={P} f={f} V={V} bad={bad} set={set} need={need.has(f.id)} std={isStandard(V, f.id)} texts={texts}
     aiuto={testoAiuto(AIUTO, f.key ?? f.id)} />;
   const aiutoCheck = { compare: testoAiuto(AIUTO, 'compare'), keepD: testoAiuto(AIUTO, 'keepD'), keepRopes: testoAiuto(AIUTO, 'keepRopes') };
@@ -64,10 +70,10 @@ export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopes
   );
   return (
     <form className="inputs" autoComplete="off" noValidate onSubmit={(e) => e.preventDefault()}>
-      <details className="group" open><summary>{t('g_plant')}</summary><div className="rows">{rows(PLANT)}</div></details>
-      <details className="group" open><summary>{t('g_layout')}</summary><div className="rows">{rows(LAYOUT)}</div></details>
-      <details className="group" open hidden={!esistente || !!resta}>
-        <summary>{t('g_old')}</summary>
+      <details {...passo('impianto')} open><summary><NumeroPasso n={numeri.impianto} />{t('g_plant')}</summary><div className="rows">{rows(PLANT)}</div></details>
+      <details {...passo('disposizione')} open><summary><NumeroPasso n={numeri.disposizione} />{t('g_layout')}</summary><div className="rows">{rows(LAYOUT)}</div></details>
+      <details {...passo('esistente')} open hidden={!esistente || !!resta}>
+        <summary><NumeroPasso n={numeri.esistente} />{t('g_old')}</summary>
         <div className="rows">
           {check('compare')}
           <div className="hint">{t('hint_old')}</div>
@@ -80,12 +86,12 @@ export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopes
           </div>
         </div>
       </details>
-      <details className="group" open>
-        <summary>{resta ? resta.title : t('g_new')}</summary>
+      <details {...passo('nuovo')} open>
+        <summary><NumeroPasso n={numeri.nuovo} />{resta ? resta.title : t('g_new')}</summary>
         <div className="rows"><div className="hint">{resta ? resta.hint : t('hint_new')}</div>{rows(MACHINE('n_'))}</div>
       </details>
-      <details className="group" open>
-        <summary>{resta?.funi ?? t('g_ropes')}</summary>
+      <details {...passo('funi')} open>
+        <summary><NumeroPasso n={numeri.funi} />{resta?.funi ?? t('g_ropes')}</summary>
         <div className="rows">
           {check('keepRopes')}
           <div className="hint" hidden={!keepRopesHint}>{keepRopesHint}</div>
@@ -93,12 +99,12 @@ export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopes
           {estimate('n_')}
         </div>
       </details>
-      <details className="group" open hidden={!esistente}>
-        <summary>{t('g_funi10411')}</summary>
+      <details {...passo('funi10411')} open hidden={!esistente}>
+        <summary><NumeroPasso n={numeri.funi10411} />{t('g_funi10411')}</summary>
         <div className="rows"><div className="hint">{t('hint_funi10411')}</div>{rows(FUNI_10411.filter((f) => shown(f.id, V)))}</div>
       </details>
-      <details className={`group${service ? '' : ' adv'}`} open={service || esperto || undefined}>
-        <summary>{t('g_service')}</summary><div className="rows">{rows(SERVICE)}</div>
+      <details id={passoId('servizio')} className={`group passo-sez${service ? '' : ' adv'}`} open={service || esperto || undefined}>
+        <summary><NumeroPasso n={numeri.servizio} />{t('g_service')}</summary><div className="rows">{rows(SERVICE)}</div>
       </details>
       <p className="note simple-only">{t('simple_note')}</p>
       {stdNote ? <p className="note simple-only">{stdNote}</p> : null}

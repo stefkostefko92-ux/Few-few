@@ -13,6 +13,7 @@ import { NORMA_SIGLA, TIPI_INTERVENTO, type Collaudo, type TipoIntervento } from
 import { analyse } from '@/lib/present/analysis';
 import type { Texts } from '@/lib/present/texts';
 import type { Pres } from '@/lib/present/tr';
+import { passoId } from '@/lib/passi-moduli';
 
 /** The «Calcolo argano» a drawing is made on, as the page gives it to the browser. */
 export interface BaseProgetto {
@@ -33,9 +34,11 @@ interface Props {
   when: string;
   /** whoever makes the calculations: the link to change it */
   canCalc: boolean;
+  /** its number in the bar of the Progetto's steps (round 52) */
+  passo?: number;
 }
 
-export default function DalCalcolo({ P, X, base, projectId, when, canCalc }: Props) {
+export default function DalCalcolo({ P, X, base, projectId, when, canCalc, passo }: Props) {
   const t = useTranslations('progetto'), ti = useTranslations('calculations.intervento'), tl = useTranslations('lift');
   const { ctx } = useMemo(() => analyse(base.values), [base.values]), { I, N } = ctx, { fmt } = P;
   const C = base.collaudo, i = TIPI_INTERVENTO.indexOf(base.tipo);
@@ -44,7 +47,7 @@ export default function DalCalcolo({ P, X, base, projectId, when, canCalc }: Pro
   const fact = (dt: string, dd: string) => <div><dt>{dt}</dt><dd className="num">{dd}</dd></div>;
   return (
     <div className="dal-calcolo">
-      <SectionTitle icon="calculator-check" eyebrow={when}>{t('dalCalcolo')}</SectionTitle>
+      <SectionTitle icon="calculator-check" eyebrow={when} id={passoId('base')} className="passo-sez" passo={passo}>{t('dalCalcolo')}</SectionTitle>
       <p className="calc-ruolo">
         <span className="tipo-badge" data-tipo={base.tipo}>
           <span className="tipo-scala" aria-hidden="true">{[0, 1, 2].map((s) => <i key={s} className={s <= i ? 'piena' : undefined} />)}</span>

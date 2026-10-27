@@ -10,21 +10,25 @@ import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { testoAiuto } from '@/lib/aiuto';
 import { TIPI_INTERVENTO, type TipoIntervento } from '@/lib/lift';
+import { passoId } from '@/lib/passi-moduli';
 import AIUTO from '../../../messages/aiuto/calcolo.json';
+import { NumeroPasso } from '../passi/BarraPassi';
 import { ConAiuto } from '../shaft/Campo';
 
 interface Props {
   tipo: TipoIntervento | null;
   choose(t: TipoIntervento): void;
+  /** the card's number in the bar of the steps */
+  passo?: number;
   children?: ReactNode;
 }
 
-export default function InterventoChoice({ tipo, choose, children }: Props) {
+export default function InterventoChoice({ tipo, choose, passo, children }: Props) {
   const t = useTranslations('calculations.intervento');
   return (
-    <section className={`panel intervento${tipo ? '' : ' da'}`} aria-labelledby="intervento-title">
+    <section className={`panel intervento passo-sez${tipo ? '' : ' da'}`} id={passoId('tipo')} aria-labelledby="intervento-title">
       <div className="intervento-head">
-        <ConAiuto aiuto={testoAiuto(AIUTO, 'tipo')} nome={t('title')} block><h2 id="intervento-title">{t('title')}</h2></ConAiuto>
+        <ConAiuto aiuto={testoAiuto(AIUTO, 'tipo')} nome={t('title')} block><h2 id="intervento-title"><NumeroPasso n={passo} />{t('title')}</h2></ConAiuto>
         <p className="note">{t('lead')}</p>
       </div>
       <div className="intervento-tipi" role="radiogroup" aria-labelledby="intervento-title">
