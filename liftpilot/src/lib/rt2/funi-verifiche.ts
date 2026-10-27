@@ -36,8 +36,11 @@ function daCalcolo(c: Check | undefined, id: string, testo: string, rif: string,
 }
 
 /** The rope checks on the model's computation `o` of `x`, with the calculation (its values `V`, its results `res`) for
- *  the corrections (none when the calculation does not derive: then the RT lists them as missing), under `norma`. */
-export function verificheFuni(x: FuniIn, o: FuniOut, V: FormValues, res: Results | null, norma: Norma10411): VerificaRt2[] {
+ *  the corrections (none when the calculation does not derive: then the RT lists them as missing), under `norma`;
+ *  `rapporto`: the ratio of the loads changed (UNI 10411-1 6.1), which makes D.1 and D.2 checks — otherwise D.1 not met
+ *  is «Attenzione» and D.2 only decides between z and S_f, its result information (correction of the model, which
+ *  says «non verificato» for both). */
+export function verificheFuni(x: FuniIn, o: FuniOut, V: FormValues, res: Results | null, norma: Norma10411, rapporto: boolean): VerificaRt2[] {
   const out: VerificaRt2[] = [
     verifica('funi.numero', 'Numero delle funi di trazione', x.n, '>=', K.ropesMin, { dec: 0, rif: `${T20}, 5.5.1.2` }),
     verifica('funi.diametro', 'Diametro delle funi di trazione', x.d, '>=', K.ropeDiameterMin, { unita: 'mm', dec: 1, rif: `${T20}, 5.5.1.2 a)` }),
@@ -45,17 +48,18 @@ export function verificheFuni(x: FuniIn, o: FuniOut, V: FormValues, res: Results
     verifica('funi.Dd', 'Rapporto diametri puleggia di frizione / fune D/d', o.dRatio, '>=', K.ddMin, { dec: 1, rif: `${T20}, 5.5.2.1; ${U1}, 14.3` }),
   ];
   if (o.compRatio !== null) {
-    out.push(verifica('funi.compDd', 'Rapporto diametri puleggia tenditrice / fune di compensazione', o.compRatio, '>=', KR2.compDd, { dec: 1, rif: `${T20}, 5.5.6` }));
+    out.push(verifica('funi.compDd', 'Rapporto diametri puleggia tenditrice / fune di compensazione', o.compRatio, '>=', KR2.compDd, { dec: 1, rif: `${T20}, 5.5.6.2 c)` }));
   }
   const gr = x.gola;
   if (gr.type === 'VH' || gr.type === 'VN') out.push(verifica('funi.gamma', 'Angolo della gola a cuneo γ', gr.gamma, '>=', K.gammaMin, { unita: '°', dec: 1, rif: `${T50}, 5.11.2.3.1.2` }));
   if (gr.type === 'UU' || gr.type === 'VN') out.push(verifica('funi.beta', 'Angolo del sottosquadro β', gr.beta, '<=', K.betaMax, { unita: '°', dec: 1, rif: `${T50}, 5.11.2.3.1.1` }));
-  const d1 = (id: string, testo: string, r: number): VerificaRt2 => verifica(id, testo, Number.isFinite(r) ? r : null, '<=', o.efa, { dec: 3, rif: `${U1}, D.1` });
+  const d1 = (id: string, testo: string, r: number): VerificaRt2 => verifica(id, testo, Number.isFinite(r) ? r : null, '<=', o.efa, { dec: 3, rif: `${U1}, D.1`, warn: !rapporto });
   out.push(
     d1('funi.d1Basso', 'Stabilità allo scorrimento, cabina in basso con sovraccarico: (T1/T2)·C1·C2 ≤ e^(f·α)', o.ratioLow),
     d1('funi.d1Alto', 'Stabilità allo scorrimento, cabina in alto senza carico: (T1/T2)·C1·C2 ≤ e^(f·α)', o.ratioHigh),
   );
-  const d2 = verifica('funi.d2', 'Pressione specifica nelle gole', o.pRes, '<=', o.pLim, { unita: 'N/mm²', dec: 2, rif: `${U1}, D.2` });
+  const d2v = verifica('funi.d2', 'Pressione specifica nelle gole', o.pRes, '<=', o.pLim, { unita: 'N/mm²', dec: 2, rif: `${U1}, D.2` });
+  const d2: VerificaRt2 = !rapporto && d2v.esito === 'fail' ? { ...d2v, esito: 'info' } : d2v;
   out.push(d2);
   const ck = (id: CheckId): Check | undefined => res?.checks.find((c) => c.id === id);
   // 12/16 stand in for S_f only with D.2 met (UNI 10411-1:2024, 14.1 c)–d)): otherwise the calculation's S_f

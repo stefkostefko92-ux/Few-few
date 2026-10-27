@@ -19,7 +19,7 @@ import { isUpperLimit, mergeChecks, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { existingRoomCheck } from '@/shaft/room-above';
 import { slingCheck } from '../lift/arcata';
-import { rapportoChecks } from '../lift/rapporto';
+import { verificheModifica } from '../lift/funi-modello';
 import { carichiOf } from '../lift/modifica';
 import { withPitches } from '@/shaft/brackets';
 import { maxSpanOf, onBridge, railHeights } from '@/shaft/rail-brackets';
@@ -246,10 +246,10 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2)
   if (I.context === 'repl' && room && !below) all.push(existingRoomCheck(room));
   // the existing sling under a new car or rated load (arcata.ts); D.1 and D.2 with the ratio of the loads changed
-  // (rapporto.ts)
+  // (rapporto.ts) and the ropes as the owner's rope sheet checks them (funi-modello.ts)
   const sling = slingCheck(C, carichiOf(x.values));
   if (sling) all.push(sling);
-  all.push(...rapportoChecks(C, x.values));
+  all.push(...verificheModifica(C, x.values));
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
     // a check of a part that stays as it is is out of the acceptance test (note on the sheet)

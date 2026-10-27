@@ -77,6 +77,10 @@ const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   sl_frame: 'modifica: arcata esistente con carichi oltre i limiti (T* o portata) o non documentati, da verificare per i nuovi carichi',
   tr_d1: 'modifica (UNI 10411-1): stabilità allo scorrimento delle funi con il rapporto tra i carichi cambiato (D.1)',
   tr_d2: 'modifica (UNI 10411-1): pressione specifica delle funi nelle gole con il rapporto tra i carichi cambiato (D.2)',
+  fm_z: 'modifica (UNI 10411-1): coefficiente di sicurezza z delle funi come nel foglio funi, con la D.2 verificata (14.1)',
+  fm_d1: 'modifica (UNI 10411-1): stabilità allo scorrimento delle funi come nel foglio funi (D.1)',
+  fm_d2: 'modifica (UNI 10411-1): pressione specifica delle funi nelle gole come nel foglio funi (D.2)',
+  fm_comp: 'modifica (UNI 10411-1): rapporto D/d della puleggia tenditrice della compensazione (foglio funi)',
 };
 const ORDER_VANO: readonly GruppoVano[] = ['cabina', 'distanze', 'accessibilita', 'porte', 'ingombri', 'sezione', 'locale', 'carichi', 'modello_vano'];
 const IMPIANTO = 'Impianto: valori calcolati dai dati inseriti una volta', SIMULAZIONE = 'Simulazione nel tempo (3D e grafici)';

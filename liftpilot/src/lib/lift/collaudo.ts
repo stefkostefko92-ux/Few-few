@@ -14,6 +14,7 @@ import type { ShaftCheckId } from '@/shaft';
 import { AMBITO_10411_1, AMBITO_VERIFICHE, SOLO_10411_1, VERIFICHE_DATI } from './ambito';
 import { NORME_INFO, type AmbitoNorma } from './norme-collaudo';
 import { normaDaMarcatura, variazioniDi, type Carichi, type Libretto, type Marcatura, type Regolazione } from './modifica';
+import { senzaSostituite } from './sostituite';
 
 /** The base standard of the test: one, by the context. */
 export const NORME_COLLAUDO = ['en81', '10411-1', '10411-11'] as const;
@@ -218,9 +219,9 @@ const verdictOf = (on: readonly { status: string }[]): Verdict => {
 };
 
 /** The lift's verdict for its acceptance test: the worst status of the checks that apply under any of its standards,
- *  and how many fail or warn. */
+ *  and how many fail or warn (a check another of them stands in for not counted, sostituite.ts). */
 export const collaudoVerdict = (C: Collaudo, checks: readonly { id: CheckId | ShaftCheckId; status: string }[]): Verdict =>
-  verdictOf(checks.filter((c) => ambitoOf(C, c.id) === 'applies'));
+  verdictOf(senzaSostituite(checks).filter((c) => ambitoOf(C, c.id) === 'applies'));
 
 /** The result under one standard: its checks among those computed (none computed: `ids` empty). */
 export interface EsitoNorma extends Verdict {
@@ -231,6 +232,6 @@ export interface EsitoNorma extends Verdict {
 /** The result of each of the test's standards, in their order. */
 export const esitiNorme = (C: Collaudo, checks: readonly { id: CheckId | ShaftCheckId; status: string }[]): EsitoNorma[] =>
   normeOf(C).map((norma) => {
-    const on = checks.filter((c) => underNorma(C, norma, c.id));
+    const on = senzaSostituite(checks).filter((c) => underNorma(C, norma, c.id));
     return { norma, ids: on.map((c) => c.id), ...verdictOf(on) };
   });

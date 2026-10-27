@@ -21,6 +21,7 @@ import { makePres } from '../present/tr';
 import type { ReportBlock, ReportDoc } from './model';
 import { shaftBlocks, type ReportDesign } from './shaft';
 import { casesBlocks, d1Blocks, limitiBlocks } from './cases';
+import { funiModelloBlocks } from './funi-modello';
 import { checkRefs } from './refs';
 import { BOTTOM_IT, STATO, cellText, drawnText, massNote, proposalBlocks, rowStatus, underPitText, vociBlocks } from './build-parts';
 import { guideSection } from './guide';
@@ -223,7 +224,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   B.push(...adempimentiBlocks(C, repl, kept, r.values));
 
   section("Aderenza: tutti i casi di calcolo");
-  B.push(...casesBlocks(P, I, N, res, (c, test) => X.caseText(c, true, test), st), ...d1Blocks(P, C, r.values));
+  B.push(...casesBlocks(P, I, N, res, (c, test) => X.caseText(c, true, test), st), ...d1Blocks(P, C, r.values), ...funiModelloBlocks(P, C, r.values));
 
   section('Dettaglio delle verifiche');
   const tables = techTables(P, X, a);

@@ -25,6 +25,8 @@ export const PIT: readonly Parte[] = ['car', 'sling', 'buffers', 'speed', 'trave
 const RAILS: readonly Parte[] = ['rails', 'car', 'sling', 'load', 'speed', 'travel'];
 const BUFFERS: readonly Parte[] = ['buffers', 'speed', 'car', 'cw', 'load'];
 const DOORS: readonly Parte[] = ['landingDoors', 'carDoors'];
+// the parts that bring the RT's rope pages in (rt2/generale.ts: the ropes, the machine, the load, the speed)
+const FUNI_RT: readonly Parte[] = ['machine', 'ropes', 'load', 'speed'];
 // the car's rails under a new safety gear (UNI 10411-1 15.6: the rails its type certificate names)
 const RAILS_SG: readonly Parte[] = [...RAILS, 'safetyGear'];
 
@@ -88,6 +90,11 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   // pressure of its D.2 with it (rapporto.ts: emitted only then, under -1 only — SOLO_10411_1; the changed ratio brings
   // the load, collaudoOf; round 48: D.2 a check met or not beside D.1)
   tr_d1: ['load'], tr_d2: ['load'],
+  // the ropes of a modification under UNI 10411-1 as the owner's rope sheet checks them (round 52, funi-modello.ts): z
+  // against 12/16 in place of S_f with D.2 met (14.1 c)–d)), D.1 in its two cases, D.2, D/d of the compensation's
+  // tensioner — whenever the RT's rope pages are in it: the ropes or the machine replaced, the load or the speed changed
+  // (rt2/generale.ts); under -1 only (SOLO_10411_1)
+  fm_z: FUNI_RT, fm_d1: FUNI_RT, fm_d2: FUNI_RT, fm_comp: FUNI_RT,
 };
 
 /** The parts that bring a check into the test under UNI 10411-1 only, besides AMBITO_VERIFICHE: the counterweight's
@@ -105,8 +112,8 @@ export const AMBITO_10411_1: Readonly<Partial<Record<CheckId | ShaftCheckId, rea
  *  5.9 under UNI 10411-1:2024, 9.2; under UNI 10411-11 the existing height stays, a new lift has its own (m_height). The
  *  stability against slipping of D.1 with the ratio of the loads changed (round 46, B10), with the specific pressure of
  *  D.2 (round 48): UNI 10411-1 6.1 asks them, -11 counts every increase of the load instead (its 6.1), a new lift has the
- *  traction of UNI EN 81-50 5.11. */
-export const SOLO_10411_1: readonly ShaftCheckId[] = ['m_hexist', 'tr_d1', 'tr_d2'];
+ *  traction of UNI EN 81-50 5.11. The ropes as the owner's rope sheet checks them (round 52): the model is of UNI 10411-1. */
+export const SOLO_10411_1: readonly ShaftCheckId[] = ['m_hexist', 'tr_d1', 'tr_d2', 'fm_z', 'fm_d1', 'fm_d2', 'fm_comp'];
 
 /** Checks of the data, not of a part: the distances set by hand on the plan keep every part in its place
  *  (layout.ts); the existing governor surveyed over the shaft it drops its ropes into (survey-site.ts, round 37). They

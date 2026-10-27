@@ -20,8 +20,9 @@ import { CASI_TESTO, SEZIONI, SEZIONI_PER_CASO } from '../rt/sezioni';
 import { RT_ENGINE_VERSION } from '../rt/version';
 
 /** The key and the version it was pinned at (round 49, S3: the first RT engine; re-pinned at 1.0.0 in the fix step after
- *  the norm review and after the text of guide.sospensione — never released, no RT issued in production). */
-const PINNED = { sha256: '41b0a4368398962ae958532f977bebcf38a154187522023f9aae8fd00767a37c', version: '1.0.0' };
+ *  the norm review and after the text of guide.sospensione — never released, no RT issued in production). Round 52:
+ *  1.1.0 — the ropes' section takes the rope sheet's checks (componenti/funi-argano.ts, contrappeso.ts ALTROVE). */
+const PINNED = { sha256: 'a6c24924bddde7af5879d81cd9e255ebc2de8b7bc6d8da7b0a44efdab253daf5', version: '1.1.0' };
 
 const golden = JSON.parse(readFileSync(new URL('./fixtures/rt/golden.json', import.meta.url), 'utf8')) as { engine: string; cases: { nome: string; resultsSha: string }[] };
 

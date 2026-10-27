@@ -200,12 +200,14 @@ test('collaudoOf è idempotente: la prova normalizzata, normalizzata di nuovo, �
   assert.equal(n, 4000);
 });
 
-test('kit di round 48: le quattro versioni alzate insieme (il perimetro del collaudo, ambito-version.test)', () => {
+test('kit di round 52: le quattro versioni alzate insieme (il perimetro del collaudo, ambito-version.test)', () => {
   // round 45 (phase 3) left the engines as they were; round 46 S4 changed the scope of the test, which reaches the
   // documents of every kind of record; round 48 again (D.2 beside D.1, the rated speed over 0,15 m/s, the notified
-  // body's points only for a lift tested as new): every record becomes «da aggiornare»
-  assert.equal(ENGINE_VERSION, '1.8.0');
-  assert.equal(SHAFT_ENGINE_VERSION, '2.27.0');
-  assert.equal(LIFT_ENGINE_VERSION, '1.33.0');
-  assert.equal(ROOM_ENGINE_VERSION, '1.17.0');
+  // body's points only for a lift tested as new); round 52 again (the ropes of a modification under UNI 10411-1 as the
+  // owner's rope sheet checks them, S_f not counted where z of the sheet stands in for it): every record becomes «da
+  // aggiornare»
+  assert.equal(ENGINE_VERSION, '1.9.0');
+  assert.equal(SHAFT_ENGINE_VERSION, '2.28.0');
+  assert.equal(LIFT_ENGINE_VERSION, '1.34.0');
+  assert.equal(ROOM_ENGINE_VERSION, '1.18.0');
 });

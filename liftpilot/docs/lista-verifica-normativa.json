@@ -1732,6 +1732,42 @@
     },
     {
       "n": 142,
+      "id": "vano.funi.modello.z",
+      "gruppo": "Carichi sull’edificio e spinte sulle guide",
+      "voce": "Funi della modifica (UNI 10411-1) come nel foglio funi: coefficiente di sicurezza z",
+      "valore": "nella modifica secondo la UNI 10411-1 con funi o argano sostituiti, carico o velocità variati, z = carico di rottura minimo / tiro della fune più caricata (cabina con la portata al piano più basso, funi e mezza massa della compensazione) almeno 12 con tre o più funi, 16 con due, solo con la pressione specifica della D.2 verificata (voce funi.modello.d1d2): allora sostituisce il coefficiente S_f della UNI EN 81-50, 5.12, che non viene conteggiato; con la D.2 non verificata vale S_f",
+      "riferimento": "UNI EN 81-20:2020, 5.5.2.2; UNI 10411-1:2024, 14.1 c) e d)",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 74–75; UNI 10411-1:2024, testo della norma, letto il 2026-10-06, p. 13",
+      "stato": "confermato",
+      "verifiche": "modifica (UNI 10411-1): coefficiente di sicurezza z delle funi come nel foglio funi, con la D.2 verificata (14.1)",
+      "nota": "come il foglio funi della relazione tecnica (rt2.funi.*); calcolo con le masse della compensazione e del cavo flessibile del foglio"
+    },
+    {
+      "n": 143,
+      "id": "vano.funi.modello.d1d2",
+      "gruppo": "Carichi sull’edificio e spinte sulle guide",
+      "voce": "Funi della modifica (UNI 10411-1) come nel foglio funi: D.1 e D.2",
+      "valore": "nella stessa modifica della voce funi.modello.z, la D.1 nei suoi due casi (cabina in basso con 1,25·Q, cabina vuota in alto), con C1 mai sotto il minimo della fascia di velocità, la compensazione e il cavo flessibile nei tiri: esito il caso peggiore, (T1/T2)·C1·C2 al massimo e^(f·α); la D.2 con la cabina caricata con la portata, p al massimo il limite (12,5 + 4·v_c)/(1 + v_c) per il fattore del foglio (voce rt2.funi.d2). Solo con il rapporto tra i carichi come documentato (con il rapporto cambiato contano la D.1 e la D.2 delle voci rapporto.d1 e rapporto.d2): la D.1 non soddisfatta è «Attenzione», la D.2 decide solo tra z e S_f (voce funi.modello.z) e il suo esito è un’informazione",
+      "riferimento": "UNI 10411-1:2024, D.1 e D.2",
+      "fonte": "UNI 10411-1:2024, testo della norma, letto il 2026-10-06, pp. 33–34",
+      "stato": "confermato",
+      "verifiche": "modifica (UNI 10411-1): stabilità allo scorrimento delle funi come nel foglio funi (D.1); modifica (UNI 10411-1): pressione specifica delle funi nelle gole come nel foglio funi (D.2)",
+      "nota": "il foglio funi calcola la D.1 e la D.2 sempre e le dice «non verificate» anche dove la 6.1 non le chiede: corretto in avviso e informazione"
+    },
+    {
+      "n": 144,
+      "id": "vano.funi.modello.comp",
+      "gruppo": "Carichi sull’edificio e spinte sulle guide",
+      "voce": "Funi della modifica (UNI 10411-1) come nel foglio funi: puleggia tenditrice della compensazione",
+      "valore": "con funi di compensazione, il diametro primitivo della puleggia tenditrice almeno 30 volte quello della fune di compensazione (voce rt2.funi.comp); le catene non hanno questa verifica",
+      "riferimento": "UNI EN 81-20:2020, 5.5.6.2 c)",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 76",
+      "stato": "confermato",
+      "verifiche": "modifica (UNI 10411-1): rapporto D/d della puleggia tenditrice della compensazione (foglio funi)",
+      "nota": ""
+    },
+    {
+      "n": 145,
       "id": "vano.carichi.cavi",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Massa dei cavi flessibili",
@@ -1743,7 +1779,7 @@
       "nota": ""
     },
     {
-      "n": 143,
+      "n": 146,
       "id": "vano.guide.staffe",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Numero e posizione delle staffe delle guide",
@@ -1755,7 +1791,7 @@
       "nota": "il foglio 1 delle tavole riporta l’interasse massimo tra le staffe montate, lo stesso l della verifica delle guide di cabina (UNI EN 81-50:2020, 5.10); le quote di ogni staffa dal fondo della fossa sono nel foglio dello sviluppo delle guide"
     },
     {
-      "n": 144,
+      "n": 147,
       "id": "vano.foglio.stime",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Lunghezze stimate nel foglio dei dati",
@@ -1767,7 +1803,7 @@
       "nota": ""
     },
     {
-      "n": 145,
+      "n": 148,
       "id": "vano.carichi.reazioni",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Reazioni sugli appoggi del basamento (R1…Rn)",
@@ -1779,7 +1815,7 @@
       "nota": "P1 resta il carico totale sul basamento; le reazioni non sono simultanee ai carichi P2…P8; la verifica della soletta e dei muri è del tecnico strutturale"
     },
     {
-      "n": 146,
+      "n": 149,
       "id": "vano.guide.verifica",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Verifica delle guide di cabina",
@@ -1791,7 +1827,7 @@
       "nota": "Confermati sul testo i coefficienti, le formule e i limiti, e il carico al piano per uso (UNI EN 81-20:2020, 5.7.2.3.6). Senza l’uso nei dati dell’impianto vale la regola per portata della UNI EN 81-1:2008 (G.2.5), che per un ascensore per persone da 2500 kg in su è dal lato della sicurezza. La formula di ω per Rm 370 è data da λ 20 a 250: sotto 20 il software usa ω di λ 20 (dal lato della sicurezza). Non contate: la spinta di scorrimento delle staffe (assestamento dell’edificio), le apparecchiature appese alle guide, le frecce di staffe ed edificio (la norma vuole la somma entro il limite) e le guide del contrappeso senza paracadute (con il paracadute: guide.contrappeso). La flessione della suola è quella dei pattini a rotelle (5.10.5 ha una formula a parte per quelli a scorrimento; il tipo di pattino non è un dato del software)."
     },
     {
-      "n": 147,
+      "n": 150,
       "id": "vano.guide.sezioni",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Sezioni delle guide di cabina",
@@ -1803,7 +1839,7 @@
       "nota": ""
     },
     {
-      "n": 148,
+      "n": 151,
       "id": "vano.paracadute.tipo",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Tipo di paracadute per la velocità nominale",
@@ -1815,7 +1851,7 @@
       "nota": ""
     },
     {
-      "n": 149,
+      "n": 152,
       "id": "vano.paracadute.contrappeso",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Spazio accessibile sotto il vano: paracadute del contrappeso e fondo della fossa",
@@ -1827,7 +1863,7 @@
       "nota": "con la presa del paracadute le guide del contrappeso si verificano a carico di punta e con le forze di guida dell’eccentricità del contrappeso (guide.contrappeso, verifica gr_cw); frecce, flessione della suola e staffe restano da verificare a parte (modello.non.calcolate); in una modifica la UNI 10411-1:2024 (6.14) accetta al posto del paracadute un pilastro esistente fino al terreno, verificato per i nuovi carichi: è una scelta del progettista; con la UNI 10411-11:2024 il pilastro è quello che l’impianto ha secondo la sua edizione della UNI EN 81-1 (5.5 a)), verificato per i nuovi carichi (6.6 e 6.13)"
     },
     {
-      "n": 150,
+      "n": 153,
       "id": "vano.guide.contrappeso",
       "gruppo": "Carichi sull’edificio e spinte sulle guide",
       "voce": "Guide del contrappeso con la presa del suo paracadute",
@@ -1839,7 +1875,7 @@
       "nota": "casi di carico per la cabina (portata spostata, carico al piano) non valgono per il contrappeso: conta l’intervento del suo paracadute. Non contate: frecce, flessione della suola, marcia (k2), funi o catene di compensazione, spinta delle staffe; restano fra le verifiche che il software non calcola. Fino al vano 2.24.0 le guide del contrappeso non erano verificate e il foglio 1 mostrava il paracadute del contrappeso «OK» anche con le guide T45/A che alla presa istantanea arrivavano a 365 N/mm²"
     },
     {
-      "n": 151,
+      "n": 154,
       "id": "vano.modello.passo",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Dimensioni proposte della cabina",
@@ -1851,7 +1887,7 @@
       "nota": ""
     },
     {
-      "n": 152,
+      "n": 155,
       "id": "vano.modello.quote",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Quote della pianta fissate a mano",
@@ -1863,7 +1899,7 @@
       "nota": ""
     },
     {
-      "n": 153,
+      "n": 156,
       "id": "vano.modello.limiti",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Limiti del modello del vano",
@@ -1875,7 +1911,7 @@
       "nota": ""
     },
     {
-      "n": 154,
+      "n": 157,
       "id": "vano.modello.non.calcolate",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Verifiche che il software non calcola",
@@ -1887,7 +1923,7 @@
       "nota": "fino a SHAFT 2.25.0 la voce legava UCM e velocità eccessiva in salita alla sola macchina nuova"
     },
     {
-      "n": 155,
+      "n": 158,
       "id": "impianto.corsa",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Corsa",
@@ -1899,7 +1935,7 @@
       "nota": ""
     },
     {
-      "n": 156,
+      "n": 159,
       "id": "impianto.portata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Portata e velocità",
@@ -1911,7 +1947,7 @@
       "nota": "In una modifica il confronto con i carichi documentati è nella voce impianto.variazione.carico."
     },
     {
-      "n": 157,
+      "n": 160,
       "id": "impianto.variazione.carico",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Modifica: variazione dei carichi rispetto allo stato documentato",
@@ -1923,7 +1959,7 @@
       "nota": "T* della norma non comprende funi e cavi: P del calcolo comprende la quota del cavo flessibile, che si annulla nel confronto se resta la stessa. Quale portata decide la riga del prospetto non è detto nel testo (scelta prudente del software); con la -11 il 10 % si somma alle modifiche precedenti: lo stato documentato è quello dell’impianto originale. Con la -1 (6.1) anche il rapporto tra i carichi appesi lato cabina e lato contrappeso porta le verifiche del carico: T* o P lontani dal valore che conserverebbe il rapporto documentato col nuovo contrappeso oltre l’arrotondamento di 0,5 kg dei carichi documentati riportato al rapporto (scelta del software), con D.1, D.2 e ammortizzatori secondo la UNI EN 81-20 5.8; il calo dei carichi e il rapporto portano le verifiche più spesso delle soglie dei prospetti: più severo della norma, dalla parte della sicurezza"
     },
     {
-      "n": 158,
+      "n": 161,
       "id": "impianto.variazione.velocita",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Modifica: variazione della velocità nominale rispetto a quella documentata",
@@ -1935,7 +1971,7 @@
       "nota": "una differenza entro 0,005 m/s è l’arrotondamento dei dati (scelta del software, non un valore della norma); con la -1 una variazione entro il 5 % non porta i punti 15.2–15.15: se sia comunque un cambio della velocità ai sensi del DPR 162/1999 lo valuta il tecnico; una diminuzione oltre il 5 % porta nell’esito tutte le verifiche che riguardano la velocità, più dei punti 15.2 e 15.17 (dalla parte della sicurezza)"
     },
     {
-      "n": 159,
+      "n": 162,
       "id": "impianto.variazione.corsa",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Modifica: variazione della corsa rispetto a quella documentata",
@@ -1947,7 +1983,7 @@
       "nota": "una differenza entro 0,05 m è l’arrotondamento dei dati (scelta del software, non un valore della norma)"
     },
     {
-      "n": 160,
+      "n": 163,
       "id": "impianto.quadro.regolazione",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Modifica: macchina nuova sul quadro esistente — regolazione della velocità",
@@ -1959,7 +1995,7 @@
       "nota": "una macchina senza inverter (una o due velocità alla frequenza di rete) non è modellata; i calcoli salvati prima, senza la risposta, si aggiornano e la relazione lo segnala con ⚠ (fino a LIFT 1.31.0 la domanda non c’era)"
     },
     {
-      "n": 161,
+      "n": 164,
       "id": "impianto.parti.facoltative",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Ammodernamento: altre parti (facoltative)",
@@ -1971,7 +2007,7 @@
       "nota": "«No» per difetto dà il risultato di prima, perché fino a LIFT 1.31.0 queste parti non c’erano e nessuna entrava nell’esito; quali verifiche riguarda ciascuna è una lettura del software, da confermare dall’ingegnere; il paracadute sostituito senza variazione del carico (UNI 10411-1, 6.7 nel punto dei carichi) è da verificare sul testo vigente"
     },
     {
-      "n": 162,
+      "n": 165,
       "id": "impianto.marcatura",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Modifica: UNI 10411-1 o UNI 10411-11",
@@ -1983,7 +2019,7 @@
       "nota": "la data dal DPR 162/1999 è una lettura dell’articolo 19 (messa in servizio secondo le regole precedenti fino al 30 giugno 1999)"
     },
     {
-      "n": 163,
+      "n": 166,
       "id": "impianto.collaudo",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Normativa di collaudo e parti sostituite o modificate",
@@ -1995,7 +2031,7 @@
       "nota": "lo scopo delle due UNI 10411 e i requisiti per la sostituzione del macchinario (punto 14) sono letti sul testo (voce sostituzione.adeguamenti); quali verifiche riguardano ciascuna parte e la matrice delle norme compatibili sono una lettura del software, da approvare dall’ingegnere. Velocità, portata e corsa variate entrano tra le parti da sole quando i dati del libretto e i carichi documentati lo dicono (voci impianto.variazione.*). Con la velocità variata entrano l’aderenza, le funi e la pressione nelle gole (-1 15.8 con 14.1 e D.2; -11 15 d)), con la corsa variata gli spazi in testata e in fossa e le guide (-1 16 g), j); -11 16 f), i)), con la portata variata i paracadute, le guide del contrappeso e gli ammortizzatori (6.1, 6.4–6.6, 6.13–6.14); solo con la -1 lo schermo del contrappeso in fossa (6.13, 15.7, 16 a)) e, con il quadro nuovo, il freno a doppio elemento (11.1.4), con le porte di piano sostituite o aggiunte il grembiule della soglia di cabina (19.6); fino a LIFT 1.31.0 velocità e corsa entravano solo come indicate tra le parti"
     },
     {
-      "n": 164,
+      "n": 167,
       "id": "impianto.intervento",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Tipo di intervento: solo argano, ammodernamento, trasformazione completa",
@@ -2007,7 +2043,7 @@
       "nota": "velocità, portata e corsa variate si indicano tra le parti e vi entrano anche da sole: velocità e corsa dai dati del libretto, la portata dai carichi documentati (voci impianto.variazione.*; fino a LIFT 1.31.0 velocità e corsa solo a mano); quando l’insieme delle modifiche diventa una sostituzione completa lo conferma il tecnico incaricato con il soggetto che esegue la verifica straordinaria"
     },
     {
-      "n": 165,
+      "n": 168,
       "id": "impianto.rifacimento",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Rifacimento con l’arcata esistente",
@@ -2019,7 +2055,7 @@
       "nota": "il DPR 162/1999 elenca le modifiche costruttive senza dire quando l’insieme diventa una sostituzione completa; la UNI 10411-1/-11:2024 (21.1) chiama modifica sostanziale il cambio insieme di quadro, macchina, almeno una porta di piano, cabina e arcata, con il risultato secondo la UNI EN 81-20:2020: tenendo l’arcata il 21.1 non si applica. Una cabina nuova nell’arcata esistente segue la UNI EN 81-20 5.4.1–5.4.10 (UNI 10411-1:2024, 22; con porte di cabina a battente fino a +0,10 m² di superficie senza cambiare la portata, 22 f)). La qualificazione dell’intervento la conferma il tecnico incaricato con il soggetto che esegue la verifica straordinaria"
     },
     {
-      "n": 166,
+      "n": 169,
       "id": "impianto.massa.cabina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Massa della cabina non inserita",
@@ -2031,7 +2067,7 @@
       "nota": "va sostituita con la massa del libretto o con quella ricavata dalla prova di bilanciamento; la sensibilità ±10% ne mostra l’effetto"
     },
     {
-      "n": 167,
+      "n": 170,
       "id": "impianto.massa.argano",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Massa dell’argano nei carichi sull’edificio",
@@ -2043,7 +2079,7 @@
       "nota": "la stima si sostituisce con la massa dell’argano completo dalla scheda del costruttore; fino a LIFT 1.28.0 e ROOM 1.12.0 la massa di catalogo entrava come quella dell’argano completo anche dove era il solo riduttore"
     },
     {
-      "n": 168,
+      "n": 171,
       "id": "impianto.massa.basamento",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Peso proprio del basamento sulla soletta",
@@ -2055,7 +2091,7 @@
       "nota": "fino a LIFT 1.28.0 e ROOM 1.12.0 il totale sulla soletta (P9) e la riga «Argano e telaio» contavano solo l’argano (e il telaio con rinvio del costruttore): plinto, telaio, putrelle e telaio con rinvio del software ne restavano fuori"
     },
     {
-      "n": 169,
+      "n": 172,
       "id": "impianto.L0",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Fune oltre la corsa (L0)",
@@ -2067,7 +2103,7 @@
       "nota": "inserita a mano (misurata sull’impianto) deve tornare con il progetto del vano entro 0,3 m, altrimenti va corretta: il progetto non si salva (scelta del software sulla tolleranza); passando dalla sostituzione al progetto completo il valore del calcolo non si porta come inserito, la geometria è quella del progetto del vano"
     },
     {
-      "n": 170,
+      "n": 173,
       "id": "impianto.dx",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Distanza orizzontale della puleggia di rinvio (dx)",
@@ -2079,7 +2115,7 @@
       "nota": "fino a LIFT 1.27.0 e ROOM 1.11.0 in taglia 2:1 le pulegge di cabina e di contrappeso giravano nel piano delle calate e la calata era quella tra i centri meno Dp: con il contrappeso sottile contro il muro la sua puleggia entrava nel muro e nella corsa della cabina"
     },
     {
-      "n": 171,
+      "n": 174,
       "id": "impianto.calata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Tiro diretto (senza rinvio): calata uguale al diametro della puleggia",
@@ -2091,7 +2127,7 @@
       "nota": "con un diametro diverso dalla calata le funi si inclinano verso gli attacchi: nella sostituzione con il confronto il calcolo ne tiene conto per la nuova puleggia; oltre pochi millimetri servono una puleggia di rinvio o il contrappeso spostato (quota «Calata» in pianta)"
     },
     {
-      "n": 172,
+      "n": 175,
       "id": "impianto.Hv",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: altezza fino alle pulegge in alto (Hv)",
@@ -2103,7 +2139,7 @@
       "nota": "inserita a mano deve tornare con il progetto del vano entro 0,5 m (scelta del software sulla tolleranza), altrimenti va corretta e il progetto non si salva: un Hv più lungo di quanto lo schema consente (con la macchina accanto al vano al piano più basso, oltre l’altezza della testata sopra la puleggia) darebbe funi, masse e lunghezze d’ordine sbagliate; passando dalla sostituzione al progetto completo il valore del calcolo (spesso quello dell’esempio) non si porta come inserito"
     },
     {
-      "n": 173,
+      "n": 176,
       "id": "impianto.basso.schema",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: schema delle funi",
@@ -2115,7 +2151,7 @@
       "nota": "lo schema reale va rilevato sull’impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del contrappeso — la EN 81-20 non ammette più il pilastro pieno fino al terreno — (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori; in una modifica la UNI 10411-1:2024 (6.14) accetta al posto del paracadute un pilastro esistente fino al terreno, verificato per i nuovi carichi; con la UNI 10411-11:2024 quello che l’impianto ha secondo la sua edizione della UNI EN 81-1 (5.5 a)), verificato per i nuovi carichi (6.6 e 6.13)"
     },
     {
-      "n": 174,
+      "n": 177,
       "id": "impianto.catalogo",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta dal catalogo di un costruttore",
@@ -2127,7 +2163,7 @@
       "nota": "la tolleranza sul rapporto è una scelta del software: la velocità reale con l’inverter deve restare entro il 5 % sopra la nominale (UNI EN 81-20:2020, 5.9.2.4; buona pratica non oltre l'8 % sotto); vale perché con la macchina nuova la regolazione della velocità c’è sempre: sul quadro che resta va dichiarata (voce impianto.quadro.regolazione), senza si sostituisce il quadro; i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell’ordine; per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce; fino a LIFT 1.28.0 il motore e la gola restavano quelli della griglia, al rapporto ideale e con la geometria dell’argano generico: un argano più veloce poteva mancare la potenza statica e uno con l’asse più basso l’aderenza, e su plinto o telaio un argano con l’asse più alto era proposto anche quando la pianta non posizionava il rinvio (da inserire a mano); fino a LIFT 1.30.0 un argano era escluso anche quando il motore della griglia (al rapporto ideale) superava il più grande del catalogo, benché al rapporto del catalogo ne bastasse uno entro quel limite, e per ogni opzione si provava solo l’argano più piccolo: se non passava, l’opzione si perdeva anche quando un argano più grande la prendeva"
     },
     {
-      "n": 175,
+      "n": 178,
       "id": "impianto.macchina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta",
@@ -2139,7 +2175,7 @@
       "nota": "una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori. La puleggia cambia la geometria delle funi (fune oltre la corsa, distanza del rinvio): ogni puleggia della griglia è dimensionata con la propria, e con il rinvio dalla pianta solo le pulegge per cui la pianta sa posizionare il rinvio"
     },
     {
-      "n": 176,
+      "n": 179,
       "id": "tavole.caratteri",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Altezza minima delle scritte dei disegni",
@@ -2151,7 +2187,7 @@
       "nota": "prima i nomi che non stavano si rimpicciolivano sotto i 2,5 mm di corpo, fino a non leggersi in stampa"
     },
     {
-      "n": 177,
+      "n": 180,
       "id": "tavole.matricola",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Numero di matricola nel cartiglio e nella striscia",
@@ -2163,7 +2199,7 @@
       "nota": ""
     },
     {
-      "n": 178,
+      "n": 181,
       "id": "tavole.revisioni",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Revisioni nel cartiglio",
@@ -2175,7 +2211,7 @@
       "nota": ""
     },
     {
-      "n": 179,
+      "n": 182,
       "id": "tavole.argano",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Nome dell’argano nei disegni",
@@ -2187,7 +2223,7 @@
       "nota": ""
     },
     {
-      "n": 180,
+      "n": 183,
       "id": "tavole.carichi",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Richiami dei carichi P1…P8 sulle tavole",
@@ -2199,7 +2235,7 @@
       "nota": ""
     },
     {
-      "n": 181,
+      "n": 184,
       "id": "tavole.limitatore",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Carico del limitatore (P4) non noto",
@@ -2211,7 +2247,7 @@
       "nota": ""
     },
     {
-      "n": 182,
+      "n": 185,
       "id": "tavole.elaborati",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Elaborati collegati sul foglio 1",
@@ -2223,7 +2259,7 @@
       "nota": ""
     },
     {
-      "n": 183,
+      "n": 186,
       "id": "tavole.cad",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "File CAD della serie emessa",
@@ -2235,7 +2271,7 @@
       "nota": ""
     },
     {
-      "n": 184,
+      "n": 187,
       "id": "impianto.funi.taglio",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Lunghezza di taglio delle funi di sospensione",
@@ -2247,7 +2283,7 @@
       "nota": "fino a LIFT 1.28.0 e ROOM 1.12.0 il foglio 1 dava la formula arrotondata al metro più vicino, i carichi la formula e la distinta la geometria senza aggiunta: con la macchina in basso circa 3 m di differenza per fune"
     },
     {
-      "n": 185,
+      "n": 188,
       "id": "impianto.basso.albero",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso accanto al vano: albero lento prolungato",
@@ -2259,7 +2295,7 @@
       "nota": "come le quote A e B delle schede corrispondono allo sbalzo del progetto non è detto: il carico statico ammesso per lo sbalzo indicato va confermato con il costruttore prima dell’ordine. Nel calcolatore della sostituzione, che non conosce lo schema, la macchina in basso è presa accanto al vano"
     },
     {
-      "n": 186,
+      "n": 189,
       "id": "impianto.acop.ucm",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Protezioni ACOP e UCM nella bozza d’ordine e nella distinta",
@@ -2271,7 +2307,7 @@
       "nota": "la soluzione la sceglie il progettista con il costruttore: il software non verifica l’organo d’arresto né lo spazio d’arresto"
     },
     {
-      "n": 187,
+      "n": 190,
       "id": "ordine.esecuzione",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Esecuzione dell’argano (destra o sinistra) nella bozza d’ordine",
@@ -2283,7 +2319,7 @@
       "nota": "la mano segnata va confermata con lo schema di esecuzione del costruttore prima dell’ordine"
     },
     {
-      "n": 188,
+      "n": 191,
       "id": "impianto.distinta",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Distinta dei materiali del progetto",
@@ -2295,7 +2331,7 @@
       "nota": ""
     },
     {
-      "n": 189,
+      "n": 192,
       "id": "sim.forze",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Forze nella simulazione",
@@ -2307,7 +2343,7 @@
       "nota": "agli estremi della corsa e alle accelerazioni della verifica i valori coincidono con quelli della verifica (test automatico)"
     },
     {
-      "n": 190,
+      "n": 193,
       "id": "sim.profilo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Profilo del moto tra i piani",
@@ -2319,7 +2355,7 @@
       "nota": "accelerazione e strappo sono dati di progetto dell’azionamento, non limiti normativi"
     },
     {
-      "n": 191,
+      "n": 194,
       "id": "sim.aderenza.marcia",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Limite di aderenza mostrato durante la marcia",
@@ -2331,7 +2367,7 @@
       "nota": ""
     },
     {
-      "n": 192,
+      "n": 195,
       "id": "sim.porte",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Tempi delle porte",
@@ -2343,7 +2379,7 @@
       "nota": "La norma non dà tempi: per le porte automatiche orizzontali dà l’energia cinetica (≤ 10 J, ≤ 4 J con il dispositivo di protezione escluso) e la forza contro la chiusura (≤ 150 N) (UNI EN 81-20:2020, 5.3.6.2.2.1), dati del fornitore delle porte."
     },
     {
-      "n": 193,
+      "n": 196,
       "id": "sim.ammortizzatori",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Urto sugli ammortizzatori",
@@ -2355,7 +2391,7 @@
       "nota": "la rigidezza è una scelta del software coerente con i carichi sulla fossa (il tampone in poliuretano reale non è lineare: valori indicativi); la verifica della corsa resta quella della sezione. Le decelerazioni mostrate non sono una verifica: per i tamponi non lineari la norma vuole media ≤ 1 gn, oltre 2,5 gn per non più di 0,04 s, picco ≤ 6 gn e rimbalzo ≤ 1 m/s (5.8.2.1.2.1), per gli idraulici media ≤ 1 gn e oltre 2,5 gn per non più di 0,04 s (5.8.2.2.3); si provano per tipo (certificato del fornitore). Il salto convenzionale della verifica della sezione (UNI EN 81-20:2020, 5.2.5.6.1: voce spazi.salto) è uno spazio da lasciare libero, non un moto: nella simulazione l’altra parte vola solo da dove le funi si allentano (con una molla, al doppio della compressione statica, di nuovo alla velocità d’urto) e lo spazio resta quello verificato nella sezione"
     },
     {
-      "n": 194,
+      "n": 197,
       "id": "sim.bloccata",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Cabina bloccata: rotazione in salita",
@@ -2367,7 +2403,7 @@
       "nota": "La simulazione mostra il contrappeso sugli ammortizzatori con la cabina in alto; la norma chiede anche la cabina vuota in basso, che il calcolo verifica (tr_stall)."
     },
     {
-      "n": 195,
+      "n": 198,
       "id": "sim.passo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Passo di campionamento",
@@ -2379,7 +2415,7 @@
       "nota": ""
     },
     {
-      "n": 196,
+      "n": 199,
       "id": "collaudo.adempimenti.nuovo.1",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
       "voce": "DPR 162/1999, art. 4-bis",
@@ -2391,7 +2427,7 @@
       "nota": ""
     },
     {
-      "n": 197,
+      "n": 200,
       "id": "collaudo.adempimenti.nuovo.2",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
       "voce": "DPR 162/1999 e s.m.i., artt. 6-bis e 7 c.3",
@@ -2403,7 +2439,7 @@
       "nota": ""
     },
     {
-      "n": 198,
+      "n": 201,
       "id": "collaudo.adempimenti.nuovo.3",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
       "voce": "DPR 162/1999 e s.m.i., art. 12 c.1–3",
@@ -2415,7 +2451,7 @@
       "nota": ""
     },
     {
-      "n": 199,
+      "n": 202,
       "id": "collaudo.adempimenti.nuovo.4",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
       "voce": "DPR 162/1999, artt. 13, 15 c.4 e 16 c.3",
@@ -2427,7 +2463,7 @@
       "nota": ""
     },
     {
-      "n": 200,
+      "n": 203,
       "id": "collaudo.adempimenti.modifica.1",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "DPR 162/1999, art. 2 c.1 lett. cc)",
@@ -2439,7 +2475,7 @@
       "nota": ""
     },
     {
-      "n": 201,
+      "n": 204,
       "id": "collaudo.adempimenti.modifica.2",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "DPR 162/1999, art. 12 c.4",
@@ -2451,7 +2487,7 @@
       "nota": ""
     },
     {
-      "n": 202,
+      "n": 205,
       "id": "collaudo.adempimenti.modifica.3",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "DPR 162/1999, art. 12 c.4–5",
@@ -2463,7 +2499,7 @@
       "nota": ""
     },
     {
-      "n": 203,
+      "n": 206,
       "id": "collaudo.adempimenti.modifica.4",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "DPR 162/1999 e s.m.i., art. 14 c.3; schema ICIM SCI 162 rev. 02",
@@ -2475,7 +2511,7 @@
       "nota": ""
     },
     {
-      "n": 204,
+      "n": 207,
       "id": "collaudo.adempimenti.modifica.5",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "UNI 10411-1:2024 e UNI 10411-11:2024, 25",
@@ -2487,7 +2523,7 @@
       "nota": ""
     },
     {
-      "n": 205,
+      "n": 208,
       "id": "collaudo.en81.1",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "DPR 162/1999, All. V 3.3 (All. VIII 4)",
@@ -2499,7 +2535,7 @@
       "nota": ""
     },
     {
-      "n": 206,
+      "n": 209,
       "id": "collaudo.en81.2",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "DPR 162/1999, All. VIII 3 e), g), h)",
@@ -2511,7 +2547,7 @@
       "nota": ""
     },
     {
-      "n": 207,
+      "n": 210,
       "id": "collaudo.en81.3",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "Regolamento (UE) 2023/1230, art. 51 par. 2",
@@ -2523,7 +2559,7 @@
       "nota": ""
     },
     {
-      "n": 208,
+      "n": 211,
       "id": "collaudo.en81.4",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-50:2020, 5.12.1 e 5.12.2.1",
@@ -2535,7 +2571,7 @@
       "nota": ""
     },
     {
-      "n": 209,
+      "n": 212,
       "id": "collaudo.en81.5",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.6.2.2.1.2",
@@ -2547,7 +2583,7 @@
       "nota": ""
     },
     {
-      "n": 210,
+      "n": 213,
       "id": "collaudo.en81.6",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.8.2.1.2.1 e 5.8.2.2.3",
@@ -2559,7 +2595,7 @@
       "nota": ""
     },
     {
-      "n": 211,
+      "n": 214,
       "id": "collaudo.en81.7",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.5.7.1",
@@ -2571,7 +2607,7 @@
       "nota": ""
     },
     {
-      "n": 212,
+      "n": 215,
       "id": "collaudo.en81.8",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.2.4",
@@ -2583,7 +2619,7 @@
       "nota": ""
     },
     {
-      "n": 213,
+      "n": 216,
       "id": "collaudo.en81.9",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.1.5.1 b)",
@@ -2595,7 +2631,7 @@
       "nota": ""
     },
     {
-      "n": 214,
+      "n": 217,
       "id": "collaudo.en81.10",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.12.1.5.2.1 f)",
@@ -2607,7 +2643,7 @@
       "nota": ""
     },
     {
-      "n": 215,
+      "n": 218,
       "id": "collaudo.en81.11",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.5.7.1 e 5.2.5.8.1",
@@ -2619,7 +2655,7 @@
       "nota": ""
     },
     {
-      "n": 216,
+      "n": 219,
       "id": "collaudo.en81.12",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.1.4.1",
@@ -2631,7 +2667,7 @@
       "nota": ""
     },
     {
-      "n": 217,
+      "n": 220,
       "id": "collaudo.en81.13",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.4.10.1 e 5.4.10.4",
@@ -2643,7 +2679,7 @@
       "nota": ""
     },
     {
-      "n": 218,
+      "n": 221,
       "id": "collaudo.en81.14",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.4.4",
@@ -2655,7 +2691,7 @@
       "nota": ""
     },
     {
-      "n": 219,
+      "n": 222,
       "id": "collaudo.en81.15",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 6.3.1",
@@ -2667,7 +2703,7 @@
       "nota": ""
     },
     {
-      "n": 220,
+      "n": 223,
       "id": "collaudo.en81.16",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 6.3.2",
@@ -2679,7 +2715,7 @@
       "nota": ""
     },
     {
-      "n": 221,
+      "n": 224,
       "id": "collaudo.en81.17",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 6.3.3",
@@ -2691,7 +2727,7 @@
       "nota": ""
     },
     {
-      "n": 222,
+      "n": 225,
       "id": "collaudo.en81.18",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 6.3.4, 6.3.5 e 6.3.7",
@@ -2703,7 +2739,7 @@
       "nota": ""
     },
     {
-      "n": 223,
+      "n": 226,
       "id": "collaudo.en81.19",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 6.3.11, 6.3.12 e 6.3.13",
@@ -2715,7 +2751,7 @@
       "nota": ""
     },
     {
-      "n": 224,
+      "n": 227,
       "id": "collaudo.en81.20",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 6.3.14",
@@ -2727,7 +2763,7 @@
       "nota": ""
     },
     {
-      "n": 225,
+      "n": 228,
       "id": "collaudo.en81.21",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, C.2 e 7.3.2",
@@ -2739,7 +2775,7 @@
       "nota": ""
     },
     {
-      "n": 226,
+      "n": 229,
       "id": "collaudo.en81.22",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.3.5.3.2, 5.3.5.3.4, 5.3.6.2.2.1 b) e 5.3.15.2 b)",
@@ -2751,7 +2787,7 @@
       "nota": ""
     },
     {
-      "n": 227,
+      "n": 230,
       "id": "collaudo.en81.23",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.3.6.2.2.1 a)–d)",
@@ -2763,7 +2799,7 @@
       "nota": ""
     },
     {
-      "n": 228,
+      "n": 231,
       "id": "collaudo.10411-1.1",
       "gruppo": "Collaudo: UNI 10411-1:2024",
       "voce": "UNI 10411-1:2024, scopo",
@@ -2775,7 +2811,7 @@
       "nota": ""
     },
     {
-      "n": 229,
+      "n": 232,
       "id": "collaudo.10411-1.2",
       "gruppo": "Collaudo: UNI 10411-1:2024",
       "voce": "UNI 10411-1:2024, 9.1–9.2",
@@ -2787,7 +2823,7 @@
       "nota": ""
     },
     {
-      "n": 230,
+      "n": 233,
       "id": "collaudo.10411-1.3",
       "gruppo": "Collaudo: UNI 10411-1:2024",
       "voce": "UNI 10411-1:2024, 5 e App. C (5, 9 e 14)",
@@ -2799,7 +2835,7 @@
       "nota": ""
     },
     {
-      "n": 231,
+      "n": 234,
       "id": "collaudo.10411-1.4",
       "gruppo": "Collaudo: UNI 10411-1:2024",
       "voce": "UNI 10411-1:2024, 14.4 a)–g)",
@@ -2811,7 +2847,7 @@
       "nota": ""
     },
     {
-      "n": 232,
+      "n": 235,
       "id": "collaudo.10411-11.1",
       "gruppo": "Collaudo: UNI 10411-11:2024",
       "voce": "UNI 10411-11:2024, scopo",
@@ -2823,7 +2859,7 @@
       "nota": ""
     },
     {
-      "n": 233,
+      "n": 236,
       "id": "collaudo.10411-11.2",
       "gruppo": "Collaudo: UNI 10411-11:2024",
       "voce": "UNI 10411-11:2024, 14.3 a) e App. A (14); UNI EN 81-20:2020, 5.6.6.2 e 5.6.7.3",
@@ -2835,7 +2871,7 @@
       "nota": ""
     },
     {
-      "n": 234,
+      "n": 237,
       "id": "collaudo.10411-11.3",
       "gruppo": "Collaudo: UNI 10411-11:2024",
       "voce": "UNI 10411-11:2024, 5 e 9.2",
@@ -2847,7 +2883,7 @@
       "nota": ""
     },
     {
-      "n": 235,
+      "n": 238,
       "id": "collaudo.10411-11.4",
       "gruppo": "Collaudo: UNI 10411-11:2024",
       "voce": "UNI 10411-11:2024, 14.3 b)",
@@ -2859,7 +2895,7 @@
       "nota": ""
     },
     {
-      "n": 236,
+      "n": 239,
       "id": "collaudo.en81-21.1",
       "gruppo": "Collaudo: UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)",
       "voce": "UNI EN 81-21:2022, 1",
@@ -2871,7 +2907,7 @@
       "nota": ""
     },
     {
-      "n": 237,
+      "n": 240,
       "id": "collaudo.en81-21.2",
       "gruppo": "Collaudo: UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)",
       "voce": "UNI EN 81-21:2022, 6.2 e 7.1",
@@ -2883,7 +2919,7 @@
       "nota": ""
     },
     {
-      "n": 238,
+      "n": 241,
       "id": "collaudo.en81-21.3",
       "gruppo": "Collaudo: UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)",
       "voce": "DPR 162/1999, art. 17-bis; DM 19/03/2015; linee guida MIMIT 2022",
@@ -2895,7 +2931,7 @@
       "nota": ""
     },
     {
-      "n": 239,
+      "n": 242,
       "id": "collaudo.en81-28.1",
       "gruppo": "Collaudo: UNI EN 81-28:2022 (teleallarme)",
       "voce": "UNI EN 81-20:2020, 5.12.3.1; UNI EN 81-28:2004, 4.1.3, 4.2.1 e 7",
@@ -2907,7 +2943,7 @@
       "nota": ""
     },
     {
-      "n": 240,
+      "n": 243,
       "id": "collaudo.en81-28.2",
       "gruppo": "Collaudo: UNI EN 81-28:2022 (teleallarme)",
       "voce": "UNI EN 81-28:2022",
@@ -2919,7 +2955,7 @@
       "nota": ""
     },
     {
-      "n": 241,
+      "n": 244,
       "id": "collaudo.en81-58.1",
       "gruppo": "Collaudo: UNI EN 81-58:2022 (resistenza al fuoco delle porte di piano)",
       "voce": "UNI EN 81-58:2022; DM 15/09/2005, 3.2–3.3 e art. 1 c.2 lett. c)",
@@ -2931,7 +2967,7 @@
       "nota": ""
     },
     {
-      "n": 242,
+      "n": 245,
       "id": "collaudo.en81-70.1",
       "gruppo": "Collaudo: UNI EN 81-70:2022 (accessibilità)",
       "voce": "UNI EN 81-70:2022, 5.3.1",
@@ -2943,7 +2979,7 @@
       "nota": ""
     },
     {
-      "n": 243,
+      "n": 246,
       "id": "collaudo.en81-70.2",
       "gruppo": "Collaudo: UNI EN 81-70:2022 (accessibilità)",
       "voce": "UNI EN 81-70:2022, 5.3.2 e 5.4",
@@ -2955,7 +2991,7 @@
       "nota": ""
     },
     {
-      "n": 244,
+      "n": 247,
       "id": "collaudo.en81-70.3",
       "gruppo": "Collaudo: UNI EN 81-70:2022 (accessibilità)",
       "voce": "UNI EN 81-70:2022, scopo",
@@ -2967,7 +3003,7 @@
       "nota": ""
     },
     {
-      "n": 245,
+      "n": 248,
       "id": "collaudo.en81-71.1",
       "gruppo": "Collaudo: UNI EN 81-71 (ascensori antivandalo)",
       "voce": "UNI EN 81-71",
@@ -2979,7 +3015,7 @@
       "nota": ""
     },
     {
-      "n": 246,
+      "n": 249,
       "id": "collaudo.en81-72.1",
       "gruppo": "Collaudo: UNI EN 81-72:2020 (ascensori antincendio)",
       "voce": "DM 15/09/2005, punto 7 (valori); Codice V.3.3.4",
@@ -2991,7 +3027,7 @@
       "nota": ""
     },
     {
-      "n": 247,
+      "n": 250,
       "id": "collaudo.en81-72.2",
       "gruppo": "Collaudo: UNI EN 81-72:2020 (ascensori antincendio)",
       "voce": "Codice S.10, Tab. S.10-2",
@@ -3003,7 +3039,7 @@
       "nota": ""
     },
     {
-      "n": 248,
+      "n": 251,
       "id": "collaudo.en81-72.3",
       "gruppo": "Collaudo: UNI EN 81-72:2020 (ascensori antincendio)",
       "voce": "UNI EN 81-72:2020",
@@ -3015,7 +3051,7 @@
       "nota": ""
     },
     {
-      "n": 249,
+      "n": 252,
       "id": "collaudo.en81-73.1",
       "gruppo": "Collaudo: UNI EN 81-73:2020 (comportamento in caso d’incendio)",
       "voce": "DM 15/09/2005, punto 6; Codice V.3.3.1",
@@ -3027,7 +3063,7 @@
       "nota": ""
     },
     {
-      "n": 250,
+      "n": 253,
       "id": "collaudo.en81-73.2",
       "gruppo": "Collaudo: UNI EN 81-73:2020 (comportamento in caso d’incendio)",
       "voce": "UNI EN 81-73:2020",
@@ -3039,7 +3075,7 @@
       "nota": ""
     },
     {
-      "n": 251,
+      "n": 254,
       "id": "collaudo.en81-76.1",
       "gruppo": "Collaudo: UNI EN 81-76:2025 (evacuazione delle persone con disabilità)",
       "voce": "UNI EN 81-76:2025",
@@ -3051,7 +3087,7 @@
       "nota": ""
     },
     {
-      "n": 252,
+      "n": 255,
       "id": "collaudo.en81-77.1",
       "gruppo": "Collaudo: UNI EN 81-77:2022 (azioni sismiche)",
       "voce": "UNI EN 81-77:2022, 1",
@@ -3063,7 +3099,7 @@
       "nota": ""
     },
     {
-      "n": 253,
+      "n": 256,
       "id": "collaudo.en81-77.2",
       "gruppo": "Collaudo: UNI EN 81-77:2022 (azioni sismiche)",
       "voce": "UNI EN 81-77:2022, 5.4–5.10, All. A, B, D",
@@ -3075,7 +3111,7 @@
       "nota": ""
     },
     {
-      "n": 254,
+      "n": 257,
       "id": "collaudo.en81-77.3",
       "gruppo": "Collaudo: UNI EN 81-77:2022 (azioni sismiche)",
       "voce": "UNI EN 81-77:2022, 0.3",
@@ -3087,7 +3123,7 @@
       "nota": ""
     },
     {
-      "n": 255,
+      "n": 258,
       "id": "collaudo.en81-80.1",
       "gruppo": "Collaudo: UNI EN 81-80:2019 (miglioramento della sicurezza degli esistenti)",
       "voce": "UNI EN 81-80:2004 e 2009, 1 e appendice A",
@@ -3099,7 +3135,7 @@
       "nota": ""
     },
     {
-      "n": 256,
+      "n": 259,
       "id": "collaudo.en81-80.2",
       "gruppo": "Collaudo: UNI EN 81-80:2019 (miglioramento della sicurezza degli esistenti)",
       "voce": "UNI EN 81-80:2019",
@@ -3111,7 +3147,7 @@
       "nota": ""
     },
     {
-      "n": 257,
+      "n": 260,
       "id": "collaudo.en81-82.1",
       "gruppo": "Collaudo: UNI EN 81-82:2026 (accessibilità degli esistenti)",
       "voce": "UNI EN 81-82:2026",
@@ -3123,7 +3159,7 @@
       "nota": ""
     },
     {
-      "n": 258,
+      "n": 261,
       "id": "collaudo.en81-83.1",
       "gruppo": "Collaudo: UNI EN 81-83:2026 (antivandalo degli esistenti)",
       "voce": "UNI EN 81-83:2026",
@@ -3135,7 +3171,7 @@
       "nota": ""
     },
     {
-      "n": 259,
+      "n": 262,
       "id": "collaudo.dm236.1",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12",
@@ -3147,7 +3183,7 @@
       "nota": ""
     },
     {
-      "n": 260,
+      "n": 263,
       "id": "collaudo.dm236.2",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12",
@@ -3159,7 +3195,7 @@
       "nota": ""
     },
     {
-      "n": 261,
+      "n": 264,
       "id": "collaudo.dm236.3",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12",
@@ -3171,7 +3207,7 @@
       "nota": ""
     },
     {
-      "n": 262,
+      "n": 265,
       "id": "collaudo.dm236.4",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12 e 8.0.1",
@@ -3183,7 +3219,7 @@
       "nota": ""
     },
     {
-      "n": 263,
+      "n": 266,
       "id": "collaudo.dm236.5",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12 e 4.1.12",
@@ -3195,7 +3231,7 @@
       "nota": ""
     },
     {
-      "n": 264,
+      "n": 267,
       "id": "collaudo.dm236.6",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 3.2; L. 13/1989, art. 1 c.3 lett. d)",
@@ -3207,7 +3243,7 @@
       "nota": ""
     },
     {
-      "n": 265,
+      "n": 268,
       "id": "collaudo.dm236.7",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 7.5; DPR 503/1996, art. 19",
@@ -3219,7 +3255,7 @@
       "nota": ""
     },
     {
-      "n": 266,
+      "n": 269,
       "id": "collaudo.antincendio.1",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 3/8/2015, art. 5 c.1-bis lett. e)",
@@ -3231,7 +3267,7 @@
       "nota": ""
     },
     {
-      "n": 267,
+      "n": 270,
       "id": "collaudo.antincendio.2",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, art. 1 c.2",
@@ -3243,7 +3279,7 @@
       "nota": ""
     },
     {
-      "n": 268,
+      "n": 271,
       "id": "collaudo.antincendio.3",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, 3.1–3.3; Codice V.3.2",
@@ -3255,7 +3291,7 @@
       "nota": ""
     },
     {
-      "n": 269,
+      "n": 272,
       "id": "collaudo.antincendio.4",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, punto 2",
@@ -3267,7 +3303,7 @@
       "nota": ""
     },
     {
-      "n": 270,
+      "n": 273,
       "id": "collaudo.antincendio.5",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/03/2005 (tabella di confronto); UNI EN 81-20:2020, 5.4.4",
@@ -3279,7 +3315,7 @@
       "nota": ""
     },
     {
-      "n": 271,
+      "n": 274,
       "id": "collaudo.antincendio.6",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, punto 5",
@@ -3291,7 +3327,7 @@
       "nota": ""
     },
     {
-      "n": 272,
+      "n": 275,
       "id": "collaudo.antincendio.7",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, punto 6; Codice V.3.3.1 c.5",
@@ -3303,7 +3339,7 @@
       "nota": ""
     },
     {
-      "n": 273,
+      "n": 276,
       "id": "collaudo.antincendio.8",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "Codice S.9, Tab. S.9-3",
@@ -3315,7 +3351,7 @@
       "nota": ""
     },
     {
-      "n": 274,
+      "n": 277,
       "id": "collaudo.ntc2018.1",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §3.1.4",
@@ -3327,7 +3363,7 @@
       "nota": ""
     },
     {
-      "n": 275,
+      "n": 278,
       "id": "collaudo.ntc2018.2",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §8.4.1",
@@ -3339,7 +3375,7 @@
       "nota": ""
     },
     {
-      "n": 276,
+      "n": 279,
       "id": "collaudo.ntc2018.3",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §11.4.1",
@@ -3351,7 +3387,7 @@
       "nota": ""
     },
     {
-      "n": 277,
+      "n": 280,
       "id": "collaudo.ntc2018.4",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §7.2.3–7.2.4",
@@ -3363,7 +3399,7 @@
       "nota": ""
     },
     {
-      "n": 278,
+      "n": 281,
       "id": "collaudo.ntc2018.5",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, Tab. 7.3.III e §7.3.6.3",
@@ -3375,7 +3411,7 @@
       "nota": ""
     },
     {
-      "n": 279,
+      "n": 282,
       "id": "collaudo.parti.10411-1.1",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 22",
@@ -3387,7 +3423,7 @@
       "nota": ""
     },
     {
-      "n": 280,
+      "n": 283,
       "id": "collaudo.parti.10411-1.2",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 12.1 e 12.3",
@@ -3399,7 +3435,7 @@
       "nota": ""
     },
     {
-      "n": 281,
+      "n": 284,
       "id": "collaudo.parti.10411-1.3",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 19 e 12.2",
@@ -3411,7 +3447,7 @@
       "nota": ""
     },
     {
-      "n": 282,
+      "n": 285,
       "id": "collaudo.parti.10411-1.4",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 6.2 e 22 b)",
@@ -3423,7 +3459,7 @@
       "nota": ""
     },
     {
-      "n": 283,
+      "n": 286,
       "id": "collaudo.parti.10411-1.5",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 11.1",
@@ -3435,7 +3471,7 @@
       "nota": ""
     },
     {
-      "n": 284,
+      "n": 287,
       "id": "collaudo.parti.10411-1.6",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 17",
@@ -3447,7 +3483,7 @@
       "nota": ""
     },
     {
-      "n": 285,
+      "n": 288,
       "id": "collaudo.parti.10411-1.7",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 18",
@@ -3459,7 +3495,7 @@
       "nota": ""
     },
     {
-      "n": 286,
+      "n": 289,
       "id": "collaudo.parti.10411-1.8",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 6.6, 6.7, 15.3 e 15.6",
@@ -3471,7 +3507,7 @@
       "nota": ""
     },
     {
-      "n": 287,
+      "n": 290,
       "id": "collaudo.parti.10411-1.9",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 6.12, 15.4 e 14.4 c)–d)",
@@ -3483,7 +3519,7 @@
       "nota": ""
     },
     {
-      "n": 288,
+      "n": 291,
       "id": "collaudo.parti.10411-1.10",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 23",
@@ -3495,7 +3531,7 @@
       "nota": ""
     },
     {
-      "n": 289,
+      "n": 292,
       "id": "collaudo.parti.10411-1.11",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 8",
@@ -3507,7 +3543,7 @@
       "nota": ""
     },
     {
-      "n": 290,
+      "n": 293,
       "id": "collaudo.parti.10411-1.12",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 13.1.1–13.2.4",
@@ -3519,7 +3555,7 @@
       "nota": ""
     },
     {
-      "n": 291,
+      "n": 294,
       "id": "collaudo.parti.10411-11.1",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 22",
@@ -3531,7 +3567,7 @@
       "nota": ""
     },
     {
-      "n": 292,
+      "n": 295,
       "id": "collaudo.parti.10411-11.2",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 12.1–12.3",
@@ -3543,7 +3579,7 @@
       "nota": ""
     },
     {
-      "n": 293,
+      "n": 296,
       "id": "collaudo.parti.10411-11.3",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 19",
@@ -3555,7 +3591,7 @@
       "nota": ""
     },
     {
-      "n": 294,
+      "n": 297,
       "id": "collaudo.parti.10411-11.4",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 11.1",
@@ -3567,7 +3603,7 @@
       "nota": ""
     },
     {
-      "n": 295,
+      "n": 298,
       "id": "collaudo.parti.10411-11.5",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 17",
@@ -3579,7 +3615,7 @@
       "nota": ""
     },
     {
-      "n": 296,
+      "n": 299,
       "id": "collaudo.parti.10411-11.6",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 18",
@@ -3591,7 +3627,7 @@
       "nota": ""
     },
     {
-      "n": 297,
+      "n": 300,
       "id": "collaudo.parti.10411-11.7",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 6.6 e 6.7",
@@ -3603,7 +3639,7 @@
       "nota": ""
     },
     {
-      "n": 298,
+      "n": 301,
       "id": "collaudo.parti.10411-11.8",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 6.10, 15 c), 15 i) e 14.3 a)",
@@ -3615,7 +3651,7 @@
       "nota": ""
     },
     {
-      "n": 299,
+      "n": 302,
       "id": "collaudo.parti.10411-11.9",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 23",
@@ -3627,7 +3663,7 @@
       "nota": ""
     },
     {
-      "n": 300,
+      "n": 303,
       "id": "collaudo.parti.10411-11.10",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 8",
@@ -3639,7 +3675,7 @@
       "nota": ""
     },
     {
-      "n": 301,
+      "n": 304,
       "id": "collaudo.parti.10411-11.11",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 13.1.1–13.2.4",
@@ -3651,7 +3687,7 @@
       "nota": ""
     },
     {
-      "n": 302,
+      "n": 305,
       "id": "collaudo.variazioni.10411-1.1",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 15.1–15.15",
@@ -3663,7 +3699,7 @@
       "nota": ""
     },
     {
-      "n": 303,
+      "n": 306,
       "id": "collaudo.variazioni.10411-1.2",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 15.16–15.17",
@@ -3675,7 +3711,7 @@
       "nota": ""
     },
     {
-      "n": 304,
+      "n": 307,
       "id": "collaudo.variazioni.10411-1.3",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 15.1 e 15.16",
@@ -3687,7 +3723,7 @@
       "nota": ""
     },
     {
-      "n": 305,
+      "n": 308,
       "id": "collaudo.variazioni.10411-1.4",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 15.1 e 15.16",
@@ -3699,7 +3735,7 @@
       "nota": ""
     },
     {
-      "n": 306,
+      "n": 309,
       "id": "collaudo.variazioni.10411-1.5",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1, 6.3–6.12 e 6.15",
@@ -3711,7 +3747,7 @@
       "nota": ""
     },
     {
-      "n": 307,
+      "n": 310,
       "id": "collaudo.variazioni.10411-1.6",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1, 6.4, 6.5, 6.8 e 6.13–6.15",
@@ -3723,7 +3759,7 @@
       "nota": ""
     },
     {
-      "n": 308,
+      "n": 311,
       "id": "collaudo.variazioni.10411-1.7",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1",
@@ -3735,7 +3771,7 @@
       "nota": ""
     },
     {
-      "n": 309,
+      "n": 312,
       "id": "collaudo.variazioni.10411-1.8",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1",
@@ -3747,7 +3783,7 @@
       "nota": ""
     },
     {
-      "n": 310,
+      "n": 313,
       "id": "collaudo.variazioni.10411-1.9",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1 e App. D",
@@ -3759,7 +3795,7 @@
       "nota": ""
     },
     {
-      "n": 311,
+      "n": 314,
       "id": "collaudo.variazioni.10411-1.10",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 16 a)–l)",
@@ -3771,7 +3807,7 @@
       "nota": ""
     },
     {
-      "n": 312,
+      "n": 315,
       "id": "collaudo.variazioni.10411-1.11",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 16",
@@ -3783,7 +3819,7 @@
       "nota": ""
     },
     {
-      "n": 313,
+      "n": 316,
       "id": "collaudo.variazioni.10411-1.12",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 16 e 4",
@@ -3795,7 +3831,7 @@
       "nota": ""
     },
     {
-      "n": 314,
+      "n": 317,
       "id": "collaudo.variazioni.10411-1.13",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 15.1 e 15.16",
@@ -3807,7 +3843,7 @@
       "nota": ""
     },
     {
-      "n": 315,
+      "n": 318,
       "id": "collaudo.variazioni.10411-1.14",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 16",
@@ -3819,7 +3855,7 @@
       "nota": ""
     },
     {
-      "n": 316,
+      "n": 319,
       "id": "collaudo.variazioni.10411-1.15",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 22 e 6.1",
@@ -3831,7 +3867,7 @@
       "nota": ""
     },
     {
-      "n": 317,
+      "n": 320,
       "id": "collaudo.variazioni.10411-1.16",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1",
@@ -3843,7 +3879,7 @@
       "nota": ""
     },
     {
-      "n": 318,
+      "n": 321,
       "id": "collaudo.variazioni.10411-1.17",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1 e D.1",
@@ -3855,7 +3891,7 @@
       "nota": ""
     },
     {
-      "n": 319,
+      "n": 322,
       "id": "collaudo.variazioni.10411-1.18",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1 e D.1",
@@ -3867,7 +3903,7 @@
       "nota": ""
     },
     {
-      "n": 320,
+      "n": 323,
       "id": "collaudo.variazioni.10411-11.1",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 15 a)–k) e 4.3",
@@ -3879,7 +3915,7 @@
       "nota": ""
     },
     {
-      "n": 321,
+      "n": 324,
       "id": "collaudo.variazioni.10411-11.2",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 15 i)",
@@ -3891,7 +3927,7 @@
       "nota": ""
     },
     {
-      "n": 322,
+      "n": 325,
       "id": "collaudo.variazioni.10411-11.3",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1–6.13",
@@ -3903,7 +3939,7 @@
       "nota": ""
     },
     {
-      "n": 323,
+      "n": 326,
       "id": "collaudo.variazioni.10411-11.4",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1–6.13",
@@ -3915,7 +3951,7 @@
       "nota": ""
     },
     {
-      "n": 324,
+      "n": 327,
       "id": "collaudo.variazioni.10411-11.5",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1",
@@ -3927,7 +3963,7 @@
       "nota": ""
     },
     {
-      "n": 325,
+      "n": 328,
       "id": "collaudo.variazioni.10411-11.6",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1",
@@ -3939,7 +3975,7 @@
       "nota": ""
     },
     {
-      "n": 326,
+      "n": 329,
       "id": "collaudo.variazioni.10411-11.7",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 16 a)–i) e 4.3",
@@ -3951,7 +3987,7 @@
       "nota": ""
     },
     {
-      "n": 327,
+      "n": 330,
       "id": "collaudo.variazioni.10411-11.8",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 16 e 4.3",
@@ -3963,7 +3999,7 @@
       "nota": ""
     },
     {
-      "n": 328,
+      "n": 331,
       "id": "collaudo.variazioni.10411-11.9",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 15 e 4.3",
@@ -3975,7 +4011,7 @@
       "nota": ""
     },
     {
-      "n": 329,
+      "n": 332,
       "id": "collaudo.variazioni.10411-11.10",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 16 e 4.3",
@@ -3987,7 +4023,7 @@
       "nota": ""
     },
     {
-      "n": 330,
+      "n": 333,
       "id": "collaudo.variazioni.10411-11.11",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 22 e 6.1",
@@ -3999,7 +4035,7 @@
       "nota": ""
     },
     {
-      "n": 331,
+      "n": 334,
       "id": "collaudo.variazioni.10411-11.12",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1",
@@ -4011,7 +4047,7 @@
       "nota": ""
     },
     {
-      "n": 332,
+      "n": 335,
       "id": "rt.relazione.sezioni",
       "gruppo": "Relazione tecnica di modifica: sezioni, documenti e strutture",
       "voce": "Sezioni della relazione per le parti e i casi della modifica",
@@ -4023,7 +4059,7 @@
       "nota": "i casi che portano solo punti (corsa oltre 8 m o accorciata, velocità entro i limiti, variazioni smentite dai documenti) li stampano in «Adeguamenti e adempimenti»; con la UNI 10411-11 le lettere dei punti 15 e 16 sono quelle del testo e, dove il testo non nomina il componente, la sezione cita l’intervallo del caso (6.1–6.13); le regole di decisione di modelli di terzi non sono usate"
     },
     {
-      "n": 333,
+      "n": 336,
       "id": "rt.relazione.documenti",
       "gruppo": "Relazione tecnica di modifica: sezioni, documenti e strutture",
       "voce": "Documenti attesi della relazione",
@@ -4035,7 +4071,7 @@
       "nota": "quale file è quale documento è una scelta del software (tipo e componente) o del tecnico; per i componenti di aziende con qualità totale vale anche il documento analogo al certificato d’esame del tipo"
     },
     {
-      "n": 334,
+      "n": 337,
       "id": "rt.relazione.strutture",
       "gruppo": "Relazione tecnica di modifica: sezioni, documenti e strutture",
       "voce": "Strutture dell’edificio",
@@ -4047,7 +4083,7 @@
       "nota": "se una macchina nuova aumenti o sposti le forze sulle strutture lo giudica il tecnico: la relazione gli chiede la risposta"
     },
     {
-      "n": 335,
+      "n": 338,
       "id": "rt.relazione.spazi",
       "gruppo": "Relazione tecnica di modifica: sezioni, documenti e strutture",
       "voce": "Testata e fossa con la velocità o la corsa cambiate",
@@ -4059,7 +4095,7 @@
       "nota": "la tabella dell’ambito dell’esame (relazione di calcolo, progetto dell’ascensore) porta queste tre verifiche con meno parti: allinearla sposta le versioni dei motori, decisione del titolare"
     },
     {
-      "n": 336,
+      "n": 339,
       "id": "rt.impianto.regime",
       "gruppo": "Relazione tecnica di modifica: dati dell’impianto",
       "voce": "Legge di approvazione dell’impianto",
@@ -4071,7 +4107,7 @@
       "nota": "gli anni sono una stima del software: la data di un atto non è quella da cui gli impianti dovevano seguirlo; gli atti e il loro campo sono letti, il DPR 268/1994 era nominato per gli ascensori elettrici nello scopo delle edizioni della UNI 10411-1 fino a quella del 2008"
     },
     {
-      "n": 337,
+      "n": 340,
       "id": "rt.quadro.tensioni",
       "gruppo": "Relazione tecnica di modifica: quadro di manovra",
       "voce": "Tensioni del quadro nuovo e dei contatti delle serrature",
@@ -4083,7 +4119,7 @@
       "nota": "le tensioni sono dati del quadro con la loro fonte; senza il dato la verifica stampa «Dati mancanti ⚠» e un punto da verificare in sito; i contatti delle serrature solo con la UNI 10411-1 (con la UNI 10411-11 il punto 11.1.2 elenca le deroghe, non questa regola)"
     },
     {
-      "n": 338,
+      "n": 341,
       "id": "rt.cabina.superficie.esistente",
       "gruppo": "Relazione tecnica di modifica: cabina e carichi",
       "voce": "Cabina che resta con la portata cambiata",
@@ -4095,7 +4131,7 @@
       "nota": "entro il limite la riga è un’informazione, mai «Soddisfatta»: la norma non la chiede"
     },
     {
-      "n": 339,
+      "n": 342,
       "id": "rt.guide.rm",
       "gruppo": "Relazione tecnica di modifica: guide",
       "voce": "Guide esistenti: acciaio e allungamento",
@@ -4107,7 +4143,7 @@
       "nota": "λ sotto 20: ω di λ 20 come per l’acciaio Rm 370; λ oltre 250 non verificabile; l’allungamento non dato è preso oltre 12 % e stampato come ipotesi"
     },
     {
-      "n": 340,
+      "n": 343,
       "id": "rt.guide.sospensione",
       "gruppo": "Relazione tecnica di modifica: guide",
       "voce": "Punto di sospensione della cabina nelle forze sulle guide",
@@ -4119,7 +4155,7 @@
       "nota": ""
     },
     {
-      "n": 341,
+      "n": 344,
       "id": "rt.guide.fp",
       "gruppo": "Relazione tecnica di modifica: guide",
       "voce": "Spinta delle staffe sulle guide (Fp)",
@@ -4131,7 +4167,7 @@
       "nota": ""
     },
     {
-      "n": 342,
+      "n": 345,
       "id": "rt.guide.pattini",
       "gruppo": "Relazione tecnica di modifica: guide",
       "voce": "Flessione della suola con pattini a strisciamento",
@@ -4143,7 +4179,7 @@
       "nota": ""
     },
     {
-      "n": 343,
+      "n": 346,
       "id": "rt.guide.contrappeso.marcia",
       "gruppo": "Relazione tecnica di modifica: guide",
       "voce": "Guide del contrappeso in marcia",
@@ -4155,7 +4191,7 @@
       "nota": ""
     },
     {
-      "n": 344,
+      "n": 347,
       "id": "rt.ammortizzatori.molla",
       "gruppo": "Relazione tecnica di modifica: ammortizzatori",
       "voce": "Ammortizzatori a molla: forza a corsa completa",
@@ -4167,7 +4203,7 @@
       "nota": "la norma dice «tra» senza dire degli estremi: compresi, scelta del software da confermare; senza la forza la verifica stampa «Dati mancanti ⚠» e un punto da verificare con la scheda del costruttore"
     },
     {
-      "n": 345,
+      "n": 348,
       "id": "rt.ammortizzatori.velocita",
       "gruppo": "Relazione tecnica di modifica: ammortizzatori",
       "voce": "Ammortizzatori in poliuretano e idraulici: velocità d’urto",
@@ -4179,7 +4215,7 @@
       "nota": ""
     },
     {
-      "n": 346,
+      "n": 349,
       "id": "rt.ammortizzatori.massa",
       "gruppo": "Relazione tecnica di modifica: ammortizzatori",
       "voce": "Ammortizzatori in poliuretano e idraulici: masse del certificato",
@@ -4191,7 +4227,7 @@
       "nota": "il certificato dà la massa minima e la massima; che vi rientri anche la cabina vuota è una lettura del software (la cabina vuota può urtare l’ammortizzatore), non scritta nella norma"
     },
     {
-      "n": 347,
+      "n": 350,
       "id": "rt.limitatore.taratura",
       "gruppo": "Relazione tecnica di modifica: limitatore di velocità e paracadute",
       "voce": "Velocità d’intervento di targa del limitatore",
@@ -4203,7 +4239,7 @@
       "nota": "con la velocità ridotta (UNI 10411-1, 15.17) e con il limitatore nuovo (18) vale anche il limite della norma in vigore all’installazione: voce limitatore.origine"
     },
     {
-      "n": 348,
+      "n": 351,
       "id": "rt.limitatore.origine",
       "gruppo": "Relazione tecnica di modifica: limitatore di velocità e paracadute",
       "voce": "Limite d’intervento della norma in vigore all’installazione",
@@ -4215,7 +4251,7 @@
       "nota": "il software non conosce i limiti di questi atti e non li prende da altre norme: senza il valore e la sua fonte la verifica stampa «Dati mancanti ⚠»"
     },
     {
-      "n": 349,
+      "n": 352,
       "id": "rt.limitatore.forza",
       "gruppo": "Relazione tecnica di modifica: limitatore di velocità e paracadute",
       "voce": "Forza del limitatore sulla fune all’intervento",
@@ -4227,7 +4263,7 @@
       "nota": ""
     },
     {
-      "n": 350,
+      "n": 353,
       "id": "rt.limitatore.fune.sicurezza",
       "gruppo": "Relazione tecnica di modifica: limitatore di velocità e paracadute",
       "voce": "Fune del limitatore: carico di rottura",
@@ -4239,7 +4275,7 @@
       "nota": "con la corsa allungata (UNI 10411-1, 16 i)) la fune nuova si verifica secondo la UNI EN 81-1:1987 9.9.6 o la UNI EN 81-20 5.6.2.2.1.3: il software applica la seconda; il diametro minimo della fune della UNI EN 81-1 non è nella UNI EN 81-20:2020 e non si verifica"
     },
     {
-      "n": 351,
+      "n": 354,
       "id": "rt.porte.fuoco",
       "gruppo": "Relazione tecnica di modifica: porte di piano",
       "voce": "Porte di piano nuove: resistenza al fuoco",
@@ -4251,7 +4287,7 @@
       "nota": "l’ordine fra le classi E ed EI è una lettura del software (la UNI EN 81-58 non è tra i testi letti); vale anche la classe chiesta dal certificato di prevenzione incendi dell’edificio"
     },
     {
-      "n": 352,
+      "n": 355,
       "id": "rt.porte.altezza",
       "gruppo": "Relazione tecnica di modifica: porte di piano",
       "voce": "Porte di piano nuove: altezza",
@@ -4263,7 +4299,7 @@
       "nota": "con la UNI 10411-11 (19.1) la UNI EN 81-21 5.12 vale dove i luoghi non consentono la 5.3.2.1: il software applica la stessa regola"
     },
     {
-      "n": 353,
+      "n": 356,
       "id": "rt.obblighi.rt.rails",
       "gruppo": "Relazione tecnica di modifica: parti sostituite senza un punto proprio della UNI 10411",
       "voce": "Guide nuove o sostituite",
@@ -4275,7 +4311,7 @@
       "nota": "la UNI 10411 non ha un punto per questa parte sostituita da sola: la relazione la valuta con il punto 4 (-11: 4.3) e con i punti dei casi"
     },
     {
-      "n": 354,
+      "n": 357,
       "id": "rt.obblighi.rt.buffers",
       "gruppo": "Relazione tecnica di modifica: parti sostituite senza un punto proprio della UNI 10411",
       "voce": "Ammortizzatori nuovi o sostituiti",
@@ -4287,7 +4323,7 @@
       "nota": "la UNI 10411 non ha un punto per questa parte sostituita da sola: la relazione la valuta con il punto 4 (-11: 4.3) e con i punti dei casi"
     },
     {
-      "n": 355,
+      "n": 358,
       "id": "rt.obblighi.rt.cw",
       "gruppo": "Relazione tecnica di modifica: parti sostituite senza un punto proprio della UNI 10411",
       "voce": "Contrappeso nuovo o modificato",
@@ -4299,7 +4335,7 @@
       "nota": "la UNI 10411 non ha un punto per questa parte sostituita da sola: la relazione la valuta con il punto 4 (-11: 4.3) e con i punti dei casi"
     },
     {
-      "n": 356,
+      "n": 359,
       "id": "rt.obblighi.rt.sling",
       "gruppo": "Relazione tecnica di modifica: parti sostituite senza un punto proprio della UNI 10411",
       "voce": "Arcata nuova (UNI 10411-11)",

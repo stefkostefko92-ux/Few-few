@@ -46,6 +46,9 @@ export interface FuniIn {
   caviQ: number;
   /** the model's «a = 0,5 m/s²» chosen for D.1 (its cell K28) */
   aRidotta: boolean;
+  /** the car's braking deceleration of the calculation [m/s²] (its emergency braking check, Plant.ae): over the last
+   *  band D.1 computes C1 with it (round 52, norm expert's answer 16) */
+  aFrenatura: number;
 }
 
 export interface FuniOut {
@@ -80,11 +83,13 @@ export interface FuniOut {
   pLim: number;
 }
 
-/** The model's «a» of D.1 at the rated speed `v` [m/s²]: by band, 0,5 over the last band or when chosen. */
-export function aModello(v: number, ridotta: boolean): number {
-  if (ridotta) return KR2.d1Ridotta;
+/** The model's «a» of D.1 at the rated speed `v` [m/s²]: by band, 0,5 when chosen; over the last band the car's braking
+ *  deceleration `frenatura` (UNI 10411-1:2024 D.1 computes C1 for the lift there, never under its minimum: the model's
+ *  fixed 0,5 corrected, round 52). */
+export function aModello(v: number, ridotta: boolean, frenatura: number): number {
   const band = KR2.d1Bande.find(([top]) => v <= top + 1e-9);
-  return band ? band[1] : KR2.d1Ridotta;
+  if (!band) return frenatura;
+  return ridotta ? KR2.d1Ridotta : band[1];
 }
 
 /** The larger of two pulls over the smaller (a slack side: infinite). */
@@ -114,7 +119,7 @@ export function funiDi(x: FuniIn): FuniOut {
   const T2 = ((Mcw + Mt2 + compMassCwt) * G) / r;
   const T2p = ((P + Mt2 + compMassCar) * G + cableWeight) / r;
   const T1p = ((Mcw + Mt2) * G + ropeWeight * kRope) / r;
-  const a = aModello(v, x.aRidotta), C1 = Math.max((G + a) / (G - a), c1Min(v)), C2 = c2Of(x.gola), f = fD1(x.gola);
+  const a = aModello(v, x.aRidotta, x.aFrenatura), C1 = a < G ? Math.max((G + a) / (G - a), c1Min(v)) : Infinity, C2 = c2Of(x.gola), f = fD1(x.gola);
   const alfaRad = rad(x.alfa), efa = Math.exp(f * alfaRad);
   const vRope = v * r, Tstat = ((P + Q + Mt2) * G + ropeWeight) / r;
   return {

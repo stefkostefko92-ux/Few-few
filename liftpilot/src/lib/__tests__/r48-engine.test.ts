@@ -22,6 +22,7 @@ import { d1Check, d2Check, d2Di, rapportoChecks } from '../lift/rapporto';
 import { snapshotOf } from '@/calc/snapshot';
 import type { ShaftCheck } from '@/shaft/types';
 import { calcExtra, calcVerdictOf } from '../lift/calc-verdict';
+import { senzaSostituite } from '../lift/sostituite';
 import { analyse } from '../present/analysis';
 import { quickRows } from '../present/quick';
 import { summaryText } from '../present/summary';
@@ -97,17 +98,23 @@ test('T5: l’esito del calcolo conta la D.1 e la D.2 — il caso dei revisori n
   assert.ok(sum.includes(`- ${appIt.shaft.c_tr_d2}: ${calcIt.st_fail} (11,21 MPa / ≤ 8,25 MPa)`), sum);
 });
 
-test('T5: l’esito del calcolo senza il rapporto cambiato, o con la D.1 e la D.2 superate, resta quello del motore', () => {
+test('T5: l’esito del calcolo senza il rapporto cambiato, o con la D.1 e la D.2 superate, resta quello del motore (con il foglio funi, round 52)', () => {
   const V: FormValues = { ...PRESETS.C, context: 'repl', compare: false }, o = carichiOf(V) as Carichi;
   const { I, N } = readInputs(V), res = compute(I, N);
+  const count = (xs: readonly { status: string }[], s: string): number => xs.filter((c) => c.status === s).length;
   for (const C of [collaudoOf(V, { norma: '10411-1', parti: ['machine'] }), collaudoOf(V), collaudoOf(V, { norma: '10411-1', parti: ['machine'], documentato: { Q: o.Q, P: o.P - 100, Mcw: o.Mcw } })]) {
-    const v = calcVerdictOf(res, C, V);
-    assert.equal(v.status, verdictStatus(res));
-    assert.equal(v.fails, res.fails.length);
-    assert.equal(v.warns, res.checks.filter((c) => c.status === 'warn').length);
-    assert.ok(v.extra.every((c) => c.status === 'ok'));
-    assert.equal(arganoLine(report(V, C)).text, `Verifiche dell’argano: ${X.verdictText(res)} — ${calcIt.indicative}`);
+    // the engine's checks (S_f out where z of the rope sheet stands in for it) and the sheet's: D.1 and D.2 of a changed
+    // ratio met, none other added
+    const v = calcVerdictOf(res, C, V), engine = senzaSostituite(res.checks, v.extra);
+    assert.ok(v.extra.filter((c) => c.id.startsWith('tr_')).every((c) => c.status === 'ok'));
+    assert.ok(v.extra.every((c) => c.id.startsWith('tr_') || c.id.startsWith('fm_')));
+    assert.equal(v.fails, count(engine, 'fail') + count(v.extra, 'fail'));
+    assert.equal(v.warns, count(engine, 'warn') + count(v.extra, 'warn'));
+    assert.equal(arganoLine(report(V, C)).text, `Verifiche dell’argano: ${X.countsText(v.fails, v.warns)} — ${calcIt.indicative}`);
   }
+  // a lift tested as new (UNI EN 81-20/50): the engine's alone
+  const nuovo = calcVerdictOf(res, collaudoOf({ ...V, context: 'new' }), V);
+  assert.deepEqual([nuovo.status, nuovo.extra], [verdictStatus(res), []]);
   // only what the test takes: the -11 asks none
   assert.deepEqual(calcExtra(collaudoOf(V, { norma: '10411-11', parti: ['machine'], documentato: { Q: o.Q, P: o.P - 100, Mcw: o.Mcw } }), V), []);
 });

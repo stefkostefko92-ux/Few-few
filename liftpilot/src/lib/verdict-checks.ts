@@ -8,6 +8,7 @@
 import { z } from 'zod';
 import type { Check, CheckId } from '@/calc/types';
 import { AMBITO_VERIFICHE, ambitoOf, type Collaudo } from '@/lib/lift/collaudo';
+import { senzaSostituite, sostituite } from '@/lib/lift/sostituite';
 import { mergeChecks } from '@/shaft/checks';
 import type { ShaftCheck, ShaftCheckId } from '@/shaft/types';
 
@@ -103,24 +104,35 @@ const applies = (C: Collaudo, id: string): boolean => (isCalcCheckId(id) || isSh
 /** The engine version from which a calculation's stored counts take D.1 and D.2 beside its snapshot's checks (round
  *  48, src/lib/lift/calc-verdict.ts); a record saved before counts its snapshot's alone and stays as stored. */
 export const CALC_EXTRA_FROM = '1.8.0';
+/** The engine version from which the counts also take the rope sheet's checks of a modification under UNI 10411-1, S_f
+ *  not counted where z of the sheet stands in for it (round 52, lift/funi-modello.ts, lift/sostituite.ts). */
+export const CALC_FUNI_FROM = '1.9.0';
 const semver = (v: string): number[] | null => { const m = /^(\d+)\.(\d+)\.(\d+)$/.exec(v); return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null; };
-/** Whether a calculation saved with engine `version` counts the extra checks (an unreadable version: no). */
-export function countsExtra(version: string): boolean {
-  const a = semver(version), b = semver(CALC_EXTRA_FROM);
+/** Whether engine `version` is `from` or later (an unreadable version: no). */
+function since(version: string, from: string): boolean {
+  const a = semver(version), b = semver(from);
   if (!a || !b) return false;
   const i = a.findIndex((x, j) => x !== b[j]);
   return i < 0 || (a[i] ?? 0) > (b[i] ?? 0);
 }
+/** Whether a calculation saved with engine `version` counts the extra checks (an unreadable version: no). */
+export const countsExtra = (version: string): boolean => since(version, CALC_EXTRA_FROM);
+/** The extra checks a calculation saved with engine `version` counted: before CALC_FUNI_FROM, D.1 and D.2 of a changed
+ *  ratio alone. */
+export const extraOfVersion = (version: string, extra: readonly ShaftCheck[]): ShaftCheck[] =>
+  since(version, CALC_FUNI_FROM) ? [...extra] : extra.filter((c) => c.id === 'tr_d1' || c.id === 'tr_d2');
 
 /** A calculation: every check of its snapshot (results.res.checks) — failCount the failing ones, warnCount the warning
  *  ones, as saved — and, for one saved from CALC_EXTRA_FROM, the extra checks its verdict counted (D.1 and D.2 with the
- *  ratio of the loads changed: calcExtra of its stored values and test, derived again — no record keeps them). */
+ *  ratio of the loads changed and, from CALC_FUNI_FROM, the rope sheet's: calcExtra of its stored values and test,
+ *  derived again — no record keeps them), without a check of the snapshot one of them stands in for (S_f). */
 export function calcList(results: unknown, extra: readonly ShaftCheck[] = []): CheckList {
   const p = calcResults.safeParse(results);
   if (!p.success) return UNREADABLE;
+  const via = new Set<string>(sostituite(extra));
   const more = extra.filter((c) => isCounted(c.status))
     .map((c): ListedCheck => ({ src: 'shaft', id: c.id, status: c.status === 'fail' ? 'fail' : 'warn', value: c.value, limit: c.limit, dec: c.dec, unit: c.unit }));
-  return split([...counted(p.data.res.checks).map(fromCalcRow), ...more], 'stored');
+  return split([...counted(p.data.res.checks).filter((r) => !via.has(r.id)).map(fromCalcRow), ...more], 'stored');
 }
 
 /** A shaft design: every check of its snapshot (results.checks), as saved. */
@@ -141,7 +153,7 @@ export function roomList(results: unknown, C: Collaudo | null, defs: readonly Sh
  *  calculation's, and the shaft design's merged with those of the beams under the machine). */
 export function liftListDerived(C: Collaudo, calc: readonly Check[], shaft: readonly ShaftCheck[], support: readonly ShaftCheck[]): CheckList {
   const all: ListedCheck[] = [
-    ...calc.filter((c) => isCounted(c.status) && ambitoOf(C, c.id) === 'applies')
+    ...senzaSostituite(calc, support).filter((c) => isCounted(c.status) && ambitoOf(C, c.id) === 'applies')
       .map((c): ListedCheck => ({ src: 'calc', id: c.id, status: c.status === 'fail' ? 'fail' : 'warn', value: c.value, limit: c.limit, dec: c.dec })),
     ...mergeChecks(shaft, support).filter((c) => isCounted(c.status) && ambitoOf(C, c.id) === 'applies')
       .map((c): ListedCheck => ({ src: 'shaft', id: c.id, status: c.status === 'fail' ? 'fail' : 'warn', value: c.value, limit: c.limit, dec: c.dec, unit: c.unit })),

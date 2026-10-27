@@ -26,14 +26,15 @@ const docSha = (doc: ReportDoc<PdfBlock>): string => createHash('sha256').update
 /** The SHA-256 of each fixture's document (its blocks and meta, as rt-hash.ts rtDocSha hashes them) and the RT engine's
  *  version it was pinned at. After an intended change of the document: bump RT_ENGINE_VERSION, then pin again
  *  (RT_DOC_PRINT=1 prints the new values). Round 49 fix step: re-pinned at 1.0.0 — the engine was never released, no RT
- *  issued in production (plan §1.2 names 1.0.0 the first release). */
+ *  issued in production (plan §1.2 names 1.0.0 the first release). Round 52: 1.1.0, the rope sheet's checks in the
+ *  ropes' section. */
 const PINNED = {
-  version: '1.0.0',
+  version: '1.1.0',
   docSha: {
-    'locale-solo-argano': 'fd763562ab3adf248cd87fab7e46904a3b5a69d6561d4c77036ec0bf11c7d843',
-    'locale-solo-argano-p1': '6ef795922260c338ec18e1dc710fbc26e7da994626c319e50644ed186d80c3e6',
-    'vano-ammodernamento-velocita': 'a2f8d0730d1392e8b1fda659d1bb74983d87dd416fcd33740307084a4e9b7188',
-    'vano-ce-carico': '271522534a26adbd18001d2195e2ddada2ed90681c14d0954a2047238912302c',
+    'locale-solo-argano': '586e4d0bef914239f20a5708e4bd958946466216d422127583d01cfe2164fdc6',
+    'locale-solo-argano-p1': '91a57f8ba38d9ba3f8323db54e33a6ba6ef7386f65075d50cce1221a6c1a7366',
+    'vano-ammodernamento-velocita': '1401bbfe22cca46fed7e53739da6dab14b1805b746f866bb6eab57912065859e',
+    'vano-ce-carico': 'cdef461fd06af93915d3452ba8c8408ce1b855b1d722475eaad1af96e2ffd40e',
   } as Readonly<Record<string, string>>,
 };
 

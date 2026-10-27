@@ -11,7 +11,7 @@ import type { SupportLoad } from '@/shaft/support-check';
 import type { Layout } from '@/shaft/types';
 import { slingCheck } from '../lift/arcata';
 import { calcVerdictOf, type CalcVerdict } from '../lift/calc-verdict';
-import { rapportoChecks } from '../lift/rapporto';
+import { verificheModifica } from '../lift/funi-modello';
 import { belowChecks } from '../lift/below-checks';
 import { bottomGeo, sheaveHalfBelow, type BottomScheme } from '../lift/bottom';
 import type { Collaudo } from '../lift/collaudo';
@@ -71,9 +71,10 @@ export function designMachine(r: ReportInput, a: Analysis, C: Collaudo, m: Value
   // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2), as the design's verdict takes it
   if (I.context === 'repl' && L?.inputs.room && !scheme) beams.push(existingRoomCheck(L.inputs.room));
   // the existing sling under a new car or rated load (arcata.ts), as the design's verdict takes it; D.1 and D.2 with the
-  // ratio of the loads changed under UNI 10411-1 (rapporto.ts), with a design or without: the calculation's own
+  // ratio of the loads changed under UNI 10411-1 (rapporto.ts) and the rope sheet's checks (funi-modello.ts), with a
+  // design or without: the calculation's own
   const sling = slingCheck(C, carichiOf(r.values));
   if (L && sling) beams.push(sling);
-  beams.push(...rapportoChecks(C, r.values));
+  beams.push(...verificheModifica(C, r.values));
   return { machine, weighed, scheme, L, rope, ld, bed, beams, calc: calcVerdictOf(res, C, r.values) };
 }

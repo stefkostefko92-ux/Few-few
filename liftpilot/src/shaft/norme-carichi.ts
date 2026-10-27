@@ -1,7 +1,8 @@
 // The shaft registry's entries of a modification that changes the loads (round 48: split from norme-vert.ts, kept in
 // their place in VOCI_VERT): the existing sling under a new car or rated load (arcata.ts), and the changed ratio of the
 // suspended loads under UNI 10411-1 6.1 — D.1, the stability against slipping, and D.2, the specific pressure in the
-// grooves (lift/rapporto.ts). In our words, with the clause numbers and values only.
+// grooves (lift/rapporto.ts); round 52, the ropes of a modification under UNI 10411-1 as the owner's rope sheet checks
+// them (lift/funi-modello.ts). In our words, with the clause numbers and values only.
 import { K } from '../calc/norme';
 import { letto } from '../calc/norme-fonti';
 import type { VoceVano } from './norme';
@@ -41,5 +42,34 @@ export const VOCI_CARICHI: readonly VoceVano[] = [
     verifiche: ['tr_d2'], rifFuoriNorma: 'UNI 10411-1:2024, 6.1 e D.2 (verifica della sola UNI 10411-1)',
     nota: 'gola a V con sottosquadro: la D.2 non ha una formula; il maggiore dei due valori è una scelta del software (voce gole.pressione), '
       + 'da confermare con il soggetto della verifica',
+  },
+  {
+    id: 'funi.modello.z', gruppo: 'carichi', titolo: 'Funi della modifica (UNI 10411-1) come nel foglio funi: coefficiente di sicurezza z',
+    valore: `nella modifica secondo la UNI 10411-1 con funi o argano sostituiti, carico o velocità variati, z = carico di rottura minimo / tiro della fune `
+      + `più caricata (cabina con la portata al piano più basso, funi e mezza massa della compensazione) almeno ${K.sfMin3} con tre o più funi, `
+      + `${K.sfMin2} con due, solo con la pressione specifica della D.2 verificata (voce funi.modello.d1d2): allora sostituisce il coefficiente S_f `
+      + 'della UNI EN 81-50, 5.12, che non viene conteggiato; con la D.2 non verificata vale S_f',
+    riferimento: 'UNI EN 81-20:2020, 5.5.2.2; UNI 10411-1:2024, 14.1 c) e d)', fonte: `${letto('UNI EN 81-20:2020', 'pp. 74–75')}; ${letto('UNI 10411-1:2024', 'p. 13')}`,
+    stato: 'confermato', verifiche: ['fm_z'], rifFuoriNorma: 'UNI 10411-1:2024, 14.1 c) e d) (verifica della sola UNI 10411-1)',
+    nota: 'come il foglio funi della relazione tecnica (rt2.funi.*); calcolo con le masse della compensazione e del cavo flessibile del foglio',
+  },
+  {
+    id: 'funi.modello.d1d2', gruppo: 'carichi', titolo: 'Funi della modifica (UNI 10411-1) come nel foglio funi: D.1 e D.2',
+    valore: 'nella stessa modifica della voce funi.modello.z, la D.1 nei suoi due casi (cabina in basso con 1,25·Q, cabina vuota in alto), con C1 '
+      + 'mai sotto il minimo della fascia di velocità, la compensazione e il cavo flessibile nei tiri: esito il caso peggiore, (T1/T2)·C1·C2 al '
+      + 'massimo e^(f·α); la D.2 con la cabina caricata con la portata, p al massimo il limite (12,5 + 4·v_c)/(1 + v_c) per il fattore del foglio '
+      + '(voce rt2.funi.d2). Solo con il rapporto tra i carichi come documentato (con il rapporto cambiato contano la D.1 e la D.2 delle voci '
+      + 'rapporto.d1 e rapporto.d2): la D.1 non soddisfatta è «Attenzione», la D.2 decide solo tra z e S_f (voce funi.modello.z) e il suo esito è '
+      + 'un’informazione',
+    riferimento: 'UNI 10411-1:2024, D.1 e D.2', fonte: letto('UNI 10411-1:2024', 'pp. 33–34'), stato: 'confermato',
+    verifiche: ['fm_d1', 'fm_d2'], rifFuoriNorma: 'UNI 10411-1:2024, D.1 e D.2 (verifica della sola UNI 10411-1)',
+    nota: 'il foglio funi calcola la D.1 e la D.2 sempre e le dice «non verificate» anche dove la 6.1 non le chiede: corretto in avviso e informazione',
+  },
+  {
+    id: 'funi.modello.comp', gruppo: 'carichi', titolo: 'Funi della modifica (UNI 10411-1) come nel foglio funi: puleggia tenditrice della compensazione',
+    valore: 'con funi di compensazione, il diametro primitivo della puleggia tenditrice almeno 30 volte quello della fune di compensazione '
+      + '(voce rt2.funi.comp); le catene non hanno questa verifica',
+    riferimento: 'UNI EN 81-20:2020, 5.5.6.2 c)', fonte: letto('UNI EN 81-20:2020', 'p. 76'), stato: 'confermato',
+    verifiche: ['fm_comp'], rifFuoriNorma: 'UNI EN 81-20:2020, 5.5.6.2 c) (verifica del foglio funi della UNI 10411-1)',
   },
 ];

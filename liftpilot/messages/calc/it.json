@@ -264,6 +264,7 @@
   "col_brake": "Freno/gruppo",
   "col_shaftk": "Albero",
   "v_prop": "Proposta del software",
+  "v_sfz": "S_f (UNI EN 81-50, 5.12) non conteggiato: con la pressione specifica della D.2 verificata vale z ≥ 12 (16 con due funi), come nel foglio funi della relazione tecnica (UNI 10411-1:2024, 14.1 c) e d)).",
   "print_saved": "File salvato: aprilo per stampare.",
   "print_opened": "Riepilogo aperto in una nuova scheda: parte la stampa.",
   "print_declined": "Salvataggio annullato.",

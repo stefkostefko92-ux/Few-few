@@ -15,7 +15,7 @@ import { SITO_RT, sito } from './punti';
 /** The design's checks of the counterweight, printed in its section. */
 export const ID_CONTRAPPESO: readonly ShaftCheckId[] = ['h_cw', 'p_screen', 'p_screenlo', 'p_screenw', 'v_cw', 'v_cwlen', 'v_niche', 'h_cwgap', 'v_staffa'];
 /** The design's checks other sections print: the car's area, the buffers', the governor's, the doors', the counterweight's. */
-const ALTROVE: readonly ShaftCheckId[] = ['v_area', 'b_type', 'b_car', 'b_cw', 'sl_frame', 'tr_d1', 'tr_d2', ...ID_LIMITATORE, ...ID_PORTE, ...ID_CONTRAPPESO];
+const ALTROVE: readonly ShaftCheckId[] = ['v_area', 'b_type', 'b_car', 'b_cw', 'sl_frame', 'tr_d1', 'tr_d2', 'fm_z', 'fm_d1', 'fm_d2', 'fm_comp', ...ID_LIMITATORE, ...ID_PORTE, ...ID_CONTRAPPESO];
 
 export function contrappeso(x: RtCtx): EsitoSezione {
   const L = x.base.path === 'vano', checks = L ? conId(x.base.lift?.checks ?? [], ID_CONTRAPPESO).map((c) => daVano(x, c, 'contrappeso')) : [];

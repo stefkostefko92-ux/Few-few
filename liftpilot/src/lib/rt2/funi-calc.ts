@@ -53,7 +53,7 @@ export function funiDaCalcolo(V: FormValues): FuniCalcolo | null {
   const input: FuniIn = {
     n: N.n, d: N.d, MBL: N.Fmin * 1000, qf: N.qf, S: fune?.S ?? null, Q: car.Q, P: car.P, Mcw: car.Mcw, H: I.H, r: tagliaDi(V), v: I.v,
     locale: localeDi(V), D: N.D, gola: N.groove, alfa: Math.min(wa.B, wa.T), comp: compDi(V),
-    caviQ: numero(V.caviQ) ?? KR2.caviMassa, aRidotta: !!V.aRidotta,
+    caviQ: numero(V.caviQ) ?? KR2.caviMassa, aRidotta: !!V.aRidotta, aFrenatura: I.ae,
   };
   return { input, out: funiDi(input), fune };
 }

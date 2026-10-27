@@ -29,7 +29,7 @@ const GOLA: Readonly<Record<string, string>> = {
 function calcola(ctx: ContestoRt2, x: DatiRt2): EsitoRt2 {
   const f = funiDaCalcolo(ctx.calc.V);
   if (!f) return { verifiche: [], mancanti: [...mancantiCampi(CAMPI, x, ctx), 'calcolo.funi'], valori: {}, avvisi: [] };
-  const o = f.out, verifiche = verificheFuni(f.input, o, ctx.calc.V, ctx.calc.res, ctx.norma);
+  const o = f.out, verifiche = verificheFuni(f.input, o, ctx.calc.V, ctx.calc.res, ctx.norma, ctx.carico?.rapporto ?? false);
   const S = f.fune?.S ?? num(x, 'sezione');
   return {
     verifiche, mancanti: mancantiCampi(CAMPI, x, ctx), avvisi: [],

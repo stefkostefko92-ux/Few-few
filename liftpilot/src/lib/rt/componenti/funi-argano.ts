@@ -4,7 +4,8 @@
 // each with its clauses and its scope by the base's test. Pure.
 import type { Check } from '@/calc/types';
 import { ropesKept } from '../../lift/collaudo';
-import { rapportoChecks } from '../../lift/rapporto';
+import { verificheModifica } from '../../lift/funi-modello';
+import { senzaSostituite } from '../../lift/sostituite';
 import { calcMachine } from '../../order/machine';
 import { daCalcolo, daVano, dato, mancantiDi, nuova, type RtCtx } from './comune';
 import type { EsitoSezione } from './esito';
@@ -14,7 +15,9 @@ export const diFuni = (c: Pick<Check, 'id'>): boolean => c.id.startsWith('tr_') 
 
 export function funi(x: RtCtx): EsitoSezione {
   const { res } = x.base.analysis, { I, N } = x.base.analysis.ctx;
-  const checks = [...res.checks.filter(diFuni).map((c) => daCalcolo(x, c, 'funi')), ...rapportoChecks(x.base.collaudo, x.base.values).map((c) => daVano(x, c, 'funi'))];
+  // D.1 and D.2 of a changed ratio and the rope sheet's checks (round 52), S_f out where z of the sheet stands in for it
+  const extra = verificheModifica(x.base.collaudo, x.base.values);
+  const checks = [...senzaSostituite(res.checks.filter(diFuni), extra).map((c) => daCalcolo(x, c, 'funi')), ...extra.map((c) => daVano(x, c, 'funi'))];
   const stato = ropesKept(x.base.collaudo, x.base.values) ? 'esistente' : 'nuovo';
   const dati = [dato('numeroFuni', N.n, '', 0, stato, 'calcolo'), dato('diametroFuni', N.d, 'mm', 1, stato, 'calcolo'), dato('tiro', I.r, '', 0, stato, 'calcolo')];
   return { componente: { sezione: 'funi', stato, dati }, checks, punti: [], mancanti: mancantiDi('funi', checks) };

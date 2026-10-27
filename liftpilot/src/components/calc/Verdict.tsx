@@ -3,11 +3,13 @@
 // `resta`: its name) verifies it as it is: no proposal, the result under the kept machine's name. The result is the
 // calculation's own (round 48, calc-verdict.ts): with the ratio of the loads changed, D.1 and D.2 (`extra`) are counted
 // in it and named beside the engine's checks, each with its value against its limit (D.2's pressure in N/mm², the unit
-// of the relazione's table — the check carries MPa, the same number).
+// of the relazione's table — the check carries MPa, the same number). Round 52: under UNI 10411-1 the rope sheet's checks
+// too, and S_f not counted where z of the sheet stands in for it (a note says so when S_f is not met).
 import { useTranslations } from 'next-intl';
 import type { Check } from '@/calc/types';
 import Icon, { type IconName } from '@/components/Icon';
 import { calcVerdict } from '@/lib/lift/calc-verdict';
+import { senzaSostituite } from '@/lib/lift/sostituite';
 import type { Analysis } from '@/lib/present/analysis';
 import { verdictStatus, worstTraction, type Texts } from '@/lib/present/texts';
 import type { Pres } from '@/lib/present/tr';
@@ -34,7 +36,9 @@ export default function Verdict({ id, P, X, a, badCount, resta, extra = [] }: {
   const { t, fmt } = P, ts = useTranslations('shaft');
   const { res, old, sizing, sens } = a;
   const v = calcVerdict(res, extra);
-  const warns = res.checks.filter((c) => c.status === 'warn');
+  // compute()'s checks an extra one stands in for (S_f with z of the rope sheet, round 52) are not counted nor listed
+  const fails = senzaSostituite(res.fails, extra), warns = senzaSostituite(res.checks, extra).filter((c) => c.status === 'warn');
+  const sfz = v.sostituite.includes('r_sfa') && res.checks.some((c) => c.id === 'r_sfa' && c.status !== 'ok');
   const pills = (list: readonly Check[], status: 'fail' | 'warn') => list.map((c) => <Pill key={c.id} status={status}>{X.checkLabel(c.id)}</Pill>);
   // D.1 and D.2 under their names of the shaft's checks (messages shaft c_tr_d1, c_tr_d2), with their figures
   const more = (status: 'fail' | 'warn') => extra.filter((c) => c.status === status).map((c) => {
@@ -62,8 +66,9 @@ export default function Verdict({ id, P, X, a, badCount, resta, extra = [] }: {
       )}
       <div className="eyebrow">{resta ?? t('g_new')} · {t('indicative')}</div>
       <div className={`big ${badCount ? 'warn' : CLASS[v.status]}`}>{head}</div>
-      {res.fails.length || extraFails ? <div className="fails">{pills(res.fails, 'fail')}{more('fail')}</div> : null}
+      {fails.length || extraFails ? <div className="fails">{pills(fails, 'fail')}{more('fail')}</div> : null}
       {warns.length || extraWarns ? <div className="fails"><span className="note">{t('k_warns')}:</span>{pills(warns, 'warn')}{more('warn')}</div> : null}
+      {sfz ? <div className="note">{t('v_sfz')}</div> : null}
       <div className="kpis">
         {kpi('gauge', t('k_speed'), `${fmt(res.kin.vReal, 3)} m/s`, `${fmt(res.kin.fRated, 2)} Hz`)}
         {kpi('rope', t('k_trac'), fmt(worstTraction(res), 3))}

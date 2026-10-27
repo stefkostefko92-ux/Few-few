@@ -14,7 +14,7 @@ const near = (a: number, b: number, rel = 1e-9, msg = ''): void => assert.ok(Mat
 
 const B: FuniIn = {
   n: 4, d: 10, MBL: 46000, qf: 0.34, S: 36.5, Q: 630, P: 900, Mcw: 1215, H: 20, r: 1, v: 1, locale: 'alto', D: 500,
-  gola: { type: 'VH', beta: 0, gamma: 40 }, alfa: 180, comp: { tipo: 'nessuna', d: 0, n: 0, q: 0, Mt: 0, Dt: 0, soloCwt: false }, caviQ: 0.8, aRidotta: false,
+  gola: { type: 'VH', beta: 0, gamma: 40 }, alfa: 180, comp: { tipo: 'nessuna', d: 0, n: 0, q: 0, Mt: 0, Dt: 0, soloCwt: false }, caviQ: 0.8, aRidotta: false, aFrenatura: 0.5,
 };
 
 test('rt2-funi: il vettore B del modello (LibreOffice) dove nessuna correzione cambia il valore', () => {
@@ -47,6 +47,15 @@ test('rt2-funi: correzioni — cavo flessibile per g, C1 mai sotto il minimo, f 
   near(heavy.ratioLow, heavy.C1 * heavy.C2 * (heavy.T2 / heavy.T1), 1e-12, 'ratio');
 });
 
+test('rt2-funi: oltre 2,5 m/s C1 dalla decelerazione di frenatura, mai sotto 1,25 (risposta 16 dell’esperto norme)', () => {
+  const g = 9.81;
+  near(funiDi({ ...B, v: 3, aFrenatura: 1 }).C1, 1.25, 1e-12, 'C1 minimo');
+  near(funiDi({ ...B, v: 3, aFrenatura: 1.5 }).C1, (g + 1.5) / (g - 1.5), 1e-12, 'C1 dalla frenatura');
+  // the model's reduced 0,5 m/s² does not apply over the last band
+  near(funiDi({ ...B, v: 3, aFrenatura: 1.5, aRidotta: true }).a, 1.5, 1e-12, 'a');
+  near(funiDi({ ...B, v: 2.5, aFrenatura: 1.5 }).a, 1.25, 1e-12, 'ultima fascia');
+});
+
 test('rt2-funi: dai valori del calcolo e la pagina stampata', () => {
   const ctx = ctxDi();
   const f = funiDaCalcolo(ctx.calc.V);
@@ -54,7 +63,11 @@ test('rt2-funi: dai valori del calcolo e la pagina stampata', () => {
   near(f.out.Ctot, 15276.132, 1e-9, 'Ctot dal calcolo');
   const e = FUNI.calcola(ctx, {});
   assert.ok(e.verifiche.some((v) => v.id === 'funi.z' && v.esito === 'ok'));
-  assert.equal(e.verifiche.find((v) => v.id === 'funi.d2')?.esito, 'fail', 'D.2 non verificata nel vettore B');
+  // D.2 not met in vector B: with the ratio as documented it only decides between z and S_f (information), the D.1 not
+  // met would be «Attenzione»; with the ratio changed both are checks (UNI 10411-1 6.1)
+  assert.equal(e.verifiche.find((v) => v.id === 'funi.d2')?.esito, 'info', 'D.2 non verificata nel vettore B: vale S_f');
+  const cambiato = FUNI.calcola(ctxDi({ collaudo: { documentato: { Q: 630, P: 900, Mcw: 1500 } } }), {});
+  assert.equal(cambiato.verifiche.find((v) => v.id === 'funi.d2')?.esito, 'fail', 'D.2 con il rapporto cambiato');
   const blocks = FUNI.pagine(ctx, {}, e, { titolo: 'Documentazione', norma: 'UNI 10411-1:2024' });
   const text = JSON.stringify(blocks);
   assert.ok(text.includes('Stabilità allo scorrimento:') && text.includes('Pressione specifica limite'));

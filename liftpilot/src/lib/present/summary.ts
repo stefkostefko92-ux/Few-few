@@ -6,6 +6,7 @@ import { quickRows } from './quick';
 import { worstTraction, type Texts } from './texts';
 import type { CalcKey, Pres } from './tr';
 import { calcVerdict } from '../lift/calc-verdict';
+import { senzaSostituite } from '../lift/sostituite';
 import type { Collaudo } from '../lift/collaudo';
 import type { TipoIntervento } from '../lift/intervento';
 import { contestoKey } from '../report/intervento-text';
@@ -34,13 +35,14 @@ export function summaryText(P: Pres, X: Texts, a: Analysis, opts: {
   L.push(`${t('v_prop')}: ${sizing.pick ? X.proposalShort(sizing.pick) : X.noneText(sizing)}`);
   if (sizing.pick) for (const [k, v] of X.proposalRows(sizing.pick, N, a.hold, !!sizing.keep)) L.push(`  ${k}: ${v}`);
   const extra = opts.extra ?? [], v = calcVerdict(res, extra);
-  const failed = [...res.fails.map((c) => X.checkLabel(c.id)), ...extra.filter((c) => c.status === 'fail').map((c) => c.label)];
+  const failed = [...senzaSostituite(res.fails, extra).map((c) => X.checkLabel(c.id)), ...extra.filter((c) => c.status === 'fail').map((c) => c.label)];
   L.push(`${t('g_new')}: ${X.countsText(v.fails, v.warns)}${failed.length ? ': ' + failed.join('; ') : ''}`);
   for (const q of quickRows(P, X, N, res, sens)) L.push(`  ${t(q.key)} — ${X.st(q.status)}: ${q.text}`);
   for (const c of res.checks) {
     const val = c.value == null ? '' : ` (${X.checkValue(c, N)}${c.limit != null ? ' / ' + X.checkLimit(c, N) : ''})`;
     L.push(`- ${X.checkText(c)}: ${X.st(c.status)}${val}`);
   }
+  if (v.sostituite.includes('r_sfa')) L.push(`  ${t('v_sfz')}`);
   for (const c of extra) {
     const unit = c.unit ? ` ${c.unit}` : '', val = c.value == null ? '' : ` (${shownValue(c, fmt)}${unit}${c.limit != null ? ` / ${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)}${unit}` : ''})`;
     L.push(`- ${c.label}: ${X.st(c.status)}${val}`);

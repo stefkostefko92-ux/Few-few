@@ -101,8 +101,8 @@ test('calcolo da un progetto del vano: pianta in scala, verifiche in pianta, voc
   // one row for each check of the shaft, then those that need the machine as the design's verdict takes them: B has it
   // below with the head pulleys under the slab — the runs behind the counterweight (m_runs), its room (m_height, m_panel
   // and m_door in place of those of the room over the shaft, then m_fit, m_free, m_quadro and m_route) and the car's top
-  // under the pulleys (h_top)
-  assert.ok(checks && checks.t === 'grid' && checks.rows.length === L.checks.length + 6 && checks.rows.every((r) => r[4]), 'una riga per verifica, con riferimento');
+  // under the pulleys (h_top); B is a «Solo argano» under UNI 10411-1: the rope sheet's z, D.1 and D.2 too (round 52)
+  assert.ok(checks && checks.t === 'grid' && checks.rows.length === L.checks.length + 6 + 3 && checks.rows.every((r) => r[4]), 'una riga per verifica, con riferimento');
   assert.ok(['Parte più alta della cabina', 'L’argano sta nel locale: distanza minima da muri e soffitto'].every((x) => checks.rows.some((r) => r[0].startsWith(x))), 'il locale della macchina in basso');
   assert.ok(checks.rows.some((r) => r[0] === 'Superficie entro la portata' && r[4].startsWith('UNI EN 81-20:2020, 5.4.2.1')), 'riferimento della superficie');
   const all = texts(same);
