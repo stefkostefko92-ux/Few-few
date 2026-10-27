@@ -1255,7 +1255,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 616
+        "lessons": 618
       },
       "evolution": [
         {
@@ -2403,9 +2403,20 @@
           "date": "2026-10-27",
           "event": "v49.8 — учене",
           "detail": "Научи: В FiveM approveSubmissionAction поема съществуващ листинг само по публичния cfx код или… (+2 още)"
+        },
+        {
+          "version": "50.0.0",
+          "date": "2026-10-27",
+          "event": "v50.0 — учене",
+          "detail": "Научи: .pr-review/137.diff (erp-ascensori) е отрязан на 41 от 496 файла (последен docs/legale/… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „.pr-review/137.diff (erp-ascensori) е отрязан на 41 от 496 файла (последен docs/legale/…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
