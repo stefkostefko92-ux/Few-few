@@ -1200,7 +1200,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 563
+        "lessons": 565
       },
       "evolution": [
         {
@@ -2156,9 +2156,20 @@
           "date": "2026-10-27",
           "event": "v44.5 — учене",
           "detail": "Научи: medqr прилага CSRF глобално (app.use(csrf) на server.js:184, преди маршрутите на 293-29… (+1 още)"
+        },
+        {
+          "version": "44.7.0",
+          "date": "2026-10-27",
+          "event": "v44.7 — учене",
+          "detail": "Научи: PR 318 (zabobovdol) .pr-review/318.diff съдържа само .claude и agents-dashboard, без пр… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „PR 318 (zabobovdol) .pr-review/318.diff съдържа само .claude и agents-dashboard, без пр…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
