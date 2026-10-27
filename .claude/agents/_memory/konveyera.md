@@ -9,6 +9,7 @@
 Специалност: **CI/CD и GitHub автоматизация** — бързи, зелени, сигурни конвейери за монорепото.
 Версии на actions и лимити са време-чувствителни → потвърждавай на живо преди цитиране.
 ## Проверени поуки (verified)
+- **2026-10-27:** В репото няма пиннат по SHA actions/setup-node (само checkout 11bd7190…, v4.2.2); SHA на setup-node изисква жива сверка, не се измисля. _(пинване на setup-node в продуктови workflow-и; verified; Grep actions/setup-node@[0-9a-f]{40} в .github/workflows → без съвпадения, 2026-10-27)_
 - **2026-10-27:** cspos.yml:87 (softprops v2.6.2) и android.yml:52 (android-actions v3.2.2) вече са пинати по SHA; остарява старата поука, че softprops е по таг. Подвижен @v4 остава за официалните actions/* в около 28 workflow-а. _(ревю на supply-chain пиновете; сверявай с актуалния grep; verified; Grep "uses: <owner>/" в .github/workflows, 2026-10-27)_
 - **2026-10-27:** В .github/workflows няма pull_request_target, write-all или PR-head checkout; persist-credentials:false има само в security.yml и supremediscordbot.yml. _(състояние на репото към 2026-10-27; verified; Grep pull_request_target|write-all|persist-credentials в .github/, 2026-10-27)_
 - **2026-10-27:** cs2dm.yml (нов в PR 321) ползва actions по таг @v4 без persist-credentials:false, а gate-ът вика ../tools/vps/deploy-check.mjs извън paths филтъра на workflow-а. _(преглед на PR 321 / cs2dm CI; verified; .github/workflows/cs2dm.yml:32-48,5-11; cs2dm/package.json:22)_
