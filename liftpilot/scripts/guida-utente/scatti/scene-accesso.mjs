@@ -59,11 +59,11 @@ export async function company() {
   await o.page.click('main form button[type="submit"]');
   await o.page.waitForSelector('.alert-ok');
   await goto(o.page, '/it/app');
-  await hydrated(o.page, 'main form:has(input[name="clauses"]) button');
+  await hydrated(o.page, 'main form:has(input[name="clauses"]) button[type="submit"]');
   for (const k of ['accept', 'business', 'drafts', 'clauses']) await o.page.check(`main input[name="${k}"]`);
   await o.page.fill('main form:has(input[name="clauses"]) input[name="password"]', PEOPLE.owner.password);
   await shot('app-terms', o.page, { clip: { x: 0, y: 0, width: 1440, height: 1050 } });
-  await o.page.click('main form:has(input[name="clauses"]) button');
+  await o.page.click('main form:has(input[name="clauses"]) button[type="submit"]');
   await o.page.waitForSelector('main form:has(input[name="clauses"])', { state: 'detached' });
   adopt('owner', o, PEOPLE.owner.password);
 

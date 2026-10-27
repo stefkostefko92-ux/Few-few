@@ -116,6 +116,14 @@ export function adopt(who, s, password) {
 // ── small steps every scene uses ───────────────────────────────────────────────────────────────────────────────────────
 export const text = async (loc) => ((await loc.first().textContent()) ?? '').trim();
 export const goto = async (page, path) => { await page.goto(path.startsWith('http') ? path : `${BASE}${path}`); };
+/** The interface's mode (round 52) from the top bar's switch, kept with the user: «semplice» or «esperto». */
+export async function modalita(page, m) {
+  if (await page.locator(`[data-modalita="${m}"]`).count()) return;
+  await hydrated(page, `#ws-mode-${m}`);
+  await page.click(`label[for="ws-mode-${m}"]`);
+  await page.waitForSelector(`[data-modalita="${m}"]`);
+  await page.waitForTimeout(400);
+}
 /** The link of an e-mail to /it/<path>, its token in the fragment. */
 export const linkIn = (mail, path) => {
   const m = new RegExp(`https?://[^\\s"<>]+/it/${path}#([A-Za-z0-9_-]{43})`).exec(mail.text);

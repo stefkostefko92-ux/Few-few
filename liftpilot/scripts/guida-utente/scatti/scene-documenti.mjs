@@ -2,7 +2,7 @@
 // revision, the relazione tecnica di modifica), its page compared with its survey, the lists and the home.
 import assert from 'node:assert/strict';
 import { step } from '../../smoke-kit.mjs';
-import { BASE, COMPANY, S, TESTER, as, fresh, goto, hydrated, skip } from './ambiente.mjs';
+import { BASE, COMPANY, S, TESTER, as, fresh, goto, hydrated, modalita, skip } from './ambiente.mjs';
 import { demoPdf, logoPng, platePng } from './disegni.mjs';
 import { FORM, saveCalc, saveSheet } from './scene-rilievi.mjs';
 import { shot, wideClip } from './scatto.mjs';
@@ -21,8 +21,11 @@ export async function p1docs() {
   await page.waitForSelector('.logo-preview img');
   const closeAll = () => page.evaluate(() => globalThis.document.querySelectorAll('.plant-form details').forEach((d) => { d.open = false; }));
   await closeAll();
+  // the label sits beside its control (round 52: the «?» next to it), both in the field; the optional fields are the
+  // expert's: shown in «Esperto», the mode set back to «Semplice» after
+  await modalita(page, 'esperto');
   const fillLabel = async (label, value) => {
-    const f = page.locator(`.plant-form label:has-text("${label}")`).first();
+    const f = page.locator(`.plant-form .field:has(label:has-text("${label}"))`).first();
     const sel = f.locator('select');
     if (await sel.count()) await sel.selectOption({ index: value });
     else await f.locator('input').fill(String(value));
@@ -37,6 +40,7 @@ export async function p1docs() {
   await page.click('.plant-form button[type="submit"]');
   await page.waitForSelector('.plant-form [role="status"]');
   await closeAll();
+  await modalita(page, 'semplice');
   await shot('dati-impianto-pagina', page, { clip: { x: 0, y: 0, width: 1440, height: 1500 } });
 
   // the drawing set issued from the saved design, then a revision and the part of the page with the CAD files
@@ -56,7 +60,7 @@ export async function p1docs() {
 }
 
 export async function rt() {
-  step('relazione tecnica di modifica: registry, documents, description and signatures, issue');
+  step('relazione tecnica di modifica: registry, documents, the steps, the components, signatures and issue');
   const { page, errors } = await as('chief');
   const ws = `${S.p1}/relazione-tecnica`, projectId = S.p1.split('/').pop();
   await goto(page, ws);
@@ -75,17 +79,28 @@ export async function rt() {
     ['targa-argano.png', 'image/png', platePng(), { kind: 'FOTO', title: 'Targa dell’argano', component: 'argano' }],
   ]) assert.ok([200, 201].includes((await post({ name, mimeType, buffer }, fields)).status()), name);
   await goto(page, ws);
-  await hydrated(page, '#rt-descr');
-  await page.waitForSelector('#rt-allegati ol.rt-ordine li');
-  await page.click('#rt-allegati button[aria-label^="Allega «Targa dell’argano»"]').catch(() => undefined);
-  await page.fill('#rt-descr', 'Sostituzione dell’argano esistente con un argano a ingranaggi nuovo; quadro e funi come nel Calcolo argano.');
-  await page.selectOption('#rt-ver-tit', 'Ing.');
-  await page.fill('#rt-ver-nome', 'Laura Bianchi');
-  await page.fill('#rt-ver-prov', 'Bergamo');
-  await page.fill('#rt-ver-num', 'A1234');
-  await page.waitForFunction(() => /Bozza (salvata|ripresa)/.test(globalThis.document.querySelector('.rt-bar .draft-bar')?.textContent ?? ''), null, { timeout: 20000 });
-  await page.waitForFunction(() => /Riepilogo aggiornato/.test(globalThis.document.querySelector('.rt-live')?.textContent ?? ''), null, { timeout: 20000 }).catch(() => undefined);
-  await shot('rt-esito', page, { tall: 2600, clipFn: () => wideClip(page, [page.locator('.rt-bar'), page.locator('#rt-modifica')], 16, 290, 1150) });
+  await hydrated(page, '#rt2-generale select');
+  // the bar of the steps with what each still needs, over «Dati generali» before it is filled
+  await shot('rt2-passi', page, { tall: 2600, clipFn: () => wideClip(page, [page.locator('.rt-bar'), page.locator('#rt2-generale')], 16, 290, 1150) });
+  const g = page.locator('#rt2-generale');
+  await g.getByLabel('Ascensore di costruzione:', { exact: true }).fill('Elevatori Esempio');
+  await g.getByLabel('Utenti autorizzati ed esperti:', { exact: true }).selectOption('no');
+  await g.getByLabel('Ascensorista :', { exact: true }).fill(COMPANY);
+  await g.getByLabel('Commessa :', { exact: true }).fill('26-015');
+  await g.getByLabel('Componenti modificati o tipologia modifica:', { exact: true })
+    .fill('Sostituzione dell’argano esistente con un argano a ingranaggi nuovo; quadro e funi come nel Calcolo argano.');
+  await page.locator('#rt2-allegati ol.rt2-dich li:has-text("Targa dell’argano") input').check().catch(() => undefined);
+  // every component field still to fill (the guide's example data)
+  const need = page.locator('[data-rt="workspace2"] section.rt-card:not(#rt2-generale):not(#rt2-firme) .field.need');
+  for (let i = 0; i < 40 && await need.count(); i++) {
+    const f = need.first(), sel = f.locator('select'), num = f.locator('input[type="number"]');
+    if (await sel.count()) await sel.selectOption((await sel.locator('option').nth(1).getAttribute('value')) ?? '');
+    else if (await num.count()) await num.fill((await num.getAttribute('min')) ?? '1');
+    else await f.locator('input, textarea').first().fill('Dato dell’esempio');
+  }
+  // the components with their reasons, and the first component's card with its checks
+  const first = page.locator('[data-rt="workspace2"] section.rt-card[id^="rt2-"]:not(#rt2-generale):not(#rt2-tecnici):not(#rt2-componenti):not(#rt2-allegati):not(#rt2-firme)').first();
+  await shot('rt2-componenti', page, { tall: 3200, clipFn: () => wideClip(page, [page.locator('#rt2-componenti'), first], 16, 290, 1150) });
   const docs = page.locator('section[data-allegati="panel"]');
   await docs.scrollIntoViewIfNeeded();
   await shot('allegati-pannello', docs, { pad: 12 });
@@ -95,17 +110,24 @@ export async function rt() {
   if (await del.count()) await del.last().click();
   await shot('allegati-modifica', docs, { pad: 12 });
   await docs.locator('button:has-text("Annulla")').first().click().catch(() => undefined);
-  // the issue: its confirmation, then the issued relazione
-  await goto(page, ws);
-  await hydrated(page, '#rt-firme button.btn-primary');
-  const emit = page.locator('#rt-firme button.btn-primary:has-text("Emetti la relazione")');
-  if (await emit.isDisabled()) throw new Error(`the issue is blocked: ${await page.locator('#rt-bloccanti').innerText()}`);
+  // the engineer who verifies it, then the issue with its confirmation
+  const ver = page.locator('#rt2-firme .rt2-campi').nth(1);
+  await ver.getByLabel('Titolo', { exact: true }).selectOption('Ing.');
+  await ver.getByLabel('Nome e cognome', { exact: true }).fill('Laura Bianchi');
+  await ver.getByLabel('Provincia dell’Ordine', { exact: true }).fill('Bergamo');
+  await ver.getByLabel('Numero di iscrizione', { exact: true }).fill('A1234');
+  await page.waitForFunction(() => /Bozza (salvata|ripresa)/.test(globalThis.document.querySelector('.rt-bar .draft-bar')?.textContent ?? ''), null, { timeout: 20000 });
+  const emit = page.locator('#rt2-firme button.btn-primary:has-text("Emetti la relazione")');
+  if (await emit.isDisabled()) throw new Error(`the issue is blocked: ${await page.locator('#rt2-firme .rt-mancanti').innerText()}`);
+  const conferma = page.locator('#rt2-firme [role="alertdialog"]');
   await emit.click();
-  await page.waitForSelector('dialog.rt-dialog[open]');
-  await shot('rt-firme', page);
-  await Promise.all([page.waitForURL(/\/app\/relazioni\/[a-z0-9]+$/, { timeout: 90000 }), page.click('dialog.rt-dialog button:has-text("Confermo ed emetto")')]);
+  const esito = await Promise.race([page.waitForURL(/\/app\/relazioni\/[a-z0-9]+$/, { timeout: 90000 }).then(() => 'emessa'), conferma.waitFor({ timeout: 90000 }).then(() => 'conferma')]);
+  if (esito === 'conferma') {
+    await shot('rt2-firme', page, { tall: 2600, clipFn: () => wideClip(page, [page.locator('#rt2-firme')], 16, 290, 1150) });
+    await Promise.all([page.waitForURL(/\/app\/relazioni\/[a-z0-9]+$/, { timeout: 90000 }), conferma.locator('button:has-text("Emetti comunque")').click()]);
+  } else skip('rt2-firme', 'every check met: no confirmation to show');
   await shot('rel-testata', page, { clip: { x: 0, y: 0, width: 1440, height: 760 } });
-  await shot('rel-sezioni-allegati', page, { tall: 3000, clipFn: () => wideClip(page, [page.locator('section[aria-labelledby="rt-p-sezioni"]'), page.locator('section[aria-labelledby="rt-p-rev"]')], 16, 290, 1150) });
+  await shot('rel-componenti-allegati', page, { tall: 3000, clipFn: () => wideClip(page, [page.locator('section[aria-labelledby="rt-p-componenti"]'), page.locator('section[aria-labelledby="rt-p-rev"]')], 16, 290, 1150) });
   assert.deepEqual(errors.filter((e) => !/404/.test(e)), [], 'browser errors');
 }
 
