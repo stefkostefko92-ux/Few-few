@@ -177,6 +177,10 @@ docker exec liftpilot-app-1 npm run engine:notice -- --send --motivo "<какв�
 Един release. Миграциите — `30_modalita` (enum `Modalita` и колона `User.modalita` с подразбиране `SEMPLICE`) и
 `31_rt_modello` (CHECK-ът на `TechnicalReport` се сменя: 2.x без основа на проекта, 1.x — точно една); и двете адитивни,
 не пренаписват ред; връщането — в коментарите им (на 31 — само докато няма ред 2.x). Entrypoint-ът ги пуска в ред.
+Ако кръгове 49–50 още не са разгърнати, същият release носи 26–31: пробвано (2026-10-27) с образа на `953dc3c66` срещу
+база в състоянието на кръг 48 (миграция 25) — 26–31 приложени, `prisma migrate diff` без разлика, health 200 (engine
+1.9.0), пълният smoke (94 стъпки; PDF-ите с ReportLab 3.6.12 на образа), `smoke-allegati` и `smoke-schizzi` — „all good“.
+Тогава важат и т. 0 и 2 на „Кръг 49“ (мястото на диска, nginx) и проверката на „Кръг 50 Б“ (`heif-convert`, `pdftoppm`).
 **Двигателите се сменят** (ENGINE 1.9.0, LIFT 1.34.0, ROOM 1.18.0, SHAFT 2.28.0, RT 1.1.0; новият RT2 2.0.0): всеки запис
 става „da aggiornare“ — затова **преди** деплоя `npm run pdf:keep` на работещия release (пази телата на издадените комплекти
 и relazioni, за да се свалят и след смяната). **Писма няма** — нито `engine:notice --send`, нито други (решение на
