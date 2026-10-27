@@ -14011,7 +14011,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 243
+        "lessons": 244
       },
       "evolution": [
         {
@@ -14121,9 +14121,20 @@
           "date": "2026-10-27",
           "event": "v23.2 — учене",
           "detail": "Научи: oversee проверява description само за YAML опасности („ #“, „: “, водещ индикатор) и дъ… (+1 още)"
+        },
+        {
+          "version": "23.3.0",
+          "date": "2026-10-27",
+          "event": "v23.3 — учене",
+          "detail": "Научи: flow-cost извежда тавана на префикса от размера на дефинициите в потока (cap = 0.45·wor…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „flow-cost извежда тавана на префикса от размера на дефинициите в потока (cap = 0.45·wor…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
