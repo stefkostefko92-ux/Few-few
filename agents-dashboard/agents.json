@@ -1200,7 +1200,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 558
+        "lessons": 559
       },
       "evolution": [
         {
@@ -2132,9 +2132,20 @@
           "date": "2026-10-27",
           "event": "v44.0 — учене",
           "detail": "Научи: vpsdash test/shellspec.test.js scriptOf() вади скрипт само от spec.shell или cmd==='bas…"
+        },
+        {
+          "version": "44.1.0",
+          "date": "2026-10-27",
+          "event": "v44.1 — учене",
+          "detail": "Научи: В cs2dm игровите чат команди (plugins/src/CarbonStealth/Admin.cs) дублират правата и im…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „В cs2dm игровите чат команди (plugins/src/CarbonStealth/Admin.cs) дублират правата и im…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
