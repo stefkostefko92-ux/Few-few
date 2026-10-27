@@ -1211,7 +1211,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 566
+        "lessons": 567
       },
       "evolution": [
         {
@@ -2179,9 +2179,20 @@
           "date": "2026-10-27",
           "event": "v44.8 — учене",
           "detail": "Научи: zabobovdol/backups/.gitkeep е проследен в git, затова всеки нов release има истинска па…"
+        },
+        {
+          "version": "44.9.0",
+          "date": "2026-10-27",
+          "event": "v44.9 — учене",
+          "detail": "Научи: nodemailer >=10 носи собствени типове (dist/esm/nodemailer.d.ts и dist/cjs/nodemailer.d…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „nodemailer >=10 носи собствени типове (dist/esm/nodemailer.d.ts и dist/cjs/nodemailer.d…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
