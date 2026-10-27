@@ -9213,7 +9213,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 229
+        "lessons": 230
       },
       "evolution": [
         {
@@ -9581,9 +9581,20 @@
           "date": "2026-10-27",
           "event": "v21.4 — учене",
           "detail": "Научи: Nexus има само еднократен Stripe Checkout (mode payment, price_data от сървърния катало…"
+        },
+        {
+          "version": "21.5.0",
+          "date": "2026-10-27",
+          "event": "v21.5 — учене",
+          "detail": "Научи: Nexus има Stripe само с еднократно плащане (checkout mode payment), webhook с construct…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Nexus има Stripe само с еднократно плащане (checkout mode payment), webhook с construct…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
