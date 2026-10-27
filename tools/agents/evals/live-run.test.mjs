@@ -11,6 +11,7 @@ test("обвивката пуска агента по id и иска досло�
   assert.match(p, /дословно/);
   assert.match(p, /провери sitemap$/);
   assert.match(p, /ВЕДНЪЖ/);
+  assert.match(p, /run_in_background: false/);
   assert.match(p, /никога бележка за дубликата/);
 });
 
