@@ -95,3 +95,15 @@ test("live-run: задачите, имената на опитите, обвив
   assert.deepEqual(parseResult(JSON.stringify({ result: "ок", total_cost_usd: 0.3 })), { text: "ок", costUsd: 0.3 });
   assert.equal(parseResult("суров").text, "суров");
 });
+
+// Шестият жив гейт 27.10.2026: неекранирана кавичка в цитата („seo") правеше JSON-а невалиден.
+test("проба: неекранирана кавичка в цитат не проваля четенето на полетата", async () => {
+  const { firstJson } = await import("./live-gate.mjs");
+  const raw = '{"doctrine":"държавно ниво — задължителна","procedure":"задължителна за всеки","shared":"(крос-режещи — важат","card":"екип „Растежът“","memory":"„seo" (v6.0 самообучение — ползвай","rootClaudeMd":null,"handoffFields":true}\n\n## ПРЕДАВАНЕ';
+  const j = firstJson(raw);
+  assert.equal(j.memory, '„seo" (v6.0 самообучение — ползвай');
+  assert.equal(j.rootClaudeMd, null);
+  assert.equal(j.handoffFields, true);
+  assert.equal(firstJson("нищо тук"), null);
+  assert.deepEqual(firstJson('{"a":1}'), { a: 1 });
+});

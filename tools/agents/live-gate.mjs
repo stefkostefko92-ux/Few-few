@@ -17,7 +17,7 @@
 // чиято дефиниция се е сменила; verifier-ът минава на всеки изход.
 
 import { createHash } from "node:crypto";
-import { readFileSync, writeFileSync, readdirSync, existsSync, mkdtempSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, existsSync, mkdtempSync, rmSync, mkdirSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
@@ -117,7 +117,22 @@ export function firstJson(text) {
   for (let end = s.indexOf("}", start); start >= 0 && end > start; end = s.indexOf("}", end + 1)) {
     try { return JSON.parse(s.slice(start, end + 1)); } catch { /* по-дълъг кандидат */ }
   }
-  return null;
+  return lenientProbeJson(s);
+}
+
+// Шестият жив гейт (27.10): агентът цитира `„seo"` (източникът смесва „ с ASCII ") и не екранира кавичката —
+// JSON-ът е невалиден, а пробата падаше „няма JSON“, макар цитатите да са верни. Формат не е контекст: стойностите
+// на ИЗВЕСТНИТЕ полета се четат между `"ключ":"` и следващото `","<известен ключ>":` / `"}`. Цитатът пак се сверява.
+const PROBE_KEYS = [...Object.keys(MARKERS), "handoffFields"];
+export function lenientProbeJson(s) {
+  const out = {};
+  const keyAlt = PROBE_KEYS.join("|");
+  for (const k of PROBE_KEYS) {
+    const m = s.match(new RegExp(`"${k}"\\s*:\\s*(null|true|false|"([\\s\\S]*?)"(?=\\s*,\\s*"(?:${keyAlt})"\\s*:|\\s*\\}))`));
+    if (!m) continue;
+    out[k] = m[1] === "null" ? null : m[1] === "true" ? true : m[1] === "false" ? false : m[2].replace(/\\"/g, '"');
+  }
+  return Object.keys(out).length >= 3 ? out : null;
 }
 
 /** Съди отговора на пробата спрямо очакваните източници. Връща { ok, problems }. */
@@ -193,7 +208,9 @@ async function run() {
       console.log(`  ${j.ok ? "✓" : "✗"} проба ${r.agent}${j.ok ? "" : ": " + j.problems.join(" · ")}`);
     }
     // Всички изходи (и на пробите) остават за четене: „няма JSON в отговора“ без самия отговор не се диагностицира (27.10).
-    for (const r of results.filter((x) => x.ok)) writeFileSync(join(out, r.name), r.text);
+    // Пробите отделно: в specs/ има стари spec-ове probe-<агент> — eval.mjs --run <out> би ги оценил като отговори.
+    mkdirSync(join(out, "probes"), { recursive: true });
+    for (const r of results.filter((x) => x.ok)) writeFileSync(join(out, r.name.startsWith("probe-") ? join("probes", r.name) : r.name), r.text);
     let evalSummary = null;
     try { evalSummary = JSON.parse(execFileSync("node", [join(HERE, "evals", "eval.mjs"), "--run", out, "--json"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })); }
     catch (e) { evalSummary = (() => { try { return JSON.parse(String(e.stdout || "")); } catch { return null; } })(); }
