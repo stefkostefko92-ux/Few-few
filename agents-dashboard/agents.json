@@ -1255,7 +1255,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 607
+        "lessons": 609
       },
       "evolution": [
         {
@@ -2379,9 +2379,20 @@
           "date": "2026-10-27",
           "event": "v48.9 — учене",
           "detail": "Научи: .pr-review/271.diff (liftpilot) е отрязан на 3 от 2286 файла (последен agents-dashboard… (+2 още)"
+        },
+        {
+          "version": "49.1.0",
+          "date": "2026-10-27",
+          "event": "v49.1 — учене",
+          "detail": "Научи: .pr-review/265.diff (SupremeDiscordBot) е отрязан на 69 от 236 файла (последен bot/src/… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „.pr-review/265.diff (SupremeDiscordBot) е отрязан на 69 от 236 файла (последен bot/src/…\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
