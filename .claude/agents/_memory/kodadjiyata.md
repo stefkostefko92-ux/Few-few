@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-27:** В live-run worktree за ревю на PR #69 Bash изискваше одобрение дори за node tools/agents/rubric.mjs и pdftotext; тежестта се смята на ръка по формулата в tools/agents/rubric.mjs:28-31 и това се казва в покритието _(ревю на PR в live-run worktree с ограничени права; verified; отказ "This command requires approval" за node tools/agents/rubric.mjs --kind quality в /tmp/live-run-Qc0RL4)_
 - **2026-10-27:** В deja background.js записва текста от deja:page в chrome.storage.local (pending) преди проверката isDenied/paused, която е чак в indexPage _(ревю на поверителността и опашката в deja; verified; deja/src/background.js:103-104,156-163,444-446)_
 - **2026-10-27:** В deja firefox/embed-adapter.js runEmbed присвоява chain = chain.then(...) без catch, затова една грешка при embed отхвърля всички следващи; offscreen.js в Chrome го прави правилно _(ревю на embed пътя в deja (Chrome и Firefox); verified; deja/firefox/embed-adapter.js:84-91; deja/src/offscreen/offscreen.js:50-60)_
 - **2026-10-27:** .pr-review/89.diff (deja) е отрязан на 19 от 258 файла; кодът на deja се чете от работното дърво, а deja/node_modules липсва, затова гейтовете не могат да се пуснат _(ревю на PR 89 в live-run worktree; verified; grep -c '^diff --git' .pr-review/89.diff (19) срещу .pr-review/89.stat (258 files changed); ls deja/node_modules)_
