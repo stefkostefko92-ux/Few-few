@@ -15917,7 +15917,7 @@
           "Sample Ratio Mismatch (en.wikipedia.org/wiki/Sample_ratio_mismatch); статистика на онлайн експерименти",
           "Това репо: CLAUDE.md; границата SEO (откриваемост), Продавача (Stripe), Наблюдателят (системни метрики), Правния (закон)"
         ],
-        "lessons": 207
+        "lessons": 209
       },
       "evolution": [
         {
@@ -15967,9 +15967,20 @@
           "date": "2026-10-25",
           "event": "v20.6 — учене",
           "detail": "Научи: GA4 не записва и не пази IP; anonymize_ip е само за UA и в GA4 не прави нищо, затова не… (+2 още)"
+        },
+        {
+          "version": "20.8.0",
+          "date": "2026-10-27",
+          "event": "v20.8 — учене",
+          "detail": "Научи: В linketto блоковете (Link) се трият твърдо (prisma.link.deleteMany), затова активиране… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „В linketto блоковете (Link) се трият твърдо (prisma.link.deleteMany), затова активиране…\" (+1 още)"
+        },
         {
           "date": "2026-10-25",
           "type": "learning",
