@@ -1200,7 +1200,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 555
+        "lessons": 557
       },
       "evolution": [
         {
@@ -2120,9 +2120,20 @@
           "date": "2026-10-27",
           "event": "v43.7 — учене",
           "detail": "Научи: mastilko след PR 323 е на zod 4.6.7 пакет, но всички 23 src импорта са zod/v3 (класичес… (+1 още)"
+        },
+        {
+          "version": "43.9.0",
+          "date": "2026-10-27",
+          "event": "v43.9 — учене",
+          "detail": "Научи: zabobovdol лок след PR 324 е с next 15.5.28, react/react-dom 19.2.7, nodemailer 10.2.1 … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „zabobovdol лок след PR 324 е с next 15.5.28, react/react-dom 19.2.7, nodemailer 10.2.1 …\" (+1 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
