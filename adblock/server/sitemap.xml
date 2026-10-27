@@ -5,7 +5,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://adblock.carbonstealth.eu/</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://adblock.carbonstealth.eu/" />
     <xhtml:link rel="alternate" hreflang="bg" href="https://adblock.carbonstealth.eu/bg/" />
     <xhtml:link rel="alternate" hreflang="de" href="https://adblock.carbonstealth.eu/de/" />
@@ -35,7 +35,7 @@
   </url>
   <url>
     <loc>https://adblock.carbonstealth.eu/how-we-measure</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-27</lastmod>
   </url>
   <url>
     <loc>https://adblock.carbonstealth.eu/press</loc>

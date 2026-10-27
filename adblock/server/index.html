@@ -306,7 +306,7 @@
       "installUrl": "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk",
       "softwareVersion": "5.7.0",
       "datePublished": "2026-06-15",
-      "dateModified": "2026-10-23",
+      "dateModified": "2026-10-27",
       "inLanguage": ["af", "am", "ar", "az", "be", "bg", "bn", "bs", "ca", "cs", "cy", "da", "de", "el", "en", "es", "es-419", "et", "eu", "fa", "fi", "fil", "fr", "gl", "gu", "he", "hi", "hr", "hu", "hy", "id", "is", "it", "ja", "ka", "kk", "km", "kn", "ko", "lt", "lv", "mk", "ml", "mn", "mr", "ms", "ne", "nl", "no", "pa", "pl", "pt-BR", "pt-PT", "ro", "ru", "si", "sk", "sl", "sq", "sr", "sv", "sw", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "zh-CN", "zh-TW", "zu"],
       "isAccessibleForFree": true,
       "license": "https://opensource.org/license/mit",
@@ -372,7 +372,7 @@
       "primaryImageOfPage": "https://adblock.carbonstealth.eu/og.png",
       "inLanguage": "en",
       "datePublished": "2026-06-15",
-      "dateModified": "2026-10-23",
+      "dateModified": "2026-10-27",
       "speakable": { "@type": "SpeakableSpecification", "cssSelector": [".sub", ".lead"] }
     },
     {
@@ -515,27 +515,27 @@
       <div class="reveal">
         <p class="eyebrow">Measured, not claimed</p>
         <h2>Two public tests, <span class="c">same conditions</span></h2>
-        <p class="lead">Every blocker got a fresh browser profile, its default settings and a minute to set itself up, then ran the same two public test pages twice. The runs matched, except for AdGuard and Adblock Plus, whose Turtlecute counts moved by one or two (the table shows the range). Higher is better. <a href="/how-we-measure">How we measure</a>.</p>
+        <p class="lead">Every blocker got a fresh browser profile, its default settings and a minute to set itself up, then ran the same two public test pages twice. The runs matched, except for Ghostery, AdGuard and Adblock Plus, whose Turtlecute counts moved by one or two (the table shows the range). Higher is better. <a href="/how-we-measure">How we measure</a>.</p>
       </div>
       <div class="tablewrap reveal">
         <table>
-          <caption class="sr">Results of two public ad-blocking tests, 25 September 2026</caption>
+          <caption class="sr">Results of two public ad-blocking tests, 27 October 2026</caption>
           <thead><tr>
             <th scope="col" style="text-align:left">Blocker (default settings)</th>
             <th scope="col"><a href="https://adblock.turtlecute.org/" target="_blank" rel="noopener">Turtlecute</a><span class="note">ad &amp; tracker hosts blocked</span></th>
             <th scope="col"><a href="https://adblock-tester.com/" target="_blank" rel="noopener">adblock-tester</a><span class="note">score out of 100</span></th>
           </tr></thead>
           <tbody>
-            <tr><th scope="row">No blocker</th><td>4 / 132</td><td>48</td></tr>
-            <tr class="usrow"><th scope="row">Supreme AdBlock 5.1.2</th><td>130 / 132</td><td>95</td></tr>
-            <tr><th scope="row">uBlock Origin Lite</th><td>82 / 132</td><td>91</td></tr>
-            <tr><th scope="row">Ghostery</th><td>98 / 132</td><td>96</td></tr>
-            <tr><th scope="row">AdGuard</th><td>24–26 / 132</td><td>77</td></tr>
-            <tr><th scope="row">Adblock Plus</th><td>25–26 / 132</td><td>77</td></tr>
+            <tr><th scope="row">No blocker</th><td>10 / 132</td><td>41</td></tr>
+            <tr class="usrow"><th scope="row">Supreme AdBlock 5.7.0</th><td>130 / 132</td><td>95</td></tr>
+            <tr><th scope="row">uBlock Origin Lite 2026.1026.1812</th><td>83 / 132</td><td>91</td></tr>
+            <tr><th scope="row">Ghostery 10.6.9</th><td>98–100 / 132</td><td>96</td></tr>
+            <tr><th scope="row">AdGuard 5.5.3.28</th><td>30–31 / 132</td><td>75</td></tr>
+            <tr><th scope="row">Adblock Plus 4.48.0</th><td>31–32 / 132</td><td>75</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="cmpnote reveal">Measured on 25 September 2026 in headless Chromium with <a href="https://github.com/stefkostefko92-ux/Few-few/blob/main/adblock/tools/compare_blockers.mjs" target="_blank" rel="noopener"><code>tools/compare_blockers.mjs</code></a> (in our public repository — run it yourself). Ghostery scored one point higher on adblock-tester. AdGuard and Adblock Plus may do better with extra lists switched on or after a longer set-up; we report their defaults. Test pages change over time, so numbers from another day will differ.</p>
+      <p class="cmpnote reveal">Measured on 27 October 2026 in headless Chromium with <a href="https://github.com/stefkostefko92-ux/Few-few/blob/main/adblock/tools/compare_blockers.mjs" target="_blank" rel="noopener"><code>tools/compare_blockers.mjs</code></a> (in our public repository — run it yourself), each blocker the version the Chrome Web Store served that day. The machine's network refused a few ad hosts by itself, so the no-blocker row starts at 10; compare the rows with each other. Ghostery scored one point higher on adblock-tester. AdGuard and Adblock Plus may do better with extra lists switched on or after a longer set-up; we report their defaults. Test pages change over time, so numbers from another day will differ.</p>
     </div>
   </section>
 
