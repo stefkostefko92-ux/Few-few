@@ -220,6 +220,12 @@ const team = [];
 if (fallbackOk === false) { team.push({ level: "hard", msg: "FALLBACK в index.html НЕ съвпада с agents.json" }); hardFails++; }
 if (fallbackOk === null) { team.push({ level: "warn", msg: "не намерих FALLBACK блок в index.html" }); warns++; }
 if (!securityDoctrine) { team.push({ level: "hard", msg: "липсва доктрината _memory/SECURITY.md (инжектира се във всеки агент)" }); hardFails++; }
+// При включени agent teams именуваният агент става teammate, а на teammate харнесът НЕ прилага `skills:` от
+// дефиницията (code.claude.com/docs/en/agent-teams) — доктрината тихо отпада. Проектът го държи изключено.
+try {
+  const st = JSON.parse(readFileSync(join(ROOT, ".claude", "settings.json"), "utf8"));
+  if (st.env?.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS !== "0") { team.push({ level: "hard", msg: "settings.json не държи CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=\"0\" — при agent teams teammate-ите тръгват без agent-doctrine (skills: не важи за тях)" }); hardFails++; }
+} catch { /* settings.json се проверява другаде */ }
 if (!existsSync(join(ROOT, ".claude", "skills", "agent-doctrine", "SKILL.md"))) { team.push({ level: "hard", msg: "липсва умението agent-doctrine (доктрина + процедура за всеки агент) — node tools/agents/doctrine-skill.mjs --write" }); hardFails++; }
 if (!procedureDoctrine) { team.push({ level: "hard", msg: "липсва общата процедура _memory/PROCEDURE.md (единен цикъл + HANDOFF, инжектира се във всеки агент)" }); hardFails++; }
 // Fail-loud при ТОЧЕН сблъсък (не near-dup): два агента с еднакъв accent/name чупят разпознаваемостта.

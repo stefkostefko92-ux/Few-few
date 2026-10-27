@@ -12,6 +12,13 @@
 // статичният префикс е еднакъв за десетки рънa в серия, а 5 минути изтичат между опитите. Само тук —
 // в интерактивната работа 1-часовият запис струва повече, отколкото връща. `--cache-5m` го изключва.
 //
+// Верност на продукцията (Anthropic, best-practices: „--allowedTools pre-approves its tools, and
+// --permission-mode dontAsk refuses anything else“; „What stops it? … --max-budget-usd“): моделът,
+// усилието и инструментите идват от frontmatter-а на агента, не по подразбиране — ревюър без Write се
+// оценява без Write. Цената на всеки рън се чете от JSON изхода и влиза в trend.jsonl.
+// `--without-agent`: същите задачи само с доктрината, без тялото на агента — показва какво добавя агентът
+// („A high score on its own doesn't tell you the plugin helped“ — plugin-evals).
+//
 // Изисква: `claude` CLI + ANTHROPIC_API_KEY в средата (CI secret — НИКОГА в репото).
 // Без ключ/CLI → изход 0 с ясно съобщение (гейтът не лъже червено заради липсваща конфигурация).
 //
@@ -31,6 +38,41 @@ const ROOT = join(HERE, "..", "..", "..");
 const argv = process.argv.slice(2);
 const OUT = join(ROOT, ".claude", "hooks", "_state", "behavioral-out");
 
+const BUDGET_USD = process.env.EVAL_MAX_BUDGET_USD || "3";
+
+/** Конфигурацията на агента от frontmatter-а: модел, усилие, инструменти, maxTurns. */
+export function agentConfig(id, raw = readFileSync(join(ROOT, ".claude", "agents", id + ".md"), "utf8")) {
+  const fm = (raw.match(/^---\n([\s\S]*?)\n---/) || [])[1] || "";
+  const val = (k) => ((fm.match(new RegExp(`^${k}:[ \\t]*(.+)$`, "m")) || [])[1] || "").trim();
+  return {
+    model: val("model") || null,
+    effort: val("effort") || null,
+    tools: val("tools") ? val("tools").split(",").map((t) => t.trim()).filter(Boolean) : [],
+    maxTurns: Number(val("maxTurns")) || null,
+  };
+}
+
+/** Флаговете, с които агентът тича като в продукция — само тези, които CLI-то обявява. */
+export function agentArgs(cfg, supports = () => true, budget = BUDGET_USD) {
+  const a = [];
+  if (cfg.model && supports("--model")) a.push("--model", cfg.model);
+  if (cfg.effort && supports("--effort")) a.push("--effort", cfg.effort);
+  if (cfg.tools.length && supports("--tools")) a.push("--tools", cfg.tools.join(","));
+  if (cfg.tools.length && supports("--allowedTools")) a.push("--allowedTools", cfg.tools.join(","));
+  if (supports("--permission-mode")) a.push("--permission-mode", "dontAsk");
+  if (cfg.maxTurns && supports("--max-turns")) a.push("--max-turns", String(cfg.maxTurns));
+  if (supports("--max-budget-usd")) a.push("--max-budget-usd", String(budget));
+  return a;
+}
+
+/** JSON изходът на `claude -p --output-format json` → текст, цена, ходове. Невалиден JSON = суров текст. */
+export function parseRun(out) {
+  try {
+    const j = JSON.parse(out);
+    return { text: String(j.result || ""), costUsd: Number(j.total_cost_usd) || 0, turns: Number(j.num_turns) || 0 };
+  } catch { return { text: String(out || ""), costUsd: 0, turns: 0 }; }
+}
+
 function agentBody(id) {
   const raw = readFileSync(join(ROOT, ".claude", "agents", id + ".md"), "utf8");
   return raw.replace(/^---[\s\S]*?---\n/, ""); // без frontmatter — само системният промпт
@@ -45,8 +87,8 @@ function agentBody(id) {
 //      SubagentStart стига само до messages (ограничение на харнеса); тук CLI-то е наше, затова
 //      единственото място, където system-ниво споделяне е постижимо, е точно eval-харнесът.
 // Един източник: staticPrefixParts() е СЪЩАТА функция, която ползва memory-preload.mjs.
-export function systemPrompt(id, prefixParts = staticPrefixParts()) {
-  return [...prefixParts, agentBody(id)].join("\n\n");
+export function systemPrompt(id, prefixParts = staticPrefixParts(), { withoutAgent = false } = {}) {
+  return [...prefixParts, ...(withoutAgent ? [] : [agentBody(id)])].join("\n\n");
 }
 
 // Средата на eval рънa: 1-часов кеш, освен при --cache-5m (виж горе). Изнесено за теста.
@@ -95,9 +137,14 @@ function main() {
   // --dangerously-skip-permissions изключва permission промптовете (задължително за headless CI —
   // ефимерен runner, throwaway). Ползват се само ако `--help` ги обявява.
   const bare = cliSupports("--bare");
-  const skipPerm = cliSupports("--dangerously-skip-permissions");
+  // dontAsk + инструментите на агента е продукционният вид; skip-permissions остава резерв за старо CLI.
+  const dontAsk = cliSupports("--permission-mode");
+  const skipPerm = !dontAsk && cliSupports("--dangerously-skip-permissions");
   const COMMON = [...(bare ? ["--bare"] : []), ...(skipPerm ? ["--dangerously-skip-permissions"] : [])];
-  console.log(`флагове: --bare=${bare} · skip-permissions=${skipPerm}`);
+  const help = (() => { try { return execFileSync("claude", ["--help"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }); } catch { return ""; } })();
+  const supports = (f) => help.includes(f);
+  const withoutAgent = argv.includes("--without-agent");
+  console.log(`флагове: --bare=${bare} · dontAsk=${dontAsk} · skip-permissions=${skipPerm} · таван $${BUDGET_USD}/рън${withoutAgent ? " · БЕЗ тялото на агента" : ""}`);
 
   // ── Probe: работи ли CLI headless ИЗОБЩО, преди 8-те скъпи рънa? ──
   console.log(`claude версия: ${(() => { const r = claudeRun(["--version"]); return r.ok ? r.out.trim() : "?"; })()}`);
@@ -111,14 +158,17 @@ function main() {
   // Стари изходи от предишен рън биха влезли в pass^k като опити → чиста папка на всеки рън.
   rmSync(OUT, { recursive: true, force: true });
   mkdirSync(OUT, { recursive: true });
-  let produced = 0;
+  let produced = 0, costUsd = 0;
   const made = [];
   for (const p of plan) {
     for (const name of outNames(p.specId, p.trials || 1)) {
-      const args = ["-p", p.task, ...COMMON, "--append-system-prompt", systemPrompt(p.agent), "--output-format", "text"];
+      const args = ["-p", p.task, ...COMMON, ...agentArgs(agentConfig(p.agent), supports), "--append-system-prompt", systemPrompt(p.agent, undefined, { withoutAgent }), "--output-format", "json"];
       const r = claudeRun(args);
-      if (r.ok && r.out.trim()) { writeFileSync(join(OUT, name), r.out); produced++; made.push({ agent: p.agent, name }); console.log(`  ✓ ${name} (${r.out.length} знака)`); }
-      else console.log(`  ✗ ${name}: ${r.err || "празен изход"}`);
+      const run = parseRun(r.out);
+      if (r.ok && run.text.trim()) {
+        writeFileSync(join(OUT, name), run.text); produced++; costUsd += run.costUsd;
+        made.push({ agent: p.agent, name }); console.log(`  ✓ ${name} (${run.text.length} знака · $${run.costUsd.toFixed(2)} · ${run.turns} хода)`);
+      } else console.log(`  ✗ ${name}: ${r.err || "празен изход"}`);
     }
   }
 
@@ -129,7 +179,8 @@ function main() {
 
   // ── Скориране само върху РЕАЛНО произведените файлове ──
   console.log(`\nСкориране на ${produced}/${runs} произведени изхода (${specIds.size} spec-а):`);
-  try { execSync(`node ${join(HERE, "eval.mjs")} --run ${OUT} --record`, { stdio: "inherit" }); }
+  const meta = JSON.stringify({ cli: (claudeRun(["--version"]).out || "").trim(), costUsd: +costUsd.toFixed(2), cache: evalEnv().CLAUDE_CODE_PROMPT_CACHE_TTL || "5m", withoutAgent });
+  try { execFileSync("node", [join(HERE, "eval.mjs"), "--run", OUT, "--record", "--label", withoutAgent ? "без агента" : "headless", "--meta", meta], { stdio: "inherit" }); }
   catch { /* eval връща ≠0 при провалени проверки — това е РЕЗУЛТАТ, не крах на скрипта */ }
   let vfail = 0;
   for (const m of made) {

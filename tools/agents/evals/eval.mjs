@@ -159,7 +159,11 @@ if (has("--record") && results.length) {
   const stamp = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
   const t = trialStats(results);
   const passK = t.perSpec.some((x) => x.k > 1) ? { passHatK: t.passHatK, passAtK: t.passAtK, trialSpecs: t.specs } : {};
-  appendFileSync(join(HERE, "trend.jsonl"), JSON.stringify({ date: stamp, ...(val("--label") ? { label: val("--label") } : {}), ...s, ...passK, perSpec: results.map((r) => ({ id: r.id, ...(r.trial ? { trial: r.trial } : {}), passed: r.passed, total: r.total })) }) + "\n");
+  // Конфигурацията на рънa е променлива на експеримента (Anthropic, „Infrastructure noise“): версия на CLI,
+  // кеш, цена — без нея разлика от един обърнат spec изглежда като регресия.
+  let meta = {};
+  try { meta = val("--meta") ? JSON.parse(val("--meta")) : {}; } catch { /* невалиден --meta не спира записа */ }
+  appendFileSync(join(HERE, "trend.jsonl"), JSON.stringify({ date: stamp, ...(val("--label") ? { label: val("--label") } : {}), ...s, ...passK, ...(Object.keys(meta).length ? { meta } : {}), perSpec: results.map((r) => ({ id: r.id, ...(r.trial ? { trial: r.trial } : {}), passed: r.passed, total: r.total })) }) + "\n");
   if (!JSON_OUT) console.log(dim("↳ записано в trend.jsonl (тренд на качеството)"));
 }
 
