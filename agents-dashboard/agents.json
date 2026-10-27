@@ -5133,7 +5133,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 226
+        "lessons": 227
       },
       "evolution": [
         {
@@ -5639,9 +5639,20 @@
           "date": "2026-10-25",
           "event": "v24.8 — учене",
           "detail": "Научи: CLDR 49 излезе на 2026-10-22 за Unicode 18; в него функциите :currency и :percent на Me… (+2 още)"
+        },
+        {
+          "version": "24.9.0",
+          "date": "2026-10-27",
+          "event": "v24.9 — учене",
+          "detail": "Научи: Глосарът дава IT „Chiama il 112“ (tu) въпреки правилото за Lei в medqr, а „Lingua dei s…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „Глосарът дава IT „Chiama il 112“ (tu) въпреки правилото за Lei в medqr, а „Lingua dei s…\""
+        },
         {
           "date": "2026-10-25",
           "type": "learning",
