@@ -3,6 +3,9 @@ import { Link } from '@/i18n/routing';
 import { sintesi, type Classe, type Riga } from '@/lib/collega/confronto';
 import { testoValore } from '@/lib/collega/formato';
 import { fmt } from '@/lib/rilievi/fmt';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/impianti.json';
+import Aiuto from '@/components/aiuto/Aiuto';
 
 /** Where «usa il valore del rilievo» goes: «Calcolo argano» or the Progetto (round 45, by the parameter), or the installation's data; null — not for this role. */
 export interface UsaLink {
@@ -20,7 +23,8 @@ const TONE = { ok: 'ok', diff: 'fail', mod: 'warn', info: 'info', na: '', fuori:
 // the parts of the test, src/lib/lift/collaudo.ts PARTI 'load' and 'speed'), and what is only set
 // side by side. A difference offers «Usa il valore del rilievo», which opens the right form with the survey's value in it
 // (nothing is changed until that form is saved). The parameters the survey has no value for are folded under the table
-// (on a phone they would bury the differences); the summary is green only once something was really compared.
+// (on a phone they would bury the differences); the summary is green only once something was really compared. What the
+// identity rows read and what «usa» does is the heading's «?» (round 52: the note under the table went there).
 export default async function Confronto({ righe, date, usa, collaudo, salvati }: {
   righe: readonly Riga[]; date: Date; usa: UsaLink; collaudo: string | null;
   /** a calculation or a design is saved (the comparison has a record to read) */
@@ -28,7 +32,7 @@ export default async function Confronto({ righe, date, usa, collaudo, salvati }:
 }) {
   const t = await getTranslations('collega.confronto'), tv = await getTranslations('collega');
   const parola = (code: string): string => (tv.has(`valore.${code}`) ? tv(`valore.${code}` as 'valore.ALTO') : code);
-  const s = sintesi(righe);
+  const s = sintesi(righe), aiuto = testoAiuto(AIUTO, 'confronto');
   const cell = (w: Riga, v: Riga['rilievo']) => testoValore(w.param, v, parola);
   const misurate = righe.filter((w) => w.rilievo !== null), altre = righe.filter((w) => w.rilievo === null);
   const [tone, summary] = s.diff ? ['fail', t('summary', { diff: s.diff, mod: s.mod })]
@@ -83,7 +87,7 @@ export default async function Confronto({ righe, date, usa, collaudo, salvati }:
     <section className="panel lk-confronto" id="confronto" aria-labelledby="lk-confronto-title">
       <div className="panel-head">
         <div className="dash-panel-titles">
-          <h2 id="lk-confronto-title">{t('title')}</h2>
+          <div className="lbl"><h2 id="lk-confronto-title">{t('title')}</h2>{aiuto ? <Aiuto testo={aiuto} nome={t('title')} /> : null}</div>
           <p className="note">{t('lead', { date: fmt.day(date) })}</p>
         </div>
         <p className={tone ? `status-pill ${tone}` : 'status-pill'}>{summary}</p>
@@ -96,7 +100,6 @@ export default async function Confronto({ righe, date, usa, collaudo, salvati }:
           {tabella(altre, t('more', { n: altre.length }))}
         </details>
       ) : null}
-      <p className="note">{t('identityNote')}</p>
     </section>
   );
 }

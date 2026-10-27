@@ -1,0 +1,7 @@
+{
+  "revisioneCalcolo": "Il calcolo da cui ridisegnare la revisione: ogni voce riporta data e ora, etichetta e argano. Ci sono solo i calcoli dell’impianto fatti da un progetto del vano, dal più recente.",
+  "revisioneRilievo": "Il rilievo del locale macchina salvato da cui ridisegnare la revisione: ogni voce riporta data e ora, etichetta, locale e argano, dal più recente.",
+  "reviseNote": "Una frase su cosa cambia rispetto alla revisione precedente, da 3 a 120 caratteri: va nel cartiglio del foglio 1 e nell’elenco «Revisioni». Una revisione emessa non si modifica più.",
+  "initials": "Le iniziali di chi disegna, per il cartiglio: sono proposte dal tuo nome e puoi cambiarle. Fino a 12 caratteri tra lettere, punti, spazi, apostrofi e trattini; il primo deve essere una lettera.",
+  "cad": "In DXF e DWG: le viste in scala reale con le loro legende e note, il foglio 1 con il cartiglio del numero e della revisione, le verifiche del progetto, i muri campiti. In SVG: un file per foglio (in un archivio ZIP), in millimetri alla scala di stampa, con il carattere incorporato."
+}

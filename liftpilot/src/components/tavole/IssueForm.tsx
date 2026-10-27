@@ -5,12 +5,16 @@
 // of the company and year). A revision instead keeps the number and adds a note. Before it, what the title block would
 // get wrong or leave empty: a machine name against the calculation's (the server refuses the issue), the plant number of
 // an existing lift, the client (each with the page it is corrected on); and the data of the installation sheet 1 reads
-// that nobody entered, with the way to them always at hand (the issue stays allowed).
-import { useState, useTransition } from 'react';
+// that nobody entered, with the way to them always at hand (the issue stays allowed). Each field has its «?» (round 52,
+// messages/aiuto/documenti.json), beside its label and outside it.
+import { useId, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/routing';
 import type { IssueChecks } from '@/lib/tavole/issue-check';
 import { issueDrawingSetAction, issueRoomSetAction, reviseDrawingSetAction } from '@/server/drawing-actions';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/documenti.json';
+import Etichetta from '../aiuto/Etichetta';
 
 interface Props {
   /** the calculation, or the replacement's saved machine room, to issue from; for a revision, the calculations (or the
@@ -26,7 +30,7 @@ interface Props {
 }
 
 export default function IssueForm({ calculationId, roomDesignId, revise, initials: mine, checks, projectId }: Props) {
-  const t = useTranslations('tavole'), tp = useTranslations('projects'), te = useTranslations('errors'), router = useRouter();
+  const t = useTranslations('tavole'), tp = useTranslations('projects'), te = useTranslations('errors'), router = useRouter(), uid = useId();
   const [initials, setInitials] = useState(mine);
   const [note, setNote] = useState('');
   const options = revise?.rooms ?? revise?.calculations ?? [];
@@ -49,23 +53,24 @@ export default function IssueForm({ calculationId, roomDesignId, revise, initial
     <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); submit(); }}>
       <div className="form-grid">
         {revise ? (
-          <label className="field">
-            <span>{t(revise.rooms ? 'reviseRoom' : 'reviseCalc')}</span>
-            <select className="input" value={calc} onChange={(e) => setCalc(e.target.value)} required>
+          <div className="field">
+            <Etichetta htmlFor={`${uid}-da`} className="field-label" nome={t(revise.rooms ? 'reviseRoom' : 'reviseCalc')}
+              aiuto={revise.rooms ? testoAiuto(AIUTO, 'revisioneRilievo') : testoAiuto(AIUTO, 'revisioneCalcolo')}>{t(revise.rooms ? 'reviseRoom' : 'reviseCalc')}</Etichetta>
+            <select id={`${uid}-da`} className="input" value={calc} onChange={(e) => setCalc(e.target.value)} required>
               {options.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
             </select>
-          </label>
+          </div>
         ) : null}
         {revise ? (
-          <label className="field">
-            <span>{t('reviseNote')}</span>
-            <input className="input" value={note} onChange={(e) => setNote(e.target.value)} minLength={3} maxLength={120} required />
-          </label>
+          <div className="field">
+            <Etichetta htmlFor={`${uid}-note`} className="field-label" aiuto={testoAiuto(AIUTO, 'reviseNote')} nome={t('reviseNote')}>{t('reviseNote')}</Etichetta>
+            <input id={`${uid}-note`} className="input" value={note} onChange={(e) => setNote(e.target.value)} minLength={3} maxLength={120} required />
+          </div>
         ) : null}
-        <label className="field">
-          <span>{t('initials')}</span>
-          <input className="input" value={initials} onChange={(e) => setInitials(e.target.value)} maxLength={12} required />
-        </label>
+        <div className="field">
+          <Etichetta htmlFor={`${uid}-initials`} className="field-label" aiuto={testoAiuto(AIUTO, 'initials')} nome={t('initials')}>{t('initials')}</Etichetta>
+          <input id={`${uid}-initials`} className="input" value={initials} onChange={(e) => setInitials(e.target.value)} maxLength={12} required />
+        </div>
       </div>
       {revise ? <p className="note">{t('reviseHint')}</p> : null}
       {checks?.machine ? (

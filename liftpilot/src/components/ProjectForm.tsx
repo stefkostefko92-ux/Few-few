@@ -1,10 +1,13 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useId, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { createProjectAction, updateProjectAction } from '@/server/project-actions';
 import { initialFormState } from '@/server/form';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../messages/aiuto/impianti.json';
 import { DalRilievo, OrigineProvider, type OrigineRilievo } from './collega/origine';
+import Etichetta from './aiuto/Etichetta';
 
 export interface ProjectValues {
   id?: string;
@@ -32,7 +35,7 @@ type Field = (typeof FIELDS)[number][0] | 'notes';
 export default function ProjectForm({ initial, calcola = true, rilievo = null }: {
   initial?: ProjectValues; calcola?: boolean; rilievo?: { id: string | null; origine: OrigineRilievo } | null;
 }) {
-  const t = useTranslations('projects'), te = useTranslations('errors'), locale = useLocale();
+  const t = useTranslations('projects'), te = useTranslations('errors'), locale = useLocale(), uid = useId();
   const [state, action, pending] = useActionState(initial?.id ? updateProjectAction : createProjectAction, initialFormState);
   const [v, setV] = useState<Record<Field, string>>(() => ({
     name: initial?.name ?? '', plantNumber: initial?.plantNumber ?? '', address: initial?.address ?? '', city: initial?.city ?? '',
@@ -51,17 +54,20 @@ export default function ProjectForm({ initial, calcola = true, rilievo = null }:
         <p className="note tipo-dopo" id="tipo-dopo">{t('tipoNelCalcolo')}{calcola ? '' : ` ${t('createOnly')}`}</p>
       )}
       <div className="form-grid">
+        {/* the label names its input alone; the «?» sits beside it, outside it (components/aiuto) */}
         {FIELDS.map(([name, max, required]) => (
-          <label key={name} className={`field${name === 'name' ? ' span-2' : ''}`}>
-            <span>{t(`field_${name}`)}{required ? ' *' : ''}<DalRilievo id={name} value={v[name]} /></span>
-            <input className="input" name={name} value={v[name]} onChange={(e) => put(name, e.target.value)} maxLength={max} required={required}
+          <div key={name} className={`field${name === 'name' ? ' span-2' : ''}`}>
+            <Etichetta htmlFor={`${uid}-${name}`} className="field-label" aiuto={testoAiuto(AIUTO, name)} nome={t(`field_${name}`)}>
+              {t(`field_${name}`)}{required ? ' *' : ''}<DalRilievo id={name} value={v[name]} />
+            </Etichetta>
+            <input id={`${uid}-${name}`} className="input" name={name} value={v[name]} onChange={(e) => put(name, e.target.value)} maxLength={max} required={required}
               aria-invalid={bad.has(name) || undefined} />
-          </label>
+          </div>
         ))}
-        <label className="field span-2">
-          <span>{t('field_notes')}</span>
-          <textarea className="input" name="notes" value={v.notes} onChange={(e) => put('notes', e.target.value)} maxLength={4000} />
-        </label>
+        <div className="field span-2">
+          <Etichetta htmlFor={`${uid}-notes`} className="field-label" aiuto={testoAiuto(AIUTO, 'notes')} nome={t('field_notes')}>{t('field_notes')}</Etichetta>
+          <textarea id={`${uid}-notes`} className="input" name="notes" value={v.notes} onChange={(e) => put('notes', e.target.value)} maxLength={4000} />
+        </div>
       </div>
       <div className="flex flex-wrap gap-3">
         <button type="submit" className="btn btn-primary" disabled={pending}>{initial?.id ? t('save') : t('create')}</button>

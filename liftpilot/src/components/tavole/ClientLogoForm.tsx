@@ -2,12 +2,15 @@
 
 // Upload or removal of the logo of the client who commissioned the installation, for the title block of its drawing
 // sets (next to the client's name on sheet 1). The server checks the bytes and keeps every logo: sets already issued
-// keep theirs.
+// keep theirs. The file's format and size are the field's «?» (round 52).
 import { useRef, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import SectionTitle from '@/components/project/SectionTitle';
 import { useRouter } from '@/i18n/routing';
 import { removeClientLogoAction, uploadClientLogoAction } from '@/server/client-logo-actions';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/impianti.json';
+import Etichetta from '../aiuto/Etichetta';
 
 interface Props {
   projectId: string;
@@ -44,10 +47,10 @@ export default function ClientLogoForm({ projectId, current, readOnly }: Props) 
       {readOnly ? null : (
         <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); run(() => uploadClientLogoAction(new FormData(e.currentTarget))); }}>
           <input type="hidden" name="projectId" value={projectId} />
-          <label className="field">
-            <span>{t('logoFile')}</span>
-            <input ref={file} className="input" type="file" name="logo" accept="image/png,image/jpeg" required />
-          </label>
+          <div className="field">
+            <Etichetta htmlFor="client-logo-file" className="field-label" aiuto={testoAiuto(AIUTO, 'logoFile')} nome={t('logoFile')}>{t('logoFile')}</Etichetta>
+            <input id="client-logo-file" ref={file} className="input" type="file" name="logo" accept="image/png,image/jpeg" required />
+          </div>
           <div className="flex flex-wrap items-center gap-3">
             <button type="submit" className="btn btn-primary" disabled={pending}>{t('logoUpload')}</button>
             {current ? <button type="button" className="btn" disabled={pending} onClick={() => run(() => removeClientLogoAction(projectId))}>{t('logoRemove')}</button> : null}

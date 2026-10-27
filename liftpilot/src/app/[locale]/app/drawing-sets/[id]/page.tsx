@@ -2,10 +2,13 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import Icon from '@/components/Icon';
+import Aiuto from '@/components/aiuto/Aiuto';
 import SectionTitle from '@/components/project/SectionTitle';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../../../../messages/aiuto/documenti.json';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import { ambitoOf } from '@/lib/lift/collaudo';
@@ -30,6 +33,7 @@ export async function generateMetadata() {
 // An issued drawing set: its number and revision, the PDF (kept as issued), one sheet at a time drawn again from what
 // the set was made of (the same drawing, or a warning that the engines no longer reproduce it), where its calculation
 // and shaft design disagree, the revisions and a new revision. A replacement's set is drawn from its saved machine room.
+// What each CAD format holds is the «?» of its panel's heading (round 52).
 export default async function DrawingSetPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ p?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -48,7 +52,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
   const total = doc?.pages.length ?? s.pages, page = Math.min(Math.max(1, Number((await searchParams).p) || 1), total);
   const sheet = doc?.pages[page - 1];
   const revs = revisionsSchema.safeParse(s.revisions);
-  const editable = can(user, 'drawings:issue') && !s.project.archivedAt;
+  const editable = can(user, 'drawings:issue') && !s.project.archivedAt, cadAiuto = testoAiuto(AIUTO, 'cad');
   // a whole project's set comes from a calculation made from a shaft design, a replacement's from a saved machine room
   const calcs = editable && !s.roomDesign ? (await listCalculations(user, s.projectId)).filter((c) => c.shaftDesignId).map((c) => ({ id: c.id, label: `${fd.dateTime(c.createdAt)}${c.label ? ` · ${c.label}` : ''} · ${c.summary}` })) : [];
   const roomLine = await roomSummaryLine();
@@ -95,7 +99,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
       ) : null}
       {doc && can(user, 'report:download') ? (
         <section className="panel">
-          <SectionTitle icon="file-cad">{t('cadTitle')}</SectionTitle>
+          <div className="lbl"><SectionTitle icon="file-cad">{t('cadTitle')}</SectionTitle>{cadAiuto ? <Aiuto testo={cadAiuto} nome={t('cadTitle')} /> : null}</div>
           <p className="note">{t('cadLead')}</p>
           <div className="doc-links">
             <a className="btn" href={`/api/drawing-sets/${s.id}/dxf`}><Icon name="file-dxf" size={18} />{t('cadDxf')}</a>

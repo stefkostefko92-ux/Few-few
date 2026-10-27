@@ -8,6 +8,9 @@ import { flashOk, isFlash } from '@/lib/collega/flash';
 import { collegaRilievoAction, scollegaRilievoAction } from '@/server/collega/actions';
 import { cercaImpianti, impiantoDi, suggerimentiPer } from '@/server/collega/queries';
 import Icon from '@/components/Icon';
+import Etichetta from '@/components/aiuto/Etichetta';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/impianti.json';
 
 interface Scheda {
   id: string;
@@ -107,10 +110,10 @@ export default async function LinkPanel({ user, scheda, cerca, flash }: { user: 
             <ul className="lk-offer-list">{offerte.map((s) => <Offerta key={s.id} s={s} schedaId={scheda.id} locale={locale} link={link} t={t} />)}</ul>
           ) : <p className="note">{t('panel.suggestedNone')}</p>}
           <form className="lk-search" method="get" action={`/${locale}/app/rilievi/${scheda.id}#collegamento`} role="search" aria-label={t('panel.searchLabel')}>
-            <label className="field">
-              <span>{t('panel.searchLabel')}</span>
-              <input className="input" type="search" name="impianto" defaultValue={cerca} maxLength={80} placeholder={t('panel.searchPlaceholder')} autoComplete="off" />
-            </label>
+            <div className="field">
+              <Etichetta htmlFor="lk-cerca" className="field-label" aiuto={testoAiuto(AIUTO, 'cercaImpianto')} nome={t('panel.searchLabel')}>{t('panel.searchLabel')}</Etichetta>
+              <input id="lk-cerca" className="input" type="search" name="impianto" defaultValue={cerca} maxLength={80} placeholder={t('panel.searchPlaceholder')} autoComplete="off" />
+            </div>
             <button type="submit" className="btn btn-sm"><Icon name="search" size={16} />{t('panel.search')}</button>
           </form>
           {cerca ? (found.length ? (

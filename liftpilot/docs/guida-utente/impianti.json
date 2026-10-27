@@ -281,7 +281,7 @@
         {
           "title": "Intestazione",
           "intro": [
-            "In cima: la riga «Area di lavoro», il titolo «Rilievi» e la frase «Ogni lavoro parte dal sopralluogo: le schede di rilievo, l’impianto a cui appartengono e quello che resta da fare.»."
+            "In cima: la riga «Area di lavoro», il titolo «Rilievi» e la frase «Ogni lavoro parte dal sopralluogo: qui le schede di rilievo e cosa resta da fare.»."
           ],
           "fields": [],
           "actions": [
@@ -303,7 +303,7 @@
         {
           "title": "Primi passi",
           "intro": [
-            "Compare solo per un’azienda senza alcun impianto (nemmeno archiviato) e senza alcuna scheda di rilievo (nemmeno nel cestino); sparisce con il primo impianto o la prima scheda. Dice: «La tua azienda non ha ancora né impianti né schede di rilievo. Si parte così:» e propone tre passi, ciascuno con il suo pulsante se il tuo ruolo lo può usare."
+            "Compare solo per un’azienda senza alcun impianto (nemmeno archiviato) e senza alcuna scheda di rilievo (nemmeno nel cestino); sparisce con il primo impianto o la prima scheda. Dice: «Ancora nessun impianto né scheda di rilievo. Si parte così:» e propone tre passi, ciascuno con il suo pulsante se il tuo ruolo lo può usare."
           ],
           "fields": [],
           "actions": [
@@ -477,7 +477,7 @@
         {
           "title": "Intestazione",
           "intro": [
-            "In cima: la riga «Il tuo spazio di progettazione», il titolo «Impianti» (nella vista archivio «Impianti archiviati») e la frase «Gli impianti dell’azienda con il loro tipo di intervento, l’esito degli ultimi calcoli e le tavole emesse.». Nell’archivio la frase è «Si consultano in sola lettura; un impianto si ripristina dalla sua pagina.»."
+            "In cima: la riga «Il tuo spazio di progettazione», il titolo «Impianti» (nella vista archivio «Impianti archiviati») e la frase «Gli impianti dell’azienda, con il tipo di intervento e l’ultimo esito.». Nell’archivio la frase è «Si consultano in sola lettura; un impianto si ripristina dalla sua pagina.»."
           ],
           "fields": [],
           "actions": [
@@ -731,7 +731,7 @@
         {
           "title": "Dati per riconoscere l’impianto",
           "intro": [
-            "Sopra i campi: «I dati per riconoscere l’impianto; il tipo di intervento e i dati tecnici vengono dopo, nel Calcolo argano.» e la nota «Il tipo di intervento si sceglie nel Calcolo argano.». Se il tuo ruolo non fa i calcoli, la nota aggiunge che crei l’impianto con i suoi dati e il calcolo dell’argano lo fa un collega che ne ha il permesso; dopo il salvataggio si apre la pagina dell’impianto. Per gli altri ruoli, dopo il salvataggio si apre direttamente il Calcolo argano.",
+            "Sopra i campi: «I dati per riconoscere l’impianto.» e la nota «Il tipo di intervento e i dati tecnici si danno dopo, nel Calcolo argano.». Se il tuo ruolo non fa i calcoli, la nota aggiunge che il calcolo lo fa un collega che ne ha il permesso e che dopo il salvataggio si apre la pagina dell’impianto. Per gli altri ruoli, dopo il salvataggio si apre direttamente il Calcolo argano.",
             "Se un dato non è valido leggi «Controlla i campi evidenziati.» e il campo è evidenziato; quello che hai scritto resta."
           ],
           "fields": [
@@ -986,7 +986,7 @@
         {
           "title": "Rilievi",
           "intro": [
-            "Il riquadro dei rilievi collegati; lo vede chi vede i rilievi. Sotto il titolo: «Dal più recente: il primo è il riferimento, da cui partono i valori «dal rilievo» e il confronto.»; senza rilievi: «Nessun rilievo collegato.» e «Si collega dalla pagina del rilievo, nel riquadro «Collegamento all’impianto».». Un messaggio dopo il collegamento o lo scollegamento (per esempio «Rilievo collegato all’impianto.» o «Rilievo scollegato dall’impianto.») compare in cima al riquadro. Sotto ci sono i rilievi collegati, dal più recente: per ognuno la data del sopralluogo, il titolo della scheda (collegamento), l’indirizzo e «rilevato da …»; il primo ha il segno «riferimento»."
+            "Il riquadro dei rilievi collegati; lo vede chi vede i rilievi. Sotto il titolo: «Il primo è il riferimento dei valori «dal rilievo» e del confronto.»; senza rilievi: «Nessun rilievo collegato.» e «Si collega dalla pagina del rilievo, nel riquadro «Collegamento all’impianto».». Un messaggio dopo il collegamento o lo scollegamento (per esempio «Rilievo collegato all’impianto.» o «Rilievo scollegato dall’impianto.») compare in cima al riquadro. Sotto ci sono i rilievi collegati, dal più recente: per ognuno la data del sopralluogo, il titolo della scheda (collegamento), l’indirizzo e «rilevato da …»; il primo ha il segno «riferimento»."
           ],
           "fields": [],
           "actions": [
@@ -1018,7 +1018,7 @@
         {
           "title": "Confronto",
           "intro": [
-            "Compare solo se c’è un rilievo collegato e puoi vedere i rilievi. Sotto il titolo: «Il rilievo di riferimento del … accanto all’ultimo calcolo e all’ultimo progetto salvati.». A destra una sintesi, per esempio «nessuna differenza sullo stato di fatto, nessuna modifica prevista» (verde), «# differenze sullo stato di fatto, # modifiche previste» (rosso se ci sono differenze), «niente da confrontare: nessun calcolo o progetto salvato» o «nessun parametro tecnico confrontato: rilievo e record salvati non hanno valori in comune». È verde solo se è stato davvero confrontato qualcosa.",
+            "Compare solo se c’è un rilievo collegato e puoi vedere i rilievi. Sotto il titolo: «Il rilievo del … accanto all’ultimo calcolo e all’ultimo progetto.». A destra una sintesi, per esempio «nessuna differenza sullo stato di fatto, nessuna modifica prevista» (verde), «# differenze sullo stato di fatto, # modifiche previste» (rosso se ci sono differenze), «niente da confrontare: nessun calcolo o progetto salvato» o «nessun parametro tecnico confrontato: rilievo e record salvati non hanno valori in comune». È verde solo se è stato davvero confrontato qualcosa.",
             "La tabella ha le colonne «Parametro», «Rilievo», «Calcolo», «Progetto» e «Stato», in tre gruppi: «Stato di fatto» (quello che c’è sul posto: una differenza è un probabile errore), «Modifica prevista» (cambia con l’intervento: la differenza è attesa) e «Solo confronto» (testi e scelte del progetto, affiancati senza giudizio). Su telefono ogni riga diventa una scheda. I parametri senza valore nel rilievo stanno raccolti sotto la tabella in «Altri # parametri, senza valore nel rilievo»: li apri per vederli. Se il rilievo non ha valori da confrontare leggi «Il rilievo non ha valori da confrontare.»."
           ],
           "fields": [
@@ -1245,7 +1245,7 @@
         {
           "title": "Archivio dell’impianto",
           "intro": [
-            "Una sezione chiusa che compare solo se ce n’è bisogno: «Progetti del vano e calcoli salvati prima del modulo unico, senza un progetto dell’impianto: restano consultabili.». La apri per vedere i «Progetti del vano» (colonna «Misure»: «DXF/DWG» oppure «inserite a mano») e i «Calcoli». Un record dell’archivio «da aggiornare» si aggiorna dal Progetto."
+            "Una sezione chiusa che compare solo se ce n’è bisogno: «Progetti del vano e calcoli salvati prima del modulo unico: restano consultabili.». La apri per vedere i «Progetti del vano» (colonna «Misure»: «DXF/DWG» oppure «inserite a mano») e i «Calcoli». Un record dell’archivio «da aggiornare» si aggiorna dal Progetto."
           ],
           "fields": [],
           "actions": [],
@@ -1401,7 +1401,7 @@
       "purpose": [
         "Qui inserisci i dati che né il calcolo né il progetto del vano conoscono e che il foglio 1 delle tavole (e in parte la relazione tecnica) stampa. Tutti i campi sono facoltativi: un campo vuoto va in tavola come trattino o con l’ipotesi del software. Prima di salvare, il server controlla tutti i campi con le stesse regole; un numero fuori dai limiti fa rifiutare l’intero salvataggio.",
         "I dati si salvano sull’impianto (uno per impianto) e valgono per le tavole che emetti dopo: le tavole già emesse restano come sono state emesse. Se i dati cambiano dopo un’emissione, l’elenco delle tavole lo segnala («I dati dell’impianto del progetto sono cambiati dopo l’emissione di queste tavole…»): per allinearle emetti una nuova revisione.",
-        "Il modulo mostra solo i campi che i documenti dell’impianto leggono. Per un impianto completo (progetto dell’ascensore, o calcolo il cui Progetto disegna il vano) vedi anche vano, rivestimento della cabina, uso, paracadute del contrappeso, correnti, passi delle staffe e masse della cabina. Per la sola sostituzione dell’argano in un locale esistente vedi una parte ridotta; i dati dell’impianto completo già inseriti restano salvati ma queste tavole non li usano né li stampano (messaggio: «I dati del vano, della cabina, delle correnti e delle staffe inseriti per un impianto completo restano salvati: queste tavole del locale macchina non li usano né li stampano.»)."
+        "Il modulo mostra solo i campi che i documenti dell’impianto leggono. Per un impianto completo (progetto dell’ascensore, o calcolo il cui Progetto disegna il vano) vedi anche vano, rivestimento della cabina, uso, paracadute del contrappeso, correnti, passi delle staffe e masse della cabina. Per la sola sostituzione dell’argano in un locale esistente vedi una parte ridotta; i dati dell’impianto completo già inseriti restano salvati ma queste tavole non li usano né li stampano (messaggio: «I dati inseriti per un impianto completo restano salvati: queste tavole del locale macchina non li stampano.»)."
       ],
       "shots": [
         {
@@ -1417,7 +1417,7 @@
         {
           "title": "Logo del committente",
           "intro": [
-            "Il testo del riquadro: «Il logo della società che ha commissionato il progetto: nel cartiglio delle tavole, accanto al nome del committente. PNG o JPEG fino a 300 KB; le tavole già emesse tengono il loro.» Se non c’è nessun logo leggi «Nessun logo del committente: nel cartiglio solo il nome.» Con un logo vedi l’anteprima («Logo del committente»)."
+            "Il logo della società che ha commissionato il progetto, in PNG o JPEG fino a 300 KB. Il testo del riquadro: «Va nel cartiglio delle tavole, accanto al nome del committente; le tavole già emesse tengono il loro.» Se non c’è nessun logo leggi «Nessun logo del committente: nel cartiglio solo il nome.» Con un logo vedi l’anteprima («Logo del committente»)."
           ],
           "fields": [
             {
@@ -1454,7 +1454,7 @@
         {
           "title": "Impianto",
           "intro": [
-            "Primo riquadro del modulo, con il titolo «Impianto». Sotto i campi leggi la nota «Porte, arcata, guide nuove o esistenti, staffe, limitatore e fune, ammortizzatori, massa dell’argano e dei cavi vengono dal progetto e dalle parti sostituite nel collaudo: si cambiano lì.» (per l’impianto completo) oppure «La massa dell’argano viene dal calcolo: si cambia lì.» (per la sostituzione)."
+            "Primo riquadro del modulo, con il titolo «Impianto». Sotto i campi leggi la nota «Porte, arcata, guide, staffe, limitatore, ammortizzatori e masse dell’argano e dei cavi vengono dal progetto e dal collaudo: si cambiano lì.» (per l’impianto completo) oppure «La massa dell’argano viene dal calcolo: si cambia lì.» (per la sostituzione)."
           ],
           "fields": [
             {
@@ -1753,7 +1753,8 @@
             }
           ],
           "notes": [
-            "Quello che serve al foglio 1 e non è qui viene dal progetto o dal calcolo (porte, arcata, guide nuove o esistenti, staffe, limitatore, ammortizzatori, masse dell’argano e dei cavi): lo cambi dove nasce, non in questa pagina."
+            "Quello che serve al foglio 1 e non è qui viene dal progetto o dal calcolo (porte, arcata, guide nuove o esistenti, staffe, limitatore, ammortizzatori, masse dell’argano e dei cavi): lo cambi dove nasce, non in questa pagina.",
+            "In modalità «Semplice» i due passi delle staffe e la regola sotto di essi non compaiono: vale il passo standard del software. Per inserirne uno passa a «Esperto»."
           ],
           "warnings": [
             "Un numero fuori dai limiti fa rifiutare tutto il salvataggio («Controlla i campi evidenziati.»).",

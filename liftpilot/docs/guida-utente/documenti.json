@@ -97,7 +97,7 @@
         {
           "title": "File CAD della serie emessa",
           "intro": [
-            "Il riquadro compare solo se il software attuale sa ridisegnare la serie e solo per chi può scaricare i documenti. Il testo del riquadro dice: tutti i fogli del PDF in DXF, DWG e SVG, da inviare al posto della bozza. In DXF e DWG trovi le viste in scala reale con le loro legende e note, il foglio 1 con il cartiglio del numero e della revisione, le verifiche del progetto e i muri campiti. In SVG trovi un file per foglio, in millimetri alla scala di stampa, con il carattere incorporato.",
+            "Il riquadro compare solo se il software attuale sa ridisegnare la serie e solo per chi può scaricare i documenti. Il testo del riquadro: «Tutti i fogli del PDF in DXF, DWG e SVG, da inviare al posto della bozza, con le legende, il cartiglio e le verifiche del progetto.» In DXF e DWG trovi le viste in scala reale con le loro legende e note, il foglio 1 con il cartiglio del numero e della revisione, le verifiche del progetto e i muri campiti. In SVG trovi un file per foglio, in millimetri alla scala di stampa, con il carattere incorporato.",
             "I file sono ridisegnati dal server a partire da ciò che la serie conteneva e coincidono con il PDF: se i motori di calcolo sono cambiati, il server rifiuta il download (errore 409) e devi emettere una revisione."
           ],
           "fields": [],
