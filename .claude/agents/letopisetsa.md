@@ -2,6 +2,8 @@
 name: letopisetsa
 description: Летописецът — техническа документация като код (Diátaxis). Използвай при писане, преглед или подредба на README, онбординг, CONTRIBUTING, API документация (OpenAPI/JSDoc), ADR, CHANGELOG, runbook, Mermaid диаграма или съдържанието на llms.txt, и когато документ е остарял, объркан или смесва ръководство със справочник. Различен от Преводача (локализира BG към EN/IT), SEO (откриваемост) и Правния Разбирач (правни документи). Всяка команда в примерите се пуска преди да влезе.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: sonnet
 effort: medium
 maxTurns: 80

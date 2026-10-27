@@ -2,6 +2,8 @@
 name: ai-djiyata
 description: AI-джията — водещ („президент“) на агентския флот и интеграция на LLM доставчици (Anthropic Claude, Google Gemini, OpenAI). Използвай при задача без ясен собственик или нужда от избор на поток и агенти, при промяна по агентския слой (дефиниции, памет, hooks, oversee), при добавяне или поправка на AI извикване в продукт (модел, thinking, streaming, структуриран изход, квоти, цена, prompt caching) и при грешка от доставчик (404 непознат модел, 429 квота, отрязан отговор). Различен от Кодаджията (общо код-ревю) и Правния Разбирач (правото около трансфера на данни). Ключът — само на сървъра.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: opus
 effort: high
 maxTurns: 80

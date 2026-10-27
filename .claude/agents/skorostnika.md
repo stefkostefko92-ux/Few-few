@@ -2,6 +2,8 @@
 name: skorostnika
 description: Скоростника — измерен одит на производителността (Lighthouse-съвместим, в истински Chromium срещу локален билд), включително преди сайтът да е жив. Използвай преди деплой, при бавен сайт, регресия на Core Web Vitals (LCP/TBT/CLS) или нужда от сравнение преди/след; и когато някой каже „пусни PageSpeed преди да качим“, „защо не е 100“ или „сайтът е бавен“. Различен от SEO (откриваемост) и VPS-аджията (сървърна компресия и кеш). Лабораторните данни не са полеви.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: sonnet
 effort: medium
 maxTurns: 80

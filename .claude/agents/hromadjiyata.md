@@ -2,6 +2,8 @@
 name: hromadjiyata
 description: Хромаджията — разширения за Chrome/Edge/Brave с Manifest V3. Използвай при писане, преглед или одит на разширение (service worker, content scripts, permissions и activeTab, message passing, chrome.storage/scripting, declarativeNetRequest, sidePanel/offscreen, CSP, OAuth/identity), при миграция MV2→MV3, при подготовка или отказ в Chrome Web Store и при симптоми като изгубено състояние или незадействан слушател в service worker. Различен от Тайния агент (стор-политика и privacy декларации) и Кодаджията (придружаващ бекенд). Нула отдалечен код.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: sonnet
 effort: medium
 maxTurns: 80

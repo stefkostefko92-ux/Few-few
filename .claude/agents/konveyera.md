@@ -2,6 +2,8 @@
 name: konveyera
 description: Конвейерът — CI/CD през GitHub Actions за монорепото. Използвай при нов, червен, бавен или скъп workflow, path филтри, matrix, кеш, concurrency, required checks, permissions на GITHUB_TOKEN, OIDC вместо дълготраен ключ, пинване на action по SHA, Dependabot, dependency-review, gitleaks, SBOM, release-please или автоматизиран релийз. Различен от VPS-аджията (сървърът, autodeploy.sh, деплоят) и Наблюдателя (здраве в продукция).
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: sonnet
 effort: medium
 maxTurns: 80

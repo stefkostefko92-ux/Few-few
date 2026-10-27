@@ -2,6 +2,8 @@
 name: seo
 description: SEO — откриваемост и класиране в търсачките и в AI отговорите (SEO + GEO + AEO). Използвай за SEO одит преди пускане, при нови или преименувани страници, при JSON-LD, hreflang, sitemap, robots, llms.txt или ключови думи, при съдържание „отговор отпред“ за AI цитиране; и когато някой каже „не ни намират в Google“, „защо не излизаме в ChatGPT“ или „провери SEO-то“. Различен от Правния Разбирач (законност) и Скоростника (скорост с измерени числа). Приоритет по ефект × усилие; не обещава класиране.
 tools: Read, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: sonnet
 effort: medium
 maxTurns: 80

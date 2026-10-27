@@ -194,6 +194,10 @@ for (const id of allIds) {
     const defLines = def.split("\n").length;
     r.defLines = defLines;
     if (defLines > DEF_LINE_WARN) r.warn.push(`дефиниция ${defLines} реда (>${DEF_LINE_WARN}) — раздутото разрежда адхеренцията; премести исторически „vX.Y" секции в паметта/докове`);
+    // Доктрината и процедурата идват като умението agent-doctrine (`skills:`) — без него агентът тръгва без тях.
+    const fmBlock = def.split(/^---\s*$/m)[1] || "";
+    if (!/^skills:\s*\n(?:[ \t]+-[ \t]+\S+\s*\n)*?[ \t]+-[ \t]+agent-doctrine\s*$/m.test(fmBlock))
+      r.hard.push("няма agent-doctrine в skills: — агентът тръгва без доктрината за сигурност и процедурата");
     if (repeatsLearnProtocol(def)) r.hard.push("дефиницията преповтаря цикъла за учене (```learn схема) — той живее само в _memory/PROCEDURE.md; остави един ред с доменния гейт за „verified“");
     // Описанието: по него главната сесия избира агента и го плаща на всеки ход.
     const desc = ((def.split(/^---\s*$/m)[1] || "").match(/^description:[ \t]*(.*)$/m) || [])[1];
@@ -214,6 +218,7 @@ const team = [];
 if (fallbackOk === false) { team.push({ level: "hard", msg: "FALLBACK в index.html НЕ съвпада с agents.json" }); hardFails++; }
 if (fallbackOk === null) { team.push({ level: "warn", msg: "не намерих FALLBACK блок в index.html" }); warns++; }
 if (!securityDoctrine) { team.push({ level: "hard", msg: "липсва доктрината _memory/SECURITY.md (инжектира се във всеки агент)" }); hardFails++; }
+if (!existsSync(join(ROOT, ".claude", "skills", "agent-doctrine", "SKILL.md"))) { team.push({ level: "hard", msg: "липсва умението agent-doctrine (доктрина + процедура за всеки агент) — node tools/agents/doctrine-skill.mjs --write" }); hardFails++; }
 if (!procedureDoctrine) { team.push({ level: "hard", msg: "липсва общата процедура _memory/PROCEDURE.md (единен цикъл + HANDOFF, инжектира се във всеки агент)" }); hardFails++; }
 // Fail-loud при ТОЧЕН сблъсък (не near-dup): два агента с еднакъв accent/name чупят разпознаваемостта.
 const dupKey = (k) => { const seen = new Set(), dups = new Set(); for (const a of aj.agents) { const v = a[k]; if (v == null) continue; if (seen.has(v)) dups.add(v); else seen.add(v); } return [...dups]; };

@@ -2,6 +2,8 @@
 name: geymara
 description: Геймъра — FiveM ресурси за GTA V мултиплейър (CFX) на Lua (и JS/C#) с CitizenFX API, ESX/QBCore/Qbox, ox_lib и oxmysql. Използвай при писане, преглед или оптимизация на FiveM скрипт, fxmanifest.lua, client/server/shared събития, callbacks и state bags, при дюп или експлойт през сървърно събитие и при лаг от natives или цикли без Wait. Различен от Кодаджията (общо код-ревю извън FiveM). Валидацията е на сървъра, natives се кешират.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: sonnet
 effort: medium
 maxTurns: 80

@@ -2,6 +2,8 @@
 name: tayniyat-agent
 description: Тайният агент — изрядност пред ревюто на Apple, Google и Meta. Използвай преди качване в App Store, Google Play или Chrome Web Store, при App Privacy етикети, Privacy Manifest и Data Safety, target API, затворен тест, Google OAuth verification и CASA, Meta App Review и Business Verification, при отказ от ревю или риск от бан; и когато някой каже „отхвърлиха ни“, „ще мине ли ревюто“ или „какво да попълним в Data Safety“. Различен от Мобилджията и Хромаджията (строят продукта) и Правния Разбирач (право и GDPR). Никога не заобикаля ревюто.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: opus
 effort: high
 maxTurns: 80

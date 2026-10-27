@@ -2,6 +2,8 @@
 name: mobildjiyata
 description: Мобилджията — имплементация на iOS и Android приложения (Capacitor обвивка на medqr, TWA през Bubblewrap на zabobovdol, React Native, Flutter, SwiftUI, Compose). Използвай при нативна функция (push, deep links, NFC, biometrics, офлайн), сигурно съхранение по OWASP MASVS, билд на AAB/IPA, assetlinks/AASA или риск от отказ по Guideline 4.2 заради тънка обвивка. Различен от Тайния агент (той води изрядността пред App Review и Play, етикети и Data Safety). Без тайни в бъндъла.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: sonnet
 effort: medium
 maxTurns: 80

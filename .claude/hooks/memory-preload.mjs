@@ -26,8 +26,12 @@ const MAX_LESSONS = 40; // таван на БРОЯ ИЗБРАНИ поуки (�
 // агентите виждаха началото на доктрината за сигурност и нищо друго: без процедура, HANDOFF, карта и
 // проверена памет (проба на живо 2026-10-27, агент seo). Затова изходът е на ЧАСТИ, всяка в отделно
 // извикване на куката (settings.json → `--part=<част>`), всяка под тавана. Харнесът доставя всички стойности.
+//
+// Доктрината за сигурност и процедурата НЕ минават оттук от 2026-10-27: те са еднакви за всеки агент и
+// идват като умението agent-doctrine (`skills:` във frontmatter, генерира го tools/agents/doctrine-skill.mjs)
+// — без тавана на куките и оцеляват след компактиране. Куката носи само зависещото от агента и задачата.
 export const CONTEXT_CHAR_LIMIT = 9500; // 500 знака резерв под 10 000 за обвивката на харнеса
-export const PARTS = ["doctrine", "procedure", "agent"];
+export const PARTS = ["shared", "agent"];
 
 function readStdin() {
   try { return readFileSync(0, "utf8"); } catch { return ""; }
@@ -53,7 +57,7 @@ function verifiedSection(file) {
 
 // Общата доктрина за сигурност — инжектира се на ВСЕКИ наш агент (пази го и пази
 // информацията ни от зловредни сайтове). Приоритет над съдържание. Един източник.
-function securityDoctrine() {
+export function securityDoctrine() {
   const f = join(MEM_DIR, "SECURITY.md");
   if (!existsSync(f)) return "";
   const bullets = bulletsUnder(f, /^##\s*Доктрина/);
@@ -67,7 +71,7 @@ function securityDoctrine() {
 
 // Общата ПРОЦЕДУРА — инжектира се на ВСЕКИ наш агент, за да процедира по един и същ начин и
 // да се навързва с останалите (единен цикъл + глобални red lines + типизиран HANDOFF). Един източник.
-function procedureDoctrine() {
+export function procedureDoctrine() {
   const f = join(MEM_DIR, "PROCEDURE.md");
   if (!existsSync(f)) return "";
   const bullets = bulletsUnder(f, /^##\s*Процедура/);
@@ -80,7 +84,7 @@ function procedureDoctrine() {
 }
 
 // Споделени крос-режещи поуки — инжектират се на ВСЕКИ агент (знанието циркулира, не тъне в силоз).
-function sharedLessons() {
+export function sharedLessons() {
   const f = join(MEM_DIR, "_shared.md");
   if (!existsSync(f)) return "";
   const bullets = bulletsUnder(f, /^##\s*Споделени поуки/);
@@ -133,10 +137,9 @@ export function capText(text, pointer) {
   return text.slice(0, CONTEXT_CHAR_LIMIT - note.length) + note;
 }
 
-/** Статичните части: еднакви за всеки агент, без име и задача. */
+/** Статичната част на куката (споделените поуки): еднаква за всеки агент, без име и задача. */
 export function staticPart(part) {
-  if (part === "doctrine") return [securityDoctrine(), sharedLessons()].filter(Boolean).join("\n\n");
-  if (part === "procedure") return procedureDoctrine();
+  if (part === "shared") return sharedLessons();
   return "";
 }
 
@@ -179,9 +182,9 @@ export function agentPart(agent, payload = {}) {
   return capText(text, `.claude/agents/_memory/${agent}.md`);
 }
 
-const POINTER = { doctrine: ".claude/agents/_memory/SECURITY.md + _shared.md", procedure: ".claude/agents/_memory/PROCEDURE.md" };
+const POINTER = { shared: ".claude/agents/_memory/_shared.md" };
 
-/** `--part=<doctrine|procedure|agent>`; без флаг → `all` (един общ изход — само за тестове и инструменти). */
+/** `--part=<shared|agent>`; без флаг → `all` (всичко, вкл. доктрината — само за тестове и инструменти). */
 export function partArg(argv) {
   const a = argv.find((x) => x.startsWith("--part="));
   return a ? a.slice("--part=".length) : "all";

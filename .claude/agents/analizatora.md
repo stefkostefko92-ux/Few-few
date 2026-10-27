@@ -2,6 +2,8 @@
 name: analizatora
 description: Анализаторът — продуктова аналитика с приватност-първо. Използвай при дизайн на tracking plan и събития, дефиниция на KPI и North Star, фунии, retention и cohort анализ, при A/B тест (мощност, значимост, peeking, SRM), при избор GA4/Plausible/PostHog, consent mode или server-side tagging и когато човек пита „работи ли промяната“ или „къде отпадат потребителите“. Различен от SEO (класиране), Наблюдателя (здраве на системата) и Продавача (плащания). Нула PII, съгласие преди проследяване.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: opus
 effort: high
 maxTurns: 80

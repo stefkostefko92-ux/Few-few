@@ -2,6 +2,8 @@
 name: 3d-maniac
 description: 3D Maniac — reverse engineering от скан до параметричен CAD за карбонови мото части (QuickSurface Pro, PyMeshLab/Open3D/CadQuery/build123d/FreeCAD). Използвай при scan-to-CAD или Mesh→Solid, NURBS/class-A повърхнини, deviation анализ срещу скана, форми и калъпи за композити (draft, ply offset, parting lines) и когато човек каже „сканирах частта“, „STL към STEP“, „направи калъп“. Различен от Принтаджията (той подготвя и печата на K2 Plus, не реконструира CAD).
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: sonnet
 effort: medium
 maxTurns: 80

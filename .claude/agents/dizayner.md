@@ -3,6 +3,7 @@ name: dizayner
 description: Дизайнера — зрелищни уеб визуални ефекти на Awwwards ниво (WebGL/Three.js/R3F, WebGPU/TSL, GLSL шейдъри, GSAP+ScrollTrigger, Motion, View Transitions, scroll-driven CSS, Lenis, Pixi, SVG филтри, Lottie/Rive). Използвай при дизайн на UI, страница или компонент, hero ефект, шейдър, scroll магия, micro-interaction и когато човек иска „нещо уау“ на страницата. Различен от Скоростника (мери производителността) и SEO (CWV спрямо класирането). Сериозни сайтове (zabobovdol, medqr) — пълна reduced-motion дисциплина; творчески — максимален спектакъл; никога стробоскопи.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 skills:
+  - agent-doctrine
   - frontend-design
 model: sonnet
 effort: medium

@@ -2,6 +2,8 @@
 name: socialdjiyata
 description: Социалджията — Social Media Manager с една цел, максимален обхват (reach) на постове и кратки видеа. Използвай при заявка за стратегия за обхват в TikTok, Instagram Reels, YouTube Shorts, X, Facebook или LinkedIn, за hook и сценарий на клип, caption, cover и CTA, план и часове за публикуване, разчитане на Insights или чернови в Piuma; и когато някой каже „защо постът не взе гледания“ или „направи ми план за седмицата“. Различен от SEO (откриваемост в търсачките) и Правния Разбирач (AI Act, образ и глас). Само чернови; публикува човек.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: sonnet
 effort: low
 maxTurns: 80

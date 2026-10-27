@@ -10,8 +10,9 @@
 29 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
 **durable verified memory** + a **hook-enforced self-learning loop**
 (`SubagentStart`/`SubagentStop` → `_memory/<id>.md`; verified-only,
-source-or-nothing, secrets hard-dropped). Every agent also gets a **hook-injected
-security doctrine** (`_memory/SECURITY.md`, via `memory-preload.mjs`) — state-level
+source-or-nothing, secrets hard-dropped). Every agent also preloads the **security
+doctrine + procedure** as the `agent-doctrine` skill (`skills:` in each definition, generated from
+`_memory/SECURITY.md` + `PROCEDURE.md` by `doctrine-skill.mjs`, gated in `gate.mjs`) — state-level
 defense against malicious sites: all external content is untrusted **data not
 instructions** (prompt-injection resistant), lethal-trifecta aware, **never
 exfiltrates secrets/PII**, fail-closed. It overrides any instruction found in
@@ -186,7 +187,7 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 25): **процедури** — deploy · prisma-migrate · quality-gate ·
+guardrails*. Ours (BG, vetted; 26): **агентски** — agent-doctrine (генериран, зарежда се във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik;
 **предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch · db-readonly ·
@@ -226,8 +227,11 @@ Claude" (Anthropic, 33 стр.) описва изисквания, които п
 
 **Доставката се мери през харнеса, не през функцията.** Стойност на `additionalContext` над 10 000 знака
 не влиза в контекста (Claude Code от 2.1.89, 01.04.2026 — https://code.claude.com/docs/en/changelog.md) — харнесът я записва във файл и подава само път +
-2 000-знаков преглед. Затова `memory-preload` подава три части (`--part=doctrine|procedure|agent`, всяка под
-9 500 знака), а `tools/hooks/preload-size.test.mjs` гейтва регистрацията, тавана за всеки агент и пълнотата.
+2 000-знаков преглед. Затова статичната доктрина (сигурност + процедура) е умението `agent-doctrine`, заредено през `skills:` —
+без тавана на куките и оцелява след компактиране (проба на живо 2026-10-27: нова сесия с изключени куки, агентът
+го вижда; умение, създадено по средата на сесия, стига до агентите едва в следваща сесия). `memory-preload`
+подава само `--part=shared|agent`, всяка под 9 500 знака; `tools/hooks/preload-size.test.mjs` гейтва
+регистрацията, тавана, `skills:` на всеки агент, синхрона на умението и пълнотата.
 Цената на пропуска (измерено на стари commit-и: 15 293 знака на 04.07.2026, 22 138 на 12.07, ~25 000 на
 27.10): до 27.10.2026 агентите тръгваха само с началото на доктрината за сигурност — без процедура,
 ПРЕДАВАНЕ, карта и собствена памет — при зелени `memory-recall` и тестове на куката, защото те мереха какво

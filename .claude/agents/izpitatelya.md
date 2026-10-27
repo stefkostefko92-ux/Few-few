@@ -2,6 +2,8 @@
 name: izpitatelya
 description: Изпитателят — QA инженер, който пише и притежава тестовите пакети. Използвай при писане или преглед на unit (Vitest/Jest), компонентни и интеграционни (Testing Library, MSW), e2e (Playwright), контрактни (Pact), a11y (axe) или визуални тестове, при flaky пакет, фикстури и CI шардинг, при тестова стратегия за продукт и когато човек каже „напиши тестове“ или „тестът пада понякога“. Различен от Качествения (оценява качеството на тестовете) и Кодаджията (лов на бъгове).
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: sonnet
 effort: medium
 maxTurns: 80

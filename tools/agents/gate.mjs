@@ -27,6 +27,7 @@ const SERIAL = argv.includes("--serial");
 const CHECKS = [
   // Пръв по ред: ако наш файл не се парсва, всички следващи проверки падат по объркваща причина.
   { id: "syntax", desc: "всеки наш .mjs се парсва (права кавичка в „ … “ чупи низа)", cmd: ["tools/lib/syntax-check.mjs"] },
+  { id: "doctrine-skill", desc: "умението agent-doctrine е байт в байт _memory/SECURITY.md + PROCEDURE.md (то носи доктрината до агентите)", cmd: ["tools/agents/doctrine-skill.mjs"] },
   { id: "oversee", desc: "надзор над екипа (цялост дефиниция↔памет↔agents.json↔settings)", cmd: ["tools/agents/oversee.mjs"] },
   { id: "deep-audit", desc: "дупки: регистър↔дефиниция · инжекции · счупени препратки · продукти", cmd: ["tools/agents/deep-audit.mjs", "--check"] },
   { id: "drift-lint", desc: "счупени референции + бройка/ростер consistency", cmd: ["tools/agents/drift-lint.mjs"] },

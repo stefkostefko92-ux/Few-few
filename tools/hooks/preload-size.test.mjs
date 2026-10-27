@@ -14,6 +14,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { CONTEXT_CHAR_LIMIT, PARTS, capText } from "../../.claude/hooks/memory-preload.mjs";
+import { renderDoctrineSkill, SKILL_FILE, SKILL_NAME } from "../agents/doctrine-skill.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const HOOK = join(ROOT, ".claude", "hooks", "memory-preload.mjs");
@@ -49,8 +50,8 @@ test("settings.json вика memory-preload САМО на части и покр
   assert.deepEqual([...parts].sort(), [...PARTS].sort(), "всяка част трябва да е регистрирана точно веднъж");
 });
 
-test("статичните части се побират ЦЕЛИ — без отрязване (растеж на доктрината/процедурата пада тук)", () => {
-  for (const part of ["doctrine", "procedure"]) {
+test("статичните части се побират ЦЕЛИ — без отрязване (растеж на споделените поуки пада тук)", () => {
+  for (const part of PARTS.filter((p) => p !== "agent")) {
     const ctx = run(part, AGENTS[0]);
     assert.ok(ctx.length > 500, `${part}: празна`);
     assert.ok(!ctx.includes("[отрязано на"), `${part}: ${ctx.length} знака — над тавана ${CONTEXT_CHAR_LIMIT}; съкрати текста`);
@@ -66,8 +67,19 @@ test(`агентската част е под тавана за всеки от 
   }
 });
 
-test("частите заедно носят всичко, което агентът трябва да види", () => {
-  const all = PARTS.map((p) => run(p, "kodadjiyata")).join("\n");
+// Доктрината и процедурата идват като умението agent-doctrine (`skills:`), не през куката — проба на живо
+// 2026-10-27: в нова сесия с изключени куки агентът вижда умението в контекста си. Затова пълнотата се
+// гейтва като умението + частите на куката заедно, а всеки агент трябва да го зарежда.
+test("всеки агент зарежда agent-doctrine през skills:, а умението съвпада с източниците", () => {
+  for (const a of AGENTS) {
+    const fm = readFileSync(join(ROOT, ".claude", "agents", `${a}.md`), "utf8").match(/^---\n([\s\S]*?)\n---/)[1];
+    assert.match(fm, new RegExp(`^skills:\\s*\\n(?:\\s+-\\s+\\S+\\n)*?\\s+-\\s+${SKILL_NAME}\\s*$`, "m"), `${a}: няма ${SKILL_NAME} в skills: — тръгва без доктрина`);
+  }
+  assert.equal(readFileSync(SKILL_FILE, "utf8"), renderDoctrineSkill(), "умението е остаряло — node tools/agents/doctrine-skill.mjs --write");
+});
+
+test("умението + частите на куката заедно носят всичко, което агентът трябва да види", () => {
+  const all = [readFileSync(SKILL_FILE, "utf8"), ...PARTS.map((p) => run(p, "kodadjiyata"))].join("\n");
   for (const marker of [/ДОКТРИНА ЗА СИГУРНОСТ/, /ОБЩА ПРОЦЕДУРА/, /СПОДЕЛЕНИ ПОУКИ/, /Изход\/артефакт:/, /Следваща стъпка:/, /Проверена памет на „kodadjiyata"/, /agent: kodadjiyata/]) {
     assert.match(all, marker, `липсва ${marker} в доставения контекст`);
   }

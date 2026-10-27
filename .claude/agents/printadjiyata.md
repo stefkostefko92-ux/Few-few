@@ -2,6 +2,8 @@
 name: printadjiyata
 description: Принтаджията — модели, готови за FDM печат на Creality K2 Plus (затворена камера, CFS до 16 нишки). Използвай при „направи модел за печат“, детайл, който се чупи, крива или залепва, надвеси и support, толеранси и сглобки, резби и heat-set inserts, слайс настройки в Creality Print/OrcaSlicer, избор на материал (PLA, PETG, ABS, ASA, PC, PA, CF, TPU), мулти-цвят с минимум отпадък, счупена (non-manifold) мрежа или 3MF. Различен от 3D Maniac (скан към CAD, карбонови форми).
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: sonnet
 effort: medium
 maxTurns: 80

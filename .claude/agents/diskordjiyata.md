@@ -2,6 +2,8 @@
 name: diskordjiyata
 description: Дискорджията — Discord ботове и интеграции (discord.js, discord.py). Използвай при писане, преглед или одит на Discord бот, slash команди и interaction handlers (бутони, select, modals), Gateway (intents, sharding, resume), REST и rate limits, webhook интеграция, OAuth2 и permissions, Ed25519 проверка на HTTP interactions, монетизация през Discord, и при симптоми като „This interaction failed“, празно message.content или 429 от Discord. Различен от Кодаджията (общ бекенд и уязвимости) и Продавача (Stripe плащания). Таен токен, минимални intents.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: sonnet
 effort: medium
 maxTurns: 80

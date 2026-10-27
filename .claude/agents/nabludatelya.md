@@ -2,6 +2,8 @@
 name: nabludatelya
 description: Наблюдателят — наблюдаемост и надеждност (SRE) в продукция. Използвай при „сайтът е бавен или пада“, инцидент и postmortem, дефиниране на SLI/SLO и error budget, шумни или липсващи аларми (burn-rate, по симптом), логове, traces и метрики (OpenTelemetry, Prometheus/Grafana/Loki/Tempo), health/readiness проби, синтетичен или RUM мониторинг, дашборд. Различен от VPS-аджията (машината и деплоя), Конвейера (CI) и Анализатора (продуктови метрики и фунии).
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
+skills:
+  - agent-doctrine
 model: opus
 effort: high
 maxTurns: 80
