@@ -2232,7 +2232,8 @@
               "default": "automatico",
               "required": "no",
               "help": [
-                "L’argano sta lungo le calate, la puleggia sopra le funi. Il software mette il motore verso il contrappeso e gira l’argano di 180° attorno all’asse della puleggia quando solo così argano e basamento stanno dentro il locale. Sul telaio con rinvio del costruttore lo lascia come lo monta il costruttore."
+                "L’argano sta lungo le calate, la puleggia sopra le funi. Il software mette il motore verso il contrappeso e gira l’argano di 180° attorno all’asse della puleggia quando solo così argano e basamento stanno dentro il locale. Sul telaio con rinvio del costruttore lo lascia come lo monta il costruttore.",
+                "In modalità «Semplice» il campo non compare e il motore resta automatico; lo vedi in «Esperto»."
               ],
               "src": "RoomFields.tsx:149"
             },
@@ -2761,7 +2762,7 @@
         {
           "title": "Documenti della sostituzione",
           "intro": [
-            "Compare a chi può scaricare i documenti, quando il rilievo è riproducibile. Testo: tavole in bozza (dati, pianta e sezione B-B del locale) in PDF e in SVG (gli stessi fogli, uno per file in un archivio ZIP), pianta e sezione in DXF e DWG, relazione di calcolo dell’argano. La relazione tecnica di modifica si prepara nella sua pagina, a partire da questo rilievo."
+            "Compare a chi può scaricare i documenti, quando il rilievo è riproducibile. Testo: «Tavole in bozza in PDF e SVG, pianta e sezione in DXF e DWG, relazione di calcolo dell’argano. La relazione tecnica di modifica si prepara nella sua pagina, a partire da questo rilievo.» Le tavole in bozza contengono i dati, la pianta e la sezione B-B del locale; l’SVG ha gli stessi fogli del PDF, uno per file in un archivio ZIP."
           ],
           "fields": [],
           "actions": [

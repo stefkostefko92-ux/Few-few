@@ -754,7 +754,8 @@
               "default": "Automatico: motore verso il contrappeso; il software gira l’argano di 180° attorno all’asse della puleggia quando solo così argano e basamento stanno nel locale. Sul telaio con rinvio del costruttore resta come lo monta il costruttore.",
               "required": "no",
               "help": [
-                "Da che parte sta il motore lungo le calate. Scegli un lato solo se il rilievo lo impone. Compare dopo il basamento (e anche per un argano esistente che resta)."
+                "Da che parte sta il motore lungo le calate. Scegli un lato solo se il rilievo lo impone. Compare dopo il basamento (e anche per un argano esistente che resta).",
+                "In modalità «Semplice» il campo non compare e il motore resta automatico; lo vedi in «Esperto»."
               ],
               "src": "src/components/shaft/RoomFields.tsx:148"
             },

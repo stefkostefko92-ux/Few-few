@@ -35,6 +35,9 @@ import Refreshed from '@/components/Refreshed';
 import { prisma } from '@/lib/db';
 import { calcoloBase, tipoDi } from '@/server/calcolo-base';
 import { ridisegnaDalCalcoloAction } from '@/server/ridisegna-actions';
+import { testoAiuto } from '@/lib/aiuto';
+import { ConAiuto } from '@/components/shaft/Campo';
+import AIUTO from '../../../../../../messages/aiuto/progetto.json';
 
 export async function generateMetadata() {
   const t = await getTranslations('lift');
@@ -144,7 +147,8 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
         ) : <p className="note">{t('docs_refused')}</p>}
         {same && can(user, 'report:download') ? (
           <div className="panel">
-            <SectionTitle level={3} icon="file-cad">{t('doc_export')}</SectionTitle>
+            {/* the formats' details beside the title (round 52): the lead keeps the essential */}
+            <ConAiuto aiuto={testoAiuto(AIUTO, 'export')} nome={t('doc_export')} block><SectionTitle level={3} icon="file-cad">{t('doc_export')}</SectionTitle></ConAiuto>
             <p className="note">{t('export_lead')}</p>
             <div className="doc-links">
               <a className="btn" href={`/api/lift-designs/${d.id}/pdf`}><Icon name="file-pdf" size={18} />{t('doc_pdf')}</a>

@@ -4,10 +4,14 @@
 // here), hashed with SHA-256 and shown; a click inside the shaft measures it; the user picks the side of the landing
 // doors and the layers that are walls. Only the resulting size and the description of the measure leave the page. The
 // side of the doors is the one seen on screen whatever the plan's turn (measure.ts aVista: the rays fold the walls'
-// direction into [0°, 90°), and a plan turned a few degrees clockwise would otherwise swap W and D).
+// direction into [0°, 90°), and a plan turned a few degrees clockwise would otherwise swap W and D). Round 52: the file,
+// the unit and the doors' side with their «?».
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import CadViewer from './CadViewer';
+import Campo, { ConAiuto } from './Campo';
 import { MM_PER_UNIT, type CadModel, type CadUnits } from '@/lib/cad/model';
 import { aVista, latoMisurato, shaftSize, type DoorSide, type Survey } from '@/lib/cad/measure';
 import { cadReadError, pickSurvey } from '@/lib/cad/pick';
@@ -92,11 +96,11 @@ export default function SurveyPanel({ onSurvey }: { onSurvey(r: SurveyResult): v
 
   return (
     <div className="survey">
-      <label className="field">
-        <span>{t('file')}</span>
-        <input className="input" type="file" accept=".dxf,.dwg,application/dxf,image/vnd.dxf,image/vnd.dwg" onChange={(e) => void onFile(e.target.files?.[0])} disabled={reading} />
-      </label>
-      <p className="note">{t('fileHint')}</p>
+      <Campo id="shaft-cad-file" nome={t('file')} aiuto={testoAiuto(AIUTO, 'cad_file')}>
+        <input id="shaft-cad-file" className="input" type="file" accept=".dxf,.dwg,application/dxf,image/vnd.dxf,image/vnd.dwg" onChange={(e) => void onFile(e.target.files?.[0])} disabled={reading}
+          aria-describedby="shaft-cad-file-hint" />
+      </Campo>
+      <p className="note" id="shaft-cad-file-hint">{t('fileHint')}</p>
       {reading ? <p className="note" role="status">{t('reading')}</p> : null}
       {error ? <p className="alert alert-bad" role="alert">{error}</p> : null}
       {model ? (
@@ -104,14 +108,13 @@ export default function SurveyPanel({ onSurvey }: { onSurvey(r: SurveyResult): v
           <p className="note">{t('fileInfo', { format: model.format.toUpperCase(), version: model.version, count: model.count, layers: model.layers.length })}
             {model.truncated ? ` ${t('truncated', { count: model.count })}` : ''}</p>
           <div className="survey-row">
-            <label className="field">
-              <span>{t('units')}</span>
-              <select className="input" value={units} onChange={(e) => setUnit(e.target.value as Exclude<CadUnits, 'unknown'>)}>
+            <Campo id="shaft-cad-units" nome={t('units')} aiuto={testoAiuto(AIUTO, 'cad_units')}>
+              <select id="shaft-cad-units" className="input" value={units} onChange={(e) => setUnit(e.target.value as Exclude<CadUnits, 'unknown'>)}>
                 {UNITS.map((u) => <option key={u} value={u}>{t(`unit_${u}`)}</option>)}
               </select>
-            </label>
-            <fieldset className="field">
-              <legend>{t('doorSide')}</legend>
+            </Campo>
+            <fieldset className="field" aria-labelledby="shaft-cad-side">
+              <legend><ConAiuto aiuto={testoAiuto(AIUTO, 'cad_doorSide')} nome={t('doorSide')}><span id="shaft-cad-side">{t('doorSide')}</span></ConAiuto></legend>
               <div className="seg-row" role="radiogroup" aria-label={t('doorSide')}>
                 {SIDES.map((s) => (
                   <label key={s} className={door === s ? 'on' : undefined}>

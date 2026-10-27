@@ -32,6 +32,8 @@ import { editShaft } from '@/lib/shaft-edit';
 import { applicaVano, valoreVano } from '@/lib/schizzi/applica';
 import { saveLiftDesignAction } from '@/server/lift-actions';
 import { editValue, keptPlan, type ShaftInputs } from '@/shaft';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import { asCalcDict } from '../calc/dict';
 import MissingPanel, { goToField } from '../MissingPanel';
 import RefreshNotice from '../RefreshNotice';
@@ -41,6 +43,7 @@ import { useDraft, type DraftTarget } from '../draft/useDraft';
 import { OrigineProvider, type OrigineRilievo } from '../collega/origine';
 import PanevBom from '../shaft/PanevBom';
 import PlanEditor from '../shaft/PlanEditor';
+import { ConAiuto } from '../shaft/Campo';
 import type { Modulo } from '../schizzi/ConfermaValori';
 import SchizzoPanel, { type SchizziStart } from '../schizzi/SchizzoPanel';
 import type { Refusal } from '../drawing/EditableDrawing';
@@ -250,6 +253,7 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
       <div className="savebar">
         <div className="inner">
           <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} placeholder={t('label')} aria-label={t('label')} />
+          <ConAiuto aiuto={testoAiuto(AIUTO, 'label')} nome={t('label')} />
           <button type="button" className="btn btn-primary" onClick={save} disabled={saving || !derived || !settled || refused.length > 0 || rivedere}>{saving ? t('saving') : t('save')}</button>
           <span className={derived && refused.length ? 'note bad' : 'note'}>
             {/* what to correct, each a link to where it is corrected (round 46: the falls by the plan's dimension) */}

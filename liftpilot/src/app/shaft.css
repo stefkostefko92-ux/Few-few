@@ -10,6 +10,9 @@
 /* fieldsets styled as the other fields; segmented choices */
 fieldset.field { border: 0; margin: 0; padding: 0; min-width: 0; }
 fieldset.field > legend { font-size: 13.5px; font-weight: 600; color: var(--ink-2); padding: 0; margin-bottom: 7px; }
+/* a name with its «?» (round 52, components/aiuto): the mark of a value still to enter after the name, not after the «?» */
+.need > legend:has(> .lbl)::after { content: none; }
+.need > legend > .lbl > span:first-child::after { content: " *"; color: var(--warn); font-weight: 600; }
 /* segmented choice: the template's filter buttons joined in one frame; the chosen one on the cyan-tinted slab with the
    cyan underline (not a cyan fill: several stand in one form) */
 .seg-row { display: inline-flex; flex-wrap: wrap; gap: 1px; width: fit-content; max-width: 100%; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); overflow: hidden; background: var(--rule); }

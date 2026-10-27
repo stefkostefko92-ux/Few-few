@@ -18,7 +18,9 @@
   .lift-form .row.wide { grid-template-columns: minmax(0, 1fr); row-gap: 5px; }
 }
 /* a long name wraps instead of running under its field; the «standard» badge follows it, on the next line if need be */
-.lift-form .row.wide > label { min-width: 0; overflow-wrap: anywhere; }
+.lift-form .row.wide > label, .lift-form .row.wide > .lbl > label { min-width: 0; overflow-wrap: anywhere; }
+/* the «?» of the save bar's name (round 52): the bar sits at the bottom of the screen, its explanation opens above it */
+.lift-work > .savebar .aiuto-testo { top: auto; bottom: calc(100% + 6px); }
 @media (max-width: 1079px) {
   .lift-work .lift-main { display: contents; }
   .lift-work .lift-facts { order: 1; }
@@ -156,6 +158,8 @@ html.sim-full-open { overflow: hidden; }
 .scenario-params > .field { flex: 1 1 15rem; }
 .scenario-params > .note { max-width: 80ch; }
 .floor-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+/* a parameter's choice with its «?» beside it (round 52) */
+.sim-seg { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; }
 /* the call buttons as a car's: the one called lights up */
 .floor-buttons > button { min-width: 2.75em; min-height: 40px; font: 500 14px/1 var(--font-mono); color: var(--ink); background: var(--btn-bg); border: 1px solid var(--accent-line); border-radius: var(--radius-sm);
   padding: 9px 10px; cursor: pointer; }
@@ -167,6 +171,8 @@ html.sim-full-open { overflow: hidden; }
 .transport .speed { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
 .transport .speed .input { width: auto; padding: 8px 10px; }
 .transport input.time { flex: 1 1 12rem; width: auto; min-width: 8rem; }
+/* the time's «?» ends the row: its explanation opens leftward, inside the screen */
+.transport > .lbl .aiuto-testo { left: auto; right: 0; }
 .transport .clock { font: 500 13px/1 var(--font-mono); color: var(--ink-2); min-width: 11ch; text-align: right; }
 
 .sim-result { display: flex; align-items: flex-start; gap: 10px 12px; padding: 12px 15px; border-radius: var(--radius-sm); border: 1px solid var(--ok-line); box-shadow: inset 3px 0 0 var(--ok); background: var(--surface2); }

@@ -6,7 +6,11 @@
 // below and its pulleys over the slab, the pulley room) and the ropes in the drawing (ProgettoFuni). The intervention,
 // the test, the machine and the calculation's values are changed in «Calcolo argano». A new drawing starts empty
 // (blankProgetto); the software's own values (rails, allowances, heights, niches, frames…) come once its data are in.
+// Round 52: every field with its «?» (messages/aiuto/progetto.json); the rare refinements (the software's choices in the
+// shaft, niches, headroom walls, frames, linings) are marked `esperto` in their components — hidden in «Semplice».
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import SectionTitle from '@/components/project/SectionTitle';
 import { KL, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import type { ProgettoAuto } from '@/lib/lift/progetto';
@@ -19,6 +23,7 @@ import type { Pres } from '@/lib/present/tr';
 import type { ShaftSource } from '@/lib/shaft-input';
 import type { BlankTexts } from '../calc/FieldRow';
 import { fieldId, mmOf, type FormBlank, type ShaftSet } from '../blank';
+import Campo from '../shaft/Campo';
 import ShaftOptions from '../shaft/ShaftOptions';
 import ShaftTechOptions from '../shaft/ShaftTechOptions';
 import VerticalOptions from '../shaft/VerticalOptions';
@@ -72,11 +77,10 @@ export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc
   const pulley = inp.calc.layout === 'bottom' && !is('bottom') && inp.bottom === 'room'
     ? { standard: pulleyRoomOf({ ...inp.shaft, room: null }), minH: KV_VERT.pulleyRoomH, doorW: KV_VERT.doorMinW, doorH: KV_VERT.pulleyDoorH, above: KV_VERT.pulleyAbove } : undefined;
   const size = (key: 'W' | 'D') => (
-    <label className={`field${is(key) ? ' need' : ''}`}>
-      <span>{ts(key)}</span>
+    <Campo id={fieldId(key)} nome={ts(key)} aiuto={key === 'W' ? testoAiuto(AIUTO, 'W') : testoAiuto(AIUTO, 'D')} need={is(key)}>
       <input id={fieldId(key)} className="input num" type="number" inputMode="numeric" min={500} max={10000} step={10} value={is(key) ? '' : inp.shaft[key]}
         aria-required={is(key) || undefined} onChange={(e) => { const v = mmOf(e.target.value); if (v !== null) setSize(key, v); }} />
-    </label>
+    </Campo>
   );
   const fromCalc = tp('fromCalc');
   return (

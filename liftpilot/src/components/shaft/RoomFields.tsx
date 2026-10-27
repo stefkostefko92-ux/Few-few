@@ -9,8 +9,11 @@
 // place the control panel: its wall and place are then shown as it put them, marked as such. With the support, the HEB
 // beams on the shaft's walls it may stand on (HebFields), and which way the machine lies along the rope drops (its motor
 // toward the counterweight, or turned round toward the car: the software's when not chosen). The pulley room of a
-// machine below (scheme room) holds neither machine nor panel: its size, height, slab and door only.
+// machine below (scheme room) holds neither machine nor panel: its size, height, slab and door only. Round 52: each field
+// with its «?»; the motor's side, which the survey rarely imposes, is marked `esperto` (hidden in «Semplice»).
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import type { HebTaken, RoomInputs } from '@/shaft';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { PROFILE_NAMES } from '@/shaft/profiles';
@@ -18,6 +21,7 @@ import { BASI_ESISTENTI, SUPPORT_SCELTE, hasProfile, profileOf, supportHeight, s
 import type { MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
 import { mmOf } from '../blank';
+import Campo, { ConAiuto } from './Campo';
 import HebFields from './HebFields';
 
 export interface RoomMachine {
@@ -66,38 +70,34 @@ const WALLS = ['front', 'rear', 'left', 'right'] as const;
 export default function RoomFields({ R, put, machine, blank = () => false, choose = '—', panel, pulley = false }: Props) {
   const t = useTranslations('shaft'), tl = useTranslations('lift');
   const field = (key: NumKey, min: number, max: number) => (
-    <label className={`field${blank(key) ? ' need' : ''}`} key={key}>
-      <span>{t(`rm_${key}`)}</span>
+    <Campo key={key} id={`bk-room-${key}`} nome={t(`rm_${key}`)} aiuto={testoAiuto(AIUTO, `rm_${key}`)} need={blank(key)}>
       <input id={`bk-room-${key}`} className="input num" type="number" inputMode="numeric" min={min} max={max} step={10}
         value={blank(key) || (key === 'ridge' && R.ridge === 0) ? '' : R[key]} aria-required={blank(key) || undefined}
         onChange={(e) => { const v = mmOf(e.target.value); if (v !== null) put({ [key]: v }, [key]); }} />
-    </label>
+    </Campo>
   );
   const wall = (key: 'doorWall' | 'panelWall') => (
-    <label className={`field${blank(key) ? ' need' : ''}`}>
-      <span>{t(`rm_${key}`)}</span>
+    <Campo id={`bk-room-${key}`} nome={t(`rm_${key}`)} aiuto={testoAiuto(AIUTO, `rm_${key}`)} need={blank(key)}>
       <select id={`bk-room-${key}`} className="input" value={blank(key) ? '' : R[key]} aria-required={blank(key) || undefined}
         onChange={(e) => put({ [key]: e.target.value as RoomInputs[typeof key] }, [key])}>
         {blank(key) ? <option value="" disabled>{choose}</option> : null}
         {WALLS.map((w) => <option key={w} value={w}>{t(`wall_${w}`)}</option>)}
       </select>
-    </label>
+    </Campo>
   );
   // the panel's wall and place as the software put them
   const placed = (key: 'panelWall' | 'panelAt', text: (P: NonNullable<RoomPanel['placed']>) => string) => (
-    <label className="field">
-      <span>{t(`rm_${key}`)}</span>
+    <Campo id={`bk-room-${key}`} nome={t(`rm_${key}`)} aiuto={testoAiuto(AIUTO, `rm_${key}`)}>
       <output id={`bk-room-${key}`} className="auto-value">{panel?.placed ? text(panel.placed) : '—'} <span className="badge">{tl('badge_auto')}</span></output>
-    </label>
+    </Campo>
   );
   const auto = !!panel?.auto;
   const rf = machine?.rinvio ?? null, sup = supportOf(R, rf !== null), putSup = (patch: Partial<MachineSupport>): void => put({ support: { ...sup, ...patch } });
-  const num = (label: string, value: number, min: number, max: number, apply: (v: number) => void) => (
-    <label className="field">
-      <span>{label}</span>
-      <input className="input num" type="number" inputMode="numeric" min={min} max={max} step={5} value={Math.round(value)}
+  const num = (id: string, label: string, aiuto: string | null, value: number, min: number, max: number, apply: (v: number) => void) => (
+    <Campo id={id} nome={label} aiuto={aiuto}>
+      <input id={id} className="input num" type="number" inputMode="numeric" min={min} max={max} step={5} value={Math.round(value)}
         onChange={(e) => { const v = mmOf(e.target.value); if (v !== null) apply(v); }} />
-    </label>
+    </Campo>
   );
   // the machine the intervention keeps (round 46, B8): its existing base, what it looks like only — no support, height,
   // HEB beams or pulley's frame to choose (src/lib/lift/kept.ts)
@@ -108,8 +108,7 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
       {kept ? <p className="note" id="kept-base-note">{t('kept_note')}</p> : null}
       <div className="form-grid">
         {kept ? (
-          <label className="field">
-            <span>{t('kept_of')}</span>
+          <Campo id="bk-room-kept-of" nome={t('kept_of')} aiuto={testoAiuto(AIUTO, 'kept_of')}>
             <select id="bk-room-kept-of" className="input" value={of ?? ''} aria-describedby="kept-base-note" onChange={(e) => {
               const o = BASI_ESISTENTI.find((k) => k === e.target.value);
               put({ support: { kind: 'esistente', ...(o ? { of: o } : {}) } });
@@ -117,36 +116,33 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
               <option value="">{t('kept_of_none')}</option>
               {BASI_ESISTENTI.map((k) => <option key={k} value={k}>{t(`kept_of_${k}`)}</option>)}
             </select>
-          </label>
+          </Campo>
         ) : (
-          <label className="field">
-            <span>{t('sp_kind')}</span>
-            <select className="input" value={sup.kind} onChange={(e) => {
+          <Campo id="room-sp-kind" nome={t('sp_kind')} aiuto={testoAiuto(AIUTO, 'sp_kind')}>
+            <select id="room-sp-kind" className="input" value={sup.kind} onChange={(e) => {
               const kind = SUPPORT_SCELTE.find((k) => k === e.target.value);
               // a new kind starts from its typical profile, height and length; the one the software takes is left unset
               if (kind) put({ support: kind === (rf ? 'rinvio' : 'shims') ? undefined : { kind } });
             }}>
               {SUPPORT_SCELTE.map((k) => <option key={k} value={k}>{t(`sp_${k}`)}</option>)}
             </select>
-          </label>
+          </Campo>
         )}
         {!kept && hasProfile(sup) ? (
-          <label className="field">
-            <span>{t('sp_profile')}</span>
-            <select className="input" value={profileOf(sup)} onChange={(e) => {
+          <Campo id="room-sp-profile" nome={t('sp_profile')} aiuto={testoAiuto(AIUTO, 'sp_profile')}>
+            <select id="room-sp-profile" className="input" value={profileOf(sup)} onChange={(e) => {
               const p = PROFILE_NAMES.find((x) => x === e.target.value);
               if (p) putSup({ profile: p, height: undefined });
             }}>
               {PROFILE_NAMES.map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
-          </label>
+          </Campo>
         ) : null}
         {kept || (sup.kind === 'rinvio' && rf?.maker) ? null
-          : num(t('sp_height'), sup.kind === 'rinvio' && rf ? rf.top : supportHeight(sup, machine.D, machine.shimsAxis, machine.shape ?? null), 0, 3000, (v) => putSup({ height: v }))}
+          : num('room-sp-height', t('sp_height'), testoAiuto(AIUTO, 'sp_height'), sup.kind === 'rinvio' && rf ? rf.top : supportHeight(sup, machine.D, machine.shimsAxis, machine.shape ?? null), 0, 3000, (v) => putSup({ height: v }))}
         {!kept && supportLength(sup, machine.D, machine.shape ?? null) !== null
-          ? num(t('sp_length'), supportLength(sup, machine.D, machine.shape ?? null) ?? 0, 300, 5000, (v) => putSup({ length: v })) : null}
-        <label className="field">
-          <span>{t('rm_motor')}</span>
+          ? num('room-sp-length', t('sp_length'), testoAiuto(AIUTO, 'sp_length'), supportLength(sup, machine.D, machine.shape ?? null) ?? 0, 300, 5000, (v) => putSup({ length: v })) : null}
+        <Campo id="bk-room-motor" nome={t('rm_motor')} aiuto={testoAiuto(AIUTO, 'rm_motor')} className="esperto">
           <select id="bk-room-motor" className="input" value={R.motor ?? ''} onChange={(e) => {
             const v = e.target.value;
             put({ motor: v === 'cw' || v === 'car' ? v : undefined });
@@ -155,9 +151,9 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
             <option value="cw">{t('rm_motor_cw')}</option>
             <option value="car">{t('rm_motor_car')}</option>
           </select>
-        </label>
+        </Campo>
       </div>
-      <p className="note">{t('rm_motor_hint')}</p>
+      <p className="note esperto">{t('rm_motor_hint')}</p>
       {rf && !kept ? <p className="note">{rf.on === 'stand' ? t('sp_rinvio_stand', { axis: Math.round(rf.pulleyAxis) })
         : rf.maker ? t('sp_rinvio_maker', { code: rf.maker.code, mass: rf.maker.mass, axis: rf.maker.pulleyAxis, A: rf.maker.sheaveAxis })
           : t('sp_rinvio_ours', { axis: Math.round(rf.pulleyAxis), top: Math.round(rf.top) })}</p> : null}
@@ -183,10 +179,12 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
         {field('doorH', KV_VERT.pulleyDoorH, 3000)}
       </div>
       {panel && !pulley ? (
-        <label className="check">
-          <input type="checkbox" id="auto-panel" checked={auto} onChange={(e) => panel.set(e.target.checked)} />
-          <span>{t('rm_panelAuto')}</span>
-        </label>
+        <ConAiuto aiuto={testoAiuto(AIUTO, 'rm_panelAuto')} nome={t('rm_panelAuto')}>
+          <label className="check">
+            <input type="checkbox" id="auto-panel" checked={auto} onChange={(e) => panel.set(e.target.checked)} />
+            <span>{t('rm_panelAuto')}</span>
+          </label>
+        </ConAiuto>
       ) : null}
       {pulley ? null : (
         <div className="form-grid">

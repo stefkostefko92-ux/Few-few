@@ -6,12 +6,15 @@
 // it. With a machine below and its pulleys over the slab (scheme room) it is the pulley room the scheme cannot do
 // without: no switch, its size, height, slab and door only, checked for its height, its door and the space over the
 // pulleys (src/lib/lift/below-checks.ts); a design saved without one shows the software's standard room it is drawn and
-// checked as, until a measure is entered (the design's own from then: ownPulleyRoom).
+// checked as, until a measure is entered (the design's own from then: ownPulleyRoom). Round 52: the switch with its «?».
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import type { RoomInputs, ShaftInputs } from '@/shaft';
 import { ROOM_FIELDS, ROOM_PLACEHOLDER, filled, isBlankKey, ownPulleyRoom, roomAdded, type BlankKey } from '@/lib/lift/blank';
 import { NO_BLANK, StdBadge, type FormBlank, type ShaftSet } from '../blank';
+import { ConAiuto } from './Campo';
 import RoomFields, { type RoomMachine, type RoomPanel } from './RoomFields';
 
 /** The pulley room of scheme room: the software's standard room (a design without one is drawn and checked as it) and
@@ -55,10 +58,12 @@ export default function RoomOptions({ I, set, open = false, machine, blank = NO_
     <details className="room-options" open={unfolded || undefined}>
       <summary>{t(pulley ? 'rm_pulley_title' : 'rm_title')}{std ? <> <StdBadge /></> : null}</summary>
       {pulley ? <p className="note">{t('rm_pulley_hint', { H: String(pulley.minH), W: String(pulley.doorW), D: String(pulley.doorH), above: String(pulley.above) })}</p> : (
-        <label className="check">
-          <input type="checkbox" checked={own !== null} onChange={(e) => { const on = e.target.checked; set({ room: on ? ROOM_PLACEHOLDER : null }, (b) => (on ? roomAdded(b) : [...b])); }} />
-          <span>{t('rm_on')}</span>
-        </label>
+        <ConAiuto aiuto={testoAiuto(AIUTO, 'rm_on')} nome={t('rm_on')}>
+          <label className="check">
+            <input type="checkbox" checked={own !== null} onChange={(e) => { const on = e.target.checked; set({ room: on ? ROOM_PLACEHOLDER : null }, (b) => (on ? roomAdded(b) : [...b])); }} />
+            <span>{t('rm_on')}</span>
+          </label>
+        </ConAiuto>
       )}
       {std && R ? <p className="note">{t('rm_pulley_std', { H: String(R.H), W: String(R.doorW), D: String(R.doorH) })}</p> : null}
       {R ? <RoomFields R={R} put={put} machine={pulley ? undefined : machine} blank={(k) => keys([k]).some(blank.is)} choose={tb('choose')} panel={panel} pulley={!!pulley} /> : null}

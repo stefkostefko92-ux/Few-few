@@ -7,7 +7,8 @@
 // its drawings change where they are; what stops a record is said with what to do. The form's draft is kept as it is
 // filled in. The save sends the survey only: the server derives everything again. Round 50: the survey sketch beside the
 // measures (SchizzoPanel, sticky on a wide screen) and the room measured on a DXF/DWG plan (LocaleCad); what either
-// proposes enters the form only once confirmed (src/lib/schizzi/applica.ts), as if typed.
+// proposes enters the form only once confirmed (src/lib/schizzi/applica.ts), as if typed. Round 52: each field with its
+// «?» (messages/aiuto/progetto.json), the save's details beside its heading.
 import { useMemo, useState, useTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import SectionTitle from '@/components/project/SectionTitle';
@@ -22,10 +23,13 @@ import type { SurveyDraft, SurveyField } from '@/lib/room/survey';
 import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { applicaLocale, valoreLocale } from '@/lib/schizzi/applica';
 import { saveRoomDesignAction } from '@/server/room-actions';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import MissingPanel from '../MissingPanel';
 import { mmOf } from '../blank';
 import DraftBar from '../draft/DraftBar';
 import { useDraft, type DraftTarget } from '../draft/useDraft';
+import Campo, { ConAiuto } from '../shaft/Campo';
 import RoomFields from '../shaft/RoomFields';
 import type { Modulo } from '../schizzi/ConfermaValori';
 import SchizzoPanel, { type SchizziStart } from '../schizzi/SchizzoPanel';
@@ -59,12 +63,11 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
   // a change of the survey, with the measures it enters
   const change = (survey: SurveyDraft['survey'], entered: readonly SurveyField[]): void =>
     setForm((f) => ({ survey, blank: f.blank.filter((k) => !entered.includes(k)) }));
-  const num = (key: SurveyField, text: string, value: number, apply: (v: number) => SurveyDraft['survey'], min = 0, max = 10000) => (
-    <label className={`field${is(key) ? ' need' : ''}`}>
-      <span>{text}</span>
+  const num = (key: SurveyField, text: string, aiuto: string | null, value: number, apply: (v: number) => SurveyDraft['survey'], min = 0, max = 10000) => (
+    <Campo id={`bk-${key.replace('.', '-')}`} nome={text} aiuto={aiuto} need={is(key)}>
       <input id={`bk-${key.replace('.', '-')}`} className="input num" type="number" inputMode="numeric" min={min} max={max} step={5} value={is(key) ? '' : value}
         aria-required={is(key) || undefined} onChange={(e) => { const v = mmOf(e.target.value); if (v !== null) change(apply(v), [key]); }} />
-    </label>
+    </Campo>
   );
   const save = (): void => {
     setError(null);
@@ -106,17 +109,17 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
               machine={d ? { D: d.M.D, shimsAxis: KL.sheaveAxisPerD * d.M.D, shape: d.M.shape ?? null, rinvio: d.M.rinvio ?? null, heb: d.heb, turn: d.G?.dir } : undefined} />
             <h3>{t('shaftTitle')}</h3>
             <div className="form-grid">
-              {num('shaft.W', ts('W'), s.shaft.W, (v) => ({ ...s, shaft: { ...s.shaft, W: v } }), 500)}
-              {num('shaft.D', ts('D'), s.shaft.D, (v) => ({ ...s, shaft: { ...s.shaft, D: v } }), 500)}
-              {num('shaft.wall', t('wall'), s.shaft.wall, (v) => ({ ...s, shaft: { ...s.shaft, wall: v } }), 50, 1000)}
+              {num('shaft.W', ts('W'), testoAiuto(AIUTO, 'rs_W'), s.shaft.W, (v) => ({ ...s, shaft: { ...s.shaft, W: v } }), 500)}
+              {num('shaft.D', ts('D'), testoAiuto(AIUTO, 'rs_D'), s.shaft.D, (v) => ({ ...s, shaft: { ...s.shaft, D: v } }), 500)}
+              {num('shaft.wall', t('wall'), testoAiuto(AIUTO, 'rs_wall'), s.shaft.wall, (v) => ({ ...s, shaft: { ...s.shaft, wall: v } }), 50, 1000)}
             </div>
             <h3>{t('dropsTitle')}</h3>
             <p className="note">{t('dropsHint')}</p>
             <div className="form-grid">
-              {num('car.x', t('carX'), s.car.x, (v) => ({ ...s, car: { ...s.car, x: v } }))}
-              {num('car.y', t('carY'), s.car.y, (v) => ({ ...s, car: { ...s.car, y: v } }))}
-              {num('cw.x', t('cwX'), s.cw.x, (v) => ({ ...s, cw: { ...s.cw, x: v } }))}
-              {num('cw.y', t('cwY'), s.cw.y, (v) => ({ ...s, cw: { ...s.cw, y: v } }))}
+              {num('car.x', t('carX'), testoAiuto(AIUTO, 'carX'), s.car.x, (v) => ({ ...s, car: { ...s.car, x: v } }))}
+              {num('car.y', t('carY'), testoAiuto(AIUTO, 'carY'), s.car.y, (v) => ({ ...s, car: { ...s.car, y: v } }))}
+              {num('cw.x', t('cwX'), testoAiuto(AIUTO, 'cwX'), s.cw.x, (v) => ({ ...s, cw: { ...s.cw, x: v } }))}
+              {num('cw.y', t('cwY'), testoAiuto(AIUTO, 'cwY'), s.cw.y, (v) => ({ ...s, cw: { ...s.cw, y: v } }))}
             </div>
             {d ? <p className="note" role="status">{t('calata', { calc: fmt(Math.round(d.calata.calc), 0), measured: fmt(Math.round(d.calata.measured), 0) })}</p> : null}
             <SurveyFound survey={s} onChange={(next) => change(next, [])} />
@@ -149,11 +152,12 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
         </section>
       ) : null}
       <section className="panel" aria-labelledby="room-save">
-        <SectionTitle id="room-save" icon="save">{t('saveTitle')}</SectionTitle>
-        <label className="field">
-          <span>{t('label')}</span>
-          <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} />
-        </label>
+        <ConAiuto aiuto={testoAiuto(AIUTO, 'rs_save')} nome={t('saveTitle')} block>
+          <SectionTitle id="room-save" icon="save">{t('saveTitle')}</SectionTitle>
+        </ConAiuto>
+        <Campo id="room-save-label" nome={t('label')} aiuto={testoAiuto(AIUTO, 'rs_label')}>
+          <input id="room-save-label" className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} />
+        </Campo>
         <div className="flex flex-wrap items-center gap-3">
           <button type="button" className="btn btn-primary" disabled={pending || !d || d.issues.length > 0} onClick={save}>{pending ? t('saving') : t('save')}</button>
           {!d ? <span className="note">{tb('saveMissing', { n: blank.length })}</span> : null}

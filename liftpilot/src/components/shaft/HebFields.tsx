@@ -3,11 +3,15 @@
 // The HEB beams on the shaft's walls under the machine's support (src/shaft/heb.ts, registry locale.putrelle.vano): put
 // when the slab between the room and the shaft has no structural check; the software takes the shortest that pass its
 // checks, then the lightest — the easiest to carry into the room, with the machine turned too — or one of the six is
-// taken by hand, each shown with its length and how it does. Shared by a whole design and a replacement's survey.
+// taken by hand, each shown with its length and how it does. Shared by a whole design and a replacement's survey. Round
+// 52: the switch with its «?», and the choice's beside the note under the list.
 import { useLocale, useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import { hebChecks, onHeb, type HebOption, type HebTaken, type RoomInputs } from '@/shaft';
+import { ConAiuto } from './Campo';
 
 interface Props {
   R: RoomInputs;
@@ -37,10 +41,12 @@ export default function HebFields({ R, put, heb, deflector }: Props) {
   const best = heb?.options.find((o) => o.ok) ?? null;
   return (
     <fieldset className="field heb-fields">
-      <label className="check">
-        <input type="checkbox" id="heb-on" checked={on} onChange={(e) => put({ heb: e.target.checked ? {} : undefined })} />
-        <span>{t('heb_on')}</span>
-      </label>
+      <ConAiuto aiuto={testoAiuto(AIUTO, 'heb_on')} nome={t('heb_title')}>
+        <label className="check">
+          <input type="checkbox" id="heb-on" checked={on} onChange={(e) => put({ heb: e.target.checked ? {} : undefined })} />
+          <span>{t('heb_on')}</span>
+        </label>
+      </ConAiuto>
       {on && !onHeb(R, deflector) ? <p className="note">{t('heb_not')}</p> : null}
       {on && onHeb(R, deflector) ? (heb ? (
         <div className="heb-list" role="radiogroup" aria-label={t('heb_title')}>
@@ -56,7 +62,7 @@ export default function HebFields({ R, put, heb, deflector }: Props) {
           ))}
         </div>
       ) : <p className="note">{t('heb_wait')}</p>) : null}
-      {on ? <p className="note">{t('heb_hint')}</p> : null}
+      {on ? <p className="note"><ConAiuto aiuto={testoAiuto(AIUTO, 'heb_list')} nome={t('heb_title')}>{t('heb_hint')}</ConAiuto></p> : null}
     </fieldset>
   );
 }

@@ -4,8 +4,11 @@
 // entrance they serve and the main one; then, once the project's data are in, the heights of car, frame and
 // counterweight, the buffers and the spaces for the maintenance person, the software's typical values marked as such.
 // A new installation starts with the speed, pit, headroom and the number of stops to enter: the stops' rows come with
-// that number, each rise (and door, with two entrances) and the main floor to enter (src/lib/lift/blank.ts).
+// that number, each rise (and door, with two entrances) and the main floor to enter (src/lib/lift/blank.ts). Round 52:
+// each field and each column of the stops' table with its «?» (messages/aiuto/progetto.json).
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import { BUFFER_TYPES, DEFAULT_VERTICAL, bufferStroke, bufferType, withBufferType, withStandardBuffers, withVerticalValue, type BufferType, type Floor,
   type ShaftInputs, type VerticalInputs } from '@/shaft';
 import { screenOf, standOf } from '@/shaft/section';
@@ -14,6 +17,7 @@ import { K } from '@/calc/norme';
 import { filled, floorRemoved, floorsTo, type BlankKey } from '@/lib/lift/blank';
 import { NO_BLANK, StdBadge, fieldId, type FormBlank, type ShaftSet } from '../blank';
 import { DalRilievo } from '../collega/origine';
+import Campo, { ConAiuto } from './Campo';
 
 interface Props {
   I: ShaftInputs;
@@ -32,6 +36,8 @@ const num = (s: string): number => (s.trim() === '' ? NaN : Number(s.replace(','
 const V_MIN_FIELD = Math.round(K.vRatedMin * 100 + 1) / 100;
 /** Values worked out until one is entered (missing in the inputs). */
 const WORKED_OUT: readonly NumKey[] = ['cwScreen', 'standW', 'standD'];
+/** The «?» of the project's own values (the speed when it is typed: the standalone page). */
+const DATA_AIUTO = { v: testoAiuto(AIUTO, 'vt_vEdit'), pit: testoAiuto(AIUTO, 'vt_pit'), headroom: testoAiuto(AIUTO, 'vt_headroom') } as const;
 
 export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK, fixedV }: Props) {
   const t = useTranslations('shaft'), tb = useTranslations('blank'), tc = useTranslations('calc'), V = I.vertical, floors = V.floors, is = blank.is;
@@ -42,11 +48,11 @@ export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK
   const std = withStandardBuffers(V);
   const shown = (key: NumKey): number | undefined => (key === 'cwScreen' ? screenOf(V) : key === 'standW' ? standOf(V)[0] : key === 'standD' ? standOf(V)[1] : std[key]);
   const field = (key: NumKey, min: number, max: number, step = 10) => (
-    <label className="field" key={key}>
-      <span>{t(`vt_${key}`)}<StdBadge on={WORKED_OUT.includes(key) ? V[key] === undefined : V[key] === DEFAULT_VERTICAL[key]} /></span>
-      <input className="input num" type="number" inputMode="decimal" min={min} max={max} step={step} value={shown(key)}
+    <Campo key={key} id={`shaft-vt-${key}`} nome={t(`vt_${key}`)} aiuto={testoAiuto(AIUTO, `vt_${key}`)}
+      label={<>{t(`vt_${key}`)}<StdBadge on={WORKED_OUT.includes(key) ? V[key] === undefined : V[key] === DEFAULT_VERTICAL[key]} /></>}>
+      <input id={`shaft-vt-${key}`} className="input num" type="number" inputMode="decimal" min={min} max={max} step={step} value={shown(key)}
         onChange={(e) => { const v = num(e.target.value); if (Number.isFinite(v)) set({ vertical: withVerticalValue(V, key, Math.round(v)) }, (b) => filled(b, [])); }} />
-    </label>
+    </Campo>
   );
   // the project's own values: empty until entered. The rated speed must be over K.vRatedMin (the server refuses it at or
   // below, shaft-input.ts): the field starts at the first value allowed and says why at once, with the calculator's words
@@ -54,32 +60,30 @@ export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK
   const data = (key: 'v' | 'pit' | 'headroom', min: number, max: number, step = 10) => {
     const bad = key === 'v' && slow;
     return (
-      <label className={`field${is(key) ? ' need' : ''}`} key={key}>
-        <span>{t(`vt_${key}`)}<DalRilievo id={key} value={is(key) ? '' : V[key]} /></span>
+      <Campo key={key} id={fieldId(key)} nome={t(`vt_${key}`)} aiuto={DATA_AIUTO[key]} need={is(key)} label={<>{t(`vt_${key}`)}<DalRilievo id={key} value={is(key) ? '' : V[key]} /></>}>
         <input id={fieldId(key)} className="input num" type="number" inputMode="decimal" min={min} max={max} step={step} value={is(key) ? '' : V[key]}
           aria-required={is(key) || undefined} aria-invalid={bad || undefined} aria-describedby={bad ? `${fieldId(key)}-err` : undefined}
           onChange={(e) => { const v = num(e.target.value); if (Number.isFinite(v)) put({ [key]: key === 'v' ? v : Math.round(v) }, [key]); }} />
         {bad ? <span className="note bad" id={`${fieldId(key)}-err`} role="alert">{tc('err_v')}</span> : null}
-      </label>
+      </Campo>
     );
   };
   // a buffer's type: a typical one of it, its support moved so the run-by stays; a pad's stroke follows its height
   const typeField = (side: 'car' | 'cw') => (
-    <label className="field" key={`${side}-type`}>
-      <span>{t(`vt_${side}BufferType`)}<StdBadge on={!V[`${side}BufferType`]} /></span>
-      <select className="input" value={bufferType(V, side)} onChange={(e) => {
+    <Campo key={`${side}-type`} id={`shaft-vt-${side}-type`} nome={t(`vt_${side}BufferType`)} aiuto={testoAiuto(AIUTO, `vt_${side}BufferType`)}
+      label={<>{t(`vt_${side}BufferType`)}<StdBadge on={!V[`${side}BufferType`]} /></>}>
+      <select id={`shaft-vt-${side}-type`} className="input" value={bufferType(V, side)} onChange={(e) => {
         const ty = BUFFER_TYPES.find((x) => x === e.target.value);
         if (ty) set({ vertical: withBufferType(V, side, ty as BufferType) });
       }}>
         {BUFFER_TYPES.map((x) => <option key={x} value={x}>{t(`bt_${x}`)}</option>)}
       </select>
-    </label>
+    </Campo>
   );
   const strokeField = (side: 'car' | 'cw') => (bufferType(V, side) === 'pu' ? (
-    <label className="field" key={`${side}-stroke`}>
-      <span>{t(`vt_${side}BufferStroke`)}</span>
-      <input className="input num" type="number" value={bufferStroke(std, side)} readOnly aria-readonly="true" />
-    </label>
+    <Campo key={`${side}-stroke`} id={`shaft-vt-${side}-stroke`} nome={t(`vt_${side}BufferStroke`)} aiuto={testoAiuto(AIUTO, `vt_${side}BufferStroke`)}>
+      <input id={`shaft-vt-${side}-stroke`} className="input num" type="number" value={bufferStroke(std, side)} readOnly aria-readonly="true" />
+    </Campo>
   ) : field(side === 'car' ? 'carBufferStroke' : 'cwBufferStroke', 10, 2000, 5));
   // the floors and what they leave to enter, with a number of stops, a stop added or one taken off
   const apply = (r: { vertical: VerticalInputs; blank: BlankKey[] }): void => set({ vertical: r.vertical }, () => r.blank);
@@ -97,26 +101,30 @@ export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK
       <summary>{t('vt_title')}</summary>
       <div className="form-grid">
         {fixedV ? (
-          <label className="field">
-            <span>{t('vt_v')}<span className="badge calcolo">{fixedV.label}</span></span>
+          <Campo id={fieldId('v')} nome={t('vt_v')} aiuto={testoAiuto(AIUTO, 'vt_v')} label={<>{t('vt_v')}<span className="badge calcolo">{fixedV.label}</span></>}>
             <input id={fieldId('v')} className="input num" type="number" value={fixedV.ms} readOnly aria-readonly="true" />
-          </label>
+          </Campo>
         ) : data('v', V_MIN_FIELD, 10, 0.01)}
         {data('pit', 100, 10000)}
         {data('headroom', 1000, 20000)}
-        <label className={`field${is('floors') ? ' need' : ''}`}>
-          <span>{tb('count')}<DalRilievo id="floors" value={is('floors') ? '' : floors.length} /></span>
+        <Campo id={fieldId('floors')} nome={tb('count')} aiuto={testoAiuto(AIUTO, 'count')} need={is('floors')}
+          label={<>{tb('count')}<DalRilievo id="floors" value={is('floors') ? '' : floors.length} /></>}>
           <input id={fieldId('floors')} key={is('floors') ? 'blank' : floors.length} className="input num" type="number" inputMode="numeric" min={2} max={60} step={1}
             defaultValue={is('floors') ? '' : floors.length} aria-required={is('floors') || undefined} onBlur={(e) => count(e.currentTarget)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); count(e.currentTarget); } }} />
-        </label>
+        </Campo>
       </div>
       {is('floors') ? null : (
         <>
           <table className="floors">
             <caption>{t('vt_floors')}</caption>
             <thead>
-              <tr><th scope="col">{t('vt_label')}</th><th scope="col">{t('vt_rise')}</th><th scope="col">{t('vt_door')}</th><th scope="col">{t('vt_main')}</th><th /></tr>
+              <tr>
+                <th scope="col"><ConAiuto aiuto={testoAiuto(AIUTO, 'vt_label')} nome={t('vt_label')}>{t('vt_label')}</ConAiuto></th>
+                <th scope="col"><ConAiuto aiuto={testoAiuto(AIUTO, 'vt_rise')} nome={t('vt_rise')}>{t('vt_rise')}</ConAiuto></th>
+                <th scope="col"><ConAiuto aiuto={testoAiuto(AIUTO, 'vt_door')} nome={t('vt_door')}>{t('vt_door')}</ConAiuto></th>
+                <th scope="col"><ConAiuto aiuto={testoAiuto(AIUTO, 'vt_main')} nome={t('vt_main')}>{t('vt_main')}</ConAiuto></th><th />
+              </tr>
             </thead>
             <tbody>
               {floors.map((f, i) => {
@@ -178,26 +186,26 @@ export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK
             {field('standW', 100, 3000)}
             {field('standD', 100, 3000)}
             {/* the doors' unlocking zone (the supplier's): empty, the most the standard allows and the plate under the sills warns */}
-            <label className="field" key="unlockZone">
-              <span>{t('vt_unlockZone')}<StdBadge on={V.unlockZone === undefined} /></span>
-              <input className="input num" type="number" inputMode="numeric" min={50} max={350} step={10} value={V.unlockZone ?? ''} placeholder={String(KV_VERT.unlockMax)}
+            <Campo key="unlockZone" id="shaft-vt-unlockZone" nome={t('vt_unlockZone')} aiuto={testoAiuto(AIUTO, 'vt_unlockZone')}
+              label={<>{t('vt_unlockZone')}<StdBadge on={V.unlockZone === undefined} /></>}>
+              <input id="shaft-vt-unlockZone" className="input num" type="number" inputMode="numeric" min={50} max={350} step={10} value={V.unlockZone ?? ''} placeholder={String(KV_VERT.unlockMax)}
                 onChange={(e) => { const v = num(e.target.value); put({ unlockZone: Number.isFinite(v) ? Math.round(v) : undefined }); }} />
-            </label>
+            </Campo>
           </div>
           <p className="note">{t('bt_hint')}</p>
           <div className="form-grid">
-            <label className="field">
-              <span>{t('vt_topRefuge')}<StdBadge on={V.topRefuge === DEFAULT_VERTICAL.topRefuge} /></span>
-              <select className="input" value={V.topRefuge} onChange={(e) => put({ topRefuge: e.target.value === '1' ? 1 : 2 })}>
+            <Campo id="shaft-vt-topRefuge" nome={t('vt_topRefuge')} aiuto={testoAiuto(AIUTO, 'vt_topRefuge')}
+              label={<>{t('vt_topRefuge')}<StdBadge on={V.topRefuge === DEFAULT_VERTICAL.topRefuge} /></>}>
+              <select id="shaft-vt-topRefuge" className="input" value={V.topRefuge} onChange={(e) => put({ topRefuge: e.target.value === '1' ? 1 : 2 })}>
                 {([1, 2] as const).map((r) => <option key={r} value={r}>{t(`refuge_${r}`)}</option>)}
               </select>
-            </label>
-            <label className="field">
-              <span>{t('vt_pitRefuge')}<StdBadge on={V.pitRefuge === DEFAULT_VERTICAL.pitRefuge} /></span>
-              <select className="input" value={V.pitRefuge} onChange={(e) => put({ pitRefuge: e.target.value === '1' ? 1 : e.target.value === '2' ? 2 : 3 })}>
+            </Campo>
+            <Campo id="shaft-vt-pitRefuge" nome={t('vt_pitRefuge')} aiuto={testoAiuto(AIUTO, 'vt_pitRefuge')}
+              label={<>{t('vt_pitRefuge')}<StdBadge on={V.pitRefuge === DEFAULT_VERTICAL.pitRefuge} /></>}>
+              <select id="shaft-vt-pitRefuge" className="input" value={V.pitRefuge} onChange={(e) => put({ pitRefuge: e.target.value === '1' ? 1 : e.target.value === '2' ? 2 : 3 })}>
                 {([1, 2, 3] as const).map((r) => <option key={r} value={r}>{t(`refuge_${r}`)}</option>)}
               </select>
-            </label>
+            </Campo>
           </div>
           {/* the typical values again; the project's own (speed, pit, headroom, floors) stay */}
           <button type="button" className="btn btn-sm" onClick={() => set({ vertical: { ...DEFAULT_VERTICAL, v: V.v, pit: V.pit, headroom: V.headroom, floors: V.floors, main: V.main } })}>

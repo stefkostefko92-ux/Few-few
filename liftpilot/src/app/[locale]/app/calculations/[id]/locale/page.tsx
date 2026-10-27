@@ -18,6 +18,9 @@ import RefreshNotice from '@/components/RefreshNotice';
 import { openedByRefresh } from '@/lib/refresh-form';
 import RoomSurvey from '@/components/room/RoomSurvey';
 import { schizziOf } from '@/server/schizzi/queries';
+import { testoAiuto } from '@/lib/aiuto';
+import { ConAiuto } from '@/components/shaft/Campo';
+import AIUTO from '../../../../../../../messages/aiuto/progetto.json';
 import '@/components/schizzi/schizzi.css';
 
 export async function generateMetadata() {
@@ -30,6 +33,7 @@ export async function generateMetadata() {
 // from the survey's draft, else from the latest saved room of the installation, else empty (every measure to enter).
 // Opened by «Aggiorna con il software attuale» on a survey the calculation no longer takes (&aggiorna=1), it says so.
 // Round 50: two columns on a wide screen — the form, and beside it the installation's survey sketches (SchizzoPanel).
+// Round 52: the lead says the essential, the «?» beside the title the rest.
 export default async function RoomSurveyPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string; aggiorna?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -56,7 +60,7 @@ export default async function RoomSurveyPage({ params, searchParams }: { params:
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${c.projectId}`, label: c.project.name }, { href: `/app/calculations/${c.id}`, label: tc('viewTitle') }, { label: t('newTitle') }]} />
       <div className="page-head">
         <div className="titles">
-          <h1>{t('newTitle')}</h1>
+          <ConAiuto aiuto={testoAiuto(AIUTO, 'locale_pagina')} nome={t('newTitle')} block><h1>{t('newTitle')}</h1></ConAiuto>
           <p className="lead">{t('newLead')}</p>
         </div>
       </div>

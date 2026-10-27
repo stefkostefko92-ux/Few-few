@@ -2,11 +2,14 @@
 
 // The distances of the plan that can be set by hand, in a table: each with its value now (set by hand, or worked out
 // by the software), a field to set it, and the reset to the worked-out one; all of them reset at once. The same
-// distances the drawing changes when its dimensions are clicked.
+// distances the drawing changes when its dimensions are clicked. Round 52: each column's header with its «?».
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import type { EditResult } from '@/lib/shaft-edit';
 import { PLAN_KEYS, planValues, withValue, withoutFix, type Layout, type PlanKey, type ShaftInputs } from '@/shaft';
+import { ConAiuto } from './Campo';
 
 interface Props {
   I: ShaftInputs;
@@ -53,7 +56,12 @@ export default function PlanFixes({ I, L, name, onChange, check, refused }: Prop
       <div className="table-wrap">
         <table className="fixes">
           <thead>
-            <tr><th scope="col">{t('fx_what')}</th><th scope="col">{t('fx_value')}</th><th scope="col">{t('fx_state')}</th><th scope="col"><span className="sr-only">{t('fx_reset')}</span></th></tr>
+            <tr>
+              <th scope="col"><ConAiuto aiuto={testoAiuto(AIUTO, 'fx_what')} nome={t('fx_what')}>{t('fx_what')}</ConAiuto></th>
+              <th scope="col"><ConAiuto aiuto={testoAiuto(AIUTO, 'fx_value')} nome={t('fx_value')}>{t('fx_value')}</ConAiuto></th>
+              <th scope="col"><ConAiuto aiuto={testoAiuto(AIUTO, 'fx_state')} nome={t('fx_state')}>{t('fx_state')}</ConAiuto></th>
+              <th scope="col"><span className="sr-only">{t('fx_reset')}</span></th>
+            </tr>
           </thead>
           <tbody>
             {keys.map((k) => {

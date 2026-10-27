@@ -5,14 +5,18 @@
 // below measured with the four rays (castRays) — the room with the shaft's layer left out —, the side of the drawing that
 // is the room's front wall chosen (the bottom by default, as seen on screen whatever the plan's turn). The measures
 // (src/lib/cad/locale.ts) go into the same confirm table as a sketch's reading, «dal disegno CAD»; nothing of the
-// drawing leaves the page and nothing of it is kept: the survey stores the measures only.
+// drawing leaves the page and nothing of it is kept: the survey stores the measures only. Round 52: the file, the unit,
+// the front wall and what the next click measures with their «?».
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import { MM_PER_UNIT, type CadModel, type CadUnits } from '@/lib/cad/model';
 import type { DoorSide, Survey } from '@/lib/cad/measure';
 import { cadReadError, pickSurvey } from '@/lib/cad/pick';
 import { aVista, misuraLocale } from '@/lib/cad/locale';
 import CadViewer from '../shaft/CadViewer';
+import Campo, { ConAiuto } from '../shaft/Campo';
 import ConfermaValori, { type Modulo } from '../schizzi/ConfermaValori';
 
 const UNITS: readonly Exclude<CadUnits, 'unknown'>[] = ['mm', 'cm', 'dm', 'm', 'in', 'ft'];
@@ -84,12 +88,11 @@ export default function LocaleCad({ modulo }: { modulo: Modulo }) {
   return (
     <div className="survey locale-cad">
       <p className="note">{ts('cad.lead')}</p>
-      <label className="field">
-        <span>{t('file')}</span>
-        <input className="input" type="file" accept=".dxf,.dwg,application/dxf,image/vnd.dxf,image/vnd.dwg" onChange={(e) => void onFile(e.target.files?.[0])} disabled={reading}
-          data-schizzi="cad-file" />
-      </label>
-      <p className="note">{t('fileHint')}</p>
+      <Campo id="locale-cad-file" nome={t('file')} aiuto={testoAiuto(AIUTO, 'lc_file')}>
+        <input id="locale-cad-file" className="input" type="file" accept=".dxf,.dwg,application/dxf,image/vnd.dxf,image/vnd.dwg" onChange={(e) => void onFile(e.target.files?.[0])} disabled={reading}
+          data-schizzi="cad-file" aria-describedby="locale-cad-file-hint" />
+      </Campo>
+      <p className="note" id="locale-cad-file-hint">{t('fileHint')}</p>
       {reading ? <p className="note" role="status">{t('reading')}</p> : null}
       {error ? <p className="alert alert-bad" role="alert">{error}</p> : null}
       {model ? (
@@ -98,14 +101,13 @@ export default function LocaleCad({ modulo }: { modulo: Modulo }) {
             {model.truncated ? ` ${t('truncated', { count: model.count })}` : ''}</p>
           <p className="note">{ts('cad.cornice')}</p>
           <div className="survey-row">
-            <label className="field">
-              <span>{t('units')}</span>
-              <select className="input" value={units} onChange={(e) => { const u = UNITS.find((x) => x === e.target.value); if (u) setUnits(u); }}>
+            <Campo id="locale-cad-units" nome={t('units')} aiuto={testoAiuto(AIUTO, 'cad_units')}>
+              <select id="locale-cad-units" className="input" value={units} onChange={(e) => { const u = UNITS.find((x) => x === e.target.value); if (u) setUnits(u); }}>
                 {UNITS.map((u) => <option key={u} value={u}>{t(`unit_${u}`)}</option>)}
               </select>
-            </label>
-            <fieldset className="field">
-              <legend>{ts('cad.anteriore')}</legend>
+            </Campo>
+            <fieldset className="field" aria-labelledby="locale-cad-front">
+              <legend><ConAiuto aiuto={testoAiuto(AIUTO, 'lc_front')} nome={ts('cad.anteriore')}><span id="locale-cad-front">{ts('cad.anteriore')}</span></ConAiuto></legend>
               <div className="seg-row" role="radiogroup" aria-label={ts('cad.anteriore')}>
                 {SIDES.map((s) => (
                   <label key={s} className={front === s ? 'on' : undefined}>
@@ -115,8 +117,8 @@ export default function LocaleCad({ modulo }: { modulo: Modulo }) {
                 ))}
               </div>
             </fieldset>
-            <fieldset className="field">
-              <legend>{ts('cad.prossimo')}</legend>
+            <fieldset className="field" aria-labelledby="locale-cad-next">
+              <legend><ConAiuto aiuto={testoAiuto(AIUTO, 'lc_next')} nome={ts('cad.prossimo')}><span id="locale-cad-next">{ts('cad.prossimo')}</span></ConAiuto></legend>
               <div className="seg-row" role="radiogroup" aria-label={ts('cad.prossimo')}>
                 {(['room', 'shaft'] as const).map((w) => (
                   <label key={w} className={what === w ? 'on' : undefined}>

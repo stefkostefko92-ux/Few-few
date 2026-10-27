@@ -30,6 +30,9 @@ import ShapesSvg from '@/components/drawing/ShapesSvg';
 import VerdictPill from '@/components/VerdictPill';
 import StaleNotice from '@/components/StaleNotice';
 import Refreshed from '@/components/Refreshed';
+import { testoAiuto } from '@/lib/aiuto';
+import { ConAiuto } from '@/components/shaft/Campo';
+import AIUTO from '../../../../../../messages/aiuto/progetto.json';
 
 export async function generateMetadata() {
   const t = await getTranslations('room');
@@ -94,7 +97,8 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
       </dl>
       {download ? (
         <section className="panel" aria-labelledby="room-docs">
-          <SectionTitle id="room-docs" icon="file-export">{t('docsTitle')}</SectionTitle>
+          {/* the drafts' details beside the title (round 52): the lead keeps the essential */}
+          <ConAiuto aiuto={testoAiuto(AIUTO, 'room_docs')} nome={t('docsTitle')} block><SectionTitle id="room-docs" icon="file-export">{t('docsTitle')}</SectionTitle></ConAiuto>
           <p className="note">{t('docsLead')}</p>
           <div className="doc-links">
             <Link className="btn" href={`/app/projects/${r.projectId}/relazione-tecnica`}><Icon name="file-text" size={18} />{trt('apri')}</Link>

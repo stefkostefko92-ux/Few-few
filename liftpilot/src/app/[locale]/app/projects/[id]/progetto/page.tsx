@@ -18,6 +18,9 @@ import { avvioProgetto } from '@/server/collega/forms';
 import { pitchesOf } from '@/lib/plant';
 import { openedByRefresh } from '@/lib/refresh-form';
 import { schizziOf } from '@/server/schizzi/queries';
+import { testoAiuto } from '@/lib/aiuto';
+import { ConAiuto } from '@/components/shaft/Campo';
+import AIUTO from '../../../../../../../messages/aiuto/progetto.json';
 import '@/components/schizzi/schizzi.css';
 
 export async function generateMetadata() {
@@ -35,7 +38,8 @@ export async function generateMetadata() {
 // so on top — the whole drawing stays possible. The drawing starts from a saved design (?from=), its draft, the latest
 // design, the installation's records, else empty (src/server/progetto-start.ts); with a linked survey its stops come
 // from it, marked «dal rilievo» (round 44). Opened by «Aggiorna con il software attuale» (&aggiorna=1), it says why on top.
-// The installation's survey sketches go beside the form (round 50, SchizzoPanel).
+// The installation's survey sketches go beside the form (round 50, SchizzoPanel). Round 52: the lead says the essential,
+// the «?» beside the title the rest.
 export default async function ProgettoPage({ params, searchParams }: {
   params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string; calc?: string; aggiorna?: string; usa?: string }>;
 }) {
@@ -62,7 +66,7 @@ export default async function ProgettoPage({ params, searchParams }: {
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${p.id}`, label: p.name }, { label: tl('workTitle') }]} />
       <div className="page-head">
         <div className="titles">
-          <h1>{tl('workTitle')}</h1>
+          <ConAiuto aiuto={testoAiuto(AIUTO, 'pagina')} nome={tl('workTitle')} block><h1>{tl('workTitle')}</h1></ConAiuto>
           <p className="lead">{tl('workLead')}</p>
         </div>
       </div>

@@ -35,7 +35,7 @@
         {
           "title": "In cima alla pagina",
           "intro": [
-            "Sopra il modulo trovi il percorso (Impianti › nome dell’impianto › Progetto e simulazione), il titolo «Progetto e simulazione» e la frase che spiega il lavoro: il vano, le porte, i piani e il locale sono disegnati sul calcolo argano; portata, velocità, argano, funi e collaudo vengono dal calcolo, il resto lo calcola il software e la simulazione 3D lo mostra.",
+            "Sopra il modulo trovi il percorso (Impianti › nome dell’impianto › Progetto e simulazione), il titolo «Progetto e simulazione» e la frase che spiega il lavoro: «Disegna vano, porte, piani e locale sul calcolo argano: portata, velocità, argano, funi e collaudo vengono dal calcolo.» Il resto lo calcola il software e la simulazione 3D lo mostra.",
             "In base allo stato dell’impianto, al posto del modulo o sopra di esso può comparire un avviso."
           ],
           "fields": [],
@@ -635,7 +635,8 @@
             }
           ],
           "notes": [
-            "Le etichette dei campi «Ingombri» sono, nell’ordine: Profondità della porta di piano, Gioco tra le soglie, Porta di cabina, Pareti della cabina, Guide e staffe della cabina per lato, Cabina–contrappeso, Spessore del contrappeso, Guide e staffe del contrappeso, Cabina–parete di fondo, Punta della guida–cabina, Contrappeso laterale–piede della guida di cabina."
+            "Le etichette dei campi «Ingombri» sono, nell’ordine: Profondità della porta di piano, Gioco tra le soglie, Porta di cabina, Pareti della cabina, Guide e staffe della cabina per lato, Cabina–contrappeso, Spessore del contrappeso, Guide e staffe del contrappeso, Cabina–parete di fondo, Punta della guida–cabina, Contrappeso laterale–piede della guida di cabina.",
+            "In modalità «Semplice» questo blocco non compare: valgono i valori standard del software. Per cambiarli passa a «Esperto»."
           ]
         },
         {
@@ -728,7 +729,8 @@
             }
           ],
           "notes": [
-            "Sotto il blocco leggi la nota con la regola delle distanze dall’angolo. Le quote delle nicchie si cambiano anche cliccandole sulla pianta."
+            "Sotto il blocco leggi la nota «Le quote delle nicchie si cambiano anche cliccandole sulla pianta.» La regola delle distanze dall’angolo è descritta qui sotto, nel campo «Dall’angolo (mm)».",
+            "In modalità «Semplice» il blocco non compare (nessuna nicchia, se non ne hai aggiunte); lo vedi in «Esperto»."
           ]
         },
         {
@@ -794,7 +796,8 @@
             }
           ],
           "notes": [
-            "Le quote si cambiano anche sulla pianta in testata."
+            "Le quote si cambiano anche sulla pianta in testata.",
+            "In modalità «Semplice» il blocco non compare e le pareti in testata restano come al piano principale; lo vedi in «Esperto»."
           ]
         },
         {
@@ -855,7 +858,8 @@
           ],
           "actions": [],
           "notes": [
-            "Mentre scrivi un valore (per esempio 1 per arrivare a 150) il campo lo accetta; il modulo segnala i valori fuori dai limiti. Le misure si cambiano anche sulle quote della pianta e della sezione."
+            "Mentre scrivi un valore (per esempio 1 per arrivare a 150) il campo lo accetta; il modulo segnala i valori fuori dai limiti. Le misure si cambiano anche sulle quote della pianta e della sezione.",
+            "In modalità «Semplice» il blocco non compare (porte con il portale, se non hai attivato il telaio); lo vedi in «Esperto»."
           ]
         },
         {
@@ -933,7 +937,8 @@
             }
           ],
           "notes": [
-            "Un valore che porterebbe un imbotto sotto zero (apertura più stretta della porta nuova) o oltre 1500 mm non viene accettato. Le quote si cambiano anche sulla pianta e sulla sezione A-A."
+            "Un valore che porterebbe un imbotto sotto zero (apertura più stretta della porta nuova) o oltre 1500 mm non viene accettato. Le quote si cambiano anche sulla pianta e sulla sezione A-A.",
+            "In modalità «Semplice» il blocco non compare (nessun imbotto, se non ne hai inseriti); lo vedi in «Esperto»."
           ]
         },
         {

@@ -2,9 +2,14 @@
 
 // Niches in the shaft walls: the counterweight in its niche (the car gains its depth), a recess at each lamp of the
 // shaft lighting, the chase of the cable trunking. Each has its wall, where it starts from the wall's corner, its width
-// and depth; the plan shows them with dimensions that can also be changed on the drawing.
+// and depth; the plan shows them with dimensions that can also be changed on the drawing. Round 52: each field with its
+// «?»; a refinement most jobs never touch, marked `esperto` (hidden in «Semplice»).
+import { useId } from 'react';
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import { KV, PANEV_BACK, RAILS, counterweightSide, cwBracketsOf, layout, type Niche, type NicheUse, type ShaftInputs, type Wall } from '@/shaft';
+import Campo from './Campo';
 
 interface Props {
   I: ShaftInputs;
@@ -30,38 +35,37 @@ function proposal(I: ShaftInputs, use: NicheUse): Niche {
 }
 
 export default function NicheOptions({ I, set }: Props) {
-  const t = useTranslations('shaft'), list = I.niches ?? [];
+  const t = useTranslations('shaft'), list = I.niches ?? [], uid = useId();
+  const fid = (i: number, k: string): string => `${uid}-${i}-${k}`;
+  const aiuto = { at: testoAiuto(AIUTO, 'nc_at'), width: testoAiuto(AIUTO, 'nc_width'), depth: testoAiuto(AIUTO, 'nc_depth') };
   const put = (i: number, patch: Partial<Niche>): void => set({ niches: list.map((n, j) => (j === i ? { ...n, ...patch } : n)) });
   const drop = (i: number): void => {
     const rest = list.filter((_, j) => j !== i);
     set({ niches: rest.length ? rest : undefined });
   };
   const num = (i: number, key: 'at' | 'width' | 'depth', min: number, max: number) => (
-    <label className="field">
-      <span>{t(`nc_${key}`)}</span>
-      <input className="input num" type="number" inputMode="numeric" min={min} max={max} step={10} value={list[i][key]}
+    <Campo id={fid(i, key)} nome={t(`nc_${key}`)} aiuto={aiuto[key]}>
+      <input id={fid(i, key)} className="input num" type="number" inputMode="numeric" min={min} max={max} step={10} value={list[i][key]}
         onChange={(e) => { const v = int(e.target.value); if (Number.isFinite(v)) put(i, { [key]: v }); }} />
-    </label>
+    </Campo>
   );
   return (
-    <details className="niche-options" open={list.length > 0}>
+    <details className="niche-options esperto" open={list.length > 0}>
       <summary>{t('nc_title')}</summary>
       {list.map((n, i) => (
         <fieldset className="niche" key={i}>
           <legend>{t(`nc_use_${n.use}`)}</legend>
           <div className="form-grid">
-            <label className="field">
-              <span>{t('nc_use')}</span>
-              <select className="input" value={n.use} onChange={(e) => put(i, { use: e.target.value as NicheUse })}>
+            <Campo id={fid(i, 'use')} nome={t('nc_use')} aiuto={testoAiuto(AIUTO, 'nc_use')}>
+              <select id={fid(i, 'use')} className="input" value={n.use} onChange={(e) => put(i, { use: e.target.value as NicheUse })}>
                 {USES.map((u) => <option key={u} value={u}>{t(`nc_use_${u}`)}</option>)}
               </select>
-            </label>
-            <label className="field">
-              <span>{t('nc_wall')}</span>
-              <select className="input" value={n.wall} onChange={(e) => put(i, { wall: e.target.value as Wall })}>
+            </Campo>
+            <Campo id={fid(i, 'wall')} nome={t('nc_wall')} aiuto={testoAiuto(AIUTO, 'nc_wall')}>
+              <select id={fid(i, 'wall')} className="input" value={n.wall} onChange={(e) => put(i, { wall: e.target.value as Wall })}>
                 {WALLS.map((w) => <option key={w} value={w}>{t(`wall_${w}`)}</option>)}
               </select>
-            </label>
+            </Campo>
             {num(i, 'at', 0, 10000)}
             {num(i, 'width', 50, 5000)}
             {num(i, 'depth', 10, 1000)}

@@ -4,13 +4,16 @@
 // server), sent as kind SCHIZZO for the target's part (vano | locale) through the installation's upload route — the
 // same checks as every file (src/server/allegati/upload.ts). The same bytes already kept as another kind (a photo of the
 // installation) come back as that file: the panel offers to make it a sketch (updateAttachmentAction, the kind and the
-// part the only columns that may change).
+// part the only columns that may change). Round 52: the file and the title with their «?».
 import { useId, useRef, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import { MAX_FILE_BYTES } from '@/lib/allegati/limits';
 import type { Target } from '@/lib/schizzi/campi';
 import { updateAttachmentAction } from '@/server/allegati/actions';
 import { BY_STATUS, send, type UploadAnswer, type UploadPhase } from '../allegati/send';
+import Campo from '../shaft/Campo';
 
 type Caricato = { id: string; kind: string; title: string };
 
@@ -72,16 +75,14 @@ export default function SchizzoUpload({ projectId, target, onDone }: {
 
   return (
     <form className="schizzo-upload" onSubmit={(e) => { void submit(e); }} aria-busy={busy} data-schizzi="upload">
-      <label className="field">
-        <span>{t('pannello.file')}</span>
+      <Campo id={`${id}-file`} nome={t('pannello.file')} aiuto={testoAiuto(AIUTO, 'sk_file')}>
         <input ref={fileRef} id={`${id}-file`} className="input" type="file" name="file" disabled={busy} aria-describedby={`${id}-hint`}
           accept="image/jpeg,image/png,image/heic,image/heif,application/pdf,.jpg,.jpeg,.png,.heic,.heif,.pdf" />
         <span id={`${id}-hint`} className="hint">{t('pannello.fileHint')}</span>
-      </label>
-      <label className="field">
-        <span>{t('pannello.titoloCampo')}</span>
-        <input className="input" name="title" value={title} maxLength={160} onChange={(e) => setTitle(e.target.value)} disabled={busy} />
-      </label>
+      </Campo>
+      <Campo id={`${id}-title`} nome={t('pannello.titoloCampo')} aiuto={testoAiuto(AIUTO, 'sk_title')}>
+        <input id={`${id}-title`} className="input" name="title" value={title} maxLength={160} onChange={(e) => setTitle(e.target.value)} disabled={busy} />
+      </Campo>
       <div className="flex flex-wrap items-center gap-3">
         <button type="submit" className="btn" disabled={busy}>{t('pannello.invia')}</button>
         {phase.at === 'sending' ? (

@@ -7,11 +7,14 @@
 // typed ticks its row) —, filled in from a confidence of 0.6 up, empty under it with the text read as the hint; a
 // measure taken on a drawing starts checked. «Applica i valori confermati» puts only the checked, valid rows into the
 // form (src/lib/schizzi/applica.ts) and says how many went in and why any did not. Nothing is saved here: the form
-// saves as before.
+// saves as before. Round 52: each column's header with its «?».
 import { useId, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import { campoDi, valoreValido, type Target, type TipoCampo } from '@/lib/schizzi/campi';
 import type { Rifiuto, Valore, ValoreCampo } from '@/lib/schizzi/applica';
+import { ConAiuto } from '../shaft/Campo';
 
 /** A proposed measure. */
 export interface Riga {
@@ -137,11 +140,17 @@ export default function ConfermaValori({ target, righe, fonte, modulo, caption, 
           <caption>{caption}</caption>
           <thead>
             <tr>
-              <th scope="col">{t('tabella.campo')}</th>
-              <th scope="col">{t(fonte === 'cad' ? 'tabella.lettoCad' : 'tabella.letto')}</th>
-              <th scope="col">{t('tabella.valore')}</th>
-              {fonte === 'ai' ? <th scope="col" className="num">{t('tabella.affidabilita')}</th> : null}
-              <th scope="col">{t('tabella.conferma')}</th>
+              <th scope="col"><ConAiuto aiuto={testoAiuto(AIUTO, 'cv_campo')} nome={t('tabella.campo')}>{t('tabella.campo')}</ConAiuto></th>
+              <th scope="col">
+                <ConAiuto aiuto={fonte === 'cad' ? testoAiuto(AIUTO, 'cv_lettoCad') : testoAiuto(AIUTO, 'cv_letto')} nome={t(fonte === 'cad' ? 'tabella.lettoCad' : 'tabella.letto')}>
+                  {t(fonte === 'cad' ? 'tabella.lettoCad' : 'tabella.letto')}
+                </ConAiuto>
+              </th>
+              <th scope="col"><ConAiuto aiuto={testoAiuto(AIUTO, 'cv_valore')} nome={t('tabella.valore')}>{t('tabella.valore')}</ConAiuto></th>
+              {fonte === 'ai' ? (
+                <th scope="col" className="num"><ConAiuto aiuto={testoAiuto(AIUTO, 'cv_affidabilita')} nome={t('tabella.affidabilita')}>{t('tabella.affidabilita')}</ConAiuto></th>
+              ) : null}
+              <th scope="col"><ConAiuto aiuto={testoAiuto(AIUTO, 'cv_conferma')} nome={t('tabella.conferma')}>{t('tabella.conferma')}</ConAiuto></th>
             </tr>
           </thead>
           <tbody>

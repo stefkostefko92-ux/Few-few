@@ -6,12 +6,15 @@
 // of the one form follow (a direct pull's falls against the sheave, the refuge, the pulleys of a machine below, a
 // distance to measure); the calculation's own fields are not here — they are changed in «Calcolo argano»: an issue the
 // calculation resolves (the falls against the sheave, the diverting pulley's distance or height) carries «Porta nel
-// calcolo», which opens it with the drawing's values.
+// calcolo», which opens it with the drawing's values. Round 52: the scheme, each switch and each value with its «?».
 import { SHEAVE_GRID } from '@/calc/sizing';
 import type { FormValues } from '@/calc/types';
 import { BOTTOM_SCHEMES, type BottomScheme, type LiftDerived } from '@/lib/lift';
 import type { ProgettoAuto } from '@/lib/lift/progetto';
 import type { Pres } from '@/lib/present/tr';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
+import Etichetta from '../aiuto/Etichetta';
 import FieldRow, { type BlankTexts } from '../calc/FieldRow';
 import { LAYOUT, PLANT, type Field } from '../calc/fields';
 import { fieldId, type FormBlank } from '../blank';
@@ -45,6 +48,9 @@ const field = (id: string): Field => {
   return f;
 };
 const NONE = new Set<string>();
+/** The «?» of the values the drawing gives and of their switches. */
+const VALUE_AIUTO = { L0: testoAiuto(AIUTO, 'L0'), dx: testoAiuto(AIUTO, 'dx'), h: testoAiuto(AIUTO, 'h'), Hv: testoAiuto(AIUTO, 'Hv') } as const;
+const SWITCH_AIUTO = { L0: testoAiuto(AIUTO, 'auto_L0'), dx: testoAiuto(AIUTO, 'auto_dx'), Hv: testoAiuto(AIUTO, 'auto_Hv') } as const;
 
 /** A direct pull: the falls in the plan are the sheave's diameter apart, or why not; on the falls an existing lift keeps
  *  (round 46), the existing sheave's spacing beside the new sheave, and the plan's drop set to them with one click. */
@@ -82,7 +88,7 @@ export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank,
   const value = (id: 'L0' | 'dx' | 'h' | 'Hv', on: boolean, dec: number, plan = false) => {
     const x = on || plan ? (derived ? Number(DV[id]) : plan && h !== undefined ? h : null) : Number(base[id]);
     return (
-      <FieldRow key={id} P={P} f={field(id)} V={base} bad={NONE} set={() => {}} texts={texts}
+      <FieldRow key={id} P={P} f={field(id)} V={base} bad={NONE} set={() => {}} texts={texts} aiuto={VALUE_AIUTO[id]}
         auto={{ value: x === null || !Number.isFinite(x) ? '—' : fmt(x, dec), badge: t(on ? 'badge_auto' : plan ? 'badge_pianta' : 'badge_calcolo') }} />
     );
   };
@@ -92,7 +98,7 @@ export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank,
     <div className={`row check auto-toggle${locked(key) ? ' locked' : ''}`}>
       <input type="checkbox" id={`auto-${key}`} checked={locked(key) ? false : auto[key]} disabled={locked(key)} aria-describedby={locked(key) ? 'progetto-kept' : undefined}
         onChange={(e) => setAuto({ [key]: e.target.checked })} />
-      <label htmlFor={`auto-${key}`}>{label}</label>
+      <Etichetta htmlFor={`auto-${key}`} aiuto={SWITCH_AIUTO[key]} nome={label}>{label}</Etichetta>
     </div>
   );
   const complete = derived !== null;
@@ -113,7 +119,7 @@ export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank,
           {layout === 'bottom' ? (
             <>
               <div className={`row wide${bottomBlank ? ' need' : ''}`}>
-                <label htmlFor={fieldId('bottom')}>{t('bottom_scheme')}</label>
+                <Etichetta htmlFor={fieldId('bottom')} aiuto={testoAiuto(AIUTO, 'bottom_scheme')} nome={t('bottom_scheme')}>{t('bottom_scheme')}</Etichetta>
                 <select id={fieldId('bottom')} className="input" value={bottomBlank ? '' : scheme} aria-required={bottomBlank || undefined}
                   onChange={(e) => { const b = BOTTOM_SCHEMES.find((x) => x === e.target.value); if (b) setBottom(b); }}>
                   {bottomBlank ? <option value="" disabled>{texts.choose}</option> : null}

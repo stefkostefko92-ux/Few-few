@@ -2,16 +2,20 @@
 
 // A sketch shown beside the form (round 50): the preview the server draws again (GET /api/allegati/<id>/anteprima — a
 // picture turned upright and at most 1600 px, a PDF's page as a PNG; never the uploaded bytes), fitted to the panel or
-// at its own size to read the small figures (scrolled inside the frame), a PDF's first four pages one at a time.
-import { useState } from 'react';
+// at its own size to read the small figures (scrolled inside the frame), a PDF's first four pages one at a time. Round 52:
+// the page and the zoom with their «?».
+import { useId, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
+import AIUTO from '../../../messages/aiuto/progetto.json';
 import type { SchizzoView } from '@/server/schizzi/queries';
+import Campo, { ConAiuto } from '../shaft/Campo';
 
 /** The pages of a PDF sketch shown and read (the server's SCHIZZO_PAGINE, src/lib/report/image-tool.ts). */
 const PAGINE = 4;
 
 export default function SchizzoAnteprima({ schizzo }: { schizzo: SchizzoView }) {
-  const t = useTranslations('schizzi');
+  const t = useTranslations('schizzi'), pageId = useId();
   const [page, setPage] = useState(1);
   const [zoom, setZoom] = useState<'fit' | 'full'>('fit');
   const [broken, setBroken] = useState(false);
@@ -22,12 +26,11 @@ export default function SchizzoAnteprima({ schizzo }: { schizzo: SchizzoView }) 
     <figure className="schizzo-anteprima">
       <div className="schizzo-tools">
         {pages > 1 ? (
-          <label className="field inline">
-            <span>{t('pannello.pagina')}</span>
-            <select className="input" value={page} onChange={(e) => { setPage(Number(e.target.value)); setBroken(false); }}>
+          <Campo id={pageId} nome={t('pannello.pagina')} aiuto={testoAiuto(AIUTO, 'sk_page')} className="inline">
+            <select id={pageId} className="input" value={page} onChange={(e) => { setPage(Number(e.target.value)); setBroken(false); }}>
               {Array.from({ length: pages }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}
             </select>
-          </label>
+          </Campo>
         ) : null}
         <div className="seg-row" role="group" aria-label={t('pannello.zoom')}>
           {(['fit', 'full'] as const).map((z) => (
@@ -36,6 +39,7 @@ export default function SchizzoAnteprima({ schizzo }: { schizzo: SchizzoView }) 
             </button>
           ))}
         </div>
+        <ConAiuto aiuto={testoAiuto(AIUTO, 'sk_zoom')} nome={t('pannello.zoom')} />
       </div>
       <div className={`schizzo-view ${zoom}`} tabIndex={zoom === 'full' ? 0 : undefined}>
         {broken ? <p className="note bad" role="alert">{t('pannello.anteprimaErrore')}</p> : (
