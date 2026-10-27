@@ -7648,7 +7648,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 261
+        "lessons": 262
       },
       "evolution": [
         {
@@ -8136,9 +8136,20 @@
           "date": "2026-10-27",
           "event": "v22.6 — учене",
           "detail": "Научи: tools/vps/blue-green.sh не е безопасен за Compose стек с база - вдига целия стек под CO…"
+        },
+        {
+          "version": "22.7.0",
+          "date": "2026-10-27",
+          "event": "v22.7 — учене",
+          "detail": "Научи: deploy_liftpilot (PR #271) няма автоматично връщане назад - провал на health след docke…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-27",
+          "type": "learning",
+          "summary": "Научи: „deploy_liftpilot (PR #271) няма автоматично връщане назад - провал на health след docke…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
