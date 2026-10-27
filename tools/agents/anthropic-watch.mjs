@@ -29,6 +29,18 @@ import { emitJson, finish } from "../lib/emit.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const STATE = join(HERE, "anthropic-watch.json");
+export const CONTRACTS = join(HERE, "harness-contracts.json");
+
+/** Договорите с харнеса (tools/agents/harness-contracts.json); липсващ файл → празен списък. */
+export function loadContracts(file = CONTRACTS) {
+  try { return JSON.parse(readFileSync(file, "utf8")).contracts || []; } catch { return []; }
+}
+
+/** Кои договори засяга ред от changelog-а (ключова дума, без значение регистъра). */
+export function touchedContracts(line, contracts = loadContracts()) {
+  const l = String(line || "").toLowerCase();
+  return contracts.filter((c) => (c.keywords || []).some((k) => l.includes(String(k).toLowerCase()))).map((c) => c.id);
+}
 export const SOURCES = {
   docs: "https://code.claude.com/docs/llms.txt",
   changelog: "https://code.claude.com/docs/en/changelog.md",
@@ -87,7 +99,7 @@ export function newer(a, b) {
  * Сравнява предишната снимка с текущата. Липсващ източник в текущата (неуспешно сваляне) не
  * изтрива нищо — затова снимката на този източник се пренася непроменена.
  */
-export function diffSnapshot(prev, cur) {
+export function diffSnapshot(prev, cur, contracts = loadContracts()) {
   const p = prev || {};
   const docsBefore = new Set((p.docs || []).map((d) => d.url));
   const docsNow = new Set((cur.docs || []).map((d) => d.url));
@@ -98,6 +110,9 @@ export function diffSnapshot(prev, cur) {
     removedDocs: cur.docs ? (p.docs || []).filter((d) => !docsNow.has(d.url)) : [],
     newVersions: versions.map((r) => ({ ...r, relevant: r.bullets.filter((b) => RELEVANT.test(b)) })),
     newPosts: cur.engineering ? cur.engineering.filter((e) => !engBefore.has(e.slug)) : [],
+    // Редове, които засягат допускане на агентския ни слой — оценяват се първи (2.1.89 мина незабелязан).
+    contractHits: versions.flatMap((r) => r.bullets.map((b) => ({ version: r.version, line: b, contracts: touchedContracts(b, contracts) })))
+      .filter((h) => h.contracts.length),
   };
 }
 
@@ -117,6 +132,11 @@ export function renderReport(d, failed) {
   const lines = [];
   const none = !d.newDocs.length && !d.removedDocs.length && !d.newVersions.length && !d.newPosts.length;
   lines.push(none ? "Няма новости от последната проверка." : "Новости от последната проверка:");
+  if (d.contractHits?.length) {
+    lines.push("", `⚠ ЗАСЯГАТ ДОГОВОР С ХАРНЕСА (${d.contractHits.length}) — оцени първо, после node tools/agents/live-gate.mjs:`);
+    for (const h of d.contractHits.slice(0, 20)) lines.push(`  - ${h.version} [${h.contracts.join(", ")}] ${h.line}`);
+    if (d.contractHits.length > 20) lines.push(`  … още ${d.contractHits.length - 20}`);
+  }
   if (d.newVersions.length) {
     lines.push("", `Claude Code — ${d.newVersions.length} нови версии (${d.newVersions.map((v) => v.version).join(", ")}):`);
     for (const v of d.newVersions) {

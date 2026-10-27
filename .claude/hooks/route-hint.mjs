@@ -13,11 +13,14 @@ import { readFileSync } from "node:fs";
 import { route, loadTeams, names } from "../../tools/agents/teams.mjs";
 
 export const MIN_PROMPT = 12; // по-кратко е „ок“/„продължи“ — няма какво да се рутира
+// Системни пликове (известие от фонова задача, GitHub събитие, будилник) минават през същото събитие,
+// но не са заявка на човек — подсказка върху тях е шум (хванато на 27.10: известие → „екип Щабът“).
+export const ENVELOPE = /^\s*<(task-notification|github-webhook-activity|webhook-payload|wake|child-session-event|system-reminder|local-command|command-)/;
 
 /** Подсказката за заявката или празен низ. Чиста функция — тества се без харнес. */
 export function hintFor(prompt, T = loadTeams(), nm = names()) {
   const text = String(prompt || "").trim();
-  if (text.length < MIN_PROMPT) return "";
+  if (text.length < MIN_PROMPT || ENVELOPE.test(text)) return "";
   const r = route(text, T);
   if (r.fallback || !r.score) return "";
   const team = T.teams.find((t) => t.id === r.team);

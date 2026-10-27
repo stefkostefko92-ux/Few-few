@@ -90,3 +90,18 @@ test("всички верификатор-агенти реално същест
   for (const id of Object.keys(VERIFIER)) assert.match(id, /^[\w-]+$/);
   assert.ok(Object.keys(VERIFIER).length >= 9, `покритие: ${Object.keys(VERIFIER).length}`);
 });
+
+// Живият гейт (27.10.2026): Касаджията написа „Без бон продажбата не се записва“ и верификаторът го
+// отхвърли — дефект на оценителя, не на агента. Редът „Инварианти:“ от дефинициите също трябва да минава.
+test("kasadjiyata: естествената формулировка и редът „Инварианти:“ минават фискалния инвариант", () => {
+  const live = "Остойностяване на сървъра в цели центове → карта → бон → запис. Без бон продажбата не се записва.";
+  assert.equal(verifyOutput("kasadjiyata", live).ok, true, JSON.stringify(verifyOutput("kasadjiyata", live).checks));
+  const line = "Инварианти: ✓ сървърна остойностка (route.ts:96) · ✓ int евроценти · ✗ без успешен бон няма запис (write-ahead PENDING липсва) · ? сторно вместо триене. Продажба с фискален бон.";
+  assert.equal(verifyOutput("kasadjiyata", line).ok, true, JSON.stringify(verifyOutput("kasadjiyata", line).checks));
+});
+
+test("prodavacha: редът „Инварианти:“ покрива подписа и payment_status", () => {
+  const line = "Инварианти: ? сървърна сума · ? подпис върху суровото тяло · ? payment_status · ? идемпотентност по event.id · ? права само през webhook. План за checkout.";
+  const r = verifyOutput("prodavacha", line);
+  assert.equal(r.ok, true, JSON.stringify(r.checks.filter((c) => !c.ok)));
+});

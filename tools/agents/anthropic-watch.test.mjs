@@ -98,3 +98,19 @@ test("записаната снимка в репото е валидна и н�
   assert.match(s.changelogVersion, /^\d+\.\d+\.\d+$/);
   assert.ok(s.docs.length > 50 && s.engineering.length > 5, "снимката не е празна");
 });
+
+test("договорите с харнеса: ред от changelog-а, който ги засяга, излиза първи", async () => {
+  const { touchedContracts, loadContracts } = await import("./anthropic-watch.mjs");
+  const contracts = loadContracts();
+  assert.ok(contracts.length >= 10, "регистърът на договорите е зареден");
+  for (const c of contracts) {
+    assert.match(c.source, /^https:\/\//, `${c.id}: без източник`);
+    assert.ok(c.keywords.length && c.relies.length, `${c.id}: ключови думи и файлове`);
+  }
+  assert.ok(touchedContracts("Changed hook additionalContext limit to 20,000 characters", contracts).includes("additional-context-10k"));
+  assert.ok(touchedContracts("Fixed skills not preloading into subagents", contracts).includes("skills-preload-subagent"));
+  assert.deepEqual(touchedContracts("[VSCode] Added syntax coloring to code blocks", contracts), []);
+  const d = diffSnapshot({ changelogVersion: "2.1.310" }, { changelog: [{ version: "2.1.311", date: "", bullets: ["Changed hook additionalContext limit to 20,000 characters"] }] }, contracts);
+  assert.equal(d.contractHits.length, 1);
+  assert.match(renderReport(d, []), /ЗАСЯГАТ ДОГОВОР С ХАРНЕСА/);
+});
