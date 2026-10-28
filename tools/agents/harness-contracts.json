@@ -34,6 +34,27 @@
       ]
     },
     {
+      "id": "skills-on-demand-subagent",
+      "claim": "Субагент с изричен списък tools: вдига проектни умения при нужда през инструмента Skill само ако Skill е в списъка (или не е в disallowedTools); skills: само предварително зарежда. allowed-tools на умение разрешава без питане, но не добавя инструмент, който агентът няма.",
+      "source": "https://code.claude.com/docs/en/sub-agents.md#preload-skills-into-subagents",
+      "keywords": [
+        "Skill tool",
+        "invoke skills",
+        "disallowedTools",
+        "allowed-tools",
+        "unlisted project"
+      ],
+      "relies": [
+        ".claude/agents/pravniyat-razbirach.md",
+        ".claude/agents/letopisetsa.md",
+        ".claude/agents/socialdjiyata.md",
+        ".claude/agents/izpitatelya.md",
+        ".claude/agents/seo.md",
+        ".claude/agents/prodavacha.md",
+        "agents-dashboard/agents.json"
+      ]
+    },
+    {
       "id": "skills-not-for-teammates",
       "claim": "При agent teams именуваният агент тръгва като teammate, а на teammate харнесът не прилага skills: от дефиницията.",
       "source": "https://code.claude.com/docs/en/agent-teams.md",
@@ -112,7 +133,9 @@
       ],
       "relies": [
         "tools/skills/lint.mjs",
-        ".claude/skills/agent-doctrine/SKILL.md"
+        ".claude/skills/agent-doctrine/SKILL.md",
+        ".claude/skills/humanizer/SKILL.md",
+        ".claude/skills/aia-generation/SKILL.md"
       ]
     },
     {

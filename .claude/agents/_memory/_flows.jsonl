@@ -315,3 +315,5 @@
 {"t":"handoff","ts":"2026-10-28T13:21:50.150Z","id":"rb8dd65be","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"86097a6f"}
 {"t":"start","ts":"2026-10-28T13:24:02.176Z","id":"r90e72e00","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-10-28T13:24:02.176Z","id":"r90e72e00","from":"razbivacha","to":"ai-djiyata","status":"блокер","run":"6d6d42b6"}
+{"t":"handoff","ts":"2026-10-28T13:44:01.118Z","id":"r90e72e00","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"c45d7515"}
+{"t":"handoff","ts":"2026-10-28T13:48:15.179Z","id":"r90e72e00","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"48e3b702"}

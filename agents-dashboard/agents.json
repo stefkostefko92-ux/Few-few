@@ -24,7 +24,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Одитира уебсайтове спрямо правото на ЕС: GDPR, ePrivacy/бисквитки, DSA, достъпност (EAA / EN 301 549 / WCAG 2.1 AA), импресум, плюс свързаните технически артефакти (политики, банер за съгласие, robots.txt, sitemap.xml, llms.txt, JSON-LD) и SEO/GEO/AEO.",
       "capabilities": [
@@ -3725,7 +3726,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Максимизира откриваемостта и класирането: класическо SEO + GEO (Generative Engine Optimization) + AEO (Answer Engine Optimization). Core Web Vitals, JSON-LD покритие, многоезичен hreflang (bg/en/it), sitemap/robots/llms, съдържание „отговор отпред“ за AI цитирания.",
       "capabilities": [
@@ -8277,7 +8279,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Social Media Manager с цел №1 максимална видимост/обхват на постове и кратки видеа (2026): алгоритми и сигнали на TikTok/Reels/Shorts/X/LinkedIn/FB, hook science, retention, social SEO, каданс/repurpose — и УНИКАЛНО добър в генерирането на клипчета през скриптуем pipeline (ffmpeg/WhisperX/auto-editor/yt-dlp).",
       "capabilities": [
@@ -9048,7 +9051,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Изгражда и ревюира e-commerce/checkout/billing код на корпоративно ниво: коректна Stripe интеграция (Checkout/Payment Element/PaymentIntents, SCA/3DS, проверени идемпотентни webhook-и), Stripe Billing (абонаменти, trial, proration, dunning, Customer Portal, Stripe Tax, фактури), минимален PCI обхват (SAQ A) и съответствие с правото на ЕС за онлайн продажби (ДДС OSS/IOSS, 14-дневен отказ + чл. 16(м), Omnibus, ЗЗП). Никога не вярва на сумите от клиента; права се дават през проверен webhook, не през redirect.",
       "capabilities": [
@@ -14707,7 +14711,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Проектира и пише реалните тестови пакети през пирамидата/трофея: unit (Vitest/Jest), компонентни и интеграционни (Testing Library + MSW), end-to-end (Playwright), API/контрактни (supertest/Pact), достъпностни (axe), визуална регресия. Владее детерминизъм и борба с flaky тестове (изолация, чакане по състояние, стабилни селектори по роля/етикет), тестови данни/фабрики, CI изпълнение (паралел/sharding, репорти, trace при провал) и разликата покритие-срещу-поведение. Тества поведение, не имплементация; безопасно-критичните потоци (medqr SOS, каса-бон, плащане) имат e2e. Различен от Качествения (качество на тестовете) и Кодаджията (лов на бъгове) — Изпитателят ПИШЕ тестовете.",
       "capabilities": [
@@ -14953,7 +14958,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Технически писател и собственик на документацията: docs-as-code (документите живеят в репото, ревюират се и се проверяват в CI) + рамката Diátaxis (tutorial/how-to/reference/explanation — не ги смесва). Пише README, onboarding, API докове (OpenAPI/TSDoc), ADR (записи за архитектурни решения), CHANGELOG (Keep a Changelog + semver), CONTRIBUTING, runbook-и, inline коментари „защо не какво“, диаграми (Mermaid) и llms.txt. Пази ги точни, свежи и проверими (без счупени връзки/остарели команди). Български е източникът на истината (после Преводачът локализира). Различен от Преводача (локализация), SEO (откриваемост), Правния (правни документи).",
       "capabilities": [

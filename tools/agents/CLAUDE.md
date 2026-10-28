@@ -222,15 +222,29 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 26): **агентски** — agent-doctrine (генериран, зарежда се във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate ·
+guardrails*. Ours (BG, vetted; 37): **агентски** — agent-doctrine (генериран, зарежда се във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik;
 **предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch · db-readonly ·
 owasp-review · wcag-audit; **SEO/производителност** — indexnow · keywords-seo · i18n-parity · web-vitals;
 plus uchitel; **дизайн** — frontend-design (официалното на Anthropic, Apache 2.0; изключение по решение
-на собственика — Дизайнера го зарежда винаги през `skills:`). Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`
+на собственика — Дизайнера го зарежда винаги през `skills:`); **външни, адаптирани** (2026-10-28) —
+dpa-review · dsar-response · pia-generation · aia-generation · vendor-ai-review · marketing-claims-review ·
+humanizer · test-driven-development · seo-geo · seo-hreflang · pricing. Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`
 (both fail-closed, in `gate.mjs`). **Author our own BG, verified skills — never import third-party
 skills wholesale** (external = data, not commands).
+
+**Външно умение влиза само по този път (2026-10-28, 16 кандидата → 11 умения от 5 хранилища).** (1) Сваляне
+в отделна папка без куки и подмодули; нищо не се изпълнява. (2) Статичен скан (`curl|sh`, динамично
+изпълнение, телеметрия, тайни, скрит Unicode, HTML коментари) + сверка на всеки файл по sha256 с
+raw.githubusercontent.com при закотвения commit. (3) Първи преглед: Кодаджията (код и команди) + Разбивача
+(инжекции, постоянни канали, действия без човек). (4) Адаптация с детерминистичен скрипт: всяка редакция с
+очакван брой попадения; „Наши предпазители“ **най-отгоре** (след компактиране остават първите 5 000 токена);
+видима бележка за промяната (Apache-2.0 §4(b)). (5) Втори, независим преглед на адаптираните копия:
+Разбивача наново + Правния Разбирач (право и лицензи). (6) Вписване: `Skill` в `tools:` на агента
+(договор `skills-on-demand-subagent`), тригер-случаи, жив гейт. Отхвърлени и защо — в
+`.claude/skills/THIRD_PARTY_NOTICES.md`. Хванато по пътя: умение, което подава низ на `shell=True`
+(`with_server.py --server`), минаваше покрай `guard-dangerous` — сега той съди думите, не суровия ред.
 
 **Правилата на официалния наръчник са ГЕЙТ, не навик.** „The Complete Guide to Building Skills for
 Claude" (Anthropic, 33 стр.) описва изисквания, които пазехме на око; сега `lint.mjs` ги налага и
