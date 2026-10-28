@@ -18124,7 +18124,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 153
+        "lessons": 155
       },
       "evolution": [
         {
@@ -18210,9 +18210,20 @@
           "date": "2026-10-28",
           "event": "v24.7 — учене",
           "detail": "Научи: guard-readonly търси знак > в целия низ на командата и маха само низове в кавички, зато… (+1 още)"
+        },
+        {
+          "version": "24.9.0",
+          "date": "2026-10-28",
+          "event": "v24.9 — учене",
+          "detail": "Научи: guard-dangerous не блокира git reset --hard, git checkout ., git restore, git clean -fd… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-28",
+          "type": "learning",
+          "summary": "Научи: „guard-dangerous не блокира git reset --hard, git checkout ., git restore, git clean -fd…\" (+1 още)"
+        },
         {
           "date": "2026-10-28",
           "type": "learning",
