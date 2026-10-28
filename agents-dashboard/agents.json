@@ -18124,7 +18124,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 145
+        "lessons": 148
       },
       "evolution": [
         {
@@ -18192,9 +18192,20 @@
           "date": "2026-10-27",
           "event": "v23.9 — учене",
           "detail": "Научи: В CSPos продажбата зачита клиентския priceLockedCents за ЛЮБА стока; гейтът (само тегло… (+1 още)"
+        },
+        {
+          "version": "24.2.0",
+          "date": "2026-10-28",
+          "event": "v24.2 — учене",
+          "detail": "Научи: guard-readonly третира \">\" в тялото на heredoc (например python \"ord(ch) > 127\") като п… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-28",
+          "type": "learning",
+          "summary": "Научи: „guard-readonly третира \">\" в тялото на heredoc (например python \"ord(ch) > 127\") като п…\" (+2 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
