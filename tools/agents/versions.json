@@ -121,7 +121,7 @@
       "manual": true,
       "ttlDays": 90,
       "current": "теглата FCP 10 · SI 10 · LCP 25 · TBT 30 · CLS 25 (v10-моделът) + log-normal кривите ВАЖАТ и в Lighthouse 13.4.1",
-      "checkedAt": "2026-07-29",
+      "checkedAt": "2026-10-28",
       "source": "https://developer.chrome.com/docs/lighthouse/performance/performance-scoring",
       "note": "prelaunch-audit.mjs и Скоростника цитират „кривите на v10“ — това е ИМЕ на модела, не остаряла версия."
     },
@@ -129,17 +129,17 @@
       "id": "node-lts",
       "manual": true,
       "ttlDays": 90,
-      "current": "активна LTS: 24 (до 2028-04); 26 става LTS на 2026-10-28; 22 е в maintenance",
-      "checkedAt": "2026-07-29",
+      "current": "активна LTS: 26 (от 2026-10-28, активна поддръжка до 2027-10-27, EOL 2029-04-30); 24 е в maintenance (EOL 2028-04-30); 22 е в maintenance (EOL 2027-04-30)",
+      "checkedAt": "2026-10-28",
       "source": "https://endoflife.date/api/nodejs.json"
     },
     {
       "id": "wcag",
       "manual": true,
-      "ttlDays": 90,
-      "current": "W3C REC: WCAG 2.2 (2023-10). ПРАВНО хармонизиран за EAA остава EN 301 549 V3.2.1 → WCAG 2.1 AA — цитирането на 2.1 в EAA контекст е КОРЕКТНО, не остаряло",
-      "checkedAt": "2026-07-29",
-      "source": "https://www.w3.org/TR/WCAG22/ + EN 301 549 V3.2.1 (виж паметта на Правния)"
+      "ttlDays": 45,
+      "current": "W3C REC: WCAG 2.2 (2023-10, обновена 2024-12-12). ПРАВНО хармонизиран за EAA остава EN 301 549 V3.2.1 → WCAG 2.1 AA, докато V4.1.1 (ETSI, 2026-09-02, носи WCAG 2.2 AA и Приложение ZB към EAA) не бъде цитиран в ОВ на ЕС (очаквано Q4 2026) — тогава правната опора става WCAG 2.2 AA",
+      "checkedAt": "2026-10-28",
+      "source": "https://www.w3.org/TR/WCAG22/ + https://www.deque.com/blog/en-301-549-v4-1-1-is-final-what-changed-what-it-means-and-what-you-should-do/ (сверявай цитирането в EUR-Lex)"
     },
     {
       "id": "claude-models",
@@ -153,9 +153,9 @@
       "id": "chrome-mv",
       "manual": true,
       "ttlDays": 90,
-      "current": "Manifest V3 е единственият приеман от Web Store; MV2 е мъртъв (исторически факт, не версия за следене)",
-      "checkedAt": "2026-07-29",
-      "source": "https://developer.chrome.com/docs/extensions/develop/migrate"
+      "current": "Manifest V3 е единственият приеман от Web Store; MV2 е мъртъв — Chrome 138 е последната версия с MV2, а на 2026-08-31 всички останали MV2 разширения са махнати от Web Store",
+      "checkedAt": "2026-10-28",
+      "source": "https://developer.chrome.com/docs/extensions/develop/migrate/mv2-deprecation-timeline"
     }
   ]
 }
