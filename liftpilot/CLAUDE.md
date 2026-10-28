@@ -112,6 +112,7 @@ python3 scripts/lista-verifica-xlsx.py   # docs/lista-verifica-normativa.xlsx о
 npm run artifact      # самостоятелната страница с двата инструмента → artifact/dist (claude.ai Artifact или статичен хост)
 npx tsx scripts/landing-drawings.ts                  # чертежите на началната страница (public/img/lp-plan|lp-section.svg) от ядрото
 npx tsx --conditions=react-server scripts/landing-docs.ts   # страниците на документите на примера (public/img/lp-doc-*.webp, 320/600/820 px); нужни ReportLab, PyMuPDF, Pillow
+node print/build-brochure.mjs                        # брошурата A5 отпред/отзад: PDF за печатницата (3 mm изрязване) и за имейл; print/README.md
 ```
 
 Гейтът (задължителен преди „готово“): `lint` + `typecheck` + `test` + `build`, после `smoke` срещу пуснат

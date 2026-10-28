@@ -60,6 +60,7 @@
 - Кръг 52, довършването: „Искам да довършиш стъпка по стъпка, да не пипаш рилиеви, остави ги какво във файла и след това направи точка 1.“ — стъпките и в Calcolo argano и Progetto; Rilievi и етикетите на файла («Ascensorista :», «Commessa :») остават както са; после `main` в клона на PR-а.
 - Петдесет и третият кръг: „Voglio che la parte del progetto, la parte della simulazione e della relazione tecnica siano separate in pagine diverse e non così incasinate. Al momento, un utente deve stare lì ore per capire come funziona il software. Dobbiamo puntare di più sulla leggibilità e sul renderlo più facilmente capibile per l’utente già a prima vista. Prima di iniziare a modificare proponimi le modifiche.“ Предложението (артефакт) и изборът на собственика: симулацията — запазеният проект и черновата; проверките — до чертежа; една стъпка наведнъж — само в Semplice; Calcolo argano по същата схема — трета доставка. Тази промяна е първата доставка; втората (relazione tecnica стъпка по стъпка в Semplice) и третата (Calcolo argano) идват после.
 - Петдесет и четвъртият кръг: „Voglio che quando c’è una verifica non superata il software mi suggerisca dei rimedi. Una volta finito il lavoro non mi fare i manuali d’uso, te lo dico io quando farli.“ Изборът на собственика: решения, изчислени със стойността, при която проверката минава, и «Applica»; в Progetto, Calcolo argano и Rilievo del locale macchina; и за «Attenzione». Ръководството — само когато собственикът го поиска.
+- Петдесет и петият кръг: „И направи професионални и брутални рекламни брошури fronte/retro A5“. Изборът на собственика: облика на марката LiftPilot; отзад имейл, сайт, QR и телефона +39 379 296 9699; една брошура за всички; файл за печатницата и дигитален.
 
 ## Намерено по пътя
 
@@ -3648,6 +3649,20 @@ i rimedi» под присъдата; Rilievo del locale macchina — колон
 (бутонът «Rimedi» и редът под проверката), присъдата на Calcolo argano (новият блок) и таблицата на проверките в Rilievo
 del locale macchina (новата колона).
 
+### Кръг 55 — брошурата A5 (отпред и отзад)
+
+`print/` (`print/README.md`): брошура A5 на италиански в облика Premium на сайта — `brochure.html` + `brochure.css`,
+сглобена от Chromium (`node print/build-brochure.mjs`) в два PDF-а: за печатницата 154 × 216 mm с 3 mm изрязване, TrimBox
+148 × 210 mm и BleedBox (`print/boxes.py` с PyMuPDF реже страницата до милиметъра — Chromium закръгля размера до стотна от
+инча), и за имейл точно A5. Отпред: «Rileva. Verifica. Documenta.», сечението A-A от двигателя (`lp-section.svg`), числата
+на софтуера (125 проверки, 198 стойности с източник, 1:1 DXF/DWG, 5 сценария). Отзад: шестте стъпки на съоръжението,
+«Rimedi» с реален изход на софтуера (белязан «Esempio»), профилът на нормите, поканата за бетата с имейл, телефон, сайт и
+QR (`qr-liftpilot.svg`), бележката, че резултатите са чернови за подпис на техник, и подписа на Carbon Stealth VCC.
+Скриптът спира, ако съдържанието не се побира на листа. ESLint: `print/**/*.mjs` с глобалните на Node, както `scripts/`.
+
+**Намерено по пътя:** примерът за «Rimedi» е от тестов проект, не от проекта на сечението отпред — затова е белязан
+«Esempio»; редът с пълното име на проверката не се побира — съкратено на «Rifugio sul tetto di cabina».
+
 ## Проверки
 
 - [x] Пуснах пълния quality gate на засегнатия продукт `liftpilot/` (до кръг 6 — `argano/`): lint, typecheck, test (250/250, със схемите, токените и писмата на акаунтите на трите езика, с тестовете за хлабината на вратите, хода на кабината и противотежестта при трите схеми с машина долу, планките на Panev, кабелния канал, редакцията на всеки размер на плана и на разреза, каталога на машините, ограничителите, нишите, етажните табла и имената на котите на трите езика), build. **Зелен.**
@@ -4246,6 +4261,10 @@ del locale macchina (новата колона).
   1440 и 390 px и Calcolo argano на 1440 px прегледани като PNG, нула грешки в конзолата; нормативен преглед от
   Асансьорчика — поправките са в „Намерено по пътя“; `secret-scan` — чисто; ръководството не е пипнато (решение на
   собственика); сървърите — спрени по своите pid.
+- [x] Кръг 55 (брошурата): `npm run lint` чисто, `tsc` 0, `npm test`, `npm run build`; `pdfinfo -box` — 436.535 × 612.283 pt
+  с TrimBox 8.50 pt навътре и 419.528 × 595.276 pt (A5); `pdffonts` — всички шрифтове вградени; QR-ът декодиран от двата
+  PDF-а (`https://liftpilot.carbonstealth.eu`); двете страници прегледани като PNG с линиите на реза и на 8 mm навътре;
+  числата сверени с `registryCounts()`/`SCENARIOS` и с началната страница на живо; `secret-scan` — чисто.
 - [x] `node tools/design/motion-a11y.mjs liftpilot/src`: проверката за reduced motion в базата — да; 6 евристични
   находки `webgl-no-rm-check` в модули на 3D, които се зареждат само през `boot.ts` (същите и преди кръг 24).
 - [x] Живата 3D сцена на началната страница е проверена в headless Chromium (WebGL 2) на двете нива на качество, без грешки в конзолата. При reduced motion three.js не се зарежда.

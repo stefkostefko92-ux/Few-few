@@ -19,8 +19,8 @@ export default tseslint.config(
     },
   },
   {
-    // Node scripts (smoke test)
-    files: ['scripts/**/*.mjs'],
+    // Node scripts (smoke test, the brochure)
+    files: ['scripts/**/*.mjs', 'print/**/*.mjs'],
     languageOptions: { globals: { process: 'readonly', fetch: 'readonly', console: 'readonly', URL: 'readonly' } },
   },
   {
