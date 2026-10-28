@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-28:** subprocess.Popen(cmd, shell=True) със съставна команда (cd X && npm run dev) не може да бъде заменена директно от sh, затова process.terminate() спира само sh и npm/node остават сираци; нужно е start_new_session=True + os.killpg _(преглед на Python помощни скриптове, които пускат и спират dev сървъри; verified; vetting/testing-anthropic/webapp-testing/scripts/with_server.py:69-71,96-100 + SKILL.md:47-48)_
 - **2026-10-27:** В ПРЕДАВАНЕ полето Към трябва да е id на агента (напр. izpitatelya), не името на кирилица — dod-check.mjs отхвърля „Изпитателя“ _(всеки HANDOFF блок; verified; Stop hook dod-check.mjs в тази сесия; .claude/agents/izpitatelya.md)_
 - **2026-10-27:** Агентът-тестер се адресира в ПРЕДАВАНЕ с id izpitatelya (не izpitatelyat) — dod-check отхвърля непознат адресат _(всеки ПРЕДАВАНЕ блок към Изпитателя; verified; .claude/agents/izpitatelya.md (Glob) + Stop hook dod-check.mjs отказ за „izpitatelyat“)_
 - **2026-10-27:** Id-то на Изпитателя в полето Към на ПРЕДАВАНЕ е izpitatelya (не izpitatelyat) — грешно id проваля dod-check _(блок ПРЕДАВАНЕ към Изпитателя; verified; Glob .claude/agents/*.md → .claude/agents/izpitatelya.md)_
