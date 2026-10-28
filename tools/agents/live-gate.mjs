@@ -111,13 +111,17 @@ export function quoteMatches(quote, expected) {
   return q.slice(0, 4).every((w, i) => w === e[i]);
 }
 
+// Деветият жив гейт (28.10): Летописецът даде грешен обект и после поправен („ползвай само втория“), а тук се
+// четеше първият. Важи ПОСЛЕДНИЯТ обект на пробата (поправката идва след грешката); без обект на пробата — първият.
 export function firstJson(text) {
   const s = String(text || "");
-  const start = s.indexOf("{");
-  for (let end = s.indexOf("}", start); start >= 0 && end > start; end = s.indexOf("}", end + 1)) {
-    try { return JSON.parse(s.slice(start, end + 1)); } catch { /* по-дълъг кандидат */ }
+  const starts = [...s.matchAll(new RegExp(`\\{\\s*"(?:${PROBE_KEYS.join("|")})"\\s*:`, "g"))].map((m) => m.index);
+  const start = starts.length ? starts[starts.length - 1] : s.indexOf("{");
+  const tail = start >= 0 ? s.slice(start) : s;
+  for (let end = tail.indexOf("}"); start >= 0 && end > 0; end = tail.indexOf("}", end + 1)) {
+    try { return JSON.parse(tail.slice(0, end + 1)); } catch { /* по-дълъг кандидат */ }
   }
-  return lenientProbeJson(s);
+  return lenientProbeJson(tail);
 }
 
 // Шестият жив гейт (27.10): агентът цитира `„seo"` (източникът смесва „ с ASCII ") и не екранира кавичката —

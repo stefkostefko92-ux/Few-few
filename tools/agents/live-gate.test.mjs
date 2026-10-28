@@ -107,3 +107,15 @@ test("проба: неекранирана кавичка в цитат не п�
   assert.equal(firstJson("нищо тук"), null);
   assert.deepEqual(firstJson('{"a":1}'), { a: 1 });
 });
+
+// Деветият жив гейт 28.10.2026: Летописецът даде грешен обект, после поправен („ползвай само втория“), а
+// оценителят вземаше първия. Важи последният обект на пробата; цитатите пак се сверяват дословно.
+test("проба: при два обекта важи последният (поправката идва след грешката)", async () => {
+  const { firstJson } = await import("./live-gate.mjs");
+  const raw = '{"doctrine":"(налична е само чрез скила)","procedure":null,"shared":null,"card":null,"memory":null,"rootClaudeMd":null,"handoffFields":true}\n\nЗабележка: горният обект е невалиден, давам го коригиран.\n\n{"doctrine":"държавно ниво — задължителна, с приоритет","procedure":"задължителна за всеки агент — процедирай по","shared":"крос-режещи — важат за всички агенти; ползвай","card":"екип „Думите“ (водач: Летописецът; с теб:","memory":"„letopisetsa" (v6.0 самообучение — ползвай я,","rootClaudeMd":null,"handoffFields":true}';
+  const j = firstJson(raw);
+  assert.equal(j.procedure, "задължителна за всеки агент — процедирай по");
+  assert.equal(j.memory, '„letopisetsa" (v6.0 самообучение — ползвай я,');
+  assert.equal(j.rootClaudeMd, null);
+  assert.deepEqual(firstJson('пред {"a": {"b": 1}} след'), { a: { b: 1 } }, "непробен JSON — както преди");
+});
