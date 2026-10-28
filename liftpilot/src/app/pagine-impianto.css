@@ -27,6 +27,25 @@
 .checks-others > summary { cursor: pointer; width: fit-content; padding-block: 4px; font: 600 14px/1.4 var(--font-body); color: var(--accent); }
 .checks-others[open] > summary { margin-bottom: 10px; }
 
+/* the remedies of a check, under its row (round 54) */
+.lift-checks .check-acts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+tr.rimedi-row > td { padding: 0 12px 14px; background: var(--surface2); }
+@media (max-width: 719px) { .data-table.stack tr.rimedi-row > td::before { content: none; } }
+.rimedi-calc { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.rimedi-calc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.rimedi-calc-riga { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.rimedi-calc-nome { flex: 1 1 14rem; min-width: 0; font: 400 13.5px/1.4 var(--font-body); color: var(--ink); }
+.rimedi { display: flex; flex-direction: column; gap: 8px; padding-top: 10px; text-align: left; white-space: normal; }
+.rimedi .note { margin: 0; }
+.rimedi-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.rimedi-list > li { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); }
+.rimedio-riga { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.rimedio-cosa { flex: 1 1 16rem; min-width: 0; font: 400 14px/1.45 var(--font-body); color: var(--ink); }
+.rimedio-val { font-family: var(--font-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.rimedio-costo { font: 500 11.5px/1.6 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 1px 8px; border: 1px solid var(--rule-strong); border-radius: 999px; }
+.rimedio-costo.edile { color: var(--warn); border-color: var(--warn-line); background: var(--warn-bg); }
+.rimedi .note.ok { color: var(--ok); } .rimedi .note.bad { color: var(--fail); } .rimedi .note.warn { color: var(--warn); }
+
 /* the Simulazione: what it simulates, the scenarios each with its line */
 .sim-fonte { width: fit-content; max-width: 100%; }
 .sim-fonte > a[aria-current="true"] { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); box-shadow: inset 0 -2px 0 var(--accent); }

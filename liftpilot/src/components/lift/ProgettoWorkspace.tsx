@@ -20,12 +20,13 @@ import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { Edit } from '@/drawing';
 import { deriveLift, tipoDaRivedere, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
-import { bottomTo, enteredBy, filled, isBlankKey, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
+import { bottomTo, isBlankKey, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
 import { mancantiDi } from '@/lib/lift/progetto-bozza';
-import { composto, dalComposto, type ProgettoAuto, type ProgettoDraft } from '@/lib/lift/progetto';
-import { calataVerso, calateAlCompleto, calateEsistenti } from '@/lib/lift/calata';
+import { composto, type ProgettoAuto, type ProgettoDraft } from '@/lib/lift/progetto';
+import { conModifica, conPatch, conVano } from '@/lib/lift/progetto-edit';
+import { calataVerso, calateEsistenti } from '@/lib/lift/calata';
 import { macchinaEsistente } from '@/lib/lift/kept';
-import { drawnShaft, edited, enteredShaft, movedPanel, panelEntered } from '@/lib/lift/panel-form';
+import { drawnShaft, edited, panelEntered } from '@/lib/lift/panel-form';
 import { withPitches, type BracketPitches } from '@/shaft/brackets';
 import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
@@ -36,7 +37,7 @@ import type { ShaftSource } from '@/lib/shaft-input';
 import { editShaft } from '@/lib/shaft-edit';
 import { applicaVano, valoreVano } from '@/lib/schizzi/applica';
 import { saveLiftDesignAction } from '@/server/lift-actions';
-import { editValue, keptPlan, type ShaftInputs } from '@/shaft';
+import { editValue, type ShaftInputs } from '@/shaft';
 import { testoAiuto } from '@/lib/aiuto';
 import { numeriDi, passiProgetto, passoId, type PassoProgetto } from '@/lib/passi-moduli';
 import AIUTO from '../../../messages/aiuto/progetto.json';
@@ -65,6 +66,7 @@ import ProgettoRisultati from './ProgettoRisultati';
 import { useUnoAllaVolta } from './progetto-uno';
 import { missingItems } from './missing-items';
 import { useSaveBlockers } from './save-blockers';
+import { useRimediProgetto } from './rimedi-progetto';
 
 interface Props {
   projectId: string;
@@ -156,20 +158,19 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
   // a change the one form's helpers make on the composed draft, kept as the drawing (the plan's h as it was); the change
   // that completes it on existing falls puts the plan's drop at them (round 46, src/lib/lift/calata.ts)
   const change = (f: (L: LiftDraft) => LiftDraft): void => {
-    setForm((d) => calateAlCompleto(d, dalComposto(f(composto(d, B)), d.progetto.h), B));
+    setForm((d) => conModifica(d, B, f));
     setSaveError(null);
   };
-  const setShaft: ShaftSet = (patch, edit) => change((L) => {
-    // the distances set by hand go with the arrangement they belong to; what the patch sets is entered
-    const shaft = { ...L.inputs.shaft, ...patch };
-    return { inputs: { ...L.inputs, shaft: { ...shaft, plan: keptPlan(L.inputs.shaft, shaft) } }, blank: filled(edit ? edit(L.blank) : L.blank, enteredBy(patch)) };
-  });
+  // the distances set by hand go with the arrangement they belong to; what the patch sets is entered (progetto-edit.ts)
+  const setShaft: ShaftSet = (patch, edit) => {
+    setForm((d) => conPatch(d, B, patch, edit));
+    setSaveError(null);
+  };
   // the drawings show the panel where the software put it and the HEB beams it took; moved or chosen there, entered
   const drawn = useMemo(() => drawnShaft(inp.shaft, derived), [inp.shaft, derived]);
   const setDrawn = (next: ShaftInputs): void => {
-    const moved = movedPanel(next, derived);
-    if (moved) change((L) => panelEntered(L, moved));
-    setShaft(enteredShaft(next, inp.shaft, derived));
+    setForm((d) => conVano(d, B, next, derived));
+    setSaveError(null);
   };
   // the diverting pulley's height under the sheave set on the plan [mm] (the drawing's h, effective with dx entered)
   const setCalcFromDrawing = (key: string, value: number): Refusal | null => {
@@ -252,6 +253,7 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
   };
   const passi = passiProgetto(missing, { locale: !sotto || pulegge }, (k) => titoli[k], (k) => (isBlankKey(k) ? fieldId(k) : k));
   const numeri = numeriDi<PassoProgetto>(passi), uno = useUnoAllaVolta(passi);
+  const rimedi = useRimediProgetto({ form, base: B, derived, pitches, settled, applica: setDrawn, calcolo: porta });
   return (
     <OrigineProvider value={origine}>
     <div className="lift-work">
@@ -267,7 +269,7 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
             differenze={<DifferenzeCalcolo P={P} X={X} base={base.values} derived={derived} porta={porta} pending={leaving} collaudo={base.collaudo} tipo={base.tipo} />}
             disegno={<section className="panel"><PlanEditor I={drawn} onChange={setDrawn} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan"
               below={derived.bottom ? { machine: derived.machine, analysis: derived.analysis, scheme: derived.bottom } : null} /></section>}
-            verifiche={<LiftChecks derived={derived} X={X} fmt={P.fmt} {...(completo ? { onSimulate: (req: SimRequest) => sim.current?.play(req) } : { simulaHref: simula, apri: apriSim })} />}
+            verifiche={<LiftChecks derived={derived} X={X} fmt={P.fmt} {...(completo ? { onSimulate: (req: SimRequest) => sim.current?.play(req) } : { simulaHref: simula, apri: apriSim, rimedi })} />}
             completo={completo ? { simulatore: <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />, distinta: <PanevBom L={derived.layout} prices={prices} C={derived.collaudo} /> } : null} />
         )}
       </div>

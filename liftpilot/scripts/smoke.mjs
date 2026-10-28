@@ -36,6 +36,7 @@ import { guidePage, helpAndSearch, notFoundPage, reportFlow, rilievoLostAnswer, 
 import { replacementRoom } from './smoke-replacement.mjs';
 import { setSvg } from './smoke-svg.mjs';
 import { documentiFlow, sempliceFlow, simulazioneFlow } from './smoke-pagine.mjs';
+import { rimediFlow } from './smoke-rimedi.mjs';
 import { rilieviFlow } from './smoke-rilievi.mjs';
 import { rtTrasformazione, rtVano } from './smoke-rt.mjs';
 import { rilieviSync } from './smoke-rilievi-sync.mjs';
@@ -201,6 +202,7 @@ try {
   const { liftRelHref, dxfHref, designUrl } = await documentiFlow({ BASE, page, projectUrl, reportBytes: body.length, orderFiles });
   await simulazioneFlow({ page, projectUrl, liftUrl });
   await sempliceFlow({ page, hydrated, projectUrl });
+  await rimediFlow({ page, hydrated, projectUrl });
 
   await verdictPopover({ BASE, page, hydrated });
 

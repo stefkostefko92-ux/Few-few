@@ -6,7 +6,9 @@
 // result. Round 53: the problems first — the checks not met and those with «Attenzione» the test counts —, the others
 // closed under their count (open in «Esperto»); where the simulation can replay a check, a button runs it: here
 // (`onSimulate`, the Simulazione's page) or on the Simulazione's page (`simulaHref`); `solo="simulabili"` lists only
-// those (the Simulazione's page).
+// those (the Simulazione's page). Round 54: a check to look at has «Rimedi» (`rimedi`: the screen holding the design) —
+// the values that make it pass, found by trying them on the whole design, under its row (RimediVerifica).
+import { Fragment, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import type { ReactNode } from 'react';
@@ -19,6 +21,7 @@ import { isUpperLimit, mergeChecks, shownValue, type ShaftCheck } from '@/shaft'
 import { useModalita } from '../shell/Modalita';
 import { scenarioForCheck } from './scenarios';
 import type { SimRequest } from './LiftSimulator';
+import RimediVerifica, { type FonteRimedi } from '../rimedi/RimediVerifica';
 
 interface Props {
   derived: LiftDerived;
@@ -32,13 +35,16 @@ interface Props {
   apri?(href: string): void;
   /** only the checks the simulation replays */
   solo?: 'simulabili';
+  /** the remedies of a check to look at (the screen holding the design); absent: none */
+  rimedi?: FonteRimedi<unknown> | null;
 }
 
 type Id = Check['id'] | ShaftCheck['id'];
 interface Row { id: Id; status: CheckStatus; existing: boolean; cells: ReactNode }
 
-export default function LiftChecks({ derived, X, fmt, onSimulate, simulaHref, apri, solo }: Props) {
-  const t = useTranslations('lift'), ts = useTranslations('shaft'), esperto = useModalita()?.modalita === 'esperto';
+export default function LiftChecks({ derived, X, fmt, onSimulate, simulaHref, apri, solo, rimedi = null }: Props) {
+  const t = useTranslations('lift'), ts = useTranslations('shaft'), tr = useTranslations('rimedi'), esperto = useModalita()?.modalita === 'esperto';
+  const [aperto, setAperto] = useState<string | null>(null);
   const res = derived.analysis.res, L = derived.layout;
   const replay = (id: Id): SimRequest | null => scenarioForCheck(id, res, derived.sim);
   const simulate = (id: Id) => {
@@ -78,15 +84,38 @@ export default function LiftChecks({ derived, X, fmt, onSimulate, simulaHref, ap
       };
     }),
   ].filter((r) => solo !== 'simulabili' || replay(r.id) !== null);
+  // a check's name as its row reads it, for what a remedy puts right or breaks
+  const nome = (id: string): string => {
+    const c = res.checks.find((x) => x.id === id);
+    return c ? X.checkLabel(c.id) : ts(verificaKey(id, derived.values));
+  };
   // a problem: what the test's verdict counts against the lift (collaudo.ts problemiCollaudo)
   const counted = new Set(problemiCollaudo(C, rows).map((r) => r.id)), problems = rows.filter((r) => counted.has(r.id));
   const others = rows.filter((r) => !problems.includes(r));
-  const table = (list: readonly Row[], label: string) => (
+  // the problems' rows with «Rimedi» (one open at a time, under its row)
+  const table = (list: readonly Row[], label: string, conRimedi = false) => (
     <div className="table-panel">
       <table className="data-table stack" aria-label={label}>
         <thead><tr><th>{t('col_check')}</th><th className="num">{t('col_value')}</th><th className="num">{t('col_limit')}</th><th>{t('col_result')}</th><th /></tr></thead>
         <tbody>
-          {list.map((r) => <tr key={r.id} className={r.existing ? 'existing' : undefined} data-check={r.id}>{r.cells}<td>{simulate(r.id)}</td></tr>)}
+          {list.map((r) => (
+            <Fragment key={r.id}>
+              <tr className={r.existing ? 'existing' : undefined} data-check={r.id}>
+                {r.cells}
+                <td>
+                  <div className="check-acts">
+                    {simulate(r.id)}
+                    {conRimedi && rimedi ? (
+                      <button type="button" className="btn btn-sm" aria-expanded={aperto === r.id} aria-controls={`rimedi-${r.id}`} onClick={() => setAperto(aperto === r.id ? null : r.id)}>{tr('apri')}</button>
+                    ) : null}
+                  </div>
+                </td>
+              </tr>
+              {conRimedi && rimedi && aperto === r.id ? (
+                <tr className="rimedi-row" id={`rimedi-${r.id}`}><td colSpan={5}><RimediVerifica id={r.id} fonte={rimedi} nome={nome} fmt={fmt} onApplied={() => setAperto(null)} /></td></tr>
+              ) : null}
+            </Fragment>
+          ))}
         </tbody>
       </table>
     </div>
@@ -94,7 +123,7 @@ export default function LiftChecks({ derived, X, fmt, onSimulate, simulaHref, ap
   return (
     <section id="checks" className="lift-checks">
       <SectionTitle icon="list-checks" eyebrow={NORMA_BREVE[C.norma]}>{t(solo === 'simulabili' ? 'checks_sim_title' : 'checks_title')}</SectionTitle>
-      {problems.length ? table(problems, t('checks_problems', { n: problems.length })) : <p className="note checks-none">{t(solo === 'simulabili' ? 'checks_sim_none' : 'checks_none')}</p>}
+      {problems.length ? table(problems, t('checks_problems', { n: problems.length }), solo !== 'simulabili') : <p className="note checks-none">{t(solo === 'simulabili' ? 'checks_sim_none' : 'checks_none')}</p>}
       {others.length ? (
         <details className="checks-others" open={esperto || undefined}>
           <summary>{t('checks_others', { n: others.length })}</summary>

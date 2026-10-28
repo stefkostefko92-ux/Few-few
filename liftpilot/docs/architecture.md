@@ -428,6 +428,10 @@ src/lib/impianto/schede.ts, src/server/impianto/schede.ts, src/components/impian
                      Panoramica и шестте стъпки със състоянието им (`schedeDi` — чисто, от записите; `prossimoDi` —
                      «Prossimo passo»), зареждането (`schedeImpianto`: леките заявки и адресите по правата), ImpiantoNav
                      (лентата на всяка страница на съоръжението), TabCorrente, ProssimoPasso (панорамата).
+src/lib/rimedi/, src/lib/lift/progetto-edit.ts, src/components/rimedi/  Решенията на неминаващите проверки (кръг 54): cerca
+                     (търсенето), vano (лостовете на Progetto и каталогът), progetto, calcolo, locale (пресмятането на
+                     всеки екран), margine (разстоянието до границата); RimediVerifica (редът под проверката),
+                     lift/rimedi-progetto.ts, calc/RimediCalcolo.tsx и колоната в room/RoomSurvey.tsx.
 src/components/passi/mostra.ts  Събитието `passo-mostra`: връзка към поле или стъпка показва скритата стъпка, преди да
                      отиде там (BarraPassi, MissingPanel, progetto-uno, ProgettoRisultati).
 src/app/[locale]/app/projects/[id]/simulazione, src/server/simulazione.ts, src/lib/lift/progetto-bozza.ts,

@@ -8,8 +8,10 @@
 // filled in. The save sends the survey only: the server derives everything again. Round 50: the survey sketch beside the
 // measures (SchizzoPanel, sticky on a wide screen) and the room measured on a DXF/DWG plan (LocaleCad); what either
 // proposes enters the form only once confirmed (src/lib/schizzi/applica.ts), as if typed. Round 52: each field with its
-// «?» (messages/aiuto/progetto.json), the save's details beside its heading.
-import { useMemo, useState, useTransition } from 'react';
+// «?» (messages/aiuto/progetto.json), the save's details beside its heading. Round 54: a check that does not pass (or
+// passes with «Attenzione») has «Rimedi» — the support, the beams, the motor's side, the panel, the room tried on the whole
+// survey (lib/rimedi/locale.ts) — under its row.
+import { Fragment, useMemo, useState, useTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import SectionTitle from '@/components/project/SectionTitle';
 import { useRouter } from '@/i18n/routing';
@@ -21,6 +23,10 @@ import { makeFmt } from '@/lib/present/tr';
 import { deriveRoom, roomCheckKey } from '@/lib/room/derive';
 import type { SurveyDraft, SurveyField } from '@/lib/room/survey';
 import { isUpperLimit, shownValue } from '@/shaft/checks';
+import { editLabel } from '@/shaft';
+import { rimediLocale } from '@/lib/rimedi/locale';
+import { ALTROVE } from '@/lib/rimedi/vano';
+import type { Survey } from '@/lib/room/survey';
 import { applicaLocale, valoreLocale } from '@/lib/schizzi/applica';
 import { saveRoomDesignAction } from '@/server/room-actions';
 import { testoAiuto } from '@/lib/aiuto';
@@ -36,6 +42,7 @@ import SchizzoPanel, { type SchizziStart } from '../schizzi/SchizzoPanel';
 import LocaleCad from './LocaleCad';
 import SurveyDrawings from './SurveyDrawings';
 import SurveyFound from './SurveyFound';
+import RimediVerifica, { senzaUnita, type FonteRimedi } from '../rimedi/RimediVerifica';
 
 interface Props {
   calculationId: string;
@@ -49,7 +56,8 @@ interface Props {
 
 export default function RoomSurvey({ calculationId, values, initial, draft = null, schizzi = null }: Props) {
   const t = useTranslations('room'), ts = useTranslations('shaft'), tb = useTranslations('blank'), te = useTranslations('errors'), locale = useLocale(), router = useRouter();
-  const tz = useTranslations('schizzi');
+  const tz = useTranslations('schizzi'), tr = useTranslations('rimedi');
+  const [aperto, setAperto] = useState<string | null>(null);
   const fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   const [form, setForm] = useState<SurveyDraft>(initial);
   const [label, setLabel] = useState('');
@@ -93,6 +101,15 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
       return { applied: r.applied, refused: r.refused };
     },
   };
+  // the remedies of the survey's checks: tried on the survey as it stands (lib/rimedi/locale.ts)
+  const fonte = useMemo((): FonteRimedi<Survey> | null => (d ? {
+    dove: (id) => ALTROVE[id] ?? 'qui',
+    cerca: (id, o) => rimediLocale({ values, survey: s }, id, (k) => ts(k), o),
+    applica: (r) => setForm((f) => ({ survey: r.inputs, blank: f.blank })),
+    leva: (key) => senzaUnita(ts(editLabel(key, false))),
+    unita: () => 'mm',
+    calcolo: () => router.push(`/app/calculations/${calculationId}`),
+  } : null), [d, values, s, ts, router, calculationId]);
   const issue = (k: string): string => (k === 'rinvio' && d ? t('issue_rinvio', { h: Math.round(d.M.h), hMin: d.hMin ?? 0 }) : t(`issue_${k}`));
   return (
     <div className="flex flex-col gap-4">
@@ -135,15 +152,23 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
           <SectionTitle id="room-checks" icon="list-checks">{t('checksTitle')}</SectionTitle>
           <div className="table-scroll">
             <table className="data-table stack">
-              <thead><tr><th scope="col">{t('check')}</th><th scope="col" className="num">{t('value')}</th><th scope="col" className="num">{t('limit')}</th><th scope="col">{t('outcome')}</th></tr></thead>
+              <thead><tr><th scope="col">{t('check')}</th><th scope="col" className="num">{t('value')}</th><th scope="col" className="num">{t('limit')}</th><th scope="col">{t('outcome')}</th><th scope="col"><span className="sr-only">{tr('apri')}</span></th></tr></thead>
               <tbody>
                 {d.checks.map((c) => (
-                  <tr key={c.id}>
-                    <td className="row-title">{ts(roomCheckKey(c.id, d))}{c.id === 'm_quadro' && !s.governor ? ` ${t('govNotSurveyed')}` : ''}</td>
-                    <td className="num" data-label={t('value')}>{c.value === null ? '—' : `${shownValue(c, fmt)} ${c.unit}`}</td>
-                    <td className="num" data-label={t('limit')}>{c.limit === null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)} ${c.unit}`}</td>
-                    <td data-label={t('outcome')}><span className={`status-pill ${c.status}`}>{ts(`st_${c.status}`)}</span></td>
-                  </tr>
+                  <Fragment key={c.id}>
+                    <tr data-check={c.id}>
+                      <td className="row-title">{ts(roomCheckKey(c.id, d))}{c.id === 'm_quadro' && !s.governor ? ` ${t('govNotSurveyed')}` : ''}</td>
+                      <td className="num" data-label={t('value')}>{c.value === null ? '—' : `${shownValue(c, fmt)} ${c.unit}`}</td>
+                      <td className="num" data-label={t('limit')}>{c.limit === null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)} ${c.unit}`}</td>
+                      <td data-label={t('outcome')}><span className={`status-pill ${c.status}`}>{ts(`st_${c.status}`)}</span></td>
+                      <td>{fonte && (c.status === 'fail' || c.status === 'warn') ? (
+                        <button type="button" className="btn btn-sm" aria-expanded={aperto === c.id} aria-controls={`rimedi-${c.id}`} onClick={() => setAperto(aperto === c.id ? null : c.id)}>{tr('apri')}</button>
+                      ) : null}</td>
+                    </tr>
+                    {fonte && aperto === c.id ? (
+                      <tr className="rimedi-row" id={`rimedi-${c.id}`}><td colSpan={5}><RimediVerifica id={c.id} fonte={fonte} nome={(id) => ts(roomCheckKey(id, d))} fmt={fmt} onApplied={() => setAperto(null)} /></td></tr>
+                    ) : null}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

@@ -25,8 +25,9 @@ export const worstTraction = (r: Results): number => Math.max(r.load.util, r.dn.
 export const sensMeasured = (sens: readonly SensitivityVariant[]): boolean => !sens.some((s) => s.key === 'k');
 const isBrakeCase = (c: TractionCase | BrakeCase): c is BrakeCase => 'dir' in c;
 
-/** The sense of a check's limit: the value at most (≤) or at least (≥) the limit. */
-const AT_LEAST: ReadonlySet<CheckId> = new Set<CheckId>(['tr_stall', 'r_dd', 'r_ddp', 'r_nd', 'r_sfa', 'b_sets']);
+/** The sense of a check's limit: the value at most (≤) or at least (≥) the limit — the machine's checks with a minimum
+ *  (for the others it is a maximum). */
+export const AT_LEAST: ReadonlySet<CheckId> = new Set<CheckId>(['tr_stall', 'r_dd', 'r_ddp', 'r_nd', 'r_sfa', 'b_sets']);
 
 /** The unit of a check's value and limit; none for a ratio, a utilisation, a safety factor or a count. */
 export const CHECK_UNIT: Readonly<Partial<Record<CheckId, string>>> = {

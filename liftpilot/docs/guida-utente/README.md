@@ -28,4 +28,5 @@ python3 -I scripts/guida-utente/pdf.py --shots /път/shots --out LiftPilot-Gui
 python3 -I scripts/guida-utente/pdf.py --shots /път/shots --out LiftPilot-Guida-amministratore.pdf --admin
 ```
 
-Когато се смени страница на приложението, главата, която я описва, се сменя в същата промяна.
+Главите се обновяват само когато собственикът го поиска (решение от 2026-10-28); дотогава сменените страници са в
+`liftpilot/CHANGELOG.md`, откъдето главите се наваксват.

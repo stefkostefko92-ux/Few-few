@@ -6,7 +6,8 @@
 // the server, which recomputes and stores the official snapshot (the type and the test beside it). A new calculation
 // starts empty (src/lib/calc-blank.ts): the type and the values still to enter are listed, the proposals and the advice
 // come once the installation is entered, the verdict once the new machine is too; a modernisation that keeps the machine
-// verifies it as it is, with no proposal or advice; the form's draft is kept as it is filled in.
+// verifies it as it is, with no proposal or advice; the form's draft is kept as it is filled in. Round 54: each check the
+// verdict counts with its remedies under it (RimediCalcolo).
 import { useCallback, useDeferredValue, useEffect, useMemo, useState, useTransition } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
@@ -40,6 +41,7 @@ import CalcForm, { type Prefix } from './CalcForm';
 import CalcSaveBar from './CalcSaveBar';
 import Diagram from './Diagram';
 import Verdict from './Verdict';
+import RimediCalcolo from './RimediCalcolo';
 import Results, { type UseKey } from './Results';
 import LegalNotice from './LegalNotice';
 import InterventoChoice from './InterventoChoice';
@@ -242,6 +244,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
             <>
               <Diagram P={P} I={a.ctx.I} N={a.ctx.N} res={a.res} />
               <Verdict P={P} X={X} a={a} badCount={bad.size} resta={resta ? ti('argano_resta') : undefined} extra={extra} />
+              <RimediCalcolo P={P} X={X} values={deferred} collaudo={I.effective ?? null} resta={resta} edit={edit} fieldLabel={fieldLabel} consiglio={!resta} />
             </>
           ) : (
             <MissingPanel title={ready ? tb(resta ? 'keptTitle' : 'machineTitle') : tb('title')} lead={ready ? tb(resta ? 'keptLead' : 'machineLead') : tb('lead')}
