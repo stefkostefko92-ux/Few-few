@@ -21,6 +21,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sanitize } from "./guard-secrets.mjs";
+import { codeView } from "./guard-dangerous.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const WRITE_TOOLS = /\b(Write|Edit|MultiEdit|NotebookEdit)\b/;
@@ -65,7 +66,9 @@ function writesFile(cmd, scratch) {
 
 /** Чиста логика: команда → причина за блок или "" . */
 export function mutationReason(command, { scratch = "" } = {}) {
-  const cmd = unquote(sanitize(String(command || "")));
+  // codeView: тялото на heredoc към python/node/cat е данни (знаците му стават `_`), към обвивка — код.
+  // Хванато на 28.10.2026: `ord(ch) > 127` в python heredoc се четеше като пренасочване към файл.
+  const cmd = unquote(codeView(sanitize(String(command || ""))));
   for (const [re, why] of RULES) if (re.test(cmd)) return why;
   return writesFile(cmd, scratch);
 }

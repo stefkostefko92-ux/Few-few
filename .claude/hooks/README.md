@@ -40,7 +40,7 @@ settings.json бяха регистрирани четири с други match
 |---|---|---|
 | **`guard-prompt.mjs`** | `UserPromptSubmit` | Случайно ПОСТАВЕНА тайна в промпта (клипборд) — да не влезе в история/логове. Байпас по избор: „[секрет-ок]". |
 | **`guard-readonly.mjs`** | `PreToolUse` · `Bash` | Агент, чиято дефиниция има Bash, но няма Write/Edit (днес Кодаджията, Качествения, Разбивача), да пише в репото през Bash: git записи, `sed -i`/`perl -i`, `>`/`>>`/`tee` към файл извън `/tmp`, `/dev/null` и scratchpad-а, rm/mv/cp/touch/chmod, `--write`/`--fix`, npm/pnpm/yarn, които сменят манифест/lockfile (`npm ci` и `--frozen-lockfile` минават). Агентът идва от `agent_type` в payload-а. На ниво settings, а не във frontmatter, защото frontmatter куките не тичат в `-p` сесии. Fail-open (ролева кука). |
-| **`guard-dangerous.mjs`** | `PreToolUse` · `Bash` | Само еднозначно катастрофалното: `rm -rf` на корен/дом/работно дърво (`/`, `~`, `$HOME`, `.`, `$PWD`), fork bomb, `mkfs`/`dd`/`wipefs`/`shred` върху `/dev` диск, `find / -delete`, `curl\|sh`, force push към main (`--force`, `-f`, `+refspec`), изтриване на main (`:main`, `--delete`), `gh repo delete`. |
+| **`guard-dangerous.mjs`** | `PreToolUse` · `Bash` | Само еднозначно катастрофалното: `rm -rf` на корен/дом/работно дърво (`/`, `~`, `$HOME`, `.`, `$PWD`), fork bomb, `mkfs`/`dd`/`wipefs`/`shred` върху `/dev` диск, `find / -delete`, `curl\|sh`, force push към main (`--force`, `-f`, `+refspec`), изтриване на main (`:main`, `--delete`), `gh repo delete`. `git push` се съди по ДУМИ по правилата на обвивката (`shellWords`): съобщение в кавички не е команда, а низът за изпълнение (`bash -c`, `eval`, `ssh host`, `--server`/`--cmd`/`--run`, `concurrently`, heredoc към обвивка, `$(…)`) се анализира рекурсивно. |
 | **`guard-secrets.mjs`** | `PostToolUse` · `Write\|Edit\|MultiEdit\|NotebookEdit` | Тъкмо записан файл/бележник с високо-уверен credential (17 типа от `tools/lib/secret-patterns.mjs`). Пропуска fixture/test/eval/scratch пътища. Твърдият гейт остава `secret-scan.mjs` при commit/CI. |
 | **`guard-exfil.mjs`** | `PreToolUse` · `Bash\|WebFetch\|WebSearch\|mcp__.*` | ИЗНАСЯНЕ навън (lethal-trifecta изходът): литерална тайна или тайна env променлива към мрежов verb/интерпретатор; `.env`/ключ/credential файл през пайп, субституция `$(…)`, stdin редирект, `-d/-F/-T/--data-raw/--post-file`, scp/rsync, архив, четене от код (`readFileSync`, `open`); `/proc/*/environ`; пълен env dump; команди, които издават credential (`gh auth token`, `vault read`…) към мрежа; стажиране (env dump/тайна → файл, `git remote add` чужд URL); `git push` към чужд URL; `npm publish`; тайна в URL/търсене; **тайна в аргумент на MCP инструмент** (`mcp__github__*`, `mcp__Gmail__*`… — целият `tool_input` се сериализира и се търси по същия списък + секрет в URL query). |
 
@@ -48,7 +48,9 @@ settings.json бяха регистрирани четири с други match
 предпазителя пак е fail-open (exit 0) — фалшивият блок изключва предпазители. Но ако скриптът изобщо не
 стартира (липсващ файл, счупен импорт, таймаут), без `onFailure` действието минава БЕЗ проверка. За
 `guard-exfil` и `guard-dangerous` това е блок: по-добре спряна работа, която всички виждат, отколкото тих
-пропуск. Не важи за Stop/SubagentStop.
+пропуск. Не важи за Stop/SubagentStop. Обратната страна (28.10.2026): синтактична грешка в тези два файла
+спира ВСЯКА Bash команда, включително тестовете — поправяй ги през Edit, после пусни
+`node --test tools/hooks/liveness.test.mjs`.
 
 **Стандартният слой под куките — `permissions.deny`.** `Read(.env)`, `Read(.env.*)` с изключение
 `Read(!*.example)`, ключове (`*.pem`, `id_rsa*`, `id_ed25519*`) и `~/.ssh`, `~/.aws`, `~/.config/gh`,

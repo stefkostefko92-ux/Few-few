@@ -38,6 +38,16 @@ test("четене, тестове и временни файлове минав
   assert.equal(mutationReason("echo x > /s/pad/f.txt", { scratch: "/s/pad" }), "", "scratchpad-ът е позволен");
 });
 
+// Хванато на 28.10.2026 два пъти (Разбивача): „>“ в тялото на heredoc за python/node е код или данни,
+// не пренасочване — четяща проба беше блокирана. Тяло, подадено на обвивка, остава команда.
+test("heredoc: тялото към интерпретатор или cat не е пренасочване; към обвивка — е", () => {
+  assert.equal(mutationReason("python3 -I - <<'EOF'\nimport sys\nif ord('a') > 127: print(1)\nEOF"), "", "python heredoc");
+  assert.equal(mutationReason("cat <<'EOF' | node x.mjs\na > b\nEOF"), "", "данни за node");
+  assert.ok(mutationReason("bash <<'EOF'\necho x > out.txt\nEOF"), "тяло към bash е команда");
+  assert.ok(mutationReason("cat > out.txt <<'EOF'\nhi\nEOF"), "пренасочването е на командния ред");
+  assert.ok(mutationReason("python3 - <<'EOF' > out.txt\nprint(1)\nEOF"), "пренасочване след маркера");
+});
+
 test("куката блокира ревюър (exit 2), пуска агент с Write/Edit и главната сесия (exit 0)", () => {
   const r = run("kodadjiyata", "sed -i 's/a/b/' src/a.ts");
   assert.equal(r.status, 2);

@@ -19,18 +19,8 @@ export const CATASTROPHIC = [
   { re: /chmod\s+-[a-z]*R[a-z]*\s+0*777\s+\/(\s|$)/i, why: "chmod -R 777 на корен" },
   // Изтегляне+изпълнение (curl|sh и роднините) НЕ е тук — живее в isRemoteExec() по-долу: иска изглед
   // „само код" и котва за командна позиция, което един регекс върху суровия ред не може да даде.
-  // Red-team 2026-07-30 (F5b): шаблонът искаше ДЪЛГИЯ флаг `--force`, затова най-краткият и най-често
-  // писан вариант `git push -f origin main` минаваше необезпокоявано. Сега и `-f`, и `--force`.
-  // КОМАНДНА ПОЗИЦИЯ (същият урок като FOREIGN_PUSH в guard-exfil): без котва шаблонът съвпада и когато
-  // командата е само СПОМЕНАТА в текстов аргумент. Хванато на живо 2026-09-08 — записът в дневника на
-  // грешките, чието описание цитираше „git push origin +main", беше блокиран от самия предпазител.
-  { re: /(?:^|[;&|]\s*|\n\s*)(?:sudo\s+)?git\b[^\n;&|]*\bpush\b[^\n;&|]*(--force\b|\s-[a-zA-Z]*f\b)(?![^\n;&|]*--force-with-lease)[^\n;&|]*\b(origin\s+)?(main|master)\b/i, why: "git push --force/-f към main (ползвай --force-with-lease към feature клон)" },
-  // Red-team 2026-09-08: третият правопис на force push — `+` пред refspec-а (`git push origin +main`,
-  // `+HEAD:main`, `+refs/heads/main`) е force по git спецификация, без нито един флаг. Минаваше.
-  { re: /(?:^|[;&|]\s*|\n\s*)(?:sudo\s+)?git\b[^\n;&|]*\bpush\b[^\n;&|]*\s\+(refs\/heads\/|[\w/.-]+:)?(main|master)\b/i, why: "git push с +refspec към main (това е force push без флаг)" },
-  // Кръг 2 (2026-09-09): ИЗТРИВАНЕ на подразбиращия се клон — `git push origin :main` (празен източник
-  // в refspec-а), `git push --delete origin main`, `-d`. Feature клон (`:refs/heads/claude/x`) е нормално.
-  { re: /(?:^|[;&|]\s*|\n\s*)(?:sudo\s+)?git\b[^\n;&|]*\bpush\b[^\n;&|]*(\s(--delete|-d)\s[^\n;&|]*\b(main|master)\b|\s:(refs\/heads\/)?(main|master)\b)/i, why: "изтриване на отдалечения main/master (git push :main / --delete)" },
+  // `git push` към main (force, +refspec, изтриване) НЕ е тук — живее в gitPushDanger() по-долу: съди
+  // ДУМИТЕ на командата, не суровия ред (2026-10-28, виж shellWords).
   // Кръг 2: репото като цяло — `gh repo delete`, `gh api -X DELETE /repos/…`.
   { re: /(?:^|[;&|]\s*|\n\s*)gh\s+(repo\s+delete\b|api\s+[^\n;&|]*-X\s+DELETE\b)/i, why: "изтриване на репо през gh" },
   // Red-team 2026-09-08: `find / -delete` (и `find / … -exec rm`) изтрива системата също толкова
@@ -255,13 +245,157 @@ export function isRemoteExec(cmd, depth = 0) {
   return null;
 }
 
-export function isCatastrophic(cmd) {
+// ── Думи по правилата на обвивката (2026-10-28) ─────────────────────────────────────────────────────
+// Регекс върху суровия ред не различава ДУМА от НИЗ. Хванато от Разбивача при прегледа на чуждото умение
+// webapp-testing (with_server.py подава --server на shell=True): `--server "git push --force origin main"`,
+// `bash -c "…"`, `ssh host "…"` и `g""it push …` минаваха, а `git commit -m "… push --force origin main"`
+// се блокираше. Предишната история на правилата за git push: `-f` (F5b, 2026-07-30), `+main` и `:main`
+// (2026-09-08/09), котва за командна позиция (2026-09-08) — всички остават в gitPushDanger().
+// shellWords() връща простите команди като масиви от думи (кавичките се слепват: g""it = git) и низовете,
+// които обвивката ще изпълни ($(…), `…`, heredoc към обвивка); низовете за изпълнение в argv (sh -c, eval,
+// ssh host, su/flock/script -c, --server/--cmd/--run…, concurrently/parallel/watch) се анализират рекурсивно.
+const SHELL_NAME = /^(?:ba|z|k|da|a|c|tc|fi)?sh$/;
+const HEREDOC_RUNNER = /^(?:(?:ba|z|k|da|a|c|tc|fi)?sh|ssh|eval|source)$/;
+const WRAP_ARG = { sudo: /^-[ugChpU]$/, doas: /^-[uC]$/, env: /^-[uSC]$/, xargs: /^-[InPLdaEs]$/, timeout: /^-[sk]$/, nice: /^-n$/, stdbuf: /^-[ioe]$/ };
+
+/** argv без префиксите, които не сменят командата (VAR=x, sudo, env, timeout 30, xargs -I {} …). */
+function commandOf(argv) {
+  const a = argv.slice();
+  for (let n = 0; a.length && n < 20; n++) {
+    const w = a[0], name = base(w);
+    if (/^[A-Za-z_]\w*=/.test(w) || /^(?:\{|\}|!|then|do|else|elif|if|while|until|time|nohup|exec|command|builtin)$/.test(w)) { a.shift(); continue; }
+    if (!Object.hasOwn(WRAP_ARG, name)) break;
+    a.shift();
+    while (a.length && (a[0].startsWith("-") || (name === "env" && /^[A-Za-z_]\w*=/.test(a[0])))) if (WRAP_ARG[name].test(a.shift())) a.shift();
+    if (name === "timeout" && a.length) a.shift(); // продължителността
+  }
+  return a;
+}
+
+/** Простите команди (масиви от думи) + низовете, които обвивката ще изпълни. */
+export function shellWords(src) {
+  const s = String(src ?? "");
+  const cmds = [], subs = [], heredocs = [];
+  let argv = [], word = "", inWord = false;
+  const endWord = () => { if (inWord) argv.push(word); word = ""; inWord = false; };
+  const endCmd = () => { endWord(); if (argv.length) cmds.push(argv); argv = []; };
+  const sub = (open) => { const k = closeParen(s, open); subs.push(s.slice(open + 1, k)); return k; };
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (c === "\\") { if (s[i + 1] !== "\n") { word += s[i + 1] ?? ""; inWord = true; } i++; continue; }
+    if (c === "'") { let j = s.indexOf("'", i + 1); if (j < 0) j = s.length; word += s.slice(i + 1, j); inWord = true; i = j; continue; }
+    if (c === '"') {
+      inWord = true;
+      for (i++; i < s.length && s[i] !== '"'; i++) {
+        if (s[i] === "\\" && /["\\$`\n]/.test(s[i + 1] ?? "")) { word += s[++i]; continue; }
+        if (s[i] === "$" && s[i + 1] === "(") { const k = sub(i + 1); word += s.slice(i, k + 1); i = k; continue; }
+        if (s[i] === "`") { let k = s.indexOf("`", i + 1); if (k < 0) k = s.length; subs.push(s.slice(i + 1, k)); i = k; continue; }
+        word += s[i];
+      }
+      continue;
+    }
+    if (c === "$" && s[i + 1] === "(") { const k = sub(i + 1); word += s.slice(i, k + 1); inWord = true; i = k; continue; }
+    if (c === "`") { let k = s.indexOf("`", i + 1); if (k < 0) k = s.length; subs.push(s.slice(i + 1, k)); inWord = true; i = k; continue; }
+    if (c === "#" && !inWord) { const j = s.indexOf("\n", i); i = (j < 0 ? s.length : j) - 1; continue; }
+    if (c === "<" && s[i + 1] === "<" && s[i + 2] !== "<") { // heredoc (не here-string `<<<`)
+      const m = /^<<(-?)\s*(['"]?)([\w.-]+)\2/.exec(s.slice(i));
+      if (m) {
+        endWord();
+        const head = commandOf(argv)[0];
+        heredocs.push({ delim: m[3], strip: m[1] === "-", exec: head != null && HEREDOC_RUNNER.test(base(head)) });
+        i += m[0].length - 1; continue;
+      }
+    }
+    if (c === "\n") {
+      endCmd();
+      for (const h of heredocs.splice(0)) { // тялото е данни, освен ако обвивка го чете
+        let p = i + 1, bodyEnd = s.length, end = s.length;
+        while (p < s.length) {
+          let nl = s.indexOf("\n", p); if (nl < 0) nl = s.length;
+          if ((h.strip ? s.slice(p, nl).replace(/^\t+/, "") : s.slice(p, nl)) === h.delim) { bodyEnd = p; end = nl; break; }
+          p = nl + 1;
+        }
+        if (h.exec) subs.push(s.slice(i + 1, bodyEnd));
+        i = end - 1;
+      }
+      continue;
+    }
+    if (/[;&|()]/.test(c)) { endCmd(); continue; }
+    if (/\s/.test(c)) { endWord(); continue; }
+    word += c; inWord = true;
+  }
+  endCmd();
+  return { cmds, subs };
+}
+
+/** `git push` към main/master: force (--force, -f, --force-with-lease), +refspec или изтриване. */
+export function gitPushDanger(argv) {
+  const a = commandOf(argv);
+  if (!a.length || base(a[0]) !== "git") return null;
+  let i = 1;
+  while (i < a.length && a[i].startsWith("-")) i += /^(?:-C|-c|--git-dir|--work-tree|--namespace|--exec-path|--config-env)$/.test(a[i]) ? 2 : 1;
+  if (a[i] !== "push") return null;
+  const pos = [];
+  let force = false, del = false;
+  for (let k = i + 1; k < a.length; k++) {
+    const w = a[k];
+    if (w === "--") { pos.push(...a.slice(k + 1)); break; }
+    if (/^--(?:force|force-with-lease|force-if-includes)(?:=|$)/.test(w)) { force = true; continue; }
+    if (w === "--delete") { del = true; continue; }
+    if (/^(?:-o|--push-option|--repo|--receive-pack|--exec)$/.test(w)) { k++; continue; }
+    if (w.startsWith("--")) continue;
+    if (/^-[a-zA-Z]+$/.test(w)) { if (w.includes("f")) force = true; if (w.includes("d")) del = true; continue; }
+    pos.push(w);
+  }
+  const refs = pos.length > 1 ? pos.slice(1) : pos; // първата позиционна дума е remote-ът
+  const isMain = (r) => /^(?:refs\/heads\/)?(?:main|master)$/.test(r.replace(/^[+:]/, "").split(":").pop());
+  if (refs.some((r) => r.startsWith(":") && isMain(r)) || (del && refs.some(isMain))) return "изтриване на отдалечения main/master (git push :main / --delete)";
+  if (refs.some((r) => r.startsWith("+") && isMain(r))) return "git push с +refspec към main (това е force push без флаг)";
+  if (force && refs.some(isMain)) return "git push --force/-f към main (ползвай --force-with-lease към feature клон)";
+  return null;
+}
+
+const RUN_FLAG = /^--(?:server|cmd|command|exec|execute|run|shell)(?:=([\s\S]*))?$/;
+/** Низовете в argv, които програмата ще подаде на обвивка. */
+function execStrings(argv) {
+  const a = commandOf(argv), out = [];
+  if (!a.length) return out;
+  const name = base(a[0]);
+  const after = (re) => { const k = a.findIndex((w, j) => j > 0 && re.test(w)); if (k > 0 && a[k + 1] != null) out.push(a[k + 1]); };
+  if (SHELL_NAME.test(name)) after(/^-[a-zA-Z]*c[a-zA-Z]*$/);
+  if (/^(?:su|flock|script)$/.test(name)) after(/^(?:-c|--command)$/);
+  if (name === "eval") out.push(a.slice(1).join(" "));
+  if (name === "ssh") {
+    let k = 1;
+    while (k < a.length && a[k].startsWith("-")) k += /^-[bcDEeFIiJLlmOoPpQRSWw]$/.test(a[k]) ? 2 : 1;
+    if (k + 1 < a.length) out.push(a.slice(k + 1).join(" "));
+  }
+  const r = a.findIndex((w) => /^(?:concurrently|parallel|watch)$/.test(base(w)));
+  if (r >= 0) for (const w of a.slice(r + 1)) if (/\s/.test(w)) out.push(w);
+  a.forEach((w, k) => { const m = RUN_FLAG.exec(w); if (m) { const v = m[1] ?? a[k + 1]; if (v != null) out.push(v); } });
+  return out;
+}
+
+function wordDanger(s, depth) {
+  let parsed;
+  try { parsed = shellWords(s); } catch { return null; }
+  for (const argv of parsed.cmds) {
+    const g = gitPushDanger(argv);
+    if (g) return g;
+    for (const inner of execStrings(argv)) { const why = isCatastrophic(inner, depth + 1); if (why) return why; }
+  }
+  for (const inner of parsed.subs) { const why = isCatastrophic(inner, depth + 1); if (why) return why; }
+  return null;
+}
+
+export function isCatastrophic(cmd, depth = 0) {
+  if (depth > 3) return null;
   const s = sanitize(cmd); // `rm<U+200B> -rf /` минаваше — невидимият знак чупеше `\brm\b`
   if (isCatastrophicRm(s)) return "rm -rf на корен/дом (вкл. разделени флагове)";
   const remote = isRemoteExec(s);
   if (remote) return remote;
   for (const p of CATASTROPHIC) if (p.re.test(s)) return p.why;
-  return null;
+  return wordDanger(s, depth);
 }
 
 // CLI (fail-open навсякъде)
