@@ -18,6 +18,7 @@ import { rt2Record } from '@/server/rt2/record';
 import { isRt2 } from '@/lib/rt2/version';
 import { titoloComponente } from '@/lib/rt2/titoli';
 import Crumbs from '@/components/Crumbs';
+import ImpiantoNav from '@/components/impianto/ImpiantoNav';
 import VerdictPill from '@/components/VerdictPill';
 import SectionTitle from '@/components/project/SectionTitle';
 import '@/components/rt/rt.css';
@@ -59,6 +60,7 @@ export default async function RelazionePage({ params }: { params: Promise<{ loca
     <main className="page rt-page">
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${r.projectId}`, label: r.project.name },
         { href: `/app/projects/${r.projectId}/relazione-tecnica`, label: t('titolo') }, { label: `${t('numero', { n: r.number })} R${r.revision}` }]} />
+      <ImpiantoNav user={user} projectId={r.projectId} corrente="relazione" />
       <div className="page-head">
         <div className="titles">
           <h1>{t('pagina.titolo')} · {t('numero', { n: r.number })} R{r.revision}</h1>

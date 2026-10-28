@@ -36,11 +36,14 @@ export async function priceList({ BASE, page, hydrated, stamp, liftUrl, roomUrl 
   // the cost counts by the acceptance test: a new lift (UNI EN 81-20/50) the line by the stop, a modification tested to
   // UNI 10411 the one a corpo — the smoke's whole project is a renovation keeping the sling (UNI 10411-11), so a
   // modification: the parts it replaces and the installer as a lump sum, like the replacement
+  // (round 53: the cost is on «Tavole e documenti» of the design, and of the machine room)
   await page.goto(liftUrl);
+  await Promise.all([page.waitForURL(/\/documenti\?design=/), page.click('main .doc-links a[href*="/documenti?design="]')]);
   const cost = await page.textContent('section[aria-labelledby="project-cost-h"]');
   assert.ok(cost.includes(lot) && !cost.includes(stop), `free lines of the modifications: ${cost}`);
   assert.match(cost, /Cottimista a corpo \(modifica UNI 10411\)/, 'the installer as a lump sum');
   await page.goto(roomUrl);
+  await Promise.all([page.waitForURL(/\/documenti\?design=/), page.click('main .page-head .actions a[href*="/documenti?design="]')]);
   const repl = await page.textContent('section[aria-labelledby="project-cost-h"]');
   assert.ok(repl.includes(lot) && !repl.includes(stop), 'free lines of the replacements');
 

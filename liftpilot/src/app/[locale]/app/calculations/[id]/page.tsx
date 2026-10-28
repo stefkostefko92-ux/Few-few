@@ -28,6 +28,7 @@ import VerdictPill from '@/components/VerdictPill';
 import ReviewForm from '@/components/ReviewForm';
 import { REVIEW_MAX } from '@/lib/review';
 import Crumbs from '@/components/Crumbs';
+import ImpiantoNav from '@/components/impianto/ImpiantoNav';
 import CalculationView from '@/components/calc/CalculationView';
 import StaleNotice from '@/components/StaleNotice';
 import Refreshed from '@/components/Refreshed';
@@ -105,6 +106,7 @@ export default async function CalculationPage({ params, searchParams }: {
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${c.projectId}`, label: c.project.name }, { label: t('viewTitle') }]} />
+      <ImpiantoNav user={user} projectId={c.projectId} corrente="calcolo" />
       <div className="page-head">
         <div className="titles">
           <h1>{t('viewTitle')}{c.label ? ` · ${c.label}` : ''}</h1>

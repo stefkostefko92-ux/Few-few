@@ -7,6 +7,7 @@ import { getProject } from '@/server/queries';
 import { calcStart } from '@/server/calc-start';
 import Calculator from '@/components/calc/Calculator';
 import Crumbs from '@/components/Crumbs';
+import ImpiantoNav from '@/components/impianto/ImpiantoNav';
 import RefreshNotice from '@/components/RefreshNotice';
 import RilievoAvviso from '@/components/collega/RilievoAvviso';
 import { avvioCalc } from '@/server/collega/forms';
@@ -59,6 +60,7 @@ export default async function CalcPage({ params, searchParams }: {
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${p.id}`, label: p.name }, { label: t('newTitle') }]} />
+      <ImpiantoNav user={user} projectId={p.id} corrente="calcolo" />
       <div className="page-head">
         <div className="titles">
           <h1>{t('newTitle')}</h1>

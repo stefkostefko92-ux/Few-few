@@ -8,6 +8,7 @@ import type { MouseEvent, ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { passoOra, type Passo } from '@/lib/passi';
 import { goToField } from '../MissingPanel';
+import { chiediPasso, mostraPasso } from './mostra';
 
 /** Opens the closed groups round an element and its own, if it is one. */
 function apri(el: HTMLElement): void {
@@ -16,8 +17,10 @@ function apri(el: HTMLElement): void {
 
 /** To the step's first value still to enter; else to its section by the link itself (the section is the page's target,
  *  its groups opened first), and a box that lays out its children only — the installation's results on a phone — by its
- *  first child. */
+ *  first child. Round 53: the step asked for first (passi/mostra.ts) — the form that shows one at a time shows it, the
+ *  Progetto's side opens its checks. */
 export function vaiAlPasso(p: Passo, e: MouseEvent): void {
+  chiediPasso(p.id);
   if (p.primo && document.getElementById(p.primo)) {
     e.preventDefault();
     goToField(p.primo);
@@ -25,6 +28,11 @@ export function vaiAlPasso(p: Passo, e: MouseEvent): void {
   }
   const el = document.getElementById(p.id);
   if (!el) return;
+  if (el.closest('[data-passo][hidden]')) {
+    e.preventDefault();
+    mostraPasso(el, () => el.scrollIntoView({ block: 'start' }));
+    return;
+  }
   apri(el);
   if (getComputedStyle(el).display === 'contents' && el.firstElementChild instanceof HTMLElement) {
     e.preventDefault();
@@ -37,10 +45,12 @@ export function NumeroPasso({ n }: { n: number | undefined }) {
   return n ? <span className="passo-n" aria-hidden="true">{n}</span> : null;
 }
 
-export default function BarraPassi({ passi, label, stato, className, children }: {
+export default function BarraPassi({ passi, label, stato, className, attivo, children }: {
   passi: readonly Passo[];
   /** the bar's name for assistive technology */
   label: string;
+  /** the step the form shows, where it shows one at a time (round 53): marked instead of the step now */
+  attivo?: string;
   /** the live line; absent: the step now, or that every value is in */
   stato?: string;
   className?: string;
@@ -52,7 +62,7 @@ export default function BarraPassi({ passi, label, stato, className, children }:
     <div className={className ? `passi-bar ${className}` : 'passi-bar'}>
       <nav className="seg-row passi-nav" aria-label={label}>
         {passi.map((p) => (
-          <a key={p.id} href={`#${p.id}`} data-manca={p.manca || undefined} aria-current={p === ora ? 'step' : undefined} onClick={(e) => vaiAlPasso(p, e)}>
+          <a key={p.id} href={`#${p.id}`} data-manca={p.manca || undefined} aria-current={(attivo ? p.id === attivo : p === ora) ? 'step' : undefined} onClick={(e) => vaiAlPasso(p, e)}>
             {p.n} · {p.label}{p.manca ? ` (${t('manca', { n: p.manca })})` : p.manca === 0 ? ' ✓' : ''}
           </a>
         ))}

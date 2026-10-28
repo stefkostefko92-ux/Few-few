@@ -34,7 +34,8 @@ import { progettoFlow } from './smoke-progetto.mjs';
 import { publicPages } from './smoke-public.mjs';
 import { guidePage, helpAndSearch, notFoundPage, reportFlow, rilievoLostAnswer, rilievoOffline } from './smoke-help.mjs';
 import { replacementRoom } from './smoke-replacement.mjs';
-import { liftExports, setSvg } from './smoke-svg.mjs';
+import { setSvg } from './smoke-svg.mjs';
+import { documentiFlow, sempliceFlow, simulazioneFlow } from './smoke-pagine.mjs';
 import { rilieviFlow } from './smoke-rilievi.mjs';
 import { rtTrasformazione, rtVano } from './smoke-rt.mjs';
 import { rilieviSync } from './smoke-rilievi-sync.mjs';
@@ -78,7 +79,7 @@ try {
     await hydrated(page, '#ws-mode-esperto');
   }
   assert.equal(await page.locator('main .dash-nuovo a[href$="/app/projects/new"]').count(), 1, 'one new installation');
-  assert.equal(await page.locator('main .dash-nuovo .dash-passi li').count(), 4, 'the four steps');
+  assert.equal(await page.locator('main .dash-nuovo .dash-passi li').count(), 6, 'the six steps');
   await page.goto(`${BASE}/it/app/projects/new?kind=replacement`);
   assert.equal(await page.locator('main input[name="kind"]').count(), 0, 'no module to choose (an old ?kind= is ignored)');
   assert.match(await page.textContent('main form'), /Il tipo di intervento e i dati tecnici si danno dopo, nel Calcolo argano/);
@@ -106,7 +107,7 @@ try {
   assert.match(await page.textContent('dl.cartiglio'), /riprodotto/, 'hash reproduced');
 
   step('calculation report (PDF)');
-  const href = await page.getAttribute('a[href*="/relazione"]', 'href');
+  const href = await page.getAttribute('a[href^="/api/calculations/"][href$="/relazione"]', 'href');
   const pdf = await page.request.get(`${BASE}${href}`);
   assert.equal(pdf.status(), 200);
   assert.equal(pdf.headers()['content-type'], 'application/pdf');
@@ -133,14 +134,15 @@ try {
   }
 
   await blankSaves({ BASE, page, hydrated, stamp });
-  step('the installation: its type from «Calcolo argano», its sections in the order of the work (round 45)');
+  step('the installation: its type from «Calcolo argano», its bar and next step, its sections in the order of the work (rounds 45, 53)');
   await page.goto(projectUrl);
   assert.match(await page.textContent('.page-head .titles .tipo-badge'), /Solo argano/, 'the type read from its calculation');
-  for (const id of ['sec-calcolo', 'sec-progetto', 'sec-tavole']) assert.equal(await page.locator(`#${id}`).count(), 1, id);
+  for (const id of ['sec-calcolo', 'sec-progetto']) assert.equal(await page.locator(`#${id}`).count(), 1, id);
   assert.ok(await page.locator('section[aria-labelledby="sec-calcolo"] tbody tr').count() > 0, 'its «Calcolo argano»');
   // a «Solo argano» with the machine below: its Progetto draws the shaft (no machine room above to survey), still to do
   assert.ok(await page.locator('section[aria-labelledby="sec-progetto"] a[href*="/progetto?calc="]').count() > 0, 'its Progetto: the shaft to draw on it');
-  assert.match(await page.getAttribute('.page-head .actions a.btn-primary', 'href') ?? '', /\/progetto\?calc=/, 'the next step: the Progetto');
+  assert.match(await page.getAttribute('.imp-next a.btn-primary', 'href') ?? '', /\/progetto\?calc=/, 'the next step: the Progetto');
+  assert.equal(await page.locator('.imp-tabs > li').count(), 7, 'the bar: the overview and six steps');
   assert.equal(await page.locator('button:has-text("Passa a progetto completo")').count(), 0, 'no upgrade any more');
 
   // round 47 (D1): the documents answer speed, load and travel both ways, in an installation of its own
@@ -148,7 +150,7 @@ try {
   // a «Calcolo argano» of a modernisation from the saved one, its logbook's speed locking «Velocità variata» (round 46)
   await ammodernamento({ page, hydrated, calcUrl });
 
-  step('the Progetto draws on it: the drawing\'s data entered, the plan edited on the drawing, live simulation, save');
+  step('the Progetto draws on it: the drawing\'s data entered, the plan edited on the drawing, the checks in their tab, save');
   // the calculation's load, speed, roping, machine place, machine and test are the base's: shown, never asked; the shaft,
   // the floors and the scheme of the machine below to enter
   await projectData({ page, hydrated, bottom: 'head', draft: true });
@@ -180,19 +182,14 @@ try {
   await page.fill('.lift-main .ed-pop input', String(spanWas + 40));
   await page.press('.lift-main .ed-pop input', 'Enter');
   await page.waitForSelector(`.lift-main .ed-hits .hit[aria-label^="${spanWas + 40}"][aria-label*="Ammortizzatori di cabina: interasse"]`);
-  await page.waitForSelector('.lift-stage.live, .lift-stage.failed', { timeout: 120000 });
-  await page.click('.scenario-tabs button[data-scenario="brake"]');
-  await page.waitForSelector('.sim-chart svg path.line');
+  assert.equal(await page.locator('.lift-work .lift-sim, .lift-work .panev-bom').count(), 0, 'the 3D and the bill: their own pages');
   // the acceptance test of its base: UNI 10411-11, the renovation keeping the sling; the checks of what stays are existing
+  await page.click('.lato-tabs button:has-text("Verifiche")');
   await page.waitForSelector('.lift-checks tr.existing .status-pill.existing');
   assert.match(await page.textContent('.lift-work .lift-verdict .badge'), /UNI 10411-11/, 'standard of the acceptance test');
   await page.waitForFunction(() => /arcata esistente/.test(globalThis.document.querySelector('.lift-work .lift-verdict')?.textContent ?? ''));
-  // Panev's brackets: the bill shows the landing doors' pair; a counterweight rail support chosen by hand follows into
-  // the bill and into the saved design
-  await page.waitForSelector('.lift-work .panev-bom tbody td.code');
-  assert.match(await page.textContent('.lift-work .panev-bom'), /A 65 170 7[\s\S]*B 65 320/, 'door pair in the bill');
+  // a counterweight rail support chosen by hand: into the saved design and its bill («Tavole e documenti»)
   await page.selectOption('.lift-form select:has(option[value="SU 220 200"])', 'SU 220 200');
-  await page.waitForFunction(() => /SU 220 200[\s\S]*SG 80 190/.test(globalThis.document.querySelector('.lift-work .panev-bom')?.textContent ?? ''));
   await page.fill('.lift-work .savebar input', 'Progetto di prova');
   await Promise.all([page.waitForURL(/\/lift-designs\/[a-z0-9]+$/, { timeout: 60000 }), page.click('.lift-work .savebar button.btn-primary')]);
   const liftUrl = page.url();
@@ -200,24 +197,10 @@ try {
   assert.equal(await page.locator('main > .alert-warn, main > .alert-bad').count(), 0, 'the running engines reproduce the saved design');
   assert.match(await page.textContent('.lift-view .lift-verdict .badge'), /UNI 10411-11/, 'the saved standard');
   assert.match(await page.textContent('.lift-view .lift-verdict'), /arcata esistente/, 'the renovation saved');
-  assert.match(await page.textContent('.lift-view .panev-bom'), /SU 220 200/, 'the support chosen by hand, saved');
 
-  step('its documents: report with the plan, DXF, order, export');
-  const liftRelHref = await page.getAttribute('.doc-links a[href*="/relazione"]', 'href');
-  const liftRel = await page.request.get(`${BASE}${liftRelHref}`);
-  assert.equal(liftRel.status(), 200);
-  const liftRelBody = await liftRel.body();
-  assert.equal(liftRelBody.subarray(0, 5).toString('latin1'), '%PDF-');
-  assert.ok(liftRelBody.length > body.length, 'the report with the plan is larger');
-  const dxfHref = await page.getAttribute('.doc-links a[href$="/dxf"]', 'href');
-  const dxfText = await (await page.request.get(`${BASE}${dxfHref}`)).text();
-  assert.ok(dxfText.includes('CABINA') && dxfText.trimEnd().endsWith('EOF'), 'DXF with the layer of the car');
-  const designUrl = `${BASE}${await page.getAttribute('.doc-links a[href*="/app/shaft-designs/"]', 'href')}`;
-  // the draft order of the machine the design verified
-  assert.match(await page.textContent('main'), /l’argano verificato in questo progetto/, 'the order is for the machine the design verified');
-  await orderFiles(page, '/api/lift-designs/');
-  // the saved project exported: the drawing set as a draft PDF and its sheets in SVG, every view as DXF and DWG
-  await liftExports({ BASE, page });
+  const { liftRelHref, dxfHref, designUrl } = await documentiFlow({ BASE, page, projectUrl, reportBytes: body.length, orderFiles });
+  await simulazioneFlow({ page, projectUrl, liftUrl });
+  await sempliceFlow({ page, hydrated, projectUrl });
 
   await verdictPopover({ BASE, page, hydrated });
 
@@ -239,7 +222,7 @@ try {
   await page.setInputFiles('input[name="logo"]', { name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from(LOGO_PNG, 'base64') });
   await page.click('main form button[type="submit"]');
   await page.waitForSelector('.logo-preview img');
-  await page.goto(liftUrl);
+  await page.goto(`${projectUrl}/documenti`);
   assert.notEqual(await page.inputValue('main form input[maxlength="12"]'), '', 'initials filled in from the name');
   await page.fill('main form input[maxlength="12"]', 'S.T.');
   await Promise.all([page.waitForURL(/\/drawing-sets\/[a-z0-9]+$/, { timeout: 60000 }), page.click('main form:has(input[maxlength="12"]) button[type="submit"]')]);
@@ -275,7 +258,7 @@ try {
   await Promise.all([page.waitForURL((u) => /\/drawing-sets\/[a-z0-9]+$/.test(u.pathname) && u.pathname !== setPath, { timeout: 60000 }), page.click('main form:has(input[maxlength="120"]) button[type="submit"]')]);
   assert.match(await page.textContent('h1'), / R1$/, 'revision R1');
   await page.goto(projectUrl);
-  await page.waitForSelector('.lift-home .lift-facts');
+  await page.waitForSelector('.imp-nav .imp-tabs');
   await rtVano({ page, hydrated, stamp, projectUrl });
   assert.deepEqual(errors, [], 'browser errors');
   await archivedReadOnly({ page, hydrated, projectUrl, errors });

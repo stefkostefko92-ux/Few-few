@@ -3,24 +3,25 @@
   "title": "Progetto: il vano di corsa",
   "intro": [
     "Il Progetto disegna il vano di corsa dell’impianto sulla base di un Calcolo argano già salvato. Il calcolo fornisce portata, velocità, argano, funi e collaudo; il Progetto aggiunge solo la geometria: il vano, le porte, il contrappeso, i piani, il locale e le funi nel disegno. Tutto il resto lo ricava il software, lo disegna (piante, sezioni, 3D) e lo verifica.",
-    "Questa parte descrive la pagina dall’alto fino alla sezione «Vano, porte e contrappeso», più il pannello dello schizzo, l’elenco dei dati mancanti, il confronto con il calcolo, l’editor delle quote e la barra di salvataggio. Le sezioni «Piani, fossa e testata» e «Funi e rinvii», le verifiche, la simulazione 3D e le pagine dei progetti salvati sono descritte altrove nella guida."
+    "Questa parte descrive la pagina dall’alto fino alla sezione «Vano, porte e contrappeso», più il pannello dello schizzo, l’elenco dei dati mancanti, il confronto con il calcolo, la scheda «Disegno» con l’editor delle quote e la barra di salvataggio. Le sezioni «Piani, fossa e testata» e «Funi e rinvii», la scheda «Verifiche», la pagina «Simulazione» e le pagine dei progetti salvati sono descritte nel capitolo seguente."
   ],
   "pages": [
     {
       "id": "progetto",
-      "title": "Progetto e simulazione",
+      "title": "Progetto",
       "path": "/it/app/projects/‹id›/progetto",
       "access": "La pagina si apre a chi ha il permesso «Progetto: disegnare il vano o rilevare il locale macchina». Nella matrice predefinita lo hanno il Capotecnico e il Progettista; il Titolare ha tutti i diritti. Il Titolare può cambiare la matrice nella pagina Permessi, quindi nella tua azienda l’elenco può essere diverso. Chi non ha il diritto non può aprirla. Se l’azienda è in sola lettura (nessun abbonamento dopo la prova o condizioni non accettate), il Progetto non si può salvare. Il pulsante «Porta nel calcolo» e i collegamenti «Modifica nel calcolo argano» e «Calcola l’argano» compaiono solo a chi ha il diritto di fare i calcoli (predefinito: Capotecnico, Progettista, Tecnico). Caricare uno schizzo spetta a chi modifica i dati dell’impianto; il Tecnico ha questo permesso, ma non può aprire questa pagina, quindi qui di fatto carica gli schizzi solo il Capotecnico, il Progettista o il Titolare (con la matrice predefinita). «Leggi lo schizzo» è per chi disegna il progetto.",
-      "reach": "Dalla pagina dell’impianto con «Disegna il progetto» (o «Disegna l’intero impianto» quando l’intervento è solo del locale macchina), dalla pagina di un «Calcolo argano» salvato, oppure da un progetto già salvato con «Modifica il disegno». Il Progetto si apre sull’ultimo Calcolo argano dell’impianto; per disegnare su un altro calcolo, apri il Progetto dalla pagina di quel calcolo.",
+      "reach": "Dalla scheda «Progetto» della barra dell’impianto (a chi disegna il progetto); dalla panoramica dell’impianto con «Disegna il progetto» o con il pulsante del «Prossimo passo»; dalla pagina di un «Calcolo argano» salvato; oppure da un progetto già salvato con «Modifica il disegno». Il Progetto si apre sull’ultimo Calcolo argano dell’impianto; per disegnare su un altro calcolo, apri il Progetto dalla pagina di quel calcolo.",
       "purpose": [
-        "Qui disegni il vano di corsa e i piani sul Calcolo argano scelto. Ogni dato che inserisci cambia subito le piante, le sezioni, il 3D e le verifiche sulla destra. Il Progetto parte vuoto: finché mancano i dati obbligatori il software non calcola e non disegna nulla, e a destra compare l’elenco di quello che manca.",
+        "Qui disegni il vano di corsa e i piani sul Calcolo argano scelto. Ogni dato che inserisci cambia subito il disegno e le verifiche sulla destra. Il Progetto parte vuoto: finché mancano i dati obbligatori il software non calcola e non disegna nulla, e a destra compare l’elenco di quello che manca.",
         "Quando i dati ci sono, salvi: il server rifà tutto il disegno sul calcolo, rifà tutti i calcoli e salva insieme il progetto del vano e il calcolo del progetto, con l’impronta SHA-256.",
-        "Sullo schermo trovi a sinistra il modulo (il calcolo di partenza, poi le sezioni da compilare) e a destra tutto ciò che il software ricava. In basso resta fissa la barra di salvataggio."
+        "Sullo schermo trovi a sinistra il modulo (il calcolo di partenza, poi le sezioni da compilare) e a destra ciò che il software ricava: il riepilogo, il confronto con il calcolo e due schede, «Disegno» (piante e sezioni, con le quote da cambiare) e «Verifiche». Ne vedi una alla volta. In basso resta fissa la barra di salvataggio.",
+        "In modalità «Semplice» il modulo mostra un passo alla volta, con «Indietro» e «Avanti» in fondo al passo; in «Esperto» vedi tutti i passi uno sotto l’altro. La simulazione 3D è nella pagina «Simulazione»; la distinta, il costo e i documenti nella pagina «Tavole e documenti»."
       ],
       "shots": [
         {
           "id": "progetto-vuoto",
-          "what": "Progetto appena aperto: modulo a sinistra con «Dal calcolo argano» e i campi vuoti segnati, a destra il riquadro «Dati del progetto da inserire», in basso la barra di salvataggio."
+          "what": "Progetto appena aperto in modalità «Semplice»: la barra dei passi con il passo 2 aperto («Ora: 2 · Vano, porte e contrappeso»), il modulo con i campi vuoti segnati, a destra lo schizzo di rilievo (sotto, il riquadro «Dati del progetto da inserire»), in basso la barra di salvataggio."
         },
         {
           "id": "progetto-editor",
@@ -35,7 +36,7 @@
         {
           "title": "In cima alla pagina",
           "intro": [
-            "Sopra il modulo trovi il percorso (Impianti › nome dell’impianto › Progetto e simulazione), il titolo «Progetto e simulazione» e la frase che spiega il lavoro: «Disegna vano, porte, piani e locale sul calcolo argano: portata, velocità, argano, funi e collaudo vengono dal calcolo.» Il resto lo calcola il software e la simulazione 3D lo mostra.",
+            "Sopra il modulo trovi il percorso (Impianti › nome dell’impianto › Progetto), la barra dei passi dell’impianto con la scheda «Progetto» evidenziata (descritta nel capitolo sugli impianti), il titolo «Progetto» e la frase che spiega il lavoro: «Disegna vano, porte, piani e locale sul calcolo argano; a destra il disegno e le verifiche. Portata, velocità, argano, funi e collaudo vengono dal calcolo.»",
             "In base allo stato dell’impianto, al posto del modulo o sopra di esso può comparire un avviso."
           ],
           "fields": [],
@@ -74,19 +75,26 @@
         {
           "title": "Passi del progetto",
           "intro": [
-            "Sopra il modulo e i risultati compare la barra «Passi del progetto», con un collegamento per ogni parte nell’ordine in cui la compili: «Calcolo argano» (i dati che vengono dal calcolo), «Vano, porte e contrappeso», «Piani, fossa e testata», il locale («Locale macchina sopra il vano» con la macchina in alto, «Locale delle pulegge sopra il vano» con la macchina in basso e lo schema con il locale delle pulegge), «Funi e rinvii» e «Verifiche e simulazione». Lo stesso numero è davanti al titolo di ogni sezione del modulo.",
-            "Ogni voce dice cosa manca: «(manca 1)», «(mancano ‹n›)» oppure «✓» se il passo è completo; «Verifiche e simulazione» non ha un conteggio. Il passo da fare adesso è evidenziato nella barra e la riga di stato accanto dice «Ora: ‹n› · ‹passo›»; quando non manca più nulla dice «Tutti i dati inseriti»."
+            "Sopra il modulo e i risultati compare la barra «Passi del progetto», con un collegamento per ogni parte nell’ordine in cui la compili: «Calcolo argano» (i dati che vengono dal calcolo), «Vano, porte e contrappeso», «Piani, fossa e testata», il locale («Locale macchina sopra il vano» con la macchina in alto, «Locale delle pulegge sopra il vano» con la macchina in basso e lo schema con il locale delle pulegge), «Funi e rinvii» e «Disegno e verifiche». Lo stesso numero è davanti al titolo di ogni sezione del modulo.",
+            "Ogni voce dice cosa manca: «(manca 1)», «(mancano ‹n›)» oppure «✓» se il passo è completo; «Disegno e verifiche» non ha un conteggio. Il passo da fare adesso è evidenziato nella barra e la riga di stato accanto dice «Ora: ‹n› · ‹passo›»; quando non manca più nulla dice «Tutti i dati inseriti».",
+            "In modalità «Semplice» il modulo mostra solo il passo aperto, evidenziato anche nella barra: all’inizio quello in cui manca ancora qualcosa. Scrivere in un campo non cambia il passo; lo cambi tu con la barra o con i pulsanti in fondo al passo. In modalità «Esperto» tutti i passi restano aperti uno sotto l’altro."
           ],
           "fields": [],
           "actions": [
             {
               "label": "‹n› · ‹passo›",
-              "help": "Porta al primo dato ancora da inserire di quel passo: apre il gruppo e mette il cursore nel campo. Se nel passo non manca nulla, porta all’inizio del passo.",
+              "help": "Porta al primo dato ancora da inserire di quel passo: apre il gruppo e mette il cursore nel campo. Se nel passo non manca nulla, porta all’inizio del passo. In «Semplice» quel passo prende il posto di quello aperto. «Disegno e verifiche» apre a destra la scheda «Verifiche».",
               "src": "src/components/passi/BarraPassi.tsx; src/lib/passi-moduli.ts"
+            },
+            {
+              "label": "Indietro: ‹passo› · Avanti: ‹passo›",
+              "help": "Solo in «Semplice», in fondo al passo aperto: aprono il passo prima o quello dopo e portano al suo titolo. Dall’ultimo passo del modulo, «Avanti: Disegno e verifiche» apre a destra la scheda «Verifiche».",
+              "src": "src/components/lift/ProgettoForm.tsx:146; src/components/lift/progetto-uno.ts"
             }
           ],
           "notes": [
-            "Un dato che manca nel passo «Calcolo argano» si inserisce nel Calcolo argano, non nel Progetto."
+            "Un dato che manca nel passo «Calcolo argano» si inserisce nel Calcolo argano, non nel Progetto.",
+            "Un collegamento a un campo (dall’elenco dei dati da inserire, dalla barra di salvataggio o da un avviso) apre anche, in «Semplice», il passo di quel campo."
           ],
           "warnings": []
         },
@@ -1030,7 +1038,7 @@
             "Compaiono solo i dati che servono con le scelte fatte: per esempio il «Secondo accesso sulla parete» solo con due accessi adiacenti, il «Contrappeso» solo con un accesso.",
             "Le voci del locale macchina cambiano con la posizione della macchina del calcolo; con macchina in basso e schema «locale pulegge» si chiedono le misure del locale delle pulegge.",
             "Nella barra di salvataggio, mentre mancano dati, leggi «Mancano … dati del progetto: sono elencati nel riquadro dei dati da inserire.».",
-            "Quando l’elenco è vuoto, al suo posto compaiono i riquadri con i risultati del progetto (riepilogo, confronto con il calcolo, simulazione, quote, verifiche)."
+            "Quando l’elenco è vuoto, al suo posto compaiono i risultati del progetto: il riepilogo, il confronto con il calcolo e le schede «Disegno» e «Verifiche»."
           ]
         },
         {
@@ -1084,7 +1092,7 @@
         {
           "title": "Disegni del progetto: cambia le quote",
           "intro": [
-            "Riquadro sulla destra con le piante e le sezioni del progetto (editor delle quote). Ogni quota è un pulsante: la clicchi (o la raggiungi con Tab e premi Invio), scrivi il valore e premi Invio; il progetto si ridisegna con le sue verifiche. Le quote della pianta cambiate a mano restano finché non le ripristini; le altre cambiano il dato corrispondente del modulo.",
+            "Nella scheda «Disegno» sulla destra (quella aperta quando arrivi) trovi le piante e le sezioni del progetto (editor delle quote). Ogni quota è un pulsante: la clicchi (o la raggiungi con Tab e premi Invio), scrivi il valore e premi Invio; il progetto si ridisegna con le sue verifiche. Le quote della pianta cambiate a mano restano finché non le ripristini; le altre cambiano il dato corrispondente del modulo.",
             "Ogni valore passa dalla stessa validazione del salvataggio: quello che imposti dal disegno si può sempre salvare. Se un valore è fuori campo il messaggio dice il campo (per esempio «Valore fuori campo: da … a … mm», «Il valore minimo è … mm», «Il valore massimo è … mm» o «Valore non accettato»), e il limite è espresso come lunghezza della quota che stai modificando.",
             "Il disegno non è animato: si ridisegna soltanto."
           ],
@@ -1159,7 +1167,8 @@
           ],
           "notes": [
             "Le quote cambiate a mano sono segnate sul disegno.",
-            "Le quote della pianta fissate a mano si perdono quando cambi accessi o lato del contrappeso, o larghezza e profondità del vano (vedi gli avvisi di «Vano, porte e contrappeso»)."
+            "Le quote della pianta fissate a mano si perdono quando cambi accessi o lato del contrappeso, o larghezza e profondità del vano (vedi gli avvisi di «Vano, porte e contrappeso»).",
+            "Le schede «Disegno» e «Verifiche» restano entrambe pronte: passando alle verifiche e tornando al disegno, la vista scelta e la quota aperta restano dove le avevi lasciate."
           ],
           "warnings": [
             "Una quota fuori campo viene rifiutata con il messaggio dei limiti e nulla cambia."
@@ -1581,7 +1590,7 @@
         "Compila i campi nell’ordine del modulo: il riquadro «Dati del progetto da inserire» ti porta al primo che manca con un clic.",
         "Per un vano vecchio, misura la pianta con il CAD e poi controlla in cantiere larghezza e profondità: la misura dal disegno non sostituisce il rilievo.",
         "Usa l’editor delle quote per le rifiniture (posizione delle porte, della cabina, del contrappeso, degli ammortizzatori): sono le quote che il software normalmente calcola da solo.",
-        "Se la verifica di una distanza non passa, cambia la quota giusta sul disegno e guarda l’esito delle verifiche a destra. Se il valore è fuori campo, il messaggio indica i limiti ammessi."
+        "Se la verifica di una distanza non passa, cambia la quota giusta nella scheda «Disegno» e guarda il numero sulla scheda «Verifiche»: dice quante verifiche non passano ancora. Se il valore è fuori campo, il messaggio indica i limiti ammessi."
       ]
     }
   ],

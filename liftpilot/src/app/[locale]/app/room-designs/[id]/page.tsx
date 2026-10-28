@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import Icon from '@/components/Icon';
 import SectionTitle from '@/components/project/SectionTitle';
 import { requireCapability } from '@/lib/auth';
 import { can, remakerOf } from '@/lib/rbac';
@@ -12,27 +11,17 @@ import { makeFmt } from '@/lib/present/tr';
 import { roomCheckKey } from '@/lib/room/derive';
 import { cropped, surveyView } from '@/lib/tavole/views';
 import { isUpperLimit, shownValue } from '@/shaft/checks';
-import { prisma } from '@/lib/db';
 import { reproduceRoomRecord } from '@/server/room-compose';
 import { roomSummaryLine } from '@/server/room-summary';
 import { getRoomDesign, refreshedFrom } from '@/server/queries';
 import { rilevaLocale } from '@/server/calcolo-base';
-import { projectCost } from '@/server/prices';
-import { calcBom, calcUncounted } from '@/lib/prices/bom';
-import { initialsOf } from '@/lib/tavole/compose';
-import { issueChecks } from '@/lib/tavole/issue-check';
-import { plantReadSchema } from '@/lib/plant';
-import ProjectCost from '@/components/prices/ProjectCost';
 import Crumbs from '@/components/Crumbs';
-import IssueForm from '@/components/tavole/IssueForm';
+import ImpiantoNav from '@/components/impianto/ImpiantoNav';
 import DrawingFigure from '@/components/drawing/DrawingFigure';
 import ShapesSvg from '@/components/drawing/ShapesSvg';
 import VerdictPill from '@/components/VerdictPill';
 import StaleNotice from '@/components/StaleNotice';
 import Refreshed from '@/components/Refreshed';
-import { testoAiuto } from '@/lib/aiuto';
-import { ConAiuto } from '@/components/shaft/Campo';
-import AIUTO from '../../../../../../messages/aiuto/progetto.json';
 
 export async function generateMetadata() {
   const t = await getTranslations('room');
@@ -42,24 +31,23 @@ export async function generateMetadata() {
 const AREA = { x0: 0, y0: 0, x1: 190, y1: 190 };
 
 // A saved machine room of a replacement: its result, its plan and section, the checks (those of the parts that stay
-// marked "esistente"), the documents — the drawing set as a draft, DXF and DWG; its relazione tecnica is the
-// installation's relazione tecnica di modifica (round 49), reached from here — and the drawing sets issued from it, with
-// the issue of a new one. Drawn again from the stored survey and calculation only when the
-// running engines reproduce them; else «Aggiorna con il software attuale» saves it again.
+// marked "esistente"); its documents, its cost and the drawing sets issued from it are «Tavole e documenti» (round 53),
+// its relazione tecnica the installation's relazione tecnica di modifica (round 49), both reached from here. Drawn again
+// from the stored survey and calculation only when the running engines reproduce them; else «Aggiorna con il software
+// attuale» saves it again.
 export default async function RoomDesignPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ da?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'calc:view');
   const r = await getRoomDesign(user, id);
   if (!r) notFound();
-  const [t, tp, tc, tt, ts, trt, before] = await Promise.all([getTranslations('room'), getTranslations('projects'), getTranslations('calculations'), getTranslations('tavole'),
-    getTranslations('shaft'), getTranslations('rt'), refreshedFrom(user, 'roomDesign', (await searchParams).da, r.projectId)]);
+  const [t, tp, tc, ts, trt, td, before] = await Promise.all([getTranslations('room'), getTranslations('projects'), getTranslations('calculations'),
+    getTranslations('shaft'), getTranslations('rt'), getTranslations('documenti'), refreshedFrom(user, 'roomDesign', (await searchParams).da, r.projectId)]);
   const rep = reproduceRoomRecord(r, r.calculation), d = rep.ok ? rep.derived : null;
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']), lead = (await roomSummaryLine())(r);
   // a machine room is surveyed on a «Calcolo argano» of an existing lift (round 45: whatever the installation was called);
   // one whose calculation is not such a one is read only
-  const live = !r.project.archivedAt, download = !!d && can(user, 'report:download'), editable = can(user, 'progetto:edit') && live;
-  const issues = can(user, 'drawings:issue') && live;
+  const live = !r.project.archivedAt, editable = can(user, 'progetto:edit') && live;
   const replacement = rilevaLocale(r.calculation);
   const views = d ? (['plan', 'section'] as const).map((k) => {
     try {
@@ -69,19 +57,15 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
       return null;
     }
   }).filter((x) => x !== null) : [];
-  // what the replacement costs with the company's prices: the machine, its support, the parts the test names replaced
-  const costed = d && rep.ok ? await projectCost(user, calcBom(rep.values, rep.collaudo, d), 'replacement', { stops: null, travel: d.analysis.ctx.I.H }) : null;
-  // before an issue: the machine the data of the installation name against the calculation's, the plant number, the client
-  const plant = plantReadSchema.safeParse(r.project.plant ?? {}), checks = issueChecks(plant.success ? plant.data : {}, d?.made ?? null, r.project, true, { whole: false });
-  const sets = await prisma.drawingSet.findMany({ where: { companyId: user.companyId, roomDesignId: r.id }, orderBy: [{ seq: 'desc' }, { revision: 'desc' }],
-    select: { id: true, number: true, revision: true, createdAt: true, authorInitials: true, user: { select: { name: true } } } });
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${r.projectId}`, label: r.project.name }, { label: t('viewTitle') }]} />
+      <ImpiantoNav user={user} projectId={r.projectId} corrente="progetto" />
       <div className="page-head">
         <div className="titles"><h1>{t('viewTitle')}{r.label ? `\u00a0· ${r.label}` : ''}</h1><p className="lead">{lead}</p></div>
         <div className="actions">
-          <Link className="btn btn-primary" href={`/app/projects/${r.projectId}/relazione-tecnica`}>{trt('apri')}</Link>
+          <Link className="btn btn-primary" href={`/app/projects/${r.projectId}/documenti?design=${r.id}`}>{td('titolo')}</Link>
+          <Link className="btn" href={`/app/projects/${r.projectId}/relazione-tecnica`}>{trt('apri')}</Link>
           {editable && replacement ? <Link className="btn" href={`/app/calculations/${r.calculationId}/locale?from=${r.id}`}>{t('newFrom')}</Link> : null}
         </div>
       </div>
@@ -95,21 +79,6 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
         <div><dt>{tc('col_machine')}</dt><dd className="num"><Link href={`/app/calculations/${r.calculationId}`}>{r.calculation.summary}</Link></dd></div>
         <div className="wide"><dt>{tc('col_hash')}</dt><dd className="hash">{r.sha256}</dd></div>
       </dl>
-      {download ? (
-        <section className="panel" aria-labelledby="room-docs">
-          {/* the drafts' details beside the title (round 52): the lead keeps the essential */}
-          <ConAiuto aiuto={testoAiuto(AIUTO, 'room_docs')} nome={t('docsTitle')} block><SectionTitle id="room-docs" icon="file-export">{t('docsTitle')}</SectionTitle></ConAiuto>
-          <p className="note">{t('docsLead')}</p>
-          <div className="doc-links">
-            <Link className="btn" href={`/app/projects/${r.projectId}/relazione-tecnica`}><Icon name="file-text" size={18} />{trt('apri')}</Link>
-            <a className="btn" href={`/api/room-designs/${r.id}/pdf`}><Icon name="file-pdf" size={18} />{t('docDraft')}</a>
-            <a className="btn" href={`/api/room-designs/${r.id}/dxf`}><Icon name="file-dxf" size={18} />DXF</a>
-            <a className="btn" href={`/api/room-designs/${r.id}/dwg`}><Icon name="file-dwg" size={18} />DWG</a>
-            <a className="btn" href={`/api/room-designs/${r.id}/svg`}><Icon name="file-image" size={18} />SVG</a>
-            <a className="btn" href={`/api/calculations/${r.calculationId}/relazione`}><Icon name="file-pdf" size={18} />{tc('downloadReport')}</a>
-          </div>
-        </section>
-      ) : null}
       {views.map(({ k, c }) => (
         <DrawingFigure key={k} className="sheet-view" w={c.w} h={c.h} label={ts(k === 'plan' ? 'ed_v_room_plan' : 'ed_v_room_section')}
           caption={`${ts(k === 'plan' ? 'ed_v_room_plan' : 'ed_v_room_section')} · ${ts('scale', { n: c.scale })}`}>
@@ -137,17 +106,6 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
           <p className="note">{t('existingNote')}</p>
         </section>
       ) : null}
-      {costed && rep.ok ? <ProjectCost cost={costed.cost} skipped={costed.skipped} uncounted={calcUncounted(rep.collaudo)} locale={locale} scope="calc" editable={can(user, 'prices:edit')} /> : null}
-      <section className="panel" aria-labelledby="room-sets">
-        <SectionTitle id="room-sets" icon="file-stack">{tt('title')}</SectionTitle>
-        <p className="note">{t('setsLead')}</p>
-        {sets.length ? (
-          <ul className="rec-list">
-            {sets.map((x) => <li key={x.id}><Link href={`/app/drawing-sets/${x.id}`} className="num">{x.number}{x.revision ? ` R${x.revision}` : ''}</Link><span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span></li>)}
-          </ul>
-        ) : null}
-        {d && issues ? <IssueForm roomDesignId={r.id} initials={initialsOf(user.name)} checks={checks} projectId={r.projectId} /> : null}
-      </section>
     </main>
   );
 }

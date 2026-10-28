@@ -10,9 +10,11 @@ import { shot, wideClip } from './scatto.mjs';
 export async function p1docs() {
   step('documents of the first installation: the data of the plant, the drawing set and a revision');
   const { page, errors } = await as('chief');
-  // the form that issues the drawings, before the plant's data are in (it says so)
-  await goto(page, S.lift1);
-  await shot('emissione-tavole-modulo', page.locator('.panel:has(input[maxlength="12"]), section:has(> form input[maxlength="12"])').last(), { pad: 12 });
+  // «Tavole e documenti» (round 53), and its form that issues the drawings before the plant's data are in (it says so)
+  await goto(page, `${S.p1}/documenti`);
+  await page.waitForSelector('section[aria-labelledby="doc-tavole"]');
+  await shot('documenti-pagina', page, { clip: { x: 0, y: 0, width: 1440, height: 1200 } });
+  await shot('emissione-tavole-modulo', page.locator('#doc-emetti'), { pad: 12 });
 
   // the data of the plant: the client's logo, the plant's data, the optional ones
   await goto(page, `${S.p1}/impianto`);
@@ -43,8 +45,8 @@ export async function p1docs() {
   await modalita(page, 'semplice');
   await shot('dati-impianto-pagina', page, { clip: { x: 0, y: 0, width: 1440, height: 1500 } });
 
-  // the drawing set issued from the saved design, then a revision and the part of the page with the CAD files
-  await goto(page, S.lift1);
+  // the drawing set issued from the saved design («Tavole e documenti»), then a revision and the part of the page with the CAD files
+  await goto(page, `${S.p1}/documenti`);
   await page.fill('main form input[maxlength="12"]', 'A.E.');
   await Promise.all([page.waitForURL(/\/drawing-sets\/[a-z0-9]+$/, { timeout: 60000 }), page.click('main form:has(input[maxlength="12"]) button[type="submit"]')]);
   await page.waitForSelector('.sheet-page svg.sheet-svg');
@@ -142,8 +144,8 @@ export async function p1pages() {
   await saveSheet(page);
   await goto(page, S.p1);
   await page.waitForSelector('#confronto tr.lk-row');
-  await shot('impianto-testata', page, { clipFn: () => wideClip(page, [page.locator('.page-head').first(), page.locator('nav.lk-steps-wrap')], 18, 270, 1170) });
-  await shot('stepper', page.locator('nav.lk-steps-wrap'), { pad: 8 });
+  await shot('impianto-testata', page, { clipFn: () => wideClip(page, [page.locator('nav.imp-nav'), page.locator('.imp-next')], 18, 270, 1170) });
+  await shot('stepper', page.locator('nav.imp-nav'), { pad: 8 });
   await shot('impianto-rilievi-confronto', page, { tall: 2600, clipFn: () => wideClip(page, [page.locator('#rilievi'), page.locator('#confronto')], 16, 290, 1150) });
   await goto(page, `${S.p1}/edit`);
   await hydrated(page, 'main form button[type="submit"]');

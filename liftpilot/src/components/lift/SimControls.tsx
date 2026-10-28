@@ -2,7 +2,8 @@
 
 // Controls of the simulator: the scenario, its parameters (floors and load, the braking case, the buffer), the
 // transport (play, pause, restart, speed) and the time slider. The slider and the time follow the clock without
-// re-rendering React on every frame. Round 52: each parameter, the playback speed and the time with their «?».
+// re-rendering React on every frame. Round 52: each parameter, the playback speed and the time with their «?». Round 53:
+// each scenario says in a line what it shows.
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTranslations } from 'next-intl';
 import { testoAiuto } from '@/lib/aiuto';
@@ -69,7 +70,9 @@ export default function SimControls({ sc, choose, set, labels, here, Q, T, clock
     <div className="sim-controls">
       <div className="scenario-tabs" role="tablist" aria-label={t('scenario')}>
         {SCENARIOS.map((id) => (
-          <button key={id} type="button" role="tab" data-scenario={id} aria-selected={sc.id === id} className={sc.id === id ? 'on' : undefined} onClick={() => choose(id)}><Icon name={SC_ICON[id]} size={18} />{t(`sc_${id}`)}</button>
+          <button key={id} type="button" role="tab" data-scenario={id} aria-selected={sc.id === id} className={sc.id === id ? 'on' : undefined} onClick={() => choose(id)}>
+            <Icon name={SC_ICON[id]} size={18} /><span className="sc-text"><span className="sc-name">{t(`sc_${id}`)}</span><span className="sc-d">{t(`sc_${id}_d`)}</span></span>
+          </button>
         ))}
       </div>
       <div className="scenario-params">

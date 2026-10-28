@@ -2913,15 +2913,15 @@
       "id": "room-saved",
       "title": "Progetto della sostituzione",
       "path": "/it/app/room-designs/‹id›",
-      "access": "La vedono tutti i ruoli che vedono gli impianti; è di sola lettura. «Nuovo rilievo da questo»: chi disegna il progetto (con i permessi predefiniti: Titolare, Capotecnico, Progettista). Download: chi ha il diritto di scaricare i documenti (con i permessi predefiniti, tutti). «Emetti le tavole»: chi può emettere (con i permessi predefiniti: Titolare, Capotecnico, Progettista). Il Titolare può cambiare la matrice.",
-      "reach": "Dopo «Salva il rilievo» nel rilievo del locale macchina, oppure dalla pagina dell’impianto o dal pannello «Progetto» di un calcolo salvato (elenco dei locali macchina rilevati).",
+      "access": "La vedono tutti i ruoli che vedono gli impianti; è di sola lettura. «Nuovo rilievo da questo»: chi disegna il progetto (con i permessi predefiniti: Titolare, Capotecnico, Progettista). I documenti, il costo e l’emissione delle tavole sono nella pagina «Tavole e documenti», ognuno con il suo diritto. Il Titolare può cambiare la matrice.",
+      "reach": "Dopo «Salva il rilievo» nel rilievo del locale macchina; dalla scheda «Progetto» della barra a chi non disegna il progetto; oppure dalla pagina dell’impianto o dal pannello «Progetto» di un calcolo salvato (elenco dei locali macchina rilevati).",
       "purpose": [
-        "È il rilievo del locale macchina salvato: non si modifica più. Mostra l’esito, la pianta e la sezione ridisegnate dal rilievo, le verifiche, i documenti da scaricare, il costo e le tavole emesse. Un rilievo diverso è un nuovo rilievo."
+        "È il rilievo del locale macchina salvato: non si modifica più. Mostra l’esito, la pianta e la sezione ridisegnate dal rilievo e le verifiche. I documenti da scaricare, il costo e le tavole sono nella pagina «Tavole e documenti» dell’impianto, aperta su questo rilievo con il pulsante in alto. Un rilievo diverso è un nuovo rilievo."
       ],
       "shots": [
         {
           "id": "locale-saved",
-          "what": "Pagina del locale macchina salvato con dati d’identità, documenti e disegni"
+          "what": "Pagina del locale macchina salvato con i pulsanti in alto, i dati d’identità e i disegni"
         }
       ],
       "sections": [
@@ -2933,14 +2933,19 @@
           "fields": [],
           "actions": [
             {
+              "label": "Tavole e documenti",
+              "help": "Apre la pagina «Tavole e documenti» dell’impianto su questo rilievo: tavole in bozza e loro emissione, DXF, DWG, SVG, relazione di calcolo e costo (capitolo sui documenti).",
+              "src": "src/app/[locale]/app/room-designs/[id]/page.tsx:67"
+            },
+            {
               "label": "Relazione tecnica di modifica",
               "help": "Porta alla relazione tecnica di modifica dell’impianto: il rilievo è la sua base. La relazione si prepara nella sua pagina.",
-              "src": "src/app/[locale]/app/room-designs/[id]/page.tsx:81"
+              "src": "src/app/[locale]/app/room-designs/[id]/page.tsx:68"
             },
             {
               "label": "Nuovo rilievo da questo",
               "help": "Apre il modulo del rilievo con i valori di questo (per una variante). Solo per chi disegna il progetto, e su un calcolo con rilievo del locale.",
-              "src": "page.tsx:82"
+              "src": "src/app/[locale]/app/room-designs/[id]/page.tsx:69"
             }
           ],
           "notes": [
@@ -2949,47 +2954,6 @@
           "warnings": [
             "Se il rilievo è «da aggiornare» i documenti non si rigenerano finché non lo aggiorni con «Aggiorna con il software attuale»."
           ]
-        },
-        {
-          "title": "Documenti della sostituzione",
-          "intro": [
-            "Compare a chi può scaricare i documenti, quando il rilievo è riproducibile. Testo: «Tavole in bozza in PDF e SVG, pianta e sezione in DXF e DWG, relazione di calcolo dell’argano. La relazione tecnica di modifica si prepara nella sua pagina, a partire da questo rilievo.» Le tavole in bozza contengono i dati, la pianta e la sezione B-B del locale; l’SVG ha gli stessi fogli del PDF, uno per file in un archivio ZIP."
-          ],
-          "fields": [],
-          "actions": [
-            {
-              "label": "Relazione tecnica di modifica",
-              "help": "Apre la relazione tecnica di modifica dell’impianto.",
-              "src": "page.tsx:101"
-            },
-            {
-              "label": "Tavole in bozza (PDF)",
-              "help": "Scarica le tavole in bozza.",
-              "src": "page.tsx:101"
-            },
-            {
-              "label": "DXF",
-              "help": "Scarica pianta e sezione in DXF.",
-              "src": "page.tsx:101"
-            },
-            {
-              "label": "DWG",
-              "help": "Scarica pianta e sezione in DWG.",
-              "src": "page.tsx:102"
-            },
-            {
-              "label": "SVG",
-              "help": "Scarica i fogli in SVG (ZIP se più d’uno).",
-              "src": "page.tsx:103"
-            },
-            {
-              "label": "Relazione di calcolo (PDF)",
-              "help": "Scarica la relazione di calcolo dell’argano del calcolo da cui viene il rilievo.",
-              "src": "page.tsx:104"
-            }
-          ],
-          "notes": [],
-          "warnings": []
         },
         {
           "title": "Pianta e sezione del locale",
@@ -3010,47 +2974,6 @@
           "actions": [],
           "notes": [],
           "warnings": []
-        },
-        {
-          "title": "Costo degli articoli (listino dell’azienda)",
-          "intro": [
-            "Come nel calcolo: compare solo a chi vede i prezzi, con la stessa tabella (Articolo · Quantità · Prezzo unitario · Importo, totale IVA esclusa, avviso sugli articoli senza prezzo). Conta l’argano, il suo basamento e le parti che il collaudo indica come sostituite."
-          ],
-          "fields": [],
-          "actions": [],
-          "notes": [],
-          "warnings": []
-        },
-        {
-          "title": "Tavole di progetto",
-          "intro": [
-            "Elenca le tavole già emesse da questo rilievo («AA-NNN», con la revisione R1…, data e autore). Testo: «Le tavole emesse da questo rilievo hanno un numero AA-NNN e le loro revisioni.» Ogni numero porta al set di tavole."
-          ],
-          "fields": [
-            {
-              "label": "Iniziali di chi disegna",
-              "kind": "testo",
-              "unit": null,
-              "values": "fino a 12 caratteri",
-              "default": "le iniziali del tuo nome",
-              "required": "sì",
-              "help": [
-                "Vanno nel cartiglio delle tavole. Il numero (AA-NNN) lo assegna il server per azienda e anno."
-              ],
-              "src": "src/components/tavole/IssueForm.tsx:66"
-            }
-          ],
-          "actions": [
-            {
-              "label": "Emetti le tavole",
-              "help": "Emette un nuovo set di tavole dal rilievo. Lo vede chi ha il diritto di emettere (con i permessi predefiniti: Titolare, Capotecnico, Progettista), con il rilievo riproducibile. Prima del pulsante il modulo segnala che cosa resterebbe sbagliato o vuoto nel cartiglio: il nome della macchina nei dati dell’impianto che non coincide con quella del calcolo (blocca l’emissione), il numero di matricola mancante (le tavole scriveranno «DA COMUNICARE»), il committente mancante (resta un trattino) e quanti dati dell’impianto letti dal foglio 1 non sono inseriti. Negli altri casi l’emissione resta consentita.",
-              "src": "IssueForm.tsx:86"
-            }
-          ],
-          "notes": [],
-          "warnings": [
-            "«Emetti le tavole» crea un set numerato che non si cancella; se il nome dell’argano nei dati dell’impianto non coincide con quello del calcolo l’emissione è bloccata."
-          ]
         }
       ],
       "tips": []

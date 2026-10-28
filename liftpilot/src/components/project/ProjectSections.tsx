@@ -1,27 +1,20 @@
 import type { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { getSessionUser, type SessionUser } from '@/lib/auth';
+import type { SessionUser } from '@/lib/auth';
 import { dateFormat } from '@/lib/dates';
-import { liftInputsReadSchema } from '@/lib/lift-input';
 import type { TipoIntervento } from '@/lib/lift/intervento';
-import { pitchesOf } from '@/lib/plant';
-import { can, remakerOf } from '@/lib/rbac';
-import LiftView from '@/components/lift/LiftView';
+import { remakerOf } from '@/lib/rbac';
 import StaleNotice from '@/components/StaleNotice';
 import { outdated } from '@/server/records';
-import { visiblePrices } from '@/server/prices';
-import { listProjectRts } from '@/server/rt/queries';
-import RelazioniEmesse from '@/components/rt/RelazioniEmesse';
 import RecordTable, { type RecordRow } from './RecordTable';
 import SectionTitle from './SectionTitle';
 import TipoTag from './TipoTag';
 
-// The sections of an installation's page in the order of its work (round 45): «Calcolo argano» (its step-2
-// calculations, their type), the Progetto (the latest lift design in 3D with its versions, and the machine rooms
-// surveyed), the drawing sets with the installation's data and the relazioni tecniche di modifica (round 49), and the
-// archive of the records made before the one form (shaft designs and their calculations without a lift design). Server
-// components; the page reads the records (the relazioni: the section, with the session's company).
+// The sections of an installation's overview in the order of its work (round 45): «Calcolo argano» (its step-2
+// calculations, their type), the Progetto (its saved versions and the machine rooms surveyed — round 53: the 3D is the
+// Simulazione's page, the bill and the drawing sets «Tavole e documenti»), and the archive of the records made before the
+// one form (shaft designs and their calculations without a lift design). Server components; the page reads the records.
 
 type Calc = RecordRow & { tipo: TipoIntervento; reviews: number };
 
@@ -43,15 +36,15 @@ export async function CalcoloSection({ rows, locale, nuovo, vuoto }: { rows: Cal
   );
 }
 
-interface Latest { id: string; inputs: unknown; createdAt: Date; engineVersion: string; calculation: { engineVersion: string }; shaftDesign: { engineVersion: string } }
+interface Latest { id: string; createdAt: Date; engineVersion: string; calculation: { engineVersion: string }; shaftDesign: { engineVersion: string } }
 
-/** The Progetto: the latest lift design in 3D (and its saved versions), the machine rooms surveyed; nothing yet — what
- *  the Progetto of this intervention is and the way to it (or whose it is). */
-export async function ProgettoSection({ user, plant, latest, lifts, rooms, locale, live, vuoto }: {
-  user: SessionUser; plant: unknown; latest: Latest | null; lifts: RecordRow[]; rooms: RecordRow[]; locale: string; live: boolean; vuoto: ReactNode;
+/** The Progetto: its saved versions (the latest first) and the machine rooms surveyed; nothing yet — what the Progetto of
+ *  this intervention is and the way to it (or whose it is). */
+export async function ProgettoSection({ user, latest, lifts, rooms, locale, live, vuoto }: {
+  user: SessionUser; latest: Latest | null; lifts: RecordRow[]; rooms: RecordRow[]; locale: string; live: boolean; vuoto: ReactNode;
 }) {
   const [t, tl, tm] = await Promise.all([getTranslations('projects'), getTranslations('lift'), getTranslations('room')]);
-  const fd = dateFormat(locale), inputs = latest ? liftInputsReadSchema.safeParse(latest.inputs) : null;
+  const fd = dateFormat(locale);
   return (
     <section className="flex flex-col gap-3 lift-home" aria-labelledby="sec-progetto">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -59,44 +52,11 @@ export async function ProgettoSection({ user, plant, latest, lifts, rooms, local
         {latest ? <Link className="btn" href={`/app/lift-designs/${latest.id}`}>{tl('open')}</Link> : null}
       </div>
       {latest && outdated.lift(latest) ? <StaleNotice text="design" by={remakerOf(user, 'lift', live)} refresh={{ kind: 'lift', id: latest.id }} /> : null}
-      {inputs?.success ? <LiftView inputs={inputs.data} checks={false} prices={await visiblePrices(user)} pitches={pitchesOf(plant)} /> : null}
-      {lifts.length > 1 ? <SectionTitle level={3} icon="history">{tl('history')}</SectionTitle> : null}
-      {lifts.length > 1 ? <RecordTable rows={lifts} kind="lift" href={(x) => `/app/lift-designs/${x}`} what={tl('col_design')} locale={locale} /> : null}
+      {lifts.length ? <SectionTitle level={3} icon="history">{tl('history')}</SectionTitle> : null}
+      {lifts.length ? <RecordTable rows={lifts} kind="lift" href={(x) => `/app/lift-designs/${x}`} what={tl('col_design')} locale={locale} /> : null}
       {rooms.length ? <SectionTitle level={3} icon="building-gear">{tm('projectTitle')}</SectionTitle> : null}
       {rooms.length ? <RecordTable rows={rooms} kind="room" href={(x) => `/app/room-designs/${x}`} what={tm('col_room')} locale={locale} /> : null}
       {!latest && rooms.length === 0 ? <div className="panel items-start">{vuoto}</div> : null}
-    </section>
-  );
-}
-
-/** The drawing sets issued, with the installation's data (sheet 1 reads them); then the relazioni tecniche di modifica
- *  issued (number, revision, day, outcome, PDF) and the way to the installation's one. */
-export async function TavoleSection({ projectId, sets, locale }: {
-  projectId: string; sets: { id: string; number: string; revision: number; createdAt: Date; authorInitials: string; user: { name: string } | null }[]; locale: string;
-}) {
-  const [tt, tr, user] = await Promise.all([getTranslations('tavole'), getTranslations('rt'), getSessionUser()]), fd = dateFormat(locale);
-  const rts = user ? await listProjectRts(user, projectId) : [];
-  return (
-    <section className="flex flex-col gap-3" aria-labelledby="sec-tavole">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <SectionTitle id="sec-tavole" icon="file-stack">{tt('list')}</SectionTitle>
-        <Link className="btn" href={`/app/projects/${projectId}/impianto`}>{tt('plantTitle')}</Link>
-      </div>
-      {sets.length ? (
-        <ul className="rec-list" aria-label={tt('list')}>
-          {sets.map((x) => (
-            <li key={x.id}>
-              <Link href={`/app/drawing-sets/${x.id}`} className="num">{tt('number')} {x.number}{x.revision ? ` R${x.revision}` : ''}</Link>
-              <span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span>
-            </li>
-          ))}
-        </ul>
-      ) : <p className="note">{tt('none')} {tt('needDesign')}</p>}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <SectionTitle id="sec-rt" level={3} icon="file-text">{tr('emesse.titolo')}</SectionTitle>
-        <Link className="btn" href={`/app/projects/${projectId}/relazione-tecnica`} data-rt-link="">{tr('apri')}</Link>
-      </div>
-      <RelazioniEmesse rows={rts} locale={locale} download={!!user && can(user, 'report:download')} />
     </section>
   );
 }

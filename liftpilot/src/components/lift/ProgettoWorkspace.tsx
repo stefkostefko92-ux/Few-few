@@ -10,14 +10,18 @@
 // draft at once and opens the calculation with the drawing's values (?dal=progetto), for whoever makes it. Round 50: the
 // installation's survey sketches head the right side (SchizzoPanel); what is confirmed from one enters the form as if
 // typed (src/lib/schizzi/applica.ts) — a new size of the shaft drops the CAD measure, as typing it does. Round 52: the bar
-// of the steps over both sides, the step now in the save bar (components/passi).
+// of the steps over both sides, the step now in the save bar (components/passi). Round 53: the right side holds the
+// drawing and the checks in two tabs (ProgettoRisultati); a check's «Simula» keeps the draft, then opens the Simulazione
+// of the draft on that check; the 3D and the bill are the Simulazione's and «Tavole e documenti»'s (the standalone page
+// keeps them here, `completo`); in «Semplice» the form shows one step at a time (progetto-uno.ts).
 import { useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState, useTransition, type Ref } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { Edit } from '@/drawing';
 import { deriveLift, tipoDaRivedere, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
-import { bottomTo, enteredBy, filled, isBlankKey, missingOf, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
+import { bottomTo, enteredBy, filled, isBlankKey, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
+import { mancantiDi } from '@/lib/lift/progetto-bozza';
 import { composto, dalComposto, type ProgettoAuto, type ProgettoDraft } from '@/lib/lift/progetto';
 import { calataVerso, calateAlCompleto, calateEsistenti } from '@/lib/lift/calata';
 import { macchinaEsistente } from '@/lib/lift/kept';
@@ -54,9 +58,11 @@ import type { SurveyResult } from '../shaft/SurveyPanel';
 import type { BaseProgetto } from './DalCalcolo';
 import LiftFacts from './LiftFacts';
 import LiftChecks from './LiftChecks';
-import LiftSimulator, { type SimApi } from './LiftSimulator';
+import LiftSimulator, { type SimApi, type SimRequest } from './LiftSimulator';
 import DifferenzeCalcolo from './DifferenzeCalcolo';
 import ProgettoForm from './ProgettoForm';
+import ProgettoRisultati from './ProgettoRisultati';
+import { useUnoAllaVolta } from './progetto-uno';
 import { missingItems } from './missing-items';
 import { useSaveBlockers } from './save-blockers';
 
@@ -86,6 +92,8 @@ interface Props {
   origine?: OrigineRilievo | null;
   /** the installation's survey sketches beside the form (round 50); absent: none shown (the standalone page) */
   schizzi?: SchizziStart | null;
+  /** the standalone page: the 3D and the bill beside the drawing, as before round 53 */
+  completo?: boolean;
 }
 
 /** The largest height of the diverting pulley under the sheave a drawing may set [mm]. */
@@ -96,7 +104,7 @@ export interface WorkspaceApi {
   edit(e: Edit, length: number): Refusal | null;
 }
 
-export default function ProgettoWorkspace({ projectId, base, when, canCalc, initial, onDerived, api, prices, pitches, draft = null, refresh = false, origine = null, schizzi = null }: Props) {
+export default function ProgettoWorkspace({ projectId, base, when, canCalc, initial, onDerived, api, prices, pitches, draft = null, refresh = false, origine = null, schizzi = null, completo = false }: Props) {
   const locale = useLocale(), messages = useMessages(), t = useTranslations('lift'), ts = useTranslations('shaft'), te = useTranslations('errors'), tb = useTranslations('blank');
   const tpa = useTranslations('passi');
   const router = useRouter();
@@ -113,9 +121,7 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
   // the drawing and what is still to enter settle together: nothing is drawn from a placeholder; the case of DM 236 is
   // the drawing's to choose when the calculation adds the standard to the test
   const deferred = useDeferredValue(composed), dInp = deferred.inputs;
-  const dm236 = !!base.collaudo.aggiuntive?.includes('dm236');
-  const missing = useMemo((): BlankKey[] => [...missingOf(deferred),
-    ...(dm236 && !deferred.blank.includes('access') && deferred.inputs.shaft.access === 'none' ? ['access' as const] : [])], [deferred, dm236]);
+  const missing = useMemo((): BlankKey[] => mancantiDi(deferred, base.collaudo), [deferred, base.collaudo]);
   const car = pitches?.car, cw = pitches?.cw;
   const derived = useMemo(() => {
     if (missing.length) return null;
@@ -139,6 +145,12 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
     await draftHandle.flush();
     router.push(`/app/projects/${projectId}/calc?from=${base.id}&dal=progetto`);
   }) : null;
+  // a check's «Simula»: the draft kept, then the Simulazione of the draft on that check
+  const simula = projectId ? (id: string) => `/app/projects/${projectId}/simulazione?fonte=bozza&verifica=${id}` : undefined;
+  const apriSim = (href: string): void => startLeaving(async () => {
+    await draftHandle.flush();
+    router.push(href);
+  });
   const texts = { choose: tb('choose'), std: tb('std'), stdTitle: tb('stdTitle') };
 
   // a change the one form's helpers make on the composed draft, kept as the drawing (the plan's h as it was); the change
@@ -239,27 +251,24 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
     base: tpa('base'), vano: t('s_shaft'), piani: t('s_floors'), locale: ts(pulegge ? 'rm_pulley_title' : 'rm_title'), funi: t('s_funi'), verifiche: tpa('verifiche'),
   };
   const passi = passiProgetto(missing, { locale: !sotto || pulegge }, (k) => titoli[k], (k) => (isBlankKey(k) ? fieldId(k) : k));
-  const numeri = numeriDi<PassoProgetto>(passi);
+  const numeri = numeriDi<PassoProgetto>(passi), uno = useUnoAllaVolta(passi);
   return (
     <OrigineProvider value={origine}>
     <div className="lift-work">
       {refresh ? <RefreshNotice kind="lift" items={[...items(missing), ...blockers]} /> : null}
-      <BarraPassi passi={passi} label={tpa('progetto')} />
+      <BarraPassi passi={passi} label={tpa('progetto')} attivo={uno?.attivo} />
       <ProgettoForm P={P} X={X} inp={inp} base={base} projectId={projectId} when={when} canCalc={canCalc} h={form.progetto.h} derived={derived} blank={blank}
         texts={texts} source={source} setShaft={setShaft} setSize={setSize} onSurvey={onSurvey} setAuto={setAuto} setBottom={setBottom}
-        porta={porta ? { go: porta, pending: leaving } : null} calate={calate} numeri={numeri} />
+        porta={porta ? { go: porta, pending: leaving } : null} calate={calate} numeri={numeri} uno={uno} />
       <div className="lift-main passo-sez" id={passoId('verifiche')}>
         {schizzi ? <SchizzoPanel start={schizzi} target="vano" modulo={modulo} open={initial.blank.length > 0 || schizzi.initial.length > 0} /> : null}
         {!derived ? <MissingPanel title={tb('title')} lead={tb('lead')} items={items(missing)} /> : (
-          <>
-            <LiftFacts derived={derived} X={X} fmt={P.fmt} />
-            <DifferenzeCalcolo P={P} X={X} base={base.values} derived={derived} porta={porta} pending={leaving} collaudo={base.collaudo} tipo={base.tipo} />
-            <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
-            <section className="panel"><PlanEditor I={drawn} onChange={setDrawn} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan"
-              below={derived.bottom ? { machine: derived.machine, analysis: derived.analysis, scheme: derived.bottom } : null} /></section>
-            <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} />
-            <PanevBom L={derived.layout} prices={prices} C={derived.collaudo} />
-          </>
+          <ProgettoRisultati derived={derived} fatti={<LiftFacts derived={derived} X={X} fmt={P.fmt} />}
+            differenze={<DifferenzeCalcolo P={P} X={X} base={base.values} derived={derived} porta={porta} pending={leaving} collaudo={base.collaudo} tipo={base.tipo} />}
+            disegno={<section className="panel"><PlanEditor I={drawn} onChange={setDrawn} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan"
+              below={derived.bottom ? { machine: derived.machine, analysis: derived.analysis, scheme: derived.bottom } : null} /></section>}
+            verifiche={<LiftChecks derived={derived} X={X} fmt={P.fmt} {...(completo ? { onSimulate: (req: SimRequest) => sim.current?.play(req) } : { simulaHref: simula, apri: apriSim })} />}
+            completo={completo ? { simulatore: <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />, distinta: <PanevBom L={derived.layout} prices={prices} C={derived.collaudo} /> } : null} />
         )}
       </div>
       <div className="savebar">

@@ -223,6 +223,11 @@ const verdictOf = (on: readonly { status: string }[]): Verdict => {
 export const collaudoVerdict = (C: Collaudo, checks: readonly { id: CheckId | ShaftCheckId; status: string }[]): Verdict =>
   verdictOf(senzaSostituite(checks).filter((c) => ambitoOf(C, c.id) === 'applies'));
 
+/** What that verdict counts against the lift (round 53: the list of the checks opens with them): the checks that apply
+ *  and do not pass or pass with «Attenzione», by the same rule. */
+export const problemiCollaudo = <T extends { id: CheckId | ShaftCheckId; status: string }>(C: Collaudo, checks: readonly T[]): T[] =>
+  senzaSostituite(checks).filter((c) => ambitoOf(C, c.id) === 'applies' && (c.status === 'fail' || c.status === 'warn'));
+
 /** The result under one standard: its checks among those computed (none computed: `ids` empty). */
 export interface EsitoNorma extends Verdict {
   norma: Norma;

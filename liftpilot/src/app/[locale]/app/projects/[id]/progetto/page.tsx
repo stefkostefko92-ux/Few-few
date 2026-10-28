@@ -13,6 +13,7 @@ import { calcoloBase } from '@/server/calcolo-base';
 import { progettoStart } from '@/server/progetto-start';
 import ProgettoWorkspace from '@/components/lift/ProgettoWorkspace';
 import Crumbs from '@/components/Crumbs';
+import ImpiantoNav from '@/components/impianto/ImpiantoNav';
 import RilievoAvviso from '@/components/collega/RilievoAvviso';
 import { avvioProgetto } from '@/server/collega/forms';
 import { pitchesOf } from '@/lib/plant';
@@ -64,6 +65,7 @@ export default async function ProgettoPage({ params, searchParams }: {
   const head = (
     <>
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${p.id}`, label: p.name }, { label: tl('workTitle') }]} />
+      <ImpiantoNav user={user} projectId={p.id} corrente="progetto" />
       <div className="page-head">
         <div className="titles">
           <ConAiuto aiuto={testoAiuto(AIUTO, 'pagina')} nome={tl('workTitle')} block><h1>{tl('workTitle')}</h1></ConAiuto>

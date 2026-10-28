@@ -2,10 +2,10 @@
   "key": "progetto-b",
   "title": "Progetto: piani, locale macchina, funi, verifiche e simulazione",
   "intro": [
-    "Questa parte della guida segue la pagina «Progetto e simulazione» dall’alto verso il basso. A sinistra c’è il modulo che compili; a destra il software mostra ciò che ha ricavato dai tuoi dati, la simulazione 3D e le verifiche. In fondo allo schermo c’è la barra di salvataggio.",
+    "Questa parte della guida segue la pagina «Progetto» dall’alto verso il basso. A sinistra c’è il modulo che compili; a destra il software mostra ciò che ha ricavato dai tuoi dati, con il disegno e le verifiche in due schede. La simulazione 3D ha una pagina sua, «Simulazione», descritta dopo le verifiche. In fondo allo schermo c’è la barra di salvataggio.",
     "Il Progetto disegna soltanto la geometria (vano, piani, locale, funi nel disegno). Portata, velocità, argano, funi e collaudo vengono dal «Calcolo argano» su cui si basa il disegno e si cambiano lì: nel modulo li vedi con l’etichetta «dal calcolo».",
     "I valori che il software propone portano un’etichetta: «standard» (valore tipico del software, non inserito da te), «automatico» (ricavato dai tuoi dati), «dal calcolo» (preso dal calcolo argano), «dalla pianta» (misura impostata sulla pianta), «dal rilievo» (preso dal rilievo dell’impianto). Un campo necessario lasciato vuoto è evidenziato, e il software non calcola né disegna finché non lo compili.",
-    "Dopo il salvataggio trovi il progetto nella pagina «Progetto dell’impianto» (documenti da scaricare in PDF, DXF, DWG, SVG) e, per il solo vano, nella pagina «Progetto del vano». Entrambe sono descritte in fondo.",
+    "Dopo il salvataggio trovi il progetto nella pagina «Progetto dell’impianto» (riepilogo e verifiche, in sola lettura), i suoi documenti nella pagina «Tavole e documenti» (descritta nel capitolo sui documenti) e, per il solo vano, nella pagina «Progetto del vano». Le pagine dei progetti salvati sono descritte in fondo.",
     "Le norme sono citate solo con il numero del punto e il valore (per esempio UNI EN 81-20, 5.2.5.8): il testo delle norme non è riprodotto."
   ],
   "pages": [
@@ -941,22 +941,19 @@
     },
     {
       "id": "progetto-verifiche",
-      "title": "Progetto — verifiche, 3D e simulazione",
+      "title": "Progetto — disegno e verifiche",
       "path": "/it/app/projects/‹id›/progetto",
-      "access": "Stessa pagina di prima: la vedono e la modificano Titolare, Capotecnico e Progettista (permesso «Progetto: disegnare il vano o rilevare il locale macchina»). Possono salvare il Titolare e i ruoli con quel diritto. La distinta con i prezzi si vede con il diritto sui prezzi.",
-      "reach": "È la parte destra della pagina «Progetto e simulazione» e la barra in fondo allo schermo; i riquadri compaiono appena i dati del progetto sono completi.",
+      "access": "Stessa pagina di prima: la vedono e la modificano Titolare, Capotecnico e Progettista (permesso «Progetto: disegnare il vano o rilevare il locale macchina»). Possono salvare il Titolare e i ruoli con quel diritto.",
+      "reach": "È la parte destra della pagina «Progetto» e la barra in fondo allo schermo; i riquadri compaiono appena i dati del progetto sono completi.",
       "purpose": [
-        "A destra il software mostra, in tempo reale, ciò che ha ricavato dai tuoi dati: i valori calcolati, la simulazione 3D con i grafici, l’elenco di tutte le verifiche e la distinta delle staffe. Il riquadro «Dati del progetto da inserire» e il confronto «Il progetto completa il calcolo» sono descritti nel capitolo precedente.",
+        "A destra il software mostra, in tempo reale, ciò che ha ricavato dai tuoi dati: in alto i valori calcolati, poi due schede, «Disegno» (le piante e le sezioni con le quote da cambiare, descritte nel capitolo precedente) e «Verifiche». Il riquadro «Dati del progetto da inserire» e il confronto «Il progetto completa il calcolo» sono descritti nel capitolo precedente.",
+        "La simulazione 3D è nella pagina «Simulazione» (descritta qui sotto); la distinta delle staffe Panev e il costo nella pagina «Tavole e documenti».",
         "In fondo alla pagina c’è la barra di salvataggio."
       ],
       "shots": [
         {
-          "id": "progetto-3d",
-          "what": "Simulazione 3D con la vista «Cabina», comandi di scenario e grafici sotto"
-        },
-        {
           "id": "progetto-verifiche",
-          "what": "Tabella «Verifiche» con il pulsante «Simula» su una riga"
+          "what": "La scheda «Verifiche» del Progetto: in alto le verifiche da guardare, con «▶ Simula», sotto le altre verifiche richiuse"
         }
       ],
       "sections": [
@@ -1068,6 +1065,138 @@
           "notes": []
         },
         {
+          "title": "Verifiche",
+          "intro": [
+            "Sopra il disegno ci sono due schede: «Disegno» e «Verifiche». Sulla scheda «Verifiche» un numero dice quante verifiche non passano (in rosso); se nessuna non passa, quante hanno «Attenzione» (in ambra); se è tutto in ordine compare «✓». Il numero si aggiorna mentre scrivi.",
+            "Nella scheda trovi prima le verifiche da guardare: quelle che non passano e quelle con «Attenzione» che contano per il collaudo. Se non ce ne sono leggi «Nessuna verifica non superata e nessuna con «Attenzione».». Sotto, richiuse, «Altre ‹n› verifiche: superate, informative o su parti esistenti»: un clic le apre. In modalità «Esperto» sono già aperte.",
+            "Sopra il titolo è indicata la norma del collaudo. Le verifiche sono quelle della macchina (trazione, funi, azionamento, freno, soccorso) e quelle del vano (pianta, sezione, locale macchina, putrelle sotto la macchina)."
+          ],
+          "fields": [
+            {
+              "label": "Verifica / Valore / Limite / Esito",
+              "kind": "tabella",
+              "unit": "secondo la verifica",
+              "values": "Limite con ≤ o ≥; Esito: OK, Attenzione, Non soddisfatta, Info (Esistente per le parti che restano)",
+              "default": "Calcolata.",
+              "required": "no",
+              "help": [
+                "Per ogni riga leggi il valore calcolato e il limite della norma (con il punto citato nella relazione di calcolo, non qui).",
+                "In un intervento UNI 10411 una verifica su una parte che resta com’è mostra «Esistente» e, accanto, il risultato del calcolo: non entra nell’esito del collaudo e sta tra le altre verifiche."
+              ],
+              "src": "src/components/lift/LiftChecks.tsx:97-102"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Disegno · Verifiche",
+              "help": "Le due schede sopra i risultati: mostrano il disegno o le verifiche. Anche il passo «Disegno e verifiche» della barra dei passi apre la scheda «Verifiche».",
+              "src": "src/components/lift/ProgettoRisultati.tsx:36"
+            },
+            {
+              "label": "▶ Simula",
+              "help": "Dove la simulazione può riprodurre una verifica (trazione, freno, ammortizzatori, rifugi, carico al 125 %, blocco): salva subito la bozza e apre la pagina «Simulazione» sulla bozza del progetto, con quella prova già avviata nella vista adatta.",
+              "src": "src/components/lift/LiftChecks.tsx:48; src/components/lift/ProgettoWorkspace.tsx:149"
+            }
+          ],
+          "notes": []
+        },
+        {
+          "title": "Barra di salvataggio",
+          "intro": [
+            "In fondo allo schermo. Il server ricompone il disegno sul calcolo argano, rifà tutti i calcoli e salva progetto del vano e calcolo insieme: non prende nulla di calcolato dal browser."
+          ],
+          "fields": [
+            {
+              "label": "Nome del progetto (facoltativo)",
+              "kind": "testo",
+              "unit": null,
+              "values": "fino a 120 caratteri",
+              "default": "Vuoto: la pagina del progetto usa il titolo «Progetto dell’impianto».",
+              "required": "no",
+              "help": [
+                "Un nome che ti aiuta a riconoscere la versione tra «Versioni salvate»."
+              ],
+              "src": "src/components/lift/ProgettoWorkspace.tsx:252"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Salva il progetto",
+              "help": "Salva una nuova versione immutabile. Il pulsante è attivo solo con i dati completi, a schermo aggiornato, senza voci da correggere e senza il tipo da rivedere. Durante il salvataggio dice «Salvataggio…». Al termine si apre la pagina «Progetto dell’impianto».",
+              "src": "src/components/lift/ProgettoWorkspace.tsx:253"
+            }
+          ],
+          "notes": [
+            "Messaggio a lato: con dati mancanti leggi «Manca # dato del progetto» (o «Mancano # dati»); con voci da correggere, «Da correggere per salvare:» con collegamenti ai campi; altrimenti «Il server ricompone il disegno…». Gli errori del server compaiono in rosso accanto al pulsante."
+          ],
+          "warnings": [
+            "Il salvataggio crea un record immutabile: salvare di nuovo crea una nuova versione, la precedente resta.",
+            "Il pulsante resta disattivato con dati mancanti, voci da correggere o tipo di intervento da rivedere («Solo argano» con corsa o velocità diverse dal libretto): porta i valori nel calcolo."
+          ]
+        }
+      ],
+      "tips": [
+        "Usa «▶ Simula» sulle verifiche che non passano: vedere la prova in 3D chiarisce spesso cosa correggere. Dalla Simulazione torni al Progetto con «Modifica il progetto» o con la scheda «Progetto» della barra.",
+        "Prima di salvare controlla nel riquadro «Il progetto completa il calcolo» (capitolo precedente) che la corsa sia quella del libretto."
+      ]
+    },
+    {
+      "id": "simulazione",
+      "title": "Simulazione",
+      "path": "/it/app/projects/‹id›/simulazione",
+      "access": "La vedono tutti i ruoli che vedono gli impianti (permesso «Vedere gli impianti con calcoli, progetti e tavole»; con la matrice predefinita tutti). È di sola lettura: non salva nulla. «Modifica il progetto» e «Apri il progetto» compaiono a chi disegna il progetto (predefinito: Titolare, Capotecnico, Progettista) su un impianto non archiviato.",
+      "reach": "Dalla scheda «Simulazione» della barra dell’impianto; da «▶ Simula» su una verifica del Progetto o del progetto salvato (la pagina si apre con quella prova già avviata); dal pulsante «Simulazione» nella pagina di un progetto salvato.",
+      "purpose": [
+        "La scena 3D e i grafici dell’impianto, con le stesse forze delle verifiche: scegli uno scenario e avvialo. Servono a capire il comportamento dell’impianto, non sostituiscono le prove in sito.",
+        "Si simula un progetto salvato (l’ultimo, oppure quello da cui sei arrivato) o la bozza del Progetto, quando è completa. Il software ricalcola tutto con la versione attuale: la simulazione non legge valori calcolati e conservati."
+      ],
+      "shots": [
+        {
+          "id": "simulazione-pagina",
+          "what": "La pagina «Simulazione»: la barra dei passi, la scelta tra progetto salvato e bozza, i valori calcolati e l’inizio della scena 3D"
+        },
+        {
+          "id": "progetto-3d",
+          "what": "La scena 3D con la vista «Cabina», gli scenari con la loro riga di spiegazione e i grafici sotto"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Intestazione e cosa simulare",
+          "intro": [
+            "In cima trovi il percorso (Impianti › nome dell’impianto › Simulazione), la barra dei passi con la scheda «Simulazione» evidenziata, il titolo «Simulazione» e la frase «Il comportamento dell’impianto con le stesse forze delle verifiche: scegli uno scenario e avvialo.»",
+            "Sotto, la scelta «Cosa simulare»: «Progetto salvato · ‹nome› · ‹data›» e, se c’è, «Bozza del progetto · ‹data›». Quella che stai guardando è evidenziata; un clic sull’altra la apre. Senza progetto salvato la pagina mostra la bozza."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Modifica il progetto",
+              "help": "Apre il Progetto dell’impianto (con la sua bozza). Solo per chi disegna il progetto, su un impianto non archiviato.",
+              "src": "src/app/[locale]/app/projects/[id]/simulazione/page.tsx:54"
+            },
+            {
+              "label": "Progetto salvato · ‹nome› · ‹data› / Bozza del progetto · ‹data›",
+              "help": "Scelgono che cosa simulare: il progetto salvato (quello da cui sei arrivato, altrimenti l’ultimo) o la bozza del Progetto.",
+              "src": "src/app/[locale]/app/projects/[id]/simulazione/page.tsx:58-69"
+            }
+          ],
+          "notes": [
+            "Una bozza a cui mancano dati non si simula: al posto del collegamento leggi «Bozza del progetto: manca 1 dato» (o «mancano ‹n› dati»); una bozza su un Calcolo argano da aggiornare: «Bozza del progetto: il suo calcolo argano va aggiornato».",
+            "Un progetto salvato con una versione precedente del software si simula lo stesso, ricalcolato: compare «Questo progetto è stato salvato con una versione precedente del software: la simulazione lo ricalcola con quella attuale.»",
+            "Senza nulla da simulare compare «Niente da simulare per ora» con «La simulazione parte da un progetto del vano salvato, o da una bozza completa del progetto.» (o «La bozza del progetto non è ancora completa: finiscila nel Progetto.») e, per chi disegna il progetto, «Apri il progetto»."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Valori calcolati",
+          "intro": [
+            "La stessa striscia del Progetto: cabina, portata, masse, corsa, velocità e macchina, con il verdetto del collaudo e le sigle delle norme (descritta nel capitolo «Progetto — disegno e verifiche»)."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": []
+        },
+        {
           "title": "Simulazione 3D",
           "intro": [
             "La scena mostra vano, cabina, contrappeso, funi e macchina. Trascina per ruotare, tasto destro o due dita per spostare, rotella o pizzico per ingrandire; da tastiera frecce per spostare, Maiusc + frecce per ruotare, + e − per ingrandire o ridurre; doppio clic per tornare alla vista iniziale.",
@@ -1118,8 +1247,8 @@
               "default": "Corsa dal piano principale all’ultimo, con la portata.",
               "required": "no",
               "help": [
-                "Scegliendo uno scenario la simulazione riparte da sola con i parametri di partenza. Usa le stesse forze delle verifiche.",
-                "«Carico al 125%»: cabina al piano, freno chiuso, entrano persone fino a 1,25 volte la portata. «Cabina bloccata»: il contrappeso poggia sugli ammortizzatori e la macchina continua a girare in salita; le funi devono slittare."
+                "Ogni scenario porta sotto il nome una riga che dice cosa prova: «Corsa» — «Da un piano all’altro, con il carico che scegli»; «Frenata di emergenza» — «Arresto con il freno: le funi tengono?»; «Carico al 125%» — «1,25 volte la portata al piano: le funi tengono?»; «Cabina bloccata» — «Contrappeso sugli ammortizzatori: le funi devono slittare»; «Ammortizzatori» — «Urto sugli ammortizzatori a 1,15 volte la velocità».",
+                "Scegliendo uno scenario la simulazione riparte da sola con i parametri di partenza. Usa le stesse forze delle verifiche."
               ],
               "src": "src/components/lift/SimControls.tsx:254"
             },
@@ -1252,113 +1381,39 @@
           ]
         },
         {
-          "title": "Verifiche",
+          "title": "Verifiche che la simulazione riproduce",
           "intro": [
-            "Un’unica tabella con tutte le verifiche: prima quelle della macchina (trazione, funi, azionamento, freno, soccorso), poi quelle del vano (pianta, sezione, locale macchina, putrelle sotto la macchina). Sopra il titolo è indicata la norma del collaudo."
+            "Sotto la scena, la tabella delle sole verifiche che la simulazione sa rifare (trazione, freno, ammortizzatori, rifugi, carico al 125 %, blocco), con le stesse colonne della scheda «Verifiche» del Progetto: prima quelle da guardare, poi le altre richiuse. Se nessuna di queste è da guardare leggi «Nessuna di queste verifiche è non superata o con «Attenzione».»."
           ],
-          "fields": [
-            {
-              "label": "Verifica / Valore / Limite / Esito",
-              "kind": "tabella",
-              "unit": "secondo la verifica",
-              "values": "Limite con ≤ o ≥; Esito: OK, Attenzione, Non soddisfatta, Info (Esistente per le parti che restano)",
-              "default": "Calcolata.",
-              "required": "no",
-              "help": [
-                "Per ogni riga leggi il valore calcolato e il limite della norma (con il punto citato nella relazione di calcolo, non qui).",
-                "In un intervento UNI 10411 una verifica su una parte che resta com’è mostra «Esistente» e, accanto, il risultato del calcolo: non entra nell’esito del collaudo."
-              ],
-              "src": "src/components/lift/LiftChecks.tsx:41"
-            }
-          ],
+          "fields": [],
           "actions": [
             {
               "label": "▶ Simula",
-              "help": "Dove la simulazione può riprodurre una verifica (trazione, freno, ammortizzatori, rifugi, carico al 125 %, blocco) il pulsante porta in alto il simulatore e rifà quella prova nella vista adatta.",
-              "src": "src/components/lift/LiftChecks.tsx:29"
+              "help": "Rifà quella prova qui: porta in vista il simulatore, sceglie lo scenario e la vista adatti e la avvia.",
+              "src": "src/components/lift/LiftChecks.tsx:46; src/components/simulazione/SimulazioneVista.tsx:43"
             }
           ],
           "notes": []
-        },
-        {
-          "title": "Distinta staffe Panev",
-          "intro": [
-            "Appare solo se l’impianto ha staffe di catalogo. Con un intervento UNI 10411 conta solo le staffe delle parti sostituite."
-          ],
-          "fields": [
-            {
-              "label": "Codice / Articolo / Q.tà / Prezzo / Importo",
-              "kind": "tabella",
-              "unit": "€ (prezzo e importo)",
-              "values": "Prezzo e Importo solo con il diritto sui prezzi; «a preventivo» dove manca il prezzo",
-              "default": "Calcolata.",
-              "required": "no",
-              "help": [
-                "Per ogni articolo: codice, tipo e misura, pagina del catalogo, eventuale taglio o «su disegno esecutivo», e «più corta della soglia: da verificare».",
-                "Sotto vedi il «Totale, IVA esclusa» e l’avviso su staffe del contrappeso senza articolo a catalogo."
-              ],
-              "src": "src/components/shaft/PanevBom.tsx:30"
-            }
-          ],
-          "actions": [],
-          "notes": [
-            "Due bride N1 per staffa, tasselli e bulloneria non sono inclusi."
-          ]
-        },
-        {
-          "title": "Barra di salvataggio",
-          "intro": [
-            "In fondo allo schermo. Il server ricompone il disegno sul calcolo argano, rifà tutti i calcoli e salva progetto del vano e calcolo insieme: non prende nulla di calcolato dal browser."
-          ],
-          "fields": [
-            {
-              "label": "Nome del progetto (facoltativo)",
-              "kind": "testo",
-              "unit": null,
-              "values": "fino a 120 caratteri",
-              "default": "Vuoto: la pagina del progetto usa il titolo «Progetto dell’impianto».",
-              "required": "no",
-              "help": [
-                "Un nome che ti aiuta a riconoscere la versione tra «Versioni salvate»."
-              ],
-              "src": "src/components/lift/ProgettoWorkspace.tsx:252"
-            }
-          ],
-          "actions": [
-            {
-              "label": "Salva il progetto",
-              "help": "Salva una nuova versione immutabile. Il pulsante è attivo solo con i dati completi, a schermo aggiornato, senza voci da correggere e senza il tipo da rivedere. Durante il salvataggio dice «Salvataggio…». Al termine si apre la pagina «Progetto dell’impianto».",
-              "src": "src/components/lift/ProgettoWorkspace.tsx:253"
-            }
-          ],
-          "notes": [
-            "Messaggio a lato: con dati mancanti leggi «Manca # dato del progetto» (o «Mancano # dati»); con voci da correggere, «Da correggere per salvare:» con collegamenti ai campi; altrimenti «Il server ricompone il disegno…». Gli errori del server compaiono in rosso accanto al pulsante."
-          ],
-          "warnings": [
-            "Il salvataggio crea un record immutabile: salvare di nuovo crea una nuova versione, la precedente resta.",
-            "Il pulsante resta disattivato con dati mancanti, voci da correggere o tipo di intervento da rivedere («Solo argano» con corsa o velocità diverse dal libretto): porta i valori nel calcolo."
-          ]
         }
       ],
       "tips": [
-        "Usa «▶ Simula» sulle verifiche che non passano: vedere la prova in 3D chiarisce spesso cosa correggere.",
-        "Prima di salvare controlla nel riquadro «Il progetto completa il calcolo» (capitolo precedente) che la corsa sia quella del libretto."
+        "Per vedere un progetto ancora da salvare, lascia la pagina del Progetto con tutti i dati inseriti: la bozza si salva da sola e qui compare «Bozza del progetto»."
       ]
     },
     {
       "id": "progetto-salvato",
       "title": "Progetto dell’impianto",
       "path": "/it/app/lift-designs/‹id›",
-      "access": "La vedono tutti i ruoli con il permesso «Vedere gli impianti con calcoli, progetti e tavole» (Titolare, Capotecnico, Progettista, Tecnico, Commerciale). «Modifica il disegno» e «Aggiorna con il software attuale» solo con «Progetto: disegnare il vano o rilevare il locale macchina» (Capotecnico, Progettista, Titolare) e su impianto non archiviato. Scaricare PDF, DXF, DWG, SVG e relazione: «Scaricare relazioni, tavole, DXF, DWG e SVG, bozze d’ordine e documenti caricati» (tutti). L’emissione delle tavole: «Emettere le tavole e le relazioni tecniche di modifica, con le loro revisioni» (Capotecnico, Progettista). I prezzi: «Vedere i prezzi e il listino» (Titolare, Capotecnico, Commerciale). Il Titolare ha tutti i permessi e può cambiare la matrice.",
-      "reach": "Dopo «Salva il progetto»; dalla pagina dell’impianto con «Apri il progetto» (ultima versione), oppure dalla tabella «Versioni salvate» (compare con più di una versione).",
+      "access": "La vedono tutti i ruoli con il permesso «Vedere gli impianti con calcoli, progetti e tavole» (Titolare, Capotecnico, Progettista, Tecnico, Commerciale). «Modifica il disegno» e «Aggiorna con il software attuale» solo con «Progetto: disegnare il vano o rilevare il locale macchina» (Capotecnico, Progettista, Titolare) e su impianto non archiviato. Il Titolare ha tutti i permessi e può cambiare la matrice.",
+      "reach": "Dopo «Salva il progetto»; dalla scheda «Progetto» della barra a chi non disegna il progetto; dalla panoramica dell’impianto con «Apri il progetto» (ultima versione), oppure dalla tabella «Versioni salvate» (compare con più di una versione).",
       "purpose": [
-        "La versione salvata del progetto, in sola lettura: lo stesso 3D e le stesse verifiche della pagina Progetto, ricalcolati dai dati inseriti, con i documenti prodotti dai suoi dati. Sotto l’intestazione trovi la data, l’autore e l’esito.",
+        "La versione salvata del progetto, in sola lettura: i valori calcolati e le verifiche, ricalcolati dai dati inseriti. Sotto l’intestazione trovi la data, l’autore e l’esito. La simulazione e i documenti hanno ognuno la sua pagina: ci arrivi con i pulsanti sotto l’intestazione.",
         "I documenti si generano solo finché il software attuale riproduce lo stesso progetto (stessa impronta SHA-256). Se il software è cambiato compare un avviso e il progetto va rifatto con «Aggiorna con il software attuale»."
       ],
       "shots": [
         {
           "id": "lift-designs",
-          "what": "Pagina del progetto salvato con avviso, valori calcolati e riquadro «Documenti»"
+          "what": "Pagina del progetto salvato: intestazione, i pulsanti «Simulazione», «Tavole e documenti» e «Relazione tecnica di modifica», valori calcolati e verifiche"
         }
       ],
       "sections": [
@@ -1372,7 +1427,7 @@
             {
               "label": "Modifica il disegno",
               "help": "Riapre il Progetto con i dati di questa versione e sullo stesso calcolo.",
-              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:102"
+              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:71"
             }
           ],
           "notes": []
@@ -1398,116 +1453,45 @@
           ]
         },
         {
-          "title": "Valori, 3D, verifiche e distinta",
+          "title": "Simulazione, tavole e documenti",
           "intro": [
-            "Seguono gli stessi riquadri della pagina Progetto, ma di sola lettura: «Valori calcolati», «Simulazione 3D», «Verifiche» (con «▶ Simula») e «Distinta staffe Panev». Poi, se hai il diritto, il costo calcolato con il listino dell’azienda e il consiglio sulla macchina."
+            "Sotto l’intestazione e gli avvisi, tre pulsanti portano alle pagine che partono da questo progetto."
           ],
           "fields": [],
-          "actions": [],
+          "actions": [
+            {
+              "label": "Simulazione",
+              "help": "Apre la pagina «Simulazione» su questo progetto.",
+              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:96"
+            },
+            {
+              "label": "Tavole e documenti",
+              "help": "Apre la pagina «Tavole e documenti» su questo progetto: tavole da scaricare o da emettere, relazione di calcolo, pianta in DXF e SVG, distinta, costo e bozza d’ordine (capitolo sui documenti).",
+              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:97"
+            },
+            {
+              "label": "Relazione tecnica di modifica",
+              "help": "Compare solo per un intervento su un ascensore esistente (UNI 10411): apre la relazione tecnica di modifica dell’impianto.",
+              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:98"
+            }
+          ],
           "notes": []
         },
         {
-          "title": "Documenti",
+          "title": "Valori e verifiche",
           "intro": [
-            "«Relazione di calcolo, pianta in DXF e SVG e tavole si fanno dagli stessi dati, con un clic.» Se il software è cambiato leggi «I documenti non si generano finché il progetto non viene salvato di nuovo con il software attuale»."
+            "Seguono, di sola lettura, la striscia dei «Valori calcolati» e le «Verifiche» come nel Progetto: prima quelle da guardare, poi le altre richiuse (aperte in «Esperto»)."
           ],
           "fields": [],
           "actions": [
             {
-              "label": "Relazione di calcolo (PDF)",
-              "help": "Scarica la relazione di calcolo del calcolo argano. Serve il diritto di scaricare i documenti.",
-              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:136"
-            },
-            {
-              "label": "Pianta del vano (DXF)",
-              "help": "Scarica la pianta del vano in DXF.",
-              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:137"
-            },
-            {
-              "label": "Pianta del vano (SVG)",
-              "help": "Scarica la pianta del vano in SVG.",
-              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:138"
-            },
-            {
-              "label": "Calcolo della macchina",
-              "help": "Apre la pagina del calcolo argano.",
-              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:139"
-            },
-            {
-              "label": "Progetto del vano",
-              "help": "Apre la pagina «Progetto del vano», descritta qui sotto.",
-              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:140"
-            },
-            {
-              "label": "Apri la relazione tecnica di modifica",
-              "help": "Compare solo per un intervento su un ascensore esistente (UNI 10411): apre la relazione tecnica di modifica.",
-              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:142"
-            },
-            {
-              "label": "PDF delle tavole (bozza)",
-              "help": "Il PDF delle tavole non ancora emesse, sotto il titolo «Esporta il progetto».",
-              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:150"
-            },
-            {
-              "label": "DXF (tutte le viste)",
-              "help": "Tutte le viste del progetto in millimetri, a grandezza naturale, con i layer per tipo di parte.",
-              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:151"
-            },
-            {
-              "label": "DWG (tutte le viste)",
-              "help": "Le stesse viste in DWG.",
-              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:152"
-            },
-            {
-              "label": "SVG (tutti i fogli, ZIP)",
-              "help": "Gli stessi fogli del PDF (foglio 1 e verifiche compresi), un file per foglio in un archivio ZIP, alla scala di stampa e con il carattere incorporato.",
-              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:153"
-            },
-            {
-              "label": "Bozza d’ordine Word (DOCX)",
-              "help": "Nel riquadro «Bozza d’ordine dell’argano»: l’argano con i dati per il costruttore. Mostra se la macchina è quella verificata o la prima del confronto SICOR / Montanari; i campi esecuzione, prezzo e consegna restano vuoti. La bozza non c’è se l’argano esistente resta (nessun ordine) oppure se nessun argano SICOR o Montanari a catalogo prende l’impianto («Nessun argano SICOR o Montanari a catalogo prende questo impianto: niente bozza d’ordine»).",
-              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:166"
-            },
-            {
-              "label": "Bozza d’ordine PDF",
-              "help": "La stessa bozza in PDF.",
-              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:167"
+              "label": "▶ Simula",
+              "help": "Apre la pagina «Simulazione» su questo progetto, con quella prova già avviata.",
+              "src": "src/components/lift/LiftRiepilogo.tsx"
             }
           ],
-          "notes": [],
-          "warnings": [
-            "Se il software è cambiato i documenti non si generano: «I documenti non si generano finché il progetto non viene salvato di nuovo con il software attuale»."
-          ]
-        },
-        {
-          "title": "Tavole di progetto (emissione)",
-          "intro": [
-            "Per Capotecnico, Progettista e Titolare compare il riquadro «Tavole di progetto»: «Il progetto dell’ascensore in tavole A4: dati dell’impianto, piante e sezioni del vano, locale macchina, carichi sull’edificio». Da qui parte l’emissione."
-          ],
-          "fields": [
-            {
-              "label": "Iniziali di chi disegna",
-              "kind": "testo",
-              "unit": null,
-              "values": "fino a 12 caratteri",
-              "default": "Le iniziali del tuo nome.",
-              "required": "sì",
-              "help": [
-                "Vanno nel cartiglio delle tavole. L’emissione è descritta nel capitolo dedicato alle tavole."
-              ],
-              "src": "src/components/tavole/IssueForm.tsx:65"
-            }
-          ],
-          "actions": [
-            {
-              "label": "Emetti le tavole",
-              "help": "Emette la serie di tavole con numero e revisione. Prima dell’emissione il riquadro segnala i dati dell’impianto mancanti (matricola, committente) e il nome della macchina che non coincide con quella del calcolo.",
-              "src": "src/components/tavole/IssueForm.tsx:86"
-            }
-          ],
-          "notes": [],
-          "warnings": [
-            "L’emissione crea una serie di tavole con numero e revisione: un’emissione non si cancella."
+          "notes": [
+            "Se il progetto salvato non si legge con il software attuale, al posto di valori e verifiche compare «Il progetto salvato non si legge con la versione attuale del software»."
           ]
         }
       ],

@@ -19,7 +19,7 @@ export async function progettoFlow({ BASE, page, hydrated, stamp }) {
   // the installation: «Intervento da definire», its next step the calculation
   await page.goto(projectUrl);
   assert.match(await page.textContent('.page-head .titles .tipo-badge'), /Intervento da definire/);
-  assert.equal(await page.getAttribute('.page-head .actions a.btn-primary', 'href'), `${new URL(projectUrl).pathname}/calc`, 'the next step: the calculation');
+  assert.equal(await page.getAttribute('.imp-next a.btn-primary', 'href'), `${new URL(projectUrl).pathname}/calc`, 'the next step: the calculation');
   await page.goto(`${projectUrl}/progetto`);
   assert.match(await page.textContent('main .progetto-vuoto'), /Il progetto parte dal calcolo argano/, 'nothing to draw on yet');
   await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main .progetto-vuoto a[href$="/calc"]')]);
@@ -59,8 +59,8 @@ export async function progettoFlow({ BASE, page, hydrated, stamp }) {
   step('trasformazione completa: its calculation names the base, its set says the type');
   await page.goto(baseUrl);
   assert.equal(await page.locator(`section[aria-labelledby="calc-progetto"] a[href*="/lift-designs/"]`).count(), 1, 'the design on its base');
-  await page.goto(liftUrl);
-  const relHref = await page.getAttribute('.doc-links a[href*="/relazione"]', 'href');
+  await documentiOf(page, liftUrl);
+  const relHref = await page.getAttribute(REL, 'href');
   const calcId = /\/api\/calculations\/([a-z0-9]+)\/relazione/.exec(relHref ?? '')?.[1];
   assert.ok(calcId && calcId !== baseId, 'the design’s own calculation');
   await page.goto(`${BASE}/it/app/calculations/${calcId}`);
@@ -68,7 +68,7 @@ export async function progettoFlow({ BASE, page, hydrated, stamp }) {
   const rel = await page.request.get(`${BASE}${relHref}`);
   assert.equal(rel.status(), 200);
   assert.equal((await rel.body()).subarray(0, 5).toString('latin1'), '%PDF-');
-  await page.goto(liftUrl);
+  await documentiOf(page, liftUrl);
   await page.fill('main form input[maxlength="12"]', 'S.T.');
   await Promise.all([page.waitForURL(/\/drawing-sets\/[a-z0-9]+$/, { timeout: 60000 }), page.click('main form:has(input[maxlength="12"]) button[type="submit"]')]);
   await page.waitForSelector('.sheet-page svg.sheet-svg');
@@ -115,6 +115,7 @@ export async function keptProgetto({ page, hydrated, keptUrl }) {
   await page.waitForSelector('.lift-work .savebar button.btn-primary:not([disabled])', { timeout: 60000 });
   await page.fill('.lift-work .savebar input', 'Argano esistente');
   await Promise.all([page.waitForURL(/\/lift-designs\/[a-z0-9]+$/, { timeout: 60000 }), page.click('.lift-work .savebar button.btn-primary')]);
+  await documentiOf(page, page.url());
   await page.fill('main form input[maxlength="12"]', 'S.T.');
   await Promise.all([page.waitForURL(/\/drawing-sets\/[a-z0-9]+$/, { timeout: 60000 }), page.click('main form:has(input[maxlength="12"]) button[type="submit"]')]);
   await page.waitForSelector('.sheet-page svg.sheet-svg');
@@ -128,6 +129,15 @@ async function shownOf(page, url) {
   await page.goto(url);
   const dd = page.locator('.cartiglio dd');
   return { verdict: await dd.nth(0).textContent(), machine: await dd.nth(3).textContent(), checks: await page.textContent('#checks') };
+}
+
+/** The calculation's report among the documents. */
+const REL = '.doc-links a[href^="/api/calculations/"][href$="/relazione"]';
+
+/** «Tavole e documenti» of a saved design (round 53: out of the design's page), from the design's page. */
+async function documentiOf(page, liftUrl) {
+  await page.goto(liftUrl);
+  await Promise.all([page.waitForURL(/\/documenti\?design=[a-z0-9]+$/, { timeout: 30000 }), page.click('main .doc-links a[href*="/documenti?design="]')]);
 }
 
 async function progettoLoop({ BASE, page, hydrated, liftUrl }) {
@@ -157,7 +167,8 @@ async function progettoLoop({ BASE, page, hydrated, liftUrl }) {
   assert.notEqual(again, liftUrl, 'a new design');
   assert.equal(await page.locator('main .ridisegna').count(), 0, 'on the latest calculation');
   assert.equal(await page.getAttribute('main .progetto-base a', 'href'), `/it/app/calculations/${latestId}`, 'it names its base');
-  const relHref = await page.getAttribute('.doc-links a[href*="/relazione"]', 'href');
+  await documentiOf(page, again);
+  const relHref = await page.getAttribute(REL, 'href');
   const calcId = /\/api\/calculations\/([a-z0-9]+)\/relazione/.exec(relHref ?? '')?.[1];
   // every input the form shows the same, the same results (round 46: the values the form does not show are saved at the
   // engine's own, the drawing's calculation holds the drawing's — their hashes differ, nothing else; calc-saved.ts)

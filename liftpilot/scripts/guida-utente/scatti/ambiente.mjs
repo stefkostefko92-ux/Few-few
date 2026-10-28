@@ -124,6 +124,16 @@ export async function modalita(page, m) {
   await page.waitForSelector(`[data-modalita="${m}"]`);
   await page.waitForTimeout(400);
 }
+/** A field of a form that shows one step at a time («Semplice», round 53): its step shown first — the event the bar of the
+ *  steps sends (components/passi/mostra.ts) —, then the field in view. */
+export async function inVista(page, sel) {
+  await page.waitForSelector(sel, { state: 'attached' });
+  await page.evaluate((s) => {
+    const box = globalThis.document.querySelector(s)?.closest('[data-passo][hidden]');
+    if (box) globalThis.document.dispatchEvent(new globalThis.CustomEvent('passo-mostra', { detail: box.getAttribute('data-passo') }));
+  }, sel);
+  await page.waitForSelector(sel, { state: 'visible' });
+}
 /** The link of an e-mail to /it/<path>, its token in the fragment. */
 export const linkIn = (mail, path) => {
   const m = new RegExp(`https?://[^\\s"<>]+/it/${path}#([A-Za-z0-9_-]{43})`).exec(mail.text);

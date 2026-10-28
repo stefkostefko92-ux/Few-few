@@ -416,13 +416,28 @@ src/components/lift/ Екранът Progetto (кръг 45; до него LiftWor
                      (състоянието — геометрията и какво липсва заедно, сглобена върху „Calcolo argano“, изведеното на живо,
                      запис, чернова, „Porta nel calcolo“) + ProgettoForm (лявата колона) + ProgettoFuni (въжетата в чертежа,
                      превключвателите) + DalCalcolo (основата, само за четене) + DifferenzeCalcolo (какво допълва чертежът)
-                     + missing-items (имената в списъка какво липсва), LiftView
-                     (записан проект), LiftSimulator
+                     + missing-items (имената в списъка какво липсва), ProgettoRisultati (дясната страна от кръг 53:
+                     обобщението, сравнението, табовете «Disegno»/«Verifiche»), progetto-uno (една стъпка наведнъж в
+                     «Semplice»), LiftRiepilogo (записаният проект: обобщението и проверките), LiftSimulator
                      (сцена, HUD, изгледи, сценарии, часовник), SimCharts (малки графики по една величина, курсор, подсказка),
-                     LiftChecks (всяка проверка с бутон „Симулирай“), LiftFacts (изведеното с произход), MachineAdvice
+                     LiftChecks (първо проверките за гледане — `problemiCollaudo`, другите затворени; „Simula“ тук или към Simulazione), LiftFacts (изведеното с произход), MachineAdvice
                      (проверява моделите на части в браузъра, „Usa questo argano“ — и в калкулатора на подмяната) + AdviceView
                      (картите, причината, таблицата с всички и отпадналите, алтернативата с ролка; само за четене на записаните
                      проект и изчисление).
+src/lib/impianto/schede.ts, src/server/impianto/schede.ts, src/components/impianto/  Лентата на съоръжението (кръг 53):
+                     Panoramica и шестте стъпки със състоянието им (`schedeDi` — чисто, от записите; `prossimoDi` —
+                     «Prossimo passo»), зареждането (`schedeImpianto`: леките заявки и адресите по правата), ImpiantoNav
+                     (лентата на всяка страница на съоръжението), TabCorrente, ProssimoPasso (панорамата).
+src/components/passi/mostra.ts  Събитието `passo-mostra`: връзка към поле или стъпка показва скритата стъпка, преди да
+                     отиде там (BarraPassi, MissingPanel, progetto-uno, ProgettoRisultati).
+src/app/[locale]/app/projects/[id]/simulazione, src/server/simulazione.ts, src/lib/lift/progetto-bozza.ts,
+src/components/simulazione/  Simulazione (кръг 53): запазеният проект или пълната чернова на Progetto (`mancantiDi`,
+                     `inputsDellaBozza`), изведени в браузъра (SimulazioneVista: LiftFacts, LiftSimulator, LiftChecks
+                     `solo="simulabili"`); `?verifica=` пуска сценария на проверката.
+src/app/[locale]/app/projects/[id]/documenti, src/components/documenti/  Tavole e documenti (кръг 53): DocumentiProgetto
+                     (проектът на асансьора: износ, издаване, relazione di calcolo, плана, MaterialiProgetto, цена,
+                     поръчка), DocumentiLocale (машинното на подмяната), TavoleEmesse (издадените серии); `?design=` —
+                     поисканият запис, иначе проектът на съоръжението (`collegamentoImpianto`).
 src/app/             [locale]/… страниците, api/ (health, logout — „Esci“ като обикновен POST само от страниците на приложението
                      (`lib/same-origin.ts`), billing/webhook — Stripe с проверен подпис, relazione PDF, DXF и SVG на проект
                      на шахтата (shaft-designs/<id>/dxf|svg), PDF и dxf|dwg|svg на комплект, lista-verifica,
@@ -638,7 +653,7 @@ src/app/[locale]/app/projects/[id]/relazione-tecnica  Работното мяс�
                      компоненти, файлове, подписи и издаване); src/app/[locale]/app/relazioni/[id] — издадената.
 src/components/rt/   Картите на работното място (CardAnagrafica + AnagraficaForm, CardModifica, CardSezioni + Campo + campi,
                      CardAllegati, CardFirme), RtWorkspace (състоянието, живото обобщение, диалогът за издаване), RtEsito,
-                     BaseStato, RelazioniEmesse (списъкът в TavoleSection), rt.css.
+                     BaseStato, RelazioniEmesse (списъкът на работното място), rt.css.
 src/components/allegati/ AllegatiPanel (картата: качване, таван, списък), AllegatoUpload (формата с напредък, XHR),
                      AllegatiList (таблицата, промяна на място, изтриване в две стъпки), options (видовете и разделите).
 scripts/             keep-rt-pdfs.ts (пазените тела на relazioni при `npm run pdf:keep`), rt-golden-export.ts (golden на

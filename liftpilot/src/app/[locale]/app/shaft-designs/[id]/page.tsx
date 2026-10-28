@@ -13,6 +13,7 @@ import { getShaftDesign } from '@/server/queries';
 import { visiblePrices } from '@/server/prices';
 import VerdictPill from '@/components/VerdictPill';
 import Crumbs from '@/components/Crumbs';
+import ImpiantoNav from '@/components/impianto/ImpiantoNav';
 import ShaftViews from '@/components/shaft/ShaftViews';
 import ShaftResults from '@/components/shaft/ShaftResults';
 import PanevBom from '@/components/shaft/PanevBom';
@@ -41,6 +42,7 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${d.projectId}`, label: d.project.name }, { label: t('title') }]} />
+      <ImpiantoNav user={user} projectId={d.projectId} corrente="panoramica" />
       <div className="page-head">
         <div className="titles"><h1>{t('title')}{d.label ? ` · ${d.label}` : ''}</h1></div>
         <div className="actions">

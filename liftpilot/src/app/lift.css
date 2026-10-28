@@ -228,10 +228,12 @@ html.sim-full-open { overflow: hidden; }
 .sim-chart .tip .when { color: var(--muted); font-size: 11.5px; }
 
 /* every check */
-.lift-checks { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.lift-checks { display: flex; flex-direction: column; gap: 10px; min-width: 0; container: checks / inline-size; }
 .lift-checks tbody th { text-align: left; font: 500 13.5px/1.4 var(--font-body); color: var(--ink); background: none; letter-spacing: 0; text-transform: none; white-space: normal;
   padding: 11px 12px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; min-width: 16rem; }
 .lift-checks tbody tr:last-child th { border-bottom: 0; }
+/* beside the drawing (the Progetto's right column, round 53): the check's name narrower, so «Simula» stays in view */
+@container checks (max-width: 760px) { .lift-checks tbody th { min-width: 10rem; } }
 .lift-checks td.num, .lift-checks th.num { text-align: right; font-family: var(--font-mono); white-space: nowrap; }
 .lift-checks td:last-child { text-align: right; white-space: nowrap; }
 /* a check of a part that stays as it is: out of the acceptance test's result, with what the calculation gives */

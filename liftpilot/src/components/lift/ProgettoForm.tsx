@@ -8,7 +8,9 @@
 // (blankProgetto); the software's own values (rails, allowances, heights, niches, frames…) come once its data are in.
 // Round 52: every field with its «?» (messages/aiuto/progetto.json); the rare refinements (the software's choices in the
 // shaft, niches, headroom walls, frames, linings) are marked `esperto` in their components — hidden in «Semplice». The
-// sections carry their numbers in the bar of the steps (ProgettoWorkspace).
+// sections carry their numbers in the bar of the steps (ProgettoWorkspace). Round 53: each step a box of its own
+// (`data-passo`); in «Semplice» only the step chosen is shown, with the way to the one before and after (passi/mostra.ts).
+import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { testoAiuto } from '@/lib/aiuto';
 import { passoId, type PassoProgetto } from '@/lib/passi-moduli';
@@ -69,10 +71,23 @@ interface Props {
   calate?: { Do: number; fix(): void } | null;
   /** the sections' numbers in the bar of the steps (round 52) */
   numeri?: Partial<Record<PassoProgetto, number>>;
+  /** the steps one at a time («Semplice», round 53): the step shown, the steps before and after it and the way to them;
+   *  absent: every step */
+  uno?: Uno | null;
 }
 
-export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc, h, derived, blank, texts, source, setShaft, setSize, onSurvey, setAuto, setBottom, porta, calate = null, numeri = {} }: Props) {
-  const t = useTranslations('lift'), ts = useTranslations('shaft'), tp = useTranslations('progetto'), is = blank.is;
+export interface Uno {
+  attivo: string;
+  prima: { id: string; label: string } | null;
+  dopo: { id: string; label: string } | null;
+  vai(id: string): void;
+}
+
+export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc, h, derived, blank, texts, source, setShaft, setSize, onSurvey, setAuto, setBottom, porta, calate = null, numeri = {}, uno = null }: Props) {
+  const t = useTranslations('lift'), ts = useTranslations('shaft'), tp = useTranslations('progetto'), tpa = useTranslations('passi'), is = blank.is;
+  const blocco = (k: PassoProgetto, children: ReactNode) => (
+    <div className="passo-blocco" data-passo={passoId(k)} hidden={!!uno && uno.attivo !== passoId(k)}>{children}</div>
+  );
   // the machine room comes with a machine above; the pulley room with a machine below whose pulleys stand over the slab
   // (scheme room): the room the sheets and the 3D draw and the checks measure
   const above = inp.calc.layout !== 'bottom';
@@ -89,38 +104,50 @@ export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc
   const fromCalc = tp('fromCalc'), locale = { id: passoId('locale'), n: numeri.locale };
   return (
     <form className="lift-form panel" autoComplete="off" noValidate onSubmit={(e) => e.preventDefault()}>
-      <DalCalcolo P={P} X={X} base={base} projectId={projectId} when={when} canCalc={canCalc} passo={numeri.base} />
-      <SectionTitle icon="building" id={passoId('vano')} className="passo-sez" passo={numeri.vano}>{t('s_shaft')}</SectionTitle>
-      <div className="form-grid">
-        {size('W')}
-        {size('D')}
-      </div>
-      <details className="survey">
-        <summary>{t('from_cad')}</summary>
-        <SurveyPanel onSurvey={onSurvey} />
-      </details>
-      <p className="note">{source ? ts('sourceCad', { file: source.file, format: source.format.toUpperCase() }) : ts('edited')}</p>
-      <ShaftOptions I={inp.shaft} set={setShaft} blank={blank} fixedQ={{ kg: inp.shaft.Q ?? 0, label: fromCalc }} />
-      {base.collaudo.aggiuntive?.includes('dm236') ? <p className="note">{tp('dm236')}</p> : null}
-      {blank.full ? (
-        <>
-          <ShaftTechOptions I={inp.shaft} set={setShaft} govSide={derived && !inp.shaft.governorSide ? derived.shaft.governorSide : undefined} />
-          <NicheOptions I={inp.shaft} set={setShaft} />
-          <HeadOptions I={inp.shaft} set={setShaft} />
-          <FrameOptions I={inp.shaft} set={setShaft} />
-          <ImbottiOptions I={inp.shaft} set={setShaft} />
-        </>
-      ) : null}
-      <SectionTitle icon="layers" id={passoId('piani')} className="passo-sez" passo={numeri.piani}>{t('s_floors')}</SectionTitle>
-      <VerticalOptions I={inp.shaft} set={setShaft} open blank={blank} fixedV={{ ms: inp.shaft.vertical.v, label: fromCalc }} />
-      {above ? (
+      {blocco('base', <DalCalcolo P={P} X={X} base={base} projectId={projectId} when={when} canCalc={canCalc} passo={numeri.base} />)}
+      {blocco('vano', <>
+        <SectionTitle icon="building" id={passoId('vano')} className="passo-sez" passo={numeri.vano}>{t('s_shaft')}</SectionTitle>
+        <div className="form-grid">
+          {size('W')}
+          {size('D')}
+        </div>
+        <details className="survey">
+          <summary>{t('from_cad')}</summary>
+          <SurveyPanel onSurvey={onSurvey} />
+        </details>
+        <p className="note">{source ? ts('sourceCad', { file: source.file, format: source.format.toUpperCase() }) : ts('edited')}</p>
+        <ShaftOptions I={inp.shaft} set={setShaft} blank={blank} fixedQ={{ kg: inp.shaft.Q ?? 0, label: fromCalc }} />
+        {base.collaudo.aggiuntive?.includes('dm236') ? <p className="note">{tp('dm236')}</p> : null}
+        {blank.full ? (
+          <>
+            <ShaftTechOptions I={inp.shaft} set={setShaft} govSide={derived && !inp.shaft.governorSide ? derived.shaft.governorSide : undefined} />
+            <NicheOptions I={inp.shaft} set={setShaft} />
+            <HeadOptions I={inp.shaft} set={setShaft} />
+            <FrameOptions I={inp.shaft} set={setShaft} />
+            <ImbottiOptions I={inp.shaft} set={setShaft} />
+          </>
+        ) : null}
+      </>)}
+      {blocco('piani', <>
+        <SectionTitle icon="layers" id={passoId('piani')} className="passo-sez" passo={numeri.piani}>{t('s_floors')}</SectionTitle>
+        <VerticalOptions I={inp.shaft} set={setShaft} open blank={blank} fixedV={{ ms: inp.shaft.vertical.v, label: fromCalc }} />
+      </>)}
+      {above ? blocco('locale', (
         <RoomOptions I={inp.shaft} set={setShaft} blank={blank} passo={locale}
           machine={derived ? { D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null, heb: derived.heb, turn: roomGeo(derived.layout, derived.machine)?.dir, kept } : undefined}
           panel={{ auto: !!inp.auto.panel, set: (on) => setAuto({ panel: on }), placed: derived && derived.origin.panel === 'auto' ? derived.shaft.room : null }} />
-      ) : pulley ? <RoomOptions I={inp.shaft} set={setShaft} blank={blank} pulley={pulley} passo={locale} /> : null}
-      <SectionTitle icon="gear" id={passoId('funi')} className="passo-sez" passo={numeri.funi}>{t('s_funi')}</SectionTitle>
-      <ProgettoFuni P={P} base={base.values} auto={inp.auto} bottom={inp.bottom} h={h} derived={derived} blank={blank} texts={texts} setAuto={setAuto} setBottom={setBottom}
-        t={(k, v) => t(k, v)} porta={porta ? { ...porta, label: tp('porta') } : null} calate={calate} kept={kept} />
+      )) : pulley ? blocco('locale', <RoomOptions I={inp.shaft} set={setShaft} blank={blank} pulley={pulley} passo={locale} />) : null}
+      {blocco('funi', <>
+        <SectionTitle icon="gear" id={passoId('funi')} className="passo-sez" passo={numeri.funi}>{t('s_funi')}</SectionTitle>
+        <ProgettoFuni P={P} base={base.values} auto={inp.auto} bottom={inp.bottom} h={h} derived={derived} blank={blank} texts={texts} setAuto={setAuto} setBottom={setBottom}
+          t={(k, v) => t(k, v)} porta={porta ? { ...porta, label: tp('porta') } : null} calate={calate} kept={kept} />
+      </>)}
+      {uno ? (
+        <div className="passo-nav">
+          {uno.prima ? <button type="button" className="btn" onClick={() => uno.prima && uno.vai(uno.prima.id)}>{tpa('indietro', { passo: uno.prima.label })}</button> : <span />}
+          {uno.dopo ? <button type="button" className="btn btn-primary" onClick={() => uno.dopo && uno.vai(uno.dopo.id)}>{tpa('avanti', { passo: uno.dopo.label })}</button> : null}
+        </div>
+      ) : null}
     </form>
   );
 }

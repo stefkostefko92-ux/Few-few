@@ -1,9 +1,7 @@
-/* Round 44 — a survey and its installation: the link panel on a survey's page, the four steps, the surveys and the
-   comparison on an installation's page, the Rilievi home, the mark «dal rilievo» in the forms. The one memorable piece
-   is the steps, drawn as the push buttons of a car's panel: a floor reached lights its ring, one to update or with
-   differences glows amber or red, one still to do stays dark with a dashed ring; the rope between them runs across on
-   wide screens and down on a phone. Everything else is the workspace's panels, tables and pills. Colours only from the
-   tokens of globals.css, but the steel of the survey's plate (rilievi.css) for its own mark. */
+/* Round 44 — a survey and its installation: the link panel on a survey's page, the surveys and the comparison on an
+   installation's page, the Rilievi home, the mark «dal rilievo» in the forms (the steps of the installation: its bar,
+   impianto.css, round 53). The workspace's panels, tables and pills. Colours only from the tokens of globals.css, but
+   the steel of the survey's plate (rilievi.css) for its own mark. */
 
 /* ---- the mark of a value measured in the survey: a small steel plate, like the lift's plate on the sheet ---------- */
 .badge.rilievo { margin-left: 6px; color: #dbe7ec; background: linear-gradient(180deg, #24414e, #132833); border-color: #5f8190;
@@ -12,46 +10,6 @@
   background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid #5f8190; border-radius: var(--radius); }
 .lk-avviso p { margin: 0; }
 .lk-avviso .alert { margin: 0; }
-
-/* ---- the steps: 1 Rilievo → 2 Calcolo argano → 3 Progetto → 4 Documenti e ordini --------------------------------- */
-.lk-steps-wrap { container: lksteps / inline-size; padding: 18px 20px; background: var(--panel-grad); border: 1px solid var(--rule);
-  border-radius: var(--radius); box-shadow: var(--panel-hi), var(--shadow); }
-.lk-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px 0; }
-.lk-step { position: relative; display: flex; flex-direction: column; gap: 10px; min-width: 0; padding-right: 12px; }
-/* the rope from this button to the next */
-.lk-step:not(:last-child)::after { content: ""; position: absolute; z-index: 0; top: 25px; left: 60px; right: 4px; height: 2px; border-radius: 1px;
-  background: var(--rule-strong); }
-.lk-step.ok:not(:last-child)::after { background: linear-gradient(90deg, var(--ok-line), var(--rule-strong)); }
-.lk-step-link { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; width: fit-content; max-width: 100%;
-  color: var(--ink); text-decoration: none; border-radius: 10px; }
-.lk-step-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
-.lk-btn { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; font: 800 20px/1 var(--font-body);
-  color: var(--dim); background: radial-gradient(circle at 36% 30%, #18323f 0%, #0a1923 62%, #050e15 100%); border: 2px dashed var(--rule-strong);
-  box-shadow: inset 0 2px 2px rgb(255 255 255 / .06), inset 0 -4px 7px rgb(0 0 0 / .55), 0 0 0 5px var(--bg-2); transition: border-color .15s, box-shadow .2s; }
-.lk-btn.ok { color: var(--ok); border: 2px solid var(--ok); box-shadow: inset 0 2px 2px rgb(255 255 255 / .06), inset 0 -4px 7px rgb(0 0 0 / .55), 0 0 0 5px var(--bg-2), 0 0 18px rgb(102 227 180 / .32); }
-.lk-btn.warn { color: var(--warn); border: 2px solid var(--warn); box-shadow: inset 0 2px 2px rgb(255 255 255 / .06), inset 0 -4px 7px rgb(0 0 0 / .55), 0 0 0 5px var(--bg-2), 0 0 18px rgb(231 189 117 / .3); }
-.lk-btn.fail { color: var(--fail); border: 2px solid var(--fail); box-shadow: inset 0 2px 2px rgb(255 255 255 / .06), inset 0 -4px 7px rgb(0 0 0 / .55), 0 0 0 5px var(--bg-2), 0 0 18px rgb(255 138 128 / .32); }
-a.lk-step-link:hover .lk-btn { border-color: var(--accent); }
-/* the next step to take: the cyan ring of the panel's «next floor» */
-.lk-step[aria-current="step"] .lk-btn { outline: 2px solid var(--accent); outline-offset: 3px; }
-.lk-step-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-@container lksteps (max-width: 760px) { .lk-step-text { padding-top: 3px; } }
-.lk-step-text strong { font: 700 15px/1.3 var(--font-body); letter-spacing: -.01em; }
-.lk-step-text .note { font-size: 12.5px; }
-.lk-step-state { font: 600 12.5px/1.35 var(--font-body); color: var(--muted); }
-.lk-step-state.ok { color: var(--ok); } .lk-step-state.warn { color: var(--warn); } .lk-step-state.fail { color: var(--fail); }
-.lk-moduli { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13px; line-height: 1.4; }
-.lk-moduli a { display: inline-flex; align-items: flex-start; gap: 6px; color: var(--ink-2); }
-.lk-moduli a:hover { color: var(--ink); }
-@container lksteps (max-width: 760px) {
-  .lk-steps { grid-template-columns: minmax(0, 1fr); }
-  .lk-step { padding-right: 0; }
-  .lk-step-link { flex-direction: row; gap: 12px; border-radius: 30px 10px 10px 30px; }
-  .lk-moduli { margin-left: 64px; }
-  .lk-step:not(:last-child)::after { top: 60px; bottom: -14px; left: 25px; right: auto; width: 2px; height: auto; }
-  .lk-step.ok:not(:last-child)::after { background: linear-gradient(180deg, var(--ok-line), var(--rule-strong)); }
-}
-@media (prefers-reduced-motion: reduce) { .lk-btn { transition: none; } }
 
 /* ---- the link panel on a survey's page --------------------------------------------------------------------------- */
 .lk-panel-head { display: flex; align-items: center; gap: 10px; }

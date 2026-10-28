@@ -18,6 +18,8 @@
 @import './intervento.css';
 @import './aiuto.css';
 @import './passi.css';
+@import './impianto.css';
+@import './pagine-impianto.css';
 
 @tailwind base;
 @tailwind components;

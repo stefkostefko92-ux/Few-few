@@ -1359,8 +1359,8 @@
     "exportFormat": "Com’è fatto il file: formati e struttura dei dati"
   },
   "lift": {
-    "workTitle": "Progetto e simulazione",
-    "workLead": "Disegna vano, porte, piani e locale sul calcolo argano: portata, velocità, argano, funi e collaudo vengono dal calcolo.",
+    "workTitle": "Progetto",
+    "workLead": "Disegna vano, porte, piani e locale sul calcolo argano; a destra il disegno e le verifiche. Portata, velocità, argano, funi e collaudo vengono dal calcolo.",
     "designTitle": "Progetto dell’impianto",
     "open": "Apri il progetto",
     "history": "Versioni salvate",
@@ -1643,7 +1643,21 @@
     "avviso_en81-71": "La UNI EN 81-71:2022 non è citata in GUUE: nessuna presunzione di conformità (la dà la 2005+A1:2006).",
     "avviso_en81-80": "Scelta volontaria: nessun obbligo nazionale di adeguamento risulta in vigore.",
     "avviso_antincendio": "Cabina: le classi minime della EN 81-20 (pavimento Cfl-s2, pareti C-s2,d1, soffitto C-s2,d0) valgono la classe italiana 2; il DM 15/09/2005 chiede la 1 (pareti e soffitto in A2 o B, pavimento in A2fl o Bfl). Da decidere con il progettista antincendio.",
-    "sim_note": "Simulazione con le stesse forze delle verifiche, per capire il comportamento dell’impianto: non sostituisce le prove e le verifiche in sito, e la scena 3D è una rappresentazione, non un rilievo."
+    "sim_note": "Simulazione con le stesse forze delle verifiche, per capire il comportamento dell’impianto: non sostituisce le prove e le verifiche in sito, e la scena 3D è una rappresentazione, non un rilievo.",
+    "checks_sim_title": "Verifiche che la simulazione riproduce",
+    "checks_problems": "{n, plural, one {# verifica da guardare} other {# verifiche da guardare}}",
+    "checks_none": "Nessuna verifica non superata e nessuna con «Attenzione».",
+    "checks_sim_none": "Nessuna di queste verifiche è non superata o con «Attenzione».",
+    "checks_others": "{n, plural, one {Un’altra verifica: superata, informativa o su una parte esistente} other {Altre # verifiche: superate, informative o su parti esistenti}}",
+    "sc_ride_d": "Da un piano all’altro, con il carico che scegli",
+    "sc_brake_d": "Arresto con il freno: le funi tengono?",
+    "sc_loading_d": "1,25 volte la portata al piano: le funi tengono?",
+    "sc_stall_d": "Contrappeso sugli ammortizzatori: le funi devono slittare",
+    "sc_buffer_d": "Urto sugli ammortizzatori a 1,15 volte la velocità",
+    "vista_label": "Disegno o verifiche",
+    "vista_disegno": "Disegno",
+    "vista_verifiche": "Verifiche",
+    "doc_rt": "Relazione tecnica di modifica"
   },
   "register": {
     "title": "Registra la tua azienda",
@@ -3258,6 +3272,87 @@
       "matricola": "Matricola {n}"
     }
   },
+  "impianto": {
+    "nav": "Passi dell’impianto {nome}",
+    "scheda": {
+      "panoramica": "Panoramica",
+      "rilievo": "Rilievo",
+      "calcolo": "Calcolo argano",
+      "progetto": "Progetto",
+      "simulazione": "Simulazione",
+      "relazione": "Relazione tecnica",
+      "documenti": "Tavole e documenti"
+    },
+    "stato": {
+      "fatto": "fatto",
+      "daFare": "da fare",
+      "daAggiornare": "da aggiornare",
+      "differenze": "differenze",
+      "nonSuperate": "{n, plural, one {# non superata} other {# non superate}}",
+      "pronta": "pronta",
+      "bozza": "bozza",
+      "emessa": "emessa",
+      "nonServe": "non serve",
+      "dopoCalcolo": "dopo il calcolo",
+      "dopoProgetto": "dopo il progetto",
+      "soloVano": "con il progetto del vano"
+    },
+    "prossimo": {
+      "titolo": "Prossimo passo",
+      "calcola": "Comincia dal calcolo dell’argano: tipo di intervento, dati dell’impianto e macchina.",
+      "calcoloAggiorna": "Il calcolo argano va aggiornato prima di andare avanti.",
+      "progettoFai": "Disegna il progetto del vano sull’ultimo calcolo argano.",
+      "progettoFaiLocale": "Rileva il locale macchina sull’ultimo calcolo argano.",
+      "progettoAggiorna": "Il progetto va rifatto sull’ultimo calcolo argano.",
+      "progettoNonSupera": "{n, plural, one {Il progetto ha # verifica non superata.} other {Il progetto ha # verifiche non superate.}}",
+      "relazione": "Prepara la relazione tecnica di modifica.",
+      "relazioneAggiorna": "La relazione tecnica emessa va rifatta in una nuova revisione.",
+      "tavole": "Emetti le tavole di progetto.",
+      "tavoleAggiorna": "Le tavole emesse sono più vecchie del progetto: emettine una revisione.",
+      "pronto": "Tutto pronto: tavole e documenti da scaricare.",
+      "apri": {
+        "panoramica": "Apri la panoramica",
+        "rilievo": "Apri il rilievo",
+        "calcolo": "Apri il calcolo argano",
+        "progetto": "Apri il progetto",
+        "simulazione": "Apri la simulazione",
+        "relazione": "Apri la relazione tecnica",
+        "documenti": "Apri tavole e documenti"
+      }
+    }
+  },
+  "simulazione": {
+    "titolo": "Simulazione",
+    "lead": "Il comportamento dell’impianto con le stesse forze delle verifiche: scegli uno scenario e avvialo.",
+    "modifica": "Modifica il progetto",
+    "fonte": "Cosa simulare",
+    "salvato": "Progetto salvato · {nome}",
+    "bozza": "Bozza del progetto · {at}",
+    "bozzaManca": "{n, plural, one {Bozza del progetto: manca # dato} other {Bozza del progetto: mancano # dati}}",
+    "bozzaSenzaCalcolo": "Bozza del progetto: il suo calcolo argano va aggiornato",
+    "vecchio": "Questo progetto è stato salvato con una versione precedente del software: la simulazione lo ricalcola con quella attuale.",
+    "vuota": "Niente da simulare per ora",
+    "vuotaLead": "La simulazione parte da un progetto del vano salvato, o da una bozza completa del progetto.",
+    "vuotaBozza": "La bozza del progetto non è ancora completa: finiscila nel Progetto.",
+    "apriProgetto": "Apri il progetto"
+  },
+  "documenti": {
+    "titolo": "Tavole e documenti",
+    "lead": "Tutto quello che si scarica, si emette o si ordina, dal progetto salvato.",
+    "daProgetto": "Dal progetto salvato il {date}",
+    "daLocale": "Dal locale macchina rilevato il {date}",
+    "apriRecord": "apri il progetto salvato",
+    "tavole": "Tavole di progetto",
+    "calcolo": "Relazione di calcolo e disegni",
+    "materiali": "Materiali e ordine",
+    "emesse": "{n, plural, =0 {Serie emesse} other {Serie emesse ({n})}}",
+    "rifiutati": "Il progetto salvato va aggiornato con il software attuale prima di fare i documenti: «Aggiorna con il software attuale» nella sua pagina.",
+    "vuoto": "Ancora nessun documento",
+    "vuotoLead": "Tavole, relazione di calcolo e bozza d’ordine si fanno dal progetto salvato.",
+    "vuotoLocale": "Tavole e relazione di calcolo si fanno dal locale macchina rilevato.",
+    "apriProgetto": "Apri il progetto",
+    "emetti": "Emetti una serie di tavole"
+  },
   "feedback": {
     "title": "Segnala un problema",
     "lead": "Un problema, un suggerimento o una domanda: la leggono gli amministratori di LiftPilot (Carbon Stealth VCC) per risponderti e correggere il servizio.",
@@ -3589,6 +3684,8 @@
     "collaudo": "Collaudo e documenti",
     "esito": "Esito e proposte",
     "base": "Calcolo argano",
-    "verifiche": "Verifiche e simulazione"
+    "verifiche": "Disegno e verifiche",
+    "avanti": "Avanti: {passo}",
+    "indietro": "Indietro: {passo}"
   }
 }

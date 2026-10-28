@@ -1,18 +1,21 @@
-// Scenes of the guide's screenshots: the Progetto of the first installation (the shaft measured on a DXF, the data, the
-// drawings with their dimensions, the checks, the 3D), and the second installation with the machine above (its machine
-// room's survey, then the Progetto with the room).
+// Scenes of the guide's screenshots: the Progetto of the first installation (the shaft measured on a DXF, the data step
+// by step as «Semplice» shows them, the drawings with their dimensions, the checks in their tab), its Simulazione and the
+// saved design; the second installation with the machine above (its machine room's survey, then the Progetto with the
+// room).
 import assert from 'node:assert/strict';
 import { step } from '../../smoke-kit.mjs';
-import { BASE, S, as, fresh, goto, hydrated, skip, want } from './ambiente.mjs';
+import { BASE, S, as, fresh, goto, hydrated, inVista, skip, want } from './ambiente.mjs';
 import { shaftDxf, sketchPng } from './disegni.mjs';
 import { saveCalc } from './scene-rilievi.mjs';
 import { shot, wideClip } from './scatto.mjs';
 
 /** The project data still to enter on /progetto, typed as in scripts/smoke-blank.mjs: the shaft (unless measured on the
- *  drawing), one entrance with a telescopic door, the walls, the floors with their rises, pit and headroom. */
+ *  drawing), one entrance with a telescopic door, the walls, the floors with their rises, pit and headroom — each step
+ *  shown first, as «Semplice» shows one at a time. */
 async function projectData(page, { shaft = true, bottom = null, walls = true } = {}) {
   const choose = (id) => page.click(`label:has(> #${id})`);
   await hydrated(page, '#bk-entrances');
+  await inVista(page, '#bk-entrances');
   if (shaft) { await page.fill('#bk-W', '1600'); await page.fill('#bk-D', '1750'); }
   await choose('bk-entrances');
   await choose('bk-door');
@@ -20,13 +23,14 @@ async function projectData(page, { shaft = true, bottom = null, walls = true } =
   await page.fill('#bk-doorHeight', '2000');
   if (walls) { await choose('bk-cw'); await page.fill('#bk-wall', '200'); }
   await page.selectOption('#bk-access', 'dm236_existing');
+  await inVista(page, '#bk-pit');
   await page.fill('#bk-pit', '1400');
   await page.fill('#bk-headroom', '3700');
   await page.fill('#bk-floors', '5');
   await page.press('#bk-floors', 'Enter');
   for (let i = 0; i < 4; i++) await page.fill(`#bk-rise-${i}`, '3000');
   await page.check('#bk-main');
-  if (bottom) await page.selectOption('#bottom-scheme', bottom);
+  if (bottom) { await inVista(page, '#bottom-scheme'); await page.selectOption('#bottom-scheme', bottom); }
   await page.waitForSelector('.lift-facts .lift-verdict', { timeout: 60000 }).catch(async (e) => {
     throw new Error(`${e.message}\nstill to enter: ${(await page.locator('.panel.missing').allInnerTexts()).join(' | ')}`);
   });
@@ -59,7 +63,8 @@ export async function p1progetto() {
 
   await projectData(page, { shaft: false, bottom: 'head' });
   await page.waitForSelector('.lift-main svg.sheet-svg');
-  // «Piani, fossa e testata»: the section's title down to the stops' table
+  // «Piani, fossa e testata»: the section's title down to the stops' table (its step shown)
+  await inVista(page, 'details.vertical-options');
   const vertical = page.locator('details.vertical-options');
   if (!(await vertical.evaluate((d) => d.open))) await vertical.locator('summary').first().click();
   await shot('progetto-piani-fermate', page, { tall: true, clipFn: () => wideClip(page, [page.locator('h2.sec-title:has-text("Piani, fossa e testata")'), page.locator('details.vertical-options table').first()], 16, 290, 520) });
@@ -80,13 +85,13 @@ export async function p1progetto() {
   await shot('progetto-editor', drawings, { pad: 8 });
   await page.keyboard.press('Escape');
 
-  // the checks with their «Simula», after the emergency braking was played
-  await page.waitForSelector('.lift-stage.live, .lift-stage.failed', { timeout: 120000 });
-  await page.click('.scenario-tabs button[data-scenario="brake"]');
-  await page.waitForSelector('.sim-chart svg path.line');
-  const checks = page.locator('#checks');
-  await checks.scrollIntoViewIfNeeded();
-  await shot('progetto-verifiche', page, { clipFn: async () => wideClip(page, [checks.locator('h2').first(), checks.locator('button:has-text("Simula")').nth(3)], 18, 740, 700) });
+  // the checks in their tab beside the drawing: the problems first, each with its «Simula»
+  await page.click('.lato-tabs button:has-text("Verifiche")');
+  const checks = page.locator('#lato-verifiche-panel #checks');
+  await checks.waitFor();
+  await page.locator('.lato-tabs').scrollIntoViewIfNeeded();
+  await shot('progetto-verifiche', page, { clipFn: async () => wideClip(page, [page.locator('.lato-tabs'), checks.locator('details.checks-others > summary')], 18, 740, 700) });
+  await page.click('.lato-tabs button:has-text("Disegno")');
 
   // saved: the design and, from it, the shaft's design
   await page.fill('.lift-work .savebar input', 'Progetto Via dei Mille 12');
@@ -95,26 +100,33 @@ export async function p1progetto() {
   S.lift1 = page.url();
   await page.waitForSelector('.lift-view .lift-facts');
   await shot('lift-designs', page, { clip: { x: 0, y: 0, width: 1440, height: 1200 } });
+  // its documents' page: the shaft's design from there
+  await Promise.all([page.waitForURL(/\/documenti\?design=/), page.click('main .doc-links a[href*="/documenti?design="]')]);
   await goto(page, `${BASE}${await page.getAttribute('.doc-links a[href*="/app/shaft-designs/"]', 'href')}`);
   await page.waitForSelector('dl.cartiglio');
   await shot('shaft-designs', page, { clip: { x: 0, y: 0, width: 1440, height: 1200 } });
 
-  // the 3D simulation: the saved design opened again in the Progetto («Modifica»), in a page of its own that draws WebGL
-  // as a graphics card would (slow: nothing else runs in it); the stage starts once it is on screen
-  if (want('progetto-3d')) {
+  // the Simulazione of the saved design (its own page, round 53), in a page of its own that draws WebGL as a graphics card
+  // would (slow: nothing else runs in it); the stage starts once it is on screen
+  if (want('progetto-3d') || want('simulazione-pagina')) {
     await goto(page, S.lift1);
-    const edit = `${BASE}${await page.getAttribute('main a.btn-primary[href*="/progetto?from="]', 'href')}`;
+    const sim = `${BASE}${await page.getAttribute('main .doc-links a[href*="/simulazione?design="]', 'href')}`;
     const g = await fresh(await page.context().storageState(), true);
     try {
-      await goto(g.page, edit);
+      await goto(g.page, sim);
       await g.page.locator('.lift-stage').first().scrollIntoViewIfNeeded();
       const live = await g.page.waitForSelector('.lift-stage.live, .lift-stage.failed', { timeout: 150000 }).then((e) => e.evaluate((el) => el.classList.contains('live'))).catch(() => false);
       if (live) {
         await g.page.locator('.lift-sim button:has-text("Cabina")').first().click();
         await g.page.click('.scenario-tabs button[data-scenario="brake"]');
         await g.page.waitForSelector('.sim-chart svg path.line');
+        // the page first: the element's shot taller than the window resizes the surface, and the software WebGL loses
+        // its context there (the stage then says the 3D is not available)
+        await g.page.evaluate(() => globalThis.scrollTo(0, 0));
+        await g.page.waitForTimeout(600);
+        await shot('simulazione-pagina', g.page, { clip: { x: 0, y: 0, width: 1440, height: 1100 } });
         await shot('progetto-3d', g.page.locator('section.lift-sim'), { pad: 8 });
-      } else skip('progetto-3d', 'the 3D view could not be drawn in this browser');
+      } else skip(['progetto-3d', 'simulazione-pagina'], 'the 3D view could not be drawn in this browser');
     } finally { await g.ctx.close(); }
   }
   assert.deepEqual(errors, [], 'browser errors');
@@ -166,6 +178,7 @@ export async function p2() {
   await toProgetto(page, calc);
   await projectData(page, { shaft: false, walls: false });
   await page.waitForSelector('.lift-main svg.sheet-svg');
+  if (await page.locator('.lift-form details.room-options').count()) await inVista(page, '.lift-form details.room-options');
   await page.evaluate(() => { const d = globalThis.document.querySelector('.lift-form details.room-options'); if (d) d.open = true; });
   const room = page.locator('.lift-form details.room-options');
   if (await room.count()) await shot('progetto-locale', page, { tall: true, clipFn: () => wideClip(page, [room], 16, 290, 520) });

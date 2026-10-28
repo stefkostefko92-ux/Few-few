@@ -21,6 +21,7 @@ import { composeStoredRoom } from '@/server/room-compose';
 import { getDrawingSet, listCalculations, listRevisions, listRoomDesigns } from '@/server/queries';
 import { roomSummaryLine } from '@/server/room-summary';
 import Crumbs from '@/components/Crumbs';
+import ImpiantoNav from '@/components/impianto/ImpiantoNav';
 import IssueForm from '@/components/tavole/IssueForm';
 import DrawingFigure from '@/components/drawing/DrawingFigure';
 import ShapesSvg from '@/components/drawing/ShapesSvg';
@@ -71,6 +72,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${s.projectId}`, label: s.project.name }, { label: `${t('number')} ${s.number}` }]} />
+      <ImpiantoNav user={user} projectId={s.projectId} corrente="documenti" />
       <div className="page-head">
         <div className="titles">
           <h1>{t('title')} · {s.number}{s.revision ? ` R${s.revision}` : ''}</h1>

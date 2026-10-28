@@ -5,6 +5,7 @@ import { getProject } from '@/server/queries';
 import { usaDatiImpianto } from '@/server/collega/forms';
 import ProjectForm from '@/components/ProjectForm';
 import Crumbs from '@/components/Crumbs';
+import ImpiantoNav from '@/components/impianto/ImpiantoNav';
 
 // The installation's data. From the comparison (round 44, ?usa=indirizzo|matricola) the reference survey's address or
 // matricola (the installation's «Numero di matricola») is put in the form, marked «dal rilievo», and said on top: saved
@@ -23,6 +24,7 @@ export default async function EditProjectPage({ params, searchParams }: { params
   return (
     <main className="page page-narrow">
       <Crumbs items={[{ href: '/app/impianti', label: t('title') }, { href: `/app/projects/${p.id}`, label: p.name }, { label: t('editTitle') }]} />
+      <ImpiantoNav user={user} projectId={p.id} corrente="panoramica" />
       <h1>{t('editTitle')}</h1>
       {u ? (
         <p className="alert alert-info" role="status">

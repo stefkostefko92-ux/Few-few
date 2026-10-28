@@ -58,6 +58,7 @@
 - Петдесет и първият кръг: „Искам да ми напишеш пълно обяснение на италиански за всяко поле във всяка наша страница и да го направиш като user guide в pdf формат.“
 - Петдесет и вторият кръг, с Excel файла на собственика «RT-E MOD - 10411-1»: „Per il progetto e la relazione tecnica della 10411 ti devi basare solo ed esclusivamente su questo file in quanto è più semplice del tuo sviluppo. Inoltre… voglio che implementi una spiegazione quando l’utente hover il mouse sul nome del parametro oppure che ci metti un ? di fianco al parametro… Tutto il software deve essere leggermente più semplice da farla usare a più persone.“ Изборът на собственика: relazione tecnica и проверките на въжетата и машината в Calcolo argano по файла; текстовете, каталозите и таблиците 1:1 (правата са негови); като файла, с грешките срещу нормата поправени и изброени; режим Semplice/Esperto, водене стъпка по стъпка, по-кратки текстове и «?» до всяко поле.
 - Кръг 52, довършването: „Искам да довършиш стъпка по стъпка, да не пипаш рилиеви, остави ги какво във файла и след това направи точка 1.“ — стъпките и в Calcolo argano и Progetto; Rilievi и етикетите на файла («Ascensorista :», «Commessa :») остават както са; после `main` в клона на PR-а.
+- Петдесет и третият кръг: „Voglio che la parte del progetto, la parte della simulazione e della relazione tecnica siano separate in pagine diverse e non così incasinate. Al momento, un utente deve stare lì ore per capire come funziona il software. Dobbiamo puntare di più sulla leggibilità e sul renderlo più facilmente capibile per l’utente già a prima vista. Prima di iniziare a modificare proponimi le modifiche.“ Предложението (артефакт) и изборът на собственика: симулацията — запазеният проект и черновата; проверките — до чертежа; една стъпка наведнъж — само в Semplice; Calcolo argano по същата схема — трета доставка. Тази промяна е първата доставка; втората (relazione tecnica стъпка по стъпка в Semplice) и третата (Calcolo argano) идват после.
 
 ## Намерено по пътя
 
@@ -3571,6 +3572,45 @@ argano и Progetto имат лентата на relazione tecnica — всяка
 - D.1 на файла, броена винаги, проваляше примерния проект с всяка машина от каталога — оттук корекцията по 6.1.
 - Два текста, които не следваха кода (честотата на управлението и контактите; редът на качените файлове).
 
+
+### Кръг 53 — страниците на съоръжението: една работа на страница (първа доставка)
+
+**Лентата на съоръжението** (`lib/impianto/schede.ts`, `server/impianto/schede.ts`, `components/impianto/`): в горната
+част на всяка страница на съоръжението — Panoramica и шестте стъпки в реда на работата (Rilievo, Calcolo argano, Progetto,
+Simulazione, Relazione tecnica, Tavole e documenti), всяка със своето състояние, изчислено от своя запис (`fatto`,
+`da fare`, `da aggiornare`, `differenze`, `n non superate`, `pronta`, `bozza`, `emessa`, `non serve`, `dopo il calcolo`,
+`dopo il progetto`); стъпка, чиято страница ролята не отваря — сива, без връзка. Старата лента на стъпките на
+панорамата (`collega/Passi.tsx`) я няма. На панорамата — «Prossimo passo»: едно изречение и един бутон
+(`prossimoDi`); бележката чия е стъпката (`handoff_*`) — веднъж.
+
+**Progetto:** вдясно — обобщението, сравнението с изчислението и два таба, «Disegno» и «Verifiche» (броят на
+неминаващите на таба), и двата монтирани (`ProgettoRisultati.tsx`); 3D-то и дистинтата на Panev излизат от страницата. В
+«Semplice» формулярът показва една стъпка наведнъж (`progetto-uno.ts`) с «Indietro»/«Avanti» в края ѝ; стъпката не се
+сменя от писане, а от лентата, от бутоните или от връзка към поле (`passi/mostra.ts`, събитието `passo-mostra`); след
+последната — табът «Verifiche». В «Esperto» и в артефакта — всички стъпки. Проверките (`LiftChecks.tsx`): първо тези за
+гледане (`problemiCollaudo` — същото правило като присъдата), останалите — затворени под броя си (отворени в «Esperto»).
+
+**Simulazione** (`/app/projects/<id>/simulazione`, `server/simulazione.ts`, `lib/lift/progetto-bozza.ts`): своя страница
+за всеки, който вижда съоръжението — запазеният проект (поисканият или последният) или пълната чернова на Progetto,
+изведени наново в браузъра; «Simula» на проверка в Progetto (първо записва черновата) и на запазения проект отваря
+страницата с този сценарий пуснат; под всеки сценарий — ред какво проверява.
+
+**Tavole e documenti** (`/app/projects/<id>/documenti`, `components/documenti/`): всичко, което се сваля, издава или
+поръчва — блоковете «Tavole di progetto» (износ, издаване, издадените серии), «Relazione di calcolo e disegni», «Documenti
+caricati», «Materiali e ordine» (дистинта Panev, цена, чернова на поръчка); от проекта на съоръжението или от поискания
+запис (`?design=`), за машинното — същите блокове. Страниците на запазения проект и на машинното остават само с
+резюмето, проверките и чертежите, с бутоните към двете нови страници; правилото за документите (`records.ts`) — същото.
+
+**Ръководството** — в същата промяна: главата на съоръженията (лентата, «Prossimo passo»), двете глави на Progetto (табовете,
+една стъпка наведнъж, новата страница Simulazione, запазеният проект), главата на документите (новата страница «Tavole e
+documenti») и рилевото на машинното. Двигателите — непипнати (ENGINE 1.9.0, LIFT 1.34.0, ROOM 1.18.0, SHAFT 2.28.0).
+
+**Намерено по пътя.**
+- Табът на проверките броеше неминаващите и предупрежденията заедно (12), а лентата на присъдата казваше 5: сега броят на
+  таба е само неминаващите, предупрежденията — само когато няма неминаващи.
+- Smoke: селекторът на relazione di calcolo хващаше таба «Relazione tecnica» на лентата; на панорамата бележката „Il
+  progetto lo disegna un collega…“ излизаше два пъти (в «Prossimo passo» и в секцията Progetto).
+
 ## Проверки
 
 - [x] Пуснах пълния quality gate на засегнатия продукт `liftpilot/` (до кръг 6 — `argano/`): lint, typecheck, test (250/250, със схемите, токените и писмата на акаунтите на трите езика, с тестовете за хлабината на вратите, хода на кабината и противотежестта при трите схеми с машина долу, планките на Panev, кабелния канал, редакцията на всеки размер на плана и на разреза, каталога на машините, ограничителите, нишите, етажните табла и имената на котите на трите езика), build. **Зелен.**
@@ -4152,6 +4192,14 @@ argano и Progetto имат лентата на relazione tecnica — всяка
   без хоризонтален скрол и без грешки в конзолата; горната лента на 1024–1600 px — пътят спира преди търсенето;
   ръководството — снимките наново от празна база (91 от 91), двата PDF-а — 304 и 17 страници, страницата на лентата
   прегледана като PNG.
+- [x] Кръг 53 (първа доставка): `npm run lint` чисто, `tsc` 0, `npm test` 1416 + 343, `npm run build`, `npm run artifact`;
+  пълният smoke с пощата „all good“ (96 стъпки: лентата на съоръжението и «Prossimo passo», «Tavole e documenti» — блоковете,
+  relazione с плана, DXF, дистинтата, поръчката, износът, издаването; Simulazione на запазения проект и «Simula» от
+  проверка; Progetto в «Semplice» — една стъпка, «Avanti», стъпка от лентата, табът на проверките; ролите — бележката чия
+  е стъпката веднъж), `smoke-allegati` и `smoke-schizzi` — „all good“, всеки на нов процес; височината на страниците на
+  1440 px (данните на smoke-а): панорамата 3073 → 1313 px, Progetto 10 547 → 3782 px, запазеният проект 11 569 → 5934 px;
+  ръководството — снимките наново от празна база (93 от 93), двата PDF-а — 306 и 17 страници, без остатъци от разметка,
+  страниците на Simulazione и «Tavole e documenti» прегледани като PNG; `secret-scan` — чисто; сървърите — спрени по своите pid.
 - [x] `node tools/design/motion-a11y.mjs liftpilot/src`: проверката за reduced motion в базата — да; 6 евристични
   находки `webgl-no-rm-check` в модули на 3D, които се зареждат само през `boot.ts` (същите и преди кръг 24).
 - [x] Живата 3D сцена на началната страница е проверена в headless Chromium (WebGL 2) на двете нива на качество, без грешки в конзолата. При reduced motion three.js не се зарежда.

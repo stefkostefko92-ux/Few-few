@@ -101,7 +101,7 @@ function Tools() {
         ) : null}
         {opened.progetto ? (
           <div hidden={tab !== 'progetto'} className="ar-lift">
-            <ProgettoWorkspace projectId="" base={base} when={SHELL.baseWhen} canCalc={false} initial={DRAWING} onDerived={onDerived} api={work} prices={PANEV_PRICES} />
+            <ProgettoWorkspace projectId="" base={base} when={SHELL.baseWhen} canCalc={false} initial={DRAWING} onDerived={onDerived} api={work} prices={PANEV_PRICES} completo />
             {design ? <Sheets inputs={design.inputs} derived={design.derived} lead={SHELL.sheetsLead}
               onEdit={(e, length) => work.current?.edit(e, length) ?? { min: null, max: null }} /> : null}
           </div>

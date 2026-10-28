@@ -14,7 +14,7 @@ export type { BottomGeo, BottomScheme } from './bottom';
 export { LIFT_ENGINE_VERSION } from './version';
 export { NO_MARKS, P_ESTIMATE_RULE, valueMarks } from './marks';
 export { AMBITO_VERIFICHE, AUTO_PARTI, NORMA_BREVE, NORMA_SIGLA, NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI, VERIFICHE_DM236, VERIFICHE_NTC, adeguamentiDovuti, ambitoNorme,
-  ambitoOf, ammessa, collaudoOf, collaudoVerdict, esitiNorme, normeOf, underNorma, withAggiunta } from './collaudo';
+  ambitoOf, ammessa, collaudoOf, collaudoVerdict, esitiNorme, normeOf, problemiCollaudo, underNorma, withAggiunta } from './collaudo';
 export type { Ambito, Collaudo, EsitoNorma, Norma, NormaAggiuntiva, NormaCollaudo, Parte } from './collaudo';
 export { PARTI_FACOLTATIVE, PARTI_LOCALE, PARTI_RIFACIMENTO, PARTI_SOLO, TIPI_INTERVENTO, VARIAZIONI, contestoDi, disegnoDi, interventoDi, interventoTo, interventoValido,
   isTipoIntervento, macchinaResta, rifacimentoTo, sostanziale, stessoIntervento, tipoDaRivedere, type Dichiarato } from './intervento';

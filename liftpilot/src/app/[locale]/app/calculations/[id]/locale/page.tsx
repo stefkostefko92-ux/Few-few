@@ -14,6 +14,7 @@ import { readDraft } from '@/server/drafts';
 import { readCalc } from '@/server/records';
 import { localeRilevabile } from '@/server/calcolo-base';
 import Crumbs from '@/components/Crumbs';
+import ImpiantoNav from '@/components/impianto/ImpiantoNav';
 import RefreshNotice from '@/components/RefreshNotice';
 import { openedByRefresh } from '@/lib/refresh-form';
 import RoomSurvey from '@/components/room/RoomSurvey';
@@ -58,6 +59,7 @@ export default async function RoomSurveyPage({ params, searchParams }: { params:
   return (
     <main className="page page-wide">
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${c.projectId}`, label: c.project.name }, { href: `/app/calculations/${c.id}`, label: tc('viewTitle') }, { label: t('newTitle') }]} />
+      <ImpiantoNav user={user} projectId={c.projectId} corrente="progetto" />
       <div className="page-head">
         <div className="titles">
           <ConAiuto aiuto={testoAiuto(AIUTO, 'locale_pagina')} nome={t('newTitle')} block><h1>{t('newTitle')}</h1></ConAiuto>

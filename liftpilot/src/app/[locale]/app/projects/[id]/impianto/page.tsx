@@ -6,6 +6,7 @@ import { plantReadSchema } from '@/lib/plant';
 import { getProject } from '@/server/queries';
 import { projectCatalogMachine } from '@/server/plant-machine';
 import Crumbs from '@/components/Crumbs';
+import ImpiantoNav from '@/components/impianto/ImpiantoNav';
 import PlantForm from '@/components/tavole/PlantForm';
 import ClientLogoForm from '@/components/tavole/ClientLogoForm';
 
@@ -32,6 +33,7 @@ export default async function PlantPage({ params }: { params: Promise<{ locale: 
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${p.id}`, label: p.name }, { label: t('plantTitle') }]} />
+      <ImpiantoNav user={user} projectId={p.id} corrente="documenti" />
       <div className="page-head">
         <div className="titles">
           <h1>{t('plantTitle')}</h1>

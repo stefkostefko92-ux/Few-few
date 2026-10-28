@@ -22,7 +22,7 @@
         },
         {
           "id": "stepper",
-          "what": "I quattro passi di un impianto: Rilievo, Calcolo argano, Progetto, Documenti e ordini, in stati diversi."
+          "what": "La barra dei passi di un impianto: Panoramica, Rilievo, Calcolo argano, Progetto, Simulazione, Relazione tecnica, Tavole e documenti, ognuno con il suo stato."
         }
       ],
       "sections": [
@@ -146,16 +146,18 @@
           ]
         },
         {
-          "title": "I quattro passi di un impianto",
+          "title": "I passi di un impianto: la barra in cima a ogni pagina",
           "intro": [
-            "Ogni impianto percorre gli stessi quattro passi, nell’ordine in cui li fai sul lavoro. Li vedi sempre in cima alla pagina dell’impianto, come quattro pulsanti numerati sotto il titolo «Dal rilievo ai documenti».",
-            "1 · Rilievo: la scheda di rilievo dell’impianto esistente, compilata durante il sopralluogo e collegata all’impianto. 2 · Calcolo argano: la scelta del tipo di intervento, delle parti sostituite e del collaudo, con il calcolo dell’argano e la relazione di calcolo. 3 · Progetto: il disegno basato sul calcolo (il rilievo del locale macchina oppure il vano con la simulazione 3D). 4 · Documenti e ordini: tavole, relazioni e bozza d’ordine che nascono dai record salvati.",
-            "Ogni pulsante ha il suo stato: «fatto» (anello acceso), «da fare» (spento), «da aggiornare» (ambra: il record è più vecchio del rilievo o il software è cambiato), «da aggiornare (calcolo più recente)» (il Progetto è disegnato su un Calcolo argano più vecchio dell’ultimo) e «differenze» (rosso: il record non coincide con il rilievo sullo stato di fatto, cioè su quello che c’è sul posto). Il primo passo non ancora fatto è quello a cui lavorare. Ogni pulsante apre la sua pagina, se il tuo ruolo ne ha il diritto."
+            "In cima a ogni pagina di un impianto trovi sempre la stessa barra, con i passi nell’ordine in cui li fai sul lavoro: «Panoramica», poi 1 · Rilievo, 2 · Calcolo argano, 3 · Progetto, 4 · Simulazione, 5 · Relazione tecnica, 6 · Tavole e documenti. La scheda della pagina in cui sei è evidenziata.",
+            "1 · Rilievo: la scheda di rilievo dell’impianto esistente, collegata all’impianto. 2 · Calcolo argano: tipo di intervento, parti sostituite, collaudo, calcolo dell’argano e relazione di calcolo. 3 · Progetto: il disegno basato sul calcolo (il rilievo del locale macchina oppure il vano), con il disegno e le verifiche accanto ai dati. 4 · Simulazione: la scena 3D e i grafici del progetto. 5 · Relazione tecnica: la relazione tecnica di modifica (non serve per una «Trasformazione completa»). 6 · Tavole e documenti: tutto quello che si scarica, si emette o si ordina dal progetto salvato.",
+            "Sotto il nome di ogni passo leggi il suo stato: «fatto», «da fare», «da aggiornare» (il record è più vecchio del rilievo o il software è cambiato), «differenze» (il record non coincide con il rilievo sullo stato di fatto), «# non superate» (il Progetto ha verifiche che non passano), «pronta» (la simulazione ha un progetto salvato), «bozza», «emessa», «non serve», «dopo il calcolo», «dopo il progetto» e «con il progetto del vano». Il numero del passo si accende di verde quando è fatto, di ambra o di rosso quando c’è qualcosa da sistemare.",
+            "Ogni scheda apre la sua pagina se il tuo ruolo ne ha il diritto; una scheda che il tuo ruolo non può aprire è grigia e non è un collegamento. Sul telefono la barra scorre di lato."
           ],
           "fields": [],
           "actions": [],
           "notes": [
-            "Ogni passo ha il suo stato, calcolato dal proprio record: «Calcolo argano» e «Progetto» non dipendono dai passi precedenti. Solo «Documenti e ordini» dipende dagli altri: è «fatto» soltanto se c’è un Progetto salvato, nessun record da cui nascono i documenti è «da aggiornare» o in «differenze», e la serie di tavole emessa (se c’è) non è più vecchia dell’ultimo record; senza record salvati è «da fare». Il passo corrente è il primo non «fatto» quando tutti quelli prima sono «fatto»."
+            "Ogni passo ha il suo stato, calcolato dal proprio record: «Calcolo argano» e «Progetto» non dipendono dai passi precedenti. «Tavole e documenti» è «dopo il progetto» finché non c’è un Progetto salvato; poi è «fatto», oppure «da aggiornare» se un record da cui nascono i documenti è da aggiornare o in «differenze», o se la serie di tavole emessa è più vecchia dell’ultimo record.",
+            "La scheda «Rilievo» apre la scheda di rilievo di riferimento; senza rilievo collegato apre il riquadro «Rilievi» della panoramica. La scheda «Progetto» apre il disegno per chi disegna il progetto, altrimenti il progetto salvato."
           ]
         },
         {
@@ -895,17 +897,17 @@
     },
     {
       "id": "impianto-scheda",
-      "title": "Pagina dell’impianto",
+      "title": "Panoramica dell’impianto",
       "path": "/it/app/projects/‹id›",
-      "access": "La vedono i ruoli che vedono gli impianti (predefinito: tutti). «Modifica anagrafica»: chi modifica gli impianti (Titolare, Capotecnico, Progettista, Tecnico). «Archivia» e «Ripristina»: chi archivia (Titolare, Capotecnico, Progettista). Collegare e scollegare i rilievi: Titolare, Capotecnico, Progettista, Tecnico. I pulsanti dei passi seguono il diritto di quel passo (calcolo: Titolare, Capotecnico, Progettista, Tecnico; Progetto: Titolare, Capotecnico, Progettista). Il Titolare può cambiare la matrice.",
-      "reach": "Dal nome nell’elenco Impianti, da «Apri l’impianto» nell’anteprima, dai collegamenti nelle schede di rilievo e nei record, dal percorso «Impianti › nome». Dopo «Salva» di «Modifica impianto» torni qui.",
+      "access": "La vedono i ruoli che vedono gli impianti (predefinito: tutti). «Modifica anagrafica»: chi modifica gli impianti (Titolare, Capotecnico, Progettista, Tecnico). «Archivia» e «Ripristina»: chi archivia (Titolare, Capotecnico, Progettista). Collegare e scollegare i rilievi: Titolare, Capotecnico, Progettista, Tecnico. Le schede della barra e il pulsante del «Prossimo passo» seguono il diritto di quel passo (calcolo: Titolare, Capotecnico, Progettista, Tecnico; Progetto: Titolare, Capotecnico, Progettista). Il Titolare può cambiare la matrice.",
+      "reach": "Dal nome nell’elenco Impianti, da «Apri l’impianto» nell’anteprima, dai collegamenti nelle schede di rilievo e nei record, dal percorso «Impianti › nome» e dalla scheda «Panoramica» della barra. Dopo «Salva» di «Modifica impianto» torni qui.",
       "purpose": [
-        "È la pagina di lavoro di un impianto: in cima i dati e il passo successivo, poi i quattro passi, i rilievi collegati, il confronto con il calcolo e il progetto, e infine gli elenchi dei record (Calcolo argano, Progetto, Tavole emesse, Archivio dell’impianto)."
+        "È la panoramica di un impianto: in cima la barra dei passi e il riquadro «Prossimo passo», poi i dati, i rilievi collegati con il confronto, e infine gli elenchi dei record (Calcolo argano, Progetto, Archivio dell’impianto). La simulazione, la relazione tecnica, le tavole e i documenti hanno ognuno la sua pagina, nella barra."
       ],
       "shots": [
         {
           "id": "impianto-testata",
-          "what": "La testata di un impianto attivo: etichetta del tipo, titolo, indirizzo, pulsanti, cartiglio e i quattro passi."
+          "what": "La barra dei passi, la testata e il riquadro «Prossimo passo» di un impianto attivo."
         },
         {
           "id": "impianto-rilievi-confronto",
@@ -916,8 +918,8 @@
         {
           "title": "Testata",
           "intro": [
-            "In alto: il percorso «Impianti › nome», l’etichetta del tipo di intervento («Solo argano», «Ammodernamento», «Trasformazione completa» o «Intervento da definire»), il segno «archiviato» se lo è, il nome dell’impianto e la riga con indirizzo, comune e provincia.",
-            "A destra i pulsanti. Il primo è il passo successivo, in blu, e dipende dallo stato: senza Calcolo argano è «Calcola l’argano»; con un calcolo e il Progetto da fare è «Rileva il locale macchina» (interventi sul solo locale macchina) o «Disegna il progetto» (progetto del vano); a Progetto fatto è «Nuovo calcolo». Compare solo se il tuo ruolo ha il diritto di quel passo; altrimenti sotto la testata leggi di chi è il passo: «Il calcolo dell’argano lo fa un collega che ne ha il permesso.» o «Il progetto lo disegna un collega che ne ha il permesso.».",
+            "In alto: il percorso «Impianti › nome», la barra dei passi (vedi «I passi di un impianto»), l’etichetta del tipo di intervento («Solo argano», «Ammodernamento», «Trasformazione completa» o «Intervento da definire»), il segno «archiviato» se lo è, il nome dell’impianto e la riga con indirizzo, comune e provincia.",
+            "A destra i pulsanti «Modifica anagrafica» e «Archivia» (o «Ripristina»). Il passo da fare adesso è nel riquadro «Prossimo passo», sotto la testata.",
             "Sotto, il cartiglio con i dati dell’impianto."
           ],
           "fields": [
@@ -931,7 +933,7 @@
               "help": [
                 "La matricola dell’impianto, come inserita in «Modifica anagrafica»."
               ],
-              "src": "src/app/[locale]/app/projects/[id]/page.tsx:290"
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:92"
             },
             {
               "label": "Committente",
@@ -943,7 +945,7 @@
               "help": [
                 "Il committente indicato nell’anagrafica."
               ],
-              "src": "src/app/[locale]/app/projects/[id]/page.tsx:291"
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:92"
             },
             {
               "label": "Creato da",
@@ -955,7 +957,7 @@
               "help": [
                 "Chi ha creato l’impianto, con il giorno. Non si modifica."
               ],
-              "src": "src/app/[locale]/app/projects/[id]/page.tsx:292"
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:92"
             },
             {
               "label": "Ultima modifica",
@@ -967,7 +969,7 @@
               "help": [
                 "Data e ora dell’ultima modifica dell’impianto. Non si modifica."
               ],
-              "src": "src/app/[locale]/app/projects/[id]/page.tsx:293"
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:92"
             },
             {
               "label": "Note",
@@ -979,62 +981,47 @@
               "help": [
                 "Le note scritte in «Modifica anagrafica», con gli a capo."
               ],
-              "src": "src/app/[locale]/app/projects/[id]/page.tsx:294"
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:92"
             }
           ],
           "actions": [
             {
-              "label": "Calcola l’argano",
-              "help": "Apre il Calcolo argano di questo impianto. Compare quando non c’è ancora un calcolo e il tuo ruolo fa i calcoli.",
-              "src": "src/app/[locale]/app/projects/[id]/page.tsx:244"
-            },
-            {
-              "label": "Rileva il locale macchina",
-              "help": "Apre il rilievo del locale macchina sul Calcolo argano. Compare quando il Progetto dell’intervento è il rilievo del locale macchina e non è ancora fatto, per chi disegna il progetto.",
-              "src": "src/app/[locale]/app/projects/[id]/page.tsx:245"
-            },
-            {
-              "label": "Disegna il progetto",
-              "help": "Apre il Progetto (il vano con la simulazione 3D) sull’ultimo Calcolo argano. Compare quando il Progetto è ancora da fare, per chi disegna il progetto.",
-              "src": "src/app/[locale]/app/projects/[id]/page.tsx:245"
-            },
-            {
-              "label": "Nuovo calcolo",
-              "help": "Apre un nuovo Calcolo argano per l’impianto. Compare quando il Progetto è allineato all’ultimo calcolo, per chi fa i calcoli.",
-              "src": "src/app/[locale]/app/projects/[id]/page.tsx:246"
-            },
-            {
               "label": "Modifica anagrafica",
               "help": "Apre «Modifica impianto». Non compare se l’impianto è archiviato.",
-              "src": "src/app/[locale]/app/projects/[id]/page.tsx:276"
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:78"
             },
             {
               "label": "Archivia",
               "help": "Archivia l’impianto subito, senza conferma: da quel momento è in sola lettura e sparisce dall’elenco normale (lo trovi in «Impianti archiviati»). I rilievi collegati restano collegati.",
-              "src": "src/app/[locale]/app/projects/[id]/page.tsx:282"
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:78"
             },
             {
               "label": "Ripristina",
               "help": "Sull’impianto archiviato: lo riporta attivo e modificabile.",
-              "src": "src/app/[locale]/app/projects/[id]/page.tsx:282"
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:78"
             }
           ],
           "notes": [
             "Non esiste un comando per cancellare un impianto: l’archivio è il modo di toglierlo dal lavoro senza perdere i record.",
-            "«Archivia» agisce subito, senza conferma, e si annulla con «Ripristina». Nella pagina di un impianto archiviato non ci sono i pulsanti di modifica, di collegamento e di nuovo calcolo."
+            "«Archivia» agisce subito, senza conferma, e si annulla con «Ripristina». Nella pagina di un impianto archiviato non ci sono i pulsanti di modifica, di collegamento e di nuovo calcolo, né il «Prossimo passo»."
           ]
         },
         {
-          "title": "Dal rilievo ai documenti",
+          "title": "Prossimo passo",
           "intro": [
-            "I quattro passi numerati: «Rilievo», «Calcolo argano», «Progetto» e «Documenti e ordini». Ognuno ha un cerchio colorato e uno stato scritto: «fatto», «da fare», «da aggiornare», «da aggiornare (calcolo più recente)» o «differenze». Il primo passo non fatto è il passo corrente (lo leggono anche gli screen reader). Per un intervento sul solo locale macchina, sotto «Progetto» leggi «locale macchina».",
-            "Ogni passo è un collegamento alla sua pagina: «Rilievo» alla scheda di riferimento (o, senza rilievo, al riquadro «Rilievi» qui sotto), «Calcolo argano» all’ultimo calcolo (o al nuovo calcolo), «Progetto» al record del Progetto (o al disegno), «Documenti e ordini» alle tavole emesse, altrimenti al record da cui nascono i documenti. Un passo senza collegamento è un passo che il tuo ruolo non può aprire.",
-            "Sotto «Documenti e ordini» trovi i moduli dei fornitori della scheda di riferimento (titolo «Moduli dei fornitori del rilievo di riferimento»), da scaricare."
+            "Un riquadro con una frase e un pulsante: il passo che l’impianto aspetta adesso, nell’ordine del lavoro. Le frasi possibili sono: «Comincia dal calcolo dell’argano: tipo di intervento, dati dell’impianto e macchina.», «Il calcolo argano va aggiornato prima di andare avanti.», «Disegna il progetto del vano sull’ultimo calcolo argano.», «Rileva il locale macchina sull’ultimo calcolo argano.», «Il progetto va rifatto sull’ultimo calcolo argano.», «Il progetto ha # verifiche non superate.», «Prepara la relazione tecnica di modifica.», «La relazione tecnica emessa va rifatta in una nuova revisione.», «Emetti le tavole di progetto.», «Le tavole emesse sono più vecchie del progetto: emettine una revisione.» e, a lavoro finito, «Tutto pronto: tavole e documenti da scaricare.».",
+            "Il pulsante apre la pagina di quel passo («Apri il calcolo argano», «Apri il progetto», «Apri la relazione tecnica», «Apri tavole e documenti»). Se il tuo ruolo non ha il diritto di quel passo, al posto del pulsante leggi di chi è: «Il calcolo dell’argano lo fa un collega che ne ha il permesso.» o «Il progetto lo disegna un collega che ne ha il permesso.»."
           ],
           "fields": [],
-          "actions": [],
+          "actions": [
+            {
+              "label": "Apri il calcolo argano · Apri il progetto · Apri la relazione tecnica · Apri tavole e documenti",
+              "help": "Apre la pagina del passo indicato dalla frase.",
+              "src": "src/components/impianto/ProssimoPasso.tsx:22"
+            }
+          ],
           "notes": [
-            "«Rilievo» è «fatto» appena c’è un rilievo collegato. «Calcolo argano» e «Progetto» diventano «da aggiornare» se il rilievo è stato scritto dopo di loro o se il software è cambiato, «differenze» se non coincidono con il rilievo sullo stato di fatto. «Documenti e ordini» non è mai «fatto» senza un Progetto salvato, e diventa «da aggiornare» se un record da cui nascono è da aggiornare o se la serie di tavole emessa è più vecchia dell’ultimo record."
+            "Il riquadro non compare su un impianto archiviato. Per una «Trasformazione completa» la relazione tecnica non è un passo: dopo il progetto il prossimo passo sono le tavole."
           ]
         },
         {
@@ -1258,7 +1245,7 @@
         {
           "title": "Progetto",
           "intro": [
-            "Il Progetto dell’impianto: sotto il titolo, la data dell’ultimo progetto salvato, il pulsante «Apri il progetto» e, se il software è cambiato, l’avviso «da aggiornare» con «Aggiorna con il software attuale» (per chi può aggiornare). Sotto, la vista 3D dell’ultimo progetto del vano, con i suoi dati. Se ci sono più versioni salvate trovi «Versioni salvate» con la tabella (Data, Esito, Impianto, Autore). Se hai rilevato il locale macchina, «Rilievi del locale macchina» con la tabella (Data, Esito, Locale e argano, Autore).",
+            "Il Progetto dell’impianto: sotto il titolo, la data dell’ultimo progetto salvato, il pulsante «Apri il progetto» e, se il software è cambiato, l’avviso «da aggiornare» con «Aggiorna con il software attuale» (per chi può aggiornare). Sotto, «Versioni salvate» con la tabella dei progetti salvati (Data, Esito, Impianto, Autore). Se hai rilevato il locale macchina, «Rilievi del locale macchina» con la tabella (Data, Esito, Locale e argano, Autore). La simulazione 3D è nella pagina «Simulazione», la distinta delle staffe in «Tavole e documenti».",
             "Se non c’è ancora nulla leggi che cosa è il Progetto per questo intervento: «Per questo intervento il Progetto è il rilievo del locale macchina sul calcolo argano; resta possibile disegnare l’intero impianto.», «Il Progetto disegna il vano sul calcolo argano.» oppure «Il Progetto si disegna sul calcolo argano, dopo averlo salvato.», con il pulsante «Rileva il locale macchina» o «Disegna il progetto» (o la nota di chi fa quel passo)."
           ],
           "fields": [],
@@ -1266,32 +1253,17 @@
             {
               "label": "Apri il progetto",
               "help": "Apre l’ultimo progetto salvato.",
-              "src": "src/components/project/ProjectSections.tsx:59"
+              "src": "src/components/project/ProjectSections.tsx:52"
+            },
+            {
+              "label": "Rileva il locale macchina · Disegna il progetto",
+              "help": "Compaiono quando non c’è ancora un Progetto, per chi disegna il progetto: aprono il rilievo del locale macchina o il disegno del vano sull’ultimo Calcolo argano.",
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:60"
             },
             {
               "label": "Aggiorna con il software attuale",
               "help": "Compare nell’avviso «da aggiornare» del progetto, per chi può aggiornarlo.",
               "src": "src/components/StaleNotice.tsx:88"
-            }
-          ],
-          "notes": []
-        },
-        {
-          "title": "Tavole emesse",
-          "intro": [
-            "L’elenco delle serie di tavole emesse (ognuna «Disegno n° …», con la revisione «R1», «R2»… se non è la prima, la data e l’autore). Senza tavole: «Nessuna tavola emessa per questo impianto. Le tavole si emettono dal progetto dell’impianto (Documenti) o da un calcolo fatto da un progetto del vano.». Sotto, «Relazioni tecniche di modifica emesse» con le relazioni già emesse («Scarica il PDF» se puoi scaricare) o «Nessuna relazione tecnica di modifica emessa per questo impianto.»."
-          ],
-          "fields": [],
-          "actions": [
-            {
-              "label": "Dati dell’impianto",
-              "help": "Apre la pagina «Dati dell’impianto», con i dati che servono al foglio 1 delle tavole (vedi pagina seguente). Compare anche se l’impianto è archiviato (in sola lettura).",
-              "src": "src/components/project/ProjectSections.tsx:83"
-            },
-            {
-              "label": "Relazione tecnica di modifica",
-              "help": "Apre la relazione tecnica di modifica dell’impianto. Su un impianto archiviato la pagina si apre in sola lettura.",
-              "src": "src/components/project/ProjectSections.tsx:97"
             }
           ],
           "notes": []

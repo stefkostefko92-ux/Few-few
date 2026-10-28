@@ -184,9 +184,11 @@ export async function rtRoom({ BASE, page, hydrated, stamp, roomUrl, roomId }) {
   assert.equal((await page.goto(rtUrl)).status(), 200);
   assert.match(await page.textContent('main .alert-info'), /non è l’ultima revisione/);
 
-  step('RT: the installation’s page lists it; the workspace fits a phone');
+  step('RT: the installation’s bar says it issued, its page lists the revisions; the workspace fits a phone');
   await page.goto(wsUrl.replace(/\/relazione-tecnica$/, ''));
-  assert.ok(await page.locator('.rt-emesse li').count() >= 2, 'the RTs on the installation’s page');
+  assert.equal((await page.textContent('.imp-tabs > li[data-scheda="relazione"] .imp-st'))?.trim(), 'emessa', 'the bar: issued');
+  await page.goto(wsUrl);
+  assert.ok(await page.locator('.rt-emesse li').count() >= 2, 'the RTs issued, on the relazione tecnica’s page');
   await page.setViewportSize({ width: 360, height: 800 });
   for (const url of [wsUrl, r1Url]) {
     await page.goto(url);

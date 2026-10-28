@@ -54,16 +54,17 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   assert.equal(await page.locator('main > .alert-warn').count(), 0, 'the running engines reproduce the machine room');
   assert.equal(await page.locator('figure.sheet-view .draw-stage svg').count(), 2, 'plan and section of the machine room');
 
-  step('replacement: drawing set draft (PDF and its sheets in SVG), DXF and DWG (no relazione of the machine room any more)');
+  step('replacement: on «Tavole e documenti», the drawing set draft (PDF and its sheets in SVG), DXF and DWG (no relazione of the machine room any more)');
   assert.equal((await page.request.get(`${BASE}/api/room-designs/${roomId}/relazione`)).status(), 404, 'relazione: the relazione tecnica di modifica');
+  await Promise.all([page.waitForURL(/\/documenti\?design=[a-z0-9]+$/), page.click('main .page-head .actions a[href*="/documenti?design="]')]);
   for (const [format, magic] of [['pdf', '%PDF-'], ['dxf', '  0\nSECTION'], ['dwg', 'AC1015'], ['svg', ZIP]]) {
     assert.ok(await page.locator(`.doc-links a[href="/api/room-designs/${roomId}/${format}"]`).count(), `${format} button`);
     await fetchFile(page, `${BASE}/api/room-designs/${roomId}/${format}`, magic, format);
   }
 
   step('replacement: drawing set issued from the machine room, its PDF and a revision');
-  await page.fill('section[aria-labelledby="room-sets"] input[maxlength="12"]', 'S.T.');
-  await Promise.all([page.waitForURL(/\/drawing-sets\/[a-z0-9]+$/, { timeout: 60000 }), page.click('section[aria-labelledby="room-sets"] button[type="submit"]')]);
+  await page.fill('section[aria-labelledby="doc-tavole"] input[maxlength="12"]', 'S.T.');
+  await Promise.all([page.waitForURL(/\/drawing-sets\/[a-z0-9]+$/, { timeout: 60000 }), page.click('section[aria-labelledby="doc-tavole"] form:has(input[maxlength="12"]) button[type="submit"]')]);
   const roomSetUrl = page.url();
   await page.waitForSelector('.sheet-page svg.sheet-svg');
   assert.equal(await page.locator('nav.seg-row a').count(), 3, 'data, plan and section of the machine room');

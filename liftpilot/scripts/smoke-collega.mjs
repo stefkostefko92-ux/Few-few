@@ -82,15 +82,15 @@ export async function collegaFlow({ BASE, page, hydrated, stamp }) {
   await page.waitForSelector('.savebar button.primary:not([disabled])');
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
 
-  step('survey and installation: the steps, the survey and the comparison on the installation\'s page');
+  step('survey and installation: the bar of the steps, the next step, the survey and the comparison on the installation\'s page');
   await page.goto(projectUrl);
-  assert.equal(await page.locator('.lk-steps > li').count(), 4, 'four steps');
-  const states = (await page.locator('.lk-steps > li .lk-step-state').allTextContents()).map((x) => x.trim());
-  assert.deepEqual([states[1], states[3]], ['differenze', 'da aggiornare'], 'the documents of a calculation with differences: not «fatto»');
+  assert.equal(await page.locator('.imp-tabs > li').count(), 7, 'the bar: the overview and six steps');
+  const stato = async (k) => (await page.locator(`.imp-tabs > li[data-scheda="${k}"] .imp-st`).textContent())?.trim();
+  assert.equal(await stato('calcolo'), 'differenze', 'a calculation that says otherwise than the survey');
+  assert.equal(await stato('documenti'), 'dopo il progetto', 'the documents: not before the Progetto');
+  assert.match(await page.textContent('.imp-next'), /calcolo argano va aggiornato/, 'the next step: the calculation first');
   // a «Solo argano» with the machine above: its Progetto is the machine room surveyed on the calculation (round 45)
-  const step3 = page.locator('.lk-steps > li').nth(2);
-  assert.match(await step3.textContent(), /locale macchina/, 'the step says what the Progetto is');
-  assert.equal(await step3.locator('a[href$="/locale"]').count(), 1, 'the way to the machine room survey');
+  assert.equal(await page.locator('.imp-tabs > li[data-scheda="progetto"] a[href$="/locale"]').count(), 1, 'the way to the machine room survey');
   assert.match(await page.textContent('.page-head .titles .tipo-badge'), /Solo argano/, 'the type read from the calculation');
   assert.equal(await page.locator('#rilievi .lk-rilievi-list > li').count(), 1, 'its survey');
   const row = (p) => page.locator(`#confronto tr[data-param="${p}"]`);

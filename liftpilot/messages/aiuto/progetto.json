@@ -1,5 +1,6 @@
 {
-  "pagina": "Qui disegni solo la geometria dell’impianto: vano, porte, piani, locale e funi nel disegno. Il resto (cabina, guide, contrappeso, verifiche) lo calcola il software mentre scrivi e la simulazione 3D lo mostra; portata, velocità, argano e funi si cambiano nel Calcolo argano.",
+  "pagina": "Qui disegni solo la geometria dell’impianto: vano, porte, piani, locale e funi nel disegno. Il resto (cabina, guide, contrappeso, verifiche) lo calcola il software mentre scrivi: a destra vedi il disegno e le verifiche. Portata, velocità, argano e funi si cambiano nel Calcolo argano; la simulazione 3D è nella pagina Simulazione.",
+  "simulazione": "La scena 3D e i grafici usano le stesse forze delle verifiche: servono a capire il comportamento dell’impianto, non sostituiscono le prove in sito. Si simula il progetto salvato o la bozza del Progetto, quando è completa.",
   "W": "Larghezza interna libera del vano lungo la parete delle porte di piano, tra i muri finiti, da 500 a 10.000 mm. Misurala in cantiere o prendila dal disegno CAD: con larghezza e profondità il software propone la cabina più grande che entra.",
   "D": "Profondità interna libera del vano, dalla parete delle porte a quella di fondo, da 500 a 10.000 mm. Se cambi le misure del vano, le quote della pianta fissate a mano si perdono, tranne la posizione delle porte.",
   "Q": "La portata del Calcolo argano: qui la vedi, ma si cambia solo nel calcolo. Decide la superficie massima della cabina e il numero di persone.",

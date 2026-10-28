@@ -2,18 +2,227 @@
   "key": "documenti",
   "title": "Tavole, relazione tecnica di modifica e documenti",
   "intro": [
-    "Questo capitolo spiega i documenti che LiftPilot produce a partire dal progetto: la serie di tavole in formato A4 (con il cartiglio, i dati dell’impianto e i loghi), la relazione tecnica di modifica con i suoi componenti, gli allegati e le firme, e i documenti che carichi tu (dichiarazioni, certificati, schemi, fotografie, schizzi di rilievo).",
+    "Questo capitolo spiega i documenti che LiftPilot produce a partire dal progetto: la pagina «Tavole e documenti» dell’impianto, la serie di tavole in formato A4 (con il cartiglio, i dati dell’impianto e i loghi), la relazione tecnica di modifica con i suoi componenti, gli allegati e le firme, e i documenti che carichi tu (dichiarazioni, certificati, schemi, fotografie, schizzi di rilievo).",
     "Le tavole e la relazione sono documenti numerati e non modificabili: una volta emessi ricevono un numero nella forma AA-NNN (le ultime due cifre dell’anno e un progressivo dell’azienda, per esempio 26-001). Per correggerli emetti una revisione, che tiene lo stesso numero e aggiunge R1, R2… Il PDF emesso resta scaricabile com’è, anche se in seguito il software cambia.",
     "Per capire chi può fare che cosa: vedere gli impianti è di tutti i ruoli; modificare i dati dell’impianto e caricare i documenti spetta a Capotecnico, Progettista e Tecnico; preparare la bozza della relazione, disegnare il progetto ed emettere tavole e relazioni spetta a Capotecnico e Progettista; scaricare i PDF spetta a tutti. Il Titolare ha tutti i diritti e può cambiare questa matrice per l’azienda.",
-    "L’ordine del capitolo segue il lavoro: la serie di tavole emessa e il suo modulo di emissione, le quote che cambi sui disegni del progetto, la relazione tecnica di modifica, il riquadro dei documenti caricati e la relazione emessa. I dati dell’impianto e il logo del committente che finiscono nel cartiglio sono nella pagina «Dati dell’impianto» (vedi il capitolo L’area di lavoro e gli impianti); il logo dell’azienda è nella pagina «Azienda» (vedi il capitolo L’azienda)."
+    "L’ordine del capitolo segue il lavoro: la pagina «Tavole e documenti», la serie di tavole emessa e il suo modulo di emissione, le quote che cambi sui disegni del progetto, la relazione tecnica di modifica, il riquadro dei documenti caricati e la relazione emessa. I dati dell’impianto e il logo del committente che finiscono nel cartiglio sono nella pagina «Dati dell’impianto» (vedi il capitolo L’area di lavoro e gli impianti); il logo dell’azienda è nella pagina «Azienda» (vedi il capitolo L’azienda)."
   ],
   "pages": [
+    {
+      "id": "documenti-impianto",
+      "title": "Tavole e documenti",
+      "path": "/it/app/projects/‹id›/documenti",
+      "access": "La vedono tutti i ruoli che vedono gli impianti. Ogni documento segue il suo diritto: scaricare («Scaricare relazioni, tavole, DXF, DWG e SVG, bozze d’ordine e documenti caricati»: predefinito tutti i ruoli), emettere le tavole («Emettere le tavole e le relazioni tecniche di modifica, con le loro revisioni»: predefinito Capotecnico e Progettista, su un impianto non archiviato), vedere costo e prezzi («Vedere i prezzi e il listino»: predefinito Titolare, Capotecnico, Commerciale), caricare documenti (predefinito Capotecnico, Progettista, Tecnico). Il Titolare ha tutti i diritti e può cambiare la matrice.",
+      "reach": "Dalla scheda «Tavole e documenti» della barra dell’impianto; dal pulsante «Tavole e documenti» nella pagina di un progetto salvato o di un locale macchina rilevato (la pagina si apre su quel record); dal «Prossimo passo» della panoramica quando tocca alle tavole.",
+      "purpose": [
+        "Tutto quello che si scarica, si emette o si ordina, in una pagina sola e in blocchi, nell’ordine del lavoro: «Tavole di progetto», «Relazione di calcolo e disegni», «Documenti caricati», «Materiali e ordine».",
+        "La pagina parte dal Progetto dell’impianto: l’ultimo progetto del vano salvato, oppure il locale macchina rilevato quando l’intervento tocca solo il locale macchina. Se ci arrivi da un record salvato, parte da quello. Sotto il titolo leggi «Dal progetto salvato il ‹data›» (o «Dal locale macchina rilevato il ‹data›») e il collegamento «apri il progetto salvato».",
+        "I documenti si fanno solo finché il software attuale riproduce il record da cui nascono (stessa impronta SHA-256); altrimenti un avviso in cima lo dice e i pulsanti di download e di emissione non compaiono. La bozza del Progetto non conta: i documenti partono sempre dal progetto salvato."
+      ],
+      "shots": [
+        {
+          "id": "documenti-pagina",
+          "what": "La pagina «Tavole e documenti» di un progetto salvato: la barra dei passi, il blocco «Tavole di progetto» con l’esportazione e l’inizio del blocco «Relazione di calcolo e disegni»"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Tavole di progetto",
+          "intro": [
+            "Il primo blocco. «Esporta il progetto»: «Le tavole e tutte le viste del progetto salvato, in PDF, DXF, DWG e SVG. Il PDF è la bozza non emessa.» Sotto, «Emetti una serie di tavole» con il modulo di emissione (descritto nella pagina «Emissione di una serie di tavole») e l’elenco «Serie emesse (‹n›)», dalla più recente."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "PDF delle tavole (bozza)",
+              "help": "Il PDF delle tavole non ancora emesse.",
+              "src": "src/components/documenti/DocumentiProgetto.tsx:65"
+            },
+            {
+              "label": "DXF (tutte le viste)",
+              "help": "Tutte le viste del progetto in millimetri, a grandezza naturale, con i layer per tipo di parte.",
+              "src": "src/components/documenti/DocumentiProgetto.tsx:66"
+            },
+            {
+              "label": "DWG (tutte le viste)",
+              "help": "Le stesse viste in DWG.",
+              "src": "src/components/documenti/DocumentiProgetto.tsx:67"
+            },
+            {
+              "label": "SVG (tutti i fogli, ZIP)",
+              "help": "Gli stessi fogli del PDF (foglio 1 e verifiche compresi), un file per foglio in un archivio ZIP, alla scala di stampa e con il carattere incorporato.",
+              "src": "src/components/documenti/DocumentiProgetto.tsx:68"
+            },
+            {
+              "label": "Emetti le tavole",
+              "help": "Nel riquadro «Emetti una serie di tavole»: emette la serie con numero e revisione. Prima del pulsante il modulo segnala i dati dell’impianto mancanti (matricola, committente) e il nome della macchina che non coincide con quella del calcolo. Solo per chi può emettere, su un impianto non archiviato.",
+              "src": "src/components/tavole/IssueForm.tsx"
+            },
+            {
+              "label": "Dati dell’impianto",
+              "help": "Accanto a «Serie emesse»: apre la pagina «Dati dell’impianto», con i dati che il foglio 1 delle tavole legge.",
+              "src": "src/components/documenti/TavoleEmesse.tsx:16"
+            },
+            {
+              "label": "Disegno n° ‹numero›",
+              "help": "Ogni serie emessa, con data e autore: apre la pagina della serie (descritta qui sotto). Senza serie leggi «Nessuna tavola emessa per questo impianto.»",
+              "src": "src/components/documenti/TavoleEmesse.tsx:22"
+            }
+          ],
+          "notes": [],
+          "warnings": [
+            "Se il progetto salvato non è più riprodotto dal software attuale leggi «I documenti non si generano finché il progetto non viene salvato di nuovo con il software attuale.»: aggiornalo dalla sua pagina con «Aggiorna con il software attuale».",
+            "L’emissione crea una serie di tavole con numero e revisione: un’emissione non si cancella."
+          ]
+        },
+        {
+          "title": "Relazione di calcolo e disegni",
+          "intro": [
+            "«Relazione di calcolo, pianta in DXF e SVG e tavole si fanno dagli stessi dati, con un clic.»"
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Relazione di calcolo (PDF)",
+              "help": "Scarica la relazione di calcolo del progetto, con la pianta del vano.",
+              "src": "src/components/documenti/DocumentiProgetto.tsx:85"
+            },
+            {
+              "label": "Pianta del vano (DXF)",
+              "help": "Scarica la pianta del vano in DXF.",
+              "src": "src/components/documenti/DocumentiProgetto.tsx:86"
+            },
+            {
+              "label": "Pianta del vano (SVG)",
+              "help": "Scarica la pianta del vano in SVG.",
+              "src": "src/components/documenti/DocumentiProgetto.tsx:87"
+            },
+            {
+              "label": "Calcolo della macchina",
+              "help": "Apre la pagina del calcolo del progetto.",
+              "src": "src/components/documenti/DocumentiProgetto.tsx:88"
+            },
+            {
+              "label": "Progetto del vano",
+              "help": "Apre la pagina «Progetto del vano» (capitolo sul Progetto).",
+              "src": "src/components/documenti/DocumentiProgetto.tsx:89"
+            }
+          ],
+          "notes": [
+            "La relazione tecnica di modifica non è qui: ha la sua scheda nella barra, «Relazione tecnica»."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Documenti caricati",
+          "intro": [
+            "Lo stesso riquadro del passo «Allegati» della relazione tecnica (pagina «Documenti caricati» di questo capitolo): carichi, modifichi, elimini e scarichi i documenti dell’impianto secondo i tuoi diritti."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [],
+          "warnings": []
+        },
+        {
+          "title": "Materiali e ordine",
+          "intro": [
+            "L’ultimo blocco: la distinta delle staffe Panev, il costo con il listino dell’azienda (solo a chi vede i prezzi) e la bozza d’ordine dell’argano verificato nel progetto."
+          ],
+          "fields": [
+            {
+              "label": "Codice / Articolo / Q.tà / Prezzo / Importo",
+              "kind": "tabella",
+              "unit": "€ (prezzo e importo)",
+              "values": "Prezzo e Importo solo con il diritto sui prezzi; «a preventivo» dove manca il prezzo",
+              "default": "Calcolata.",
+              "required": "no",
+              "help": [
+                "Per ogni articolo: codice, tipo e misura, pagina del catalogo, eventuale taglio o «su disegno esecutivo», e «più corta della soglia: da verificare».",
+                "Sotto vedi il «Totale, IVA esclusa» e l’avviso su staffe del contrappeso senza articolo a catalogo."
+              ],
+              "src": "src/components/documenti/MaterialiProgetto.tsx; src/components/shaft/PanevBom.tsx"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Bozza d’ordine Word (DOCX)",
+              "help": "Nel riquadro «Bozza d’ordine dell’argano»: l’argano con i dati per il costruttore. Mostra se la macchina è quella verificata o la prima del confronto SICOR / Montanari; i campi esecuzione, prezzo e consegna restano vuoti. La bozza non c’è se l’argano esistente resta (nessun ordine) oppure se nessun argano SICOR o Montanari a catalogo prende l’impianto («Nessun argano SICOR o Montanari a catalogo prende questo impianto: niente bozza d’ordine»).",
+              "src": "src/components/documenti/DocumentiProgetto.tsx:106"
+            },
+            {
+              "label": "Bozza d’ordine PDF",
+              "help": "La stessa bozza in PDF.",
+              "src": "src/components/documenti/DocumentiProgetto.tsx:107"
+            }
+          ],
+          "notes": [
+            "La distinta compare solo se l’impianto ha staffe di catalogo; con un intervento UNI 10411 conta solo le staffe delle parti sostituite. Due bride N1 per staffa, tasselli e bulloneria non sono inclusi.",
+            "«Costo degli articoli (listino dell’azienda)»: la tabella Articolo · Quantità · Prezzo unitario · Importo, con il totale IVA esclusa e la nota su che cosa conta. Si vede solo con il diritto sui prezzi.",
+            "Se l’argano esistente resta, al posto della bozza d’ordine leggi «L’argano resta quello dell’impianto: non c’è un argano da ordinare.»"
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Locale macchina rilevato (sostituzione dell’argano)",
+          "intro": [
+            "Quando la pagina parte da un locale macchina rilevato, i blocchi sono gli stessi con i documenti della sostituzione. In «Tavole di progetto»: «Documenti della sostituzione» («Tavole in bozza in PDF e SVG, pianta e sezione in DXF e DWG, relazione di calcolo dell’argano. La relazione tecnica di modifica si prepara nella sua pagina, a partire da questo rilievo.») e il modulo di emissione («Le tavole emesse da questo rilievo hanno un numero AA-NNN e le loro revisioni.»). In «Relazione di calcolo e disegni» la relazione di calcolo dell’argano. In «Materiali e ordine» il costo, per chi vede i prezzi: l’argano, il suo basamento e le parti che il collaudo indica come sostituite."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Tavole in bozza (PDF)",
+              "help": "Scarica le tavole in bozza: i dati, la pianta e la sezione B-B del locale.",
+              "src": "src/components/documenti/DocumentiLocale.tsx:48"
+            },
+            {
+              "label": "DXF · DWG",
+              "help": "Scaricano pianta e sezione in DXF o in DWG.",
+              "src": "src/components/documenti/DocumentiLocale.tsx:49-50"
+            },
+            {
+              "label": "SVG",
+              "help": "Scarica i fogli in SVG (ZIP se più d’uno).",
+              "src": "src/components/documenti/DocumentiLocale.tsx:51"
+            },
+            {
+              "label": "Relazione di calcolo (PDF)",
+              "help": "Scarica la relazione di calcolo dell’argano del calcolo da cui viene il rilievo.",
+              "src": "src/components/documenti/DocumentiLocale.tsx:67"
+            }
+          ],
+          "notes": [],
+          "warnings": [
+            "Se il software attuale non riproduce più il rilievo leggi «Il progetto salvato va aggiornato con il software attuale prima di fare i documenti: «Aggiorna con il software attuale» nella sua pagina.»"
+          ]
+        },
+        {
+          "title": "Ancora nessun documento",
+          "intro": [
+            "Finché l’impianto non ha un Progetto salvato compare «Ancora nessun documento» con «Tavole, relazione di calcolo e bozza d’ordine si fanno dal progetto salvato.» (o «Tavole e relazione di calcolo si fanno dal locale macchina rilevato.»). Sotto restano le serie già emesse, se ci sono, e i documenti caricati."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Apri il progetto",
+              "help": "Apre il Progetto (o il rilievo del locale macchina) sull’ultimo Calcolo argano. Solo per chi disegna il progetto.",
+              "src": "src/app/[locale]/app/projects/[id]/documenti/page.tsx:70"
+            }
+          ],
+          "notes": [],
+          "warnings": []
+        }
+      ],
+      "tips": [
+        "Prima di emettere le tavole salva il Progetto: la pagina parte sempre dal progetto salvato, non dalla bozza.",
+        "Le serie emesse più vecchie dell’ultimo progetto restano valide come documenti: per portare le modifiche nelle tavole emetti una revisione."
+      ]
+    },
     {
       "id": "serie-tavole",
       "title": "Tavole di progetto · ‹numero› (per esempio «Tavole di progetto · 26-001 R1»)",
       "path": "/it/app/drawing-sets/‹id›",
       "access": "La vedono tutti i colleghi che vedono gli impianti (permesso «Vedere gli impianti con calcoli, progetti e tavole», che comprende i calcoli: per impostazione predefinita Capotecnico, Progettista, Tecnico e Commerciale; il Titolare ha tutto). Il PDF e i file CAD li scarica chi ha il permesso di scaricare i documenti (predefinito: tutti i ruoli). La nuova revisione la emette chi ha il permesso di emettere i documenti («Emettere le tavole e le relazioni tecniche di modifica, con le loro revisioni»: predefinito Capotecnico e Progettista) e solo se l’impianto non è archiviato. Il Titolare può cambiare la matrice dei permessi.",
-      "reach": "Dalla pagina dell’impianto, nella sezione «Tavole emesse», clicca «Disegno n° ‹numero›»; oppure dall’elenco delle tavole emesse nella pagina del calcolo o del rilievo del locale; oppure ci arrivi direttamente dopo aver emesso le tavole.",
+      "reach": "Dalla pagina «Tavole e documenti» dell’impianto, nell’elenco «Serie emesse», clicca «Disegno n° ‹numero›»; oppure dall’elenco delle tavole emesse nella pagina del calcolo; oppure ci arrivi direttamente dopo aver emesso le tavole.",
       "purpose": [
         "Qui trovi una serie di tavole già emessa: il suo numero e la sua revisione, i fogli A4 disegnati uno alla volta, il PDF così com’è stato emesso, i file CAD (DXF, DWG, SVG) e lo storico delle revisioni. Da qui emetti anche una nuova revisione.",
         "Il numero della serie ha la forma AA-NNN (le ultime due cifre dell’anno e un progressivo dell’azienda, per esempio 26-001). Una revisione tiene lo stesso numero e aggiunge R1, R2… La serie emessa non si modifica mai: per correggere si emette una revisione.",
@@ -209,9 +418,9 @@
     {
       "id": "emissione-tavole",
       "title": "Emissione di una serie di tavole (modulo «Emetti le tavole»)",
-      "path": "/it/app/calculations/‹id›, /it/app/lift-designs/‹id› e /it/app/room-designs/‹id› (il modulo è lo stesso)",
+      "path": "/it/app/projects/‹id›/documenti (blocco «Tavole di progetto») e /it/app/calculations/‹id› (il modulo è lo stesso)",
       "access": "Lo vede e lo usa chi può emettere i documenti («Emettere le tavole e le relazioni tecniche di modifica, con le loro revisioni»: predefinito Capotecnico e Progettista, oltre al Titolare); l’impianto non deve essere archiviato. Il Titolare può cambiare la matrice dei permessi.",
-      "reach": "Dal calcolo salvato, dal progetto dell’ascensore o dal rilievo del locale macchina (pagine descritte negli altri capitoli): in fondo trovi «Emetti le tavole». La lista di cosa serve è in «Tavole emesse» della pagina dell’impianto: «Le tavole si emettono dal progetto dell’impianto (Documenti) o da un calcolo fatto da un progetto del vano.»",
+      "reach": "Dalla pagina «Tavole e documenti» dell’impianto, nel blocco «Tavole di progetto» («Emetti una serie di tavole»); oppure in fondo alla pagina di un calcolo fatto da un progetto del vano. La pagina parte dal progetto salvato dell’impianto o dal locale macchina rilevato.",
       "purpose": [
         "Questo modulo dà il numero alla serie (AA-NNN, per esempio 26-001) e la conserva con il suo PDF. Il progressivo è per azienda e per anno e lo assegna il server al momento dell’emissione.",
         "Prima di emettere, il modulo controlla ciò che il cartiglio scriverebbe sbagliato o lascerebbe vuoto, con gli stessi avvisi descritti nella pagina «Tavole di progetto»."
@@ -258,9 +467,9 @@
     {
       "id": "quote-modificabili",
       "title": "Disegni del progetto: cambia le quote",
-      "path": "/it/app/projects/‹id›/progetto (riquadro «Disegni del progetto: cambia le quote») e, per la sostituzione dell’argano, /it/app/calculations/‹id›/locale (riquadro «Pianta e sezione del locale»)",
+      "path": "/it/app/projects/‹id›/progetto (scheda «Disegno», riquadro «Disegni del progetto: cambia le quote») e, per la sostituzione dell’argano, /it/app/calculations/‹id›/locale (riquadro «Pianta e sezione del locale»)",
       "access": "Il riquadro è parte del Progetto: lo vede chi vede l’impianto e lo usa chi può disegnare il progetto («Progetto: disegnare il vano o rilevare il locale macchina»: predefinito Capotecnico e Progettista, oltre al Titolare). Anche la pagina del rilievo del locale richiede «Progetto: disegnare il vano o rilevare il locale macchina». Il Titolare può cambiare la matrice dei permessi.",
-      "reach": "Dal Progetto dell’ascensore (impianto completo) o dal rilievo del locale macchina (sostituzione): nel punto in cui il progetto è disegnato. Il riquadro compare quando il progetto ha tutti i dati per essere disegnato; altrimenti leggi «Questa vista non si può disegnare con questi dati.» (vano) o «Il locale non si può disegnare con questi valori.» (locale).",
+      "reach": "Dal Progetto dell’ascensore (impianto completo), nella scheda «Disegno» sulla destra, o dal rilievo del locale macchina (sostituzione): nel punto in cui il progetto è disegnato. Il riquadro compare quando il progetto ha tutti i dati per essere disegnato; altrimenti leggi «Questa vista non si può disegnare con questi dati.» (vano) o «Il locale non si può disegnare con questi valori.» (locale).",
       "purpose": [
         "Le quote scritte sul disegno sono pulsanti: clicca una quota (o raggiungila con Tab e premi Invio) e sul punto si apre un campo con la lunghezza attuale; scrivi il valore e premi Invio: il progetto si ridisegna con le sue verifiche. Quello che cambi sul disegno cambia il dato corrispondente del modulo, con la stessa convalida del salvataggio.",
         "Le tavole emesse nascono da questi stessi disegni: le modifiche fatte qui entrano nelle tavole solo quando salvi il progetto ed emetti una serie o una revisione.",
@@ -576,7 +785,7 @@
       "title": "Relazione tecnica di modifica",
       "path": "/it/app/projects/‹id›/relazione-tecnica",
       "access": "La vedono tutti i ruoli che vedono l’impianto («Vedere gli impianti con calcoli, progetti e tavole»). I dati dell’impianto e i documenti caricati li modifica chi può modificare l’impianto («Modificare i dati dell’impianto (anche l’anagrafica per la relazione tecnica) e il logo del committente; caricare, modificare ed eliminare i documenti dell’impianto»: predefinito Capotecnico, Progettista e Tecnico); la bozza della relazione (dai «Dati generali» alle «Firme») la prepara chi può disegnare il progetto («Progetto: disegnare il vano o rilevare il locale macchina»: predefinito Capotecnico e Progettista); la relazione la emette chi può emettere i documenti («Emettere le tavole e le relazioni tecniche di modifica, con le loro revisioni»: predefinito Capotecnico e Progettista). L’elenco emesse lo scarica chi può scaricare i documenti («Scaricare relazioni, tavole, DXF, DWG e SVG, bozze d’ordine e documenti caricati»: predefinito tutti i ruoli). Se l’impianto è archiviato tutto è in sola lettura. Il Titolare può cambiare la matrice dei permessi.",
-      "reach": "Dalla pagina dell’impianto, sezione «Tavole emesse», pulsante «Relazione tecnica di modifica»; dalla pagina del progetto dell’ascensore e da quella del rilievo del locale, pulsante «Relazione tecnica di modifica»; dalla relazione emessa, il percorso in alto.",
+      "reach": "Dalla scheda «Relazione tecnica» della barra dell’impianto; dalla pagina del progetto dell’ascensore e da quella del rilievo del locale, pulsante «Relazione tecnica di modifica»; dalla relazione emessa, il percorso in alto.",
       "purpose": [
         "Qui prepari ed emetti la relazione tecnica di modifica (RT) dell’impianto: il documento che raccoglie, per una modifica di un ascensore esistente, i dati generali e tecnici, le schede dei componenti toccati con le loro verifiche, i documenti allegati e le firme. Segue la UNI 10411-1 (impianti non marcati CE) o la UNI 10411-11 (impianti con marcatura CE); lo decide il Calcolo argano. Dalla versione 2.0.0 la relazione segue il modello del titolare dello studio.",
         "La relazione parte dall’ultimo Calcolo argano: la pagina lo dice sotto il titolo («Fatta sul Calcolo argano del …») e non serve il Progetto. Il software ricava da solo quali componenti entrano, i loro dati dal calcolo e i documenti proposti; tu compili i passi uno dopo l’altro, come dice la barra.",
@@ -3592,9 +3801,9 @@
     {
       "id": "documenti-caricati",
       "title": "Documenti caricati",
-      "path": "/it/app/projects/‹id›/relazione-tecnica (riquadro «Documenti caricati», nel passo «Allegati»)",
+      "path": "/it/app/projects/‹id›/relazione-tecnica (riquadro «Documenti caricati», nel passo «Allegati») e /it/app/projects/‹id›/documenti (blocco «Documenti caricati»)",
       "access": "Lo vede chi vede l’impianto. Carica, modifica ed elimina chi può modificare l’impianto («Modificare i dati dell’impianto (anche l’anagrafica per la relazione tecnica) e il logo del committente; caricare, modificare ed eliminare i documenti dell’impianto»: predefinito Capotecnico, Progettista e Tecnico) se l’impianto non è archiviato; scarica chi può scaricare i documenti («Scaricare relazioni, tavole, DXF, DWG e SVG, bozze d’ordine e documenti caricati»: predefinito tutti i ruoli). Per gli altri: «Qui i documenti si possono solo consultare e scaricare: l’impianto è archiviato, oppure il tuo accesso non prevede modifiche.» Il Titolare può cambiare la matrice dei permessi.",
-      "reach": "Nella pagina «Relazione tecnica di modifica», in fondo al passo «Allegati». Se la relazione non si può fare (manca il Calcolo argano, o l’intervento non ha la relazione) il riquadro compare comunque al posto dei passi.",
+      "reach": "Nella pagina «Relazione tecnica di modifica», in fondo al passo «Allegati», e nella pagina «Tavole e documenti» dell’impianto. Se la relazione non si può fare (manca il Calcolo argano, o l’intervento non ha la relazione) il riquadro compare comunque al posto dei passi.",
       "purpose": [
         "Qui carichi le dichiarazioni, i certificati, gli schemi e le fotografie dell’impianto: il testo del riquadro dice «Dichiarazioni, certificati, schemi e fotografie dell’impianto. Nella relazione tecnica di modifica spunti quali allegare in coda al fascicolo.»",
         "Il tipo del file si riconosce dal contenuto, non dal nome: sono accettati PDF, JPEG, PNG e HEIC (le foto HEIC dell’iPhone si convertono in JPEG), fino a 20 MB per file. Dalle fotografie si tolgono i metadati (posizione GPS, fotocamera, autore) prima di conservarle, perciò l’impronta SHA-256 indicata è quella della copia conservata. I PDF si conservano come caricati, compresi i loro metadati (autore, programma): toglili prima del caricamento se devono restare riservati. Non caricare fotografie con persone riconoscibili né documenti con dati sanitari.",
@@ -3874,7 +4083,7 @@
       "title": "Relazione tecnica di modifica · RT ‹numero› R‹revisione›",
       "path": "/it/app/relazioni/‹id›",
       "access": "La vedono tutti i ruoli che vedono l’impianto («Vedere gli impianti con calcoli, progetti e tavole»); una relazione di un’altra azienda dà «non trovato». Il PDF e gli allegati li scarica chi può scaricare i documenti («Scaricare relazioni, tavole, DXF, DWG e SVG, bozze d’ordine e documenti caricati»: predefinito tutti i ruoli). «Nuova revisione» compare a chi può emettere i documenti («Emettere le tavole e le relazioni tecniche di modifica, con le loro revisioni»: predefinito Capotecnico e Progettista) se l’impianto non è archiviato. Il Titolare può cambiare la matrice dei permessi.",
-      "reach": "Dall’elenco «Relazioni tecniche di modifica emesse» nella pagina della relazione tecnica o nella pagina dell’impianto: clicca «RT ‹numero› R‹n›»; oppure dopo aver emesso la relazione.",
+      "reach": "Dall’elenco «Relazioni tecniche di modifica emesse» nella pagina della relazione tecnica: clicca «RT ‹numero› R‹n›»; oppure dopo aver emesso la relazione.",
       "purpose": [
         "Questa pagina mostra una relazione già emessa: cosa contiene, come è stata fatta, quali revisioni ha; da qui scarichi il PDF. Una relazione emessa non si cambia: una correzione è una nuova revisione, con lo stesso numero.",
         "Il numero ha la forma AA-NNN (per esempio RT 26-001) e la revisione parte da R0. Il progressivo è per azienda e per anno."

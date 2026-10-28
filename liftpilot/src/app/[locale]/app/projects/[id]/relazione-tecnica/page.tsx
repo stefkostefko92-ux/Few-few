@@ -14,6 +14,7 @@ import { giornoIt } from '@/server/rt/issue';
 import { allegatiOptions, labelOf } from '@/components/allegati/options';
 import AllegatiPanel from '@/components/allegati/AllegatiPanel';
 import Crumbs from '@/components/Crumbs';
+import ImpiantoNav from '@/components/impianto/ImpiantoNav';
 import BaseStato2 from '@/components/rt2/BaseStato2';
 import CardAnagrafica from '@/components/rt/CardAnagrafica';
 import RelazioniEmesse from '@/components/rt/RelazioniEmesse';
@@ -49,6 +50,7 @@ export default async function RelazioneTecnicaPage({ params, searchParams }: { p
   return (
     <main className="page page-wide rt-page">
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${p.id}`, label: p.name }, { label: t('titolo') }]} />
+      <ImpiantoNav user={user} projectId={p.id} corrente="relazione" />
       <div className="page-head">
         <div className="titles">
           <span className="chip" data-rt-stato="">{stato}</span>

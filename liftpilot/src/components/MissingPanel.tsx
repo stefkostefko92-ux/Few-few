@@ -1,6 +1,7 @@
 'use client';
 
 import SectionTitle from '@/components/project/SectionTitle';
+import { mostraPasso } from './passi/mostra';
 
 // What a form still needs before the software works anything out: each value, a link that opens its group and puts
 // the cursor in its field.
@@ -10,13 +11,16 @@ interface Item {
   label: string;
 }
 
-/** Opens the groups round the field `id`, puts it in view and the cursor in it. */
+/** Opens the groups round the field `id` (and its step, where the form shows one at a time: passi/mostra.ts), puts it in
+ *  view and the cursor in it. */
 export function goToField(id: string): void {
   const el = document.getElementById(id);
   if (!el) return;
-  for (let p: HTMLElement | null = el.parentElement; p; p = p.parentElement) if (p instanceof HTMLDetailsElement) p.open = true;
-  el.scrollIntoView({ block: 'center' });
-  el.focus({ preventScroll: true });
+  mostraPasso(el, () => {
+    for (let p: HTMLElement | null = el.parentElement; p; p = p.parentElement) if (p instanceof HTMLDetailsElement) p.open = true;
+    el.scrollIntoView({ block: 'center' });
+    el.focus({ preventScroll: true });
+  });
 }
 
 export default function MissingPanel({ title, lead, items, id = 'missing' }: { title: string; lead: string; items: readonly Item[]; id?: string }) {

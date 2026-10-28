@@ -1,0 +1,45 @@
+/* Round 53 — the pages of an installation one job each: the Progetto's steps one at a time («Semplice») and its right side
+   in two tabs (drawing, checks), the checks with the problems first, the Simulazione's own page (what it simulates, the
+   scenarios with a line each), «Tavole e documenti» in three blocks. Colours only from the tokens of globals.css. */
+
+/* the Progetto's form: each step a box; between boxes the rule the sections had */
+.passo-blocco { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.lift-form > .passo-blocco + .passo-blocco:not([hidden]) { padding-top: 14px; border-top: 1px solid var(--rule); }
+.lift-form > .passo-blocco > h2 { padding-top: 0; border-top: 0; }
+.passo-nav { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding-top: 14px; border-top: 1px solid var(--rule); }
+.passo-nav > .btn { max-width: 100%; white-space: normal; text-align: left; }
+
+/* the Progetto's right side: the drawing or the checks */
+.lato-tabs { width: 100%; }
+.lato-tabs > button { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; }
+.lato-tabs > button.on { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); box-shadow: inset 0 -2px 0 var(--accent); }
+.lato-tabs .status-pill { min-width: 26px; justify-content: center; }
+.lift-main > [role="tabpanel"] { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.lift-main > [role="tabpanel"][hidden] { display: none; }
+/* on a narrow screen the right side flows into the page (lift.css): the facts, the form, then the drawing or the checks */
+@media (max-width: 1079px) {
+  .lift-work .differenze { order: 1; }
+  .lift-work .lato-tabs, .lift-work .lift-main > [role="tabpanel"] { order: 4; }
+}
+
+/* the checks: the problems in a table, the others folded under their count */
+.lift-checks .checks-none { margin: 0; color: var(--ok); }
+.checks-others > summary { cursor: pointer; width: fit-content; padding-block: 4px; font: 600 14px/1.4 var(--font-body); color: var(--accent); }
+.checks-others[open] > summary { margin-bottom: 10px; }
+
+/* the Simulazione: what it simulates, the scenarios each with its line */
+.sim-fonte { width: fit-content; max-width: 100%; }
+.sim-fonte > a[aria-current="true"] { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); box-shadow: inset 0 -2px 0 var(--accent); }
+.sim-fonte > .note { align-self: center; padding: 6px 10px; }
+.sc-text { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
+.sc-name { font: 600 14px/1.2 var(--font-body); }
+.sc-d { font: 400 12px/1.3 var(--font-body); color: var(--muted); white-space: normal; max-width: 22ch; }
+.scenario-tabs > button.on .sc-d { color: var(--ink-2); }
+.sim-page .lift-sim { padding: 14px; }
+
+/* «Tavole e documenti»: three blocks, one job each */
+.doc-blocchi { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.doc-blocco { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.doc-blocco .doc-links { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (min-width: 1180px) { .doc-blocchi.due { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media print { .passo-nav, .lato-tabs { display: none; } .lift-main > [role="tabpanel"][hidden] { display: flex; } }

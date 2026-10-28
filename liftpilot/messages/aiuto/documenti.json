@@ -1,4 +1,5 @@
 {
+  "pagina": "Qui si fa tutto quello che esce dall’impianto: le tavole di progetto da scaricare o emettere, la relazione di calcolo, la distinta Panev con il costo dal listino e la bozza d’ordine dell’argano. Tutto parte dal progetto salvato: se cambi il progetto, salvalo prima di emettere.",
   "revisioneCalcolo": "Il calcolo da cui ridisegnare la revisione: ogni voce riporta data e ora, etichetta e argano. Ci sono solo i calcoli dell’impianto fatti da un progetto del vano, dal più recente.",
   "revisioneRilievo": "Il rilievo del locale macchina salvato da cui ridisegnare la revisione: ogni voce riporta data e ora, etichetta, locale e argano, dal più recente.",
   "reviseNote": "Una frase su cosa cambia rispetto alla revisione precedente, da 3 a 120 caratteri: va nel cartiglio del foglio 1 e nell’elenco «Revisioni». Una revisione emessa non si modifica più.",
