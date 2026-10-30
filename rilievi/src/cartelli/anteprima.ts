@@ -2,10 +2,10 @@ import sharp from 'sharp';
 import { immagineModello, type ModelloCartello, type ModelloId } from './modelli.js';
 
 /**
- * Умалената картинка на шаблона за избора в настройките: изчистеният шаблон (без примерните данни), 480 px
- * широк, WebP. Прави се веднъж за процеса.
+ * Голият шаблон (изчистен, без главата на фирмата), 480 px широк, WebP — картинката на табелата само
+ * там, където pdftoppm липсва (машина за разработка, cartelli/vista.ts). Прави се веднъж за процеса.
  */
-export const LARGHEZZA_ANTEPRIMA = 480;
+const LARGHEZZA = 480;
 
 const cache = new Map<ModelloId, Promise<Buffer>>();
 
@@ -14,14 +14,10 @@ export function anteprimaModello(modello: ModelloCartello): Promise<Buffer> {
   let pronta = cache.get(id);
   if (!pronta) {
     pronta = immagineModello(modello).then((jpeg) =>
-      sharp(jpeg).resize({ width: LARGHEZZA_ANTEPRIMA }).webp({ quality: 78 }).toBuffer(),
+      sharp(jpeg).resize({ width: LARGHEZZA }).webp({ quality: 78 }).toBuffer(),
     );
     cache.set(id, pronta);
     pronta.catch(() => cache.delete(id));
   }
   return pronta;
 }
-
-/** Височината на умалената картинка (за width/height в страницата — без прескачане при зареждане). */
-export const altezzaAnteprima = (modello: ModelloCartello): number =>
-  Math.round((modello.altezza * LARGHEZZA_ANTEPRIMA) / modello.larghezza);

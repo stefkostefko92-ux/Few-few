@@ -1,9 +1,9 @@
 import { Router, type Request, type Response } from 'express';
 import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { canIn } from '../auth/scope.js';
-import { intestazioneDi } from '../aziende/dati.js';
-import { activeAziende, aziendaLogo } from '../aziende/service.js';
-import { altezzaAnteprima, LARGHEZZA_ANTEPRIMA } from '../cartelli/anteprima.js';
+import { datiSalvati } from '../aziende/dati.js';
+import { testataDi } from '../aziende/intestazione.js';
+import { activeAziende } from '../aziende/service.js';
 import {
   formValuesDalBody,
   formValuesFromCartello,
@@ -11,7 +11,7 @@ import {
   parseCartello,
 } from '../cartelli/form.js';
 import { modelloDi } from '../cartelli/modelli.js';
-import { renderCartello } from '../cartelli/pdf.js';
+import { renderCartello, type DatiCartello } from '../cartelli/pdf.js';
 import {
   createCartello,
   deleteCartello,
@@ -20,9 +20,10 @@ import {
   updateCartello,
   type CartelloFull,
 } from '../cartelli/service.js';
+import { misuraVista, vistaCartello } from '../cartelli/vista.js';
 import { config } from '../config.js';
 import { setFlash } from '../http/flash.js';
-import { pdfLimiter } from '../http/limits.js';
+import { pdfLimiter, vistaLimiter } from '../http/limits.js';
 import type { FieldErrors, FormValues } from '../schede/field-parsers.js';
 import { businessDay, dayFromDate } from '../time.js';
 import { scope } from './interventi.js';
@@ -134,11 +135,11 @@ cartelliRouter.get('/cartelli/:id', read, async (req, res) => {
   res.render('cartelli/show', {
     titleKey: 'cartelli.titolo',
     cartello: row,
-    modello: {
-      id: modello.id,
-      titolo: modello.titolo,
-      width: LARGHEZZA_ANTEPRIMA,
-      height: altezzaAnteprima(modello),
+    modello: { id: modello.id, titolo: modello.titolo, ...misuraVista(modello) },
+    // Без лого или без данни главата на табелата е непълна — страницата казва какво липсва и кой го слага.
+    manca: {
+      logo: !row.azienda.logoType,
+      dati: datiSalvati(row.azienda.datiSocietari) === null,
     },
     modifica: puoScrivere(req, row),
     impostazioni: canIn(principalOf(req).user, 'aziende:settings', row.aziendaId),
@@ -197,23 +198,37 @@ cartelliRouter.post('/cartelli/:id/elimina', write, requireCsrf, async (req, res
   res.redirect(303, '/cartelli');
 });
 
+const datiDi = (res: Response, row: CartelloFull): DatiCartello => ({
+  data: res.locals.fmt.day(row.data),
+  indirizzo: row.indirizzo ?? '',
+  citta: row.citta ?? '',
+  ubicazione: row.ubicazione ?? '',
+  testo: row.testo,
+});
+
+/** Картинката на табелата — самият PDF с логото и данните горе (cartelli/vista.ts). */
+cartelliRouter.get('/cartelli/:id/anteprima.webp', read, vistaLimiter, async (req, res) => {
+  const row = await loadCartello(req);
+  if (!row) return notFound(req, res);
+  const webp = await vistaCartello(
+    modelloDi(row.azienda.cartelloModello),
+    datiDi(res, row),
+    await testataDi(row.azienda),
+    config().PDF_FONT_DIR,
+  );
+  res
+    .status(200)
+    .set({ 'Content-Type': 'image/webp', 'Content-Length': String(webp.length) })
+    .end(webp);
+});
+
 cartelliRouter.get('/cartelli/:id/pdf', read, pdfLimiter, async (req, res) => {
   const row = await loadCartello(req);
   if (!row) return notFound(req, res);
-  const logo = row.azienda.logoType ? await aziendaLogo(row.aziendaId) : null;
   const pdf = await renderCartello(
     modelloDi(row.azienda.cartelloModello),
-    {
-      data: res.locals.fmt.day(row.data),
-      indirizzo: row.indirizzo ?? '',
-      citta: row.citta ?? '',
-      ubicazione: row.ubicazione ?? '',
-      testo: row.testo,
-    },
-    {
-      intestazione: intestazioneDi(row.azienda.name, row.azienda.datiSocietari),
-      logo: logo?.data ?? null,
-    },
+    datiDi(res, row),
+    await testataDi(row.azienda),
     config().PDF_FONT_DIR,
   );
   const filename = `cartello-fermo-impianto-${dayFromDate(row.data)}.pdf`;

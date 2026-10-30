@@ -24,7 +24,7 @@ Modulo di pronto intervento“, като хартиения блок): номе�
 Node ≥22 · TypeScript strict (ESM, `NodeNext`) · Express 5 · EJS (сървърно рендиране, строг CSP с nonce,
 `style-src-attr 'none'`) · Prisma 6 + PostgreSQL 16 (`pg_trgm`) · zod на всеки външен вход · pino (без
 PII и токени) · Argon2id · JWT (jose, HS256) в HttpOnly бисквитка, проверяван срещу сесия в базата ·
-pdfkit + DejaVu Sans (PDF с кирилица) · pdf-lib + @pdf-lib/fontkit (модулите на доставчиците, попълнени
+pdfkit + DejaVu Sans (PDF с кирилица) · pdftoppm (poppler-utils — картинката на табелата) · pdf-lib + @pdf-lib/fontkit (модулите на доставчиците, попълнени
 с DejaVu) · multer + sharp (логото на фирмата, прекодирано; снимките) · ffmpeg (клиповете — само в
 контейнера `worker`) · Fira Sans /
 Fira Sans Condensed от @fontsource (без CDN).
@@ -61,7 +61,8 @@ src/
                      sezioni.ts (редът на разделите на фирмата — запис, одит) · funzioni.ts (функциите
                      по избор: скицникът — само MASTER, с одит) · dati.ts (данните на фирмата — zod,
                      четене с недоверие, главата на табелата) · intestazione.ts (запис на данните и на
-                     шаблона на табелата, одит) · ruoli.ts (имената и правата от настройките, одит)
+                     шаблона на табелата, одит; `testataDi` — главата на табелата: логото и данните) ·
+                     ruoli.ts (имената и правата от настройките, одит)
   services/          вход, покани, потребители, членства (фирми и роли), токени (в базата само SHA-256)
   schede/            fields.ts (ЕДИНСТВЕНИЯТ списък полета и условията им) + fields-argano.ts +
                      fields-centralina.ts + fields-serrature.ts (разделите им) + field-conditions.ts +
@@ -79,8 +80,9 @@ src/
                      един UPDATE; проверката на печата) · sigillo.ts (отпечатъкът SHA-256, печатът HMAC) ·
                      pdf.ts + pdf-parti.ts (една страница A4)
   cartelli/          табелата „Avviso di fermo impianto“: modelli.ts (петте шаблона от assets/cartelli —
-                     SHA-256, картата в пиксели, изчистването на примерните данни) · anteprima.ts
-                     (умалените шаблони, WebP) · form.ts (zod) · service.ts (запис с `base`, изтриване,
+                     SHA-256, картата в пиксели, изчистването на примерните данни) · vista.ts
+                     (картинката на табелата — самият PDF, WebP) · anteprima.ts (голият шаблон —
+                     само без pdftoppm) · form.ts (zod) · service.ts (запис с `base`, изтриване,
                      одит) · pdf.ts (A4 по посоката на шаблона, логото и данните на фирмата горе)
   schizzi/           скицникът: elementi.ts (видът на елементите — zod, тежестта) · costanti.ts (мерките,
                      таваните, стрелките, пунктирите, котите) · simboli.ts (символите за шахтата) ·
@@ -529,7 +531,16 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   шаблон, вертикален за висок; Fira Sans Condensed (WOFF, като надписите на шаблоните), знак извън латиницата
   — DejaVu; всеки текст се смалява до 55 % и чак тогава се реже с „…“ (при текста към хората — на последния
   ред с текст). Мястото на рязане на дълга дума и размерът на текста се търсят двоично: PDF-ът се рисува в
-  единствената нишка на портала, а дума от 600 знака знак по знак беше 2–3 s (тестът пази под 1,5 s). Ново поле на табелата = нова колона в
+  единствената нишка на портала, а дума от 600 знака знак по знак беше 2–3 s (тестът пази под 1,5 s).
+  Логото и данните на фирмата стоят горе на ВСЯКА табела (собственикът, 30 октомври 2026 — „nella parte
+  superiore di tutti i cartelli deve comparire il logo e i dati societari“) — и в това, което порталът
+  показва: картинката на страницата на табелата (`/cartelli/:id/anteprima.webp`) и петте шаблона в
+  настройките (`/impostazioni/cartello/anteprima/<шаблон>.webp?azienda=`, само `aziende:settings` на
+  фирмата) са самият PDF, превърнат в WebP (`cartelli/vista.ts`: pdftoppm → суров PPM → sharp; PNG-то
+  през pdftoppm беше 1,2 s, PPM-ът — 45 ms), помнени по входа (шаблон, данни, лого — до 80). Свой таван
+  `vistaLimiter` (120/мин. на акаунт) — настройките са пет картинки, не бива да изяждат PDF-ите. Без
+  лого или без данни страницата и настройките го казват (логото слага само MASTER). Без pdftoppm (машина
+  за разработка) — голият шаблон и едно предупреждение в лога; в образа и в CI го има. Ново поле на табелата = нова колона в
   картата на всеки шаблон и поглед в PDF-а на петте.
 - **Менюто** (`views/partials/header.ejs`, `public/css/sidenav.css`, `public/js/menu.js`; собственикът, 30
   октомври 2026 — като в LiftPilot, вляво): групи Rilievi · Assistenza elevatori · Amministrazione (на

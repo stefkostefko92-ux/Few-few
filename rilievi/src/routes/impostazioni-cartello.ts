@@ -1,21 +1,22 @@
 import { Router } from 'express';
 import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { CAMPI_DATI, parseDatiSocietari } from '../aziende/dati.js';
-import { setCartelloModello, setDatiSocietari } from '../aziende/intestazione.js';
+import { setCartelloModello, setDatiSocietari, testataDi } from '../aziende/intestazione.js';
 import { aziendeImpostabili } from '../aziende/sezioni.js';
-import { anteprimaModello } from '../cartelli/anteprima.js';
 import { isModelloId, MODELLI } from '../cartelli/modelli.js';
+import { DATI_VUOTI, vistaCartello } from '../cartelli/vista.js';
+import { config } from '../config.js';
 import { setFlash } from '../http/flash.js';
+import { vistaLimiter } from '../http/limits.js';
 import { notFound, renderImpostazioni } from './impostazioni.js';
 
 /**
  * Настройките на фирмата за табелата „Avviso di fermo impianto“: данните ѝ (главата на табелата до
  * логото) и шаблонът. Пишат администраторът ѝ и MASTER (`aziende:settings`); фирма извън обхвата — 404.
- * Умалените шаблони са за всеки, който вижда табелите или настройките.
+ * Картинките на шаблоните в избора — с главата на фирмата, само за който пипа настройките ѝ.
  */
 export const impostazioniCartelloRouter: Router = Router();
 const settings = requireCapability('aziende:settings');
-const read = requireCapability('interventi:read');
 
 impostazioniCartelloRouter.post('/impostazioni/dati', settings, requireCsrf, async (req, res) => {
   const body = req.body as Record<string, unknown>;
@@ -62,18 +63,29 @@ impostazioniCartelloRouter.post(
   },
 );
 
-impostazioniCartelloRouter.get('/cartelli/modelli/:file', read, async (req, res) => {
-  const match = /^([a-z-]+)\.webp$/.exec(String(req.params.file));
-  const id = match?.[1];
-  if (!isModelloId(id)) return notFound(req, res);
-  const webp = await anteprimaModello(MODELLI.get(id)!);
-  res
-    .status(200)
-    .set({
-      'Content-Type': 'image/webp',
-      'Content-Length': String(webp.length),
-      // Адресът носи версията (?v=) — шаблоните се сменят само с нов билд.
-      'Cache-Control': 'private, max-age=86400',
-    })
-    .end(webp);
-});
+/**
+ * Шаблонът с главата на фирмата (логото и данните ѝ горе, полетата празни) — изборът в настройките
+ * показва табелата такава, каквато ще излезе.
+ */
+impostazioniCartelloRouter.get(
+  '/impostazioni/cartello/anteprima/:file',
+  settings,
+  vistaLimiter,
+  async (req, res) => {
+    const match = /^([a-z-]+)\.webp$/.exec(String(req.params.file));
+    const id = match?.[1];
+    const aziende = await aziendeImpostabili(principalOf(req).user);
+    const azienda = aziende.find((a) => a.id === req.query.azienda);
+    if (!isModelloId(id) || !azienda) return notFound(req, res);
+    const webp = await vistaCartello(
+      MODELLI.get(id)!,
+      DATI_VUOTI,
+      await testataDi(azienda),
+      config().PDF_FONT_DIR,
+    );
+    res
+      .status(200)
+      .set({ 'Content-Type': 'image/webp', 'Content-Length': String(webp.length) })
+      .end(webp);
+  },
+);

@@ -80,6 +80,9 @@
       "title": "Cartello di fermo impianto",
       "text": "Scegli l'aspetto del cartello. In alto vanno automaticamente il logo e i dati societari; data, indirizzo, ubicazione e testo li scrive chi crea il cartello.",
       "inUso": "In uso",
+      "anteprimaAlt": "Modello «{titolo}» con il logo e i dati societari dell'azienda in alto",
+      "mancaLogo": "L'azienda non ha ancora un logo: in alto nei cartelli ci sono solo i dati societari. Il logo lo carica l'amministrazione del portale.",
+      "mancaLogoMaster": "L'azienda non ha ancora un logo: in alto nei cartelli ci sono solo i dati societari. Caricalo nella pagina dell'azienda.",
       "save": "Usa il modello scelto"
     },
     "ruoli": {

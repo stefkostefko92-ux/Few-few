@@ -4,9 +4,12 @@
 # Обновяване: `docker buildx imagetools inspect node:22-slim` → новият Digest тук.
 FROM node:22-slim@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c AS base
 ENV TZ=UTC
-# openssl е за Prisma; ca-certificates — за SMTP; fonts-dejavu-core — DejaVu Sans за PDF-а (кирилица).
+# openssl е за Prisma; ca-certificates — за SMTP; fonts-dejavu-core — DejaVu Sans за PDF-а (кирилица);
+# poppler-utils — pdftoppm: картинката на табелата е самият ѝ PDF (src/cartelli/vista.ts), само наш PDF.
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates fonts-dejavu-core \
-  && rm -rf /var/lib/apt/lists/*
+    poppler-utils \
+  && rm -rf /var/lib/apt/lists/* \
+  && pdftoppm -v
 WORKDIR /app
 
 # --- Зависимости ---

@@ -24,10 +24,12 @@
     <div class="kv__item kv__item--wide"><dt><%= t('cartelli.campo.testo') %></dt><dd><%= c.testo %></dd></div>
   </dl>
   <figure class="cartello__modello">
-    <img class="cartello__anteprima" src="/cartelli/modelli/<%= modello.id %>.webp?v=<%= v %>" width="<%= modello.width %>" height="<%= modello.height %>" alt="<%= t('cartelli.anteprimaAlt', { titolo: modello.titolo }) %>" loading="lazy">
+    <img class="cartello__anteprima" src="/cartelli/<%= c.id %>/anteprima.webp" width="<%= modello.width %>" height="<%= modello.height %>" alt="<%= t('cartelli.anteprimaAlt', { titolo: modello.titolo }) %>" loading="lazy">
     <figcaption>
       <strong><%= t('cartelli.modello', { titolo: modello.titolo }) %></strong>
       <span class="muted"><%= t('cartelli.modelloTesto') %></span>
+      <% if (manca.logo) { %><span class="field__hint"><%= t('cartelli.mancaLogo') %></span><% } %>
+      <% if (manca.dati) { %><span class="field__hint"><%= t('cartelli.mancaDati') %></span><% } %>
       <% if (impostazioni) { %><a href="/impostazioni?azienda=<%= encodeURIComponent(c.aziendaId) %>#h-cartello"><%= t('cartelli.modelloCambia') %></a><% } %>
     </figcaption>
   </figure>

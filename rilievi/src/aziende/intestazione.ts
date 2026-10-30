@@ -1,9 +1,11 @@
 import type { Prisma } from '@prisma/client';
 import { writeAudit } from '../audit.js';
 import type { ModelloId } from '../cartelli/modelli.js';
+import type { AziendaCartello } from '../cartelli/pdf.js';
 import { prisma } from '../db.js';
 import type { SessionUser } from '../types.js';
-import type { DatiSocietari } from './dati.js';
+import { intestazioneDi, type DatiSocietari } from './dati.js';
+import { aziendaLogo } from './service.js';
 
 /**
  * Записът от настройките на фирмата за табелата „Avviso di fermo impianto“: данните ѝ (главата на
@@ -60,4 +62,18 @@ export async function setCartelloModello(
     );
     return true;
   });
+}
+
+/** Главата на табелата — логото и данните на фирмата, както са сега (за PDF-а и за картинката му). */
+export async function testataDi(azienda: {
+  id: string;
+  name: string;
+  logoType: string | null;
+  datiSocietari: unknown;
+}): Promise<AziendaCartello> {
+  const logo = azienda.logoType ? await aziendaLogo(azienda.id) : null;
+  return {
+    intestazione: intestazioneDi(azienda.name, azienda.datiSocietari),
+    logo: logo?.data ?? null,
+  };
 }

@@ -130,18 +130,6 @@ describe('the company data and the sign template in the settings', () => {
       assert.equal(row.cartelloModello, null);
     }
   });
-
-  it('serves the template thumbnails to whoever sees the signs, and nothing else', async () => {
-    const { browser } = await signedIn('CLIENTE');
-    const thumb = await browser.get('/cartelli/modelli/rosso.webp');
-    assert.equal(thumb.status, 200);
-    assert.equal(thumb.headers.get('content-type'), 'image/webp');
-    assert.equal(thumb.bytes.subarray(8, 12).toString(), 'WEBP');
-    for (const path of ['/cartelli/modelli/nero.webp', '/cartelli/modelli/rosso.jpg']) {
-      assert.equal((await browser.get(path)).status, 404, path);
-    }
-    assert.equal((await new Browser().get('/cartelli/modelli/rosso.webp')).status, 302);
-  });
 });
 
 describe('the stop signs', () => {

@@ -54,7 +54,8 @@ sudo REF=main PROJECTS="rilievi" bash /opt/few-few/current/deploy/fetch-deploy.s
 `deploy/deploy.sh` (вика го autodeploy; същият е и за ръчен деплой от папката на release-а):
 
 1. `.env` от `/opt/few-few/shared/rilievi/` в release-а; проверка на паролата и ключа;
-2. `docker compose build app worker` (приложението и фоновият процес на снимките — той с ffmpeg) —
+2. `docker compose build app worker` (приложението — с poppler-utils за картинката на табелата — и
+   фоновият процес на снимките — той с ffmpeg) —
    провал тук не пипа работещите контейнери (код 1);
 3. бекъп на базата ПРЕДИ миграцията (`backups/pre-deploy-*.sql.gz`, последните 5) — без бекъп няма
    миграция;

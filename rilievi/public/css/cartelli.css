@@ -82,7 +82,7 @@
 }
 
 .cartello__anteprima {
-  width: min(100%, 320px);
+  width: min(100%, 480px);
   height: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius);

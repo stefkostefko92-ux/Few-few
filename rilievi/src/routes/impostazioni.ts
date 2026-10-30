@@ -10,8 +10,8 @@ import {
 } from '../auth/permessi.js';
 import { CAMPI_DATI, datiSalvati, type DatiSocietari } from '../aziende/dati.js';
 import { aziendeImpostabili, setOrdineSezioni } from '../aziende/sezioni.js';
-import { altezzaAnteprima, LARGHEZZA_ANTEPRIMA } from '../cartelli/anteprima.js';
 import { MODELLI, MODELLI_ID, modelloDi } from '../cartelli/modelli.js';
+import { misuraVista } from '../cartelli/vista.js';
 import { setFlash } from '../http/flash.js';
 import type { SectionKey } from '../schede/fields.js';
 import {
@@ -82,12 +82,7 @@ export function renderImpostazioni(
     campiDati: CAMPI_DATI,
     modelli: MODELLI_ID.map((id) => {
       const modello = MODELLI.get(id)!;
-      return {
-        id,
-        titolo: modello.titolo,
-        width: LARGHEZZA_ANTEPRIMA,
-        height: altezzaAnteprima(modello),
-      };
+      return { id, titolo: modello.titolo, ...misuraVista(modello) };
     }),
     modello: modelloDi(azienda.cartelloModello).id,
     ruoli: { values: ruoliForm(azienda), errors: {} },

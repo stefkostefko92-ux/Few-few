@@ -244,7 +244,6 @@ export function createServer(): Express {
   app.use(interventiRouter);
   app.use(interventiFirmaRouter);
   app.use(interventiInvioRouter);
-  // Преди cartelliRouter: `/cartelli/modelli/<шаблон>.webp` (умалените шаблони).
   app.use(impostazioniCartelloRouter);
   app.use(cartelliRouter);
   app.use(usersRouter);
