@@ -1,20 +1,17 @@
 <%
-  // Формата на листа за интервенция — разделите като хартиения блок: главата, петте групи с точките
-  // (кутийка, номер, текстът, празното място на реда като поле), „Altro“ с пробите и часовете, двата
-  // подписа с пръст (public/js/firma.js). Подписите не идват попълнени от записа: всеки запис на
-  // черновата ги иска наново, за да са за това, което е на листа.
+  // Формата на черновата на листа за интервенция — разделите като хартиения блок: главата, петте групи с
+  // точките (кутийка, номер, текстът, празното място на реда като поле), „Altro“ с пробите и часовете.
+  // Подписите не са тук: слагат се на страницата „Firma e conferma“ върху окончателния лист (firma.ejs).
   const isEdit = intervento !== null;
   const action = isEdit ? '/interventi/' + intervento.id : '/interventi';
   const errorKeys = Object.keys(errors);
   const vocePrefixes = ['v-', 'q-', 'c-'];
   const labelOf = (key) => {
     if (key === 'azienda') return t('scheda.field.azienda');
-    if (key === 'firmaTecnico' || key === 'firmaTecnicoNome') return t('interventi.firma.tecnico');
-    if (key === 'firmaCliente' || key === 'firmaClienteNome') return t('interventi.firma.cliente');
     if (vocePrefixes.includes(key.slice(0, 2))) return t('interventi.voce', { n: key.slice(2) });
     return t('interventi.campo.' + key);
   };
-  const maxOf = (key) => key.startsWith('q-') ? maxCampo[gruppi.flatMap((g) => g.voci).find((v) => codice(v.n) === key.slice(2))?.campo || 'n'] : { indirizzo: 200, citta: 120, tecnici: 300, matricola: 40, altro: 1000, firmaTecnicoNome: 120, firmaClienteNome: 120 }[key];
+  const maxOf = (key) => key.startsWith('q-') ? maxCampo[gruppi.flatMap((g) => g.voci).find((v) => codice(v.n) === key.slice(2))?.campo || 'n'] : { indirizzo: 200, citta: 120, tecnici: 300, matricola: 40, altro: 1000 }[key];
   const messageOf = (key) => key === 'data' && errors[key] === 'required' ? t('interventi.dataMancante') : t('scheda.error.' + errors[key], { maxLength: maxOf(key), min: 0, max: 9999 });
   const anchorOf = (key) => '#f-' + key;
   const str = (key) => typeof values[key] === 'string' ? values[key] : '';
@@ -101,27 +98,6 @@
       <div class="field field--wide"><label class="tick"><input type="checkbox" id="f-prove" name="prove" value="si"<% if (str('prove') === 'si') { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('interventi.campo.prove') %></span></label></div>
       <%- campo('oreTecnico', t('interventi.campo.oreTecnico'), 'decimal') %>
       <%- campo('oreTotali', t('interventi.campo.oreTotali'), 'decimal') %>
-    </div>
-  </fieldset>
-
-  <fieldset class="section firme">
-    <legend class="section__title"><%= t('interventi.sezione.firme') %></legend>
-    <% if (rifirmare) { %><p class="notice firme__nota"><%= t('interventi.firma.rifare') %></p><% } %>
-    <p class="field__hint"><%= t('interventi.firma.hint') %></p>
-    <div class="firme__grid">
-      <% for (const chi of ['Tecnico', 'Cliente']) {
-           const label = t('interventi.firma.' + chi.toLowerCase()); %>
-      <div class="firma" data-firma>
-        <p class="firma__label" id="l-firma<%= chi %>"><%= label %></p>
-        <div class="firma__pad">
-          <canvas class="firma__canvas" width="600" height="200" role="img" aria-label="<%= t('interventi.firma.area', { chi: label }) %>" data-firma-canvas></canvas>
-          <button type="button" class="btn btn--sm firma__clear" data-firma-clear aria-describedby="l-firma<%= chi %>"><%= t('interventi.firma.cancella') %></button>
-        </div>
-        <input type="hidden" id="f-firma<%= chi %>" name="firma<%= chi %>" value="<%= str('firma' + chi) %>" data-firma-input>
-        <% if (errors['firma' + chi]) { %><p class="field__error"><%= t('scheda.error.invalid') %></p><% } %>
-        <%- campo('firma' + chi + 'Nome', t('interventi.firma.nome'), 'text', 120, { autocomplete: chi === 'Tecnico' ? 'name' : 'off' }) %>
-      </div>
-      <% } %>
     </div>
   </fieldset>
 

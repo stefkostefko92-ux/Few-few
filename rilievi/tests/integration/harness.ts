@@ -36,6 +36,7 @@ process.env.DATABASE_URL =
   process.env.TEST_DATABASE_URL ?? 'postgresql://rilievi:rilievi@127.0.0.1:55432/rilievi_test';
 assertTestDatabase(process.env.DATABASE_URL);
 process.env.JWT_SECRET = randomBytes(32).toString('hex');
+process.env.INTERVENTI_SEAL_KEY = randomBytes(32).toString('hex');
 process.env.LOG_LEVEL = 'silent';
 process.env.PDF_FONT_DIR ??= '/usr/share/fonts/truetype/dejavu';
 delete process.env.SMTP_HOST;

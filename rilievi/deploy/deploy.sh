@@ -10,7 +10,8 @@
 # `prisma migrate deploy`) → чака, докато на порта отговори именно Rilievi → фоновият процес върви →
 # дневният бекъп → vhost-ът от репото, щом има сертификат → подсказки.
 #
-# Тайни не се измислят. Изход: 0 — жив; 3 — няма .env (машината не е настроена); 4 — контейнерите са
+# Тайни не се измислят — освен ключа на печата на листовете за интервенция (ensure_seal_key): нов, без
+# предишно състояние, създава се веднъж и после само се чете. Изход: 0 — жив; 3 — няма .env (машината не е настроена); 4 — контейнерите са
 # сменени, но Rilievi не отговаря (autodeploy връща предишния код); 1 — спрян преди смяната
 # (работещите не са пипани). След успешната сонда нищо не сменя изхода 0.
 #
@@ -64,6 +65,19 @@ sync_env() {
   fi
 }
 
+# Ключът на печата на потвърдените листове за интервенция (src/interventi/sigillo.ts): липсва ли в
+# $SHARED/.env (машина отпреди листовете), се създава веднъж там. Никога не се сменя — сменен или загубен
+# ключ значи, че нито един потвърден лист не минава проверката (PDF и имейл спират) — DEPLOY.md, т. 1.
+ensure_seal_key() {
+  [ -z "$(env_value INTERVENTI_SEAL_KEY)" ] || return 0
+  command -v openssl >/dev/null 2>&1 || fail 1 "липсва openssl — не мога да създам INTERVENTI_SEAL_KEY."
+  # Без нов ред накрая новият ключ би се залепил за последния ред на файла.
+  [ -z "$(tail -c 1 "$SHARED/.env")" ] || printf '\n' >>"$SHARED/.env"
+  printf 'INTERVENTI_SEAL_KEY=%s\n' "$(openssl rand -hex 32)" >>"$SHARED/.env"
+  install -m 600 "$SHARED/.env" "$APP_DIR/.env"
+  ok "създадох INTERVENTI_SEAL_KEY в $SHARED/.env — пази го в бекъпа на тайните, никога не го сменяй"
+}
+
 # POSTGRES_PASSWORD влиза некодирана в DATABASE_URL: „/“, „?“, „#“, „%“ и „@“ чупят адреса и
 # приложението никога не стига до базата. По-добре отказ сега, отколкото сонда и откат.
 check_secrets() {
@@ -73,6 +87,8 @@ check_secrets() {
   esac
   printf '%s' "$(env_value JWT_SECRET)" | grep -Eqx '[0-9a-fA-F]{64}' ||
     fail 1 "JWT_SECRET трябва да е 64 hex знака (openssl rand -hex 32) — DEPLOY.md, т. 1."
+  printf '%s' "$(env_value INTERVENTI_SEAL_KEY)" | grep -Eqx '[0-9a-fA-F]{64}' ||
+    fail 1 "INTERVENTI_SEAL_KEY трябва да е 64 hex знака — DEPLOY.md, т. 1 (не се сменя, ако вече има потвърдени листове)."
 }
 
 # Има ли база за бекъп — решава се преди build-а: при пръв деплой томът още не съществува.
@@ -217,6 +233,7 @@ main() {
   fi
   cd "$APP_DIR"
   sync_env
+  ensure_seal_key
   check_secrets
   port="$(env_value HTTP_PORT | tr -dc '0-9')"
   port="${port:-4330}"

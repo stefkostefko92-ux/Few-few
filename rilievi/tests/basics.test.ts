@@ -10,6 +10,7 @@ const base = {
   PUBLIC_BASE_URL: 'https://rilievi.carbonstealth.eu/',
   DATABASE_URL: 'postgresql://x:y@db:5432/rilievi',
   JWT_SECRET: 'a'.repeat(64),
+  INTERVENTI_SEAL_KEY: 'b'.repeat(64),
 };
 
 describe('config', () => {
@@ -24,6 +25,17 @@ describe('config', () => {
   it('refuses to start with a weak or missing JWT secret', () => {
     assert.throws(() => loadConfig({ ...base, JWT_SECRET: 'secret' }), /JWT_SECRET/);
     assert.throws(() => loadConfig({ ...base, JWT_SECRET: undefined }), /JWT_SECRET/);
+  });
+
+  it('refuses to start without the seal key of the intervention sheets', () => {
+    assert.throws(
+      () => loadConfig({ ...base, INTERVENTI_SEAL_KEY: undefined }),
+      /INTERVENTI_SEAL_KEY/,
+    );
+    assert.throws(
+      () => loadConfig({ ...base, INTERVENTI_SEAL_KEY: 'c'.repeat(63) }),
+      /INTERVENTI_SEAL_KEY/,
+    );
   });
 
   it('treats an empty SMTP host from compose as "no mail"', () => {

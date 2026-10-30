@@ -1,11 +1,16 @@
 // The intervention form in a real browser (the owner, 30 October 2026): the side bar with its groups, a
-// new "Modulo di pronto intervento" filled and ticked like the paper pad, two signatures drawn with the
-// mouse, "Conferma" — then no "Modifica" any more, only the PDF and the email. On a phone the bar opens
-// from ☰ over the page and Esc closes it, focus back on ☰. axe on every page of it.
+// new "Modulo di pronto intervento" filled and ticked like the paper pad and saved as a draft (no
+// signature there), then "Firma e conferma": the final sheet read-only with its fingerprint, two
+// signatures drawn with the mouse under it — then no "Modifica" any more, the seal verified, only the PDF
+// and the email. On a phone the bar opens from ☰ over the page and Esc closes it, focus back on ☰. axe on
+// every page of it.
 import { join } from 'node:path';
 import { audit, fail, tick } from './helpers.mjs';
 
-/** A signature drawn with the mouse in the pad — centred on screen, clear of the sticky save bar. */
+/**
+ * A signature drawn with the mouse in the pad — centred on screen, clear of the sticky save bar. Each pad
+ * gets its own curve: the same strokes in both pads are refused (the customer did not sign).
+ */
 async function sign(page, index) {
   const pad = page.locator('[data-firma-canvas]').nth(index);
   await pad.evaluate((el) => el.scrollIntoView({ block: 'center' }));
@@ -15,7 +20,7 @@ async function sign(page, index) {
   for (let s = 1; s <= 16; s += 1)
     await page.mouse.move(
       box.x + box.width * (0.1 + s * 0.045),
-      box.y + box.height * (0.6 - 0.3 * Math.sin(s / 2)),
+      box.y + box.height * (0.6 - (0.3 - index * 0.12) * Math.sin(s / 2)),
     );
   await page.mouse.up();
   const value = await page.locator('[data-firma-input]').nth(index).inputValue();
@@ -47,7 +52,27 @@ export async function checkInterventi(page, { base, shots, scheme, aziendaName }
   await tick(page, 'prove', 'si');
   await page.fill('#f-oreTecnico', '1,5');
   await page.fill('#f-oreTotali', '3');
+  if (await page.locator('[data-firma-canvas]').count())
+    fail(`${scheme}: the draft form offers a signature pad`);
   await audit(page, `${scheme} intervento form`);
+  await page.screenshot({ path: join(shots, `${scheme}-intervento-form.png`), fullPage: true });
+  await page.click('.actions button[type=submit]');
+  await page.waitForURL(/\/interventi\/[a-z0-9]+$/);
+  const url = page.url();
+  if (!(await page.locator('.foglio li.is-on').count()))
+    fail(`${scheme}: no ticked item on the sheet`);
+  await audit(page, `${scheme} intervento draft`);
+
+  // "Firma e conferma": the sheet read-only, its fingerprint, the two pads under it.
+  await page.click('.intervento-conferma a[href$="/firma"]');
+  await page.waitForURL(`${url}/firma`);
+  const impronta = (await page.locator('.intervento-impronta .impronta').textContent())?.trim();
+  if (!/^([0-9A-F]{4} ){15}[0-9A-F]{4}$/.test(impronta ?? ''))
+    fail(`${scheme}: no fingerprint on the signing page (${impronta})`);
+  if (!(await page.locator('.foglio li.is-on').count()))
+    fail(`${scheme}: the signing page does not show the sheet`);
+  if ((await page.inputValue('#f-firmaTecnicoNome')) === '')
+    fail(`${scheme}: the technician's name is not filled in`);
   await sign(page, 0);
   await sign(page, 1);
   // "Cancella" empties a pad; the signature is drawn again.
@@ -57,18 +82,14 @@ export async function checkInterventi(page, { base, shots, scheme, aziendaName }
   await sign(page, 0);
   await page.fill('#f-firmaTecnicoNome', 'Mario Rossi');
   await page.fill('#f-firmaClienteNome', 'Anna Bianchi');
-  await page.screenshot({ path: join(shots, `${scheme}-intervento-form.png`), fullPage: true });
-  await page.click('.actions button[type=submit]');
-  await page.waitForURL(/\/interventi\/[a-z0-9]+$/);
-  const url = page.url();
+  await audit(page, `${scheme} intervento firma`);
+  await page.screenshot({ path: join(shots, `${scheme}-intervento-firma.png`), fullPage: true });
+  await page.click('.intervento-firma .actions button[type=submit]');
+  await page.waitForURL(url);
   if ((await page.locator('.foglio__firma path').count()) !== 2)
     fail(`${scheme}: the sheet does not show both signatures`);
-  if (!(await page.locator('.foglio li.is-on').count()))
-    fail(`${scheme}: no ticked item on the sheet`);
-  await audit(page, `${scheme} intervento draft`);
-
-  await page.click('.intervento-conferma button[type=submit]');
-  await page.waitForURL(url);
+  const stampata = (await page.locator('.foglio__impronta .impronta').textContent())?.trim();
+  if (stampata !== impronta) fail(`${scheme}: the sheet shows another fingerprint (${stampata})`);
   if (await page.locator(`a[href$="/modifica"]`).count())
     fail(`${scheme}: "Modifica" still offered after the confirmation`);
   if (!(await page.locator('.intervento-email').isVisible()))

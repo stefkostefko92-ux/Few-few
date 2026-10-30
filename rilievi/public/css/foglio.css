@@ -228,6 +228,13 @@
   font-size: 0.75rem;
 }
 
+.foglio__impronta {
+  margin: 4px 0 0;
+  color: #444444;
+  text-align: center;
+  font-size: 0.6875rem;
+}
+
 @media print {
   .foglio {
     width: auto;

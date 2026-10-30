@@ -4,6 +4,7 @@ import type { Capability } from '../auth/roles.js';
 import { canIn, scopeFor, type Scope } from '../auth/scope.js';
 import { activeAziende } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
+import { sigilloIntatto } from '../interventi/conferma.js';
 import { firmaSalvata, pathFirma } from '../interventi/firma.js';
 import {
   formValuesDalBody,
@@ -12,15 +13,14 @@ import {
   TURNI,
 } from '../interventi/form.js';
 import {
-  confermaIntervento,
   createIntervento,
-  firmato,
   getIntervento,
   listInterventi,
   numeroModulo,
   updateIntervento,
   type InterventoFull,
 } from '../interventi/service.js';
+import { improntaLeggibile } from '../interventi/sigillo.js';
 import { codiceVoce, GRUPPI_VOCI, MAX_CAMPO, valoriVoci } from '../interventi/voci.js';
 import type { FieldErrors, FormValues } from '../schede/field-parsers.js';
 import { businessDay } from '../time.js';
@@ -28,8 +28,8 @@ import { aziendaFilterOf, aziendeOf, notFound } from './schede-shared.js';
 
 /**
  * Листовете за интервенция („Servizio assistenza elevatori“): списък, нов, страница, редакция на
- * черновата, потвърждение, PDF и имейл. Обхватът е по фирма; чужд лист — 404. Потвърденият лист не се
- * пише по никой път — само PDF и имейл.
+ * черновата. Подписът и потвърждението — interventi-firma.ts; PDF и имейл — interventi-invio.ts. Обхватът
+ * е по фирма; чужд лист — 404. Потвърденият лист не се пише по никой път — само PDF и имейл.
  */
 export const interventiRouter: Router = Router();
 
@@ -54,7 +54,7 @@ async function aziendePerNuovo(req: Request) {
 export const loadIntervento = (req: Request) =>
   getIntervento(scope(req, 'interventi:read'), String(req.params.id));
 
-const puoScrivere = (req: Request, row: InterventoFull) =>
+export const puoScrivere = (req: Request, row: InterventoFull) =>
   !row.confermatoAt && canIn(principalOf(req).user, 'interventi:write', row.aziendaId);
 
 interface FormView {
@@ -72,14 +72,12 @@ function renderForm(res: Response, status: number, view: FormView): void {
   res.status(status).render('interventi/form', {
     titleKey: 'interventi.new',
     title: numero ? res.locals.t('interventi.numero', { n: numero }) : undefined,
-    scripts: ['firma'],
+    scripts: [],
     gruppi: GRUPPI_VOCI,
     codice: codiceVoce,
     maxCampo: MAX_CAMPO,
     turni: TURNI,
     numero,
-    // Черновата е била подписана: редакцията иска подписите наново (бележка във формата).
-    rifirmare: view.intervento ? firmato(view.intervento) : false,
     ...view,
   });
 }
@@ -141,6 +139,8 @@ interventiRouter.get('/interventi/:id', read, async (req, res) => {
   if (!row) return notFound(req, res);
   const tecnico = firmaSalvata(row.firmaTecnico);
   const cliente = firmaSalvata(row.firmaCliente);
+  // Потвърденият лист навън — само с непокътнат печат: иначе нито PDF, нито имейл (interventi-invio.ts).
+  const sigillo = row.confermatoAt ? sigilloIntatto(row) : null;
   res.render('interventi/show', {
     titleKey: 'interventi.titolo',
     title: res.locals.t('interventi.numero', { n: numeroModulo(row.numero) }),
@@ -154,10 +154,9 @@ interventiRouter.get('/interventi/:id', read, async (req, res) => {
       cliente: cliente ? pathFirma(cliente) : null,
     },
     modifica: puoScrivere(req, row),
-    firmato: firmato(row),
-    invia:
-      Boolean(row.confermatoAt) && canIn(principalOf(req).user, 'interventi:write', row.aziendaId),
-    base: row.updatedAt.toISOString(),
+    sigillo,
+    impronta: sigillo && row.impronta ? improntaLeggibile(row.impronta) : null,
+    invia: sigillo === true && canIn(principalOf(req).user, 'interventi:write', row.aziendaId),
   });
 });
 
@@ -218,28 +217,5 @@ interventiRouter.post('/interventi/:id', write, requireCsrf, async (req, res) =>
   }
   if (esito === 'conflict') return again(409, {}, true);
   setFlash(res, 'ok', 'interventi.flash.salvato');
-  res.redirect(303, `/interventi/${row.id}`);
-});
-
-interventiRouter.post('/interventi/:id/conferma', write, requireCsrf, async (req, res) => {
-  const row = await loadIntervento(req);
-  if (!row || !canIn(principalOf(req).user, 'interventi:write', row.aziendaId))
-    return notFound(req, res);
-  const body = req.body as Record<string, unknown>;
-  const esito = await confermaIntervento(
-    scope(req, 'interventi:write'),
-    row.id,
-    typeof body.base === 'string' ? body.base : '',
-    principalOf(req).user.id,
-  );
-  if (esito === 'missing') return notFound(req, res);
-  const flash = {
-    ok: ['ok', 'interventi.flash.confermato'],
-    chiuso: ['info', 'interventi.chiuso'],
-    conflict: ['error', 'interventi.flash.conflitto'],
-    firme: ['error', 'interventi.conferma.mancano'],
-  } as const;
-  const [kind, key] = flash[esito];
-  setFlash(res, kind, key);
   res.redirect(303, `/interventi/${row.id}`);
 });

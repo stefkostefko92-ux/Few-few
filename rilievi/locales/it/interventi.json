@@ -53,17 +53,28 @@
       "nome": "Nome e cognome",
       "cancella": "Cancella",
       "hint": "Firma con il dito, la penna o il mouse nel riquadro.",
-      "rifare": "Questo modulo era già firmato: dopo una modifica le firme vanno ripetute.",
       "vuota": "Non firmato",
-      "area": "Riquadro per la firma: {chi}"
+      "area": "Riquadro per la firma: {chi}",
+      "errore": {
+        "mancante": "Manca la firma nel riquadro.",
+        "invalid": "Firma non leggibile: cancellala e rifalla.",
+        "uguale": "Le due firme sono identiche: il cliente deve firmare nel proprio riquadro.",
+        "nome": "Scrivi nome e cognome."
+      }
     },
     "salva": "Salva",
     "modifica": "Modifica",
     "conferma": {
       "titolo": "Firma e conferma",
-      "testo": "Controlla il modulo. Dopo la conferma non si potrà più modificare: resteranno solo il PDF e l'invio per email.",
-      "pulsante": "Conferma il modulo firmato",
-      "mancano": "Per confermare servono la firma del tecnico e quella del cliente, ciascuna con nome e cognome. Apri «Modifica» e firma nei riquadri in fondo."
+      "titoloNumero": "Firma del modulo n. {n}",
+      "testo": "Quando il modulo è completo, rileggetelo insieme al cliente e firmate: la firma vale per il contenuto mostrato e dopo la conferma il modulo non si può più modificare.",
+      "pulsante": "Firma e conferma",
+      "leggi": "Rileggete il modulo qui sotto insieme al cliente: le firme valgono esattamente per questo contenuto. Dopo la conferma non si potrà più modificare; resteranno solo il PDF e l'invio per email.",
+      "impronta": "Impronta del contenuto (SHA-256)",
+      "improntaHint": "La stessa impronta viene stampata sul PDF: identifica il contenuto firmato.",
+      "invio": "Firma e conferma il modulo",
+      "cambiato": "Il modulo è stato modificato dopo l'apertura di questa pagina: rileggetelo e firmate di nuovo.",
+      "torna": "Torna al modulo"
     },
     "confermato": "Firmato e confermato il {at} da {name}",
     "chiuso": "Modulo firmato e confermato: non si può più modificare.",
@@ -90,6 +101,13 @@
     "voce": "Voce {n}",
     "indietro": "Torna agli interventi",
     "segnato": "(segnato)",
-    "nonSegnato": "(non segnato)"
+    "nonSegnato": "(non segnato)",
+    "sigillo": {
+      "valido": "Sigillo verificato: il contenuto è quello firmato.",
+      "impronta": "Impronta del contenuto firmato (SHA-256)",
+      "alterato": "Il sigillo non corrisponde al contenuto firmato: il modulo risulta modificato dopo la firma, oppure è stato confermato prima dell'introduzione del sigillo. PDF e invio per email sono bloccati — avvisa l'amministrazione del portale.",
+      "bloccato": "PDF e invio bloccati: il sigillo del modulo non corrisponde al contenuto firmato.",
+      "pdf": "Impronta del contenuto firmato (SHA-256): {impronta} — sigillo verificato"
+    }
   }
 }

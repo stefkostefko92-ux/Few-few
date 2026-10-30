@@ -45,6 +45,7 @@ main() {
     printf 'PUBLIC_BASE_URL=https://%s\n' "$DOMAIN"
     printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)"
     printf 'JWT_SECRET=%s\n' "$(openssl rand -hex 32)"
+    printf 'INTERVENTI_SEAL_KEY=%s\n' "$(openssl rand -hex 32)"
     if [ -n "$smtp_user" ]; then
       printf 'SMTP_HOST=smtp-relay.brevo.com\nSMTP_PORT=2525\n'
       printf 'SMTP_USER=%s\nSMTP_PASS=%s\n' "$smtp_user" "$smtp_pass"

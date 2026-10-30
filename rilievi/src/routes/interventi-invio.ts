@@ -6,6 +6,7 @@ import { aziendaLogo } from '../aziende/service.js';
 import { config } from '../config.js';
 import { setFlash } from '../http/flash.js';
 import { mailLimiter, pdfLimiter } from '../http/limits.js';
+import { sigilloIntatto } from '../interventi/conferma.js';
 import { renderInterventoPdf } from '../interventi/pdf.js';
 import { numeroModulo, registraInvio, type InterventoFull } from '../interventi/service.js';
 import { sendMail } from '../mail/mailer.js';
@@ -16,7 +17,8 @@ import { notFound } from './schede-shared.js';
 
 /**
  * Потвърденият лист за интервенция навън: PDF-ът (изтегляне или в браузъра) и писмото с него на адрес,
- * който човекът пише. Черновата няма нито едното, нито другото.
+ * който човекът пише. Черновата няма нито едното, нито другото; потвърден лист с нарушен печат — също
+ * (страницата му казва защо).
  */
 export const interventiInvioRouter: Router = Router();
 
@@ -24,6 +26,12 @@ const read = requireCapability('interventi:read');
 const write = requireCapability('interventi:write');
 
 /** Потвърденият лист като PDF; черновата няма PDF (подписите и съдържанието още се менят). */
+/** Печатът не съвпада: обратно на страницата на листа, която обяснява (и вече е записала в лога). */
+function sigilloRotto(res: Response, row: InterventoFull): void {
+  setFlash(res, 'error', 'interventi.sigillo.bloccato');
+  res.redirect(303, `/interventi/${row.id}`);
+}
+
 async function pdfDi(
   res: Response,
   row: InterventoFull,
@@ -42,6 +50,7 @@ async function pdfDi(
 interventiInvioRouter.get('/interventi/:id/pdf', read, pdfLimiter, async (req, res) => {
   const row = await loadIntervento(req);
   if (!row || !row.confermatoAt) return notFound(req, res);
+  if (!sigilloIntatto(row)) return sigilloRotto(res, row);
   const { pdf, filename } = await pdfDi(res, row);
   res
     .status(200)
@@ -69,6 +78,7 @@ interventiInvioRouter.post(
       !canIn(principalOf(req).user, 'interventi:write', row.aziendaId)
     )
       return notFound(req, res);
+    if (!sigilloIntatto(row)) return sigilloRotto(res, row);
     const to = emailSchema.safeParse((req.body as Record<string, unknown>).email);
     if (!to.success) {
       setFlash(res, 'error', 'interventi.flash.emailNonValida');

@@ -7,10 +7,17 @@ import { describe, it } from 'node:test';
 import { PDFDocument } from 'pdf-lib';
 import { translatorFor } from '../src/i18n.js';
 import { viewHelpers } from '../src/http/view.js';
+import { parseConferma } from '../src/interventi/conferma.js';
 import { firmaDalForm, firmaSalvata, pathFirma } from '../src/interventi/firma.js';
 import { formValuesFromIntervento, parseIntervento } from '../src/interventi/form.js';
 import { FONDO_PAGINA, fineFoglio, renderInterventoPdf } from '../src/interventi/pdf.js';
-import { firmato, numeroModulo, type InterventoFull } from '../src/interventi/service.js';
+import { numeroModulo, type InterventoFull } from '../src/interventi/service.js';
+import {
+  improntaContenuto,
+  sigilloDi,
+  sigilloValido,
+  type ContenutoIntervento,
+} from '../src/interventi/sigillo.js';
 import {
   codiceVoce,
   GRUPPI_VOCI,
@@ -29,6 +36,7 @@ const FIRMA = JSON.stringify({
     [400, 100],
   ],
 });
+const FIRMA_CLIENTE = JSON.stringify({ s: [[30, 120, 200, 60, 420, 150]] });
 
 describe('the items of the paper pad', () => {
   it('are the 97 numbers of the photo, in its five groups, each once', () => {
@@ -108,14 +116,47 @@ describe('the finger signatures', () => {
     assert.equal(firmaSalvata('broken'), null);
   });
 
-  it('confirm only with both signatures and both names', () => {
-    const both = { firmaTecnico: JSON.parse(FIRMA), firmaCliente: JSON.parse(FIRMA) };
-    assert.equal(firmato({ ...both, firmaTecnicoNome: 'Mario', firmaClienteNome: 'Anna' }), true);
-    assert.equal(firmato({ ...both, firmaTecnicoNome: 'Mario', firmaClienteNome: null }), false);
-    assert.equal(
-      firmato({ ...both, firmaCliente: null, firmaTecnicoNome: 'Mario', firmaClienteNome: 'Anna' }),
-      false,
-    );
+  it('confirm only with both signatures, both names and two different signatures', () => {
+    const ok = parseConferma({
+      firmaTecnico: FIRMA,
+      firmaTecnicoNome: '  Mario   Rossi ',
+      firmaCliente: FIRMA_CLIENTE,
+      firmaClienteNome: 'Anna\nBianchi',
+    });
+    assert.ok(ok.ok);
+    assert.deepEqual(ok.ok && [ok.data.firmaTecnicoNome, ok.data.firmaClienteNome], [
+      'Mario Rossi',
+      'Anna Bianchi',
+    ]);
+    assert.deepEqual(parseConferma({}), {
+      ok: false,
+      errors: {
+        firmaTecnico: 'mancante',
+        firmaTecnicoNome: 'mancante',
+        firmaCliente: 'mancante',
+        firmaClienteNome: 'mancante',
+      },
+    });
+    const copied = parseConferma({
+      firmaTecnico: FIRMA,
+      firmaTecnicoNome: 'Mario',
+      firmaCliente: FIRMA,
+      firmaClienteNome: 'x'.repeat(121),
+    });
+    assert.deepEqual(!copied.ok && copied.errors, {
+      firmaCliente: 'uguale',
+      firmaClienteNome: 'tooLong',
+    });
+    const forged = parseConferma({
+      firmaTecnico: '{"s":[[999,1]]}',
+      firmaTecnicoNome: ['Mario'],
+      firmaCliente: FIRMA_CLIENTE,
+      firmaClienteNome: 'Anna',
+    });
+    assert.deepEqual(!forged.ok && forged.errors, {
+      firmaTecnico: 'invalid',
+      firmaTecnicoNome: 'invalid',
+    });
   });
 });
 
@@ -133,12 +174,13 @@ describe('the intervention form', () => {
     prove: 'si',
     oreTecnico: '1,5',
     oreTotali: '3',
+    // Sent anyway (an old page, a forged form): the draft takes no signature and no name.
     firmaTecnico: FIRMA,
     firmaTecnicoNome: 'Mario Rossi',
     firmaClienteNome: 'Anna Bianchi',
   };
 
-  it('reads the header, the items, the hours and the signatures', () => {
+  it('reads the header, the items and the hours — never a signature', () => {
     const parsed = parseIntervento(body);
     assert.ok(parsed.ok);
     if (!parsed.ok) return;
@@ -148,8 +190,8 @@ describe('the intervention form', () => {
     assert.deepEqual(parsed.data.voci, { '60': { x: true, q: '3,5' } });
     assert.equal(parsed.data.prove, true);
     assert.deepEqual([parsed.data.oreTecnico, parsed.data.oreTotali], ['1.50', '3.00']);
-    assert.ok(parsed.data.firmaTecnico);
-    assert.equal(parsed.data.firmaCliente, null, 'the customer has not signed yet');
+    for (const key of ['firmaTecnico', 'firmaTecnicoNome', 'firmaCliente', 'firmaClienteNome'])
+      assert.equal(key in parsed.data, false, key);
   });
 
   it('reports every error at once, under the name of its field', () => {
@@ -160,7 +202,6 @@ describe('the intervention form', () => {
       oreTecnico: 'tre',
       matricola: 'x'.repeat(41),
       prove: 'yes',
-      firmaCliente: '{"s":[[999,1]]}',
     });
     assert.equal(parsed.ok, false);
     assert.deepEqual(!parsed.ok && parsed.errors, {
@@ -169,11 +210,10 @@ describe('the intervention form', () => {
       oreTecnico: 'decimal',
       matricola: 'tooLong',
       prove: 'invalid',
-      firmaCliente: 'invalid',
     });
   });
 
-  it('opens a saved draft without its signatures: a change is signed again', () => {
+  it('opens a saved draft in the shape of the form', () => {
     const values = formValuesFromIntervento({
       data: new Date('2026-10-30T00:00:00Z'),
       turno: null,
@@ -186,15 +226,100 @@ describe('the intervention form', () => {
       prove: false,
       oreTecnico: { toString: () => '1.50' },
       oreTotali: null,
-      firmaTecnicoNome: 'Mario Rossi',
-      firmaClienteNome: null,
     });
     assert.equal(values.data, '2026-10-30');
     assert.equal(values['v-84'], 'si');
     assert.deepEqual(values['c-84'], ['P']);
     assert.equal(values.oreTecnico, '1,5');
-    assert.equal(values.firmaTecnicoNome, 'Mario Rossi');
-    assert.equal(values.firmaTecnico, undefined);
+  });
+});
+
+describe('the seal of a confirmed sheet', () => {
+  const KEY = Buffer.alloc(32, 7);
+  const content: ContenutoIntervento = {
+    id: 'cm0intervento',
+    aziendaId: 'cm0azienda',
+    numero: 42,
+    data: new Date('2026-10-30T00:00:00Z'),
+    turno: 'MATTINA',
+    indirizzo: 'Via Roma 12',
+    citta: 'Milano',
+    tecnici: 'Mario Rossi',
+    matricola: 'MI 4521',
+    voci: { '84': { x: true, q: 'piano 3', c: ['P'] }, '05': { x: true, q: '2' } },
+    altro: 'Sostituito pulsante.',
+    prove: true,
+    oreTecnico: { toString: () => '1.5' },
+    oreTotali: { toString: () => '3' },
+  };
+  const firme = {
+    firmaTecnico: JSON.parse(FIRMA) as { s: number[][] },
+    firmaTecnicoNome: 'Mario Rossi',
+    firmaCliente: JSON.parse(FIRMA_CLIENTE) as { s: number[][] },
+    firmaClienteNome: 'Anna Bianchi',
+    confermatoAt: new Date('2026-10-30T14:32:00.123Z'),
+  };
+  const impronta = improntaContenuto(content);
+  const sealed = { ...content, ...firme, impronta, sigillo: sigilloDi(KEY, impronta, firme) };
+
+  it('fingerprints exactly what the sheet says, whatever the order of the items in the database', () => {
+    assert.match(impronta, /^[0-9a-f]{64}$/);
+    assert.equal(
+      improntaContenuto({
+        ...content,
+        voci: { '05': { q: '2', x: true }, '84': { c: ['P'], q: 'piano 3', x: true }, xx: 1 },
+        oreTecnico: { toString: () => '1.50' },
+      }),
+      impronta,
+      'same content, other order, unknown key, "1.50" — the same fingerprint',
+    );
+    const changes: Array<Partial<ContenutoIntervento>> = [
+      { id: 'cm0altro' },
+      { aziendaId: 'cm0altra' },
+      { numero: 43 },
+      { data: new Date('2026-10-31T00:00:00Z') },
+      { turno: 'POMERIGGIO' },
+      { indirizzo: 'Via Roma 13' },
+      { citta: 'Monza' },
+      { tecnici: 'Luca Verdi' },
+      { matricola: 'MI 4522' },
+      { voci: { '84': { x: true, q: 'piano 3', c: ['C'] }, '05': { x: true, q: '2' } } },
+      { voci: { '84': { x: true, q: 'piano 3', c: ['P'] }, '05': { x: true, q: '3' } } },
+      { voci: { '84': { x: true, q: 'piano 3', c: ['P'] } } },
+      { altro: 'Sostituito pulsante di piano.' },
+      { prove: false },
+      { oreTecnico: { toString: () => '2' } },
+      { oreTotali: null },
+    ];
+    for (const change of changes)
+      assert.notEqual(
+        improntaContenuto({ ...content, ...change }),
+        impronta,
+        JSON.stringify(change),
+      );
+  });
+
+  it('holds only for the signed content, the same signatures, names and time, and the same key', () => {
+    assert.equal(sigilloValido(KEY, sealed), true);
+    assert.equal(sigilloValido(Buffer.alloc(32, 8), sealed), false, 'another key');
+    const broken: Array<Partial<typeof sealed>> = [
+      { citta: 'Monza' },
+      { voci: {} },
+      { firmaClienteNome: 'Altra Persona' },
+      { firmaTecnicoNome: 'Mario Rossi.' },
+      { firmaCliente: { s: [[30, 120, 200, 60, 420, 151]] } },
+      { firmaTecnico: JSON.parse(FIRMA_CLIENTE) as { s: number[][] } },
+      { confermatoAt: new Date('2026-10-30T14:32:00.124Z') },
+      { sigillo: sealed.sigillo.replace(/^./, (c) => (c === '0' ? '1' : '0')) },
+      { sigillo: sealed.sigillo.slice(0, 62) },
+      { impronta: improntaContenuto({ ...content, citta: 'Monza' }), citta: 'Monza' },
+    ];
+    for (const change of broken)
+      assert.equal(sigilloValido(KEY, { ...sealed, ...change }), false, JSON.stringify(change));
+    // A sheet confirmed before the seal existed, or a damaged signature: not verified, never "ok".
+    assert.equal(sigilloValido(KEY, { ...sealed, impronta: null, sigillo: null }), false);
+    assert.equal(sigilloValido(KEY, { ...sealed, firmaCliente: 'broken' }), false);
+    assert.equal(sigilloValido(KEY, { ...sealed, confermatoAt: null }), false);
   });
 });
 
@@ -229,6 +354,8 @@ function fullest(): InterventoFull {
     firmaCliente: firma,
     firmaClienteNome: 'W'.repeat(120),
     confermatoAt: new Date('2026-10-30T14:32:00Z'),
+    impronta: 'f'.repeat(64),
+    sigillo: 'f'.repeat(64),
     confermatoById: null,
     createdById: null,
     updatedById: null,

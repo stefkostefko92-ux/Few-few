@@ -666,13 +666,19 @@ model Intervento {
   prove            Boolean          @default(false)
   oreTecnico       Decimal?         @db.Decimal(6, 2)
   oreTotali        Decimal?         @db.Decimal(6, 2)
-  /// Подписите — щрихи с пръст в поле 600 × 200 ({s: [[x, y, x, y, …], …]}), проверени при запис.
-  /// Всяка промяна на черновата ги изтрива: подписът е за съдържанието, с което е положен.
+  /// Подписите — щрихи с пръст в поле 600 × 200 ({s: [[x, y, x, y, …], …]}) — и имената. Слагат се
+  /// само с потвърждението, върху окончателното съдържание (src/interventi/conferma.ts); черновата никога
+  /// не ги носи (CHECK `Intervento_firme_check` в базата).
   firmaTecnico     Json?
   firmaTecnicoNome String?          @db.VarChar(120)
   firmaCliente     Json?
   firmaClienteNome String?          @db.VarChar(120)
   confermatoAt     DateTime?
+  /// SHA-256 на съдържанието, което е подписано (src/interventi/sigillo.ts) — показан при подписа, в PDF-а.
+  impronta         String?          @db.Char(64)
+  /// HMAC-SHA256 (INTERVENTI_SEAL_KEY) над отпечатъка, подписите, имената и часа: проверява се при всяко
+  /// показване, PDF и имейл — несъвпадение спира PDF-а и имейла.
+  sigillo          String?          @db.Char(64)
   confermatoById   String?
   confermatoBy     User?            @relation("InterventiChiusi", fields: [confermatoById], references: [id], onDelete: SetNull)
   createdById      String?

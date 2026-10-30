@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 process.env.PUBLIC_BASE_URL ??= 'https://rilievi.example.test';
 process.env.DATABASE_URL ??= 'postgresql://unused@127.0.0.1:1/unused';
 process.env.JWT_SECRET ??= 'a'.repeat(64);
+process.env.INTERVENTI_SEAL_KEY ??= 'b'.repeat(64);
 
 const { parseAccessRequest, HONEYPOT } = await import('../src/requests/form.js');
 const { llmsTxt, robotsTxt, sitemapXml } = await import('../src/seo/files.js');

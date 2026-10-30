@@ -1,7 +1,8 @@
-// Signatures with a finger, a pen or the mouse on the intervention form: each pad records its strokes
-// in a 600 × 200 box (whole numbers) into its hidden input as {"s": [[x, y, x, y, …], …]} — the server
-// checks them (src/interventi/firma.ts) and draws them the same in the page and in the PDF. "Cancella"
-// empties the pad. A signature sent back with an error is drawn again from its input.
+// Signatures with a finger, a pen or the mouse on the signing page of an intervention sheet: each pad
+// records its strokes in a 600 × 200 box (whole numbers) into its hidden input as
+// {"s": [[x, y, x, y, …], …]} — the server checks them (src/interventi/conferma.ts) and draws them the
+// same in the page and in the PDF. "Cancella" empties the pad. A signature sent back with an error (same
+// version of the sheet) is drawn again from its input.
 (() => {
   const W = 600;
   const H = 200;

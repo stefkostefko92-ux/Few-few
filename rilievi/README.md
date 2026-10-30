@@ -104,6 +104,7 @@ npm ci
 #   PUBLIC_BASE_URL=http://127.0.0.1:4330
 #   DATABASE_URL=postgresql://rilievi:…@127.0.0.1:5432/rilievi
 #   JWT_SECRET=<openssl rand -hex 32>
+#   INTERVENTI_SEAL_KEY=<openssl rand -hex 32>   (печатът на листовете за интервенция — не се сменя)
 #   MEDIA_DIR=./media   (снимките и клиповете; папката е в .gitignore)
 npx prisma migrate deploy
 npm run build

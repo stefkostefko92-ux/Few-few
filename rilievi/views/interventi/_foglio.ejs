@@ -1,7 +1,7 @@
 <%
   // Листът за интервенция като на хартия (A4, бял и в тъмната тема): логото, номерът, главата, двете
   // колони с точките — ☒ при отметнатите, — „Altro“, часовете, подписите (SVG от щрихите). Същото като в
-  // PDF-а (src/interventi/pdf.ts).
+  // PDF-а (src/interventi/pdf.ts). На страницата за подписа (`senzaFirme`) подписите са под листа.
   const r = intervento;
   const az = r.azienda;
   const segno = (on) => '<span class="foglio__box' + (on ? ' foglio__box--on' : '') + '" aria-hidden="true"></span>';
@@ -48,11 +48,12 @@
     <p class="foglio__altro-testo"><%= r.altro || '' %></p>
   </div>
   <p class="foglio__prove"><%- segno(r.prove) %><%- stato(r.prove) %><%= t('interventi.campo.prove') %> — <%= t('interventi.oreRiga', { tecnico: ore(r.oreTecnico), totale: ore(r.oreTotali) }) %></p>
-  <div class="foglio__firme">
+  <% if (typeof senzaFirme === 'undefined' || !senzaFirme) { %><div class="foglio__firme">
     <% for (const [chi, path, nome] of [['tecnico', firme.tecnico, r.firmaTecnicoNome], ['cliente', firme.cliente, r.firmaClienteNome]]) { %><figure>
       <figcaption><%= t('interventi.firma.' + chi) %>: <strong><%= nome || '—' %></strong></figcaption>
       <% if (path) { %><svg class="foglio__firma" viewBox="0 0 600 200" role="img" aria-label="<%= t('interventi.firma.' + chi) %>"><path d="<%= path %>" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><% } else { %><p class="foglio__firma foglio__firma--vuota"><%= t('interventi.firma.vuota') %></p><% } %>
     </figure><% } %>
-  </div>
+  </div><% } %>
   <% if (r.confermatoAt) { %><p class="foglio__confermato"><%= t('interventi.confermato', { at: fmt.dateTime(r.confermatoAt), name: r.confermatoBy ? r.confermatoBy.name : '—' }) %></p><% } %>
+  <% if (typeof impronta !== 'undefined' && impronta && r.confermatoAt) { %><p class="foglio__impronta"><%= t('interventi.sigillo.impronta') %>: <span class="impronta"><%= impronta %></span></p><% } %>
 </article>

@@ -17,6 +17,7 @@ import {
   unaRiga,
 } from './pdf-parti.js';
 import { numeroModulo, type InterventoFull } from './service.js';
+import { improntaLeggibile } from './sigillo.js';
 import { GRUPPI_VOCI, valoriVoci } from './voci.js';
 
 /**
@@ -270,6 +271,14 @@ function disegnaFoglio(
         { width: W, align: 'center', lineBreak: false },
       );
     y += 14;
+    // Отпечатъкът на подписаното съдържание — същият, който е бил на екрана при подписа. PDF се прави
+    // само за лист с непокътнат печат (interventi-invio.ts), затова „sigillo verificato“ е вярно.
+    if (row.impronta) {
+      doc.font('Sans').fontSize(6.5).fillColor(MUTED);
+      const riga = t('interventi.sigillo.pdf', { impronta: improntaLeggibile(row.impronta) });
+      doc.text(unaRiga(doc, riga, W), M, y, { width: W, align: 'center', lineBreak: false });
+      y += 10;
+    }
   }
   return y;
 }

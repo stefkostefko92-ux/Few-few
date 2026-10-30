@@ -3,13 +3,13 @@ import { writeAudit } from '../audit.js';
 import { aziendaWhere, type Scope } from '../auth/scope.js';
 import { prisma } from '../db.js';
 import { PAGE_SIZE, pageOf } from '../schede/list.js';
-import { firmaSalvata } from './firma.js';
 import type { InterventoData } from './form.js';
 
 /**
  * Листовете за интервенция в базата: номер за фирмата (брояч на фирмата, в транзакцията на листа — без
- * дупки и без повторения), запис на черновата (с проверка, че никой не я е сменил междувременно),
- * потвърждението, след което листът не се пипа. Одитът е в същата транзакция.
+ * дупки и без повторения), запис на черновата (с проверка, че никой не я е сменил междувременно). Черновата
+ * не носи подписи: те влизат само с потвърждението (conferma.ts), след което листът не се пипа. Одитът е в
+ * същата транзакция.
  */
 
 const INCLUDE = {
@@ -61,12 +61,6 @@ function persisted(data: InterventoData) {
     prove: data.prove,
     oreTecnico: data.oreTecnico,
     oreTotali: data.oreTotali,
-    // Подписът е за съдържанието, с което е положен: всеки запис на черновата пише и подписите си —
-    // недонарисуваните (редакцията ги иска наново) остават празни.
-    firmaTecnico: data.firmaTecnico ?? Prisma.DbNull,
-    firmaTecnicoNome: data.firmaTecnicoNome,
-    firmaCliente: data.firmaCliente ?? Prisma.DbNull,
-    firmaClienteNome: data.firmaClienteNome,
   };
 }
 
@@ -151,73 +145,6 @@ export async function updateIntervento(
     );
     return 'ok';
   });
-}
-
-export type EsitoConferma = 'ok' | 'conflict' | 'chiuso' | 'missing' | 'firme';
-
-/**
- * „Conferma“: листът, както е на екрана (`base`), с двата подписа и имената им — оттук нататък не се
- * пипа. Условията са и в самия UPDATE: два едновременни клика или запис между тях не минават.
- */
-export async function confermaIntervento(
-  scope: Scope,
-  id: string,
-  base: string,
-  actorId: string,
-): Promise<EsitoConferma> {
-  const baseDate = new Date(base);
-  return prisma.$transaction(async (tx) => {
-    const current = await tx.intervento.findFirst({
-      where: { id, ...aziendaWhere(scope) },
-      select: {
-        aziendaId: true,
-        numero: true,
-        confermatoAt: true,
-        updatedAt: true,
-        firmaTecnico: true,
-        firmaTecnicoNome: true,
-        firmaCliente: true,
-        firmaClienteNome: true,
-      },
-    });
-    if (!current) return 'missing';
-    if (current.confermatoAt) return 'chiuso';
-    if (Number.isNaN(baseDate.getTime()) || current.updatedAt.getTime() !== baseDate.getTime())
-      return 'conflict';
-    if (!firmato(current)) return 'firme';
-    const updated = await tx.intervento.updateMany({
-      where: { id, aziendaId: current.aziendaId, confermatoAt: null, updatedAt: baseDate },
-      data: { confermatoAt: new Date(), confermatoById: actorId },
-    });
-    if (updated.count === 0) return 'conflict';
-    await writeAudit(
-      {
-        actorId,
-        action: 'INTERVENTO_CONFIRM',
-        aziendaId: current.aziendaId,
-        targetType: 'intervento',
-        targetId: id,
-        meta: { numero: current.numero },
-      },
-      tx,
-    );
-    return 'ok';
-  });
-}
-
-/** И двата подписа са положени и имената са написани. */
-export function firmato(row: {
-  firmaTecnico: unknown;
-  firmaTecnicoNome: string | null;
-  firmaCliente: unknown;
-  firmaClienteNome: string | null;
-}): boolean {
-  return Boolean(
-    firmaSalvata(row.firmaTecnico) &&
-    firmaSalvata(row.firmaCliente) &&
-    row.firmaTecnicoNome &&
-    row.firmaClienteNome,
-  );
 }
 
 /** Изпратеният имейл — само в одита (без адреса: лични данни в одита не влизат). */
