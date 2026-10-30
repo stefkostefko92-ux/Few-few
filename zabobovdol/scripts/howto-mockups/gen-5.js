@@ -219,7 +219,7 @@ S["scam-remote"] = phone(`
     <div style="margin-top:22px;font-size:17px;font-weight:500;color:#202124;display:flex;justify-content:space-between">За това приложение${ms("arrow_forward", { size: 22 })}</div>
     <div style="font-size:14px;color:#3c4043;line-height:1.45;margin-top:8px">Приложение за отдалечен достъп — позволява на другия човек да вижда екрана ви и да управлява устройството ви.</div>
   </div>
-  ${tip("Никога не инсталирайте приложение по чуждо нареждане по телефона. Така измамникът вижда екрана ви и влиза в сметката ви", "left:50%;top:420px;transform:translateX(-50%);width:320px")}
+  ${tip("Никога не инсталирайте приложение по чуждо нареждане по телефона. Така измамникът вижда екрана Ви и влиза в сметката Ви", "left:50%;top:420px;transform:translateX(-50%);width:320px")}
 `, "#fff");
 
 // Фалшив магазин (Chrome).
@@ -341,7 +341,7 @@ S["euro-receipt"] = scene(`
         <div style="text-align:center;font-size:11px;color:#555;margin-top:8px;line-height:1.35">Каса 02 · Бон № 0004817<br>30.10.2026 11:32:08<br>Благодарим Ви!</div>
       </div>
     </div>
-    ${tip("Сумата е в евро. Ако платите с лева,<br>рестото е в евро — по фиксирания курс", "left:50%;top:0;transform:translateX(-50%);width:300px", { arrow: "d", at: "50%" })}
+    ${tip("Сумата и рестото са в евро.<br>Равностойността в лева е по фиксирания курс", "left:50%;top:0;transform:translateX(-50%);width:300px", { arrow: "d", at: "50%" })}
   </div>`, { pad: 14, w: 450 });
 
 // Банкомат.
@@ -399,7 +399,7 @@ S["euro-rate"] = phone(`
       ${[10, 50, 100, 500, 1000].map((v) => `<div style="display:flex;padding:9px 16px;font-size:15.5px;color:#202124;border-top:1px solid #eceff1"><span style="flex:1">${v} лв</span><b style="font-weight:500">${conv(v)} €</b></div>`).join("")}
     </div>
   </div>
-  ${tip("Курсът е един и същ навсякъде —<br>сумата ви остава същата", "left:50%;top:60px;transform:translateX(-50%);width:260px").replace("top:60px", "top:545px")}
+  ${tip("Курсът е един и същ навсякъде —<br>сумата Ви остава същата", "left:50%;top:60px;transform:translateX(-50%);width:260px").replace("top:60px", "top:545px")}
 `, "#fff");
 
 // ═══════════ Фалшива банкнота: „Пипнете – Погледнете – Наклонете“ ═══════════
@@ -428,4 +428,10 @@ S["fake-banknote"] = scene(`
     <div style="position:absolute;left:0;top:470px;font-size:11px;color:#6b7280">Образец: © Европейска централна банка</div>
   </div>`, { pad: 22 });
 
+// Час в лентата за състоянието = часът в съдържанието (без „последно видян“ в бъдещето)
+const setTime = (names, t) => names.forEach((n) => { S[n] = S[n].replace(/(<span class="st-time">)[^<]*/, `$1${t}`); });
+setTime(["scam-parcel-sms", "scam-fake-sms", "scam-otp"], "11:33");
+setTime(["scam-grandchild"], "10:14");
+setTime(["scam-verify"], "11:24");
+setTime(["euro-rate"], "11:34");
 render(S).catch((e) => { console.error(e); process.exit(1); });

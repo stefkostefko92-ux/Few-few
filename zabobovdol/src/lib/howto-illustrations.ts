@@ -1,8 +1,7 @@
-// Карта „ръководство (slug) → примерни екрани". Картинките са СТИЛИЗИРАНИ
-// пресъздавания на интерфейса на приложенията (Viber, Messenger, WhatsApp,
-// Facebook) — близки до реалния вид, за да разпознаят възрастните хора какво да
-// търсят. Файловете са в public/kak-da/ и се генерират от
-// scripts/howto-mockups/gen.js. Това е чисто добавъчен слой — не пипа базата.
+// Карта „ръководство (slug) → екрани“. Картинките са фотореалистични пресъздавания на
+// интерфейса на приложенията (екран на телефон със снимки CC0/PDM, карти © OpenStreetMap,
+// банкноти и монети — образци на ЕЦБ). Файловете са в public/kak-da/ и се генерират от
+// scripts/howto-mockups/*.js. Това е чисто добавъчен слой — не пипа базата.
 
 export type Illustration = { src: string; alt: string };
 
@@ -21,7 +20,7 @@ const MAP: Record<string, Illustration[]> = {
     { src: "/kak-da/viber-prikachi.webp", alt: "Меню за прикачване във Viber с подчертани „Локация“ и „Контакт“" },
   ],
   "app-viber-kontakt": [
-    { src: "/kak-da/viber-prikachi.webp", alt: "Меню за прикачване във Viber с подчертан бутон „Контакт“" },
+    { src: "/kak-da/viber-prikachi.webp", alt: "Меню за прикачване във Viber с подчертани „Контакт“ и „Локация“" },
   ],
   "app-viber-blokiram": [
     { src: "/kak-da/viber-blok.webp", alt: "Екран с информация за контакт във Viber и подчертан бутон „Блокирай“" },
@@ -33,7 +32,7 @@ const MAP: Record<string, Illustration[]> = {
     { src: "/kak-da/viber-procheteno.webp", alt: "Обяснение на отметките във Viber: изпратено, доставено, прочетено" },
   ],
   "app-emoji-stikeri": [
-    { src: "/kak-da/viber-emoji.webp", alt: "Панел с емоджи и стикери в чат приложение" },
+    { src: "/kak-da/viber-emoji.webp", alt: "Viber: панел с емоджи под полето за писане, подчертан е бутонът с усмихнатото лице" },
   ],
   "app-zaglushi-chat": [
     { src: "/kak-da/viber-zaglushi.webp", alt: "Прозорец за заглушаване на известията от група" },
@@ -44,7 +43,7 @@ const MAP: Record<string, Illustration[]> = {
   ],
   // ── WhatsApp ──
   "app-whatsapp": [
-    { src: "/kak-da/whatsapp.webp", alt: "Чат екран на WhatsApp (зелено приложение)" },
+    { src: "/kak-da/whatsapp.webp", alt: "Чат във WhatsApp със съобщения, снимка на лалета и зелен бутон за гласово съобщение" },
     { src: "/kak-da/whatsapp-registraciya.webp", alt: "Регистрация в WhatsApp с въвеждане на телефонен номер" },
   ],
   // ── Снимки от чат ──
@@ -53,7 +52,7 @@ const MAP: Record<string, Illustration[]> = {
   ],
   // ── Facebook ──
   "fb-kakvo-e": [
-    { src: "/kak-da/fb-feed.webp", alt: "Начален екран (емисия) на Facebook" },
+    { src: "/kak-da/fb-feed.webp", alt: "Началният екран на Facebook с поле „Какво Ви се случва?“ и публикации; подчертани са лупата и Messenger" },
   ],
   "fb-publikuvai": [
     { src: "/kak-da/fb-publikuvai.webp", alt: "Създаване на публикация във Facebook с подчертан бутон „Публикувай“" },
@@ -65,10 +64,10 @@ const MAP: Record<string, Illustration[]> = {
     { src: "/kak-da/fb-priatel.webp", alt: "Търсене на човек във Facebook с бутон „Добави приятел“" },
   ],
   "fb-poveritelnost": [
-    { src: "/kak-da/fb-poveritelnost.webp", alt: "Настройка кой вижда публикациите във Facebook" },
+    { src: "/kak-da/fb-poveritelnost.webp", alt: "Избор на аудитория във Facebook: избрано е „Приятели“" },
   ],
   "safe-falshiv-profil-fb": [
-    { src: "/kak-da/fb-falshiv.webp", alt: "Признаци за фалшив профил във Facebook" },
+    { src: "/kak-da/fb-falshiv.webp", alt: "Фалшив профил във Facebook: нов, с малко приятели и снимки, без снимка на лице" },
   ],
   "akaunt-zabravena-parola-fb": [
     { src: "/kak-da/fb-parola.webp", alt: "Екран за възстановяване на забравена парола за Facebook" },
@@ -82,7 +81,7 @@ const MAP: Record<string, Illustration[]> = {
     { src: "/kak-da/contact-new.webp", alt: "Екран за запис на нов контакт с поле за име и телефон" },
   ],
   "kak-da-se-obadya-na-kontakt": [
-    { src: "/kak-da/dial-contact.webp", alt: "Списък с контакти и зелена слушалка за обаждане" },
+    { src: "/kak-da/dial-contact.webp", alt: "Списък с контакти в приложение „Телефон“ с подчертан контакт „Мария Петрова“" },
   ],
   "kak-da-napisha-sms": [
     { src: "/kak-da/sms-new.webp", alt: "Писане на SMS с подчертан бутон за изпращане" },
@@ -105,33 +104,33 @@ const MAP: Record<string, Illustration[]> = {
     { src: "/kak-da/mail-attach.webp", alt: "Прикачване на снимка към имейл (кламер)" },
   ],
   "mail-spam": [
-    { src: "/kak-da/mail-spam.webp", alt: "Имейл-измама (спам) с предупреждение и бутон за изтриване" },
+    { src: "/kak-da/mail-spam.webp", alt: "Подозрително писмо за „награда“ в Gmail; менюто с три точки е отворено и „Докладване на спам“ е подчертано" },
   ],
 
   // ── Банкомат, карта, е-услуги ──
   "kak-da-izteglya-pari-bankomat": [
-    { src: "/kak-da/atm.webp", alt: "Екран на банкомат за избор на сума" },
+    { src: "/kak-da/atm.webp", alt: "Екран на банкомат „Изберете сума“ със суми в евро; бутонът до 50 € е подчертан" },
   ],
   "bezopasnost-na-bankomata": [
-    { src: "/kak-da/atm-safe.webp", alt: "Прикриване на ПИН с ръка на банкомат" },
+    { src: "/kak-da/atm-safe.webp", alt: "Ръка прикрива клавиатурата на банкомат, докато на екрана се въвежда ПИН" },
   ],
   "kakvo-da-ne-pravya-s-karta-pin": [
-    { src: "/kak-da/atm-safe.webp", alt: "Защита на ПИН кода при въвеждане" },
+    { src: "/kak-da/atm-safe.webp", alt: "Ръка прикрива клавиатурата на банкомат при въвеждане на ПИН" },
   ],
   "kak-da-plashtam-s-karta-magazin": [
-    { src: "/kak-da/pos.webp", alt: "Плащане с карта на POS терминал (допиране)" },
+    { src: "/kak-da/pos.webp", alt: "Банкова карта, допряна до ПОС терминал; на екрана е сумата 24,80 €" },
   ],
   "izgubih-kartata-kakvo-da-pravya": [
     { src: "/kak-da/card-lost.webp", alt: "Спешни стъпки при изгубена карта и обаждане до банката" },
   ],
   "shop-porchka": [
-    { src: "/kak-da/shop-order.webp", alt: "Поръчка в онлайн магазин с бутон „Купи сега“" },
+    { src: "/kak-da/shop-order.webp", alt: "Онлайн магазин: страница на продукт с бутони „Добави в количката“ и „Купи сега“" },
   ],
   "shop-prosledya-pratka": [
-    { src: "/kak-da/shop-track.webp", alt: "Проследяване на пратка с Еконт по номер на товарителница" },
+    { src: "/kak-da/shop-track.webp", alt: "Проследяване на пратка по номер на товарителница в сайт на куриер" },
   ],
   "docs-egov": [
-    { src: "/kak-da/egov.webp", alt: "Вход в електронните услуги на egov.bg" },
+    { src: "/kak-da/egov.webp", alt: "Примерна страница „Електронни услуги“ с търсене на услуга и бутон „Вход“" },
   ],
   "docs-zdravno-dosie": [
     { src: "/kak-da/health-record.webp", alt: "Електронно здравно досие с рецепти и прегледи" },
@@ -166,10 +165,10 @@ const MAP: Record<string, Illustration[]> = {
     { src: "/kak-da/screenshot.webp", alt: "Правене на снимка на екрана с двата бутона" },
   ],
   "acc-uvelichenie-ekran": [
-    { src: "/kak-da/magnifier.webp", alt: "Лупа за увеличаване на екрана" },
+    { src: "/kak-da/magnifier.webp", alt: "Настройка „Увеличение“ в „Достъпност“ с лупа върху дребен текст" },
   ],
   "day-lupa": [
-    { src: "/kak-da/magnifier.webp", alt: "Използване на телефона като лупа за дребен текст" },
+    { src: "/kak-da/camera-magnifier.webp", alt: "Камерата на телефона, приближена 3× към дребен текст на листовка; два пръста се раздалечават по екрана" },
   ],
   "acc-subtitri": [
     { src: "/kak-da/captions.webp", alt: "Включване на субтитри при видео (бутон CC)" },
@@ -324,7 +323,7 @@ const MAP: Record<string, Illustration[]> = {
 
   // ── Имейл (Gmail) ──
   "mail-iztriya": [{ src: "/kak-da/mail-delete.webp", alt: "Изтриване на имейл с кошчето" }],
-  "mail-izprateni": [{ src: "/kak-da/mail-sent.webp", alt: "Папка с изпратени имейли" }],
+  "mail-izprateni": [{ src: "/kak-da/mail-sent.webp", alt: "Менюто на Gmail с подчертана папка „Изпратени“" }],
   "mail-tarsya": [{ src: "/kak-da/mail-search.webp", alt: "Търсене на стар имейл" }],
   "mail-prepratya": [{ src: "/kak-da/mail-forward.webp", alt: "Препращане на имейл на друг човек" }],
   "mail-kontakt": [{ src: "/kak-da/mail-add-contact.webp", alt: "Добавяне на човек в контактите на имейла" }],
@@ -354,7 +353,7 @@ const MAP: Record<string, Illustration[]> = {
   "money-prevod-blizak": [{ src: "/kak-da/bank-transfer.webp", alt: "Превод на пари на близък през банковото приложение" }],
 
   // ── Онлайн пазаруване и забавление ──
-  "shop-varna-stoka": [{ src: "/kak-da/return-item.webp", alt: "Връщане на поръчана стока" }],
+  "shop-varna-stoka": [{ src: "/kak-da/return-item.webp", alt: "Поръчка с бутон „Заяви връщане“ и срок за връщане" }],
   "shop-sravnya-ceni": [{ src: "/kak-da/compare-prices.webp", alt: "Сравняване на цени на един продукт" }],
   "shop-garanciya": [{ src: "/kak-da/receipt-warranty.webp", alt: "Снимане и пазене на касова бележка за гаранция" }],
   "fun-radio-online": [{ src: "/kak-da/radio.webp", alt: "Слушане на радио онлайн" }],
@@ -392,33 +391,33 @@ const MAP: Record<string, Illustration[]> = {
   "x-izmama-investicii": [{ src: "/kak-da/scam-investment.webp", alt: "Измама с „инвестиция“, обещаваща бързи печалби" }],
   "m-vnimanie-investicii2": [{ src: "/kak-da/scam-investment.webp", alt: "Измамна инвестиционна схема с гарантирана печалба" }],
   "x-izmama-lyubov": [{ src: "/kak-da/scam-love.webp", alt: "Измама „любов онлайн“ — непознат, който иска пари" }],
-  "s-remote-dostap-izmama": [{ src: "/kak-da/scam-remote.webp", alt: "Измама с отдалечен достъп (инсталиране на приложение по чуждо нареждане)" }],
-  "iz-proveri-obazhdane": [{ src: "/kak-da/scam-verify.webp", alt: "Как да проверите дали обаждане или SMS е истинско" }],
-  "money-falshiva-banknota": [{ src: "/kak-da/fake-banknote.webp", alt: "Как да познаете истинска банкнота по защитните белези" }],
-  "m-falshiva-banknota2": [{ src: "/kak-da/fake-banknote.webp", alt: "Защитни белези на истинска банкнота" }],
+  "s-remote-dostap-izmama": [{ src: "/kak-da/scam-remote.webp", alt: "Страница на приложение за отдалечен достъп в магазина — не го инсталирайте по чужда молба" }],
+  "iz-proveri-obazhdane": [{ src: "/kak-da/scam-verify.webp", alt: "Бележка с четири стъпки за проверка на съмнително обаждане или SMS" }],
+  "money-falshiva-banknota": [{ src: "/kak-da/fake-banknote.webp", alt: "Банкнота 50 евро (образец на ЕЦБ) с белези: релеф, воден знак, портретен прозорец, изумрудено число, нишка" }],
+  "m-falshiva-banknota2": [{ src: "/kak-da/fake-banknote.webp", alt: "Банкнота 50 евро (образец на ЕЦБ) със защитните белези" }],
   "iz-falshiva-nagrada": [{ src: "/kak-da/fake-prize.webp", alt: "Фалшива печалба/награда — измама" }],
   "s-falshiva-pechalba-link": [{ src: "/kak-da/fake-prize.webp", alt: "Фалшива печалба с линк — измама" }],
   "x-falshiva-pechalba-mreja": [{ src: "/kak-da/fake-prize.webp", alt: "Фалшива печалба онлайн — измама" }],
 
   // ── Еврото (нагледни помагала) ──
-  "e-dvoyni-ceni-ot-koga": [{ src: "/kak-da/euro-dual-price.webp", alt: "Ценоразпис с двете цени — в левове и в евро" }],
+  "e-dvoyni-ceni-ot-koga": [{ src: "/kak-da/euro-dual-price.webp", alt: "Етикети на рафт с две цени — в лева и в евро: 1,20 лв = 0,61 €" }],
   "e-zashto-dve-ceni": [{ src: "/kak-da/euro-dual-price.webp", alt: "Защо цените се показват и в лева, и в евро" }],
   "e-poskapvane": [{ src: "/kak-da/euro-dual-price.webp", alt: "Двойни цени — курсът е фиксиран, не губите пари" }],
-  "e-zakraglyane": [{ src: "/kak-da/euro-receipt.webp", alt: "Касова бележка с обща сума в левове и в евро" }],
-  "e-resto": [{ src: "/kak-da/euro-receipt.webp", alt: "Ресто по фиксирания курс на касовата бележка" }],
-  "e-gruba-smetka": [{ src: "/kak-da/euro-rate.webp", alt: "Бързо пресмятане: лев ≈ половин евро" }],
-  "e-banknoti": [{ src: "/kak-da/euro-banknotes.webp", alt: "Евробанкноти по цвят и номинал (примерни)" }],
-  "e-moneti": [{ src: "/kak-da/euro-coins.webp", alt: "Евромонети — от 1 цент до 2 евро" }],
+  "e-zakraglyane": [{ src: "/kak-da/euro-receipt.webp", alt: "Касова бележка с обща сума 6,49 € и равностойност в лева по фиксирания курс" }],
+  "e-resto": [{ src: "/kak-da/euro-receipt.webp", alt: "Касова бележка: платено 10,00 €, ресто 3,51 €" }],
+  "e-gruba-smetka": [{ src: "/kak-da/euro-rate.webp", alt: "Конвертор на телефона: 1 евро = 1,95583 лева, с таблица за 10, 50, 100, 500 и 1000 лева" }],
+  "e-banknoti": [{ src: "/kak-da/euro-banknotes.webp", alt: "Евробанкноти от 5 до 200 евро, лицева страна — образци на ЕЦБ" }],
+  "e-moneti": [{ src: "/kak-da/euro-coins.webp", alt: "Евромонети от 1 цент до 2 евро — общата и българската страна" }],
   "e-stotinki": [{ src: "/kak-da/euro-coins.webp", alt: "Евроцентове (стотинки) — монети" }],
-  "e-bg-moneti": [{ src: "/kak-da/euro-coins.webp", alt: "Български евромонети" }],
-  "e-bankomat-evro": [{ src: "/kak-da/euro-atm.webp", alt: "Банкомат, който дава евро" }],
-  "e-kurs": [{ src: "/kak-da/euro-rate.webp", alt: "Фиксиран курс 1 евро = 1,95583 лева" }],
-  "e-kak-presmiatam": [{ src: "/kak-da/euro-rate.webp", alt: "Как да пресметна цена от лева в евро" }],
-  "e-kolko-struva": [{ src: "/kak-da/euro-rate.webp", alt: "Колко струва нещо в евро" }],
+  "e-bg-moneti": [{ src: "/kak-da/euro-coins.webp", alt: "Български евромонети с Мадарския конник, св. Иван Рилски и Паисий Хилендарски" }],
+  "e-bankomat-evro": [{ src: "/kak-da/euro-atm.webp", alt: "Екран на банкомат, който дава евро: суми в € и надпис „Сумите са в евро (€)“" }],
+  "e-kurs": [{ src: "/kak-da/euro-rate.webp", alt: "Фиксиран курс на екрана на телефона: 1 евро = 1,95583 лева" }],
+  "e-kak-presmiatam": [{ src: "/kak-da/euro-rate.webp", alt: "Таблица на телефона: 10, 50, 100 лева в евро (деление на 1,95583)" }],
+  "e-kolko-struva": [{ src: "/kak-da/euro-rate.webp", alt: "Таблица: колко евро са 10, 50, 100, 500 и 1000 лева" }],
   // „e-leva-do-koga“ и „e-leva-vkashti“ нямат картинка: старата
   // (euro-dual-period, махната) говореше за двойното обращение и безплатната
   // обмяна в банки като за предстоящи, а те приключиха (1.02 и 30.06.2026).
-  "e-falshivo-evro": [{ src: "/kak-da/fake-banknote.webp", alt: "Как да позная фалшиво евро по защитните белези" }],
+  "e-falshivo-evro": [{ src: "/kak-da/fake-banknote.webp", alt: "Банкнота 50 евро (образец на ЕЦБ) със защитните белези за разпознаване" }],
 
   // ── Още телефонни действия и приложения ──
   "kak-da-namerya-snimkite": [{ src: "/kak-da/gallery.webp", alt: "Галерия със снимките, подредени по дата" }],
@@ -427,7 +426,7 @@ const MAP: Record<string, Illustration[]> = {
   "e2-selfi-po-dobro": [{ src: "/kak-da/camera.webp", alt: "Селфи с предната камера" }],
   "kak-da-se-obadya-viber-messenger": [{ src: "/kak-da/viber-call.webp", alt: "Безплатно обаждане по Viber през интернет" }],
   "kak-da-se-video-obadya-viber-messenger": [{ src: "/kak-da/video-call.webp", alt: "Видео обаждане с превключване на камерата" }],
-  "kak-da-izpratya-snimka-klip-viber-messenger": [{ src: "/kak-da/viber-prikachi.webp", alt: "Изпращане на снимка или клип от менюто за прикачване" }],
+  "kak-da-izpratya-snimka-klip-viber-messenger": [{ src: "/kak-da/viber-prikachi.webp", alt: "Меню за прикачване във Viber: Галерия, Камера, GIF, Файл, Локация, Контакт" }],
   "kak-da-izpratya-link": [{ src: "/kak-da/share-link.webp", alt: "Копиране и изпращане на линк на сайт" }],
   "kak-da-kopiram-link": [{ src: "/kak-da/share-link.webp", alt: "Копиране на линк на сайт" }],
   "kak-da-postavya-link": [{ src: "/kak-da/share-link.webp", alt: "Поставяне на копиран линк" }],

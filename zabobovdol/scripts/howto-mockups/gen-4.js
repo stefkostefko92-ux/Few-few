@@ -505,7 +505,7 @@ const BNK = { bg: "#0b2a4a", ac: "#1e88e5" };
 const bankLogo = `<span style="display:inline-flex;width:30px;height:30px;border-radius:9px;background:#fff;align-items:center;justify-content:center">${m("account_balance", 20, "#0b2a4a", 1)}</span>`;
 S["bank-balance"] = (() => {
   const mv = (ic, t, d, v, pos) => `<div style="display:flex;align-items:center;gap:14px;padding:11px 18px"><div style="width:42px;height:42px;border-radius:50%;background:#eef2f7;display:flex;align-items:center;justify-content:center">${m(ic, 22, "#0b2a4a")}</div><div style="flex:1"><div style="font-size:15px;color:#1f1f1f">${t}</div><div style="font-size:12.5px;color:#6b7280">${d}</div></div><div style="font-size:15px;font-weight:500;color:${pos ? "#188038" : "#1f1f1f"}">${v}</div></div>`;
-  return scr(`<div style="background:${BNK.bg};color:#fff;padding:12px 18px 70px;flex-shrink:0"><div style="display:flex;align-items:center;gap:10px">${bankLogo}<div style="flex:1;font-size:17px;font-weight:500">Моята банка</div>${m("notifications", 24, "#fff")}${m("settings", 24, "#fff")}</div><div style="font-size:14px;margin-top:20px;opacity:.85">Добър вечер, Иван</div></div>
+  return scr(`<div style="background:${BNK.bg};color:#fff;padding:12px 18px 70px;flex-shrink:0"><div style="display:flex;align-items:center;gap:10px">${bankLogo}<div style="flex:1;font-size:17px;font-weight:500">Моята банка</div>${m("notifications", 24, "#fff")}${m("settings", 24, "#fff")}</div><div style="font-size:14px;margin-top:20px;opacity:.85">Добър ден, Иван</div></div>
     <div style="margin:-56px 14px 0;background:#fff;border-radius:18px;padding:16px 18px;box-shadow:0 4px 16px rgba(0,0,0,.18);position:relative;z-index:2;flex-shrink:0"><div style="font-size:13px;color:#6b7280;display:flex;justify-content:space-between">Разплащателна сметка ${m("visibility", 20, "#6b7280")}</div><div class="ring" style="display:inline-block;font-size:34px;font-weight:700;color:#0b2a4a;margin:6px 0 4px;border-radius:8px;padding:0 4px;margin-left:-4px">1 248,30 €</div><div style="font-size:12.5px;color:#6b7280;letter-spacing:.3px">BG00 XXXX 0000 0000 0000 00</div>
       <div style="display:flex;justify-content:space-around;margin-top:16px">${[["north_east", "Превод"], ["receipt_long", "Плащане"], ["credit_card", "Карти"], ["history", "Движения"]].map(([i, t]) => `<div style="text-align:center;font-size:12.5px;color:#1f1f1f"><div style="width:48px;height:48px;border-radius:50%;background:#e3f0fd;display:flex;align-items:center;justify-content:center;margin:0 auto 5px">${m(i, 24, BNK.ac)}</div>${t}</div>`).join("")}</div></div>
     <div style="padding:16px 18px 4px;font-size:15px;font-weight:500;color:#1f1f1f;flex-shrink:0">Последни движения</div>
@@ -754,4 +754,11 @@ S["photo-zoom"] = (() => {
     tip("Сложете два пръста върху снимката и ги раздалечете — приближава. Съберете ги — връща размера", "left:50%;bottom:24px;transform:translateX(-50%);width:300px;z-index:40"), "#000", "#fff");
 })();
 
+// Час в лентата за състоянието = часът в съдържанието (без „последно видян“ в бъдещето)
+const setTime = (names, t) => names.forEach((n) => { S[n] = S[n].replace(/(<span class="st-time">)[^<]*/, `$1${t}`); });
+setTime(["downloads"], "10:30");
+setTime(["transit"], "14:05");
+setTime(["night-mode"], "21:14");
+setTime(["receipt-warranty"], "10:24");
+setTime(["shopping-list"], "18:05");
 render(S).catch((e) => { console.error(e); process.exit(1); });

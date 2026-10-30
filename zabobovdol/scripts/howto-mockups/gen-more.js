@@ -183,7 +183,7 @@ S["mail-inbox"] = ph(wrap(`
   </div>
   <div style="position:absolute;right:16px;bottom:98px;height:56px;padding:0 20px 0 16px;border-radius:16px;background:#c2e7ff;display:flex;align-items:center;gap:12px;font-size:15px;font-weight:500;color:#001d35;box-shadow:0 2px 6px rgba(0,0,0,.2),0 6px 12px rgba(0,0,0,.12)">${ic("edit", { fill: 1, color: "#001d35" })}Нов имейл</div>
   <div style="height:80px;background:${G.sc};display:flex;padding-top:12px;flex-shrink:0">${[["mail", "Поща", 1], ["videocam", "Meet", 0]].map(([n, l, a]) => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:64px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center;${a ? "background:#d3e3fd" : ""}">${ic(n, { fill: a, color: a ? "#041e49" : G.sub })}</div><div style="font-size:12px;font-weight:500;color:${a ? G.on : G.sub}">${l}</div></div>`).join("")}</div>
-  ${tip("Новите писма са удебелени.<br>Докоснете писмо, за да го отворите", "left:50%;top:92px;transform:translateX(-50%)", { arrow: "d", at: "50%" })}
+  ${tip("Новите писма са удебелени.<br>Докоснете писмо, за да го отворите", "left:8px;top:552px;width:max-content", { arrow: "u", at: "26%" })}
 `), G.sc);
 
 // Писане на имейл
@@ -273,23 +273,16 @@ S["atm"] = scene(
   { pad: 30 }
 );
 
-// Безопасност: ПИН + ръка, която закрива клавиатурата
-const HAND = `<svg width="250" height="190" viewBox="0 0 250 190" style="position:absolute;filter:drop-shadow(0 14px 12px rgba(0,0,0,.45))">
-  <defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1c9a5"/><stop offset=".6" stop-color="#e2a982"/><stop offset="1" stop-color="#c98b66"/></linearGradient>
-  <linearGradient id="sk2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d79d77"/><stop offset="1" stop-color="#eec3a0"/></linearGradient></defs>
-  <g fill="url(#sk)" stroke="#b97d59" stroke-width="1.2">
-    <rect x="12" y="16" width="128" height="28" rx="14"/><rect x="2" y="48" width="140" height="29" rx="14.5"/><rect x="6" y="81" width="136" height="29" rx="14.5"/><rect x="26" y="114" width="116" height="26" rx="13"/>
-    <path d="M118 12h70c34 0 58 26 58 62v50c0 36-30 62-62 62h-52c-22 0-34-14-34-34z" fill="url(#sk2)"/>
-  </g>
-  <g fill="#f6dcc5" opacity=".85"><ellipse cx="26" cy="30" rx="9" ry="6"/><ellipse cx="18" cy="62" rx="9" ry="6"/><ellipse cx="22" cy="95" rx="9" ry="6"/><ellipse cx="40" cy="127" rx="8" ry="5.5"/></g>
-  <g stroke="#b97d59" stroke-width="1.3" fill="none" opacity=".7"><path d="M96 28h8M98 62h8M98 95h8M104 127h8"/><path d="M160 80q22 18 44 4M170 110q18 12 36 2"/></g></svg>`;
+// atm-safe — истинска снимка (CC0, Wikimedia Commons, 3dman_eu): човек въвежда ПИН и
+// прикрива клавиатурата с другата ръка. Логото на производителя на банкомата е
+// размито (assets/more/atm-hand.jpg; виж assets/credits/more.md).
 S["atm-safe"] = scene(
-  `<div style="position:relative;padding-bottom:62px">` + atmUnit(
-    `<div style="padding:34px 18px 0;text-align:center"><div style="font-size:13px;color:#a9c7ea">Безопасност</div><div style="font-size:22px;font-weight:700;margin-top:4px">Въведете ПИН</div><div style="font-size:34px;letter-spacing:12px;margin-top:22px;font-weight:700">● ● ● ●</div><div style="font-size:12px;color:#a9c7ea;margin-top:22px">След това натиснете „Потвърди“</div></div>`,
-    { L: [], R: [], showCash: false, ringKeypad: true }
-  ).replace("</div></div>\n  </div>", "</div></div>\n  </div>") +
-    `<div style="position:absolute;left:196px;top:292px;transform:rotate(-6deg) scale(.7);transform-origin:0 0">${HAND}</div>` +
-    tip("Прикривайте клавиатурата с ръка,<br>докато въвеждате ПИН кода", "left:50%;bottom:0;transform:translateX(-50%);width:max-content") + `</div>`,
+  `<div style="position:relative;width:560px;padding-bottom:96px">
+    ${photo("more/atm-hand.jpg", { w: 560, h: 373, radius: 18, style: "box-shadow:0 18px 40px rgba(15,23,42,.28)" })}
+    <div class="ring" style="position:absolute;left:283px;top:184px;width:168px;height:150px;border-radius:26px"></div>` +
+    tip("Прикривайте клавиатурата с ръка,<br>докато въвеждате ПИН кода", "left:50%;top:392px;transform:translateX(-50%);width:max-content", { arrow: "u", at: "62%" }) +
+    `<div style="position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:12px;color:#64748b">Снимка: 3dman_eu, Wikimedia Commons (CC0)</div>
+  </div>`,
   { pad: 30 }
 );
 
@@ -742,7 +735,7 @@ S["reminder"] = ph(wrap(`
   <div style="padding:6px 22px 0 62px"><div style="font-size:26px;color:${G.on};border-bottom:2px solid ${G.pri};padding-bottom:8px">Лекарство за кръвно${caret}</div></div>
   <div style="display:flex;gap:8px;padding:16px 22px 6px 62px">${["Събитие", "Задача", "Напомняне"].map((t, i) => `<span style="height:34px;padding:0 14px;border-radius:9px;display:flex;align-items:center;font-size:14px;${i === 2 ? "background:#d3e3fd;color:#041e49;font-weight:500" : "border:1px solid #c4c7c5;color:" + G.on}">${t}</span>`).join("")}</div>
   <div style="padding:8px 0 0">
-    ${[["schedule", `петък, 30 октомври`, `9:00 ч.`], ["repeat", "Повтаря се всеки ден", ""], ["notifications", "Известие в 9:00 ч.", ""]].map(([n, a, b]) => `<div style="display:flex;align-items:center;height:60px;padding:0 22px;gap:22px">${ic(n, { color: G.gray })}<div style="flex:1;font-size:16px;color:${G.on}">${a}</div>${b ? `<div style="font-size:16px;color:${G.on}">${b}</div>` : ""}</div>`).join("")}
+    ${[["schedule", `петък, 30 октомври`, `20:00 ч.`], ["repeat", "Повтаря се всеки ден", ""], ["notifications", "Известие в 20:00 ч.", ""]].map(([n, a, b]) => `<div style="display:flex;align-items:center;height:60px;padding:0 22px;gap:22px">${ic(n, { color: G.gray })}<div style="flex:1;font-size:16px;color:${G.on}">${a}</div>${b ? `<div style="font-size:16px;color:${G.on}">${b}</div>` : ""}</div>`).join("")}
   </div>
   ${spacer}
   ${tip("Изберете час и повторение „всеки ден“,<br>после натиснете „Запази“", "left:50%;top:440px;transform:translateX(-50%)")}
@@ -751,9 +744,9 @@ S["reminder"] = ph(wrap(`
 // ═══════════ КАМЕРА (Samsung) ═══════════
 function camUI(preview, o = {}) {
   return wrap(`
-  <div style="height:46px;background:#000;display:flex;align-items:center;justify-content:space-around;flex-shrink:0;padding:0 20px">${["settings", "flash_auto", "timer", "aspect_ratio", "filter_vintage"].map((n) => ic(n, { color: "#fff", size: 22 })).join("")}</div>
+  <div style="height:46px;background:#000;display:flex;align-items:center;justify-content:space-around;flex-shrink:0;padding:0 20px">${(o.topIcons || ["settings", "flash_auto", "timer", "aspect_ratio", "filter_vintage"]).map((n) => (n === o.topRing ? `<span class="ring" style="width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center">${ic(n, { color: "#ffd24a", size: 22 })}</span>` : ic(n, { color: "#fff", size: 22 }))).join("")}</div>
   <div style="position:relative;height:450px;flex-shrink:0;overflow:hidden;background:#111">${preview}
-    <div style="position:absolute;left:0;right:0;bottom:12px;display:flex;justify-content:center"><div style="display:flex;gap:4px;height:36px;padding:3px;border-radius:18px;background:rgba(0,0,0,.4);align-items:center;color:#fff;font-size:13px"><span style="width:30px;text-align:center">.6</span><span style="width:34px;height:30px;border-radius:15px;background:rgba(255,255,255,.95);color:#000;font-weight:700;display:flex;align-items:center;justify-content:center">1×</span><span style="width:30px;text-align:center">3</span></div></div></div>
+    ${o.zoomHtml || `<div style="position:absolute;left:0;right:0;bottom:12px;display:flex;justify-content:center"><div style="display:flex;gap:4px;height:36px;padding:3px;border-radius:18px;background:rgba(0,0,0,.4);align-items:center;color:#fff;font-size:13px"><span style="width:30px;text-align:center">.6</span><span style="width:34px;height:30px;border-radius:15px;background:rgba(255,255,255,.95);color:#000;font-weight:700;display:flex;align-items:center;justify-content:center">1×</span><span style="width:30px;text-align:center">3</span></div></div>`}</div>
   <div style="height:36px;background:#000;color:#fff;display:flex;justify-content:center;gap:22px;align-items:center;font-size:14px;flex-shrink:0"><span style="opacity:.7">Видео</span><span style="font-weight:700;color:#ffd24a">Снимка</span><span style="opacity:.7">Портрет</span><span style="opacity:.7">Още</span></div>
   <div style="flex:1;background:#000;display:flex;align-items:center;justify-content:space-between;padding:0 38px 4px">${img(o.thumb || "lake.jpg", { w: 52, h: 52, radius: 14, style: "box-shadow:0 0 0 2px rgba(255,255,255,.7)" })}
     <div class="${o.ring === false ? "" : "ring ringr"}" style="width:76px;height:76px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px #000,0 0 0 6px #fff"></div>
@@ -761,6 +754,36 @@ function camUI(preview, o = {}) {
   ${o.tipHtml || ""}`, { css: "background:#000" });
 }
 S["camera"] = ph(camUI(`${img("meadow1.jpg", { w: 390, h: 450, fit: "cover", style: "object-position:40% 50%" })}<div style="position:absolute;left:150px;top:230px;width:72px;height:72px;border:2px solid #ffd24a;border-radius:6px"></div>`, { tipHtml: tip("Насочете телефона и докоснете<br>големия бял кръг, за да снимате", "left:50%;top:536px;transform:translateX(-50%)", { arrow: "d", at: "50%" }).replace("top:536px", "top:376px") }), "#000", "#ffffff");
+
+// ═══════════ КАМЕРАТА КАТО ЛУПА (day-lupa): дребен текст върху листовка, приближен с щипване ═══════════
+// Няма външна снимка: листовката е пресъздадена (хартиено зърно, лек наклон, сянка, светлина от фенерчето).
+S["camera-magnifier"] = (() => {
+  const line = (t, css = "") => `<div style="font-size:20px;line-height:1.36;color:#1d1c1a;text-shadow:0 0 .7px rgba(0,0,0,.55);${css}">${t}</div>`;
+  const paper = `
+    <div style="position:absolute;inset:-40px;transform:rotate(-2.4deg);background:linear-gradient(100deg,#ece6d6 0%,#f8f4e8 38%,#fbf8ef 62%,#e9e2d0 100%)">
+      <svg width="100%" height="100%" style="position:absolute;inset:0;mix-blend-mode:multiply;opacity:.55"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .35  0 0 0 0 .3  0 0 0 0 .22  0 0 0 .22 0"/></filter><rect width="100%" height="100%" filter="url(#grain)"/></svg>
+      <div style="position:absolute;left:66px;top:104px;width:296px">
+        <div style="font-size:14px;letter-spacing:.6px;color:#4a4742;text-shadow:0 0 .6px rgba(0,0,0,.4);margin-bottom:6px">Листовка: информация за пациента</div>
+        ${line("Как да приемате", "font-weight:700;font-size:25px;margin-bottom:4px")}
+        ${line("Възрастни: по 1 таблетка сутрин и вечер, след хранене.")}
+        ${line("Не превишавайте дневната доза.", "margin-top:8px")}
+        ${line("Съхранявайте на сухо, под 25 °C, далеч от деца.", "margin-top:8px")}
+        <div style="position:relative;margin-top:14px;width:max-content"><div style="position:absolute;inset:-5px -10px;border:2px solid #ffd24a;border-radius:6px;box-shadow:0 0 0 1px rgba(0,0,0,.18)"></div>${line("Годно до: <b>08.2027</b>", "font-size:23px")}</div>
+      </div>
+    </div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 58% 38%,rgba(255,252,240,.34),rgba(255,252,240,0) 62%),radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,0,.42) 100%);pointer-events:none"></div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:130px;backdrop-filter:blur(1.6px);-webkit-mask-image:linear-gradient(0deg,#000,rgba(0,0,0,0));mask-image:linear-gradient(0deg,#000,rgba(0,0,0,0));pointer-events:none"></div>`;
+  const finger = (x, y) => `<div style="position:absolute;left:${x - 32}px;top:${y - 32}px;width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.28);border:2px solid rgba(255,255,255,.9);box-shadow:0 0 0 2px rgba(0,0,0,.25);z-index:15"></div>`;
+  const arrow = (x, y, rot) => `<div style="position:absolute;left:${x}px;top:${y}px;z-index:14;transform:rotate(${rot}deg)">${ic("arrow_forward", { size: 34, color: "#fff" })}</div>`;
+  const zoomHtml = `<div style="position:absolute;left:0;right:0;top:12px;display:flex;justify-content:center"><div style="height:30px;padding:0 14px;border-radius:15px;background:rgba(0,0,0,.45);color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center">3,0×</div></div>
+    <div style="position:absolute;left:0;right:0;bottom:12px;display:flex;flex-direction:column;align-items:center;gap:9px">
+      <div style="position:relative;width:250px;height:4px;border-radius:2px;background:rgba(255,255,255,.4)"><div style="position:absolute;left:0;top:0;width:44%;height:4px;border-radius:2px;background:#fff"></div><div style="position:absolute;left:44%;top:-7px;margin-left:-9px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.5)"></div></div>
+      <div style="display:flex;gap:4px;height:36px;padding:3px;border-radius:18px;background:rgba(0,0,0,.4);align-items:center;color:#fff;font-size:13px"><span style="width:30px;text-align:center">1</span><span style="width:30px;text-align:center">2</span><span style="min-width:38px;height:30px;border-radius:15px;background:rgba(255,255,255,.95);color:#000;font-weight:700;display:flex;align-items:center;justify-content:center">3×</span><span style="width:30px;text-align:center">5</span></div></div>`;
+  return ph(camUI(`${paper}${finger(296, 330)}${finger(338, 196)}${arrow(250, 356, 135)}${arrow(334, 124, -45)}`, {
+    ring: false, thumb: "bread.jpg", zoomHtml, topIcons: ["settings", "flash_on", "timer", "aspect_ratio", "filter_vintage"], topRing: "flash_on",
+    tipHtml: tip("Раздалечете два пръста на екрана —<br>дребният текст се уголемява", "left:50%;top:506px;transform:translateX(-50%)", { arrow: "u", at: "50%" }),
+  }), "#000", "#ffffff");
+})();
 
 // ═══════════ QR КОД (камерата чете кода, без да снимате) ═══════════
 function qrSvg(text, px) {
@@ -821,5 +844,10 @@ S["photo-rotate"] = ph(wrap(`
   ${tip("Натискайте кръглата стрелка,<br>докато снимката се изправи", "left:50%;top:120px;transform:translateX(-50%)")}
 `, { css: "background:#000" }), "#000", "#ffffff");
 
+// Час в лентата за състоянието = часът в съдържанието (без „последно видян“ в бъдещето)
+const setTime = (names, t) => names.forEach((n) => { S[n] = S[n].replace(/(<span class="st-time">)[^<]*/, `$1${t}`); });
+setTime(["sms-new", "kb-lang", "kb-paste", "kb-dictate"], "13:09");
+setTime(["call-missed"], "13:40");
+setTime(["weather", "screenshot"], "12:41");
 // @@END
 render(S).catch((e) => { console.error(e); process.exit(1); });

@@ -89,7 +89,7 @@ S["video-call"] = P(col(`
   <div style="position:absolute;right:14px;top:66px;width:104px;height:148px;border-radius:14px;overflow:hidden;border:2px solid rgba(255,255,255,.85);box-shadow:0 4px 14px rgba(0,0,0,.4)">${crop("meadow2", "50% 50%", 1.6)}</div>
   <div style="flex:1"></div>
   <div style="position:relative;display:flex;justify-content:center;gap:18px;margin-bottom:34px">${circ("mic_off", { s: 58 })}${circ("cameraswitch", { s: 58, ring: 1, bg: "rgba(255,255,255,.22)" })}${circ("videocam", { s: 58 })}${circ("call_end", { s: 58, bg: "#e5484d" })}</div>`, "#1a1a26"), "#1a1a26", "#fff")
-  + tip("Иконата с двете стрелки върти камерата —<br>малкото прозорче показва какво виждате вие", "left:50%;top:380px;transform:translateX(-50%);width:max-content;max-width:360px", { arrow: "d", at: "38%" });
+  + tip("Иконата с двете стрелки върти камерата —<br>малкото прозорче показва какво виждате Вие", "left:50%;top:380px;transform:translateX(-50%);width:max-content;max-width:360px", { arrow: "d", at: "38%" });
 
 // ═════════════ share-link — Chrome + Сподели ═════════════
 {
@@ -133,7 +133,7 @@ S["video-call"] = P(col(`
     <div style="display:flex;justify-content:center;padding:14px 0 84px"><div style="position:relative">${av("М", "#7e57c2", 118).replace("font-weight:500", "font-weight:400")}<div class="ring ringr" style="position:absolute;right:-2px;bottom:-2px;width:44px;height:44px;border-radius:50%;background:#c2e7ff;border:3px solid #fff;display:flex;align-items:center;justify-content:center">${ms("photo_camera", { size: 22, fill: 1, color: "#001d35" })}</div></div></div>
     ${field("Име", "Мария", "person")}${field("Фамилия", "Георгиева", "")}${field("Телефон", "0888 123 456", "call")}
     <div style="padding:0 16px 14px 56px;font-size:13px;color:${SUB}">Мобилен</div>${field("Имейл", "maria@example.com", "mail")}`, "#fff"), "#fff", "#0b0b0b")
-    + tip("Докоснете кръгчето с камерата, изберете снимка<br>от галерията, после натиснете „Запази“", "left:50%;top:226px;transform:translateX(-50%);width:max-content;max-width:360px", { arrow: "u", at: "62%" });
+    + tip("Докоснете кръгчето с камерата, изберете снимка<br>от галерията, после натиснете „Запази“", "left:50%;top:218px;transform:translateX(-50%);width:max-content;max-width:360px", { arrow: "u", at: "62%" });
 }
 
 // ═════════════ home-shortcut — меню на Chrome ═════════════
@@ -288,7 +288,7 @@ S["polling-station"] = P(sitePage("izbori.example.bg/sekciya", "Изборна �
       <div style="display:flex;align-items:center;gap:14px;padding:10px 12px;border:2px solid #111;border-radius:14px">${ms("local_taxi", { size: 34, fill: 1, color: "#111" })}<div style="flex:1"><div style="font-size:16px;font-weight:700;color:#111">Такси · до 4 места</div><div style="font-size:13px;color:#666;margin-top:2px">Колата е на 4 минути</div></div><div style="font-size:18px;font-weight:800;color:#111">~4,50 €</div></div>
       <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#555;margin:12px 2px 12px">${ms("payments", { size: 20, color: "#555" })}Плащане в брой на шофьора</div>
       <div class="ring" style="height:52px;border-radius:12px;background:#111;color:#fff;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center">Поръчай такси</div></div>`, "#f2efe9"), "#fff", "#0b0b0b")
-    + tip("Въведете адресите и натиснете „Поръчай такси“.<br>Виждате колата как идва към вас на картата", "left:50%;top:378px;transform:translateX(-50%);width:max-content;max-width:360px", { arrow: "d", at: "50%" });
+    + tip("Въведете адресите и натиснете „Поръчай такси“.<br>Виждате колата как идва към Вас на картата", "left:50%;top:378px;transform:translateX(-50%);width:max-content;max-width:360px", { arrow: "d", at: "50%" });
 }
 
 // ═════════════ telemedicine — видео преглед, влизане (без лица) ═════════════
@@ -328,7 +328,7 @@ S["telemedicine"] = P(col(`
     <div class="ring" style="display:flex;align-items:center;gap:14px;margin:2px 10px;padding:8px 10px;border-radius:14px">${av("М", "#7e57c2", 46)}<div style="flex:1"><div style="font-size:16px;color:${INK}">Мария Петрова</div><div style="font-size:13px;color:${SUB}">Дъщеря · 0888 123 456</div></div><span style="width:44px;height:44px;border-radius:50%;background:#c4eed0;display:flex;align-items:center;justify-content:center">${ms("call", { size: 22, fill: 1, color: "#0a5c2c" })}</span></div>
     <div style="flex:1"></div>
     <div style="margin:0 16px 14px;height:50px;border-radius:25px;border:2px solid #d93025;color:#d93025;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px">${ms("emergency", { size: 22, fill: 1, color: "#d93025" })}Спешно обаждане 112</div>`), "#fff", "#0b0b0b")
-    + tip("Спасител вижда спешния ви контакт и може да се<br>обади на близкия ви, без да отключва телефона", "left:50%;top:506px;transform:translateX(-50%);width:max-content;max-width:360px", { arrow: "u", at: "50%" });
+    + tip("Спасител вижда спешния Ви контакт и може да се<br>обади на близкия Ви, без да отключва телефона", "left:50%;top:506px;transform:translateX(-50%);width:max-content;max-width:360px", { arrow: "u", at: "50%" });
 }
 
 // ═════════════ lock-app — Заключване на приложения ═════════════

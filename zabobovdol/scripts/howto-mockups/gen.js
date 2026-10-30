@@ -317,11 +317,11 @@ S["viber-procheteno"] = phone(root(`
       <span style="display:flex;gap:20px;padding-right:6px">${ic("call", { s: 25 })}${ic("videocam", { s: 28 })}</span></div>
     <div style="flex:1;background:#fff;padding:12px 12px 8px;display:flex;flex-direction:column;gap:4px;overflow:hidden">
       <div style="display:flex;flex-direction:column;align-items:center;padding:8px 0 10px">${ini("И", "#e07a1f", 76)}<div style="font-size:18px;font-weight:700;margin-top:8px;color:#050505">Иван (син)</div><div style="font-size:13px;color:#65676b">Приятели във Facebook</div></div>
-      ${day("ВТОР 18:02")}
+      ${day("ЧЕТ 18:02")}
       ${inb("Мамо, видя ли снимките на внучето?")}
       ${outb("Видях ги! Колко е пораснал, Боже мой")}
       ${inb("Утре идваме на гости 🙂", "margin-top:4px")}
-      ${day("СРЯ 09:15")}
+      ${day("ПЕТ 09:15")}
       ${outb("Добро утро! Правя баница, чакам Ви")}
       <div style="align-self:flex-end;margin:0 2px 0 0;display:flex;align-items:center;gap:4px">${sil(15, "#c3c6cc")}</div>
     </div>

@@ -70,8 +70,8 @@ S["battery"] = scr(`${hdr("Батерия")}
       <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:52px;font-weight:400;letter-spacing:-1.5px;color:#111">78</span><span style="font-size:24px;color:#111">%</span><span style="margin-left:8px;display:inline-flex;align-items:center;gap:4px;color:#2fa86a;font-size:15px">${ms("bolt", { size: 20, fill: 1, color: "#2fa86a" })}Зарежда се</span></div>
       <div style="height:10px;border-radius:5px;background:#e6e6ea;margin:14px 0 12px;overflow:hidden"><div style="width:78%;height:10px;background:#2fa86a"></div></div>
       <div style="font-size:14px;color:#6b6b70">Пълно зареждане след около 40 мин</div></div>`)}
-  ${card(`${orow(ic("battery_saver", C.green), "Пестене на енергия", "Ограничава яркостта и фоновата работа", sw(true, true), false)}${orow(ic("bar_chart", C.blue), "Използване на батерията", "", chev)}${orow(ic("nights_stay", C.purple), "Фоново използване", "", chev)}`)}
-  ${tip("Включете „Пестене на енергия“, за да издържи по-дълго", "left:50%;top:372px;transform:translateX(-50%);width:262px", { arrow: "u", at: "86%" })}`, { battery: 78 });
+  ${card(`${orow(ic("battery_saver", C.green), "Пестене на батерия", "Ограничава яркостта и фоновата работа", sw(true, true), false)}${orow(ic("bar_chart", C.blue), "Използване на батерията", "", chev)}${orow(ic("nights_stay", C.purple), "Фоново използване", "", chev)}`)}
+  ${tip("Включете „Пестене на батерия“, за да издържи по-дълго", "left:50%;top:506px;transform:translateX(-50%);width:262px", { arrow: "u", at: "86%" })}`, { battery: 78 });
 
 // ═══ НАСТРОЙКИ ═══
 S["airplane"] = quickPanel({ on: ["Самолетен режим"], hl: "Самолетен режим",
@@ -267,17 +267,17 @@ S["data-usage"] = scr(`${hdr("Използване на данни", { fs: 27 })
   <div style="padding:2px 28px 8px;font-size:14px;color:#6b6b70">Използване по приложения</div>
   ${card(`${orow(appIc("youtube", 38), "YouTube", "", "1,1 GB")}${orow(appIc("viber", 38), "Viber", "", "0,4 GB")}${orow(appIc("chrome", 38), "Chrome", "", "0,3 GB")}`)}
   ${card(`${orow("", "Предупреждение за данни", "При 4,5 GB", chev)}`)}
-  ${tip("Тук виждате колко интернет сте изхарчили този месец", "left:50%;top:252px;transform:translateX(-50%);width:250px", { arrow: "u", at: "36%" })}`);
+  ${tip("Тук виждате колко интернет сте изхарчили този месец", "left:50%;top:572px;transform:translateX(-50%);width:250px", { arrow: "u", at: "36%" })}`);
 
 // ═══ КЛАВИАТУРА ═══
 const typed = (t) => `<span>${t}</span><i style="display:inline-block;width:2px;height:22px;background:${BLUE};vertical-align:middle;margin-left:1px"></i>`;
 const conv = [[false, "Здравей, бабо! Как си днес?"], [true, "Добре съм, мило. Ела на обяд."]];
 
 S["kb-backspace"] = scr(chat("Георги (внук)", conv, typed("Здравейтее"), gboard({ hl: "back", sug: ["Здравейте", "Здравей", "Здравейтее"] })) +
-  tip("Натиснете ⌫ — трие буква по буква", "right:6px;top:" + (H - 50) + "px;width:300px", { arrow: "u", at: "92%" }), { bg: "#fff" });
+  tip("Натиснете ⌫ — трие буква по буква", "right:6px;top:236px;width:300px", { arrow: "d", at: "92%" }), { bg: "#fff" });
 
 S["kb-caps"] = scr(chat("Георги (внук)", conv, typed("БОБОВ ДОЛ"), gboard({ shift: "caps", hl: "shift", sug: ["БОБОВ", "ДОЛ", "БОБОВДОЛ"] })) +
-  tip("Стрелката ⇧ — веднъж: една главна; два пъти: всички главни", "left:6px;top:" + (H - 58) + "px;width:300px", { arrow: "u", at: "12%" }), { bg: "#fff" });
+  tip("Стрелката ⇧ — веднъж: една главна; два пъти: всички главни", "left:6px;top:236px;width:300px", { arrow: "d", at: "12%" }), { bg: "#fff" });
 
 // Gboard → Корекция на текста
 S["kb-autocorrect"] = scr(`${gbar("Корекция на текста")}
