@@ -167,3 +167,30 @@
   margin: 0;
   padding-left: 1.2em;
 }
+
+/* Формата на табелата: всяко поле — подравнено отгоре (подсказката под „Ubicazione“ не сваля „Città“).
+   На телефон — една колона; от 720 px — дата | адрес, град | място, текстът на целия ред. */
+.grid--cartello {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+@media (min-width: 720px) {
+  .grid--cartello {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .grid--cartello .field--data,
+  .grid--cartello .field--citta {
+    grid-column: span 2;
+  }
+
+  .grid--cartello .field--indirizzo,
+  .grid--cartello .field--ubicazione {
+    grid-column: span 4;
+  }
+
+  .grid--cartello .field--testo {
+    grid-column: 1 / -1;
+  }
+}

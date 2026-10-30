@@ -132,6 +132,15 @@ export async function checkCartelli(page, { base, shots, scheme, aziendaPath, sh
   await page.waitForSelector('.da-scheda__scelta');
   if (!(await page.inputValue('#f-indirizzo')))
     fail(`${name}: the address did not come from the scheda`);
+  // The fields stand in rows like on the sign: date | address, city | place — the hint under the place
+  // does not push the city down (the owner's screenshot, 30 October 2026).
+  const tops = await page.evaluate(() =>
+    ['data', 'indirizzo', 'citta', 'ubicazione'].map((k) =>
+      Math.round(document.getElementById(`f-${k}`).getBoundingClientRect().top),
+    ),
+  );
+  if (tops[0] !== tops[1] || tops[2] !== tops[3])
+    fail(`${name}: the sign fields are not in rows (${tops.join(', ')})`);
   await audit(page, `${name} from scheda`);
   await page.screenshot({ path: join(shots, `${scheme}-cartello-da-scheda.png`), fullPage: true });
   if (!(await page.inputValue('#f-testo')))

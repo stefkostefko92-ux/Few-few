@@ -51,9 +51,10 @@
   <% } %>
   <fieldset class="section">
     <legend class="section__title"><%= t('cartelli.titolo') %></legend>
-    <div class="grid">
+    <%# Като на табелата: дата и адрес, после град и място на уредбата, после текстът (cartelli.css). %>
+    <div class="grid grid--cartello">
       <%- campo('data', 'date') %>
-      <%- campo('indirizzo', 'text', { wide: true, autocomplete: 'street-address' }) %>
+      <%- campo('indirizzo', 'text', { autocomplete: 'street-address' }) %>
       <%- campo('citta', 'text', { autocomplete: 'address-level2' }) %>
       <%- campo('ubicazione', 'text', { hint: t('cartelli.hint.ubicazione') }) %>
       <%- campo('testo', 'textarea', { wide: true, hint: proposto ? t('cartelli.daScheda.proposto') : t('cartelli.hint.testo') }) %>

@@ -9,7 +9,7 @@
   const errText = error ? (error === 'required' && required[key] ? t(required[key]) : t('scheda.error.' + error, { maxLength })) : null;
   const describedBy = [typeof hint !== 'undefined' && hint ? hintId : null, errText ? errId : null].filter(Boolean).join(' ');
   const aria = (errText ? ' aria-invalid="true"' : '') + (describedBy ? ' aria-describedby="' + describedBy + '"' : '');
-%><div class="field<%= typeof wide !== 'undefined' && wide ? ' field--wide' : '' %>">
+%><div class="field field--<%= key %><%= typeof wide !== 'undefined' && wide ? ' field--wide' : '' %>">
   <label class="field__label" for="<%= id %>"><%= label %></label>
   <% if (kind === 'textarea') { %><textarea class="textarea" id="<%= id %>" name="<%= key %>" rows="5" maxlength="<%= maxLength %>" required<%- aria %>><%= text %></textarea>
   <% } else if (kind === 'date') { %><input class="input" id="<%= id %>" name="<%= key %>" type="date" required min="1950-01-01" max="2099-12-31" value="<%= text %>"<%- aria %>>
