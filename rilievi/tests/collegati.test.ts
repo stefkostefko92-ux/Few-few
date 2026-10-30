@@ -29,6 +29,9 @@ const open = {
   'om-_': '1',
   'mn-_': '1',
   'mq-_': '1',
+  'eg-_': '1',
+  'el-_': '1',
+  'eo-_': '1',
   arganoPreventivo: 'si',
   'pa-_': '1',
 };

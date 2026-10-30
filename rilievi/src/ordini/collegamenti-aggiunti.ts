@@ -5,7 +5,8 @@ import type { Collegamento } from './collegamenti.js';
  * редът на разминаванията и на отпечатъка на потвърждението, затова нова връзка е винаги в края.
  * Октомври 2026 (централата и Mastech): таблата помежду си (сервизи), машината (полюси, мощност,
  * окачване, шайба, предавателно число), шейната, марката на централата. Мощността и пускането на
- * централата на картата са махнати (21 октомври) — и връзките им с MoviLift.
+ * централата на картата са махнати (21 октомври) — и връзките им с MoviLift. Elettroquadri (30
+ * октомври) — в същите връзки (без нови).
  */
 export const AGGIUNTI: readonly Collegamento[] = [
   {
@@ -16,6 +17,9 @@ export const AGGIUNTI: readonly Collegamento[] = [
       { luogo: 'oq', campo: 'nServizi' },
       { luogo: 'mn', campo: 'nServizi' },
       { luogo: 'mq', campo: 'numeroServizi' },
+      { luogo: 'eg', campo: 'nServizi' },
+      { luogo: 'el', campo: 'nServizi' },
+      { luogo: 'eo', campo: 'nServizi' },
     ],
   },
   {
@@ -34,6 +38,9 @@ export const AGGIUNTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'mn', campo: 'potenzaKw' },
       { luogo: 'mq', campo: 'potenzaMotore' },
+      { luogo: 'eg', campo: 'motoreKw' },
+      { luogo: 'el', campo: 'motoreKw' },
+      { luogo: 'eo', campo: 'motoreKw' },
       { luogo: 'pa', campo: 'potenzaKw' },
     ],
   },
@@ -69,6 +76,8 @@ export const AGGIUNTI: readonly Collegamento[] = [
       { luogo: 'om', campo: 'elettrPattinoV' },
       { luogo: 'mn', campo: 'tensionePattino' },
       { luogo: 'mq', campo: 'tensionePattino' },
+      { luogo: 'eg', campo: 'pattinoV' },
+      { luogo: 'eo', campo: 'pattinoV' },
     ],
   },
   {
@@ -79,6 +88,7 @@ export const AGGIUNTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'centralinaMarca' },
       { luogo: 'om', campo: 'centralina' },
+      { luogo: 'eo', campo: 'centralinaMarca' },
     ],
   },
 ];

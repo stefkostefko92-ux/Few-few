@@ -1,13 +1,16 @@
 import { AGGIUNTI } from './collegamenti-aggiunti.js';
+import { IMPIANTO } from './collegamenti-impianto.js';
 import type { Collegamento } from './collegamenti.js';
 
 /**
  * Свързаните данни — СПИСЪКЪТ: едно и също нещо от уредбата, записано на повече от едно място — в
- * картата, в поръчката за таблото (Pelazza `oq`, MoviLift `om`, Mastech NG120 `mn` или QI Touch `mq` —
- * според марката и модела, никога две), в листа с данни за аргано (`pa`) и в листа на 2SG (`sg`).
+ * картата, в поръчката за таблото (Pelazza `oq`, MoviLift `om`, Mastech NG120 `mn` или QI Touch `mq`,
+ * Elettroquadri geared `eg`, gearless `el` или oleodinamico `eo` — според марката, модела и вида на
+ * уредбата, никога две), в листа с данни за аргано (`pa`) и в листа на 2SG (`sg`).
  * Всяко място, в което човекът не е писал, се попълва от другите — във всяка посока и докато се пише
  * (public/js/collegati.js); различните стойности се сравняват (collegati.ts). Типовете и проверката
- * при старт са в collegamenti.ts; добавените по-късно връзки — в collegamenti-aggiunti.ts (след тези).
+ * при старт са в collegamenti.ts; втората част на първия списък (от адреса нататък) — в
+ * collegamenti-impianto.ts; добавените по-късно връзки — в collegamenti-aggiunti.ts (след тези).
  *
  * Редът на местата е и редът на източниците: първо картата, после таблата, аргано и 2SG. Редът на
  * връзките е редът в списъка с разминавания (и в отпечатъка на потвърждението) — новите са накрая.
@@ -16,6 +19,8 @@ import type { Collegamento } from './collegamenti.js';
  * машината, въжетата; после — адресът, матрикулата, марката, видът на уредбата, операторът (между
  * таблата), токът и оборотите на мотора; после — централата и Mastech (и в тези връзки). Марката,
  * напрежението и светлият отвор на оператора в картата — махнати (собственикът, октомври 2026).
+ * Elettroquadri (30 октомври 2026) — в същите връзки; вратите им са разделени на етажни и на кабината
+ * (полуавтоматичните са две отметки) — не са във връзката на вратите.
  */
 const BASE: readonly Collegamento[] = [
   {
@@ -28,6 +33,9 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'om', campo: 'fermate' },
       { luogo: 'mn', campo: 'nFermate' },
       { luogo: 'mq', campo: 'numeroFermate' },
+      { luogo: 'eg', campo: 'nFermate' },
+      { luogo: 'el', campo: 'nFermate' },
+      { luogo: 'eo', campo: 'nFermate' },
       { luogo: 'pa', campo: 'piani' },
     ],
   },
@@ -40,6 +48,9 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'om', campo: 'velocita' },
       { luogo: 'mn', campo: 'velocita' },
       { luogo: 'mq', campo: 'velocita' },
+      { luogo: 'eg', campo: 'velocita' },
+      { luogo: 'el', campo: 'velocita' },
+      { luogo: 'eo', campo: 'velocita' },
       { luogo: 'pa', campo: 'velocita' },
     ],
   },
@@ -53,18 +64,23 @@ const BASE: readonly Collegamento[] = [
         voci: { tq1Velocita: '1V', tq2Velocita: '2V', tqVvvfAperto: 'VVVF', tqVvvfChiuso: 'VVVF' },
       },
       { luogo: 'mn', voci: { velocita1: '1V', velocita2: '2V', vvvf: 'VVVF' } },
+      // Elettroquadri geared: „2 velocità“ и „Con VVVF“ в „Motore“ (едноскоростен няма своя отметка).
+      { luogo: 'eg', voci: { dueVelocita: '2V', conVvvf: 'VVVF' } },
       { luogo: 'pa', voci: { motoreAc1: '1V', motoreAc2: '2V', motoreInverter: 'VVVF' } },
     ],
   },
   {
     // Ходът в метри; „Corsa [mm]“ на QI Touch е в милиметри — не е тук. Ходът на централата на картата —
-    // махнат (21 октомври 2026).
+    // махнат (21 октомври 2026). Elettroquadri: „Corsa (m)“ на gearless; geared и oleodinamico — същото.
     key: 'corsa',
     tipo: 'numero',
     membri: [
       { luogo: 'oq', campo: 'corsa' },
       { luogo: 'om', campo: 'corsa' },
       { luogo: 'mn', campo: 'corsa' },
+      { luogo: 'eg', campo: 'corsa' },
+      { luogo: 'el', campo: 'corsa' },
+      { luogo: 'eo', campo: 'corsa' },
       { luogo: 'pa', campo: 'corsa' },
     ],
   },
@@ -112,6 +128,8 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'oq', campo: 'circuitoFrenoVcc' },
       { luogo: 'mn', campo: 'tensioneFreno' },
       { luogo: 'mq', campo: 'tensioneFreno' },
+      { luogo: 'eg', campo: 'frenoV' },
+      { luogo: 'el', campo: 'frenoVcc' },
       { luogo: 'pa', campo: 'tensioneFreno' },
     ],
   },
@@ -171,6 +189,10 @@ const BASE: readonly Collegamento[] = [
         campo: 'ingressi',
         voci: { unico: 'UNICO', doppio: 'DOPPIO', doppioSelezionato: 'DOPPIO' },
       },
+      // Elettroquadri: „Numero di accessi in cabina“ 1/2/3 (три достъпа картата не казва).
+      { luogo: 'eg', voci: { accessi1: 'UNICO', accessi2: 'DOPPIO' } },
+      { luogo: 'el', voci: { accessi1: 'UNICO', accessi2: 'DOPPIO' } },
+      { luogo: 'eo', voci: { accessi1: 'UNICO', accessi2: 'DOPPIO' } },
     ],
   },
   {
@@ -181,6 +203,10 @@ const BASE: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'ubicazioneMacchina', voci: { ALTO: 'ALTO', BASSO: 'BASSO' } },
       { luogo: 'om', campo: 'locMacc', voci: { alto: 'ALTO', basso: 'BASSO' } },
+      // Elettroquadri: „Con Locale macchina: Basso / Alto“ (gearless), позицията на централата в
+      // машинното (oleodinamico).
+      { luogo: 'el', voci: { localeAlto: 'ALTO', localeBasso: 'BASSO' } },
+      { luogo: 'eo', voci: { centralinaAlto: 'ALTO', centralinaBasso: 'BASSO' } },
     ],
   },
   {
@@ -207,75 +233,6 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'pa', campo: 'trefoli' },
     ],
   },
-  {
-    key: 'indirizzo',
-    tipo: 'numero',
-    membri: [
-      { luogo: 'scheda', campo: 'indirizzo' },
-      { luogo: 'pa', campo: 'indirizzo' },
-    ],
-  },
-  {
-    key: 'matricola',
-    tipo: 'numero',
-    membri: [
-      { luogo: 'scheda', campo: 'matricola' },
-      { luogo: 'pa', campo: 'matricola' },
-    ],
-  },
-  {
-    key: 'marca',
-    tipo: 'numero',
-    membri: [
-      { luogo: 'scheda', campo: 'marca' },
-      { luogo: 'pa', campo: 'marca' },
-    ],
-  },
-  {
-    // „Idraulico“ в „Tipo di Quadro“ на Pelazza; електрическата и MRL нямат своя отметка там.
-    key: 'tipoImpianto',
-    tipo: 'scelta',
-    membri: [
-      {
-        luogo: 'scheda',
-        campo: 'tipoImpianto',
-        voci: { ELETTRICO: 'ELETTRICO', IDRAULICO: 'IDRAULICO', GEARLESS: 'GEARLESS' },
-      },
-      { luogo: 'oq', voci: { tqIdraulico: 'IDRAULICO' } },
-    ],
-  },
-  {
-    // Операторът — таблата помежду си, само при смяна на марката или модела (отворено е едно). „Modello“
-    // на Pelazza често е по-подробен от марката („Selcom Midi Supra“) — само попълване.
-    key: 'operatoreMarca',
-    tipo: 'numero',
-    confronto: false,
-    membri: [
-      { luogo: 'oq', campo: 'opModello' },
-      { luogo: 'om', campo: 'marcaOpA' },
-      { luogo: 'mq', campo: 'modelloOperatore1' },
-    ],
-  },
-  {
-    // Токът на мотора: „In (A)“ на Pelazza, „Amp.“ в „Fune“ на MoviLift, „Corrente (A)“ на аргано.
-    key: 'correnteMotore',
-    tipo: 'numero',
-    membri: [
-      { luogo: 'oq', campo: 'motIn' },
-      { luogo: 'om', campo: 'amp' },
-      { luogo: 'mn', campo: 'correnteNominale' },
-      { luogo: 'mq', campo: 'correnteMotore' },
-      { luogo: 'pa', campo: 'ampere' },
-    ],
-  },
-  {
-    key: 'giriMotore',
-    tipo: 'numero',
-    membri: [
-      { luogo: 'om', campo: 'numGiri' },
-      { luogo: 'pa', campo: 'giri' },
-    ],
-  },
 ];
 
-export const COLLEGAMENTI: readonly Collegamento[] = [...BASE, ...AGGIUNTI];
+export const COLLEGAMENTI: readonly Collegamento[] = [...BASE, ...IMPIANTO, ...AGGIUNTI];

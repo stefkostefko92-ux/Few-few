@@ -196,6 +196,7 @@ describe('the Mastech orders and the sheet', () => {
       moduliStampati: ['ordineQuadro'],
       quadroMarca: 'MASTECH' as const,
       quadroModello: 'NG120' as const,
+      tipoImpianto: [],
       quadroOrdine: true,
       ordineQuadro: {
         modulo: MASTECH_NG120.id,

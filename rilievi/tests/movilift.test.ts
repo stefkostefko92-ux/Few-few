@@ -106,7 +106,7 @@ describe('the MoviLift order form', () => {
   });
 
   it('opens under the question of the panel order only for its own make', () => {
-    assert.deepEqual(marcheOf('quadroOrdine'), ['PELAZZA', 'MOVILIFT', 'MASTECH']);
+    assert.deepEqual(marcheOf('quadroOrdine'), ['PELAZZA', 'MOVILIFT', 'MASTECH', 'ELETTROQUADRI']);
     assert.deepEqual(fieldByKey('quadroOrdine')?.when?.values, marcheOf('quadroOrdine'));
     // The argano sheet and the 2SG sheet are for every make: no make in their condition (the 2SG
     // sheet follows the doors with an operator, the argano sheet has none).
@@ -322,6 +322,7 @@ describe('saving the MoviLift order', () => {
       moduliStampati: [],
       quadroMarca: 'MOVILIFT' as const,
       quadroModello: null,
+      tipoImpianto: [],
       quadroOrdine: true,
       ordineQuadro: {
         modulo: MOVILIFT.id,

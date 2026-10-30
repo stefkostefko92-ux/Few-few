@@ -30,6 +30,8 @@ export type FieldErrorCode =
   | 'identifierNeeded'
   /** Mastech: „Sì“ на поръчката за таблото без модела (NG120 или QI Touch). */
   | 'modelloNeeded'
+  /** Elettroquadri: „Sì“ на поръчката за таблото без вида на уредбата (модулът зависи от него). */
+  | 'impiantoNeeded'
   /** Само MASTER: не е избрана (активна) фирма за новата карта. */
   | 'azienda';
 
@@ -51,6 +53,7 @@ export const ERROR_CODES: ReadonlySet<string> = new Set<FieldErrorCode>([
   'option',
   'identifierNeeded',
   'modelloNeeded',
+  'impiantoNeeded',
 ]);
 
 /** Липсващото поле е празен низ; масив или обект на мястото на низ е подправен вход. */

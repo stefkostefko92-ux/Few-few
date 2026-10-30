@@ -50,6 +50,7 @@ type SchedaModuli = Pick<
   | 'moduliStampati'
   | 'quadroMarca'
   | 'quadroModello'
+  | 'tipoImpianto'
   | 'quadroOrdine'
   | 'ordineQuadro'
   | 'arganoPreventivo'

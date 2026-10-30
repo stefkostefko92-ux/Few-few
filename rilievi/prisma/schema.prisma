@@ -58,6 +58,7 @@ enum QuadroMarca {
   MOVILIFT
   DMG
   MASTECH
+  ELETTROQUADRI
   ALTRO
 }
 

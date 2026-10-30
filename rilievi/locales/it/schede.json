@@ -98,6 +98,7 @@
       "option": "Scelta non valida.",
       "identifierNeeded": "Compila almeno indirizzo, matricola o n° impianto.",
       "modelloNeeded": "Scegli la tipologia del quadro (NG120 o QI Touch) per compilare il suo modulo d'ordine.",
+      "impiantoNeeded": "Scegli il tipo di impianto (elettrico, idraulico o MRL): il modulo d'ordine Elettroquadri dipende da questo.",
       "azienda": "Scegli l'azienda della scheda."
     },
     "compiledBy": "Compilata da",
@@ -135,6 +136,9 @@
       "om": "Ordine quadro",
       "mn": "Ordine quadro",
       "mq": "Ordine quadro",
+      "eg": "Ordine quadro",
+      "el": "Ordine quadro",
+      "eo": "Ordine quadro",
       "pa": "Dati argano",
       "sg": "Ordine 2SG",
       "so": "Ordine 2SG"

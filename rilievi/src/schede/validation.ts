@@ -7,7 +7,7 @@ import type {
   UbicazioneMacchina,
 } from '@prisma/client';
 import { AUTO_KEY } from '../ordini/collegamenti.js';
-import { modelloMancante, slotAperto, SLOTS } from '../ordini/registry.js';
+import { impiantoMancante, modelloMancante, slotAperto, SLOTS } from '../ordini/registry.js';
 import { moduloFromBody, parseModulo, type ModuloDati } from '../ordini/valori.js';
 import { activeFields, FIELDS, IDENTIFIERS } from './fields.js';
 import {
@@ -201,12 +201,15 @@ export function parseScheda(
   const stampa = sezioniEscluseDi(raw);
   const foto = fotoInStampaDi(raw);
   const schizzi = schizziDi(raw);
-  // Mastech: „Sì“ на поръчката без модел — човекът да избере NG120 или QI Touch.
+  // Mastech: „Sì“ на поръчката без модел — човекът да избере NG120 или QI Touch; Elettroquadri — без вид
+  // на уредбата (модулът е по него).
   const modello = modelloMancante(active, (key) => raw[key]);
+  const impianto = impiantoMancante(active, (key) => raw[key]);
   const extraErrors: FieldErrors = Object.assign(
     {},
     misure?.errors,
     modello ? { [modello]: 'modelloNeeded' } : {},
+    impianto ? { [impianto]: 'impiantoNeeded' } : {},
     ...moduli.map((modulo) => modulo?.errors ?? {}),
     riepilogo.success ? {} : { [RIEPILOGO_KEY]: 'invalid' },
     stampa.success ? {} : { [STAMPA_KEY]: 'option' },
@@ -223,7 +226,7 @@ export function parseScheda(
     schizzi.success &&
     Object.keys(extraErrors).length === 0
   ) {
-    // Колоната на отворения модул (таблото — Pelazza или MoviLift, никога и двата).
+    // Колоната на отворения модул (таблото — само един от модулите му).
     const dati = (column: string) =>
       moduli.find((modulo, i) => modulo && SLOTS[i]!.column === column)?.dati;
     return {

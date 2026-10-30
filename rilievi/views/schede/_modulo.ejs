@@ -1,8 +1,9 @@
 <%
   // Модулът на доставчика (src/ordini/, assets/moduli/*.json) — същите полета в същия ред като на
   // хартията, за да излезе в неговия оригинален PDF. Етикетите са дословно от модула (италиански) и не
-  // се превеждат. Отваря се при своята марка (и модел — Mastech) и „Sì“ на въпроса над него (обвивки с
-  // data-when — таблото има четири модула под един въпрос); data-prefill — попълване от огледа
+  // се превеждат. Отваря се при своята марка (и модел — Mastech, и вид на уредбата — Elettroquadri) и „Sì“
+  // на въпроса над него (обвивки с data-when — таблото има седем модула под един въпрос); data-prefill —
+  // попълване от огледа
   // (moduli.js); data-auto — поле, попълнено от огледа, от картата, от другия модул или със стойността на
   // празния модул: следва източника си, докато човекът не пише в него (moduli.js, collegati.js);
   // data-scritto — поле от огледа, изпразнено от човека в записания модул: остава празно (form.ts). Под
@@ -11,16 +12,21 @@
   // колона (2SG на окачванията и на оператора) са един лист на две места — moduli-gemelli.js пренася
   // писаното, когато на екрана се смени кое от тях се вижда.
   const name = (key) => slot.prefix + '-' + key;
-  // Изборите на картата за модула: марката, после моделът — обвивка за всеки. Модул без марка (листът за
-  // аргано, 2SG) е отворен при всяка марка — обвивката е без условие.
-  const [marca, modello] = [slot.marca, slot.modello];
-  const off = (c) => c && values[c.field] !== c.value;
+  // Изборите на картата за модула: марката, после моделът или видът на уредбата — обвивка за всеки. Модул
+  // без марка (листът за аргано, 2SG) е отворен при всяка марка — обвивката е без условие. Видът на
+  // уредбата е отметка — стойността идва като списък.
+  const [marca, modello, impianto] = [slot.marca, slot.modello, slot.impianto];
+  const off = (c) => {
+    if (!c) return false;
+    const v = values[c.field];
+    return !(Array.isArray(v) ? v.includes(c.value) : v === c.value);
+  };
   // Отворен само ако и въпросът се вижда — иначе „Sì“ е остатък от друга марка; и ако слотът с
   // предимство в колоната не е отворен (2SG при автоматични: „Sospensioni: Sì“ — листът е неговият).
   const ceduto = slot.cede && active.has(slot.cede) && values[slot.cede] === 'si';
   const on = active.has(slot.question) && values[slot.question] === 'si';
 %><% if (slot.cede) { %><div class="field--wide" data-when="<%= slot.cede %>" data-when-values="si" data-when-not<% if (ceduto) { %> data-off<% } %>><% } %><div class="field--wide"<% if (marca) { %> data-when="<%= marca.field %>" data-when-values="<%= marca.value %>"<% } %><% if (off(marca)) { %> data-off<% } %>>
-<% if (modello) { %><div data-when="<%= modello.field %>" data-when-values="<%= modello.value %>"<% if (off(modello)) { %> data-off<% } %>><% } %>
+<% for (const c of [modello, impianto]) if (c) { %><div data-when="<%= c.field %>" data-when-values="<%= c.value %>"<% if (off(c)) { %> data-off<% } %>><% } %>
 <div class="modulo" id="f-<%= slot.prefix %>" data-when="<%= slot.question %>" data-when-values="si"<% if (!on) { %> data-off<% } %> data-modulo data-gemelli="<%= slot.column %>:<%= slot.modulo.id %>">
   <input type="hidden" name="<%= slot.prefix %>-_" value="1">
   <div class="modulo__head">
@@ -72,6 +78,6 @@
   </fieldset>
   <% }) %>
 </div>
-<% if (modello) { %></div><% } %>
+<% for (const c of [modello, impianto]) if (c) { %></div><% } %>
 </div>
 <% if (slot.cede) { %></div><% } %>

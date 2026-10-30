@@ -6,8 +6,9 @@ import type { Valori } from './valori.js';
 
 /**
  * PDF-ът на модул: самият официален модул с нашите стойности — нищо друго не се пипа. Плоските листове
- * (Pelazza, листът с данни за аргано, 2SG, Mastech): кръстчета в кутийките (или кръгче около номера на
- * етажа) и текст върху редовете, по координатите от картата и на страницата на групата — тук. MoviLift
+ * (Pelazza, листът с данни за аргано, 2SG, Mastech, Elettroquadri): кръстчета в кутийките (или кръгче около
+ * номера на етажа) и текст върху редовете, по координатите от картата и на страницата на групата (и на
+ * страниците от `anche` — главата на Elettroquadri, повторена на стр. 2) — тук. MoviLift
  * (формуляр) — pdf-form.ts; общото (шрифтът, мястото на текста, изправянето на обърнатия лист) —
  * pdf-testo.ts.
  */
@@ -53,7 +54,14 @@ export async function renderOverlay(
   const lift = modulo.sopraLinea ?? 1.6;
   for (const gruppo of modulo.gruppi) {
     const page = doc.getPage((gruppo.pagina ?? 1) - 1);
-    for (const riga of gruppo.righe) drawCampi(page, riga.campi, valori, font, size, lift);
+    for (const riga of gruppo.righe) {
+      drawCampi(page, riga.campi, valori, font, size, lift);
+      for (const field of riga.campi) {
+        for (const altra of field.anche ?? []) {
+          drawCampi(doc.getPage(altra - 1), [field], valori, font, size, lift);
+        }
+      }
+    }
   }
   return doc.save();
 }

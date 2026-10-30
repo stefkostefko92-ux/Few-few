@@ -3,8 +3,8 @@
 Портал само с покана (и публична витрина със заявка за достъп) за схемите за оглед на асансьорни уредби („scheda rilievo impianto“): попълване на
 29-те полета от заданието и полетата от второто (врати, аларма, работна карта, мерки на старите
 бутониери по спирки), търсене (№ на асансьора, матрикула, адрес, марка, работна карта, бележки), печат
-A4 и PDF. Модулите: при табло Pelazza / MoviLift / Mastech (NG120 или QI Touch — втори избор)
-(поръчката), „Argano da sostituire?“ (листът с данни за аргано) и „Sospensioni da cambiare?“ /
+A4 и PDF. Модулите: при табло Pelazza / MoviLift / Mastech (NG120 или QI Touch — втори избор) /
+Elettroquadri (geared, gearless или oleodinamico — сам по вида на уредбата) (поръчката), „Argano da sostituire?“ (листът с данни за аргано) и „Sospensioni da cambiare?“ /
 „Operatore da cambiare?“ (листът на 2SG за оператора и окачванията) се попълва самият модул и излиза като отделен PDF — оригиналът с данните
 върху него. Редът на разделите на картата се избира за всяка фирма (настройките на администратора ѝ);
 кои раздели влизат в печата и PDF-а — за всяка карта (в края на формата). Снимки и клипове — във
@@ -71,10 +71,11 @@ src/
   ordini/            модулите: moduli.ts (картите от assets/moduli, SHA-256) · registry.ts (марка ↔
                      колона ↔ въпрос ↔ модул) · valori.ts · prefill.ts · opzioni.ts (опцията на падащ
                      списък за текст) · collegamenti-elenco.ts (списъкът на свързаните данни) +
+                     collegamenti-impianto.ts (втората му част, от адреса нататък) +
                      collegamenti-aggiunti.ts (добавените по-късно — винаги в края) +
                      collegamenti.ts (видовете места, проверката при старт) + collegati.ts (правилата
                      им) + collegati-browser.ts (JSON-ът за браузъра) · riepilogo.ts (модулите в печата на
-                     картата) · form.ts · pdf.ts (плоските листове: Pelazza, аргано, 2SG, Mastech) + pdf-form.ts
+                     картата) · form.ts · pdf.ts (плоските листове: Pelazza, аргано, 2SG, Mastech, Elettroquadri) + pdf-form.ts
                      (формулярът на MoviLift) + pdf-testo.ts (шрифтът, мястото на текста, изправянето на
                      обърнатия лист) — pdf-lib
   routes/            тънки рутери: проверка → услуга → изглед (витрината · заявките · картите ·
@@ -89,8 +90,10 @@ src/
                      foto.ts (sharp) · video.ts (ffmpeg/ffprobe) · stampa.ts (снимките в печата и PDF-а)
   worker.ts          фоновият процес (контейнерът `worker`): компресира опашката, файл „жив съм“
 assets/moduli/       празните PDF-и на Pelazza, MoviLift, листа за аргано (Word-ът на собственика, в PDF),
-                     2SG (сканиран, обърнат) и Mastech NG120 / QI Touch (сканирани; QI Touch — две
-                     страници) + картата на полетата им (JSON)
+                     2SG (сканиран, обърнат), Mastech NG120 / QI Touch (сканирани; QI Touch — две
+                     страници) и Elettroquadri geared / gearless / oleodinamico (официалните им PDF-и
+                     от elettroquadri.net; geared и oleodinamico — две страници) + картата на полетата
+                     им (JSON)
 views/               EJS: partials/ (горна и долна лента, табелата, филтърът по фирма), site/ (витрината,
                      чертежът на шахтата, политиката), requests/, auth/, schede/, users/, aziende/,
                      account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs; скицникът —
@@ -220,9 +223,14 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
 - **Модулите** (`src/ordini/`, `assets/moduli/`): „Marca quadro“ Pelazza + „Sì“ → техният „Modulo
   d'ordine quadri“; „Marca quadro“ MoviLift + „Sì“ (същият въпрос, същата колона) → техният „Modulo
   ordine quadro (Scelta v2.6)“; „Marca quadro“ Mastech → втори избор „Tipologia quadro“ NG120 / QI Touch
-  → същият въпрос → техният модул (слотът има и `modello`; „Sì“ без модел е грешка `modelloNeeded`) —
-  модулът на таблото е отворен само при СВОЯТА марка и модел (`registry.ts`, `slotAperto`; тестът пази
-  `when` на въпроса = марките от регистъра). Във формата модулът стои веднага след въпроса си и
+  → същият въпрос → техният модул (слотът има и `modello`; „Sì“ без модел е грешка `modelloNeeded`);
+  „Marca quadro“ Elettroquadri → същият въпрос, без втори избор: модулът е по „Tipo impianto“ на
+  картата (собственикът, 30 октомври 2026) — Elettrico → geared, MRL (`GEARLESS`) → gearless,
+  Idraulico → oleodinamico; „Piattaforma oleodinamica“ — не (слотът има `impianto`; видът е отметка —
+  `scelto` сравнява и списък; „Sì“ без вид е грешка `impiantoNeeded` на „Tipo impianto“; в браузъра —
+  обвивка `data-when="tipoImpianto"`, смяната на вида сменя листа на място) — модулът на таблото е
+  отворен само при СВОЯТА марка, модел и вид (`registry.ts`, `slotAperto`; тестът пази `when` на
+  въпроса = марките от регистъра). Във формата модулът стои веднага след въпроса си и
   полетата, които зависят от него, преди бележките на раздела (`moduliDopo`, `ordini/form.ts`).
   „Argano da sostituire?“ + „Sì“ →
   „Modulo rilievi dati argani“ (Word-ът на собственика, за всеки вид аргано — без марка и без
@@ -241,15 +249,16 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   `{modulo, valori}` — `modulo` е id-то на картата, затова записът на Pelazza никога не се чете като
   MoviLift, нито старото запитване към Montanari като листа за аргано) и излизат като свой PDF
   (`/schede/:id/ordine-quadro`, `/ordine-quadro-movilift`, `/ordine-quadro-mastech-ng120`,
-  `/ordine-quadro-mastech-qi-touch`, `/dati-argano`, `/sospensioni-2sg`, `/operatore-2sg`; затворен
-  модул → 404). В печата
+  `/ordine-quadro-mastech-qi-touch`, `/ordine-quadro-elettroquadri-geared`, `…-gearless`,
+  `…-oleodinamico`, `/dati-argano`, `/sospensioni-2sg`, `/operatore-2sg`; затворен модул → 404). В печата
   и PDF-а на картата влизат САМО модулите, които картата иска — всеки поотделно (таблото, аргано, 2SG:
   отметките `riepilogoOrdini` в края на формата, пазят се в `moduliStampati`; `riepilogoOrdini` в базата е
   „поне един“ за предишния код, а карта с него и без списък включва и трите, както преди) — само
   попълненото, по групите на модула (`ordini/riepilogo.ts`). PDF-ът на модула е самият модул: плоските листове (Pelazza, аргано, 2SG) —
   кръстчета и текст по координатите от картата (`dimensione`/`sopraLinea` — размерът на текста по
   листа; `righe` — кутия с редове, NOTE на 2SG; `pagina` — групата е на втората страница, QI Touch;
-  `segno: 'cerchio'` — кръгче около номера на етажа, NG120); `titolo` на ред — надписът на реда от листа
+  `segno: 'cerchio'` — кръгче около номера на етажа, NG120; `anche: [2]` — същото поле и на тези
+  страници, на същото място: главата на поръчката на Elettroquadri се повтаря на стр. 2); `titolo` на ред — надписът на реда от листа
   („Tensione Allarme“): във формата над отметките (група за четеца), в резюмето пред всяка; знаците — 1,7
   pt (`SEGNO`, pdf-testo.ts); MoviLift — попълнен и „заключен“ формуляр. PDF-ите са
   закрепени по SHA-256: нова версия = нова карта (координати/имена), иначе процесът не тръгва.
@@ -286,7 +295,10 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   скоростта, ходът, мощността и пускането ѝ — махнати от картата на 21 октомври); NG120 и QI Touch —
   в досегашните връзки и в нови (полюси, мощност в kW, окачване 1:1/2:1, шайба, предавателно число);
   „Corsa [mm]“ на QI Touch не е в хода (метри). Таблата помежду си (сервизи, напрежение на шейната) — само
-  за смяната на марката или модела: никога не са отворени заедно. Място може да е поле на
+  за смяната на марката или модела: никога не са отворени заедно. Elettroquadri (30 октомври) — в
+  същите връзки (спирки, скорост, ход, 2V/VVVF на geared, спирачка, достъпи 1/2, машинното на gearless
+  и централата на oleodinamico, оператор, ток, kW, сервизи, шейна, марка на централата); вратите им са
+  етажни и на кабината поотделно (полуавтоматичните са две отметки) — не са във връзката на вратите. Място може да е поле на
   картата (текст, цифри, число; `valori` превежда „Sì/No“: „si“ → „2“), ред или падащ списък на модул
   (опцията — по дума или по числата, `opzioni.ts`), отметки, „Sì/No“ или радио група (`campo`; при
   една категория отсреща — първата ѝ опция, без нищо — стойността на празния модул). Сървърът попълва

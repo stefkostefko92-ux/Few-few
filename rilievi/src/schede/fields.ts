@@ -90,7 +90,7 @@ export const SECTIONS = [
         question: true,
         modulo: 'ordineQuadro',
         // Марките с модул за поръчка (src/ordini/registry.ts — тестът пази съвпадението).
-        when: { field: 'quadroMarca', values: ['PELAZZA', 'MOVILIFT', 'MASTECH'] },
+        when: { field: 'quadroMarca', values: ['PELAZZA', 'MOVILIFT', 'MASTECH', 'ELETTROQUADRI'] },
       },
       { key: 'quadroNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],

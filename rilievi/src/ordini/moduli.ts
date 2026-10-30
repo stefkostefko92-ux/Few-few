@@ -9,7 +9,7 @@ import { z } from 'zod';
  * данни върху него — затова PDF-ът е закрепен по SHA-256: друга версия на модула значи други
  * координати, и процесът отказва да тръгне. Откъде е всеки празен модул — `fonte` в картата му
  * (MoviLift — копието без шифъра; листът за аргано — Word, конвертиран в PDF; 2SG и двата листа на
- * Mastech — сканирани).
+ * Mastech — сканирани; трите на Elettroquadri — от сайта им, векторни).
  */
 
 const ASSETS = new URL('../../assets/moduli/', import.meta.url);
@@ -48,6 +48,8 @@ const base = {
 const checkPrefill = z.string().regex(CHECK_PREFILL).optional();
 const textPrefill = z.enum(PREFILL_TOKENS).optional();
 const maxLength = z.number().int().min(1).max(600);
+/** Същата стойност и на тези страници, на същото място (главата на Elettroquadri се повтаря на стр. 2). */
+const anche = z.array(z.number().int().min(2).max(4)).min(1).optional();
 
 const overlayField = z.discriminatedUnion('kind', [
   z.object({
@@ -56,6 +58,7 @@ const overlayField = z.discriminatedUnion('kind', [
     prefill: checkPrefill,
     /** Вътрешността на кутийката: x0, y0 (от горе), x1, y1 — в точки. */
     box: z.tuple([num, num, num, num]),
+    anche,
     /** Кръгче около надписа вместо кръстче — етажите на NG120 се отбелязват по номера си. */
     segno: z.literal('cerchio').optional(),
   }),
@@ -66,6 +69,7 @@ const overlayField = z.discriminatedUnion('kind', [
     maxLength,
     /** Редът: от x0 до x1, върху линията на височина y (от горе). */
     line: z.tuple([num, num, num]),
+    anche,
   }),
   z.object({
     ...base,
@@ -75,6 +79,7 @@ const overlayField = z.discriminatedUnion('kind', [
     area: z.tuple([num, num, num, num]),
     /** Листът има свои редове (пунктир) в кутията: текстът се пише върху тях — височините им. */
     righe: z.array(num).min(2).optional(),
+    anche,
   }),
 ]);
 
@@ -241,6 +246,19 @@ export const MASTECH_QI: ModuloOverlay = load(
   'mastech-qi-touch.json',
   moduloSchema(overlayField, 'overlay'),
 );
+/** Elettroquadri: модулът се избира по вида на уредбата (registry.ts) — електрическа, MRL, хидравлична. */
+export const EQ_GEARED: ModuloOverlay = load(
+  'elettroquadri-geared.json',
+  moduloSchema(overlayField, 'overlay'),
+);
+export const EQ_GEARLESS: ModuloOverlay = load(
+  'elettroquadri-gearless.json',
+  moduloSchema(overlayField, 'overlay'),
+);
+export const EQ_OLEO: ModuloOverlay = load(
+  'elettroquadri-oleodinamico.json',
+  moduloSchema(overlayField, 'overlay'),
+);
 
 const bytes = new Map<string, Uint8Array>();
 
@@ -260,7 +278,17 @@ export function moduloPdf(modulo: Modulo): Uint8Array {
 
 /** Проверка при старт: модулите са на мястото си и са точно версията на картите. */
 export function assertModuli(): void {
-  for (const modulo of [PELAZZA, MOVILIFT, ARGANI, SG, MASTECH_NG120, MASTECH_QI])
+  for (const modulo of [
+    PELAZZA,
+    MOVILIFT,
+    ARGANI,
+    SG,
+    MASTECH_NG120,
+    MASTECH_QI,
+    EQ_GEARED,
+    EQ_GEARLESS,
+    EQ_OLEO,
+  ])
     moduloPdf(modulo);
 }
 
