@@ -40,6 +40,43 @@ export function inRighe(
   return `${text.slice(0, low).trimEnd()}…`;
 }
 
+const GRUPPO_H = 11;
+/** Колоната отвътре: откъде започва текстът на точката и колко е широк. */
+const textXOf = (x: number) => x + 4 + BOX + 4 + 12;
+const textWOf = (width: number) => width - (textXOf(0) - 0) - 4;
+
+/** Текстът на точката (празното място — със записаното или „……“) и мястото за „C“/„P“. */
+function rigaVoce(voce: GruppoVoci['voci'][number], value: ValoriVoci[string] | undefined) {
+  return {
+    testo: voce.testo.replace('{q}', value?.q ? value.q : '……'),
+    scelteW: voce.scelte ? voce.scelte.length * 20 : 0,
+  };
+}
+
+function altezzaVoce(doc: PDFKit.PDFDocument, testo: string, textW: number, fs: number): number {
+  doc.font('Sans').fontSize(fs);
+  return Math.max(fs + 3, doc.heightOfString(testo, { width: textW }) + 2.4);
+}
+
+/** Колко е висока колоната при този размер — без да се рисува (изборът на размера в pdf.ts). */
+export function misuraColonna(
+  doc: PDFKit.PDFDocument,
+  gruppi: readonly GruppoVoci[],
+  voci: ValoriVoci,
+  width: number,
+  fs: number,
+): number {
+  let h = 0;
+  for (const gruppo of gruppi) {
+    h += GRUPPO_H;
+    for (const voce of gruppo.voci) {
+      const { testo, scelteW } = rigaVoce(voce, voci[codiceVoce(voce.n)]);
+      h += altezzaVoce(doc, testo, textWOf(width) - scelteW, fs);
+    }
+  }
+  return h;
+}
+
 /** Една колона с групите; връща къде свършва. */
 export function drawColonna(
   doc: PDFKit.PDFDocument,
@@ -51,25 +88,23 @@ export function drawColonna(
   fs: number = FS,
 ): number {
   let y = top;
-  const textX = x + 4 + BOX + 4 + 12;
-  const textW = width - (textX - x) - 4;
+  const textX = textXOf(x);
+  const textW = textWOf(width);
   doc.lineWidth(0.6).strokeColor(INK);
   for (const gruppo of gruppi) {
-    doc.rect(x, y, width, 11).fillAndStroke(FILL, INK);
+    doc.rect(x, y, width, GRUPPO_H).fillAndStroke(FILL, INK);
     doc
       .font('Sans-Bold')
       .fontSize(7.6)
       .fillColor(INK)
       .text(gruppo.titolo.toUpperCase(), x, y + 1.3, { width, align: 'center' });
-    y += 11;
+    y += GRUPPO_H;
     for (const voce of gruppo.voci) {
       const key = codiceVoce(voce.n);
       const value = voci[key];
-      const testo = voce.testo.replace('{q}', value?.q ? value.q : '……');
       // 84: „C“ и „P“ с кутийките си — в края на реда.
-      const scelteW = voce.scelte ? voce.scelte.length * 20 : 0;
-      doc.font('Sans').fontSize(fs);
-      const h = Math.max(fs + 3, doc.heightOfString(testo, { width: textW - scelteW }) + 2.4);
+      const { testo, scelteW } = rigaVoce(voce, value);
+      const h = altezzaVoce(doc, testo, textW - scelteW, fs);
       doc.rect(x, y, width, h).stroke();
       box(doc, x + 4, y + (h - BOX) / 2, Boolean(value?.x));
       doc

@@ -420,7 +420,9 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   в одита без адреса) — само за потвърден лист. PDF-ът е винаги една страница: текстовете на главата се
   съкращават с „…“ по мярка (`unaRiga`, `inRighe` — pdfkit не го прави при `continued`), а при много
   попълнени редове размерът на точките намалява на стъпки (`fineFoglio` ≤ `FONDO_PAGINA`, тестът
-  проверява най-пълния лист).
+  проверява най-пълния лист). Листът се рисува веднъж, преливащият — още веднъж: размерът идва от
+  височината на колоните, мерена без рисуване (`misuraColonna` — същата формула като `drawColonna`); DejaVu
+  се чете веднъж за процеса.
 - **Менюто** (`views/partials/header.ejs`, `public/css/sidenav.css`, `public/js/menu.js`; собственикът, 30
   октомври 2026 — като в LiftPilot, вляво): групи Rilievi · Assistenza elevatori · Amministrazione, само
   точките, които човекът може; текуща е най-дългата пасваща точка („/schede/nuova“ — „Nuova scheda“).

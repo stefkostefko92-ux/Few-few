@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import PDFDocument from 'pdfkit';
 import type { ViewHelpers } from '../http/view.js';
 import type { Translator } from '../i18n.js';
@@ -10,6 +11,7 @@ import {
   FS,
   INK,
   inRighe,
+  misuraColonna,
   MUTED,
   tickAt,
   unaRiga,
@@ -41,44 +43,75 @@ export interface InterventoPdfOptions {
  */
 const SIZES = [FS, 6.6, 6.2, 5.8, 5.4];
 
-function sizeFor(row: InterventoFull, options: InterventoPdfOptions): number {
-  return SIZES.find((fs) => fineFoglio(row, options, fs) <= FONDO_PAGINA) ?? SIZES.at(-1)!;
+/**
+ * Размерът за лист, вече нарисуван с обичайния (`end` — докъде стигна): ако преля, се сменя само
+ * височината на колоните, мерена без рисуване — листът не се рисува по веднъж за всеки размер.
+ */
+function dimensioneDa(doc: PDFKit.PDFDocument, row: InterventoFull, end: number): number {
+  if (end <= FONDO_PAGINA) return FS;
+  const voci = valoriVoci(row.voci);
+  const colonne = (fs: number) =>
+    Math.max(
+      misuraColonna(doc, GRUPPI_VOCI.slice(0, 3), voci, W / 2, fs),
+      misuraColonna(doc, GRUPPI_VOCI.slice(3), voci, W / 2, fs),
+    );
+  const base = end - colonne(FS);
+  return SIZES.find((size) => base + colonne(size) <= FONDO_PAGINA) ?? SIZES.at(-1)!;
 }
 
 export function renderInterventoPdf(
   row: InterventoFull,
   options: InterventoPdfOptions,
 ): Promise<Buffer> {
-  const fs = sizeFor(row, options);
-  const doc = nuovoDoc(row, options);
+  // Обичайният лист се рисува веднъж; преливащият — още веднъж, с по-малкия размер. Първият документ
+  // тогава не се завършва: вграждането на шрифтовете е най-скъпата част, а той не отива никъде.
+  let doc = nuovoDoc(row, options);
+  const fs = dimensioneDa(doc, row, disegnaFoglio(doc, row, options, FS));
+  if (fs !== FS) {
+    doc = nuovoDoc(row, options);
+    disegnaFoglio(doc, row, options, fs);
+  }
   const chunks: Buffer[] = [];
   const done = new Promise<Buffer>((resolve, reject) => {
     doc.on('data', (chunk: Buffer) => chunks.push(chunk));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
   });
-  disegnaFoglio(doc, row, options, fs);
   doc.end();
   return done;
 }
 
-/** Докъде стига листът по вертикала (за теста: и най-пълният лист е на една страница). */
+/** Докъде стига листът по вертикала — с дадения размер или с избрания (тестът: една страница). */
 export function fineFoglio(
   row: InterventoFull,
   options: InterventoPdfOptions,
-  fs: number = sizeFor(row, options),
+  fs?: number,
 ): number {
   const doc = nuovoDoc(row, options);
-  const end = disegnaFoglio(doc, row, options, fs);
-  doc.end();
-  return end;
+  const end = disegnaFoglio(doc, row, options, fs ?? FS);
+  if (fs !== undefined) return end;
+  const scelto = dimensioneDa(doc, row, end);
+  return scelto === FS ? end : disegnaFoglio(nuovoDoc(row, options), row, options, scelto);
 }
 
 /** Долната граница на съдържанието на страницата. */
 export const FONDO_PAGINA = PAGE.height - M;
 
+/** DejaVu се чете веднъж за процеса (pdfkit иначе чете файловете синхронно при всеки документ). */
+const fontCache = new Map<string, { regular: Buffer; bold: Buffer }>();
+
+function fontsOf(dir: string): { regular: Buffer; bold: Buffer } {
+  let fonts = fontCache.get(dir);
+  if (!fonts) {
+    const paths = pdfFontPaths(dir);
+    fonts = { regular: readFileSync(paths.regular), bold: readFileSync(paths.bold) };
+    fontCache.set(dir, fonts);
+  }
+  return fonts;
+}
+
 function nuovoDoc(row: InterventoFull, options: InterventoPdfOptions): PDFKit.PDFDocument {
-  const fonts = pdfFontPaths(options.fontDir);
+  const fonts = fontsOf(options.fontDir);
   const doc = new PDFDocument({
     size: 'A4',
     margin: M,
