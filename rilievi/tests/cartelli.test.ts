@@ -5,12 +5,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { PDFDocument } from 'pdf-lib';
 import sharp from 'sharp';
-import {
-  ATTIVITA_PREDEFINITA,
-  datiSalvati,
-  intestazioneDi,
-  parseDatiSocietari,
-} from '../src/aziende/dati.js';
+import { datiSalvati, intestazioneDi, parseDatiSocietari } from '../src/aziende/dati.js';
 import { parseCartello } from '../src/cartelli/form.js';
 import {
   assertModelliCartello,
@@ -80,6 +75,29 @@ describe('the sign templates', () => {
   });
 });
 
+describe('the head of the cleaned templates', () => {
+  it('keeps no red rule and no activity line under the logo (the owner, 30 October 2026)', async () => {
+    for (const modello of MODELLI.values()) {
+      const { data, info } = await sharp(await immagineModello(modello))
+        .removeAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+      // From the bottom of the logo to the bottom of the first field (the sample activity line).
+      const [x0, , x1, y1] = modello.copri[0]!.rect;
+      const reddish: number[] = [];
+      for (let y = modello.logo.box[3] - 10; y < y1 + 25; y++) {
+        let n = 0;
+        for (let x = x0; x < x1; x++) {
+          const i = (y * info.width + x) * 3;
+          if (data[i]! - Math.max(data[i + 1]!, data[i + 2]!) > 40) n++;
+        }
+        if (n > (x1 - x0) * 0.15) reddish.push(y);
+      }
+      assert.deepEqual(reddish, [], `${modello.id}: a red rule is left on rows ${reddish}`);
+    }
+  });
+});
+
 describe('the sign form', () => {
   const FORM = {
     data: '2026-11-03',
@@ -114,7 +132,6 @@ describe('the sign form', () => {
 describe('the company data', () => {
   const DATI = {
     ragioneSociale: 'Ascensori Prova S.r.l.',
-    attivita: 'Manutenzione ascensori',
     indirizzo: 'Via Roma 12',
     cap: '20121',
     citta: 'Milano',
@@ -161,25 +178,23 @@ describe('the company data', () => {
     assert.equal('extra' in salvati, false);
   });
 
-  it('make the head of the sign: name, activity and up to three lines', () => {
+  it('make the head of the sign: the name and up to three lines, never an activity line', () => {
     assert.deepEqual(intestazioneDi('Azienda Portale', null), {
       nome: 'Azienda Portale',
-      attivita: ATTIVITA_PREDEFINITA,
       righe: [],
     });
-    assert.deepEqual(intestazioneDi('Azienda Portale', DATI), {
+    // Saved before the activity line was removed: it stays in the JSON and is not read.
+    assert.deepEqual(intestazioneDi('Azienda Portale', { ...DATI, attivita: 'Manutenzione' }), {
       nome: 'Ascensori Prova S.r.l.',
-      attivita: 'Manutenzione ascensori',
       righe: [
         'Via Roma 12, 20121 Milano (MI)',
         'Tel. 02 1234567 – info@prova.example',
         'P. IVA 01234567890 – www.prova.example',
       ],
     });
-    // Saved but left empty: the portal name, no activity line, no empty lines.
+    // Saved but left empty: the portal name, no empty lines.
     assert.deepEqual(intestazioneDi('Azienda Portale', { ...DATI, ...emptied(DATI) }), {
       nome: 'Azienda Portale',
-      attivita: '',
       righe: [],
     });
   });
@@ -269,7 +284,7 @@ describe('the sign PDF', { skip: !fontsHere && 'DejaVu fonts are not installed h
       const pdf = await renderCartello(
         modelloDi('rosso'),
         DATI_CARTELLO,
-        { intestazione: { nome, attivita: 'Manutenzione', righe: [] }, logo: null },
+        { intestazione: { nome, righe: [] }, logo: null },
         fontDir,
       );
       return pdf.toString('latin1');

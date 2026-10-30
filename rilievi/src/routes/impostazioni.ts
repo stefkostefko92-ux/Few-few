@@ -1,11 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import { principalOf, requireCapability, requireCsrf, sendError } from '../auth/guards.js';
-import {
-  ATTIVITA_PREDEFINITA,
-  CAMPI_DATI,
-  datiSalvati,
-  type DatiSocietari,
-} from '../aziende/dati.js';
+import { CAMPI_DATI, datiSalvati, type DatiSocietari } from '../aziende/dati.js';
 import { aziendeImpostabili, setOrdineSezioni } from '../aziende/sezioni.js';
 import { altezzaAnteprima, LARGHEZZA_ANTEPRIMA } from '../cartelli/anteprima.js';
 import { MODELLI, MODELLI_ID, modelloDi } from '../cartelli/modelli.js';
@@ -31,15 +26,13 @@ const settings = requireCapability('aziende:settings');
 
 export type AziendaImpostabile = Awaited<ReturnType<typeof aziendeImpostabili>>[number];
 
-/** Данните във формата: записаните, или празни с дейността по подразбиране, докато не са записани. */
+/** Данните във формата: записаните, или празни, докато не са записани. */
 function datiForm(azienda: AziendaImpostabile): Record<keyof DatiSocietari, string> {
   const salvati = datiSalvati(azienda.datiSocietari);
-  const values = Object.fromEntries(CAMPI_DATI.map((key) => [key, salvati?.[key] ?? ''])) as Record<
+  return Object.fromEntries(CAMPI_DATI.map((key) => [key, salvati?.[key] ?? ''])) as Record<
     keyof DatiSocietari,
     string
   >;
-  if (!salvati) values.attivita = ATTIVITA_PREDEFINITA;
-  return values;
 }
 
 export function renderImpostazioni(

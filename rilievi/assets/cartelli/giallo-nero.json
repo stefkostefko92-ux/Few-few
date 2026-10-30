@@ -8,7 +8,7 @@
   "altezza": 1094,
   "copri": [
     {
-      "rect": [101, 182, 719, 210]
+      "rect": [95, 166, 724, 210]
     },
     {
       "rect": [95, 714, 963, 754]
@@ -24,13 +24,6 @@
     "box": [404, 62, 1185, 166],
     "colore": "#1a1a1a",
     "dimensione": 22
-  },
-  "attivita": {
-    "x": 109,
-    "y": 203,
-    "larghezza": 610,
-    "dimensione": 22,
-    "colore": "#1a1a1a"
   },
   "valori": {
     "y": 746,

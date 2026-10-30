@@ -47,7 +47,6 @@ export async function checkCartelli(page, { base, shots, scheme, aziendaPath }) 
     fail(`${name}: the typed company name did not come back after the error`);
   await audit(page, `${name} settings error`);
   for (const [key, value] of [
-    ['attivita', 'Manutenzione riparazione ascensori e montacarichi'],
     ['indirizzo', 'Via Roma 12'],
     ['cap', '20121'],
     ['citta', 'Milano'],

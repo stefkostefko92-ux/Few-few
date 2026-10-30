@@ -26,13 +26,6 @@
     "colore": "#f2f2f2",
     "dimensione": 18
   },
-  "attivita": {
-    "x": 70,
-    "y": 141,
-    "larghezza": 520,
-    "dimensione": 18,
-    "colore": "#ececec"
-  },
   "valori": {
     "y": 592,
     "dimensione": 23,

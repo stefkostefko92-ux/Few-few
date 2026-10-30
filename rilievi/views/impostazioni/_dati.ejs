@@ -1,10 +1,10 @@
 <%
   // Данните на фирмата за главата на табелата „Avviso di fermo impianto“ (src/aziende/dati.ts). Всяко
   // поле е по желание; празното име — името на фирмата в портала.
-  const MAX = { ragioneSociale: 160, attivita: 120, indirizzo: 200, cap: 10, citta: 80, provincia: 2, telefono: 40, email: 160, partitaIva: 20, sito: 160 };
-  const WIDE = ['ragioneSociale', 'attivita', 'indirizzo'];
+  const MAX = { ragioneSociale: 160, indirizzo: 200, cap: 10, citta: 80, provincia: 2, telefono: 40, email: 160, partitaIva: 20, sito: 160 };
+  const WIDE = ['ragioneSociale', 'indirizzo'];
   const AUTO = { ragioneSociale: 'organization', indirizzo: 'street-address', cap: 'postal-code', citta: 'address-level2', provincia: 'address-level1', telefono: 'tel', email: 'email', sito: 'url' };
-  const HINT = ['ragioneSociale', 'attivita'];
+  const HINT = ['ragioneSociale'];
 %><section aria-labelledby="h-dati">
   <h2 class="section__title" id="h-dati"><%= t('impostazioni.dati.title') %></h2>
   <p class="muted"><%= t('impostazioni.dati.text') %> <%= t(azienda.logoType ? 'impostazioni.dati.logoSi' : 'impostazioni.dati.logoNo') %></p>

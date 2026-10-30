@@ -3,11 +3,10 @@ import { z } from 'zod';
 /**
  * Данните на фирмата (собственикът, 30 октомври 2026): попълва ги администраторът ѝ в настройките, а
  * табелата „Avviso di fermo impianto“ ги слага горе до логото. Пазят се като JSON в
- * `Azienda.datiSocietari`; записаното се чете с недоверие (непознатото се маха, грешното — също).
+ * `Azienda.datiSocietari`; записаното се чете с недоверие (непознатото се маха, грешното — също). Ред с
+ * дейността на табелата няма (собственикът, 30 октомври 2026: „премахни напълно Manutenzione
+ * riparazione…“) — записаното отпреди остава в JSON-а, но не се чете.
  */
-
-/** Дейността, когато фирмата още не е записала своя — редът от шаблоните на собственика. */
-export const ATTIVITA_PREDEFINITA = 'Manutenzione riparazione ascensori e montacarichi';
 
 /** Един ред: без управляващи знаци, интервалите събрани — така е и на табелата. */
 const testo = (max: number) =>
@@ -24,7 +23,6 @@ const testo = (max: number) =>
 export const datiSocietariSchema = z
   .object({
     ragioneSociale: testo(160),
-    attivita: testo(120),
     indirizzo: testo(200),
     cap: testo(10).refine((v) => /^[0-9A-Za-z ]*$/.test(v), 'invalid'),
     citta: testo(80),
@@ -77,16 +75,15 @@ export function datiSalvati(value: unknown): DatiSocietari | null {
   return out;
 }
 
-/** Главата на табелата: името (получер), дейността и до три реда с адреса и контактите. */
+/** Главата на табелата: името (получер) и до три реда с адреса и контактите. */
 export interface IntestazioneAzienda {
   nome: string;
-  attivita: string;
   righe: string[];
 }
 
 export function intestazioneDi(nomeAzienda: string, salvati: unknown): IntestazioneAzienda {
   const dati = datiSalvati(salvati);
-  if (!dati) return { nome: nomeAzienda, attivita: ATTIVITA_PREDEFINITA, righe: [] };
+  if (!dati) return { nome: nomeAzienda, righe: [] };
   const luogo = [dati.cap, dati.citta].filter(Boolean).join(' ');
   const sede = [
     dati.indirizzo,
@@ -102,7 +99,6 @@ export function intestazioneDi(nomeAzienda: string, salvati: unknown): Intestazi
     .join(' – ');
   return {
     nome: dati.ragioneSociale || nomeAzienda,
-    attivita: dati.attivita,
     righe: [sede, contatti, fiscale].filter((v) => v !== ''),
   };
 }

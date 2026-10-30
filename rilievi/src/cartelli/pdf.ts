@@ -10,7 +10,7 @@ import { immagineModello, type ModelloCartello } from './modelli.js';
 /**
  * PDF-ът на табелата „Avviso di fermo impianto“: страница A4 (хоризонтална за широка табела, вертикална
  * за висока), шаблонът на фирмата (modelli.ts) вписан в нея, изчистен от примерните данни, горе логото
- * и данните на фирмата, после дейността, датата, адресът, градът, мястото и текстът към хората. Шрифтът е Fira Sans Condensed (като надписите на шаблоните); знак извън латиницата пише реда с
+ * и данните на фирмата, после датата, адресът, градът, мястото и текстът към хората. Шрифтът е Fira Sans Condensed (като надписите на шаблоните); знак извън латиницата пише реда с
  * DejaVu. Всеки текст се смалява, докато влезе в мястото си, и чак тогава се реже с „…“.
  */
 
@@ -207,18 +207,7 @@ export async function renderCartello(
     );
   }
 
-  const { attivita, valori, testo } = modello;
-  if (azienda.intestazione.attivita) {
-    doc.fillColor(attivita.colore);
-    riga(
-      azienda.intestazione.attivita.toLocaleUpperCase('it-IT'),
-      X(attivita.x),
-      Y(attivita.y),
-      attivita.larghezza * s,
-      attivita.dimensione * s,
-      'normale',
-    );
-  }
+  const { valori, testo } = modello;
 
   doc.fillColor(valori.colore);
   [dati.data, dati.indirizzo, dati.citta, dati.ubicazione].forEach((valore, i) => {

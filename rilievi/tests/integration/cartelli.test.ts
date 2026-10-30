@@ -12,7 +12,6 @@ after(stopApp);
 
 const DATI = {
   ragioneSociale: 'Ascensori Prova S.r.l.',
-  attivita: 'Manutenzione riparazione ascensori e montacarichi',
   indirizzo: 'Via Roma 12',
   cap: '20121',
   citta: 'Milano',
