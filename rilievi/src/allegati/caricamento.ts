@@ -51,7 +51,10 @@ const filesOf = (req: Request): Express.Multer.File[] =>
 /** Файловете на заявката; грешка на качването е грешка на формата (запомня се), не 500. */
 export function multipart(req: Request, res: Response, next: NextFunction): void {
   res.on('close', () => {
-    for (const file of filesOf(req)) void rm(file.path, { force: true });
+    // Прекъснато качване: multer вече е изтрил частичния файл и е махнал `path` — той не се пипа. Грешка
+    // при триенето не бива да излезе извън заявката: необработено отхвърляне сваля целия процес.
+    for (const file of filesOf(req))
+      if (typeof file.path === 'string') rm(file.path, { force: true }).catch(() => undefined);
   });
   middlewareCarica()(req, res, (error: unknown) => {
     if (!error) statiCarica.set(req, 'ok');
