@@ -65,18 +65,24 @@ sync_env() {
   fi
 }
 
+# Compose чете целия файл и спира на `${INTERVENTI_SEAL_KEY:?…}` на услугата app, преди да стигне до
+# базата — а тук ключът липсва точно защото се проверява дали да се създаде (деплоят на 30 октомври 2026
+# спря на това). За командите само към базата интерполацията получава заместител: db не го ползва
+# (дефиницията ѝ не се сменя, базата не се пресъздава), а app не се пуска оттук.
+db_compose() { INTERVENTI_SEAL_KEY=chiave-mancante docker compose "$@"; }
+
 # Колко потвърдени листа за интервенция носят печат: 0 — и при база без такава таблица/колона (машина
 # отпреди листовете) или без том (пръв деплой). Грешка — няма отговор: тогава ключ не се създава.
 sealed_sheets() {
   docker volume inspect rilievi_db-data >/dev/null 2>&1 || { printf '0'; return 0; }
   # --no-recreate: работещата база не се пресъздава по дефиницията на новия release (както при бекъпа).
-  docker compose up -d --no-recreate --wait db >/dev/null || return 1
+  db_compose up -d --no-recreate --wait db >/dev/null || return 1
   local has_column
-  has_column="$(docker compose exec -T db psql -U rilievi -d rilievi -tAc \
+  has_column="$(db_compose exec -T db psql -U rilievi -d rilievi -tAc \
     "SELECT count(*) FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'Intervento' AND column_name = 'sigillo'")" ||
     return 1
   if [ "$has_column" != "1" ]; then printf '0'; return 0; fi
-  docker compose exec -T db psql -U rilievi -d rilievi -tAc \
+  db_compose exec -T db psql -U rilievi -d rilievi -tAc \
     'SELECT count(*) FROM "Intervento" WHERE "sigillo" IS NOT NULL'
 }
 
