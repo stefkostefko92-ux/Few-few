@@ -203,9 +203,8 @@ const BASE: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'ubicazioneMacchina', voci: { ALTO: 'ALTO', BASSO: 'BASSO' } },
       { luogo: 'om', campo: 'locMacc', voci: { alto: 'ALTO', basso: 'BASSO' } },
-      // Elettroquadri: „Con Locale macchina: Basso / Alto“ (gearless), позицията на централата в
-      // машинното (oleodinamico).
-      { luogo: 'el', voci: { localeAlto: 'ALTO', localeBasso: 'BASSO' } },
+      // Elettroquadri: позицията на централата в машинното (oleodinamico). „Con Locale macchina: Basso /
+      // Alto“ на gearless — не: листът се отваря при MRL (без машинно), там е „MRL gearless“ (видът).
       { luogo: 'eo', voci: { centralinaAlto: 'ALTO', centralinaBasso: 'BASSO' } },
     ],
   },

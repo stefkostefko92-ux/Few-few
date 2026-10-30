@@ -41,6 +41,8 @@ export const IMPIANTO: readonly Collegamento[] = [
         voci: { ELETTRICO: 'ELETTRICO', IDRAULICO: 'IDRAULICO', GEARLESS: 'GEARLESS' },
       },
       { luogo: 'oq', voci: { tqIdraulico: 'IDRAULICO' } },
+      // Gearless на Elettroquadri се отваря при MRL: „MRL gearless“ (не „Con Locale macchina“).
+      { luogo: 'el', voci: { mrlGearless: 'GEARLESS' } },
     ],
   },
   {
