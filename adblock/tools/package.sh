@@ -45,6 +45,8 @@ if (m.options_ui?.page) refs.add(m.options_ui.page);
 refs.add("scriptlets/main.js");
 refs.add("scriptlets/policy.js"); // importScripts() in the service worker
 refs.add("youtube_main.js");          // registered by the service worker (MAIN world, YouTube)
+refs.add("youtube_ads.css");          // registered by the service worker with it (sa-youtube-css)
+refs.add("twitch_main.js");           // registered by the service worker (MAIN world, Twitch)
 refs.add("lib/abp2dnr.js");       // importScripts() — author-hosted lists
 refs.add("gpc.js");               // registered by the service worker (MAIN world, Global Privacy Control)
 refs.add("scriptlets/entities-off.js"); // registered by the SW while the uBO list is off

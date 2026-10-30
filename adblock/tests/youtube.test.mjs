@@ -108,7 +108,7 @@ const enforcement = { textContent: "Ad blockers violate YouTube's Terms of Servi
   t.load("youtube_skip.js");
   ok("loop guard: no bypass message within 90s of a reload", !t.messages.some((m) => m.type === "ytBypass"));
   ok("loop guard: no reload", t.sb.__reloads === 0);
-  ok("loop guard: dialog left visible (bypass attr set, youtube.css un-gated)", t.attrs["data-tbab-yt-bypass"] === "1");
+  ok("loop guard: dialog left visible (bypass attr set, youtube_ads.css un-gated)", t.attrs["data-tbab-yt-bypass"] === "1");
 }
 
 // ---------- 4) enforcement по време на активен bypass: една втора възможност, после стоп ----------
@@ -266,15 +266,28 @@ function tick(t, video, seconds) {
 }
 
 // ---------- youtube_main (MAIN world): текст преди парсване, „родни" куки, без следи ----------
-function ytPage(responses, before = {}) {
-  const sb = { Proxy, Reflect, WeakMap, WeakSet, Object, Array, JSON, RegExp, String, Promise, Function };
+// Скриптът се зарежда с името, което има в браузъра (chrome-extension://…), за да се види дали
+// кадрите му изтичат в e.stack. Promise е от отделен realm: куката на .then не пипа самия тест.
+const MAIN_URL = "chrome-extension://abcdefghijklmnop/youtube_main.js";
+function ytPage(responses, before = {}, { host = "www.youtube.com", path = "/watch", search = "?v=vid1" } = {}) {
+  const RealmPromise = runInNewContext("Promise");
+  const sb = { Proxy, Reflect, WeakMap, WeakSet, Object, Array, JSON, RegExp, String, Number, Promise: RealmPromise, Function, Error, TypeError, URLSearchParams };
   sb.window = sb;
   sb.console = { warn() {} };
+  sb.__now = 1_800_000_000_000;
+  sb.Date = { now: () => sb.__now };
+  sb.location = { hostname: host, pathname: path, search };
+  sb.navigator = { onLine: true };
   const winListeners = {};
   sb.addEventListener = (t, f) => { (winListeners[t] ||= []).push(f); };
-  sb.document = { getElementById: () => null, addEventListener() {} };
+  const ids = {};
+  sb.document = { getElementById: (id) => ids[id] || null, addEventListener() {}, visibilityState: "visible" };
   sb.__timers = [];
+  sb.__intervals = [];
   sb.setTimeout = function setTimeout(fn, ms) { sb.__timers.push(ms); return 1; };
+  sb.setInterval = function setInterval(fn, ms) { sb.__intervals.push(fn); return 2; };
+  const mos = [];
+  sb.MutationObserver = class { constructor(cb) { mos.push(cb); } observe() {} };
   class Resp {
     constructor(body, init = {}) { this.body = typeof body === "string" ? body : JSON.stringify(body); this.status = init.status || 200; this.statusText = init.statusText || "OK"; this.headers = init.headers || {}; this.ok = this.status >= 200 && this.status < 300; this.url = ""; this.type = "basic"; this.redirected = false; }
     clone() { const r = new Resp(this.body, this); r.ok = this.ok; r.url = this.url; return r; }
@@ -282,11 +295,18 @@ function ytPage(responses, before = {}) {
     json() { return Promise.resolve(JSON.parse(this.body)); }
   }
   sb.Response = Resp;
+  class Req {
+    constructor(input, init = {}) { this.url = input instanceof Req ? input.url : String(input); this.method = init.method || (input instanceof Req ? input.method : "GET"); this.body = init.body !== undefined ? init.body : input instanceof Req ? input.body : undefined; }
+    clone() { return new Req(this); }
+    text() { return Promise.resolve(this.body || ""); }
+  }
+  sb.Request = Req;
   sb.Event = class { constructor(type) { this.type = type; } };
   const calls = [];
   sb.fetch = function fetch(input, init) {
-    const body = init && init.body ? JSON.parse(init.body) : null;
-    calls.push({ url: String(input), flagged: !!body?.playbackContext?.contentPlaybackContext?.isInlinePlaybackNoAd });
+    const raw = init && init.body ? init.body : input instanceof Req ? input.body : null;
+    const body = raw ? JSON.parse(raw) : null;
+    calls.push({ url: String(input instanceof Req ? input.url : input), body, flagged: !!body?.playbackContext?.contentPlaybackContext?.isInlinePlaybackNoAd });
     const next = responses.shift();
     const r = next instanceof Resp ? next : new Resp(next);
     r.url = String(input);
@@ -296,7 +316,7 @@ function ytPage(responses, before = {}) {
   const sent = [];
   class XHR {
     open(m, u) { this._m = m; this._u = u; }
-    send(b) { sent.push(this._u); this._readyState = 4; }
+    send(b) { sent.push({ url: this._u, body: b }); this._readyState = 4; }
     dispatchEvent() {}
   }
   Object.defineProperty(XHR.prototype, "responseText", { configurable: true, get() { return this._text; } });
@@ -305,17 +325,22 @@ function ytPage(responses, before = {}) {
   sb.XMLHttpRequest = XHR;
   class Node_ { appendChild(n) { return n; } insertBefore(n) { return n; } }
   class Element_ extends Node_ { append() {} prepend() {} }
-  sb.Node = Node_; sb.Element = Element_;
+  class IFrame_ extends Element_ { get contentWindow() { return this._win; } get contentDocument() { return this._win ? { defaultView: this._win } : null; } }
+  sb.Node = Node_; sb.Element = Element_; sb.HTMLIFrameElement = IFrame_;
   Object.assign(before, { fetch: sb.fetch, open: XHR.prototype.open, send: XHR.prototype.send, setTimeout: sb.setTimeout,
-    appendChild: Node_.prototype.appendChild, responseText: Object.getOwnPropertyDescriptor(XHR.prototype, "responseText").get });
-  runInNewContext(src("youtube_main.js"), sb, { filename: "youtube_main.js" });
-  const call = (url = "https://www.youtube.com/youtubei/v1/player?prettyPrint=false") => sb.fetch(url, { method: "POST", body: JSON.stringify({ videoId: "x", context: {} }) });
+    appendChild: Node_.prototype.appendChild, then: RealmPromise.prototype.then,
+    responseText: Object.getOwnPropertyDescriptor(XHR.prototype, "responseText").get,
+    contentWindow: Object.getOwnPropertyDescriptor(IFrame_.prototype, "contentWindow").get });
+  runInNewContext(src("youtube_main.js"), sb, { filename: MAIN_URL });
+  const PLAYER = "https://www.youtube.com/youtubei/v1/player?prettyPrint=false";
+  const playerBody = () => JSON.stringify({ videoId: "vid1", context: { client: { clientName: "WEB", clientScreen: "WATCH" } }, playbackContext: { contentPlaybackContext: { referer: "https://www.youtube.com/", lactMilliseconds: "-1" } }, attestationRequest: { omitBotguardData: true } });
+  const call = (url = PLAYER, body = JSON.stringify({ videoId: "x", context: {} })) => sb.fetch(url, { method: "POST", body });
   const config = (cfg) => (winListeners["tbab-yt-cfg"] || []).forEach((f) => f({ detail: JSON.stringify(cfg) }));
-  return { sb, calls, call, config, sent, XHR, Resp };
+  const tick = (n = 1, ms = 500) => { for (let i = 0; i < n; i++) { sb.__now += ms; sb.__intervals.forEach((f) => f()); } };
+  return { sb, ids, calls, call, config, sent, XHR, Resp, Req, IFrame_, mos, tick, PLAYER, playerBody, RealmPromise };
 }
 const OK = { playabilityStatus: { status: "OK" }, streamingData: {}, adPlacements: [{ a: 1 }], adSlots: [{ s: 1 }], playerAds: [{ p: 1 }] };
 const BAD = { playabilityStatus: { status: "UNPLAYABLE", reason: "Video unavailable" } };
-const isNative = (f) => Function.prototype.toString.call(f).includes("[native code]");
 
 {
   const p = ytPage([OK]);
@@ -332,11 +357,26 @@ const isNative = (f) => Function.prototype.toString.call(f).includes("[native co
   const before = {};
   const p = ytPage([], before);
   const same = (now, orig) => Function.prototype.toString.call(now) === Function.prototype.toString.call(orig) && now !== orig;
-  ok("main: every hook stringifies exactly like the function it wraps (name included) — fetch, XHR open/send/responseText, setTimeout, appendChild",
+  ok("main: every hook stringifies exactly like the function it wraps (name included) — fetch, XHR open/send/responseText, setTimeout, contentWindow, Promise.then",
     same(p.sb.fetch, before.fetch) && same(p.XHR.prototype.open, before.open) && same(p.XHR.prototype.send, before.send) &&
-    same(p.sb.setTimeout, before.setTimeout) && same(p.sb.Node.prototype.appendChild, before.appendChild) &&
-    same(Object.getOwnPropertyDescriptor(p.XHR.prototype, "responseText").get, before.responseText));
+    same(p.sb.setTimeout, before.setTimeout) && same(Object.getOwnPropertyDescriptor(p.XHR.prototype, "responseText").get, before.responseText) &&
+    same(Object.getOwnPropertyDescriptor(p.IFrame_.prototype, "contentWindow").get, before.contentWindow) &&
+    same(p.RealmPromise.prototype.then, before.then));
+  ok("main: appendChild & co. are NOT wrapped (every element YouTube inserts would run under our frame)",
+    p.sb.Node.prototype.appendChild === before.appendChild);
   ok("main: no global JSON.parse / Response.json / Object.assign patch any more", p.sb.JSON.parse === JSON.parse && !("__patched" in p.sb.Response.prototype));
+}
+{
+  // a hook in the stack of an error is a tell: "at Object.apply (chrome-extension://…/youtube_main.js)"
+  const p = ytPage([]);
+  let stack = "";
+  try { Function.prototype.toString.call({}); } catch (e) { stack = String(e.stack); }
+  ok(`main: an error thrown through a hook has no frame of ours (${stack.split("\n").length} lines, none chrome-extension://)`,
+    /requires that 'this' be a Function/.test(stack) && !/chrome-extension:\/\//.test(stack));
+  let xs = "";
+  const x = new p.sb.XMLHttpRequest();
+  try { p.XHR.prototype.open.call(null, "GET", "/"); } catch (e) { xs = String(e.stack); }
+  ok("main: …the same for a native that throws inside XHR open", xs === "" || !/chrome-extension:\/\//.test(xs));
 }
 {
   const feed = { contents: { richGridRenderer: { contents: [{ richItemRenderer: { content: { adSlotRenderer: { x: 1 } } } }, { richItemRenderer: { content: { videoRenderer: { videoId: "v" } } } }] } } };
@@ -377,11 +417,16 @@ const isNative = (f) => Function.prototype.toString.call(f).includes("[native co
 {
   const p = ytPage([]);
   const pristineFetch = function fetch() {};
-  const iframeWin = { fetch: pristineFetch, setTimeout: function setTimeout() {}, Response: p.Resp, Event: p.sb.Event, XMLHttpRequest: class {}, Node: class {}, Element: class {}, addEventListener() {} };
-  const iframe = { nodeType: 1, tagName: "IFRAME", contentWindow: iframeWin };
-  new p.sb.Node().appendChild(iframe);
-  ok("main: a fresh iframe's pristine fetch is hooked too (YouTube's hook bypass) and still stringifies like its native",
-    iframeWin.fetch !== pristineFetch && Function.prototype.toString.call(iframeWin.fetch) === Function.prototype.toString.call(pristineFetch));
+  const iframeWin = { fetch: pristineFetch, setTimeout: function setTimeout() {}, Response: p.Resp, Event: p.sb.Event, XMLHttpRequest: class {}, addEventListener() {} };
+  const iframe = new p.IFrame_(); iframe._win = iframeWin;
+  const got = iframe.contentWindow; // however the frame got into the page
+  ok("main: a fresh iframe's pristine fetch is hooked the moment the page reaches its window — and still stringifies like its native",
+    got === iframeWin && iframeWin.fetch !== pristineFetch && Function.prototype.toString.call(iframeWin.fetch) === Function.prototype.toString.call(pristineFetch));
+  const w2 = { fetch: function fetch() {}, Response: p.Resp, Event: p.sb.Event, addEventListener() {} };
+  const f2 = new p.IFrame_(); f2._win = w2; f2.nodeType = 1; f2.tagName = "IFRAME";
+  const orig2 = w2.fetch;
+  p.mos[0]([{ addedNodes: [f2] }]);
+  ok("main: …and a frame reached by index (window[0]) is armed when it is inserted", w2.fetch !== orig2);
 }
 {
   // live channel can still turn a request flag on — with the old plain-retry safety net
@@ -397,6 +442,122 @@ const isNative = (f) => Function.prototype.toString.call(f).includes("[native co
   p.config({ requestFlags: ["playbackContext.contentPlaybackContext.isInlinePlaybackNoAd"], disableRequestFlags: true });
   await p.call();
   ok("main: kill switch (or stall stage 1) → no flag", p.calls.length === 1 && !p.calls[0].flagged);
+}
+
+// ---------- 5.7: какво прави YouTube с флагнат клиент — и отговорът (www.youtube.com) ----------
+const REFUSED = {
+  videoDetails: { videoId: "vid1", lengthSeconds: "212" },
+  playerConfig: { playbackStartConfig: { startSeconds: 0 } },
+  playabilityStatus: { status: "UNPLAYABLE", reason: "Video unavailable", errorScreen: { playerErrorMessageRenderer: { subreason: { runs: [
+    { text: "Ad blockers violate YouTube's Terms of Service. " },
+    { text: "Learn more", navigationEndpoint: { commandMetadata: { webCommandMetadata: { url: "https://support.google.com/youtube/answer/3037019", webPageType: "WEB_PAGE_TYPE_UNKNOWN" } } } },
+  ] } } } },
+};
+const PLAYING = { videoDetails: { videoId: "vid1", lengthSeconds: "212" }, playabilityStatus: { status: "OK" } };
+function fakePlayer(p, state) {
+  const mp = {
+    loads: [], seeks: [],
+    getPlayerResponse: () => state.resp,
+    getStatsForNerds: () => state.stats || { debug_info: "s:8 t:1.00 b:0.000-212.000", resolution: "1920x1080", buffer_health_seconds: "12.00 s" },
+    getProgressState: () => state.prog || { current: 1, duration: 212 },
+    getPlayerStateObject: () => ({ isBuffering: !!state.buffering }),
+    loadVideoById(id, start) { this.loads.push([id, start]); },
+    seekTo(t) { this.seeks.push(t); },
+  };
+  p.ids.movie_player = mp;
+  return mp;
+}
+const shapeOf = (c) => ({ screen: c.body?.context?.client?.clientScreen, params: c.body?.params, referer: c.body?.playbackContext?.contentPlaybackContext?.referer, lact: c.body?.playbackContext?.contentPlaybackContext?.lactMilliseconds });
+{
+  const p = ytPage([OK, OK, OK, OK, OK, OK]);
+  const st = { resp: PLAYING };
+  const mp = fakePlayer(p, st);
+  await p.call(p.PLAYER, p.playerBody());
+  p.tick(4);
+  ok("shapes: until a refusal, /player goes out exactly as YouTube built it", JSON.stringify(p.calls[0].body) === p.playerBody() && mp.loads.length === 0);
+  st.resp = REFUSED; p.tick();
+  ok("shapes: refusal (UNPLAYABLE → the ad-blocker help page) → the clip is retried in place", mp.loads.length === 1 && mp.loads[0][0] === "vid1");
+  await p.call(p.PLAYER, p.playerBody());
+  const s1 = shapeOf(p.calls[1]);
+  ok(`shapes: the retry carries params 8AUB, a fresh lactMilliseconds and the #reloadxhr referer (${JSON.stringify(s1)})`,
+    s1.params === "8AUB" && s1.referer === "https://www.youtube.com/#reloadxhr" && s1.lact === String(p.sb.__now) && s1.screen === "WATCH");
+  p.tick(2);
+  ok("shapes: the player still holds the old answer → no second retry yet (it would burn a shape)", mp.loads.length === 1);
+  st.resp = Object.assign({}, REFUSED); p.tick();
+  ok("shapes: refused again → the next shape", mp.loads.length === 2);
+  await p.call(p.PLAYER, p.playerBody());
+  const s2 = shapeOf(p.calls[2]);
+  ok("shapes: …\"inline\" = only the referer", s2.params === undefined && s2.referer.endsWith("#reloadxhr") && s2.lact === "-1");
+  for (let k = 0; k < 6; k++) { st.resp = Object.assign({}, REFUSED); p.tick(20); }
+  ok(`shapes: bounded — every shape once, then as sent, then stop (${mp.loads.length} retries)`, mp.loads.length === 4);
+  // XHR path and a body inside a Request carry the same shape
+  const x = new p.sb.XMLHttpRequest();
+  x.open("POST", p.PLAYER); x.send(p.playerBody());
+  const r = await p.sb.fetch(new p.Req(p.PLAYER, { method: "POST", body: p.playerBody() }));
+  ok("shapes: the XHR body and a Request body are shaped too", typeof p.sent[0].body === "string" && typeof r.body === "string");
+}
+{
+  const p = ytPage([OK, OK]);
+  const st = { resp: PLAYING, buffering: true, stats: { debug_info: "s:5 t:0.00 b:0.000-0.000", resolution: "0x0", buffer_health_seconds: "0.00 s" } };
+  const mp = fakePlayer(p, st);
+  p.tick(10); // 5 s
+  ok("stuck: under 10 s at 0x0 with an empty buffer → nothing", mp.loads.length === 0);
+  p.tick(22); // 16 s
+  ok("stuck: 10 s at 0x0 with an empty buffer → retried in place with the first shape", mp.loads.length === 1);
+  await p.call(p.PLAYER, p.playerBody());
+  ok("stuck: …clientScreen CHANNEL (WEB client only)", shapeOf(p.calls[0]).screen === "CHANNEL");
+  p.sb.document.visibilityState = "hidden"; st.resp = Object.assign({}, PLAYING); p.tick(60);
+  ok("stuck: a hidden tab is not a stuck player", mp.loads.length === 1);
+}
+{
+  const p = ytPage([]);
+  const st = { resp: PLAYING, stats: { debug_info: "SSAP, AD 1/1 s:8", resolution: "1280x720" }, prog: { current: 2, duration: 15 } };
+  const mp = fakePlayer(p, st);
+  p.tick();
+  ok("SSAP: an ad stitched into the stream is jumped to its end through the player API", mp.seeks.join() === "15");
+  p.tick();
+  ok("SSAP: …once a second at most", mp.seeks.length === 1);
+  st.prog = { current: 2, duration: 212 }; p.tick(4);
+  ok("SSAP: never when the \"ad\" duration is the clip's own (that jump would end the clip)", mp.seeks.length === 1);
+  st.prog = { current: 14.5, duration: 15 }; p.tick(4);
+  ok("SSAP: not in the last second (it is ending anyway)", mp.seeks.length === 1);
+  const q = ytPage([]); const st2 = { resp: PLAYING, stats: st.stats, prog: { current: 2, duration: 15 } }; const mq = fakePlayer(q, st2);
+  q.config({ noSsapJump: true }); q.tick(4);
+  ok("SSAP: live kill switch youtube.noSsapJump (data) → no jump", mq.seeks.length === 0);
+}
+{
+  const p = ytPage([OK, OK]);
+  const st = { resp: REFUSED };
+  const mp = fakePlayer(p, st);
+  p.config({ noShapes: true }); p.tick(4);
+  await p.call(p.PLAYER, p.playerBody());
+  ok("shapes: live kill switch youtube.noShapes (data) → no retry, body as built", mp.loads.length === 0 && JSON.stringify(p.calls[0].body) === p.playerBody());
+}
+{
+  const p = ytPage([OK]);
+  p.sb.ytInitialData = { topbar: { desktopTopbarRenderer: { logo: { topbarLogoRenderer: { iconImage: { iconType: "YOUTUBE_PREMIUM_LOGO" } } } } } };
+  const st = { resp: REFUSED, stats: { debug_info: "SSAP, AD" }, prog: { current: 1, duration: 15 } };
+  const mp = fakePlayer(p, st);
+  p.tick(4);
+  ok("Premium: nothing of this runs (no jump, no retry)", mp.loads.length === 0 && mp.seeks.length === 0);
+}
+{
+  const p = ytPage([]);
+  const NEEDLE = "onAbnormality" + "Detected";
+  const hits = [];
+  const abn = new Function("hits", `return function () { hits.push("abn"); this.api && this.api.${NEEDLE}(); }`)(hits);
+  const plain = function () { hits.push("plain"); };
+  await new Promise((resolve) => {
+    p.RealmPromise.resolve(1).then(abn).then(plain).then(resolve);
+  });
+  ok(`abnormality: the callback that wires "${NEEDLE}" never runs; the next one does (${hits.join()})`, hits.join() === "plain");
+}
+{
+  const p = ytPage([], {}, { host: "music.youtube.com" });
+  const st = { resp: REFUSED, stats: { debug_info: "SSAP, AD" }, prog: { current: 1, duration: 15 } };
+  const mp = fakePlayer(p, st);
+  p.tick(4);
+  ok("only www.youtube.com: elsewhere no player guard and no Promise hook (as the uBO quick fixes)", p.sb.__intervals.length === 0 && mp.loads.length === 0 && mp.seeks.length === 0);
 }
 
 done();
