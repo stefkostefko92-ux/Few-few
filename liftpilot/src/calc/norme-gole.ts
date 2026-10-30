@@ -47,7 +47,7 @@ export const VOCI_GOLE: readonly Voce[] = [
   {
     id: 'gole.pressione', gruppo: 'gole', titolo: 'Pressione specifica nelle gole',
     valore: 'p = T/(n·d·D) · 8·cos(β/2)/(π − β − sin β) nella gola semicircolare (β = 0 senza sottosquadro), p = T/(n·d·D) · 4,5/sin(γ/2) nella '
-      + 'gola a V, nella gola a V con sottosquadro il maggiore dei due; T tiro statico delle funi lato cabina alla puleggia di frizione, con la '
+      + 'gola a V, nella gola a V con sottosquadro il maggiore dei due; T tiro statico delle funi lato cabina alla puleggia di trazione, con la '
       + 'cabina al piano più basso con la portata; p ≤ (12,5 + 4·v_c)/(1 + v_c), v_c velocità delle funi alla velocità nominale: entro il limite '
       + 'informazione, oltre «Attenzione»',
     riferimento: 'UNI 10411-1:2024, appendice D.2, 6.1, 6.2 e 14.1 c)–d)', fonte: `${letto(U1, 'pp. 6–7, 13 e 34')}`, stato: 'confermato',

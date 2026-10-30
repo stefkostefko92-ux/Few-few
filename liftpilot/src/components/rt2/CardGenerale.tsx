@@ -30,14 +30,16 @@ function Testo({ id: campo, label, value, set, need, readOnly, max, esperto }: {
   );
 }
 
-export default function CardGenerale({ n, doc, set, mancanti, readOnly, oggi }: {
+export default function CardGenerale({ n, doc, set, mancanti, readOnly, oggi, dalRilievo = null }: {
   n: number; doc: Doc; set: (k: keyof Doc, v: ValoreRt2 | undefined) => void; mancanti: ReadonlySet<string>; readOnly: boolean; oggi: string;
+  /** the day of the survey whose make filled «Ascensore di costruzione» (round 57); null: none */
+  dalRilievo?: string | null;
 }) {
   const dataId = useId();
   return (
     <section className="panel rt-card" id="rt2-generale" aria-labelledby="rt2-generale-h">
       <h2 id="rt2-generale-h" className="rt-card-title"><span className="rt-step" aria-hidden="true">{n}</span>Dati generali</h2>
-      <p className="note">Matricola, indirizzo, proprietario e «Collaudato secondo» vengono dai dati dell’impianto qui sopra; portata, masse, velocità e corsa dal Calcolo argano.</p>
+      <p className="note">Matricola, indirizzo, proprietario e «Collaudato secondo» vengono dai dati dell’impianto qui sopra; portata, masse, velocità e corsa dal Calcolo argano.{dalRilievo ? ` «Ascensore di costruzione» viene dalla marca del rilievo del ${dalRilievo}.` : ''}</p>
       <div className="rt2-campi">
         <div className="field">
           <Etichetta htmlFor={dataId} aiuto={aiutoRt2('doc.data')} nome="Data Relazione Tecnica:">Data Relazione Tecnica:</Etichetta>

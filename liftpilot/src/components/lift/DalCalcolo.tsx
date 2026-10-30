@@ -14,6 +14,7 @@ import { analyse } from '@/lib/present/analysis';
 import type { Texts } from '@/lib/present/texts';
 import type { Pres } from '@/lib/present/tr';
 import { passoId } from '@/lib/passi-moduli';
+import { sospensione } from '@/lib/sospensione';
 
 /** The «Calcolo argano» a drawing is made on, as the page gives it to the browser. */
 export interface BaseProgetto {
@@ -61,7 +62,7 @@ export default function DalCalcolo({ P, X, base, projectId, when, canCalc, passo
         {fact(P.t('Q'), `${fmt(I.Q, 0)} kg`)}
         {fact(P.t('v'), `${fmt(I.v, 2)} m/s`)}
         {fact(P.t('P'), `${fmt(I.P, 0)} kg`)}
-        {fact(P.t('r'), `${I.r}:1`)}
+        {fact(P.t('r'), sospensione(I.r))}
         {fact(P.t('layout'), P.t(`lay_${I.layout}`))}
         {/* ropes the test leaves out stay as they are (a «Solo argano» answered «No»): said so, never «new» */}
         {fact(C.norma !== 'en81' && !C.parti.includes('ropes') ? ti('funi_restano') : P.t('g_ropes'), `${N.n} × Ø${fmt(N.d, 1)} mm`)}

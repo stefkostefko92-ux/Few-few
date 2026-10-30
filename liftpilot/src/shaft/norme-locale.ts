@@ -70,7 +70,7 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
       + '≥ 500 mm o quanto il quadro; per la manutenzione delle parti in movimento e la manovra di emergenza una superficie libera di almeno '
       + '500 × 600 mm (il software la cerca accanto all’argano, fino a muri, quadro, limitatore e interruttore generale, sul lato del volantino se ci sta: '
       + 'locale.volantino; la disegna in pianta con i percorsi dalla porta); almeno 300 mm liberi in verticale sopra le parti rotanti non protette '
-      + '(la puleggia di frizione con le funi, il volantino, la puleggia di rinvio nel locale); '
+      + '(la puleggia di trazione con le funi, il volantino, la puleggia di rinvio nel locale); '
       + 'percorsi dalla porta alle superfici libere larghi ≥ 500 mm (il software chiede 500 mm ovunque, anche dove la norma ammette 0,40 m) e alti '
       + '≥ 1800 mm; porta di accesso ≥ 600 × 2000 mm, che non si apre verso l’interno del locale; aperture nella soletta sopra il vano ridotte al '
       + 'minimo, con manicotti o bordi che sporgono almeno 50 mm dal pavimento',
@@ -162,7 +162,7 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
     id: 'locale.esistente.altezza', gruppo: 'locale', titolo: 'Altezza del locale esistente sotto 2,0 m (modifica con la UNI 10411-1)',
     valore: 'nella modifica collaudata con la UNI 10411-1 il software verifica l’altezza libera del locale esistente: almeno 2000 mm passa; fra 1800 mm '
       + 'più lo spessore del materiale ammortizzante (50 mm, se non indicato) e 2000 mm avverte — zone segnalate a strisce gialle e nere o con un '
-      + 'cartello, materiale ammortizzante sotto il soffitto e almeno 1800 mm liberi sotto di esso; sotto non passa. Con la UNI 10411-11 l’altezza '
+      + 'cartello, materiale ammortizzante sotto il soffitto e almeno 1800 mm liberi sotto di esso; sotto la verifica non è soddisfatta. Con la UNI 10411-11 l’altezza '
       + 'esistente resta e la verifica non entra nell’esito; per un impianto nuovo vale la verifica dell’altezza di 2100 mm',
     riferimento: 'UNI 10411-1:2024, 9.2; UNI EN 81-21:2022, 5.9; UNI 10411-11:2024, 9.2',
     fonte: `${letto('UNI 10411-1:2024', 'p. 9')}; ${letto('UNI EN 81-21:2022', 'p. 23')}; lo spessore di 50 mm del materiale ammortizzante è una `
@@ -176,7 +176,7 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
   },
   {
     id: 'locale.fori', gruppo: 'locale', titolo: 'Fori nella soletta: misura, posizione e bordi',
-    valore: 'ogni foro della soletta sopra il vano (funi di trazione, puleggia di rinvio che vi scende, attacchi delle funi in taglia 2:1) ha '
+    valore: 'ogni foro della soletta sopra il vano (funi di trazione, puleggia di rinvio che vi scende, attacchi delle funi nella sospensione indiretta 1:2) ha '
       + 'i lati a 30 mm dalle funi nelle due posizioni estreme della cabina e dalla puleggia (con l’argano sotto la fossa lo stesso per i fori della '
       + 'soletta della fossa attorno alle funi che scendono all’argano: pianta della fossa, sezione A-A e 3D); fori più vicini di 80 mm diventano uno; '
       + 'ogni foro ha un bordo in lamiera d’acciaio alto 50 mm sul pavimento finito e spesso 25 mm tutto attorno (lo stesso nel 3D), e le '
@@ -207,8 +207,8 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
       + 'la portata targata va confrontata con quella del disegno); il tecnico può prescriverne un’altra',
   },
   {
-    id: 'locale.attacchi', gruppo: 'locale', titolo: 'Attacchi delle funi in taglia 2:1',
-    valore: 'in taglia 2:1 le funi finiscono negli attacchi sulla soletta del locale: una piastra d’acciaio sotto la soletta, quadrata di 180 mm '
+    id: 'locale.attacchi', gruppo: 'locale', titolo: 'Attacchi delle funi nella sospensione indiretta 1:2',
+    valore: 'nella sospensione indiretta 1:2 le funi finiscono negli attacchi sulla soletta del locale: una piastra d’acciaio sotto la soletta, quadrata di 180 mm '
       + 'e spessa 20 mm, con tirafondi passanti e una contropiastra sul pavimento del locale; i carichi P2 (lato cabina) e P3 (lato contrappeso) '
       + 'agiscono lì, separati da P1 (il basamento dell’argano); la pianta del locale li segna e quota il loro centro dai muri interni del vano',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.8.1 (carichi sull’edificio) e 5.5.2.3.1 (attacchi delle funi ai punti fissi dei tratti morti); dimensioni scelta del software',

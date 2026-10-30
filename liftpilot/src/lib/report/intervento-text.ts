@@ -31,11 +31,11 @@ export function titoloCalcolo(tipo: TipoIntervento, C: Prova): string {
 /** The opening of the object (before the layout and the roping in brackets), of a calculation saved with its type: the
  *  machine kept is verified as it is, with the modified lift's data. */
 export function oggettoCalcolo(tipo: TipoIntervento, C: Prova): string {
-  if (tipo === 'TRASFORMAZIONE_COMPLETA') return 'Verifica dell’argano a riduttore per la trasformazione completa dell’impianto';
-  if (tipo === 'SOLO_ARGANO') return 'Verifica dell’argano a riduttore in sostituzione su impianto esistente';
+  if (tipo === 'TRASFORMAZIONE_COMPLETA') return 'Verifica dell’argano geared per la trasformazione completa dell’impianto';
+  if (tipo === 'SOLO_ARGANO') return 'Verifica dell’argano geared in sostituzione su impianto esistente';
   if (macchinaResta(tipo, C)) return 'Verifica dell’argano esistente con le modifiche dell’ammodernamento';
-  return rifDi(C) ? 'Verifica dell’argano a riduttore per il rifacimento di un impianto esistente che ne mantiene l’arcata'
-    : 'Verifica dell’argano a riduttore per l’ammodernamento di un impianto esistente';
+  return rifDi(C) ? 'Verifica dell’argano geared per il rifacimento di un impianto esistente che ne mantiene l’arcata'
+    : 'Verifica dell’argano geared per l’ammodernamento di un impianto esistente';
 }
 
 /** The calculator's text of the context row (and of the copied summary) of a calculation saved with its type. */
@@ -75,7 +75,7 @@ export const titoloTecnica = (tipo: TipoIntervento): string => (tipo === 'AMMODE
 export function oggettoTecnica(tipo: TipoIntervento, C: Prova, named: string | null): string | null {
   if (tipo !== 'AMMODERNAMENTO') return null;
   return macchinaResta(tipo, C) ? `Verifica dell’argano esistente${named ? ` (${named})` : ''}, che resta nell’ammodernamento dell’impianto`
-    : `Sostituzione dell’argano nell’ammodernamento dell’impianto, con un argano a riduttore${named ? ` (${named})` : ''}`;
+    : `Sostituzione dell’argano nell’ammodernamento dell’impianto, con un argano geared${named ? ` (${named})` : ''}`;
 }
 
 /** The note of sheet 1 on the test, opened by the type of a calculation saved with it. */

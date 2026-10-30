@@ -27,10 +27,12 @@ export interface TecniciValori {
   dopo: { azionamento?: '1v' | '2v' | 'vvvf'; capienza?: number; fermate?: number; superficie?: number };
 }
 
-export default function CardTecnici({ n, ctx, x, set, readOnly, chiediAzPrima, calcHref, mancanti }: {
+export default function CardTecnici({ n, ctx, x, set, readOnly, chiediAzPrima, calcHref, mancanti, dalRilievo = null }: {
   n: number; ctx: ContestoRt2; x: TecniciValori; set: (path: string, v: ValoreRt2 | undefined) => void; readOnly: boolean; chiediAzPrima: boolean; calcHref: string;
   /** the technical data still to give («tecnici.<path>»): marked, and shown in «Semplice» too */
   mancanti: ReadonlySet<string>;
+  /** the day of the survey that filled empty «prima» values (round 57); null: none */
+  dalRilievo?: string | null;
 }) {
   const campi: [string, Exclude<Spec, { t: 'gruppo' }>, ValoreRt2 | undefined, ValoreRt2 | undefined][] = [
     ['prima.r', { id: 'r', t: 'scelta', label: '9. Sospensione prima della modifica:', opzioni: [{ v: '1', t: 'Diretto' }, { v: '2', t: 'Indiretto 1:2' }, { v: '4', t: 'Indiretto 1:4' }] },
@@ -49,7 +51,7 @@ export default function CardTecnici({ n, ctx, x, set, readOnly, chiediAzPrima, c
   return (
     <section className="panel rt-card" id="rt2-tecnici" aria-labelledby="rt2-tecnici-h">
       <h2 id="rt2-tecnici-h" className="rt-card-title"><span className="rt-step" aria-hidden="true">{n}</span>Dati tecnici</h2>
-      <p className="note">«Dopo» viene dal Calcolo argano, «prima» dai documenti dell’impianto inseriti nel calcolo (libretto, verbale): <a href={calcHref}>cambiali lì</a>. Un valore «prima» vuoto vale come «dopo».</p>
+      <p className="note">«Dopo» viene dal Calcolo argano, «prima» dai documenti dell’impianto inseriti nel calcolo (libretto, verbale): <a href={calcHref}>cambiali lì</a>. Un valore «prima» vuoto vale come «dopo».{dalRilievo ? ` I valori «prima» che mancavano vengono dal rilievo del ${dalRilievo}: controllali.` : ''}</p>
       <div className="table-scroll">
         <table className="table rt2-tecnici">
           <caption className="sr-only">Dati tecnici dopo e prima della modifica</caption>

@@ -165,7 +165,7 @@ export const VOCI: readonly Voce[] = [
   {
     id: 'trazione.bloccata.dispositivo', gruppo: 'trazione', titolo: 'Cabina o contrappeso bloccati: dispositivo al posto dello slittamento',
     valore: 'con la macchina secondo la UNI EN 81-20:2020 e un dispositivo elettrico di sicurezza (5.11.2) che arresta la macchina, la verifica '
-      + 'con cabina o contrappeso bloccati non superata è «Attenzione» (verifica sostituita da dispositivo, da documentare), mai OK; con la '
+      + 'con cabina o contrappeso bloccati non soddisfatta è «Attenzione» (verifica sostituita da dispositivo, da documentare), mai OK; con la '
       + 'macchina secondo la UNI EN 81-1 resta «Non soddisfatta»',
     riferimento: 'UNI EN 81-20:2020, 5.5.3 c) 2); UNI EN 81-1:2008, 9.3 c); UNI 10411-1:2024, 14.1 a)–b)',
     fonte: `${letto(T20, 'p. 75')}; ${letto('UNI EN 81-1:2008', 'p. 55')}; ${letto(U1, 'p. 13')}`, stato: 'confermato',
@@ -280,7 +280,7 @@ export const VOCI: readonly Voce[] = [
   },
   {
     id: 'modifica.d1', gruppo: 'sostituzione', titolo: 'Rapporto tra i carichi cambiato (UNI 10411-1): stabilità allo scorrimento delle funi',
-    valore: '(T1/T2)·C1·C2 ≤ e^(f·α) con le tensioni statiche ai due lati della puleggia di frizione, cabina al piano più basso con 1,25·Q e cabina '
+    valore: '(T1/T2)·C1·C2 ≤ e^(f·α) con le tensioni statiche ai due lati della puleggia di trazione, cabina al piano più basso con 1,25·Q e cabina '
       + 'vuota al piano più alto; C1 = (g + a)/(g − a), mai sotto 1,10 fino a 0,63 m/s, 1,15 fino a 1,00 m/s, 1,20 fino a 1,60 m/s, 1,25 fino a '
       + '2,50 m/s, oltre calcolato e mai sotto 1,25; C2 = 1,2 con gola a cuneo, 1 con gola semicircolare; μ = 0,09: f = μ/sin(γ/2) con gola a '
       + 'cuneo, 4μ·(1 − sin(β/2))/(π − β − sin β) con gola semicircolare (β = 0 senza intaglio)',

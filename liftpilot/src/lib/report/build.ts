@@ -37,6 +37,7 @@ import { designRoomBlocks } from './tecnica-site';
 import { designMachine } from './build-design';
 import { contestoKey, oggettoCalcolo, restaVariataText, titoloCalcolo } from './intervento-text';
 import { macchinaResta, type TipoIntervento } from '../lift/intervento';
+import { sospensione, sospensioneTesto } from '../sospensione';
 
 export interface ReportInput {
   calc: { id: string; label: string | null; createdAt: Date; sha256: string; engineVersion: string; profileId: string; author: string | null };
@@ -101,8 +102,8 @@ export function buildReport(r: ReportInput): ReportDoc {
   ] });
 
   section('Oggetto');
-  const what = tipo ? oggettoCalcolo(tipo, C) : `Verifica dell’argano a riduttore ${rif ? "per il rifacimento di un impianto esistente che ne mantiene l’arcata" : repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"}`;
-  B.push({ t: 'p', text: `${what} (${layoutText}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull’albero secondo il modello di calcolo del software.${I.std === 'en81-1' ? std81_1(C.norma) : ''}${collaudoText(C, repl, undefined, tipo, r.values)}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
+  const what = tipo ? oggettoCalcolo(tipo, C) : `Verifica dell’argano geared ${rif ? "per il rifacimento di un impianto esistente che ne mantiene l’arcata" : repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"}`;
+  B.push({ t: 'p', text: `${what} (${layoutText}, ${sospensioneTesto(I.r)}): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull’albero secondo il modello di calcolo del software.${I.std === 'en81-1' ? std81_1(C.norma) : ''}${collaudoText(C, repl, undefined, tipo, r.values)}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
   section('Riferimenti normativi');
   B.push({ t: 'grid', head: ['Documento', 'Ambito'], rows: riferimentiRows(repl, C, I.std, !!r.design, kept), widths: [0.38, 0.62], align: ['l', 'l'] });
 
@@ -111,7 +112,7 @@ export function buildReport(r: ReportInput): ReportDoc {
     [t('context'), t(tipo ? contestoKey(tipo, C) : rif ? 'ctx_rif' : repl ? 'ctx_repl' : 'ctx_new')], ...collaudoRows(C, repl, carichiOf(r.values), r.values), [t('layout'), layoutText.charAt(0).toUpperCase() + layoutText.slice(1)], [t('Q'), `${fmt(I.Q, 0)} kg`],
     [t('P'), `${fmt(I.P, 0)} kg${m.pEstimate ? ' — stima del software, da sostituire con la massa reale' : ''}`],
     [`${t('k')} · M_cw`, `${fmt(res.k, 3)} · ${fmt(res.Mcw, 0)} kg${I.qeq > 0 ? ` (${t('qeq')}: ${fmt(I.qeq, 0)} kg)` : ''}`], [t('v'), `${fmt(I.v, 2)} m/s`],
-    [t('r'), `${I.r}:1`], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 2)} m · ${fmt(I.L0, 2)} m${fromShaft('L0')}`], [t('alphaMode'), `α ${X.alphaText(res)}`],
+    [t('r'), sospensione(I.r)], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 2)} m · ${fmt(I.L0, 2)} m${fromShaft('L0')}`], [t('alphaMode'), `α ${X.alphaText(res)}`],
     ...(I.layout === 'topDefl' ? [[`${t('dx')} · ${t('h')}`, `${fmt(I.dx, 3)} m · ${fmt(I.h, 3)} m${m.geometry.includes('dx')
       ? ' (dx dal progetto del vano; h dal basamento o dal telaio del rinvio, salvo se inserita a mano)' : ''}`] as [string, string]] : []),
     ...(I.layout === 'bottom' ? [[t('Hv'), `${fmt(I.Hv, 2)} m${fromShaft('Hv', false)}`] as [string, string]] : []),
@@ -289,7 +290,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const short = pr.name.length > 70 ? `${pr.name.slice(0, 69)}…` : pr.name;
   return {
     meta: {
-      title: `Relazione di calcolo — ${pr.name}`, subject: "Verifica dell’argano a riduttore", author: r.company,
+      title: `Relazione di calcolo — ${pr.name}`, subject: "Verifica dell’argano geared", author: r.company,
       header: `LiftPilot · Relazione di calcolo · ${short}`, footer: `Calcolo ${r.calc.id} · motore ${r.calc.engineVersion} · profilo ${r.calc.profileId}`,
       code: `SHA-256 ${r.calc.sha256}`, notice: t('rep_footer'),
     },

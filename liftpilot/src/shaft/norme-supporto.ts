@@ -149,7 +149,7 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
     id: 'locale.calate', gruppo: 'locale', titolo: 'Sostituzione dell’argano: calate esistenti e calate della nuova macchina',
     valore: 'nella sola sostituzione dell’argano la cabina e il contrappeso restano dove sono: le funi della nuova macchina devono scendere sulle '
       + 'calate esistenti, rilevate nel locale dall’angolo interno del vano. La distanza tra le calate data dal calcolo (rinvio: D/2 + dx ± Dp/2, '
-      + 'più Dp in taglia 2:1; tiro diretto: il diametro della puleggia esistente, se inserita, altrimenti della nuova, più Dp in taglia 2:1) e quella '
+      + 'più Dp nella sospensione indiretta 1:2; tiro diretto: il diametro della puleggia esistente, se inserita, altrimenti della nuova, più Dp nella sospensione indiretta 1:2) e quella '
       + 'misurata differiscono al più di 10 mm; oltre, il calcolo va ripetuto con la geometria misurata (dx, puleggia esistente)',
     riferimento: '—', fonte: 'tolleranza scelta dal software per il rilievo in sito (le funi a qualche metro dal basamento): da confermare con l’installatore',
     stato: 'scelta', verifiche: ['m_calata'],

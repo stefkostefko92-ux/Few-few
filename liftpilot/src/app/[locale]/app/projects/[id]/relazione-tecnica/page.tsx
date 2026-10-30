@@ -74,7 +74,7 @@ export default async function RelazioneTecnicaPage({ params, searchParams }: { p
           revisione={w.revisione ? { id: w.revisione.id, label: `${t('numero', { n: w.revisione.number })} R${w.revisione.revision}` } : null}
           base={{ V: base.base.V, C: base.base.C, anagrafica: base.base.anagrafica, ...(base.base.liftUse ? { liftUse: base.base.liftUse } : {}) }}
           canEdit={canEdit} canIssue={canIssue} oggi={giornoIt(new Date())} calcHref={`/it/app/calculations/${base.calc.id}`}
-          files={w.files.map((f) => ({ id: f.id, title: f.title, kindLabel: labelOf(options.kinds, f.kind), pages: f.pages }))} panel={panel} />
+          files={w.files.map((f) => ({ id: f.id, title: f.title, kindLabel: labelOf(options.kinds, f.kind), pages: f.pages }))} panel={panel} rilievo={hints} />
       ) : panel}
       {!canEdit && base ? <p className="note">{t(live ? 'soloLettura' : 'archiviata')}</p> : null}
       <section className="panel flex flex-col gap-3" aria-labelledby="rt-emesse-h">

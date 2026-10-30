@@ -44,7 +44,7 @@ export const VOCI_LIMITATORE: readonly VoceVano[] = [
       + 'limitatore nel locale sta sopra la sua fune, fuori dall’ingombro dell’argano con il suo basamento, del quadro e dell’interruttore '
       + 'generale, dentro il locale, con accanto una superficie libera di 500 × 600 mm per la manutenzione (accanto a un lato più corto di 500 mm '
       + 'la superficie va oltre i suoi spigoli, entro i muri); il limitatore esistente rilevato con le funi attraverso la soletta ha il loro foro '
-      + 'sopra l’interno del vano (a cavallo di un muro: attenzione; fuori dal vano: non passa, misura da ricontrollare). Lato, distanza dalla '
+      + 'sopra l’interno del vano (a cavallo di un muro: attenzione; fuori dal vano: non soddisfatta, misura da ricontrollare). Lato, distanza dalla '
       + 'parete e ramo agganciato si scelgono a mano; altrimenti il software mette la fune a metà dello spazio accanto alla cabina, 145 mm dietro '
       + 'l’asse della guida, sull’ultima parete libera — o sull’altra parete libera quando solo lì il limitatore resta fuori dall’ingombro '
       + 'dell’argano nel locale (l’argano girato con il motore verso la cabina può arrivare sopra la fune)',
@@ -67,7 +67,7 @@ export const VOCI_LIMITATORE: readonly VoceVano[] = [
       + 'di trazione che il limitatore produce nella fune all’intervento (μ massimo 0,2 per i limitatori ad aderenza), e quella forza non '
       + 'sotto il doppio della forza che fa prendere il paracadute né sotto 300 N',
     riferimento: 'UNI EN 81-20:2020, 5.6.2.2.1.3 c); 5.6.2.2.1.3 b) e 5.6.2.2.1.1 d) (dati del fornitore)', fonte: letto('UNI EN 81-20:2020', 'pp. 82–83'), stato: 'confermato',
-    nota: 'un modello con la fune più grossa del rapporto (fune «in deroga» del costruttore) non passa: si sceglie un altro modello o la fune che '
+    nota: 'un modello con la fune più grossa del rapporto (fune «in deroga» del costruttore) non soddisfa la verifica: si sceglie un altro modello o la fune che '
       + 'il rapporto ammette, salvo una deroga documentata dal certificato del costruttore. La forza all’intervento è del limitatore e la forza di '
       + 'presa del paracadute è del paracadute, entrambi componenti con esame di tipo: il software non le conosce e non verifica il coefficiente '
       + 'della fune (il carico P4 dei dati dell’impianto è quello sulla soletta, non questa forza); lo dice la relazione fra le verifiche che '

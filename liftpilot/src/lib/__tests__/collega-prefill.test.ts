@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { Prisma } from '@prisma/client';
 import { blankCalc } from '@/lib/calc-blank';
 import { blankProgetto } from '@/lib/lift/progetto';
-import { arganoDi, poliDi, rapportoDi, rilievoDati, unNumero, type RilievoRow } from '@/lib/collega/rilievo';
+import { arganoDi, datiLetti, poliDi, rapportoDi, rilievoDati, unNumero, type RilievoRow } from '@/lib/collega/rilievo';
 import { layoutDi, seminaCalc, seminaLift, semeCalc, semeLift, usaCalc, usaLift } from '@/lib/collega/prefill';
 
 const day = new Date('2026-10-10T00:00:00Z');
@@ -14,10 +14,10 @@ const day = new Date('2026-10-10T00:00:00Z');
 const nuovoDisegno = () => blankProgetto();
 function row(over: Partial<RilievoRow> = {}): RilievoRow {
   return {
-    id: 'cm00000000000000000000s1', data: day, createdAt: day, updatedAt: day, indirizzo: 'Via Giuseppe Verdi 14, Milano', matricola: '0123456', numeroImpianto: '71234',
+    id: 'cm00000000000000000000s1', data: day, createdAt: day, updatedAt: day, datiAt: null, indirizzo: 'Via Giuseppe Verdi 14, Milano', matricola: '0123456', numeroImpianto: '71234',
     marca: 'OTIS', portataKg: 630, capienzaPersone: 8, fermate: 5, ubicazioneMacchina: ['ALTO'], tipoImpianto: ['ELETTRICO'], funiNumero: 4,
     funiDiametroMm: new Prisma.Decimal('10.00'), funicellaDiametroMm: new Prisma.Decimal('6.5'), limitatoreTipo: 'PFB LK200', operatoreMarca: 'Wittur',
-    lucePorte: '800 x 2000', arganoPreventivo: true,
+    lucePorte: '800 x 2000', arganoPreventivo: true, quadroOrdine: null, quadroMarca: null, quadroModello: null, ordineQuadro: null,
     preventivoArgano: { modulo: 'rilievo-dati-argani', valori: { velocita: '1,0', corsa: '12,5', taglia12: true, diametroPuleggia: 'Ø 520 mm', rapportoRiduzione: '1:53',
       potenzaKw: '7,5 kW', giri: '1.400', poli: '4/16', pesoCabina: '700', pulegginaRinvio: 'no', cuneo: '40', funiN: '6', portata: '480' } },
     ...over,
@@ -149,4 +149,48 @@ test('progetto (round 45): il disegno prende dal rilievo solo le fermate; il res
   for (const p of ['Q', 'velocita', 'posizione', 'taglia'] as const) assert.deepEqual(usaLift(four, r, p).set, [], p);
   // stops out of the form's range are not put in
   assert.deepEqual(seminaLift(nuovoDisegno(), rilievoDati(row({ fermate: 90 }))).seeded, []);
+});
+
+test('i dati letti dall’impianto: una modifica che non li tocca non rende nulla «da aggiornare» (round 57)', () => {
+  const later = new Date('2026-10-20T08:00:00Z');
+  // a save that leaves what the installation reads as it was (a note, a module it does not read): the same
+  assert.equal(datiLetti(row({ updatedAt: later, datiAt: later })), datiLetti(row()));
+  assert.notEqual(datiLetti(row({ portataKg: 700 })), datiLetti(row()), 'the load');
+  assert.notEqual(datiLetti(row({ data: later })), datiLetti(row()), 'the day: it decides the reference');
+  const modulo = row().preventivoArgano as { modulo: string; valori: Record<string, unknown> };
+  assert.notEqual(datiLetti(row({ preventivoArgano: { ...modulo, valori: { ...modulo.valori, velocita: '1,6' } } })), datiLetti(row()), 'the argano sheet');
+  // a sheet from before migration 32: its `updatedAt`
+  assert.equal(rilievoDati(row({ datiAt: null, updatedAt: later })).datiAt.getTime(), later.getTime());
+  assert.equal(rilievoDati(row({ datiAt: day, updatedAt: later })).datiAt.getTime(), day.getTime());
+});
+
+test('l’ordine del quadro: velocità, corsa, fermate, regolazione e misure del vano dove la scheda non le ha (round 57)', () => {
+  const pel = row({ quadroOrdine: true, quadroMarca: 'PELAZZA', arganoPreventivo: false, fermate: null,
+    ordineQuadro: { modulo: 'pelazza-ordine-quadri-032026', valori: { velocita: '1,6', corsa: '24,5 m', nFermate: '8', tqVvvfAperto: true } } });
+  const p = rilievoDati(pel);
+  assert.deepEqual(p.quadro && { v: p.quadro.velocita, H: p.quadro.corsa, f: p.quadro.fermate, r: p.quadro.regolazione }, { v: 1.6, H: 24.5, f: 8, r: 'vvvf' });
+  assert.equal(p.fermate, 8, 'the stops where the sheet has none');
+  assert.equal(p.regolazione, 'vvvf');
+  // the calculator: the speed and the travel from the panel order when no argano sheet is there
+  const seme = semeCalc(p);
+  assert.equal(seme.v, '1.6');
+  assert.equal(seme.H, '24.5');
+  // a make that is not the module's: nothing read
+  assert.equal(rilievoDati(row({ ...pel, quadroMarca: 'MOVILIFT' })).quadro, null);
+  // QI Touch: the travel in mm, the shaft's sides without a unit (in metres under 20)
+  const qi = rilievoDati(row({ quadroOrdine: true, quadroMarca: 'MASTECH', quadroModello: 'QI_TOUCH', arganoPreventivo: false,
+    ordineQuadro: { modulo: 'mastech-qi-touch', valori: { velocita: '1', corsa: '12500', numeroFermate: '5', p1Larghezza: '1,60', p1Profondita: '1750', s1Fossa: '1400', s2Testata: '3,7' } } }));
+  assert.deepEqual(qi.quadro && [qi.quadro.corsa, qi.quadro.vanoW, qi.quadro.vanoD, qi.quadro.fossa, qi.quadro.testata], [12.5, 1600, 1750, 1400, 3700]);
+  // MoviLift: pit and headroom in metres
+  const ml = rilievoDati(row({ quadroOrdine: true, quadroMarca: 'MOVILIFT', arganoPreventivo: false,
+    ordineQuadro: { modulo: 'movilift-modulo-ordine-scelta-v2-6', valori: { fossa: '1,2', testata: '3,6', corsa: '9' } } }));
+  assert.deepEqual(ml.quadro && [ml.quadro.fossa, ml.quadro.testata, ml.quadro.corsa], [1200, 3600, 9]);
+  // the Progetto: the shaft's measures where still to enter, marked
+  const d = nuovoDisegno(), s = seminaLift(d, qi);
+  assert.ok(['W', 'D', 'pit', 'headroom'].every((k) => s.seeded.includes(k)), 'the four measures');
+  assert.equal(s.draft.progetto.shaft.W, 1600);
+  assert.equal(s.draft.progetto.shaft.vertical.headroom, 3700);
+  assert.deepEqual(semeLift(qi), { floors: '5', W: '1600', D: '1750', pit: '1400', headroom: '3700' });
+  // the argano sheet's motor before the panel's ticks
+  assert.equal(rilievoDati(row({ ...pel, arganoPreventivo: true, preventivoArgano: { modulo: 'rilievo-dati-argani', valori: { motoreAc2: true } } })).regolazione, '2v');
 });

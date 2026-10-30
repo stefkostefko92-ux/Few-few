@@ -102,7 +102,7 @@ test('le verifiche che non stanno leggibili sul foglio 1 vanno su un foglio loro
   const page = r.doc.pages[3];
   assert.ok(page);
   const own = textsOf(page.shapes), read = own.map((t) => t.text).join(' ');
-  assert.ok(own.filter((t) => t.text === 'OK' || t.text === 'NON PASSA' || t.text === 'ATTENZIONE' || t.text === 'ESISTENTE').length >= checks.length, name);
+  assert.ok(own.filter((t) => t.text === 'OK' || t.text === 'NON SODDISFATTA' || t.text === 'ATTENZIONE' || t.text === 'ESISTENTE').length >= checks.length, name);
   for (const t of own) assert.ok(t.size >= 1.8 - 1e-9, `«${t.text}» ${t.size.toFixed(2)}`);
   assert.ok(read.includes('VALORE') && read.includes('LIMITE') && read.includes('ESITO'));
   assert.deepEqual(overlaps(page.shapes), []);

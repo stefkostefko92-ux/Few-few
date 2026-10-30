@@ -96,7 +96,7 @@ export const VOCI_GUIDE: readonly VoceVano[] = [
       + 'progettato per almeno 5000 N/m² oltre alle reazioni degli ammortizzatori (P6, P8) e delle guide (P5, P7, con la presa del paracadute); '
       + 'il paracadute del contrappeso è progressivo oltre 1 m/s, fino a 1 m/s anche istantaneo, ed è azionato dal limitatore o, fino a 1 m/s, '
       + 'dalla rottura della sospensione o da una fune di sicurezza. Il tipo e l’azionamento si indicano nei dati dell’impianto: finché mancano '
-      + 'la verifica non passa; il carico P7 conta la presa (progressivo se non indicato) su metà del contrappeso per guida',
+      + 'la verifica non è soddisfatta; il carico P7 conta la presa (progressivo se non indicato) su metà del contrappeso per guida',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.4, 5.2.1.8.4, 5.6.2.1.2.3, prospetto 11 (5.6.1.2), 5.6.2.2.2 e 5.6.2.2.3; UNI EN 81-50:2020, 5.10',
     fonte: letto('UNI EN 81-20:2020', 'pp. 27, 35, 79, 81'), stato: 'confermato', verifiche: ['sg_cw'],
     nota: 'con la presa del paracadute le guide del contrappeso si verificano a carico di punta e con le forze di guida dell’eccentricità del '

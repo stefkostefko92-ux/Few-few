@@ -111,7 +111,7 @@ test('guide del contrappeso alla presa del suo paracadute: carico di punta e for
   // on sheet 1 only with a space under the shaft, with the gear of the data of the installation
   const label = /^Guide del contrappeso alla presa/;
   const gr = (s: ReturnType<typeof sheet>) => s.checks.find((r) => label.test(r[0]));
-  assert.equal(gr(sheet('under', { cwSafetyGear: 'instantaneous', cwGearTrip: 'rupture' }))?.[3], 'NON PASSA');
+  assert.equal(gr(sheet('under', { cwSafetyGear: 'instantaneous', cwGearTrip: 'rupture' }))?.[3], 'NON SODDISFATTA');
   assert.equal(gr(sheet('under', { cwSafetyGear: 'progressive', cwGearTrip: 'governor' }, 1, 'T70-1/A'))?.[3], 'OK');
   assert.equal(gr(sheet('under', { cwSafetyGear: 'pillar' })), undefined);
   assert.equal(gr(sheet('head', { cwSafetyGear: 'instantaneous' })), undefined);

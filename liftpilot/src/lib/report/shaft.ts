@@ -34,7 +34,7 @@ export interface ShaftTexts {
 }
 
 const S = appIt.shaft;
-const VERDICT = { ok: 'supera le verifiche del vano', warn: 'supera, con avvisi', fail: 'non supera le verifiche del vano' } as const;
+const VERDICT = { ok: 'soddisfa le verifiche del vano', warn: 'le soddisfa, con avvisi', fail: 'non soddisfa le verifiche del vano' } as const;
 const ENTRANCES = { one: 'un accesso', opposite: 'due accessi opposti', adjacent: 'due accessi adiacenti a 90° (arcata a zaino)' } as const;
 // the screen labels carry their clause in brackets; the report has a column for it
 const plain = (label: string): string => label.replace(/\s*\((UNI|DM) [^)]*\)$/, '');

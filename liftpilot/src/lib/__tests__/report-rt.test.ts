@@ -27,14 +27,14 @@ const docSha = (doc: ReportDoc<PdfBlock>): string => createHash('sha256').update
  *  version it was pinned at. After an intended change of the document: bump RT_ENGINE_VERSION, then pin again
  *  (RT_DOC_PRINT=1 prints the new values). Round 49 fix step: re-pinned at 1.0.0 — the engine was never released, no RT
  *  issued in production (plan §1.2 names 1.0.0 the first release). Round 52: 1.1.0, the rope sheet's checks in the
- *  ropes' section. */
+ *  ropes' section. Round 57: 1.2.0, the owner's words (puleggia di trazione, Diretto/Indiretto 1:2, non soddisfatta). */
 const PINNED = {
-  version: '1.1.0',
+  version: '1.2.0',
   docSha: {
-    'locale-solo-argano': '586e4d0bef914239f20a5708e4bd958946466216d422127583d01cfe2164fdc6',
-    'locale-solo-argano-p1': '91a57f8ba38d9ba3f8323db54e33a6ba6ef7386f65075d50cce1221a6c1a7366',
-    'vano-ammodernamento-velocita': '1401bbfe22cca46fed7e53739da6dab14b1805b746f866bb6eab57912065859e',
-    'vano-ce-carico': 'cdef461fd06af93915d3452ba8c8408ce1b855b1d722475eaad1af96e2ffd40e',
+    'locale-solo-argano': 'ee3263cae4f433eee9e6fdebef9a615510899526afcb9a0800a3ba1c8d0db2e6',
+    'locale-solo-argano-p1': '3a873a9b70012020b9a20c4cc60695e124057e6af966fd5a74f336fd5d66d2d2',
+    'vano-ammodernamento-velocita': 'e9d87ef79ecdc57c999d7d0399e1c026fe1d00ac471312f9f617b165b9af5b65',
+    'vano-ce-carico': '97e53305b8ac0c3552e90fe6726959724a5587a158fda85249af3461b5f830bb',
   } as Readonly<Record<string, string>>,
 };
 

@@ -78,7 +78,7 @@ function pagine(ctx: ContestoRt2, x: DatiRt2, e: EsitoRt2, p: PaginaCtx): FBlock
       valore('Sollecitazione su ogni fune:', 'σfune:', fmt(S ? o.Cfune / S : null, 2), 'N/mm2'),
       valore('Coefficiente di sicurezza:', 'z:', fmt(o.z, 2), `≥ ${fmt(o.zMin, 0)}`, es('funi.z')),
     ] },
-    { t: 'sez', l: 'Verifica rapporto diametri:\n(puleggia frizione / fune)', righe: [
+    { t: 'sez', l: 'Verifica rapporto diametri:\n(puleggia di trazione / fune)', righe: [
       valore('Diametro puleggia:', 'D:', fmt(i.D, 0), 'mm'), valore('Rapporto diametri:', 'D/d:', fmt(o.dRatio, 2), '≥ 40', es('funi.Dd')),
     ] },
     { t: 'sez', l: 'Attacchi delle funi:', righe: [
@@ -97,7 +97,7 @@ function pagine(ctx: ContestoRt2, x: DatiRt2, e: EsitoRt2, p: PaginaCtx): FBlock
   const pagina2: FBlock[] = [
     { t: 'pagina' }, { t: 'titolo', s: p.titolo },
     { t: 'sez', l: 'Stabilità allo scorrimento:', righe: [
-      { t: 'testo', s: 'Si considerano le tensioni statiche ai due lati della puleggia di frizione,' },
+      { t: 'testo', s: 'Si considerano le tensioni statiche ai due lati della puleggia di trazione,' },
       { t: 'testo', s: 'considerando i pesi propri delle funi portanti e delle eventuali funi o catene di' },
       { t: 'testo', s: 'compensazione e la massa del loro tenditore.' },
     ] },

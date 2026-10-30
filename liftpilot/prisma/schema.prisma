@@ -938,6 +938,10 @@ model Scheda {
   writeKey                 String?
   createdAt                DateTime                    @default(now())
   updatedAt                DateTime                    @updatedAt
+  /// when what the installation reads of the sheet last changed, or the sheet was linked to it (round 57,
+  /// src/lib/collega/rilievo.ts datiLetti): a record older than it is «da aggiornare»; null: `updatedAt` (sheets before
+  /// migration 32). Written only by src/server/rilievi/service.ts and src/server/collega/service.ts
+  datiAt                   DateTime?
 
   @@unique([companyId, writeKey])
   /// the list in its order (survey day, then creation, newest first; the trashed ones skipped), and the trash

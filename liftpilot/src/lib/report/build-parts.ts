@@ -53,7 +53,7 @@ export function proposalBlocks(x: { X: Texts; fmt: Fmt; N: Machine; sizing: Sizi
 }
 
 /** A direct pull's sheave: the plan's drop (registry impianto.calata). */
-const DROP = (D: number, fmt: Fmt): string => `Tiro diretto: le due calate scendono dai lati della puleggia di frizione, che ha quindi il diametro della calata `
+const DROP = (D: number, fmt: Fmt): string => `Tiro diretto: le due calate scendono dai lati della puleggia di trazione, che ha quindi il diametro della calata `
   + `del piano, Ø ${fmt(D, 0)} mm (voce impianto.calata)`;
 
 /** What the proposal of a lift design's relazione is computed with: on a direct pull the plan's sheave, which another
@@ -129,7 +129,7 @@ export function underPitText(norma: NormaCollaudo): string {
     + 'carichi P5–P8 del foglio 1 delle tavole (sotto ogni guida del contrappeso anche la presa del paracadute); paracadute del contrappeso, '
     + `progressivo oltre ${v} m/s e fino a ${v} m/s anche istantaneo, azionato dal limitatore o, fino a ${v} m/s, dalla rottura della sospensione o `
     + 'da una fune di sicurezza: tipo e azionamento si indicano nei dati dell’impianto, e la verifica (in questa relazione e sul foglio 1 delle tavole) '
-    + 'non passa finché mancano'
+    + 'non è soddisfatta finché mancano'
     + (norma !== 'en81' ? '; in una modifica può stare al suo posto un pilastro esistente fino al terreno sotto gli ammortizzatori del contrappeso, '
       + `verificato per i nuovi carichi (${pilastroRif(norma)}): è una scelta del progettista` : '');
 }

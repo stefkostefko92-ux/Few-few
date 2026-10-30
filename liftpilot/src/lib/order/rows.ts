@@ -54,7 +54,7 @@ export function acopBlocks(C: Collaudo): ReportBlock[] {
     return [
       { t: 'h3', text: 'Protezione contro la sovravelocità in salita (ACOP) e i movimenti incontrollati della cabina (UCM)' },
       { t: 'kv', rows: [
-        ['Organo d’arresto', 'su cabina, contrappeso, funi, puleggia di frizione o albero della puleggia sostenuto in due soli punti (UNI EN 81-20:2020, '
+        ['Organo d’arresto', 'su cabina, contrappeso, funi, puleggia di trazione o albero della puleggia sostenuto in due soli punti (UNI EN 81-20:2020, '
           + '5.6.6.4 e 5.6.7.4): non il freno dell’albero del motore, che con il riduttore sta prima della riduzione'],
         ['Soluzione richiesta', '☐ freno sull’albero lento o sulla puleggia, certificato come organo d’arresto ACOP e UCM (fornito con l’argano)   '
           + '☐ bloccafuni certificato   ☐ paracadute di cabina bidirezionale e rilevamento dei movimenti incontrollati nel quadro'],

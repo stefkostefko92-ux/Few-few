@@ -101,8 +101,8 @@ export function guideSection(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, 
   B.push({ t: 'kv', rows: mass });
   B.push({ t: 'grid', head: ['Carico', 'daN', 'Come si ottiene', 'Dove'], widths: [0.2, 0.12, 0.43, 0.25], align: ['l', 'r', 'l', 'l'], rows: [
     ['P1', daN(P[0]), below ? `carico statico sulle pulegge in testata × ${dyn}` : `carico statico sull’asse × ${dyn}`, at[0]],
-    ['P2', daN(P[1]), `taglia 2:1: (P + Q)/2 × ${dyn}`, at[1]],
-    ['P3', daN(P[2]), `taglia 2:1: M_cw/2 × ${dyn}`, at[2]],
+    ['P2', daN(P[1]), `indiretto 1:2: (P + Q)/2 × ${dyn}`, at[1]],
+    ['P3', daN(P[2]), `indiretto 1:2: M_cw/2 × ${dyn}`, at[2]],
     // (the governor's load not in the data: its maker's, as sheet 1 writes it)
     ['P4', P[3] == null ? GOVERNOR_LOAD_UNSET : daN(P[3]), 'dato del costruttore del limitatore (dati dell’impianto)', at[3]],
     ['P5', daN(P[4], true), `paracadute: k1·g·(P + Q)/2 + peso della guida (k1 ${R.gear === 'progressive' ? KV_VERT.k1Progressive : R.gear === 'roller' ? KV_VERT.k1Roller : KV_VERT.k1Instant})`, at[4]],

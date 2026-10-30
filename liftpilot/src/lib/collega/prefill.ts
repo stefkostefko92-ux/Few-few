@@ -1,5 +1,6 @@
-// What a linked survey gives the installation's forms (round 44): «Calcolo argano» and the Progetto (round 45: only the
-// stops, its own) start from the measured values where they have the matching input, marked «dal rilievo».
+// What a linked survey gives the installation's forms (round 44): «Calcolo argano» and the Progetto (round 45: the
+// stops, its own; round 57: the shaft's measures of the panel order too) start from the measured values where they have
+// the matching input, marked «dal rilievo».
 // Only an empty value is filled — in a brand new form also one still at the software's standard (in a draft a value equal
 // to the standard may be the user's: it stays) —: a value the user typed is never overwritten;
 // a saved record never changes (the forms seed a new record or a draft). In a brand new form nothing is the user's: a
@@ -43,8 +44,8 @@ function campiCalc(r: RilievoDati): Partial<Record<Usa, Record<string, string | 
     Q: { Q: num(r.portataKg) },
     posizione: { layout },
     taglia: { r: a?.taglia ? String(a.taglia) : null },
-    velocita: { v: num(a?.velocita) },
-    corsa: { H: num(a?.corsa) },
+    velocita: { v: num(a?.velocita ?? r.quadro?.velocita) },
+    corsa: { H: num(a?.corsa ?? r.quadro?.corsa) },
     pesoCabina: { P: num(a?.pesoCabina) },
     funiNumero: { o_n: num(r.funiNumero) },
     funiDiametro: { o_d: num(r.funiDiametroMm) },
@@ -96,10 +97,18 @@ export function usaCalc(V: FormValues, r: RilievoDati, p: Usa): { values: FormVa
   return { values: out, set };
 }
 
-/** The Progetto's values the survey gives (the badges compare with them): the stops — the drawing's own (round 45; the
- *  load, the speed, the roping, the machine's place and the existing machine are the «Calcolo argano»'s). */
+/** The shaft's measures the panel order draws (round 57, quadro.ts): field of the Progetto → the survey's value [mm]. */
+const MISURE = [['W', 'vanoW'], ['D', 'vanoD'], ['pit', 'fossa'], ['headroom', 'testata']] as const;
+type Misura = (typeof MISURE)[number][0];
+const misuraDi = (r: RilievoDati, k: Misura): number | null => r.quadro?.[MISURE.find(([f]) => f === k)?.[1] ?? 'vanoW'] ?? null;
+
+/** The Progetto's values the survey gives (the badges compare with them): the stops and, from the panel order, the
+ *  shaft's width and depth, the pit and the headroom — the drawing's own (round 45; the load, the speed, the roping, the
+ *  machine's place and the existing machine are the «Calcolo argano»'s). */
 export function semeLift(r: RilievoDati): Seme {
-  return r.fermate !== null ? { floors: String(r.fermate) } : {};
+  const out: Record<string, string> = r.fermate !== null ? { floors: String(r.fermate) } : {};
+  for (const [k] of MISURE) { const v = misuraDi(r, k); if (v !== null) out[k] = String(v); }
+  return out;
 }
 
 const inRange = (x: number | null, lo: number, hi: number): x is number => x !== null && x >= lo && x <= hi;
@@ -113,11 +122,25 @@ function liftParam(d: ProgettoDraft, r: RilievoDati, p: Usa, force: boolean): { 
   return { draft: { ...d, progetto: { ...d.progetto, shaft: { ...S, vertical: f.vertical } }, blank: f.blank }, set: ['floors'] };
 }
 
-/** The Progetto's start (new, carried over from the installation's records, its draft) with the survey's stops where
- *  they are still to enter; what was filled. */
+/** The shaft's measures into the Progetto's draft where they are still to enter (round 57). */
+function misureIn(d: ProgettoDraft, r: RilievoDati): { draft: ProgettoDraft; set: string[] } {
+  let S = d.progetto.shaft, blank = d.blank;
+  const set: string[] = [];
+  for (const [k] of MISURE) {
+    const v = misuraDi(r, k);
+    if (v === null || !blank.includes(k)) continue;
+    S = k === 'W' || k === 'D' ? { ...S, [k]: v } : { ...S, vertical: { ...S.vertical, [k]: v } };
+    blank = blank.filter((b) => b !== k);
+    set.push(k);
+  }
+  return { draft: set.length ? { ...d, progetto: { ...d.progetto, shaft: S }, blank } : d, set };
+}
+
+/** The Progetto's start (new, carried over from the installation's records, its draft) with the survey's stops and
+ *  shaft measures where they are still to enter; what was filled. */
 export function seminaLift(d: ProgettoDraft, r: RilievoDati): { draft: ProgettoDraft; seeded: string[] } {
-  const step = liftParam(d, r, 'fermate', false);
-  return { draft: step.draft, seeded: step.set };
+  const step = liftParam(d, r, 'fermate', false), misure = misureIn(step.draft, r);
+  return { draft: misure.draft, seeded: [...step.set, ...misure.set] };
 }
 
 /** «Usa il valore del rilievo» in the Progetto: the stops set over what it holds (any other parameter is the «Calcolo
@@ -131,7 +154,9 @@ export const valoreCalc = (seme: Seme, id: string): string | undefined => seme[i
 /** A field of the Progetto as its mark reads it (field ids of semeLift): what is still to enter is empty — its
  *  placeholder is not a value. */
 export function valoreLift(d: ProgettoDraft, id: string): unknown {
-  return id === 'floors' && !d.blank.includes('floors') ? d.progetto.shaft.vertical.floors.length : '';
+  if (d.blank.some((b) => b === id)) return '';
+  const S = d.progetto.shaft;
+  return id === 'floors' ? S.vertical.floors.length : id === 'W' || id === 'D' ? S[id] : id === 'pit' || id === 'headroom' ? S.vertical[id] : '';
 }
 
 /** The marks «dal rilievo» of a form: of the fields given (filled at the start, put in by «usa», kept marked by its

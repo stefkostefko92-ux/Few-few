@@ -37,7 +37,7 @@ export const VOCI_HEB: readonly VoceVano[] = [
       + 'putrelle (un telaio che le attraversa solo entro la loro lunghezza), le funi che attraversano la soletta (anche quella del limitatore) ad almeno 50 mm dalle putrelle, '
       + 'le putrelle fuori dai bordi dei fori in pianta (anche a filo), i muri del vano spessi '
       + 'almeno quanto l’appoggio e le due putrelle sopra i muri che le portano, entro le loro facce esterne (sotto piedi oltre il vano una '
-      + 'putrella non poggia su nulla e la verifica non passa). Delle sei scelte (due direzioni, tre profili) il software prende le putrelle più corte che passano le '
+      + 'putrella non poggia su nulla e la verifica non è soddisfatta). Delle sei scelte (due direzioni, tre profili) il software prende le putrelle più corte che passano le '
       + 'verifiche, poi le più leggere — le più facili da portare nel locale, anche con l’argano girato; profilo e direzione si scelgono a mano',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.8.1 e appendice E.1 (carichi sull’edificio); NTC 2018, §4.2.4.1.1 (γM0), Tab. 11.3.IX (S275), '
       + '§11.3.4.1 (E); DPR 1497/1963, art. 5.1–5.2 (freccia ≤ 1/1500 della luce libera); proprietà dei profili EN 10365',

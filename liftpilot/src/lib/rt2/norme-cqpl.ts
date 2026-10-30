@@ -80,7 +80,7 @@ export const VOCI_CQPL: readonly VoceRt2[] = [
     riferimento: 'UNI EN 81-1:1998, 9.9.6.3 (non nella UNI EN 81-20:2020, 5.6.2.2.1.3)', fonte: `${MODELLO}, foglio «Limitatore», AU4; ${letto('UNI EN 81-20:2020', 'p. 83')}`,
     stato: 'prassi', costanti: ['funeLimDiamMin'], verifiche: ['limitatore.funeDiametro'],
     nota: 'requisito della UNI EN 81-1 (anche 1999), non della UNI EN 81-20:2020; con la corsa estesa la UNI 10411-1:2024 16 i) ammette la UNI EN 81-1:1987 '
-      + 'o la UNI EN 81-20: per questo non è una verifica non superata ma un avviso',
+      + 'o la UNI EN 81-20: per questo non è una verifica non soddisfatta ma un avviso',
   },
   {
     id: 'rt2.limitatore.fune', area: 'limitatore', titolo: 'Fune del limitatore: coefficiente di sicurezza e rapporto dei diametri',

@@ -7,11 +7,13 @@
 // the list links to). The software sizes every machine it proposes for a frequency converter: one or two speeds replace
 // the controller in a modernisation (the controller's row locked «Sì») and refuse a «Solo argano» («Passa ad
 // Ammodernamento con il quadro», AvvisiIntervento). Round 52: the question with its «?», its words still the group's name.
+// Round 57: answered by the linked survey (useIntervento), marked «dal rilievo» while it is that answer.
 import { useTranslations } from 'next-intl';
 import { testoAiuto } from '@/lib/aiuto';
 import { REGOLAZIONE_ID } from '@/lib/calc-blank';
 import { REGOLAZIONI, type Regolazione } from '@/lib/lift/modifica';
 import AIUTO from '../../../messages/aiuto/calcolo.json';
+import { DalRilievo } from '../collega/origine';
 import { ConAiuto } from '../shaft/Campo';
 
 interface Props {
@@ -27,7 +29,7 @@ export default function RegolazioneQuadro({ value, set, norma }: Props) {
   return (
     <li className={`parte regola${value ? '' : ' da'}`} data-part="regolazione">
       <ConAiuto aiuto={testoAiuto(AIUTO, 'regolazione')} nome={t('reg_domanda')} className="parte-lbl">
-        <span className="parte-nome" id={`${REGOLAZIONE_ID}-label`}>{t('reg_domanda')}</span>
+        <span className="parte-nome" id={`${REGOLAZIONE_ID}-label`}>{t('reg_domanda')}</span><DalRilievo id={REGOLAZIONE_ID} value={value} />
       </ConAiuto>
       <span className="seg-row parte-scelta" role="radiogroup" aria-labelledby={`${REGOLAZIONE_ID}-label`} aria-describedby={hintId}>
         {REGOLAZIONI.map((r, i) => (

@@ -57,7 +57,7 @@ export const VOCI_MASSE: readonly VoceImpianto[] = [
       + `argano di catalogo (tre ferri a C alti quanto il telaio, ali di 70 mm, spessori ${KM.ironTf} e ${KM.ironTw} mm, con le traverse), il telaio di `
       + `profilati (tre profilati e le due traverse), le putrelle (fra i muri con l’appoggio), le piastre sotto gli appoggi (${KM.plateL} × ${KM.plateW} mm), `
       + `il plinto in calcestruzzo (${KM.concreteKgM3} kg/m³, i due blocchi), il telaio con rinvio del software (travi UPN 160, gambe di tubo quadro da `
-      + `${it(KM.legKgM)} kg/m, la puleggia di rinvio stimata come la puleggia di frizione), la puleggia sul suo supporto; acciaio ${KM.steelKgM3} kg/m³; `
+      + `${it(KM.legKgM)} kg/m, la puleggia di rinvio stimata come la puleggia di trazione), la puleggia sul suo supporto; acciaio ${KM.steelKgM3} kg/m³; `
       + 'il telaio con rinvio del costruttore con la sua massa di catalogo; le putrelle HEB sui muri del vano con la loro. Nel carico statico '
       + 'del foglio 1 (P9) e della relazione, senza coefficiente dinamico; nelle verifiche delle travi il peso proprio delle travi verificate '
       + 'è già nella verifica',

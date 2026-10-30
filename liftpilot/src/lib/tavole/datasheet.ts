@@ -33,7 +33,7 @@ export interface DataSheet extends TitleData {
 /** The title block's height over the frame's foot [mm]: the same on every sheet 1. */
 export const TITLE_H = 52;
 /** The outcome of a check that does not pass, as the tables write it. */
-export const FAILED = 'NON PASSA';
+export const FAILED = 'NON SODDISFATTA';
 
 /** The notes' lettering at its largest [mm]. */
 const NOTE_MAX = 2.3;

@@ -69,6 +69,6 @@ export function rinvioRow(rf: RinvioFrame, fmt: (x: number, dp?: number) => stri
   const mk = rf.maker;
   return ['Puleggia di rinvio', mk
     ? `nel locale macchina, mai nel vano: nel basamento ${mk.brand} ${mk.code} dell’argano (${fmt(mk.mass, 0)} kg con puleggia e antivibranti), ${axis}, `
-      + `sommità a ${fmt(mk.top, 0)} mm, asse della puleggia di frizione a ${fmt(mk.sheaveAxis, 0)} mm (fonte: ${mk.src})`
+      + `sommità a ${fmt(mk.top, 0)} mm, asse della puleggia di trazione a ${fmt(mk.sheaveAxis, 0)} mm (fonte: ${mk.src})`
     : `nel locale macchina, mai nel vano: nel telaio dell’argano (UPN sotto i suoi ferri, su antivibranti; scelta del software), ${axis}, sommità a ${fmt(rf.top, 0)} mm`];
 }

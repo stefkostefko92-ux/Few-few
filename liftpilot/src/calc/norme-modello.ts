@@ -14,14 +14,14 @@ export const VOCI_MODELLO: readonly Voce[] = [
   },
   {
     id: 'modello.percorso', gruppo: 'modello', titolo: 'Tiri con il metodo del percorso della fune',
-    valore: 'masse per lato, funi di ogni tratto con il fattore (r² + 2)/3, inerzia delle pulegge di rinvio e, in taglia 2:1, delle pulegge di '
+    valore: 'masse per lato, funi di ogni tratto con il fattore (r² + 2)/3, inerzia delle pulegge di rinvio e, nella sospensione indiretta 1:2, delle pulegge di '
       + 'cabina e di contrappeso (termine III); attrito di guide e pulegge trascurato in aderenza',
     riferimento: 'UNI EN 81-50:2020, 5.11.3', fonte: letto(T50, 'pp. 43–44'), stato: 'confermato',
     verifiche: ['tr_load', 'tr_dn', 'tr_up', 'tr_real', 'tr_stall'],
-    nota: 'Il fattore (r² + 2)/3 vale esattamente r per le taglie 1:1 e 2:1, le sole del software.',
+    nota: 'Il fattore (r² + 2)/3 vale esattamente r nella sospensione diretta e nell’indiretta 1:2, le sole del software.',
   },
   {
-    id: 'modello.percorso.pulegge', gruppo: 'modello', titolo: 'Pulegge di cabina e di contrappeso nella taglia 2:1',
+    id: 'modello.percorso.pulegge', gruppo: 'modello', titolo: 'Pulegge di cabina e di contrappeso nella sospensione indiretta 1:2',
     valore: 'una puleggia per lato, con l’inerzia J_p e il diametro D_p delle pulegge di rinvio: massa ridotta J_p/R_p², con l’accelerazione '
       + 'della cabina divisa per r, nei tiri e nell’inerzia riportata al motore',
     riferimento: 'UNI EN 81-50:2020, 5.11.3 (termine III)', fonte: `${letto(T50, 'pp. 43–44')}; numero e inerzia delle pulegge: scelta del software`,
@@ -32,11 +32,11 @@ export const VOCI_MODELLO: readonly Voce[] = [
   },
   {
     id: 'modello.percorso.msr1', gruppo: 'modello', titolo: 'Macchina in basso: tratto tra la macchina e le pulegge in testata',
-    valore: 'con l’accelerazione a della cabina, come stampato nella norma; nella taglia 2:1 il software mostra anche l’esito con r·a, '
+    valore: 'con l’accelerazione a della cabina, come stampato nella norma; nella sospensione indiretta 1:2 il software mostra anche l’esito con r·a, '
       + 'l’accelerazione fisica di quel tratto: «Attenzione» se supera il limite, mai «Non soddisfatta»',
     riferimento: 'UNI EN 81-50:2020, 5.11.3 (MSR1)', fonte: letto(T50, 'p. 44'), stato: 'confermato',
     verifiche: ['tr_dn', 'tr_up', 'tr_msr1'],
-    nota: 'Il testo stampa a in entrambe le edizioni; a 1:1 le due forme coincidono.',
+    nota: 'Il testo stampa a in entrambe le edizioni; nella sospensione diretta le due forme coincidono.',
   },
   {
     id: 'modello.velocita', gruppo: 'modello', titolo: 'Velocità nominale e compensazione',

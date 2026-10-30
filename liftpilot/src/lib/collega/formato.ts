@@ -3,6 +3,7 @@
 // machine's place, the kind of lift) are the page's (messages: collega.valore.*); and when a form's value is the
 // survey's, however written. Pure.
 import type { Param, Valore } from './confronto';
+import { sospensione } from '../sospensione';
 
 export const UNITA: Readonly<Partial<Record<Param, string>>> = {
   Q: 'kg', pesoCabina: 'kg', corsa: 'm', velocita: 'm/s', funiDiametro: 'mm', puleggia: 'mm', funicella: 'mm', potenza: 'kW', giri: 'giri/min',
@@ -15,7 +16,7 @@ export const numero = (n: number): string => String(Number(n.toFixed(2))).replac
 export function testoValore(p: Param, v: Valore, parola: (code: string) => string): string {
   if (v === null) return '—';
   if (typeof v === 'number') {
-    if (p === 'taglia') return `${v}:1`;
+    if (p === 'taglia') return sospensione(Number(v));
     if (p === 'rapporto') return `1:${numero(v)}`;
     const u = UNITA[p];
     return u ? `${numero(v)} ${u}` : numero(v);

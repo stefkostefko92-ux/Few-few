@@ -10,6 +10,7 @@ import { senzaSostituite } from '../lift/sostituite';
 import type { Collaudo } from '../lift/collaudo';
 import type { TipoIntervento } from '../lift/intervento';
 import { contestoKey } from '../report/intervento-text';
+import { sospensione } from '../sospensione';
 
 const LEGAL: readonly CalcKey[] = ['lg_1', 'lg_2', 'lg_3', 'lg_4', 'lg_5', 'lg_6'];
 
@@ -30,7 +31,7 @@ export function summaryText(P: Pres, X: Texts, a: Analysis, opts: {
   if (opts.badVisible) L.push(t('invalid'));
   const it = opts.intervento, ctxKey: CalcKey = it ? contestoKey(it.tipo, it.collaudo) : I.context !== 'repl' ? 'ctx_new' : opts.rifacimento ? 'ctx_rif' : 'ctx_repl';
   L.push(`${t('title')} — ${t(`lay_${I.layout}`)} — ${t(ctxKey)}`);
-  L.push(`Q ${fmt(I.Q, 0)} kg · P ${fmt(I.P, 0)} kg · k ${fmt(res.k, 3)} · M_cw ${fmt(res.Mcw, 0)} kg · v ${fmt(I.v, 2)} m/s · ${I.r}:1 · H ${fmt(I.H, 1)} m · α ${fmt(res.alphaDeg, 1)}°`);
+  L.push(`Q ${fmt(I.Q, 0)} kg · P ${fmt(I.P, 0)} kg · k ${fmt(res.k, 3)} · M_cw ${fmt(res.Mcw, 0)} kg · v ${fmt(I.v, 2)} m/s · ${sospensione(I.r)} · H ${fmt(I.H, 1)} m · α ${fmt(res.alphaDeg, 1)}°`);
   L.push(`D ${fmt(N.D, 0)} mm · ${X.grooveText(N.groove)} · ${N.n}×Ø${fmt(N.d, 1)} · i ${fmt(N.i, 1)} · ${fmt(N.Pn, 1)} kW · ${N.poles} ${t('poles_short')} · ${fmt(N.nm, 0)} 1/min`);
   L.push(`${t('v_prop')}: ${sizing.pick ? X.proposalShort(sizing.pick) : X.noneText(sizing)}`);
   if (sizing.pick) for (const [k, v] of X.proposalRows(sizing.pick, N, a.hold, !!sizing.keep)) L.push(`  ${k}: ${v}`);

@@ -233,7 +233,7 @@ export const VOCI_VANO: readonly VoceVano[] = [
       + 'sicurezza della fune del limitatore (carico minimo di rottura almeno 8 volte la forza di trazione all’intervento) e quella forza (almeno '
       + 'il doppio della forza che fa prendere il paracadute e almeno 300 N), dati dei fornitori del limitatore e del paracadute (limitatore.fune); il fondo della '
       + 'fossa e la soletta sopra un locale sotto la fossa (5000 N/m² con le reazioni P5–P8: progetto strutturale); puleggia del contrappeso '
-      + 'in taglia 2:1 sotto il soffitto con il contrappeso nella posizione più alta; uno spazio accessibile sotto il vano che non sia il locale '
+      + 'nella sospensione indiretta 1:2 sotto il soffitto con il contrappeso nella posizione più alta; uno spazio accessibile sotto il vano che non sia il locale '
       + 'della macchina (il software lo conosce solo con la macchina sotto la fossa); distanza tra le parti fisse più alte della fossa e quelle '
       + 'più basse della cabina sugli ammortizzatori; sporgenze nel vano oltre 150 mm senza balaustra; movimento incontrollato della cabina '
       + '(UCM) e velocità eccessiva in salita con la macchina nuova o con la velocità variata; rigidità e sporgenze della lamiera sotto la soglia di piano (5.2.5.3.2 b)–c), '

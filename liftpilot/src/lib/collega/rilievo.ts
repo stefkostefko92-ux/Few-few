@@ -8,6 +8,9 @@ import type { Prisma, Scheda } from '@prisma/client';
 import { ARGANI } from '@/lib/rilievi/ordini/moduli';
 import { numeriDi } from '@/lib/rilievi/ordini/numeri';
 import { storedValori, type Valori } from '@/lib/rilievi/ordini/valori';
+import type { Regolazione } from '@/lib/lift/modifica';
+import { unNumero } from './numero';
+import { QUADRO_SELECT, quadroDi, regolazioneDi, type QuadroDati } from './quadro';
 
 export type Posizione = 'ALTO' | 'BASSO';
 export type TipoImpianto = 'ELETTRICO' | 'IDRAULICO' | 'GEARLESS';
@@ -45,8 +48,11 @@ export interface RilievoDati {
   /** the day of the survey and when the sheet was created: the newest by both is the installation's reference */
   data: Date;
   createdAt: Date;
-  /** the last change of the sheet: a calculation older than it may not have read it («da aggiornare») */
+  /** the last change of the sheet (its version) */
   updatedAt: Date;
+  /** the last change of what the installation reads of it, or its link to the installation: a record older than it may
+   *  not have read it («da aggiornare», passi.ts) */
+  datiAt: Date;
   indirizzo: string | null;
   matricola: string | null;
   numeroImpianto: string | null;
@@ -64,14 +70,18 @@ export interface RilievoDati {
   operatoreMarca: string | null;
   lucePorte: string | null;
   argano: ArganoDati | null;
+  /** the panel order of the sheet's make (round 57, quadro.ts): the speed, the travel, the stops, the shaft */
+  quadro: QuadroDati | null;
+  /** the existing controller's speed regulation: the argano sheet's motor (AC1, AC2, inverter), else the panel order's */
+  regolazione: Regolazione | null;
 }
 
 /** The columns of a sheet the installation reads. `operatoreMarca` and `lucePorte` are no longer asked by the sheet (rilievi
  *  988f3cf37, round 49): only older surveys fill them, and the comparison shows them as they are (confronto.ts). */
 export const RILIEVO_SELECT = {
-  id: true, data: true, createdAt: true, updatedAt: true, indirizzo: true, matricola: true, numeroImpianto: true, marca: true, portataKg: true, capienzaPersone: true,
+  id: true, data: true, createdAt: true, updatedAt: true, datiAt: true, indirizzo: true, matricola: true, numeroImpianto: true, marca: true, portataKg: true, capienzaPersone: true,
   fermate: true, ubicazioneMacchina: true, tipoImpianto: true, funiNumero: true, funiDiametroMm: true, funicellaDiametroMm: true,
-  limitatoreTipo: true, operatoreMarca: true, lucePorte: true, arganoPreventivo: true, preventivoArgano: true,
+  limitatoreTipo: true, operatoreMarca: true, lucePorte: true, arganoPreventivo: true, preventivoArgano: true, ...QUADRO_SELECT,
 } as const satisfies Prisma.SchedaSelect;
 
 export type RilievoRow = Pick<Scheda, keyof typeof RILIEVO_SELECT>;
@@ -84,12 +94,7 @@ const dec = (x: Prisma.Decimal | number | null): number | null => {
 };
 const text = (s: string | null | undefined): string | null => (s && s.trim() ? s.trim() : null);
 
-/** One plain number in a line of the module, or null. */
-export function unNumero(line: string | true | undefined): number | null {
-  if (typeof line !== 'string') return null;
-  const n = numeriDi(line);
-  return n.length === 1 && n[0] !== undefined && n[0] > 0 ? n[0] : null;
-}
+export { unNumero } from './numero';
 
 /** The reduction ratio as the machine's i: «53», «1:53», «1/53», «53:1». */
 export function rapportoDi(line: string | true | undefined): number | null {
@@ -128,22 +133,32 @@ export function arganoDi(v: Valori | null): ArganoDati | null {
 }
 
 const TIPI: readonly TipoImpianto[] = ['ELETTRICO', 'IDRAULICO', 'GEARLESS'];
+/** The argano sheet's motor ticks as the existing controller's regulation. */
+const MOTORE: Readonly<Record<string, Regolazione>> = { motoreAc1: '1v', motoreAc2: '2v', motoreInverter: 'vvvf' };
 
 /** The survey's data: the sheet first, the argano sheet where the sheet is empty. */
 export function rilievoDati(s: RilievoRow): RilievoDati {
   const valori = s.arganoPreventivo === true ? storedValori(ARGANI, s.preventivoArgano) : null;
   const argano = arganoDi(valori), pa = (k: string): string | true | undefined => valori?.[k];
-  const pos = s.ubicazioneMacchina.length === 1 ? (s.ubicazioneMacchina[0] ?? null) : null;
+  const pos = s.ubicazioneMacchina.length === 1 ? (s.ubicazioneMacchina[0] ?? null) : null, quadro = quadroDi(s);
   return {
-    id: s.id, data: s.data, createdAt: s.createdAt, updatedAt: s.updatedAt,
+    id: s.id, data: s.data, createdAt: s.createdAt, updatedAt: s.updatedAt, datiAt: s.datiAt ?? s.updatedAt,
     indirizzo: text(s.indirizzo) ?? (typeof pa('indirizzo') === 'string' ? text(pa('indirizzo') as string) : null),
     matricola: text(s.matricola), numeroImpianto: text(s.numeroImpianto), marca: text(s.marca),
-    portataKg: s.portataKg ?? unNumero(pa('portata')), persone: s.capienzaPersone ?? unNumero(pa('persone')), fermate: s.fermate ?? unNumero(pa('piani')),
+    portataKg: s.portataKg ?? unNumero(pa('portata')), persone: s.capienzaPersone ?? unNumero(pa('persone')), fermate: s.fermate ?? unNumero(pa('piani')) ?? quadro?.fermate ?? null,
     posizione: pos, tipo: TIPI.filter((x) => s.tipoImpianto.includes(x)),
     funiNumero: s.funiNumero ?? unNumero(pa('funiN')), funiDiametroMm: dec(s.funiDiametroMm) ?? unNumero(pa('funiDiametro')),
     funicellaDiametroMm: dec(s.funicellaDiametroMm), limitatoreTipo: text(s.limitatoreTipo), operatoreMarca: text(s.operatoreMarca), lucePorte: text(s.lucePorte),
-    argano,
+    argano, quadro,
+    regolazione: regolazioneDi(valori, MOTORE) ?? quadro?.regolazione ?? null,
   };
+}
+
+/** What the installation reads of a sheet, as one string: a change of the sheet that leaves it as it was (a note, a
+ *  module the installation does not read) does not make the installation's records «da aggiornare». */
+export function datiLetti(s: RilievoRow): string {
+  const d = rilievoDati(s);
+  return JSON.stringify({ ...d, id: null, createdAt: null, updatedAt: null, datiAt: null });
 }
 
 /** The newest survey: by its day, then by when it was created (the installation's reference). */

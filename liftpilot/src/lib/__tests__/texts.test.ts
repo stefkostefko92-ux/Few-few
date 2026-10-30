@@ -53,16 +53,16 @@ test('esito: nessun errore e nessun avviso → verdict_ok', () => {
 test('esito: 1 errore → verdict_ko1; 2 o più → verdict_ko con il numero', () => {
   const base = a.res.checks.map((c) => ({ ...c, status: 'ok' as const }));
   const failing = (n: number): Results => ({ ...a.res, fails: Array.from({ length: n }, (_, i) => `x${i}`), checks: base } as unknown as Results);
-  assert.equal(X.verdictText(failing(1)), '1 verifica non superata');
-  assert.equal(X.verdictText(failing(2)), '2 verifiche non superate');
-  assert.equal(X.verdictText(failing(7)), '7 verifiche non superate');
+  assert.equal(X.verdictText(failing(1)), '1 verifica non soddisfatta');
+  assert.equal(X.verdictText(failing(2)), '2 verifiche non soddisfatte');
+  assert.equal(X.verdictText(failing(7)), '7 verifiche non soddisfatte');
 });
 
 test('solo avvisi: 1 → verdict_warn1; più → verdict_warn con il numero; gli errori vincono sugli avvisi', () => {
   const warn = (n: number): Results => ({ ...a.res, fails: [], checks: a.res.checks.map((c, i) => ({ ...c, status: i < n ? 'warn' as const : 'ok' as const })) } as unknown as Results);
   assert.equal(X.verdictText(warn(1)), 'Verifiche superate, 1 con «Attenzione»');
   assert.equal(X.verdictText(warn(3)), 'Verifiche superate, 3 con «Attenzione»');
-  assert.equal(X.verdictText({ ...warn(3), fails: ['x'] } as unknown as Results), '1 verifica non superata');
+  assert.equal(X.verdictText({ ...warn(3), fails: ['x'] } as unknown as Results), '1 verifica non soddisfatta');
 });
 
 test('limiti della gola: ognuno con i numeri della norma', () => {

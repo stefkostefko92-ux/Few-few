@@ -13,6 +13,7 @@ import type { Anagrafica } from '@/lib/rt/anagrafica';
 import { CONDIVISI, moduloDi } from '@/lib/rt2/componenti';
 import { datiCondivisi, deriveRt2 } from '@/lib/rt2/derive';
 import { rt2DraftSchema, type Rt2Inputs } from '@/lib/rt2/input';
+import { conRilievo, type RilievoHints } from '@/lib/rt2/rilievo';
 import { risultatiDi } from '@/lib/rt2/risultati';
 import { COMPONENTI_RT2, type ComponenteRt2, type ValoreRt2 } from '@/lib/rt2/types';
 import { TITOLI_RT2 } from '@/lib/rt2/titoli';
@@ -47,13 +48,18 @@ export interface Rt2WorkspaceProps {
   oggi: string;
   calcHref: string;
   panel: ReactNode;
+  /** the installation's reference survey (round 57): what it gives fills the empty «prima» and the make */
+  rilievo: RilievoHints | null;
 }
 
 type Obj = Record<string, unknown>;
 const DISPONIBILI = new Set(COMPONENTI_RT2.filter((c) => moduloDi(c) !== null));
 
 export default function Rt2Workspace(p: Rt2WorkspaceProps) {
-  const [inputs, setInputs] = useState<Rt2Inputs>(p.initial);
+  // what the survey gives, where the RT is empty and can be written (a read-only RT shows what it holds)
+  const [seme] = useState(() => (p.canEdit ? conRilievo(p.initial, p.rilievo, !p.base.C.regolazione) : { inputs: p.initial, dati: [] }));
+  const [inputs, setInputs] = useState<Rt2Inputs>(seme.inputs);
+  const dalRilievo = seme.dati.length && p.rilievo ? { data: p.rilievo.data.split('-').reverse().join('/'), campi: new Set(seme.dati) } : null;
   const res = useMemo(() => risultatiDi(p.base.V), [p.base.V]);
   const d = useMemo(() => deriveRt2({ ...p.base, res }, inputs), [p.base, res, inputs]);
   const condivisi = useMemo(() => datiCondivisi(inputs.dati), [inputs.dati]);
@@ -84,9 +90,10 @@ export default function Rt2Workspace(p: Rt2WorkspaceProps) {
         stato={valid ? `${d.fails} non verificate · ${d.mancanti.length} dati mancanti` : `${bad.size} valori fuori dai limiti`}>
         {target ? <DraftBar target={target} draft={draft} /> : null}
       </BarraPassi>
-      <CardGenerale n={1} doc={inputs.doc ?? {}} set={(k, v) => set(`doc.${k}`, v)} mancanti={new Set(d.mancanti.map((m) => m.campo))} readOnly={ro} oggi={p.oggi} />
+      <CardGenerale n={1} doc={inputs.doc ?? {}} set={(k, v) => set(`doc.${k}`, v)} mancanti={new Set(d.mancanti.map((m) => m.campo))} readOnly={ro} oggi={p.oggi}
+        dalRilievo={dalRilievo?.campi.has('doc.costruttore') ? dalRilievo.data : null} />
       <CardTecnici n={2} ctx={d.ctx} x={tecnici} set={set} readOnly={ro} chiediAzPrima={!p.base.C.regolazione} calcHref={p.calcHref}
-        mancanti={new Set(d.mancanti.map((m) => m.campo).filter(tecnico))} />
+        mancanti={new Set(d.mancanti.map((m) => m.campo).filter(tecnico))} dalRilievo={dalRilievo && [...dalRilievo.campi].some(tecnico) ? dalRilievo.data : null} />
       <CardComponenti n={3} richiesti={richiesti} aggiunti={inputs.aggiunti ?? []} disponibili={DISPONIBILI} readOnly={ro}
         set={(c: ComponenteRt2, on: boolean) => {
           const prev = inputs.aggiunti ?? [], next = on ? [...prev.filter((x) => x !== c), c] : prev.filter((x) => x !== c);

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { rad } from '@/calc/math';
 import type { Machine, Plant, Results } from '@/calc/types';
 import type { Pres } from '@/lib/present/tr';
+import { sospensione } from '@/lib/sospensione';
 
 export default function Diagram({ P, I, N, res }: { P: Pres; I: Plant; N: Machine; res: Results }) {
   const { t, fmt } = P;
@@ -74,7 +75,7 @@ export default function Diagram({ P, I, N, res }: { P: Pres; I: Plant; N: Machin
   return (
     <div className="diagram">
       <svg viewBox="0 0 320 270" role="img" aria-label={t('aria_diag')}>{s}</svg>
-      <div className="cap">{`${t(`lay_${I.layout}`)} · ${I.r}:1 · ${t('diagcap')}`}</div>
+      <div className="cap">{`${t(`lay_${I.layout}`)} · ${sospensione(I.r)} · ${t('diagcap')}`}</div>
     </div>
   );
 }

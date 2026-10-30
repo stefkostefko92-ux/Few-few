@@ -148,7 +148,7 @@ test('macchina sotto la fossa: il paracadute del contrappeso è una verifica del
   assert.equal(sgRow(ok)?.s, 'ok', 'con il paracadute e il suo azionamento');
   assert.equal(failing(none), failing(ok) + 1);
   // sheet 1 has as many failing checks as the relazione's result counts
-  const fails = (P: Plant): number => sheet1(inp, P).checks.filter((c) => c[3] === 'NON PASSA').length;
+  const fails = (P: Plant): number => sheet1(inp, P).checks.filter((c) => c[3] === 'NON SODDISFATTA').length;
   assert.equal(fails({}), failing(none));
   assert.equal(fails(given), failing(ok));
   // a new lift: a pillar does not stand in place of the gear

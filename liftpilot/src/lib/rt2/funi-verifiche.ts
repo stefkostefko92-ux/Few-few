@@ -45,7 +45,7 @@ export function verificheFuni(x: FuniIn, o: FuniOut, V: FormValues, res: Results
     verifica('funi.numero', 'Numero delle funi di trazione', x.n, '>=', K.ropesMin, { dec: 0, rif: `${T20}, 5.5.1.2` }),
     verifica('funi.diametro', 'Diametro delle funi di trazione', x.d, '>=', K.ropeDiameterMin, { unita: 'mm', dec: 1, rif: `${T20}, 5.5.1.2 a)` }),
     verifica('funi.z', 'Coefficiente di sicurezza delle funi z', x.n >= K.ropesMin ? o.z : null, '>=', o.zMin, { dec: 2, rif: `${T20}, 5.5.2.2; ${U1}, 14.1 c) e d)` }),
-    verifica('funi.Dd', 'Rapporto diametri puleggia di frizione / fune D/d', o.dRatio, '>=', K.ddMin, { dec: 1, rif: `${T20}, 5.5.2.1; ${U1}, 14.3` }),
+    verifica('funi.Dd', 'Rapporto diametri puleggia di trazione / fune D/d', o.dRatio, '>=', K.ddMin, { dec: 1, rif: `${T20}, 5.5.2.1; ${U1}, 14.3` }),
   ];
   if (o.compRatio !== null) {
     out.push(verifica('funi.compDd', 'Rapporto diametri puleggia tenditrice / fune di compensazione', o.compRatio, '>=', KR2.compDd, { dec: 1, rif: `${T20}, 5.5.6.2 c)` }));

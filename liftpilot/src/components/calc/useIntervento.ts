@@ -8,8 +8,9 @@
 // machine's fields (the machine kept is the existing one), «Sì» again brings back the machine replaced (round 46,
 // src/lib/calc-resta.ts). Round 46 (B6): the existing controller's speed regulation, asked under a new machine on it;
 // one or two speeds replace the controller in a modernisation (the rule's «Sì», risposte.ts effettiva), and «Passa ad
-// Ammodernamento con il quadro» leaves a refused «Solo argano» for a modernisation with the controller «Sì». Pure state,
-// no server.
+// Ammodernamento con il quadro» leaves a refused «Solo argano» for a modernisation with the controller «Sì». Round 57: the
+// regulation the linked survey gives answers the question where it is asked and still unanswered (marked «dal rilievo»).
+// Pure state, no server.
 import { useMemo, useState } from 'react';
 import type { FormValues } from '@/calc/types';
 import { collaudoOf, interventoDi, interventoTo, interventoValido, macchinaResta, rifacimentoTo, type Collaudo, type Parte, type TipoIntervento } from '@/lib/lift';
@@ -26,9 +27,12 @@ export interface InterventoInit {
 /** A modernisation left for the transformation: its answers and what the existing machine's comparison was. */
 type Lasciato = { chosen: Collaudo; risposte: Parte[]; values: FormValues };
 
-export function useIntervento(init: InterventoInit, values: FormValues, edit: (patch: FormValues) => void) {
+export function useIntervento(init: InterventoInit, values: FormValues, edit: (patch: FormValues) => void, dalRilievo: Regolazione | null = null) {
+  /** The test with the survey's regulation where the question is asked and still unanswered. */
+  const conRilievo = (t: TipoIntervento | null, c: Collaudo | undefined, r: readonly Parte[]): Collaudo | undefined =>
+    (c && !c.regolazione && dalRilievo && chiediRegolazione(t, c, r) ? { ...c, regolazione: dalRilievo } : c);
   const [tipo, setTipo] = useState<TipoIntervento | null>(init.tipo);
-  const [chosen, setChosen] = useState<Collaudo | undefined>(init.collaudo ?? undefined);
+  const [chosen, setChosen] = useState<Collaudo | undefined>(() => conRilievo(init.tipo, init.collaudo ?? undefined, init.risposte));
   const [risposte, setRisposte] = useState<Parte[]>(() => [...init.risposte]);
   // the modernisation left for the transformation (point 21.1's «Passa», or a click): coming straight back, its answers
   // return as they were — UI state only, nothing saved or hashed
@@ -74,9 +78,9 @@ export function useIntervento(init: InterventoInit, values: FormValues, edit: (p
     }
     const r = interventoTo(t, chosen), next = quadro ? rispondi(r.collaudo, 'controller', true) : r.collaudo;
     edit(conMacchina({ ...r.values, ...(t === 'TRASFORMAZIONE_COMPLETA' ? { compare: false, keepD: false } : values.context !== 'repl' ? { compare: true } : {}) }, t, next));
-    setChosen(next);
-    const dopo = risposteDopo(t, risposte);
-    setRisposte(quadro && !dopo.includes('controller') ? [...dopo, 'controller'] : dopo);
+    const dopo = risposteDopo(t, risposte), nuove = quadro && !dopo.includes('controller') ? [...dopo, 'controller' as const] : dopo;
+    setChosen(conRilievo(t, next, nuove));
+    setRisposte(nuove);
     setTipo(t);
   };
   /** The existing controller's speed regulation answered. */
@@ -87,7 +91,7 @@ export function useIntervento(init: InterventoInit, values: FormValues, edit: (p
   const answer = (p: Parte, si: boolean): void => {
     if (!chosen) return;
     const next = rispondi(chosen, p, si);
-    setChosen(next);
+    setChosen(conRilievo(tipo, next, risposte.includes(p) ? risposte : [...risposte, p]));
     setRisposte((r) => (r.includes(p) ? r : [...r, p]));
     const patch = conMacchina(p === 'machine' && tipo === 'AMMODERNAMENTO' && si !== chosen.parti.includes('machine') ? (si ? { compare: true } : { compare: false, keepD: false }) : {}, tipo, next);
     if (Object.keys(patch).length) edit(patch);

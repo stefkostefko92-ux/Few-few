@@ -1,6 +1,6 @@
 // The way of an installation from its survey to its documents (round 44): 1 Rilievo → 2 Calcolo argano → 3 Progetto →
 // 4 Documenti e ordini, each with its state from the records — «fatto», «da fare», «da aggiornare» (the record is older
-// than the survey it should read — the reference survey written or changed after it —, or the running engines no longer
+// than the survey it should read — what it reads of the reference survey changed, or the survey was linked, after it —, or the running engines no longer
 // reproduce it), «da aggiornare (calcolo più recente)» (round 45: the Progetto drawn on an older «Calcolo argano» than
 // the latest) or «differenze» (the record says otherwise than the survey about what exists on site, confronto.ts).
 // «Documenti e ordini» are the documents of the saved records — the relazione and the order draft of «Calcolo argano»
@@ -20,8 +20,9 @@ export interface Record {
 }
 
 export interface PassiInput {
-  /** the reference survey: when it was last written (null: none, or not read — a role that does not see the surveys) */
-  rilievo: { updatedAt: Date } | null;
+  /** the reference survey: when what the installation reads of it last changed, or it was linked (null: none, or not
+   *  read — a role that does not see the surveys) */
+  rilievo: { datiAt: Date } | null;
   /** a survey is linked, for a role that does not see the surveys (default: whether `rilievo` is there) */
   collegato?: boolean;
   /** the installation's «Calcolo argano» and its Progetto's record (a lift design, or a machine room surveyed) */
@@ -41,8 +42,8 @@ export interface Passi {
   documenti: StatoPasso;
 }
 
-/** Older than the survey it should read: the survey was written or changed after the record. */
-export const piuVecchio = (rec: { createdAt: Date }, rilievo: { updatedAt: Date } | null): boolean => !!rilievo && rilievo.updatedAt.getTime() > rec.createdAt.getTime();
+/** Older than the survey it should read: what the installation reads of it changed, or it was linked, after the record. */
+export const piuVecchio = (rec: { createdAt: Date }, rilievo: { datiAt: Date } | null): boolean => !!rilievo && rilievo.datiAt.getTime() > rec.createdAt.getTime();
 
 function statoDi(rec: Record | null, rilievo: PassiInput['rilievo'], errori: number): StatoPasso {
   if (!rec) return 'daFare';

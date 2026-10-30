@@ -28,10 +28,10 @@ export const VOCI_ORDINE: readonly VoceImpianto[] = [
   {
     id: 'impianto.funi.taglio', titolo: 'Lunghezza di taglio delle funi di sospensione',
     valore: 'per ogni fune la lunghezza misurata sul progetto da attacco ad attacco con la cabina al piano più basso, su tutte le pulegge '
-      + '(puleggia di frizione, rinvio, pulegge in testata della macchina in basso, pulegge della taglia 2:1: tratti rettilinei e archi '
+      + '(puleggia di trazione, rinvio, pulegge in testata della macchina in basso, pulegge della sospensione indiretta 1:2: tratti rettilinei e archi '
       + `di avvolgimento), più ${it(KL_ORDINE.ropeEnds)} m per i due attacchi e la regolazione, arrotondata al metro superiore; un calcolo fatto `
       + 'da un progetto del vano la misura sulla geometria di quel progetto con il suo argano; senza il progetto del vano (sostituzione '
-      + 'dell’argano) la lunghezza è taglia × (corsa + 2 × tratto oltre la corsa) più deviazione o rinvii. La stessa lunghezza nel foglio 1, '
+      + 'dell’argano) la lunghezza è il fattore di sospensione × (corsa + 2 × tratto oltre la corsa) più deviazione o rinvii. La stessa lunghezza nel foglio 1, '
       + 'nella distinta, nella bozza d’ordine e nella massa delle funi dei carichi sulla macchina; le funi che il collaudo lascia al loro posto '
       + 'il foglio 1 le dà come esistenti (la loro massa nei carichi resta a quella lunghezza)',
     riferimento: '—', fonte: 'prassi di cantiere: la fune si taglia più lunga e si accorcia all’attacco; da misurare in sito prima del taglio',
@@ -41,7 +41,7 @@ export const VOCI_ORDINE: readonly VoceImpianto[] = [
   },
   {
     id: 'impianto.basso.albero', titolo: 'Macchina in basso accanto al vano: albero lento prolungato',
-    valore: 'con la macchina nel locale accanto al vano (rinvii in testata o locale pulegge) la puleggia di frizione sta nel vano, sull’albero '
+    valore: 'con la macchina nel locale accanto al vano (rinvii in testata o locale pulegge) la puleggia di trazione sta nel vano, sull’albero '
       + 'lento che attraversa il muro: la proposta da un catalogo e il confronto tra SICOR e Montanari prendono solo le varianti ad albero '
       + 'lungo (SICOR LS, Montanari AL) o con supporto esterno (SICOR TS, Montanari S e i modelli con supporto, GEM L e CL, FAER P58F), con '
       + `il carico statico ammesso con l’albero più lungo della scheda (SICOR SH140LS ${minLoad('SICOR SH140LS')} kg, SH160LS `
@@ -61,7 +61,7 @@ export const VOCI_ORDINE: readonly VoceImpianto[] = [
   {
     id: 'impianto.acop.ucm', titolo: 'Protezioni ACOP e UCM nella bozza d’ordine e nella distinta',
     valore: 'impianto nuovo (UNI EN 81-20/50): la bozza d’ordine chiede come si realizzano la protezione contro la sovravelocità in salita '
-      + 'e quella contro i movimenti incontrollati, con l’organo d’arresto su cabina, contrappeso, funi, puleggia di frizione o albero della '
+      + 'e quella contro i movimenti incontrollati, con l’organo d’arresto su cabina, contrappeso, funi, puleggia di trazione o albero della '
       + 'puleggia sostenuto in due soli punti — mai il freno sull’albero del motore di un argano con riduttore —: freno sull’albero lento o '
       + 'sulla puleggia certificato, bloccafuni certificato, oppure paracadute di cabina bidirezionale con il rilevamento dei movimenti '
       + 'incontrollati nel quadro; il numero del certificato di esame UE del tipo e i microinterruttori di controllo del freno; la '
@@ -90,7 +90,7 @@ export const VOCI_ORDINE: readonly VoceImpianto[] = [
       + 'accorciato quando l’ultima resterebbe più corta del minimo della voce guide.staffe) con una giunzione tra due barre; funi alla '
       + 'lunghezza di taglio (voce impianto.funi.taglio) con due attacchi a cuneo con molla per fune; fune del limitatore come nel foglio 1; '
       + 'paracadute di cabina del tipo dei dati dell’impianto (senza dato progressivo, come nel foglio 1); due pattini per guida di cabina e '
-      + 'di contrappeso; in taglia 2:1 la puleggia della cabina e quella del contrappeso, l’arcata e il contrappeso per la taglia 2:1 e '
+      + 'di contrappeso; nella sospensione indiretta 1:2 la puleggia della cabina e quella del contrappeso, l’arcata e il contrappeso per la sospensione indiretta 1:2 e '
       + 'due attacchi fissi sotto la soletta; con la macchina in basso le pulegge in testata '
       + 'con il loro telaio e il basamento dell’argano ancorato contro il sollevamento netto della prova; nella modifica secondo UNI 10411 '
       + 'solo le parti che il collaudo indica come sostituite (le altre restano, come nel foglio 1) e la manodopera a corpo',

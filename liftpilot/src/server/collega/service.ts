@@ -3,7 +3,8 @@ import 'server-only';
 // the installation's `companyId` checked in the same statement —, together with its row in the activity log
 // (SCHEDA_LINKED / SCHEDA_UNLINKED, without the sheet's content). The link is not the sheet's content nor its version: it
 // is written with plain SQL so that `updatedAt` stays (a form opened on the sheet is not put in conflict, «Ultima
-// modifica» keeps naming who changed the sheet). Only a sheet out of the trash is linked or unlinked, only to an active
+// modifica» keeps naming who changed the sheet); it sets `datiAt` (round 57): the installation's records made before the
+// link have not read the sheet («da aggiornare»). Only a sheet out of the trash is linked or unlinked, only to an active
 // installation, and never away from an archived one (an archived installation is read only: its surveys stay). Each
 // UPDATE pins what was read in the same transaction (the sheet's installation, still active): a link changed meanwhile
 // by someone else is «changed», nothing is written and the log names the right `from`.
@@ -25,7 +26,7 @@ export async function collega(companyId: string, schedaId: string, projectId: st
     if (prev.project?.archivedAt) return 'archived';
     const target = await tx.project.findFirst({ where: { id: projectId, companyId, archivedAt: null }, select: { id: true } });
     if (!target) return 'projectNotFound';
-    const n = await tx.$executeRaw`UPDATE "Scheda" AS s SET "projectId" = p."id" FROM "Project" AS p
+    const n = await tx.$executeRaw`UPDATE "Scheda" AS s SET "projectId" = p."id", "datiAt" = (now() AT TIME ZONE 'UTC') FROM "Project" AS p
       WHERE s."id" = ${schedaId} AND s."companyId" = ${companyId} AND s."deletedAt" IS NULL
         AND s."projectId" IS NOT DISTINCT FROM ${prev.projectId}
         AND NOT EXISTS (SELECT 1 FROM "Project" AS q WHERE q."id" = s."projectId" AND q."archivedAt" IS NOT NULL)
@@ -77,7 +78,7 @@ export async function creaDaRilievo(companyId: string, userId: string, data: Nuo
       if (!s) throw new Annulla('notFound');
       if (s.projectId) throw new Annulla('alreadyLinked');
       const project = await tx.project.create({ data: { ...data, companyId, createdById: userId }, select: { id: true } });
-      const n = await tx.$executeRaw`UPDATE "Scheda" SET "projectId" = ${project.id}
+      const n = await tx.$executeRaw`UPDATE "Scheda" SET "projectId" = ${project.id}, "datiAt" = (now() AT TIME ZONE 'UTC')
         WHERE "id" = ${schedaId} AND "companyId" = ${companyId} AND "deletedAt" IS NULL AND "projectId" IS NULL`;
       if (n !== 1) throw new Annulla('alreadyLinked');
       await auditTx(tx, { companyId, userId, action: 'PROJECT_CREATED', entity: 'Project', entityId: project.id, meta: { rilievo: schedaId } });

@@ -137,7 +137,7 @@ export const VOCI_FOSSA: readonly VoceVano[] = [
     valore: 'più di 11000 mm tra le soglie di due porte di piano consecutive (piani contigui con porte, qualunque accesso): porte di soccorso intermedie '
       + 'alte almeno 1800 mm e larghe almeno 500 mm, oppure cabine adiacenti con porta di soccorso',
     riferimento: 'UNI EN 81-20:2020, 5.2.3.1 e 5.2.3.2 d)', fonte: letto(T20, 'p. 29'), stato: 'confermato', verifiche: ['v_emerg'],
-    nota: 'il software non modella le porte di soccorso né le cabine adiacenti: oltre 11 m la verifica non passa e il progetto va completato a parte',
+    nota: 'il software non modella le porte di soccorso né le cabine adiacenti: oltre 11 m la verifica non è soddisfatta e il progetto va completato a parte',
   },
   {
     id: 'porte.sottosoglia', gruppo: 'porte', titolo: 'Lamiera sotto la soglia di piano',

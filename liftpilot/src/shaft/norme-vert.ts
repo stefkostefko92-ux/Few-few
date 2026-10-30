@@ -176,7 +176,7 @@ export const VOCI_VERT: readonly VoceVano[] = [
   },
   {
     id: 'carichi.macchina', gruppo: 'carichi', titolo: 'Carico della macchina sulla soletta',
-    valore: 'carico statico sull’asse (cabina, portata, contrappeso, funi, cavi; in taglia 2:1 la metà di cabina, portata e contrappeso) × 2 come '
+    valore: 'carico statico sull’asse (cabina, portata, contrappeso, funi, cavi; nella sospensione indiretta 1:2 la metà di cabina, portata e contrappeso) × 2 come '
       + 'coefficiente dinamico; sulla soletta anche la massa di macchina e telaio',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.8.1 e appendice E.1 (informativa: l’effetto dinamico delle masse in moto con un fattore 2); il DPR '
       + '1497/1963, art. 5.1, per gli impianti costruiti secondo esso chiedeva 1,5 volte il carico statico delle funi', fonte: letto(T20, 'pp. 26, 148'), stato: 'confermato',

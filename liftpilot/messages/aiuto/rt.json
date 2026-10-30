@@ -7,7 +7,7 @@
   "doc.ascensorista": "L’azienda che esegue il lavoro: è proposta la tua. Va nei «Dati Impianto» della prima pagina.",
   "doc.componentiModificati": "Descrivi in poche righe che cosa sostituisci o modifichi (per esempio «Sostituzione dell’argano e delle funi di trazione»). Almeno 20 caratteri.",
   "doc.testoCopertina": "Un testo libero per la copertina, per esempio «Nuova emissione dopo la sostituzione del quadro». Facoltativo.",
-  "tecnici.prima.r": "Come erano appese cabina e contrappeso prima della modifica: diretto (1:1) o in taglia 1:2 o 1:4. Vuoto: come dopo.",
+  "tecnici.prima.r": "Come erano appese cabina e contrappeso prima della modifica: diretto o indiretto 1:2 o 1:4. Vuoto: come dopo.",
   "tecnici.prima.locale": "Dove stava il locale macchinario prima della modifica: in alto o in basso. Vuoto: come dopo.",
   "tecnici.prima.azionamento": "Come era regolata la velocità prima: 1 velocità, 2 velocità o VVVF. Si chiede solo se il Calcolo argano non lo dice già.",
   "tecnici.dopo.azionamento": "Come è regolata la velocità dopo la modifica. Con un quadro nuovo è proposto VVVF, altrimenti come prima.",

@@ -9,7 +9,7 @@ import type { BlockStatus, ReportBlock } from './model';
 
 type Fmt = (x: number, dec?: number) => string;
 
-const result = (c: MachineCandidate): string => (c.fails ? `${c.fails === 1 ? 'una verifica non passa' : `${c.fails} verifiche non passano`}`
+const result = (c: MachineCandidate): string => (c.fails ? `${c.fails === 1 ? 'una verifica non soddisfatta' : `${c.fails} verifiche non soddisfatte`}`
   : c.warns ? `passa, ${c.warns === 1 ? 'un avviso' : `${c.warns} avvisi`}` : 'passa le verifiche del software');
 const status = (c: MachineCandidate): BlockStatus => (c.fails ? 'fail' : c.warns ? 'warn' : 'ok');
 /** The whole machine, with the catalogue's mass when the parts it leaves out are estimated (registry impianto.massa.argano). */
@@ -49,7 +49,7 @@ export function adviceBlocks(A: MachineAdvice, fmt: Fmt, drop: number | null = n
 
 /** None of the advice's makers takes a direct pull: its sheave is the plan's drop, which no machine of theirs takes with
  *  these data; another sheave asks for another project (the engineer's choice). */
-const dropNone = (D: number, fmt: Fmt): string => `⚠ Con il tiro diretto la puleggia di frizione deve avere Ø ${fmt(D, 0)} mm, quanto la calata del piano `
+const dropNone = (D: number, fmt: Fmt): string => `⚠ Con il tiro diretto la puleggia di trazione deve avere Ø ${fmt(D, 0)} mm, quanto la calata del piano `
   + '(voce impianto.calata), e nessun argano SICOR o Montanari a catalogo la prende con questi dati. Per un argano a catalogo serve la puleggia di '
-  + 'rinvio nel locale macchina, che lascia libera la puleggia di frizione, oppure gli attacchi delle funi spostati perché la calata sia quella di una '
+  + 'rinvio nel locale macchina, che lascia libera la puleggia di trazione, oppure gli attacchi delle funi spostati perché la calata sia quella di una '
   + 'puleggia a catalogo: in entrambi i casi il progetto va ripetuto, e la scelta è del progettista.';

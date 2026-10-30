@@ -119,6 +119,7 @@ export const SCHEDA: SchedaForPdf = {
   deletedById: null,
   createdAt: new Date('2026-10-12T09:00:00.000Z'),
   updatedAt: new Date('2026-10-12T09:30:00.000Z'),
+  datiAt: new Date('2026-10-12T09:30:00.000Z'),
   createdBy: { name: 'Mario Bianchi' },
   updatedBy: { name: 'Luca Verdi' },
   company: { name: 'Ascensori Rossi Srl', ordineSezioni: [] },

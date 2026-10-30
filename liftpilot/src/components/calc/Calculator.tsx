@@ -20,6 +20,7 @@ import { textsFor } from '@/lib/present/texts';
 import { makePres, type CalcKey } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
 import { REGOLAZIONE_ID, calcMissing, plantReady } from '@/lib/calc-blank';
+import { REGOLAZIONI } from '@/lib/lift/modifica';
 import { savedValues } from '@/lib/calc-saved';
 import { segniResta } from '@/lib/calc-resta';
 import { calcDraftSchema } from '@/lib/draft-input';
@@ -114,7 +115,9 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
     setPropMsg('');
     setSaveError(null);
   };
-  const I = useIntervento(startOf(initial, initialPreset, intervento), values, edit);
+  // the existing controller's speed regulation the survey gives (round 57): the answer where the question is asked
+  const regRilievo = origine?.valori[REGOLAZIONE_ID], dalRilievo = REGOLAZIONI.find((r) => r === regRilievo) ?? null;
+  const I = useIntervento(startOf(initial, initialPreset, intervento), values, edit, dalRilievo);
   // the machine kept once «Argano: No» is answered (src/lib/lift/intervento.ts macchinaResta)
   const { tipo, value: collaudo } = I, resta = I.resta && I.risposte.includes('machine');
   // the machine kept is the existing one: the survey's marks of the existing machine on its fields (round 46)

@@ -120,7 +120,7 @@ function pagine(ctx: ContestoRt2, _x: DatiRt2, e: EsitoRt2, p: PaginaCtx): FBloc
       valore('Potenza motore:', '', nuova ? fmt(N.Pn, 1) : 'preesistente', 'kW'),
       valore('Frequenza', '', vvvf ? fmt(s.fVvvf, 0) : '50', 'Hz'),
     ] },
-    { t: 'sez', l: 'Puleggia di frizione:', righe: [
+    { t: 'sez', l: 'Puleggia di trazione:', righe: [
       valore('Diametro puleggia:', 'D:', fmt(N.D, 0), 'mm'), valore('Diam. funi trazione:', 'd:', fmt(N.d, 1), 'mm'),
       valore('Numero gole:', '', fmt(N.n, 0)), valore('Angolo gole:', golaV ? 'γ:' : 'β:', fmt(ang, 1), '°'),
       valore('Profilo gole:', '', nuova ? GOLA[N.groove.type] ?? '—' : 'preesistente'),

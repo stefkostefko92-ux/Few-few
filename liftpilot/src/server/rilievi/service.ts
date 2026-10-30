@@ -10,6 +10,7 @@ import 'server-only';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { auditTx, type AuditAction } from '@/lib/audit';
+import { RILIEVO_SELECT, datiLetti } from '@/lib/collega/rilievo';
 import { schedaIdSchema } from '@/lib/rilievi/inputs';
 import { searchTextOf } from '@/lib/rilievi/search';
 import type { SchedaData } from '@/lib/rilievi/validation';
@@ -89,11 +90,15 @@ export async function updateScheda(companyId: string, id: string, base: string, 
   if (Number.isNaN(baseDate.getTime())) return unwritten(prisma);
   try {
     return await prisma.$transaction(async (tx) => {
+      // what the installation reads of the sheet, before and after: `datiAt` moves only when that changes (round 57)
+      const before = await tx.scheda.findFirst({ where: { id, companyId, updatedAt: baseDate, deletedAt: null }, select: RILIEVO_SELECT });
       const updated = await tx.scheda.updateMany({
         where: { id, companyId, updatedAt: baseDate, deletedAt: null },
         data: { ...persisted(data), writeKey, updatedById: actorId },
       });
       if (updated.count === 0) return unwritten(tx);
+      const after = await tx.scheda.findFirst({ where: { id, companyId }, select: RILIEVO_SELECT });
+      if (!before || !after || datiLetti(before) !== datiLetti(after)) await tx.scheda.updateMany({ where: { id, companyId }, data: { datiAt: new Date() } });
       // the measurements per stop are written anew — exactly what is in the form, nothing old stays
       await tx.misuraBottoniera.deleteMany({ where: { schedaId: id } });
       if (data.misureBottoniere.length > 0) {

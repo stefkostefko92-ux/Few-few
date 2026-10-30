@@ -43,8 +43,8 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
   },
   {
     id: 'spazi.testata.pulegge', gruppo: 'sezione', titolo: 'Parte più alta della cabina sotto ciò che pende sopra',
-    valore: 'con la cabina nella posizione più alta: a 2:1 la puleggia di cabina (Dp + 30 mm sopra la traversa) è un’apparecchiatura sul tetto, '
-      + 'distanza libera ≥ 500 mm dal soffitto o dalle pulegge appese; a 1:1 con la macchina in basso la traversa sotto le pulegge appese alla soletta '
+    valore: 'con la cabina nella posizione più alta: nella sospensione indiretta 1:2 la puleggia di cabina (Dp + 30 mm sopra la traversa) è un’apparecchiatura sul tetto, '
+      + 'distanza libera ≥ 500 mm dal soffitto o dalle pulegge appese; nella sospensione diretta con la macchina in basso la traversa sotto le pulegge appese alla soletta '
       + '(asse a Dp/2 + 120 mm sotto il soffitto), distanza libera ≥ 100 mm, quella della traversa',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.2 a) e b)', fonte: letto(T20, 'p. 38'), stato: 'confermato',
     nota: 'fino alla versione 1.17.0 del motore del progetto la puleggia di cabina era verificata a 100 mm; i 100 mm della traversa sono la '
@@ -54,7 +54,7 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
   {
     id: 'spazi.tetto.appese', gruppo: 'sezione', titolo: 'Spazio di rifugio sul tetto sotto le parti appese alla soletta',
     valore: 'con la cabina nella posizione più alta, ciò che pende sotto la soletta (le pulegge di rinvio appese della macchina in basso con il loro '
-      + 'telaio, il tratto orizzontale delle funi fra due rinvii a 90°, gli attacchi delle funi della taglia 2:1) più in basso dell’altezza del '
+      + 'telaio, il tratto orizzontale delle funi fra due rinvii a 90°, gli attacchi delle funi della sospensione indiretta 1:2) più in basso dell’altezza del '
       + 'rifugio sopra il tetto toglie la sua pianta dalle parti libere del tetto, come gli operatori: il rifugio deve stare tutto fuori; '
       + 'l’altezza libera del rifugio si misura fino alla parte più bassa sopra ogni parte libera del tetto, dove si sta in piedi',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.1 (prospetto 3), 5.2.5.7.2 e 5.2.5.7.3', fonte: letto(T20, 'pp. 37–39'), stato: 'confermato',
@@ -110,7 +110,7 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.1 (prospetto 3)', fonte: 'misure dell’arcata e dell’operatore del disegno del software (tipiche, da '
       + 'confermare con il fornitore dell’arcata e delle porte)', stato: 'stima',
     nota: 'fino alla versione 2.17.0 del motore del vano la verifica misurava il rifugio sull’intero tetto e il disegno lo metteva sopra la traversa; '
-      + 'non contati: la puleggia di cabina della taglia 2:1 (verifica della testata del progetto) e il corrimano della balaustra',
+      + 'non contati: la puleggia di cabina della sospensione indiretta 1:2 (verifica della testata del progetto) e il corrimano della balaustra',
     verifiche: ['h_stand'],
   },
   {

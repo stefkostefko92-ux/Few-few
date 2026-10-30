@@ -238,7 +238,7 @@ try {
   // the note: tavole.test.ts)
   // (the checks themselves on the set's last sheet, which sheet 1 points to)
   const sheet1 = await page.textContent('.sheet-page svg.sheet-svg');
-  assert.ok(sheet1?.includes('VERIFICA DELLE GUIDE DI CABINA') && new RegExp(`VERIFICHE (DEL PROGETTO: FOGLIO|NON SUPERATE: \\d+ — VEDI FOGLIO) ${sheets}`).test(sheet1), 'the rails\' check on sheet 1');
+  assert.ok(sheet1?.includes('VERIFICA DELLE GUIDE DI CABINA') && new RegExp(`VERIFICHE (DEL PROGETTO: FOGLIO|NON SODDISFATTE: \\d+ — VEDI FOGLIO) ${sheets}`).test(sheet1), 'the rails\' check on sheet 1');
   // (the note wraps on its lines, whose texts join without the space: compared without spaces)
   const flat = (s) => (s ?? '').replace(/\s+/g, '');
   assert.ok(flat(sheet1).includes(flat("Rifacimento con l’arcata esistente:")), 'the renovation in the test’s note');

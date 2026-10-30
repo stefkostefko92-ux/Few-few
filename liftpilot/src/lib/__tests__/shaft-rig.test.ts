@@ -165,7 +165,7 @@ test('macchina sotto la fossa: paracadute del contrappeso dichiarato e verificat
   const sg = (s: ReturnType<typeof sheet>) => s.checks.find((r) => /contrappeso/i.test(r[0]) && /paracadute/i.test(r[0]));
   const under = sheet('under', {}), given = sheet('under', { cwSafetyGear: 'progressive', cwGearTrip: 'governor' }), head = sheet('head', {});
   assert.equal(row(under)?.[2], 'OBBLIGATORIO, DA INDICARE (5.2.5.4)');
-  assert.equal(sg(under)?.[3], 'NON PASSA');
+  assert.equal(sg(under)?.[3], 'NON SODDISFATTA');
   assert.equal(row(given)?.[2], 'PROGRESSIVO DA LIMITATORE');
   assert.equal(sg(given)?.[3], 'OK');
   assert.equal(row(head), undefined);

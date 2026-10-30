@@ -30,6 +30,7 @@ import type { SurveyTavoleInput } from './survey-input';
 import { refsText, titleOf } from './title-data';
 import { machineText } from './views';
 import { hookRow, reactionRows } from './room-rows';
+import { sospensione } from '../sospensione';
 
 const fmt = makeFmt('it-IT');
 const dec = (x: number): number => (Number.isInteger(x) ? 0 : Math.abs(x * 10 - Math.round(x * 10)) < 1e-9 ? 1 : 2);
@@ -106,7 +107,7 @@ const machineRows = (O: Machine | null, N: Machine, oldName: string, newName: st
   const both = (f: (m: Machine) => string): [string, string] => [O ? f(O) : '—', f(N)];
   return [
     ['ARGANO', 'tipo', oldName, newName],
-    ['PULEGGIA DI FRIZIONE Ø', 'mm', ...both((m) => fmt(m.D, 0))],
+    ['PULEGGIA DI TRAZIONE Ø', 'mm', ...both((m) => fmt(m.D, 0))],
     ['RAPPORTO DI RIDUZIONE', '', ...both((m) => `1 : ${num(m.i)}`)],
     ['POTENZA MOTORE', 'kW', ...both((m) => num(m.Pn))],
     ['POLI N° - GIRI/MINUTO', '', ...both((m) => `${m.poles}/${fmt(m.nm, 0)}`)],
@@ -194,7 +195,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     ['PORTATA', 'kg', fmt(I.Q, 0)],
     ['VELOCITÀ', 'm/s', fmt(I.v, 2)],
     ['CORSA', 'm', fmt(I.H, 2)],
-    ['TRAZIONE', 'tipo', `ELETTRICA ${I.r}:1`],
+    ['TRAZIONE', 'tipo', `ELETTRICA, ${sospensione(I.r).toUpperCase()}`],
     ['ARGANO', 'posizione', I.layout === 'topDefl' ? 'IN ALTO CON RINVIO' : 'IN ALTO, TIRO DIRETTO'],
     ['PESO TOTALE CABINA', 'kg', fmt(I.P, 0)],
     ['BILANCIAMENTO - CONTRAPPESO', '%-kg', `${fmt(res.k * 100, 0)} - ${fmt(res.Mcw, 0)}`],
@@ -236,7 +237,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
   // the loads on the slab by their names (loads.ts); the governor's, when not entered, its maker's
   const name = (i: number): string => `P${i + 1} ${loadNames()[i] ?? ''}`, val = (i: number): string => (ld.P[i] == null ? '—' : fmt(ld.P[i] ?? 0, 0));
   const P: SurveySheet['P'] = [[name(0), val(0)], [name(1), val(1)], [name(2), val(2)], [name(3), ld.P[3] == null ? GOVERNOR_LOAD_UNSET : val(3)], [name(8), val(8)]];
-  const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON PASSA', info: '—' } as const;
+  const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON SODDISFATTA', info: '—' } as const;
   const withUnit = (v: number | null, dp: number, u: string): string => (v == null ? '—' : `${fmt(v, dp)}${u ? ` ${u}` : ''}`);
   const checks: SurveySheet['checks'] = all.map((c) => {
     const named = (labels[roomCheckKey(c.id, d)] ?? c.id).replace(' (UNI EN 81-20, ', ' (');

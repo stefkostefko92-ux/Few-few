@@ -190,7 +190,7 @@ export const esitoOf = (C: Collaudo, id: CheckId | ShaftCheckId, st: string, sta
 
 /** The note under a table of checks with some of the parts that stay as they are. */
 export const EXISTING_NOTE = "Le verifiche con esito «Esistente» riguardano parti che restano come sono e non entrano nell’esito delle verifiche per il "
-  + 'collaudo; tra parentesi l’esito del calcolo, da valutare con il tecnico quando non passa.';
+  + 'collaudo; tra parentesi l’esito del calcolo, da valutare con il tecnico quando non è soddisfatta.';
 
 /** The section of the adaptations: its title and blocks, the machine's then those of the other parts replaced or
  *  changed (obblighi.ts obblighiParti; the cases of speed, load and travel by the calculation's values `V`). `t` reads
@@ -228,9 +228,9 @@ export function esitiBlocks(C: Collaudo, checks: readonly { id: CheckId | ShaftC
   const E = esitiNorme(C, checks), all = collaudoVerdict(C, checks);
   const rows = E.map((e, i) => [NORMA_SIGLA[e.norma], i === 0 ? 'base' : 'aggiunta', String(e.ids.length), String(e.fails), String(e.warns), e.ids.length ? st(e.verdict) : 'non calcolata']);
   const out: ReportBlock[] = [
-    { t: 'grid', head: ['Normativa', 'Ruolo', 'Verifiche', 'Non passano', 'Avvisi', 'Esito'], rows, status: E.map((e) => (e.ids.length ? e.verdict : 'info')), statusCol: 5,
+    { t: 'grid', head: ['Normativa', 'Ruolo', 'Verifiche', 'Non soddisfatte', 'Avvisi', 'Esito'], rows, status: E.map((e) => (e.ids.length ? e.verdict : 'info')), statusCol: 5,
       widths: [0.4, 0.1, 0.1, 0.12, 0.1, 0.18], align: ['l', 'l', 'r', 'r', 'r', 'l'] },
-    { t: 'verdict', text: `Esito delle verifiche di calcolo: ${st(all.verdict)}${all.fails ? ` — ${all.fails} ${all.fails === 1 ? 'verifica non passa' : 'verifiche non passano'}` : ''}`, status: all.verdict },
+    { t: 'verdict', text: `Esito delle verifiche di calcolo: ${st(all.verdict)}${all.fails ? ` — ${all.fails} ${all.fails === 1 ? 'verifica non soddisfatta' : 'verifiche non soddisfatte'}` : ''}`, status: all.verdict },
     { t: 'p', style: 'note', text: "Non è l’esito del collaudo, che spetta al tecnico incaricato e all’organismo con le prove in sito. Quali verifiche entrano per ogni "
       + 'normativa è la lettura del software (voce «impianto.collaudo» del registro), da confermare sul testo vigente delle norme.' },
   ];

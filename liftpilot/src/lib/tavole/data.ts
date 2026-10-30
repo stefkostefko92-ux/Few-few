@@ -49,6 +49,7 @@ import { shaftDetailText } from './notes-vano';
 import { NORMA_SIGLA, ambitoOf, collaudoOf, partKept, ropesKept } from '../lift/collaudo';
 import { macchinaResta } from '../lift/intervento';
 import { collaudoNote } from '../report/collaudo';
+import { sospensione } from '../sospensione';
 
 /** The buffers by type as the data sheet writes them: the car's (plural) and the counterweight's. */
 const BUFFER_TEXT: Readonly<Record<BufferType, readonly [string, string]>> = {
@@ -116,7 +117,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['ACCESSI DI CABINA', 'N°', access],
     ['MANOVRA', 'tipo', txt(Pl.control)],
     ['VANO', 'tipo', txt(Pl.shaft)],
-    ['TRAZIONE', 'tipo', `ELETTRICA ${I.r}:1`],
+    ['TRAZIONE', 'tipo', `ELETTRICA, ${sospensione(I.r).toUpperCase()}`],
     ['BILANCIAMENTO', '%', fmt(res.k * 100, 0)],
     ['SUPERFICIE CABINA', 'm²', fmt(L.area, 2)],
     ['RIVESTIMENTO CABINA', 'tipo', txt(Pl.carFinish)],
@@ -156,8 +157,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const specs: Row[] = [
     ['ARGANO', 'tipo', (resta ? existingMachine : txt)(machineText(Pl, x.marks?.catalog ?? null))],
     ['RAPPORTO DI RIDUZIONE', '', `1 : ${num(N.i)}`],
-    ['PULEGGIA DI FRIZIONE Ø', 'mm', fmt(N.D, 0)],
-    ['PULEGGIA DI RINVIO/TAGLIA Ø', 'mm', I.layout === 'top' && I.r === 1 ? '—' : fmt(I.Dp, 0)],
+    ['PULEGGIA DI TRAZIONE Ø', 'mm', fmt(N.D, 0)],
+    ['PULEGGIA DI RINVIO / CABINA Ø', 'mm', I.layout === 'top' && I.r === 1 ? '—' : fmt(I.Dp, 0)],
     ['ANGOLO DI AVVOLGIMENTO', '°', fmt(res.alphaDeg, 0)],
     // the angles the sheave is made to, as the calculation checks them (to the half degree)
     ['ANGOLO GOLE γ - β', '°', `${num(g.gamma)} - ${num(g.beta)}`],
@@ -228,7 +229,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const P = ld.P.map((p, i) => (p === null ? (i === 3 ? GOVERNOR_LOAD_UNSET : '—') : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));
   // the car rails between their brackets (the pitch declared or the rule's), at the loads of this sheet (sheet-loads.ts)
   const { gear, F, rc } = R;
-  const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON PASSA', info: '—' } as const;
+  const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON SODDISFATTA', info: '—' } as const;
   const withUnit = (x: number | null, dp: number, u: string): string => (x == null ? '—' : `${fmt(x, dp)}${u ? ` ${u}` : ''}`);
   // the clause stays in the label, the standard is in the heading of the table; the door of the room in its sizes
   // the shaft's checks, then the beams under the machine at the load of this sheet

@@ -27,6 +27,7 @@ import type { Pres } from '@/lib/present/tr';
 import type { ShaftSource } from '@/lib/shaft-input';
 import type { BlankTexts } from '../calc/FieldRow';
 import { fieldId, mmOf, type FormBlank, type ShaftSet } from '../blank';
+import { DalRilievo } from '../collega/origine';
 import Campo from '../shaft/Campo';
 import ShaftOptions from '../shaft/ShaftOptions';
 import ShaftTechOptions from '../shaft/ShaftTechOptions';
@@ -96,7 +97,8 @@ export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc
   const pulley = inp.calc.layout === 'bottom' && !is('bottom') && inp.bottom === 'room'
     ? { standard: pulleyRoomOf({ ...inp.shaft, room: null }), minH: KV_VERT.pulleyRoomH, doorW: KV_VERT.doorMinW, doorH: KV_VERT.pulleyDoorH, above: KV_VERT.pulleyAbove } : undefined;
   const size = (key: 'W' | 'D') => (
-    <Campo id={fieldId(key)} nome={ts(key)} aiuto={key === 'W' ? testoAiuto(AIUTO, 'W') : testoAiuto(AIUTO, 'D')} need={is(key)}>
+    <Campo id={fieldId(key)} nome={ts(key)} aiuto={key === 'W' ? testoAiuto(AIUTO, 'W') : testoAiuto(AIUTO, 'D')} need={is(key)}
+      label={<>{ts(key)}<DalRilievo id={key} value={is(key) ? '' : inp.shaft[key]} /></>}>
       <input id={fieldId(key)} className="input num" type="number" inputMode="numeric" min={500} max={10000} step={10} value={is(key) ? '' : inp.shaft[key]}
         aria-required={is(key) || undefined} onChange={(e) => { const v = mmOf(e.target.value); if (v !== null) setSize(key, v); }} />
     </Campo>

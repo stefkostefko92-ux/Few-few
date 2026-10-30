@@ -61,7 +61,7 @@ test('relazione «Solo argano»: titolo della sostituzione, contesto e voce del 
   const doc = report(SOLO, 'SOLO_ARGANO');
   assert.equal(h1(doc), 'Relazione di calcolo — sostituzione dell’argano');
   assert.equal(kv(doc).get('Contesto'), 'Solo argano');
-  assert.ok(paras(doc).startsWith('Verifica dell’argano a riduttore in sostituzione su impianto esistente'));
+  assert.ok(paras(doc).startsWith('Verifica dell’argano geared in sostituzione su impianto esistente'));
   assert.ok(paras(doc).includes('La sostituzione del macchinario è una modifica costruttiva'));
   assert.ok(VOCE && voci(doc).includes(VOCE.titolo));
 });
@@ -70,7 +70,7 @@ test('relazione «Ammodernamento»: le parti nominate, il rifacimento e l’arga
   const doc = report(AMMOD, 'AMMODERNAMENTO'), p = paras(doc);
   assert.equal(h1(doc), 'Relazione di calcolo — ammodernamento dell’impianto');
   assert.equal(kv(doc).get('Contesto'), 'Ammodernamento');
-  assert.ok(p.includes('Verifica dell’argano a riduttore per l’ammodernamento di un impianto esistente'));
+  assert.ok(p.includes('Verifica dell’argano geared per l’ammodernamento di un impianto esistente'));
   // the case of the DPR the modernisation is, never every part called a constructive modification (round 46 final check)
   assert.ok(p.includes('Ammodernamento dell’impianto esistente: la sostituzione del macchinario ne fa una modifica costruttiva') && p.includes('lettera cc) n. 5))'), p);
   assert.ok(!p.includes('sono modifiche costruttive') && p.includes(`le parti sostituite o modificate (${partiText(AMMOD)})`), p);
@@ -119,7 +119,7 @@ test('relazione «Trasformazione completa»: il titolo, l’oggetto e il contest
   const doc = report(TRASF, 'TRASFORMAZIONE_COMPLETA', PRESETS.A);
   assert.equal(h1(doc), 'Relazione di calcolo — trasformazione completa dell’impianto (collaudo come impianto nuovo)');
   assert.equal(kv(doc).get('Contesto'), 'Trasformazione completa');
-  assert.ok(paras(doc).startsWith('Verifica dell’argano a riduttore per la trasformazione completa dell’impianto'));
+  assert.ok(paras(doc).startsWith('Verifica dell’argano geared per la trasformazione completa dell’impianto'));
 });
 
 const sheet1 = (collaudo: Collaudo, tipo?: TipoIntervento | null, room = false): string => {
@@ -174,7 +174,7 @@ test('relazione tecnica del locale macchina: il titolo e l’oggetto dell’ammo
   assert.equal(titoloTecnica('SOLO_ARGANO'), 'sostituzione dell’argano');
   assert.equal(titoloTecnica('AMMODERNAMENTO'), 'ammodernamento dell’impianto');
   assert.equal(oggettoTecnica('SOLO_ARGANO', SOLO, 'SICOR MR12'), null, 'la sostituzione come prima');
-  assert.equal(oggettoTecnica('AMMODERNAMENTO', AMMOD, 'SICOR MR12'), 'Sostituzione dell’argano nell’ammodernamento dell’impianto, con un argano a riduttore (SICOR MR12)');
+  assert.equal(oggettoTecnica('AMMODERNAMENTO', AMMOD, 'SICOR MR12'), 'Sostituzione dell’argano nell’ammodernamento dell’impianto, con un argano geared (SICOR MR12)');
   assert.equal(oggettoTecnica('AMMODERNAMENTO', KEPT, null), 'Verifica dell’argano esistente, che resta nell’ammodernamento dell’impianto');
 });
 

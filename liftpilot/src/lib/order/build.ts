@@ -25,6 +25,7 @@ import { ORDER_DRAWING } from './drawings';
 import type { OrderMachine } from './machine';
 import { acopBlocks, belowBlocks, driveRows, handRow } from './rows';
 import type { OrderSite } from './site';
+import { sospensione } from '../sospensione';
 
 export interface OrderInput {
   company: string;
@@ -71,7 +72,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
   const what = o.record.kind === 'design' ? 'progetto' : 'calcolo', pr = o.project;
   const dText = (d: number): string => fmt(d, Number.isInteger(d) ? 0 : 1);
   // the software's checks only: no statement of conformity of the machine or of the installation
-  const status = (m: MachineCandidate): string => (m.fails ? `non passa ${m.fails === 1 ? '1 verifica' : `${m.fails} verifiche`} del software`
+  const status = (m: MachineCandidate): string => (m.fails ? `${m.fails === 1 ? '1 verifica' : `${m.fails} verifiche`} del software non ${m.fails === 1 ? 'soddisfatta' : 'soddisfatte'}`
     : `passa le verifiche del software${m.warns ? `, con ${m.warns === 1 ? '1 avviso' : `${m.warns} avvisi`}` : ''}`);
   const B: ReportBlock[] = [];
   let n = 0;
@@ -108,7 +109,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
   B.push({ t: 'kv', rows: [
     ['Costruttore e modello', `${machineName(c)} · quantità 1`],
     ['Rapporto di riduzione', `${c.ratio} (i = ${fmt(c.i, 3)})`],
-    ['Puleggia di frizione', `Ø ${fmt(N.D, 0)} mm primitivo; ${N.n} gole per funi Ø ${dText(N.d)} mm; ${X.grooveText(N.groove)}`],
+    ['Puleggia di trazione', `Ø ${fmt(N.D, 0)} mm primitivo; ${N.n} gole per funi Ø ${dText(N.d)} mm; ${X.grooveText(N.groove)}`],
     ['Motore', `${fmt(N.Pn, 1)} kW · ${N.poles} ${t('poles_short')} · ${fmt(N.nm, 0)} giri/min · ${fmt(N.fn, 0)} Hz${c.kWmax !== null ? ` (a catalogo fino a ${fmt(c.kWmax, 1)} kW)` : ''}`],
     // always a frequency converter: a new machine on a controller without speed regulation is refused (round 46, B6:
     // UNI 10411-1:2024 11.2.1, UNI 10411-11:2024 11.2 — intervento.ts 'inverter'), so the regulation is there
@@ -132,7 +133,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
       ['Basamento', bp
         ? `${bp.brand} ${bp.code} per ${bp.model}${bp.dt ? ` (rinvio Ø ${bp.dt.map((x) => fmt(x, 0)).join(' / ')})` : ''}: ${fmt(bp.mass, 0)} kg con puleggia e antivibranti`
         : `da chiedere al costruttore o da realizzare su misura: il calcolo pone il rinvio a h = ${fmt(I.h, 3)} m sotto l’asse della puleggia e a dx = ${fmt(I.dx, 3)} m`],
-      ...(bp ? [['Quote sul pavimento del locale', `asse del rinvio ${fmt(bp.pulleyAxis, 0)} mm, asse della puleggia di frizione ${fmt(bp.sheaveAxis, 0)} mm, sommità ${fmt(bp.top, 0)} mm; `
+      ...(bp ? [['Quote sul pavimento del locale', `asse del rinvio ${fmt(bp.pulleyAxis, 0)} mm, asse della puleggia di trazione ${fmt(bp.sheaveAxis, 0)} mm, sommità ${fmt(bp.top, 0)} mm; `
         + `calata del contrappeso fino a ${fmt(bp.fall.max - N.D / 2, 0)} mm dall’asse della puleggia`] as [string, string]] : []),
       ['Puleggia di rinvio', `Ø ${fmt(I.Dp, 0)} mm; ${N.n} gole per funi Ø ${dText(N.d)} mm`],
       ...(bp ? [['Fonte', bp.src] as [string, string]] : []),
@@ -144,7 +145,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
   section('Dati dell’impianto');
   B.push({ t: 'kv', rows: [
     ['Portata · velocità', `${fmt(I.Q, 0)} kg · ${fmt(I.v, 2)} m/s`],
-    ['Taglia · corsa', `${I.r}:1 · ${fmt(I.H, 2)} m`],
+    ['Sospensione · corsa', `${sospensione(I.r)} · ${fmt(I.H, 2)} m`],
     ['Massa della cabina · contrappeso', `${fmt(I.P, 0)} kg${o.pEstimate ? ' (stima del software, da confermare)' : ''} · ${fmt(c.Mcw, 0)} kg (bilanciamento ${fmt(c.k, I.qeq > 0 ? 3 : 2)})`],
     ['Disposizione', t(`lay_${I.layout}`)],
     ['Funi (non comprese)', `${N.n} × Ø ${dText(N.d)} mm, carico di rottura minimo ${fmt(N.Fmin, 1)} kN${cut !== null ? `, lunghezza di taglio ${fmt(cut, 0)} m ciascuna` : ''}`],
@@ -167,7 +168,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
   B.push({ t: 'p', style: 'note', text: recorded
     ? `L’esito è quello del ${what} salvato (relazione di calcolo LiftPilot, stessi dati e stessa impronta).`
     : `Verifica del software con questo argano e gli stessi dati dell’impianto; la relazione del ${what} salvato riguarda l’altro argano.` });
-  if (c.fails) B.push({ t: 'box', text: `Con questo argano almeno una verifica non passa: non ordinarlo prima di aver risolto le verifiche non superate (punto ${verdictAt}).` });
+  if (c.fails) B.push({ t: 'box', text: `Con questo argano almeno una verifica non è soddisfatta: non ordinarlo prima di aver risolto le verifiche non soddisfatte (punto ${verdictAt}).` });
 
   section('Condizioni (da completare)');
   // the euro after the amount with a no-break space, as money.ts writes it in Italian

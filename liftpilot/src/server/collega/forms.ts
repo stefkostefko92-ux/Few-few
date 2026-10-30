@@ -18,9 +18,10 @@ import type { ProgettoDraft } from '@/lib/lift/progetto';
 import { fmt } from '@/lib/rilievi/fmt';
 import { stessoValore } from '@/lib/collega/formato';
 import { dividiIndirizzo } from '@/lib/collega/testo';
-import { isUsa, segnati, seminaCalc, seminaLift, semeCalc, semeLift, usaCalc, usaLift, valoreCalc, valoreLift, type Usa } from '@/lib/collega/prefill';
+import { isUsa, segnati, seminaCalc, seminaLift, semeCalc, semeLift, usaCalc, usaLift, valoreCalc, valoreLift, type Seme, type Usa } from '@/lib/collega/prefill';
 import type { RilievoDati } from '@/lib/collega/rilievo';
 import type { OrigineRilievo } from '@/components/collega/origine';
+import { REGOLAZIONE_ID } from '@/lib/calc-blank';
 import { rilievoDiRiferimento } from './queries';
 
 /** «Usa il valore del rilievo» as the form's notice says it: the parameter, the fields it set, what the main one held
@@ -108,10 +109,12 @@ export async function avvioCalc(user: SessionUser, projectId: string, start: For
     values = u.values;
   }
   const valori = segnati([...dal, ...(done?.set ?? [])], valore, (id) => values[id]);
-  return { start: values, rilievo: r, origine: { date: fmt.day(r.data), valori, parte: parte.length > 0 }, seeded: parte, usa: done };
+  // the existing controller's regulation (round 57): the calculator answers its question with it where it is asked
+  const reg: Seme = r.regolazione ? { [REGOLAZIONE_ID]: r.regolazione } : {};
+  return { start: values, rilievo: r, origine: { date: fmt.day(r.data), valori: { ...valori, ...reg }, parte: parte.length > 0 }, seeded: parte, usa: done };
 }
 
-/** The Progetto's start (`kept`: what its draft kept of the survey): the survey's stops. */
+/** The Progetto's start (`kept`: what its draft kept of the survey): the survey's stops and shaft measures. */
 export async function avvioProgetto(user: SessionUser, projectId: string, start: ProgettoDraft, mode: Partenza, usa: unknown,
   kept: Kept = {}): Promise<Avvio<ProgettoDraft>> {
   const r = can(user, 'rilievi:view') ? await rilievoDiRiferimento(user, projectId) : null;

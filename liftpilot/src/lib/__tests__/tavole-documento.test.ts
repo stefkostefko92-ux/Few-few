@@ -155,9 +155,9 @@ test('foglio 1: quote da verificare, verifiche non superate, elaborati collegati
   assert.equal(currentRevision(r.title), 'R1 12/10/2026');
   // the failed checks counted over their table, on the last sheet of the set (checks-sheet.ts); sheet 1 says where it is
   const n = r.doc.pages.length, last = texts(r.doc.pages[n - 1]?.shapes ?? []), failed = last.filter((x) => x === FAILED).length;
-  assert.ok(t.includes(failed ? `VERIFICHE NON SUPERATE: ${failed} — VEDI FOGLIO ${n}` : `VERIFICHE DEL PROGETTO: FOGLIO ${n}`), 'dove sono le verifiche');
-  assert.ok(texts(refBand(100, 3, null, 12)).includes('VERIFICHE NON SUPERATE: 3 — VEDI FOGLIO 12'));
-  assert.ok(texts(refBand(100, 3, null)).includes('VERIFICHE NON SUPERATE: 3 — VEDI TABELLA'));
+  assert.ok(t.includes(failed ? `VERIFICHE NON SODDISFATTE: ${failed} — VEDI FOGLIO ${n}` : `VERIFICHE DEL PROGETTO: FOGLIO ${n}`), 'dove sono le verifiche');
+  assert.ok(texts(refBand(100, 3, null, 12)).includes('VERIFICHE NON SODDISFATTE: 3 — VEDI FOGLIO 12'));
+  assert.ok(texts(refBand(100, 3, null)).includes('VERIFICHE NON SODDISFATTE: 3 — VEDI TABELLA'));
   assert.ok(!texts(refBand(100, 0, null)).some((x) => x.startsWith('VERIFICHE')));
   // the governor's load not known: its maker gives it
   const none = texts(buildTavole(input({}, { machine: 'M 73 (Sx)', safetyGear: 'progressive' })).doc.pages[0]?.shapes ?? []);

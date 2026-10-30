@@ -15,10 +15,11 @@ import { paroleDaCercare, paroleIndirizzo, stessoIndirizzo } from '@/lib/collega
 
 const d = (s: string) => new Date(`${s}T00:00:00Z`);
 const R = (over: Partial<RilievoDati> = {}): RilievoDati => ({
-  id: 'r1', data: d('2026-10-10'), createdAt: d('2026-10-10'), updatedAt: d('2026-10-10'), indirizzo: 'Via Giuseppe Verdi 14, Milano', matricola: '0123456',
+  id: 'r1', data: d('2026-10-10'), createdAt: d('2026-10-10'), updatedAt: d('2026-10-10'), datiAt: d('2026-10-10'), indirizzo: 'Via Giuseppe Verdi 14, Milano', matricola: '0123456',
   numeroImpianto: '71234', marca: 'OTIS', portataKg: 630, persone: 8, fermate: 5, posizione: 'ALTO', tipo: ['ELETTRICO'], funiNumero: 4, funiDiametroMm: 10,
   funicellaDiametroMm: 6, limitatoreTipo: 'PFB LK200', operatoreMarca: 'Wittur', lucePorte: '800 x 2000',
   argano: { pesoCabina: 700, velocita: 1, corsa: 12.5, taglia: 1, puleggia: 520, cuneo: null, rapporto: 53, potenzaKw: 7.5, giri: 1400, poli: 4, rinvio: null, rinvioD: null },
+  quadro: null, regolazione: null,
   ...over,
 });
 const L = (over: Partial<Lato> = {}): Lato => ({
@@ -120,7 +121,7 @@ test('le righe senza alcun valore non si mostrano; i valori si scrivono all’it
   const w = (p: string) => (code: string) => `${p}:${code}`;
   assert.equal(testoValore('funiDiametro', 6.5, w('x')), '6,5 mm');
   assert.equal(testoValore('rapporto', 53, w('x')), '1:53');
-  assert.equal(testoValore('taglia', 2, w('x')), '2:1');
+  assert.equal(testoValore('taglia', 2, w('x')), 'Indiretto 1:2');
   assert.equal(testoValore('posizione', 'ALTO', w('v')), 'v:ALTO');
   assert.equal(testoValore('Q', null, w('x')), '—');
 });
@@ -144,7 +145,7 @@ test('i passi: da fare, fatto, da aggiornare (software o rilievo più recente), 
   const rec = (s: string, old = false) => ({ createdAt: new Date(s), old });
   const none = passi({ rilievo: null, calcolo: null, progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 });
   assert.deepEqual(none, { rilievo: 'daFare', calcolo: 'daFare', progetto: 'daFare', documenti: 'daFare' });
-  const r = { updatedAt: new Date('2026-10-12T10:00:00Z') };
+  const r = { datiAt: new Date('2026-10-12T10:00:00Z') };
   const p = passi({ rilievo: r, calcolo: rec('2026-10-12T09:00:00Z'), progetto: rec('2026-10-13T09:00:00Z', true), tavole: { createdAt: new Date('2026-10-12T12:00:00Z') },
     erroriCalcolo: 0, erroriProgetto: 0 });
   assert.deepEqual(p, { rilievo: 'fatto', calcolo: 'daAggiornare', progetto: 'daAggiornare', documenti: 'daAggiornare' });
@@ -165,7 +166,7 @@ test('i passi: da fare, fatto, da aggiornare (software o rilievo più recente), 
 
 test('i documenti mai «fatto» accanto a un record con differenze o più vecchio del rilievo, né senza il Progetto', () => {
   const rec = (s: string, old = false) => ({ createdAt: new Date(s), old });
-  const r = { updatedAt: new Date('2026-10-12T10:00:00Z') };
+  const r = { datiAt: new Date('2026-10-12T10:00:00Z') };
   const diff = passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 1, erroriProgetto: 0 });
   assert.deepEqual([diff.calcolo, diff.documenti], ['differenze', 'daAggiornare']);
   const older = passi({ rilievo: r, calcolo: rec('2026-10-12T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 });
@@ -188,7 +189,7 @@ test('i documenti mai «fatto» accanto a un record con differenze o più vecchi
 
 test('il Progetto disegnato su un calcolo argano più vecchio: «da aggiornare (calcolo più recente)», e i documenti con lui (round 45)', () => {
   const rec = (s: string, over: { old?: boolean; superato?: boolean } = {}) => ({ createdAt: new Date(s), old: false, ...over });
-  const r = { updatedAt: new Date('2026-10-12T10:00:00Z') };
+  const r = { datiAt: new Date('2026-10-12T10:00:00Z') };
   const s = passi({ rilievo: r, calcolo: rec('2026-10-14T09:00:00Z'), progetto: rec('2026-10-13T09:00:00Z', { superato: true }), tavole: { createdAt: new Date('2026-10-14T10:00:00Z') },
     erroriCalcolo: 0, erroriProgetto: 0 });
   assert.deepEqual([s.calcolo, s.progetto, s.documenti], ['fatto', 'superato', 'daAggiornare']);

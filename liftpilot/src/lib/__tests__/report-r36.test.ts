@@ -70,10 +70,11 @@ test('relazione: la norma di collaudo dell’impianto nei riferimenti delle veri
   }
 });
 
-test('relazione: «argano a riduttore», la designazione delle funi, la massa dell’argano completo', () => {
+test('relazione: «argano geared», la designazione delle funi, la massa dell’argano completo', () => {
   const doc = buildReport(input('A')), all = texts(doc);
-  assert.ok(all.some((x) => x.startsWith('Verifica dell’argano a riduttore')));
-  assert.ok(!all.some((x) => /\bgeared\b/.test(x)), 'nessun «geared»');
+  assert.ok(all.some((x) => x.startsWith('Verifica dell’argano geared')));
+  // round 57: «argano geared», the owner's term (round 36 had «a riduttore»)
+  assert.ok(!all.some((x) => /argano a riduttore/.test(x)), 'nessun «argano a riduttore»');
   // the ropes of the calculation's family: their construction and grade named, to be confirmed by the supplier
   assert.ok(all.some((x) => x.includes('8×19 Seale, anima tessile, 1570 N/mm², EN 12385-5')), 'designazione delle funi');
   // the output torque of the gearbox: the three cases and the largest

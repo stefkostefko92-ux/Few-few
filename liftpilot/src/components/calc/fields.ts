@@ -28,7 +28,7 @@ export const PLANT: readonly Field[] = [
   { id: 'machineStd', kind: 'select', options: [opt('en81-20', 'std_20'), opt('en81-1', 'std_1')], wide: true, hint: 'hint_machineStd' },
   num('Q', 'kg', 10), num('P', 'kg', 10, { hint: 'hint_P' }), num('k', '', 0.01),
   num('qeq', 'kg', 5, { hint: 'hint_qeq' }), num('v', 'm/s', 0.05, { err: 'err_v' }), num('H', 'm', 0.5),
-  num('L0', 'm', 0.5, { adv: true }), { id: 'r', kind: 'select', options: [lit('1', '1:1'), lit('2', '2:1')] },
+  num('L0', 'm', 0.5, { adv: true }), { id: 'r', kind: 'select', options: [lit('1', 'Diretto'), lit('2', 'Indiretto 1:2')] },
 ];
 
 export const ROPES = (p: 'n_' | 'o_'): readonly Field[] => [

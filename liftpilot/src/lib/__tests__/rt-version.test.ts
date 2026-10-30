@@ -21,8 +21,9 @@ import { RT_ENGINE_VERSION } from '../rt/version';
 
 /** The key and the version it was pinned at (round 49, S3: the first RT engine; re-pinned at 1.0.0 in the fix step after
  *  the norm review and after the text of guide.sospensione — never released, no RT issued in production). Round 52:
- *  1.1.0 — the ropes' section takes the rope sheet's checks (componenti/funi-argano.ts, contrappeso.ts ALTROVE). */
-const PINNED = { sha256: 'a6c24924bddde7af5879d81cd9e255ebc2de8b7bc6d8da7b0a44efdab253daf5', version: '1.1.0' };
+ *  1.1.0 — the ropes' section takes the rope sheet's checks (componenti/funi-argano.ts, contrappeso.ts ALTROVE).
+ *  Round 57: 1.2.0 — the owner's words in the results' labels (puleggia di trazione, Diretto/Indiretto 1:2, non soddisfatta). */
+const PINNED = { sha256: 'cf177408b1ff3ec12b696fd782fa5b1e39b332e240a705fa8d2c3802a112c02d', version: '1.2.0' };
 
 const golden = JSON.parse(readFileSync(new URL('./fixtures/rt/golden.json', import.meta.url), 'utf8')) as { engine: string; cases: { nome: string; resultsSha: string }[] };
 

@@ -138,7 +138,7 @@ export function confronto(x: ConfrontoInput): Riga[] {
   const indirizzo = row('indirizzo', 'fatto', r.indirizzo, null, imp.indirizzo, 'impianto');
   rows.push(indirizzo.stato === 'ok' && !stessaCitta(r.indirizzo, imp.citta) ? { ...indirizzo, stato: 'diff', usa: 'impianto' } : indirizzo);
   rows.push(row('fermate', 'fatto', r.fermate, side(C, 'fermate'), side(P, 'fermate')));
-  rows.push(row('corsa', 'fatto', a?.corsa ?? null, side(C, 'corsa'), side(P, 'corsa')));
+  rows.push(row('corsa', 'fatto', a?.corsa ?? r.quadro?.corsa ?? null, side(C, 'corsa'), side(P, 'corsa')));
   // the place as the calculator's layout when the argano sheet says it (with or without a diverting pulley), else ALTO/BASSO
   rows.push(row('posizione', 'fatto', r.posizione === 'ALTO' ? layoutDi(r) ?? r.posizione : r.posizione, side(C, 'layout'), side(P, 'layout')));
   rows.push(row('taglia', 'fatto', a?.taglia ?? null, side(C, 'taglia'), side(P, 'taglia')));
@@ -153,7 +153,7 @@ export function confronto(x: ConfrontoInput): Riga[] {
   // MODIFICA PREVISTA
   rows.push(row('Q', 'modifica', r.portataKg, side(C, 'Q'), side(P, 'Q')));
   rows.push(row('persone', 'modifica', r.persone, null, side(P, 'persone'), null));
-  rows.push(row('velocita', 'modifica', a?.velocita ?? null, side(C, 'velocita'), side(P, 'velocita')));
+  rows.push(row('velocita', 'modifica', a?.velocita ?? r.quadro?.velocita ?? null, side(C, 'velocita'), side(P, 'velocita')));
   // SOLO CONFRONTO
   const fun = side(P, 'funicella');
   rows.push(row('marca', 'info', r.marca, null, null, null));

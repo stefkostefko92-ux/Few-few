@@ -34,12 +34,12 @@ export function roomRows(s: Survey, d: RoomDerived, fmt: (x: number, dp?: number
     // (direct drive: the calculation's drops are the existing sheave's; the new one's falls slant to them — round 36)
     ...calataText(d, fmt),
     ['Posizione dell’argano', `${G && Math.abs(G.sheaveAt - (M.ropeIn + M.D / 2)) > 0.5
-      ? 'puleggia di frizione centrata tra le calate esistenti (tiro diretto, come nel calcolo)'
-      : 'lato cabina della puleggia di frizione sulla calata della cabina'}; ${G?.dir === -1
+      ? 'puleggia di trazione centrata tra le calate esistenti (tiro diretto, come nel calcolo)'
+      : 'lato cabina della puleggia di trazione sulla calata della cabina'}; ${G?.dir === -1
       ? `motore verso la calata della cabina${R.motor ? '' : ' (argano girato di 180° dal software: con il motore verso il contrappeso uscirebbe dal locale)'}`
       : 'motore verso il contrappeso'}`],
     // (as sheet 1 names it, its designations kept: UPN 200, SICOR XTE3022 — round 37)
-    ['Basamento', `${lowerKeeping(supportName(d, true))}; asse della puleggia di frizione a ${mm(M.axis)} sul pavimento del locale`],
+    ['Basamento', `${lowerKeeping(supportName(d, true))}; asse della puleggia di trazione a ${mm(M.axis)} sul pavimento del locale`],
     ...(M.rinvio ? [rinvioRow(M.rinvio, fmt)] : []),
     // the mounts and the fixings (on the existing support kept, the anchors in tension of the bearings pulled up — round
     // 37); the HEB beams' bearings; what else the survey found (round 36)

@@ -41,7 +41,7 @@ export const VOCI_TAVOLE: readonly VoceImpianto[] = [
   {
     id: 'tavole.carichi', titolo: 'Richiami dei carichi P1…P8 sulle tavole',
     valore: 'dove ogni carico agisce: P1 sull’argano nel locale (con la macchina in basso sulle pulegge di rinvio in testata, tratteggiate nella '
-      + 'pianta in testata, un richiamo con una linea a ciascuna), P2 e P3 sugli attacchi delle funi a 2:1, P4 sul limitatore, P5–P8 su guide e '
+      + 'pianta in testata, un richiamo con una linea a ciascuna), P2 e P3 sugli attacchi delle funi della sospensione indiretta 1:2, P4 sul limitatore, P5–P8 su guide e '
       + 'ammortizzatori nella pianta della fossa; ogni cerchio ad almeno 2r + 0,5 mm dagli altri e fuori dalle scritte, al primo posto libero intorno '
       + 'a ciò che indica',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.8 (carichi sulla struttura dell’edificio: voci carichi.macchina e carichi.fossa)', fonte: 'scelta del software', stato: 'scelta',
@@ -54,7 +54,7 @@ export const VOCI_TAVOLE: readonly VoceImpianto[] = [
   },
   {
     id: 'tavole.elaborati', titolo: 'Elaborati collegati sul foglio 1',
-    valore: 'sopra il cartiglio: «QUOTE IN mm, DA VERIFICARE IN CANTIERE», il numero delle verifiche non superate della tabella e i record da cui la '
+    valore: 'sopra il cartiglio: «QUOTE IN mm, DA VERIFICARE IN CANTIERE», il numero delle verifiche non soddisfatte della tabella e i record da cui la '
       + 'serie è disegnata con l’inizio del loro SHA-256 (il calcolo e il progetto del vano, o il rilievo del locale e il calcolo per una '
       + 'sostituzione); la relazione tecnica della sostituzione cita le tavole emesse con numero, revisione e SHA-256',
     riferimento: 'UNI 10411-1:2024, App. C (documenti della modifica)', fonte: 'scelta del software', stato: 'scelta',

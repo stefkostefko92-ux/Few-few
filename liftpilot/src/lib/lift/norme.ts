@@ -188,20 +188,20 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
   {
     id: 'impianto.dx', titolo: 'Distanza orizzontale della puleggia di rinvio (dx)',
     valore: 'calata tra la fune di cabina e quella del contrappeso in pianta − D/2 − Dp/2 (rinvio semplice: la fune scende dal lato esterno della '
-      + 'puleggia di rinvio); se la fune deve rientrare, − D/2 + Dp/2 (rinvio inverso: dal lato interno); con taglia 2:1 le pulegge di cabina e di '
+      + 'puleggia di rinvio); se la fune deve rientrare, − D/2 + Dp/2 (rinvio inverso: dal lato interno); con la sospensione indiretta 1:2 le pulegge di cabina e di '
       + 'contrappeso girano ognuna nel piano fra le sue guide (quella di cabina nella traversa, quella del contrappeso nel suo telaio, lungo il lato '
       + 'lungo, mai nello spessore: arriverebbe nel muro dietro e nella corsa della cabina): la fune sale da un lato di ognuna, il punto fisso pende '
       + 'dall’altro, a Dp/2 dal centro, e la calata è tra le due salite (con i due piani paralleli quanto tra i centri, l’argano dritto spostato '
-      + 'di Dp/2). La puleggia di frizione sopra la cabina, il rinvio sopra il '
+      + 'di Dp/2). La puleggia di trazione sopra la cabina, il rinvio sopra il '
       + 'contrappeso; se nessuna delle due geometrie torna con l’angolo di avvolgimento, la distanza va misurata sull’impianto',
     riferimento: 'ricerca, capitolo 5.3', fonte: 'pianta del vano', stato: 'derivazione',
-    nota: 'fino a LIFT 1.27.0 e ROOM 1.11.0 in taglia 2:1 le pulegge di cabina e di contrappeso giravano nel piano delle calate e la calata era '
+    nota: 'fino a LIFT 1.27.0 e ROOM 1.11.0 nella sospensione indiretta 1:2 le pulegge di cabina e di contrappeso giravano nel piano delle calate e la calata era '
       + 'quella tra i centri meno Dp: con il contrappeso sottile contro il muro la sua puleggia entrava nel muro e nella corsa della cabina',
   },
   {
     id: 'impianto.calata', titolo: 'Tiro diretto (senza rinvio): calata uguale al diametro della puleggia',
-    valore: 'senza rinvio le due calate scendono dai due lati della puleggia di frizione: la loro distanza in pianta (dall’asse della cabina a '
-      + 'quello del contrappeso; con la taglia 2:1 tra le salite dai lati delle loro pulegge, voce impianto.dx) è il diametro primitivo D. La '
+    valore: 'senza rinvio le due calate scendono dai due lati della puleggia di trazione: la loro distanza in pianta (dall’asse della cabina a '
+      + 'quello del contrappeso; con la sospensione indiretta 1:2 tra le salite dai lati delle loro pulegge, voce impianto.dx) è il diametro primitivo D. La '
       + 'macchina proposta ha la puleggia di diametro uguale '
       + `alla calata della pianta, se è nella gamma del calcolo (da ${SHEAVE_GRID[0]} a ${SHEAVE_GRID[SHEAVE_GRID.length - 1]} mm); una macchina `
       + 'inserita a mano, o nella sostituzione con il confronto la macchina esistente (i suoi attacchi restano), con un diametro che si scosta '
@@ -213,7 +213,7 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
   },
   {
     id: 'impianto.Hv', titolo: 'Macchina in basso: altezza fino alle pulegge in alto (Hv)',
-    valore: 'dall’asse dei rinvii in testata all’asse della puleggia di frizione, secondo lo schema delle funi (impianto.basso.schema); '
+    valore: 'dall’asse dei rinvii in testata all’asse della puleggia di trazione, secondo lo schema delle funi (impianto.basso.schema); '
       + 'la puleggia ha l’asse a 0,9·D sul pavimento del suo locale',
     riferimento: 'ricerca, capitolo 5; funi con la macchina in basso, capitolo 2.6', fonte: 'dati verticali del vano', stato: 'derivazione',
     costanti: ['hvTol'],
@@ -256,7 +256,7 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + `sono dimensionati di nuovo con le regole del dimensionamento — il motore IEC più piccolo che copre la potenza statica alla velocità reale, non `
       + `oltre il più grande del catalogo; la gola che aderisce col margine più largo e, se con essa il coefficiente di sicurezza delle funi non basta, `
       + `quella che aderisce di più fra le meno incise, a mezzo grado, fino al margine successivo; per ogni opzione si provano gli argani che la `
-      + `accettano dal più piccolo; quello che non passa ogni verifica così, o per cui la pianta non sa posizionare il rinvio, lascia l’opzione al `
+      + `accettano dal più piccolo; quello che non soddisfa ogni verifica così, o per cui la pianta non sa posizionare il rinvio, lascia l’opzione al `
       + `successivo del costruttore e, se nessuno la prende, si prova l’opzione successiva; i disegni e il 3D mostrano l’argano SICOR `
       + `com’è (ingombri, piedi e fori, asse della puleggia, P ed E della scheda), sul telaio del software`,
     riferimento: 'ricerca, capitolo 12 (catalogo degli argani)',

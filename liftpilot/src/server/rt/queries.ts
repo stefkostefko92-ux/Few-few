@@ -10,6 +10,7 @@ import type { SessionUser } from '@/lib/auth';
 import { rtDraftDataSchema, type RtDraftData } from '@/lib/draft-input';
 import type { RtInputs } from '@/lib/rt/input';
 import { rilievoDiRiferimento } from '../collega/queries';
+import type { RilievoHints } from '@/lib/rt2/rilievo';
 import { readDraft } from '../drafts';
 import { LIFT_BASE, ROOM_BASE } from './base';
 
@@ -117,10 +118,14 @@ export async function readRtDraft(user: SessionUser, projectId: string): Promise
   return { data: dropped ? { ...d.data, inputs: senzaFile(d.data.inputs, alive) } : d.data, at: d.at, dropped };
 }
 
-/** The installation's reference survey as hints for the registry (persons, stops, matricola), for whoever sees the
- *  surveys — read as the comparison reads it, the machine's data sheet standing in for what the card leaves empty;
- *  null without one. */
-export async function rilievoHints(user: SessionUser, projectId: string): Promise<{ persone: number | null; fermate: number | null; matricola: string | null } | null> {
+/** The installation's reference survey as hints for the RT, for whoever sees the surveys — read as the comparison reads
+ *  it, the machine's data sheet and the panel order standing in for what the card leaves empty: the registry's persons,
+ *  stops and matricola; and (round 57) what the RT asks of the lift before the modification — the roping, where the
+ *  machine stands, the controller's regulation — and its make; null without one. */
+export async function rilievoHints(user: SessionUser, projectId: string): Promise<RilievoHints | null> {
   const r = await rilievoDiRiferimento(user, projectId);
-  return r ? { persone: r.persone, fermate: r.fermate, matricola: r.matricola } : null;
+  return r ? {
+    persone: r.persone, fermate: r.fermate, matricola: r.matricola, marca: r.marca, taglia: r.argano?.taglia ?? null,
+    locale: r.posizione === 'ALTO' ? 'alto' : r.posizione === 'BASSO' ? 'basso' : null, regolazione: r.regolazione, data: r.data.toISOString().slice(0, 10),
+  } : null;
 }

@@ -139,7 +139,7 @@ export function refBand(yTop: number, failed: number, refs: string | null, sheet
   out.push(fitted([xL + 1.4, y1], DIMENSIONS_NOTE, 2.3, 100, { bold: true }));
   // where the checks are: the table on this sheet, or their own sheet of the set (checks-sheet.ts)
   const where = sheet === null ? 'VEDI TABELLA' : `VEDI FOGLIO ${sheet}`;
-  if (failed > 0) out.push(fitted([xR - 1.4, y1], `VERIFICHE NON SUPERATE: ${failed} — ${where}`, 2.3, 88, { align: 'r', bold: true }));
+  if (failed > 0) out.push(fitted([xR - 1.4, y1], `VERIFICHE NON SODDISFATTE: ${failed} — ${where}`, 2.3, 88, { align: 'r', bold: true }));
   else if (sheet !== null) out.push(fitted([xR - 1.4, y1], `VERIFICHE DEL PROGETTO: FOGLIO ${sheet}`, 2.3, 88, { align: 'r' }));
   if (refs) out.push(fitted([xL + 1.4, y2], refs, 2, xR - xL - 2.8));
   return out;
