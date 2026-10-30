@@ -1,364 +1,555 @@
-// Генератор на „мокъп" екрани за ръководствата „Как да…" (Viber, Messenger,
-// WhatsApp, Facebook). Това са СТИЛИЗИРАНИ пресъздавания на интерфейса — близки
-// до реалния вид, за да разпознаят възрастните хората какво да търсят, но НЕ са
-// официални екрани на съответните компании. Важният бутон е подчертан в червено.
+// Генератор на екрани за ръководствата „Как да…“ — месинджъри и социални мрежи:
+// Viber, Messenger, WhatsApp, Facebook (Android, актуален вид 2025–2026).
+// Това са пресъздавания на интерфейса, нарисувани по актуалните екрани; НЕ са официални
+// екрани на съответните компании. Важният бутон е подчертан в червено (.ring).
+// Профилните снимки са както в приложенията — сив силует или цветен кръг с инициали.
+// Снимките в публикации/чатове са само CC0/PDM — assets/messaging/ + assets/credits/messaging.md.
 //
-// Стартиране (от папката zabobovdol/):  node scripts/howto-mockups/gen.js
-// Изходните PNG-та отиват в public/kak-da/ и се качват в хранилището.
-const { chromium } = require("playwright");
+// Стартиране (от zabobovdol/):  node scripts/howto-mockups/gen.js
+//   ONLY=viber-pisane,whatsapp node scripts/howto-mockups/gen.js   — само избрани
+// Изходът е в public/kak-da/. Слой: _shell.js (телефон, Material Symbols, шрифтове).
+const fs = require("node:fs");
 const path = require("node:path");
-const OUT = path.resolve(__dirname, "../../public/kak-da");
+const { phone, ms, tip, av, navBar, photo, render, ASSETS } = require("./_shell");
 
-const FONT = `-apple-system,'Segoe UI','DejaVu Sans','Liberation Sans',sans-serif`;
+// ───────────────────────── общи помощници ─────────────────────────
+const H = 790; // височина на екрана под лентата за състоянието (вкл. жестовата лента) → 20:9
+const ST = 38; // височина на лентата за състоянието на Android в шела
 
-function phone(inner, bg = "#ffffff", scHl = "#0b0b0b") {
-  return `<!doctype html><html><head><meta charset="utf-8"><style>
-  *{margin:0;padding:0;box-sizing:border-box;font-family:${FONT};-webkit-font-smoothing:antialiased}
-  body{background:#e9edf2;display:flex;justify-content:center;padding:18px}
-  .phone{width:390px;border-radius:34px;overflow:hidden;background:${bg};
-    box-shadow:0 14px 40px rgba(2,8,23,.22);border:1px solid #d5dbe3}
-  .status{height:30px;display:flex;align-items:center;justify-content:space-between;
-    padding:0 20px;font-size:13px;font-weight:600;color:${scHl}}
-  .status .right{display:flex;gap:6px;align-items:center}
-  .bar{width:16px;height:10px;border:1.5px solid currentColor;border-radius:2px;position:relative}
-  .bar:after{content:"";position:absolute;right:-3px;top:2.5px;width:2px;height:4px;background:currentColor;border-radius:1px}
-  .bar i{position:absolute;inset:1.5px;right:5px;background:currentColor;border-radius:1px}
-  .screen{min-height:660px;display:flex;flex-direction:column;position:relative}
-  .grow{flex:1}
-  .ring{box-shadow:0 0 0 4px #ef4444, 0 0 0 9px rgba(239,68,68,.25)}
-  .ringr{border-radius:999px}
-  .tip{position:absolute;font-size:12.5px;font-weight:700;color:#fff;background:#ef4444;
-    padding:5px 11px;border-radius:9px;box-shadow:0 4px 10px rgba(0,0,0,.22);z-index:5;text-align:center;max-width:260px}
-  .red{color:#ef4444}
-  </style></head><body><div class="phone">
-    <div class="status"><span>9:41</span><span class="right">5G<span class="bar"><i></i></span></span></div>
-    <div class="screen">${inner}</div>
-  </div></body></html>`;
+// Корен на екрана: фиксирана височина; dim=true → без отрязване (за сянката върху лентата за състоянието)
+const root = (inner, o = {}) => `<div style="height:${H}px;display:flex;flex-direction:column;position:relative;${o.dim ? "" : "overflow:hidden;"}${o.style || ""}">${inner}</div>`;
+const nav = (bg, color = "#111") => `<div style="background:${bg};flex-shrink:0">${navBar({ color })}</div>`;
+// затъмняване на целия екран (вкл. лентата за състоянието)
+const scrim = (a = 0.5) => `<div style="position:absolute;left:0;right:0;top:-${ST}px;bottom:0;background:rgba(0,0,0,${a});z-index:35"></div>`;
+const t = (text, style = "") => `<span style="${style}">${text}</span>`;
+const flex = (style, inner) => `<div style="display:flex;${style}">${inner}</div>`;
+
+// брандове (simple-icons, CC0) — само пътя на знака
+function brand(slug, color, size) {
+  const svg = fs.readFileSync(path.join(ASSETS, "brands", slug + ".svg"), "utf8");
+  const ds = [...svg.matchAll(/<path[^>]*\sd="([^"]+)"/g)].map((m) => m[1]);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${color}">${ds.map((d) => `<path d="${d}"/>`).join("")}</svg>`;
 }
 
-// ── икони (inline SVG) ──
-const I = {
-  back: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-  phone: `<svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.3 1l-2.2 2.3z"/></svg>`,
-  video: `<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h11a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2zm15 3l3-2v10l-3-2V9z"/></svg>`,
-  plus: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>`,
-  cam: `<svg width="23" height="23" viewBox="0 0 24 24" fill="currentColor"><path d="M9 4l-1.5 2H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2h-3.5L15 4H9zm3 5a4.5 4.5 0 110 9 4.5 4.5 0 010-9z"/></svg>`,
-  mic: `<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 003-3V6a3 3 0 00-6 0v5a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.9V21h2v-3.1A7 7 0 0019 11h-2z"/></svg>`,
-  send: `<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11l18-8-8 18-2-7-8-3z"/></svg>`,
-  smile: `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2" stroke-linecap="round"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/></svg>`,
-  thumb: `<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M2 10h3v10H2V10zm6 10c-.8 0-1.5-.7-1.5-1.5V10c0-.4.2-.8.4-1l5-5.5c.3.2.5.5.5.9V8h5.5c1 0 1.8.9 1.6 1.9l-1.4 8c-.2 1-1 1.7-2 1.7H8z"/></svg>`,
-  pin: `<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z"/></svg>`,
-  person: `<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.5-9 6v2h18v-2c0-3.5-4-6-9-6z"/></svg>`,
-  download: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg>`,
-  search: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4" stroke-linecap="round"/></svg>`,
-  bell: `<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 002.45-2h-4.9A2.5 2.5 0 0012 22zm7-5l-1.5-1.6V11a5.5 5.5 0 00-4-5.3V5a1.5 1.5 0 00-3 0v.7A5.5 5.5 0 006.5 11v4.4L5 17v1h14v-1z"/></svg>`,
-  lock: `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 10V7a6 6 0 1112 0v3h1a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9a1 1 0 011-1h1zm2 0h8V7a4 4 0 10-8 0v3z"/></svg>`,
-};
+// профилни снимки: сив силует по подразбиране или кръг с инициали
+const sil = (s, bg = "#c3c6cc") => `<div style="width:${s}px;height:${s}px;border-radius:50%;background:${bg};overflow:hidden;flex-shrink:0;position:relative"><svg width="${s}" height="${s}" viewBox="0 0 40 40"><circle cx="20" cy="15.2" r="6.9" fill="#fff" fill-opacity=".93"/><path d="M4.5 40c0-9 6.7-13.6 15.5-13.6S35.5 31 35.5 40z" fill="#fff" fill-opacity=".93"/></svg></div>`;
+const ini = (l, c, s = 40) => av(l, c, s);
 
-const av = (l, c, s = 38) => `<div style="width:${s}px;height:${s}px;border-radius:50%;background:${c};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${Math.round(s*0.42)}px;flex-shrink:0">${l}</div>`;
-const hdr = (bg, fg, name, sub, sfg = fg) => `<div style="background:${bg};color:${fg};padding:8px 12px;display:flex;align-items:center;gap:10px${bg==='#fff'?';border-bottom:1px solid #f0f0f0':''}">
-  <span>${I.back}</span>${av(name[0], sfg==='#fff'?'rgba(255,255,255,.3)':'#90caf9')}
-  <div style="flex:1"><div style="font-weight:700;font-size:16px;color:${bg==='#fff'?'#111':fg}">${name}</div>
-    <div style="font-size:12px;opacity:.85;color:${bg==='#fff'?'#65676b':fg}">${sub}</div></div>
-  <span>${I.video}</span><span>${I.phone}</span></div>`;
-const tip = (text, css) => `<div class="tip" style="${css}">${text}</div>`;
+// курсор за текстово поле
+const caret = (c) => `<span style="display:inline-block;width:2px;height:1.1em;background:${c};vertical-align:text-bottom;margin-left:1px"></span>`;
 
-// ───────────────────────── ЕКРАНИ ─────────────────────────
-const S = {};
-
-// VIBER — писане
-S["viber-pisane"] = phone(`
-  ${hdr("#7360f2","#fff","Мария (дъщеря)","в мрежата")}
-  <div class="grow" style="background:#ece9f7;padding:14px 12px;display:flex;flex-direction:column;gap:10px">
-    <div style="align-self:center;background:#d7d0ee;color:#5b4a9e;font-size:11px;padding:3px 10px;border-radius:10px">Днес</div>
-    <div style="align-self:flex-start;max-width:74%;background:#fff;padding:8px 12px;border-radius:14px 14px 14px 4px;font-size:15px;color:#1b1b1b;box-shadow:0 1px 1px rgba(0,0,0,.06)">Здравей, мамо! Как си днес? ❤️</div>
-    <div style="align-self:flex-end;max-width:74%;background:#e7ddff;padding:8px 12px;border-radius:14px 14px 4px 14px;font-size:15px;color:#1b1b1b">Добре съм, миличка.<span style="display:block;text-align:right;font-size:10px;color:#8a7fb5;margin-top:2px">13:12 ✓✓</span></div>
-  </div>
-  <div style="background:#fff;padding:9px 10px;display:flex;align-items:center;gap:9px;border-top:1px solid #eee">
-    <span style="color:#8a8a8a">${I.plus}</span>
-    <div style="flex:1;background:#f0f0f3;border-radius:20px;padding:9px 14px;color:#1b1b1b;font-size:15px;display:flex;justify-content:space-between;align-items:center">До скоро!<span style="color:#9a9a9a">${I.smile}</span></div>
-    <div class="ring ringr" style="background:#7360f2;color:#fff;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center">${I.send}</div>
-  </div>
-  ${tip("Натиснете стрелката, за да изпратите","right:8px;bottom:64px")}
-`);
-
-// VIBER — гласово
-S["viber-glasovo"] = phone(`
-  ${hdr("#7360f2","#fff","Мария (дъщеря)","в мрежата")}
-  <div class="grow" style="background:#ece9f7;padding:14px 12px;display:flex;flex-direction:column;gap:12px">
-    <div style="align-self:flex-start;max-width:80%;background:#fff;padding:10px 12px;border-radius:14px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 1px rgba(0,0,0,.06)">
-      <div style="width:34px;height:34px;border-radius:50%;background:#7360f2;color:#fff;display:flex;align-items:center;justify-content:center">▶</div>
-      <div style="flex:1;height:3px;background:#d7d0ee;border-radius:2px;position:relative"><span style="position:absolute;left:0;top:-4px;width:11px;height:11px;border-radius:50%;background:#7360f2"></span></div>
-      <span style="font-size:12px;color:#7a7a7a">0:08</span></div>
-    <div style="align-self:center;color:#6b5fa8;font-size:13px;text-align:center;max-width:80%">Гласовото е по-лесно от писане — просто говорите.</div>
-  </div>
-  <div style="background:#fff;padding:9px 10px;display:flex;align-items:center;gap:9px;border-top:1px solid #eee">
-    <span style="color:#8a8a8a">${I.plus}</span>
-    <div style="flex:1;background:#f0f0f3;border-radius:20px;padding:9px 14px;color:#9a9a9a;font-size:15px">Съобщение…</div>
-    <span style="color:#8a8a8a">${I.cam}</span>
-    <div class="ring ringr" style="background:#7360f2;color:#fff;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center">${I.mic}</div>
-  </div>
-  ${tip("Задръжте микрофона и говорете","right:6px;bottom:64px")}
-`);
-
-// VIBER — нова група
-S["viber-grupa"] = phone(`
-  <div style="background:#7360f2;color:#fff;padding:12px;display:flex;align-items:center;gap:12px">
-    <span>${I.back}</span><div style="flex:1;font-weight:700;font-size:17px">Нова група</div></div>
-  <div style="background:#fff;padding:12px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:12px">
-    ${av("📷","#e0dcf5",44)}<div style="flex:1;color:#9a9a9a;font-size:15px;border-bottom:1px solid #eee;padding-bottom:6px">Име на групата</div></div>
-  <div style="padding:10px 14px;color:#7360f2;font-weight:700;font-size:13px;background:#f7f6fc">ИЗБЕРЕТЕ УЧАСТНИЦИ</div>
-  <div class="grow" style="background:#fff">
-    ${["Мария (дъщеря)|#b39ddb|1","Иван (син)|#90caf9|1","Елена (сестра)|#a5d6a7|0","Петър (зет)|#ffcc80|0"].map(r=>{const[n,c,on]=r.split("|");return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid #f3f3f3">${av(n[0],c)}<div style="flex:1;font-size:15px;color:#1b1b1b">${n}</div><div style="width:22px;height:22px;border-radius:50%;border:2px solid ${on==='1'?'#7360f2':'#cfcfcf'};background:${on==='1'?'#7360f2':'#fff'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px">${on==='1'?'✓':''}</div></div>`}).join("")}
-  </div>
-  <div style="position:absolute;right:18px;bottom:24px"><div class="ring ringr" style="background:#7360f2;color:#fff;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px">→</div></div>
-  ${tip("Изберете хората с отметка,<br>после натиснете стрелката","right:16px;bottom:92px")}
-`);
-
-// VIBER — меню „прикачи" (локация/контакт/снимка)
-S["viber-prikachi"] = phone(`
-  ${hdr("#7360f2","#fff","Иван (син)","в мрежата")}
-  <div class="grow" style="background:#ece9f7"></div>
-  <div style="background:#fff;border-top:1px solid #eee;padding:16px 14px">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;text-align:center;font-size:12px;color:#444">
-      ${[["📷","Камера","#f0f0f3",0],["🖼️","Галерия","#f0f0f3",0],["📍","Локация","#ffe2e2",1],["👤","Контакт","#ffe2e2",1],["📄","Файл","#f0f0f3",0],["🎵","Музика","#f0f0f3",0],["😊","Стикер","#f0f0f3",0],["⋯","Още","#f0f0f3",0]].map(([e,l,bg,hl])=>`<div><div class="${hl?'ring ringr':''}" style="width:54px;height:54px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 5px">${e}</div>${l}</div>`).join("")}
-    </div>
-  </div>
-  ${tip("„Локация“ праща къде сте,<br>„Контакт“ праща телефон на човек","left:50%;top:230px;transform:translateX(-50%)")}
-`);
-
-// VIBER — блокиране (екран с информация за контакта)
-S["viber-blok"] = phone(`
-  <div style="background:#7360f2;color:#fff;padding:12px;display:flex;align-items:center;gap:12px">
-    <span>${I.back}</span><div style="flex:1;font-weight:700;font-size:16px">Информация</div></div>
-  <div style="background:#fff;padding:22px 12px;text-align:center;border-bottom:8px solid #eef0f2">
-    ${av("Н","#bdbdbd",72)}<div style="font-weight:700;font-size:19px;margin-top:10px;color:#1b1b1b">Непознат номер</div>
-    <div style="color:#8a8a8a;font-size:14px">+359 88 ... ... </div></div>
-  <div class="grow" style="background:#fff">
-    ${[["Съобщение","#1b1b1b",0],["Аудио разговор","#1b1b1b",0],["Изключи звука","#1b1b1b",0],["Блокирай и докладвай","#ef4444",1]].map(([l,c,hl])=>`<div class="${hl?'ring':''}" style="padding:15px 16px;border-bottom:1px solid #f3f3f3;font-size:16px;color:${c};font-weight:${hl?700:500};${hl?'border-radius:10px;margin:4px 8px;':''}">${l}</div>`).join("")}
-  </div>
-  ${tip("Натиснете „Блокирай“ —<br>човекът няма да Ви пише повече","left:50%;top:300px;transform:translateX(-50%)")}
-`);
-
-// VIBER — изтриване на съобщение (задържане → меню)
-S["viber-iztrij"] = phone(`
-  ${hdr("#7360f2","#fff","Иван (син)","в мрежата")}
-  <div class="grow" style="background:#ece9f7;padding:14px 12px;position:relative">
-    <div style="align-self:flex-end;margin-left:auto;max-width:74%;width:fit-content;background:#e7ddff;padding:8px 12px;border-radius:14px;font-size:15px;color:#1b1b1b;box-shadow:0 0 0 3px rgba(115,96,242,.4)">Това съобщение е с грешка</div>
-    <div style="position:absolute;right:14px;top:62px;background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden;width:180px">
-      ${[["Отговори",0],["Копирай",0],["Препрати",0],["Изтрий",1]].map(([l,hl])=>`<div class="${hl?'ring':''}" style="padding:12px 16px;font-size:15px;color:${hl?'#ef4444':'#1b1b1b'};font-weight:${hl?700:500};border-bottom:1px solid #f3f3f3;${hl?'border-radius:8px;':''}">${l}</div>`).join("")}
-    </div>
-  </div>
-  <div style="background:#fff;padding:9px 10px;display:flex;align-items:center;gap:9px;border-top:1px solid #eee">
-    <span style="color:#8a8a8a">${I.plus}</span><div style="flex:1;background:#f0f0f3;border-radius:20px;padding:9px 14px;color:#9a9a9a;font-size:15px">Съобщение…</div><span style="color:#8a8a8a">${I.mic}</span></div>
-  ${tip("Задръжте пръст върху съобщението,<br>после изберете „Изтрий“","left:14px;bottom:74px")}
-`);
-
-// VIBER — прочетено (легенда на отметките)
-S["viber-procheteno"] = phone(`
-  ${hdr("#7360f2","#fff","Мария (дъщеря)","в мрежата")}
-  <div class="grow" style="background:#ece9f7;padding:18px 14px;display:flex;flex-direction:column;gap:16px">
-    <div style="align-self:flex-end;background:#e7ddff;padding:8px 12px;border-radius:14px;font-size:15px;color:#1b1b1b">Добро утро! <span style="font-size:11px;color:#9a9a9a">✓</span></div>
-    <div style="align-self:flex-end;background:#e7ddff;padding:8px 12px;border-radius:14px;font-size:15px;color:#1b1b1b">Как си? <span style="font-size:11px;color:#9a9a9a">✓✓</span></div>
-    <div style="align-self:flex-end;background:#e7ddff;padding:8px 12px;border-radius:14px;font-size:15px;color:#1b1b1b">Обичам те ❤️ <span style="font-size:11px;color:#7360f2">✓✓</span></div>
-    <div style="background:#fff;border-radius:14px;padding:14px;margin-top:8px;font-size:14px;color:#444;box-shadow:0 2px 8px rgba(0,0,0,.08)">
-      <div style="display:flex;gap:8px;margin-bottom:8px"><b style="color:#9a9a9a">✓</b> Изпратено</div>
-      <div style="display:flex;gap:8px;margin-bottom:8px"><b style="color:#9a9a9a">✓✓</b> Доставено (стигна до телефона)</div>
-      <div style="display:flex;gap:8px"><b style="color:#7360f2">✓✓</b> <span><b style="color:#7360f2">Лилаво</b> = човекът го <b>прочете</b></span></div>
-    </div>
-  </div>
-`);
-
-// VIBER — емоджи/стикери
-S["viber-emoji"] = phone(`
-  ${hdr("#7360f2","#fff","Елена (сестра)","в мрежата")}
-  <div style="background:#ece9f7;padding:12px;flex:0 0 auto;min-height:140px"><div style="align-self:flex-start;background:#fff;padding:8px 12px;border-radius:14px;font-size:15px;color:#1b1b1b;width:fit-content;box-shadow:0 1px 1px rgba(0,0,0,.06)">Честит празник! 🎉</div></div>
-  <div style="background:#fff;padding:9px 10px;display:flex;align-items:center;gap:9px;border-top:1px solid #eee">
-    <span style="color:#8a8a8a">${I.plus}</span><div style="flex:1;background:#f0f0f3;border-radius:20px;padding:9px 14px;color:#9a9a9a;font-size:15px">Съобщение…</div>
-    <div class="ring ringr" style="color:#7360f2;display:flex;padding:3px">${I.smile}</div></div>
-  <div style="background:#f7f6fc;padding:14px 12px;border-top:1px solid #eee">
-    <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:30px;justify-content:center">😀 😍 👍 ❤️ 🎉 🌹 ☀️ 😂 🙏 😘 👏 🥰</div>
-  </div>
-  ${tip("Натиснете усмихнатото лице,<br>после изберете картинка","right:60px;bottom:230px")}
-`);
-
-// VIBER — заглушаване на чат
-S["viber-zaglushi"] = phone(`
-  <div style="background:#7360f2;color:#fff;padding:12px;display:flex;align-items:center;gap:12px">
-    <span>${I.back}</span><div style="flex:1;font-weight:700;font-size:16px">Семейна група</div></div>
-  <div class="grow" style="background:#fff;display:flex;align-items:center;justify-content:center;padding:20px">
-    <div style="background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.16);width:100%;overflow:hidden">
-      <div style="padding:16px;font-weight:700;font-size:16px;color:#1b1b1b;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f0f0f0"><span style="color:#7360f2">${I.bell}</span> Заглуши известията</div>
-      ${[["За 1 час",0],["За 8 часа",0],["До утре сутрин",0],["Завинаги",1]].map(([l,hl])=>`<div class="${hl?'ring':''}" style="padding:14px 18px;font-size:16px;color:#1b1b1b;border-bottom:1px solid #f6f6f6;${hl?'border-radius:10px;margin:4px 8px;font-weight:700;':''}">${l}</div>`).join("")}
-    </div>
-  </div>
-  ${tip("Изберете колко време<br>да мълчи групата","left:50%;bottom:120px;transform:translateX(-50%)")}
-`);
-
-// MESSENGER — чат + гласово
-S["messenger"] = phone(`
-  <div style="background:#fff;color:#0084ff;padding:8px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f0f0f0">
-    <span>${I.back}</span>${av("И","#0084ff")}<div style="flex:1"><div style="font-weight:700;font-size:16px;color:#111">Иван (син)</div><div style="font-size:12px;color:#65676b">Активен сега</div></div><span>${I.phone}</span><span>${I.video}</span></div>
-  <div class="grow" style="background:#fff;padding:14px 12px;display:flex;flex-direction:column;gap:8px">
-    <div style="align-self:flex-start;max-width:74%;background:#f0f0f0;padding:9px 13px;border-radius:18px;font-size:15px;color:#050505">Мамо, гледай внучето 👶</div>
-    <div style="align-self:flex-end;max-width:74%;background:linear-gradient(135deg,#00b2ff,#006aff);color:#fff;padding:9px 13px;border-radius:18px;font-size:15px">Колко е сладък! 😍<span style="display:block;text-align:right;font-size:10px;opacity:.8;margin-top:2px">Доставено</span></div>
-  </div>
-  <div style="background:#fff;padding:9px 10px;display:flex;align-items:center;gap:12px;border-top:1px solid #f0f0f0">
-    <span style="color:#0084ff">${I.plus}</span><span style="color:#0084ff">${I.cam}</span>
-    <div class="ring ringr" style="color:#0084ff;display:flex;padding:2px">${I.mic}</div>
-    <div style="flex:1;background:#f0f0f3;border-radius:20px;padding:9px 14px;color:#9a9a9a;font-size:15px">Съобщение…</div><span style="color:#0084ff">${I.thumb}</span></div>
-  ${tip("Микрофон = гласово съобщение","left:60px;bottom:64px")}
-`);
-
-// WHATSAPP — чат
-S["whatsapp"] = phone(`
-  ${hdr("#075e54","#fff","Елена (сестра)","на линия")}
-  <div class="grow" style="background:#e5ddd5;padding:14px 12px;display:flex;flex-direction:column;gap:9px">
-    <div style="align-self:flex-start;max-width:76%;background:#fff;padding:8px 12px;border-radius:10px 10px 10px 2px;font-size:15px;color:#111;box-shadow:0 1px 1px rgba(0,0,0,.08)">Добро утро! Как е времето? ☀️</div>
-    <div style="align-self:flex-end;max-width:76%;background:#dcf8c6;padding:8px 12px;border-radius:10px 10px 2px 10px;font-size:15px;color:#111;box-shadow:0 1px 1px rgba(0,0,0,.08)">Слънчево и топло! 🌞<span style="display:block;text-align:right;font-size:10px;color:#4fae5a;margin-top:2px">08:30 ✓✓</span></div>
-  </div>
-  <div style="background:#f0f0f0;padding:9px 10px;display:flex;align-items:center;gap:9px">
-    <div style="flex:1;background:#fff;border-radius:22px;padding:9px 14px;color:#9a9a9a;font-size:15px;display:flex;justify-content:space-between;align-items:center">Съобщение<span style="display:flex;gap:14px;color:#8a8a8a">${I.smile}${I.cam}</span></div>
-    <div class="ring ringr" style="background:#25d366;color:#fff;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center">${I.mic}</div></div>
-  ${tip("Зеленото приложение е WhatsApp","right:8px;bottom:66px")}
-`);
-
-// WHATSAPP — регистрация (въвеждане на номер)
-S["whatsapp-registraciya"] = phone(`
-  <div style="background:#075e54;color:#fff;padding:14px;text-align:center;font-weight:700;font-size:17px">WhatsApp</div>
-  <div class="grow" style="background:#fff;padding:28px 22px;text-align:center">
-    <div style="font-size:17px;font-weight:700;color:#075e54;margin-bottom:8px">Въведете телефонния си номер</div>
-    <div style="font-size:13px;color:#777;margin-bottom:24px">WhatsApp ще Ви изпрати SMS с код за потвърждение.</div>
-    <div style="display:flex;gap:10px;justify-content:center;align-items:center;margin-bottom:8px">
-      <div style="border-bottom:2px solid #25d366;padding:8px 12px;font-size:16px;color:#111">🇧🇬 +359</div>
-      <div style="border-bottom:2px solid #25d366;padding:8px 16px;font-size:16px;color:#111;flex:1;text-align:left">88 123 4567</div>
-    </div>
-    <div style="font-size:12px;color:#999;margin-top:6px">Носете телефона си — кодът идва веднага.</div>
-    <div class="ring ringr" style="background:#25d366;color:#fff;display:inline-block;padding:12px 40px;border-radius:24px;font-weight:700;font-size:16px;margin-top:30px">НАПРЕД</div>
-  </div>
-  ${tip("Въведете номера си и натиснете „Напред“","left:50%;bottom:150px;transform:translateX(-50%)")}
-`);
-
-// ЧАТ — запазване на снимка в галерията
-S["chat-zapazi"] = phone(`
-  ${hdr("#7360f2","#fff","Мария (дъщеря)","в мрежата")}
-  <div class="grow" style="background:#ece9f7;padding:14px 12px;display:flex;flex-direction:column;gap:10px">
-    <div style="align-self:flex-start;max-width:78%;position:relative">
-      <div style="height:200px;border-radius:14px;background:linear-gradient(135deg,#ffd194,#d1913c);display:flex;align-items:center;justify-content:center;color:#fff;font-size:40px">🏖️</div>
-      <div class="ring ringr" style="position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.55);color:#fff;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center">${I.download}</div>
-    </div>
-    <div style="align-self:flex-start;color:#6b5fa8;font-size:13px">Снимка от морето 🙂</div>
-  </div>
-  <div style="background:#fff;padding:9px 10px;display:flex;align-items:center;gap:9px;border-top:1px solid #eee"><span style="color:#8a8a8a">${I.plus}</span><div style="flex:1;background:#f0f0f3;border-radius:20px;padding:9px 14px;color:#9a9a9a;font-size:15px">Съобщение…</div><span style="color:#8a8a8a">${I.mic}</span></div>
-  ${tip("Натиснете стрелката надолу,<br>за да я запазите в галерията","left:14px;top:150px")}
-`);
-
-// FACEBOOK — начален екран (фийд)
-S["fb-feed"] = phone(`
-  <div style="background:#fff;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee">
-    <span style="color:#1877f2;font-weight:800;font-size:24px;letter-spacing:-.5px">facebook</span>
-    <div style="display:flex;gap:8px"><span style="width:34px;height:34px;border-radius:50%;background:#e4e6eb;display:flex;align-items:center;justify-content:center;color:#444">${I.search}</span><span style="width:34px;height:34px;border-radius:50%;background:#e4e6eb;display:flex;align-items:center;justify-content:center;font-size:16px">💬</span></div></div>
-  <div style="background:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:8px solid #eef0f2">${av("Б","#1877f2")}<div style="flex:1;background:#f0f2f5;border-radius:20px;padding:9px 14px;color:#65676b;font-size:15px">Какво ви се случва?</div></div>
-  <div class="grow" style="background:#eef0f2;padding:10px 0">
-    <div style="background:#fff;padding:12px 14px">
-      <div style="display:flex;align-items:center;gap:10px">${av("Ч","#42a5f5")}<div style="flex:1"><div style="font-weight:700;font-size:15px;color:#050505">Читалище „Просвета"</div><div style="font-size:12px;color:#65676b">вчера в 18:30 · 🌍</div></div></div>
-      <div style="font-size:15px;color:#050505;margin:10px 0;line-height:1.4">Утре в 11:00 ч. концерт в центъра на Бобов дол. Вход свободен! 🎶</div>
-      <div style="height:150px;border-radius:10px;background:linear-gradient(135deg,#b3d4fc,#7fa8e0);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:17px">🎵 Концерт в Бобов дол</div>
-      <div style="display:flex;justify-content:space-around;border-top:1px solid #eee;margin-top:10px;padding-top:8px;color:#65676b;font-size:14px;font-weight:600"><span style="display:flex;align-items:center;gap:6px;color:#1877f2">${I.thumb}Харесвам</span><span>💬 Коментар</span><span>↗ Споделяне</span></div>
-    </div>
-  </div>
-`, "#eef0f2");
-
-// FACEBOOK — харесване и коментар
-S["fb-haresai"] = phone(`
-  <div style="background:#fff;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee"><span style="color:#1877f2;font-weight:800;font-size:24px">facebook</span></div>
-  <div class="grow" style="background:#eef0f2;padding:10px 0">
-    <div style="background:#fff;padding:12px 14px">
-      <div style="display:flex;align-items:center;gap:10px">${av("П","#66bb6a")}<div style="flex:1"><div style="font-weight:700;font-size:15px;color:#050505">Петър Иванов</div><div style="font-size:12px;color:#65676b">преди 2 часа · 🌍</div></div></div>
-      <div style="font-size:15px;color:#050505;margin:10px 0">Прибрахме реколтата! Хубава година беше 🍇</div>
-      <div style="height:140px;border-radius:10px;background:linear-gradient(135deg,#a5d6a7,#66bb6a);display:flex;align-items:center;justify-content:center;font-size:40px">🍇</div>
-      <div style="display:flex;align-items:center;gap:6px;color:#65676b;font-size:13px;margin-top:8px"><span style="background:#1877f2;color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px">👍</span> 24 харесвания</div>
-      <div style="display:flex;justify-content:space-around;border-top:1px solid #eee;margin-top:8px;padding-top:10px;font-size:15px;font-weight:600;color:#65676b">
-        <span class="ring" style="display:flex;align-items:center;gap:7px;color:#1877f2;border-radius:8px;padding:4px 10px">${I.thumb} Харесвам</span>
-        <span style="display:flex;align-items:center;gap:7px">💬 Коментар</span><span style="display:flex;align-items:center;gap:7px">↗ Споделяне</span></div>
-    </div>
-  </div>
-  ${tip("Натиснете „Харесвам“ (палец),<br>за да покажете, че Ви харесва","left:14px;bottom:120px")}
-`, "#eef0f2");
-
-// FACEBOOK — публикуване
-S["fb-publikuvai"] = phone(`
-  <div style="background:#fff;padding:12px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #eee">
-    <span style="color:#111;font-size:20px">✕</span><div style="flex:1;font-weight:700;font-size:17px;color:#111">Създаване на публикация</div>
-    <div class="ring ringr" style="background:#1877f2;color:#fff;padding:7px 20px;border-radius:8px;font-weight:700;font-size:14px">Публикувай</div></div>
-  <div style="padding:12px 14px;display:flex;align-items:center;gap:10px">${av("Б","#1877f2")}<div><div style="font-weight:700;font-size:15px;color:#111">Баба Стойна</div><div style="font-size:12px;color:#1877f2;background:#e7f0fd;border-radius:6px;padding:2px 8px;display:inline-block">👥 Приятели</div></div></div>
-  <div class="grow" style="padding:6px 16px;font-size:19px;color:#111">Честит празник на всички! 🌷</div>
-  <div style="border-top:1px solid #eee;padding:14px 16px;display:flex;gap:22px;font-size:15px;color:#444;align-items:center">
-    <span style="color:#45bd62;font-size:20px">🖼️</span> Снимка <span style="margin-left:auto;color:#f5c33b;font-size:20px">😊</span></div>
-  ${tip("Напишете нещо, после натиснете<br>синия бутон „Публикувай“","right:10px;top:60px")}
-`);
-
-// FACEBOOK — намиране на приятел
-S["fb-priatel"] = phone(`
-  <div style="background:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #eee">
-    <span>${I.back}</span><div style="flex:1;background:#f0f2f5;border-radius:20px;padding:8px 14px;color:#65676b;font-size:15px;display:flex;align-items:center;gap:8px">${I.search} Мария Петрова</div></div>
-  <div class="grow" style="background:#fff">
-    <div style="padding:14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f3f3f3">
-      ${av("М","#ec407a",54)}<div style="flex:1"><div style="font-weight:700;font-size:16px;color:#111">Мария Петрова</div><div style="font-size:13px;color:#65676b">5 общи приятели</div></div>
-      <div class="ring ringr" style="background:#1877f2;color:#fff;padding:8px 16px;border-radius:8px;font-weight:700;font-size:13px;white-space:nowrap">+ Добави</div></div>
-    <div style="padding:14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f3f3f3">
-      ${av("М","#7e57c2",54)}<div style="flex:1"><div style="font-weight:700;font-size:16px;color:#111">Мария Георгиева</div><div style="font-size:13px;color:#65676b">2 общи приятели</div></div>
-      <div style="background:#e4e6eb;color:#111;padding:8px 16px;border-radius:8px;font-weight:700;font-size:13px;white-space:nowrap">+ Добави</div></div>
-  </div>
-  ${tip("Намерете човека по име и<br>натиснете „Добави“","right:10px;top:78px")}
-`);
-
-// FACEBOOK — поверителност (кой вижда публикациите)
-S["fb-poveritelnost"] = phone(`
-  <div style="background:#fff;padding:12px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #eee">
-    <span>${I.back}</span><div style="flex:1;font-weight:700;font-size:16px;color:#111">Кой вижда публикацията?</div></div>
-  <div class="grow" style="background:#fff">
-    <div style="padding:12px 16px;color:#65676b;font-size:13px">Изберете кой може да вижда какво публикувате.</div>
-    ${[["🌍","Публично","Всеки във и извън Facebook",0],["👥","Приятели","Само Вашите приятели",1],["🔒","Само аз","Никой друг не вижда",0]].map(([e,t,d,hl])=>`<div class="${hl?'ring':''}" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid #f3f3f3;${hl?'border-radius:10px;margin:4px 8px;':''}"><span style="font-size:22px">${e}</span><div style="flex:1"><div style="font-weight:700;font-size:16px;color:#111">${t}</div><div style="font-size:12px;color:#65676b">${d}</div></div><div style="width:22px;height:22px;border-radius:50%;border:2px solid ${hl?'#1877f2':'#cfcfcf'};background:${hl?'#1877f2':'#fff'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px">${hl?'✓':''}</div></div>`).join("")}
-  </div>
-  ${tip("„Приятели“ е най-безопасно —<br>само познати виждат снимките Ви","left:50%;bottom:150px;transform:translateX(-50%)")}
-`);
-
-// FACEBOOK — фалшив профил (червени флагове)
-S["fb-falshiv"] = phone(`
-  <div style="background:#1877f2;color:#fff;padding:12px;display:flex;align-items:center;gap:12px"><span>${I.back}</span><div style="flex:1;font-weight:700;font-size:16px">Профил</div></div>
-  <div style="background:#fff;padding:20px 14px;text-align:center;border-bottom:8px solid #eef0f2">
-    ${av("?","#bdbdbd",76)}<div style="font-weight:700;font-size:19px;margin-top:10px;color:#111">Ivan Petrov 2</div>
-    <div class="ring" style="display:inline-block;color:#ef4444;font-size:13px;font-weight:700;margin-top:8px;border-radius:8px;padding:4px 10px">⚠ Създаден преди 3 дни</div></div>
-  <div class="grow" style="background:#fff;padding:14px 16px">
-    <div style="font-weight:700;color:#111;margin-bottom:10px">Признаци за фалшив профил:</div>
-    ${["Съвсем нов профил, само с няколко снимки","Има 2–3 „приятели“","Праща Ви покана, без да Ви познава","Бързо иска пари или личен телефон"].map(t=>`<div style="display:flex;gap:10px;margin-bottom:10px;font-size:14px;color:#444"><span class="red" style="font-weight:800">✗</span> ${t}</div>`).join("")}
-    <div style="background:#fff4f4;border:1px solid #ffd5d5;border-radius:10px;padding:12px;font-size:14px;color:#b91c1c;margin-top:6px">Не приемайте и не пращайте пари. Натиснете „⋯“ → „Докладвай профила“.</div>
-  </div>
-`, "#fff");
-
-// FACEBOOK — забравена парола
-S["fb-parola"] = phone(`
-  <div class="grow" style="background:#fff;padding:30px 24px;text-align:center;display:flex;flex-direction:column">
-    <div style="color:#1877f2;font-weight:800;font-size:30px;margin-bottom:30px">facebook</div>
-    <div style="font-weight:700;font-size:17px;color:#111;margin-bottom:6px;text-align:left">Намерете профила си</div>
-    <div style="font-size:13px;color:#65676b;margin-bottom:16px;text-align:left">Въведете имейла или телефона, с който сте се регистрирали.</div>
-    <div style="border:1px solid #ccd0d5;border-radius:10px;padding:13px 14px;font-size:15px;color:#111;text-align:left;margin-bottom:14px">088 123 4567</div>
-    <div class="ring" style="background:#1877f2;color:#fff;padding:13px;border-radius:10px;font-weight:700;font-size:16px;border-radius:10px">Търсене</div>
-    <div style="margin-top:16px;color:#1877f2;font-size:14px;font-weight:600">Ще получите код по SMS</div>
-  </div>
-  ${tip("Въведете телефона/имейла си →<br>идва код за нова парола","left:50%;bottom:150px;transform:translateX(-50%)")}
-`);
-
-(async () => {
-  const browser = await chromium.launch();
-  const page = await browser.newPage({ deviceScaleFactor: 2 });
-  for (const [name, html] of Object.entries(S)) {
-    await page.setContent(html, { waitUntil: "networkidle" });
-    const el = await page.$(".phone");
-    await el.screenshot({ path: path.join(OUT, `${name}.png`) });
-    console.log("✔", name);
+// ───────────────────────── клавиатура (Gboard, светла, български) ─────────────────────────
+function keyboard(o = {}) {
+  const { sugg = ["", "", ""], enter = "keyboard_return", num = false } = o;
+  const key = (c, st = "") => `<div style="flex:1;height:47px;border-radius:9px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:21px;color:#1f1f1f;box-shadow:0 1px 0 rgba(0,0,0,.18);${st}">${c}</div>`;
+  const sp = (c, w, st = "") => `<div style="flex:0 0 ${w}px;height:47px;border-radius:9px;background:#d9dde4;display:flex;align-items:center;justify-content:center;font-size:15px;color:#1f1f1f;box-shadow:0 1px 0 rgba(0,0,0,.14);${st}">${c}</div>`;
+  const enterKey = (w) => `<div style="flex:0 0 ${w}px;height:47px;border-radius:24px;background:#a8c7fa;display:flex;align-items:center;justify-content:center;color:#041e49">${ms(enter, { size: 24, fill: 1 })}</div>`;
+  const row = (inner, pad = 0) => `<div style="display:flex;gap:5px;padding:0 ${pad}px">${inner}</div>`;
+  if (num) {
+    const nk = (c) => `<div style="flex:1;height:54px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:25px;color:#1f1f1f;box-shadow:0 1px 0 rgba(0,0,0,.18)">${c}</div>`;
+    const ns = (c, st = "") => `<div style="flex:0 0 76px;height:54px;border-radius:12px;background:#d9dde4;display:flex;align-items:center;justify-content:center;font-size:20px;color:#1f1f1f;${st}">${c}</div>`;
+    return `<div style="background:#eceef2;padding:10px 6px 4px;display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+      ${row(nk(1) + nk(2) + nk(3) + ns("−"))}${row(nk(4) + nk(5) + nk(6) + ns("␣", "font-size:18px"))}
+      ${row(nk(7) + nk(8) + nk(9) + ns(ms("backspace", { size: 24, fill: 1 })))}
+      ${row(nk(",") + nk(0) + nk(".") + `<div style="flex:0 0 76px;height:54px;border-radius:27px;background:#a8c7fa;display:flex;align-items:center;justify-content:center;color:#041e49">${ms("check", { size: 26, weight: 600 })}</div>`)}
+    </div>`;
   }
-  await browser.close();
-  console.log(`\nГотово: ${Object.keys(S).length} екрана в public/kak-da/`);
-})();
+  const L = (s) => s.split(" ").map((c) => key(c)).join("");
+  const strip = `<div style="height:44px;display:flex;align-items:center;padding:0 8px;color:#444746">
+      <span style="width:36px;display:flex;justify-content:center">${ms("apps", { size: 24, fill: 1 })}</span>
+      <div style="flex:1;display:flex;font-size:16.5px;color:#1f1f1f;text-align:center">${sugg.map((s, i) => `<div style="flex:1;${i ? "border-left:1px solid #c8ccd3;" : ""}padding:2px 0">${s}</div>`).join("")}</div>
+      <span style="width:36px;display:flex;justify-content:center">${ms("mic", { size: 24, fill: 1 })}</span></div>`;
+  return `<div style="background:#eceef2;padding:0 4px 4px;display:flex;flex-direction:column;gap:7px;flex-shrink:0">${strip}
+    ${row(L("я в е р т ъ у и о п ч"))}${row(L("а с д ф г х й к л ш"), 12)}
+    ${row(sp(ms("arrow_upward", { size: 22 }), 46) + L("ю з ц ж б н м") + sp(ms("backspace", { size: 22, fill: 1 }), 46))}
+    ${row(sp("?123", 52) + key(",", "flex:0 0 38px") + key(ms("sentiment_satisfied", { size: 22 }), "flex:0 0 40px") + key(`<span style="font-size:14px;color:#5f6368">Български</span>`, "flex:1") + key(".", "flex:0 0 38px") + enterKey(66))}
+  </div>`;
+}
+
+// ═════════════════════════ VIBER ═════════════════════════
+const VP = "#7360F2"; // лилавото на Viber
+const VBG = "#EEEAF9"; // фон на чата (светла тема)
+
+// Лента на разговора: назад · снимка · име/състояние · видео · обаждане
+function vHeader(name, sub = "Последно видян днес в 08:52", o = {}) {
+  const a = o.avatar || sil(38, "#b9b4d6");
+  return `<div style="background:${VP};color:#fff;height:58px;padding:0 10px 0 6px;display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <span style="width:36px;display:flex;justify-content:center">${ms("arrow_back", { size: 24 })}</span>${a}
+    <div style="flex:1;min-width:0;line-height:1.2"><div style="font-size:17px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>${sub ? `<div style="font-size:12.5px;opacity:.82">${sub}</div>` : ""}</div>
+    <span style="display:flex;gap:18px;padding-right:4px">${ms("videocam", { size: 25, fill: 1 })}${ms("call", { size: 23, fill: 1 })}</span></div>`;
+}
+const vDay = (s) => `<div style="align-self:center;background:rgba(255,255,255,.75);color:#6a6485;font-size:12px;padding:3px 11px;border-radius:12px;margin:2px 0 4px">${s}</div>`;
+const vTime = (tm, st, onDark) => {
+  const c = onDark ? "rgba(255,255,255,.78)" : "#8b86a3";
+  const ck = st === "sent" ? ms("done", { size: 15, color: c, weight: 500 }) : st ? ms("done_all", { size: 16, color: c, weight: 500 }) : "";
+  return `<div style="display:flex;justify-content:flex-end;align-items:center;gap:3px;font-size:11px;color:${c};margin-top:2px;line-height:1">${tm}${ck}</div>`;
+};
+const vIn = (text, tm, st = "") => `<div style="align-self:flex-start;max-width:76%;background:#fff;color:#1c1b22;padding:8px 12px 6px;border-radius:18px 18px 18px 5px;font-size:16px;line-height:1.3;box-shadow:0 1px 1px rgba(60,40,120,.08);${st}">${text}${vTime(tm, "", false)}</div>`;
+const vOut = (text, tm, status = "delivered", st = "") => `<div style="align-self:flex-end;max-width:76%;background:${VP};color:#fff;padding:8px 12px 6px;border-radius:18px 18px 5px 18px;font-size:16px;line-height:1.3;${st}">${text}${vTime(tm, status, true)}</div>`;
+const vSeen = (s = "Видяно") => `<div style="align-self:flex-end;font-size:11.5px;color:#7d7898;margin:-4px 4px 0 0">${s}</div>`;
+const vChat = (inner, st = "") => `<div style="flex:1;background:${VBG};padding:10px 12px;display:flex;flex-direction:column;justify-content:flex-end;gap:7px;overflow:hidden;${st}">${inner}</div>`;
+
+// Поле за съобщение: + · поле (емоджи) · микрофон/изпрати
+function vInput(o = {}) {
+  const { text, ring = "", emoji = false } = o;
+  const r = (k, inner, extra = "") => `<div class="${ring === k ? "ring ringr" : ""}" style="display:flex;align-items:center;justify-content:center;border-radius:50%;${extra}">${inner}</div>`;
+  const right = text
+    ? r("send", ms("send", { size: 25, fill: 1, color: VP }), "width:42px;height:42px")
+    : r("mic", ms("mic", { size: 26, fill: 1, color: VP }), "width:42px;height:42px");
+  return `<div style="background:#fff;border-top:1px solid #e6e2f4;padding:7px 8px 7px 6px;display:flex;align-items:center;gap:4px;flex-shrink:0">
+    ${r("plus", ms("add", { size: 28, weight: 500, color: VP }), "width:42px;height:42px")}
+    <div style="flex:1;background:#f3f1fa;border-radius:23px;height:42px;padding:0 8px 0 15px;display:flex;align-items:center;font-size:16px;color:${text ? "#1c1b22" : "#8b86a3"}">
+      <span style="flex:1;white-space:nowrap;overflow:hidden">${text ? text + caret(VP) : "Напишете съобщение"}</span>
+      ${r("emoji", ms("sentiment_satisfied", { size: 26, color: emoji ? VP : "#8b86a3", fill: emoji ? 1 : 0 }), "width:34px;height:34px")}
+    </div>${right}</div>`;
+}
+
+const S = {};
+// по-ранна история за чатовете (чатът не започва „от нищото“)
+const vHist = vDay("Вчера") + vIn("Добър ден! Утре ще ти се обадя", "18:20") + vOut("Добре, чакам те", "18:22", "seen");
+
+// ── Viber — писане (стъпки: полето „Напишете съобщение“ → текст → стрелката) ──
+S["viber-pisane"] = phone(root(`
+  ${vHeader("Мария (дъщеря)")}
+  ${vChat(`${vDay("Днес")}
+    ${vIn("Здравей, мамо! Как си днес?", "10:12")}
+    ${vOut("Добре съм, миличка. Ходих до пазара.", "10:14", "seen")}
+    ${vIn("Идваме в неделя!", "10:15")}`)}
+  ${vInput({ text: "Чудесно! Ще направя баница", ring: "send" })}
+  ${keyboard({ sugg: ["баница", "баба", "бавно"] })}
+  ${nav("#eceef2")}
+  ${tip("Натиснете стрелката,<br>за да изпратите", "right:8px;top:385px", { arrow: "d", at: "88%" })}
+`), "#7360F2", "#ffffff", { nav: false, time: "10:16" });
+
+// ── Viber — гласово (задържане на микрофона) ──
+const wave = (n, c, seed = 3, played = 0) => {
+  let x = seed; const bars = [];
+  for (let i = 0; i < n; i++) { x = (x * 9301 + 49297) % 233280; const h = 5 + Math.round((x / 233280) * 20); bars.push(`<i style="display:block;width:3px;height:${h}px;border-radius:2px;background:${i < played ? VP : c}"></i>`); }
+  return `<div style="display:flex;align-items:center;gap:2.5px;height:28px">${bars.join("")}</div>`;
+};
+S["viber-glasovo"] = phone(root(`
+  ${vHeader("Мария (дъщеря)")}
+  ${vChat(`${vDay("Днес")}
+    <div style="align-self:flex-start;background:#fff;padding:9px 14px 6px 10px;border-radius:18px 18px 18px 5px;box-shadow:0 1px 1px rgba(60,40,120,.08)">
+      <div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:${VP};display:flex;align-items:center;justify-content:center">${ms("play_arrow", { size: 26, fill: 1, color: "#fff" })}</div>${wave(26, "#cfc9ea", 7, 0)}<span style="font-size:12px;color:#7d7898">0:12</span></div>
+      ${vTime("10:20", "", false)}</div>
+    ${vOut("Мило, ще ти пиша по-късно", "10:21", "seen")}
+    ${vIn("Добре, мамо. Целуваме те!", "10:22")}`)}
+  <div style="background:#fff;border-top:1px solid #e6e2f4;padding:7px 8px 7px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;height:58px">
+    <span style="width:10px;height:10px;border-radius:50%;background:#e53935"></span><span style="font-size:17px;color:#1c1b22;width:44px">0:06</span>
+    <div style="flex:1;display:flex;align-items:center;gap:4px;color:#8b86a3;font-size:15px">${ms("chevron_left", { size: 22 })}Плъзнете за отказ</div>
+    <div class="ring ringr" style="width:46px;height:46px;border-radius:50%;background:${VP};display:flex;align-items:center;justify-content:center">${ms("mic", { size: 27, fill: 1, color: "#fff" })}</div></div>
+  ${nav("#fff")}
+  ${tip("Задръжте микрофона<br>и говорете", "right:10px;bottom:" + (26 + 58 + 14) + "px", { arrow: "d", at: "82%" })}
+`), "#7360F2", "#ffffff", { nav: false, time: "10:22" });
+
+// ── Viber — нова група (избор на участници) ──
+{
+  const people = [["А", "Антон (зет)", "#8e6bbf"], ["Е", "Елена (сестра)", "#2a9d8f"], ["И", "Иван (син)", "#e07a1f", 1], ["М", "Мария (дъщеря)", "#d6457a", 1], ["П", "Петър (внук)", "#3a7bd5"], ["С", "Стела (снаха)", "#6a8d2f"]];
+  const rows = people.map(([l, n, c, on]) => `${flex("align-items:center;gap:14px;padding:9px 16px", `${ini(l, c, 44)}<div style="flex:1;font-size:16.5px;color:#1c1b22">${n}</div>
+    <div style="width:24px;height:24px;border-radius:50%;${on ? `background:${VP};` : "border:2px solid #c9c5dc;"}display:flex;align-items:center;justify-content:center">${on ? ms("check", { size: 17, color: "#fff", weight: 600 }) : ""}</div>`)}`).join("");
+  const chip = (l, n, c) => `<div style="display:flex;align-items:center;gap:6px;background:#efecfb;border-radius:18px;padding:3px 10px 3px 3px;font-size:14px;color:#1c1b22;white-space:nowrap">${ini(l, c, 26)}${n}${ms("close", { size: 16, color: "#7d7898" })}</div>`;
+  S["viber-grupa"] = phone(root(`
+    <div style="background:${VP};color:#fff;height:58px;padding:0 10px 0 6px;display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <span style="width:36px;display:flex;justify-content:center">${ms("arrow_back", { size: 24 })}</span>
+      <div style="flex:1;line-height:1.2"><div style="font-size:19px;font-weight:500">Нова група</div><div style="font-size:12.5px;opacity:.85">Избрани: 2</div></div>
+      <span style="padding-right:8px">${ms("search", { size: 24 })}</span></div>
+    <div style="background:#fff;padding:10px 12px;display:flex;gap:8px;flex-shrink:0;border-bottom:1px solid #eceaf5">${chip("И", "Иван (син)", "#e07a1f")}${chip("М", "Мария (дъщеря)", "#d6457a")}</div>
+    <div style="background:#fff;flex:1;overflow:hidden;padding-top:4px">
+      <div style="padding:8px 16px 2px;font-size:13px;color:${VP};font-weight:500">Контакти във Viber</div>${rows}</div>
+    <div class="ring ringr" style="position:absolute;right:20px;bottom:${26 + 22}px;width:58px;height:58px;border-radius:50%;background:${VP};display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(115,96,242,.45)">${ms("arrow_forward", { size: 28, color: "#fff", weight: 500 })}</div>
+    ${nav("#fff")}
+    ${tip("Отметнете хората, после<br>натиснете стрелката", `right:14px;bottom:${26 + 22 + 58 + 14}px`, { arrow: "d", at: "86%" })}
+  `), "#7360F2", "#ffffff", { nav: false, time: "10:30" });
+}
+
+// ── Viber — меню „+“ (Местоположение, Контакт, Галерия…) ──
+{
+  const item = (icon, label, c, bgc, ring) => `<div style="display:flex;flex-direction:column;align-items:center;gap:7px;width:25%"><div class="${ring ? "ring ringr" : ""}" style="width:56px;height:56px;border-radius:50%;background:${bgc};display:flex;align-items:center;justify-content:center">${ms(icon, { size: 28, fill: 1, color: c })}</div><div style="font-size:12.5px;color:#3d3a4d;text-align:center;line-height:1.15">${label}</div></div>`;
+  const grid = [
+    ["photo_library", "Галерия", "#e8573d", "#fdeae6"], ["photo_camera", "Камера", "#7360F2", "#ece9fd"], ["gif_box", "GIF", "#1b9e77", "#dff4ec"], ["folder", "Файл", "#3a7bd5", "#e3edfb"],
+    ["location_on", "Локация", "#e53935", "#fde7e6", 1], ["contact_page", "Контакт", "#d6457a", "#fbe6ee", 1], ["mic", "Гласово", "#7360F2", "#ece9fd"], ["sticky_note_2", "Стикери", "#f29a1f", "#fdf0dc"],
+  ];
+  S["viber-prikachi"] = phone(root(`
+    ${vHeader("Иван (син)", "Последно видян днес в 09:58", { avatar: ini("И", "#e07a1f", 38) })}
+    ${vChat(`${vHist}${vDay("Днес")}${vIn("Мамо, къде да се срещнем?", "10:35")}${vOut("Чакай да ти пратя къде съм", "10:36", "delivered")}`)}
+    <div style="background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -4px 18px rgba(30,20,80,.16);padding:10px 8px 14px;flex-shrink:0;position:relative;z-index:2">
+      <div style="width:38px;height:4px;border-radius:2px;background:#d6d2e6;margin:0 auto 16px"></div>
+      <div style="display:flex;flex-wrap:wrap;row-gap:20px">${grid.map((g) => item(...g)).join("")}</div>
+      <div style="height:6px"></div></div>
+    ${nav("#fff")}
+    ${tip("„Локация“ праща къде сте,<br>„Контакт“ — телефона на човек", "left:0;right:0;margin:0 auto;width:max-content;top:482px", { arrow: "d", at: "50%" })}
+  `, { style: "background:" + VBG }), "#7360F2", "#ffffff", { nav: false, time: "10:36" });
+}
+
+// ── Viber — информация за контакта → Блокирай ──
+{
+  const row = (icon, label, o = {}) => `<div class="${o.ring ? "ring" : ""}" style="display:flex;align-items:center;gap:20px;padding:0 20px;height:58px;${o.ring ? "border-radius:12px;margin:2px 8px;padding:0 12px;" : ""}">${ms(icon, { size: 25, fill: o.fill ?? 0, color: o.c || "#6b6785" })}<div style="flex:1;font-size:16.5px;color:${o.c || "#1c1b22"};${o.ring ? "font-weight:500" : ""}">${label}</div>${o.r || ""}</div>`;
+  S["viber-blok"] = phone(root(`
+    <div style="background:${VP};color:#fff;height:58px;padding:0 10px 0 6px;display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <span style="width:36px;display:flex;justify-content:center">${ms("arrow_back", { size: 24 })}</span><div style="flex:1;font-size:19px;font-weight:500">Информация</div>${ms("more_vert", { size: 24 })}</div>
+    <div style="background:#fff;flex:1;overflow:hidden">
+      <div style="padding:24px 16px 18px;display:flex;flex-direction:column;align-items:center;gap:4px;border-bottom:8px solid #f1eff8">
+        ${sil(92, "#b9b4d6")}<div style="font-size:21px;font-weight:500;color:#1c1b22;margin-top:10px">+359 888 123 456</div>
+        <div style="font-size:14px;color:#8b86a3">Не е във Вашите контакти</div>
+        <div style="display:flex;gap:34px;margin-top:16px">${[["call", "Повикване"], ["videocam", "Видео"], ["chat_bubble", "Съобщение"]].map(([i, l]) => `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12.5px;color:#5b5675"><div style="width:48px;height:48px;border-radius:50%;background:#efecfb;display:flex;align-items:center;justify-content:center">${ms(i, { size: 24, fill: 1, color: VP })}</div>${l}</div>`).join("")}</div></div>
+      ${row("perm_media", "Медии, файлове и връзки", { r: ms("chevron_right", { size: 22, color: "#a9a5be" }) })}
+      ${row("notifications_off", "Заглуши известията", { r: `<div style="width:44px;height:26px;border-radius:13px;background:#d6d2e6;position:relative"><i style="position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;display:block"></i></div>` })}
+      ${row("person_add", "Добави в контактите", { c: "#1c1b22" })}
+      ${row("flag", "Докладвай", { c: "#d93025" })}
+      ${row("block", "Блокирай", { c: "#d93025", ring: true })}
+    </div>
+    ${nav("#fff")}
+    ${tip("Натиснете „Блокирай“ —<br>човекът няма да Ви пише повече", "left:0;right:0;margin:0 auto;width:max-content;top:676px", { arrow: "u", at: "28%" })}
+  `), "#7360F2", "#ffffff", { nav: false, time: "10:40" });
+}
+
+// ── Viber — задържане на съобщение → Изтрий ──
+{
+  const mi = (icon, label, o = {}) => `<div class="${o.ring ? "ring" : ""}" style="display:flex;align-items:center;gap:16px;height:50px;padding:0 16px;${o.ring ? "border-radius:10px;margin:2px 6px;padding:0 10px;" : ""}">${ms(icon, { size: 23, fill: o.fill ?? 0, color: o.c || "#4a4660" })}<span style="font-size:16px;color:${o.c || "#1c1b22"};${o.ring ? "font-weight:500" : ""}">${label}</span></div>`;
+  S["viber-iztrij"] = phone(root(`
+    ${vHeader("Иван (син)", "Последно видян днес в 09:58", { avatar: ini("И", "#e07a1f", 38) })}
+    ${vChat(`${vDay("Днес")}${vIn("Кога ще дойдеш, мамо?", "10:44")}${vOut("Изпратих това по погрешка", "10:45", "delivered", "visibility:hidden")}`, "justify-content:flex-start")}
+    ${vInput({})}
+    ${nav("#fff")}
+    ${scrim(0.55)}
+    <div style="position:absolute;left:0;right:0;top:${58 + 28 + 56}px;z-index:36;display:flex;flex-direction:column;align-items:flex-end;gap:10px;padding:0 14px">
+      <div style="background:#fff;border-radius:26px;padding:6px 12px;display:flex;gap:10px;font-size:25px;box-shadow:0 4px 16px rgba(0,0,0,.25)">👍 ❤️ 😂 😮 😢 🙏</div>
+      ${vOut("Изпратих това по погрешка", "10:45", "delivered", "box-shadow:0 0 0 3px rgba(255,255,255,.55)")}
+      <div style="background:#fff;border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.3);width:236px;padding:6px 0;margin-top:2px">
+        ${mi("reply", "Отговор")}${mi("forward", "Препрати")}${mi("content_copy", "Копирай")}${mi("delete", "Изтрий", { ring: true, fill: 1, c: "#d93025" })}</div>
+    </div>
+    ${tip("Задръжте пръст върху съобщението,<br>после изберете „Изтрий“", "left:130px;top:556px;z-index:60", { arrow: "u", at: "55%" })}
+  `, { dim: true }), "#7360F2", "#ffffff", { nav: false, time: "10:45" });
+}
+
+// ── Viber — отметки: изпратено / доставено / видяно ──
+S["viber-procheteno"] = phone(root(`
+  ${vHeader("Мария (дъщеря)")}
+  ${vChat(`${vDay("Вчера")}
+    ${vIn("Лека нощ, мамо! Целувки", "21:40")}${vOut("Лека нощ, мило!", "21:41", "seen")}
+    ${vDay("Днес")}
+    ${vOut("Добро утро, миличка!", "09:02", "sent")}
+    ${vOut("Как си? Как са внуците?", "09:03", "delivered")}
+    ${vOut("Обичам Ви! Целувки", "09:05", "seen")}
+    ${vSeen("Видяно")}`, "gap:14px;padding-top:14px")}
+  ${vInput({})}
+  ${nav("#fff")}
+  ${tip("Една отметка =<br>изпратено", "right:208px;top:490px", { arrow: "r", at: "50%" })}
+  ${tip("Две отметки =<br>доставено", "right:227px;top:556px", { arrow: "r", at: "50%" })}
+  ${tip("„Видяно“ — човекът<br>го е прочел", "right:66px;top:667px", { arrow: "r", at: "50%" })}
+`), "#7360F2", "#ffffff", { nav: false, time: "09:06" });
+
+// ── Viber — емоджи и стикери ──
+{
+  const em = "😀 😃 😄 😁 😆 😅 😂 🙂 😉 😊 😇 🥰 😍 😘 😗 😋 😎 🤗 🤔 😢 😭 😮 😴 🙏 👍 👏 💪 ❤️ 🌹 🌷 ☀️ 🎉 🎂 🎁 🍀 ☕ 🍰 🏠 🚗 ✈️".split(" ");
+  const grid = em.map((e, i) => `<div style="width:12.5%;height:44px;display:flex;align-items:center;justify-content:center;font-size:27px;${i === 11 ? "background:#ece9fd;border-radius:10px" : ""}">${e}</div>`).join("");
+  S["viber-emoji"] = phone(root(`
+    ${vHeader("Елена (сестра)", "Последно видян днес в 11:02", { avatar: ini("Е", "#2a9d8f", 38) })}
+    ${vChat(`${vHist}${vDay("Днес")}${vIn("Честит имен ден! 🎉", "11:05")}${vOut("Благодаря, сестричке! Целувки", "11:06", "delivered")}`)}
+    ${vInput({ text: "Честит празник и на теб ", ring: "emoji", emoji: true })}
+    <div style="background:#fff;border-top:1px solid #eceaf5;flex-shrink:0;height:300px;display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;height:44px;padding:0 6px;border-bottom:1px solid #f0eef8">
+        <div style="width:56px;display:flex;justify-content:center;border-bottom:3px solid ${VP};height:44px;align-items:center">${ms("sentiment_satisfied", { size: 25, fill: 1, color: VP })}</div>
+        <div style="width:56px;display:flex;justify-content:center">${ms("sticky_note_2", { size: 25, color: "#8b86a3" })}</div>
+        <div style="width:56px;display:flex;justify-content:center">${ms("gif_box", { size: 25, color: "#8b86a3" })}</div>
+        <div style="flex:1"></div><div style="padding:0 12px">${ms("search", { size: 24, color: "#8b86a3" })}</div><div style="padding:0 10px">${ms("backspace", { size: 24, color: "#8b86a3" })}</div></div>
+      <div style="padding:2px 6px;display:flex;flex-wrap:wrap;overflow:hidden;flex:1">${grid}</div>
+      <div style="display:flex;height:40px;border-top:1px solid #f0eef8;padding:0 6px;align-items:center;justify-content:space-around;color:#8b86a3">${["schedule", "sentiment_satisfied", "pets", "restaurant", "directions_car", "emoji_objects", "tag"].map((i, k) => ms(i, { size: 22, color: k === 1 ? VP : "#8b86a3", fill: k === 1 ? 1 : 0 })).join("")}</div>
+    </div>
+    ${nav("#fff")}
+    ${tip("Натиснете усмихнатото лице,<br>после изберете картинка", "right:8px;top:352px", { arrow: "d", at: "86%" })}
+  `), "#7360F2", "#ffffff", { nav: false, time: "11:07" });
+}
+
+// ── Viber — заглушаване на групов чат ──
+{
+  const opt = (l, on, ring) => `<div class="${ring ? "ring" : ""}" style="display:flex;align-items:center;gap:16px;height:52px;padding:0 6px;${ring ? "border-radius:12px;margin:2px -2px;padding:0 8px;" : ""}"><div style="width:22px;height:22px;border-radius:50%;border:2.2px solid ${on ? VP : "#79747e"};display:flex;align-items:center;justify-content:center">${on ? `<i style="display:block;width:11px;height:11px;border-radius:50%;background:${VP}"></i>` : ""}</div><span style="font-size:16.5px;color:#1c1b22">${l}</span></div>`;
+  S["viber-zaglushi"] = phone(root(`
+    <div style="background:${VP};color:#fff;height:58px;padding:0 10px 0 6px;display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <span style="width:36px;display:flex;justify-content:center">${ms("arrow_back", { size: 24 })}</span><div style="flex:1;font-size:19px;font-weight:500">Информация за групата</div></div>
+    <div style="background:#fff;flex:1;overflow:hidden">
+      <div style="padding:22px 16px 16px;display:flex;flex-direction:column;align-items:center;gap:4px;border-bottom:8px solid #f1eff8">
+        <div style="width:88px;height:88px;border-radius:50%;background:#d9d4f4;display:flex;align-items:center;justify-content:center">${ms("groups", { size: 50, fill: 1, color: VP })}</div>
+        <div style="font-size:21px;font-weight:500;color:#1c1b22;margin-top:10px">Семейна група</div><div style="font-size:14px;color:#8b86a3">5 участници</div></div>
+      ${[["perm_media", "Медии, файлове и връзки"], ["notifications_off", "Заглуши известията"], ["push_pin", "Закачи чата"], ["person_add", "Добави участници"]].map(([i, l]) => `<div style="display:flex;align-items:center;gap:20px;padding:0 20px;height:58px">${ms(i, { size: 25, color: "#6b6785" })}<div style="flex:1;font-size:16.5px;color:#1c1b22">${l}</div></div>`).join("")}
+    </div>
+    ${nav("#fff")}
+    ${scrim(0.5)}
+    <div style="position:absolute;left:28px;right:28px;top:210px;z-index:36;background:#fff;border-radius:28px;padding:24px 22px 14px;box-shadow:0 10px 34px rgba(0,0,0,.35)">
+      <div style="font-size:22px;color:#1c1b22;margin-bottom:10px">Заглуши известията</div>
+      ${opt("За 1 час", 0)}${opt("За 8 часа", 1, 1)}${opt("До утре сутрин", 0)}${opt("Завинаги", 0)}
+      <div style="display:flex;justify-content:flex-end;gap:22px;padding:16px 6px 4px;font-size:15.5px;font-weight:500;color:${VP}"><span>Отказ</span><span>Готово</span></div></div>
+    ${tip("Изберете за колко време<br>да мълчи групата", "left:0;right:0;margin:0 auto;width:max-content;top:614px;z-index:60", { arrow: "u", at: "30%" })}
+  `, { dim: true }), "#7360F2", "#ffffff", { nav: false, time: "11:12" });
+}
+
+// ── Viber/чат — запазване на снимка в галерията (преглед на снимката → меню) ──
+{
+  const mi = (icon, label, ring) => `<div class="${ring ? "ring" : ""}" style="display:flex;align-items:center;gap:16px;height:50px;padding:0 16px;${ring ? "border-radius:10px;margin:2px 6px;padding:0 10px;" : ""}">${ms(icon, { size: 23, color: "#4a4660" })}<span style="font-size:16px;color:#1c1b22;${ring ? "font-weight:500" : ""}">${label}</span></div>`;
+  S["chat-zapazi"] = phone(root(`
+    <div style="height:58px;display:flex;align-items:center;gap:10px;padding:0 6px;color:#fff;flex-shrink:0;position:relative;z-index:3">
+      <span style="width:36px;display:flex;justify-content:center">${ms("arrow_back", { size: 24 })}</span>
+      <div style="flex:1;line-height:1.2"><div style="font-size:17px;font-weight:500">Мария (дъщеря)</div><div style="font-size:12.5px;opacity:.75">Днес, 11:20</div></div>
+      <span style="width:36px;display:flex;justify-content:center">${ms("more_vert", { size: 24 })}</span></div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;margin-top:-58px;overflow:hidden">${photo("messaging/beach.jpg", { w: 390, h: 292 })}</div>
+    <div style="height:66px;display:flex;align-items:center;gap:14px;padding:0 16px;color:#fff;flex-shrink:0">
+      <div style="flex:1;font-size:15px;opacity:.9">Морето е чудесно! Целуваме те</div>${ms("reply", { size: 25, style: "transform:scaleX(-1)" })}${ms("favorite", { size: 24 })}</div>
+    ${nav("#000", "#fff")}
+    <div style="position:absolute;right:10px;top:50px;z-index:5;background:#fff;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.45);width:226px;padding:6px 0">
+      ${mi("forward", "Препрати")}${mi("download", "Запази в галерията", true)}${mi("share", "Сподели")}${mi("delete", "Изтрий")}</div>
+    ${tip("Менюто (три точки)<br>→ „Запази“", "left:12px;top:110px", { arrow: "r", at: "50%" })}
+  `), "#000", "#ffffff", { nav: false, time: "11:21" });
+}
+
+// ═════════════════════════ MESSENGER ═════════════════════════
+{
+  const MB = "#0084FF", MG = "#F0F0F0";
+  const day = (s) => `<div style="align-self:center;font-size:12px;color:#65676b;margin:4px 0">${s}</div>`;
+  const inb = (x, st = "") => `<div style="align-self:flex-start;max-width:74%;background:${MG};color:#050505;padding:9px 14px;border-radius:20px;font-size:16px;line-height:1.28;${st}">${x}</div>`;
+  const outb = (x) => `<div style="align-self:flex-end;max-width:74%;background:${MB};color:#fff;padding:9px 14px;border-radius:20px;font-size:16px;line-height:1.28">${x}</div>`;
+  const ic = (i, o = {}) => ms(i, { size: o.s || 28, fill: 1, color: MB });
+  S["messenger"] = phone(root(`
+    <div style="height:60px;display:flex;align-items:center;gap:6px;padding:0 10px 0 4px;flex-shrink:0;background:#fff">
+      <span style="width:38px;display:flex;justify-content:center">${ms("arrow_back", { size: 26, color: MB, weight: 500 })}</span>
+      <div style="position:relative;width:40px;height:40px">${ini("И", "#e07a1f", 40)}<span style="position:absolute;right:-1px;bottom:0;width:13px;height:13px;border-radius:50%;background:#31a24c;border:2.5px solid #fff"></span></div>
+      <div style="flex:1;margin-left:4px;line-height:1.2"><div style="font-size:17px;font-weight:700;color:#050505">Иван (син)</div><div style="font-size:12.5px;color:#65676b">Активен сега</div></div>
+      <span style="display:flex;gap:20px;padding-right:6px">${ic("call", { s: 25 })}${ic("videocam", { s: 28 })}</span></div>
+    <div style="flex:1;background:#fff;padding:12px 12px 8px;display:flex;flex-direction:column;gap:4px;overflow:hidden">
+      <div style="display:flex;flex-direction:column;align-items:center;padding:8px 0 10px">${ini("И", "#e07a1f", 76)}<div style="font-size:18px;font-weight:700;margin-top:8px;color:#050505">Иван (син)</div><div style="font-size:13px;color:#65676b">Приятели във Facebook</div></div>
+      ${day("ВТОР 18:02")}
+      ${inb("Мамо, видя ли снимките на внучето?")}
+      ${outb("Видях ги! Колко е пораснал, Боже мой")}
+      ${inb("Утре идваме на гости 🙂", "margin-top:4px")}
+      ${day("СРЯ 09:15")}
+      ${outb("Добро утро! Правя баница, чакам Ви")}
+      <div style="align-self:flex-end;margin:0 2px 0 0;display:flex;align-items:center;gap:4px">${sil(15, "#c3c6cc")}</div>
+    </div>
+    <div style="background:#fff;padding:8px 8px 8px 6px;display:flex;align-items:center;gap:2px;flex-shrink:0">
+      <span style="width:38px;display:flex;justify-content:center">${ms("add_circle", { size: 29, fill: 1, color: MB })}</span>
+      <span style="width:38px;display:flex;justify-content:center">${ic("photo_camera", { s: 28 })}</span>
+      <span style="width:38px;display:flex;justify-content:center">${ic("image", { s: 28 })}</span>
+      <span class="ring ringr" style="width:38px;height:38px;display:flex;justify-content:center;align-items:center;border-radius:50%">${ic("mic", { s: 28 })}</span>
+      <div style="flex:1;background:#f0f2f5;border-radius:21px;height:40px;padding:0 10px 0 14px;display:flex;align-items:center;font-size:16px;color:#65676b;margin-left:4px"><span style="flex:1">Съобщение</span>${ms("sentiment_satisfied", { size: 25, color: MB, fill: 1 })}</div>
+      <span style="width:40px;display:flex;justify-content:center">${ic("thumb_up", { s: 28 })}</span></div>
+    ${nav("#fff")}
+    ${tip("Микрофонът праща гласово<br>съобщение — задръжте и говорете", "left:14px;bottom:100px", { arrow: "d", at: "42%" })}
+  `), "#fff", "#111111", { nav: false, time: "09:16" });
+}
+
+// ═════════════════════════ WHATSAPP ═════════════════════════
+const WG = "#1DAA61", WBG = "#EFEAE2";
+// фин десен от контурни рисунки (подобен на характерния фон на чата; нарисуван, не копиран)
+function waPattern(w, h) {
+  const names = ["favorite", "star", "photo_camera", "call", "music_note", "cake", "local_cafe", "home", "pets", "flight", "wb_sunny", "sports_soccer", "cloud", "umbrella", "local_florist", "directions_car", "headphones", "mail"];
+  let x = 11; const rnd = () => ((x = (x * 9301 + 49297) % 233280) / 233280);
+  const out = []; let k = 0;
+  for (let y = 6; y < h; y += 58) for (let xx = (Math.floor(y / 58) % 2) * 29; xx < w; xx += 58) {
+    out.push(`<span style="position:absolute;left:${(xx + rnd() * 14).toFixed(0)}px;top:${(y + rnd() * 14).toFixed(0)}px;transform:rotate(${Math.round(rnd() * 70 - 35)}deg)">${ms(names[k++ % names.length], { size: 25 + Math.round(rnd() * 5), color: "rgba(113,95,64,.17)", weight: 300, outlined: true })}</div>`.replace("</div>", "</span>"));
+  }
+  return `<div style="position:absolute;inset:0;overflow:hidden;pointer-events:none">${out.join("")}</div>`;
+}
+const wCss = `<style>
+.wb{position:relative;max-width:80%;padding:6px 8px 5px 9px;font-size:16px;line-height:1.28;color:#111b21;box-shadow:0 1px .5px rgba(11,20,26,.13)}
+.wb .tm{float:right;margin:7px 0 -4px 10px;font-size:11.5px;color:#667781;display:flex;align-items:center;gap:2px;line-height:1}
+.wi{align-self:flex-start;background:#fff;border-radius:0 9px 9px 9px}
+.wi:before{content:"";position:absolute;left:-7px;top:0;border-right:8px solid #fff;border-bottom:9px solid transparent}
+.wo{align-self:flex-end;background:#D9FDD3;border-radius:9px 0 9px 9px}
+.wo:before{content:"";position:absolute;right:-7px;top:0;border-left:8px solid #D9FDD3;border-bottom:9px solid transparent}
+</style>`;
+const wTm = (tm, st) => `<span class="tm">${tm}${st === "read" ? ms("done_all", { size: 17, color: "#53BDEB", weight: 500 }) : st === "del" ? ms("done_all", { size: 17, color: "#667781", weight: 500 }) : st === "sent" ? ms("done", { size: 17, color: "#667781", weight: 500 }) : ""}</span>`;
+const wIn = (x, tm) => `<div class="wb wi">${x}${wTm(tm, "")}</div>`;
+const wOut = (x, tm, st) => `<div class="wb wo">${x}${wTm(tm, st)}</div>`;
+const wDay = (s) => `<div style="align-self:center;background:#fff;color:#54656f;font-size:12.5px;padding:4px 11px;border-radius:8px;box-shadow:0 1px .5px rgba(11,20,26,.13);margin:2px 0 4px">${s}</div>`;
+
+{
+  const hasFlowers = fs.existsSync(path.join(ASSETS, "messaging", "flowers.jpg"));
+  const pic = hasFlowers ? `<div class="wb wi" style="padding:3px 3px 5px;width:250px">${photo("messaging/flowers.jpg", { w: 244, h: 180, radius: 7 })}<div style="padding:5px 5px 0 6px">Погледни цветята в градината ❤️${wTm("08:29", "")}</div></div>` : "";
+  S["whatsapp"] = phone(root(`${wCss}
+    <div style="background:#fff;height:60px;display:flex;align-items:center;gap:6px;padding:0 8px 0 4px;flex-shrink:0;box-shadow:0 1px 0 rgba(11,20,26,.1);position:relative;z-index:2">
+      <span style="width:36px;display:flex;justify-content:center">${ms("arrow_back", { size: 24, color: "#111b21" })}</span>${sil(40, "#c4cbd0")}
+      <div style="flex:1;margin-left:4px;line-height:1.2"><div style="font-size:17px;font-weight:500;color:#111b21">Елена (сестра)</div><div style="font-size:13px;color:#667781">на линия</div></div>
+      <span style="display:flex;gap:20px;color:#111b21;padding-right:4px">${ms("videocam", { size: 26, fill: 1 })}${ms("call", { size: 22, fill: 1 })}${ms("more_vert", { size: 24 })}</span></div>
+    <div style="flex:1;background:${WBG};position:relative;overflow:hidden">${waPattern(390, 640)}
+      <div style="position:relative;padding:10px 10px;display:flex;flex-direction:column;gap:6px;height:100%">
+        ${wDay("Днес")}
+        ${wIn("Добро утро, Стойно! Как е времето при вас?", "08:24")}
+        ${wOut("Добро утро! Слънчево и топло ☀️", "08:26", "read")}
+        ${pic}
+        ${wOut("Много са красиви! В събота ще дойда на гости", "08:31", "del")}
+      </div></div>
+    <div style="background:${WBG};padding:6px 6px 8px;display:flex;align-items:flex-end;gap:6px;flex-shrink:0">
+      <div style="flex:1;background:#fff;border-radius:24px;height:48px;display:flex;align-items:center;padding:0 12px;gap:12px;color:#667781;font-size:17px;box-shadow:0 1px .5px rgba(11,20,26,.13)">${ms("sentiment_satisfied", { size: 26 })}<span style="flex:1">Съобщение</span>${ms("attach_file", { size: 24, style: "transform:rotate(-45deg)" })}${ms("photo_camera", { size: 25, fill: 1 })}</div>
+      <div class="ring ringr" style="width:48px;height:48px;border-radius:50%;background:${WG};display:flex;align-items:center;justify-content:center">${ms("mic", { size: 27, fill: 1, color: "#fff" })}</div></div>
+    ${nav(WBG)}
+    ${tip("Зеленият бутон: задръжте<br>и говорете (гласово съобщение)", "right:8px;bottom:112px", { arrow: "d", at: "88%" })}
+  `), "#fff", "#111111", { nav: false, time: "08:32" });
+}
+
+// ── WhatsApp — регистрация: въвеждане на номер ──
+S["whatsapp-registraciya"] = phone(root(`
+  <div style="height:56px;display:flex;align-items:center;justify-content:flex-end;padding:0 14px;flex-shrink:0">${ms("more_vert", { size: 24, color: "#111b21" })}</div>
+  <div style="flex:1;padding:6px 26px 0;display:flex;flex-direction:column;align-items:center;overflow:hidden">
+    <div style="font-size:23px;font-weight:500;color:#111b21;text-align:center;margin-top:4px">Въведете телефонния си номер</div>
+    <div style="font-size:15px;line-height:1.4;color:#54656f;text-align:center;margin-top:14px">WhatsApp ще трябва да потвърди Вашия телефонен номер. Може да се начислят такси от оператора. <span style="color:#027eb5">Какъв е номерът ми?</span></div>
+    <div style="width:100%;margin-top:26px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;border-bottom:2px solid ${WG};padding:8px 0;font-size:18px;color:#111b21"><span style="flex:1;text-align:center;padding-left:30px">България</span>${ms("arrow_drop_down", { size: 28, color: "#667781" })}</div>
+      <div style="display:flex;gap:18px;margin-top:6px">
+        <div style="display:flex;align-items:center;gap:8px;border-bottom:2px solid ${WG};padding:10px 6px;font-size:18px;color:#111b21;width:92px">${t("+", "color:#667781")}359</div>
+        <div style="flex:1;border-bottom:2px solid ${WG};padding:10px 6px;font-size:19px;color:#111b21;letter-spacing:.3px">888 123 456${caret(WG)}</div></div></div>
+    <div style="font-size:14px;color:#667781;margin-top:16px;text-align:center">Носете телефона си подръка — кодът идва по SMS.</div>
+  </div>
+  <div style="display:flex;justify-content:center;padding:0 0 18px;flex-shrink:0"><div class="ring ringr" style="background:${WG};color:#fff;font-size:16.5px;font-weight:500;padding:13px 40px;border-radius:26px">Напред</div></div>
+  ${keyboard({ num: true })}
+  ${nav("#eceef2")}
+  ${tip("Въведете номера си<br>и натиснете „Напред“", "left:0;right:0;margin:0 auto;width:max-content;bottom:" + (26 + 262 + 72) + "px", { arrow: "d", at: "50%" })}
+`), "#fff", "#111111", { nav: false, time: "10:05" });
+
+// ═════════════════════════ FACEBOOK ═════════════════════════
+const FB = "#0866FF", FG = "#050505", FS = "#65676B", FL = "#E4E6EB";
+const fbMark = (s = 29) => `<span style="font-family:'Inter','Roboto',sans-serif;font-weight:700;font-size:${s}px;letter-spacing:${(-s * 0.045).toFixed(2)}px;color:${FB};line-height:1">facebook</span>`;
+const circ = (inner, s = 38, bg = FL) => `<span style="width:${s}px;height:${s}px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0">${inner}</span>`;
+const fbTop = (title, ring = false) => `<div style="height:56px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 14px;flex-shrink:0">${title}
+  <span style="display:flex;gap:11px">${circ(ms("add", { size: 25, weight: 500, color: FG }))}<span class="${ring ? "ring ringr" : ""}" style="display:flex;border-radius:50%">${circ(ms("search", { size: 23, weight: 500, color: FG }))}</span><span class="${ring ? "ring ringr" : ""}" style="display:flex;border-radius:50%">${circ(brand("messenger", FG, 21))}</span></span></div>`;
+const fbTabs = () => `<div style="height:48px;background:#fff;display:flex;flex-shrink:0;border-bottom:1px solid #dadde1">${[["home", 1], ["group", 0], ["smart_display", 0], ["storefront", 0], ["notifications", 0], ["menu", 0]].map(([i, a]) => `<div style="flex:1;display:flex;align-items:center;justify-content:center;position:relative;${a ? `border-bottom:3px solid ${FB};` : ""}">${ms(i, { size: 27, fill: a ? 1 : 0, color: a ? FB : "#606770" })}${i === "notifications" ? `<span style="position:absolute;left:54%;top:6px;min-width:17px;height:17px;border-radius:9px;background:#e41e3f;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px">5</span>` : ""}</div>`).join("")}</div>`;
+const reactIcons = `<span style="display:flex"><span style="width:20px;height:20px;border-radius:50%;background:${FB};display:flex;align-items:center;justify-content:center;border:1.5px solid #fff">${ms("thumb_up", { size: 12, fill: 1, color: "#fff" })}</span><span style="width:20px;height:20px;border-radius:50%;background:#f33e58;display:flex;align-items:center;justify-content:center;border:1.5px solid #fff;margin-left:-5px">${ms("favorite", { size: 12, fill: 1, color: "#fff" })}</span></span>`;
+const actBtn = (icon, label, o = {}) => `<div class="${o.ring ? "ring" : ""}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;height:40px;font-size:14.5px;font-weight:500;color:${o.on ? FB : FS};${o.ring ? "border-radius:10px;margin:0 4px;" : ""}">${ms(icon, { size: 22, fill: o.on ? 1 : 0, color: o.on ? FB : FS })}${label}</div>`;
+const postHead = (avatar, name, sub) => `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px 0">${avatar}<div style="flex:1;line-height:1.25"><div style="font-size:15.5px;font-weight:600;color:${FG}">${name}</div><div style="font-size:13px;color:${FS};display:flex;align-items:center;gap:4px">${sub}${ms("public", { size: 14, fill: 1, color: FS })}</div></div>${ms("more_horiz", { size: 24, color: FS })}${ms("close", { size: 24, color: FS })}</div>`;
+const has = (f) => fs.existsSync(path.join(ASSETS, "messaging", f));
+
+// ── Facebook — начален екран (емисия) ──
+S["fb-feed"] = phone(root(`
+  ${fbTop(fbMark(30), true)}${fbTabs()}
+  <div style="background:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:8px solid ${FL}">
+    ${ini("С", "#1f7a8c", 40)}<div style="flex:1;border:1px solid #ced0d4;border-radius:22px;height:40px;padding:0 15px;display:flex;align-items:center;font-size:16px;color:${FS}">Какво ви се случва?</div>${ms("photo_library", { size: 27, fill: 1, color: "#45bd62" })}</div>
+  <div style="background:#fff;flex-shrink:0;padding-bottom:0">
+    ${postHead(ini("П", "#2f6fb5", 40), "Читалище „Просвета“", "Вчера в 18:30 · ")}
+    <div style="padding:10px 14px 10px;font-size:16px;line-height:1.35;color:${FG}">Утре от 11:00 ч. на площада в Бобов дол има концерт. Вход свободен — заповядайте!</div>
+    ${has("concert.jpg") ? photo("messaging/concert.jpg", { w: 390, h: 250 }) : ""}
+    <div style="display:flex;align-items:center;padding:9px 14px;font-size:14px;color:${FS};gap:6px">${reactIcons}<span style="flex:1;white-space:nowrap">Мария и още 48</span><span style="white-space:nowrap">7 коментара · 2 споделяния</span></div>
+    <div style="display:flex;border-top:1px solid #dadde1;margin:0 6px">${actBtn("thumb_up", "Харесвам")}${actBtn("chat_bubble", "Коментар")}${actBtn("share", "Споделяне")}</div></div>
+  <div style="height:8px;background:${FL};flex-shrink:0"></div>
+  <div style="background:#fff;flex:1;overflow:hidden">${postHead(ini("П", "#3f8f4f", 40), "Петър Иванов", "2 ч. · ")}<div style="padding:10px 14px;font-size:16px;color:${FG}">Добро утро от село!</div></div>
+  ${nav("#fff")}
+  ${tip("Горе: лупата търси хора,<br>балончето е за съобщения", "left:0;right:0;margin:0 auto;width:max-content;top:735px")}
+`), "#fff", "#111111", { nav: false, time: "09:41" });
+
+// ── Facebook — харесване и коментар ──
+S["fb-haresai"] = phone(root(`
+  ${fbTop(fbMark(30))}${fbTabs()}
+  <div style="background:#fff;flex:1;overflow:hidden">
+    ${postHead(ini("П", "#3f8f4f", 40), "Петър Иванов", "2 ч. · ")}
+    <div style="padding:10px 14px 10px;font-size:16px;line-height:1.35;color:${FG}">Прибрахме реколтата! Хубава година беше.</div>
+    ${has("grapes.jpg") ? photo("messaging/grapes.jpg", { w: 390, h: 250 }) : ""}
+    <div style="display:flex;align-items:center;padding:9px 14px;font-size:14px;color:${FS};gap:6px">${reactIcons}<span style="flex:1">Иван Георгиев и още 23</span><span>4 коментара</span></div>
+    <div style="display:flex;border-top:1px solid #dadde1;margin:0 6px;border-bottom:1px solid #dadde1">${actBtn("thumb_up", "Харесвам", { ring: 1 })}${actBtn("chat_bubble", "Коментар")}${actBtn("share", "Споделяне")}</div>
+    <div style="padding:10px 12px;display:flex;gap:9px;margin-top:74px"><div style="margin-top:2px">${sil(34, "#b7c0c7")}</div>
+      <div><div style="background:${"#f0f2f5"};border-radius:18px;padding:8px 13px"><div style="font-size:13.5px;font-weight:600;color:${FG}">Елена Стоянова</div><div style="font-size:15.5px;color:${FG};line-height:1.3">Браво, Петре! Какво хубаво грозде!</div></div>
+      <div style="font-size:12.5px;color:${FS};padding:3px 12px;font-weight:600">1 ч. &nbsp; Харесвам &nbsp; Отговор</div></div></div>
+  </div>
+  <div style="background:#fff;border-top:1px solid #dadde1;padding:7px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0">${ini("С", "#1f7a8c", 36)}
+    <div style="flex:1;background:#f0f2f5;border-radius:20px;height:40px;padding:0 14px;display:flex;align-items:center;font-size:15.5px;color:${FS}"><span style="flex:1">Напишете коментар…</span>${ms("sentiment_satisfied", { size: 23, color: FS })}</div>${ms("send", { size: 25, fill: 1, color: "#bcc0c4" })}</div>
+  ${nav("#fff")}
+  ${tip("Натиснете „Харесвам“ (палецът) —<br>става синьо", "left:14px;top:534px", { arrow: "u", at: "20%" })}
+`), "#fff", "#111111", { nav: false, time: "11:52" });
+
+// ── Facebook — публикуване ──
+{
+  const opt = (icon, label, c, fill = 1) => `<div style="display:flex;align-items:center;gap:16px;height:52px;padding:0 16px">${ms(icon, { size: 27, fill, color: c })}<span style="font-size:16.5px;color:${FG}">${label}</span></div>`;
+  S["fb-publikuvai"] = phone(root(`
+    <div style="height:56px;background:#fff;display:flex;align-items:center;gap:12px;padding:0 12px 0 10px;flex-shrink:0;border-bottom:1px solid #dadde1">
+      ${ms("arrow_back", { size: 25, color: FG })}<div style="flex:1;font-size:16.5px;font-weight:700;color:${FG};white-space:nowrap">Създаване на публикация</div>
+      <div class="ring" style="background:${FB};color:#fff;font-size:15px;font-weight:600;padding:7px 14px;border-radius:8px">Публикувай</div></div>
+    <div style="background:#fff;flex:1;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px">${ini("С", "#1f7a8c", 44)}
+        <div style="line-height:1.3"><div style="font-size:16.5px;font-weight:600;color:${FG}">Стойна Иванова</div>
+          <div style="display:flex;gap:6px;margin-top:3px"><div style="display:flex;align-items:center;gap:4px;border:1px solid #ced0d4;border-radius:7px;padding:2px 8px;font-size:13px;font-weight:600;color:${FG}">${ms("group", { size: 15, fill: 1, color: FG })}Приятели${ms("arrow_drop_down", { size: 18, color: FG })}</div></div></div></div>
+      <div style="padding:80px 16px 0;font-size:25px;line-height:1.3;color:${FG}">Честит празник на всички! Бъдете здрави и усмихнати.${caret(FB)}</div>
+    </div>
+    <div style="background:#fff;border-top:1px solid #dadde1;flex-shrink:0;padding:4px 0">
+      ${opt("photo_library", "Снимка/видео", "#45bd62")}${opt("person_add", "Маркирай хора", FB)}${opt("sentiment_satisfied", "Чувство/дейност", "#f7b928")}${opt("location_on", "Регистрация", "#f5533d")}</div>
+    ${nav("#fff")}
+    ${tip("Проверете: „Приятели“ —<br>кой ще го види", "left:60px;top:136px", { arrow: "u", at: "20%" })}
+    ${tip("Натиснете синия бутон<br>„Публикувай“", "right:10px;top:64px", { arrow: "u", at: "84%" })}
+    ${tip("„Снимка“ — за да добавите снимка", "left:14px;bottom:" + (26 + 4 * 52 + 10) + "px", { arrow: "d", at: "14%" })}
+  `), "#fff", "#111111", { nav: false, time: "10:20" });
+}
+
+// ── Facebook — намиране на приятел ──
+{
+  const chipF = (l, on) => `<div style="padding:7px 14px;border-radius:18px;font-size:14.5px;font-weight:600;background:${on ? "#e7f3ff" : FL};color:${on ? FB : FG};white-space:nowrap">${l}</div>`;
+  const res = (av_, n, sub, ring) => `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px">${av_}<div style="flex:1;line-height:1.3"><div style="font-size:16.5px;font-weight:600;color:${FG}">${n}</div><div style="font-size:13.5px;color:${FS}">${sub}</div></div>
+    <div class="${ring ? "ring" : ""}" style="display:flex;align-items:center;gap:5px;background:#e7f3ff;color:${FB};font-size:14px;font-weight:600;padding:8px 11px;border-radius:8px;white-space:nowrap">${ms("person_add", { size: 18, fill: 1, color: FB })}Добави приятел</div></div>`;
+  S["fb-priatel"] = phone(root(`
+    <div style="height:58px;background:#fff;display:flex;align-items:center;gap:6px;padding:0 12px 0 8px;flex-shrink:0">${ms("arrow_back", { size: 25, color: FG })}
+      <div style="flex:1;background:#f0f2f5;border-radius:22px;height:40px;padding:0 12px 0 14px;display:flex;align-items:center;font-size:16.5px;color:${FG};margin-left:6px"><span style="flex:1">Мария Петрова</span>${ms("close", { size: 20, color: FS })}</div></div>
+    <div style="display:flex;gap:8px;padding:2px 12px 10px;background:#fff;flex-shrink:0;overflow:hidden;border-bottom:1px solid #dadde1">${chipF("Всичко")}${chipF("Хора", 1)}${chipF("Публикации")}${chipF("Снимки")}</div>
+    <div style="background:#fff;flex:1;overflow:hidden;padding-top:4px">
+      ${res(sil(60, "#d3a6b8"), "Мария Петрова", "5 общи приятели", 1)}
+      ${res(sil(60, "#a9b8d6"), "Мария Колева", "2 общи приятели")}
+      ${res(sil(60, "#b6c9a8"), "Мария Петрова", "Живее в София")}
+    </div>
+    ${nav("#fff")}
+    ${tip("Познайте човека по общите приятели,<br>натиснете „Добави приятел“", "left:0;right:0;margin:0 auto;width:max-content;top:452px")}
+  `), "#fff", "#111111", { nav: false, time: "10:48" });
+}
+
+// ── Facebook — поверителност (избор на аудитория) ──
+{
+  const opt = (icon, t1, t2, on) => `<div class="${on ? "ring" : ""}" style="display:flex;align-items:center;gap:14px;padding:12px 14px;${on ? "border-radius:12px;margin:2px 8px;padding:12px 8px;" : ""}">${circ(ms(icon, { size: 26, fill: 1, color: FG }), 48)}<div style="flex:1;line-height:1.3"><div style="font-size:16.5px;font-weight:600;color:${FG}">${t1}</div><div style="font-size:13.5px;color:${FS}">${t2}</div></div>
+    <div style="width:24px;height:24px;border-radius:50%;${on ? `background:${FB};` : "border:2px solid #8a8d91;"}display:flex;align-items:center;justify-content:center">${on ? `<i style="display:block;width:9px;height:9px;border-radius:50%;background:#fff"></i>` : ""}</div></div>`;
+  S["fb-poveritelnost"] = phone(root(`
+    <div style="height:56px;background:#fff;display:flex;align-items:center;gap:12px;padding:0 12px 0 10px;flex-shrink:0;border-bottom:1px solid #dadde1">${ms("arrow_back", { size: 25, color: FG })}<div style="flex:1;font-size:19px;font-weight:700;color:${FG}">Избор на аудитория</div></div>
+    <div style="background:#fff;flex:1;overflow:hidden">
+      <div style="padding:16px 14px 8px"><div style="font-size:18px;font-weight:700;color:${FG}">Кой може да вижда публикацията Ви?</div>
+      <div style="font-size:14px;line-height:1.35;color:${FS};margin-top:6px">Публикацията ще се показва в емисията, във Вашия профил и в резултатите от търсене.</div></div>
+      ${opt("public", "Публично", "Всеки във Facebook и извън него", 0)}${opt("group", "Приятели", "Само Вашите приятели във Facebook", 1)}${opt("person_add", "Конкретни приятели", "Само избрани от Вас хора", 0)}${opt("lock", "Само аз", "Никой друг не я вижда", 0)}
+    </div>
+    <div style="background:#fff;padding:10px 14px 12px;flex-shrink:0;border-top:1px solid #dadde1"><div style="background:${FB};color:#fff;text-align:center;font-size:16.5px;font-weight:600;height:46px;border-radius:8px;display:flex;align-items:center;justify-content:center">Готово</div></div>
+    ${nav("#fff")}
+    ${tip("„Приятели“ е най-безопасно —<br>само познати виждат снимките Ви", "left:0;right:0;margin:0 auto;width:max-content;top:520px")}
+  `), "#fff", "#111111", { nav: false, time: "10:22" });
+}
+
+// ── Facebook — фалшив профил (подозрителни признаци) ──
+{
+  const info = (icon, x) => `<div style="display:flex;align-items:center;gap:12px;padding:5px 16px;font-size:15.5px;color:${FG}">${ms(icon, { size: 24, color: "#606770" })}<span>${x}</span></div>`;
+  S["fb-falshiv"] = phone(root(`
+    <div style="height:56px;background:#fff;display:flex;align-items:center;gap:8px;padding:0 12px 0 10px;flex-shrink:0">${ms("arrow_back", { size: 25, color: FG })}
+      <div style="flex:1;background:#f0f2f5;border-radius:20px;height:38px;padding:0 14px;display:flex;align-items:center;font-size:16px;color:${FG};margin-left:4px">Ivan Petrov</div>${ms("more_horiz", { size: 26, color: FG })}</div>
+    <div style="background:#fff;flex:1;overflow:hidden">
+      <div style="height:150px;background:linear-gradient(180deg,#d8dadf,#c9ccd1)"></div>
+      <div style="margin:-64px 0 0 16px;width:128px;height:128px;border-radius:50%;border:4px solid #fff;overflow:hidden;background:#fff">${sil(120, "#bcc0c7")}</div>
+      <div style="padding:8px 16px 0"><div style="font-size:26px;font-weight:700;color:${FG}">Ivan Petrov</div><div style="font-size:15px;color:${FS};margin-top:2px"><b style="color:${FG}">3</b> приятели</div></div>
+      <div style="display:flex;gap:8px;padding:14px 16px 12px"><div style="flex:1;background:${FB};color:#fff;height:40px;border-radius:8px;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px">${ms("person_add", { size: 19, fill: 1, color: "#fff" })}Добави приятел</div><div style="flex:1;background:${FL};color:${FG};height:40px;border-radius:8px;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px">${ms("chat", { size: 19, fill: 1, color: FG })}Съобщение</div></div>
+      <div style="border-top:1px solid #dadde1;padding:10px 0 62px">${info("work", "Работи като инженер в Лондон")}${info("home", "Живее в Лондон, Англия")}${info("schedule", "Присъединил се през октомври 2026")}</div>
+      <div style="border-top:8px solid ${FL};padding:12px 16px"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:19px;font-weight:700;color:${FG}">Снимки</span><span style="font-size:15px;color:${FB}">Всички снимки</span></div>
+        <div style="display:flex;gap:4px;margin-top:10px"><div style="flex:1;height:96px;border-radius:8px;background:#d3d6db"></div><div style="flex:1;height:96px;border-radius:8px;background:#c4c8ce"></div><div style="flex:1;height:96px;border-radius:8px;border:1px dashed #ced0d4"></div></div></div>
+    </div>
+    ${nav("#fff")}
+    ${tip("Присъединил се наскоро —<br>профилът е съвсем нов", "right:10px;top:516px", { arrow: "u", at: "30%" })}
+    ${tip("Само 3 приятели", "left:112px;top:306px", { arrow: "l", at: "50%" })}
+    ${tip("Само 2 снимки", "right:10px;top:724px", { arrow: "u", at: "70%" })}
+  `), "#fff", "#111111", { nav: false, time: "20:07" });
+}
+
+// ── Facebook — забравена парола (намерете профила си) ──
+S["fb-parola"] = phone(root(`
+  <div style="height:56px;display:flex;align-items:center;padding:0 12px;flex-shrink:0;background:#fff">${ms("arrow_back", { size: 25, color: FG })}</div>
+  <div style="background:#fff;flex:1;padding:0 20px;overflow:hidden">
+    <div style="display:flex;justify-content:center;margin:2px 0 18px">${brand("facebook", FB, 56)}</div>
+    <div style="font-size:23px;font-weight:700;color:${FG}">Намерете профила си</div>
+    <div style="font-size:15px;line-height:1.4;color:${FS};margin:8px 0 18px">Въведете имейл адреса или мобилния номер, с които сте се регистрирали.</div>
+    <div style="position:relative;border:2px solid ${FB};border-radius:10px;height:56px;padding:0 14px;display:flex;align-items:flex-end;padding-bottom:9px;font-size:18px;color:${FG}">
+      <span style="position:absolute;left:12px;top:-10px;background:#fff;padding:0 4px;font-size:13px;color:${FB}">Мобилен номер или имейл</span>0888 123 456${caret(FB)}</div>
+    <div class="ring" style="margin-top:20px;background:${FB};color:#fff;height:48px;border-radius:24px;font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center">Търсене</div>
+    <div style="margin-top:14px;text-align:center;font-size:14px;color:${FS}">След това ще получите код по SMS</div>
+  </div>
+  ${keyboard({ num: true })}
+  ${nav("#eceef2")}
+  ${tip("Въведете телефона или имейла си —<br>идва код за нова парола", "left:0;right:0;margin:0 auto;width:max-content;top:470px", { arrow: "u", at: "50%" })}
+`), "#fff", "#111111", { nav: false, time: "19:15" });
+
+// емоджитата — винаги с цветния шрифт (иначе DejaVu слага контурни/монохромни глифове)
+const emojify = (h) => h.replace(/(\p{Extended_Pictographic}\uFE0F?(?:\u200D\p{Extended_Pictographic}\uFE0F?)*)/gu, `<span style="font-family:'Noto Color Emoji'">$1</span>`);
+render(Object.fromEntries(Object.entries(S).map(([k, v]) => [k, emojify(v)])));
