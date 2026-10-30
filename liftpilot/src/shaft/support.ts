@@ -50,6 +50,9 @@ export interface MachineSupport {
   height?: number;
   /** a frame's or a plinth's length along the rope drop line (missing: the bedplate's plus the overhang at each end) */
   length?: number;
+  /** a frame's or a plinth's middle moved along the rope drop line toward the counterweight's drop, from the middle of
+   *  the machine's bedplate (round 57; negative: toward the car's; missing: centred) [mm] */
+  shift?: number;
   /** the existing base of a machine kept: what it looks like (missing: not said) */
   of?: BaseEsistente;
   /** the existing base of a machine kept: the sheave's axis over the room's floor the calculation's L0 gives (kept.ts) [mm] */
@@ -110,11 +113,12 @@ export function supportLength(s: MachineSupport, D: number, shape: MachineShape 
   return s.length ?? Math.round(b - a + 2 * KV_VERT.supportOverhang);
 }
 
-/** Where a frame or a plinth runs along the drop line, from the sheave's centre: centred on the bedplate [mm]. */
-export function supportSpan(s: MachineSupport, D: number, shape: MachineShape | null = null): readonly [number, number] | null {
+/** Where a frame or a plinth runs along the drop line, from the sheave's centre: centred on the bedplate, moved by its
+ *  shift toward the counterweight's drop — `dir`: 1 where the machine's x runs toward it, -1 turned round [mm]. */
+export function supportSpan(s: MachineSupport, D: number, shape: MachineShape | null = null, dir: 1 | -1 = 1): readonly [number, number] | null {
   const len = supportLength(s, D, shape);
   if (len === null) return null;
-  const [a, b] = bedplate(D, shape), mid = (a + b) / 2;
+  const [a, b] = bedplate(D, shape), mid = (a + b) / 2 + dir * (s.shift ?? 0);
   return [mid - len / 2, mid + len / 2];
 }
 
@@ -124,8 +128,8 @@ type P2 = readonly [number, number];
  *  puts past the bedplate brought back to stay KV_VERT.supportWallGap off the walls of the room [0, W] × [0, Dr] — never
  *  short of the bedplate (m_fit then tells) —, the machine's origin at `o` in the room's plan, its x along the unit `ex`
  *  and its z along `ez`; a length set by hand as it is. null for the others. */
-export function supportSpanIn(s: MachineSupport, D: number, shape: MachineShape | null, W: number, Dr: number, o: P2, ex: P2, ez: P2): readonly [number, number] | null {
-  const span = supportSpan(s, D, shape);
+export function supportSpanIn(s: MachineSupport, D: number, shape: MachineShape | null, W: number, Dr: number, o: P2, ex: P2, ez: P2, dir: 1 | -1 = 1): readonly [number, number] | null {
+  const span = supportSpan(s, D, shape, dir);
   if (!span || s.length !== undefined) return span;
   const F = machineFrame(D, shape), [a, b] = F.run, half = s.kind === 'frame' ? PROFILES[profileOf(s)].b / 2 : 0;
   const zs = s.kind === 'plinth' ? F.plinth.flat() : F.beams.flatMap((z) => [z - half, z + half]), g = KV_VERT.supportWallGap;

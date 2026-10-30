@@ -61,6 +61,7 @@ const supportSchema = z.object({
   profile: z.enum(PROFILE_NAMES).optional(),
   height: mm(0, 3000).optional(),
   length: mm(300, 5000).optional(),
+  shift: z.number().int().min(-3000).max(3000).optional(),
   of: z.enum(BASI_ESISTENTI).optional(),
   axis: z.number().finite().min(-20000).max(20000).optional(),
 }).strict();

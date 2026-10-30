@@ -142,7 +142,9 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     hebBeams(hb, beams, R, z0, M);
     hb.into(common);
   }
-  const span = R ? supportSpanIn(sup, D, F.shape, R.W, R.D, [o[0] + R.shaftX, o[1] + R.shaftY], pose.xDir, across) : undefined;
+  // the machine's x toward the counterweight's drop or turned round: the support's shift is toward it
+  const toCw: 1 | -1 = pose.xDir[0] * rig.dir[0] + pose.xDir[1] * rig.dir[1] < 0 ? -1 : 1;
+  const span = R ? supportSpanIn(sup, D, F.shape, R.W, R.D, [o[0] + R.shaftX, o[1] + R.shaftY], pose.xDir, across, toCw) : undefined;
   const base = buildSupport(sup, F, D, gap, walls, M, inFrame, hebH / 1000, span);
   base.position.copy(machine.group.position);
   base.rotation.copy(machine.group.rotation);

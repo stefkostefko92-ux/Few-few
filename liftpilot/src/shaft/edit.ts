@@ -39,7 +39,7 @@ const CS_KEYS = ['offset', 'height'] as const;
 const H_KEYS = ['front', 'rear', 'left', 'right'] as const;
 const IMB_KEYS = ['left', 'right', 'top', 'marble', 'height'] as const;
 const FR_KEYS = ['jamb', 'head', 'depth'] as const;
-const SUP_KEYS = ['height', 'length'] as const;
+const SUP_KEYS = ['height', 'length', 'shift'] as const;
 const BL_KEYS = ['W', 'D', 'H', 'doorAt', 'doorW', 'doorH'] as const satisfies readonly (keyof BelowRoom)[];
 /** Inputs changed by choosing an entry of a catalogue or a table. */
 const PICK_KEYS = ['carRail', 'cwRail', 'v.topRefuge', 'v.pitRefuge', 'sup.profile', ...HEB_KEYS] as const;
@@ -133,7 +133,7 @@ export function withValue(I: ShaftInputs, key: string, value: number): ShaftInpu
   if (bl) return { ...I, below: { ...I.below, [bl]: value } };
   const su = head === 'sup' ? pick(SUP_KEYS, sub) : undefined;
   // a support below the floor or a frame or plinth shorter than the zod range is no support
-  if (su && I.room) return value < (su === 'length' ? 300 : 0) ? null : { ...I, room: { ...I.room, support: { ...supportOf(I.room), [su]: value } } };
+  if (su && I.room) return value < (su === 'length' ? 300 : su === 'shift' ? -3000 : 0) ? null : { ...I, room: { ...I.room, support: { ...supportOf(I.room), [su]: value } } };
   const w = head === 'head' ? pick(H_KEYS, sub) : undefined;
   if (w) {
     // walls back where the main floor has them leave no headroom of their own

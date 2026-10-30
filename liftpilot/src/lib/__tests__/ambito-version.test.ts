@@ -37,8 +37,9 @@ import { sostituite } from '../lift/sostituite';
  *  four versions bumped (ENGINE 1.8.0, LIFT 1.33.0, ROOM 1.17.0, SHAFT 2.27.0). Round 52: the ropes of a modification
  *  under UNI 10411-1 as the owner's rope sheet checks them (fm_* in the scope, among the checks of UNI 10411-1 only, the
  *  sheet's numbers KR2 and compensation lists, S_f not counted where z stands in for it), with the four versions bumped
- *  (ENGINE 1.9.0, LIFT 1.34.0, ROOM 1.18.0, SHAFT 2.28.0). */
-const PINNED = { sha256: '7053da1c5107c0f7e62e142b47a8b174a00f493db5315dd06852359c49e83e0c', engine: '1.9.0', lift: '1.34.0', room: '1.18.0', shaft: '2.28.0' };
+ *  (ENGINE 1.9.0, LIFT 1.34.0, ROOM 1.18.0, SHAFT 2.28.0). Round 57: the scope as it was (the same key), LIFT 1.35.0,
+ *  ROOM 1.19.0 and SHAFT 2.29.0 for a new input of the machine's support (its shift along the drop line). */
+const PINNED = { sha256: '7053da1c5107c0f7e62e142b47a8b174a00f493db5315dd06852359c49e83e0c', engine: '1.9.0', lift: '1.35.0', room: '1.19.0', shaft: '2.29.0' };
 
 /** The constants of a modification: the loads (6.1), the CE marking's day, the speed and the travel (15, 16). */
 const KL_MODIFICA = {

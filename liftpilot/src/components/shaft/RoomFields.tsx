@@ -142,6 +142,9 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
           : num('room-sp-height', t('sp_height'), testoAiuto(AIUTO, 'sp_height'), sup.kind === 'rinvio' && rf ? rf.top : supportHeight(sup, machine.D, machine.shimsAxis, machine.shape ?? null), 0, 3000, (v) => putSup({ height: v }))}
         {!kept && supportLength(sup, machine.D, machine.shape ?? null) !== null
           ? num('room-sp-length', t('sp_length'), testoAiuto(AIUTO, 'sp_length'), supportLength(sup, machine.D, machine.shape ?? null) ?? 0, 300, 5000, (v) => putSup({ length: v })) : null}
+        {/* round 57: the frame or plinth moved along the drop line, the machine where its sheave is */}
+        {!kept && supportLength(sup, machine.D, machine.shape ?? null) !== null
+          ? num('room-sp-shift', t('sp_shift'), testoAiuto(AIUTO, 'sp_shift'), sup.shift ?? 0, -3000, 3000, (v) => putSup({ shift: v === 0 ? undefined : v })) : null}
         <Campo id="bk-room-motor" nome={t('rm_motor')} aiuto={testoAiuto(AIUTO, 'rm_motor')} className="esperto">
           <select id="bk-room-motor" className="input" value={R.motor ?? ''} onChange={(e) => {
             const v = e.target.value;

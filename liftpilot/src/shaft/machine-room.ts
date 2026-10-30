@@ -146,7 +146,7 @@ type P2 = readonly [number, number];
 export function supportRunIn(G: RoomGeo, M: MachineSpec): readonly [number, number] | null {
   const d = G.dir, vx = -G.uy, vy = G.ux, zS = G.frame.zSheave;
   const o: P2 = [G.carDrop[0] + G.sheaveAt * G.ux + d * zS * vx, G.carDrop[1] + G.sheaveAt * G.uy + d * zS * vy];
-  return supportSpanIn(supportOf(G.room, M.Dp > 0), M.D, G.frame.shape, G.room.W, G.room.D, o, [d * G.ux, d * G.uy], [-d * vx, -d * vy]);
+  return supportSpanIn(supportOf(G.room, M.Dp > 0), M.D, G.frame.shape, G.room.W, G.room.D, o, [d * G.ux, d * G.uy], [-d * vx, -d * vy], d);
 }
 
 /** The machine on its bedframe in plan [u0, v0, u1, v1], with what its support spreads past it: a frame's profiles and a

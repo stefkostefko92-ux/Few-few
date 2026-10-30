@@ -1199,6 +1199,7 @@
     "sp_profile": "Profilato",
     "sp_height": "Altezza del basamento sul pavimento (mm)",
     "sp_length": "Lunghezza lungo la calata (mm)",
+    "sp_shift": "Spostamento lungo la calata, verso il contrappeso (mm)",
     "sp_hint": "L’altezza del basamento porta l’asse della puleggia: il calcolo, i disegni del locale e il 3D lo seguono.",
     "kept_title": "Basamento dell’argano esistente",
     "kept_note": "Argano esistente (resta) sul suo basamento — da rilevare: posizione, altezza e appoggi. Il disegno lo mette dove la L0 del calcolo porta l’asse della puleggia; nessun nuovo supporto, putrelle sui muri del vano o gancio, e il software non verifica il basamento.",
@@ -1235,6 +1236,7 @@
     "su_height": "Basamento: altezza sul pavimento",
     "ri_height": "Piano del telaio con rinvio sul pavimento",
     "su_length": "Basamento: lunghezza lungo la calata",
+    "su_shift": "Basamento: spostamento verso il contrappeso",
     "su_profile": "Basamento: profilato",
     "pv_door": "Staffe delle porte di piano (Panev)",
     "pv_door_auto": "Automatico: {code}",
@@ -2648,7 +2650,7 @@
       },
       "conflict": {
         "title": "Qualcuno ha modificato questa scheda mentre la stavi compilando.",
-        "text": "I tuoi dati sono ancora qui sotto. Apri la versione attuale in un’altra scheda del browser e confronta: se salvi ora, sostituisci le modifiche dell'altra persona.",
+        "text": "I tuoi dati sono ancora qui sotto. Apri la versione attuale in un’altra scheda del browser e confronta: se salvi ora, sostituisci le modifiche dell’altra persona.",
         "open": "Apri la versione attuale"
       }
     },
@@ -2973,7 +2975,7 @@
       "sezioniHint": "Togli la spunta alle sezioni da lasciare fuori dal foglio stampato. L’intestazione con indirizzo, matricola e n° impianto c’è sempre."
     },
     "impostazioni": {
-      "error": "L'ordine inviato non è valido. Ecco quello salvato: riprova.",
+      "error": "L’ordine inviato non è valido. Ecco quello salvato: riprova.",
       "sezioni": {
         "title": "Ordine delle sezioni della scheda",
         "text": "Vale per tutte le schede dell’azienda: modulo, pagina della scheda, stampa e PDF.",

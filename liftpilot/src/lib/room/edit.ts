@@ -29,9 +29,9 @@ export function withSurveyValue(s: Survey, key: string, value: number): Survey |
   if (r) return { ...s, room: { ...s.room, [r]: value } };
   // the top of the bedplate with the diverting pulley: that support, ours, at that height
   if (key === 'rinvio.height') return value < 0 ? null : { ...s, room: { ...s.room, support: { kind: 'rinvio', height: value } } };
-  if (key === 'sup.height' || key === 'sup.length') {
-    const f = key === 'sup.height' ? 'height' : 'length';
-    return value < (f === 'length' ? 300 : 0) ? null : { ...s, room: { ...s.room, support: { ...supportOf(s.room), [f]: value } } };
+  if (key === 'sup.height' || key === 'sup.length' || key === 'sup.shift') {
+    const f = key === 'sup.height' ? 'height' : key === 'sup.length' ? 'length' : 'shift';
+    return value < (f === 'length' ? 300 : f === 'shift' ? -3000 : 0) ? null : { ...s, room: { ...s.room, support: { ...supportOf(s.room), [f]: value } } };
   }
   return null;
 }

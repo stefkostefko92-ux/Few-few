@@ -6,6 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_ROOM, KV_VERT, PROFILES, defaultInputs, layout, roomGeo, sheaveAxisOn, supportHeight, type MachineSpec, type MachineSupport } from '../index';
 import { ownAxis, supportSpan } from '../support';
+import { supportRunIn } from '../machine-room';
 import { beamChecks, beamDoorGap, beamResult, fitChecks, freeBeside, machineTop, rowShares } from '../support-check';
 
 const D = 400, SHIMS_AXIS = 0.55 * D;
@@ -153,4 +154,24 @@ test('superficie libera accanto all’argano: 500 × 600 mm sul lato più libero
   // on the design: the default machine room leaves the area free
   const L = layout(defaultInputs(1600, 1750)), G = roomGeo(L, M);
   assert.equal(fitChecks(G, M).find((c) => c.id === 'm_free')?.status, 'ok');
+});
+
+test('basamento spostato lungo la calata verso il contrappeso (round 57): l’argano resta, il telaio si sposta', () => {
+  const [a, b] = supportSpan({ kind: 'frame', length: 2000 }, D) ?? [0, 0], [c, d] = supportSpan({ kind: 'frame', length: 2000, shift: 300 }, D) ?? [0, 0];
+  assert.equal(c - a, 300);
+  assert.equal(d - b, 300);
+  // the machine turned round (its x toward the car's drop): the same shift toward the counterweight
+  const [e] = supportSpan({ kind: 'frame', length: 2000, shift: 300 }, D, null, -1) ?? [0, 0];
+  assert.equal(e - a, -300);
+  // in the room: the run along the drop line moves by the shift toward the counterweight's drop, the machine stays
+  const G0 = geo({ kind: 'frame', length: 2000 }), G1 = geo({ kind: 'frame', length: 2000, shift: 300 });
+  const r0 = supportRunIn(G0, M), r1 = supportRunIn(G1, M);
+  assert.ok(r0 && r1);
+  assert.equal(G1.sheaveAt, G0.sheaveAt, 'the sheave over the ropes');
+  // (the run is along the machine's x: toward the counterweight's drop is G.dir of it)
+  assert.equal(Math.round(G1.dir * (r1[0] - r0[0])), 300);
+  assert.equal(Math.round(G1.dir * (r1[1] - r0[1])), 300);
+  // shifted past the machine's mounts: the base check fails
+  const far = fitChecks(geo({ kind: 'frame', length: 1200, shift: 1500 }), M).find((x) => x.id === 'm_base');
+  assert.ok(!far || far.status === 'fail', 'the frame no longer under every mount');
 });

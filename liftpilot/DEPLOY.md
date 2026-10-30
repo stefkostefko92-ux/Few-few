@@ -172,6 +172,30 @@ docker exec liftpilot-app-1 npm run engine:notice -- --send --motivo "<какв�
 не праща на вече уведомените, а неизпратените (грешка на релея) се пращат при следващото. Без пощенски настройки
 `--send` спира, без да праща.
 
+## Кръг 57 — данните на картата, имената, изместването на telaio
+
+Един release. Миграцията `32_scheda_dati_at` — колона `Scheda.datiAt` (`TIMESTAMP(3)`, nullable) и
+`UPDATE "Scheda" SET "datiAt" = "updatedAt"` за съществуващите карти; адитивна, връщането — в коментара ѝ. Ако кръгове
+52–56 още не са разгърнати, важи и „Кръг 52“ (миграции 30–31) — entrypoint-ът ги пуска в ред.
+**Двигателите се сменят** (LIFT 1.35.0, ROOM 1.19.0, SHAFT 2.29.0, RT 1.2.0, RT2 2.1.0; ENGINE 1.9.0 — същият): проектите,
+машинните, комплектите и relazioni стават „da aggiornare“ — затова **преди** деплоя `pdf:keep` на работещия release.
+**Писма няма** (нито `engine:notice --send`).
+
+0. **Преди:** бекъп (скриптът го прави) и
+   ```bash
+   docker exec liftpilot-app-1 npm run pdf:keep -- --dry-run
+   docker exec liftpilot-app-1 npm run pdf:keep
+   ```
+1. **Деплоят:** `REF=<SHA на кръг 57> PROJECTS="liftpilot"` (с `fetch-deploy.sh` от същия SHA). Проверка:
+   ```bash
+   curl -fsS http://127.0.0.1:4330/api/health
+   docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc 'SELECT migration_name FROM "_prisma_migrations" ORDER BY finished_at DESC LIMIT 1'   # 32_scheda_dati_at
+   docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc 'SELECT count(*) FROM "Scheda" WHERE "datiAt" IS NULL'   # 0
+   ```
+2. **След:** издаденият комплект и издадената relazione се свалят (пазените тела); записите „da aggiornare“ — с «Aggiorna
+   con il software attuale»; бележка в свързана карта вече не прави съоръжението „da aggiornare“.
+3. **IndexNow:** публичните страници не са сменени — нищо.
+
 ## Кръг 52 — редът на деплоя (relazione tecnica по модела на собственика, «?», режимът, листът «Funi»)
 
 Един release. Миграциите — `30_modalita` (enum `Modalita` и колона `User.modalita` с подразбиране `SEMPLICE`) и

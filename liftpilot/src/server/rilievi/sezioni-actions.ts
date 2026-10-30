@@ -20,7 +20,7 @@ import { prisma } from '@/lib/db';
 
 /** The setting's answer: the order to show (`moved` — moved, not saved yet; `focus` — the button pressed, to keep the
  *  focus on it), saved or reset (the page shows `rilievi.flash.sezioniSaved|sezioniReset`), or a refusal (`invalid`:
- *  «L'ordine inviato non è valido. Ecco quello salvato: riprova.» with the saved order; `forbidden`, `readOnly` and
+ *  «L’ordine inviato non è valido. Ecco quello salvato: riprova.» with the saved order; `forbidden`, `readOnly` and
  *  `tooMany` with the order that was on screen, `modificato` when it holds moves not saved yet). */
 export type SezioniState =
   | { status: 'idle' }
