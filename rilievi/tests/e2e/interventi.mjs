@@ -30,10 +30,11 @@ async function sign(page, index) {
 }
 
 export async function checkInterventi(page, { base, shots, scheme, aziendaName }) {
-  // The bar: three groups, the current page marked.
+  // The bar: four groups for the MASTER (Master apart from the company's Amministrazione), the current
+  // page marked.
   await page.goto(`${base}/interventi`);
   const groups = await page.locator('.sidenav__group').allTextContents();
-  if (groups.join('|') !== 'Rilievi|Assistenza elevatori|Amministrazione')
+  if (groups.join('|') !== 'Rilievi|Assistenza elevatori|Amministrazione|Master')
     fail(`${scheme}: side bar groups ${groups.join('|')}`);
   if (!(await page.locator('.sidenav a[aria-current="page"][href="/interventi"]').count()))
     fail(`${scheme}: "Interventi" not marked in the bar`);

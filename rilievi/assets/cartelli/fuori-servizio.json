@@ -1,0 +1,65 @@
+{
+  "id": "fuori-servizio",
+  "titolo": "Fuori servizio",
+  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 03_Fuori_Servizio.pdf, senza modifiche",
+  "file": "fuori-servizio.jpg",
+  "sha256": "0613dac1fbf9e46f83fa64cea7738b68f2b6d373c9ada29ef112d2a9275359fb",
+  "larghezza": 1216,
+  "altezza": 918,
+  "copri": [
+    {
+      "rect": [347, 112, 825, 139]
+    },
+    {
+      "rect": [497, 556, 623, 588]
+    },
+    {
+      "rect": [643, 556, 803, 588]
+    },
+    {
+      "rect": [833, 556, 931, 588]
+    },
+    {
+      "rect": [965, 556, 1208, 588]
+    },
+    {
+      "rect": [497, 662, 1163, 766]
+    }
+  ],
+  "logo": {
+    "box": [500, 14, 700, 104]
+  },
+  "azienda": {
+    "box": [716, 18, 1200, 104],
+    "colore": "#1a1a1a",
+    "dimensione": 18
+  },
+  "attivita": {
+    "x": 354,
+    "y": 132,
+    "larghezza": 470,
+    "dimensione": 18,
+    "colore": "#1a1a1a"
+  },
+  "valori": {
+    "y": 580,
+    "dimensione": 24,
+    "colore": "#111111",
+    "colonne": [
+      [505, 115],
+      [651, 150],
+      [840, 88],
+      [972, 228]
+    ]
+  },
+  "testo": {
+    "x": 504,
+    "y": 683,
+    "larghezza": 650,
+    "riga": 25.3,
+    "righe": 4,
+    "dimensione": 21,
+    "colore": "#111111"
+  },
+  "scritte": []
+}

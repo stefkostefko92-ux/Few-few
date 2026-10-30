@@ -49,6 +49,41 @@
   "impostazioni": {
     "title": "Impostazioni",
     "choose": "Apri",
+    "dati": {
+      "title": "Dati societari",
+      "text": "Vanno in alto sul cartello di fermo impianto, accanto al logo. Compila solo quello che vuoi mostrare.",
+      "logoSi": "Il logo dell'azienda va accanto ai dati.",
+      "logoNo": "L'azienda non ha un logo: il cartello mostra solo i dati. Il logo lo carica il Master del portale.",
+      "save": "Salva dati societari",
+      "campo": {
+        "ragioneSociale": "Ragione sociale",
+        "attivita": "Attività",
+        "indirizzo": "Indirizzo",
+        "cap": "CAP",
+        "citta": "Città",
+        "provincia": "Provincia (sigla)",
+        "telefono": "Telefono",
+        "email": "Email",
+        "partitaIva": "Partita IVA",
+        "sito": "Sito web"
+      },
+      "hint": {
+        "ragioneSociale": "Vuota: si usa il nome dell'azienda nel portale.",
+        "attivita": "La riga sotto i dati, ad esempio «Manutenzione riparazione ascensori e montacarichi»."
+      },
+      "error": {
+        "tooLong": "Massimo {maxLength} caratteri.",
+        "invalid": "Valore non valido.",
+        "phone": "Solo cifre, spazi e + ( ) . / -",
+        "email": "Indirizzo email non valido."
+      }
+    },
+    "cartello": {
+      "title": "Cartello di fermo impianto",
+      "text": "Scegli l'aspetto del cartello. In alto vanno automaticamente il logo e i dati societari; data, indirizzo, ubicazione e testo li scrive chi crea il cartello.",
+      "inUso": "In uso",
+      "save": "Usa il modello scelto"
+    },
     "error": "L'ordine inviato non è valido. Ecco quello salvato: riprova.",
     "sezioni": {
       "title": "Ordine delle sezioni della scheda",

@@ -21,12 +21,14 @@
     },
     "impostazioni": "Impostazioni",
     "interventi": "Interventi",
+    "cartelli": "Cartelli fermo impianto",
     "open": "Apri il menu",
     "close": "Chiudi il menu",
     "group": {
       "rilievi": "Rilievi",
       "assistenza": "Assistenza elevatori",
-      "amministrazione": "Amministrazione"
+      "amministrazione": "Amministrazione",
+      "master": "Master"
     }
   },
   "common": {
@@ -107,6 +109,8 @@
     "membershipRemoved": "Account tolto dall'azienda.",
     "membershipLast": "È l'unica azienda dell'account e non si può togliere: per togliere l'accesso, disattivalo.",
     "sezioniSaved": "Ordine delle sezioni salvato.",
-    "sezioniReset": "Ripristinato l'ordine predefinito delle sezioni."
+    "sezioniReset": "Ripristinato l'ordine predefinito delle sezioni.",
+    "datiSaved": "Dati societari salvati.",
+    "cartelloSaved": "Modello del cartello salvato."
   }
 }

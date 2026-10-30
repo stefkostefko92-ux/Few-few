@@ -57,7 +57,9 @@ src/
                      кого), memberships.ts, пароли, JWT сесии, заключване, CSRF
   aziende/           service.ts (фирмите) · logo.ts (проверка по байтове + прекодиране през sharp) ·
                      sezioni.ts (редът на разделите на фирмата — запис, одит) · funzioni.ts (функциите
-                     по избор: скицникът — само MASTER, с одит)
+                     по избор: скицникът — само MASTER, с одит) · dati.ts (данните на фирмата — zod,
+                     четене с недоверие, главата на табелата) · intestazione.ts (запис на данните и на
+                     шаблона на табелата, одит)
   services/          вход, покани, потребители, членства (фирми и роли), токени (в базата само SHA-256)
   schede/            fields.ts (ЕДИНСТВЕНИЯТ списък полета и условията им) + fields-argano.ts +
                      fields-centralina.ts + fields-serrature.ts (разделите им) + field-conditions.ts +
@@ -74,6 +76,10 @@ src/
                      транзакцията; черновата с `base`; одитът) · conferma.ts (подписите и потвърждението —
                      един UPDATE; проверката на печата) · sigillo.ts (отпечатъкът SHA-256, печатът HMAC) ·
                      pdf.ts + pdf-parti.ts (една страница A4)
+  cartelli/          табелата „Avviso di fermo impianto“: modelli.ts (петте шаблона от assets/cartelli —
+                     SHA-256, картата в пиксели, изчистването на примерните данни) · anteprima.ts
+                     (умалените шаблони, WebP) · form.ts (zod) · service.ts (запис с `base`, изтриване,
+                     одит) · pdf.ts (A4 по посоката на шаблона, логото и данните на фирмата горе)
   schizzi/           скицникът: elementi.ts (видът на елементите — zod, тежестта) · costanti.ts (мерките,
                      таваните, стрелките, пунктирите, котите) · simboli.ts (символите за шахтата) ·
                      forme.ts (елементът → примитиви: линии, запълнени върхове, елипси, надписи — за SVG и
@@ -102,6 +108,7 @@ src/
                      service.ts (запис, надписи, изтриване, одит) · coda.ts (опашката в базата) ·
                      foto.ts (sharp) · video.ts (ffmpeg/ffprobe) · stampa.ts (снимките в печата и PDF-а)
   worker.ts          фоновият процес (контейнерът `worker`): компресира опашката, файл „жив съм“
+assets/cartelli/     петте шаблона на табелата (JPEG-ите на собственика, непроменени) + картата им (JSON)
 assets/moduli/       празните PDF-и на Pelazza, MoviLift, листа за аргано (Word-ът на собственика, в PDF),
                      2SG (начертан наново от нас — `scripts/moduli/2sg.mjs`), AMI 100 Mono UCM / Mono RTBS
                      (начертани от нас — `scripts/moduli/ami100.mjs`), Mastech NG120 / QI Touch (сканирани; QI Touch — две
@@ -112,10 +119,12 @@ views/               EJS: partials/ (горна и долна лента, таб
                      чертежът на шахтата, политиката), requests/, auth/, schede/, users/, aziende/,
                      account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs; скицникът —
                      schede/_schizzo.ejs (листът като SVG), _schizzo-foglio.ejs, _schizzo-editor.ejs
-locales/it/          common · auth · schede · users · aziende · requests · site · mail · allegati · schizzi
+locales/it/          common · auth · schede · users · aziende · requests · site · mail · allegati · schizzi ·
+                     interventi · cartelli
                      (.json) — единственият
 public/              css/ (портал: base, buttons, shell, layout, plate, forms, pages, data, sheet, misure,
-                     moduli, allegati, foto-stampa, schizzi, schizzo-editor, print; витрина: site, shaft,
+                     moduli, allegati, foto-stampa, schizzi, schizzo-editor, interventi, foglio, cartelli, print;
+                     витрина: site, shaft,
                      site-hero, site-parts,
                      site-request),
                      js/app.js + js/valori.js + js/moduli.js + js/collegati.js (последните три — само във
@@ -473,8 +482,27 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   (`fineFoglio` ≤ `FONDO_PAGINA`, тестът проверява най-пълния лист). Листът се рисува веднъж, преливащият —
   още веднъж: размерът идва от височината на колоните, мерена без рисуване (`misuraColonna` — същата
   формула като `drawColonna`); DejaVu се чете веднъж за процеса.
+- **Табелата „Avviso di fermo impianto“** (`src/cartelli/`, `routes/cartelli.ts` +
+  `impostazioni-cartello.ts`; собственикът, 30 октомври 2026 — пет готови табели без лого, „usa questi come
+  bozze“): в „Assistenza elevatori“ → „Cartelli fermo impianto“. Табелата пази само датата, адреса, града,
+  мястото на уредбата и текста към хората (задължителен); правата са тези на листа за интервенция (пише
+  OPERATORE нагоре, чете CLIENTE нагоре), обхватът — по фирма, чужда табела — 404; записът е върху
+  отворената версия (`base`), изтриването е окончателно (одитът остава). Облеклото е шаблонът, избран от
+  фирмата в настройките (`Azienda.cartelloModello`; непознат — първият), а главата горе — логото на фирмата
+  и данните ѝ (`Azienda.datiSocietari`, попълва ги ADMIN/MASTER в `/impostazioni`; празно име — името в
+  портала), взети при всяко рисуване на PDF-а. Шаблоните са JPEG-ите на собственика (`assets/cartelli/`,
+  закрепени по SHA-256 — друга картинка значи други координати, процесът не тръгва) с карта в пиксели:
+  примерните данни (дата, адрес, град, място, текстът, редът с дейността) се изчистват в паметта — всяка
+  колона на полето се запълва по права между средния цвят на трите реда над него и трите под него, така и
+  преливането към снимката остава; полето не застъпва линия от шаблона (редът над и под е фон). Надписите,
+  отрязани в картинката („Blu tecnico“), се пишат наново (`scritte`). PDF-ът е A4 — хоризонтален за широк
+  шаблон, вертикален за висок; Fira Sans Condensed (WOFF, като надписите на шаблоните), знак извън латиницата
+  — DejaVu; всеки текст се смалява до 55 % и чак тогава се реже с „…“. Ново поле на табелата = нова колона в
+  картата на всеки шаблон и поглед в PDF-а на петте.
 - **Менюто** (`views/partials/header.ejs`, `public/css/sidenav.css`, `public/js/menu.js`; собственикът, 30
-  октомври 2026 — като в LiftPilot, вляво): групи Rilievi · Assistenza elevatori · Amministrazione, само
+  октомври 2026 — като в LiftPilot, вляво): групи Rilievi · Assistenza elevatori · Amministrazione (на
+  фирмата: Utenti, Impostazioni, Registro) · Master (нашето — Aziende и Richieste, само за собственика на
+  портала; „Separa il nostro menu master dal menu amministrazione“, 30 октомври 2026), само
   точките, които човекът може; текуща е най-дългата пасваща точка („/schede/nuova“ — „Nuova scheda“).
   От 1100 px лентата стои вляво (`body.with-nav` отстъпва `--nav-w`); под това горе остава тънка лента с ☰,
   а лентата се отваря отляво над страницата — останалото е `inert`, Esc и фонът я затварят, фокусът се

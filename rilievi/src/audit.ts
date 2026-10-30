@@ -32,6 +32,9 @@ export const AUDIT_ACTIONS = [
   'INTERVENTO_UPDATE',
   'INTERVENTO_CONFIRM',
   'INTERVENTO_EMAIL',
+  'CARTELLO_CREATE',
+  'CARTELLO_UPDATE',
+  'CARTELLO_DELETE',
   'AZIENDA_CREATE',
   'AZIENDA_UPDATE',
   'AZIENDA_LOGO',
@@ -40,6 +43,8 @@ export const AUDIT_ACTIONS = [
   'AZIENDA_SEZIONI',
   'AZIENDA_SCHIZZI_ON',
   'AZIENDA_SCHIZZI_OFF',
+  'AZIENDA_DATI',
+  'AZIENDA_CARTELLO',
   // Старите записи от времето с една фирма на човек — само за показ, нови не се пишат.
   'USER_AZIENDA',
   'MEMBERSHIP_ADD',
@@ -61,7 +66,7 @@ export interface AuditEntry {
    * — събитие на самия портал, видимо само за MASTER.
    */
   aziendaId: string | null;
-  targetType?: 'user' | 'invite' | 'scheda' | 'azienda' | 'request' | 'intervento';
+  targetType?: 'user' | 'invite' | 'scheda' | 'azienda' | 'request' | 'intervento' | 'cartello';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */
   meta?: Prisma.InputJsonObject;

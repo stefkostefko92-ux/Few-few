@@ -1,0 +1,46 @@
+<%
+  // Страницата на табелата: стойностите ѝ, шаблонът на фирмата (умалена картинка) и PDF-ът; за който
+  // пише — „Modifica“ и изтриването (в затворена зона, с отделно потвърждение).
+  const c = cartello;
+  const luogo = [c.indirizzo, c.citta].filter(Boolean).join(', ');
+%><%- include('../partials/top', { titleKey: 'cartelli.titolo' }) %>
+<div class="page-head">
+  <div>
+    <a href="/cartelli"><%= t('cartelli.indietro') %></a>
+    <h1><%= t('cartelli.titolo') %></h1>
+    <p class="page-head__sub"><%= c.azienda.name %> · <%= fmt.day(c.data) %></p>
+  </div>
+  <div class="toolbar">
+    <% if (modifica) { %><a class="btn" href="/cartelli/<%= c.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('cartelli.modifica') %></a><% } %>
+    <a class="btn" href="/cartelli/<%= c.id %>/pdf?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('cartelli.apri') %></a>
+    <a class="btn btn--primary" href="/cartelli/<%= c.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('cartelli.pdf') %></a>
+  </div>
+</div>
+<div class="stack-gap cartello">
+  <dl class="kv">
+    <div class="kv__item"><dt><%= t('cartelli.campo.data') %></dt><dd><%= fmt.day(c.data) %></dd></div>
+    <div class="kv__item"><dt><%= t('cartelli.colonna.luogo') %></dt><% if (luogo) { %><dd><%= luogo %></dd><% } else { %><dd class="empty-value">—</dd><% } %></div>
+    <div class="kv__item"><dt><%= t('cartelli.campo.ubicazione') %></dt><% if (c.ubicazione) { %><dd><%= c.ubicazione %></dd><% } else { %><dd class="empty-value">—</dd><% } %></div>
+    <div class="kv__item kv__item--wide"><dt><%= t('cartelli.campo.testo') %></dt><dd><%= c.testo %></dd></div>
+  </dl>
+  <figure class="cartello__modello">
+    <img class="cartello__anteprima" src="/cartelli/modelli/<%= modello.id %>.webp?v=<%= v %>" width="<%= modello.width %>" height="<%= modello.height %>" alt="<%= t('cartelli.anteprimaAlt', { titolo: modello.titolo }) %>" loading="lazy">
+    <figcaption>
+      <strong><%= t('cartelli.modello', { titolo: modello.titolo }) %></strong>
+      <span class="muted"><%= t('cartelli.modelloTesto') %></span>
+      <% if (impostazioni) { %><a href="/impostazioni?azienda=<%= encodeURIComponent(c.aziendaId) %>#h-cartello"><%= t('cartelli.modelloCambia') %></a><% } %>
+    </figcaption>
+  </figure>
+  <p class="muted"><%= t('cartelli.creato', { name: c.createdBy ? c.createdBy.name : '—', date: fmt.dateTime(c.createdAt) }) %></p>
+  <% if (modifica) { %>
+  <details class="danger-zone">
+    <summary><%= t('cartelli.elimina.title') %></summary>
+    <p class="muted"><%= t('cartelli.elimina.text') %></p>
+    <form method="post" action="/cartelli/<%= c.id %>/elimina">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn btn--danger" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t('cartelli.elimina.submit') %></button>
+    </form>
+  </details>
+  <% } %>
+</div>
+<%- include('../partials/bottom') %>

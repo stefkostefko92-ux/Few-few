@@ -24,10 +24,12 @@ import { allegatiRouter } from './routes/allegati.js';
 import { auditRouter } from './routes/audit.js';
 import { authRouter } from './routes/auth.js';
 import { aziendeRouter } from './routes/aziende.js';
+import { cartelliRouter } from './routes/cartelli.js';
 import { cestinoRouter } from './routes/cestino.js';
 import { ordiniRouter } from './routes/ordini.js';
 import { healthRouter } from './routes/health.js';
 import { impostazioniRouter } from './routes/impostazioni.js';
+import { impostazioniCartelloRouter } from './routes/impostazioni-cartello.js';
 import { interventiRouter } from './routes/interventi.js';
 import { interventiFirmaRouter } from './routes/interventi-firma.js';
 import { interventiInvioRouter } from './routes/interventi-invio.js';
@@ -235,6 +237,9 @@ export function createServer(): Express {
   app.use(interventiRouter);
   app.use(interventiFirmaRouter);
   app.use(interventiInvioRouter);
+  // Преди cartelliRouter: `/cartelli/modelli/<шаблон>.webp` (умалените шаблони).
+  app.use(impostazioniCartelloRouter);
+  app.use(cartelliRouter);
   app.use(usersRouter);
   // След usersRouter: `/utenti/invita` е преди `/utenti/:id`.
   app.use(usersManageRouter);

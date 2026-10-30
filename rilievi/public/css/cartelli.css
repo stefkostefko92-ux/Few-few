@@ -1,0 +1,96 @@
+/* Табелата „Avviso di fermo impianto“: изборът на шаблона в настройките (умалените картинки като карти
+   с радио) и шаблонът на страницата на табелата. Картинките са цветни — шаблоните на собственика. */
+
+.modelli {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 16px;
+  margin: 12px 0 20px;
+  padding: 0;
+  border: 0;
+}
+
+.modelli__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--field-line);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.modelli__item:hover {
+  border-color: var(--fg);
+}
+
+.modelli__item input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.modelli__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto;
+  max-height: 260px;
+  object-fit: contain;
+  background: var(--wash);
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.modelli__nome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.modelli__dot {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--fg);
+  border-radius: 50%;
+}
+
+.modelli__item:has(input:checked) {
+  border-color: var(--fg);
+  box-shadow: inset 0 0 0 2px var(--fg);
+  font-weight: 600;
+}
+
+.modelli__item:has(input:checked) .modelli__dot {
+  background: radial-gradient(circle, var(--fg) 0 5px, transparent 5.5px);
+}
+
+.modelli__item:has(input:focus-visible) {
+  outline: 2px solid var(--fg);
+  outline-offset: 3px;
+}
+
+.cartello__modello {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 0;
+}
+
+.cartello__anteprima {
+  width: min(100%, 320px);
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.cartello__modello figcaption {
+  display: flex;
+  flex: 1 1 220px;
+  flex-direction: column;
+  gap: 6px;
+}

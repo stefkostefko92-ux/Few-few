@@ -1,0 +1,56 @@
+{
+  "id": "giallo-nero",
+  "titolo": "Giallo e nero",
+  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 02_Giallo_Nero.pdf, senza modifiche",
+  "file": "giallo-nero.jpg",
+  "sha256": "2207f39dcf066026202d3d8de958d1346f29ee31de5a6abd9205f56bf0406f95",
+  "larghezza": 1518,
+  "altezza": 1094,
+  "copri": [
+    {
+      "rect": [101, 182, 719, 210]
+    },
+    {
+      "rect": [95, 714, 963, 754]
+    },
+    {
+      "rect": [95, 826, 1098, 942]
+    }
+  ],
+  "logo": {
+    "box": [104, 58, 384, 166]
+  },
+  "azienda": {
+    "box": [404, 62, 1185, 166],
+    "colore": "#1a1a1a",
+    "dimensione": 22
+  },
+  "attivita": {
+    "x": 109,
+    "y": 203,
+    "larghezza": 610,
+    "dimensione": 22,
+    "colore": "#1a1a1a"
+  },
+  "valori": {
+    "y": 746,
+    "dimensione": 31,
+    "colore": "#111111",
+    "colonne": [
+      [103, 225],
+      [333, 283],
+      [621, 200],
+      [826, 265]
+    ]
+  },
+  "testo": {
+    "x": 102,
+    "y": 852,
+    "larghezza": 990,
+    "riga": 27.7,
+    "righe": 4,
+    "dimensione": 25,
+    "colore": "#111111"
+  },
+  "scritte": []
+}

@@ -1,0 +1,56 @@
+{
+  "id": "rosso",
+  "titolo": "Rosso",
+  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 01_Rosso_Corporate.pdf, senza modifiche",
+  "file": "rosso.jpg",
+  "sha256": "4145b35af6108ec2191ff47708f2675bf6f74f8109ecfc9c43e858058cd3e149",
+  "larghezza": 1518,
+  "altezza": 1094,
+  "copri": [
+    {
+      "rect": [73, 138, 738, 170]
+    },
+    {
+      "rect": [69, 648, 993, 690]
+    },
+    {
+      "rect": [69, 786, 1115, 924]
+    }
+  ],
+  "logo": {
+    "box": [76, 18, 336, 116]
+  },
+  "azienda": {
+    "box": [356, 22, 990, 116],
+    "colore": "#1a1a1a",
+    "dimensione": 21
+  },
+  "attivita": {
+    "x": 84,
+    "y": 161,
+    "larghezza": 650,
+    "dimensione": 20,
+    "colore": "#1a1a1a"
+  },
+  "valori": {
+    "y": 679,
+    "dimensione": 31,
+    "colore": "#111111",
+    "colonne": [
+      [79, 225],
+      [316, 285],
+      [614, 205],
+      [830, 155]
+    ]
+  },
+  "testo": {
+    "x": 78,
+    "y": 816,
+    "larghezza": 1025,
+    "riga": 33.3,
+    "righe": 4,
+    "dimensione": 28,
+    "colore": "#111111"
+  },
+  "scritte": []
+}

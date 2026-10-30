@@ -1,6 +1,7 @@
 <%
   // Страничната лента (собственикът, 30 октомври 2026 — като в LiftPilot, вляво): групи Rilievi ·
-  // Assistenza · Amministrazione, вписаният човек долу. На компютър (от 1100 px) стои винаги вляво; под
+  // Assistenza · Amministrazione на фирмата · Master (нашето — фирмите и заявките за достъп, само за
+  // собственика на портала, отделно от администрацията на фирмата), вписаният човек долу. На компютър (от 1100 px) стои винаги вляво; под
   // това горе остава тънка лента с ☰, а лентата се отваря отляво над страницата (public/js/menu.js). Без
   // JavaScript лентата е над съдържанието, отворена.
   const pending = typeof newRequests !== 'undefined' ? newRequests : 0;
@@ -18,16 +19,22 @@
       items: [
         { href: '/interventi', key: 'nav.interventi', icon: 'wrench', show: can('interventi:read') },
         { href: '/interventi/nuovo', key: 'interventi.new', icon: 'plus', show: can('interventi:write') },
+        { href: '/cartelli', key: 'nav.cartelli', icon: 'stop', show: can('interventi:read') },
       ],
     },
     {
       key: 'amministrazione',
       items: [
         { href: '/utenti', key: 'nav.utenti', icon: 'users', show: can('users:manage') },
-        { href: '/aziende', key: 'nav.aziende', icon: 'building', show: can('aziende:manage') },
-        { href: '/richieste', key: 'requests.nav', icon: 'inbox', show: can('requests:manage'), count: pending },
         { href: '/impostazioni', key: 'nav.impostazioni', icon: 'settings', show: can('aziende:settings') },
         { href: '/registro', key: 'nav.registro', icon: 'log', show: can('audit:view') },
+      ],
+    },
+    {
+      key: 'master',
+      items: [
+        { href: '/aziende', key: 'nav.aziende', icon: 'building', show: can('aziende:manage') },
+        { href: '/richieste', key: 'requests.nav', icon: 'inbox', show: can('requests:manage'), count: pending },
       ],
     },
   ]

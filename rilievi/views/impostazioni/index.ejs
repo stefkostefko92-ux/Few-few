@@ -1,5 +1,6 @@
 <%
-  // Редът на разделите на картата във фирмата (src/aziende/sezioni.ts). Без JavaScript: всеки бутон
+  // Настройките на фирмата: данните ѝ и шаблонът на табелата (_dati, _cartello), после редът на разделите
+  // на картата (src/aziende/sezioni.ts). Без JavaScript: всеки бутон
   // праща целия ред (скритите полета „ordine“) и страницата се връща с новия ред; „Salva“ го записва.
   // Идентификацията („Impianto“, `fisse` от src/schede/ordine.ts) стои винаги първа и не се мести.
   const autofocusOf = (key, verso) => {
@@ -30,6 +31,8 @@
     </div>
   </form>
   <% } %>
+  <%- include('_dati') %>
+  <%- include('_cartello') %>
   <section aria-labelledby="h-sezioni">
     <h2 class="section__title" id="h-sezioni"><%= t('impostazioni.sezioni.title') %></h2>
     <p class="muted"><%= t('impostazioni.sezioni.text') %></p>

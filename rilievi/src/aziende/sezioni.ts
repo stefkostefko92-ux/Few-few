@@ -28,7 +28,14 @@ export function aziendeImpostabili(user: SessionUser) {
   return prisma.azienda.findMany({
     where: { deactivatedAt: null, ...(scope.all ? {} : { id: { in: [...scope.aziendaIds] } }) },
     orderBy: { name: 'asc' },
-    select: { id: true, name: true, ordineSezioni: true },
+    select: {
+      id: true,
+      name: true,
+      ordineSezioni: true,
+      datiSocietari: true,
+      cartelloModello: true,
+      logoType: true,
+    },
   });
 }
 

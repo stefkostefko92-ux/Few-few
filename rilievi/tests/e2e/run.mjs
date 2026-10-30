@@ -9,8 +9,8 @@
 // who sees the company's sheets (inviti.mjs), photos in a section of the sheet (allegati.mjs — the worker
 // must run next to the portal: `npm run worker`), the sketch pad turned on for the company and drawn in its
 // full-screen editor (schizzi.mjs), the side bar and an intervention form signed and confirmed
-// (interventi.mjs), and accessibility (axe-core, WCAG 2.1 AA) on every page,
-// in the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
+// (interventi.mjs), the company data and the stop sign (cartelli.mjs), the phone (telefono.mjs), and
+// accessibility (axe-core, WCAG 2.1 AA) on every page, in the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
 //
 //   RILIEVI_URL=http://127.0.0.1:4330 E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e
 //
@@ -25,7 +25,9 @@ import { audit, fail, failures, italianOnly, signIn as signInAt, tick } from './
 import { checkSite } from './site.mjs';
 import { checkInvites } from './inviti.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
-import { checkInterventi, checkPhoneMenu } from './interventi.mjs';
+import { checkCartelli } from './cartelli.mjs';
+import { checkInterventi } from './interventi.mjs';
+import { checkPhone } from './telefono.mjs';
 import { checkMovilift } from './movilift.mjs';
 import { checkPrintedNotes, fillDoorsAndChecks } from './porte.mjs';
 import { checkQuadro } from './quadro.mjs';
@@ -252,35 +254,9 @@ try {
     await audit(page, `${scheme} print`);
     await page.screenshot({ path: join(shots, `${scheme}-print.png`), fullPage: true });
     await checkInterventi(page, { base, shots, scheme, aziendaName });
+    await checkCartelli(page, { base, shots, scheme, aziendaPath });
 
-    const phone = await browser.newContext({
-      colorScheme: scheme,
-      viewport: { width: 390, height: 844 },
-      isMobile: true,
-      hasTouch: true,
-    });
-    const mobile = await phone.newPage();
-    await signIn(mobile, email, password);
-    await checkPhoneMenu(mobile, { base, scheme });
-    for (const [name, path] of [
-      ['list', '/schede?q=verdi'],
-      ['sheet', new URL(sheetUrl).pathname],
-      ['interventi', '/interventi'],
-      ['intervento', '/interventi/nuovo'],
-    ]) {
-      await mobile.goto(base + path);
-      const overflow = await mobile.evaluate(
-        () => document.documentElement.scrollWidth > window.innerWidth,
-      );
-      if (overflow) fail(`${scheme} mobile ${name}: horizontal scroll`);
-      // The phone layout hides labels behind icons: check that every control keeps its name.
-      await audit(mobile, `${scheme} mobile ${name}`);
-      await mobile.screenshot({
-        path: join(shots, `${scheme}-mobile-${name}.png`),
-        fullPage: true,
-      });
-    }
-    await phone.close();
+    await checkPhone(browser, { base, shots, scheme, email, password, sheetUrl });
     await context.close();
   }
 

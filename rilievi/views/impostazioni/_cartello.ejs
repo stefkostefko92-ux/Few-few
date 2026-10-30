@@ -1,0 +1,23 @@
+<%
+  // Шаблонът на табелата „Avviso di fermo impianto“ (src/cartelli/modelli.ts): умалената картинка на
+  // всеки, без примерните данни; отметнат е избраният (или първият).
+%><section aria-labelledby="h-cartello">
+  <h2 class="section__title" id="h-cartello"><%= t('impostazioni.cartello.title') %></h2>
+  <p class="muted"><%= t('impostazioni.cartello.text') %></p>
+  <form method="post" action="/impostazioni/cartello">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <fieldset class="modelli">
+      <legend class="visually-hidden"><%= t('impostazioni.cartello.title') %></legend>
+      <% for (const item of modelli) { %><label class="modelli__item">
+        <input type="radio" name="modello" value="<%= item.id %>"<% if (item.id === modello) { %> checked<% } %>>
+        <img class="modelli__img" src="/cartelli/modelli/<%= item.id %>.webp?v=<%= v %>" width="<%= item.width %>" height="<%= item.height %>" alt="" loading="lazy">
+        <span class="modelli__nome"><span class="modelli__dot" aria-hidden="true"></span><%= item.titolo %><% if (item.id === modello) { %> <span class="stato stato--chiuso"><%= t('impostazioni.cartello.inUso') %></span><% } %></span>
+      </label>
+      <% } %>
+    </fieldset>
+    <div class="toolbar">
+      <button class="btn btn--primary" type="submit"><%= t('impostazioni.cartello.save') %></button>
+    </div>
+  </form>
+</section>

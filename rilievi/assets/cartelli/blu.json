@@ -1,0 +1,90 @@
+{
+  "id": "blu",
+  "titolo": "Blu tecnico",
+  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 04_Blu_Tecnico.pdf, senza modifiche",
+  "file": "blu.jpg",
+  "sha256": "e41799dcaf3cf0ba8e2aba52244228111bd984a7266a799c98aa7c4f4e5d6f0f",
+  "larghezza": 794,
+  "altezza": 918,
+  "copri": [
+    {
+      "rect": [43, 128, 535, 152]
+    },
+    {
+      "rect": [642, 542, 794, 569]
+    },
+    {
+      "rect": [195, 571, 317, 602]
+    },
+    {
+      "rect": [333, 571, 493, 602]
+    },
+    {
+      "rect": [517, 571, 615, 602]
+    },
+    {
+      "rect": [643, 571, 794, 602]
+    },
+    {
+      "rect": [195, 686, 794, 788]
+    },
+    {
+      "rect": [195, 804, 794, 832]
+    }
+  ],
+  "logo": {
+    "box": [44, 14, 260, 112]
+  },
+  "azienda": {
+    "box": [276, 18, 780, 112],
+    "colore": "#1a1a1a",
+    "dimensione": 18
+  },
+  "attivita": {
+    "x": 52,
+    "y": 145,
+    "larghezza": 480,
+    "dimensione": 18,
+    "colore": "#1a1a1a"
+  },
+  "valori": {
+    "y": 595,
+    "dimensione": 24,
+    "colore": "#111111",
+    "colonne": [
+      [202, 110],
+      [340, 148],
+      [524, 86],
+      [650, 138]
+    ]
+  },
+  "testo": {
+    "x": 202,
+    "y": 707,
+    "larghezza": 588,
+    "riga": 24.7,
+    "righe": 4,
+    "dimensione": 21,
+    "colore": "#111111"
+  },
+  "scritte": [
+    {
+      "testo": "UBICAZIONE IMPIANTO",
+      "x": 650,
+      "y": 563,
+      "larghezza": 138,
+      "dimensione": 21,
+      "colore": "#1f1f1f",
+      "peso": "normale"
+    },
+    {
+      "testo": "CERTI DELLA VOSTRA COLLABORAZIONE, PORGIAMO I NOSTRI CORDIALI SALUTI",
+      "x": 202,
+      "y": 825,
+      "larghezza": 588,
+      "dimensione": 21,
+      "colore": "#111111",
+      "peso": "normale"
+    }
+  ]
+}

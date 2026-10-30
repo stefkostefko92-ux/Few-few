@@ -1,0 +1,63 @@
+<%
+  // Формата на табелата „Avviso di fermo impianto“: датата, адресът, градът, мястото на уредбата и
+  // текстът към хората. Логото, данните на фирмата и облеклото идват от настройките ѝ — не са тук.
+  const isEdit = cartello !== null;
+  const action = isEdit ? '/cartelli/' + cartello.id : '/cartelli';
+  const errorKeys = Object.keys(errors);
+  const maxOf = { indirizzo: 200, citta: 80, ubicazione: 120, testo: maxTesto };
+  const required = { data: 'cartelli.error.dataMancante', testo: 'cartelli.error.testoMancante' };
+  const labelOf = (key) => key === 'azienda' ? t('scheda.field.azienda') : t('cartelli.campo.' + key);
+  const messageOf = (key) => key === 'azienda' ? t('scheda.error.azienda') : errors[key] === 'required' && required[key] ? t(required[key]) : t('scheda.error.' + errors[key], { maxLength: maxOf[key] });
+  const campo = (key, kind, extra = {}) => include('_campo', { key, label: t('cartelli.campo.' + key), kind, maxLength: maxOf[key], values, errors, ...extra });
+%><%- include('../partials/top', { titleKey: isEdit ? 'cartelli.modifica' : 'cartelli.new', narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="<%= isEdit ? '/cartelli/' + cartello.id : '/cartelli' %>"><%= t('cartelli.indietro') %></a>
+    <h1><%= isEdit ? t('cartelli.titolo') : t('cartelli.new') %></h1>
+    <p class="page-head__sub"><%= t('cartelli.sottotitolo') %></p>
+  </div>
+</div>
+<div class="stack-gap">
+<% if (typeof conflict !== 'undefined' && conflict) { %>
+  <div class="notice" role="alert"><p><strong><%= t('cartelli.flash.conflitto') %></strong></p></div>
+<% } %>
+<% if (errorKeys.length) { %>
+  <div class="errors" role="alert" id="error-summary" tabindex="-1">
+    <h2><%= t('scheda.errorSummary', { n: errorKeys.length }) %></h2>
+    <ul>
+      <% for (const key of errorKeys) { %><li><a href="#f-<%= key %>"><%= labelOf(key) %>: <%= messageOf(key) %></a></li>
+      <% } %>
+    </ul>
+  </div>
+<% } %>
+<form class="form" method="post" action="<%= action %>" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (isEdit) { %><input type="hidden" name="base" value="<%= base %>"><% } %>
+  <% if (!isEdit && aziende.length > 0) { %>
+  <div class="field field--azienda">
+    <label class="field__label" for="f-azienda"><%= t('scheda.field.azienda') %></label>
+    <select class="select" id="f-azienda" name="azienda" required<% if (errors.azienda) { %> aria-invalid="true" aria-describedby="err-azienda"<% } %>>
+      <option value=""<% if (!azienda) { %> selected<% } %>>—</option>
+      <% for (const item of aziende) { %><option value="<%= item.id %>"<% if (azienda === item.id) { %> selected<% } %>><%= item.name %></option>
+      <% } %>
+    </select>
+    <% if (errors.azienda) { %><p class="field__error" id="err-azienda"><%= t('scheda.error.azienda') %></p><% } %>
+  </div>
+  <% } %>
+  <fieldset class="section">
+    <legend class="section__title"><%= t('cartelli.titolo') %></legend>
+    <div class="grid">
+      <%- campo('data', 'date') %>
+      <%- campo('indirizzo', 'text', { wide: true, autocomplete: 'street-address' }) %>
+      <%- campo('citta', 'text', { autocomplete: 'address-level2' }) %>
+      <%- campo('ubicazione', 'text', { hint: t('cartelli.hint.ubicazione') }) %>
+      <%- campo('testo', 'textarea', { wide: true, hint: t('cartelli.hint.testo') }) %>
+    </div>
+  </fieldset>
+  <div class="toolbar">
+    <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'check' }) %><%= t('cartelli.salva') %></button>
+    <a class="btn btn--ghost" href="<%= isEdit ? '/cartelli/' + cartello.id : '/cartelli' %>"><%= t('common.cancel') %></a>
+  </div>
+</form>
+</div>
+<%- include('../partials/bottom') %>

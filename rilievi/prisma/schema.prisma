@@ -106,6 +106,12 @@ model Azienda {
   /// Последният даден номер на лист за интервенция във фирмата (собствен брояч от 1, без дупки):
   /// новият лист взема +1 в транзакцията си (src/interventi/service.ts).
   interventiNumero Int       @default(0)
+  /// Данните на фирмата за главата на табелата „Avviso di fermo impianto“ (име, дейност, адрес,
+  /// контакти, P. IVA) — попълва ги администраторът ѝ; проверени при запис и четени с недоверие
+  /// (src/aziende/dati.ts). null — още не са записани.
+  datiSocietari    Json?
+  /// Шаблонът на табелата, избран в настройките (src/cartelli/modelli.ts); непознат или null — първият.
+  cartelloModello  String?   @db.VarChar(40)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -113,6 +119,7 @@ model Azienda {
   invites        Invite[]
   schede         Scheda[]
   interventi     Intervento[]
+  cartelli       Cartello[]
   audit          AuditLog[]
   accessRequests AccessRequest[]
 }
@@ -156,6 +163,8 @@ model User {
   interventiCreati Intervento[]    @relation("InterventiCreati")
   interventiMod    Intervento[]    @relation("InterventiModificati")
   interventiChiusi Intervento[]    @relation("InterventiChiusi")
+  cartelliCreati   Cartello[]      @relation("CartelliCreati")
+  cartelliMod      Cartello[]      @relation("CartelliModificati")
   auditEntries     AuditLog[]
   requestsDecided  AccessRequest[] @relation("AccessRequestsDecided")
 
@@ -711,4 +720,28 @@ model Intervento {
   @@index([confermatoById])
   @@index([firmaTecnicoHash])
   @@index([firmaClienteHash])
+}
+
+/// Табелата „Avviso di fermo impianto“ (src/cartelli/): датата, адресът, градът, мястото на уредбата и
+/// текстът към хората. Облеклото ѝ е шаблонът, избран от фирмата, а главата — логото и данните ѝ, взети
+/// при всяко рисуване на PDF-а.
+model Cartello {
+  id          String   @id @default(cuid())
+  aziendaId   String
+  azienda     Azienda  @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  data        DateTime @db.Date
+  indirizzo   String?  @db.VarChar(200)
+  citta       String?  @db.VarChar(80)
+  ubicazione  String?  @db.VarChar(120)
+  testo       String   @db.VarChar(600)
+  createdById String?
+  createdBy   User?    @relation("CartelliCreati", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById String?
+  updatedBy   User?    @relation("CartelliModificati", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([aziendaId, createdAt])
+  @@index([createdById])
+  @@index([updatedById])
 }

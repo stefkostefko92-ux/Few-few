@@ -1,0 +1,57 @@
+{
+  "id": "grafite-oro",
+  "titolo": "Grafite e oro",
+  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 05_Grafite_Oro.pdf, senza modifiche",
+  "file": "grafite-oro.jpg",
+  "sha256": "968a5a8bd4b0d5ee0bc89296e186c454b247fe925d4708741743c12f9336246d",
+  "larghezza": 930,
+  "altezza": 918,
+  "copri": [
+    {
+      "rect": [63, 121, 589, 148]
+    },
+    {
+      "rect": [59, 569, 903, 600]
+    },
+    {
+      "rect": [59, 688, 883, 805]
+    }
+  ],
+  "logo": {
+    "box": [66, 18, 300, 108],
+    "lastra": "#ffffff"
+  },
+  "azienda": {
+    "box": [318, 22, 900, 108],
+    "colore": "#f2f2f2",
+    "dimensione": 18
+  },
+  "attivita": {
+    "x": 70,
+    "y": 141,
+    "larghezza": 520,
+    "dimensione": 18,
+    "colore": "#ececec"
+  },
+  "valori": {
+    "y": 592,
+    "dimensione": 23,
+    "colore": "#ffffff",
+    "colonne": [
+      [68, 150],
+      [228, 215],
+      [454, 150],
+      [614, 280]
+    ]
+  },
+  "testo": {
+    "x": 67,
+    "y": 713,
+    "larghezza": 800,
+    "riga": 28.3,
+    "righe": 4,
+    "dimensione": 23,
+    "colore": "#f2f2f2"
+  },
+  "scritte": []
+}
