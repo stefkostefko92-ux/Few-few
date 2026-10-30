@@ -58,6 +58,9 @@ type SchedaModuli = Pick<
   | 'sospensioni'
   | 'operatore'
   | 'ordineSospensioni'
+  | 'ami100'
+  | 'ami100Tipo'
+  | 'ordineAmi'
 >;
 
 /**

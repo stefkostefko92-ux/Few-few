@@ -379,6 +379,12 @@ model Scheda {
   /// Намалената яма и горното пространство — не при хидравлична уредба (от 24 октомври 2026).
   fossaRidotta                 Boolean?
   testataRidotta               Boolean?
+  /// „Installare AMI 100?“ — при намалена яма или горно пространство (30 октомври 2026); при true — видът
+  /// (Mono UCM или Mono RTBS) и листът му с данните за поръчката.
+  ami100                       Boolean?
+  ami100Tipo                   Ami100Tipo?
+  /// Листът на AMI 100 (Mono UCM или Mono RTBS): {modulo, valori}. Има свой PDF.
+  ordineAmi                    Json?
   /// „Да попълня ли модула за поръчка на таблото?“ — само при Pelazza.
   quadroOrdine                 Boolean?
   /// Модулът за поръчка на Pelazza: {modulo, valori} — ключовете са в assets/moduli/*.json. Има свой PDF.
@@ -595,6 +601,12 @@ enum StatoAllegato {
 enum QuadroModello {
   NG120
   QI_TOUCH
+}
+
+/// AMI 100 при намалена яма или горно пространство — всеки вид със свой лист за поръчка.
+enum Ami100Tipo {
+  MONO_UCM
+  MONO_RTBS
 }
 
 /// Централата на хидравличния асансьор (src/schede/field-options.ts).

@@ -9,6 +9,7 @@
  */
 
 import {
+  AMI100_TIPO,
   QUADRO_MARCA,
   QUADRO_MODELLO,
   TIPO_IMPIANTO,
@@ -20,7 +21,14 @@ import type { Condition, FieldDef, SectionDef, SectionKey } from './field-types.
 export * from './field-types.js';
 export * from './field-options.js';
 
-import { ALTRA, IDRAULICO, NON_IDRAULICO, PORTE_SCELTE, yes } from './field-conditions.js';
+import {
+  ALTRA,
+  IDRAULICO,
+  NON_IDRAULICO,
+  PORTE_SCELTE,
+  SPAZI_RIDOTTI,
+  yes,
+} from './field-conditions.js';
 import { SEZIONE_ARGANO } from './fields-argano.js';
 import { SEZIONE_CENTRALINA } from './fields-centralina.js';
 import { SEZIONE_SERRATURE } from './fields-serrature.js';
@@ -83,6 +91,10 @@ export const SECTIONS = [
       },
       { key: 'fossaRidotta', kind: 'yesno', when: NON_IDRAULICO },
       { key: 'testataRidotta', kind: 'yesno', when: NON_IDRAULICO },
+      // При намалена яма или горно пространство — AMI 100: Mono UCM или Mono RTBS, всеки със своя лист
+      // с данните за поръчката (src/ordini/; собственикът, 30 октомври 2026).
+      { key: 'ami100', kind: 'yesno', question: true, modulo: 'ordineAmi', when: SPAZI_RIDOTTI },
+      { key: 'ami100Tipo', kind: 'choice', options: AMI100_TIPO, when: yes('ami100') },
       {
         key: 'quadroOrdine',
         kind: 'yesno',
@@ -234,14 +246,18 @@ export function tokensOf(raw: unknown): string[] {
   return [];
 }
 
-/** Условието е изпълнено при тези стойности; `active` — вече видимите полета (по-ранните). */
+/**
+ * Условието е изпълнено при тези стойности; `active` — вече видимите полета (по-ранните). С `also` стига
+ * едно от полетата.
+ */
 function conditionMet(
   when: Condition,
   active: ReadonlySet<string>,
   valueOf: (key: string) => unknown,
 ): boolean {
-  const has =
-    active.has(when.field) && tokensOf(valueOf(when.field)).some((v) => when.values.includes(v));
+  const has = [when.field, ...(when.also ?? [])].some(
+    (field) => active.has(field) && tokensOf(valueOf(field)).some((v) => when.values.includes(v)),
+  );
   return when.not ? !has : has;
 }
 

@@ -153,6 +153,9 @@ describe('the Elettroquadri orders and the sheet', () => {
       sospensioni: null,
       operatore: null,
       ordineSospensioni: null,
+      ami100: null,
+      ami100Tipo: null,
+      ordineAmi: null,
     };
     const [summary] = riepilogoModuli(scheda);
     assert.equal(summary?.nome, nomeModulo(EQ_OLEO));

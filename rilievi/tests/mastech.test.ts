@@ -15,7 +15,7 @@ import {
   type ModuloOverlay,
 } from '../src/ordini/moduli.js';
 import { renderModulo } from '../src/ordini/pdf.js';
-import { modelloMancante, sceltoNellaScheda, SLOTS } from '../src/ordini/registry.js';
+import { modelliMancanti, sceltoNellaScheda, SLOTS } from '../src/ordini/registry.js';
 import { riepilogoModuli } from '../src/ordini/riepilogo.js';
 import { activeFields } from '../src/schede/fields.js';
 import { pdfFontPaths } from '../src/schede/pdf.js';
@@ -129,9 +129,9 @@ describe('the second choice of the Mastech make', () => {
     assert.equal(forged.ok && forged.data.quadroModello, null);
     assert.equal(forged.ok && forged.data.ordineQuadro?.modulo, 'pelazza-ordine-quadri-032026');
     const shown = activeFields((key) => ({ quadroMarca: 'PELAZZA' })[key]);
-    assert.equal(
-      modelloMancante(shown, () => 'si'),
-      null,
+    assert.deepEqual(
+      modelliMancanti(shown, (key) => (key === 'quadroMarca' ? 'PELAZZA' : 'si')),
+      [],
       'no type to ask for under Pelazza',
     );
   });
@@ -207,6 +207,9 @@ describe('the Mastech orders and the sheet', () => {
       sospensioni: null,
       operatore: null,
       ordineSospensioni: null,
+      ami100: null,
+      ami100Tipo: null,
+      ordineAmi: null,
     };
     assert.deepEqual(riepilogoModuli(scheda), [
       {

@@ -63,6 +63,7 @@ function persisted(
     ordineQuadro,
     preventivoArgano,
     ordineSospensioni,
+    ordineAmi,
     ...fields
   } = data;
   return {
@@ -71,6 +72,7 @@ function persisted(
     ordineQuadro: ordineQuadro ?? Prisma.DbNull,
     preventivoArgano: preventivoArgano ?? Prisma.DbNull,
     ordineSospensioni: ordineSospensioni ?? Prisma.DbNull,
+    ordineAmi: ordineAmi ?? Prisma.DbNull,
     searchText: searchTextOf(fields),
   };
 }

@@ -37,6 +37,7 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'el', campo: 'nFermate' },
       { luogo: 'eo', campo: 'nFermate' },
       { luogo: 'pa', campo: 'piani' },
+      { luogo: 'au', campo: 'fermate' },
     ],
   },
   {
@@ -92,6 +93,7 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'om', campo: 'portata' },
       { luogo: 'mq', campo: 'portataNominale' },
       { luogo: 'pa', campo: 'portata' },
+      { luogo: 'au', campo: 'portata' },
     ],
   },
   {

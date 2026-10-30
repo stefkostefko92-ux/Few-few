@@ -1,4 +1,4 @@
 <%#
   Атрибутите на условие (fields.ts, `when`): app.js показва елемента, когато полето `when.field` има една
   от стойностите (`not` — нито една). `off` — скрит при отварянето (по стойностите от сървъра).
-%><% if (typeof when !== 'undefined' && when) { %> data-when="<%= when.field %>" data-when-values="<%= when.values.join(' ') %>"<% if (when.not) { %> data-when-not<% } %><% if (off) { %> data-off<% } %><% } %>
+%><% if (typeof when !== 'undefined' && when) { %> data-when="<%= when.field %>"<% if (when.also) { %> data-when-also="<%= when.also.join(' ') %>"<% } %> data-when-values="<%= when.values.join(' ') %>"<% if (when.not) { %> data-when-not<% } %><% if (off) { %> data-off<% } %><% } %>

@@ -340,6 +340,9 @@ describe('saving the MoviLift order', () => {
       sospensioni: null,
       operatore: null,
       ordineSospensioni: null,
+      ami100: null,
+      ami100Tipo: null,
+      ordineAmi: null,
     };
     assert.deepEqual(riepilogoModuli(scheda), [
       {

@@ -43,20 +43,25 @@ const LOCKS = [
 ] as const;
 const SUSPENSIONS = ['sospensioni', 'sospensioniNumero'] as const;
 
-/** A condition points at an earlier field and at answers that field really has. */
+/**
+ * A condition points at earlier fields (its field and the `also` ones) and at answers each of them
+ * really has.
+ */
 function checkCondition(when: Condition, at: number, who: string) {
-  const control = fieldByKey(when.field);
-  assert.ok(control, `${who} depends on a field that does not exist`);
-  assert.ok(FIELDS.indexOf(control) < at, `${who} must come after ${control.key}`);
-  const answers =
-    control.kind === 'yesno'
-      ? ['si', 'no']
-      : control.kind === 'checks' || control.kind === 'choice'
-        ? control.options
-        : null;
-  assert.ok(answers, `${who} depends on a ${control.kind} field`);
   assert.ok(when.values.length > 0, who);
-  for (const value of when.values) assert.ok(answers.includes(value), `${who}: ${value}`);
+  for (const key of [when.field, ...(when.also ?? [])]) {
+    const control = fieldByKey(key);
+    assert.ok(control, `${who} depends on a field that does not exist`);
+    assert.ok(FIELDS.indexOf(control) < at, `${who} must come after ${control.key}`);
+    const answers =
+      control.kind === 'yesno'
+        ? ['si', 'no']
+        : control.kind === 'checks' || control.kind === 'choice'
+          ? control.options
+          : null;
+    assert.ok(answers, `${who} depends on a ${control.kind} field`);
+    for (const value of when.values) assert.ok(answers.includes(value), `${who}: ${value}`);
+  }
 }
 
 describe('conditions', () => {

@@ -63,7 +63,7 @@
       },
       "orders": {
         "title": "Moduli d'ordine dal rilievo",
-        "text": "Con un quadro Pelazza, Movilift, Mastech (NG120 o QI Touch) o Elettroquadri (geared, gearless o oleodinamico, secondo il tipo di impianto) la scheda compila il modulo d'ordine originale; con l'argano da sostituire, la scheda dati dell'argano; con le sospensioni o l'operatore da cambiare, il modulo 2SG per operatori e sospensioni. Ogni modulo esce come PDF a parte, identico all'originale. Pelazza, Movilift, Mastech, Elettroquadri e 2SG sono marchi dei rispettivi titolari."
+        "text": "Con un quadro Pelazza, Movilift, Mastech (NG120 o QI Touch) o Elettroquadri (geared, gearless o oleodinamico, secondo il tipo di impianto) la scheda compila il modulo d'ordine originale; con l'argano da sostituire, la scheda dati dell'argano; con le sospensioni o l'operatore da cambiare, il modulo 2SG per operatori e sospensioni; con la fossa o la testata ridotta, i dati per l'ordine di AMI 100 (Mono UCM o Mono RTBS). Ogni modulo esce come PDF a parte. Pelazza, Movilift, Mastech, Elettroquadri, 2SG e AMI 100 sono marchi dei rispettivi titolari."
       },
       "misure": {
         "title": "Misuri le bottoniere piano per piano",

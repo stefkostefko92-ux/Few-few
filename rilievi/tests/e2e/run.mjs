@@ -2,7 +2,7 @@
 // accepted by the MASTER (site.mjs), sign-in, a company with its logo, a full sheet (the fields that
 // appear with the door type, the alarm, one measurement row per stop that follows "Fermate" while it
 // is typed, the order forms and data sheets, Mastech and the hydraulic lift — mastech.mjs, Elettroquadri
-// by the kind of lift — elettroquadri.mjs), search,
+// by the kind of lift — elettroquadri.mjs, AMI 100 — ami100.mjs, the three in quadro.mjs), search,
 // print (the sections chosen for it), PDF, the order of the sections in the
 // company settings (impostazioni.mjs), the same data filled in real time in every direction
 // (tempo-reale.mjs), the company ADMIN invited by the MASTER and a technician invited by that ADMIN
@@ -25,11 +25,10 @@ import { audit, fail, failures, italianOnly, signIn as signInAt, tick } from './
 import { checkSite } from './site.mjs';
 import { checkInvites } from './inviti.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
-import { checkElettroquadri } from './elettroquadri.mjs';
 import { checkInterventi, checkPhoneMenu } from './interventi.mjs';
-import { checkMastech } from './mastech.mjs';
 import { checkMovilift } from './movilift.mjs';
 import { checkPrintedNotes, fillDoorsAndChecks } from './porte.mjs';
+import { checkQuadro } from './quadro.mjs';
 import { checkSettings } from './impostazioni.mjs';
 import { checkAttachments } from './allegati.mjs';
 import { checkSketches } from './schizzi.mjs';
@@ -149,8 +148,7 @@ try {
       // The forms: the MoviLift order first, then the Pelazza order (the same question, the other
       // make), the argano data sheet and the 2SG sheet, prefilled from the survey.
       await checkMovilift(page, scheme);
-      await checkMastech(page, scheme, aziendaName);
-      await checkElettroquadri(page, scheme, aziendaName);
+      await checkQuadro(page, scheme, aziendaName);
       await tick(page, 'quadroMarca', 'PELAZZA');
       if (await page.locator('#f-om').isVisible()) fail('MoviLift order shown for Pelazza');
       await tick(page, 'quadroOrdine', 'si');
@@ -189,7 +187,7 @@ try {
       await page.waitForFunction(
         () => document.querySelectorAll('[data-results] .row-link').length > 0,
       );
-      for (const path of ['ordine-quadro', 'dati-argano', 'sospensioni-2sg']) {
+      for (const path of ['ordine-quadro', 'dati-argano', 'sospensioni-2sg', 'ami100-mono-ucm']) {
         const order = await page.request.get(`${sheetUrl}/${path}`);
         const bytes = await order.body();
         if (order.status() !== 200 || bytes.subarray(0, 5).toString() !== '%PDF-')

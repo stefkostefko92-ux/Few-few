@@ -34,6 +34,8 @@ const open = {
   'eo-_': '1',
   arganoPreventivo: 'si',
   'pa-_': '1',
+  'au-_': '1',
+  'ar-_': '1',
 };
 
 describe('numbers in the data the sheet and the orders share', () => {

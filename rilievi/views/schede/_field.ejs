@@ -10,7 +10,7 @@
   const describedBy = [unit ? unitId : null, errText ? errId : null].filter(Boolean).join(' ');
   const aria = (describedBy ? ' aria-describedby="' + describedBy + '"' : '') + (errText ? ' aria-invalid="true"' : '');
   const classes = 'field' + (field.wide ? ' field--wide' : '') + (field.kind === 'yesno' ? ' choice--compact' : '');
-  const when = field.when ? ' data-when="' + field.when.field + '" data-when-values="' + field.when.values.join(' ') + '"' + (field.when.not ? ' data-when-not' : '') + (active.has(field.key) ? '' : ' data-off') : '';
+  const when = field.when ? ' data-when="' + field.when.field + '"' + (field.when.also ? ' data-when-also="' + field.when.also.join(' ') + '"' : '') + ' data-when-values="' + field.when.values.join(' ') + '"' + (field.when.not ? ' data-when-not' : '') + (active.has(field.key) ? '' : ' data-off') : '';
   const list = Array.isArray(value) ? value : [];
   const text = typeof value === 'string' ? value : '';
   // Sì/No със свои думи и ред (`risposte`, „Accessi: 1 / 2“) — иначе Sì, No. Отметките с един избор

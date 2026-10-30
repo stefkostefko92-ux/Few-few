@@ -1,0 +1,210 @@
+{
+  "id": "ami100-mono-ucm",
+  "titolo": "AMI 100 Mono UCM",
+  "fonte": "Campi e ordine dall'elenco «Ami_100.pdf» caricato dal proprietario del portale il 30/10/2026 (i dati per preparare l’ordine, senza modulo): foglio disegnato da Rilievi Impianti (scripts/moduli/ami100.mjs); le scelte fisse dal catalogo AMI100 (tensione 24/48 Vdc, fune del limitatore a sinistra o a destra, guide 7-8-9-16 mm, economizzatore)",
+  "file": "ami100-mono-ucm.pdf",
+  "sha256": "b60e2a991b51658d2310722e453b46129d5a6dbca6e2982650bd33182987149a",
+  "tipo": "overlay",
+  "dimensione": 10,
+  "sopraLinea": 2,
+  "gruppi": [
+    {
+      "titolo": "Intestazione",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "mittente",
+              "kind": "text",
+              "label": "Mittente",
+              "maxLength": 120,
+              "prefill": "azienda",
+              "line": [184, 529, 149.5]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "data",
+              "kind": "text",
+              "label": "Data",
+              "maxLength": 20,
+              "prefill": "data",
+              "line": [184, 529, 176.5]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "riferimento",
+              "kind": "text",
+              "label": "Riferimento impianto",
+              "maxLength": 120,
+              "prefill": "rif",
+              "line": [184, 529, 203.5]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "AMI 100 Mono UCM",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "numeroOrdine",
+              "kind": "text",
+              "label": "Numero d'ordine",
+              "maxLength": 30,
+              "line": [318, 529, 278]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "portata",
+              "kind": "text",
+              "label": "Portata impianto = Q [Kg]",
+              "maxLength": 10,
+              "line": [318, 529, 312]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "pesoP",
+              "kind": "text",
+              "label": "Peso cabina + peso arcata + peso accessori = P [Kg]",
+              "maxLength": 10,
+              "line": [318, 529, 346]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "pesoContrappeso",
+              "kind": "text",
+              "label": "Peso contrappeso [Kg]",
+              "maxLength": 10,
+              "line": [318, 529, 380]
+            }
+          ]
+        },
+        {
+          "titolo": "Spessore guida [mm]",
+          "campi": [
+            {
+              "key": "spessore7",
+              "kind": "check",
+              "label": "7",
+              "box": [318, 406, 325, 413]
+            },
+            {
+              "key": "spessore8",
+              "kind": "check",
+              "label": "8",
+              "box": [354.2, 406, 361.2, 413]
+            },
+            {
+              "key": "spessore9",
+              "kind": "check",
+              "label": "9",
+              "box": [391.3, 406, 398.3, 413]
+            },
+            {
+              "key": "spessore16",
+              "kind": "check",
+              "label": "16",
+              "box": [428.3, 406, 435.3, 413]
+            }
+          ]
+        },
+        {
+          "titolo": "Tensione di alimentazione",
+          "campi": [
+            {
+              "key": "tensione24",
+              "kind": "check",
+              "label": "24 Vdc",
+              "box": [318, 440, 325, 447]
+            },
+            {
+              "key": "tensione48",
+              "kind": "check",
+              "label": "48 Vdc",
+              "box": [376.2, 440, 383.2, 447]
+            }
+          ]
+        },
+        {
+          "titolo": "Posizione della fune del limitatore rispetto alla guida",
+          "campi": [
+            {
+              "key": "funeSinistra",
+              "kind": "check",
+              "label": "Sinistra",
+              "box": [318, 474, 325, 481]
+            },
+            {
+              "key": "funeDestra",
+              "kind": "check",
+              "label": "Destra",
+              "box": [381.5, 474, 388.5, 481]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "fermate",
+              "kind": "text",
+              "label": "Numero delle fermate",
+              "maxLength": 4,
+              "line": [318, 529, 516]
+            }
+          ]
+        },
+        {
+          "titolo": "Sopralzi universali",
+          "campi": [
+            {
+              "key": "sopralziSi",
+              "kind": "check",
+              "label": "Sì",
+              "box": [318, 542, 325, 549]
+            },
+            {
+              "key": "sopralziNo",
+              "kind": "check",
+              "label": "No",
+              "box": [357.6, 542, 364.6, 549]
+            }
+          ]
+        },
+        {
+          "titolo": "Economizzatore",
+          "campi": [
+            {
+              "key": "economizzatoreSi",
+              "kind": "check",
+              "label": "Sì",
+              "box": [318, 576, 325, 583]
+            },
+            {
+              "key": "economizzatoreNo",
+              "kind": "check",
+              "label": "No",
+              "box": [357.6, 576, 364.6, 583]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

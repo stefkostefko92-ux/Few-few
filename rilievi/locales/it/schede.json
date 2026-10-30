@@ -99,6 +99,7 @@
       "identifierNeeded": "Compila almeno indirizzo, matricola o n° impianto.",
       "modelloNeeded": "Scegli la tipologia del quadro (NG120 o QI Touch) per compilare il suo modulo d'ordine.",
       "impiantoNeeded": "Scegli il tipo di impianto (elettrico, idraulico o MRL): il modulo d'ordine Elettroquadri dipende da questo.",
+      "ami100TipoNeeded": "Scegli AMI 100 Mono UCM o Mono RTBS per compilare i dati del suo ordine.",
       "azienda": "Scegli l'azienda della scheda."
     },
     "compiledBy": "Compilata da",
@@ -124,7 +125,7 @@
     "page": "Pagina {page} di {pages}"
   },
   "ordini": {
-    "hint": "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
+    "hint": "I campi del modulo d'ordine, nello stesso ordine del foglio. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte.",
     "download": "Scarica PDF",
     "print": "Stampa",
     "errorLabel": "{label} ({fornitore})"
@@ -141,7 +142,9 @@
       "eo": "Ordine quadro",
       "pa": "Dati argano",
       "sg": "Ordine 2SG",
-      "so": "Ordine 2SG"
+      "so": "Ordine 2SG",
+      "au": "Ordine AMI 100",
+      "ar": "Ordine AMI 100"
     },
     "fermate": "Fermate",
     "velocita": "Velocità (m/s)",
@@ -191,7 +194,8 @@
     "modulo": {
       "ordineQuadro": "Ordine quadro",
       "preventivoArgano": "Dati argano",
-      "ordineSospensioni": "Ordine 2SG (operatori e sospensioni)"
+      "ordineSospensioni": "Ordine 2SG (operatori e sospensioni)",
+      "ordineAmi": "Ordine AMI 100"
     },
     "hint": "Spunta i moduli da aggiungere in fondo al foglio: entra solo quello che è compilato. I moduli restano anche come PDF a parte.",
     "sezioni": "Sezioni nella stampa e nel PDF",

@@ -35,3 +35,9 @@ export const PORTE_CON_PATTINO: Condition = {
  */
 export const IDRAULICO: Condition = { field: 'tipoImpianto', values: ['IDRAULICO'] };
 export const NON_IDRAULICO: Condition = { ...IDRAULICO, not: true };
+/** Намалена яма или намалено горно пространство — „Installare AMI 100?“ (собственикът, 30.10.2026). */
+export const SPAZI_RIDOTTI: Condition = {
+  field: 'fossaRidotta',
+  also: ['testataRidotta'],
+  values: ['si'],
+};

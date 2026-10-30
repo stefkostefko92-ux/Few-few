@@ -73,7 +73,8 @@ export function moduliDopo(fields: readonly FieldDef[]): Map<string, string[]> {
     const legati = new Set([field.key]);
     let ultimo = field.key;
     for (const next of fields.slice(i + 1)) {
-      if (!next.when || !legati.has(next.when.field)) continue;
+      if (!next.when || ![next.when.field, ...(next.when.also ?? [])].some((f) => legati.has(f)))
+        continue;
       legati.add(next.key);
       ultimo = next.key;
     }

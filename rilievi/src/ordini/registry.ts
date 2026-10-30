@@ -1,4 +1,6 @@
 import {
+  AMI_RTBS,
+  AMI_UCM,
   ARGANI,
   EQ_GEARED,
   EQ_GEARLESS,
@@ -22,25 +24,27 @@ import {
  * da cambiare?“ при автоматични врати и „Operatore da cambiare?“ при автоматични и полуавтоматични — и
  * затова два слота (свой префикс и свой път на PDF-а) в една колона. Отворен е най-много единият: при
  * автоматични с „Sì“ и на двата листът е един — този на окачванията (слотът на оператора отстъпва,
- * `cede`).
+ * `cede`). AMI 100 („Installare AMI 100?“ при намалена яма или горно пространство) — два листа в една
+ * колона, по втория избор (Mono UCM или Mono RTBS), като моделите на Mastech, но без марка.
  */
 /**
  * Префиксът във формата: `oq` — таблото Pelazza, `om` — таблото MoviLift, `mn` и `mq` — таблото
  * Mastech NG120 и QI Touch, `eg`, `el` и `eo` — таблото Elettroquadri geared, gearless и oleodinamico,
  * `pa` — листът за аргано, `sg` и `so` — листът на 2SG (окачванията при автоматични врати, операторът при
- * автоматични и полуавтоматични).
+ * автоматични и полуавтоматични), `au` и `ar` — AMI 100 Mono UCM и Mono RTBS.
  */
-export type Prefisso = 'oq' | 'om' | 'mn' | 'mq' | 'eg' | 'el' | 'eo' | 'pa' | 'sg' | 'so';
+export type Prefisso =
+  'oq' | 'om' | 'mn' | 'mq' | 'eg' | 'el' | 'eo' | 'pa' | 'sg' | 'so' | 'au' | 'ar';
 
 export interface ModuloSlot {
   /** Марката, при която модулът се отваря; без нея — при всяка. */
   marca?: { field: 'quadroMarca'; value: string };
-  /** И моделът на таблото под марката (Mastech: NG120 или QI Touch). */
-  modello?: { field: 'quadroModello'; value: string };
+  /** И моделът под марката (Mastech: NG120 или QI Touch) или видът на AMI 100 (Mono UCM или RTBS). */
+  modello?: { field: 'quadroModello' | 'ami100Tipo'; value: string };
   /** И видът на уредбата (Elettroquadri: модулът се избира сам по него — собственикът, 30.10.2026). */
   impianto?: { field: 'tipoImpianto'; value: string };
-  column: 'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni';
-  question: 'quadroOrdine' | 'arganoPreventivo' | 'sospensioni' | 'operatore';
+  column: 'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni' | 'ordineAmi';
+  question: 'quadroOrdine' | 'arganoPreventivo' | 'sospensioni' | 'operatore' | 'ami100';
   /** Въпросът на друг слот в същата колона, който има предимство: при неговото видимо „Sì“ този е затворен. */
   cede?: ModuloSlot['question'];
   prefix: Prefisso;
@@ -132,6 +136,22 @@ export const SLOTS: readonly ModuloSlot[] = [
     path: 'operatore-2sg',
     modulo: SG,
   },
+  {
+    modello: { field: 'ami100Tipo', value: 'MONO_UCM' },
+    column: 'ordineAmi',
+    question: 'ami100',
+    prefix: 'au',
+    path: 'ami100-mono-ucm',
+    modulo: AMI_UCM,
+  },
+  {
+    modello: { field: 'ami100Tipo', value: 'MONO_RTBS' },
+    column: 'ordineAmi',
+    question: 'ami100',
+    prefix: 'ar',
+    path: 'ami100-mono-rtbs',
+    modulo: AMI_RTBS,
+  },
 ];
 
 /**
@@ -195,24 +215,27 @@ export function slotAperto(
 }
 
 /**
- * „Sì“ на поръчката при марка с модели, но без избран модел (Mastech без NG120 / QI Touch): няма кой
- * модул да се отвори — полето на модела, което липсва, иначе null.
+ * „Sì“ на въпрос с модели, но без избран модел (Mastech без NG120 / QI Touch, AMI 100 без Mono UCM /
+ * RTBS): няма кой модул да се отвори — полетата на моделите, които липсват (празно — нищо не липсва).
  */
-export function modelloMancante(
+export function modelliMancanti(
   active: ReadonlySet<string>,
   valueOf: (key: string) => unknown,
-): string | null {
-  const slot = SLOTS.find(
-    (s) =>
-      s.modello &&
-      active.has(s.question) &&
-      active.has(s.modello.field) &&
-      valueOf(s.question) === 'si' &&
-      (!s.marca || valueOf(s.marca.field) === s.marca.value),
-  );
-  if (!slot?.modello) return null;
-  const chosen = valueOf(slot.modello.field);
-  return typeof chosen === 'string' && chosen !== '' ? null : slot.modello.field;
+): string[] {
+  const missing = new Set<string>();
+  for (const s of SLOTS) {
+    if (
+      !s.modello ||
+      !active.has(s.question) ||
+      !active.has(s.modello.field) ||
+      valueOf(s.question) !== 'si' ||
+      (s.marca && valueOf(s.marca.field) !== s.marca.value)
+    )
+      continue;
+    const chosen = valueOf(s.modello.field);
+    if (typeof chosen !== 'string' || chosen === '') missing.add(s.modello.field);
+  }
+  return [...missing];
 }
 
 /**

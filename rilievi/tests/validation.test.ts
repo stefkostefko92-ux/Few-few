@@ -62,6 +62,8 @@ describe('the field list', () => {
         'quadroModello',
         'fossaRidotta',
         'testataRidotta',
+        'ami100',
+        'ami100Tipo',
         'quadroOrdine',
         'quadroNote',
         'arganoPreventivo',

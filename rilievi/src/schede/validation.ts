@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type {
+  Ami100Tipo,
   QuadroMarca,
   QuadroModello,
   TipoImpianto,
@@ -7,7 +8,7 @@ import type {
   UbicazioneMacchina,
 } from '@prisma/client';
 import { AUTO_KEY } from '../ordini/collegamenti.js';
-import { impiantoMancante, modelloMancante, slotAperto, SLOTS } from '../ordini/registry.js';
+import { impiantoMancante, modelliMancanti, slotAperto, SLOTS } from '../ordini/registry.js';
 import { moduloFromBody, parseModulo, type ModuloDati } from '../ordini/valori.js';
 import { activeFields, FIELDS, IDENTIFIERS } from './fields.js';
 import {
@@ -133,6 +134,8 @@ export const schedaSchema = z
     quadroModello: choiceOf<QuadroModello>('quadroModello'),
     fossaRidotta: yesNoOf('fossaRidotta'),
     testataRidotta: yesNoOf('testataRidotta'),
+    ami100: yesNoOf('ami100'),
+    ami100Tipo: choiceOf<Ami100Tipo>('ami100Tipo'),
     quadroOrdine: yesNoOf('quadroOrdine'),
     quadroNote: textOf('quadroNote'),
     arganoPreventivo: yesNoOf('arganoPreventivo'),
@@ -165,6 +168,7 @@ export type SchedaData = z.output<typeof schedaSchema> & {
   ordineQuadro: ModuloDati | null;
   preventivoArgano: ModuloDati | null;
   ordineSospensioni: ModuloDati | null;
+  ordineAmi: ModuloDati | null;
   /** Поне един модул в печата (за предишния код) и кои — колоните им. */
   riepilogoOrdini: boolean;
   moduliStampati: string[];
@@ -201,14 +205,16 @@ export function parseScheda(
   const stampa = sezioniEscluseDi(raw);
   const foto = fotoInStampaDi(raw);
   const schizzi = schizziDi(raw);
-  // Mastech: „Sì“ на поръчката без модел — човекът да избере NG120 или QI Touch; Elettroquadri — без вид
-  // на уредбата (модулът е по него).
-  const modello = modelloMancante(active, (key) => raw[key]);
+  // Mastech: „Sì“ на поръчката без модел — човекът да избере NG120 или QI Touch; AMI 100 — Mono UCM или
+  // RTBS; Elettroquadri — без вид на уредбата (модулът е по него).
+  const modelli = modelliMancanti(active, (key) => raw[key]);
   const impianto = impiantoMancante(active, (key) => raw[key]);
   const extraErrors: FieldErrors = Object.assign(
     {},
     misure?.errors,
-    modello ? { [modello]: 'modelloNeeded' } : {},
+    ...modelli.map((field) => ({
+      [field]: field === 'ami100Tipo' ? 'ami100TipoNeeded' : 'modelloNeeded',
+    })),
     impianto ? { [impianto]: 'impiantoNeeded' } : {},
     ...moduli.map((modulo) => modulo?.errors ?? {}),
     riepilogo.success ? {} : { [RIEPILOGO_KEY]: 'invalid' },
@@ -237,6 +243,7 @@ export function parseScheda(
         ordineQuadro: dati('ordineQuadro') ?? null,
         preventivoArgano: dati('preventivoArgano') ?? null,
         ordineSospensioni: dati('ordineSospensioni') ?? null,
+        ordineAmi: dati('ordineAmi') ?? null,
         riepilogoOrdini: riepilogo.data.length > 0,
         moduliStampati: riepilogo.data,
         sezioniEscluse: stampa.data,

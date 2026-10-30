@@ -37,6 +37,8 @@ export type SectionKey =
  */
 export interface Condition {
   field: string;
+  /** И тези полета: стига едно от всичките да има една от `values` („Fossa“ или „Testata ridotta: Sì“). */
+  also?: readonly string[];
   values: readonly string[];
   not?: true;
 }
@@ -52,7 +54,7 @@ interface BaseField {
   /** При „Sì“ носи таблицата с мерките на старите бутониери — ред за всяка спирка (misure.ts). */
   misure?: boolean;
   /** При „Sì“ отваря модула на доставчика (src/ordini/) — свой PDF, отделно от картата. */
-  modulo?: 'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni';
+  modulo?: 'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni' | 'ordineAmi';
 }
 
 export interface TextField extends BaseField {

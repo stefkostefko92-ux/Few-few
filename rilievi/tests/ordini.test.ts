@@ -77,7 +77,6 @@ describe('the supplier forms', () => {
   it('are named with the supplier, or by the title alone when the sheet has none', () => {
     assert.equal(nomeModulo(SG), 'Modulo ordine operatori e sospensioni · 2SG S.r.l.');
     assert.equal(nomeModulo(ARGANI), 'Modulo rilievi dati argani');
-    assert.equal(SG.ruota, 180, 'the scanned 2SG sheet is upside down');
   });
 });
 
@@ -266,7 +265,10 @@ describe('the supplier PDFs', { skip: !fontsHere && 'DejaVu fonts are not instal
     );
   });
 
-  it('turn the upside-down 2SG scan upright, keep its size and write the notes on its lines', async () => {
+  it('write on the 2SG sheet we drew (no scan, 30 October 2026), the notes on its lines', async () => {
+    const blank = (await PDFDocument.load(moduloPdf(SG))).getPage(0);
+    assert.equal(resources(blank, 'XObject').length, 0, 'a vector sheet: no scanned picture');
+    assert.ok(resources(blank, 'Font').length >= 2, 'its own labels, in embedded fonts');
     const out = await renderModulo(
       SG,
       { automatico: true, ordNo: '77', note: 'Operatore da sostituire. '.repeat(20) },
@@ -275,9 +277,13 @@ describe('the supplier PDFs', { skip: !fontsHere && 'DejaVu fonts are not instal
     const doc = await PDFDocument.load(out);
     assert.equal(doc.getPageCount(), 1);
     const page = doc.getPage(0);
-    assert.equal(page.getRotation().angle, 0, 'upright on the page, not by a viewer rotation');
-    assert.deepEqual(page.getSize(), A4);
-    assert.equal(resources(page, 'XObject').length, 1, 'the scan, drawn turned on the new page');
-    assert.equal(resources(page, 'Font').length, 1);
+    assert.equal(page.getRotation().angle, 0);
+    const size = page.getSize();
+    assert.ok(
+      Math.abs(size.width - A4.width) < 0.1 && Math.abs(size.height - A4.height) < 0.1,
+      'A4',
+    );
+    assert.equal(resources(page, 'XObject').length, 0);
+    assert.equal(resources(page, 'Font').length, resources(blank, 'Font').length + 1);
   });
 });

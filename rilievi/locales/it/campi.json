@@ -78,6 +78,8 @@
       "quadroModello": "Tipologia quadro",
       "fossaRidotta": "Fossa ridotta",
       "testataRidotta": "Testata ridotta",
+      "ami100": "AMI 100 da installare",
+      "ami100Tipo": "Tipo AMI 100",
       "arganoTipo": "Tipo argano esistente",
       "kitControlloGanasce": "Kit controllo ganasce da installare?",
       "kitControlloGanasceTipo": "Tipo controllo ganasce",
@@ -105,7 +107,8 @@
       "sospensioni": "Sospensioni da cambiare?",
       "quadroSostituire": "Quadro di manovra da sostituire?",
       "bottoniereSostituire": "Bottoniere da sostituire?",
-      "centralinaDaFare": "Centralina da sostituire?"
+      "centralinaDaFare": "Centralina da sostituire?",
+      "ami100": "Installare AMI 100?"
     },
     "option": {
       "ubicazioneMacchina": {
@@ -137,6 +140,10 @@
       "quadroModello": {
         "NG120": "NG120",
         "QI_TOUCH": "QI Touch"
+      },
+      "ami100Tipo": {
+        "MONO_UCM": "AMI 100 Mono UCM",
+        "MONO_RTBS": "AMI 100 Mono RTBS"
       }
     },
     "unit": {

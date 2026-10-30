@@ -22,6 +22,9 @@ describe('the orders in the sheet print', () => {
     sospensioni: null,
     operatore: null,
     ordineSospensioni: null,
+    ami100: null,
+    ami100Tipo: null,
+    ordineAmi: null,
   };
 
   it('come in only when the sheet asks for them, with what is filled in', () => {
@@ -87,6 +90,9 @@ describe('each order chosen for the sheet print on its own', () => {
     sospensioni: true as boolean | null,
     operatore: null as boolean | null,
     ordineSospensioni: { modulo: SG.id, valori: { automatico: true } },
+    ami100: null,
+    ami100Tipo: null,
+    ordineAmi: null,
   };
   const nomi = (scheda: typeof tutti) => riepilogoModuli(scheda).map((modulo) => modulo.nome);
 
@@ -114,11 +120,12 @@ describe('each order chosen for the sheet print on its own', () => {
     );
   });
 
-  it('keeps all three for a sheet saved with the one box of before', () => {
+  it('keeps every order for a sheet saved with the one box of before', () => {
     assert.deepEqual(moduliStampatiDi(tutti), [
       'ordineQuadro',
       'preventivoArgano',
       'ordineSospensioni',
+      'ordineAmi',
     ]);
     assert.equal(nomi(tutti).length, 3);
   });
@@ -131,7 +138,12 @@ describe('each order chosen for the sheet print on its own', () => {
     ]);
     assert.deepEqual(parse('preventivoArgano').data, ['preventivoArgano']);
     assert.deepEqual(parse(undefined).data, []);
-    assert.deepEqual(parse('1').data, ['ordineQuadro', 'preventivoArgano', 'ordineSospensioni']);
+    assert.deepEqual(parse('1').data, [
+      'ordineQuadro',
+      'preventivoArgano',
+      'ordineSospensioni',
+      'ordineAmi',
+    ]);
     for (const forged of ['yes', 'constructor', ['ordineQuadro', 'note'], { a: 1 }]) {
       assert.equal(parse(forged).success, false, JSON.stringify(forged));
     }

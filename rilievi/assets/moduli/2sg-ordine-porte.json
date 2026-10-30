@@ -2,13 +2,12 @@
   "id": "2sg-ordine-porte",
   "fornitore": "2SG S.r.l.",
   "titolo": "Modulo ordine operatori e sospensioni",
-  "fonte": "DATI_RILIEVI_2SG.pdf caricato dal proprietario del portale il 13/10/2026: scansione capovolta, senza testo; il PDF compilato la raddrizza (ruota)",
+  "fonte": "Ridisegnato da Rilievi Impianti (scripts/moduli/2sg.mjs) dal modulo cartaceo di 2SG S.r.l. (DATI_RILIEVI_2SG.pdf, scansione caricata dal proprietario del portale il 13/10/2026): stessi campi e stesso ordine, foglio vettoriale A4 al posto della scansione (30/10/2026)",
   "file": "2sg-ordine-porte.pdf",
-  "sha256": "c199143b61c7a1fac02dc81083a40f2243fff089d6fc0808cc32b2ff7a605bc6",
+  "sha256": "8f5a3ab8b10a296ff02f189c832ce6351a1e7a85792de04840f97e2b5989838c",
   "tipo": "overlay",
-  "dimensione": 9,
-  "sopraLinea": 1.2,
-  "ruota": 180,
+  "dimensione": 8.4,
+  "sopraLinea": 1.6,
   "gruppi": [
     {
       "titolo": "Intestazione",
@@ -20,8 +19,9 @@
               "kind": "textarea",
               "label": "MITTENTE:",
               "maxLength": 200,
-              "area": [74.5, 129.0, 309.0, 198.0],
-              "prefill": "azienda"
+              "area": [42, 52, 344, 126],
+              "prefill": "azienda",
+              "righe": [64, 78, 92, 106, 120]
             }
           ]
         },
@@ -32,7 +32,7 @@
               "kind": "text",
               "label": "DATA:",
               "maxLength": 20,
-              "line": [344.0, 421.0, 122.9],
+              "line": [379.2, 456, 50.5],
               "prefill": "data"
             },
             {
@@ -40,7 +40,7 @@
               "kind": "text",
               "label": "ORD No:",
               "maxLength": 20,
-              "line": [466.0, 550.0, 124.3]
+              "line": [497.5, 555, 50.5]
             }
           ]
         },
@@ -51,7 +51,7 @@
               "kind": "text",
               "label": "RIFERIMENTO ORDINE:",
               "maxLength": 90,
-              "line": [74.0, 308.0, 219.7],
+              "line": [42, 344, 161.5],
               "prefill": "rif"
             }
           ]
@@ -63,14 +63,14 @@
               "kind": "text",
               "label": "CONSEGNA OPERATORI:",
               "maxLength": 30,
-              "line": [314.0, 420.0, 225.7]
+              "line": [358, 456, 161.5]
             },
             {
               "key": "consegnaSospensioni",
               "kind": "text",
               "label": "CONSEGNA SOSPENSIONI:",
               "maxLength": 30,
-              "line": [427.0, 549.0, 226.2]
+              "line": [468, 555, 161.5]
             }
           ]
         },
@@ -81,19 +81,19 @@
               "kind": "text",
               "label": "CORRIERE:",
               "maxLength": 90,
-              "line": [74.0, 308.0, 243.2]
+              "line": [42, 344, 189.5]
             },
             {
               "key": "imballoSi",
               "kind": "check",
               "label": "IMBALLO: SI",
-              "box": [358.9, 235.1, 365.4, 240.5]
+              "box": [404.7, 179.5, 411.7, 186.5]
             },
             {
               "key": "imballoNo",
               "kind": "check",
               "label": "IMBALLO: NO",
-              "box": [392.0, 235.8, 398.9, 240.8]
+              "box": [439.1, 179.5, 446.1, 186.5]
             }
           ]
         },
@@ -104,7 +104,7 @@
               "kind": "text",
               "label": "DESTINAZIONE MERCE:",
               "maxLength": 120,
-              "line": [74.0, 404.0, 266.7]
+              "line": [42, 465, 213.5]
             }
           ]
         }
@@ -119,13 +119,13 @@
               "key": "automatico",
               "kind": "check",
               "label": "AUTOMATICO",
-              "box": [167.4, 286.9, 174.6, 292.7]
+              "box": [162, 250.5, 169, 257.5]
             },
             {
               "key": "semiautomatico",
               "kind": "check",
               "label": "SEMIAUTOMATICO",
-              "box": [168.1, 295.2, 175.0, 300.6]
+              "box": [162, 262.9, 169, 269.9]
             }
           ]
         },
@@ -135,19 +135,19 @@
               "key": "extracorsaCabina",
               "kind": "check",
               "label": "EXTRACORSA",
-              "box": [167.4, 310.3, 174.2, 316.1]
+              "box": [162, 281.5, 169, 288.5]
             },
             {
               "key": "bloccoFuoriPiano",
               "kind": "check",
               "label": "BLOCCO FUORI PIANO",
-              "box": [167.0, 318.6, 174.6, 324.7]
+              "box": [162, 293.9, 169, 300.9]
             },
             {
               "key": "paramento",
               "kind": "check",
               "label": "PARAMENTO DI CABINA",
-              "box": [167.0, 327.2, 174.6, 333.0]
+              "box": [162, 306.3, 169, 313.3]
             }
           ]
         },
@@ -157,7 +157,7 @@
               "key": "portePesanti",
               "kind": "check",
               "label": "PORTE PESANTI => 60Kg",
-              "box": [166.7, 345.2, 174.6, 350.3]
+              "box": [162, 324.9, 169, 331.9]
             }
           ]
         },
@@ -167,7 +167,7 @@
               "key": "operatoreOp93",
               "kind": "check",
               "label": "OPERATORE TRIFASE 127Vca: OPERATORE A BRACCIO OP93",
-              "box": [178.2, 378.4, 186.1, 384.1]
+              "box": [162, 355.9, 169, 362.9]
             }
           ]
         },
@@ -177,13 +177,13 @@
               "key": "operatoreLouis",
               "kind": "check",
               "label": "OPERATORE MONOFASE 230Vca: OPERATORE LINEARE \"LOUIS\"",
-              "box": [176.4, 405.0, 184.7, 410.8]
+              "box": [162, 386.9, 169, 393.9]
             },
             {
               "key": "operatoreFly",
               "kind": "check",
               "label": "OPERATORE MONOFASE 230Vca: OPERATORE PWM \"FLY\"",
-              "box": [176.4, 414.4, 184.7, 420.5]
+              "box": [162, 399.3, 169, 406.3]
             }
           ]
         },
@@ -193,13 +193,13 @@
               "key": "motore125",
               "kind": "check",
               "label": "MOTORE 125/220VCA",
-              "box": [287.6, 287.6, 294.8, 293.0]
+              "box": [280.5, 250.5, 287.5, 257.5]
             },
             {
               "key": "motore48",
               "kind": "check",
               "label": "MOTORE 48 VCC",
-              "box": [287.3, 295.6, 294.8, 301.0]
+              "box": [280.5, 262.5, 287.5, 269.5]
             }
           ]
         },
@@ -210,14 +210,14 @@
               "kind": "text",
               "label": "MOTORE : VCA",
               "maxLength": 10,
-              "line": [254.0, 286.0, 319.7]
+              "line": [221.3, 261.3, 284.9]
             },
             {
               "key": "motoreHz",
               "kind": "text",
               "label": "HZ",
               "maxLength": 10,
-              "line": [222.5, 253.0, 327.4]
+              "line": [221.3, 261.3, 296.9]
             }
           ]
         },
@@ -227,13 +227,13 @@
               "key": "nonFornireSogliaCabina",
               "kind": "check",
               "label": "NON FORNIRE SOGLIA",
-              "box": [286.6, 338.4, 294.1, 344.5]
+              "box": [280.5, 308.1, 287.5, 315.1]
             },
             {
               "key": "sogliaRinforzataCabina",
               "kind": "check",
               "label": "SOGLIA RINFORZATA H90",
-              "box": [286.6, 347.0, 294.1, 353.2]
+              "box": [280.5, 320.1, 287.5, 327.1]
             }
           ]
         },
@@ -243,13 +243,13 @@
               "key": "centraliH50",
               "kind": "check",
               "label": "SOGLIE CENTRALI 2AO: H50",
-              "box": [207.7, 369.7, 215.3, 375.5]
+              "box": [202.3, 351.3, 209.3, 358.3]
             },
             {
               "key": "centraliH70",
               "kind": "check",
               "label": "SOGLIE CENTRALI 2AO: H70",
-              "box": [236.9, 369.7, 244.1, 375.5]
+              "box": [235, 351.3, 242, 358.3]
             }
           ]
         },
@@ -259,13 +259,13 @@
               "key": "telescopicaH75",
               "kind": "check",
               "label": "SOGLIE TELESCOPICA 2AT/4AO: H75",
-              "box": [207.4, 387.0, 215.3, 393.1]
+              "box": [201.3, 376.5, 208.3, 383.5]
             },
             {
               "key": "telescopicaH90",
               "kind": "check",
               "label": "SOGLIE TELESCOPICA 2AT/4AO: H90",
-              "box": [234.4, 387.0, 242.3, 393.5]
+              "box": [234.8, 376.5, 241.8, 383.5]
             }
           ]
         },
@@ -275,7 +275,7 @@
               "key": "telescopicaH120",
               "kind": "check",
               "label": "SOGLIE TELESCOPICA 3AT/6AT: H120",
-              "box": [211.7, 411.5, 219.6, 417.2]
+              "box": [205.2, 401.7, 212.2, 408.7]
             }
           ]
         },
@@ -286,8 +286,8 @@
               "kind": "textarea",
               "label": "NOTE:",
               "maxLength": 160,
-              "area": [96.0, 432.0, 290.0, 466.0],
-              "righe": [439.6, 454.2]
+              "area": [40, 423, 288.5, 453],
+              "righe": [433, 445]
             }
           ]
         }
@@ -302,13 +302,13 @@
               "key": "nonFornireSogliaPiano",
               "kind": "check",
               "label": "NON FORNIRE SOGLIA",
-              "box": [392.0, 288.7, 400.0, 294.1]
+              "box": [377.1, 250.5, 384.1, 257.5]
             },
             {
               "key": "sogliaRinforzataPiano",
               "kind": "check",
               "label": "SOGLIA RINFORZATA H90",
-              "box": [522.0, 289.4, 529.6, 294.8]
+              "box": [482.2, 250.5, 489.2, 257.5]
             }
           ]
         },
@@ -318,31 +318,31 @@
               "key": "sogliaH50",
               "kind": "check",
               "label": "H50",
-              "box": [339.8, 303.8, 347.4, 309.6]
+              "box": [322.8, 264.1, 329.8, 271.1]
             },
             {
               "key": "sogliaH70",
               "kind": "check",
               "label": "H70",
-              "box": [379.1, 304.2, 386.6, 310.0]
+              "box": [361.5, 264.1, 368.5, 271.1]
             },
             {
               "key": "sogliaH75",
               "kind": "check",
               "label": "H75",
-              "box": [418.0, 304.6, 425.5, 310.3]
+              "box": [399.8, 264.1, 406.8, 271.1]
             },
             {
               "key": "sogliaH90",
               "kind": "check",
               "label": "H90",
-              "box": [457.2, 304.9, 464.8, 310.3]
+              "box": [439.3, 264.1, 446.3, 271.1]
             },
             {
               "key": "sogliaH120",
               "kind": "check",
               "label": "H120",
-              "box": [501.8, 305.3, 509.4, 311.0]
+              "box": [481.5, 264.1, 488.5, 271.1]
             }
           ]
         },
@@ -352,20 +352,20 @@
               "key": "telaiNo",
               "kind": "check",
               "label": "TELAI: NO",
-              "box": [407.9, 324.4, 414.7, 330.1]
+              "box": [378.4, 284.5, 385.4, 291.5]
             },
             {
               "key": "telaiSi",
               "kind": "check",
               "label": "TELAI: SI",
-              "box": [438.5, 324.4, 446.0, 330.5]
+              "box": [407.3, 284.5, 414.3, 291.5]
             },
             {
               "key": "telaiNr",
               "kind": "text",
               "label": "NR.",
               "maxLength": 4,
-              "line": [499.7, 534.2, 337.1]
+              "line": [442.8, 553, 292.5]
             }
           ]
         },
@@ -375,7 +375,7 @@
               "key": "telaiAntiruggine",
               "kind": "check",
               "label": "VERNICIATI IN ANTIRUGGINE RAL 9002",
-              "box": [449.0, 342.0, 456.5, 347.8]
+              "box": [426.7, 298.1, 433.7, 305.1]
             }
           ]
         },
@@ -385,14 +385,14 @@
               "key": "telaiFuoco",
               "kind": "check",
               "label": "VERNICIATI A FUOCO BUCCIATI",
-              "box": [450.4, 350.3, 457.2, 356.4]
+              "box": [402.3, 311.7, 409.3, 318.7]
             },
             {
               "key": "telaiRal",
               "kind": "text",
               "label": "RAL NR.",
               "maxLength": 10,
-              "line": [499.0, 534.1, 360.1]
+              "line": [451.3, 553, 319.7]
             }
           ]
         },
@@ -403,7 +403,7 @@
               "kind": "text",
               "label": "RIVESTITI IN",
               "maxLength": 60,
-              "line": [356.9, 533.0, 374.7]
+              "line": [347.6, 553, 336]
             }
           ]
         },
@@ -413,7 +413,7 @@
               "key": "telaiSpeciali",
               "kind": "check",
               "label": "TELAI DI DIMENSIONI SPECIALI: (ALLEGARE DISEGNO)",
-              "box": [421.9, 384.8, 429.5, 391.0]
+              "box": [405, 345.7, 412, 352.7]
             }
           ]
         },
@@ -423,13 +423,13 @@
               "key": "extracorsaNo",
               "kind": "check",
               "label": "EXTRACORSA: NO",
-              "box": [406.4, 393.8, 413.6, 400.0]
+              "box": [409.9, 366.1, 416.9, 373.1]
             },
             {
               "key": "extracorsaSi",
               "kind": "check",
               "label": "EXTRACORSA: SI",
-              "box": [428.8, 394.2, 436.3, 400.3]
+              "box": [438.8, 366.1, 445.8, 373.1]
             }
           ]
         },
@@ -439,27 +439,27 @@
               "key": "scassoNo",
               "kind": "check",
               "label": "SCASSO BOTTONIERA: NO",
-              "box": [406.1, 411.1, 413.6, 417.2]
+              "box": [409.9, 381.1, 416.9, 388.1]
             },
             {
               "key": "scassoSi",
               "kind": "check",
               "label": "SCASSO BOTTONIERA: SI",
-              "box": [428.8, 411.5, 436.3, 417.2]
+              "box": [438.8, 381.1, 445.8, 388.1]
             },
             {
               "key": "scassoL",
               "kind": "text",
               "label": "LxH:",
               "maxLength": 8,
-              "line": [471.0, 501.1, 421.3]
+              "line": [473, 506, 389.1]
             },
             {
               "key": "scassoH",
               "kind": "text",
               "label": "X",
               "maxLength": 8,
-              "line": [509.4, 541.4, 421.6]
+              "line": [520, 553, 389.1]
             }
           ]
         },
@@ -469,20 +469,20 @@
               "key": "aletteNo",
               "kind": "check",
               "label": "ALETTE DI FISSAGGIO: NO",
-              "box": [406.1, 427.7, 413.3, 432.7]
+              "box": [409.9, 396, 416.9, 403]
             },
             {
               "key": "aletteSi",
               "kind": "check",
               "label": "ALETTE DI FISSAGGIO: SI",
-              "box": [428.8, 428.0, 436.0, 433.1]
+              "box": [438.8, 396, 445.8, 403]
             },
             {
               "key": "aletteMm",
               "kind": "text",
               "label": "MM:",
               "maxLength": 10,
-              "line": [471.0, 540.7, 441.7]
+              "line": [476.4, 553, 404]
             }
           ]
         },
@@ -493,7 +493,7 @@
               "kind": "text",
               "label": "ALTEZZA DA TERRA (mm):",
               "maxLength": 12,
-              "line": [404.3, 540.2, 455.7]
+              "line": [387.1, 553, 421.7]
             }
           ]
         }
@@ -509,14 +509,14 @@
               "kind": "text",
               "label": "ANTE DI CABINA: NR.",
               "maxLength": 4,
-              "line": [155.0, 212.4, 484.3]
+              "line": [108.3, 204, 480.5]
             },
             {
               "key": "antePianoNr",
               "kind": "text",
               "label": "ANTE DI PIANO: NR.",
               "maxLength": 4,
-              "line": [403.5, 467.5, 486.0]
+              "line": [371.3, 437.5, 480.5]
             }
           ]
         },
@@ -526,26 +526,26 @@
               "key": "anteGrezze",
               "kind": "check",
               "label": "GREZZE (VERN. ALL'INTERNO)",
-              "box": [177.1, 490.0, 185.0, 496.1]
+              "box": [132.4, 487.5, 139.4, 494.5]
             },
             {
               "key": "anteAntiruggine",
               "kind": "check",
               "label": "ANTIRUGGINE RAL 9002",
-              "box": [289.8, 490.3, 297.7, 496.8]
+              "box": [237.9, 487.5, 244.9, 494.5]
             },
             {
               "key": "anteFuoco",
               "kind": "check",
               "label": "VERNICIATE A FUOCO BUCCIATE",
-              "box": [432.0, 491.8, 439.9, 497.9]
+              "box": [405.5, 487.5, 412.5, 494.5]
             },
             {
               "key": "anteRal",
               "kind": "text",
               "label": "RAL NR.",
               "maxLength": 10,
-              "line": [483.8, 539.8, 505.7]
+              "line": [452.4, 553, 495.5]
             }
           ]
         },
@@ -556,7 +556,7 @@
               "kind": "text",
               "label": "RIVESTITE IN :",
               "maxLength": 60,
-              "line": [122.8, 305.6, 508.1]
+              "line": [86.1, 553, 510.5]
             }
           ]
         },
@@ -566,25 +566,25 @@
               "key": "profiliAlluminio",
               "kind": "check",
               "label": "PROFILI DI BATTUTA IN ALLUMINIO",
-              "box": [191.5, 517.0, 199.8, 523.1]
+              "box": [148.9, 517.5, 155.9, 524.5]
             },
             {
               "key": "inoxScotchBrite",
               "kind": "check",
               "label": "PROFILI DI BATTUTA IN INOX: SCOTCH BRITE",
-              "box": [384.5, 518.4, 392.4, 524.5]
+              "box": [325, 517.5, 332, 524.5]
             },
             {
               "key": "inoxLucidoBa",
               "kind": "check",
               "label": "PROFILI DI BATTUTA IN INOX: LUCIDO BA",
-              "box": [440.6, 519.1, 448.2, 525.2]
+              "box": [382.9, 517.5, 389.9, 524.5]
             },
             {
               "key": "inoxSpecchio",
               "kind": "check",
               "label": "PROFILI DI BATTUTA IN INOX: SPECCHIO",
-              "box": [495.0, 519.5, 502.6, 525.6]
+              "box": [438.4, 517.5, 445.4, 524.5]
             }
           ]
         }
@@ -600,14 +600,14 @@
               "kind": "text",
               "label": "LUCE PORTA:",
               "maxLength": 8,
-              "line": [138.6, 211.1, 546.1]
+              "line": [94.6, 164.6, 555.5]
             },
             {
               "key": "luceCabinaH",
               "kind": "text",
               "label": "x",
               "maxLength": 8,
-              "line": [227.2, 304.4, 546.5]
+              "line": [176.6, 286.5, 555.5]
             }
           ]
         },
@@ -618,7 +618,7 @@
               "kind": "text",
               "label": "1AT CD NR.",
               "maxLength": 4,
-              "line": [262.0, 297.0, 577.2]
+              "line": [240.8, 286.5, 578]
             }
           ]
         },
@@ -629,7 +629,7 @@
               "kind": "text",
               "label": "1AT CS NR.",
               "maxLength": 4,
-              "line": [262.0, 297.0, 592.5]
+              "line": [240.8, 286.5, 603.5]
             }
           ]
         },
@@ -640,7 +640,7 @@
               "kind": "text",
               "label": "2AO NR.",
               "maxLength": 4,
-              "line": [262.0, 297.0, 613.5]
+              "line": [240.8, 286.5, 629]
             }
           ]
         },
@@ -651,7 +651,7 @@
               "kind": "text",
               "label": "2AT CD NR.",
               "maxLength": 4,
-              "line": [262.0, 297.0, 638.6]
+              "line": [240.8, 286.5, 654.5]
             }
           ]
         },
@@ -662,7 +662,7 @@
               "kind": "text",
               "label": "2AT CS NR.",
               "maxLength": 4,
-              "line": [262.0, 297.0, 670.8]
+              "line": [240.8, 286.5, 680]
             }
           ]
         },
@@ -673,7 +673,7 @@
               "kind": "text",
               "label": "3AT CD NR.",
               "maxLength": 4,
-              "line": [262.0, 297.0, 694.8]
+              "line": [240.8, 286.5, 705.5]
             }
           ]
         },
@@ -684,7 +684,7 @@
               "kind": "text",
               "label": "3AT CS NR.",
               "maxLength": 4,
-              "line": [262.0, 297.0, 718.0]
+              "line": [240.8, 286.5, 731]
             }
           ]
         },
@@ -695,7 +695,7 @@
               "kind": "text",
               "label": "4AT NR.",
               "maxLength": 4,
-              "line": [262.0, 297.0, 741.1]
+              "line": [240.8, 286.5, 756.5]
             }
           ]
         },
@@ -706,7 +706,7 @@
               "kind": "text",
               "label": "6AT NR.",
               "maxLength": 4,
-              "line": [262.0, 297.0, 764.4]
+              "line": [240.8, 286.5, 782]
             }
           ]
         }
@@ -722,14 +722,14 @@
               "kind": "text",
               "label": "LUCE PORTA:",
               "maxLength": 8,
-              "line": [378.9, 442.4, 547.6]
+              "line": [361.1, 431.1, 555.5]
             },
             {
               "key": "lucePianoH",
               "kind": "text",
               "label": "x",
               "maxLength": 8,
-              "line": [458.8, 539.3, 548.4]
+              "line": [443.1, 553, 555.5]
             }
           ]
         },
@@ -740,7 +740,7 @@
               "kind": "text",
               "label": "1AT CD NR.",
               "maxLength": 4,
-              "line": [503.0, 538.0, 579.2]
+              "line": [507.3, 553, 578]
             }
           ]
         },
@@ -751,7 +751,7 @@
               "kind": "text",
               "label": "1AT CS NR.",
               "maxLength": 4,
-              "line": [503.0, 538.0, 594.4]
+              "line": [507.3, 553, 603.5]
             }
           ]
         },
@@ -762,7 +762,7 @@
               "kind": "text",
               "label": "2AO NR.",
               "maxLength": 4,
-              "line": [503.0, 538.0, 615.7]
+              "line": [507.3, 553, 629]
             }
           ]
         },
@@ -773,7 +773,7 @@
               "kind": "text",
               "label": "2AT CD NR.",
               "maxLength": 4,
-              "line": [503.0, 538.0, 640.5]
+              "line": [507.3, 553, 654.5]
             }
           ]
         },
@@ -784,7 +784,7 @@
               "kind": "text",
               "label": "2AT CS NR.",
               "maxLength": 4,
-              "line": [503.0, 538.0, 672.7]
+              "line": [507.3, 553, 680]
             }
           ]
         },
@@ -795,7 +795,7 @@
               "kind": "text",
               "label": "3AT CD NR.",
               "maxLength": 4,
-              "line": [503.0, 538.0, 696.4]
+              "line": [507.3, 553, 705.5]
             }
           ]
         },
@@ -806,7 +806,7 @@
               "kind": "text",
               "label": "3AT CS NR.",
               "maxLength": 4,
-              "line": [503.0, 538.0, 719.8]
+              "line": [507.3, 553, 731]
             }
           ]
         },
@@ -817,7 +817,7 @@
               "kind": "text",
               "label": "4AT NR.",
               "maxLength": 4,
-              "line": [503.0, 538.0, 742.6]
+              "line": [507.3, 553, 756.5]
             }
           ]
         },
@@ -828,7 +828,7 @@
               "kind": "text",
               "label": "6AT NR.",
               "maxLength": 4,
-              "line": [503.0, 538.0, 766.1]
+              "line": [507.3, 553, 782]
             }
           ]
         }

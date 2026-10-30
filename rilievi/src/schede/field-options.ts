@@ -18,3 +18,5 @@ export const QUADRO_MARCA = [
 ] as const;
 /** Mastech: таблото за поръчка — NG120 или QI Touch (всеки със своя модул). */
 export const QUADRO_MODELLO = ['NG120', 'QI_TOUCH'] as const;
+/** AMI 100 при намалена яма или горно пространство — Mono UCM или Mono RTBS (всеки със своя лист). */
+export const AMI100_TIPO = ['MONO_UCM', 'MONO_RTBS'] as const;

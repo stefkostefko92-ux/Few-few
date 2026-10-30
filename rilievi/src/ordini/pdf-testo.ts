@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
 import fontkit from '@pdf-lib/fontkit';
-import { degrees, PDFDocument, type PDFFont } from 'pdf-lib';
+import { PDFDocument, type PDFFont } from 'pdf-lib';
 import { pdfFontPaths } from '../schede/pdf.js';
 import { moduloPdf, type Modulo } from './moduli.js';
 
 /**
- * Общото на PDF-ите на модулите (pdf.ts — плоският лист на Pelazza, pdf-form.ts — формулярите):
+ * Общото на PDF-ите на модулите (pdf.ts — плоските листове, pdf-form.ts — формулярите):
  * отварянето на официалния модул с нашия шрифт и мястото на текста. Шрифтът е DejaVu Sans (кирилица,
  * ударения) — никога вграденият Helvetica на pdf-lib.
  */
@@ -18,33 +18,16 @@ const MIN_SIZE = 5;
  */
 export const SEGNO = 1.7;
 
-/**
- * Официалният празен модул (проверен по SHA-256) с вграден DejaVu Sans. Сканиран лист с главата надолу
- * (`ruota`, 2SG) излиза изправен: нова страница със същия размер и листът върху нея, завъртян на 180° —
- * координатите в картата са на изправения лист.
- */
+/** Официалният празен модул (проверен по SHA-256) с вграден DejaVu Sans. */
 export async function apriModulo(
   modulo: Modulo,
   fontDir: string,
 ): Promise<{ doc: PDFDocument; font: PDFFont }> {
-  const doc =
-    modulo.ruota === 180
-      ? await raddrizza(moduloPdf(modulo))
-      : await PDFDocument.load(moduloPdf(modulo));
+  const doc = await PDFDocument.load(moduloPdf(modulo));
   doc.registerFontkit(fontkit);
   const font = await doc.embedFont(readFileSync(pdfFontPaths(fontDir).regular), { subset: true });
   doc.setProducer('Rilievi Impianti — Carbon Stealth VCC');
   return { doc, font };
-}
-
-async function raddrizza(bytes: Uint8Array): Promise<PDFDocument> {
-  const doc = await PDFDocument.create();
-  const [scan] = await doc.embedPdf(bytes, [0]);
-  if (!scan) throw new Error('модулът няма страница');
-  doc
-    .addPage([scan.width, scan.height])
-    .drawPage(scan, { x: scan.width, y: scan.height, rotate: degrees(180) });
-  return doc;
 }
 
 /** Един ред: никога не се пренася — смалява се до 5 pt, после се реже с многоточие. */

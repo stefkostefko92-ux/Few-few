@@ -179,7 +179,12 @@ describe('data the sheet and the orders share', () => {
     const id = await create(browser, { ...SURVEY, ...ORDERS, riepilogoOrdini: '1' });
     const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
     assert.equal(row.riepilogoOrdini, true);
-    assert.deepEqual(row.moduliStampati, ['ordineQuadro', 'preventivoArgano', 'ordineSospensioni']);
+    assert.deepEqual(row.moduliStampati, [
+      'ordineQuadro',
+      'preventivoArgano',
+      'ordineSospensioni',
+      'ordineAmi',
+    ]);
     const print = await browser.get(`/schede/${id}/stampa`);
     assert.match(print.body, /Modulo d&#39;ordine quadri · Pelazza Peppino/);
     assert.match(print.body, /Velocità m\/s: <strong>1,0<\/strong>/);
@@ -192,7 +197,7 @@ describe('data the sheet and the orders share', () => {
 
     // Each order on its own: only the argano sheet; then none — the orders keep their own PDFs.
     const edit = await browser.get(`/schede/${id}/modifica`);
-    for (const colonna of ['ordineQuadro', 'preventivoArgano', 'ordineSospensioni']) {
+    for (const colonna of ['ordineQuadro', 'preventivoArgano', 'ordineSospensioni', 'ordineAmi']) {
       assert.match(edit.body, new RegExp(`name="riepilogoOrdini" value="${colonna}" checked`));
     }
     const base = /name="base" value="([^"]+)"/.exec(edit.body)![1]!;

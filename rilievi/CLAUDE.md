@@ -5,8 +5,9 @@
 бутониери по спирки), търсене (№ на асансьора, матрикула, адрес, марка, работна карта, бележки), печат
 A4 и PDF. Модулите: при табло Pelazza / MoviLift / Mastech (NG120 или QI Touch — втори избор) /
 Elettroquadri (geared, gearless или oleodinamico — сам по вида на уредбата) (поръчката), „Argano da sostituire?“ (листът с данни за аргано) и „Sospensioni da cambiare?“ /
-„Operatore da cambiare?“ (листът на 2SG за оператора и окачванията) се попълва самият модул и излиза като отделен PDF — оригиналът с данните
-върху него. Редът на разделите на картата се избира за всяка фирма (настройките на администратора ѝ);
+„Operatore da cambiare?“ (листът на 2SG за оператора и окачванията — начертан наново от нас) и „Installare AMI 100?“ при намалена
+яма или горно пространство (листът AMI 100 Mono UCM или Mono RTBS — начертан от нас) се попълва самият модул и излиза
+като отделен PDF — празният лист с данните върху него. Редът на разделите на картата се избира за всяка фирма (настройките на администратора ѝ);
 кои раздели влизат в печата и PDF-а — за всяка карта (в края на формата). Снимки и клипове — във
 всеки раздел на картата, компресирани от фонов процес (`worker`); снимките — избрани като иконки в края
 на формата, в края на печата и PDF-а. Скицник (функция, която MASTER включва за фирма): листове, нарисувани
@@ -41,6 +42,7 @@ npm run test:e2e         # Chromium + axe (WCAG 2.1 AA) срещу работе�
 npm run dev              # локално на :4330, чете .env (README, „Локално“)
 npm run worker           # компресията на снимките и клиповете (иска ffmpeg/ffprobe; MEDIA_DIR=./media)
 npm run build            # prisma generate + tsc + шрифтовете в public/fonts (scripts/fonts.mjs)
+npm run moduli:disegna   # чертае листовете на 2SG и AMI 100 и картите им (assets/moduli) — после commit
 npm run owner:create     # първият MASTER от OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD (на сървъра: deploy/create-master.sh)
 ```
 
@@ -76,16 +78,17 @@ src/
                      forme.ts (елементът → примитиви: линии, запълнени върхове, елипси, надписи — за SVG и
                      PDF) · model.ts (каквото отива в браузъра, пратеното от формата, спасеното при
                      върната форма) · service.ts (четене и запис в транзакцията на картата)
-  ordini/            модулите: moduli.ts (картите от assets/moduli, SHA-256) · registry.ts (марка ↔
+  ordini/            модулите: moduli.ts (картите от assets/moduli, SHA-256) + moduli-schema.ts (zod
+                     схемата на картите) · registry.ts (марка ↔
                      колона ↔ въпрос ↔ модул) · valori.ts · prefill.ts · opzioni.ts (опцията на падащ
                      списък за текст) · collegamenti-elenco.ts (списъкът на свързаните данни) +
                      collegamenti-impianto.ts (втората му част, от адреса нататък) +
                      collegamenti-aggiunti.ts (добавените по-късно — винаги в края) +
                      collegamenti.ts (видовете места, проверката при старт) + collegati.ts (правилата
                      им) + collegati-browser.ts (JSON-ът за браузъра) · riepilogo.ts (модулите в печата на
-                     картата) · form.ts · pdf.ts (плоските листове: Pelazza, аргано, 2SG, Mastech, Elettroquadri) + pdf-form.ts
-                     (формулярът на MoviLift) + pdf-testo.ts (шрифтът, мястото на текста, изправянето на
-                     обърнатия лист) — pdf-lib
+                     картата) · form.ts · pdf.ts (плоските листове: Pelazza, аргано, 2SG, Mastech, Elettroquadri,
+                     AMI 100) + pdf-form.ts (формулярът на MoviLift) + pdf-testo.ts (шрифтът, мястото на
+                     текста) — pdf-lib
   routes/            тънки рутери: проверка → услуга → изглед (витрината · заявките · картите ·
                      печатът и PDF-ът на картата (schede-stampa.ts) · кошчето · модулите · хора · фирми ·
                      настройките · одит)
@@ -98,7 +101,8 @@ src/
                      foto.ts (sharp) · video.ts (ffmpeg/ffprobe) · stampa.ts (снимките в печата и PDF-а)
   worker.ts          фоновият процес (контейнерът `worker`): компресира опашката, файл „жив съм“
 assets/moduli/       празните PDF-и на Pelazza, MoviLift, листа за аргано (Word-ът на собственика, в PDF),
-                     2SG (сканиран, обърнат), Mastech NG120 / QI Touch (сканирани; QI Touch — две
+                     2SG (начертан наново от нас — `scripts/moduli/2sg.mjs`), AMI 100 Mono UCM / Mono RTBS
+                     (начертани от нас — `scripts/moduli/ami100.mjs`), Mastech NG120 / QI Touch (сканирани; QI Touch — две
                      страници) и Elettroquadri geared / gearless / oleodinamico (официалните им PDF-и
                      от elettroquadri.net; geared и oleodinamico — две страници) + картата на полетата
                      им (JSON)
@@ -219,6 +223,8 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   по-ранно поле (тестът го пази); веригата работи (поле с условие може да зависи от друго с условие).
   Цял раздел също може да има условие (`SectionDef.when`; `not: true` — обратното: „не при
   хидравлична“) — полетата на скрития раздел нямат смисъл; app.js скрива и полето, чийто родител е скрит.
+  `also` — още полета, от които стига едното („Installare AMI 100?“ при „Fossa ridotta: Sì“ или „Testata
+  ridotta: Sì“; в страницата — `data-when-also`).
   Махнатите от листа полета (блокировка, донивелиране, брой шейни, марка на аргано, марката и данните на
   оператора, контактите и челюстите на спирачката, данните на централата освен марката) остават в
   колоните си със старите отговори —
@@ -251,9 +257,19 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   лист на две места (`data-gemelli="<колона>:<модул>"`): когато на екрана се смени кое се вижда,
   `public/js/moduli-gemelli.js` пренася в новото всичко писано и отметнато в старото (и знаците
   `data-auto`/`data-touched`/`data-scritto`) — нищо написано не се губи при „Sì“/„No“ на окачванията; в
-  печата на картата колоната излиза веднъж (сканиран с главата надолу — `ruota: 180`: PDF-ът го слага изправен на нова страница,
-  координатите в картата са на изправения лист). Полетата и редът им са дословно от модула (италиански,
-  не се превеждат). Пазят се като JSON (`ordineQuadro`, `preventivoArgano`, `ordineSospensioni`:
+  печата на картата колоната излиза веднъж. Листът на 2SG е начертан наново от нас като векторен A4
+  (собственикът, 30 октомври 2026 — „non generi un pdf … basato sulla scansione“): същите полета, надписи
+  и ред като хартиения им модул; `scripts/moduli/2sg.mjs` (общото — `scripts/moduli/foglio.mjs`) чертае
+  листа и пише координатите в картата, ключовете на полетата са старите — записаните карти пазят
+  стойностите си; `npm run moduli:disegna` дава едни и същи байтове. **AMI 100** (30 октомври 2026): при
+  „Fossa ridotta“ или „Testata ridotta: Sì“ — „Installare AMI 100?“; при „Sì“ видът (`ami100Tipo`: Mono
+  UCM или Mono RTBS — като модела на Mastech, но без марка; „Sì“ без вид е грешка `ami100TipoNeeded`) и
+  листът му (колона `ordineAmi`, префикси `au`/`ar`, PDF `/ami100-mono-ucm`, `/ami100-mono-rtbs`):
+  полетата и редът им — от списъка на собственика („Ami_100.pdf“), фиксираните варианти — отметки по
+  каталога AMI100 (захранване 24/48 Vdc, въжето на ограничителя отляво/отдясно, водач 7/8/9/16 mm,
+  икономайзер), отгоре — подател, дата и асансьорът; листът е начертан от нас
+  (`scripts/moduli/ami100.mjs`). Полетата и редът им са дословно от модула (италиански, не се
+  превеждат). Пазят се като JSON (`ordineQuadro`, `preventivoArgano`, `ordineSospensioni`:
   `{modulo, valori}` — `modulo` е id-то на картата, затова записът на Pelazza никога не се чете като
   MoviLift, нито старото запитване към Montanari като листа за аргано) и излизат като свой PDF
   (`/schede/:id/ordine-quadro`, `/ordine-quadro-movilift`, `/ordine-quadro-mastech-ng120`,
@@ -296,7 +312,7 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   на машината (MoviLift; на листа за аргано е текст — само попълване), въжета (брой, диаметър,
   снопове). После („всички полета с еднакви параметри“, октомври 2026): адрес, матрикула и марка
   (листът за аргано), вид на уредбата (Pelazza „Idraulico“), вратите на 2SG (Automatico,
-  Semiautomatico), ток и обороти на мотора. Операторът на картата е махнат (17 октомври): марката му
+  Semiautomatico), ток и обороти на мотора. AMI 100 Mono UCM (30 октомври 2026): товарът и спирките. Операторът на картата е махнат (17 октомври): марката му
   остава връзка само между таблата (Pelazza „Modello“, MoviLift — падащ списък, QI Touch; само
   попълване, при смяна на марката), напрежението и светлият отвор — без връзка.
   После (централата и Mastech): марката на централата (картата ↔ MoviLift „Idraulico“, само попълване;

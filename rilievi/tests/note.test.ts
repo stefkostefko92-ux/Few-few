@@ -203,7 +203,8 @@ describe('the supplier forms in the form', () => {
   it('stand after their question and what follows from it, before the notes of the section', () => {
     const after = (key: string) =>
       Object.fromEntries(moduliDopo(SECTIONS.find((s) => s.key === key)!.fields));
-    assert.deepEqual(after('quadro'), { quadroOrdine: ['quadroOrdine'] });
+    // AMI 100 after its type (Mono UCM or RTBS), the panel order after its question (30 October 2026).
+    assert.deepEqual(after('quadro'), { ami100Tipo: ['ami100'], quadroOrdine: ['quadroOrdine'] });
     // The check on the panel follows the panel, not the argano (24 October 2026).
     assert.deepEqual(after('argano'), { kitControlloGanasceTipo: ['arganoPreventivo'] });
     // The 2SG sheet twice, each after its own question: the suspensions (automatic doors) and the
