@@ -1,6 +1,5 @@
-/* Чертежът на шахтата (views/site/_shaft.ejs) — във витрината и на входа. Единственото движение на
-   портала: във витрината кабината идва веднъж от етаж 0 до етаж 2, после се появяват номерата. При
-   prefers-reduced-motion всичко е неподвижно, в крайното положение. */
+/* Чертежът на шахтата (views/site/_shaft.ejs) — във витрината (до картата раздел по раздел) и на входа.
+   Неподвижен: кабината стои на етаж 2. */
 
 .shaft {
   display: block;
@@ -25,97 +24,4 @@
   font-family: var(--font-cond);
   font-size: 13px;
   font-weight: 600;
-}
-
-/* Кадрите са сметнати от чертежа (views/site/_shaft.ejs): кабината се качва 188 единици (два етажа),
-   противотежестта слиза толкова, въжетата се скъсяват/удължават около шайбата (y = 98), гъвкавият
-   кабел — около закрепването си (y = 470) и примката си (y = 578), която слиза наполовина. */
-@media (prefers-reduced-motion: no-preference) {
-  .shaft--live {
-    --lift: 2.6s cubic-bezier(0.55, 0, 0.25, 1) 0.5s both;
-  }
-
-  .shaft--live .shaft__car {
-    animation: shaft-car var(--lift);
-  }
-
-  .shaft--live .shaft__cw {
-    animation: shaft-cw var(--lift);
-  }
-
-  .shaft--live .shaft__ropes-car {
-    transform-origin: 0 98px;
-    animation: shaft-ropes-car var(--lift);
-  }
-
-  .shaft--live .shaft__ropes-cw {
-    transform-origin: 0 98px;
-    animation: shaft-ropes-cw var(--lift);
-  }
-
-  .shaft--live .shaft__cable-fixed {
-    transform-origin: 0 470px;
-    animation: shaft-cable-fixed var(--lift);
-  }
-
-  .shaft--live .shaft__cable-loop {
-    animation: shaft-cable-loop var(--lift);
-  }
-
-  .shaft--live .shaft__cable-car {
-    transform-origin: 0 578px;
-    animation: shaft-cable-car var(--lift);
-  }
-
-  .shaft--live .shaft__markers {
-    animation: shaft-markers 0.6s ease 3.1s both;
-  }
-}
-
-@keyframes shaft-car {
-  from {
-    transform: translateY(188px);
-  }
-}
-
-@keyframes shaft-cw {
-  from {
-    transform: translateY(-188px);
-  }
-}
-
-@keyframes shaft-ropes-car {
-  from {
-    transform: scaleY(1.6912);
-  }
-}
-
-@keyframes shaft-ropes-cw {
-  from {
-    transform: scaleY(0.3691);
-  }
-}
-
-@keyframes shaft-cable-fixed {
-  from {
-    transform: scaleY(1.8704);
-  }
-}
-
-@keyframes shaft-cable-loop {
-  from {
-    transform: translateY(94px);
-  }
-}
-
-@keyframes shaft-cable-car {
-  from {
-    transform: translateY(94px) scaleY(0.1897);
-  }
-}
-
-@keyframes shaft-markers {
-  from {
-    opacity: 0;
-  }
 }

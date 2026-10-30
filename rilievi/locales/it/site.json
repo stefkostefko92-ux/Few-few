@@ -28,7 +28,7 @@
       "title": "Rilievi Impianti: la scheda di rilievo degli ascensori",
       "description": "Compila dal telefono la scheda di rilievo dell'ascensore, ritrovala per matricola o indirizzo e stampala in A4 o PDF con il tuo logo. Accesso su richiesta.",
       "keywords": "Carbon Stealth, scheda rilievo ascensore, rilievo impianti ascensori, sopralluogo ascensore, manutenzione ascensori, software per ascensoristi, matricola impianto",
-      "imageAlt": "Sezione di un vano ascensore disegnata a linee bianche su fondo nero, con il nome Rilievi Impianti",
+      "imageAlt": "Rendering 3D di un vano ascensore visto dalla fossa verso l'alto, con il nome Rilievi Impianti e Carbon Stealth VCC",
       "browser": "Un browser recente: Chrome, Edge, Firefox o Safari"
     },
     "hero": {
@@ -37,6 +37,11 @@
       "request": "Richiedi l'accesso",
       "login": "Accedi",
       "note": "Non c'è registrazione libera: ogni azienda entra su richiesta e poi invita i propri tecnici."
+    },
+    "photo": {
+      "vano": "Rendering 3D di un vano ascensore visto dalla fossa verso l'alto: pareti in calcestruzzo, guide con le staffe, porte di piano illuminate, lampade del vano e la cabina in alto.",
+      "bottoniera": "Rendering 3D di una bottoniera di cabina in acciaio satinato: i pulsanti dei piani da 0 a 7, l'apertura e la chiusura delle porte, l'allarme e il display che indica il piano 3.",
+      "tablet": "Rendering 3D di un tablet appoggiato su un quadro elettrico, con aperta la pagina «Nuova scheda» del portale, e un foglio accanto."
     },
     "shaft": {
       "title": "Sezione di un vano ascensore",

@@ -1,21 +1,44 @@
 <%
-  // Витрината: какво е порталът (чертежът и легендата на картата), какво прави, кой какво вижда, как се
-  // влиза и формата за заявка. Разделите и ролите идват от кода (src/site/landing.ts), не от ръката.
-  const featureIcon = { search: 'search', phone: 'phone', print: 'print', orders: 'clipboard', misure: 'ruler', safe: 'shield' };
+  // Витрината: първият екран със снимката на шахтата (нашият рендер), какво прави порталът — до снимките
+  // на обекта и в офиса, картата раздел по раздел до чертежа, кой какво вижда, как се влиза и формата за
+  // заявка. Разделите, ролите и възможностите идват от кода (src/site/landing.ts), не от ръката.
 %><%- include('top', { pageTitle: t('site.meta.title'), description: t('site.meta.description'), sectionNav: true }) %>
 <section class="hero" aria-labelledby="hero-title">
+  <%# Шахтата от ямата нагоре: широка на широк екран, отвесна на изправен телефон; тегли се веднага — тя е LCP. %>
+  <picture class="hero__foto">
+    <source media="(max-aspect-ratio: 1/1)" type="image/avif" srcset="<%= hero.verticale.avif %>" sizes="100vw" width="<%= hero.verticale.width %>" height="<%= hero.verticale.height %>">
+    <source media="(max-aspect-ratio: 1/1)" type="image/webp" srcset="<%= hero.verticale.webp %>" sizes="100vw" width="<%= hero.verticale.width %>" height="<%= hero.verticale.height %>">
+    <source type="image/avif" srcset="<%= hero.orizzontale.avif %>" sizes="100vw">
+    <img src="<%= hero.orizzontale.src %>" srcset="<%= hero.orizzontale.webp %>" sizes="100vw" width="<%= hero.orizzontale.width %>" height="<%= hero.orizzontale.height %>" alt="<%= hero.orizzontale.alt %>" fetchpriority="high" decoding="async">
+  </picture>
   <div class="hero__text">
     <h1 class="hero__title" id="hero-title"><%= t('site.hero.title') %></h1>
     <p class="hero__lead"><%= t('site.hero.lead') %></p>
     <div class="hero__actions">
-      <a class="btn btn--primary btn--lg" href="#richiesta"><%= t('site.hero.request') %></a>
-      <a class="btn btn--lg" href="<%= signedIn ? '/schede' : loginUrl %>"><%= t(signedIn ? 'site.nav.app' : 'site.hero.login') %></a>
+      <a class="btn btn--inverse btn--lg" href="#richiesta"><%= t('site.hero.request') %></a>
+      <a class="btn btn--bar btn--lg" href="<%= signedIn ? '/schede' : loginUrl %>"><%= t(signedIn ? 'site.nav.app' : 'site.hero.login') %></a>
     </div>
     <p class="hero__note"><%= t('site.hero.note') %></p>
   </div>
-  <figure class="hero__drawing">
-    <%- include('_shaft', { markers: true, animate: true, legend }) %>
-  </figure>
+</section>
+
+<section class="band band--scene" id="come" aria-labelledby="come-title">
+  <div class="band__inner">
+    <header class="band__head">
+      <h2 id="come-title"><%= t('site.features.title') %></h2>
+    </header>
+  </div>
+  <% scene.forEach((scena, index) => { %><div class="scena<%= index % 2 ? ' scena--destra' : '' %>">
+    <%- include('_foto', { foto: scena.foto, classe: 'scena__foto', sizes: '(min-width: 900px) 50vw, 100vw' }) %>
+    <ul class="scena__lista">
+      <% for (const id of scena.features) { %><li class="feature">
+        <h3><%= t('site.features.' + id + '.title') %></h3>
+        <p><%= t('site.features.' + id + '.text') %></p>
+      </li>
+      <% } %>
+    </ul>
+  </div>
+  <% }) %>
 </section>
 
 <section class="band" id="scheda" aria-labelledby="scheda-title">
@@ -24,31 +47,22 @@
       <h2 id="scheda-title"><%= t('site.legend.title') %></h2>
       <p class="band__lead"><%= t('site.legend.lead', counts) %></p>
     </header>
-    <ol class="legend__list">
-      <% for (const section of legend) { %><li class="legend__item">
-        <span class="secnum" aria-hidden="true"><%= section.n %></span>
-        <h3><%= section.title %></h3>
-        <p><%= section.fields.join(', ') %></p>
-      </li>
-      <% } %>
-    </ol>
-    <p class="band__note"><%= t('site.legend.extra') %></p>
-  </div>
-</section>
-
-<section class="band" id="come" aria-labelledby="come-title">
-  <div class="band__inner">
-    <header class="band__head">
-      <h2 id="come-title"><%= t('site.features.title') %></h2>
-    </header>
-    <ul class="features">
-      <% for (const id of features) { %><li class="feature">
-        <%- include('../partials/icon', { name: featureIcon[id] }) %>
-        <h3><%= t('site.features.' + id + '.title') %></h3>
-        <p><%= t('site.features.' + id + '.text') %></p>
-      </li>
-      <% } %>
-    </ul>
+    <div class="disegno">
+      <figure class="disegno__figura">
+        <%- include('_shaft', { markers: true, legend }) %>
+      </figure>
+      <div>
+        <ol class="legend__list">
+          <% for (const section of legend) { %><li class="legend__item">
+            <span class="secnum" aria-hidden="true"><%= section.n %></span>
+            <h3><%= section.title %></h3>
+            <p><%= section.fields.join(', ') %></p>
+          </li>
+          <% } %>
+        </ol>
+        <p class="band__note"><%= t('site.legend.extra') %></p>
+      </div>
+    </div>
   </div>
 </section>
 

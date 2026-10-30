@@ -1,7 +1,7 @@
 // The public side in a real Chromium: the landing page and the privacy policy, in Italian only (light
-// and dark, desktop and phone, axe-core WCAG 2.1 AA, no horizontal scroll, no Cyrillic), the drawing in
-// its final state, then an access request sent from the form and accepted by the MASTER: a new company
-// and the invitation of its administrator.
+// and dark, desktop and phone, axe-core WCAG 2.1 AA, no horizontal scroll, no Cyrillic, every photo
+// loaded), then an access request sent from the form and accepted by the MASTER: a new company and the
+// invitation of its administrator.
 import { join } from 'node:path';
 import { audit, fail, italianOnly, signIn } from './helpers.mjs';
 
@@ -22,8 +22,17 @@ export async function checkSite(browser, { base, shots, email, password }) {
       for (const [name, path] of PAGES) {
         const reply = await page.goto(base + path);
         if (reply?.status() !== 200) fail(`site ${path}: ${reply?.status()}`);
-        // The car rises once on load (2.6 s); the audit and the picture want the final state.
-        await page.waitForTimeout(path === '/' ? 3800 : 0);
+        // The photos below the first screen load lazily: load them all, and every one must decode
+        // (a missing width of a srcset would leave a hole in the page).
+        const broken = await page.evaluate(async () => {
+          const images = [...document.images];
+          for (const image of images) image.loading = 'eager';
+          await Promise.all(images.map((image) => image.decode().catch(() => null)));
+          return images
+            .filter((image) => image.naturalWidth === 0)
+            .map((image) => image.currentSrc || image.src);
+        });
+        if (broken.length) fail(`site ${scheme} ${device} ${name}: images not loaded ${broken}`);
         await audit(page, `site ${scheme} ${device} ${name}`);
         await italianOnly(page, `site ${scheme} ${device} ${name}`);
         const overflow = await page.evaluate(

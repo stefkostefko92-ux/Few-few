@@ -23,11 +23,12 @@ import { llmsTxt, robotsTxt, sitemapXml } from '../seo/files.js';
 import { HOME_PATH, PRIVACY_PATH, SENT_PATH } from '../seo/paths.js';
 import { landingStructuredData, privacyStructuredData } from '../seo/structured-data.js';
 import { INVITE_DAYS } from '../services/invites.js';
+import { fotoVista, IMMAGINI } from '../site/immagini.js';
 import {
   FAQ_IDS,
-  FEATURES,
   MATRIX_CAPABILITIES,
   roleMatrix,
+  SCENE,
   sheetCounts,
   sheetLegend,
   STEPS,
@@ -105,16 +106,24 @@ interface RequestForm {
 function renderLanding(req: Request, res: Response, status: number, form: RequestForm): void {
   const locals = siteLocals(req, HOME_PATH);
   const t = res.locals.t;
+  const v = String(res.locals.v);
   res.status(status).render('site/landing', {
     ...locals,
     jsonLd: landingStructuredData(t, locals.canonical ?? ''),
+    hero: {
+      orizzontale: fotoVista(IMMAGINI.vano, t, v),
+      verticale: fotoVista(IMMAGINI.vanoVerticale, t, v),
+    },
+    scene: SCENE.map((scena) => ({
+      foto: fotoVista(IMMAGINI[scena.immagine], t, v),
+      features: scena.features,
+    })),
     legend: sheetLegend(t),
     counts: sheetCounts(),
     roles: roleMatrix(),
     capabilities: MATRIX_CAPABILITIES,
     faqIds: FAQ_IDS,
     steps: STEPS,
-    features: FEATURES,
     inviteDays: INVITE_DAYS,
     retentionDays: REQUEST_RETENTION_DAYS,
     preCsrf: issuePreCsrf(req, res),

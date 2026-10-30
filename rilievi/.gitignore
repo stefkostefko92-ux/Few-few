@@ -9,3 +9,7 @@ test-results/
 tests/e2e/shots/
 # Снимките и клиповете при локална разработка (MEDIA_DIR=./media).
 media/
+# Рендерите на витрината: виртуалната среда на Mitsuba и 16-битовите оригинали (scripts/render).
+scripts/render/.venv/
+scripts/render/out/
+__pycache__/

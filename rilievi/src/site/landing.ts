@@ -16,8 +16,17 @@ export type FaqId = (typeof FAQ_IDS)[number];
 /** Стъпките на „Come si ottiene l'accesso“ (`site.steps.s1…s4`) — за страницата и за HowTo. */
 export const STEPS = [1, 2, 3, 4] as const;
 
-/** Възможностите в „Dal sopralluogo all'ufficio“ (`site.features.<id>`). */
-export const FEATURES = ['search', 'phone', 'print', 'orders', 'misure', 'safe'] as const;
+/**
+ * Възможностите в „Dal sopralluogo all'ufficio“ (`site.features.<id>`), до двете снимки: на обекта (при
+ * бутониерата в кабината) и в офиса (таблетът с портала). Редът тук е редът на страницата и на
+ * `featureList` в JSON-LD.
+ */
+export const SCENE = [
+  { immagine: 'bottoniera', features: ['phone', 'misure', 'orders'] },
+  { immagine: 'tablet', features: ['search', 'print', 'safe'] },
+] as const;
+
+export const FEATURES = SCENE.flatMap((scena) => scena.features);
 
 export interface LegendSection {
   /** Поредният номер на раздела — същият е и маркерът на чертежа. */

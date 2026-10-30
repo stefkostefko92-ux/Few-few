@@ -3,7 +3,7 @@
   // черната лента с марката, „Accedi“ и „Richiedi l'accesso“. Езикът е един — италиански.
   // Страницата след заявка е `noindex` — достига се само след формата.
   const indexable = !(typeof noindex !== 'undefined' && noindex);
-  const sheets = ['base', 'buttons', 'forms', 'site', 'shaft', 'site-hero', 'site-parts', 'site-request'];
+  const sheets = ['base', 'buttons', 'forms', 'site', 'shaft', 'site-hero', 'site-scene', 'site-parts', 'site-request'];
   const showNav = typeof sectionNav !== 'undefined' && sectionNav;
 %><!doctype html>
 <html lang="<%= locale %>"<% if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>
@@ -57,8 +57,8 @@
       <span class="sitebar__name">Rilievi Impianti<span class="sitebar__by"><%= t('site.by') %></span></span>
     </a>
     <% if (showNav) { %><nav class="sitebar__nav" aria-label="<%= t('site.nav.label') %>">
-      <a href="#scheda"><%= t('site.nav.scheda') %></a>
       <a href="#come"><%= t('site.nav.come') %></a>
+      <a href="#scheda"><%= t('site.nav.scheda') %></a>
       <a href="#faq"><%= t('site.nav.faq') %></a>
     </nav><% } %>
     <div class="sitebar__end">

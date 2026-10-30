@@ -43,6 +43,7 @@ npm run dev              # локално на :4330, чете .env (README, „
 npm run worker           # компресията на снимките и клиповете (иска ffmpeg/ffprobe; MEDIA_DIR=./media)
 npm run build            # prisma generate + tsc + шрифтовете в public/fonts (scripts/fonts.mjs)
 npm run moduli:disegna   # чертае листовете на 2SG и AMI 100 и картите им (assets/moduli) — после commit
+npm run render:encode    # снимките на витрината: scripts/render/out/*.png → public/img/site (AVIF + WebP)
 npm run owner:create     # първият MASTER от OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD (на сървъра: deploy/create-master.sh)
 ```
 
@@ -93,7 +94,8 @@ src/
                      печатът и PDF-ът на картата (schede-stampa.ts) · кошчето · модулите · хора · фирми ·
                      настройките · одит)
   requests/          заявките за достъп: form.ts (публичната форма) · service.ts (запис, решение, срок)
-  site/ · seo/       витрината: landing.ts (разделите и ролите от кода) · paths.ts · structured-data.ts
+  site/ · seo/       витрината: landing.ts (разделите, ролите и възможностите до снимките — от кода) ·
+                     immagini.ts (снимките: ширини, srcset) · paths.ts · structured-data.ts
                      (JSON-LD) · files.ts (robots, sitemap, llms.txt) · company.ts (данните на фирмата)
   allegati/          снимките и клиповете на картата: archivio.ts (пътищата в тома — само от id-тата) ·
                      formati.ts (видът по байтовете) · caricamento.ts (тялото на качването, таваните) ·
@@ -132,7 +134,8 @@ public/              css/ (портал: base, buttons, shell, layout, plate, fo
                      schizzo-azioni.js · schizzo-valore.js (лентата за стойност) · schizzo-menu.js
                      (менютата — и от клавиатурата) · schizzo-comandi.js (лентите, клавиатурата,
                      отваряне/затваряне); css/schizzo-barre.css — лентите и менютата;
-                     img/ (og.png и apple-touch-icon.png — `npm run brand:images`), indexnow-key.txt
+                     img/ (og.png и apple-touch-icon.png — `npm run brand:images`; site/ — снимките на
+                     витрината, `npm run render:encode`), indexnow-key.txt
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
 deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh · nginx/ · systemd/
 ```
@@ -383,9 +386,20 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   носи „Created and Designed by Carbon Stealth VCC“. Промяна на витрината → `CONTENT_UPDATED` и след
   деплой IndexNow (`node tools/seo/indexnow.mjs https://rilievi.carbonstealth.eu`).
 - **Визията** е от заданието: бяло/черно, сивите са само линии и тихи повърхности, червеното — само за
-  грешки. Единственото изображение е чертежът на шахтата (`views/site/_shaft.ejs`): маркерите са
-  номерата на разделите на картата (всеки раздел сочи своята част — `spots` по ключ); единственото движение — кабината се качва веднъж във витрината
-  (кадрите в `shaft.css` са сметнати от координатите на чертежа), неподвижно при reduced motion.
+  грешки. Витрината (собственикът, 30 октомври 2026 — „landing fotorealistica, professionale e con gli
+  stessi colori bianco e nero“) е със **снимки, които сме направили сами**: черно-бели 3D рендери
+  (`scripts/render/` — Mitsuba 3, `llvm_ad_mono`, процедурни бетон и стомана, без чужд модел или
+  текстура): шахтата от ямата нагоре (първият екран — широка и отвесна за изправен телефон, LCP:
+  `fetchpriority="high"`), бутониерата в кабината и таблетът с портала (истинска снимка на екрана на
+  „Nuova scheda“, `assets/schermo.png`). Описани са като „Rendering 3D …“ — не се представят като
+  снимки на истински обект. `src/site/immagini.ts` е списъкът (ширини, пропорция, описание);
+  `npm run render:encode` прави от 16-битовите оригинали AVIF и WebP за всяка ширина в
+  `public/img/site` (едноканални — без цвят); unit тестът пази, че всеки файл от `srcset` съществува в
+  размера си и няма излишни, e2e — че всяка снимка се зарежда. Нов рендер: `render.py final <кадър>`
+  (около час за четирите кадъра на 4 ядра — командите са в началото на render.py), после encode.
+  Чертежът на шахтата (`views/site/_shaft.ejs`) остава — до легендата на картата и на входа: маркерите
+  са номерата на разделите на картата (всеки раздел сочи своята част — `spots` по ключ). Витрината е
+  без движение (и без JavaScript).
 - **Снимки и клипове** (`src/allegati/`, `src/routes/allegati.ts`, решение на собственика, 21 октомври
   2026): качват се във всеки раздел на записана карта (нова — след първия запис), до 10 файла наведнъж,
   с общ надпис; само хората, които пишат във фирмата, и не в кошчето. Формите са ИЗВЪН формата на картата

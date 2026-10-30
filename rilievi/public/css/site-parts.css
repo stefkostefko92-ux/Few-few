@@ -1,5 +1,6 @@
-/* Разделите на витрината: легендата на картата, възможностите, ролите, стъпките, въпросите (заявката и
-   политиката са в site-request.css). Номерата в кръг са номерата на разделите от чертежа. */
+/* Разделите на витрината: ролите, стъпките, въпросите (възможностите и легендата на картата са в
+   site-scene.css, заявката и политиката — в site-request.css). Номерата в кръг са номерата на
+   разделите от чертежа. */
 
 .secnum {
   display: inline-flex;
@@ -15,71 +16,6 @@
   font-size: 0.9375rem;
   font-weight: 600;
   line-height: 1;
-}
-
-/* Легендата: разделите на картата и полетата им — в три колони, разделени с тънка линия. */
-.legend__list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
-  gap: 0 40px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.legend__item {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 4px 14px;
-  align-items: start;
-  align-content: start;
-  padding: 20px 0 22px;
-  border-top: 1px solid var(--line);
-}
-
-.legend__item h3 {
-  align-self: center;
-  font-size: 1.125rem;
-}
-
-.legend__item p {
-  grid-column: 2;
-  font-size: 0.9375rem;
-  line-height: 1.55;
-  color: var(--muted);
-}
-
-/* Възможностите: икона в квадрат с рамка, заглавие, кратък текст. Без карти и сенки. */
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
-  gap: 44px 40px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.feature {
-  display: grid;
-  gap: 10px;
-  align-content: start;
-}
-
-.feature .icon {
-  width: 44px;
-  height: 44px;
-  padding: 10px;
-  border: 1.5px solid var(--fg);
-  border-radius: var(--radius);
-}
-
-.feature h3 {
-  margin-top: 6px;
-  font-size: 1.1875rem;
-}
-
-.feature p {
-  color: var(--muted);
 }
 
 /* Ролите: таблица в черния раздел. Номерът е нивото от roles.ts — бутон на етаж, като в кабината. */

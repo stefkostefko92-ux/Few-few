@@ -39,7 +39,8 @@
     "prisma:migrate": "prisma migrate deploy",
     "owner:create": "node dist/scripts/create-owner.js",
     "brand:images": "node scripts/brand-images.mjs",
-    "moduli:disegna": "node scripts/moduli/2sg.mjs && node scripts/moduli/ami100.mjs && prettier --write assets/moduli/2sg-ordine-porte.json assets/moduli/ami100-mono-*.json"
+    "moduli:disegna": "node scripts/moduli/2sg.mjs && node scripts/moduli/ami100.mjs && prettier --write assets/moduli/2sg-ordine-porte.json assets/moduli/ami100-mono-*.json",
+    "render:encode": "node scripts/render/encode.mjs"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "1.1.1",

@@ -1,13 +1,10 @@
 <%
-  // Разрез на асансьорна шахта — единствената „снимка“ на портала: линии, щриховка и кота, като на
-  // чертеж. Кабината е на етаж 2; при `live` идва от етаж 0 веднъж (site-hero.css, без движение при
-  // prefers-reduced-motion). Маркерите са номерата на разделите на картата (легендата отдолу, `legend`):
-  // всеки раздел сочи своята част от уредбата, номерът е мястото му в картата.
-  // Координатите на движещите се части се смятат заедно с ключовите кадри в site-hero.css.
+  // Разрез на асансьорна шахта: линии, щриховка и кота, като на чертеж; кабината е на етаж 2. Маркерите
+  // са номерата на разделите на картата (легендата до него, `legend`): всеки раздел сочи своята част от
+  // уредбата, номерът е мястото му в картата.
   const floors = [650, 556, 462, 368, 274];
   const walls = [[164, 210], [274, 304], [368, 398], [462, 492], [556, 586], [650, 712]];
   const withMarkers = typeof markers !== 'undefined' && markers;
-  const live = typeof animate !== 'undefined' && animate;
   // Раздел → [център на маркера, точка на детайла].
   const spots = {
     // Разделът 1 — идентификацията и табелата: табелата в кабината.
@@ -33,7 +30,7 @@
     const dx = to[0] - from[0], dy = to[1] - from[1], len = Math.hypot(dx, dy) || 1;
     return [from[0] + (dx / len) * r, from[1] + (dy / len) * r];
   };
-%><svg class="shaft<%= live ? ' shaft--live' : '' %>" viewBox="0 -24 440 760" width="440" height="760" focusable="false"<% if (withMarkers) { %> role="img" aria-labelledby="shaft-title shaft-desc"<% } else { %> aria-hidden="true"<% } %>>
+%><svg class="shaft" viewBox="0 -24 440 760" width="440" height="760" focusable="false"<% if (withMarkers) { %> role="img" aria-labelledby="shaft-title shaft-desc"<% } else { %> aria-hidden="true"<% } %>>
 <% if (withMarkers) { %><title id="shaft-title"><%= t('site.shaft.title') %></title>
 <desc id="shaft-desc"><%= t('site.shaft.desc') %></desc>
 <% } %><defs>
