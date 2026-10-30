@@ -3,6 +3,7 @@ import { allegatiDi } from '../allegati/service.js';
 import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { canIn, spansAziende } from '../auth/scope.js';
 import { aziendeConSchizzi } from '../aziende/funzioni.js';
+import { cartelliDellaScheda } from '../cartelli/scheda.js';
 import { ordineSezioniDi } from '../aziende/sezioni.js';
 import { setFlash } from '../http/flash.js';
 import { businessDay } from '../time.js';
@@ -142,6 +143,10 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
     discrepanze: discrepanzeDi(formValuesFromScheda(scheda, res.locals.fmt), res.locals.t),
     // Листовете на скицника — и когато фирмата вече го е изключила (нарисуваното остава).
     schizzi: await fogliDi(scheda.id),
+    // Табелите „Avviso di fermo impianto“, попълнени от картата — за който вижда табелите на фирмата.
+    cartelli: canIn(principalOf(req).user, 'interventi:read', scheda.aziendaId)
+      ? await cartelliDellaScheda(scope(req, 'interventi:read'), scheda.id)
+      : null,
   });
 });
 

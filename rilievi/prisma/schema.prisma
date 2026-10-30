@@ -499,6 +499,8 @@ model Scheda {
   deletedAt                    DateTime?
   deletedById                  String?
   deletedBy                    User?                    @relation("SchedeDeleted", fields: [deletedById], references: [id], onDelete: SetNull)
+  /// Табелите „Avviso di fermo impianto“, попълнени от тази карта.
+  cartelli                     Cartello[]
   createdAt                    DateTime                 @default(now())
   updatedAt                    DateTime                 @updatedAt
 
@@ -745,6 +747,10 @@ model Cartello {
   citta       String?  @db.VarChar(80)
   ubicazione  String?  @db.VarChar(120)
   testo       String   @db.VarChar(600)
+  /// Картата на уредбата, от която е попълнена (същата фирма — проверява се при записа). Окончателно
+  /// изтритата карта оставя табелата без връзка; табела без карта е нормална.
+  schedaId    String?
+  scheda      Scheda?  @relation(fields: [schedaId], references: [id], onDelete: SetNull)
   createdById String?
   createdBy   User?    @relation("CartelliCreati", fields: [createdById], references: [id], onDelete: SetNull)
   updatedById String?
@@ -753,6 +759,7 @@ model Cartello {
   updatedAt   DateTime @updatedAt
 
   @@index([aziendaId, createdAt])
+  @@index([schedaId, createdAt])
   @@index([createdById])
   @@index([updatedById])
 }

@@ -6,8 +6,10 @@
   const errorKeys = Object.keys(errors);
   const maxOf = { indirizzo: 200, citta: 80, ubicazione: 120, testo: maxTesto };
   const required = { data: 'cartelli.error.dataMancante', testo: 'cartelli.error.testoMancante' };
-  const labelOf = (key) => key === 'azienda' ? t('scheda.field.azienda') : t('cartelli.campo.' + key);
-  const messageOf = (key) => key === 'azienda' ? t('scheda.error.azienda') : errors[key] === 'required' && required[key] ? t(required[key]) : t('scheda.error.' + errors[key], { maxLength: maxOf[key] });
+  const labelOf = (key) => key === 'azienda' ? t('scheda.field.azienda') : key === 'scheda' ? t('cartelli.daScheda.titolo') : t('cartelli.campo.' + key);
+  const messageOf = (key) => key === 'azienda' ? t('scheda.error.azienda') : key === 'scheda' ? t('cartelli.daScheda.nonDisponibile') : errors[key] === 'required' && required[key] ? t(required[key]) : t('scheda.error.' + errors[key], { maxLength: maxOf[key] });
+  // Табелата, попълнена от картата: при редакцията връзката само се показва.
+  const collegata = isEdit ? cartello.scheda : null;
   const campo = (key, kind, extra = {}) => include('_campo', { key, label: t('cartelli.campo.' + key), kind, maxLength: maxOf[key], values, errors, ...extra });
 %><%- include('../partials/top', { titleKey: isEdit ? 'cartelli.modifica' : 'cartelli.new', narrowMain: true }) %>
 <div class="page-head">
@@ -30,10 +32,13 @@
     </ul>
   </div>
 <% } %>
+<% if (!isEdit && (puoCercare || scheda)) { %><%- include('_da-scheda') %><% } %>
+<% if (collegata) { %><p class="muted"><%= t('cartelli.daScheda.collegato', { nome: [collegata.matricola ? t('cartelli.daScheda.matricola', { m: collegata.matricola }) : '', collegata.numeroImpianto ? t('cartelli.daScheda.numero', { n: collegata.numeroImpianto }) : ''].filter(Boolean).join(' · ') || '—' }) %></p><% } %>
 <form class="form" method="post" action="<%= action %>" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <% if (isEdit) { %><input type="hidden" name="base" value="<%= base %>"><% } %>
-  <% if (!isEdit && aziende.length > 0) { %>
+  <% if (!isEdit && scheda) { %><input type="hidden" name="scheda" value="<%= scheda.id %>"><% } %>
+  <% if (!isEdit && !scheda && aziende.length > 0) { %>
   <div class="field field--azienda">
     <label class="field__label" for="f-azienda"><%= t('scheda.field.azienda') %></label>
     <select class="select" id="f-azienda" name="azienda" required<% if (errors.azienda) { %> aria-invalid="true" aria-describedby="err-azienda"<% } %>>
@@ -51,7 +56,7 @@
       <%- campo('indirizzo', 'text', { wide: true, autocomplete: 'street-address' }) %>
       <%- campo('citta', 'text', { autocomplete: 'address-level2' }) %>
       <%- campo('ubicazione', 'text', { hint: t('cartelli.hint.ubicazione') }) %>
-      <%- campo('testo', 'textarea', { wide: true, hint: t('cartelli.hint.testo') }) %>
+      <%- campo('testo', 'textarea', { wide: true, hint: proposto ? t('cartelli.daScheda.proposto') : t('cartelli.hint.testo') }) %>
     </div>
   </fieldset>
   <div class="toolbar">

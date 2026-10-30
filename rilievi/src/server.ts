@@ -26,6 +26,7 @@ import { allegatiRouter } from './routes/allegati.js';
 import { auditRouter } from './routes/audit.js';
 import { authRouter } from './routes/auth.js';
 import { aziendeRouter } from './routes/aziende.js';
+import { cartelliNuovoRouter } from './routes/cartelli-nuovo.js';
 import { cartelliRouter } from './routes/cartelli.js';
 import { cestinoRouter } from './routes/cestino.js';
 import { ordiniRouter } from './routes/ordini.js';
@@ -245,6 +246,8 @@ export function createServer(): Express {
   app.use(interventiFirmaRouter);
   app.use(interventiInvioRouter);
   app.use(impostazioniCartelloRouter);
+  // Преди cartelliRouter: `/cartelli/nuovo` е преди `/cartelli/:id`.
+  app.use(cartelliNuovoRouter);
   app.use(cartelliRouter);
   app.use(usersRouter);
   // След usersRouter: `/utenti/invita` е преди `/utenti/:id`.

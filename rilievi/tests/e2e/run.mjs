@@ -254,7 +254,7 @@ try {
     await audit(page, `${scheme} print`);
     await page.screenshot({ path: join(shots, `${scheme}-print.png`), fullPage: true });
     await checkInterventi(page, { base, shots, scheme, aziendaName });
-    await checkCartelli(page, { base, shots, scheme, aziendaPath });
+    await checkCartelli(page, { base, shots, scheme, aziendaPath, sheetUrl });
 
     await checkPhone(browser, { base, shots, scheme, email, password, sheetUrl });
     await context.close();

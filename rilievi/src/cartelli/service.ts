@@ -16,6 +16,9 @@ const INCLUDE = {
   },
   createdBy: { select: { name: true } },
   updatedBy: { select: { name: true } },
+  scheda: {
+    select: { id: true, aziendaId: true, matricola: true, numeroImpianto: true, deletedAt: true },
+  },
 } satisfies Prisma.CartelloInclude;
 
 export type CartelloFull = Prisma.CartelloGetPayload<{ include: typeof INCLUDE }>;
@@ -29,18 +32,31 @@ const LIST_SELECT = {
   aziendaId: true,
   azienda: { select: { name: true } },
   createdBy: { select: { name: true } },
+  scheda: { select: { matricola: true } },
 } satisfies Prisma.CartelloSelect;
 
 export type CartelloRow = Prisma.CartelloGetPayload<{ select: typeof LIST_SELECT }>;
 
+/**
+ * Нова табела; `schedaId` — картата, от която е попълнена (маршрутът я е проверил в обхвата). Тук се
+ * проверява пак в транзакцията: същата фирма и не в кошчето, иначе нищо не се записва (null).
+ */
 export async function createCartello(
   data: CartelloData,
   actorId: string,
   aziendaId: string,
-): Promise<{ id: string }> {
+  schedaId: string | null = null,
+): Promise<{ id: string } | null> {
   return prisma.$transaction(async (tx) => {
+    if (schedaId) {
+      const scheda = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT "id" FROM "Scheda"
+        WHERE "id" = ${schedaId} AND "aziendaId" = ${aziendaId} AND "deletedAt" IS NULL
+        FOR SHARE`;
+      if (scheda.length === 0) return null;
+    }
     const row = await tx.cartello.create({
-      data: { ...data, aziendaId, createdById: actorId, updatedById: actorId },
+      data: { ...data, aziendaId, schedaId, createdById: actorId, updatedById: actorId },
       select: { id: true },
     });
     await writeAudit(

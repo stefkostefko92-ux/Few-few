@@ -21,6 +21,9 @@
     <div class="kv__item"><dt><%= t('cartelli.campo.data') %></dt><dd><%= fmt.day(c.data) %></dd></div>
     <div class="kv__item"><dt><%= t('cartelli.colonna.luogo') %></dt><% if (luogo) { %><dd><%= luogo %></dd><% } else { %><dd class="empty-value">—</dd><% } %></div>
     <div class="kv__item"><dt><%= t('cartelli.campo.ubicazione') %></dt><% if (c.ubicazione) { %><dd><%= c.ubicazione %></dd><% } else { %><dd class="empty-value">—</dd><% } %></div>
+    <% if (c.scheda) { const nomeScheda = [c.scheda.matricola ? t('cartelli.daScheda.matricola', { m: c.scheda.matricola }) : '', c.scheda.numeroImpianto ? t('cartelli.daScheda.numero', { n: c.scheda.numeroImpianto }) : ''].filter(Boolean).join(' · ') || t('cartelli.daScheda.senzaNumero'); %>
+    <div class="kv__item"><dt><%= t('cartelli.daScheda.impianto') %></dt><dd><% if (apriScheda) { %><a href="/schede/<%= c.scheda.id %>"><%= nomeScheda %></a><% } else { %><%= nomeScheda %><% if (c.scheda.deletedAt) { %> <span class="muted">(<%= t('cartelli.daScheda.nelCestino') %>)</span><% } %><% } %></dd></div>
+    <% } %>
     <div class="kv__item kv__item--wide"><dt><%= t('cartelli.campo.testo') %></dt><dd><%= c.testo %></dd></div>
   </dl>
   <figure class="cartello__modello">

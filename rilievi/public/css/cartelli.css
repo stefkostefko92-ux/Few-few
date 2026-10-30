@@ -94,3 +94,76 @@
   flex-direction: column;
   gap: 6px;
 }
+
+/* Новата табела от картата на уредбата: изборът или търсенето ѝ над формата. */
+.da-scheda {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.da-scheda .section__title {
+  margin: 0;
+}
+
+.da-scheda__cerca {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.da-scheda__cerca .input {
+  flex: 1 1 240px;
+}
+
+.da-scheda__scelta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.da-scheda__scelta p {
+  margin: 0;
+}
+
+.da-scheda__azioni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.da-scheda__risultati {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.da-scheda__risultato {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) - 2px);
+  color: inherit;
+  text-decoration: none;
+}
+
+.da-scheda__risultato:hover {
+  background: var(--hover);
+}
+
+.da-scheda__risultato:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
+.cartelli-scheda ul {
+  margin: 0;
+  padding-left: 1.2em;
+}

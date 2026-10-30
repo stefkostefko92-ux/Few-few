@@ -2,7 +2,8 @@
 // with the Master group apart from Amministrazione, the company data and the sign template chosen in the
 // company settings (a wrong email is refused and the typed values come back), a new sign — refused without
 // the text, then saved, its PDF (A4 landscape for the yellow-and-black template), changed, listed and
-// deleted. axe on every page of it.
+// deleted. axe on every page of it. Then a sign from the scheda of the lift (the button on the scheda: the
+// address and the city filled, the link kept both ways) and the search for a scheda in the new-sign form.
 import { join } from 'node:path';
 import { audit, fail } from './helpers.mjs';
 
@@ -16,7 +17,7 @@ async function imagesLoaded(page, selector, name) {
   if (broken) fail(`${name}: ${broken} template thumbnail(s) not loaded`);
 }
 
-export async function checkCartelli(page, { base, shots, scheme, aziendaPath }) {
+export async function checkCartelli(page, { base, shots, scheme, aziendaPath, sheetUrl }) {
   const aziendaId = aziendaPath.split('/').pop();
   const name = `${scheme} cartello`;
 
@@ -123,4 +124,30 @@ export async function checkCartelli(page, { base, shots, scheme, aziendaPath }) 
   await page.waitForURL(/\/cartelli$/);
   const gone = await page.request.get(url);
   if (gone.status() !== 404) fail(`${name}: the deleted sign answers ${gone.status()}`);
+
+  // From the scheda: the button opens the form already filled, linked to the scheda.
+  const sheetPath = new URL(sheetUrl).pathname;
+  await page.goto(sheetUrl);
+  await page.click(`a[href="/cartelli/nuovo?scheda=${sheetPath.split('/').pop()}"]`);
+  await page.waitForSelector('.da-scheda__scelta');
+  if (!(await page.inputValue('#f-indirizzo')))
+    fail(`${name}: the address did not come from the scheda`);
+  await audit(page, `${name} from scheda`);
+  await page.screenshot({ path: join(shots, `${scheme}-cartello-da-scheda.png`), fullPage: true });
+  if (!(await page.inputValue('#f-testo')))
+    await page.fill('#f-testo', "Dal 3/11 l'impianto è fermo per lavori.");
+  await page.click('form.form button[type=submit]');
+  await page.waitForURL(/\/cartelli\/[a-z0-9]+$/);
+  if (!(await page.locator(`.cartello a[href="${sheetPath}"]`).count()))
+    fail(`${name}: the sign from the scheda does not link back to it`);
+  await page.goto(sheetUrl);
+  if (!(await page.locator('.cartelli-scheda a').count()))
+    fail(`${name}: the scheda does not list its sign`);
+
+  // The search in the new-sign form.
+  await page.goto(`${base}/cartelli/nuovo`);
+  await page.fill('#f-scheda', 'verdi');
+  await page.click('.da-scheda__cerca button[type=submit]');
+  await page.waitForURL(/\/cartelli\/nuovo\?/);
+  await audit(page, `${name} search`);
 }

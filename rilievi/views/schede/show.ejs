@@ -11,6 +11,7 @@
     <% if (!scheda.deletedAt && canIn('schede:write', scheda.aziendaId)) { %><a class="btn btn--primary" href="/schede/<%= scheda.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('scheda.actions.edit') %></a><% } %>
     <a class="btn" href="/schede/<%= scheda.id %>/stampa?auto=1"><%- include('../partials/icon', { name: 'print' }) %><%= t('scheda.actions.print') %></a>
     <a class="btn" href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
+    <% if (!scheda.deletedAt && canIn('interventi:write', scheda.aziendaId)) { %><a class="btn" href="/cartelli/nuovo?scheda=<%= scheda.id %>"><%- include('../partials/icon', { name: 'stop' }) %><%= t('cartelli.daScheda.crea') %></a><% } %>
     <% if (!scheda.deletedAt && canIn('schede:delete', scheda.aziendaId)) { %><a class="btn btn--ghost" href="/schede/<%= scheda.id %>/elimina"><%- include('../partials/icon', { name: 'trash' }) %><%= t('scheda.actions.delete') %></a><% } %>
   </div>
 </div>
@@ -67,6 +68,15 @@
       <div class="schizzo-intero__corpo" data-schizzo-intero-corpo></div>
       <p class="schizzo-intero__ruota"><%= t('schizzi.editor.ruota') %></p>
     </dialog>
+  </section>
+  <% } %>
+  <% if (cartelli && cartelli.length) { %>
+  <section class="cartelli-scheda" aria-labelledby="h-cartelli-scheda">
+    <h2 class="section__title" id="h-cartelli-scheda"><%= t('cartelli.daScheda.dellaScheda') %></h2>
+    <ul role="list">
+      <% for (const c of cartelli) { %><li><a href="/cartelli/<%= c.id %>"><%= fmt.day(c.data) %></a><% if (c.ubicazione) { %> · <%= c.ubicazione %><% } %></li>
+      <% } %>
+    </ul>
   </section>
   <% } %>
   <p class="sheet__meta">

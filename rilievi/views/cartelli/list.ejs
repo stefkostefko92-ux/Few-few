@@ -32,7 +32,7 @@
   <tbody>
     <% for (const row of page.rows) { %><tr>
       <td class="date" data-label="<%= t('cartelli.colonna.data') %>"><a class="row-link" href="/cartelli/<%= row.id %>"><%= fmt.day(row.data) %></a></td>
-      <td class="wide" data-label="<%= t('cartelli.colonna.luogo') %>"><%= luogo(row) || '—' %></td>
+      <td class="wide" data-label="<%= t('cartelli.colonna.luogo') %>"><%= luogo(row) || '—' %><% if (row.scheda && row.scheda.matricola) { %><br><span class="muted"><%= t('cartelli.daScheda.matricola', { m: row.scheda.matricola }) %></span><% } %></td>
       <td data-label="<%= t('cartelli.colonna.ubicazione') %>"><%= row.ubicazione || '—' %></td>
       <td data-label="<%= t('cartelli.colonna.autore') %>"><%= row.createdBy ? row.createdBy.name : '—' %></td>
       <% if (showAzienda) { %><td data-label="<%= t('scheda.field.azienda') %>"><%= row.azienda.name %></td><% } %>

@@ -66,6 +66,13 @@ export function inScope(scope: Scope, aziendaId: string | null): boolean {
   return scope.all || (aziendaId !== null && scope.aziendaIds.includes(aziendaId));
 }
 
+/** Фирмите и в двата обхвата („вижда картите“ и „пише табели“); празно сечение е „нищо“. */
+export function intersezioneScope(a: Scope, b: Scope): Scope {
+  if (a.all) return b;
+  if (b.all) return a;
+  return { all: false, aziendaIds: a.aziendaIds.filter((id) => b.aziendaIds.includes(id)) };
+}
+
 /** Повече от една фирма в обхвата: показват се филтърът и колоната „Azienda“. */
 export function spansAziende(scope: Scope): boolean {
   return scope.all || scope.aziendaIds.length > 1;
