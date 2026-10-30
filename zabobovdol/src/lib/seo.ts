@@ -1,5 +1,16 @@
 import type { Metadata } from "next";
 import { SITE } from "@/lib/site";
+import { isoDateTime } from "@/lib/format-date";
+import { isDialablePhone, splitPhones } from "@/lib/phone";
+
+/**
+ * Картинката при споделяне (Viber, Facebook) по подразбиране: името на
+ * проекта и „не е сайтът на Община Бобов дол“ до малкия герб — не само
+ * гербът (изглеждаше като съобщение на общината). `?v=` сменя адреса при нова
+ * картинка, иначе мрежите показват старата от кеша си.
+ */
+export const OG_IMAGE = `${SITE.url}/og.png?v=2`;
+export const OG_IMAGE_ALT = `${SITE.name} — независим граждански портал, не е сайтът на Община Бобов дол`;
 
 export function canonical(path = "/"): string {
   return `${SITE.url}${path === "/" ? "" : path}`;
@@ -36,14 +47,14 @@ export function buildMetadata(opts: {
   const title = opts.title;
   const description = opts.description ?? SITE.description;
   const url = canonical(opts.path ?? "/");
-  const rawImages = opts.images?.length ? opts.images : [`${SITE.url}/og.png`];
+  const rawImages = opts.images?.length ? opts.images : [OG_IMAGE];
   // Структурирани изображения с размери и alt — по-добри карти в социални
   // мрежи и AI асистенти.
   const images = rawImages.map((u) => ({
     url: u,
     width: 1200,
     height: 630,
-    alt: title ?? SITE.name,
+    alt: u === OG_IMAGE ? OG_IMAGE_ALT : (title ?? SITE.name),
   }));
 
   return {
@@ -138,14 +149,28 @@ export function organizationLd(opts?: { sameAs?: string[] }) {
     alternateName: SITE.shortName,
     url: SITE.url,
     description: SITE.description,
+    // Изрично: проектът НЕ е общината (и не е „същото“ като фирмата, която го
+    // прави — тя е parentOrganization, не sameAs). Търсачките и AI отговорите
+    // да не слеят трите.
+    disambiguatingDescription: "Независим граждански портал — не е официалният сайт на Община Бобов дол",
     slogan: SITE.slogan,
+    // Собствен знак на проекта (словесна марка), НЕ общинският герб — гербът
+    // като лого на частен проект би внушавал, че сайтът е на общината.
     logo: {
       "@type": "ImageObject",
-      url: `${SITE.url}/icon-512.png`,
+      url: `${SITE.url}/brand/za-bobov-dol-logo.png`,
       width: 512,
       height: 512,
     },
-    image: `${SITE.url}/og.png`,
+    image: OG_IMAGE,
+    parentOrganization: {
+      "@type": "Organization",
+      name: SITE.company.legalName,
+      alternateName: SITE.company.tradeName,
+      url: SITE.company.website,
+      vatID: SITE.company.vat,
+    },
+    publishingPrinciples: `${SITE.url}/za-nas`,
     knowsLanguage: "bg",
     // Теми, по които порталът е авторитет — силен сигнал за AI/answer-engine
     // цитиране (entity-disambiguation). Съответства на основните рубрики.
@@ -292,7 +317,9 @@ export function localBusinessLd(b: {
     name: b.name,
     ...(b.description ? { description: b.description } : {}),
     ...(b.website ? { url: b.website } : b.url ? { url: b.url } : {}),
-    ...(b.phone ? { telephone: b.phone } : {}),
+    // Номер с грешна дължина („0702 2016“) не отива в търсачките; от няколко
+    // номера в едно поле — първият верен (telephone е един номер).
+    ...((t) => (t ? { telephone: t } : {}))(b.phone ? splitPhones(b.phone).find(isDialablePhone) : undefined),
     address: {
       "@type": "PostalAddress",
       streetAddress: b.address || undefined,
@@ -335,7 +362,7 @@ export function newsArticleLd(a: {
     isAccessibleForFree: true,
     datePublished: published,
     dateModified: modified,
-    image: [a.image || `${SITE.url}/og.png`],
+    image: [a.image || OG_IMAGE],
     author: { "@id": ORG_ID },
     publisher: { "@id": ORG_ID },
   };
@@ -413,8 +440,10 @@ export function eventLd(e: {
     "@type": "Event",
     name: e.name,
     ...(e.description ? { description: e.description } : {}),
-    startDate: e.startAt.toISOString(),
-    ...(e.endAt ? { endDate: e.endAt.toISOString() } : {}),
+    // startAt/endAt са стенно софийско време от админ полето — „09:33Z“ би
+    // казало на търсачките 11:33/12:33. Пишем момента с отместването на София.
+    startDate: isoDateTime(e.startAt, { wall: true }),
+    ...(e.endAt ? { endDate: isoDateTime(e.endAt, { wall: true }) } : {}),
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     eventStatus: "https://schema.org/EventScheduled",
     location: {

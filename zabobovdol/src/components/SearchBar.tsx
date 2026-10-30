@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { Search } from "@/components/icons";
+import { UI_LABEL } from "@/lib/ui-labels";
 
 // Минимална типизация на Web Speech API (не е в стандартните DOM типове).
 type RecognitionEvent = { results: ArrayLike<ArrayLike<{ transcript: string }>> };
@@ -17,9 +19,25 @@ type Recognition = {
 };
 type RecognitionCtor = new () => Recognition;
 
-export function SearchBar({ compact = false }: { compact?: boolean }) {
+export function SearchBar({
+  compact = false,
+  initialQuery = "",
+  onSearch,
+}: {
+  compact?: boolean;
+  /** Търсеното досега — на /tarsene полето показва думата от адреса. */
+  initialQuery?: string;
+  /**
+   * След изпращане (и с глас). В мобилното меню го затваря — на /tarsene
+   * адресът сменя само ?q=, pathname остава и менюто иначе покрива резултатите.
+   */
+  onSearch?: () => void;
+}) {
   const router = useRouter();
-  const [q, setQ] = useState("");
+  // На страницата може да има няколко търсачки (хедър, герой, менюто) —
+  // всяка със свой id, за да сочи <label> към своето поле.
+  const id = useId();
+  const [q, setQ] = useState(initialQuery);
   const [listening, setListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const recRef = useRef<Recognition | null>(null);
@@ -35,7 +53,9 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
 
   function go(query: string) {
     const v = query.trim();
-    if (v.length >= 2) router.push(`/tarsene?q=${encodeURIComponent(v)}`);
+    if (v.length < 2) return;
+    router.push(`/tarsene?q=${encodeURIComponent(v)}`);
+    onSearch?.();
   }
 
   function startVoice() {
@@ -70,14 +90,17 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
         e.preventDefault();
         go(q);
       }}
-      className="flex w-full items-center gap-2"
+      // Некомпактната търсачка (герой, меню, 404, /tarsene) е контейнер:
+      // според ширината си в em сама решава дали бутонът е с надпис, само с
+      // лупата или под полето (globals.css, .search-form).
+      className={"flex w-full items-center gap-2" + (compact ? "" : " search-form flex-wrap")}
     >
-      <label htmlFor="site-search" className="sr-only">
+      <label htmlFor={id} className="sr-only">
         Търсене в сайта
       </label>
-      <div className="relative min-w-0 flex-1">
+      <div className="search-field relative min-w-0 flex-1">
         <input
-          id="site-search"
+          id={id}
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -86,7 +109,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
           placeholder="Какво търсите?"
           // Отдясно стои бутонът за глас — оставяме му място, за да не минава
           // текстът под него на тесен екран.
-          className={"input w-full" + (voiceSupported ? " pr-11" : "")}
+          className={"input w-full" + (voiceSupported ? " pr-12" : "")}
           autoComplete="off"
           enterKeyHint="search"
         />
@@ -94,7 +117,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
           <button
             type="button"
             onClick={startVoice}
-            className={`absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1.5 ${
+            className={`absolute right-0.5 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-lg ${
               listening ? "animate-pulse text-crimson-600" : "text-slate-600 hover:text-brand-700"
             }`}
             aria-label={listening ? "Слушам…" : "Търсене с глас"}
@@ -112,21 +135,16 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
           </button>
         )}
       </div>
+      {/* Когато полето стане твърде тясно, надписът „Търсете“ остава само за
+          екранния четец (иначе подсказката се реже: „Каквс“), а още по-тясно
+          бутонът минава под полето на цяла ширина — globals.css. */}
       <button
         type="submit"
-        className={compact ? "btn-secondary px-3" : "btn-primary"}
-        aria-label="Търси"
+        className={compact ? "search-submit btn-secondary px-3" : "search-submit btn-primary"}
+        aria-label={UI_LABEL.search}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
-          <path
-            d="M20 20l-3.5-3.5"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
-        {!compact && <span>Търси</span>}
+        <Search className="h-5 w-5 shrink-0" aria-hidden />
+        {!compact && <span className="search-submit-label">{UI_LABEL.search}</span>}
       </button>
     </form>
   );

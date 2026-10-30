@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { track } from "@/lib/events";
+import { UI_LABEL } from "@/lib/ui-labels";
 
 type Topic = { key: string; label: string; hint: string };
 
@@ -14,7 +15,7 @@ function urlBase64ToUint8Array(b64: string): Uint8Array<ArrayBuffer> {
 }
 
 // Известия: нищо не е отметнато предварително и разрешение се иска САМО след
-// натискане на бутона „Включи известията“.
+// натискане на бутона „Включете известията“.
 export function PushSubscribe({ topics }: { topics: Topic[] }) {
   const [supported, setSupported] = useState<boolean | null>(null);
   const [active, setActive] = useState(false);
@@ -94,25 +95,25 @@ export function PushSubscribe({ topics }: { topics: Topic[] }) {
 
   if (supported === false) {
     return (
-      <p className="card">
+      <p className="panel">
         Този телефон или браузър не поддържа известия. Можете да следите новините през Viber канала или RSS (по-долу).
       </p>
     );
   }
 
   return (
-    <div className="card space-y-4">
+    <div className="form-panel">
       {active ? (
         <>
           <p className="font-semibold">Известията са включени на това устройство.</p>
-          <button type="button" className="btn-secondary min-h-[44px]" onClick={disable} disabled={busy}>
-            Спри известията
+          <button type="button" className="btn-secondary w-full sm:w-auto" onClick={disable} disabled={busy}>
+            {UI_LABEL.pushOff}
           </button>
         </>
       ) : (
         <>
           <fieldset className="space-y-3">
-            <legend className="font-semibold">За какво искате известия?</legend>
+            <legend className="legend px-0">За какво искате известия?</legend>
             {topics.map((t) => (
               <label key={t.key} className="flex min-h-[44px] items-start gap-3">
                 <input
@@ -122,18 +123,18 @@ export function PushSubscribe({ topics }: { topics: Topic[] }) {
                   onChange={() => toggle(t.key)}
                 />
                 <span>
-                  <span className="block font-medium">{t.label}</span>
-                  <span className="block text-sm opacity-80">{t.hint}</span>
+                  <span className="block font-semibold text-slate-900">{t.label}</span>
+                  <span className="block text-base text-slate-600">{t.hint}</span>
                 </span>
               </label>
             ))}
           </fieldset>
-          <button type="button" className="btn-primary min-h-[44px]" onClick={enable} disabled={busy || supported === null}>
-            Включи известията
+          <button type="button" className="btn-primary w-full sm:w-auto" onClick={enable} disabled={busy || supported === null}>
+            Включете известията
           </button>
         </>
       )}
-      <p role="status" aria-live="polite" className="text-sm">
+      <p role="status" aria-live="polite" className={`text-base text-slate-800 ${msg ? "" : "!mt-0"}`}>
         {msg}
       </p>
     </div>

@@ -1,23 +1,37 @@
 import type { Metadata } from "next";
-import { PageHero } from "@/components/ui";
+import { CheckCircle2 } from "@/components/icons";
+import { PageHero, SectionHeader } from "@/components/ui";
+import { FormLayout, NextSteps } from "@/components/FormLayout";
 import { buildMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
+import { eurText } from "@/lib/eur-text";
+import { SECTION } from "@/lib/section-names";
 import { AdRequestForm } from "@/components/AdRequestForm";
 import { getAdSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Рекламирайте в За Бобов дол — банер на началната страница за 20€/месец",
-  description:
-    "Достигнете до жителите на Бобов дол с банер на началната страница. Символична цена от 20€ на месец. Подкрепете местния проект и Вашия бизнес.",
-  path: "/reklama",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const price = eurText((await getAdSettings()).priceEur);
+  return buildMetadata({
+    title: `Рекламирайте в „За Бобов дол“ — банер на началната страница за ${price} на месец`,
+    description: `Достигнете до жителите на Бобов дол с банер на началната страница. Символична цена от ${price} на месец. Подкрепете местния проект и вашия бизнес.`,
+    path: "/reklama",
+    keywords: [
+      "реклама Бобов дол",
+      "рекламен банер Бобов дол",
+      "реклама за местен бизнес",
+      "евтина онлайн реклама Кюстендилска област",
+      "банер на началната страница",
+      "Carbon Stealth",
+    ],
+  });
+}
 
-const BENEFITS = [
+const benefits = (price: string) => [
   {
     t: "Местна аудитория",
-    d: "Виждат Ви точно хората от Бобов дол и района — Вашите реални клиенти.",
+    d: "Виждат ви точно хората от Бобов дол и района — вашите реални клиенти.",
   },
   {
     t: "Видно място",
@@ -25,7 +39,7 @@ const BENEFITS = [
   },
   {
     t: "Символична цена",
-    d: "Само 20€ на месец — достъпно за всеки местен бизнес и занаятчия.",
+    d: `Само ${price} на месец — достъпно за всеки местен бизнес и занаятчия.`,
   },
   {
     t: "Лесна промяна",
@@ -41,11 +55,33 @@ const BENEFITS = [
   },
 ];
 
+const INCLUDED = [
+  "Снимка/лого или текстов банер",
+  "Връзка към сайт, Facebook или телефон",
+  "Промяна на съдържанието при нужда",
+  "Ясно обозначаване „Реклама“",
+];
+
+// Домейнът се пренася само след „zabobovdol.“ (никога насред думата).
+function DomainText() {
+  const dot = SITE.domain.indexOf(".");
+  if (dot < 0) return <>{SITE.domain}</>;
+  return (
+    <>
+      {SITE.domain.slice(0, dot + 1)}
+      <wbr />
+      {SITE.domain.slice(dot + 1)}
+    </>
+  );
+}
+
 export default async function ReklamaPage() {
   const ad = await getAdSettings();
+  const price = eurText(ad.priceEur);
   return (
     <>
       <PageHero
+        eyebrow={SECTION.site}
         title="Рекламирайте в „За Бобов дол“"
         intro="Достигнете до жителите на града с банер на началната страница — на символична цена."
         crumbs={[{ name: "Реклама", path: "/reklama" }]}
@@ -53,23 +89,22 @@ export default async function ReklamaPage() {
 
       <div className="container-content py-10">
         {/* Оферта */}
-        <div className="grid gap-6 lg:grid-cols-[1.4fr,1fr]">
-          <div className="prose-content max-w-none text-slate-700">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+          <div className="prose-content min-w-0 text-slate-700">
             <h2>Банер на началната страница</h2>
             <p>
-              На началната страница на сайта има <strong>4 рекламни слота</strong>.
-              Вашият банер се показва на видно място пред всички, които посещават{" "}
-              {SITE.domain} — местни жители, които търсят услуги, телефони и
-              информация за града.
+              На началната страница на сайта има <strong>4 рекламни слота</strong>. Вашият банер
+              се показва на видно място пред всички, които посещават <DomainText /> — местни
+              жители, които търсят услуги, телефони и информация за града.
             </p>
             <p>
-              Банерът може да е с Ваша снимка/лого или текстов, и води към Ваш
-              сайт, Facebook страница или телефон. Сменяме съдържанието при нужда.
+              Банерът може да е с ваша снимка/лого или текстов и води към ваш сайт, Facebook
+              страница или телефон. Сменяме съдържанието при нужда.
             </p>
 
             <h2>Какво получавате</h2>
             <ul>
-              {BENEFITS.map((b) => (
+              {benefits(price).map((b) => (
                 <li key={b.t}>
                   <strong>{b.t}.</strong> {b.d}
                 </li>
@@ -78,68 +113,69 @@ export default async function ReklamaPage() {
 
             <h2>Как да заявите реклама</h2>
             <p>
-              Попълнете кратката форма по-долу (трите си имена и имейл или
-              телефон). <strong>Първо ще се свържем с Вас</strong>, за да уточним
-              текста, изображението и линка на рекламата. Таксата от {ad.priceEur}€
-              на месец се плаща през Revolut <strong>едва след като се уговорим</strong>.
-              Подходящ размер на изображението е около 600×320 пиксела.
+              Попълнете кратката форма по-долу (трите си имена и имейл или телефон).{" "}
+              <strong>Първо ще се свържем с вас</strong>, за да уточним текста, изображението и
+              връзката на рекламата. Таксата от {price} на месец се плаща през Revolut{" "}
+              <strong>едва след като се уговорим</strong>. Подходящ размер на изображението е около
+              600×320 пиксела.
             </p>
           </div>
 
-          {/* Ценова карта */}
-          <aside>
-            <div className="rounded-2xl border border-brand-200 bg-brand-50 p-6 text-center">
-              <div className="text-sm font-medium uppercase tracking-wide text-brand-700">
-                Рекламен банер
-              </div>
-              <div className="mt-2 text-4xl font-extrabold text-slate-900">
-                {ad.priceEur}€{" "}
-                <span className="text-base font-medium text-slate-600">/ месец</span>
-              </div>
-              <p className="mt-2 text-sm text-slate-600">
-                Един слот на началната страница. Без скрити такси.
-              </p>
-              <ul className="mt-4 space-y-2 text-left text-sm text-slate-700">
-                <li>✔ Снимка/лого или текстов банер</li>
-                <li>✔ Връзка към сайт, Facebook или телефон</li>
-                <li>✔ Промяна на съдържанието при нужда</li>
-                <li>✔ Ясно обозначаване „Реклама“</li>
-              </ul>
-              <a href="#zayavka" className="btn-primary mt-6 w-full">
-                Заявете реклама
-              </a>
-              <a
-                href={ad.revolutUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary mt-2 w-full"
-              >
-                Платете {ad.priceEur}€ с Revolut
-              </a>
-              <p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-left text-xs text-amber-900">
-                <strong>Важно:</strong> преди да платите, задължително първо се
-                свържете с нас с данните за рекламата. Плащайте едва след като сме
-                се уговорили.
-              </p>
-            </div>
+          {/* Ценова карта — само „Заявете“. Връзката за плащане е в
+              потвърждението на заявката (първо уговорка, после плащане). */}
+          <aside aria-labelledby="cena-zaglavie" className="panel text-center">
+            <h2 id="cena-zaglavie" className="label-caps">
+              Рекламен банер
+            </h2>
+            <p className="mt-2 font-display text-4xl font-bold text-slate-900 tabular-nums">
+              {price}
+              <span className="font-sans text-base font-medium text-slate-600"> на месец</span>
+            </p>
+            <p className="mt-2 text-base text-slate-600">
+              Един слот на началната страница. Без скрити такси.
+            </p>
+            <ul role="list" className="mt-4 space-y-2 text-left text-base text-slate-700">
+              {INCLUDED.map((x) => (
+                <li key={x} className="flex items-start gap-2">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-700" aria-hidden />
+                  <span>{x}</span>
+                </li>
+              ))}
+            </ul>
+            <a href="#zayavka" className="btn-primary mt-6 w-full">
+              Заявете реклама
+            </a>
+            <p className="callout-note mt-4 rounded-xl text-left text-base">
+              <strong>Важно:</strong> не плащайте предварително. Първо ще се свържем с вас и ще се
+              уговорим.
+            </p>
           </aside>
         </div>
 
-        {/* Форма-образец за заявка */}
-        <section id="zayavka" className="mt-12 scroll-mt-24">
-          <h2 className="text-2xl font-bold text-slate-900">Заявка за реклама</h2>
-          <p className="mt-1 text-slate-600">
-            Оставете трите си имена и данни за връзка. Ще се свържем с Вас и ще
-            подготвим банера.
+        {/* Заявка */}
+        <section id="zayavka" aria-labelledby="zayavka-zaglavie" className="mt-12">
+          <SectionHeader id="zayavka-zaglavie" title="Заявка за реклама" className="mb-3" />
+          <p className="mb-6 max-w-3xl text-base text-slate-600">
+            Оставете трите си имена и данни за връзка. Ще се свържем с вас и ще подготвим банера.
           </p>
-          <div className="mt-5 max-w-2xl rounded-xl border border-slate-200 bg-white p-6">
-            <AdRequestForm paymentUrl={ad.revolutUrl} price={ad.priceEur} />
-          </div>
+          <FormLayout
+            aside={
+              <NextSteps
+                steps={[
+                  "Получаваме заявката.",
+                  "Свързваме се с вас, за да уточним текста, изображението и връзката.",
+                  <>Едва след уговорката плащате {price} на месец през Revolut.</>,
+                ]}
+              />
+            }
+          >
+            <AdRequestForm paymentUrl={ad.revolutUrl} priceText={price} />
+          </FormLayout>
         </section>
 
-        <p className="mt-8 max-w-3xl text-sm text-slate-600">
-          Запазваме си правото да не публикуваме реклами с невярно, обидно или
-          незаконно съдържание. Рекламите не са препоръка от страна на проекта.
+        <p className="mt-8 max-w-3xl text-base text-slate-600">
+          Запазваме си правото да не публикуваме реклами с невярно, обидно или незаконно
+          съдържание. Рекламите не са препоръка от страна на проекта.
         </p>
       </div>
     </>

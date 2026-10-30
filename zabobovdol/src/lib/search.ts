@@ -417,6 +417,35 @@ export async function search(
   return all.slice(0, limit);
 }
 
+/**
+ * Всеки резултат по веднъж. Дубъл на ръководство (същият въпрос, друг адрес —
+ * `redirects`: slug → slug, който остава) сочи към каноничния адрес, а не към
+ * 308 пренасочването, и се показва веднъж (и по заглавие — два въпроса с
+ * еднакъв текст). Другите типове се различават по адрес: две събития „Пазарен
+ * ден“ на различни дати или два клона с едно име остават и двете.
+ */
+export function dedupeResults(
+  results: SearchResult[],
+  redirects: ReadonlyMap<string, string> = new Map(),
+): SearchResult[] {
+  const seen = new Set<string>();
+  const out: SearchResult[] = [];
+  for (const res of results) {
+    let r = res;
+    const keys: string[] = [];
+    if (r.type === "faq") {
+      const keep = redirects.get(r.url.replace(/^\/kak-da\//, ""));
+      if (keep) r = { ...r, url: `/kak-da/${keep}` };
+      keys.push(`faq:${r.title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim()}`);
+    }
+    keys.push(r.url);
+    if (keys.some((k) => seen.has(k))) continue;
+    for (const k of keys) seen.add(k);
+    out.push(r);
+  }
+  return out;
+}
+
 /** Подготвя текста за запис: маскира личните данни, реже и сваля регистъра. */
 export function prepareMissQuery(query: string): string | null {
   // Режем дължината ПРЕДИ маскирането (бот с многокилобайтови заявки), сваляме

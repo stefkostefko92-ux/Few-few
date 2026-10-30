@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { z } from "zod";
-import { PageHero, EmptyState } from "@/components/ui";
+import { PageHero, EmptyState, FilterChips, SectionHeader } from "@/components/ui";
+import { ChevronRight } from "@/components/icons";
 import { SearchBar } from "@/components/SearchBar";
 import { buildMetadata, webPageLd, itemListLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
@@ -15,10 +16,12 @@ import {
   pageCount,
   pageSlice,
   parsePageParam,
+  sectionCategories,
   topByViews,
 } from "@/lib/howto";
-import { GuideList } from "./_components/GuideList";
+import { GuideCard, GuideList } from "./_components/GuideList";
 import { Pagination } from "./_components/Pagination";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +35,7 @@ const KEYWORDS = [
   "документи онлайн",
   "смартфон за начинаещи",
   "Бобов дол",
+  "Carbon Stealth",
 ];
 const POPULAR = 6;
 
@@ -87,6 +91,8 @@ export default async function KakDaPage({ searchParams }: { searchParams: SP }) 
   const { categories, guides } = index;
   const popular = topByViews(guides, POPULAR).filter((g) => g.views > 0);
 
+  const sections = sectionCategories(categories);
+
   return (
     <>
       <JsonLd
@@ -109,16 +115,17 @@ export default async function KakDaPage({ searchParams }: { searchParams: SP }) 
         ]}
       />
       <PageHero
+        eyebrow={SECTION.guides}
         title="Как да…"
         intro="Кратки и разбираеми обяснения как да свършите ежедневни неща онлайн — без сложни думи. Изберете тема или потърсете с дума."
         crumbs={[{ name: "Как да…", path: "/kak-da" }]}
       />
       <div className="container-content space-y-12 py-10">
         <section aria-labelledby="tarsi" className="max-w-2xl">
-          <h2 id="tarsi" className="text-xl font-bold text-slate-900">
+          <h2 id="tarsi" className="section-title">
             Търсите нещо конкретно?
           </h2>
-          <p className="mt-1 text-base text-slate-600">
+          <p className="mt-4 text-base text-slate-600">
             Напишете дума — например „пенсия“, „Viber“ или „лична карта“.
           </p>
           <div className="mt-3">
@@ -132,18 +139,11 @@ export default async function KakDaPage({ searchParams }: { searchParams: SP }) 
           <>
             {popular.length > 0 && (
               <section aria-labelledby="nai-cheteni">
-                <h2 id="nai-cheteni" className="section-title">
-                  Най-четени
-                </h2>
-                <ul className="mt-5 grid gap-3 md:grid-cols-2">
+                <SectionHeader id="nai-cheteni" title="Най-четени" />
+                <ul role="list" className="grid gap-4 md:grid-cols-2">
                   {popular.map((g) => (
                     <li key={g.id}>
-                      <Link
-                        href={`/kak-da/${g.slug}`}
-                        className="card flex min-h-[44px] items-center text-base font-semibold text-slate-900"
-                      >
-                        {g.question}
-                      </Link>
+                      <GuideCard guide={g} as="h3" />
                     </li>
                   ))}
                 </ul>
@@ -154,50 +154,85 @@ export default async function KakDaPage({ searchParams }: { searchParams: SP }) 
               <h2 id="temi" className="section-title">
                 Всички теми
               </h2>
-              <p className="mt-3 text-base text-slate-600">
+              <p className="mt-4 text-base text-slate-600">
                 {guidesLabel(guides.length)} в {categories.length}{" "}
-                {categories.length === 1 ? "тема" : "теми"}.
+                {categories.length === 1 ? "тема" : "теми"}, подредени в {sections.length}{" "}
+                {sections.length === 1 ? "раздел" : "раздела"}.
               </p>
-              <ul className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {categories.map((c) => (
-                  <li
-                    key={c.slug}
-                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-                  >
-                    <h3 className="text-lg font-bold text-slate-900">
-                      <Link
-                        href={categoryPath(c.slug)}
-                        className="flex min-h-[44px] items-center underline-offset-4 hover:underline"
-                      >
-                        {c.name}
-                      </Link>
-                    </h3>
-                    <p className="text-sm text-slate-600">{guidesLabel(c.count)}</p>
-                    <ul className="mt-2">
-                      {c.top.map((g) => (
-                        <li key={g.id}>
-                          <Link
-                            href={`/kak-da/${g.slug}`}
-                            className="flex min-h-[44px] items-center py-1 text-base text-brand-700 underline underline-offset-2 hover:decoration-2"
-                          >
-                            {g.question}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                    {c.count > c.top.length && (
-                      <Link
-                        href={categoryPath(c.slug)}
-                        className="btn-secondary mt-3 w-full"
-                        aria-label={`Всички ${guidesLabel(c.count)} в темата „${c.name}“`}
-                      >
-                        Всички {c.count} →
-                      </Link>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              {sections.length > 1 && (
+                <FilterChips
+                  className="no-print mt-4"
+                  label="Раздели на ръководствата"
+                  items={sections.map((s) => ({ href: `#${s.id}`, label: s.title }))}
+                />
+              )}
             </section>
+
+            {sections.map((s) => (
+              <section key={s.id} id={s.id} aria-labelledby={`${s.id}-zaglavie`}>
+                <h2 id={`${s.id}-zaglavie`} className="section-title">
+                  {s.title}
+                </h2>
+                {/* На телефон — компактен списък („Тема · 8 ръководства ›“) в една
+                    карта; от sm — карти с трите най-четени и „Всички N“. */}
+                <ul
+                  role="list"
+                  className="mt-6 divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200/80 shadow-sm sm:grid sm:grid-cols-2 sm:gap-4 sm:divide-y-0 sm:overflow-visible sm:rounded-none sm:border-0 sm:shadow-none lg:grid-cols-3"
+                >
+                  {s.categories.map((c) => (
+                    <li
+                      key={c.slug}
+                      className="bg-white sm:flex sm:flex-col sm:rounded-2xl sm:border sm:border-slate-200/80 sm:p-5 sm:shadow-sm"
+                    >
+                      <h3 className="h-card">
+                        <Link
+                          href={categoryPath(c.slug)}
+                          className="group flex min-h-[3.5rem] items-center gap-3 px-4 py-2 hover:text-brand-700 sm:min-h-tap sm:p-0 sm:underline-offset-4 sm:hover:underline"
+                        >
+                          <span className="min-w-0 flex-1">
+                            {c.name}
+                            <span className="block text-base font-normal text-slate-600 sm:hidden">
+                              {guidesLabel(c.count)}
+                            </span>
+                          </span>
+                          <ChevronRight
+                            className="h-6 w-6 shrink-0 text-brand-600 sm:hidden"
+                            aria-hidden
+                          />
+                        </Link>
+                      </h3>
+                      <p className="text-meta hidden sm:block">{guidesLabel(c.count)}</p>
+                      <ul role="list" className="mt-2 hidden sm:block">
+                        {c.top.map((g) => (
+                          <li key={g.id}>
+                            <Link
+                              href={`/kak-da/${g.slug}`}
+                              className="link-quiet flex min-h-tap items-center py-1 text-base text-brand-700"
+                            >
+                              {g.question}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                      {c.count > c.top.length && (
+                        // mt-auto изравнява бутоните на реда, pt-3 пази отстъпа
+                        // от последната връзка в най-високата карта.
+                        <div className="mt-auto hidden pt-3 sm:block">
+                          <Link
+                            href={categoryPath(c.slug)}
+                            className="btn-secondary w-full"
+                            aria-label={`Всички ${guidesLabel(c.count)} в темата „${c.name}“`}
+                          >
+                            Всички {c.count}
+                            <span aria-hidden="true">→</span>
+                          </Link>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
           </>
         )}
       </div>
@@ -227,6 +262,7 @@ async function TagView({
   return (
     <>
       <PageHero
+        eyebrow={SECTION.guides}
         title={`Етикет „${tag}“`}
         intro={
           matches.length > 0
@@ -252,7 +288,7 @@ async function TagView({
             <Pagination page={page} total={total} href={(n) => tagPath(tag, n)} />
           </>
         )}
-        <p className="mt-10">
+        <p className="no-print mt-10">
           <Link href="/kak-da" className="btn-secondary">
             <span aria-hidden>←</span> Всички теми
           </Link>

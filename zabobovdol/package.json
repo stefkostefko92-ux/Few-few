@@ -23,8 +23,8 @@
     "local-services"
   ],
   "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
+    "dev": "node scripts/patch-react-replay.mjs && next dev",
+    "build": "node scripts/patch-react-replay.mjs && prisma generate && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -64,6 +64,7 @@
     "db:seed:detailed5": "tsx prisma/seed-detailed-5.ts",
     "db:seed:details": "tsx prisma/seed-detailed.ts && tsx prisma/seed-detailed-2.ts && tsx prisma/seed-detailed-3.ts && tsx prisma/seed-detailed-4.ts && tsx prisma/seed-detailed-5.ts && tsx prisma/seed-detailed-6.ts && tsx prisma/seed-detailed-7.ts && tsx prisma/seed-detailed-8.ts && tsx prisma/seed-detailed-9.ts && tsx prisma/seed-detailed-10.ts && tsx prisma/seed-detailed-11.ts && tsx prisma/seed-detailed-12.ts && tsx prisma/seed-detailed-13.ts && tsx prisma/seed-detailed-14.ts && tsx prisma/seed-detailed-15.ts && tsx prisma/seed-detailed-16.ts && tsx prisma/seed-detailed-17.ts && tsx prisma/seed-detailed-18.ts && tsx prisma/seed-detailed-19.ts && tsx prisma/seed-detailed-20.ts && tsx prisma/seed-detailed-21.ts && tsx prisma/seed-detailed-22.ts && tsx prisma/seed-detailed-23.ts && tsx prisma/seed-detailed-24.ts",
     "db:seed:euro": "tsx prisma/seed-euro.ts",
+    "db:fix:decimals": "tsx prisma/fix-bg-decimals.ts",
     "db:seed:education": "tsx prisma/seed-education.ts",
     "db:seed:placeholders": "tsx prisma/seed-placeholders.ts",
     "db:seed:services-core": "tsx prisma/seed-services-core.ts",
@@ -83,6 +84,7 @@
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "sharp": "^0.35.4",
     "web-push": "^3.6.7",
     "zod": "^3.24.1"
   },

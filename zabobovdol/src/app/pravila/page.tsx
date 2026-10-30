@@ -1,8 +1,18 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { PageHero } from "@/components/ui";
-import { buildMetadata, webPageLd, breadcrumbLd } from "@/lib/seo";
+import { LegalLayout, LegalMeta, SecRef, type Toc } from "@/components/LegalDoc";
+import { TelLink } from "@/components/TelLink";
+import { buildMetadata, webPageLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
+import { SECTION } from "@/lib/section-names";
 import { SITE } from "@/lib/site";
+import { UI_LABEL, quoted } from "@/lib/ui-labels";
+import { breakableAddress } from "@/components/TrustCard";
+
+// Динамична: редът „отпечатано на …“ на хартия (PrintSourceLine) е денят на
+// зареждане, не денят на билда.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
   title: "Общи условия за ползване",
@@ -20,8 +30,27 @@ export const metadata: Metadata = buildMetadata({
 });
 
 // Дата на последната промяна — една и съща в текста и в JSON-LD.
-const LAST_CHANGE_ISO = "2026-10-24";
-const LAST_CHANGE_TEXT = "24 октомври 2026 г.";
+const LAST_CHANGE_ISO = "2026-10-25";
+
+// Заглавията на точките — и за съдържанието, и за самите H2 (id = котвата,
+// към която водят препратките „т. 3“ в този и в другите документи).
+const TOC = {
+  t1: "1. За сайта и администратора",
+  t2: "2. Информация в сайта",
+  t3: "3. Подадено от потребители съдържание",
+  t4: "4. Некролози и помени",
+  t5: "5. Безплатен каталог на бизнесите",
+  t6: "6. Сигнал „Този номер е сгрешен“",
+  t7: "7. Възраст",
+  t8: "8. Снимки в галерията — лиценз",
+  t9: "9. Сигнали до общината",
+  t10: "10. Интелектуална собственост",
+  t11: "11. Лични данни",
+  t12: "12. Ограничаване на отговорността",
+  t13: "13. Приложимо право",
+  t14: "14. Промени в условията",
+  t15: "15. Контакт",
+} as const satisfies Toc;
 
 export default function TermsPage() {
   return (
@@ -35,29 +64,25 @@ export default function TermsPage() {
             path: "/pravila",
             lastReviewed: LAST_CHANGE_ISO,
           }),
-          breadcrumbLd([
-            { name: "Начало", path: "/" },
-            { name: "Общи условия", path: "/pravila" },
-          ]),
         ]}
       />
+      {/* BreadcrumbList идва от PageHero (crumbs). */}
       <PageHero
+        eyebrow={SECTION.legal}
         title="Общи условия за ползване"
+        intro="Правата и отговорностите при ползване на сайта — информацията, обявите, некролозите, каталога на бизнесите и формите."
         crumbs={[{ name: "Общи условия", path: "/pravila" }]}
+        meta={<LegalMeta updated={LAST_CHANGE_ISO} current="/pravila" />}
       />
-      <div className="container-content max-w-3xl py-10">
+      <LegalLayout toc={TOC} path="/pravila">
         <div className="prose-content text-slate-700">
-          <p className="text-sm text-slate-600">
-            <strong>Последна актуализация: {LAST_CHANGE_TEXT}</strong>
-          </p>
-
           <p>
             Тези общи условия уреждат ползването на сайта{" "}
-            <strong>{SITE.name}</strong> ({SITE.domain}). С достъпа до сайта
+            <strong>{SITE.name}</strong> ({breakableAddress(SITE.domain)}). С достъпа до сайта
             приемате условията по-долу.
           </p>
 
-          <h2>1. За сайта и администратора</h2>
+          <h2 id="t1">{TOC.t1}</h2>
           <p>
             {SITE.name} е независим граждански информационен проект за жителите на
             град {SITE.geo.city}. Сайтът <strong>не е официален сайт</strong> на
@@ -72,7 +97,7 @@ export default function TermsPage() {
             <a href={`mailto:${SITE.contact.email}`}>{SITE.contact.email}</a>.
           </p>
 
-          <h2>2. Информация в сайта</h2>
+          <h2 id="t2">{TOC.t2}</h2>
           <p>
             Стремим се информацията (телефони, адреси, работно време, обяснения) да
             бъде точна и актуална, но не гарантираме нейната пълнота и безгрешност.
@@ -82,8 +107,8 @@ export default function TermsPage() {
           <p>
             До телефоните в „Услуги“ пишем <strong>„Проверено на …“</strong> и
             източника, когато сме сверили номера. Ако видите грешен или стар номер,
-            натиснете бутона <strong>„Този номер е сгрешен“</strong> до него (виж
-            т. 6).
+            натиснете бутона <strong>{quoted(UI_LABEL.phoneWrong)}</strong> до него (вж.{" "}
+            <SecRef n={6} />).
           </p>
           <p>
             <strong>Прекъсвания на тока и водата.</strong> Данните за тока идват
@@ -106,7 +131,7 @@ export default function TermsPage() {
             Не разчитайте на тях при спешност — звънете на <strong>112</strong>.
           </p>
 
-          <h2>3. Подадено от потребители съдържание</h2>
+          <h2 id="t3">{TOC.t3}</h2>
           <p>
             Сайтът позволява да публикувате съдържание чрез различни форми (обяви,
             спомени, галерия, доброволци, споделено пътуване, зов за помощ,
@@ -138,8 +163,10 @@ export default function TermsPage() {
             смятате, че публикувана обява, снимка, спомен или друго потребителско
             съдържание е незаконно или нарушава тези условия, можете да ни
             уведомите по електронен път — чрез бутона{" "}
-            <strong>„Сигнализирай за това съдържание“</strong> под всяка такава
-            публикация или на{" "}
+            <strong>{quoted(UI_LABEL.report)}</strong> под всяка обява, спомен,
+            некролог, призив за помощ, споделено пътуване и бизнес от каталога
+            (за снимка от галерията или профил на доброволец — бутона под
+            списъка, като посочите в сигнала коя е снимката или профилът) или на{" "}
             {SITE.contact.email ? (
               <a href={`mailto:${SITE.contact.email}`}>{SITE.contact.email}</a>
             ) : (
@@ -158,15 +185,16 @@ export default function TermsPage() {
             или английски език.
           </p>
 
-          <h2>4. Некролози и помени</h2>
+          <h2 id="t4">{TOC.t4}</h2>
           <ul>
             <li>
               <strong>Кой подава:</strong> само близък на починалия, след като е
               съгласувал публикуването със семейството. Подателят отговаря за
               верността на данните и за това, че публикуването е съгласувано.
               Отметката във формата е негово потвърждение за това — тя не е
-              съгласие от името на други хора за личните им данни (виж{" "}
-              <a href="/poveritelnost">Политиката за поверителност</a>, т. 5).
+              съгласие от името на други хора за личните им данни (вж.{" "}
+              <Link href="/poveritelnost">Политиката за поверителност</Link>,{" "}
+              <SecRef n={5} doc="/poveritelnost" />).
             </li>
             <li>
               <strong>Достойнство:</strong> текстът трябва да е уважителен към
@@ -198,7 +226,7 @@ export default function TermsPage() {
                 <>
                   {" "}
                   — на телефон{" "}
-                  <a href={`tel:${SITE.contact.phone}`}>{SITE.contact.phone}</a>
+                  <TelLink phone={SITE.contact.phone} />
                 </>
               )}
               {SITE.contact.email && (
@@ -212,7 +240,7 @@ export default function TermsPage() {
             </li>
           </ul>
 
-          <h2>5. Безплатен каталог на бизнесите</h2>
+          <h2 id="t5">{TOC.t5}</h2>
           <ul>
             <li>
               Включването в каталога е <strong>безплатно</strong>. Данните подава
@@ -228,8 +256,8 @@ export default function TermsPage() {
             <li>
               Описанието е кратка информация за бизнеса — какво предлага, къде е и
               кога работи. <strong>Не е място за реклама</strong>: без промоции,
-              рекламни призиви и обещания. Платената реклама е отделна услуга (виж
-              страница „Реклама“).
+              рекламни призиви и обещания. Платената реклама е отделна услуга (вж.
+              страница <Link href="/reklama">„Реклама“</Link>).
             </li>
             <li>
               Поправките, подадени през формата, <strong>не се прилагат
@@ -242,7 +270,7 @@ export default function TermsPage() {
             </li>
           </ul>
 
-          <h2>6. Сигнал „Този номер е сгрешен“</h2>
+          <h2 id="t6">{TOC.t6}</h2>
           <ul>
             <li>
               Бутонът до телефоните в „Услуги“ служи само да ни кажете, че номерът е
@@ -264,14 +292,14 @@ export default function TermsPage() {
             </li>
           </ul>
 
-          <h2>7. Възраст</h2>
+          <h2 id="t7">{TOC.t7}</h2>
           <p>
             За да подавате съдържание през сайта, трябва да сте пълнолетни. Ако сте
             непълнолетни, можете да го правите само със съгласието на родител или
             настойник.
           </p>
 
-          <h2>8. Снимки в галерията — лиценз</h2>
+          <h2 id="t8">{TOC.t8}</h2>
           <p>
             Когато качите снимка през бутона в галерията, Вие давате на проекта{" "}
             {SITE.name} правото да я използва и на други места — на страници и в
@@ -283,47 +311,47 @@ export default function TermsPage() {
             публикуването ѝ.
           </p>
 
-          <h2>9. Сигнали до общината</h2>
+          <h2 id="t9">{TOC.t9}</h2>
           <p>
             Формата за сигнали препраща съобщения към съответната институция (по
             подразбиране община {SITE.geo.city}). Тя <strong>не е</strong> канал за
             спешни случаи — при спешност звънете на <strong>112</strong>.
           </p>
 
-          <h2>10. Интелектуална собственост</h2>
+          <h2 id="t10">{TOC.t10}</h2>
           <p>
             Гербът на град {SITE.geo.city} е общинска символика и се използва с
             информационна цел. Текстовете в сайта може да се ползват с посочване на
             източника.
           </p>
 
-          <h2>11. Лични данни</h2>
+          <h2 id="t11">{TOC.t11}</h2>
           <p>
             Обработваме лични данни в съответствие с нашата{" "}
-            <a href="/poveritelnost">Политика за поверителност</a>. За бисквитките
-            вижте <a href="/biskvitki">Политиката за бисквитки</a>.
+            <Link href="/poveritelnost">Политика за поверителност</Link>. За бисквитките
+            вижте <Link href="/biskvitki">Политиката за бисквитки</Link>.
           </p>
 
-          <h2>12. Ограничаване на отговорността</h2>
+          <h2 id="t12">{TOC.t12}</h2>
           <p>
             Сайтът се предоставя „както е“. Не носим отговорност за вреди,
             произтекли от ползване или невъзможност за ползване на сайта или от
             доверяване на публикувана информация.
           </p>
 
-          <h2>13. Приложимо право</h2>
+          <h2 id="t13">{TOC.t13}</h2>
           <p>
             За тези условия и за ползването на сайта се прилага българското право и
             правото на Европейския съюз.
           </p>
 
-          <h2>14. Промени в условията</h2>
+          <h2 id="t14">{TOC.t14}</h2>
           <p>
             Можем да актуализираме тези условия. Актуалната версия е винаги на тази
             страница, с посочена дата на последна актуализация.
           </p>
 
-          <h2>15. Контакт</h2>
+          <h2 id="t15">{TOC.t15}</h2>
           <p>
             Въпроси:{" "}
             {SITE.contact.email ? (
@@ -335,13 +363,13 @@ export default function TermsPage() {
               <>
                 {" "}
                 или на телефон{" "}
-                <a href={`tel:${SITE.contact.phone}`}>{SITE.contact.phone}</a>
+                <TelLink phone={SITE.contact.phone} />
               </>
             )}
             .
           </p>
         </div>
-      </div>
+      </LegalLayout>
     </>
   );
 }

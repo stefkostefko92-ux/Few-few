@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { SITE } from "@/lib/site";
 import { track } from "@/lib/events";
+import { UI_LABEL } from "@/lib/ui-labels";
 
-// „Сподели“ — в малък град сайтът расте от уста на уста („изпрати на мама“).
+// „Споделете“ — в малък град сайтът расте от уста на уста („изпрати на мама“).
 // На телефон първо се пробва системното меню за споделяне (Viber, WhatsApp,
 // Messenger — каквото човек има); иначе — едри бутони. Без чужди скриптове:
 // само обикновени връзки, затова CSP не се пипа. Към адреса се добавя ?s=share,
@@ -58,7 +59,7 @@ export function ShareButton({
 
   const enc = encodeURIComponent;
   const item =
-    "a11y-btn inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-base font-semibold text-slate-800 hover:border-brand-300 hover:bg-brand-50";
+    "a11y-btn inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-base font-semibold text-slate-800 hover:border-brand-300 hover:bg-brand-50";
 
   return (
     <div className={"no-print " + className}>
@@ -74,10 +75,10 @@ export function ShareButton({
             fill="currentColor"
           />
         </svg>
-        Сподели
+        {UI_LABEL.share}
       </button>
       {open && (
-        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Сподели тази страница">
+        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={`${UI_LABEL.share} тази страница`}>
           <a className={item} href={`viber://forward?text=${enc(message())}`}>
             Viber
           </a>
@@ -98,7 +99,7 @@ export function ShareButton({
             Facebook
           </a>
           <button type="button" className={item} onClick={copy}>
-            {copied ? "Копирано ✓" : "Копирай връзката"}
+            {copied ? "Копирано ✓" : "Копирайте връзката"}
           </button>
         </div>
       )}

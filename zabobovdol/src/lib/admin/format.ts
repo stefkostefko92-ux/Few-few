@@ -1,4 +1,5 @@
 import type { Resource, Field } from "@/lib/admin/resources";
+import { formatDateTimeNumeric } from "@/lib/format-date";
 
 // Превръща стойност от базата в стойност, годна за HTML формуляр.
 function toFormValue(field: Field, raw: unknown): string | boolean {
@@ -42,13 +43,9 @@ export function displayCell(field: Field, raw: unknown): string {
   if (field.type === "datetime") {
     const d = raw instanceof Date ? raw : new Date(String(raw));
     if (isNaN(d.getTime())) return "—";
-    return new Intl.DateTimeFormat("bg-BG", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(d);
+    // Стенно време (както е въведено във формата, виж toFormValue) — не
+    // зависи от часовата зона на сървъра.
+    return formatDateTimeNumeric(d, { wall: true });
   }
   if (field.type === "select") {
     return field.options?.find((o) => o.value === String(raw))?.label ?? String(raw);

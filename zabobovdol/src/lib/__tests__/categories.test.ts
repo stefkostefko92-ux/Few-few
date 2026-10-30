@@ -13,3 +13,11 @@ test("labelFor е устойчив при липсваща/празна стой
   // непознат ключ се връща както е (не чупи рендера)
   assert.equal(labelFor(SERVICE_CATEGORY_LABELS, "UNKNOWN"), "UNKNOWN");
 });
+
+test("ключовете от Object.prototype („constructor“, „toString“) не са категории", () => {
+  // „/uslugi?cat=constructor“ връщаше 500: `cat in LABELS` е true заради прототипа.
+  for (const k of ["constructor", "toString", "hasOwnProperty", "__proto__"]) {
+    assert.equal(Object.hasOwn(SERVICE_CATEGORY_LABELS, k), false, k);
+    assert.equal(labelFor(SERVICE_CATEGORY_LABELS, k), k);
+  }
+});
