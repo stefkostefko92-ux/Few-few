@@ -1,7 +1,7 @@
 import { COMPANY, CONTENT_UPDATED, PRIVACY_UPDATED } from '../company.js';
 import { DEFAULT_LOCALE, translate } from '../i18n.js';
 import { INVITE_DAYS } from '../services/invites.js';
-import { FAQ_IDS, sheetCounts, sheetLegend } from '../site/landing.js';
+import { FAQ_IDS, SERVIZI, sheetCounts, sheetLegend } from '../site/landing.js';
 import { HOME_PATH, PRIVACY_PATH, PUBLIC_PATHS, type PublicPath } from './paths.js';
 
 /**
@@ -63,7 +63,7 @@ export function llmsTxt(base: string, contactEmail: string): string {
     `> Rilievi Impianti è un portale web in cui le aziende di ascensori compilano la scheda di rilievo di un impianto esistente, la ritrovano e la stampano. ${it('site.hero.note')}`,
     '',
     '## Pagine',
-    `- [Rilievi Impianti](${base}${HOME_PATH}): ${it('site.nav.scheda').toLowerCase()}, ${it('site.nav.come').toLowerCase()}, ${it('site.nav.faq').toLowerCase()}, ${it('site.nav.request').toLowerCase()}`,
+    `- [Rilievi Impianti](${base}${HOME_PATH}): ${it('site.nav.scheda').toLowerCase()}, ${it('site.nav.come').toLowerCase()}, ${it('site.nav.assistenza').toLowerCase()}, ${it('site.nav.faq').toLowerCase()}, ${it('site.nav.request').toLowerCase()}`,
     `- [${it('privacy.title')}](${base}${PRIVACY_PATH})`,
     '',
     '## Fatti',
@@ -72,6 +72,7 @@ export function llmsTxt(base: string, contactEmail: string): string {
     `- ${it('site.features.print.text')}`,
     `- ${it('site.features.orders.text')}`,
     `- ${it('site.features.misure.text')}`,
+    ...SERVIZI.map((id) => `- ${it(`site.servizi.${id}.title`)}: ${it(`site.servizi.${id}.text`)}`),
     `- ${it('site.roles.lead')} Ruoli: ${roles}. ${it('site.roles.note')}`,
     `- ${it('site.steps.s3.title')}. ${it('site.steps.s3.text', { days: INVITE_DAYS })}`,
     '',
@@ -79,7 +80,7 @@ export function llmsTxt(base: string, contactEmail: string): string {
     ...FAQ_IDS.map((id) => `- ${it(`site.faq.${id}.q`)} ${it(`site.faq.${id}.a`)}`),
     '',
     '## Azienda',
-    `- [${COMPANY.name}](${COMPANY.url}), ${it('company.legalForm')}, ${it('company.eikLabel')} ${COMPANY.eik}, ${it('company.vatLabel')} ${COMPANY.vat}; ${it('company.street')}, ${COMPANY.postalCode} ${it('company.city')}, ${it('company.country')}; ${it('company.phoneLabel')} ${COMPANY.phone}; ${contactEmail}`,
+    `- [${COMPANY.name}](${COMPANY.url}), ${it('company.legalForm')}, ${it('company.eikLabel')} ${COMPANY.eik}, ${it('company.vatLabel')} ${COMPANY.vat}; ${it('company.street')}, ${COMPANY.postalCode} ${it('company.city')}, ${it('company.country')}; ${it('company.phoneLabel')} ${COMPANY.phones.map((p) => p.number).join(', ')}; ${contactEmail}`,
     '',
   ].join('\n');
 }

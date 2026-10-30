@@ -41,6 +41,22 @@
   <% }) %>
 </section>
 
+<section class="band" id="assistenza" aria-labelledby="assistenza-title">
+  <div class="band__inner">
+    <header class="band__head">
+      <h2 id="assistenza-title"><%= t('site.servizi.title') %></h2>
+      <p class="band__lead"><%= t('site.servizi.lead') %></p>
+    </header>
+    <ul class="servizi">
+      <% for (const id of servizi) { %><li class="feature">
+        <h3><%= t('site.servizi.' + id + '.title') %></h3>
+        <p><%= t('site.servizi.' + id + '.text') %></p>
+      </li>
+      <% } %>
+    </ul>
+  </div>
+</section>
+
 <section class="band" id="scheda" aria-labelledby="scheda-title">
   <div class="band__inner">
     <header class="band__head">
@@ -137,6 +153,7 @@
         <li><%= t('site.request.next.s3', { days: retentionDays }) %> <a href="<%= privacyPath %>"><%= t('site.request.privacyLink') %></a></li>
       </ol>
       <p><%= t('site.request.contact') %> <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a></p>
+      <p><%= t('site.request.phoneCall') %> <a href="<%= company.phoneHref %>"><%= company.phone %></a></p>
     </div>
     <%- include('_request') %>
   </div>

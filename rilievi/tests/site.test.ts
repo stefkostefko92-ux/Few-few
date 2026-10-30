@@ -193,11 +193,20 @@ describe('the structured data', () => {
     const org = graph.find((node) => Array.isArray(node['@type'])) as {
       address: { postalCode: string };
       vatID: string;
-      contactPoint: { availableLanguage: string };
+      telephone: string;
+      contactPoint: Array<{ telephone: string; availableLanguage: string }>;
     };
     assert.equal(org.address.postalCode, '2670');
     assert.equal(org.vatID, 'BG208725180');
-    assert.equal(org.contactPoint.availableLanguage, 'it-IT');
+    // The Italian number first (the site is for Italy), then the one of the registered office.
+    assert.equal(org.telephone, '+39 379 29 69 699');
+    assert.deepEqual(
+      org.contactPoint.map((c) => [c.telephone, c.availableLanguage]),
+      [
+        ['+39 379 29 69 699', 'it-IT'],
+        ['+359 877 414 874', 'it-IT'],
+      ],
+    );
   });
 
   it('speaks only Italian: every language tag is it-IT and no text is in Cyrillic', () => {

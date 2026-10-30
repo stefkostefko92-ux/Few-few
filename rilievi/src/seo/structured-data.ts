@@ -3,7 +3,7 @@ import { config } from '../config.js';
 import { jsonForScript } from '../http/json-script.js';
 import { DEFAULT_LOCALE, LOCALE_TAG, type Translator } from '../i18n.js';
 import { INVITE_DAYS } from '../services/invites.js';
-import { FAQ_IDS, FEATURES, STEPS } from '../site/landing.js';
+import { FAQ_IDS, FEATURES, SERVIZI, STEPS } from '../site/landing.js';
 import { HOME_PATH } from './paths.js';
 
 /**
@@ -25,13 +25,13 @@ function organization(t: Translator) {
     url: COMPANY.url,
     email,
     telephone: COMPANY.phone,
-    contactPoint: {
+    contactPoint: COMPANY.phones.map(({ number }) => ({
       '@type': 'ContactPoint',
       contactType: 'customer support',
       email,
-      telephone: COMPANY.phone,
+      telephone: number,
       availableLanguage: IN_LANGUAGE,
-    },
+    })),
     taxID: COMPANY.eik,
     vatID: COMPANY.vat,
     address: {
@@ -107,7 +107,10 @@ export function landingStructuredData(t: Translator, canonical: string): string 
       description: t('site.meta.description'),
       inLanguage: IN_LANGUAGE,
       publisher: { '@id': `${COMPANY.url}/#org` },
-      featureList: FEATURES.map((id) => t(`site.features.${id}.title`)),
+      featureList: [
+        ...FEATURES.map((id) => t(`site.features.${id}.title`)),
+        ...SERVIZI.map((id) => t(`site.servizi.${id}.title`)),
+      ],
     },
     {
       // стъпките от „Come si ottiene l'accesso“ дума по дума, всяка със своята котва на страницата

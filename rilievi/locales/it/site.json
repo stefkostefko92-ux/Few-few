@@ -19,6 +19,7 @@
       "label": "Sezioni della pagina",
       "scheda": "La scheda",
       "come": "Come funziona",
+      "assistenza": "Assistenza",
       "faq": "Domande",
       "login": "Accedi",
       "request": "Richiedi l'accesso",
@@ -26,8 +27,8 @@
     },
     "meta": {
       "title": "Rilievi Impianti: la scheda di rilievo degli ascensori",
-      "description": "Compila dal telefono la scheda di rilievo dell'ascensore, ritrovala per matricola o indirizzo e stampala in A4 o PDF con il tuo logo. Accesso su richiesta.",
-      "keywords": "Carbon Stealth, scheda rilievo ascensore, rilievo impianti ascensori, sopralluogo ascensore, manutenzione ascensori, software per ascensoristi, matricola impianto",
+      "description": "Scheda di rilievo dell'ascensore dal telefono, foglio di intervento firmato e cartelli di fermo impianto con il tuo logo. Accesso su richiesta.",
+      "keywords": "Carbon Stealth, scheda rilievo ascensore, rilievo impianti ascensori, sopralluogo ascensore, manutenzione ascensori, software per ascensoristi, matricola impianto, foglio di intervento ascensore, cartello fermo impianto",
       "imageAlt": "Rendering 3D di un vano ascensore visto dalla fossa verso l'alto, con il nome Rilievi Impianti e Carbon Stealth VCC",
       "browser": "Un browser recente: Chrome, Edge, Firefox o Safari"
     },
@@ -79,9 +80,33 @@
         "text": "Se due persone modificano la stessa scheda, la seconda viene avvisata invece di sovrascrivere. Le schede eliminate restano nel cestino e ogni operazione finisce nel registro."
       }
     },
+    "servizi": {
+      "title": "Dopo il rilievo: assistenza e cantiere",
+      "lead": "Lo stesso portale accompagna l'impianto anche dopo il sopralluogo, con i dati che la scheda già conosce.",
+      "intervento": {
+        "title": "Il foglio di intervento, firmato sul telefono",
+        "text": "Come il blocchetto di pronto intervento: numerato per azienda, con le voci da spuntare, le prove e gli orari. Tecnico e cliente firmano con il dito; dopo la conferma il foglio non si modifica più ed esce in PDF A4, anche via email."
+      },
+      "cartelli": {
+        "title": "Cartelli di fermo impianto con il tuo logo",
+        "text": "Cinque modelli pronti, con il logo e i dati della tua azienda in alto. Dalla scheda dell'impianto si compilano da soli indirizzo, città e il testo per gli utenti, preso dai lavori previsti; per un impianto senza scheda li scrivi a mano."
+      },
+      "allegati": {
+        "title": "Foto, video e schizzi nella scheda",
+        "text": "Foto e video in ogni sezione, compressi in automatico; scegli tu quali foto finiscono in stampa. Su richiesta, gli schizzi a mano con quote e simboli del vano."
+      },
+      "permessi": {
+        "title": "Ruoli e permessi su misura",
+        "text": "L'amministratore dell'azienda rinomina i ruoli e sceglie cosa può fare ognuno. Nel registro ciascuno vede le proprie operazioni e quelle dei ruoli sotto il suo."
+      },
+      "colori": {
+        "title": "I tuoi colori",
+        "text": "Ognuno sceglie per sé i colori di pagina, menu, testo e pulsanti; il portale controlla che restino leggibili."
+      }
+    },
     "roles": {
       "title": "Ogni azienda nel suo spazio",
-      "lead": "Schede, persone e logo di un'azienda li vede solo quell'azienda. Dentro, sei ruoli decidono chi consulta, chi compila, chi elimina e chi invita.",
+      "lead": "Schede, persone e logo di un'azienda li vede solo quell'azienda. Dentro, sei ruoli decidono chi consulta, chi compila, chi elimina e chi invita; l'amministratore dell'azienda può rinominarli e cambiarne i permessi.",
       "caption": "Che cosa può fare ogni ruolo",
       "role": "Ruolo",
       "yes": "Sì",
@@ -94,7 +119,7 @@
         "users:manage": "Invita persone",
         "audit:view": "Registro"
       },
-      "note": "Ognuno invita solo ruoli sotto il proprio. L'amministrazione del portale (Carbon Stealth) crea le aziende e può accedere a tutte."
+      "note": "La tabella mostra i permessi iniziali. Ognuno invita solo ruoli sotto il proprio. L'amministrazione del portale (Carbon Stealth) crea le aziende e può accedere a tutte."
     },
     "steps": {
       "title": "Come si ottiene l'accesso",
@@ -132,6 +157,14 @@
       "print": {
         "q": "Si può stampare la scheda?",
         "a": "Sì: in A4 dal browser o come PDF, con il logo dell'azienda in alto e il nome di chi ha compilato la scheda."
+      },
+      "firma": {
+        "q": "Il cliente può firmare il foglio di intervento sul telefono?",
+        "a": "Sì: tecnico e cliente firmano con il dito sullo schermo. Dopo la conferma il foglio non si modifica più ed esce come PDF A4, anche via email."
+      },
+      "cartelli": {
+        "q": "Si possono preparare i cartelli di fermo impianto?",
+        "a": "Sì: scegli uno dei cinque modelli e il cartello esce in PDF con il logo e i dati della tua azienda in alto. Se l'impianto ha una scheda, indirizzo, città e testo per gli utenti si compilano da soli; altrimenti li scrivi a mano."
       },
       "data": {
         "q": "Dove sono conservati i dati?",
@@ -181,7 +214,8 @@
         "invalid": "Scegli una delle opzioni.",
         "privacy": "Spunta la casella per inviare la richiesta.",
         "busy": "Oggi abbiamo ricevuto troppe richieste. Riprova domani oppure scrivici a {email}."
-      }
+      },
+      "phoneCall": "Preferisci telefonare?"
     },
     "sent": {
       "title": "Richiesta inviata",

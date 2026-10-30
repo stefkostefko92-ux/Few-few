@@ -17,7 +17,7 @@
   <p><%= t('privacy.intro') %></p>
 
   <h2><%= t('privacy.who.title') %></h2>
-  <p><%= t('company.legalName') %>, <%= t('company.legalForm') %>, <%= t('company.eikLabel') %> <%= company.eik %>, <%= t('company.vatLabel') %> <%= company.vat %>, <%= t('company.street') %>, <%= company.postalCode %> <%= t('company.city') %>, <%= t('company.region') %>, <%= t('company.country') %>, <%= t('company.phoneLabel') %> <a href="<%= company.phoneHref %>"><%= company.phone %></a>. <%= t('privacy.who.contact') %> <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a>.</p>
+  <p><%= t('company.legalName') %>, <%= t('company.legalForm') %>, <%= t('company.eikLabel') %> <%= company.eik %>, <%= t('company.vatLabel') %> <%= company.vat %>, <%= t('company.street') %>, <%= company.postalCode %> <%= t('company.city') %>, <%= t('company.region') %>, <%= t('company.country') %>, <%= t('company.phoneLabel') %> <% company.phones.forEach((p, i) => { %><%= i ? ', ' : '' %><a href="<%= p.href %>"><%= p.number %></a><% }) %>. <%= t('privacy.who.contact') %> <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a>.</p>
 
   <h2><%= t('privacy.roles.title') %></h2>
   <p><%= t('privacy.roles.text') %></p>

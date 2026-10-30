@@ -23,7 +23,7 @@
       <h2><%= t('site.footer.contact') %></h2>
       <address>
         <%= t('company.street') %>, <%= company.postalCode %> <%= t('company.city') %>, <%= t('company.region') %>, <%= t('company.country') %><br>
-        <%= t('company.phoneLabel') %> <a href="<%= company.phoneHref %>"><%= company.phone %></a><br>
+        <%= t('company.phoneLabel') %> <% company.phones.forEach((p, i) => { %><%= i ? ' · ' : '' %><a href="<%= p.href %>"><%= p.number %></a><% }) %><br>
         <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a>
       </address>
     </div>

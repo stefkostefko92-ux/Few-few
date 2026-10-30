@@ -1,4 +1,11 @@
-const PHONE = '+359 877 414 874';
+/**
+ * Телефоните: италианският — първи (сайтът е за Италия; собственикът, 30 октомври 2026), после този на
+ * седалището в България.
+ */
+const PHONES = ['+39 379 29 69 699', '+359 877 414 874'] as const;
+
+/** За `href`: RFC 3966 не допуска интервали в номера. */
+const tel = (number: string): string => `tel:${number.replace(/\s/g, '')}`;
 
 /**
  * Издателят на портала и администратор на личните данни — същите вписани данни като в другите продукти
@@ -12,9 +19,11 @@ export const COMPANY = {
   vat: 'BG208725180',
   postalCode: '2670',
   country: 'BG',
-  phone: PHONE,
-  /** За `href`: RFC 3966 не допуска интервали в номера. */
-  phoneHref: `tel:${PHONE.replace(/\s/g, '')}`,
+  /** Главният номер (JSON-LD `telephone`) — италианският. */
+  phone: PHONES[0],
+  phoneHref: tel(PHONES[0]),
+  /** Всички номера, в реда на показване. */
+  phones: PHONES.map((number) => ({ number, href: tel(number) })),
   url: 'https://carbonstealth.eu',
   geo: { region: 'BG-10', latitude: 42.3539, longitude: 23.0008 },
 } as const;
@@ -23,4 +32,4 @@ export const COMPANY = {
 export const CONTENT_UPDATED = '2026-10-30';
 
 /** Последната промяна на политиката за поверителност — показва се на страницата и отива в sitemap. */
-export const PRIVACY_UPDATED = '2026-10-21';
+export const PRIVACY_UPDATED = '2026-10-30';

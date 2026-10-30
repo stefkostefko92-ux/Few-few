@@ -10,7 +10,15 @@ import { SECTIONS } from '../schede/fields.js';
  */
 
 /** Въпросите в „Domande frequenti“ — страницата и FAQPage в JSON-LD ги вземат оттук. */
-export const FAQ_IDS = ['selfSignup', 'visibility', 'app', 'print', 'data'] as const;
+export const FAQ_IDS = [
+  'selfSignup',
+  'visibility',
+  'app',
+  'print',
+  'firma',
+  'cartelli',
+  'data',
+] as const;
 export type FaqId = (typeof FAQ_IDS)[number];
 
 /** Стъпките на „Come si ottiene l'accesso“ (`site.steps.s1…s4`) — за страницата и за HowTo. */
@@ -27,6 +35,13 @@ export const SCENE = [
 ] as const;
 
 export const FEATURES = SCENE.flatMap((scena) => scena.features);
+
+/**
+ * „Dopo il rilievo: assistenza e cantiere“ (`site.servizi.<id>`, собственикът, 30 октомври 2026 — „modifica
+ * la landing aggiungendo le nuove funzioni“): листът за интервенция, табелите, снимките и скиците, ролите и
+ * цветовете. Редът тук е редът на страницата и на `featureList` в JSON-LD.
+ */
+export const SERVIZI = ['intervento', 'cartelli', 'allegati', 'permessi', 'colori'] as const;
 
 export interface LegendSection {
   /** Поредният номер на раздела — същият е и маркерът на чертежа. */
