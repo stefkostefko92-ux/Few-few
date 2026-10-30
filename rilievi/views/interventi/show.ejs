@@ -1,0 +1,47 @@
+<%
+  // Страницата на листа за интервенция: листът като на хартия и действията според състоянието —
+  // чернова: „Modifica“ и, когато двата подписа са положени, „Conferma“; потвърден: само PDF и имейл.
+  const r = intervento;
+%><%- include('../partials/top', { titleKey: 'interventi.titolo', title, scripts: [] }) %>
+<div class="page-head">
+  <div>
+    <a href="/interventi"><%= t('interventi.indietro') %></a>
+    <h1><%= t('interventi.titolo') %> <span class="intervento__num">n. <%= numero %></span></h1>
+    <p class="page-head__sub"><%= r.azienda.name %> · <span class="stato<%= r.confermatoAt ? ' stato--chiuso' : '' %>"><%= t(r.confermatoAt ? 'interventi.stato.chiuso' : 'interventi.stato.bozza') %></span></p>
+  </div>
+  <div class="toolbar">
+    <% if (modifica) { %><a class="btn" href="/interventi/<%= r.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('interventi.modifica') %></a><% } %>
+    <% if (r.confermatoAt) { %><a class="btn btn--primary" href="/interventi/<%= r.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('interventi.pdf') %></a><% } %>
+  </div>
+</div>
+<div class="stack-gap">
+<% if (r.confermatoAt) { %>
+  <p class="notice"><%= t('interventi.chiuso') %></p>
+  <% if (invia) { %>
+  <form class="panel intervento-email" method="post" action="/interventi/<%= r.id %>/invia">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2><%= t('interventi.email.titolo') %></h2>
+    <div class="field">
+      <label class="field__label" for="f-email"><%= t('interventi.email.label') %></label>
+      <div class="intervento-email__row">
+        <input class="input" id="f-email" name="email" type="email" required maxlength="254" autocomplete="email" aria-describedby="h-email">
+        <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'mail' }) %><%= t('interventi.email.pulsante') %></button>
+      </div>
+      <p class="field__hint" id="h-email"><%= t('interventi.email.hint') %></p>
+    </div>
+  </form>
+  <% } %>
+<% } else if (modifica && firmato) { %>
+  <form class="panel intervento-conferma" method="post" action="/interventi/<%= r.id %>/conferma">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="base" value="<%= base %>">
+    <h2><%= t('interventi.conferma.titolo') %></h2>
+    <p><%= t('interventi.conferma.testo') %></p>
+    <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'sign' }) %><%= t('interventi.conferma.pulsante') %></button>
+  </form>
+<% } else if (modifica) { %>
+  <p class="notice"><%= t('interventi.conferma.mancano') %></p>
+<% } %>
+<%- include('_foglio') %>
+</div>
+<%- include('../partials/bottom') %>

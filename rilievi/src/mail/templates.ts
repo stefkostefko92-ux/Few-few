@@ -63,3 +63,26 @@ export function accessRequestMail(params: {
     text: t('mail.request.body', { company: params.company, link: params.link }),
   };
 }
+
+/** Листът за интервенция като PDF — на адреса, който човекът е написал при изпращането. */
+export function interventoMail(params: {
+  to: string;
+  numero: string;
+  data: string;
+  azienda: string;
+  pdf: Buffer;
+  filename: string;
+}): MailMessage {
+  return {
+    to: params.to,
+    subject: t('interventi.email.oggetto', { n: params.numero, azienda: params.azienda }),
+    text: t('interventi.email.corpo', {
+      n: params.numero,
+      data: params.data,
+      azienda: params.azienda,
+    }),
+    attachments: [
+      { filename: params.filename, content: params.pdf, contentType: 'application/pdf' },
+    ],
+  };
+}

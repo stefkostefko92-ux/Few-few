@@ -1,0 +1,58 @@
+<%
+  // Листът за интервенция като на хартия (A4, бял и в тъмната тема): логото, номерът, главата, двете
+  // колони с точките — ☒ при отметнатите, — „Altro“, часовете, подписите (SVG от щрихите). Същото като в
+  // PDF-а (src/interventi/pdf.ts).
+  const r = intervento;
+  const az = r.azienda;
+  const segno = (on) => '<span class="foglio__box' + (on ? ' foglio__box--on' : '') + '" aria-hidden="true"></span>';
+  const stato = (on) => '<span class="visually-hidden">' + (on ? t('interventi.segnato') : t('interventi.nonSegnato')) + '</span>';
+  const colonne = [gruppi.slice(0, 3), gruppi.slice(3)];
+  const testo = (voce, value) => voce.testo.replace('{q}', value && value.q ? '\u0001' : '……');
+  const ore = (value) => value ? fmt.num(value) : '—';
+%><article class="foglio" aria-labelledby="foglio-title">
+  <header class="foglio__head">
+    <% if (az.logoType) { %><img class="foglio__logo" src="/aziende/<%= az.id %>/logo?v=<%= az.logoUpdatedAt ? az.logoUpdatedAt.getTime() : 0 %>" alt="<%= t('aziende.logoAlt', { name: az.name }) %>"<% if (az.logoWidth && az.logoHeight) { %> width="<%= az.logoWidth %>" height="<%= az.logoHeight %>"<% } %>><% } else { %><span class="foglio__azienda"><%= az.name %></span><% } %>
+    <div class="foglio__title">
+      <p><%= t('interventi.servizio') %></p>
+      <h2 id="foglio-title"><%= t('interventi.titolo') %> <span>n. <%= numero %></span></h2>
+    </div>
+  </header>
+  <div class="foglio__testa">
+    <div>
+      <p><span class="foglio__k"><%= t('interventi.campo.data') %></span> <strong><%= fmt.day(r.data) %></strong>
+        <span class="foglio__turni"><% for (const turno of ['MATTINA', 'POMERIGGIO']) { %><span><%- segno(r.turno === turno) %><%- stato(r.turno === turno) %><%= t('interventi.turno.' + turno) %></span><% } %></span></p>
+      <p><span class="foglio__k"><%= t('interventi.campo.indirizzo') %></span> <strong><%= r.indirizzo || '—' %></strong></p>
+      <p><span class="foglio__k"><%= t('interventi.campo.citta') %></span> <strong><%= r.citta || '—' %></strong></p>
+    </div>
+    <div>
+      <p class="foglio__k"><%= t('interventi.campo.tecnici') %></p>
+      <p class="foglio__tecnici"><strong><%= r.tecnici || '—' %></strong></p>
+    </div>
+  </div>
+  <p class="foglio__matricola"><%= t('interventi.campo.matricolaPdf') %> <strong><%= r.matricola || '—' %></strong> · <%= t('interventi.eseguite') %></p>
+  <div class="foglio__voci">
+    <% for (const colonna of colonne) { %><div>
+      <% for (const gruppo of colonna) { %><h3><%= gruppo.titolo %></h3>
+      <ul>
+        <% for (const voce of gruppo.voci) {
+             const key = codice(voce.n);
+             const value = voci[key];
+             const [prima, dopo] = testo(voce, value).split('\u0001'); %><li<% if (value && value.x) { %> class="is-on"<% } %>><%- segno(value && value.x) %><%- stato(value && value.x) %><b><%= key %></b> <span><%= prima %><% if (dopo !== undefined) { %><u><%= value.q %></u><%= dopo %><% } %><% for (const s of voce.scelte || []) { %> <span class="foglio__scelta"><%= s %> <%- segno(value && value.c && value.c.includes(s)) %><%- stato(value && value.c && value.c.includes(s)) %></span><% } %></span></li>
+        <% } %>
+      </ul>
+      <% } %>
+    </div><% } %>
+  </div>
+  <div class="foglio__altro">
+    <p><%- segno(Boolean(r.altro)) %><%- stato(Boolean(r.altro)) %><strong><%= t('interventi.campo.altro') %></strong></p>
+    <p class="foglio__altro-testo"><%= r.altro || '' %></p>
+  </div>
+  <p class="foglio__prove"><%- segno(r.prove) %><%- stato(r.prove) %><%= t('interventi.campo.prove') %> — <%= t('interventi.oreRiga', { tecnico: ore(r.oreTecnico), totale: ore(r.oreTotali) }) %></p>
+  <div class="foglio__firme">
+    <% for (const [chi, path, nome] of [['tecnico', firme.tecnico, r.firmaTecnicoNome], ['cliente', firme.cliente, r.firmaClienteNome]]) { %><figure>
+      <figcaption><%= t('interventi.firma.' + chi) %>: <strong><%= nome || '—' %></strong></figcaption>
+      <% if (path) { %><svg class="foglio__firma" viewBox="0 0 600 200" role="img" aria-label="<%= t('interventi.firma.' + chi) %>"><path d="<%= path %>" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><% } else { %><p class="foglio__firma foglio__firma--vuota"><%= t('interventi.firma.vuota') %></p><% } %>
+    </figure><% } %>
+  </div>
+  <% if (r.confermatoAt) { %><p class="foglio__confermato"><%= t('interventi.confermato', { at: fmt.dateTime(r.confermatoAt), name: r.confermatoBy ? r.confermatoBy.name : '—' }) %></p><% } %>
+</article>

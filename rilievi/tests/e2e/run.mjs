@@ -8,7 +8,8 @@
 // (tempo-reale.mjs), the company ADMIN invited by the MASTER and a technician invited by that ADMIN
 // who sees the company's sheets (inviti.mjs), photos in a section of the sheet (allegati.mjs — the worker
 // must run next to the portal: `npm run worker`), the sketch pad turned on for the company and drawn in its
-// full-screen editor (schizzi.mjs), and accessibility (axe-core, WCAG 2.1 AA) on every page,
+// full-screen editor (schizzi.mjs), the side bar and an intervention form signed and confirmed
+// (interventi.mjs), and accessibility (axe-core, WCAG 2.1 AA) on every page,
 // in the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
 //
 //   RILIEVI_URL=http://127.0.0.1:4330 E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e
@@ -25,6 +26,7 @@ import { checkSite } from './site.mjs';
 import { checkInvites } from './inviti.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
 import { checkElettroquadri } from './elettroquadri.mjs';
+import { checkInterventi, checkPhoneMenu } from './interventi.mjs';
 import { checkMastech } from './mastech.mjs';
 import { checkMovilift } from './movilift.mjs';
 import { checkPrintedNotes, fillDoorsAndChecks } from './porte.mjs';
@@ -251,6 +253,7 @@ try {
     await page.goto(`${sheetUrl}/stampa`);
     await audit(page, `${scheme} print`);
     await page.screenshot({ path: join(shots, `${scheme}-print.png`), fullPage: true });
+    await checkInterventi(page, { base, shots, scheme, aziendaName });
 
     const phone = await browser.newContext({
       colorScheme: scheme,
@@ -260,9 +263,12 @@ try {
     });
     const mobile = await phone.newPage();
     await signIn(mobile, email, password);
+    await checkPhoneMenu(mobile, { base, scheme });
     for (const [name, path] of [
       ['list', '/schede?q=verdi'],
       ['sheet', new URL(sheetUrl).pathname],
+      ['interventi', '/interventi'],
+      ['intervento', '/interventi/nuovo'],
     ]) {
       await mobile.goto(base + path);
       const overflow = await mobile.evaluate(

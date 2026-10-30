@@ -6,6 +6,8 @@ export interface MailMessage {
   to: string;
   subject: string;
   text: string;
+  /** Прикачени файлове (PDF-ът на листа за интервенция) — създадени на сървъра, никога пратени отвън. */
+  attachments?: Array<{ filename: string; content: Buffer; contentType: string }>;
 }
 
 /** `disabled` — няма SMTP: връзката се показва на екрана за копиране, нищо не е изгубено. */
@@ -32,7 +34,14 @@ export const outbox: Array<MailMessage & { at: number; result: MailResult }> = [
 
 function remember(message: MailMessage, result: MailResult): void {
   if (isProduction()) return;
-  outbox.push({ ...message, at: Date.now(), result });
+  // В кутията — само името и размерът на прикаченото, не съдържанието.
+  const attachments = message.attachments?.map((a) => ({
+    filename: a.filename,
+    contentType: a.contentType,
+    content: Buffer.alloc(0),
+    size: a.content.length,
+  }));
+  outbox.push({ ...message, ...(attachments ? { attachments } : {}), at: Date.now(), result });
   if (outbox.length > 200) outbox.shift();
 }
 

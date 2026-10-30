@@ -1,0 +1,95 @@
+{
+  "interventi": {
+    "new": "Nuovo intervento",
+    "list": "Interventi",
+    "listSub": "I moduli di pronto intervento dell'azienda, dal più recente. Una volta firmati e confermati non si modificano più: si scaricano in PDF o si inviano per email.",
+    "empty": "Nessun modulo di pronto intervento.",
+    "emptyHint": "Crea il primo con «Nuovo intervento».",
+    "servizio": "Servizio assistenza elevatori",
+    "titolo": "Modulo di pronto intervento",
+    "numero": "Modulo n. {n}",
+    "numeroNuovo": "Il numero viene assegnato al primo salvataggio.",
+    "stato": {
+      "label": "Stato",
+      "bozza": "Bozza",
+      "chiuso": "Firmato"
+    },
+    "colonna": {
+      "numero": "N.",
+      "data": "Data",
+      "luogo": "Stabile",
+      "matricola": "Matricola",
+      "tecnici": "Tecnici"
+    },
+    "campo": {
+      "data": "Effettuato il",
+      "turno": "Mattina o pomeriggio",
+      "indirizzo": "Presso lo stabile di via/piazza",
+      "citta": "Città",
+      "tecnici": "Tecnici intervenuti",
+      "matricola": "Matricola impianto n.",
+      "matricolaPdf": "Dopo la verifica dell'impianto matricola n.",
+      "altro": "Altro",
+      "prove": "Prove dell'impianto e regolazioni",
+      "oreTecnico": "Ore per tecnico",
+      "oreTotali": "Totale ore",
+      "quantita": "Quantità o testo per la voce {n}"
+    },
+    "turno": {
+      "MATTINA": "Matt.",
+      "POMERIGGIO": "Pom."
+    },
+    "sezione": {
+      "testata": "Intervento",
+      "voci": "Sono state eseguite riparazioni, fornitura e posa in opera di:",
+      "altro": "Altro, prove e ore",
+      "firme": "Firme"
+    },
+    "eseguite": "Sono state eseguite riparazioni, fornitura e posa in opera di:",
+    "oreRiga": "Impiegando ore {tecnico} per tecnico = Totale ore {totale}",
+    "firma": {
+      "tecnico": "Firma del tecnico",
+      "cliente": "Firma del cliente",
+      "nome": "Nome e cognome",
+      "cancella": "Cancella",
+      "hint": "Firma con il dito, la penna o il mouse nel riquadro.",
+      "rifare": "Questo modulo era già firmato: dopo una modifica le firme vanno ripetute.",
+      "vuota": "Non firmato",
+      "area": "Riquadro per la firma: {chi}"
+    },
+    "salva": "Salva",
+    "modifica": "Modifica",
+    "conferma": {
+      "titolo": "Firma e conferma",
+      "testo": "Controlla il modulo. Dopo la conferma non si potrà più modificare: resteranno solo il PDF e l'invio per email.",
+      "pulsante": "Conferma il modulo firmato",
+      "mancano": "Per confermare servono la firma del tecnico e quella del cliente, ciascuna con nome e cognome. Apri «Modifica» e firma nei riquadri in fondo."
+    },
+    "confermato": "Firmato e confermato il {at} da {name}",
+    "chiuso": "Modulo firmato e confermato: non si può più modificare.",
+    "pdf": "Scarica PDF",
+    "email": {
+      "titolo": "Invia per email",
+      "label": "Indirizzo email",
+      "hint": "Il PDF del modulo viene allegato all'email.",
+      "pulsante": "Invia",
+      "oggetto": "Modulo di pronto intervento n. {n} — {azienda}",
+      "corpo": "Buongiorno,\n\nin allegato il modulo di pronto intervento n. {n} del {data}, firmato e confermato.\n\n{azienda}"
+    },
+    "flash": {
+      "creato": "Modulo n. {n} salvato.",
+      "salvato": "Modulo salvato.",
+      "confermato": "Modulo firmato e confermato.",
+      "conflitto": "Il modulo è stato modificato da qualcun altro mentre lo guardavi: ricarica la pagina e ricontrolla.",
+      "inviato": "PDF inviato a {email}.",
+      "nonInviato": "L'email non è partita. Riprova più tardi o scarica il PDF.",
+      "mailDisattivata": "L'invio di email non è configurato su questo server: scarica il PDF.",
+      "emailNonValida": "Scrivi un indirizzo email valido."
+    },
+    "dataMancante": "Indica la data dell'intervento.",
+    "voce": "Voce {n}",
+    "indietro": "Torna agli interventi",
+    "segnato": "(segnato)",
+    "nonSegnato": "(non segnato)"
+  }
+}

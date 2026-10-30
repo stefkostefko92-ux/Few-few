@@ -20,6 +20,8 @@ export type Capability =
   | 'schede:write'
   | 'schede:delete'
   | 'schede:trash'
+  | 'interventi:read'
+  | 'interventi:write'
   | 'users:manage'
   | 'audit:view'
   | 'aziende:manage'
@@ -32,6 +34,10 @@ const REQUIRED: Readonly<Record<Capability, Role>> = {
   'schede:write': 'OPERATORE',
   'schede:delete': 'RESPONSABILE',
   'schede:trash': 'ADMIN',
+  // Листовете за интервенция („Servizio assistenza elevatori“, src/interventi/): четат ги като картите;
+  // попълва, подписва и праща техникът (като писането на карта). Подписаният лист не се пипа от никого.
+  'interventi:read': 'CLIENTE',
+  'interventi:write': 'OPERATORE',
   // Кани и управлява хората само най-високата роля във фирмата (ADMIN — в своята фирма, роли под
   // своята) и собственикът на портала (MASTER — във всяка фирма). Така е поискал собственикът.
   'users:manage': 'ADMIN',

@@ -1,29 +1,22 @@
-/* Рамката на портала: черната горна лента (марка, навигация с икони, „Нова карта“, кой е вписан),
-   съдържанието и заглавието на страницата (долната лента е в layout.css). Черното е еднакво в двете
-   теми — като лентата на витрината, за да е ясно, че е едно място. */
+/* Рамката на портала: черната странична лента вляво (марка, групите на навигацията, вписаният човек
+   долу), съдържанието и заглавието на страницата (долната лента е в layout.css). Черното е еднакво в
+   двете теми — като лентата на витрината, за да е ясно, че е едно място. От 1100 px лентата стои винаги
+   вляво; под това горе остава тънка лента с ☰ и лентата се отваря отляво над страницата (menu.js). */
 
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  background: var(--bar);
-  color: var(--bar-fg);
-  border-bottom: 1px solid var(--bar-edge);
+:root {
+  --nav-w: 248px;
+  /* Колко заема залепналата горна лента — за котвите и залепналия индекс на разделите. */
+  --chrome-top: 56px;
 }
 
-.topbar :focus-visible {
-  outline-color: var(--bar-fg);
-}
+@media (min-width: 1100px) {
+  :root {
+    --chrome-top: 0px;
+  }
 
-.topbar__inner {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 0 28px;
-  max-width: 1200px;
-  min-height: 64px;
-  margin: 0 auto;
-  padding: 0 var(--gutter);
+  body.with-nav {
+    padding-left: var(--nav-w);
+  }
 }
 
 .brand {
@@ -52,158 +45,30 @@
   color: var(--bar-muted);
 }
 
-.nav {
-  container: topnav / inline-size;
-  display: flex;
-  align-self: stretch;
-  gap: 2px;
-  min-width: 0;
-}
-
-.nav a {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  color: var(--bar-muted);
-  text-decoration: none;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.nav .icon {
-  width: 18px;
-  height: 18px;
-}
-
-.nav a:hover {
-  color: var(--bar-fg);
-}
-
-.nav a[aria-current='page'] {
-  color: var(--bar-fg);
-  box-shadow: inset 0 -3px 0 var(--bar-fg);
-}
-
-/* Когато мястото не стига за икони и имена (най-много точки има MASTER), иконите отпадат първи. */
-@container topnav (max-width: 720px) {
-  .nav[data-count='7'] .icon,
-  .nav[data-count='6'] .icon,
-  .nav[data-count='5'] .icon {
-    display: none;
-  }
-}
-
-@container topnav (max-width: 520px) {
-  .nav .icon {
-    display: none;
-  }
-}
-
-.nav__count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: var(--bar-fg);
-  color: var(--bar);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.topbar__end {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.who {
+/* Горната лента на телефон и таблет: ☰, марката, акаунтът. */
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: grid;
-  text-align: right;
-  line-height: 1.15;
-  color: inherit;
-  text-decoration: none;
-  padding: 4px 8px;
-  border-radius: var(--radius);
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0 8px;
+  min-height: var(--chrome-top);
+  padding: 0 calc(var(--gutter) - 6px);
+  background: var(--bar);
+  color: var(--bar-fg);
+  border-bottom: 1px solid var(--bar-edge);
 }
 
-.who:hover .who__name {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-.who__name {
-  font-weight: 600;
-  max-width: 18ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.who__role {
-  max-width: 28ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.8125rem;
-  color: var(--bar-muted);
-}
-
-.topbar__account {
-  display: none;
-}
-
-/* Под 1280 px името на вписания отстъпва на иконката на акаунта; под 1100 px навигацията слиза на
-   втори ред и се плъзга. */
-@media (max-width: 1279px) {
-  .who {
-    display: none;
-  }
-
-  .topbar__account {
-    display: inline-flex;
-  }
-}
-
-@media (max-width: 1099px) {
-  .topbar__inner {
-    grid-template-columns: 1fr auto;
-    min-height: 0;
-    padding-top: 8px;
-  }
-
-  .nav {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    overflow-x: auto;
-    margin: 6px calc(var(--gutter) * -1) 0;
-    padding: 0 calc(var(--gutter) - 9px);
-    border-top: 1px solid var(--bar-line);
-    scrollbar-width: none;
-  }
-
-  .nav a {
-    min-height: 46px;
-  }
+.appbar :focus-visible,
+.sidenav :focus-visible {
+  outline-color: var(--bar-fg);
 }
 
 @media (max-width: 479px) {
   .brand__product {
     display: none;
-  }
-
-  /* На телефон бутонът е само иконата, но името му остава за екранния четец (display: none би го
-     оставил безименен). */
-  .topbar__new .btn__label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
   }
 }
 

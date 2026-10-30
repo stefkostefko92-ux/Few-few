@@ -19,7 +19,15 @@
       "one": "{n} azienda",
       "other": "{n} aziende"
     },
-    "impostazioni": "Impostazioni"
+    "impostazioni": "Impostazioni",
+    "interventi": "Interventi",
+    "open": "Apri il menu",
+    "close": "Chiudi il menu",
+    "group": {
+      "rilievi": "Rilievi",
+      "assistenza": "Assistenza elevatori",
+      "amministrazione": "Amministrazione"
+    }
   },
   "common": {
     "yes": "Sì",

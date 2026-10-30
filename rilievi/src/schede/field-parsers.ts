@@ -156,7 +156,7 @@ function checksParser<T extends string>(options: readonly string[], single: bool
   );
 }
 
-function choiceParser<T extends string>(options: readonly string[]) {
+export function choiceParser<T extends string>(options: readonly string[]) {
   return z.preprocess(
     asText,
     str
@@ -178,7 +178,7 @@ export function yesNoParser() {
   );
 }
 
-function dateParser() {
+export function dateParser() {
   return z.preprocess(
     asText,
     str

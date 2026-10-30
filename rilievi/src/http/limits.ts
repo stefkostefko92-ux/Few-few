@@ -47,3 +47,8 @@ export const writeLimiter = limiter(60_000, 60, {
 export const pdfLimiter = limiter(60_000, 30, {
   keyGenerator: (req) => (req.principal ? `u:${req.principal.user.id}` : networkKey(req)),
 });
+
+/** Писмата с PDF на листа за интервенция — по акаунт, двадесет на час. */
+export const mailLimiter = limiter(60 * 60_000, 20, {
+  keyGenerator: (req) => (req.principal ? `u:${req.principal.user.id}` : networkKey(req)),
+});

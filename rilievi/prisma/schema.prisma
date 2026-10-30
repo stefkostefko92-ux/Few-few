@@ -87,28 +87,32 @@ enum AccessRequestStatus {
 /// Фирма — клиент на портала: свои хора, свои карти, свое лого на листа. Създава я само MASTER
 /// (собственикът на портала); всяка фирма вижда само своето (src/auth/scope.ts).
 model Azienda {
-  id            String    @id @default(cuid())
-  name          String    @unique @db.VarChar(120)
+  id               String    @id @default(cuid())
+  name             String    @unique @db.VarChar(120)
   /// Логото за листа и PDF-а — вече прекодирано от src/aziende/logo.ts (PNG или JPEG, без метаданни).
-  logo          Bytes?
-  logoType      String?   @db.VarChar(20)
-  logoWidth     Int?
-  logoHeight    Int?
-  logoUpdatedAt DateTime?
+  logo             Bytes?
+  logoType         String?   @db.VarChar(20)
+  logoWidth        Int?
+  logoHeight       Int?
+  logoUpdatedAt    DateTime?
   /// Деактивирана фирма: хората ѝ не влизат и сесиите им падат; картите ѝ остават.
-  deactivatedAt DateTime?
+  deactivatedAt    DateTime?
   /// Редът на разделите на картата във фирмата (ключовете от src/schede/fields.ts); празно — редът по
   /// подразбиране. Подрежда го администраторът ѝ (src/aziende/sezioni.ts).
-  ordineSezioni String[]  @default([])
+  ordineSezioni    String[]  @default([])
   /// Скицникът в края на картата (листове за рисуване на ръка, src/schizzi/) — включва го само MASTER.
   /// Изключен: полето изчезва от формата, а нарисуваното остава и се печата.
-  schizzi       Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  schizzi          Boolean   @default(false)
+  /// Последният даден номер на лист за интервенция във фирмата (собствен брояч от 1, без дупки):
+  /// новият лист взема +1 в транзакцията си (src/interventi/service.ts).
+  interventiNumero Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   memberships    Membership[]
   invites        Invite[]
   schede         Scheda[]
+  interventi     Intervento[]
   audit          AuditLog[]
   accessRequests AccessRequest[]
 }
@@ -149,6 +153,9 @@ model User {
   schedeUpdated    Scheda[]        @relation("SchedeUpdated")
   schedeDeleted    Scheda[]        @relation("SchedeDeleted")
   allegatiCaricati Allegato[]      @relation("AllegatiCaricati")
+  interventiCreati Intervento[]    @relation("InterventiCreati")
+  interventiMod    Intervento[]    @relation("InterventiModificati")
+  interventiChiusi Intervento[]    @relation("InterventiChiusi")
   auditEntries     AuditLog[]
   requestsDecided  AccessRequest[] @relation("AccessRequestsDecided")
 
@@ -629,4 +636,55 @@ enum OlioStato {
   BUONO
   DA_SOSTITUIRE
   PERDITE
+}
+
+/// Частта от деня на интервенцията от хартиения лист: „Matt.“ / „Pom.“.
+enum TurnoIntervento {
+  MATTINA
+  POMERIGGIO
+}
+
+/// Лист за интервенция — „Servizio assistenza elevatori · Modulo di pronto intervento“ (собственикът, 30
+/// октомври 2026, по хартиения блок): номер за фирмата от 1, отметките 01–97 с бройките си, „Altro“,
+/// часовете, подписите на техника и на клиента. Докато е чернова, се пише; след „Conferma“
+/// (`confermatoAt`) не се пипа — остават PDF-ът и имейлът. Не се трие (номерата са без дупки).
+model Intervento {
+  id               String           @id @default(cuid())
+  aziendaId        String
+  azienda          Azienda          @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  numero           Int
+  data             DateTime         @db.Date
+  turno            TurnoIntervento?
+  indirizzo        String?          @db.VarChar(200)
+  citta            String?          @db.VarChar(120)
+  tecnici          String?          @db.VarChar(300)
+  matricola        String?          @db.VarChar(40)
+  /// Отметките по номер („01“…„97“): {x: отметнато, q: бройката или текстът на реда, c: „C“/„P“ на 84}.
+  /// Проверени при запис (src/interventi/voci.ts); непознатите номера не влизат.
+  voci             Json             @default("{}")
+  altro            String?          @db.VarChar(1000)
+  prove            Boolean          @default(false)
+  oreTecnico       Decimal?         @db.Decimal(6, 2)
+  oreTotali        Decimal?         @db.Decimal(6, 2)
+  /// Подписите — щрихи с пръст в поле 600 × 200 ({s: [[x, y, x, y, …], …]}), проверени при запис.
+  /// Всяка промяна на черновата ги изтрива: подписът е за съдържанието, с което е положен.
+  firmaTecnico     Json?
+  firmaTecnicoNome String?          @db.VarChar(120)
+  firmaCliente     Json?
+  firmaClienteNome String?          @db.VarChar(120)
+  confermatoAt     DateTime?
+  confermatoById   String?
+  confermatoBy     User?            @relation("InterventiChiusi", fields: [confermatoById], references: [id], onDelete: SetNull)
+  createdById      String?
+  createdBy        User?            @relation("InterventiCreati", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById      String?
+  updatedBy        User?            @relation("InterventiModificati", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@unique([aziendaId, numero])
+  @@index([aziendaId, createdAt])
+  @@index([createdById])
+  @@index([updatedById])
+  @@index([confermatoById])
 }

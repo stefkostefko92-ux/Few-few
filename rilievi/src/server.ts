@@ -28,6 +28,8 @@ import { cestinoRouter } from './routes/cestino.js';
 import { ordiniRouter } from './routes/ordini.js';
 import { healthRouter } from './routes/health.js';
 import { impostazioniRouter } from './routes/impostazioni.js';
+import { interventiRouter } from './routes/interventi.js';
+import { interventiInvioRouter } from './routes/interventi-invio.js';
 import { requestsRouter } from './routes/requests.js';
 import { schedeRouter } from './routes/schede.js';
 import { schedeStampaRouter } from './routes/schede-stampa.js';
@@ -229,6 +231,8 @@ export function createServer(): Express {
   app.use(allegatiRouter);
   app.use(cestinoRouter);
   app.use(ordiniRouter);
+  app.use(interventiRouter);
+  app.use(interventiInvioRouter);
   app.use(usersRouter);
   // След usersRouter: `/utenti/invita` е преди `/utenti/:id`.
   app.use(usersManageRouter);

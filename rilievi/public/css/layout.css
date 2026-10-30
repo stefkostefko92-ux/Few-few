@@ -179,7 +179,9 @@
 
 /* Печат на обикновена страница (Ctrl+P върху схемата): без навигация и бутони. */
 @media print {
-  .topbar,
+  .appbar,
+  .sidenav,
+  .sidenav__backdrop,
   .footer,
   .toolbar,
   .actions,
@@ -190,6 +192,10 @@
 
   .main {
     padding: 0;
+  }
+
+  body.with-nav {
+    padding-left: 0;
   }
 
   .with-index {

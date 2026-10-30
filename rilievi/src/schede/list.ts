@@ -38,7 +38,7 @@ export interface SchedaPage {
   tokens: string[];
 }
 
-function pageOf(raw: unknown): number {
+export function pageOf(raw: unknown): number {
   const n = typeof raw === 'string' ? Number.parseInt(raw, 10) : NaN;
   return Number.isInteger(n) && n >= 1 && n <= 10_000 ? n : 1;
 }

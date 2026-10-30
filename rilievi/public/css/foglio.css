@@ -1,0 +1,242 @@
+/* Листът за интервенция като на хартия (views/interventi/_foglio.ejs): бял и в тъмната тема, като
+   печата; кутийките с кръстче, подписите от щрихите. */
+
+.foglio {
+  width: min(210mm, 100%);
+  margin: 0 auto;
+  padding: 10mm 9mm;
+  background: #ffffff;
+  color: #000000;
+  color-scheme: light;
+  box-shadow: 0 0 0 1px #c8c8c8;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.foglio__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.foglio__logo {
+  width: auto;
+  max-width: 220px;
+  height: auto;
+  max-height: 64px;
+}
+
+.foglio__azienda {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.foglio__title {
+  text-align: right;
+}
+
+.foglio__title p,
+.foglio__title h2 {
+  margin: 0;
+}
+
+.foglio__title p {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.foglio__title h2 {
+  font-size: 0.9375rem;
+  font-weight: 400;
+}
+
+.foglio__title h2 span {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.foglio__testa {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  margin-top: 12px;
+  border: 1px solid #000000;
+}
+
+.foglio__testa > div {
+  padding: 6px 8px;
+}
+
+.foglio__testa > div + div {
+  border-left: 1px solid #000000;
+}
+
+.foglio__testa p {
+  margin: 0 0 4px;
+}
+
+.foglio__k {
+  color: #444444;
+}
+
+.foglio__turni {
+  display: inline-flex;
+  gap: 12px;
+  margin-left: 12px;
+}
+
+.foglio__tecnici {
+  white-space: pre-line;
+}
+
+.foglio__matricola {
+  margin: 10px 0 8px;
+}
+
+.foglio__voci {
+  display: grid;
+  gap: 0;
+}
+
+@media (min-width: 900px) {
+  .foglio__voci {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.foglio__voci h3 {
+  margin: 0;
+  padding: 3px 6px;
+  background: #ececec;
+  border: 1px solid #000000;
+  font-size: 0.8125rem;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.foglio__voci ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.foglio__voci li {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 6px;
+  border: 1px solid #000000;
+  border-top: 0;
+}
+
+.foglio__voci li b {
+  font-variant-numeric: tabular-nums;
+}
+
+.foglio__voci u {
+  text-decoration-style: dotted;
+  font-weight: 700;
+}
+
+.foglio__scelta {
+  white-space: nowrap;
+}
+
+/* Кутийката на листа; отметнатата — с кръстче, както се „crocetta“ на блока. */
+.foglio__box {
+  position: relative;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border: 1px solid #000000;
+  vertical-align: -1px;
+}
+
+.foglio__box--on::before,
+.foglio__box--on::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -1px;
+  width: 10px;
+  height: 1.6px;
+  background: #000000;
+}
+
+.foglio__box--on::before {
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.foglio__box--on::after {
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+.foglio__altro {
+  margin-top: 10px;
+}
+
+.foglio__altro p {
+  margin: 0;
+}
+
+.foglio__altro-testo {
+  min-height: 3.6em;
+  padding: 2px 0 2px 16px;
+  white-space: pre-line;
+  background: repeating-linear-gradient(transparent 0 1.3em, #9a9a9a 1.3em calc(1.3em + 1px));
+}
+
+.foglio__prove {
+  margin: 10px 0;
+}
+
+.foglio__firme {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 12px;
+}
+
+.foglio__firme figure {
+  margin: 0;
+}
+
+.foglio__firma {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 1;
+  margin: 4px 0 0;
+  border: 1px solid #000000;
+  color: #000000;
+}
+
+.foglio__firma--vuota {
+  display: grid;
+  place-items: center;
+  color: #6b6b6b;
+}
+
+.foglio__confermato {
+  margin: 12px 0 0;
+  color: #444444;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+@media print {
+  .foglio {
+    width: auto;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .intervento-email,
+  .intervento-conferma {
+    display: none;
+  }
+}

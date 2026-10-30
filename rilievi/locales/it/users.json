@@ -92,6 +92,7 @@
     "target": "Oggetto",
     "system": "Sistema",
     "openScheda": "Apri scheda",
+    "openIntervento": "Apri modulo",
     "openUser": "Apri utente",
     "action": {
       "LOGIN": "Accesso",
@@ -115,6 +116,10 @@
       "ALLEGATO_UPLOAD": "Foto o video caricati",
       "ALLEGATO_UPDATE": "Didascalia modificata",
       "ALLEGATO_DELETE": "Foto o video eliminati",
+      "INTERVENTO_CREATE": "Modulo di pronto intervento creato",
+      "INTERVENTO_UPDATE": "Modulo di pronto intervento modificato",
+      "INTERVENTO_CONFIRM": "Modulo di pronto intervento firmato e confermato",
+      "INTERVENTO_EMAIL": "Modulo di pronto intervento inviato per email",
       "AZIENDA_CREATE": "Azienda creata",
       "AZIENDA_UPDATE": "Nome dell'azienda cambiato",
       "AZIENDA_LOGO": "Logo dell'azienda cambiato",
