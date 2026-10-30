@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 // Екранни снимки на телефона за стъпките „Сложи на телефона“: Chrome за Android и Safari за
 // iPhone на истинския ни сайт, после началният екран с иконата. Генерират се от
-// scripts/howto-mockups/gen-instaliraj.js (изход: public/instaliraj/*.png) — червеният контур
+// scripts/howto-mockups/gen-instaliraj.js (изход: public/instaliraj/*.webp) — червеният контур
 // и бележката показват къде да се натисне. Размерите са фиксирани → страницата не „скача“.
 // Картинките дублират текста на стъпката, затова alt описва само какво се вижда.
 
@@ -14,7 +14,7 @@ function Shot({ name, h, alt }: { name: string; h: number; alt: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element -- готови PNG със зададени размери; next/image не е нужен
     <img
-      src={`/instaliraj/${name}.png`}
+      src={`/instaliraj/${name}.webp`}
       width={W}
       height={h}
       alt={alt}

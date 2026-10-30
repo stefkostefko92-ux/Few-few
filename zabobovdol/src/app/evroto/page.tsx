@@ -46,27 +46,27 @@ const SOURCES = ["БНБ", "evroto.bg", "КЗП"];
 // предстоящ.
 const EURO_VISUALS: { src: string; alt: string; caption: string }[] = [
   {
-    src: "/kak-da/euro-rate.png",
+    src: "/kak-da/euro-rate.webp",
     alt: "Фиксиран курс 1 евро = 1,95583 лева",
     caption: "Фиксиран курс",
   },
   {
-    src: "/kak-da/euro-banknotes.png",
+    src: "/kak-da/euro-banknotes.webp",
     alt: "Евробанкноти по цвят и номинал",
     caption: "Банкнотите (примерни)",
   },
   {
-    src: "/kak-da/euro-coins.png",
+    src: "/kak-da/euro-coins.webp",
     alt: "Евромонети от 1 цент до 2 евро",
     caption: "Монетите",
   },
   {
-    src: "/kak-da/euro-atm.png",
+    src: "/kak-da/euro-atm.webp",
     alt: "Банкомат, който дава евро",
     caption: "Банкоматът дава евро",
   },
   {
-    src: "/kak-da/euro-dual-price.png",
+    src: "/kak-da/euro-dual-price.webp",
     alt: "Ценоразпис с цена в лева и в евро",
     caption: "Двойните цени (до 8 август 2026 г.)",
   },

@@ -4,6 +4,7 @@
 // Старото API е запазено: phone(inner,bg,scHl), I, av, tip, navTitle, setRow, toggle, render, OUT.
 // Описание на новите помощници: scripts/howto-mockups/README.md. Източници/лицензи: assets/CREDITS.md.
 const { chromium } = require("playwright");
+const sharp = require("sharp");
 const path = require("node:path");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -404,7 +405,7 @@ function appIcon(name, o = {}) {
 appIcon.names = Object.keys(APPS);
 
 // ───────────────────────── Рендер ─────────────────────────
-// render({име: html}) → public/kak-da/<име>.png. ONLY=име1,име2 ограничава (за бърза итерация).
+// render({име: html}) → public/kak-da/<име>.webp. ONLY=име1,име2 ограничава (за бърза итерация).
 async function render(screens) {
   const only = process.env.ONLY ? new Set(process.env.ONLY.split(",").map((s) => s.trim())) : null;
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "howto-"));
@@ -425,7 +426,10 @@ async function render(screens) {
       });
       const el = (await page.$(".stage")) || (await page.$(".scene")) || (await page.$(".phone"));
       if (!el) throw new Error("няма .stage/.scene/.phone");
-      await el.screenshot({ path: path.join(OUT, `${name}.png`) });
+      // WebP вместо PNG: снимките вътре правят PNG-то ~0,5–1,8 MB, а WebP (q82) е
+      // ~8 пъти по-лек при същия вид — важно за хората с мобилни данни.
+      const png = await el.screenshot();
+      await sharp(png).webp({ quality: 82, effort: 6 }).toFile(path.join(OUT, `${name}.webp`));
       ok++;
       console.log("✔", name);
     } catch (e) {

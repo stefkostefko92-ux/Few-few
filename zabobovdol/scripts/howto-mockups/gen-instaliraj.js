@@ -1,15 +1,15 @@
 // Страница „Сложете сайта на телефона“ (/instaliraj): 7 фотореалистични екранни снимки вместо
 // схематичните SVG. Chrome за Android и Safari за iPhone показват истинския горен край на нашия
 // сайт (assets/instaliraj/home-top.png — снимка на началната страница), а началният екран е с
-// нашата икона сред други реални икони. Изход: public/instaliraj/*.png (нова папка).
+// нашата икона сред други реални икони. Изход: public/instaliraj/*.webp (нова папка).
 // Стартиране (от zabobovdol/):  node scripts/howto-mockups/gen-instaliraj.js
 //   ONLY=android-menu,iphone-share node scripts/howto-mockups/gen-instaliraj.js
 // Обновяване на снимката на сайта: виж assets/credits/instaliraj.md.
 const { chromium } = require("playwright");
+const sharp = require("sharp");
 const path = require("node:path");
 const fs = require("node:fs");
 const os = require("node:os");
-const { execFileSync } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
 const { phone, tip, ms, appIcon, ASSETS } = require("./_shell");
 
@@ -257,14 +257,6 @@ S["home-iphone"] = phone(wrapScreen(`${iphoneHome()}
 
 // Палитра от 192 цвята + дитеринг: ~3x по-малък файл (страницата е за хора с бавен интернет).
 // Ако ImageMagick (convert) липсва — остава пълният PNG.
-function shrink(file) {
-  try {
-    execFileSync("convert", [file, "-dither", "FloydSteinberg", "-colors", "192", "-strip", `PNG8:${file}`], { stdio: "ignore" });
-  } catch {
-    /* няма convert — оставяме оригинала */
-  }
-}
-
 async function main() {
   fs.mkdirSync(OUT, { recursive: true });
   const only = process.env.ONLY ? new Set(process.env.ONLY.split(",").map((s) => s.trim())) : null;
@@ -283,9 +275,9 @@ async function main() {
         await document.fonts.ready;
         await Promise.all([...document.images].map((i) => (i.complete ? 0 : new Promise((r) => { i.onload = i.onerror = r; }))));
       });
-      const out = path.join(OUT, `${name}.png`);
-      await (await pg.$(".stage")).screenshot({ path: out });
-      shrink(out);
+      const out = path.join(OUT, `${name}.webp`);
+      const png = await (await pg.$(".stage")).screenshot();
+      await sharp(png).webp({ quality: 82, effort: 6 }).toFile(out);
       ok++;
       console.log("✔", name);
     } catch (e) {

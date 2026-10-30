@@ -1,6 +1,6 @@
 # Картинки „Как да…“ — генератори
 
-HTML → Playwright → PNG (`deviceScaleFactor` 2) в `public/kak-da/`. Общата основа е `_shell.js`
+HTML → Playwright → WebP (`deviceScaleFactor` 2, качество 82) в `public/kak-da/`. Общата основа е `_shell.js`
 (реалистичен смартфон, Material Symbols, локални шрифтове и активи — без мрежа). Източници/лицензи: `assets/CREDITS.md`.
 
 ```bash
@@ -10,7 +10,7 @@ ONLY=power,battery node scripts/howto-mockups/gen-3.js   # само избран
 ```
 
 Основа: `const { phone, scene, I, ms, setRow, toggle, tip, navTitle, av, appIcon, banknote, coin, photo, statusBar, navBar, render } = require("./_shell");`
-Снима се `.stage` (устройство + мека сянка + неутрален фон) или `.scene`; PNG ≈ 876 px широк.
+Снима се `.stage` (устройство + мека сянка + неутрален фон) или `.scene`; картинката е ≈ 876 px широка, WebP (снимките вътре правят PNG-то ~8 пъти по-тежко).
 
 ## Примери
 
@@ -54,4 +54,4 @@ photo("moya-snimka.jpg", { w: 340, h: 200, radius: 12 })     // търси в as
 ## Други
 - `build-coins.js` — еднократно: прави прозрачните PNG на монетите от снимките на ЕЦБ (вж. заглавния коментар).
 - Емоджи → икона: таблицата `EMOJI` в `_shell.js` (непознато емоджи остава непроменено).
-- Анимации/странични ефекти в картинките няма — само статични PNG.
+- Анимации/странични ефекти в картинките няма — само статични WebP.
