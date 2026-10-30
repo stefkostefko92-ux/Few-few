@@ -56,18 +56,34 @@ const line = (l, v, o = {}) => `<div style="display:flex;align-items:baseline;ga
 const biro = (css) => `<div style="position:absolute;height:10px;border-radius:5px;background:linear-gradient(180deg,#5b8def,#1e40af 55%,#14307a);box-shadow:0 6px 8px rgba(0,0,0,.4);${css}"><i style="position:absolute;right:-12px;top:2px;border-left:12px solid #d8c9a8;border-top:3px solid transparent;border-bottom:3px solid transparent"></i></div>`;
 const deskScene = (inner, w = 600, h = 760) => scene(`<div style="position:relative;width:${w}px;height:${h}px;border-radius:18px;overflow:hidden;${DESK};box-shadow:0 18px 40px rgba(15,23,42,.28)"><div style="position:absolute;inset:0;${grain}"></div>${inner}</div>`, { pad: 30 });
 
+// Колаж: основна снимка + вмъкната снимка + контури (дял от снимката) + списък с бележки под нея
+const tipFree = (t, css = "", o) => _tip(t, css + ";width:max-content;max-width:none", o);
+function collage(o) {
+  const { w = 640, h, photos, list = [], listTop = 0, wrap, credit: ct } = o;
+  const ph = photos.map((p) => {
+    const rings = (p.rings || []).map(([fx, fy, fw, fh, round]) => `<div class="ring" style="position:absolute;left:${fx * 100}%;top:${fy * 100}%;width:${fw * 100}%;height:${fh * 100}%;border-radius:${round ? "999px" : "14px"}"></div>`).join("");
+    const sh = p.rot ? "0 0 0 6px #fff,0 14px 28px rgba(15,23,42,.4)" : "0 14px 32px rgba(15,23,42,.28)";
+    return `<div style="position:absolute;left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px;${p.rot ? `transform:rotate(${p.rot}deg);` : ""}z-index:${p.z || 1}">${photo(path.join(DOM, p.f), { w: p.w, h: p.h, radius: 14, style: `object-position:${p.pos || "50% 50%"};box-shadow:${sh}` })}${rings}</div>`;
+  }).join("");
+  const ls = `<div style="position:absolute;left:0;right:0;top:${listTop}px;display:flex;${wrap ? "flex-flow:row wrap;justify-content:center;padding:0 6px" : "flex-direction:column;align-items:center"};gap:10px">${list.map(([t, ar]) => tipFree(t, "position:relative", ar ? { arrow: "u", at: "50%" } : {})).join("")}</div>`;
+  return scene(`<div style="position:relative;width:${w}px;height:${h}px">${ph}${ls}<div style="position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:12px;color:#64748b">${ct}</div></div>`, { pad: 30 });
+}
+
 // @@SHOTS
 SHOTS["dom-krushka"] = { file: "bulb-socket.jpg", w: 380, credit: CC0("RAIL P (RAIL.PHOTOGRAPHY)"), below: 110,
   rings: [[0.2, 0.25, 0.5, 0.4, true]],
   tips: [["Изключете ключа на лампата<br>(а за сигурност и предпазителя)", 0.5, 1.1, "u", "50%"], ["Развийте старата крушка (обикновено наляво)", 0.5, 1.26, ""]] };
 
-SHOTS["dom-zakliuchen"] = { file: "corridor-door.jpg", w: 340, side: 420, credit: CC0("247homerescue"), below: 0,
-  rings: [[0.46, 0.27, 0.16, 0.1, true]],
-  tips: [["Звъннете на близък, който има резервен ключ", 1.55, 0.2, "l", "50%"], ["Обадете се на ключар", 1.4, 0.45, "l", "50%"], ["Не разбивайте сами —<br>рискувате нараняване и щети", 1.5, 0.72, "l", "50%"]] };
+SHOTS["dom-zakliuchen"] = { file: "keys-table.jpg", w: 320, side: 470, credit: CC0("Aphiwat chuangchoem"), below: 0,
+  rings: [[0.08, 0.12, 0.84, 0.76]],
+  tips: [["Проверете дали друга врата/прозорец<br>не е отворен (безопасно)", 1.62, 0.1, "l", "50%"], ["Звъннете на близък,<br>който има резервен ключ", 1.62, 0.3, "l", "50%"], ["Обадете се на ключар", 1.62, 0.5, "l", "50%"], ["Не разбивайте сами — рискувате<br>нараняване и щети", 1.62, 0.7, "l", "50%"], ["За в бъдеще оставете резервен<br>ключ на доверен човек", 1.62, 0.9, "l", "50%"]] };
 
-SHOTS["dom-hlazgav-banya"] = { file: "bathtub.jpg", w: 380, credit: CC0("It's Asbestos Time, Baby"), below: 150,
-  rings: [[0.02, 0.22, 0.75, 0.4]],
-  tips: [["Сложете противохлъзгаща постелка във ваната/душа", 0.5, 1.08, "u", "40%"], ["Поставете дръжки (хватки) на стената", 0.5, 1.22, ""]] };
+SHOTS["dom-hlazgav-banya"] = () => collage({ h: 640, listTop: 500, wrap: true,
+  photos: [
+    { f: "bath-tub-plain.jpg", x: 0, y: 0, w: 640, h: 480, rings: [[0.14, 0.7, 0.4, 0.25, false], [0.3, 0.3, 0.17, 0.3, false]] },
+    { f: "bath-mat.jpg", x: 404, y: 296, w: 214, h: 160, rot: -3, z: 2, rings: [[0.05, 0.05, 0.9, 0.9, false]] }],
+  list: [["Сложете противохлъзгаща постелка във ваната/душа", 1], ["Поставете дръжки (хватки) на стената за подсигуряване"], ["Бършете локвите вода веднага"], ["Ползвайте стол за душ, ако ви е трудно да стоите"], ["Дръжте телефон подръка за всеки случай"]],
+  credit: "Снимки: Tomwsulcer, JohnLEE Brothers — Wikimedia Commons (CC0)" });
 
 SHOTS["dom-otoplenie"] = { file: "radiator-valve.jpg", credit: CC0("247homerescue"), below: 110,
   rings: [[0.5, 0.2, 0.3, 0.8]],
@@ -81,10 +97,9 @@ SHOTS["dom-pozhar-doma"] = { file: "corridor-door.jpg", w: 340, side: 400, credi
   rings: [[0.03, 0.02, 0.7, 0.82]],
   tips: [["Извикайте всички и излезте веднага", 1.5, 0.12, "l", "50%"], ["Затваряйте врати след себе си,<br>за да забавите огъня", 1.5, 0.42, "l", "50%"], ["Ако има дим, движете се ниско (приведени)", 1.52, 0.7, ""], ["От безопасно място звъннете на 112", 1.5, 0.86, ""]] };
 
-SHOTS["dom-pechka"] = { file: "heater.jpg", w: 460, credit: CC0("Bondigoldwiki"), below: 110,
-  blur: [[0.4, 0.855, 0.17, 0.045]],
-  rings: [[0.0, 0.05, 1.0, 0.9]],
-  tips: [["Дръжте на разстояние от завеси,<br>дрехи и мебели", 0.5, 1.1, "u", "50%"], ["Не сушете дрехи върху печката", 0.5, 1.28, ""]] , below: 150 };
+SHOTS["dom-pechka"] = { file: "heater-oil.jpg", w: 330, side: 460, credit: CC0("Fafibelord") + " · марката размита", below: 0,
+  rings: [[0.1, 0.0, 0.86, 0.98]],
+  tips: [["Дръжте на разстояние от завеси,<br>дрехи и мебели", 1.64, 0.12, "l", "50%"], ["Не сушете дрехи върху печката", 1.64, 0.3, "l", "50%"], ["Не ползвайте разклонители —<br>включвайте директно в контакта", 1.64, 0.48, "l", "50%"], ["Изключвайте я, преди да си легнете<br>или да излезете", 1.64, 0.66, "l", "50%"], ["Не оставяйте без надзор<br>при деца или животни", 1.64, 0.84, "l", "50%"]] };
 
 SHOTS["dom-tigan-olio"] = { file: "frying-pan.jpg", credit: CC0("Hans Herrington"), below: 150,
   rings: [[0.42, 0.18, 0.5, 0.7, true]],

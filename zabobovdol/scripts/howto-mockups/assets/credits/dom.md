@@ -6,7 +6,6 @@
 
 | Файл | Източник | Автор | Лиценз | Обработка |
 |------|----------|-------|--------|-----------|
-| bathtub.jpg | https://commons.wikimedia.org/wiki/File:Carpeted_Tub.jpg | It's Asbestos Time, Baby | CC0 | смалена до ≤1200 px |
 | bulb-socket.jpg | https://commons.wikimedia.org/wiki/File:Dusty_E27_light_bulb.jpg | RAIL P (RAIL.PHOTOGRAPHY) | CC0 | смалена до ≤1200 px |
 | co-alarm.jpg | https://commons.wikimedia.org/wiki/File:CO_alarm_(12451594153).jpg | The EnergySmart Academy from Santa Fe, NM, United States of America | CC0 | смалена до ≤1200 px |
 | coffee.jpg | https://commons.wikimedia.org/wiki/File:Black_coffee_cup_(Unsplash).jpg | Ross Parmly rparmly | CC0 | смалена до ≤1200 px |
@@ -23,7 +22,6 @@
 | fuse-panel.jpg | https://commons.wikimedia.org/wiki/File:Elektryczna_rozdzielnica_mieszkania_w_czworaku_we_wsi_Chwa%C5%82kowo_w_powiecie_%C5%9Bredzkim_w_wojew%C3%B3dztwie_wielkopolskim_-_grudzie%C5%84_2024.jpg | Koefbac | CC0 | смалена до ≤1200 px |
 | gas-burner.jpg | https://commons.wikimedia.org/wiki/File:Gas_stove_burner_flame.jpg | Lisafern | CC0 | смалена до ≤1200 px |
 | hand-sink.jpg | https://commons.wikimedia.org/wiki/File:Hand_Soap_Liquid.jpg | Simplegnome | CC0 | смалена до ≤1200 px |
-| heater.jpg | https://commons.wikimedia.org/wiki/File:Radiant_Heater_5000.jpg | Bondigoldwiki | CC0 | смалена до ≤1200 px |
 | jars.jpg | https://commons.wikimedia.org/wiki/File:Dehydrated_fruits_and_vegetables_in_labeled_mason_jars.jpg | Nutrition, Food Safety & Health | CC0 | смалена до ≤1200 px |
 | keys-bulb.jpg | https://commons.wikimedia.org/wiki/File:Light_bulb_and_keys_on_table.jpg | Aphiwat chuangchoem | CC0 | смалена до ≤1200 px |
 | knife-cloth.jpg | https://commons.wikimedia.org/wiki/File:A_potato_next_to_a_knife.jpg | Gregory Karastergios | CC0 | смалена до ≤1200 px |
@@ -38,5 +36,10 @@
 | spoon-plate.jpg | https://commons.wikimedia.org/wiki/File:Whole_cumin_seeds_with_measuring_spoon.jpg | Nutrition, Food Safety & Health | CC0 | изрязване; смалена до ≤1200 px |
 | water-valve.jpg | https://commons.wikimedia.org/wiki/File:Kitchen_renovation_new_plumbing_valve_beneath_kitchen_sink_with_teflon_tape.JPG | Tomwsulcer | CC0 | смалена до ≤1200 px |
 
+| heater-oil.jpg | https://commons.wikimedia.org/wiki/File:Electricaire_Economaster_2400_Electric_Oil_Heater.jpg | Fafibelord | CC0 | свалена през Special:FilePath (960 px); логото на производителя и надписът с модела са размити (blur) |
+| bath-tub-plain.jpg | https://commons.wikimedia.org/wiki/File:Phoenix_bathroom_Residence_Inn_Marriott_hotel_with_towels_and_shower.JPG | Tomwsulcer | CC0 | свалена през Special:FilePath (960 px); без други промени (няма лица/марки) |
+| bath-mat.jpg | https://commons.wikimedia.org/wiki/File:MC_澳門_Macau_澳門半島_Macao_Peninsula_得勝馬路_2_Estrada_da_Vitória_皇都酒店_Royal_Macau_Hotel_hotel_浴室_bathroom_防滑膠地墊_plastic_non-slip_shower_mat_November_2024_R12S_02.jpg | JohnLEE Brothers | CC0 | свалена през Special:FilePath (960 px); отрязана отдолу (датата от фотоапарата) |
+
 Хартиените образци (молба-декларация, сметка за ток, бележници, телефонен списък, етикети, опаковки, електромер)
 са ИЗМИСЛЕНИ — примерни данни, без герб/лого на институция или фирма.
+| keys-table.jpg | изрязан от keys-bulb.jpg (същият източник: https://commons.wikimedia.org/wiki/File:Light_bulb_and_keys_on_table.jpg) | Aphiwat chuangchoem | CC0 | изрязани само ключовете (`dom-zakliuchen`) |

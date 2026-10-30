@@ -259,51 +259,11 @@ const fridgeBg = "linear-gradient(100deg,#e9edf0 0%,#f7f9fa 35%,#eef1f3 70%,#dde
 const magnet = (c, css = "") => `<div style="position:absolute;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff8 0,${c} 40%,#000a 150%);box-shadow:0 3px 5px rgba(0,0,0,.4);${css}"></div>`;
 
 // 17) h2-priznaci-insult — карта „Лице – Ръце – Реч“ на вратата на хладилника
-const fast = (n, head, text, c) => `<div style="display:flex;gap:16px;padding:14px 0;border-bottom:1.5px solid #e6e0d6"><div style="width:62px;height:62px;border-radius:16px;background:${c};display:flex;align-items:center;justify-content:center;flex-shrink:0">${ic(n, { size: 36, color: "#fff", fill: 1 })}</div><div><div style="font-size:21px;font-weight:700;color:#1d2b3a">${head}</div><div style="font-size:16px;color:#34414f;line-height:1.35;margin-top:2px">${text}</div></div></div>`;
-S["zdrave-insult-lice-race-rech"] = scene(`
-  <div style="position:relative;width:520px;height:640px">
-    <div style="position:absolute;left:50px;top:26px;width:420px;padding:22px 26px 20px;background:#fffdf8;border-radius:6px;transform:rotate(-1.2deg);${paperShadow}">
-      <div style="font-size:25px;font-weight:800;color:#1d2b3a;letter-spacing:-.3px;line-height:1.15">Инсулт: Лице – Ръце – Реч</div>
-      ${fast("sentiment_satisfied", "Лице", "Помолете човека да се усмихне. Едната страна увисва ли?", "#c2410c")}
-      ${fast("front_hand", "Ръце", "Помолете го да вдигне двете ръце. Едната пада ли надолу?", "#0f766e")}
-      ${fast("record_voice_over", "Реч", "Помолете го да каже простичко изречение. Говорът завален или неразбираем ли е?", "#1d4ed8")}
-      <div style="margin-top:14px;padding:12px 14px;border-radius:10px;background:#fde8e8;font-size:17px;font-weight:700;color:#9b1c1c;line-height:1.3">При дори един съмнителен признак — звъннете на 112 веднага.</div>
-    </div>
-    ${magnet("#d32f2f", "left:244px;top:6px")}
-    ${tip("Направете трите проверки:<br>усмивка, вдигане на ръце,<br>кратко изречение", "left:50%;top:572px", { arrow: "u", at: "50%" })}
-  </div>`, { w: 520, h: 640, pad: 0, bg: fridgeBg });
 
 
 // 18) h2-priznaci-infarkt — карта със признаците (дословно от ръководството)
-const sign = (n, t, c = "#b91c1c") => `<div style="display:flex;gap:14px;align-items:center;padding:11px 0;border-bottom:1.5px solid #e6e0d6"><div style="width:48px;height:48px;border-radius:14px;background:${c};display:flex;align-items:center;justify-content:center;flex-shrink:0">${ic(n, { size: 28, color: "#fff", fill: 1 })}</div><div style="font-size:17px;color:#1d2b3a;line-height:1.3">${t}</div></div>`;
-S["zdrave-infarkt-priznaci"] = scene(`
-  <div style="position:relative;width:520px;height:560px">
-    <div style="position:absolute;left:50px;top:26px;width:420px;padding:22px 26px 20px;background:#fffdf8;border-radius:6px;transform:rotate(1deg);${paperShadow}">
-      <div style="font-size:25px;font-weight:800;color:#1d2b3a;letter-spacing:-.3px;line-height:1.15">Признаци на инфаркт</div>
-      ${sign("monitor_heart", "Болка, натиск или стягане в средата на гърдите")}
-      ${sign("accessibility_new", "Болка, която „плъзва“ към лявата ръка, врата, челюстта или гърба", "#c2410c")}
-      ${sign("water_drop", "Студена пот, гадене, силна слабост", "#0f766e")}
-      ${sign("air", "Задух", "#1d4ed8")}
-      <div style="margin-top:14px;padding:12px 14px;border-radius:10px;background:#fde8e8;font-size:17px;font-weight:700;color:#9b1c1c;line-height:1.3">При съмнение звъннете НЕЗАБАВНО на 112.</div>
-    </div>
-    ${magnet("#1d4ed8", "left:245px;top:6px")}
-    ${tip("При съмнение звъннете<br>незабавно на 112", "left:50%;top:492px", { arrow: "u", at: "50%" })}
-  </div>`, { w: 520, h: 560, pad: 0, bg: fridgeBg });
 
 // 19) h2-koga-lekar-koga-112
-const col = (c, head, lines) => `<div style="flex:1;border-radius:12px;background:#fff;padding:16px 16px 14px;border-top:8px solid ${c};box-shadow:0 1px 3px rgba(0,0,0,.15)"><div style="font-size:24px;font-weight:800;color:${c};margin-bottom:10px">${head}</div>${lines.map((l) => `<div style="font-size:15px;line-height:1.35;color:#1d2b3a;padding:7px 0;border-top:1px solid #eee">${l}</div>`).join("")}</div>`;
-S["zdrave-koga-lekar-koga-112"] = scene(`
-  <div style="position:relative;width:620px;height:440px">
-    <div style="position:absolute;left:20px;top:26px;width:580px;padding:18px;background:#fffdf8;border-radius:6px;transform:rotate(-.8deg);${paperShadow}">
-      <div style="display:flex;gap:14px">
-        ${col("#c62828", "На 112", ["Болка в гърдите, задух, признаци на инсулт, силно кървене, загуба на съзнание", "Тежка злополука, отравяне, високо неовладяно кръвно със симптоми"])}
-        ${col("#0f766e", "При личен лекар", ["Настинка, леки болки, хронични оплаквания, рецепти"])}
-      </div>
-      <div style="margin-top:14px;font-size:16px;color:#34414f;text-align:center">При съмнение — обадете се и питайте.</div>
-    </div>
-    ${magnet("#d32f2f", "left:285px;top:6px")}
-    ${tip("При съмнение — обадете се<br>и питайте", "left:50%;top:352px", { arrow: "u", at: "50%" })}
-  </div>`, { w: 620, h: 440, pad: 0, bg: fridgeBg });
 
 // 20) g-proverka-izmami-blizak — бележка до телефона
 S["zdrave-izmami-belezhka"] = scene(`
@@ -337,21 +297,6 @@ S["zdrave-napravlenie-specialist"] = scene(`
     ${tip("Питайте за какъв специалист е<br>и какъв е срокът на направлението", "left:50%;top:480px", { arrow: "u", at: "50%" })}
   </div>`, { w: 560, h: 540, pad: 0, bg: deskBg });
 
-// 22) h-pregled-podgotovka — лист „Какво да нося“
-const chk = (t) => `<div style="display:flex;gap:12px;align-items:flex-start;padding:7px 0"><div style="width:22px;height:22px;border:2px solid #3a5aa8;border-radius:5px;margin-top:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center">${ic("check", { size: 18, color: "#3a5aa8", weight: 700 })}</div><div style="font-size:18px;color:#1d2b3a;line-height:1.3">${t}</div></div>`;
-S["zdrave-podgotovka-pregled"] = scene(`
-  <div style="position:relative;width:560px;height:480px">
-    <div style="position:absolute;left:50px;top:24px;width:460px;padding:26px 30px 22px;background:repeating-linear-gradient(#fffefb 0 31px,#d6e2f2 31px 32px);transform:rotate(-1deg);${paperShadow}">
-      <div style="font-size:25px;font-weight:800;color:#1d2b3a;margin-bottom:8px">Какво да нося на преглед</div>
-      ${chk("Лична карта и здравна книжка/документи")}
-      ${chk("Списъка с лекарства и алергии")}
-      ${chk("Предишни изследвания и решения")}
-      ${chk("Оплакванията и въпросите ми — записани предварително")}
-      ${chk("При изследване на гладно — да не ям сутринта")}
-      ${chk("Да дойда малко по-рано")}
-    </div>
-    ${tip("Запишете оплакванията<br>и въпросите си предварително", "left:50%;top:412px", { arrow: "u", at: "50%" })}
-  </div>`, { w: 560, h: 480, pad: 0, bg: deskBg });
 
 // 23) g-dokumenti-na-blizak — папка с подредени документи
 S["zdrave-dokumenti-papka"] = scene(`
@@ -413,144 +358,248 @@ function cardScene(title, items, o = {}) {
 }
 const deskCard = { bg: deskBg, pin: "#1d4ed8" };
 
-S["zdrave-zadavyane-hvatka"] = cardScene("Задавяне: какво правя", [
-  ["back_hand", "Наведете го напред и нанесете 5 силни удара с длан между плешките."],
-  ["accessibility_new", "Ако не помогне, застанете зад него и обхванете кръста с ръце."],
-  ["sports_mma", "Сложете юмрук малко над пъпа и го хванете с другата ръка."],
-  ["arrow_upward", "Дръпнете силно навътре и нагоре — 5 пъти (хватка на Хаймлих)."],
-  ["repeat", "Редувайте 5 удара по гърба и 5 натискания, докато блокажът излезе."]],
-  { foot: "Ако човекът изпадне в безсъзнание — звъннете 112 и следвайте указанията на оператора.", tipText: "Редувайте 5 удара по гърба<br>и 5 натискания", color: "#c2410c" });
-S["zdrave-kravotechenie-nos"] = cardScene("Кръв от носа", [
-  ["airline_seat_recline_normal", "Седнете и наведете главата леко НАПРЕД (не назад)."],
-  ["pinch", "Стиснете меката част на носа (под костта) с палец и показалец."],
-  ["timer", "Дишайте през устата и дръжте стиснато 10 минути, без да пускате."],
-  ["ac_unit", "Може да сложите студен компрес върху носа."]],
-  { foot: "Не си бъркайте и не се секнете силно няколко часа след това.", tipText: "Главата леко напред — не назад", color: "#0f766e", bg: deskBg, pin: "#1d4ed8" });
 
 
 const MOREA = (f) => path.join(ASSETS, "more", f);
-S["zdrave-izgaryane-ohlazhdane"] = cardScene("Леко изгаряне", [
-  ["do_not_disturb_on", "Махнете пръстени и часовник близо до мястото, преди да отече."],
-  ["water_drop", "Дръжте изгореното под хладка течаща вода 15–20 минути."],
-  ["do_not_touch", "Не пукайте мехурите."],
-  ["healing", "Подсушете внимателно и покрийте с чиста, нелепкава марля."]],
-  { foot: "НЕ слагайте масло, паста за зъби или лед.", tipText: "Хладка течаща вода — 15–20 минути", color: "#0369a1", ...deskCard });
-S["zdrave-malka-rana"] = cardScene("Малка рана или порязване", [
-  ["wash", "Измийте ръцете си, преди да пипате раната."],
-  ["compress", "Притиснете с чиста марля, докато спре кървенето."],
-  ["water_drop", "Измийте раната с чиста вода (и сапун около нея)."],
-  ["sanitizer", "Подсушете и сложете дезинфектант, ако имате."],
-  ["healing", "Покрийте с лепенка или марля."],
-  ["event_repeat", "Сменяйте превръзката всеки ден и при намокряне."]],
-  { tipText: "Притиснете с чиста марля,<br>докато спре кървенето", color: "#0f766e" });
-S["zdrave-priloshavane"] = cardScene("На някого му прилошее или припадне", [
-  ["airline_seat_flat", "Ако усеща, че ще припадне — нека седне или легне веднага."],
-  ["elderly", "Повдигнете краката му малко нагоре."],
-  ["air", "Осигурете чист въздух, разхлабете тесни дрехи."],
-  ["hotel", "Ако е в безсъзнание, но диша — обърнете го настрани."],
-  ["visibility", "Останете до него и следете дишането."]],
-  { foot: "Ако НЕ диша нормално — звъннете на 112 и следвайте указанията.", tipText: "Повдигнете краката му малко нагоре", color: "#7c3aed", ...deskCard });
-S["zdrave-lekarstva-pravilno"] = cardScene("Лекарствата — правилно и безопасно", [
-  ["menu_book", "Четете указанието: доза, колко пъти и кога (преди/след храна)."],
-  ["medication", "Ползвайте кутийка за дни/часове, за да не се бъркате."],
-  ["block", "Не спирайте и не променяйте дозата без лекар."],
-  ["no_drinks", "Не смесвайте с алкохол."],
-  ["stethoscope", "Питайте лекаря/аптекаря за взаимодействия между лекарства."],
-  ["child_care", "Пазете лекарствата на сухо, далеч от деца."]],
-  { tipText: "Не променяйте дозата сами", color: "#0f766e" });
-S["zdrave-srok-lekarstva"] = cardScene("Срок на годност на лекарство", [
-  ["event_available", "Намерете срока на годност на опаковката (изписан с дата)."],
-  ["block", "Ако датата е минала — не го приемайте."],
-  ["opacity", "Гледайте и срока след отваряне (за капки, сиропи)."],
-  ["recycling", "Изхвърляйте старите лекарства правилно (в аптека приемат)."],
-  ["inventory_2", "Не пазете разпилени таблетки без опаковка."]],
-  { tipText: "Ако датата е минала — не го приемайте", color: "#b91c1c", ...deskCard });
-S["zdrave-voda"] = cardScene("Вода през деня", [
-  ["local_drink", "Пийте вода редовно през деня, не наведнъж."],
-  ["wb_sunny", "В жега и при температура пийте повече."],
-  ["visibility", "Дръжте чаша/бутилка на видно място като напомняне."],
-  ["soup_kitchen", "Чай и супи също се броят за течности."],
-  ["coffee", "Ограничете много кафе и сладки напитки."],
-  ["stethoscope", "Питайте лекаря, ако имате бъбречни/сърдечни ограничения."]],
-  { tipText: "Чаша вода на видно място", color: "#0369a1" });
-S["zdrave-zhega"] = cardScene("В горещините", [
-  ["schedule", "Стойте на хладно през най-горещите часове (11–17 ч)."],
-  ["local_drink", "Пийте вода редовно."],
-  ["checkroom", "Носете леки, светли дрехи и шапка навън."],
-  ["window", "Проветрявайте сутрин и вечер, дръпвайте пердетата през деня."],
-  ["warning", "Признаци за прегряване: замайване, гадене, силна слабост — охладете се и почивайте."]],
-  { foot: "При обърканост или загуба на съзнание — звъннете на 112.", tipText: "Хладно през 11–17 ч", color: "#c2410c", ...deskCard });
-S["zdrave-padane-doma"] = cardScene("Риск от падане у дома", [
-  ["texture", "Махнете килимчета и кабели, в които може да се спънете."],
-  ["lightbulb", "Осигурете добро осветление, особено нощем по пътя до тоалетната."],
-  ["accessible", "Сложете дръжки в банята и до стълбите."],
-  ["steps", "Носете стабилни обувки/чехли, не хлъзгави чорапи."],
-  ["shelves", "Дръжте нужните неща на удобна височина."],
-  ["directions_walk", "Движете се без бързане."]],
-  { tipText: "Дръжки в банята и до стълбите", color: "#0f766e" });
-S["zdrave-navitsi"] = cardScene("Прости навици за здраве", [
-  ["directions_walk", "Движете се всеки ден (дори кратка разходка)."],
-  ["restaurant", "Хранете се редовно и разнообразно, пийте вода."],
-  ["bedtime", "Спете достатъчно и в постоянен режим."],
-  ["groups", "Поддържайте контакт с хора — против самотата."],
-  ["medication", "Вземайте лекарствата си редовно."],
-  ["stethoscope", "Ходете на профилактични прегледи."]],
-  { photo: { file: MOREA("apple.jpg"), h: 130, style: "object-position:50% 38%" }, tipText: "Движете се всеки ден", color: "#15803d", ...deskCard });
-S["zdrave-zubi-protezi"] = cardScene("Зъби и протеза", [
-  ["dentistry", "Мийте зъбите два пъти дневно с мека четка."],
-  ["nightlight", "Протезата чистете всеки ден и я вадете нощем (в чаша с вода/разтвор)."],
-  ["water_drop", "Изплаквайте устата след хранене."],
-  ["event", "Ходете на зъболекар при болка или разклатена протеза."],
-  ["stethoscope", "При рани в устата, които не минават — на лекар."]],
-  { tipText: "Два пъти дневно, с мека четка", color: "#0369a1" });
-S["zdrave-ochi"] = cardScene("Зрение и очи", [
-  ["ophthalmology", "Ходете на очен лекар редовно (особено при диабет/високо кръвно)."],
-  ["eyeglasses", "Носете подходящи очила и ги дръжте чисти."],
-  ["light_mode", "При четене осигурявайте добра светлина."],
-  ["sunny", "Пазете очите от силно слънце (слънчеви очила)."],
-  ["priority_high", "При внезапно влошаване, петна или болка — на лекар бързо."]],
-  { tipText: "Подходящи очила и добра светлина", color: "#7c3aed", ...deskCard });
-S["zdrave-sluh"] = cardScene("Слух и слухов апарат", [
-  ["hearing", "При влошен слух отидете на специалист (УНГ/слухов)."],
-  ["cleaning_services", "Почиствайте слуховия апарат внимателно по упътването."],
-  ["battery_charging_full", "Сменяйте батериите навреме."],
-  ["do_not_touch", "Не си бъркайте в ушите с твърди предмети."],
-  ["volume_down", "Намалете силно силните шумове."],
-  ["flashlight_on", "Може да включите светкавица при звънене на телефона."]],
-  { tipText: "Сменяйте батериите навреме", color: "#0f766e" });
-S["zdrave-hranene"] = cardScene("Здравословно хранене", [
-  ["nutrition", "Яжте повече зеленчуци, плодове и пълнозърнести храни."],
-  ["no_food", "Намалете солта, мазното и сладкото."],
-  ["set_meal", "Включете белтъчини (риба, яйца, млечни, боб)."],
-  ["local_drink", "Пийте достатъчно вода."],
-  ["schedule", "Хранете се редовно, на по-малки порции."],
-  ["stethoscope", "Съобразявайте с лекаря при диабет/кръвно/бъбреци."]],
-  { photo: { file: MOREA("bread.jpg"), h: 140, style: "object-position:50% 60%" }, tipText: "Повече зеленчуци, плодове и пълнозърнести храни", color: "#b45309" });
-S["zdrave-uprazhneniya"] = cardScene("Леки упражнения", [
-  ["directions_walk", "Кратки разходки всеки ден."],
-  ["chair", "Леки упражнения седнал (ръце, крака, рамене)."],
-  ["balance", "Упражнения за равновесие (държейки се за стол)."],
-  ["self_improvement", "Разтягане сутрин."],
-  ["block", "Не насилвайте при болка."],
-  ["stethoscope", "Питайте лекаря какви движения са подходящи за вас."]],
-  { tipText: "Не насилвайте при болка", color: "#15803d", ...deskCard });
-S["zdrave-aptechka"] = cardScene("Домашна аптечка", [
-  ["healing", "Лепенки, марли, бинт и дезинфектант."],
-  ["thermostat", "Термометър."],
-  ["medication", "Болкоуспокояващо (напр. парацетамол), ако нямате противопоказание."],
-  ["medication_liquid", "Лекарствата, които приемате редовно (резерв)."],
-  ["list_alt", "Списък с вашите лекарства и алергии."],
-  ["call", "Важни телефони (112, личен лекар)."],
-  ["event_available", "Проверявайте сроковете 1–2 пъти годишно."]],
-  { tipText: "Проверявайте сроковете 1–2 пъти годишно", color: "#b91c1c" });
-S["zdrave-studa-zimata"] = cardScene("Студ и измръзване", [
-  ["checkroom", "Обличайте се на пластове и носете шапка и ръкавици."],
-  ["thermostat", "Отоплявайте дома до приятна температура."],
-  ["directions_walk", "Движете се, за да се топлите."],
-  ["ice_skating", "Внимавайте на лед навън (стабилни обувки, бавно)."],
-  ["warning", "При силно зачервяване/изтръпване на крайник — стоплете бавно и потърсете лекар."],
-  ["diversity_3", "Проверявайте възрастни близки и съседи в студа."]],
-  { photo: { file: MOREA("socks.jpg"), h: 150, style: "object-position:50% 40%" }, tipText: "Обличайте се на пластове", color: "#0369a1", ...deskCard });
+
+// ───────────────────────── Втори кръг: истински снимки на предмета/действието ─────────────────────────
+// Бележките са дословно от стъпките на ръководството; снимките са CC0 (виж assets/credits/zdrave.md).
+S["zdrave-aptechka"] = photoScene("aptechka.jpg", 600, 577,
+  [[46, 120, 170, 148, 14], [54, 314, 345, 165, 16]],
+  [["Лепенки, марли, бинт<br>и дезинфектант", "left:232px;top:150px", { arrow: "l", at: "50%" }],
+   ["Проверявайте сроковете<br>1–2 пъти годишно", "left:240px;top:496px", { arrow: "u", at: "30%" }]],
+  "Снимка: Beendy234, Wikimedia Commons (CC0)", 34);
+
+S["zdrave-izgaryane-ohlazhdane"] = photoScene("izgaryane-voda.jpg", 640, 455,
+  [[210, 20, 250, 250, 40]],
+  [["Дръжте изгореното под хладка<br>течаща вода 15–20 минути", "left:20px;top:300px", { arrow: "r", at: "50%" }],
+   ["НЕ слагайте масло, паста<br>за зъби или лед", "left:400px;top:372px"]],
+  "Снимка: Judgefloro, Wikimedia Commons (CC0) · кадърът е отрязан без лица и надписи", 34);
+
+S["zdrave-malka-rana"] = photoScene("rana-prevrazka.jpg", 620, 441,
+  [[34, 118, 420, 300, 40]],
+  [["Покрийте с лепенка или марля", "left:300px;top:30px", { arrow: "d", at: "40%" }],
+   ["Сменяйте превръзката всеки<br>ден и при намокряне", "left:350px;top:446px", { arrow: "u", at: "30%" }]],
+  "Снимка: Sciencia58, Wikimedia Commons (CC0)", 80);
+
+S["zdrave-kravotechenie-nos"] = photoScene("nos-kompres.jpg", 600, 554,
+  [[28, 30, 556, 400, 60]],
+  [["Може да сложите студен<br>компрес върху носа", "left:50%;top:462px", { arrow: "u", at: "50%" }]],
+  "Снимка: Mona Hitzenauer, Wikimedia Commons (CC0)", 34);
+
+S["zdrave-lekarstva-pravilno"] = photoScene("lekarstva-organayzer.jpg", 640, 427,
+  [[28, 72, 460, 330, 24]],
+  [["Ползвайте кутийка за<br>дни/часове, за да не се бъркате", "left:300px;top:14px", { arrow: "d", at: "35%" }],
+   ["Не променяйте дозата<br>без лекар", "left:430px;top:318px", { arrow: "u", at: "40%" }]],
+  "Снимка: Stevepb, Wikimedia Commons (CC0)", 34);
+
+S["zdrave-srok-lekarstva"] = photoScene("srok-blister.jpg", 460, 593,
+  [[20, 83, 134, 40, 8], [322, 532, 94, 38, 8]],
+  [["Намерете срока на годност<br>на опаковката (изписан с дата)", "left:24px;top:20px", { arrow: "d", at: "24%" }],
+   ["Ако датата е минала —<br>не го приемайте", "left:150px;top:470px", { arrow: "d", at: "85%" }]],
+  "Снимка: Tmeers91, Wikimedia Commons (CC0) · името е размито", 34);
+
+S["zdrave-ochi"] = photoScene("ochi-chetene.jpg", 640, 424,
+  [[28, 60, 584, 280, 50]],
+  [["При четене осигурявайте<br>добра светлина", "left:50%;top:352px", { arrow: "u", at: "50%" }],
+   ["Носете подходящи очила<br>и ги дръжте чисти", "left:20px;top:10px"]],
+  "Снимка: Dmitry Ratushny, Wikimedia Commons (CC0)", 34);
+
+S["zdrave-sluh"] = photoScene("sluh-aparati.jpg", 640, 488,
+  [[30, 120, 300, 260, 60], [330, 60, 260, 160, 50]],
+  [["Почиствайте слуховия апарат<br>внимателно по упътването", "left:20px;top:392px", { arrow: "u", at: "28%" }],
+   ["Сменяйте батериите<br>навреме", "left:400px;top:230px", { arrow: "u", at: "30%" }]],
+  "Снимка: Utayachibo, Wikimedia Commons (CC0) · логото на производителя е замазано", 34);
+
+S["zdrave-zubi-protezi"] = photoScene("zubi-chasha.jpg", 460, 640,
+  [[290, 4, 146, 444, 30], [14, 212, 262, 330, 34]],
+  [["Мийте зъбите два пъти<br>дневно с мека четка", "left:20px;top:90px", { arrow: "r", at: "50%" }],
+   ["Протезата — в чаша с вода/<br>разтвор през нощта", "left:60px;top:556px", { arrow: "u", at: "50%" }]],
+  "Снимка: Lead holder, Wikimedia Commons (CC0)", 34);
+
+// ───────────────────────── Печатни листовки върху истински повърхности ─────────────────────────
+const noiseSvg = "url(data:image/svg+xml;base64," + Buffer.from("<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .3  0 0 0 0 .22  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>").toString("base64") + ")";
+const INK = "#1c1b19", PRINTRED = "#b3201a";
+// Лист хартия: перспектива, сянка, зърно, гънка. Връща HTML за позиционирана хартия.
+function sheetPaper(inner, o) {
+  const { x, y, w, rot = -1, rx = 3, ry = -3, crease = true, flat = false } = o;
+  const sh = flat
+    ? "0 1px 2px rgba(0,0,0,.35),0 8px 14px -4px rgba(0,0,0,.4),0 22px 30px -12px rgba(0,0,0,.45)"
+    : "0 1px 1px rgba(0,0,0,.3),0 7px 10px -3px rgba(0,0,0,.35),0 20px 26px -10px rgba(0,0,0,.4)";
+  return `<div style="position:absolute;left:${x}px;top:${y}px;width:${w}px;transform:perspective(1500px) rotateX(${rx}deg) rotateY(${ry}deg) rotate(${rot}deg);transform-origin:50% 40%;background:#fbf9f2;box-shadow:${sh};padding:30px 32px 26px;color:${INK}">
+    ${inner}
+    <div style="position:absolute;inset:0;background:${noiseSvg};mix-blend-mode:multiply;opacity:.4;pointer-events:none"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(112deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 32%,rgba(40,30,10,.07) 100%);pointer-events:none"></div>
+    ${crease ? `<div style="position:absolute;left:0;right:0;top:50%;height:7px;margin-top:-3px;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(60,45,20,.10) 45%,rgba(255,255,255,.55) 55%,rgba(255,255,255,0));pointer-events:none"></div>` : ""}
+  </div>`;
+}
+const pinPush = (c, x, y) => `<div style="position:absolute;left:${x}px;top:${y}px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff9 0,${c} 38%,#000a 170%);box-shadow:3px 6px 6px rgba(0,0,0,.45),0 0 0 1px rgba(0,0,0,.25)"></div>`;
+const magnetAt = (c, x, y) => magnet(c, `left:${x}px;top:${y}px;width:34px;height:34px`);
+// Печатни градивни елементи (плоски, мастило)
+const pIcon = (n, c = INK, s = 40) => ic(n, { size: s, color: c, fill: 1 });
+const pLine = (icn, head, text, c = INK) => `<div style="display:flex;gap:16px;align-items:flex-start;padding:13px 0;border-top:2px solid ${INK}33"><div style="width:46px;flex-shrink:0;padding-top:2px">${pIcon(icn, c, 42)}</div><div><div style="font-size:25px;font-weight:800;letter-spacing:-.4px;line-height:1.1">${head}</div><div style="font-size:17px;line-height:1.35;margin-top:3px;color:#2b2a27">${text}</div></div></div>`;
+const pStep = (icn, t, c = INK) => `<div style="display:flex;gap:14px;align-items:center;padding:10px 0;border-top:1.5px solid ${INK}2e"><div style="width:34px;flex-shrink:0">${pIcon(icn, c, 30)}</div><div style="font-size:17px;line-height:1.32;font-weight:500">${t}</div></div>`;
+const pAlert = (t) => `<div style="margin-top:14px;padding:12px 14px;background:${PRINTRED};color:#fffaf0;font-size:19px;font-weight:800;line-height:1.25">${t}</div>`;
+const posterCredit = (t) => `<div style="position:absolute;right:8px;bottom:6px;font-size:11px;color:#fff;background:rgba(0,0,0,.5);padding:2px 8px;border-radius:6px">${t}</div>`;
+function poster(bgFile, w, h, paperHtml, extra, creditText, bgStyle = "") {
+  return scene(`<div style="position:relative;width:${w}px;height:${h}px;overflow:hidden">${img(bgFile, { w, h, style: bgStyle })}${paperHtml}${extra}${posterCredit(creditText)}</div>`, { w, h, pad: 0 });
+}
+const FR = "Фон: Squared.one, Wikimedia Commons (CC0)", CK = "Фон: ambientCG (L. Demes), Wikimedia Commons (CC0)", WD = "Фон: W.carter, Wikimedia Commons (CC0)";
+
+// 17) Инсулт — листовка на вратата на хладилника
+S["zdrave-insult-lice-race-rech"] = poster("fon-hladilnik.jpg", 760, 780,
+  sheetPaper(`
+    <div style="font-size:26px;font-weight:900;letter-spacing:-.6px;line-height:1.1">Инсулт: Лице – Ръце – Реч</div>
+    <div style="height:10px"></div>
+    ${pLine("sentiment_satisfied", "Лице", "Помолете човека да се усмихне. Едната страна увисва ли?")}
+    ${pLine("front_hand", "Ръце", "Помолете го да вдигне двете ръце. Едната пада ли надолу?")}
+    ${pLine("record_voice_over", "Реч", "Помолете го да каже простичко изречение. Говорът завален или неразбираем ли е?")}
+    ${pAlert("При дори един съмнителен признак — звъннете на 112 веднага.")}`, { x: 222, y: 120, w: 400, rot: -1.2, rx: 2, ry: -2 }),
+  magnetAt("#c62828", 238, 116) + magnetAt("#1d4ed8", 588, 126) +
+  tip("Направете трите проверки:<br>усмивка, вдигане на ръце,<br>кратко изречение", "left:50%;top:718px", { arrow: "u", at: "50%" }), FR);
+
+// 18) Инфаркт — листовка
+S["zdrave-infarkt-priznaci"] = poster("fon-hladilnik.jpg", 760, 780,
+  sheetPaper(`
+    <div style="font-size:31px;font-weight:900;letter-spacing:-.8px;line-height:1.05">Признаци на инфаркт</div>
+    <div style="height:10px"></div>
+    ${pStep("monitor_heart", "Болка, натиск или стягане в средата на гърдите", PRINTRED)}
+    ${pStep("accessibility_new", "Болка, която „плъзва“ към лявата ръка, врата, челюстта или гърба")}
+    ${pStep("water_drop", "Студена пот, гадене, силна слабост")}
+    ${pStep("air", "Задух")}
+    ${pAlert("При съмнение звъннете НЕЗАБАВНО на 112.")}`, { x: 222, y: 130, w: 400, rot: 1, rx: 2, ry: 2 }),
+  magnetAt("#1d4ed8", 238, 126) + magnetAt("#c62828", 588, 124) +
+  tip("При съмнение звъннете<br>незабавно на 112", "left:50%;top:684px", { arrow: "u", at: "50%" }), FR, "object-position:50% 100%");
+
+// 19) Кога лекар, кога 112 — листовка на дървена маса
+const pCol = (c, head, lines) => `<div style="flex:1;border-top:9px solid ${c};padding-top:10px"><div style="font-size:30px;font-weight:900;letter-spacing:-.6px;color:${c};margin-bottom:6px">${head}</div>${lines.map((l) => `<div style="font-size:16.5px;line-height:1.35;padding:8px 0;border-top:1.5px solid ${INK}2e">${l}</div>`).join("")}</div>`;
+S["zdrave-koga-lekar-koga-112"] = poster("fon-masa.jpg", 860, 520,
+  sheetPaper(`
+    <div style="display:flex;gap:22px">
+      ${pCol(PRINTRED, "На 112", ["Болка в гърдите, задух, признаци на инсулт, силно кървене, загуба на съзнание", "Тежка злополука, отравяне, високо неовладяно кръвно със симптоми"])}
+      ${pCol("#1d3f6e", "При личен лекар", ["Настинка, леки болки, хронични оплаквания, рецепти"])}
+    </div>
+    <div style="margin-top:16px;padding-top:12px;border-top:2px solid ${INK};font-size:19px;font-weight:700;text-align:center">При съмнение — обадете се и питайте.</div>`,
+    { x: 110, y: 60, w: 640, rot: -2.2, rx: 8, ry: -3, flat: true, crease: false }),
+  tip("По-добре да попитате,<br>отколкото да чакате", "left:50%;top:440px", { arrow: "u", at: "50%" }), WD);
+
+// 20) Задавяне — листовка на корково табло
+S["zdrave-zadavyane-hvatka"] = poster("fon-korkovo.jpg", 760, 780,
+  sheetPaper(`
+    <div style="font-size:30px;font-weight:900;letter-spacing:-.8px;line-height:1.05">Задавяне: какво правя</div>
+    <div style="height:8px"></div>
+    ${pStep("call", "Извикайте за помощ и помолете някой да звънне на 112.", PRINTRED)}
+    ${pStep("back_hand", "Наведете го напред и нанесете 5 силни удара с длан между плешките.")}
+    ${pStep("accessibility_new", "Ако не помогне, застанете зад него и обхванете кръста с ръце.")}
+    ${pStep("sports_mma", "Сложете юмрук малко над пъпа и го хванете с другата ръка.")}
+    ${pStep("arrow_upward", "Дръпнете силно навътре и нагоре — 5 пъти (хватка на Хаймлих).")}
+    ${pStep("repeat", "Редувайте 5 удара по гърба и 5 натискания, докато блокажът излезе.")}
+    ${pAlert("Ако човекът изпадне в безсъзнание — звъннете 112 и следвайте указанията на оператора.")}`, { x: 130, y: 70, w: 500, rot: -.8, rx: 2, ry: -2 }),
+  pinPush("#d32f2f", 368, 74) + pinPush("#1d4ed8", 130, 80) + pinPush("#d32f2f", 610, 94) +
+  tip("Редувайте 5 удара по гърба<br>и 5 натискания", "left:50%;top:712px", { arrow: "u", at: "50%" }), CK);
+
+// 21) Прилошаване — листовка на дървена маса
+S["zdrave-priloshavane"] = poster("fon-masa.jpg", 760, 700,
+  sheetPaper(`
+    <div style="font-size:29px;font-weight:900;letter-spacing:-.8px;line-height:1.08">На някого му прилошее или припадне</div>
+    <div style="height:8px"></div>
+    ${pStep("airline_seat_flat", "Ако усеща, че ще припадне — нека седне или легне веднага.")}
+    ${pStep("arrow_upward", "Повдигнете краката му малко нагоре.")}
+    ${pStep("air", "Осигурете чист въздух, разхлабете тесни дрехи.")}
+    ${pStep("hotel", "Ако е в безсъзнание, но диша — обърнете го настрани.")}
+    ${pStep("visibility", "Останете до него и следете дишането.")}
+    ${pAlert("Ако НЕ диша нормално — звъннете на 112 и следвайте указанията.")}`, { x: 120, y: 70, w: 500, rot: 2, rx: 7, ry: 3, flat: true, crease: false }),
+  tip("Повдигнете краката му<br>малко нагоре", "left:50%;top:632px", { arrow: "u", at: "50%" }), WD);
+
+// ───────────────────────── Колажи от истински снимки (CC0) — второ поколение на „картите на таблото“ ─────────────────────────
+// collage({w,h,photos:[{f,x,y,w,h,pos,rot,rings:[[дял x,y,w,h,кръгъл?]]}],tips:[[текст,css,опции]],list:[[текст,стрелка?]],listTop,wrap,credit})
+const tipFree = (t, css = "", o) => _tip(t, css + ";width:max-content;max-width:none", o);
+function collage(o) {
+  const { w = 640, h, photos, tips = [], list = [], listTop = 0, wrap: wr, credit: ct, extra = "" } = o;
+  const ph = photos.map((p) => {
+    const rings = (p.rings || []).map(([fx, fy, fw, fh, round]) => `<div class="ring" style="position:absolute;left:${fx * 100}%;top:${fy * 100}%;width:${fw * 100}%;height:${fh * 100}%;border-radius:${round ? "999px" : "14px"}"></div>`).join("");
+    const sh = p.rot ? "0 0 0 6px #fff,0 14px 28px rgba(15,23,42,.4)" : "0 14px 32px rgba(15,23,42,.28)";
+    return `<div style="position:absolute;left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px;${p.rot ? `transform:rotate(${p.rot}deg);` : ""}z-index:${p.z || 1}">${img(p.f, { w: p.w, h: p.h, radius: 14, style: `object-position:${p.pos || "50% 50%"};box-shadow:${sh}` })}${rings}</div>`;
+  }).join("");
+  const ts = tips.map(([t, css, op]) => tipFree(t, css, op)).join("");
+  const ls = list.length
+    ? `<div style="position:absolute;left:0;right:0;top:${listTop}px;display:flex;${wr ? "flex-flow:row wrap;justify-content:center;padding:0 6px" : "flex-direction:column;align-items:center"};gap:10px">${list.map(([t, ar]) => tipFree(t, "position:relative", ar ? { arrow: "u", at: "50%" } : {})).join("")}</div>`
+    : "";
+  return scene(`<div style="position:relative;width:${w}px;height:${h}px">${ph}${extra}${ts}${ls}${credit(ct)}</div>`, { pad: 28 });
+}
+const CCz = (a) => `Снимки: ${a} — Wikimedia Commons (CC0)`;
+
+// ── Вода (h2-pia-voda)
+S["zdrave-voda"] = collage({ h: 640, listTop: 498,
+  photos: [{ f: "water-glass.jpg", x: 0, y: 0, w: 640, h: 480, pos: "50% 50%", rings: [[0.2, 0.05, 0.54, 0.9, false]] }],
+  list: [["Дръжте чаша/бутилка на видно място като напомняне", 1], ["Пийте вода редовно през деня, не наведнъж"], ["В жега и при температура пийте повече"]],
+  credit: CCz("Kurt Kaiser") });
+
+// ── Жега (h2-zhega-pregryavane)
+S["zdrave-zhega"] = collage({ w: 680, h: 654, listTop: 502,
+  photos: [
+    { f: "fan.jpg", x: 0, y: 0, w: 330, h: 482, pos: "50% 30%", rings: [[0.05, 0.0, 0.86, 0.58, true]] },
+    { f: "sunhat.jpg", x: 340, y: 0, w: 340, h: 227, rings: [[0.25, 0.12, 0.66, 0.64, false]] },
+    { f: "water-glass.jpg", x: 340, y: 237, w: 340, h: 245, pos: "50% 45%", rings: [[0.2, 0.02, 0.56, 0.94, false]] }],
+  tips: [["Стойте на хладно през<br>най-горещите часове (11–17 ч)", "left:12px;top:420px"], ["Носете леки, светли дрехи<br>и шапка навън", "left:352px;top:10px"]],
+  list: [["Пийте вода редовно", 1], ["Признаци за прегряване: замайване, гадене, силна слабост —<br>охладете се и почивайте"], ["При обърканост или загуба на съзнание — звъннете на 112"]],
+  credit: CCz("Ben plc, www.Pixel.la Free Stock Photos, Kurt Kaiser") + " · лого размито" });
+
+// ── Студ (h2-toplina-stud-zimata)
+S["zdrave-studa-zimata"] = collage({ h: 612, listTop: 450,
+  photos: [
+    { f: path.join(ASSETS, "more", "socks.jpg"), x: 0, y: 0, w: 310, h: 355, rings: [[0.1, 0.08, 0.8, 0.84, false]] },
+    { f: path.join(ASSETS, "dom", "radiator-valve.jpg"), x: 330, y: 0, w: 310, h: 355, pos: "50% 35%", rings: [[0.22, 0.12, 0.6, 0.62, false]] }],
+  tips: [["Обличайте се на пластове<br>и носете шапка и ръкавици", "left:155px;top:372px;transform:translateX(-50%)", { arrow: "u", at: "50%" }], ["Отоплявайте дома<br>до приятна температура", "left:485px;top:372px;transform:translateX(-50%)", { arrow: "u", at: "50%" }]],
+  list: [["При силно зачервяване/изтръпване на крайник —<br>стоплете бавно и потърсете лекар"], ["Проверявайте възрастни близки и съседи в студа"], ["Внимавайте на лед навън (стабилни обувки, бавно)"]],
+  credit: CCz("Toomas Tuul (Eesti Rahva Muuseum), 247homerescue") });
+
+// ── Упражнения (h2-dvizhenie-uprazhneniya)
+S["zdrave-uprazhneniya"] = collage({ h: 600, listTop: 452, wrap: true,
+  photos: [
+    { f: "park-path.jpg", x: 0, y: 0, w: 640, h: 427 },
+    { f: "boots.jpg", x: 408, y: 232, w: 212, h: 182, rot: 2.5, z: 2, rings: [[0.12, 0.05, 0.76, 0.9, false]] }],
+  tips: [["Кратки разходки всеки ден", "left:372px;top:196px", { arrow: "d", at: "62%" }]],
+  list: [["Леки упражнения седнал (ръце, крака, рамене)"], ["Упражнения за равновесие (държейки се за стол)"], ["Разтягане сутрин"], ["Не насилвайте при болка"], ["Питайте лекаря какви движения са подходящи за вас"]],
+  credit: CCz("Powzawow, W.carter") });
+
+// ── Падане у дома (h2-padane-doma)
+S["zdrave-padane-doma"] = collage({ h: 690, listTop: 500, wrap: true,
+  photos: [
+    { f: path.join(ASSETS, "dom", "bath-tub-plain.jpg"), x: 0, y: 0, w: 640, h: 480, pos: "50% 60%", rings: [[0.05, 0.55, 0.5, 0.36, false]] },
+    { f: "boots.jpg", x: 432, y: 288, w: 190, h: 164, rot: 3, z: 2, rings: [[0.12, 0.05, 0.76, 0.9, false]] }],
+  tips: [["Сложете дръжки в банята и до стълбите", "left:12px;top:432px", { arrow: "u", at: "40%" }]],
+  list: [["Носете стабилни обувки/чехли, не хлъзгави чорапи"], ["Махнете килимчета и кабели, в които може да се спънете"], ["Осигурете добро осветление, особено нощем по пътя до тоалетната"], ["Дръжте нужните неща на удобна височина"], ["Движете се без бързане"]],
+  credit: CCz("Tomwsulcer, W.carter") });
+
+// ── Хранене (h2-zdravoslovno-hranene)
+S["zdrave-hranene"] = collage({ h: 580, listTop: 366,
+  photos: [
+    { f: "salad.jpg", x: 0, y: 0, w: 300, h: 300, rings: [[0.04, 0.03, 0.92, 0.94, false]] },
+    { f: "berries.jpg", x: 310, y: 0, w: 330, h: 222, rings: [[0.1, 0.26, 0.82, 0.6, true]] }],
+  tips: [["Включете белтъчини<br>(риба, яйца, млечни, боб)", "left:322px;top:232px"], ["Пийте достатъчно вода", "left:322px;top:294px"]],
+  list: [["Яжте повече зеленчуци, плодове и пълнозърнести храни", 1], ["Намалете солта, мазното и сладкото"], ["Хранете се редовно, на по-малки порции"], ["Съобразявайте с лекаря при диабет/кръвно/бъбреци"]],
+  credit: CCz("Jvanree, Cecilia Par") });
+
+// ── Навици (h2-zdravosloven-rezhim)
+S["zdrave-navitsi"] = collage({ h: 700, listTop: 590, wrap: true,
+  photos: [
+    { f: "alarm-clock.jpg", x: 0, y: 0, w: 640, h: 360, pos: "50% 40%", rings: [[0.36, 0.14, 0.26, 0.6, false]] },
+    { f: "berries.jpg", x: 0, y: 372, w: 314, h: 190, pos: "50% 62%", rings: [[0.08, 0.14, 0.84, 0.72, true]] },
+    { f: "boots.jpg", x: 326, y: 372, w: 314, h: 190, pos: "50% 72%", rings: [[0.14, 0.02, 0.72, 0.96, false]] }],
+  tips: [["Спете достатъчно<br>и в постоянен режим", "left:14px;top:150px", { arrow: "r", at: "50%" }], ["Хранете се редовно и разнообразно,<br>пийте вода", "left:10px;top:380px"], ["Движете се всеки ден<br>(дори кратка разходка)", "left:336px;top:380px"]],
+  list: [["Поддържайте контакт с хора — против самотата"], ["Вземайте лекарствата си редовно"], ["Ходете на профилактични прегледи"]],
+  credit: CCz("Szűcs László, Cecilia Par, W.carter") });
+
+// ── Подготовка за преглед (h-pregled-podgotovka) — списък върху дървена маса
+const chk = (t, ring) => `<div style="position:relative;display:flex;gap:11px;align-items:flex-start;padding:6px 0"><div style="width:21px;height:21px;border:2px solid #3a5aa8;border-radius:5px;margin-top:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center">${ic("check", { size: 17, color: "#3a5aa8", weight: 700 })}</div><div style="font-size:17px;color:#1d2b3a;line-height:1.3">${t}</div>${ring ? `<div class="ring" style="position:absolute;left:-8px;right:-8px;top:0;bottom:0;border-radius:8px"></div>` : ""}</div>`;
+S["zdrave-podgotovka-pregled"] = collage({ h: 590,
+  photos: [{ f: "table-notebooks.jpg", x: 0, y: 0, w: 640, h: 560, pos: "0% 50%" }],
+  extra: `<div style="position:absolute;left:16px;top:30px;width:392px;padding:24px 26px 20px;background:repeating-linear-gradient(#fffefb 0 31px,#d6e2f2 31px 32px);transform:rotate(-1.4deg);${paperShadow};z-index:3">
+      <div style="font-size:23px;font-weight:800;color:#1d2b3a;margin-bottom:6px">Какво да нося на преглед</div>
+      ${chk("Лична карта и здравна книжка/документи")}${chk("Списъка с лекарства и алергии")}${chk("Предишни изследвания и решения")}${chk("Оплакванията и въпросите ми — записани предварително", 1)}${chk("При изследване на гладно — да не ям сутринта")}${chk("Да дойда малко по-рано")}</div>`,
+  tips: [["Запишете оплакванията<br>и въпросите си предварително", "left:50%;top:496px;transform:translateX(-50%);z-index:70", { arrow: "u", at: "50%" }]],
+  credit: CCz("Freddy Castro") });
 
 // @@MORE
 
