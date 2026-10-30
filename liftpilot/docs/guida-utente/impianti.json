@@ -1,0 +1,1856 @@
+{
+  "key": "impianti",
+  "title": "L’area di lavoro e gli impianti",
+  "intro": [
+    "Questo capitolo spiega come è fatta l’area di lavoro di LiftPilot e come si gestisce un impianto: dall’elenco degli impianti alla pagina di ciascuno, dai dati anagrafici ai dati che servono al foglio 1 delle tavole. Prima di tutto trovi la pagina «Come funziona LiftPilot», con le regole e i simboli che incontri in ogni schermata.",
+    "Un impianto è il contenitore di tutto il lavoro su un ascensore: i rilievi collegati, i calcoli dell’argano, il progetto, le tavole e le relazioni. Qui trovi l’impianto in sé; i singoli passi (rilievo, Calcolo argano, Progetto, documenti) hanno un capitolo ciascuno."
+  ],
+  "pages": [
+    {
+      "id": "concetti",
+      "title": "Come funziona LiftPilot",
+      "path": "",
+      "access": "Vale per tutti i ruoli. Cosa vedi nel menu dipende dai diritti del tuo ruolo (matrice predefinita: il Titolare ha tutti i diritti;Capotecnico, Progettista e Tecnico lavorano su rilievi, impianti e calcoli; il Commerciale legge, vede il Listino e non modifica). Il Titolare può cambiare la matrice dalla pagina Permessi.",
+      "reach": "È una pagina di spiegazione della guida, non una schermata del programma: descrive la cornice che vedi dopo l’accesso, su ogni pagina dell’area di lavoro.",
+      "purpose": [
+        "Dopo l’accesso lavori sempre dentro la stessa cornice: un menu a sinistra, una barra in alto con il percorso, la ricerca degli impianti e il tuo profilo, e al centro la pagina. Questa pagina spiega la cornice e le convenzioni che si ripetono ovunque, così non devi riscoprirle in ogni capitolo."
+      ],
+      "shots": [
+        {
+          "id": "shell-desktop",
+          "what": "L’area di lavoro su schermo largo con il menu aperto a sinistra (Area di lavoro, Libreria, Gestione, Aiuto) e la barra in alto con il campo «Cerca impianti»."
+        },
+        {
+          "id": "stepper",
+          "what": "La barra dei passi di un impianto: Panoramica, Rilievo, Calcolo argano, Progetto, Simulazione, Relazione tecnica, Tavole e documenti, ognuno con il suo stato."
+        }
+      ],
+      "sections": [
+        {
+          "title": "La cornice: menu, barra in alto e ricerca",
+          "intro": [
+            "Il menu a sinistra raggruppa le sezioni in tre gruppi: «Area di lavoro», «Libreria» e «Gestione». Un gruppo compare solo se contiene almeno una voce che il tuo ruolo può usare. Sotto i gruppi, fissi in basso, ci sono «Aiuto», la tua scheda utente con «Esci» e, in fondo, l’indicazione «Beta gratuita» (finché la fatturazione non è attiva) con il profilo normativo in uso.",
+            "Sotto i 1024 pixel di larghezza il menu diventa un pannello a scomparsa: lo apri con il pulsante «Menu» nella barra in alto e lo chiudi con «Chiudi il menu», con il tasto Esc, toccando fuori dal pannello o seguendo un collegamento. Con il pannello aperto la pagina sottostante è bloccata. Il collegamento «Vai al contenuto» (per chi naviga da tastiera) porta direttamente alla pagina.",
+            "Nella barra in alto, a destra, trovi anche il selettore «Modalità» con «Semplice» e «Esperto»; i dettagli sono nella sezione «Il «?» accanto ai campi e la modalità Semplice / Esperto»."
+          ],
+          "fields": [
+            {
+              "label": "Cerca impianti",
+              "kind": "testo",
+              "unit": null,
+              "values": "Fino a 80 caratteri e 5 parole: un testo più lungo viene tagliato, non rifiutato.",
+              "default": "Vuoto. Segnaposto: «Nome, indirizzo, matricola…». Sulla pagina Impianti il campo mostra le parole cercate e conserva il filtro «Archiviati» e il filtro per tipo di intervento.",
+              "required": "no",
+              "help": [
+                "Cerca tra gli impianti dell’azienda per nome, indirizzo, comune, numero di matricola dell’impianto e matricola dei suoi rilievi (quest’ultima solo se il tuo ruolo vede i rilievi). Devono comparire tutte le parole che scrivi.",
+                "Premi Invio per aprire l’elenco Impianti già filtrato. Con Ctrl K (⌘ K su Mac) porti il cursore nel campo da qualunque pagina; su telefono il campo si apre con il pulsante a forma di lente sotto la barra e si chiude con Esc o toccando fuori.",
+                "Il campo c’è solo se il tuo ruolo vede gli impianti."
+              ],
+              "src": "src/components/shell/ShellSearch.tsx:112"
+            },
+            {
+              "label": "Modalità",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Semplice | Esperto",
+              "default": "Semplice",
+              "required": "no",
+              "help": [
+                "Cambia subito quanti campi vedi in tutta l'area di lavoro: «Semplice» mostra solo i campi che servono quasi sempre e lascia agli altri i valori del software; «Esperto» li mostra tutti. Passando il mouse sul selettore leggi: «Semplice: solo i campi che servono quasi sempre, gli altri restano ai valori del software. Esperto: tutti i campi.»",
+                "La scelta resta con il tuo utente (non nel browser): la ritrovi alla prossima sessione e su un altro dispositivo. Vale anche per un'azienda in sola lettura. Se il salvataggio non riesce (sessione scaduta, oltre 30 cambi al minuto) il selettore torna alla scelta di prima."
+              ],
+              "src": "src/components/AppShell.tsx:112; src/components/shell/Modalita.tsx:33; src/server/modalita-actions.ts:11"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Rilievi",
+              "help": "Gruppo «Area di lavoro». Apre la pagina iniziale (le schede di rilievo). Per chi può vedere i rilievi è anche la pagina di partenza dopo l’accesso.",
+              "src": "src/components/AppShell.tsx:37"
+            },
+            {
+              "label": "Impianti",
+              "help": "Gruppo «Area di lavoro». L’elenco degli impianti dell’azienda.",
+              "src": "src/components/AppShell.tsx:38"
+            },
+            {
+              "label": "Nuovo impianto",
+              "help": "Gruppo «Area di lavoro». Apre il modulo per creare un impianto. Compare solo se il tuo ruolo può creare impianti.",
+              "src": "src/components/AppShell.tsx:39"
+            },
+            {
+              "label": "Impianti archiviati",
+              "help": "Gruppo «Area di lavoro». L’elenco degli impianti archiviati, in sola lettura.",
+              "src": "src/components/AppShell.tsx:42"
+            },
+            {
+              "label": "Norme",
+              "help": "Gruppo «Libreria». I valori e i riferimenti normativi usati dai motori di calcolo, ciascuno con punto, fonte e stato. Compare per chi vede gli impianti.",
+              "src": "src/components/AppShell.tsx:45"
+            },
+            {
+              "label": "Listino",
+              "help": "Gruppo «Libreria». I prezzi dell’azienda. Compare se il tuo ruolo vede il listino (predefinito: Capotecnico e Commerciale, oltre al Titolare).",
+              "src": "src/components/AppShell.tsx:46"
+            },
+            {
+              "label": "Utenti",
+              "help": "Gruppo «Gestione». I colleghi e gli inviti. Solo per il Titolare.",
+              "src": "src/components/AppShell.tsx:49"
+            },
+            {
+              "label": "Permessi",
+              "help": "Gruppo «Gestione». La matrice dei diritti per ruolo. Solo per il Titolare.",
+              "src": "src/components/AppShell.tsx:50"
+            },
+            {
+              "label": "Azienda",
+              "help": "Gruppo «Gestione». I dati dell’azienda, il logo e l’esportazione dei dati. Compare a chi ha il diritto di esportare i dati o di modificare i dati dell’azienda; se l’azienda è in sola lettura la pagina spiega perché nulla cambia.",
+              "src": "src/components/AppShell.tsx:52"
+            },
+            {
+              "label": "Abbonamento",
+              "help": "Gruppo «Gestione». Lo stato dell’abbonamento. Solo per il Titolare.",
+              "src": "src/components/AppShell.tsx:53"
+            },
+            {
+              "label": "Registro attività",
+              "help": "Gruppo «Gestione». Il registro delle operazioni. Predefinito: Titolare e Capotecnico.",
+              "src": "src/components/AppShell.tsx:54"
+            },
+            {
+              "label": "Aziende",
+              "help": "Gruppo «Gestione». Solo per l’Amministratore della piattaforma.",
+              "src": "src/components/AppShell.tsx:55"
+            },
+            {
+              "label": "Guida",
+              "help": "Gruppo «Aiuto». Apre la guida pubblica in una nuova scheda del browser, così il lavoro in corso resta dov’è.",
+              "src": "src/components/NavLinks.tsx:194"
+            },
+            {
+              "label": "Segnala un problema",
+              "help": "Gruppo «Aiuto». Apre il modulo di segnalazione, che riporta la pagina da cui arrivi (solo il percorso) perché l’amministratore veda la schermata a cui ti riferisci.",
+              "src": "src/components/NavLinks.tsx:191"
+            },
+            {
+              "label": "Esci",
+              "help": "Chiude la sessione. Se stai compilando un modulo con modifiche non salvate (per esempio il rilievo), il browser prima ti chiede conferma.",
+              "src": "src/components/AppShell.tsx:91"
+            }
+          ],
+          "notes": [
+            "Il tuo nome, il ruolo e il nome dell’azienda stanno nella scheda utente in fondo al menu e (nome e ruolo) in alto a destra: toccandola apri la pagina del tuo account.",
+            "Il percorso in alto («Percorso») dice dove sei, per esempio «Area di lavoro › Impianti». Nelle pagine di un impianto mostra «Impianti › nome dell’impianto › …» e ogni voce è un collegamento. Un nome lungo viene tagliato: passando il mouse sopra lo vedi intero.",
+            "Non c’è un’icona di notifiche: l’applicazione non ha notifiche da mostrare."
+          ]
+        },
+        {
+          "title": "I passi di un impianto: la barra in cima a ogni pagina",
+          "intro": [
+            "In cima a ogni pagina di un impianto trovi sempre la stessa barra, con i passi nell’ordine in cui li fai sul lavoro: «Panoramica», poi 1 · Rilievo, 2 · Calcolo argano, 3 · Progetto, 4 · Simulazione, 5 · Relazione tecnica, 6 · Tavole e documenti. La scheda della pagina in cui sei è evidenziata.",
+            "1 · Rilievo: la scheda di rilievo dell’impianto esistente, collegata all’impianto. 2 · Calcolo argano: tipo di intervento, parti sostituite, collaudo, calcolo dell’argano e relazione di calcolo. 3 · Progetto: il disegno basato sul calcolo (il rilievo del locale macchina oppure il vano), con il disegno e le verifiche accanto ai dati. 4 · Simulazione: la scena 3D e i grafici del progetto. 5 · Relazione tecnica: la relazione tecnica di modifica (non serve per una «Trasformazione completa»). 6 · Tavole e documenti: tutto quello che si scarica, si emette o si ordina dal progetto salvato.",
+            "Sotto il nome di ogni passo leggi il suo stato: «fatto», «da fare», «da aggiornare» (il record è più vecchio del rilievo o il software è cambiato), «differenze» (il record non coincide con il rilievo sullo stato di fatto), «# non superate» (il Progetto ha verifiche che non passano), «pronta» (la simulazione ha un progetto salvato), «bozza», «emessa», «non serve», «dopo il calcolo», «dopo il progetto» e «con il progetto del vano». Il numero del passo si accende di verde quando è fatto, di ambra o di rosso quando c’è qualcosa da sistemare.",
+            "Ogni scheda apre la sua pagina se il tuo ruolo ne ha il diritto; una scheda che il tuo ruolo non può aprire è grigia e non è un collegamento. Sul telefono la barra scorre di lato."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "Ogni passo ha il suo stato, calcolato dal proprio record: «Calcolo argano» e «Progetto» non dipendono dai passi precedenti. «Tavole e documenti» è «dopo il progetto» finché non c’è un Progetto salvato; poi è «fatto», oppure «da aggiornare» se un record da cui nascono i documenti è da aggiornare o in «differenze», o se la serie di tavole emessa è più vecchia dell’ultimo record.",
+            "La scheda «Rilievo» apre la scheda di rilievo di riferimento; senza rilievo collegato apre il riquadro «Rilievi» della panoramica. La scheda «Progetto» apre il disegno per chi disegna il progetto, altrimenti il progetto salvato."
+          ]
+        },
+        {
+          "title": "I tre tipi di intervento",
+          "intro": [
+            "Il tipo di intervento si sceglie una sola volta, nel Calcolo argano, e non sull’impianto: l’impianto prende il tipo dall’ultimo Calcolo argano. Finché non c’è un calcolo l’impianto è «Intervento da definire». I tipi sono tre: «Solo argano», «Ammodernamento» e «Trasformazione completa». Il loro significato e ciò che cambia nel collaudo e nel Progetto sono spiegati nel capitolo sul Calcolo argano."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "Nell’elenco e nella pagina dell’impianto il tipo appare come un’etichetta con una scala a tre tacche: più tacche piene ci sono, più l’intervento riguarda l’intero impianto."
+          ]
+        },
+        {
+          "title": "Etichette e convenzioni che trovi ovunque",
+          "intro": [
+            "Dove il software propone un valore invece di chiedertelo, lo dice con una piccola etichetta accanto al nome del campo. «automatico» è un valore ricavato dai tuoi dati (per esempio dal vano o dai carichi documentati); «stimato» è una stima del software da controllare; «standard» è il valore normale del software, non inserito da te: se il tuo progetto è diverso, cambialo e l’etichetta sparisce (passando il mouse leggi: «Valore standard del software, non inserito: cambialo se il progetto è diverso»). Alcuni valori standard si cambiano solo in modalità esperto.",
+            "«dal rilievo» segna un valore preso dalla scheda di rilievo collegata (passando il mouse vedi la data del rilievo); «dal progetto» segna un valore preso dal disegno del Progetto. Le etichette seguono il valore: se scrivi tu un altro valore, l’etichetta sparisce, e un valore che hai scritto tu resta tuo anche se coincide con quello del rilievo. Nulla viene salvato finché non salvi il modulo."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "Un asterisco (*) dopo il nome di un campo indica che il campo è obbligatorio.",
+            "I numeri sono scritti all’italiana, con la virgola decimale (1,6 m/s); nei campi numerici puoi scrivere sia la virgola sia il punto."
+          ]
+        },
+        {
+          "title": "Il «?» accanto ai campi e la modalità Semplice / Esperto",
+          "intro": [
+            "Accanto al nome di quasi ogni campo (dove c'è qualcosa da spiegare) trovi un piccolo «?» rotondo: è la spiegazione breve di che cosa chiede il campo, di dove prendere il valore e di quali limiti ha. Il testo è lo stesso di questa guida.",
+            "La modalità «Semplice» / «Esperto» (selettore «Modalità» nella barra in alto) decide quali campi vedi. In «Semplice» i campi per esperti sono nascosti e valgono i valori proposti dal software; in «Esperto» li vedi tutti e puoi cambiarli. Quali sono i campi per esperti è scritto, pagina per pagina, nei capitoli (per esempio nel Calcolo argano e nella relazione tecnica di modifica)."
+          ],
+          "fields": [
+            {
+              "label": "«?» (accanto al nome del campo)",
+              "kind": "pulsante",
+              "unit": null,
+              "values": "spiegazione breve del campo",
+              "default": "chiuso",
+              "required": "no",
+              "help": [
+                "Per leggere la spiegazione porta il mouse sul nome del campo o sul «?», oppure portaci il fuoco con la tastiera (Tab), oppure toccalo (o cliccalo) sullo schermo tattile: la spiegazione resta aperta finché tocchi altrove. Con il tasto Esc la spiegazione si nasconde.",
+                "Vicino al margine destro dello schermo il testo si apre verso sinistra, così la pagina non scorre di lato. Il nome accessibile del pulsante è «Che cos'è «‹nome del campo›»» e il testo è letto dagli screen reader come descrizione del pulsante. Il «?» non si stampa."
+              ],
+              "src": "src/components/aiuto/Aiuto.tsx:15-60; src/components/aiuto/Etichetta.tsx; src/app/aiuto.css:1-24"
+            },
+            {
+              "label": "Modalità: Semplice | Esperto",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Semplice | Esperto",
+              "default": "Semplice",
+              "required": "no",
+              "help": [
+                "«Semplice» nasconde i campi per esperti, ma mai un campo che devi ancora compilare (segnato come «da inserire») o che ha un valore sbagliato (fuori dai limiti): quello resta sempre in vista. Il valore di un campo nascosto non si perde: se lo avevi già inserito resta com'è e lo ritrovi passando a «Esperto».",
+                "«Esperto» mostra tutti i campi. Il Calcolo argano ha il suo selettore, che è lo stesso della barra in alto: cambiandone uno cambia anche l'altro."
+              ],
+              "src": "src/components/shell/Modalita.tsx:1-31; src/app/aiuto.css:25-28"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "La modalità è una preferenza personale: non cambia i dati dell'azienda né quelli degli altri colleghi."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Un progetto nuovo parte vuoto",
+          "intro": [
+            "In un nuovo progetto il software non inserisce dati al posto tuo: il software non calcola e non disegna nulla finché non gli dai i dati che servono. Il riquadro «Dati del progetto da inserire» elenca quello che manca, con la frase «Un progetto nuovo parte vuoto: il software non calcola e non disegna nulla finché mancano questi dati.». Ogni voce è un collegamento: toccandolo si apre il gruppo di campi e il cursore va nel campo da compilare. Quando l’elenco è vuoto, il software comincia a proporre i suoi valori.",
+            "Nel Calcolo argano i riquadri sono tre, secondo il caso: «Dati del progetto da inserire», «Dati della nuova macchina da inserire» (dalla scheda del costruttore, oppure usa la proposta o la macchina consigliata) e «Dati dell’argano esistente da inserire» (dalla targa o dal rilievo dell’argano installato, quando l’argano resta). Il pulsante di salvataggio ti dice quanti dati mancano: «Manca # dato del progetto» o «Mancano # dati del progetto». Un campo a scelta ancora da compilare mostra «— scegli —». I valori standard in uso sono elencati dopo la frase «Valori standard in uso (si cambiano in modalità esperto)»."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "Dalla pagina Rilievi, «Crea impianto» parte dalla scheda: nome, indirizzo, comune, provincia e matricola sono già compilati dal rilievo e il Calcolo argano parte dai valori misurati."
+          ]
+        },
+        {
+          "title": "La bozza",
+          "intro": [
+            "Mentre compili il Calcolo argano, il Progetto, il rilievo del locale macchina o la relazione tecnica, LiftPilot conserva quello che scrivi come bozza, circa un secondo e mezzo dopo l’ultima modifica (finché un valore è fuori dai limiti, la bozza non viene salvata). Se chiudi la scheda o cambi pagina, la bozza viene conservata subito. Quando riapri il modulo, riparti da lì.",
+            "Vicino al pulsante di salvataggio una riga ti dice lo stato: «Bozza ripresa, salvata il …», «Bozza salvata alle …» oppure «La bozza non è stata salvata: riprova tra poco.». Salvare il record cancella la bozza."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Scarta la bozza",
+              "help": "Chiede conferma con la domanda «Scartare la bozza e ripartire dai dati salvati?»; rispondi «Sì, scarta» per cancellarla (la pagina si ricarica dall’ultimo record dell’impianto, oppure vuota) o «No» per tenerla. Se non è possibile cancellarla leggi «Non è stato possibile scartare la bozza.».",
+              "src": "src/components/draft/DraftBar.tsx:35"
+            }
+          ],
+          "notes": [
+            "La bozza non è un record: non genera relazioni, tavole o ordini e non entra nel registro. Per ottenere i documenti devi salvare."
+          ],
+          "warnings": [
+            "«Scarta la bozza» cancella quello che hai scritto e non si può annullare: la pagina si ricarica dall’ultimo record salvato."
+          ]
+        },
+        {
+          "title": "I record non si modificano: «da aggiornare»",
+          "intro": [
+            "Un calcolo, un progetto del vano o un rilievo del locale macchina salvato non si cambia più: se correggi un dato e salvi, nasce un nuovo record e quello di prima resta com’era. Ogni record è anche legato alla versione del software con cui è stato fatto.",
+            "Se il software è cambiato e non riproduce più lo stesso risultato, il record riceve l’etichetta «da aggiornare» (nelle tabelle, nell’elenco degli impianti e nei passi) e i suoi documenti non si rigenerano. Nella pagina del record compare un avviso, per esempio «Il software è cambiato da quando questo calcolo è stato salvato: la relazione non si rigenera.». Lo stesso stato compare quando il rilievo collegato è stato scritto o modificato dopo il record."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Aggiorna con il software attuale",
+              "help": "Con un clic rifà il record con gli stessi dati e il software attuale, e dice se l’esito cambia («l’esito non cambia» oppure «l’esito cambia. Prima e ora:» con i due esiti affiancati). Mentre lavora il pulsante diventa «Aggiornamento…» e un secondo clic non crea copie. Il vecchio record resta; il nuovo diventa la sua versione successiva.",
+              "src": "src/components/RefreshForm.tsx:13"
+            }
+          ],
+          "notes": [
+            "Se con il software attuale alcuni dati non passano più, il record non si rifà da solo: si apre il modulo con il titolo «Aggiornamento con il software attuale: dati da correggere» e l’elenco «Da correggere:», con un collegamento per ogni dato. Correggi e salva: nasce un nuovo record. Quando l’elenco è vuoto leggi «Ora i dati passano: salva per creare la nuova versione.».",
+            "Chi può aggiornare: un Calcolo argano lo aggiorna chi fa i calcoli; un progetto del vano o un rilievo del locale macchina solo chi disegna anche il progetto. Gli altri ruoli leggono chi se ne occupa («Lo aggiorna un collega che disegna il progetto.» o «Lo aggiorna un collega che fa i calcoli.»). L’aggiornamento resta possibile anche se l’azienda è in sola lettura."
+          ],
+          "warnings": [
+            "Un impianto archiviato non si aggiorna: ripristinalo prima."
+          ]
+        },
+        {
+          "title": "Impianti archiviati: sola lettura",
+          "intro": [
+            "Un impianto archiviato si consulta, ma non si modifica: niente nuovi calcoli, niente modifica dei dati, niente collegamento o scollegamento dei rilievi, niente caricamento del logo. I suoi rilievi restano collegati. Per lavorarci di nuovo lo ripristini dalla sua pagina con «Ripristina». Gli impianti archiviati hanno la loro vista nel menu e nell’elenco."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Beta, prova e abbonamento",
+          "intro": [
+            "Finché la fatturazione non è attiva, in fondo al menu leggi «Beta gratuita». Quando l’abbonamento è attivo, in cima a ogni pagina può comparire un avviso di colore diverso: informativo durante la prova («Prova gratuita: # giorni rimasti.»), di avviso se il pagamento non è riuscito («Il pagamento dell’abbonamento non è riuscito: Stripe lo sta riprovando.»), di errore se l’abbonamento non è attivo («Abbonamento non attivo: i progetti sono in sola lettura.»). Il Titolare trova il pulsante «Abbonamento»; gli altri leggono «Lo gestisce il Titolare dell’azienda.».",
+            "In sola lettura continui a consultare e scaricare tutto, ma non crei né modifichi: i pulsanti di scrittura spariscono. Un avviso simile compare quando le condizioni d’uso sono cambiate e non sono state ancora accettate («Leggi e accetta»)."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "I ruoli",
+          "intro": [
+            "Ci sono il Titolare, quattro ruoli per i colleghi (Capotecnico, Progettista, Tecnico, Commerciale) e l’Amministratore della piattaforma. Nella matrice predefinita: tutti vedono rilievi e impianti; Capotecnico, Progettista e Tecnico compilano i rilievi, creano e modificano gli impianti, collegano i rilievi e fanno i calcoli; Capotecnico e Progettista archiviano gli impianti, danno il visto ai calcoli, disegnano il Progetto ed emettono le tavole; il Commerciale legge e scarica. Utenti, Permessi e Abbonamento sono sempre del Titolare, che può cambiare gli altri diritti dalla pagina Permessi. Ogni pagina di questa guida indica chi la vede e chi può modificare con la matrice predefinita."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "Se un pulsante non c’è, di solito il tuo ruolo non ha quel diritto (oppure l’azienda è in sola lettura o l’impianto è archiviato): chiedilo al Titolare."
+          ]
+        }
+      ],
+      "tips": [
+        "Parti sempre dal rilievo: collegarlo all’impianto ti evita di riscrivere i dati e ti dà il confronto tra quello che c’è sul posto e quello che hai calcolato."
+      ]
+    },
+    {
+      "id": "home",
+      "title": "Rilievi",
+      "path": "/it/app",
+      "access": "La vedono i ruoli con il diritto di vedere i rilievi (predefinito: tutti). Chi non lo ha viene portato agli Impianti, o al proprio account se non vede nemmeno quelli. «Nuovo rilievo» e i pulsanti di creazione richiedono il diritto di compilare i rilievi (predefinito: Titolare, Capotecnico, Progettista, Tecnico).",
+      "reach": "È la pagina di partenza dopo l’accesso. La raggiungi anche dalla voce «Rilievi» del menu o dal logo LiftPilot in alto a sinistra.",
+      "purpose": [
+        "Ogni lavoro parte dal sopralluogo. Questa pagina riassume le schede di rilievo, a quale impianto appartengono e cosa resta da fare, e porta alle schede recenti. Se la tua azienda non ha ancora né impianti né schede, in cima trovi «Primi passi»."
+      ],
+      "shots": [
+        {
+          "id": "home-primi-passi",
+          "what": "La pagina Rilievi di un’azienda nuova, con il riquadro «Primi passi» e i tre passi."
+        },
+        {
+          "id": "home-completa",
+          "what": "La pagina Rilievi con i tre riquadri di cifre e la tabella «Rilievi recenti»."
+        }
+      ],
+      "sections": [
+        {
+          "title": "Intestazione",
+          "intro": [
+            "In cima: la riga «Area di lavoro», il titolo «Rilievi» e la frase «Ogni lavoro parte dal sopralluogo: qui le schede di rilievo e cosa resta da fare.»."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Nuovo rilievo",
+              "help": "Apre una nuova scheda di rilievo vuota. Compare solo se il tuo ruolo compila i rilievi.",
+              "src": "src/app/[locale]/app/page.tsx:45"
+            },
+            {
+              "label": "Vai agli impianti",
+              "help": "Apre l’elenco degli impianti. Compare solo se il tuo ruolo vede gli impianti.",
+              "src": "src/app/[locale]/app/page.tsx:46"
+            }
+          ],
+          "notes": [
+            "Gli indirizzi vecchi dell’elenco degli impianti (con filtri nell’indirizzo) vengono portati automaticamente alla pagina Impianti."
+          ]
+        },
+        {
+          "title": "Primi passi",
+          "intro": [
+            "Compare solo per un’azienda senza alcun impianto (nemmeno archiviato) e senza alcuna scheda di rilievo (nemmeno nel cestino); sparisce con il primo impianto o la prima scheda. Dice: «Ancora nessun impianto né scheda di rilievo. Si parte così:» e propone tre passi, ciascuno con il suo pulsante se il tuo ruolo lo può usare."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Nuova scheda di rilievo",
+              "help": "Passo 1, «Il sopralluogo»: compila la scheda di rilievo dell’impianto esistente, anche dal telefono sul posto; i moduli dei fornitori si compilano dai suoi dati. Solo per chi compila i rilievi.",
+              "src": "src/components/PrimiPassi.tsx:104"
+            },
+            {
+              "label": "Nuovo impianto",
+              "help": "Passo 2, «L’impianto»: crealo e collega la scheda; dalla sua pagina parte il «Calcolo argano», poi il Progetto e i documenti. Solo per chi crea impianti.",
+              "src": "src/components/PrimiPassi.tsx:108"
+            },
+            {
+              "label": "Leggi la guida",
+              "help": "Passo 3, «La guida»: il percorso completo, con ciò che il tecnico deve ancora verificare e firmare. Per tutti.",
+              "src": "src/components/PrimiPassi.tsx:112"
+            }
+          ],
+          "notes": []
+        },
+        {
+          "title": "Rilievi e impianti in cifre",
+          "intro": [
+            "Fino a tre riquadri con un numero grande. Il primo vale per tutti i ruoli che vedono i rilievi; gli altri due solo per chi vede anche gli impianti (gli altri leggono «Il tuo ruolo vede i rilievi, non gli impianti.» con il collegamento «Tutte le schede»). I due riquadri sugli impianti sono collegamenti: aprono l’elenco degli impianti già filtrato."
+          ],
+          "fields": [
+            {
+              "label": "Rilievi senza impianto",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Numero intero.",
+              "default": "Calcolato dalle schede dell’azienda, escluse quelle nel cestino.",
+              "required": "no",
+              "help": [
+                "Le schede di rilievo non ancora collegate a un impianto. La riga sotto dice su quante schede è calcolato («su # rilievi, esclusi quelli nel cestino»). Il riquadro è verde a zero, ambra altrimenti.",
+                "Per ridurre il numero, apri la scheda e collegala, o crea l’impianto dalla scheda."
+              ],
+              "src": "src/components/collega/HomeKpis.tsx:34"
+            },
+            {
+              "label": "Impianti con differenze",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Numero intero; con il segno «+» se la ricerca è limitata.",
+              "default": "Calcolato dagli impianti con rilievo collegato.",
+              "required": "no",
+              "help": [
+                "Gli impianti in cui rilievo e calcolo o progetto non coincidono su quello che c’è sul posto. Rosso se ce n’è almeno uno, verde a zero. Un clic apre l’elenco Impianti con il filtro «differenze».",
+                "Le differenze sono cercate tra gli impianti con rilievo modificati per ultimi (fino a 5000): se sono di più, il numero ha il «+» e la riga dice «potrebbero essercene altri»."
+              ],
+              "src": "src/components/collega/HomeKpis.tsx:36"
+            },
+            {
+              "label": "Calcoli da aggiornare",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Numero intero.",
+              "default": "Calcolato dagli impianti attivi.",
+              "required": "no",
+              "help": [
+                "I calcoli che andrebbero rifatti, divisi per causa: «# con un rilievo più recente, # per il software aggiornato». Ambra se ce n’è almeno uno. Un clic apre l’elenco Impianti con il filtro «calcolo da aggiornare»."
+              ],
+              "src": "src/components/collega/HomeKpis.tsx:38"
+            }
+          ],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Rilievi recenti",
+          "intro": [
+            "Una tabella con gli ultimi 8 rilievi, per data di sopralluogo, sotto la frase «# rilievi in tutto: qui i più recenti per data del sopralluogo.». Senza rilievi leggi «Nessun rilievo ancora: il primo sopralluogo si scrive da «Nuovo rilievo».» con il pulsante «Nuovo rilievo» (se puoi compilarli)."
+          ],
+          "fields": [
+            {
+              "label": "Data",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": "Data del sopralluogo.",
+              "required": "no",
+              "help": [
+                "Il giorno del sopralluogo indicato nella scheda."
+              ],
+              "src": "src/components/collega/RecentRilievi.tsx:36"
+            },
+            {
+              "label": "Rilievo",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": "«N° …» (numero dell’impianto), altrimenti «Matricola …», altrimenti «Scheda rilievo impianto».",
+              "required": "no",
+              "help": [
+                "Il titolo breve della scheda, che è un collegamento alla scheda stessa."
+              ],
+              "src": "src/components/collega/RecentRilievi.tsx:38"
+            },
+            {
+              "label": "Indirizzo",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": "Indirizzo della scheda, oppure un trattino.",
+              "required": "no",
+              "help": [
+                "L’indirizzo dell’impianto indicato nel rilievo."
+              ],
+              "src": "src/components/collega/RecentRilievi.tsx:39"
+            },
+            {
+              "label": "Tipo",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Elettrico, idraulico, MRL…",
+              "default": "Dal rilievo; un trattino se non indicato.",
+              "required": "no",
+              "help": [
+                "Il tipo di impianto indicato nella scheda."
+              ],
+              "src": "src/components/collega/RecentRilievi.tsx:40"
+            },
+            {
+              "label": "Collegato a",
+              "kind": "tabella",
+              "unit": null,
+              "values": "«non collegato» (ambra), nome dell’impianto, oppure «collegato» (verde).",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Se la scheda è collegata a un impianto. Chi vede gli impianti legge il nome dell’impianto come collegamento; chi non li vede legge solo «collegato»."
+              ],
+              "src": "src/components/collega/RecentRilievi.tsx:42"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Tutte le schede",
+              "help": "Apre l’elenco completo delle schede di rilievo.",
+              "src": "src/components/collega/RecentRilievi.tsx:126"
+            }
+          ],
+          "notes": []
+        }
+      ],
+      "tips": [
+        "Se vedi cifre rosse o ambra, un clic sul riquadro ti porta direttamente agli impianti da controllare."
+      ]
+    },
+    {
+      "id": "impianti-elenco",
+      "title": "Impianti",
+      "path": "/it/app/impianti",
+      "access": "La vedono i ruoli con il diritto di vedere gli impianti (predefinito: tutti). Chi non lo ha viene portato alla propria pagina di partenza. «Nuovo impianto» richiede il diritto di creare impianti (predefinito: Titolare, Capotecnico, Progettista, Tecnico). Gli impianti archiviati (stessa pagina con il titolo «Impianti archiviati») sono in sola lettura.",
+      "reach": "Voce «Impianti» (o «Impianti archiviati») del menu, pulsante «Vai agli impianti» della pagina Rilievi, riquadri cliccabili della pagina Rilievi, tasto Invio nel campo «Cerca impianti» in alto.",
+      "purpose": [
+        "È l’elenco degli impianti dell’azienda con il loro tipo di intervento, l’esito degli ultimi calcoli e le tavole emesse, ordinati per data dell’ultima modifica. Da qui apri un impianto, filtri per tipo di intervento, cerchi, passi all’archivio o ne crei uno nuovo."
+      ],
+      "shots": [
+        {
+          "id": "impianti-elenco",
+          "what": "L’elenco Impianti con i quattro riquadri, i filtri per tipo di intervento, alcune righe con esiti diversi e l’anteprima a destra."
+        },
+        {
+          "id": "impianti-vuoto",
+          "what": "L’elenco di un’azienda senza impianti, con «Nuovo impianto» e i quattro passi."
+        }
+      ],
+      "sections": [
+        {
+          "title": "Intestazione",
+          "intro": [
+            "In cima: la riga «Il tuo spazio di progettazione», il titolo «Impianti» (nella vista archivio «Impianti archiviati») e la frase «Gli impianti dell’azienda, con il tipo di intervento e l’ultimo esito.». Nell’archivio la frase è «Si consultano in sola lettura; un impianto si ripristina dalla sua pagina.»."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Nuovo impianto",
+              "help": "Apre il modulo «Nuovo impianto». Accanto vedi i quattro passi di ogni impianto («Rilievo», «Calcolo argano», «Progetto», «Documenti e ordini»). Compare per chi crea impianti, non nell’archivio; se non c’è nessun impianto lo stesso pulsante sta dentro l’elenco.",
+              "src": "src/components/dashboard/NuovoImpianto.tsx:56"
+            }
+          ],
+          "notes": []
+        },
+        {
+          "title": "Riepilogo",
+          "intro": [
+            "Quattro riquadri con le cifre dell’azienda, calcolate su tutti gli impianti attivi (non solo su quelli in elenco). Non compaiono nell’archivio."
+          ],
+          "fields": [
+            {
+              "label": "Impianti attivi",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Numero intero.",
+              "default": "Impianti non archiviati.",
+              "required": "no",
+              "help": [
+                "Sotto il numero: quanti per tipo, «# solo argano · # ammodernamenti · # trasformazioni · # da definire»."
+              ],
+              "src": "src/components/dashboard/Kpis.tsx:23"
+            },
+            {
+              "label": "Da rivedere",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Numero intero.",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Gli impianti attivi con l’ultimo esito che non supera le verifiche, oppure senza calcolo, oppure con un record da aggiornare (un impianto è contato una sola volta). Sotto: «# non superano · # senza calcolo · # da aggiornare». Il riquadro è rosso se almeno un esito non supera, ambra se c’è altro da rivedere, verde altrimenti."
+              ],
+              "src": "src/components/dashboard/Kpis.tsx:24"
+            },
+            {
+              "label": "Serie di tavole emesse",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Numero intero.",
+              "default": "Serie emesse per gli impianti attivi.",
+              "required": "no",
+              "help": [
+                "Il numero di serie di tavole emesse. Sotto: le revisioni («nessuna revisione», «# revisione», «# revisioni»)."
+              ],
+              "src": "src/components/dashboard/Kpis.tsx:28"
+            },
+            {
+              "label": "Calcoli negli ultimi 30 giorni",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Numero intero.",
+              "default": null,
+              "required": "no",
+              "help": [
+                "I calcoli salvati negli ultimi 30 giorni. Sotto: gli impianti creati nello stesso periodo."
+              ],
+              "src": "src/components/dashboard/Kpis.tsx:29"
+            }
+          ],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "L’elenco degli impianti",
+          "intro": [
+            "Il riquadro «Impianti» ha sopra la riga «Per ultima modifica». Mostra gli ultimi 10 impianti modificati; «Mostra tutti (N)» ne elenca fino a 500 (oltre, la riga dice «Sono mostrati i primi # di #: gli altri si trovano con la ricerca.»), e «Solo gli ultimi modificati» torna alla vista breve. Ogni riga è un impianto e mostra il nome dell’impianto (collegamento alla sua pagina), l’etichetta del tipo di intervento con la sua icona (motore per «Solo argano», ascensore per gli altri tipi, elenco per «Intervento da definire»), l’indirizzo con comune e provincia e «Matricola» con il numero."
+          ],
+          "fields": [
+            {
+              "label": "Tipo di intervento",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Tutti · Solo argano · Ammodernamento · Trasformazione completa · Da definire",
+              "default": "Tutti",
+              "required": "no",
+              "help": [
+                "Filtra l’elenco per il tipo dell’ultimo Calcolo argano di ogni impianto; «Da definire» sono gli impianti senza Calcolo argano. Accanto a ogni voce c’è il numero di impianti, che compare solo nell’elenco degli impianti attivi, senza ricerca né filtro di stato.",
+                "Il filtro si combina con la ricerca, l’archivio e il filtro di stato. Senza risultati leggi «Nessun impianto con questo tipo di intervento.»."
+              ],
+              "src": "src/components/dashboard/ProjectList.tsx:135"
+            },
+            {
+              "label": "Ultimo calcolo",
+              "kind": "tabella",
+              "unit": null,
+              "values": "«Supera le verifiche» · «Supera · attenzione: #» · «Non supera: #» · «Nessun calcolo»",
+              "default": null,
+              "required": "no",
+              "help": [
+                "L’esito dell’ultimo record dell’impianto: per un impianto con progetto completo quello del progetto, altrimenti quello dell’ultimo calcolo. Un esito con avvisi o che non supera è un pulsante: lo premi e vedi una per una le verifiche. Se il software è cambiato compare anche «da aggiornare».",
+                "Sotto l’esito: data e ora del record e la riga con l’argano calcolato."
+              ],
+              "src": "src/components/dashboard/ProjectList.tsx:180"
+            },
+            {
+              "label": "Ultima modifica",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "A destra della riga: data e ora dell’ultima modifica dell’impianto e, se ce ne sono, il numero di calcoli («# calcolo» o «# calcoli»; senza calcoli non compare nulla)."
+              ],
+              "src": "src/components/dashboard/ProjectList.tsx:196"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Archiviati",
+              "help": "Passa alla vista degli impianti archiviati (titolo «Impianti archiviati»); da lì il pulsante diventa «Impianti attivi» e torna alla vista normale. Il filtro per tipo resta.",
+              "src": "src/components/dashboard/ProjectList.tsx:131"
+            },
+            {
+              "label": "Mostra tutti (N)",
+              "help": "Estende l’elenco a tutti gli impianti della vista (fino a 500).",
+              "src": "src/components/dashboard/ProjectList.tsx:209"
+            },
+            {
+              "label": "Solo gli ultimi modificati",
+              "help": "Riporta l’elenco ai soli 10 impianti modificati per ultimi.",
+              "src": "src/components/dashboard/ProjectList.tsx:213"
+            },
+            {
+              "label": "Annulla la ricerca",
+              "help": "Toglie le parole cercate.",
+              "src": "src/components/dashboard/ProjectList.tsx:154"
+            },
+            {
+              "label": "Mostra tutti gli impianti",
+              "help": "Toglie il filtro di stato arrivato dalla pagina Rilievi.",
+              "src": "src/components/dashboard/ProjectList.tsx:148"
+            }
+          ],
+          "notes": [
+            "Ricerca: il testo si scrive in «Cerca impianti», nella barra in alto. In questa pagina compare solo la frase «# impianto per «…»» (oppure «Nessun impianto corrisponde a «…»: cerca per nome, indirizzo, comune o matricola.») con il collegamento «Annulla la ricerca».",
+            "Arrivando dai riquadri della pagina Rilievi (solo per chi vede i rilievi, non nell’archivio) compare una frase, per esempio «# impianti con differenze tra il rilievo e il calcolo o il progetto su quello che c’è sul posto.» oppure «# impianti con il calcolo da aggiornare: un rilievo più recente o il software aggiornato.»; per le differenze può seguire «Le differenze sono cercate tra i 5000 impianti con rilievo modificati per ultimi.». Il collegamento «Mostra tutti gli impianti» toglie il filtro.",
+            "Senza impianti vedi: «Nessun impianto ancora: si parte da qui.» con «Nuovo impianto» (chi non può crearli legge: «Nessun impianto: quelli che l’azienda crea compaiono qui.»). Nell’archivio vuoto leggi «Nessun impianto archiviato.».",
+            "Devono comparire tutte le parole cercate; «MI_2291» o «50%» cercano esattamente quei caratteri."
+          ]
+        },
+        {
+          "title": "Anteprima dell’ultimo impianto calcolato",
+          "intro": [
+            "A destra dell’elenco (sotto, su schermi stretti) compare l’impianto modificato per ultimo che ha già un esito salvato; con una ricerca o un filtro per tipo o di stato, il primo risultato che ha un esito. Se nessun impianto ha un esito, il riquadro non c’è."
+          ],
+          "fields": [
+            {
+              "label": "Pianta al piano principale",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Scala 1:n",
+              "default": "Disegnata dal software dal vano salvato.",
+              "required": "no",
+              "help": [
+                "Per un progetto completo vedi la pianta al piano principale del vano salvato, su carta bianca, con la didascalia «Pianta al piano principale · 1:n». Il pulsante a icona «Apri il progetto del vano» apre il progetto.",
+                "Senza pianta vedi, in forma di targa, i dati dell’ultimo calcolo (l’argano calcolato) e una frase: «Nessun vano disegnato: qui i dati dell’ultimo calcolo dell’argano.» oppure «La pianta compare quando il Progetto dell’impianto è salvato: qui i dati del suo ultimo calcolo.»."
+              ],
+              "src": "src/components/dashboard/ProjectPreview.tsx:244"
+            },
+            {
+              "label": "Tipo di intervento",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "Il tipo dell’ultimo Calcolo argano dell’impianto in anteprima."
+              ],
+              "src": "src/components/dashboard/ProjectPreview.tsx:266"
+            },
+            {
+              "label": "Matricola",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": "Un trattino (—) se vuota.",
+              "required": "no",
+              "help": [
+                "Il numero di matricola dell’impianto."
+              ],
+              "src": "src/components/dashboard/ProjectPreview.tsx:267"
+            },
+            {
+              "label": "Ultimo calcolo",
+              "kind": "tabella",
+              "unit": null,
+              "values": "«Supera le verifiche» · «Supera · attenzione: #» · «Non supera: #» · «Nessun calcolo»",
+              "default": null,
+              "required": "no",
+              "help": [
+                "L’esito dell’ultimo record, con «da aggiornare» se il software è cambiato."
+              ],
+              "src": "src/components/dashboard/ProjectPreview.tsx:268"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Apri l’impianto",
+              "help": "Apre la pagina dell’impianto in anteprima.",
+              "src": "src/components/dashboard/ProjectPreview.tsx:277"
+            }
+          ],
+          "notes": []
+        }
+      ],
+      "tips": [
+        "Per ritrovare un impianto cerca la matricola: la ricerca guarda anche quella dei rilievi collegati, se il tuo ruolo vede i rilievi."
+      ]
+    },
+    {
+      "id": "nuovo-impianto",
+      "title": "Nuovo impianto",
+      "path": "/it/app/projects/new",
+      "access": "Chi ha il diritto di creare impianti (predefinito: Titolare, Capotecnico, Progettista, Tecnico); per creare da un rilievo serve anche il diritto di collegare i rilievi (stesso insieme). Se l’azienda è in sola lettura il salvataggio è rifiutato.",
+      "reach": "Pulsante «Nuovo impianto» dell’elenco Impianti, voce «Nuovo impianto» del menu, «Nuovo impianto» di «Primi passi», oppure «Crea impianto» nel riquadro «Collegamento all’impianto» di una scheda di rilievo (percorso con il rilievo scelto).",
+      "purpose": [
+        "Qui crei un impianto con i soli dati che servono a riconoscerlo. Il tipo di intervento e i dati tecnici si danno dopo, nel Calcolo argano. Se parti da un rilievo, l’impianto nasce già collegato a quella scheda e prende nome, indirizzo e matricola dal rilievo."
+      ],
+      "shots": [
+        {
+          "id": "nuovo-impianto-vuoto",
+          "what": "Il modulo «Nuovo impianto» vuoto con la nota sul tipo di intervento."
+        },
+        {
+          "id": "nuovo-impianto-da-rilievo",
+          "what": "Il modulo aperto da un rilievo, con l’avviso «L’impianto nasce collegato al rilievo…» e le etichette «dal rilievo» accanto ai campi."
+        }
+      ],
+      "sections": [
+        {
+          "title": "Avvisi in cima",
+          "intro": [
+            "Se arrivi da un rilievo leggi: «L’impianto nasce collegato al rilievo «…» del …: nome, indirizzo e matricola vengono dal rilievo e il Calcolo argano partirà dai valori misurati.». Se la scheda è già collegata a un altro impianto leggi invece «Questo rilievo è già collegato a un impianto: l’impianto qui sotto nascerebbe senza rilievo.» con il collegamento «Apri il rilievo»; se la scheda non si trova, «Rilievo non trovato: l’impianto qui sotto nasce senza rilievo.». In questi due casi il modulo è vuoto e l’impianto non viene collegato."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [],
+          "warnings": [
+            "Se la scheda è già collegata a un altro impianto, il modulo si apre vuoto e l’impianto che crei nasce senza rilievo; per usarla scollegala prima dalla sua pagina («Questo rilievo è già collegato a un impianto: scollegalo prima dalla sua pagina.»)."
+          ]
+        },
+        {
+          "title": "Dati per riconoscere l’impianto",
+          "intro": [
+            "Sopra i campi: «I dati per riconoscere l’impianto.» e la nota «Il tipo di intervento e i dati tecnici si danno dopo, nel Calcolo argano.». Se il tuo ruolo non fa i calcoli, la nota aggiunge che il calcolo lo fa un collega che ne ha il permesso e che dopo il salvataggio si apre la pagina dell’impianto. Per gli altri ruoli, dopo il salvataggio si apre direttamente il Calcolo argano.",
+            "Se un dato non è valido leggi «Controlla i campi evidenziati.» e il campo è evidenziato; quello che hai scritto resta."
+          ],
+          "fields": [
+            {
+              "label": "Denominazione",
+              "kind": "testo",
+              "unit": null,
+              "values": "Da 1 a 160 caratteri; una sola riga (gli a capo diventano spazi).",
+              "default": "Vuoto. Da un rilievo: l’indirizzo del rilievo come scritto (tagliato a 160 caratteri), oppure il titolo della scheda; è solo una proposta e non ha l’etichetta «dal rilievo».",
+              "required": "sì (asterisco)",
+              "help": [
+                "Il nome con cui riconosci l’impianto nell’elenco e nel percorso, per esempio il condominio o la via. Scegli un nome che distingua l’impianto dagli altri dello stesso committente.",
+                "Compare ovunque si nomina l’impianto; puoi cambiarlo quando vuoi con «Modifica anagrafica»."
+              ],
+              "src": "src/components/ProjectForm.tsx:21"
+            },
+            {
+              "label": "Numero di matricola",
+              "kind": "testo",
+              "unit": null,
+              "values": "Fino a 80 caratteri.",
+              "default": "Vuoto. Da un rilievo: la matricola del rilievo, con «dal rilievo».",
+              "required": "no",
+              "help": [
+                "La matricola dell’impianto. È quella che l’elenco mostra come «Matricola», che la ricerca trova e che il Confronto controlla con i rilievi dell’impianto.",
+                "Compare nel cartiglio della pagina dell’impianto."
+              ],
+              "src": "src/components/ProjectForm.tsx:21"
+            },
+            {
+              "label": "Indirizzo",
+              "kind": "testo",
+              "unit": null,
+              "values": "Fino a 200 caratteri.",
+              "default": "Vuoto. Da un rilievo: l’indirizzo del rilievo senza comune e provincia, con «dal rilievo».",
+              "required": "no",
+              "help": [
+                "Via e numero civico dove si trova l’impianto. Se arrivi da un rilievo, il software separa il comune scritto per ultimo (e la provincia tra parentesi) e li mette nei campi successivi.",
+                "Serve per riconoscere l’impianto, per la ricerca e per il collegamento dei rilievi suggeriti."
+              ],
+              "src": "src/components/ProjectForm.tsx:21"
+            },
+            {
+              "label": "Comune",
+              "kind": "testo",
+              "unit": null,
+              "values": "Fino a 120 caratteri.",
+              "default": "Vuoto. Da un rilievo: il comune ricavato dall’indirizzo, con «dal rilievo».",
+              "required": "no",
+              "help": [
+                "Il comune dell’impianto. Compare nella riga sotto il titolo dell’impianto e nell’elenco, e la ricerca lo trova."
+              ],
+              "src": "src/components/ProjectForm.tsx:21"
+            },
+            {
+              "label": "Provincia",
+              "kind": "testo",
+              "unit": null,
+              "values": "Fino a 40 caratteri.",
+              "default": "Vuoto. Da un rilievo: la provincia tra parentesi dell’indirizzo (in maiuscolo), con «dal rilievo».",
+              "required": "no",
+              "help": [
+                "La provincia. Si legge insieme al comune sotto il titolo dell’impianto."
+              ],
+              "src": "src/components/ProjectForm.tsx:21"
+            },
+            {
+              "label": "Committente",
+              "kind": "testo",
+              "unit": null,
+              "values": "Fino a 160 caratteri.",
+              "default": "Vuoto.",
+              "required": "no",
+              "help": [
+                "La società o la persona che ha commissionato il lavoro. Compare nel cartiglio della pagina dell’impianto e nel cartiglio delle tavole, accanto al logo del committente se l’hai caricato nei «Dati dell’impianto». Se lo lasci vuoto, il cartiglio delle tavole riporta un trattino."
+              ],
+              "src": "src/components/ProjectForm.tsx:21"
+            },
+            {
+              "label": "Note",
+              "kind": "testo lungo",
+              "unit": null,
+              "values": "Fino a 4000 caratteri.",
+              "default": "Vuoto.",
+              "required": "no",
+              "help": [
+                "Appunti liberi sull’impianto (accessi, referenti, particolarità). Se compilate, appaiono nel cartiglio della pagina dell’impianto."
+              ],
+              "src": "src/components/ProjectForm.tsx:61"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Crea impianto",
+              "help": "Salva l’impianto. Con il diritto di fare i calcoli si apre il Calcolo argano; altrimenti la pagina dell’impianto. Se partivi da un rilievo, l’impianto nasce collegato alla scheda (scheda già collegata: «Questo rilievo è già collegato a un impianto: scollegalo prima dalla sua pagina.»). Durante il salvataggio il pulsante è disattivato.",
+              "src": "src/components/ProjectForm.tsx:67"
+            }
+          ],
+          "notes": [
+            "Il percorso in alto è «Impianti › Nuovo impianto»."
+          ]
+        }
+      ],
+      "tips": [
+        "Crea l’impianto da una scheda di rilievo: non devi riscrivere i dati e il Calcolo argano parte dai valori misurati."
+      ]
+    },
+    {
+      "id": "impianto-scheda",
+      "title": "Panoramica dell’impianto",
+      "path": "/it/app/projects/‹id›",
+      "access": "La vedono i ruoli che vedono gli impianti (predefinito: tutti). «Modifica anagrafica»: chi modifica gli impianti (Titolare, Capotecnico, Progettista, Tecnico). «Archivia» e «Ripristina»: chi archivia (Titolare, Capotecnico, Progettista). Collegare e scollegare i rilievi: Titolare, Capotecnico, Progettista, Tecnico. Le schede della barra e il pulsante del «Prossimo passo» seguono il diritto di quel passo (calcolo: Titolare, Capotecnico, Progettista, Tecnico; Progetto: Titolare, Capotecnico, Progettista). Il Titolare può cambiare la matrice.",
+      "reach": "Dal nome nell’elenco Impianti, da «Apri l’impianto» nell’anteprima, dai collegamenti nelle schede di rilievo e nei record, dal percorso «Impianti › nome» e dalla scheda «Panoramica» della barra. Dopo «Salva» di «Modifica impianto» torni qui.",
+      "purpose": [
+        "È la panoramica di un impianto: in cima la barra dei passi e il riquadro «Prossimo passo», poi i dati, i rilievi collegati con il confronto, e infine gli elenchi dei record (Calcolo argano, Progetto, Archivio dell’impianto). La simulazione, la relazione tecnica, le tavole e i documenti hanno ognuno la sua pagina, nella barra."
+      ],
+      "shots": [
+        {
+          "id": "impianto-testata",
+          "what": "La barra dei passi, la testata e il riquadro «Prossimo passo» di un impianto attivo."
+        },
+        {
+          "id": "impianto-rilievi-confronto",
+          "what": "Il riquadro «Rilievi» con un rilievo di riferimento e il «Confronto» con righe «coincide», «differenza» e «modifica prevista»."
+        }
+      ],
+      "sections": [
+        {
+          "title": "Testata",
+          "intro": [
+            "In alto: il percorso «Impianti › nome», la barra dei passi (vedi «I passi di un impianto»), l’etichetta del tipo di intervento («Solo argano», «Ammodernamento», «Trasformazione completa» o «Intervento da definire»), il segno «archiviato» se lo è, il nome dell’impianto e la riga con indirizzo, comune e provincia.",
+            "A destra i pulsanti «Modifica anagrafica» e «Archivia» (o «Ripristina»). Il passo da fare adesso è nel riquadro «Prossimo passo», sotto la testata.",
+            "Sotto, il cartiglio con i dati dell’impianto."
+          ],
+          "fields": [
+            {
+              "label": "Numero di matricola",
+              "kind": "testo",
+              "unit": null,
+              "values": null,
+              "default": "Un trattino (—) se vuoto.",
+              "required": "no",
+              "help": [
+                "La matricola dell’impianto, come inserita in «Modifica anagrafica»."
+              ],
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:92"
+            },
+            {
+              "label": "Committente",
+              "kind": "testo",
+              "unit": null,
+              "values": null,
+              "default": "Un trattino (—) se vuoto.",
+              "required": "no",
+              "help": [
+                "Il committente indicato nell’anagrafica."
+              ],
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:92"
+            },
+            {
+              "label": "Creato da",
+              "kind": "testo",
+              "unit": null,
+              "values": null,
+              "default": "Nome di chi ha creato l’impianto e data.",
+              "required": "no",
+              "help": [
+                "Chi ha creato l’impianto, con il giorno. Non si modifica."
+              ],
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:92"
+            },
+            {
+              "label": "Ultima modifica",
+              "kind": "testo",
+              "unit": null,
+              "values": null,
+              "default": "Data e ora.",
+              "required": "no",
+              "help": [
+                "Data e ora dell’ultima modifica dell’impianto. Non si modifica."
+              ],
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:92"
+            },
+            {
+              "label": "Note",
+              "kind": "testo lungo",
+              "unit": null,
+              "values": null,
+              "default": "Compare solo se le note non sono vuote.",
+              "required": "no",
+              "help": [
+                "Le note scritte in «Modifica anagrafica», con gli a capo."
+              ],
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:92"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Modifica anagrafica",
+              "help": "Apre «Modifica impianto». Non compare se l’impianto è archiviato.",
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:78"
+            },
+            {
+              "label": "Archivia",
+              "help": "Archivia l’impianto subito, senza conferma: da quel momento è in sola lettura e sparisce dall’elenco normale (lo trovi in «Impianti archiviati»). I rilievi collegati restano collegati.",
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:78"
+            },
+            {
+              "label": "Ripristina",
+              "help": "Sull’impianto archiviato: lo riporta attivo e modificabile.",
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:78"
+            }
+          ],
+          "notes": [
+            "Non esiste un comando per cancellare un impianto: l’archivio è il modo di toglierlo dal lavoro senza perdere i record.",
+            "«Archivia» agisce subito, senza conferma, e si annulla con «Ripristina». Nella pagina di un impianto archiviato non ci sono i pulsanti di modifica, di collegamento e di nuovo calcolo, né il «Prossimo passo»."
+          ]
+        },
+        {
+          "title": "Prossimo passo",
+          "intro": [
+            "Un riquadro con una frase e un pulsante: il passo che l’impianto aspetta adesso, nell’ordine del lavoro. Le frasi possibili sono: «Comincia dal calcolo dell’argano: tipo di intervento, dati dell’impianto e macchina.», «Il calcolo argano va aggiornato prima di andare avanti.», «Disegna il progetto del vano sull’ultimo calcolo argano.», «Rileva il locale macchina sull’ultimo calcolo argano.», «Il progetto va rifatto sull’ultimo calcolo argano.», «Il progetto ha # verifiche non superate.», «Prepara la relazione tecnica di modifica.», «La relazione tecnica emessa va rifatta in una nuova revisione.», «Emetti le tavole di progetto.», «Le tavole emesse sono più vecchie del progetto: emettine una revisione.» e, a lavoro finito, «Tutto pronto: tavole e documenti da scaricare.».",
+            "Il pulsante apre la pagina di quel passo («Apri il calcolo argano», «Apri il progetto», «Apri la relazione tecnica», «Apri tavole e documenti»). Se il tuo ruolo non ha il diritto di quel passo, al posto del pulsante leggi di chi è: «Il calcolo dell’argano lo fa un collega che ne ha il permesso.» o «Il progetto lo disegna un collega che ne ha il permesso.»."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Apri il calcolo argano · Apri il progetto · Apri la relazione tecnica · Apri tavole e documenti",
+              "help": "Apre la pagina del passo indicato dalla frase.",
+              "src": "src/components/impianto/ProssimoPasso.tsx:22"
+            }
+          ],
+          "notes": [
+            "Il riquadro non compare su un impianto archiviato. Per una «Trasformazione completa» la relazione tecnica non è un passo: dopo il progetto il prossimo passo sono le tavole."
+          ]
+        },
+        {
+          "title": "Rilievi",
+          "intro": [
+            "Il riquadro dei rilievi collegati; lo vede chi vede i rilievi. Sotto il titolo: «Il primo è il riferimento dei valori «dal rilievo» e del confronto.»; senza rilievi: «Nessun rilievo collegato.» e «Si collega dalla pagina del rilievo, nel riquadro «Collegamento all’impianto».». Un messaggio dopo il collegamento o lo scollegamento (per esempio «Rilievo collegato all’impianto.» o «Rilievo scollegato dall’impianto.») compare in cima al riquadro. Sotto ci sono i rilievi collegati, dal più recente: per ognuno la data del sopralluogo, il titolo della scheda (collegamento), l’indirizzo e «rilevato da …»; il primo ha il segno «riferimento»."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Vai ai rilievi",
+              "help": "Apre l’elenco delle schede di rilievo.",
+              "src": "src/components/collega/ImpiantoCollegato.tsx:149"
+            },
+            {
+              "label": "PDF",
+              "help": "Scarica la scheda di rilievo in PDF.",
+              "src": "src/components/collega/ImpiantoCollegato.tsx:164"
+            },
+            {
+              "label": "Moduli dei fornitori",
+              "help": "Un pulsante, con il nome del modulo, per ogni modulo compilato con i dati del rilievo: lo scarica.",
+              "src": "src/components/collega/ImpiantoCollegato.tsx:165"
+            },
+            {
+              "label": "Scollega",
+              "help": "Toglie il collegamento tra la scheda e l’impianto, senza cancellare né l’una né l’altro. Non compare se l’impianto è archiviato o se non hai il diritto di collegare i rilievi.",
+              "src": "src/components/collega/ImpiantoCollegato.tsx:172"
+            }
+          ],
+          "notes": [
+            "Per collegare una scheda a questo impianto vai alla pagina della scheda, nel riquadro «Collegamento all’impianto» (vedi più avanti)."
+          ]
+        },
+        {
+          "title": "Confronto",
+          "intro": [
+            "Compare solo se c’è un rilievo collegato e puoi vedere i rilievi. Sotto il titolo: «Il rilievo del … accanto all’ultimo calcolo e all’ultimo progetto.». A destra una sintesi, per esempio «nessuna differenza sullo stato di fatto, nessuna modifica prevista» (verde), «# differenze sullo stato di fatto, # modifiche previste» (rosso se ci sono differenze), «niente da confrontare: nessun calcolo o progetto salvato» o «nessun parametro tecnico confrontato: rilievo e record salvati non hanno valori in comune». È verde solo se è stato davvero confrontato qualcosa.",
+            "La tabella ha le colonne «Parametro», «Rilievo», «Calcolo», «Progetto» e «Stato», in tre gruppi: «Stato di fatto» (quello che c’è sul posto: una differenza è un probabile errore), «Modifica prevista» (cambia con l’intervento: la differenza è attesa) e «Solo confronto» (testi e scelte del progetto, affiancati senza giudizio). Su telefono ogni riga diventa una scheda. I parametri senza valore nel rilievo stanno raccolti sotto la tabella in «Altri # parametri, senza valore nel rilievo»: li apri per vederli. Se il rilievo non ha valori da confrontare leggi «Il rilievo non ha valori da confrontare.»."
+          ],
+          "fields": [
+            {
+              "label": "Parametro",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Tipo impianto, Matricola, N° impianto, Indirizzo, Fermate, Corsa, Posizione della macchina, Taglia, Numero di funi, Diametro funi, Massa cabina, Diametro puleggia di trazione, Rapporto di riduzione, Potenza del motore, Giri del motore, Poli del motore, Portata, Persone, Velocità, Marca impianto, Operatore porte, Luce porte, Limitatore di velocità, Diametro funicella",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Il valore confrontato. Per «Matricola» e «Indirizzo» la colonna «Progetto» riporta i dati dell’impianto; matricola e n° impianto si confrontano anche con i rilievi precedenti dell’impianto."
+              ],
+              "src": "src/components/collega/Confronto.tsx:57"
+            },
+            {
+              "label": "Rilievo · Calcolo · Progetto",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "I tre valori affiancati: quello misurato nel rilievo di riferimento, quello dell’ultimo Calcolo argano e quello dell’ultimo progetto salvato. Dove manca c’è un trattino."
+              ],
+              "src": "src/components/collega/Confronto.tsx:58"
+            },
+            {
+              "label": "Stato",
+              "kind": "tabella",
+              "unit": null,
+              "values": "coincide · differenza · modifica prevista · solo confronto · nessun confronto · fuori ambito",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Il giudizio sulla riga. «differenza» (rosso) sullo stato di fatto è un probabile errore; «modifica prevista» (ambra) è attesa. Se il valore è stato scritto diversamente in un rilievo precedente leggi «Nel rilievo del …: …».",
+                "Per la portata e la velocità variate trovi anche la nota che per il collaudo è una parte modificata («Portata o carichi (variati)», «Velocità nominale (variata)») con il collegamento «Parti del collaudo»."
+              ],
+              "src": "src/components/collega/Confronto.tsx:61"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Usa il valore del rilievo",
+              "help": "Compare sulle differenze quando il tuo ruolo può modificare il modulo giusto: apre il Calcolo argano, il Progetto o «Modifica impianto» con il valore del rilievo già inserito e l’etichetta «dal rilievo». Non cambia nulla finché non salvi il modulo.",
+              "src": "src/components/collega/Confronto.tsx:70"
+            }
+          ],
+          "notes": [
+            "Se il rilievo indica un impianto idraulico o MRL, sopra la tabella leggi che LiftPilot calcola gli impianti elettrici con argano a riduttore, quindi calcolo e progetto non si applicano a questo impianto (stato «fuori ambito»)."
+          ]
+        },
+        {
+          "title": "Collegamento di una scheda di rilievo all’impianto",
+          "intro": [
+            "Il collegamento si fa dalla pagina della scheda, nel riquadro «Collegamento all’impianto» (non nella pagina dell’impianto). Serve il diritto di collegare i rilievi e un impianto attivo. Non compare nella stampa né nel PDF della scheda."
+          ],
+          "fields": [
+            {
+              "label": "Cerca un altro impianto",
+              "kind": "testo",
+              "unit": null,
+              "values": "Fino a 80 caratteri.",
+              "default": "Vuoto. Segnaposto: «Nome, indirizzo, comune, matricola o n° impianto».",
+              "required": "no",
+              "help": [
+                "Compare per le schede non collegate. Cerca tra gli impianti attivi dell’azienda; i risultati già suggeriti non si ripetono. Se non trova nulla leggi «Nessun impianto attivo trovato per «…».», se trova solo i suggeriti «Per «…» solo gli impianti già suggeriti qui sopra.»."
+              ],
+              "src": "src/components/collega/LinkPanel.tsx:299"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Crea impianto",
+              "help": "Per una scheda non collegata: apre «Nuovo impianto» con indirizzo e matricola del rilievo (il tipo di intervento si sceglie poi nel Calcolo argano).",
+              "src": "src/components/collega/LinkPanel.tsx:286"
+            },
+            {
+              "label": "Collega",
+              "help": "Accanto a ogni impianto suggerito o trovato: collega la scheda a quell’impianto. Il motivo del suggerimento è scritto sotto il nome («stessa matricola», «stesso n° impianto di un suo rilievo», «stesso indirizzo»). Se nel frattempo un’altra persona ha cambiato il collegamento, un messaggio ti avvisa che non è cambiato nulla: riprova.",
+              "src": "src/components/collega/LinkPanel.tsx:225"
+            },
+            {
+              "label": "Cerca",
+              "help": "Esegue la ricerca di un altro impianto.",
+              "src": "src/components/collega/LinkPanel.tsx:303"
+            },
+            {
+              "label": "Vedi il confronto",
+              "help": "Per una scheda già collegata: apre il confronto dell’impianto.",
+              "src": "src/components/collega/LinkPanel.tsx:268"
+            },
+            {
+              "label": "Scollega",
+              "help": "Per una scheda già collegata a un impianto attivo: toglie il collegamento.",
+              "src": "src/components/collega/LinkPanel.tsx:274"
+            }
+          ],
+          "notes": [
+            "Con l’azienda in sola lettura leggi «L’azienda è in sola lettura: il collegamento non si cambia.».",
+            "Una scheda si collega a un solo impianto; un impianto può avere più schede."
+          ],
+          "warnings": [
+            "Se l’impianto è archiviato il collegamento non si può cambiare («L’impianto è archiviato, quindi in sola lettura: il rilievo resta collegato.»)."
+          ]
+        },
+        {
+          "title": "Calcolo argano",
+          "intro": [
+            "Le schede dei calcoli dell’impianto (sezione «Calcolo argano»), dal più recente. Con almeno un calcolo e il diritto di calcolare, in alto a destra c’è «Nuovo calcolo». Senza calcoli leggi: «Nessun calcolo argano ancora: si sceglie il tipo di intervento, le parti e il collaudo, e si calcola l’argano.» con «Calcola l’argano» (oppure la nota su chi fa il calcolo)."
+          ],
+          "fields": [
+            {
+              "label": "Data",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "Data e ora del salvataggio, collegamento alla pagina del calcolo. Sotto, l’etichetta del record se c’è."
+              ],
+              "src": "src/components/project/RecordTable.tsx:162"
+            },
+            {
+              "label": "Esito",
+              "kind": "tabella",
+              "unit": null,
+              "values": "«Supera le verifiche» · «Supera · attenzione: #» · «Non supera: #»",
+              "default": null,
+              "required": "no",
+              "help": [
+                "L’esito delle verifiche, come nell’elenco. Un esito con avvisi o che non supera è un pulsante che mostra le verifiche. «da aggiornare» segna un calcolo che il software attuale non riproduce. Se il calcolo ha dei visti leggi «Visti: #»."
+              ],
+              "src": "src/components/project/RecordTable.tsx:165"
+            },
+            {
+              "label": "Argano",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "La macchina calcolata, in sintesi (marca, modello, dati principali)."
+              ],
+              "src": "src/components/project/RecordTable.tsx:172"
+            },
+            {
+              "label": "Autore",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": "Un trattino se l’autore non c’è più.",
+              "required": "no",
+              "help": [
+                "Chi ha salvato il calcolo."
+              ],
+              "src": "src/components/project/RecordTable.tsx:173"
+            },
+            {
+              "label": "Tipo di intervento",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Solo argano · Ammodernamento · Trasformazione completa",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Il tipo scelto in quel calcolo."
+              ],
+              "src": "src/components/project/ProjectSections.tsx:39"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Nuovo calcolo",
+              "help": "Apre un nuovo Calcolo argano per l’impianto.",
+              "src": "src/components/project/ProjectSections.tsx:35"
+            }
+          ],
+          "notes": []
+        },
+        {
+          "title": "Progetto",
+          "intro": [
+            "Il Progetto dell’impianto: sotto il titolo, la data dell’ultimo progetto salvato, il pulsante «Apri il progetto» e, se il software è cambiato, l’avviso «da aggiornare» con «Aggiorna con il software attuale» (per chi può aggiornare). Sotto, «Versioni salvate» con la tabella dei progetti salvati (Data, Esito, Impianto, Autore). Se hai rilevato il locale macchina, «Rilievi del locale macchina» con la tabella (Data, Esito, Locale e argano, Autore). La simulazione 3D è nella pagina «Simulazione», la distinta delle staffe in «Tavole e documenti».",
+            "Se non c’è ancora nulla leggi che cosa è il Progetto per questo intervento: «Per questo intervento il Progetto è il rilievo del locale macchina sul calcolo argano; resta possibile disegnare l’intero impianto.», «Il Progetto disegna il vano sul calcolo argano.» oppure «Il Progetto si disegna sul calcolo argano, dopo averlo salvato.», con il pulsante «Rileva il locale macchina» o «Disegna il progetto» (o la nota di chi fa quel passo)."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Apri il progetto",
+              "help": "Apre l’ultimo progetto salvato.",
+              "src": "src/components/project/ProjectSections.tsx:52"
+            },
+            {
+              "label": "Rileva il locale macchina · Disegna il progetto",
+              "help": "Compaiono quando non c’è ancora un Progetto, per chi disegna il progetto: aprono il rilievo del locale macchina o il disegno del vano sull’ultimo Calcolo argano.",
+              "src": "src/app/[locale]/app/projects/[id]/page.tsx:60"
+            },
+            {
+              "label": "Aggiorna con il software attuale",
+              "help": "Compare nell’avviso «da aggiornare» del progetto, per chi può aggiornarlo.",
+              "src": "src/components/StaleNotice.tsx:88"
+            }
+          ],
+          "notes": []
+        },
+        {
+          "title": "Archivio dell’impianto",
+          "intro": [
+            "Una sezione chiusa che compare solo se ce n’è bisogno: «Progetti del vano e calcoli salvati prima del modulo unico: restano consultabili.». La apri per vedere i «Progetti del vano» (colonna «Misure»: «DXF/DWG» oppure «inserite a mano») e i «Calcoli». Un record dell’archivio «da aggiornare» si aggiorna dal Progetto."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": []
+        }
+      ],
+      "tips": [
+        "Usa il Confronto prima di consegnare: le righe «Stato di fatto» in rosso sono quasi sempre un dato da ricontrollare in sopralluogo o nel modulo."
+      ]
+    },
+    {
+      "id": "modifica-impianto",
+      "title": "Modifica impianto",
+      "path": "/it/app/projects/‹id›/edit",
+      "access": "Chi modifica gli impianti (predefinito: Titolare, Capotecnico, Progettista, Tecnico). Su un impianto archiviato la pagina non si apre (pagina non trovata): ripristina prima l’impianto. Con l’azienda in sola lettura il salvataggio è rifiutato.",
+      "reach": "Pulsante «Modifica anagrafica» nella testata della pagina dell’impianto; oppure «Usa il valore del rilievo» nel Confronto per matricola o indirizzo.",
+      "purpose": [
+        "Cambia i dati per riconoscere l’impianto. Il modulo è lo stesso di «Nuovo impianto», con i valori attuali già compilati. Il tipo di intervento non si cambia qui: è quello dell’ultimo Calcolo argano."
+      ],
+      "shots": [
+        {
+          "id": "modifica-impianto",
+          "what": "Il modulo «Modifica impianto» compilato con i valori dell’impianto."
+        },
+        {
+          "id": "modifica-usa-rilievo",
+          "what": "Il modulo aperto da «Usa il valore del rilievo», con l’avviso informativo e l’etichetta «dal rilievo» accanto al campo."
+        }
+      ],
+      "sections": [
+        {
+          "title": "Avviso «usa il valore del rilievo»",
+          "intro": [
+            "Se arrivi da «Usa il valore del rilievo» per la matricola o l’indirizzo (solo per chi vede i rilievi) leggi in cima, per esempio: «Inserito il valore del rilievo per «Numero di matricola»: …. Non è ancora salvato: salva per registrarlo.», con «(prima: …)» se il campo conteneva altro. Il campo ha l’etichetta «dal rilievo». Per l’indirizzo il software compila anche comune e provincia, se li trova nel rilievo."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Dati per riconoscere l’impianto",
+          "intro": [
+            "Gli stessi sette campi di «Nuovo impianto», con gli stessi limiti: «Denominazione» (obbligatoria, 1–160 caratteri), «Numero di matricola» (80), «Indirizzo» (200), «Comune» (120), «Provincia» (40), «Committente» (160) e «Note» (4000). Qui i campi partono dai valori salvati; la nota sul tipo di intervento non c’è."
+          ],
+          "fields": [
+            {
+              "label": "Denominazione",
+              "kind": "testo",
+              "unit": null,
+              "values": "Da 1 a 160 caratteri; una sola riga.",
+              "default": "Il nome attuale dell’impianto.",
+              "required": "sì (asterisco)",
+              "help": [
+                "Il nome dell’impianto. Cambiarlo lo cambia ovunque (elenco, percorso, ricerca)."
+              ],
+              "src": "src/components/ProjectForm.tsx:21"
+            },
+            {
+              "label": "Numero di matricola",
+              "kind": "testo",
+              "unit": null,
+              "values": "Fino a 80 caratteri.",
+              "default": "Il valore attuale.",
+              "required": "no",
+              "help": [
+                "La matricola dell’impianto. Se la cambi, il Confronto la controlla di nuovo con i rilievi."
+              ],
+              "src": "src/components/ProjectForm.tsx:21"
+            },
+            {
+              "label": "Indirizzo",
+              "kind": "testo",
+              "unit": null,
+              "values": "Fino a 200 caratteri.",
+              "default": "Il valore attuale.",
+              "required": "no",
+              "help": [
+                "Via e numero civico."
+              ],
+              "src": "src/components/ProjectForm.tsx:21"
+            },
+            {
+              "label": "Comune",
+              "kind": "testo",
+              "unit": null,
+              "values": "Fino a 120 caratteri.",
+              "default": "Il valore attuale.",
+              "required": "no",
+              "help": [
+                "Il comune dell’impianto."
+              ],
+              "src": "src/components/ProjectForm.tsx:21"
+            },
+            {
+              "label": "Provincia",
+              "kind": "testo",
+              "unit": null,
+              "values": "Fino a 40 caratteri.",
+              "default": "Il valore attuale.",
+              "required": "no",
+              "help": [
+                "La provincia."
+              ],
+              "src": "src/components/ProjectForm.tsx:21"
+            },
+            {
+              "label": "Committente",
+              "kind": "testo",
+              "unit": null,
+              "values": "Fino a 160 caratteri.",
+              "default": "Il valore attuale.",
+              "required": "no",
+              "help": [
+                "Il committente: compare nel cartiglio delle tavole emesse da questo momento in poi."
+              ],
+              "src": "src/components/ProjectForm.tsx:21"
+            },
+            {
+              "label": "Note",
+              "kind": "testo lungo",
+              "unit": null,
+              "values": "Fino a 4000 caratteri.",
+              "default": "Le note attuali.",
+              "required": "no",
+              "help": [
+                "Appunti liberi sull’impianto."
+              ],
+              "src": "src/components/ProjectForm.tsx:61"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Salva",
+              "help": "Salva i dati e torna alla pagina dell’impianto. Se un campo non è valido leggi «Controlla i campi evidenziati.» e quello che hai scritto resta. Se nel frattempo l’impianto è stato archiviato leggi «Elemento non trovato.».",
+              "src": "src/components/ProjectForm.tsx:67"
+            }
+          ],
+          "notes": [
+            "Il percorso in alto è «Impianti › nome › Modifica impianto»."
+          ],
+          "warnings": [
+            "Se nel frattempo l’impianto è stato archiviato, «Salva» non salva e leggi «Elemento non trovato.»."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dati-impianto",
+      "title": "Dati dell’impianto",
+      "path": "/it/app/projects/‹id›/impianto",
+      "access": "La vedono tutti i ruoli che vedono gli impianti («Vedere gli impianti con calcoli, progetti e tavole»). Li modifica chi può modificare i dati dell’impianto («Modificare i dati dell’impianto (anche l’anagrafica per la relazione tecnica) e il logo del committente; caricare, modificare ed eliminare i documenti dell’impianto»: predefinito Capotecnico, Progettista e Tecnico, oltre al Titolare), purché l’impianto non sia archiviato e l’azienda non sia in sola lettura; per gli altri i campi sono disattivati e non ci sono i pulsanti di salvataggio. Il Titolare può cambiare la matrice dei permessi.",
+      "reach": "Dalla pagina dell’impianto, sezione «Tavole emesse», pulsante «Dati dell’impianto»; oppure dai collegamenti «Apri i dati dell’impianto» e «Modifica nei dati dell’impianto» nei moduli di emissione e nella relazione tecnica.",
+      "purpose": [
+        "Qui inserisci i dati che né il calcolo né il progetto del vano conoscono e che il foglio 1 delle tavole (e in parte la relazione tecnica) stampa. Tutti i campi sono facoltativi: un campo vuoto va in tavola come trattino o con l’ipotesi del software. Prima di salvare, il server controlla tutti i campi con le stesse regole; un numero fuori dai limiti fa rifiutare l’intero salvataggio.",
+        "I dati si salvano sull’impianto (uno per impianto) e valgono per le tavole che emetti dopo: le tavole già emesse restano come sono state emesse. Se i dati cambiano dopo un’emissione, l’elenco delle tavole lo segnala («I dati dell’impianto del progetto sono cambiati dopo l’emissione di queste tavole…»): per allinearle emetti una nuova revisione.",
+        "Il modulo mostra solo i campi che i documenti dell’impianto leggono. Per un impianto completo (progetto dell’ascensore, o calcolo il cui Progetto disegna il vano) vedi anche vano, rivestimento della cabina, uso, paracadute del contrappeso, correnti, passi delle staffe e masse della cabina. Per la sola sostituzione dell’argano in un locale esistente vedi una parte ridotta; i dati dell’impianto completo già inseriti restano salvati ma queste tavole non li usano né li stampano (messaggio: «I dati inseriti per un impianto completo restano salvati: queste tavole del locale macchina non li stampano.»)."
+      ],
+      "shots": [
+        {
+          "id": "dati-impianto-pagina",
+          "what": "La pagina intera con il riquadro «Logo del committente» e i riquadri «Impianto» e «Alimentazione»"
+        },
+        {
+          "id": "dati-impianto-facoltativi",
+          "what": "Il riquadro «Facoltativi» aperto con i passi delle staffe e le quattro masse della cabina"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Logo del committente",
+          "intro": [
+            "Il logo della società che ha commissionato il progetto, in PNG o JPEG fino a 300 KB. Il testo del riquadro: «Va nel cartiglio delle tavole, accanto al nome del committente; le tavole già emesse tengono il loro.» Se non c’è nessun logo leggi «Nessun logo del committente: nel cartiglio solo il nome.» Con un logo vedi l’anteprima («Logo del committente»)."
+          ],
+          "fields": [
+            {
+              "label": "File del logo",
+              "kind": "file",
+              "unit": "KB",
+              "values": "PNG o JPEG; al massimo 300 KB; ciascun lato da 16 a 4000 pixel e al massimo 4 milioni di pixel in tutto.",
+              "default": null,
+              "required": "sì per usare «Carica il logo»",
+              "help": [
+                "Il logo della società committente, in PNG o JPEG. Il server riconosce il formato dai primi byte del file, non dal nome.",
+                "Massimo 300 KB; ciascun lato da 16 a 4000 pixel e al massimo 4 milioni di pixel in tutto, altrimenti ricevi «Il file non è un PNG o JPEG valido, o ha dimensioni fuori misura.» (oltre i 300 KB: «Il logo supera 300 KB.»).",
+                "Il riquadro compare con il campo solo se puoi modificare l’impianto e non è archiviato."
+              ],
+              "src": "src/components/tavole/ClientLogoForm.tsx:48"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Carica il logo",
+              "help": "Carica il file. Il nuovo logo diventa quello del committente per le serie emesse da ora; le serie già emesse tengono quello con cui sono state emesse. A caricamento riuscito leggi «Logo salvato.»",
+              "src": "src/components/tavole/ClientLogoForm.tsx:52"
+            },
+            {
+              "label": "Togli il logo",
+              "help": "Compare solo se c’è un logo. Lo scollega dall’impianto (il file resta per le serie già emesse): nel cartiglio tornerà solo il nome del committente.",
+              "src": "src/components/tavole/ClientLogoForm.tsx:53"
+            }
+          ],
+          "warnings": [
+            "Il nuovo logo sostituisce quello attuale per le serie che emetti da ora; «Togli il logo» lo scollega dall’impianto. Le serie già emesse tengono il logo con cui sono state emesse."
+          ]
+        },
+        {
+          "title": "Impianto",
+          "intro": [
+            "Primo riquadro del modulo, con il titolo «Impianto». Sotto i campi leggi la nota «Porte, arcata, guide, staffe, limitatore, ammortizzatori e masse dell’argano e dei cavi vengono dal progetto e dal collaudo: si cambiano lì.» (per l’impianto completo) oppure «La massa dell’argano viene dal calcolo: si cambia lì.» (per la sostituzione)."
+          ],
+          "fields": [
+            {
+              "label": "Manovra",
+              "kind": "testo",
+              "unit": null,
+              "values": "fino a 80 caratteri",
+              "default": "vuoto: in tavola un trattino",
+              "required": "no",
+              "help": [
+                "Il tipo di manovra dell’impianto, come lo vuoi scritto sul foglio 1.",
+                "Massimo 80 caratteri. Compare anche nella relazione tecnica, nel riquadro «Dati che la relazione legge dall’impianto e dal Calcolo argano»."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:71"
+            },
+            {
+              "label": "Vano",
+              "kind": "testo",
+              "unit": null,
+              "values": "fino a 80 caratteri",
+              "default": "vuoto: in tavola un trattino",
+              "required": "no; il campo compare solo per l’impianto completo",
+              "help": [
+                "Una breve descrizione del vano, come va sul foglio 1. Compare solo per un impianto completo.",
+                "Massimo 80 caratteri."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:72"
+            },
+            {
+              "label": "Rivestimento cabina",
+              "kind": "testo",
+              "unit": null,
+              "values": "fino a 80 caratteri",
+              "default": "vuoto: in tavola un trattino",
+              "required": "no; solo impianto completo",
+              "help": [
+                "Il rivestimento o la finitura della cabina, come va sul foglio 1. Compare solo per un impianto completo.",
+                "Massimo 80 caratteri."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:73"
+            },
+            {
+              "label": "Paracadute",
+              "kind": "scelta",
+              "unit": null,
+              "values": "— (non indicato) · progressivo · istantaneo a rulli · istantaneo",
+              "default": "— (non indicato)",
+              "required": "no",
+              "help": [
+                "Il tipo di paracadute della cabina: progressivo, istantaneo a rulli o istantaneo. Il foglio 1 lo usa per il fattore d’urto nel calcolo dei carichi sulle guide; compare anche nella relazione tecnica.",
+                "Sotto il campo leggi: «Istantaneo, anche a rulli: solo fino a 0,63 m/s (UNI EN 81-20, 5.6.2). Il foglio 1 lo verifica con la velocità del progetto.»"
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:75"
+            },
+            {
+              "label": "Uso dell’ascensore",
+              "kind": "scelta",
+              "unit": null,
+              "values": "— · Persone · Merci accompagnate · Merci accompagnate con mezzi pesanti",
+              "default": "— (il software usa un’ipotesi: vedi sotto)",
+              "required": "no; solo impianto completo",
+              "help": [
+                "A che cosa serve l’impianto: decide la forza sulla soglia di cabina durante il carico, nella verifica delle guide (UNI EN 81-20, 5.7.2.3.6). Compare solo per un impianto completo e anche nella relazione tecnica.",
+                "Le tre scelte sono «Persone (0,4·g·Q)», «Merci accompagnate (0,6·g·Q)» e «Merci accompagnate, mezzi di carico pesanti fuori portata (0,85·g·Q)».",
+                "Se non indichi nulla il software sceglie dalla portata Q, come nella UNI EN 81-1:2008, G.2.5: 0,6·g·Q per Q da 2500 kg in su, 0,4·g·Q sotto i 2500 kg."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:85"
+            },
+            {
+              "label": "Carico del limitatore sulla soletta P4 (daN)",
+              "kind": "numero",
+              "unit": "daN",
+              "values": "0 – 5000",
+              "default": "vuoto: un trattino",
+              "required": "no",
+              "help": [
+                "La forza che il limitatore di velocità scarica sulla soletta (carico P4), in decanewton.",
+                "Valori da 0 a 5000 daN; sono ammessi i decimali (con la virgola o con il punto)."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:94"
+            },
+            {
+              "label": "Paracadute del contrappeso (spazio accessibile sotto il vano)",
+              "kind": "scelta",
+              "unit": null,
+              "values": "— · progressivo · istantaneo a rulli · istantaneo · nessuno: pilastro esistente fino al terreno (modifica)",
+              "default": "— ; senza dati il software ipotizza un paracadute progressivo per il carico P7",
+              "required": "no in generale; obbligatorio con la macchina sotto la fossa (altrimenti il foglio 1 non passa). Solo impianto completo",
+              "help": [
+                "Il tipo di paracadute del contrappeso quando sotto il vano c’è uno spazio raggiungibile dalle persone. Con la macchina sotto la fossa è obbligatorio (UNI EN 81-20, 5.2.5.4); finché manca, il foglio 1 non passa.",
+                "Scelte: progressivo, istantaneo a rulli, istantaneo, oppure «nessuno: pilastro esistente fino al terreno (modifica)» (solo in una modifica: UNI 10411-1, 6.14). Sotto il campo: progressivo oltre 1 m/s; istantaneo, rottura della sospensione o fune di sicurezza solo fino a 1 m/s.",
+                "Scegliendo il pilastro, il campo «Azionamento del paracadute del contrappeso» si azzera e si disattiva. Il tipo scelto determina anche il carico P7 sulle guide del contrappeso."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:98"
+            },
+            {
+              "label": "Azionamento del paracadute del contrappeso",
+              "kind": "scelta",
+              "unit": null,
+              "values": "— · limitatore di velocità del contrappeso · rottura della sospensione · fune di sicurezza",
+              "default": "—",
+              "required": "solo impianto completo; serve con un paracadute del contrappeso (non con il pilastro)",
+              "help": [
+                "Che cosa fa intervenire il paracadute del contrappeso: «limitatore di velocità del contrappeso», «rottura della sospensione» oppure «fune di sicurezza». Con il limitatore il foglio 1 scrive anche il limitatore del contrappeso con la sua fune.",
+                "È disattivato se hai scelto il pilastro al posto del paracadute."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:107"
+            }
+          ],
+          "actions": [],
+          "warnings": [
+            "Con la macchina sotto la fossa il paracadute del contrappeso e il suo azionamento sono obbligatori (UNI EN 81-20, 5.2.5.4): finché mancano, il foglio 1 non passa."
+          ]
+        },
+        {
+          "title": "Alimentazione",
+          "intro": [
+            "Secondo riquadro: i dati elettrici. Tutti facoltativi; ammettono i decimali."
+          ],
+          "fields": [
+            {
+              "label": "Corrente nominale (A)",
+              "kind": "numero",
+              "unit": "A",
+              "values": "0 – 1000",
+              "default": "vuoto: un trattino",
+              "required": "no; solo impianto completo",
+              "help": [
+                "La corrente nominale del motore. Compare solo per un impianto completo (tabella dei carichi del foglio 1)."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:122"
+            },
+            {
+              "label": "Corrente di avviamento (A)",
+              "kind": "numero",
+              "unit": "A",
+              "values": "0 – 5000",
+              "default": "vuoto: un trattino",
+              "required": "no; solo impianto completo",
+              "help": [
+                "La corrente di avviamento del motore. Compare solo per un impianto completo."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:122"
+            },
+            {
+              "label": "Tensione forza motrice (V)",
+              "kind": "numero",
+              "unit": "V",
+              "values": "0 – 1000",
+              "default": "vuoto: un trattino",
+              "required": "no",
+              "help": [
+                "La tensione dell’alimentazione di forza motrice."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:122"
+            },
+            {
+              "label": "Tensione luce (V)",
+              "kind": "numero",
+              "unit": "V",
+              "values": "0 – 1000",
+              "default": "vuoto: un trattino",
+              "required": "no",
+              "help": [
+                "La tensione del circuito luce di cabina e vano."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:122"
+            },
+            {
+              "label": "Frequenza (Hz)",
+              "kind": "numero",
+              "unit": "Hz",
+              "values": "0 – 100",
+              "default": "vuoto: un trattino",
+              "required": "no",
+              "help": [
+                "La frequenza di rete."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:122"
+            },
+            {
+              "label": "Intermittenza (%)",
+              "kind": "numero",
+              "unit": "%",
+              "values": "0 – 100",
+              "default": "vuoto: un trattino",
+              "required": "no",
+              "help": [
+                "Il fattore di intermittenza del motore."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:122"
+            }
+          ],
+          "actions": []
+        },
+        {
+          "title": "Facoltativi",
+          "intro": [
+            "Riquadro a scomparsa. Si apre da solo quando il nome dell’argano non corrisponde già a quello del calcolo."
+          ],
+          "fields": [
+            {
+              "label": "Nome dell’argano nelle tavole (se non è quello del catalogo)",
+              "kind": "testo",
+              "unit": null,
+              "values": "fino a 80 caratteri",
+              "default": "vuoto: le tavole usano il modello del catalogo",
+              "required": "no (ma un nome in contraddizione con il calcolo blocca l’emissione)",
+              "help": [
+                "Il nome con cui l’impianto chiama l’argano (per esempio «MONTANARI M 73 (Sx)»). Serve soprattutto per una macchina fuori catalogo.",
+                "Con un argano del catalogo le tavole scrivono il suo modello e questo nome compare accanto come riferimento dell’impianto: deve nominare lo stesso modello a parole intere e nessun altro modello o costruttore. Se non lo fa leggi in rosso «Il calcolo verifica il ‹marca modello›: il nome qui sopra non ne nomina il modello, o nomina un altro modello o costruttore, e le tavole non si possono emettere.»",
+                "Massimo 80 caratteri."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:128"
+            },
+            {
+              "label": "Passo staffe cabina (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "300 – 10.000",
+              "default": "2000 mm (regola del software)",
+              "required": "no; solo impianto completo",
+              "help": [
+                "La distanza tra le staffe delle guide di cabina. Il numero delle staffe si calcola da solo: per ogni guida una ogni 2000 mm (o il passo inserito), più la prima e l’ultima.",
+                "Valori da 300 a 10.000 mm. Nel campo vuoto vedi 2000 come suggerimento. Compare solo per un impianto completo."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:134"
+            },
+            {
+              "label": "Passo staffe contrappeso (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "300 – 10.000",
+              "default": "2000 mm (regola del software)",
+              "required": "no; solo impianto completo",
+              "help": [
+                "Come il precedente, per le guide del contrappeso. Compare solo per un impianto completo."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:134"
+            },
+            {
+              "label": "Cabina (kg)",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "0 – 10.000",
+              "default": "vuoto: un trattino nella tabella dei carichi",
+              "required": "no; solo impianto completo",
+              "help": [
+                "Una delle quattro parti della massa della cabina: la cassa. Compare solo per un impianto completo.",
+                "Le quattro parti insieme sono la massa della cabina P del calcolo: se la somma è diversa, le tavole lo segnalano."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:137"
+            },
+            {
+              "label": "Pavimento del cliente, massimo (kg)",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "0 – 10.000",
+              "default": "vuoto: un trattino",
+              "required": "no; solo impianto completo",
+              "help": [
+                "La massa massima del pavimento che il cliente può scegliere. Fa parte della somma della massa della cabina."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:137"
+            },
+            {
+              "label": "Operatore e ante (kg)",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "0 – 10.000",
+              "default": "vuoto: un trattino",
+              "required": "no; solo impianto completo",
+              "help": [
+                "La massa dell’operatore porte e delle ante di cabina. Fa parte della somma della massa della cabina."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:137"
+            },
+            {
+              "label": "Arcata (kg)",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "0 – 10.000",
+              "default": "vuoto: un trattino",
+              "required": "no; solo impianto completo",
+              "help": [
+                "La massa dell’arcata. Fa parte della somma della massa della cabina."
+              ],
+              "src": "src/components/tavole/PlantForm.tsx:137"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Salva",
+              "help": "Salva tutti i dati dell’impianto. Mentre salva dice «Salvataggio…»; a salvataggio riuscito leggi «Dati salvati.». Compare solo se puoi modificare l’impianto.",
+              "src": "src/components/tavole/PlantForm.tsx:146"
+            }
+          ],
+          "notes": [
+            "Quello che serve al foglio 1 e non è qui viene dal progetto o dal calcolo (porte, arcata, guide nuove o esistenti, staffe, limitatore, ammortizzatori, masse dell’argano e dei cavi): lo cambi dove nasce, non in questa pagina.",
+            "In modalità «Semplice» i due passi delle staffe e la regola sotto di essi non compaiono: vale il passo standard del software. Per inserirne uno passa a «Esperto»."
+          ],
+          "warnings": [
+            "Un numero fuori dai limiti fa rifiutare tutto il salvataggio («Controlla i campi evidenziati.»).",
+            "Se il nome dell’argano non nomina il modello verificato dal calcolo (o ne nomina un altro, o un altro costruttore), le tavole non si possono emettere."
+          ]
+        }
+      ],
+      "tips": [
+        "Compila «Paracadute del contrappeso» e il suo azionamento prima di emettere le tavole di un impianto con spazio accessibile sotto il vano: senza, il foglio 1 non passa."
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Impianto",
+      "def": "Il contenitore di tutto il lavoro su un ascensore: dati anagrafici, rilievi collegati, calcoli, progetto, tavole e relazioni."
+    },
+    {
+      "term": "Rilievo (scheda di rilievo)",
+      "def": "La scheda compilata durante il sopralluogo sull’impianto esistente; si collega a un impianto e dà i valori «dal rilievo»."
+    },
+    {
+      "term": "Calcolo argano",
+      "def": "Il passo 2: tipo di intervento, parti sostituite, collaudo e calcolo della macchina, con la relazione di calcolo."
+    },
+    {
+      "term": "Progetto",
+      "def": "Il passo 3: il disegno sul Calcolo argano, cioè il rilievo del locale macchina o il vano con la simulazione 3D."
+    },
+    {
+      "term": "Documenti e ordini",
+      "def": "Il passo 4: tavole, relazioni e bozza d’ordine che nascono dai record salvati."
+    },
+    {
+      "term": "Tipo di intervento",
+      "def": "Solo argano, Ammodernamento o Trasformazione completa; si sceglie nel Calcolo argano."
+    },
+    {
+      "term": "da aggiornare",
+      "def": "Etichetta di un record che il software attuale non riproduce più, o più vecchio del rilievo collegato; si rifà con «Aggiorna con il software attuale»."
+    },
+    {
+      "term": "Bozza",
+      "def": "Ogni risultato di LiftPilot prima della firma: diventa documento quando un tecnico abilitato lo verifica e lo firma. L’anteprima di una relazione non emessa porta la scritta «BOZZA — non emessa, non valida per la firma». Quello che scrivi in un modulo prima di salvare è la «Bozza (del modulo)»."
+    },
+    {
+      "term": "Record",
+      "def": "Un calcolo, un progetto o un rilievo salvato; non si modifica, una correzione crea un nuovo record."
+    },
+    {
+      "term": "Archiviato",
+      "def": "Impianto messo da parte, in sola lettura; si ripristina dalla sua pagina."
+    },
+    {
+      "term": "Cartiglio",
+      "def": "Il riquadro di ogni foglio delle tavole con numero e revisione del disegno, impianto, committente, azienda, loghi e iniziali di chi disegna. In cima alla pagina dell’impianto i dati dell’impianto stanno in un riquadro dello stesso tipo."
+    },
+    {
+      "term": "Foglio 1",
+      "def": "Il primo foglio delle tavole, con i dati dell’impianto e le verifiche."
+    },
+    {
+      "term": "Titolare",
+      "def": "Il ruolo che gestisce azienda, colleghi, permessi e abbonamento."
+    }
+  ],
+  "verify": [
+    "Sulla pagina dell’impianto, il passo corrente dei quattro passi è evidenziato anche visivamente, o solo per gli screen reader (aria-current='step', Passi.tsx:37)?",
+    "Nell’elenco Impianti su schermo stretto l’anteprima sta davvero sotto l’elenco (assunto dal layout a una colonna, ProjectList/dashboard.css)?",
+    "Nel Confronto su telefono ogni riga diventa una scheda (classe «stack» di data-table): confermare a schermo.",
+    "Il «?» accanto ai campi e la modalità Semplice / Esperto: Il «?» non compare dove il campo non ha una spiegazione (Etichetta.tsx); confermare a schermo il comportamento al tocco e con Esc."
+  ]
+}

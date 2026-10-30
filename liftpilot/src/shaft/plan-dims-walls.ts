@@ -1,0 +1,94 @@
+// The side walls of a plan's dimensions (plan-dims.ts). On the counterweight's side: the car rails of a cantilever
+// sling, the counterweight rails with their profile (D.F.G.), the bridge bracket between their feet, the shaft. On a
+// side without the counterweight: the depth from the start of the landing sill to the end of the car (landing sill, the
+// gap between the sills, the car's sill with its door, the car), the car inside with its walls, with a counterweight
+// at the back the car with its sill to the counterweight (the space between them, the counterweight, the wall behind
+// it), the axis of the car rails, the shaft. With two such sides the first takes the depth, the second the car and the
+// counterweight; alone, one side takes them all. The car's place across the shaft is given once, on the first side
+// without the counterweight. The extension lines start at the elements measured (plan-from.ts).
+import { edit as E, type Edit, type Side } from '../drawing';
+import { KV } from './norme';
+import { RAILS } from './rails';
+import { railPick } from './plan-picks';
+import { areaOf, axisEnd, faceOf, railFace, wallArea } from './plan-from';
+import { landingOf } from './landing';
+import type { PushChain } from './plan-dims';
+import type { DoorLayout, Layout } from './types';
+
+export interface SideWallCtx {
+  L: Layout;
+  push: PushChain;
+  total(side: Side, dir: 'x' | 'y'): void;
+  /** landing doors of the level */
+  open: readonly DoorLayout[];
+  doorSide: Side;
+  /** edits of the platform's depth from the front wall */
+  carY: readonly Edit[];
+  /** depth of the counterweight's niche */
+  nd: number;
+}
+
+export function sideWallDims({ L, push, total, open, doorSide, carY, nd }: SideWallCtx): void {
+  const I = L.inputs, { D, carWall: cw, landingDepth: ld, sillGap: sg } = I, { car, carInner: ci } = L, wr = RAILS[I.cwRail];
+  const sill = ld + sg, end = car.y + car.h, rearDoor = L.doors.find((d) => d.wall === 'rear');
+  const cwWallSide: Side | null = L.cwSide === 'left' ? 'left' : L.cwSide === 'right' ? 'right' : null;
+  const sides = (['left', 'right'] as const).filter((s) => s !== doorSide), free = sides.filter((s) => s !== cwWallSide);
+  // the landing door the depth starts from: on the front wall, else on the rear one; none at this level, the platform
+  const from = open.find((d) => d.wall === 'front') ?? open.find((d) => d.wall === 'rear') ?? null;
+  for (const side of sides) {
+    const carF = faceOf(areaOf(car), side), ciF = faceOf(areaOf(ci), side), cwF = faceOf(areaOf(L.cw), side);
+    if (side === cwWallSide) {
+      const [a, b] = L.rails.filter((r) => r.kind === 'cw'), n = L.cw.h, sh = KV.cwShoe, pick = railPick('cwRail', I.cwRail);
+      if (L.frame.kind === 'cantilever') {
+        const [p, q] = L.rails.filter((r) => r.kind === 'car');
+        // the blades face each other along the wall: the distance between their tips, from the tips
+        push(side, 'y', [0, p.y, q.y, D], [null, '{v} D.F.G. Arcata', null], [E('plan.railY'), E('plan.dbg'), E('plan.railY', D - (q.y - p.y), -1)],
+          { from: [undefined, railFace(L, p, side, 'tip'), railFace(L, q, side, 'tip'), undefined] });
+      }
+      push(side, 'y', [0, a.y - wr.h, a.y, b.y, b.y + wr.h, D], [null, '{v}', 'D.F.G {v}', '{v}', null],
+        [E('plan.cwPos', sh + wr.h), pick, E('plan.cwLen', -2 * sh), pick, E('plan.cwPos', D - n - sh - wr.h, -1)],
+        { from: [undefined, railFace(L, a, side, 'foot'), railFace(L, a, side, 'tip'), railFace(L, b, side, 'tip'), railFace(L, b, side, 'foot'), undefined] });
+      if (L.bridge) {
+        // the bridge bracket between the rails' feet (their places are in the row before)
+        const o = sh + wr.h, bx = faceOf({ x0: L.bridge.x - 25, y0: 0, x1: L.bridge.x + 25, y1: 0 }, side);
+        push(side, 'y', [L.bridge.y0, L.bridge.y1], ['{v} Ingombro Staffa'], [E('plan.cwLen', -2 * o)], { from: [bx, bx] });
+      }
+      total(side, 'y');
+      continue;
+    }
+    const first = side === free[0], alone = free.length < 2;
+    if (first && from) {
+      // from the start of the landing sill: the sill, the gap, the car's sill and door, the car, and on to the other
+      // wall (a second entrance: its car door, gap and landing sill); each from its end on this side
+      const land = landingOf(from), landF = faceOf(wallArea(L, from.wall, land.u0 - 40, 0, land.u1 + 40, ld), side);
+      const carSillF = faceOf(wallArea(L, from.wall, from.u0 - 40, sill, from.u1 + 40, sill + I.carDoorDepth), side);
+      const rear = rearDoor ? [faceOf(wallArea(L, 'rear', rearDoor.u0 - 40, sill, rearDoor.u1 + 40, sill + I.carDoorDepth), side),
+        faceOf(wallArea(L, 'rear', landingOf(rearDoor).u0 - 40, 0, landingOf(rearDoor).u1 + 40, ld), side)] : [];
+      push(side, 'y', [0, ld, sill, car.y, end, ...(rearDoor ? [D - sill, D - ld] : []), D], ['{v}', '{v}', '{v}', '{v} Cabina', ...(rearDoor ? ['{v}', '{v}', '{v}'] : [null])],
+        [E('landingDepth'), E('sillGap'), E('carDoorDepth'), E('plan.B', -2 * cw),
+          ...(rearDoor ? [E('plan.B', D - sill - car.y - 2 * cw, -1), E('sillGap'), E('landingDepth')] : [E('plan.B', D - car.y - 2 * cw, -1)])],
+        { from: [undefined, landF, carSillF, carF, carF, ...rear, undefined] });
+      // the landing sill's start to the far end of the car: the car's depth changes (from the rear door: its car door)
+      if (from.wall === 'front') push(side, 'y', [0, end], ['{v} Inizio soglia di piano – fine cabina'], [E('plan.B', -(car.y + 2 * cw))], { from: [undefined, carF] });
+      else push(side, 'y', [car.y, D], ['{v} Inizio soglia di piano – fine cabina'], [E('carDoorDepth', D - sill, -1)], { from: [carF, undefined] });
+    } else if (first) push(side, 'y', [0, car.y, end, D], [null, '{v} Piattaforma', null], [...carY], { from: [undefined, carF, carF, undefined] });
+    if (!first || alone) {
+      // the car inside with its walls (its place across the shaft is in the first row)
+      push(side, 'y', [car.y, ci.y, ci.y + ci.h, end], ['{v}', '{v} Interno Cabina', '{v}'], [E('carWall'), E('plan.B'), E('carWall')], { from: [carF, ciF, ciF, carF] });
+      if (L.cwSide === 'rear') {
+        // the car with its sill to the counterweight at the back, the space between them (the counterweight moves with
+        // its wall gap, the car keeps its depth), the counterweight and the wall behind it (the back of its niche)
+        const c = L.cw, keep = [{ key: 'plan.B', value: L.B }] as const, front = L.doors.find((d) => d.wall === 'front') ?? L.doors[0];
+        const sillF = faceOf(wallArea(L, front.wall, front.u0 - 40, sill, front.u1 + 40, sill + I.carDoorDepth), side);
+        push(side, 'y', [sill, end, c.y, c.y + c.h, D + nd], ['{v} Cabina con soglia', '{v}', '{v}', '{v}'],
+          [E('plan.B', -(I.carDoorDepth + 2 * cw)), E('cwWallGap', D + nd - I.cwDepth - end, -1, keep), E('cwDepth'), E('cwWallGap')], { from: [sillF, carF, cwF, cwF, undefined] });
+        push(side, 'y', [sill, c.y], ['{v} Soglia di cabina – contrappeso'], [E('cwWallGap', D + nd - I.cwDepth - sill, -1, keep)], { from: [sillF, cwF] });
+      }
+    }
+    if (first && L.frame.kind === 'central') {
+      push(side, 'y', [0, L.frame.axis, D], ['{v} Asse guide cabina', null], [E('plan.railY'), E('plan.railY', D, -1)],
+        { from: [undefined, axisEnd(L, side), undefined], axis: [false, true, false] });
+    }
+    total(side, 'y');
+  }
+}

@@ -1,0 +1,444 @@
+{
+  "titolo": "Relazione tecnica di modifica",
+  "apri": "Relazione tecnica di modifica",
+  "numero": "RT {n}",
+  "scegli": "Scegli…",
+  "annulla": "Annulla",
+  "valore": "Valore",
+  "intervallo": "Valori ammessi: da {min} a {max} {unit}",
+  "indice": "Parti della relazione",
+  "tornaImpianto": "Torna all’impianto",
+  "soloLettura": "Sola lettura: la relazione la prepara chi può modificare il progetto e la emette chi può emettere i documenti (i permessi li assegna il Titolare).",
+  "archiviata": "L’impianto è archiviato: le relazioni emesse si consultano, una nuova non si prepara.",
+  "card": {
+    "anagrafica": "Dati dell’impianto",
+    "anagraficaBreve": "Impianto",
+    "modifica": "Modifica",
+    "sezioni": "Sezioni e componenti",
+    "sezioniBreve": "Sezioni",
+    "allegati": "Allegati",
+    "firme": "Firme ed emissione",
+    "firmeBreve": "Firme"
+  },
+  "stato": {
+    "daAggiornare": "Ultima RT da aggiornare",
+    "emessa": "Emessa · RT {n} R{r}",
+    "bozza": "Bozza in corso",
+    "nessuna": "Non ancora emessa",
+    "nonValido": "{n, plural, one {Un campo da correggere: il riepilogo resta all’ultimo dato valido.} other {# campi da correggere: il riepilogo resta all’ultimo dato valido.}}",
+    "aggiorno": "Aggiornamento del riepilogo…",
+    "aggiornato": "Riepilogo aggiornato"
+  },
+  "base": {
+    "archiviato": "Impianto archiviato: le relazioni emesse restano consultabili e scaricabili.",
+    "calcolo": "Calcolo argano del {data}",
+    "rilievo": "Rilievo del locale macchina del {data}",
+    "progetto": "Progetto dell’impianto del {data}",
+    "percorsoLocale": "Relazione sul rilievo del locale macchina",
+    "percorsoVano": "Relazione sul progetto dell’impianto",
+    "motivo": {
+      "noCalc": "Manca il Calcolo argano: la relazione parte dal calcolo dell’intervento.",
+      "trasformazione": "Con la Trasformazione completa l’impianto si tratta come un ascensore nuovo (UNI EN 81-20/50): valgono la relazione di calcolo, il progetto e i documenti dell’ascensore nuovo, non la relazione tecnica di modifica.",
+      "en81": "Il Calcolo argano verifica l’impianto secondo UNI EN 81-20/50, come un ascensore nuovo: la relazione tecnica di modifica (UNI 10411) non si applica e valgono i documenti dell’ascensore nuovo.",
+      "noProgetto": "Manca il Progetto sull’ultimo Calcolo argano: preparalo, poi torna qui.",
+      "progettoVecchio": "Il Progetto è stato fatto su un Calcolo argano precedente: rifallo sull’ultimo calcolo, poi torna qui.",
+      "engineChanged": "Il software è cambiato da quando il documento di base è stato salvato: aprilo, usa «Aggiorna con il software attuale», poi torna qui."
+    },
+    "vaiCalcolo": "Vai al Calcolo argano",
+    "vaiRilievo": "Rileva il locale macchina",
+    "vaiProgetto": "Prepara il Progetto"
+  },
+  "norma": {
+    "10411-1": "UNI 10411-1",
+    "10411-11": "UNI 10411-11"
+  },
+  "tipo": {
+    "SOLO_ARGANO": "Solo argano",
+    "AMMODERNAMENTO": "Ammodernamento"
+  },
+  "revisione": {
+    "inCorso": "Stai preparando la revisione R{r} della RT {n}: stesso numero, con la nota di revisione.",
+    "apri": "Apri la revisione emessa"
+  },
+  "bozza": {
+    "fileTolti": "{n, plural, one {Un documento della bozza è stato eliminato dall’impianto ed è uscito dalla relazione.} other {# documenti della bozza sono stati eliminati dall’impianto e sono usciti dalla relazione.}}"
+  },
+  "emesse": {
+    "titolo": "Relazioni tecniche di modifica emesse",
+    "nessuna": "Nessuna relazione tecnica di modifica emessa per questo impianto.",
+    "scarica": "Scarica il PDF"
+  },
+  "pagina": {
+    "titolo": "Relazione tecnica di modifica",
+    "emessa": "Emessa il {data} da {nome}",
+    "scarica": "Scarica il PDF",
+    "nuovaRevisione": "Nuova revisione",
+    "nonRiprodotta": "Emessa con una versione precedente del software: il PDF emesso resta valido e scaricabile; una nuova revisione la rifà con il software attuale.",
+    "nonRiprodottaSenzaPdf": "Emessa con una versione precedente del software, senza un PDF conservato: non si può più generare. Una nuova revisione la rifà con il software attuale.",
+    "datiCambiati": "I dati o l’anagrafica dell’impianto sono cambiati dopo l’emissione: la relazione riporta quelli del giorno in cui è stata emessa; per i nuovi serve una nuova revisione.",
+    "nonUltima": "Questa non è l’ultima revisione della relazione: le revisioni sono elencate qui sotto.",
+    "esito": "Verifiche",
+    "base": "Documenti di base",
+    "motore": "Versione del software della relazione",
+    "impronta": "Impronta SHA-256 della relazione",
+    "pdf": "PDF conservato",
+    "pdfConservato": "{pagine, plural, one {# pagina} other {# pagine}} senza i documenti allegati",
+    "sezioni": "Sezioni della relazione",
+    "allegati": "Documenti allegati",
+    "scaricaFile": "Scarica",
+    "daAllegare": "Documenti indicati come da allegare",
+    "revisioni": "Revisioni",
+    "revisioniIlleggibili": "L’elenco delle revisioni di questa relazione non si legge con il software attuale.",
+    "componenti": "Componenti della relazione"
+  },
+  "esito": {
+    "titolo": "Stato della relazione",
+    "verifiche": "Verifiche della relazione",
+    "OK": "Tutte soddisfatte",
+    "WARN": "{warn, plural, one {# con avviso} other {# con avviso}}",
+    "FAIL": "{fail, plural, one {# non soddisfatta} other {# non soddisfatte}}{warn, plural, =0 {} other {, # con avviso}}",
+    "sezioni": "Sezioni",
+    "documenti": "Documenti attesi",
+    "daAllegare": "{n, plural, one {# da allegare} other {# da allegare}}",
+    "documentiOk": "Nessuno da allegare",
+    "regime": "Legge di approvazione",
+    "daConfermare": "(da confermare sul libretto)",
+    "regimeNo": "Da indicare",
+    "bloccanti": "{n, plural, one {Manca un dato senza il quale la relazione non si emette:} other {Mancano # dati senza i quali la relazione non si emette:}}",
+    "mancanti": "{n, plural, one {Un dato non indicato: la relazione lo stampa come «da indicare ⚠»} other {# dati non indicati: la relazione li stampa come «da indicare ⚠»}}",
+    "regimeIncoerente": "La legge di approvazione indicata non corrisponde alla marcatura CE del Calcolo argano: correggi l’una o l’altra prima di emettere."
+  },
+  "sezioni": {
+    "lead": "Le sezioni portate dalle parti sostituite o modificate e dalle regole della norma sono fisse, ciascuna con il suo motivo; altre si aggiungono indicando perché. In ogni sezione: i dati del componente che i documenti di base non hanno e le verifiche come le stampa la relazione.",
+    "automatica": "dalla regola",
+    "manuale": "aggiunta dal tecnico",
+    "perche": "Perché è nella relazione",
+    "motivoBreve": "Motivo dell’aggiunta",
+    "togli": "Togli dalla relazione",
+    "aggiungi": "Aggiungi «{titolo}»",
+    "motivo": "Perché aggiungi «{titolo}»",
+    "motivoHint": "Almeno 3 caratteri: la relazione stampa il motivo nella sezione.",
+    "conferma": "Aggiungi alla relazione",
+    "inAttesa": "«{titolo}» entra nella relazione al prossimo aggiornamento del riepilogo, con un motivo di almeno 3 caratteri.",
+    "altre": "Altre sezioni",
+    "altreLead": "Non richieste dalla regola per questa modifica: aggiungile se il componente è comunque interessato.",
+    "verificheDi": "Verifiche della sezione «{titolo}»"
+  },
+  "col": {
+    "verifica": "Verifica",
+    "valore": "Valore",
+    "limite": "Limite",
+    "esito": "Esito",
+    "rif": "Riferimento"
+  },
+  "blocchi": {
+    "quadro": "Quadro di manovra",
+    "cabina": "Cabina",
+    "guideCabina": "Guide della cabina",
+    "guideContrappeso": "Guide del contrappeso",
+    "ammortizzatoriCabina": "Ammortizzatori della cabina",
+    "ammortizzatoriContrappeso": "Ammortizzatori del contrappeso",
+    "limitatore": "Limitatore di velocità",
+    "portePiano": "Porte di piano",
+    "porteCabina": "Porte di cabina",
+    "contrappeso": "Contrappeso"
+  },
+  "campi": {
+    "quadro": {
+      "tensioneComando": "Tensione dei circuiti di comando",
+      "correnteComando": "Corrente dei circuiti di comando",
+      "tensioneContattiSerrature": "Tensione dei contatti delle serrature di piano",
+      "correnteContatti": "Corrente dei contatti delle serrature",
+      "impiantoElettrico": "Parte elettrica esistente",
+      "costruttore": "Costruttore del quadro",
+      "modello": "Modello del quadro",
+      "fonte": "Fonte dei dati del quadro"
+    },
+    "cabina": {
+      "superficie": "Superficie utile della cabina",
+      "fonte": "Fonte della superficie"
+    },
+    "guide": {
+      "profilo": "Profilo delle guide",
+      "custom": {
+        "sigla": "Sigla del profilo",
+        "A": "Area della sezione A",
+        "Ix": "Momento d’inerzia Ix",
+        "Iy": "Momento d’inerzia Iy",
+        "Wx": "Modulo di resistenza Wx",
+        "Wy": "Modulo di resistenza Wy",
+        "iMin": "Raggio d’inerzia minimo",
+        "c": "Spessore del gambo c",
+        "q": "Massa per metro q"
+      },
+      "Rm": "Resistenza a trazione dell’acciaio Rm",
+      "allungamento": "Allungamento dell’acciaio",
+      "arcata": "Arcata",
+      "A": "Larghezza interna della cabina A",
+      "B": "Profondità interna della cabina B",
+      "xC": "Centro della cabina dall’asse delle guide, x",
+      "yC": "Centro della cabina dall’asse delle guide, y",
+      "xS": "Punto di sospensione dall’asse delle guide, x",
+      "yS": "Punto di sospensione dall’asse delle guide, y",
+      "h": "Distanza tra i pattini h",
+      "pattini": "Pattini",
+      "accessi": "Accessi della cabina",
+      "colonna": "Lunghezza della colonna di guide",
+      "larghezza": "Larghezza del contrappeso tra le guide",
+      "profondita": "Profondità del contrappeso",
+      "sottoFossaAccessibile": "Sotto la fossa c’è uno spazio accessibile alle persone",
+      "fonte": "Fonte dei dati delle guide"
+    },
+    "ammortizzatore": {
+      "tipo": "Tipo",
+      "numero": "Numero",
+      "corsa": "Corsa",
+      "altezza": "Altezza",
+      "forzaCorsaCompleta": "Forza a corsa completa",
+      "certificato": {
+        "numero": "Certificato d’esame del tipo, numero",
+        "vMax": "Velocità d’urto massima del certificato",
+        "massaMin": "Massa minima del certificato",
+        "massaMax": "Massa massima del certificato"
+      },
+      "fonte": "Fonte dei dati degli ammortizzatori"
+    },
+    "limitatore": {
+      "modello": "Modello del limitatore",
+      "manuale": {
+        "D": "Diametro della puleggia",
+        "d": "Diametro della fune",
+        "fonte": "Fonte dei dati della puleggia"
+      },
+      "vScatto": "Velocità d’intervento di targa",
+      "fune": {
+        "d": "Diametro della fune del limitatore",
+        "caricoRottura": "Carico di rottura della fune",
+        "formazione": "Formazione della fune",
+        "fonte": "Fonte dei dati della fune"
+      },
+      "forzaTiro": "Forza di trazione del limitatore sulla fune",
+      "forzaParacadute": "Forza che serve ad azionare il paracadute",
+      "limiteOrigine": "Velocità d’intervento massima della regola d’origine"
+    },
+    "porta": {
+      "tipo": "Tipo di porte",
+      "fuocoEsistente": "Classe di resistenza al fuoco delle porte esistenti",
+      "fuocoNuova": "Classe di resistenza al fuoco richiesta per le porte nuove",
+      "altezzaEsistente": "Altezza di passaggio esistente",
+      "altezzaNuova": "Altezza di passaggio dopo la modifica",
+      "tensioneOperatore": "Tensione dell’operatore",
+      "corrente": "Corrente dell’operatore",
+      "serratureNuove": "Le serrature si sostituiscono",
+      "fonte": "Fonte dei dati delle porte"
+    },
+    "contrappeso": {
+      "intervento": "Intervento sul contrappeso"
+    }
+  },
+  "valori": {
+    "ca": "corrente alternata",
+    "cc": "corrente continua",
+    "rifatto": "rifatta",
+    "compatibile_contrassegnato": "compatibile, con i conduttori contrassegnati",
+    "oltre12": "oltre il 12 %",
+    "da8a12": "dall’8 al 12 %",
+    "centrale": "centrale",
+    "zaino": "a zaino",
+    "rulli": "a rulli",
+    "strisciamento": "a strisciamento",
+    "A": "un accesso",
+    "AB": "due accessi opposti",
+    "A90": "due accessi a 90°",
+    "spring": "a molla",
+    "pu": "in poliuretano",
+    "oil": "idraulici",
+    "scorrevoli_automatiche": "scorrevoli automatiche",
+    "scorrevoli_manuali": "scorrevoli manuali",
+    "battente": "a battente",
+    "altro": "altro",
+    "nessuno": "nessuno",
+    "zavorre": "zavorre aggiunte o tolte",
+    "sostituito": "contrappeso sostituito",
+    "custom": "profilo inserito a mano",
+    "manuale": "altro modello, dati a mano",
+    "nessuna": "nessuna"
+  },
+  "fonteTipi": {
+    "targa": "targa",
+    "certificato": "certificato",
+    "scheda": "scheda tecnica",
+    "libretto": "libretto",
+    "verbale": "verbale",
+    "rilievo": "rilievo in sito",
+    "dichiarazione": "dichiarazione",
+    "altro": "altro"
+  },
+  "fonte": {
+    "titolo": "Fonte del valore",
+    "tipo": "Tipo di documento",
+    "rif": "Riferimento",
+    "rifHint": "Ad esempio il numero del certificato, la targa o la pagina del libretto.",
+    "file": "Documento allegato",
+    "nessunFile": "Nessun documento allegato",
+    "senzaFile": "Nessun documento nella relazione"
+  },
+  "errori": {
+    "range": "Fuori dai valori ammessi: da {min} a {max} {unit}",
+    "testo": "Al massimo {max} caratteri.",
+    "fonte": "Indica il tipo di documento e il riferimento: un dato inserito a mano porta la sua fonte."
+  },
+  "esiti": {
+    "conferma": "Prima di emettere conferma quello che la relazione stampa come non soddisfatto, mancante o da allegare.",
+    "allegatoEstraneo": "Un documento indicato non è tra quelli di questo impianto: aggiorna la pagina e riprova.",
+    "allegatiTroppi": "I documenti allegati superano i limiti della relazione (40 file, 400 pagine, 120 MiB; le immagini PNG con trasparenza o interlacciate al più 300 megapixel in tutto): togline qualcuno.",
+    "dataNonValida": "La data della relazione non è valida: non può essere futura né precedente al Calcolo argano.",
+    "notaRevisione": "Scrivi la nota di revisione (da 3 a 120 caratteri).",
+    "revisioneNonUltima": "Si rivede solo l’ultima revisione di una relazione: è stata emessa una revisione più recente.",
+    "allegatoEliminato": "Un documento allegato è stato eliminato mentre emettevi: aggiorna la pagina e riprova."
+  },
+  "doc": {
+    "data": "Data della relazione",
+    "dataHint": "Se resta vuota è la data dell’emissione.",
+    "commessa": "Commessa",
+    "descrizione": "Descrizione della modifica",
+    "descrizioneMin": "{n} caratteri: per emettere ne servono almeno 20.",
+    "descrizioneOk": "{n} caratteri.",
+    "layout": "La disposizione delle apparecchiature cambia rispetto a quella esistente",
+    "notaLayout": "Come cambia la disposizione",
+    "nota": "Nota della prima pagina",
+    "notaHint": "Facoltativa: la relazione la stampa nella prima pagina."
+  },
+  "strutture": {
+    "titolo": "Strutture dell’edificio",
+    "esito": {
+      "documento": "Le regole della norma chiedono il documento sulle strutture portanti: è tra i documenti attesi negli allegati.",
+      "dichiarazione": "Per questa modifica basta la dichiarazione del tecnico sulle strutture: la relazione la stampa.",
+      "non_applicato": "La regola sulle strutture non si applica a questa modifica.",
+      "manca_risposta": "Rispondi qui sotto: dalla risposta dipende se serve il documento sulle strutture o basta la dichiarazione.",
+      "non_richiamato": "Nessuna regola della norma richiama le strutture per questa modifica."
+    },
+    "forze": "Con la modifica, le forze sulle strutture portanti dell’edificio",
+    "aumentano": "aumentano",
+    "non_aumentano": "non aumentano",
+    "pertinente": "Con il contrappeso fuori dal prospetto 2, la dichiarazione del proprietario è pertinente?",
+    "pertinenteSi": "sì, è pertinente",
+    "pertinenteNo": "no"
+  },
+  "allegati": {
+    "attesi": "Documenti attesi per questa modifica",
+    "consigliato": "(consigliato)",
+    "quale": "Quale file è «{titolo}»",
+    "automatico": "Riconosciuto in automatico",
+    "opzione": "Allegato {n} · {titolo}",
+    "separato": "Consegnato separatamente",
+    "carica": "Carica questo documento",
+    "caricaPer": "Carica «{titolo}»",
+    "nessunoAtteso": "Nessun documento particolare atteso per questa modifica.",
+    "fascicolo": "Documenti allegati alla relazione, in ordine",
+    "conteggio": "{n, plural, one {# file} other {# file}}, {pagine} pagine (al massimo {maxFile} file e {maxPagine} pagine).",
+    "n": "Allegato {n}",
+    "pagine": "{n, plural, one {# pagina} other {# pagine}}",
+    "su": "Sposta prima «{titolo}»",
+    "giu": "Sposta dopo «{titolo}»",
+    "togli": "Togli",
+    "togliDi": "Togli «{titolo}» dalla relazione",
+    "vuoto": "Nessun documento allegato.",
+    "fuori": "Documenti dell’impianto non allegati",
+    "fuoriNota": "Fotografie e documenti «Altro» non entrano da soli nella relazione: allegali solo se servono, perché possono mostrare persone, firme o note interne e il fascicolo va al proprietario e all’organismo di verifica.",
+    "includi": "Allega",
+    "includiDi": "Allega «{titolo}» alla relazione"
+  },
+  "firme": {
+    "redatto": "Redatto da",
+    "nome": "Nome e cognome",
+    "qualifica": "Qualifica",
+    "verificato": "Verificato da",
+    "verificatoLead": "Un ingegnere iscritto all’Ordine: titolo, nome, provincia e numero di iscrizione sono richiesti per emettere.",
+    "titolo": "Titolo",
+    "nomeIng": "Nome e cognome dell’ingegnere",
+    "provincia": "Ordine degli Ingegneri della Provincia di",
+    "numero": "Numero di iscrizione",
+    "numeroHint": "Lettere, cifre e i segni / . - (al massimo 20).",
+    "sezione": "Sezione dell’albo",
+    "sezioneNessuna": "Non indicata",
+    "notaRevisione": "Nota di revisione (rispetto a {rt})",
+    "notaRevisioneHint": "Cosa cambia in questa revisione, da 3 a 120 caratteri: la relazione la stampa nell’elenco delle revisioni."
+  },
+  "emissione": {
+    "bloccanti": "Per emettere manca ancora:",
+    "anteprima": "Anteprima PDF",
+    "emetti": "Emetti la relazione",
+    "emettiRevisione": "Emetti la revisione",
+    "soloProgettisti": "Emette la relazione chi ha il permesso di emettere i documenti (lo assegna il Titolare).",
+    "conferma": "Emettere la relazione?",
+    "confermaRevisione": "Emettere la revisione?",
+    "confermaLead": "La relazione emessa ha un numero e non si modifica più: una correzione si fa con una nuova revisione. La relazione stampa quanto segue così com’è.",
+    "falliti": "{n, plural, one {Una verifica non soddisfatta} other {# verifiche non soddisfatte}}",
+    "mancanti": "{n, plural, one {Un dato da indicare} other {# dati da indicare}}",
+    "documenti": "{n, plural, one {Un documento da allegare} other {# documenti da allegare}}",
+    "nienteDaConfermare": "Tutte le verifiche sono soddisfatte e non manca nessun dato né documento.",
+    "confermo": "Confermo ed emetto"
+  },
+  "anagrafica": {
+    "titolo": "Anagrafica dell’impianto",
+    "lead": "L’anagrafica si salva con l’impianto e serve a ogni relazione: ciascuna relazione emessa ne conserva la sua copia.",
+    "proprietario": "Proprietario",
+    "comeCommittente": "È il committente ({client})",
+    "indirizzo": "Indirizzo del proprietario",
+    "manutentore": "Ditta di manutenzione",
+    "numeroFabbrica": "Numero di fabbrica",
+    "anno": "Anno di installazione",
+    "legge": "Approvato secondo",
+    "leggeDerivata": "{sigla} (dall’anno di installazione)",
+    "leggeScelta": "Indicata dal tecnico.",
+    "leggeDaConfermare": "Derivata dall’anno di installazione: confermala sul libretto.",
+    "leggeHint": "Indica la legge, oppure l’anno di installazione per derivarla.",
+    "leggeConfermata": "Legge di approvazione confermata sul libretto",
+    "prima": "Dati documentati prima della modifica",
+    "primaLead": "Capienza, fermate e superficie della cabina come risultano dai documenti, con la loro fonte: la relazione li confronta con quelli dopo la modifica.",
+    "persone": "Capienza (persone)",
+    "fermate": "Fermate",
+    "superficie": "Superficie utile della cabina [m²]",
+    "fonte": "Fonte dei dati",
+    "dalRilievo": "dal rilievo: {v}",
+    "usa": "Usa",
+    "matricolaRilievo": "Il rilievo collegato riporta la matricola {m}.",
+    "salva": "Salva l’anagrafica",
+    "salvata": "Anagrafica salvata.",
+    "nonValida": "Controlla i campi evidenziati.",
+    "altrove": "Dati che la relazione legge dall’impianto e dal Calcolo argano",
+    "modificaImpianto": "Modifica nei dati dell’impianto",
+    "modificaCalcolo": "Modifica nel Calcolo argano"
+  },
+  "primaFonti": {
+    "libretto": "libretto",
+    "verbale": "verbale di verifica",
+    "rilievo": "rilievo in sito",
+    "dichiarazione": "dichiarazione"
+  },
+  "impianto": {
+    "uso": "Ascensore per",
+    "paracadute": "Paracadute",
+    "passo": "Passo delle staffe (cabina · contrappeso)",
+    "manovra": "Manovra",
+    "marcatura": "Marcatura CE",
+    "documentati": "Carichi documentati",
+    "libretto": "Dati del libretto",
+    "liftUse": {
+      "passengers": "persone (o persone e cose)",
+      "goods": "merci accompagnate",
+      "goodsHeavy": "merci accompagnate, con mezzi di carico pesanti"
+    },
+    "safetyGear": {
+      "progressive": "progressivo",
+      "roller": "istantaneo a rulli",
+      "instantaneous": "istantaneo"
+    },
+    "ce": {
+      "si": "presente",
+      "no": "assente",
+      "incerta": "non nota, da confermare"
+    }
+  }
+}

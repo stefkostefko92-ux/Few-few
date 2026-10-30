@@ -1,0 +1,57 @@
+// «Calcolo argano» on a brand new project: no type of intervention chosen, nothing of the installation or of the machines
+// filled in, only the software's standard values set (each marked as such in the form). Nothing is worked out until each
+// step has what it needs: the type and the parts answered, the installation (and the existing machine when it is
+// compared) for the proposals and the advice, then the new machine for the verdict. An empty value is one the calculation flags (or, for the roping, would read as 1:1).
+import type { FormValues } from '@/calc/types';
+import { FIELD_IDS, LAYOUT, MACHINE, PLANT, ROPES, SERVICE } from '@/components/calc/fields';
+import { visibleBad } from './calc-input';
+import type { Parte } from './lift/collaudo';
+import type { TipoIntervento } from './lift/intervento';
+
+/**
+ * The software's standard values: the wrap angle from the geometry, the falls centred, the rope beyond the travel, no
+ * extra bends, the shaft's efficiency, the design and braking decelerations, the rope's hanging length, ordinary
+ * buffers, a machine to UNI EN 81-20, the motors' 50 Hz and 4 poles, and the assumptions the proposal sizes the new machine with (the gear's
+ * efficiency, the motor's speed, the inertias, the groove's undercut) — the research's typical values, chapter 7.
+ */
+export const CALC_STANDARD: FormValues = {
+  alphaMode: 'geo', dropAlign: 'center', L0: 2, nps: 0, npr: 0, etaShaft: 0.85, aDesign: 0.8, aBrake: 0.5, rh: 0.2, buffers: false, machineStd: 'en81-20',
+  n_fn: 50, o_fn: 50, n_poles: '4', o_poles: '4', n_etaD: 0.7, n_nm: 1450, n_Jm: 0.08, n_Js: 2.5, n_gamma: 35,
+};
+
+/** A new calculation: no type of intervention yet (its context is set by the type, src/lib/lift/intervento.ts); for an
+ *  existing lift, the existing machine compared and the new ropes keeping its number and diameter, which only those
+ *  types read. */
+export function blankCalc(): FormValues {
+  return { ...Object.fromEntries(FIELD_IDS.map((id) => [id, ''])), context: '', compare: true, keepD: false, keepRopes: true, ...CALC_STANDARD };
+}
+
+const isBlank = (V: FormValues, id: string): boolean => String(V[id] ?? '').trim() === '';
+
+/** The form's order: the installation, the geometry, the existing machine and its ropes, the new machine and its ropes. */
+const ORDER: readonly string[] = [...PLANT, ...LAYOUT, ...MACHINE('o_'), ...ROPES('o_'), ...MACHINE('n_'), ...ROPES('n_'), ...SERVICE].map((f) => f.id);
+const orderOf = (id: string): number => { const i = ORDER.indexOf(id); return i < 0 ? ORDER.length : i; };
+
+/** The id of a part still to answer in the list of what is missing (the «Sì» of its row, src/components/calc/PartiSiNo.tsx). */
+export const parteId = (p: Parte): string => `parte-${p}`;
+
+/** The id of the existing controller's speed regulation still to answer (round 46, B6: its first answer,
+ *  src/components/calc/RegolazioneQuadro.tsx). */
+export const REGOLAZIONE_ID = 'regolazione';
+
+/** What is still to enter, in the form's order: the type of intervention first (`tipo` null: not chosen; absent: a form
+ *  without the choice), the parts still to answer (`parti`, src/lib/lift/risposte.ts daIndicare), the existing
+ *  controller's speed regulation when it is asked and not answered (`regolazione`, round 46), then the fields the form
+ *  shows (the roping included), the installation's before the new machine's. */
+export function calcMissing(V: FormValues, bad: readonly string[], tipo?: TipoIntervento | null, parti: readonly Parte[] = [], regolazione = false): string[] {
+  const out = visibleBad(bad, V).filter((id) => isBlank(V, id));
+  if (isBlank(V, 'r') && !out.includes('r')) out.push('r');
+  return [...(tipo === null ? ['intervento'] : []), ...parti.map(parteId), ...(regolazione ? [REGOLAZIONE_ID] : []), ...out.sort((a, b) => orderOf(a) - orderOf(b))];
+}
+
+/** Whether the proposals can be worked out: the type chosen, every part answered, nothing of the installation (or of the
+ *  existing machine) still to enter. */
+export const plantReady = (missing: readonly string[]): boolean => missing.every((id) => id.startsWith('n_'));
+
+/** A standard value still as the software set it. */
+export const isStandard = (V: FormValues, id: string): boolean => id in CALC_STANDARD && String(V[id]) === String(CALC_STANDARD[id]);

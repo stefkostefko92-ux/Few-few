@@ -1,0 +1,24 @@
+"""DejaVu Sans for every PDF of the product (Cyrillic, Greek and technical symbols); never the built-in Helvetica or
+Times. The directory comes from REPORT_FONT_DIR."""
+import os
+
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+FONT_DIR = os.environ.get("REPORT_FONT_DIR", "/usr/share/fonts/truetype/dejavu")
+
+
+FILES = {"DejaVu": "DejaVuSans.ttf", "DejaVu-Bold": "DejaVuSans-Bold.ttf"}
+
+
+def path_of(name):
+    """The file of a font the documents register."""
+    return os.path.join(FONT_DIR, FILES[name])
+
+
+def register():
+    if "DejaVu" in pdfmetrics.getRegisteredFontNames():
+        return
+    pdfmetrics.registerFont(TTFont("DejaVu", path_of("DejaVu")))
+    pdfmetrics.registerFont(TTFont("DejaVu-Bold", path_of("DejaVu-Bold")))
+    pdfmetrics.registerFontFamily("DejaVu", normal="DejaVu", bold="DejaVu-Bold", italic="DejaVu", boldItalic="DejaVu-Bold")

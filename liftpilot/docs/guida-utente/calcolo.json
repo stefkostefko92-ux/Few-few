@@ -1,0 +1,3063 @@
+{
+  "key": "calcolo",
+  "title": "Calcolo argano e locale macchina",
+  "intro": [
+    "Questo capitolo descrive il secondo passo del lavoro su un impianto, dopo il Rilievo: il Calcolo argano. Qui scegli il tipo di intervento (Solo argano, Ammodernamento, Trasformazione completa), indichi quali parti sono sostituite, inserisci i dati dell’impianto, dell’argano esistente, dell’argano nuovo e delle funi, e vedi in diretta se il nuovo argano supera le verifiche. Salvato, il calcolo diventa la base del Progetto, della relazione di calcolo e della bozza d’ordine dell’argano.",
+    "Quando l’intervento sostituisce la macchina di un impianto esistente con la macchina in alto, il Progetto è il rilievo del locale macchina: misuri il locale, il vano sotto e le calate esistenti, il software sistema la nuova macchina, verifica locale, basamento e calate e prepara le tavole. Il rilievo, a sua volta, è la base della relazione tecnica di modifica.",
+    "Le pagine sono quattro: il modulo «Calcolo argano», il «Calcolo» salvato, il «Rilievo del locale macchina» e il «Progetto della sostituzione» salvato. I calcoli e i rilievi salvati non si modificano: una variante è un nuovo salvataggio. Le norme sono citate solo con numero di punto e valore, mai con il testo; l’interfaccia è solo in italiano."
+  ],
+  "pages": [
+    {
+      "id": "calc-form",
+      "title": "Calcolo argano",
+      "path": "/it/app/projects/‹id›/calc",
+      "access": "La apre chi può fare i calcoli (con i permessi predefiniti: Titolare, Capotecnico, Progettista e Tecnico; il Commerciale no). Gli altri ruoli vedono i calcoli salvati ma non questo modulo. Su un impianto archiviato la pagina non è disponibile, e con l’abbonamento scaduto l’azienda è in sola lettura. Il Titolare può cambiare la matrice dei permessi.",
+      "reach": "Dalla pagina dell’impianto: pulsante «Calcola l’argano» finché l’impianto non ha un calcolo, «Nuovo calcolo» quando calcolo e Progetto sono già fatti (e nella sezione dei calcoli). Anche la pagina del Progetto ha «Calcola l’argano» se manca il calcolo. Dalla pagina di un calcolo salvato: «Nuovo calcolo da questi dati» (parte dai valori di quel calcolo). Dal Progetto: «Porta nel calcolo» e il collegamento per un calcolo preliminare.",
+      "purpose": [
+        "Il Calcolo argano è il secondo passo dopo il Rilievo: calcola la macchina (aderenza, funi, motore, freno, soccorso, albero) e fissa il tipo di intervento, il collaudo, la portata, la velocità, la massa e le funi. Il Progetto, che viene dopo, si limita a disegnare su questo calcolo. Titolo della pagina: «Calcolo argano»; testo: «Prima il tipo di intervento, poi i dati dell’impianto: i risultati si aggiornano mentre scrivi.» Al salvataggio il server ricalcola tutto e conserva il calcolo con la sua impronta.",
+        "Il modulo si apre con i dati del calcolo scelto con «Nuovo calcolo da questi dati»; in mancanza, con la bozza del modulo; in mancanza anche di questa, con l’ultimo calcolo dell’impianto. Se non c’è nessuno dei tre, parte vuoto: nessun dato dell’impianto o delle macchine, e il tipo di intervento da scegliere per primo. Se all’impianto è collegato un rilievo, i valori misurati entrano nei campi ancora vuoti, segnati «dal rilievo». Il modulo ha una modalità «Semplice» e una «Esperto»; i risultati si aggiornano in diretta, ma sono un’anteprima: conta solo il calcolo salvato.",
+        "Il risultato non sostituisce la relazione di calcolo firmata: il software applica le formule e i valori del registro delle norme, ciascuno con la sua clausola e il suo stato, ma non verifica i dati che inserisci. Il segno ⚠ indica ciò che il tecnico deve controllare."
+      ],
+      "shots": [
+        {
+          "id": "calc-form",
+          "what": "Modulo Calcolo argano con il tipo di intervento scelto, le parti Sì/No e i gruppi Impianto, Disposizione e geometria"
+        },
+        {
+          "id": "calc-risultati",
+          "what": "Colonna dei risultati dopo aver caricato l’Esempio B: proposta del software, esito (qui una verifica non superata) e valori chiave"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Avvisi in cima alla pagina",
+          "intro": [
+            "Sopra il modulo possono comparire, nell’ordine, questi avvisi (solo quando valgono)."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "Se apri la pagina con «Aggiorna con il software attuale» su un calcolo che non si può più salvare così com’era: un riquadro «Aggiornamento con il software attuale: dati da correggere» spiega («Con il software attuale alcuni dati di questo calcolo non passano più, quindi non si è potuto rifarlo da solo. Correggi i dati segnati e salva: il salvataggio crea un nuovo calcolo; quello salvato prima resta com’era.»), elenca i dati da correggere («Da correggere:») come collegamenti ai campi e, quando i dati passano, dice «Ora i dati passano: salva per creare la nuova versione.»",
+            "Con un rilievo collegato all’impianto: «Questo impianto parte dal rilievo «…» del …: i valori segnati «dal rilievo» sono quelli misurati; quelli che scrivi tu restano tuoi.» Il calcolo prende dal rilievo i valori misurati solo nei campi ancora vuoti; un calcolo salvato che riprendi non cita il rilievo.",
+            "Se apri la pagina dal Progetto con «Porta nel calcolo»: «Valori portati dal progetto del …: … Non sono ancora salvati: salva il calcolo per registrarli.» (ogni valore con «prima: …» se ne sostituisce uno) oppure, se non ce ne sono, «Il progetto non ha ancora valori da portare nel calcolo: completa il disegno nel Progetto.» I valori portati hanno il distintivo «dal progetto». Con il tiro diretto la proposta tiene la puleggia che il progetto appende: «Il progetto appende le funi a D mm: la puleggia dell’argano deve avere D = … mm.»",
+            "Se il calcolo parte dal progetto salvato: «Questo calcolo parte dal progetto del …: corsa, funi oltre la corsa e rinvio segnati «dal progetto» vengono dal disegno.»"
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Esempi e modalità",
+          "intro": [
+            "In alto a sinistra trovi tre pulsanti di esempio, in alto a destra il selettore della modalità. Un progetto nuovo parte vuoto: gli esempi si caricano solo premendo il pulsante."
+          ],
+          "fields": [
+            {
+              "label": "Modalità",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Semplice | Esperto",
+              "default": "Semplice (la scelta è della barra in alto, vale per tutte le pagine e resta con il tuo utente)",
+              "required": "no",
+              "help": [
+                "È la stessa modalità «Semplice» / «Esperto» della barra in alto: la scelgi in un punto e vale ovunque, anche per il Calcolo argano e per i calcoli salvati, e resta con il tuo utente.",
+                "In modalità «Semplice» le righe meno comuni sono nascoste: fune oltre la corsa, inerzie, rendimenti del vano e inverso, poli, frequenza, flessioni in più, la massa del cavo flessibile e la decelerazione ridotta della D.1 (gruppo «Funi e compensazione (relazione tecnica)»), e tutto il gruppo «Servizio e soccorso». Per quei dati valgono i valori caricati o tipici.",
+                "Passa a «Esperto» per vederli e cambiarli: il gruppo «Servizio e soccorso» si apre da solo. Una riga nascosta compare comunque da sola, anche in «Semplice», se il suo valore è ancora da inserire o è fuori campo (in quel caso anche il gruppo «Servizio e soccorso» si mostra aperto).",
+                "Sotto il modulo, in «Semplice», il software elenca i valori standard che sta usando sulle righe nascoste («Valori standard in uso (si cambiano in modalità esperto): …»). In «Semplice» le tabelle tecniche dei risultati sono richiuse sotto «Dettagli tecnici: tabelle e valori intermedi»."
+              ],
+              "src": "src/components/calc/ModoCalc.tsx:14-21; src/components/shell/Modalita.tsx; src/components/calc/CalcForm.tsx:45-48,102-104"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Esempio A: in alto con rinvio",
+              "help": "Carica un impianto nuovo con la macchina in alto e una puleggia di rinvio (tipo «Trasformazione completa»). Sono dati illustrativi della ricerca, capitolo 7, non un impianto reale.",
+              "src": "src/calc/presets.ts:15; Calculator.tsx:200"
+            },
+            {
+              "label": "Esempio B: sostituzione, in basso",
+              "help": "Carica una sostituzione con la macchina in basso e rinvii in testata, con l’argano esistente da confrontare (tipo «Solo argano»).",
+              "src": "src/calc/presets.ts:18"
+            },
+            {
+              "label": "Esempio C: sostituzione, in alto a tiro diretto",
+              "help": "Carica la stessa sostituzione con la macchina in alto a tiro diretto e il diametro della puleggia esistente mantenuto nella proposta (tipo «Solo argano»).",
+              "src": "src/calc/presets.ts:21"
+            }
+          ],
+          "notes": [
+            "Dopo un esempio compare «Caricato: Esempio X (dati illustrativi della ricerca, capitolo 7). Sostituisci i valori con quelli dell’impianto.» Alla prima modifica di un valore l’avviso sparisce."
+          ],
+          "warnings": [
+            "Un esempio sostituisce tutti i valori e il tipo di intervento: usalo solo per capire come funziona il calcolo, non su un impianto vero."
+          ]
+        },
+        {
+          "title": "Avvertenza e limitazione di responsabilità",
+          "intro": [
+            "Un riquadro sempre visibile sopra il calcolatore. Dice che il calcolatore è un ausilio: i risultati sono bozze indicative che diventano relazione di calcolo, progetto o parere tecnico solo quando un tecnico abilitato li verifica e li firma. Il pulsante «Testo completo» apre sei punti con le condizioni; non devi compilare nulla."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Testo completo",
+              "help": "Apre e chiude l’elenco dei sei punti dell’avvertenza (dati non verificati dal software, verifica da parte di un tecnico abilitato, responsabilità dell’installatore, limiti di responsabilità).",
+              "src": "src/components/calc/LegalNotice.tsx:13"
+            }
+          ],
+          "notes": [
+            "Il segno ⚠ che trovi nei risultati indica stime, scelte del software e valori ancora da verificare sul testo delle norme."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Passi del calcolo",
+          "intro": [
+            "Sotto l’avvertenza compare la barra «Passi del calcolo», con un collegamento per ogni parte del modulo nell’ordine in cui la compili: «Tipo di intervento», «Collaudo e documenti» (dopo aver scelto il tipo), «Impianto», «Disposizione e geometria», «Argano esistente» (prima di scegliere il tipo e in una modifica che sostituisce l’argano), «Argano nuovo» (o «Argano esistente (resta)»), «Funi nuove» (o «Funi esistenti (restano)»), «Funi e compensazione (relazione tecnica)» (prima di scegliere il tipo e in una modifica), «Servizio e soccorso» (in modalità «Esperto» o quando un suo valore manca) ed «Esito e proposte». Lo stesso numero è davanti al titolo di ogni gruppo del modulo.",
+            "Ogni voce dice cosa manca: «(manca 1)», «(mancano ‹n›)» oppure «✓» se il passo è completo; «Collaudo e documenti» ed «Esito e proposte» non hanno un conteggio. Il passo da fare adesso è il primo con qualcosa da inserire: è evidenziato nella barra e la riga di stato accanto dice «Ora: ‹n› · ‹passo›»; quando non manca più nulla dice «Tutti i dati inseriti»."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "‹n› · ‹passo›",
+              "help": "Porta al primo dato ancora da inserire di quel passo: apre il gruppo e mette il cursore nel campo. Se nel passo non manca nulla, porta all’inizio del passo.",
+              "src": "src/components/passi/BarraPassi.tsx; src/lib/passi-moduli.ts"
+            }
+          ],
+          "notes": [
+            "Il tipo di intervento, le parti sostituite e la regolazione del quadro ancora da rispondere contano nel passo «Tipo di intervento»; i dati dell’argano esistente e delle sue funi nel passo «Argano esistente»."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Tipo di intervento",
+          "intro": [
+            "È la prima cosa che il Calcolo argano chiede: «Va scelto per primo: decide il collaudo, le parti da verificare e il Progetto.» Si sceglie una volta: decide la norma del collaudo, le parti da verificare e che cosa si disegna nel Progetto. Finché non scegli, il software non propone e non giudica nulla. Il tipo diventa un dato del calcolo salvato."
+          ],
+          "fields": [
+            {
+              "label": "Tipo di intervento",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Solo argano | Ammodernamento | Trasformazione completa",
+              "default": "nessuno (da scegliere)",
+              "required": "sì",
+              "help": [
+                "«Solo argano»: si sostituisce l’argano (e, se serve, le funi); collaudo UNI 10411-1 o -11, verifica straordinaria. «Ammodernamento»: più parti sostituite o modificate, per ciascuna sì o no; collaudo UNI 10411-1 o -11, verifica straordinaria. «Trasformazione completa»: tutto l’impianto progettato e collaudato come nuovo, UNI EN 81-20/50.",
+                "Ogni scheda mostra una scala a tre livelli (quanto dell’ascensore entra nel collaudo) e la norma di base: «UNI 10411-1 o -11» per i primi due tipi, «UNI EN 81-20/50» per la trasformazione.",
+                "Il cambio di tipo imposta il contesto del calcolo (sostituzione o impianto nuovo): con «Trasformazione completa» il confronto con l’argano esistente si spegne, con gli altri due si riaccende. Se passi da «Ammodernamento» a «Trasformazione completa» e poi torni indietro, le risposte date alle parti tornano come erano.",
+                "Il tipo decide anche che cosa disegna il Progetto: per «Solo argano» (e per un ammodernamento che tocca solo le parti del locale macchina) il rilievo del locale macchina; negli altri casi il vano."
+              ],
+              "src": "src/components/calc/InterventoChoice.tsx:25-35; src/components/calc/useIntervento.ts:72; messages/it.json calculations.intervento"
+            }
+          ],
+          "actions": [],
+          "notes": [],
+          "warnings": [
+            "Se il tipo è ancora da scegliere, l’elenco «Dati del progetto da inserire» comincia con «Tipo di intervento» e il pulsante Salva resta bloccato."
+          ]
+        },
+        {
+          "title": "Parti sostituite o modificate",
+          "intro": [
+            "Compare per «Solo argano» e «Ammodernamento» (non per la trasformazione). Il testo sullo schermo dice: per ogni parte «Sì» o «No»; una parte senza risposta non conta come «No», e il calcolo si salva quando sono tutte indicate. Velocità, portata e corsa le decidono i documenti dell’impianto (libretto, carichi documentati) quando ci sono, e il «No» dai documenti si può cambiare. Per «Solo argano» il testo è: «L’argano è sostituito: indica se lo sono anche le funi.»",
+            "Ogni parte è una coppia di pulsanti di scelta «Sì»/«No»: con i tasti freccia passi dall’uno all’altro e rispondi. Una parte ancora senza risposta porta la scritta «Da indicare». Alcune risposte le dà la regola e non si cambiano: al posto dei pulsanti vedi la risposta e il motivo."
+          ],
+          "fields": [
+            {
+              "label": "Argano (Solo argano)",
+              "kind": "casella",
+              "unit": null,
+              "values": "fisso: «Argano: sì (è il calcolo dell’argano)»",
+              "default": "sì, sempre",
+              "required": "no",
+              "help": [
+                "In «Solo argano» la macchina è sempre sostituita: la riga è solo informativa."
+              ],
+              "src": "src/components/calc/PartiSiNo.tsx:97"
+            },
+            {
+              "label": "Funi sostituite (Solo argano)",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Sì | No",
+              "default": "da indicare; bloccata su «Sì» se togli la spunta «Stesso numero e diametro delle funi esistenti»",
+              "required": "sì",
+              "help": [
+                "In «Solo argano» è l’unica domanda oltre all’argano: dice se le funi sono nuove. Se nel gruppo «Funi nuove» togli la spunta a «Stesso numero e diametro delle funi esistenti», le funi hanno numero o diametro propri e la riga diventa «Sì» con il motivo «Funi di numero o diametro propri: sono nuove».",
+                "La risposta decide quali verifiche sulle funi e sugli attacchi valgono come «nuove» nel collaudo."
+              ],
+              "src": "src/components/calc/PartiSiNo.tsx:96-125; src/lib/lift/risposte.ts:33"
+            },
+            {
+              "label": "Argano (Ammodernamento)",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Sì | No",
+              "default": "«Sì» all’ingresso nel tipo",
+              "required": "sì",
+              "help": [
+                "In un ammodernamento la macchina parte come «Sì» e si può cambiare. Con «No» l’argano resta quello esistente: il modulo diventa «Argano esistente (resta)»: inserisci i dati dell’argano installato (targa o rilievo) e il calcolo lo verifica com’è, senza proposta, consiglio, prezzo né ordine.",
+                "Con «No» il confronto con l’argano esistente si spegne; se torni a «Sì» ricompare la macchina sostituita come l’avevi lasciata."
+              ],
+              "src": "src/components/calc/useIntervento.ts:77-98; src/lib/calc-resta.ts"
+            },
+            {
+              "label": "Funi (Ammodernamento)",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Sì | No",
+              "default": "da indicare; bloccata su «Sì» se le funi hanno numero o diametro propri",
+              "required": "sì",
+              "help": [
+                "Come in «Solo argano»: indica se le funi sono sostituite. Con le funi che restano e l’argano che resta, il modulo delle funi diventa «Funi esistenti (restano)»."
+              ],
+              "src": "src/components/calc/PartiSiNo.tsx:96; src/components/calc/Calculator.tsx:220"
+            },
+            {
+              "label": "Cabina · Arcata · Contrappeso · Guide · Porte di piano · Porte di cabina · Ammortizzatori · Limitatore di velocità",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Sì | No",
+              "default": "da indicare",
+              "required": "sì",
+              "help": [
+                "Otto parti dell’ammodernamento, in questo ordine nell’elenco, una coppia «Sì»/«No» ciascuna. «Sì» vuol dire sostituita o modificata dall’intervento: le sue verifiche entrano nell’esito del collaudo. «No» vuol dire che resta com’è: le sue verifiche compaiono come «Esistente» e non entrano nell’esito.",
+                "Se rispondi «Sì» a «Porte di piano» compare l’avviso sul controllo antincendio; la domanda «Porte di cabina: da battente a scorrevoli» (in «Altre parti (facoltative)») compare solo se hai risposto «Sì» a «Porte di cabina»."
+              ],
+              "src": "src/lib/lift/risposte.ts:62; src/lib/lift/collaudo.ts:52"
+            },
+            {
+              "label": "Quadro di manovra",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Sì | No",
+              "default": "da indicare; bloccata su «Sì — senza regolazione della velocità» se la macchina nuova resta su un quadro senza regolazione",
+              "required": "sì",
+              "help": [
+                "Se rispondi «No» (il quadro resta) e la macchina è «Sì», compare la domanda «Il quadro esistente ha la regolazione della velocità?». Se il quadro non ha la regolazione (2 velocità o 1 velocità) la riga diventa «Sì — senza regolazione della velocità»: con la macchina nuova il quadro si sostituisce (UNI 10411-1, 11.2.1; UNI 10411-11, 11.2)."
+              ],
+              "src": "src/lib/lift/risposte.ts:36; src/components/calc/PartiSiNo.tsx:58"
+            },
+            {
+              "label": "Velocità nominale variata",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Sì | No",
+              "default": "dai documenti: «No — dai documenti» se libretto e calcolo non mostrano una variazione; «Sì — dal libretto» (bloccata) se la mostrano; altrimenti da indicare",
+              "required": "quando i documenti non la decidono",
+              "help": [
+                "La decidono i dati del libretto (vedi «Libretto — velocità e corsa documentate») confrontati con la velocità del calcolo. Se non c’è variazione la riga parte su «No», con la scritta «dai documenti» e la frase del libretto che spiega il perché; puoi cambiarla in «Sì»: in quel caso compare «Contro i documenti: nella relazione resta da confermare dal tecnico.»",
+                "Se non hai ancora inserito la velocità nominale del calcolo la riga aspetta: «Dai documenti, quando il calcolo ha la velocità nominale.» Se mancano i dati del libretto devi rispondere tu «Sì» o «No», oppure inserire la velocità del libretto: l’elenco dei dati mancanti dice che cosa serve. Quando i documenti non decidono una variazione ma non la escludono, il testo è «Velocità nominale variata: «Sì» o «No» (i documenti non lo decidono)»."
+              ],
+              "src": "src/components/calc/PartiSiNo.tsx:72-90; src/components/calc/etichette-parti.ts:19"
+            },
+            {
+              "label": "Portata variata",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Sì | No",
+              "default": "dai documenti: «No — dai documenti» se i carichi del progetto coincidono con quelli documentati; «Sì — dai carichi documentati» (bloccata) se la portata cambia; altrimenti da indicare",
+              "required": "quando i documenti non la decidono",
+              "help": [
+                "La decidono i «Carichi documentati» (portata, massa della cabina vuota, contrappeso del verbale) confrontati con Q, P e contrappeso del calcolo, con le soglie percentuali del registro UNI 10411. Se i carichi coincidono, entro l’arrotondamento dei dati, la riga parte su «No» con il motivo; con una nuova cabina il software ti ricorda di controllare che P sia la massa della cabina nuova con porte e operatore (e arcata, se anche l’arcata è nuova).",
+                "Se la portata del progetto è diversa dalla documentata, la variazione è della portata (DPR 162/1999, art. 2 c.1 lett. cc) n. 2)) e devi rispondere tu. Senza carichi documentati ti viene chiesto «Sì» o «No», oppure di inserire i carichi."
+              ],
+              "src": "src/components/calc/PartiSiNo.tsx:83-89; src/lib/lift/risposte.ts:34"
+            },
+            {
+              "label": "Corsa variata",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Sì | No",
+              "default": "dai documenti: «No — dai documenti» se la corsa coincide con quella del libretto; «Sì — dal libretto» (bloccata) se cambia; altrimenti da indicare",
+              "required": "quando i documenti non la decidono",
+              "help": [
+                "Si confronta la corsa H del calcolo con quella del primo collaudo (UNI 10411-1) o con la corsa documentata (UNI 10411-11). Se l’elenco dei dati mancanti la nomina, inserisci la corsa del libretto oppure rispondi tu."
+              ],
+              "src": "src/components/calc/PartiSiNo.tsx:79-82; src/components/calc/etichette-parti.ts:19-24"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Rifacimento con l’arcata esistente",
+              "help": "Interruttore solo per l’«Ammodernamento»: risponde in una volta sola a tutte le parti che il rifacimento sostituisce — argano, funi, cabina, contrappeso, guide, porte di piano e di cabina, ammortizzatori, limitatore, quadro — tranne l’arcata, che resta («No — resta l’arcata esistente»). Le funi diventano libere dal numero e dal diametro esistenti. Velocità, portata e corsa seguono i documenti; senza documenti restano da indicare. Per prassi l’intervento resta una modifica dell’impianto (DPR 162/1999, art. 2) e si collauda con la UNI 10411, non come impianto nuovo. Sotto compare la nota «Rifacimento: tutte le parti sostituite tranne l’arcata, con funi nuove.». Premendolo di nuovo torni alla sola macchina; le «Altre parti (facoltative)» non sono toccate.",
+              "src": "src/components/calc/PartiSiNo.tsx:131-136; src/lib/lift/intervento.ts:100"
+            }
+          ],
+          "notes": [
+            "Le risposte bloccate dalla regola mostrano una scritta al posto dei due pulsanti. Una parte che i documenti hanno risolto come «No» si può comunque cambiare in «Sì».",
+            "Passando a «Trasformazione completa» tutte le parti diventano «Sì» per regola e non si chiede nulla."
+          ],
+          "warnings": [
+            "Il software non assume «No» per una parte senza risposta: finché non rispondi, la parte compare in «Da indicare» e il calcolo non si salva."
+          ]
+        },
+        {
+          "title": "Regolazione della velocità del quadro esistente",
+          "intro": [
+            "Compare quando la macchina nuova resta su un quadro di manovra esistente: sotto «Funi sostituite» in un «Solo argano», sotto «Quadro di manovra» in un ammodernamento con macchina «Sì» e quadro «No». Ogni macchina proposta dal software è dimensionata per l’inverter; la regolazione non si aggiunge a un quadro che non l’ha."
+          ],
+          "fields": [
+            {
+              "label": "Il quadro esistente ha la regolazione della velocità?",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "VVVF (inverter) | 2 velocità | 1 velocità",
+              "default": "nessuna (da indicare)",
+              "required": "quando compare",
+              "help": [
+                "Rispondi guardando il quadro installato. «VVVF (inverter)»: il quadro regola già la velocità. «2 velocità» o «1 velocità»: non la regola.",
+                "In un ammodernamento, 2 o 1 velocità bloccano «Quadro di manovra» su «Sì»: il quadro si sostituisce. In un «Solo argano» il calcolo non si salva: l’avviso offre «Passa ad Ammodernamento con il quadro». Clausole: UNI 10411-1, 11.2.1; UNI 10411-11, 11.2 (secondo la parte della norma del collaudo).",
+                "Finché non rispondi la voce «Regolazione della velocità del quadro esistente» è nell’elenco dei dati mancanti."
+              ],
+              "src": "src/components/calc/RegolazioneQuadro.tsx:22-34; src/lib/lift/risposte.ts:52"
+            }
+          ],
+          "actions": [],
+          "notes": [],
+          "warnings": [
+            "Finché non rispondi il calcolo non si salva: la voce «Regolazione della velocità del quadro esistente» resta nell’elenco dei dati mancanti."
+          ]
+        },
+        {
+          "title": "Altre parti (facoltative)",
+          "intro": [
+            "Solo per l’«Ammodernamento». Il testo dice: «Indica «Sì» solo per ciò che l’intervento sostituisce o modifica: senza risposta resta «No».» Il rifacimento con l’arcata esistente non le comprende. Non sono mai nell’elenco dei dati mancanti e partono tutte su «No»."
+          ],
+          "fields": [
+            {
+              "label": "Paracadute · Protezioni ACOP e UCM · Allarme di emergenza · Locale del macchinario",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Sì | No",
+              "default": "No",
+              "required": "no",
+              "help": [
+                "Quattro parti facoltative, una coppia «Sì»/«No» ciascuna. «Sì» solo se l’intervento le sostituisce o le modifica: allora le loro verifiche entrano nell’esito del collaudo. «Protezioni ACOP e UCM» sono le protezioni contro la velocità eccessiva in salita e contro il movimento incontrollato della cabina.",
+                "«Locale del macchinario» in «Sì» rientra, insieme a macchina, funi, quadro, allarme e UCM, tra le parti per cui il Progetto disegna il rilievo del locale macchina."
+              ],
+              "src": "src/components/calc/AltreParti.tsx:26-41; src/lib/lift/intervento.ts:32,38"
+            },
+            {
+              "label": "Porte di cabina: da battente a scorrevoli",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Sì | No",
+              "default": "No",
+              "required": "no",
+              "help": [
+                "Compare solo se hai risposto «Sì» a «Porte di cabina». Rispondendo «No» a «Porte di cabina» questa voce torna «No» da sola."
+              ],
+              "src": "src/lib/lift/risposte.ts:68,92"
+            }
+          ],
+          "actions": [],
+          "notes": [],
+          "warnings": []
+        },
+        {
+          "title": "Avvisi sul tipo di intervento",
+          "intro": [
+            "Sotto le parti compare un elenco di avvisi che dipende dal tipo, dalle risposte e dai dati del libretto. Sono avvisi, mai un rifiuto, salvo i casi indicati sotto; la procedura la conferma il tecnico con l’organismo."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Passa a Trasformazione completa",
+              "help": "Compare con l’avviso «Quadro, argano, porte di piano, cabina e arcata sostituiti insieme…» (UNI 10411, punto 21.1: modifica sostanziale; il risultato segue la UNI EN 81-20:2020, e la UNI EN 81-21:2022 dove i luoghi non lo consentono) e con l’avviso sulla corsa che supera di oltre 8 m quella del primo collaudo (UNI 10411-1, punto 16: nuova installazione). Imposta il tipo «Trasformazione completa» e porta il fuoco sul tipo scelto.",
+              "src": "src/components/calc/AvvisiIntervento.tsx:51,60-62"
+            },
+            {
+              "label": "Passa ad Ammodernamento",
+              "help": "Compare in «Solo argano» quando velocità o corsa del progetto variano rispetto al libretto (UNI 10411, punti 15 e 16): come «Solo argano» il calcolo non si salva. Porta al tipo «Ammodernamento», dove la variazione è già indicata.",
+              "src": "AvvisiIntervento.tsx:44-46"
+            },
+            {
+              "label": "Passa ad Ammodernamento con il quadro",
+              "help": "Compare in «Solo argano» se il quadro esistente non ha la regolazione della velocità e la macchina nuova è dimensionata per l’inverter (UNI 10411-1, 11.2.1; UNI 10411-11, 11.2): il calcolo non si salva come «Solo argano». Porta all’ammodernamento con «Quadro di manovra» già su «Sì».",
+              "src": "AvvisiIntervento.tsx:43,44"
+            }
+          ],
+          "notes": [
+            "Altri avvisi senza pulsante: «I carichi del progetto variano rispetto a quelli documentati (UNI 10411, 6.1)… Valuta «Ammodernamento»» (solo argano); porte di piano di modello diverso in attività soggetta ai controlli antincendio (DM 15/09/2005, art. 1 c.2, o Codice di prevenzione incendi, RTV V.3); cabina nuova sull’arcata esistente che resta accessibile, con bottoniera secondo UNI EN 81-70:2022 (UNI 10411-1, 22 j)); nella modifica sostanziale, UNI EN 81-70:2022 (UNI 10411, 21.2); velocità variata di oltre il 5 % (UNI 10411-11, 15 i)): serve la protezione UCM secondo la UNI EN 81-20, 5.6.7; velocità entro il 5 % (UNI 10411-1, 15.1 e 15.16): non entra tra le parti.",
+            "Per «Trasformazione completa» compare «Collaudo come impianto nuovo (UNI EN 81-20/50). In un edificio esistente valuta anche la UNI EN 81-21:2022.»"
+          ],
+          "warnings": [
+            "Il calcolo non si salva se tipo e collaudo sono in contrasto: la barra di salvataggio lo dice con «Tipo di intervento non coerente» e l’elenco dei punti (tipo di intervento, parti sostituite, velocità variata dal libretto, corsa variata dal libretto, quadro esistente senza regolazione della velocità, porte di cabina scorrevoli senza le porte di cabina sostituite, regolazione non indicata, …)."
+          ]
+        },
+        {
+          "title": "Impianto",
+          "intro": [
+            "Primo gruppo del modulo. Nei campi numerici puoi usare come separatore decimale sia il punto sia la virgola. Un valore ancora da inserire è segnato come necessario; un valore standard del software porta il distintivo «standard» (suggerimento: «Valore standard del software, non inserito: cambialo se il progetto è diverso.»). Un valore preso dal rilievo collegato porta il distintivo «dal rilievo», uno portato dal Progetto «dal progetto»."
+          ],
+          "fields": [
+            {
+              "label": "Norma della macchina",
+              "kind": "scelta",
+              "unit": null,
+              "values": "UNI EN 81-20:2020 (UNI 10411-1, 14.1 a)) | UNI EN 81-1 (UNI 10411-1, 14.1 b), o norma d’origine)",
+              "default": "UNI EN 81-20:2020 (standard del software)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "Compare solo per «Solo argano» e «Ammodernamento». Dice secondo quale norma è fatta la macchina sostituita (UNI 10411-1:2024, 14.1 a) o b)): cambiano la manovra di emergenza e la verifica del blocco.",
+                "Con la UNI EN 81-20 contano anche i 150 N del mezzo meccanico e il dispositivo contro lo stallo; con la UNI EN 81-1 solo i 400 N e la verifica dello stallo."
+              ],
+              "src": "src/components/calc/fields.ts:27; messages/calc hint_machineStd"
+            },
+            {
+              "label": "Portata Q",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "maggiore di 0; passo 10",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Portata nominale dell’ascensore, dalla targa in cabina o dal libretto. Entra in tutto: carico di equilibrio, aderenza (caso con 1,25·Q), motore, freno, carico sull’albero, forze di soccorso, e nel diagramma.",
+                "È la portata di progetto. Per decidere se «Portata variata», il software la confronta con la portata scritta in «Carichi documentati» (il verbale): lì inserisci quella documentata."
+              ],
+              "src": "src/components/calc/fields.ts:28; src/calc/inputs.ts:46"
+            },
+            {
+              "label": "Massa cabina completa P",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "maggiore di 0; passo 10",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Cabina vuota completa: arcata, porte, operatore, paracadute, accessori e la parte del cavo flessibile (e della compensazione, se c’è) che grava sulla cabina. Con P e il bilanciamento il software ricava il contrappeso: M_cw = P + k·Q.",
+                "Se hai cambiato la cabina, inserisci la massa della cabina nuova con porte e operatore: la relazione lo segnala al tecnico. Nell’analisi di sensibilità il software prova P ±10 %."
+              ],
+              "src": "src/components/calc/fields.ts:28; messages/calc hint_P"
+            },
+            {
+              "label": "Bilanciamento k",
+              "kind": "numero",
+              "unit": null,
+              "values": "da 0 a 1 (estremi inclusi); passo 0,01",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Frazione di Q che il contrappeso bilancia (per esempio 0,5 = 50 %). Determina M_cw = P + k·Q e quindi lo squilibrio dei tiri. Se compili «Carico di equilibrio misurato (se noto)», k è calcolato come carico di equilibrio / Q e prevale sul valore scritto qui; il campo resta comunque da compilare nel modulo."
+              ],
+              "src": "src/components/calc/fields.ts:28; src/calc/model.ts:41"
+            },
+            {
+              "label": "Carico di equilibrio misurato (se noto)",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "0 o maggiore; passo 5; vuoto = non usato",
+              "default": "vuoto",
+              "required": "no",
+              "help": [
+                "Il carico in cabina con cui cabina e contrappeso sono in equilibrio, misurato in sito. Se lo inserisci, il software usa k = carico di equilibrio / Q e nell’analisi di sensibilità non fa variare il bilanciamento: varia solo la massa della cabina e con essa il contrappeso."
+              ],
+              "src": "src/components/calc/fields.ts:29; messages/calc hint_qeq"
+            },
+            {
+              "label": "Velocità nominale v",
+              "kind": "numero",
+              "unit": "m/s",
+              "values": "maggiore di 0,15; passo 0,05",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Velocità nominale dell’ascensore, dalla targa o dal libretto. A 0,15 m/s o meno l’apparecchio è fuori dal campo di applicazione della UNI EN 81-20 (1.3 a) 2)), della Direttiva 2014/33/UE (art. 1 par. 2 a)) e del DPR 162/1999 (art. 1 c.3 a)): il software non calcola e mostra l’errore sotto il campo (per esempio 1,0 invece di 0,1).",
+                "Entra nell’aderenza, nella potenza, nella frenata, nella velocità reale a frequenza di rete e nel confronto con il libretto per «Velocità nominale variata»."
+              ],
+              "src": "src/components/calc/fields.ts:29; src/calc/inputs.ts:50; messages/calc err_v"
+            },
+            {
+              "label": "Corsa H",
+              "kind": "numero",
+              "unit": "m",
+              "values": "maggiore di 0; passo 0,5",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Corsa dell’ascensore, dal piano più basso al più alto. Serve per la lunghezza e la massa delle funi, per la loro posizione nei vari casi di aderenza e per il confronto con la corsa del libretto («Corsa variata»). Se parti dal Progetto («dal progetto») la corsa viene dal disegno."
+              ],
+              "src": "src/components/calc/fields.ts:29"
+            },
+            {
+              "label": "Fune oltre la corsa, per lato",
+              "kind": "numero",
+              "unit": "m",
+              "values": "0,1 o più; passo 0,5",
+              "default": "2 m (valore standard del software)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "Lunghezza di fune che si aggiunge alla corsa H da ciascun lato. Entra nella lunghezza e nella massa delle funi in movimento e nelle posizioni di cabina e contrappeso per le verifiche di aderenza. Se parti dal Progetto («dal progetto») viene dal disegno.",
+                "Compare solo in modalità «Esperto» (in «Semplice» vale il valore standard)."
+              ],
+              "src": "src/components/calc/fields.ts:30; src/calc/inputs.ts:50; src/calc/model.ts:67"
+            },
+            {
+              "label": "Taglia",
+              "kind": "scelta",
+              "unit": null,
+              "values": "1:1 | 2:1",
+              "default": "nessuna (da scegliere)",
+              "required": "sì",
+              "help": [
+                "Rapporto di sospensione delle funi: 1:1 o 2:1. Con 2:1 il calcolo conta una puleggia di cabina e una di contrappeso come flessioni semplici (le altre pulegge in «Flessioni semplici in più») e, nei tiri, l’inerzia J_p delle pulegge di rinvio. Cambia anche il disegno dello schema."
+              ],
+              "src": "src/components/calc/fields.ts:30; messages/calc v_r2"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "Il campo «Contesto» (sostituzione o impianto nuovo) non è un campo del modulo: lo imposta il tipo di intervento."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Disposizione e geometria",
+          "intro": [
+            "Descrive dove sta la macchina e come passano le funi. Alcune righe compaiono solo con certe scelte."
+          ],
+          "fields": [
+            {
+              "label": "Posizione della macchina",
+              "kind": "scelta",
+              "unit": null,
+              "values": "In alto, tiro diretto (senza rinvio) | In alto, con rinvio | In basso, rinvii in testata",
+              "default": "nessuna (da scegliere)",
+              "required": "sì",
+              "help": [
+                "Tiro diretto: le funi scendono dalla puleggia di frizione direttamente a cabina e contrappeso. Con rinvio: una puleggia di rinvio porta il contrappeso. In basso: la macchina sta in fondo e i rinvii in testata portano le funi. La scelta fa comparire le righe giuste qui sotto e cambia lo schema.",
+                "Con la macchina in basso il locale macchina non si rileva e non si disegna sopra il vano: il Progetto disegna il vano."
+              ],
+              "src": "src/components/calc/fields.ts:38"
+            },
+            {
+              "label": "Angolo di avvolgimento",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Calcolato dalle quote | Inserito a mano",
+              "default": "Calcolato dalle quote (standard)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "«Calcolato dalle quote»: tiro diretto 180°, o nella sostituzione dalle calate dell’argano esistente (confronto attivo); con rinvio dalle distanze; in basso 180° con rami verticali. «Inserito a mano»: scrivi tu l’angolo."
+              ],
+              "src": "src/components/calc/fields.ts:39; messages/calc hint_geo"
+            },
+            {
+              "label": "α inserito",
+              "kind": "numero",
+              "unit": "°",
+              "values": "maggiore di 0 e fino a 360; passo 0,5",
+              "default": "nessuno",
+              "required": "quando «Angolo di avvolgimento» è «Inserito a mano»",
+              "help": [
+                "Angolo di avvolgimento delle funi sulla puleggia di frizione. Decide l’aderenza (e^(f·α)). Compare solo con «Inserito a mano»."
+              ],
+              "src": "src/components/calc/fields.ts:40,83; src/calc/inputs.ts:47"
+            },
+            {
+              "label": "Nuova puleggia rispetto alle calate esistenti",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Centrata | Allineata al lato cabina",
+              "default": "Centrata (standard)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "Compare solo in sostituzione, con macchina in alto a tiro diretto e il confronto con l’argano esistente attivo. Senza rinvio l’interasse delle calate è uguale al diametro della puleggia: con un diametro diverso gli attacchi restano dove sono e le funi si inclinano. Qui scegli come si posiziona la nuova puleggia: centrata sulle calate esistenti, oppure con il lato cabina allineato.",
+                "La scelta decide l’angolo α usato nelle verifiche, la scheda «Calate delle funi (tiro diretto)» dei risultati, e la posizione della puleggia nel rilievo del locale macchina."
+              ],
+              "src": "src/components/calc/fields.ts:40,86; messages/calc dr_note"
+            },
+            {
+              "label": "Rinvio: distanza orizzontale dal centro puleggia",
+              "kind": "numero",
+              "unit": "m",
+              "values": "0 o più; passo 0,01",
+              "default": "nessuno (da inserire)",
+              "required": "quando la posizione è «In alto, con rinvio»",
+              "help": [
+                "Distanza orizzontale tra il centro della puleggia di frizione e quello della puleggia di rinvio. Con «Calcolato dalle quote» insieme a h determina l’angolo di avvolgimento; se le due quote non permettono di calcolarlo, entrambe sono segnate come errore. Se parti dal Progetto («dal progetto») viene dal disegno."
+              ],
+              "src": "src/components/calc/fields.ts:41,87; src/calc/inputs.ts:98"
+            },
+            {
+              "label": "Rinvio: distanza verticale dal centro puleggia",
+              "kind": "numero",
+              "unit": "m",
+              "values": "0 o più; passo 0,01",
+              "default": "nessuno (da inserire)",
+              "required": "quando la posizione è «In alto, con rinvio»",
+              "help": [
+                "Distanza verticale tra i due centri (h). Con rinvio verso l’interno la fune tocca il rinvio dal lato opposto e il calcolo la conta come flessione inversa. Nel rilievo del locale macchina h indica anche l’altezza minima necessaria perché la puleggia di rinvio trovi posto."
+              ],
+              "src": "src/components/calc/fields.ts:41,87; messages/calc g_bend_note"
+            },
+            {
+              "label": "Distanza verticale testata – puleggia di frizione",
+              "kind": "numero",
+              "unit": "m",
+              "values": "0 o più; passo 0,5",
+              "default": "nessuno (da inserire)",
+              "required": "quando la posizione è «In basso, rinvii in testata»",
+              "help": [
+                "Distanza verticale (Hv) tra la testata, dove stanno i rinvii, e la puleggia di frizione. Il calcolo la usa in due modi: aggiunge 2·Hv alla lunghezza delle funi (quindi alla loro massa in movimento e all’inerzia) e conta, su ciascun lato, il tratto di fune Hv tra la testata e la puleggia di frizione nel calcolo dei tiri."
+              ],
+              "src": "src/components/calc/fields.ts:42,88; src/calc/model.ts:67"
+            },
+            {
+              "label": "Diametro pulegge di rinvio",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "maggiore di 0; passo 10",
+              "default": "nessuno (da inserire)",
+              "required": "quando c’è un rinvio, la posizione è «In basso…», la taglia è 2:1, oppure «Flessioni semplici in più» più «Flessioni inverse in più» è maggiore di 0",
+              "help": [
+                "Se le pulegge hanno diametri diversi, inserisci la più piccola: vale per D/d e, dal lato della sicurezza, per N_equiv. Il rapporto Dp/d delle funi deve essere almeno 40; il diametro delle funi della proposta è limitato anche da qui."
+              ],
+              "src": "src/components/calc/fields.ts:42,89; messages/calc hint_Dp"
+            },
+            {
+              "label": "Inerzia per puleggia (rinvio; cabina e contrappeso a 2:1)",
+              "kind": "numero",
+              "unit": "kg·m²",
+              "values": "0 o più; passo 0,1",
+              "default": "nessuno (da inserire se il campo compare)",
+              "required": "quando compare (rinvio, macchina in basso o taglia 2:1)",
+              "help": [
+                "Momento d’inerzia di ciascuna puleggia di rinvio, dal costruttore. Entra nei tiri e nella decelerazione reale. Con pulegge diverse a 2:1 si inserisce l’inerzia equivalente. Solo in modalità «Esperto»."
+              ],
+              "src": "src/components/calc/fields.ts:42,91"
+            },
+            {
+              "label": "Flessioni semplici in più",
+              "kind": "numero",
+              "unit": null,
+              "values": "numero intero da 0 a 50; passo 1",
+              "default": "0 (standard)",
+              "required": "no (ha già il valore standard)",
+              "help": [
+                "Quante pulegge in più, oltre a quelle già contate (rinvio, pulegge in testata, pulegge di cabina e contrappeso della taglia 2:1), fanno flettere la fune in modo semplice. Solo «Esperto»."
+              ],
+              "src": "src/components/calc/fields.ts:43; messages/calc hint_bends"
+            },
+            {
+              "label": "Flessioni inverse in più",
+              "kind": "numero",
+              "unit": null,
+              "values": "numero intero da 0 a 50; passo 1",
+              "default": "0 (standard)",
+              "required": "no (ha già il valore standard)",
+              "help": [
+                "Quante flessioni inverse in più (la fune si flette in senso opposto), oltre a quella già contata con il rinvio verso l’interno. Solo «Esperto»."
+              ],
+              "src": "src/components/calc/fields.ts:43"
+            },
+            {
+              "label": "Rendimento del vano η_vano",
+              "kind": "numero",
+              "unit": null,
+              "values": "maggiore di 0 e fino a 1; passo 0,01",
+              "default": "0,85 (standard)",
+              "required": "no (ha già il valore standard)",
+              "help": [
+                "Rendimento complessivo del vano (guide, rinvii, pulegge). Moltiplica il rendimento del riduttore nella coppia statica e nello sforzo al volantino. Il valore 0,85 è un’ipotesi. Solo «Esperto»."
+              ],
+              "src": "src/components/calc/fields.ts:43; src/calc/inputs.ts:50; src/calc/compute.ts:110"
+            }
+          ],
+          "actions": [],
+          "notes": [],
+          "warnings": []
+        },
+        {
+          "title": "Argano esistente",
+          "intro": [
+            "Gruppo visibile per «Solo argano» e «Ammodernamento» (e finché il tipo non è scelto); nascosto per «Trasformazione completa» e quando l’argano resta («Argano: No»). Serve a confrontare l’argano esistente con quello nuovo."
+          ],
+          "fields": [
+            {
+              "label": "Confronta con l’argano esistente",
+              "kind": "casella",
+              "unit": null,
+              "values": "spuntata | non spuntata",
+              "default": "spuntata (per un impianto esistente)",
+              "required": "no",
+              "help": [
+                "Se spunti, compaiono i dati dell’argano esistente e delle sue funi, e i risultati mostrano il confronto «Esistente / Nuovo». Il confronto serve anche a ricavare l’angolo di avvolgimento dalle calate esistenti nella sostituzione a tiro diretto. Il testo del gruppo: «La disposizione, le masse e il servizio sono quelli dell’impianto; qui solo i dati dell’argano e delle funi esistenti.»"
+              ],
+              "src": "src/components/calc/CalcForm.tsx:63; src/components/calc/fields.ts:102"
+            },
+            {
+              "label": "Nella proposta mantieni il diametro della puleggia esistente",
+              "kind": "casella",
+              "unit": null,
+              "values": "spuntata | non spuntata",
+              "default": "non spuntata",
+              "required": "no",
+              "help": [
+                "Compare con il confronto attivo. Se spunti, la proposta del software tiene il diametro della puleggia esistente («diametro dell’argano esistente») e propone le alternative con le stesse funi, una riga per diametro."
+              ],
+              "src": "src/components/calc/fields.ts:102; messages/calc keepD, p_fixed"
+            },
+            {
+              "label": "Dati dell’argano esistente (stessi campi dell’argano nuovo)",
+              "kind": "tabella",
+              "unit": null,
+              "values": "come per l’argano nuovo",
+              "default": "solo «Frequenza di rete» 50 Hz e «Poli del motore» 4 sono standard; il resto è da inserire",
+              "required": "quando «Confronta con l’argano esistente» è spuntata",
+              "help": [
+                "Il sottogruppo ripete, con la stessa etichetta, gli stessi campi dell’argano nuovo: Diametro primitivo puleggia D, Profilo della gola, Angolo di sottosquadro β, Angolo della gola γ, Rapporto di riduzione i, Rendimento diretto riduttore η_d, Rendimento inverso riduttore η_i, Poli del motore, Frequenza di rete, Giri di targa, Potenza del motore, Inerzia motore + freno (+ volano), Inerzia puleggia di frizione, Gruppi del freno, Coppia per gruppo, Carico statico massimo sull’albero, Coppia massima in uscita ammessa (catalogo) e Massa della macchina. Limiti e unità sono identici (vedi «Argano nuovo»).",
+                "Differenze: in «Semplice» «Carico statico massimo sull’albero» e «Coppia massima in uscita ammessa (catalogo)» sono nascosti per l’argano esistente; i valori si ricavano dalla targa o dal rilievo dell’argano installato. Nei messaggi di errore e nel riepilogo i campi dell’argano esistente portano il suffisso «(Argano esistente)».",
+                "Un valore misurato nel rilievo collegato all’impianto porta il distintivo «dal rilievo»."
+              ],
+              "src": "src/components/calc/CalcForm.tsx:66-72; src/components/calc/fields.ts:46-59"
+            },
+            {
+              "label": "Funi esistenti",
+              "kind": "tabella",
+              "unit": null,
+              "values": "come per le funi nuove",
+              "default": "da inserire",
+              "required": "quando «Confronta con l’argano esistente» è spuntata",
+              "help": [
+                "Sottogruppo con gli stessi quattro campi delle funi nuove: Numero di funi n, Diametro funi d, Carico di rottura minimo per fune, Massa lineare per fune (vedi «Funi nuove»). Sono i dati delle funi montate; servono al confronto. Se «Stesso numero e diametro delle funi esistenti» è spuntato nel gruppo «Funi nuove», numero e diametro di queste funi si copiano sulle funi nuove."
+              ],
+              "src": "src/components/calc/CalcForm.tsx:68-70"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Stima F_min e massa dal diametro ⚠",
+              "help": "Compila «Carico di rottura minimo per fune» e «Massa lineare per fune» dal diametro d, con i valori tipici di una fune 8×19 Seale con anima tessile, 1570 N/mm² (8 mm: 30,4 kN e 0,215 kg/m, poi in proporzione a d²). Il messaggio «Valori stimati per funi 8×19 Seale 1570 N/mm²: usare quelli del certificato.» ricorda di sostituirli con i valori del certificato di fune. Non ha effetto se il diametro non è ancora inserito.",
+              "src": "src/components/calc/Calculator.tsx:150-156; CalcForm.tsx:50-55"
+            }
+          ],
+          "notes": [
+            "I dati dell’argano esistente non cambiano l’esito dell’argano nuovo, tranne l’angolo di avvolgimento nella sostituzione a tiro diretto con il confronto attivo."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Argano nuovo",
+          "intro": [
+            "Gruppo dell’argano offerto dal costruttore: «L’argano offerto dal costruttore. Oppure premi «Usa la proposta nella verifica»: qui entrano le caratteristiche proposte dal software.» Con «Argano: No» il gruppo si chiama «Argano esistente (resta)» e il testo diventa «L’argano resta: si verifica con i dati dell’impianto modificato; nessuna proposta, consiglio o ordine.»; inserisci i dati dell’argano installato dalla targa o dal rilievo."
+          ],
+          "fields": [
+            {
+              "label": "Diametro primitivo puleggia D",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "maggiore di 0; passo 10",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Diametro primitivo della puleggia di frizione, cioè quello su cui agiscono le funi (il calcolo usa D/2 come braccio), dalla scheda del costruttore o misurato. Entra nel rapporto D/d (almeno 40), nella velocità, nei tiri e nella decelerazione. Nel tiro diretto, in sostituzione, decide l’interasse delle nuove calate. Il Progetto lo porta al calcolo («dal progetto»)."
+              ],
+              "src": "src/components/calc/fields.ts:47; src/calc/inputs.ts:103"
+            },
+            {
+              "label": "Profilo della gola",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Semicircolare senza sottosquadro | Semicircolare con sottosquadro | A V temprata | A V non temprata",
+              "default": "nessuno (da scegliere)",
+              "required": "sì",
+              "help": [
+                "Forma della gola della puleggia di frizione: determina il coefficiente d’attrito equivalente. Il sottosquadro compare solo per «Semicircolare con sottosquadro» e «A V non temprata»; la gola a V temprata tiene con l’angolo γ da solo."
+              ],
+              "src": "src/components/calc/fields.ts:48"
+            },
+            {
+              "label": "Angolo di sottosquadro β",
+              "kind": "numero",
+              "unit": "°",
+              "values": "maggiore di 0 e fino a 180; passo 0,5",
+              "default": "nessuno (da inserire)",
+              "required": "quando il profilo è «Semicircolare con sottosquadro» o «A V non temprata»",
+              "help": [
+                "Angolo del sottosquadro, dai dati del costruttore o misurato sulla puleggia che resta (l’usura lo cambia). Limiti UNI EN 81-50:2020 (5.11.2.3.1): β ≤ 105° e γ ≥ 35° sulle gole a V, γ ≥ 25° raccomandato sulle semicircolari; β ≤ 90° è la raccomandazione di Montanari (sopra, compare l’avviso «oltre i 90° raccomandati (Montanari) ⚠»)."
+              ],
+              "src": "src/components/calc/fields.ts:49,100; src/calc/norme.ts:42-45; messages/calc v_geom"
+            },
+            {
+              "label": "Angolo della gola γ",
+              "kind": "numero",
+              "unit": "°",
+              "values": "maggiore di 0 e fino a 180; passo 0,5",
+              "default": "35° (standard)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "Angolo della gola a V o del taglio della gola semicircolare. Sulla gola semicircolare la norma raccomanda di non scendere sotto un valore minimo; sotto, compare l’avviso «Angolo γ della gola semicircolare sotto …°»."
+              ],
+              "src": "src/components/calc/fields.ts:49; messages/calc q_geom_gamma"
+            },
+            {
+              "label": "Rapporto di riduzione i",
+              "kind": "numero",
+              "unit": null,
+              "values": "maggiore di 0; passo 0,5",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Rapporto del riduttore (giri del motore / giri della puleggia), dalla targa. Con la velocità nominale e i giri di targa determina la velocità reale a frequenza di rete. Il rapporto ideale e lo scostamento dalla nominale sono nella scheda «Cinematica»."
+              ],
+              "src": "src/components/calc/fields.ts:50; src/calc/compute.ts:114"
+            },
+            {
+              "label": "Rendimento diretto riduttore η_d",
+              "kind": "numero",
+              "unit": null,
+              "values": "maggiore di 0 e fino a 1; passo 0,01",
+              "default": "0,7 (standard)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "Rendimento del riduttore in senso diretto, dal costruttore. Entra nella potenza richiesta, nella coppia statica al motore e negli sforzi di soccorso. Se non inserisci il rendimento inverso, η_i è stimato da questo valore."
+              ],
+              "src": "src/components/calc/fields.ts:50; src/calc/inputs.ts:93"
+            },
+            {
+              "label": "Rendimento inverso riduttore η_i",
+              "kind": "numero",
+              "unit": null,
+              "values": "da 0 a 1; passo 0,01; vuoto = stima",
+              "default": "vuoto: stima 2 − 1/η_d (vite senza fine)",
+              "required": "no",
+              "help": [
+                "Rendimento del riduttore in senso inverso, dal costruttore. Serve per la decelerazione reale in frenata. Se lo lasci vuoto il software stima 2 − 1/η_d e lo dichiara con l’avviso «η_i stimato da η_d (…): per la decelerazione reale in frenata inserire il rendimento inverso del costruttore». Con η_i = 0 il riduttore è irreversibile: aprendo il freno la cabina non si muove per gravità. Solo «Esperto»."
+              ],
+              "src": "src/components/calc/fields.ts:51; src/calc/inputs.ts:93; messages/calc hint_etaI"
+            },
+            {
+              "label": "Poli del motore (avvolgimento veloce)",
+              "kind": "scelta",
+              "unit": null,
+              "values": "2 | 4 | 6 | 8",
+              "default": "4 (standard)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "Numero di poli dell’avvolgimento veloce del motore, dalla targa. Con la frequenza di rete dà la velocità sincrona (120·f/poli) e lo scorrimento rispetto ai giri di targa (scheda «Cinematica»). Solo «Esperto»."
+              ],
+              "src": "src/components/calc/fields.ts:52; src/calc/inputs.ts:58"
+            },
+            {
+              "label": "Frequenza di rete",
+              "kind": "numero",
+              "unit": "Hz",
+              "values": "maggiore di 0; passo 1",
+              "default": "50 Hz (standard)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "Frequenza alla quale il motore ha i giri di targa (50 Hz in Italia). Con il rapporto e il diametro dà la velocità reale. Solo «Esperto»."
+              ],
+              "src": "src/components/calc/fields.ts:53"
+            },
+            {
+              "label": "Giri di targa",
+              "kind": "numero",
+              "unit": "1/min",
+              "values": "maggiore di 0; passo 5",
+              "default": "1450 1/min (standard)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "Velocità di rotazione del motore sulla targa, nell’avvolgimento veloce. Serve alla velocità reale, alla coppia nominale (9550·Pn/nm) e alla frequenza per la velocità nominale."
+              ],
+              "src": "src/components/calc/fields.ts:53"
+            },
+            {
+              "label": "Potenza del motore",
+              "kind": "numero",
+              "unit": "kW",
+              "values": "maggiore di 0; passo 0,1",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Potenza nominale del motore, dalla targa. Il software la confronta con la potenza richiesta (potenza statica): «Motore da X kW: servono Y kW (Z %)»."
+              ],
+              "src": "src/components/calc/fields.ts:54; src/calc/compute.ts:114"
+            },
+            {
+              "label": "Inerzia motore + freno (+ volano)",
+              "kind": "numero",
+              "unit": "kg·m²",
+              "values": "0 o più; passo 0,01",
+              "default": "0,08 kg·m² (standard)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "Momento d’inerzia di motore, freno ed eventuale volano, dal costruttore. Da esso dipendono la coppia di accelerazione, il freno, le decelerazioni e l’aderenza alla decelerazione reale. Solo «Esperto»."
+              ],
+              "src": "src/components/calc/fields.ts:54; messages/calc v_inertia"
+            },
+            {
+              "label": "Inerzia puleggia di frizione",
+              "kind": "numero",
+              "unit": "kg·m²",
+              "values": "0 o più; passo 0,1",
+              "default": "2,5 kg·m² (standard)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "Momento d’inerzia della puleggia di frizione, dal costruttore. Stesse verifiche dell’inerzia del motore. Solo «Esperto»."
+              ],
+              "src": "src/components/calc/fields.ts:55"
+            },
+            {
+              "label": "Gruppi del freno",
+              "kind": "numero",
+              "unit": null,
+              "values": "numero intero da 1 a 8; passo 1",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Quanti gruppi hanno gli elementi meccanici del freno. Il freno deve avere elementi meccanici in almeno due gruppi; con uno in avaria deve fermare la cabina carica in discesa e vuota in salita (UNI EN 81-20, 5.9.2.2.2.1). La proposta del software usa due gruppi."
+              ],
+              "src": "src/components/calc/fields.ts:55; src/calc/inputs.ts:103; messages/calc a_brake"
+            },
+            {
+              "label": "Coppia per gruppo",
+              "kind": "numero",
+              "unit": "N·m",
+              "values": "maggiore di 0; passo 1",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Coppia di frenatura regolata per ciascun gruppo del freno. Il software ricava la coppia minima per gruppo dai requisiti del freno (tutti i gruppi con 1,25·Q in discesa, un gruppo con la portata in discesa, un gruppo a cabina vuota in salita, con la decelerazione minima che hai indicato in «Servizio e soccorso») e la massima per l’aderenza con il freno reale. Se nessuna coppia tiene l’aderenza, lo dice (⚠)."
+              ],
+              "src": "src/components/calc/fields.ts:56; messages/calc b_win"
+            },
+            {
+              "label": "Carico statico massimo sull’albero",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "0 o più; passo 50; vuoto = non verificato",
+              "default": "vuoto",
+              "required": "no",
+              "help": [
+                "Carico statico massimo ammesso sull’albero dalla scheda del costruttore. Vuoto: non verificato; il calcolo dà in ogni caso il carico nella prova con 1,25·Q, da chiedere al costruttore. Nell’argano esistente compare solo in «Esperto»."
+              ],
+              "src": "src/components/calc/fields.ts:56; messages/calc hint_shaftMax"
+            },
+            {
+              "label": "Coppia massima in uscita ammessa (catalogo)",
+              "kind": "numero",
+              "unit": "N·m",
+              "values": "0 o più; passo 10; vuoto = non verificata",
+              "default": "vuoto",
+              "required": "no",
+              "help": [
+                "Coppia massima in uscita ammessa dal riduttore, dal catalogo del costruttore. Vuoto: non verificata. La coppia massima in uscita è la maggiore tra accelerazione, frenatura di emergenza con tutti i gruppi e prova con 1,25·Q, arrotondata per eccesso a 10 N·m: è questa che si chiede al costruttore. Nell’argano esistente compare solo in «Esperto»."
+              ],
+              "src": "src/components/calc/fields.ts:57; messages/calc hint_MpCat, d_mp_note"
+            },
+            {
+              "label": "Massa della macchina",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "0 o più; passo 10",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Massa dell’argano completo. Con la macchina in basso entra nel sollevamento netto sugli ancoraggi (carico di prova meno massa della macchina). Per la macchina in alto è il carico sulla soletta e sulle putrelle del locale (rilievo, foglio 1, relazione tecnica). Compare anche per l’argano esistente, in qualunque posizione."
+              ],
+              "src": "src/components/calc/fields.ts:58,99; src/calc/compute.ts:156"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Usa la proposta nella verifica",
+              "help": "Compare nei risultati, nella scheda «Caratteristiche dell’argano proposte dal software». Carica nei campi dell’argano nuovo la proposta: puleggia, gola, rapporto, potenza, gruppi e coppia del freno, funi. Restano come li avevi scritti poli, giri, frequenza, rendimenti, inerzie e massa. Segue il messaggio «Proposta caricata nel gruppo «Argano nuovo»: le verifiche qui sotto sono le sue.»",
+              "src": "Results.tsx:55; Calculator.tsx:158-163"
+            }
+          ],
+          "notes": [
+            "Un valore standard porta il distintivo «standard». Un valore ancora da inserire è nell’elenco «Dati della nuova macchina da inserire»."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Funi nuove",
+          "intro": [
+            "Con «Argano: No» e funi che restano, il gruppo si chiama «Funi esistenti (restano)»."
+          ],
+          "fields": [
+            {
+              "label": "Stesso numero e diametro delle funi esistenti",
+              "kind": "casella",
+              "unit": null,
+              "values": "spuntata | non spuntata",
+              "default": "spuntata (per un impianto esistente)",
+              "required": "no",
+              "help": [
+                "Compare in sostituzione. Come d’uso nella sostituzione, numero e diametro delle funi nuove sono quelli delle funi esistenti, anche nella proposta; sotto il campo il testo dice «({n} × Ø{d})» e che qui entrano carico di rottura e massa delle funi nuove. Con il confronto spento la proposta tiene numero e diametro che scrivi qui, quelli delle funi montate. Se togli la spunta le funi sono nuove di numero o diametro propri e la parte «Funi» diventa «Sì» per regola."
+              ],
+              "src": "src/components/calc/CalcForm.tsx:44-49,81-83; src/components/calc/Calculator.tsx:180-182"
+            },
+            {
+              "label": "Numero di funi n",
+              "kind": "numero",
+              "unit": null,
+              "values": "numero intero da 1 a 20; passo 1",
+              "default": "nessuno; copiato dalle funi esistenti se spuntata «Stesso numero…» con il confronto",
+              "required": "sì (nascosto quando copiato)",
+              "help": [
+                "Numero di funi di trazione. Il limite superiore di 20 è un controllo di buon senso (i disegni e il 3D disegnano ogni fune). Entra nel tiro massimo per fune e nel coefficiente di sicurezza S_f."
+              ],
+              "src": "src/components/calc/fields.ts:34; src/calc/inputs.ts:8,103"
+            },
+            {
+              "label": "Diametro funi d",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "maggiore di 0; passo 0,5",
+              "default": "nessuno; copiato dalle funi esistenti come sopra",
+              "required": "sì (nascosto quando copiato)",
+              "help": [
+                "Diametro nominale delle funi. Il rapporto D/d della puleggia di frizione, delle pulegge e del tamburo deve essere almeno 40 (UNI 10411-1, 14.3)."
+              ],
+              "src": "src/components/calc/fields.ts:34"
+            },
+            {
+              "label": "Carico di rottura minimo per fune",
+              "kind": "numero",
+              "unit": "kN",
+              "values": "maggiore di 0; passo 0,1",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Carico di rottura minimo del certificato della fune (famiglia 8×19 Seale, 1570 N/mm², EN 12385-5 nel calcolo: da confermare con la scheda del fornitore). Serve al coefficiente di sicurezza S_f effettivo. Il pulsante «Stima F_min e massa dal diametro ⚠» lo stima dal diametro."
+              ],
+              "src": "src/components/calc/fields.ts:34; src/calc/inputs.ts:103"
+            },
+            {
+              "label": "Massa lineare per fune",
+              "kind": "numero",
+              "unit": "kg/m",
+              "values": "maggiore di 0; passo 0,001",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Massa per metro di una fune. Entra nella massa delle funi in movimento (n·massa lineare·lunghezza), nell’inerzia e nel contrappeso."
+              ],
+              "src": "src/components/calc/fields.ts:34; src/calc/model.ts:42"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Stima F_min e massa dal diametro ⚠",
+              "help": "Come per le funi esistenti: compila carico di rottura e massa lineare dal diametro con i valori tipici di 8×19 Seale 1570 N/mm² (stima, da sostituire con il certificato).",
+              "src": "src/components/calc/CalcForm.tsx:50-55"
+            }
+          ],
+          "notes": [],
+          "warnings": []
+        },
+        {
+          "title": "Funi e compensazione (relazione tecnica)",
+          "intro": [
+            "Gruppo che compare per un impianto esistente («Solo argano» o «Ammodernamento»), dopo «Funi nuove» e prima di «Servizio e soccorso»; con la «Trasformazione completa» non c’è. Il suggerimento sotto il titolo dice: «I dati delle funi come li chiede la relazione tecnica di modifica: la fune dagli elenchi del modello, la compensazione, il cavo flessibile.» Finché non scegli il tipo di intervento le righe non si vedono.",
+            "Questi dati servono a due cose: alle pagine «Funi di trazione» della relazione tecnica di modifica (tensioni, stabilità allo scorrimento, pressione specifica) e all’esito del Calcolo argano con la UNI 10411-1 (vedi «Funi: le verifiche del foglio «Funi» nell’esito»). Nessuna riga è obbligatoria: quelle vuote valgono come indicato nel campo."
+          ],
+          "fields": [
+            {
+              "label": "Fune dagli elenchi",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Inserita a mano (diametro, carico di rottura, massa) · le funi degli elenchi Donati e Telcal (nome: marca e tipo)",
+              "default": "Inserita a mano (diametro, carico di rottura, massa)",
+              "required": "no",
+              "help": [
+                "La fune dagli elenchi della relazione tecnica (Donati, Telcal): sceglila e diametro, carico di rottura e massa al metro si riempiono da soli nel gruppo «Funi nuove». Se cambi uno di questi valori a mano, la fune torna «inserita a mano».",
+                "Con una fune inserita a mano la relazione tecnica chiede, nella pagina «Funi di trazione», numero di trefoli, formazione, classe di resistenza e sezione.",
+                "Compare per un impianto esistente."
+              ],
+              "src": "src/components/calc/fields.ts:70; src/components/calc/Calculator.tsx:145-147"
+            },
+            {
+              "label": "Tipo di compensazione",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Nessuna · Funi · Catene",
+              "default": "— scegli — (vuoto vale «Nessuna»)",
+              "required": "no",
+              "help": [
+                "La compensazione dell’impianto: nessuna, funi o catene appese tra cabina e contrappeso. Serve alle verifiche delle funi della relazione tecnica (tensioni e stabilità allo scorrimento).",
+                "Con «Nessuna» (o vuoto) le righe seguenti non compaiono e la relazione stampa la compensazione come «Nessuna». Compare per un impianto esistente."
+              ],
+              "src": "src/components/calc/fields.ts:71; src/lib/rt2/funi-calc.ts:31-39"
+            },
+            {
+              "label": "Fune di compensazione",
+              "kind": "scelta",
+              "unit": null,
+              "values": "10 voci, da «8 mm · 0,22 kg/m» a «17 mm · 0,99 kg/m» (diametro e massa al metro)",
+              "default": "— scegli —",
+              "required": "no",
+              "help": [
+                "La fune di compensazione dall’elenco: diametro in mm e massa al metro in kg/m.",
+                "Compare solo con il tipo «Funi». Se non scegli, diametro e massa contano 0."
+              ],
+              "src": "src/components/calc/fields.ts:72"
+            },
+            {
+              "label": "Catena di compensazione",
+              "kind": "scelta",
+              "unit": null,
+              "values": "9 voci, da «5,4 mm · 0,5 kg/m» a «20 mm · 8 kg/m» (diametro della maglia e massa al metro)",
+              "default": "— scegli —",
+              "required": "no",
+              "help": [
+                "La catena di compensazione dall’elenco: diametro della maglia in mm e massa al metro in kg/m.",
+                "Compare solo con il tipo «Catene». Se non scegli, diametro e massa contano 0."
+              ],
+              "src": "src/components/calc/fields.ts:73"
+            },
+            {
+              "label": "Numero funi/catene di compensazione",
+              "kind": "numero",
+              "unit": "",
+              "values": "numero; passo 1; vuoto vale 0",
+              "default": "vuoto (0)",
+              "required": "no",
+              "help": [
+                "Quante funi o catene di compensazione ci sono.",
+                "Compare con il tipo «Funi» o «Catene». Un valore negativo conta 0."
+              ],
+              "src": "src/components/calc/fields.ts:74; src/lib/rt2/funi-calc.ts:36"
+            },
+            {
+              "label": "Massa tenditore compensazione",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "numero; passo 1; vuoto vale 0",
+              "default": "vuoto (0)",
+              "required": "no",
+              "help": [
+                "La massa del tenditore della compensazione in kg: metà si conta sul lato cabina, metà sul lato contrappeso. Senza tenditore lascia 0.",
+                "Compare con il tipo «Funi» o «Catene»."
+              ],
+              "src": "src/components/calc/fields.ts:74"
+            },
+            {
+              "label": "Diametro puleggia tenditore compensazione",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero; passo 10; vuoto vale 0",
+              "default": "vuoto (0)",
+              "required": "no",
+              "help": [
+                "Il diametro della puleggia del tenditore in mm: il rapporto con il diametro della fune di compensazione deve essere almeno 30.",
+                "Compare solo con il tipo «Funi». Il rapporto entra nell’esito (vedi «Funi: le verifiche del foglio «Funi» nell’esito»)."
+              ],
+              "src": "src/components/calc/fields.ts:74"
+            },
+            {
+              "label": "Catene da metà corsa al contrappeso",
+              "kind": "casella",
+              "unit": null,
+              "values": "spuntata | non spuntata",
+              "default": "non spuntata",
+              "required": "no",
+              "help": [
+                "Spunta se le catene pendono da metà corsa al solo contrappeso: allora sul lato contrappeso si conta metà della loro massa e nessuna sul lato cabina.",
+                "Compare solo con il tipo «Catene»."
+              ],
+              "src": "src/components/calc/fields.ts:74"
+            },
+            {
+              "label": "Massa del cavo flessibile",
+              "kind": "numero",
+              "unit": "kg/m",
+              "values": "numero; passo 0,1; vuoto = 0,8",
+              "default": "vuoto: 0,8 kg/m",
+              "required": "no",
+              "help": [
+                "La massa al metro del cavo flessibile in kg/m, contata su metà corsa nella tensione lato cabina in alto. Vuoto: 0,8 kg/m.",
+                "Riga per esperti: in «Semplice» non compare e vale 0,8 kg/m."
+              ],
+              "src": "src/components/calc/fields.ts:75; src/lib/rt2/funi-calc.ts:56"
+            },
+            {
+              "label": "Decelerazione ridotta nella D.1 (a = 0,5 m/s²)",
+              "kind": "casella",
+              "unit": null,
+              "values": "spuntata | non spuntata",
+              "default": "non spuntata",
+              "required": "no",
+              "help": [
+                "Spunta solo se la decelerazione di frenata è ridotta (a = 0,5 m/s²): il coefficiente C1 della D.1 scende allora al minimo della fascia di velocità, mai sotto.",
+                "Riga per esperti: in «Semplice» non compare e la casella resta non spuntata."
+              ],
+              "src": "src/components/calc/fields.ts:75"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "In «Semplice» restano nascoste le due righe per esperti («Massa del cavo flessibile» e «Decelerazione ridotta nella D.1 (a = 0,5 m/s²)»): valgono 0,8 kg/m e la decelerazione del calcolo.",
+            "Il gruppo non ha il segno «da inserire»: nessuna riga è obbligatoria e nessun valore è proposto dal software, tranne i 0,8 kg/m del cavo flessibile quando lo lasci vuoto."
+          ],
+          "warnings": [
+            "I valori di questo gruppo si salvano con il calcolo e passano alla relazione tecnica: una compensazione dimenticata cambia le tensioni e la stabilità allo scorrimento stampate. Se l’impianto ha funi o catene di compensazione, indicale qui."
+          ]
+        },
+        {
+          "title": "Servizio e soccorso",
+          "intro": [
+            "Gruppo riservato alla modalità «Esperto»: in «Semplice» non compare; in «Esperto» si apre da solo. Compare aperto anche in «Semplice» se un suo valore è ancora da inserire o fuori campo."
+          ],
+          "fields": [
+            {
+              "label": "Accelerazione di progetto",
+              "kind": "numero",
+              "unit": "m/s²",
+              "values": "maggiore di 0; passo 0,05",
+              "default": "0,8 m/s² (standard)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "Accelerazione di progetto: entra nella coppia di accelerazione del motore e nella coppia massima in uscita dal riduttore. Il rapporto coppia di accelerazione / nominale non dovrebbe superare 2."
+              ],
+              "src": "src/components/calc/fields.ts:61; src/calc/compute.ts:114"
+            },
+            {
+              "label": "Ammortizzatori a corsa ridotta",
+              "kind": "casella",
+              "unit": null,
+              "values": "spuntata | non spuntata",
+              "default": "non spuntata (standard)",
+              "required": "no",
+              "help": [
+                "Spunta se l’impianto ha ammortizzatori a corsa ridotta. Fa comparire «Decelerazione con ammortizzatori a corsa ridotta»; senza spunta la verifica in frenata usa il valore minimo del registro (0,5 m/s²)."
+              ],
+              "src": "src/components/calc/fields.ts:61,92"
+            },
+            {
+              "label": "Decelerazione con ammortizzatori a corsa ridotta",
+              "kind": "numero",
+              "unit": "m/s²",
+              "values": "da 0,5 a 9,81; passo 0,05; vuoto = 0,8",
+              "default": "vuoto: 0,8 m/s²",
+              "required": "no",
+              "help": [
+                "Compare solo con la spunta precedente. È la decelerazione minima che porta cabina e contrappeso alla loro velocità di progetto (UNI EN 81-50:2020, 5.11.2.2.2), non sotto 0,5 m/s²: la ricava l’ingegnere dai dati degli ammortizzatori. Vuoto: 0,8 m/s² (UNI EN 81-1:2008, M.2.1.2)."
+              ],
+              "src": "src/components/calc/fields.ts:61,92; src/calc/inputs.ts:58; messages/calc hint_ae"
+            },
+            {
+              "label": "Decelerazione minima voluta dal freno",
+              "kind": "numero",
+              "unit": "m/s²",
+              "values": "maggiore di 0; passo 0,05",
+              "default": "0,5 m/s² (standard)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "Decelerazione minima che vuoi dal freno: entra nella coppia minima per gruppo (finestra «coppia minima per gruppo / massima per l’aderenza reale»)."
+              ],
+              "src": "src/components/calc/fields.ts:62; src/calc/compute.ts:138"
+            },
+            {
+              "label": "Raggio del volantino",
+              "kind": "numero",
+              "unit": "m",
+              "values": "maggiore di 0; passo 0,01",
+              "default": "0,2 m (standard)",
+              "required": "sì (ha già il valore standard)",
+              "help": [
+                "Raggio del volantino per la manovra manuale di emergenza. La forza al volantino si calcola dividendo la coppia di soccorso per questo raggio; oltre il limite per la manovra manuale il software dice che serve la manovra elettrica di emergenza."
+              ],
+              "src": "src/components/calc/fields.ts:62; src/calc/compute.ts:146-149"
+            },
+            {
+              "label": "Dispositivo elettrico di sicurezza contro lo stallo (5.5.3 c) 2))",
+              "kind": "casella",
+              "unit": null,
+              "values": "spuntata | non spuntata",
+              "default": "non spuntata",
+              "required": "no",
+              "help": [
+                "Ferma la macchina se cabina o contrappeso sono bloccati. Se spuntata, la verifica dello stallo non superata diventa «Attenzione», da documentare («Cabina o contrappeso bloccati: verifica sostituita da dispositivo elettrico di sicurezza (UNI EN 81-20:2020, 5.5.3 c) 2)), da documentare»). Compare solo per un impianto nuovo o per una sostituzione con la macchina secondo la UNI EN 81-20."
+              ],
+              "src": "src/components/calc/fields.ts:62,95; messages/calc hint_stallDevice"
+            }
+          ],
+          "actions": [],
+          "notes": [],
+          "warnings": []
+        },
+        {
+          "title": "Dati da inserire, schema ed esito (colonna di destra)",
+          "intro": [
+            "Accanto al modulo, o sotto su schermo stretto, il riquadro cambia con lo stato del calcolo. Finché mancano dati compare l’elenco di ciò che manca; quando c’è tutto compaiono lo schema della sospensione e l’esito."
+          ],
+          "fields": [
+            {
+              "label": "Dati del progetto da inserire",
+              "kind": "tabella",
+              "unit": null,
+              "values": "elenco di voci cliccabili",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Titolo e testo cambiano con lo stato: «Dati del progetto da inserire» («Un progetto nuovo parte vuoto: il software non calcola e non disegna nulla finché mancano questi dati.») finché mancano tipo, parti o dati dell’impianto; poi «Dati della nuova macchina da inserire» («Inseriscili dalla scheda del costruttore, oppure usa la proposta o la macchina consigliata.»); con l’argano che resta, «Dati dell’argano esistente da inserire».",
+                "Ogni voce è un collegamento: apre i gruppi e porta il cursore sul campo. L’ordine è quello del modulo: prima «Tipo di intervento», poi le parti da indicare, la regolazione del quadro, poi i campi dell’impianto e dell’argano. Sono dati necessari, non errori: i valori fuori campo sono invece segnati in rosso."
+              ],
+              "src": "src/components/MissingPanel.tsx; src/lib/calc-blank.ts:55-60"
+            },
+            {
+              "label": "Schema della sospensione",
+              "kind": "tabella",
+              "unit": null,
+              "values": "disegno",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Compare quando c’è tutto. Disegna, non in scala («Schema non in scala»), la sospensione con le tue quote: macchina in alto con o senza rinvio, oppure in basso; angolo di avvolgimento α, masse di cabina e contrappeso, diametro D, rapporto i, potenza e, con la macchina in basso, Hv e il carico sull’albero."
+              ],
+              "src": "src/components/calc/Diagram.tsx"
+            },
+            {
+              "label": "Esito del calcolo (riquadro in alto)",
+              "kind": "tabella",
+              "unit": null,
+              "values": "esito; quattro valori chiave",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Sulla riga «Proposta del software» vedi in breve la macchina che il software propone. Sotto, il titolo «Argano nuovo · esito indicativo» (o il nome dell’argano che resta) e l’esito: «Tutte le verifiche del software superate», «Verifiche superate, N con «Attenzione»» oppure «N verifiche non superate». Se qualche valore è fuori campo l’esito diventa «Dati non validi: correggi i campi in rosso».",
+                "Le verifiche non superate e quelle con «Attenzione» sono elencate come etichette; per quelle con «Attenzione» il riquadro dice «Da controllare». Il segno ⚠ indica stime, scelte del software e valori da verificare sul testo delle norme.",
+                "Quattro valori chiave: «Velocità reale» (a frequenza di rete, con la frequenza per la nominale), «Aderenza, caso peggiore» (utilizzo dell’aderenza), «Potenza richiesta» (kW e percentuale della potenza del motore) e «Carico sull’albero» (kg nella prova con 1,25·Q, freccia verso l’alto o verso il basso). Una riga di sensibilità dice se l’esito cambia con la massa della cabina ±10 % e il bilanciamento ±0,05.",
+                "Se hai attivo il confronto, in fondo compare l’esito anche dell’«Argano esistente». Sotto l’esito: «Con i dati e le ipotesi inseriti: non è una relazione di calcolo. Il segno ⚠ indica ciò che va controllato.» Se il rapporto tra i carichi lato cabina e lato contrappeso cambia rispetto ai documenti (UNI 10411-1, 6.1), il software conta nell’esito anche le verifiche D.1 e D.2 e le nomina accanto alle altre, ognuna con il valore e il suo limite."
+              ],
+              "src": "src/components/calc/Verdict.tsx:46-86"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "L’esito non sostituisce la relazione di calcolo firmata."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Normativa di collaudo",
+          "intro": [
+            "Sotto l’esito. Compare dopo la scelta del tipo. Dice con quale norma si collauda e, per le modifiche, che cosa si sa dell’impianto esistente."
+          ],
+          "fields": [
+            {
+              "label": "Normativa di collaudo",
+              "kind": "scelta",
+              "unit": null,
+              "values": "UNI 10411-1:2024 — senza marcatura CE | UNI 10411-11:2024 — con marcatura CE (per «Solo argano» e «Ammodernamento»); fissa «UNI EN 81-20/50:2020 — come nuovo» per «Trasformazione completa»",
+              "default": "UNI 10411-1:2024 al primo ingresso nel tipo",
+              "required": "sì",
+              "help": [
+                "La parte della UNI 10411 dipende dall’impianto: la -1 per un ascensore elettrico non conforme alla Direttiva Ascensori (messo in servizio senza marcatura CE), la -11 per uno conforme alla 95/16/CE o alla 2014/33/UE (marcatura CE e dichiarazione di conformità). Il tipo «Trasformazione completa» è sempre collaudato come impianto nuovo.",
+                "Con le norme UNI 10411 le verifiche delle parti che restano come sono si vedono con il loro valore, marcate «Esistente», e non entrano nell’esito delle verifiche per il collaudo."
+              ],
+              "src": "src/components/lift/CollaudoOptions.tsx:88-100"
+            },
+            {
+              "label": "Marcatura CE dell’impianto",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Sì, con la dichiarazione di conformità | No | Non so",
+              "default": "nessuna risposta",
+              "required": "no",
+              "help": [
+                "Decide la parte della UNI 10411: con la marcatura CE la -11, senza la -1. Conta la dichiarazione di conformità CE/UE nel libretto, con la marcatura in cabina; la targa non lo dice. Rispondendo, il software cambia da solo «Normativa di collaudo».",
+                "Con «Non so» decide la data di messa in servizio (campo qui sotto) e la relazione segnala di confermarla sul libretto prima di firmare."
+              ],
+              "src": "src/components/lift/CollaudoOptions.tsx:105-121; src/lib/lift/modifica.ts:27,35"
+            },
+            {
+              "label": "Data di messa in servizio",
+              "kind": "data",
+              "unit": null,
+              "values": "una data del calendario dal 1900 a oggi",
+              "default": "vuota",
+              "required": "quando la marcatura è «Non so»",
+              "help": [
+                "Fino al 30/06/1999 di solito l’impianto è senza marcatura (UNI 10411-1), dal 01/07/1999 con marcatura (UNI 10411-11). Va confermata con il libretto prima di firmare la relazione, che lo segnala. Una data inesistente o futura non viene memorizzata."
+              ],
+              "src": "CollaudoOptions.tsx:116-122; modifica.ts:42; src/lib/lift/norme.ts:52"
+            }
+          ],
+          "actions": [],
+          "notes": [],
+          "warnings": []
+        },
+        {
+          "title": "Carichi documentati",
+          "intro": [
+            "Compare con le norme UNI 10411. Titolo sullo schermo: «Carichi documentati — verbale di collaudo o dell’ultima verifica straordinaria». Serve a decidere la risposta a «Portata variata»."
+          ],
+          "fields": [
+            {
+              "label": "Portata (kg)",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "intero da 1 a 100000",
+              "default": "vuoto",
+              "required": "no (ma tutti e tre o nessuno)",
+              "help": [
+                "Portata nominale riportata nel verbale. Il software la confronta con la Q del calcolo."
+              ],
+              "src": "src/components/lift/CarichiDocumentati.tsx:46-52"
+            },
+            {
+              "label": "Cabina vuota completa (kg)",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "intero da 1 a 100000",
+              "default": "vuoto",
+              "required": "no (tutti e tre o nessuno)",
+              "help": [
+                "Massa della cabina vuota con arcata, porte e gruppi del verbale. Confrontata con la P del calcolo."
+              ],
+              "src": "CarichiDocumentati.tsx:46-52"
+            },
+            {
+              "label": "Contrappeso (kg)",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "intero da 1 a 100000",
+              "default": "vuoto",
+              "required": "no (tutti e tre o nessuno)",
+              "help": [
+                "Massa del contrappeso del verbale. Confrontata con M_cw = P + k·Q del calcolo. I tre valori vengono salvati solo quando sono tutti numeri validi; finché ne manca uno non è memorizzato nulla."
+              ],
+              "src": "CarichiDocumentati.tsx:28-36"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "Sotto i campi una riga («Variazione: portata …, T* …, contrappeso … della portata.») dice di quanto la portata, T* (cabina vuota più portata) e il contrappeso cambiano rispetto al progetto e se la variazione supera le soglie. UNI 10411-1: le verifiche del carico entrano nell’esito se la portata cresce oltre il 10 % o T* oltre il 15 % (portata fino a 500 kg; oltre: 5 % e 10 %), o il contrappeso oltre il 25 % della portata (10 %). UNI 10411-11: a ogni aumento. Con una diminuzione entrano sempre. Sono i valori del registro delle norme, con la loro clausola nella relazione.",
+            "Altre frasi: «Entro i limiti.»; «Oltre i limiti: le verifiche del carico entrano nell’esito.»; per una diminuzione le verifiche entrano comunque nell’esito; se cambia il rapporto tra i carichi entrano anche D.1, D.2 e gli ammortizzatori (UNI 10411-1, 6.1; UNI EN 81-20, 5.8); con la UNI 10411-11, oltre il 10 % entrano anche le strutture dell’edificio (UNI 10411-11, 5)."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Libretto — velocità e corsa documentate",
+          "intro": [
+            "Compare con le norme UNI 10411. Dice quali velocità e corsa risultano dai documenti, così da stabilire se il calcolo le varia. Il valore si salva quando è un numero valido; il software non verifica i documenti."
+          ],
+          "fields": [
+            {
+              "label": "Velocità nominale di riferimento (libretto o verbale), m/s",
+              "kind": "numero",
+              "unit": "m/s",
+              "values": "da 0,1 a 10",
+              "default": "vuoto",
+              "required": "no",
+              "help": [
+                "Velocità iniziale del libretto o accertata con verbale. Con la UNI 10411-1 la velocità entra tra le parti oltre il 5 % sopra la maggiore tra quella del libretto e quella dopo il passaggio a 50 Hz, o oltre il 5 % sotto quella del libretto (15.1, 15.16); con la UNI 10411-11 a ogni variazione (15). Se il rilievo collegato ha una velocità, compare «nel rilievo: …» come promemoria (non viene inserita)."
+              ],
+              "src": "src/components/lift/DatiLibretto.tsx:19,57-66"
+            },
+            {
+              "label": "Velocità dopo il passaggio a 50 Hz, m/s",
+              "kind": "numero",
+              "unit": "m/s",
+              "values": "da 0,1 a 10",
+              "default": "vuoto",
+              "required": "no; compare solo con la UNI 10411-1",
+              "help": [
+                "Velocità dopo il passaggio dalla rete a 50 Hz, se l’impianto è stato convertito. Il riferimento per un aumento è la maggiore tra questa e la velocità del libretto; per una riduzione si misura dalla velocità iniziale del libretto."
+              ],
+              "src": "DatiLibretto.tsx:34"
+            },
+            {
+              "label": "Corsa al primo collaudo, m (UNI 10411-1) · Corsa documentata, m (UNI 10411-11)",
+              "kind": "numero",
+              "unit": "m",
+              "values": "da 1 a 300",
+              "default": "vuoto",
+              "required": "no",
+              "help": [
+                "Corsa risultante dai documenti. Con la UNI 10411-1 il confronto è con la corsa del primo collaudo: oltre 8 m in più l’intervento conta come nuova installazione (UNI 10411-1, 16), da confermare con il soggetto della verifica. Con la UNI 10411-11 ogni variazione di corsa conta (16)."
+              ],
+              "src": "DatiLibretto.tsx:34,55"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "Sotto i campi compaiono frasi in diretta («Velocità … rispetto a … m/s → variata (clausola)» o «entro il 5 %» o «uguale a quella documentata»), con lo stesso testo che trovi accanto a un «No — dai documenti»."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Altre normative di collaudo",
+          "intro": [
+            "Elenco di caselle con altre norme da aggiungere alla base. Ogni norma scelta ha il suo esito e la sua sezione nella relazione, con i punti da verificare in sito; l’esito complessivo delle verifiche è il peggiore. Si offrono solo le norme compatibili con la base."
+          ],
+          "fields": [
+            {
+              "label": "Norme EN 81 supplementari",
+              "kind": "scelta multipla",
+              "unit": null,
+              "values": "per «Solo argano» e «Ammodernamento»: UNI EN 81-20/50:2020 — tutto l’impianto · EN 81-28 · teleallarme · EN 81-58 · porte di piano resistenti al fuoco · EN 81-73 · comportamento in caso d’incendio. Per «Trasformazione completa»: EN 81-21 · nuovo in edificio esistente · EN 81-28 · EN 81-58 · EN 81-70 · accessibilità · EN 81-71 · antivandalo · EN 81-72 · ascensore antincendio · EN 81-73 · EN 81-76 · evacuazione delle persone con disabilità · EN 81-77 · azioni sismiche",
+              "default": "nessuna spuntata",
+              "required": "no",
+              "help": [
+                "Per EN 81-71 compare l’avviso che la UNI EN 81-71:2022 non è citata in GUUE (nessuna presunzione di conformità; la dà la 2005+A1:2006)."
+              ],
+              "src": "src/components/lift/NormeAggiunte.tsx:14-30"
+            },
+            {
+              "label": "Miglioramento dell’esistente",
+              "kind": "scelta multipla",
+              "unit": null,
+              "values": "EN 81-80 · miglioramento della sicurezza | EN 81-82 · accessibilità dell’esistente | EN 81-83 · antivandalo dell’esistente (solo «Solo argano» e «Ammodernamento»)",
+              "default": "nessuna spuntata",
+              "required": "no",
+              "help": [
+                "Norme volontarie per le modifiche. Per EN 81-80 l’avviso dice che è una scelta volontaria e che nessun obbligo nazionale di adeguamento risulta in vigore."
+              ],
+              "src": "NormeAggiunte.tsx:15"
+            },
+            {
+              "label": "Obblighi nazionali",
+              "kind": "scelta multipla",
+              "unit": null,
+              "values": "DM 236/1989 — accessibilità | Antincendio · DM 15/09/2005 o Codice V.3 | NTC 2018 · strutture e sisma",
+              "default": "nessuna spuntata",
+              "required": "no",
+              "help": [
+                "«DM 236/1989» non è offerto in «Solo argano» (nessuna parte del vano toccata): il caso del DM 236 si sceglie nel Progetto («Il caso DM 236 si sceglie nel Progetto.»). Per «Antincendio» compare l’avviso sulle classi minime della cabina (classi EN 81-20 contro il DM 15/09/2005): da decidere con il progettista antincendio."
+              ],
+              "src": "NormeAggiunte.tsx:16"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "Sotto l’elenco c’è il riquadro «Adeguamenti» quando la norma di base li richiede (per la UNI 10411-1: elenco di punti 4, 14, 17.1, 25.5 e appendice C)."
+          ],
+          "warnings": [
+            "Le norme aggiunte cambiano l’esito complessivo del collaudo (è il peggiore tra le norme) e le sezioni della relazione: controlla la scelta prima di salvare."
+          ]
+        },
+        {
+          "title": "Risultati",
+          "intro": [
+            "Colonna dei risultati. Compare quando i dati dell’impianto sono completi e l’argano non resta. Con la macchina nuova ancora da inserire vedi solo la proposta del software; con tutto inserito, la proposta, l’esito in breve e le schede tecniche. Qui spieghiamo che cosa significa ogni blocco, non ogni numero."
+          ],
+          "fields": [
+            {
+              "label": "Caratteristiche dell’argano proposte dal software (proposta indicativa ⚠)",
+              "kind": "tabella",
+              "unit": null,
+              "values": "scheda con righe e tabella di alternative",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Il software dimensiona un argano che supera tutte le verifiche con i dati dell’impianto: puleggia di frizione, gola, funi, rapporto di riduzione, motore, coppia massima in uscita dal riduttore, carico statico ammesso sull’albero, freno (due gruppi regolati al minimo richiesto), manovra di emergenza (manuale o elettrica), margini (per esempio «margine d’aderenza ridotto»).",
+                "Criteri: funi 8×19 Seale con anima tessile, 1570 N/mm², stimate; pulegge a passi di 40 mm da 320 a 800 mm (non è un catalogo); motori IEC con coppia di accelerazione ≤ 2 volte la nominale; utilizzo dell’aderenza ≤ 0,97 dove possibile. Poli, giri, frequenza, rendimenti, inerzie, tipo di gola e γ vengono dal gruppo «Argano nuovo».",
+                "Sotto la scheda: «Alternative: per ogni diametro di fune, il numero minimo di funi e la puleggia più piccola». Con «Nella proposta mantieni il diametro della puleggia esistente» o «Stesso numero e diametro delle funi esistenti» le alternative sono «con le stesse funi: una riga per diametro della puleggia». Se nulla supera le verifiche, il software dice cosa provare: un angolo di avvolgimento maggiore, la gola a V temprata, la taglia 2:1 o un’accelerazione minore."
+              ],
+              "src": "src/components/calc/Results.tsx:42-77; messages/calc c_prop, p_*"
+            },
+            {
+              "label": "Argano nuovo: esito in breve",
+              "kind": "tabella",
+              "unit": null,
+              "values": "righe con esito OK / Attenzione / Non soddisfatta / Info",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Una riga per area in linguaggio semplice: «Aderenza» (le funi tengono in tutti i casi della norma, con quale utilizzo), «Funi» (coefficiente S_f effettivo e richiesto; D/d, numero e diametro), «Motore e riduttore» (kW richiesti e percentuale della potenza del motore), «Freno» (a quanti N·m regolare ogni gruppo, minimo e massimo), «Albero e ancoraggio» (carico sull’albero nella prova con 1,25·Q, ammesso dal costruttore, sollevamento netto sugli ancoraggi), «Manovra di emergenza» (forza al volantino, limite, manovra manuale o elettrica) e «Dati incerti» (sensibilità a massa e bilanciamento).",
+                "«OK»: la verifica è superata. «Attenzione»: superata ma con poco margine o con una scelta del software da controllare. «Non soddisfatta»: da correggere. «Info»: informazione."
+              ],
+              "src": "src/lib/present/quick.ts; Results.tsx:108"
+            },
+            {
+              "label": "Schede tecniche",
+              "kind": "tabella",
+              "unit": null,
+              "values": "tabelle",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "In «Esperto» le schede sono tutte aperte; in «Semplice» stanno sotto «Dettagli tecnici: tabelle e valori intermedi». Sono: «Aderenza» (casi di carico e frenata con μ, f, e^(f·α), tiri T1 e T2, utilizzo), «Calate delle funi (tiro diretto)» (interasse delle calate esistenti e con la nuova puleggia, spostamenti, α), «Come correggere l’aderenza» (angolo di avvolgimento minimo, sottosquadro β minimo e angolo γ massimo; ogni correzione cambia anche altre verifiche), «Funi» (D/d, N_equiv, S_f, tiro massimo per fune, pressione specifica nelle gole), «Cinematica» (giri, rapporto ideale, velocità reale, scostamento dalla nominale, frequenza per la nominale, velocità sincrona, scorrimento), «Motore e riduttore» (potenza statica, coppie, coppia massima in uscita dal riduttore), «Freno» (tutti i gruppi e un gruppo, decelerazione massima), «Manovra di emergenza» (forza al volantino, forza fino a una fermata), «Albero e ancoraggio», «Sensibilità» e, con il confronto, «Confronto: argano esistente e argano nuovo» (colonne Esistente e Nuovo).",
+                "Ogni scheda riporta il riferimento di norma (per esempio EN 81-50 §5.11, §5.12, EN 81-20 §5.9.2.2.2.1) e il segno ⚠ dove il valore va ancora verificato sul testo."
+              ],
+              "src": "src/components/calc/TechCards.tsx; src/lib/present/tables.ts:50-167"
+            },
+            {
+              "label": "Adeguamenti",
+              "kind": "tabella",
+              "unit": null,
+              "values": "scheda con elenco",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Cambia con la norma di base: «Adeguamenti per la sostituzione (UNI 10411-1)» o «(UNI 10411-11)», «Adeguamenti: collaudo come impianto nuovo» per EN 81, «Impianto nuovo: protezione UCMP» per un impianto nuovo. Elenca i punti da rispettare (per la UNI 10411-1: valutazione della sicurezza della modifica su tre piani, freno, rapporto 40 per il diametro, macchina nuova, limitatore del tempo di funzionamento, arresto prima della velocità di intervento del limitatore, protezioni ACOP/UCM, dispositivo di arresto, protezioni delle pulegge, regole di alimentazione del freno, funi nuove e attacchi, documenti della sostituzione, fonte). Solo numeri di punto e valori, non il testo della norma."
+              ],
+              "src": "Results.tsx:120-124; src/lib/present/adapt.ts"
+            },
+            {
+              "label": "Da verificare prima dell’uso",
+              "kind": "tabella",
+              "unit": null,
+              "values": "elenco con ⚠",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Elenco dei valori che il software ha stimato o scelto e che il tecnico deve controllare sui documenti del costruttore (per esempio rendimenti e inerzie «dai dati del costruttore», velocità e compensazione)."
+              ],
+              "src": "Results.tsx:125"
+            },
+            {
+              "label": "Riepilogo testuale",
+              "kind": "testo lungo",
+              "unit": null,
+              "values": "sola lettura",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Testo con il riepilogo del pre-dimensionamento (intestazione «PRE-DIMENSIONAMENTO INDICATIVO — NON È UNA RELAZIONE DI CALCOLO», tipo di intervento, dati, esito, verifiche). Il pulsante «Copia riepilogo» lo copia negli appunti («Copiato negli appunti»); se il browser lo vieta il testo resta selezionato da copiare a mano («Copia non consentita qui: il testo è selezionato, copialo a mano.»)."
+              ],
+              "src": "Results.tsx:79-98"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Usa la proposta nella verifica",
+              "help": "Carica la proposta nei campi dell’argano nuovo (vedi «Argano nuovo»).",
+              "src": "Results.tsx:55"
+            },
+            {
+              "label": "Usa",
+              "help": "Pulsante in ogni riga della tabella delle alternative: carica quella configurazione nell’argano nuovo.",
+              "src": "Results.tsx:68"
+            },
+            {
+              "label": "Copia riepilogo",
+              "help": "Copia il riepilogo testuale negli appunti.",
+              "src": "Results.tsx:79-98"
+            }
+          ],
+          "notes": [
+            "Questa schermata è un’anteprima in diretta nel browser; al salvataggio il server ricalcola tutto con gli stessi motori e conserva il calcolo. Un valore fuori campo non blocca l’anteprima (il calcolo usa un valore predefinito), ma nessun risultato è ufficiale finché c’è un campo in rosso."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Funi: le verifiche del foglio «Funi» nell’esito (UNI 10411-1)",
+          "intro": [
+            "Con un collaudo secondo la UNI 10411-1 e almeno una delle parti argano, funi, portata o velocità sostituita o cambiata, l’esito del Calcolo argano conta anche le verifiche del foglio «Funi» della relazione tecnica, calcolate con i dati del gruppo «Funi e compensazione (relazione tecnica)». Con la UNI 10411-11 e con un impianto collaudato come nuovo (UNI EN 81-20/50) queste righe non entrano nell’esito. Non hai niente da compilare qui: le righe compaiono nell’elenco delle verifiche non superate («Non soddisfatta» o «Attenzione») con il loro nome."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "«Funi (UNI 10411-1): z ≥ 12, 16 con due funi, con la D.2 verificata (UNI 10411-1, 14.1)»: quando la pressione specifica nelle gole della D.2 è nei limiti e le funi sono almeno due, il coefficiente di sicurezza z della fune si confronta con 12 (16 con due funi) al posto del coefficiente S_f della UNI EN 81-50. In quel caso S_f non è conteggiato e sotto l’esito leggi: «S_f (UNI EN 81-50, 5.12) non conteggiato: con la pressione specifica della D.2 verificata vale z ≥ 12 (16 con due funi), come nel foglio funi della relazione tecnica (UNI 10411-1:2024, 14.1 c) e d)).» (la frase compare quando S_f, da solo, non sarebbe soddisfatto). Se la D.2 non è nei limiti, vale S_f e questa riga non c’è.",
+            "«Funi (UNI 10411-1): stabilità allo scorrimento del foglio funi, caso peggiore (UNI 10411-1, D.1)»: compare quando il rapporto tra i carichi sospesi non cambia con la modifica. Se non è soddisfatta è un «Attenzione», non una verifica «Non soddisfatta». Quando il rapporto cambia, la D.1 e la D.2 sono invece verifiche vere dell’esito («tr_d1» e «tr_d2» del Calcolo argano) e queste due righe del foglio non compaiono.",
+            "«Funi (UNI 10411-1): pressione specifica del foglio funi, decide tra z e S_f (UNI 10411-1, D.2)»: compare con il rapporto dei carichi invariato. Se non è nei limiti è solo «Informazione» e per le funi vale S_f.",
+            "«Funi (UNI 10411-1): D/d della puleggia tenditrice della compensazione ≥ 30 (UNI EN 81-20, 5.5.6)»: compare solo con una compensazione a funi e il diametro della puleggia del tenditore inserito; il valore è D/d tra la puleggia del tenditore e la fune di compensazione.",
+            "Nessuna di queste righe compare finché mancano i dati delle funi o dell’impianto che il calcolatore segna in rosso."
+          ],
+          "warnings": [
+            "Le righe valgono per l’esito del Calcolo argano; non cambiano le verifiche sul numero e sul diametro delle funi e sul rapporto D/d della puleggia di frizione, che restano quelle di prima."
+          ]
+        },
+        {
+          "title": "Argano consigliato dal software",
+          "intro": [
+            "Sezione sotto il modulo, visibile quando i dati dell’impianto sono completi e l’argano non resta. Il software verifica ogni argano SICOR e Montanari a catalogo con l’impianto e li mette in ordine sui dati (verifiche, fonte dei dati, basamento con il rinvio, taglia che basta, valori al limite, disegno, velocità, massa). Il prezzo non entra nella scelta. È un ordine tecnico sui dati dei cataloghi, non un giudizio sulla qualità né una raccomandazione commerciale."
+          ],
+          "fields": [
+            {
+              "label": "Scheda di ogni argano",
+              "kind": "tabella",
+              "unit": null,
+              "values": "scheda per argano",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Ogni scheda mostra: «Rapporto · velocità», «Puleggia · funi», «Motore» (con il massimo a catalogo), «Carico statico ammesso» (con i kg in prova), «Massa», «Basamento con rinvio» (del costruttore o su misura, solo con il rinvio), «Fonte dei dati» (documento del costruttore, estratti delle pagine, rivenditore, ricerca precedente), «Ingombro e disegni» (quote del costruttore o sagoma generica) e «Esito con questo argano». Il primo porta il distintivo «Primo per i criteri»; quello in uso porta «In uso»."
+              ],
+              "src": "src/components/lift/AdviceView.tsx:47-65"
+            },
+            {
+              "label": "Argani verificati con l’impianto (tabella)",
+              "kind": "tabella",
+              "unit": null,
+              "values": "tabella richiudibile",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Elenca tutti gli argani verificati con colonne Argano · esito, Rapporto · v, Puleggia · funi, Statico ammesso, Massa, Basamento, Fonte, Esito. Quelli esclusi prima del calcolo, perché i dati del catalogo non prendono l’impianto (rapporto, puleggia, carico statico, motore o portata), sono elencati sotto."
+              ],
+              "src": "AdviceView.tsx:75-111"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Usa questo argano",
+              "help": "Carica nei campi dell’argano nuovo la puleggia, le funi, il rapporto, il carico statico e la massa dell’argano scelto. Nella tabella il pulsante breve è «Usa»; con il rinvio nel locale macchina è «Usa con il rinvio». Dopo l’uso il pulsante diventa «In uso».",
+              "src": "AdviceView.tsx:39-43; Calculator.tsx:165-168"
+            }
+          ],
+          "notes": [
+            "Mentre i modelli si verificano compare «Verifica degli argani a catalogo: N di M…»; con nuovi dati «Aggiornamento con i nuovi dati: N di M…». Se nessun argano a catalogo prende l’impianto: «Nessun argano SICOR o Montanari a catalogo prende questo impianto con questi dati: resta la proposta della griglia di calcolo.»",
+            "Con il tiro diretto, se nessun argano prende la puleggia che serve, il software mostra «Con la puleggia di rinvio nel locale macchina» con le macchine che andrebbero con il rinvio.",
+            "I dati di catalogo sono quelli letti il 2 ottobre 2026, ciascuno con la sua fonte: confermali con la scheda tecnica e l’offerta del costruttore prima dell’ordine.",
+            "Con la macchina in basso accanto al vano il confronto riguarda solo gli argani ad albero lungo o con supporto esterno."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Barra di salvataggio",
+          "intro": [
+            "Barra fissa in fondo alla pagina. Il salvataggio manda al server solo i valori, il tipo e il collaudo: il server ricalcola tutto e conserva un calcolo non modificabile, con la sua impronta SHA-256."
+          ],
+          "fields": [
+            {
+              "label": "Descrizione del calcolo",
+              "kind": "testo",
+              "unit": null,
+              "values": "fino a 120 caratteri",
+              "default": "vuoto",
+              "required": "no",
+              "help": [
+                "Etichetta facoltativa del calcolo (segnaposto: «Descrizione (facoltativa), es. offerta 2 o variante D 600»). Compare nel titolo del calcolo salvato e nelle liste."
+              ],
+              "src": "src/components/calc/CalcSaveBar.tsx:30"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Salva calcolo",
+              "help": "Salva il calcolo («Salvataggio…» durante l’invio) e apre la pagina del calcolo salvato. È bloccato se: ci sono dati ancora da inserire, ci sono valori fuori campo, o tipo di intervento e collaudo sono in contrasto. Vicino al pulsante il testo dice perché: «Manca N dato del progetto» / «Mancano N dati del progetto» (sono elencati nel riquadro dei dati da inserire), «Correggi i campi: …» con i nomi dei campi, «Tipo di intervento non coerente: …»; altrimenti «Un calcolo salvato non si modifica più: per una variante se ne salva uno nuovo.»",
+              "src": "CalcSaveBar.tsx:31-36"
+            },
+            {
+              "label": "Ora: ‹n› · ‹passo› (‹quanti mancano›)",
+              "help": "Compare accanto a «Mancano … dati del progetto» finché manca qualcosa: è il passo da fare adesso, con quanti dati mancano. Resta visibile mentre scorri il modulo; toccalo per andare al primo dato da inserire.",
+              "src": "src/components/calc/CalcSaveBar.tsx"
+            },
+            {
+              "label": "Scarta la bozza",
+              "help": "Compare accanto alla barra quando il modulo ha una bozza. Mentre compili, il modulo conserva il suo stato in una bozza («Bozza salvata alle …», «Bozza ripresa, salvata il …»); la bozza non è un calcolo. Premendo il pulsante ti viene chiesto «Scartare la bozza e ripartire dai dati salvati?» con «Sì, scarta» e «No»; poi la pagina si riapre dall’ultimo calcolo dell’impianto o vuota.",
+              "src": "src/components/draft/DraftBar.tsx"
+            }
+          ],
+          "notes": [
+            "Se il server rifiuta il salvataggio il messaggio compare in rosso accanto al pulsante: «Controlla i campi evidenziati.» con i nomi dei campi, «Il tipo di intervento non corrisponde alle parti o alla norma scelte: …» con i punti, «Non hai i permessi per questa operazione.», «Elemento non trovato.» o «Troppi tentativi. Riprova tra qualche minuto.» (limite di 60 salvataggi ogni 10 minuti). Un salvataggio riuscito cancella la bozza del modulo."
+          ],
+          "warnings": [
+            "Un calcolo salvato non si modifica più: per una variante se ne salva uno nuovo. Il salvataggio cancella la bozza del modulo.",
+            "«Scarta la bozza» cancella ciò che hai compilato e riparte dall’ultimo calcolo dell’impianto o dal modulo vuoto: non si annulla."
+          ]
+        }
+      ],
+      "tips": [
+        "Per un primo giro carica l’«Esempio B: sostituzione, in basso» o l’«Esempio C»: vedi come cambiano i campi, l’esito e la proposta. Poi sostituisci i valori con quelli del tuo impianto.",
+        "Inserisci prima il tipo e le parti, poi l’impianto. Quando manca qualcosa, l’elenco «Dati del progetto da inserire» ti porta sul campo con un clic.",
+        "Se la proposta del software non basta, apri «Argano consigliato dal software»: ogni argano SICOR e Montanari a catalogo è già verificato con i tuoi dati.",
+        "Un calcolo salvato non si modifica: per una variante usa «Nuovo calcolo da questi dati» e dai una descrizione (per esempio «variante D 600»)."
+      ]
+    },
+    {
+      "id": "calc-saved",
+      "title": "Calcolo",
+      "path": "/it/app/calculations/‹id›",
+      "access": "La vedono tutti i ruoli che vedono gli impianti (Titolare, Capotecnico, Progettista, Tecnico, Commerciale): è di sola lettura. «Relazione di calcolo (PDF)» e le bozze d’ordine: chi ha il diritto di scaricare i documenti (con i permessi predefiniti, tutti). «Nuovo calcolo da questi dati» e «Aggiorna con il software attuale»: chi può fare i calcoli (con i permessi predefiniti: Titolare, Capotecnico, Progettista, Tecnico). «Metti il visto»: chi può mettere il visto (con i permessi predefiniti: Titolare, Capotecnico, Progettista). Il rilievo del locale e il Progetto: chi disegna il progetto (con i permessi predefiniti: Titolare, Capotecnico, Progettista). Il Titolare può cambiare la matrice dei permessi. Un impianto archiviato resta in sola lettura.",
+      "reach": "Dalla pagina dell’impianto, nell’elenco dei calcoli (o dopo «Salva calcolo» nel Calcolo argano, che ti porta qui).",
+      "purpose": [
+        "È il calcolo salvato: non si modifica più. Qui trovi l’esito, i documenti (relazione di calcolo in PDF, bozze d’ordine dell’argano in Word e PDF), il consiglio dell’argano tra SICOR e Montanari, i visti interni, il passo successivo (Progetto) e le tavole. Per una variante apri «Nuovo calcolo da questi dati».",
+        "Il calcolo ha un’impronta SHA-256 e porta la versione del motore con cui è stato fatto. Se il software cambia, il calcolo diventa «da aggiornare»: le sue pagine mostrano i valori ricalcolati, ma i documenti non si rigenerano finché non lo aggiorni."
+      ],
+      "shots": [
+        {
+          "id": "calc-saved",
+          "what": "Pagina di un calcolo salvato: intestazione con tipo di intervento, dati d’identità e consiglio dell’argano"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Intestazione e documenti",
+          "intro": [
+            "Titolo «Calcolo» seguito dalla descrizione, se l’hai data. Sotto il titolo vedi il tipo di intervento con la sua scala a tre livelli (Solo argano, Ammodernamento, Trasformazione completa) e che cosa è questo calcolo: «Calcolo argano dell’impianto», oppure — per un calcolo fatto dal progetto dell’impianto — «Calcolo del progetto, disegnato sul calcolo argano del …» (con il collegamento), «Calcolo del progetto del modulo unico (prima del calcolo argano separato)» o «Archivio: calcolo fatto da un progetto del vano prima del modulo unico»."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Relazione di calcolo (PDF)",
+              "help": "Scarica la relazione di calcolo dell’argano in PDF. C’è solo se il software attuale riproduce ancora il calcolo (altrimenti prima devi premere «Aggiorna con il software attuale»). La relazione resta una bozza da far firmare al tecnico.",
+              "src": "src/app/[locale]/app/calculations/[id]/page.tsx:115"
+            },
+            {
+              "label": "Apri il progetto dell’impianto",
+              "help": "Solo per un calcolo fatto da un progetto dell’impianto: porta a quel progetto.",
+              "src": "page.tsx:117"
+            },
+            {
+              "label": "Nuovo calcolo da questi dati",
+              "help": "Apre «Calcolo argano» già compilato con i valori di questo calcolo, per una variante (un calcolo salvato non si modifica). Per un calcolo fatto da un progetto i valori del disegno portano il distintivo «dal progetto».",
+              "src": "page.tsx:119"
+            },
+            {
+              "label": "Aggiorna con il software attuale",
+              "help": "Compare nell’avviso giallo quando il software attuale non riproduce più il calcolo («Il software è cambiato da quando questo calcolo è stato salvato: la relazione non si rigenera.»). Rifà il calcolo dagli stessi dati, con il progetto dell’impianto o il rilievo del locale macchina da cui viene, e dice se l’esito cambia. Se con il software attuale alcuni dati non passano più, apre il modulo «Calcolo argano» sui dati da correggere e il salvataggio crea un nuovo calcolo; quello salvato prima resta com’era. Il pulsante lo vede chi può fare i calcoli. Chi non può non lo vede e al suo posto legge «Lo aggiorna un collega che fa i calcoli.» (per un calcolo fatto dal progetto dell’impianto: «Lo aggiorna un collega che disegna il progetto.»). Su un impianto archiviato non c’è né il pulsante né questa frase.",
+              "src": "src/components/StaleNotice.tsx; src/components/RefreshForm.tsx"
+            }
+          ],
+          "notes": [
+            "Dopo un aggiornamento la pagina del nuovo calcolo dice: «Rifatto con il software attuale dai dati salvati il …: l’esito non cambia.» oppure «…: l’esito cambia. Prima e ora:» con i due esiti.",
+            "Se il rilievo del locale macchina salvato con il calcolo precedente non passa più, compare «Il rilievo del locale macchina salvato con il calcolo precedente non passa con il software attuale: rifallo partendo da quel rilievo.» con «Apri il rilievo» (per chi disegna il progetto); per gli altri: «Il rilievo del locale macchina è rimasto sul calcolo precedente: lo rifà sul nuovo calcolo chi disegna il progetto.»"
+          ],
+          "warnings": [
+            "Se il calcolo è «da aggiornare» la relazione di calcolo e le bozze d’ordine non si generano finché non lo aggiorni con «Aggiorna con il software attuale».",
+            "«Aggiorna con il software attuale» crea un nuovo calcolo (quello vecchio resta com’era) e l’esito può cambiare."
+          ]
+        },
+        {
+          "title": "Dati d’identità del calcolo (sotto il titolo)",
+          "intro": [
+            "Elenco di dati di sola lettura che identificano il calcolo; sullo schermo non ha un titolo."
+          ],
+          "fields": [
+            {
+              "label": "Esito",
+              "kind": "testo",
+              "unit": null,
+              "values": "Supera le verifiche | Supera · attenzione: N | Non supera: N",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Esito salvato. Se non è «Supera le verifiche» è un pulsante: passandoci sopra o premendolo si apre un pannello «Verifiche non superate» o «Verifiche con attenzione», con ogni verifica, il suo valore e il suo limite. Il pannello ha «Apri le verifiche» (porta alla sezione dei risultati in fondo alla pagina) e «Chiudi»; se il pannello non si carica: «Le verifiche non si sono caricate.» con «Riprova»."
+              ],
+              "src": "page.tsx:137; src/components/VerdictPill.tsx"
+            },
+            {
+              "label": "Data",
+              "kind": "data",
+              "unit": null,
+              "values": "—",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Quando è stato salvato."
+              ],
+              "src": "page.tsx:138"
+            },
+            {
+              "label": "Autore",
+              "kind": "testo",
+              "unit": null,
+              "values": "—",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Chi l’ha salvato."
+              ],
+              "src": "page.tsx:139"
+            },
+            {
+              "label": "Argano",
+              "kind": "testo",
+              "unit": null,
+              "values": "—",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Riassunto della macchina verificata."
+              ],
+              "src": "page.tsx:140"
+            },
+            {
+              "label": "Motore · profilo",
+              "kind": "testo",
+              "unit": null,
+              "values": "—",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Versione del motore di calcolo e profilo normativo con cui il calcolo è stato fatto. Se cambia, il calcolo diventa «da aggiornare»."
+              ],
+              "src": "page.tsx:141"
+            },
+            {
+              "label": "Normative di collaudo",
+              "kind": "testo",
+              "unit": null,
+              "values": "—",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Le norme di collaudo del calcolo (base più le aggiunte), in sigla breve."
+              ],
+              "src": "page.tsx:142"
+            },
+            {
+              "label": "SHA-256",
+              "kind": "testo",
+              "unit": null,
+              "values": "—",
+              "default": "—",
+              "required": "—",
+              "help": [
+                "Impronta del calcolo. Se il software attuale riproduce lo stesso calcolo, accanto compare «riprodotto». Un calcolo salvato non si modifica."
+              ],
+              "src": "page.tsx:146"
+            }
+          ],
+          "actions": [],
+          "notes": [],
+          "warnings": []
+        },
+        {
+          "title": "Argano consigliato dal software",
+          "intro": [
+            "Come nel Calcolo argano, rifatto con i dati salvati e il catalogo di oggi («Verificato di nuovo con i dati salvati e il catalogo di oggi.»). Non compare se l’argano resta («Argano: No»), perché allora non c’è né proposta, né consiglio, né ordine. L’argano del calcolo porta il distintivo «Nel calcolo» (o «Nel progetto» per un calcolo del progetto). I pulsanti «Usa questo argano» non ci sono: la pagina è di sola lettura; per cambiare argano devi fare un nuovo calcolo."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "Per le schede e la tabella vedi «Argano consigliato dal software» nella pagina «Calcolo argano»."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Costo degli articoli (listino dell’azienda)",
+          "intro": [
+            "Pannello visibile solo a chi vede i prezzi (con i permessi predefiniti il Titolare, il Capotecnico e il Commerciale). È una tabella Articolo · Quantità · Prezzo unitario · Importo con gli articoli del calcolo (l’argano di catalogo verificato, il basamento, le funi, le parti che il collaudo indica come sostituite), più il totale «Totale, IVA esclusa». Un articolo senza prezzo mostra «non a listino»; il totale diventa «Totale degli articoli con prezzo, IVA esclusa» e un avviso dice quanti articoli sono senza prezzo, con il collegamento «Completa il listino» per chi può modificare il listino. Un secondo avviso elenca le parti che senza il progetto dell’impianto non si possono contare. In fondo una nota dice quali articoli il costo conta in questo caso (sostituzione dell’argano, argano che resta, ecc.). I prezzi non entrano mai nei disegni né nella relazione."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [],
+          "warnings": []
+        },
+        {
+          "title": "Bozza d’ordine dell’argano",
+          "intro": [
+            "Pannello visibile a chi può scaricare i documenti, quando il calcolo è riproducibile. Il testo dice: «L’argano con i dati per il costruttore: puleggia e gole, rapporto, motore, freno, carico sull’albero, basamento con rinvio, dati dell’impianto, esito della verifica e, dal progetto, la pianta e la sezione del locale macchina; i campi da completare (esecuzione, prezzo, consegna) restano vuoti.» Il prezzo è lasciato in bianco."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Bozza d’ordine Word (DOCX)",
+              "help": "Scarica la bozza d’ordine in Word, da completare e inviare al costruttore.",
+              "src": "page.tsx:163"
+            },
+            {
+              "label": "Bozza d’ordine PDF",
+              "help": "Scarica la stessa bozza in PDF.",
+              "src": "page.tsx:164"
+            }
+          ],
+          "notes": [
+            "Sopra i pulsanti il pannello dice quale macchina si ordina: «…: l’argano verificato in questo calcolo.» se il calcolo verifica un argano di catalogo, oppure «…: il primo del confronto fra SICOR e Montanari. Questo calcolo verifica un altro argano: per allinearli, usa questo argano e salva di nuovo.»",
+            "Se nessun argano SICOR o Montanari a catalogo prende l’impianto: «Nessun argano SICOR o Montanari a catalogo prende questo impianto: niente bozza d’ordine.»",
+            "Con l’argano che resta il testo è «L’argano resta quello dell’impianto: non c’è un argano da ordinare.»"
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Visti interni",
+          "intro": [
+            "Elenco di chi ha controllato il calcolo, con ruolo, data e nota. Il visto è un controllo interno, non una firma."
+          ],
+          "fields": [
+            {
+              "label": "Nota (facoltativa)",
+              "kind": "testo lungo",
+              "unit": null,
+              "values": "fino a 1000 caratteri",
+              "default": "vuoto",
+              "required": "no",
+              "help": [
+                "Annotazione che resta con il visto. Il modulo compare solo a chi può mettere il visto (con i permessi predefiniti: Titolare, Capotecnico e Progettista), su un impianto non archiviato, finché i visti sono meno di 50."
+              ],
+              "src": "src/components/ReviewForm.tsx:20; src/lib/review.ts:2"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Metti il visto",
+              "help": "Registra il tuo visto sul calcolo. Se non c’è alcun visto, il pannello dice «Nessun visto.»",
+              "src": "ReviewForm.tsx:25"
+            }
+          ],
+          "notes": [],
+          "warnings": []
+        },
+        {
+          "title": "Progetto",
+          "intro": [
+            "Pannello che rimanda al passo successivo, il Progetto, secondo quello che disegna l’intervento. Per «Solo argano» e per un ammodernamento che tocca solo le parti del locale (macchina, funi, quadro, locale del macchinario, allarme, UCM) il Progetto è il rilievo del locale macchina: «Per questo intervento il Progetto è il rilievo del locale macchina, base delle tavole e della relazione tecnica di modifica. Si può disegnare anche l’intero impianto.» Il software sistema l’argano sulle calate esistenti, verifica locale, basamento e calate e prepara le tavole. Negli altri casi: «Il Progetto disegna il vano e la cabina su questo calcolo.» Portata, velocità, argano, funi e collaudo vengono dal calcolo, la geometria dal disegno. Con la macchina in basso il locale non si disegna: «Argano in basso: il software non disegna il locale della macchina… Relazione di calcolo e bozza d’ordine restano disponibili.»"
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Rileva il locale macchina",
+              "help": "Apre il rilievo del locale macchina su questo calcolo (pagina successiva). Dopo il primo rilievo il pulsante si chiama «Nuovo rilievo». Lo vede chi disegna il progetto, su un calcolo che il software attuale riproduce.",
+              "src": "src/components/calc/ProgettoPanel.tsx:49-52"
+            },
+            {
+              "label": "Disegna l’intero impianto · Disegna il progetto",
+              "help": "Apre il Progetto del vano su questo calcolo. Per un calcolo con rilievo del locale il pulsante si chiama «Disegna l’intero impianto».",
+              "src": "ProgettoPanel.tsx:53-55"
+            }
+          ],
+          "notes": [
+            "Sotto i pulsanti, l’elenco dei «Locali macchina rilevati su questo calcolo» (ogni voce porta alla pagina del rilievo salvato) e dei «Progetti su questo calcolo», con la nota «Questo è il calcolo argano preliminare al progetto: relazione, tavole e ordine dell’impianto sono quelli del progetto disegnato su di esso.»",
+            "«Il locale macchina non verifica le parti nel vano: il progetto dell’impianto resta da disegnare.» compare sotto i pulsanti quando il Progetto è del vano ma un rilievo del locale è possibile.",
+            "A chi non ha il diritto di disegnare il progetto: «Il progetto lo disegna un collega che ne ha il permesso.»"
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Tavole di progetto",
+          "intro": [
+            "Elenca le tavole emesse da questo calcolo (numero AA-NNN con la revisione, data, autore). Per un calcolo argano il testo dice: «Nella sostituzione le tavole si emettono dal rilievo del locale macchina.» (o «Le tavole si emettono dal progetto disegnato su questo calcolo.»). Non c’è modulo di emissione qui: si emette dal rilievo del locale macchina o dal progetto."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [],
+          "warnings": []
+        },
+        {
+          "title": "Risultati del calcolo (sola lettura)",
+          "intro": [
+            "In fondo alla pagina il browser rifà il calcolo con gli stessi motori (il server ha già verificato che l’impronta sia riprodotta) e mostra gli stessi componenti del Calcolo argano, senza campi da compilare: l’avvertenza, il selettore «Semplice»/«Esperto», lo schema della sospensione, l’esito con le sue verifiche e, tranne per l’argano che resta, i risultati (proposta, esito in breve, schede tecniche, adeguamenti, da verificare, riepilogo)."
+          ],
+          "fields": [
+            {
+              "label": "Modalità",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Semplice | Esperto",
+              "default": "Semplice",
+              "required": "no",
+              "help": [
+                "Come nel Calcolo argano: «Semplice» richiude le schede tecniche sotto «Dettagli tecnici: tabelle e valori intermedi», «Esperto» le mostra tutte. È la stessa modalità del Calcolo argano: la scelta vale anche lì."
+              ],
+              "src": "src/components/calc/CalculationView.tsx:36-40; src/components/calc/ModoCalc.tsx"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Copia riepilogo",
+              "help": "Copia negli appunti il riepilogo testuale con tipo di intervento e verifiche.",
+              "src": "Results.tsx:73"
+            }
+          ],
+          "notes": [],
+          "warnings": []
+        }
+      ],
+      "tips": [
+        "Prima di scaricare la relazione controlla che accanto all’impronta ci sia «riprodotto»: se compare l’avviso «da aggiornare» aggiorna il calcolo."
+      ]
+    },
+    {
+      "id": "room-survey",
+      "title": "Rilievo del locale macchina",
+      "path": "/it/app/calculations/‹id›/locale",
+      "access": "La vede e la compila chi disegna il progetto (con i permessi predefiniti: Titolare, Capotecnico, Progettista). Gli altri ruoli non la aprono (pagina «Permesso non concesso»). Il caricamento degli schizzi richiede il diritto di modificare i dati dell’impianto (con i permessi predefiniti lo ha chi disegna il progetto). Il Titolare può cambiare la matrice. L’impianto non deve essere archiviato.",
+      "reach": "Dalla pagina dell’impianto (pulsante «Rileva il locale macchina») o dalla pagina del calcolo salvato, nel pannello «Progetto» (pulsante «Rileva il locale macchina»; dopo il primo rilievo «Nuovo rilievo»). Non esiste per un calcolo di un impianto nuovo, di un ammodernamento che tiene l’argano esistente né con la macchina in basso (in quei casi il Progetto disegna il vano).",
+      "purpose": [
+        "Rilievo del locale macchina sopra il vano: il locale, il vano sotto e le calate esistenti, misurati in sito. Il software vi sistema la nuova macchina del calcolo e la verifica in diretta. Il rilievo salvato dà le tavole della sostituzione ed è la base della relazione tecnica di modifica.",
+        "Il modulo parte da un rilievo del locale già salvato per l’impianto o dalla bozza del modulo; altrimenti parte vuoto (ogni misura da inserire). Se il software è cambiato da quando il calcolo è stato salvato, il modulo non compare e si legge «Il software è cambiato da quando questo calcolo è stato salvato: aggiornalo dalla sua pagina con «Aggiorna con il software attuale» prima del rilievo.» Sotto il titolo una riga «Argano» ricorda la macchina del calcolo."
+      ],
+      "shots": [
+        {
+          "id": "locale-form",
+          "what": "Pagina del rilievo del locale macchina con il modulo a sinistra e il pannello dello schizzo a destra"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Misure dal disegno CAD (DXF o DWG)",
+          "intro": [
+            "Riquadro richiudibile in cima al gruppo «Locale macchina». Misura il locale e il vano sotto su una pianta DXF o DWG, tutto nel browser: il disegno resta sul tuo computer (al server arrivano solo le misure che confermi e non viene conservato nulla del disegno). Testo: «Clicca dentro il locale e poi dentro il vano: il software misura fino alle pareti.»"
+          ],
+          "fields": [
+            {
+              "label": "Disegno DXF o DWG",
+              "kind": "file",
+              "unit": null,
+              "values": ".dxf o .dwg; fino a 60 MB; DWG nella versione 2000 o successiva",
+              "default": "nessuno",
+              "required": "no",
+              "help": [
+                "Scegli il file della pianta. Dopo la lettura vedi formato, versione, numero di segmenti e layer. Un disegno molto grande è letto solo nei primi 400.000 segmenti («Disegno molto grande: letti i primi N segmenti»). Errori: «File troppo grande (massimo 60 MB).», «DWG … troppo vecchio: salvalo come DWG 2000 o successivo, o esportalo in DXF.», «Il file non si legge come DXF o DWG.», «Il disegno non contiene linee da misurare nello spazio modello.»"
+              ],
+              "src": "src/components/room/LocaleCad.tsx:89-92"
+            },
+            {
+              "label": "Unità del disegno",
+              "kind": "scelta",
+              "unit": null,
+              "values": "millimetri | centimetri | decimetri | metri | pollici | piedi",
+              "default": "quella letta nel file; millimetri se non indicata",
+              "required": "sì",
+              "help": [
+                "Se il file non dice l’unità compare «Il disegno non indica l’unità: controlla che sia quella giusta.» Un’unità sbagliata falsa tutte le misure."
+              ],
+              "src": "LocaleCad.tsx:102-107"
+            },
+            {
+              "label": "Parete anteriore del locale sul disegno",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "In basso | In alto | A sinistra | A destra",
+              "default": "In basso",
+              "required": "sì",
+              "help": [
+                "Il lato in basso del disegno è preso come parete anteriore del locale (dalla parte dell’accesso A del vano) e il lato sinistro come parete sinistra; se il disegno è girato scegli quale lato è la parete anteriore."
+              ],
+              "src": "LocaleCad.tsx:108-117"
+            },
+            {
+              "label": "Il prossimo clic misura",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "il locale | il vano sotto",
+              "default": "il locale; dopo la misura del locale passa al vano",
+              "required": "sì",
+              "help": [
+                "Clicca dentro il locale e poi dentro il vano: il software misura con quattro raggi fino alle pareti. Se il punto non è chiuso da pareti: «Il punto non è chiuso da pareti in tutte le direzioni: clicca dentro il vano o togli i layer che non sono pareti.» Per misurare il locale togli il layer del vano sottostante (e quelli di quote e arredi): la misura si ferma sulle linee dei layer attivi. Se le pareti del vano non sono parallele a quelle del locale: «Le pareti del vano non sono parallele a quelle del locale: controlla le distanze del vano dalle pareti.»"
+              ],
+              "src": "LocaleCad.tsx:119-128"
+            },
+            {
+              "label": "Layer usati per la misura",
+              "kind": "casella",
+              "unit": null,
+              "values": "un layer per riga, spuntato = attivo",
+              "default": "layer nascosti nel file disattivati",
+              "required": "no",
+              "help": [
+                "Elenco dei layer con il numero di segmenti. Togli la spunta ai layer che non sono pareti."
+              ],
+              "src": "LocaleCad.tsx:138-146"
+            },
+            {
+              "label": "Misure prese sul disegno CAD (tabella)",
+              "kind": "tabella",
+              "unit": null,
+              "values": "righe Misura · Dal disegno · Valore proposto · Confermo",
+              "default": "tutte confermate in partenza",
+              "required": "—",
+              "help": [
+                "Compare dopo il clic. Dopo il locale: larghezza e profondità del locale. Dopo il vano: larghezza e profondità del vano e, se hai misurato anche il locale, «Vano dalla parete sinistra del locale» e «Vano dalla parete anteriore del locale». Ogni riga ha il valore proposto in un campo modificabile e la casella «Confermo» (già spuntata per una misura presa sul disegno). Il valore è controllato sullo stesso campo e sugli stessi limiti del modulo; «Valore non valido (intervallo)» se non va."
+              ],
+              "src": "src/components/schizzi/ConfermaValori.tsx; LocaleCad.tsx:149"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Applica i valori confermati",
+              "help": "Mette nel modulo sotto, come se li avessi scritti, solo le righe confermate e valide. Dice quanti sono entrati («Applicati N valori dal disegno CAD.») e quali no con il motivo («non è una misura di questo modulo», «valore non valido»…). Nulla viene salvato: il rilievo si salva dal suo pulsante.",
+              "src": "ConfermaValori.tsx:100-114,192"
+            }
+          ],
+          "notes": [],
+          "warnings": [
+            "Un’unità del disegno sbagliata falsa tutte le misure proposte: controlla le misure prima di premere «Applica i valori confermati»."
+          ]
+        },
+        {
+          "title": "Locale macchina",
+          "intro": [
+            "Misure del locale sopra il vano, in millimetri come numeri interi (le frazioni sono arrotondate). Un rilievo nuovo parte vuoto: le misure da inserire sono segnate come necessarie, non c’è un valore proposto. Finché ne manca anche una sola, il software non sistema la nuova macchina e non disegna: le misure mancanti sono nell’elenco «Dati del progetto da inserire» sotto il modulo, con collegamenti ai campi."
+          ],
+          "fields": [
+            {
+              "label": "Larghezza interna (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 1000 a 20000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "sì (misura da inserire)",
+              "help": [
+                "Larghezza interna libera del locale macchina, da muro a muro, lungo il muro anteriore (quello dal lato dell’accesso A del vano). Dal rilievo o dalla pianta."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:171"
+            },
+            {
+              "label": "Profondità interna (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 1000 a 20000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "sì (misura da inserire)",
+              "help": [
+                "Profondità interna libera, dal muro anteriore a quello posteriore."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:172"
+            },
+            {
+              "label": "Vano dalla parete sinistra del locale (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 0 a 20000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "sì (misura da inserire)",
+              "help": [
+                "Distanza tra la parete sinistra del locale e la faccia interna sinistra del vano sotto."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:173"
+            },
+            {
+              "label": "Vano dalla parete anteriore del locale (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 0 a 20000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "sì (misura da inserire)",
+              "help": [
+                "Distanza tra la parete anteriore del locale e la faccia interna del vano dal lato dell’accesso A. Con la distanza precedente colloca il vano nel locale."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:174"
+            },
+            {
+              "label": "Altezza libera (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 1500 a 10000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "sì (misura da inserire)",
+              "help": [
+                "Altezza libera sotto il soffitto, nel punto più basso (sotto travi o soffitto più basso). Entra nella verifica «Altezza libera del locale macchina (UNI EN 81-20, 5.2.6.3.2.1)» e, per un locale esistente, nell’informazione per le altezze sotto 2,0 m (UNI 10411, 9.2)."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:175"
+            },
+            {
+              "label": "Altezza al colmo (mm, 0 = tetto piano)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 0 a 15000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "no",
+              "help": [
+                "Altezza libera sotto il colmo di un tetto a falde. Lascia vuoto o 0 per il tetto piano: è l’unica misura del locale facoltativa."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:176"
+            },
+            {
+              "label": "Soletta sul vano (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 100 a 1000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "sì (misura da inserire)",
+              "help": [
+                "Spessore della soletta tra il locale e il vano. Serve alle altezze del basamento e dell’asse della puleggia e ai fori."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:177"
+            },
+            {
+              "label": "Parete della porta",
+              "kind": "scelta",
+              "unit": null,
+              "values": "anteriore | posteriore | sinistra | destra",
+              "default": "nessuna (— scegli —)",
+              "required": "sì",
+              "help": [
+                "Parete del locale in cui sta la porta di accesso. Le pareti si guardano dall’interno, stando davanti al muro anteriore: sinistra e destra seguono questo punto di vista."
+              ],
+              "src": "RoomFields.tsx:76-84,180"
+            },
+            {
+              "label": "Porta dall’angolo (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 0 a 20000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "sì (misura da inserire)",
+              "help": [
+                "Distanza del montante sinistro della porta (inizio della luce libera) dall’angolo di partenza della parete: lungo le pareti anteriore e posteriore si parte dalla parete sinistra, lungo quelle sinistra e destra dalla parete anteriore."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:181"
+            },
+            {
+              "label": "Larghezza porta (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 500 a 3000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "sì (misura da inserire)",
+              "help": [
+                "Luce netta della porta del locale. La verifica della porta (UNI EN 81-20, 5.2.3) chiede almeno 600 mm."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:182"
+            },
+            {
+              "label": "Altezza porta (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 1400 a 3000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "sì (misura da inserire)",
+              "help": [
+                "Luce netta in altezza della porta. Il campo accetta da 1400 mm, ma la verifica «Porta del locale macchina, margine (UNI EN 81-20, 5.2.3)» chiede almeno 2000 mm di altezza (e 600 mm di larghezza): sotto, la verifica non è soddisfatta."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:183"
+            },
+            {
+              "label": "Parete del quadro",
+              "kind": "scelta",
+              "unit": null,
+              "values": "anteriore | posteriore | sinistra | destra",
+              "default": "nessuna (— scegli —)",
+              "required": "sì",
+              "help": [
+                "Parete contro cui sta il quadro di manovra. Nel rilievo il quadro si inserisce sempre a mano: la posizione automatica non è offerta."
+              ],
+              "src": "RoomFields.tsx:76-84,193"
+            },
+            {
+              "label": "Quadro dall’angolo (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 0 a 20000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "sì (misura da inserire)",
+              "help": [
+                "Distanza dell’inizio del quadro dall’angolo di partenza della sua parete, con la stessa regola della porta."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:194"
+            },
+            {
+              "label": "Larghezza quadro (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 200 a 3000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "sì (misura da inserire)",
+              "help": [
+                "Larghezza del quadro lungo la sua parete. Il quadro deve restare fuori dall’ingombro di argano, limitatore e interruttore generale, con la superficie libera davanti (UNI EN 81-20, 5.2.6.3.2.1) e un percorso di almeno 500 mm dalla porta (5.2.6.3.2.2)."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:195"
+            },
+            {
+              "label": "Profondità quadro (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 100 a 1000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "sì (misura da inserire)",
+              "help": [
+                "Profondità del quadro (sporgenza dalla parete)."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:196"
+            },
+            {
+              "label": "Altezza quadro (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "numero intero da 500 a 3000; passo 10 (le frazioni sono arrotondate)",
+              "default": "nessuno (da inserire)",
+              "required": "sì (misura da inserire)",
+              "help": [
+                "Altezza del quadro."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:197"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "I limiti sono quelli dello schema: lo stesso controllo vale nel browser e nel salvataggio sul server."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Basamento dell’argano e motore",
+          "intro": [
+            "Queste righe compaiono solo dopo che hai inserito tutte le misure: serve che la macchina del calcolo sia già sistemata nel locale. Il basamento è ciò su cui poggia il nuovo argano."
+          ],
+          "fields": [
+            {
+              "label": "Basamento",
+              "kind": "scelta",
+              "unit": null,
+              "values": "spessori di livellamento | telaio di profilati | putrelle da muro a muro | piastre d’acciaio | plinto in calcestruzzo | telaio con rinvio",
+              "default": "spessori di livellamento (con il rinvio: telaio con rinvio), proposti dal software",
+              "required": "no",
+              "help": [
+                "L’altezza del basamento determina la quota dell’asse della puleggia: il calcolo, i disegni del locale e il 3D la seguono. Il telaio dell’argano ha tre ferri, la puleggia fra il secondo e il terzo: i profilati, le putrelle e le piastre stanno sotto ogni ferro. Il «telaio con rinvio» tiene la puleggia di rinvio nel locale, mai nel vano (telaio del costruttore o del software). Le putrelle possono stare sollevate dal pavimento e si verificano a tensione e freccia.",
+                "Se cambi tipo, il basamento riparte dai valori tipici del nuovo tipo."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:105,123"
+            },
+            {
+              "label": "Profilato",
+              "kind": "scelta",
+              "unit": null,
+              "values": "profilati IPE, HEA, HEB, UPN della tabella dei profili del software (per esempio IPE 120 … IPE 400, HEB 120 … HEB 240, UPN 100 … UPN 240)",
+              "default": "il profilo tipico del tipo di basamento",
+              "required": "no; compare con «telaio di profilati» e «putrelle da muro a muro»",
+              "help": [
+                "Sezione dei profilati. Cambiando il profilato l’altezza del basamento torna al valore del profilo. L’altezza non può scendere sotto quella del profilo (sotto, il rilievo non si salva)."
+              ],
+              "src": "RoomFields.tsx:135"
+            },
+            {
+              "label": "Altezza del basamento sul pavimento (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 0 a 3000; passo 5",
+              "default": "calcolata dal software per il tipo di basamento",
+              "required": "no; nascosto con il telaio con rinvio del costruttore",
+              "help": [
+                "Altezza del piano di appoggio dell’argano sul pavimento del locale. Con il telaio con rinvio del software è l’altezza del piano del telaio."
+              ],
+              "src": "RoomFields.tsx:145"
+            },
+            {
+              "label": "Lunghezza lungo la calata (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 300 a 5000; passo 5",
+              "default": "calcolata dal software",
+              "required": "no; compare con «telaio di profilati» e «plinto in calcestruzzo»",
+              "help": [
+                "Lunghezza del telaio o del plinto lungo la linea delle calate."
+              ],
+              "src": "RoomFields.tsx:147"
+            },
+            {
+              "label": "Motore dell’argano",
+              "kind": "scelta",
+              "unit": null,
+              "values": "automatico (verso il contrappeso | verso la cabina, a seconda di come lo ha messo il software) | verso il contrappeso | verso la cabina",
+              "default": "automatico",
+              "required": "no",
+              "help": [
+                "L’argano sta lungo le calate, la puleggia sopra le funi. Il software mette il motore verso il contrappeso e gira l’argano di 180° attorno all’asse della puleggia quando solo così argano e basamento stanno dentro il locale. Sul telaio con rinvio del costruttore lo lascia come lo monta il costruttore.",
+                "In modalità «Semplice» il campo non compare e il motore resta automatico; lo vedi in «Esperto»."
+              ],
+              "src": "RoomFields.tsx:149"
+            },
+            {
+              "label": "Putrelle HEB sui muri del vano sotto il basamento (soletta senza verifica strutturale)",
+              "kind": "casella",
+              "unit": null,
+              "values": "spuntata | non spuntata",
+              "default": "non spuntata",
+              "required": "no",
+              "help": [
+                "Da spuntare quando la soletta non ha una verifica strutturale: due putrelle sotto il basamento poggiano sui muri del vano (200 mm in ogni muro e mai oltre le loro facce esterne). Il software sceglie le più corte che superano le verifiche (tensione, freccia L/1500, basamento sulle putrelle, funi a 50 mm, muri), poi le più leggere. Con certi basamenti (putrelle da muro a muro del locale, plinto) le putrelle HEB non si usano e compare «Con questo basamento … le putrelle HEB sui muri del vano non si usano.»",
+                "Se spuntata, compare un elenco di scelte: «Automatica — le più corte che passano: …» (o «nessuna passa, la più vicina»), oppure una delle sei combinazioni HEB 120/140/160 lungo la larghezza o la profondità del vano, ciascuna con «passa» o «non passa: tensione, freccia, basamento fuori dalle putrelle, funi troppo vicine, putrella sul bordo di un foro, putrella fuori dai muri o muro più sottile dell’appoggio». L’altezza della putrella alza l’argano."
+              ],
+              "src": "src/components/shaft/HebFields.tsx:40-62"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "Nel rilievo il basamento esistente di una macchina che resta non si offre: lì il Progetto disegna il vano."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Vano sotto il locale",
+          "intro": [
+            "Misure del vano che sta sotto il locale macchina, come numeri interi in millimetri."
+          ],
+          "fields": [
+            {
+              "label": "Larghezza del vano, lato porte (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 500 a 10000; passo 5",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Larghezza interna del vano lungo la parete dell’accesso A (le porte di piano principali)."
+              ],
+              "src": "src/components/room/RoomSurvey.tsx:109"
+            },
+            {
+              "label": "Profondità del vano (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 500 a 10000; passo 5",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Profondità interna del vano, dalla parete dell’accesso A a quella opposta."
+              ],
+              "src": "RoomSurvey.tsx:110"
+            },
+            {
+              "label": "Spessore dei muri del vano (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 50 a 1000; passo 5",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Spessore dei muri del vano. Serve all’appoggio delle putrelle HEB sui muri e alle distanze dal bordo dei fori."
+              ],
+              "src": "RoomSurvey.tsx:111"
+            }
+          ],
+          "actions": [],
+          "notes": [],
+          "warnings": []
+        },
+        {
+          "title": "Calate esistenti",
+          "intro": [
+            "Testo: «Centro delle funi lato cabina e lato contrappeso dove attraversano la soletta, misurato dall’angolo interno del vano sul lato dell’ingresso A: x lungo quella parete, y verso il fondo del vano.»"
+          ],
+          "fields": [
+            {
+              "label": "Funi lato cabina: x (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 0 a 10000; passo 5",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Posizione x del centro delle funi lato cabina dove passano nella soletta, lungo la parete dell’accesso A dall’angolo interno del vano."
+              ],
+              "src": "RoomSurvey.tsx:116"
+            },
+            {
+              "label": "Funi lato cabina: y (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 0 a 10000; passo 5",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Posizione y della stessa calata, dalla parete dell’accesso A verso il fondo del vano."
+              ],
+              "src": "RoomSurvey.tsx:117"
+            },
+            {
+              "label": "Funi lato contrappeso: x (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 0 a 10000; passo 5",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Posizione x del centro delle funi lato contrappeso."
+              ],
+              "src": "RoomSurvey.tsx:118"
+            },
+            {
+              "label": "Funi lato contrappeso: y (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 0 a 10000; passo 5",
+              "default": "nessuno (da inserire)",
+              "required": "sì",
+              "help": [
+                "Posizione y del centro delle funi lato contrappeso. Le due calate non devono coincidere né stare fuori dal vano: altrimenti «Calate non valide: quella della cabina e quella del contrappeso coincidono o stanno fuori dal vano.»"
+              ],
+              "src": "RoomSurvey.tsx:119"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "Quando tutto è inserito una riga confronta le calate: «Calate: N mm dal calcolo, M mm rilevate.» Lo scarto tra le due entra nelle verifiche (calate esistenti rilevate e calate del calcolo).",
+            "Il software sistema l’argano sulle calate: con il tiro diretto la nuova puleggia ha l’interasse del calcolo."
+          ],
+          "warnings": [
+            "Se le due calate coincidono o stanno fuori dal vano il rilievo non si salva («Calate non valide…»)."
+          ]
+        },
+        {
+          "title": "Rilievi in sito: limitatore, aperture, basamento esistente",
+          "intro": [
+            "Facoltativi. Misure dall’angolo interno del locale: x dal muro di sinistra, y dal muro anteriore (come la pianta). Il limitatore rilevato entra nelle verifiche delle superfici libere, dei percorsi e del quadro; le aperture esistenti sono disegnate e gli appoggi del nuovo basamento ne devono stare lontani. Le verifiche non tengono conto di ciò che non inserisci."
+          ],
+          "fields": [
+            {
+              "label": "Limitatore di velocità nel locale",
+              "kind": "casella",
+              "unit": null,
+              "values": "spuntata | non spuntata",
+              "default": "non spuntata",
+              "required": "no",
+              "help": [
+                "Spunta se nel locale c’è il limitatore di velocità. Compaiono i quattro campi seguenti e la casella delle funi, con i valori iniziali x = 600 mm, y = 600 mm, ingombro 400 × 300 mm e funi che attraversano la soletta. Se togli la spunta il limitatore sparisce dal rilievo (e l’etichetta della verifica riporta «(limitatore non rilevato)»)."
+              ],
+              "src": "src/components/room/SurveyFound.tsx:46-48"
+            },
+            {
+              "label": "Limitatore: centro x (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 0 a 10000; passo 5",
+              "default": "600",
+              "required": "quando il limitatore è spuntato",
+              "help": [
+                "Distanza del centro dell’impronta del limitatore dal muro sinistro del locale."
+              ],
+              "src": "SurveyFound.tsx:52"
+            },
+            {
+              "label": "Limitatore: centro y (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 0 a 10000; passo 5",
+              "default": "600",
+              "required": "quando il limitatore è spuntato",
+              "help": [
+                "Distanza del centro dell’impronta dal muro anteriore."
+              ],
+              "src": "SurveyFound.tsx:53"
+            },
+            {
+              "label": "Limitatore: ingombro lungo x (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 100 a 2000; passo 5",
+              "default": "400",
+              "required": "quando il limitatore è spuntato",
+              "help": [
+                "Dimensione dell’impronta lungo x. Un valore fuori dall’intervallo viene ignorato."
+              ],
+              "src": "SurveyFound.tsx:54"
+            },
+            {
+              "label": "Limitatore: ingombro lungo y (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 100 a 2000; passo 5",
+              "default": "300",
+              "required": "quando il limitatore è spuntato",
+              "help": [
+                "Dimensione dell’impronta lungo y."
+              ],
+              "src": "SurveyFound.tsx:55"
+            },
+            {
+              "label": "Le sue funi attraversano la soletta sotto di esso",
+              "kind": "casella",
+              "unit": null,
+              "values": "spuntata | non spuntata",
+              "default": "spuntata",
+              "required": "no",
+              "help": [
+                "Spunta se le funi del limitatore scendono nel vano attraverso la soletta sotto di esso. In questo caso il software verifica il loro foro e la distanza dalle putrelle HEB."
+              ],
+              "src": "SurveyFound.tsx:56-58"
+            },
+            {
+              "label": "Apertura: centro x (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 0 a 10000; passo 5",
+              "default": "600 per una nuova apertura",
+              "required": "per ogni apertura aggiunta",
+              "help": [
+                "Centro dell’apertura esistente nella soletta (un foro, una botola) dal muro sinistro. Puoi aggiungere fino a 12 aperture."
+              ],
+              "src": "SurveyFound.tsx:65"
+            },
+            {
+              "label": "Apertura: centro y (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 0 a 10000; passo 5",
+              "default": "600",
+              "required": "per ogni apertura aggiunta",
+              "help": [
+                "Centro dell’apertura dal muro anteriore."
+              ],
+              "src": "SurveyFound.tsx:66"
+            },
+            {
+              "label": "Apertura: lato x (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 20 a 3000; passo 5",
+              "default": "200",
+              "required": "per ogni apertura aggiunta",
+              "help": [
+                "Dimensione dell’apertura lungo x."
+              ],
+              "src": "SurveyFound.tsx:67"
+            },
+            {
+              "label": "Apertura: lato y (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "intero da 20 a 3000; passo 5",
+              "default": "150",
+              "required": "per ogni apertura aggiunta",
+              "help": [
+                "Dimensione dell’apertura lungo y. Le aperture sono disegnate e gli appoggi del nuovo basamento devono stare lontani dal loro bordo (verifica «Appoggi del nuovo basamento dal bordo delle aperture esistenti della soletta»)."
+              ],
+              "src": "SurveyFound.tsx:68"
+            },
+            {
+              "label": "Su che cosa poggia",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Non rilevato | Spessori o antivibranti sulla soletta | Telaio di profilati | Putrelle da muro a muro | Plinto in calcestruzzo | Altro o non chiaro",
+              "default": "Non rilevato",
+              "required": "no",
+              "help": [
+                "Sotto «Basamento dell’argano esistente»: indica su che cosa poggia l’argano da sostituire."
+              ],
+              "src": "SurveyFound.tsx:76"
+            },
+            {
+              "label": "Resta e il nuovo basamento lo riusa (da verificare dal tecnico)",
+              "kind": "casella",
+              "unit": null,
+              "values": "spuntata | non spuntata",
+              "default": "non spuntata",
+              "required": "no; compare quando hai scelto un tipo",
+              "help": [
+                "Spunta se il basamento esistente resta e il nuovo lo riusa. In questo caso la verifica degli appoggi dal bordo delle aperture è sul basamento esistente, «da rilevare»."
+              ],
+              "src": "SurveyFound.tsx:85"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Aggiungi un’apertura",
+              "help": "Aggiunge una riga di apertura (fino a 12) con i valori iniziali 600/600/200/150 mm.",
+              "src": "SurveyFound.tsx:72"
+            },
+            {
+              "label": "Togli",
+              "help": "Toglie l’apertura di quella riga.",
+              "src": "SurveyFound.tsx:69"
+            }
+          ],
+          "notes": [],
+          "warnings": []
+        },
+        {
+          "title": "Schizzo di rilievo",
+          "intro": [
+            "Pannello richiudibile accanto al modulo (su schermo largo resta in vista mentre scorri). Testo: «Lo schizzo fatto in sito, accanto al modulo: inserisci le misure guardandolo; appena ci sono tutte, il software disegna il locale macchina.» Mostra gli schizzi dell’impianto, prima quelli del locale macchina, poi gli altri con la parte per cui sono stati fatti (altra parte, Vano di corsa, Locale macchina)."
+          ],
+          "fields": [
+            {
+              "label": "Elenco «Schizzi dell’impianto»",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "uno schizzo alla volta",
+              "default": "il primo (del locale macchina)",
+              "required": "no",
+              "help": [
+                "Ogni voce porta il titolo e «caricato il …». Se non ce ne sono: «Nessuno schizzo caricato per questo impianto.»"
+              ],
+              "src": "src/components/schizzi/SchizzoPanel.tsx:63-72"
+            },
+            {
+              "label": "Foto, scansione o PDF dello schizzo",
+              "kind": "file",
+              "unit": null,
+              "values": "JPEG, PNG, HEIC (iPhone) o PDF; al massimo 20 MB",
+              "default": "nessuno",
+              "required": "sì per caricare",
+              "help": [
+                "Compare sotto «Carica uno schizzo» (aperto da solo se non c’è nessuno schizzo). I dati della foto (posizione, dispositivo) vengono tolti; un HEIC diventa JPEG. Se scegli un file già caricato come documento di altro tipo, il pannello propone «Usalo come schizzo»; se è già uno schizzo: «Questo file era già stato caricato: «…».»"
+              ],
+              "src": "src/components/schizzi/SchizzoUpload.tsx:76"
+            },
+            {
+              "label": "Titolo (facoltativo)",
+              "kind": "testo",
+              "unit": null,
+              "values": "fino a 160 caratteri",
+              "default": "vuoto",
+              "required": "no",
+              "help": [
+                "Nome con cui lo schizzo compare nell’elenco."
+              ],
+              "src": "SchizzoUpload.tsx:82"
+            },
+            {
+              "label": "Zoom e pagina dell’anteprima",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Adatta | 100 %; Pagina 1…4 per un PDF",
+              "default": "Adatta, pagina 1",
+              "required": "no",
+              "help": [
+                "Anteprima ridisegnata dal server (mai il file caricato). Un PDF si sfoglia una pagina alla volta, fino alle prime 4: «Si vedono e si leggono le prime 4 pagine di N.» «100 %» mostra lo schizzo alla dimensione reale per leggere le cifre piccole."
+              ],
+              "src": "src/components/schizzi/SchizzoAnteprima.tsx:26-35"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Carica",
+              "help": "Carica lo schizzo come schizzo del locale macchina («Invio… N %», «Controllo del file…», «Schizzo «…» caricato.»). Serve il diritto di modificare i dati dell’impianto (con i permessi predefiniti lo hanno Titolare, Capotecnico, Progettista e anche il Tecnico); se un’azienda lo toglie a chi disegna il progetto, qui compare «Caricare gli schizzi spetta a chi modifica i dati dell’impianto.»",
+              "src": "SchizzoUpload.tsx:86"
+            },
+            {
+              "label": "Leggi lo schizzo",
+              "help": "Fa leggere lo schizzo al modello (Claude, tramite Google Cloud Vertex AI, UE) e propone le misure del locale: la lettura può richiedere fino a due minuti (si vedono i secondi e c’è «Annulla»). Il pulsante c’è solo se la lettura automatica è attiva sul server e se hai il diritto di disegnare il progetto (con i permessi predefiniti: Titolare, Capotecnico, Progettista). Se la lettura non è attiva compare soltanto «Lettura automatica non attiva: inserisci le misure guardando lo schizzo.» Sopra il pulsante c’è l’avviso «Valori proposti dall’intelligenza artificiale… verifica ogni valore sullo schizzo prima di confermarlo.»",
+              "src": "src/components/schizzi/SchizzoPanel.tsx:74-77; LetturaSchizzo.tsx:95-98"
+            },
+            {
+              "label": "Applica i valori confermati",
+              "help": "Nella tabella «Valori proposti dalla lettura dello schizzo» (colonne Misura · Letto sullo schizzo · Valore proposto · Affidabilità · Confermo): ogni valore parte non confermato, vuoto sotto il 60 % di affidabilità («bassa»); lo controlli sullo schizzo, lo correggi se serve e spunti «Confermo». Il pulsante mette nel modulo solo le righe confermate e valide come se le avessi scritte, e dice «Applicati N valori dallo schizzo del …».",
+              "src": "src/components/schizzi/ConfermaValori.tsx:36,100-114,192"
+            }
+          ],
+          "notes": [
+            "Dopo la lettura vedi «Unità lette sullo schizzo: …», l’elenco «Non lette sullo schizzo» con il motivo e gli «Avvisi della lettura». Una lettura già fatta sullo stesso file risponde dalla memoria («Lettura già fatta su questo stesso file: risposta senza un nuovo invio.»).",
+            "Se lo schizzo non è del locale: «Questo schizzo è del vano: leggendolo per il locale macchina verranno proposti solo i valori che vi compaiono.»",
+            "Le misure dello schizzo non entrano mai nel modulo da sole: serve la tua conferma riga per riga."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Pianta e sezione del locale",
+          "intro": [
+            "Quando le misure ci sono tutte e la macchina del calcolo entra, il software disegna il locale (pianta e sezione B-B) e lo ridisegna a ogni modifica. Le quote si cambiano sul disegno: clicca una quota (o raggiungila con Tab e premi Invio), scrivi il valore e premi Invio; il rilievo si ridisegna con le sue verifiche. Le quote della pianta cambiate a mano restano finché non le ripristini; le altre cambiano il dato corrispondente del modulo."
+          ],
+          "fields": [
+            {
+              "label": "Vista",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Locale macchina | Sezione B-B",
+              "default": "Locale macchina (pianta)",
+              "required": "no",
+              "help": [
+                "Alterna pianta e sezione del locale. Sotto la figura: scala 1:N sul foglio A4 e il numero di quote modificabili."
+              ],
+              "src": "src/components/room/SurveyDrawings.tsx:56"
+            },
+            {
+              "label": "Nuovo valore della quota",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "dentro l’intervallo di quella quota («Valore fuori campo: da N a M mm»)",
+              "default": "valore attuale",
+              "required": "no",
+              "help": [
+                "Campo che si apre cliccando una quota sul disegno. Puoi cambiare le quote del locale, l’altezza e la lunghezza del basamento e l’altezza del rinvio, il profilato, larghezza e profondità del vano e la posizione della calata lato cabina (che sposta con sé quella del contrappeso); i valori decisi dal calcolo (l’interasse delle calate e h) non sono quote da cambiare qui. Ogni valore passa dalla stessa validazione del salvataggio."
+              ],
+              "src": "SurveyDrawings.tsx:41"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Applica",
+              "help": "Applica la nuova quota al rilievo.",
+              "src": "SurveyDrawings.tsx:41"
+            },
+            {
+              "label": "Annulla",
+              "help": "Chiude il campo senza modificare la quota.",
+              "src": "SurveyDrawings.tsx:41"
+            }
+          ],
+          "notes": [
+            "Se qualcosa impedisce di salvare, un riquadro rosso lo dice prima del disegno: «Argano in basso: il locale sopra il vano non contiene la macchina…» (macchina in basso), «Calate non valide…», oppure «La puleggia di rinvio non trova posto con h = N mm del calcolo: finisce sotto il pavimento del locale o contro l’argano sopra di essa. Ripeti il calcolo con h di almeno M mm, o scegli un altro basamento.»"
+          ],
+          "warnings": [
+            "Un problema segnalato nel riquadro rosso sopra il disegno impedisce di salvare il rilievo."
+          ]
+        },
+        {
+          "title": "Verifiche del locale, del basamento e delle calate",
+          "intro": [
+            "Tabella con colonne Verifica, Valore, Limite, Esito (OK, Attenzione, Non soddisfatta, Info). Limiti con ≤ o ≥ secondo la verifica. Le verifiche sono quelle del registro: altezza libera del locale (UNI EN 81-20, 5.2.6.3.2.1), porta del locale (5.2.3), superficie libera davanti al quadro e accanto all’argano (5.2.6.3.2.1), percorsi (5.2.6.3.2.2), spazio sopra le parti rotanti (5.2.6.3.2.3), putrelle (NTC 2018, §4.2.4.1.1; freccia L/1500), appoggi del basamento, limitatore, scarto delle calate, apertura e funi del limitatore, ecc. Ogni riga riporta il valore calcolato dal rilievo e il suo limite."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "Nel progetto salvato le verifiche delle parti che restano come sono (locale, porta, quadro esistenti) compaiono come «Esistente» e non entrano nell’esito del collaudo della sostituzione."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Salva il rilievo",
+          "intro": [
+            "Il server ricalcola tutto dal rilievo e dal calcolo e salva un record non modificabile con la sua impronta SHA-256; una variante è un nuovo rilievo."
+          ],
+          "fields": [
+            {
+              "label": "Etichetta (facoltativa)",
+              "kind": "testo",
+              "unit": null,
+              "values": "fino a 120 caratteri",
+              "default": "vuoto",
+              "required": "no",
+              "help": [
+                "Nome che accompagna il rilievo nelle liste e nel titolo."
+              ],
+              "src": "RoomSurvey.tsx:154"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Salva il rilievo",
+              "help": "Salva e apre la pagina del locale macchina salvato. È bloccato finché mancano misure («Mancano N dati del progetto…») o c’è un problema segnalato («Il rilievo non si salva finché resta un problema segnalato sopra.»).",
+              "src": "RoomSurvey.tsx:158"
+            },
+            {
+              "label": "Scarta la bozza",
+              "help": "Come nel Calcolo argano: la bozza del rilievo si conserva mentre compili e si scarta con conferma («Scartare la bozza e ripartire dai dati salvati?»).",
+              "src": "src/components/draft/DraftBar.tsx"
+            }
+          ],
+          "notes": [],
+          "warnings": [
+            "Il rilievo salvato non si modifica più: una variante è un nuovo rilievo.",
+            "«Scarta la bozza» cancella le misure inserite e riparte dall’ultimo rilievo salvato o dal modulo vuoto: non si annulla."
+          ]
+        }
+      ],
+      "tips": [
+        "Misura tutto dall’interno e dallo stesso lato: davanti al muro anteriore (quello dell’accesso A del vano), x cresce verso destra e y verso il fondo.",
+        "Se hai il disegno in CAD, comincia dal riquadro «Misure dal disegno CAD»: ti risparmia di ribattere le quote e puoi correggerle prima di applicarle."
+      ]
+    },
+    {
+      "id": "room-saved",
+      "title": "Progetto della sostituzione",
+      "path": "/it/app/room-designs/‹id›",
+      "access": "La vedono tutti i ruoli che vedono gli impianti; è di sola lettura. «Nuovo rilievo da questo»: chi disegna il progetto (con i permessi predefiniti: Titolare, Capotecnico, Progettista). I documenti, il costo e l’emissione delle tavole sono nella pagina «Tavole e documenti», ognuno con il suo diritto. Il Titolare può cambiare la matrice.",
+      "reach": "Dopo «Salva il rilievo» nel rilievo del locale macchina; dalla scheda «Progetto» della barra a chi non disegna il progetto; oppure dalla pagina dell’impianto o dal pannello «Progetto» di un calcolo salvato (elenco dei locali macchina rilevati).",
+      "purpose": [
+        "È il rilievo del locale macchina salvato: non si modifica più. Mostra l’esito, la pianta e la sezione ridisegnate dal rilievo e le verifiche. I documenti da scaricare, il costo e le tavole sono nella pagina «Tavole e documenti» dell’impianto, aperta su questo rilievo con il pulsante in alto. Un rilievo diverso è un nuovo rilievo."
+      ],
+      "shots": [
+        {
+          "id": "locale-saved",
+          "what": "Pagina del locale macchina salvato con i pulsanti in alto, i dati d’identità e i disegni"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Intestazione e dati d’identità",
+          "intro": [
+            "Titolo «Progetto della sostituzione» con la tua etichetta e, sotto, una riga di riepilogo («Locale N × M mm · argano su basamento · calate K mm»). L’elenco dei dati d’identità riporta Esito (con l’elenco delle verifiche se non sono tutte superate), Data, Autore, Argano (collegamento al calcolo) e SHA-256."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Tavole e documenti",
+              "help": "Apre la pagina «Tavole e documenti» dell’impianto su questo rilievo: tavole in bozza e loro emissione, DXF, DWG, SVG, relazione di calcolo e costo (capitolo sui documenti).",
+              "src": "src/app/[locale]/app/room-designs/[id]/page.tsx:67"
+            },
+            {
+              "label": "Relazione tecnica di modifica",
+              "help": "Porta alla relazione tecnica di modifica dell’impianto: il rilievo è la sua base. La relazione si prepara nella sua pagina.",
+              "src": "src/app/[locale]/app/room-designs/[id]/page.tsx:68"
+            },
+            {
+              "label": "Nuovo rilievo da questo",
+              "help": "Apre il modulo del rilievo con i valori di questo (per una variante). Solo per chi disegna il progetto, e su un calcolo con rilievo del locale.",
+              "src": "src/app/[locale]/app/room-designs/[id]/page.tsx:69"
+            }
+          ],
+          "notes": [
+            "Se il software attuale non riproduce più il rilievo compare l’avviso «Il software è cambiato da quando questo rilievo è stato salvato: i documenti non si rigenerano.» con «Aggiorna con il software attuale» (per chi disegna il progetto: «lo salva di nuovo dalle stesse misure (e, se serve, il suo calcolo) e dice se l’esito cambia»); chi non può disegnare il progetto non vede il pulsante e legge «Lo aggiorna un collega che disegna il progetto.»; su un impianto archiviato non c’è né il pulsante né questa frase."
+          ],
+          "warnings": [
+            "Se il rilievo è «da aggiornare» i documenti non si rigenerano finché non lo aggiorni con «Aggiorna con il software attuale»."
+          ]
+        },
+        {
+          "title": "Pianta e sezione del locale",
+          "intro": [
+            "Due figure di sola lettura: «Locale macchina» (pianta) e «Sezione B-B», in scala 1:N sul foglio A4. Non si modificano qui."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [],
+          "warnings": []
+        },
+        {
+          "title": "Verifiche del locale, del basamento e delle calate",
+          "intro": [
+            "Stessa tabella del rilievo (Verifica, Valore, Limite, Esito). In più, per le parti che restano come sono (locale, porta, quadro esistenti) l’esito è «Esistente» e non entra nell’esito del collaudo della sostituzione («Le verifiche «esistente» riguardano parti che restano come sono: non entrano nell’esito del collaudo della sostituzione»). Se il software non riproduce più il rilievo la tabella non compare."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [],
+          "warnings": []
+        }
+      ],
+      "tips": []
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Argano",
+      "def": "La macchina di trazione dell’ascensore a funi: motore, riduttore, freno e puleggia di frizione."
+    },
+    {
+      "term": "Puleggia di frizione",
+      "def": "La puleggia dell’argano su cui passano le funi: le trascina per aderenza tra funi e gola."
+    },
+    {
+      "term": "Aderenza (trazione)",
+      "def": "La capacità delle funi di non slittare sulla puleggia nei casi della norma: caricamento, frenata di emergenza, blocco di cabina o contrappeso."
+    },
+    {
+      "term": "Tiro diretto",
+      "def": "Macchina in alto senza puleggia di rinvio: le funi scendono dalla puleggia di frizione direttamente a cabina e contrappeso."
+    },
+    {
+      "term": "Rinvio",
+      "def": "Puleggia di rinvio che porta le funi dal lato del contrappeso (macchina in alto con rinvio) o in testata (macchina in basso)."
+    },
+    {
+      "term": "Calata",
+      "def": "Il tratto di funi che scende dalla puleggia di trazione alla cabina o al contrappeso, e il punto in cui attraversa la soletta del locale macchina. La quota «Calata» della pianta è l’interasse tra le due calate; nel tiro diretto, senza rinvio, deve essere uguale al diametro della puleggia."
+    },
+    {
+      "term": "Taglia 1:1 / 2:1",
+      "def": "Rapporto di sospensione delle funi: 1:1 collegamento diretto, 2:1 con una puleggia sulla cabina e una sul contrappeso."
+    },
+    {
+      "term": "Bilanciamento k",
+      "def": "La frazione della portata che il contrappeso bilancia: massa del contrappeso = massa della cabina + k · portata."
+    },
+    {
+      "term": "Libretto",
+      "def": "Il libretto dell’impianto e i verbali di collaudo: dai suoi dati il software ricava se velocità, portata e corsa sono variate."
+    },
+    {
+      "term": "Parti sostituite o modificate",
+      "def": "L’elenco Sì/No che dice quali parti dell’impianto l’intervento tocca; le parti non toccate («Esistente») non entrano nell’esito del collaudo."
+    },
+    {
+      "term": "UCM / ACOP",
+      "def": "Protezioni contro il movimento incontrollato della cabina e contro la velocità eccessiva in salita."
+    },
+    {
+      "term": "VVVF (inverter)",
+      "def": "Regolazione della velocità del motore con convertitore di frequenza; la regolazione del quadro esistente è chiesta quando la macchina nuova resta sul quadro."
+    },
+    {
+      "term": "Distintivo «standard» / «dal rilievo» / «dal progetto»",
+      "def": "Segna l’origine di un valore del modulo: valore standard del software non inserito, valore misurato nel rilievo collegato, valore portato dal Progetto."
+    },
+    {
+      "term": "Bozza (del modulo)",
+      "def": "Copia di lavoro del modulo che si conserva mentre lo compili; non è un calcolo e si scarta con «Scarta la bozza»."
+    },
+    {
+      "term": "SHA-256",
+      "def": "L’impronta del contenuto di un record salvato, di un file o di un documento emesso: se il contenuto cambia, cambia l’impronta. Accanto a un record salvato, «riprodotto» dice che il software attuale lo rifà uguale; serve anche a provare che un documento non è stato modificato dopo l’emissione."
+    },
+    {
+      "term": "da aggiornare",
+      "def": "Record salvato che il software attuale non riproduce più; si rifà con «Aggiorna con il software attuale»."
+    },
+    {
+      "term": "Basamento",
+      "def": "Ciò su cui poggia l’argano nel locale macchina: spessori, telaio di profilati, putrelle, piastre, plinto o telaio con rinvio."
+    }
+  ],
+  "verify": [
+    "Dalla pagina dell’impianto: con un calcolo salvato ma senza Progetto, il pulsante principale è «Rileva il locale macchina»/«Disegna il progetto» e non «Nuovo calcolo»: confermare che «Nuovo calcolo» compaia comunque nella sezione dei calcoli.",
+    "Esempio B e C: dopo il caricamento le parti mostrano «Argano: sì» e «Funi sostituite: No»? (dedotto da interventoDi e dal preset, non provato a video).",
+    "Il pannello «Verifiche non superate» del pulsante dell’esito si apre già al passaggio del mouse o solo al clic/focus? (VerdictChecks usa un’anteprima con puntatore e focus: descritto come «passandoci sopra o premendolo»).",
+    "Campo «Altezza porta» del rilievo: l’input accetta da 1400 mm ma la verifica chiede 2000 mm; confermare che a 1400–1999 mm compaia «Non soddisfatta» sulla porta.",
+    "Per il Tecnico (progetto:edit tolto di default) la pagina del rilievo del locale dà «permesso negato»? (requireCapability progetto:edit, descritto così).",
+    "Campo k con «Carico di equilibrio misurato» compilato: il modulo continua a segnare k come necessario (readInputs lo richiede sempre); confermare a video il testo dell’elenco dei dati mancanti.",
+    "Funi e compensazione (relazione tecnica): Le righe della compensazione compaiono solo dopo aver scelto il tipo; «Massa del cavo flessibile» e «Decelerazione ridotta nella D.1» solo in «Esperto»; il gruppo sparisce con «Trasformazione completa».",
+    "Funi: le verifiche del foglio «Funi» nell’esito (UNI 10411-1): Confermare a schermo i nomi delle pillole con una modifica UNI 10411-1 con D.2 nei limiti e con D.2 fuori limite; la frase «S_f … non conteggiato» compare solo se r_sfa non è ok (Verdict.tsx:42).",
+    "Esempi e modalità / Modalità: Con «Semplice» il gruppo «Servizio e soccorso» non si vede affatto (classe adv) e con «Esperto» si apre; confermare a schermo."
+  ]
+}

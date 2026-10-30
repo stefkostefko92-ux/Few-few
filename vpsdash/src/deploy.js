@@ -21,6 +21,7 @@ export const KNOWN_PROJECTS = [
   'SupremeDiscordBot',
   'eternaltouch',
   'piuma',
+  'liftpilot',
   'korpora',
   'gaming',
   'adblock',

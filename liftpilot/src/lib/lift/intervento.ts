@@ -1,0 +1,178 @@
+// The intervention declared in «Calcolo argano» (round 45): «Solo argano» — the machine replaced (and, when needed, its
+// ropes) on an existing lift; «Ammodernamento» — more parts replaced or changed, each answered yes or no, the existing
+// sling kept or not; «Trasformazione completa» — the whole lift designed and tested as new. The first two are
+// modifications of the existing lift (DPR 162/1999, art. 2 c.1 lett. cc)), tested to UNI 10411-1 or -11 (a check applies
+// when the intervention touches what it checks); the third is tested to UNI EN 81-20/50, every check applies. Keeping
+// the existing sling is the site practice that keeps a renovation a modification (registry impianto.rifacimento;
+// research, chapter 16 §3.2 and §5.3). The type is a fact of the calculation record (Calculation.intervento, outside its
+// hash, like the test); the calculation's context and the acceptance test it stores follow it. Records saved before the
+// type existed are read by their shape (interventoDi); the one form's three choices of round 27 are gone with it (the
+// renovation is the modernisation's preset, rifacimentoTo). Pure.
+import type { FormValues } from '@/calc/types';
+import { NORME_AGGIUNTIVE, PARTI, ammessa, collaudoOf, esistenteOf, type Collaudo, type NormaAggiuntiva, type NormaCollaudo, type Parte } from './collaudo';
+import { SOSTANZIALE } from './norme-collaudo';
+
+const subset = (a: readonly Parte[], of: readonly Parte[]): boolean => a.every((p) => of.includes(p));
+const isUni = (n: NormaCollaudo | undefined): n is '10411-1' | '10411-11' => n === '10411-1' || n === '10411-11';
+
+/** The three types, as the database's enum names them (TipoIntervento, migration 21): no mapping between the two. */
+export const TIPI_INTERVENTO = ['SOLO_ARGANO', 'AMMODERNAMENTO', 'TRASFORMAZIONE_COMPLETA'] as const;
+export type TipoIntervento = (typeof TIPI_INTERVENTO)[number];
+export const isTipoIntervento = (x: unknown): x is TipoIntervento => TIPI_INTERVENTO.some((t) => t === x);
+
+/** What a «Solo argano» can replace: the machine, and the ropes when they go with it. */
+export const PARTI_SOLO: readonly Parte[] = ['machine', 'ropes'];
+
+/** What a renovation replaces: every part but the sling, which stays as it is (a change of speed, rated load or travel
+ *  is answered when there is one). */
+export const PARTI_RIFACIMENTO: readonly Parte[] = ['machine', 'ropes', 'car', 'cw', 'rails', 'landingDoors', 'carDoors', 'buffers', 'governor', 'controller'];
+
+/** What the survey of the machine room verifies: the machine, its ropes and the control panel in the room; round 46
+ *  (B7), the room itself, the alarm and the UCM protection that go with them. */
+export const PARTI_LOCALE: readonly Parte[] = ['machine', 'ropes', 'controller', 'room', 'alarm', 'ucm'];
+
+/** The optional parts of a modernisation (round 46, B7, owner's decision Q3): a group of their own, «No» unless answered
+ *  «Sì», never among what is still to answer, not answered by the renovation — the safety gear, the ACOP and UCM
+ *  protections, the emergency alarm, the machine room, the car doors made sliding (only with the car doors replaced:
+ *  interventoValido 'porte'). */
+export const PARTI_FACOLTATIVE: readonly Parte[] = ['safetyGear', 'ucm', 'alarm', 'room', 'slidingDoors'];
+
+/** The parts that change a lift without being replaced: speed, rated load, travel. */
+export const VARIAZIONI: readonly Parte[] = ['speed', 'load', 'travel'];
+
+/** What the Progetto of a step draws: the survey of the existing machine room, or the whole shaft. */
+export type Disegno = 'locale' | 'vano';
+
+/** The speed regulation the software sizes every machine it proposes for (round 46, B6): a frequency converter
+ *  (KL.catalogRatioTol). UNI 10411-1:2024 11.2.1 and UNI 10411-11:2024 11.2 do not allow adding a speed regulation to
+ *  a controller without one: a new machine on an existing controller of one or two speeds needs the controller replaced. */
+export const senzaRegolazione = (r: Collaudo['regolazione']): boolean => r === '1v' || r === '2v';
+
+/** A modification whose new machine stays on the existing controller: the speed regulation of that controller is
+ *  asked (a «Solo argano» always, a modernisation with the machine «Sì» and the controller «No»). */
+export const regolazioneChiesta = (t: TipoIntervento | null | undefined, C: Pick<Collaudo, 'norma' | 'parti'>): boolean =>
+  (t === 'SOLO_ARGANO' || t === 'AMMODERNAMENTO') && isUni(C.norma) && C.parti.includes('machine') && !C.parti.includes('controller');
+
+/** The calculation's context of a type: a new lift for the transformation, a replacement otherwise. */
+export const contestoDi = (t: TipoIntervento): 'new' | 'repl' => (t === 'TRASFORMAZIONE_COMPLETA' ? 'new' : 'repl');
+
+
+/** The type of a record saved before it was declared, read by its shape: the calculation's context and its test as
+ *  stored (collaudoReadSchema-parsed or normalised; null: none chosen). A new lift or a test to EN 81-20/50 is a
+ *  transformation (a replacement tested as new is one); the renovation keeping the sling a modernisation; the machine
+ *  with its ropes (and a load the documented loads changed) a «Solo argano», as is a replacement with nothing chosen;
+ *  anything else a modernisation. */
+export function interventoDi(context: unknown, C: Collaudo | null | undefined): TipoIntervento {
+  if (context === 'new' || C?.norma === 'en81') return 'TRASFORMAZIONE_COMPLETA';
+  if (C?.rifacimento) return 'AMMODERNAMENTO';
+  if (!C || (C.parti.includes('machine') && subset(C.parti, ['machine', 'ropes', 'load']))) return 'SOLO_ARGANO';
+  return 'AMMODERNAMENTO';
+}
+
+const aggiunteFor = (prev: Collaudo | undefined, base: NormaCollaudo): { aggiuntive?: readonly NormaAggiuntiva[] } => {
+  const a = NORME_AGGIUNTIVE.filter((n) => prev?.aggiuntive?.includes(n) && ammessa(n, base));
+  return a.length ? { aggiuntive: a } : {};
+};
+
+/** The parts a modification chose before: none when the previous test was one as new (its parts are every part by the
+ *  rule, not answers). */
+const scelte = (prev: Collaudo | undefined): readonly Parte[] => (prev && prev.norma !== 'en81' ? prev.parti : []);
+
+/** What choosing a type sets: the calculation's context and the test. The transformation is tested to EN 81-20/50 with
+ *  every part; a «Solo argano» replaces the machine (and its ropes when they were among the parts), under the part of
+ *  UNI 10411 chosen before (-1 otherwise), never as a renovation; a modernisation starts from the parts chosen before
+ *  with the machine (which can then be answered «No»), a renovation staying one. Switching never loses the answer
+ *  about the CE marking, the service day or the documented loads; the standards added stay where they fit the base. */
+export function interventoTo(t: TipoIntervento, prev?: Collaudo): { values: FormValues; collaudo: Collaudo } {
+  const known = esistenteOf(prev);
+  if (t === 'TRASFORMAZIONE_COMPLETA') return { values: { context: 'new' }, collaudo: { norma: 'en81', parti: PARTI, ...known, ...aggiunteFor(prev, 'en81') } };
+  const norma: NormaCollaudo = isUni(prev?.norma) ? prev.norma : '10411-1', was = scelte(prev);
+  if (t === 'SOLO_ARGANO') {
+    const parti = PARTI.filter((p) => p === 'machine' || (p === 'ropes' && was.includes('ropes')));
+    return { values: { context: 'repl' }, collaudo: { norma, parti, ...known, ...aggiunteFor(prev, norma) } };
+  }
+  const rif = prev?.rifacimento && prev.norma !== 'en81' ? { rifacimento: true as const } : {};
+  return { values: { context: 'repl' }, collaudo: { norma, parti: PARTI.filter((p) => p === 'machine' || was.includes(p)), ...rif, ...known, ...aggiunteFor(prev, norma) } };
+}
+
+/** The renovation that keeps the existing sling turned on or off in a modernisation. On: every part but the sling,
+ *  the changes of speed, load and travel as answered, new ropes free of those in place. Off: the machine alone, the
+ *  ropes' number and diameter in place. The part of UNI 10411, the standards added, what is known of the lift and the
+ *  optional parts as answered (round 46: the renovation does not answer them) stay. */
+export function rifacimentoTo(on: boolean, C: Collaudo): { values: FormValues; collaudo: Collaudo } {
+  const norma: NormaCollaudo = isUni(C.norma) ? C.norma : '10411-1', rest = { ...esistenteOf(C), ...aggiunteFor(C, norma) };
+  const extra = (p: Parte): boolean => PARTI_FACOLTATIVE.includes(p) && C.parti.includes(p);
+  if (!on) return { values: { keepRopes: true }, collaudo: { norma, parti: PARTI.filter((p) => p === 'machine' || extra(p)), ...rest } };
+  const parti = PARTI.filter((p) => PARTI_RIFACIMENTO.includes(p) || (VARIAZIONI.includes(p) && C.parti.includes(p)) || extra(p));
+  return { values: { keepRopes: false }, collaudo: { norma, parti, rifacimento: true, ...rest } };
+}
+
+/** What the type, the calculation's values and the test chosen disagree on (the keys of the save's error; none: they
+ *  agree). The base EN 81-20/50 is the transformation's (it can be added to a modification as a standard); speed and
+ *  travel make a modernisation of what would be a «Solo argano» — chosen ('parti') or brought by the logbook (round
+ *  46: 'velocita', 'corsa', the test as the documents read it); the load is never chosen there (the documented loads
+ *  may bring it: a warning, not a refusal) — and the load they bring makes one too: a modernisation is told apart from
+ *  a «Solo argano» on the parts as the documents read them (collaudoOf), the rule's load among them. Round 46 (B6, B7):
+ *  a new machine on an existing controller of one or two speeds ('inverter': the controller is replaced — UNI
+ *  10411-1:2024 11.2.1, UNI 10411-11:2024 11.2; an unanswered regulation is the form's to ask, never a refusal here, so
+ *  a record saved before still updates), the car doors made sliding without the car doors replaced ('porte'). */
+export function interventoValido(t: TipoIntervento | null | undefined, V: FormValues, chosen: Collaudo | null | undefined): string[] {
+  if (!t) return ['intervento'];
+  const out = new Set<string>();
+  if ((t === 'TRASFORMAZIONE_COMPLETA') !== (V.context === 'new')) out.add('context');
+  if (t === 'TRASFORMAZIONE_COMPLETA') {
+    if (chosen && chosen.norma !== 'en81') out.add('norma');
+    if (chosen?.rifacimento) out.add('rifacimento');
+    return [...out];
+  }
+  if (!chosen || !isUni(chosen.norma)) return [...out, 'norma'];
+  const P = chosen.parti, has = (p: Parte): boolean => P.includes(p);
+  if (t === 'SOLO_ARGANO') {
+    if (!has('machine') || !subset(P, PARTI_SOLO)) out.add('parti');
+    if (chosen.rifacimento) out.add('rifacimento');
+    // the changes the logbook brings on an existing lift (chosen: 'parti'; a new lift is tested with every part:
+    // 'context' says it)
+    const C = V.context === 'new' ? null : collaudoOf(V, chosen);
+    if (C?.parti.includes('speed') && !has('speed')) out.add('velocita');
+    if (C?.parti.includes('travel') && !has('travel')) out.add('corsa');
+  } else if (!P.length || (!chosen.rifacimento && has('machine') && subset(collaudoOf(V, chosen).parti, PARTI_SOLO))) out.add('parti');
+  if (chosen.rifacimento) {
+    if (!subset(PARTI_RIFACIMENTO, P)) out.add('rifacimento');
+    if (has('sling')) out.add('sling');
+  }
+  if (regolazioneChiesta(t, chosen) && senzaRegolazione(chosen.regolazione)) out.add('inverter');
+  if (has('slidingDoors') && !has('carDoors')) out.add('porte');
+  if (!has('machine') && V.compare) out.add('compare');
+  if (!V.keepRopes && !has('ropes')) out.add('ropes');
+  return [...out];
+}
+
+/** A drawing whose test (as derived on it: the drawing's travel) brings a change of speed or travel on a «Solo argano»
+ *  base: the type is to be reviewed in the calculation (round 46, the Progetto's save refuses 'tipoDaRivedere'). */
+export const tipoDaRivedere = (t: TipoIntervento | null | undefined, C: Pick<Collaudo, 'parti'>): boolean =>
+  t === 'SOLO_ARGANO' && (C.parti.includes('speed') || C.parti.includes('travel'));
+
+/** A modernisation that keeps the existing machine: the calculation verifies it with the modified lift's data — no
+ *  proposal, advice or order. */
+export const macchinaResta = (t: TipoIntervento | null | undefined, C: Pick<Collaudo, 'parti'>): boolean => t === 'AMMODERNAMENTO' && !C.parti.includes('machine');
+
+/** What the Progetto of a step-2 calculation draws: the survey of the machine room for a «Solo argano» and for a
+ *  modernisation of the machine room's parts only (C: the test as the documents read it, collaudoOf), the whole shaft
+ *  otherwise; a machine below has no machine room over the shaft. The survey places a new machine on the falls in place
+ *  (its bedplate, its openings, its relazione tecnica): a modernisation that keeps the machine draws the shaft. */
+export const disegnoDi = (t: TipoIntervento, C: Pick<Collaudo, 'parti'>, V: FormValues): Disegno =>
+  (V.layout !== 'bottom' && !macchinaResta(t, C) && (t === 'SOLO_ARGANO' || (t === 'AMMODERNAMENTO' && subset(C.parti, PARTI_LOCALE))) ? 'locale' : 'vano');
+
+/** Controller, machine, landing doors, car and sling replaced together: a substantial modification, UNI 10411-1/-11
+ *  point 21.1 (the form warns and offers the transformation; the documents print the point, norme-collaudo.ts). */
+export const sostanziale = (C: Pick<Collaudo, 'parti'>): boolean => SOSTANZIALE.every((p) => C.parti.includes(p));
+
+/** An intervention as two records are compared on it: the type and the test (the parts, the renovation). */
+export interface Dichiarato { tipo: TipoIntervento; collaudo: Pick<Collaudo, 'parti' | 'rifacimento'> }
+
+/** The same intervention: type, renovation and the parts replaced or changed (round 46: «Aggiorna il progetto con
+ *  l’ultimo calcolo» draws again in one click only on a calculation of the same intervention; another one opens the
+ *  Progetto on it, the change named). */
+export const stessoIntervento = (a: Dichiarato, b: Dichiarato): boolean =>
+  a.tipo === b.tipo && !!a.collaudo.rifacimento === !!b.collaudo.rifacimento && a.collaudo.parti.length === b.collaudo.parti.length
+  && a.collaudo.parti.every((p) => b.collaudo.parti.includes(p));

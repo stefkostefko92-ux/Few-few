@@ -1,0 +1,131 @@
+/* Round 45 — «Tipo di intervento» in «Calcolo argano»: the three types as cards across the calculator, the parts
+   answered «Sì» or «No» one by one, the warnings of the type. The one piece of character is the scale under each
+   type's name: three rising bars, like the floors of a car's position indicator, lit as far as the intervention reaches
+   — the machine, the parts, the whole lift. Everything else is the workspace's panels, segmented buttons and notes;
+   colours only from the tokens of globals.css. */
+
+.intervento { gap: 14px; }
+/* no type yet: the card is the first thing missing, marked as the list of what is missing is (blank.css) */
+.intervento.da { border-color: var(--warn-line); box-shadow: inset 3px 0 0 var(--warn), var(--panel-hi), var(--shadow); }
+.intervento-head h2 { margin: 0; font: var(--panel-title); letter-spacing: var(--panel-title-track); }
+.intervento-head .note { margin: 4px 0 0; max-width: 70ch; }
+
+.intervento-tipi { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@container calc (max-width: 760px) { .intervento-tipi { grid-template-columns: minmax(0, 1fr); } }
+.intervento-tipo { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nome scala" "norma scala" "lead lead";
+  gap: 4px 14px; padding: 14px 16px 15px; border: 1px solid var(--card-line); border-radius: var(--radius); background: var(--card-grad); cursor: pointer;
+  transition: border-color .15s, box-shadow .2s, background-color .15s; }
+.intervento-tipo:hover { border-color: var(--rule-strong); box-shadow: var(--card-hover-ring); }
+.intervento-tipo input { position: absolute; opacity: 0; pointer-events: none; }
+.intervento-tipo:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.intervento-tipo.on { border-color: var(--card-on-line); box-shadow: var(--card-on-glow); background: linear-gradient(140deg, var(--accent-soft), var(--surface) 72%); }
+.tipo-nome { grid-area: nome; font: 700 16px/1.25 var(--font-body); letter-spacing: -.01em; color: var(--ink); }
+.intervento-tipo.on .tipo-nome { color: var(--accent); }
+.tipo-norma { grid-area: norma; font: 500 12px/1.35 var(--font-mono); color: var(--eyebrow-ink); }
+.tipo-lead { grid-area: lead; margin-top: 6px; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
+/* how far the intervention reaches: three rising bars, lit up to the type's */
+.tipo-scala { grid-area: scala; align-self: start; display: inline-flex; align-items: flex-end; gap: 3px; height: 24px; padding-top: 2px; }
+.tipo-scala i { width: 6px; border-radius: 1px; background: var(--rule-strong); }
+.tipo-scala i:nth-child(1) { height: 10px; } .tipo-scala i:nth-child(2) { height: 16px; } .tipo-scala i:nth-child(3) { height: 22px; }
+.tipo-scala i.piena { background: var(--dim); }
+.intervento-tipo.on .tipo-scala i.piena { background: var(--accent); box-shadow: var(--dash-glow); }
+
+/* the parts, each answered: an unanswered one keeps the amber edge of what is missing */
+.parti-sino { margin: 0; padding: 14px 0 0; border: 0; border-top: 1px solid var(--rule); min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.parti-sino legend { float: left; width: 100%; padding: 0; font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.parti-sino legend + * { clear: both; }
+.parti-sino > .note { margin: 0; max-width: 72ch; }
+.parti-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 18.5rem), 1fr)); gap: 6px 20px; }
+.parte { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 12px; min-height: 40px; padding: 4px 0 4px 11px;
+  border-left: 2px solid var(--rule-strong); }
+.parte.da { border-left-color: var(--warn); }
+.parte-nome { font-size: 13.5px; line-height: 1.35; color: var(--ink-2); }
+.parte.da .parte-nome { color: var(--ink); }
+/* round 52: a part's name with its «?» beside it — the name wraps, the «?» stays with it */
+.parte-lbl { justify-self: start; flex-wrap: nowrap; }
+.parte-lbl > .parte-nome { min-width: 0; }
+.parte.fissa { border-left-color: var(--accent-line); }
+.parte.fissa .parte-nome { color: var(--muted); }
+.parte-scelta > label { min-width: 3.4em; padding: 7px 12px; }
+.parte-regola { font-size: 12.5px; font-weight: 600; color: var(--muted); text-align: right; }
+.parte-regola.si { color: var(--accent); }
+.parte-da, .parte-perche { grid-column: 1 / -1; font-size: 12px; line-height: 1.35; }
+.parte-da { color: var(--warn); }
+.parte-perche { color: var(--muted); }
+/* round 47: a «No» from the documents (a quiet mark beside the answer, the edge of an answered part) and a «Sì» against
+   them (the amber of something to confirm, no edge of what is missing) */
+.parte-doc, .parte-contro { grid-column: 1 / -1; font-size: 12px; line-height: 1.35; font-weight: 600; }
+.parte-doc { color: var(--accent); }
+.parte-contro { color: var(--warn); }
+/* round 46: the existing controller's speed regulation under a new machine — a question hanging on the row above it
+   (the ropes of a «Solo argano», the controller of a modernisation), across the whole list, set in from its edge */
+.parte.regola { grid-column: 1 / -1; margin-left: 13px; }
+.parte.regola .parte-scelta > label { min-width: 0; white-space: nowrap; }
+/* the three answers do not fit beside the question on a phone: under it, from the left, wrapping (round 46 review) */
+@container calc (max-width: 640px) {
+  .parte.regola { grid-template-columns: minmax(0, 1fr); margin-left: 8px; }
+  .parte.regola .parte-scelta { justify-self: start; }
+}
+/* the optional parts: a quieter group of their own, «No» checked, never amber (never missing) */
+.parti-altre { margin: 4px 0 0; padding: 12px 0 0; border: 0; border-top: 1px dashed var(--rule-strong); min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.parti-altre legend { float: left; width: 100%; padding: 0; font-size: 13.5px; font-weight: 700; color: var(--ink-2); }
+.parti-altre legend + * { clear: both; }
+.parti-altre > .note { margin: 0; max-width: 72ch; }
+.parti-altre .parte { border-left-color: var(--rule); }
+.parti-altre .parte.si { border-left-color: var(--accent-line); }
+.parti-altre .parte.si .parte-nome { color: var(--ink); }
+.rif-preset { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.rif-preset .note { margin: 0; flex: 1 1 22rem; }
+.rif-preset .btn.on { color: var(--accent); background: var(--accent-soft); border-color: var(--accent-line); box-shadow: inset 0 -2px 0 var(--accent); }
+
+/* the type's warnings: our words with the clause; point 21.1 in amber with its way out */
+.intervento-avvisi { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.intervento-avvisi li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 14px; padding: 10px 14px;
+  font-size: 13.5px; line-height: 1.5; color: var(--ink-2); background: var(--info-bg); border: 1px solid var(--info-line); border-radius: var(--radius-sm);
+  box-shadow: inset 3px 0 0 var(--info); }
+.intervento-avvisi li.forte { color: var(--ink); background: var(--warn-bg); border-color: var(--warn-line); box-shadow: inset 3px 0 0 var(--warn); }
+.intervento-avvisi p { margin: 0; flex: 1 1 26rem; max-width: 80ch; }
+.intervento-hint { margin: 0; }
+
+/* the mark of a value the drawing gave (round 45), beside «dal rilievo» (collega.css) */
+.badge.progetto { margin-left: 6px; color: var(--accent); background: var(--accent-soft); border-color: var(--accent-line); text-transform: none; letter-spacing: .02em; }
+/* the base of a transformation's test: fixed, shown as a value, not a choice */
+.collaudo .norma-fissa { margin: 0; padding: 9px 12px; font-size: 14px; font-weight: 600; color: var(--ink); border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-sm); background: var(--bg-2); }
+
+/* the record's role under its title (calculation page): the type with its scale, smaller, then what the calculation is */
+.calc-ruolo { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 8px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+.tipo-badge { display: inline-flex; align-items: center; gap: 8px; padding: 3px 10px 3px 8px; font-weight: 700; color: var(--ink);
+  border: 1px solid var(--card-on-line); border-radius: var(--radius-sm); background: var(--accent-soft); }
+.tipo-badge .tipo-scala { align-self: center; height: 16px; padding-top: 0; gap: 2px; }
+.tipo-badge .tipo-scala i { width: 4px; }
+.tipo-badge .tipo-scala i:nth-child(1) { height: 7px; } .tipo-badge .tipo-scala i:nth-child(2) { height: 11px; } .tipo-badge .tipo-scala i:nth-child(3) { height: 15px; }
+.tipo-badge .tipo-scala i.piena { background: var(--accent); }
+.calc-ruolo .ruolo a { font-weight: 600; }
+
+/* a value of the Progetto that the «Calcolo argano» fixes (the rated load, the speed): read only, its source said */
+.badge.calcolo { margin-left: 6px; color: var(--ink-2); background: var(--surface2); border-color: var(--rule-strong); text-transform: none; letter-spacing: .02em; }
+.field input[readonly] { color: var(--ink-2); background: var(--bg-2); }
+
+/* «Il progetto completa il calcolo» (round 45): the calculation's value beside the drawing's; a row the drawing changes
+   beyond the screen's tolerance carries the amber edge the warnings use, so the eye finds what «Porta nel calcolo» brings */
+.differenze table { width: 100%; }
+.differenze tbody th { font-weight: 500; text-align: left; color: var(--ink-2); }
+.differenze tr.differs th, .differenze tr.differs td { background: var(--warn-bg); }
+.differenze tr.differs th { box-shadow: inset 3px 0 0 var(--warn); color: var(--ink); }
+.differenze td .badge { margin-left: 8px; }
+.differenze-esito { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 10px 0 0; font-size: 14px; color: var(--ink-2); }
+.differenze-esito > span { display: inline-flex; align-items: center; gap: 6px; }
+/* the base a lift design was drawn on, under its title; drawn on an older one, the way to the latest */
+.progetto-base { margin-top: 0; }
+.ridisegna { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.ridisegna p { margin: 0; flex: 1 1 26rem; max-width: 80ch; }
+.ridisegna form { margin: 0; }
+.porta-avviso { max-width: 100ch; }
+.differenze .badge.warn { color: var(--warn); background: var(--warn-bg); text-transform: none; letter-spacing: .02em; }
+/* an installation's type in the lists (round 45): the badge of «Calcolo argano» at the size of a tag; none yet — dashed */
+.tipo-badge.sm { gap: 6px; padding: 2px 8px 2px 6px; font-size: 12px; font-weight: 600; line-height: 1.25; white-space: nowrap; }
+.tipo-badge.sm .tipo-scala { height: 12px; gap: 1.5px; }
+.tipo-badge.sm .tipo-scala i { width: 3px; }
+.tipo-badge.sm .tipo-scala i:nth-child(1) { height: 5px; } .tipo-badge.sm .tipo-scala i:nth-child(2) { height: 8px; } .tipo-badge.sm .tipo-scala i:nth-child(3) { height: 11px; }
+.tipo-badge[data-tipo="none"] { color: var(--ink-2); background: transparent; border-style: dashed; border-color: var(--rule-strong); }

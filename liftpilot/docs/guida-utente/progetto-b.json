@@ -1,0 +1,1602 @@
+{
+  "key": "progetto-b",
+  "title": "Progetto: piani, locale macchina, funi, verifiche e simulazione",
+  "intro": [
+    "Questa parte della guida segue la pagina «Progetto» dall’alto verso il basso. A sinistra c’è il modulo che compili; a destra il software mostra ciò che ha ricavato dai tuoi dati, con il disegno e le verifiche in due schede. La simulazione 3D ha una pagina sua, «Simulazione», descritta dopo le verifiche. In fondo allo schermo c’è la barra di salvataggio.",
+    "Il Progetto disegna soltanto la geometria (vano, piani, locale, funi nel disegno). Portata, velocità, argano, funi e collaudo vengono dal «Calcolo argano» su cui si basa il disegno e si cambiano lì: nel modulo li vedi con l’etichetta «dal calcolo».",
+    "I valori che il software propone portano un’etichetta: «standard» (valore tipico del software, non inserito da te), «automatico» (ricavato dai tuoi dati), «dal calcolo» (preso dal calcolo argano), «dalla pianta» (misura impostata sulla pianta), «dal rilievo» (preso dal rilievo dell’impianto). Un campo necessario lasciato vuoto è evidenziato, e il software non calcola né disegna finché non lo compili.",
+    "Dopo il salvataggio trovi il progetto nella pagina «Progetto dell’impianto» (riepilogo e verifiche, in sola lettura), i suoi documenti nella pagina «Tavole e documenti» (descritta nel capitolo sui documenti) e, per il solo vano, nella pagina «Progetto del vano». Le pagine dei progetti salvati sono descritte in fondo.",
+    "Le norme sono citate solo con il numero del punto e il valore (per esempio UNI EN 81-20, 5.2.5.8): il testo delle norme non è riprodotto."
+  ],
+  "pages": [
+    {
+      "id": "progetto-piani",
+      "title": "Progetto — piani, locale macchina e funi",
+      "path": "/it/app/projects/‹id›/progetto",
+      "access": "Vedono e modificano la pagina il Titolare e, con la matrice predefinita dei diritti, il Capotecnico e il Progettista (permesso «Progetto: disegnare il vano o rilevare il locale macchina»). Tecnico e Commerciale non la aprono (vengono mandati alla pagina «senza permesso»). Il Titolare può cambiare la matrice in «Permessi». Un impianto archiviato non si apre. I prezzi nella distinta staffe si vedono solo con il diritto sui prezzi (predefinito: Titolare, Capotecnico, Commerciale).",
+      "reach": "Dalla pagina dell’impianto, passo «Progetto» (dopo il «Calcolo argano»). Il Progetto parte sull’ultimo calcolo argano dell’impianto. Per riaprire una versione salvata, o per disegnare su un altro calcolo, usa «Modifica il disegno» nella pagina del progetto salvato (o «Apri il Progetto sull’ultimo calcolo» quando c’è un calcolo più recente).",
+      "purpose": [
+        "Qui inserisci i dati verticali dell’impianto (fermate, fossa, testata, cabina, ammortizzatori), il locale macchina o il locale delle pulegge e le scelte sulle funi nel disegno. Il software ne ricava il progetto del vano, tutte le verifiche e la simulazione 3D.",
+        "Questa parte della pagina comprende le sezioni «Piani, fossa e testata», «Funi e rinvii» e il locale macchina che sta tra le due. La sezione «Vano, porte e contrappeso» e i riquadri in alto sono descritti nel capitolo precedente.",
+        "Un progetto nuovo parte vuoto: i dati del progetto non hanno valori finché non li inserisci, e a destra un riquadro elenca ciò che manca. Il modulo viene salvato come bozza mentre lo compili."
+      ],
+      "shots": [
+        {
+          "id": "progetto-piani-fermate",
+          "what": "Sezione «Piani, fossa e testata» aperta, con fossa, testata, numero di fermate e la tabella delle fermate compilata"
+        },
+        {
+          "id": "progetto-locale",
+          "what": "Riquadro «Locale macchina sopra il vano» aperto con basamento e putrelle HEB"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Piani, fossa e testata",
+          "intro": [
+            "Il riquadro «Dati verticali: fermate, fossa, testata, cabina, ammortizzatori» è aperto all’inizio. Prima inserisci fossa, testata e numero di fermate (la velocità è già fissata dal calcolo); compaiono allora la tabella delle fermate e, a progetto completo, tutti gli altri dati verticali con i valori tipici del software."
+          ],
+          "fields": [
+            {
+              "label": "Velocità nominale (m/s)",
+              "kind": "numero",
+              "unit": "m/s",
+              "values": "Nel Progetto è di sola lettura. Deve superare 0,15 m/s (UNI EN 81-20, 1.3 a) 2)); il progetto del vano accetta da 0,1 a 10 m/s ma il software non calcola un apparecchio a 0,15 m/s o meno.",
+              "default": "Dal calcolo argano (etichetta «dal calcolo»).",
+              "required": "no (non si inserisce qui)",
+              "help": [
+                "È la velocità nominale della cabina. Nel Progetto non la scrivi: viene dal calcolo argano e si cambia lì.",
+                "Serve per la corsa degli ammortizzatori, il salto della cabina in testata e la scelta dell’ammortizzatore standard (idraulico oltre 1 m/s)."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:99"
+            },
+            {
+              "label": "Fossa (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 100 a 10.000, passo 10; numero intero",
+              "default": "Vuoto fino all’inserimento (può avere l’etichetta «dal rilievo»).",
+              "required": "sì",
+              "help": [
+                "Profondità della fossa sotto il piano più basso, misurata dal pavimento del piano più basso al fondo della fossa.",
+                "Serve per le verifiche della fossa (spazio libero sotto la cabina, UNI EN 81-20, 5.2.5.8, almeno 0,50 m; rifugio in fossa), per la corsa degli ammortizzatori e per la sezione A-A."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:105"
+            },
+            {
+              "label": "Testata (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 1000 a 20.000, passo 10; numero intero",
+              "default": "Vuoto fino all’inserimento (può avere l’etichetta «dal rilievo»).",
+              "required": "sì",
+              "help": [
+                "Altezza libera sopra il piano più alto, dal pavimento dell’ultimo piano al soffitto del vano (sotto la soletta).",
+                "Serve per le verifiche della testata (salto della cabina, spazio di rifugio sul tetto di cabina, distanze dal soffitto) e per la sezione A-A."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:106"
+            },
+            {
+              "label": "Numero di fermate",
+              "kind": "numero",
+              "unit": null,
+              "values": "da 2 a 60; numero intero",
+              "default": "Vuoto in un progetto nuovo.",
+              "required": "sì",
+              "help": [
+                "Conta tutte le fermate, comprese quelle sotto il piano di ingresso. Il valore si applica quando esci dal campo o premi Invio; un valore non valido viene riportato al numero attuale.",
+                "La prima volta il software crea le righe numerate da 0 (con le quote e gli accessi ancora da inserire). In seguito, aumentando il numero si aggiungono fermate in cima; diminuendolo si tolgono quelle in cima."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:107"
+            },
+            {
+              "label": "Fermate, dalla più bassa (tabella)",
+              "kind": "tabella",
+              "unit": null,
+              "values": "una riga per fermata, dalla più bassa; da 2 a 60 righe",
+              "default": "Le righe nascono con il numero di fermate.",
+              "required": "sì (quota, accesso e fermata principale vanno inseriti)",
+              "help": [
+                "Le colonne sono quelle descritte nei campi qui sotto. Le quote e la fermata principale vengono evidenziate finché mancano.",
+                "La tabella compare solo dopo che hai inserito il numero di fermate."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:116"
+            },
+            {
+              "label": "Piano",
+              "kind": "testo",
+              "unit": null,
+              "values": "da 1 a 8 caratteri",
+              "default": "Numeri progressivi da 0; una fermata aggiunta in cima prosegue la numerazione dell’ultima.",
+              "required": "no",
+              "help": [
+                "È il nome che la fermata ha sul pianerottolo (per esempio -1, 0, 1, T, P). Si usa nelle tavole, nelle verifiche e nella simulazione («Chiama la cabina al piano»).",
+                "Cambiare il nome non cambia le quote."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:126"
+            },
+            {
+              "label": "Alla fermata sopra (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 20.000, passo 10. Il salvataggio rifiuta un interpiano inferiore a 1 mm; se le due fermate hanno una porta sullo stesso lato (A con A, B con B) l’interpiano deve essere almeno pari al campo «Altezza della porta (mm)» del vano, perché le porte di una stessa parete non si sovrappongano. Il valore 0 è ammesso solo nell’ultima riga, dove compare «—».",
+              "default": "Vuoto fino all’inserimento.",
+              "required": "sì, per ogni fermata tranne l’ultima",
+              "help": [
+                "Interpiano: distanza tra il pavimento di questa fermata e quello della fermata successiva verso l’alto. La somma degli interpiani è la corsa.",
+                "La corsa disegnata viene riportata al calcolo argano: se è diversa da quella del libretto vedi l’avviso nel riquadro «Il progetto completa il calcolo»."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:127"
+            },
+            {
+              "label": "Accesso",
+              "kind": "scelta",
+              "unit": null,
+              "values": "A; con due accessi (opposti o ad angolo) anche B e AB",
+              "default": "A. Con due accessi la scelta parte vuota («— scegli —») e va fatta per ogni fermata.",
+              "required": "sì, per ogni fermata quando il vano ha due accessi; con un solo accesso resta A",
+              "help": [
+                "Dice da quale ingresso è servita la fermata: A è l’ingresso principale, B il secondo ingresso, AB entrambi.",
+                "Serve per disegnare le porte di piano sul lato giusto e per le verifiche delle soglie e dei rifugi."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:134"
+            },
+            {
+              "label": "Principale",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "un solo piano tra quelli della tabella",
+              "default": "Vuoto fino alla scelta; se togli la fermata principale, devi sceglierla di nuovo.",
+              "required": "sì",
+              "help": [
+                "Seleziona il piano principale (i muri in testata si misurano rispetto ai muri di questo piano). La simulazione parte da qui.",
+                "È un pulsante di scelta: se ne può selezionare uno solo."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:141"
+            },
+            {
+              "label": "Altezza interna cabina (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 1000 a 5000, passo 10",
+              "default": "2150 mm, standard del software.",
+              "required": "no",
+              "help": [
+                "Altezza libera dentro la cabina (UNI EN 81-20, 5.4.1: almeno 2000 mm). Se la cabina è più bassa o più alta del normale, inserisci il valore del rilievo o della scheda del fornitore.",
+                "I campi di questo gruppo compaiono quando i dati del progetto sono tutti inseriti. Ognuno mostra l’etichetta «standard» finché ha il valore proposto."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:157"
+            },
+            {
+              "label": "Altezza esterna cabina (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 1000 a 6000, passo 10; non può essere inferiore all’altezza interna",
+              "default": "2200 mm, standard.",
+              "required": "no",
+              "help": [
+                "Altezza della cabina all’esterno, dal pavimento al tetto. Serve per la distanza dal soffitto e per il disegno in sezione."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:158"
+            },
+            {
+              "label": "Piattaforma (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 500, passo 10",
+              "default": "100 mm, standard.",
+              "required": "no",
+              "help": [
+                "Spessore del pavimento della cabina (piattaforma) sotto il piano di calpestio. Serve per la quota della cabina sulle soglie e per la distanza dalla fossa."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:159"
+            },
+            {
+              "label": "Ingombro massimo operatore (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 6000, passo 10",
+              "default": "2500 mm, standard.",
+              "required": "no",
+              "help": [
+                "Il punto più alto dell’operatore delle porte di cabina sopra il pavimento di cabina. Serve per lo spazio sul tetto di cabina e per la distanza dal soffitto (apparecchiature a 500 mm, UNI EN 81-20, 5.2.5.7.2)."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:160"
+            },
+            {
+              "label": "Arcata sopra il pavimento (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 1000 a 8000, passo 10",
+              "default": "2650 mm, standard.",
+              "required": "no",
+              "help": [
+                "Altezza del punto più alto dell’arcata (traversa superiore) sopra il pavimento di cabina. Serve per la testata e per la corsa guidata oltre il piano più alto."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:161"
+            },
+            {
+              "label": "Arcata sotto il pavimento (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 3000, passo 10",
+              "default": "330 mm, standard.",
+              "required": "no",
+              "help": [
+                "Distanza tra il pavimento di cabina e il punto più basso dell’arcata (piastra degli ammortizzatori). Serve per lo spazio libero sotto la cabina in fossa (UNI EN 81-20, 5.2.5.8.2: almeno 500 mm)."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:162"
+            },
+            {
+              "label": "Balaustra (mm, 0 = nessuna)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 2000, passo 10; 0 = nessuna balaustra",
+              "default": "700 mm, standard.",
+              "required": "no",
+              "help": [
+                "Altezza della balaustra sul tetto di cabina. Serve quando il bordo del tetto è a più di 300 mm dal muro (UNI EN 81-20, 5.4.7.2 b): 700 mm se il corrimano dista fino a 500 mm dal muro, 1100 mm oltre (5.4.7.4).",
+                "Inserisci 0 se la balaustra non c’è."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:163"
+            },
+            {
+              "label": "Altezza contrappeso (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 300 a 10.000, passo 10",
+              "default": "2500 mm, standard.",
+              "required": "no",
+              "help": [
+                "Altezza totale del telaio del contrappeso. Serve per la corsa guidata del contrappeso (UNI EN 81-20, 5.2.5.6.2) e per la fossa."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:164"
+            },
+            {
+              "label": "Ammortizzatori di cabina",
+              "kind": "scelta",
+              "unit": null,
+              "values": "a molla; tampone in poliuretano; idraulico",
+              "default": "Standard del software: a molla fino a 1 m/s, idraulico oltre (etichetta «standard» se non lo scegli).",
+              "required": "no",
+              "help": [
+                "Tipo degli ammortizzatori di cabina. Cambiando tipo il software propone un ammortizzatore tipico e alza o abbassa il supporto per lasciare l’extracorsa com’era.",
+                "Molle e poliuretano sono ammessi fino a 1 m/s (UNI EN 81-20, 5.8.2); l’idraulico a qualsiasi velocità."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:167"
+            },
+            {
+              "label": "Ammortizzatori di cabina (n.)",
+              "kind": "numero",
+              "unit": null,
+              "values": "da 1 a 4, passo 1",
+              "default": "2, standard.",
+              "required": "no",
+              "help": [
+                "Quanti ammortizzatori ci sono sotto la cabina. Serve per la disposizione in pianta e per il carico in fossa."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:168"
+            },
+            {
+              "label": "Altezza ammortizzatore cabina (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 50 a 3000, passo 10",
+              "default": "330 mm, standard (o l’ammortizzatore tipico del tipo scelto).",
+              "required": "no",
+              "help": [
+                "Altezza dell’ammortizzatore a riposo. Con il poliuretano la corsa è il 90 % dell’altezza. Inserisci il valore del catalogo del fornitore."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:169"
+            },
+            {
+              "label": "Corsa ammortizzatore cabina (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 10 a 2000, passo 5; con il poliuretano il campo è di sola lettura (90 % dell’altezza)",
+              "default": "135 mm, standard (o la corsa tipica del tipo scelto).",
+              "required": "no",
+              "help": [
+                "Corsa utile. La corsa minima dipende dalla velocità: per le molle 0,135·v² m e non meno di 65 mm, per l’idraulico 0,0674·v² m (UNI EN 81-20, 5.8.2). Il progetto verifica che la corsa sia sufficiente."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:170"
+            },
+            {
+              "label": "Supporto ammortizzatori cabina (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 3000, passo 10",
+              "default": "600 mm, standard.",
+              "required": "no",
+              "help": [
+                "Altezza del supporto (basamento o plinto) su cui poggiano gli ammortizzatori, dal fondo della fossa. Insieme all’altezza dell’ammortizzatore dà la quota a cui la cabina li incontra."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:171"
+            },
+            {
+              "label": "Ammortizzatore del contrappeso",
+              "kind": "scelta",
+              "unit": null,
+              "values": "a molla; tampone in poliuretano; idraulico",
+              "default": "Standard del software: a molla fino a 1 m/s, idraulico oltre.",
+              "required": "no",
+              "help": [
+                "Come per la cabina: tipo dell’ammortizzatore del contrappeso. Cambiando tipo si propone un ammortizzatore tipico e si adegua il supporto."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:172"
+            },
+            {
+              "label": "Altezza ammortizzatore contrappeso (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 50 a 3000, passo 10",
+              "default": "330 mm, standard (o l’ammortizzatore tipico del tipo scelto).",
+              "required": "no",
+              "help": [
+                "Altezza a riposo dell’ammortizzatore del contrappeso, dal catalogo del fornitore."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:173"
+            },
+            {
+              "label": "Corsa ammortizzatore contrappeso (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 10 a 2000, passo 5; con il poliuretano di sola lettura (90 % dell’altezza)",
+              "default": "135 mm, standard.",
+              "required": "no",
+              "help": [
+                "Corsa utile dell’ammortizzatore del contrappeso; stessa regola della cabina (UNI EN 81-20, 5.8.2)."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:174"
+            },
+            {
+              "label": "Supporto ammortizzatore contrappeso (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 3000, passo 10",
+              "default": "300 mm, standard.",
+              "required": "no",
+              "help": [
+                "Altezza del supporto dell’ammortizzatore del contrappeso dal fondo della fossa."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:175"
+            },
+            {
+              "label": "Extracorsa del contrappeso (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 2000, passo 10",
+              "default": "250 mm, standard.",
+              "required": "no",
+              "help": [
+                "Distanza tra la piastra del contrappeso e il suo ammortizzatore con la cabina al piano più alto. Serve per la verifica dell’extracorsa e della corsa guidata (UNI EN 81-20, 5.2.5.6.1 e 5.2.5.6.2)."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:176"
+            },
+            {
+              "label": "Protezione del contrappeso in fossa: altezza (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 300 a 6000, passo 10",
+              "default": "Calcolata dal software: 2000 mm sopra il fondo della fossa finché non inserisci un valore (UNI EN 81-20, 5.2.5.5.1: almeno 2000 mm).",
+              "required": "no",
+              "help": [
+                "Altezza della sommità della rete di protezione del contrappeso in fossa, dal fondo della fossa. Mostra «standard» finché non inserisci il tuo valore."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:177"
+            },
+            {
+              "label": "Superficie per stare sul tetto di cabina: larghezza (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 100 a 3000, passo 10",
+              "default": "Calcolata dal software: 400 mm.",
+              "required": "no",
+              "help": [
+                "Larghezza (trasversale alla cabina) del punto del tetto dove una persona può stare. Serve per lo spazio di rifugio sul tetto: area di almeno 0,12 m² con il lato minore oltre 250 mm (UNI EN 81-20, 5.2.5.7.3)."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:178"
+            },
+            {
+              "label": "Superficie per stare sul tetto di cabina: profondità (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 100 a 3000, passo 10",
+              "default": "Calcolata dal software: 300 mm.",
+              "required": "no",
+              "help": [
+                "Profondità (lungo la cabina) dello stesso punto del tetto. Vale la stessa regola dell’area di 0,12 m²."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:179"
+            },
+            {
+              "label": "Zona di sbloccaggio delle porte di piano, sopra e sotto il piano (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 50 a 350, passo 10",
+              "default": "Vuoto: il software usa il massimo ammesso (200 mm, UNI EN 81-20, 5.3.8.1) e la verifica della lamiera sotto la soglia di piano resta un avviso finché non inserisci il valore.",
+              "required": "no",
+              "help": [
+                "Distanza entro cui la porta di piano si sblocca sopra e sotto il piano, come la dichiara il fornitore delle porte. Svuota il campo per tornare al valore del software."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:181"
+            },
+            {
+              "label": "Spazio di rifugio sul tetto di cabina",
+              "kind": "scelta",
+              "unit": null,
+              "values": "tipo 1, in piedi; tipo 2, accucciato",
+              "default": "tipo 2, accucciato (standard).",
+              "required": "no",
+              "help": [
+                "Tipo di spazio di rifugio per chi lavora sul tetto. UNI EN 81-20, Tabella 3: tipo 1 alto 2000 mm, area 400 × 500 mm; tipo 2 alto 1000 mm, area 500 × 700 mm. Il progetto verifica la testata con il tipo scelto."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:189"
+            },
+            {
+              "label": "Spazio di rifugio in fossa",
+              "kind": "scelta",
+              "unit": null,
+              "values": "tipo 1, in piedi; tipo 2, accucciato; tipo 3, disteso",
+              "default": "tipo 3, disteso (standard).",
+              "required": "no",
+              "help": [
+                "Tipo di rifugio sul fondo della fossa. UNI EN 81-20, Tabella 3: tipo 1 alto 2000 mm, area 400 × 500 mm; tipo 2 alto 1000 mm, area 500 × 700 mm; tipo 3 alto 500 mm, area 700 × 1000 mm (il tipo 3 vale solo in fossa)."
+              ],
+              "src": "src/components/shaft/VerticalOptions.tsx:195"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Aggiungi fermata",
+              "help": "Aggiunge una fermata in cima (massimo 60). La quota tra la vecchia e la nuova fermata e l’accesso, se gli accessi sono due, restano da inserire.",
+              "src": "src/components/shaft/VerticalOptions.tsx:151"
+            },
+            {
+              "label": "Togli",
+              "help": "Toglie la fermata di quella riga (non si può scendere sotto 2). Le fermate sopra scendono; se togli una fermata intermedia, le due quote si sommano e vanno controllate; se togli la principale devi sceglierla di nuovo.",
+              "src": "src/components/shaft/VerticalOptions.tsx:145"
+            },
+            {
+              "label": "Valori tipici",
+              "help": "Riporta ai valori tipici del software tutti i dati dell’elenco (altezze, ammortizzatori, rifugi, protezioni). Restano velocità, fossa, testata, fermate e fermata principale.",
+              "src": "src/components/shaft/VerticalOptions.tsx:203"
+            }
+          ],
+          "notes": [
+            "I campi con l’etichetta «standard» hanno il valore proposto dal software: cambiali se il progetto è diverso. L’etichetta sparisce quando il valore è diverso da quello tipico.",
+            "Con i tamponi in poliuretano la corsa è il 90 % dell’altezza (completamente compresso); cambiando tipo si propone un ammortizzatore tipico e il supporto si alza o si abbassa per lasciare l’extracorsa com’era."
+          ],
+          "warnings": [
+            "La velocità nominale deve superare 0,15 m/s: a 0,15 m/s o meno il software non calcola e il salvataggio è rifiutato.",
+            "«Togli» una fermata intermedia somma i due interpiani, che restano da controllare; togliendo la fermata principale devi sceglierla di nuovo."
+          ]
+        },
+        {
+          "title": "Locale macchina sopra il vano",
+          "intro": [
+            "Il riquadro compare con la macchina in alto (disposizione «In alto, tiro diretto» o «In alto, con rinvio» del calcolo). Si apre da solo quando ci sono misure da inserire.",
+            "Con la macchina accanto al vano (disposizione «In basso, rinvii in testata») il riquadro non compare, tranne quando lo schema delle funi è «Locale pulegge sopra il vano» (vedi la sezione «Funi e rinvii»): allora si chiama «Locale delle pulegge sopra il vano»."
+          ],
+          "fields": [
+            {
+              "label": "Il progetto ha il locale macchina",
+              "kind": "casella",
+              "unit": null,
+              "values": "attiva / non attiva",
+              "default": "Non attiva in un progetto nuovo.",
+              "required": "no",
+              "help": [
+                "Attivala se sopra il vano c’è un locale macchina da disegnare e verificare (pianta, sezione B-B, altezza, area libera davanti al quadro, porta, putrelle). Attivandola compaiono i campi del locale, tutti da inserire tranne la posizione del quadro quando la sceglie il software.",
+                "Questa casella non esiste nel locale delle pulegge: lì il locale c’è sempre."
+              ],
+              "src": "src/components/shaft/RoomOptions.tsx:268"
+            },
+            {
+              "label": "Larghezza interna (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 1000 a 20.000, passo 10",
+              "default": "Vuoto fino all’inserimento.",
+              "required": "sì, quando il locale c’è",
+              "help": [
+                "Larghezza libera del locale macchina in pianta (lato porte del vano). Si misura tra le pareti finite, non al grezzo."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:171"
+            },
+            {
+              "label": "Profondità interna (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 1000 a 20.000, passo 10",
+              "default": "Vuoto fino all’inserimento.",
+              "required": "sì, quando il locale c’è",
+              "help": [
+                "Profondità libera del locale in pianta, misurata nell’altra direzione."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:172"
+            },
+            {
+              "label": "Vano dalla parete sinistra del locale (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 20.000, passo 10",
+              "default": "Vuoto fino all’inserimento.",
+              "required": "sì, quando il locale c’è",
+              "help": [
+                "Distanza dalla parete sinistra del locale all’angolo del vano dal lato dell’ingresso principale. Posiziona il vano nel locale."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:173"
+            },
+            {
+              "label": "Vano dalla parete anteriore del locale (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 20.000, passo 10",
+              "default": "Vuoto fino all’inserimento.",
+              "required": "sì, quando il locale c’è",
+              "help": [
+                "Distanza dalla parete anteriore del locale allo stesso angolo del vano."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:174"
+            },
+            {
+              "label": "Altezza libera (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 1500 a 10.000, passo 10",
+              "default": "Vuoto fino all’inserimento.",
+              "required": "sì, quando il locale c’è",
+              "help": [
+                "Altezza libera sotto il soffitto (nel punto più basso se il tetto è inclinato). Nel locale macchina serve almeno 2100 mm nelle zone di lavoro (UNI EN 81-20, 5.2.6.3.2.1). Nel locale delle pulegge: almeno 1500 mm."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:175"
+            },
+            {
+              "label": "Altezza al colmo (mm, 0 = tetto piano)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 15.000, passo 10; 0 o vuoto = tetto piano",
+              "default": "0 (tetto piano).",
+              "required": "no",
+              "help": [
+                "Altezza sotto il colmo se il tetto è a falde. Con 0 il locale si disegna e si verifica con soffitto piano."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:176"
+            },
+            {
+              "label": "Soletta sul vano (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 100 a 1000, passo 10",
+              "default": "Vuoto fino all’inserimento.",
+              "required": "sì, quando il locale c’è",
+              "help": [
+                "Spessore della soletta tra il locale e il vano. Serve per l’altezza dell’asse della puleggia, i fori per le funi e gli appoggi del basamento."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:177"
+            },
+            {
+              "label": "Parete della porta",
+              "kind": "scelta",
+              "unit": null,
+              "values": "anteriore; posteriore; sinistra; destra",
+              "default": "Vuoto («— scegli —») fino alla scelta.",
+              "required": "sì, quando il locale c’è",
+              "help": [
+                "Parete del locale in cui si apre la porta di accesso."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:180"
+            },
+            {
+              "label": "Porta dall’angolo (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 20.000, passo 10",
+              "default": "Vuoto fino all’inserimento.",
+              "required": "sì, quando il locale c’è",
+              "help": [
+                "Distanza del montante sinistro della porta dall’angolo della parete scelta. Serve a verificare il percorso di almeno 500 mm tra la porta e le aree libere (UNI EN 81-20, 5.2.6.3.2.2)."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:181"
+            },
+            {
+              "label": "Larghezza porta (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 500 a 3000, passo 10",
+              "default": "Vuoto fino all’inserimento.",
+              "required": "sì, quando il locale c’è",
+              "help": [
+                "Larghezza libera della porta. Il locale macchina e il locale delle pulegge richiedono almeno 600 mm."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:182"
+            },
+            {
+              "label": "Altezza porta (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 1400 a 3000, passo 10",
+              "default": "Vuoto fino all’inserimento.",
+              "required": "sì, quando il locale c’è",
+              "help": [
+                "Altezza libera della porta. Il locale macchina richiede almeno 2000 mm (UNI EN 81-20, 5.2.3); il locale delle pulegge almeno 1400 mm."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:183"
+            },
+            {
+              "label": "Posizione del quadro dal software",
+              "kind": "casella",
+              "unit": null,
+              "values": "attiva / non attiva",
+              "default": "Attiva (il software sceglie la parete e la posizione).",
+              "required": "no",
+              "help": [
+                "Attiva: il software mette il quadro contro una parete, fuori dall’ingombro di argano, limitatore e interruttore generale, con la superficie libera davanti (UNI EN 81-20, 5.2.6.3.2.1: 0,70 × 0,50 m) e un percorso di almeno 500 mm dalla porta (5.2.6.3.2.2), il più vicino possibile alla porta. Parete e posizione compaiono con l’etichetta «automatico».",
+                "Se sposti il quadro sul disegno, o se disattivi la casella, la posizione diventa un valore inserito da te e resta dov’era. Non compare nel locale delle pulegge."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:185"
+            },
+            {
+              "label": "Parete del quadro",
+              "kind": "scelta",
+              "unit": null,
+              "values": "anteriore; posteriore; sinistra; destra. Con la posizione automatica è mostrata come valore «automatico», non modificabile.",
+              "default": "Vuoto in un locale nuovo; con la casella attiva, scelta dal software.",
+              "required": "sì, quando la posizione non è del software",
+              "help": [
+                "Parete contro cui sta il quadro di manovra. Non compare nel locale delle pulegge."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:193"
+            },
+            {
+              "label": "Quadro dall’angolo (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 20.000, passo 10. Con la posizione automatica è mostrato come valore «automatico».",
+              "default": "Vuoto in un locale nuovo; con la casella attiva, scelto dal software.",
+              "required": "sì, quando la posizione non è del software",
+              "help": [
+                "Distanza del quadro dall’angolo della parete scelta."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:194"
+            },
+            {
+              "label": "Larghezza quadro (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 200 a 3000, passo 10",
+              "default": "Vuoto fino all’inserimento.",
+              "required": "sì, quando il locale c’è",
+              "help": [
+                "Larghezza del quadro dal catalogo del fornitore. Serve per l’ingombro e per l’area libera davanti."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:195"
+            },
+            {
+              "label": "Profondità quadro (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 100 a 1000, passo 10",
+              "default": "Vuoto fino all’inserimento.",
+              "required": "sì, quando il locale c’è",
+              "help": [
+                "Profondità del quadro. Si somma allo spazio libero davanti (UNI EN 81-20, 5.2.6.3.2.1)."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:196"
+            },
+            {
+              "label": "Altezza quadro (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 500 a 3000, passo 10",
+              "default": "Vuoto fino all’inserimento.",
+              "required": "sì, quando il locale c’è",
+              "help": [
+                "Altezza del quadro dal pavimento. Serve al disegno in sezione e al 3D."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:197"
+            },
+            {
+              "label": "Basamento",
+              "kind": "scelta",
+              "unit": null,
+              "values": "spessori di livellamento; telaio di profilati; putrelle da muro a muro; piastre d’acciaio; plinto in calcestruzzo; telaio con rinvio",
+              "default": "Spessori di livellamento; telaio con rinvio quando la macchina ha una puleggia di rinvio (nessuna scelta salvata).",
+              "required": "no",
+              "help": [
+                "Su che cosa poggia l’argano. Un nuovo tipo parte dal profilato, dall’altezza e dalla lunghezza tipici. Il rinvio sta sempre nel locale, mai nel vano.",
+                "Il campo compare sotto il titolo «Basamento dell’argano», quando i dati del progetto sono completi e la macchina è definita. L’altezza del basamento determina la quota dell’asse della puleggia: il calcolo, i disegni del locale e il 3D la seguono."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:122"
+            },
+            {
+              "label": "Profilato",
+              "kind": "scelta",
+              "unit": null,
+              "values": "elenco dei profilati dell’archivio (IPE, HEA, HEB, UPN …)",
+              "default": "UPN 200 per il telaio di profilati, IPE 200 per le putrelle.",
+              "required": "quando compare",
+              "help": [
+                "Compare solo con «telaio di profilati» o «putrelle da muro a muro». Cambiando profilato l’altezza del basamento torna a quella del profilato."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:133"
+            },
+            {
+              "label": "Altezza del basamento sul pavimento (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 0 a 3000, passo 5. Non compare con il telaio con rinvio del costruttore. Con profilato e putrelle non può essere inferiore all’altezza del profilato.",
+              "default": "Calcolata: con gli spessori, l’altezza che porta l’asse della puleggia alla quota scelta dal software (0,9·D sul pavimento); con il profilato, l’altezza del profilato; con le piastre, 20 mm; con il plinto, 250 mm.",
+              "required": "no",
+              "help": [
+                "Quota della faccia superiore del basamento sul pavimento del locale, dove poggiano gli appoggi dell’argano. Con le putrelle puoi alzarle dal pavimento (argano non a terra): vengono verificate a tensione e freccia."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:144"
+            },
+            {
+              "label": "Lunghezza lungo la calata (mm)",
+              "kind": "numero",
+              "unit": "mm",
+              "values": "da 300 a 5000, passo 5. Compare solo con telaio di profilati e plinto.",
+              "default": "Calcolata: lunghezza del basamento dell’argano più lo sbalzo a ogni estremità.",
+              "required": "no",
+              "help": [
+                "Lunghezza del telaio o del plinto nella direzione delle calate delle funi. Il software la riduce per tenerlo lontano dai muri del locale; se la inserisci tu, resta com’è."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:146"
+            },
+            {
+              "label": "Motore dell’argano",
+              "kind": "scelta",
+              "unit": null,
+              "values": "automatico (verso il contrappeso o verso la cabina, come lo ha messo il software); verso il contrappeso; verso la cabina",
+              "default": "Automatico: motore verso il contrappeso; il software gira l’argano di 180° attorno all’asse della puleggia quando solo così argano e basamento stanno nel locale. Sul telaio con rinvio del costruttore resta come lo monta il costruttore.",
+              "required": "no",
+              "help": [
+                "Da che parte sta il motore lungo le calate. Scegli un lato solo se il rilievo lo impone. Compare dopo il basamento (e anche per un argano esistente che resta).",
+                "In modalità «Semplice» il campo non compare e il motore resta automatico; lo vedi in «Esperto»."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:148"
+            },
+            {
+              "label": "Putrelle HEB sui muri del vano sotto il basamento (soletta senza verifica strutturale)",
+              "kind": "casella",
+              "unit": null,
+              "values": "attiva / non attiva",
+              "default": "Non attiva.",
+              "required": "no",
+              "help": [
+                "Attivala se la soletta tra locale e vano non ha una verifica strutturale: due putrelle HEB poggiano sui muri del vano sotto i piedi del basamento (200 mm in ogni muro, mai oltre la faccia esterna).",
+                "Non vale con putrelle da muro a muro o plinto: compare l’avviso «Con questo basamento … le putrelle HEB sui muri del vano non si usano». Finché la macchina non è definita compare «Le putrelle si scelgono quando la macchina è definita»."
+              ],
+              "src": "src/components/shaft/HebFields.tsx:244"
+            },
+            {
+              "label": "Scelta delle putrelle HEB (elenco di opzioni)",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "«Automatica — le più corte che passano: …» (o «nessuna passa, la più vicina»), poi una riga per ogni combinazione profilo e direzione (HEB 120, 140, 160, lungo la larghezza o la profondità del vano), con la lunghezza e l’esito «passa» / «non passa: …»",
+              "default": "Automatica.",
+              "required": "no",
+              "help": [
+                "Le due putrelle poggiano sui muri opposti del vano, 200 mm in ogni muro (UNI/NTC citate nel registro: tensione ≤ fyk/γM0, freccia ≤ 1/1500 della luce libera). Il software prende le più corte che passano le verifiche (tensione, freccia, basamento sulle putrelle, funi a 50 mm dalle putrelle, muri), poi le più leggere. Se vuoi scegliere a mano, seleziona una riga.",
+                "I motivi di «non passa» sono: tensione, freccia, basamento fuori dalle putrelle, funi troppo vicine, putrella sul bordo di un foro, putrella fuori dai muri o muro più sottile dell’appoggio. L’altezza della putrella alza l’argano e il calcolo, i disegni e il 3D la seguono."
+              ],
+              "src": "src/components/shaft/HebFields.tsx:249"
+            },
+            {
+              "label": "Com’è il basamento esistente (facoltativo)",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Non indicato; Spessori; Telaio; Putrelle; Plinto; Non chiaro",
+              "default": "Non indicato.",
+              "required": "no",
+              "help": [
+                "Compare solo quando l’argano esistente resta (titolo «Basamento dell’argano esistente»). Descrive a parole il basamento rilevato: il software non lo verifica, non propone nuovi appoggi, putrelle sui muri del vano o gancio, e disegna l’argano dove la L0 del calcolo porta l’asse della puleggia."
+              ],
+              "src": "src/components/shaft/RoomFields.tsx:113"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "Con la macchina in basso e lo schema «Locale pulegge sopra il vano» il riquadro si intitola «Locale delle pulegge sopra il vano» e mostra l’etichetta «standard» se il progetto non ha un locale proprio: viene disegnato e verificato come il locale standard del software (grande quanto il vano, altezza e porta standard). Inserendo una misura il locale diventa quello del progetto.",
+            "In quel locale non ci sono argano né quadro: servono solo dimensioni, altezza, soletta e porta. Si verificano l’altezza libera (almeno 1500 mm), la porta (almeno 600 × 1400 mm) e lo spazio sopra le pulegge senza protezione (almeno 300 mm)."
+          ]
+        },
+        {
+          "title": "Funi e rinvii",
+          "intro": [
+            "Il riquadro «Funi nel disegno» è aperto. Mostra i valori del calcolo argano che il disegno completa. Ogni valore ha un interruttore: acceso, vale il valore del disegno; spento, resta quello del calcolo argano come salvato, che si cambia nel calcolo.",
+            "Gli avvisi rossi spiegano cosa non torna e, dove il calcolo risolve il problema, compare «Porta nel calcolo», che apre il calcolo con i valori del disegno (se hai il diritto di fare i calcoli)."
+          ],
+          "fields": [
+            {
+              "label": "Schema delle funi (macchina in basso)",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Rinvii in testata, macchina accanto al vano; Locale pulegge sopra il vano, macchina accanto al vano; Macchina sotto il vano",
+              "default": "Vuoto («— scegli —») fino alla scelta.",
+              "required": "sì, quando il calcolo ha la macchina in basso",
+              "help": [
+                "Compare solo se nel calcolo argano la posizione della macchina è «In basso, rinvii in testata». Con «Locale pulegge sopra il vano» il software aggiunge il locale delle pulegge (da compilare). Con «Macchina sotto il vano» serve lo spazio accessibile sotto il vano con paracadute sul contrappeso (UNI EN 81-20, 5.2.5.4: fondo della fossa per almeno 5000 N/m²).",
+                "Sotto il campo compaiono il numero dei rinvii in alto e, quando i rami non passano dietro il contrappeso, lo spazio da portare tra contrappeso e parete."
+              ],
+              "src": "src/components/lift/ProgettoFuni.tsx:379"
+            },
+            {
+              "label": "Fune oltre la corsa dai dati del vano",
+              "kind": "interruttore",
+              "unit": null,
+              "values": "acceso / spento",
+              "default": "Acceso.",
+              "required": "no",
+              "help": [
+                "Acceso: la fune oltre la corsa (L0) viene dal disegno (testata e altezza del locale). Spento: vale quella del calcolo. Con l’argano esistente che resta l’interruttore è bloccato e L0 è quella del calcolo (si cambia in «Calcolo argano»)."
+              ],
+              "src": "src/components/lift/ProgettoFuni.tsx:402"
+            },
+            {
+              "label": "Fune oltre la corsa, per lato",
+              "kind": "numero",
+              "unit": "m",
+              "values": "sola lettura, 2 decimali; etichetta «automatico» o «dal calcolo»",
+              "default": "Dal disegno se l’interruttore è acceso.",
+              "required": "no",
+              "help": [
+                "È la lunghezza di fune oltre la corsa, per lato, che entra nel calcolo e nella lista delle funi per l’ordine.",
+                "Se non torna con il progetto del vano compare l’avviso con i due valori: correggila nel calcolo o lascia che la prenda il software. Con l’argano esistente, se l’asse starebbe sotto il pavimento del locale, controlla L0 nel calcolo, la testata o la soletta."
+              ],
+              "src": "src/components/lift/ProgettoFuni.tsx:403"
+            },
+            {
+              "label": "Distanza e altezza del rinvio dalla pianta e dal telaio",
+              "kind": "interruttore",
+              "unit": null,
+              "values": "acceso / spento",
+              "default": "In un disegno nuovo: acceso se il calcolo argano è «Impianto nuovo», spento per la «Sostituzione dell’argano» (che tiene la misura del calcolo). Un progetto riaperto riprende l’impostazione salvata.",
+              "required": "no",
+              "help": [
+                "Compare solo con la disposizione «In alto, con rinvio». Acceso: dx e h vengono dalla pianta e dal telaio dell’argano. Spento: valgono quelli del calcolo; h può essere impostata sulla pianta. Con l’argano esistente che resta è bloccato."
+              ],
+              "src": "src/components/lift/ProgettoFuni.tsx:410"
+            },
+            {
+              "label": "Rinvio: distanza orizzontale dal centro puleggia",
+              "kind": "numero",
+              "unit": "m",
+              "values": "sola lettura, 3 decimali; etichetta «automatico» o «dal calcolo»",
+              "default": "Dalla pianta con l’interruttore acceso.",
+              "required": "no",
+              "help": [
+                "Distanza orizzontale tra il centro della puleggia di trazione e quello di rinvio. Se con la pianta la fune non scende dove sta il contrappeso, misura dx (e h) sull’impianto e inseriscili nel calcolo, oppure rivedi la disposizione."
+              ],
+              "src": "src/components/lift/ProgettoFuni.tsx:411"
+            },
+            {
+              "label": "Rinvio: distanza verticale dal centro puleggia",
+              "kind": "numero",
+              "unit": "m",
+              "values": "sola lettura, 3 decimali; etichetta «automatico», «dalla pianta» o «dal calcolo»",
+              "default": "Dal telaio con rinvio se la macchina lo ha e l’interruttore è acceso; «dalla pianta» se hai impostato h sulla pianta con l’interruttore spento.",
+              "required": "no",
+              "help": [
+                "Altezza del rinvio sotto la puleggia di trazione. Il rinvio sta nel telaio dell’argano, mai nel vano: se scende sotto il pavimento del locale o sale dentro l’argano, compare l’avviso con la correzione (riduci o aumenta h, alza il telaio o lascia fare al software).",
+                "L’altezza massima impostabile sulla pianta è 3000 mm."
+              ],
+              "src": "src/components/lift/ProgettoFuni.tsx:419"
+            },
+            {
+              "label": "Altezza delle pulegge dai dati del vano",
+              "kind": "interruttore",
+              "unit": null,
+              "values": "acceso / spento",
+              "default": "Acceso.",
+              "required": "no",
+              "help": [
+                "Compare solo con la macchina in basso. Acceso: l’altezza fino alle pulegge in alto viene dal progetto del vano. Spento: vale quella del calcolo."
+              ],
+              "src": "src/components/lift/ProgettoFuni.tsx:426"
+            },
+            {
+              "label": "Distanza verticale testata – puleggia di frizione",
+              "kind": "numero",
+              "unit": "m",
+              "values": "sola lettura, 2 decimali; etichetta «automatico» o «dal calcolo»",
+              "default": "Dal disegno se l’interruttore è acceso.",
+              "required": "no",
+              "help": [
+                "Compare solo con la macchina in basso. Se non torna con il progetto del vano con questo schema delle funi compare l’avviso: correggila o lascia che la prenda il software."
+              ],
+              "src": "src/components/lift/ProgettoFuni.tsx:427"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Porta nel calcolo",
+              "help": "Salva la bozza e apre il calcolo argano con i valori del disegno (calata, rinvio, L0). Compare accanto a un avviso che il calcolo può risolvere, solo per chi ha il diritto di fare i calcoli.",
+              "src": "src/components/lift/ProgettoFuni.tsx:344"
+            },
+            {
+              "label": "Calata a ‹Do› mm (calate esistenti) / Calata a ‹Do› mm (puleggia dell’argano esistente)",
+              "help": "Porta la quota «Calata» della pianta alla misura delle calate esistenti o della puleggia dell’argano che resta, in un clic. Compare quando la calata in pianta non coincide.",
+              "src": "src/components/lift/ProgettoFuni.tsx:324"
+            }
+          ],
+          "notes": [
+            "Senza rinvio la calata (interasse delle funi) è uguale al diametro della puleggia; in pianta si cambia la quota «Calata» o si sceglie «In alto, con rinvio».",
+            "Con la macchina in basso e un rinvio appeso sotto la soletta, lo spazio di rifugio sul tetto può non bastare: l’avviso dice a quanto portare la testata."
+          ],
+          "warnings": [
+            "Con le calate esistenti la quota «Calata» della pianta è fissata dalle calate esistenti: se non coincide, o se cabina e contrappeso non stanno al loro posto, il salvataggio è bloccato finché non la correggi (o usi «Porta nel calcolo»).",
+            "Con il rinvio sotto il pavimento del locale o dentro l’argano, e con L0 o l’altezza delle pulegge che non tornano con il vano, compaiono avvisi rossi che bloccano il salvataggio."
+          ]
+        }
+      ],
+      "tips": [
+        "Compila nell’ordine dello schermo: vano, piani, locale, funi. I campi evidenziati sono quelli che mancano; il riquadro a destra li elenca.",
+        "Misura fossa e testata sul posto e annota la quota di ogni interpiano: la corsa totale deve tornare con il libretto.",
+        "Se non hai il dato di un campo «standard», lascia il valore del software e annota di verificarlo con il fornitore."
+      ]
+    },
+    {
+      "id": "progetto-verifiche",
+      "title": "Progetto — disegno e verifiche",
+      "path": "/it/app/projects/‹id›/progetto",
+      "access": "Stessa pagina di prima: la vedono e la modificano Titolare, Capotecnico e Progettista (permesso «Progetto: disegnare il vano o rilevare il locale macchina»). Possono salvare il Titolare e i ruoli con quel diritto.",
+      "reach": "È la parte destra della pagina «Progetto» e la barra in fondo allo schermo; i riquadri compaiono appena i dati del progetto sono completi.",
+      "purpose": [
+        "A destra il software mostra, in tempo reale, ciò che ha ricavato dai tuoi dati: in alto i valori calcolati, poi due schede, «Disegno» (le piante e le sezioni con le quote da cambiare, descritte nel capitolo precedente) e «Verifiche». Il riquadro «Dati del progetto da inserire» e il confronto «Il progetto completa il calcolo» sono descritti nel capitolo precedente.",
+        "La simulazione 3D è nella pagina «Simulazione» (descritta qui sotto); la distinta delle staffe Panev e il costo nella pagina «Tavole e documenti».",
+        "In fondo alla pagina c’è la barra di salvataggio."
+      ],
+      "shots": [
+        {
+          "id": "progetto-verifiche",
+          "what": "La scheda «Verifiche» del Progetto: in alto le verifiche da guardare, con «▶ Simula», sotto le altre verifiche richiuse"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Valori calcolati",
+          "intro": [
+            "Una striscia riepiloga cabina, portata, masse, corsa, velocità e macchina, con il verdetto del collaudo."
+          ],
+          "fields": [
+            {
+              "label": "Verdetto (OK / Avviso / Non passa)",
+              "kind": "testo",
+              "unit": null,
+              "values": "OK; Avviso; Non passa",
+              "default": "Calcolato.",
+              "required": "no",
+              "help": [
+                "Riassume tutte le verifiche che l’intervento tocca, secondo ogni norma del collaudo. Sotto leggi quante non passano («# verifiche non passano»), quanti avvisi («Nessuna verifica fallita, # avvisi») oppure «Tutte le verifiche passano».",
+                "Se alcune verifiche riguardano parti che restano come sono, compare «# verifiche su parti esistenti, fuori dall’esito» e, se una non passa, l’invito a valutarla con il tecnico."
+              ],
+              "src": "src/components/lift/LiftFacts.tsx:98"
+            },
+            {
+              "label": "Sigle delle norme accanto al verdetto (senza titolo a schermo)",
+              "kind": "testo",
+              "unit": null,
+              "values": "una sigla per ogni norma del collaudo; «arcata esistente» per il rifacimento",
+              "default": "Calcolato.",
+              "required": "no",
+              "help": [
+                "Ogni sigla ha il colore del proprio esito; al passaggio del mouse mostra la norma e il numero di verifiche calcolate."
+              ],
+              "src": "src/components/lift/LiftFacts.tsx:102"
+            },
+            {
+              "label": "Cabina",
+              "kind": "testo",
+              "unit": "mm",
+              "values": "larghezza × profondità interna",
+              "default": "Calcolata dal software per il vano e la portata.",
+              "required": "no",
+              "help": [
+                "Dimensioni interne della cabina ricavate dal vano e dalla portata."
+              ],
+              "src": "src/components/lift/LiftFacts.tsx:109"
+            },
+            {
+              "label": "Portata",
+              "kind": "testo",
+              "unit": "kg",
+              "values": "portata in kg e numero di persone",
+              "default": "Dal calcolo.",
+              "required": "no",
+              "help": [
+                "La portata del calcolo con le persone corrispondenti. L’etichetta indica l’origine."
+              ],
+              "src": "src/components/lift/LiftFacts.tsx:110"
+            },
+            {
+              "label": "Massa della cabina",
+              "kind": "testo",
+              "unit": "kg",
+              "values": "valore in kg con l’etichetta «stimato» o «automatico»",
+              "default": "Dal calcolo; «stimato» se è la stima di partenza (1,1·Q).",
+              "required": "no",
+              "help": [
+                "Massa della cabina vuota. Se è stimata, sostituiscila con la massa del libretto o della prova di bilanciamento nel calcolo."
+              ],
+              "src": "src/components/lift/LiftFacts.tsx:111"
+            },
+            {
+              "label": "Contrappeso",
+              "kind": "testo",
+              "unit": "kg",
+              "values": "massa in kg",
+              "default": "Calcolata.",
+              "required": "no",
+              "help": [
+                "Massa del contrappeso ricavata dal calcolo."
+              ],
+              "src": "src/components/lift/LiftFacts.tsx:112"
+            },
+            {
+              "label": "Corsa e velocità",
+              "kind": "testo",
+              "unit": "m e m/s",
+              "values": "corsa (2 decimali) · velocità (2 decimali)",
+              "default": "Corsa dal disegno; velocità dal calcolo.",
+              "required": "no",
+              "help": [
+                "La corsa è la somma degli interpiani; la velocità è quella nominale del calcolo."
+              ],
+              "src": "src/components/lift/LiftFacts.tsx:113"
+            },
+            {
+              "label": "Macchina",
+              "kind": "testo",
+              "unit": null,
+              "values": "marca e modello (se di catalogo), gola, diametro, funi, rapporto, potenza, freni",
+              "default": "Dal calcolo; etichetta «automatico» se proposta dal software.",
+              "required": "no",
+              "help": [
+                "La macchina verificata nel calcolo con i suoi dati principali. Si cambia nel calcolo argano."
+              ],
+              "src": "src/components/lift/LiftFacts.tsx:114"
+            }
+          ],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Verifiche",
+          "intro": [
+            "Sopra il disegno ci sono due schede: «Disegno» e «Verifiche». Sulla scheda «Verifiche» un numero dice quante verifiche non passano (in rosso); se nessuna non passa, quante hanno «Attenzione» (in ambra); se è tutto in ordine compare «✓». Il numero si aggiorna mentre scrivi.",
+            "Nella scheda trovi prima le verifiche da guardare: quelle che non passano e quelle con «Attenzione» che contano per il collaudo. Se non ce ne sono leggi «Nessuna verifica non superata e nessuna con «Attenzione».». Sotto, richiuse, «Altre ‹n› verifiche: superate, informative o su parti esistenti»: un clic le apre. In modalità «Esperto» sono già aperte.",
+            "Sopra il titolo è indicata la norma del collaudo. Le verifiche sono quelle della macchina (trazione, funi, azionamento, freno, soccorso) e quelle del vano (pianta, sezione, locale macchina, putrelle sotto la macchina)."
+          ],
+          "fields": [
+            {
+              "label": "Verifica / Valore / Limite / Esito",
+              "kind": "tabella",
+              "unit": "secondo la verifica",
+              "values": "Limite con ≤ o ≥; Esito: OK, Attenzione, Non soddisfatta, Info (Esistente per le parti che restano)",
+              "default": "Calcolata.",
+              "required": "no",
+              "help": [
+                "Per ogni riga leggi il valore calcolato e il limite della norma (con il punto citato nella relazione di calcolo, non qui).",
+                "In un intervento UNI 10411 una verifica su una parte che resta com’è mostra «Esistente» e, accanto, il risultato del calcolo: non entra nell’esito del collaudo e sta tra le altre verifiche."
+              ],
+              "src": "src/components/lift/LiftChecks.tsx:97-102"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Disegno · Verifiche",
+              "help": "Le due schede sopra i risultati: mostrano il disegno o le verifiche. Anche il passo «Disegno e verifiche» della barra dei passi apre la scheda «Verifiche».",
+              "src": "src/components/lift/ProgettoRisultati.tsx:36"
+            },
+            {
+              "label": "▶ Simula",
+              "help": "Dove la simulazione può riprodurre una verifica (trazione, freno, ammortizzatori, rifugi, carico al 125 %, blocco): salva subito la bozza e apre la pagina «Simulazione» sulla bozza del progetto, con quella prova già avviata nella vista adatta.",
+              "src": "src/components/lift/LiftChecks.tsx:48; src/components/lift/ProgettoWorkspace.tsx:149"
+            }
+          ],
+          "notes": []
+        },
+        {
+          "title": "Barra di salvataggio",
+          "intro": [
+            "In fondo allo schermo. Il server ricompone il disegno sul calcolo argano, rifà tutti i calcoli e salva progetto del vano e calcolo insieme: non prende nulla di calcolato dal browser."
+          ],
+          "fields": [
+            {
+              "label": "Nome del progetto (facoltativo)",
+              "kind": "testo",
+              "unit": null,
+              "values": "fino a 120 caratteri",
+              "default": "Vuoto: la pagina del progetto usa il titolo «Progetto dell’impianto».",
+              "required": "no",
+              "help": [
+                "Un nome che ti aiuta a riconoscere la versione tra «Versioni salvate»."
+              ],
+              "src": "src/components/lift/ProgettoWorkspace.tsx:252"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Salva il progetto",
+              "help": "Salva una nuova versione immutabile. Il pulsante è attivo solo con i dati completi, a schermo aggiornato, senza voci da correggere e senza il tipo da rivedere. Durante il salvataggio dice «Salvataggio…». Al termine si apre la pagina «Progetto dell’impianto».",
+              "src": "src/components/lift/ProgettoWorkspace.tsx:253"
+            }
+          ],
+          "notes": [
+            "Messaggio a lato: con dati mancanti leggi «Manca # dato del progetto» (o «Mancano # dati»); con voci da correggere, «Da correggere per salvare:» con collegamenti ai campi; altrimenti «Il server ricompone il disegno…». Gli errori del server compaiono in rosso accanto al pulsante."
+          ],
+          "warnings": [
+            "Il salvataggio crea un record immutabile: salvare di nuovo crea una nuova versione, la precedente resta.",
+            "Il pulsante resta disattivato con dati mancanti, voci da correggere o tipo di intervento da rivedere («Solo argano» con corsa o velocità diverse dal libretto): porta i valori nel calcolo."
+          ]
+        }
+      ],
+      "tips": [
+        "Usa «▶ Simula» sulle verifiche che non passano: vedere la prova in 3D chiarisce spesso cosa correggere. Dalla Simulazione torni al Progetto con «Modifica il progetto» o con la scheda «Progetto» della barra.",
+        "Prima di salvare controlla nel riquadro «Il progetto completa il calcolo» (capitolo precedente) che la corsa sia quella del libretto."
+      ]
+    },
+    {
+      "id": "simulazione",
+      "title": "Simulazione",
+      "path": "/it/app/projects/‹id›/simulazione",
+      "access": "La vedono tutti i ruoli che vedono gli impianti (permesso «Vedere gli impianti con calcoli, progetti e tavole»; con la matrice predefinita tutti). È di sola lettura: non salva nulla. «Modifica il progetto» e «Apri il progetto» compaiono a chi disegna il progetto (predefinito: Titolare, Capotecnico, Progettista) su un impianto non archiviato.",
+      "reach": "Dalla scheda «Simulazione» della barra dell’impianto; da «▶ Simula» su una verifica del Progetto o del progetto salvato (la pagina si apre con quella prova già avviata); dal pulsante «Simulazione» nella pagina di un progetto salvato.",
+      "purpose": [
+        "La scena 3D e i grafici dell’impianto, con le stesse forze delle verifiche: scegli uno scenario e avvialo. Servono a capire il comportamento dell’impianto, non sostituiscono le prove in sito.",
+        "Si simula un progetto salvato (l’ultimo, oppure quello da cui sei arrivato) o la bozza del Progetto, quando è completa. Il software ricalcola tutto con la versione attuale: la simulazione non legge valori calcolati e conservati."
+      ],
+      "shots": [
+        {
+          "id": "simulazione-pagina",
+          "what": "La pagina «Simulazione»: la barra dei passi, la scelta tra progetto salvato e bozza, i valori calcolati e l’inizio della scena 3D"
+        },
+        {
+          "id": "progetto-3d",
+          "what": "La scena 3D con la vista «Cabina», gli scenari con la loro riga di spiegazione e i grafici sotto"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Intestazione e cosa simulare",
+          "intro": [
+            "In cima trovi il percorso (Impianti › nome dell’impianto › Simulazione), la barra dei passi con la scheda «Simulazione» evidenziata, il titolo «Simulazione» e la frase «Il comportamento dell’impianto con le stesse forze delle verifiche: scegli uno scenario e avvialo.»",
+            "Sotto, la scelta «Cosa simulare»: «Progetto salvato · ‹nome› · ‹data›» e, se c’è, «Bozza del progetto · ‹data›». Quella che stai guardando è evidenziata; un clic sull’altra la apre. Senza progetto salvato la pagina mostra la bozza."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Modifica il progetto",
+              "help": "Apre il Progetto dell’impianto (con la sua bozza). Solo per chi disegna il progetto, su un impianto non archiviato.",
+              "src": "src/app/[locale]/app/projects/[id]/simulazione/page.tsx:54"
+            },
+            {
+              "label": "Progetto salvato · ‹nome› · ‹data› / Bozza del progetto · ‹data›",
+              "help": "Scelgono che cosa simulare: il progetto salvato (quello da cui sei arrivato, altrimenti l’ultimo) o la bozza del Progetto.",
+              "src": "src/app/[locale]/app/projects/[id]/simulazione/page.tsx:58-69"
+            }
+          ],
+          "notes": [
+            "Una bozza a cui mancano dati non si simula: al posto del collegamento leggi «Bozza del progetto: manca 1 dato» (o «mancano ‹n› dati»); una bozza su un Calcolo argano da aggiornare: «Bozza del progetto: il suo calcolo argano va aggiornato».",
+            "Un progetto salvato con una versione precedente del software si simula lo stesso, ricalcolato: compare «Questo progetto è stato salvato con una versione precedente del software: la simulazione lo ricalcola con quella attuale.»",
+            "Senza nulla da simulare compare «Niente da simulare per ora» con «La simulazione parte da un progetto del vano salvato, o da una bozza completa del progetto.» (o «La bozza del progetto non è ancora completa: finiscila nel Progetto.») e, per chi disegna il progetto, «Apri il progetto»."
+          ],
+          "warnings": []
+        },
+        {
+          "title": "Valori calcolati",
+          "intro": [
+            "La stessa striscia del Progetto: cabina, portata, masse, corsa, velocità e macchina, con il verdetto del collaudo e le sigle delle norme (descritta nel capitolo «Progetto — disegno e verifiche»)."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Simulazione 3D",
+          "intro": [
+            "La scena mostra vano, cabina, contrappeso, funi e macchina. Trascina per ruotare, tasto destro o due dita per spostare, rotella o pizzico per ingrandire; da tastiera frecce per spostare, Maiusc + frecce per ruotare, + e − per ingrandire o ridurre; doppio clic per tornare alla vista iniziale.",
+            "Se il dispositivo non supporta la grafica 3D compare «La vista 3D non è disponibile su questo dispositivo»: la simulazione continua nei grafici e nei valori. Il 3D si anima solo mentre qualcosa si muove."
+          ],
+          "fields": [
+            {
+              "label": "Inquadratura",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Cabina; Vano; Macchina; Fossa",
+              "default": "Cabina (per la frenata e il blocco cambia da sola in Macchina, per gli ammortizzatori in Fossa).",
+              "required": "no",
+              "help": [
+                "Sceglie dove guarda la telecamera. Premendo di nuovo la stessa inquadratura si torna alla vista iniziale."
+              ],
+              "src": "src/components/lift/LiftSimulator.tsx:175"
+            },
+            {
+              "label": "Spazi di rifugio",
+              "kind": "casella",
+              "unit": null,
+              "values": "attiva / non attiva",
+              "default": "Non attiva.",
+              "required": "no",
+              "help": [
+                "Mostra nel 3D gli spazi di rifugio sul tetto di cabina e in fossa."
+              ],
+              "src": "src/components/lift/LiftSimulator.tsx:176"
+            },
+            {
+              "label": "Schermo intero / Esci dallo schermo intero",
+              "kind": "interruttore",
+              "unit": null,
+              "values": "attivo / non attivo",
+              "default": "Non attivo.",
+              "required": "no",
+              "help": [
+                "Porta il simulatore a tutto schermo (o sulla finestra se il browser rifiuta). Esc lo chiude."
+              ],
+              "src": "src/components/lift/LiftSimulator.tsx:177"
+            },
+            {
+              "label": "Scenario",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Corsa; Frenata di emergenza; Carico al 125%; Cabina bloccata; Ammortizzatori",
+              "default": "Corsa dal piano principale all’ultimo, con la portata.",
+              "required": "no",
+              "help": [
+                "Ogni scenario porta sotto il nome una riga che dice cosa prova: «Corsa» — «Da un piano all’altro, con il carico che scegli»; «Frenata di emergenza» — «Arresto con il freno: le funi tengono?»; «Carico al 125%» — «1,25 volte la portata al piano: le funi tengono?»; «Cabina bloccata» — «Contrappeso sugli ammortizzatori: le funi devono slittare»; «Ammortizzatori» — «Urto sugli ammortizzatori a 1,15 volte la velocità».",
+                "Scegliendo uno scenario la simulazione riparte da sola con i parametri di partenza. Usa le stesse forze delle verifiche."
+              ],
+              "src": "src/components/lift/SimControls.tsx:254"
+            },
+            {
+              "label": "Chiama la cabina al piano",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "un pulsante per ogni piano",
+              "default": "L’ultimo piano.",
+              "required": "no",
+              "help": [
+                "Solo nello scenario «Corsa». La cabina parte dal piano più vicino alla sua posizione e va al piano scelto."
+              ],
+              "src": "src/components/lift/SimControls.tsx:262"
+            },
+            {
+              "label": "Carico",
+              "kind": "numero",
+              "unit": "kg",
+              "values": "cursore da 0 alla portata; passo pari al maggiore tra 5 kg e portata/40",
+              "default": "La portata.",
+              "required": "no",
+              "help": [
+                "Solo nello scenario «Corsa». Cambiare il carico non avvia subito la corsa: premi «Avvia» o chiama un piano."
+              ],
+              "src": "src/components/lift/SimControls.tsx:270"
+            },
+            {
+              "label": "Carico (frenata)",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "con la portata; vuota; con 1,25·Q (prova)",
+              "default": "con la portata.",
+              "required": "no",
+              "help": [
+                "Solo nella «Frenata di emergenza». Con 1,25·Q (prova) la direzione passa a «in discesa» e la decelerazione a «del freno reale»."
+              ],
+              "src": "src/components/lift/SimControls.tsx:280"
+            },
+            {
+              "label": "Direzione",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "in discesa; in salita",
+              "default": "in discesa.",
+              "required": "no",
+              "help": [
+                "Solo nella frenata: verso del moto quando il freno chiude."
+              ],
+              "src": "src/components/lift/SimControls.tsx:282"
+            },
+            {
+              "label": "Decelerazione",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "del freno reale; minima della norma",
+              "default": "del freno reale.",
+              "required": "no",
+              "help": [
+                "Solo nella frenata. «Del freno reale» usa la coppia della macchina; «minima della norma» usa la decelerazione minima prevista dalla verifica."
+              ],
+              "src": "src/components/lift/SimControls.tsx:284"
+            },
+            {
+              "label": "Chi urta",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "la cabina; il contrappeso",
+              "default": "la cabina.",
+              "required": "no",
+              "help": [
+                "Solo nello scenario «Ammortizzatori»: urto a 1,15 volte la velocità nominale. Il risultato dice quanto si comprime l’ammortizzatore su quanti mm di corsa e la decelerazione di picco, indicativa (modello lineare)."
+              ],
+              "src": "src/components/lift/SimControls.tsx:289"
+            },
+            {
+              "label": "Avvia / Pausa",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Avvia ▶; Pausa ❚❚",
+              "default": "Fermo, finché non scegli uno scenario o un piano.",
+              "required": "no",
+              "help": [
+                "Avvia o ferma la simulazione."
+              ],
+              "src": "src/components/lift/SimControls.tsx:295"
+            },
+            {
+              "label": "Da capo",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "pulsante",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Riporta la simulazione a zero e la fa ripartire."
+              ],
+              "src": "src/components/lift/SimControls.tsx:298"
+            },
+            {
+              "label": "Velocità",
+              "kind": "scelta",
+              "unit": null,
+              "values": "×0,25; ×0,50; ×1; ×2",
+              "default": "×1.",
+              "required": "no",
+              "help": [
+                "Velocità di riproduzione della simulazione; non cambia i risultati."
+              ],
+              "src": "src/components/lift/SimControls.tsx:299"
+            },
+            {
+              "label": "Tempo",
+              "kind": "numero",
+              "unit": "s",
+              "values": "cursore da 0 alla durata della corsa, passo 0,02 s",
+              "default": "0.",
+              "required": "no",
+              "help": [
+                "Sposta l’istante mostrato (mette in pausa). Accanto vedi «istante / durata» in secondi."
+              ],
+              "src": "src/components/lift/SimControls.tsx:305"
+            }
+          ],
+          "actions": [],
+          "notes": [
+            "Sopra la scena una striscia mostra in tempo reale Piano, Velocità, «T1/T2 · limite» (rapporto delle trazioni e limite di aderenza), Carico; compaiono le segnalazioni «Le funi slittano» e «Freno chiuso».",
+            "Sotto i comandi, l’esito della prova in parole e numeri («OK», «Avviso», «Non passa») con la frase di riepilogo. Nei grafici: velocità della cabina, accelerazione, aderenza T1/T2 con il limite e^(f·α), coppia sull’albero motore, carico in cabina, compressione e decelerazione sull’ammortizzatore. Passando il mouse leggi i valori; un clic sposta la simulazione in quell’istante.",
+            "La nota in fondo avverte che la simulazione usa le stesse forze delle verifiche ma non sostituisce le prove sull’impianto, e che la scena 3D è una rappresentazione, non un rilievo."
+          ]
+        },
+        {
+          "title": "Verifiche che la simulazione riproduce",
+          "intro": [
+            "Sotto la scena, la tabella delle sole verifiche che la simulazione sa rifare (trazione, freno, ammortizzatori, rifugi, carico al 125 %, blocco), con le stesse colonne della scheda «Verifiche» del Progetto: prima quelle da guardare, poi le altre richiuse. Se nessuna di queste è da guardare leggi «Nessuna di queste verifiche è non superata o con «Attenzione».»."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "▶ Simula",
+              "help": "Rifà quella prova qui: porta in vista il simulatore, sceglie lo scenario e la vista adatti e la avvia.",
+              "src": "src/components/lift/LiftChecks.tsx:46; src/components/simulazione/SimulazioneVista.tsx:43"
+            }
+          ],
+          "notes": []
+        }
+      ],
+      "tips": [
+        "Per vedere un progetto ancora da salvare, lascia la pagina del Progetto con tutti i dati inseriti: la bozza si salva da sola e qui compare «Bozza del progetto»."
+      ]
+    },
+    {
+      "id": "progetto-salvato",
+      "title": "Progetto dell’impianto",
+      "path": "/it/app/lift-designs/‹id›",
+      "access": "La vedono tutti i ruoli con il permesso «Vedere gli impianti con calcoli, progetti e tavole» (Titolare, Capotecnico, Progettista, Tecnico, Commerciale). «Modifica il disegno» e «Aggiorna con il software attuale» solo con «Progetto: disegnare il vano o rilevare il locale macchina» (Capotecnico, Progettista, Titolare) e su impianto non archiviato. Il Titolare ha tutti i permessi e può cambiare la matrice.",
+      "reach": "Dopo «Salva il progetto»; dalla scheda «Progetto» della barra a chi non disegna il progetto; dalla panoramica dell’impianto con «Apri il progetto» (ultima versione), oppure dalla tabella «Versioni salvate» (compare con più di una versione).",
+      "purpose": [
+        "La versione salvata del progetto, in sola lettura: i valori calcolati e le verifiche, ricalcolati dai dati inseriti. Sotto l’intestazione trovi la data, l’autore e l’esito. La simulazione e i documenti hanno ognuno la sua pagina: ci arrivi con i pulsanti sotto l’intestazione.",
+        "I documenti si generano solo finché il software attuale riproduce lo stesso progetto (stessa impronta SHA-256). Se il software è cambiato compare un avviso e il progetto va rifatto con «Aggiorna con il software attuale»."
+      ],
+      "shots": [
+        {
+          "id": "lift-designs",
+          "what": "Pagina del progetto salvato: intestazione, i pulsanti «Simulazione», «Tavole e documenti» e «Relazione tecnica di modifica», valori calcolati e verifiche"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Intestazione",
+          "intro": [
+            "Titolo: il nome dato al salvataggio oppure «Progetto dell’impianto». Sotto: data, autore e l’esito. «Calcolo argano di partenza» è un collegamento al calcolo su cui il disegno è fatto; per un progetto del modulo unico leggi «Progetto del modulo unico (prima del calcolo argano separato)»."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Modifica il disegno",
+              "help": "Riapre il Progetto con i dati di questa versione e sullo stesso calcolo.",
+              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:71"
+            }
+          ],
+          "notes": []
+        },
+        {
+          "title": "Avvisi",
+          "intro": [
+            "Può comparire «C’è un calcolo argano più recente, del ‹data›»: «Aggiorna il progetto con l’ultimo calcolo» lo rifà con lo stesso disegno, oppure, se l’intervento è diverso, «Apri il Progetto sull’ultimo calcolo». Chi non ha il diritto legge «Lo aggiorna un collega che disegna il progetto».",
+            "Se il software è cambiato: «Il software è cambiato da quando questo progetto è stato salvato: i valori qui sotto sono ricalcolati, i documenti non si rigenerano.»"
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Aggiorna con il software attuale",
+              "help": "Salva di nuovo gli stessi dati con il software attuale e dice se l’esito cambia («l’esito non cambia» oppure «l’esito cambia. Prima e ora:»). La versione vecchia resta. Se un dato non passa più, si apre il modulo con i dati da correggere.",
+              "src": "src/components/RefreshForm.tsx:13"
+            }
+          ],
+          "notes": [],
+          "warnings": [
+            "Se il software è cambiato, i documenti non si rigenerano finché non usi «Aggiorna con il software attuale». Il pulsante crea una nuova versione; la vecchia resta com’era.",
+            "Se il progetto non si legge con il software attuale compare «Il progetto salvato non si legge con la versione attuale del software»."
+          ]
+        },
+        {
+          "title": "Simulazione, tavole e documenti",
+          "intro": [
+            "Sotto l’intestazione e gli avvisi, tre pulsanti portano alle pagine che partono da questo progetto."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Simulazione",
+              "help": "Apre la pagina «Simulazione» su questo progetto.",
+              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:96"
+            },
+            {
+              "label": "Tavole e documenti",
+              "help": "Apre la pagina «Tavole e documenti» su questo progetto: tavole da scaricare o da emettere, relazione di calcolo, pianta in DXF e SVG, distinta, costo e bozza d’ordine (capitolo sui documenti).",
+              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:97"
+            },
+            {
+              "label": "Relazione tecnica di modifica",
+              "help": "Compare solo per un intervento su un ascensore esistente (UNI 10411): apre la relazione tecnica di modifica dell’impianto.",
+              "src": "src/app/[locale]/app/lift-designs/[id]/page.tsx:98"
+            }
+          ],
+          "notes": []
+        },
+        {
+          "title": "Valori e verifiche",
+          "intro": [
+            "Seguono, di sola lettura, la striscia dei «Valori calcolati» e le «Verifiche» come nel Progetto: prima quelle da guardare, poi le altre richiuse (aperte in «Esperto»)."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "▶ Simula",
+              "help": "Apre la pagina «Simulazione» su questo progetto, con quella prova già avviata.",
+              "src": "src/components/lift/LiftRiepilogo.tsx"
+            }
+          ],
+          "notes": [
+            "Se il progetto salvato non si legge con il software attuale, al posto di valori e verifiche compare «Il progetto salvato non si legge con la versione attuale del software»."
+          ]
+        }
+      ],
+      "tips": []
+    },
+    {
+      "id": "progetto-vano-salvato",
+      "title": "Progetto del vano",
+      "path": "/it/app/shaft-designs/‹id›",
+      "access": "La vedono tutti i ruoli con il diritto di vedere i calcoli (derivato da «Vedere gli impianti con calcoli, progetti e tavole»). I download richiedono «Scaricare relazioni, tavole, DXF, DWG e SVG, bozze d’ordine e documenti caricati» (tutti). «Apri il modulo del progetto» solo con «Progetto: disegnare il vano o rilevare il locale macchina» su un impianto non archiviato.",
+      "reach": "Da «Progetto del vano» nella pagina del progetto dell’impianto o dalla pagina dell’impianto.",
+      "purpose": [
+        "Mostra il solo vano del progetto salvato, in sola lettura: pianta, sezione A-A, risultati e verifiche e la distinta delle staffe."
+      ],
+      "shots": [
+        {
+          "id": "shaft-designs",
+          "what": "Pagina «Progetto del vano» con cartiglio, pianta e sezione A-A"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Intestazione e cartiglio",
+          "intro": [
+            "Il titolo è «Progetto del vano» con il nome del salvataggio. Il cartiglio elenca: Esito, Data, Autore, «Misure» («inserite a mano» oppure «‹file› (‹formato›), misurato sul disegno»), «Motore · profilo» (versione del motore e profilo), «Vano · cabina · portata», «SHA-256» del progetto (con «riprodotto» se il software lo riproduce) e «Calcoli» (quanti calcoli vengono da questo progetto)."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Scarica il DXF",
+              "help": "La pianta del vano in DXF. Solo se il software riproduce il progetto.",
+              "src": "src/app/[locale]/app/shaft-designs/[id]/page.tsx:230"
+            },
+            {
+              "label": "Scarica l’SVG",
+              "help": "La pianta del vano in SVG.",
+              "src": "src/app/[locale]/app/shaft-designs/[id]/page.tsx:231"
+            },
+            {
+              "label": "Apri il progetto dell’impianto / Apri il modulo del progetto",
+              "help": "Il primo porta al progetto dell’impianto da cui viene il vano; il secondo, se non c’è, apre il modulo del Progetto.",
+              "src": "src/app/[locale]/app/shaft-designs/[id]/page.tsx:232"
+            }
+          ],
+          "notes": [],
+          "warnings": [
+            "Se il motore di calcolo è cambiato compare un avviso: la pianta in DXF non si rigenera e si rifà dal progetto dell’impianto con «Aggiorna con il software attuale»."
+          ]
+        },
+        {
+          "title": "Pianta, sezione e risultati",
+          "intro": [
+            "Pianta del vano alla fermata principale e sezione A-A con la cabina all’ultima fermata, con la scala su foglio A4. Poi quattro valori (Cabina, interno; Portata; Persone; Superficie, con «m² su m² ammessi») e la tabella «Verifiche». Se la cabina minima non entra nel vano compare «La cabina minima non entra nel vano: vedi le verifiche»."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "Nota di cautela: modello semplificato; arcata, operatori delle porte, ammortizzatori e macchina hanno posizioni e ingombri tipici. Le misure prese dal disegno vanno controllate in cantiere e gli ingombri tipici confermati con i fornitori. Sotto, la «Distinta staffe Panev» con tutte le staffe."
+          ]
+        }
+      ],
+      "tips": []
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Interpiano",
+      "def": "Distanza tra il pavimento di una fermata e quello della fermata successiva verso l’alto."
+    },
+    {
+      "term": "Fossa",
+      "def": "La parte del vano sotto il piano più basso."
+    },
+    {
+      "term": "Testata",
+      "def": "La parte del vano sopra il piano più alto."
+    },
+    {
+      "term": "Rinvio",
+      "def": "Puleggia che devia le funi tra la macchina e il vano."
+    },
+    {
+      "term": "Calata",
+      "def": "Il tratto di funi che scende dalla puleggia di trazione alla cabina o al contrappeso, e il punto in cui attraversa la soletta del locale macchina. La quota «Calata» della pianta è l’interasse tra le due calate; nel tiro diretto, senza rinvio, deve essere uguale al diametro della puleggia."
+    },
+    {
+      "term": "L0",
+      "def": "La lunghezza di fune oltre la corsa, per lato."
+    },
+    {
+      "term": "HEB",
+      "def": "Profilo d’acciaio ad ali larghe usato per le putrelle sotto il basamento."
+    },
+    {
+      "term": "T1/T2",
+      "def": "Rapporto delle trazioni nelle funi, confrontato con il limite di aderenza."
+    },
+    {
+      "term": "Rifugio",
+      "def": "Spazio per chi lavora sul tetto di cabina o in fossa."
+    }
+  ],
+  "verify": [
+    "Schermo: nella tabella delle fermate la colonna «Principale» mostra solo un pulsante di scelta senza testo visibile (ha solo l’etichetta accessibile «Principale»): è chiaro per l’utente?",
+    "Schermo: dopo aver cambiato il cursore «Carico» nello scenario «Corsa», la simulazione resta ferma finché non premi «Avvia» (da codice set(…, false)): confermare.",
+    "Schermo: la velocità di riproduzione appare come «×0,25», «×0,50», «×1», «×2» (fmt con 2 decimali sotto 1): confermare."
+  ]
+}

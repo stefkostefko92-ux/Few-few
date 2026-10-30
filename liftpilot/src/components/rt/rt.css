@@ -1,0 +1,161 @@
+/* Round 49 — the relazione tecnica di modifica: its workspace (/app/projects/<id>/relazione-tecnica) and the page of an
+   issued one (/app/relazioni/<id>). The one memorable piece is the cards' numbers, drawn as the push buttons of a car's
+   panel like the installation's steps (collega.css): the card in view is the floor reached. Everything else is the
+   workspace's panels, fields, tables and pills; colours only from the tokens of globals.css. Fits 360 px without a
+   horizontal scroll: grids fall to one column, rows wrap, long words break. */
+
+/* ---- the page ------------------------------------------------------------------------------------------------------ */
+.rt-page { min-width: 0; }
+.rt-page :is(h2, h3) { margin: 0; overflow-wrap: anywhere; }
+.rt-page h3 { font: 700 15px/1.35 var(--font-body); color: var(--ink); letter-spacing: -0.005em; }
+.rt-page .field > label { font-size: 13.5px; font-weight: 600; line-height: 1.35; color: var(--ink-2); }
+.rt-page .field > .field-hint { font-size: 12.5px; font-weight: 400; line-height: 1.45; color: var(--muted); }
+.rt-page .field-hint.rt-bad, .rt-page .field > .field-hint.rt-bad { color: var(--fail); }
+.rt-page .m-0 { margin: 0; }
+.rt-base { margin: 0; }
+.rt-base a { font-weight: 600; }
+.rt-work { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+/* ---- the bar: the cards' index, the live summary's state, the draft ------------------------------------------------ */
+.rt-bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 12px;
+  background: var(--savebar-bg); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--savebar-shadow);
+  backdrop-filter: blur(6px); }
+.rt-nav { flex: 1 1 auto; min-width: 0; }
+.rt-nav > a { font-size: 13px; padding: 7px 10px; }
+.rt-live { flex: 0 1 auto; min-width: 0; }
+.rt-bar > :last-child:not(.rt-live):not(.rt-nav):not(.passi-live):not(.passi-nav) { flex: 1 1 100%; }
+@media (max-width: 640px) {
+  .rt-bar { position: static; }
+  .rt-nav > a { flex: 1 1 calc(50% - 4px); }
+}
+
+/* ---- the cards and their numbers (a car panel's buttons) ------------------------------------------------------------ */
+.rt-card { display: flex; flex-direction: column; gap: 14px; min-width: 0; scroll-margin-top: 84px; }
+.rt-card > .note { margin: 0; }
+.rt-card-title { display: flex; align-items: center; gap: 12px; font: var(--panel-title); letter-spacing: var(--panel-title-track); }
+.rt-step { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; font: 800 15px/1 var(--font-body);
+  color: var(--accent); background: radial-gradient(circle at 36% 30%, #18323f 0%, #0a1923 62%, #050e15 100%); border: 2px solid var(--accent-line);
+  box-shadow: inset 0 2px 2px rgb(255 255 255 / .06), inset 0 -3px 6px rgb(0 0 0 / .5), var(--glow); }
+.rt-card:target .rt-step, .rt-card:focus-within .rt-step { border-color: var(--accent); box-shadow: inset 0 2px 2px rgb(255 255 255 / .08), var(--glow-strong); }
+
+/* ---- the state of the relazione: four figures, then what is missing ------------------------------------------------ */
+.rt-esito { display: flex; flex-direction: column; gap: 12px; }
+.rt-kpi { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin: 0; overflow: hidden;
+  background: var(--rule-soft); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.rt-kpi > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 12px 14px; background: var(--surface); }
+.rt-kpi dt { font-size: 12.5px; color: var(--muted); }
+.rt-kpi dd { margin: 0; font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
+.rt-kpi dd.num { font: 600 22px/1.1 var(--font-mono); }
+@media (max-width: 900px) { .rt-kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 380px) { .rt-kpi { grid-template-columns: minmax(0, 1fr); } }
+.rt-mancanti { font-size: 14px; color: var(--ink-2); }
+.rt-mancanti > summary { cursor: pointer; font-weight: 600; color: var(--warn); }
+.rt-mancanti > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+.rt-list-plain { margin: 6px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 3px; font-size: 14px; line-height: 1.5; }
+
+/* ---- registry (card 1) ----------------------------------------------------------------------------------------------- */
+.rt-anagrafica { display: flex; flex-direction: column; gap: 16px; }
+.rt-dati > div { flex-basis: 210px; }
+.rt-dati dd { font-size: 14px; }
+
+/* ---- check boxes and radios on a line ------------------------------------------------------------------------------- */
+.rt-check { display: flex; align-items: flex-start; gap: 10px; min-height: 44px; padding: 10px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink-2);
+  cursor: pointer; }
+.rt-check input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; }
+.rt-radio { display: flex; flex-wrap: wrap; gap: 0 22px; margin: 0; padding: 0; border: 0; }
+.rt-radio > legend { width: 100%; }
+.rt-radio .rt-check { min-height: 36px; padding-top: 6px; }
+.rt-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+/* a button naming a section or a file wraps its words instead of leaving the card on a phone */
+.rt-page .btn:not(.btn-icon) { max-width: 100%; white-space: normal; text-align: center; }
+
+/* ---- sections and components (card 3) -------------------------------------------------------------------------------- */
+.rt-sezione { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 14px 16px; background: var(--bg-2);
+  border: 1px solid var(--rule-soft); border-left: 3px solid var(--accent-line); border-radius: var(--radius-sm); }
+.rt-sezione-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.rt-sezione-head h3 { font-size: 16px; }
+.chip.rt-auto { color: var(--accent); background: var(--accent-soft); border-color: var(--accent-line); }
+.chip.rt-man { color: var(--info); background: var(--info-bg); border-color: var(--info-line); }
+.rt-motivi { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.rt-motivi > li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.rt-motivi > li::before { content: ""; flex: none; width: 6px; height: 6px; margin-top: 8px; border-radius: 50%; background: var(--accent); align-self: flex-start; }
+.rt-clausola { font: 500 12px/1.45 var(--font-mono); color: var(--muted); overflow-wrap: anywhere; }
+.rt-blocco { display: flex; flex-direction: column; gap: 12px; min-width: 0; margin: 0; padding: 12px 14px 14px; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.rt-blocco > legend { padding: 0 6px; font: 700 14px/1.3 var(--font-body); color: var(--ink); }
+.rt-blocco > .note { margin: 0; }
+.rt-fonte, .rt-valfonte { min-width: 0; margin: 0; padding: 10px 12px 12px; border: 1px dashed var(--rule-strong); border-radius: var(--radius-sm); }
+.rt-valfonte { display: flex; flex-direction: column; gap: 10px; border-style: solid; border-color: var(--rule); }
+.rt-fonte-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1.4fr); gap: 12px 14px; }
+@media (max-width: 900px) { .rt-fonte-grid { grid-template-columns: minmax(0, 1fr); } }
+/* the checks as the document prints them: fixed columns, every cell wraps (a long limit never squeezes the clause) */
+.rt-checks { font-size: 13.5px; table-layout: fixed; width: 100%; }
+.rt-checks th:nth-child(1) { width: 31%; }
+.rt-checks th:nth-child(2) { width: 14%; }
+.rt-checks th:nth-child(3) { width: 16%; }
+.rt-checks th:nth-child(4) { width: 15%; }
+.rt-checks :is(td, th).num { white-space: normal; overflow-wrap: break-word; }
+.rt-checks .rt-ref { font: 500 12px/1.4 var(--font-mono); color: var(--muted); overflow-wrap: anywhere; }
+.rt-checks td.row-title { overflow-wrap: anywhere; }
+/* stacked on a phone: the label column narrower, values and limits wrap at their spaces, the cards' insets smaller */
+@media (max-width: 719px) {
+  .rt-checks.data-table.stack tr { padding: 12px 10px; }
+  .rt-checks.data-table.stack td { grid-template-columns: minmax(0, 5.5rem) minmax(0, 1fr); gap: 10px; }
+}
+@media (max-width: 640px) {
+  .rt-card.panel { padding: 16px 14px; }
+  .rt-sezione { padding: 12px 10px; }
+  .rt-blocco { padding: 10px 10px 12px; }
+}
+.rt-aggiungi { display: flex; flex-direction: column; gap: 7px; width: 100%; max-width: 560px; }
+.rt-aggiungibili { display: flex; flex-direction: column; gap: 8px; padding-top: 6px; border-top: 1px solid var(--rule-soft); }
+.rt-aggiungibili > .note { margin: 0; }
+.rt-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--rule-soft); }
+.rt-list > li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; padding: 9px 2px;
+  border-bottom: 1px solid var(--rule-soft); font-size: 14px; min-width: 0; }
+.rt-list > li > span { min-width: 0; overflow-wrap: anywhere; }
+
+/* ---- documents (card 4) ------------------------------------------------------------------------------------------------ */
+.rt-docs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 900px) { .rt-docs { grid-template-columns: minmax(0, 1fr); } }
+.rt-docs > li { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 12px 14px; background: var(--bg-2);
+  border: 1px solid var(--rule-soft); border-radius: var(--radius-sm); }
+.rt-doc-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 6px 10px; }
+.rt-doc-title { min-width: 0; font-weight: 700; font-size: 14px; line-height: 1.4; color: var(--ink); overflow-wrap: anywhere; }
+/* the pills here carry sentences (a document's state, a check's outcome): they wrap within their box */
+.rt-page .status-pill { white-space: normal; max-width: 100%; overflow-wrap: break-word; }
+.rt-page .status-pill::before { align-self: flex-start; margin-top: 4px; }
+.rt-doc-actions { display: flex; flex-direction: column; gap: 8px; }
+.rt-doc-upload > summary { width: fit-content; cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--accent); }
+.rt-doc-upload > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+.rt-doc-upload[open] > summary { margin-bottom: 10px; }
+.rt-ordine { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--rule-soft); counter-reset: none; }
+.rt-ordine > li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px 12px; padding: 9px 2px;
+  border-bottom: 1px solid var(--rule-soft); }
+.rt-n { font: 600 12.5px/1.2 var(--font-mono); color: var(--accent); white-space: nowrap; }
+.rt-file { min-width: 0; font-size: 14px; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+.rt-file .note { font-weight: 400; }
+@media (max-width: 640px) {
+  .rt-ordine > li { grid-template-columns: auto minmax(0, 1fr); }
+  .rt-ordine > li > :last-child:not(.rt-file) { grid-column: 1 / -1; }
+}
+
+/* ---- signatures and the issue (card 5) --------------------------------------------------------------------------------- */
+.rt-issue { padding-top: 4px; }
+.rt-issue .note { margin: 0; }
+.rt-dialog { width: min(640px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); overflow: auto; margin: auto; padding: 22px 22px 18px;
+  color: var(--ink); background: var(--surface); border: 1px solid var(--rule-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
+.rt-dialog::backdrop { background: rgb(1 6 10 / .72); backdrop-filter: blur(2px); }
+.rt-dialog[open] { display: flex; flex-direction: column; gap: 14px; }
+.rt-dialog > h2 { font: var(--panel-title); }
+.rt-dialog > p { margin: 0; }
+.rt-dlg-group { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; background: var(--bg-2); border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-sm); }
+.rt-dlg-group h3 { font-size: 14px; }
+
+/* ---- the RTs issued ------------------------------------------------------------------------------------------------------ */
+.rt-emesse > li { align-items: center; }
+.rt-emesse .rec-text { flex-basis: 100%; font-size: 13px; color: var(--muted); }
+.rt-emesse .btn { margin-left: auto; }
+
+@media (prefers-reduced-motion: reduce) { .rt-step { transition: none; } }
+@media print { .rt-bar, .rt-dialog { display: none; } }

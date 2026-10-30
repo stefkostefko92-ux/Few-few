@@ -1,0 +1,154 @@
+import { getLocale, getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/routing';
+import Icon from '@/components/Icon';
+import VerdictPill from '@/components/VerdictPill';
+import { DASH_ROWS, TIPI_FILTRO, type TipoFiltro } from '@/lib/dashboard';
+import { dateFormat } from '@/lib/dates';
+import type { TipoIntervento } from '@/lib/lift/intervento';
+import type { listProjects } from '@/server/project-list';
+import { outdated } from '@/server/records';
+import { MAX_LINKED } from '@/server/collega/home';
+import TipoTag, { iconaTipo } from '@/components/project/TipoTag';
+import NuovoImpianto from './NuovoImpianto';
+
+export type ListedProject = Awaited<ReturnType<typeof listProjects>>[number];
+
+/** An installation's result: its latest lift design's for a whole project, else its latest calculation's (the record its
+ *  pill shows the checks of); and whether the running engines no longer reproduce it («da aggiornare», by the versions
+ *  stored). */
+export function latestOf(p: ListedProject) {
+  const design = p.liftDesigns[0] ?? null, calc = p.calculations[0] ?? null;
+  const record = design ? { kind: 'lift' as const, id: design.id } : calc ? { kind: 'calc' as const, id: calc.id } : undefined;
+  return { last: design ?? calc, design, record, old: design ? outdated.lift(design) : calc ? outdated.calc(calc) : false };
+}
+
+interface Props {
+  /** the view's latest changed: its first DASH_ROWS, or with `all` its first ALL_ROWS */
+  projects: ListedProject[];
+  /** how many installations the view has */
+  total: number;
+  all: boolean;
+  archived: boolean;
+  /** the filter by type of intervention (round 45, ?tipo=); null: all */
+  tipo: TipoFiltro | null;
+  /** the type of intervention of each installation listed (project-list.ts tipiImpianti; absent: «da definire») */
+  tipi: ReadonlyMap<string, TipoIntervento | null>;
+  /** the words searched as typed, '' for none */
+  q: string;
+  /** the active installations by type of intervention, for the filters (the plain active list only) */
+  counts: { all: number } & Record<TipoFiltro, number> | null;
+  canEdit: boolean;
+  /** the installations of a figure of the Rilievi home (round 44); `capped`: looked for among the latest changed only */
+  stato?: { key: 'differenze' | 'aggiornare'; capped: boolean } | null;
+}
+
+// The company's installations, latest change first (the dashboard's «Progetti recenti»): the view's latest changed
+// and «show all (N)» for the rest, with the filters by type of intervention (round 45), the archive, the search's words,
+// and per row its type of intervention,
+// address, plant number, latest result («da aggiornare» when the engines changed), its date and machine line, and the
+// number of calculations. From a figure of the Rilievi home (?stato=) only its installations, said on top.
+export default async function ProjectList({ projects, total, all, archived, tipo, tipi, q, counts, canEdit, stato = null }: Props) {
+  const [t, tf, ti, locale] = await Promise.all([getTranslations('projects'), getTranslations('refresh'), getTranslations('calculations.intervento'), getLocale()]);
+  const fd = dateFormat(locale);
+  const href = (k: TipoFiltro | null, arch = archived, words = q, every = all, st = arch ? null : stato?.key ?? null): string => {
+    const s = [arch ? 'archived=1' : '', k ? `tipo=${k}` : '', words ? `q=${encodeURIComponent(words)}` : '', st ? `stato=${st}` : '', every ? 'all=1' : '']
+      .filter(Boolean).join('&');
+    return s ? `/app/impianti?${s}` : '/app/impianti';
+  };
+  const more = total > projects.length;
+  const empty = projects.length === 0, fresh = empty && !archived && !q && tipo === null && !stato;
+  return (
+    <section className="panel dash-list" aria-labelledby="dash-list-title">
+      <div className="panel-head">
+        <div className="dash-panel-titles">
+          <p className="eyebrow plain">{t('list_eyebrow')}</p>
+          <h2 id="dash-list-title">{archived ? t('archivedTitle') : t('title')}</h2>
+        </div>
+        <Link className="btn btn-sm" href={href(tipo, !archived)}>
+          <Icon name={archived ? 'layout-dashboard' : 'archive'} size={16} />{archived ? t('showActive') : t('showArchived')}
+        </Link>
+      </div>
+      <nav className="dash-filters" aria-label={t('col_tipo')}>
+        <Link href={href(null)} aria-current={tipo === null ? 'page' : undefined}>
+          {t('filter_all')}{counts ? <span className="dash-count">{counts.all}</span> : null}
+        </Link>
+        {TIPI_FILTRO.map((f) => (
+          <Link key={f} href={href(f)} aria-current={tipo === f ? 'page' : undefined}>
+            {t(`filtroTipo.${f}`)}{counts ? <span className="dash-count">{counts[f]}</span> : null}
+          </Link>
+        ))}
+      </nav>
+      {stato ? (
+        <p className="dash-q" role="status">
+          {t(`stato_${stato.key}`, { n: total })}{stato.capped ? ` ${t('stato_capped', { n: MAX_LINKED })}` : ''}{' '}
+          <Link href={href(tipo, archived, q, all, null)}>{t('stato_clear')}</Link>
+        </p>
+      ) : null}
+      {q ? (
+        <p className="dash-q" role="status">
+          {empty ? t('searchNone', { q }) : t('searchResults', { n: total, q })}{' '}
+          <Link href={href(tipo, archived, '')}>{t('searchClear')}</Link>
+        </p>
+      ) : null}
+      {fresh ? (
+        <div className="dash-empty">
+          <p>{canEdit ? t('emptyStart') : t('emptyNoEdit')}</p>
+          {canEdit ? <NuovoImpianto /> : null}
+        </div>
+      ) : empty ? (
+        q || stato ? null : <p className="dash-empty">{archived && tipo === null ? t('emptyArchived') : t('emptyKind')}</p>
+      ) : (
+        <ul className="dash-rows" role="list">
+          {projects.map((p) => {
+            const { last, old, record } = latestOf(p), tp = tipi.get(p.id) ?? null;
+            const place = [p.address, p.city, p.province].filter(Boolean).join(', ');
+            return (
+              <li key={p.id} className="dash-row">
+                <span className="icon-tile sm"><Icon name={iconaTipo(tp)} size={20} /></span>
+                <div className="dash-row-main">
+                  <Link href={`/app/projects/${p.id}`} className="dash-row-link">{p.name}</Link>
+                  <span className="dash-row-meta">
+                    <TipoTag tipo={tp} label={ti(tp ?? 'daDefinire')} small />
+                    {place ? <span>{place}</span> : null}
+                    {p.plantNumber ? <span>{t('col_plantNumber')} <span className="mono">{p.plantNumber}</span></span> : null}
+                  </span>
+                </div>
+                <div className="dash-row-result">
+                  {last ? (
+                    <>
+                      {/* a sibling of the row's link (never inside it): its button sits over the link's box */}
+                      <div className="dash-pills">
+                        <VerdictPill verdict={last.verdict} fails={last.failCount} warns={last.warnCount} record={record} />
+                        {old ? <span className="chip old">{tf('outdated')}</span> : null}
+                      </div>
+                      {/* the result's date before its machine line, as the list had it before the redesign */}
+                      <span className="dash-row-sum">
+                        <time className="dash-row-at" dateTime={last.createdAt.toISOString()}><span className="sr-only">{t('col_last')} </span>{fd.dateTime(last.createdAt)}</time>
+                        {' · '}{last.summary}
+                      </span>
+                    </>
+                  ) : <span className="note">{t('noCalculations')}</span>}
+                </div>
+                <div className="dash-row-when">
+                  <time dateTime={p.updatedAt.toISOString()}><span className="sr-only">{t('updated')} </span>{fd.dateTime(p.updatedAt)}</time>
+                  {p._count.calculations ? <span>{t('calcCount', { n: p._count.calculations })}</span> : null}
+                </div>
+                <svg className="dash-row-go" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+                  <path d="M5.5 12.5 12.5 5.5M7 5.5h5.5V11" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {more && !all ? (
+        <p className="dash-more"><Link className="btn btn-sm" href={href(tipo, archived, q, true)}>{t('showAll', { n: total })}</Link></p>
+      ) : all && !empty ? (
+        <p className="dash-more">
+          {more ? <span className="note">{t('listCapped', { n: projects.length, total })}</span> : null}
+          {total > DASH_ROWS ? <Link href={href(tipo, archived, q, false)}>{t('showRecent')}</Link> : null}
+        </p>
+      ) : null}
+    </section>
+  );
+}

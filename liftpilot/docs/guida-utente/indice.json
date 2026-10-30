@@ -1,0 +1,67 @@
+{
+  "guide": {
+    "title": "Guida utente",
+    "subtitle": "Ogni pagina e ogni campo di LiftPilot, spiegati passo per passo",
+    "coverLines": [
+      "LiftPilot — sostituzione dell’argano e progetto dell’ascensore per le ditte di ascensori",
+      "Edizione di ottobre 2026",
+      "Le immagini mostrano un’azienda di esempio con dati inventati."
+    ],
+    "header": "LiftPilot · Guida utente",
+    "pdfTitle": "LiftPilot — Guida utente",
+    "subject": "Guida all’uso di LiftPilot: ogni pagina, ogni campo, ogni pulsante",
+    "keywords": "LiftPilot, guida utente, sostituzione argano, progetto ascensore, relazione di calcolo, rilievo ascensore, Carbon Stealth",
+    "chapters": ["accesso", "impianti", "azienda", "rilievi", "calcolo", "progetto-a", "progetto-b", "documenti"],
+    "front": [
+      {
+        "title": "Come usare questa guida",
+        "paragraphs": [
+          "Questa guida descrive, pagina per pagina, tutto ciò che vedi in LiftPilot: a che cosa serve ogni pagina, chi può usarla, ogni campo da compilare e ogni pulsante. I capitoli seguono l’ordine del lavoro: l’accesso, l’area di lavoro e gli impianti, l’azienda, i rilievi, il calcolo dell’argano, il progetto, le tavole e i documenti.",
+          "Per ogni pagina trovi un riquadro con l’indirizzo, chi la usa e come ci arrivi, poi le sezioni nell’ordine in cui compaiono sullo schermo. Le tabelle dei campi hanno tre colonne: il nome del campo come appare a schermo, con il tipo di campo sotto; che cosa indicare e a che cosa serve il valore; i valori ammessi, cioè l’unità di misura, i limiti, il valore che il software propone e quando il campo è obbligatorio. Seguono i pulsanti, con quello che fanno."
+        ]
+      },
+      {
+        "title": "Convenzioni",
+        "list": [
+          "I nomi dei campi, dei pulsanti e delle pagine sono scritti esattamente come li vedi nell’interfaccia.",
+          "‹id› in un indirizzo è il codice dell’impianto, del calcolo o del documento: lo vedi nella barra degli indirizzi del browser.",
+          "I numeri usano la virgola decimale (1,6 m/s). Le misure sono in millimetri, salvo dove è indicata un’altra unità.",
+          "«Attenzione» segnala ciò che può bloccare un salvataggio o cambiare un documento; «Consiglio» un modo più rapido o più sicuro di lavorare.",
+          "Accanto al nome di quasi ogni campo trovi un «?» con una spiegazione breve, la stessa di questa guida: porta il mouse sul nome del campo o sul «?», portaci il fuoco con la tastiera oppure toccalo; con Esc la spiegazione si nasconde.",
+          "Il selettore «Semplice» / «Esperto» nella barra in alto decide se vedi anche i campi per esperti: «Semplice» li nasconde e lascia i valori del software, ma non nasconde mai un campo ancora da compilare o con un valore sbagliato. La scelta resta con il tuo utente.",
+          "I riferimenti alle norme riportano solo il numero del punto e il valore: il testo delle norme UNI ed EN va letto nelle edizioni ufficiali.",
+          "I diritti indicati per ogni pagina sono quelli predefiniti: il Titolare dell’azienda può cambiarli nella pagina «Permessi»."
+        ]
+      },
+      {
+        "title": "Chi firma",
+        "paragraphs": [
+          "LiftPilot è uno strumento di calcolo e di disegno. I risultati, le tavole e le relazioni vanno controllati e firmati da un tecnico abilitato, che resta responsabile del progetto e dei documenti che firma."
+        ]
+      }
+    ]
+  },
+  "admin": {
+    "title": "Guida per l’amministratore della piattaforma",
+    "subtitle": "Le pagine riservate a chi gestisce LiftPilot: aziende, inviti alla beta, permessi e segnalazioni",
+    "coverLines": [
+      "LiftPilot — appendice riservata alla guida utente",
+      "Edizione di ottobre 2026",
+      "Documento interno: non va consegnato alle aziende clienti."
+    ],
+    "header": "LiftPilot · Amministrazione della piattaforma",
+    "pdfTitle": "LiftPilot — Guida per l’amministratore della piattaforma",
+    "subject": "Le pagine di amministrazione della piattaforma LiftPilot",
+    "keywords": "LiftPilot, amministrazione, piattaforma, inviti beta, segnalazioni, Carbon Stealth",
+    "chapters": ["admin"],
+    "front": [
+      {
+        "title": "A chi è destinata",
+        "paragraphs": [
+          "Questa appendice descrive le pagine che vede solo l’amministratore della piattaforma. Le aziende clienti non le vedono e non trovano queste pagine nella guida utente.",
+          "Le convenzioni sono le stesse della guida utente: nomi esatti dell’interfaccia, ‹id› per i codici, valori ammessi nella terza colonna delle tabelle."
+        ]
+      }
+    ]
+  }
+}

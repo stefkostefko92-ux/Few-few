@@ -1,0 +1,155 @@
+'use client';
+
+// The Progetto's form, on the left of its screen (round 45): what it draws on («Calcolo argano», read only), then the
+// geometry only — the shaft (its size, or measured on a drawing), entrances, doors and counterweight (the rated load the
+// calculation's), the floors with pit and headroom (the speed the calculation's), the machine room (with a machine
+// below and its pulleys over the slab, the pulley room) and the ropes in the drawing (ProgettoFuni). The intervention,
+// the test, the machine and the calculation's values are changed in «Calcolo argano». A new drawing starts empty
+// (blankProgetto); the software's own values (rails, allowances, heights, niches, frames…) come once its data are in.
+// Round 52: every field with its «?» (messages/aiuto/progetto.json); the rare refinements (the software's choices in the
+// shaft, niches, headroom walls, frames, linings) are marked `esperto` in their components — hidden in «Semplice». The
+// sections carry their numbers in the bar of the steps (ProgettoWorkspace). Round 53: each step a box of its own
+// (`data-passo`); in «Semplice» only the step chosen is shown, with the way to the one before and after (passi/mostra.ts).
+import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
+import { testoAiuto } from '@/lib/aiuto';
+import { passoId, type PassoProgetto } from '@/lib/passi-moduli';
+import AIUTO from '../../../messages/aiuto/progetto.json';
+import SectionTitle from '@/components/project/SectionTitle';
+import { KL, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
+import type { ProgettoAuto } from '@/lib/lift/progetto';
+import { pulleyRoomOf } from '@/lib/lift/shaft-rig';
+import { macchinaEsistente } from '@/lib/lift/kept';
+import { roomGeo } from '@/shaft/machine-room';
+import { KV_VERT } from '@/shaft/norme-vert';
+import type { Texts } from '@/lib/present/texts';
+import type { Pres } from '@/lib/present/tr';
+import type { ShaftSource } from '@/lib/shaft-input';
+import type { BlankTexts } from '../calc/FieldRow';
+import { fieldId, mmOf, type FormBlank, type ShaftSet } from '../blank';
+import { DalRilievo } from '../collega/origine';
+import Campo from '../shaft/Campo';
+import ShaftOptions from '../shaft/ShaftOptions';
+import ShaftTechOptions from '../shaft/ShaftTechOptions';
+import VerticalOptions from '../shaft/VerticalOptions';
+import RoomOptions from '../shaft/RoomOptions';
+import HeadOptions from '../shaft/HeadOptions';
+import FrameOptions from '../shaft/FrameOptions';
+import ImbottiOptions from '../shaft/ImbottiOptions';
+import NicheOptions from '../shaft/NicheOptions';
+import SurveyPanel, { type SurveyResult } from '../shaft/SurveyPanel';
+import DalCalcolo, { type BaseProgetto } from './DalCalcolo';
+import ProgettoFuni from './ProgettoFuni';
+
+interface Props {
+  P: Pres;
+  X: Texts;
+  /** the one form's inputs composed on the base (the drawing and the calculation's values) */
+  inp: LiftInputs;
+  base: BaseProgetto;
+  projectId: string;
+  /** the base's date as the page writes it */
+  when: string;
+  canCalc: boolean;
+  /** the drawing's own height of the diverting pulley set on the plan [m] */
+  h: number | undefined;
+  /** what the software worked out; null while the drawing's data are still to enter */
+  derived: LiftDerived | null;
+  blank: FormBlank;
+  texts: BlankTexts;
+  /** the drawing the shaft was measured on; null: entered by hand */
+  source: ShaftSource | null;
+  setShaft: ShaftSet;
+  /** the shaft's inner size typed [mm] */
+  setSize(key: 'W' | 'D', value: number): void;
+  onSurvey(r: SurveyResult): void;
+  setAuto(patch: Partial<ProgettoAuto>): void;
+  setBottom(b: BottomScheme): void;
+  /** «Porta nel calcolo» beside an issue the calculation resolves (the falls, the diverting pulley); null: not for this
+   *  user (or the standalone page) */
+  porta: { go(): void; pending: boolean } | null;
+  /** the existing falls a direct pull keeps [mm] and the plan's drop set to them (round 46); null: none */
+  calate?: { Do: number; fix(): void } | null;
+  /** the sections' numbers in the bar of the steps (round 52) */
+  numeri?: Partial<Record<PassoProgetto, number>>;
+  /** the steps one at a time («Semplice», round 53): the step shown, the steps before and after it and the way to them;
+   *  absent: every step */
+  uno?: Uno | null;
+}
+
+export interface Uno {
+  attivo: string;
+  prima: { id: string; label: string } | null;
+  dopo: { id: string; label: string } | null;
+  vai(id: string): void;
+}
+
+export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc, h, derived, blank, texts, source, setShaft, setSize, onSurvey, setAuto, setBottom, porta, calate = null, numeri = {}, uno = null }: Props) {
+  const t = useTranslations('lift'), ts = useTranslations('shaft'), tp = useTranslations('progetto'), tpa = useTranslations('passi'), is = blank.is;
+  const blocco = (k: PassoProgetto, children: ReactNode) => (
+    <div className="passo-blocco" data-passo={passoId(k)} hidden={!!uno && uno.attivo !== passoId(k)}>{children}</div>
+  );
+  // the machine room comes with a machine above; the pulley room with a machine below whose pulleys stand over the slab
+  // (scheme room): the room the sheets and the 3D draw and the checks measure
+  const above = inp.calc.layout !== 'bottom';
+  // the machine the intervention keeps stands on its existing base, its L0, dx and h the calculation's (round 46, B8)
+  const kept = macchinaEsistente(inp);
+  const pulley = inp.calc.layout === 'bottom' && !is('bottom') && inp.bottom === 'room'
+    ? { standard: pulleyRoomOf({ ...inp.shaft, room: null }), minH: KV_VERT.pulleyRoomH, doorW: KV_VERT.doorMinW, doorH: KV_VERT.pulleyDoorH, above: KV_VERT.pulleyAbove } : undefined;
+  const size = (key: 'W' | 'D') => (
+    <Campo id={fieldId(key)} nome={ts(key)} aiuto={key === 'W' ? testoAiuto(AIUTO, 'W') : testoAiuto(AIUTO, 'D')} need={is(key)}
+      label={<>{ts(key)}<DalRilievo id={key} value={is(key) ? '' : inp.shaft[key]} /></>}>
+      <input id={fieldId(key)} className="input num" type="number" inputMode="numeric" min={500} max={10000} step={10} value={is(key) ? '' : inp.shaft[key]}
+        aria-required={is(key) || undefined} onChange={(e) => { const v = mmOf(e.target.value); if (v !== null) setSize(key, v); }} />
+    </Campo>
+  );
+  const fromCalc = tp('fromCalc'), locale = { id: passoId('locale'), n: numeri.locale };
+  return (
+    <form className="lift-form panel" autoComplete="off" noValidate onSubmit={(e) => e.preventDefault()}>
+      {blocco('base', <DalCalcolo P={P} X={X} base={base} projectId={projectId} when={when} canCalc={canCalc} passo={numeri.base} />)}
+      {blocco('vano', <>
+        <SectionTitle icon="building" id={passoId('vano')} className="passo-sez" passo={numeri.vano}>{t('s_shaft')}</SectionTitle>
+        <div className="form-grid">
+          {size('W')}
+          {size('D')}
+        </div>
+        <details className="survey">
+          <summary>{t('from_cad')}</summary>
+          <SurveyPanel onSurvey={onSurvey} />
+        </details>
+        <p className="note">{source ? ts('sourceCad', { file: source.file, format: source.format.toUpperCase() }) : ts('edited')}</p>
+        <ShaftOptions I={inp.shaft} set={setShaft} blank={blank} fixedQ={{ kg: inp.shaft.Q ?? 0, label: fromCalc }} />
+        {base.collaudo.aggiuntive?.includes('dm236') ? <p className="note">{tp('dm236')}</p> : null}
+        {blank.full ? (
+          <>
+            <ShaftTechOptions I={inp.shaft} set={setShaft} govSide={derived && !inp.shaft.governorSide ? derived.shaft.governorSide : undefined} />
+            <NicheOptions I={inp.shaft} set={setShaft} />
+            <HeadOptions I={inp.shaft} set={setShaft} />
+            <FrameOptions I={inp.shaft} set={setShaft} />
+            <ImbottiOptions I={inp.shaft} set={setShaft} />
+          </>
+        ) : null}
+      </>)}
+      {blocco('piani', <>
+        <SectionTitle icon="layers" id={passoId('piani')} className="passo-sez" passo={numeri.piani}>{t('s_floors')}</SectionTitle>
+        <VerticalOptions I={inp.shaft} set={setShaft} open blank={blank} fixedV={{ ms: inp.shaft.vertical.v, label: fromCalc }} />
+      </>)}
+      {above ? blocco('locale', (
+        <RoomOptions I={inp.shaft} set={setShaft} blank={blank} passo={locale}
+          machine={derived ? { D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null, heb: derived.heb, turn: roomGeo(derived.layout, derived.machine)?.dir, kept } : undefined}
+          panel={{ auto: !!inp.auto.panel, set: (on) => setAuto({ panel: on }), placed: derived && derived.origin.panel === 'auto' ? derived.shaft.room : null }} />
+      )) : pulley ? blocco('locale', <RoomOptions I={inp.shaft} set={setShaft} blank={blank} pulley={pulley} passo={locale} />) : null}
+      {blocco('funi', <>
+        <SectionTitle icon="gear" id={passoId('funi')} className="passo-sez" passo={numeri.funi}>{t('s_funi')}</SectionTitle>
+        <ProgettoFuni P={P} base={base.values} auto={inp.auto} bottom={inp.bottom} h={h} derived={derived} blank={blank} texts={texts} setAuto={setAuto} setBottom={setBottom}
+          t={(k, v) => t(k, v)} porta={porta ? { ...porta, label: tp('porta') } : null} calate={calate} kept={kept} />
+      </>)}
+      {uno ? (
+        <div className="passo-nav">
+          {uno.prima ? <button type="button" className="btn" onClick={() => uno.prima && uno.vai(uno.prima.id)}>{tpa('indietro', { passo: uno.prima.label })}</button> : <span />}
+          {uno.dopo ? <button type="button" className="btn btn-primary" onClick={() => uno.dopo && uno.vai(uno.dopo.id)}>{tpa('avanti', { passo: uno.dopo.label })}</button> : null}
+        </div>
+      ) : null}
+    </form>
+  );
+}

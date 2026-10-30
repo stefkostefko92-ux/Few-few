@@ -1,0 +1,1388 @@
+{
+  "key": "azienda",
+  "title": "L’azienda: dati, colleghi, permessi, listino e abbonamento",
+  "intro": [
+    "Questo capitolo riguarda tutto ciò che appartiene all’azienda e non a un singolo impianto: il logo e l’ordine delle sezioni delle schede di rilievo, i colleghi e i loro ruoli, i permessi di ogni ruolo, il listino prezzi, l’abbonamento, il registro delle attività e il registro delle norme.",
+    "Quasi tutte queste pagine sono riservate al Titolare, cioè a chi gestisce l’azienda. Alcune si aprono anche ai colleghi, ma solo se il Titolare ha dato loro il permesso corrispondente (pagina «Permessi»). Una pagina che il tuo ruolo non può aprire non compare nel menu; se provi ad aprirla digitando l’indirizzo, arrivi a una pagina che ti spiega che manca il permesso.",
+    "Quando una pagina dice «permessi predefiniti», intende la matrice di partenza descritta nella pagina «Permessi». Il Titolare può cambiarla per la sua azienda: se lavori in un’azienda che l’ha modificata, i diritti effettivi del tuo ruolo possono essere diversi da quelli indicati qui."
+  ],
+  "pages": [
+    {
+      "id": "azienda-dati",
+      "title": "Azienda",
+      "path": "/it/app/company",
+      "access": "La pagina si apre a chi ha il permesso «Esportare tutti i dati dell’azienda» o il permesso «Cambiare il logo dell’azienda e l’ordine delle sezioni delle schede di rilievo». Con i permessi predefiniti la vede solo il Titolare; i colleghi solo se il Titolare dà uno dei due permessi al Capotecnico (questi due permessi non si assegnano agli altri ruoli). Chi ha «Cambiare il logo…» modifica logo e ordine delle sezioni; chi ha solo l’esportazione scarica i dati. Se l’azienda è in sola lettura (nessun abbonamento attivo dopo la prova) la pagina resta visibile, ma logo e ordine delle sezioni non si cambiano.",
+      "reach": "Dal menu laterale, gruppo «Gestione», voce «Azienda».",
+      "purpose": [
+        "Qui imposti come l’azienda compare nei documenti: il logo nel cartiglio (il riquadro con i dati in basso) delle tavole, e l’ordine in cui le sezioni compaiono nelle schede di rilievo. Da qui scarichi anche tutti i dati dell’azienda in un unico file, utile per un archivio o per passare a un altro fornitore.",
+        "Il titolo della pagina è «Azienda» seguito dal nome della tua azienda. Le sezioni compaiono in questo ordine: logo, ordine delle sezioni (solo con il permesso di modifica e in modalità «Esperto»; in sola lettura, mostrato senza frecce), dati dell’azienda (solo con il permesso di esportazione)."
+      ],
+      "shots": [
+        {
+          "id": "azienda-pagina",
+          "what": "La pagina Azienda del Titolare con il logo caricato, l’elenco delle sezioni con le frecce e il pulsante per scaricare i dati"
+        },
+        {
+          "id": "azienda-sola-lettura",
+          "what": "La stessa pagina per un Capotecnico con il solo permesso di esportare: il logo non si cambia e l’ordine delle sezioni non compare"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Logo nel cartiglio delle tavole",
+          "intro": [
+            "Il logo compare nel cartiglio (il riquadro con i dati in basso) di tutte le tavole che emetti da quel momento. Il testo del riquadro dice: «PNG o JPEG, al massimo 300 KB. Le tavole già emesse tengono il logo con cui sono state emesse.»",
+            "Con un logo vedi l’anteprima «Logo attuale» con le sue dimensioni in pixel (‹larghezza› × ‹altezza› px); senza logo leggi «Nessun logo: il cartiglio porta il nome dell’azienda.»"
+          ],
+          "fields": [
+            {
+              "label": "File del logo",
+              "kind": "file",
+              "unit": "KB",
+              "values": "PNG o JPEG; al massimo 300 KB; ogni lato da 16 a 4000 pixel e al massimo 4 milioni di pixel in tutto (per esempio 2000 × 2000).",
+              "default": null,
+              "required": "sì, per usare «Carica il logo»",
+              "help": [
+                "È l’immagine che il programma stampa nel cartiglio delle tavole al posto del nome dell’azienda. Il formato è riconosciuto dal contenuto del file, non dal nome né dall’estensione.",
+                "Se il file supera 300 KB leggi «Il logo supera 300 KB.»; se non è un PNG o JPEG valido, o le dimensioni sono fuori misura, leggi «Il file non è un PNG o JPEG valido, o ha dimensioni fuori misura.» In tal caso riduci o riesporta l’immagine e riprova.",
+                "Dopo più di 20 caricamenti in un’ora il server risponde «Troppi tentativi. Riprova tra qualche minuto.»"
+              ],
+              "src": "src/components/tavole/LogoForm.tsx:29"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Carica il logo",
+              "help": "Carica il file e lo imposta come logo dell’azienda; conferma «Logo salvato.» Il logo nuovo vale per le tavole emesse da quel momento.",
+              "src": "src/components/tavole/LogoForm.tsx:32"
+            },
+            {
+              "label": "Togli il logo",
+              "help": "Compare solo se c’è già un logo. Toglie il logo dall’azienda (le immagini restano per le tavole già emesse); conferma «Logo salvato.» Le tavole nuove tornano a portare il nome dell’azienda.",
+              "src": "src/components/tavole/LogoForm.tsx:33"
+            }
+          ],
+          "notes": [
+            "Senza il permesso di modifica il modulo non compare e al suo posto leggi una nota: «Il logo si cambia quando l’azienda non è in sola lettura.» (azienda in sola lettura) oppure «Il logo dell’azienda lo cambia il Titolare o il Capotecnico a cui il Titolare ne ha dato il permesso.»",
+            "Il logo del committente (il cliente per cui lavori) non si gestisce qui: si gestisce nella pagina dell’impianto, con il permesso «Modificare i dati dell’impianto…»."
+          ],
+          "warnings": [
+            "Le tavole già emesse tengono il logo con cui sono state emesse: cambiare o togliere il logo qui non le modifica."
+          ]
+        },
+        {
+          "title": "Ordine delle sezioni della scheda",
+          "intro": [
+            "Questo ordine vale per tutte le schede di rilievo dell’azienda: il modulo, la pagina della scheda, la stampa e il PDF seguono lo stesso ordine. La sezione «Impianto» resta sempre in cima, con l’indicazione «Sempre in cima», perché identifica l’impianto. Le altre sezioni sono: «Ubicazione e accesso», «Tipologia», «Quadro», «Funi e tiranti», «Limitatore», «Cavi», «Serrature o sospensioni», «Allarme e telesoccorso», «Note e lavori»; l’ordine predefinito è quello appena elencato."
+          ],
+          "fields": [
+            {
+              "label": "Elenco delle sezioni (numerato)",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "Ogni sezione (tranne «Impianto») ha due frecce: «Sposta su …» e «Sposta giù …» con il nome della sezione. La freccia su è disattivata per la prima sezione mobile, la freccia giù per l’ultima.",
+              "default": "Ordine predefinito del programma, finché l’azienda non ne salva uno proprio.",
+              "required": "no",
+              "help": [
+                "Premi una freccia per spostare la sezione di un posto. Dopo ogni spostamento una riga di stato dice dove si trova ora la sezione, per esempio «‹Nome› ora è la 3ª sezione.», e aggiunge «Modifiche non salvate» finché non salvi. Il numero conta anche la sezione «Impianto».",
+                "Le frecce si usano anche da tastiera: il fuoco resta sul pulsante premuto, così puoi spostare la stessa sezione più volte di seguito.",
+                "Puoi riordinare le sezioni come preferisci per adattare la scheda al tuo modo di fare il sopralluogo; i dati già inseriti non cambiano, cambia solo la posizione in cui li vedi e li stampi."
+              ],
+              "src": "src/components/rilievi/SezioniForm.tsx:113"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Salva ordine",
+              "help": "Salva l’ordine mostrato. Conferma con «Ordine delle sezioni salvato.»",
+              "src": "src/components/rilievi/SezioniForm.tsx:143"
+            },
+            {
+              "label": "Ripristina l’ordine predefinito",
+              "help": "Torna all’ordine di partenza del programma. Conferma con «Ripristinato l’ordine predefinito delle sezioni.»",
+              "src": "src/components/rilievi/SezioniForm.tsx:152"
+            }
+          ],
+          "notes": [
+            "La sezione compare solo in modalità «Esperto»: in «Semplice» non si vede e le schede tengono l’ordine salvato.",
+            "Con l’azienda in sola lettura vedi l’ordine ma senza frecce né pulsanti; il testo sotto l’elenco dice «L’ordine si cambia quando l’azienda non è in sola lettura.»",
+            "Se l’ordine inviato non è valido, compare «L’ordine inviato non è valido. Ecco quello salvato: riprova.» con l’ordine salvato.",
+            "Il testo di spiegazione del pannello è «Vale per tutte le schede dell’azienda: modulo, pagina della scheda, stampa e PDF.»; sotto l’elenco, per chi può modificare: «Sposta una sezione con le frecce, poi salva. Impianto resta in cima: identifica l’impianto.»"
+          ]
+        },
+        {
+          "title": "Dati dell’azienda",
+          "intro": [
+            "Il pannello compare solo a chi ha il permesso di esportazione. Il file contiene tutti i dati inseriti dall’azienda: schede di rilievo, impianti, calcoli, progetti, tavole, listino, colleghi con i permessi dei ruoli e registro attività. È un file JSON, strutturato e leggibile da una macchina; serve anche per passare a un altro fornitore."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Scarica i dati (JSON)",
+              "help": "Scarica il file con i dati dell’azienda (il nome del file contiene il nome dell’azienda e la data). Ogni download resta nel registro attività come «Dati dell’azienda esportati». Puoi scaricare al massimo 6 volte all’ora: oltre, il programma ti chiede di riprovare più tardi.",
+              "src": "src/app/[locale]/app/company/page.tsx:58"
+            },
+            {
+              "label": "Com’è fatto il file: formati e struttura dei dati",
+              "help": "Apre in una nuova scheda la descrizione del formato del file.",
+              "src": "src/app/[locale]/app/company/page.tsx:59"
+            }
+          ],
+          "notes": [
+            "Il download resta disponibile anche con l’azienda in sola lettura: i tuoi dati ti appartengono anche senza abbonamento."
+          ]
+        }
+      ],
+      "tips": [
+        "Carica il logo prima di emettere la prima serie di tavole: quelle già emesse non si aggiornano da sole."
+      ]
+    },
+    {
+      "id": "azienda-utenti",
+      "title": "Utenti",
+      "path": "/it/app/team",
+      "access": "Solo il Titolare. Il permesso «Invitare e gestire gli utenti» non si assegna ai colleghi.",
+      "reach": "Dal menu laterale, gruppo «Gestione», voce «Utenti», oppure dal collegamento nel riepilogo dei posti di altre pagine.",
+      "purpose": [
+        "Gli account dei colleghi della tua azienda. Il Titolare li invita per e-mail, dà a ciascuno uno dei quattro ruoli (Capotecnico, Progettista, Tecnico, Commerciale) e decide, nella pagina «Permessi», che cosa può fare ogni ruolo. Ogni collega attivo e ogni invito in attesa occupa un posto dell’abbonamento.",
+        "Le sezioni compaiono in questo ordine: riepilogo dei posti e dei ruoli, tabella dei colleghi, tabella degli inviti in attesa (solo se ce ne sono), modulo «Invita un collega»."
+      ],
+      "shots": [
+        {
+          "id": "utenti-pagina",
+          "what": "La pagina Utenti con il riepilogo dei posti, la tabella dei colleghi e il modulo di invito"
+        },
+        {
+          "id": "utenti-password",
+          "what": "Il riquadro verde con la password temporanea, mostrata una sola volta (server senza posta attiva)"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Posti e ruoli",
+          "intro": [
+            "In alto leggi «Posti usati (colleghi attivi e inviti in attesa): X su Y.» Se l’abbonamento non è esente, accanto trovi il collegamento «Acquista o cambia i posti» verso la pagina Abbonamento. Se i posti sono illimitati compare il simbolo ∞.",
+            "Sotto, la nota «I permessi predefiniti di ogni ruolo; il Titolare li cambia per la sua azienda.» con il collegamento «Permessi dei ruoli», e per ogni ruolo una riga di spiegazione. Se hai cambiato i permessi di un ruolo, la sua riga aggiunge «modificato per la tua azienda»."
+          ],
+          "fields": [
+            {
+              "label": "Capotecnico (nota del ruolo)",
+              "kind": "testo",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "Coordina il lavoro tecnico: fa tutto ciò che fa il Progettista e in più gestisce il cestino dei rilievi, vede i prezzi e il registro attività. È l’unico ruolo a cui il Titolare può affidare anche il logo, l’ordine delle sezioni delle schede di rilievo e l’esportazione dei dati dell’azienda."
+              ],
+              "src": "messages/it.json team.roleNote.CHIEF_TECHNICIAN"
+            },
+            {
+              "label": "Progettista (nota del ruolo)",
+              "kind": "testo",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "Compila i rilievi e li sposta nel cestino, crea gli impianti e ne cura i dati, fa i calcoli dell’argano e mette il visto, disegna il progetto ed emette le tavole, archivia gli impianti; non vede i prezzi."
+              ],
+              "src": "messages/it.json team.roleNote.ENGINEER"
+            },
+            {
+              "label": "Tecnico (nota del ruolo)",
+              "kind": "testo",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "Compila i rilievi, crea gli impianti e ne cura i dati, fa i calcoli dell’argano; non sposta i rilievi nel cestino, non archivia gli impianti, non disegna il progetto, non emette le tavole, non mette il visto e non vede i prezzi."
+              ],
+              "src": "messages/it.json team.roleNote.TECHNICIAN"
+            },
+            {
+              "label": "Commerciale (nota del ruolo)",
+              "kind": "testo",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "Consulta rilievi e impianti, scarica relazioni, tavole e bozze d’ordine e vede i prezzi; non modifica nulla."
+              ],
+              "src": "messages/it.json team.roleNote.SALES"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Acquista o cambia i posti",
+              "help": "Apre la pagina Abbonamento. Compare solo se hai il permesso di gestire l’abbonamento e l’azienda è soggetta all’abbonamento.",
+              "src": "src/app/[locale]/app/team/page.tsx:106"
+            },
+            {
+              "label": "Permessi dei ruoli",
+              "help": "Apre la pagina Permessi.",
+              "src": "src/app/[locale]/app/team/page.tsx:107"
+            }
+          ],
+          "notes": [],
+          "warnings": [
+            "Se non ci sono posti liberi compare «Non ci sono posti liberi: acquista un pacchetto di posti, disattiva un collega o annulla un invito in attesa.»",
+            "Se provi a disattivare l’ultimo Titolare attivo, compare «Un’azienda ha sempre un Titolare attivo: l’ultimo non si disattiva.»"
+          ]
+        },
+        {
+          "title": "Tabella dei colleghi",
+          "intro": [
+            "La tabella ha le colonne «Nome» (con l’e-mail sotto), «Ruolo», «Stato», «Ultimo accesso» e «Azioni». Sulla tua riga, al posto delle azioni, leggi «sei tu»: non puoi cambiare il tuo ruolo né disattivarti."
+          ],
+          "fields": [
+            {
+              "label": "Nome",
+              "kind": "testo",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "Il nome del collega, con l’indirizzo e-mail sotto. Il nome compare nel registro attività e nelle relazioni tecniche."
+              ],
+              "src": "src/app/[locale]/app/team/page.tsx:125"
+            },
+            {
+              "label": "Ruolo",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Capotecnico, Progettista, Tecnico, Commerciale.",
+              "default": "Il ruolo attuale del collega.",
+              "required": "no",
+              "help": [
+                "Per cambiare il ruolo scegli il nuovo valore e premi «Salva». Il ruolo cambia subito i permessi del collega, secondo la pagina «Permessi».",
+                "Il ruolo del Titolare non si cambia da qui."
+              ],
+              "src": "src/app/[locale]/app/team/page.tsx:131"
+            },
+            {
+              "label": "Stato",
+              "kind": "testo",
+              "unit": null,
+              "values": "attivo, disattivato; con in più, sotto, «deve confermare l’e-mail» o «deve cambiare la password».",
+              "default": null,
+              "required": "no",
+              "help": [
+                "«deve confermare l’e-mail» significa che il collega non ha ancora aperto il link di conferma. «deve cambiare la password» compare dopo che una password temporanea è stata generata e il collega non l’ha ancora cambiata."
+              ],
+              "src": "src/app/[locale]/app/team/page.tsx:138"
+            },
+            {
+              "label": "Ultimo accesso",
+              "kind": "testo",
+              "unit": null,
+              "values": "Data e ora, oppure «—» se il collega non è mai entrato.",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Ti aiuta a capire quali account non si usano più e a liberare posti."
+              ],
+              "src": "src/app/[locale]/app/team/page.tsx:145"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Salva",
+              "help": "Salva il nuovo ruolo scelto nella riga del collega.",
+              "src": "src/app/[locale]/app/team/page.tsx:134"
+            },
+            {
+              "label": "Disattiva",
+              "help": "Il collega non può più accedere e le sue sessioni aperte finiscono subito. Libera il suo posto. I suoi dati restano all’azienda.",
+              "src": "src/app/[locale]/app/team/page.tsx:153"
+            },
+            {
+              "label": "Riattiva",
+              "help": "Riattiva un collega disattivato. Richiede un posto libero: altrimenti compare il messaggio dei posti esauriti.",
+              "src": "src/app/[locale]/app/team/page.tsx:153"
+            },
+            {
+              "label": "Nuova password",
+              "help": "Compare per i colleghi attivi. Con la posta attiva invia al collega un link per scegliere una nuova password (conferma: «Link per una nuova password inviato a …: la password attuale vale finché il collega non ne sceglie una nuova.»). Senza posta mostra una password temporanea, descritta sotto.",
+              "src": "src/components/ResetPasswordButton.tsx:206"
+            },
+            {
+              "label": "Elimina",
+              "help": "Compare al posto di «Nuova password» per i colleghi disattivati. Apre una conferma: «L’account del collega è cancellato per sempre; i progetti e i documenti che ha creato restano all’azienda, senza il suo nome, salvo le iniziali nelle tavole e il nome nelle relazioni tecniche già emesse.»",
+              "src": "src/app/[locale]/app/team/page.tsx:157"
+            },
+            {
+              "label": "Elimina definitivamente",
+              "help": "Conferma l’eliminazione. Puoi eliminare un collega solo dopo averlo disattivato.",
+              "src": "src/app/[locale]/app/team/page.tsx:162"
+            }
+          ],
+          "notes": [
+            "Se la posta del server non è attiva, «Nuova password» genera una password temporanea al posto del link: compare il riquadro verde «Password temporanea per ‹e-mail› (mostrata una sola volta):». Consegnala di persona o con un canale sicuro; al primo accesso l’utente sceglie la propria password. Con la posta attiva il collega riceve invece un link per sceglierla da sé.",
+            "Puoi gestire solo i colleghi di ruolo inferiore al tuo, e mai te stesso. Il ruolo del Titolare non si cambia da qui."
+          ],
+          "warnings": [
+            "La password temporanea si vede una sola volta: se la perdi premi di nuovo «Nuova password» (genera una password diversa).",
+            "«Elimina definitivamente» cancella l’account per sempre e non si annulla. «Disattiva» chiude subito le sessioni aperte del collega.",
+            "Puoi eliminare un collega solo dopo averlo disattivato; il Titolare non si elimina e l’ultimo Titolare attivo non si disattiva."
+          ]
+        },
+        {
+          "title": "Inviti in attesa",
+          "intro": [
+            "La tabella compare solo se ci sono inviti non ancora accettati. Colonne: «Nome» (con l’e-mail), «Ruolo», «Stato» e «Azioni». Lo stato è «invitato» con «il link scade il ‹data›». Ogni invito occupa un posto finché è in attesa."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Invia di nuovo",
+              "help": "Invia un nuovo link e annulla il precedente. Per lo stesso indirizzo il programma limita il numero di e-mail all’ora.",
+              "src": "src/app/[locale]/app/team/page.tsx:191"
+            },
+            {
+              "label": "Annulla l’invito",
+              "help": "Revoca l’invito e libera il posto.",
+              "src": "src/app/[locale]/app/team/page.tsx:196"
+            }
+          ],
+          "notes": []
+        },
+        {
+          "title": "Invita un collega",
+          "intro": [
+            "Il collega riceve un’e-mail con un link e sceglie da sé la password: nessuna password passa da te. Il link vale 7 giorni. Dopo l’invio compare «Invito inviato a ‹e-mail›: il collega apre il link dell’e-mail e sceglie la sua password (il link vale 7 giorni). Nessuna password passa da te.»"
+          ],
+          "fields": [
+            {
+              "label": "Nome *",
+              "kind": "testo",
+              "unit": null,
+              "values": "Da 1 a 120 caratteri, su una riga.",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "Il nome e il cognome del collega, come devono comparire nei documenti e nel registro attività."
+              ],
+              "src": "src/components/CreateUserForm.tsx:181"
+            },
+            {
+              "label": "E-mail *",
+              "kind": "email",
+              "unit": null,
+              "values": "Un indirizzo valido, al massimo 254 caratteri. Un indirizzo già usato nella tua azienda viene rifiutato.",
+              "default": null,
+              "required": "sì",
+              "help": [
+                "L’indirizzo a cui arriva il link di invito. Diventa il nome utente del collega. A ogni indirizzo corrisponde un solo account."
+              ],
+              "src": "src/components/CreateUserForm.tsx:182"
+            },
+            {
+              "label": "Ruolo",
+              "kind": "scelta",
+              "unit": null,
+              "values": "Capotecnico, Progettista, Tecnico, Commerciale.",
+              "default": "Tecnico",
+              "required": "sì (è già scelto)",
+              "help": [
+                "Scegli il ruolo in base al lavoro che il collega farà; i permessi del ruolo si vedono e si cambiano nella pagina «Permessi». Puoi cambiare il ruolo anche dopo."
+              ],
+              "src": "src/components/CreateUserForm.tsx:183"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Invia l’invito",
+              "help": "Invia l’invito. È disattivato se non ci sono posti liberi. Se la posta del server non è attiva compare «L’invio delle e-mail non è ancora attivo: riprova più tardi o scrivi a info@carbonstealth.eu.»",
+              "src": "src/components/CreateUserForm.tsx:187"
+            }
+          ],
+          "warnings": [
+            "Se non ci sono posti liberi sopra il modulo compare «Non ci sono posti liberi: acquista un pacchetto di posti, disattiva un collega o annulla un invito in attesa.»",
+            "Durante la prova gratuita non si possono aggiungere colleghi: i posti dei pacchetti si acquistano con l’abbonamento."
+          ],
+          "notes": []
+        }
+      ],
+      "tips": [
+        "Per non occupare posti inutilmente, disattiva i colleghi che non lavorano più con te e annulla gli inviti scaduti."
+      ]
+    },
+    {
+      "id": "azienda-permessi",
+      "title": "Permessi",
+      "path": "/it/app/permessi",
+      "access": "Solo il Titolare (il permesso «Gestire i permessi» non si assegna ai colleghi).",
+      "reach": "Dal menu laterale, gruppo «Gestione», voce «Permessi», oppure dal collegamento «Permessi dei ruoli» nella pagina Utenti.",
+      "purpose": [
+        "Qui decidi che cosa può fare ogni ruolo nella tua azienda. Il Titolare ha sempre tutti i permessi; la gestione degli utenti, dei permessi e dell’abbonamento resta solo sua.",
+        "La pagina è una matrice: le azioni (raggruppate) sono in riga, i ruoli in colonna: Titolare, Capotecnico, Progettista, Tecnico, Commerciale. Ogni casella è un permesso. Le modifiche valgono dalla prossima pagina che ogni collega apre e restano nel registro attività.",
+        "Sul telefono la matrice mostra un ruolo alla volta: scegli il ruolo con i pulsanti sopra, sotto «Ruolo mostrato»."
+      ],
+      "shots": [
+        {
+          "id": "permessi-matrice",
+          "what": "La matrice dei permessi con la colonna del Capotecnico e alcune modifiche non salvate"
+        },
+        {
+          "id": "permessi-conferma",
+          "what": "La finestra «Salvare i permessi?» con l’elenco delle modifiche"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Come si legge la matrice",
+          "intro": [
+            "Sotto la matrice una legenda spiega le caselle: «concesso», «sempre concesso (Titolare)», «non concesso», «bloccato dalle regole», «diverso dal predefinito», «modifica non salvata».",
+            "Sotto il nome di ogni ruolo vedi «predefinito» se la colonna è quella di partenza, oppure il numero di permessi diversi («1 diverso dal predefinito», «3 diversi dal predefinito»). La colonna del Titolare dice «sempre tutto» e non si modifica.",
+            "Tre regole fisse non si possono cambiare. Un lucchetto sulla casella le segnala: «Il Titolare ha sempre tutti i permessi.», «Solo del Titolare: non si assegna ai colleghi.» (utenti, permessi, abbonamento) e «Si assegna solo al Capotecnico.» (logo e ordine delle sezioni, esportazione dei dati).",
+            "Alcuni permessi richiedono un altro permesso: sotto il nome dell’azione leggi «Richiede: …». Se spunti un permesso, il programma concede anche quelli che richiede; se ne togli uno, toglie anche quelli che ne dipendono. Una riga sotto la matrice lo dice, per esempio «Concessi anche a ‹ruolo›, perché servono: …» oppure «Tolti anche a ‹ruolo›, perché ne dipendono: …».",
+            "Due permessi seguono automaticamente altri permessi e non hanno una riga propria: chi vede gli impianti vede anche i loro calcoli e progetti; chi fa i calcoli può rifare un calcolo salvato quando il software è stato aggiornato."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "Con l’azienda in sola lettura (nessun abbonamento attivo dopo la prova) i permessi di scrittura sono sospesi per tutti, anche se la matrice li concede: restano attivi la consultazione, il download, l’esportazione dei dati, la gestione di colleghi e permessi e l’abbonamento.",
+            "Il Titolare è l’unico ruolo che ha sempre tutti i permessi, anche quelli non assegnabili ai colleghi."
+          ]
+        },
+        {
+          "title": "Rilievi",
+          "intro": [
+            "Le schede di rilievo (i sopralluoghi in cantiere). Valori predefiniti: C = Capotecnico, P = Progettista, T = Tecnico, Co = Commerciale."
+          ],
+          "fields": [
+            {
+              "label": "Vedere le schede di rilievo e scaricarne i PDF",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, P, T, Co (tutti)",
+              "required": "no",
+              "help": [
+                "Consente di aprire le schede di rilievo e scaricarne il PDF. Le altre azioni sui rilievi lo richiedono."
+              ],
+              "src": "src/lib/rbac.ts:87"
+            },
+            {
+              "label": "Compilare e modificare le schede e i moduli dei fornitori",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, P, T (non il Commerciale)",
+              "required": "no",
+              "help": [
+                "Consente di creare e compilare le schede e i moduli dei fornitori. Richiede: Vedere i rilievi."
+              ],
+              "src": "src/lib/rbac.ts:87"
+            },
+            {
+              "label": "Spostare una scheda nel cestino",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, P",
+              "required": "no",
+              "help": [
+                "Consente di mettere una scheda nel cestino, da cui si può ripristinare. Richiede: Vedere i rilievi."
+              ],
+              "src": "src/lib/rbac.ts:87"
+            },
+            {
+              "label": "Gestire il cestino: ripristinare o eliminare per sempre",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C",
+              "required": "no",
+              "help": [
+                "Consente di ripristinare una scheda dal cestino o eliminarla definitivamente. Richiede: Vedere i rilievi."
+              ],
+              "src": "src/lib/rbac.ts:87"
+            }
+          ],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Impianti",
+          "intro": [
+            "Gli impianti (gli ascensori su cui lavori) con i loro calcoli, progetti e tavole."
+          ],
+          "fields": [
+            {
+              "label": "Vedere gli impianti con calcoli, progetti e tavole",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, P, T, Co (tutti)",
+              "required": "no",
+              "help": [
+                "Consente di aprire gli impianti e di consultare i loro calcoli, progetti e tavole. Su questo permesso si appoggiano molti altri."
+              ],
+              "src": "src/lib/rbac.ts:89"
+            },
+            {
+              "label": "Creare un impianto",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, P, T",
+              "required": "no",
+              "help": [
+                "Consente di aprire un nuovo impianto. Non dà da solo il diritto di fare il calcolo o il progetto. Richiede: Vedere gli impianti."
+              ],
+              "src": "src/lib/rbac.ts:89"
+            },
+            {
+              "label": "Collegare un rilievo a un impianto",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, P, T",
+              "required": "no",
+              "help": [
+                "Consente di collegare (o scollegare) una scheda di rilievo a un impianto. Richiede: Vedere gli impianti, Vedere i rilievi."
+              ],
+              "src": "src/lib/rbac.ts:89"
+            },
+            {
+              "label": "Modificare i dati dell’impianto (anche l’anagrafica per la relazione tecnica) e il logo del committente; caricare, modificare ed eliminare i documenti dell’impianto",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, P, T",
+              "required": "no",
+              "help": [
+                "Consente di cambiare i dati dell’impianto, l’anagrafica (proprietario, manutentore, approvazione) usata nella relazione tecnica, il logo del committente e i documenti caricati. Richiede: Vedere gli impianti."
+              ],
+              "src": "src/lib/rbac.ts:89"
+            },
+            {
+              "label": "Archiviare e ripristinare gli impianti",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, P",
+              "required": "no",
+              "help": [
+                "Consente di archiviare un impianto e di ripristinarlo. Richiede: Vedere gli impianti."
+              ],
+              "src": "src/lib/rbac.ts:89"
+            }
+          ],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Calcolo argano",
+          "intro": [],
+          "fields": [
+            {
+              "label": "Calcolo argano: scegliere il tipo di intervento, le parti e il collaudo, fare il calcolo e aggiornarlo al software attuale",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, P, T",
+              "required": "no",
+              "help": [
+                "Consente di fare il calcolo dell’argano e di rifarlo quando le regole del software sono state aggiornate. Richiede: Vedere gli impianti."
+              ],
+              "src": "src/lib/rbac.ts:91"
+            },
+            {
+              "label": "Mettere il visto ai calcoli",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, P",
+              "required": "no",
+              "help": [
+                "Consente di approvare un calcolo con il visto. Richiede: Vedere gli impianti."
+              ],
+              "src": "src/lib/rbac.ts:91"
+            }
+          ],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Progetto",
+          "intro": [],
+          "fields": [
+            {
+              "label": "Progetto: disegnare il vano o rilevare il locale macchina",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, P",
+              "required": "no",
+              "help": [
+                "Consente di disegnare il progetto del vano o di rilevare il locale macchina. Richiede: Vedere gli impianti."
+              ],
+              "src": "src/lib/rbac.ts:93"
+            },
+            {
+              "label": "Emettere le tavole e le relazioni tecniche di modifica, con le loro revisioni",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, P",
+              "required": "no",
+              "help": [
+                "Consente di emettere le serie di tavole e le relazioni tecniche di modifica e di emetterne le revisioni. Richiede: Vedere gli impianti."
+              ],
+              "src": "src/lib/rbac.ts:93"
+            }
+          ],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Documenti",
+          "intro": [],
+          "fields": [
+            {
+              "label": "Scaricare relazioni, tavole, DXF, DWG e SVG, bozze d’ordine e documenti caricati",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, P, T, Co (tutti)",
+              "required": "no",
+              "help": [
+                "Consente di scaricare tutti i documenti prodotti dal programma e i documenti caricati. Richiede: Vedere gli impianti."
+              ],
+              "src": "src/lib/rbac.ts:94"
+            }
+          ],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Prezzi",
+          "intro": [],
+          "fields": [
+            {
+              "label": "Vedere i prezzi e il listino",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C, Co",
+              "required": "no",
+              "help": [
+                "Consente di aprire il listino e di vedere i costi e le bozze d’ordine con i prezzi nei progetti."
+              ],
+              "src": "src/lib/rbac.ts:95"
+            },
+            {
+              "label": "Modificare il listino",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "nessun collega (solo il Titolare)",
+              "required": "no",
+              "help": [
+                "Consente di cambiare i prezzi e le voci libere. Richiede: Vedere i prezzi."
+              ],
+              "src": "src/lib/rbac.ts:95"
+            }
+          ],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Azienda",
+          "intro": [],
+          "fields": [
+            {
+              "label": "Vedere il registro attività",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso",
+              "default": "C",
+              "required": "no",
+              "help": [
+                "Consente di aprire la pagina «Registro attività»."
+              ],
+              "src": "src/lib/rbac.ts:97"
+            },
+            {
+              "label": "Cambiare il logo dell’azienda e l’ordine delle sezioni delle schede di rilievo",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso; solo per il Capotecnico (lucchetto «Si assegna solo al Capotecnico.»)",
+              "default": "nessun collega (solo il Titolare)",
+              "required": "no",
+              "help": [
+                "Consente di cambiare il logo nel cartiglio e l’ordine delle sezioni nella pagina «Azienda»."
+              ],
+              "src": "src/lib/rbac.ts:97"
+            },
+            {
+              "label": "Esportare tutti i dati dell’azienda",
+              "kind": "casella",
+              "unit": null,
+              "values": "concesso / non concesso; solo per il Capotecnico",
+              "default": "nessun collega (solo il Titolare)",
+              "required": "no",
+              "help": [
+                "Consente di scaricare il file JSON con tutti i dati dell’azienda dalla pagina «Azienda»."
+              ],
+              "src": "src/lib/rbac.ts:97"
+            },
+            {
+              "label": "Invitare e gestire gli utenti",
+              "kind": "casella",
+              "unit": null,
+              "values": "sempre non concesso ai colleghi (lucchetto «Solo del Titolare: non si assegna ai colleghi.»)",
+              "default": "solo il Titolare",
+              "required": "no",
+              "help": [
+                "Dà accesso alla pagina «Utenti»."
+              ],
+              "src": "src/lib/rbac.ts:98"
+            },
+            {
+              "label": "Gestire i permessi",
+              "kind": "casella",
+              "unit": null,
+              "values": "sempre non concesso ai colleghi",
+              "default": "solo il Titolare",
+              "required": "no",
+              "help": [
+                "Dà accesso a questa pagina."
+              ],
+              "src": "src/lib/rbac.ts:98"
+            },
+            {
+              "label": "Gestire l’abbonamento",
+              "kind": "casella",
+              "unit": null,
+              "values": "sempre non concesso ai colleghi",
+              "default": "solo il Titolare",
+              "required": "no",
+              "help": [
+                "Dà accesso alla pagina «Abbonamento»."
+              ],
+              "src": "src/lib/rbac.ts:98"
+            }
+          ],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Salvataggio",
+          "intro": [
+            "Nessuna modifica vale finché non la salvi. In basso una barra mostra lo stato: «Nessuna modifica da salvare» oppure «‹n› modifiche non salvate». Se lasci la pagina con modifiche non salvate il browser ti chiede conferma."
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Ripristina predefiniti",
+              "help": "Compare nell’intestazione di ogni colonna dei colleghi: riporta quella colonna ai permessi di partenza (non salva finché non confermi). È disattivato se la colonna è già quella predefinita.",
+              "src": "src/components/permessi/PermissionsMatrix.tsx:235"
+            },
+            {
+              "label": "Annulla le modifiche",
+              "help": "Scarta tutte le modifiche non salvate e torna alla matrice in vigore.",
+              "src": "src/components/permessi/PermissionsMatrix.tsx:290"
+            },
+            {
+              "label": "Salva i permessi",
+              "help": "Apre la finestra «Salvare i permessi?», che elenca ogni cambiamento, ruolo per ruolo, con «concesso → non concesso» o il contrario.",
+              "src": "src/components/permessi/PermissionsMatrix.tsx:291"
+            },
+            {
+              "label": "Conferma e salva",
+              "help": "Salva i cambiamenti. Conferma con «‹n› permessi salvati. Valgono dalla prossima pagina che ogni collega apre.»",
+              "src": "src/components/permessi/ConfirmSave.tsx:54"
+            },
+            {
+              "label": "Torna alla matrice",
+              "help": "Chiude la finestra senza salvare.",
+              "src": "src/components/permessi/ConfirmSave.tsx:55"
+            }
+          ],
+          "notes": [
+            "Se fai troppi salvataggi di fila compare «Troppi salvataggi. Riprova tra qualche minuto.»",
+            "Quando è la piattaforma LiftPilot a cambiare i permessi della tua azienda, su tua richiesta scritta, nella sua finestra di conferma indica il riferimento della richiesta (data e oggetto della tua e-mail), che resta nel registro attività dell’azienda."
+          ],
+          "warnings": [
+            "Una modifica salvata vale subito, dalla prossima pagina che ogni collega apre: togliere un permesso può impedire a un collega di proseguire un lavoro in corso.",
+            "Se lasci la pagina con modifiche non salvate, le perdi (il browser chiede conferma).",
+            "Se nel frattempo qualcun altro ha cambiato i permessi, compare «Nel frattempo i permessi sono stati cambiati da qualcun altro: la matrice mostra ora quelli in vigore. Rifai le modifiche e salva di nuovo.»: le tue modifiche non sono salvate."
+          ]
+        }
+      ],
+      "tips": [
+        "Per dare al Commerciale la sola consultazione dei prezzi non devi fare nulla: è già nei permessi predefiniti. Per far modificare il listino a un collega devi dargli prima «Vedere i prezzi e il listino» e poi «Modificare il listino».",
+        "Prima di togliere un permesso a un ruolo leggi la riga che il programma mostra sotto la matrice: ti dice quali altri permessi vengono tolti con quello."
+      ]
+    },
+    {
+      "id": "azienda-listino",
+      "title": "Listino prezzi",
+      "path": "/it/app/prices",
+      "access": "Chi ha il permesso «Vedere i prezzi e il listino» (con i permessi predefiniti Titolare, Capotecnico e Commerciale) vede il listino. Chi ha anche «Modificare il listino» (con i predefiniti solo il Titolare) lo modifica; gli altri lo leggono soltanto. Con l’azienda in sola lettura il listino non si modifica.",
+      "reach": "Dal menu laterale, gruppo «Libreria», voce «Listino» (la pagina si intitola «Listino prezzi»).",
+      "purpose": [
+        "Il listino contiene i prezzi dell’azienda per ogni articolo che il software mette nei progetti, IVA esclusa. I costi dei progetti e le bozze d’ordine prendono i prezzi da qui, e solo per chi ha il permesso di vedere i prezzi. Gli articoli Panev partono dal listino Panev 2026; gli altri li inserisci tu.",
+        "Il costo di un progetto conta gli articoli che il software progetta e quelli che ricava dal progetto (quadro, impianto elettrico, segnalazioni, manodopera), con le quantità calcolate in automatico, più le voci libere; una modifica secondo UNI 10411 conta solo le parti sostituite. Non comprende le opere murarie."
+      ],
+      "shots": [
+        {
+          "id": "listino-pagina",
+          "what": "Il listino con la barra di ricerca, un gruppo di articoli con i prezzi e la tabella delle voci libere"
+        },
+        {
+          "id": "listino-lettura",
+          "what": "Il listino visto da chi può solo consultarlo (prezzi senza campi)"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Ricerca e salvataggio",
+          "intro": [
+            "In alto, una barra di ricerca e il pulsante di salvataggio (solo per chi modifica). La ricerca nasconde gli articoli che non corrispondono: gli articoli nascosti non vengono toccati e tengono il loro prezzo quando salvi."
+          ],
+          "fields": [
+            {
+              "label": "Cerca un articolo",
+              "kind": "testo",
+              "unit": null,
+              "values": "Testo libero",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Filtra l’elenco in base al nome dell’articolo, per esempio una sigla di macchina. Se nulla corrisponde, leggi «Nessun articolo corrisponde alla ricerca.»"
+              ],
+              "src": "src/components/prices/PriceList.tsx:45"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Salva i prezzi",
+              "help": "Salva tutti i prezzi e le voci libere insieme. Conferma con «Prezzi salvati (‹n› modifiche).» Il pulsante compare anche in fondo alla pagina.",
+              "src": "src/components/prices/PriceList.tsx:32"
+            }
+          ],
+          "notes": [
+            "I tentativi di salvataggio sono al massimo 30 all’ora."
+          ],
+          "warnings": [
+            "Se anche una sola riga non è valida non viene salvato niente: vedi «‹n› righe non valide: scrivi i prezzi in cifre con al massimo due decimali, per esempio 1.250,50; ogni voce libera vuole una descrizione e un prezzo.» e le righe errate sono segnate."
+          ]
+        },
+        {
+          "title": "Articoli per gruppo",
+          "intro": [
+            "Gli articoli sono divisi in gruppi, ognuno con il titolo e il conteggio «‹n› su ‹m› con prezzo». I gruppi, nell’ordine, sono: «Argani», «Basamenti SICOR con puleggia di rinvio», «Basamenti e supporti dell’argano», «Funi», «Guide e piastre di giunzione», «Staffe delle guide», «Staffe e supporti Panev», «Porte», «Limitatori, tenditori e ammortizzatori», «Cabina, arcata e contrappeso», «Quadro, impianto elettrico e segnalazioni», «Manodopera e lavori». Un gruppo senza articoli corrispondenti alla ricerca non compare.",
+            "La tabella di ogni gruppo ha tre colonne: «Articolo», «Prezzo» e «Origine»."
+          ],
+          "fields": [
+            {
+              "label": "Articolo",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Il nome dell’articolo, per esempio una macchina, un basamento, una fune di un certo diametro, un profilo HEB, una staffa Panev.",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Non si modifica: l’elenco degli articoli lo decide il programma, perché sono quelli che il calcolo e il progetto possono mettere in un progetto."
+              ],
+              "src": "src/components/prices/PriceList.tsx:58"
+            },
+            {
+              "label": "Prezzo",
+              "kind": "numero",
+              "unit": "€ per l’unità dell’articolo (€/pz, €/m, €/kg, €/fermata, € a corpo)",
+              "values": "Cifre con al massimo due decimali, separatore decimale la virgola (o il punto); le migliaia con il punto («1.250,50») o con lo spazio; il simbolo € è ammesso. Da 0 a 10.000.000 €. Al massimo 16 caratteri. IVA esclusa.",
+              "default": "Per gli articoli Panev, il prezzo del listino Panev 2026; per tutti gli altri nessun prezzo.",
+              "required": "no (un articolo senza prezzo non entra nel totale del costo)",
+              "help": [
+                "L’unità del prezzo è scritta accanto al campo: «€/pz» al pezzo, «€/m» al metro, «€/kg» al chilogrammo, «€/fermata» per fermata (la manodopera del cottimista, contata sulle fermate dell’impianto) e «€ a corpo» per un importo forfettario. Per chi può solo consultare il listino il prezzo è scritto con la stessa unità, oppure «—» se manca.",
+                "Per tornare al prezzo di partenza (o a nessun prezzo) svuota il campo e salva. Scrivere di nuovo il prezzo di partenza equivale a non avere un prezzo proprio."
+              ],
+              "src": "src/components/prices/PriceList.tsx:66"
+            },
+            {
+              "label": "Origine",
+              "kind": "testo",
+              "unit": null,
+              "values": "«prezzo dell’azienda», «listino Panev 2026, p. 65» (per gli articoli Panev) oppure «—».",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Dice da dove viene il prezzo che vedi: «prezzo dell’azienda» se lo hai scritto tu, «listino Panev 2026, p. 65» se è il prezzo di partenza del listino Panev, «—» se non c’è alcun prezzo."
+              ],
+              "src": "src/components/prices/PriceList.tsx:72"
+            }
+          ],
+          "actions": [],
+          "notes": [],
+          "warnings": [
+            "Svuotando il campo di un prezzo e salvando, il prezzo dell’azienda viene tolto e torna quello di partenza (o nessun prezzo): un articolo senza prezzo non entra più nel totale del costo."
+          ]
+        },
+        {
+          "title": "Voci a stesura libera",
+          "intro": [
+            "Le tue voci, con la descrizione e il prezzo: il software le aggiunge da solo al costo dei progetti che scegli, con la quantità calcolata — una volta, per fermata o per metro di corsa. Una riga vuota si elimina quando salvi. Il titolo mostra il conteggio, per esempio «2 voci». Chi non può modificare il listino vede la sezione in sola lettura. Se non ce ne sono leggi «Nessuna voce libera.»",
+            "La tabella ha le colonne «Descrizione», «Prezzo», «Quantità», «Progetti» e, per chi modifica, una colonna senza titolo visibile (il lettore di schermo la legge «Azioni») con il pulsante per eliminare la riga. Le voci libere sono al massimo 100."
+          ],
+          "fields": [
+            {
+              "label": "Descrizione",
+              "kind": "testo",
+              "unit": null,
+              "values": "Al massimo 120 caratteri, su una riga.",
+              "default": null,
+              "required": "sì, se la riga ha un prezzo",
+              "help": [
+                "Il testo della voce, che compare nel costo del progetto. Il segnaposto suggerisce «Per esempio: trasporto e scarico in cantiere»."
+              ],
+              "src": "src/components/prices/CustomRows.tsx:139"
+            },
+            {
+              "label": "Prezzo",
+              "kind": "numero",
+              "unit": "€ per l’unità scelta nella colonna «Quantità» (€ a corpo, €/fermata, €/m)",
+              "values": "Come per i prezzi degli articoli: al massimo due decimali, da 0 a 10.000.000 €, IVA esclusa.",
+              "default": null,
+              "required": "sì, se la riga ha una descrizione",
+              "help": [
+                "Una riga con la sola descrizione o il solo prezzo non è valida. Una riga con entrambi i campi vuoti viene scartata al salvataggio."
+              ],
+              "src": "src/components/prices/CustomRows.tsx:144"
+            },
+            {
+              "label": "Quantità",
+              "kind": "scelta",
+              "unit": null,
+              "values": "«A corpo (una volta per progetto)», «Per fermata», «Per metro di corsa».",
+              "default": "A corpo (una volta per progetto)",
+              "required": "sì (è già scelto)",
+              "help": [
+                "Dice come il programma calcola la quantità in ogni progetto: una volta sola; tante volte quante sono le fermate; tante volte quanti sono i metri di corsa.",
+                "Nella sostituzione dell’argano le fermate non sono note: le voci «Per fermata» non vengono contate e il costo le elenca a parte."
+              ],
+              "src": "src/components/prices/CustomRows.tsx:150"
+            },
+            {
+              "label": "Progetti",
+              "kind": "scelta",
+              "unit": null,
+              "values": "«Tutti i progetti», «Trasformazione completa (UNI EN 81-20/50)», «Solo argano e ammodernamento (UNI 10411)».",
+              "default": "Tutti i progetti",
+              "required": "sì (è già scelto)",
+              "help": [
+                "Decide in quali tipi di progetto la voce entra: in tutti, solo nelle trasformazioni complete, oppure solo nella sostituzione dell’argano e nell’ammodernamento."
+              ],
+              "src": "src/components/prices/CustomRows.tsx:156"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Aggiungi una voce",
+              "help": "Aggiunge una riga vuota in fondo. Si disattiva quando raggiungi il limite, con il messaggio «Al massimo 100 voci.»",
+              "src": "src/components/prices/CustomRows.tsx:183"
+            },
+            {
+              "label": "Elimina",
+              "help": "Toglie la riga dall’elenco; la modifica vale dopo «Salva i prezzi».",
+              "src": "src/components/prices/CustomRows.tsx:163"
+            }
+          ],
+          "notes": [
+            "Il costo di ogni progetto può avvisarti di voci non contate, per esempio «Voci libere per fermata non contate…» o parti sostituite senza progetto dell’impianto: in quel caso aggiungile come voci libere oppure fai il progetto."
+          ],
+          "warnings": [
+            "Una riga con solo la descrizione o solo il prezzo non è valida e blocca il salvataggio di tutto il listino; una riga con entrambi i campi vuoti viene scartata. «Elimina» toglie la voce dai costi dei progetti dopo il salvataggio."
+          ]
+        }
+      ],
+      "tips": [
+        "Compila il listino prima di preparare i costi dei progetti: un articolo senza prezzo non entra nel totale e il costo ti dice quanti articoli mancano («‹n› articoli senza prezzo: il totale non li conta.»).",
+        "Le lunghezze nel costo sono stime ricavate dal progetto: sostituiscile con le misure prese in sito."
+      ]
+    },
+    {
+      "id": "azienda-abbonamento",
+      "title": "Abbonamento",
+      "path": "/it/app/billing",
+      "access": "Solo il Titolare. Il permesso «Gestire l’abbonamento» non si assegna ai colleghi.",
+      "reach": "Dal menu laterale, gruppo «Gestione», voce «Abbonamento»; dal pulsante «Abbonamento» della fascia in alto durante la prova o dopo un pagamento non riuscito; dal collegamento «Acquista o cambia i posti» nella pagina Utenti.",
+      "purpose": [
+        "Qui vedi lo stato dell’abbonamento, scegli il pacchetto di posti per i colleghi e vai al pagamento. Il prezzo mensile comprende il Titolare; i colleghi occupano i posti dei pacchetti, acquistati in aggiunta al prezzo mensile. I pagamenti sono gestiti da Stripe: LiftPilot non vede né conserva i dati della carta.",
+        "Le sezioni compaiono in questo ordine: messaggi, stato, attivazione o cambio del pacchetto (solo se la fatturazione è attiva sul server), condizioni in breve.",
+        "Finché la fatturazione non è attiva sul server, il menu laterale mostra la scritta «Beta gratuita» e tutte le funzioni sono disponibili senza limiti di utenti."
+      ],
+      "shots": [
+        {
+          "id": "abbonamento-pagina",
+          "what": "La pagina Abbonamento durante la beta gratuita: stato «Senza fatturazione» e condizioni in breve"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Fascia in alto (su tutte le pagine)",
+          "intro": [
+            "Durante la prova, con un pagamento non riuscito o con l’azienda in sola lettura, una fascia sotto la barra in alto ti avvisa in ogni pagina: «Prova gratuita: ‹n› giorni rimasti.», «Il pagamento dell’abbonamento non è riuscito: Stripe lo sta riprovando.» oppure «Abbonamento non attivo: i progetti sono in sola lettura.» Il Titolare trova il pulsante «Abbonamento»; i colleghi leggono «Lo gestisce il Titolare dell’azienda.»"
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Stato",
+          "intro": [
+            "Un’etichetta mostra lo stato: «Senza fatturazione», «In prova», «Attivo», «Pagamento in sospeso» o «Sola lettura», e sotto un testo che lo spiega. Per esempio: «Prova gratuita fino al ‹data› (‹n› giorni rimasti). Durante la prova non si possono aggiungere colleghi.»; «Abbonamento attivo: si rinnova il ‹data›.»; «Abbonamento disdetto: resta attivo fino al ‹data›, poi i progetti passano in sola lettura.»; «Nessun abbonamento attivo: i progetti sono in sola lettura (si possono consultare e scaricare, non modificare).» Se il pagamento non è riuscito leggi che Stripe lo sta riprovando e che nel frattempo non si possono aggiungere colleghi.",
+            "Se la fatturazione non è attiva sul server leggi «La fatturazione non è attiva su questo server: tutte le funzioni sono disponibili, senza limiti di utenti.»; se l’azienda è esente, «Questa azienda non è soggetta all’abbonamento.»",
+            "Sotto, «Posti usati (colleghi attivi e inviti in attesa): X su Y.»"
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "Dopo il pagamento compare «Pagamento completato: l’abbonamento si attiva appena Stripe lo conferma, di solito in pochi secondi. Ricarica la pagina se lo stato non è cambiato.» Dopo un cambio di pacchetto compare «Pacchetto cambiato.»",
+            "Il Titolare non occupa un posto dei pacchetti: i posti contano solo i colleghi attivi e gli inviti in attesa."
+          ],
+          "warnings": [
+            "Senza abbonamento attivo dopo la prova i progetti passano in sola lettura (si consultano e si scaricano, non si modificano) e i colleghi oltre i posti pagati sono disattivati, a partire dai più recenti."
+          ]
+        },
+        {
+          "title": "Attiva l’abbonamento / Cambia il pacchetto di posti",
+          "intro": [
+            "Il titolo è «Attiva l’abbonamento» se non ne hai ancora uno e «Cambia il pacchetto di posti» se è già attivo. La sezione compare solo quando la fatturazione è attiva sul server. Sopra le scelte leggi «Prezzo per il Titolare: ‹importo› ‹periodo›.» con l’indicazione se i prezzi sono IVA esclusa o inclusa. Se le condizioni d’uso in vigore non sono state accettate, al posto delle scelte compare l’avviso con il collegamento «Leggi e accetta»; se il prezzo non è disponibile leggi «Il prezzo dell’abbonamento non è disponibile in questo momento: riprova più tardi.»"
+          ],
+          "fields": [
+            {
+              "label": "Pacchetto di posti",
+              "kind": "pulsanti di scelta",
+              "unit": null,
+              "values": "«Titolare» (solo il Titolare), «5 posti» (Titolare + 5 colleghi, +50 % del prezzo mensile), «10 posti» (Titolare + 10 colleghi, +80 %), «Posti illimitati» (Titolare + colleghi senza limite, +100 %).",
+              "default": "Il pacchetto attuale, oppure «Titolare» se non hai ancora un abbonamento. Il pacchetto attuale è segnato «attuale».",
+              "required": "sì",
+              "help": [
+                "Ogni scelta mostra il prezzo totale al periodo (prezzo del Titolare più la quota del pacchetto) e, sotto, la quota espressa in percentuale e in importo, per esempio «+50 % del prezzo mensile (…)».",
+                "Un pacchetto con meno posti di quelli che stai già usando è disattivato, con l’avviso «Usi ‹n› posti (colleghi attivi e inviti in attesa): disattiva qualche collega o annulla qualche invito prima di scegliere questo pacchetto.»"
+              ],
+              "src": "src/app/[locale]/app/billing/page.tsx:64"
+            },
+            {
+              "label": "Accetto le condizioni d’uso, comprese quelle dell’abbonamento (rinnovo automatico, modifica del prezzo con preavviso, nessun rimborso del periodo non usato), e confermo di agire come impresa o professionista.",
+              "kind": "casella",
+              "unit": null,
+              "values": "Da spuntare.",
+              "default": "non spuntata",
+              "required": "sì, solo per attivare un nuovo abbonamento (non compare per il cambio di pacchetto)",
+              "help": [
+                "Le parole «condizioni d’uso» sono un collegamento che apre le condizioni in una nuova scheda. Senza la spunta non puoi proseguire: «Per continuare accetta le condizioni d’uso.»"
+              ],
+              "src": "src/app/[locale]/app/billing/page.tsx:74"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Vai al pagamento",
+              "help": "Compare quando non hai ancora un abbonamento: apre il pagamento sicuro di Stripe con il pacchetto scelto.",
+              "src": "src/app/[locale]/app/billing/page.tsx:77"
+            },
+            {
+              "label": "Cambia pacchetto",
+              "help": "Compare con un abbonamento attivo. Un pacchetto più grande è addebitato subito per la parte restante del periodo; uno più piccolo lascia un credito sulle fatture successive.",
+              "src": "src/app/[locale]/app/billing/page.tsx:67"
+            },
+            {
+              "label": "Pagamento, fatture e disdetta",
+              "help": "Compare quando esiste già un cliente su Stripe. Apre il portale sicuro di Stripe, dove aggiorni il metodo di pagamento, scarichi le fatture e disdici.",
+              "src": "src/app/[locale]/app/billing/page.tsx:85"
+            },
+            {
+              "label": "Leggi e accetta",
+              "help": "Compare se le condizioni d’uso in vigore non sono ancora accettate dal Titolare: prima di attivare o cambiare l’abbonamento vanno accettate.",
+              "src": "src/app/[locale]/app/billing/page.tsx:58"
+            }
+          ],
+          "notes": [
+            "Messaggi di errore possibili: «Solo il Titolare gestisce l’abbonamento.», «Troppi tentativi: riprova tra qualche minuto.», «Scegli un pacchetto.», «L’azienda ha già un abbonamento: cambia il pacchetto qui sotto.», «Il pacchetto scelto ha meno posti di quelli usati…», «Non c’è un abbonamento attivo da cambiare.», «È già il pacchetto attuale.», «Il pagamento della differenza non è riuscito e il pacchetto non è cambiato: aggiorna il metodo di pagamento e riprova.», «Non ci sono ancora pagamenti per questa azienda.», «Stripe non ha risposto come previsto: riprova più tardi. Se il problema continua scrivi a info@carbonstealth.eu.»"
+          ],
+          "warnings": [
+            "Un pacchetto più grande è addebitato subito per la parte restante del periodo; uno più piccolo lascia un credito sulle fatture successive. Se il pagamento della differenza non riesce il pacchetto non cambia.",
+            "L’abbonamento si rinnova automaticamente, e la disdetta ha effetto alla fine del periodo già pagato, senza rimborso della parte non usata."
+          ]
+        },
+        {
+          "title": "Condizioni in breve",
+          "intro": [
+            "Un elenco di sette punti riassume le condizioni: il prezzo mensile e le quote dei pacchetti (5 posti +50 %, 10 posti +80 %, posti illimitati +100 %); il rinnovo automatico e la disdetta, che ha effetto alla fine del periodo già pagato senza rimborso della parte non usata; i cambi di pacchetto; che il prezzo può cambiare con un preavviso di almeno 30 giorni; che senza un abbonamento attivo, dopo la prova, i progetti restano consultabili e scaricabili in sola lettura e i colleghi oltre i posti pagati sono disattivati, a partire dai più recenti, e il Titolare può riattivarli quando c’è posto; che i pagamenti sono gestiti da Stripe; che il servizio è riservato a imprese e professionisti, senza diritto di recesso dei consumatori."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [
+            "Questo riassunto non sostituisce le condizioni d’uso complete."
+          ]
+        }
+      ],
+      "tips": [
+        "Prima di scegliere un pacchetto più piccolo, disattiva i colleghi in eccesso o annulla gli inviti in attesa dalla pagina Utenti."
+      ]
+    },
+    {
+      "id": "azienda-registro",
+      "title": "Registro attività",
+      "path": "/it/app/audit",
+      "access": "Chi ha il permesso «Vedere il registro attività»: con i permessi predefiniti il Titolare e il Capotecnico. La pagina è di sola lettura.",
+      "reach": "Dal menu laterale, gruppo «Gestione», voce «Registro attività».",
+      "purpose": [
+        "Chi ha fatto cosa nella tua azienda (ultimi 300 eventi), dal più recente. Serve per ricostruire chi ha emesso una serie di tavole, chi ha cambiato un permesso o il listino, chi ha scaricato un documento. Il registro non si modifica né si cancella dalla pagina.",
+        "La pagina non ha filtri né ricerca: è una sola tabella."
+      ],
+      "shots": [
+        {
+          "id": "registro-pagina",
+          "what": "Il registro attività con alcune righe, tra cui un cambio di permessi e un rilievo collegato a un impianto"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Tabella degli eventi",
+          "intro": [
+            "La tabella ha quattro colonne. L’elenco delle azioni è lungo; le principali sono: accessi e uscite, password cambiata o generata, impianto creato, modificato, archiviato o ripristinato, calcolo salvato o con il visto, tavole emesse, revisionate o scaricate, relazione tecnica di modifica emessa o revisionata, scheda di rilievo creata, modificata, nel cestino, ripristinata o eliminata definitivamente, rilievo collegato o scollegato da un impianto, documento caricato, modificato o eliminato, logo caricato o tolto, listino prezzi aggiornato, permessi cambiati, ordine delle sezioni della scheda cambiato, utente creato, modificato o eliminato, collega invitato o invito revocato, pagamento e pacchetto di posti cambiati, dati dell’azienda esportati."
+          ],
+          "fields": [
+            {
+              "label": "Azione",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Il nome dell’evento, per esempio «Impianto creato» o «Listino prezzi aggiornato».",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Che cosa è successo. Se l’azione non è riconosciuta compare il suo codice."
+              ],
+              "src": "src/app/[locale]/app/audit/page.tsx:71"
+            },
+            {
+              "label": "Quando",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Data e ora dell’evento.",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Quando è avvenuto. Il registro è ordinato dal più recente."
+              ],
+              "src": "src/app/[locale]/app/audit/page.tsx:72"
+            },
+            {
+              "label": "Chi",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Il nome del collega, «Piattaforma LiftPilot» per i cambi fatti dalla piattaforma, oppure «—».",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Chi ha fatto l’azione. Per un utente eliminato il nome non c’è più e leggi «—». Un cambio di permessi fatto dalla piattaforma è attribuito alla «Piattaforma LiftPilot»."
+              ],
+              "src": "src/app/[locale]/app/audit/page.tsx:73"
+            },
+            {
+              "label": "Oggetto",
+              "kind": "tabella",
+              "unit": null,
+              "values": "Il tipo di oggetto (per esempio «Impianto», «Calcolo», «Scheda di rilievo», «Permesso») con il suo nome.",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Su che cosa è stata fatta l’azione. Per un cambio di permessi leggi anche ruolo, permesso e il passaggio, per esempio «Tecnico · …: non concesso → concesso», con «su richiesta del Titolare: ‹riferimento›» se a farlo è stata la piattaforma. Per un rilievo collegato o scollegato leggi «impianto ‹nome›».",
+                "Per le schede di rilievo compare il collegamento «Apri scheda», finché la scheda può essere aperta: non dopo l’eliminazione definitiva, né dal cestino se non hai il permesso di gestirlo."
+              ],
+              "src": "src/app/[locale]/app/audit/page.tsx:74"
+            }
+          ],
+          "actions": [
+            {
+              "label": "Apri scheda",
+              "help": "Apre la scheda di rilievo a cui si riferisce l’evento.",
+              "src": "src/app/[locale]/app/audit/page.tsx:78"
+            }
+          ],
+          "notes": []
+        }
+      ],
+      "tips": []
+    },
+    {
+      "id": "azienda-norme",
+      "title": "Registro delle norme",
+      "path": "/it/app/norme",
+      "access": "Chi ha il permesso «Vedere gli impianti con calcoli, progetti e tavole» (con i permessi predefiniti tutti i ruoli, Commerciale compreso). Pagina di sola lettura.",
+      "reach": "Dal menu laterale, gruppo «Libreria», voce «Norme» (la pagina si intitola «Registro delle norme»).",
+      "purpose": [
+        "Elenca ogni valore che il software usa nei calcoli e nei controlli, con il documento e la clausola dove verificarlo, la fonte attuale e lo stato. Serve a chi deve controllare o dichiarare il lavoro: puoi vedere a quale punto di quale norma si riferisce ogni numero, senza dover ricostruire i calcoli. La pagina riporta solo i riferimenti e i valori, non il testo delle norme, che resta dei rispettivi editori.",
+        "La pagina non ha filtri né campi da compilare."
+      ],
+      "shots": [
+        {
+          "id": "norme-pagina",
+          "what": "L’inizio del registro delle norme con il profilo, i documenti, i contatori per stato e la prima tabella"
+        }
+      ],
+      "sections": [
+        {
+          "title": "Intestazione",
+          "intro": [
+            "Il titolo è «Registro delle norme», con l’etichetta «Profilo ‹sigla›» (per esempio «Profilo IT-2026.1») e la frase «Ogni valore che il software usa, con il documento e la clausola dove verificarlo, la fonte attuale e lo stato.»"
+          ],
+          "fields": [],
+          "actions": [
+            {
+              "label": "Lista di verifica (Excel)",
+              "help": "Scarica un foglio Excel con la lista di verifica normativa, generata dal registro.",
+              "src": "src/app/[locale]/app/norme/page.tsx:137"
+            }
+          ],
+          "notes": []
+        },
+        {
+          "title": "Profilo e documenti",
+          "intro": [
+            "Il riquadro con il titolo del profilo (Italia: calcolo dell’argano e progetto dell’ascensore) elenca i documenti su cui si basa il software, ciascuno con il suo ambito: la Direttiva 2014/33/UE, il DPR 162/1999 e successive modifiche, il Regolamento (UE) 2023/1230, la UNI EN 81-20:2020, la UNI EN 81-50:2020, la UNI 10411-1:2024, la UNI 10411-11:2024 e il DM 236/1989."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": []
+        },
+        {
+          "title": "Contatori per stato",
+          "intro": [
+            "Una fila di riquadri conta le voci del registro per stato (compaiono solo gli stati presenti). Gli stati sono: «confermato» (letto sul documento), «da verificare», «stima», «derivazione», «scelta del software» e «prassi di cantiere»."
+          ],
+          "fields": [],
+          "actions": [],
+          "notes": [],
+          "warnings": [
+            "Una voce «da verificare» o «stima» non è una norma letta e confermata: controllala sul documento prima di usarla in una dichiarazione."
+          ]
+        },
+        {
+          "title": "Le quattro tabelle",
+          "intro": [
+            "Le voci sono divise in quattro tabelle, nell’ordine del lavoro, ognuna con il numero delle sue voci: «Argano, funi e freno», «Vano, cabina e locale macchina», «Dati dell’impianto (formulario)» e «Simulazione 3D». Ogni tabella ha le stesse colonne."
+          ],
+          "fields": [
+            {
+              "label": "Voce",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "Il nome del valore o della regola, con sotto il suo codice interno e, se c’è, una nota."
+              ],
+              "src": "src/app/[locale]/app/norme/page.tsx:161"
+            },
+            {
+              "label": "Valore nel software",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "Il valore o la formula che il software usa. Sotto, in carattere a spaziatura fissa, il nome della costante: serve a chi vuole ritrovare il valore nel programma."
+              ],
+              "src": "src/app/[locale]/app/norme/page.tsx:162"
+            },
+            {
+              "label": "Dove si verifica",
+              "kind": "tabella",
+              "unit": null,
+              "values": null,
+              "default": null,
+              "required": "no",
+              "help": [
+                "Il documento e il punto (clausola o articolo) dove verificare il valore, con sotto la fonte attuale che il programma ha consultato, per esempio il documento e le pagine."
+              ],
+              "src": "src/app/[locale]/app/norme/page.tsx:163"
+            },
+            {
+              "label": "Stato",
+              "kind": "tabella",
+              "unit": null,
+              "values": "confermato, da verificare, stima, derivazione, scelta del software, prassi di cantiere.",
+              "default": null,
+              "required": "no",
+              "help": [
+                "Quanto è sicura la voce, nei sei stati descritti sopra."
+              ],
+              "src": "src/app/[locale]/app/norme/page.tsx:164"
+            }
+          ],
+          "actions": [],
+          "notes": []
+        }
+      ],
+      "tips": [
+        "Prima di firmare una relazione scarica la lista di verifica in Excel e confronta le voci «da verificare» e «stima» con i documenti ufficiali."
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Titolare",
+      "def": "Chi gestisce l’azienda in LiftPilot: ha sempre tutti i permessi ed è l’unico a gestire utenti, permessi e abbonamento."
+    },
+    {
+      "term": "Capotecnico",
+      "def": "Ruolo di un collega che coordina il lavoro tecnico; è l’unico a cui il Titolare può affidare logo, ordine delle sezioni ed esportazione dei dati."
+    },
+    {
+      "term": "Progettista",
+      "def": "Ruolo di un collega che compila rilievi, fa i calcoli, disegna il progetto ed emette le tavole."
+    },
+    {
+      "term": "Tecnico",
+      "def": "Ruolo di un collega che compila rilievi, crea impianti e fa i calcoli, ma non disegna il progetto, non emette le tavole e non mette il visto."
+    },
+    {
+      "term": "Commerciale",
+      "def": "Ruolo di un collega che consulta e scarica i documenti e vede i prezzi, senza modificare nulla."
+    },
+    {
+      "term": "Matrice dei permessi",
+      "def": "La tabella della pagina Permessi: azioni in riga, ruoli in colonna."
+    },
+    {
+      "term": "Posto",
+      "def": "Un posto dell’abbonamento è occupato da ogni collega attivo e da ogni invito in attesa; il Titolare non occupa un posto dei pacchetti."
+    },
+    {
+      "term": "Sola lettura",
+      "def": "Stato dell’azienda senza abbonamento attivo dopo la prova: si consulta e si scarica, non si modifica."
+    },
+    {
+      "term": "Voce a stesura libera",
+      "def": "Riga del listino che scrivi tu, con descrizione, prezzo, modo di contare la quantità e progetti in cui entra."
+    },
+    {
+      "term": "Registro attività",
+      "def": "L’elenco degli ultimi 300 eventi dell’azienda, dal più recente."
+    },
+    {
+      "term": "Cartiglio",
+      "def": "Il riquadro di ogni foglio delle tavole con numero e revisione del disegno, impianto, committente, azienda, loghi e iniziali di chi disegna. In cima alla pagina dell’impianto i dati dell’impianto stanno in un riquadro dello stesso tipo."
+    }
+  ],
+  "verify": [
+    "Pagina Utenti: con la posta del server attiva, compare mai il riquadro verde con la password temporanea per il Titolare (e non solo per l’amministratore della piattaforma)?",
+    "Pagina Permessi: nella finestra «Salvare i permessi?» del Titolare il campo «Riferimento della richiesta scritta del Titolare» è davvero assente (compare solo per la piattaforma su un’altra azienda)?",
+    "Pagina Listino: il numero di articoli di ogni gruppo e il testo esatto dell’origine «listino Panev 2026, p. 65» corrispondono a quanto si vede a schermo?",
+    "Menu laterale: la scritta «Beta gratuita» e il profilo «IT-2026.1» compaiono in fondo al menu come descritto?"
+  ]
+}

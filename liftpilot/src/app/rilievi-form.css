@@ -1,0 +1,178 @@
+/* Rilievi: the sheet's form (src/components/rilievi/SchedaForm.tsx) — rilievi's forms.css, misure.css and moduli.css in
+   the Premium identity. Fields 48 px high and 16 px text (a gloved finger in a machine room, no zoom on a phone), the
+   unit inside the field, ticks drawn as the paper form's boxes, the error next to its field and summed up on top; a
+   section is a panel with its number and name on a bar; the old push-button panels' measurements a frame per stop;
+   a supplier's module a frame like its paper, its boxes as groups and its rows in the paper's order. */
+
+.rv-form { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.rv-form .input { min-height: 48px; font-size: 16px; }
+.rv-form textarea.input { min-height: 112px; line-height: 1.45; }
+
+/* a section: a panel, its legend floated so that it is a bar inside the frame, not on the frame's line */
+.rv-section { margin: 0; padding: 0 22px 22px; min-width: 0; background: var(--panel-grad); border: 1px solid var(--rule); border-radius: var(--radius);
+  box-shadow: var(--panel-hi), var(--shadow); scroll-margin-top: 16px; }
+.rv-section > legend { float: left; display: flex; align-items: center; gap: 12px; width: calc(100% + 44px); margin: 0 -22px 18px; padding: 13px 22px;
+  border-bottom: 1px solid var(--rule); border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0; background: var(--surface2);
+  font: var(--panel-title); letter-spacing: var(--panel-title-track); font-size: 16.5px; color: var(--ink); }
+.rv-section > legend + * { clear: both; }
+/* the numbers count only the visible sections (rilievi sheet.css): one hidden by its condition («Argano» with a hydraulic
+   lift) leaves no gap; «Stampa e PDF» at the end counts too, but shows no number */
+.rv-form { counter-reset: sezione; }
+.rv-form > .rv-section { counter-increment: sezione; }
+.rv-section > legend > .rv-secnum:empty::before { content: counter(sezione); }
+@media (max-width: 479px) {
+  .rv-section { padding: 0 14px 18px; }
+  .rv-section > legend { width: calc(100% + 28px); margin: 0 -14px 16px; padding: 12px 14px; }
+}
+.rv-section > .rv-hint { margin: -4px 0 14px; }
+
+/* the fields line up by their box, not their label: a label on two lines does not push its field down */
+.rv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); align-items: end; gap: 16px 14px; }
+@media (min-width: 720px) { .rv-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px 20px; } }
+/* the ticks are a row of the paper form («Tipo impianto: ☐ Elettrico ☐ Idraulico ☐ Gearless»); Sì/No sits in a column */
+.rv-grid .rv-choice:not(.compact), .rv-grid .rv-wide { grid-column: 1 / -1; }
+/* a Sì/No question and the field of its kind, each pair on a row of its own (rilievi sheet.css, the owner, October 2026):
+   the brake shoes' control kit, the control on the panel, the retiring cam; the tie rods of the car and of the
+   counterweight (a hydraulic lift — in the pit), number and kind. A field with a condition sits in its wrapper (.rv-cond,
+   no box of its own). On a phone the fields are one under another anyway. */
+.rv-grid > :is([data-campo="kitControlloGanasce"], [data-campo="controlloQuadro"], [data-campo="pattinoRetrattile"],
+  [data-campo="tirantiCabinaNumero"], [data-campo="tirantiContrappesoNumero"], [data-campo="tirantiFossaNumero"]),
+.rv-grid > .rv-cond > :is([data-campo="kitControlloGanasce"], [data-campo="controlloQuadro"], [data-campo="pattinoRetrattile"],
+  [data-campo="tirantiCabinaNumero"], [data-campo="tirantiContrappesoNumero"], [data-campo="tirantiFossaNumero"]) { grid-column-start: 1; }
+
+.rv-field { display: grid; gap: 7px; align-content: start; min-width: 0; }
+.rv-label, .rv-choice > legend { padding: 0; font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--ink-2); }
+.rv-hint { font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+.rv-hint.bad, .rv-error { color: var(--fail); font-weight: 600; }
+.rv-error { font-size: 14px; line-height: 1.4; }
+
+/* the unit inside the field, on its right («630 | kg») */
+.rv-unit { position: relative; display: flex; }
+.rv-unit .input { padding-right: calc(var(--rv-unit-w, 3ch) + 28px); }
+.rv-unit-text { position: absolute; top: 1px; right: 1px; bottom: 1px; display: flex; align-items: center; padding: 0 12px; pointer-events: none;
+  border-left: 1px solid var(--rule); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--muted); font: 500 14px/1 var(--font-mono); }
+.rv-unit.long { --rv-unit-w: 7ch; }
+.rv-misura .rv-unit .input { padding-right: 46px; }
+
+/* ticks and Sì/No: the paper's square boxes, the whole label is the target */
+.rv-choice { margin: 0; padding: 0; border: 0; min-width: 0; }
+.rv-choice > legend { margin-bottom: 7px; }
+/* a hint or an error under a choice's ticks (the print's sections and modules), as far as in a field */
+.rv-choice > .rv-hint, .rv-choice > .rv-error { margin-top: 7px; }
+.rv-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.rv-tick { position: relative; display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 16px 0 12px; cursor: pointer; user-select: none;
+  border: 1px solid var(--rule-input); border-radius: var(--radius-sm); background: var(--bg-2); color: var(--ink-2); font-size: 15px; }
+.rv-tick:hover { border-color: var(--rule-input-hover); color: var(--ink); }
+.rv-tick input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.rv-box { position: relative; flex: none; width: 20px; height: 20px; border: 2px solid var(--ink-2); border-radius: 4px; }
+.rv-tick input:checked + .rv-box { background: var(--accent); border-color: var(--accent); }
+/* the tick, bold (rilievi forms.css — the owner, 21 October 2026: the ticks a little bolder): rilievi's tick of its
+   22 px box scaled to this 20 px one (the 16 px inside the border against rilievi's 18: × 8/9) */
+.rv-tick input:checked + .rv-box::after { content: ""; position: absolute; left: 4.44px; top: .89px; width: 6.67px; height: 11.11px;
+  border: solid var(--accent-ink); border-width: 0 3.11px 3.11px 0; transform: rotate(45deg); }
+.rv-tick:has(input:checked) { color: var(--ink); font-weight: 700; border-color: var(--accent-line); background: var(--accent-soft); }
+.rv-tick input:focus-visible + .rv-box { outline: 2px solid var(--accent); outline-offset: 3px; }
+/* a choice with its error under it (not any choice described by a hint — the print's sections and modules always are) */
+.rv-choice:has(> .rv-error) .rv-tick { border-color: var(--fail-line); }
+
+/* what shows under a condition (fields.ts `when`, a section's too, the measurements, a module's make, model and «Sì», a
+   section's tick among those to print): hidden while it does not hold. A field's wrapper is no box of its own, so the
+   field stays an item of the section's grid. Without JavaScript everything shows, as in rilievi (nothing could show it),
+   the sections numbered in a row. */
+.rv-cond { display: contents; }
+.rv-form [data-when][data-off] { display: none; }
+@media (scripting: none) {
+  .rv-form .rv-cond[data-off] { display: contents; }
+  .rv-form .rv-section[data-off] { display: block; }
+  .rv-form .rv-mwrap[data-off], .rv-form .rv-mwrap-mod[data-off] { display: block; }
+  .rv-form .rv-modulo[data-off] { display: grid; }
+  .rv-form .rv-tick[data-off] { display: inline-flex; }
+}
+
+/* section 1 «Impianto» is laid out as the sheet's head and plate (rilievi .grid--testa): the date; the address on the
+   left and the work order on the right; the matricola on the left, the lift's number on the right; then the load, the
+   capacity, the stops and the make */
+.rv-grid.testa { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.rv-grid.testa > [data-campo="indirizzo"], .rv-grid.testa > [data-campo="buonoLavoro"] { grid-column: 1 / -1; }
+.rv-grid.testa > [data-campo="indirizzo"] .input { font-weight: 600; }
+@media (min-width: 720px) {
+  .rv-grid.testa { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .rv-grid.testa > [data-campo="indirizzo"] { grid-column: 1 / 4; }
+  .rv-grid.testa > [data-campo="buonoLavoro"] { grid-column: 4 / 5; }
+  .rv-grid.testa > [data-campo="matricola"] { grid-column: 1 / 3; }
+  .rv-grid.testa > [data-campo="numeroImpianto"] { grid-column: 3 / 5; }
+}
+
+/* the error summary over the form, its lines linking to the fields */
+.rv-errors { padding: 16px 18px; border: 2px solid var(--fail); border-radius: var(--radius); background: var(--fail-bg); color: var(--fail); }
+.rv-errors:focus { outline: 2px solid var(--fail); outline-offset: 3px; }
+/* the conflict and the refusals take the focus too when they answer */
+.rv-answer:focus { outline: 2px solid currentColor; outline-offset: 3px; }
+.rv-errors h2 { font-size: 17px; color: var(--fail); }
+.rv-errors ul { margin: 8px 0 0; padding-left: 20px; }
+.rv-errors a { color: var(--fail); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+
+/* the save bar: the main action, «Salva comunque» after it when the data disagree (dashed like their lists — Enter never
+   reaches it), cancel, the unsaved hint */
+.rv-form .savebar { margin: 0 -2px; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+/* the save bar stays stuck to the bottom of the screen: a field reached with Tab (or from the summaries' links) scrolls
+   into view above it, never under it (WCAG 2.2, 2.4.11 Focus Not Obscured); the bar is at most two rows high on a phone
+   («Salva», «Salva comunque», «Annulla», «Modifiche non salvate») */
+html:has(.rv-form) { scroll-padding-bottom: 140px; }
+.rv-form .rv-confirm-btn { border-style: dashed; border-color: var(--warn); }
+.rv-form .rv-confirm-btn:hover { border-color: var(--warn); color: var(--ink); }
+.rv-dirty { font-size: 13.5px; color: var(--warn); }
+
+/* the form takes the whole width until there is room for the index beside it too: a stop's measurements stay on one
+   line (as in rilievi) from about 760 px of form, and a module's rows keep their paper's grouping */
+@media screen and (min-width: 1280px) and (max-width: 1439px) {
+  .rv-with-index.rv-form-layout { grid-template-columns: minmax(0, 1fr); }
+  .rv-form-layout > .rv-index { display: none; }
+}
+
+/* ---- the measurements of the old push-button panels: a frame per stop ------------------------------------------ */
+.rv-misure { display: grid; gap: 12px; container-type: inline-size; }
+.rv-misure-rows { display: grid; gap: 12px; }
+.rv-misura { margin: 0; padding: 8px 16px 16px; min-width: 0; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--bg-2); }
+.rv-misura > legend { padding: 0 6px; font-size: 14px; font-weight: 700; color: var(--accent-2); }
+.rv-misura-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); align-items: end; gap: 12px 14px; }
+.rv-misura-grid > .rv-choice { grid-column: 1 / -1; }
+/* room for a whole stop on one line: the columns under one another as in a table */
+@container (min-width: 760px) {
+  .rv-misura-grid { grid-template-columns: minmax(56px, .5fr) repeat(2, minmax(124px, 1fr)) repeat(2, minmax(118px, 1.2fr)) auto; }
+  .rv-misura-grid > .rv-choice { grid-column: auto; }
+}
+
+/* ---- a supplier's module: a frame like its paper ------------------------------------------------------------- */
+.rv-modulo { display: grid; gap: 14px; padding: 18px; border: 1.5px solid var(--accent-line); border-radius: var(--radius); background: var(--bg-2); }
+.rv-modulo-head { display: grid; gap: 4px; }
+.rv-modulo-title { font-size: 17px; color: var(--ink-2); }
+.rv-modulo-title strong { color: var(--ink); }
+.rv-mgroup { display: grid; gap: 10px; margin: 0; padding: 8px 14px 14px; min-width: 0; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.rv-mgroup > legend { padding: 0 6px; font-size: 14px; font-weight: 700; color: var(--ink); }
+.rv-mrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; }
+/* the paper's heading of a row («Norme di riferimento»): on a line of its own over the ticks it names */
+.rv-mrowtitle { flex-basis: 100%; font-size: 15px; font-weight: 600; color: var(--ink); }
+.rv-arrow { align-self: center; font-size: 20px; line-height: 1; color: var(--accent-2); }
+/* what follows the paper's arrow stays together behind it: wrapped, it is still visibly part of its row */
+.rv-mfollow { display: flex; align-items: flex-end; gap: 8px 10px; flex: 1 1 auto; min-width: 0; }
+.rv-mfollow > .rv-arrow { align-self: flex-start; margin-top: 10px; }  /* level with the first box, also when the rest wraps */
+.rv-mfollow-items { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; flex: 1 1 auto; min-width: 0; }
+.rv-mtext { display: grid; gap: 5px; flex: 1 1 180px; max-width: 340px; min-width: 0; }
+.rv-mtext.wide { flex-basis: 100%; max-width: none; }
+/* a radio group of the paper (MoviLift): one of its options; a click on the chosen one clears it */
+.rv-mradio { display: grid; gap: 6px; margin: 0; padding: 0; border: 0; min-width: 0; }
+/* a shown legend sits on its own line over the options; a hidden one (`sr-only`, e.g. «Fornitura») stays 1 px wide —
+   given the full width it would stick out of the page's right edge and the whole page would scroll sideways */
+.rv-mradio > legend:not(.sr-only) { float: left; width: 100%; margin-bottom: 6px; padding: 0; }
+.rv-mradio > legend:not(.sr-only) + * { clear: both; }
+.rv-mopts { display: flex; flex-wrap: wrap; gap: 8px 10px; }
+/* the boxes for one or two letters (MoviLift's floor names): narrow, sixteen to a row */
+.rv-mtext.short { flex: 0 0 auto; }
+.rv-mtext.short .input { width: 4.75rem; padding-inline: 6px; text-align: center; }
+/* a longer name («Piano Corto (1)») widens its box instead of wrapping over two lines */
+.rv-mtext.short .rv-label { white-space: nowrap; }
+/* the module has over a hundred boxes: lower than the sheet's, still over 24 px for a finger */
+.rv-tick.sm { min-height: 40px; padding: 0 12px 0 9px; gap: 8px; font-size: 14.5px; }
+.rv-tick.sm .rv-box { width: 18px; height: 18px; }
+.rv-tick.sm input:checked + .rv-box::after { left: 4px; top: .5px; width: 6.5px; height: 10.5px; border-width: 0 3px 3px 0; }

@@ -1,0 +1,37 @@
+/* Round 52 — the steps of a form, «passo per passo» (components/passi/BarraPassi.tsx): the bar over «Calcolo argano»,
+   «Progetto» and the relazione tecnica (the relazione keeps it in view, rt.css), the step now marked, the sections numbered
+   as the bar numbers them (the push buttons of a car's panel, as the relazione's cards), the step now in the save bar.
+   Colours only from the tokens of globals.css; fits 360 px without a horizontal scroll. */
+.passi-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; min-width: 0; padding: 10px 12px; background: var(--savebar-bg);
+  border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--savebar-shadow); }
+.passi-nav { flex: 1 1 auto; min-width: 0; }
+.passi-nav > a { font-size: 13px; padding: 7px 10px; text-decoration: none; }
+.passi-nav > a[data-manca] { color: var(--ink-2); }
+.passi-nav > a[aria-current="step"], .passi-nav > a[aria-current="step"]:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft);
+  box-shadow: inset 0 -2px 0 var(--accent); font-weight: 600; }
+.passi-live { flex: 0 1 auto; min-width: 0; }
+.passi-bar > :last-child:not(.passi-live):not(.passi-nav) { flex: 1 1 100%; }
+@media (max-width: 640px) {
+  .passi-nav { width: 100%; }
+  /* over the tabs' own sizing (shaft.css: .seg-row:is([role="tablist"], nav) > a) */
+  .passi-bar .passi-nav > a { flex: 1 1 calc(50% - 4px); }
+}
+
+/* a section's number, as the bar gives it */
+.passo-n { flex: none; display: inline-grid; place-items: center; width: 26px; height: 26px; margin-right: 10px; border-radius: 50%; vertical-align: middle;
+  font: 800 13px/1 var(--font-body); color: var(--accent); background: radial-gradient(circle at 36% 30%, #18323f 0%, #0a1923 62%, #050e15 100%);
+  border: 2px solid var(--accent-line); box-shadow: inset 0 2px 2px rgb(255 255 255 / .06), inset 0 -3px 6px rgb(0 0 0 / .5), var(--glow); }
+.sec-title > .passo-n { width: 32px; height: 32px; margin-right: 0; font-size: 14px; }
+/* in a group's head the title follows its number and the chevron stays at the end (calc.css spreads the head's parts) */
+details.group > summary:has(> .passo-n) { justify-content: flex-start; }
+details.group > summary:has(> .passo-n)::after { margin-left: auto; }
+details.group > summary > .passo-n { margin-right: 0; }
+:target > .passo-n, :target > summary > .passo-n, :target h2 > .passo-n { border-color: var(--accent); box-shadow: inset 0 2px 2px rgb(255 255 255 / .08), var(--glow-strong); }
+.passo-sez { scroll-margin-top: 16px; }
+
+/* the step now in the save bar */
+.passo-ora { font-size: 13.5px; font-weight: 600; color: var(--accent); overflow-wrap: anywhere; }
+
+/* in the installation's screen the bar spans the form and the results */
+.lift-work > .passi-bar { grid-column: 1 / -1; }
+@media print { .passi-bar, .passo-ora { display: none; } }

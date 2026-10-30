@@ -1,0 +1,88 @@
+/* The survey sketches beside a form (round 50, src/components/schizzi/): on the machine room's survey two columns on a
+   wide screen — the measures, and the sketch beside them, sticky with its own scroll so it stays in view while the form
+   scrolls —; on /progetto the panel heads the main column (the form beside it scrolls on its own); on a phone the sketch
+   comes first, then the form. The sketch on white paper, as the drawing sheets; the confirm table as the app's tables. */
+.schizzo-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.schizzo-layout > .schizzo-form { min-width: 0; }
+.schizzo-layout > .schizzo-panel { order: -1; }
+@media (min-width: 1080px) {
+  .schizzo-layout { grid-template-columns: minmax(0, 1fr) minmax(360px, 34rem); gap: 18px; }
+  .schizzo-layout > .schizzo-panel { order: 0; position: sticky; top: 76px; max-height: calc(100dvh - 76px - 16px); overflow: auto; overscroll-behavior: contain;
+    scrollbar-gutter: stable; }
+}
+
+.schizzo-panel { min-width: 0; }
+.schizzo-panel > summary { cursor: pointer; list-style: none; }
+.schizzo-panel > summary::-webkit-details-marker { display: none; }
+.schizzo-panel > summary .sec-title { margin: 0; }
+.schizzo-panel[open] > summary { margin-bottom: 10px; }
+.schizzo-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+/* the installation's sketches: the one shown marked as the segmented choices are */
+.schizzo-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.schizzo-list li { min-width: 0; max-width: 100%; }
+.schizzo-list button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; max-width: 100%; text-align: left; padding: 7px 10px; cursor: pointer;
+  border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink-2); font: 500 13.5px/1.3 var(--font-body); }
+.schizzo-list button:hover { color: var(--ink); background: var(--surface3); }
+.schizzo-list button.on { border-color: var(--accent-line); background: var(--accent-soft); color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); }
+.schizzo-list .schizzo-title { font-weight: 600; overflow-wrap: anywhere; }
+.schizzo-list .note { font-size: 12px; }
+/* on a phone the sketches in one row, scrolled sideways: the sketch itself stays near the top */
+@media (max-width: 719px) {
+  .schizzo-list { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }
+  .schizzo-list li { flex: 0 0 auto; max-width: 78%; scroll-snap-align: start; }
+}
+.schizzo-carica > summary, .locale-cad-box > summary { cursor: pointer; width: fit-content; font-size: 14px; font-weight: 500; color: var(--accent); padding-block: 2px; }
+.schizzo-upload { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.locale-cad-box { margin-bottom: 4px; }
+.locale-cad-box .locale-cad { margin-top: 10px; }
+.locale-cad .cad-canvas { height: clamp(260px, 46vh, 520px); }
+
+/* the sketch: fitted to the panel, or at its own size scrolled inside the frame */
+.schizzo-anteprima { margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.schizzo-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.schizzo-tools .field.inline { flex-direction: row; align-items: center; gap: 8px; }
+.schizzo-tools .field.inline .input { width: auto; min-width: 4.5rem; }
+.schizzo-tools .seg-row > button { padding: 7px 12px; }
+/* the zoom's «?» ends the tools' row (round 52): its explanation opens leftward, inside the panel */
+.schizzo-tools > .lbl .aiuto-testo { left: auto; right: 0; }
+.schizzo-view { border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: #fff; overflow: auto; max-height: 72vh; }
+.schizzo-view.fit img { display: block; width: 100%; height: auto; max-height: 72vh; object-fit: contain; }
+.schizzo-view.full img { display: block; max-width: none; }
+.schizzo-view .note { margin: 0; padding: 14px; background: var(--surface); }
+.schizzo-off { padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface2); border: 1px solid var(--rule); }
+
+/* the reading and the confirm table */
+.schizzo-lettura, .schizzo-conferma { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.schizzo-ai { margin: 0; font-size: 13.5px; }
+.schizzo-conferma caption { caption-side: top; text-align: left; padding: 0 0 6px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
+.schizzo-conferma td { vertical-align: top; }
+.schizzo-conferma td .note { display: block; margin-top: 3px; font-size: 12.5px; }
+.schizzo-conferma .schizzo-num { display: inline-flex; align-items: center; gap: 6px; }
+.schizzo-conferma .schizzo-num .input { width: 7.5rem; }
+.schizzo-conferma .unit { color: var(--muted); font: 500 12.5px/1 var(--font-mono); }
+.schizzo-conferma select.input { width: auto; min-width: 9rem; }
+.schizzo-conferma tr.unsure td.num { color: var(--warn); }
+.schizzo-conferma tr.done td { opacity: .8; }
+.schizzo-conferma .badge.ok { color: var(--ok); background: var(--ok-bg); }
+.schizzo-conferma label.check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.schizzo-conferma label.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.schizzo-elenco h4 { margin: 0 0 4px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
+.schizzo-elenco ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 3px; font-size: 13.5px; color: var(--ink-2); }
+/* the confirm table stacked as the app's tables are on a phone (tables.css), here by its own width: in the sketch
+   panel's column of a wide screen too */
+.schizzo-conferma { container-type: inline-size; }
+@container (max-width: 640px) {
+  .schizzo-conferma .data-table.stack thead { display: none; }
+  .schizzo-conferma .data-table.stack caption { display: block; }
+  .schizzo-conferma .data-table.stack, .schizzo-conferma .data-table.stack tbody, .schizzo-conferma .data-table.stack tr,
+  .schizzo-conferma .data-table.stack td { display: block; width: 100%; }
+  .schizzo-conferma .data-table.stack tr { padding: 12px 4px; border-bottom: 1px solid var(--rule-soft); }
+  .schizzo-conferma .data-table.stack tbody tr:last-child { border-bottom: 0; }
+  .schizzo-conferma .data-table.stack td { border: 0; padding: 4px 0; display: grid; grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr); gap: 10px;
+    text-align: left; }
+  .schizzo-conferma .data-table.stack td::before { content: attr(data-label); color: var(--muted); font: 500 11.5px/1.6 var(--font-mono); letter-spacing: .06em;
+    text-transform: uppercase; }
+  .schizzo-conferma .data-table.stack td.row-title { display: block; padding-bottom: 6px; font-size: 15px; font-weight: 600; color: var(--ink); }
+  .schizzo-conferma .data-table.stack td.row-title::before { content: none; }
+}
