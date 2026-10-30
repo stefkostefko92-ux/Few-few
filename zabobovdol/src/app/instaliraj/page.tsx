@@ -146,7 +146,7 @@ export default async function InstallPage() {
             <Step n={4} picture={<IphoneConfirmPicture />}>
               {IPHONE_STEPS[3]}
             </Step>
-            <Step n={5} picture={<HomeScreenPicture />}>
+            <Step n={5} picture={<HomeScreenPicture os="ios" />}>
               {IPHONE_STEPS[4]}
             </Step>
           </ol>
