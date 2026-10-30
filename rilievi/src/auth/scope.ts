@@ -1,10 +1,12 @@
 import { Prisma, type Role } from '@prisma/client';
 import type { SessionUser } from '../types.js';
+import { puo } from './permessi.js';
 import { can, isPrivileged, ROLE_LEVEL, type Capability } from './roles.js';
 
 /**
  * Обхватът на човека за една способност. Ролята е различна за всяка фирма (членствата), затова
- * обхватът е множеството фирми, в които ролята му има способността; MASTER — всички фирми. Всяка
+ * обхватът е множеството фирми, в които ролята му има способността — по правата, записани във фирмата
+ * (permessi.ts); MASTER — всички фирми. Всяка
  * заявка към карти, хора, покани, одит и лого минава оттук. Празен обхват значи „нищо“, никога „всичко“.
  */
 export type Scope = { all: true } | { all: false; aziendaIds: readonly string[] };
@@ -18,23 +20,28 @@ export function roleIn(user: AccessUser, aziendaId: string | null): Role | null 
   return user.memberships.find((m) => m.aziendaId === aziendaId)?.role ?? null;
 }
 
+type Membro = AccessUser['memberships'][number];
+const puoMembro = (m: Membro, capability: Capability): boolean =>
+  puo(m.role, capability, m.permessi);
+
 /** Способността във фирмата на конкретен запис (карта, покана, човек). */
 export function canIn(user: AccessUser, capability: Capability, aziendaId: string | null): boolean {
-  const role = roleIn(user, aziendaId);
-  return role !== null && can(role, capability);
+  if (user.master) return can('MASTER', capability);
+  const m = aziendaId ? user.memberships.find((x) => x.aziendaId === aziendaId) : undefined;
+  return m !== undefined && puoMembro(m, capability);
 }
 
 /** Способността поне в една фирма — за менюто и за входа в страницата; записът се проверява отделно. */
 export function canAnywhere(user: AccessUser, capability: Capability): boolean {
   if (user.master) return can('MASTER', capability);
-  return user.memberships.some((m) => can(m.role, capability));
+  return user.memberships.some((m) => puoMembro(m, capability));
 }
 
 export function scopeFor(user: AccessUser, capability: Capability): Scope {
   if (user.master) return { all: true };
   return {
     all: false,
-    aziendaIds: user.memberships.filter((m) => can(m.role, capability)).map((m) => m.aziendaId),
+    aziendaIds: user.memberships.filter((m) => puoMembro(m, capability)).map((m) => m.aziendaId),
   };
 }
 

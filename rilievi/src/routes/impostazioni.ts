@@ -1,5 +1,13 @@
 import { Router, type Request, type Response } from 'express';
 import { principalOf, requireCapability, requireCsrf, sendError } from '../auth/guards.js';
+import {
+  CAPACITA_CONFIGURABILI,
+  nomiSalvati,
+  permessiSalvati,
+  predefiniti,
+  RUOLI_AZIENDA,
+  RUOLI_CONFIGURABILI,
+} from '../auth/permessi.js';
 import { CAMPI_DATI, datiSalvati, type DatiSocietari } from '../aziende/dati.js';
 import { aziendeImpostabili, setOrdineSezioni } from '../aziende/sezioni.js';
 import { altezzaAnteprima, LARGHEZZA_ANTEPRIMA } from '../cartelli/anteprima.js';
@@ -17,7 +25,8 @@ import {
 
 /**
  * Настройките на фирмата: данните ѝ и шаблонът на табелата „Avviso di fermo impianto“
- * (impostazioni-cartello.ts) и редът на разделите на картата. Администраторът на фирмата (и MASTER) мести
+ * (impostazioni-cartello.ts), имената и правата на ролите (impostazioni-ruoli.ts) и редът на разделите
+ * на картата. Администраторът на фирмата (и MASTER) мести
  * разделите нагоре и надолу без JavaScript: всеки бутон праща целия ред, страницата се връща с новия ред
  * незаписан, „Salva“ го записва (един запис в одита). Фирма извън обхвата — 404.
  */
@@ -25,6 +34,19 @@ export const impostazioniRouter: Router = Router();
 const settings = requireCapability('aziende:settings');
 
 export type AziendaImpostabile = Awaited<ReturnType<typeof aziendeImpostabili>>[number];
+
+/** Ролите във формата: записаните имена (празно — по подразбиране) и правата на всяка роля под ADMIN. */
+function ruoliForm(azienda: AziendaImpostabile): Record<string, string | string[]> {
+  const nomi = nomiSalvati(azienda.nomiRuoli);
+  const permessi = permessiSalvati(azienda.permessiRuoli);
+  return Object.fromEntries([
+    ...RUOLI_AZIENDA.map((role) => [`nome-${role}`, nomi[role] ?? '']),
+    ...RUOLI_CONFIGURABILI.map((role) => [
+      `perm-${role}`,
+      [...(permessi[role] ?? predefiniti(role))],
+    ]),
+  ]);
+}
 
 /** Данните във формата: записаните, или празни, докато не са записани. */
 function datiForm(azienda: AziendaImpostabile): Record<keyof DatiSocietari, string> {
@@ -46,6 +68,7 @@ export function renderImpostazioni(
     focus?: { key: SectionKey; verso: Verso } | null;
     error?: string | null;
     dati?: { values: Record<string, string>; errors: Partial<Record<string, string>> };
+    ruoli?: { values: Record<string, string | string[]>; errors: Partial<Record<string, string>> };
   },
 ): void {
   const { azienda } = view;
@@ -67,6 +90,10 @@ export function renderImpostazioni(
       };
     }),
     modello: modelloDi(azienda.cartelloModello).id,
+    ruoli: { values: ruoliForm(azienda), errors: {} },
+    ruoliAzienda: RUOLI_AZIENDA,
+    ruoliConfigurabili: RUOLI_CONFIGURABILI,
+    capacita: CAPACITA_CONFIGURABILI,
     ...view,
   });
 }

@@ -86,13 +86,13 @@
 .sidenav__nav a:hover,
 .who:hover {
   color: var(--bar-fg);
-  background: #141414;
+  background: var(--bar-hover);
 }
 
 .sidenav__nav a[aria-current='page'],
 .who[aria-current='page'] {
   color: var(--bar-fg);
-  background: #1c1c1c;
+  background: var(--bar-current);
   box-shadow: inset 3px 0 0 var(--bar-fg);
 }
 

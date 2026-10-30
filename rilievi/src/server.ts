@@ -9,6 +9,7 @@ import { config, isProduction, mailEnabled } from './config.js';
 import { errorMessage, httpLogOptions, logger } from './logger.js';
 import { ROOT } from './paths.js';
 import { isPartial, renderError, SAFE_METHODS } from './auth/guards.js';
+import { nomeRuolo, nomiDellaSessione, ruoliLocals } from './auth/nomi-ruoli.js';
 import type { Capability } from './auth/roles.js';
 import { canAnywhere, canIn } from './auth/scope.js';
 import { attachSession } from './auth/sessions.js';
@@ -20,6 +21,7 @@ import { MAX_FILE_PER_VOLTA } from './allegati/caricamento.js';
 import { primitiviFoglio } from './schizzi/forme.js';
 import { VISTA_SCHIZZO } from './schizzi/model.js';
 import { accountRouter } from './routes/account.js';
+import { accountColoriRouter } from './routes/account-colori.js';
 import { allegatiRouter } from './routes/allegati.js';
 import { auditRouter } from './routes/audit.js';
 import { authRouter } from './routes/auth.js';
@@ -30,6 +32,7 @@ import { ordiniRouter } from './routes/ordini.js';
 import { healthRouter } from './routes/health.js';
 import { impostazioniRouter } from './routes/impostazioni.js';
 import { impostazioniCartelloRouter } from './routes/impostazioni-cartello.js';
+import { impostazioniRuoliRouter } from './routes/impostazioni-ruoli.js';
 import { interventiRouter } from './routes/interventi.js';
 import { interventiFirmaRouter } from './routes/interventi-firma.js';
 import { interventiInvioRouter } from './routes/interventi-invio.js';
@@ -76,6 +79,7 @@ function baseLocals(req: Request, res: Response): void {
     user ? canAnywhere(user, capability) : false;
   res.locals.canIn = (capability: Capability, aziendaId: string | null): boolean =>
     user ? canIn(user, capability, aziendaId) : false;
+  res.locals.ruolo = nomeRuolo(res.locals.t, nomiDellaSessione(user));
   res.locals.mailEnabled = mailEnabled();
   const cfg = config();
   res.locals.limitiAllegati = {
@@ -207,6 +211,8 @@ export function createServer(): Express {
     baseLocals(req, res);
     next();
   });
+  // Имената на ролите, както ги е записала всяка фирма (`ruolo(роля, фирма)` в изгледите).
+  app.use(ruoliLocals);
   // Броят на новите заявки за достъп до „Richieste“ — само за MASTER и само на цяла страница.
   app.use(async (req: Request, res: Response, next: NextFunction) => {
     res.locals.newRequests = 0;
@@ -229,6 +235,7 @@ export function createServer(): Express {
   app.use(siteRouter);
   app.use(authRouter);
   app.use(accountRouter);
+  app.use(accountColoriRouter);
   app.use(schedeRouter);
   app.use(schedeStampaRouter);
   app.use(allegatiRouter);
@@ -245,6 +252,7 @@ export function createServer(): Express {
   app.use(usersManageRouter);
   app.use(aziendeRouter);
   app.use(impostazioniRouter);
+  app.use(impostazioniRuoliRouter);
   app.use(requestsRouter);
   app.use(auditRouter);
 

@@ -13,7 +13,7 @@
   <section aria-labelledby="h-aziende">
     <h2 class="section__title" id="h-aziende"><%= t('account.aziendeTitle') %></h2>
     <dl class="kv">
-      <% for (const m of currentUser.memberships) { %><div class="kv__item"><dt><%= m.aziendaName %></dt><dd><%= t('role.' + m.role) %></dd></div>
+      <% for (const m of currentUser.memberships) { %><div class="kv__item"><dt><%= m.aziendaName %></dt><dd><%= ruolo(m.role, m.aziendaId) %></dd></div>
       <% } %>
     </dl>
   </section>
@@ -54,6 +54,7 @@
     <h2 class="section__title" id="h-prefs"><%= t('account.prefsTitle') %></h2>
     <p class="muted"><%= t('account.prefsText') %></p>
   </section>
+  <%- include('_colori') %>
   <% } %>
 </div>
 <%- include('../partials/bottom') %>

@@ -15,6 +15,9 @@
   --hover: #f1f1f1;
   --mark-bg: #000000;
   --mark-fg: #ffffff;
+  /* Главният бутон — текстът върху фона; темата „Personalizzato“ го сменя с акцента (colori.ts). */
+  --primary-bg: var(--fg);
+  --primary-fg: var(--bg);
   --danger: #b3261e;
   --danger-fg: #ffffff;
   --bar: #000000;
@@ -22,6 +25,8 @@
   --bar-muted: #b8b8b8;
   --bar-line: #333333;
   --bar-edge: transparent;
+  --bar-hover: #141414;
+  --bar-current: #1c1c1c;
   --radius: 6px;
   --radius-plate: 12px;
   --gutter: 16px;

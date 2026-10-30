@@ -59,7 +59,7 @@ export async function renderForm(
       user.memberships.find((m) => m.aziendaId === aziendaId)?.aziendaName ??
       '',
     utente: user.name,
-    ruolo: role ? t(`role.${role}`) : '',
+    ruolo: role ? res.locals.ruolo(role, aziendaId) : '',
     email: user.email,
   };
   const { values, auto, scritti } = withPrefill(view.values, {

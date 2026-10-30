@@ -5,6 +5,10 @@
     { value: 'chiaro', key: 'theme.light', icon: 'sun', on: theme === 'LIGHT' },
     { value: 'scuro', key: 'theme.dark', icon: 'moon', on: theme === 'DARK' },
   ];
+  // „Personalizzato“ — само за човек, който си е избрал цветове в профила.
+  if (currentUser && currentUser.colori) {
+    themes.push({ value: 'personale', key: 'theme.custom', icon: 'palette', on: theme === 'CUSTOM' });
+  }
 %><footer class="footer">
   <div class="footer__inner">
     <% if (!hide && themeUrl('auto')) { %><nav class="switch" aria-label="<%= t('switch.theme') %>">

@@ -51,7 +51,7 @@
   const roleLine = currentUser.master
     ? t('role.MASTER')
     : only
-      ? t('role.' + only.role) + ', ' + only.aziendaName
+      ? ruolo(only.role, only.aziendaId) + ', ' + only.aziendaName
       : t('nav.aziendeCount', { n: currentUser.memberships.length });
 %><header class="appbar">
   <button type="button" class="appbar__menu" aria-controls="sidenav" aria-expanded="false" data-nav-open><%- include('icon', { name: 'menu' }) %><span class="visually-hidden"><%= t('nav.open') %></span></button>

@@ -25,15 +25,15 @@
 }
 
 .btn--primary {
-  background: var(--fg);
-  color: var(--bg);
+  background: var(--primary-bg);
+  color: var(--primary-fg);
 }
 
 .btn--primary:hover {
-  background: var(--fg);
+  background: var(--primary-bg);
   box-shadow:
     0 0 0 3px var(--bg),
-    0 0 0 4.5px var(--fg);
+    0 0 0 4.5px var(--primary-bg);
 }
 
 .btn--ghost {

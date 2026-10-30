@@ -35,6 +35,8 @@ export function aziendeImpostabili(user: SessionUser) {
       datiSocietari: true,
       cartelloModello: true,
       logoType: true,
+      nomiRuoli: true,
+      permessiRuoli: true,
     },
   });
 }

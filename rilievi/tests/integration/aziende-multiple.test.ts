@@ -50,9 +50,11 @@ describe('the MASTER', () => {
     assert.match(list.body, /dal\.master@rilievi\.test/);
     assert.match(list.body, /Amministrazione del portale/);
     assert.equal((await browser.get(`/utenti/${master.id}`)).status, 404);
+    // The log shows the admin's own actions and those of the roles below (the owner, 30 October 2026):
+    // the MASTER's invite into the company is not there at all.
     const log = await browser.get('/registro');
     assert.doesNotMatch(log.body, new RegExp(master.name));
-    assert.match(log.body, /Amministrazione del portale/);
+    assert.doesNotMatch(log.body, /Amministrazione del portale/);
   });
 
   it('manages every account, its own too, but cannot switch itself off', async () => {

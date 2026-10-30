@@ -25,6 +25,8 @@ enum Theme {
   AUTO
   LIGHT
   DARK
+  /// Цветовете на човека (`User.colori`, src/http/colori.ts) — собственикът, 30 октомври 2026.
+  CUSTOM
 }
 
 enum UbicazioneMacchina {
@@ -112,6 +114,12 @@ model Azienda {
   datiSocietari    Json?
   /// Шаблонът на табелата, избран в настройките (src/cartelli/modelli.ts); непознат или null — първият.
   cartelloModello  String?   @db.VarChar(40)
+  /// Имената на ролите във фирмата ({ADMIN: „Titolare“, …}) — сменя ги администраторът ѝ; липсващото
+  /// е името по подразбиране (src/auth/permessi.ts).
+  nomiRuoli        Json?
+  /// Правата на ролите под ADMIN за картите, листовете, табелите и регистъра ({TECNICO: [...], …}) —
+  /// сменя ги администраторът ѝ; липсващата роля е по йерархията (src/auth/permessi.ts).
+  permessiRuoli    Json?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -137,6 +145,9 @@ model User {
   /// Не се ползва — порталът е само на италиански. Колоната остава („it“), за да не се трие с миграция.
   locale             String    @default("it")
   theme              Theme     @default(AUTO)
+  /// Цветовете на темата „Personalizzato“ ({sfondo, testo, menu, menuTesto, accento, linee} — #rrggbb),
+  /// проверени при запис и четени с недоверие (src/http/colori.ts). null — няма свои.
+  colori             Json?
   /// Деактивиран акаунт не влиза; сесиите му падат при деактивирането.
   deactivatedAt      DateTime?
   /// Първият MASTER от скрипта сменя паролата при първия вход.

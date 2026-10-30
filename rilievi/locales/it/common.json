@@ -43,7 +43,8 @@
   "theme": {
     "auto": "Automatico",
     "light": "Chiaro",
-    "dark": "Scuro"
+    "dark": "Scuro",
+    "custom": "Personalizzato"
   },
   "pager": {
     "label": "Pagine",
@@ -111,6 +112,9 @@
     "sezioniSaved": "Ordine delle sezioni salvato.",
     "sezioniReset": "Ripristinato l'ordine predefinito delle sezioni.",
     "datiSaved": "Dati societari salvati.",
-    "cartelloSaved": "Modello del cartello salvato."
+    "cartelloSaved": "Modello del cartello salvato.",
+    "ruoliSaved": "Ruoli e permessi salvati.",
+    "coloriSaved": "Colori salvati: il tema è ora «Personalizzato».",
+    "coloriReset": "Tornati ai colori del portale."
   }
 }

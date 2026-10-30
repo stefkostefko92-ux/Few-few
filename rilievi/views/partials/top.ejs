@@ -4,9 +4,11 @@
   const narrow = typeof narrowMain !== 'undefined' && narrowMain;
   const bareMain = typeof bare !== 'undefined' && bare;
   // Входът е без лентата на портала, но с чертежа на шахтата (shaft.css).
-  const sheets = ['base', 'buttons', 'shell', 'sidenav', 'layout', 'plate', 'forms', 'pages', 'data', 'sheet', 'misure', 'moduli', 'allegati', 'foto-stampa', 'schizzi', 'schizzo-editor', 'schizzo-barre', 'interventi', 'foglio', 'cartelli'].concat(bareMain ? ['shaft'] : []);
+  // Темата „Personalizzato“: класът и светла/тъмна основа на <html>, стилът с цветовете — след останалите.
+  const personale = typeof temaPersonale !== 'undefined' && temaPersonale ? temaPersonale : null;
+  const sheets = ['base', 'buttons', 'shell', 'sidenav', 'layout', 'plate', 'forms', 'pages', 'data', 'sheet', 'misure', 'moduli', 'allegati', 'foto-stampa', 'schizzi', 'schizzo-editor', 'schizzo-barre', 'interventi', 'foglio', 'cartelli', 'impostazioni'].concat(bareMain ? ['shaft'] : []);
 %><!doctype html>
-<html lang="<%= locale %>"<% if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>
+<html lang="<%= locale %>"<% if (personale) { %> class="tema-personale" data-theme="<%= personale.schema %>"<% } else if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -20,6 +22,7 @@
 <link rel="icon" href="/static/img/favicon.svg?v=<%= v %>" type="image/svg+xml">
 <link rel="stylesheet" href="/static/fonts/fonts.css?v=<%= v %>">
 <% for (const sheet of sheets) { %><link rel="stylesheet" href="/static/css/<%= sheet %>.css?v=<%= v %>">
+<% } %><% if (personale) { %><link rel="stylesheet" href="<%= personale.href %>">
 <% } %><script nonce="<%= cspNonce %>">document.documentElement.classList.add('js')</script>
 <script src="/static/js/app.js?v=<%= v %>" defer></script>
 <% if (currentUser && !bareMain) { %><script src="/static/js/menu.js?v=<%= v %>" defer></script>

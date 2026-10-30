@@ -6,6 +6,7 @@ import { prisma } from '../db.js';
 import { randomToken } from '../crypto.js';
 import { readCookie } from '../http/cookies.js';
 import { DAY, HOUR, MINUTE } from '../time.js';
+import { coloriSalvati } from '../http/colori.js';
 import { activeMemberships, MEMBERSHIP_SELECT } from './memberships.js';
 import { privilegedAccess } from './scope.js';
 import type { Principal, SessionUser } from '../types.js';
@@ -140,6 +141,7 @@ export async function resolveSession(token: string | undefined): Promise<Princip
           name: true,
           master: true,
           theme: true,
+          colori: true,
           mustChangePassword: true,
           deactivatedAt: true,
           memberships: { select: MEMBERSHIP_SELECT },
@@ -173,7 +175,17 @@ export async function resolveSession(token: string | undefined): Promise<Princip
   }
 
   const { id, email, name, master, theme, mustChangePassword } = session.user;
-  const user: SessionUser = { id, email, name, master, memberships, theme, mustChangePassword };
+  const colori = coloriSalvati(session.user.colori);
+  const user: SessionUser = {
+    id,
+    email,
+    name,
+    master,
+    memberships,
+    theme,
+    colori,
+    mustChangePassword,
+  };
   return { user, session: { id: session.id, csrfToken: session.csrfToken } };
 }
 

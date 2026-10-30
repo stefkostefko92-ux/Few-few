@@ -2,6 +2,8 @@ import type { Invite, Prisma, Role } from '@prisma/client';
 import { prisma } from '../db.js';
 import { writeAudit } from '../audit.js';
 import { hashPassword, passwordProblem, type PasswordProblem } from '../auth/password.js';
+import { nomiDelleAziende } from '../auth/nomi-ruoli.js';
+import { nomiSalvati, type RuoloAzienda } from '../auth/permessi.js';
 import { isPrivileged, outranks } from '../auth/roles.js';
 import { aziendaWhere, canIn, roleIn, scopeFor } from '../auth/scope.js';
 import { activeAzienda } from '../aziende/service.js';
@@ -50,7 +52,10 @@ export async function createInvite(
   const { invite, token } = await prisma.$transaction((tx) =>
     insertInvite(tx, actor, { ...input, aziendaId: azienda.id }),
   );
-  const { link, mail } = await sendInviteMail(actor, input, azienda.name, token);
+  const ruolo = (await nomiDelleAziende([azienda.id])).get(azienda.id)?.[
+    input.role as RuoloAzienda
+  ];
+  const { link, mail } = await sendInviteMail(actor, input, azienda.name, token, ruolo);
   return { ok: true, link, mail, invite };
 }
 
@@ -99,6 +104,8 @@ export async function sendInviteMail(
   input: { email: string; role: Role },
   aziendaName: string,
   token: string,
+  /** Името на ролята, записано от фирмата; без него — това от речника. */
+  ruolo?: string,
 ): Promise<{ link: string; mail: MailResult }> {
   const link = inviteLink(token);
   const t = translatorFor(DEFAULT_LOCALE);
@@ -107,7 +114,7 @@ export async function sendInviteMail(
       to: input.email,
       inviter: actor.name,
       azienda: aziendaName,
-      role: t(`role.${input.role}`),
+      role: ruolo ?? t(`role.${input.role}`),
       link,
       days: INVITE_DAYS,
     }),
@@ -160,7 +167,8 @@ export async function revokeInvite(actor: SessionUser, inviteId: string): Promis
   });
 }
 
-export type ValidInvite = Invite & { azienda: { name: string } };
+/** `azienda.ruolo` — името на ролята, записано от фирмата (без него — това от речника). */
+export type ValidInvite = Invite & { azienda: { name: string; ruolo?: string } };
 
 /** Поканата по токена от връзката, ако още важи (и фирмата ѝ не е деактивирана). */
 export async function findValidInvite(token: unknown): Promise<ValidInvite | null> {
@@ -168,11 +176,13 @@ export async function findValidInvite(token: unknown): Promise<ValidInvite | nul
   if (!hash) return null;
   const invite = await prisma.invite.findUnique({
     where: { tokenHash: hash },
-    include: { azienda: { select: { name: true, deactivatedAt: true } } },
+    include: { azienda: { select: { name: true, deactivatedAt: true, nomiRuoli: true } } },
   });
   if (!invite || invite.acceptedAt || invite.revokedAt || invite.azienda.deactivatedAt) return null;
   if (invite.expiresAt.getTime() <= Date.now()) return null;
-  return { ...invite, azienda: { name: invite.azienda.name } };
+  const ruolo =
+    invite.role === 'MASTER' ? undefined : nomiSalvati(invite.azienda.nomiRuoli)[invite.role];
+  return { ...invite, azienda: { name: invite.azienda.name, ...(ruolo ? { ruolo } : {}) } };
 }
 
 export type AcceptResult =

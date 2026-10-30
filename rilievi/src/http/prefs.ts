@@ -6,6 +6,7 @@ import { LOCK_MINUTES, MAX_FAILED_LOGINS } from '../auth/lockout.js';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../auth/password.js';
 import { DEFAULT_LOCALE, translatorFor, type Translator } from '../i18n.js';
 import { DAY } from '../time.js';
+import { schemaDi, versioneColori } from './colori.js';
 import { readCookie } from './cookies.js';
 import { viewHelpers } from './view.js';
 
@@ -17,11 +18,13 @@ const THEME_BY_PARAM: Readonly<Record<string, Theme>> = {
   auto: 'AUTO',
   chiaro: 'LIGHT',
   scuro: 'DARK',
+  personale: 'CUSTOM',
 };
 const THEME_PARAM: Readonly<Record<Theme, string>> = {
   AUTO: 'auto',
   LIGHT: 'chiaro',
   DARK: 'scuro',
+  CUSTOM: 'personale',
 };
 
 function themeFromParam(value: unknown): Theme | null {
@@ -30,13 +33,21 @@ function themeFromParam(value: unknown): Theme | null {
     : null;
 }
 
-/** Темата: `?tema=` → профилът → бисквитката → AUTO (следва системата на устройството). */
+/**
+ * Темата: `?tema=` → профилът → бисквитката → AUTO (следва системата на устройството). „Personalizzato“
+ * има само вписан човек със свои цветове; иначе е AUTO.
+ */
 function chooseTheme(req: Request): { theme: Theme; fromQuery: boolean } {
-  const asked = themeFromParam(req.query.tema);
-  if (asked) return { theme: asked, fromQuery: true };
   const user = req.principal?.user;
-  if (user) return { theme: user.theme, fromQuery: false };
-  return { theme: themeFromParam(readCookie(req, THEME_COOKIE)) ?? 'AUTO', fromQuery: false };
+  const possibile = (theme: Theme | null): Theme | null =>
+    theme === 'CUSTOM' && !user?.colori ? null : theme;
+  const asked = possibile(themeFromParam(req.query.tema));
+  if (asked) return { theme: asked, fromQuery: true };
+  if (user) return { theme: possibile(user.theme) ?? 'AUTO', fromQuery: false };
+  return {
+    theme: possibile(themeFromParam(readCookie(req, THEME_COOKIE))) ?? 'AUTO',
+    fromQuery: false,
+  };
 }
 
 /** Числата от правилата, които текстовете ползват — идват от кода, не се пишат в речника. */
@@ -73,6 +84,11 @@ function remember(res: Response, name: string, value: string): void {
 export function attachPrefs(req: Request, res: Response, next: NextFunction): void {
   const { theme, fromQuery } = chooseTheme(req);
   applyPrefs(res, theme);
+  const colori = req.principal?.user.colori;
+  res.locals.temaPersonale =
+    theme === 'CUSTOM' && colori
+      ? { href: `/account/colori.css?v=${versioneColori(colori)}`, schema: schemaDi(colori) }
+      : null;
   if (!fromQuery) {
     next();
     return;

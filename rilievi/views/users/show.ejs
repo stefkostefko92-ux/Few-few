@@ -32,7 +32,7 @@
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <label class="visually-hidden" for="role-<%= m.aziendaId %>"><%= t('users.roleIn', { azienda: m.aziendaName }) %></label>
           <select class="select" id="role-<%= m.aziendaId %>" name="role">
-            <% for (const role of m.roles) { %><option value="<%= role %>"<% if (m.role === role) { %> selected<% } %>><%= t('role.' + role) %></option>
+            <% for (const role of m.roles) { %><option value="<%= role %>"<% if (m.role === role) { %> selected<% } %>><%= ruolo(role, m.aziendaId) %></option>
             <% } %>
           </select>
           <button class="btn" type="submit"><%= t('users.saveRole') %></button>
@@ -41,7 +41,7 @@
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button class="btn btn--ghost btn--sm" type="submit"><%= t('users.removeAzienda') %></button>
         </form><% } %>
-        <% } else { %><span class="membership__fixed"><%= t('role.' + m.role) %></span><% } %>
+        <% } else { %><span class="membership__fixed"><%= ruolo(m.role, m.aziendaId) %></span><% } %>
       </li>
       <% } %>
     </ul>

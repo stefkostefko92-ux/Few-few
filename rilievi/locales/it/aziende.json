@@ -82,6 +82,31 @@
       "inUso": "In uso",
       "save": "Usa il modello scelto"
     },
+    "ruoli": {
+      "title": "Ruoli e permessi",
+      "text": "Rinomina i ruoli dell'azienda e scegli cosa può fare ognuno. Valgono per tutti i suoi utenti dal clic successivo. Invitare e gestire gli utenti e queste impostazioni restano solo all'amministratore.",
+      "nome": "Nome nell'azienda",
+      "nomeHint": "Vuoto: «{nome}».",
+      "permessiDi": "Permessi di «{nome}»",
+      "admin": "Ha sempre tutti i permessi dell'azienda: non si può limitare.",
+      "implica": "Chi può compilare, eliminare o aprire il cestino può anche vedere: la spunta «vedere» si aggiunge da sola.",
+      "save": "Salva ruoli e permessi",
+      "errore": "Ruoli non salvati: correggi i campi segnati.",
+      "cap": {
+        "schede_read": "Vedere le schede",
+        "schede_write": "Compilare e modificare le schede",
+        "schede_delete": "Spostare le schede nel cestino",
+        "schede_trash": "Aprire il cestino: ripristinare ed eliminare per sempre",
+        "interventi_read": "Vedere interventi e cartelli",
+        "interventi_write": "Compilare interventi e cartelli",
+        "audit_view": "Vedere il registro: le proprie azioni e quelle dei ruoli sotto il proprio"
+      },
+      "error": {
+        "tooLong": "Massimo 40 caratteri.",
+        "duplicato": "Due ruoli non possono avere lo stesso nome.",
+        "invalid": "Valore non valido."
+      }
+    },
     "error": "L'ordine inviato non è valido. Ecco quello salvato: riprova.",
     "sezioni": {
       "title": "Ordine delle sezioni della scheda",

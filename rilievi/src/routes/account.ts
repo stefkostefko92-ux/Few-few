@@ -5,11 +5,13 @@ import { principalOf, requireCsrf, requireUser } from '../auth/guards.js';
 import { PASSWORD_MAX_LENGTH } from '../auth/password.js';
 import { setFlash } from '../http/flash.js';
 import { changePassword } from '../services/auth.js';
+import { coloriForm } from './account-colori.js';
 
 export const accountRouter: Router = Router();
 
 accountRouter.get('/account', requireUser, (req, res) => {
-  res.render('account/index', { error: null, name: principalOf(req).user.name });
+  const user = principalOf(req).user;
+  res.render('account/index', { error: null, name: user.name, colori: coloriForm(user) });
 });
 
 const passwordSchema = z.object({
@@ -21,7 +23,11 @@ const passwordSchema = z.object({
 accountRouter.post('/account/password', requireUser, requireCsrf, async (req, res) => {
   const principal = principalOf(req);
   const fail = (error: string): void => {
-    res.status(400).render('account/index', { error, name: principal.user.name });
+    res.status(400).render('account/index', {
+      error,
+      name: principal.user.name,
+      colori: coloriForm(principal.user),
+    });
   };
   const parsed = passwordSchema.safeParse(req.body);
   if (!parsed.success) return fail('password.problem.tooShort');
@@ -48,9 +54,11 @@ accountRouter.post('/account/profilo', requireUser, requireCsrf, async (req, res
   const principal = principalOf(req);
   const parsed = nameSchema.safeParse(req.body);
   if (!parsed.success) {
-    res
-      .status(400)
-      .render('account/index', { error: 'auth.error.name', name: principal.user.name });
+    res.status(400).render('account/index', {
+      error: 'auth.error.name',
+      name: principal.user.name,
+      colori: coloriForm(principal.user),
+    });
     return;
   }
   await prisma.user.update({ where: { id: principal.user.id }, data: { name: parsed.data.name } });

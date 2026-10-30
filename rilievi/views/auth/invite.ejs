@@ -2,7 +2,7 @@
 <form class="auth__form" method="post" novalidate>
   <div>
     <h1><%= t('auth.invite.title') %></h1>
-    <p class="page-head__sub"><%= t('auth.invite.intro', { azienda: invite.azienda.name, role: t('role.' + invite.role) }) %></p>
+    <p class="page-head__sub"><%= t('auth.invite.intro', { azienda: invite.azienda.name, role: invite.azienda.ruolo || t('role.' + invite.role) }) %></p>
   </div>
   <% if (error) { %><div class="errors" role="alert" id="form-error"><h2><%= t(error) %></h2></div><% } %>
   <input type="hidden" name="_csrf" value="<%= preCsrf %>">
