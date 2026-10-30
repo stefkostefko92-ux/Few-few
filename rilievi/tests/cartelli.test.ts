@@ -250,6 +250,20 @@ describe('the sign PDF', { skip: !fontsHere && 'DejaVu fonts are not installed h
     }
   });
 
+  it('stays quick with a 600-letter word: the PDF is drawn on the one thread of the portal', async () => {
+    const az = { intestazione: intestazioneDi('Ascensori Prova', null), logo: null };
+    await renderCartello(modelloDi('blu'), DATI_CARTELLO, az, fontDir);
+    const start = performance.now();
+    await renderCartello(
+      modelloDi('blu'),
+      { ...DATI_CARTELLO, testo: 'W'.repeat(600) },
+      az,
+      fontDir,
+    );
+    // Cut letter by letter it took 2–3 s; cut by halves, about 0.1 s.
+    assert.ok(performance.now() - start < 1500, `${Math.round(performance.now() - start)} ms`);
+  });
+
   it('writes in Fira Sans Condensed, and in DejaVu what that face has no glyph for', async () => {
     const fonts = async (nome: string) => {
       const pdf = await renderCartello(

@@ -119,10 +119,26 @@ export async function renderCartello(
     doc.text(fit.testo, x, y, { baseline: 'alphabetic', lineBreak: false });
   };
 
-  /** Абзацът в редове до ширината (по думи; дълга дума — по знаци). */
+  /** Докъде дълга дума влиза в реда — двоично (600 знака знак по знак са секунди синхронна работа). */
+  const cutOf = (word: string, max: number, size: number, peso: Peso): number => {
+    let lo = 1;
+    let hi = word.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if (width(word.slice(0, mid), peso, size) <= max) lo = mid;
+      else hi = mid - 1;
+    }
+    return lo;
+  };
+
+  /** Абзацът в редове до ширината (по думи; дълга дума — по знаци); поредните празни редове — един. */
   const wrap = (str: string, max: number, size: number, peso: Peso): string[] => {
     const lines: string[] = [];
     for (const paragraph of str.split('\n')) {
+      if (!paragraph.trim()) {
+        if (lines.length > 0 && lines[lines.length - 1] !== '') lines.push('');
+        continue;
+      }
       let line = '';
       for (const word of paragraph.split(/\s+/).filter(Boolean)) {
         const next = line ? `${line} ${word}` : word;
@@ -133,8 +149,7 @@ export async function renderCartello(
         if (line) lines.push(line);
         line = word;
         while (line.length > 1 && width(line, peso, size) > max) {
-          let cut = line.length - 1;
-          while (cut > 1 && width(line.slice(0, cut), peso, size) > max) cut -= 1;
+          const cut = cutOf(line, max, size, peso);
           lines.push(line.slice(0, cut));
           line = line.slice(cut);
         }
@@ -211,24 +226,40 @@ export async function renderCartello(
     if (valore) riga(valore, X(x), Y(valori.y), w * s, valori.dimensione * s, 'grassetto');
   });
 
-  // Текстът към хората — с главни букви като на шаблоните; смалява се, докато влезе в редовете си.
+  // Текстът към хората — с главни букви като на шаблоните; по-ситният шрифт дава повече редове в същата
+  // височина. Размерът е най-големият, при който текстът влиза (двоично между 55 % и целия); не влезе ли и
+  // при 55 %, последният ред завършва с „…“.
   if (dati.testo.trim()) {
     const str = dati.testo.trim().toLocaleUpperCase('it-IT');
     const max = testo.larghezza * s;
     const base = testo.dimensione * s;
+    const room = (size: number) => Math.floor(((testo.righe - 1) * base) / size) + 1;
+    const fits = (size: number) => wrap(str, max, size, 'normale').length <= room(size);
     let size = base;
-    let lines = wrap(str, max, size, 'normale');
-    while (size > base * MIN && lines.length > testo.righe) {
-      size -= 0.25;
-      lines = wrap(str, max, size, 'normale');
+    if (!fits(base)) {
+      let lo = base * MIN;
+      let hi = base;
+      if (fits(lo)) {
+        for (let i = 0; i < 10; i++) {
+          const mid = (lo + hi) / 2;
+          if (fits(mid)) lo = mid;
+          else hi = mid;
+        }
+      }
+      size = lo;
     }
-    // По-ситен шрифт — повече редове в същата височина.
+    const lines = wrap(str, max, size, 'normale');
+    const shown = lines.slice(0, room(size));
+    if (lines.length > shown.length) {
+      // „…“ отива на последния ред с текст, не на празния между два абзаца.
+      while (shown.length > 1 && shown[shown.length - 1] === '') shown.pop();
+      let last = shown[shown.length - 1]!;
+      while (last.length > 1 && width(`${last}…`, 'normale', size) > max) last = last.slice(0, -1);
+      shown[shown.length - 1] = `${last.trimEnd()}…`;
+    }
     const step = testo.riga * s * (size / base);
-    const room = Math.floor(((testo.righe - 1) * testo.riga * s) / step) + 1;
     doc.fillColor(testo.colore);
-    lines
-      .slice(0, room)
-      .forEach((line, i) => riga(line, X(testo.x), Y(testo.y) + i * step, max, size, 'normale'));
+    shown.forEach((line, i) => riga(line, X(testo.x), Y(testo.y) + i * step, max, size, 'normale'));
   }
 
   for (const scritta of modello.scritte) {
