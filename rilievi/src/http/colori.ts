@@ -103,9 +103,12 @@ export function coloriSalvati(value: unknown): Colori | null {
   return parsed.ok ? parsed.data : null;
 }
 
-/** Версията на стила — адресът се сменя с цветовете, кешът на браузъра — не. */
+/**
+ * Версията на стила — хеш на самия CSS: сменя се и с цветовете, и с кода, който извежда останалите
+ * (нов release стига до всеки веднага, а кешът на браузъра не пита излишно).
+ */
 export const versioneColori = (colori: Colori): string =>
-  createHash('sha256').update(JSON.stringify(colori)).digest('hex').slice(0, 12);
+  createHash('sha256').update(cssColori(colori)).digest('hex').slice(0, 12);
 
 /** Стилът на темата: токените на base.css, изведени от шестте цвята. */
 export function cssColori(c: Colori): string {

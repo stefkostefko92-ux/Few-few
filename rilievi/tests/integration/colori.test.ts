@@ -36,6 +36,10 @@ describe('the custom colours of a person', () => {
     assert.equal(css.status, 200);
     assert.match(css.headers.get('content-type') ?? '', /^text\/css/);
     assert.match(css.headers.get('cache-control') ?? '', /immutable/);
+    // Under another version (an old page, colours changed meanwhile) the sheet is never cached.
+    const stale = await browser.get('/account/colori.css?v=000000000000');
+    assert.equal(stale.status, 200);
+    assert.equal(stale.headers.get('cache-control'), 'no-store');
     assert.match(css.body, /--bg: #0f1b2d;/);
     assert.match(css.body, /--primary-bg: #ffb000;/);
     // Someone else's stylesheet is never served: the sheet is the one of the session.

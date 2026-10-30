@@ -39,7 +39,7 @@
   <div class="field">
     <label class="field__label" for="role"><%= t('users.role') %></label>
     <select class="select" id="role" name="role" required aria-describedby="role-hint">
-      <% for (const role of roles) { %><option value="<%= role %>"<% if (form.role === role) { %> selected<% } %>><%= t('role.' + role) %></option>
+      <% for (const role of roles) { %><option value="<%= role %>"<% if (form.role === role) { %> selected<% } %>><%= ruolo(role, aziendaRuoli) %></option>
       <% } %>
     </select>
     <p class="field__hint" id="role-hint"><%= t('users.roleHint') %></p>

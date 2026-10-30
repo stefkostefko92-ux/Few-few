@@ -88,6 +88,8 @@ async function renderInviteForm(
     days: INVITE_DAYS,
     aziende: only ? [] : choices,
     ownAzienda: only?.name ?? null,
+    // Имената на ролите във фирмата, когато тя е една (иначе — тези по подразбиране).
+    aziendaRuoli: only?.id ?? null,
   });
 }
 

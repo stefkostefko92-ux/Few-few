@@ -2,7 +2,13 @@ import { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { principalOf, requireCsrf, requireUser, sendError } from '../auth/guards.js';
 import { prisma } from '../db.js';
-import { CAMPI_COLORE, COLORI_PREDEFINITI, cssColori, parseColori } from '../http/colori.js';
+import {
+  CAMPI_COLORE,
+  COLORI_PREDEFINITI,
+  cssColori,
+  parseColori,
+  versioneColori,
+} from '../http/colori.js';
 import { setFlash } from '../http/flash.js';
 
 /**
@@ -52,12 +58,14 @@ accountColoriRouter.post(
 accountColoriRouter.get('/account/colori.css', requireUser, (req, res) => {
   const colori = principalOf(req).user.colori;
   if (!colori) return sendError(req, res, 404, 'error.notFoundTitle', 'error.notFound');
+  // Кешира се за година само под своята версия (?v=); стар адрес (цветовете са сменени в друг раздел
+  // между страницата и стила) получава текущите цветове, но не ги кешира под чуждата версия.
+  const proprio = req.query.v === versioneColori(colori);
   res
     .status(200)
     .set({
       'Content-Type': 'text/css; charset=utf-8',
-      // Адресът носи версията на цветовете (?v=) — нови цветове, нов адрес.
-      'Cache-Control': 'private, max-age=31536000, immutable',
+      'Cache-Control': proprio ? 'private, max-age=31536000, immutable' : 'no-store',
     })
     .send(cssColori(colori));
 });
