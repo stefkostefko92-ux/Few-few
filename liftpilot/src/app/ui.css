@@ -148,5 +148,6 @@ details.panel > * + * { margin-top: 12px; }
 .savebar .input { max-width: 26rem; flex: 1 1 12rem; }
 @media (max-width: 640px) {
   .savebar { padding-block: 8px calc(8px + env(safe-area-inset-bottom, 0px)); }
-  .savebar .note:not(.bad) { display: none; }
+  /* (the draft's bar stays: «Scarta la bozza» is reachable only there) */
+  .savebar .note:not(.bad):not(.draft-bar) { display: none; }
 }

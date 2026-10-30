@@ -111,6 +111,10 @@ export function poliDi(line: string | true | undefined): 2 | 4 | 6 | 8 | null {
   return p === 2 || p === 4 || p === 6 || p === 8 ? p : null;
 }
 
+/** A metric horsepower (CV) [kW]: the sheet's power in CV stands in for the kW when those are not written. */
+const KW_PER_CV = 0.73549875;
+const kwDaCv = (cv: number | null): number | null => (cv === null ? null : Math.round(cv * KW_PER_CV * 100) / 100);
+
 /** The argano data sheet's values, when the module is open and stored (its PDF exists). */
 export function arganoDi(v: Valori | null): ArganoDati | null {
   if (!v) return null;
@@ -118,7 +122,7 @@ export function arganoDi(v: Valori | null): ArganoDati | null {
   const rinvio = typeof v.pulegginaRinvio === 'string' ? text(v.pulegginaRinvio) : null;
   return {
     pesoCabina: unNumero(v.pesoCabina), velocita: unNumero(v.velocita), corsa: unNumero(v.corsa), taglia, puleggia: unNumero(v.diametroPuleggia),
-    cuneo: unNumero(v.cuneo), rapporto: rapportoDi(v.rapportoRiduzione), potenzaKw: unNumero(v.potenzaKw), giri: unNumero(v.giri), poli: poliDi(v.poli),
+    cuneo: unNumero(v.cuneo), rapporto: rapportoDi(v.rapportoRiduzione), potenzaKw: unNumero(v.potenzaKw) ?? kwDaCv(unNumero(v.potenzaCv)), giri: unNumero(v.giri), poli: poliDi(v.poli),
     rinvio, rinvioD: rinvio ? unNumero(rinvio) : null,
   };
 }

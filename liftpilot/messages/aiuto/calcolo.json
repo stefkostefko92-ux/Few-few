@@ -20,7 +20,7 @@
   "parte_safetyGear": "«Sì» solo se l’intervento sostituisce o modifica il paracadute: allora le sue verifiche entrano nell’esito del collaudo. Senza risposta resta «No».",
   "parte_ucm": "Le protezioni contro la velocità eccessiva della cabina in salita (ACOP) e contro il suo movimento incontrollato (UCM). «Sì» solo se l’intervento le sostituisce o le modifica: le loro verifiche entrano nell’esito.",
   "parte_alarm": "«Sì» solo se l’intervento sostituisce o modifica l’allarme di emergenza: le sue verifiche entrano nell’esito. Senza risposta resta «No».",
-  "parte_room": "«Sì» se l’intervento modifica il locale del macchinario: le sue verifiche entrano nell’esito. Quando cambiano solo parti del locale (macchina, funi, quadro, locale, allarme, UCM) il Progetto è il rilievo del locale macchina.",
+  "parte_room": "«Sì» se l’intervento modifica il locale macchina: le sue verifiche entrano nell’esito. Quando cambiano solo parti del locale (macchina, funi, quadro, locale, allarme, UCM) il Progetto è il rilievo del locale macchina.",
   "parte_slidingDoors": "Compare con le porte di cabina sostituite: «Sì» se le porte da battente diventano scorrevoli. Se rispondi «No» a «Porte di cabina», torna «No» da sola.",
   "regolazione": "Rispondi guardando il quadro installato: «VVVF (inverter)» se regola già la velocità, «2 velocità» o «1 velocità» se non la regola. Ogni macchina proposta è dimensionata per l’inverter: in un ammodernamento 2 o 1 velocità sostituiscono il quadro, in un «Solo argano» il calcolo non si salva.",
   "machineStd": "Scegli secondo quale norma è fatta la macchina nuova (UNI 10411-1:2024, 14.1 a) o b)): cambiano la manovra di emergenza e la verifica del blocco. Compare solo per «Solo argano» e «Ammodernamento».",

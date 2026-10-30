@@ -32,10 +32,10 @@
   "base": {
     "archiviato": "Impianto archiviato: le relazioni emesse restano consultabili e scaricabili.",
     "calcolo": "Calcolo argano del {data}",
-    "rilievo": "Rilievo del locale del {data}",
-    "progetto": "Progetto dell’ascensore del {data}",
-    "percorsoLocale": "Relazione sul rilievo del locale del macchinario",
-    "percorsoVano": "Relazione sul progetto dell’ascensore",
+    "rilievo": "Rilievo del locale macchina del {data}",
+    "progetto": "Progetto dell’impianto del {data}",
+    "percorsoLocale": "Relazione sul rilievo del locale macchina",
+    "percorsoVano": "Relazione sul progetto dell’impianto",
     "motivo": {
       "noCalc": "Manca il Calcolo argano: la relazione parte dal calcolo dell’intervento.",
       "trasformazione": "Con la Trasformazione completa l’impianto si tratta come un ascensore nuovo (UNI EN 81-20/50): valgono la relazione di calcolo, il progetto e i documenti dell’ascensore nuovo, non la relazione tecnica di modifica.",
@@ -45,7 +45,7 @@
       "engineChanged": "Il software è cambiato da quando il documento di base è stato salvato: aprilo, usa «Aggiorna con il software attuale», poi torna qui."
     },
     "vaiCalcolo": "Vai al Calcolo argano",
-    "vaiRilievo": "Rileva il locale del macchinario",
+    "vaiRilievo": "Rileva il locale macchina",
     "vaiProgetto": "Prepara il Progetto"
   },
   "norma": {

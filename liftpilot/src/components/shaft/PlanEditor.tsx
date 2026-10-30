@@ -34,6 +34,8 @@ interface Props {
 }
 
 const VIEWS: readonly ScreenView[] = ['plan', 'head', 'pit-plan', 'full', 'top', 'floor', 'pit', 'room-plan', 'room-section', 'below-plan', 'below-section'];
+/** The views seen from above, access A at the bottom: they say how the sides are named. */
+const PLANS: ReadonlySet<ScreenView> = new Set(['plan', 'head', 'pit-plan', 'room-plan', 'below-plan']);
 
 export default function PlanEditor({ I, onChange, machine, below = null, onCalc, id, titleAs = 'h2' }: Props) {
   const t = useTranslations('shaft');
@@ -65,6 +67,7 @@ export default function PlanEditor({ I, onChange, machine, below = null, onCalc,
           <button key={k} type="button" role="tab" aria-selected={shown === k} className={shown === k ? 'on' : undefined} onClick={() => setView(k)}>{t(`ed_v_${k.replace('-', '_')}`)}</button>
         ))}
       </div>
+      {PLANS.has(shown) ? <p className="note">{t('ed_orient')}</p> : null}
       {v ? (
         <DrawingFigure className="sheet-view" w={v.w} h={v.h} label={t(`ed_v_${shown.replace('-', '_')}`)} caption={<>{t('scale', { n: v.scale })} · {t('ed_count', { n: v.hits.length })}</>}>
           <EditableDrawing shapes={v.shapes} w={v.w} h={v.h} hits={v.hits} id={`${id}-${shown}`} label={t(`ed_v_${shown.replace('-', '_')}`)} manual={manual} onEdit={onEdit} texts={texts} />

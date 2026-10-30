@@ -20,6 +20,8 @@ async function submitBack(page, press) {
   await press();
   await answer;
   await page.waitForSelector('#confirm-summary');
+  // the form that came back is drawn when it focuses its list (the list is there already on a second save)
+  await page.waitForFunction(() => globalThis.document.activeElement?.id === 'confirm-summary');
 }
 
 /** The company page's «Ripristina l'ordine predefinito». */

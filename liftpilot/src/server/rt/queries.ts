@@ -7,9 +7,9 @@ import 'server-only';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import type { SessionUser } from '@/lib/auth';
-import { can } from '@/lib/rbac';
 import { rtDraftDataSchema, type RtDraftData } from '@/lib/draft-input';
 import type { RtInputs } from '@/lib/rt/input';
+import { rilievoDiRiferimento } from '../collega/queries';
 import { readDraft } from '../drafts';
 import { LIFT_BASE, ROOM_BASE } from './base';
 
@@ -117,13 +117,10 @@ export async function readRtDraft(user: SessionUser, projectId: string): Promise
   return { data: dropped ? { ...d.data, inputs: senzaFile(d.data.inputs, alive) } : d.data, at: d.at, dropped };
 }
 
-/** The installation's latest linked survey as hints for the registry (persons, stops, matricola), for whoever sees
- *  the surveys; null without one. */
+/** The installation's reference survey as hints for the registry (persons, stops, matricola), for whoever sees the
+ *  surveys — read as the comparison reads it, the machine's data sheet standing in for what the card leaves empty;
+ *  null without one. */
 export async function rilievoHints(user: SessionUser, projectId: string): Promise<{ persone: number | null; fermate: number | null; matricola: string | null } | null> {
-  if (!can(user, 'rilievi:view')) return null;
-  const s = await prisma.scheda.findFirst({
-    where: { companyId: user.companyId, projectId, deletedAt: null }, orderBy: [{ data: 'desc' }, { createdAt: 'desc' }],
-    select: { capienzaPersone: true, fermate: true, matricola: true },
-  });
-  return s ? { persone: s.capienzaPersone ?? null, fermate: s.fermate ?? null, matricola: s.matricola ?? null } : null;
+  const r = await rilievoDiRiferimento(user, projectId);
+  return r ? { persone: r.persone, fermate: r.fermate, matricola: r.matricola } : null;
 }

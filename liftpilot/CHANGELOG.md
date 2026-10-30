@@ -61,6 +61,7 @@
 - Петдесет и третият кръг: „Voglio che la parte del progetto, la parte della simulazione e della relazione tecnica siano separate in pagine diverse e non così incasinate. Al momento, un utente deve stare lì ore per capire come funziona il software. Dobbiamo puntare di più sulla leggibilità e sul renderlo più facilmente capibile per l’utente già a prima vista. Prima di iniziare a modificare proponimi le modifiche.“ Предложението (артефакт) и изборът на собственика: симулацията — запазеният проект и черновата; проверките — до чертежа; една стъпка наведнъж — само в Semplice; Calcolo argano по същата схема — трета доставка. Тази промяна е първата доставка; втората (relazione tecnica стъпка по стъпка в Semplice) и третата (Calcolo argano) идват после.
 - Петдесет и четвъртият кръг: „Voglio che quando c’è una verifica non superata il software mi suggerisca dei rimedi. Una volta finito il lavoro non mi fare i manuali d’uso, te lo dico io quando farli.“ Изборът на собственика: решения, изчислени със стойността, при която проверката минава, и «Applica»; в Progetto, Calcolo argano и Rilievo del locale macchina; и за «Attenzione». Ръководството — само когато собственикът го поиска.
 - Петдесет и петият кръг: „И направи професионални и брутални рекламни брошури fronte/retro A5“. Изборът на собственика: облика на марката LiftPilot; отзад имейл, сайт, QR и телефона +39 379 296 9699; една брошура за всички; файл за печатницата и дигитален.
+- Петдесет и шестият кръг: „Свързани ли са и ъпдейтнати ли са по най-добрият начин Rilievi и всички други неща? Също така искам да знам как се базираш с ляво, дясно и тн в locale macchine за да бъде обяснено по най-добрият начин и как мога да преместя telaio. Провери етикетите на всяко място дали са с правилното име. Искам софтуера да е възможно най-близко до работещ за да можем да пуснем бета версия скоро.“
 
 ## Намерено по пътя
 
@@ -3663,6 +3664,38 @@ QR (`qr-liftpilot.svg`), бележката, че резултатите са ч
 **Намерено по пътя:** примерът за «Rimedi» е от тестов проект, не от проекта на сечението отпред — затова е белязан
 «Esempio»; редът с пълното име на проверката не се побира — съкратено на «Rifugio sul tetto di cabina».
 
+### Кръг 56 — страните на плановете, етикетите, Rilievi към бетата
+
+Два прегледа само за четене: връзката Rilievi ↔ съоръжение (Кодаджията) и етикетите на целия интерфейс (Преводача);
+поправено е каквото е ясно и не сменя данни, останалото — предложено на собственика.
+
+- **Страните** (`docs/rules.md` → „Страните на плановете и basamento/telaio“): над всеки план на Progetto и на машинното —
+  бележка как се четат «anteriore», «sinistra», «destra» (`shaft.ed_orient`); помощта на вратата, таблото и калатите —
+  «con le spalle alla parete anteriore» вместо двусмисленото «stando davanti al muro anteriore», разстоянието на вратата
+  до най-близкия ръб на отвора (не «montante sinistro», което отвътре към предната или лявата стена е другият),
+  калатите — от вътрешния **ляв** ъгъл на шахтата откъм вход A.
+- **Етикетите:** записаното машинно «Rilievo del locale macchina» (беше «Progetto della sostituzione» — заглавие, път,
+  бутонът на комплекта), записаното изчисление «Calcolo argano» (беше «Calcolo»), в relazione
+  tecnica «locale macchina» (беше «locale del macchinario»; частта на изпитването остава «Locale del macchinario» —
+  от нея идва текстът на relazione tecnica, `rt/sezioni.ts` `nomeParte`, и смяната ѝ би сменила двигателя RT), «Progetto
+  dell’impianto» (беше «dell’ascensore»), «Apri il rilievo del locale macchina» и «Nuovo rilievo del locale macchina» (за
+  да не се бъркат с картата), «Misure in sito» (беше «Rilievi in sito»), «pareti» на шахтата, цитатите на частите на
+  изпитването като в списъка («Portata variata», «Velocità nominale variata»), «modalità «Esperto»», типографски
+  апострофи в Rilievi, «sparirà da LiftPilot» (беше «dal portale»).
+- **Rilievi:** подсказките на анаграфиката на relazione tecnica четат рилевото за справка както сравнението (с листа за
+  машината, където картата е празна); мощност само в CV на листа за машината → kW (1 CV = 0,73549875 kW).
+- **Телефон:** лентата на черновата вече не се крие под 640 px — «Scarta la bozza» се стига и от телефона (`ui.css`).
+
+**Намерено по пътя (за решение на собственика):** всяка редакция на свързана карта — и само бележка — прави Calcolo
+argano, Progetto и документите «da aggiornare» (`piuVecchio` гледа `Scheda.updatedAt`), а карта, свързана след
+изчислението, не прави нищо остаряло; данните от модулите на таблото (Corsa, Velocità, Fermate, шахтата, fossa и
+testata) и регулирането на старото табло не се четат; «prima» на RT2 не идва от рилевото; telaio не се мести по
+калатата несиметрично. «Puleggia di frizione» срещу «di trazione», «Taglia 2:1» срещу «Indiretto 1:2», «argano geared»
+в метаданните, редът на стъпките на началната страница и «Non soddisfatta» срещу «non superata» — оставени за решение.
+
+**Ръководството** по решение на собственика не е обновено; за наваксване: бележката над плановете, новите имена по-горе
+и помощта на вратата, таблото и калатите в машинното.
+
 ## Проверки
 
 - [x] Пуснах пълния quality gate на засегнатия продукт `liftpilot/` (до кръг 6 — `argano/`): lint, typecheck, test (250/250, със схемите, токените и писмата на акаунтите на трите езика, с тестовете за хлабината на вратите, хода на кабината и противотежестта при трите схеми с машина долу, планките на Panev, кабелния канал, редакцията на всеки размер на плана и на разреза, каталога на машините, ограничителите, нишите, етажните табла и имената на котите на трите езика), build. **Зелен.**
@@ -4265,6 +4298,13 @@ QR (`qr-liftpilot.svg`), бележката, че резултатите са ч
   с TrimBox 8.50 pt навътре и 419.528 × 595.276 pt (A5); `pdffonts` — всички шрифтове вградени; QR-ът декодиран от двата
   PDF-а (`https://liftpilot.carbonstealth.eu`); двете страници прегледани като PNG с линиите на реза и на 8 mm навътре;
   числата сверени с `registryCounts()`/`SCENARIOS` и с началната страница на живо; `secret-scan` — чисто.
+- [x] Кръг 56 (страните, етикетите, Rilievi): `npm run lint` чисто, `tsc` 0, `npm test` 1426 + 343 (`collega-prefill`: CV
+  → kW; `rt-version` хвана смяната на `lift.parte_room`, която влиза в relazione tecnica — върната), `npm run build`; пълният
+  smoke с пощата „all good“ (98 стъпки), `smoke-allegati` и `smoke-schizzi` — „all good“, всеки на нов процес; по пътя
+  smoke-ът на Rilievi чакаше обобщението, което при второ изпращане вече е там (едно падане от два пуска, 4 вместо 5) —
+  сега чака фокуса на върнатия формуляр; на демо данните — бележката над плана на машинното на 1440 px и черновата на
+  телефон (390 px): лентата се вижда, «Scarta la bozza» я изхвърля, нула грешки в конзолата; `secret-scan` — чисто;
+  сървърите — спрени по своите pid.
 - [x] `node tools/design/motion-a11y.mjs liftpilot/src`: проверката за reduced motion в базата — да; 6 евристични
   находки `webgl-no-rm-check` в модули на 3D, които се зареждат само през `boot.ts` (същите и преди кръг 24).
 - [x] Живата 3D сцена на началната страница е проверена в headless Chromium (WebGL 2) на двете нива на качество, без грешки в конзолата. При reduced motion three.js не се зарежда.

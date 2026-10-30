@@ -58,6 +58,7 @@ export default function SurveyDrawings({ survey, derived, onChange, id }: Props)
           <button key={k} type="button" role="tab" aria-selected={kind === k} className={kind === k ? 'on' : undefined} onClick={() => setKind(k)}>{t(k === 'plan' ? 'ed_v_room_plan' : 'ed_v_room_section')}</button>
         ))}
       </div>
+      {kind === 'plan' ? <p className="note">{t('ed_orient')}</p> : null}
       {v ? (
         <DrawingFigure className="sheet-view" w={v.w} h={v.h} label={t(kind === 'plan' ? 'ed_v_room_plan' : 'ed_v_room_section')} caption={<>{t('scale', { n: v.scale })} · {t('ed_count', { n: v.hits.length })}</>}>
           <EditableDrawing shapes={v.shapes} w={v.w} h={v.h} hits={v.hits} id={`${id}-${kind}`} label={t(kind === 'plan' ? 'ed_v_room_plan' : 'ed_v_room_section')} manual={manual} onEdit={onEdit} texts={texts} />

@@ -97,7 +97,7 @@ export async function collegaFlow({ BASE, page, hydrated, stamp }) {
   assert.match((await row('Q').getAttribute('class')) ?? '', /\blk-mod\b/, 'the load: a planned modification');
   assert.match(await row('Q').textContent(), /collaudo/, 'the acceptance test told');
   assert.match((await row('velocita').getAttribute('class')) ?? '', /\blk-mod\b/, 'the speed: a planned modification');
-  assert.match(await row('velocita').textContent(), /Velocità nominale \(variata\)/, 'the test\'s part named');
+  assert.match(await row('velocita').textContent(), /Velocità nominale variata/, 'the test\'s part named');
   assert.equal(await row('velocita').locator('a[href$="/calc#collaudo"]').count(), 1, 'the way to the parts of the test, as for the load');
   assert.match((await row('posizione').getAttribute('class')) ?? '', /\blk-diff\b/, 'the machine\'s place: a probable error');
   assert.match((await row('funiNumero').getAttribute('class')) ?? '', /\blk-ok\b/, 'the ropes\' number: the same');

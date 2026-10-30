@@ -55,6 +55,9 @@ test('il rilievo: prima la scheda, poi il modulo dati argano dove la scheda è v
   // both or neither of the machine's places: not known
   assert.equal(rilievoDati(row({ ubicazioneMacchina: ['ALTO', 'BASSO'] })).posizione, null);
   assert.equal(arganoDi({ taglia11: true, taglia12: true })?.taglia, null);
+  // the power in CV only: in kW (a metric horsepower), the kW written win
+  assert.equal(arganoDi({ potenzaCv: '10' })?.potenzaKw, 7.35);
+  assert.equal(arganoDi({ potenzaCv: '10', potenzaKw: '7,5' })?.potenzaKw, 7.5);
 });
 
 test('la posizione della macchina: in basso; in alto con o senza rinvio solo se il modulo lo dice', () => {
