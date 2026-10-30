@@ -14,6 +14,7 @@ import { FONDO_PAGINA, fineFoglio, renderInterventoPdf } from '../src/interventi
 import { numeroModulo, type InterventoFull } from '../src/interventi/service.js';
 import {
   improntaContenuto,
+  improntaFirma,
   sigilloDi,
   sigilloValido,
   type ContenutoIntervento,
@@ -258,6 +259,7 @@ describe('the seal of a confirmed sheet', () => {
     firmaCliente: JSON.parse(FIRMA_CLIENTE) as { s: number[][] },
     firmaClienteNome: 'Anna Bianchi',
     confermatoAt: new Date('2026-10-30T14:32:00.123Z'),
+    confermatoById: 'cm0utente',
   };
   const impronta = improntaContenuto(content);
   const sealed = { ...content, ...firme, impronta, sigillo: sigilloDi(KEY, impronta, firme) };
@@ -310,6 +312,7 @@ describe('the seal of a confirmed sheet', () => {
       { firmaCliente: { s: [[30, 120, 200, 60, 420, 151]] } },
       { firmaTecnico: JSON.parse(FIRMA_CLIENTE) as { s: number[][] } },
       { confermatoAt: new Date('2026-10-30T14:32:00.124Z') },
+      { confermatoById: 'cm0altro' },
       { sigillo: sealed.sigillo.replace(/^./, (c) => (c === '0' ? '1' : '0')) },
       { sigillo: sealed.sigillo.slice(0, 62) },
       { impronta: improntaContenuto({ ...content, citta: 'Monza' }), citta: 'Monza' },
@@ -320,6 +323,22 @@ describe('the seal of a confirmed sheet', () => {
     assert.equal(sigilloValido(KEY, { ...sealed, impronta: null, sigillo: null }), false);
     assert.equal(sigilloValido(KEY, { ...sealed, firmaCliente: 'broken' }), false);
     assert.equal(sigilloValido(KEY, { ...sealed, confermatoAt: null }), false);
+    assert.equal(sigilloValido(KEY, { ...sealed, confermatoById: null }), false);
+  });
+
+  it('keeps its canon: the fingerprints and the seal of a fixed sheet never move', () => {
+    // A change here invalidates every seal already in the database (their PDF and email stop): a new
+    // canon needs a new label ("v2") and the old one kept for checking — never an edit of these values.
+    assert.equal(impronta, '697321ad3741ec726ad9bff035ee7640c360ebc046906f9056a14ec7e2c2e309');
+    assert.equal(
+      sealed.sigillo,
+      'ad9b0a342ba4a2dfcbbf6da965598695829f6f430a1f971056cdc52c40814ee9',
+    );
+    // The same string PostgreSQL builds in the migration: replace(("firmaTecnico" -> 's')::text, ' ', '').
+    assert.equal(
+      improntaFirma(firme.firmaTecnico),
+      'dd17b62727793691e2d850eab2abc84c5a4673e003b06b8f0bfdf3c34b198f4d',
+    );
   });
 });
 

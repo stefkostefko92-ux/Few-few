@@ -1,6 +1,7 @@
 // Shared by the integration tests of the intervention sheets: a filled draft, the two signatures, and the
 // signing page sent back exactly as it was shown (its version and the fingerprint of its content).
 import assert from 'node:assert/strict';
+import { randomInt } from 'node:crypto';
 import type { Browser } from './harness.js';
 
 export const FIRMA_TECNICO = JSON.stringify({ s: [[10, 150, 120, 40, 260, 160]] });
@@ -52,7 +53,25 @@ export async function paginaFirma(browser: Browser, id: string) {
   };
 }
 
-export async function firma(browser: Browser, id: string, fields: Record<string, string> = FIRME) {
+/** One random stroke in the 600 × 200 box — a signature never repeats (the same strokes twice are refused). */
+const tratto = () =>
+  JSON.stringify({
+    s: [Array.from({ length: 12 }, (_, i) => (i % 2 ? randomInt(0, 201) : randomInt(0, 601)))],
+  });
+
+/** Two fresh signatures with their names. */
+export const firmeNuove = (): Record<string, string> => ({
+  firmaTecnico: tratto(),
+  firmaTecnicoNome: 'Mario Rossi',
+  firmaCliente: tratto(),
+  firmaClienteNome: 'Anna Bianchi',
+});
+
+export async function firma(
+  browser: Browser,
+  id: string,
+  fields: Record<string, string> = firmeNuove(),
+) {
   const vista = await paginaFirma(browser, id);
   return browser.submit(`/interventi/${id}/firma`, `/interventi/${id}/conferma`, {
     base: vista.base,

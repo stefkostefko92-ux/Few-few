@@ -7,8 +7,11 @@ import { valoriVoci } from './voci.js';
  * Подписът е за съдържанието (собственикът, 30 октомври 2026). Отпечатъкът (`impronta`) е SHA-256 на
  * всичко, което листът казва — фирмата, номерът, главата, точките, „Altro“, пробите и часовете — в
  * постоянен ред; показва се на страницата за подписа и в PDF-а. Печатът (`sigillo`) е HMAC-SHA256 с
- * INTERVENTI_SEAL_KEY над отпечатъка, двата подписа, имената и часа на потвърждението: промяна на
- * който и да е от тях след подписа (в базата, на ръка) не минава проверката и листът не излиза навън.
+ * INTERVENTI_SEAL_KEY над отпечатъка, двата подписа, имената, часа и кой е потвърдил: промяна на който
+ * и да е от тях след подписа (в базата, на ръка) не минава проверката и листът не излиза навън.
+ * Канонът е част от формата: смяна в него (или в начина, по който voci.ts чете точките) обезсилва всички
+ * стари печати — тестът с еталонните стойности пада първи. Нов канон = нов етикет (`v2`) и старият за
+ * проверка.
  */
 
 /** Съдържанието на листа — без подписите (те са в печата). */
@@ -36,6 +39,8 @@ export interface Firme {
   firmaCliente: Firma;
   firmaClienteNome: string;
   confermatoAt: Date;
+  /** Кой е потвърдил — „da …“ на листа и в PDF-а. */
+  confermatoById: string;
 }
 
 /** Часовете като в базата (две десетични): „1.5“ и „1.50“ са едно и също. */
@@ -70,7 +75,14 @@ export function improntaContenuto(row: ContenutoIntervento): string {
   return createHash('sha256').update(JSON.stringify(canon)).digest('hex');
 }
 
-/** Печатът: HMAC над отпечатъка и подписите с часа — само сървърът с ключа може да го направи. */
+/**
+ * Отпечатъкът на един подпис — щрихите като JSON без интервали (`[[10,150,…]]`). Същият низ дава и
+ * PostgreSQL: `replace(("firmaCliente"->'s')::text, ' ', '')` (миграцията попълва старите листове така).
+ */
+export const improntaFirma = (firma: Firma): string =>
+  createHash('sha256').update(JSON.stringify(firma.s)).digest('hex');
+
+/** Печатът: HMAC над отпечатъка, подписите, часа и кой е потвърдил — само сървърът с ключа го прави. */
 export function sigilloDi(key: Buffer, impronta: string, firme: Firme): string {
   const canon = [
     'rilievi/intervento/sigillo/v1',
@@ -80,6 +92,7 @@ export function sigilloDi(key: Buffer, impronta: string, firme: Firme): string {
     firme.firmaCliente.s,
     firme.firmaClienteNome,
     firme.confermatoAt.toISOString(),
+    firme.confermatoById,
   ];
   return createHmac('sha256', key).update(JSON.stringify(canon)).digest('hex');
 }
@@ -96,14 +109,15 @@ export function sigilloValido(
     firmaCliente: unknown;
     firmaClienteNome: string | null;
     confermatoAt: Date | null;
+    confermatoById: string | null;
     impronta: string | null;
     sigillo: string | null;
   },
 ): boolean {
   const firmaTecnico = firmaSalvata(row.firmaTecnico);
   const firmaCliente = firmaSalvata(row.firmaCliente);
-  if (!row.confermatoAt || !row.impronta || !row.sigillo || !firmaTecnico || !firmaCliente)
-    return false;
+  if (!row.confermatoAt || !row.confermatoById || !row.impronta || !row.sigillo) return false;
+  if (!firmaTecnico || !firmaCliente) return false;
   if (!row.firmaTecnicoNome || !row.firmaClienteNome) return false;
   if (improntaContenuto(row) !== row.impronta) return false;
   const expected = Buffer.from(
@@ -113,6 +127,7 @@ export function sigilloValido(
       firmaCliente,
       firmaClienteNome: row.firmaClienteNome,
       confermatoAt: row.confermatoAt,
+      confermatoById: row.confermatoById,
     }),
     'hex',
   );

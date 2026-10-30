@@ -65,12 +65,35 @@ sync_env() {
   fi
 }
 
+# Колко потвърдени листа за интервенция носят печат: 0 — и при база без такава таблица/колона (машина
+# отпреди листовете) или без том (пръв деплой). Грешка — няма отговор: тогава ключ не се създава.
+sealed_sheets() {
+  docker volume inspect rilievi_db-data >/dev/null 2>&1 || { printf '0'; return 0; }
+  # --no-recreate: работещата база не се пресъздава по дефиницията на новия release (както при бекъпа).
+  docker compose up -d --no-recreate --wait db >/dev/null || return 1
+  local has_column
+  has_column="$(docker compose exec -T db psql -U rilievi -d rilievi -tAc \
+    "SELECT count(*) FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'Intervento' AND column_name = 'sigillo'")" ||
+    return 1
+  if [ "$has_column" != "1" ]; then printf '0'; return 0; fi
+  docker compose exec -T db psql -U rilievi -d rilievi -tAc \
+    'SELECT count(*) FROM "Intervento" WHERE "sigillo" IS NOT NULL'
+}
+
 # Ключът на печата на потвърдените листове за интервенция (src/interventi/sigillo.ts): липсва ли в
-# $SHARED/.env (машина отпреди листовете), се създава веднъж там. Никога не се сменя — сменен или загубен
-# ключ значи, че нито един потвърден лист не минава проверката (PDF и имейл спират) — DEPLOY.md, т. 1.
+# $SHARED/.env, се създава веднъж там — САМО ако в базата още няма запечатан лист (машина отпреди
+# листовете). Има ли, ключът е загубен, не нов: нов ключ би обезсилил всички стари печати (PDF и имейл
+# спират), затова деплоят спира и казва да се върне старият от бекъпа на тайните — DEPLOY.md, т. 1.
 ensure_seal_key() {
   [ -z "$(env_value INTERVENTI_SEAL_KEY)" ] || return 0
   command -v openssl >/dev/null 2>&1 || fail 1 "липсва openssl — не мога да създам INTERVENTI_SEAL_KEY."
+  local sealed
+  sealed="$(sealed_sheets | tr -dc '0-9')" ||
+    fail 1 "не мога да проверя в базата дали има запечатани листове — не създавам INTERVENTI_SEAL_KEY наслуки."
+  [ -n "$sealed" ] ||
+    fail 1 "базата не каза колко листа са запечатани — не създавам INTERVENTI_SEAL_KEY наслуки."
+  [ "$sealed" = "0" ] ||
+    fail 1 "INTERVENTI_SEAL_KEY липсва в $SHARED/.env, а в базата има $sealed запечатани листа: ключът е загубен, не нов. Върни го от бекъпа на тайните (DEPLOY.md, т. 1) — нов ключ би обезсилил всичките им печати."
   # Без нов ред накрая новият ключ би се залепил за последния ред на файла.
   [ -z "$(tail -c 1 "$SHARED/.env")" ] || printf '\n' >>"$SHARED/.env"
   printf 'INTERVENTI_SEAL_KEY=%s\n' "$(openssl rand -hex 32)" >>"$SHARED/.env"

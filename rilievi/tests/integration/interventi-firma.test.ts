@@ -10,14 +10,14 @@ import {
   improntaLeggibile,
   sigilloValido,
 } from '../../src/interventi/sigillo.js';
-import { outbox, prisma, signedIn, startApp, stopApp } from './harness.js';
+import { makeAzienda, outbox, prisma, signedIn, startApp, stopApp } from './harness.js';
 import {
   baseOf,
   create,
-  FIRMA_CLIENTE,
   FIRMA_TECNICO,
   firma,
   FIRME,
+  firmeNuove,
   FORM,
   paginaFirma,
   SEAL_KEY,
@@ -111,7 +111,8 @@ describe('signing an intervention sheet', () => {
     assert.equal((await prisma.intervento.findUniqueOrThrow({ where: { id } })).confermatoAt, null);
 
     // Signed on the current content: confirmed and sealed in one write.
-    const done = await firma(browser, id);
+    const mie = firmeNuove();
+    const done = await firma(browser, id, mie);
     assert.equal(done.status, 303);
     const sealed = await prisma.intervento.findUniqueOrThrow({ where: { id } });
     assert.ok(sealed.confermatoAt);
@@ -119,7 +120,7 @@ describe('signing an intervention sheet', () => {
     assert.equal(sealed.impronta, improntaContenuto(sealed));
     assert.match(sealed.sigillo ?? '', /^[0-9a-f]{64}$/);
     assert.equal(sigilloValido(SEAL_KEY(), sealed), true);
-    assert.deepEqual(sealed.firmaCliente, JSON.parse(FIRMA_CLIENTE));
+    assert.deepEqual(sealed.firmaCliente, JSON.parse(mie.firmaCliente!));
     const audit = await prisma.auditLog.findFirstOrThrow({
       where: { targetId: id, action: 'INTERVENTO_CONFIRM' },
     });
@@ -146,6 +147,7 @@ describe('signing an intervention sheet', () => {
       Prisma.sql`"firmaClienteNome" = 'Altra Persona'`,
       Prisma.sql`"voci" = '{}'::jsonb`,
       Prisma.sql`"confermatoAt" = "confermatoAt" + interval '1 day'`,
+      Prisma.sql`"confermatoById" = NULL`,
     ]) {
       const id = await create(browser, FORM);
       assert.equal((await firma(browser, id)).status, 303);
@@ -164,5 +166,40 @@ describe('signing an intervention sheet', () => {
       assert.equal(mail.status, 303);
       assert.equal(outbox.length, before, 'no email of a tampered sheet');
     }
+  });
+
+  it('refuses strokes already on another sheet — copied from the page, the PDF or the form', async () => {
+    const { browser } = await signedIn('TECNICO');
+    const primo = await create(browser, FORM);
+    const firme = firmeNuove();
+    assert.equal((await firma(browser, primo, firme)).status, 303);
+    // The customer's strokes, as anyone who reads the confirmed sheet sees them (the SVG path).
+    const secondo = await create(browser, { ...FORM, citta: 'Inventata' });
+    const replay = await firma(browser, secondo, {
+      ...firmeNuove(),
+      firmaCliente: firme.firmaCliente!,
+    });
+    assert.equal(replay.status, 422);
+    assert.match(replay.body, /Questa firma è già presente su un altro modulo/);
+    assert.match(replay.body, /name="firmaCliente" value=""/, 'the copied signature is dropped');
+    // The technician's strokes in the customer's pad, from another company: refused too.
+    const altro = (await signedIn('TECNICO', (await makeAzienda()).id)).browser;
+    const terzo = await create(altro, FORM);
+    const cross = await firma(altro, terzo, { ...firmeNuove(), firmaCliente: firme.firmaTecnico! });
+    assert.equal(cross.status, 422);
+    for (const id of [secondo, terzo])
+      assert.equal(
+        (await prisma.intervento.findUniqueOrThrow({ where: { id } })).confermatoAt,
+        null,
+      );
+    // What the migration computes for older sheets is what the application computes.
+    const [row] = await prisma.$queryRaw<Array<{ sql: string; app: string | null }>>`
+      SELECT encode(sha256(convert_to(replace(("firmaCliente" -> 's')::text, ' ', ''), 'UTF8')), 'hex') AS sql,
+             "firmaClienteHash" AS app
+      FROM "Intervento" WHERE "id" = ${primo}`;
+    assert.ok(row?.app);
+    assert.equal(row.sql, row.app);
+    // Signed again by hand: it passes.
+    assert.equal((await firma(browser, secondo)).status, 303);
   });
 });

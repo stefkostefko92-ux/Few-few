@@ -4,7 +4,7 @@ import { config } from '../config.js';
 import { prisma } from '../db.js';
 import { logger } from '../logger.js';
 import { firmaDalForm, MAX_FIRMA_JSON, type Firma } from './firma.js';
-import { improntaContenuto, sigilloDi, sigilloValido } from './sigillo.js';
+import { improntaContenuto, improntaFirma, sigilloDi, sigilloValido } from './sigillo.js';
 
 /**
  * „Firma e conferma“ (собственикът, 30 октомври 2026 — подписът е обвързан със съдържанието): техникът
@@ -17,7 +17,7 @@ import { improntaContenuto, sigilloDi, sigilloValido } from './sigillo.js';
 const NOME_MAX = 120;
 
 export type CampoFirma = 'firmaTecnico' | 'firmaTecnicoNome' | 'firmaCliente' | 'firmaClienteNome';
-export type ErroreFirma = 'mancante' | 'invalid' | 'tooLong' | 'uguale';
+export type ErroreFirma = 'mancante' | 'invalid' | 'tooLong' | 'uguale' | 'ripetuta';
 export type ErroriConferma = Partial<Record<CampoFirma, ErroreFirma>>;
 
 export interface DatiConferma {
@@ -92,12 +92,19 @@ let chiave: Buffer | null = null;
 export const chiaveSigillo = (): Buffer =>
   (chiave ??= Buffer.from(config().INTERVENTI_SEAL_KEY, 'hex'));
 
-export type EsitoConferma = 'ok' | 'conflict' | 'chiuso' | 'missing';
+export type EsitoConferma =
+  'ok' | 'conflict' | 'chiuso' | 'missing' | { ripetute: Array<'firmaTecnico' | 'firmaCliente'> };
+
+/** Ключът на заключването, което реди потвържденията — проверката за повторен подпис е за всички листове. */
+const LOCK_FIRME = 0x52_49_4c_46; // „RILF“
 
 /**
  * Потвърждението. `base` и `impronta` са каквото страницата за подписа е показала: различна версия или
  * различен отпечатък — „conflict“, нищо не се пише. Условията са и в самия UPDATE (два клика, запис
- * между прочитането и записа).
+ * между прочитането и записа). Подпис, чиито щрихи вече стоят на друг лист (на която и да е фирма, в
+ * което и да е от двете полета), се отказва: копиран е от страницата, PDF-а или прихванат, не е положен
+ * тук. Потвържденията се редят със заключване в транзакцията — два листа с едни и същи щрихи
+ * едновременно не минават и двата.
  */
 export async function confermaIntervento(
   scope: Scope,
@@ -115,11 +122,27 @@ export async function confermaIntervento(
       return 'conflict';
     const impronta = improntaContenuto(current);
     if (impronta !== vista.impronta) return 'conflict';
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${LOCK_FIRME})`;
+    const firmaTecnicoHash = improntaFirma(dati.firmaTecnico);
+    const firmaClienteHash = improntaFirma(dati.firmaCliente);
+    const hashes = [firmaTecnicoHash, firmaClienteHash];
+    const usate = await tx.intervento.findMany({
+      where: {
+        OR: [{ firmaTecnicoHash: { in: hashes } }, { firmaClienteHash: { in: hashes } }],
+      },
+      select: { firmaTecnicoHash: true, firmaClienteHash: true },
+    });
+    const giaUsati = new Set(usate.flatMap((r) => [r.firmaTecnicoHash, r.firmaClienteHash]));
+    const ripetute = (['firmaTecnico', 'firmaCliente'] as const).filter((campo, i) =>
+      giaUsati.has(hashes[i]!),
+    );
+    if (ripetute.length) return { ripetute };
     const confermatoAt = new Date();
-    const sigillo = sigilloDi(chiaveSigillo(), impronta, { ...dati, confermatoAt });
+    const firme = { ...dati, confermatoAt, confermatoById: actorId };
+    const sigillo = sigilloDi(chiaveSigillo(), impronta, firme);
     const updated = await tx.intervento.updateMany({
       where: { id, aziendaId: current.aziendaId, confermatoAt: null, updatedAt: baseDate },
-      data: { ...dati, confermatoAt, confermatoById: actorId, impronta, sigillo },
+      data: { ...firme, impronta, sigillo, firmaTecnicoHash, firmaClienteHash },
     });
     if (updated.count === 0) return 'conflict';
     await writeAudit(

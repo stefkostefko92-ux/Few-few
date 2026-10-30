@@ -59,7 +59,8 @@
         "mancante": "Manca la firma nel riquadro.",
         "invalid": "Firma non leggibile: cancellala e rifalla.",
         "uguale": "Le due firme sono identiche: il cliente deve firmare nel proprio riquadro.",
-        "nome": "Scrivi nome e cognome."
+        "nome": "Scrivi nome e cognome.",
+        "ripetuta": "Questa firma è già presente su un altro modulo: va tracciata di nuovo, a mano, qui."
       }
     },
     "salva": "Salva",

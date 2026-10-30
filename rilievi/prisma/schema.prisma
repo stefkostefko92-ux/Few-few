@@ -679,6 +679,10 @@ model Intervento {
   /// HMAC-SHA256 (INTERVENTI_SEAL_KEY) над отпечатъка, подписите, имената и часа: проверява се при всяко
   /// показване, PDF и имейл — несъвпадение спира PDF-а и имейла.
   sigillo          String?          @db.Char(64)
+  /// SHA-256 на щрихите на всеки подпис (sigillo.ts, `improntaFirma`): подпис, който вече стои на друг
+  /// лист (копиран от страницата, PDF-а или прихванат), се отказва при потвърждението.
+  firmaTecnicoHash String?          @db.Char(64)
+  firmaClienteHash String?          @db.Char(64)
   confermatoById   String?
   confermatoBy     User?            @relation("InterventiChiusi", fields: [confermatoById], references: [id], onDelete: SetNull)
   createdById      String?
@@ -693,4 +697,6 @@ model Intervento {
   @@index([createdById])
   @@index([updatedById])
   @@index([confermatoById])
+  @@index([firmaTecnicoHash])
+  @@index([firmaClienteHash])
 }

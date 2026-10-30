@@ -12,6 +12,8 @@ import { audit, fail, tick } from './helpers.mjs';
  * gets its own curve: the same strokes in both pads are refused (the customer did not sign).
  */
 async function sign(page, index) {
+  // A little randomness too: a signature already on another sheet (an earlier run) is refused.
+  const wave = 0.3 - index * 0.12 - Math.random() * 0.05;
   const pad = page.locator('[data-firma-canvas]').nth(index);
   await pad.evaluate((el) => el.scrollIntoView({ block: 'center' }));
   const box = await pad.boundingBox();
@@ -20,7 +22,7 @@ async function sign(page, index) {
   for (let s = 1; s <= 16; s += 1)
     await page.mouse.move(
       box.x + box.width * (0.1 + s * 0.045),
-      box.y + box.height * (0.6 - (0.3 - index * 0.12) * Math.sin(s / 2)),
+      box.y + box.height * (0.6 - wave * Math.sin(s / 2)),
     );
   await page.mouse.up();
   const value = await page.locator('[data-firma-input]').nth(index).inputValue();

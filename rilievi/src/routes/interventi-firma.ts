@@ -114,6 +114,16 @@ interventiFirmaRouter.post('/interventi/:id/conferma', write, requireCsrf, async
     if (current) cambiato(current);
     return;
   }
+  if (typeof esito === 'object') {
+    // Щрихи, които вече стоят на друг лист: подписът се рисува наново, на ръка; другият остава.
+    const values = valoriFirmaDalBody(body);
+    const errors: ErroriConferma = {};
+    for (const campo of esito.ripetute) {
+      values[campo] = '';
+      errors[campo] = 'ripetuta';
+    }
+    return renderFirma(res, 422, row, { values, errors });
+  }
   setFlash(
     res,
     esito === 'ok' ? 'ok' : 'info',
