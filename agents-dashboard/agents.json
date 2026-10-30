@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-10-27",
+    "updated": "2026-10-28",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 425
+        "lessons": 428
       },
       "evolution": [
         {
@@ -650,9 +650,20 @@
           "date": "2026-10-27",
           "event": "v33.7 — учене",
           "detail": "Научи: medqr записва съгласието с отделна константа CONSENT_VERSION ('1.0', routes/auth.js:30)…"
+        },
+        {
+          "version": "34.0.0",
+          "date": "2026-10-28",
+          "event": "v34.0 — учене",
+          "detail": "Научи: EDPB Guidelines 01/2022 v2.1 т. 159 — срокът по чл. 12(3) тече от получаване; само се С… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-28",
+          "type": "learning",
+          "summary": "Научи: „EDPB Guidelines 01/2022 v2.1 т. 159 — срокът по чл. 12(3) тече от получаване; само се С…\" (+2 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
@@ -1255,7 +1266,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 634
+        "lessons": 635
       },
       "evolution": [
         {
@@ -2469,9 +2480,20 @@
           "date": "2026-10-27",
           "event": "v51.6 — учене",
           "detail": "Научи: В ПРЕДАВАНЕ полето Към трябва да е id на агента (напр. izpitatelya), не името на кирили…"
+        },
+        {
+          "version": "51.7.0",
+          "date": "2026-10-28",
+          "event": "v51.7 — учене",
+          "detail": "Научи: subprocess.Popen(cmd, shell=True) със съставна команда (cd X && npm run dev) не може да…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-28",
+          "type": "learning",
+          "summary": "Научи: „subprocess.Popen(cmd, shell=True) със съставна команда (cd X && npm run dev) не може да…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
@@ -18113,7 +18135,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 145
+        "lessons": 155
       },
       "evolution": [
         {
@@ -18181,9 +18203,53 @@
           "date": "2026-10-27",
           "event": "v23.9 — учене",
           "detail": "Научи: В CSPos продажбата зачита клиентския priceLockedCents за ЛЮБА стока; гейтът (само тегло… (+1 още)"
+        },
+        {
+          "version": "24.2.0",
+          "date": "2026-10-28",
+          "event": "v24.2 — учене",
+          "detail": "Научи: guard-readonly третира \">\" в тялото на heredoc (например python \"ord(ch) > 127\") като п… (+2 още)"
+        },
+        {
+          "version": "24.5.0",
+          "date": "2026-10-28",
+          "event": "v24.5 — учене",
+          "detail": "Научи: guard-dangerous закотвя force-push шаблона към началото на команда и влиза в рекурсия с… (+2 още)"
+        },
+        {
+          "version": "24.7.0",
+          "date": "2026-10-28",
+          "event": "v24.7 — учене",
+          "detail": "Научи: guard-readonly търси знак > в целия низ на командата и маха само низове в кавички, зато… (+1 още)"
+        },
+        {
+          "version": "24.9.0",
+          "date": "2026-10-28",
+          "event": "v24.9 — учене",
+          "detail": "Научи: guard-dangerous не блокира git reset --hard, git checkout ., git restore, git clean -fd… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-28",
+          "type": "learning",
+          "summary": "Научи: „guard-dangerous не блокира git reset --hard, git checkout ., git restore, git clean -fd…\" (+1 още)"
+        },
+        {
+          "date": "2026-10-28",
+          "type": "learning",
+          "summary": "Научи: „guard-readonly търси знак > в целия низ на командата и маха само низове в кавички, зато…\" (+1 още)"
+        },
+        {
+          "date": "2026-10-28",
+          "type": "learning",
+          "summary": "Научи: „guard-dangerous закотвя force-push шаблона към началото на команда и влиза в рекурсия с…\" (+2 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-10-28",
+          "type": "learning",
+          "summary": "Научи: „guard-readonly третира \">\" в тялото на heredoc (например python \"ord(ch) > 127\") като п…\" (+2 още)"
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
