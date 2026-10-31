@@ -322,3 +322,5 @@
 {"t":"start","ts":"2026-10-31T06:03:33.154Z","id":"re5a3f5f3","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-10-31T06:03:33.154Z","id":"re5a3f5f3","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"4c302cee"}
 {"t":"handoff","ts":"2026-10-31T06:13:20.042Z","id":"re5a3f5f3","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"7031446d"}
+{"t":"start","ts":"2026-10-31T06:14:54.044Z","id":"r6941fd71","flow":"авто","lead":"pravniyat-razbirach","auto":true}
+{"t":"handoff","ts":"2026-10-31T06:14:54.044Z","id":"r6941fd71","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"c6c8dfbe"}

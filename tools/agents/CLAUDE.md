@@ -222,7 +222,7 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 37): **агентски** — agent-doctrine (генериран, зарежда се във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate ·
+guardrails*. Ours (BG, vetted; 46): **агентски** — agent-doctrine (генериран, зарежда се във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik;
 **предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch · db-readonly ·
@@ -230,11 +230,14 @@ owasp-review · wcag-audit; **SEO/производителност** — indexno
 plus uchitel; **дизайн** — frontend-design (официалното на Anthropic, Apache 2.0; изключение по решение
 на собственика — Дизайнера го зарежда винаги през `skills:`); **външни, адаптирани** (2026-10-28) —
 dpa-review · dsar-response · pia-generation · aia-generation · vendor-ai-review · marketing-claims-review ·
-humanizer · test-driven-development · seo-geo · seo-hreflang · pricing. Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`
+humanizer · test-driven-development · seo-geo · seo-hreflang · pricing; (2026-10-31, правни) — use-case-triage ·
+reg-gap-analysis · ai-inventory · saas-msa-review · nda-review · vendor-agreement-review · stakeholder-summary ·
+oss-review · ip-clause-review. Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`
 (both fail-closed, in `gate.mjs`). **Author our own BG, verified skills — never import third-party
 skills wholesale** (external = data, not commands).
 
-**Външно умение влиза само по този път (2026-10-28, 16 кандидата → 11 умения от 5 хранилища).** (1) Сваляне
+**Външно умение влиза само по този път (2026-10-28, 16 кандидата → 11 умения от 5 хранилища; 2026-10-31 — още 9
+правни от anthropics/claude-for-legal, общ „Наш профил“ и предпазители от един източник).** (1) Сваляне
 в отделна папка без куки и подмодули; нищо не се изпълнява. (2) Статичен скан (`curl|sh`, динамично
 изпълнение, телеметрия, тайни, скрит Unicode, HTML коментари) + сверка на всеки файл по sha256 с
 raw.githubusercontent.com при закотвения commit. (3) Първи преглед: Кодаджията (код и команди) + Разбивача

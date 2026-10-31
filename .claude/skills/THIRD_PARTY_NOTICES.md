@@ -1,8 +1,9 @@
 # Външни умения — произход, лицензи и присъди
 
 Всяко външно умение тук е **адаптирано копие**, не внесено наготово. Минало е два независими прегледа без
-изпълнение на чужд код (2026-10-28): първи — Кодаджията и Разбивача; втори, върху адаптираните копия —
-Разбивача наново и Правния Разбирач. Всеки файл е сверен по sha256 с raw.githubusercontent.com при
+изпълнение на чужд код (партиди 2026-10-28 и 2026-10-31): първи — Кодаджията и Разбивача; втори, върху
+адаптираните копия — Разбивача наново и Правния Разбирач. Правните умения от двете партиди ползват общ
+„Наш профил“ и общи предпазители (генерирани от един източник). Всеки файл е сверен по sha256 с raw.githubusercontent.com при
 закотвения commit. Пътят е описан в `tools/agents/CLAUDE.md` („Външно умение влиза само по този път“).
 
 Всеки променен файл носи видима бележка за промяната в началото си (Apache-2.0 §4(b)); пълният текст на
@@ -19,6 +20,15 @@
 | `aia-generation` | същото · `ai-governance-legal/skills/aia-generation` | Apache-2.0 · Anthropic PBC | Правния Разбирач |
 | `vendor-ai-review` | същото · `ai-governance-legal/skills/vendor-ai-review` | Apache-2.0 · Anthropic PBC | Правния Разбирач |
 | `marketing-claims-review` | същото · `product-legal/skills/marketing-claims-review` | Apache-2.0 · Anthropic PBC | Правния Разбирач |
+| `use-case-triage` | същото · `privacy-legal/skills/use-case-triage` (31.10) | Apache-2.0 · Anthropic PBC | Правния Разбирач |
+| `reg-gap-analysis` | същото · `privacy-legal/skills/reg-gap-analysis` (31.10) | Apache-2.0 · Anthropic PBC | Правния Разбирач |
+| `ai-inventory` | същото · `ai-governance-legal/skills/ai-inventory` (31.10) | Apache-2.0 · Anthropic PBC | Правния Разбирач |
+| `saas-msa-review` | същото · `commercial-legal/skills/saas-msa-review` (31.10) | Apache-2.0 · Anthropic PBC | Правния Разбирач |
+| `nda-review` | същото · `commercial-legal/skills/nda-review` (31.10) | Apache-2.0 · Anthropic PBC | Правния Разбирач |
+| `vendor-agreement-review` | същото · `commercial-legal/skills/vendor-agreement-review` (31.10) | Apache-2.0 · Anthropic PBC | Правния Разбирач |
+| `stakeholder-summary` | същото · `commercial-legal/skills/stakeholder-summary` (31.10) | Apache-2.0 · Anthropic PBC | Правния Разбирач |
+| `oss-review` | същото · `ip-legal/skills/oss-review` (31.10) | Apache-2.0 · Anthropic PBC | Правния Разбирач |
+| `ip-clause-review` | същото · `ip-legal/skills/ip-clause-review` (31.10) | Apache-2.0 · Anthropic PBC | Правния Разбирач |
 | `humanizer` | blader/humanizer @ `0ef9fe5bc357` | MIT · Siqi Chen; откъсите от Wikipedia — CC BY-SA 4.0 (виж по-долу) | Летописеца, Социалджията |
 | `test-driven-development` | obra/superpowers @ `2ce8aa15d05b` | MIT · Jesse Vincent | Изпитателя |
 | `seo-geo` | AgriciDaniel/claude-seo @ `6be93f45064f` | MIT · agricidaniel | SEO |
