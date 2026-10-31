@@ -1,6 +1,6 @@
 "use client";
 
-import { z } from "zod";
+import { z } from "zod/v3";
 import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, titleFx, photoFilterCss, readableAccent, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { type WarmTheme } from "@/lib/themes";
 import { MAX_SHEETS } from "@/lib/print";

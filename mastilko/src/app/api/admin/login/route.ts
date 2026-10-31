@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { ADMIN_COOKIE, COOKIE_MAX_AGE, createSession } from "@/lib/admin-auth";
 import { readAdmins } from "@/lib/admin-store";
 import { clientIp, pruneHits } from "@/lib/client-ip";
