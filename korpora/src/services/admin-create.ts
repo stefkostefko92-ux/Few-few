@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { Plan } from '@prisma/client';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { audited } from '../audit.js';
 import { prisma } from '../db.js';
 import { LABEL } from '../labels.js';
