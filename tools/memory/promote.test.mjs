@@ -165,3 +165,59 @@ test("пресверка на поука в стар формат (без опа
   const broken = '- **2026-06-26:** нещо _(само-една-част)_';
   assert.match(applyVerdicts(mem([Q1], [broken]), [{ lid: lessonId(broken), verdict: "потвърдена", source: "tools/x.mjs:1" }], TODAY).error || "", /не мога да разчета/, "счупена опашка → не гадай");
 });
+
+// ── 31.10.2026: „дубъл“ и „премести“ (курирането след вълната за обхвата) ──
+const VD = [
+  "# x", "", "## Проверени поуки",
+  "- **2026-08-01:** Глобален таван на вход преди паролата е DoS. _(lockout при вход; verified; src/a.ts:1)_",
+  "- **2026-08-01:** Глобален таван на вход пред паролата е DoS на собственика. _(брояч при вход; verified; src/a.ts:1)_",
+  "- **2026-07-25:** restic forget и prune са отделни стъпки. _(ротация на бекъпи с restic; verified; https://restic.readthedocs.io/)_",
+  "", "## Карантина", "",
+].join("\n");
+const lidOf = (re) => lessonId(VD.split("\n").find((l) => re.test(l)).trim());
+
+test("дубъл: сваля повторението в Карантина с маркер ДУБЪЛ на <lid>, оригиналът остава", () => {
+  const keep = lidOf(/преди паролата/), dup = lidOf(/пред паролата/);
+  const r = applyVerdicts(VD, [{ lid: dup, verdict: "дубъл", of: keep }], TODAY);
+  assert.ok(!r.error, r.error);
+  const [ver, quar] = r.md.split("## Карантина");
+  assert.match(ver, /преди паролата е DoS/);
+  assert.doesNotMatch(ver, /пред паролата е DoS/);
+  assert.match(quar, new RegExp(`ДУБЪЛ на ${keep} ${TODAY} — Глобален таван на вход пред паролата.*_\\(брояч при вход; unverified; src/a\\.ts:1\\)_`));
+  assert.deepEqual(r.duplicates, [dup]);
+});
+
+test("дубъл: отказва без of, of = самата поука, непознат of или of, който също се сваля", () => {
+  const a = lidOf(/преди паролата/), b = lidOf(/пред паролата/);
+  for (const v of [
+    [{ lid: b, verdict: "дубъл" }],
+    [{ lid: b, verdict: "дубъл", of: b }],
+    [{ lid: b, verdict: "дубъл", of: "deadbeef" }],
+    [{ lid: b, verdict: "дубъл", of: a }, { lid: a, verdict: "опровергана", note: "x" }],
+  ]) assert.ok(applyVerdicts(VD, v, TODAY).error, JSON.stringify(v));
+});
+
+test("премести: сваля с маркер ПРЕМЕСТЕНА при <агент> и връща реда за целевата памет", () => {
+  const id = lidOf(/restic/);
+  const r = applyVerdicts(VD, [{ lid: id, verdict: "премести", to: "vps-adjiyata", note: "домейн на VPS-аджията" }], TODAY, { self: "konveyera", agents: new Set(["vps-adjiyata", "konveyera"]) });
+  assert.ok(!r.error, r.error);
+  assert.match(r.md.split("## Карантина")[1], /ПРЕМЕСТЕНА при vps-adjiyata 2026-08-04 \(домейн на VPS-аджията\) — restic/);
+  assert.equal(r.moved.length, 1);
+  assert.equal(r.moved[0].to, "vps-adjiyata");
+  assert.match(r.moved[0].line, /^- \*\*2026-07-25 \(преместено от konveyera 2026-08-04\):\*\* restic forget .*; verified; https:\/\/restic/);
+});
+
+test("премести: отказва непознат агент или към себе си", () => {
+  const id = lidOf(/restic/);
+  const ctx = { self: "konveyera", agents: new Set(["vps-adjiyata", "konveyera"]) };
+  assert.ok(applyVerdicts(VD, [{ lid: id, verdict: "премести", to: "nikoy" }], TODAY, ctx).error);
+  assert.ok(applyVerdicts(VD, [{ lid: id, verdict: "премести", to: "konveyera" }], TODAY, ctx).error);
+});
+
+test("insertVerified: преместената поука влиза най-горе в „Проверени поуки“ на целта", async () => {
+  const { insertVerified } = await import("./promote.mjs");
+  const target = ["# vps", "", "## Проверени поуки", "- **2026-01-01:** стара _(x y; verified; a:1)_", "", "## Карантина", ""].join("\n");
+  const out = insertVerified(target, ["- **2026-07-25 (преместено от konveyera 2026-08-04):** restic _(ротация на бекъпи с restic; verified; https://restic.readthedocs.io/)_"]);
+  const ver = out.split("## Карантина")[0];
+  assert.ok(ver.indexOf("restic") < ver.indexOf("стара"));
+});

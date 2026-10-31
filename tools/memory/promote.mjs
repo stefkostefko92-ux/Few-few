@@ -31,8 +31,9 @@
 //
 //   node tools/memory/promote.mjs --agent <id> --verdicts <файл.json>            # dry-run
 //   node tools/memory/promote.mjs --agent <id> --verdicts <файл.json> --write
+//   (31.10.2026) { "lid", "verdict": "дубъл", "of": "<lid на запазената>" } · { "lid", "verdict": "премести", "to": "<агент>", "note" }
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isRealSource } from "../agents/oversee-lib.mjs";
@@ -41,7 +42,11 @@ import { lessonId } from "./quarantine-review.mjs";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MEM_DIR = process.env.CURATE_MEM_DIR || join(ROOT, ".claude", "agents", "_memory");
 
-export const VERDICTS = ["потвърдена", "опровергана", "остава"];
+export const VERDICTS = ["потвърдена", "опровергана", "остава", "дубъл", "премести"];
+// „дубъл“ (31.10.2026): проверена поука, която повтаря друга от същата памет (`of`) — слиза в Карантина
+// с маркер „ДУБЪЛ на <of>“. Не е „опровергана“: знанието е вярно, просто вече стои другаде.
+// „премести“: поука от чужд домейн (`to` = id на агент) — в източника слиза с маркер „ПРЕМЕСТЕНА при“,
+// а редът (с „(преместено от <агент> <дата>)“) влиза най-горе в проверените на целта.
 
 /** Разбива опашката `_(обхват; увереност; източник)_` на части. Източникът може да съдържа „;“. */
 export function splitTail(bullet) {
@@ -101,10 +106,33 @@ export function refuteBullet(bullet, note, today) {
  * за да не остане в Карантина запис, който твърди за себе си, че е проверен.
  */
 export function demoteBullet(bullet, note, today) {
-  const tail = splitTail(bullet);
-  const marked = refuteBullet(bullet, note, today);
+  return unverify(bullet, refuteBullet(bullet, note, today));
+}
+
+function unverify(original, marked) {
+  const tail = splitTail(original);
   if (!tail) return marked;
   return marked.replace(/_\((.*)\)_\s*$/, `_(${tail.scope}; unverified; ${tail.source})_`);
+}
+
+/** Маркер пред текста (ДУБЪЛ на … / ПРЕМЕСТЕНА при …) + увереност → unverified. */
+function markBullet(bullet, marker, note) {
+  const marked = bullet.replace(/^(-\s*\*\*[^*]*\*\*:?\s*)/, `$1${marker}${note ? ` (${note})` : ""} — `);
+  return unverify(bullet, marked);
+}
+
+/** „- **2026-07-25:**“ → „- **2026-07-25 (преместено от <агент> <дата>):**“ — пази друга история в скобите. */
+export function movedBullet(bullet, from, today) {
+  return bullet.replace(/^(-\s*\*\*)([\d-]{10}(?:\s*\([^)]*\))*)(:\*\*)/, (_, a, d, z) => `${a}${d} (преместено от ${from} ${today})${z}`);
+}
+
+/** Вмъква поуки най-горе в „## Проверени поуки“ (целта на „премести“). */
+export function insertVerified(md, newLines) {
+  const lines = String(md).split("\n");
+  const at = lines.findIndex((l) => /^##\s*Проверени поуки/.test(l));
+  if (at === -1) throw new Error("целевата памет няма секция „Проверени поуки“");
+  lines.splice(at + 1, 0, ...newLines);
+  return lines.join("\n");
 }
 
 function sectionBounds(lines, heading) {
@@ -119,7 +147,7 @@ function sectionBounds(lines, heading) {
  * Прилага вердиктите върху съдържанието на един файл-памет. Чиста функция (текст → текст + отчет),
  * за да е тествана без да се пипа живата памет.
  */
-export function applyVerdicts(md, verdicts, today) {
+export function applyVerdicts(md, verdicts, today, ctx = {}) {
   const lines = md.split("\n");
   const q = sectionBounds(lines, "Карантина");
   const v = sectionBounds(lines, "Проверени поуки");
@@ -147,7 +175,9 @@ export function applyVerdicts(md, verdicts, today) {
   };
   const inQuar = index(q), inVer = index(v);
 
-  const promoted = [], reverified = [], refuted = [], demoted = [], kept = [], errors = [];
+  const promoted = [], reverified = [], refuted = [], demoted = [], kept = [], errors = [], duplicates = [], moved = [];
+  // `of` на „дубъл“ трябва да ОСТАНЕ в проверените — не може да е свален в същия пакет.
+  const leaving = new Set(verdicts.filter((r) => ["опровергана", "дубъл", "премести"].includes(r?.verdict)).map((r) => String(r.lid || "").trim()));
   const drop = new Set(), replace = new Map();
 
   for (const rec of verdicts) {
@@ -168,6 +198,27 @@ export function applyVerdicts(md, verdicts, today) {
     const { i, end } = (where === "q" ? inQuar : inVer).get(lid);
     const block = lines.slice(i, end + 1).join("\n");
     if (rec.verdict === "остава") { kept.push(lid); continue; }
+
+    if (rec.verdict === "дубъл") {
+      const of = String(rec.of || "").trim();
+      if (where !== "v") { errors.push(`${lid}: „дубъл“ е само за проверена поука`); continue; }
+      if (!of || of === lid || !inVer.has(of)) { errors.push(`${lid}: „дубъл“ иска of = lid на ДРУГА проверена поука в същата памет (даден: „${of || "—"}“)`); continue; }
+      if (leaving.has(of)) { errors.push(`${lid}: of=${of} също се сваля в този пакет — оригиналът трябва да остане`); continue; }
+      demoted.push({ lid, line: markBullet(block, `ДУБЪЛ на ${of} ${today}`, String(rec.note || "").trim()) });
+      duplicates.push(lid);
+      for (let k = i; k <= end; k++) drop.add(k);
+      continue;
+    }
+
+    if (rec.verdict === "премести") {
+      const to = String(rec.to || "").trim();
+      if (where !== "v") { errors.push(`${lid}: „премести“ е само за проверена поука`); continue; }
+      if (!to || to === ctx.self || !ctx.agents?.has?.(to)) { errors.push(`${lid}: „премести“ иска to = id на ДРУГ наш агент (даден: „${to || "—"}“)`); continue; }
+      demoted.push({ lid, line: markBullet(block, `ПРЕМЕСТЕНА при ${to} ${today}`, String(rec.note || "").trim()) });
+      moved.push({ lid, to, line: movedBullet(block.replace(/\s*\n\s*/g, " "), ctx.self || "?", today) });
+      for (let k = i; k <= end; k++) drop.add(k);
+      continue;
+    }
 
     if (rec.verdict === "опровергана") {
       if (where === "q") { lines[i] = refuteBullet(lines[i], rec.note, today); refuted.push(lid); continue; }
@@ -208,7 +259,7 @@ export function applyVerdicts(md, verdicts, today) {
   const cleaned = out.join("\n").split("\n").filter((l, i, a) => !(l.trim() === "" && a[i + 1] !== undefined && a[i + 1].trim() === ""));
   return {
     md: cleaned.join("\n"),
-    promoted: promoted.map((p) => p.lid), reverified, refuted, demoted: demoted.map((p) => p.lid), kept,
+    promoted: promoted.map((p) => p.lid), reverified, refuted, demoted: demoted.map((p) => p.lid), kept, duplicates, moved,
   };
 }
 
@@ -226,14 +277,25 @@ function main() {
   if (!Array.isArray(verdicts)) { console.error("вердиктите трябва да са JSON масив"); process.exit(2); }
 
   const today = new Date().toISOString().slice(0, 10);
-  const r = applyVerdicts(readFileSync(file, "utf8"), verdicts, today);
+  const agents = new Set(readdirSync(MEM_DIR).filter((f) => /^[a-z0-9-]+\.md$/.test(f) && !/^(SECURITY|PROCEDURE|PROTOCOL|README)\.md$/.test(f)).map((f) => f.slice(0, -3)));
+  const r = applyVerdicts(readFileSync(file, "utf8"), verdicts, today, { self: agent, agents });
   if (r.error) { console.error(`✗ ${agent}:\n${r.error}`); process.exit(1); }
 
+  const refutedV = r.demoted.length - r.duplicates.length - r.moved.length;
   console.log(`${agent}: ${r.promoted.length} промотирани · ${r.reverified.length} пресверени · ` +
-    `${r.refuted.length + r.demoted.length} опровергани (${r.demoted.length} свалени от проверените) · ` +
-    `${r.kept.length} остават` +
+    `${r.refuted.length + refutedV} опровергани (${refutedV} свалени от проверените) · ` +
+    `${r.duplicates.length} дубъла · ${r.moved.length} преместени · ${r.kept.length} остават` +
     (WRITE ? "" : "  [dry-run]"));
-  if (WRITE) writeFileSync(file, r.md);
+  if (WRITE) {
+    writeFileSync(file, r.md);
+    const byTarget = new Map();
+    for (const m of r.moved) byTarget.set(m.to, [...(byTarget.get(m.to) || []), m.line]);
+    for (const [to, ls] of byTarget) {
+      const tf = join(MEM_DIR, `${to}.md`);
+      writeFileSync(tf, insertVerified(readFileSync(tf, "utf8"), ls));
+      console.log(`  → ${to}: +${ls.length} проверени (преместени от ${agent})`);
+    }
+  }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main();
