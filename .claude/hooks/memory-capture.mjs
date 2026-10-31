@@ -223,6 +223,7 @@ const looksInjection = (s) => {
 // симптоми: учебният цикъл на целия флот мълчеше и изглеждаше „празен ден", не счупен.
 import { isRealSource as sourceIsReal } from "../../tools/agents/oversee-lib.mjs";
 import { seenIn, unseenRefs } from "../../tools/agents/source-provenance.mjs";
+import { genericScope } from "../../tools/lib/lesson-scope.mjs";
 export { sourceIsReal };
 
 export { looksSecret, looksInjection };
@@ -292,6 +293,10 @@ export function learnProblems(text, { agent = "", known = null } = {}) {
     if (String(l.scope).length > MAX_SCOPE) over.push(`scope ${String(l.scope).length}>${MAX_SCOPE}`);
   }
   if (over.length) out.push(`над тавана (поуката ще бъде изхвърлена цяла): ${over.join(", ")} знака — съкрати`);
+  // Общ обхват (31.10.2026, memory-recall): „zabobovdol“ или собственото име не казва КОГА важи — поуката
+  // се губи сред всички останали от домейна и не стига до теб, когато трябва.
+  const vague = lessons.map((l) => [l.scope, genericScope(l.scope, agent || blockAgent)]).filter(([, why]) => why);
+  if (vague.length) out.push(`${vague.length} поуки с общ обхват (${vague.slice(0, 3).map(([s, why]) => `„${s || "—"}“: ${why}`).join("; ")}) — „scope:“ казва КОГА важи: задача, файл или ситуация, не продукта`);
   return out;
 }
 

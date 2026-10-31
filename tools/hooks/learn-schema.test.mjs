@@ -24,6 +24,7 @@ const CLAIM_STATUS = fence([
   '  - claim: "Context engineering: контекстът да съдържа точно нужното за следващата стъпка."',
   "    status: verified",
   "    source: https://x.com/karpathy/status/1937902205765607626",
+  "    scope: подбор на контекста за следващата стъпка на агент",
 ].join("\n"));
 
 // Формата на Летописеца от 2026-10-09 (съкратен текст, същите ключове).
@@ -82,7 +83,7 @@ test("многоредов текст, липсваща увереност и ve
 });
 
 test("източник като вложен списък не се брои за отделни поуки", () => {
-  const nested = fence("agent: seo\nlessons:\n  - text: поука\n    confidence: verified\n    source: https://a.example/x\n    also:\n      - https://b.example/y\n      - https://c.example/z");
+  const nested = fence("agent: seo\nlessons:\n  - text: поука\n    confidence: verified\n    source: https://a.example/x\n    scope: hreflang в sitemap\n    also:\n      - https://b.example/y\n      - https://c.example/z");
   assert.deepEqual(learnProblems(nested), []);
 });
 
@@ -168,8 +169,16 @@ test("learnProblems: чужд познат агент в блока се каз�
   const known = new Set(["letopisetsa", "kasadjiyata"]);
   const foreign = fence("agent: kasadjiyata\nlessons:\n  - text: поука\n    confidence: verified\n    source: https://a.example/x");
   assert.match(learnProblems(foreign, { agent: "letopisetsa", known }).join(" "), /друг агент/);
-  const typo = fence("agent: letopisec\nlessons:\n  - text: поука\n    confidence: verified\n    source: https://a.example/x");
+  const typo = fence("agent: letopisec\nlessons:\n  - text: поука\n    confidence: verified\n    source: https://a.example/x\n    scope: README на нов продукт");
   assert.deepEqual(learnProblems(typo, { agent: "letopisetsa", known }), []);
+});
+
+test("learnProblems: общ обхват връща агента; конкретен — не (31.10.2026, memory-recall)", () => {
+  const block = (scope) => fence(`agent: siydara\nlessons:\n  - text: поука\n    confidence: verified\n    source: https://a.example/x${scope == null ? "" : `\n    scope: ${scope}`}`);
+  for (const s of [null, "zabobovdol", "siydara", "global", "общо", "project"])
+    assert.match(learnProblems(block(s), { agent: "siydara" }).join(" "), /общ обхват/, `обхват „${s}“`);
+  for (const s of ["upsert в seed скрипт на zabobovdol", "stripe-webhooks", "playwright/ci", "project:tools/3d"])
+    assert.deepEqual(learnProblems(block(s), { agent: "siydara" }), [], `обхват „${s}“`);
 });
 
 test("memory-preload показва схемата с ТОЧНИЯ id на агента", () => {
