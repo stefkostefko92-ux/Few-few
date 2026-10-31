@@ -51,6 +51,12 @@ test("pravniyat: правен изход без дисклеймър пада; �
   assert.equal(verifyOutput("pravniyat-razbirach", "Според GDPR чл.6 основанието е съгласие. Това не е правен съвет.").ok, true);
 });
 
+test("pravniyat: „само след активно съгласие“ е консент преди проследяване (аблация 31.10.2026)", () => {
+  const ok = "Тракинг преди съгласие: всичко неесенциално (бисквитки, пиксели) да се зарежда само след активно съгласие. Не е правен съвет.";
+  assert.equal(verifyOutput("pravniyat-razbirach", ok).ok, true, "дословно от рамо base #1 — беше фалшив провал");
+  assert.equal(verifyOutput("pravniyat-razbirach", "Банерът за бисквитки е наред. Не е правен съвет.").ok, false, "без правилото за реда остава провал");
+});
+
 test("kodadjiyata: находка без файл:ред/тежест пада; пълна минава", () => {
   assert.equal(verifyOutput("kodadjiyata", "Има бъг някъде в кода, оправи го.").ok, false);
   assert.equal(verifyOutput("kodadjiyata", "Уязвимост server.js:42 — тежест HIGH, увереност висока. Минимална поправка: замени `==` с timingSafeEqual.").ok, true);

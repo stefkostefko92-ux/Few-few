@@ -109,3 +109,12 @@ test("капан: отречено срещане не е нарушение; у
   assert.equal(evalCheck(trap, "Не е проблем да ползваме float.").ok, false);
   assert.equal(affirmedHit("без float, но после parse като float", "float"), true);
 });
+
+test("капанът на kasadjiyata-2 не хваща отрицание в празнината на регулярния маркер (аблация 31.10.2026)", () => {
+  const spec = JSON.parse(readFileSync(join(HERE, "specs", "kasadjiyata-2.json"), "utf8"));
+  const trap = spec.expect.find((c) => c.none);
+  // Дословно от рамо „base“: агентът казва правилното, старият /печат[^.\n]{0,40}в една транзакция/ го хвана.
+  assert.equal(evalCheck(trap, "Печатът и базата не могат да са в една транзакция, защото печатът е външно действие.").ok, true);
+  assert.equal(evalCheck(trap, "Сложи печата и записа в една транзакция.").ok, false, "истинският капан още се хваща");
+  assert.equal(evalCheck(trap, "Печатът и записът в базата са в същата транзакция.").ok, false);
+});
