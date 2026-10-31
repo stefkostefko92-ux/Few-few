@@ -274,3 +274,14 @@
   flex: 1;
   min-width: 0;
 }
+
+/* На телефон падащият списък е сам на реда, бутонът — под него: името на фирмата не се реже до бутона. */
+@media (max-width: 719px) {
+  .filter__row {
+    flex-wrap: wrap;
+  }
+
+  .filter__row .select {
+    flex-basis: 100%;
+  }
+}

@@ -44,3 +44,11 @@
     grid-column: 1 / -1;
   }
 }
+
+/* От 720 px колоните са поне три (200 px): падащ списък с възможност, по-дълга от една колона
+   („Semicircolare senza intaglio“), взима две — текстът не се реже до стрелката. */
+@media (min-width: 720px) {
+  .grid > .field--doppia {
+    grid-column: span 2;
+  }
+}

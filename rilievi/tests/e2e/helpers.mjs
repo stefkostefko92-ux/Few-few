@@ -94,4 +94,30 @@ export async function aligned(page, name) {
     return out;
   });
   for (const issue of issues) fail(`${name}: fields not aligned — ${issue}`);
+  await selectsFit(page, name);
+}
+
+// No drop-down cuts its options: the longest option text fits between the left padding and the arrow
+// (measured in Chromium: the arrow takes about 28 px). A cut option reads "TELCAL 10 mm, 8 tref…".
+// A drop-down that already takes the whole line of its form (the company filter on a phone) cannot be
+// wider: a long company name there is the company's own, so it is not counted.
+async function selectsFit(page, name) {
+  const cut = await page.evaluate(() => {
+    const out = [];
+    const ctx = document.createElement('canvas').getContext('2d');
+    for (const select of document.querySelectorAll('select')) {
+      if (select.getClientRects().length === 0) continue;
+      const cs = getComputedStyle(select);
+      ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      const room =
+        select.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 28;
+      const longest = Math.max(...[...select.options].map((o) => ctx.measureText(o.text).width));
+      const form = select.closest('form');
+      if (form && select.offsetWidth >= form.clientWidth - 1) continue;
+      if (longest > room)
+        out.push(`${select.name || select.id}: ${Math.round(longest)}px > ${Math.round(room)}px`);
+    }
+    return out;
+  });
+  for (const issue of cut) fail(`${name}: drop-down cuts its text — ${issue}`);
 }

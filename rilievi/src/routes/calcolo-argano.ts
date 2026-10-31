@@ -39,12 +39,15 @@ const puoScrivere = (req: Request, scheda: SchedaFull) =>
 const identificativo = (scheda: SchedaFull) =>
   scheda.numeroImpianto ?? scheda.matricola ?? scheda.id.slice(-8);
 
+/** Твърд интервал: надписът и стойността му не се разделят на два реда („N° impianto“ / „12“). */
+const nonSpezzare = (testo: string) => testo.replace(/ /g, '\u00a0');
+
 /** Уредбата в заглавието: адресът, матрикулата и номерът — каквото има. */
 const impiantoDi = (scheda: SchedaFull, t: (key: string) => string) =>
   [
     scheda.indirizzo,
-    scheda.matricola && `${t('argano.matricola')} ${scheda.matricola}`,
-    scheda.numeroImpianto && `${t('argano.nImpianto')} ${scheda.numeroImpianto}`,
+    scheda.matricola && nonSpezzare(`${t('argano.matricola')} ${scheda.matricola}`),
+    scheda.numeroImpianto && nonSpezzare(`${t('argano.nImpianto')} ${scheda.numeroImpianto}`),
   ]
     .filter(Boolean)
     .join(' · ');

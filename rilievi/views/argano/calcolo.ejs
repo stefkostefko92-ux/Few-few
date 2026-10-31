@@ -66,7 +66,7 @@
         <div class="field__piede"><p class="field__hint" id="hint-rapportoB"><%= t('argano.hint.rapporto') %></p><% if (errori.rapportoB) { %><p class="field__error" id="err-rapportoB"><%= errSummary('rapportoB') %></p><% } %></div>
       </div>
       <%- campo('diametroPuleggia', 'numero') %>
-      <%- campo('gola', 'scelta', { opzioni: op('gola', ['cuneo', 'semicircolare', 'semicircolare-intaglio']), hint: 'gola', classe: 'field--riga-telefono' }) %>
+      <%- campo('gola', 'scelta', { opzioni: op('gola', ['cuneo', 'semicircolare', 'semicircolare-intaglio']), hint: 'gola', classe: 'field--riga-telefono field--doppia' }) %>
       <%- campo('angoloGola', 'numero', { hint: 'angoloGola' }) %>
       <%- campo('angoloAvvolgimento', 'numero') %>
       <%- campo('decelerazioneRidotta', 'spunta', { hint: 'decelerazioneRidotta' }) %>
@@ -76,7 +76,7 @@
     <legend class="section__title"><%= t('argano.sezione.funi') %></legend>
     <div class="grid grid--righe">
       <%- campo('funiNumero', 'numero') %>
-      <%- campo('fune', 'scelta', { opzioni: opFuni, classe: 'field--riga-telefono' }) %>
+      <%- campo('fune', 'scelta', { opzioni: opFuni, classe: 'field--riga-telefono field--doppia' }) %>
       <%- campo('funiSostituzione', 'spunta', { hint: 'funiSostituzione' }) %>
       <%- campo('altroD', 'numero', { hint: 'altro' }) %><%- campo('altroSezione', 'numero') %><%- campo('altroRottura', 'numero') %><%- campo('altroMassa', 'numero') %>
     </div>

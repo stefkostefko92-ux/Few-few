@@ -64,7 +64,7 @@
       "velocita": "Quella dell'impianto prima della modifica: la nuova velocità si confronta con questa.",
       "giriMotore": "Per 1 o 2 velocità: la velocità dopo la modifica si calcola dai giri.",
       "velocitaVvvf": "Con inverter: dai giri e dalla frequenza necessari per questa velocità.",
-      "rapporto": "Ad esempio 1 : 50 oppure 2 : 53.",
+      "rapporto": "Ad esempio 1\u00a0:\u00a050 oppure 2\u00a0:\u00a053.",
       "angoloGola": "Cuneo: angolo γ della gola. Semicircolare: angolo β dell'intaglio.",
       "funiSostituzione": "Cambia il coefficiente di attrito per le gole semicircolari, come nella relazione tecnica.",
       "decelerazioneRidotta": "Come nella relazione tecnica, solo se l'aderenza non è verificata con la decelerazione normale.",
