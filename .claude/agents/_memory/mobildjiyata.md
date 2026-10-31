@@ -197,30 +197,14 @@
 - **2026-06-26:** Apple Privacy Manifest + подпис се изискват за SDK-та от списъка, вкл. Capacitor/Cordova/Flutter/React Native/Firebase; Xcode ги обединява в nutrition-label репорт. _("ios-privacy-manifest"; verified; "https://developer.apple.com/support/third-party-SDK-requirements/")_
 - **2026-06-26:** Capacitor текуща стабилна версия е v8 (release 8.4.1, 19.06.2026). Паметта с 'Capacitor 6' е остаряла за глобалния стек; провери locally medqr/mobile/package.json дали е мигрирало. _("capacitor-version"; verified; "https://capacitorjs.com/docs/getting-started")_
 - **2026-06-26:** Google Play target SDK: от 31.08.2025 нови апове и ъпдейти таргетират Android 15 (API 35)+; за да остане налично за нови потребители — поне API 34. Следваща стъпка (API 36) не потвърдена на страницата → проверявай при качване. _("android-play-store"; verified; "https://developer.android.com/google/play/requirements/target-sdk")_
-- **2026-06-26:** Репо стек: `medqr/mobile` е **Capacitor 6**, `appId: eu.carbonstealth.medqr`,
-  `server.url: https://medqr.carbonstealth.eu` (обвива живия сайт) + `@aparajita/capacitor-biometric-auth`;
-  `zabobovdol/android` е **TWA (Bubblewrap)**, `packageId: eu.carbonstealth.zabobovdol`, подписан с
-  `android.keystore`, `webManifestUrl` сочи живия manifest. (Източник: capacitor.config.json, twa-manifest.json.)
-- **2026-06-26:** Capacitor `server.url` към отдалечен сайт = тънка обвивка → **рискова по Apple Guideline 4.2**
-  („minimum functionality"). Дай нативна стойност (NFC, push, biometrics, offline, share), иначе отказ.
-  (Източник: Apple App Review Guidelines 4.2.)
-- **2026-06-26:** Тайни в бъндъла НЕ са тайни — извличат се с reverse engineering (OWASP MASWE-0005/0013).
-  Пази ги сървърно или в hardware keystore. (Източник: mas.owasp.org/MASTG.)
-- **2026-06-26:** Сигурно съхранение: iOS **Keychain** (`kSecAttrAccessibleWhenUnlocked…ThisDeviceOnly`),
-  Android **Keystore** (hardware/TEE, StrongBox API 28+). `@capacitor/preferences` **НЕ е криптиран** —
-  за тайни ползвай secure-storage плъгин (Keychain/Keystore). Jetpack `EncryptedSharedPreferences` е
-  **deprecated** (1.1.0, 2025) → директно Keystore. (Източник: developer.apple.com/Security, developer.android.com/privacy-and-security/keystore.)
-- **2026-06-26:** NFC за medqr: iOS иска **нативен Core NFC** (`NFCNDEFReaderSession`, entitlement
-  `com.apple.developer.nfc.readersession.formats`, iPhone 7+); **Web NFC** (`NDEFReader`) работи само на
-  **Chrome за Android** — НЕ на iOS/десктоп. QR няма това ограничение. (Източник: developer.apple.com/corenfc, MDN Web_NFC_API.)
-- **2026-06-26:** Достъпност за глухи/слабочуващи (medqr): носещите критерии са **визуални/текстови**
-  алтернативи (надписи/транскрипт, без само-аудио сигнали), не екранен четец. WCAG 2.2 (W3C Rec 12.12.2024);
-  EAA важи за приложения от **28.06.2025**. (Източник: w3.org/TR/WCAG22, EAA.)
-- **2026-06-26:** Push: iOS **APNs** (APNs auth key + Key ID), Android **FCM**; FCM достига Apple устройства
-  **през APNs** (качваш APNs key в Firebase). (Източник: firebase.google.com/docs/cloud-messaging/ios/client.)
-- **2026-06-26:** Android старт: cold ≥5s / warm ≥2s / hot ≥1.5s = „excessive" (Android vitals); кадър <16ms
-  за 60fps, frozen >700ms. Публикувай **AAB** (не APK); R8 (`minifyEnabled`) + `shrinkResources`.
-  (Източник: developer.android.com/topic/performance/vitals.)
+- **2026-06-26:** Репо стек: `medqr/mobile` е **Capacitor 6**, `appId: eu.carbonstealth.medqr`, `server.url: https://medqr.carbonstealth.eu` (обвива живия сайт) + `@aparajita/capacitor-biometric-auth`; `zabobovdol/android` е **TWA (Bubblewrap)**, `packageId: eu.carbonstealth.zabobovdol`, подписан с `android.keystore`, `webManifestUrl` сочи живия manifest. (Източник: capacitor.config.json, twa-manifest.json.)
+- **2026-06-26:** Capacitor `server.url` към отдалечен сайт = тънка обвивка → **рискова по Apple Guideline 4.2** („minimum functionality"). Дай нативна стойност (NFC, push, biometrics, offline, share), иначе отказ. (Източник: Apple App Review Guidelines 4.2.)
+- **2026-06-26:** Тайни в бъндъла НЕ са тайни — извличат се с reverse engineering (OWASP MASWE-0005/0013). Пази ги сървърно или в hardware keystore. (Източник: mas.owasp.org/MASTG.)
+- **2026-06-26:** Сигурно съхранение: iOS **Keychain** (`kSecAttrAccessibleWhenUnlocked…ThisDeviceOnly`), Android **Keystore** (hardware/TEE, StrongBox API 28+). `@capacitor/preferences` **НЕ е криптиран** — за тайни ползвай secure-storage плъгин (Keychain/Keystore). Jetpack `EncryptedSharedPreferences` е **deprecated** (1.1.0, 2025) → директно Keystore. (Източник: developer.apple.com/Security, developer.android.com/privacy-and-security/keystore.)
+- **2026-06-26:** NFC за medqr: iOS иска **нативен Core NFC** (`NFCNDEFReaderSession`, entitlement `com.apple.developer.nfc.readersession.formats`, iPhone 7+); **Web NFC** (`NDEFReader`) работи само на **Chrome за Android** — НЕ на iOS/десктоп. QR няма това ограничение. (Източник: developer.apple.com/corenfc, MDN Web_NFC_API.)
+- **2026-06-26:** Достъпност за глухи/слабочуващи (medqr): носещите критерии са **визуални/текстови** алтернативи (надписи/транскрипт, без само-аудио сигнали), не екранен четец. WCAG 2.2 (W3C Rec 12.12.2024); EAA важи за приложения от **28.06.2025**. (Източник: w3.org/TR/WCAG22, EAA.)
+- **2026-06-26:** Push: iOS **APNs** (APNs auth key + Key ID), Android **FCM**; FCM достига Apple устройства **през APNs** (качваш APNs key в Firebase). (Източник: firebase.google.com/docs/cloud-messaging/ios/client.)
+- **2026-06-26:** Android старт: cold ≥5s / warm ≥2s / hot ≥1.5s = „excessive" (Android vitals); кадър <16ms за 60fps, frozen >700ms. Публикувай **AAB** (не APK); R8 (`minifyEnabled`) + `shrinkResources`. (Източник: developer.android.com/topic/performance/vitals.)
 
 ## Карантина (непроверени — НЕ са факт)
 - **2026-09-24:** ОПРОВЕРГАНА 2026-10-24 (Днес latest е 8.5.3. 8.5.2 е публикувана на 2026-09-11 и вече не е последната. v8 остава текущата стабилна по capacitorjs.com.) — npm registry: @capacitor/core latest стабилна е 8.5.2 (публикувана 2026-09-11), next таг 9.0.0-alpha.7 — по-свежо от предишната поука (8.4.1); capacitorjs.com/docs потвърждава v8 текущ стабилен, v9 в /docs/next. _(общо; unverified; "registry.npmjs.org/@capacitor/core dist-tags; https://capacitorjs.com/docs")_

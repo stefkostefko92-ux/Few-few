@@ -213,32 +213,15 @@
 - **2026-06-26:** WebGPU ~82% global, но Firefox още disabled by default на desktop И Android (v153-155); Safari 26 само partial. WebGL2 fallback остава задължителен. _("WebGPU Baseline статус"; verified; "https://caniuse.com/webgpu (2026-06-26)")_
 - **2026-06-26:** Firefox 144+ ship-на View Transitions same-document по подразбиране (изключен в 143). Same-document VT вече ~88% global, широко Baseline-подобно; cross-document VT още НЕ е Baseline → progressive enhancement. _("View Transitions поддръжка"; verified; "https://caniuse.com/view-transitions (2026-06-26)")_
 - **2026-06-26:** Three.js latest = 0.185.0 (r185, ~юни 2026); GSAP 3.15.0; Pixi 8.19.0; anime.js 4.5.0; Motion 12.42.0 — пинвай тези при инсталация. _("creative front-end версии"; verified; "https://registry.npmjs.org/three/latest, /gsap/latest, /pixi.js/latest, /animejs/latest, /motion/latest (npm registry API, 2026-06-26)")_
-- **2026-06-26:** **Режимът зависи от типа сайт (директива на собственика).** Reduced-motion дисциплината
-  (gate, статичен fallback, спокойни defaults, строг CWV, „работи без JS") важи за **СЕРИОЗНИ** сайтове —
-  корпоративни/медицински/граждански/държавни/финансови (вкл. zabobovdol/medqr). За **ТВОРЧЕСКИ** (портфолио/
-  арт/бранд) → по подразбиране максимален спектакъл, reduced-motion по избор. **Универсално и в двата режима:**
-  никога >3 проблясъка/сек (WCAG 2.3.1 — епилепсия), защото е физическа безопасност, не консерватизъм.
-  Ако режимът не е ясен — питай. (Източник: директива на собственика 2026-06-26.)
-- **2026-06-26:** Носещ компромис на репото (СЕРИОЗЕН режим): zabobovdol е за **възрастни** (вестибуларна
-  чувствителност), medqr е медицински за **глухи/слабочуващи** + CSP nonce. **Спешният `/e/<token>` изглед —
-  почти без декоративна анимация** (спокойствие > спектакъл). (Източник: CLAUDE.md, medqr conventions.)
-- **2026-06-26:** `tools/design/motion-a11y.mjs` има `--creative` флаг: в творчески режим reduced-motion HIGH-овете
-  падат до INFO (не fail-ват гейта), анти-строб остава. По подразбиране = сериозен/строг. (Източник: собствен инструмент.)
-- **2026-06-26:** Винаги fallback: под reduced-motion → статичен poster; low-FPS/mobile → разруши WebGL
-  контекста (`loseContext()`) → CSS/статика. Progressive enhancement: работи без JS. (Източник: web.dev, Blenra prompt.)
-- **2026-06-26:** WebGPU е shippable 2026 (Safari 26, Firefox 141/145) **но WebGL2 fallback задължителен**
-  (Firefox Linux/Android още). Three r182, от r171 WebGPURenderer zero-config; **TSL** компилира към GLSL/WGSL.
-  (Източник: utsubo 2026, web.dev/webgpu, MDN.)
-- **2026-06-26:** **GSAP е 100% безплатен** (вкл. бивши Club плъгини, комерсиално) — Webflow купи GreenSock 2024.
-  (Източник: gsap.com/pricing, webflow.com/updates/gsap-becomes-free. Точните условия — провери license страницата.)
-- **2026-06-26:** Стек по тежест: **Three.js+GLSL** макс съвместимост; **WebGPU+TSL** ново тежко (+WebGL2 fallback);
-  **OGL/raw WebGL2** единичен лек ефект (по-малък bundle = по-добър LCP); **Pixi v8** 2D; **R3F v9** за React 19 (zabobovdol).
-  **Lenis** плавен скрол, но **изключи под reduced-motion**. (Източник: r3f docs, lenis, pixijs.)
-- **2026-06-26:** Производителност: GPU не main thread; **OffscreenCanvas + Web Worker** (`transferControlToOffscreen`);
-  rAF→`setTimeout` за paint между интеракция и тежка логика (INP); lazy-init с IntersectionObserver, teardown при изход.
-  (Източник: web.dev/offscreen-canvas, debugbear rAF/INP.)
-- **2026-06-26:** `tools/design/motion-a11y.mjs` хваща: анимация без reduced-motion, WebGL без matchMedia, autoplay
-  без контрол, inline script без nonce, вероятен строб. Тествано; zabobovdol/src вече има reduced-motion gate. (Източник: собствен инструмент.)
+- **2026-06-26:** **Режимът зависи от типа сайт (директива на собственика).** Reduced-motion дисциплината (gate, статичен fallback, спокойни defaults, строг CWV, „работи без JS") важи за **СЕРИОЗНИ** сайтове — корпоративни/медицински/граждански/държавни/финансови (вкл. zabobovdol/medqr). За **ТВОРЧЕСКИ** (портфолио/ арт/бранд) → по подразбиране максимален спектакъл, reduced-motion по избор. **Универсално и в двата режима:** никога >3 проблясъка/сек (WCAG 2.3.1 — епилепсия), защото е физическа безопасност, не консерватизъм. Ако режимът не е ясен — питай. (Източник: директива на собственика 2026-06-26.)
+- **2026-06-26:** Носещ компромис на репото (СЕРИОЗЕН режим): zabobovdol е за **възрастни** (вестибуларна чувствителност), medqr е медицински за **глухи/слабочуващи** + CSP nonce. **Спешният `/e/<token>` изглед — почти без декоративна анимация** (спокойствие > спектакъл). (Източник: CLAUDE.md, medqr conventions.)
+- **2026-06-26:** `tools/design/motion-a11y.mjs` има `--creative` флаг: в творчески режим reduced-motion HIGH-овете падат до INFO (не fail-ват гейта), анти-строб остава. По подразбиране = сериозен/строг. (Източник: собствен инструмент.)
+- **2026-06-26:** Винаги fallback: под reduced-motion → статичен poster; low-FPS/mobile → разруши WebGL контекста (`loseContext()`) → CSS/статика. Progressive enhancement: работи без JS. (Източник: web.dev, Blenra prompt.)
+- **2026-06-26:** WebGPU е shippable 2026 (Safari 26, Firefox 141/145) **но WebGL2 fallback задължителен** (Firefox Linux/Android още). Three r182, от r171 WebGPURenderer zero-config; **TSL** компилира към GLSL/WGSL. (Източник: utsubo 2026, web.dev/webgpu, MDN.)
+- **2026-06-26:** **GSAP е 100% безплатен** (вкл. бивши Club плъгини, комерсиално) — Webflow купи GreenSock 2024. (Източник: gsap.com/pricing, webflow.com/updates/gsap-becomes-free. Точните условия — провери license страницата.)
+- **2026-06-26:** Стек по тежест: **Three.js+GLSL** макс съвместимост; **WebGPU+TSL** ново тежко (+WebGL2 fallback); **OGL/raw WebGL2** единичен лек ефект (по-малък bundle = по-добър LCP); **Pixi v8** 2D; **R3F v9** за React 19 (zabobovdol). **Lenis** плавен скрол, но **изключи под reduced-motion**. (Източник: r3f docs, lenis, pixijs.)
+- **2026-06-26:** Производителност: GPU не main thread; **OffscreenCanvas + Web Worker** (`transferControlToOffscreen`); rAF→`setTimeout` за paint между интеракция и тежка логика (INP); lazy-init с IntersectionObserver, teardown при изход. (Източник: web.dev/offscreen-canvas, debugbear rAF/INP.)
+- **2026-06-26:** `tools/design/motion-a11y.mjs` хваща: анимация без reduced-motion, WebGL без matchMedia, autoplay без контрол, inline script без nonce, вероятен строб. Тествано; zabobovdol/src вече има reduced-motion gate. (Източник: собствен инструмент.)
 - **2026-07-03:** WebGPU TSL GTAONode рендерира в RedFormat таргет: семплирането дава vec4(ao,0,0,1) и суровото .mul(color) занулява G/B → целият кадър наситено червен. Правилно: color.mul(vec4(vec3(aoTex.r), 1)) — броудкаст на .r (официалният пример в GTAONode.js:30). _("three r0.184 WebGPU пост-пайплайн"; verified; преместено от 3d-maniac (мис-таргет); "apps/web/src/features/game/gl/render.ts:329 + node_modules/three/examples/jsm/tsl/display/GTAONode.js:97")_
 - **2026-07-03:** Никога не дефолтвай непроверен рендер бекенд: headless тестовете нямат navigator.gpu (упражняваха само WebGL), а прод Chrome взимаше WebGPU — счупеният път отиде право при потребителите. Дефолт webgl, WebGPU opt-in с ?renderer=webgpu до реален browser mileage. _("RenderCore/бекенд избор"; verified; преместено от 3d-maniac (мис-таргет); "apps/web/src/features/game/gl/gfxRegistry.ts:33")_
 - **2026-07-03:** Портален bloom стандарт 1.35/0.06: слонова кост повърхности под key light ≥1.9 пресичат дефолтния праг 1.3 и целите зони ореолят като неон (лудо кръст, шах фигури, дама, табла пулове). Прагът 1.35 е точно над HDR яркостта на осветена ivory плочка. _("всички 3D сцени с UnrealBloom/TSL bloom"; verified; преместено от 3d-maniac (мис-таргет); "apps/web/src/features/game/ludo/ludoScene.ts (params.bloom) + magnatScene.ts:457")_
