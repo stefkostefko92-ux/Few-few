@@ -1266,7 +1266,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 635
+        "lessons": 638
       },
       "evolution": [
         {
@@ -2486,9 +2486,20 @@
           "date": "2026-10-28",
           "event": "v51.7 — учене",
           "detail": "Научи: subprocess.Popen(cmd, shell=True) със съставна команда (cd X && npm run dev) не може да…"
+        },
+        {
+          "version": "52.0.0",
+          "date": "2026-10-31",
+          "event": "v52.0 — учене",
+          "detail": "Научи: CSPos/package-lock.json е lockfileVersion 3 и всичките 482 записа в packages имат поле … (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-31",
+          "type": "learning",
+          "summary": "Научи: „CSPos/package-lock.json е lockfileVersion 3 и всичките 482 записа в packages имат поле …\" (+2 още)"
+        },
         {
           "date": "2026-10-28",
           "type": "learning",
