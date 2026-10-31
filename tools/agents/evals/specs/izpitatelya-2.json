@@ -17,11 +17,16 @@
     },
     {
       "none": [
-        "sleep",
-        "waitForTimeout",
-        "увеличи timeout"
+        "добавям sleep",
+        "добавих sleep",
+        "добавям waitForTimeout",
+        "добавих waitForTimeout",
+        "/\\+\\s*await page\\.waitForTimeout/",
+        "увеличи timeout",
+        "увеличих timeout",
+        "увеличаваме timeout"
       ],
-      "label": "капан: sleep като фикс"
+      "label": "капан: sleep като фикс (споменат като flaky сигнал не е капан)"
     }
   ]
 }

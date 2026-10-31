@@ -4,9 +4,16 @@
 > извикване). Тук живеят пълният ростер, цикълът на самообучение и инструментите на агентите.
 
 This repo ships a small team of **purpose-built Claude Code subagents**. Each is a
-markdown file with YAML frontmatter (`name`, `description`, `tools`, `model`) and a
+markdown file with YAML frontmatter (`name`, `description`, `tools`, `model`, plus `effort`, `maxTurns`
+and, where needed, `skills`) and a
 Bulgarian system prompt distilled from deep web + GitHub research. Invoke one with the
 Agent tool (e.g. *"пусни Кодаджията върху промените"*); several can run in parallel.
+
+**Екипи — започни оттук.** Агентите са в 9 малки екипа около реален поток (Щабът · Ковачницата ·
+Пускането · Думите · Растежът · Парите · Нормите · Платформите · Формата) — всеки с водач, поток до 3
+стъпки, човешка точка, 5 тестови задачи, 3 вероятни провала и метрики. Източник: `_teams.json`;
+прочетим изглед: [`_teams.md`](_teams.md). Не знаеш кого да викнеш →
+`node tools/agents/teams.mjs --route "<задачата>"`. Всеки агент получава своята карта при старт.
 
 | Agent (file)                              | Викай го за…                                                                 |
 | ----------------------------------------- | ---------------------------------------------------------------------------- |
@@ -42,8 +49,8 @@ Agent tool (e.g. *"пусни Кодаджията върху промените
 All twenty-nine agents have reached at least **v10.0** — mastery — through genuine,
 source-verified learning (Скоростника, born 2026-07-29, crossed the threshold the same day:
 40 verified lessons from five live-source missions + real audits — vizitka 100/100,
-ospedali's heavy subpage exposed at 67/100 with a 6.4s TBT); Асансьорчика, born 2026-10-05, is at v16.2
-(161 verified lessons from a real audit; see the version scheme below). Each definition layers: an **operating contract** (v1.0 —
+ospedali's heavy subpage exposed at 67/100 with a 6.4s TBT); Асансьорчика, born 2026-10-05,
+passed it from a real audit (current versions: `agents-dashboard/agents.json`). Each definition layers: an **operating contract** (v1.0 —
 source-or-silence, verify-before-asserting, confidence labels, self-check, stop-and-ask, Definition
 of Done); a **v1.1** worked example + competence boundary; a **v2.0** *instrumented-executor* block
 (runs real `tools/<area>/`); a **v2.1 reliability** block (Chain-of-Verification for legal/SEO/
@@ -60,46 +67,48 @@ remember. The loop is **read → act → verify → persist → curate**: a `Sub
 the agent ends every turn with a strict, self-identifying ```learn block; a `SubagentStop` hook
 (`.claude/hooks/memory-capture.mjs`) parses it from the transcript and persists it — **verified
 lessons → memory, everything else → a `Карантина` (quarantine) section that is never read as fact** —
-</br>Alongside memory, the `SubagentStart` hook injects **two shared doctrines into every agent** so the
-fleet *acts the same way and chains reliably*: `_memory/SECURITY.md` (state-level security doctrine) and
-`_memory/PROCEDURE.md` (**one lifecycle** — Orient → verify-live → Act → Self-check → **Hand off** — plus
-global red lines and a **typed HANDOFF contract**). Named cross-agent flows (lead · pipeline · escalation)
-live in `.claude/agents/_orchestration.md` (v4.0); `oversee.mjs` hard-gates on both doctrines' presence.
 deduping as it goes (works even for the read-only auditors that can't write files themselves) and
 also **appending a learning entry to that agent's activity feed in the dashboard** (`agents.json` +
 the embedded FALLBACK in `index.html`, atomic write + lock) and **bumping the agent's version**
 (a `vX.Y — учене` timeline entry — verified learning level-ups the agent; quarantine and repeat lessons
-don't). **Where it lands (2026-09-23):** not in the task branch — the hook commits to the dedicated
+don't). **Where it lands:** not in the task branch — the hook commits to the dedicated
 `agents/memory` branch via git plumbing (the human's HEAD/index/worktree are never touched), a detached
 sync folds `main` in and pushes, and one standing PR `agents/memory` → `main` brings it home;
-`memory-preload` already reads pending lessons from that branch. Before this, 562 verified lessons sat
-in 32 task branches that new sessions never saw (`tools/agents/harvest-memory.mjs` recovered them).
+`memory-preload` reads pending lessons from that branch. Lessons left in task branches are invisible to
+new sessions; `tools/agents/harvest-memory.mjs` recovers them.
 **Version scheme (`bumpVersion` in `tools/lib/memory-core.mjs`):** each verified lesson is +0.1 and
 **every 10 verified lessons roll into a +1 major** (6.9 → 7.0 → …); the version tracks verified-lesson
 count (≈ lessons ÷ 10), so **v10.0 = mastery** (≈100 verified lessons) is a *threshold, not a cap* — agents
-keep climbing past it as they learn (e.g. `ai-djiyata` is at **v15.0**, ~150 lessons). So the agents-lab page updates
+keep climbing past it as they learn (current versions: `agents-dashboard/agents.json`). So the agents-lab page updates
 itself on every new lesson; `tools/memory/curate.mjs` then dedups, caps size, and flags contradictions for human review. The
-verify gate (only tool/eval/test/live-source-backed lessons become fact) is what keeps it flawless —
-no unverified claim contaminates memory. Hooks are registered in `.claude/settings.json`, scoped by
+verify gate (only tool/eval/test/live-source-backed lessons become fact) keeps unverified claims
+out of memory. Hooks are registered in `.claude/settings.json`, scoped by
 matcher to the twenty-nine agent types; the schema + `learn`-block format live in `.claude/agents/_memory/PROTOCOL.md`.
 **v7.0 hardening** (distilled from GitHub prior art — anthropic-cookbook `research_subagent`, wshobson
-PluginEval, Mem0, DSPy/Guardrails/ragas): the capture hook now **hard-drops any lesson containing a
+PluginEval, Mem0, DSPy/Guardrails/ragas): the capture hook **hard-drops any lesson containing a
 secret/key/token**, **downgrades a `verified` lesson whose source isn't a real URL/`file:line`/tool to
-quarantine** (don't trust self-assessment), and `curate.mjs` **flags time-sensitive verified facts older
-than 45 days for re-verification** (TTL/provenance); agents must run **Chain-of-Verification** before
+quarantine** (don't trust self-assessment), and verified facts past their freshness class (`memory-freshness.mjs`) or an
+explicit re-verify date are **queued for re-verification** (TTL/provenance); agents must run **Chain-of-Verification** before
 marking anything `verified`. See PROTOCOL.md's "v7.0 — закалена безгрешност" section.
+
+Alongside memory, every agent preloads **two shared doctrines** as the `agent-doctrine` skill (`skills:`,
+generated by `tools/agents/doctrine-skill.mjs`) so the
+fleet *acts the same way and chains reliably*: `_memory/SECURITY.md` (state-level security doctrine) and
+`_memory/PROCEDURE.md` (**one lifecycle** — Orient → verify-live → Act → Self-check → **Hand off** — plus
+global red lines and a **typed HANDOFF contract**). Named cross-agent flows (lead · pipeline · escalation)
+live in `.claude/agents/_orchestration.md` (v4.0); `oversee.mjs` hard-gates on both doctrines and on `agent-doctrine` in every definition.
 
 Supporting files under `.claude/agents/`:
 - **`_shared/glossary.md`** — canonical BG·EN·IT glossary (incl. the *verified* clinical terms
   and the ready IT base) + base project facts, so agents don't re-derive or drift. Преводач owns it.
-- **`_orchestration.md`** — v3.0 team handoff map (who passes work to whom, common multi-agent flows).
+- **`_orchestration.md`** — v4.0 flows (lead · pipeline · escalation: who passes work to whom).
 - **`_memory/<id>.md`** — per-agent durable memory: a `Проверени поуки (verified)` section (facts,
   preloaded into the agent each run) + a `Карантина` section (unverified hypotheses, never treated as
   fact). v6.0 makes the read/write automatic via hooks; `_memory/PROTOCOL.md` defines the `learn`-block
   schema and the laws (verified-only, source-or-nothing, no secrets, contradiction → stop).
 - **`_proposals/v2.0.md`** — the v2.0 roadmap (✅ shipped vs 🟡 planned, per agent, with effort).
 - **`_evals/reliability.md`** — the v2.1 reliability playbook (which technique per agent + judge
-  calibration); **`_evals/run.sh`** under `tools/evals/` is the runnable deterministic-grader gate
+  calibration); **`tools/evals/run.sh`** is the runnable deterministic-grader gate
   (it caught the 536 duplicate seed slugs). **`_evals/promptfooconfig.yaml`** scaffolds the LLM-rubric layer.
 - **`_evals/golden-cases.md`** — one manual golden case per agent (input + expected traits +
   pitfalls); run an agent against its case after an upgrade to catch regressions.
@@ -136,8 +145,8 @@ auto-selects — **кратко „кога да ме викнеш“** (рол�
 example + competence boundary; bump the version + append an `evolution` entry in
 `agents-dashboard/agents.json` whenever you change what the agent knows (метаданни като
 описание/`maxTurns` не са ново знание — версията брои научено).
-**Разхлабвай, не усилвай (модели 4.6+):** новите модели са проактивни и директни по
-подразбиране — при авторство/ъпгрейд НЕ добавяй „бъди старателен/агресивен/провери преди
+**Разхлабвай, не усилвай:** текущите модели са проактивни и директни по
+подразбиране — при авторство/ъпгрейд не добавяй „бъди старателен/агресивен/провери преди
 да приключиш" (причиняват свръх-многословност и ненужно tool-calling); замени „Default to
 using X" с „Use X when it helps", махни „If in doubt, use X". Ветеранската краткост е в
 `PROCEDURE.md` (инжектира се на всички) — не я преповтаряй в дефиницията.
@@ -149,9 +158,9 @@ A self-contained page (`index.html`, no build step) that visualizes the roster: 
 agent's capabilities, **evolution timeline** (versions) and an **activity feed**, driven by
 `agents.json` (the canonical manifest; the HTML also embeds a fallback snapshot so it opens
 over `file://`). Open it directly, or serve it: `python3 -m http.server -d agents-dashboard`.
-Note: Claude Code subagents are stateless between runs — they don't persistently "learn", so
-the dashboard tracks the honest equivalent: how each definition *evolves* and what it's *used
-for*. Keep `agents.json` in sync when you add/upgrade an agent.
+Subagents are stateless between runs; what they learn lives in the hook-managed memory above, and
+the dashboard shows it: each definition's *evolution*, its verified-learning entries and what it's
+*used for*. Keep `agents.json` in sync when you add/upgrade an agent.
 
 ### Communication style (caveman-inspired)
 

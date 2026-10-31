@@ -46,13 +46,19 @@ const MEM_INJECT_BUDGET = 3200;
 // WARN ≈ +10% над днешното, HARD ≈ +27%: гейтваме РАЗБЯГВАНЕТО, не текущото състояние.
 export const PREFIX_TOKEN_WARN = 5200;
 export const PREFIX_TOKEN_HARD = 6000;
-// Таван на КОРЕННИЯ CLAUDE.md. Той се зарежда във всяка сесия и при всеки старт на агент (проба на
-// живо 2026-09-23: субагентите го зареждат). До 2026-09-23 носеше цялата доктрина на агентския слой
+// Таван на КОРЕННИЯ CLAUDE.md. Той се зарежда във всяка главна сесия; нашите агенти са с
+// `omitClaudeMd: true` от 2026-10-27 (до тогава го зареждаха при всеки старт — проба на живо 2026-09-23). До 2026-09-23 носеше цялата доктрина на агентския слой
 // (~9.4k т), платена и от продуктова задача, която не пипа агенти; сега тя е в tools/agents/CLAUDE.md
 // (зарежда се при нужда) и коренът е ~3.8k т. HARD ≈ +25% — място за нови продукти в таблицата,
 // не за нова доктрина: тя отива в CLAUDE.md на продукта или на слоя. Пътят е override-ваем за тест.
 export const ROOT_DOC_TOKEN_HARD = 4800;
 const ROOT_DOC = process.env.TOKEN_BUDGET_ROOT_DOC || join(ROOT, "CLAUDE.md");
+
+// Харнесът маха блоковите HTML коментари от CLAUDE.md, преди да го подаде на модела (docs: memory,
+// „Block-level HTML comments … are stripped“; коментар в код блок остава). Мерим това, което се плаща.
+export function injectedText(md) {
+  return String(md).split(/(^```[\s\S]*?^```)/m).map((part, i) => (i % 2 ? part : part.replace(/<!--[\s\S]*?-->/g, ""))).join("");
+}
 
 // --- Cyrillic-aware евристичен токенизатор ---------------------------------
 // Claude токенизаторът дели кирилицата по-ситно от латиницата. Емпирично blended съотношение:
@@ -167,7 +173,7 @@ export function computeBudget() {
   totals.prefixBullets = prefixBullets;
   totals.costPerPrefixBullet = prefixBullets ? Math.round((STATIC_PREFIX_TOKENS / prefixBullets) * rows.length) : 0;
   // Главната сесия на всеки ход: коренният CLAUDE.md + списъкът с описания на агентите.
-  const rootDocTokens = existsSync(ROOT_DOC) ? estTokens(readFileSync(ROOT_DOC, "utf8")) : 0;
+  const rootDocTokens = existsSync(ROOT_DOC) ? estTokens(injectedText(readFileSync(ROOT_DOC, "utf8"))) : 0;
   const descTokens = agentIds().reduce((s, id) => {
     const fm = readFileSync(join(AGENTS_DIR, id + ".md"), "utf8").split(/^---\s*$/m)[1] || "";
     return s + estTokens((fm.match(/^description:[ \t]*(.*)$/m) || [])[1] || "");
@@ -202,7 +208,7 @@ if (JSON_OUT) {
 
 console.log(`\n🪙  Токен-бюджет на екипа (${rows.length} агента) — ОЦЕНКА, не измерен ран\n`);
 console.log(`  Главна сесия, всеки ход: коренен CLAUDE.md ~${rootDocTokens} т (таван ${ROOT_DOC_TOKEN_HARD}) · описания на агентите ~${descTokens} т`);
-console.log(`  \x1b[90mКоренният CLAUDE.md се зарежда и при всеки старт на агент. Реалната цена: usage-report.mjs.\x1b[0m\n`);
+console.log(`  \x1b[90mКоренният CLAUDE.md се зарежда във всяка главна сесия (агентите са с omitClaudeMd). Реалната цена: usage-report.mjs.\x1b[0m\n`);
 console.log(`  Статичен префикс (доктрина+процедура+споделено): ~${STATIC_PREFIX_TOKENS} т · еднакъв по СЪДЪРЖАНИЕ`);
 console.log(`  Кеш спестява ~${CACHE_SAVED} т на повторно извикване на СЪЩИЯ агент (0.9× от префикса).`);
 console.log(`  \x1b[90mНЕ се дели между различни агенти: префиксът влиза в messages (SubagentStart), а системният`);
@@ -250,7 +256,7 @@ if (CHECK && prefixOverHard) {
 }
 if (CHECK && rootDocOverHard) {
   console.error(`token-budget --check: коренният CLAUDE.md е ~${rootDocTokens} т над твърдия таван ${ROOT_DOC_TOKEN_HARD} т. ` +
-    `Зарежда се във всяка сесия и при всеки старт на агент. Премести подробностите в CLAUDE.md на продукта ` +
+    `Зарежда се във всяка главна сесия. Премести подробностите в CLAUDE.md на продукта ` +
     `или в tools/agents/CLAUDE.md (зареждат се при нужда) — не вдигай тавана.`);
   failed = 1;
 }

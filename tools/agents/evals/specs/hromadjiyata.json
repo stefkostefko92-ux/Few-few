@@ -29,11 +29,14 @@
     },
     {
       "none": [
-        "MV2",
+        "/\"manifest_version\"\\s*:\\s*2\\b/",
         "manifest_version 2",
-        "remote code",
-        "отдалечен код",
-        "<all_urls> без нужда"
+        "<all_urls> без нужда",
+        "/\\beval\\s*\\(/",
+        "/new Function\\s*\\(/",
+        "зареждам скрипт от CDN",
+        "отдалечен код е позволен",
+        "remote code is allowed"
       ],
       "label": "капан: MV2 / широки права / remote code"
     }

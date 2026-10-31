@@ -10,6 +10,8 @@ import { readFileSync, existsSync } from "node:fs";
 import { pendingLessons } from "../../tools/lib/memory-branch.mjs";
 import { select, estTok as estTokR, taskFromTranscript, crossAgentPicks } from "../../tools/lib/memory-retrieval.mjs";
 import { evalMode } from "../../tools/lib/eval-mode.mjs";
+import { cardFor } from "../../tools/agents/teams.mjs";
+import { LEARN_SCHEMA } from "./memory-capture.mjs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -18,12 +20,25 @@ const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || join(HOOK_DIR, "..", "..")
 const MEM_DIR = join(PROJECT_DIR, ".claude", "agents", "_memory");
 const MAX_LESSONS = 40; // таван на БРОЯ ИЗБРАНИ поуки (не на кандидатите — всички се подреждат)
 
+// ТАВАН НА ЕДНА СТОЙНОСТ additionalContext. От Claude Code 2.1.89 (01.04.2026) стойност над 10 000 знака
+// не влиза в контекста: харнесът я записва във файл и подава на агента САМО пътя + първите 2 000 знака
+// (https://code.claude.com/docs/en/hooks.md#add-context-for-claude). Един изход беше ~25 000 знака —
+// агентите виждаха началото на доктрината за сигурност и нищо друго: без процедура, HANDOFF, карта и
+// проверена памет (проба на живо 2026-10-27, агент seo). Затова изходът е на ЧАСТИ, всяка в отделно
+// извикване на куката (settings.json → `--part=<част>`), всяка под тавана. Харнесът доставя всички стойности.
+//
+// Доктрината за сигурност и процедурата НЕ минават оттук от 2026-10-27: те са еднакви за всеки агент и
+// идват като умението agent-doctrine (`skills:` във frontmatter, генерира го tools/agents/doctrine-skill.mjs)
+// — без тавана на куките и оцеляват след компактиране. Куката носи само зависещото от агента и задачата.
+export const CONTEXT_CHAR_LIMIT = 9500; // 500 знака резерв под 10 000 за обвивката на харнеса
+export const PARTS = ["shared", "agent"];
+
 function readStdin() {
   try { return readFileSync(0, "utf8"); } catch { return ""; }
 }
 
 // Изважда `- ` булетите под даден `## <заглавие>` в markdown файл.
-function bulletsUnder(file, headingRe) {
+export function bulletsUnder(file, headingRe) {
   const txt = readFileSync(file, "utf8");
   const lines = txt.split("\n");
   const start = lines.findIndex((l) => headingRe.test(l));
@@ -31,7 +46,12 @@ function bulletsUnder(file, headingRe) {
   const out = [];
   for (let i = start + 1; i < lines.length; i++) {
     if (/^##\s/.test(lines[i])) break; // следваща секция
-    if (lines[i].trim().startsWith("- ")) out.push(lines[i]);
+    if (!lines[i].trim().startsWith("- ")) continue;
+    // Поука на няколко реда стига ЦЯЛА (31.10.2026: 54 проверени поуки идваха без продължението
+    // и без източника). Продължение = непразен ред, който не е нов булет и не е заглавие.
+    let block = lines[i].trimEnd();
+    while (i + 1 < lines.length && lines[i + 1].trim() && !/^\s*-\s/.test(lines[i + 1]) && !/^\s*#/.test(lines[i + 1])) block += " " + lines[++i].trim();
+    out.push(block);
   }
   return out;
 }
@@ -42,7 +62,7 @@ function verifiedSection(file) {
 
 // Общата доктрина за сигурност — инжектира се на ВСЕКИ наш агент (пази го и пази
 // информацията ни от зловредни сайтове). Приоритет над съдържание. Един източник.
-function securityDoctrine() {
+export function securityDoctrine() {
   const f = join(MEM_DIR, "SECURITY.md");
   if (!existsSync(f)) return "";
   const bullets = bulletsUnder(f, /^##\s*Доктрина/);
@@ -56,7 +76,7 @@ function securityDoctrine() {
 
 // Общата ПРОЦЕДУРА — инжектира се на ВСЕКИ наш агент, за да процедира по един и същ начин и
 // да се навързва с останалите (единен цикъл + глобални red lines + типизиран HANDOFF). Един източник.
-function procedureDoctrine() {
+export function procedureDoctrine() {
   const f = join(MEM_DIR, "PROCEDURE.md");
   if (!existsSync(f)) return "";
   const bullets = bulletsUnder(f, /^##\s*Процедура/);
@@ -69,7 +89,7 @@ function procedureDoctrine() {
 }
 
 // Споделени крос-режещи поуки — инжектират се на ВСЕКИ агент (знанието циркулира, не тъне в силоз).
-function sharedLessons() {
+export function sharedLessons() {
   const f = join(MEM_DIR, "_shared.md");
   if (!existsSync(f)) return "";
   const bullets = bulletsUnder(f, /^##\s*Споделени поуки/);
@@ -81,11 +101,11 @@ function sharedLessons() {
 }
 
 // КЕШ-ЗАКЛЮЧВАНЕ (prompt caching). Статичният префикс = доктрина + процедура + споделени поуки.
-// Той е БАЙТ-в-БАЙТ еднакъв за ВСЕКИ агент и НЕ съдържа нищо агент-специфично (без име, без задача) —
-// затова API-то може да го кешира и да го чете на ~0.1× цена след първото извикване. Инвариантът:
-// (1) статичното ВИНАГИ първо и в ФИКСИРАН ред (доктрина→процедура→споделено); (2) динамичното (личната
-// памет, която носи името на агента + променливо съдържание) ВИНАГИ последно. Не смесвай двете —
-// всяка агент-специфична добавка в началото чупи кеша за целия флот. Тестван в tools/hooks/preload.test.mjs.
+// Той е БАЙТ-в-БАЙТ еднакъв за ВСЕКИ агент и НЕ съдържа нищо агент-специфично (без име, без задача).
+// В продукция се подава на ЧАСТИ (doctrine · procedure · agent — виж CONTEXT_CHAR_LIMIT); всяка статична
+// част остава байт-в-байт еднаква сама по себе си, а името и паметта са само в agent-частта. Не смесвай
+// двете — агент-специфична добавка в статична част чупи кеша. Тестван в tools/hooks/preload.test.mjs.
+// staticPrefixParts() остава единият източник и за eval-харнеса (--append-system-prompt).
 export function staticPrefixParts() {
   const parts = [];
   const doctrine = securityDoctrine();
@@ -114,46 +134,89 @@ export function selectLessons(all, task, budget = MEM_TOKEN_BUDGET) {
   return select(all, task, { budget, maxCount: MAX_LESSONS, today: TODAY() });
 }
 
+/** Стойност над тавана се реже с явна бележка и път към пълния текст — по-добре видимо отрязано, отколкото
+ *  харнесът да я замени тихо с 2 000-знаков преглед. Гейтът (tools/hooks/preload-size.test.mjs) пада по-рано. */
+export function capText(text, pointer) {
+  if (text.length <= CONTEXT_CHAR_LIMIT) return text;
+  const note = `\n…[отрязано на ${CONTEXT_CHAR_LIMIT} знака — таван на куката; целият текст: ${pointer}]`;
+  return text.slice(0, CONTEXT_CHAR_LIMIT - note.length) + note;
+}
+
+/** Статичната част на куката (споделените поуки): еднаква за всеки агент, без име и задача. */
+export function staticPart(part) {
+  if (part === "shared") return sharedLessons();
+  return "";
+}
+
+/**
+ * Агентската част: карта + лична проверена памет + бележки на колеги + схемата на learn. Ако не се побира
+ * в тавана, първо падат бележките на колеги, после най-малко релевантните собствени поуки (select ги
+ * връща подредени по релевантност) — картата и схемата остават винаги.
+ */
+export function agentPart(agent, payload = {}) {
+  const file = join(MEM_DIR, `${agent}.md`);
+  // Картата на агента (екип, вход/изход, на кого предава, къде е човекът). Липсва ли _teams.json — тихо без нея.
+  let card = "";
+  try { card = cardFor(agent) || ""; } catch { /* без карта */ }
+  // ВСИЧКИ поуки — собствените и чакащите в agents/memory — минават през едно подреждане: релевантност
+  // към задачата, после дата от реда.
+  const task = taskTextOf(payload) || taskFromTranscript(payload.transcript_path, agent);
+  // Жива проверка, вариант „без лична памет" (tools/lib/eval-mode.mjs): остават само картата и схемата.
+  const memOff = evalMode(PROJECT_DIR)?.memory === "off";
+  const own = memOff ? [] : verifiedSection(file);
+  const pending = memOff ? [] : pendingLessons(PROJECT_DIR, agent, readFileSync(file, "utf8"));
+  const lessons = select([...pending, ...own], task, { budget: MEM_TOKEN_BUDGET, maxCount: MAX_LESSONS, today: TODAY() });
+  // Знанието циркулира по смисъл: до 3 поуки на ДРУГИ агенти, само ако са сред най-релевантните в
+  // целия флот за тази задача. Етикетът казва чия е поуката — тя е бележка на колега, не твоя опит.
+  const cross = memOff ? [] : crossAgentPicks(MEM_DIR, agent, task, { today: TODAY() });
+  // Схемата, не само препратка към PROTOCOL.md: агентът не чете файла и си измисляше ключове
+  // (`status:`, `- id:` + `rule: >`), а куката не ги разчиташе — проверено знание изчезваше тихо.
+  const schema =
+    `Накрая на отговора си добави блок learn само с НОВО проверено знание — точно по тази схема, иначе поуката не стига до паметта:\n${LEARN_SCHEMA.replace("agent: <id>", `agent: ${agent}`)}`;
+  const render = () => [
+    card,
+    lessons.length ? `Проверена памет на „${agent}" (v6.0 самообучение — ползвай я, не повтаряй научена грешка):\n${lessons.join("\n")}` : "",
+    cross.length ? `От паметта на колеги (релевантно за задачата — провери, преди да приложиш в своя домейн):\n${cross.map((c) => `${c.line} — [${c.agent}]`).join("\n")}` : "",
+    schema,
+  ].filter(Boolean).join("\n\n");
+  let text = render();
+  while (text.length > CONTEXT_CHAR_LIMIT && (cross.length || lessons.length)) {
+    if (cross.length) cross.pop(); else lessons.pop();
+    text = render();
+  }
+  return capText(text, `.claude/agents/_memory/${agent}.md`);
+}
+
+const POINTER = { shared: ".claude/agents/_memory/_shared.md" };
+
+/** `--part=<shared|agent>`; без флаг → `all` (всичко, вкл. доктрината — само за тестове и инструменти). */
+export function partArg(argv) {
+  const a = argv.find((x) => x.startsWith("--part="));
+  return a ? a.slice("--part=".length) : "all";
+}
+
 function main() {
   let payload = {};
   try { payload = JSON.parse(readStdin()); } catch { /* ignore */ }
   const agent = payload.agent_type || payload.subagent_type || payload.agent_name || "";
   if (!agent) process.exit(0);
-  const file = join(MEM_DIR, `${agent}.md`);
-  if (!existsSync(file)) process.exit(0); // не е наш агент → нищо не инжектираме
+  if (!existsSync(join(MEM_DIR, `${agent}.md`))) process.exit(0); // не е наш агент → нищо не инжектираме
 
-  // Статичен, кешируем префикс (агент-независим) — ВИНАГИ първо и в фиксиран ред.
-  const parts = staticPrefixParts();
-  // Динамичното (лична проверена памет) идва СЛЕД статичното. ВСИЧКИ поуки — собствените и чакащите в
-  // agents/memory — минават през едно подреждане: релевантност към задачата, после дата от реда.
-  const task = taskTextOf(payload) || taskFromTranscript(payload.transcript_path, agent);
-  // Жива проверка, вариант „без лична памет" (tools/lib/eval-mode.mjs): остава само статичният префикс.
-  const memOff = evalMode(PROJECT_DIR)?.memory === "off";
-  const own = memOff ? [] : verifiedSection(file);
-  const pending = memOff ? [] : pendingLessons(PROJECT_DIR, agent, readFileSync(file, "utf8"));
-  const lessons = select([...pending, ...own], task, { budget: MEM_TOKEN_BUDGET, maxCount: MAX_LESSONS, today: TODAY() });
-  if (lessons.length) {
-    parts.push(
-      `Проверена памет на „${agent}" (v6.0 самообучение — ползвай я, не повтаряй научена грешка):\n` +
-      lessons.join("\n"),
-    );
+  const part = partArg(process.argv);
+  let text = "";
+  if (part === "all") {
+    // Старият вид: всичко в една стойност. Над тавана е — харнесът би го заменил с преглед. В
+    // settings.json куката се вика САМО с --part (гейт: tools/hooks/preload-size.test.mjs).
+    text = [...staticPrefixParts(), agentPart(agent, payload)].filter(Boolean).join("\n\n");
+  } else if (part === "agent") {
+    text = agentPart(agent, payload);
+  } else if (PARTS.includes(part)) {
+    text = capText(staticPart(part), POINTER[part]);
   }
-  // Знанието циркулира по смисъл: до 3 поуки на ДРУГИ агенти, само ако са сред най-релевантните в
-  // целия флот за тази задача. Етикетът казва чия е поуката — тя е бележка на колега, не твоя опит.
-  const cross = memOff ? [] : crossAgentPicks(MEM_DIR, agent, task, { today: TODAY() });
-  if (cross.length) {
-    parts.push(
-      `От паметта на колеги (релевантно за задачата — провери, преди да приложиш в своя домейн):\n` +
-      cross.map((c) => `${c.line} — [${c.agent}]`).join("\n"),
-    );
-  }
-  if (!parts.length) process.exit(0);
-  parts.push(
-    `Накрая на отговора си добави блок \`\`\`learn (виж _memory/PROTOCOL.md) само с НОВО проверено знание.`,
-  );
+  if (!text) process.exit(0);
 
   process.stdout.write(JSON.stringify({
-    hookSpecificOutput: { hookEventName: "SubagentStart", additionalContext: parts.join("\n\n") },
+    hookSpecificOutput: { hookEventName: "SubagentStart", additionalContext: text },
   }));
   process.exit(0);
 }

@@ -6,10 +6,20 @@ settings.json бяха регистрирани четири с други match
 съществува, е по-лош от липсващ (виж secret-parity: „зелено по слепота").
 
 ## Активни — цикълът на паметта
-- **`memory-preload.mjs`** (`SubagentStart`) — инжектира релевантните „Проверени поуки" + доктрината за
-  сигурност (`_memory/SECURITY.md`) + общата процедура (`_memory/PROCEDURE.md`) в контекста на всеки агент.
+- **`route-hint.mjs`** (`UserPromptSubmit`) — пуска рутера на екипите (`tools/agents/teams.mjs`) върху заявката и, ако хване екип, слага пред главната сесия един ред: кой НАШ агент я поема и с кой поток (правило на собственика: при нужда от агент — наш). Нищо не хваща или заявката е по-кратка от 12 знака → мълчи. Fail-open. Тест: `tools/hooks/route-hint.test.mjs`.
+- **`memory-preload.mjs`** (`SubagentStart`, две извиквания: `--part=shared` · `--part=agent`) — инжектира
+  споделените поуки, и картата + релевантните „Проверени поуки" + схемата на `learn`. Доктрината за сигурност
+  и общата процедура не минават оттук: те са умението `agent-doctrine` (`skills:` във всяка дефиниция,
+  генерира го `tools/agents/doctrine-skill.mjs`). **Всяка част е отделна стойност под 9 500 знака:** от
+  Claude Code 2.1.89 стойност над 10 000 знака се заменя с път към файл + 2 000-знаков преглед и агентът не я
+  вижда. До 2026-10-27 изходът беше една стойност от ~25 000 знака — агентите тръгваха само с началото на
+  доктрината (проба на живо). Гейт: `tools/hooks/preload-size.test.mjs`. Без `--part` куката връща всичко в
+  една стойност — само за тестове и инструменти, никога в `settings.json`.
 - **`dod-check.mjs`** (`SubagentStop`) — налага блока `## ПРЕДАВАНЕ` (HANDOFF) и дневника на веригите;
-  агент без валидно предаване не завършва тихо.
+  агент без валидно предаване не завършва тихо. Връща агента и когато блокът му ```learn няма да стигне до
+  паметта: неразчетени поуки, липсващ `confidence:`/`source:`, многоредов текст, поле над тавана
+  (`learnProblems` в `memory-capture.mjs`, схемата е `LEARN_SCHEMA` — същата, която `memory-preload` показва
+  при старт). 2026-10-09: проверени поуки изчезваха тихо заради `status:`, `- id:` + `rule: >` и обхват над 200 знака.
 - **`memory-capture.mjs`** (`SubagentStop`) — изважда последния ```learn блок от транскрипта, записва
   verified → памет / друго → Карантина (тайни се изпускат твърдо), обновява таблото.
 - **`precompact-save.mjs`** (`PreCompact`) — запазва състоянието преди компактиране на контекста.
@@ -18,7 +28,9 @@ settings.json бяха регистрирани четири с други match
   флота се обновява ВИНАГИ. Кука не може сама да публикува Artifact, затова връща сесията ВЕДНЪЖ, когато
   ЛОКАЛНИЯТ `agents/memory` (появява се само при учене в този clone) е по-нов от публикувания връх
   (`.git/agents-artifact.json`): билд от върха на паметта → публикуване на същия адрес →
-  `build-artifact.mjs --mark-published <sha>`. Втори Stop → само напомняне (без цикъл).
+  `build-artifact.mjs --mark-published <sha>`. Втори Stop → само напомняне (без цикъл). Докато тече
+  партида учене (`tools/lib/learning-batch.mjs`, напр. `pr-review.mjs` върху всички PR-и) — само напомняне:
+  артефактът след партидата, не на всяко спиране по средата (27.10: десет републикувания за час).
 
 ## Активни предпазители
 Отбранителни, **fail-open** при вътрешна грешка (хук-бъг никога не спира работата), **fail-closed** при
@@ -27,9 +39,26 @@ settings.json бяха регистрирани четири с други match
 | Кука | Събитие · matcher | Какво блокира |
 |---|---|---|
 | **`guard-prompt.mjs`** | `UserPromptSubmit` | Случайно ПОСТАВЕНА тайна в промпта (клипборд) — да не влезе в история/логове. Байпас по избор: „[секрет-ок]". |
-| **`guard-dangerous.mjs`** | `PreToolUse` · `Bash` | Само еднозначно катастрофалното: `rm -rf` на корен/дом/работно дърво (`/`, `~`, `$HOME`, `.`, `$PWD`), fork bomb, `mkfs`/`dd`/`wipefs`/`shred` върху `/dev` диск, `find / -delete`, `curl\|sh`, force push към main (`--force`, `-f`, `+refspec`), изтриване на main (`:main`, `--delete`), `gh repo delete`. |
+| **`guard-readonly.mjs`** | `PreToolUse` · `Bash` | Агент, чиято дефиниция има Bash, но няма Write/Edit (днес Кодаджията, Качествения, Разбивача), да пише в репото през Bash: git записи, `sed -i`/`perl -i`, `>`/`>>`/`tee` към файл извън `/tmp`, `/dev/null` и scratchpad-а, rm/mv/cp/touch/chmod, `--write`/`--fix`, npm/pnpm/yarn, които сменят манифест/lockfile (`npm ci` и `--frozen-lockfile` минават). Агентът идва от `agent_type` в payload-а. На ниво settings, а не във frontmatter, защото frontmatter куките не тичат в `-p` сесии. Fail-open (ролева кука). |
+| **`guard-dangerous.mjs`** | `PreToolUse` · `Bash` | Само еднозначно катастрофалното: `rm -rf` на корен/дом/работно дърво (`/`, `~`, `$HOME`, `.`, `$PWD`), fork bomb, `mkfs`/`dd`/`wipefs`/`shred` върху `/dev` диск, `find / -delete`, `curl\|sh`, force push към main (`--force`, `-f`, `+refspec`), изтриване на main (`:main`, `--delete`), `gh repo delete`. `git push` се съди по ДУМИ по правилата на обвивката (`shellWords`): съобщение в кавички не е команда, а низът за изпълнение (`bash -c`, `eval`, `ssh host`, `--server`/`--cmd`/`--run`, `concurrently`, heredoc към обвивка, `$(…)`) се анализира рекурсивно. |
 | **`guard-secrets.mjs`** | `PostToolUse` · `Write\|Edit\|MultiEdit\|NotebookEdit` | Тъкмо записан файл/бележник с високо-уверен credential (17 типа от `tools/lib/secret-patterns.mjs`). Пропуска fixture/test/eval/scratch пътища. Твърдият гейт остава `secret-scan.mjs` при commit/CI. |
-| **`guard-exfil.mjs`** | `PreToolUse` · `Bash\|WebFetch\|WebSearch\|mcp__.*` | ИЗНАСЯНЕ навън (lethal-trifecta изходът): литерална тайна или тайна env променлива към мрежов verb/интерпретатор; `.env`/ключ/credential файл през пайп, субституция `$(…)`, stdin редирект, `-d/-F/-T/--data-raw/--post-file`, scp/rsync, архив, четене от код (`readFileSync`, `open`); `/proc/*/environ`; пълен env dump; команди, които издават credential (`gh auth token`, `vault read`…) към мрежа; стажиране (env dump/тайна → файл, `git remote add` чужд URL); `git push` към чужд URL; `npm publish`; тайна в URL/търсене; **тайна в аргумент на MCP инструмент** (`mcp__github__*`, `mcp__Gmail__*`… — целият `tool_input` се сериализира и се търси по същия списък + секрет в URL query). |
+| **`guard-config.mjs`** | `ConfigChange` (без matcher) · `onFailure: "block"` | Настройка, сменена ПО СРЕДАТА на сесия, да отслаби пазачите на същата сесия (31.10.2026). `project_settings` се сравнява с git HEAD: махнато deny правило, махната или стеснена кука, свален `onFailure: "block"`, намален `timeout`, изключена ограда за запис. Във всеки файл: `disableAllHooks`, `defaultMode` `bypassPermissions`/`auto`. Умение, сменено по средата на сесия, влиза от следващата. Затягането минава. Блокът е мълчалив по дизайна на харнеса — всяко решение влиза в `_state/config-changes.jsonl`. Тест: `tools/hooks/guard-config.test.mjs`. |
+| **`agent-cap.mjs`** | `PreToolUse` · `Agent\|Task` | 11-ият общ агент в сесия (`general-purpose`, `Explore`, `Plan`, `fork`…); нашите от `.claude/agents/` не се броят. Правилото „общи агенти: таван 10“ вече е механизъм. Плюс `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS=10` (едновременни, всички) и `CLAUDE_CODE_SUBAGENT_EFFORT=medium` (общите без собствено усилие) в `env`. Fail-open — броячът е икономия, не сигурност. |
+| **`guard-exfil.mjs`** | `PreToolUse` · `Bash\|Monitor\|WebFetch\|WebSearch\|mcp__.*` | ИЗНАСЯНЕ навън (lethal-trifecta изходът): литерална тайна или тайна env променлива към мрежов verb/интерпретатор; `.env`/ключ/credential файл през пайп, субституция `$(…)`, stdin редирект, `-d/-F/-T/--data-raw/--post-file`, scp/rsync, архив, четене от код (`readFileSync`, `open`); `/proc/*/environ`; пълен env dump; команди, които издават credential (`gh auth token`, `vault read`…) към мрежа; стажиране (env dump/тайна → файл, `git remote add` чужд URL); `git push` към чужд URL; `npm publish`; тайна в URL/търсене; **тайна в аргумент на MCP инструмент** (`mcp__github__*`, `mcp__Gmail__*`… — целият `tool_input` се сериализира и се търси по същия списък + секрет в URL query). **Monitor** (31.10.2026, проба на живо): shell командата му стига до Bash-куките като `tool_name: "Bash"`, а WebSocket режимът (`ws.url`, `protocols`, `headers`) — само до matcher, който назовава Monitor; проверяват се всички канали едновременно. Входът се разкодира (`%XX`, двукратно) преди шаблоните. |
+
+**Когато предпазителят не може да тръгне (`onFailure: "block"`, Claude Code ≥ 2.1.295).** Вътрешна грешка в
+предпазителя пак е fail-open (exit 0) — фалшивият блок изключва предпазители. Но ако скриптът изобщо не
+стартира (липсващ файл, счупен импорт, таймаут), без `onFailure` действието минава БЕЗ проверка. За
+`guard-exfil` и `guard-dangerous` това е блок: по-добре спряна работа, която всички виждат, отколкото тих
+пропуск. Не важи за Stop/SubagentStop. Обратната страна (28.10.2026): синтактична грешка в тези два файла
+спира ВСЯКА Bash команда, включително тестовете — поправяй ги през Edit, после пусни
+`node --test tools/hooks/liveness.test.mjs`.
+
+**Стандартният слой под куките — `permissions.deny`.** `Read(.env)`, `Read(.env.*)` с изключение
+`Read(!*.example)`, ключове (`*.pem`, `id_rsa*`, `id_ed25519*`) и `~/.ssh`, `~/.aws`, `~/.config/gh`,
+`~/.netrc`, `~/.claude/.credentials.json`. Deny правилата важат във всеки режим (и auto, и bypass) и хващат
+и `cat`/`ls` на файла. Проба на живо 2026-10-27: `.env.probe` → отказ, `.env.probe.example` → чете се.
+Скрипт, който сам отваря файла, не се хваща — затова `guard-exfil` остава.
 
 **Един източник за „какво е тайна":** `tools/lib/secret-patterns.mjs` (`CREDENTIAL`). Трите куки
 (`guard-secrets` → `guard-exfil`, `guard-prompt`) го ИМПОРТИРАТ; `secret-parity.test.mjs` пази и трите.

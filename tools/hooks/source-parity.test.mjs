@@ -21,10 +21,21 @@ const РЕАЛНИ = [
   "Прил. № 29, т. 10 от Наредба Н-18",
   "чл. 31, ал. 2 Наредба Н-18",
   "developer.mozilla.org/en-US/docs/Web/API",
+  // Отхвърляни до 2026-10-24 (разширение над 5 знака, {a,b} група, файл без разширение, команда след
+  // увод) — вълната ги хвана, когато промоцията на сверени поуки падна на „без реален източник“.
+  "mastilko/deploy/mastilko.service:48-52",
+  "panev/.env.example:52",
+  "linketto/messages/{it,es,fr,de}.json:27,36",
+  "Caddyfile:12",
+  "ospedali.service:40-47",
+  "panev/deploy/systemd/panev.service (Restart=on-failure)",
+  "zabobovdol/android/.gitignore (последен ред)",
+  "file zabobovdol/android/store/feature-graphic.png → PNG 1024 x 500",
+  "възпроизведено днес: sed s/a/b/ → unknown option to `s'",
 ];
 
 // Празнота — тук няма какво да се провери; ТРЯБВА да остане отхвърлена.
-const ПРАЗНИ = ["N/A", "n/a", "само коефициенти налични", "", "   ", "—", "-", "няма"];
+const ПРАЗНИ = ["N/A", "n/a", "само коефициенти налични", "", "   ", "—", "-", "няма", "проверих го", "виж горе", "README"];
 
 test("реален източник минава през куката (иначе знанието умира в Карантина)", () => {
   for (const s of РЕАЛНИ) assert.equal(sourceIsReal(s), true, `трябва да мине: ${s}`);

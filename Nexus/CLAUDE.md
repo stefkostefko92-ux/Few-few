@@ -38,4 +38,11 @@ docs/             design + deployment notes
   transactions; note better-sqlite3 constraints (e.g. bound params not allowed
   inside virtual-table module arguments).
 - Client is strict TypeScript + Zustand for state.
+- **SEO head is server-rendered per request** (`server/src/lib/seoHead.ts`): `/?lang=it|bg`
+  get their own `<html lang>`, title, description and a SELF canonical; app screens get
+  `noindex, follow` and no canonical/hreflang. Locale strings live in
+  `client/public/seo-locales.json` (the landing imports the same file).
+- **IndexNow:** key in `client/public/indexnow-key.txt` (public by design). `autodeploy.sh`
+  does not ping Nexus — after page/sitemap changes run, from the repo root,
+  `node tools/seo/indexnow.mjs https://nexus.carbonstealth.eu`.
 - Ship as one Docker image (`Dockerfile` + `docker-compose.yml`).

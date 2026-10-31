@@ -224,18 +224,20 @@ export function build(dash = DASH, reader = null) {
 
   const docs = rd.read("docs.js").trim();
   if (!html.includes(DOCS_TAG)) throw new Error(`не намирам ${DOCS_TAG} — таблото е сменено`);
-  html = html.replace(DOCS_TAG, `<script>\n${docs}\n</script>`);
+  // Замяна с ФУНКЦИЯ, не с низ: в низа `$`` / `$'` / `$&` са шаблони — „(`$`)“ в rilievi/CLAUDE.md
+  // вмъкна цялото начало на страницата втори път (31.10.2026, 58 агента вместо 29).
+  html = html.replace(DOCS_TAG, () => `<script>\n${docs}\n</script>`);
 
   // Галактиката: условно (виж бележката при GALAXY_TAG) — по-стари върхове на паметта я нямат.
   let galaxy = "";
   if (html.includes(GALAXY_TAG)) {
     galaxy = rd.read("galaxy.js").trim();
-    html = html.replace(GALAXY_TAG, `<script>\n${galaxy}\n</script>`);
+    html = html.replace(GALAXY_TAG, () => `<script>\n${galaxy}\n</script>`);
   }
 
   const icons = mascotDataUris(join(dash, "mascots"), reader);
   if (!html.includes(IMG_SRC)) throw new Error("не намирам <img src> към mascots/ — таблото е сменено");
-  html = html.replace(IMG_SRC, IMG_SRC_INLINE);
+  html = html.replace(IMG_SRC, () => IMG_SRC_INLINE);
 
   // Картата се обявява ПРЕДИ главния скрипт: top-level `const` е видим за следващите блокове.
   // Ръчният билд я слагаше СЛЕД употребата — работеше, но само защото функцията се вика по-късно.

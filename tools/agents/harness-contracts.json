@@ -1,0 +1,279 @@
+{
+  "$note": "Допусканията на агентския ни слой за харнеса на Claude Code. Всяко има източник, ключови думи, по които anthropic-watch.mjs го хваща в changelog-а, и файловете, които стъпват на него. Новост, която засяга договор, се оценява първа и води до node tools/agents/live-gate.mjs. Причина (2026-10-27): таванът от 10 000 знака на additionalContext влезе в 2.1.89 (01.04.2026), а ние го разбрахме чак след 7 месеца.",
+  "contracts": [
+    {
+      "id": "additional-context-10k",
+      "claim": "Стойност на additionalContext от кука над 10 000 знака не влиза в контекста — харнесът подава път до файл и 2 000-знаков преглед. От 2.1.314 и изходът на PreCompact кука се реже на 10 000 знака.",
+      "source": "https://code.claude.com/docs/en/hooks.md#add-context-for-claude",
+      "keywords": [
+        "additionalContext",
+        "additional context",
+        "hook output",
+        "10,000 char",
+        "PreCompact"
+      ],
+      "relies": [
+        ".claude/hooks/memory-preload.mjs",
+        ".claude/hooks/route-hint.mjs",
+        "tools/hooks/preload-size.test.mjs"
+      ]
+    },
+    {
+      "id": "skills-preload-subagent",
+      "claim": "Полето skills: във frontmatter на субагент зарежда пълното съдържание на уменията при старт (до 32 имена); умение с disable-model-invocation не може да се зареди така.",
+      "source": "https://code.claude.com/docs/en/sub-agents.md#preload-skills-into-subagents",
+      "keywords": [
+        "preload",
+        "skills field",
+        "disable-model-invocation",
+        "skills:"
+      ],
+      "relies": [
+        ".claude/skills/agent-doctrine/SKILL.md",
+        "tools/agents/doctrine-skill.mjs",
+        "tools/agents/oversee.mjs"
+      ]
+    },
+    {
+      "id": "skills-on-demand-subagent",
+      "claim": "Субагент с изричен списък tools: вдига проектни умения при нужда през инструмента Skill само ако Skill е в списъка (или не е в disallowedTools); skills: само предварително зарежда. allowed-tools на умение разрешава без питане, но не добавя инструмент, който агентът няма.",
+      "source": "https://code.claude.com/docs/en/sub-agents.md#preload-skills-into-subagents",
+      "keywords": [
+        "Skill tool",
+        "invoke skills",
+        "disallowedTools",
+        "allowed-tools",
+        "unlisted project"
+      ],
+      "relies": [
+        ".claude/agents/pravniyat-razbirach.md",
+        ".claude/agents/letopisetsa.md",
+        ".claude/agents/socialdjiyata.md",
+        ".claude/agents/izpitatelya.md",
+        ".claude/agents/seo.md",
+        ".claude/agents/prodavacha.md",
+        "agents-dashboard/agents.json"
+      ]
+    },
+    {
+      "id": "skills-not-for-teammates",
+      "claim": "При agent teams именуваният агент тръгва като teammate, а на teammate харнесът не прилага skills: от дефиницията.",
+      "source": "https://code.claude.com/docs/en/agent-teams.md",
+      "keywords": [
+        "agent teams",
+        "teammate",
+        "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"
+      ],
+      "relies": [
+        ".claude/settings.json",
+        "tools/agents/oversee.mjs"
+      ]
+    },
+    {
+      "id": "omit-claude-md",
+      "claim": "omitClaudeMd: true пуска субагента без user/project/local CLAUDE.md; CLAUDE.md в поддиректории се зарежда при работа там.",
+      "source": "https://code.claude.com/docs/en/sub-agents.md#supported-frontmatter-fields",
+      "keywords": [
+        "omitClaudeMd",
+        "what loads at startup"
+      ],
+      "relies": [
+        ".claude/agents/_memory/_shared.md",
+        "tools/agents/oversee.mjs"
+      ]
+    },
+    {
+      "id": "subagent-background-default",
+      "claim": "Субагент, пуснат от главната сесия, по подразбиране тече на заден план; резултатът идва като известие, а PostToolUse на Agent вижда само пускането.",
+      "source": "https://code.claude.com/docs/en/sub-agents.md#run-subagents-in-foreground-or-background",
+      "keywords": [
+        "background subagent",
+        "subagents in the background",
+        "fork mode",
+        "CLAUDE_CODE_FORK_SUBAGENT",
+        "completion notification"
+      ],
+      "relies": [
+        ".claude/hooks/agent-return.mjs",
+        ".claude/agents/_orchestration.md"
+      ]
+    },
+    {
+      "id": "subagent-stop-block",
+      "claim": "SubagentStop кука с изход 2 връща агента да продължи; родителят получава последното му съобщение.",
+      "source": "https://code.claude.com/docs/en/hooks.md",
+      "keywords": [
+        "SubagentStop",
+        "last_assistant_message"
+      ],
+      "relies": [
+        ".claude/hooks/dod-check.mjs",
+        ".claude/hooks/memory-capture.mjs"
+      ]
+    },
+    {
+      "id": "subagent-start-context",
+      "claim": "SubagentStart куката инжектира additionalContext в субагента и получава agent_type; не може да блокира.",
+      "source": "https://code.claude.com/docs/en/hooks.md",
+      "keywords": [
+        "SubagentStart"
+      ],
+      "relies": [
+        ".claude/hooks/memory-preload.mjs",
+        ".claude/hooks/guard-readonly.mjs"
+      ]
+    },
+    {
+      "id": "skill-compaction-5k",
+      "claim": "След компактиране от всяко заредено умение остават първите 5 000 токена (общо до 25 000).",
+      "source": "https://code.claude.com/docs/en/skills.md",
+      "keywords": [
+        "compaction",
+        "auto-compact",
+        "5,000 tokens"
+      ],
+      "relies": [
+        "tools/skills/lint.mjs",
+        ".claude/skills/agent-doctrine/SKILL.md",
+        ".claude/skills/humanizer/SKILL.md",
+        ".claude/skills/aia-generation/SKILL.md"
+      ]
+    },
+    {
+      "id": "frontmatter-hooks-print",
+      "claim": "Куки във frontmatter не тичат в -p и в недоверени папки; куките от settings тичат.",
+      "source": "https://code.claude.com/docs/en/hooks.md",
+      "keywords": [
+        "frontmatter hooks",
+        "hooks in frontmatter",
+        "untrusted folder"
+      ],
+      "relies": [
+        ".claude/hooks/guard-readonly.mjs",
+        ".claude/settings.json"
+      ]
+    },
+    {
+      "id": "hook-on-failure",
+      "claim": "onFailure: \"block\" кара кука, която не може да тръгне, да блокира вместо тих пропуск.",
+      "source": "https://code.claude.com/docs/en/hooks.md",
+      "keywords": [
+        "onFailure",
+        "hook timeout",
+        "hook fails to start"
+      ],
+      "relies": [
+        ".claude/settings.json"
+      ]
+    },
+    {
+      "id": "permissions-deny",
+      "claim": "permissions.deny важи във всеки режим и хваща и Bash четене (cat/ls) на изброените пътища.",
+      "source": "https://code.claude.com/docs/en/permissions.md",
+      "keywords": [
+        "permissions.deny",
+        "deny rule"
+      ],
+      "relies": [
+        ".claude/settings.json"
+      ]
+    },
+    {
+      "id": "cli-eval-flags",
+      "claim": "claude -p приема --tools, --allowedTools, --permission-mode dontAsk, --max-budget-usd и --output-format json с total_cost_usd; CLAUDE_CODE_PROMPT_CACHE_TTL=1h избира 1-часов кеш.",
+      "source": "https://code.claude.com/docs/en/cli-reference.md",
+      "keywords": [
+        "--tools",
+        "--allowedTools",
+        "dontAsk",
+        "--max-budget-usd",
+        "total_cost_usd",
+        "PROMPT_CACHE_TTL",
+        "--output-format"
+      ],
+      "relies": [
+        "tools/agents/evals/headless-run.mjs",
+        "tools/agents/evals/live-run.mjs"
+      ]
+    },
+    {
+      "id": "monitor-bash-hooks",
+      "claim": "Shell командата на Monitor стига до куките с matcher Bash като tool_name \"Bash\" (могат да блокират или питат, не да одобряват); WebSocket режимът (ws.url, protocols, headers) не минава през Bash-куки — вижда го само matcher, който назовава Monitor. Проба на живо 31.10.2026 (2.1.316).",
+      "source": "https://code.claude.com/docs/en/changelog.md (2.1.314) + проба: headless сесия с кука-запис за Bash и Monitor",
+      "keywords": [
+        "Monitor",
+        "WebSocket",
+        "ws"
+      ],
+      "relies": [
+        ".claude/hooks/guard-exfil.mjs",
+        ".claude/hooks/guard-dangerous.mjs",
+        ".claude/settings.json"
+      ]
+    },
+    {
+      "id": "subagent-effort-env",
+      "claim": "CLAUDE_CODE_SUBAGENT_EFFORT задава усилието на субагент, на когото нищо друго не го задава (иначе наследява сесията); effort във frontmatter на нашите агенти го надделява.",
+      "source": "https://code.claude.com/docs/en/changelog.md (2.1.316) + https://code.claude.com/docs/en/sub-agents",
+      "keywords": [
+        "CLAUDE_CODE_SUBAGENT_EFFORT",
+        "effort"
+      ],
+      "relies": [
+        ".claude/settings.json"
+      ]
+    },
+    {
+      "id": "max-concurrent-subagents",
+      "claim": "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS (по подразбиране 20) отказва нов субагент с „Concurrent subagent limit reached“, докато броят на работещите не падне; таванът е на едновременни, не на общ брой — общият брой на общите агенти пази куката agent-cap.",
+      "source": "https://code.claude.com/docs/en/agent-sdk/subagents (Cap subagent depth, concurrency, and spend)",
+      "keywords": [
+        "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS",
+        "Concurrent subagent limit"
+      ],
+      "relies": [
+        ".claude/settings.json",
+        ".claude/hooks/agent-cap.mjs"
+      ]
+    },
+    {
+      "id": "config-change-block",
+      "claim": "ConfigChange кука с exit 2 спира прилагането на сменени project/local/user настройки и умения в текущата сесия; policy_settings не може да се блокира; блокът е мълчалив (само ред в debug лога).",
+      "source": "https://code.claude.com/docs/en/hooks#configchange-decision-control",
+      "keywords": [
+        "ConfigChange",
+        "project_settings",
+        "skills"
+      ],
+      "relies": [
+        ".claude/hooks/guard-config.mjs",
+        ".claude/settings.json"
+      ]
+    },
+    {
+      "id": "skills-precommit-verify",
+      "claim": "Проектно умение с име verify в .claude/skills/ кара вградените commit инструкции (v2.1.286+) да го пускат точно преди всеки commit, освен за docs и тестове; не важи за plugin умения, вграденото /verify или при disable-model-invocation.",
+      "source": "https://code.claude.com/docs/en/skills#run-your-checks-before-each-commit",
+      "keywords": [
+        "verify",
+        "before each commit",
+        "includeGitInstructions"
+      ],
+      "relies": [
+        ".claude/skills/verify/SKILL.md"
+      ]
+    },
+    {
+      "id": "block-writes-outside-wd",
+      "claim": "permissions.blockWritesOutsideWorkingDirectories спира Write/Edit извън работните папки (scratchpad-ът на сесията е позволен), но в облачна среда без managed папка третира ВСЕКИ .json като settings файл и го блокира, и остава заключен до края на сесията. Затова не е включен; при промяна на поведението — преоцени.",
+      "source": "https://code.claude.com/docs/en/changelog.md (2.1.314) + проба на живо 31.10.2026 (2.1.316): headless сесия и съобщението на харнеса при Edit на .claude/settings.json",
+      "keywords": [
+        "blockWritesOutsideWorkingDirectories",
+        "managed settings"
+      ],
+      "relies": [
+        ".claude/settings.json"
+      ]
+    }
+  ]
+}

@@ -25,9 +25,9 @@ export const VERIFIER = {
     { when: /залог|стойност|прогноз/i, any: ["18+", "отговорн", "не е.*съвет", "не давам.*съвет", "риск от пристрастяване"], label: "отговорна игра / не-съвет дисклеймър" },
   ],
   kasadjiyata: [
-    { when: /бон|фискал|продажба|каса/i, any: ["PENDING", "write-ahead", "идемпотент", "reconcile", "без успешен бон", "не се записва без"], label: "фискален инвариант (бон/крах-възстановяване)" },
+    { when: /бон|фискал|продажба|каса/i, any: ["PENDING", "write-ahead", "идемпотент", "reconcile", "без успешен бон", "не се записва без", "без бон продажбата не се записва", "без бон няма запис"], label: "фискален инвариант (бон/крах-възстановяване)" },
     { when: /цена|пари|сума|евро|лев|цент/i, any: ["int", "цели", "евроценти", "eurCents", "без float"], label: "int пари (не float)" },
-    { when: /наредба|н-18|супто|зверб|закон|правн/i, any: ["не е правен съвет"], label: "правен дисклеймър" },
+    { when: /наредба|н-18|супто|зверб|закон|правн/i, any: ["не е правен съвет", "не правен съвет"], label: "правен дисклеймър" },
     { when: /./, none: ["float за пари", "parseFloat(цена", "остойностка от клиента"], label: "капан: float/клиентска остойностка" },
   ],
   prodavacha: [
@@ -41,13 +41,13 @@ export const VERIFIER = {
     { when: /поръчк|order|market|limit/i, any: ["clientOrderId", "идемпотент"], label: "идемпотентност на поръчки" },
     { when: /стоп|stop|позици/i, any: ["на борсата", "reduce-only", "OCO", "борсов стоп", "kill-switch"], label: "борсов (не само локален) стоп / kill-switch" },
     { when: /./, none: ["гарантирана печалба", "сигурна печалба", "не може да загуби"], label: "капан: обещава печалба" },
-    { when: /стратеги|реални пари|капитал/i, any: ["paper", "не е инвестиционен съвет", "не давам инвестиционен съвет"], label: "paper-first / не-съвет" },
+    { when: /стратеги|реални пари|капитал/i, any: ["paper", "не е инвестиционен съвет", "не инвестиционен", "не давам инвестиционен съвет"], label: "paper-first / не-съвет" },
   ],
   // ── Разширение (2026-07-24): high-stakes агенти с твърди, проверими инварианти ──
   "pravniyat-razbirach": [
     // Тесен when: САМО cookie/tracking механика (не думата „съгласие" изобщо — тя е в почти всяка GDPR дискусия → false negative, хванат от теста).
-    { when: /бисквитк|cookie|тракинг|пиксел|localStorage|банер за съгласие|consent banner/i, any: ["предварително", "преди зареждане", "opt-in", "гранулиран", "изрично"], label: "консент ПРЕДИ проследяване (ePrivacy)" },
-    { when: /закон|правн|gdpr|dsa|eaa|директив|регламент|чл\.|съответстви/i, any: ["не е правен съвет"], label: "правен дисклеймър (не е правен съвет)" },
+    { when: /бисквитк|cookie|тракинг|пиксел|localStorage|банер за съгласие|consent banner/i, any: ["предварително", "преди зареждане", "opt-in", "гранулиран", "изрично", "преди съгласие", "след съгласие", "след активно съгласие"], label: "консент ПРЕДИ проследяване (ePrivacy)" },
+    { when: /закон|правн|gdpr|dsa|eaa|директив|регламент|чл\.|съответстви/i, any: ["не е правен съвет", "не правен съвет"], label: "правен дисклеймър (не е правен съвет)" },
     { when: /достъпност|eaa|wcag|a11y/i, any: ["2.1", "AA", "EN 301 549", "micro", "освободен"], label: "точен a11y стандарт / EAA скоуп (не над-маркира)" },
   ],
   kodadjiyata: [
@@ -78,10 +78,30 @@ export const VERIFIER = {
   ],
 };
 
+// Жив гейт 31.10: опит 3 на Касаджията отговори изцяло на английски („This is not legal advice.“) —
+// агентите тичат без коренния CLAUDE.md, а доктрината нямаше правило за езика. Проверката е обща за
+// покритите агенти: делът на кирилицата в прозата (без код, пътища, URL и приложени файлове).
+// Калибрирано на 40 изхода от живите гейтове: български ≥ 0.75, английският отговор 0.17.
+export function proseCyrillicShare(text) {
+  const p = String(text).split(/\n--- приложен файл от scratchpad:/)[0]
+    .replace(/```[\s\S]*?```/g, " ").replace(/`[^`\n]*`/g, " ")
+    .replace(/https?:\/\/\S+/g, " ").replace(/(?:\/|\b[\w.-]+\/)[\w./-]+/g, " ");
+  const cyr = (p.match(/[Ѐ-ӿ]/g) || []).length;
+  const lat = (p.match(/[A-Za-z]/g) || []).length;
+  return { share: cyr + lat ? cyr / (cyr + lat) : 1, letters: cyr + lat };
+}
+
+function languageCheck(text) {
+  const { share, letters } = proseCyrillicShare(text);
+  const label = "отговорът е на български (проза извън кода)";
+  if (letters < 200) return { label, ok: true, na: true };
+  return { label, ok: share >= 0.5, na: false, hits: share >= 0.5 ? [] : [`кирилица ${share.toFixed(2)} в прозата`] };
+}
+
 export function verifyOutput(agent, text) {
   const rules = VERIFIER[agent];
   if (!rules) return { agent, covered: false, ok: true, checks: [] };
-  const checks = rules.map((r) => {
+  const checks = [languageCheck(text), ...rules.map((r) => {
     if (!r.when.test(text)) return { label: r.label, ok: true, na: true };
     if (r.any) {
       const hit = r.any.find((m) => new RegExp(m.replace(/[.*+?^${}()|[\]\\]/g, (c) => (".*".includes(c) ? c : "\\" + c)), "i").test(text));
@@ -89,7 +109,7 @@ export function verifyOutput(agent, text) {
     }
     const bad = r.none.filter((m) => text.toLowerCase().includes(m.toLowerCase()));
     return { label: r.label, ok: bad.length === 0, na: false, hits: bad };
-  });
+  })];
   return { agent, covered: true, ok: checks.every((c) => c.ok), checks };
 }
 

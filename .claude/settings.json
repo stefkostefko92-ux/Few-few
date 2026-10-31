@@ -1,5 +1,38 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "0",
+    "CLAUDE_CODE_SUBAGENT_EFFORT": "medium",
+    "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS": "10"
+  },
+  "permissions": {
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(!*.example)",
+      "Read(*.pem)",
+      "Read(id_rsa*)",
+      "Read(id_ed25519*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gh/**)",
+      "Read(~/.netrc)",
+      "Read(~/.claude/.credentials.json)",
+      "Edit(.env)",
+      "Edit(.env.*)",
+      "Edit(!*.example)",
+      "Edit(*.pem)",
+      "Edit(id_rsa*)",
+      "Edit(id_ed25519*)",
+      "Edit(~/.ssh/**)",
+      "Edit(~/.aws/**)",
+      "Edit(~/.config/gh/**)",
+      "Edit(~/.netrc)",
+      "Edit(~/.claude/.credentials.json)",
+      "Read(**/.next/**)",
+      "Edit(**/.next/**)"
+    ]
+  },
   "hooks": {
     "SubagentStart": [
       {
@@ -7,7 +40,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-preload.mjs\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-preload.mjs\" --part=shared",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-preload.mjs\" --part=agent",
             "timeout": 15
           }
         ]
@@ -46,6 +84,11 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-prompt.mjs\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/route-hint.mjs\"",
+            "timeout": 10
           }
         ]
       }
@@ -82,6 +125,18 @@
         ]
       }
     ],
+    "ConfigChange": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-config.mjs\"",
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -89,16 +144,33 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-dangerous.mjs\"",
+            "timeout": 10,
+            "onFailure": "block"
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-readonly.mjs\"",
             "timeout": 10
           }
         ]
       },
       {
-        "matcher": "Bash|WebFetch|WebSearch|mcp__.*",
+        "matcher": "Bash|Monitor|WebFetch|WebSearch|mcp__.*",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-exfil.mjs\"",
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/agent-cap.mjs\"",
             "timeout": 10
           }
         ]

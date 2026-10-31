@@ -27,9 +27,14 @@ export const SKIP_PATH = /(^|\/)(evals?|fixtures?|__tests__|test|tests|\.tmp|scr
 export const INVISIBLE =
   /[­᠎​-‏‪-‮⁠-⁤⁦-⁩ㅤ﻿]|[\u{E0000}-\u{E007F}]/gu;
 
-/** Маха невидимите знаци и нормализира (NFKC), за да не се крие payload зад тях. */
+/** Маха невидимите знаци, нормализира (NFKC) и разкодира %XX, за да не се крие payload зад тях. */
 export function sanitize(text) {
-  return String(text || "").normalize("NFKC").replace(INVISIBLE, "");
+  const s = String(text || "").normalize("NFKC").replace(INVISIBLE, "");
+  // Червен екип 31.10.2026: `sk%5Flive%5F…` в адрес минаваше покрай шаблоните. Разкодираме всяка
+  // %XX двойка поотделно (счупено кодиране не хвърля), два пъти — срещу двойно кодиране.
+  if (!s.includes("%")) return s;
+  const once = (x) => x.replace(/(?:%[0-9A-Fa-f]{2})+/g, (m) => { try { return decodeURIComponent(m); } catch { return m; } });
+  return once(once(s)).normalize("NFKC").replace(INVISIBLE, "");
 }
 
 export function findSecret(content) {

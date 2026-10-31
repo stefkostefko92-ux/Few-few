@@ -1,7 +1,7 @@
 // verifier.test.mjs — верификатор-проходът за парично-критичните агенти (CI auto-discovery).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { verifyOutput, VERIFIER } from "./verifier.mjs";
+import { verifyOutput, VERIFIER, proseCyrillicShare } from "./verifier.mjs";
 
 test("непокрит агент → covered:false, ok:true (не блокираме непокритото)", () => {
   const r = verifyOutput("seo", "какъвто и да е изход");
@@ -51,6 +51,12 @@ test("pravniyat: правен изход без дисклеймър пада; �
   assert.equal(verifyOutput("pravniyat-razbirach", "Според GDPR чл.6 основанието е съгласие. Това не е правен съвет.").ok, true);
 });
 
+test("pravniyat: „само след активно съгласие“ е консент преди проследяване (аблация 31.10.2026)", () => {
+  const ok = "Тракинг преди съгласие: всичко неесенциално (бисквитки, пиксели) да се зарежда само след активно съгласие. Не е правен съвет.";
+  assert.equal(verifyOutput("pravniyat-razbirach", ok).ok, true, "дословно от рамо base #1 — беше фалшив провал");
+  assert.equal(verifyOutput("pravniyat-razbirach", "Банерът за бисквитки е наред. Не е правен съвет.").ok, false, "без правилото за реда остава провал");
+});
+
 test("kodadjiyata: находка без файл:ред/тежест пада; пълна минава", () => {
   assert.equal(verifyOutput("kodadjiyata", "Има бъг някъде в кода, оправи го.").ok, false);
   assert.equal(verifyOutput("kodadjiyata", "Уязвимост server.js:42 — тежест HIGH, увереност висока. Минимална поправка: замени `==` с timingSafeEqual.").ok, true);
@@ -89,4 +95,30 @@ test("asansyorchika: издание + точка + бележка + инжене
 test("всички верификатор-агенти реално съществуват + покритие ≥9", () => {
   for (const id of Object.keys(VERIFIER)) assert.match(id, /^[\w-]+$/);
   assert.ok(Object.keys(VERIFIER).length >= 9, `покритие: ${Object.keys(VERIFIER).length}`);
+});
+
+// Живият гейт (27.10.2026): Касаджията написа „Без бон продажбата не се записва“ и верификаторът го
+// отхвърли — дефект на оценителя, не на агента. Редът „Инварианти:“ от дефинициите също трябва да минава.
+test("kasadjiyata: естествената формулировка и редът „Инварианти:“ минават фискалния инвариант", () => {
+  const live = "Остойностяване на сървъра в цели центове → карта → бон → запис. Без бон продажбата не се записва.";
+  assert.equal(verifyOutput("kasadjiyata", live).ok, true, JSON.stringify(verifyOutput("kasadjiyata", live).checks));
+  const line = "Инварианти: ✓ сървърна остойностка (route.ts:96) · ✓ int евроценти · ✗ без успешен бон няма запис (write-ahead PENDING липсва) · ? сторно вместо триене. Продажба с фискален бон.";
+  assert.equal(verifyOutput("kasadjiyata", line).ok, true, JSON.stringify(verifyOutput("kasadjiyata", line).checks));
+});
+
+test("език (жив гейт 31.10): отговор на английски пада, български с много код и пътища минава", () => {
+  const en = "I couldn't finish this. The permission system refused writes to `CSPos/` and also refused `npm ci`. I wrote the full change set into the scratchpad instead. It has not been typechecked, linted or tested, and nothing in the repo has changed. Sales with a fiscal receipt are already in place: prices are worked out on the server, the card is charged first, then the receipt prints, then the sale is saved. Write-ahead PENDING, УНП, int евроценти. This is not legal advice.";
+  const r = verifyOutput("kasadjiyata", en);
+  assert.equal(r.ok, false);
+  assert.ok(r.checks.some((c) => !c.ok && /български/.test(c.label)), JSON.stringify(r.checks));
+  const bg = "Спрях: инструментите за запис са блокирани. Продажбата с фискален бон вече съществува в `CSPos/src/app/api/sales/route.ts`; сървърът изчислява сумите в цели евроценти, после картата, после бонът. Липсва write-ahead PENDING запис с УНП преди печат и сверка при старт (src/lib/sale-journal.ts). Без успешен бон продажбата не се записва.\n```ts\nawait tx.auditLog.create({ data: { action: \"SALE_PENDING\", entity: \"Sale\" } });\n```\nТова не е правен съвет (Н-18).";
+  const ok = verifyOutput("kasadjiyata", bg);
+  assert.equal(ok.ok, true, JSON.stringify(ok.checks.filter((c) => !c.ok)));
+  assert.ok(proseCyrillicShare(bg).share > 0.7);
+});
+
+test("prodavacha: редът „Инварианти:“ покрива подписа и payment_status", () => {
+  const line = "Инварианти: ? сървърна сума · ? подпис върху суровото тяло · ? payment_status · ? идемпотентност по event.id · ? права само през webhook. План за checkout.";
+  const r = verifyOutput("prodavacha", line);
+  assert.equal(r.ok, true, JSON.stringify(r.checks.filter((c) => !c.ok)));
 });

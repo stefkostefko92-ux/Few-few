@@ -6,30 +6,31 @@ description: >-
   продукт — дори без потребителят да казва „пусни тестовете". Гейтът е различен на всеки продукт;
   CI е path-филтриран (всеки workflow тича само при промяна в неговата папка), затова пусни точно
   гейта на продукта, който си докоснал. „Готово" = гейтът е РЕАЛНО зелен, не „предполагам минава".
+allowed-tools: Bash(git status *)
 ---
 
 # Пусни quality gate на засегнатия продукт
 
 **Едно правило:** `cd` в продукта, пусни неговия пълен гейт, покажи изхода. Не смесвай продукти
-(няма root `package.json`). CI дублира точно това (path-филтрирано), затова зелено локално = зелено CI.
+(няма root `package.json`). CI пуска същото (path-филтрирано), затова зелено локално = зелен продуктов workflow в CI.
+
+## Какво е пипнато в момента (вмъкнато при зареждане на умението)
+Първата папка на всеки ред е продуктът, чийто гейт пускаш. Празно → няма незаписани промени; тогава
+гледай файловете от последния си commit.
+
+!`git status --short`
 
 ## Гейт по продукт (пусни от папката на продукта)
-| Продукт | Команди |
-|---------|---------|
-| `zabobovdol/` | `npm run lint` · `npm run typecheck` · `npm test` · `npm run build` |
-| `medqr/` | `npm run lint` · `npm run format:check` · `npm test` |
-| `Gaming/` | `pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm build` (turbo fans out) |
-| `linketto/`, `Minyor/`, `scuolabulgara/`, `mastilko/`, `CSPos/` | Next+TS: `npm run lint` · `npm run typecheck` · `npm test` · `npm run build` |
-| `SupremeDiscordBot/`, `treydar/`, `panev/`, `vizitka/`, `eternaltouch/` | plain ESM: `npm run lint` · `npm test` (виж product `package.json`) |
+Каноничният списък е в `<продукт>/CLAUDE.md`. Ако там го няма — пусни **всички налични** от `lint`,
+`typecheck`, `format:check`, `test`, `build`, `check` в `<продукт>/package.json` → `scripts` (продуктите се
+различават: напр. Minyor няма `test`, panev има само `test`). `Gaming/` е pnpm + turbo (`pnpm lint` …);
+`SupremeDiscordBot/` няма коренен `package.json` — гейтът е по подпапки (`backend/`, `bot/`, `frontend/`).
+Не гадай скриптове — липсващ скрипт не се брои за минал, казваш, че го няма.
 
-Не помниш командите на конкретен продукт → **прочети неговия `CLAUDE.md`/`README`** (там е каноничният
-списък). Не гадай скриптове.
-
-## Агентен слой (ако си пипал `.claude/agents`, hooks, tools/agents|memory)
+## Агентен слой (ако си пипал `.claude/agents`, `.claude/hooks`, `.claude/skills`, `tools/agents|memory|hooks|skills`)
 ```bash
-node tools/agents/oversee.mjs                    # fail-closed: 0 твърди = здрав
-node tools/agents/evals/eval.mjs --check         # структурна валидност на golden spec-овете
-node --test $(find tools -name '*.test.mjs')     # надзор + скорер + рубрика
+node tools/agents/gate.mjs                       # пълният гейт на слоя (oversee, deep-audit, skills, …) — едно място
+node --test $(find tools -name '*.test.mjs')     # тестовете се пускат отделно от gate.mjs
 ```
 
 ## Сигурност (винаги преди commit)

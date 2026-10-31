@@ -33,3 +33,21 @@ test("L2 без ескалация → грешка; непознат owner → 
   assert.ok(r.errors.some((e) => /невалидна автономия/.test(e)));
   assert.ok(r.errors.some((e) => /невалиден trigger/.test(e)));
 });
+
+test("облачен loop (31.10): конекторите са изрични и обосновани, без тайни в env, изход само report/draft-pr", () => {
+  const ok = { id: "c", description: "d", trigger: "schedule:every-5-days", command: "c", owner: "ai-djiyata", autonomy: "L2", escalation: "собственикът решава какво се слива", runtime: "cloud", connectors: [], network: "trusted", secretsInEnv: false, output: "draft-pr" };
+  assert.equal(auditLoops({ loops: [ok] }, agentIds).errors.length, 0);
+  const bad = auditLoops({ loops: [{ ...ok, connectors: undefined, network: "full", secretsInEnv: true, output: "push-main" }] }, agentIds).errors;
+  for (const re of [/connectors/, /network/, /secretsInEnv/, /output/]) assert.ok(bad.some((e) => re.test(e)), `очаквах грешка ${re}`);
+  const noWhy = auditLoops({ loops: [{ ...ok, connectors: ["Gmail"] }] }, agentIds).errors;
+  assert.ok(noWhy.some((e) => /Gmail.*connectorsWhy/.test(e)), "конектор без обосновка пада");
+  assert.equal(auditLoops({ loops: [{ ...ok, connectors: ["Gmail"], connectorsWhy: { Gmail: "чете само етикета X" } }] }, agentIds).errors.length, 0);
+  assert.ok(auditLoops({ loops: [{ ...ok, runtime: "lambda" }] }, agentIds).errors.some((e) => /runtime/.test(e)));
+});
+
+test("реалната облачна задача anthropic-watch е в манифеста и е без конектори", () => {
+  const w = manifest.loops.find((l) => l.id === "anthropic-watch");
+  assert.ok(w, "anthropic-watch липсва в loops.json");
+  assert.equal(w.runtime, "cloud");
+  assert.deepEqual(w.connectors, []);
+});

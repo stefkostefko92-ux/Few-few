@@ -45,16 +45,4 @@
     <xhtml:link rel="alternate" hreflang="bg-BG"     href="https://nexus.carbonstealth.eu/?lang=bg" />
   </url>
 
-  <url>
-    <loc>https://nexus.carbonstealth.eu/login</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://nexus.carbonstealth.eu/register</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
 </urlset>

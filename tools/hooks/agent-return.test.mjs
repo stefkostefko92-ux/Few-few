@@ -31,6 +31,10 @@ test("предаване към агент → един ред за главна
 test("блокер и решение на човек се изваждат отделно; към себе си или без блок — нищо", () => {
   assert.match(nextStepNote(block("kasadjiyata", "човек", "блокер", "потвърди курса"), "kasadjiyata", names), /⛔ Блокер от „Касаджията“/);
   assert.match(nextStepNote(block("seo", "човек", "наред", "одобри текста"), "seo", names), /🧑 „SEO“ иска решение от човек/);
+  // Обикновен доклад към човека (наред, без следваща стъпка) не е молба за решение.
+  assert.equal(nextStepNote(block("seo", "човек", "наред", "няма"), "seo", names), null);
+  assert.equal(nextStepNote(block("seo", "човек", "наред", "—"), "seo", names), null);
+  assert.doesNotMatch(nextStepNote(block("seo", "човек", "има бележки", "няма"), "seo", names), /решение от човек: няма/);
   assert.equal(nextStepNote(block("seo", "seo", "наред", "x"), "seo", names), null);
   assert.equal(nextStepNote("отговор без блок", "seo", names), null);
 });

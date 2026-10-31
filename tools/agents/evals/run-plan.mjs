@@ -7,6 +7,7 @@
 //   node tools/agents/evals/run-plan.mjs                     # пълният план (всички функционални)
 //   node tools/agents/evals/run-plan.mjs --agents a,b,c      # само тези агенти
 //   node tools/agents/evals/run-plan.mjs --critical          # само verifier-покритите (парично-критични)
+//   node tools/agents/evals/run-plan.mjs --trials 3          # k опита на всеки spec (иначе по TRIALS)
 //
 // Инжекционните spec-ове НЕ са в плана по подразбиране (те са red-team вълна на Разбивача — пускат
 // се нарочно, не рутинно). Добави ги с --injection при пълна проверка.
@@ -20,6 +21,9 @@ const argv = process.argv.slice(2);
 const val = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] : null; };
 
 const CRITICAL = ["goladjiyata", "kasadjiyata", "prodavacha", "treydara"]; // verifier-покритите
+// Опити на spec за pass^k: парите и фискалът се мерят за надеждност (всеки опит верен), не за
+// „веднъж се получи“. Останалите — един опит. `--trials N` задава N на всички.
+const TRIALS = { kasadjiyata: 3, prodavacha: 3 };
 
 const specs = readdirSync(join(HERE, "specs")).filter((f) => f.endsWith(".json"))
   .map((f) => JSON.parse(readFileSync(join(HERE, "specs", f), "utf8")));
@@ -29,4 +33,6 @@ const only = val("--agents");
 if (only) { const set = new Set(only.split(",")); plan = plan.filter((s) => set.has(s.agent)); }
 if (argv.includes("--critical")) plan = plan.filter((s) => CRITICAL.includes(s.agent));
 
-console.log(JSON.stringify(plan.map((s) => ({ agent: s.agent, specId: s.id, task: s.task })), null, 2));
+const forced = Number(val("--trials"));
+const trials = (agent) => (Number.isInteger(forced) && forced > 0 ? forced : TRIALS[agent] || 1);
+console.log(JSON.stringify(plan.map((s) => ({ agent: s.agent, specId: s.id, task: s.task, trials: trials(s.agent) })), null, 2));

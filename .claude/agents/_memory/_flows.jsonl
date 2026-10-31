@@ -222,6 +222,42 @@
 {"t":"handoff","ts":"2026-10-16T10:04:51.167Z","id":"r2b0124e5","from":"prevodach","to":"човек","status":"има бележки","run":"7f92f57b"}
 {"t":"handoff","ts":"2026-10-16T10:06:09.173Z","id":"r2b0124e5","from":"prevodach","to":"ai-djiyata","status":"има бележки","run":"5c083696"}
 {"t":"handoff","ts":"2026-10-16T10:06:48.066Z","id":"r2b0124e5","from":"prevodach","to":"ai-djiyata","status":"има бележки","run":"d1d809b1"}
+{"t":"start","ts":"2026-10-09T12:36:50.213Z","id":"r05b11bfa","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-10-09T12:36:50.213Z","id":"r05b11bfa","from":"ai-djiyata","to":"оркестратор","status":"наред","run":"7f8c8d23"}
+{"t":"start","ts":"2026-10-09T12:45:58.539Z","id":"r1190f408","flow":"авто","lead":"pravniyat-razbirach","auto":true}
+{"t":"handoff","ts":"2026-10-09T12:45:58.539Z","id":"r1190f408","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"b2bb4577"}
+{"t":"handoff","ts":"2026-10-09T12:53:26.425Z","id":"r1190f408","from":"letopisetsa","to":"човек","status":"наред","run":"4246fd1a"}
+{"t":"start","ts":"2026-10-24T06:48:18.897Z","id":"rc3c8e542","flow":"авто","lead":"konveyera","auto":true}
+{"t":"handoff","ts":"2026-10-24T06:48:18.897Z","id":"rc3c8e542","from":"konveyera","to":"човек","status":"наред","run":"950109e8"}
+{"t":"handoff","ts":"2026-10-24T06:48:49.233Z","id":"rc3c8e542","from":"skorostnika","to":"човек","status":"наред","run":"aa902dca"}
+{"t":"handoff","ts":"2026-10-24T06:49:16.638Z","id":"rc3c8e542","from":"kachestveniyat","to":"човек","status":"има бележки","run":"e3dacd8a"}
+{"t":"handoff","ts":"2026-10-24T06:50:16.765Z","id":"rc3c8e542","from":"treydara","to":"човек","status":"има бележки","run":"61c85616"}
+{"t":"handoff","ts":"2026-10-24T06:50:45.001Z","id":"rc3c8e542","from":"asansyorchika","to":"човек","status":"има бележки","run":"ef1ee556"}
+{"t":"handoff","ts":"2026-10-24T06:52:36.931Z","id":"rc3c8e542","from":"hromadjiyata","to":"човек","status":"наред","run":"a8aa43cc"}
+{"t":"handoff","ts":"2026-10-24T06:52:43.953Z","id":"rc3c8e542","from":"socialdjiyata","to":"човек","status":"наред","run":"a01ab2c3"}
+{"t":"handoff","ts":"2026-10-24T06:53:18.827Z","id":"rc3c8e542","from":"diskordjiyata","to":"човек","status":"наред","run":"a837dab4"}
+{"t":"handoff","ts":"2026-10-24T06:53:19.440Z","id":"rc3c8e542","from":"goladjiyata","to":"човек","status":"наред","run":"8185a985"}
+{"t":"handoff","ts":"2026-10-24T06:53:40.167Z","id":"rc3c8e542","from":"razbivacha","to":"човек","status":"наред","run":"f4ca7bad"}
+{"t":"handoff","ts":"2026-10-24T06:53:47.209Z","id":"rc3c8e542","from":"analizatora","to":"човек","status":"наред","run":"5b2a229d"}
+{"t":"handoff","ts":"2026-10-24T06:53:56.152Z","id":"rc3c8e542","from":"tayniyat-agent","to":"човек","status":"наред","run":"05f9f9ed"}
+{"t":"handoff","ts":"2026-10-24T06:54:25.194Z","id":"rc3c8e542","from":"ai-djiyata","to":"човек","status":"има бележки","run":"15f43f55"}
+{"t":"handoff","ts":"2026-10-24T06:54:49.615Z","id":"rc3c8e542","from":"nabludatelya","to":"човек","status":"наред","run":"331222d2"}
+{"t":"handoff","ts":"2026-10-24T06:56:23.681Z","id":"rc3c8e542","from":"prevodach","to":"човек","status":"наред","run":"f88b09b3"}
+{"t":"handoff","ts":"2026-10-24T06:58:21.275Z","id":"rc3c8e542","from":"mobildjiyata","to":"човек","status":"наред","run":"1de62f2d"}
+{"t":"handoff","ts":"2026-10-24T06:58:43.198Z","id":"rc3c8e542","from":"3d-maniac","to":"човек","status":"наред","run":"dee64026"}
+{"t":"handoff","ts":"2026-10-24T06:58:47.292Z","id":"rc3c8e542","from":"dizayner","to":"човек","status":"наред","run":"e217f8d0"}
+{"t":"handoff","ts":"2026-10-24T06:58:54.677Z","id":"rc3c8e542","from":"seo","to":"човек","status":"наред","run":"41591919"}
+{"t":"handoff","ts":"2026-10-24T06:59:21.363Z","id":"rc3c8e542","from":"seo","to":"човек","status":"наред","run":"57012ecb"}
+{"t":"handoff","ts":"2026-10-24T07:02:44.542Z","id":"rc3c8e542","from":"kasadjiyata","to":"човек","status":"има бележки","run":"934ab349"}
+{"t":"handoff","ts":"2026-10-24T07:03:22.847Z","id":"rc3c8e542","from":"vps-adjiyata","to":"човек","status":"има бележки","run":"e7de1732"}
+{"t":"handoff","ts":"2026-10-24T07:04:03.394Z","id":"rc3c8e542","from":"prodavacha","to":"човек","status":"наред","run":"bebdcc76"}
+{"t":"handoff","ts":"2026-10-24T07:05:44.692Z","id":"rc3c8e542","from":"kodadjiyata","to":"човек","status":"има бележки","run":"8a10d641"}
+{"t":"handoff","ts":"2026-10-24T07:07:01.062Z","id":"rc3c8e542","from":"pravniyat-razbirach","to":"човек","status":"има бележки","run":"1d904243"}
+{"t":"handoff","ts":"2026-10-24T07:07:40.873Z","id":"rc3c8e542","from":"pravniyat-razbirach","to":"човек","status":"има бележки","run":"240e8f6d"}
+{"t":"handoff","ts":"2026-10-24T07:08:41.640Z","id":"rc3c8e542","from":"kodadjiyata","to":"човек","status":"има бележки","run":"de310f83"}
+{"t":"handoff","ts":"2026-10-24T07:09:17.078Z","id":"rc3c8e542","from":"kodadjiyata","to":"човек","status":"има бележки","run":"d03cb19e"}
+{"t":"handoff","ts":"2026-10-24T07:09:42.816Z","id":"rc3c8e542","from":"pravniyat-razbirach","to":"човек","status":"има бележки","run":"c4445010"}
+{"t":"handoff","ts":"2026-10-24T07:12:39.631Z","id":"rc3c8e542","from":"printadjiyata","to":"човек","status":"наред","run":"02d5cfd7"}
 {"t":"start","ts":"2026-10-23T19:36:26.309Z","id":"r1bbec096","flow":"авто","lead":"prevodach","auto":true}
 {"t":"handoff","ts":"2026-10-23T19:36:26.309Z","id":"r1bbec096","from":"prevodach","to":"човек","status":"има бележки","run":"413ea6b6"}
 {"t":"handoff","ts":"2026-10-23T19:39:11.703Z","id":"r1bbec096","from":"prevodach","to":"ai-djiyata","status":"има бележки","run":"6fa52e72"}
@@ -261,5 +297,67 @@
 {"t":"handoff","ts":"2026-10-24T06:36:10.110Z","id":"r606f816d","from":"prevodach","to":"човек","status":"наред","run":"0cc8e6c0"}
 {"t":"handoff","ts":"2026-10-24T06:39:15.140Z","id":"r606f816d","from":"izpitatelya","to":"ai-djiyata","status":"има бележки","run":"e6a786bd"}
 {"t":"handoff","ts":"2026-10-24T06:42:56.908Z","id":"r606f816d","from":"prevodach","to":"човек","status":"има бележки","run":"630be6d0"}
+{"t":"start","ts":"2026-10-27T09:52:36.519Z","id":"red60c781","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-10-27T09:52:36.519Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"има бележки","run":"6e2e0626"}
+{"t":"handoff","ts":"2026-10-27T09:53:17.881Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"има бележки","run":"4821e441"}
+{"t":"handoff","ts":"2026-10-27T09:55:26.295Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"има бележки","run":"468b4d61"}
+{"t":"handoff","ts":"2026-10-27T09:55:40.901Z","id":"red60c781","from":"seo","to":"ai-djiyata","status":"има бележки","run":"9e3f70c7"}
+{"t":"handoff","ts":"2026-10-27T09:56:27.589Z","id":"red60c781","from":"kasadjiyata","to":"kachestveniyat","status":"има бележки","run":"b7d511ff"}
+{"t":"handoff","ts":"2026-10-27T09:56:42.274Z","id":"red60c781","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"126193b3"}
+{"t":"handoff","ts":"2026-10-27T09:57:08.442Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"има бележки","run":"1e753e73"}
+{"t":"handoff","ts":"2026-10-27T09:58:20.959Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"блокер (гейтът е червен по причина извън моя обхват; моята част е готова)","run":"12d849bd"}
+{"t":"handoff","ts":"2026-10-27T09:58:54.854Z","id":"red60c781","from":"ai-djiyata","to":"човек","status":"блокер","run":"9f8655cb"}
+{"t":"handoff","ts":"2026-10-27T10:02:02.255Z","id":"red60c781","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"b7c5ad1e"}
 {"t":"start","ts":"2026-10-25T14:31:24.150Z","id":"rfccf1a0e","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-10-25T14:31:24.150Z","id":"rfccf1a0e","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"f23898b1"}
+{"t":"start","ts":"2026-10-28T13:21:43.255Z","id":"rb8dd65be","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-10-28T13:21:43.255Z","id":"rb8dd65be","from":"kodadjiyata","to":"izpitatelya","status":"блокер","run":"26899e27"}
+{"t":"handoff","ts":"2026-10-28T13:21:50.150Z","id":"rb8dd65be","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"86097a6f"}
+{"t":"start","ts":"2026-10-28T13:24:02.176Z","id":"r90e72e00","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-10-28T13:24:02.176Z","id":"r90e72e00","from":"razbivacha","to":"ai-djiyata","status":"блокер","run":"6d6d42b6"}
+{"t":"handoff","ts":"2026-10-28T13:44:01.118Z","id":"r90e72e00","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"c45d7515"}
+{"t":"handoff","ts":"2026-10-28T13:48:15.179Z","id":"r90e72e00","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"48e3b702"}
+{"t":"start","ts":"2026-10-31T06:03:05.873Z","id":"r5d0e2ad2","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-10-31T06:03:05.873Z","id":"r5d0e2ad2","from":"kodadjiyata","to":"ai-djiyata","status":"има бележки","run":"f81ce57f"}
+{"t":"start","ts":"2026-10-31T06:03:33.154Z","id":"re5a3f5f3","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-10-31T06:03:33.154Z","id":"re5a3f5f3","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"4c302cee"}
+{"t":"handoff","ts":"2026-10-31T06:13:20.042Z","id":"re5a3f5f3","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"7031446d"}
+{"t":"start","ts":"2026-10-31T06:14:54.044Z","id":"r6941fd71","flow":"авто","lead":"pravniyat-razbirach","auto":true}
+{"t":"handoff","ts":"2026-10-31T06:14:54.044Z","id":"r6941fd71","from":"pravniyat-razbirach","to":"ai-djiyata","status":"има бележки","run":"c6c8dfbe"}
+{"t":"start","ts":"2026-10-31T10:25:31.767Z","id":"r488b0733","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-10-31T10:25:31.767Z","id":"r488b0733","from":"ai-djiyata","to":"човек","status":"има бележки","run":"a2cbc0cc"}
+{"t":"handoff","ts":"2026-10-31T10:26:13.973Z","id":"r488b0733","from":"ai-djiyata","to":"човек","status":"има бележки","run":"e23faa2f"}
+{"t":"start","ts":"2026-10-31T10:26:26.788Z","id":"r8b429905","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-10-31T10:26:26.789Z","id":"r8b429905","from":"ai-djiyata","to":"човек","status":"има бележки","run":"a2cbc0cc"}
+{"t":"handoff","ts":"2026-10-31T10:26:59.886Z","id":"r8b429905","from":"ai-djiyata","to":"kodadjiyata","status":"има бележки","run":"71ba3e03"}
+{"t":"handoff","ts":"2026-10-31T10:47:57.202Z","id":"r8b429905","from":"konveyera","to":"ai-djiyata","status":"има бележки","run":"caecd134"}
+{"t":"handoff","ts":"2026-10-31T10:59:11.031Z","id":"r8b429905","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"89320050"}
+{"t":"start","ts":"2026-10-31T12:45:54.501Z","id":"r5d2a1deb","flow":"авто","lead":"vps-adjiyata","auto":true}
+{"t":"handoff","ts":"2026-10-31T12:45:54.501Z","id":"r5d2a1deb","from":"vps-adjiyata","to":"ai-djiyata","status":"има бележки","run":"d3156679"}
+{"t":"handoff","ts":"2026-10-31T12:46:54.512Z","id":"r5d2a1deb","from":"kodadjiyata","to":"ai-djiyata","status":"има бележки","run":"de80a85d"}
+{"t":"handoff","ts":"2026-10-31T12:47:00.050Z","id":"r5d2a1deb","from":"hromadjiyata","to":"ai-djiyata","status":"наред","run":"729dc213"}
+{"t":"handoff","ts":"2026-10-31T12:47:00.916Z","id":"r5d2a1deb","from":"seo","to":"ai-djiyata","status":"наред","run":"341fb2e9"}
+{"t":"handoff","ts":"2026-10-31T12:47:09.650Z","id":"r5d2a1deb","from":"siydara","to":"ai-djiyata","status":"наред","run":"5a0b37d9"}
+{"t":"handoff","ts":"2026-10-31T12:47:19.794Z","id":"r5d2a1deb","from":"mobildjiyata","to":"ai-djiyata","status":"наред","run":"29d44219"}
+{"t":"handoff","ts":"2026-10-31T12:47:21.014Z","id":"r5d2a1deb","from":"izpitatelya","to":"ai-djiyata","status":"наред","run":"5d80d99d"}
+{"t":"handoff","ts":"2026-10-31T12:47:23.953Z","id":"r5d2a1deb","from":"kodadjiyata","to":"ai-djiyata","status":"наред","run":"6edbba3d"}
+{"t":"handoff","ts":"2026-10-31T12:47:26.522Z","id":"r5d2a1deb","from":"diskordjiyata","to":"ai-djiyata","status":"наред","run":"5c6254bd"}
+{"t":"handoff","ts":"2026-10-31T12:47:39.144Z","id":"r5d2a1deb","from":"letopisetsa","to":"ai-djiyata","status":"има бележки","run":"fcc26323"}
+{"t":"handoff","ts":"2026-10-31T12:47:50.540Z","id":"r5d2a1deb","from":"goladjiyata","to":"ai-djiyata","status":"наред","run":"3fd2062f"}
+{"t":"handoff","ts":"2026-10-31T12:48:07.882Z","id":"r5d2a1deb","from":"skorostnika","to":"ai-djiyata","status":"има бележки","run":"12b73806"}
+{"t":"handoff","ts":"2026-10-31T12:48:12.764Z","id":"r5d2a1deb","from":"skorostnika","to":"ai-djiyata","status":"наред","run":"70cd2f9d"}
+{"t":"handoff","ts":"2026-10-31T12:48:36.850Z","id":"r5d2a1deb","from":"printadjiyata","to":"ai-djiyata","status":"наред","run":"8144cbde"}
+{"t":"handoff","ts":"2026-10-31T12:48:49.767Z","id":"r5d2a1deb","from":"razbivacha","to":"ai-djiyata","status":"наред","run":"0a2390ba"}
+{"t":"handoff","ts":"2026-10-31T12:49:00.903Z","id":"r5d2a1deb","from":"prevodach","to":"ai-djiyata","status":"има бележки","run":"3dfee829"}
+{"t":"handoff","ts":"2026-10-31T12:49:05.568Z","id":"r5d2a1deb","from":"kasadjiyata","to":"ai-djiyata","status":"наред","run":"afbe6f92"}
+{"t":"handoff","ts":"2026-10-31T12:49:10.325Z","id":"r5d2a1deb","from":"prodavacha","to":"ai-djiyata","status":"наред","run":"6fde342d"}
+{"t":"handoff","ts":"2026-10-31T12:49:11.258Z","id":"r5d2a1deb","from":"nabludatelya","to":"ai-djiyata","status":"има бележки","run":"493f6ca3"}
+{"t":"handoff","ts":"2026-10-31T12:49:11.990Z","id":"r5d2a1deb","from":"treydara","to":"ai-djiyata","status":"наред","run":"0d868d02"}
+{"t":"handoff","ts":"2026-10-31T12:49:14.555Z","id":"r5d2a1deb","from":"geymara","to":"ai-djiyata","status":"наред","run":"c3eb7e7d"}
+{"t":"handoff","ts":"2026-10-31T12:49:27.809Z","id":"r5d2a1deb","from":"dizayner","to":"ai-djiyata","status":"наред","run":"7b7cebb9"}
+{"t":"handoff","ts":"2026-10-31T12:49:31.964Z","id":"r5d2a1deb","from":"socialdjiyata","to":"ai-djiyata","status":"наред","run":"7856e9e8"}
+{"t":"handoff","ts":"2026-10-31T12:49:33.425Z","id":"r5d2a1deb","from":"analizatora","to":"ai-djiyata","status":"има бележки","run":"1a54edc2"}
+{"t":"handoff","ts":"2026-10-31T12:49:51.795Z","id":"r5d2a1deb","from":"ai-djiyata","to":"ai-djiyata","status":"наред","run":"659553ea"}
+{"t":"handoff","ts":"2026-10-31T12:49:53.344Z","id":"r5d2a1deb","from":"3d-maniac","to":"ai-djiyata","status":"наред","run":"6bc68cb4"}
+{"t":"handoff","ts":"2026-10-31T12:50:02.958Z","id":"r5d2a1deb","from":"tayniyat-agent","to":"ai-djiyata","status":"има бележки","run":"5cc98018"}
+{"t":"handoff","ts":"2026-10-31T12:50:03.820Z","id":"r5d2a1deb","from":"pravniyat-razbirach","to":"ai-djiyata","status":"наред","run":"2950d7f7"}

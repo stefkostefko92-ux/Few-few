@@ -19,7 +19,23 @@ const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes("--json");
 const AUTONOMY = new Set(["L1", "L2", "L3"]);
 const REQUIRED = ["id", "description", "trigger", "command", "owner", "autonomy", "escalation"];
-const TRIGGER_RE = /^(schedule:(daily|weekly|monthly|quarterly)|event:[a-z-]+|manual)$/;
+const TRIGGER_RE = /^(schedule:(daily|weekly|monthly|quarterly|every-\d+-days)|event:[a-z-]+|manual)$/;
+
+// Облачна планирана задача (31.10.2026, code.claude.com/docs/en/routines): по подразбиране получава
+// ВСИЧКИ свързани конектори (вкл. такива, които пишат), тече в auto mode, а env променливите се виждат
+// от всеки със достъп до средата. Недоверен вход + конектор, който пише = смъртоносната тройка.
+// Затова облачният loop декларира конекторите изрично и обосновава всеки.
+const CLOUD_NETWORK = new Set(["none", "trusted", "custom"]);
+const CLOUD_OUTPUT = new Set(["report", "draft-pr"]);
+export function auditCloud(l, tag) {
+  const errors = [];
+  if (!Array.isArray(l.connectors)) errors.push(`${tag}: облачен loop изисква изричен списък „connectors“ (може и празен)`);
+  else for (const c of l.connectors) if (!l.connectorsWhy?.[c]) errors.push(`${tag}: конектор „${c}“ без обосновка в „connectorsWhy“`);
+  if (!CLOUD_NETWORK.has(l.network)) errors.push(`${tag}: облачен loop изисква „network“ (none|trusted|custom)`);
+  if (l.secretsInEnv !== false) errors.push(`${tag}: „secretsInEnv“ трябва да е false — ключовете отиват в network secrets`);
+  if (!CLOUD_OUTPUT.has(l.output)) errors.push(`${tag}: „output“ трябва да е report или draft-pr (никога push към main)`);
+  return errors;
+}
 
 // Валидирай манифеста. Връща {loops, errors[]} — errors непразно = fail-closed.
 export function auditLoops(manifest, agentIds) {
@@ -36,6 +52,8 @@ export function auditLoops(manifest, agentIds) {
     // Автономия-стълба: повишена автономия иска guardrails.
     if ((l.autonomy === "L2" || l.autonomy === "L3") && (!l.escalation || l.escalation.length < 10))
       errors.push(`${tag}: ${l.autonomy} изисква явна ескалация (човек-в-цикъла)`);
+    if (l.runtime === "cloud") errors.push(...auditCloud(l, tag));
+    else if (l.runtime != null && l.runtime !== "ci" && l.runtime !== "local") errors.push(`${tag}: невалиден runtime „${l.runtime}“ (cloud|ci|local)`);
     if (l.autonomy === "L3") {
       if (typeof l.budgetCap !== "number" || l.budgetCap <= 0) errors.push(`${tag}: L3 (безнадзорно) изисква числов budgetCap`);
       if (!Array.isArray(l.denylist) || !l.denylist.length) errors.push(`${tag}: L3 изисква непразен denylist`);

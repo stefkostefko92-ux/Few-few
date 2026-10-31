@@ -60,10 +60,10 @@ const CHECK = process.argv.includes("--check");
 // поука": класовете на memory-freshness (гейтът). До 2026-09-09 тук стоеше отделна евристика
 // „регекс за версия/година + 45 дни", преписана и в oversee — две истини за едно понятие (85% „застарели"
 // тук срещу 0 просрочени в гейта в същия ден). Изричен „re-verify: ДАТА" в поуката побеждава класа.
-import { classify } from "../agents/memory-freshness.mjs";
-const REVERIFY_RE = /re-?verify:?\s*(\d{4}-\d{2}-\d{2})/i;
-function lessonDate(bullet) { const m = bullet.match(/\*\*(\d{4}-\d{2}-\d{2})/); return m ? m[1] : null; }
-function daysSince(d) { return (Date.now() - new Date(d + "T00:00:00Z").getTime()) / 86400000; }
+// От 2026-10-24 и самият СРОК идва оттам (`dueOf`): тук се смяташе наново от датата на научаването,
+// тоест трета сметка, която обявяваше пресверените поуки за просрочени.
+import { dueOf } from "../agents/memory-freshness.mjs";
+const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
 const SECTIONS = ["Проверени поуки", "Карантина"];
 
@@ -212,12 +212,9 @@ for (const f of readdirSync(MEM_DIR).filter((x) => x.endsWith(".md") && x !== "P
     if (heading === "Проверени поуки" && !CHECK)
       for (const i of kept) {
         if (dropped.has(i)) continue;
-        const t = blockText(entries[i]), d = lessonDate(t);
-        const rv = t.match(REVERIFY_RE);
-        const cls = classify(t);
-        const overdue = rv ? daysSince(rv[1]) > 0 : (d && cls.days != null && daysSince(d) > cls.days);
-        if (overdue) {
-          report.push(`  ⏳ просрочено (${rv ? "re-verify " + rv[1] : cls.id + ", " + cls.days + "д"}, ${d}): ${t.slice(0, 110)}…`); totalStale++;
+        const t = blockText(entries[i]), d = dueOf(t);
+        if (d?.due && d.due < TODAY_ISO) {
+          report.push(`  ⏳ просрочено (${d.cls}, срок ${d.due}, научено ${d.date}${d.reverified ? `, пресверено ${d.reverified}` : ""}): ${t.slice(0, 110)}…`); totalStale++;
         }
       }
 
