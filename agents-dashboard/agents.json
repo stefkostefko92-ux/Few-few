@@ -14978,7 +14978,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 212
+        "lessons": 214
       },
       "evolution": [
         {
@@ -15070,9 +15070,20 @@
           "date": "2026-10-31",
           "event": "v20.7 — учене",
           "detail": "Научи: Nexus e2e вече има auth.spec.ts с само 2 логин теста (успех, грешна парола); пропуски -… (+1 още)"
+        },
+        {
+          "version": "20.9.0",
+          "date": "2026-10-31",
+          "event": "v20.9 — учене",
+          "detail": "Научи: `next dev` в Next 16.3.5 дописва блок nextjs-agent-rules в mastilko/CLAUDE.md при всеки… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-31",
+          "type": "learning",
+          "summary": "Научи: „`next dev` в Next 16.3.5 дописва блок nextjs-agent-rules в mastilko/CLAUDE.md при всеки…\" (+1 още)"
+        },
         {
           "date": "2026-10-31",
           "type": "learning",
