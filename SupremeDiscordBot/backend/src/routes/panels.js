@@ -1,7 +1,7 @@
 // backend/src/routes/panels.js
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";
 import { validatePremiumFields, getServerTier } from "../lib/premium.js";
