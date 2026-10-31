@@ -61,7 +61,7 @@ export const ERROR_CODES: ReadonlySet<string> = new Set<FieldErrorCode>([
 
 /** Липсващото поле е празен низ; масив или обект на мястото на низ е подправен вход. */
 const asText = (value: unknown): unknown => (value === undefined ? '' : value);
-const str = z.string({ invalid_type_error: 'invalid' });
+const str = z.string({ error: 'invalid' });
 
 /** Без управляващи знаци; бележките пазят новите редове, едноредовото — събира интервалите. */
 function cleanText(value: string, multiline: boolean): string {
@@ -149,7 +149,7 @@ function checksParser<T extends string>(options: readonly string[], single: bool
   return z.preprocess(
     (value) => (value === undefined ? [] : typeof value === 'string' ? [value] : value),
     z
-      .array(str, { invalid_type_error: 'invalid' })
+      .array(str, { error: 'invalid' })
       .max(options.length * 2, 'invalid')
       .refine((values) => values.every((v) => options.includes(v)), 'option')
       // Един избор (`single`): два избора праща само подправена или стара страница — грешка, не тих избор.

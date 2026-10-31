@@ -22,7 +22,7 @@ const scelte = (value: unknown): unknown =>
 export const riepilogoSchema = z.preprocess(
   scelte,
   z
-    .array(z.string({ invalid_type_error: 'invalid' }), { invalid_type_error: 'invalid' })
+    .array(z.string({ error: 'invalid' }), { error: 'invalid' })
     .max(COLONNE.length + 1, 'invalid')
     .refine(
       (keys) => keys.every((key) => key === TUTTI || (COLONNE as readonly string[]).includes(key)),
@@ -54,7 +54,7 @@ const stampaSchema = z.preprocess(
     return Array.isArray(list) ? list.filter((key) => !SLITE.includes(key)) : list;
   },
   z
-    .array(z.string({ invalid_type_error: 'invalid' }), { invalid_type_error: 'invalid' })
+    .array(z.string({ error: 'invalid' }), { error: 'invalid' })
     .max(ORDINABILI.length * 2, 'invalid')
     .refine(
       (keys) => keys.every((key) => (ORDINABILI as readonly string[]).includes(key)),

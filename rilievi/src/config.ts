@@ -64,7 +64,7 @@ const schema = z
     SMTP_HOST: optionalText(),
     /** Brevo приема 2525 — Hetzner блокира 25/465/587. */
     SMTP_PORT: z.coerce.number().int().positive().default(2525),
-    SMTP_SECURE: flag.default('false'),
+    SMTP_SECURE: flag.default(false),
     SMTP_USER: optionalText(),
     SMTP_PASS: optionalText(),
     MAIL_FROM: z.string().min(3).default('Rilievi Impianti <no-reply@carbonstealth.eu>'),

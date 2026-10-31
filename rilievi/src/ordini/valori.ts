@@ -72,7 +72,7 @@ export function parseModulo(
 
 const storedSchema = z.object({
   modulo: z.string(),
-  valori: z.record(z.union([z.string(), z.literal(true)])),
+  valori: z.record(z.string(), z.union([z.string(), z.literal(true)])),
 });
 
 /** Записаните стойности — само ключовете на модула и от правилния вид (JSON-ът се проверява). */

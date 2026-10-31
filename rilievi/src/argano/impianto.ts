@@ -46,7 +46,7 @@ export function parseImpianto(body: Record<string, unknown>): {
 } {
   const errori: ErroriImpianto = {};
   // Поле, пратено два пъти (масив) или подправено, не е текст — грешка, не догадка.
-  const leggi = (campo: CampoImpianto, schema: z.ZodType<string, z.ZodTypeDef, string>) => {
+  const leggi = (campo: CampoImpianto, schema: z.ZodType<string, string>) => {
     const raw = body[campo] ?? '';
     const parsed = schema.safeParse(raw);
     if (parsed.success) return parsed.data;

@@ -28,7 +28,7 @@ const flashSchema = z.object({
     .string()
     .regex(/^[a-zA-Z0-9_.]{1,80}$/)
     .refine((key) => hasKey(DEFAULT_LOCALE, key)),
-  params: z.record(z.unknown()).catch({}).transform(plainParams),
+  params: z.record(z.string(), z.unknown()).catch({}).transform(plainParams),
 });
 
 export type Flash = z.infer<typeof flashSchema>;
