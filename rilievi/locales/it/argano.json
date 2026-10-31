@@ -1,0 +1,184 @@
+{
+  "argano": {
+    "titolo": "Calcolo argano",
+    "sottotitolo": "Verifiche per l'argano nuovo o modificato, con le formule della relazione tecnica RT-E MOD (UNI 10411-1).",
+    "normativa": "Verifiche secondo la relazione tecnica RT-E MOD per le modifiche agli impianti esistenti (UNI 10411-1); aderenza secondo EN 81-1 con i coefficienti C1 e C2.",
+    "indietro": "Torna alla scheda",
+    "apri": "Calcolo argano",
+    "proposto": "Dati proposti dal modulo rilievi dati argani della scheda: sono quelli dell'argano esistente. Controllali e inserisci quelli dell'argano nuovo.",
+    "salvatoIl": "Salvato il {quando} da {nome}",
+    "conflitto": "Nel frattempo qualcuno ha salvato un altro calcolo per questa scheda. I tuoi dati sono qui sotto: controllali e salva di nuovo.",
+    "calcola": "Calcola e salva",
+    "pdf": "Scarica PDF",
+    "stampa": "Apri il PDF",
+    "soloLettura": "Puoi vedere il calcolo ma non modificarlo.",
+    "dati": "Dati dell'impianto e dell'argano",
+    "matricola": "Matricola",
+    "nImpianto": "N° impianto",
+    "si": "Sì",
+    "funiNuove": "Sì, funi nuove",
+    "funiVerifica": "No, solo verifica delle funi esistenti",
+    "nota": "Le formule sono quelle della relazione tecnica RT-E MOD, riportate senza modifiche: il risultato è lo stesso del foglio Excel. Il calcolo non sostituisce la verifica del progettista.",
+    "nessunCalcolo": "Il calcolo non è ancora stato salvato.",
+    "sezione": {
+      "impianto": "Impianto",
+      "argano": "Argano nuovo",
+      "funi": "Funi di trazione",
+      "compensazione": "Compensazione"
+    },
+    "campo": {
+      "portata": "Portata (kg)",
+      "massaCabina": "Massa totale cabina (kg)",
+      "massaContrappeso": "Massa totale contrappeso (kg)",
+      "velocita": "Velocità preesistente (m/s)",
+      "corsa": "Corsa (m)",
+      "sospensione": "Sospensione",
+      "macchina": "Locale macchinario",
+      "azionamento": "Azionamento",
+      "giriMotore": "Giri motore (rpm)",
+      "velocitaVvvf": "Velocità di esercizio con inverter (m/s)",
+      "motoreVvvf": "Motore (con inverter)",
+      "rapporto": "Rapporto di riduzione",
+      "rapportoA": "Rapporto di riduzione",
+      "rapportoB": "Rapporto di riduzione",
+      "diametroPuleggia": "Diametro puleggia di trazione (mm)",
+      "gola": "Tipo di gola",
+      "angoloGola": "Angolo di gola γ o β (°)",
+      "angoloAvvolgimento": "Angolo di avvolgimento (°)",
+      "funiSostituzione": "Funi nuove (sostituzione)",
+      "funiNumero": "Numero funi",
+      "fune": "Fune",
+      "altroD": "Diametro fune (mm)",
+      "altroSezione": "Sezione fune (mm²)",
+      "altroRottura": "Carico di rottura minimo (N)",
+      "altroMassa": "Massa lineare (kg/m)",
+      "compensazione": "Compensazione",
+      "compNumero": "Numero funi o catene",
+      "compMisura": "Misura (mm)",
+      "compMetaCorsa": "Catene da metà corsa al contrappeso",
+      "massaTenditore": "Massa tenditore (kg)",
+      "diametroTenditore": "Diametro puleggia tenditore (mm)",
+      "decelerazioneRidotta": "Decelerazione ridotta a 0,5 m/s²"
+    },
+    "hint": {
+      "velocita": "Quella dell'impianto prima della modifica: la nuova velocità si confronta con questa.",
+      "giriMotore": "Per 1 o 2 velocità: la velocità dopo la modifica si calcola dai giri.",
+      "velocitaVvvf": "Con inverter: dai giri e dalla frequenza necessari per questa velocità.",
+      "rapporto": "Ad esempio 1 : 50 oppure 2 : 53.",
+      "angoloGola": "Cuneo: angolo γ della gola. Semicircolare: angolo β dell'intaglio.",
+      "funiSostituzione": "Cambia il coefficiente di attrito per le gole semicircolari, come nella relazione tecnica.",
+      "decelerazioneRidotta": "Come nella relazione tecnica, solo se l'aderenza non è verificata con la decelerazione normale.",
+      "altro": "Solo per una fune che non è nelle tabelle TELCAL e DONATI.",
+      "gola": "Con gola semicircolare senza intaglio e funi solo verificate la relazione tecnica non ha una formula per l'attrito: l'aderenza risulta non verificata.",
+      "compMisura": "Dalle tabelle della relazione tecnica: catene o funi, secondo la compensazione scelta."
+    },
+    "opzione": {
+      "sospensione": {
+        "1:1": "Diretta 1:1",
+        "1:2": "Indiretta 1:2",
+        "1:4": "Indiretta 1:4"
+      },
+      "macchina": {
+        "alto": "In alto",
+        "basso": "In basso"
+      },
+      "azionamento": {
+        "1V": "1 velocità",
+        "2V": "2 velocità",
+        "VVVF": "Inverter VVVF"
+      },
+      "motoreVvvf": {
+        "1000": "1000 rpm (6 poli)",
+        "1500": "1500 rpm (4 poli)"
+      },
+      "gola": {
+        "cuneo": "A cuneo",
+        "semicircolare": "Semicircolare senza intaglio",
+        "semicircolare-intaglio": "Semicircolare con intaglio"
+      },
+      "fune": {
+        "altro": "Altra fune (dati a mano)"
+      },
+      "compensazione": {
+        "nessuna": "Nessuna",
+        "catene": "Catene",
+        "funi": "Funi"
+      }
+    },
+    "errore": {
+      "required": "Campo obbligatorio.",
+      "decimal": "Inserisci un numero, ad esempio 6,5.",
+      "range": "Inserisci un valore tra {min} e {max}.",
+      "option": "Scelta non valida.",
+      "integer": "Inserisci un numero intero."
+    },
+    "flash": {
+      "salvato": "Calcolo argano salvato."
+    },
+    "r": {
+      "titolo": "Risultati",
+      "ok": "OK",
+      "no": "NO",
+      "velocita": "Velocità",
+      "rapporto": "Rapporto di riduzione",
+      "taglia": "Sospensione",
+      "vNuova": "Velocità dopo la modifica",
+      "vPre": "Velocità preesistente",
+      "variazione": "Variazione (al massimo ±5 %)",
+      "giriVvvf": "Giri motore per la velocità richiesta",
+      "hzVvvf": "Frequenza dell'inverter",
+      "funi": "Funi di trazione",
+      "fune": "Fune",
+      "numeroFuni": "Numero funi (almeno 2)",
+      "diametroFune": "Diametro fune (almeno 8 mm)",
+      "rottura": "Carico di rottura minimo",
+      "massaFuni": "Massa delle funi di trazione",
+      "caricoTotale": "Carico totale sulle funi",
+      "caricoFune": "Carico su ogni fune",
+      "sollecitazione": "Sollecitazione su ogni fune",
+      "sicurezza": "Coefficiente di sicurezza (oltre {min})",
+      "diametroMinimo": "Diametro minimo della puleggia (40 × d)",
+      "rapportoDiametri": "Rapporto D/d (almeno 40)",
+      "compensazione": "Compensazione",
+      "compCabina": "Massa della compensazione con la cabina in alto",
+      "compContrappeso": "Massa della compensazione con il contrappeso in alto",
+      "compDiametri": "Rapporto D/d della compensazione (almeno 30)",
+      "aderenza": "Aderenza",
+      "t1": "T1 — lato cabina, cabina in basso con il 125 % del carico",
+      "t2": "T2 — lato contrappeso, cabina in basso",
+      "t1Alto": "T'1 — lato contrappeso, cabina in alto vuota",
+      "t2Alto": "T'2 — lato cabina, cabina in alto vuota",
+      "decelerazione": "Decelerazione a",
+      "f": "Coefficiente di attrito f",
+      "rapportoBasso": "(T1 / T2) × C1 × C2, al massimo e^(f·α)",
+      "rapportoAlto": "(T'1 / T'2) × C1 × C2, al massimo e^(f·α)",
+      "pressione": "Pressione specifica",
+      "velocitaFuni": "Velocità delle funi",
+      "caricoStatico": "Carico statico massimo",
+      "p": "Pressione specifica",
+      "pLim": "Pressione limite (12,5 + 4 v) / (1 + v)"
+    },
+    "esito": {
+      "velocita": {
+        "ok": "La variazione di velocità è entro il 5 %: non servono le condizioni del paragrafo 15 della UNI 10411-1.",
+        "no": "La variazione di velocità è oltre il 5 %: vanno rispettate le condizioni del paragrafo 15 della UNI 10411-1."
+      },
+      "funi": {
+        "ok": "Funi di trazione verificate.",
+        "no": "Funi di trazione non verificate: controlla numero, diametro, coefficiente di sicurezza e rapporto D/d."
+      },
+      "compensazione": {
+        "ok": "Compensazione verificata.",
+        "no": "Compensazione non verificata: il rapporto D/d è sotto 30."
+      },
+      "aderenza": {
+        "ok": "Aderenza verificata nei due casi.",
+        "no": "Aderenza non verificata: cambia gola, angolo di avvolgimento, contrappeso o funi."
+      },
+      "pressione": {
+        "ok": "Pressione specifica entro il limite.",
+        "no": "Pressione specifica oltre il limite: serve una puleggia più grande o più funi."
+      }
+    }
+  }
+}

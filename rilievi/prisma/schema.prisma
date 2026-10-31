@@ -176,6 +176,7 @@ model User {
   interventiChiusi Intervento[]    @relation("InterventiChiusi")
   cartelliCreati   Cartello[]      @relation("CartelliCreati")
   cartelliMod      Cartello[]      @relation("CartelliModificati")
+  calcoliArgano    CalcoloArgano[]
   auditEntries     AuditLog[]
   requestsDecided  AccessRequest[] @relation("AccessRequestsDecided")
 
@@ -501,6 +502,7 @@ model Scheda {
   deletedBy                    User?                    @relation("SchedeDeleted", fields: [deletedById], references: [id], onDelete: SetNull)
   /// Табелите „Avviso di fermo impianto“, попълнени от тази карта.
   cartelli                     Cartello[]
+  calcoloArgano                CalcoloArgano?
   createdAt                    DateTime                 @default(now())
   updatedAt                    DateTime                 @updatedAt
 
@@ -761,5 +763,21 @@ model Cartello {
   @@index([aziendaId, createdAt])
   @@index([schedaId, createdAt])
   @@index([createdById])
+  @@index([updatedById])
+}
+
+/// Изчислението за аргано по „RT-E MOD 10411-1“ на собственика (31 октомври 2026): входът (`argano/dati.ts`,
+/// чете се с недоверие), по едно на карта; резултатите се смятат при всяко показване. Отделна таблица —
+/// записът не мести версията на картата (`base`), а окончателно изтритата карта го взима със себе си.
+model CalcoloArgano {
+  id          String   @id @default(cuid())
+  schedaId    String   @unique
+  scheda      Scheda   @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  dati        Json
+  updatedById String?
+  updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   @@index([updatedById])
 }

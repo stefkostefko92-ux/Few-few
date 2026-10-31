@@ -1,0 +1,30 @@
+<%
+  // Едно поле на изчислението: число (с десетична запетая), избор или отметка; подсказката и грешката —
+  // под него. `kind`: 'numero' | 'scelta' | 'spunta'; `opzioni` — [{ value, label, gruppo?, attiva? }] за избора
+  // (`attiva: false` — не се отмята: веригата и въжето от 8 mm имат една и съща стойност).
+  const id = 'f-' + key;
+  const text = typeof values[key] === 'string' ? values[key] : '';
+  const hintText = typeof hint !== 'undefined' && hint ? t('argano.hint.' + hint) : null;
+  const e = errori[key];
+  let errText = null;
+  if (e === 'range') {
+    const [min, max] = limiteDi(key);
+    errText = t('argano.errore.range', { min: String(min).replace('.', ','), max: String(max).replace('.', ',') });
+  } else if (e) errText = t('argano.errore.' + e);
+  const describedBy = [hintText ? 'hint-' + key : null, errText ? 'err-' + key : null].filter(Boolean).join(' ');
+%><div class="field field--<%= key %><%= kind === 'spunta' ? ' field--wide' : '' %>">
+  <% if (kind === 'spunta') { %><label class="tick"><input type="checkbox" id="<%= id %>" name="<%= key %>" value="si"<% if (text === 'si') { %> checked<% } %><% if (describedBy) { %> aria-describedby="<%= describedBy %>"<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('argano.campo.' + key) %></span></label>
+  <% } else { %><label class="field__label" for="<%= id %>"><%= t('argano.campo.' + key) %></label>
+  <% if (kind === 'scelta') { %><select class="select" id="<%= id %>" name="<%= key %>"<% if (errText) { %> aria-invalid="true"<% } %><% if (describedBy) { %> aria-describedby="<%= describedBy %>"<% } %>>
+    <option value="">—</option>
+    <% const gruppi = [...new Set(opzioni.map((o) => o.gruppo || ''))]; %>
+    <% for (const g of gruppi) { %><% if (g) { %><optgroup label="<%= g %>"><% } %>
+      <% for (const o of opzioni.filter((o) => (o.gruppo || '') === g)) { %><option value="<%= o.value %>"<% if (text === o.value && o.attiva !== false) { %> selected<% } %>><%= o.label %></option>
+      <% } %><% if (g) { %></optgroup><% } %>
+    <% } %>
+  </select>
+  <% } else { %><input class="input" id="<%= id %>" name="<%= key %>" type="text" inputmode="decimal" autocomplete="off" value="<%= text %>"<% if (errText) { %> aria-invalid="true"<% } %><% if (describedBy) { %> aria-describedby="<%= describedBy %>"<% } %>>
+  <% } %><% } %>
+  <% if (hintText) { %><p class="field__hint" id="hint-<%= key %>"><%= hintText %></p><% } %>
+  <% if (errText) { %><p class="field__error" id="err-<%= key %>"><%= errText %></p><% } %>
+</div>

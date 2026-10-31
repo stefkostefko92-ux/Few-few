@@ -1,0 +1,119 @@
+<%
+  // Изчислението за аргано на картата: формата (уредбата, новото аргано, въжетата, компенсацията) и
+  // резултатите по раздели — същите редове като в PDF-а (argano/righe.ts). Кой не пише — само чете.
+  const errorKeys = Object.keys(errori).filter((k) => k !== '_');
+  const val = (k) => typeof values[k] === 'string' ? values[k] : '';
+  const campo = (key, kind, extra = {}) => include('_campo', { key, kind, values, errori, limiteDi, opzioni: [], ...extra });
+  const op = (gruppo, valori) => valori.map((v) => ({ value: String(v), label: t('argano.opzione.' + gruppo + '.' + v) }));
+  const opFuni = funi.map((f) => ({ value: f.id, label: f.marca + ' ' + f.d + ' mm, ' + f.trefoli + ' trefoli' })).concat([{ value: 'altro', label: t('argano.opzione.fune.altro') }]);
+  // Мерките на компенсацията — веригите и въжетата в две групи; коя важи, казва видът над тях.
+  const opMisure = (lista, tipo) => lista.map((m) => ({ value: String(m.d).replace('.', ','), label: String(m.d).replace('.', ',') + ' mm (' + String(m.massa).replace('.', ',') + ' kg/m)', gruppo: t('argano.opzione.compensazione.' + tipo), attiva: val('compensazione') === tipo }));
+  const errSummary = (k) => {
+    const e = errori[k];
+    if (e === 'range') { const [min, max] = limiteDi(k); return t('argano.errore.range', { min: String(min).replace('.', ','), max: String(max).replace('.', ',') }); }
+    return t('argano.errore.' + e);
+  };
+%><%- include('../partials/top', { title }) %>
+<div class="page-head">
+  <div>
+    <a href="/schede/<%= scheda.id %>"><%= t('argano.indietro') %></a>
+    <h1><%= t('argano.titolo') %></h1>
+    <% if (impianto) { %><p class="page-head__sub"><strong><%= impianto %></strong></p><% } %>
+    <p class="page-head__sub"><%= t('argano.sottotitolo') %></p>
+  </div>
+  <% if (salvato && salvato.dati) { %><div class="toolbar">
+    <a class="btn" href="/schede/<%= scheda.id %>/calcolo-argano.pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('argano.pdf') %></a>
+    <a class="btn" href="/schede/<%= scheda.id %>/calcolo-argano.pdf?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('argano.stampa') %></a>
+  </div><% } %>
+</div>
+<div class="stack-gap argano">
+<% if (typeof conflitto !== 'undefined' && conflitto) { %><div class="notice" role="alert"><p><strong><%= t('argano.conflitto') %></strong></p></div><% } %>
+<% if (errorKeys.length) { %>
+  <div class="errors" role="alert" id="error-summary" tabindex="-1">
+    <h2><%= t('scheda.errorSummary', { n: errorKeys.length }) %></h2>
+    <ul><% for (const k of errorKeys) { %><li><a href="#f-<%= k %>"><%= t('argano.campo.' + k) %>: <%= errSummary(k) %></a></li><% } %></ul>
+  </div>
+<% } %>
+<% if (typeof proposto !== 'undefined' && proposto && puoScrivere) { %><p class="notice"><%= t('argano.proposto') %></p><% } %>
+<% if (!puoScrivere) { %><p class="muted"><%= t('argano.soloLettura') %></p><% } %>
+<% if (salvato && salvato.dati) { %><p class="muted"><%= t('argano.salvatoIl', { quando: fmt.dateTime(salvato.updatedAt), nome: salvato.autore || '—' }) %></p><% } %>
+<form class="form" method="post" action="/schede/<%= scheda.id %>/calcolo-argano" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="base" value="<%= base %>">
+  <fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
+    <legend class="section__title"><%= t('argano.sezione.impianto') %></legend>
+    <div class="grid">
+      <%- campo('portata', 'numero') %><%- campo('massaCabina', 'numero') %><%- campo('massaContrappeso', 'numero') %>
+      <%- campo('velocita', 'numero', { hint: 'velocita' }) %><%- campo('corsa', 'numero') %>
+      <%- campo('sospensione', 'scelta', { opzioni: op('sospensione', ['1:1', '1:2', '1:4']) }) %>
+      <%- campo('macchina', 'scelta', { opzioni: op('macchina', ['alto', 'basso']) }) %>
+    </div>
+  </fieldset>
+  <fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
+    <legend class="section__title"><%= t('argano.sezione.argano') %></legend>
+    <div class="grid">
+      <%- campo('azionamento', 'scelta', { opzioni: op('azionamento', ['1V', '2V', 'VVVF']) }) %>
+      <%- campo('giriMotore', 'numero', { hint: 'giriMotore' }) %>
+      <%- campo('velocitaVvvf', 'numero', { hint: 'velocitaVvvf' }) %>
+      <%- campo('motoreVvvf', 'scelta', { opzioni: op('motoreVvvf', [1000, 1500]) }) %>
+      <div class="field field--rapporto">
+        <span class="field__label" id="l-rapporto"><%= t('argano.campo.rapporto') %></span>
+        <span class="argano__rapporto">
+          <select class="select" id="f-rapportoA" name="rapportoA" aria-labelledby="l-rapporto"><% for (const a of ['1', '2']) { %><option value="<%= a %>"<% if (val('rapportoA') === a || (a === '1' && !val('rapportoA'))) { %> selected<% } %>><%= a %></option><% } %></select>
+          <span aria-hidden="true">:</span>
+          <input class="input" id="f-rapportoB" name="rapportoB" type="text" inputmode="decimal" autocomplete="off" aria-labelledby="l-rapporto" aria-describedby="hint-rapportoB<%= errori.rapportoB ? ' err-rapportoB' : '' %>" value="<%= val('rapportoB') %>"<% if (errori.rapportoB) { %> aria-invalid="true"<% } %>>
+        </span>
+        <p class="field__hint" id="hint-rapportoB"><%= t('argano.hint.rapporto') %></p>
+        <% if (errori.rapportoB) { %><p class="field__error" id="err-rapportoB"><%= errSummary('rapportoB') %></p><% } %>
+      </div>
+      <%- campo('diametroPuleggia', 'numero') %>
+      <%- campo('gola', 'scelta', { opzioni: op('gola', ['cuneo', 'semicircolare', 'semicircolare-intaglio']), hint: 'gola' }) %>
+      <%- campo('angoloGola', 'numero', { hint: 'angoloGola' }) %>
+      <%- campo('angoloAvvolgimento', 'numero') %>
+      <%- campo('decelerazioneRidotta', 'spunta', { hint: 'decelerazioneRidotta' }) %>
+    </div>
+  </fieldset>
+  <fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
+    <legend class="section__title"><%= t('argano.sezione.funi') %></legend>
+    <div class="grid">
+      <%- campo('funiNumero', 'numero') %>
+      <%- campo('fune', 'scelta', { opzioni: opFuni }) %>
+      <%- campo('funiSostituzione', 'spunta', { hint: 'funiSostituzione' }) %>
+      <%- campo('altroD', 'numero', { hint: 'altro' }) %><%- campo('altroSezione', 'numero') %><%- campo('altroRottura', 'numero') %><%- campo('altroMassa', 'numero') %>
+    </div>
+  </fieldset>
+  <fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
+    <legend class="section__title"><%= t('argano.sezione.compensazione') %></legend>
+    <div class="grid">
+      <%- campo('compensazione', 'scelta', { opzioni: op('compensazione', ['nessuna', 'catene', 'funi']) }) %>
+      <%- campo('compNumero', 'numero') %>
+      <%- campo('compMisura', 'scelta', { opzioni: opMisure(catene, 'catene').concat(opMisure(funiCompensazione, 'funi')), hint: 'compMisura' }) %>
+      <%- campo('massaTenditore', 'numero') %><%- campo('diametroTenditore', 'numero') %>
+      <%- campo('compMetaCorsa', 'spunta') %>
+    </div>
+  </fieldset>
+  <% if (puoScrivere) { %><div class="toolbar">
+    <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'check' }) %><%= t('argano.calcola') %></button>
+    <a class="btn btn--ghost" href="/schede/<%= scheda.id %>"><%= t('common.cancel') %></a>
+  </div><% } %>
+</form>
+<section class="argano__risultati" id="risultati" aria-labelledby="h-risultati">
+  <h2 class="section__title" id="h-risultati"><%= t('argano.r.titolo') %></h2>
+  <%# При грешки или конфликт записаните резултати не отговарят на формата — не се показват. %>
+  <% if (!sezioni.length && !(salvato && salvato.dati)) { %><p class="muted"><%= t('argano.nessunCalcolo') %></p><% } %>
+  <% for (const s of sezioni) { %>
+  <div class="argano__sezione">
+    <h3><%= s.titolo %></h3>
+    <table class="table argano__tabella">
+      <tbody>
+        <% for (const r of s.righe) { %><tr><th scope="row"><%= r.etichetta %></th><td class="argano__valore"><%= r.valore %><% if (r.unita) { %> <%= r.unita %><% } %></td><td class="argano__esito"><% if (r.ok !== undefined) { %><span class="esito esito--<%= r.ok ? 'ok' : 'no' %>"><%= r.ok ? t('argano.r.ok') : t('argano.r.no') %></span><% } %></td></tr>
+        <% } %>
+      </tbody>
+    </table>
+    <p class="argano__conclusione esito-testo--<%= s.esito.ok ? 'ok' : 'no' %>"><%= s.esito.testo %></p>
+  </div>
+  <% } %>
+  <% if (sezioni.length) { %><p class="muted argano__nota"><%= t('argano.nota') %></p><% } %>
+</section>
+</div>
+<%- include('../partials/bottom') %>

@@ -86,6 +86,11 @@ src/
                      само без pdftoppm) · form.ts (zod) · service.ts (запис с `base`, изтриване,
                      одит) · da-scheda.ts (попълването от картата — без база) · scheda.ts (картата
                      на табелата: избор, търсене, паметта) · pdf.ts (A4 по посоката на шаблона, логото и данните на фирмата горе)
+  argano/            изчислението за аргано по „RT-E MOD 10411-1“: calcolo.ts (формулите на листовете
+                     „Macchina“ и „Funi“, без база) · dati.ts (входът — zod, формата) · tabelle.ts
+                     (въжетата TELCAL/DONATI, мерките на компенсацията) · da-scheda.ts (попълването от
+                     „Modulo rilievi dati argani“) · righe.ts (резултатите като редове — страница и PDF) ·
+                     formato.ts · service.ts (четене, запис върху `base`, одит) · pdf.ts (A4)
   schizzi/           скицникът: elementi.ts (видът на елементите — zod, тежестта) · costanti.ts (мерките,
                      таваните, стрелките, пунктирите, котите) · simboli.ts (символите за шахтата) ·
                      forme.ts (елементът → примитиви: линии, запълнени върхове, елипси, надписи — за SVG и
@@ -128,10 +133,10 @@ views/               EJS: partials/ (горна и долна лента, таб
                      account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs; скицникът —
                      schede/_schizzo.ejs (листът като SVG), _schizzo-foglio.ejs, _schizzo-editor.ejs
 locales/it/          common · auth · schede · users · aziende · requests · site · mail · allegati · schizzi ·
-                     interventi · cartelli
+                     interventi · cartelli · argano
                      (.json) — единственият
 public/              css/ (портал: base, buttons, shell, layout, plate, forms, pages, data, sheet, misure,
-                     moduli, allegati, foto-stampa, schizzi, schizzo-editor, interventi, foglio, cartelli, print;
+                     moduli, allegati, foto-stampa, schizzi, schizzo-editor, interventi, foglio, cartelli, argano, print;
                      витрина: site, shaft,
                      site-hero, site-parts,
                      site-request),
@@ -578,6 +583,27 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   лого или без данни страницата и настройките го казват (логото слага само MASTER). Без pdftoppm (машина
   за разработка) — голият шаблон и едно предупреждение в лога; в образа и в CI го има. Ново поле на табелата = нова колона в
   картата на всеки шаблон и поглед в PDF-а на петте.
+- **Изчислението за аргано** (`src/argano/`, `routes/calcolo-argano.ts`; собственикът, 31 октомври 2026 — от
+  своя „RT-E MOD 10411-1“ (Excel по UNI 10411-1): изчисление и проверки, отделна страница и PDF, по метода
+  на файла, без мощност на мотора): бутон „Calcolo argano“ на картата (не при хидравлична), страница
+  `/schede/:id/calcolo-argano` и PDF `…/calcolo-argano.pdf`. Формулите са на листовете „Macchina“
+  (скоростта v = n·π·D / (i·60000·taglia), разликата до 5 % спрямо досегашната; при VVVF — нужните обороти
+  и честотата за мотор 1000/1500) и „Funi“ (въжетата: сигурност > 16 при 2 / > 12 при 3+, D/d ≥ 40;
+  компенсацията D/d ≥ 30; сцеплението (T1/T2)·C1·C2 ≤ e^(f·α) с кабина долу и 125 % товар и кабина горе
+  празна; специфичният натиск ≤ (12,5 + 4v)/(1 + v)·0,981) — едно към едно, и с особеностите на файла:
+  „a“ е минималното C1 на EN 81-1 (1,10…1,25 по скоростта), взето като забавяне (C1 ≈ 1,25–1,29);
+  кабелите влизат в T'2 в kg без × g; при полукръгъл канал без подрез и „solo verifica“ f = 0. Въжетата —
+  таблиците TELCAL и DONATI от файла (въже без данни не е в списъка; другото — `altro`, на ръка), не по
+  номер на ред (във файла DONATI има два реда „8“ и VLOOKUP взима 12 mm вместо 11). Unit тестът
+  (`tests/argano-rt.json`) пази пет случая, сметнати в самия Excel (LibreOffice, без макросите): 1:1, 1:2,
+  1:4, две скорости и VVVF, клиновиден и полукръгли канали, вериги и въжета за компенсация, машина горе
+  и долу — до 9 знака. Първото отваряне се попълва от „Modulo rilievi dati argani“ (`da-scheda.ts` —
+  огледаното аргано: товар, маси, скорост, ход, окачване, ролка, ъгли, въжета, „1:50“/„2:53“, мотор,
+  полюси); после — записаното. Записът е в `CalcoloArgano` (едно на карта, `dati` JSON, четен с недоверие;
+  миграция `20261031100000_calcolo_argano`, само добавя) върху отворената версия (`base`; празно — още
+  няма), с одит `ARGANO_CALCOLO`; не мести версията на картата. Чете всеки, който вижда картата (формата
+  — заключена); пише, който пише карти в нейната фирма, не в кошчето; чужда — 404. Резултатите се
+  смятат при всяко показване; редовете са едни и същи на страницата и в PDF-а (`righe.ts`).
 - **Менюто** (`views/partials/header.ejs`, `public/css/sidenav.css`, `public/js/menu.js`; собственикът, 30
   октомври 2026 — като в LiftPilot, вляво): групи Rilievi · Assistenza elevatori · Amministrazione (на
   фирмата: Utenti, Impostazioni, Registro) · Master (нашето — Aziende и Richieste, само за собственика на

@@ -27,6 +27,7 @@ import { auditRouter } from './routes/audit.js';
 import { authRouter } from './routes/auth.js';
 import { aziendeRouter } from './routes/aziende.js';
 import { cartelliNuovoRouter } from './routes/cartelli-nuovo.js';
+import { calcoloArganoRouter } from './routes/calcolo-argano.js';
 import { cartelliRouter } from './routes/cartelli.js';
 import { cestinoRouter } from './routes/cestino.js';
 import { ordiniRouter } from './routes/ordini.js';
@@ -242,6 +243,7 @@ export function createServer(): Express {
   app.use(allegatiRouter);
   app.use(cestinoRouter);
   app.use(ordiniRouter);
+  app.use(calcoloArganoRouter);
   app.use(interventiRouter);
   app.use(interventiFirmaRouter);
   app.use(interventiInvioRouter);
