@@ -28,6 +28,11 @@ https://code.claude.com/docs/en/skills#run-your-checks-before-each-commit). Та
    жив гейт (`node tools/agents/live-gate.mjs`) преди „готово“ — не преди всеки commit.
 3. **Винаги:** `node tools/security/secret-scan.mjs`. При промяна в lock файл —
    `node tools/security/new-deps.mjs` (typosquat гейтва).
+4. **Ядро** (`node tools/agents/core-map.mjs --diff`): пари, фискал, вход, медицински данни, схема →
+   трябва тест в същия продукт (изход 1 = няма); преди PR и умение `security-review`.
+5. **Работещото приложение** — при промяна по интерфейс или поведение: пусни продукта по рецептата му
+   (`<продукт>/.claude/skills/run-<продукт>/`, ако я има) и провери промяната там — тестовете не стигат.
+   Това умение замества вграденото `/verify`, затова тази стъпка е тук.
 
 ## Решение
 - Всичко зелено и показано → commit.

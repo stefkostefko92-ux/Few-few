@@ -23,6 +23,15 @@ node tools/agents/scope-check.mjs --staged   # монорепо закон №1:
 # + пусни quality-gate на засегнатия продукт (виж skill quality-gate)
 ```
 
+## Ядро → тест първо и преглед за сигурност (31.10.2026)
+```bash
+node tools/agents/core-map.mjs --diff        # ядро = пари, фискал, вход, медицински и лични данни, схема
+```
+Пипа ядро → преди draft PR: умение `security-review` върху промените и умение `code-review` на ниво
+`low` (най-малко фалшиви попадения). Ядро без тест в същия продукт (изход 1) → първо тест (умение
+`test-driven-development`); човекът чете тестовете първи. Листата (изгледи, стилове, текстове) — свободно.
+Слоевете по Anthropic: в сесията → `security-review` → `code-review` → CI (`security.yml`, `new-deps`).
+
 ## Commit
 - **Conventional, български, описателен:** `type(scope): описание` — type ∈
   `feat|fix|chore|docs|refactor|perf|test|build|ci|style|revert`. Пример: „feat(medqr): спешен SOS изглед".
@@ -55,5 +64,5 @@ VPS-аджията …); само зависимости → Кодаджият�
 Собственик на CI/PR конвейера = агентът **Конвейерът**.
 
 ## Дефиниция на „готово"
-secret-scan чисто · гейт зелен · conventional български commit на feature клон · PR (draft) с попълнен шаблон ·
-нашите агенти по `pr-triage` са прегледали PR-а без открит блокер.
+secret-scan чисто · гейт зелен · ядро → с тест и с `security-review` · conventional български commit на feature
+клон · PR (draft) с попълнен шаблон · нашите агенти по `pr-triage` са прегледали PR-а без открит блокер.

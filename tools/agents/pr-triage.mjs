@@ -10,6 +10,7 @@
 //   … --json                                            # машинен изход (план за live-run)
 
 import { execFileSync } from "node:child_process";
+import { coreReport } from "./core-map.mjs";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -75,13 +76,15 @@ export function rankProducts(files) {
 export const STALE_DAYS = 30;
 
 /** Решението за един PR: кои агенти и защо (или защо никой). Чиста функция. */
-export function decide({ kind, products, ageDays, reviewed = [] }) {
+export function decide({ kind, products, ageDays, reviewed = [], coreNoTest = [] }) {
   if (kind === "docs" || kind === "empty") return { agents: [], why: "само документи — няма какво да счупи" };
   if (ageDays > STALE_DAYS) return { agents: [], why: `застарял (${ageDays} дни) — първо rebase или затваряне` };
-  const all = agentsFor(kind, products);
+  // „Ядро без тест“ (core-map.mjs, 31.10.2026): пари, фискал, вход или медицински код без променен тест в
+  // същия продукт → и Изпитателят. В ядрото първо тест; човекът чете тестовете (Schluntz, Anthropic).
+  const all = [...new Set([...agentsFor(kind, products), ...(kind === "code" && coreNoTest.length ? ["izpitatelya"] : [])])];
   const agents = all.filter((a) => !reviewed.includes(a));
   if (!agents.length) return { agents: [], why: "вече прегледан на тази версия" };
-  return { agents, why: kind === "deps" ? "зависимости" : "код" };
+  return { agents, why: kind === "deps" ? "зависимости" : coreNoTest.length ? `код · ядро без тест (${coreNoTest.length})` : "код" };
 }
 
 function git(args) { return execFileSync("git", ["-C", ROOT, ...args], { encoding: "utf8", maxBuffer: 1 << 26 }); }
@@ -105,7 +108,7 @@ export function triage(prs, info = changedFiles, ledger = {}) {
     let r;
     try { r = info(p.head.ref); } catch (e) { return { pr: p.number, title: p.title, ref: p.head.ref, error: String(e.message).slice(0, 120), agents: [], why: "грешка при git" }; }
     const kind = kindOf(r.files), products = productsOf(r.files);
-    const d = decide({ kind, products: rankProducts(r.files), ageDays: r.ageDays, reviewed: ledger[r.sha] || [] });
+    const d = decide({ kind, products: rankProducts(r.files), ageDays: r.ageDays, reviewed: ledger[r.sha] || [], coreNoTest: coreReport(r.files).coreWithoutTest });
     return { pr: p.number, title: p.title, ref: p.head.ref, sha: r.sha, kind, products, files: r.files.length, ageDays: r.ageDays, ...d };
   });
 }

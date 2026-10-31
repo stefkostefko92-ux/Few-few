@@ -53,6 +53,9 @@ hooks, skills).
 - **Run that project's full quality gate before you call work done** (lint +
   typecheck/format + test + build — listed in the product's `CLAUDE.md`/`README`).
   CI is **path-filtered**: each workflow runs only when its subdir changes.
+- **Core: plan → spec → test first.** Core = money, fiscal, auth, medical, personal data, schema
+  (`tools/agents/core-map.mjs`). Core or >3 files → `/plan`, spec with acceptance criteria, tests
+  first, review against the spec; the human reads the tests. Leaves (views, styles, copy) — freely.
 - **Match the surrounding style.** Strict TS + Zod + `@/*` alias in the Next apps;
   plain ESM JS + Prettier in medqr/SupremeDiscordBot/treydar/panev. Avoid unjustified `any`.
 - **Commits: Bulgarian, conventional, descriptive** (e.g. „Печатна брошура А5…“),
@@ -73,9 +76,8 @@ hooks, skills).
   **IndexNow** (Bing, Yandex, Seznam, Naver, Yep — one call reaches all):
   `node tools/seo/indexnow.mjs https://<live-domain>` (needs the site deployed with
   its `indexnow-key.txt` at web root). `deploy/autodeploy.sh` pings after a healthy release for
-  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock and korpora (each its own way — there
-  is no generic `INDEXNOW_<PROJ>` switch; korpora only when its sitemap changed); for the rest run
-  the command yourself. zabobovdol also exposes a server-side admin action (`src/lib/indexnow.ts`). **Google does NOT
+  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock and korpora (details: `deploy/README.md`);
+  for the rest run the command yourself. **Google does NOT
   support IndexNow** (sitemap ping retired 2023) — for Google keep the sitemap fresh
   (auto-discovered) and use Search Console (`tools/seo/gsc.mjs`).
 - **Keywords: always ≥5, one always „Carbon Stealth“.** Every site we build/touch
@@ -83,10 +85,9 @@ hooks, skills).
   on static/EJS pages) with **at least 5** relevant keywords, and **„Carbon Stealth“
   must always be one of them** (brand attribution — Carbon Stealth VCC makes all
   products). Keep the rest locale-appropriate and specific to the page/product.
-- **Promo clips are no longer updated — any product** (owner's decision, 2026-10-15). Don't
-  re-render a promo/store/YouTube/social clip on a new version or a UI/site/copy change, don't
-  propose one, and don't write "replace the clip" steps into kits/docs. A clip is made only on the
-  owner's explicit request. Not covered: video that is a product feature (e.g. Piuma's content engine).
+- **Promo clips are frozen — any product** (owner, 2026-10-15): no re-render, proposal or "replace
+  the clip" step on any version/UI/copy change; only on the owner's explicit request. Not covered:
+  video that is a product feature (e.g. Piuma's content engine).
 - **Generic agents: hard cap 10 per session** (anything not in `.claude/agents/`; enforced by the
   `agent-cap` hook) — it burns tokens. Our agents first (owner's rules below); verify inline when cheap.
 

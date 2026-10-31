@@ -54,3 +54,12 @@ test("най-много двама собственици на домейн — 
   assert.deepEqual(rankProducts(files), ["zabobovdol", "Gaming", "Nexus"]);
   assert.deepEqual(agentsFor("code", rankProducts(files)), ["kodadjiyata", "seo", "prodavacha"]);
 });
+
+test("ядро без тест (31.10): PR по фискален код без тест получава и Изпитателя", async () => {
+  const { decide } = await import("./pr-triage.mjs");
+  const d = decide({ kind: "code", products: ["CSPos"], ageDays: 1, coreNoTest: ["CSPos/src/lib/fiscal/erpnet.ts"] });
+  assert.ok(d.agents.includes("izpitatelya") && d.agents.includes("kodadjiyata"));
+  assert.match(d.why, /ядро без тест/);
+  assert.ok(!decide({ kind: "code", products: ["CSPos"], ageDays: 1 }).agents.includes("izpitatelya"), "без ядро — без Изпитателя");
+  assert.ok(!decide({ kind: "deps", products: ["CSPos"], ageDays: 1, coreNoTest: ["x"] }).agents.includes("izpitatelya"), "само зависимости — без Изпитателя");
+});
