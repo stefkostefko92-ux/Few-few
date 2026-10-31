@@ -5,6 +5,7 @@ import { COMPANY, PRIVACY_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { issuePreCsrf, PRE_CSRF_MAX_AGE_MS, requirePreAuthCsrf } from '../auth/guards.js';
 import { LOCK_MINUTES, MAX_FAILED_LOGINS } from '../auth/lockout.js';
+import { SFIDA_MS } from '../services/login-2fa.js';
 import { SESSION_LIMITS } from '../auth/sessions.js';
 import { requestLimiter } from '../http/limits.js';
 import { ROOT } from '../paths.js';
@@ -34,7 +35,7 @@ import {
   sheetLegend,
   STEPS,
 } from '../site/landing.js';
-import { DAY, HOUR } from '../time.js';
+import { DAY, HOUR, MINUTE } from '../time.js';
 
 /**
  * Публичната страница: витрината (`/`, само на италиански), политиката за поверителност и заявката за
@@ -159,6 +160,7 @@ siteRouter.get(PRIVACY_PATH, (req, res) => {
     sessionDays: SESSION_LIMITS.standard.absoluteMs / DAY,
     adminSessionDays: SESSION_LIMITS.privileged.absoluteMs / DAY,
     preCsrfHours: PRE_CSRF_MAX_AGE_MS / HOUR,
+    sfidaMinutes: SFIDA_MS / MINUTE,
     attempts: MAX_FAILED_LOGINS,
     minutes: LOCK_MINUTES,
   });

@@ -2,12 +2,15 @@ import { config } from './config.js';
 import { prisma } from './db.js';
 import { errorMessage, logger } from './logger.js';
 import { pulisciArrivi } from './allegati/archivio.js';
+import { pulisciErrori } from './auth/rete.js';
 import { purgeExpiredSessions } from './auth/sessions.js';
+import { pulisciSfide } from './services/login-2fa.js';
 import { purgeOldRequests } from './requests/service.js';
 import { DAY, HOUR } from './time.js';
 
 /**
- * Чистене веднъж на час: изтекли сесии, стари покани и връзки за парола (след 30 дни — дотогава се
+ * Чистене веднъж на час: изтекли сесии и входове, чакали кода на 2FA, грешните опити по мрежа (след ден),
+ * стари покани и връзки за парола (след 30 дни — дотогава се
  * виждат като „изтекли“), заявки за достъп след срока си, одит по-стар от срока, качено от прекъсната
  * заявка (по-старо от ден). Грешка тук не спира
  * процеса — опитва пак след час.
@@ -15,6 +18,9 @@ import { DAY, HOUR } from './time.js';
 export async function runMaintenance(): Promise<void> {
   const now = Date.now();
   const sessions = await purgeExpiredSessions();
+  // Входовете, чакали кода, и грешните опити по мрежа (пазят се ден).
+  const sfide = await pulisciSfide(now);
+  const errori = await pulisciErrori(now);
   const invites = await prisma.invite.deleteMany({
     where: { expiresAt: { lt: new Date(now - 30 * DAY) }, acceptedAt: null },
   });
@@ -27,10 +33,15 @@ export async function runMaintenance(): Promise<void> {
   });
   // Каченото от прекъсната заявка (обикновено заявката го трие сама).
   const arrivi = await pulisciArrivi(DAY, now);
-  if (sessions + invites.count + resets.count + requests + audit.count + arrivi > 0) {
+  if (
+    sessions + sfide + errori + invites.count + resets.count + requests + audit.count + arrivi >
+    0
+  ) {
     logger.info(
       {
         sessions,
+        sfide,
+        errori,
         invites: invites.count,
         resets: resets.count,
         requests,

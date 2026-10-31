@@ -1,7 +1,9 @@
 // The people of a company in a real browser: the MASTER invites the company's ADMIN, the ADMIN invites
 // a technician into the same company (never another one); the technician sees the company's sheet but
-// not the people or the companies; then the people pages themselves (people.mjs).
+// not the people or the companies; then the people pages themselves (people.mjs) and the technician's
+// two-step sign-in (due-fattori.mjs).
 import { audit, fail, signIn as signInAt } from './helpers.mjs';
+import { checkTwoFactor } from './due-fattori.mjs';
 import { checkPeople } from './people.mjs';
 
 async function acceptInvite(context, base, link, name) {
@@ -61,5 +63,12 @@ export async function checkInvites({
     masterPage,
     adminPage,
     techEmail: `tecnico.e2e.${stamp}@rilievi.test`,
+  });
+  await checkTwoFactor({
+    base,
+    shots,
+    techPage,
+    techEmail: `tecnico.e2e.${stamp}@rilievi.test`,
+    password: 'Fune-Trefolo-Tenditore-7',
   });
 }

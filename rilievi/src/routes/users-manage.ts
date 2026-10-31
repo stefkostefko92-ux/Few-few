@@ -7,6 +7,7 @@ import { activeAziende, isAziendaId } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
 import { ADMIN_RESET_HOURS } from '../services/auth.js';
 import { addMembership, changeMembershipRole, removeMembership } from '../services/memberships.js';
+import { azzeraDueFattori } from '../services/due-fattori.js';
 import { createResetLink, getUser, setActive, updateAccount } from '../services/users.js';
 
 /**
@@ -109,6 +110,17 @@ usersManageRouter.post('/utenti/:id/reimposta', manage, requireCsrf, async (req,
     hours: ADMIN_RESET_HOURS,
     hideSwitches: true,
   });
+});
+
+/**
+ * Изгубен телефон: двуфакторният вход на човека се изключва от който управлява акаунта му (като връзката
+ * за нова парола); човекът получава писмо и може да го включи пак с новия телефон.
+ */
+usersManageRouter.post('/utenti/:id/due-fattori', manage, requireCsrf, async (req, res) => {
+  const id = String(req.params.id);
+  const ok = await azzeraDueFattori(principalOf(req).user, id);
+  setFlash(res, ok ? 'ok' : 'error', ok ? 'flash.dueFattoriAzzerata' : 'flash.notAllowed');
+  back(res, id);
 });
 
 /** Ролята в една фирма. */

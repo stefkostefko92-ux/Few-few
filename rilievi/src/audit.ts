@@ -8,6 +8,10 @@ import { prisma } from './db.js';
 export const AUDIT_ACTIONS = [
   'LOGIN',
   'LOGIN_LOCKED',
+  'TOTP_ON',
+  'TOTP_OFF',
+  'TOTP_RESET',
+  'TOTP_CODES',
   'LOGOUT',
   'INVITE_CREATE',
   'INVITE_REVOKE',

@@ -255,7 +255,7 @@
         "kept": "{days} giorni dall'ultima modifica della richiesta, poi cancellati automaticamente; prima, se ce lo chiedete"
       },
       "account": {
-        "data": "Email, nome, aziende e ruolo in ognuna, tema, hash della password (Argon2id), data dell'ultimo accesso, numero di password errate e sessioni attive",
+        "data": "Email, nome, aziende e ruolo in ognuna, tema, hash della password (Argon2id), data dell'ultimo accesso, numero di password e codici errati, blocchi consecutivi e sessioni attive; se la attivi, la verifica in due passaggi: la chiave dell'app (cifrata, AES-256-GCM) e i codici di recupero (solo come impronta HMAC)",
         "why": "L'account e l'accesso al portale per conto dell'azienda",
         "basis": "Per conto dell'azienda titolare (art. 28 GDPR)",
         "kept": "Finché l'account esiste; le sessioni fino all'uscita o alla scadenza"
@@ -276,7 +276,7 @@
         "data": "Indirizzo IP",
         "why": "Limitare i tentativi ripetuti di accesso e l'invio massiccio di richieste",
         "basis": "Legittimo interesse, art. 6, par. 1, lett. f) GDPR",
-        "kept": "Solo nella memoria del server, al massimo un'ora; non viene scritto nei log"
+        "kept": "Nella memoria del server al massimo un'ora; per un accesso fallito, solo un'impronta cifrata (HMAC) della rete da cui arriva, mai l'indirizzo, per 24 ore. Non viene scritto nei log"
       }
     },
     "required": "Nome, azienda ed email servono per rispondere alla richiesta: senza di essi non possiamo valutarla. Gli altri campi sono facoltativi.",
@@ -290,6 +290,8 @@
       "sessionKept": "Fino all'uscita; al massimo {days} giorni ({adminDays} per gli amministratori)",
       "pre": "Proteggere i moduli prima dell'accesso (accesso, richiesta di accesso, password) da richieste contraffatte",
       "preKept": "{hours} ore",
+      "dueFattori": "La verifica in due passaggi in corso, tra la password e il codice dell'app (solo se l'hai attivata)",
+      "dueFattoriKept": "{minutes} minuti",
       "theme": "Il tema scelto (chiaro, scuro o automatico)",
       "prefKept": "1 anno",
       "flash": "Un messaggio una tantum dopo un'azione, per esempio «Salvato»",
@@ -307,7 +309,7 @@
     },
     "decisions": {
       "title": "Decisioni automatizzate",
-      "text": "Non prendiamo decisioni con effetti giuridici basate unicamente su un trattamento automatizzato. Dopo {attempts} password errate l'accesso si blocca per {minutes} minuti: è una misura di sicurezza che si annulla da sola. Ogni richiesta di accesso la valuta una persona."
+      "text": "Non prendiamo decisioni con effetti giuridici basate unicamente su un trattamento automatizzato. Dopo {attempts} password o codici errati l'accesso si blocca per {minutes} minuti, poi per periodi più lunghi se gli errori continuano (al massimo 24 ore): è una misura di sicurezza che si annulla da sola, e un link per una nuova password la toglie subito. Ogni richiesta di accesso la valuta una persona."
     },
     "rights": {
       "title": "I vostri diritti",

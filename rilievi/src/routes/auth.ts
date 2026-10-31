@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from 'express';
+import { Router, type Response } from 'express';
 import { z } from 'zod';
 import { mailEnabled } from '../config.js';
 import { writeUserAudit } from '../audit.js';
@@ -14,30 +14,19 @@ import { setFlash } from '../http/flash.js';
 import { forgotLimiter, loginLimiter, tokenLimiter } from '../http/limits.js';
 import { logger, errorMessage } from '../logger.js';
 import { acceptInvite, findValidInvite } from '../services/invites.js';
-import { findValidReset, login, requestReset, resetPassword } from '../services/auth.js';
+import { findValidReset, requestReset, resetPassword } from '../services/auth.js';
+import { login } from '../services/login.js';
+import { creaSfida } from '../services/login-2fa.js';
+import { durataBlocco, setSfidaCookie } from './auth-codice.js';
+import { noStore, renderLogin } from './auth-vista.js';
 
 export const authRouter: Router = Router();
-
-/** Страниците с токен и входът не се кешират никъде (споделен компютър, прокси). */
-function noStore(res: Response): void {
-  res.set('Cache-Control', 'no-store');
-}
 
 const loginSchema = z.object({
   email: z.string().trim().max(254),
   password: z.string().max(PASSWORD_MAX_LENGTH * 4),
   next: z.string().max(500).optional(),
 });
-
-function renderLogin(
-  req: Request,
-  res: Response,
-  status: number,
-  view: { email: string; next: string; error: string | null },
-): void {
-  noStore(res);
-  res.status(status).render('auth/login', { preCsrf: issuePreCsrf(req, res), ...view });
-}
 
 authRouter.get('/accesso', (req, res) => {
   const next = safeNext(req.query.next);
@@ -55,13 +44,20 @@ authRouter.post('/accesso', loginLimiter, requirePreAuthCsrf, async (req, res) =
     renderLogin(req, res, 400, { email: '', next, error: 'auth.error.invalid' });
     return;
   }
-  const outcome = await login(parsed.data.email, parsed.data.password);
+  const outcome = await login(parsed.data.email, parsed.data.password, req.ip);
+  if (outcome.kind === 'mfa') {
+    // Вярна парола, включена 2FA: сесия още няма — само предизвикателство за кода (10 минути).
+    setSfidaCookie(res, await creaSfida(outcome.userId, next));
+    res.redirect(303, '/accesso/codice');
+    return;
+  }
   if (outcome.kind !== 'ok') {
-    const status = { invalid: 401, locked: 429, deactivated: 403 }[outcome.kind];
+    const status = { invalid: 401, locked: 429, throttled: 429, deactivated: 403 }[outcome.kind];
     renderLogin(req, res, status, {
       email: parsed.data.email.slice(0, 254),
       next,
       error: `auth.error.${outcome.kind}`,
+      errorParams: outcome.kind === 'locked' ? { durata: durataBlocco(res, outcome.minutes) } : {},
     });
     return;
   }

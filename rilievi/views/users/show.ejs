@@ -92,6 +92,15 @@
     <form method="post" action="/utenti/<%= target.id %>/reimposta"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><div class="toolbar"><button class="btn" type="submit"><%= t('users.resetSubmit') %></button></div></form>
   </section>
   <% } %>
+  <section aria-labelledby="h-2fa">
+    <h2 class="section__title" id="h-2fa"><%= t('users.dueFattori.title') %></h2>
+    <% if (target.dueFattori) { %>
+    <p class="muted"><%= t('users.dueFattori.attiva') %></p>
+    <% if (!target.self) { %><form method="post" action="/utenti/<%= target.id %>/due-fattori"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><div class="toolbar"><button class="btn btn--danger" type="submit"><%= t('users.dueFattori.azzera') %></button></div></form><% } %>
+    <% } else { %>
+    <p class="muted"><%= t('users.dueFattori.spenta') %></p>
+    <% } %>
+  </section>
   <section aria-labelledby="h-access">
     <h2 class="section__title" id="h-access"><%= t('users.accessTitle') %></h2>
     <% if (target.activable) { %>

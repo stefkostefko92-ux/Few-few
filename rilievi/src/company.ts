@@ -32,4 +32,4 @@ export const COMPANY = {
 export const CONTENT_UPDATED = '2026-10-30';
 
 /** Последната промяна на политиката за поверителност — показва се на страницата и отива в sitemap. */
-export const PRIVACY_UPDATED = '2026-10-30';
+export const PRIVACY_UPDATED = '2026-10-31';

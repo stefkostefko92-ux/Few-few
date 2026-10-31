@@ -27,6 +27,7 @@ const USER_SELECT = {
   master: true,
   deactivatedAt: true,
   lastLoginAt: true,
+  totpEnabledAt: true,
   createdAt: true,
   invitedBy: { select: { name: true, master: true, memberships: { select: { aziendaId: true } } } },
   memberships: {
@@ -45,6 +46,8 @@ export interface UserView {
   master: boolean;
   deactivatedAt: Date | null;
   lastLoginAt: Date | null;
+  /** Двуфакторният вход е включен (самият човек го включва; управляващият може само да го изключи). */
+  dueFattori: boolean;
   createdAt: Date;
   /**
    * Кой го е поканил: MASTER за другите е „Amministrazione del portale“; човек от фирма извън обхвата на
@@ -78,6 +81,7 @@ function viewOf(actor: SessionUser, row: UserRow, scope: Scope): UserView {
     master: row.master,
     deactivatedAt: row.deactivatedAt,
     lastLoginAt: row.lastLoginAt,
+    dueFattori: row.totpEnabledAt !== null,
     createdAt: row.createdAt,
     invitedBy: inviterOf(actor, row, scope),
     // Фирмите извън обхвата на гледащия не се показват — нито името им, нито ролята.

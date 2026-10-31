@@ -6,7 +6,7 @@
   // Входът е без лентата на портала, но с чертежа на шахтата (shaft.css).
   // Темата „Personalizzato“: класът и светла/тъмна основа на <html>, стилът с цветовете — след останалите.
   const personale = typeof temaPersonale !== 'undefined' && temaPersonale ? temaPersonale : null;
-  const sheets = ['base', 'buttons', 'shell', 'sidenav', 'layout', 'plate', 'forms', 'righe', 'pages', 'data', 'sheet', 'misure', 'moduli', 'allegati', 'foto-stampa', 'schizzi', 'schizzo-editor', 'schizzo-barre', 'interventi', 'foglio', 'cartelli', 'impostazioni', 'argano'].concat(bareMain ? ['shaft'] : []);
+  const sheets = ['base', 'buttons', 'shell', 'sidenav', 'layout', 'plate', 'forms', 'righe', 'pages', 'data', 'sheet', 'misure', 'moduli', 'allegati', 'foto-stampa', 'schizzi', 'schizzo-editor', 'schizzo-barre', 'interventi', 'foglio', 'cartelli', 'impostazioni', 'argano', 'due-fattori'].concat(bareMain ? ['shaft'] : []);
 %><!doctype html>
 <html lang="<%= locale %>"<% if (personale) { %> class="tema-personale" data-theme="<%= personale.schema %>"<% } else if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>
 <head>

@@ -4,6 +4,7 @@
   const cookies = [
     { name: '__Host-rilievi', purpose: t('privacy.cookies.session'), kept: t('privacy.cookies.sessionKept', { days: sessionDays, adminDays: adminSessionDays }) },
     { name: '__Host-rilievi_pre', purpose: t('privacy.cookies.pre'), kept: t('privacy.cookies.preKept', { hours: preCsrfHours }) },
+    { name: '__Host-rilievi_2fa', purpose: t('privacy.cookies.dueFattori'), kept: t('privacy.cookies.dueFattoriKept', { minutes: sfidaMinutes }) },
     { name: 'rilievi_theme', purpose: t('privacy.cookies.theme'), kept: t('privacy.cookies.prefKept') },
     { name: 'rilievi_flash', purpose: t('privacy.cookies.flash'), kept: t('privacy.cookies.flashKept') },
   ];

@@ -155,6 +155,14 @@ model User {
   mustChangePassword Boolean   @default(false)
   failedLogins       Int       @default(0)
   lockedUntil        DateTime?
+  /// Поредни заключвания без успешен вход между тях — всяко следващо е по-дълго (src/auth/lockout.ts).
+  lockouts           Int       @default(0)
+  /// Двуфакторният вход (TOTP, RFC 6238) — по избор на всеки човек. Тайната е шифрована (AES-256-GCM,
+  /// src/auth/chiavi.ts); преди потвърждението с код `totpEnabledAt` е празно и входът не я иска.
+  totpSecretEnc      String?
+  totpEnabledAt      DateTime?
+  /// Последната приета стъпка от 30 s: същият код не минава втори път.
+  totpLastStep       Int?
   lastLoginAt        DateTime?
   passwordChangedAt  DateTime  @default(now())
   invitedById        String?
@@ -162,24 +170,26 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  invitedUsers     User[]          @relation("InvitedUsers")
+  invitedUsers     User[]           @relation("InvitedUsers")
   memberships      Membership[]
   sessions         Session[]
-  invitesSent      Invite[]        @relation("InvitesSent")
-  resets           PasswordReset[] @relation("ResetsFor")
-  resetsCreated    PasswordReset[] @relation("ResetsCreated")
-  schedeCreated    Scheda[]        @relation("SchedeCreated")
-  schedeUpdated    Scheda[]        @relation("SchedeUpdated")
-  schedeDeleted    Scheda[]        @relation("SchedeDeleted")
-  allegatiCaricati Allegato[]      @relation("AllegatiCaricati")
-  interventiCreati Intervento[]    @relation("InterventiCreati")
-  interventiMod    Intervento[]    @relation("InterventiModificati")
-  interventiChiusi Intervento[]    @relation("InterventiChiusi")
-  cartelliCreati   Cartello[]      @relation("CartelliCreati")
-  cartelliMod      Cartello[]      @relation("CartelliModificati")
+  invitesSent      Invite[]         @relation("InvitesSent")
+  resets           PasswordReset[]  @relation("ResetsFor")
+  resetsCreated    PasswordReset[]  @relation("ResetsCreated")
+  schedeCreated    Scheda[]         @relation("SchedeCreated")
+  schedeUpdated    Scheda[]         @relation("SchedeUpdated")
+  schedeDeleted    Scheda[]         @relation("SchedeDeleted")
+  allegatiCaricati Allegato[]       @relation("AllegatiCaricati")
+  interventiCreati Intervento[]     @relation("InterventiCreati")
+  interventiMod    Intervento[]     @relation("InterventiModificati")
+  interventiChiusi Intervento[]     @relation("InterventiChiusi")
+  cartelliCreati   Cartello[]       @relation("CartelliCreati")
+  recoveryCodes    RecoveryCode[]
+  loginChallenges  LoginChallenge[]
+  cartelliMod      Cartello[]       @relation("CartelliModificati")
   calcoliArgano    CalcoloArgano[]
   auditEntries     AuditLog[]
-  requestsDecided  AccessRequest[] @relation("AccessRequestsDecided")
+  requestsDecided  AccessRequest[]  @relation("AccessRequestsDecided")
 
   @@index([invitedById])
   @@index([master])
@@ -793,4 +803,43 @@ model CalcoloArgano {
 
   @@index([updatedById])
   @@index([aziendaId, updatedAt])
+}
+
+/// Резервните кодове на двуфакторния вход: 10, всеки — веднъж; в базата е само HMAC (src/auth/recovery.ts).
+model RecoveryCode {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, codeHash])
+}
+
+/// Вход с вярна парола, който чака втория фактор: сесия още няма. Бисквитката носи токена, тук е само
+/// SHA-256; живее 10 минути и дава най-много 5 опита с код (src/services/login-2fa.ts).
+model LoginChallenge {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  next      String
+  failures  Int      @default(0)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Грешен вход от мрежа (IPv4 адрес или IPv6 /64) — само HMAC на мрежата, не адресът; пази се ден.
+/// Таванът по мрежа (src/auth/rete.ts) важи и след рестарт, и за всички процеси.
+model LoginFailure {
+  id        String   @id @default(cuid())
+  rete      String
+  createdAt DateTime @default(now())
+
+  @@index([rete, createdAt])
+  @@index([createdAt])
 }

@@ -84,6 +84,12 @@
     "welcome": "Account attivato: ti diamo il benvenuto.",
     "mustChangePassword": "Prima di continuare, scegli una nuova password.",
     "passwordChanged": "Password aggiornata. Le altre sessioni sono state chiuse.",
+    "dueFattoriAzzerata": "Verifica in due passaggi disattivata. La persona riceverà un'email.",
+    "bloccatoSessione": "Troppi tentativi errati: per sicurezza tutte le tue sessioni sono state chiuse e l'accesso è bloccato per un po'.",
+    "codiceRecupero": {
+      "one": "Hai usato un codice di recupero: ne resta {n}. Creane di nuovi dal tuo account.",
+      "other": "Hai usato un codice di recupero: ne restano {n}. Creane di nuovi dal tuo account quando stanno per finire."
+    },
     "passwordReset": "Password aggiornata. Accedi con la nuova password.",
     "profileSaved": "Nome aggiornato.",
     "roleChanged": "Ruolo aggiornato.",

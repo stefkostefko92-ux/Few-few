@@ -80,7 +80,13 @@
     "saveAccount": "Salva nome ed email",
     "emailChangeHint": "Se cambi l'email, il vecchio indirizzo riceve un avviso e i link per la password ancora aperti smettono di valere.",
     "selfAccessNote": "Non puoi disattivare il tuo account.",
-    "accountByPortal": "Nome, email, password e accesso di questo account li gestisce l'amministrazione del portale."
+    "accountByPortal": "Nome, email, password e accesso di questo account li gestisce l'amministrazione del portale.",
+    "dueFattori": {
+      "title": "Verifica in due passaggi",
+      "attiva": "Attiva: dopo la password l'accesso chiede il codice dell'app. Se ha perso il telefono e i codici di recupero, puoi disattivarla: riceverà un'email e potrà riattivarla dal suo account.",
+      "spenta": "Non attiva. La attiva solo la persona, dal suo account.",
+      "azzera": "Disattiva la verifica in due passaggi"
+    }
   },
   "audit": {
     "title": "Registro",
@@ -99,6 +105,10 @@
     "action": {
       "LOGIN": "Accesso",
       "LOGIN_LOCKED": "Accesso bloccato per tentativi errati",
+      "TOTP_ON": "Verifica in due passaggi attivata",
+      "TOTP_OFF": "Verifica in due passaggi disattivata",
+      "TOTP_RESET": "Verifica in due passaggi disattivata da un amministratore",
+      "TOTP_CODES": "Nuovi codici di recupero creati",
       "LOGOUT": "Uscita",
       "INVITE_CREATE": "Invito creato",
       "INVITE_REVOKE": "Invito revocato",

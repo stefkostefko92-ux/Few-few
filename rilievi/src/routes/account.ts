@@ -3,15 +3,22 @@ import { z } from 'zod';
 import { prisma } from '../db.js';
 import { principalOf, requireCsrf, requireUser } from '../auth/guards.js';
 import { PASSWORD_MAX_LENGTH } from '../auth/password.js';
+import { clearSessionCookie } from '../auth/sessions.js';
 import { setFlash } from '../http/flash.js';
 import { changePassword } from '../services/auth.js';
+import { statoDueFattori } from '../services/due-fattori.js';
 import { coloriForm } from './account-colori.js';
 
 export const accountRouter: Router = Router();
 
-accountRouter.get('/account', requireUser, (req, res) => {
+accountRouter.get('/account', requireUser, async (req, res) => {
   const user = principalOf(req).user;
-  res.render('account/index', { error: null, name: user.name, colori: coloriForm(user) });
+  res.render('account/index', {
+    error: null,
+    name: user.name,
+    colori: coloriForm(user),
+    dueFattori: await statoDueFattori(user.id),
+  });
 });
 
 const passwordSchema = z.object({
@@ -37,6 +44,13 @@ accountRouter.post('/account/password', requireUser, requireCsrf, async (req, re
     parsed.data.current,
     parsed.data.password,
   );
+  if (!result.ok && result.error === 'locked') {
+    // Грешните стари пароли заключиха акаунта: всички сесии вече ги няма — към входа.
+    clearSessionCookie(res);
+    setFlash(res, 'error', 'flash.bloccatoSessione');
+    res.redirect(303, '/accesso');
+    return;
+  }
   if (!result.ok) {
     return fail(
       result.error === 'wrongCurrent' || result.error === 'same'

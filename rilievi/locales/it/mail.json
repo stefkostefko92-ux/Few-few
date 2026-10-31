@@ -22,6 +22,24 @@
       "subject": "Nuova richiesta di accesso — Rilievi Impianti",
       "body": "Ciao,\n\nl'azienda {company} ha chiesto l'accesso al portale Rilievi Impianti.\n\nApri la richiesta (serve l'accesso al portale):\n{link}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
     },
+    "dueFattori": {
+      "attivata": {
+        "subject": "Verifica in due passaggi attivata — Rilievi Impianti",
+        "body": "Ciao,\n\nsul tuo account del portale Rilievi Impianti è stata attivata la verifica in due passaggi: da ora, dopo la password, l'accesso chiede il codice dell'app di autenticazione.\n\nSe non sei stato tu, avvisa subito l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      },
+      "disattivata": {
+        "subject": "Verifica in due passaggi disattivata — Rilievi Impianti",
+        "body": "Ciao,\n\nsul tuo account del portale Rilievi Impianti la verifica in due passaggi è stata disattivata: l'accesso ora chiede solo la password.\n\nSe non sei stato tu, cambia subito la password e avvisa l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      },
+      "azzerata": {
+        "subject": "Verifica in due passaggi disattivata da un amministratore — Rilievi Impianti",
+        "body": "Ciao,\n\nun amministratore ha disattivato la verifica in due passaggi del tuo account sul portale Rilievi Impianti (di solito perché hai perso il telefono): l'accesso ora chiede solo la password. Puoi riattivarla dal tuo account, con l'app sul nuovo telefono.\n\nSe non l'hai chiesto tu, cambia subito la password e avvisa l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      }
+    },
+    "bloccoCodici": {
+      "subject": "Accesso bloccato: codici errati — Rilievi Impianti",
+      "body": "Ciao,\n\nqualcuno ha inserito la password corretta del tuo account sul portale Rilievi Impianti, ma poi codici di verifica sbagliati: l'accesso è bloccato per un po'.\n\nSe non eri tu, la tua password è nota a qualcun altro: cambiala appena puoi e avvisa l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+    },
     "emailChanged": {
       "subject": "Email del tuo account cambiata — Rilievi Impianti",
       "body": "Ciao,\n\nl'indirizzo email del tuo account sul portale Rilievi Impianti è stato cambiato: da ora per accedere si usa il nuovo indirizzo.\n\nSe non hai chiesto tu questa modifica, avvisa subito l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"

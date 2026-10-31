@@ -1,7 +1,7 @@
 <%- include('../partials/auth-top', { titleKey: 'auth.login.title' }) %>
 <form class="auth__form" method="post" action="/accesso" novalidate>
   <h1><%= t('auth.login.title') %></h1>
-  <% if (error) { %><div class="errors" role="alert" id="form-error"><h2><%= t(error) %></h2><% if (error === 'auth.error.invalid') { %><p class="muted"><%= t('auth.login.lockHint') %></p><% } %></div><% } %>
+  <% if (error) { %><div class="errors" role="alert" id="form-error"><h2><%= t(error, errorParams) %></h2><% if (error === 'auth.error.invalid') { %><p class="muted"><%= t('auth.login.lockHint') %></p><% } %></div><% } %>
   <input type="hidden" name="_csrf" value="<%= preCsrf %>">
   <input type="hidden" name="next" value="<%= next %>">
   <div class="field">
