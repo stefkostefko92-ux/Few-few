@@ -321,3 +321,4 @@
 {"t":"handoff","ts":"2026-10-31T06:03:05.873Z","id":"r5d0e2ad2","from":"kodadjiyata","to":"ai-djiyata","status":"има бележки","run":"f81ce57f"}
 {"t":"start","ts":"2026-10-31T06:03:33.154Z","id":"re5a3f5f3","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-10-31T06:03:33.154Z","id":"re5a3f5f3","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"4c302cee"}
+{"t":"handoff","ts":"2026-10-31T06:13:20.042Z","id":"re5a3f5f3","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"7031446d"}
