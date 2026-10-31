@@ -43,6 +43,7 @@ export const KNOWN_OK = new Set([
   "gaxios", // Google HTTP клиент (googleapis)
   "preact", // самостоятелна библиотека, не React
   "pino-pretty", "jest-dom",
+  "server", // истински HTTP сървър за Node (червен екип 31.10: dist("server","semver") = 1)
 ]);
 
 function dist(a, b) {
@@ -64,6 +65,9 @@ const fold = (n) => n.toLowerCase().replace(/[-_.]/g, "");
 /** Името прилича ли на популярен пакет, без да е той? Връща целта или null. */
 export function typosquatOf(name) {
   if (POPULAR_SET.has(name) || KNOWN_OK.has(name)) return null;
+  // Хомоглиф (кирилско „е“, „а“, „о“ в `ехpress`): npm не приема нови имена извън URL-безопасния ASCII,
+  // затова такова име в lock файл е или git/tarball зависимост, или атака — гейтва се винаги.
+  if (/[^\x21-\x7e]/.test(name)) return "име извън ASCII (хомоглиф?)";
   for (const p of POPULAR) {
     if (fold(name) === fold(p)) return p; // reactdom, react_dom, discordjs
     const [ns, nn] = name.startsWith("@") ? name.split("/") : ["", name];

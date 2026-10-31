@@ -1,7 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "0"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "0",
+    "CLAUDE_CODE_SUBAGENT_EFFORT": "medium",
+    "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS": "10"
   },
   "permissions": {
     "deny": [
@@ -15,7 +17,20 @@
       "Read(~/.aws/**)",
       "Read(~/.config/gh/**)",
       "Read(~/.netrc)",
-      "Read(~/.claude/.credentials.json)"
+      "Read(~/.claude/.credentials.json)",
+      "Edit(.env)",
+      "Edit(.env.*)",
+      "Edit(!*.example)",
+      "Edit(*.pem)",
+      "Edit(id_rsa*)",
+      "Edit(id_ed25519*)",
+      "Edit(~/.ssh/**)",
+      "Edit(~/.aws/**)",
+      "Edit(~/.config/gh/**)",
+      "Edit(~/.netrc)",
+      "Edit(~/.claude/.credentials.json)",
+      "Read(**/.next/**)",
+      "Edit(**/.next/**)"
     ]
   },
   "hooks": {
@@ -110,6 +125,18 @@
         ]
       }
     ],
+    "ConfigChange": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-config.mjs\"",
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -128,13 +155,23 @@
         ]
       },
       {
-        "matcher": "Bash|WebFetch|WebSearch|mcp__.*",
+        "matcher": "Bash|Monitor|WebFetch|WebSearch|mcp__.*",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-exfil.mjs\"",
             "timeout": 10,
             "onFailure": "block"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/agent-cap.mjs\"",
+            "timeout": 10
           }
         ]
       }

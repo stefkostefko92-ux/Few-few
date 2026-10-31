@@ -236,21 +236,29 @@ export function detectMcpExfil(toolInput) {
   return null;
 }
 
+// Проба на живо 31.10.2026 (2.1.316): shell командата на Monitor стига до Bash-куките с
+// tool_name "Bash" — тя е пазена. WebSocket режимът (`ws.url`, `ws.protocols`) НЕ минава през
+// Bash-куки: вижда го само matcher, който назовава Monitor. Без този клон адрес `wss://…` с тайна
+// напускаше машината без проверка.
+export function detectExfil(tool, ti = {}) {
+  // MCP първи: името на MCP инструмент може да съдържа „bash"/„fetch" (`mcp__x__fetch_page`),
+  // а входът му е произволен JSON — не `command`/`url`.
+  if (/^mcp__/i.test(tool)) return detectMcpExfil(ti);
+  // Всички канали, не „или-или“: Разбивача (31.10) мина с безобидна команда + злонамерен ws.
+  if (/^monitor$/i.test(tool)) return (ti.command ? detectBashExfil(ti.command) : null) || (ti.ws ? detectUrlExfil(typeof ti.ws === "string" ? ti.ws : ti.ws.url) || detectMcpExfil(ti.ws) : null);
+  if (/bash/i.test(tool)) return detectBashExfil(ti.command);
+  if (/webfetch/i.test(tool)) return detectUrlExfil(ti.url);
+  if (/websearch/i.test(tool)) return detectSearchExfil(ti.query);
+  return null;
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   let buf = "";
   process.stdin.on("data", (d) => (buf += d));
   process.stdin.on("end", () => {
     try {
       const payload = JSON.parse(buf || "{}");
-      const tool = payload?.tool_name || "";
-      const ti = payload?.tool_input || {};
-      let why = null;
-      // MCP първи: името на MCP инструмент може да съдържа „bash"/„fetch" (`mcp__x__fetch_page`),
-      // а входът му е произволен JSON — не `command`/`url`.
-      if (/^mcp__/i.test(tool)) why = detectMcpExfil(ti);
-      else if (/bash/i.test(tool)) why = detectBashExfil(ti.command);
-      else if (/webfetch/i.test(tool)) why = detectUrlExfil(ti.url);
-      else if (/websearch/i.test(tool)) why = detectSearchExfil(ti.query);
+      const why = detectExfil(payload?.tool_name || "", payload?.tool_input || {});
       if (why) {
         process.stderr.write(`⛔ Блокирано от guard-exfil: ${why}. Тайните живеят само на сървъра — не се изнасят навън от агента. Ако е легитимно, направи го ръчно извън агента.\n`);
         process.exit(2);
