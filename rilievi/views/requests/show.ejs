@@ -1,0 +1,105 @@
+<%
+  // Една заявка: данните, решението (ако има) и действията — приеми (фирма + покана), откажи, изтрий.
+  const r = request;
+  const statusText = t('requests.status.' + r.status);
+  const decided = r.decidedAt
+    ? (r.decidedBy
+      ? t('requests.decided', { status: statusText, name: r.decidedBy.name, at: fmt.dateTime(r.decidedAt) })
+      : t('requests.decidedNobody', { status: statusText, at: fmt.dateTime(r.decidedAt) }))
+    : null;
+  const inviteState = r.invite
+    ? (r.invite.acceptedAt ? 'inviteAccepted' : r.invite.revokedAt ? 'inviteRevoked' : r.invite.expiresAt.getTime() <= Date.now() ? 'inviteExpired' : 'invitePending')
+    : null;
+  const items = [
+    ['name', r.name], ['company', r.company], ['email', r.email], ['phone', r.phone],
+    ['city', r.city], ['teamSize', r.teamSize ? t('site.request.team.' + r.teamSize) : null],
+    ['message', r.message],
+  ];
+  const title = r.company.length > 40 ? r.company.slice(0, 39) + '…' : r.company;
+%><%- include('../partials/top', { title, narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="/richieste"><%= t('requests.back') %></a>
+    <h1><%= r.company %></h1>
+    <p class="page-head__sub"><%= t('requests.received', { at: fmt.dateTime(r.createdAt) }) %></p>
+  </div>
+  <span class="badge<%= r.status === 'NEW' ? ' badge--on' : r.status === 'REJECTED' ? ' badge--off' : '' %>"><%= statusText %></span>
+</div>
+<div class="stack-gap">
+  <% if (error) { %><div class="errors" role="alert" id="form-error" tabindex="-1"><h2><%= t(error) %></h2></div><% } %>
+  <% if (decided) { %><div class="notice" role="status">
+    <p><strong><%= decided %></strong></p>
+    <% if (r.azienda) { %><p><%= t('requests.result.azienda') %>: <a href="/aziende/<%= r.azienda.id %>"><%= r.azienda.name %></a></p><% } %>
+    <% if (inviteState) { %><p><%= t('requests.result.invite') %>: <%= t('requests.result.' + inviteState, { at: fmt.dateTime(r.invite.expiresAt) }) %></p><% } %>
+  </div><% } %>
+  <dl class="kv panel">
+    <% for (const [key, value] of items) { %><div class="kv__item<%= key === 'message' ? ' kv__item--wide' : '' %>">
+      <dt><%= t('requests.field.' + key) %></dt>
+      <% if (!value) { %><dd class="empty-value">—</dd><% } else if (key === 'email') { %><dd><a href="mailto:<%= value %>"><%= value %></a></dd><% } else if (key === 'phone') { %><dd><a href="tel:<%= value.replace(/[^+0-9]/g, '') %>"><%= value %></a></dd><% } else { %><dd><%= value %></dd><% } %>
+    </div>
+    <% } %>
+  </dl>
+  <% if (r.status === 'NEW') { %>
+  <section aria-labelledby="h-accept">
+    <h2 class="section__title" id="h-accept"><%= t('requests.accept.title') %></h2>
+    <p class="muted"><%= t('requests.accept.text') %></p>
+    <form class="form form--tight" method="post" action="/richieste/<%= r.id %>/accetta" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <fieldset class="choice">
+        <legend><%= t('requests.result.azienda') %></legend>
+        <div class="choice__opts">
+          <label class="tick"><input type="radio" name="mode" value="new"<% if (form.mode !== 'existing') { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('requests.accept.newAzienda') %></span></label>
+          <% if (aziende.length) { %><label class="tick"><input type="radio" name="mode" value="existing"<% if (form.mode === 'existing') { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('requests.accept.existing') %></span></label><% } %>
+        </div>
+      </fieldset>
+      <div class="grid">
+        <div class="field">
+          <label class="field__label" for="aziendaName"><%= t('requests.accept.aziendaName') %></label>
+          <input class="input" id="aziendaName" name="aziendaName" type="text" maxlength="120" autocomplete="off" value="<%= form.aziendaName %>">
+        </div>
+        <% if (aziende.length) { %><div class="field">
+          <label class="field__label" for="azienda"><%= t('requests.accept.existing') %></label>
+          <select class="select" id="azienda" name="azienda">
+            <option value="">—</option>
+            <% for (const item of aziende) { %><option value="<%= item.id %>"<% if (form.azienda === item.id) { %> selected<% } %>><%= item.name %></option>
+            <% } %>
+          </select>
+        </div><% } %>
+        <div class="field">
+          <label class="field__label" for="email"><%= t('requests.field.email') %></label>
+          <input class="input" id="email" name="email" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="254" required value="<%= form.email %>">
+        </div>
+        <div class="field">
+          <label class="field__label" for="name"><%= t('requests.field.name') %></label>
+          <input class="input" id="name" name="name" type="text" autocomplete="off" maxlength="120" required value="<%= form.name %>">
+        </div>
+        <div class="field">
+          <label class="field__label" for="role"><%= t('requests.accept.role') %></label>
+          <select class="select" id="role" name="role">
+            <% for (const role of roles) { %><option value="<%= role %>"<% if (form.role === role) { %> selected<% } %>><%= t('role.' + role) %></option>
+            <% } %>
+          </select>
+        </div>
+      </div>
+      <div class="toolbar"><button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'plus' }) %><%= t('requests.accept.submit') %></button></div>
+    </form>
+  </section>
+  <section aria-labelledby="h-reject">
+    <h2 class="section__title" id="h-reject"><%= t('requests.reject.title') %></h2>
+    <p class="muted"><%= t('requests.reject.text', { days: retentionDays }) %></p>
+    <form class="form--tight" method="post" action="/richieste/<%= r.id %>/rifiuta">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn" type="submit"><%= t('requests.reject.submit') %></button>
+    </form>
+  </section>
+  <% } %>
+  <details class="danger-zone">
+    <summary><%= t('requests.delete.title') %></summary>
+    <p class="muted"><%= t('requests.delete.text') %></p>
+    <form method="post" action="/richieste/<%= r.id %>/elimina">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn btn--danger" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t('requests.delete.submit') %></button>
+    </form>
+  </details>
+</div>
+<%- include('../partials/bottom') %>

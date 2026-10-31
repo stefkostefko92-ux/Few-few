@@ -1,0 +1,7 @@
+<%- include('../partials/auth-top', { titleKey: 'auth.linkInvalid.title' }) %>
+<div class="auth__form">
+  <h1><%= t('auth.linkInvalid.title') %></h1>
+  <p><%= t(kind === 'invite' ? 'auth.linkInvalid.invite' : 'auth.linkInvalid.reset') %></p>
+  <div class="auth__links"><a href="/accesso"><%= t('auth.backToLogin') %></a></div>
+</div>
+<%- include('../partials/auth-bottom') %>

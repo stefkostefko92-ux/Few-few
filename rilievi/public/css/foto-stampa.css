@@ -1,0 +1,113 @@
+/* Иконките за печата в края на формата (views/schede/_foto-stampa.ejs): малки снимки по раздели с
+   отметка в ъгъла — като квадратчетата на формата; отметнатата е и с плътна рамка. Цялата иконка е
+   полето за отметката (палец в ръкавица), отметката е бяла с черна рамка — личи на всяка снимка. */
+
+.foto-stampa {
+  display: grid;
+  gap: 14px;
+}
+
+.foto-stampa__azioni {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.foto-stampa__conteggio {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.foto-stampa__gruppo {
+  display: grid;
+  gap: 8px;
+}
+
+.foto-stampa__titolo {
+  font-weight: 600;
+}
+
+/* Разделът не е в листа: снимката пак излиза — белегът го казва (stampa-foto.js го следи на живо). */
+.foto-stampa__esclusa {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.foto-stampa__gruppo:not([data-esclusa]) .foto-stampa__esclusa {
+  display: none;
+}
+
+.foto-stampa__lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.foto-stampa__voce {
+  position: relative;
+  display: block;
+  width: 96px;
+  height: 72px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--wash);
+}
+
+.foto-stampa__voce img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: calc(var(--radius) - 1px);
+  object-fit: cover;
+}
+
+.foto-stampa__voce input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.foto-stampa__segno {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--fg);
+  border-radius: 4px;
+  background: var(--bg);
+  pointer-events: none;
+}
+
+.foto-stampa__voce input:checked ~ .foto-stampa__segno {
+  background: var(--fg);
+}
+
+.foto-stampa__voce input:checked ~ .foto-stampa__segno::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 7.5px;
+  height: 12.5px;
+  border: solid var(--bg);
+  border-width: 0 3.5px 3.5px 0;
+  transform: rotate(45deg);
+}
+
+.foto-stampa__voce:has(input:checked) {
+  box-shadow: 0 0 0 2px var(--fg);
+}
+
+.foto-stampa__voce input:focus-visible ~ .foto-stampa__segno {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}

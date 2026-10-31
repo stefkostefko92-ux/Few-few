@@ -1,0 +1,207 @@
+/* Rilievi Impianti — основа: токени, нулиране, типография, бутони, фокус.
+   Палитрата е от заданието: бял фон с черен текст и черен фон с бял текст. Сивите са само стъпала между
+   двете (линии, тихи повърхности); червеното е само за грешки и необратими действия — никога за украса.
+   Черната лента (горе, долу, панелът с чертежа) е еднаква в двете теми. */
+
+:root {
+  --bg: #ffffff;
+  --fg: #000000;
+  --muted: #555555;
+  --line: #d6d6d6;
+  --line-strong: #000000;
+  --wash: #f4f4f4;
+  --field: #ffffff;
+  --field-line: #767676;
+  --hover: #f1f1f1;
+  --mark-bg: #000000;
+  --mark-fg: #ffffff;
+  /* Главният бутон — текстът върху фона; темата „Personalizzato“ го сменя с акцента (colori.ts). */
+  --primary-bg: var(--fg);
+  --primary-fg: var(--bg);
+  --danger: #b3261e;
+  --danger-fg: #ffffff;
+  --bar: #000000;
+  --bar-fg: #ffffff;
+  --bar-muted: #b8b8b8;
+  --bar-line: #333333;
+  --bar-edge: transparent;
+  --bar-hover: #141414;
+  --bar-current: #1c1c1c;
+  --radius: 6px;
+  --radius-plate: 12px;
+  --gutter: 16px;
+  --font: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-cond: 'Fira Sans Condensed', 'Fira Sans', system-ui, sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #000000;
+    --fg: #ffffff;
+    --muted: #a8a8a8;
+    --line: #333333;
+    --line-strong: #ffffff;
+    --wash: #121212;
+    --field: #000000;
+    --field-line: #8a8a8a;
+    --hover: #161616;
+    --mark-bg: #ffffff;
+    --mark-fg: #000000;
+    --danger: #ff8b80;
+    --danger-fg: #000000;
+    --bar-edge: #333333;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #000000;
+  --fg: #ffffff;
+  --muted: #a8a8a8;
+  --line: #333333;
+  --line-strong: #ffffff;
+  --wash: #121212;
+  --field: #000000;
+  --field-line: #8a8a8a;
+  --hover: #161616;
+  --mark-bg: #ffffff;
+  --mark-fg: #000000;
+  --danger: #ff8b80;
+  --danger-fg: #000000;
+  --bar-edge: #333333;
+  color-scheme: dark;
+}
+
+@media (min-width: 720px) {
+  :root {
+    --gutter: 32px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Заглавията на страниците са в тесния шрифт — като надписите на табелата. */
+h1 {
+  font-family: var(--font-cond);
+  font-size: clamp(1.875rem, 1.45rem + 1.5vw, 2.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.005em;
+}
+
+h2 {
+  font-size: 1.25rem;
+}
+
+h3 {
+  font-size: 1rem;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+mark {
+  background: var(--mark-bg);
+  color: var(--mark-fg);
+  padding: 0 0.1em;
+  border-radius: 2px;
+}
+
+.skip {
+  position: absolute;
+  left: var(--gutter);
+  top: -100px;
+  z-index: 100;
+  padding: 10px 14px;
+  background: var(--fg);
+  color: var(--bg);
+  font-weight: 600;
+  border-radius: var(--radius);
+}
+
+.skip:focus {
+  top: 12px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+/* Марката (табела „RI“, картинка — scripts/logo) — в лентата, на входа и във витрината. */
+.brand__mark {
+  flex: none;
+  width: 47px;
+  height: 36px;
+}
+
+.brand__mark--48 {
+  width: 62px;
+  height: 48px;
+}

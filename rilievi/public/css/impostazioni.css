@@ -1,0 +1,56 @@
+/* Настройките на фирмата — имената и правата на ролите: всяка роля е рамка с името и отметките си.
+   В профила — цветовете на темата „Personalizzato“ (избирачът на браузъра). */
+
+.ruoli {
+  display: grid;
+  gap: 16px;
+}
+
+.ruolo {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-plate);
+}
+
+.ruolo__titolo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px;
+  font-weight: 600;
+}
+
+.ruolo__permessi {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 8px;
+}
+
+.colori {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap: 16px;
+}
+
+.colore__input {
+  display: block;
+  width: 100%;
+  height: 44px;
+  padding: 3px;
+  background: var(--field);
+  border: 1px solid var(--field-line);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.colore__input:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
+.colori__ripristina {
+  margin-top: 12px;
+}

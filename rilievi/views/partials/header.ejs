@@ -1,0 +1,77 @@
+<%
+  // Страничната лента (собственикът, 30 октомври 2026 — като в LiftPilot, вляво): групи Rilievi ·
+  // Assistenza · Amministrazione на фирмата · Master (нашето — фирмите и заявките за достъп, само за
+  // собственика на портала, отделно от администрацията на фирмата), вписаният човек долу. На компютър (от 1100 px) стои винаги вляво; под
+  // това горе остава тънка лента с ☰, а лентата се отваря отляво над страницата (public/js/menu.js). Без
+  // JavaScript лентата е над съдържанието, отворена.
+  const pending = typeof newRequests !== 'undefined' ? newRequests : 0;
+  const groups = [
+    {
+      key: 'rilievi',
+      items: [
+        { href: '/schede', key: 'nav.schede', icon: 'sheet', show: can('schede:read') },
+        { href: '/schede/nuova', key: 'schede.new', icon: 'plus', show: can('schede:write') },
+        { href: '/calcolo-argano', key: 'nav.calcoloArgano', icon: 'calc', show: can('schede:read') },
+        { href: '/cestino', key: 'nav.cestino', icon: 'trash', show: can('schede:trash') },
+      ],
+    },
+    {
+      key: 'assistenza',
+      items: [
+        { href: '/interventi', key: 'nav.interventi', icon: 'wrench', show: can('interventi:read') },
+        { href: '/interventi/nuovo', key: 'interventi.new', icon: 'plus', show: can('interventi:write') },
+        { href: '/cartelli', key: 'nav.cartelli', icon: 'stop', show: can('interventi:read') },
+      ],
+    },
+    {
+      key: 'amministrazione',
+      items: [
+        { href: '/utenti', key: 'nav.utenti', icon: 'users', show: can('users:manage') },
+        { href: '/impostazioni', key: 'nav.impostazioni', icon: 'settings', show: can('aziende:settings') },
+        { href: '/registro', key: 'nav.registro', icon: 'log', show: can('audit:view') },
+      ],
+    },
+    {
+      key: 'master',
+      items: [
+        { href: '/aziende', key: 'nav.aziende', icon: 'building', show: can('aziende:manage') },
+        { href: '/richieste', key: 'requests.nav', icon: 'inbox', show: can('requests:manage'), count: pending },
+      ],
+    },
+  ]
+    .map((group) => ({ ...group, items: group.items.filter((item) => item.show) }))
+    .filter((group) => group.items.length > 0);
+  // Текущата точка е най-дългият адрес, в който е страницата: „/schede/nuova“ е „Nuova scheda“, а
+  // „/schede/<id>“ — „Schede“.
+  const currentHref = groups
+    .flatMap((group) => group.items.map((item) => item.href))
+    .filter((href) => path === href || path.startsWith(href + '/'))
+    .sort((a, b) => b.length - a.length)[0];
+  // Под името: Master; ролята и фирмата при една фирма; броят на фирмите при няколко.
+  const only = currentUser.memberships.length === 1 ? currentUser.memberships[0] : null;
+  const roleLine = currentUser.master
+    ? t('role.MASTER')
+    : only
+      ? ruolo(only.role, only.aziendaId) + ', ' + only.aziendaName
+      : t('nav.aziendeCount', { n: currentUser.memberships.length });
+%><header class="appbar">
+  <button type="button" class="appbar__menu" aria-controls="sidenav" aria-expanded="false" data-nav-open><%- include('icon', { name: 'menu' }) %><span class="visually-hidden"><%= t('nav.open') %></span></button>
+  <a class="brand" href="/schede"><%- include('brandmark') %><span class="brand__text"><span class="brand__name">Carbon Stealth VCC</span><span class="brand__product"><%= t('app.product') %></span></span></a>
+  <a class="btn btn--bar btn--sm appbar__account" href="/account" aria-label="<%= t('nav.account') %>"><%- include('icon', { name: 'user' }) %></a>
+</header>
+<div class="sidenav__backdrop" data-nav-close hidden></div>
+<div class="sidenav" id="sidenav" data-sidenav>
+  <div class="sidenav__head">
+    <a class="brand" href="/schede"><%- include('brandmark') %><span class="brand__text"><span class="brand__name">Carbon Stealth VCC</span><span class="brand__product"><%= t('app.product') %></span></span></a>
+    <button type="button" class="sidenav__close" data-nav-close><%- include('icon', { name: 'close' }) %><span class="visually-hidden"><%= t('nav.close') %></span></button>
+  </div>
+  <nav class="sidenav__nav" aria-label="<%= t('nav.label') %>">
+    <% for (const group of groups) { %><p class="sidenav__group" id="nav-<%= group.key %>"><%= t('nav.group.' + group.key) %></p>
+    <ul aria-labelledby="nav-<%= group.key %>">
+      <% for (const item of group.items) { %><li><a href="<%= item.href %>"<% if (item.href === currentHref) { %> aria-current="page"<% } %>><%- include('icon', { name: item.icon }) %><span><%= t(item.key) %></span><% if (item.count) { %><span class="nav__count"><%= item.count %></span><% } %></a></li>
+      <% } %>
+    </ul>
+    <% } %>
+  </nav>
+  <a class="who" href="/account"<% if (path === '/account') { %> aria-current="page"<% } %>><%- include('icon', { name: 'user' }) %><span class="who__text"><span class="who__name"><%= currentUser.name %></span><span class="who__role"><%= roleLine %></span></span></a>
+</div>

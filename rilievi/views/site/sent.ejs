@@ -1,0 +1,11 @@
+<%- include('top', { pageTitle: t('site.sent.title') + ' — Rilievi Impianti', description: t('site.meta.description'), noindex: true }) %>
+<section class="sent" id="richiesta" aria-labelledby="sent-title">
+  <span class="sent__mark" aria-hidden="true"><%- include('../partials/icon', { name: 'check' }) %></span>
+  <h1 id="sent-title"><%= t('site.sent.title') %></h1>
+  <p><%= t('site.sent.text') %></p>
+  <div class="toolbar">
+    <a class="btn btn--primary" href="<%= homePath %>"><%= t('site.sent.back') %></a>
+    <a class="btn" href="<%= loginUrl %>"><%= t('site.nav.login') %></a>
+  </div>
+</section>
+<%- include('bottom') %>

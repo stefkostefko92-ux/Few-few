@@ -1,0 +1,196 @@
+/* Табелата „Avviso di fermo impianto“: изборът на шаблона в настройките (умалените картинки като карти
+   с радио) и шаблонът на страницата на табелата. Картинките са цветни — шаблоните на собственика. */
+
+.modelli {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 16px;
+  margin: 12px 0 20px;
+  padding: 0;
+  border: 0;
+}
+
+.modelli__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--field-line);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.modelli__item:hover {
+  border-color: var(--fg);
+}
+
+.modelli__item input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.modelli__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto;
+  max-height: 260px;
+  object-fit: contain;
+  background: var(--wash);
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.modelli__nome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.modelli__dot {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--fg);
+  border-radius: 50%;
+}
+
+.modelli__item:has(input:checked) {
+  border-color: var(--fg);
+  box-shadow: inset 0 0 0 2px var(--fg);
+  font-weight: 600;
+}
+
+.modelli__item:has(input:checked) .modelli__dot {
+  background: radial-gradient(circle, var(--fg) 0 5px, transparent 5.5px);
+}
+
+.modelli__item:has(input:focus-visible) {
+  outline: 2px solid var(--fg);
+  outline-offset: 3px;
+}
+
+.cartello__modello {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 0;
+}
+
+.cartello__anteprima {
+  width: min(100%, 480px);
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.cartello__modello figcaption {
+  display: flex;
+  flex: 1 1 220px;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Новата табела от картата на уредбата: изборът или търсенето ѝ над формата. */
+.da-scheda {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.da-scheda .section__title {
+  margin: 0;
+}
+
+.da-scheda__cerca {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.da-scheda__cerca .input {
+  flex: 1 1 240px;
+}
+
+.da-scheda__scelta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.da-scheda__scelta p {
+  margin: 0;
+}
+
+.da-scheda__azioni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.da-scheda__risultati {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.da-scheda__risultato {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) - 2px);
+  color: inherit;
+  text-decoration: none;
+}
+
+.da-scheda__risultato:hover {
+  background: var(--hover);
+}
+
+.da-scheda__risultato:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
+.cartelli-scheda ul {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+/* Формата на табелата: всяко поле — подравнено отгоре (подсказката под „Ubicazione“ не сваля „Città“).
+   На телефон — една колона; от 720 px — дата | адрес, град | място, текстът на целия ред. */
+.grid--cartello {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+@media (min-width: 720px) {
+  .grid--cartello {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .grid--cartello .field--data,
+  .grid--cartello .field--citta {
+    grid-column: span 2;
+  }
+
+  .grid--cartello .field--indirizzo,
+  .grid--cartello .field--ubicazione {
+    grid-column: span 4;
+  }
+
+  .grid--cartello .field--testo {
+    grid-column: 1 / -1;
+  }
+}

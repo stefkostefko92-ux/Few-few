@@ -1,0 +1,111 @@
+/* Изчислението за аргано (views/argano/calcolo.ejs): предавателното число на един ред, резултатите
+   като таблици по раздели, ОК/НЕ като етикет — монохромно: НЕ е обърнат (черен фон), не червен. */
+
+.argano__rapporto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.argano__rapporto .select {
+  flex: 0 0 auto;
+  width: 4.5rem;
+}
+
+.argano__rapporto .input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.argano__risultati {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  scroll-margin-top: calc(var(--chrome-top, 0px) + 16px);
+}
+
+.argano__sezione h3 {
+  margin: 0 0 8px;
+  font-family: var(--font-cond);
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+/* Надписите на резултатите се пренасят (в общата таблица заглавията са на един ред): дълъг надпис не
+   разширява таблицата извън телефона. */
+.argano__tabella th {
+  width: 60%;
+  background: none;
+  font-weight: 400;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.argano__valore {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.argano__esito {
+  width: 4.5rem;
+  text-align: right;
+}
+
+.esito {
+  display: inline-block;
+  min-width: 2.75rem;
+  padding: 2px 8px;
+  border: 1.5px solid var(--fg);
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.esito--no {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.argano__conclusione {
+  margin: 8px 0 0;
+  font-weight: 600;
+}
+
+.argano__conclusione.esito-testo--no::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  background: var(--fg);
+  vertical-align: 0.05em;
+}
+
+.argano__nota {
+  font-size: 0.875rem;
+}
+
+@media (max-width: 640px) {
+  .argano__tabella th {
+    width: auto;
+  }
+}
+
+/* Страницата „Calcolo argano“ (views/argano/elenco.ejs): разделите на търсенето и списъка; картата на
+   хидравлична уредба се показва без връзка — с пунктирна рамка, не като бутон. */
+.argano-elenco {
+  display: grid;
+  gap: 10px;
+}
+
+.argano-elenco .section__title {
+  margin: 0;
+}
+
+.argano-elenco__spento {
+  border-style: dashed;
+  color: var(--muted);
+}

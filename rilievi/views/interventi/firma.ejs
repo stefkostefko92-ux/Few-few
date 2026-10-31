@@ -1,0 +1,73 @@
+<%
+  // „Firma e conferma“: окончателният лист само за четене, отпечатъкът на съдържанието му и под него
+  // двата подписа с пръст (public/js/firma.js) с имената. Формата връща версията (`base`) и отпечатъка,
+  // които тази страница е показала — сървърът подписва само същото съдържание (src/interventi/conferma.ts).
+  const r = intervento;
+  const errorKeys = Object.keys(errors);
+  const chi = (key) => key.startsWith('firmaTecnico') ? 'tecnico' : 'cliente';
+  const labelOf = (key) => t('interventi.firma.' + chi(key)) + (key.endsWith('Nome') ? ' — ' + t('interventi.firma.nome') : '');
+  const messageOf = (key) => {
+    const code = errors[key];
+    if (key.endsWith('Nome')) return code === 'mancante' ? t('interventi.firma.errore.nome') : t('scheda.error.' + code, { maxLength: 120 });
+    return t('interventi.firma.errore.' + code);
+  };
+%><%- include('../partials/top', { titleKey: 'interventi.conferma.titolo', title, scripts }) %>
+<div class="page-head">
+  <div>
+    <a href="/interventi/<%= r.id %>"><%= t('interventi.conferma.torna') %></a>
+    <h1><%= t('interventi.conferma.titolo') %> <span class="intervento__num">n. <%= numero %></span></h1>
+    <p class="page-head__sub"><%= r.azienda.name %></p>
+  </div>
+</div>
+<div class="stack-gap">
+<% if (typeof conflict !== 'undefined' && conflict) { %>
+  <div class="notice" role="alert"><p><strong><%= t('interventi.conferma.cambiato') %></strong></p></div>
+<% } %>
+<% if (errorKeys.length) { %>
+  <div class="errors" role="alert" id="error-summary" tabindex="-1">
+    <h2><%= t('scheda.errorSummary', { n: errorKeys.length }) %></h2>
+    <ul>
+      <% for (const key of errorKeys) { %><li><a href="#f-<%= key %>"><%= labelOf(key) %>: <%= messageOf(key) %></a></li>
+      <% } %>
+    </ul>
+  </div>
+<% } %>
+<p class="notice"><%= t('interventi.conferma.leggi') %></p>
+<%- include('_foglio') %>
+<form class="form intervento-form intervento-firma" method="post" action="/interventi/<%= r.id %>/conferma" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="base" value="<%= base %>">
+  <input type="hidden" name="impronta" value="<%= improntaHex %>">
+  <fieldset class="section firme">
+    <legend class="section__title"><%= t('interventi.sezione.firme') %></legend>
+    <p class="intervento-impronta"><%= t('interventi.conferma.impronta') %>: <span class="impronta"><%= improntaTesto %></span></p>
+    <p class="field__hint"><%= t('interventi.conferma.improntaHint') %> <%= t('interventi.firma.hint') %></p>
+    <div class="firme__grid">
+      <% for (const who of ['Tecnico', 'Cliente']) {
+           const key = 'firma' + who;
+           const nomeKey = key + 'Nome';
+           const label = t('interventi.firma.' + who.toLowerCase()); %>
+      <div class="firma" data-firma>
+        <p class="firma__label" id="l-<%= key %>"><%= label %></p>
+        <div class="firma__pad" id="f-<%= key %>" tabindex="-1">
+          <canvas class="firma__canvas" width="600" height="200" role="img" aria-label="<%= t('interventi.firma.area', { chi: label }) %>" data-firma-canvas></canvas>
+          <button type="button" class="btn btn--sm firma__clear" data-firma-clear aria-describedby="l-<%= key %>"><%= t('interventi.firma.cancella') %></button>
+        </div>
+        <input type="hidden" name="<%= key %>" value="<%= values[key] %>" data-firma-input>
+        <% if (errors[key]) { %><p class="field__error"><%= messageOf(key) %></p><% } %>
+        <div class="field">
+          <label class="field__label" for="f-<%= nomeKey %>"><%= t('interventi.firma.nome') %></label>
+          <input class="input" id="f-<%= nomeKey %>" name="<%= nomeKey %>" type="text" maxlength="120" required autocomplete="<%= who === 'Tecnico' ? 'name' : 'off' %>" value="<%= values[nomeKey] %>"<% if (errors[nomeKey]) { %> aria-invalid="true" aria-describedby="err-<%= nomeKey %>"<% } %>>
+          <% if (errors[nomeKey]) { %><p class="field__error" id="err-<%= nomeKey %>"><%= messageOf(nomeKey) %></p><% } %>
+        </div>
+      </div>
+      <% } %>
+    </div>
+  </fieldset>
+  <div class="actions">
+    <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'sign' }) %><%= t('interventi.conferma.invio') %></button>
+    <a class="btn btn--ghost" href="/interventi/<%= r.id %>"><%= t('common.cancel') %></a>
+  </div>
+</form>
+</div>
+<%- include('../partials/bottom') %>

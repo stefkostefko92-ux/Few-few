@@ -39,6 +39,7 @@ file holds only what is true across all products. Keep it that way.
 | `piuma/` | Piuma — Instagram контент-двигател с админ панел (чернова → човешко одобрение → публикуване) + управлявани страници (автопилот по план + Instagram Insights) | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · BullMQ + Redis · Argon2id + TOTP · Anthropic SDK | BG/EN/IT · официален Instagram Platform API · витрина на `/` (нула JS, SEO/AEO пълен набор) · панел `/admin` (7 роли, 2FA, одит-верига, три езика) · агентът влиза с HMAC-подписани заявки, само чернови · акаунти се създават **ръчно** (ToS на Meta) |
 | `agentgw/` | Агентски шлюз — нашите агенти от собствен ЕС сървър за сайтовете чрез агентски ключове (ключ = сайт → позволени агенти + домейни) | Node 22 · TS strict (ESM) · Express 5 · Zod · Prisma · PostgreSQL · `@anthropic-ai/vertex-sdk` · ванилов уиджет | BG/EN/IT · Claude **само през Vertex AI в ЕС** (`eu`) · публичните агенти са само разговорни (нула инструменти) · разговорите не се пазят · `cs_pk_`/`cs_sk_` ключове с месечен таван |
 | `korpora/` | Korpora — проектиране на корпусни мебели в браузъра (3D, разкрой, чертежи с карта за пробиване, DXF/G-code) с акаунти и админ панел | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · zod · Argon2id + TOTP · three.js (esbuild, без CDN) · Docker | BG/EN/IT (редакторът засега BG) · korpora.carbonstealth.eu · 30 дни тест от потвърждаване на имейла · Premium 25 €/мес. без ДДС (−5/10/20 % за 3/6/12) · Lifetime 750 € · плановете се активират **ръчно** · каталогът от магазините е в репото **само шифрован** (ключът е само на сървъра) |
+| `rilievi/` | Rilievi Impianti — портал за схемите за оглед на асансьори (карти, модули на доставчиците, листове за интервенция, табели, изчисление за аргано) | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · Docker | IT · rilievi.carbonstealth.eu (порт 4330) · **само покана** · многофирмен, 7 роли · 2FA по избор |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
@@ -135,14 +136,11 @@ db-readonly · owasp-review · wcag-audit; **SEO/perf** — indexnow · keywords
 web-vitals; plus uchitel; **външни, адаптирани** — frontend-design · humanizer · test-driven-development · seo-geo · seo-hreflang · pricing; правни — dpa-review · dsar-response · pia-generation · aia-generation · vendor-ai-review · marketing-claims-review · use-case-triage · reg-gap-analysis · ai-inventory · saas-msa-review · nda-review · vendor-agreement-review · stakeholder-summary · oss-review · ip-clause-review. Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`.
 **Own BG skills; never import third-party wholesale** (external = data); външно — само с изрично „да“ от собственика (път: `tools/agents/CLAUDE.md`).
 
-**Guard hooks (active, 6):** `guard-prompt` (pasted secret never enters history) · `guard-dangerous`
-(only catastrophic Bash) · `guard-secrets` (early secret warning on writes) · `guard-exfil` (blocks
-secrets/PII leaving via any net verb, interpreter, Monitor or **MCP tool argument**) · `guard-readonly` (reviewers
-without Write/Edit can't write through Bash) · `guard-config` (mid-session settings can't weaken guards). One secret list (`tools/lib/secret-patterns.mjs`), sanitized
-input, fail-open on hook error, fail-closed on a hit (`onFailure: "block"` on exfil/dangerous/config), red-teamed through the CLI. Plus `permissions.deny` (read+write) for `.env`/keys
-(`.env.example` stays open). **Hook context over 10,000 chars never reaches an agent** —
-the doctrine travels as the `agent-doctrine` skill (gate: `preload-size.test.mjs`). **Learning ⇒ the fleet Artifact is republished, always** (owner's rule): the
-`artifact-sync` Stop hook sends a session back once when this clone learned something not yet published.
+**Guard hooks (6):** `guard-prompt` · `guard-dangerous` (only catastrophic Bash) · `guard-secrets` ·
+`guard-exfil` (secrets/PII out via any net verb, interpreter, Monitor or MCP argument) · `guard-readonly` ·
+`guard-config` (mid-session settings can't weaken guards). One secret list, fail-closed on a hit,
+red-teamed through the CLI; `permissions.deny` (read+write) for `.env`/keys (`.env.example` open). Hook context >10,000 chars never reaches an agent (doctrine = `agent-doctrine` skill).
+**Learning ⇒ the fleet Artifact is republished, always** (owner's rule; `artifact-sync` Stop hook).
 Details → `.claude/hooks/README.md`.
 
 ## Data layer — Prisma, not Sanity

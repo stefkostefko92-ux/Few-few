@@ -1,0 +1,84 @@
+{
+  "id": "blu",
+  "titolo": "Blu tecnico",
+  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 04_Blu_Tecnico.pdf, ingrandita per la stampa il 31/10/2026 con Real-ESRGAN x4plus (3:1 con Lanczos) e riportata a 4× con Lanczos (scripts/cartelli/upscale.py)",
+  "file": "blu.jpg",
+  "sha256": "c62c032b19d0c8255531bc34037cf72a5805d640078e7e3f3e083a162a62f9b8",
+  "larghezza": 794,
+  "altezza": 918,
+  "scala": 4,
+  "copri": [
+    {
+      "rect": [40, 114, 540, 152]
+    },
+    {
+      "rect": [642, 542, 794, 569]
+    },
+    {
+      "rect": [195, 571, 317, 602]
+    },
+    {
+      "rect": [333, 571, 493, 602]
+    },
+    {
+      "rect": [517, 571, 615, 602]
+    },
+    {
+      "rect": [643, 571, 794, 602]
+    },
+    {
+      "rect": [195, 686, 794, 788]
+    },
+    {
+      "rect": [195, 804, 794, 832]
+    }
+  ],
+  "logo": {
+    "box": [44, 14, 260, 112]
+  },
+  "azienda": {
+    "box": [276, 18, 780, 112],
+    "colore": "#1a1a1a",
+    "dimensione": 18
+  },
+  "valori": {
+    "y": 595,
+    "dimensione": 24,
+    "colore": "#111111",
+    "colonne": [
+      [202, 110],
+      [340, 148],
+      [524, 86],
+      [650, 138]
+    ]
+  },
+  "testo": {
+    "x": 202,
+    "y": 707,
+    "larghezza": 588,
+    "riga": 24.7,
+    "righe": 4,
+    "dimensione": 21,
+    "colore": "#111111"
+  },
+  "scritte": [
+    {
+      "testo": "UBICAZIONE IMPIANTO",
+      "x": 650,
+      "y": 563,
+      "larghezza": 138,
+      "dimensione": 21,
+      "colore": "#1f1f1f",
+      "peso": "normale"
+    },
+    {
+      "testo": "CERTI DELLA VOSTRA COLLABORAZIONE, PORGIAMO I NOSTRI CORDIALI SALUTI",
+      "x": 202,
+      "y": 825,
+      "larghezza": 588,
+      "dimensione": 21,
+      "colore": "#111111",
+      "peso": "normale"
+    }
+  ]
+}

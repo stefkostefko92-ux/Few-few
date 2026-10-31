@@ -1,0 +1,104 @@
+/* Първият екран: снимката на шахтата от ямата нагоре (нашият рендер) до ръбовете, заглавието долу
+   вляво върху тъмното. Винаги черно-бял и тъмен — и в светлата тема, като черната лента над него. */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-items: end;
+  min-height: min(calc(100svh - 64px), 920px);
+  background: var(--bar);
+  color: var(--bar-fg);
+  overflow: hidden;
+}
+
+.hero__foto,
+.hero__foto img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero__foto {
+  z-index: -2;
+}
+
+.hero__foto img {
+  object-fit: cover;
+  object-position: 50% 40%;
+}
+
+/* Тъмното под текста: отдолу нагоре и отляво надясно, за да се чете бялото върху бетона. */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(to top, rgb(0 0 0 / 0.92) 0%, rgb(0 0 0 / 0.7) 32%, rgb(0 0 0 / 0) 68%),
+    linear-gradient(to right, rgb(0 0 0 / 0.72) 0%, rgb(0 0 0 / 0.3) 46%, rgb(0 0 0 / 0) 70%);
+}
+
+.hero__text {
+  display: grid;
+  gap: 24px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 160px var(--gutter) clamp(48px, 2rem + 4vw, 96px);
+}
+
+.hero__title {
+  max-width: 14ch;
+  font-size: clamp(2.75rem, 1.2rem + 5vw, 5.5rem);
+  font-weight: 600;
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+}
+
+.hero__lead {
+  max-width: 38rem;
+  font-size: clamp(1.125rem, 1rem + 0.45vw, 1.3125rem);
+  line-height: 1.55;
+  color: var(--bar-fg);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.hero :focus-visible {
+  outline-color: var(--bar-fg);
+}
+
+.hero__note {
+  max-width: 34rem;
+  padding-left: 14px;
+  border-left: 3px solid var(--bar-fg);
+  font-size: 0.9375rem;
+  color: var(--bar-muted);
+}
+
+@media (max-width: 599px) {
+  .hero {
+    min-height: min(calc(100svh - 64px), 760px);
+  }
+
+  .hero::after {
+    background: linear-gradient(
+      to top,
+      rgb(0 0 0 / 0.94) 0%,
+      rgb(0 0 0 / 0.78) 45%,
+      rgb(0 0 0 / 0.1) 85%
+    );
+  }
+
+  .hero__text {
+    gap: 18px;
+    padding-top: 120px;
+  }
+}
