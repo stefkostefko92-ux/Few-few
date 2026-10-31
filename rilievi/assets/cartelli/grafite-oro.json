@@ -1,11 +1,12 @@
 {
   "id": "grafite-oro",
   "titolo": "Grafite e oro",
-  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 05_Grafite_Oro.pdf, senza modifiche",
+  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 05_Grafite_Oro.pdf, ingrandita per la stampa il 31/10/2026 con Real-ESRGAN x4plus (3:1 con Lanczos) e riportata a 4× con Lanczos (scripts/cartelli/upscale.py)",
   "file": "grafite-oro.jpg",
-  "sha256": "968a5a8bd4b0d5ee0bc89296e186c454b247fe925d4708741743c12f9336246d",
+  "sha256": "170c4fe2a5fe7150dd79adf61e6500886b68127560002e4397d87c94e88c230d",
   "larghezza": 930,
   "altezza": 918,
+  "scala": 4,
   "copri": [
     {
       "rect": [63, 121, 589, 148]

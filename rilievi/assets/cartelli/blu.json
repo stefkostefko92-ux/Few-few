@@ -1,11 +1,12 @@
 {
   "id": "blu",
   "titolo": "Blu tecnico",
-  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 04_Blu_Tecnico.pdf, senza modifiche",
+  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 04_Blu_Tecnico.pdf, ingrandita per la stampa il 31/10/2026 con Real-ESRGAN x4plus (3:1 con Lanczos) e riportata a 4× con Lanczos (scripts/cartelli/upscale.py)",
   "file": "blu.jpg",
-  "sha256": "e41799dcaf3cf0ba8e2aba52244228111bd984a7266a799c98aa7c4f4e5d6f0f",
+  "sha256": "c62c032b19d0c8255531bc34037cf72a5805d640078e7e3f3e083a162a62f9b8",
   "larghezza": 794,
   "altezza": 918,
+  "scala": 4,
   "copri": [
     {
       "rect": [40, 114, 540, 152]

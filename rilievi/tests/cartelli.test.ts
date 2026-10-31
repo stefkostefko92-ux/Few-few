@@ -1,102 +1,15 @@
-// The stop sign "Avviso di fermo impianto" (the owner, 30 October 2026): the five templates pinned to their
-// images, the sample data wiped by filling each column between the background above and below it, the
-// sign form and the company data read with distrust, and the A4 PDF with the logo and the data on top.
+// The stop sign "Avviso di fermo impianto" (the owner, 30 October 2026): the sign form and the company data
+// read with distrust, and the A4 PDF with the logo and the data on top. The templates themselves:
+// cartelli-modelli.test.ts.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { PDFDocument } from 'pdf-lib';
 import sharp from 'sharp';
 import { datiSalvati, intestazioneDi, parseDatiSocietari } from '../src/aziende/dati.js';
 import { parseCartello } from '../src/cartelli/form.js';
-import {
-  assertModelliCartello,
-  immagineModello,
-  isModelloId,
-  MODELLI,
-  MODELLI_ID,
-  modelloDi,
-  originale,
-  pulisci,
-} from '../src/cartelli/modelli.js';
+import { MODELLI, modelloDi } from '../src/cartelli/modelli.js';
 import { adatta, renderCartello } from '../src/cartelli/pdf.js';
 import { fontDir, fontsHere } from './scheda-pdf.js';
-
-describe('the sign templates', () => {
-  it('are the five images of the owner, pinned by SHA-256, the red one first', () => {
-    assert.doesNotThrow(assertModelliCartello);
-    assert.deepEqual([...MODELLI.keys()], [...MODELLI_ID]);
-    assert.equal(MODELLI_ID.length, 5);
-    assert.equal(modelloDi(null).id, 'rosso');
-    assert.equal(modelloDi('viola').id, 'rosso', 'a template no longer there');
-    assert.equal(modelloDi(['blu']).id, 'rosso', 'a forged value');
-    assert.equal(modelloDi('blu').id, 'blu');
-    assert.equal(isModelloId('__proto__'), false);
-  });
-
-  it('wipe a field by filling each column from the row above to the row below', () => {
-    // 1 × 9 pixels: 10 on top, 250 at the bottom, "text" (0) in rows 3–5.
-    const rgb = new Uint8Array([10, 10, 10, 0, 0, 0, 250, 250, 250].flatMap((v) => [v, v, v]));
-    const width = 1;
-    const height = 9;
-    pulisci(rgb, width, height, [[0, 3, 1, 6]]);
-    const column = [...rgb].filter((_, i) => i % 3 === 0);
-    assert.deepEqual(column.slice(0, 3), [10, 10, 10], 'above untouched');
-    assert.deepEqual(column.slice(6), [250, 250, 250], 'below untouched');
-    assert.deepEqual(column.slice(3, 6), [70, 130, 190], 'a straight line in between');
-  });
-
-  it('leave no sample text where the company data goes: the field turns smooth', async () => {
-    for (const modello of MODELLI.values()) {
-      const [original, cleaned] = await Promise.all(
-        [originale(modello), await immagineModello(modello)].map((bytes) =>
-          sharp(bytes).removeAlpha().raw().toBuffer({ resolveWithObject: true }),
-        ),
-      );
-      assert.equal(cleaned!.info.width, modello.larghezza);
-      assert.equal(cleaned!.info.height, modello.altezza);
-      // The largest field — the sample message to the people — had text; now it is a gradient.
-      const [x0, y0, x1, y1] = modello.copri.reduce((a, b) =>
-        (b.rect[2] - b.rect[0]) * (b.rect[3] - b.rect[1]) >
-        (a.rect[2] - a.rect[0]) * (a.rect[3] - a.rect[1])
-          ? b
-          : a,
-      ).rect;
-      const roughness = ({ data, info }: { data: Buffer; info: { width: number } }) => {
-        let sum = 0;
-        for (let y = y0; y < y1 - 1; y++)
-          for (let x = x0; x < x1; x++)
-            sum += Math.abs(
-              data[(y * info.width + x) * 3]! - data[((y + 1) * info.width + x) * 3]!,
-            );
-        return sum / ((x1 - x0) * (y1 - y0 - 1));
-      };
-      assert.ok(roughness(original!) > 8, `${modello.id}: the sample had text`);
-      assert.ok(roughness(cleaned!) < 3, `${modello.id}: the text is still there`);
-    }
-  });
-});
-
-describe('the head of the cleaned templates', () => {
-  it('keeps no red rule and no activity line under the logo (the owner, 30 October 2026)', async () => {
-    for (const modello of MODELLI.values()) {
-      const { data, info } = await sharp(await immagineModello(modello))
-        .removeAlpha()
-        .raw()
-        .toBuffer({ resolveWithObject: true });
-      // From the bottom of the logo to the bottom of the first field (the sample activity line).
-      const [x0, , x1, y1] = modello.copri[0]!.rect;
-      const reddish: number[] = [];
-      for (let y = modello.logo.box[3] - 10; y < y1 + 25; y++) {
-        let n = 0;
-        for (let x = x0; x < x1; x++) {
-          const i = (y * info.width + x) * 3;
-          if (data[i]! - Math.max(data[i + 1]!, data[i + 2]!) > 40) n++;
-        }
-        if (n > (x1 - x0) * 0.15) reddish.push(y);
-      }
-      assert.deepEqual(reddish, [], `${modello.id}: a red rule is left on rows ${reddish}`);
-    }
-  });
-});
 
 describe('the sign form', () => {
   const FORM = {

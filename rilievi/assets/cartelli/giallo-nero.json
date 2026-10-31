@@ -1,11 +1,12 @@
 {
   "id": "giallo-nero",
   "titolo": "Giallo e nero",
-  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 02_Giallo_Nero.pdf, senza modifiche",
+  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 02_Giallo_Nero.pdf, ingrandita per la stampa il 31/10/2026 con Real-ESRGAN x4plus (3:1 con Lanczos) e riportata a 2× con Lanczos (scripts/cartelli/upscale.py)",
   "file": "giallo-nero.jpg",
-  "sha256": "2207f39dcf066026202d3d8de958d1346f29ee31de5a6abd9205f56bf0406f95",
+  "sha256": "0fd14c4cf1824ea0549f5548ae2316fc78cf5672a2d0ab748f37ef0bc5ff6c88",
   "larghezza": 1518,
   "altezza": 1094,
+  "scala": 2,
   "copri": [
     {
       "rect": [95, 166, 724, 210]
