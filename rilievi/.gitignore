@@ -12,4 +12,6 @@ media/
 # Рендерите на витрината: виртуалната среда на Mitsuba и 16-битовите оригинали (scripts/render).
 scripts/render/.venv/
 scripts/render/out/
+# Логото: оригиналът от scripts/logo/logo.py (кодира се с `npm run brand:logo`).
+scripts/logo/out/
 __pycache__/

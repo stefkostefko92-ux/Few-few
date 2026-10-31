@@ -19,7 +19,8 @@
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="/static/img/favicon.svg?v=<%= v %>" type="image/svg+xml">
+<link rel="icon" href="/static/img/favicon-32.png?v=<%= v %>" type="image/png" sizes="32x32">
+<link rel="icon" href="/static/img/favicon-192.png?v=<%= v %>" type="image/png" sizes="192x192">
 <link rel="stylesheet" href="/static/fonts/fonts.css?v=<%= v %>">
 <% for (const sheet of sheets) { %><link rel="stylesheet" href="/static/css/<%= sheet %>.css?v=<%= v %>">
 <% } %><% if (personale) { %><link rel="stylesheet" href="<%= personale.href %>">

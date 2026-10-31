@@ -17,5 +17,5 @@ healthRouter.get('/health', async (_req, res) => {
 });
 
 healthRouter.get('/favicon.ico', (_req, res) => {
-  res.redirect(301, '/static/img/favicon.svg');
+  res.redirect(301, '/static/img/favicon-32.png');
 });

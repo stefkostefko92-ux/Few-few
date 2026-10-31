@@ -194,15 +194,14 @@ mark {
   height: 20px;
 }
 
-/* Марката (табела с четири винта) — в лентата, на входа и във витрината. */
+/* Марката (табела „RI“, картинка — scripts/logo) — в лентата, на входа и във витрината. */
 .brand__mark {
   flex: none;
-  width: 34px;
-  height: 26px;
+  width: 47px;
+  height: 36px;
 }
 
-.brand__mark rect,
-.brand__mark circle {
-  fill: none;
-  stroke: currentColor;
+.brand__mark--48 {
+  width: 62px;
+  height: 48px;
 }

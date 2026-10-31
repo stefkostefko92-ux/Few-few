@@ -37,7 +37,8 @@
 <meta name="geo.placename" content="<%= t('company.city') %>">
 <meta name="geo.position" content="<%= company.geo.latitude %>;<%= company.geo.longitude %>">
 <meta name="ICBM" content="<%= company.geo.latitude %>, <%= company.geo.longitude %>">
-<% } %><link rel="icon" href="/static/img/favicon.svg?v=<%= v %>" type="image/svg+xml">
+<% } %><link rel="icon" href="/static/img/favicon-32.png?v=<%= v %>" type="image/png" sizes="32x32">
+<link rel="icon" href="/static/img/favicon-192.png?v=<%= v %>" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png?v=<%= v %>">
 <%# Двата шрифта, които пренареждат текста, ако дойдат след първото рисуване (CLS) — основният текст
    (400) и заглавията (Condensed 600) — тръгват веднага с HTML-а, не чак след fonts.css; адресът е

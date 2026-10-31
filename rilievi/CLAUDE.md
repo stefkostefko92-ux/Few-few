@@ -44,6 +44,7 @@ npm run worker           # компресията на снимките и кл�
 npm run build            # prisma generate + tsc + шрифтовете в public/fonts (scripts/fonts.mjs)
 npm run moduli:disegna   # чертае листовете на 2SG и AMI 100 и картите им (assets/moduli) — после commit
 npm run render:encode    # снимките на витрината: scripts/render/out/*.png → public/img/site (AVIF + WebP)
+npm run brand:logo       # марката: scripts/logo/out/marchio.png → public/img/brand (WebP 1x/2x/3x) + favicon-*.png
 npm run owner:create     # първият MASTER от OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD (на сървъра: deploy/create-master.sh)
 ```
 
@@ -151,7 +152,8 @@ public/              css/ (портал: base, buttons, shell, layout, plate, fo
                      (менютата — и от клавиатурата) · schizzo-comandi.js (лентите, клавиатурата,
                      отваряне/затваряне); css/schizzo-barre.css — лентите и менютата;
                      img/ (og.png и apple-touch-icon.png — `npm run brand:images`; site/ — снимките на
-                     витрината, `npm run render:encode`), indexnow-key.txt
+                     витрината, `npm run render:encode`; brand/ и favicon-32/192.png — марката,
+                     `npm run brand:logo`), indexnow-key.txt
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
 deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh · nginx/ · systemd/
 ```
@@ -432,6 +434,16 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   Чертежът на шахтата (`views/site/_shaft.ejs`) остава — до легендата на картата и на входа: маркерите
   са номерата на разделите на картата (всеки раздел сочи своята част — `spots` по ключ). Витрината е
   без движение (и без JavaScript).
+- **Марката** (собственикът, 31 октомври 2026 — „un logo (non svg) … per il livello enterprise“; от три
+  концепции избра „Targa nera“): табела като тази на асансьора — стоманена рамка около черен сатенен
+  емайл, четири винта, релефни стоманени букви „RI“ (Fira Sans Condensed Bold), рендерирана от нас
+  (`scripts/logo/logo.py` — Mitsuba, като снимките на витрината; прозрачен фон, правоъгълна камера,
+  1,3 : 1). Картинка, не SVG: `views/partials/brandmark.ejs` — `<img>` 36 px в лентите и на входа, 48 px
+  в долната част на витрината (`marchio: 48`), с 2x и 3x в `srcset`; името до нея остава текст (следва
+  темите и „Personalizzato“). Същият рендер дава иконките на раздела (`favicon-32/192.png`,
+  `/favicon.ico` → 32) и марката в og.png и apple-touch-icon.png (`npm run brand:images`). Нов рендер:
+  `logo.py final` (минути на 4 ядра), после `npm run brand:logo` и `npm run brand:images`; unit тестът
+  пази всеки файл в размера си, с прозрачност, и че няма излишни.
 - **Темата „Personalizzato“** (`http/colori.ts`, `routes/account-colori.ts`; собственикът, 30 октомври
   2026): всеки вписан човек избира в профила шест цвята (фон, текст, лента на менюто и текстът ѝ, акцент
   за главните бутони и избраното, линии) — `User.colori`, `Theme.CUSTOM`. Двойките, които се четат,
