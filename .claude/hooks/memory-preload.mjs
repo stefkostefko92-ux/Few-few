@@ -38,7 +38,7 @@ function readStdin() {
 }
 
 // Изважда `- ` булетите под даден `## <заглавие>` в markdown файл.
-function bulletsUnder(file, headingRe) {
+export function bulletsUnder(file, headingRe) {
   const txt = readFileSync(file, "utf8");
   const lines = txt.split("\n");
   const start = lines.findIndex((l) => headingRe.test(l));
@@ -46,7 +46,12 @@ function bulletsUnder(file, headingRe) {
   const out = [];
   for (let i = start + 1; i < lines.length; i++) {
     if (/^##\s/.test(lines[i])) break; // следваща секция
-    if (lines[i].trim().startsWith("- ")) out.push(lines[i]);
+    if (!lines[i].trim().startsWith("- ")) continue;
+    // Поука на няколко реда стига ЦЯЛА (31.10.2026: 54 проверени поуки идваха без продължението
+    // и без източника). Продължение = непразен ред, който не е нов булет и не е заглавие.
+    let block = lines[i].trimEnd();
+    while (i + 1 < lines.length && lines[i + 1].trim() && !/^\s*-\s/.test(lines[i + 1]) && !/^\s*#/.test(lines[i + 1])) block += " " + lines[++i].trim();
+    out.push(block);
   }
   return out;
 }

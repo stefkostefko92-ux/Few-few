@@ -50,6 +50,50 @@ export function sectionLessons(txt, which) {
 
 export const countVerifiedText = (txt) => sectionLessons(txt, "verified").length;
 
+// Продължение на поука: непразен ред, който не е нов булет и не е заглавие.
+const isContinuation = (ln) => ln.trim() !== "" && !/^\s*-\s/.test(ln) && !/^\s*#/.test(ln);
+
+/**
+ * Поуките като ЦЕЛИ блокове: булетът + продълженията му, слепени с интервал (31.10.2026).
+ * За ЧЕТЕНЕ (зареждане при старт, извличане, мерене). `sectionLessons` остава ред-по-ред, защото
+ * синхронизацията на клона agents/memory сравнява и дописва редове.
+ */
+export function sectionBlocks(txt, which) {
+  const want = which === "verified" ? /verified|Проверени поуки/i : /Карантина/i;
+  const lines = String(txt || "").split("\n");
+  let inSec = false;
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    const ln = lines[i];
+    if (/^##\s/.test(ln)) { inSec = want.test(ln); continue; }
+    if (!inSec || !/^\s*-\s+\*\*/.test(ln)) continue;
+    let block = ln.trimEnd();
+    while (i + 1 < lines.length && isContinuation(lines[i + 1])) block += " " + lines[++i].trim();
+    out.push(block);
+  }
+  return out;
+}
+
+/** Данните: всяка поука (проверена и в Карантина) на един ред. Сменя само празното място. */
+export function unwrapLessons(md) {
+  const lines = String(md).split("\n");
+  const out = [];
+  let inSec = false, joined = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const ln = lines[i];
+    if (/^##\s/.test(ln)) inSec = /Проверени поуки|Карантина/i.test(ln);
+    if (inSec && /^\s*-\s+\*\*/.test(ln) && i + 1 < lines.length && isContinuation(lines[i + 1])) {
+      let block = ln.trimEnd();
+      while (i + 1 < lines.length && isContinuation(lines[i + 1])) block += " " + lines[++i].trim();
+      out.push(block);
+      joined++;
+      continue;
+    }
+    out.push(ln);
+  }
+  return { md: out.join("\n"), joined };
+}
+
 /** Текстът на поуката без датата и мета-опашката `_(…)_`. */
 export function lessonText(line) {
   let s = String(line).replace(/^\s*-\s+\*\*[^*]*\*\*\s*/, "").trimEnd();

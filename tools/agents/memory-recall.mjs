@@ -15,7 +15,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { sectionLessons, lessonText } from "../lib/memory-core.mjs";
+import { sectionBlocks, lessonText } from "../lib/memory-core.mjs";
 import { select } from "../lib/memory-retrieval.mjs";
 import { genericScope } from "../lib/lesson-scope.mjs";
 
@@ -44,7 +44,7 @@ const sample = (arr, k) => arr.length <= k ? arr : Array.from({ length: k }, (_,
 export function measure(memDir = MEM, { perAgent = PER_AGENT } = {}) {
   const rows = [];
   for (const f of readdirSync(memDir).filter((f) => /^[\w-]+\.md$/.test(f) && !/^(_shared|SECURITY|PROCEDURE|PROTOCOL|README)\.md$/.test(f))) {
-    const all = sectionLessons(readFileSync(join(memDir, f), "utf8"), "verified");
+    const all = sectionBlocks(readFileSync(join(memDir, f), "utf8"), "verified");
     if (!all.length) continue;
     let now = 0, before = 0;
     const probes = sample(all, perAgent);
@@ -76,7 +76,7 @@ export function measureScopes(memDir = MEM, { today = "", perAgent = PER_AGENT }
   const rows = [];
   for (const f of readdirSync(memDir).filter((f) => /^[\w-]+\.md$/.test(f) && !/^(_shared|SECURITY|PROCEDURE|PROTOCOL|README)\.md$/.test(f))) {
     const agent = f.replace(/\.md$/, "");
-    const all = sectionLessons(readFileSync(join(memDir, f), "utf8"), "verified");
+    const all = sectionBlocks(readFileSync(join(memDir, f), "utf8"), "verified");
     const specific = all.filter((l) => !genericScope(scopeOf(l), agent));
     const vague = all.length - specific.length;
     // Извадка като в лесния режим (пълното мерене е ~50 s; `--full` го пуска): perAgent = Infinity → всички.
