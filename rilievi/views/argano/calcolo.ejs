@@ -1,7 +1,11 @@
 <%
-  // Изчислението за аргано на картата: формата (уредбата, новото аргано, въжетата, компенсацията) и
-  // резултатите по раздели — същите редове като в PDF-а (argano/righe.ts). Кой не пише — само чете.
+  // Изчислението за аргано — на карта или без карта (routes/calcolo-argano-vista.ts): формата (без карта —
+  // първо адресът и матрикулата, после уредбата, новото аргано, въжетата, компенсацията) и резултатите по
+  // раздели — същите редове като в PDF-а (argano/righe.ts). Кой не пише — само чете.
   const errorKeys = Object.keys(errori).filter((k) => k !== '_');
+  const erroriImpianto = identita ? Object.keys(identita.errori) : [];
+  const nErrori = errorKeys.length + erroriImpianto.length + (identita && identita.aziendaErrore ? 1 : 0);
+  const msgImpianto = (k) => identita.errori[k] === 'required' ? t('argano.libero.erroreIndirizzo') : identita.errori[k] === 'digitsOnly' ? t('scheda.error.digitsOnly') : t('scheda.error.tooLong', { maxLength: k === 'indirizzo' ? 200 : 20 });
   const val = (k) => typeof values[k] === 'string' ? values[k] : '';
   const campo = (key, kind, extra = {}) => include('_campo', { key, kind, values, errori, limiteDi, opzioni: [], ...extra });
   const op = (gruppo, valori) => valori.map((v) => ({ value: String(v), label: t('argano.opzione.' + gruppo + '.' + v) }));
@@ -16,30 +20,35 @@
 %><%- include('../partials/top', { title }) %>
 <div class="page-head">
   <div>
-    <a href="/schede/<%= scheda.id %>"><%= t('argano.indietro') %></a>
+    <a href="<%= percorso.indietro.href %>"><%= percorso.indietro.testo %></a>
     <h1><%= t('argano.titolo') %></h1>
     <% if (impianto) { %><p class="page-head__sub"><strong><%= impianto %></strong></p><% } %>
     <p class="page-head__sub"><%= t('argano.sottotitolo') %></p>
   </div>
-  <% if (salvato && salvato.dati) { %><div class="toolbar">
-    <a class="btn" href="/schede/<%= scheda.id %>/calcolo-argano.pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('argano.pdf') %></a>
-    <a class="btn" href="/schede/<%= scheda.id %>/calcolo-argano.pdf?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('argano.stampa') %></a>
+  <% if (salvato && salvato.dati && percorso.pdf) { %><div class="toolbar">
+    <a class="btn" href="<%= percorso.pdf %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('argano.pdf') %></a>
+    <a class="btn" href="<%= percorso.pdf %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('argano.stampa') %></a>
   </div><% } %>
 </div>
 <div class="stack-gap argano">
 <% if (typeof conflitto !== 'undefined' && conflitto) { %><div class="notice" role="alert"><p><strong><%= t('argano.conflitto') %></strong></p></div><% } %>
-<% if (errorKeys.length) { %>
+<% if (nErrori) { %>
   <div class="errors" role="alert" id="error-summary" tabindex="-1">
-    <h2><%= t('scheda.errorSummary', { n: errorKeys.length }) %></h2>
-    <ul><% for (const k of errorKeys) { %><li><a href="#f-<%= k %>"><%= t('argano.campo.' + k) %>: <%= errSummary(k) %></a></li><% } %></ul>
+    <h2><%= t('scheda.errorSummary', { n: nErrori }) %></h2>
+    <ul>
+      <% if (identita && identita.aziendaErrore) { %><li><a href="#f-azienda"><%= t('scheda.field.azienda') %>: <%= t('scheda.error.azienda') %></a></li><% } %>
+      <% for (const k of erroriImpianto) { %><li><a href="#f-<%= k %>"><%= t('argano.libero.campo.' + k) %>: <%= msgImpianto(k) %></a></li><% } %>
+      <% for (const k of errorKeys) { %><li><a href="#f-<%= k %>"><%= t('argano.campo.' + k) %>: <%= errSummary(k) %></a></li><% } %>
+    </ul>
   </div>
 <% } %>
 <% if (typeof proposto !== 'undefined' && proposto && puoScrivere) { %><p class="notice"><%= t('argano.proposto') %></p><% } %>
 <% if (!puoScrivere) { %><p class="muted"><%= t('argano.soloLettura') %></p><% } %>
 <% if (salvato && salvato.dati) { %><p class="muted"><%= t('argano.salvatoIl', { quando: fmt.dateTime(salvato.updatedAt), nome: salvato.autore || '—' }) %></p><% } %>
-<form class="form" method="post" action="/schede/<%= scheda.id %>/calcolo-argano" novalidate>
+<form class="form" method="post" action="<%= percorso.azione %>" novalidate>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <input type="hidden" name="base" value="<%= base %>">
+  <% if (identita) { %><%- include('_impianto', { msgImpianto }) %><% } %>
   <fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
     <legend class="section__title"><%= t('argano.sezione.impianto') %></legend>
     <div class="grid grid--righe">
@@ -93,7 +102,7 @@
   </fieldset>
   <% if (puoScrivere) { %><div class="toolbar">
     <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'check' }) %><%= t('argano.calcola') %></button>
-    <a class="btn btn--ghost" href="/schede/<%= scheda.id %>"><%= t('common.cancel') %></a>
+    <a class="btn btn--ghost" href="<%= percorso.annulla %>"><%= t('common.cancel') %></a>
   </div><% } %>
 </form>
 <section class="argano__risultati" id="risultati" aria-labelledby="h-risultati">
@@ -114,5 +123,15 @@
   <% } %>
   <% if (sezioni.length) { %><p class="muted argano__nota"><%= t('argano.nota') %></p><% } %>
 </section>
+<% if (percorso.elimina) { %>
+<details class="danger-zone">
+  <summary><%= t('argano.libero.elimina.titolo') %></summary>
+  <p class="muted"><%= t('argano.libero.elimina.testo') %></p>
+  <form method="post" action="<%= percorso.elimina %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button class="btn btn--danger" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t('argano.libero.elimina.submit') %></button>
+  </form>
+</details>
+<% } %>
 </div>
 <%- include('../partials/bottom') %>

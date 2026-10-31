@@ -20,6 +20,52 @@
     "funiVerifica": "No, solo verifica delle funi esistenti",
     "nota": "Le formule sono quelle della relazione tecnica RT-E MOD, riportate senza modifiche: il risultato è lo stesso del foglio Excel. Il calcolo non sostituisce la verifica del progettista.",
     "nessunCalcolo": "Il calcolo non è ancora stato salvato.",
+    "elenco": {
+      "titolo": "Calcolo argano",
+      "sottotitolo": "Cerca l'impianto per matricola, numero o via: se ha la scheda, il calcolo si compila dai suoi dati. Impianto senza scheda? Crea un calcolo e scrivi tu indirizzo e matricola.",
+      "cerca": "Matricola, numero impianto o via",
+      "cercaBtn": "Cerca",
+      "nuovo": "Nuovo calcolo senza scheda",
+      "nuovoPer": "Nuovo calcolo senza scheda per «{q}»",
+      "schede": "Schede",
+      "liberi": "Calcoli senza scheda",
+      "nessuno": "Nessuna scheda e nessun calcolo trovati per «{q}».",
+      "altreSchede": "Altre {n} schede: aggiungi una parola alla ricerca.",
+      "altriLiberi": "Altri {n} calcoli: aggiungi una parola alla ricerca.",
+      "salvati": "Calcoli salvati",
+      "vuoto": "Nessun calcolo salvato.",
+      "vuotoHint": "Cerca una scheda qui sopra o crea un calcolo senza scheda.",
+      "daCalcolare": "Nessun calcolo: si compila dalla scheda",
+      "calcolato": "Calcolo salvato il {quando}",
+      "idraulico": "Impianto idraulico: non ha argano",
+      "conScheda": "Dalla scheda",
+      "senzaScheda": "Senza scheda",
+      "colonna": {
+        "impianto": "Impianto",
+        "dati": "Dati",
+        "salvato": "Salvato",
+        "autore": "Da"
+      }
+    },
+    "libero": {
+      "sezione": "Indirizzo e matricola",
+      "testo": "Impianto senza scheda: indirizzo, matricola e numero vanno nel PDF del calcolo.",
+      "indietro": "Tutti i calcoli",
+      "campo": {
+        "indirizzo": "Indirizzo",
+        "matricola": "Matricola",
+        "numeroImpianto": "N° impianto"
+      },
+      "erroreIndirizzo": "Indica l'indirizzo dell'impianto.",
+      "elimina": {
+        "titolo": "Elimina calcolo",
+        "testo": "Il calcolo viene eliminato per sempre. Il registro conserva solo che è stato eliminato.",
+        "submit": "Elimina calcolo"
+      },
+      "flash": {
+        "eliminato": "Calcolo argano eliminato."
+      }
+    },
     "sezione": {
       "impianto": "Impianto",
       "argano": "Argano nuovo",

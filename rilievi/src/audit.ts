@@ -36,6 +36,7 @@ export const AUDIT_ACTIONS = [
   'CARTELLO_UPDATE',
   'CARTELLO_DELETE',
   'ARGANO_CALCOLO',
+  'ARGANO_CALCOLO_DELETE',
   'AZIENDA_CREATE',
   'AZIENDA_UPDATE',
   'AZIENDA_LOGO',
@@ -68,7 +69,8 @@ export interface AuditEntry {
    * — събитие на самия портал, видимо само за MASTER.
    */
   aziendaId: string | null;
-  targetType?: 'user' | 'invite' | 'scheda' | 'azienda' | 'request' | 'intervento' | 'cartello';
+  targetType?:
+    'user' | 'invite' | 'scheda' | 'azienda' | 'request' | 'intervento' | 'cartello' | 'calcolo';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */
   meta?: Prisma.InputJsonObject;

@@ -28,6 +28,8 @@ import { authRouter } from './routes/auth.js';
 import { aziendeRouter } from './routes/aziende.js';
 import { cartelliNuovoRouter } from './routes/cartelli-nuovo.js';
 import { calcoloArganoRouter } from './routes/calcolo-argano.js';
+import { calcoloElencoRouter } from './routes/calcolo-argano-elenco.js';
+import { calcoloLiberoRouter } from './routes/calcolo-argano-libero.js';
 import { cartelliRouter } from './routes/cartelli.js';
 import { cestinoRouter } from './routes/cestino.js';
 import { ordiniRouter } from './routes/ordini.js';
@@ -244,6 +246,8 @@ export function createServer(): Express {
   app.use(cestinoRouter);
   app.use(ordiniRouter);
   app.use(calcoloArganoRouter);
+  app.use(calcoloElencoRouter);
+  app.use(calcoloLiberoRouter);
   app.use(interventiRouter);
   app.use(interventiFirmaRouter);
   app.use(interventiInvioRouter);

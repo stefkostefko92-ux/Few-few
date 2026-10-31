@@ -94,6 +94,7 @@
     "openScheda": "Apri scheda",
     "openIntervento": "Apri modulo",
     "openCartello": "Apri cartello",
+    "openCalcolo": "Apri calcolo",
     "openUser": "Apri utente",
     "action": {
       "LOGIN": "Accesso",
@@ -124,6 +125,7 @@
       "CARTELLO_CREATE": "Cartello di fermo impianto creato",
       "CARTELLO_UPDATE": "Cartello di fermo impianto modificato",
       "ARGANO_CALCOLO": "Calcolo argano salvato",
+      "ARGANO_CALCOLO_DELETE": "Calcolo argano senza scheda eliminato",
       "CARTELLO_DELETE": "Cartello di fermo impianto eliminato",
       "AZIENDA_CREATE": "Azienda creata",
       "AZIENDA_UPDATE": "Nome dell'azienda cambiato",

@@ -1,0 +1,30 @@
+<%
+  // Уредбата на изчислението без карта: фирмата (само при новото и няколко фирми), адресът
+  // (задължителен), матрикулата и номерът — само цифри. Редовете са на трите линии на `grid--righe`.
+  const v = (k) => typeof identita.values[k] === 'string' ? identita.values[k] : '';
+  const describedBy = (k, hint) => [hint ? 'hint-' + k : null, identita.errori[k] ? 'err-' + k : null].filter(Boolean).join(' ');
+  const campi = [
+    { key: 'indirizzo', max: 200, classe: ' field--doppia field--riga-telefono', autocomplete: 'street-address', inputmode: 'text', hint: t('argano.libero.testo') },
+    { key: 'matricola', max: 20, classe: '', autocomplete: 'off', inputmode: 'numeric', hint: null },
+    { key: 'numeroImpianto', max: 20, classe: '', autocomplete: 'off', inputmode: 'numeric', hint: null },
+  ];
+%><fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
+  <legend class="section__title"><%= t('argano.libero.sezione') %></legend>
+  <div class="grid grid--righe">
+    <% if (identita.aziende.length > 0) { %><div class="field field--azienda field--doppia field--riga-telefono">
+      <label class="field__label" for="f-azienda"><%= t('scheda.field.azienda') %></label>
+      <select class="select" id="f-azienda" name="azienda" required<% if (identita.aziendaErrore) { %> aria-invalid="true" aria-describedby="err-azienda"<% } %>>
+        <option value=""<% if (!identita.azienda) { %> selected<% } %>>—</option>
+        <% for (const item of identita.aziende) { %><option value="<%= item.id %>"<% if (identita.azienda === item.id) { %> selected<% } %>><%= item.name %></option>
+        <% } %>
+      </select>
+      <div class="field__piede"><% if (identita.aziendaErrore) { %><p class="field__error" id="err-azienda"><%= t('scheda.error.azienda') %></p><% } %></div>
+    </div><% } %>
+    <% for (const c of campi) { const db = describedBy(c.key, c.hint); %><div class="field field--<%= c.key %><%= c.classe %>">
+      <label class="field__label" for="f-<%= c.key %>"><%= t('argano.libero.campo.' + c.key) %></label>
+      <input class="input" id="f-<%= c.key %>" name="<%= c.key %>" type="text" inputmode="<%= c.inputmode %>" autocomplete="<%= c.autocomplete %>" maxlength="<%= c.max %>" value="<%= v(c.key) %>"<% if (c.key === 'indirizzo') { %> required<% } %><% if (identita.errori[c.key]) { %> aria-invalid="true"<% } %><% if (db) { %> aria-describedby="<%= db %>"<% } %>>
+      <div class="field__piede"><% if (c.hint) { %><p class="field__hint" id="hint-<%= c.key %>"><%= c.hint %></p><% } %><% if (identita.errori[c.key]) { %><p class="field__error" id="err-<%= c.key %>"><%= msgImpianto(c.key) %></p><% } %></div>
+    </div>
+    <% } %>
+  </div>
+</fieldset>

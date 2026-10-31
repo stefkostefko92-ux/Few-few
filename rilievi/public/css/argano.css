@@ -93,3 +93,19 @@
     width: auto;
   }
 }
+
+/* Страницата „Calcolo argano“ (views/argano/elenco.ejs): разделите на търсенето и списъка; картата на
+   хидравлична уредба се показва без връзка — с пунктирна рамка, не като бутон. */
+.argano-elenco {
+  display: grid;
+  gap: 10px;
+}
+
+.argano-elenco .section__title {
+  margin: 0;
+}
+
+.argano-elenco__spento {
+  border-style: dashed;
+  color: var(--muted);
+}

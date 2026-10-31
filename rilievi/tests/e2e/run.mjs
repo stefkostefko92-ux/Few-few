@@ -266,7 +266,7 @@ try {
     await page.screenshot({ path: join(shots, `${scheme}-print.png`), fullPage: true });
     await checkInterventi(page, { base, shots, scheme, aziendaName });
     await checkCartelli(page, { base, shots, scheme, aziendaPath, sheetUrl });
-    await checkArgano(page, { shots, scheme, sheetUrl });
+    await checkArgano(page, { shots, scheme, sheetUrl, aziendaId: aziendaPath.split('/').pop() });
 
     await checkPhone(browser, { base, shots, scheme, email, password, sheetUrl });
     await context.close();

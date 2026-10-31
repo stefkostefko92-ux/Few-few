@@ -24,6 +24,8 @@ export async function checkPhone(browser, { base, shots, scheme, email, password
     ['cartello', '/cartelli/nuovo'],
     ['nuova', '/schede/nuova'],
     ['calcolo-argano', `${new URL(sheetUrl).pathname}/calcolo-argano`],
+    ['calcoli', '/calcolo-argano?q=verdi'],
+    ['calcolo-libero', '/calcolo-argano/nuovo'],
     ['utenti', '/utenti'],
     ['account', '/account'],
   ]) {

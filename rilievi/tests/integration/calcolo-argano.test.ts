@@ -104,6 +104,7 @@ describe('the machine calculation of a scheda', () => {
     assert.equal(saved.location, `${pagina(scheda.id)}#risultati`);
     const row = await prisma.calcoloArgano.findUniqueOrThrow({ where: { schedaId: scheda.id } });
     assert.equal(row.updatedById, user.id);
+    assert.equal(row.aziendaId, azienda.id, 'the calculation lives in the company of its scheda');
     assert.equal((row.dati as { rapportoB: number }).rapportoB, 50);
     const audit = await prisma.auditLog.findFirst({
       where: { action: 'ARGANO_CALCOLO', targetId: scheda.id },

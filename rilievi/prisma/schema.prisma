@@ -128,6 +128,7 @@ model Azienda {
   schede         Scheda[]
   interventi     Intervento[]
   cartelli       Cartello[]
+  calcoliArgano  CalcoloArgano[]
   audit          AuditLog[]
   accessRequests AccessRequest[]
 }
@@ -767,17 +768,29 @@ model Cartello {
 }
 
 /// Изчислението за аргано по „RT-E MOD 10411-1“ на собственика (31 октомври 2026): входът (`argano/dati.ts`,
-/// чете се с недоверие), по едно на карта; резултатите се смятат при всяко показване. Отделна таблица —
-/// записът не мести версията на картата (`base`), а окончателно изтритата карта го взима със себе си.
+/// чете се с недоверие), по едно на карта или без карта; резултатите се смятат при всяко показване.
+/// Отделна таблица — записът не мести версията на картата (`base`), а окончателно изтритата карта го
+/// взима със себе си.
 model CalcoloArgano {
-  id          String   @id @default(cuid())
-  schedaId    String   @unique
-  scheda      Scheda   @relation(fields: [schedaId], references: [id], onDelete: Cascade)
-  dati        Json
-  updatedById String?
-  updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  /// Картата на уредбата (едно изчисление на карта); null — изчисление без карта (собственикът, 31
+  /// октомври 2026): тогава адресът, матрикулата и номерът са тук (`CalcoloArgano_impianto_check`).
+  schedaId       String?  @unique
+  scheda         Scheda?  @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  /// Фирмата — на картата или избраната при новото изчисление без карта; обхватът се решава по нея.
+  aziendaId      String
+  azienda        Azienda  @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  indirizzo      String?
+  matricola      String?
+  numeroImpianto String?
+  /// Нормализираният адрес, матрикула и номер (като `Scheda.searchText`) — само без карта.
+  searchText     String   @default("")
+  dati           Json
+  updatedById    String?
+  updatedBy      User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([updatedById])
+  @@index([aziendaId, updatedAt])
 }

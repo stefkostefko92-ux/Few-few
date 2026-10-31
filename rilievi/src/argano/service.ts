@@ -6,7 +6,8 @@ import { datiSalvati, type DatiArgano } from './dati.js';
 /**
  * Записаното изчисление за аргано на картата: четене (с недоверие — `datiSalvati`) и запис върху
  * отворената версия (`base` = updatedAt на изчислението; празно — още няма). Проверката коя карта и дали
- * човекът пише в нейната фирма е в маршрута; тук картата се търси пак — не в кошчето.
+ * човекът пише в нейната фирма е в маршрута; тук картата се търси пак — не в кошчето. Фирмата на
+ * изчислението е фирмата на картата. Изчислението без карта — liberi.ts.
  */
 
 export interface CalcoloSalvato {
@@ -55,7 +56,12 @@ export async function salvaCalcolo(
       } else {
         if (base !== '') return 'conflict';
         await tx.calcoloArgano.create({
-          data: { schedaId: scheda.id, dati: json, updatedById: actorId },
+          data: {
+            schedaId: scheda.id,
+            aziendaId: scheda.aziendaId,
+            dati: json,
+            updatedById: actorId,
+          },
         });
       }
       await writeAudit(
@@ -78,8 +84,8 @@ export async function salvaCalcolo(
   }
 }
 
-/** Фирмата на картата за главата на PDF-а (логото и данните ѝ — `testataDi`). */
-export function aziendaDellaScheda(aziendaId: string) {
+/** Фирмата на изчислението за главата на PDF-а (логото и данните ѝ — `testataDi`). */
+export function aziendaDelCalcolo(aziendaId: string) {
   return prisma.azienda.findUniqueOrThrow({
     where: { id: aziendaId },
     select: { id: true, name: true, logoType: true, datiSocietari: true },

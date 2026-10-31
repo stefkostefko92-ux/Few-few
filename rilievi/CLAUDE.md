@@ -90,7 +90,9 @@ src/
                      „Macchina“ и „Funi“, без база) · dati.ts (входът — zod, формата) · tabelle.ts
                      (въжетата TELCAL/DONATI, мерките на компенсацията) · da-scheda.ts (попълването от
                      „Modulo rilievi dati argani“) · righe.ts (резултатите като редове — страница и PDF) ·
-                     formato.ts · service.ts (четене, запис върху `base`, одит) · pdf.ts (A4)
+                     formato.ts · service.ts (четене, запис върху `base`, одит) · pdf.ts (A4) ·
+                     impianto.ts (уредбата без карта — zod) · liberi.ts (изчислението без карта) ·
+                     elenco.ts (списъкът и търсенето на страницата в менюто)
   schizzi/           скицникът: elementi.ts (видът на елементите — zod, тежестта) · costanti.ts (мерките,
                      таваните, стрелките, пунктирите, котите) · simboli.ts (символите за шахтата) ·
                      forme.ts (елементът → примитиви: линии, запълнени върхове, елипси, надписи — за SVG и
@@ -617,6 +619,23 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   няма), с одит `ARGANO_CALCOLO`; не мести версията на картата. Чете всеки, който вижда картата (формата
   — заключена); пише, който пише карти в нейната фирма, не в кошчето; чужда — 404. Резултатите се
   смятат при всяко показване; редовете са едни и същи на страницата и в PDF-а (`righe.ts`).
+  **Страницата в менюто и изчислението без карта** (собственикът, 31 октомври 2026 — „cercare il numero di
+  matricola o la via e precompilare il calcolo se ho già la scheda impianto“; избра „calcolo libero“):
+  „Rilievi“ → „Calcolo argano“ (`/calcolo-argano`, `routes/calcolo-argano-elenco.ts`) — търсене по
+  матрикула, номер или улица: картите (търсачката на „Schede“; всяка води към изчислението си, попълнено
+  от картата, с „Calcolo salvato il …“ или „Nessun calcolo“; хидравличната — без връзка) и изчисленията
+  без карта; една карта и нищо друго — направо изчислението ѝ (303). Без търсене — записаните
+  изчисления (на карта и без), най-новите отгоре, с филтъра по фирма. Ненамереното предлага ново
+  изчисление без карта с написаното (`?da=` — само цифри = матрикула, иначе адрес). Изчислението без
+  карта (`routes/calcolo-argano-libero.ts`: `/calcolo-argano/nuovo`, POST `/calcolo-argano`,
+  `/calcolo-argano/:id`, `/pdf`, `/elimina`) носи адреса (задължителен), матрикулата и номера (само
+  цифри) и фирмата — избрана при новото между тези, в които човекът пише карти; чете, който вижда
+  картите ѝ; пише, който ги пише; трие окончателно (одит `ARGANO_CALCOLO_DELETE`), който трие карти
+  (`schede:delete`); чуждо — 404. Страницата и PDF-ът са общи с изчислението на карта
+  (`routes/calcolo-argano-vista.ts`). В базата (миграция `20261031120000_calcolo_argano_libero`, само
+  добавя): `schedaId` по избор, `aziendaId` на всяко изчисление (досегашните — от картата си),
+  `indirizzo`/`matricola`/`numeroImpianto`/`searchText` и `CalcoloArgano_impianto_check` — без карта
+  не се пази без адрес.
 - **Менюто** (`views/partials/header.ejs`, `public/css/sidenav.css`, `public/js/menu.js`; собственикът, 30
   октомври 2026 — като в LiftPilot, вляво): групи Rilievi · Assistenza elevatori · Amministrazione (на
   фирмата: Utenti, Impostazioni, Registro) · Master (нашето — Aziende и Richieste, само за собственика на
