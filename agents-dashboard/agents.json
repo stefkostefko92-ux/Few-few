@@ -15811,7 +15811,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 279
+        "lessons": 280
       },
       "evolution": [
         {
@@ -16017,9 +16017,20 @@
           "date": "2026-10-31",
           "event": "v26.8 — учене",
           "detail": "Научи: Claude Opus 5 сам проверява работата си; явни инструкции „double-check“ или „use a suba… (+4 още)"
+        },
+        {
+          "version": "26.9.0",
+          "date": "2026-10-31",
+          "event": "v26.9 — учене",
+          "detail": "Научи: Облачните scheduled tasks (routines) включват по подразбиране ВСИЧКИ свързани MCP конек…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-31",
+          "type": "learning",
+          "summary": "Научи: „Облачните scheduled tasks (routines) включват по подразбиране ВСИЧКИ свързани MCP конек…\" · 1 в карантина"
+        },
         {
           "date": "2026-10-31",
           "type": "learning",
