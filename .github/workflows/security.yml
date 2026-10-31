@@ -28,11 +28,11 @@ jobs:
     steps:
       # Забележка (state-level follow-up): пинвай action-ите към пълен commit SHA (не @vX),
       # за да не може tag-hijack да вкара supply-chain код в CI-то.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0 # пълна история — за gitleaks
           persist-credentials: false # не оставяй GITHUB_TOKEN в git config (по-малка exfil повърхност)
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
       # ТВЪРД ГЕЙТ: вграденият скенер (нула външни зависимости → нула supply-chain риск).
@@ -67,7 +67,7 @@ jobs:
     timeout-minutes: 10
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
       # ДОПЪЛНИТЕЛЕН СЛОЙ (best-effort, като gitleaks по-горе): официалният
@@ -80,6 +80,26 @@ jobs:
       # secret-scan (job „secrets" по-горе).
       - name: dependency-review (best-effort — иска GHAS)
         continue-on-error: true
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4
         with:
           fail-on-severity: high
+
+  new-deps:
+    name: Нови зависимости (typosquat скенер)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0 # историята на базата — скенерът прави git diff base...HEAD
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      # ТВЪРД ГЕЙТ (без continue-on-error): изход 1 = подозрение за typosquat.
+      # Нула зависимости, без мрежа. Изход 0 с „▲" са предупреждения и не гейтват.
+      - name: new-deps (typosquat, hard gate)
+        env:
+          BASE_REF: ${{ github.base_ref }} # през env, не вмъкнато в скрипта
+        run: node tools/security/new-deps.mjs --base "origin/$BASE_REF"
