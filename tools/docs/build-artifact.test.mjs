@@ -177,3 +177,15 @@ test("реалният билд НЕ съдържа нито един шабло
   const { html } = build();
   assert.deepEqual(findSecretsIn(html), [], "реалният артефакт трябва да е чист");
 });
+
+test("вграждането не разгъва $` / $' / $& от съдържанието (31.10.2026: 58 агента вместо 29)", async () => {
+  const { dashReader } = await import("./build-artifact.mjs");
+  const real = dashReader(null, ROOT);
+  // „(`$`)“ дойде с rilievi/CLAUDE.md в docs.js; низова замяна вмъкваше началото на страницата втори път.
+  const reader = { ...real, read: (p) => (p === "docs.js" ? real.read(p) + "\n// (`$`) · $' · $& · $$\n" : real.read(p)) };
+  const { html, agents } = build(join(ROOT, "agents-dashboard"), reader);
+  assert.equal((html.match(/const FALLBACK = \{/g) || []).length, 1, "FALLBACK е вграден веднъж");
+  assert.ok(html.includes("// (`$`) · $' · $& · $$"), "текстът е вграден дословно");
+  const reg = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
+  assert.equal(agents, (Array.isArray(reg) ? reg : reg.agents).length);
+});
