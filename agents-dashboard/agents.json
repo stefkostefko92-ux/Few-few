@@ -17000,7 +17000,7 @@
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 222
+        "lessons": 223
       },
       "evolution": [
         {
@@ -17116,9 +17116,20 @@
           "date": "2026-10-31",
           "event": "v21.2 — учене",
           "detail": "Научи: Когато gh api е блокиран за сесията, SHA на таг се разрешава с `git ls-remote https://g…"
+        },
+        {
+          "version": "21.3.0",
+          "date": "2026-10-31",
+          "event": "v21.3 — учене",
+          "detail": "Научи: Твърд гейт, който трябва да е без continue-on-error, се слага в отделен job; job-ът dep…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-31",
+          "type": "learning",
+          "summary": "Научи: „Твърд гейт, който трябва да е без continue-on-error, се слага в отделен job; job-ът dep…\""
+        },
         {
           "date": "2026-10-31",
           "type": "learning",
