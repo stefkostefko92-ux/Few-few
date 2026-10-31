@@ -78,10 +78,30 @@ export const VERIFIER = {
   ],
 };
 
+// Жив гейт 31.10: опит 3 на Касаджията отговори изцяло на английски („This is not legal advice.“) —
+// агентите тичат без коренния CLAUDE.md, а доктрината нямаше правило за езика. Проверката е обща за
+// покритите агенти: делът на кирилицата в прозата (без код, пътища, URL и приложени файлове).
+// Калибрирано на 40 изхода от живите гейтове: български ≥ 0.75, английският отговор 0.17.
+export function proseCyrillicShare(text) {
+  const p = String(text).split(/\n--- приложен файл от scratchpad:/)[0]
+    .replace(/```[\s\S]*?```/g, " ").replace(/`[^`\n]*`/g, " ")
+    .replace(/https?:\/\/\S+/g, " ").replace(/(?:\/|\b[\w.-]+\/)[\w./-]+/g, " ");
+  const cyr = (p.match(/[Ѐ-ӿ]/g) || []).length;
+  const lat = (p.match(/[A-Za-z]/g) || []).length;
+  return { share: cyr + lat ? cyr / (cyr + lat) : 1, letters: cyr + lat };
+}
+
+function languageCheck(text) {
+  const { share, letters } = proseCyrillicShare(text);
+  const label = "отговорът е на български (проза извън кода)";
+  if (letters < 200) return { label, ok: true, na: true };
+  return { label, ok: share >= 0.5, na: false, hits: share >= 0.5 ? [] : [`кирилица ${share.toFixed(2)} в прозата`] };
+}
+
 export function verifyOutput(agent, text) {
   const rules = VERIFIER[agent];
   if (!rules) return { agent, covered: false, ok: true, checks: [] };
-  const checks = rules.map((r) => {
+  const checks = [languageCheck(text), ...rules.map((r) => {
     if (!r.when.test(text)) return { label: r.label, ok: true, na: true };
     if (r.any) {
       const hit = r.any.find((m) => new RegExp(m.replace(/[.*+?^${}()|[\]\\]/g, (c) => (".*".includes(c) ? c : "\\" + c)), "i").test(text));
@@ -89,7 +109,7 @@ export function verifyOutput(agent, text) {
     }
     const bad = r.none.filter((m) => text.toLowerCase().includes(m.toLowerCase()));
     return { label: r.label, ok: bad.length === 0, na: false, hits: bad };
-  });
+  })];
   return { agent, covered: true, ok: checks.every((c) => c.ok), checks };
 }
 

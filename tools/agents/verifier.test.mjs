@@ -1,7 +1,7 @@
 // verifier.test.mjs — верификатор-проходът за парично-критичните агенти (CI auto-discovery).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { verifyOutput, VERIFIER } from "./verifier.mjs";
+import { verifyOutput, VERIFIER, proseCyrillicShare } from "./verifier.mjs";
 
 test("непокрит агент → covered:false, ok:true (не блокираме непокритото)", () => {
   const r = verifyOutput("seo", "какъвто и да е изход");
@@ -98,6 +98,17 @@ test("kasadjiyata: естествената формулировка и редъ
   assert.equal(verifyOutput("kasadjiyata", live).ok, true, JSON.stringify(verifyOutput("kasadjiyata", live).checks));
   const line = "Инварианти: ✓ сървърна остойностка (route.ts:96) · ✓ int евроценти · ✗ без успешен бон няма запис (write-ahead PENDING липсва) · ? сторно вместо триене. Продажба с фискален бон.";
   assert.equal(verifyOutput("kasadjiyata", line).ok, true, JSON.stringify(verifyOutput("kasadjiyata", line).checks));
+});
+
+test("език (жив гейт 31.10): отговор на английски пада, български с много код и пътища минава", () => {
+  const en = "I couldn't finish this. The permission system refused writes to `CSPos/` and also refused `npm ci`. I wrote the full change set into the scratchpad instead. It has not been typechecked, linted or tested, and nothing in the repo has changed. Sales with a fiscal receipt are already in place: prices are worked out on the server, the card is charged first, then the receipt prints, then the sale is saved. Write-ahead PENDING, УНП, int евроценти. This is not legal advice.";
+  const r = verifyOutput("kasadjiyata", en);
+  assert.equal(r.ok, false);
+  assert.ok(r.checks.some((c) => !c.ok && /български/.test(c.label)), JSON.stringify(r.checks));
+  const bg = "Спрях: инструментите за запис са блокирани. Продажбата с фискален бон вече съществува в `CSPos/src/app/api/sales/route.ts`; сървърът изчислява сумите в цели евроценти, после картата, после бонът. Липсва write-ahead PENDING запис с УНП преди печат и сверка при старт (src/lib/sale-journal.ts). Без успешен бон продажбата не се записва.\n```ts\nawait tx.auditLog.create({ data: { action: \"SALE_PENDING\", entity: \"Sale\" } });\n```\nТова не е правен съвет (Н-18).";
+  const ok = verifyOutput("kasadjiyata", bg);
+  assert.equal(ok.ok, true, JSON.stringify(ok.checks.filter((c) => !c.ok)));
+  assert.ok(proseCyrillicShare(bg).share > 0.7);
 });
 
 test("prodavacha: редът „Инварианти:“ покрива подписа и payment_status", () => {
