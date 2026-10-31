@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Писмо — шрифт за четене</title>
+<meta name="description" content="Писмо (Pismo) — текстов шрифт с българска кирилица и латиница, Regular и Bold, от Carbon Stealth VCC.">
+<meta name="keywords" content="Писмо, Pismo, шрифт, българска кирилица, текстов шрифт, Carbon Stealth">
+<style>
+@font-face { font-family: "Pismo"; src: url("../fonts/Pismo-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Pismo"; src: url("../fonts/Pismo-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+:root { --bg: #fbfaf7; --fg: #16161a; --muted: #6b6b73; --line: #e2dfd8; --accent: #2b59c3; }
+@media (prefers-color-scheme: dark) { :root { --bg: #141417; --fg: #ecebe6; --muted: #9a9aa3; --line: #2c2c33; --accent: #8fb0ff; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: "Pismo", system-ui, sans-serif; }
+main { max-width: 980px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: clamp(56px, 12vw, 128px); line-height: 1; margin: 0 0 8px; }
+h2 { font-size: 15px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 48px 0 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+.lead { font-size: 22px; color: var(--muted); margin: 0; }
+.chars { font-size: clamp(28px, 5vw, 44px); line-height: 1.35; word-break: break-all; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+.text p { font-size: 18px; line-height: 1.6; margin: 0 0 12px; max-width: 64ch; }
+.tester { display: grid; gap: 12px; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; font-size: 15px; color: var(--muted); }
+.controls label { display: flex; gap: 8px; align-items: center; }
+textarea { width: 100%; min-height: 160px; font: inherit; font-size: 40px; line-height: 1.3; color: var(--fg); background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 12px; resize: vertical; }
+textarea:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+footer { margin-top: 64px; font-size: 14px; color: var(--muted); }
+footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Писмо</h1>
+  <p class="lead">Текстов шрифт за българска кирилица и латиница · Regular и Bold</p>
+
+  <h2>Пробвай</h2>
+  <div class="tester">
+    <div class="controls">
+      <label>Размер <input id="size" type="range" min="12" max="160" value="40"></label>
+      <label>Тегло
+        <select id="weight"><option value="400">Regular</option><option value="700">Bold</option></select>
+      </label>
+      <label>Език
+        <select id="lang"><option value="bg">български (български форми)</option><option value="ru">руски (стандартни форми)</option><option value="en">English</option></select>
+      </label>
+    </div>
+    <textarea id="sample" lang="bg" spellcheck="false" aria-label="Текст за проба">Жълтата дюля беше щастлива, че пухът, който цъфна, замръзна като гьон.</textarea>
+  </div>
+
+  <h2>Знаци</h2>
+  <div class="chars" lang="bg">АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЬЮЯ абвгдежзийклмнопрстуфхцчшщъьюя ѝ</div>
+  <div class="chars" lang="ru">ЁЫЭ ёыэ — стандартни форми: д ж и й к л п т ц ш щ ю</div>
+  <div class="chars" lang="en">ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz</div>
+  <div class="chars">0123456789 €$№%@&amp; „…“ «…» àèéìòù äöü</div>
+
+  <h2>Текст</h2>
+  <div class="pair text">
+    <div lang="bg">
+      <p>Добрият текстов шрифт не се забелязва — той просто позволява на мисълта да тече. Отворени форми, спокоен ритъм и ясни разлики между I, l и 1.</p>
+      <p><strong>Удебеленото</strong> е за акцент, не за викане.</p>
+    </div>
+    <div lang="en">
+      <p>A good text face stays out of the way and lets the thought flow. Open shapes, an even rhythm and clear differences between I, l and 1.</p>
+      <p><strong>Bold</strong> is for emphasis, not for shouting.</p>
+    </div>
+  </div>
+
+  <footer>Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></footer>
+</main>
+<script>
+(() => {
+  const sample = document.getElementById("sample");
+  const size = document.getElementById("size");
+  const weight = document.getElementById("weight");
+  const lang = document.getElementById("lang");
+  const apply = () => {
+    sample.style.fontSize = `${size.value}px`;
+    sample.style.fontWeight = weight.value;
+    sample.lang = lang.value;
+  };
+  [size, weight, lang].forEach((el) => el.addEventListener("input", apply));
+  apply();
+})();
+</script>
+</body>
+</html>

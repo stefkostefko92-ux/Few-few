@@ -1,0 +1,36 @@
+name: pismo
+
+on:
+  push:
+    paths:
+      - 'pismo/**'
+      - '.github/workflows/pismo.yml'
+  pull_request:
+    paths:
+      - 'pismo/**'
+      - '.github/workflows/pismo.yml'
+
+concurrency:
+  group: pismo-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: гейтът само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Инсталирай закачения тулчейн
+        working-directory: pismo
+        run: pip install -r requirements.txt
+      # Покритие на знаците, метрики, locl/kern и байт-идентичен ребилд срещу fonts/.
+      - name: Гейт на шрифта
+        working-directory: pismo
+        run: ./gate.sh
