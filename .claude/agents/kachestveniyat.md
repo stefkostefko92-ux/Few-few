@@ -6,7 +6,7 @@ skills:
   - agent-doctrine
 omitClaudeMd: true
 model: opus
-effort: high
+effort: medium
 maxTurns: 80
 ---
 

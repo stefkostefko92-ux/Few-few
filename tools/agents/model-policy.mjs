@@ -49,6 +49,11 @@ const TIER_C = new Set([]);
 // LOW_EFFORT: най-шаблонно-процедурните — upsert seed / clip-repurpose. Тесен, защитим списък;
 // разширяване = през eval-паритет, не на око (същата дисциплина като TIER_C).
 const LOW_EFFORT = new Set(["siydara", "socialdjiyata"]);
+// Tier A на medium по ИЗМЕРВАНЕ (31.10.2026, пилот live-run --set effort=medium, k=2): Кодаджията
+// $1.05 → $0.64 (−39%), Качествения $0.90 → $0.57 (−37%), golden 2/2 и в двете рамена; сляпо двойково
+// съдийство за Кодаджията 1:1 (истински находки 4/5 и 4/3). „Prompting Claude Opus 5.5“: medium на 5.5 ≥
+// high на Opus 5. Преводача остана high (−4%). Връщане: обратно в TIER_A без изключение + жив гейт.
+const MEDIUM_MEASURED = new Set(["kodadjiyata", "kachestveniyat"]);
 
 const REASON = {
   A: "дълбоко разсъждение / безопасно-критично (пари·право·фискал·сигурност·клинично·стат) → opus + effort:high",
@@ -57,7 +62,7 @@ const REASON = {
   effort: "high=критично/дълбоко (TIER_A) · low=шаблонно/механично (LOW_EFFORT) · medium=останалите",
 };
 const rec = (id) => (TIER_C.has(id) ? "haiku" : TIER_A.has(id) ? "opus" : "sonnet");
-const recEffort = (id) => (TIER_A.has(id) ? "high" : LOW_EFFORT.has(id) ? "low" : "medium");
+const recEffort = (id) => (TIER_A.has(id) && !MEDIUM_MEASURED.has(id) ? "high" : LOW_EFFORT.has(id) ? "low" : "medium");
 
 function agentIds() {
   return readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_") && f !== "README.md").map((f) => f.replace(/\.md$/, "")).sort();

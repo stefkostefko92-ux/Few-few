@@ -1145,7 +1145,7 @@
       "tagline": "Хваща бъгове и уязвимости — с нула шум, всяка находка самопроверена.",
       "file": ".claude/agents/kodadjiyata.md",
       "model": "opus",
-      "effort": "high",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -2757,7 +2757,7 @@
       "tagline": "Прави кода лесен за четене и промяна — поведение-запазващи рефактори, нула шум.",
       "file": ".claude/agents/kachestveniyat.md",
       "model": "opus",
-      "effort": "high",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
