@@ -1,5 +1,6 @@
 import "server-only";
-import nodemailer from "nodemailer";
+// nodemailer 10 носи собствени типове: Transporter е именуван тип, не namespace.
+import nodemailer, { type Transporter } from "nodemailer";
 
 // Имейл по подразбиране на получателя на сигнали (Община Бобов дол).
 export const MUNICIPALITY_EMAIL =
@@ -9,8 +10,8 @@ function isConfigured(): boolean {
   return Boolean(process.env.SMTP_HOST && process.env.SMTP_PORT);
 }
 
-let transporter: nodemailer.Transporter | null = null;
-function getTransporter(): nodemailer.Transporter | null {
+let transporter: Transporter | null = null;
+function getTransporter(): Transporter | null {
   if (!isConfigured()) return null;
   if (transporter) return transporter;
   transporter = nodemailer.createTransport({
