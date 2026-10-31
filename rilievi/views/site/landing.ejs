@@ -1,0 +1,161 @@
+<%
+  // Витрината: първият екран със снимката на шахтата (нашият рендер), какво прави порталът — до снимките
+  // на обекта и в офиса, картата раздел по раздел до чертежа, кой какво вижда, как се влиза и формата за
+  // заявка. Разделите, ролите и възможностите идват от кода (src/site/landing.ts), не от ръката.
+%><%- include('top', { pageTitle: t('site.meta.title'), description: t('site.meta.description'), sectionNav: true }) %>
+<section class="hero" aria-labelledby="hero-title">
+  <%# Шахтата от ямата нагоре: широка на широк екран, отвесна на изправен телефон; тегли се веднага — тя е LCP. %>
+  <picture class="hero__foto">
+    <source media="(max-aspect-ratio: 1/1)" type="image/avif" srcset="<%= hero.verticale.avif %>" sizes="100vw" width="<%= hero.verticale.width %>" height="<%= hero.verticale.height %>">
+    <source media="(max-aspect-ratio: 1/1)" type="image/webp" srcset="<%= hero.verticale.webp %>" sizes="100vw" width="<%= hero.verticale.width %>" height="<%= hero.verticale.height %>">
+    <source type="image/avif" srcset="<%= hero.orizzontale.avif %>" sizes="100vw">
+    <img src="<%= hero.orizzontale.src %>" srcset="<%= hero.orizzontale.webp %>" sizes="100vw" width="<%= hero.orizzontale.width %>" height="<%= hero.orizzontale.height %>" alt="<%= hero.orizzontale.alt %>" fetchpriority="high" decoding="async">
+  </picture>
+  <div class="hero__text">
+    <h1 class="hero__title" id="hero-title"><%= t('site.hero.title') %></h1>
+    <p class="hero__lead"><%= t('site.hero.lead') %></p>
+    <div class="hero__actions">
+      <a class="btn btn--inverse btn--lg" href="#richiesta"><%= t('site.hero.request') %></a>
+      <a class="btn btn--bar btn--lg" href="<%= signedIn ? '/schede' : loginUrl %>"><%= t(signedIn ? 'site.nav.app' : 'site.hero.login') %></a>
+    </div>
+    <p class="hero__note"><%= t('site.hero.note') %></p>
+  </div>
+</section>
+
+<section class="band band--scene" id="come" aria-labelledby="come-title">
+  <div class="band__inner">
+    <header class="band__head">
+      <h2 id="come-title"><%= t('site.features.title') %></h2>
+    </header>
+  </div>
+  <% scene.forEach((scena, index) => { %><div class="scena<%= index % 2 ? ' scena--destra' : '' %>">
+    <%- include('_foto', { foto: scena.foto, classe: 'scena__foto', sizes: '(min-width: 900px) 50vw, 100vw' }) %>
+    <ul class="scena__lista">
+      <% for (const id of scena.features) { %><li class="feature">
+        <h3><%= t('site.features.' + id + '.title') %></h3>
+        <p><%= t('site.features.' + id + '.text') %></p>
+      </li>
+      <% } %>
+    </ul>
+  </div>
+  <% }) %>
+</section>
+
+<section class="band" id="assistenza" aria-labelledby="assistenza-title">
+  <div class="band__inner">
+    <header class="band__head">
+      <h2 id="assistenza-title"><%= t('site.servizi.title') %></h2>
+      <p class="band__lead"><%= t('site.servizi.lead') %></p>
+    </header>
+    <ul class="servizi">
+      <% for (const id of servizi) { %><li class="feature">
+        <h3><%= t('site.servizi.' + id + '.title') %></h3>
+        <p><%= t('site.servizi.' + id + '.text') %></p>
+      </li>
+      <% } %>
+    </ul>
+  </div>
+</section>
+
+<section class="band" id="scheda" aria-labelledby="scheda-title">
+  <div class="band__inner">
+    <header class="band__head">
+      <h2 id="scheda-title"><%= t('site.legend.title') %></h2>
+      <p class="band__lead"><%= t('site.legend.lead', counts) %></p>
+    </header>
+    <div class="disegno">
+      <figure class="disegno__figura">
+        <%- include('_shaft', { markers: true, legend }) %>
+      </figure>
+      <div>
+        <ol class="legend__list">
+          <% for (const section of legend) { %><li class="legend__item">
+            <span class="secnum" aria-hidden="true"><%= section.n %></span>
+            <h3><%= section.title %></h3>
+            <p><%= section.fields.join(', ') %></p>
+          </li>
+          <% } %>
+        </ol>
+        <p class="band__note"><%= t('site.legend.extra') %></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band band--ink" id="ruoli" aria-labelledby="ruoli-title">
+  <div class="band__inner">
+    <header class="band__head">
+      <h2 id="ruoli-title"><%= t('site.roles.title') %></h2>
+      <p class="band__lead"><%= t('site.roles.lead') %></p>
+    </header>
+    <table class="matrix">
+      <caption class="visually-hidden"><%= t('site.roles.caption') %></caption>
+      <thead>
+        <tr>
+          <th scope="col"><%= t('site.roles.role') %></th>
+          <% for (const cap of capabilities) { %><th scope="col"><%= t('site.roles.cap.' + cap) %></th>
+          <% } %>
+        </tr>
+      </thead>
+      <tbody>
+        <% roles.forEach((row, index) => { %><tr>
+          <th scope="row"><span class="level" aria-hidden="true"><%= index + 2 %></span><%= t('role.' + row.role) %></th>
+          <% row.caps.forEach((yes, i) => { const label = t('site.roles.cap.' + capabilities[i]); %><td data-label="<%= label %>"><% if (yes) { %><%- include('../partials/icon', { name: 'check' }) %><span class="visually-hidden"><%= t('site.roles.yes') %></span><% } else { %><span class="matrix__no" aria-hidden="true">—</span><span class="visually-hidden"><%= t('site.roles.no') %></span><% } %></td>
+          <% }) %>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <p class="band__note"><%= t('site.roles.note') %></p>
+  </div>
+</section>
+
+<section class="band" id="accesso" aria-labelledby="accesso-title">
+  <div class="band__inner">
+    <header class="band__head">
+      <h2 id="accesso-title"><%= t('site.steps.title') %></h2>
+    </header>
+    <ol class="steps">
+      <% for (const n of steps) { %><li class="step" id="passo-<%= n %>">
+        <span class="step__n" aria-hidden="true"><%= n %></span>
+        <h3><%= t('site.steps.s' + n + '.title') %></h3>
+        <p><%= t('site.steps.s' + n + '.text', { days: inviteDays }) %></p>
+      </li>
+      <% } %>
+    </ol>
+  </div>
+</section>
+
+<section class="band" id="faq" aria-labelledby="faq-title">
+  <div class="band__inner">
+    <header class="band__head">
+      <h2 id="faq-title"><%= t('site.faq.title') %></h2>
+    </header>
+    <div class="faq">
+      <% for (const id of faqIds) { %><div class="faq__item">
+        <h3 class="faq__q"><%= t('site.faq.' + id + '.q') %></h3>
+        <p class="faq__a"><%= t('site.faq.' + id + '.a') %></p>
+      </div>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<section class="request" id="richiesta" aria-labelledby="richiesta-title">
+  <div class="request__inner">
+    <div class="request__aside">
+      <h2 id="richiesta-title"><%= t('site.request.title') %></h2>
+      <p><%= t('site.request.lead') %></p>
+      <h3><%= t('site.request.next.title') %></h3>
+      <ol class="request__next">
+        <li><%= t('site.request.next.s1') %></li>
+        <li><%= t('site.request.next.s2') %></li>
+        <li><%= t('site.request.next.s3', { days: retentionDays }) %> <a href="<%= privacyPath %>"><%= t('site.request.privacyLink') %></a></li>
+      </ol>
+      <p><%= t('site.request.contact') %> <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a></p>
+      <p><%= t('site.request.phoneCall') %> <a href="<%= company.phoneHref %>"><%= company.phone %></a></p>
+    </div>
+    <%- include('_request') %>
+  </div>
+</section>
+<%- include('bottom') %>

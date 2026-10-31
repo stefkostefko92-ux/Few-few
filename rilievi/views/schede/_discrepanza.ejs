@@ -1,0 +1,4 @@
+<%
+  // Едно разминаване: името на данното и какво пише на всяко място (src/ordini/collegati.ts). Същия вид
+  // прави и public/js/collegati.js, докато се пише.
+%><strong><%= t('collegati.' + d.key) %></strong> — <%= d.voci.map((v) => t('collegati.luogo.' + v.luogo) + ': ' + v.valore).join(' · ') %>

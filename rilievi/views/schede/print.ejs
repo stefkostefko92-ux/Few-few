@@ -1,0 +1,105 @@
+<%
+  const byKey = Object.fromEntries(sections.flatMap((s) => s.fields).map((f) => [f.key, f]));
+%><!doctype html>
+<html lang="<%= locale %>" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= ident.length > 40 ? ident.slice(0, 39) + '…' : ident %> — Rilievi Impianti</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/static/img/favicon-32.png?v=<%= v %>" type="image/png" sizes="32x32">
+<link rel="icon" href="/static/img/favicon-192.png?v=<%= v %>" type="image/png" sizes="192x192">
+<link rel="stylesheet" href="/static/fonts/fonts.css?v=<%= v %>">
+<link rel="stylesheet" href="/static/css/base.css?v=<%= v %>">
+<link rel="stylesheet" href="/static/css/buttons.css?v=<%= v %>">
+<link rel="stylesheet" href="/static/css/plate.css?v=<%= v %>">
+<link rel="stylesheet" href="/static/css/print.css?v=<%= v %>">
+<link rel="stylesheet" href="/static/css/print-head.css?v=<%= v %>">
+<script src="/static/js/app.js?v=<%= v %>" defer></script>
+</head>
+<body class="print-body"<% if (autoPrint) { %> data-auto-print<% } %>>
+<div class="print-bar">
+  <button class="btn btn--primary btn--sm" type="button" data-print><%- include('../partials/icon', { name: 'print' }) %><%= t('scheda.actions.print') %></button>
+  <a class="btn btn--sm" href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
+  <a class="btn btn--sm" href="/schede/<%= scheda.id %>"><%- include('../partials/icon', { name: 'back' }) %><%= t('print.back') %></a>
+</div>
+<article class="paper">
+  <%# Горе: логото (без лого — името на фирмата) и кой е попълнил; заглавието в средата; под него вляво
+      адресът (удебелен, колкото заглавието), вдясно бонът. „Impianto“ не се печата отделно — всичко
+      от него е в лентата и в табелата. %>
+  <header class="paper__head">
+    <div class="paper__top">
+      <div class="paper__brand">
+        <% if (scheda.azienda.logoType) { %><img class="paper__logo" src="/aziende/<%= scheda.azienda.id %>/logo?v=<%= scheda.azienda.logoUpdatedAt ? scheda.azienda.logoUpdatedAt.getTime() : 0 %>" alt="<%= t('aziende.logoAlt', { name: scheda.azienda.name }) %>"<% if (scheda.azienda.logoWidth && scheda.azienda.logoHeight) { %> width="<%= scheda.azienda.logoWidth %>" height="<%= scheda.azienda.logoHeight %>"<% } %>><% } else { %><span class="paper__azienda"><%= scheda.azienda.name %></span><% } %>
+      </div>
+      <div class="paper__meta">
+        <div><strong><%= t('scheda.field.data') %>: <%= fmt.day(scheda.data) %></strong></div>
+        <div class="paper__by"><span><%= t('scheda.compiledBy') %></span><strong><%= scheda.createdBy ? scheda.createdBy.name : '—' %></strong></div>
+        <% if (scheda.updatedBy && scheda.updatedAt.getTime() - scheda.createdAt.getTime() > 1000) { %><div><%= t('scheda.meta.updated', { name: scheda.updatedBy.name, at: fmt.dateTime(scheda.updatedAt) }) %></div><% } %>
+      </div>
+    </div>
+    <h1 class="paper__title"><%= t('scheda.title') %></h1>
+    <div class="paper__sub">
+      <p class="paper__address<%= scheda.indirizzo ? '' : ' paper__address--empty' %>"><%= scheda.indirizzo || t('scheda.noAddress') %></p>
+      <p class="paper__buono"><span><%= t('scheda.buonoRiferimento') %></span><strong><%= scheda.buonoLavoro || '—' %></strong></p>
+    </div>
+  </header>
+  <%- include('../partials/plate', { byKey, withAddress: false }) %>
+  <% for (const section of printed) { %>
+  <section class="paper__section">
+    <h2><%= section.title %></h2>
+    <dl class="paper__grid">
+      <% for (const field of section.fields) { %><div class="paper__cell<%= field.wide || (field.options && field.kind !== 'yesno') ? ' paper__cell--wide' : '' %>">
+        <dt><%= field.label %></dt>
+        <% if (field.options) { %><dd><span class="opts"><% for (const option of field.options) { %><span class="opt<%= option.checked ? ' opt--on' : '' %>"><span class="opt__box" aria-hidden="true"></span><%= option.label %><% if (option.checked) { %><span class="visually-hidden"> ✓</span><% } %></span><% } %></span><% if (field.table) { %><%- include('_table', { table: field.table, tableClass: 'ptable' }) %><% } %></dd>
+        <% } else if (field.value) { %><dd><%= field.value %></dd><% } else { %><dd class="empty-value">—</dd><% } %>
+      </div>
+      <% } %>
+    </dl>
+  </section>
+  <% } %>
+  <%# Попълненото в модулите на доставчиците — само в тези, които картата иска (moduliStampati). %>
+  <% for (const modulo of riepilogo) { %>
+  <section class="paper__section">
+    <h2><%= modulo.nome %></h2>
+    <dl class="paper__grid">
+      <% for (const gruppo of modulo.gruppi) { %><div class="paper__cell paper__cell--wide">
+        <dt><%= gruppo.titolo %></dt>
+        <dd><% if (gruppo.spunte.length) { %><span class="opts"><% for (const label of gruppo.spunte) { %><span class="opt opt--on"><span class="opt__box" aria-hidden="true"></span><%= label %><span class="visually-hidden"> ✓</span></span><% } %></span><% } %><% if (gruppo.testi.length) { %><span class="pairs"><% for (const pair of gruppo.testi) { %><span><%= pair.label %>: <strong><%= pair.value %></strong></span><% } %></span><% } %></dd>
+      </div>
+      <% } %>
+    </dl>
+  </section>
+  <% } %>
+  <%# Листовете на скицника — при отметката на картата, след модулите, всеки на цялата ширина. %>
+  <% if (schizzi.length) { %>
+  <section class="paper__section paper__schizzi">
+    <h2><%= t('schizzi.title') %></h2>
+    <% schizzi.forEach((foglio, i) => { %><figure class="paper__schizzo">
+      <% if (schizzi.length > 1) { %><figcaption><%= t('schizzi.foglio', { n: i + 1 }) %></figcaption><% } %>
+      <%- include('_schizzo', { foglio, titolo: t('schizzi.foglio', { n: i + 1 }) }) %>
+    </figure>
+    <% }) %>
+  </section>
+  <% } %>
+  <%# Снимките на разделите — накрая, от нова страница, само при отметката на картата (клиповете
+     остават в портала). Миниатюрите (до 960 px) стигат за половин A4; без lazy — печатът ги чака. %>
+  <% if (foto.length) { %>
+  <section class="paper__section paper__foto">
+    <h2><%= t('allegati.stampa.titolo') %></h2>
+    <% for (const gruppo of foto) { %>
+    <h3 class="paper__foto-titolo"><%= gruppo.section.title %></h3>
+    <div class="paper__foto-grid">
+      <% for (const f of gruppo.foto) { %><figure class="paper__figura">
+        <img src="/schede/<%= scheda.id %>/allegati/<%= f.id %>?mini=1" alt="<%= f.didascalia || t('allegati.foto', { nome: f.nomeOriginale }) %>"<% if (f.larghezza && f.altezza) { %> width="<%= f.larghezza %>" height="<%= f.altezza %>"<% } %>>
+        <% if (f.didascalia) { %><figcaption><%= f.didascalia %></figcaption><% } %>
+      </figure>
+      <% } %>
+    </div>
+    <% } %>
+  </section>
+  <% } %>
+  <footer class="paper__foot"><%= t('pdf.generated', { at: fmt.dateTime(new Date()), name: currentUser.name }) %> — Created and Designed by Carbon Stealth VCC — carbonstealth.eu</footer>
+</article>
+</body>
+</html>

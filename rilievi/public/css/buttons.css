@@ -1,0 +1,119 @@
+/* Бутоните на портала и на витрината. */
+
+/* Черен (основен), с рамка (второстепенен), без рамка (тих), червен (необратим). */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1.5px solid var(--fg);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--hover);
+}
+
+.btn--primary {
+  background: var(--primary-bg);
+  color: var(--primary-fg);
+}
+
+.btn--primary:hover {
+  background: var(--primary-bg);
+  box-shadow:
+    0 0 0 3px var(--bg),
+    0 0 0 4.5px var(--primary-bg);
+}
+
+.btn--ghost {
+  border-color: transparent;
+}
+
+.btn--ghost:hover {
+  border-color: var(--line);
+}
+
+.btn--danger {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: var(--danger-fg);
+}
+
+.btn--danger:hover {
+  background: var(--danger);
+  box-shadow:
+    0 0 0 3px var(--bg),
+    0 0 0 4.5px var(--danger);
+}
+
+.btn--sm {
+  min-height: 38px;
+  padding: 0 12px;
+  font-size: 0.9375rem;
+}
+
+.btn--lg {
+  min-height: 52px;
+  padding: 0 24px;
+  font-size: 1.0625rem;
+}
+
+/* В черната лента: бял бутон (основното действие) и бяла рамка (второстепенното). */
+.btn--inverse {
+  border-color: var(--bar-fg);
+  background: var(--bar-fg);
+  color: var(--bar);
+}
+
+.btn--inverse:hover {
+  background: var(--bar-fg);
+  box-shadow:
+    0 0 0 3px var(--bar),
+    0 0 0 4.5px var(--bar-fg);
+}
+
+.btn--bar {
+  border-color: var(--bar-muted);
+  color: var(--bar-fg);
+}
+
+.btn--bar:hover {
+  border-color: var(--bar-fg);
+  background: transparent;
+}
+
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn,
+  .btn--primary:hover {
+    transition:
+      box-shadow 120ms ease,
+      background-color 120ms ease;
+  }
+}

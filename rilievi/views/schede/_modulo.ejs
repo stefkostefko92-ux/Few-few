@@ -1,0 +1,83 @@
+<%
+  // Модулът на доставчика (src/ordini/, assets/moduli/*.json) — същите полета в същия ред като на
+  // хартията, за да излезе в неговия оригинален PDF. Етикетите са дословно от модула (италиански) и не
+  // се превеждат. Отваря се при своята марка (и модел — Mastech, и вид на уредбата — Elettroquadri) и „Sì“
+  // на въпроса над него (обвивки с data-when — таблото има седем модула под един въпрос); data-prefill —
+  // попълване от огледа
+  // (moduli.js); data-auto — поле, попълнено от огледа, от картата, от другия модул или със стойността на
+  // празния модул: следва източника си, докато човекът не пише в него (moduli.js, collegati.js);
+  // data-scritto — поле от огледа, изпразнено от човека в записания модул: остава празно (form.ts). Под
+  // всяка група — разминаванията на нейните свързани данни; редът с надпис („Norme di riferimento“) е
+  // група за четеца на екрана. data-gemelli — колоната и модулът: два слота с един и същ модул в една
+  // колона (2SG на окачванията и на оператора) са един лист на две места — moduli-gemelli.js пренася
+  // писаното, когато на екрана се смени кое от тях се вижда.
+  const name = (key) => slot.prefix + '-' + key;
+  // Изборите на картата за модула: марката, после моделът или видът на уредбата — обвивка за всеки. Модул
+  // без марка (листът за аргано, 2SG) е отворен при всяка марка — обвивката е без условие. Видът на
+  // уредбата е отметка — стойността идва като списък.
+  const [marca, modello, impianto] = [slot.marca, slot.modello, slot.impianto];
+  const off = (c) => {
+    if (!c) return false;
+    const v = values[c.field];
+    return !(Array.isArray(v) ? v.includes(c.value) : v === c.value);
+  };
+  // Отворен само ако и въпросът се вижда — иначе „Sì“ е остатък от друга марка; и ако слотът с
+  // предимство в колоната не е отворен (2SG при автоматични: „Sospensioni: Sì“ — листът е неговият).
+  const ceduto = slot.cede && active.has(slot.cede) && values[slot.cede] === 'si';
+  const on = active.has(slot.question) && values[slot.question] === 'si';
+%><% if (slot.cede) { %><div class="field--wide" data-when="<%= slot.cede %>" data-when-values="si" data-when-not<% if (ceduto) { %> data-off<% } %>><% } %><div class="field--wide"<% if (marca) { %> data-when="<%= marca.field %>" data-when-values="<%= marca.value %>"<% } %><% if (off(marca)) { %> data-off<% } %>>
+<% for (const c of [modello, impianto]) if (c) { %><div data-when="<%= c.field %>" data-when-values="<%= c.value %>"<% if (off(c)) { %> data-off<% } %>><% } %>
+<div class="modulo" id="f-<%= slot.prefix %>" data-when="<%= slot.question %>" data-when-values="si"<% if (!on) { %> data-off<% } %> data-modulo data-gemelli="<%= slot.column %>:<%= slot.modulo.id %>">
+  <input type="hidden" name="<%= slot.prefix %>-_" value="1">
+  <div class="modulo__head">
+    <p class="modulo__title"><strong><%= slot.modulo.titolo %></strong><% if (slot.modulo.fornitore) { %> · <%= slot.modulo.fornitore %><% } %></p>
+    <p class="field__hint"><%= t('ordini.hint') %></p>
+  </div>
+  <% slot.modulo.gruppi.forEach((group, g) => { %>
+  <fieldset class="modulo__group">
+    <legend><%= group.titolo %></legend>
+    <% group.righe.forEach((row, r) => {
+         const rowId = 'r-' + slot.prefix + '-' + g + '-' + r; %>
+    <div class="modulo__row"<% if (row.titolo) { %> role="group" aria-labelledby="<%= rowId %>"<% } %>>
+      <% if (row.titolo) { %><span class="modulo__rowtitle" id="<%= rowId %>"><%= row.titolo %></span><% } %>
+      <% row.campi.forEach((field, i) => {
+           const id = 'f-' + name(field.key);
+           const errId = 'err-' + name(field.key);
+           const error = errors[name(field.key)];
+           const errText = error ? t('scheda.error.' + error, { maxLength: field.maxLength }) : null;
+           const value = values[name(field.key)];
+           const text = typeof value === 'string' ? value : '';
+           const prefill = field.prefill
+             ? ' data-prefill="' + field.prefill + '"' + (collegati.scritti.has(name(field.key)) ? ' data-scritto' : '')
+             : '';
+           const aria = errText ? ' aria-invalid="true" aria-describedby="' + errId + '"' : '';
+           const auto = collegati.auto.has(name(field.key));
+      %><% if (row.freccia && i === row.freccia) { %><span class="modulo__arrow" aria-hidden="true">→</span><% } %><% if (field.kind === 'check') { %><label class="tick tick--sm"><input type="checkbox" id="<%= id %>" name="<%= name(field.key) %>" value="si"<% if (value === 'si') { %> checked<% } %><% if (auto && value === 'si') { %> data-auto="si"<% } %><%- prefill %>><span class="tick__box" aria-hidden="true"></span><span><%= field.label %></span></label><% } else if (field.kind === 'radio') { %><fieldset class="modulo__radio" id="<%= id %>"<% if (errText) { %> aria-describedby="<%= errId %>"<% } %>>
+        <legend class="<%= field.labelNascosta ? 'visually-hidden' : 'field__label' %>"><%= field.label %></legend>
+        <div class="modulo__opts"><% for (const option of field.opzioni) { %><label class="tick tick--sm"><input type="radio" name="<%= name(field.key) %>" value="<%= option.valore %>" data-clearable<% if (text === option.valore) { %> checked<% if (auto) { %> data-auto="si"<% } %><% } %><% if (field.predefinito === option.valore) { %> data-predefinito<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= option.label %></span></label><% } %></div>
+        <% if (errText) { %><p class="field__error" id="<%= errId %>"><%= errText %></p><% } %>
+      </fieldset><% } else { %><div class="modulo__text<%= field.kind === 'textarea' ? ' modulo__text--wide' : field.kind === 'text' && field.maxLength <= 3 ? ' modulo__text--short' : '' %>">
+        <label class="field__label<%= field.labelNascosta ? ' visually-hidden' : '' %>" for="<%= id %>"><%= field.label %></label>
+        <% if (field.kind === 'textarea') { %><textarea class="textarea" id="<%= id %>" name="<%= name(field.key) %>" rows="3" maxlength="<%= field.maxLength %>"<% if (auto) { %> data-auto="<%= text %>"<% } %><%- prefill %><%- aria %>><%= text %></textarea>
+        <% } else if (field.kind === 'select') { %><select class="select" id="<%= id %>" name="<%= name(field.key) %>"<% if (auto) { %> data-auto="<%= text %>"<% } %><%- prefill %><%- aria %>>
+          <option value="">—</option>
+          <% for (const option of field.opzioni) { %><option value="<%= option %>"<% if (text === option) { %> selected<% } %>><%= option %></option>
+          <% } %>
+        </select>
+        <% } else { %><input class="input" id="<%= id %>" name="<%= name(field.key) %>" type="text" maxlength="<%= field.maxLength %>" autocomplete="off" value="<%= text %>"<% if (auto) { %> data-auto="<%= text %>"<% } %><%- prefill %><%- aria %>>
+        <% } %><% if (errText) { %><p class="field__error" id="<%= errId %>"><%= errText %></p><% } %>
+      </div><% } %><% }) %>
+    </div>
+    <% }) %>
+    <% const linked = collegati.delGruppo(slot.prefix, group.righe.flatMap((row) => row.campi.map((field) => field.key)));
+       const diffs = linked.map((key) => collegati.discrepanze.get(key)).filter(Boolean);
+       if (linked.length) { %><div class="modulo__diff" data-diff="<%= linked.join(' ') %>" aria-live="polite"<% if (!diffs.length) { %> hidden<% } %>>
+      <p class="modulo__diff-title"><%= t('collegati.diversi') %></p>
+      <ul><% for (const d of diffs) { %><li><%- include('_discrepanza', { d }) %></li><% } %></ul>
+    </div><% } %>
+  </fieldset>
+  <% }) %>
+</div>
+<% for (const c of [modello, impianto]) if (c) { %></div><% } %>
+</div>
+<% if (slot.cede) { %></div><% } %>

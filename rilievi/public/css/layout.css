@@ -1,0 +1,248 @@
+/* Части на страниците: лента с бутони, съобщения, странициране, празни състояния, раздели (табове),
+   панели, опасната зона, долната лента. Горната лента е в shell.css, индексът на картата — в sheet.css. */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.flash {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--fg);
+  border-radius: var(--radius);
+  font-weight: 500;
+}
+
+.flash--error {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.flash--ok {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* Празно: малък чертеж на празна карта, едно изречение и действието, ако има такова. */
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  border: 1.5px dashed var(--field-line);
+  border-radius: var(--radius-plate);
+  text-align: center;
+}
+
+.empty__art {
+  width: 72px;
+  height: 72px;
+  color: var(--muted);
+}
+
+.empty p {
+  max-width: 48ch;
+}
+
+/* Разделите по състояние (заявките): подчертан е текущият, до всеки — броят. */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tabs a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.tabs a:hover {
+  color: var(--fg);
+}
+
+.tabs a[aria-current='page'] {
+  color: var(--fg);
+  box-shadow: inset 0 -3px 0 var(--fg);
+}
+
+.tabs__n {
+  min-width: 22px;
+  padding: 1px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
+.panel {
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-plate);
+}
+
+/* Необратимото е зад разгъване — един клик повече, нищо не се трие случайно. */
+.danger-zone {
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-plate);
+}
+
+.danger-zone summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.danger-zone[open] summary {
+  margin-bottom: 10px;
+}
+
+.danger-zone form {
+  margin-top: 14px;
+}
+
+/* Долната лента: темата и авторството. */
+.footer {
+  border-top: 1px solid var(--line);
+}
+
+.footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 18px var(--gutter) 22px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.switch {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.switch a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--muted);
+}
+
+.switch a:hover {
+  color: var(--fg);
+}
+
+.switch a[aria-current='true'] {
+  color: var(--fg);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.switch .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.credit a {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* Печат на обикновена страница (Ctrl+P върху схемата): без навигация и бутони. */
+@media print {
+  .appbar,
+  .sidenav,
+  .sidenav__backdrop,
+  .footer,
+  .toolbar,
+  .actions,
+  .secindex,
+  .skip {
+    display: none !important;
+  }
+
+  .main {
+    padding: 0;
+  }
+
+  body.with-nav {
+    padding-left: 0;
+  }
+
+  .with-index {
+    display: block;
+  }
+}
+
+/* Фирмите и ролите на човек: ред за фирма — името, ролята (избор, ако може да се смени), махането. */
+.memberships {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.membership {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.membership__name {
+  flex: 1 1 200px;
+  font-weight: 600;
+}
+
+.membership__role {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Изборът на роля не заема целия ред — бутонът остава до него. */
+.membership__role .select {
+  width: auto;
+  min-width: 13rem;
+}
+
+.membership-add {
+  margin-top: 16px;
+}
+
+/* В списъка: всяка фирма с ролята си на свой ред. */
+.role-line {
+  display: block;
+}

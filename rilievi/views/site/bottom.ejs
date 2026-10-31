@@ -1,0 +1,47 @@
+<%
+  const themes = [
+    { value: 'auto', key: 'theme.auto', icon: 'auto', on: theme === 'AUTO' },
+    { value: 'chiaro', key: 'theme.light', icon: 'sun', on: theme === 'LIGHT' },
+    { value: 'scuro', key: 'theme.dark', icon: 'moon', on: theme === 'DARK' },
+  ];
+%></main>
+<footer class="sitefoot">
+  <div class="sitefoot__inner">
+    <div class="sitefoot__brand">
+      <p class="sitefoot__name"><%- include('../partials/brandmark', { marchio: 48 }) %>Rilievi Impianti</p>
+      <p class="sitefoot__company"><%= t('company.legalName') %>, <%= t('company.legalForm') %>, <%= t('company.eikLabel') %> <%= company.eik %>, <%= t('company.vatLabel') %> <%= company.vat %></p>
+    </div>
+    <nav class="sitefoot__col" aria-label="<%= t('site.footer.pages') %>">
+      <h2><%= t('site.footer.pages') %></h2>
+      <ul>
+        <li><a href="<%= homePath %>"><%= t('site.home') %></a></li>
+        <li><a href="<%= homePath %>#richiesta"><%= t('site.nav.request') %></a></li>
+        <li><a href="<%= loginUrl %>"><%= t('site.nav.login') %></a></li>
+      </ul>
+    </nav>
+    <div class="sitefoot__col">
+      <h2><%= t('site.footer.contact') %></h2>
+      <address>
+        <%= t('company.street') %>, <%= company.postalCode %> <%= t('company.city') %>, <%= t('company.region') %>, <%= t('company.country') %><br>
+        <%= t('company.phoneLabel') %> <% company.phones.forEach((p, i) => { %><%= i ? ' · ' : '' %><a href="<%= p.href %>"><%= p.number %></a><% }) %><br>
+        <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a>
+      </address>
+    </div>
+    <div class="sitefoot__col">
+      <h2><%= t('site.footer.legal') %></h2>
+      <ul>
+        <li><a href="<%= privacyPath %>"><%= t('privacy.title') %></a></li>
+      </ul>
+      <p class="sitefoot__note"><%= t('site.footer.trademarks') %></p>
+    </div>
+  </div>
+  <div class="sitefoot__base">
+    <% if (themeUrl('auto')) { %><nav class="switch" aria-label="<%= t('switch.theme') %>">
+      <% for (const item of themes) { %><a href="<%= themeUrl(item.value) %>" rel="nofollow"<% if (item.on) { %> aria-current="true"<% } %>><%- include('../partials/icon', { name: item.icon }) %><%= t(item.key) %></a>
+      <% } %>
+    </nav><% } else { %><span></span><% } %>
+    <p class="credit">Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
+  </div>
+</footer>
+</body>
+</html>

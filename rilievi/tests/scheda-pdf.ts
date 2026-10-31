@@ -1,0 +1,85 @@
+import { existsSync } from 'node:fs';
+import { Prisma } from '@prisma/client';
+import { pdfFontPaths } from '../src/schede/pdf.js';
+import type { SchedaFull } from '../src/schede/service.js';
+
+// A full sheet for the PDF tests (pdf.test.ts, schizzi.test.ts) and the page count of a PDF.
+
+export const fontDir = process.env.PDF_FONT_DIR ?? '/usr/share/fonts/truetype/dejavu';
+export const fontsHere = existsSync(pdfFontPaths(fontDir).regular);
+
+export const scheda = {
+  id: 'cm0000000000000000000001',
+  data: new Date('2026-10-12T00:00:00.000Z'),
+  indirizzo: 'Via Giuseppe Verdi 14, Milano',
+  marca: 'Schindler',
+  matricola: '0033871',
+  numeroImpianto: '104552',
+  buonoLavoro: 'BL 2026/512',
+  portataKg: 630,
+  capienzaPersone: 8,
+  fermate: 6,
+  ubicazioneMacchina: ['ALTO'],
+  ubicazioneCassettina: 'Piano -1, vano contatori',
+  parcheggio: null,
+  tipoImpianto: ['ELETTRICO'],
+  tipoPorte: ['AUTOMATICHE', 'MANUALI'],
+  operatoreMarca: 'Selcom',
+  lucePorte: '800 x 2000',
+  operatoreTensione: '24 V DC',
+  doppioAccesso: false,
+  bloccaPortine: true,
+  autolivellamento: null,
+  pattinoRetrattile: true,
+  pattinoRetrattileNumero: 1,
+  serrature: true,
+  serratureNumero: 6,
+  serratureTipo: 'Elettromeccaniche',
+  luceVanoSostituire: true,
+  funiDiametroMm: new Prisma.Decimal('10.50'),
+  funiTrefoli: 8,
+  funiNumero: 4,
+  funiLunghezzaM: new Prisma.Decimal('42.75'),
+  limitatoreTipo: null,
+  funicellaDiametroMm: null,
+  funicellaLunghezzaM: null,
+  tenditore: null,
+  caviNumero: 2,
+  caviConduttori: 24,
+  caviLunghezzaM: null,
+  telesoccorsoInstallare: true,
+  perifericaInstallare: false,
+  cornettaInstallare: null,
+  allarmePortineria: false,
+  displayPortineria: null,
+  noteQuadretto: null,
+  noteImpianto: 'Бележка на български, città, perché.',
+  noteBottoniere: null,
+  bottoniereMisure: false,
+  misureBottoniere: [],
+  lavoriExtra: 'x '.repeat(1500),
+  sezioniEscluse: [],
+  moduliStampati: [],
+  searchText: '',
+  createdById: null,
+  updatedById: null,
+  deletedAt: null,
+  deletedById: null,
+  createdAt: new Date('2026-10-12T09:00:00.000Z'),
+  updatedAt: new Date('2026-10-12T09:30:00.000Z'),
+  aziendaId: 'cm0000000000000000000a01',
+  createdBy: { name: 'Tecnico Uno' },
+  updatedBy: { name: 'Tecnico Due' },
+  deletedBy: null,
+  azienda: {
+    id: 'cm0000000000000000000a01',
+    name: 'Ascensori Rossi Srl',
+    logoType: null,
+    logoWidth: null,
+    logoHeight: null,
+    logoUpdatedAt: null,
+  },
+} as unknown as SchedaFull;
+
+export const pages = (pdf: Buffer) =>
+  (pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length;

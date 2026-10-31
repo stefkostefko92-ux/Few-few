@@ -1,0 +1,113 @@
+import { rgb, type PDFFont, type PDFPage } from 'pdf-lib';
+import type { Modulo, ModuloOverlay } from './moduli.js';
+import { renderAcroform } from './pdf-form.js';
+import { apriModulo, fitBlock, fitLine, fitRighe, SEGNO } from './pdf-testo.js';
+import type { Valori } from './valori.js';
+
+/**
+ * PDF-ът на модул: самият официален модул с нашите стойности — нищо друго не се пипа. Плоските листове
+ * (Pelazza, листът с данни за аргано, 2SG, Mastech, Elettroquadri): кръстчета в кутийките (или кръгче около
+ * номера на етажа) и текст върху редовете, по координатите от картата и на страницата на групата (и на
+ * страниците от `anche` — главата на Elettroquadri, повторена на стр. 2) — тук. MoviLift
+ * (формуляр) — pdf-form.ts; общото (шрифтът, мястото на текста) — pdf-testo.ts.
+ */
+
+const INK = rgb(0, 0, 0);
+
+function cross(page: PDFPage, box: readonly [number, number, number, number]): void {
+  const height = page.getHeight();
+  const [x0, top, x1, bottom] = box;
+  const inset = 1.6;
+  const low = { x: x0 + inset, y: height - bottom + inset };
+  const high = { x: x1 - inset, y: height - top - inset };
+  page.drawLine({ start: low, end: high, thickness: SEGNO, color: INK });
+  page.drawLine({
+    start: { x: low.x, y: high.y },
+    end: { x: high.x, y: low.y },
+    thickness: SEGNO,
+    color: INK,
+  });
+}
+
+/** Кръгче около надписа в кутийката — етажът, отбелязан по номера си (NG120). */
+function circle(page: PDFPage, box: readonly [number, number, number, number]): void {
+  const [x0, top, x1, bottom] = box;
+  page.drawEllipse({
+    x: (x0 + x1) / 2,
+    y: page.getHeight() - (top + bottom) / 2,
+    xScale: (x1 - x0) / 2,
+    yScale: (bottom - top) / 2,
+    borderWidth: SEGNO,
+    borderColor: INK,
+  });
+}
+
+export async function renderOverlay(
+  modulo: ModuloOverlay,
+  valori: Valori,
+  fontDir: string,
+): Promise<Uint8Array> {
+  const { doc, font } = await apriModulo(modulo, fontDir);
+  // Размерът на написаното и колко над линията стои — по листа (Word-ът е с едри букви).
+  const size = modulo.dimensione ?? 8;
+  const lift = modulo.sopraLinea ?? 1.6;
+  for (const gruppo of modulo.gruppi) {
+    const page = doc.getPage((gruppo.pagina ?? 1) - 1);
+    for (const riga of gruppo.righe) {
+      drawCampi(page, riga.campi, valori, font, size, lift);
+      for (const field of riga.campi) {
+        for (const altra of field.anche ?? []) {
+          drawCampi(doc.getPage(altra - 1), [field], valori, font, size, lift);
+        }
+      }
+    }
+  }
+  return doc.save();
+}
+
+function drawCampi(
+  page: PDFPage,
+  campi: ModuloOverlay['gruppi'][number]['righe'][number]['campi'],
+  valori: Valori,
+  font: PDFFont,
+  size: number,
+  lift: number,
+): void {
+  const height = page.getHeight();
+  for (const field of campi) {
+    const value = valori[field.key];
+    if (field.kind === 'check') {
+      if (value === true) (field.segno === 'cerchio' ? circle : cross)(page, field.box);
+      continue;
+    }
+    if (typeof value !== 'string' || !value) continue;
+    if ('line' in field) {
+      const [x0, x1, y] = field.line;
+      const fit = fitLine(font, value, x1 - x0, size);
+      page.drawText(fit.text, { x: x0, y: height - y + lift, size: fit.size, font, color: INK });
+    } else if ('area' in field && field.righe) {
+      // Кутия с редове на листа (NOTE на 2SG): по ред на линия, не по-едро от другия текст.
+      const [x0, , x1] = field.area;
+      const { righe } = field;
+      const block = fitRighe(font, value, x1 - x0, righe.length, size);
+      righe.forEach((y, i) => {
+        const line = block.lines[i];
+        if (line)
+          page.drawText(line, { x: x0, y: height - y + lift, size: block.size, font, color: INK });
+      });
+    } else if ('area' in field) {
+      const [x0, top, x1, bottom] = field.area;
+      const block = fitBlock(font, value, x1 - x0 - 4, bottom - top - 4, 9);
+      block.lines.forEach((line, i) => {
+        const y = height - top - 2 - block.size * (i + 1) * 1.18 + block.size * 0.22;
+        page.drawText(line, { x: x0 + 2, y, size: block.size, font, color: INK });
+      });
+    }
+  }
+}
+
+export function renderModulo(modulo: Modulo, valori: Valori, fontDir: string): Promise<Uint8Array> {
+  return modulo.tipo === 'overlay'
+    ? renderOverlay(modulo, valori, fontDir)
+    : renderAcroform(modulo, valori, fontDir);
+}

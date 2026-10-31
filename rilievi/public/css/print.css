@@ -1,0 +1,277 @@
+/* Страницата за печат: A4, винаги черно на бяло (хартията е бяла и в тъмна тема). На екрана — лист
+   върху сив фон и лента с „Stampa“/„Scarica PDF“; при печат остава само листът. Шрифтовете на листа
+   са с 1,5 pt (2 px) над първите — като в PDF-а (поискано от собственика, октомври 2026). */
+
+@page {
+  size: A4;
+  margin: 12mm 12mm 14mm;
+}
+
+.print-body {
+  --bg: #ffffff;
+  --fg: #000000;
+  --muted: #4d4d4d;
+  --line: #bdbdbd;
+  --line-strong: #000000;
+  background: #e9e9e9;
+  color: #000000;
+  color-scheme: light;
+}
+
+.print-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding: 12px var(--gutter);
+  background: #000000;
+}
+
+.print-bar .btn {
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.print-bar .btn--primary {
+  background: #ffffff;
+  color: #000000;
+}
+
+.print-bar .btn:hover {
+  background: #1f1f1f;
+}
+
+.print-bar .btn--primary:hover {
+  background: #ffffff;
+  box-shadow:
+    0 0 0 3px #000000,
+    0 0 0 4.5px #ffffff;
+}
+
+.paper {
+  width: min(210mm, 100% - 24px);
+  margin: 24px auto 48px;
+  padding: 14mm 12mm;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px #c8c8c8;
+  font-size: 12pt;
+  line-height: 1.35;
+}
+
+.paper__section {
+  margin-top: 14px;
+  break-inside: auto;
+}
+
+.paper__section h2 {
+  margin-bottom: 6px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #000000;
+  font-size: 12pt;
+  break-after: avoid;
+}
+
+.paper__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 18px;
+  margin: 0;
+}
+
+.paper__cell {
+  break-inside: avoid;
+}
+
+.paper__cell:has(.ptable) {
+  break-inside: auto;
+}
+
+.paper__cell--wide {
+  grid-column: 1 / -1;
+}
+
+.paper__cell dt {
+  font-size: 9pt;
+  color: var(--muted);
+}
+
+.paper__cell dd {
+  margin: 1px 0 0;
+  min-height: 1.35em;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.paper__cell dd.empty-value {
+  color: var(--muted);
+}
+
+/* Квадратчетата на хартията: ☐ празно, ■ с отметка. */
+.opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+}
+
+.opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.opt__box {
+  position: relative;
+  width: 11pt;
+  height: 11pt;
+  border: 1.4pt solid #000000;
+  border-radius: 1.5pt;
+}
+
+/* Отметката — плътна (собственикът, 21 октомври 2026). */
+.opt--on .opt__box::after {
+  content: '';
+  position: absolute;
+  left: 2.6pt;
+  top: 0;
+  width: 4pt;
+  height: 6.9pt;
+  border: solid #000000;
+  border-width: 0 2.1pt 2.1pt 0;
+  transform: rotate(45deg);
+}
+
+.opt--on {
+  font-weight: 600;
+}
+
+/* Написаното в модул на доставчик (резюмето на картата): „Corsa Mt.: 12“ едно след друго. */
+.pairs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+}
+
+.opts + .pairs {
+  margin-top: 4px;
+}
+
+/* Мерките по спирки: таблица на цялата ширина, заглавието се повтаря на всяка страница. */
+.ptable {
+  width: 100%;
+  margin-top: 4px;
+  border-collapse: collapse;
+  font-size: 10pt;
+  font-weight: 400;
+  white-space: normal;
+}
+
+.ptable th,
+.ptable td {
+  padding: 2px 5px;
+  border: 0.75pt solid #9a9a9a;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.ptable thead th {
+  border-bottom: 1pt solid #000000;
+  font-size: 9pt;
+  color: var(--muted);
+}
+
+.ptable tr {
+  break-inside: avoid;
+}
+
+.paper__foot {
+  margin-top: 18px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  font-size: 9pt;
+  color: var(--muted);
+}
+
+/* Листовете на скицника: два на страница A4 (като в PDF-а), бели като хартия, цели. */
+.paper__schizzo {
+  max-width: 152mm;
+  margin: 0 auto 10px;
+  break-inside: avoid;
+}
+
+.paper__schizzo figcaption {
+  margin-bottom: 3px;
+  font-size: 10pt;
+  font-weight: 600;
+}
+
+.paper__schizzo .schizzo {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 0.6pt solid #000000;
+  background: #ffffff;
+}
+
+/* Снимките на разделите: от нова страница, по две на ред, до четири на лист A4; цялата снимка (без
+   изрязване), с надписа отдолу. */
+.paper__foto {
+  break-before: page;
+}
+
+.paper__foto-titolo {
+  margin: 12px 0 6px;
+  font-size: 11pt;
+  break-after: avoid;
+}
+
+.paper__foto-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  align-items: start;
+}
+
+.paper__figura {
+  margin: 0;
+  break-inside: avoid;
+}
+
+.paper__figura img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 100mm;
+  border: 0.5pt solid #bdbdbd;
+}
+
+.paper__figura figcaption {
+  margin-top: 3px;
+  font-size: 10pt;
+  overflow-wrap: anywhere;
+}
+
+@media print {
+  .print-body {
+    background: #ffffff;
+  }
+
+  .print-bar {
+    display: none;
+  }
+
+  .paper {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  a {
+    text-decoration: none;
+  }
+}

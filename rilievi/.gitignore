@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+# Шрифтовете се копират от @fontsource при `npm run build` (scripts/fonts.mjs).
+public/fonts/
+test-results/
+tests/e2e/shots/
+# Снимките и клиповете при локална разработка (MEDIA_DIR=./media).
+media/
+# Рендерите на витрината: виртуалната среда на Mitsuba и 16-битовите оригинали (scripts/render).
+scripts/render/.venv/
+scripts/render/out/
+# Логото: оригиналът от scripts/logo/logo.py (кодира се с `npm run brand:logo`).
+scripts/logo/out/
+__pycache__/
