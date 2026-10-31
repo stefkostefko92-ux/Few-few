@@ -1,0 +1,207 @@
+/* Страничната лента (views/partials/header.ejs): групите на навигацията, вписаният човек долу, бутонът
+   ☰ на горната лента и как се отваря под 1100 px (menu.js). Цветовете са на черната лента. */
+
+.appbar__menu,
+.sidenav__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.appbar__menu .icon,
+.sidenav__close .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.sidenav {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: var(--nav-w);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bar);
+  color: var(--bar-fg);
+  border-right: 1px solid var(--bar-edge);
+}
+
+.sidenav__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 72px;
+  padding: 0 12px 0 20px;
+  border-bottom: 1px solid var(--bar-line);
+}
+
+.sidenav__close {
+  display: none;
+}
+
+.sidenav__nav {
+  flex: 1;
+  padding: 8px 12px 16px;
+}
+
+.sidenav__group {
+  margin: 18px 8px 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--bar-muted);
+}
+
+.sidenav__nav ul {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sidenav__nav a,
+.who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  padding: 0 10px;
+  border-radius: var(--radius);
+  color: var(--bar-muted);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.sidenav__nav a:hover,
+.who:hover {
+  color: var(--bar-fg);
+  background: var(--bar-hover);
+}
+
+.sidenav__nav a[aria-current='page'],
+.who[aria-current='page'] {
+  color: var(--bar-fg);
+  background: var(--bar-current);
+  box-shadow: inset 3px 0 0 var(--bar-fg);
+}
+
+.sidenav .icon {
+  flex: none;
+  width: 19px;
+  height: 19px;
+}
+
+.nav__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: auto;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--bar-fg);
+  color: var(--bar);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.who {
+  margin: 0 12px 12px;
+  padding-block: 10px;
+  border-top: 1px solid var(--bar-line);
+  border-radius: 0 0 var(--radius) var(--radius);
+  color: var(--bar-fg);
+}
+
+.who__text {
+  display: grid;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.who__name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.who__role {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  color: var(--bar-muted);
+}
+
+.sidenav__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  background: rgb(0 0 0 / 0.55);
+}
+
+@media (min-width: 1100px) {
+  .appbar,
+  .sidenav__backdrop {
+    display: none;
+  }
+}
+
+/* Под 1100 px лентата е скрита вляво и се отваря с ☰ (menu.js): над страницата, с фон зад нея. */
+@media (max-width: 1099px) {
+  .sidenav {
+    width: min(300px, 86vw);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform 0.2s ease,
+      visibility 0s linear 0.2s;
+  }
+
+  .sidenav[data-open] {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.2s ease;
+  }
+
+  .sidenav__close {
+    display: inline-flex;
+  }
+
+  body.nav-open {
+    overflow: hidden;
+  }
+
+  /* Без JavaScript лентата не може да се отвори — стои над съдържанието, отворена. */
+  html:not(.js) .sidenav {
+    position: static;
+    width: auto;
+    transform: none;
+    visibility: visible;
+  }
+
+  html:not(.js) .appbar__menu,
+  html:not(.js) .sidenav__close {
+    display: none;
+  }
+}
+
+@media (max-width: 1099px) and (prefers-reduced-motion: reduce) {
+  .sidenav,
+  .sidenav[data-open] {
+    transition: none;
+  }
+}

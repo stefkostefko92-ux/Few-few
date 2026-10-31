@@ -1,0 +1,11 @@
+# Дневният бекъп на Rilievi Impianti (deploy/backup.sh от последния работещ release).
+[Unit]
+Description=Rilievi Impianti — daily database backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'exec /usr/bin/env bash "$(head -n 1 /opt/few-few/shared/rilievi/last-good)/deploy/backup.sh"'
+Nice=10
+IOSchedulingClass=idle

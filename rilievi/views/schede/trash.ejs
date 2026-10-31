@@ -1,0 +1,17 @@
+<%- include('../partials/top', { titleKey: 'trash.title' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('trash.title') %></h1>
+    <p class="page-head__sub"><%= t('trash.subtitle') %></p>
+  </div>
+</div>
+<% if (aziende.length > 0) { %><%- include('../partials/azienda-filter', { action: '/cestino' }) %><% } %>
+<form class="search" role="search" method="get" action="/cestino">
+  <% if (aziendaFilter) { %><input type="hidden" name="azienda" value="<%= aziendaFilter %>"><% } %>
+  <label class="visually-hidden" for="q"><%= t('schede.search.label') %></label>
+  <%- include('../partials/icon', { name: 'search' }) %>
+  <input class="search__input" id="q" name="q" type="search" value="<%= query %>" placeholder="<%= t('schede.search.placeholder') %>" autocomplete="off" spellcheck="false" maxlength="100" enterkeyhint="search">
+</form>
+<p class="search__status" role="status"><%= query ? t('schede.search.found', { n: page.total, q: query }) : t('schede.count', { n: page.total }) %></p>
+<%- include('_results', { trashMode: true, listBase: '/cestino' }) %>
+<%- include('../partials/bottom') %>
