@@ -88,6 +88,9 @@ const CHECKS = [
   // по-бързо, отколкото CI приключва. Сега main сам се лекува през `docs-sync.yml` (регенерира и
   // комитва), а тук пазим само видимостта. Не го връщай на задължителен, без да махнеш авто-синхрона.
   { id: "docs-fresh", desc: "docs.js (таблото) отразява реалните CLAUDE.md — main се лекува сам чрез docs-sync.yml", cmd: ["tools/docs/collect-claude-md.mjs", "--check"], required: false },
+  // Съветващо (31.10.2026): оценка на тавана не различава по-добро от по-лошо (claude.dev, 28.09.2026).
+  { id: "headroom", desc: "оценките имат запас (не всички spec-ове са на 100% от записи насам)", cmd: ["tools/agents/evals/headroom.mjs", "--strict"], required: false },
+  { id: "fold-audit", desc: "няма двойка агенти, която почти винаги върви заедно (кандидат за сливане)", cmd: ["tools/agents/fold-audit.mjs"], required: false },
 ];
 
 if (LIST) {

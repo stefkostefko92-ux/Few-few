@@ -107,7 +107,7 @@ export function claudeAvailable() {
 /** Изолирано копие на ref-а с махнати Stop куки на оркестратора. Връща пътя и функция за почистване.
  *  overlay: {from, paths} — тези пътища идват от друг ref (преглед на стар PR с ТЕКУЩИЯ агентски слой).
  *  measure: true (по подразбиране) — eval режим в копието: паметта се чете, но нищо не се записва. */
-export function makeWorktree(ref = "HEAD", overlay = null, { measure = true, sparse = null } = {}) {
+export function makeWorktree(ref = "HEAD", overlay = null, { measure = true, sparse = null, memory = "on" } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "live-run-"));
   rmSync(dir, { recursive: true, force: true });
   if (sparse?.length) {
@@ -118,7 +118,8 @@ export function makeWorktree(ref = "HEAD", overlay = null, { measure = true, spa
     execFileSync("git", ["-C", dir, "checkout", "-q", "--detach", ref], { stdio: "ignore" });
   } else execFileSync("git", ["-C", ROOT, "worktree", "add", "--detach", dir, ref], { stdio: "ignore" });
   if (overlay) execFileSync("git", ["-C", dir, "checkout", overlay.from, "--", ...overlay.paths], { stdio: "ignore" });
-  if (measure) setEvalMode(dir, { label: "live-run", memory: "on", minutes: 180 });
+  // memory: "off" — рамо „без поуките“ за A/B на паметта (31.10.2026): memory-preload не подава личната памет.
+  if (measure) setEvalMode(dir, { label: "live-run", memory: memory === "off" ? "off" : "on", minutes: 180 });
   const sp = join(dir, ".claude", "settings.json");
   writeFileSync(sp, JSON.stringify(stripOrchestratorStop(JSON.parse(readFileSync(sp, "utf8"))), null, 2) + "\n");
   const cleanup = () => { try { execFileSync("git", ["-C", ROOT, "worktree", "remove", "--force", dir], { stdio: "ignore" }); } catch { rmSync(dir, { recursive: true, force: true }); } };
@@ -140,6 +141,18 @@ export function patchFrontmatter(md, field, value) {
   const re = new RegExp(`^${field}:.*$`, "m");
   const next = re.test(fm) ? fm.replace(re, `${field}: ${value}`) : fm.replace(/\s*$/, `\n${field}: ${value}\n`);
   return [pre, next, ...rest].join("---");
+}
+
+/** Рамо за аблация (31.10.2026): `път::търси::замени` — точен текст, само в копието; липсващ текст е грешка
+ *  (иначе рамото тихо би мерило същото като базата). Пример: махане на ред от доктрината на агентите. */
+export function applyPatch(dir, spec) {
+  const [rel, find, repl = ""] = String(spec).split("::");
+  if (!rel || !find || rel.includes("..") || rel.startsWith("/")) throw new Error(`невалидно --patch „${spec}“ (път::търси::замени)`);
+  const f = join(dir, rel);
+  const src = readFileSync(f, "utf8");
+  if (!src.includes(find)) throw new Error(`--patch: текстът не е намерен в ${rel}`);
+  writeFileSync(f, src.split(find).join(repl));
+  return rel;
 }
 
 /** `kodadjiyata.effort=medium,seo.model=sonnet` → [{agent, field, value}] */
@@ -175,7 +188,7 @@ async function main(argv) {
   const val = (f) => { const k = argv.indexOf(f); return k >= 0 ? argv[k + 1] : null; };
   if (!claudeAvailable()) { console.error("live-run: няма `claude` CLI с вход — живото пускане не е възможно тук."); process.exit(2); }
   const out = val("--out");
-  if (!out || !val("--jobs")) { console.error("употреба: live-run.mjs --jobs агент:spec[:k],… --out <папка> [--ref HEAD] [--concurrency 3] [--set агент.поле=стойност,…]"); process.exit(2); }
+  if (!out || !val("--jobs")) { console.error("употреба: live-run.mjs --jobs агент:spec[:k],… --out <папка> [--ref HEAD] [--concurrency 3] [--set агент.поле=стойност,…] [--memory off] [--patch път::търси::замени]"); process.exit(2); }
   const specDir = join(ROOT, "tools", "agents", "evals", "specs");
   const jobs = expandJobs(val("--jobs"), (id) => {
     const f = join(specDir, id + ".json");
@@ -184,8 +197,10 @@ async function main(argv) {
   });
   mkdirSync(out, { recursive: true });
   const sets = parseSets(val("--set"));
-  const { dir, cleanup } = makeWorktree(val("--ref") || "HEAD");
+  const { dir, cleanup } = makeWorktree(val("--ref") || "HEAD", null, { memory: val("--memory") || "on" });
+  if (val("--memory") === "off") console.log("рамо: без личната памет (само в копието)");
   try {
+    for (let k = argv.indexOf("--patch"); k >= 0; k = argv.indexOf("--patch", k + 1)) console.log(`рамо: --patch ${applyPatch(dir, argv[k + 1])} (само в копието)`);
     for (const s of sets) {
       const f = join(dir, ".claude", "agents", `${s.agent}.md`);
       writeFileSync(f, patchFrontmatter(readFileSync(f, "utf8"), s.field, s.value));

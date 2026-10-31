@@ -83,3 +83,23 @@ test("частично копие (31.10): коренът, агентският 
     assert.ok(!ex(join(dir, "zabobovdol")), "чужд продукт не е в копието");
   } finally { cleanup(); }
 });
+
+test("--memory off: копието е в eval режим без личната памет (A/B на паметта, 31.10)", async () => {
+  const { makeWorktree } = await import("./live-run.mjs");
+  const { evalMode } = await import("../../lib/eval-mode.mjs");
+  const { dir, cleanup } = makeWorktree("HEAD", null, { sparse: ["medqr"], memory: "off" });
+  try { assert.equal(evalMode(dir)?.memory, "off"); } finally { cleanup(); }
+});
+
+test("--patch: рамо за аблация сменя точен текст само в копието; липсващ текст е грешка", async () => {
+  const { applyPatch } = await import("./live-run.mjs");
+  const { mkdtempSync, writeFileSync: w, readFileSync: r, mkdirSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const d = mkdtempSync(join(tmpdir(), "patch-"));
+  mkdirSync(join(d, "a"));
+  w(join(d, "a", "P.md"), "ред 1\n- провери пак преди Предаване\nред 3\n");
+  applyPatch(d, "a/P.md::- провери пак преди Предаване\n::");
+  assert.equal(r(join(d, "a", "P.md"), "utf8"), "ред 1\nред 3\n");
+  assert.throws(() => applyPatch(d, "a/P.md::няма такъв ред::"), /не е намерен/);
+  assert.throws(() => applyPatch(d, "../x::a::b"), /невалидно/);
+});
