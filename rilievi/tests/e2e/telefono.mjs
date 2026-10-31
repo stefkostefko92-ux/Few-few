@@ -1,7 +1,8 @@
-// The portal on a phone (390 px, touch): the side bar from ☰ (interventi.mjs) and the pages a technician
-// opens on site — no horizontal scroll, every control keeps its name (axe), a full-page screenshot each.
+// The portal on a phone (390 px, touch, then the narrowest 320 px): the side bar from ☰ (interventi.mjs)
+// and the pages a technician opens on site — no horizontal scroll, every row of fields on one line,
+// every control keeps its name (axe), a full-page screenshot each.
 import { join } from 'node:path';
-import { audit, fail, signIn } from './helpers.mjs';
+import { aligned, audit, fail, signIn } from './helpers.mjs';
 import { checkPhoneMenu } from './interventi.mjs';
 
 export async function checkPhone(browser, { base, shots, scheme, email, password, sheetUrl }) {
@@ -21,12 +22,21 @@ export async function checkPhone(browser, { base, shots, scheme, email, password
     ['intervento', '/interventi/nuovo'],
     ['cartelli', '/cartelli'],
     ['cartello', '/cartelli/nuovo'],
+    ['nuova', '/schede/nuova'],
+    ['calcolo-argano', `${new URL(sheetUrl).pathname}/calcolo-argano`],
+    ['utenti', '/utenti'],
+    ['account', '/account'],
   ]) {
     await mobile.goto(base + path);
-    const overflow = await mobile.evaluate(
-      () => document.documentElement.scrollWidth > window.innerWidth,
-    );
-    if (overflow) fail(`${scheme} mobile ${name}: horizontal scroll`);
+    for (const width of [390, 320]) {
+      await mobile.setViewportSize({ width, height: 844 });
+      const overflow = await mobile.evaluate(
+        () => document.documentElement.scrollWidth > window.innerWidth,
+      );
+      if (overflow) fail(`${scheme} mobile ${name} @${width}px: horizontal scroll`);
+      await aligned(mobile, `${scheme} mobile ${name} @${width}px`);
+    }
+    await mobile.setViewportSize({ width: 390, height: 844 });
     // The phone layout hides labels behind icons: check that every control keeps its name.
     await audit(mobile, `${scheme} mobile ${name}`);
     await mobile.screenshot({

@@ -1,8 +1,9 @@
 // The machine calculation of a scheda in a real browser (the owner, 31 October 2026 — from the RT-E MOD
-// workbook): the button on the scheda, the form (axe), the first case of the workbook typed in and saved,
-// the results by section with OK/NO, the PDF. axe on the form and on the results.
+// workbook): the button on the scheda, the form (axe; its rows aligned at 360, 768 and 1280 px), the
+// first case of the workbook typed in and saved, the results by section with OK/NO, the PDF. axe on the
+// form and on the results.
 import { join } from 'node:path';
-import { audit, fail } from './helpers.mjs';
+import { aligned, audit, fail } from './helpers.mjs';
 
 const NUMERI = {
   portata: '480',
@@ -35,6 +36,13 @@ export async function checkArgano(page, { shots, scheme, sheetUrl }) {
   await page.click(`a[href="${sheetPath}/calcolo-argano"]`);
   await page.waitForURL(/\/calcolo-argano$/);
   await audit(page, `${name} form`);
+  // The form on a phone, a tablet and a desktop: every row of fields on one line.
+  const viewport = page.viewportSize();
+  for (const width of [360, 768, 1280]) {
+    await page.setViewportSize({ width, height: viewport.height });
+    await aligned(page, `${name} form @${width}px`);
+  }
+  await page.setViewportSize(viewport);
   for (const [key, value] of Object.entries(NUMERI)) await page.fill(`#f-${key}`, value);
   for (const [key, value] of Object.entries(SCELTE)) await page.selectOption(`#f-${key}`, value);
   await page.locator('#f-funiSostituzione').evaluate((input) => {

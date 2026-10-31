@@ -99,6 +99,18 @@
   }
 }
 
+/* Най-тесните телефони (320 px): по-дългият бутон на вписания („Vai alle schede“) слиза на втори ред
+   вдясно, вместо да избута лентата встрани; „Accedi“ се побира и редът остава един. */
+@media (max-width: 359px) {
+  .sitebar__inner {
+    flex-wrap: wrap;
+  }
+
+  .sitebar__end {
+    margin-left: auto;
+  }
+}
+
 .sitemain {
   flex: 1;
 }

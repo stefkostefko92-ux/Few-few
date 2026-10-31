@@ -1,0 +1,46 @@
+/* Ред от полета на три общи линии — етикет, поле, подножие (подсказка и грешка) — със subgrid: етикет
+   на два реда, подсказка или грешка под едно поле не местят съседите му, на всяка ширина. Полето носи
+   и трите части (подножието — и празно); отметката (`field--wide`) е свой ред. */
+@supports (grid-template-rows: subgrid) {
+  .grid--righe {
+    row-gap: 0;
+  }
+
+  .grid--righe > .field:not(.field--wide) {
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+    row-gap: 6px;
+    align-self: stretch;
+  }
+
+  .grid--righe > .field > .field__label {
+    align-self: end;
+  }
+}
+
+.grid--righe {
+  align-items: start;
+}
+
+.field__piede {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+
+.grid--righe > .field > .field__piede {
+  padding-bottom: 16px;
+}
+
+@media (min-width: 720px) {
+  .grid--righe > .field > .field__piede {
+    padding-bottom: 18px;
+  }
+}
+
+/* Сам на реда на телефон: падащ списък с дълги възможности (въже, канал) не се реже в тясна колона. */
+@media (max-width: 719px) {
+  .grid > .field--riga-telefono {
+    grid-column: 1 / -1;
+  }
+}

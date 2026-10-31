@@ -22,7 +22,15 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
-import { audit, fail, failures, italianOnly, signIn as signInAt, tick } from './helpers.mjs';
+import {
+  aligned,
+  audit,
+  fail,
+  failures,
+  italianOnly,
+  signIn as signInAt,
+  tick,
+} from './helpers.mjs';
 import { checkSite } from './site.mjs';
 import { checkInvites } from './inviti.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
@@ -250,6 +258,7 @@ try {
     ]) {
       await page.goto(base + path);
       await audit(page, `${scheme} ${name}`);
+      await aligned(page, `${scheme} ${name}`);
       await page.screenshot({ path: join(shots, `${scheme}-${name}.png`), fullPage: true });
     }
     await page.goto(`${sheetUrl}/stampa`);

@@ -42,7 +42,7 @@
   <input type="hidden" name="base" value="<%= base %>">
   <fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
     <legend class="section__title"><%= t('argano.sezione.impianto') %></legend>
-    <div class="grid">
+    <div class="grid grid--righe">
       <%- campo('portata', 'numero') %><%- campo('massaCabina', 'numero') %><%- campo('massaContrappeso', 'numero') %>
       <%- campo('velocita', 'numero', { hint: 'velocita' }) %><%- campo('corsa', 'numero') %>
       <%- campo('sospensione', 'scelta', { opzioni: op('sospensione', ['1:1', '1:2', '1:4']) }) %>
@@ -51,11 +51,11 @@
   </fieldset>
   <fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
     <legend class="section__title"><%= t('argano.sezione.argano') %></legend>
-    <div class="grid">
+    <div class="grid grid--righe">
       <%- campo('azionamento', 'scelta', { opzioni: op('azionamento', ['1V', '2V', 'VVVF']) }) %>
       <%- campo('giriMotore', 'numero', { hint: 'giriMotore' }) %>
       <%- campo('velocitaVvvf', 'numero', { hint: 'velocitaVvvf' }) %>
-      <%- campo('motoreVvvf', 'scelta', { opzioni: op('motoreVvvf', [1000, 1500]) }) %>
+      <%- campo('motoreVvvf', 'scelta', { opzioni: op('motoreVvvf', [1000, 1500]), hint: 'motoreVvvf' }) %>
       <div class="field field--rapporto">
         <span class="field__label" id="l-rapporto"><%= t('argano.campo.rapporto') %></span>
         <span class="argano__rapporto">
@@ -63,11 +63,10 @@
           <span aria-hidden="true">:</span>
           <input class="input" id="f-rapportoB" name="rapportoB" type="text" inputmode="decimal" autocomplete="off" aria-labelledby="l-rapporto" aria-describedby="hint-rapportoB<%= errori.rapportoB ? ' err-rapportoB' : '' %>" value="<%= val('rapportoB') %>"<% if (errori.rapportoB) { %> aria-invalid="true"<% } %>>
         </span>
-        <p class="field__hint" id="hint-rapportoB"><%= t('argano.hint.rapporto') %></p>
-        <% if (errori.rapportoB) { %><p class="field__error" id="err-rapportoB"><%= errSummary('rapportoB') %></p><% } %>
+        <div class="field__piede"><p class="field__hint" id="hint-rapportoB"><%= t('argano.hint.rapporto') %></p><% if (errori.rapportoB) { %><p class="field__error" id="err-rapportoB"><%= errSummary('rapportoB') %></p><% } %></div>
       </div>
       <%- campo('diametroPuleggia', 'numero') %>
-      <%- campo('gola', 'scelta', { opzioni: op('gola', ['cuneo', 'semicircolare', 'semicircolare-intaglio']), hint: 'gola' }) %>
+      <%- campo('gola', 'scelta', { opzioni: op('gola', ['cuneo', 'semicircolare', 'semicircolare-intaglio']), hint: 'gola', classe: 'field--riga-telefono' }) %>
       <%- campo('angoloGola', 'numero', { hint: 'angoloGola' }) %>
       <%- campo('angoloAvvolgimento', 'numero') %>
       <%- campo('decelerazioneRidotta', 'spunta', { hint: 'decelerazioneRidotta' }) %>
@@ -75,19 +74,19 @@
   </fieldset>
   <fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
     <legend class="section__title"><%= t('argano.sezione.funi') %></legend>
-    <div class="grid">
+    <div class="grid grid--righe">
       <%- campo('funiNumero', 'numero') %>
-      <%- campo('fune', 'scelta', { opzioni: opFuni }) %>
+      <%- campo('fune', 'scelta', { opzioni: opFuni, classe: 'field--riga-telefono' }) %>
       <%- campo('funiSostituzione', 'spunta', { hint: 'funiSostituzione' }) %>
       <%- campo('altroD', 'numero', { hint: 'altro' }) %><%- campo('altroSezione', 'numero') %><%- campo('altroRottura', 'numero') %><%- campo('altroMassa', 'numero') %>
     </div>
   </fieldset>
   <fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
     <legend class="section__title"><%= t('argano.sezione.compensazione') %></legend>
-    <div class="grid">
+    <div class="grid grid--righe">
       <%- campo('compensazione', 'scelta', { opzioni: op('compensazione', ['nessuna', 'catene', 'funi']) }) %>
       <%- campo('compNumero', 'numero') %>
-      <%- campo('compMisura', 'scelta', { opzioni: opMisure(catene, 'catene').concat(opMisure(funiCompensazione, 'funi')), hint: 'compMisura' }) %>
+      <%- campo('compMisura', 'scelta', { opzioni: opMisure(catene, 'catene').concat(opMisure(funiCompensazione, 'funi')), hint: 'compMisura', classe: 'field--riga-telefono' }) %>
       <%- campo('massaTenditore', 'numero') %><%- campo('diametroTenditore', 'numero') %>
       <%- campo('compMetaCorsa', 'spunta') %>
     </div>

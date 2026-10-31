@@ -70,7 +70,8 @@
       "decelerazioneRidotta": "Come nella relazione tecnica, solo se l'aderenza non è verificata con la decelerazione normale.",
       "altro": "Solo per una fune che non è nelle tabelle TELCAL e DONATI.",
       "gola": "Con gola semicircolare senza intaglio e funi solo verificate la relazione tecnica non ha una formula per l'attrito: l'aderenza risulta non verificata.",
-      "compMisura": "Dalle tabelle della relazione tecnica: catene o funi, secondo la compensazione scelta."
+      "compMisura": "Dalle tabelle della relazione tecnica: catene o funi, secondo la compensazione scelta.",
+      "motoreVvvf": "1000 rpm: motore a 6 poli. 1500 rpm: a 4 poli."
     },
     "opzione": {
       "sospensione": {
@@ -88,8 +89,8 @@
         "VVVF": "Inverter VVVF"
       },
       "motoreVvvf": {
-        "1000": "1000 rpm (6 poli)",
-        "1500": "1500 rpm (4 poli)"
+        "1000": "1000 rpm",
+        "1500": "1500 rpm"
       },
       "gola": {
         "cuneo": "A cuneo",

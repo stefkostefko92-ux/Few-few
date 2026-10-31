@@ -162,7 +162,7 @@
 
   .table--stack tr {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 8px 16px;
     padding: 14px 16px;
     border: 1px solid var(--line);
@@ -178,6 +178,8 @@
     display: block;
     padding: 0;
     border: 0;
+    /* Дълъг имейл или адрес се пренася, не избутва картата встрани на тесен телефон. */
+    overflow-wrap: anywhere;
   }
 
   .table--stack td::before {
@@ -232,8 +234,11 @@
   font-weight: 600;
 }
 
+/* Една колона с ширината на страницата: без `minmax(0, 1fr)` колоната расте до най-широкото съдържание
+   (падащ списък, ред от формата) и страницата излиза встрани на телефон. */
 .stack-gap {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 32px;
 }
 
