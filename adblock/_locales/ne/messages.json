@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube भिडियो विज्ञापन, ब्यानर, पप-अप, ट्र्याकर, कुकी सन्देश र एन्टी-एडब्लक पर्खालहरू जताततै ब्लक गर्छ।"
+    "message": "विज्ञापन ब्लकर, YouTube र वेबका लागि: भिडियो विज्ञापन, ब्यानर, पप-अप, ट्र्याकर, कुकी ब्यानर र एन्टी-एडब्लक पर्खाल।"
   },
   "byCarbon": {
     "message": "Carbon Stealth द्वारा"
@@ -226,13 +226,13 @@
     "message": "“आफ्नो एडब्लकर बन्द गर्नुहोस्” पर्खालहरू लुकाउनुहोस् र पृष्ठ पहिलेजस्तै बनाउनुहोस्"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook र Instagram मा “प्रायोजित” पोस्टहरू लुकाउनुहोस्"
+    "message": "Facebook, Instagram र Threads मा “प्रायोजित” पोस्टहरू लुकाउनुहोस्"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "तपाईंले खोल्ने लिङ्कहरूबाट utm_*, fbclid, gclid र अन्य क्लिक पहिचानकर्ता हटाउनुहोस्"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "ज्ञात मालवेयर डोमेनहरू ब्लक गर्नुहोस् (abuse.ch को URLhaus सूची)"
+    "message": "ज्ञात मालवेयर साइट खुल्नुअघि चेतावनी दिनुहोस्, र पृष्ठहरूले त्यस्ता साइटबाट लोड गर्ने कुरा ब्लक गर्नुहोस् (abuse.ch को URLhaus सूची)।"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "हरेक साइटमा Google Topics, FLoC र Protected Audience विज्ञापन API बन्द गर्नुहोस्"
@@ -647,6 +647,12 @@
     "message": "ठेगाना पट्टीछेउको पजलको टुक्राको आइकनमा क्लिक गर्नुहोस् र Supreme AdBlock पिन गर्नुहोस्। त्यसपछि एक क्लिकमै पेजमा के ब्लक भयो भनेर देखिन्छ।",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "एक्सटेन्सन टुलबारमा पिन गरिएको छ"
+  },
+  "welPinnedText": {
+    "message": "यसको आइकनमा एक क्लिकमै पेजमा के ब्लक भयो भनेर देखिन्छ।"
+  },
   "welBrokenTitle": {
     "message": "कुनै साइट बिग्रिएको देखिए",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -670,5 +676,185 @@
   "welDone": {
     "message": "बुझेँ",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "अनुमति छ · $1 मिनेट बाँकी"
+  },
+  "hiddenHere": {
+    "message": "यहाँ लुकाइएका एलिमेन्ट: $1 · अन्तिम फर्काउने"
+  },
+  "cmd_toggle_site": {
+    "message": "यो साइटमा ब्लकिङ चालु वा बन्द गर्नुहोस्"
+  },
+  "cmd_pause": {
+    "message": "सुरक्षा पज वा फेरि सुरु गर्नुहोस् (30 मिनेट)"
+  },
+  "cmd_picker": {
+    "message": "यो पेजमा कुनै एलिमेन्ट लुकाउनुहोस्"
+  },
+  "rep_fix_hour": {
+    "message": "यहाँ 1 घण्टा विज्ञापनलाई अनुमति दिनुहोस्"
+  },
+  "rep_done_hour": {
+    "message": "यो साइटमा 1 घण्टाका लागि विज्ञापनलाई अनुमति छ। पुनः लोड गरियो — ठीक भयो?"
+  },
+  "opt_last30": {
+    "message": "पछिल्ला 30 दिन"
+  },
+  "opt_last30_sum": {
+    "message": "ब्लक भएका: $1 · कुकी ब्यानर: $2"
+  },
+  "opt_last30_empty": {
+    "message": "तपाईं ब्राउज गर्दै जाँदा तपाईंको दैनिक कुल सङ्ख्या यहाँ देखिन्छ।"
+  },
+  "opt_last30_sub": {
+    "message": "दैनिक कुल सङ्ख्या मात्र, यही डिभाइसमा 30 दिनसम्म राखिन्छ। कुनै साइट होइन, कुनै ठेगाना होइन।"
+  },
+  "opt_gpc_sub": {
+    "message": "तपाईंले भ्रमण गर्ने हरेक साइटलाई तपाईंको डेटा नबेच्न वा साझा नगर्न अनुरोध गर्छ (Sec-GPC सङ्केत, जसलाई केही गोपनीयता कानुनअनुसार साइटहरूले मान्नुपर्छ)। तपाईंले अनुमति दिनुभएका साइटहरूमा यो पठाइँदैन।"
+  },
+  "opt_shortcuts": {
+    "message": "किबोर्ड सर्टकट"
+  },
+  "opt_shortcuts_change": {
+    "message": "सर्टकट परिवर्तन गर्नुहोस्"
+  },
+  "opt_shortcut_none": {
+    "message": "सेट गरिएको छैन"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox मा: एड-अन र थिमहरू → ⚙ → एक्सटेन्सन सर्टकटहरू व्यवस्थापन गर्नुहोस्।"
+  },
+  "opt_import_foreign": {
+    "message": "अर्को एडब्लकरबाट आयात गर्नुहोस्"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard वा Adblock Plus बाट आउँदै हुनुहुन्छ? त्यसको ब्याकअप फाइल छान्नुहोस्: तपाईंले अनुमति दिनुभएका साइटहरू र तपाईंका आफ्नै फिल्टरहरू यहाँ थपिन्छन्। पहिलेको केही पनि बदलिँदैन।"
+  },
+  "opt_import_foreign_done": {
+    "message": "अनुमति दिइएका साइट: $1 · थपिएका फिल्टर: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "छोडिएका लाइन (यहाँ लागू गर्न सकिँदैन): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "यो फाइल हामीले पढ्न सक्ने ब्याकअप होइन।"
+  },
+  "welQuickTitle": {
+    "message": "आफ्नो अनुकूल बनाउनुहोस्"
+  },
+  "welQuickSub": {
+    "message": "ऐच्छिक: यो पहिले नै काम गरिरहेको छ। यीमध्ये जुनसुकै पनि पछि सेटिङमा परिवर्तन गर्न सकिन्छ।"
+  },
+  "blk_page_title": {
+    "message": "साइट ब्लक गरियो — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "यो साइटले तपाईंको डिभाइसलाई हानि गर्न सक्छ"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock ले यो पृष्ठ रोक्यो, किनकि यो साइट URLhaus मा छ — मालवेयर फैलाउने ठेगानाहरूको एउटा सार्वजनिक सूची।"
+  },
+  "blk_back": {
+    "message": "पछाडि जानुहोस्"
+  },
+  "blk_continue": {
+    "message": "तैपनि जारी राख्नुहोस्"
+  },
+  "blk_note": {
+    "message": "जारी राख्दा, ब्राउजर बन्द नगरेसम्म यो साइटका पृष्ठहरू मात्र खोल्न दिइन्छ।"
+  },
+  "blk_why": {
+    "message": "यो किन सूचीमा छ? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "यो पृष्ठका जडानहरू"
+  },
+  "conn_empty": {
+    "message": "यो पृष्ठले अन्य साइटबाट केही पनि लोड गरेन।"
+  },
+  "conn_block": {
+    "message": "यहाँ ब्लक गर्ने"
+  },
+  "conn_blocked": {
+    "message": "यहाँ ब्लक गरिएको"
+  },
+  "conn_hint": {
+    "message": "यो साइटले $1 बाट लोड गर्ने कुरा ब्लक गर्नुहोस्"
+  },
+  "opt_conn_title": {
+    "message": "तपाईंले ब्लक गरेका जडानहरू"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock विन्डोको “यो पृष्ठका जडानहरू” बाट ब्लक गरिएका, प्रत्येक आफ्नै साइटमा मात्र।"
+  },
+  "opt_empty_conn": {
+    "message": "अहिलेसम्म केही पनि ब्लक गरिएको छैन।"
+  },
+  "opt_conn_remove": {
+    "message": "$2 मा $1 अनब्लक गर्नुहोस्"
+  },
+  "opt_h_danger": {
+    "message": "मालवेयर चेतावनी पृष्ठ"
+  },
+  "opt_h_capacity": {
+    "message": "नियम क्षमता"
+  },
+  "helpTitle": {
+    "message": "साइटहरू बिग्रिँदैछन्?"
+  },
+  "helpText": {
+    "message": "एक पटकमा एउटा साइट पर्याप्त छ: त्यहाँ एक घण्टाका लागि विज्ञापनलाई अनुमति दिनुहोस्, वा त्यहाँ मात्र एलिमेन्ट लुकाउने सुविधा बन्द गर्नुहोस्। हामीलाई भन्नुभयो भने सबैका लागि ठीक हुन्छ।"
+  },
+  "helpFix": {
+    "message": "यो साइट ठीक गर्नुहोस्"
+  },
+  "cardNever": {
+    "message": "यो फेरि नदेखाउनुहोस्"
+  },
+  "cardClose": {
+    "message": "बन्द गर्नुहोस्"
+  },
+  "receiptTitle": {
+    "message": "तपाईंका पछिल्ला 30 दिन"
+  },
+  "receiptText": {
+    "message": "$1 अनुरोध ब्लक भए · $2 कुकी ब्यानरको जवाफ दिइयो · लगभग $3 डेटा बचत भयो (अनुमानित)"
+  },
+  "share": {
+    "message": "सेयर"
+  },
+  "shareTitle": {
+    "message": "Chrome Web Store मा Supreme AdBlock को लिङ्क कपी गर्नुहोस्"
+  },
+  "shareCopied": {
+    "message": "लिङ्क कपी भयो"
+  },
+  "rep_fixed_q": {
+    "message": "साइट ठीक भयो?"
+  },
+  "rep_fixed_yes": {
+    "message": "हो, यसले काम गर्छ"
+  },
+  "rep_fixed_no": {
+    "message": "होइन, अझै बिग्रिएको छ"
+  },
+  "rep_fixed_yes_note": {
+    "message": "काम गरेकोमा खुसी लाग्यो। तल हामीलाई भन्नुभयो भने रिपोर्टमा कुन उपायले काम गर्‍यो भनेर लेखिनेछ, ताकि हामी सबैका लागि साइट ठीक गर्न सकौँ।"
+  },
+  "rep_fixed_next": {
+    "message": "अर्को उपाय प्रयास गर्नुहोस्: $1"
+  },
+  "rep_fixed_none": {
+    "message": "त्यसो भए कृपया तल हामीलाई भन्नुहोस्: हामी साइट हेर्नेछौँ।"
+  },
+  "rep_webmail": {
+    "message": "इमेल एप छैन? रिपोर्ट कपी गर्नुहोस् र आफ्नो वेबमेलबाट $1 मा पठाउनुहोस्।"
+  },
+  "blk_mistake": {
+    "message": "यो गल्ती हो जस्तो लाग्छ? हामीलाई भन्नुहोस्"
+  },
+  "welTest": {
+    "message": "परीक्षण पेजमा यसले काम गरेको हेर्नुहोस्"
   }
 }

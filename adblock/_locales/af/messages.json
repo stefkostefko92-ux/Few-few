@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokkeer oral advertensies, ook op YouTube, plus baniere, opspringers, spoorsnyers, koekiemeldings en anti-adblokmure."
+    "message": "Advertensieblokker vir YouTube en die web: videoadvertensies, baniere, opspringers, spoorsnyers, koekiebaniere en anti-adblokmure."
   },
   "byCarbon": {
     "message": "deur Carbon Stealth"
@@ -226,13 +226,13 @@
     "message": "Versteek “skakel u advertensieblokker af”-mure en herstel die bladsy"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Versteek “Geborg”-plasings op Facebook en Instagram"
+    "message": "Versteek “Geborg”-plasings op Facebook, Instagram en Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Verwyder utm_*, fbclid, gclid en ander klik-identifiseerders uit die skakels wat u oopmaak"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokkeer bekende malware-domeine (URLhaus-lys van abuse.ch)"
+    "message": "Waarsku voordat 'n bekende malware-werf oopmaak, en blokkeer wat bladsye van sulke werwe laai (URLhaus-lys van abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Deaktiveer die advertensie-API’s Google Topics, FLoC en Protected Audience op elke werf"
@@ -647,6 +647,12 @@
     "message": "Klik op die legkaartstuk-ikoon langs die adresbalk en speld Supreme AdBlock vas. Een klik wys dan wat op die bladsy geblokkeer is.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Aan die nutsbalk vasgespeld"
+  },
+  "welPinnedText": {
+    "message": "Een klik op die ikoon wys wat op die bladsy geblokkeer is."
+  },
   "welBrokenTitle": {
     "message": "As ’n werf stukkend lyk",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -670,5 +676,185 @@
   "welDone": {
     "message": "Ek verstaan",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Toegelaat · $1 min oor"
+  },
+  "hiddenHere": {
+    "message": "Hier versteek: $1 · Maak die laaste ongedaan"
+  },
+  "cmd_toggle_site": {
+    "message": "Skakel blokkering op hierdie werf aan of af"
+  },
+  "cmd_pause": {
+    "message": "Pouseer of hervat beskerming (30 minute)"
+  },
+  "cmd_picker": {
+    "message": "Versteek ’n element op hierdie bladsy"
+  },
+  "rep_fix_hour": {
+    "message": "Laat advertensies hier vir 1 uur toe"
+  },
+  "rep_done_hour": {
+    "message": "Advertensies word vir 1 uur op hierdie werf toegelaat. Herlaai — is dit reggestel?"
+  },
+  "opt_last30": {
+    "message": "Afgelope 30 dae"
+  },
+  "opt_last30_sum": {
+    "message": "Geblokkeer: $1 · Koekiebaniere: $2"
+  },
+  "opt_last30_empty": {
+    "message": "U daaglikse totale verskyn hier terwyl u blaai."
+  },
+  "opt_last30_sub": {
+    "message": "Slegs daaglikse totale, 30 dae lank op hierdie toestel bewaar. Geen werwe, geen adresse nie."
+  },
+  "opt_gpc_sub": {
+    "message": "Vra elke werf wat u besoek om u data nie te verkoop of te deel nie (die Sec-GPC-sein, wat sommige privaatheidswette werwe verplig om na te kom). Word nie gestuur op werwe wat u toelaat nie."
+  },
+  "opt_shortcuts": {
+    "message": "Sleutelbordkortpaaie"
+  },
+  "opt_shortcuts_change": {
+    "message": "Verander kortpaaie"
+  },
+  "opt_shortcut_none": {
+    "message": "Nie gestel nie"
+  },
+  "opt_shortcuts_ff": {
+    "message": "In Firefox: Uitbreidings en temas → ⚙ → Bestuur uitbreidingskortpaaie."
+  },
+  "opt_import_foreign": {
+    "message": "Voer in uit ’n ander adblokker"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Skuif u van uBlock Origin, AdGuard of Adblock Plus oor? Kies sy rugsteunlêer: die werwe wat u toegelaat het en u eie filters word hier bygevoeg. Niks word vervang nie."
+  },
+  "opt_import_foreign_done": {
+    "message": "Werwe toegelaat: $1 · Filters bygevoeg: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Weggelaat (kan nie hier toegepas word nie): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Hierdie lêer is nie ’n rugsteun wat ons kan lees nie."
+  },
+  "welQuickTitle": {
+    "message": "Maak dit u eie"
+  },
+  "welQuickSub": {
+    "message": "Opsioneel: dit werk reeds. U kan enige hiervan later in Instellings verander."
+  },
+  "blk_page_title": {
+    "message": "Werf geblokkeer — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Hierdie werf kan u toestel skade aandoen"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock het hierdie bladsy gestop omdat die werf op URLhaus is, 'n openbare lys van adresse wat malware versprei."
+  },
+  "blk_back": {
+    "message": "Gaan terug"
+  },
+  "blk_continue": {
+    "message": "Gaan tog voort"
+  },
+  "blk_note": {
+    "message": "As u voortgaan, word slegs hierdie werf se bladsye deurgelaat totdat u die blaaier toemaak."
+  },
+  "blk_why": {
+    "message": "Waarom is dit gelys? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Verbindings op hierdie bladsy"
+  },
+  "conn_empty": {
+    "message": "Hierdie bladsy het niks van ander werwe gelaai nie."
+  },
+  "conn_block": {
+    "message": "Blokkeer hier"
+  },
+  "conn_blocked": {
+    "message": "Hier geblokkeer"
+  },
+  "conn_hint": {
+    "message": "Blokkeer wat hierdie werf van $1 laai"
+  },
+  "opt_conn_title": {
+    "message": "Verbindings wat u geblokkeer het"
+  },
+  "opt_conn_sub": {
+    "message": "Geblokkeer vanuit “Verbindings op hierdie bladsy” in die Supreme AdBlock-venster, elkeen slegs op sy eie werf."
+  },
+  "opt_empty_conn": {
+    "message": "Nog niks geblokkeer nie."
+  },
+  "opt_conn_remove": {
+    "message": "Deblokkeer $1 op $2"
+  },
+  "opt_h_danger": {
+    "message": "Waarskuwingsbladsy vir malware"
+  },
+  "opt_h_capacity": {
+    "message": "Reëlkapasiteit"
+  },
+  "helpTitle": {
+    "message": "Werwe stukkend?"
+  },
+  "helpText": {
+    "message": "Een werf op 'n slag is genoeg: laat sy advertensies vir 'n uur toe, of skakel elementversteking net daar af. As u ons laat weet, herstel ons dit vir almal."
+  },
+  "helpFix": {
+    "message": "Herstel hierdie werf"
+  },
+  "cardNever": {
+    "message": "Moenie dit weer wys nie"
+  },
+  "cardClose": {
+    "message": "Maak toe"
+  },
+  "receiptTitle": {
+    "message": "U laaste 30 dae"
+  },
+  "receiptText": {
+    "message": "$1 versoeke geblokkeer · $2 koekiebaniere beantwoord · sowat $3 data bespaar ('n skatting)"
+  },
+  "share": {
+    "message": "Deel"
+  },
+  "shareTitle": {
+    "message": "Kopieer die Chrome Web Store-skakel na Supreme AdBlock"
+  },
+  "shareCopied": {
+    "message": "Skakel gekopieer"
+  },
+  "rep_fixed_q": {
+    "message": "Het dit die werf herstel?"
+  },
+  "rep_fixed_yes": {
+    "message": "Ja, dit werk"
+  },
+  "rep_fixed_no": {
+    "message": "Nee, steeds stukkend"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Bly dit werk. As u ons hieronder laat weet, sê die verslag watter oplossing gewerk het, sodat ons die werf vir almal kan herstel."
+  },
+  "rep_fixed_next": {
+    "message": "Probeer die volgende: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Laat weet ons dan asseblief hieronder: ons sal na die werf kyk."
+  },
+  "rep_webmail": {
+    "message": "Geen e-posprogram nie? Kopieer die verslag en stuur dit vanaf u webpos na $1."
+  },
+  "blk_mistake": {
+    "message": "Dink u dis 'n fout? Laat weet ons"
+  },
+  "welTest": {
+    "message": "Sien hoe dit werk op 'n toetsbladsy"
   }
 }

@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokeerib reklaamid kõikjal: YouTube'i videoreklaamid, bännerid, hüpikaknad, jälgijad ja anti-adblock seinad."
+    "message": "Reklaamiblokeerija YouTube'ile ja veebile: videoreklaamid, bännerid, hüpikud, jälgijad, küpsisebännerid ja anti-adblock seinad."
   },
   "byCarbon": {
     "message": "loonud Carbon Stealth"
@@ -226,13 +226,13 @@
     "message": "Peidab „keelake oma reklaamiblokeerija“ seinad ja taastab lehe"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Peidab „Sponsitud“ postitused Facebookis ja Instagramis"
+    "message": "Peidab „Sponsitud“ postitused Facebookis, Instagramis ja Threadsis"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Eemaldab avatavatest linkidest utm_*, fbclid, gclid ja muud klikitunnused"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokeerib teadaolevad pahavara domeenid (abuse.ch URLhausi loend)"
+    "message": "Hoiatab enne teadaoleva pahavarasaidi avamist ja blokeerib selle, mida lehed sellistelt saitidelt laadivad (abuse.ch URLhausi loend)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Keelab igal saidil reklaami-API-d Google Topics, FLoC ja Protected Audience"
@@ -647,6 +647,12 @@
     "message": "Klõpsake aadressiriba kõrval pusletüki ikooni ja kinnitage Supreme AdBlock. Siis näitab üks klõps, mida lehel blokeeriti.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Kinnitatud tööriistaribale"
+  },
+  "welPinnedText": {
+    "message": "Üks klõps selle ikoonil näitab, mida lehel blokeeriti."
+  },
   "welBrokenTitle": {
     "message": "Kui sait näeb katkine välja",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -670,5 +676,185 @@
   "welDone": {
     "message": "Selge",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Lubatud · $1 min jäänud"
+  },
+  "hiddenHere": {
+    "message": "Siin peidetud: $1 · Võta viimane tagasi"
+  },
+  "cmd_toggle_site": {
+    "message": "Lülita blokeerimine sellel saidil sisse või välja"
+  },
+  "cmd_pause": {
+    "message": "Peata või jätka kaitset (30 minutit)"
+  },
+  "cmd_picker": {
+    "message": "Peida element sellel lehel"
+  },
+  "rep_fix_hour": {
+    "message": "Luba reklaamid siin 1 tunniks"
+  },
+  "rep_done_hour": {
+    "message": "Reklaamid on sellel saidil 1 tunniks lubatud. Uuesti laaditud — kas probleem lahenes?"
+  },
+  "opt_last30": {
+    "message": "Viimased 30 päeva"
+  },
+  "opt_last30_sum": {
+    "message": "Blokeeritud: $1 · Küpsisebännerid: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Teie päevased kogusummad ilmuvad siia sirvimise ajal."
+  },
+  "opt_last30_sub": {
+    "message": "Ainult päevased kogusummad, mida hoitakse selles seadmes 30 päeva. Ei saite ega aadresse."
+  },
+  "opt_gpc_sub": {
+    "message": "Palub igal külastataval saidil teie andmeid mitte müüa ega jagada (Sec-GPC-signaal, mida mõned privaatsusseadused kohustavad saite järgima). Ei saadeta saitidele, mille olete lubanud."
+  },
+  "opt_shortcuts": {
+    "message": "Kiirklahvid"
+  },
+  "opt_shortcuts_change": {
+    "message": "Muuda kiirklahve"
+  },
+  "opt_shortcut_none": {
+    "message": "Määramata"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefoxis: Laiendused ja teemad → ⚙ → Halda laienduste kiirklahve."
+  },
+  "opt_import_foreign": {
+    "message": "Impordi teisest reklaamiblokeerijast"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Kas tulete üle uBlock Originist, AdGuardist või Adblock Plusist? Valige selle varukoopiafail: teie lubatud saidid ja omad filtrid lisatakse siia. Midagi ei asendata."
+  },
+  "opt_import_foreign_done": {
+    "message": "Lubatud saite: $1 · Lisatud filtreid: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Välja jäetud (siin ei saa rakendada): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "See fail ei ole varukoopia, mida saame lugeda."
+  },
+  "welQuickTitle": {
+    "message": "Kohandage enda järgi"
+  },
+  "welQuickSub": {
+    "message": "Valikuline: kõik juba töötab. Seadetes saate neid hiljem igal ajal muuta."
+  },
+  "blk_page_title": {
+    "message": "Sait blokeeritud — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "See sait võib teie seadet kahjustada"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock peatas selle lehe, sest sait on kirjas URLhausis, avalikus loendis aadressidest, mis levitavad pahavara."
+  },
+  "blk_back": {
+    "message": "Mine tagasi"
+  },
+  "blk_continue": {
+    "message": "Jätka siiski"
+  },
+  "blk_note": {
+    "message": "Kui jätkate, lastakse läbi ainult selle saidi lehed, kuni sulgete brauseri."
+  },
+  "blk_why": {
+    "message": "Miks see loendis on? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Selle lehe ühendused"
+  },
+  "conn_empty": {
+    "message": "See leht ei laadinud teistelt saitidelt midagi."
+  },
+  "conn_block": {
+    "message": "Blokeeri siin"
+  },
+  "conn_blocked": {
+    "message": "Siin blokeeritud"
+  },
+  "conn_hint": {
+    "message": "Blokeeri see, mida see sait hostist $1 laadib"
+  },
+  "opt_conn_title": {
+    "message": "Teie blokeeritud ühendused"
+  },
+  "opt_conn_sub": {
+    "message": "Blokeeritud Supreme AdBlocki akna jaotisest „Selle lehe ühendused“, igaüks ainult oma saidil."
+  },
+  "opt_empty_conn": {
+    "message": "Veel pole midagi blokeeritud."
+  },
+  "opt_conn_remove": {
+    "message": "Tühista hosti $1 blokeerimine saidil $2"
+  },
+  "opt_h_danger": {
+    "message": "Pahavara hoiatusleht"
+  },
+  "opt_h_capacity": {
+    "message": "Reeglite maht"
+  },
+  "helpTitle": {
+    "message": "Saidid ei tööta?"
+  },
+  "helpText": {
+    "message": "Piisab ühest saidist korraga: lubage seal reklaamid tunniks või lülitage elementide peitmine ainult seal välja. Kui annate meile teada, parandame selle kõigi jaoks."
+  },
+  "helpFix": {
+    "message": "Paranda see sait"
+  },
+  "cardNever": {
+    "message": "Ära enam näita"
+  },
+  "cardClose": {
+    "message": "Sulge"
+  },
+  "receiptTitle": {
+    "message": "Teie viimased 30 päeva"
+  },
+  "receiptText": {
+    "message": "$1 päringut blokeeritud · $2 küpsisebännerile vastatud · umbes $3 andmeid säästetud (hinnang)"
+  },
+  "share": {
+    "message": "Jaga"
+  },
+  "shareTitle": {
+    "message": "Kopeeri Supreme AdBlocki Chrome Web Store'i link"
+  },
+  "shareCopied": {
+    "message": "Link kopeeritud"
+  },
+  "rep_fixed_q": {
+    "message": "Kas see parandas saidi?"
+  },
+  "rep_fixed_yes": {
+    "message": "Jah, töötab"
+  },
+  "rep_fixed_no": {
+    "message": "Ei, ikka ei tööta"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Hea, et töötab. Kui annate meile allpool teada, näitab teade, milline parandus aitas, nii et saame saidi kõigi jaoks parandada."
+  },
+  "rep_fixed_next": {
+    "message": "Proovige järgmist: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Siis andke meile palun allpool teada: vaatame saidi üle."
+  },
+  "rep_webmail": {
+    "message": "Pole e-posti rakendust? Kopeerige teade ja saatke see oma veebimeilist aadressile $1."
+  },
+  "blk_mistake": {
+    "message": "Arvate, et see on viga? Andke meile teada"
+  },
+  "welTest": {
+    "message": "Vaadake seda testlehel töös"
   }
 }

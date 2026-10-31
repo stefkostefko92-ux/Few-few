@@ -25,10 +25,18 @@
       <p class="row-sub" data-i18n="rep_fix_desc">Most problems go away with one of these. Each one applies to this site only; the tab reloads.</p>
       <div class="fixes">
         <button id="fixCosm" class="btn" type="button" data-i18n="rep_fix_cosm">Turn off element hiding here</button>
-        <button id="fixAllow" class="btn" type="button" data-i18n="rep_fix_allow">Allow ads on this site</button>
+        <button id="fixHour" class="btn" type="button" data-i18n="rep_fix_hour">Allow ads here for 1 hour</button>
+        <button id="fixAllow" class="btn ghost" type="button" data-i18n="rep_fix_allow">Allow ads on this site</button>
         <button id="fixPause" class="btn ghost" type="button" data-i18n="rep_fix_pause">Pause everywhere for 30 minutes</button>
       </div>
       <p class="hint" id="fixHint" role="status"></p>
+      <!-- 5.6: после поправката — „Поправи ли се?“: да → кажете ни кое помогна; не → следващата поправка -->
+      <div class="fixed-ask" id="fixedAsk" role="group" aria-labelledby="fixedQ" hidden>
+        <span id="fixedQ" data-i18n="rep_fixed_q">Did it fix the site?</span>
+        <button id="fixedYes" class="btn" type="button" data-i18n="rep_fixed_yes">Yes, it works</button>
+        <button id="fixedNo" class="btn ghost" type="button" data-i18n="rep_fixed_no">No, still broken</button>
+      </div>
+      <p class="hint" id="fixedHint" role="status"></p>
     </section>
 
     <section class="card">
@@ -49,6 +57,7 @@
         <button id="copy" class="btn ghost" type="button" data-i18n="rep_copy">Copy report</button>
       </div>
       <p class="hint" id="sendHint" role="status"></p>
+      <p class="row-sub" id="webmail">No email app? Copy the report and send it to info@carbonstealth.eu from your webmail.</p>
       <p class="row-sub"><a href="https://adblock.carbonstealth.eu/privacy#report" target="_blank" rel="noopener" data-i18n="rep_privacy">How this report is handled: privacy policy</a></p>
     </section>
   </main>

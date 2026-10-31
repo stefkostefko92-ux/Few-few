@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokira oglase posvuda: na YouTubeu, bannere, skočne prozore, trackere, obavijesti o kolačićima i anti-adblock zidove."
+    "message": "Blokator oglasa za YouTube i web: videooglasi, banneri, skočni prozori, trackeri, obavijesti o kolačićima i anti-adblock zidovi."
   },
   "byCarbon": {
     "message": "autor: Carbon Stealth"
@@ -226,13 +226,13 @@
     "message": "Skriva zidove „Isključite blokator oglasa“ i vraća stranicu"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Skriva objave „Sponzorirano“ na Facebooku i Instagramu"
+    "message": "Skriva objave „Sponzorirano“ na Facebooku, Instagramu i Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Uklanja utm_*, fbclid, gclid i druge identifikatore klikova iz poveznica koje otvarate"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokira poznate zlonamjerne domene (popis URLhaus, abuse.ch)"
+    "message": "Upozorava prije otvaranja poznate zlonamjerne web-lokacije i blokira ono što stranice učitavaju s takvih web-lokacija (popis URLhaus, abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Isključuje oglasne API-je Google Topics, FLoC i Protected Audience na svim web-lokacijama"
@@ -647,6 +647,12 @@
     "message": "Kliknite ikonu dijela slagalice pokraj adresne trake i prikvačite Supreme AdBlock. Tada jednim klikom vidite što je blokirano na stranici.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Proširenje je prikvačeno na alatnu traku"
+  },
+  "welPinnedText": {
+    "message": "Jednim klikom na njegovu ikonu vidite što je blokirano na stranici."
+  },
   "welBrokenTitle": {
     "message": "Ako stranica izgleda neispravno",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -670,5 +676,185 @@
   "welDone": {
     "message": "Razumijem",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Dopušteno · još $1 min"
+  },
+  "hiddenHere": {
+    "message": "Ovdje skriveni elementi: $1 · Vrati zadnji"
+  },
+  "cmd_toggle_site": {
+    "message": "Uključi ili isključi blokiranje na ovoj web-lokaciji"
+  },
+  "cmd_pause": {
+    "message": "Pauziraj ili nastavi zaštitu (30 minuta)"
+  },
+  "cmd_picker": {
+    "message": "Sakrij element na ovoj stranici"
+  },
+  "rep_fix_hour": {
+    "message": "Dopusti oglase ovdje na 1 sat"
+  },
+  "rep_done_hour": {
+    "message": "Oglasi su na ovoj web-lokaciji dopušteni na 1 sat. Ponovno učitano — je li popravljeno?"
+  },
+  "opt_last30": {
+    "message": "Posljednjih 30 dana"
+  },
+  "opt_last30_sum": {
+    "message": "Blokirano: $1 · Obavijesti o kolačićima: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Ovdje će se prikazivati vaši dnevni zbrojevi dok pregledavate web."
+  },
+  "opt_last30_sub": {
+    "message": "Samo dnevni zbrojevi, spremljeni na ovom uređaju 30 dana. Bez web-lokacija, bez adresa."
+  },
+  "opt_gpc_sub": {
+    "message": "Traži od svake web-lokacije koju posjetite da ne prodaje i ne dijeli vaše podatke (signal Sec-GPC, koji web-lokacije prema nekim zakonima o privatnosti moraju poštovati). Ne šalje se na web-lokacijama koje ste dopustili."
+  },
+  "opt_shortcuts": {
+    "message": "Tipkovnički prečaci"
+  },
+  "opt_shortcuts_change": {
+    "message": "Promijeni prečace"
+  },
+  "opt_shortcut_none": {
+    "message": "Nije postavljeno"
+  },
+  "opt_shortcuts_ff": {
+    "message": "U Firefoxu: Proširenja i teme → ⚙ → Upravljaj tipkovničkim prečacima dodatka."
+  },
+  "opt_import_foreign": {
+    "message": "Uvezi iz drugog blokatora oglasa"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Prelazite s uBlock Origin, AdGuard ili Adblock Plus? Odaberite njegovu datoteku sigurnosne kopije: web-lokacije koje ste dopustili i vaši vlastiti filtri dodaju se ovdje. Ništa se ne zamjenjuje."
+  },
+  "opt_import_foreign_done": {
+    "message": "Dopuštene web-lokacije: $1 · Dodani filtri: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Izostavljeno (ovdje se ne može primijeniti): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Ova datoteka nije sigurnosna kopija koju možemo pročitati."
+  },
+  "welQuickTitle": {
+    "message": "Prilagodite ga sebi"
+  },
+  "welQuickSub": {
+    "message": "Neobavezno: već radi. Sve to možete kasnije promijeniti u postavkama."
+  },
+  "blk_page_title": {
+    "message": "Web-lokacija blokirana — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Ova web-lokacija može naštetiti vašem uređaju"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock zaustavio je ovu stranicu jer se web-lokacija nalazi na popisu URLhaus — javnom popisu adresa koje šire zlonamjerni softver."
+  },
+  "blk_back": {
+    "message": "Natrag"
+  },
+  "blk_continue": {
+    "message": "Svejedno nastavi"
+  },
+  "blk_note": {
+    "message": "Ako nastavite, propuštat će se samo stranice ove web-lokacije, dok ne zatvorite preglednik."
+  },
+  "blk_why": {
+    "message": "Zašto je na popisu? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Veze na ovoj stranici"
+  },
+  "conn_empty": {
+    "message": "Ova stranica nije ništa učitala s drugih web-lokacija."
+  },
+  "conn_block": {
+    "message": "Blokiraj ovdje"
+  },
+  "conn_blocked": {
+    "message": "Blokirano ovdje"
+  },
+  "conn_hint": {
+    "message": "Blokiraj ono što ova web-lokacija učitava s hosta $1"
+  },
+  "opt_conn_title": {
+    "message": "Veze koje ste blokirali"
+  },
+  "opt_conn_sub": {
+    "message": "Blokirane u prozoru Supreme AdBlocka putem „Veze na ovoj stranici“, svaka samo na vlastitoj web-lokaciji."
+  },
+  "opt_empty_conn": {
+    "message": "Još ništa nije blokirano."
+  },
+  "opt_conn_remove": {
+    "message": "Deblokiraj $1 na web-lokaciji $2"
+  },
+  "opt_h_danger": {
+    "message": "Upozorenje na zlonamjerni softver"
+  },
+  "opt_h_capacity": {
+    "message": "Kapacitet pravila"
+  },
+  "helpTitle": {
+    "message": "Stranice ne rade?"
+  },
+  "helpText": {
+    "message": "Dovoljno je popravljati jednu po jednu stranicu: dopustite oglase na njoj na sat vremena ili isključite skrivanje elemenata samo ondje. Ako nam javite, popravit ćemo to za sve."
+  },
+  "helpFix": {
+    "message": "Popravi ovu stranicu"
+  },
+  "cardNever": {
+    "message": "Ne prikazuj ponovno"
+  },
+  "cardClose": {
+    "message": "Zatvori"
+  },
+  "receiptTitle": {
+    "message": "Vaših zadnjih 30 dana"
+  },
+  "receiptText": {
+    "message": "Blokirani zahtjevi: $1 · odgovorene obavijesti o kolačićima: $2 · ušteđeni podaci: oko $3 (procjena)"
+  },
+  "share": {
+    "message": "Podijeli"
+  },
+  "shareTitle": {
+    "message": "Kopiraj poveznicu na Supreme AdBlock u trgovini Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Poveznica kopirana"
+  },
+  "rep_fixed_q": {
+    "message": "Radi li stranica sada?"
+  },
+  "rep_fixed_yes": {
+    "message": "Da, radi"
+  },
+  "rep_fixed_no": {
+    "message": "Ne, i dalje ne radi"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Odlično. Ako nam javite u nastavku, u prijavi će pisati koji je popravak pomogao, pa ćemo stranicu popraviti za sve."
+  },
+  "rep_fixed_next": {
+    "message": "Pokušajte sljedeći: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Onda nam, molimo, javite u nastavku: pogledat ćemo stranicu."
+  },
+  "rep_webmail": {
+    "message": "Nemate aplikaciju za e-poštu? Kopirajte prijavu i pošaljite je na $1 iz svoje web-pošte."
+  },
+  "blk_mistake": {
+    "message": "Mislite da je ovo pogreška? Javite nam"
+  },
+  "welTest": {
+    "message": "Pogledajte kako radi na testnoj stranici"
   }
 }

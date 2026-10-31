@@ -34,7 +34,7 @@
     position: sticky;
     top: var(--stage-pad);
     height: calc(100svh - 2 * var(--stage-pad));
-    margin: var(--stage-pad) var(--stage-pad) var(--stage-pad) 0;
+    margin: var(--stage-pad) 0;
     border-radius: 26px;
   }
 }
@@ -123,6 +123,26 @@
   }
   .stage-hud dd {
     font-size: 0.78rem;
+  }
+}
+/* a phone: the two read-outs of a step stack as label-and-value rows, so the real numbers (2 400 × 2 170 × 600 mm, in any
+   language) wrap instead of running out of the frame */
+@media (max-width: 479px) {
+  .stage-hud {
+    right: clamp(10px, 1.6vw, 22px);
+  }
+  .stage-hud dl {
+    grid-template-columns: 1fr;
+  }
+  .stage-hud dl > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .stage-hud dd {
+    white-space: normal;
+    text-align: right;
   }
 }
 .stage-hud .hud-line dd {

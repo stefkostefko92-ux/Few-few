@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokuoja reklamas visur: YouTube vaizdo reklamas, reklamjuostes, iššokančius langus, sekimą ir anti-adblock sienas."
+    "message": "Reklamų blokatorius YouTube ir internetui: vaizdo reklamos, baneriai, pop-up, sekimas, slapukų pranešimai ir anti-adblock sienos."
   },
   "byCarbon": {
     "message": "sukūrė Carbon Stealth"
@@ -226,13 +226,13 @@
     "message": "Paslepia sienas „išjunkite reklamų blokavimo priemonę“ ir atkuria puslapį"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Paslepia įrašus „Remiama“ Facebook ir Instagram"
+    "message": "Paslepia įrašus „Remiama“ Facebook, Instagram ir Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Pašalina utm_*, fbclid, gclid ir kitus paspaudimų identifikatorius iš jūsų atidaromų nuorodų"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokuoja žinomus kenkėjiškus domenus (abuse.ch URLhaus sąrašas)"
+    "message": "Įspėja prieš atsidarant žinomai kenkėjiškai svetainei ir blokuoja tai, ką puslapiai įkelia iš tokių svetainių (abuse.ch URLhaus sąrašas)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Išjungia Google Topics, FLoC ir Protected Audience reklamų API visose svetainėse"
@@ -647,6 +647,12 @@
     "message": "Spustelėkite dėlionės detalės piktogramą šalia adreso juostos ir prisekite Supreme AdBlock. Tada vienu spustelėjimu pamatysite, kas puslapyje buvo užblokuota.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Prisegtas prie įrankių juostos"
+  },
+  "welPinnedText": {
+    "message": "Vienas spustelėjimas ant jo piktogramos parodo, kas puslapyje buvo užblokuota."
+  },
   "welBrokenTitle": {
     "message": "Jei svetainė atrodo sugadinta",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -670,5 +676,185 @@
   "welDone": {
     "message": "Supratau",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Leidžiama · liko $1 min."
+  },
+  "hiddenHere": {
+    "message": "Čia paslėpta elementų: $1 · Atšaukti paskutinį"
+  },
+  "cmd_toggle_site": {
+    "message": "Įjungti arba išjungti blokavimą šioje svetainėje"
+  },
+  "cmd_pause": {
+    "message": "Pristabdyti arba tęsti apsaugą (30 minučių)"
+  },
+  "cmd_picker": {
+    "message": "Paslėpti elementą šiame puslapyje"
+  },
+  "rep_fix_hour": {
+    "message": "Leisti reklamas čia 1 valandai"
+  },
+  "rep_done_hour": {
+    "message": "Reklamos šioje svetainėje leidžiamos 1 valandai. Įkelta iš naujo — ar pataisyta?"
+  },
+  "opt_last30": {
+    "message": "Paskutinės 30 dienų"
+  },
+  "opt_last30_sum": {
+    "message": "Užblokuota: $1 · Slapukų pranešimai: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Jūsų dienos sumos atsiras čia, kai naršysite."
+  },
+  "opt_last30_sub": {
+    "message": "Tik dienos sumos, saugomos šiame įrenginyje 30 dienų. Jokių svetainių, jokių adresų."
+  },
+  "opt_gpc_sub": {
+    "message": "Prašo kiekvienos lankomos svetainės neparduoti ir nebendrinti jūsų duomenų (Sec-GPC signalas, kurio pagal kai kuriuos privatumo įstatymus svetainės privalo paisyti). Nesiunčiamas svetainėse, kurias leidžiate."
+  },
+  "opt_shortcuts": {
+    "message": "Spartieji klavišai"
+  },
+  "opt_shortcuts_change": {
+    "message": "Keisti sparčiuosius klavišus"
+  },
+  "opt_shortcut_none": {
+    "message": "Nenustatyta"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox naršyklėje: Priedai ir temos → ⚙ → Tvarkyti sparčiuosius klavišus priedams."
+  },
+  "opt_import_foreign": {
+    "message": "Importuoti iš kito reklamų blokatoriaus"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Pereinate nuo uBlock Origin, AdGuard ar Adblock Plus? Pasirinkite jo atsarginės kopijos failą: jūsų leistos svetainės ir jūsų filtrai bus pridėti čia. Niekas nepakeičiama."
+  },
+  "opt_import_foreign_done": {
+    "message": "Leista svetainių: $1 · Pridėta filtrų: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Praleista (čia pritaikyti negalima): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Šis failas nėra atsarginė kopija, kurią galime perskaityti."
+  },
+  "welQuickTitle": {
+    "message": "Pritaikykite sau"
+  },
+  "welQuickSub": {
+    "message": "Neprivaloma: viskas jau veikia. Bet kurį iš šių nustatymų vėliau galėsite pakeisti nustatymuose."
+  },
+  "blk_page_title": {
+    "message": "Svetainė užblokuota — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Ši svetainė gali pakenkti jūsų įrenginiui"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock sustabdė šį puslapį, nes svetainė įtraukta į URLhaus — viešą adresų, platinančių kenkėjiškas programas, sąrašą."
+  },
+  "blk_back": {
+    "message": "Grįžti atgal"
+  },
+  "blk_continue": {
+    "message": "Vis tiek tęsti"
+  },
+  "blk_note": {
+    "message": "Jei tęsite, bus praleidžiami tik šios svetainės puslapiai, kol uždarysite naršyklę."
+  },
+  "blk_why": {
+    "message": "Kodėl ji sąraše? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Šio puslapio ryšiai"
+  },
+  "conn_empty": {
+    "message": "Šis puslapis nieko neįkėlė iš kitų svetainių."
+  },
+  "conn_block": {
+    "message": "Blokuoti čia"
+  },
+  "conn_blocked": {
+    "message": "Užblokuota čia"
+  },
+  "conn_hint": {
+    "message": "Blokuoti tai, ką ši svetainė įkelia iš $1"
+  },
+  "opt_conn_title": {
+    "message": "Jūsų užblokuoti ryšiai"
+  },
+  "opt_conn_sub": {
+    "message": "Užblokuoti plėtinio lange, skiltyje „Šio puslapio ryšiai“, kiekvienas tik savo svetainėje."
+  },
+  "opt_empty_conn": {
+    "message": "Dar nieko neužblokuota."
+  },
+  "opt_conn_remove": {
+    "message": "Atblokuoti $1 svetainėje $2"
+  },
+  "opt_h_danger": {
+    "message": "Kenkėjiškų svetainių įspėjimas"
+  },
+  "opt_h_capacity": {
+    "message": "Taisyklių talpa"
+  },
+  "helpTitle": {
+    "message": "Svetainės neveikia?"
+  },
+  "helpText": {
+    "message": "Užtenka tvarkyti po vieną svetainę: leiskite jos reklamas valandai arba išjunkite elementų slėpimą tik joje. Jei mums pranešite, pataisysime visiems."
+  },
+  "helpFix": {
+    "message": "Pataisyti šią svetainę"
+  },
+  "cardNever": {
+    "message": "Daugiau nerodyti"
+  },
+  "cardClose": {
+    "message": "Uždaryti"
+  },
+  "receiptTitle": {
+    "message": "Jūsų pastarosios 30 dienų"
+  },
+  "receiptText": {
+    "message": "Užblokuota užklausų: $1 · atsakyta į slapukų pranešimus: $2 · sutaupyta duomenų: apie $3 (apytikslis įvertis)"
+  },
+  "share": {
+    "message": "Bendrinti"
+  },
+  "shareTitle": {
+    "message": "Kopijuoti Supreme AdBlock nuorodą Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Nuoroda nukopijuota"
+  },
+  "rep_fixed_q": {
+    "message": "Ar svetainė pataisyta?"
+  },
+  "rep_fixed_yes": {
+    "message": "Taip, veikia"
+  },
+  "rep_fixed_no": {
+    "message": "Ne, vis dar neveikia"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Džiaugiamės, kad veikia. Jei parašysite mums žemiau, pranešime bus matyti, kuris pataisymas padėjo, ir galėsime pataisyti svetainę visiems."
+  },
+  "rep_fixed_next": {
+    "message": "Išbandykite kitą: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Tada praneškite mums žemiau: peržiūrėsime svetainę."
+  },
+  "rep_webmail": {
+    "message": "Neturite el. pašto programos? Nukopijuokite pranešimą ir išsiųskite jį adresu $1 per savo internetinį paštą."
+  },
+  "blk_mistake": {
+    "message": "Manote, kad tai klaida? Praneškite mums"
+  },
+  "welTest": {
+    "message": "Pažiūrėkite, kaip veikia, bandomajame puslapyje"
   }
 }

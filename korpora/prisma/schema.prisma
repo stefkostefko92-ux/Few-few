@@ -28,39 +28,47 @@ enum Plan {
 
 /// Един акаунт. Планът е състояние на акаунта, плащанията засега са извън системата (ръчно).
 model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  name              String
-  passwordHash      String
-  role              Role      @default(CUSTOMER)
-  locale            String    @default("bg")
-  emailVerifiedAt   DateTime?
-  plan              Plan      @default(TRIAL)
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  name                 String
+  passwordHash         String
+  role                 Role      @default(CUSTOMER)
+  locale               String    @default("bg")
+  emailVerifiedAt      DateTime?
+  plan                 Plan      @default(TRIAL)
   /// Край на плана. TRIAL и PREMIUM имат дата; LIFETIME — null. TRIAL без дата = още не е започнал
   /// (тестовият период тръгва при потвърждаване на имейла).
-  planExpiresAt     DateTime?
+  planExpiresAt        DateTime?
   /// Кога е пратено напомнянето, че тестовият период свършва — праща се веднъж.
-  trialReminderAt   DateTime?
+  trialReminderAt      DateTime?
+  /// За кой край на Premium е пратено напомнянето (стойността на planExpiresAt тогава): нов срок → ново писмо.
+  planReminderFor      DateTime?
   /// TOTP тайна, AES-256-GCM в покой. Без `totpEnabledAt` тайната е само започната настройка.
-  totpSecretEnc     String?
-  totpEnabledAt     DateTime?
+  totpSecretEnc        String?
+  totpEnabledAt        DateTime?
   /// Последната приета 30-секундна стъпка — един и същ код не минава два пъти.
-  totpLastStep      Int?
-  failedLogins      Int       @default(0)
-  lockedUntil       DateTime?
+  totpLastStep         Int?
+  failedLogins         Int       @default(0)
+  lockedUntil          DateTime?
   /// Текущ бан (историята е в AccountBan). Причината се показва на човека при вход.
-  bannedAt          DateTime?
-  banReason         String?
-  lastLoginAt       DateTime?
-  lastLoginIp       String?
-  lastLoginCountry  String?
-  /// Откъде е регистриран акаунтът — за „свързани акаунти“ (повторни тестови периоди от едно устройство).
-  signupIp          String?
-  signupCountry     String?
-  signupDeviceHash  String?
-  signupFingerprint String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  bannedAt             DateTime?
+  banReason            String?
+  lastLoginAt          DateTime?
+  lastLoginIp          String?
+  lastLoginCountry     String?
+  /// Откъде е регистриран акаунтът. IP адресът и бисквитката на устройството служат на сигурността на
+  /// входа; за „свързани акаунти“ (повторни тестови периоди) устройството и отпечатъкът се ползват само
+  /// със съгласие (`deviceConsentAt`), а отпечатък без съгласие не се пази.
+  signupIp             String?
+  signupCountry        String?
+  signupDeviceHash     String?
+  signupFingerprint    String?
+  /// Съгласието за отпечатъка на устройството — отделна отметка при регистрация: кога и коя версия на
+  /// текста (датата на политиката за поверителност). Оттеглянето ги изтрива заедно с пазения отпечатък.
+  deviceConsentAt      DateTime?
+  deviceConsentVersion String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   sessions        Session[]
   devices         Device[]
@@ -207,6 +215,10 @@ model AccountBan {
   liftedById    String?
   liftedByLabel String?
   liftNote      String?
+  /// Вдигнат с отметката „Блокирането беше грешка“ (общите условия, „Блокиране“): тестовият или платеният
+  /// период се удължава с liftedAt − createdAt при вдигането; за Lifetime с толкова се удължават първите
+  /// месеци от раздел „Планове и цени“ (src/plans/ban.ts).
+  mistake       Boolean   @default(false)
 
   @@index([userId, createdAt])
 }
@@ -228,10 +240,21 @@ enum BuyerType {
 
 /// Поръчка на Premium/Lifetime (със задължение за плащане). Цената се смята на сървъра от
 /// ценоразписа в момента на поръчката; договорът се сключва с потвърждението по имейл веднага след нея.
+/// Изтрит акаунт не взима поръчките си: те остават само с данните на договора (името и имейла по-долу) и
+/// поддръжката ги трие ORDER_RETENTION_DAYS след изтриването (src/retention.ts).
 model UpgradeRequest {
   id                    String           @id @default(cuid())
-  userId                String
-  user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Поредният номер за хората — в писмата, на екрана и във фактурата („KP-2026-000123“,
+  /// plans/order-number.ts). cuid остава вътрешен.
+  number                Int              @unique @default(autoincrement())
+  /// null — акаунтът е изтрит; договорът остава с името и имейла от момента на изтриването.
+  userId                String?
+  user                  User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  /// Името и имейлът по договора — записват се при изтриването на акаунта (services/order-retention.ts).
+  customerName          String?
+  customerEmail         String?
+  /// Кога е изтрит акаунтът: оттук тече срокът за пазене на поръчката.
+  accountDeletedAt      DateTime?
   /// m1 | m3 | m6 | m12 | lifetime
   option                String
   months                Int?
@@ -266,6 +289,21 @@ model UpgradeRequest {
   @@index([status, createdAt])
   @@index([userId])
   @@index([supersededById])
+  /// Поддръжката търси поръчките на изтрити акаунти след срока.
+  @@index([accountDeletedAt])
+}
+
+/// Общите условия по версия и език, както са пратени с поръчките (самостоятелният HTML файл от
+/// services/terms-copy.ts). Потвърждение, пратено пак след смяна на условията, носи приетите с поръчката,
+/// не текущите — връзка към променяща се страница не е траен носител.
+model TermsSnapshot {
+  /// LEGAL_UPDATED.terms
+  version   String
+  locale    String
+  content   String
+  updatedAt DateTime @updatedAt
+
+  @@id([version, locale])
 }
 
 /// Проект = една мебел. Спецификацията е единственият източник на истината; изходите се смятат от нея.

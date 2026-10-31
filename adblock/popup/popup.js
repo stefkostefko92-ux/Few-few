@@ -8,6 +8,10 @@ const FALLBACK = {
   on: "On", off: "Off", thisPage: "this page", filtersCount: "$1+ filters",
   logUnavailable: "Log unavailable right now (browser quota) — try again in a minute.",
   reviewBlocked: "$1 requests blocked so far",
+  allowedFor: "Allowed · $1 min left", hiddenHere: "Elements you hid here: $1 · Undo the last",
+  conn_block: "Block here", conn_blocked: "Blocked here", conn_hint: "Block what this site loads from $1",
+  receiptText: "$1 requests blocked · $2 cookie banners answered · about $3 of data saved (an estimate)",
+  shareCopied: "Link copied",
 };
 
 const toggle = $("toggle");
@@ -26,6 +30,7 @@ const listDot = $("listDot");
 
 let currentHost = null;
 let currentTabId = null;
+let siteBlocked = []; // hosts blocked on this site from "Connections on this page"
 // What the 3D shield shows: protected / paused (timed) / off / allowed (this site is on the allowlist).
 const S = { enabled: true, paused: false, allowed: false };
 
@@ -78,16 +83,25 @@ function load() {
         cosmToggle.checked = !res.noCosmetics;
         setCosmLabel(!res.noCosmetics);
         cosmToggle.disabled = !!res.allowed;
+        // allowed for a while (the repair page's "for 1 hour"): the label says how long is left
+        if (res.allowed && res.allowedUntil > Date.now()) {
+          allowLabel.textContent = t("allowedFor", [String(Math.max(1, Math.round((res.allowedUntil - Date.now()) / 60000)))]);
+        }
       } else {
         siteHost.textContent = t("thisPage");
         allowToggle.disabled = true;
         cosmToggle.disabled = true;
       }
 
-      // ★ преди мерене (заема място в долната лента), картата след него (покрива каквото покрива)
+      // what the picker hid on this site: one click brings the last one back
+      renderUndo(currentHost ? res.hiddenHere || 0 : 0);
+      siteBlocked = Array.isArray(res.siteBlocked) ? res.siteBlocked : [];
+      // ★ и „Сподели“ преди мерене (заемат място в долната лента), картата след него (покрива каквото покрива)
       renderRate(res.review);
+      $("share").hidden = !res.shareUrl;
+      shareUrl = res.shareUrl || "";
       fitPopup();
-      showReviewCard(res.review, res.blockedTotal);
+      showCard(res);
     });
     loadLog();
   });
@@ -154,10 +168,20 @@ function fitPopup() {
   if (document.body.getBoundingClientRect().bottom > 600) root.classList.add("tight");
   const foot = document.querySelector(".foot");
   foot.classList.remove("compact");
-  const labels = [...foot.querySelectorAll(".links a:not([hidden]) span")];
+  const labels = [...foot.querySelectorAll(".links > :not([hidden]) span")];
   if (labels.some((s) => s.scrollWidth > s.clientWidth + 1)) {
     foot.classList.add("compact");
     for (const s of labels) if (!s.parentElement.title) s.parentElement.title = s.textContent.trim();
+  }
+  // ↶ N next to the picker: a one-word label that cannot wrap ("Կարգավորումներ", "Einstellungen")
+  // would push the row wider than the popup — then Settings shows only its gear (the word stays
+  // its name and tooltip), like the footer above
+  const actions = document.querySelector(".actions");
+  const settings = $("settingsBtn");
+  actions.classList.remove("squeeze");
+  if (actions.scrollWidth > actions.clientWidth + 1) {
+    actions.classList.add("squeeze");
+    if (!settings.title) settings.title = settings.textContent.trim();
   }
 }
 
@@ -223,6 +247,86 @@ $("pickBtn").addEventListener("click", () => {
 
 $("settingsBtn").addEventListener("click", () => chrome.runtime.openOptionsPage());
 
+// "Connections on this page": asked from the page only when the box is opened (no cost
+// otherwise). A blocked host loads nothing any more, so it is added from the stored list.
+function loadConnections() {
+  if (currentTabId == null || !currentHost) { $("conns").hidden = true; return; }
+  chrome.tabs.sendMessage(currentTabId, { type: "getConnections" }, { frameId: 0 }, (res) => {
+    void chrome.runtime.lastError; // no content script there (store pages, chrome://): just the stored ones
+    const rows = new Map();
+    for (const it of res && res.ok && Array.isArray(res.hosts) ? res.hosts : []) rows.set(it.host, it.n);
+    for (const h of siteBlocked) if (!rows.has(h)) rows.set(h, 0);
+    renderConnections([...rows]);
+  });
+}
+function renderConnections(rows) {
+  const ul = $("connList");
+  ul.textContent = "";
+  $("conns").hidden = false;
+  $("connEmpty").hidden = rows.length > 0;
+  for (const [host, n] of rows) {
+    const li = document.createElement("li");
+    const name = document.createElement("span");
+    name.className = "host";
+    name.textContent = host;
+    name.title = host;
+    const cnt = document.createElement("span");
+    cnt.className = "type";
+    cnt.textContent = n ? "×" + n.toLocaleString(UI_LANG) : "";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "conn-block";
+    const show = (blocked) => {
+      btn.setAttribute("aria-pressed", String(blocked));
+      btn.textContent = blocked ? t("conn_blocked") : t("conn_block");
+      btn.title = t("conn_hint", [host]);
+    };
+    show(siteBlocked.includes(host));
+    btn.addEventListener("click", () => {
+      const block = btn.getAttribute("aria-pressed") !== "true";
+      btn.disabled = true;
+      chrome.runtime.sendMessage({ type: "siteBlock", site: currentHost, host, block }, (r) => {
+        btn.disabled = false;
+        if (r && r.ok) { siteBlocked = r.hosts; show(block); }
+      });
+    });
+    if (n) li.append(name, cnt, btn); else li.append(name, btn);
+    ul.appendChild(li);
+  }
+}
+$("logBox").addEventListener("toggle", () => { if ($("logBox").open) loadConnections(); });
+
+function renderUndo(n) {
+  const b = $("undoBtn");
+  b.hidden = !n;
+  if (!n) return;
+  const count = n.toLocaleString(UI_LANG);
+  const label = t("hiddenHere", [count]);
+  $("undoCount").textContent = count;
+  b.title = label;
+  b.setAttribute("aria-label", label);
+}
+$("undoBtn").addEventListener("click", () => {
+  if (!currentHost) return;
+  chrome.runtime.sendMessage({ type: "undoHidden", host: currentHost }, (r) => {
+    renderUndo(r && r.ok ? r.left : 0);
+    fitPopup();
+    if ($("undoBtn").hidden) $("pickBtn").focus(); // the button the keyboard was on is gone
+  });
+});
+
+// Keyboard shortcuts in the tooltips (chrome.commands; the user may have changed or removed them).
+try {
+  chrome.commands.getAll((cmds) => {
+    const keys = {};
+    for (const c of cmds || []) if (c.shortcut) keys[c.name] = c.shortcut;
+    const hint = (el, name) => { if (el && keys[name]) el.title = (el.title || el.textContent.trim()) + " (" + keys[name] + ")"; };
+    hint(pauseBtn, "pause");
+    hint($("pickBtn"), "picker");
+    hint(allowToggle.closest("label"), "toggle-site");
+  });
+} catch {}
+
 document.addEventListener("DOMContentLoaded", load);
 
 $("reportBtn").addEventListener("click", () => {
@@ -230,12 +334,49 @@ $("reportBtn").addEventListener("click", () => {
   window.close();
 });
 
-// Отзив в Chrome Web Store: тиха ★ в долната лента + най-много два пъти карта след реална полза.
-// Кога — решава service worker-ът (reviewDue в background.js), тук само се рисува; Настройки махат
-// и двете. Нищо не се праща никъде: линкът отваря страницата с отзивите в магазина, нищо повече.
-const review = $("review");
-let reviewShown = false;
+// Листовете отдолу — отзивът, „Сайтовете се чупят?“ и месечната разписка: най-много ЕДИН на отваряне,
+// отзивът с предимство (кога — решава service worker-ът: reviewDue / helpDue / receiptOf; тук само
+// се рисува). Покритото от листа става inert (WCAG 2.4.11), фокусът се връща в съдържанието.
+let sheetShown = false; // load() се вика пак след пауза — веднъж на отваряне
+let openSheetEl = null;
 
+function openSheet(el) {
+  sheetShown = true;
+  openSheetEl = el;
+  el.hidden = false;
+  // offsetTop, не getBoundingClientRect: анимацията на влизане го отмества с transform
+  const top = el.offsetTop;
+  for (const x of document.querySelectorAll("main > *, .foot")) {
+    if (!x.hidden && x.getBoundingClientRect().bottom > top) x.inert = true;
+  }
+}
+
+function closeSheet() {
+  const el = openSheetEl;
+  if (!el || el.hidden || el.classList.contains("out")) return;
+  const hadFocus = el.contains(document.activeElement);
+  const done = () => {
+    el.hidden = true;
+    el.classList.remove("out");
+    document.querySelectorAll("[inert]").forEach((x) => (x.inert = false));
+    if (hadFocus) document.querySelector("main").focus({ preventScroll: true }); // не на body: Tab продължава от съдържанието
+  };
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return done();
+  el.classList.add("out");
+  setTimeout(done, 200);
+}
+addEventListener("keydown", (e) => { if (e.key === "Escape" && openSheetEl && !openSheetEl.hidden) { e.preventDefault(); closeSheet(); } });
+
+function showCard(res) {
+  if (sheetShown) return;
+  const rv = res.review;
+  if (rv && rv.url && rv.on && rv.ask) return showReviewCard(rv, res.blockedTotal);
+  if (res.help && res.help.ask && currentHost) return showHelpCard();
+  if (res.receipt && res.receipt.ask) return showReceiptCard(res.receipt);
+}
+
+// Отзив в Chrome Web Store: тиха ★ в долната лента + най-много два пъти карта след реална полза.
+// Настройки махат и двете. Нищо не се праща никъде: линкът отваря страницата с отзивите в магазина.
 function renderRate(rv) {
   if (!rv || !rv.url || !rv.on) return;
   $("rate").href = rv.url;
@@ -243,32 +384,10 @@ function renderRate(rv) {
 }
 
 function showReviewCard(rv, blocked) {
-  if (!rv || !rv.url || !rv.on || !rv.ask || reviewShown) return; // load() се вика пак след пауза — веднъж на отваряне
-  reviewShown = true;
   $("reviewTitle").textContent = t("reviewBlocked", [blocked.toLocaleString(UI_LANG)]);
   $("reviewGo").href = rv.url;
-  review.hidden = false;
-  // каквото листът покрива, не взема фокус (WCAG 2.4.11) — става inert, докато листът е тук
-  // (offsetTop, не getBoundingClientRect: анимацията на влизане го отмества с transform)
-  const top = review.offsetTop;
-  for (const el of document.querySelectorAll("main > *, .foot")) {
-    if (!el.hidden && el.getBoundingClientRect().bottom > top) el.inert = true;
-  }
+  openSheet($("review"));
   chrome.runtime.sendMessage({ type: "review", action: "shown" });
-}
-
-function closeReview() {
-  if (review.hidden || review.classList.contains("out")) return;
-  const hadFocus = review.contains(document.activeElement);
-  const done = () => {
-    review.hidden = true;
-    review.classList.remove("out");
-    document.querySelectorAll("[inert]").forEach((el) => (el.inert = false));
-    if (hadFocus) document.querySelector("main").focus({ preventScroll: true }); // не на body: Tab продължава от съдържанието
-  };
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return done();
-  review.classList.add("out");
-  setTimeout(done, 200);
 }
 
 // отзивът е оставен (или поне отворен) — картата повече не идва; ★ остава, ако някой иска да го смени
@@ -283,12 +402,56 @@ function goReview(e) {
 }
 $("reviewGo").addEventListener("click", goReview);
 $("rate").addEventListener("click", goReview);
-$("reviewLater").addEventListener("click", closeReview);
+$("reviewLater").addEventListener("click", closeSheet);
 $("reviewNever").addEventListener("click", () => {
   chrome.runtime.sendMessage({ type: "review", action: "done" });
-  closeReview();
+  closeSheet();
 });
-addEventListener("keydown", (e) => { if (e.key === "Escape" && !review.hidden) { e.preventDefault(); closeReview(); } });
+
+// „Сайтовете се чупят?“ — веднъж изобщо; бутонът отваря поправките за този сайт
+function showHelpCard() {
+  openSheet($("help"));
+  chrome.runtime.sendMessage({ type: "card", card: "help", action: "shown" });
+}
+$("helpGo").addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("report/report.html?tab=" + currentTabId) });
+  window.close();
+});
+$("helpLater").addEventListener("click", closeSheet);
+$("helpNever").addEventListener("click", () => {
+  chrome.runtime.sendMessage({ type: "card", card: "help", action: "never" });
+  closeSheet();
+});
+
+// месечната разписка — само числа от това устройство; данните са приблизителни (размерът на блокирана
+// заявка не се знае), затова текстът казва „около“
+function showReceiptCard(r) {
+  $("receiptText").textContent = t("receiptText", [
+    Math.round(r.blocked || 0).toLocaleString(UI_LANG), Math.round(r.cookies || 0).toLocaleString(UI_LANG), fmtData(r.mb || 0),
+  ]);
+  openSheet($("receipt"));
+  chrome.runtime.sendMessage({ type: "card", card: "receipt", action: "shown" });
+}
+$("receiptClose").addEventListener("click", closeSheet);
+$("receiptNever").addEventListener("click", () => {
+  chrome.runtime.sendMessage({ type: "card", card: "receipt", action: "never" });
+  closeSheet();
+});
+
+// „Сподели“ — копира чистия адрес на листинга; нищо не се праща, без параметри в адреса
+let shareUrl = "";
+const shareLabel = $("share").querySelector("span");
+let shareTimer = 0;
+$("share").addEventListener("click", async () => {
+  if (!shareUrl) return;
+  try { await navigator.clipboard.writeText(shareUrl); } catch { return; }
+  if (!shareLabel.dataset.orig) shareLabel.dataset.orig = shareLabel.textContent; // a second click within the 1.6 s keeps the real label
+  clearTimeout(shareTimer);
+  shareLabel.textContent = t("shareCopied");
+  $("shareStatus").textContent = t("shareCopied");
+  fitPopup(); // the longer label may need the icon-only footer for a moment
+  shareTimer = setTimeout(() => { shareLabel.textContent = shareLabel.dataset.orig; $("shareStatus").textContent = ""; fitPopup(); }, 1600);
+});
 
 // 3D щитът (popup/shield3d.js) се зарежда чак СЛЕД първото рисуване: още една заявка към
 // разширението на критичния път струва ~40 ms до първия кадър (измерено), а статичният кадър

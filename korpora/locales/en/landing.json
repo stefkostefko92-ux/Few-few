@@ -9,6 +9,7 @@
     },
     "nav": {
       "label": "Page sections",
+      "menu": "Menu",
       "how": "How it works",
       "drilling": "Drilling",
       "kinds": "Furniture",
@@ -26,7 +27,7 @@
       "line2": "to router.",
       "lead": "Korpora designs panel furniture in the browser and turns the same project into everything the workshop needs: a cut list with edge banding, a hardware list, drawings with a drilling map for every part, and files for the CNC machine.",
       "trial": "Every new account gets a {days}-day trial, starting when the email is confirmed, to try the software. No card and no automatic payment.",
-      "caption": "Sheet {no} of {count} for a kitchen of {modules} units, {width} mm each: {parts} parts and {holes} holes. Program output, not an illustration.",
+      "caption": "Sheet {no} of {count} for a kitchen of {doors} × {width} + {drawers} × {drawerWidth} mm: {parts} parts and {holes} holes. Program output, not an illustration.",
       "keyContour": "contour, Ø{d} cutter",
       "keyGroove": "back panel groove, Ø{d} cutter",
       "keyDrill": "holes {list}"
@@ -83,7 +84,7 @@
       "system32": "Mounting plates and shelf supports follow the 32 mm system: the first row is 37 mm from the front edge.",
       "handles": "Handles are drilled at the hole spacing of the chosen model, slides to the manufacturer's template.",
       "edges": "Horizontal holes in the edges (for confirmat screws) are in the drawing's table, separate from the G-code.",
-      "checks": "If a hinge, slide or hole falls outside the manufacturer's table, the program tells you what to change. Where the document says nothing, the program decides and marks the value “наш избор” (our choice).",
+      "checks": "If a hinge, slide or hole falls outside the manufacturer's table, the program tells you what to change. Where the document says nothing, the program decides and marks the value “{mark}” (our choice).",
       "imageAlt": "Drawing of a {h} × {w} mm door with sizes, edge banding and the drilling map for the hinge cups",
       "cupAlt": "Hinge cup detail at 1:1 scale: Ø35 at {c} mm from the edge",
       "caption": "The left door of the first base unit, {h} × {w} mm: sizes, edge banding and drilling map. Drawing labels are in Bulgarian.",
@@ -96,7 +97,7 @@
       "modules": "{min}–{max} units of {wmin}–{wmax} mm",
       "mattress": "mattress {min}–{max} cm",
       "rules": "The construction follows workshop practice: the bottom and top sit between the sides, the HDF back goes into a groove, base cabinets have rails for the worktop, and cut sizes are reduced by the edge banding.",
-      "lineupNote": "The front views are the engine’s output at the default sizes, all at one scale."
+      "lineupNote": "The front views are the engine's output at the default sizes, all at one scale."
     },
     "machine": {
       "title": "What does the machine get?",
@@ -150,11 +151,11 @@
       "title": "Questions and answers",
       "beta": {
         "q": "What does “beta” mean?",
-        "a": "Korpora is in open beta: everything works and every output is real, but the software is still being refined with the feedback of the first workshops. Tell us what is missing or not right — at {contact}."
+        "a": "Korpora is in open beta: the features on this page are available and every output is real, but the software is still being refined with the feedback of the first workshops — so check the outputs before production. Tell us what is missing or not right — at {contact}."
       },
       "price": {
         "q": "How much does Korpora cost?",
-        "a": "{month} per month including VAT ({monthNet} excluding VAT). Paying for {terms} months at once gives a {discounts} discount. Lifetime costs {life} including VAT ({lifeNet} excluding VAT), is paid once and is valid for as long as Korpora is offered."
+        "a": "{month} per month including VAT ({monthNet} excluding VAT). Paying for {terms} months at once gives a discount of {discounts} respectively. Lifetime costs {life} including VAT ({lifeNet} excluding VAT), is paid once and is valid for as long as Korpora is offered."
       },
       "afterTrial": {
         "q": "What happens when the trial ends?",
@@ -166,7 +167,7 @@
       },
       "machines": {
         "q": "Which CNC machines does it work with?",
-        "a": "The program gives a layered DXF that opens in any CAM program, and G-code in two flavours: ISO/Fanuc and GRBL. The post-processors are generic, so the first cut goes through a simulation and a dry run."
+        "a": "The program gives a layered DXF R12 in millimetres for your CAM program, and G-code in two flavours: ISO/Fanuc and GRBL. The post-processors are generic, so the first cut goes through a simulation and a dry run."
       },
       "hardware": {
         "q": "Whose hardware does it support?",
@@ -182,11 +183,11 @@
       },
       "data": {
         "q": "Where is my data kept?",
-        "a": "On a server in the European Union. Passwords are kept only as Argon2id hashes. Only you see your projects; the team opens them only for support, and every opening is recorded in the audit log."
+        "a": "On a server in the European Union. Passwords are kept only as Argon2id hashes. The team opens the contents of your projects (sizes, materials, drawings) only for support, and every download is recorded in the audit log; the project name and type are visible in the admin panel."
       },
       "delete": {
         "q": "Can I delete my account?",
-        "a": "Yes, under “Data” in your account. Before that you can download all your data; deletion is permanent and removes the projects too."
+        "a": "Yes, under “Data” in your account. Before that you can download all your data; deletion is permanent and removes the projects too. The data stays in the database backups until those expire — the periods are in the privacy policy."
       }
     },
     "closing": {
@@ -199,17 +200,17 @@
     },
     "outputs": {
       "title": "What comes out of one project?",
-      "lead": "The real files of the same example kitchen: the cutting sheet with the router path, the parts of the first module and the start of the G-code."
+      "lead": "The real files of the same example kitchen: the cutting sheet with the router path, the parts of the first unit and the start of the G-code."
     },
     "story": {
       "model": "Model",
-      "modelValue": "Kitchen, {modules} units of {width} mm",
+      "modelValue": "Kitchen, {doors} × {width} + {drawers} × {drawerWidth} mm",
       "size": "Overall size",
       "sizeValue": "{w} × {h} × {d} mm",
       "parts": "Parts",
       "materials": "Materials",
       "sheets": "Sheets",
-      "sheetsValue": "{n} of {w} × {h} mm",
+      "sheetsValue": "{n}, each {w} × {h} mm",
       "yield": "Sheet yield",
       "yieldValue": "{pct}%",
       "sheet1": "Parts on sheet 1",

@@ -16,14 +16,15 @@ import {
   type Reply,
 } from './harness.js';
 
-/** A verified customer with a signed-in browser. */
+/** A verified customer with a signed-in browser; `deviceConsent` ticks the fingerprint box. */
 export async function customer(
   email: string,
   password = CUSTOMER_PASSWORD,
   ip = nextIp(),
+  deviceConsent = false,
 ): Promise<Browser> {
   const browser = new Browser(ip);
-  await browser.register('Тест Клиент', email, password);
+  await browser.register('Тест Клиент', email, password, deviceConsent);
   await browser.confirmEmail(
     linkIn((await mailTo(email, /Потвърдете имейла/)).text, '/verify-email?token='),
   );
@@ -95,11 +96,14 @@ export async function placeOrder(email: string, form: Record<string, string>) {
     ...form,
   });
   assert.equal(reply.status, 302);
-  const row = await prisma.upgradeRequest.findFirstOrThrow({
+  const found = await prisma.upgradeRequest.findFirstOrThrow({
     where: { user: { email } },
     orderBy: { createdAt: 'desc' },
   });
-  return { c, row };
+  // the order of a living account always names it (only a deleted account leaves it without one)
+  const { userId } = found;
+  assert.ok(userId, 'the order belongs to the account');
+  return { c, row: { ...found, userId } };
 }
 
 /** The withdrawal through its confirmation page, with the token of that page. */

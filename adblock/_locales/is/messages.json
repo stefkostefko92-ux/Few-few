@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Lokar á auglýsingar alls staðar: YouTube-auglýsingar, borða, sprettiglugga, rekjara, kökuborða og anti-adblock-veggi."
+    "message": "Auglýsingavörn fyrir YouTube og netið: myndbönd, borðar, sprettigluggar, rekjarar, vafrakökuborðar og anti-adblock-veggir."
   },
   "byCarbon": {
     "message": "frá Carbon Stealth"
@@ -226,13 +226,13 @@
     "message": "Fela veggi sem segja „slökktu á auglýsingavörninni“ og endurheimta síðuna"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Fela færslur merktar „Kostað“ á Facebook og Instagram"
+    "message": "Fela færslur merktar „Kostað“ á Facebook, Instagram og Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Fjarlægja utm_*, fbclid, gclid og önnur smellaauðkenni úr tenglum sem þú opnar"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Loka á þekkt spilliforritalén (URLhaus-listi frá abuse.ch)"
+    "message": "Vara við áður en þekkt vefsvæði með spilliforritum opnast og loka á það sem síður sækja frá slíkum vefsvæðum (URLhaus-listi frá abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Slökkva á auglýsinga-API-viðmótunum Google Topics, FLoC og Protected Audience á öllum vefsvæðum"
@@ -647,6 +647,12 @@
     "message": "Smelltu á púsluspilstáknið við hliðina á veffangastikunni og festu Supreme AdBlock. Þá sýnir einn smellur hvað var lokað á síðunni.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Fest á tækjastikunni"
+  },
+  "welPinnedText": {
+    "message": "Einn smellur á táknið sýnir hvað var lokað á síðunni."
+  },
   "welBrokenTitle": {
     "message": "Ef vefsvæði lítur bilað út",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -670,5 +676,185 @@
   "welDone": {
     "message": "Ég skil",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Leyft · $1 mín. eftir"
+  },
+  "hiddenHere": {
+    "message": "Faldar einingar hér: $1 · Afturkalla síðustu"
+  },
+  "cmd_toggle_site": {
+    "message": "Kveikja eða slökkva á lokun fyrir þetta vefsvæði"
+  },
+  "cmd_pause": {
+    "message": "Gera hlé á vörn eða halda áfram (30 mínútur)"
+  },
+  "cmd_picker": {
+    "message": "Fela einingu á þessari síðu"
+  },
+  "rep_fix_hour": {
+    "message": "Leyfa auglýsingar hér í 1 klukkustund"
+  },
+  "rep_done_hour": {
+    "message": "Auglýsingar eru leyfðar á þessu vefsvæði í 1 klukkustund. Endurhlaðið — er það komið í lag?"
+  },
+  "opt_last30": {
+    "message": "Síðustu 30 dagar"
+  },
+  "opt_last30_sum": {
+    "message": "Útilokað: $1 · Vafrakökuborðar: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Daglegar heildartölur birtast hér á meðan þú vafrar."
+  },
+  "opt_last30_sub": {
+    "message": "Aðeins daglegar heildartölur, geymdar á þessu tæki í 30 daga. Engin vefsvæði, engin vefföng."
+  },
+  "opt_gpc_sub": {
+    "message": "Biður öll vefsvæði sem þú heimsækir um að selja hvorki né deila gögnunum þínum (Sec-GPC-merkið, sem sum persónuverndarlög skylda vefsvæði til að virða). Ekki sent á vefsvæðum sem þú leyfir."
+  },
+  "opt_shortcuts": {
+    "message": "Flýtilyklar"
+  },
+  "opt_shortcuts_change": {
+    "message": "Breyta flýtilyklum"
+  },
+  "opt_shortcut_none": {
+    "message": "Ekki stillt"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Í Firefox: Forritsaukar og þemu → ⚙ → Sýsla með flýtilykla forritsauka."
+  },
+  "opt_import_foreign": {
+    "message": "Flytja inn úr annarri auglýsingavörn"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Ertu að skipta úr uBlock Origin, AdGuard eða Adblock Plus? Veldu öryggisafritsskrána þaðan: vefsvæðunum sem þú leyfðir og þínum eigin síum er bætt við hér. Engu er skipt út."
+  },
+  "opt_import_foreign_done": {
+    "message": "Vefsvæði leyfð: $1 · Síum bætt við: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Sleppt (ekki hægt að nota hér): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Þessi skrá er ekki öryggisafrit sem við getum lesið."
+  },
+  "welQuickTitle": {
+    "message": "Gerðu hana að þinni"
+  },
+  "welQuickSub": {
+    "message": "Valfrjálst: hún virkar nú þegar. Þú getur breytt öllu þessu síðar í Stillingum."
+  },
+  "blk_page_title": {
+    "message": "Lokað á vefsvæði — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Þetta vefsvæði gæti skaðað tækið þitt"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock stöðvaði þessa síðu vegna þess að vefsvæðið er á URLhaus, opinberum lista yfir vistföng sem dreifa spilliforritum."
+  },
+  "blk_back": {
+    "message": "Fara til baka"
+  },
+  "blk_continue": {
+    "message": "Halda samt áfram"
+  },
+  "blk_note": {
+    "message": "Ef þú heldur áfram er aðeins síðum þessa vefsvæðis hleypt í gegn, þar til þú lokar vafranum."
+  },
+  "blk_why": {
+    "message": "Hvers vegna er það á listanum? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Tengingar á þessari síðu"
+  },
+  "conn_empty": {
+    "message": "Þessi síða sótti ekkert frá öðrum vefsvæðum."
+  },
+  "conn_block": {
+    "message": "Loka á hér"
+  },
+  "conn_blocked": {
+    "message": "Lokað á hér"
+  },
+  "conn_hint": {
+    "message": "Loka á það sem þetta vefsvæði sækir frá $1"
+  },
+  "opt_conn_title": {
+    "message": "Tengingar sem þú lokaðir á"
+  },
+  "opt_conn_sub": {
+    "message": "Lokað var á þær í „Tengingar á þessari síðu“ í glugga Supreme AdBlock; hver lokun gildir aðeins á sínu vefsvæði."
+  },
+  "opt_empty_conn": {
+    "message": "Ekki enn lokað á neitt."
+  },
+  "opt_conn_remove": {
+    "message": "Hætta að loka á $1 á $2"
+  },
+  "opt_h_danger": {
+    "message": "Viðvörunarsíða um spilliforrit"
+  },
+  "opt_h_capacity": {
+    "message": "Rými fyrir reglur"
+  },
+  "helpTitle": {
+    "message": "Virka vefsvæði ekki?"
+  },
+  "helpText": {
+    "message": "Eitt vefsvæði í einu dugar: leyfðu auglýsingar þar í klukkustund eða slökktu á felingu eininga bara þar. Ef þú lætur okkur vita lögum við það fyrir alla."
+  },
+  "helpFix": {
+    "message": "Laga þetta vefsvæði"
+  },
+  "cardNever": {
+    "message": "Ekki sýna þetta aftur"
+  },
+  "cardClose": {
+    "message": "Loka"
+  },
+  "receiptTitle": {
+    "message": "Síðustu 30 dagarnir þínir"
+  },
+  "receiptText": {
+    "message": "$1 beiðnir útilokaðar · $2 vafrakökuborðum svarað · um það bil $3 af gögnum sparað (áætlun)"
+  },
+  "share": {
+    "message": "Deila"
+  },
+  "shareTitle": {
+    "message": "Afrita tengilinn á Supreme AdBlock í Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Tengill afritaður"
+  },
+  "rep_fixed_q": {
+    "message": "Lagaði þetta vefsvæðið?"
+  },
+  "rep_fixed_yes": {
+    "message": "Já, það virkar"
+  },
+  "rep_fixed_no": {
+    "message": "Nei, virkar enn ekki"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Gott að það virkar. Ef þú lætur okkur vita hér fyrir neðan sýnir skýrslan hvaða lagfæring virkaði, svo við getum lagað vefsvæðið fyrir alla."
+  },
+  "rep_fixed_next": {
+    "message": "Prófaðu næstu: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Láttu okkur þá vita hér fyrir neðan: við skoðum vefsvæðið."
+  },
+  "rep_webmail": {
+    "message": "Ekkert póstforrit? Afritaðu skýrsluna og sendu hana á $1 úr vefpóstinum þínum."
+  },
+  "blk_mistake": {
+    "message": "Heldurðu að þetta séu mistök? Láttu okkur vita"
+  },
+  "welTest": {
+    "message": "Sjáðu það virka á prófunarsíðu"
   }
 }

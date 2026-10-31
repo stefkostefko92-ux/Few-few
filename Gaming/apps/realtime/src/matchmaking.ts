@@ -5,6 +5,7 @@ import { GAME_ENGINES, generateSeed, type AnyEngine } from "@aso/game-core";
 import {
   DEFAULT_BOT_DIFFICULTY,
   MAGNAT_PRESETS,
+  SOCKET_EVENTS,
   STARTING_MMR,
   buyInFor,
   isBotDifficulty,
@@ -18,6 +19,10 @@ import { RandomBot } from "./bot.js";
 import { redis } from "./redis.js";
 import { env } from "./env.js";
 import { logger } from "./logger.js";
+import { notifySelfExcluded, selfExcludedAmong } from "./responsible.js";
+
+/** Резултат от влизане в опашка. */
+export type JoinQueueResult = "joined" | "no_engine" | "self_excluded";
 
 interface QueueDesc {
   game: GameKey;
@@ -127,6 +132,16 @@ export class Matchmaker {
 
   /** Launch a match from an assembled lobby (host pressed start). Returns id. */
   async startFromLobby(lobby: Lobby): Promise<string> {
+    const members = lobby.slots.flatMap((s) => (s.userId && !s.isBot ? [s.userId] : []));
+    // Отговорна игра: никой самоизключен не сяда на маса (и хостът научава защо).
+    const excluded = await selfExcludedAmong(members);
+    if (excluded.size > 0) {
+      notifySelfExcluded(this.io, excluded, [lobby.hostUserId]);
+      throw new Error("self-excluded member");
+    }
+    if (!(await this.allAffordBuyIn(members, lobby.game, [lobby.hostUserId]))) {
+      throw new Error("buy-in not covered");
+    }
     const seed = generateSeed();
     const match = await prisma.match.create({
       data: { game: lobby.game, mode: lobby.mode, seed },
@@ -167,8 +182,14 @@ export class Matchmaker {
     game: GameKey,
     mode = "ranked",
     difficulty?: BotDifficulty,
-  ): Promise<boolean> {
-    if (!this.engineFor(game)) return false;
+  ): Promise<JoinQueueResult> {
+    if (!this.engineFor(game)) return "no_engine";
+    // Отговорна игра: по време на самоизключване опашките са затворени.
+    const excluded = await selfExcludedAmong([userId]);
+    if (excluded.size > 0) {
+      notifySelfExcluded(this.io, excluded);
+      return "self_excluded";
+    }
     const q: QueueDesc = { game, mode };
     // Remember this player's preferred bot strength for any bot-filled seats.
     if (difficulty) await redis.hset(DIFFICULTY_HASH, userId, difficulty);
@@ -183,7 +204,7 @@ export class Matchmaker {
     await redis.zadd(queueKey(q), mmr, userId);
     await redis.hset(JOINED_HASH, joinedField(q, userId), Date.now().toString());
     await redis.sadd(ACTIVE_SET, queueKey(q));
-    return true;
+    return "joined";
   }
 
   /** Server-authoritative buy-in gate: can this user cover the wallet stake for
@@ -194,6 +215,23 @@ export class Matchmaker {
     if (buyIn === undefined) return true;
     const u = await prisma.user.findUnique({ where: { id: userId }, select: { chips: true } });
     return Number(u?.chips ?? 0n) >= buyIn;
+  }
+
+  /**
+   * Buy-in gate for EVERY way onto a betting table, not just the ranked queue:
+   * lobby starts and friend invites used to seat players without it, and with
+   * the wallet clamp a 0-chip account played Свара with no downside (minting
+   * chips). Returns true if everyone can cover the stake; otherwise tells each
+   * affected player (and `notify` extras, e.g. the host) and returns false.
+   */
+  private async allAffordBuyIn(userIds: string[], game: GameKey, notify: string[] = []): Promise<boolean> {
+    const short: string[] = [];
+    for (const id of userIds) if (!(await this.affordsBuyIn(id, game))) short.push(id);
+    if (short.length === 0) return true;
+    const msg = { code: "insufficient_chips", message: "Някой на масата няма достатъчно чипове за залога" };
+    for (const id of new Set([...short, ...notify])) this.io.to(`u:${id}`).emit(SOCKET_EVENTS.ERROR, msg);
+    logger.info({ game, short: short.length }, "betting table refused: buy-in not covered");
+    return false;
   }
 
   /** True if the user currently sits in any matchmaking queue. */
@@ -283,6 +321,15 @@ export class Matchmaker {
       players.push({ userId, mmr, waitedMs: now - Number(joinedRaw || now) });
     }
 
+    // Самоизключил се, докато чака → изваждаме го от опашката, не го сядаме.
+    const excluded = await selfExcludedAmong(players.map((p) => p.userId));
+    if (excluded.size > 0) {
+      await this.dequeue(q, [...excluded.keys()]);
+      notifySelfExcluded(this.io, excluded);
+      for (let i = players.length - 1; i >= 0; i--) if (excluded.has(players[i]!.userId)) players.splice(i, 1);
+      if (players.length === 0) return;
+    }
+
     // Form full human matches: a contiguous (mmr-sorted) window of `required`
     // players whose spread fits the (wait-widened) tolerance.
     while (players.length >= required) {
@@ -337,6 +384,12 @@ export class Matchmaker {
     if (free.length === 0) return null;
     const seats = Math.max(2, seatsFor(game));
     const humans = free.slice(0, seats);
+    const excluded = await selfExcludedAmong(humans);
+    if (excluded.size > 0) {
+      notifySelfExcluded(this.io, excluded, humans);
+      return null;
+    }
+    if (!(await this.allAffordBuyIn(humans, game))) return null;
     const q: QueueDesc = { game, mode: "private" };
     // Pull each invitee out of EVERY queue (not just `private`) so the leader
     // can't also match them from the ranked queue into a second live match.

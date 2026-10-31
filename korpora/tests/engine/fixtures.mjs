@@ -1,8 +1,12 @@
 // TEST-ONLY hardware fixtures. Hinge systems are the real ones (engine/data/hinge-systems.js); hinge families, handles,
-// slides and bed fittings are placeholders with the catalog's shape and are never shipped.
+// slides and bed fittings are placeholders with the catalog's shape and are never shipped. Also the specs the output
+// tests run over, so the outputs and the CNC geometry are checked on the same models.
+import { createHash } from 'node:crypto';
 import { registerHingeSystems, registerHinges, registerHandles, registerSlideSystems, registerSlides, registerBedFittings } from '../../engine/hardware.js';
 import { SLIDE_SYSTEMS } from '../../engine/data/slide-systems.js';
 import { HINGE_SYSTEMS } from '../../engine/data/hinge-systems.js';
+import { TYPE_ORDER } from '../../engine/types.js';
+import { canonicalJson } from '../../engine/util.js';
 
 export const FIXTURE = {
   hingeSystems: HINGE_SYSTEMS,
@@ -35,3 +39,16 @@ export function registerFixtures() {
   registerSlides(FIXTURE.slides);
   registerBedFittings(FIXTURE.bedFittings);
 }
+
+// Every furniture type, then variants for the other branches: GRBL with an 8 mm cutter and no onion skin, a bed without
+// a footboard, cut sizes without band compensation, the other hinge makers.
+export const OUTPUT_SPECS = [
+  ...TYPE_ORDER.map((type) => ({ type })),
+  { type: 'wardrobe', width: 3000, post: 'grbl', tool: 8, onion: false, hinge: 'fx:hettich' },
+  { type: 'bed', mattressW: 900, footHeight: 0 },
+  { type: 'kitchen', modules: 6, bandCompensation: false, hinge: 'fx:gtv' },
+  { type: 'wardrobe', hinge: 'fx:salice' },
+  { type: 'bookcase', columns: 3, hinge: 'fx:gtv' },
+];
+
+export const outputMeta = (model) => ({ product: 'Korpora', hash: createHash('sha256').update(canonicalJson(model.spec)).digest('hex'), owner: 'Carbon Stealth VCC', date: '2026-10-02' });

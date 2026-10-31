@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Rhwystro hysbysebion ym mhobman: fideo YouTube, baneri, llamlenni, tracwyr, negeseuon cwcis a waliau anti-adblock."
+    "message": "Rhwystrwr hysbysebion ar gyfer YouTube a’r we: hysbysebion fideo, baneri, llamlenni, tracwyr, baneri cwcis a waliau anti-adblock."
   },
   "byCarbon": {
     "message": "gan Carbon Stealth"
@@ -226,13 +226,13 @@
     "message": "Cuddio waliau “diffoddwch eich atalydd hysbysebion” ac adfer y dudalen"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Cuddio postiadau “Noddedig” ar Facebook ac Instagram"
+    "message": "Cuddio postiadau “Noddedig” ar Facebook, Instagram a Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Tynnu utm_*, fbclid, gclid a dynodwyr clicio eraill o’r dolenni rydych yn eu hagor"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Rhwystro parthau maleisus hysbys (rhestr URLhaus gan abuse.ch)"
+    "message": "Rhybuddio cyn i wefan faleisus hysbys agor, a rhwystro’r hyn y mae tudalennau’n ei lwytho o wefannau o’r fath (rhestr URLhaus gan abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Analluogi APIs hysbysebu Google Topics, FLoC a Protected Audience ar bob gwefan"
@@ -647,6 +647,12 @@
     "message": "Cliciwch yr eicon darn jig-so wrth ymyl y bar cyfeiriad a phiniwch Supreme AdBlock. Yna bydd un clic yn dangos beth gafodd ei rwystro ar y dudalen.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Wedi’i binio i’r bar offer"
+  },
+  "welPinnedText": {
+    "message": "Mae un clic ar ei eicon yn dangos beth gafodd ei rwystro ar y dudalen."
+  },
   "welBrokenTitle": {
     "message": "Os yw gwefan yn edrych wedi torri",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -670,5 +676,185 @@
   "welDone": {
     "message": "Iawn",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Caniateir · $1 mun ar ôl"
+  },
+  "hiddenHere": {
+    "message": "Elfennau a guddiwyd yma: $1 · Dadwneud yr olaf"
+  },
+  "cmd_toggle_site": {
+    "message": "Troi’r rhwystro ymlaen neu i ffwrdd ar y wefan hon"
+  },
+  "cmd_pause": {
+    "message": "Oedi neu ailddechrau’r diogelu (30 munud)"
+  },
+  "cmd_picker": {
+    "message": "Cuddio elfen ar y dudalen hon"
+  },
+  "rep_fix_hour": {
+    "message": "Caniatáu hysbysebion yma am 1 awr"
+  },
+  "rep_done_hour": {
+    "message": "Mae hysbysebion yn cael eu caniatáu ar y wefan hon am 1 awr. Ail-lwythwyd — ydy e wedi’i drwsio?"
+  },
+  "opt_last30": {
+    "message": "Y 30 diwrnod diwethaf"
+  },
+  "opt_last30_sum": {
+    "message": "Rhwystrwyd: $1 · Baneri cwcis: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Bydd eich cyfansymiau dyddiol yn ymddangos yma wrth i chi bori."
+  },
+  "opt_last30_sub": {
+    "message": "Cyfansymiau dyddiol yn unig, wedi’u cadw ar y ddyfais hon am 30 diwrnod. Dim gwefannau, dim cyfeiriadau."
+  },
+  "opt_gpc_sub": {
+    "message": "Mae’n gofyn i bob gwefan rydych yn ymweld â hi beidio â gwerthu na rhannu eich data (y signal Sec-GPC, y mae rhai cyfreithiau preifatrwydd yn gwneud i wefannau ei barchu). Nid yw’n cael ei anfon ar wefannau rydych yn eu caniatáu."
+  },
+  "opt_shortcuts": {
+    "message": "Llwybrau byr bysellfwrdd"
+  },
+  "opt_shortcuts_change": {
+    "message": "Newid llwybrau byr"
+  },
+  "opt_shortcut_none": {
+    "message": "Heb ei osod"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Yn Firefox: Estyniadau a Themâu → ⚙ → Rheoli Estyniad Llwybrau Byr."
+  },
+  "opt_import_foreign": {
+    "message": "Mewnforio o rwystrwr hysbysebion arall"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Yn symud o uBlock Origin, AdGuard neu Adblock Plus? Dewiswch ei ffeil wrth gefn: bydd y gwefannau a ganiatawyd gennych a’ch hidlyddion eich hun yn cael eu hychwanegu yma. Does dim yn cael ei ddisodli."
+  },
+  "opt_import_foreign_done": {
+    "message": "Gwefannau a ganiateir: $1 · Hidlyddion a ychwanegwyd: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Wedi’u hepgor (ni ellir eu defnyddio yma): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Nid yw’r ffeil hon yn gopi wrth gefn y gallwn ei ddarllen."
+  },
+  "welQuickTitle": {
+    "message": "Addaswch e at eich dant"
+  },
+  "welQuickSub": {
+    "message": "Dewisol: mae eisoes yn gweithio. Gallwch newid unrhyw un o’r rhain yn nes ymlaen yn y Gosodiadau."
+  },
+  "blk_page_title": {
+    "message": "Gwefan wedi’i rhwystro — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Gallai’r wefan hon niweidio eich dyfais"
+  },
+  "blk_text": {
+    "message": "Mae Supreme AdBlock wedi atal y dudalen hon oherwydd bod y wefan ar URLhaus, rhestr gyhoeddus o gyfeiriadau sy’n lledaenu maleiswedd."
+  },
+  "blk_back": {
+    "message": "Mynd yn ôl"
+  },
+  "blk_continue": {
+    "message": "Parhau beth bynnag"
+  },
+  "blk_note": {
+    "message": "Os byddwch yn parhau, dim ond tudalennau’r wefan hon fydd yn cael mynd drwodd, nes i chi gau’r porwr."
+  },
+  "blk_why": {
+    "message": "Pam mae hi ar y rhestr? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Cysylltiadau ar y dudalen hon"
+  },
+  "conn_empty": {
+    "message": "Ni lwythodd y dudalen hon ddim o wefannau eraill."
+  },
+  "conn_block": {
+    "message": "Rhwystro yma"
+  },
+  "conn_blocked": {
+    "message": "Rhwystrwyd yma"
+  },
+  "conn_hint": {
+    "message": "Rhwystro’r hyn y mae’r wefan hon yn ei lwytho o $1"
+  },
+  "opt_conn_title": {
+    "message": "Cysylltiadau rydych wedi’u rhwystro"
+  },
+  "opt_conn_sub": {
+    "message": "Wedi’u rhwystro o “Cysylltiadau ar y dudalen hon” yn ffenestr Supreme AdBlock, pob un ar ei wefan ei hun yn unig."
+  },
+  "opt_empty_conn": {
+    "message": "Dim wedi’i rwystro eto."
+  },
+  "opt_conn_remove": {
+    "message": "Dadrwystro $1 ar $2"
+  },
+  "opt_h_danger": {
+    "message": "Tudalen rybudd maleiswedd"
+  },
+  "opt_h_capacity": {
+    "message": "Capasiti rheolau"
+  },
+  "helpTitle": {
+    "message": "Gwefannau’n torri?"
+  },
+  "helpText": {
+    "message": "Mae un wefan ar y tro yn ddigon: caniatewch ei hysbysebion am awr, neu diffoddwch guddio elfennau yno’n unig. Os dywedwch wrthym, byddwn yn ei thrwsio i bawb."
+  },
+  "helpFix": {
+    "message": "Trwsio’r wefan hon"
+  },
+  "cardNever": {
+    "message": "Peidiwch â dangos hwn eto"
+  },
+  "cardClose": {
+    "message": "Cau"
+  },
+  "receiptTitle": {
+    "message": "Eich 30 diwrnod diwethaf"
+  },
+  "receiptText": {
+    "message": "$1 o geisiadau wedi’u rhwystro · $2 o faneri cwcis wedi’u hateb · tua $3 o ddata wedi’i arbed (amcangyfrif)"
+  },
+  "share": {
+    "message": "Rhannu"
+  },
+  "shareTitle": {
+    "message": "Copïo’r ddolen i Supreme AdBlock yn Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Dolen wedi’i chopïo"
+  },
+  "rep_fixed_q": {
+    "message": "Ydy hyn wedi trwsio’r wefan?"
+  },
+  "rep_fixed_yes": {
+    "message": "Ydy, mae’n gweithio"
+  },
+  "rep_fixed_no": {
+    "message": "Na, wedi torri o hyd"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Da clywed ei bod yn gweithio. Os dywedwch wrthym isod, bydd yr adroddiad yn dangos pa ateb a weithiodd, er mwyn i ni drwsio’r wefan i bawb."
+  },
+  "rep_fixed_next": {
+    "message": "Rhowch gynnig ar yr un nesaf: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Felly dywedwch wrthym isod: byddwn yn edrych ar y wefan."
+  },
+  "rep_webmail": {
+    "message": "Dim ap e-bost? Copïwch yr adroddiad a’i anfon at $1 o’ch gwe-bost."
+  },
+  "blk_mistake": {
+    "message": "Ydych chi’n meddwl mai camgymeriad yw hyn? Dywedwch wrthym"
+  },
+  "welTest": {
+    "message": "Gweld sut mae’n gweithio ar dudalen brawf"
   }
 }

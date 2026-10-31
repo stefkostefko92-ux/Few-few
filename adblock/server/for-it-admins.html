@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Deploy Supreme AdBlock with Chrome policies – IT admin guide</title>
+<meta name="description" content="How to deploy Supreme AdBlock across an organisation: Chrome force-install policies, Admin console, Group Policy, Intune, macOS, and what it sends." />
+<meta name="keywords" content="Supreme AdBlock enterprise, deploy ad blocker, Chrome ExtensionInstallForcelist, force install extension, Group Policy Chrome extension, Intune Chrome extension, Carbon Stealth" />
+<meta name="author" content="Carbon Stealth" />
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+<meta name="theme-color" content="#030303" />
+<link rel="canonical" href="https://adblock.carbonstealth.eu/for-it-admins" />
+<link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+<link rel="icon" href="/icon-512.png" sizes="512x512" type="image/png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Supreme AdBlock — Carbon Stealth" />
+<meta property="og:title" content="Supreme AdBlock for IT admins" />
+<meta property="og:description" content="Force-install Supreme AdBlock with Chrome policies, and what it sends over the network." />
+<meta property="og:url" content="https://adblock.carbonstealth.eu/for-it-admins" />
+<meta property="og:image" content="https://adblock.carbonstealth.eu/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Supreme AdBlock by Carbon Stealth – deployment guide for IT admins" />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Supreme AdBlock for IT admins" />
+<meta name="twitter:description" content="Force-install Supreme AdBlock with Chrome policies, and what it sends over the network." />
+<meta name="twitter:image" content="https://adblock.carbonstealth.eu/og.png" />
+<meta name="twitter:image:alt" content="Supreme AdBlock by Carbon Stealth – deployment guide for IT admins" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://adblock.carbonstealth.eu/for-it-admins#webpage",
+      "url": "https://adblock.carbonstealth.eu/for-it-admins",
+      "name": "Deploy Supreme AdBlock with Chrome policies – IT admin guide",
+      "description": "Deploying Supreme AdBlock in an organisation with Chrome policies, and what the extension does on the network.",
+      "inLanguage": "en",
+      "isPartOf": { "@id": "https://adblock.carbonstealth.eu/#site" },
+      "about": { "@id": "https://adblock.carbonstealth.eu/#app" },
+      "publisher": { "@id": "https://carbonstealth.eu/#organization" },
+      "breadcrumb": { "@id": "https://adblock.carbonstealth.eu/for-it-admins#breadcrumb" },
+      "datePublished": "2026-10-23",
+      "dateModified": "2026-10-23"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://adblock.carbonstealth.eu/for-it-admins#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Supreme AdBlock", "item": "https://adblock.carbonstealth.eu/" },
+        { "@type": "ListItem", "position": 2, "name": "For IT admins", "item": "https://adblock.carbonstealth.eu/for-it-admins" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{color-scheme:dark;
+    --bg:#030303; --bg2:#08090b; --panel:#0b0c0f; --line:#16181d; --line2:#22252c;
+    --cyan:#00e5ff; --cyan-deep:#00b8d4; --cream:#f5f5f0; --body:#d9d9d2; --muted:#a3a39c; --muted2:#8f8f87; --amber:#e6bd4a;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Inter",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--font);background:var(--bg);color:var(--cream);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .field{position:fixed;inset:0;z-index:0;pointer-events:none;background:
+    radial-gradient(1100px 620px at 82% -12%,rgba(0,229,255,.12),transparent 60%),
+    radial-gradient(800px 520px at 6% 112%,rgba(0,255,136,.05),transparent 60%),var(--bg)}
+  a{color:var(--cyan);text-underline-offset:3px}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+  .skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--cyan);color:#001014;font-weight:800;padding:10px 16px;border-radius:10px;text-decoration:none}
+  .skip:focus{top:12px}
+  nav.top,.crumbs,main,footer{position:relative;z-index:1}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  nav.top{display:flex;align-items:center;gap:14px;max-width:1120px;margin:0 auto;padding:22px 24px 0}
+  nav.top .brand{display:flex;align-items:center;gap:12px;color:var(--cream);text-decoration:none}
+  nav.top .mark{width:34px;height:34px;filter:drop-shadow(0 0 12px rgba(0,229,255,.45))}
+  nav.top b{display:block;font-weight:800;letter-spacing:.4px;font-size:16px;line-height:1.1}
+  nav.top .tag{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--cyan);font-family:var(--mono)}
+  nav.top .sp{flex:1}
+  nav.top .links{display:flex;gap:22px}
+  nav.top .links a{font-size:13.5px;color:var(--muted);letter-spacing:.3px;text-decoration:none;padding:4px 0}
+  nav.top .links a:hover{color:var(--cream)}
+  nav.top .links a[aria-current="page"]{color:var(--cream);box-shadow:0 2px 0 var(--cyan)}
+  @media(max-width:860px){nav.top .links{display:none}}
+
+  .crumbs{max-width:1120px;margin:0 auto;padding:30px 24px 0;font-size:13.5px;color:var(--muted)}
+  .crumbs ol{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+  .crumbs li+li::before{content:"/";color:var(--muted2);margin-right:8px}
+  .crumbs a{color:var(--muted);text-decoration:none}
+  .crumbs a:hover{color:var(--cream);text-decoration:underline}
+
+  .hero{padding:22px 0 8px}
+  h1{font-size:clamp(38px,5.4vw,64px);line-height:1.03;font-weight:900;letter-spacing:-1.4px}
+  .lead{margin-top:20px;font-size:clamp(17px,2vw,19px);color:var(--muted);max-width:60ch}
+  .lead b{color:var(--cream);font-weight:600}
+
+  /* triage: the problems people actually bring, each a jump to its fix */
+  .triage{list-style:none;margin-top:34px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:940px){.triage{grid-template-columns:1fr 1fr}}
+  @media(max-width:600px){.triage{grid-template-columns:1fr}}
+  .triage a{display:flex;flex-direction:column;gap:4px;height:100%;padding:18px 20px;border-radius:14px;border:1px solid var(--line2);
+    background:linear-gradient(180deg,var(--panel),var(--bg2));color:var(--cream);text-decoration:none;transition:border-color .2s,background .2s}
+  .triage a:hover{border-color:rgba(0,229,255,.55);background:linear-gradient(180deg,#0d1014,var(--bg2))}
+  .triage b{font-size:16.5px;font-weight:750;letter-spacing:-.1px}
+  .triage span{font-size:14px;color:var(--muted)}
+  .triage .mail{border-color:rgba(0,229,255,.38)}
+
+  section.blk{padding:64px 0 0;scroll-margin-top:16px}
+  .prose>*{max-width:760px}
+  h2{font-size:clamp(26px,3.3vw,36px);line-height:1.12;font-weight:850;letter-spacing:-.6px}
+  h3{font-size:18.5px;line-height:1.3;font-weight:750;letter-spacing:-.1px;margin-top:28px;color:var(--cream)}
+  p{color:var(--body);margin-top:12px}
+  h2+p{margin-top:14px}
+  h3+p{margin-top:6px}
+  p b,li b{color:var(--cream);font-weight:650}
+  .dots{list-style:none;margin-top:14px}
+  .dots li{position:relative;padding-left:24px;margin-top:10px;color:var(--body)}
+  .dots li::before{content:"";position:absolute;left:4px;top:.66em;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px rgba(0,229,255,.55)}
+  .steps{list-style:none;counter-reset:st;margin-top:18px}
+  .steps li{counter-increment:st;position:relative;padding-left:48px;margin-top:16px;color:var(--body);min-height:32px}
+  .steps li::before{content:counter(st);position:absolute;left:0;top:-2px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(0,229,255,.55);color:var(--cyan);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .limit{margin-top:18px;border:1px solid var(--line2);border-left:3px solid var(--amber);border-radius:12px;background:var(--panel);padding:16px 20px}
+  .limit p:first-child{margin-top:0}
+  .more{margin-top:16px;font-size:15px}
+  code{font-family:var(--mono);font-size:.88em;color:var(--cream);background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
+  .contact{margin-top:20px;display:flex;flex-wrap:wrap;gap:12px}
+  .btn{display:inline-flex;align-items:center;gap:9px;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:700;letter-spacing:.2px;text-decoration:none;border:1px solid transparent;transition:border-color .2s,box-shadow .2s,color .2s}
+  .btn.primary{background:linear-gradient(135deg,var(--cyan),var(--cyan-deep));color:#001014;box-shadow:0 10px 36px rgba(0,229,255,.25)}
+  .btn.primary:hover{box-shadow:0 14px 48px rgba(0,229,255,.42)}
+  .btn.ghost{background:rgba(255,255,255,.02);border-color:var(--line2);color:var(--cream)}
+  .btn.ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+  .btn svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .facts{margin-top:16px;display:grid;grid-template-columns:max-content 1fr;gap:10px 22px}
+  .facts dt{color:var(--muted)}
+  .facts dd{color:var(--cream)}
+  @media(max-width:560px){.facts{grid-template-columns:1fr;gap:2px}.facts dd{margin-bottom:10px}}
+
+  footer{border-top:1px solid var(--line);margin-top:84px}
+  footer .row{max-width:1120px;margin:0 auto;padding:30px 24px;display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap;color:var(--muted2);font-size:13px}
+  footer .who{display:flex;gap:12px;align-items:flex-start;max-width:560px}
+  footer .who img{width:26px;height:26px;flex:none;margin-top:2px}
+  footer .who p{color:var(--muted2);margin:0}
+  footer .who p+p{margin-top:4px}
+  footer nav{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto}
+  footer a{color:var(--muted)}
+  footer nav a{text-decoration:none}
+  footer nav a:hover{text-decoration:underline}
+  footer a:hover{color:var(--cyan)}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+  pre{margin-top:14px;max-width:860px;overflow-x:auto;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:16px 18px;font-family:var(--mono);font-size:13.5px;line-height:1.55;color:var(--cream);tab-size:2}
+  pre code{background:none;border:0;padding:0;font-size:inherit;overflow-wrap:normal}
+  .src{font-size:13.5px;color:var(--muted2)}
+</style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="field" aria-hidden="true"></div>
+
+  <nav class="top" aria-label="Main">
+    <a class="brand" href="/">
+      <img class="mark" src="/shield-96.webp?v=4c70aee9f0" alt="" width="34" height="34" />
+      <span><b>Supreme AdBlock</b><span class="tag">Carbon Stealth</span></span>
+    </a>
+    <span class="sp"></span>
+    <div class="links">
+      <a href="/youtube-ad-blocker">YouTube</a>
+      <a href="/cookie-banner-blocker">Cookie banners</a>
+      <a href="/#features">Features</a>
+      <a href="/support">Support</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+  </nav>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/">Supreme AdBlock</a></li>
+      <li><span aria-current="page">For IT admins</span></li>
+    </ol>
+  </nav>
+
+  <main id="main">
+    <header class="hero">
+      <div class="wrap">
+        <h1>Supreme AdBlock for IT admins</h1>
+        <p class="lead"><b>Force-install it with the Chrome policy <code>ExtensionInstallForcelist</code> or <code>ExtensionSettings</code>.</b> The extension ID is <code>chbjbiabkgocfbbfhednpbhfeipjcclk</code>. The update URL is <code>https://clients2.google.com/service/update2/crx</code>. Below: copy-paste examples, where to set them, how to check them, and what the extension does on your network.</p>
+        <p class="src">Policy syntax checked against Google's documentation on 23 October 2026. Extension version 5.5.1.</p>
+      </div>
+    </header>
+
+    <section class="blk" id="facts">
+      <div class="wrap prose">
+        <h2>What you need to know first</h2>
+        <ul class="dots">
+          <li><b>No admin settings.</b> The extension has no policy schema and no managed storage. An admin can install it and pin it, but cannot preconfigure it. Every setting is chosen by the user, in the extension's Settings.</li>
+          <li><b>No account, no analytics, no telemetry.</b> Like any download, the filter update reaches our server with the device's IP address and user agent; we do not log these requests. The network requests are listed <a href="#network">below</a> and in the <a href="/privacy#requests">privacy policy</a>, where you can check them yourself.</li>
+          <li><b>Not a security product.</b> The malware warning compares an address with <a href="https://urlhaus.abuse.ch/" target="_blank" rel="noopener">URLhaus</a>, a public list of known malicious addresses. It is a warning for known addresses. It is not antivirus, not a web gateway and not a replacement for either.</li>
+          <li><b>Browser.</b> Chrome 121 or newer. Installed from the <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=it_admins" target="_blank" rel="noopener">Chrome Web Store</a>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="blk" id="forcelist">
+      <div class="wrap prose">
+        <h2>Force-install with ExtensionInstallForcelist</h2>
+        <p>Each entry is the extension ID, a semicolon and the update URL. Chrome installs the extension silently, and the user cannot remove or disable it. Removing the entry from the list uninstalls it. This is the value to enter:</p>
+<pre><code>chbjbiabkgocfbbfhednpbhfeipjcclk;https://clients2.google.com/service/update2/crx</code></pre>
+        <p class="src">Source: <a href="https://chromeenterprise.google/policies/extension-install-forcelist/" target="_blank" rel="noopener">Google, ExtensionInstallForcelist</a>, checked 23 October 2026. The extension comes from the Chrome Web Store, so the domain, Azure Active Directory or Chrome Enterprise Core requirement that Google lists for installs from outside the store does not apply.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="settings">
+      <div class="wrap prose">
+        <h2>Force-install with ExtensionSettings</h2>
+        <p>Use <code>ExtensionSettings</code> when you also want to pin the icon to the toolbar. Google states that it overrides <code>ExtensionInstallForcelist</code> when both are set. <code>force_installed</code> needs an <code>update_url</code>. Enter the JSON as a single line, with no line breaks:</p>
+<pre><code>{"chbjbiabkgocfbbfhednpbhfeipjcclk":{"installation_mode":"force_installed","update_url":"https://clients2.google.com/service/update2/crx","toolbar_pin":"force_pinned"}}</code></pre>
+        <p><code>toolbar_pin</code> is optional. Its values are <code>force_pinned</code>, <code>default_pinned</code> and <code>default_unpinned</code>. Drop it if you do not want the icon pinned.</p>
+        <p class="src">Sources: <a href="https://support.google.com/chrome/a/answer/9867568" target="_blank" rel="noopener">Configure ExtensionSettings policy</a> and <a href="https://support.google.com/chrome/a/answer/7532015" target="_blank" rel="noopener">Set Chrome app and extension policies (Windows)</a> for the single-line JSON and the update URL; <a href="https://chromeenterprise.google/policies/extension-settings/" target="_blank" rel="noopener">Google, ExtensionSettings</a> for <code>toolbar_pin</code>. All checked 23 October 2026.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="admin-console">
+      <div class="wrap prose">
+        <h2>Google Admin console</h2>
+        <ol class="steps">
+          <li>Sign in as an administrator and open <b>Devices &gt; Chrome &gt; Apps &amp; extensions</b>. With Chrome Enterprise Core, open <b>Chrome browser &gt; Apps &amp; extensions</b>.</li>
+          <li>Choose <b>Users &amp; browsers</b>, and select the organisational unit or group on the left.</li>
+          <li>Click <b>Add</b>, then <b>Add Chrome app or extension by ID</b>. Enter <code>chbjbiabkgocfbbfhednpbhfeipjcclk</code> and choose <b>Save</b>.</li>
+          <li>Under <b>Installation policy</b>, choose <b>Force install</b>, then <b>Save</b>.</li>
+        </ol>
+        <p class="src">Sources: <a href="https://support.google.com/chrome/a/answer/6177447" target="_blank" rel="noopener">View and configure apps and extensions</a> and <a href="https://support.google.com/chrome/a/answer/6306504" target="_blank" rel="noopener">Automatically install apps and extensions</a>, checked 23 October 2026. Google notes that adding a paid Chrome Web Store item by ID is not available to Google Workspace for Education Fundamentals customers; Supreme AdBlock is free, so this does not apply.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="windows">
+      <div class="wrap prose">
+        <h2>Windows: Group Policy and registry</h2>
+        <h3>Group Policy</h3>
+        <p>Import Google's Chrome policy templates first. Then open <b>Administrative Templates &gt; Google &gt; Google Chrome &gt; Extensions</b> and choose <b>Extension management settings</b>. Enable it and paste the one-line JSON from the <a href="#settings">ExtensionSettings section</a>. If the policy is not listed, download the latest templates.</p>
+        <p class="src">Source: <a href="https://support.google.com/chrome/a/answer/7532015" target="_blank" rel="noopener">Set Chrome app and extension policies (Windows)</a>, checked 23 October 2026.</p>
+        <h3>Registry</h3>
+        <p>Google documents <code>HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome</code> as the key for Chrome policies set in the registry, and says a Group Policy setting takes precedence over a registry value. We could not find a list-policy example on Google's pages. The layout below, with numbered string values under the policy name, follows common admin practice and is <b>not</b> confirmed by Google's pages. Check the result in <code>chrome://policy</code>.</p>
+<pre><code>Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist]
+"1"="chbjbiabkgocfbbfhednpbhfeipjcclk;https://clients2.google.com/service/update2/crx"</code></pre>
+        <p class="src">Source for the key: <a href="https://support.google.com/chrome/a/answer/9131254" target="_blank" rel="noopener">Manage Chrome policies with Windows registry</a>, checked 23 October 2026.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="intune">
+      <div class="wrap prose">
+        <h2>Microsoft Intune</h2>
+        <p>Create a <b>Settings catalog</b> profile for Windows 10 and later, choose <b>Add settings</b> and search for “Chrome”. Google's guide lists the category <code>Administrative Templates\Google\Google Chrome\Extensions</code>. An independent Microsoft-ecosystem author describes the setting <b>Configure the list of force-installed apps and extension</b> there, with the sub-setting <b>Extension - App IDs and update URLs to be silently installed (Device)</b>. Enter the value from the <a href="#forcelist">ExtensionInstallForcelist section</a>.</p>
+        <p class="src">Sources: <a href="https://support.google.com/chrome/a/answer/12129062" target="_blank" rel="noopener">Google, Manage Chrome browser with Intune Settings Catalog (Windows)</a> and <a href="https://petervanderwoude.nl/post/further-simplifying-management-of-the-google-chrome-browser-on-windows-devices" target="_blank" rel="noopener">Peter van der Woude, third party</a>, checked 23 October 2026. Labels may differ in your tenant. We did not test this in Intune.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="macos">
+      <div class="wrap prose">
+        <h2>macOS configuration profile</h2>
+        <p>Policies on a Mac need a device-management tool such as Jamf or Apple Profile Manager. Add the <code>ExtensionSettings</code> key to your Chrome configuration profile:</p>
+<pre><code>&lt;key&gt;ExtensionSettings&lt;/key&gt;
+&lt;dict&gt;
+  &lt;key&gt;chbjbiabkgocfbbfhednpbhfeipjcclk&lt;/key&gt;
+  &lt;dict&gt;
+    &lt;key&gt;installation_mode&lt;/key&gt;
+    &lt;string&gt;force_installed&lt;/string&gt;
+    &lt;key&gt;update_url&lt;/key&gt;
+    &lt;string&gt;https://clients2.google.com/service/update2/crx&lt;/string&gt;
+  &lt;/dict&gt;
+&lt;/dict&gt;</code></pre>
+        <p class="src">Source: <a href="https://support.google.com/chrome/a/answer/7517624" target="_blank" rel="noopener">Set Chrome app and extension policies (Mac)</a>, checked 23 October 2026. That page shows this structure with another extension's ID. It does not name the preference domain in the text we read, so start from the profile Google links there. We did not verify a Jamf-specific payload.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="check">
+      <div class="wrap prose">
+        <h2>Check that it worked</h2>
+        <ol class="steps">
+          <li>Restart Chrome on a managed device and open <code>chrome://policy</code>.</li>
+          <li>Choose <b>Reload policies</b>. Find <code>ExtensionInstallForcelist</code> or <code>ExtensionSettings</code>. The status must be <b>OK</b> and the value must not be empty.</li>
+          <li>Open <code>chrome://extensions</code>. Supreme AdBlock must be listed, and the user must not be able to remove it or turn it off.</li>
+        </ol>
+        <p class="src">Source for the <code>chrome://policy</code> steps: <a href="https://support.google.com/chrome/a/answer/7532015" target="_blank" rel="noopener">Google</a>, checked 23 October 2026. Policies pushed from the cloud can take up to 3 hours to reach a device (<a href="https://support.google.com/chrome/a/answer/10407780" target="_blank" rel="noopener">Google</a>).</p>
+      </div>
+    </section>
+
+    <section class="blk" id="network">
+      <div class="wrap prose">
+        <h2>What the extension sends</h2>
+        <p>No account, analytics or telemetry data. The extension makes one automatic request: it downloads <code>filters.json</code> and its signature <code>filters.json.sig</code> from <code>adblock.carbonstealth.eu</code>, about twice a day. The request carries no identifier, no cookie and no browsing data, and the file is data only (domain names, CSS selectors and YouTube field names). Allow-list <code>adblock.carbonstealth.eu</code> on your proxy or firewall. Without it, blocking works with the filters inside the package, but does not receive updates.</p>
+        <p>If a user adds a filter list by URL, or turns on one of the regional lists we may not redistribute (the Bulgarian list from stanev.org; the Polish, Nordic and Serbo-Croatian lists from raw.githubusercontent.com), the extension downloads it from that address when it is turned on, then about once a day. You see these requests only if users do this. The full list, and how to read the downloaded file yourself, is in the <a href="/privacy#requests">privacy policy</a>.</p>
+        <div class="limit">
+          <p>The extension does not report, count or send which sites anyone visits. It has no central console, no per-user logs, and an admin cannot switch it on or off remotely. The only thing that changes it from outside is the filter data it downloads from us, which it validates and never runs as code. If you need to audit or control it centrally, use the browser policies above.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="blk" id="edge">
+      <div class="wrap prose">
+        <h2>Microsoft Edge</h2>
+        <p>Supreme AdBlock is not on Edge Add-ons yet. We give no Edge policy values for it. Edge has its own policies under <code>SOFTWARE\Policies\Microsoft\Edge</code>; Microsoft documents them in <a href="https://learn.microsoft.com/en-us/deployedge/microsoft-edge-manage-extensions-policies" target="_blank" rel="noopener">Use group policies to manage Microsoft Edge extensions</a> (checked 23 October 2026). Do not copy the Chrome paths above into Edge.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="contact">
+      <div class="wrap prose">
+        <h2>Questions from your security team</h2>
+        <p>Write to <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a>. More on privacy and how we measure: <a href="/privacy">privacy policy</a>, <a href="/how-we-measure">how we measure</a>, <a href="/status">status</a>. Everyday help for users: <a href="/support">support</a>.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="row">
+      <div class="who">
+        <img src="/shield-96.webp?v=4c70aee9f0" alt="" width="26" height="26" />
+        <div>
+          <p><b style="color:var(--cream)">Supreme AdBlock</b> is made by Carbon Stealth VCC, UIC (ЕИК) 208725180</p>
+          <p>3 Samuil St., 2670 Bobov Dol, Bulgaria, <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a></p>
+        </div>
+      </div>
+      <nav aria-label="Footer">
+        <a href="/">Home</a>
+        <a href="/youtube-ad-blocker">YouTube ad blocker</a>
+        <a href="/cookie-banner-blocker">Cookie banner blocker</a>
+        <a href="/support">Support</a>
+        <a href="/for-it-admins">For IT admins</a>
+        <a href="/privacy">Privacy</a>
+        <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=it_admins" target="_blank" rel="noopener">Chrome Web Store</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

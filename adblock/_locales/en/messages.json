@@ -1,10 +1,10 @@
 {
   "extName": {
-    "message": "Supreme AdBlock",
+    "message": "Supreme AdBlock – Ad Blocker",
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Blocks ads everywhere: YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls.",
+    "message": "Ad blocker for YouTube and the web: video ads, banners, pop-ups, trackers, cookie banners and anti-adblock walls.",
     "description": "Extension description."
   },
   "byCarbon": {
@@ -228,13 +228,13 @@
     "message": "Hide “disable your adblocker” walls and restore the page"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Hide “Sponsored” posts on Facebook & Instagram"
+    "message": "Hide “Sponsored” posts on Facebook, Instagram & Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Strip utm_*, fbclid, gclid and other click identifiers from the links you open"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Block known malware domains (URLhaus list by abuse.ch)"
+    "message": "Warn before a known malware site opens, and block what pages load from such sites (URLhaus list by abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Disable Google Topics, FLoC and Protected Audience ad APIs on every site"
@@ -649,6 +649,14 @@
     "message": "Click the puzzle-piece icon next to the address bar and pin Supreme AdBlock. One click then shows what was blocked on the page.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Pinned to the toolbar",
+    "description": "Welcome page: the same tip once the browser reports the icon is already pinned (shown with a tick)."
+  },
+  "welPinnedText": {
+    "message": "One click on its icon shows what was blocked on the page.",
+    "description": "Welcome page: text under 'Pinned to the toolbar'."
+  },
   "welBrokenTitle": {
     "message": "If a site looks broken",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -672,5 +680,204 @@
   "welDone": {
     "message": "Got it",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Allowed · $1 min left"
+  },
+  "hiddenHere": {
+    "message": "Elements you hid here: $1 · Undo the last"
+  },
+  "cmd_toggle_site": {
+    "message": "Turn blocking on this site on or off"
+  },
+  "cmd_pause": {
+    "message": "Pause or resume protection (30 minutes)"
+  },
+  "cmd_picker": {
+    "message": "Hide an element on this page"
+  },
+  "rep_fix_hour": {
+    "message": "Allow ads here for 1 hour"
+  },
+  "rep_done_hour": {
+    "message": "Ads are allowed on this site for 1 hour. Reloaded — is it fixed?"
+  },
+  "opt_last30": {
+    "message": "Last 30 days"
+  },
+  "opt_last30_sum": {
+    "message": "Blocked: $1 · Cookie banners: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Your daily totals appear here as you browse."
+  },
+  "opt_last30_sub": {
+    "message": "Only daily totals, kept on this device for 30 days. No sites, no addresses."
+  },
+  "opt_gpc_sub": {
+    "message": "Asks every site you visit not to sell or share your data (the Sec-GPC signal, which some privacy laws make sites honour). Not sent on sites you allow."
+  },
+  "opt_shortcuts": {
+    "message": "Keyboard shortcuts"
+  },
+  "opt_shortcuts_change": {
+    "message": "Change shortcuts"
+  },
+  "opt_shortcut_none": {
+    "message": "Not set"
+  },
+  "opt_shortcuts_ff": {
+    "message": "In Firefox: Extensions and themes → ⚙ → Manage Extension Shortcuts."
+  },
+  "opt_import_foreign": {
+    "message": "Import from another ad blocker"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Moving from uBlock Origin, AdGuard or Adblock Plus? Choose its backup file: the sites you allowed and your own filters are added here. Nothing is replaced."
+  },
+  "opt_import_foreign_done": {
+    "message": "Sites allowed: $1 · Filters added: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Left out (can't be applied here): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "This file isn't a backup we can read."
+  },
+  "welQuickTitle": {
+    "message": "Make it yours"
+  },
+  "welQuickSub": {
+    "message": "Optional: it already works. Settings can change any of these later."
+  },
+  "blk_page_title": {
+    "message": "Site blocked — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "This site may harm your device"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock stopped this page because the site is on URLhaus, a public list of addresses that spread malware."
+  },
+  "blk_back": {
+    "message": "Go back"
+  },
+  "blk_continue": {
+    "message": "Continue anyway"
+  },
+  "blk_note": {
+    "message": "Continuing lets only this site's pages through, until you close the browser."
+  },
+  "blk_why": {
+    "message": "Why is it listed? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Connections on this page"
+  },
+  "conn_empty": {
+    "message": "This page loaded nothing from other sites."
+  },
+  "conn_block": {
+    "message": "Block here"
+  },
+  "conn_blocked": {
+    "message": "Blocked here"
+  },
+  "conn_hint": {
+    "message": "Block what this site loads from $1"
+  },
+  "opt_conn_title": {
+    "message": "Connections you blocked"
+  },
+  "opt_conn_sub": {
+    "message": "Blocked from the popup's “Connections on this page”, each only on its own site."
+  },
+  "opt_empty_conn": {
+    "message": "Nothing blocked yet."
+  },
+  "opt_conn_remove": {
+    "message": "Unblock $1 on $2"
+  },
+  "opt_h_danger": {
+    "message": "Malware warning page"
+  },
+  "opt_h_capacity": {
+    "message": "Rule capacity"
+  },
+  "helpTitle": {
+    "message": "Sites breaking?",
+    "description": "Popup card shown once when there are signs that sites break (several allowed sites, element hiding off on sites, or repeated pauses). Heading."
+  },
+  "helpText": {
+    "message": "One site at a time is enough: allow its ads for an hour, or turn off element hiding just there. Telling us fixes it for everyone.",
+    "description": "Text of that card: the fixes on the repair page apply to one site only; reporting the site fixes it for every user."
+  },
+  "helpFix": {
+    "message": "Fix this site",
+    "description": "Button of that card: opens the repair page ('Site broken?') for the current site."
+  },
+  "cardNever": {
+    "message": "Don't show this again",
+    "description": "Small button on the popup cards: never show this card again."
+  },
+  "cardClose": {
+    "message": "Close",
+    "description": "Button that closes the monthly summary card."
+  },
+  "receiptTitle": {
+    "message": "Your last 30 days",
+    "description": "Heading of the monthly summary card in the popup (counts kept on this device only)."
+  },
+  "receiptText": {
+    "message": "$1 requests blocked · $2 cookie banners answered · about $3 of data saved (an estimate)",
+    "description": "Monthly summary. $1 = number of blocked requests, $2 = number of cookie banners answered, $3 = amount of data such as '240 MB'. The data figure is an estimate."
+  },
+  "share": {
+    "message": "Share",
+    "description": "Footer button in the popup: copies the Chrome Web Store link to the extension."
+  },
+  "shareTitle": {
+    "message": "Copy the Chrome Web Store link to Supreme AdBlock",
+    "description": "Tooltip of the Share button."
+  },
+  "shareCopied": {
+    "message": "Link copied",
+    "description": "Shown briefly after the Share button copied the link."
+  },
+  "rep_fixed_q": {
+    "message": "Did it fix the site?",
+    "description": "Repair page: question shown after a fix was applied and the tab reloaded."
+  },
+  "rep_fixed_yes": {
+    "message": "Yes, it works",
+    "description": "Repair page: answer button."
+  },
+  "rep_fixed_no": {
+    "message": "No, still broken",
+    "description": "Repair page: answer button."
+  },
+  "rep_fixed_yes_note": {
+    "message": "Glad it works. If you tell us below, the report says which fix worked, so we can fix the site for everyone.",
+    "description": "Repair page: after 'Yes, it works'."
+  },
+  "rep_fixed_next": {
+    "message": "Try the next one: $1",
+    "description": "Repair page: after 'No, still broken'. $1 = the label of the next fix button, e.g. 'Allow ads here for 1 hour'."
+  },
+  "rep_fixed_none": {
+    "message": "Then please tell us below: we will look at the site.",
+    "description": "Repair page: after 'No, still broken' when every fix was tried."
+  },
+  "rep_webmail": {
+    "message": "No email app? Copy the report and send it to $1 from your webmail.",
+    "description": "Repair page: $1 = our email address."
+  },
+  "blk_mistake": {
+    "message": "Think this is a mistake? Tell us",
+    "description": "Malware warning page: link that opens an email to us with the site name."
+  },
+  "welTest": {
+    "message": "See it working on a test page",
+    "description": "Welcome page: link to the website's demonstration page."
   }
 }
