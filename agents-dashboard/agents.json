@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 428
+        "lessons": 432
       },
       "evolution": [
         {
@@ -656,9 +656,20 @@
           "date": "2026-10-28",
           "event": "v34.0 — учене",
           "detail": "Научи: EDPB Guidelines 01/2022 v2.1 т. 159 — срокът по чл. 12(3) тече от получаване; само се С… (+2 още)"
+        },
+        {
+          "version": "34.4.0",
+          "date": "2026-10-31",
+          "event": "v34.4 — учене",
+          "detail": "Научи: EUPL-1.2 чл. 1 включва „providing access to its essential functionalities“ в понятието … (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-31",
+          "type": "learning",
+          "summary": "Научи: „EUPL-1.2 чл. 1 включва „providing access to its essential functionalities“ в понятието …\" (+3 още)"
+        },
         {
           "date": "2026-10-28",
           "type": "learning",
