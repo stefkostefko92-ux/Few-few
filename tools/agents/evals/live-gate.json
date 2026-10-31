@@ -1,9 +1,9 @@
 {
   "date": "2026-10-31",
-  "ref": "5fea2c0a061ffbdc2092dadaa619dd8596919a5b",
+  "ref": "b429361ac1c1587364f8ed5a8d9aa7f6f592a916",
   "cli": "2.1.316 (Claude Code)",
   "summary": "проба 3/3 · оценки 6/6 · pass^k 2/2 · verifier ✓",
-  "costUsd": 6.13,
+  "costUsd": 5.95,
   "probe": [
     {
       "agent": "seo",
@@ -21,7 +21,7 @@
       "problems": []
     }
   ],
-  "inputsHash": "065229f113a14465e565009a1fe9494363fb7ab775ad6acf76ce5c1379402da9",
+  "inputsHash": "507db9e4baf7433c668a8e8065a9e93be6d725f78f874b04c1f5d784d1b2faf9",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "88d5ec11b12e04c04278aed5f68f63e1a51f6ef8d3148926d53400986ff6bbca",
@@ -66,7 +66,7 @@
     ".claude/hooks/guard-readonly.mjs": "a8aaf18874b83b48d7da5003c64a241ab837b7b7e5f1aa05187c2cb91e272093",
     ".claude/hooks/guard-secrets.mjs": "5c8a2ad5292a639a08964e5bc077e6a1261b92b1120c930a2145aa83457156e0",
     ".claude/hooks/memory-capture.mjs": "923cb2262292c9b74999f088ac75aaf897c64570cc40d9c5fa9b6eae9a6c36dc",
-    ".claude/hooks/memory-preload.mjs": "65fda6219efe14cbab7d54c578cdffa2b2c0153225356a06501856121eb6d3de",
+    ".claude/hooks/memory-preload.mjs": "55982a42af50fdcd76db16a5a84c8dee97e9fe89b09440d03d654f3dd921a8ef",
     ".claude/hooks/precompact-save.mjs": "a9fa2d8f1cbd62d90d80a13367ff6fef4fcc9ae520fdc5d95a23450f09184946",
     ".claude/hooks/route-hint.mjs": "e12450074fa5b5244a15b37e0a2f691eb43d8b45453a603792e326bee76e88f5",
     ".claude/hooks/session-dod.mjs": "61117e512451c7138db6ad13e24b89ff05ef8d3c6716707f31e7636062757c3f",
@@ -76,6 +76,6 @@
     "tools/agents/handoff.mjs": "968f77b1df8890a0fce9fd8dbc25e24f088aff74ddbd8512b8ed378205bc7033",
     "tools/agents/teams.mjs": "60881dcd480171bdc378837c0ec19115442cd38948f3c08eaeb99eff82fc3a51",
     "tools/lib/memory-branch.mjs": "8ec47e40ffed4593af39dfccdc7d7d0201498a3b9eb7eb8c73d51bbfd368f10b",
-    "tools/lib/memory-retrieval.mjs": "89c56c8faf0e2a149534c0ac69c8f9d5cc37af3ea919ca4774d311e0bde7655a"
+    "tools/lib/memory-retrieval.mjs": "5a7f76c209d3eaf570f1c1a59d2ed6b08e572f4b8778e3fde6b0bfe6841a6215"
   }
 }
