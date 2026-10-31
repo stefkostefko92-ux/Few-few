@@ -57,3 +57,29 @@ test("посочените файлове от scratchpad-а се прикачв
     assert.equal(attachScratchpad("без пътища"), "без пътища");
   } finally { rmSync("/tmp/claude-0/-tmp-live-run-TEST01", { recursive: true, force: true }); }
 });
+
+test("--set: рамо на сравнение сменя само полето във frontmatter на копието (31.10)", async () => {
+  const { patchFrontmatter, parseSets } = await import("./live-run.mjs");
+  const md = "---\nname: x\nmodel: opus\neffort: high\n---\n\n# тяло\neffort: high в тялото остава\n";
+  const out = patchFrontmatter(md, "effort", "medium");
+  assert.match(out, /^effort: medium$/m);
+  assert.match(out, /effort: high в тялото остава/, "тялото не се пипа");
+  assert.match(patchFrontmatter(md, "autoCompactWindow", "200000"), /^autoCompactWindow: 200000$/m, "липсващо поле се добавя");
+  assert.deepEqual(parseSets("kodadjiyata.effort=medium,seo.model=sonnet"), [{ agent: "kodadjiyata", field: "effort", value: "medium" }, { agent: "seo", field: "model", value: "sonnet" }]);
+  assert.throws(() => parseSets("kodadjiyata.effort=$(rm -rf)"));
+  assert.throws(() => patchFrontmatter(md, "effort", "a b"));
+});
+
+test("частично копие (31.10): коренът, агентският слой, deploy и продуктите на PR-а; нищо друго", async () => {
+  const { sparsePatterns, makeWorktree } = await import("./live-run.mjs");
+  assert.deepEqual(sparsePatterns(["CSPos"]), ["/*", "!/*/", "/.claude/", "/tools/", "/deploy/", "/CSPos/"]);
+  assert.deepEqual(sparsePatterns(["../etc", "CSPos;rm"]), ["/*", "!/*/", "/.claude/", "/tools/", "/deploy/"], "само чисти имена на папки");
+  const { existsSync: ex } = await import("node:fs");
+  const { dir, cleanup } = makeWorktree("HEAD", null, { measure: false, sparse: ["CSPos"] });
+  try {
+    assert.ok(ex(join(dir, "CSPos", "package.json")), "продуктът на PR-а е в копието");
+    assert.ok(ex(join(dir, ".claude", "settings.json")) && ex(join(dir, "tools", "agents")), "агентският слой е в копието");
+    assert.ok(ex(join(dir, "CLAUDE.md")), "файловете в корена са в копието");
+    assert.ok(!ex(join(dir, "zabobovdol")), "чужд продукт не е в копието");
+  } finally { cleanup(); }
+});

@@ -1,0 +1,36 @@
+---
+name: verify
+description: >-
+  Проверка преди всеки commit: пуска гейта на всеки засегнат продукт, агентския гейт при промяна в
+  .claude/ или tools/ и secret-scan, и показва изхода. Claude Code сам вика умение с това име точно преди
+  commit (освен за docs и тестове). Ползвай и при „провери преди commit“, „мини ли гейта“, „готово ли е за
+  commit“. Заменя вграденото /verify. Червено → без commit; поправи и пусни пак.
+allowed-tools: Bash(git status *), Bash(git diff *)
+---
+
+# Проверка преди commit
+
+Харнесът вика това умение преди всеки commit (Claude Code v2.1.286+, рецептата е в корена на репото —
+https://code.claude.com/docs/en/skills#run-your-checks-before-each-commit). Така гейтът на продукта е
+правило на харнеса, не избор на модела.
+
+## Какво влиза в commit-а (вмъкнато при зареждане)
+!`git status --short`
+
+Първата папка на всеки ред е продуктът. Няма root `package.json` — всеки продукт има свой гейт.
+
+## Ред
+1. **Продуктов гейт** за всяка засегната папка-продукт: таблицата и правилата са в умението
+   `quality-gate`. Не помниш командите → прочети `<продукт>/CLAUDE.md`; не гадай скриптове.
+2. **Агентски слой** — само ако е пипано `.claude/` или `tools/`:
+   `node tools/agents/oversee.mjs` · `node tools/agents/evals/eval.mjs --check` ·
+   `node --test $(find tools -name '*.test.mjs')`. Промяна по агент, кука, умение или settings иска и
+   жив гейт (`node tools/agents/live-gate.mjs`) преди „готово“ — не преди всеки commit.
+3. **Винаги:** `node tools/security/secret-scan.mjs`. При промяна в lock файл —
+   `node tools/security/new-deps.mjs` (typosquat гейтва).
+
+## Решение
+- Всичко зелено и показано → commit.
+- Червено → без commit. Поправи причината (умение `systematic-debugging`) и пусни пак. Не пиши
+  „минава“ без показан изход.
+- Само документация или тестове → харнесът не вика умението; secret-scan пак е задължителен.

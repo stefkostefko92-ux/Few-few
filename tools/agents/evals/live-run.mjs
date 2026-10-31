@@ -107,16 +107,48 @@ export function claudeAvailable() {
 /** Изолирано копие на ref-а с махнати Stop куки на оркестратора. Връща пътя и функция за почистване.
  *  overlay: {from, paths} — тези пътища идват от друг ref (преглед на стар PR с ТЕКУЩИЯ агентски слой).
  *  measure: true (по подразбиране) — eval режим в копието: паметта се чете, но нищо не се записва. */
-export function makeWorktree(ref = "HEAD", overlay = null, { measure = true } = {}) {
+export function makeWorktree(ref = "HEAD", overlay = null, { measure = true, sparse = null } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "live-run-"));
   rmSync(dir, { recursive: true, force: true });
-  execFileSync("git", ["-C", ROOT, "worktree", "add", "--detach", dir, ref], { stdio: "ignore" });
+  if (sparse?.length) {
+    // Частично копие (31.10.2026): файловете в корена + агентският слой + подадените папки — 12 MB вместо
+    // 2,1 GB за преглед на PR по един продукт (code.claude.com/docs/en/large-codebases, sparse worktree).
+    execFileSync("git", ["-C", ROOT, "worktree", "add", "--no-checkout", "--detach", dir, ref], { stdio: "ignore" });
+    execFileSync("git", ["-C", dir, "sparse-checkout", "set", "--no-cone", ...sparsePatterns(sparse)], { stdio: "ignore" });
+    execFileSync("git", ["-C", dir, "checkout", "-q", "--detach", ref], { stdio: "ignore" });
+  } else execFileSync("git", ["-C", ROOT, "worktree", "add", "--detach", dir, ref], { stdio: "ignore" });
   if (overlay) execFileSync("git", ["-C", dir, "checkout", overlay.from, "--", ...overlay.paths], { stdio: "ignore" });
   if (measure) setEvalMode(dir, { label: "live-run", memory: "on", minutes: 180 });
   const sp = join(dir, ".claude", "settings.json");
   writeFileSync(sp, JSON.stringify(stripOrchestratorStop(JSON.parse(readFileSync(sp, "utf8"))), null, 2) + "\n");
   const cleanup = () => { try { execFileSync("git", ["-C", ROOT, "worktree", "remove", "--force", dir], { stdio: "ignore" }); } catch { rmSync(dir, { recursive: true, force: true }); } };
   return { dir, cleanup };
+}
+
+/** Шаблоните за частично копие: файловете в корена, агентският слой, deploy/ и подадените папки. */
+export function sparsePatterns(dirs) {
+  const top = [...new Set([".claude", "tools", "deploy", ...dirs])].filter((d) => /^[\w.@-]+$/.test(d));
+  return ["/*", "!/*/", ...top.map((d) => `/${d}/`)];
+}
+
+/** Сменя (или добавя) скаларно поле във frontmatter. Само в изолираното копие — за рамена на
+ *  сравнение (усилие, модел), без да се пипа истинската дефиниция (31.10.2026). */
+export function patchFrontmatter(md, field, value) {
+  if (!/^[A-Za-z][\w-]*$/.test(field) || !/^[\w.:-]+$/.test(value)) throw new Error(`невалидно --set ${field}=${value}`);
+  const [pre, fm, ...rest] = md.split(/^---\s*$/m);
+  if (rest.length === 0) throw new Error("няма frontmatter");
+  const re = new RegExp(`^${field}:.*$`, "m");
+  const next = re.test(fm) ? fm.replace(re, `${field}: ${value}`) : fm.replace(/\s*$/, `\n${field}: ${value}\n`);
+  return [pre, next, ...rest].join("---");
+}
+
+/** `kodadjiyata.effort=medium,seo.model=sonnet` → [{agent, field, value}] */
+export function parseSets(spec) {
+  return String(spec || "").split(",").filter(Boolean).map((s) => {
+    const m = s.trim().match(/^([\w-]+)\.([A-Za-z][\w-]*)=([\w.:-]+)$/);
+    if (!m) throw new Error(`невалидно --set „${s}“ (агент.поле=стойност)`);
+    return { agent: m[1], field: m[2], value: m[3] };
+  });
 }
 
 /** Пуска задачите (конкурентно) в копието. Връща [{...job, ok, text, costUsd, err, seconds}]. */
@@ -143,7 +175,7 @@ async function main(argv) {
   const val = (f) => { const k = argv.indexOf(f); return k >= 0 ? argv[k + 1] : null; };
   if (!claudeAvailable()) { console.error("live-run: няма `claude` CLI с вход — живото пускане не е възможно тук."); process.exit(2); }
   const out = val("--out");
-  if (!out || !val("--jobs")) { console.error("употреба: live-run.mjs --jobs агент:spec[:k],… --out <папка> [--ref HEAD] [--concurrency 3]"); process.exit(2); }
+  if (!out || !val("--jobs")) { console.error("употреба: live-run.mjs --jobs агент:spec[:k],… --out <папка> [--ref HEAD] [--concurrency 3] [--set агент.поле=стойност,…]"); process.exit(2); }
   const specDir = join(ROOT, "tools", "agents", "evals", "specs");
   const jobs = expandJobs(val("--jobs"), (id) => {
     const f = join(specDir, id + ".json");
@@ -151,8 +183,14 @@ async function main(argv) {
     return JSON.parse(readFileSync(f, "utf8")).task;
   });
   mkdirSync(out, { recursive: true });
+  const sets = parseSets(val("--set"));
   const { dir, cleanup } = makeWorktree(val("--ref") || "HEAD");
   try {
+    for (const s of sets) {
+      const f = join(dir, ".claude", "agents", `${s.agent}.md`);
+      writeFileSync(f, patchFrontmatter(readFileSync(f, "utf8"), s.field, s.value));
+      console.log(`рамо: ${s.agent}.${s.field} = ${s.value} (само в копието)`);
+    }
     const res = await runJobs(jobs, { wt: dir, concurrency: Number(val("--concurrency")) || 3, onDone: (r) => {
       if (r.ok) writeFileSync(join(out, r.name), r.text);
       console.log(`${r.ok ? "✓" : "✗"} ${r.name} · ${r.agent} · ${r.text.length} зн. · $${r.costUsd.toFixed(2)} · ${r.seconds}s${r.err ? " · " + r.err : ""}`);

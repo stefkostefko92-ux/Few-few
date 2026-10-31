@@ -222,6 +222,7 @@ const looksInjection = (s) => {
 // хвърляше ReferenceError при ВСЯКО захващане — а fail-open catch-ът го маскираше до нула
 // симптоми: учебният цикъл на целия флот мълчеше и изглеждаше „празен ден", не счупен.
 import { isRealSource as sourceIsReal } from "../../tools/agents/oversee-lib.mjs";
+import { seenIn, unseenRefs } from "../../tools/agents/source-provenance.mjs";
 export { sourceIsReal };
 
 export { looksSecret, looksInjection };
@@ -405,6 +406,9 @@ function main() {
 
   const tPath = payload.agent_transcript_path || payload.transcript_path || "";
   const text = transcriptText(tPath) || payload.last_assistant_message || "";
+  // Какво агентът реално е отворил в този рън — „verified“ иска източник оттам (source-provenance.mjs).
+  let provenance = null;
+  try { if (tPath && existsSync(tPath)) provenance = seenIn(readFileSync(tPath, "utf8")); } catch { provenance = null; }
   // Жива проверка: входът е измислен → „поука" за него би отровила паметта. Нищо не се записва.
   if (evalMode(PROJECT_DIR)) process.exit(0);
   const block = lastLearnBlock(text);
@@ -436,6 +440,9 @@ function main() {
     // „Verified" иска реален източник; иначе пада в карантина (не вярвай на самооценката).
     let confidence = String(les.confidence || "").toLowerCase();
     if (confidence === "verified" && !sourceIsReal(les.source)) confidence = "unverified";
+    // Формата не стига: URL, който не е изтеглен, или файл, който не е отворен в този рън, е сглобен,
+    // не прочетен (31.10.2026; калибрирано: 19 от 515 проверени поуки, почти всички справедливо).
+    if (confidence === "verified" && provenance && unseenRefs(les.source, provenance).length) confidence = "unverified";
     const entry = `- **${date}:** ${les.text} _(${les.scope || "общо"}; ${confidence}; ${les.source}${les.reverify ? `; re-verify: ${les.reverify}` : ""})_`;
     // Само точен дубъл или същото тяло. Старата проверка „текстът е подниз на съществуващ ред“
     // изхвърляше истински нови кратки поуки (Разбивача, мисия 2).

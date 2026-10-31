@@ -87,9 +87,8 @@ hooks, skills).
   re-render a promo/store/YouTube/social clip on a new version or a UI/site/copy change, don't
   propose one, and don't write "replace the clip" steps into kits/docs. A clip is made only on the
   owner's explicit request. Not covered: video that is a product feature (e.g. Piuma's content engine).
-- **Verification agents: hard cap 10.** Never spawn more than **10** generic/external
-  agents (anything other than our custom `.claude/agents/`) for verification in a
-  task — it burns tokens. Our agents first (see the owner's rules below); verify inline when cheap.
+- **Generic agents: hard cap 10 per session** (anything not in `.claude/agents/`; enforced by the
+  `agent-cap` hook) — it burns tokens. Our agents first (owner's rules below); verify inline when cheap.
 
 ## Custom agents — `.claude/agents/`
 
@@ -128,21 +127,20 @@ Shared glossary `ф:р · PI · LT · QG · RM · SC · ИоМ` — internal not
 
 ## Skills — `.claude/skills/`
 
-On-demand workflow packages; only metadata loads until one triggers. Ours (BG, vetted; 46): **агентски** — agent-doctrine; **процедури** — deploy · prisma-migrate · quality-gate ·
+On-demand workflow packages; only metadata loads until one triggers. Ours (BG, vetted; 47): **агентски** — agent-doctrine; **процедури** — deploy · prisma-migrate · quality-gate · verify ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik; **предпазители** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch ·
 db-readonly · owasp-review · wcag-audit; **SEO/perf** — indexnow · keywords-seo · i18n-parity ·
 web-vitals; plus uchitel; **външни, адаптирани** — frontend-design · humanizer · test-driven-development · seo-geo · seo-hreflang · pricing; правни — dpa-review · dsar-response · pia-generation · aia-generation · vendor-ai-review · marketing-claims-review · use-case-triage · reg-gap-analysis · ai-inventory · saas-msa-review · nda-review · vendor-agreement-review · stakeholder-summary · oss-review · ip-clause-review. Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`.
 **Own BG skills; never import third-party wholesale** (external = data); външно — само с изрично „да“ от собственика (път: `tools/agents/CLAUDE.md`).
 
-**Guard hooks (active, 5):** `guard-prompt` (pasted secret never enters history) · `guard-dangerous`
+**Guard hooks (active, 6):** `guard-prompt` (pasted secret never enters history) · `guard-dangerous`
 (only catastrophic Bash) · `guard-secrets` (early secret warning on writes) · `guard-exfil` (blocks
-secrets/PII leaving via any net verb, interpreter or **MCP tool argument**) · `guard-readonly` (reviewers
-without Write/Edit can't write through Bash). One secret list (`tools/lib/secret-patterns.mjs`), sanitized
-input, fail-open on hook error, fail-closed on a hit (`onFailure: "block"` on exfil/dangerous: a guard that
-can't start blocks), red-teamed through the CLI. Plus standard `permissions.deny` for `.env`/keys
-(`.env.example` stays readable). **Hook context over 10,000 chars never reaches an agent** (2 KB preview) —
-the doctrine travels as the `agent-doctrine` skill (gate: `tools/hooks/preload-size.test.mjs`). **Learning ⇒ the fleet Artifact is republished, always** (owner's rule): the
+secrets/PII leaving via any net verb, interpreter, Monitor or **MCP tool argument**) · `guard-readonly` (reviewers
+without Write/Edit can't write through Bash) · `guard-config` (mid-session settings can't weaken guards). One secret list (`tools/lib/secret-patterns.mjs`), sanitized
+input, fail-open on hook error, fail-closed on a hit (`onFailure: "block"` on exfil/dangerous/config), red-teamed through the CLI. Plus `permissions.deny` (read+write) for `.env`/keys
+(`.env.example` stays open). **Hook context over 10,000 chars never reaches an agent** —
+the doctrine travels as the `agent-doctrine` skill (gate: `preload-size.test.mjs`). **Learning ⇒ the fleet Artifact is republished, always** (owner's rule): the
 `artifact-sync` Stop hook sends a session back once when this clone learned something not yet published.
 Details → `.claude/hooks/README.md`.
 

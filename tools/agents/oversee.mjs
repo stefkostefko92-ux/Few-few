@@ -32,6 +32,7 @@ import {
   yamlPlainCut,
 } from "./oversee-lib.mjs";
 import { dueOf } from "./memory-freshness.mjs"; // ЕДНА дефиниция за „просрочена поука" — тази на гейта
+import { frontmatterIssues } from "./frontmatter-fields.mjs"; // грешно поле харнесът пропуска тихо
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -200,6 +201,7 @@ for (const id of allIds) {
       r.hard.push("няма agent-doctrine в skills: — агентът тръгва без доктрината за сигурност и процедурата");
     // Коренният CLAUDE.md (~4,7k т) не трябва на агента: общите му правила идват през _shared.md (A/B 2026-10-27).
     if (!/^omitClaudeMd:\s*true\s*$/m.test(fmBlock)) r.warn.push("без omitClaudeMd: true — плаща коренния CLAUDE.md при всеки старт");
+    for (const issue of frontmatterIssues(fmBlock)) r.hard.push(`frontmatter: ${issue}`);
     if (repeatsLearnProtocol(def)) r.hard.push("дефиницията преповтаря цикъла за учене (```learn схема) — той живее само в _memory/PROCEDURE.md; остави един ред с доменния гейт за „verified“");
     // Описанието: по него главната сесия избира агента и го плаща на всеки ход.
     const desc = ((def.split(/^---\s*$/m)[1] || "").match(/^description:[ \t]*(.*)$/m) || [])[1];

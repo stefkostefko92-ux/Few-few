@@ -330,3 +330,5 @@
 {"t":"start","ts":"2026-10-31T10:26:26.788Z","id":"r8b429905","flow":"авто","lead":"ai-djiyata","auto":true}
 {"t":"handoff","ts":"2026-10-31T10:26:26.789Z","id":"r8b429905","from":"ai-djiyata","to":"човек","status":"има бележки","run":"a2cbc0cc"}
 {"t":"handoff","ts":"2026-10-31T10:26:59.886Z","id":"r8b429905","from":"ai-djiyata","to":"kodadjiyata","status":"има бележки","run":"71ba3e03"}
+{"t":"handoff","ts":"2026-10-31T10:47:57.202Z","id":"r8b429905","from":"konveyera","to":"ai-djiyata","status":"има бележки","run":"caecd134"}
+{"t":"handoff","ts":"2026-10-31T10:59:11.031Z","id":"r8b429905","from":"razbivacha","to":"ai-djiyata","status":"има бележки","run":"89320050"}

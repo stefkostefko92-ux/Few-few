@@ -180,7 +180,8 @@ async function main(argv) {
       if (spent >= budget) { console.log(`· #${p.pr} пропуснат — таванът $${budget} е достигнат`); continue; }
       let wt;
       try {
-        wt = makeWorktree(`origin/${p.ref}`, { from: head, paths: LAYER }, { measure: false });
+        // Частично копие само с продуктите на PR-а; без продукт (инфраструктура в корена) — пълно копие.
+        wt = makeWorktree(`origin/${p.ref}`, { from: head, paths: LAYER }, { measure: false, sparse: p.products?.length ? p.products : null });
         const st = stage(wt.dir, p);
         const jobs = p.agents.map((agent) => ({ agent, pr: p.pr, sha: p.sha, title: p.title, name: `${p.pr}-${agent}.txt`, task: reviewTask(p, agent) }));
         const res = await runJobs(jobs, { wt: wt.dir, concurrency: jobs.length, timeoutMs: 1_200_000, allowed: REVIEW_ALLOWED, extraArgs: ["--max-budget-usd", String(perRun)], onDone: (r) => {
