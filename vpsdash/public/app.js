@@ -3248,8 +3248,12 @@ async function renderPty() {
   const cwd = el('input', { type: 'text', value: '/root', style: 'max-width:220px', 'aria-label': 'Работна папка за сесията' });
   // Екранът е ФОКУСИРУЕМ (там отиват клавишите), значи екранният четец го обявява
   // — без име чете само „група". `role="log"` + `aria-live` дават и обновяванията.
+  // На телефон екранът е по-нисък: иначе лентата с Esc/Ctrl/стрелки остава под
+  // него, извън екрана (видяно на iPhone — терминалът беше 1.3 екрана висок).
+  const phone = window.matchMedia('(max-width: 820px)').matches;
+  const restHeight = phone ? '46vh' : '64vh';
   const screen = el('pre', {
-    class: 'log-out term-screen', tabindex: '0', style: 'height:64vh;outline:none',
+    class: 'log-out term-screen', tabindex: '0', style: `height:${restHeight};outline:none`,
     role: 'log', 'aria-live': 'polite', 'aria-label': 'Екран на терминала',
   });
   const status = el('span', { class: 'muted', text: 'няма сесия' });
@@ -3418,11 +3422,11 @@ async function renderPty() {
   );
   // Лента с модификатори — виртуалната клавиатура на телефона НЯМА Ctrl, Esc,
   // Tab и стрелки. Без тези бутони терминалът на телефон е неизползваем.
-  const keyBtn = (label, seq, title) =>
-    el('button', {
+  const keyBtn = (label, seq, title) => {
+    const b = el('button', {
       class: 'btn btn-sm keycap',
-      text: label,
       title: title || label,
+      'aria-label': title || label,
       onclick: (e) => {
         e.preventDefault();
         if (session) send(seq);
@@ -3430,26 +3434,34 @@ async function renderPty() {
         focusKb();
       },
     });
-  view.appendChild(
-    el('div', { class: 'keybar' }, [
+    // Името на клавиша е същото на всеки език и не бива да става икона
+    // („←" е глиф от GLYPH_ICONS и се подменяше с картинка на „назад").
+    b.textContent = label;
+    return b;
+  };
+  const keybar = el('div', { class: 'keybar' }, [
+      // Най-нужните отпред: на телефон лентата е ЕДИН ред, който се плъзга.
       keyBtn('Esc', '\x1b'),
       keyBtn('Tab', '\t'),
       keyBtn('Ctrl+C', '\x03', 'прекъсва текущата команда'),
-      keyBtn('Ctrl+D', '\x04', 'изход от обвивката'),
-      keyBtn('Ctrl+Z', '\x1a'),
-      keyBtn('Ctrl+L', '\x0c', 'изчиства екрана'),
       keyBtn('↑', '\x1b[A'),
       keyBtn('↓', '\x1b[B'),
       keyBtn('←', '\x1b[D'),
       keyBtn('→', '\x1b[C'),
+      keyBtn('Enter', '\r'),
+      keyBtn('Ctrl+D', '\x04', 'изход от обвивката'),
+      keyBtn('Ctrl+Z', '\x1a'),
+      keyBtn('Ctrl+L', '\x0c', 'изчиства екрана'),
       keyBtn('Home', '\x1b[H'),
       keyBtn('End', '\x1b[F'),
       keyBtn('|', '|'),
       keyBtn('~', '~'),
       keyBtn('/', '/'),
-      keyBtn('Enter', '\r'),
-    ])
-  );
+    ]);
+  // На телефон лентата е НАД екрана: отворената клавиатура покрива долната
+  // половина, а лента под терминала изчезва точно когато пишеш.
+  if (phone) view.insertBefore(keybar, wrap);
+  else view.appendChild(keybar);
   view.appendChild(el('div', { class: 'metric-sub', text: 'Докосни или щракни в терминала и пиши. Ctrl+C прекъсва, Ctrl+D излиза. Сесия без активност 30 мин се затваря сама.' }));
 
   // Смяна на размера на прозореца → ПРЕОРАЗМЕРЯВАМЕ и живия TTY.
@@ -3488,8 +3500,15 @@ async function renderPty() {
   if (window.visualViewport) {
     const fit = () => {
       const vh = window.visualViewport.height;
-      if (vh < window.innerHeight - 80) screen.style.height = `${Math.max(180, vh - 260)}px`;
-      else screen.style.height = '64vh';
+      if (vh < window.innerHeight - 80) {
+        // Клавиатурата е отворена: лента + екран да влизат точно във видимото,
+        // под горната лента — и страницата се превърта дотам.
+        const top = document.querySelector('.topbar')?.getBoundingClientRect().height || 56;
+        const bar = phone ? keybar.getBoundingClientRect().height + 10 : 0;
+        screen.style.height = `${Math.max(150, vh - top - bar - 16)}px`;
+        const anchor = phone ? keybar : wrap;
+        window.scrollTo({ top: anchor.getBoundingClientRect().top + window.scrollY - top - 6 });
+      } else screen.style.height = restHeight;
       onResize();
     };
     window.visualViewport.addEventListener('resize', fit);
@@ -5872,6 +5891,7 @@ function renderPreflight(container, pf) {
 // Файловият мениджър. Всяка промяна иска sudo (сървърът го налага) и влиза в
 // одита; изтриването отива в кошчето. Имената и пътищата са ДАННИ (`raw`).
 const FILES = { path: null, hidden: false, filter: '', sel: new Set() };
+const FILE_COLS = ['', 'Име', 'Размер', 'Собственик', 'Права', 'Променен', ''];
 function savedFilesPath() {
   try { return localStorage.getItem('csd.files.path') || '/root'; } catch { return '/root'; }
 }
@@ -5977,7 +5997,7 @@ async function renderFiles(path) {
       const sel = el('select', { 'aria-label': `Действие за ${e.name}`, class: 'row-act' }, ACTIONS(e).map(([v, label]) => el('option', { value: v, text: label })));
       sel.onchange = () => { const v = sel.value; sel.value = ''; if (v) fileAction(v, e, data.path); };
       const opensDir = e.isDir || (e.isLink && e.targetIsDir);
-      tbody.appendChild(el('tr', {}, [
+      tbody.appendChild(labelRow(el('tr', {}, [
         el('td', {}, [cb]),
         el('td', {}, [
           el('a', { class: 'mono', raw: (opensDir ? '📁 ' : e.isLink ? '🔗 ' : '📄 ') + e.name, onclick: () => (opensDir ? renderFiles(full) : viewFile(full)) }),
@@ -5988,7 +6008,7 @@ async function renderFiles(path) {
         el('td', { class: 'mono muted', raw: e.mode || '' }),
         el('td', { class: 'muted', text: e.mtime ? fmtWhen(e.mtime) : '' }),
         el('td', {}, [sel]),
-      ]));
+      ]), stackLabels(FILE_COLS)));
     }
     foot.textContent = '';
     foot.append(t(`Показани ${rows.length} от ${data.entries.length}`), data.truncated ? ` · ${t('папката има още — показани са първите 2000')}` : '');
@@ -5997,8 +6017,8 @@ async function renderFiles(path) {
   };
   filter.addEventListener('input', () => { FILES.filter = filter.value; draw(); });
   hidden.addEventListener('change', () => { FILES.hidden = hidden.checked; draw(); });
-  const table = el('table', {}, [
-    el('thead', {}, [el('tr', {}, ['', 'Име', 'Размер', 'Собственик', 'Права', 'Променен', ''].map((h) => el('th', { text: h })))]),
+  const table = el('table', { class: 'stack' }, [
+    el('thead', {}, [el('tr', {}, FILE_COLS.map((h) => el('th', { text: h })))]),
     tbody,
   ]);
   const foot = el('div', { class: 'metric-sub' });
@@ -6821,7 +6841,30 @@ function closeModal() {
 function tableEl(headers, rows) {
   const thead = el('thead', {}, [el('tr', {}, headers.map((h) => el('th', { text: h })))]);
   const tbody = el('tbody', {}, rows.length ? rows : [el('tr', {}, [el('td', { class: 'empty', text: 'Няма данни', colspan: headers.length })])]);
-  return el('table', {}, [thead, tbody]);
+  return stackTable(el('table', {}, [thead, tbody]), headers);
+}
+
+// На телефон (CSS под 640px) таблицата става КАРТИ: широка таблица там се
+// мести само настрани, а бутонът за действие стои в последната колона — тоест
+// извън екрана (видяно на живо: „Освободи" в „Диск" и „Действие…" във „Файлове"
+// не се виждаха). Всяка клетка носи името на колоната си; първата е заглавието
+// на картата; колона без заглавие (бутоните) застава на цял ред.
+function stackLabels(headers) {
+  return headers.map((h) => (h ? t(h) : ''));
+}
+function labelRow(tr, labels) {
+  [...tr.children].forEach((td, i) => {
+    if (td.hasAttribute('colspan')) return;
+    if (labels[i]) td.dataset.label = labels[i];
+    else td.classList.add('cell-act');
+  });
+  return tr;
+}
+function stackTable(table, headers) {
+  table.classList.add('stack');
+  const labels = stackLabels(headers);
+  for (const tr of table.querySelectorAll(':scope > tbody > tr')) labelRow(tr, labels);
+  return table;
 }
 function kv(obj) {
   const dl = el('dl', { class: 'kv' });
@@ -6883,6 +6926,10 @@ function showAnnunciator(active) {
   if (!crit && !warn) b.appendChild(el('span', { text: 'Без активни аларми' }));
   if (crit) b.appendChild(el('span', { text: plural(crit, 'критична', 'критични') }));
   if (warn) b.appendChild(el('span', { text: plural(warn, 'предупреждение', 'предупреждения') }));
+  // На телефон думите падат и остава само числото (CSS) — иначе с отключен sudo
+  // „Опресни" излизаше извън екрана. Пълният текст остава за екранния четец.
+  if (crit || warn) b.appendChild(el('span', { class: 'annun-n', 'aria-hidden': 'true', raw: String(crit || warn) }));
+  b.setAttribute('aria-label', [...b.querySelectorAll('span:not(.annun-light):not(.annun-n)')].map((s) => s.textContent).join(', '));
   b.onclick = () => go('alerts');
 }
 
