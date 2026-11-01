@@ -44,7 +44,7 @@ npm run worker           # компресията на снимките и кл�
 npm run build            # prisma generate + tsc + шрифтовете в public/fonts (scripts/fonts.mjs)
 npm run moduli:disegna   # чертае листовете на 2SG и AMI 100 и картите им (assets/moduli) — после commit
 npm run render:encode    # снимките на витрината: scripts/render/out/*.png → public/img/site (AVIF + WebP)
-npm run brand:logo       # марката: scripts/logo/out/marchio.png → public/img/brand (WebP 1x/2x/3x) + favicon-*.png
+npm run brand:logo       # логата: scripts/logo/originals/{mark,logo}.png → public/img/brand (WebP) + favicon-*.png
 npm run owner:create     # първият MASTER от OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD (на сървъра: deploy/create-master.sh)
 ```
 
@@ -164,7 +164,7 @@ public/              css/ (портал: base, buttons, shell, layout, plate, fo
                      (менютата — и от клавиатурата) · schizzo-comandi.js (лентите, клавиатурата,
                      отваряне/затваряне); css/schizzo-barre.css — лентите и менютата;
                      img/ (og.png и apple-touch-icon.png — `npm run brand:images`; site/ — снимките на
-                     витрината, `npm run render:encode`; brand/ и favicon-32/192.png — марката,
+                     витрината, `npm run render:encode`; brand/ и favicon-32/192.png — логата,
                      `npm run brand:logo`), indexnow-key.txt
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
 deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh · nginx/ · systemd/
@@ -471,16 +471,22 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   Чертежът на шахтата (`views/site/_shaft.ejs`) остава — до легендата на картата и на входа: маркерите
   са номерата на разделите на картата (всеки раздел сочи своята част — `spots` по ключ). Витрината е
   без движение (и без JavaScript).
-- **Марката** (собственикът, 31 октомври 2026 — „un logo (non svg) … per il livello enterprise“; от три
-  концепции избра „Targa nera“): табела като тази на асансьора — стоманена рамка около черен сатенен
-  емайл, четири винта, релефни стоманени букви „RI“ (Fira Sans Condensed Bold), рендерирана от нас
-  (`scripts/logo/logo.py` — Mitsuba, като снимките на витрината; прозрачен фон, правоъгълна камера,
-  1,3 : 1). Картинка, не SVG: `views/partials/brandmark.ejs` — `<img>` 36 px в лентите и на входа, 48 px
-  в долната част на витрината (`marchio: 48`), с 2x и 3x в `srcset`; името до нея остава текст (следва
-  темите и „Personalizzato“). Същият рендер дава иконките на раздела (`favicon-32/192.png`,
-  `/favicon.ico` → 32) и марката в og.png и apple-touch-icon.png (`npm run brand:images`). Нов рендер:
-  `logo.py final` (минути на 4 ядра), после `npm run brand:logo` и `npm run brand:images`; unit тестът
-  пази всеки файл в размера си, с прозрачност, и че няма излишни.
+- **Логата** (собственикът, 1 ноември 2026 — свои две картинки: „Използвай ги като лого където мислиш, че
+  ще паснат най-добре. Искам да са четливи и да се виждат добре“; заменят табелата „Targa nera“ от 31
+  октомври). Оригиналите стоят както са дошли в `scripts/logo/originals` (извън образа): `mark.png` —
+  шестоъгълникът „RI“ с шахтата, `logo.png` — марката с „RILIEVI IMPIANTI“ и „PIATTAFORMA TECNICA
+  ASCENSORI“. `npm run brand:logo` ги изрязва до нарисуваното и пише `public/img/brand` (WebP с
+  прозрачност; малките размери — леко изострени, иначе детайлите на шахтата стават сиво) и
+  `favicon-32/192.png`. Марката — където логото е малко: черните ленти на портала и на витрината
+  (`views/partials/brandmark.ejs`, 44 px, 1x/2x/3x; името до нея остава текст — следва темите и
+  „Personalizzato“), иконките на раздела (`/favicon.ico` → 32) и apple-touch-icon.png. Пълното лого
+  (`views/partials/logo.ejs`, `srcset` 360…1320w) — само където е поне 320 px широко, за да се чете и
+  последният ред (той е ~6,5 % от височината): горе в черния панел на входа (400 px, на телефон 340),
+  над заглавието на първия екран на витрината (440/340 px; тъмен ореол по очертанието и потъмнен таван
+  на снимката отгоре), в долната част на витрината (320 px върху черна табела — на бяло последният ред
+  избледнява) и в og.png. Картинки, не SVG. Нови лога: заменят се файловете в `originals`, после
+  `npm run brand:logo` и `npm run brand:images`; unit тестът пази всеки файл от `srcset` в размера и
+  пропорциите си, с прозрачност, и че в `public/img/brand` няма излишни.
 - **Подредбата на всяко устройство** (собственикът, 31 октомври 2026 — „Искам да сме подредени … визуално
   перфектни на всякакъв вид устройство“): в един ред от полета етикетите, полетата и подсказките стоят на
   три общи линии — `grid--righe` (`public/css/righe.css`, CSS subgrid): полето носи етикет, контрола и
