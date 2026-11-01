@@ -191,3 +191,46 @@ test('файлове: тайните на панела не излизат — �
   assert.throws(() => f.copySpec('/etc', path.join(ROOT, 'etc-копие'), cfg), /тайните/);
   assert.throws(() => f.archiveSpec(['/etc/vps-dashboard'], cfg), /тайните/);
 });
+
+test('редактор: копието НЕ ляга в папка, която nginx зарежда цяла', async () => {
+  const { backupPathFor, EDIT_BAK_DIR } = await import('../src/files.js');
+  const now = new Date('2026-11-01T09:30:00.123Z');
+  const avail = path.join(ROOT, 'nginx', 'sites-available');
+  const enabled = path.join(ROOT, 'nginx', 'sites-enabled');
+  fs.mkdirSync(avail, { recursive: true });
+  fs.mkdirSync(enabled, { recursive: true });
+  fs.writeFileSync(path.join(avail, 'сайт'), 'server {}');
+  fs.symlinkSync(path.join(avail, 'сайт'), path.join(enabled, 'сайт'));
+  // През символната връзка — до истинския файл в sites-available.
+  assert.equal(backupPathFor(path.join(enabled, 'сайт'), now), path.join(avail, 'сайт.bak-2026-11-01T09-30-00-123Z'));
+  // Истински файл в sites-enabled — извън нея.
+  fs.writeFileSync(path.join(enabled, 'друг'), 'server {}');
+  assert.equal(backupPathFor(path.join(enabled, 'друг'), now), path.join(EDIT_BAK_DIR, 'друг.bak-2026-11-01T09-30-00-123Z'));
+  // Обикновен файл — до себе си, както досега.
+  assert.equal(backupPathFor(path.join(avail, 'сайт'), now), path.join(avail, 'сайт.bak-2026-11-01T09-30-00-123Z'));
+});
+
+test('файлове: големи стари файлове — праг, възраст, отворени, защитени', async () => {
+  const dir = path.join(ROOT, 'големи');
+  fs.mkdirSync(dir, { recursive: true });
+  const big = path.join(dir, 'стар-дъмп.sql');
+  const fresh = path.join(dir, 'нов.iso');
+  fs.writeFileSync(big, Buffer.alloc(2 * 1024 * 1024 + 10));
+  fs.writeFileSync(fresh, Buffer.alloc(2 * 1024 * 1024 + 10));
+  fs.writeFileSync(path.join(dir, 'малък.txt'), 'x');
+  const old = new Date(Date.now() - 40 * 86400000);
+  fs.utimesSync(big, old, old);
+  const fd = fs.openSync(big, 'r'); // „жив процес" го държи
+  try {
+    const r = await f.bigFiles(dir, { minMb: 2, days: 30 }, cfg);
+    assert.deepEqual(r.hits.map((h) => h.path), [big], 'само големият И старият');
+    assert.equal(r.hits[0].open, true, 'отворен файл не освобождава място — казва се');
+    const all = await f.bigFiles(dir, { minMb: 2, days: 0 }, cfg);
+    assert.equal(all.hits.length, 2);
+  } finally {
+    fs.closeSync(fd);
+  }
+  await assert.rejects(f.bigFiles('/usr', {}, cfg), /Системен/);
+  await assert.rejects(f.bigFiles(dir, { minMb: 0 }, cfg), /MB/);
+  await assert.rejects(f.bigFiles(dir, { minMb: 5, days: -1 }, cfg), /Дните/);
+});

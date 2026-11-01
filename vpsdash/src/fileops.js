@@ -482,6 +482,84 @@ export async function search(root, q, { limit = 300 } = {}) {
   return { root: base, q: term, hits, truncated: rows.length > limit, partial: !r.ok };
 }
 
+// ── Големи стари файлове ────────────────────────────────────────────────────
+// „Кой яде диска" показва папки; тук е другото: КОНКРЕТНИ файлове над N MB, които
+// никой не е пипал от D дни — забравен дъмп, стар ISO, лог от 2024, архив,
+// качен „временно". Решението е на човека (контекстът е пред очите му), а
+// изтриването е през кошчето, тоест обратимо.
+//
+// Отворен файл НЕ освобождава място при изтриване — процесът го държи, докато
+// не го затвори, и `df` не мърда. Затова всеки ред казва дали е отворен.
+function openPaths(candidates) {
+  const want = new Set(candidates);
+  const open = new Set();
+  let pids = [];
+  try {
+    pids = fs.readdirSync('/proc').filter((d) => /^\d+$/.test(d));
+  } catch {
+    return null; // не знаем — и го казваме (null ≠ „нищо не е отворено")
+  }
+  for (const pid of pids) {
+    let fds = [];
+    try {
+      fds = fs.readdirSync(`/proc/${pid}/fd`);
+    } catch {
+      continue;
+    }
+    for (const fd of fds) {
+      try {
+        const t = fs.readlinkSync(`/proc/${pid}/fd/${fd}`);
+        if (want.has(t)) open.add(t);
+      } catch {
+        /* затворен междувременно */
+      }
+    }
+  }
+  return open;
+}
+
+export async function bigFiles(root, { minMb = 100, days = 30, limit = 200 } = {}, cfg = null) {
+  const base = resolvePath(root || '/');
+  if (HARD_DENY.some((r) => under(base, r))) throw err('Системен път — не се претърсва.', 403);
+  const mb = Number(minMb);
+  const d = Number(days);
+  if (!Number.isInteger(mb) || mb < 1 || mb > 1024 * 1024) throw err('Размерът е цяло число MB (1 и нагоре).');
+  if (!Number.isInteger(d) || d < 0 || d > 3650) throw err('Дните са цяло число от 0 до 3650.');
+  // Системните пътища и кошчето се режат (-prune), не се филтрират след това —
+  // иначе find пак обхожда /usr и /var/lib/docker и отнема минути.
+  const prune = [...HARD_DENY, trashDir(cfg)].flatMap((p, i) => (i ? ['-o', '-path', p] : ['-path', p]));
+  const args = [base, '-xdev', '(', ...prune, ')', '-prune', '-o', '-type', 'f', '-size', `+${mb}M`];
+  if (d > 0) args.push('-mtime', `+${d}`);
+  args.push('-printf', '%s\t%T@\t%p\n');
+  const r = await run('find', args, { timeout: 60000, maxBuffer: 16 * 1024 * 1024 });
+  const rows = r.stdout
+    .split('\n')
+    .map((l) => /^(\d+)\t([\d.]+)\t(.+)$/.exec(l))
+    .filter(Boolean)
+    .map((m) => ({ path: m[3], sizeBytes: Number(m[1]), mtime: new Date(Number(m[2]) * 1000).toISOString() }))
+    .sort((a, b) => b.sizeBytes - a.sizeBytes);
+  const hits = rows.slice(0, limit);
+  const open = openPaths(hits.map((h) => h.path));
+  for (const h of hits) {
+    h.open = open ? open.has(h.path) : null;
+    try {
+      assertMutable(h.path, cfg);
+    } catch (e) {
+      h.protected = e.message;
+    }
+  }
+  return {
+    root: base,
+    minMb: mb,
+    days: d,
+    hits,
+    totalBytes: rows.reduce((s, h) => s + h.sizeBytes, 0),
+    count: rows.length,
+    truncated: rows.length > limit,
+    partial: !r.ok,
+  };
+}
+
 // ── Архиви ──────────────────────────────────────────────────────────────────
 export function archiveSpec(paths, cfg) {
   const list = (Array.isArray(paths) ? paths : [paths]).map(resolvePath);

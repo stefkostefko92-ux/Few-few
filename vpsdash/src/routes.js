@@ -47,6 +47,7 @@ import { readRaw, handleGithub } from './webhook.js';
 import * as posture from './posture.js';
 import * as selfcheck from './selfcheck.js';
 import * as fileops from './fileops.js';
+import * as machine from './machine.js';
 import * as investigate from './investigate.js';
 import { AccessLogReader, discoverLogs } from './accesslog.js';
 import { drillSpec, backupAge } from './drill.js';
@@ -86,7 +87,7 @@ const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.16.1';
+export const VERSION = '1.17.0';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -182,7 +183,9 @@ export const PEER_ALLOW = [/^\/api\/audit\/mirror$/, /^\/api\/backups\/offsite\/
 // контрол над ТАЗИ машина, не право да я ползваш като прокси към трети възел с
 // НЕГОВИЯ жетон (confused deputy, верижи /api/nodes/B/api/nodes/C/…), нито да
 // решаваш колко ти се доверява тя — обхватът е решение на човека ТУК.
-export const PEER_NEVER = [/^\/api\/nodes(\/|$)/, /^\/api\/settings\/peer$/];
+// SSH ключовете са смяна на ДОВЕРИЕТО като peer настройката: ключ, добавен през
+// съседа, е root достъп тук, даден от машина, а не от човек пред тази.
+export const PEER_NEVER = [/^\/api\/nodes(\/|$)/, /^\/api\/settings\/peer$/, /^\/api\/machine\/ssh-keys(\/|$)/];
 
 // Кой човек стои зад заявка от съседа. Проксито на другия възел го слага като
 // `потребител@възел`, след като е проверило НЕГОВАТА сесия и sudo; тук само го
@@ -1244,7 +1247,7 @@ export function buildRouter(ctx) {
         const fresh = await reclaim.reclaimable(cfg);
         const item = fresh.items.find((i) => i.id === b.id);
         if (!item) throw Object.assign(new Error('Няма такава категория (или вече е чиста).'), { status: 400 });
-        return jobs.start(reclaim.reclaimSpec(item.id, item), { user: req.user });
+        return jobs.start(reclaim.reclaimSpec(item.id, item, cfg), { user: req.user });
       }),
       { mutating: true }
     )
@@ -1328,6 +1331,15 @@ export function buildRouter(ctx) {
   r.get('/api/files/info', guard(J((req, res, p, url) => fileops.info(url.searchParams.get('path'), { hash: url.searchParams.get('hash') === '1' }))));
   r.get('/api/files/du', guard(J((req, res, p, url) => fileops.dirSize(url.searchParams.get('path')))));
   r.get('/api/files/search', guard(J((req, res, p, url) => fileops.search(url.searchParams.get('root'), url.searchParams.get('q')))));
+  r.get(
+    '/api/files/big',
+    guard(
+      J((req, res, p, url) => {
+        const q = url.searchParams;
+        return fileops.bigFiles(q.get('root') || '/', { minMb: Number(q.get('minMb') || 100), days: Number(q.get('days') ?? 30) }, cfg);
+      })
+    )
+  );
   r.get('/api/files/trash', guard(J(() => fileops.trashList(cfg))));
   // Сваляне: в SUDO_ALWAYS (като четенето — root чете всичко). `check=1` е
   // същият път без тялото: интерфейсът първо отключва sudo по него, после отваря
@@ -2699,6 +2711,47 @@ export function buildRouter(ctx) {
   // ── Federation ─────────────────────────────────────────────────────────────
   // Проверка на панела срещу машината — след местене конфигът помни СТАРАТА.
   r.get('/api/selfcheck', guard(J((req) => selfcheck.selfCheck(cfg, { audit, drill: ctx.drill }, req))));
+
+  // ── Машина: SSH ключове, пакети, swap, часовник ─────────────────────────────
+  r.get(
+    '/api/machine',
+    guard(
+      J(async () => {
+        const [ssh, sshd, time] = await Promise.all([machine.listKeys(), machine.sshdState(), machine.timeInfo()]);
+        return { ssh: { ...ssh, sshd }, swap: machine.swapInfo(), time };
+      })
+    )
+  );
+  r.get('/api/machine/packages', guard(J((req, res, p, url) => machine.listPackages(url.searchParams.get('q') || ''))));
+  r.get('/api/machine/packages/search', guard(J((req, res, p, url) => machine.searchAvailable(url.searchParams.get('q')))));
+  r.get('/api/machine/packages/remove-plan', guard(J((req, res, p, url) => machine.removePlan(url.searchParams.get('name')))));
+  r.get(
+    '/api/machine/timezones',
+    guard(
+      J(async () => {
+        const timezones = await machine.listTimezones();
+        return { available: Boolean(timezones), timezones: timezones || [] };
+      })
+    )
+  );
+  r.post('/api/machine/ssh-keys/add', guard(J(async (req) => machine.addKey((await readJson(req)).key, cfg, audit, req.user)), { mutating: true }));
+  r.post('/api/machine/ssh-keys/remove', guard(J(async (req) => machine.removeKey((await readJson(req)).fingerprint, cfg, audit, req.user)), { mutating: true }));
+  r.post('/api/machine/packages/install', guard(J(async (req) => jobs.start(machine.installSpec((await readJson(req)).name), { user: req.user })), { mutating: true }));
+  r.post(
+    '/api/machine/packages/remove',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return jobs.start(await machine.removeSpec(b.name, b.expect), { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+  r.post('/api/machine/swap/create', guard(J(async (req) => jobs.start(machine.createSwapSpec((await readJson(req)).sizeMb), { user: req.user })), { mutating: true }));
+  r.post('/api/machine/swap/remove', guard(J(async (req) => jobs.start(machine.removeSwapSpec(), { user: req.user })), { mutating: true }));
+  r.post('/api/machine/swap/swappiness', guard(J(async (req) => machine.setSwappiness((await readJson(req)).value, audit, req.user)), { mutating: true }));
+  r.post('/api/machine/time', guard(J(async (req) => machine.setTime(await readJson(req), audit, req.user)), { mutating: true }));
+  r.post('/api/machine/daemon-reload', guard(J((req) => machine.daemonReload(audit, req.user)), { mutating: true }));
   r.get('/api/nodes', guard(J(() => nodes.nodesStatus(cfg))));
   r.on(
     '*',

@@ -131,3 +131,64 @@ test('висящите образи НЕ заемат числото на `syste
   const spec = reclaimSpec('dangling-images', {});
   assert.deepEqual(spec.args, ['image', 'prune', '-f']);
 });
+
+// ── Новите категории (v1.17) ─────────────────────────────────────────────────
+import { execFileSync } from 'node:child_process';
+import { isEditorBackup, parseSnapList, CACHE_DIRS } from '../src/reclaim.js';
+
+test('чистене: всеки shell от категориите е СИНТАКТИЧНО верен (bash -n)', () => {
+  const specs = [
+    reclaimSpec('rotated-logs'),
+    reclaimSpec('crash-dumps'),
+    reclaimSpec('coredumps'),
+    reclaimSpec('old-snaps', { revs: [{ name: 'core22', rev: '1380' }, { name: 'lxd', rev: '29351' }] }),
+    reclaimSpec('file-trash', {}, { paths: { stateDir: '/var/lib/vps-dashboard' } }),
+    reclaimSpec('old-releases', { paths: ['/opt/few-few/releases/20260101-000000'] }),
+  ];
+  for (const s of specs) {
+    assert.ok(s.shell, s.title);
+    execFileSync('bash', ['-n', '-c', s.shell]);
+  }
+});
+
+test('чистене: кешовете — само ТОЧНИТЕ пътища от затворения списък', () => {
+  const s = reclaimSpec('pkg-caches', { paths: ['/root/.npm/_cacache', '/root', '/etc', '/root/.npm/_cacache/../../.ssh'] });
+  assert.deepEqual(s.args, ['-rf', '--', '/root/.npm/_cacache']);
+  assert.equal(s.cmd, 'rm');
+  assert.ok(CACHE_DIRS.every((d) => d.split('/').length >= 4), 'нито един кеш не е папка от горно ниво');
+  assert.throws(() => reclaimSpec('pkg-caches', { paths: ['/root'] }), /Няма какво/);
+});
+
+test('чистене: копията от редактора — само по точния формат и в позволените корени', () => {
+  assert.ok(isEditorBackup('/etc/nginx/nginx.conf.bak-2026-10-01T09-30-00-123Z'));
+  assert.ok(isEditorBackup('/opt/сайт/конфиг на сайта.bak-2026-10-01T09-30-00-123Z'), 'кирилица и интервал минават (rm без shell)');
+  for (const bad of [
+    '/etc/nginx/nginx.conf.bak', // чужд .bak
+    '/etc/nginx/nginx.conf.bak-20261001-093000', // формата на деплоя, не на редактора
+    '/usr/lib/x.bak-2026-10-01T09-30-00-123Z', // извън корените
+    '/etc/../usr/x.bak-2026-10-01T09-30-00-123Z',
+    '/etc/x\n.bak-2026-10-01T09-30-00-123Z',
+  ]) {
+    assert.equal(isEditorBackup(bad), false, bad);
+  }
+  const s = reclaimSpec('editor-backups', { paths: ['/etc/a.bak-2026-10-01T09-30-00-123Z', '/etc/shadow'] });
+  assert.deepEqual(s.args, ['-f', '--', '/etc/a.bak-2026-10-01T09-30-00-123Z']);
+});
+
+test('чистене: snap — само изключените ревизии, активната никога', () => {
+  const text = [
+    'Name    Version   Rev    Tracking       Publisher   Notes',
+    'core22  20240111  1122   latest/stable  canonical✓  base,disabled',
+    'core22  20240408  1380   latest/stable  canonical✓  base',
+    'lxd     5.21.1    28463  5.21/stable    canonical✓  disabled',
+    'lxd     5.21.2    29351  5.21/stable    canonical✓  -',
+  ].join('\n');
+  assert.deepEqual(parseSnapList(text), [{ name: 'core22', rev: '1122' }, { name: 'lxd', rev: '28463' }]);
+  const s = reclaimSpec('old-snaps', { revs: [{ name: 'lxd; reboot', rev: '1' }, { name: 'lxd', rev: '28463' }] });
+  assert.equal(s.shell, 'snap remove lxd --revision=28463 && echo "✔ Готово"');
+});
+
+test('чистене: прегледите на бекъпи — само файлове в restore/', () => {
+  const s = reclaimSpec('restore-previews', { paths: ['/var/lib/vps-dashboard/restore/medqr.db', '/var/lib/vps-dashboard/audit.jsonl', '/var/lib/vps-dashboard/restore/../config'] });
+  assert.deepEqual(s.args, ['-f', '--', '/var/lib/vps-dashboard/restore/medqr.db']);
+});

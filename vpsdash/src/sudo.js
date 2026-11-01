@@ -63,6 +63,9 @@ export const SUDO_ON_WRITE = [
   // Файловият мениджър: качване и разархивиране са запис (код с една стъпка
   // забавяне), кошчето и окончателното изтриване — загуба, правата — достъп.
   /^\/api\/files\/(mkdir|upload|rename|copy|delete|delete-forever|chmod|chown|archive|extract|trash\/restore|trash\/purge)$/,
+  // „Машина": ключ = root достъп; пакет = чужд код като root; swap и часовник —
+  // цялост на машината. daemon-reload не е тук: той само препрочита unit-ите.
+  /^\/api\/machine\/(ssh-keys\/(add|remove)|packages\/(install|remove)|swap\/(create|remove|swappiness)|time)$/,
   // Крон записът е същото, само отложено: ред в crontab е код, който ще се
   // изпълни като root без никого наоколо.
   /^\/api\/cron\/(add|remove|run)$/,

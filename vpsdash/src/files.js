@@ -104,6 +104,24 @@ export function listDir(p, { owners } = {}) {
 // изисква файлът да съществува, освен при изричен create.
 export const REDACTED_MARK = '«скрито';
 
+// Копието лежи до ИСТИНСКИЯ файл (през символна връзка — до целта) и никога в
+// папка, която сървърът зарежда ЦЯЛА: nginx включва `sites-enabled/*`, тоест
+// `сайт.bak-…` там е ВТОРИ активен vhost със старите настройки (а `nginx -t`
+// само предупреждава за дублирания server_name). Оттам — в /var/backups.
+export const EDIT_BAK_DIR = '/var/backups/vps-dashboard';
+const INCLUDE_ALL_DIR = /\/(sites-enabled|conf-enabled|mods-enabled|streams-enabled)$/;
+export function backupPathFor(full, now = new Date()) {
+  let real = full;
+  try {
+    real = fs.realpathSync(full);
+  } catch {
+    /* няма го — пътят е какъвто е */
+  }
+  const stamp = now.toISOString().replace(/[:.]/g, '-');
+  if (INCLUDE_ALL_DIR.test(path.dirname(real))) return path.join(EDIT_BAK_DIR, `${path.basename(real)}.bak-${stamp}`);
+  return `${real}.bak-${stamp}`;
+}
+
 export function writeFile(p, content, { create = false } = {}, audit, user) {
   const full = safeResolve(p);
   const text = String(content ?? '');
@@ -128,7 +146,8 @@ export function writeFile(p, content, { create = false } = {}, audit, user) {
   if (exists) {
     const st = fs.statSync(full);
     if (!st.isFile()) throw Object.assign(new Error('Не е файл'), { status: 400 });
-    const bak = `${full}.bak-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+    const bak = backupPathFor(full);
+    if (bak.startsWith(EDIT_BAK_DIR + '/')) fs.mkdirSync(EDIT_BAK_DIR, { recursive: true, mode: 0o700 });
     fs.copyFileSync(full, bak);
     audit.log({ action: 'file.write', path: full, bytes: text.length, backup: bak, user });
     fs.writeFileSync(full, text, { mode: st.mode & 0o777 });
