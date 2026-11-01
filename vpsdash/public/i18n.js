@@ -120,6 +120,7 @@ function extractData(s) {
 const COMPOSITE_PREFIXES = [
   'Възстановено: ', 'Провалена задача: ', '→ ',
   'Не мога да проверя: ', 'docker не отговори: ', 'journalctl не отговори: ',
+  'du не отговори: ', 'rm не мина: ', 'cp не мина: ', 'Копието е готово, но оригиналът не се изтри: ',
 ];
 
 const missing = new Set();

@@ -560,6 +560,12 @@ tbody tr:hover td { background: rgba(51, 255, 119, 0.05); }
 .kv dd { margin: 0; font-family: var(--mono); font-size: 12.5px; min-width: 0; overflow-wrap: anywhere; color: var(--accent-2); }
 .crumbs { font-family: var(--mono); font-size: 12.5px; color: var(--txt-dim); word-break: break-all; }
 .crumbs a { cursor: pointer; }
+.crumbs a:hover { color: var(--txt); text-decoration: underline; }
+/* Файловият мениджър: зона за пускане на файлове + компактно меню на реда. */
+.files-drop { transition: outline-color .15s; outline: 1px dashed transparent; outline-offset: -4px; }
+.files-drop.drag { outline-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.row-act { min-height: 28px; font-size: 12px; padding: 2px 6px; max-width: 170px; }
+.bulk-files:empty { display: none; }
 
 /* ── Разследване: интерактивна графика ─────────────────────────────────────── */
 .chart-big { border-radius: 0; cursor: crosshair; background: #000; border: 1px solid var(--line-soft); }

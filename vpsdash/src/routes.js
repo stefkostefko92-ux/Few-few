@@ -1,5 +1,6 @@
 // Всички API маршрути + защитите: сесия/Bearer, CSRF маркер, одит.
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import { Router, sendJson, sendError, readJson, parseCookies, openSse, clientIp } from './httpd.js';
 import {
   hashPassword,
@@ -44,6 +45,8 @@ import * as cronedit from './cronedit.js';
 import * as domains from './domains.js';
 import { readRaw, handleGithub } from './webhook.js';
 import * as posture from './posture.js';
+import * as selfcheck from './selfcheck.js';
+import * as fileops from './fileops.js';
 import * as investigate from './investigate.js';
 import { AccessLogReader, discoverLogs } from './accesslog.js';
 import { drillSpec, backupAge } from './drill.js';
@@ -91,7 +94,7 @@ export const PEER_DENY = [
   /^\/api\/terminal\//,
   /^\/api\/pty(\/|$)/,
   /^\/api\/power$/,
-  /^\/api\/files\/(read|write)$/,
+  /^\/api\/files(\/|$)/, // файловете на машината — не на съседа (дори списъкът носи имена)
   /^\/api\/deploy\//,
   /^\/api\/firewall\//,
   /^\/api\/webserver\/site$/,
@@ -167,6 +170,7 @@ export const AGENT_ALLOW = [
   ['GET', /^\/api\/deploy\/state$/],
   ['GET', /^\/api\/logs\/analyze$/],
   ['GET', /^\/api\/security\/posture$/],
+  ['GET', /^\/api\/selfcheck$/],
   ['GET', /^\/api\/agent\/actions$/],
   ['GET', /^\/api\/agent\/proposals(\/[0-9a-f]{16})?$/],
   ['POST', /^\/api\/agent\/proposals$/],
@@ -1304,11 +1308,43 @@ export function buildRouter(ctx) {
   r.get('/api/backups', guard(J(() => system.backupsInfo(cfg))));
   r.get('/api/cron', guard(J(() => system.cronInfo())));
 
-  // ── Файлове (само четене) ──────────────────────────────────────────────────
-  r.get('/api/files', guard(J((req, res, p, url) => files.listDir(url.searchParams.get('path')))));
+  // ── Файлове ────────────────────────────────────────────────────────────────
+  // Четене: списък, преглед, инфо, размер, търсене. Промени: всяка иска sudo
+  // (SUDO_ON_WRITE) и влиза в одита; правилата за пътищата са в fileops.js.
+  r.get(
+    '/api/files',
+    guard(
+      J((req, res, p, url) => {
+        const out = files.listDir(url.searchParams.get('path'), { owners: fileops.owners() });
+        const hidden = fileops.sandboxNote(out.path);
+        return hidden ? { ...out, sandboxHidden: hidden } : out;
+      })
+    )
+  );
   r.get(
     '/api/files/read',
     guard(J((req, res, p, url) => files.readFilePreview(url.searchParams.get('path'), audit, req.user)))
+  );
+  r.get('/api/files/info', guard(J((req, res, p, url) => fileops.info(url.searchParams.get('path'), { hash: url.searchParams.get('hash') === '1' }))));
+  r.get('/api/files/du', guard(J((req, res, p, url) => fileops.dirSize(url.searchParams.get('path')))));
+  r.get('/api/files/search', guard(J((req, res, p, url) => fileops.search(url.searchParams.get('root'), url.searchParams.get('q')))));
+  r.get('/api/files/trash', guard(J(() => fileops.trashList(cfg))));
+  // Сваляне: в SUDO_ALWAYS (като четенето — root чете всичко). `check=1` е
+  // същият път без тялото: интерфейсът първо отключва sudo по него, после отваря
+  // връзката (навигацията на браузъра не може да покаже диалога за парола).
+  r.get(
+    '/api/files/download',
+    guard((req, res, params, url) => {
+      const p = url.searchParams.get('path');
+      try {
+        const plan = fileops.downloadPlan(p, { isSensitive: files.isSensitive, secretDirs: files.secretDirs() });
+        if (url.searchParams.get('check') === '1') return sendJson(res, 200, { ok: true, dir: plan.dir, sizeBytes: plan.sizeBytes ?? null });
+        fileops.streamDownload(plan, res);
+        audit.log({ action: 'file.download', path: plan.path, dir: plan.dir, excluded: plan.excludes?.length ? plan.excludes : undefined, user: req.user });
+      } catch (e) {
+        return sendError(res, e.status || (e.code === 'ENOENT' ? 404 : 400), e.message);
+      }
+    })
   );
 
   r.post(
@@ -1316,7 +1352,85 @@ export function buildRouter(ctx) {
     guard(
       J(async (req) => {
         const b = await readJson(req);
+        if (b.create) fileops.assertCreatable(b.path, cfg);
         return files.writeFile(b.path, b.content, { create: Boolean(b.create) }, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post('/api/files/mkdir', guard(J(async (req) => fileops.mkdir((await readJson(req)).path, cfg, audit, req.user)), { mutating: true }));
+  r.post(
+    '/api/files/upload',
+    guard(
+      J((req, res, p, url) => fileops.receiveUpload(req, cfg, url.searchParams.get('dir'), url.searchParams.get('name'), { overwrite: url.searchParams.get('overwrite') === '1' }, audit, req.user)),
+      { mutating: true }
+    )
+  );
+  r.post('/api/files/rename', guard(J(async (req) => { const b = await readJson(req); return fileops.rename(b.from, b.to, cfg, audit, req.user); }), { mutating: true }));
+  r.post(
+    '/api/files/copy',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = fileops.copySpec(b.from, b.to, cfg);
+        audit.log({ action: 'file.copy', from: b.from, to: spec.args[3], user: req.user });
+        return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/files/delete',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const paths = (Array.isArray(b.paths) ? b.paths : [b.path]).slice(0, 200);
+        const done = [];
+        const failed = [];
+        for (const p of paths) {
+          try {
+            done.push(await fileops.toTrash(p, cfg, audit, req.user));
+          } catch (e) {
+            failed.push({ path: p, error: e.message });
+          }
+        }
+        return { trashed: done, failed };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post('/api/files/delete-forever', guard(J(async (req) => fileops.removeForever((await readJson(req)).path, cfg, audit, req.user)), { mutating: true }));
+  r.post('/api/files/trash/restore', guard(J(async (req) => fileops.trashRestore((await readJson(req)).id, cfg, audit, req.user)), { mutating: true }));
+  r.post('/api/files/trash/purge', guard(J(async (req) => fileops.trashPurge((await readJson(req)).id, cfg, audit, req.user)), { mutating: true }));
+  r.post(
+    '/api/files/chmod',
+    guard(J(async (req) => { const b = await readJson(req); return fileops.chmod(b.path, b.mode, { recursive: Boolean(b.recursive) }, cfg, audit, req.user); }), { mutating: true })
+  );
+  r.post(
+    '/api/files/chown',
+    guard(J(async (req) => { const b = await readJson(req); return fileops.chown(b.path, b.owner, b.group, { recursive: Boolean(b.recursive) }, cfg, audit, req.user); }), { mutating: true })
+  );
+  r.post(
+    '/api/files/archive',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = fileops.archiveSpec(b.paths, cfg);
+        audit.log({ action: 'file.archive', dest: spec.dest, count: spec.args.length - 5, user: req.user });
+        return { ...jobs.start(spec, { user: req.user }), dest: spec.dest };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/files/extract',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = fileops.extractSpec(b.path, cfg);
+        if (spec.mkdirFirst) fs.mkdirSync(spec.dest, { recursive: true });
+        audit.log({ action: 'file.extract', archive: b.path, dest: spec.dest, user: req.user });
+        return { ...jobs.start(spec, { user: req.user }), dest: spec.dest };
       }),
       { mutating: true }
     )
@@ -2583,6 +2697,8 @@ export function buildRouter(ctx) {
   );
 
   // ── Federation ─────────────────────────────────────────────────────────────
+  // Проверка на панела срещу машината — след местене конфигът помни СТАРАТА.
+  r.get('/api/selfcheck', guard(J((req) => selfcheck.selfCheck(cfg, { audit, drill: ctx.drill }, req))));
   r.get('/api/nodes', guard(J(() => nodes.nodesStatus(cfg))));
   r.on(
     '*',

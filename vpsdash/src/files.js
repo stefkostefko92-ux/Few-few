@@ -1,4 +1,5 @@
-// Файлов браузър — САМО четене (списък + преглед на текстови файлове с таван).
+// Файлов браузър — четене (списък + преглед на текст с таван) и редакция с копие.
+// Останалите операции (качване, кошче, права, архиви…) са в fileops.js.
 // Панелът върви като root: браузването е съзнателно позволено навсякъде, но
 // тайните файлове (mode 600 конфиги) се показват само по изричен път — одитирано.
 import fs from 'node:fs';
@@ -12,13 +13,27 @@ const VIEW_CAP = 256 * 1024; // 256KB преглед
 // peerToken → достъп до другия VPS. Root shell пак може да ги прочете — това не е
 // граница на привилегии, а стесняване на щетата от открадната сесия.
 const SECRET_KEYS = /("(?:passwordHash|sessionSecret|peerToken|secret|token|botToken|password|apiKey)"\s*:\s*)"[^"]*"/gi;
-const SENSITIVE_FILES = [/\/etc\/vps-dashboard\/config\.json$/, /\/etc\/vps-dashboard\/.*\.env$/];
+// Копията носят СЪЩИТЕ тайни: `config.json.bak` (saveConfig) и `.tmp` от атомарния
+// запис. Регекс, закотвен на `config.json$`, ги пропускаше — прегледът показваше
+// копието нередактирано. desktop.env е паролата на десктопа (вторият слой).
+const SENSITIVE_FILES = [
+  /\/etc\/vps-dashboard\/config\.json(?:\.[\w-]+)*$/,
+  /\/etc\/vps-dashboard\/.*\.env(?:\.[\w-]+)*$/,
+  /\/deploy\/desktop\/desktop\.env(?:\.[\w-]+)*$/,
+];
 
 // Пътят на ЖИВИЯ конфиг (уважава CSD_CONFIG) — иначе преместен конфиг тихо
 // изпада от защитата и тайните му тръгват към браузъра.
-function isSensitive(fullPath) {
-  if (path.resolve(CONFIG_PATH) === fullPath) return true;
+export function isSensitive(fullPath) {
+  const live = path.resolve(CONFIG_PATH);
+  if (fullPath === live || fullPath.startsWith(live + '.')) return true;
   return SENSITIVE_FILES.some((rx) => rx.test(fullPath));
+}
+
+// Папките, в които живеят тайните на панела — цели не се свалят, а по-горна
+// папка (напр. /etc) се сваля БЕЗ тях.
+export function secretDirs() {
+  return [...new Set([path.dirname(path.resolve(CONFIG_PATH)), '/etc/vps-dashboard'])];
 }
 
 export function redactSecrets(fullPath, text) {
@@ -42,30 +57,46 @@ function safeResolve(p) {
   return full;
 }
 
-export function listDir(p) {
+export function listDir(p, { owners } = {}) {
   const full = safeResolve(p);
   const st = fs.statSync(full);
   if (!st.isDirectory()) throw Object.assign(new Error('Не е папка'), { status: 400 });
-  const entries = fs
-    .readdirSync(full)
-    .slice(0, 1000)
+  const names = fs.readdirSync(full);
+  const users = owners?.users;
+  const groups = owners?.groups;
+  const entries = names
+    .slice(0, 2000)
     .map((name) => {
       try {
         const s = fs.lstatSync(path.join(full, name));
-        return {
+        const e = {
           name,
           isDir: s.isDirectory(),
           isLink: s.isSymbolicLink(),
           sizeBytes: s.size,
           mode: '0' + (s.mode & 0o777).toString(8),
+          owner: users?.get(s.uid) ?? String(s.uid),
+          group: groups?.get(s.gid) ?? String(s.gid),
           mtime: s.mtime.toISOString(),
         };
+        if (e.isLink) {
+          try {
+            e.target = fs.readlinkSync(path.join(full, name));
+            // Връзка към папка се отваря като папка (sites-enabled → sites-available).
+            e.targetIsDir = fs.statSync(path.join(full, name)).isDirectory();
+          } catch {
+            e.broken = true;
+          }
+        }
+        return e;
       } catch {
         return { name, error: true };
       }
     })
     .sort((a, b) => (b.isDir - a.isDir) || a.name.localeCompare(b.name));
-  return { path: full, parent: full === '/' ? null : path.dirname(full), entries };
+  // Огромна папка (node_modules, кеш) не бива да изпраща 200 000 реда — но и не
+  // бива да мълчи, че е отрязана.
+  return { path: full, parent: full === '/' ? null : path.dirname(full), entries, total: names.length, truncated: names.length > 2000 };
 }
 
 // Запис на текстов файл. Пази копие на стария (.bak-<време>) — редакцията на

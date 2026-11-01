@@ -243,6 +243,7 @@ const SECTIONS = [
   { id: 'alerts', img: 'nav-alerts', ico: '🔔', label: 'Аларми', render: renderAlerts },
   { id: 'approvals', img: 'act-scales', ico: '⚖', label: 'Одобрения', render: renderApprovals },
   { id: 'diagnostics', img: 'nav-diagnostics', ico: '⚕', label: 'Диагностика', render: renderDiagnostics },
+  { id: 'selfcheck', img: 'act-info', ico: '✓', label: 'Проверка на панела', render: renderSelfcheck },
   { id: 'investigate', img: 'act-search', ico: '🔍', label: 'Разследване', render: renderInvestigate },
   { id: 'services', img: 'nav-services', ico: '⚙', label: 'Услуги', render: renderServices },
   { id: 'docker', img: 'nav-docker', ico: '⬢', label: 'Docker', render: renderDocker },
@@ -281,7 +282,7 @@ const SECTIONS = [
 // тук, не изчезва: отива в последната група (по-добре на грешно място, отколкото
 // невидима — същият урок като с трите липсващи секции в README).
 const NAV_GROUPS = [
-  ['Наблюдение', ['overview', 'products', 'slo', 'alerts', 'approvals', 'diagnostics', 'investigate']],
+  ['Наблюдение', ['overview', 'products', 'slo', 'alerts', 'approvals', 'diagnostics', 'selfcheck', 'investigate']],
   ['Работа', ['services', 'docker', 'compose', 'databases', 'redis', 'processes', 'logs', 'traffic']],
   ['Издаване', ['deploy', 'updates']],
   ['Защита', ['security', 'ports', 'firewall', 'integrity', 'fail2ban', 'access', 'domains']],
@@ -429,6 +430,7 @@ const SECTION_ALIASES = {
   integrity: 'целост отпечатък baseline промени etc конфигурация',
   fail2ban: 'фейлтубан банове блокирани ip jail забрана',
   access: 'достъп ip allowlist разрешени адреси sudo режим',
+  selfcheck: 'проверка на панела самопроверка преместване миграция нова машина конфиг пътища',
   desktop: 'десктоп графичен интерфейс gui xfce ubuntu браузър vnc',
   webserver: 'уеб сървър нгинкс nginx caddy vhost certbot',
   backups: 'бекъпи архиви restic снимки',
@@ -5122,6 +5124,52 @@ async function renderFail2ban() {
   }
 }
 
+// ── Проверка на панела срещу машината ─────────────────────────────────────────────
+// След местене конфигът помни СТАРАТА машина. Тук е всичко, което не съвпада, с
+// поправката до него. Данните (пътища, адреси, команди) са `raw` — не са наш текст.
+const SELFCHECK_AREAS = {
+  panel: 'Панелът', deploy: 'Деплой', products: 'Продукти', backups: 'Бекъпи и известия',
+  security: 'Сигурност', machine: 'Машината',
+};
+async function renderSelfcheck() {
+  const view = document.getElementById('view');
+  const d = await api('/selfcheck');
+  view.innerHTML = '';
+  view.appendChild(el('p', { class: 'section-desc', text:
+    'Сверява това, което панелът мисли, с това, което е на ТАЗИ машина: пътища, продукти, инструменти, часовник, nginx, бекъпи. ' +
+    'След преместване конфигът помни старата машина — тук се вижда къде.' }));
+  const s = d.summary;
+  view.appendChild(el('div', { class: 'toolbar' }, [
+    pill(s.bad ? 'bad' : 'ok', s.bad ? `${s.bad} за поправка` : 'нищо счупено'),
+    s.warn ? pill('warn', `${s.warn} предупреждения`) : '',
+    pill('dim', `${s.ok} наред`),
+    el('button', { class: 'btn btn-sm', text: '⟳ Провери пак', onclick: () => go('selfcheck') }),
+  ]));
+  const order = { bad: 0, warn: 1, info: 2, ok: 3 };
+  for (const [area, label] of Object.entries(SELFCHECK_AREAS)) {
+    const items = d.checks.filter((c) => c.area === area).sort((a, b) => order[a.status] - order[b.status]);
+    if (!items.length) continue;
+    const worst = items[0].status;
+    view.appendChild(el('div', { class: 'card', style: 'margin-top:14px' }, [
+      el('div', { class: 'card-head' }, [
+        el('h3', { text: label }),
+        pill(worst === 'bad' ? 'bad' : worst === 'warn' ? 'warn' : 'ok', worst === 'bad' ? 'за поправка' : worst === 'warn' ? 'внимание' : 'наред'),
+      ]),
+      ...items.map((c) => el('div', { class: 'finding', style: 'margin-top:8px' }, [
+        el('div', {}, [
+          pill(c.status === 'bad' ? 'bad' : c.status === 'warn' ? 'warn' : c.status === 'info' ? 'dim' : 'ok', c.status === 'bad' ? '✗' : c.status === 'warn' ? '!' : c.status === 'info' ? 'i' : '✓'),
+          document.createTextNode(' '),
+          el('span', { text: c.title }),
+        ]),
+        c.detail ? el('div', { class: 'mono metric-sub', raw: c.detail }) : '',
+        c.tabs ? el('div', { class: 'metric-sub', text: c.tabs }) : '',
+        c.fix ? el('div', { class: 'metric-sub', text: '→ ' + c.fix }) : '',
+        c.cmd ? el('div', { class: 'mono metric-sub', style: 'user-select:all', raw: c.cmd }) : '',
+      ])),
+    ]));
+  }
+}
+
 // ── Достъп по IP + режим „sudo" ───────────────────────────────────────────────────
 async function renderAccess() {
   const view = document.getElementById('view');
@@ -5595,38 +5643,349 @@ function renderPreflight(container, pf) {
 }
 
 // ── Файлове ───────────────────────────────────────────────────────────────────────
-async function renderFiles(path = '/root') {
+// Файловият мениджър. Всяка промяна иска sudo (сървърът го налага) и влиза в
+// одита; изтриването отива в кошчето. Имената и пътищата са ДАННИ (`raw`).
+const FILES = { path: null, hidden: false, filter: '', sel: new Set() };
+function savedFilesPath() {
+  try { return localStorage.getItem('csd.files.path') || '/root'; } catch { return '/root'; }
+}
+const ARCHIVE_NAME_RX = /\.(tar\.gz|tgz|tar\.xz|txz|tar\.bz2|tar|zip)$/i;
+
+async function renderFiles(path) {
   const view = document.getElementById('view');
+  const target = path || FILES.path || savedFilesPath();
   let data;
   try {
-    data = await api('/files?path=' + encodeURIComponent(path));
+    data = await api('/files?path=' + encodeURIComponent(target));
   } catch (e) {
-    view.innerHTML = `<div class="empty">${escapeHtml(e.message)}</div>`;
+    if (target !== '/root') return renderFiles('/root');
+    view.innerHTML = '';
+    view.appendChild(el('div', { class: 'empty', text: e.message }));
     return;
   }
+  if (FILES.path !== data.path) FILES.sel.clear();
+  // Пясъчникът на unit-а крие /home — празната таблица там НЕ значи „празно".
+  const sandboxBanner = data.sandboxHidden
+    ? el('div', { class: 'banner banner-warn', style: 'margin-bottom:10px', text: 'Панелът не вижда тази папка: unit-ът е с ProtectHome=tmpfs и за него тя е празна. Истинското съдържание е на диска — виж го от „Терминал" или махни ProtectHome от deploy/vps-dashboard.service.' })
+    : null;
+  FILES.path = data.path;
+  try { localStorage.setItem('csd.files.path', data.path); } catch { /* без памет — нищо */ }
   view.innerHTML = '';
-  const crumbs = el('div', { class: 'crumbs' });
-  crumbs.appendChild(el('a', { text: data.path, onclick: () => renderFiles(data.path) }));
+
+  // Пътечка: всеки сегмент е връзка + поле за директен път.
+  const crumbs = el('div', { class: 'crumbs mono' });
+  const parts = data.path.split('/').filter(Boolean);
+  crumbs.appendChild(el('a', { raw: '/', onclick: () => renderFiles('/') }));
+  parts.forEach((seg, i) => {
+    const to = '/' + parts.slice(0, i + 1).join('/');
+    crumbs.appendChild(el('a', { raw: seg + (i < parts.length - 1 ? '/' : ''), onclick: () => renderFiles(to) }));
+  });
+  const goInput = el('input', { type: 'text', value: data.path, class: 'mono', 'aria-label': 'Път', style: 'flex:1;min-width:180px' });
+  goInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') renderFiles(goInput.value.trim()); });
+  const upload = el('input', { type: 'file', multiple: 'multiple', style: 'display:none', 'aria-label': 'Файлове за качване' });
+  upload.addEventListener('change', () => uploadFiles([...upload.files], data.path));
   view.appendChild(el('div', { class: 'toolbar' }, [
-    data.parent ? el('button', { class: 'btn btn-sm', text: '⬆ нагоре', onclick: () => renderFiles(data.parent) }) : el('span'),
+    data.parent ? el('button', { class: 'btn btn-sm', text: '⬆ нагоре', onclick: () => renderFiles(data.parent) }) : '',
     crumbs,
   ]));
-  view.appendChild(
-    el('div', { class: 'table-wrap' }, [
-      tableEl(['Име', 'Размер', 'Права', 'Променен'], data.entries.map((e) =>
-        el('tr', {}, [
-          el('td', {}, [
-            e.isDir
-              ? el('a', { class: 'mono', text: '📁 ' + e.name, onclick: () => renderFiles(joinPath(data.path, e.name)) })
-              : el('a', { class: 'mono', text: (e.isLink ? '🔗 ' : '📄 ') + e.name, onclick: () => viewFile(joinPath(data.path, e.name)) }),
-          ]),
-          el('td', { text: e.isDir ? '—' : fmtBytes(e.sizeBytes) }),
-          el('td', { class: 'mono muted', text: e.mode }),
-          el('td', { class: 'muted', text: fmtWhen(e.mtime) }),
-        ])
-      )),
-    ])
-  );
+  if (sandboxBanner) view.appendChild(sandboxBanner);
+  view.appendChild(el('div', { class: 'toolbar' }, [
+    goInput,
+    el('button', { class: 'btn btn-sm', text: 'Отиди', onclick: () => renderFiles(goInput.value.trim()) }),
+  ]));
+
+  const filter = el('input', { type: 'search', placeholder: 'филтър по име…', value: FILES.filter, 'aria-label': 'Филтър по име' });
+  const hidden = el('input', { type: 'checkbox', 'aria-label': 'Покажи скритите' });
+  hidden.checked = FILES.hidden;
+  view.appendChild(el('div', { class: 'toolbar' }, [
+    filter,
+    el('label', { class: 'muted' }, [hidden, document.createTextNode(' ' + t('скритите'))]),
+    el('button', { class: 'btn btn-sm', text: '📁 Нова папка', onclick: () => fileAction('mkdir', null, data.path) }),
+    el('button', { class: 'btn btn-sm', text: '📄 Нов файл', onclick: () => fileAction('newfile', null, data.path) }),
+    el('button', { class: 'btn btn-sm', text: '⇧ Качи', onclick: () => upload.click() }),
+    upload,
+    el('button', { class: 'btn btn-sm', text: '🔍 Търси', onclick: () => fileSearch(data.path) }),
+    el('button', { class: 'btn btn-sm', text: '🗑 Кошче', onclick: () => renderTrash() }),
+  ]));
+
+  const bulk = el('div', { class: 'toolbar bulk-files' });
+  view.appendChild(bulk);
+  const syncBulk = () => {
+    bulk.innerHTML = '';
+    if (!FILES.sel.size) return;
+    const chosen = [...FILES.sel];
+    bulk.append(
+      pill('warn', `${FILES.sel.size} избрани`),
+      el('button', { class: 'btn btn-sm', text: '⇄ Премести в…', onclick: () => fileAction('move-many', chosen, data.path) }),
+      el('button', { class: 'btn btn-sm', text: '🗜 Архивирай', onclick: () => fileAction('archive', chosen, data.path) }),
+      el('button', { class: 'btn btn-sm btn-danger', text: '🗑 В кошчето', onclick: () => fileAction('trash', chosen, data.path) }),
+      el('button', { class: 'btn btn-sm', text: 'Изчисти избора', onclick: () => { FILES.sel.clear(); renderFiles(data.path); } }),
+    );
+  };
+
+  const tbody = el('tbody');
+  const ACTIONS = (e) => [
+    ['', 'Действие…'],
+    e.isDir ? ['open', 'Отвори'] : ['view', 'Преглед / редакция'],
+    ['download', e.isDir ? 'Свали като .tar.gz' : 'Свали'],
+    ['rename', 'Преименувай / премести'],
+    ['copy', 'Копирай'],
+    ['chmod', 'Права'],
+    ['chown', 'Собственик'],
+    ['info', 'Информация'],
+    e.isDir ? ['du', 'Размер на папката'] : null,
+    ['archive', 'Архивирай'],
+    !e.isDir && ARCHIVE_NAME_RX.test(e.name) ? ['extract', 'Разархивирай в нова папка'] : null,
+    ['trash', 'В кошчето'],
+    ['forever', 'Изтрий окончателно'],
+  ].filter(Boolean);
+  const draw = () => {
+    tbody.innerHTML = '';
+    const q = filter.value.trim().toLowerCase();
+    const rows = data.entries.filter((e) => (FILES.hidden || !e.name.startsWith('.')) && (!q || e.name.toLowerCase().includes(q)));
+    for (const e of rows) {
+      const full = joinPath(data.path, e.name);
+      const cb = el('input', { type: 'checkbox', class: 'bulk-pick', 'aria-label': `Избери ${e.name}` });
+      cb.checked = FILES.sel.has(full);
+      cb.onchange = () => { if (cb.checked) FILES.sel.add(full); else FILES.sel.delete(full); syncBulk(); };
+      const sel = el('select', { 'aria-label': `Действие за ${e.name}`, class: 'row-act' }, ACTIONS(e).map(([v, label]) => el('option', { value: v, text: label })));
+      sel.onchange = () => { const v = sel.value; sel.value = ''; if (v) fileAction(v, e, data.path); };
+      const opensDir = e.isDir || (e.isLink && e.targetIsDir);
+      tbody.appendChild(el('tr', {}, [
+        el('td', {}, [cb]),
+        el('td', {}, [
+          el('a', { class: 'mono', raw: (opensDir ? '📁 ' : e.isLink ? '🔗 ' : '📄 ') + e.name, onclick: () => (opensDir ? renderFiles(full) : viewFile(full)) }),
+          e.isLink ? el('div', { class: 'metric-sub mono', raw: '→ ' + (e.target || '?') + (e.broken ? ' ✗' : '') }) : '',
+        ]),
+        el('td', { raw: e.isDir ? '—' : fmtBytes(e.sizeBytes) }),
+        el('td', { class: 'mono muted', raw: `${e.owner ?? '?'}:${e.group ?? '?'}` }),
+        el('td', { class: 'mono muted', raw: e.mode || '' }),
+        el('td', { class: 'muted', text: e.mtime ? fmtWhen(e.mtime) : '' }),
+        el('td', {}, [sel]),
+      ]));
+    }
+    foot.textContent = '';
+    foot.append(t(`Показани ${rows.length} от ${data.entries.length}`), data.truncated ? ` · ${t('папката има още — показани са първите 2000')}` : '');
+    // Празна таблица при пълна папка изглежда като счупено — казва се защо.
+    if (!rows.length && data.entries.length && !FILES.hidden && !q) foot.append(` · ${t('Всичко тук е скрито (имената започват с точка) — включи „скритите".')}`);
+  };
+  filter.addEventListener('input', () => { FILES.filter = filter.value; draw(); });
+  hidden.addEventListener('change', () => { FILES.hidden = hidden.checked; draw(); });
+  const table = el('table', {}, [
+    el('thead', {}, [el('tr', {}, ['', 'Име', 'Размер', 'Собственик', 'Права', 'Променен', ''].map((h) => el('th', { text: h })))]),
+    tbody,
+  ]);
+  const foot = el('div', { class: 'metric-sub' });
+  const wrap = el('div', { class: 'table-wrap files-drop' }, [table]);
+  // Пускане на файлове от компютъра направо в таблицата.
+  wrap.addEventListener('dragover', (e) => { e.preventDefault(); wrap.classList.add('drag'); });
+  wrap.addEventListener('dragleave', () => wrap.classList.remove('drag'));
+  wrap.addEventListener('drop', (e) => { e.preventDefault(); wrap.classList.remove('drag'); uploadFiles([...(e.dataTransfer?.files || [])], data.path); });
+  view.appendChild(wrap);
+  view.appendChild(foot);
+  view.appendChild(el('div', { class: 'metric-sub', text: 'Пусни файлове върху таблицата, за да ги качиш тук. Изтритото отива в кошчето; системните пътища и файловете на панела са защитени.' }));
+  draw();
+  syncBulk();
+}
+
+// Качване с прогрес. При 428 (sudo) — диалогът и повтор; при 409 — питане за замяна.
+async function uploadFiles(list, dir) {
+  for (const file of list) {
+    toast(`${t('Качвам')} ${file.name} (${fmtBytes(file.size)})…`);
+    let overwrite = false;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const res = await new Promise((resolve) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${apiBase()}/files/upload?dir=${encodeURIComponent(dir)}&name=${encodeURIComponent(file.name)}&overwrite=${overwrite ? 1 : 0}`);
+        xhr.setRequestHeader('x-csd', '1');
+        xhr.onload = () => resolve({ status: xhr.status, text: xhr.responseText });
+        xhr.onerror = () => resolve({ status: 0, text: '' });
+        xhr.send(file);
+      });
+      if (res.status === 428) { if (!(await askSudo())) return; continue; }
+      if (res.status === 409 && !overwrite) {
+        if (!confirm(`${t('Вече има файл с това име. Да го заменя? Старият отива в кошчето.')}\n${file.name}`)) break;
+        overwrite = true;
+        continue;
+      }
+      let msg = `HTTP ${res.status}`;
+      try { msg = JSON.parse(res.text).error || msg; } catch { /* без тяло */ }
+      if (res.status === 200) toast(`${t('Качен')}: ${file.name}`, 'ok');
+      else toast(msg, 'bad');
+      break;
+    }
+  }
+  renderFiles(dir);
+}
+
+// Всички действия на ЕДНО място — и потвържденията стоят точно преди заявката.
+async function fileAction(kind, e, dir) {
+  const full = e && !Array.isArray(e) ? joinPath(dir, e.name) : null;
+  try {
+    if (kind === 'open') return renderFiles(full);
+    if (kind === 'view') return viewFile(full);
+    if (kind === 'mkdir' || kind === 'newfile') {
+      const name = prompt(t(kind === 'mkdir' ? 'Име на новата папка:' : 'Име на новия файл:'));
+      if (!name) return;
+      if (kind === 'mkdir') await api('/files/mkdir', { method: 'POST', body: { path: joinPath(dir, name) } });
+      else await api('/files/write', { method: 'POST', body: { path: joinPath(dir, name), content: '', create: true } });
+      toast(t('Създадено'), 'ok');
+    } else if (kind === 'download') {
+      await api('/files/download?check=1&path=' + encodeURIComponent(full));
+      const a = el('a', { href: `${apiBase()}/files/download?path=${encodeURIComponent(full)}`, download: '' });
+      document.body.appendChild(a); a.click(); a.remove();
+      return;
+    } else if (kind === 'rename') {
+      const to = prompt(t('Ново име или пълен път (за местене):'), full);
+      if (!to || to === full) return;
+      const dest = to.includes('/') ? to : joinPath(dir, to);
+      if (!confirm(`${t('Премествам')}\n${full}\n→ ${dest}`)) return;
+      await api('/files/rename', { method: 'POST', body: { from: full, to: dest } });
+      toast(t('Преместено'), 'ok');
+    } else if (kind === 'move-many') {
+      const to = prompt(t('Папка, в която да се преместят избраните:'), dir);
+      if (!to) return;
+      if (!confirm(`${t('Премествам избраните в')}\n${to}`)) return;
+      for (const p of e) await api('/files/rename', { method: 'POST', body: { from: p, to: joinPath(to, p.split('/').pop()) } });
+      FILES.sel.clear();
+      toast(t('Преместено'), 'ok');
+    } else if (kind === 'copy') {
+      const to = prompt(t('Копирай като (пълен път):'), `${full}-${t('копие')}`);
+      if (!to) return;
+      return runJob('/files/copy', { from: full, to }, t('Копиране'));
+    } else if (kind === 'chmod') {
+      const mode = prompt(t('Нови права (напр. 644 за файл, 755 за папка):'), (e.mode || '').replace(/^0/, ''));
+      if (!mode) return;
+      const recursive = e.isDir && confirm(t('Да важат ли и за всичко вътре в папката?'));
+      await api('/files/chmod', { method: 'POST', body: { path: full, mode, recursive } });
+      toast(t('Правата са сменени'), 'ok');
+    } else if (kind === 'chown') {
+      const v = prompt(t('Собственик и група (потребител:група):'), `${e.owner}:${e.group}`);
+      if (!v) return;
+      const [owner, group = ''] = v.split(':');
+      const recursive = e.isDir && confirm(t('Да важи ли и за всичко вътре в папката?'));
+      await api('/files/chown', { method: 'POST', body: { path: full, owner, group, recursive } });
+      toast(t('Собственикът е сменен'), 'ok');
+    } else if (kind === 'info') {
+      return fileInfo(full);
+    } else if (kind === 'du') {
+      toast(t('Смятам размера…'));
+      const r = await api('/files/du?path=' + encodeURIComponent(full));
+      toast(`${e.name}: ${fmtBytes(r.sizeBytes)}${r.partial ? ' ' + t('(част от папките не се четат)') : ''}`, 'ok');
+      return;
+    } else if (kind === 'archive') {
+      const paths = Array.isArray(e) ? e : [full];
+      return runJob('/files/archive', { paths }, t('Архивиране'));
+    } else if (kind === 'extract') {
+      return runJob('/files/extract', { path: full }, t('Разархивиране'));
+    } else if (kind === 'trash') {
+      const paths = Array.isArray(e) ? e : [full];
+      if (!confirm(`${t('В кошчето (възстановимо):')}\n${paths.slice(0, 8).join('\n')}${paths.length > 8 ? '\n…' : ''}`)) return;
+      const r = await api('/files/delete', { method: 'POST', body: { paths } });
+      FILES.sel.clear();
+      if (r.failed.length) toast(r.failed.map((f) => `${f.path}: ${f.error}`).join(' · '), 'bad');
+      if (r.trashed.length) toast(`${t('Преместени в кошчето')}: ${r.trashed.length}`, 'ok');
+    } else if (kind === 'forever') {
+      if (!(await confirmDanger({ title: 'Окончателно изтриване', what: [full, 'Без кошче — няма връщане.'], expect: 'изтрий', confirmLabel: 'Изтрий окончателно' }))) return;
+      await api('/files/delete-forever', { method: 'POST', body: { path: full } });
+      toast(t('Изтрито окончателно'), 'ok');
+    }
+  } catch (err) {
+    toast(err.message, 'bad');
+  }
+  if (FILES.path === dir) renderFiles(dir);
+}
+
+async function fileInfo(full) {
+  openModal(t('Информация') + ' · ' + full);
+  const out = document.getElementById('modal-out');
+  const show = (i) => {
+    out.textContent = [
+      `${t('Тип')}: ${i.type}`,
+      `${t('Размер')}: ${fmtBytes(i.sizeBytes)} (${i.sizeBytes} B)`,
+      `${t('Права')}: ${i.mode} · ${i.owner}:${i.group}`,
+      `${t('Променен')}: ${i.mtime}`,
+      i.target ? `→ ${i.target}` : '',
+      i.sha256 ? `SHA-256: ${i.sha256}` : '',
+    ].filter(Boolean).join('\n');
+  };
+  try {
+    const i = await api('/files/info?path=' + encodeURIComponent(full));
+    show(i);
+    if (i.type === 'file') {
+      out.appendChild(el('div', { class: 'toolbar', style: 'margin-top:10px' }, [el('button', {
+        class: 'btn btn-sm', text: 'Смятай SHA-256',
+        onclick: async () => show(await api('/files/info?hash=1&path=' + encodeURIComponent(full))),
+      })]));
+    }
+  } catch (err) {
+    out.textContent = err.message;
+  }
+}
+
+async function fileSearch(root) {
+  const q = prompt(t('Търси по име (част от името, поне 2 знака) в') + ` ${root}:`);
+  if (!q) return;
+  const view = document.getElementById('view');
+  view.innerHTML = '';
+  view.appendChild(el('div', { class: 'skeleton', style: 'height:120px' }));
+  let r;
+  try {
+    r = await api(`/files/search?root=${encodeURIComponent(root)}&q=${encodeURIComponent(q)}`);
+  } catch (err) {
+    toast(err.message, 'bad');
+    return renderFiles(root);
+  }
+  view.innerHTML = '';
+  view.appendChild(el('div', { class: 'toolbar' }, [
+    el('button', { class: 'btn btn-sm', text: '← обратно', onclick: () => renderFiles(root) }),
+    pill(r.hits.length ? 'ok' : 'dim', `${r.hits.length} ${t('намерени')}${r.truncated ? '+' : ''}`),
+    r.partial ? pill('warn', 'частично — част от папките не се четат или времето изтече') : '',
+  ]));
+  view.appendChild(el('div', { class: 'table-wrap' }, [
+    tableEl(['Път', 'Размер', 'Променен'], r.hits.map((h) => el('tr', {}, [
+      el('td', {}, [el('a', { class: 'mono', raw: (h.isDir ? '📁 ' : '📄 ') + h.path, onclick: () => (h.isDir ? renderFiles(h.path) : viewFile(h.path)) })]),
+      el('td', { raw: h.isDir ? '—' : fmtBytes(h.sizeBytes) }),
+      el('td', { class: 'muted', text: fmtWhen(h.mtime) }),
+    ]))),
+  ]));
+}
+
+async function renderTrash() {
+  const view = document.getElementById('view');
+  const d = await api('/files/trash');
+  view.innerHTML = '';
+  view.appendChild(el('div', { class: 'toolbar' }, [
+    el('button', { class: 'btn btn-sm', text: '← към файловете', onclick: () => renderFiles(FILES.path) }),
+    pill(d.items.length ? 'warn' : 'ok', `${d.items.length} ${t('в кошчето')} · ${fmtBytes(d.totalBytes)}`),
+    d.items.length ? el('button', {
+      class: 'btn btn-sm btn-danger', text: '🗑 Изпразни кошчето',
+      onclick: async () => {
+        if (!(await confirmDanger({ title: 'Изпразване на кошчето', what: [`${d.items.length} — ${fmtBytes(d.totalBytes)}`, 'Необратимо.'], expect: 'изпразни', confirmLabel: 'Изпразни' }))) return;
+        try { await api('/files/trash/purge', { method: 'POST', body: { id: 'all' } }); toast(t('Кошчето е празно'), 'ok'); } catch (err) { toast(err.message, 'bad'); }
+        renderTrash();
+      },
+    }) : '',
+  ]));
+  view.appendChild(el('div', { class: 'metric-sub', text: `Изтритото стои тук ${plural(d.days, 'ден', 'дни')} и после се чисти само. Връщането го слага на старото място.` }));
+  view.appendChild(el('div', { class: 'table-wrap' }, [
+    tableEl(['Беше в', 'Изтрито', 'Размер', ''], d.items.map((i) => el('tr', {}, [
+      el('td', { class: 'mono', raw: i.path }),
+      el('td', { class: 'muted', text: i.deletedAt ? fmtWhen(i.deletedAt) : '' }),
+      el('td', { raw: i.sizeBytes != null ? fmtBytes(i.sizeBytes) : '—' }),
+      el('td', {}, [
+        el('button', { class: 'btn btn-sm', text: '↩ Върни', onclick: async () => {
+          try { await api('/files/trash/restore', { method: 'POST', body: { id: i.id } }); toast(t('Върнато'), 'ok'); } catch (err) { toast(err.message, 'bad'); }
+          renderTrash();
+        } }),
+        el('button', { class: 'btn btn-sm btn-danger', text: 'Изтрий', onclick: async () => {
+          if (!(await confirmDanger({ title: 'Окончателно изтриване', what: [i.path, 'Необратимо.'], expect: 'изтрий', confirmLabel: 'Изтрий' }))) return;
+          try { await api('/files/trash/purge', { method: 'POST', body: { id: i.id } }); } catch (err) { toast(err.message, 'bad'); }
+          renderTrash();
+        } }),
+      ]),
+    ]))),
+  ]));
 }
 
 async function viewFile(path) {
@@ -6205,6 +6564,14 @@ function setModalOut(text) {
 document.getElementById('modal-close').addEventListener('click', closeModal);
 document.getElementById('modal').addEventListener('click', (e) => {
   if (e.target.id === 'modal') closeModal();
+});
+// Escape затваря прозореца на задачата/файла — без мишка иначе няма изход. Не и
+// докато пишеш в редактора (Escape там би изхвърлил незаписаната промяна), и не
+// когато отгоре стои собствен <dialog> (той сам си обработва Escape).
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || document.getElementById('modal').classList.contains('hidden')) return;
+  if (document.querySelector('dialog[open]') || document.activeElement?.tagName === 'TEXTAREA') return;
+  closeModal();
 });
 document.getElementById('modal-kill').addEventListener('click', async () => {
   if (!modalJobId) return;

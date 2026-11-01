@@ -344,7 +344,10 @@ export function liveStream(url, { events = {}, onStatus = () => {} } = {}) {
 // от рефлекторно кликане при неща като poweroff, SIGKILL и `compose down`.
 export function confirmDanger({ title, what, expect, confirmLabel = 'Потвърди', delayMs = 0 }) {
   return new Promise((resolve) => {
-    const input = el('input', { type: 'text', placeholder: expect, autocomplete: 'off' });
+    // Подсказката е ДОСЛОВНО думата за изписване — преведена („delete") би пратила
+    // човека да пише нещо, което бутонът никога не приема (сравнява се с `expect`).
+    const input = el('input', { type: 'text', autocomplete: 'off' });
+    input.placeholder = expect;
     const btn = el('button', { class: 'btn btn-danger', text: confirmLabel, disabled: true });
     const dlg = el('dialog', { class: 'confirm-dlg' }, [
       el('h3', { text: title }),
