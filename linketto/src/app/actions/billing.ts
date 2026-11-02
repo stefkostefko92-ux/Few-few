@@ -78,7 +78,8 @@ export async function startCheckoutAction(formData: FormData): Promise<void> {
         }
       : {}),
     // Планът се дава само през проверения webhook, не през redirect-а.
-    metadata: { userId: user.id, plan: plan.id },
+    // kind: явна класификация в webhook-а (магазинът също носи plan).
+    metadata: { kind: 'plan', userId: user.id, plan: plan.id },
     locale: 'auto',
     success_url: `${baseUrl()}/${uiLocale}/dashboard?upgraded=1`,
     cancel_url: `${baseUrl()}/${uiLocale}/dashboard`,

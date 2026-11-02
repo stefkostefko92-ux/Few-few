@@ -130,6 +130,8 @@ export async function startProductPurchaseAction(
   const planId = planFor(owner.plan).id;
   const productName = { name: title, ...(description ? { description } : {}) };
   const metadata = {
+    // kind: явна класификация в webhook-а (plan тук е таксата на продавача).
+    kind: 'shop',
     productId: product.id,
     profileId: product.profileId,
     type: product.type,
