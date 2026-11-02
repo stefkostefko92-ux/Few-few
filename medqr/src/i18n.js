@@ -177,8 +177,8 @@ const DICT = {
   },
   'faq.q5': { bg: 'Спазва ли MedQR GDPR?', en: 'Is MedQR GDPR-compliant?' },
   'faq.a5': {
-    bg: 'Да. Обработката се основава на вашето изрично съгласие, а в спешност — на жизненоважни интереси (чл. 9 GDPR). Можете да изтеглите данните си и да изтриете профила си по всяко време. Хостингът е в ЕС (Hetzner, Германия).',
-    en: 'Yes. Processing is based on your explicit consent and, in an emergency, on vital interests (GDPR Art. 9). You can download your data and delete your account at any time. Hosting is in the EU (Hetzner, Germany).',
+    bg: 'Да. Обработката се основава на вашето изрично съгласие, а в спешност — на жизненоважни интереси (чл. 9 GDPR). Можете да изтеглите данните си и да изтриете профила си по всяко време. Хостингът е в ЕС (netcup, Германия).',
+    en: 'Yes. Processing is based on your explicit consent and, in an emergency, on vital interests (GDPR Art. 9). You can download your data and delete your account at any time. Hosting is in the EU (netcup, Germany).',
   },
   'faq.q6': { bg: 'MedQR медицинско изделие ли е?', en: 'Is MedQR a medical device?' },
   'faq.a6': {
