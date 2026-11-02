@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+data
+*.db
+.env
+.env*.local
+npm-debug.log*
+preview-*.png
+shot-*.png
+send-*.png
+_*.png
+README.md

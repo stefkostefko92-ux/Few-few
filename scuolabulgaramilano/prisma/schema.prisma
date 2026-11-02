@@ -1,0 +1,63 @@
+// Scuola bulgara di Milano — content model
+// SQLite keeps operations simple on a single VPS: one file, easy backups.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A localized content block. Each section of the site is one row; the
+/// `it`/`bg`/`en` columns hold that section's fields as JSON (stored as text
+/// on SQLite). Lists (courses, schedule, gallery…) live as arrays inside the
+/// JSON so the structure stays flexible and the admin stays simple.
+model Content {
+  key       String   @id
+  group     String   @default("section") // section | settings | list
+  label     String   @default("") // human label shown in the admin
+  it        String   @default("{}")
+  bg        String   @default("{}")
+  en        String   @default("{}")
+  order     Int      @default(0)
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+/// Uploaded media (images). Files are written to UPLOADS_DIR on disk and
+/// served back through the /uploads/[...] route handler.
+model Media {
+  id        String   @id @default(cuid())
+  filename  String
+  url       String
+  mime      String
+  size      Int
+  width     Int?
+  height    Int?
+  alt       String   @default("")
+  createdAt DateTime @default(now())
+}
+
+/// Optional contact-form / call-back submissions captured from the site.
+model Lead {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  topic     String   @default("")
+  message   String
+  locale    String   @default("it")
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+/// Audit of admin logins, useful on a self-hosted box.
+model LoginEvent {
+  id        String   @id @default(cuid())
+  email     String
+  ok        Boolean
+  ip        String   @default("")
+  createdAt DateTime @default(now())
+}
