@@ -6,6 +6,8 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-02:** Бекъпите на zabobovdol вече оцеляват чистенето на releases, защото autodeploy трие release-локалната backups/ и я подменя със symlink към ZBD_BACKUPS=/opt/few-few/shared/zabobovdol/backups, а compose mount-ът ./backups:/backups минава през него _(диагностика на бекъпи на zabobovdol и преглед на prune_releases; verified; deploy/autodeploy.sh:99,383-386; zabobovdol/docker-compose.yml:104)_
+- **2026-11-02:** Правилото secret-echo в deploy-check.mjs маркира тайна само когато ред без пренасочване или с пренасочване към /dev/stdout|stderr я извежда; `echo VAR=$SECRET > файл` и групите `{ … } > file` се броят за запис и не се маркират _(тълкуване на находки на deploy-check за тайни в deploy скриптове; verified; tools/vps/deploy-check.mjs:62-94)_
 
 - **2026-07-25 (преместено от konveyera 2026-10-31):** restic `forget` (маркира snapshots за триене по GFS политика) и `prune` (реално чисти storage) са умишлено разделени — forget е бърз/безопасен, prune е скъп и заключва хранилището; UI за ротация трябва да ги предлага като отделни стъпки/бутони, не като едно действие. _(shared; verified; "https://forum.restic.net/t/retention-policy/4953")_
 - **2026-07-25 (преместено от konveyera 2026-10-31):** systemd препоръчва MemoryHigh като мек/основен контрол на паметта и MemoryMax само като крайна граница (OOM-killer се вика при MemoryMax) — при добавяне на ресурсни лимити в дашборда предпочети да изложим и двата, не само MemoryMax. _(shared; verified; "https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html")_

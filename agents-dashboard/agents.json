@@ -6768,7 +6768,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 266
+        "lessons": 268
       },
       "evolution": [
         {
@@ -7178,9 +7178,20 @@
           "date": "2026-10-31",
           "event": "v23.1 — учене",
           "detail": "Научи: deploy_erp_ascensori (PR #137) няма автоматичен откат - при провал на health или rilasc… (+23 още)"
+        },
+        {
+          "version": "23.3.0",
+          "date": "2026-11-02",
+          "event": "v23.3 — учене",
+          "detail": "Научи: Бекъпите на zabobovdol вече оцеляват чистенето на releases, защото autodeploy трие rele… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Бекъпите на zabobovdol вече оцеляват чистенето на releases, защото autodeploy трие rele…\" (+1 още)"
+        },
         {
           "date": "2026-10-31",
           "type": "learning",
