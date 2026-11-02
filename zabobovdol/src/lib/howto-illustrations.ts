@@ -109,9 +109,6 @@ const MAP: Record<string, Illustration[]> = {
   ],
 
   // ── Банкомат, карта, е-услуги ──
-  "kak-da-izteglya-pari-bankomat": [
-    { src: "/kak-da/atm.png", alt: "Екран на банкомат за избор на сума" },
-  ],
   "bezopasnost-na-bankomata": [
     { src: "/kak-da/atm-safe.png", alt: "Прикриване на ПИН с ръка на банкомат" },
   ],
@@ -130,7 +127,7 @@ const MAP: Record<string, Illustration[]> = {
   "shop-prosledya-pratka": [
     { src: "/kak-da/shop-track.png", alt: "Проследяване на пратка с Еконт по номер на товарителница" },
   ],
-  "docs-egov": [
+  "c-egov-kakvo-e": [
     { src: "/kak-da/egov.png", alt: "Вход в електронните услуги на egov.bg" },
   ],
   "docs-zdravno-dosie": [
@@ -288,7 +285,10 @@ const MAP: Record<string, Illustration[]> = {
   "set-obnovya-prilozhenie": [{ src: "/kak-da/update-app.png", alt: "Обновяване на приложение в Google Play" }],
   "set-tarsya-prilozhenie": [{ src: "/kak-da/find-app.png", alt: "Намиране на приложение чрез търсене" }],
   "set-avto-zavartane": [{ src: "/kak-da/auto-rotate.png", alt: "Автоматично завъртане на екрана" }],
-  "set-smenya-tapeta": [{ src: "/kak-da/wallpaper.png", alt: "Смяна на фона (тапета)" }],
+  "set-smenya-tapeta": [
+    { src: "/kak-da/wallpaper.png", alt: "Смяна на фона (тапета)" },
+    { src: "/kak-da/set-wallpaper.png", alt: "Задаване на снимка за фон на телефона" },
+  ],
   "set-data-chas": [{ src: "/kak-da/date-time.png", alt: "Настройка на дата и час" }],
   "set-smenya-ezik": [{ src: "/kak-da/phone-language.png", alt: "Смяна на езика на телефона" }],
   "set-prastov-otpechatak": [{ src: "/kak-da/fingerprint.png", alt: "Отключване с пръстов отпечатък" }],
@@ -347,8 +347,6 @@ const MAP: Record<string, Illustration[]> = {
   // ── Безопасност и пари ──
   "safe-namerya-izguben-telefon": [{ src: "/kak-da/find-device.png", alt: "Намиране на изгубен телефон отдалеч" }],
   "safe-otkradnat-telefon": [{ src: "/kak-da/find-device.png", alt: "Заключване на изгубен или откраднат телефон" }],
-  "safe-dvufaktorna": [{ src: "/kak-da/2fa.png", alt: "Двуфакторна защита — код по SMS освен паролата" }],
-  "safe-falshiva-pechalba": [{ src: "/kak-da/fake-prize.png", alt: "Фалшива печалба/лотария — измама, която да затворите" }],
   "money-smetka-barcode": [{ src: "/kak-da/bill-barcode.png", alt: "Плащане на сметка на каса с баркод" }],
   "money-balans-prilozhenie": [{ src: "/kak-da/bank-balance.png", alt: "Проверка на баланса в банковото приложение" }],
   "money-prevod-blizak": [{ src: "/kak-da/bank-transfer.png", alt: "Превод на пари на близък през банковото приложение" }],
@@ -369,7 +367,6 @@ const MAP: Record<string, Illustration[]> = {
 
   // ── Снимки и галерия ──
   "ph-iztriya-snimka": [{ src: "/kak-da/photo-delete.png", alt: "Изтриване на снимка" }],
-  "ph-fon": [{ src: "/kak-da/set-wallpaper.png", alt: "Задаване на снимка за фон на телефона" }],
   "ph-album": [{ src: "/kak-da/create-album.png", alt: "Създаване на албум със снимки" }],
   "ph-vazstanovya": [{ src: "/kak-da/photo-restore.png", alt: "Връщане на изтрита по грешка снимка от кошчето" }],
   "ph-slideshow": [{ src: "/kak-da/slideshow.png", alt: "Гледане на снимките като слайдшоу" }],
@@ -377,27 +374,23 @@ const MAP: Record<string, Illustration[]> = {
   "ph-uvelicha": [{ src: "/kak-da/photo-zoom.png", alt: "Приближаване (увеличаване) на снимка с два пръста" }],
 
   // ── Измами (примерни екрани с подчертани червени флагове) ──
-  "iz-sms-s-link": [{ src: "/kak-da/scam-parcel-sms.png", alt: "Фалшив SMS за пратка с искане да платите по линк" }],
+  "iz-sms-s-link": [
+    { src: "/kak-da/scam-parcel-sms.png", alt: "Фалшив SMS за пратка с искане да платите по линк" },
+    { src: "/kak-da/scam-fake-sms.png", alt: "Фалшив SMS, че сметката е блокирана — измама" },
+  ],
   "s-falshiv-kurier-sms": [{ src: "/kak-da/scam-parcel-sms.png", alt: "Фалшив куриерски SMS — измама" }],
-  "falshivi-sms-primeri": [{ src: "/kak-da/scam-fake-sms.png", alt: "Фалшив SMS, че сметката е блокирана — измама" }],
   "iz-falshivo-obazhdane-banka": [{ src: "/kak-da/scam-bank-call.png", alt: "Фалшиво обаждане „от банката“, което иска кодове" }],
-  "s-falshiv-zvun-banka": [{ src: "/kak-da/scam-bank-call.png", alt: "Фалшиво обаждане от името на банка — измама" }],
   "telefonni-izmami-falshiv-policay": [{ src: "/kak-da/scam-police-call.png", alt: "Фалшиво обаждане „от полицай/прокурор“ — измама" }],
   "iz-telefonna-izmama-vnuche": [{ src: "/kak-da/scam-grandchild.png", alt: "Измама „внук в беда“, който иска пари спешно" }],
-  "izmama-vnuk-rodnina-v-beda": [{ src: "/kak-da/scam-grandchild.png", alt: "Съобщение от уж близък в беда, който иска пари — измама" }],
-  "s-falshiv-profil-rodnina": [{ src: "/kak-da/scam-grandchild.png", alt: "Фалшив профил на роднина, който иска пари — измама" }],
   "t2-kakvo-e-otp-kod": [{ src: "/kak-da/scam-otp.png", alt: "SMS с еднократен код (OTP), който не бива да давате на никого" }],
   "x-falshiva-bankova-stranica": [{ src: "/kak-da/scam-phishing-bank.png", alt: "Фалшива страница на банка без катинарче и с грешен адрес" }],
   "iz-falshivi-saytove": [{ src: "/kak-da/scam-fake-shop.png", alt: "Фалшив онлайн магазин с нереална цена и само предплащане" }],
   "x-izmama-investicii": [{ src: "/kak-da/scam-investment.png", alt: "Измама с „инвестиция“, обещаваща бързи печалби" }],
-  "m-vnimanie-investicii2": [{ src: "/kak-da/scam-investment.png", alt: "Измамна инвестиционна схема с гарантирана печалба" }],
   "x-izmama-lyubov": [{ src: "/kak-da/scam-love.png", alt: "Измама „любов онлайн“ — непознат, който иска пари" }],
   "s-remote-dostap-izmama": [{ src: "/kak-da/scam-remote.png", alt: "Измама с отдалечен достъп (инсталиране на приложение по чуждо нареждане)" }],
   "iz-proveri-obazhdane": [{ src: "/kak-da/scam-verify.png", alt: "Как да проверите дали обаждане или SMS е истинско" }],
   "money-falshiva-banknota": [{ src: "/kak-da/fake-banknote.png", alt: "Как да познаете истинска банкнота по защитните белези" }],
   "iz-falshiva-nagrada": [{ src: "/kak-da/fake-prize.png", alt: "Фалшива печалба/награда — измама" }],
-  "s-falshiva-pechalba-link": [{ src: "/kak-da/fake-prize.png", alt: "Фалшива печалба с линк — измама" }],
-  "x-falshiva-pechalba-mreja": [{ src: "/kak-da/fake-prize.png", alt: "Фалшива печалба онлайн — измама" }],
 
   // ── Еврото (нагледни помагала) ──
   "e-dvoyni-ceni-ot-koga": [{ src: "/kak-da/euro-dual-price.png", alt: "Ценоразпис с двете цени — в левове и в евро" }],
@@ -424,7 +417,7 @@ const MAP: Record<string, Illustration[]> = {
   "kak-da-napravya-snimka": [{ src: "/kak-da/camera.png", alt: "Правене на снимка с бутона на камерата" }],
   "e2-selfi-po-dobro": [{ src: "/kak-da/camera.png", alt: "Селфи с предната камера" }],
   "kak-da-se-obadya-viber-messenger": [{ src: "/kak-da/viber-call.png", alt: "Безплатно обаждане по Viber през интернет" }],
-  "kak-da-se-video-obadya-viber-messenger": [{ src: "/kak-da/video-call.png", alt: "Видео обаждане с превключване на камерата" }],
+  "kak-da-se-obadya-video-blizki": [{ src: "/kak-da/video-call.png", alt: "Видео обаждане с превключване на камерата" }],
   "kak-da-izpratya-snimka-klip-viber-messenger": [{ src: "/kak-da/viber-prikachi.png", alt: "Изпращане на снимка или клип от менюто за прикачване" }],
   "kak-da-izpratya-link": [{ src: "/kak-da/share-link.png", alt: "Копиране и изпращане на линк на сайт" }],
   "kak-da-kopiram-link": [{ src: "/kak-da/share-link.png", alt: "Копиране на линк на сайт" }],
@@ -433,18 +426,16 @@ const MAP: Record<string, Illustration[]> = {
   "e2-snimka-na-kontakt": [{ src: "/kak-da/contact-photo.png", alt: "Слагане на снимка на контакт" }],
   "e2-pryak-pat-sayt": [{ src: "/kak-da/home-shortcut.png", alt: "Пряк път към сайт на началния екран" }],
   "e2-glasova-belezhka": [{ src: "/kak-da/voice-memo.png", alt: "Запис на гласова бележка" }],
-  "e2-chete-sms-na-glas": [{ src: "/kak-da/screen-reader.png", alt: "Четене на съобщенията на глас" }],
   "e2-avtomatichno-zakliuchvane": [{ src: "/kak-da/auto-lock.png", alt: "Автоматично заключване на екрана" }],
   "e2-spri-izskachashti-reklami": [{ src: "/kak-da/block-popups.png", alt: "Спиране на изскачащите реклами в браузъра" }],
   "e2-namali-danni-youtube": [{ src: "/kak-da/data-saver.png", alt: "Намаляване на разхода на данни при видео" }],
   "kak-da-zaredya-telefon-vaucher": [{ src: "/kak-da/recharge-voucher.png", alt: "Зареждане на предплатен телефон с ваучер" }],
 
   // ── Е-услуги и документи ──
-  "c-proveria-izbiratelna-sekciya2": [{ src: "/kak-da/polling-station.png", alt: "Проверка на избирателната секция по ЕГН" }],
+  "x-izbiratelna-sekciya": [{ src: "/kak-da/polling-station.png", alt: "Проверка на избирателната секция по ЕГН" }],
   "c-kopiya-dokumenti": [{ src: "/kak-da/scan-document.png", alt: "Сканиране на документ с камерата" }],
   "c-udostoverenie-online": [{ src: "/kak-da/egov.png", alt: "Издаване на удостоверение онлайн през e-услуги" }],
   "c-proveria-zadalzheniya-nap": [{ src: "/kak-da/pik-nap.png", alt: "Проверка на данъчни задължения в НАП" }],
-  "pn-proveri-pensiya": [{ src: "/kak-da/noi-pension.png", alt: "Проверка на размера на пенсията (НОИ)" }],
   "x-povtorna-recepta": [{ src: "/kak-da/health-record.png", alt: "Повторна електронна рецепта от здравното досие" }],
   "x-plati-smetka-prilozhenie": [{ src: "/kak-da/bill-barcode.png", alt: "Плащане на сметка през приложение/баркод" }],
   "iz-bezopasno-teglene-pari": [{ src: "/kak-da/atm.png", alt: "Безопасно теглене на пари от банкомат" }],
@@ -467,8 +458,6 @@ const MAP: Record<string, Illustration[]> = {
 
   // ── Поддръжка на телефона ──
   "x-zaklyuchi-prilozhenie": [{ src: "/kak-da/lock-app.png", alt: "Заключване на приложение с пръст/ПИН" }],
-  "x-osvobodi-myasto-snimki": [{ src: "/kak-da/free-space.png", alt: "Освобождаване на място в паметта" }],
-  "t2-osvobodi-myasto2": [{ src: "/kak-da/free-space.png", alt: "Освобождаване на място на телефона" }],
   "x-prehvarli-nov-telefon": [{ src: "/kak-da/transfer-phone.png", alt: "Прехвърляне на данни към нов телефон" }],
 
   // ── Нови екрани (gen-7): настройки и действия ──
@@ -482,14 +471,9 @@ const MAP: Record<string, Illustration[]> = {
 
   // ── Повторно използване на съществуващи екрани ──
   // Известия, звук, „Не безпокойте“
-  "x-nochno-bezpokoene": [{ src: "/kak-da/dnd.png", alt: "Режим „Не безпокойте“ за тишина през нощта" }],
-  "e2-tih-nochem-vazhni": [{ src: "/kak-da/dnd.png", alt: "„Не безпокойте“ с изключения за важни контакти" }],
   "x-skrij-izvestiya-zaklyuchen": [{ src: "/kak-da/lock-screen.png", alt: "Скриване на съдържанието на известията на заключен екран" }],
   "t2-kakvo-e-izvestie": [{ src: "/kak-da/app-notifications.png", alt: "Известие (нотификация) от приложение" }],
   // Свързване
-  "t2-svurzia-slushalki": [{ src: "/kak-da/bluetooth.png", alt: "Свързване на безжични (Bluetooth) слушалки" }],
-  "t2-kakvo-e-bluetooth2": [{ src: "/kak-da/bluetooth.png", alt: "Bluetooth в настройките на телефона" }],
-  "day-kolonka-muzika": [{ src: "/kak-da/bluetooth.png", alt: "Свързване на Bluetooth колонка за музика" }],
   "net-obshtestven-wifi": [{ src: "/kak-da/quick-wifi.png", alt: "Свързване с Wi-Fi мрежа" }],
   "t2-wifi-vs-danni": [{ src: "/kak-da/mobile-data.png", alt: "Wi-Fi и мобилни данни в настройките" }],
   // Поддръжка на телефона
@@ -501,38 +485,26 @@ const MAP: Record<string, Illustration[]> = {
   "t2-kakvo-e-update": [{ src: "/kak-da/update-app.png", alt: "Обновяване (update) на приложение" }],
   "t2-zashtita-krazhba-telefon": [{ src: "/kak-da/find-device.png", alt: "„Намери устройството ми“ при кражба или загуба" }],
   "t2-kakvo-e-tamen-rezhim": [{ src: "/kak-da/night-mode.png", alt: "Тъмен режим в настройките" }],
-  "t2-kakvo-e-samoleten": [{ src: "/kak-da/airplane.png", alt: "Самолетен режим" }],
-  "t2-kakvo-e-screenshot2": [{ src: "/kak-da/screenshot.png", alt: "Снимка на екрана (screenshot)" }],
   "t2-kakvo-e-glasov-asistent": [{ src: "/kak-da/voice-search.png", alt: "Гласов асистент (Google/Siri)" }],
   // Акаунти и сигурност
   "akaunt-izlizam": [{ src: "/kak-da/logout-device.png", alt: "Изход (logout) от акаунт или устройство" }],
   "akaunt-dve-stapki": [{ src: "/kak-da/2fa.png", alt: "Защита в две стъпки (код по SMS)" }],
-  "s-zashtita-dve-stapki2": [{ src: "/kak-da/2fa.png", alt: "Защита в две стъпки за акаунта" }],
   // Пенсии, документи, пари
-  "m-noi-pensiya2": [{ src: "/kak-da/noi-pension.png", alt: "Проверка на пенсия и осигуряване (НОИ)" }],
   "pn-kak-poluchavam-pensiya": [{ src: "/kak-da/noi-pension.png", alt: "Пенсия (НОИ)" }],
   "docs-pik-noi": [{ src: "/kak-da/noi-pension.png", alt: "ПИК на НОИ за справки онлайн" }],
-  "m-pik-noi2": [{ src: "/kak-da/noi-pension.png", alt: "ПИК на НОИ" }],
-  "c-pik-nap-kakvo": [{ src: "/kak-da/pik-nap.png", alt: "ПИК на НАП за е-услуги" }],
   "docs-kat-globi": [{ src: "/kak-da/check-fines.png", alt: "Проверка на глоби от КАТ онлайн" }],
   "money-iban": [{ src: "/kak-da/bank-transfer.png", alt: "IBAN и банков превод" }],
-  "m-iban-prevod2": [{ src: "/kak-da/bank-transfer.png", alt: "Банков превод по IBAN" }],
   "money-online-bankirane": [{ src: "/kak-da/bank-balance.png", alt: "Онлайн банкиране — преглед на сметката" }],
   "money-proverya-dvizheniya": [{ src: "/kak-da/bank-balance.png", alt: "Движения и разписки по сметката" }],
-  "m-plati-smetka-easypay": [{ src: "/kak-da/bill-barcode.png", alt: "Плащане на сметка на каса по баркод" }],
-  "m-sravniavam-ceni": [{ src: "/kak-da/compare-prices.png", alt: "Сравняване на цени преди покупка" }],
-  "m-vrashtane-stoka-prava": [{ src: "/kak-da/return-item.png", alt: "Връщане на стока" }],
+  "kak-da-platya-na-kasa-easypay": [{ src: "/kak-da/bill-barcode.png", alt: "Плащане на сметка на каса по баркод" }],
   "m-garanciya-prava": [{ src: "/kak-da/receipt-warranty.png", alt: "Гаранция и касова бележка" }],
   // Пазаруване и доставка
   "k-dostavka-hrana": [{ src: "/kak-da/shop-order.png", alt: "Поръчка на храна с доставка" }],
   "h-porchka-lekarstva": [{ src: "/kak-da/shop-order.png", alt: "Поръчка на лекарства с доставка" }],
-  "k-spisak-pazaruvane2": [{ src: "/kak-da/shopping-list.png", alt: "Списък за пазаруване" }],
   "shop-bezopasno": [{ src: "/kak-da/scam-fake-shop.png", alt: "Разпознаване на фалшив онлайн магазин" }],
-  "i-pazaruvane-online-bezopasno2": [{ src: "/kak-da/scam-fake-shop.png", alt: "Безопасно онлайн пазаруване" }],
   // Здраве и спешност
   "x-podgotovka-video-pregled": [{ src: "/kak-da/telemedicine.png", alt: "Видео преглед при лекар (телемедицина)" }],
   "h-speshen-profil": [{ src: "/kak-da/emergency-contact-lock.png", alt: "Спешен профил на заключен екран" }],
-  "g-speshen-profil-blizak": [{ src: "/kak-da/emergency-contact-lock.png", alt: "Спешен профил на телефона на близък" }],
   "h-zapisha-stoynosti": [{ src: "/kak-da/health-record.png", alt: "Записване на здравни стойности" }],
   "h-spisak-lekarstva": [{ src: "/kak-da/health-record.png", alt: "Списък с приеманите лекарства" }],
   "h-napomnyane-kravno": [{ src: "/kak-da/reminder.png", alt: "Напомняне за измерване на кръвно/захар" }],
@@ -545,18 +517,9 @@ const MAP: Record<string, Illustration[]> = {
   "t-spirka-nablizo": [{ src: "/kak-da/maps-nearby.png", alt: "Автобусна спирка наблизо" }],
   "t-parking-sms": [{ src: "/kak-da/sms-new.png", alt: "Плащане на паркиране със SMS" }],
   // Свободно време
-  "z-radio-online2": [{ src: "/kak-da/radio.png", alt: "Слушане на радио онлайн" }],
-  "z-audiokniga2": [{ src: "/kak-da/audiobook.png", alt: "Аудиокниги и подкасти" }],
-  "z-knigi-telefon2": [{ src: "/kak-da/ebook.png", alt: "Четене на книги с едри букви" }],
-  "z-recepti-video2": [{ src: "/kak-da/recipes.png", alt: "Рецепти с видео стъпки" }],
-  "z-stari-filmi2": [{ src: "/kak-da/movies.png", alt: "Гледане на филми на телефона" }],
-  "z-igri-pamet": [{ src: "/kak-da/solitaire.png", alt: "Игри за ума (пасианс, судоку)" }],
-  "z-prognoza-zanimaniya": [{ src: "/kak-da/weather.png", alt: "Проверка на времето преди разходка" }],
   "z-rakodelie-video": [{ src: "/kak-da/youtube-watch.png", alt: "Видео уроци по ръкоделие" }],
   "z-bezplatni-kursove": [{ src: "/kak-da/youtube-watch.png", alt: "Безплатни видео уроци" }],
-  "z-snimki-album-spomeni": [{ src: "/kak-da/create-album.png", alt: "Албум със спомени от снимките" }],
   // Общност и ежедневие
-  "o-grupov-video-semeystvo": [{ src: "/kak-da/group-video.png", alt: "Групов видео разговор със семейството" }],
   "o-zapisha-rozhdeni-dni": [{ src: "/kak-da/calendar-event.png", alt: "Рождени дни и важни дати в календара" }],
   "o-vremeto-planiram-den": [{ src: "/kak-da/notes.png", alt: "Планиране на деня и задачите" }],
   "day-zadachi": [{ src: "/kak-da/notes.png", alt: "Списък със задачи" }],
