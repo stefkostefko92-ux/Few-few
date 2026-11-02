@@ -24,7 +24,9 @@ import { emitJson, finish } from "../lib/emit.mjs";
 import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const MEM = join(ROOT, ".claude", "agents", "_memory");
+// CURATE_MEM_DIR (02.11.2026): същото като promote.mjs и curate.mjs — вълната трябва да чете lid-овете от
+// върха на agents/memory, не от работното дърво; иначе lid от едното място не съществува в другото.
+const MEM = process.env.CURATE_MEM_DIR || join(ROOT, ".claude", "agents", "_memory");
 const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes("--json");
 const only = (() => { const i = argv.indexOf("--agent"); return i >= 0 ? argv[i + 1] : null; })();

@@ -161,6 +161,31 @@ export function addLessons(txt, { verified = [], quarantine = [] } = {}) {
   return { txt: out, added };
 }
 
+const BULLET = /^\s*-\s+\*\*/;
+
+/**
+ * Тристранно сливане на файл с памет по ПОУКИ (02.11.2026). Започва от `ours` и прилага промените на `theirs`
+ * спрямо общия предшественик `base`: първо махнатите там редове (курация, промоция от Карантина, стария вид на
+ * опровергана поука), после добавените (без дубли — точни или по тяло, през маркерите).
+ *
+ * Защо: сгъването на main взимаше дървото на main и пренасяше само ДОБАВЕНИТЕ в клона на паметта редове —
+ * всяка редакция в agents/memory се губеше. Измерено: от 1177 нови обхвата във върха бяха останали 9.
+ * Симетрично е за поуките: редакция от която и да е страна оцелява; при редакция и от двете страни на един
+ * ред печели `ours` (другата версия е със същото тяло и дедупът я отхвърля).
+ */
+export function mergeLessons3(baseTxt, oursTxt, theirsTxt) {
+  const lines = (t) => String(t || "").split("\n").filter((l) => BULLET.test(l)).map((l) => l.trimEnd());
+  const baseSet = new Set(lines(baseTxt));
+  const theirsSet = new Set(lines(theirsTxt));
+  const removed = new Set([...baseSet].filter((l) => !theirsSet.has(l)));
+  let out = String(oursTxt || "").split("\n").filter((l) => !(BULLET.test(l) && removed.has(l.trimEnd()))).join("\n");
+  const added = {
+    verified: sectionLessons(theirsTxt, "verified").filter((l) => !baseSet.has(l.trimEnd())),
+    quarantine: sectionLessons(theirsTxt, "quarantine").filter((l) => !baseSet.has(l.trimEnd())),
+  };
+  return addLessons(out, added).txt;
+}
+
 // ─── Таблото: версии и еволюция ────────────────────────────────────────────────────────────
 export function cmpVer(a, b) {
   const pa = String(a).split(".").map((n) => parseInt(n, 10) || 0);
