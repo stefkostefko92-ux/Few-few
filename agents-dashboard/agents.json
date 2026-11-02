@@ -14224,7 +14224,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 281
+        "lessons": 285
       },
       "evolution": [
         {
@@ -14316,9 +14316,20 @@
           "date": "2026-11-02",
           "event": "v27.7 — учене",
           "detail": "Научи: Записът за разход (v2) носи само agent, model, effort, turns, токени, tools, resultByte…"
+        },
+        {
+          "version": "28.1.0",
+          "date": "2026-11-02",
+          "event": "v28.1 — учене",
+          "detail": "Научи: Вграденият помощник claude-code-guide тича на Haiku (реално пускане haiku-4-5 на 24.09.… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Вграденият помощник claude-code-guide тича на Haiku (реално пускане haiku-4-5 на 24.09.…\" (+3 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
