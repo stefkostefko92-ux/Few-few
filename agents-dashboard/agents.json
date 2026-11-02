@@ -1250,7 +1250,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 592
+        "lessons": 593
       },
       "evolution": [
         {
@@ -2140,9 +2140,20 @@
           "date": "2026-11-02",
           "event": "v53.9 — учене",
           "detail": "Научи: Guard `import.meta.url === pathToFileURL(process.argv[1]).href` все още е fail-open, ко…"
+        },
+        {
+          "version": "54.0.0",
+          "date": "2026-11-02",
+          "event": "v54.0 — учене",
+          "detail": "Научи: `node --test <папка>` на Node 22 не обхожда папката, а дава 1 провален „тест“ и червен …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „`node --test <папка>` на Node 22 не обхожда папката, а дава 1 провален „тест“ и червен …\""
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
