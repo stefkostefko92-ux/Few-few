@@ -41,7 +41,7 @@ export function Tile({ label, value, sub, ok }) {
     <div className="cs-stat min-w-0">
       <div className="cs-stat-label">{label}</div>
       <div className={`cs-stat-value break-words ${long ? "!text-2xl sm:!text-3xl" : ""} ${ok === true ? "text-success" : ok === false ? "text-danger" : ""}`}>{value}</div>
-      {sub && <div className="font-mono text-[10px] text-cs-dim mt-1 break-all">{sub}</div>}
+      {sub && <div className="text-xs text-cs-dim mt-1 break-all">{sub}</div>}
     </div>
   );
 }
@@ -106,10 +106,10 @@ export function SystemTab() {
       <Section title="Outbound webhooks — failing deliveries" icon={AlertTriangle}>
         {!d.webhooks?.failing ? <p className="text-sm text-cs-dim">No webhook has failed deliveries.</p> : (
           <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>Server</th><th>Webhook</th><th>Failures</th><th>Last status</th><th>Last delivery</th><th>Enabled</th></tr></thead><tbody>
-            {(d.webhooks.items || []).map((w) => <tr key={w.id}><td className="font-mono text-[10px]">{w.serverId}</td><td>{w.name}</td><td className="text-danger">{w.failCount}</td><td className="font-mono text-xs">{w.lastStatus ?? "—"}</td><td className="text-xs">{ago(w.lastDeliveryAt)}</td><td><Bool v={w.enabled} /></td></tr>)}
+            {(d.webhooks.items || []).map((w) => <tr key={w.id}><td className="font-mono text-[11px]">{w.serverId}</td><td>{w.name}</td><td className="text-danger">{w.failCount}</td><td className="font-mono text-xs">{w.lastStatus ?? "—"}</td><td className="text-xs">{ago(w.lastDeliveryAt)}</td><td><Bool v={w.enabled} /></td></tr>)}
           </tbody></table></div>
         )}
-        <p className="font-mono text-[10px] text-cs-dim mt-2">{d.webhooks?.failing ?? 0} webhook(s) with failures across all servers · the operator sees the same on their Webhooks page.</p>
+        <p className="text-xs leading-relaxed text-cs-dim mt-2">{d.webhooks?.failing ?? 0} webhook(s) with failures across all servers · the operator sees the same on their Webhooks page.</p>
       </Section>
       <Section title="Configuration flags" icon={FileText}>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
@@ -153,13 +153,13 @@ export function SecurityTab() {
       <Section title="Staff accounts" icon={ShieldCheck}>
         <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>User</th><th>Role</th><th>MFA</th><th>Backup codes</th><th>Sessions</th><th></th></tr></thead><tbody>
           {(d.staff || []).map((s) => (
-            <tr key={s.id}><td>{s.username} <span className="font-mono text-[10px] text-cs-dim">{s.id}</span></td><td className="font-mono text-xs">{s.globalRole}</td>
+            <tr key={s.id}><td>{s.username} <span className="font-mono text-[11px] text-cs-dim">{s.id}</span></td><td className="font-mono text-xs">{s.globalRole}</td>
               <td>{s.mfaEnabled ? <span className="text-success">enabled {ago(s.mfaEnabledAt)}</span> : <span className="text-danger flex items-center gap-1"><ShieldAlert className="w-3 h-3" /> missing</span>}</td>
               <td>{s.mfaEnabled ? s.backupCodesLeft : "—"}</td><td>{s.sessions}</td>
               <td>{s.mfaEnabled && <button onClick={() => { setResetTarget({ id: s.id, username: s.username }); setResetReason(""); }} className="text-warning text-xs flex items-center gap-1"><KeyRound className="w-3 h-3" /> Reset MFA</button>}</td></tr>
           ))}
         </tbody></table></div>
-        <p className="font-mono text-[10px] text-cs-dim mt-2">Reset MFA = lost phone + lost backup codes. Clears the second factor, revokes the user's sessions, audits the reason and DMs the owner. Your own factor is managed only from Account security.</p>
+        <p className="text-xs leading-relaxed text-cs-dim mt-2">Reset MFA = lost phone + lost backup codes. Clears the second factor, revokes the user's sessions, audits the reason and DMs the owner. Your own factor is managed only from Account security.</p>
         {resetTarget && (
           <form onSubmit={(e) => { e.preventDefault(); resetMut.mutate({ id: resetTarget.id, reason: resetReason }); }} className="mt-3 flex flex-wrap items-end gap-2 bg-cs-bg rounded-lg p-3">
             <span className="text-sm text-cs-text">Reset second factor for <strong>{resetTarget.username}</strong>:</span>
@@ -178,12 +178,12 @@ export function SecurityTab() {
             ))}
           </tbody></table></div>
         )}
-        <p className="font-mono text-[10px] text-cs-dim mt-2">Ladder: {(d.bruteForce?.steps || []).map((s) => `${s.failures}→${Math.round(s.blockMs / 60000)}m`).join(" · ")} · window {d.bruteForce?.windowSec}s. Redis-backed counters are shared across processes but listed only for this process.</p>
+        <p className="text-xs leading-relaxed text-cs-dim mt-2">Ladder: {(d.bruteForce?.steps || []).map((s) => `${s.failures}→${Math.round(s.blockMs / 60000)}m`).join(" · ")} · window {d.bruteForce?.windowSec}s. Redis-backed counters are shared across processes but listed only for this process.</p>
       </Section>
       <Section title="API keys (all servers)" icon={KeyRound}>
         <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>Prefix</th><th>Name</th><th>Server</th><th>Scopes</th><th>Used</th><th>Last use</th><th>Status</th><th></th></tr></thead><tbody>
           {(d.apiKeys?.items || []).slice(0, 100).map((k) => (
-            <tr key={k.id}><td className="font-mono text-xs">{k.keyPrefix}…</td><td>{k.name}</td><td className="font-mono text-[10px]">{k.serverId}</td><td className="text-xs">{(k.scopes || []).join(", ")}</td><td>{k.requestCount}</td><td className="text-xs">{ago(k.lastUsedAt)}</td>
+            <tr key={k.id}><td className="font-mono text-xs">{k.keyPrefix}…</td><td>{k.name}</td><td className="font-mono text-[11px]">{k.serverId}</td><td className="text-xs">{(k.scopes || []).join(", ")}</td><td>{k.requestCount}</td><td className="text-xs">{ago(k.lastUsedAt)}</td>
               <td>{k.revokedAt ? <span className="text-cs-dim">revoked</span> : k.expiresAt && new Date(k.expiresAt) < new Date() ? <span className="text-warning">expired</span> : <span className="text-success">active</span>}</td>
               <td>{!k.revokedAt && <button onClick={() => setConfirm({ kind: "revoke", id: k.id, label: `${k.keyPrefix}… (${k.name})` })} className="text-danger text-xs flex items-center gap-1"><Trash2 className="w-3 h-3" /> Revoke</button>}</td></tr>
           ))}
@@ -192,7 +192,7 @@ export function SecurityTab() {
       <Section title="Security events — last 7 days" icon={AlertTriangle}>
         {!d.events?.length ? <p className="text-sm text-cs-dim">No security events.</p> : (
           <ul className="space-y-1 text-sm">
-            {d.events.map((e) => <li key={e.id} className="flex gap-3"><span className="font-mono text-[10px] text-cs-dim w-36 flex-shrink-0">{fmt(e.createdAt)}</span><span className="font-mono text-xs text-cs-cyan">{e.action}</span><span className="text-cs-muted truncate">{e.actor?.username || e.actorTag || "—"} → {e.targetId}</span></li>)}
+            {d.events.map((e) => <li key={e.id} className="flex gap-3"><span className="text-[11px] tabular-nums text-cs-dim w-36 flex-shrink-0">{fmt(e.createdAt)}</span><span className="font-mono text-xs text-cs-cyan">{e.action}</span><span className="text-cs-muted truncate">{e.actor?.username || e.actorTag || "—"} → {e.targetId}</span></li>)}
           </ul>
         )}
       </Section>
@@ -229,25 +229,25 @@ export function BillingTab() {
         <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>Server</th><th>Plan</th><th>SKU</th><th>Subscription</th><th>Period end</th><th>Since</th></tr></thead><tbody>
           {!d.discord?.length && <tr><td colSpan={6} className="text-cs-dim">No Discord-billed servers yet.</td></tr>}
           {(d.discord || []).map((s) => (
-            <tr key={s.id}><td>{s.name} <span className="font-mono text-[10px] text-cs-dim">{s.id}</span></td><td className="font-mono text-xs">{s.plan}</td><td className="font-mono text-[10px]">{s.discordSkuId}</td>
+            <tr key={s.id}><td>{s.name} <span className="font-mono text-[11px] text-cs-dim">{s.id}</span></td><td className="font-mono text-xs">{s.plan}</td><td className="font-mono text-[11px]">{s.discordSkuId}</td>
               <td className={s.statusLabel === "ending" ? "text-warning" : s.statusLabel === "inactive" ? "text-danger" : "text-success"}>{s.statusLabel || "—"}</td>
               <td className="text-xs">{fmt(s.discordCurrentPeriodEnd)}</td><td className="text-xs">{fmt(s.premiumSince)}</td></tr>
           ))}
         </tbody></table></div>
-        <p className="font-mono text-[10px] text-cs-dim mt-2">Status is a label only (0 active · 1 inactive · 2 ending per Discord docs). Access comes from entitlements; reconcile runs every 6 h and on demand.</p>
+        <p className="text-xs leading-relaxed text-cs-dim mt-2">Status is a label only (0 active · 1 inactive · 2 ending per Discord docs). Access comes from entitlements; reconcile runs every 6 h and on demand.</p>
       </Section>
       <Section title="Legacy Stripe subscriptions" icon={CreditCard}>
         <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>Server</th><th>Plan</th><th>Interval</th><th>Stripe status</th><th>Grace until</th><th>Past due since</th></tr></thead><tbody>
           {!d.stripe?.length && <tr><td colSpan={6} className="text-cs-dim">None — Stripe is legacy only.</td></tr>}
           {(d.stripe || []).map((s) => (
-            <tr key={s.id}><td>{s.name} <span className="font-mono text-[10px] text-cs-dim">{s.id}</span></td><td className="font-mono text-xs">{s.plan}{s.gracePlan ? ` (grace: ${s.gracePlan})` : ""}</td><td>{s.billingInterval || "—"}</td><td className="font-mono text-xs">{s.stripeStatus || "—"}</td><td className="text-xs">{fmt(s.accessUntil)}</td><td className="text-xs">{fmt(s.pastDueSince)}</td></tr>
+            <tr key={s.id}><td>{s.name} <span className="font-mono text-[11px] text-cs-dim">{s.id}</span></td><td className="font-mono text-xs">{s.plan}{s.gracePlan ? ` (grace: ${s.gracePlan})` : ""}</td><td>{s.billingInterval || "—"}</td><td className="font-mono text-xs">{s.stripeStatus || "—"}</td><td className="text-xs">{fmt(s.accessUntil)}</td><td className="text-xs">{fmt(s.pastDueSince)}</td></tr>
           ))}
         </tbody></table></div>
       </Section>
       {d.agencies?.length > 0 && (
         <Section title="Legacy agencies" icon={Server}>
           <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>Agency</th><th>Owner</th><th>Plan</th><th>Seats</th><th>Source</th><th>Status</th><th>Active</th></tr></thead><tbody>
-            {d.agencies.map((a) => <tr key={a.id}><td className="font-mono text-[10px]">{a.id}</td><td className="font-mono text-[10px]">{a.ownerUserId}</td><td>{a.plan}</td><td>{a._count?.servers ?? "?"}/{a.seatLimit}</td><td>{a.planSource}</td><td className="font-mono text-xs">{a.stripeStatus || "—"}</td><td><Bool v={a.active} /></td></tr>)}
+            {d.agencies.map((a) => <tr key={a.id}><td className="font-mono text-[11px]">{a.id}</td><td className="font-mono text-[11px]">{a.ownerUserId}</td><td>{a.plan}</td><td>{a._count?.servers ?? "?"}/{a.seatLimit}</td><td>{a.planSource}</td><td className="font-mono text-xs">{a.stripeStatus || "—"}</td><td><Bool v={a.active} /></td></tr>)}
           </tbody></table></div>
         </Section>
       )}
@@ -276,7 +276,7 @@ export function FleetTab() {
       <Section title="White-label fleet" icon={Bot}
         right={<button onClick={() => reconcile.mutate()} disabled={reconcile.isPending} className="cs-btn-secondary text-xs flex items-center gap-1"><RefreshCw className={`w-3 h-3 ${reconcile.isPending ? "animate-spin" : ""}`} /> Reconcile brand bots now</button>}>
         <FleetBots />
-        <p className="font-mono text-[10px] text-cs-dim mt-2">Reconcile converges running brand bots to the entitled set (the bot fails closed when the backend is unreachable — it never shuts live clients down on a network error). Pause keeps the token but stops the bot until you resume it — reconcile will not restart a paused bot.</p>
+        <p className="text-xs leading-relaxed text-cs-dim mt-2">Reconcile converges running brand bots to the entitled set (the bot fails closed when the backend is unreachable — it never shuts live clients down on a network error). Pause keeps the token but stops the bot until you resume it — reconcile will not restart a paused bot.</p>
       </Section>
     </div>
   );
@@ -320,9 +320,9 @@ function FleetBots() {
           const busy = act.isPending && act.variables?.id === b.id;
           return (
             <tr key={b.id}>
-              <td className="min-w-[10rem]">{b.name} <div className="font-mono text-[10px] text-cs-dim">{b.id}</div></td>
-              <td className="min-w-[9rem]">{b.customBotName || b.live?.tag || "—"}{b.live?.ping != null && <div className="font-mono text-[10px] text-cs-dim">{b.live.ping} ms</div>}</td>
-              <td><span className={cls}>{state}</span>{b.customBotPausedAt && <div className="font-mono text-[10px] text-cs-dim">since {fmt(b.customBotPausedAt)}</div>}</td>
+              <td className="min-w-[10rem]">{b.name} <div className="font-mono text-[11px] text-cs-dim">{b.id}</div></td>
+              <td className="min-w-[9rem]">{b.customBotName || b.live?.tag || "—"}{b.live?.ping != null && <div className="text-[11px] tabular-nums text-cs-dim">{b.live.ping} ms</div>}</td>
+              <td><span className={cls}>{state}</span>{b.customBotPausedAt && <div className="text-[11px] tabular-nums text-cs-dim">since {fmt(b.customBotPausedAt)}</div>}</td>
               <td className="font-mono text-xs">{b.plan}{b.agencyId ? " · agency" : ""}</td>
               <td className="text-xs">{fmt(b.accessUntil)}</td>
               <td className="text-right whitespace-nowrap">
@@ -401,7 +401,7 @@ export function ComplianceTab() {
           <input className="cs-input !w-72 font-mono" value={lookupId} onChange={(e) => setLookupId(e.target.value)} placeholder="Discord user id (snowflake)" inputMode="numeric" />
           <button type="submit" className="cs-btn-primary">Look up</button>
         </form>
-        <p className="font-mono text-[10px] text-cs-dim mt-2">Discord Developer Terms §5(b): delete API Data promptly when the user asks. Users can also self-serve with <code>/privacy delete</code> in Discord (identity scope) or the dashboard Privacy settings.</p>
+        <p className="text-xs leading-relaxed text-cs-dim mt-2">Discord Developer Terms §5(b): delete API Data promptly when the user asks. Users can also self-serve with <code>/privacy delete</code> in Discord (identity scope) or the dashboard Privacy settings.</p>
         {error && <p role="alert" className="text-danger text-sm mt-3">{adminErr(error)}</p>}
         {activeId && summary && (
           <div className="mt-4 space-y-4">
@@ -434,7 +434,7 @@ export function ComplianceTab() {
       <Section title="Data subject request log" icon={FileText}>
         {!requests?.requests?.length ? <p className="text-sm text-cs-dim">No requests recorded yet.</p> : (
           <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>When</th><th>Action</th><th>Subject</th><th>By</th><th>Details</th></tr></thead><tbody>
-            {requests.requests.map((r) => <tr key={r.id}><td className="text-xs">{fmt(r.createdAt)}</td><td className="font-mono text-xs">{r.action}</td><td className="font-mono text-[10px]">{r.targetId}</td><td className="text-xs">{r.actor?.username || r.actorTag || "—"}</td><td className="font-mono text-[10px] text-cs-dim">{r.metadata ? `${r.metadata.scope || ""} ${r.metadata.via || ""} ${r.metadata.note || ""}`.trim() : ""}</td></tr>)}
+            {requests.requests.map((r) => <tr key={r.id}><td className="text-xs">{fmt(r.createdAt)}</td><td className="font-mono text-xs">{r.action}</td><td className="font-mono text-[11px]">{r.targetId}</td><td className="text-xs">{r.actor?.username || r.actorTag || "—"}</td><td className="font-mono text-[11px] text-cs-dim">{r.metadata ? `${r.metadata.scope || ""} ${r.metadata.via || ""} ${r.metadata.note || ""}`.trim() : ""}</td></tr>)}
           </tbody></table></div>
         )}
       </Section>
@@ -471,7 +471,7 @@ function SeasonForm({ initial, catalog, onSubmit, pending, submitLabel, withCode
         <div className="cs-label mb-1">Seasonal companions — {form.companionIds.length} selected (they spawn only while the season is active and leave when it ends)</div>
         {groups.map((g) => (
           <div key={g.r} className="mb-2">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-cs-dim mb-1">{g.items[0].rarityEmoji} {g.r}</div>
+            <div className="text-xs text-cs-dim mb-1">{g.items[0].rarityEmoji} {g.r}</div>
             <div className="flex flex-wrap gap-2">
               {g.items.map((c) => {
                 const on = form.companionIds.includes(c.id);
@@ -521,12 +521,12 @@ export function SeasonTab() {
         {cur ? (
           <SeasonForm key={cur.code} initial={cur} catalog={d.catalog} pending={update.isPending} submitLabel="Save season" onSubmit={(body) => update.mutate({ code: cur.code, body })} />
         ) : <p className="text-cs-dim">No season yet — create one.</p>}
-        <p className="font-mono text-[10px] text-cs-dim mt-3">Requires Main Owner + a fresh second factor. Changes apply to every server: spawns read the season from the database (cached 60 s). Levels, sparks and caught companions are never touched by a season change.</p>
+        <p className="text-xs leading-relaxed text-cs-dim mt-3">Requires Main Owner + a fresh second factor. Changes apply to every server: spawns read the season from the database (cached 60 s). Levels, sparks and caught companions are never touched by a season change.</p>
       </Section>
       {creating && (
         <Section title="New season" icon={Plus}>
           <SeasonForm initial={{ companionIds: [] }} catalog={d.catalog} withCode pending={create.isPending} submitLabel="Create season" onSubmit={(body) => create.mutate(body)} />
-          <p className="font-mono text-[10px] text-cs-dim mt-3">Becomes current once its start date is reached (a later start keeps the present season running until then). The previous season is closed by the nightly job when its end date passes.</p>
+          <p className="text-xs leading-relaxed text-cs-dim mt-3">Becomes current once its start date is reached (a later start keeps the present season running until then). The previous season is closed by the nightly job when its end date passes.</p>
         </Section>
       )}
       <Section title="All seasons" icon={FileText}>
@@ -539,13 +539,13 @@ export function SeasonTab() {
                 <td className="text-right">
                   {upcoming
                     ? <button type="button" className="cs-btn-ghost cs-btn-sm text-danger" onClick={() => setConfirmDelete(s.code)} aria-label={`Delete season ${s.code}`}><Trash2 className="w-3.5 h-3.5" aria-hidden="true" /></button>
-                    : <span className="font-mono text-[10px] text-cs-dim" title="A started season has already shaped the servers — end it by changing its end date.">locked</span>}
+                    : <span className="text-[11px] text-cs-dim" title="A started season has already shaped the servers — end it by changing its end date.">locked</span>}
                 </td>
               </tr>
             );
           })}
         </tbody></table></div>
-        <p className="font-mono text-[10px] text-cs-dim mt-3">Only a season that has not started can be deleted. To end a running season early, set its end date.</p>
+        <p className="text-xs leading-relaxed text-cs-dim mt-3">Only a season that has not started can be deleted. To end a running season early, set its end date.</p>
       </Section>
       {confirmDelete && (
         <ConfirmDialog

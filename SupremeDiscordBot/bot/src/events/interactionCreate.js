@@ -14,6 +14,7 @@ import { priorityField } from "../utils/priority.js";
 import { startSetupWizard, handleSetupComponent } from "../commands/setup.js";
 import { isStaffMember } from "../utils/staffCheck.js";
 import { t, resolveLang, resolveLangSync, resolveLangForGuild } from "../i18n/index.js";
+import { roleAssignabilityReason } from "../utils/reactionRoles.js";
 
 // ─── Blacklist TTL кеш ──────────────────────────────────────────────────────
 // Всяка slash команда проверява blacklist статуса срещу backend-а. Синхронният
@@ -173,39 +174,16 @@ export default {
 
       // ── /help category dropdown ────────────────────────────────────────────
       if (interaction.isStringSelectMenu() && interaction.customId === "help:category") {
-        const { COMMAND_CATALOG } = await import("../utils/commandsCatalog.js");
-        const selected = interaction.values[0];
-        const cat = COMMAND_CATALOG.find((c) => c.category === selected);
+        // Същият embed като /help category:… — на езика на човека (един builder в help.js).
+        const lang = await resolveLang(interaction);
+        const { catalogFor } = await import("../utils/commandsCatalogL10n/index.js");
+        const { buildCategoryEmbed, buildSelect, buildLinkRow } = await import("../commands/help.js");
+        const catalog = catalogFor(lang);
+        const cat = catalog.find((c) => c.key === interaction.values[0]);
         if (!cat) {
-          const lang = await resolveLang(interaction);
           return interaction.reply({ content: t("error.categoryNotFound", lang), flags: MessageFlags.Ephemeral });
         }
-        const { default: helpCmd } = await import("../commands/help.js");
-        // Re-render the same embed the /help command would produce for this category
-        const embed = {
-          title: `${cat.icon} ${cat.category}`,
-          description: cat.description,
-          color: BRAND,
-          fields: [],
-        };
-        (cat.commands || []).forEach((cmd) => {
-          const body = [
-            `**Usage**: \`${cmd.signature}\``,
-            cmd.description,
-            cmd.permission ? `_Permission: ${cmd.permission}_` : null,
-            cmd.dashboard ? `🖥️ **Dashboard**: ${cmd.dashboard}` : null,
-          ].filter(Boolean).join("\n");
-          embed.fields.push({ name: cmd.name, value: body.slice(0, 1024), inline: false });
-        });
-        (cat.dashboardOnly || []).forEach((item) => {
-          embed.fields.push({
-            name: `🖥️ ${item.feature} (dashboard)`,
-            value: `${item.description}\n_${item.dashboard}_`.slice(0, 1024),
-            inline: false,
-          });
-        });
-        // Keep the original select menu so user can pick another category
-        await interaction.update({ embeds: [embed], components: interaction.message.components });
+        await interaction.update({ embeds: [buildCategoryEmbed(cat, lang)], components: [buildSelect(catalog, lang, cat.key), buildLinkRow(lang)] });
         return;
       }
 
@@ -309,7 +287,7 @@ export default {
 async function handlePanelButtonClick(interaction, panelId, buttonId) {
   let panel;
   try {
-    panel = await getPanel(panelId);
+    panel = await getPanel(panelId, { serverId: interaction.guildId });
   } catch (err) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
     // 404 → the panel really is gone; anything else (timeout/5xx) is a
@@ -383,7 +361,7 @@ async function handleFormModalSubmit(interaction) {
 
   let panel;
   try {
-    panel = await getPanel(panelId);
+    panel = await getPanel(panelId, { serverId: interaction.guildId });
   } catch (err) {
     return interaction.editReply(friendlyError(err, interaction, "Panel not found. Ask an admin to re-spawn it."));
   }
@@ -487,7 +465,7 @@ export async function handleCreateTicketFromMessageContextMenu(interaction) {
   const quotedMessage = `**${target.author?.tag || "Unknown user"}**: ${target.content || "*[no text content]*"}`;
 
   if (panels.length === 1) {
-    const panel = await getPanel(panels[0].id).catch(() => panels[0]);
+    const panel = await getPanel(panels[0].id, { serverId: interaction.guildId }).catch(() => panels[0]);
     return createTicketFromPanel(interaction, panel, null, { quotedMessage });
   }
 
@@ -523,7 +501,7 @@ export async function handleOpenTicketForUserContextMenu(interaction) {
   const onBehalfOf = interaction.targetUser;
 
   if (panels.length === 1) {
-    const panel = await getPanel(panels[0].id).catch(() => panels[0]);
+    const panel = await getPanel(panels[0].id, { serverId: interaction.guildId }).catch(() => panels[0]);
     return createTicketFromPanel(interaction, panel, null, { onBehalfOf });
   }
 
@@ -547,7 +525,7 @@ async function handleCtxTicketPanelSelect(interaction) {
 
   let panel;
   try {
-    panel = await getPanel(interaction.values[0]);
+    panel = await getPanel(interaction.values[0], { serverId: interaction.guildId });
   } catch (err) {
     return interaction.editReply(friendlyError(err, interaction, "Panel not found."));
   }
@@ -1201,7 +1179,7 @@ async function handleTicketAction(interaction, action, ticketId) {
     if (!ticket) {
       return interaction.reply({ content: t("ticket.notFound", lang), flags: MessageFlags.Ephemeral });
     }
-    const panel = ticket.panel || (ticket.panelId ? await api.get(`/bot/panel/${ticket.panelId}`).then(r => r.data).catch(() => null) : null);
+    const panel = ticket.panel || (ticket.panelId ? await api.get(`/bot/panel/${ticket.panelId}`, { params: { serverId: interaction.guildId } }).then(r => r.data).catch(() => null) : null);
 
     // ── Authz (OWASP A01) ────────────────────────────────────────────────
     // Всяко действие, което променя/чете тикета, изисква права на support
@@ -1763,7 +1741,16 @@ async function completeVerification(interaction, panel, success, answer) {
   const member = interaction.member;
   const added = [];
   const failed = [];
+  const botMember = interaction.guild?.members?.me;
   for (const roleId of (result.grantRoleIds || [])) {
+    // Същият гард като autorole, лепкавите роли, реакциите и играта: опасна,
+    // управлявана или над бота роля НЕ се дава. Без него човек само с Manage
+    // Server слагаше роля с Administrator в панела и се верифицираше сам
+    // (червен екип, 10.10.2026).
+    const role = interaction.guild?.roles?.cache?.get(roleId)
+      || await interaction.guild?.roles?.fetch(roleId).catch(() => null);
+    const unsafe = roleAssignabilityReason(role, botMember);
+    if (unsafe) { failed.push({ roleId, reason: unsafe }); continue; }
     try {
       await member.roles.add(roleId, "Verified via Supreme Bot");
       added.push(roleId);
@@ -1862,6 +1849,7 @@ async function handleGiveawayEnter(interaction, giveawayId) {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   try {
     const { data } = await api.post(`/bot/giveaway/${giveawayId}/enter`, {
+      serverId: interaction.guildId,
       userId: interaction.user.id,
     });
 
@@ -1871,13 +1859,13 @@ async function handleGiveawayEnter(interaction, giveawayId) {
       const missing = data.requiredRoleIds.filter((r) => !interaction.member.roles.cache.has(r));
       if (missing.length > 0) {
         // Remove the entry and tell the user
-        await api.post(`/bot/giveaway/${giveawayId}/enter`, { userId: interaction.user.id }).catch(() => {});
+        await api.post(`/bot/giveaway/${giveawayId}/enter`, { serverId: interaction.guildId, userId: interaction.user.id }).catch(() => {});
         return interaction.editReply(`❌ You need these roles to enter: ${missing.map((r) => `<@&${r}>`).join(", ")}`);
       }
     }
 
     // Refresh the giveaway message
-    const { data: g } = await api.get(`/bot/giveaway/${giveawayId}`);
+    const { data: g } = await api.get(`/bot/giveaway/${giveawayId}`, { params: { serverId: interaction.guildId } });
     const { buildGiveawayMessage } = await import("../commands/giveaway.js");
     const { embeds, components } = buildGiveawayMessage(g, g.entryCount);
     await interaction.message.edit({ embeds, components }).catch(() => {});

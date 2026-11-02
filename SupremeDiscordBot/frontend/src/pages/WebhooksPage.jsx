@@ -10,6 +10,7 @@ import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import { useToast } from "../contexts/ToastContext";
 
 const defaultForm = () => ({
@@ -109,19 +110,15 @@ export default function WebhooksPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl">
-      <div className="flex justify-between items-start mb-8">
-        <div>
-          <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
-            <WebhookIcon className="w-7 h-7 text-cs-cyan" /> {t("webhooks.title")}
-          </h1>
-          <p className="text-cs-muted mt-2 max-w-2xl">
-            {t("webhooks.subtitle")}
-          </p>
-        </div>
-        <button onClick={openNew} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> {t("webhooks.new")}
-        </button>
-      </div>
+      <PageHeader
+        title={t("webhooks.title")}
+        subtitle={t("webhooks.subtitle")}
+        actions={(
+          <button onClick={openNew} className="cs-btn-primary cs-btn-sm flex items-center gap-2">
+            <Plus className="w-4 h-4" aria-hidden="true" /> {t("webhooks.new")}
+          </button>
+        )}
+      />
 
       {isLoading && <div className="cs-card h-32 animate-pulse" />}
 

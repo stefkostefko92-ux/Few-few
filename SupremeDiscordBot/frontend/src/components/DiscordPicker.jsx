@@ -43,6 +43,21 @@ export function useGuildDirectory() {
   });
 }
 
+/**
+ * Име на канал вместо суров id: „#support“, а не „500000000000000002“
+ * (визуален одит 07.10.2026 — Panels, Automation и Applications показваха
+ * цифри). Каталогът е същата кеширана заявка като в полетата за избор.
+ * Изтрит/непознат канал → кратко id с пълното в title.
+ */
+export function ChannelName({ id, className = "" }) {
+  const { data } = useGuildDirectory();
+  if (!id) return null;
+  const ch = (data?.text || []).find((c) => c.id === String(id));
+  return ch
+    ? <span className={className}>#{ch.name}</span>
+    : <span className={`font-mono ${className}`} title={String(id)}>#…{String(id).slice(-6)}</span>;
+}
+
 function Warn({ children }) {
   return (
     <p className="text-xs text-warning mt-1 flex items-start gap-1.5">
@@ -280,7 +295,7 @@ export function DiscordRoleSelect({ multi = false, value, onChange, id, requireA
                           className={`w-full text-left px-3 py-2.5 flex items-center gap-2 hover:bg-cs-panel ${on ? "bg-cs-cyanGlow" : ""}`}>
                     <RoleDot color={r.color} />
                     <span className="text-sm text-cs-text truncate flex-1">{r.name}</span>
-                    {warn && <span className="text-[10px] text-warning font-mono uppercase tracking-wider flex-shrink-0">{warn}</span>}
+                    {warn && <span className="text-xs text-warning flex-shrink-0">{warn}</span>}
                     {on && <span className="text-cs-cyan text-xs flex-shrink-0" aria-hidden="true">✓</span>}
                   </button>
                 </li>

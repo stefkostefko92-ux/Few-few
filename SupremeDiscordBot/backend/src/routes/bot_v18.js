@@ -148,20 +148,32 @@ router.post("/giveaway/create", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Томболите са по (id, serverId) навсякъде. `/giveaway end|reroll` приемаше
+// свободно въведен id → админ на сървър A приключваше/теглеше наново томбола на
+// сървър B (червен екип, 10.10.2026). Чужд id → 404, както несъществуващ.
+const GW_SNOWFLAKE = /^\d{17,20}$/;
+const gwServer = (req) => String(req.body?.serverId ?? req.query?.serverId ?? "");
+
 router.patch("/giveaway/:id/spawned", async (req, res, next) => {
+  const serverId = gwServer(req);
+  if (!GW_SNOWFLAKE.test(serverId)) return res.status(400).json({ error: "serverId required" });
+  if (!GW_SNOWFLAKE.test(String(req.body?.messageId))) return res.status(400).json({ error: "messageId required" });
   try {
-    const g = await prisma.giveaway.update({
-      where: { id: req.params.id },
-      data: { messageId: req.body.messageId },
+    const r = await prisma.giveaway.updateMany({
+      where: { id: req.params.id, serverId },
+      data: { messageId: String(req.body.messageId) },
     });
-    res.json(g);
+    if (r.count !== 1) return res.status(404).json({ error: "Giveaway not found" });
+    res.json({ ok: true });
   } catch (err) { next(err); }
 });
 
 router.get("/giveaway/:id", async (req, res, next) => {
+  const serverId = gwServer(req);
+  if (!GW_SNOWFLAKE.test(serverId)) return res.status(400).json({ error: "serverId required" });
   try {
-    const g = await prisma.giveaway.findUnique({
-      where: { id: req.params.id },
+    const g = await prisma.giveaway.findFirst({
+      where: { id: req.params.id, serverId },
       include: { _count: { select: { entries: true } } },
     });
     if (!g) return res.status(404).json({ error: "Giveaway not found" });
@@ -170,9 +182,11 @@ router.get("/giveaway/:id", async (req, res, next) => {
 });
 
 router.post("/giveaway/:id/enter", async (req, res, next) => {
-  const { userId } = req.body;
+  const { userId } = req.body || {};
+  const serverId = gwServer(req);
+  if (!GW_SNOWFLAKE.test(serverId) || !GW_SNOWFLAKE.test(String(userId))) return res.status(400).json({ error: "serverId and userId required" });
   try {
-    const g = await prisma.giveaway.findUnique({ where: { id: req.params.id } });
+    const g = await prisma.giveaway.findFirst({ where: { id: req.params.id, serverId } });
     if (!g) return res.status(404).json({ error: "Giveaway not found" });
     if (g.endedAt) return res.status(400).json({ error: "Giveaway has ended" });
 
@@ -195,27 +209,25 @@ router.post("/giveaway/:id/enter", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post("/giveaway/:id/end", async (req, res, next) => {
-  try {
-    const winners = await pickGiveawayWinners(req.params.id);
-    res.json({ winners });
-  } catch (err) { next(err); }
-});
+for (const action of ["end", "reroll"]) {
+  router.post(`/giveaway/:id/${action}`, async (req, res, next) => {
+    const serverId = gwServer(req);
+    if (!GW_SNOWFLAKE.test(serverId)) return res.status(400).json({ error: "serverId required" });
+    try {
+      const out = await pickGiveawayWinners(req.params.id, action === "reroll", serverId);
+      if (out.error) return res.status(out.status).json({ error: out.error });
+      res.json({ winners: out.winners });
+    } catch (err) { next(err); }
+  });
+}
 
-router.post("/giveaway/:id/reroll", async (req, res, next) => {
-  try {
-    const winners = await pickGiveawayWinners(req.params.id, true);
-    res.json({ winners });
-  } catch (err) { next(err); }
-});
-
-async function pickGiveawayWinners(giveawayId, reroll = false) {
-  const g = await prisma.giveaway.findUnique({
-    where: { id: giveawayId },
+async function pickGiveawayWinners(giveawayId, reroll, serverId) {
+  const g = await prisma.giveaway.findFirst({
+    where: { id: giveawayId, serverId },
     include: { entries: true },
   });
-  if (!g) throw new Error("Giveaway not found");
-  if (!reroll && g.endedAt) throw new Error("Giveaway already ended");
+  if (!g) return { status: 404, error: "Giveaway not found" };
+  if (!reroll && g.endedAt) return { status: 409, error: "Giveaway already ended" };
 
   // Filter out previous winners on reroll
   const eligible = reroll
@@ -226,7 +238,7 @@ async function pickGiveawayWinners(giveawayId, reroll = false) {
   const winners = pickRandom(eligible, g.winnerCount).map((e) => e.userId);
 
   await prisma.giveaway.update({
-    where: { id: giveawayId },
+    where: { id: g.id },
     data: { endedAt: g.endedAt || new Date(), winnerIds: winners },
   });
 
@@ -238,12 +250,14 @@ async function pickGiveawayWinners(giveawayId, reroll = false) {
   // Update the public Discord message + announce winners in the channel.
   // Previously missing on the /giveaway end + reroll command path, so manual
   // ends never announced publicly (unlike the scheduler auto-end and dashboard).
+  // serverId липсваше → ботът не намираше канала (guildChannel иска сървъра) и
+  // обявата за победителите след /giveaway end|reroll не излизаше.
   notifyBot("GIVEAWAY_ENDED", {
-    giveawayId, channelId: g.channelId, messageId: g.messageId,
+    serverId: g.serverId, giveawayId, channelId: g.channelId, messageId: g.messageId,
     prize: g.prize, winners, reroll,
   }).catch(() => {});
 
-  return winners;
+  return { winners };
 }
 
 // ══════════════════════════════ STICKY MESSAGES ══════════════════════════════

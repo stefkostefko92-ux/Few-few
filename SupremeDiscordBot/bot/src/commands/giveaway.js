@@ -99,7 +99,7 @@ export default {
 
       const { embeds, components } = buildGiveawayMessage(giveaway, 0);
       const msg = await interaction.editReply({ embeds, components });
-      await api.patch(`/bot/giveaway/${giveaway.id}/spawned`, { messageId: msg.id }).catch(() => {});
+      await api.patch(`/bot/giveaway/${giveaway.id}/spawned`, { serverId: interaction.guildId, messageId: msg.id }).catch(() => {});
     }
 
     else if (sub === "end" || sub === "reroll") {
@@ -107,6 +107,7 @@ export default {
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       try {
         const { data } = await api.post(`/bot/giveaway/${giveawayId}/${sub}`, {
+          serverId: interaction.guildId,
           actorId: interaction.user.id,
         });
         if (data.winners?.length) {

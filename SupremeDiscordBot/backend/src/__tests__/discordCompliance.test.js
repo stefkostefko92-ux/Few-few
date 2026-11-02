@@ -45,10 +45,16 @@ describe("Developer Terms §5(a) — политика за поверителн�
     expect(app).toContain('path="/privacy"');
     expect(app).toContain('path="/terms"');
     // Футърите на публичната страница и на таблото (index.html е SPA обвивка).
-    for (const f of ["frontend/src/pages/Login.jsx", "frontend/src/components/Layout.jsx"]) {
+    // Публичният футър е ЕДИН компонент (LandingFooter в LandingParts.jsx,
+    // 10.10.2026) — английският и преведените лендинги го рендерират, вместо
+    // всеки да пази свое копие на правните връзки.
+    for (const f of ["frontend/src/components/LandingParts.jsx", "frontend/src/components/Layout.jsx"]) {
       const src = read(f);
       expect(src, f).toMatch(/(href|to)="\/privacy"/);
       expect(src, f).toMatch(/(href|to)="\/terms"/);
+    }
+    for (const f of ["frontend/src/pages/Login.jsx", "frontend/src/pages/LandingLocalized.jsx"]) {
+      expect(read(f), `${f} не рендерира общия футър с правните връзки`).toMatch(/<LandingFooter\b/);
     }
   });
 });

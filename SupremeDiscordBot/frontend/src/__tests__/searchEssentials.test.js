@@ -61,7 +61,7 @@ describe("структурираните данни съвпадат с види
   it("Login.jsx рендерира FAQ от СЪЩИЯ списък, без втори ръчен вариант", () => {
     const login = read("pages", "Login.jsx");
     expect(login).toContain('from "../data/landingFaqEn"');
-    expect(login).toMatch(/EN_LANDING_FAQ\.map\(/);
+    expect(login).toMatch(/EN_LANDING_FAQ\.map\(|items=\{EN_LANDING_FAQ\}/);
     expect(login, "останал ръчно написан въпрос").not.toMatch(/<FaqItem\s+q="/);
     expect(EN_LANDING_FAQ.length).toBeGreaterThanOrEqual(5);
     for (const { q, a } of EN_LANDING_FAQ) {
@@ -80,7 +80,9 @@ describe("структурираните данни съвпадат с види
   it("адресът в Organization е регистрираният адрес, който футърът показва", () => {
     const org = staticGraph().find((n) => n["@id"] === "https://carbonstealth.eu/#organization");
     expect(org.address.streetAddress).toBe("ul. Samuil 3");
-    expect(read("pages", "Login.jsx")).toContain("ul. Samuil 3, 2670 Bobov dol");
+    // Футърът на лендинга е общ компонент (LandingParts.jsx → LandingFooter), който Login.jsx вгражда.
+    expect(read("pages", "Login.jsx")).toContain("<LandingFooter");
+    expect(read("components", "LandingParts.jsx")).toContain("ul. Samuil 3, 2670 Bobov dol");
   });
 });
 

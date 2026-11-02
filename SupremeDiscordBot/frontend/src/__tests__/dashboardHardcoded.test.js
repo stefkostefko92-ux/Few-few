@@ -29,7 +29,7 @@ const LATIN = /[A-Za-z]{2,}/;
 // Технически думи, които НЕ се превеждат: имена на права в Discord, протоколи,
 // марки. Превод на „Manage Channels" би бил вреден — човекът търси точно този
 // надпис в интерфейса на Discord.
-const TECHNICAL = /^(Discord|Stripe|HMAC|URL|API|JSON|UTC|ID|Markdown|Webhook|Embed|Nitro|Supreme Bot|Manage \w+|Send Messages|View Channel|Embed Links)$/i;
+const TECHNICAL = /^(Discord|Stripe|HMAC|URL|API|JSON|UTC|ID|XP|Premium|White-label|Markdown|Webhook|Embed|Nitro|Supreme Bot|Manage \w+|Send Messages|View Channel|Embed Links)$/i;
 
 describe("клиентските екрани нямат зашит английски", () => {
   it("нито един cs-label не е суров текст", () => {
@@ -57,5 +57,106 @@ describe("клиентските екрани нямат зашит англий
       }
     }
     expect(bad, `изнеси ги като ключ и преведи на 8-те локала: ${bad.join(", ")}`).toEqual([]);
+  });
+});
+
+// ─── Разширение 23.10.2026 ──────────────────────────────────────────────────
+// Двете проверки горе гледат само cs-label и placeholder — и затова пропуснаха
+// 137 низа: заглавия, абзаци, бутони, тостове, aria-label, съобщения за
+// потвърждение. В български акаунт таблото беше наполовина английско, а
+// гейтът — зелен. Тук се гледа целият екран: текстът между таговете, редовете
+// само с текст и атрибутите, които четецът на екрана изговаря.
+const SRC = join(PAGES, "..");
+const SCREENS = [
+  ...CLIENT_PAGES.map((f) => join("pages", f)),
+  ...["CommandsPage.jsx", "ServerHome.jsx", "TagsPage.jsx", "PremiumPage.jsx", "PrivacySettingsPage.jsx",
+      "GamePage.jsx", "SecurityPage.jsx", "Dashboard.jsx"].map((f) => join("pages", f)),
+  ...["Layout.jsx", "DashboardTopbar.jsx", "EmojiPicker.jsx", "PremiumToast.jsx", "ToastHost.jsx",
+      "CookieConsent.jsx", "ConfirmDialog.jsx", "Modal.jsx", "EmptyState.jsx", "DiscordPicker.jsx",
+      "GraceBanner.jsx", "PastDueBanner.jsx", "MfaGate.jsx", "ServerCrest.jsx", "ErrorBoundary.jsx"].map((f) => join("components", f)),
+];
+// Собствени имена — фирмите-обработващи в страницата за поверителност и
+// импресумът (адресът на фирмата не се превежда). Имена на HTTP заглавия също.
+const PROPER = /^(Hetzner Online GmbH|Stripe Payments Europe Ltd|Discord Inc\.|Google LLC \(Gemini API\)|Minecraft\\nValorant\\nAmong Us)$|^Carbon Stealth VCC\b|^X-[\w-]+:/;
+// Коментарите не се показват: махаме ги, като пазим новите редове (за номерата).
+const stripComments = (s) =>
+  s.replace(/\{\/\*[\s\S]*?\*\/\}|\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
+    .replace(/(^|[^:"'`])\/\/[^\n]*/g, (m, p) => p + " ".repeat(m.length - p.length));
+const englishPhrase = (txt) => /[A-Za-z]{2,}/.test(txt) && !TECHNICAL.test(txt) && !PROPER.test(txt);
+
+describe("целият екран, не само етикетите", () => {
+  it("няма зашит текст между таговете и няма редове само с текст", () => {
+    const bad = [];
+    for (const f of SCREENS) {
+      const s = stripComments(readFileSync(join(SRC, f), "utf8"));
+      // >Текст< — между два тага, без израз в {}.
+      for (const m of s.matchAll(/>\s*(?:[→•✓✗✅❌]\s*)?([A-Za-z][^<>{}\n]*[A-Za-z.!?…):])\s*</g)) {
+        if (englishPhrase(m[1].trim()) && /\s/.test(m[1].trim())) bad.push(`${f}:${lineOf(s, m.index)} „${m[1].trim()}“`);
+      }
+      // Ред само с изречение (JSX текст, пренесен на нов ред).
+      for (const m of s.matchAll(/^[ \t]+([A-Z][a-z]+(?: [A-Za-z,.'’&;—-]+){2,})[ \t]*$/gm)) {
+        if (englishPhrase(m[1])) bad.push(`${f}:${lineOf(s, m.index)} „${m[1]}“`);
+      }
+    }
+    expect(bad, `изнеси ги като ключ и преведи на 8-те локала: ${bad.join(", ")}`).toEqual([]);
+  });
+
+  it("aria-label, title, тостовете и потвържденията не са сурови низове", () => {
+    const bad = [];
+    const ATTR = [
+      /\b(?:aria-label|title|confirmLabel|placeholder)=\{?"([^"]*[A-Za-z]{2,}[^"]*)"/g,
+      /\b(?:aria-label|title)=\{`([A-Za-z][^`]*)`\}/g,
+      /\btoast\.(?:success|error|info)\(\s*["'`]([^"'`]+)["'`]/g,
+      /\b(?:title|message|confirmLabel|label|text):\s*["'`]([A-Z][a-z][^"'`]*)["'`]/g,
+      /\bset\w*(?:Error|Message)\(\s*["'`]([A-Z][a-z][^"'`]*)["'`]/g,
+      /\|\|\s*["'`]([A-Z][a-z]+ [^"'`]*)["'`]\s*\}/g,
+    ];
+    for (const f of SCREENS) {
+      const s = stripComments(readFileSync(join(SRC, f), "utf8"));
+      for (const re of ATTR) {
+        for (const m of s.matchAll(re)) {
+          const txt = m[1].trim();
+          // Примерен slug („welcome-info“) и адрес не са текст за превод.
+          if (!englishPhrase(txt) || /^https?:\/\//.test(txt) || /^[a-z0-9-]+$/.test(txt)) continue;
+          bad.push(`${f}:${lineOf(s, m.index)} „${txt}“`);
+        }
+      }
+    }
+    expect(bad, `изнеси ги като ключ и преведи на 8-те локала: ${bad.join(", ")}`).toEqual([]);
+  });
+
+  // Разширение 2 (23.10.2026): текстът, слепен с израз, бягаше от проверките
+  // горе — „{n} options · {n} vote{…s} · Created {дата}“, „` · Closes ${…}`“,
+  // `|| "Delete"`. Тук се гледат и тези три форми.
+  it("няма английски, слепен с израз: шаблонни низове, резервни стойности, текст до {…}", () => {
+    const bad = [];
+    const KEYWORDS = /^(else|catch|finally|return|from|of|in|as|await|new|typeof|const|let|var|async)$/;
+    for (const f of SCREENS) {
+      const s = stripComments(readFileSync(join(SRC, f), "utf8"));
+      const push = (m, txt) => bad.push(`${f}:${lineOf(s, m.index)} „${txt}“`);
+      // `… Word ${…}` — шаблонен низ с английска дума до израз (без класове и пътища).
+      for (const m of s.matchAll(/`([^`]*\b[A-Z][a-z]{2,}\b[^`]*\$\{[^`]*)`/g)) {
+        const before = s.slice(Math.max(0, m.index - 12), m.index);
+        if (/className=\{?$|queryKey|\/api\//.test(before) || /^[\s/]*(dashboard|api|public)\//.test(m[1])) continue;
+        push(m, m[1].slice(0, 60));
+      }
+      // `|| "Text"` и `? "Text" :` — резервна стойност или тернарен клон на английски.
+      for (const m of s.matchAll(/(?:\|\||\?)\s*"([A-Z][a-z]+(?: [^"]*)?)"/g)) {
+        if (englishPhrase(m[1])) push(m, m[1]);
+      }
+      // Текст веднага след `}` или преди `{` в JSX: „} options ·“, „> Created {“.
+      for (const m of s.matchAll(/\}([ \t]*[A-Za-z][A-Za-z' \t]*[A-Za-z])[ \t]*(?=[{<·])/g)) {
+        const txt = m[1].trim();
+        if (KEYWORDS.test(txt) || !englishPhrase(txt)) continue;
+        push(m, txt);
+      }
+    }
+    expect(bad, `изнеси ги като ключ и преведи на 8-те локала: ${bad.join(", ")}`).toEqual([]);
+  });
+
+  it("гейтът вижда истински низ (иначе е сляп)", () => {
+    const probe = stripComments('<p>\n  Members react to a message to get a role.\n</p>\n<button aria-label="Close menu">');
+    expect(/^[ \t]+([A-Z][a-z]+(?: [A-Za-z,.'’&;—-]+){2,})[ \t]*$/m.test(probe)).toBe(true);
+    expect(/\baria-label="([^"]*[A-Za-z]{2,}[^"]*)"/.test(probe)).toBe(true);
   });
 });
