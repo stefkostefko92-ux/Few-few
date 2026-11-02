@@ -14242,7 +14242,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 298
+        "lessons": 302
       },
       "evolution": [
         {
@@ -14370,9 +14370,20 @@
           "date": "2026-11-02",
           "event": "v29.4 — учене",
           "detail": "Научи: dod-check куката на Stop връща агента, ако пълният gate.mjs е червен, дори когато единс…"
+        },
+        {
+          "version": "29.6.0",
+          "date": "2026-11-02",
+          "event": "v29.6 — учене",
+          "detail": "Научи: Рутерът в teams.mjs брои ключовете на екипа като обединение от team.keys и ключовете на… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Рутерът в teams.mjs брои ключовете на екипа като обединение от team.keys и ключовете на…\" (+1 още)"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
