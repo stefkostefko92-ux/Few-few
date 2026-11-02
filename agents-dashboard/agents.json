@@ -9320,7 +9320,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 247
+        "lessons": 250
       },
       "evolution": [
         {
@@ -9676,9 +9676,20 @@
           "date": "2026-10-31",
           "event": "v23.6 — учене",
           "detail": "Научи: Пакетът stripe е обявен в package.json само на Gaming, panev, linketto и SupremeDiscord… (+26 още)"
+        },
+        {
+          "version": "23.9.0",
+          "date": "2026-11-02",
+          "event": "v23.9 — учене",
+          "detail": "Научи: Най-новата стабилна Stripe API версия към 2026-11-02 е 2026-10-28.endive (предишни 2026… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Най-новата стабилна Stripe API версия към 2026-11-02 е 2026-10-28.endive (предишни 2026…\" (+2 още)"
+        },
         {
           "date": "2026-10-31",
           "type": "learning",
