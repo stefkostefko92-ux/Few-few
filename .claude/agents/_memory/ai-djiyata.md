@@ -7,6 +7,7 @@
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
 ## Проверени поуки (verified)
+- **2026-11-02:** Записът за разход (v2) носи само agent, model, effort, turns, токени, tools, resultBytes, startCtx, peakCtx и durationSec, без описание на задачата, затова цената на general-purpose и workflow-subagent не може да се разпредели по домейни. _(опит да се докаже липсващ агент от цената на общите агенти; verified; tools/lib/usage.mjs:104-108)_
 - **2026-11-02:** Записите в tools/agents/evals/usage.jsonl (v2) нямат поле за задачата или описанието (само agent, model, effort, turns, токени, tools, durationSec), затова цената на general-purpose и workflow-subagent не може да се разпредели по домейни. _(опит да се докаже липсващ агент от цената на общите агенти; verified; git show agents/memory:tools/agents/evals/usage.jsonl (запис id 0705cbff28))_
 
 - **2026-11-02:** Смяна на top-level output_config.effort между заявки рестартира prompt кеша, но per-message effort (beta, role system съобщение с output_config) на Fable 5.1, Mythos 5.1, Opus 5.5, Opus 5, Sonnet 5.5 и Haiku 5.5 пази кеша; Fable 5 връща 400 за per-message effort _(смяна на усилието в кеширан Claude разговор; verified; https://platform.claude.com/docs/en/build-with-claude/effort)_
