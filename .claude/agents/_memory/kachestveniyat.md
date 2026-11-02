@@ -10,6 +10,7 @@
 (не от гадаене) — затова първите поуки носят книжни/стандартни източници, а не repo факти.
 
 ## Проверени поуки (verified)
+- **2026-11-02:** Nexus sensitiveAuthLimiter е rateLimit с windowMs 1 час и max sensitiveAuthMax (8), закачен на /api/auth/register; 9-та регистрация в един ран без NEXUS_E2E_AUTH_RATE_MAX връща 429, затова login спек с по-малко регистрации чрез beforeAll е по-устойчив. _(ревю на Nexus e2e спекове, които регистрират потребители; verified; Nexus/server/src/server.ts:151-152)_
 - **2026-11-02:** Nexus e2e регистрира отделен потребител за всеки тест, а /api/auth/register има твърд лимит 8/час/IP; спек с повече от 8 регистрации пада без NEXUS_E2E_AUTH_RATE_MAX в командата за пускане. _(ревю на Nexus Playwright спекове и инструкции за пускане; verified; Nexus/e2e/README.md:64-71)_
 
 - **2026-10-27:** oversee.mjs е скрипт, който се изпълнява при зареждане, без нито една функция и без main guard; цикълът по агентите (:103-216, 114 реда) няма пряк тест — oversee.test.mjs внася само oversee-lib.mjs, а stale-parity.test.mjs:39 пуска oversee.mjs като процес и проверява само поуките с изтекъл срок. Рефактор там изисква първо характеризиращ тест. _(tools/agents/oversee.mjs рефактор; verified; tools/agents/oversee.test.mjs:15)_
