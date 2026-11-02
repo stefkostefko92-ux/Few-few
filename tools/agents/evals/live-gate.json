@@ -1,9 +1,9 @@
 {
   "date": "2026-11-02",
-  "ref": "ee47635a6aa50e8bf8b969789b7b9e00c21cb01e",
+  "ref": "c725e33cff0f2a31109517d348f195a7d915cdc9",
   "cli": "2.1.316 (Claude Code)",
-  "summary": "проба 5/5 · оценки 8/8 · pass^k 4/4 · verifier ✓",
-  "costUsd": 14.76,
+  "summary": "проба 11/11 · оценки 12/12 · pass^k 8/8 · verifier ✓",
+  "costUsd": 20.52,
   "probe": [
     {
       "agent": "seo",
@@ -21,7 +21,22 @@
       "problems": []
     },
     {
-      "agent": "analizatora",
+      "agent": "danachnika",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "frezadjiyata",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "geymara",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "igrodelets",
       "ok": true,
       "problems": []
     },
@@ -29,34 +44,52 @@
       "agent": "izpitatelya",
       "ok": true,
       "problems": []
+    },
+    {
+      "agent": "kasadjiyata",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "pravniyat-razbirach",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "prodavacha",
+      "ok": true,
+      "problems": []
     }
   ],
-  "inputsHash": "9c4bbc7bd120840265786188f0fcc45dd12c97a3a2088de87d98f575158890ed",
+  "inputsHash": "f84134279fd1a80b5d9b311cc0a7a5a65b46cf9d84f4a245f0c404b065d0ea31",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "df03642aee24f3b2365e8cc3590ce2ca3505933e16eceb75cf854947ef6e41cd",
     ".claude/agents/_memory/SECURITY.md": "69b6984a7d18a8af105035b7ac6846f1d2dfacec82d5e517439f4e833553ab87",
-    ".claude/agents/_teams.json": "002f686f77a5a8e43a0cbe6ecc5d206429b16d68a39e63c56cf68434a472ee9e",
+    ".claude/agents/_teams.json": "e068c37efb1b257cbd9641dc4768ca07ad782f0d0d6abf116c19efecf6d91f09",
     ".claude/agents/ai-djiyata.md": "f6b7cf76e32cea776a465e7d59718d30b8617fa9d9754ab6df87626226234e05",
     ".claude/agents/analizatora.md": "2118d101411068abcf9ca1cfe409df484d330848b2701fd99ae808b66a1354ff",
     ".claude/agents/asansyorchika.md": "18153eb60b408d9cf46341b3338cb24e45475293e0c665d90dfcb3ef08b47d77",
+    ".claude/agents/danachnika.md": "260e00c5e2b4800d7f4938fbdd3cdc31bb74f01791b531230fd03b96ee235250",
     ".claude/agents/diskordjiyata.md": "0acfc0d389c8032125485aa585cb59812883e26651e424955d37fb15a2266e3f",
     ".claude/agents/dizayner.md": "68ddb6b4612aca8ef91ea887e25ff8a9f051faed203f44063f3d7caad0441975",
-    ".claude/agents/geymara.md": "4b7c7a20f3fb1637780d3d24815e367ed3ed1247f5da5b13955489ba7afa401a",
+    ".claude/agents/frezadjiyata.md": "72f8aad6f14620ec069b83a40542f5db23b51e1811e13dc0447a08eeb9c5890d",
+    ".claude/agents/geymara.md": "faa9f8c43746b4eedf3b5f59110dcffa6ddc6adf27ab737d6e4896f5d0247764",
     ".claude/agents/goladjiyata.md": "0f0f100d590e829b6439e578f28759d470f56c9c150f08f250ec5ba0014d3c99",
     ".claude/agents/hromadjiyata.md": "6746a9aa92371ac4de2a07816ace75facd6c6333dda00f20aa85209caa9479ff",
-    ".claude/agents/izpitatelya.md": "c23f991fe1f27ffee170860e97da0ea6d53e535cb6b3e76da543e10e41562999",
+    ".claude/agents/igrodelets.md": "c92fbba576b4dacc2667f2aec76171aa30dba3762a6831aeca0b92148e036b2a",
+    ".claude/agents/izpitatelya.md": "02be8bedb2dfe30c5c017b24f5d9a55fb7bc74cf5c05e096b857a41bb0606590",
     ".claude/agents/kachestveniyat.md": "df1dea0fc82d981346d7ec0f73957a92dbe85dbbef657d75e16c59efbf9af33a",
-    ".claude/agents/kasadjiyata.md": "715e545637d8ac1e10e31356372892970ce7ecbb690632dd8f4cbebb049aab21",
+    ".claude/agents/kasadjiyata.md": "149f597ac3d05d84748fbad08f617279aa0786d2b3647dc85cc88ce0cf6a4151",
     ".claude/agents/kodadjiyata.md": "a798f3f469ac4ecd6e38f5a3bd79f4a886b2f86fad8d71636cd917f4cc2f245e",
     ".claude/agents/konveyera.md": "93e9c7a605d0d9a6f1c54cc56522d3903e35ebd16cabacf34ff391a37c394233",
     ".claude/agents/letopisetsa.md": "8d2872442e3edbb732f79b1452cc6bdbf0501302122cac0bbc62aa456ad5b5b4",
     ".claude/agents/mobildjiyata.md": "a632d13bd67854d418381a9cae4de6a313737f00554f2166b851ebdea2fede98",
     ".claude/agents/nabludatelya.md": "df037c4eace131e920c7d3499ca7b4d12b4c5bede130d6055e333f6de77be034",
-    ".claude/agents/pravniyat-razbirach.md": "3f27101daef88135c926f185e921a7f35ccd53fd5a293b54a8f06747922a84dd",
+    ".claude/agents/pravniyat-razbirach.md": "4634f1b7d53f6e6de2050003c45a57868790481e4c94ce8e96d0d6ef8b8d5975",
     ".claude/agents/prevodach.md": "7aa99a4ee469bf4abb816e63d854188f98b4c13ca1fbe0c5e7ff7d27cb1ee623",
     ".claude/agents/printadjiyata.md": "17cce75ed4135f3f1a164a7c0dfc71a8483eabe3ca23e1f38d16cec212f53e3d",
-    ".claude/agents/prodavacha.md": "3e06f4006aa664eb2a178a77e6623118d20e6b4e43a88a99a882d5f72100c649",
+    ".claude/agents/prodavacha.md": "ae210b0008655def191b971353ee2490e74bd1c25e10e230197d1dbcf04cf5c3",
     ".claude/agents/razbivacha.md": "a85e4f3f4f543fa01b77f1035f1dd72427104ea64b84f61b046074f7b6a363be",
     ".claude/agents/seo.md": "2ae498fdd0cbd5965560f8c7fbb521ac4c6a70e3b3bb52ed07219776476d2f99",
     ".claude/agents/siydara.md": "af3fd19f820426163706daf6a2a423577e994b8bb4e35e2cb67f62f61ace3899",
@@ -81,11 +114,11 @@
     ".claude/hooks/route-hint.mjs": "3e08a41a31192edb5053a67e5a2e8a6ab8d05d5d884211365b99396e285a8abb",
     ".claude/hooks/session-dod.mjs": "3f320021c2227fb5554a1d34551a5bac0d3b4e1046fd39cc8d3902fdab43b0c9",
     ".claude/hooks/usage-capture.mjs": "b6dee83a4a53f425c0e8dfab3c8b050e36b7c70b4f45c8dd9d041a5780530981",
-    ".claude/settings.json": "0f99fa37af1ce9fb5af4111f8545b64569e8ec46ced1c16cb6154967fe21d61c",
+    ".claude/settings.json": "5cc44d8bab55709fa6c1a18a8aa29f679ab3d55873595be07e2daec13fb29b08",
     ".claude/skills/agent-doctrine/SKILL.md": "e885bda75b2c663db720fd5f653f713f4bd33400972e674b2a8fd4907ae72761",
     "tools/agents/handoff.mjs": "088afa443cf1c3a6325b28a80bc74426aba907a1d7c287d0add05497b29dcba3",
     "tools/agents/teams.mjs": "955295f80b10250391714245bf5b6906c3341f2b8217c960cf07e290b4035fbb",
-    "tools/lib/memory-branch.mjs": "8ec47e40ffed4593af39dfccdc7d7d0201498a3b9eb7eb8c73d51bbfd368f10b",
+    "tools/lib/memory-branch.mjs": "7c81bd029381e5f15d101a465a27ba275ea80fc8fcc029a25f45b9d89e6083ad",
     "tools/lib/memory-retrieval.mjs": "5a7f76c209d3eaf570f1c1a59d2ed6b08e572f4b8778e3fde6b0bfe6841a6215"
   }
 }

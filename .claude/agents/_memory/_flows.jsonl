@@ -492,3 +492,4 @@
 {"t":"handoff","ts":"2026-11-02T15:20:25.334Z","id":"rffb03817","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"82569d23"}
 {"t":"start","ts":"2026-11-02T15:28:13.719Z","id":"rab1210d2","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-02T15:28:13.719Z","id":"rab1210d2","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"59bfe9c4"}
+{"t":"handoff","ts":"2026-11-02T15:35:44.997Z","id":"rab1210d2","from":"prevodach","to":"pravniyat-razbirach","status":"има бележки","run":"a4e59040"}
