@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-02:** Не показвай с grep/cat кода на .claude/hooks/dod-check.mjs в Bash; изходът съдържа маркера СТАТУС: ГЕЙТЪТ Е ЧЕРВЕН и Stop hook-ът го заключва като червен агентски гейт, който не се изчиства. _(всеки агент под Stop hook-а dod-check; verified; .claude/hooks/dod-check.mjs:103)_
 - **2026-11-02:** Hook-ът dod-check чисти червен тестов ран само с по-късен зелен ран на СЪЩИЯ текст на команда; падащите тестове се пускат с отделна чиста команда, която може да се повтори дословно след поправката. _(всеки TDD цикъл тест първо, под Stop hook-а dod-check; verified; .claude/hooks/dod-check.mjs:134)_
 - **2026-11-02:** В linketto причината planRevokedReason='dispute' е споделена между FOUNDER-спор и спор по абонамент; разграничават се с isSubscriptionDispute (записан planDisputedPaymentIntentId ИЛИ липсващ planPaymentIntentId), иначе hold-ът блокира нов абонамент на отнет FOUNDER. _(промени по спор/hold логиката на плановете в linketto; verified; linketto/src/lib/billing-sync.ts:128)_
 - **2026-11-02:** linketto админ панелът показва referralCreditCents само при > 0, затова отрицателен реферален баланс (дълг след сторно) е невидим за админа. _(сторно на реферали / O-5 в linketto; verified; linketto/src/app/(site)/[locale]/admin/page.tsx:374)_
