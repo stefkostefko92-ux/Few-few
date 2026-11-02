@@ -3,7 +3,8 @@
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "0",
     "CLAUDE_CODE_SUBAGENT_EFFORT": "medium",
-    "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS": "10"
+    "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS": "10",
+    "CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS": "10"
   },
   "permissions": {
     "deny": [
@@ -83,7 +84,8 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-prompt.mjs\"",
-            "timeout": 10
+            "timeout": 10,
+            "onFailure": "block"
           },
           {
             "type": "command",
@@ -139,7 +141,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash|Monitor",
         "hooks": [
           {
             "type": "command",
@@ -150,7 +152,8 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-readonly.mjs\"",
-            "timeout": 10
+            "timeout": 10,
+            "onFailure": "block"
           }
         ]
       },

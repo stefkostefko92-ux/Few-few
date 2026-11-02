@@ -34,6 +34,35 @@ function pricesAge(prices) {
   return Math.round((Date.parse(TODAY) - Date.parse(prices.checkedAt)) / 864e5);
 }
 
+/** effort във frontmatter на всеки наш агент (agents/*.md) → { id: "high" | … }. */
+export function definedEfforts(dir = join(ROOT, ".claude", "agents")) {
+  const out = {};
+  for (const f of readdirSync(dir).filter((f) => /^[a-z0-9-]+\.md$/.test(f) && f !== "README.md")) {
+    const fm = readFileSync(join(dir, f), "utf8").split("---")[1] || "";
+    const m = fm.match(/^effort:\s*([a-z]+)\s*$/m);
+    if (m) out[f.slice(0, -3)] = m[1];
+  }
+  return out;
+}
+
+/**
+ * Разминаване между усилието, с което агентът РЕАЛНО е тичал (записът носи payload.effort.level от
+ * SubagentStop), и това в дефиницията му. Съветващо: оркестраторът може законно да подаде effort при
+ * извикването (v2.1.292+). Ловим тихата подмяна (2026-11-02: въпросът „env medium надделява ли high“).
+ */
+export function effortDrift(recs, defs, { since = "", sinceBy = {} } = {}) {
+  const by = {};
+  for (const r of recs) {
+    const want = defs[r.agent];
+    const from = [since, sinceBy[r.agent] || ""].sort().pop(); // по-късното: прозорецът или последната смяна на дефиницията
+    if (!want || !r.effort || r.eval || (from && String(r.ts || "") < from)) continue;
+    const x = (by[r.agent] ??= { want, runs: 0, off: 0, seen: {} });
+    x.runs++;
+    if (r.effort !== want) { x.off++; x.seen[r.effort] = (x.seen[r.effort] || 0) + 1; }
+  }
+  return Object.entries(by).filter(([, x]) => x.off).map(([agent, x]) => ({ agent, ...x }));
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   if (args.includes("--backfill")) {
     const dir = args[args.indexOf("--backfill") + 1];
@@ -72,6 +101,13 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     if (stale) notes.push(`${stale} записа от стара версия (надути) — пусни --backfill <папка с транскриптите>`);
     if (unpriced) notes.push(`${unpriced} пускания без цена в prices.json`);
     if (age > (prices?.ttlDays || 45)) notes.push(`цените са сверени преди ${age} дни (срок ${prices?.ttlDays})`);
+    const since = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 16);
+    const defs = definedEfforts();
+    // Пускане отпреди последната смяна на дефиницията е тичало по старата — не е разминаване (UTC, като ts).
+    const sinceBy = Object.fromEntries(Object.keys(defs).map((id) => [id,
+      new Date(git(["log", "-1", "--format=%cI", "--", `.claude/agents/${id}.md`]).trim() || 0).toISOString().slice(0, 16)]));
+    for (const d of effortDrift(recs, defs, { since, sinceBy }))
+      notes.push(`${d.agent}: ${d.off}/${d.runs} пускания не на „${d.want}“ (${Object.entries(d.seen).map(([k, v]) => `${k}×${v}`).join(", ")})`);
     console.log(notes.length ? `▲ usage: ${notes.join(" · ")}` : `✓ usage: ${recs.length} пускания, всички поценени, цени на ${age} дни`);
     process.exit(0);
   }

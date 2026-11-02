@@ -78,3 +78,13 @@ test("куката е закачена за ConfigChange с onFailure: block", (
   assert.match(g?.command || "", /guard-config\.mjs/);
   assert.equal(g.onFailure, "block");
 });
+
+// 2026-11-02 (четвърто проучване, /en/hooks#timeouts): кука без onFailure пуска действието при срив или
+// таймаут. Всеки пазач, който може да спре действие или промпт, е fail-closed.
+test("всеки guard-* в PreToolUse и UserPromptSubmit е с onFailure: block", () => {
+  const s = JSON.parse(readFileSync(SETTINGS, "utf8"));
+  const loose = [];
+  for (const ev of ["PreToolUse", "UserPromptSubmit"]) for (const g of s.hooks[ev] || []) for (const h of g.hooks)
+    if (/guard-[a-z]+\.mjs/.test(h.command) && h.onFailure !== "block") loose.push(`${ev}: ${h.command.match(/guard-[a-z]+/)[0]}`);
+  assert.deepEqual(loose, []);
+});

@@ -159,3 +159,12 @@ test("backfill: запис с по-висока версия за съществ
     assert.equal(led.find((r) => r.id === "runV").output, 5, "четецът взима v2");
   } finally { rmSync(f.root, { recursive: true, force: true }); }
 });
+
+// Регресия 2026-11-02: SubagentStop без agent_type (вътрешни помощници) не е „общ“ агент.
+test("етикет: SubagentStop без тип и без мета → вътрешен; с тип или с мета → както е", async () => {
+  const { agentLabel } = await import(pathToFileURL(HOOK).href);
+  assert.equal(agentLabel({ hook_event_name: "SubagentStop" }, { agent: "общ" }), "вътрешен");
+  assert.equal(agentLabel({ hook_event_name: "SubagentStop", agent_type: "general-purpose" }, { agent: "general-purpose" }), "general-purpose");
+  assert.equal(agentLabel({ hook_event_name: "SubagentStop" }, { agent: "kodadjiyata" }), "kodadjiyata", "мета-файлът каза кой е");
+  assert.equal(agentLabel({ hook_event_name: "Stop" }, { agent: "общ" }), "общ");
+});

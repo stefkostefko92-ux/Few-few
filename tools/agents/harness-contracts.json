@@ -274,6 +274,72 @@
       "relies": [
         ".claude/settings.json"
       ]
+    },
+    {
+      "id": "subagent-effort-precedence",
+      "claim": "effort във frontmatter на агента надделява CLAUDE_CODE_SUBAGENT_EFFORT (env важи само когато нищо друго не назовава усилие); над двете са CLAUDE_CODE_EFFORT_LEVEL и параметърът effort при извикването (v2.1.292+). Проверено на живо: 32/32 записа high при env medium. usage-report --check лови разминаване спрямо дефиницията.",
+      "source": "https://code.claude.com/docs/en/changelog.md (2.1.316) + https://code.claude.com/docs/en/sub-agents.md#choose-an-effort-level + транскриптите от 02.11.2026",
+      "keywords": [
+        "CLAUDE_CODE_SUBAGENT_EFFORT",
+        "CLAUDE_CODE_EFFORT_LEVEL",
+        "effort"
+      ],
+      "relies": [
+        ".claude/settings.json",
+        ".claude/agents/*.md",
+        "tools/agents/usage-report.mjs"
+      ]
+    },
+    {
+      "id": "workflow-concurrency-cap",
+      "claim": "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS не ограничава workflow агентите; те имат свой таван (16 по подразбиране), задаван с CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS. Ние го държим на 10, като общия таван.",
+      "source": "https://code.claude.com/docs/en/sub-agents.md#concurrent-subagent-limit + https://code.claude.com/docs/en/workflows.md (Behavior and limits)",
+      "keywords": [
+        "CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS",
+        "workflow"
+      ],
+      "relies": [
+        ".claude/settings.json"
+      ]
+    },
+    {
+      "id": "subagentstop-empty-type",
+      "claim": "SubagentStop кука без matcher тича и за вътрешните помощници на харнеса с празен agent_type; usage-capture ги записва като „вътрешен“, не като „общ“ агент.",
+      "source": "https://code.claude.com/docs/en/hooks.md#subagentstop-input",
+      "keywords": [
+        "SubagentStop",
+        "agent_type",
+        "matcher"
+      ],
+      "relies": [
+        ".claude/hooks/usage-capture.mjs"
+      ]
+    },
+    {
+      "id": "subagent-cache-ttl",
+      "claim": "Субагентите и workflows получават 5-минутен кеш; 1 час се задава с subagentPromptCacheTtl / CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL или experimental.cacheTtl (v2.1.248+), на по-висока ставка за запис. При нашите агенти (ход 10–20 s, ~5% записи от кеша) 1 час губи около $336 — не е включен; преоцени, ако профилът се смени.",
+      "source": "https://code.claude.com/docs/en/prompt-caching.md#which-ttl-each-request-gets + мерене върху usage.jsonl на 02.11.2026",
+      "keywords": [
+        "subagentPromptCacheTtl",
+        "CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL",
+        "cacheTtl",
+        "ENABLE_PROMPT_CACHING_1H"
+      ],
+      "relies": [
+        ".claude/settings.json"
+      ]
+    },
+    {
+      "id": "hook-onfailure-default",
+      "claim": "Кука без onFailure: block пуска действието при срив или таймаут. Всички guard-* в PreToolUse и UserPromptSubmit са fail-closed (тест в guard-config.test.mjs).",
+      "source": "https://code.claude.com/docs/en/hooks.md#timeouts",
+      "keywords": [
+        "onFailure",
+        "timeout"
+      ],
+      "relies": [
+        ".claude/settings.json"
+      ]
     }
   ]
 }

@@ -56,3 +56,11 @@ test("куката блокира ревюър (exit 2), пуска агент �
   assert.equal(run(undefined, "sed -i 's/a/b/' src/a.ts").status, 0, "главната сесия (без agent_type) — пропуска");
   assert.equal(run("kodadjiyata", "git diff HEAD~1").status, 0, "четене минава");
 });
+
+// Регресия 2026-11-02 (четвърто проучване): от 2.1.314 Bash куките тичат и за Monitor. Ревюър, който пише
+// през Monitor команда, се спира като през Bash; Monitor без команда (WebSocket) не е запис.
+test("Monitor: командата на ревюъра се съди като Bash; без команда минава", () => {
+  assert.equal(run("kodadjiyata", "sed -i 's/a/b/' src/a.ts", { tool_name: "Monitor" }).status, 2);
+  assert.equal(run("kodadjiyata", "tail -f build.log", { tool_name: "Monitor" }).status, 0);
+  assert.equal(run("kodadjiyata", undefined, { tool_name: "Monitor", tool_input: { ws: { url: "wss://x" } } }).status, 0);
+});
