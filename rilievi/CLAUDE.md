@@ -93,7 +93,8 @@ src/
                      на табелата: избор, търсене, паметта) · pdf.ts (A4 по посоката на шаблона, логото и данните на фирмата горе)
   argano/            изчислението за аргано по „RT-E MOD 10411-1“: calcolo.ts (формулите на листовете
                      „Macchina“ и „Funi“, без база) · dati.ts (входът — zod, формата) · tabelle.ts
-                     (въжетата TELCAL/DONATI, мерките на компенсацията) · da-scheda.ts (попълването от
+                     (въжетата TELCAL/DONATI, мерките на компенсацията) · fune.ts (въжето за показване:
+                     формация, нишки, клас, cordatura) · da-scheda.ts (попълването от
                      „Modulo rilievi dati argani“) · righe.ts (резултатите като редове — страница и PDF) ·
                      formato.ts · service.ts (четене, запис върху `base`, одит) · pdf.ts (A4) ·
                      impianto.ts (уредбата без карта — zod) · liberi.ts (изчислението без карта) ·
@@ -655,6 +656,20 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   няма), с одит `ARGANO_CALCOLO`; не мести версията на картата. Чете всеки, който вижда картата (формата
   — заключена); пише, който пише карти в нейната фирма, не в кошчето; чужда — 404. Резултатите се
   смятат при всяко показване; редовете са едни и същи на страницата и в PDF-а (`righe.ts`).
+  **Въжетата и компенсацията** (собственикът, 2 ноември 2026 — „manca la cordatura, classe e formazione …
+  migliorare anche nella funzione di scelta“; „funi e catene … una scelta manuale“): изборът на въжето е
+  по производител (`optgroup` TELCAL / DONATI), надписът — диаметър и формация („Ø 10 mm · 6×19 + FC“), а
+  под него карта с данните на избраното от таблиците на файла (формация, нишки, клас 1370/1770, сечение,
+  разрушително усилие, линейна маса — `fune.ts`; възможността ги носи като `data-*`, `public/js/argano.js`
+  сменя картата на живо, без JavaScript — каквото е дошло от сървъра). „Cordatura“ — избор за всяко въже
+  по EN 12385-2 (crociata destra sZ / sinistra zS, parallela (Lang) destra zZ / sinistra sS); таблиците на
+  файла я нямат, затова е по избор и празна не се пази. Въже на ръка (`altro`) — и нишки, формация (до 40
+  знака) и клас („1570“ или „1370/1770“, `CLASSE`), по избор. Компенсация извън таблиците — „Altra misura
+  (dati a mano)“ в мерките: мярка (3–40 mm) и линейна маса (0,05–20 kg/m) в `compAltro`; тежи точно като
+  същата мярка от таблиците (тестът сравнява). Полетата на ръка се виждат само при „altro“ (`data-solo`,
+  argano.js; без JavaScript — винаги). Резултатите и PDF-ът показват производителя, формацията, нишките,
+  класа, cordatura и сечението („—“ за непопълненото на ръка). Новото в `dati` е по избор и липсва, когато
+  е празно — записаното преди него се чете и смята както е.
   **Страницата в менюто и изчислението без карта** (собственикът, 31 октомври 2026 — „cercare il numero di
   matricola o la via e precompilare il calcolo se ho già la scheda impianto“; избра „calcolo libero“):
   „Rilievi“ → „Calcolo argano“ (`/calcolo-argano`, `routes/calcolo-argano-elenco.ts`) — търсене по
