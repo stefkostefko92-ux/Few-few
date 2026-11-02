@@ -299,7 +299,7 @@
     },
     "recipients": {
       "title": "Chi altro vede i dati",
-      "hosting": "Hetzner Online GmbH, Germania — il server su cui funziona il portale, in un data center nell'Unione europea.",
+      "hosting": "netcup GmbH, Germania — il server su cui funziona il portale, in un data center nell'Unione europea.",
       "mail": "Sendinblue SAS (Brevo), Francia — l'invio delle email, quando è attivo: inviti, link per una nuova password e avvisi di nuove richieste agli amministratori del portale.",
       "text": "Non vendiamo dati e non li cediamo per pubblicità. Non trasferiamo dati personali fuori dall'Unione europea; se un sub-responsabile di Brevo tratta dati fuori dall'UE, il trasferimento è tutelato da clausole contrattuali tipo (art. 46 GDPR)."
     },

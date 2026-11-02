@@ -15,7 +15,7 @@ export type MailResult = 'sent' | 'disabled' | 'failed';
 
 let transport: Transporter | null = null;
 
-/** SMTP (Brevo на порт 2525 — Hetzner блокира 25/465/587), винаги шифровано (STARTTLS или TLS). */
+/** SMTP (Brevo на порт 2525), винаги шифровано (STARTTLS или TLS). */
 function getTransport(): Transporter {
   if (transport) return transport;
   const cfg = config();
