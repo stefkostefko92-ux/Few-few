@@ -9426,7 +9426,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 266
+        "lessons": 270
       },
       "evolution": [
         {
@@ -9782,9 +9782,20 @@
           "date": "2026-11-02",
           "event": "v25.1 — учене",
           "detail": "Научи: Stripe праща invoice.payment_failed и когато плащането иска 3DS (PaymentIntent отива в … (+41 още)"
+        },
+        {
+          "version": "25.4.0",
+          "date": "2026-11-02",
+          "event": "v25.4 — учене",
+          "detail": "Научи: Настройката на Stripe \"Limit customers to one subscription\" брои за активни active, pas… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Настройката на Stripe \"Limit customers to one subscription\" брои за активни active, pas…\" (+2 още)"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
