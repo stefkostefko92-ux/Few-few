@@ -1217,7 +1217,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 586
+        "lessons": 587
       },
       "evolution": [
         {
@@ -2077,9 +2077,20 @@
           "date": "2026-11-02",
           "event": "v53.3 — учене",
           "detail": "Научи: Хукът guard-readonly блокира Bash команди с неразгънати променливи пътища ($S), `sed -i… (+1 още)"
+        },
+        {
+          "version": "53.4.0",
+          "date": "2026-11-02",
+          "event": "v53.4 — учене",
+          "detail": "Научи: В linketto осиновяването на абонамент търси потребител по stripeCustomerId на самия або…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „В linketto осиновяването на абонамент търси потребител по stripeCustomerId на самия або…\""
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
