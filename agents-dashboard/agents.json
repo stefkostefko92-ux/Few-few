@@ -9550,7 +9550,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 253
+        "lessons": 255
       },
       "evolution": [
         {
@@ -9948,9 +9948,20 @@
           "date": "2026-11-02",
           "event": "v24.8 — учене",
           "detail": "Научи: Не показвай с grep/cat кода на .claude/hooks/dod-check.mjs в Bash; изходът съдържа марк…"
+        },
+        {
+          "version": "25.0.0",
+          "date": "2026-11-02",
+          "event": "v25.0 — учене",
+          "detail": "Научи: Stripe праща invoice.payment_failed и когато плащането иска 3DS (PaymentIntent отива в … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Stripe праща invoice.payment_failed и когато плащането иска 3DS (PaymentIntent отива в …\" (+1 още)"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
