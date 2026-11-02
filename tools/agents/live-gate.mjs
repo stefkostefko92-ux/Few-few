@@ -187,7 +187,7 @@ function check() {
 }
 
 async function run() {
-  const { claudeAvailable, makeWorktree, runJobs, expandJobs } = await import("./evals/live-run.mjs");
+  const { claudeAvailable, makeWorktree, runJobs, expandJobs, EVAL_ALLOWED } = await import("./evals/live-run.mjs");
   if (!claudeAvailable()) { console.error("live-gate: няма `claude` CLI с вход — живата проверка не е възможна тук."); return 2; }
   const files = inputFiles();
   const dirty = execFileSync("git", ["-C", ROOT, "status", "--porcelain", "--", ...files], { encoding: "utf8" }).trim();

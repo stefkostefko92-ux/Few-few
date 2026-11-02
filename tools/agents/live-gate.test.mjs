@@ -127,3 +127,18 @@ test("пробата: кавичките са част от цитата, null �
   assert.match(t, /Кавички, скоби и пунктуация след маркера са част от цитата/);
   assert.match(t, /null значи САМО, че маркерът липсва/);
 });
+
+// Регресия 2026-11-02: c1dff7a60 подаде EVAL_ALLOWED на runJobs, без да го импортира — `run()` гърмеше с
+// ReferenceError, а тестовете бяха зелени, защото не викат run(). Всеки износ на live-run, който live-gate
+// назовава, трябва да е в импорта му.
+test("live-gate импортира всеки износ на live-run, който ползва", async () => {
+  const { readFileSync } = await import("node:fs");
+  const lr = await import("./evals/live-run.mjs");
+  const src = readFileSync(new URL("./live-gate.mjs", import.meta.url), "utf8");
+  const imported = new Set();
+  for (const m of src.matchAll(/(?:const|import)\s*\{([^}]+)\}\s*(?:=\s*await import\(|from\s*)["']\.\/evals\/live-run\.mjs["']/g))
+    for (const n of m[1].split(",")) imported.add(n.trim().split(/\s+as\s+|:\s*/)[0]);
+  const local = (n) => new RegExp(`(?:const|let|var|function)\\s+${n}\\b|import\\s+\\{[^}]*\\b${n}\\b[^}]*\\}\\s+from\\s+["'](?!\\./evals/live-run)`).test(src);
+  const used = Object.keys(lr).filter((n) => new RegExp(`\\b${n}\\b`).test(src) && !local(n));
+  assert.deepEqual(used.filter((n) => !imported.has(n)), [], "назован, но неимпортиран износ на live-run");
+});
