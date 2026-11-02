@@ -118,3 +118,20 @@ test("капанът на kasadjiyata-2 не хваща отрицание в п
   assert.equal(evalCheck(trap, "Сложи печата и записа в една транзакция.").ok, false, "истинският капан още се хваща");
   assert.equal(evalCheck(trap, "Печатът и записът в базата са в същата транзакция.").ok, false);
 });
+
+// 02.11.2026: пресверката на карантината (Продавача 21/42, 3D Maniac 13/35 опровергани) показа, че агентите
+// записват находки в кода ни като поуки. Проверка с `"in": "learn"` гледа САМО блоковете ```learn — находката
+// в доклада е правилното място и не бива да пада.
+test("evalCheck in: learn — капанът гледа само блока learn, не доклада", () => {
+  const report = "Находка: auth.ts:81 не нормализира имейла (Сигурно).\n\n## ПРЕДАВАНЕ\nОт: izpitatelya → Към: човек\n";
+  const learnBad = report + "\n```learn\nagent: izpitatelya\nlessons:\n  - text: Nexus register не нормализира имейла\n    source: auth.ts:81\n```\n";
+  const learnOk = report + "\n```learn\nagent: izpitatelya\nlessons:\n  - text: SQLite UNIQUE е чувствителен към регистъра без COLLATE NOCASE\n    source: https://sqlite.org/datatype3.html\n```\n";
+  const trap = { none: ["не нормализира"], in: "learn", label: "находка като поука" };
+  assert.equal(evalCheck(trap, report).ok, true, "без learn блок — капанът не е хванат");
+  assert.equal(evalCheck(trap, learnOk).ok, true, "общо правило в learn — минава");
+  assert.equal(evalCheck(trap, learnBad).ok, false, "находката в learn — хваната");
+  assert.equal(evalCheck({ any: ["COLLATE NOCASE"], in: "learn" }, learnOk).ok, true, "any също се ограничава");
+  assert.equal(evalCheck({ any: ["COLLATE NOCASE"], in: "learn" }, report).ok, false);
+  assert.deepEqual(validateSpec({ id: "x", agent: "a", task: "t", expect: [{ none: ["a"], in: "learn" }] }), []);
+  assert.ok(validateSpec({ id: "x", agent: "a", task: "t", expect: [{ none: ["a"], in: "доклад" }] }).length, "непознат обхват пада");
+});

@@ -60,9 +60,18 @@ export function affirmedHit(hay, marker) {
   return false;
 }
 
+/** Текстът на всички блокове ```learn в изхода (празен, ако няма). */
+export function learnBlocks(output) {
+  return [...String(output || "").matchAll(/^```learn[^\n]*\n([\s\S]*?)^```/gm)].map((m) => m[1]).join("\n");
+}
+
+// Обхват на проверката (02.11.2026): `"in": "learn"` гледа само блоковете ```learn — за капана „находка,
+// записана като поука“. Находката в доклада е правилното място и не бива да пада.
+export const CHECK_SCOPES = ["learn"];
+
 /** Оценява една проверка спрямо изхода. Връща { ok, kind, label, hits, misses }. */
 export function evalCheck(check, output) {
-  const hay = String(output || "");
+  const hay = check.in === "learn" ? learnBlocks(output) : String(output || "");
   const kind = check.any ? "any" : check.all ? "all" : check.none ? "none" : "unknown";
   const markers = check[kind] || [];
   const hits = [], misses = [];
@@ -210,6 +219,7 @@ export function validateSpec(spec, knownAgents) {
     const kinds = ["any", "all", "none"].filter((k) => k in c);
     if (kinds.length !== 1) errs.push(`expect[${i}]: точно едно от any|all|none (има ${kinds.length})`);
     else if (!Array.isArray(c[kinds[0]]) || !c[kinds[0]].length) errs.push(`expect[${i}].${kinds[0]}: непразен масив`);
+    if ("in" in c && !CHECK_SCOPES.includes(c.in)) errs.push(`expect[${i}].in: непознат обхват „${c.in}“ (позволени: ${CHECK_SCOPES.join(", ")})`);
   });
   if (spec.trajectory != null) errs.push(...validateTrajectory(spec.trajectory, knownAgents));
   return errs;
