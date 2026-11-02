@@ -168,7 +168,7 @@ export async function youtubeApi(resource, params, { key = process.env.YOUTUBE_A
   try { body = await res.json(); } catch { /* не-JSON */ }
   if (!res.ok) {
     const reason = String(body?.error?.errors?.[0]?.reason || body?.error?.message || "");
-    const hint = /quota/i.test(reason) ? " (дневната квота е изчерпана — 10 000 единици; търсене = 100)" : "";
+    const hint = /quota/i.test(reason) ? " (дневната квота е изчерпана — 100 повиквания search.list отделно + 10 000 единици за останалите)" : "";
     throw new Error(`YouTube API ${res.status}${hint}: ${reason.split(key).join("***").slice(0, 200)}`);
   }
   return body;
