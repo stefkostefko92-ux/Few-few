@@ -98,7 +98,6 @@
     "processingNote": "Veikala pārdošanai tiek piemērota arī maksājumu apstrādes maksa: 1,9% + €0,30 (sedz karšu apstrādātāju).",
     "mostPopular": "Vispopulārākais",
     "annualOffer": "Ietaupi {percent}% ar gada plānu",
-    "referralPercentNote": "Uzaicini draugus un nopelni {percent}% no katra viņu maksājuma.",
     "vatNote": "Cenas ir galīgas — ar PVN, ja tas ir maksājams."
   },
   "auth": {

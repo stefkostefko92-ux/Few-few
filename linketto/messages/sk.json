@@ -98,7 +98,6 @@
     "processingNote": "Z predajov v obchode sa účtuje aj poplatok za spracovanie platby: 1,9 % + €0,30 (pokrýva kartového operátora).",
     "mostPopular": "Najobľúbenejší",
     "annualOffer": "Ušetri {percent} % s ročným plánom",
-    "referralPercentNote": "Pozvi priateľov a zarábaj {percent} % z každej ich platby.",
     "vatNote": "Ceny sú konečné — vrátane DPH, ak sa uplatňuje."
   },
   "auth": {

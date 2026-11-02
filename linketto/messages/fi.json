@@ -98,7 +98,6 @@
     "processingNote": "Kaupan myynneistä peritään myös maksun käsittelymaksu 1,9 % + 0,30 € (kattaa korttioperaattorin).",
     "mostPopular": "Suosituin",
     "annualOffer": "Säästä {percent} % vuosipaketilla",
-    "referralPercentNote": "Kutsu ystäviä ja ansaitse {percent} % jokaisesta heidän maksustaan.",
     "vatNote": "Hinnat ovat lopullisia — sisältävät alv:n silloin, kun sitä peritään."
   },
   "auth": {

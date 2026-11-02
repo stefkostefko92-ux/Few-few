@@ -98,7 +98,6 @@
     "processingNote": "Za prodajo v trgovini se zaračuna tudi provizija za obdelavo plačila: 1,9 % + €0,30 (pokriva kartičnega operaterja).",
     "mostPopular": "Najbolj priljubljen",
     "annualOffer": "Prihrani {percent} % z letnim paketom",
-    "referralPercentNote": "Povabi prijatelje in zasluži {percent} % od vsakega njihovega plačila.",
     "vatNote": "Cene so končne — vključno z DDV, kadar je ta dolgovan."
   },
   "auth": {

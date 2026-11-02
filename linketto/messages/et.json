@@ -98,7 +98,6 @@
     "processingNote": "Poe müügile lisandub ka maksetöötlustasu 1,9% + €0,30 (katab kaardimakse töötleja).",
     "mostPopular": "Kõige populaarsem",
     "annualOffer": "Säästa {percent}% aastapaketiga",
-    "referralPercentNote": "Kutsu sõpru ja teeni {percent}% igast nende maksest.",
     "vatNote": "Hinnad on lõplikud — sisaldavad käibemaksu, kui see kuulub tasumisele."
   },
   "auth": {

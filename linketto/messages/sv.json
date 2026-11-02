@@ -98,7 +98,6 @@
     "processingNote": "Butiksförsäljning har även en behandlingsavgift för betalningen på 1,9 % + 0,30 € (täcker kortoperatören).",
     "mostPopular": "Populärast",
     "annualOffer": "Spara {percent} % med en årsplan",
-    "referralPercentNote": "Bjud in vänner och tjäna {percent} % av varje betalning de gör.",
     "vatNote": "Priserna är slutliga — inklusive moms där sådan tas ut."
   },
   "auth": {

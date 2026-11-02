@@ -98,7 +98,6 @@
     "processingNote": "Butikssalg har også et behandlingsgebyr for betalingen på 1,9 % + 0,30 € (dækker kortudbyderen).",
     "mostPopular": "Mest populær",
     "annualOffer": "Spar {percent} % med en årsplan",
-    "referralPercentNote": "Inviter venner og tjen {percent} % af hver betaling, de foretager.",
     "vatNote": "Priserne er endelige — inkl. moms hvor det er relevant."
   },
   "auth": {
