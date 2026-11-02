@@ -13250,7 +13250,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 216
+        "lessons": 218
       },
       "evolution": [
         {
@@ -13588,9 +13588,20 @@
           "date": "2026-11-02",
           "event": "v20.9 — учене",
           "detail": "Научи: В SupremeDiscordBot всички /api/bot/* маршрути са зад един общ x-bot-secret, затова все… (+1 още)"
+        },
+        {
+          "version": "21.1.0",
+          "date": "2026-11-02",
+          "event": "v21.1 — учене",
+          "detail": "Научи: В SupremeDiscordBot ботът резолвира канала през guildChannel(serverId, channelId), зато… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „В SupremeDiscordBot ботът резолвира канала през guildChannel(serverId, channelId), зато…\" (+1 още)"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
