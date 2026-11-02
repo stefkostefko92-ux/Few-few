@@ -13,7 +13,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
-import { summarizeTranscript, parseLedger, aggregate, loadPrices, costParts, USAGE_PATH, costOf, USAGE_RECORD_V } from "../lib/usage.mjs";
+import { summarizeTranscript, parseLedger, aggregate, loadPrices, costParts, USAGE_PATH, costOf, USAGE_RECORD_V, priceOf } from "../lib/usage.mjs";
 import { LOCAL_REF, REMOTE_REF, pendingUsagePath, appendPendingUsage } from "../lib/memory-branch.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -27,6 +27,22 @@ export function loadRecords(root = ROOT) {
   const wt = join(root, USAGE_PATH); if (existsSync(wt)) texts.push(readFileSync(wt, "utf8"));
   const p = pendingUsagePath(root); if (p && existsSync(p)) texts.push(readFileSync(p, "utf8"));
   return parseLedger(...texts);
+}
+
+/**
+ * Пусканията без цена, разделени (02.11.2026): запис без модел (празен — няма какво да се поцени) срещу модел
+ * без ред в prices.json (липсва цена — добави ред с източник). Единственото „без цена“ беше празен запис от
+ * 30.07; да му „добавиш цена“ значи да излъжеш таблото.
+ */
+export function unpricedSplit(recs, prices) {
+  const out = { noModel: 0, noPrice: 0, models: [] };
+  for (const r of recs) {
+    if (priceOf(r.model, prices)) continue;
+    if (!String(r.model || "").trim()) { out.noModel++; continue; }
+    out.noPrice++;
+    if (!out.models.includes(r.model)) out.models.push(r.model);
+  }
+  return out;
 }
 
 function pricesAge(prices) {
@@ -95,11 +111,12 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   // --check (съветващо, в гейта): само сигналите, без пълния доклад; винаги exit 0.
   if (args.includes("--check")) {
     const stale = all.filter((r) => (r.v || 1) < USAGE_RECORD_V).length;
-    const unpriced = recs.length - a.priced;
+    const un = unpricedSplit(recs, prices);
     const notes = [];
     if (!recs.length) notes.push("НЕИЗМЕРЕНО — няма записи за пускания");
     if (stale) notes.push(`${stale} записа от стара версия (надути) — пусни --backfill <папка с транскриптите>`);
-    if (unpriced) notes.push(`${unpriced} пускания без цена в prices.json`);
+    if (un.noPrice) notes.push(`${un.noPrice} пускания без цена в prices.json (${un.models.join(", ")}) — добави ред с източник`);
+    if (un.noModel) notes.push(`${un.noModel} празни записа без модел (не са за цена; от 30.07 summarizeTranscript връща null при 0 хода)`);
     if (age > (prices?.ttlDays || 45)) notes.push(`цените са сверени преди ${age} дни (срок ${prices?.ttlDays})`);
     const since = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 16);
     const defs = definedEfforts();

@@ -31,7 +31,7 @@
 //   работят върху ЦЕЛИЯ текст на блока (източникът `_(…)_` често е на continuation ред), а
 //   записът пази блоковете НЕДОКОСНАТИ и в оригиналния им ред (никакво разбъркване на редове).
 
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isMain } from "../lib/is-main.mjs";
@@ -40,6 +40,7 @@ import { isMain } from "../lib/is-main.mjs";
 // Без него CLI тестът щеше да съди СЪСТОЯНИЕТО на репото („днес няма дубли“) вместо поведението на
 // инструмента — вече правена грешка: такъв тест е зелен, докато някой не добави дублат, и червен по
 // причина, която няма нищо общо с кода.
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MEM_DIR = process.env.CURATE_MEM_DIR ||
   join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".claude", "agents", "_memory");
 const MAX_PER_SECTION = Infinity; // БЕЗ лимит — знанието на агентите не се архивира никога; само дубли/противоречия се третират
@@ -86,6 +87,26 @@ function jaccard(a, b) {
 // тогава сравняваме само МНОЖЕСТВАТА числа, без да свързваме етикет с число. Съвпадат → парафраз
 // (безопасно за сливане); разминават се → истинско числово противоречие (ξ 0.0065≠0.0019) → човек.
 // Това е тясно и надеждно точно защото прилика ≥SIM вече е гарантирала, че говорят за същото.
+// Кой блок от двойка почти-дубли да остане (02.11.2026). Дотогава — по-дългият; двойка за panev цитираше
+// `panev/css/style.css` (няма го) и `panev/css/site.css` (реалният) и curate пазеше грешния. Сега печели
+// блокът с по-малко липсващи цитирани пътища в репото; дължината решава само при равенство. Сравнението е
+// ОТНОСИТЕЛНО (двата блока са парафраз на едно), затова класовете фалшиви тревоги на „мъртъв път“
+// (upstream документи, нарочно липсващ файл) засягат и двата еднакво.
+const CITED_PATH_RE = /([A-Za-z0-9_.\-]+(?:\/[A-Za-z0-9_.\-]+)+\.(?:jsonl|json|mjs|cjs|jsx|tsx|js|ts|md|sh|yml|yaml|css|html|txt|service|conf|prisma|ejs|lua|py)(?![A-Za-z0-9]|\.\w))/g;
+const repoHas = (rel) => { try { return existsSync(join(REPO_ROOT, rel)); } catch { return false; } };
+export function missingCitedPaths(text, exists = repoHas) {
+  const noUrls = String(text || "").replace(/https?:\/\/\S+/g, " ");
+  let n = 0;
+  for (const m of noUrls.matchAll(CITED_PATH_RE)) if (!m[1].includes("/node_modules/") && !exists(m[1])) n++;
+  return n;
+}
+/** "a" или "b" — кой от двата блока да остане. */
+export function pickKeeper(ta, tb, exists = repoHas) {
+  const ma = missingCitedPaths(ta, exists), mb = missingCitedPaths(tb, exists);
+  if (ma !== mb) return ma < mb ? "a" : "b";
+  return ta.length >= tb.length ? "a" : "b";
+}
+
 export function numTokens(text) {
   const t = String(text).toLowerCase()
     .replace(/ /g, " ")
@@ -172,7 +193,7 @@ for (const f of readdirSync(MEM_DIR).filter((x) => x.endsWith(".md") && x !== "P
           if (dropped.has(idx[c])) continue;
           const ta = blockText(entries[idx[a]]), tc = blockText(entries[idx[c]]);
           if (jaccard(ta, tc) >= MERGE_THRESHOLD) {
-            const drop = ta.length >= tc.length ? idx[c] : idx[a];
+            const drop = pickKeeper(ta, tc) === "a" ? idx[c] : idx[a];
             const keep = drop === idx[c] ? idx[a] : idx[c];
             report.push(`  ⇉ слято (${heading}): пази по-пълния, маха парафраза\n     ✓ ${blockText(entries[keep]).slice(0, 100)}…\n     ✗ ${blockText(entries[drop]).slice(0, 100)}…`);
             dropped.add(drop); totalMerged++; changed = true;
@@ -197,7 +218,7 @@ for (const f of readdirSync(MEM_DIR).filter((x) => x.endsWith(".md") && x !== "P
           report.push(`  ⚠ ЧИСЛА СЕ РАЗЛИЧАВАТ (${heading}) — човек решава, не пипам:\n     A само: ${d.onlyA.join(", ") || "—"}\n     B само: ${d.onlyB.join(", ") || "—"}\n     • ${ta.slice(0, 150)}\n     • ${tc.slice(0, 150)}`);
           totalNumConflict++;
         } else if (MERGE_SAFE || MERGE_DUPS) {
-          const drop = ta.length >= tc.length ? kept[c] : kept[a];
+          const drop = pickKeeper(ta, tc) === "a" ? kept[c] : kept[a];
           const keep = drop === kept[c] ? kept[a] : kept[c];
           report.push(`  ⇉ слято-безопасно (${heading}; числа съвпадат = парафраз):\n     ✓ ${blockText(entries[keep]).slice(0, 100)}…\n     ✗ ${blockText(entries[drop]).slice(0, 100)}…`);
           dropped.add(drop); totalMerged++; changed = true;
