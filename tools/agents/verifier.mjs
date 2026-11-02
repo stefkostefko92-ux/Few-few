@@ -83,7 +83,7 @@ export const VERIFIER = {
 // покритите агенти: делът на кирилицата в прозата (без код, пътища, URL и приложени файлове).
 // Калибрирано на 40 изхода от живите гейтове: български ≥ 0.75, английският отговор 0.17.
 export function proseCyrillicShare(text) {
-  const p = String(text).split(/\n--- приложен файл от scratchpad:/)[0]
+  const p = String(text).split(/\n--- (?:приложен файл от scratchpad:|записано от агента \([A-Za-z]+\):)/)[0]
     .replace(/```[\s\S]*?```/g, " ").replace(/`[^`\n]*`/g, " ")
     .replace(/https?:\/\/\S+/g, " ").replace(/(?:\/|\b[\w.-]+\/)[\w./-]+/g, " ");
   const cyr = (p.match(/[Ѐ-ӿ]/g) || []).length;

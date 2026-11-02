@@ -122,3 +122,14 @@ test("prodavacha: редът „Инварианти:“ покрива подп
   const r = verifyOutput("prodavacha", line);
   assert.equal(r.ok, true, JSON.stringify(r.checks.filter((c) => !c.ok)));
 });
+
+// Регресия 2026-11-02: живият гейт падна на Касаджията (кирилица 0.47/0.48) — attachWrites прикачва записаните
+// от агента файлове (код без ограда) с маркер „--- записано от агента (Write): …“, а проверката за езика режеше
+// само при „--- приложен файл от scratchpad:“. Кодът на агента не е проза.
+test("езикът: записаните от агента файлове не се броят за проза", () => {
+  const bg = "Отговорът е на български и обяснява решението подробно, с източник и с проверка. ".repeat(6);
+  const code = "export function fiscalReceipt(total: number) { return total * 100; } // money in cents\n".repeat(40);
+  const out = `${bg}\n\n--- записано от агента (Write): /tmp/live-run-X/CSPos/src/a.ts ---\n${code}`;
+  assert.ok(proseCyrillicShare(out).share > 0.7, "кодът след маркера не сваля дела");
+  assert.ok(proseCyrillicShare(`${bg}\n\n${code}`).share < 0.5, "без маркер кодът е проза — проверката хапе");
+});
