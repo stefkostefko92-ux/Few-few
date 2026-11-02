@@ -10,6 +10,7 @@
 (не от гадаене) — затова първите поуки носят книжни/стандартни източници, а не repo факти.
 
 ## Проверени поуки (verified)
+- **2026-11-02:** Nexus e2e регистрира отделен потребител за всеки тест, а /api/auth/register има твърд лимит 8/час/IP; спек с повече от 8 регистрации пада без NEXUS_E2E_AUTH_RATE_MAX в командата за пускане. _(ревю на Nexus Playwright спекове и инструкции за пускане; verified; Nexus/e2e/README.md:64-71)_
 
 - **2026-10-27:** oversee.mjs е скрипт, който се изпълнява при зареждане, без нито една функция и без main guard; цикълът по агентите (:103-216, 114 реда) няма пряк тест — oversee.test.mjs внася само oversee-lib.mjs, а stale-parity.test.mjs:39 пуска oversee.mjs като процес и проверява само поуките с изтекъл срок. Рефактор там изисква първо характеризиращ тест. _(tools/agents/oversee.mjs рефактор; verified; tools/agents/oversee.test.mjs:15)_
 - **2026-10-27:** ospedalitrasparenti: прагът за раздробяване 40_000 е зададен независимо на две места (fetch-appalti.js:88 и segnali-gare.js:65 soglia=40_000), без обща константа; addTo/processMonth нямат тест (test/appalti.test.js покрива само catProc) _(рефактор на fetch-appalti.js / frazionamento праговете в ospedalitrasparenti; verified; ospedalitrasparenti/src/fetch-appalti.js:88 + ospedalitrasparenti/src/segnali-gare.js:65 + ospedalitrasparenti/test/appalti.test.js:3)_

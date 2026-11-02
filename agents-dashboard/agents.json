@@ -2897,7 +2897,7 @@
           "Sandi Metz „The Wrong Abstraction“ + Page-Jones connascence",
           "Google eng-practices (code review/readability); граница спрямо .claude/agents/kodadjiyata.md"
         ],
-        "lessons": 122
+        "lessons": 123
       },
       "evolution": [
         {
@@ -2953,9 +2953,20 @@
           "date": "2026-10-31",
           "event": "v20.8 — учене",
           "detail": "Научи: oversee.mjs е скрипт, който се изпълнява при зареждане, без нито една функция и без mai… (+3 още)"
+        },
+        {
+          "version": "20.9.0",
+          "date": "2026-11-02",
+          "event": "v20.9 — учене",
+          "detail": "Научи: Nexus e2e регистрира отделен потребител за всеки тест, а /api/auth/register има твърд л…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Nexus e2e регистрира отделен потребител за всеки тест, а /api/auth/register има твърд л…\""
+        },
         {
           "date": "2026-10-31",
           "type": "learning",
