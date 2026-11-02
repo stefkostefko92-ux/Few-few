@@ -340,6 +340,19 @@
       "relies": [
         ".claude/settings.json"
       ]
+    },
+    {
+      "id": "builtin-haiku-agent",
+      "claim": "Вграденият субагент claude-code-guide тича на Haiku; правилото на собственика е „никога Haiku“, затова е забранен с permissions.deny \"Agent(claude-code-guide)\". Нов вграден агент на Haiku → добави го в deny.",
+      "source": "https://code.claude.com/docs/en/sub-agents.md (Built-in subagents; Disable specific subagents) + usage.jsonl id e53fa044df (24.09.2026)",
+      "keywords": [
+        "claude-code-guide",
+        "Haiku",
+        "built-in subagents"
+      ],
+      "relies": [
+        ".claude/settings.json"
+      ]
     }
   ]
 }

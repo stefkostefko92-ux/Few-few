@@ -88,3 +88,10 @@ test("всеки guard-* в PreToolUse и UserPromptSubmit е с onFailure: bloc
     if (/guard-[a-z]+\.mjs/.test(h.command) && h.onFailure !== "block") loose.push(`${ev}: ${h.command.match(/guard-[a-z]+/)[0]}`);
   assert.deepEqual(loose, []);
 });
+
+// 2026-11-02 (решение на собственика „качество първо“): вграденият claude-code-guide тича на Haiku, а правилото
+// е „никога Haiku“ (реално пускане haiku-4-5 на 24.09). Забраната е в permissions.deny (/en/sub-agents).
+test("вграденият помощник на Haiku е забранен: Agent(claude-code-guide) в deny", () => {
+  const s = JSON.parse(readFileSync(SETTINGS, "utf8"));
+  assert.ok(s.permissions.deny.includes("Agent(claude-code-guide)"));
+});

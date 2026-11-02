@@ -31,7 +31,8 @@
       "Edit(~/.netrc)",
       "Edit(~/.claude/.credentials.json)",
       "Read(**/.next/**)",
-      "Edit(**/.next/**)"
+      "Edit(**/.next/**)",
+      "Agent(claude-code-guide)"
     ]
   },
   "hooks": {
