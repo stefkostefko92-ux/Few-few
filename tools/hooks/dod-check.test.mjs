@@ -270,3 +270,22 @@ test("всяко връщане (не само за ПРЕДАВАНЕ) иска
   assert.match(REPEAT_ALL, /ЦЕЛИЯ си отговор/);
   assert.match(REPEAT_ALL, /предишното ми съобщение/);
 });
+
+// Регресии 2026-11-02 (Продавача, linketto TDD): (1) показан код на куката (grep) съвпадаше с маркера на
+// червения гейт — фалшиво червено, което никога не се изчиства; (2) умишлено червен TDD ран вътре в
+// еднократна мутираща команда не се изчистваше от по-късно зелено `npm test` в същия продукт.
+test("checkFailedGates: показан код на куката не е червен гейт", () => {
+  const grep = `103:  { name: "гейтът на агентския слой", green: /СТАТУС: гейтът е зелен/, red: /СТАТУС: ГЕЙТЪТ Е ЧЕРВЕН/ },\n104:  { name: "oversee", red: /СТАТУС: има твърди проблеми/ },`;
+  assert.equal(checkFailedGates([{ cmd: `grep -n "ЧЕРВЕН" .claude/hooks/dod-check.mjs`, out: grep }]), null);
+  assert.ok(checkFailedGates([{ cmd: "node tools/agents/gate.mjs", out: `\n\x1b[31mСТАТУС: ГЕЙТЪТ Е ЧЕРВЕН\x1b[0m — 1 паднаха` }]), "истинският червен гейт хапе");
+});
+
+test("checkFailedGates: червен TDD ран в heredoc се изчиства от зелено npm test в същия продукт, не в друг", () => {
+  const red = { cmd: "python3 - <<'PY'\nopen('t.ts','a').write('x')\nPY\ncd /home/user/Few-few/linketto && npm test 2>&1 | tail -15", out: "# tests 1\n# fail 1" };
+  const greenSame = { cmd: "cd linketto && npm test 2>&1 | grep -E '^# '", out: "# tests 224\n# fail 0" };
+  const greenOther = { cmd: "cd medqr && npm test", out: "# fail 0" };
+  assert.equal(checkFailedGates([red, greenSame]), null);
+  assert.ok(checkFailedGates([red, greenOther]), "зелено в друг продукт не изчиства");
+  const a = { cmd: "node --test a.test.mjs", out: "# fail 2" }, b = { cmd: "node --test b.test.mjs", out: "# fail 0" };
+  assert.ok(checkFailedGates([a, b]), "друг тестов файл пак не маскира червения");
+});

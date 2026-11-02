@@ -100,13 +100,15 @@ export function collectToolResults(jsonl) {
 // не „✗" (то се среща в легитимни одитни таблици). Броим ПОСЛЕДНОТО срещане на семейството —
 // пуснал гейта, видял червено, поправил, пуснал пак зелено е ПРАВИЛНИЯТ поток и не бива да блокира.
 const RESULT_MARKERS = [
-  { name: "гейтът на агентския слой", green: /СТАТУС: гейтът е зелен/, red: /СТАТУС: ГЕЙТЪТ Е ЧЕРВЕН/ },
-  { name: "надзорът над екипа (oversee)", green: /СТАТУС: екипът е здрав/, red: /СТАТУС: има твърди проблеми/ },
+  // Котва в началото на реда (02.11.2026): маркерът без котва съвпадаше със СОБСТВЕНИЯ код на куката, когато агент
+  // покажеше този файл (grep/cat) — „червен гейт“, който никога не е пускан и не се изчиства.
+  { name: "гейтът на агентския слой", green: /^(?:\x1b\[[\d;]*m)?СТАТУС: гейтът е зелен/m, red: /^(?:\x1b\[[\d;]*m)?СТАТУС: ГЕЙТЪТ Е ЧЕРВЕН/m },
+  { name: "надзорът над екипа (oversee)", green: /^СТАТУС: екипът е здрав/m, red: /^СТАТУС: има твърди проблеми/m },
   { name: "тестовете", green: /^# fail 0$/m, red: /^# fail (?!0$)\d+$/m },
   // ВНИМАНИЕ (собствен FP, хванат от теста): първият вариант търсеше „изтекл" и съвпадаше със
   // ЗЕЛЕНИЯ ред „чисто — нула изтекли тайни". Маркерът трябва да е точният низ на провала
   // (`secret-scan: N възможни тайни`), не дума, която се среща и в успешното съобщение.
-  { name: "secret-scan", green: /secret-scan: чисто/, red: /secret-scan: \d+ възможни тайни/ },
+  { name: "secret-scan", green: /^(?:\x1b\[[\d;]*m)?. secret-scan: чисто/m, red: /^(?:\x1b\[[\d;]*m)?. secret-scan: \d+ възможни тайни/m },
 ];
 
 /**
@@ -129,6 +131,23 @@ export function collectBashRuns(jsonl) {
 
 const cmdKey = (c) => String(c || "").replace(/\s+/g, " ").trim();
 
+// Ключ на тестово пускане (02.11.2026): продуктът (последното `cd` преди него, по име на папката) + самото
+// извикване с аргументите. Червен TDD ран вътре в еднократна команда (heredoc, който пише тестове, после
+// `npm test`) се изчиства от по-късно зелено `npm test` в същия продукт — повтарянето на мутиращата команда
+// само за куката е вредно. `node --test b.test.mjs` пак НЕ изчиства `a.test.mjs` (аргументите са в ключа).
+const TEST_RUN = /(?:npm|pnpm|yarn)\s+(?:run\s+)?test\b|node\s+--test\b[^|;&>\n]*|npx\s+(?:tsx\s+--test|vitest|jest|playwright\s+test)\b[^|;&>\n]*/g;
+export function testRunKey(cmd) {
+  const c = String(cmd || "");
+  const keys = [];
+  for (const m of c.matchAll(TEST_RUN)) {
+    const before = c.slice(0, m.index);
+    const cds = [...before.matchAll(/\bcd\s+("[^"]+"|'[^']+'|[^\s;&|]+)/g)];
+    const dir = cds.length ? cds[cds.length - 1][1].replace(/["']/g, "").replace(/\/+$/, "").split("/").pop() : "";
+    keys.push(dir + "::" + m[0].replace(/\s+/g, " ").trim());
+  }
+  return keys.length ? keys.join(" && ") : "";
+}
+
 /**
  * Гейт, чийто ПОСЛЕДЕН резултат е ЧЕРВЕН → работата не е „готова". Резултат = низ (стар формат) или
  * { cmd, out }. При сдвоени резултати червеното на ЕДНА команда се изчиства само от по-късно зелено на
@@ -141,7 +160,7 @@ export function checkFailedGates(results) {
     const last = new Map();
     for (const r of results) {
       const out = typeof r === "string" ? r : String(r?.out ?? "");
-      const key = typeof r === "string" ? "" : cmdKey(r?.cmd);
+      const key = typeof r === "string" ? "" : (m.name === "тестовете" && testRunKey(r?.cmd)) || cmdKey(r?.cmd);
       if (m.red.test(out)) last.set(key, "red");
       else if (m.green.test(out)) last.set(key, "green");
     }
