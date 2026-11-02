@@ -5,3 +5,5 @@ cs-revolution-vps.tar.gz
 
 # Runtime state of the Claude Code hooks — never commit (same rule as main)
 .claude/hooks/_state/
+# Git worktrees of Claude Code sub-agents — runtime, never commit
+.claude/worktrees/
