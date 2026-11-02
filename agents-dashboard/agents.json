@@ -6052,7 +6052,7 @@
           "съседни seed-*.ts — стил, тон и коментари за източник",
           "schema.prisma + package.json db:seed:* вериги"
         ],
-        "lessons": 169
+        "lessons": 170
       },
       "evolution": [
         {
@@ -6414,9 +6414,20 @@
           "date": "2026-10-31",
           "event": "v20.5 — учене",
           "detail": "Научи: Възлагане „добави ново съдържание“ без тема и без факти с източник не е изпълнимо; по з… (+2 още)"
+        },
+        {
+          "version": "20.6.0",
+          "date": "2026-11-02",
+          "event": "v20.6 — учене",
+          "detail": "Научи: check-dups на zabobovdol/prisma дава днес 534 дублирани slug-а (529 в seed-detailed-*);…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „check-dups на zabobovdol/prisma дава днес 534 дублирани slug-а (529 в seed-detailed-*);…\""
+        },
         {
           "date": "2026-10-31",
           "type": "quarantine",
