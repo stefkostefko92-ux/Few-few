@@ -521,7 +521,7 @@ export default {
   "privacy.subprocessorsTitle": "Subverwerkers",
   "privacy.subprocessorsDesc": "Derden die je gegevens namens Supreme Bot kunnen verwerken:",
   "privacy.policy": "Beleid →",
-  "privacy.sub.hetzner": "Hosting (EU, Duitsland)",
+  "privacy.sub.netcup": "Hosting (EU, Duitsland)",
   "privacy.sub.stripe": "Betalingsverwerking (EU, Ierland)",
   "privacy.sub.google": "AI-autoreacties (VS, SCC-waarborgen)",
   "privacy.sub.discord": "Authenticatie + bot-API (VS, SCC-waarborgen)",

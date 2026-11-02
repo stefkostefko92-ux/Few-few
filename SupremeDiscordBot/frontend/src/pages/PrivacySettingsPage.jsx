@@ -113,8 +113,8 @@ export default function PrivacySettingsPage() {
             </p>
             <ul className="text-xs text-cs-muted space-y-2">
               <li className="flex justify-between border-b border-cs-border pb-2">
-                <span><strong className="text-cs-text">Hetzner Online GmbH</strong> — {t("privacy.sub.hetzner")}</span>
-                <a href="https://www.hetzner.com/legal/privacy-policy/" target="_blank" rel="noopener" className="text-cs-cyan">{t("privacy.policy")}</a>
+                <span><strong className="text-cs-text">netcup GmbH</strong> — {t("privacy.sub.netcup")}</span>
+                <a href="https://www.netcup.com/en/contact/data-privacy" target="_blank" rel="noopener" className="text-cs-cyan">{t("privacy.policy")}</a>
               </li>
               <li className="flex justify-between border-b border-cs-border pb-2">
                 <span><strong className="text-cs-text">Stripe Payments Europe Ltd</strong> — {t("privacy.sub.stripe")}</span>

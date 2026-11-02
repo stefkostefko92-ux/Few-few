@@ -333,7 +333,7 @@ export default function Login() {
               <TrustCard
                 icon={Lock}
                 title="EU-only data residency"
-                body="Hosted and stored in the EU (Germany, Hetzner). GDPR-native. Discord, Google and Sentry are recipients in the US under Standard Contractual Clauses."
+                body="Hosted and stored in the EU (Germany, netcup). GDPR-native. Discord, Google and Sentry are recipients in the US under Standard Contractual Clauses."
               />
               <TrustCard
                 icon={Zap}
@@ -394,7 +394,7 @@ export default function Login() {
               />
               <FaqItem
                 q="Where is my data stored?"
-                a="All data is stored in the EU (Germany, Hetzner); Carbon Stealth VCC operates from Bulgaria. Some sub-processors — Discord, Google (optional, for AI replies) and Sentry — are located in the US; those transfers are governed by Standard Contractual Clauses (see Privacy Policy §5-6). Custom bot tokens and Discord OAuth tokens are encrypted at rest with AES-256-GCM. We never sell or share your data."
+                a="All data is stored in the EU (Germany, netcup); Carbon Stealth VCC operates from Bulgaria. Some sub-processors — Discord, Google (optional, for AI replies) and Sentry — are located in the US; those transfers are governed by Standard Contractual Clauses (see Privacy Policy §5-6). Custom bot tokens and Discord OAuth tokens are encrypted at rest with AES-256-GCM. We never sell or share your data."
               />
               <FaqItem
                 q="Can I use my own Discord bot?"

@@ -37,7 +37,7 @@ export const TICKET_TOOL_COMPARE = {
   description: "A factual, sourced comparison of Supreme Bot and Ticket Tool: pricing, ticket limits, application forms, verification, AI replies, API, and EU hosting — checked August 2026.",
   competitor: "Ticket Tool",
   sourceUrls: ["https://ticket-tool.app/pricing", "https://ticket-tool.app/features"],
-  answer: "Supreme Bot and Ticket Tool are both Discord ticket-management bots. The main differences: Supreme Bot bundles standalone application forms, member verification and giveaways into every tier at no extra cost, includes AI auto-replies from the Premium tier (€4.99/server/month), and is EU-hosted (Hetzner, Germany) with a GDPR data-processing agreement. Ticket Tool is priced per feature tier ($0 / $5 / $12 per server/month) with AI, API access and unlimited retention reserved for its $12 Pro tier, and does not state a hosting region or GDPR posture on its site.",
+  answer: "Supreme Bot and Ticket Tool are both Discord ticket-management bots. The main differences: Supreme Bot bundles standalone application forms, member verification and giveaways into every tier at no extra cost, includes AI auto-replies from the Premium tier (€4.99/server/month), and is EU-hosted (netcup, Germany) with a GDPR data-processing agreement. Ticket Tool is priced per feature tier ($0 / $5 / $12 per server/month) with AI, API access and unlimited retention reserved for its $12 Pro tier, and does not state a hosting region or GDPR posture on its site.",
   rows: [
     ["Free tier price", "€0 / server / forever", "$0 / server / forever"],
     ["Entry paid tier", "€4.99 / server / month (Premium)", "$5 / server / month (Community)"],
@@ -54,13 +54,13 @@ export const TICKET_TOOL_COMPARE = {
     ["Webhooks", "20 HMAC-signed integrations, Premium", "10 webhook nodes (Community) · unlimited (Pro)"],
     ["White-label custom bot", "€9.99 / server / month (own Discord bot application, own brand)", "Enterprise tier only — custom pricing"],
     ["Multi-server / agency plan", "No bundle — each server subscribes on its own (€4.99 Premium or €9.99 White-label per month, in the Discord store)", "Team: $25/mo for 3 servers (+$8/extra server)"],
-    ["EU hosting / GDPR", "Hetzner (Germany), GDPR-native, DPA available, self-service export/delete", "Not stated on their site"],
+    ["EU hosting / GDPR", "netcup (Germany), GDPR-native, DPA available, self-service export/delete", "Not stated on their site"],
   ],
   faq: [
     { q: "Is Supreme Bot a Ticket Tool alternative?", a: "Yes. Supreme Bot covers the same core job — button-panel ticket creation, staff claim/escalation, and transcripts — and adds application forms, verification and giveaways in the same subscription, which Ticket Tool prices or scopes differently (see the table above)." },
     { q: "Which is cheaper?", a: "Ticket Tool's Free and Community ($5/server/month) tiers are cheaper entry points if you only need tickets. Supreme Bot's Premium (€4.99/server/month) includes application forms, verification, giveaways, AI replies and a REST API in the same price — features that on Ticket Tool require the $12/month Pro tier for AI and API access, and do not include standalone applications at any tier." },
     { q: "Does Ticket Tool offer application forms like Appy Bot?", a: "Ticket Tool's ticket panels support intake fields (text, dropdowns, priority) attached to a ticket, but we found no separate standalone application/approval workflow on their site as of August 2026 — that is a distinct product category (see our Appy Bot comparison)." },
-    { q: "Is Supreme Bot GDPR-compliant?", a: "Supreme Bot is hosted on Hetzner servers in Germany, offers a Data Processing Agreement, and gives server owners self-service data export and deletion (GDPR Art. 15, 17, 20). Ticket Tool does not state a hosting region or GDPR posture on its public site." },
+    { q: "Is Supreme Bot GDPR-compliant?", a: "Supreme Bot is hosted on netcup servers in Germany, offers a Data Processing Agreement, and gives server owners self-service data export and deletion (GDPR Art. 15, 17, 20). Ticket Tool does not state a hosting region or GDPR posture on its public site." },
   ],
 };
 
@@ -73,7 +73,7 @@ export const APPY_COMPARE = {
   description: "A factual, sourced comparison of Supreme Bot and Appy Bot: pricing, application forms, tickets, verification, giveaways, and EU hosting — checked August 2026.",
   competitor: "Appy Bot",
   sourceUrls: ["https://appy.bot/", "https://appy.bot/premium"],
-  answer: "Supreme Bot and Appy Bot both offer Discord application/questionnaire forms. Appy Bot is priced per server in GBP (Free / £4.99 Premium / £9.99 Custom Bot) and is application-forms-first, with ticket panels as a secondary feature. Supreme Bot is priced in EUR (Free / €4.99 Premium) and adds a full ticket system (claim, escalate, round-robin), AI auto-replies, a public REST API, HMAC webhooks and EU hosting (Hetzner, Germany) with a GDPR data-processing agreement at the same Premium price — none of which Appy Bot states on its site.",
+  answer: "Supreme Bot and Appy Bot both offer Discord application/questionnaire forms. Appy Bot is priced per server in GBP (Free / £4.99 Premium / £9.99 Custom Bot) and is application-forms-first, with ticket panels as a secondary feature. Supreme Bot is priced in EUR (Free / €4.99 Premium) and adds a full ticket system (claim, escalate, round-robin), AI auto-replies, a public REST API, HMAC webhooks and EU hosting (netcup, Germany) with a GDPR data-processing agreement at the same Premium price — none of which Appy Bot states on its site.",
   rows: [
     ["Free tier price", "€0 / server / forever", "£0 / server / forever"],
     ["Paid tier (single server)", "€4.99 / server / month (Premium)", "£4.99 / server / month (Premium x1)"],
@@ -87,7 +87,7 @@ export const APPY_COMPARE = {
     ["Public REST API / webhooks", "Public REST API + 20 HMAC webhooks, Premium", "Not stated on their site"],
     ["Custom-branded bot", "White-label tier, €9.99/mo — own Discord bot application, fully own brand", "Custom Bot tier, £9.99/mo — custom avatar, username & status (their bot)"],
     ["Multi-server discount", "None — each server subscribes on its own (€4.99 Premium or €9.99 White-label per month, in the Discord store)", "Premium x3: £8.99/mo for 3 servers (40% off)"],
-    ["EU hosting / GDPR", "Hetzner (Germany), GDPR-native, DPA available, self-service export/delete", "Not stated on their site"],
+    ["EU hosting / GDPR", "netcup (Germany), GDPR-native, DPA available, self-service export/delete", "Not stated on their site"],
   ],
   faq: [
     { q: "Is Supreme Bot an Appy Bot alternative?", a: "Yes. Supreme Bot matches Appy Bot's application-forms use case (multi-question forms, review workflow, auto-role on approval) and adds a full ticket system, verification, giveaways, AI replies and an EU-hosted, GDPR-documented backend in the same subscription." },
@@ -139,7 +139,7 @@ export const BEST_TICKET_BOT_GUIDE = {
     {
       title: "7. Data hosting region and GDPR documentation",
       body: "If your community, staff, or customers are in the EU, ask directly: where is the data hosted, is there a Data Processing Agreement (DPA), and can server owners self-service export or delete their data? Not every bot states this publicly — see our GDPR guide for the exact questions to ask.",
-      supreme: "Supreme Bot is hosted on Hetzner servers in Germany, publishes a DPA, and gives server owners self-service data export (GDPR Art. 15/20) and deletion (Art. 17) from the dashboard.",
+      supreme: "Supreme Bot is hosted on netcup servers in Germany, publishes a DPA, and gives server owners self-service data export (GDPR Art. 15/20) and deletion (Art. 17) from the dashboard.",
     },
   ],
   mentions: "Ticket Tool and Appy Bot are both established, capable bots worth evaluating against this checklist — see our sourced, dated comparisons: Supreme Bot vs Ticket Tool and Supreme Bot vs Appy Bot.",
@@ -220,7 +220,7 @@ export const GDPR_GUIDE = {
     },
     {
       title: "What Supreme Bot does",
-      body: "Supreme Bot's own infrastructure (servers, database, backups) runs on Hetzner in Germany. Some sub-processors are in the USA — Discord itself (sign-in, bot operation and billing), Google Gemini (optional AI replies) and Sentry (error monitoring) — and those transfers rely on Standard Contractual Clauses, as the Privacy Policy lists. Carbon Stealth VCC (the company behind Supreme Bot) publishes a Data Processing Agreement (DPA) under GDPR Art. 28 for server owners acting as controllers, lists its sub-processors (e.g. hosting, payment, email) in its Privacy Policy, and gives server owners self-service tools in the dashboard: data export (Art. 15 access, Art. 20 portability), account and data deletion (Art. 17 erasure), and consent withdrawal (Art. 7(3)) for AI-feature opt-ins.",
+      body: "Supreme Bot's own infrastructure (servers, database, backups) runs on netcup in Germany. Some sub-processors are in the USA — Discord itself (sign-in, bot operation and billing), Google Gemini (optional AI replies) and Sentry (error monitoring) — and those transfers rely on Standard Contractual Clauses, as the Privacy Policy lists. Carbon Stealth VCC (the company behind Supreme Bot) publishes a Data Processing Agreement (DPA) under GDPR Art. 28 for server owners acting as controllers, lists its sub-processors (e.g. hosting, payment, email) in its Privacy Policy, and gives server owners self-service tools in the dashboard: data export (Art. 15 access, Art. 20 portability), account and data deletion (Art. 17 erasure), and consent withdrawal (Art. 7(3)) for AI-feature opt-ins.",
     },
     {
       title: "Article 28 — why the DPA matters, not just a privacy policy",

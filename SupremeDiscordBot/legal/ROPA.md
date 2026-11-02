@@ -297,7 +297,7 @@ This ROPA is reviewed:
 | **Data categories** | Discord user ID, verification panel ID, outcome (success/failure), captcha answer text, timestamp. IP is not collected (bot interactions carry none) |
 | **Data subjects** | Members joining a customer's Discord server |
 | **Recipients** | None outside Supreme Bot systems; the operator sees aggregated daily counts |
-| **3rd country transfers** | None (Hetzner, Germany) |
+| **3rd country transfers** | None (netcup, Germany) |
 | **Retention period** | **90 days** (`VERIFICATION_ATTEMPT_RETENTION_DAYS`, nightly retention job); deleted immediately on a data subject request (`/privacy delete`, admin DSR) |
 | **Security measures** | Bot-secret-gated ingestion; multi-tenant scoping by server; encrypted database volume |
 
@@ -310,6 +310,6 @@ This ROPA is reviewed:
 | **Data categories** | Discord user ID, server ID; counters (XP, level, season XP, sparks, daily streak, message-event count, voice minutes); one-off reward keys (which poll/giveaway/application/ticket/verification/counting milestone/trivia round already granted XP); shop purchases (item, price in sparks, expiry); caught companions (catalog ID, stage, sparks fed, optional nickname), spawn events and trade offers between two members; quest contributions (amount per member); trivia answers (chosen option, correct/incorrect) and round winners; counting state per server (current number, record, ID of the last member who counted). **No message content is stored or read for XP** — only the fact that a message event occurred. In the operator-designated counting channel the bot reads a message solely to test whether it is the next integer; the text is not stored |
 | **Data subjects** | Members of a customer's Discord server that has the game enabled |
 | **Recipients** | Other members of the same server see leaderboards, level-up/quest/trivia announcements and companion catches by design (in-server visibility, like any Discord activity); the operator sees leaderboards, purchases, quest history and trivia statistics in the dashboard. No third parties. Companion images are static files served from our own frontend |
-| **3rd country transfers** | None (Hetzner, Germany) |
+| **3rd country transfers** | None (netcup, Germany) |
 | **Retention period** | While the member is in the server and the game is enabled; **30 days after the bot is removed** from the server all game rows of that server are purged (nightly retention job); a member's rows are deleted immediately on request (`/privacy delete`, admin DSR) — trivia wins and companion catches are anonymised (user ID removed) rather than deleted so server statistics stay consistent |
 | **Security measures** | Bot-secret-gated ingestion; every query scoped by server ID (multi-tenant isolation); conditional updates for all races (catch, purchase, quest completion, trivia win); no gambling or purchasable currency (App Discovery content rules); encrypted database volume |

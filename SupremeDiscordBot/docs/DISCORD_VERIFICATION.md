@@ -166,7 +166,7 @@ Members**. **Presence НЕ се иска** и не се включва — ня�
 
 **Where and how is the data stored?**
 
-> PostgreSQL on a dedicated VPS at Hetzner Online GmbH (Germany, EU); Redis for
+> PostgreSQL on a dedicated VPS at netcup GmbH (Germany, EU); Redis for
 > short-lived counters and form sessions. All services listen on localhost behind
 > a TLS-terminating reverse proxy (TLS 1.2+, HSTS preload). Containers run with
 > all Linux capabilities dropped. Secrets live only on the server (mode 600),
@@ -202,7 +202,7 @@ Members**. **Presence НЕ се иска** и не се включва — ня�
 **Sharing with third parties:**
 
 > No sale, no advertising, no data brokers. Sub-processors under DPA/SCC only:
-> Hetzner (hosting, EU), Discord (delivery and seller of record for Premium Apps),
+> netcup (hosting, EU), Discord (delivery and seller of record for Premium Apps),
 > Google Gemini (only when the server administrator enables AI replies and only
 > after the training attestation), Sentry (error monitoring, no message content).
 > Message content is never used to train machine-learning models.

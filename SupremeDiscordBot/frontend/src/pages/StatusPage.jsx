@@ -113,7 +113,7 @@ export default function StatusPage() {
               практика (Дир. 2005/29/ЕО) — и първият клиент, поискал кредит, го
               открива. Текстът вече казва каквото е вярно: цел, не гаранция. */}
           <p>Uptime target: 99.9% — monitored continuously. No contractual SLA is included by default; Premium subscribers may negotiate one (EULA §12.1).</p>
-          <p>Infrastructure: Hetzner (Germany) · EU-only data residency</p>
+          <p>Infrastructure: netcup (Germany) · EU-only data residency</p>
           <p>Status checks refresh every 30 seconds · Cache: 30s</p>
           <p className="pt-2">
             Report an issue: <a href="https://discord.gg/wpCRpy8B" className="text-cs-cyan underline">Discord support</a>
