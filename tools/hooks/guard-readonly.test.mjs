@@ -64,3 +64,15 @@ test("Monitor: командата на ревюъра се съди като Bas
   assert.equal(run("kodadjiyata", "tail -f build.log", { tool_name: "Monitor" }).status, 0);
   assert.equal(run("kodadjiyata", undefined, { tool_name: "Monitor", tool_input: { ws: { url: "wss://x" } } }).status, 0);
 });
+
+// Регресия 2026-11-02 (пилот за усилие): cp/touch/rm към /tmp и scratchpad-а се спираха винаги, а съобщението
+// казваше „временни файлове пиши в scratchpad-а“ — Разбивача не можеше да подготви PoC. Сега временна цел минава;
+// всичко, което пипа репото (вкл. през „..“, mv от репото, ln към репото), остава спряно.
+test("файлови команди: временна цел минава, репото — не", () => {
+  const sc = "/tmp/claude-0/x/scratchpad";
+  for (const c of ["cp src/a.ts /tmp/x.ts", `cp linketto/src/x.ts ${sc}/route.ts`, "touch /tmp/a", "rm -f /tmp/a /tmp/b", "rsync -av src/ /tmp/s/", "chmod +x /tmp/run.sh"])
+    assert.equal(mutationReason(c, { scratch: sc }), "", c);
+  for (const c of ["cp /tmp/a src/a.ts", "mv src/a /tmp/a", "rm -rf /tmp/../home/user/Few-few/src", "ln -s /home/user/Few-few /tmp/r",
+    "cp a /tmp/x && rm src/b", "cp -t /tmp src/a", "touch src/new.ts", `cp a ${sc}/../../../home/x`, "chmod +x src/run.sh", "rm"])
+    assert.match(mutationReason(c, { scratch: sc }), /пише\/трие/, c);
+});

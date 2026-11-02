@@ -405,3 +405,4 @@
 {"t":"handoff","ts":"2026-11-02T08:29:00.230Z","id":"r3c21f1b0","from":"ai-djiyata","to":"човек","status":"има бележки","run":"90aae2b4"}
 {"t":"start","ts":"2026-11-02T08:33:20.387Z","id":"ra5d81e3b","flow":"авто","lead":"ai-djiyata","auto":true}
 {"t":"handoff","ts":"2026-11-02T08:33:20.387Z","id":"ra5d81e3b","from":"ai-djiyata","to":"човек","status":"има бележки","run":"d31bd082"}
+{"t":"handoff","ts":"2026-11-02T08:51:06.220Z","id":"ra5d81e3b","from":"kodadjiyata","to":"ai-djiyata","status":"има бележки","run":"00cf9903"}

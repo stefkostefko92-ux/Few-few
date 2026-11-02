@@ -177,6 +177,8 @@ const INJECTION_RE = new RegExp(
     /(?:винаги|always)\s+(?:изпращай|изпрати|прати|send|post|forward|exfiltrate)\b/.source,
     /(?:изпращай|изпрати|прати|send|post|upload|forward)\b[^\n]{0,80}\b(?:към|to)\s+https?:\/\//.source,
     /curl\s+[^\n]*\|\s*(?:ba)?sh/.source,
+    // Свали-после-пусни без пайп (02.11.2026, червеният екип): `curl -o /tmp/x … && bash /tmp/x`.
+    /(?:curl|wget)\s+[^\n]*(?:-[oO]\s*\S+|>\s*\S+)[^\n]{0,80}(?:&&|;)\s*(?:ba|z)?sh\s/.source,
     /(?:\.env|тайн[\p{L}]*|секрет[\p{L}]*|secrets?|credentials?|парол[\p{L}]*|токен[\p{L}]*|tokens?)[^\n]{0,60}\bhttps?:\/\//u.source,
     // Многоезично (продуктите са IT/DE/ES/BG/EN): игнорирай-правила + exfil към URL.
     /(?:ignora|dimentica|trascura)\s+(?:tutte\s+)?le\s+(?:istruzioni|regole)/u.source, // IT

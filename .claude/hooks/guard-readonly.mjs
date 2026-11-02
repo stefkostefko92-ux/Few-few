@@ -12,10 +12,11 @@
 // на ръка — нов ревюър се покрива сам.
 //
 // Какво спира: git команди, които пишат (commit, push, reset, checkout …); `sed -i`/`perl -i`; `>`/`>>`/
-// `tee` към файл извън /tmp, /dev/null и scratchpad-а; rm/mv/cp/touch/truncate/chmod/ln; `--write`/`--fix`;
+// `tee` към файл извън /tmp, /dev/null и scratchpad-а; rm/mv/cp/touch/truncate/chmod/ln извън тях; `--write`/`--fix`;
 // npm/pnpm/yarn, които сменят манифест или lockfile. Позволено: четене, тестове, билдове, `npm ci`.
 // Граница: скрипт, който сам пише файл (`node -e "fs.writeFileSync…"`), не се вижда — куките съдят
-// извикването, не намерението. Fail-open при собствена грешка (ролева кука, не защита на тайни).
+// извикването, не намерението. Собствена грешка в логиката → пропуска (ролева кука, не защита на тайни);
+// срив или таймаут на процеса → блок (onFailure: block в settings, от 02.11.2026).
 
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -41,7 +42,6 @@ const RULES = [
   [new RegExp(CMD + String.raw`git\s+(?:-C\s+\S+\s+)?(commit|push|reset|checkout|switch|restore|rebase|merge|cherry-pick|revert|stash|clean|rm|mv|tag|am|add|init|pull|fetch\s+.*--update-head-ok|worktree\s+(?:add|remove|move)|branch\s+-[dDmMcC]|config\s+(?!--get|--list|-l\b))\b`), "git команда, която пише"],
   [new RegExp(CMD + String.raw`git\s+apply\b(?![^;&|]*--(?:check|stat))`), "git apply пише файлове"],
   [new RegExp(CMD + String.raw`(?:sed|perl)\s+(?:-[a-zA-Z]*\s+)*-[a-zA-Z]*i`), "редакция на място (-i)"],
-  [new RegExp(CMD + String.raw`(rm|mv|cp|touch|truncate|chmod|chown|ln|install|rsync|unlink|shred)\s`), "команда, която пише/трие файлове"],
   [/--(?:write|fix)\b/, "форматер/линтер с --write/--fix пише файлове"],
   [new RegExp(CMD + String.raw`npm\s+(?:install|i|add|uninstall|remove|rm|un|update|up|upgrade|version|pkg\s+set|audit\s+fix|dedupe|prune|link)\b`), "npm, който сменя package.json/lockfile (за тестове ползвай npm ci)"],
   [new RegExp(CMD + String.raw`(?:pnpm|yarn)\s+(?:add|remove|rm|update|up|upgrade|install|i|link|dedupe)\b(?![^;&|]*--frozen-lockfile)`), "pnpm/yarn, който сменя манифест/lockfile (ползвай --frozen-lockfile)"],
@@ -50,9 +50,31 @@ const RULES = [
 /** Махни съдържанието на кавичките — „> файл“ в текстов аргумент не е пренасочване. */
 const unquote = (s) => s.replace(/'[^']*'/g, "''").replace(/"(?:\\.|[^"\\])*"/g, '""');
 
+/** Временна цел: /tmp, $TMPDIR, /dev/null…, scratchpad-ът (буквален път). „..“ никога — /tmp/../repo е репото. */
+const tempTarget = (scratch) => (t) => !t.includes("..") &&
+  (/^(?:&\d|\/dev\/(?:null|stdout|stderr)|\/tmp\/|\$TMPDIR|\$\{TMPDIR\}|\/proc\/self\/fd)/.test(t) || Boolean(scratch && t.startsWith(scratch.replace(/\/?$/, "/"))));
+
+// Файлови команди (2026-11-02): досега се спираха ВИНАГИ, дори към /tmp и scratchpad-а, а съобщението казваше
+// „временни файлове пиши в scratchpad-а“ — Разбивача не можеше да подготви PoC (пилот за усилие, live-run).
+// cp/install/rsync само ЧЕТАТ източника → съди се целта (последният аргумент); всички останали (rm, mv, ln,
+// touch, chmod …) — всеки аргумент трябва да е временен: mv от репото трие от репото, ln към репото отваря
+// заобиколен път за запис.
+const FILE_CMD = new RegExp(CMD + String.raw`(rm|mv|cp|touch|truncate|chmod|chown|ln|install|rsync|unlink|shred)(?=\s|$)([^;&|)\n]*)`, "g");
+const DEST_ONLY = new Set(["cp", "install", "rsync"]);
+function fileCmdReason(cmd, scratch) {
+  const ok = tempTarget(scratch);
+  for (const m of cmd.matchAll(FILE_CMD)) {
+    const args = m[2].trim().split(/\s+/).filter((a) => a && !a.startsWith("-"));
+    // chmod/chown: първият аргумент е режимът/собственикът, не път.
+    const targets = DEST_ONLY.has(m[1]) ? args.slice(-1) : /^ch(?:mod|own)$/.test(m[1]) ? args.slice(1) : args;
+    if (!targets.length || !targets.every(ok)) return "команда, която пише/трие файлове извън /tmp и scratchpad-а";
+  }
+  return "";
+}
+
 /** Пренасочване/tee към файл, който не е временен. */
 function writesFile(cmd, scratch) {
-  const okTarget = (t) => /^(?:&\d|\/dev\/(?:null|stdout|stderr)|\/tmp\/|\$TMPDIR|\$\{TMPDIR\}|\/proc\/self\/fd)/.test(t) || (scratch && t.startsWith(scratch));
+  const okTarget = tempTarget(scratch);
   for (const m of cmd.matchAll(/(?:^|[^<>&\d])(?:\d)?>>?\s*([^\s;&|)]+)/g)) {
     const t = m[1];
     if (t.startsWith("(") || t.startsWith("&")) continue; // >(…) process substitution · >&2
@@ -70,7 +92,7 @@ export function mutationReason(command, { scratch = "" } = {}) {
   // Хванато на 28.10.2026: `ord(ch) > 127` в python heredoc се четеше като пренасочване към файл.
   const cmd = unquote(codeView(sanitize(String(command || ""))));
   for (const [re, why] of RULES) if (re.test(cmd)) return why;
-  return writesFile(cmd, scratch);
+  return fileCmdReason(cmd, scratch) || writesFile(cmd, scratch);
 }
 
 function main() {
