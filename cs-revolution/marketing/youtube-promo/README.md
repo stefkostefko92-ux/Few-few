@@ -22,6 +22,22 @@ node render.mjs --subs 0                                                   # б�
 Нужни: Node 20+, Playwright с Chromium (`PLAYWRIGHT_MODULE`, `CHROMIUM` при нестандартен път),
 ffmpeg, Python 3. `shots/` и `out/` не влизат в репото.
 
+## Българският клип (53 s, YouTube 16:9 + Facebook 4:5)
+
+`composition-bg.html` + `music-bg.py` + `sites-bg.json`: изцяло на български, 140 BPM — всеки удар в
+картината пада на удар в музиката (мрежата на тактовете е една и съща в двата файла). Музиката е
+синтезирана от нулата (без семпли), рендерът я изравнява до −14 LUFS. Без проблясъци над 1 на такт.
+
+```bash
+CAPTURE_LANG='bg-BG,bg;q=0.9,en;q=0.7' node capture.mjs shots sites-bg.json > cap.log && python3 stitch.py cap.log
+python3 music-bg.py out/music-bg.wav                       # нужен numpy
+node render.mjs --comp composition-bg.html --w 1920 --h 1080 --name carbonstealth-promo-bg-16x9 --audio out/music-bg.wav
+node render.mjs --comp composition-bg.html --w 1080 --h 1350 --name carbonstealth-promo-bg-4x5  --audio out/music-bg.wav
+```
+
+Chrome Web Store страницата срива headless браузъра — сцената „Established Publisher“ показва
+секцията от нашия сайт adblock.carbonstealth.eu, която го казва.
+
 Правила: само реални факти за продуктите; Lift Pilot е в бета (liftpilot.carbonstealth.eu, само на италиански) — живият сайт с печат „Beta“;
 значката „Verified Publisher“ цитира текста на Google от Chrome Web Store.
 Музика и глас не са в черновата — добавят се при монтажа (виж документа).

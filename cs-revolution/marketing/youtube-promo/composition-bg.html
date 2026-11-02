@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<title>Carbon Stealth VCC — промо клип (BG)</title>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+/* Българският промо клип: ?w=1920&h=1080 (YouTube) или ?w=1080&h=1350 (Facebook 4:5).
+   Нищо не се анимира с CSS: render(t) нарежда всеки кадър от времето t върху мрежата на тактовете
+   (140 BPM — същата като в music-bg.py), затова всеки удар в картината пада на удар в музиката.
+   Правило: най-много 1 проблясък на такт (≈0,6/s) — далеч под 3/s (WCAG 2.3.1); без червени светкавици. */
+:root{--bg:#0A0C0E;--ink:#C9D1D6;--ink2:#7C868D;--hi:#F4F7F8;--c:#00e5ff;--warm:#FF6A3D}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{overflow:hidden;background:var(--bg);color:var(--ink)}
+body{font-family:'JetBrains Mono','Space Mono',monospace;-webkit-font-smoothing:antialiased}
+#stage{position:absolute;left:0;top:0;overflow:hidden;background:var(--bg)}
+#cam,#hud,.layer{position:absolute;inset:0}
+#bg{position:absolute;inset:-40px;background:
+  radial-gradient(ellipse 60% 55% at 62% 40%,rgba(0,229,255,.07),transparent 70%),
+  linear-gradient(rgba(201,209,214,.05) 1px,transparent 1px) 0 0/96px 96px,
+  linear-gradient(90deg,rgba(201,209,214,.05) 1px,transparent 1px) 0 0/96px 96px,
+  repeating-linear-gradient(45deg,rgba(255,255,255,.014) 0 3px,transparent 3px 8px),
+  repeating-linear-gradient(-45deg,rgba(255,255,255,.014) 0 3px,transparent 3px 8px),var(--bg)}
+.sc{position:absolute;inset:0;visibility:hidden}
+.a{position:absolute;left:0;top:0;transform-origin:50% 50%;will-change:transform,opacity}
+.big{font-family:'Inter Tight','Onest',sans-serif;font-weight:900;letter-spacing:-.045em;line-height:.9;color:var(--hi);white-space:nowrap;text-transform:uppercase}
+.mid{font-family:'Inter Tight','Onest',sans-serif;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--hi);white-space:nowrap;text-transform:uppercase}
+.mono{font-family:'JetBrains Mono',monospace;font-weight:500;letter-spacing:.22em;text-transform:uppercase;white-space:nowrap}
+.cy{color:var(--c)}
+.chrome{background-image:linear-gradient(100deg,transparent calc(var(--sx,-40%) - 7%),rgba(255,255,255,.95) var(--sx,-40%),transparent calc(var(--sx,-40%) + 7%)),linear-gradient(180deg,#FFFFFF 0%,#D6DDE1 38%,#7E8990 52%,#E4E9EC 62%,#FFFFFF 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;background-size:100% 100%,100% 100%;background-repeat:no-repeat}
+.glow{color:var(--c);text-shadow:0 0 30px rgba(0,229,255,.55),0 0 80px rgba(0,229,255,.25)}
+.chip{padding:.55em 1em;border:2px solid var(--c);color:var(--c);background:rgba(10,12,14,.82)}
+.chip.solid{background:var(--c);color:#041014;border-color:var(--c)}
+.dev{position:absolute;left:0;top:0;overflow:hidden;background:#000;transform-origin:50% 50%}
+.dev img{position:absolute;left:0;top:0;width:100%;display:block}
+.lap{border:2px solid rgba(0,229,255,.55);border-radius:10px;box-shadow:0 40px 120px rgba(0,0,0,.75),0 0 60px rgba(0,229,255,.12)}
+.ph{border-radius:34px;box-shadow:0 0 0 10px #14181c,0 0 0 12px rgba(0,229,255,.6),0 40px 90px rgba(0,0,0,.85)}
+.full{position:absolute;left:0;top:0;overflow:hidden}
+.full img{position:absolute;left:0;top:0;display:block}
+.shade{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,transparent,rgba(5,6,7,.94) 70%)}
+.band{position:absolute;left:0;right:0;background:rgba(5,6,7,.82);border-top:2px solid var(--c);border-bottom:2px solid var(--c)}
+.outline{font-family:'Inter Tight',sans-serif;font-weight:900;color:transparent;-webkit-text-stroke:2px rgba(201,209,214,.10);white-space:nowrap;letter-spacing:-.04em}
+.card{position:absolute;overflow:hidden;background:#000;border:2px solid rgba(0,229,255,.45)}
+.card img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.adbox{position:absolute;overflow:hidden;background:linear-gradient(135deg,#ffcf3a,#ff6a3d 55%,#d4237a)}
+.stamp{border:.09em solid var(--c);color:var(--c);padding:.08em .3em;background:rgba(10,12,14,.75);letter-spacing:.08em}
+#flash{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(220,250,255,.9),rgba(0,229,255,.55) 60%,rgba(0,229,255,.25));opacity:0;pointer-events:none}
+#grain{position:absolute;inset:0;opacity:.07;pointer-events:none;mix-blend-mode:screen}
+#scan{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);opacity:.35}
+#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.6))}
+#hud .mono{position:absolute;font-size:15px;color:var(--ink2)}
+#hud .rec i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--warm);margin-right:10px;vertical-align:0}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="cam"><div id="bg"></div></div>
+  <div id="flash"></div>
+  <div id="hud"></div>
+  <div id="grain"></div><div id="scan"></div><div id="vig"></div>
+</div>
+<script>
+// ── мрежа и размери ─────────────────────────────────────────────────────────
+const Q = new URLSearchParams(location.search);
+const W = +Q.get('w') || 1920, H = +Q.get('h') || 1080, V = H > W, U = Math.min(W, H) / 100;
+const BPM = 140, BEAT = 60 / BPM, BAR = 4 * BEAT;
+const bt = (bar, beat = 0) => bar * BAR + beat * BEAT;
+const DURATION = window.DURATION = bt(30) + 2.0;            // 53,4 s: 30 такта + отзвукът на музиката
+const stage = document.getElementById('stage'), cam = document.getElementById('cam'), hud = document.getElementById('hud');
+stage.style.width = W + 'px'; stage.style.height = H + 'px';
+document.documentElement.style.width = document.body.style.width = W + 'px';
+document.documentElement.style.height = document.body.style.height = H + 'px';
+
+// ── помощници ───────────────────────────────────────────────────────────────
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const eo = x => 1 - Math.pow(1 - clamp(x), 3);
+const eio = x => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const lerp = (a, b, k) => a + (b - a) * k;
+const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+function E(tag, cls, par, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; par.appendChild(e); return e; }
+// поставя елемент: x,y — котва; ax,ay — коя точка от елемента е котвата; s — мащаб; o — непрозрачност
+function tf(e, p) {
+  const x = p.x ?? 0, y = p.y ?? 0, ax = p.ax ?? .5, ay = p.ay ?? .5, s = p.s ?? 1, r = p.r ?? 0;
+  e.style.transform = `translate(${x}px,${y}px) translate(${-ax * 100}%,${-ay * 100}%) scale(${s}) rotate(${r}deg)` + (p.extra || '');
+  e.style.opacity = p.o ?? 1;
+  e.style.filter = p.blur ? `blur(${p.blur}px)` : '';
+  // хромираният текст е прозрачен (background-clip) — сянка през него го оцветява розово: при него разместването е само в
+  // drop-shadow филтъра, без червения канал
+  if (p.rgb !== undefined && e.classList.contains('chrome')) { if (p.rgb > .3) e.style.filter = (p.blur ? `blur(${p.blur}px) ` : '') + `drop-shadow(${-p.rgb}px 0 rgba(0,229,255,.7))`; }
+  else if (p.rgb !== undefined) e.style.textShadow = p.rgb > .3 ? `${p.rgb}px 0 rgba(255,60,110,.75),${-p.rgb}px 0 rgba(0,229,255,.8)` : '';
+}
+// удар на дума: от s0 към 1 за dur, с размазване и RGB разместване, които изчезват
+function slam(dt, dur = .16, s0 = 1.9) {
+  if (dt < 0) return { o: 0 };
+  const k = eo(dt / dur);
+  return { s: lerp(s0, 1, k), o: clamp(dt / .04), blur: 16 * (1 - k), rgb: 14 * (1 - k) };
+}
+// текстът да се побере в ширина maxW (px), не по-голям от maxPx
+function fit(e, maxW, maxPx) {
+  e.style.fontSize = '100px'; const w = e.scrollWidth || 1;
+  e.style.fontSize = Math.min(maxPx, 100 * maxW / w) + 'px';
+}
+const IMG = {};
+function img(id) { return IMG[id]; }
+function shot(par, id, cls) { const d = E('div', cls, par); const i = E('img', '', d); i.src = IMG[id].src; d._img = i; d._id = id; return d; }
+// устройство: x,y,w,h в px; p — колко е скролната страницата (0..1); dy — допълнително изместване
+function dev(d, x, y, w, h, p = 0, extra = {}) {
+  d.style.width = w + 'px'; d.style.height = h + 'px';
+  const nat = IMG[d._id]; const ih = w * nat.naturalHeight / nat.naturalWidth;
+  d._img.style.transform = `translateY(${-clamp(p) * Math.max(0, ih - h)}px)`;
+  tf(d, Object.assign({ x, y, ax: 0, ay: 0 }, extra));
+}
+// снимка на цял кадър (cover), скролирана
+function full(d, p = 0, zoom = 1, x = 0, y = 0, w = W, h = H, o = 1) {
+  d.style.width = w + 'px'; d.style.height = h + 'px';
+  const nat = IMG[d._id]; const sc = Math.max(w / nat.naturalWidth, h / Math.min(nat.naturalHeight, nat.naturalWidth * 4)) * zoom;
+  const iw = nat.naturalWidth * sc, ih = nat.naturalHeight * sc;
+  d._img.style.width = iw + 'px'; d._img.style.height = ih + 'px';
+  d._img.style.transform = `translate(${(w - iw) / 2}px,${-clamp(p) * Math.max(0, ih - h)}px)`;
+  tf(d, { x, y, ax: 0, ay: 0, o });
+}
+function show(sc, on) { sc.style.visibility = on ? 'visible' : 'hidden'; }
+function hide(e) { e.style.opacity = 0; }
+
+// ── удари (същите като в music-bg.py) ───────────────────────────────────────
+const KICKS = [];
+[0, 2, 4, 6].forEach(b => KICKS.push([b * BEAT, 1.3]));
+for (let b = 2; b < 14; b++) for (let q = 0; q < 4; q++) KICKS.push([bt(b, q), q ? .55 : .8]);
+KICKS.push([bt(14), 1.2], [bt(14, 2), 1.6]);
+for (let b = 15; b < 25; b++) for (let q = 0; q < 4; q++) KICKS.push([bt(b, q), q ? .55 : .8]);
+[25, 26].forEach(b => [0, 2].forEach(q => KICKS.push([bt(b, q), .7])));
+[27, 28].forEach(b => { for (let q = 0; q < 4; q++) KICKS.push([bt(b, q), q ? .6 : .9]); });
+KICKS.push([bt(29), 1.6]);
+const DROPS = [bt(2), bt(8), bt(14, 2), bt(20), bt(27), bt(29)];     // проблясък — най-много 1 на такт
+[bt(2), bt(8), bt(14, 2), bt(20), bt(27), bt(29)].forEach(t => KICKS.push([t, 2.2]));
+KICKS.sort((a, b) => a[0] - b[0]);
+
+// ── сцени ───────────────────────────────────────────────────────────────────
+const S = [];
+function scene(t0, t1, build, draw) { const el = E('div', 'sc', cam); const s = { t0, t1, el, draw }; build(el, s); S.push(s); return s; }
+const SECTION = [[bt(2), '// CARBON STEALTH VCC'], [bt(4), '// 01 · УСЛУГИ'], [bt(8), '// 02 · ПОРТФОЛИО'], [bt(14), '// 03 · SUPREME ADBLOCK'], [bt(20), '// 04 · ПРОЕКТИ'], [bt(25), '// 05 · ОБХВАТ'], [bt(27), '// 06 · КОНТАКТ']];
+
+function build() {
+  // HUD
+  const h1 = E('div', 'mono rec', hud, '<i></i>CARBON STEALTH VCC'); h1.style.left = '42px'; h1.style.top = '34px';
+  const h2 = E('div', 'mono', hud); h2.style.right = '42px'; h2.style.top = '34px'; h2.id = 'tc';
+  const h3 = E('div', 'mono cy', hud); h3.style.left = '42px'; h3.style.bottom = '34px'; h3.id = 'sec';
+  const h4 = E('div', 'mono', hud, 'CARBONSTEALTH.EU'); h4.style.right = '42px'; h4.style.bottom = '34px';
+  if (V) { h4.style.display = 'none'; }
+  // шум (детерминистичен)
+  const cv = document.createElement('canvas'); cv.width = cv.height = 256; const cx = cv.getContext('2d'); const id = cx.createImageData(256, 256);
+  for (let i = 0; i < id.data.length; i += 4) { const v = Math.floor(hash(i * .37 + 1) * 255); id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = 255; }
+  cx.putImageData(id, 0, 0); document.getElementById('grain').style.background = `url(${cv.toDataURL()})`;
+
+  // 1 · студено начало ───────────────────────────────────────────────────────
+  scene(0, bt(2), (el, s) => {
+    s.words = [['СТИГА', 0], ['С БАВНИТЕ', 2], ['СКУЧНИТЕ', 4], ['САЙТОВЕ.', 6]].map(([w, b]) => { const e = E('div', 'a big', el, w); fit(e, W * (V ? .88 : .8), 23 * U); return [e, b * BEAT]; });
+    s.strike = E('div', 'a', el); Object.assign(s.strike.style, { height: (1.6 * U) + 'px', width: (W * (V ? .9 : .82)) + 'px', background: 'var(--c)', boxShadow: '0 0 40px var(--c)' });
+    s.kick = E('div', 'a mono cy', el, '// ВНИМАНИЕ: СЛЕДВА БРУТАЛНА ИСТИНА'); s.kick.style.fontSize = (1.7 * U) + 'px';
+  }, (s, t) => {
+    s.words.forEach(([e, t0], i) => {
+      const nxt = s.words[i + 1] ? s.words[i + 1][1] : bt(2);
+      if (t < t0 || t >= nxt) return hide(e);
+      tf(e, Object.assign({ x: W / 2, y: H / 2 }, slam(t - t0, .14, 2.2)));
+    });
+    const k = eo((t - bt(1, 3)) / .18);
+    tf(s.strike, { x: W / 2, y: H / 2 + 1.5 * U, s: 1, o: t > bt(1, 3) ? 1 : 0, extra: ` scaleX(${k})`, r: -4 });
+    tf(s.kick, { x: W / 2, y: H * (V ? .3 : .26), o: t < BEAT * 1.5 ? clamp(t / .1) : 0 });
+  });
+
+  // 2 · марката ──────────────────────────────────────────────────────────────
+  scene(bt(2), bt(4), (el, s) => {
+    s.bgs = shot(el, 'cs-d', 'full'); s.bgs._img.style.filter = 'blur(14px)';
+    s.a = E('div', 'a big chrome', el, 'CARBON'); s.b = E('div', 'a big glow', el, 'STEALTH');
+    fit(s.a, W * (V ? .9 : .7), 26 * U); fit(s.b, W * (V ? .9 : .7), 26 * U);
+    s.c = E('div', 'a mono', el, 'VCC'); s.c.style.fontSize = (2.6 * U) + 'px'; s.c.style.color = 'var(--hi)'; s.c.style.letterSpacing = '.6em';
+    s.d = E('div', 'a mono cy', el, 'УЕБ АГЕНЦИЯ · БОБОВ ДОЛ → МИЛАНО'); s.d.style.fontSize = (V ? 1.9 : 1.8) * U + 'px';
+  }, (s, t) => {
+    const lt = t - bt(2);
+    full(s.bgs, .45 + lt / (2 * BAR) * .25, 1.15 - .1 * lt / (2 * BAR), 0, 0, W, H, .07);
+    const ls = lerp(.5, -.045, eo(lt / .35));
+    s.a.style.letterSpacing = ls + 'em'; s.b.style.letterSpacing = ls + 'em';
+    s.a.style.setProperty('--sx', (lerp(-30, 140, clamp(lt / (1.6 * BAR)))) + '%');
+    const g = parseFloat(s.a.style.fontSize), y0 = H / 2 - g * .55;
+    tf(s.a, Object.assign({ x: W / 2, y: y0 }, slam(lt, .2, 1.6)));
+    tf(s.b, Object.assign({ x: W / 2, y: y0 + g * .92 }, slam(lt - BEAT, .2, 1.6)));
+    tf(s.c, { x: W / 2, y: y0 + g * 1.62, o: clamp((lt - 2 * BEAT) / .1) });
+    s.d.textContent = 'УЕБ АГЕНЦИЯ · БОБОВ ДОЛ → МИЛАНО'.slice(0, Math.floor(clamp((lt - 3 * BEAT) / (2 * BEAT)) * 32));
+    tf(s.d, { x: W / 2, y: y0 + g * 1.95, o: lt > 3 * BEAT ? 1 : 0 });
+  });
+
+  // 3 · услуги (8 × 2 удара) ─────────────────────────────────────────────────
+  const SERV = [['САЙТОВЕ', 'от 790 €', 'demo-restorant-d'], ['ОНЛАЙН<br>МАГАЗИНИ', 'от 2 190 €', 'demo-onlain-magazin-d'],
+    ['ERP<br>СИСТЕМИ', 'от 5 000 €', 'korpora-d'], ['МОБИЛНИ<br>ПРИЛОЖЕНИЯ', 'от 3 000 €', 'zabobovdol-m'],
+    ['СОФТУЕР<br>ПО ПОРЪЧКА', 'от 2 000 €', 'supremebot-d'], ['SEO +<br>AI ТЪРСАЧКИ', 'от 290 € / мес.', 'portfolio-d'],
+    ['ХОСТИНГ<br>В ЕС', 'от 15 € / мес.', 'cs-d'], ['3D И REVERSE<br>ENGINEERING', 'CAD · ПРОТОТИПИ', 'cs-m']];
+  scene(bt(4), bt(8), (el, s) => {
+    s.ghost = E('div', 'a outline', el, '01'); s.ghost.style.fontSize = (V ? 70 : 62) * U + 'px';
+    s.items = SERV.map(([n, p, img], i) => {
+      const card = shot(el, img, 'card'); card.style.transform = 'translate(-9999px,0)';
+      const idx = E('div', 'a mono cy', el, String(i + 1).padStart(2, '0') + ' / 08'); idx.style.fontSize = 2 * U + 'px';
+      const name = E('div', 'a big', el, n); fit(name, W * (V ? .9 : .56), (V ? 15 : 17) * U);
+      const pr = E('div', 'a mono chip solid', el, p); pr.style.fontSize = (V ? 3 : 2.8) * U + 'px';
+      return { card, idx, name, pr, t0: bt(4) + i * 2 * BEAT, mobile: img.endsWith('-m') };
+    });
+    s.note = E('div', 'a mono', el, 'цени „от“ — по ценоразписа на carbonstealth.eu · сайтове и SEO с ДДС'); s.note.style.fontSize = 1.25 * U + 'px'; s.note.style.color = 'var(--ink2)'; s.note.style.textTransform = 'none';
+  }, (s, t) => {
+    s.items.forEach((it, i) => {
+      const lt = t - it.t0, on = lt >= 0 && lt < 2 * BEAT;
+      [it.card, it.idx, it.name, it.pr].forEach(e => { if (!on) hide(e); });
+      if (!on) return;
+      if (V) {
+        const cw = it.mobile ? W * .42 : W * .84, ch = it.mobile ? H * .44 : H * .4;
+        const k = eo(lt / .2);
+        tf(it.card, { x: W / 2 + (1 - k) * W, y: H * .08, ax: .5, ay: 0, r: -3 + 3 * k, o: 1 });
+        it.card.style.width = cw + 'px'; it.card.style.height = ch + 'px';
+        tf(it.idx, { x: W * .06, y: H * .55, ax: 0, o: 1 });
+        tf(it.name, Object.assign({ x: W * .06, y: H * .58, ax: 0, ay: 0 }, slam(lt, .14, 1.7)));
+        tf(it.pr, Object.assign({ x: W * .06, y: H * .58 + it.name.offsetHeight + 2 * U, ax: 0, ay: 0 }, slam(lt - BEAT, .12, 1.4)));
+      } else {
+        const k = eo(lt / .22);
+        it.card.style.width = (it.mobile ? W * .2 : W * .4) + 'px'; it.card.style.height = (it.mobile ? H * .78 : H * .62) + 'px';
+        tf(it.card, { x: W * (it.mobile ? .79 : .76) + (1 - k) * W * .6, y: H / 2, r: lerp(14, 4, k), o: 1, extra: ` perspective(1600px) rotateY(${lerp(-40, -16, k)}deg)` });
+        tf(it.idx, { x: W * .07, y: H * .22, ax: 0, o: 1 });
+        tf(it.name, Object.assign({ x: W * .07, y: H * .28, ax: 0, ay: 0 }, slam(lt, .14, 1.7)));
+        tf(it.pr, Object.assign({ x: W * .07, y: H * .28 + it.name.offsetHeight + 2.4 * U, ax: 0, ay: 0 }, slam(lt - BEAT, .12, 1.4)));
+      }
+    });
+    const cur = Math.min(7, Math.floor((t - bt(4)) / (2 * BEAT)));
+    s.ghost.textContent = String(cur + 1).padStart(2, '0');
+    tf(s.ghost, { x: V ? W * .5 : W * .5, y: V ? H * .5 : H * .52, o: 1 });
+    tf(s.note, { x: V ? W / 2 : W * .07, y: H * (V ? .93 : .88), ax: V ? .5 : 0, o: .9 });
+  });
+
+  // 4 · портфолио ────────────────────────────────────────────────────────────
+  const DEMOS = ['restorant', 'fitnes', 'avtoservis', 'salon-za-krasota', 'onlain-magazin', 'hotel-kashta-za-gosti', 'advokatska-kantora', 'agencia-za-imoti', 'avtokashta', 'barzo-hranene', 'magazin-za-drehi', 'mebelen-magazin', 'medicinski-centar', 'schetovodna-kashta', 'stroitelstvo-i-remonti'];
+  const DNAME = { 'restorant': 'РЕСТОРАНТ', 'fitnes': 'ФИТНЕС', 'avtoservis': 'АВТОСЕРВИЗ', 'salon-za-krasota': 'САЛОН ЗА КРАСОТА', 'onlain-magazin': 'ОНЛАЙН МАГАЗИН', 'hotel-kashta-za-gosti': 'ХОТЕЛ · КЪЩА ЗА ГОСТИ', 'advokatska-kantora': 'АДВОКАТСКА КАНТОРА', 'agencia-za-imoti': 'АГЕНЦИЯ ЗА ИМОТИ' };
+  scene(bt(8), bt(10), (el, s) => {
+    s.wall = E('div', 'a', el); s.wall.style.transformOrigin = '50% 50%';
+    const cols = V ? 3 : 5, cw = V ? 330 : 420, chh = V ? 200 : 262, gap = 26;
+    s.wall.style.width = (cols * cw + (cols - 1) * gap) + 'px'; s.wall.style.height = (Math.ceil(15 / cols) * (chh + gap)) + 'px';
+    s.cards = DEMOS.map((d, i) => { const c = shot(s.wall, 'demo-' + d + '-d', 'card'); Object.assign(c.style, { width: cw + 'px', height: chh + 'px', left: (i % cols) * (cw + gap) + 'px', top: Math.floor(i / cols) * (chh + gap) + 'px' }); return c; });
+    s.dim = E('div', 'layer', el); s.dim.style.background = 'radial-gradient(ellipse at 50% 50%,rgba(10,12,14,.82),rgba(10,12,14,.35) 70%)';
+    s.lab = E('div', 'a mono cy', el, '// ПОРТФОЛИО · PORTFOLIO.CARBONSTEALTH.EU'); s.lab.style.fontSize = 1.8 * U + 'px';
+    s.num = E('div', 'a big chrome', el, '15'); s.num.style.fontSize = (V ? 46 : 40) * U + 'px';
+    s.tx1 = E('div', 'a big', el, 'ДЕМО САЙТА'); fit(s.tx1, W * (V ? .88 : .7), 11 * U);
+    s.tx2 = E('div', 'a mid cy', el, 'ЗА 15 БРАНША. РАБОТЕЩИ. СЕГА.'); fit(s.tx2, W * (V ? .88 : .6), 5 * U);
+  }, (s, t) => {
+    const lt = t - bt(8);
+    s.cards.forEach((c, i) => { const ct = lt - i * BEAT / 4; c.style.opacity = ct < 0 ? 0 : clamp(ct / .05); c.style.transform = `scale(${lerp(1.25, 1, eo(ct / .14))})`; });
+    tf(s.wall, { x: W / 2 + Math.sin(lt * .8) * 30, y: H / 2 - lt * 26, s: V ? 1.02 : 1.08, extra: ` perspective(1800px) rotateX(${V ? 24 : 30}deg) rotateZ(${V ? -12 : -10}deg)` });
+    const n = Math.min(15, Math.floor(eo(lt / BAR) * 15));
+    s.num.textContent = String(n).padStart(2, '0');
+    tf(s.lab, { x: W / 2, y: H * (V ? .22 : .18), o: clamp(lt / .1) });
+    tf(s.num, Object.assign({ x: W / 2, y: H * (V ? .42 : .44) }, slam(lt, .2, 1.5)));
+    tf(s.tx1, Object.assign({ x: W / 2, y: H * (V ? .6 : .68) }, slam(lt - BAR, .14, 1.8)));
+    tf(s.tx2, Object.assign({ x: W / 2, y: H * (V ? .68 : .79) }, slam(lt - BAR - 2 * BEAT, .12, 1.5)));
+  });
+  scene(bt(10), bt(12), (el, s) => {
+    s.shots = DEMOS.slice(0, 8).map(d => shot(el, 'demo-' + d + (V ? '-m' : '-d'), 'full'));
+    s.shade = E('div', 'shade', el); s.shade.style.height = (H * .45) + 'px';
+    s.labs = DEMOS.slice(0, 8).map(d => { const e = E('div', 'a mono chip', el, 'ДЕМО · ' + DNAME[d]); e.style.fontSize = 1.9 * U + 'px'; return e; });
+    s.band = E('div', 'band', el); s.band.style.height = (V ? 15 : 22) * U + 'px';
+    s.words = [['ИЗБЕРИ.', 0], ['ПЕРСОНАЛИЗИРАЙ.', 3], ['ПУСНИ.', 6]].map(([w, b]) => { const e = E('div', 'a big', el, w); fit(e, W * .88, (V ? 13 : 17) * U); return [e, b * BEAT]; });
+  }, (s, t) => {
+    const lt = t - bt(10), i = Math.min(7, Math.floor(lt / BEAT));
+    s.shots.forEach((d, j) => { if (j !== i) { d.style.opacity = 0; return; } const k = (lt - j * BEAT) / BEAT; full(d, k * .25, 1.12 - .08 * k); });
+    s.labs.forEach((e, j) => j === i ? tf(e, { x: W * .05, y: H * .12, ax: 0, o: 1 }) : hide(e));
+    s.band.style.top = (H / 2 - parseFloat(s.band.style.height) / 2) + 'px';
+    s.words.forEach(([e, t0], j) => { const nxt = s.words[j + 1] ? s.words[j + 1][1] : 2 * BAR; if (lt < t0 || lt >= nxt) return hide(e); tf(e, Object.assign({ x: W / 2, y: H / 2 }, slam(lt - t0, .13, 2))); });
+  });
+  scene(bt(12), bt(14), (el, s) => {
+    s.lap = shot(el, 'oferta-d', 'dev lap'); s.ph = shot(el, 'oferta-m', 'dev ph');
+    s.h1 = E('div', 'a big', el, 'СГЛОБИ САЙТА СИ.'); s.h2 = E('div', 'a big cy glow', el, 'ВИЖ ЦЕНАТА ВЕДНАГА.');
+    fit(s.h1, W * (V ? .9 : .44), 8 * U); fit(s.h2, W * (V ? .9 : .44), 8 * U);
+    s.chips = ['ГОТОВ ЗА 5–30 РАБОТНИ ДНИ', 'ОТГОВОР ДО 24 ЧАСА', 'LIGHTHOUSE 95+', 'ХОСТИНГ В ЕС 12 МЕС. ВКЛЮЧЕН'].map(c => { const e = E('div', 'a mono chip', el, c); e.style.fontSize = (V ? 1.9 : 1.6) * U + 'px'; return e; });
+    s.url = E('div', 'a mono', el, 'PORTFOLIO.CARBONSTEALTH.EU'); s.url.style.fontSize = 2.4 * U + 'px'; s.url.style.color = 'var(--hi)';
+  }, (s, t) => {
+    const lt = t - bt(12), p = lt / (2 * BAR), k = eo(lt / .25);
+    if (V) {
+      dev(s.lap, W * .06, H * .07 + (1 - k) * -H * .3, W * .7, W * .7 * .62, p * .9, { o: 1 });
+      dev(s.ph, W * .66, H * .17 + (1 - k) * H * .4, W * .27, W * .27 * 2.08, p, { o: 1 });
+      tf(s.h1, Object.assign({ x: W * .05, y: H * .6, ax: 0, ay: 0 }, slam(lt, .14, 1.6)));
+      tf(s.h2, Object.assign({ x: W * .05, y: H * .6 + parseFloat(s.h1.style.fontSize) * 1.05, ax: 0, ay: 0 }, slam(lt - BEAT, .14, 1.6)));
+      s.chips.forEach((c, j) => tf(c, Object.assign({ x: W * .05 + (j % 2) * W * .46, y: H * .76 + Math.floor(j / 2) * 7 * U, ax: 0, ay: 0 }, slam(lt - (2 + j) * BEAT, .1, 1.3))));
+      tf(s.url, Object.assign({ x: W * .05, y: H * .9, ax: 0, ay: 0 }, slam(lt - 6 * BEAT, .12, 1.3)));
+    } else {
+      dev(s.lap, W * .05 + (1 - k) * -W * .5, H * .17, W * .44, W * .44 * .62, p * .9, { o: 1, extra: ' perspective(1800px) rotateY(10deg)' });
+      dev(s.ph, W * .41, H * .37 + (1 - k) * H * .6, W * .13, W * .13 * 2.08, p, { o: 1 });
+      tf(s.h1, Object.assign({ x: W * .58, y: H * .2, ax: 0, ay: 0 }, slam(lt, .14, 1.6)));
+      tf(s.h2, Object.assign({ x: W * .58, y: H * .2 + parseFloat(s.h1.style.fontSize) * 1.05, ax: 0, ay: 0 }, slam(lt - BEAT, .14, 1.6)));
+      s.chips.forEach((c, j) => tf(c, Object.assign({ x: W * .58, y: H * .44 + j * 6.4 * U, ax: 0, ay: 0 }, slam(lt - (2 + j) * BEAT, .1, 1.3))));
+      tf(s.url, Object.assign({ x: W * .58, y: H * .78, ax: 0, ay: 0 }, slam(lt - 6 * BEAT, .12, 1.3)));
+    }
+  });
+
+  // 5 · Supreme AdBlock ──────────────────────────────────────────────────────
+  scene(bt(14), bt(14, 2) + .2, (el, s) => {
+    s.ad = E('div', 'adbox', el);
+    s.adt = E('div', 'a big', s.ad, 'КУПИ СЕГА!!!<br>−90%'); s.adt.style.color = '#fff'; s.adt.style.textShadow = '0 6px 0 #9b1452';
+    s.adl = E('div', 'a mono', s.ad, 'РЕКЛАМА · 0:05'); s.adl.style.cssText += ';background:rgba(0,0,0,.7);color:#fff;padding:.4em .8em';
+    s.bar = E('div', 'a', s.ad); s.bar.style.cssText += ';height:8px;background:#fff';
+    s.w1 = E('div', 'a big', el, 'ТАЗИ РЕКЛАМА…'); s.w2 = E('div', 'a big cy glow', el, '…МОЖЕШЕ ДА Я НЯМА.');
+    fit(s.w1, W * .86, 13 * U); fit(s.w2, W * .86, 13 * U);
+    s.stamp = E('div', 'a big stamp', el, 'БЛОКИРАНО'); fit(s.stamp, W * (V ? .8 : .6), 16 * U);
+  }, (s, t) => {
+    const lt = t - bt(14), aw = W * (V ? .9 : .7), ah = aw * (V ? .8 : .5625);
+    const col = clamp((lt - 2 * BEAT) / .15);
+    s.ad.style.width = aw + 'px'; s.ad.style.height = ah + 'px';
+    tf(s.ad, { x: W / 2, y: H / 2, o: 1, extra: ` scaleY(${1 - col})` });
+    s.adt.style.fontSize = (V ? 11 : 9) * U + 'px'; tf(s.adt, { x: aw / 2, y: ah / 2, o: 1, s: 1 + .03 * Math.sin(lt * 30) });
+    s.adl.style.fontSize = 1.7 * U + 'px'; tf(s.adl, { x: 20, y: 20, ax: 0, ay: 0 });
+    s.bar.style.width = (aw * clamp(lt / (2 * BEAT)) * .4) + 'px'; tf(s.bar, { x: 0, y: ah - 8, ax: 0, ay: 0 });
+    tf(s.w1, Object.assign({ x: W / 2, y: H * (V ? .2 : .18) }, lt < 2 * BEAT ? slam(lt, .14, 1.8) : { o: 0 }));
+    tf(s.w2, Object.assign({ x: W / 2, y: H * (V ? .82 : .84) }, lt < 2 * BEAT ? slam(lt - BEAT, .14, 1.8) : { o: 0 }));
+    tf(s.stamp, Object.assign({ x: W / 2, y: H / 2, r: -8 }, slam(lt - 2 * BEAT, .12, 2.6)));
+  });
+  scene(bt(14, 2) + .2, bt(16), (el, s) => {
+    s.lap = shot(el, 'adblock-d', 'dev lap'); s.ph = shot(el, 'adblock-m', 'dev ph');
+    s.n1 = E('div', 'a big chrome', el, 'SUPREME'); s.n2 = E('div', 'a big glow', el, 'ADBLOCK');
+    fit(s.n1, W * (V ? .86 : .42), 17 * U); fit(s.n2, W * (V ? .86 : .42), 17 * U);
+    s.sub = E('div', 'a mono', el, 'БЕЗПЛАТЕН БЛОКЕР НА РЕКЛАМИ · CHROME'); s.sub.style.fontSize = (V ? 1.9 : 1.7) * U + 'px'; s.sub.style.color = 'var(--hi)';
+  }, (s, t) => {
+    const lt = t - bt(14, 2) - .2, p = lt / (6 * BEAT), k = eo(lt / .25);
+    s.n1.style.setProperty('--sx', lerp(-30, 140, clamp(lt / (5 * BEAT))) + '%');
+    if (V) {
+      dev(s.lap, W * .06, H * .48 + (1 - k) * H * .5, W * .7, W * .7 * .62, p * .8, { o: 1 });
+      dev(s.ph, W * .66, H * .56 + (1 - k) * H * .6, W * .27, W * .27 * 2.08, p, { o: 1 });
+      tf(s.n1, Object.assign({ x: W / 2, y: H * .14 }, slam(lt, .16, 1.7)));
+      tf(s.n2, Object.assign({ x: W / 2, y: H * .14 + parseFloat(s.n1.style.fontSize) * .92 }, slam(lt - BEAT * .5, .16, 1.7)));
+      tf(s.sub, { x: W / 2, y: H * .41, o: clamp((lt - BEAT) / .1) });
+    } else {
+      dev(s.lap, W * .5 + (1 - k) * W * .5, H * .17, W * .45, W * .45 * .62, p * .8, { o: 1, extra: ' perspective(1800px) rotateY(-10deg)' });
+      dev(s.ph, W * .83, H * .4 + (1 - k) * H * .6, W * .13, W * .13 * 2.08, p, { o: 1 });
+      tf(s.n1, Object.assign({ x: W * .06, y: H * .26, ax: 0, ay: 0 }, slam(lt, .16, 1.7)));
+      tf(s.n2, Object.assign({ x: W * .06, y: H * .26 + parseFloat(s.n1.style.fontSize) * .92, ax: 0, ay: 0 }, slam(lt - BEAT * .5, .16, 1.7)));
+      tf(s.sub, { x: W * .06, y: H * .7, ax: 0, o: clamp((lt - BEAT) / .1) });
+    }
+  });
+  const FACTS = [['60 000+', 'ФИЛТЪРА — ВГРАДЕНИ'], ['0', 'БАЙТА ОТ СЪРФИРАНЕТО ТИ — КЪМ НИКОГО'], ['2×', 'ПОДПИСАНИ ОБНОВЯВАНИЯ НА ДЕН'], ['0 €', 'БЕЗ ПЛАТЕНА ВЕРСИЯ']];
+  scene(bt(16), bt(18), (el, s) => {
+    s.bgs = shot(el, 'adblock-d', 'full'); s.bgs.style.opacity = .12;
+    s.f = FACTS.map(([n, l]) => { const a = E('div', 'a big chrome', el, n); a.style.fontSize = (V ? 30 : 30) * U + 'px'; const b = E('div', 'a mid', el, l); fit(b, W * .86, 5.4 * U); return [a, b]; });
+  }, (s, t) => {
+    const lt = t - bt(16);
+    full(s.bgs, lt / (2 * BAR), 1.1, 0, 0, W, H, .1);
+    s.f.forEach(([a, b], i) => {
+      const ft = lt - i * 2 * BEAT, on = ft >= 0 && ft < 2 * BEAT;
+      if (!on) { hide(a); hide(b); return; }
+      a.style.setProperty('--sx', lerp(-30, 140, clamp(ft / (2 * BEAT))) + '%');
+      tf(a, Object.assign({ x: W / 2, y: H * .44 }, slam(ft, .16, 2.2)));
+      tf(b, Object.assign({ x: W / 2, y: H * (V ? .64 : .7) }, slam(ft - .5 * BEAT, .12, 1.5)));
+    });
+  });
+  scene(bt(18), bt(20), (el, s) => {
+    s.cws = shot(el, 'adblock-d', 'dev lap');   // секцията „Established Publisher“ на нашия сайт (Chrome Web Store страницата срива headless браузъра)
+    s.ep = E('div', 'a big', el, 'ESTABLISHED<br>PUBLISHER'); s.ep.style.fontSize = (V ? 10 : 8.6) * U + 'px'; s.ep.style.lineHeight = '.92';
+    s.ck = E('div', 'a', el, '<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="none" stroke="#00e5ff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" d="M4 12.5l5 5L20 6.5"/></svg>');
+    s.ck.style.width = s.ck.style.height = (V ? 11 : 9) * U + 'px';
+    s.src = E('div', 'a mono cy', el, 'CHROME WEB STORE · CHROME · EDGE · BRAVE'); s.src.style.fontSize = (V ? 1.8 : 1.7) * U + 'px';
+    s.y1 = E('div', 'a big', el, 'РЕКЛАМИТЕ В YOUTUBE?'); s.y2 = E('div', 'a big cy glow', el, 'СПРЕНИ ПРИ ИЗТОЧНИКА.');
+    fit(s.y1, W * .88, 10 * U); fit(s.y2, W * .88, 10 * U);
+    s.url = E('div', 'a mono', el, 'ADBLOCK.CARBONSTEALTH.EU'); s.url.style.fontSize = 2.4 * U + 'px'; s.url.style.color = 'var(--hi)';
+  }, (s, t) => {
+    const lt = t - bt(18), first = lt < BAR;
+    if (first) {
+      const k = eo(lt / .25);
+      if (V) dev(s.cws, W * .05, H * .44 + (1 - k) * H * .4, W * .9, W * .9 * .58, .12, { o: .95 });
+      else dev(s.cws, W * .45 + (1 - k) * W * .5, H * .2, W * .5, W * .5 * .62, .12, { o: .95, extra: ' perspective(1800px) rotateY(-12deg)' });
+      tf(s.ck, Object.assign({ x: V ? W / 2 : W * .07, y: V ? H * .1 : H * .2, ax: V ? .5 : 0, ay: 0 }, slam(lt, .14, 2)));
+      tf(s.ep, Object.assign({ x: V ? W / 2 : W * .07, y: V ? H * .2 : H * .34, ax: V ? .5 : 0, ay: 0 }, slam(lt - .5 * BEAT, .14, 1.6)));
+      s.ep.style.textAlign = V ? 'center' : 'left';
+      tf(s.src, { x: V ? W / 2 : W * .07, y: V ? H * .38 : H * .66, ax: V ? .5 : 0, o: clamp((lt - BEAT) / .1) });
+      [s.y1, s.y2, s.url].forEach(hide);
+    } else {
+      [s.cws, s.ck, s.ep, s.src].forEach(hide);
+      const l2 = lt - BAR;
+      tf(s.y1, Object.assign({ x: W / 2, y: H * .4 }, slam(l2, .14, 1.8)));
+      tf(s.y2, Object.assign({ x: W / 2, y: H * .4 + parseFloat(s.y1.style.fontSize) * 1.05 }, slam(l2 - BEAT, .14, 1.8)));
+      tf(s.url, Object.assign({ x: W / 2, y: H * .72 }, slam(l2 - 2 * BEAT, .12, 1.3)));
+    }
+  });
+
+  // 6 · истински проекти (10 × 2 удара) ──────────────────────────────────────
+  const WORK = [['ЗА БОБОВ ДОЛ', 'ГРАЖДАНСКИ ПОРТАЛ · БОБОВ ДОЛ', 'zabobovdol'], ['PANEV ASCENSORI', 'ПАТЕНТОВАНИ СКОБИ ЗА АСАНСЬОРИ · ИТАЛИЯ', 'panev'],
+    ['SUPREME BOT', 'DISCORD БОТ И SAAS ПЛАТФОРМА', 'supremebot'], ['FIVEM BULGARIA', 'ЖИВ СПИСЪК НА FIVEM СЪРВЪРИТЕ', 'fivem'],
+    ['KORPORA', 'ПРОГРАМА ЗА МЕБЕЛИ: РАЗКРОЙ, ЧЕРТЕЖИ, CNC', 'korpora'], ['EVANITA SPORT', 'СТУДИО ЗА KANGOO JUMPS · ДУПНИЦА', 'evanita'],
+    ['ОУ „Н. ВАПЦАРОВ“', 'ОФИЦИАЛНИЯТ САЙТ НА УЧИЛИЩЕТО · БОБОВ ДОЛ', 'vaptsarov'], ['МАСТИЛКО', 'ЕТИКЕТИ, ВИЗИТКИ И CV ЗА ПЕЧАТ', 'mastilko'],
+    ['ВИЗИТКА', 'ДИГИТАЛНА ВИЗИТКА С QR КОД', 'vizitka'], ['QUI BULGARIA', 'БЪЛГАРСКО УЧИЛИЩЕ · МИЛАНО', 'scuola']];
+  scene(bt(20), bt(25), (el, s) => {
+    s.items = WORK.map(([n, tag, id], i) => {
+      const f = shot(el, id + (V ? '-m' : '-d'), 'full'); const ph = V ? null : shot(el, id + '-m', 'dev ph');
+      const sh = E('div', 'shade', el); sh.style.height = (H * (V ? .55 : .5)) + 'px';
+      const ix = E('div', 'a mono cy', el, String(i + 1).padStart(2, '0') + ' / 10'); ix.style.fontSize = 1.9 * U + 'px';
+      const nm = E('div', 'a big', el, n); fit(nm, W * (V ? .9 : .6), (V ? 11 : 11) * U);
+      const tg = E('div', 'a mono', el, tag); tg.style.fontSize = (V ? 1.8 : 1.7) * U + 'px'; tg.style.color = 'var(--hi)';
+      return { f, ph, sh, ix, nm, tg, t0: bt(20) + i * 2 * BEAT };
+    });
+    s.real = E('div', 'a mono chip solid', el, 'ИСТИНСКИ ПРОЕКТИ · НА ЖИВО'); s.real.style.fontSize = 1.7 * U + 'px';
+  }, (s, t) => {
+    s.items.forEach((it, i) => {
+      const lt = t - it.t0, on = lt >= 0 && lt < 2 * BEAT, all = [it.f, it.ph, it.sh, it.ix, it.nm, it.tg].filter(Boolean);
+      if (!on) { all.forEach(hide); return; }
+      const k = lt / (2 * BEAT);
+      full(it.f, .05 + k * .3, 1.1 - .08 * k);
+      it.f.style.filter = lt < .07 ? 'contrast(1.4) saturate(.6)' : '';
+      it.sh.style.top = (H * (V ? .45 : .5)) + 'px'; it.sh.style.opacity = 1; it.sh.style.background = 'linear-gradient(180deg,transparent,rgba(5,6,7,.96) 45%)';
+      if (it.ph) { const pk = eo((lt - .5 * BEAT) / .2); dev(it.ph, W * .8, H * .2 + (1 - pk) * H * .8, W * .14, W * .14 * 2.08, k * .6, { o: 1, r: 4 }); }
+      tf(it.ix, { x: W * .05, y: H * (V ? .7 : .66), ax: 0, o: 1 });
+      tf(it.nm, Object.assign({ x: W * .05, y: H * (V ? .73 : .7), ax: 0, ay: 0 }, slam(lt, .13, 1.7)));
+      tf(it.tg, Object.assign({ x: W * .05, y: H * (V ? .73 : .7) + parseFloat(it.nm.style.fontSize) * 1.02, ax: 0, ay: 0 }, slam(lt - .5 * BEAT, .1, 1.3)));
+    });
+    tf(s.real, { x: W - W * .05, y: H * .1, ax: 1, o: 1 });
+  });
+
+  // 7 · обхват ───────────────────────────────────────────────────────────────
+  scene(bt(25), bt(27), (el, s) => {
+    const sv = E('div', 'a', el); sv.style.width = W + 'px'; sv.style.height = H + 'px';
+    const x1 = W * (V ? .2 : .18), y1 = H * (V ? .3 : .62), x2 = W * (V ? .8 : .82), y2 = H * (V ? .22 : .4);
+    sv.innerHTML = `<svg width="${W}" height="${H}"><path id="arc" d="M${x1} ${y1} Q ${(x1 + x2) / 2} ${Math.min(y1, y2) - H * .3} ${x2} ${y2}" fill="none" stroke="#00e5ff" stroke-width="4" stroke-dasharray="14 10" style="filter:drop-shadow(0 0 10px #00e5ff)"/>
+      <circle cx="${x1}" cy="${y1}" r="12" fill="#00e5ff"/><circle cx="${x2}" cy="${y2}" r="12" fill="#00e5ff"/></svg>`;
+    s.arc = sv.querySelector('#arc'); s.len = s.arc.getTotalLength(); s.arc.style.strokeDasharray = s.len; s.svg = sv;
+    s.p1 = E('div', 'a mono', el, 'БОБОВ ДОЛ · 42.36N 23.00E'); s.p2 = E('div', 'a mono', el, 'МИЛАНО · 45.46N 9.19E');
+    [s.p1, s.p2].forEach(e => { e.style.fontSize = 1.6 * U + 'px'; e.style.color = 'var(--hi)'; });
+    s.pos = [[x1, y1], [x2, y2]];
+    s.w = [['БЪЛГАРИЯ.', 0], ['ИТАЛИЯ.', 2], ['ЕВРОПА.', 4]].map(([w, b]) => { const e = E('div', 'a big', el, w); e.style.fontSize = (V ? 14 : 15) * U + 'px'; return [e, b * BEAT]; });
+    s.w[2][0].classList.add('chrome');
+    s.c1 = E('div', 'a mono chip', el, 'BG · EN · IT'); s.c2 = E('div', 'a mono chip solid', el, '0 ШАБЛОНА — ВСИЧКО Е РЪЧНО');
+    [s.c1, s.c2].forEach(e => e.style.fontSize = 1.9 * U + 'px');
+  }, (s, t) => {
+    const lt = t - bt(25);
+    s.arc.style.strokeDashoffset = s.len * (1 - eio(lt / BAR));
+    tf(s.svg, { x: 0, y: 0, ax: 0, ay: 0, o: 1 });
+    tf(s.p1, { x: s.pos[0][0], y: s.pos[0][1] + 3.5 * U, o: 1 }); tf(s.p2, { x: s.pos[1][0], y: s.pos[1][1] + 3.5 * U, o: clamp((lt - BAR * .9) / .1) });
+    const gy = V ? H * .5 : H * .2, gs = (V ? 14 : 15) * U * .92;
+    s.w.forEach(([e, t0], i) => tf(e, Object.assign({ x: V ? W / 2 : W / 2, y: gy + i * gs }, slam(lt - t0, .14, 1.9))));
+    tf(s.c1, Object.assign({ x: W / 2 - (V ? 0 : 23 * U), y: V ? H * .86 : H * .86 }, slam(lt - 6 * BEAT, .1, 1.4)));
+    tf(s.c2, Object.assign({ x: V ? W / 2 : W / 2 + 12 * U, y: V ? H * .92 : H * .86 }, slam(lt - 6.5 * BEAT, .1, 1.4)));
+  });
+
+  // 8 · контакт ──────────────────────────────────────────────────────────────
+  scene(bt(27), DURATION + 1, (el, s) => {
+    s.a = E('div', 'a big', el, 'ТВОЯТ САЙТ'); s.b = E('div', 'a big chrome', el, 'Е СЛЕДВАЩИЯТ.');
+    fit(s.a, W * .88, 18 * U); fit(s.b, W * .88, 18 * U);
+    s.c = ['БЕЗПЛАТНА ОФЕРТА', 'ОТГОВОР ДО 24 ЧАСА'].map((c, i) => { const e = E('div', 'a mono chip' + (i ? '' : ' solid'), el, c); e.style.fontSize = 2.1 * U + 'px'; return e; });
+    s.logo = E('img', 'a', el); s.logo.src = IMG['logo'].src; s.logo.style.width = (V ? 30 : 22) * U + 'px';
+    s.n1 = E('div', 'a big chrome', el, 'CARBON STEALTH'); fit(s.n1, W * (V ? .88 : .6), 12 * U);
+    s.url = E('div', 'a mid glow', el, 'carbonstealth.eu'); s.url.style.textTransform = 'none'; fit(s.url, W * (V ? .8 : .5), 8 * U);
+    s.tel = E('div', 'a mono', el, '+359 877 414 874 · INFO@CARBONSTEALTH.EU'); s.tel.style.fontSize = (V ? 1.9 : 2) * U + 'px'; s.tel.style.color = 'var(--hi)';
+    s.more = E('div', 'a mono', el, 'PORTFOLIO.CARBONSTEALTH.EU · ADBLOCK.CARBONSTEALTH.EU'); s.more.style.fontSize = (V ? 1.4 : 1.5) * U + 'px'; s.more.style.color = 'var(--ink2)';
+  }, (s, t) => {
+    const lt = t - bt(27), end = t >= bt(29);
+    if (!end) {
+      tf(s.a, Object.assign({ x: W / 2, y: H * .36 }, slam(lt, .14, 2.1)));
+      s.b.style.setProperty('--sx', lerp(-30, 140, clamp((lt - 2 * BEAT) / (5 * BEAT))) + '%');
+      tf(s.b, Object.assign({ x: W / 2, y: H * .36 + parseFloat(s.a.style.fontSize) * .95 }, slam(lt - 2 * BEAT, .16, 2.1)));
+      s.c.forEach((e, i) => tf(e, Object.assign({ x: V ? W / 2 : W / 2 + (i ? 1 : -1) * 18 * U, y: H * (V ? .74 + i * .07 : .78) }, slam(lt - (4 + i) * BEAT, .1, 1.4))));
+      [s.logo, s.n1, s.url, s.tel, s.more].forEach(hide);
+    } else {
+      [s.a, s.b, ...s.c].forEach(hide);
+      const l2 = t - bt(29);
+      s.n1.style.setProperty('--sx', lerp(-30, 140, clamp(l2 / 2.2)) + '%');
+      tf(s.logo, Object.assign({ x: W / 2, y: H * (V ? .25 : .25) }, slam(l2, .2, 1.5)));
+      tf(s.n1, Object.assign({ x: W / 2, y: H * (V ? .47 : .5) }, slam(l2 - .15, .18, 1.5)));
+      tf(s.url, Object.assign({ x: W / 2, y: H * (V ? .58 : .63) }, slam(l2 - .4, .16, 1.4)));
+      tf(s.tel, { x: W / 2, y: H * (V ? .68 : .74), o: clamp((l2 - .7) / .2) });
+      tf(s.more, { x: W / 2, y: H * (V ? .74 : .8), o: clamp((l2 - .9) / .2) });
+    }
+  });
+}
+
+// ── кадър ───────────────────────────────────────────────────────────────────
+window.render = t => {
+  // сцени
+  S.forEach(s => { const on = t >= s.t0 && t < s.t1; show(s.el, on); if (on) s.draw(s, t); });
+  // тресене на камерата след всеки удар (силата идва от удара)
+  let sx = 0, sy = 0, rz = 0;
+  for (let i = KICKS.length - 1; i >= 0; i--) {
+    const [tk, a] = KICKS[i]; if (tk > t) continue; const d = t - tk; if (d > .5) break;
+    const amp = a * (V ? 5 : 6) * Math.exp(-d / .07);
+    sx += (hash(tk * 7.3) - .5) * 2 * amp * Math.cos(d * 70); sy += (hash(tk * 3.1) - .5) * 2 * amp * Math.sin(d * 63); rz += (hash(tk * 5.7) - .5) * .25 * a * Math.exp(-d / .09);
+  }
+  cam.style.transform = `translate(${sx}px,${sy}px) rotate(${rz}deg) scale(${1 + Math.abs(rz) * .01})`;
+  // проблясък — само на големите преходи
+  let fl = 0; DROPS.forEach(td => { if (t >= td) fl = Math.max(fl, .42 * Math.exp(-(t - td) / .09)); });
+  document.getElementById('flash').style.opacity = fl.toFixed(3);
+  // шум и HUD
+  const fr = Math.round(t * 30);
+  document.getElementById('grain').style.backgroundPosition = `${(fr * 37) % 256}px ${(fr * 91) % 256}px`;
+  const tc = document.getElementById('tc'); const ss = Math.floor(t);
+  tc.textContent = `${String(Math.floor(ss / 60)).padStart(2, '0')}:${String(ss % 60).padStart(2, '0')}:${String(fr % 30).padStart(2, '0')} · 140 BPM`;
+  let sec = ''; SECTION.forEach(([t0, l]) => { if (t >= t0) sec = l; }); document.getElementById('sec').textContent = sec;
+  hud.style.opacity = t < bt(2) ? 0 : 1;
+  document.getElementById('bg').style.transform = `translate(${-(t * 14) % 96}px,${-(t * 9) % 96}px)`;
+};
+
+// ── зареждане ───────────────────────────────────────────────────────────────
+const NEED = ['cs-d', 'cs-m', 'portfolio-d', 'oferta-d', 'oferta-m', 'adblock-d', 'adblock-m', 'korpora-d', 'supremebot-d', 'zabobovdol-m',
+  ...['zabobovdol', 'panev', 'supremebot', 'fivem', 'korpora', 'evanita', 'vaptsarov', 'mastilko', 'vizitka', 'scuola'].flatMap(i => [i + '-d', i + '-m']),
+  ...['restorant', 'fitnes', 'avtoservis', 'salon-za-krasota', 'onlain-magazin', 'hotel-kashta-za-gosti', 'advokatska-kantora', 'agencia-za-imoti', 'avtokashta', 'barzo-hranene', 'magazin-za-drehi', 'mebelen-magazin', 'medicinski-centar', 'schetovodna-kashta', 'stroitelstvo-i-remonti'].flatMap(d => ['demo-' + d + '-d', 'demo-' + d + '-m'])];
+window.__ready = (async () => {
+  await Promise.all([document.fonts.load('900 100px "Inter Tight"', 'АБВГД ABC'), document.fonts.load('800 100px "Inter Tight"', 'АБВ'), document.fonts.load('500 20px "JetBrains Mono"', 'АБВ ABC')]);
+  await document.fonts.ready;
+  const load = (k, src) => new Promise(res => { const i = new Image(); i.onload = () => { IMG[k] = i; res(); }; i.onerror = () => { console.warn('missing', k); const c = document.createElement('canvas'); c.width = 1440; c.height = 900; IMG[k] = { src: c.toDataURL(), naturalWidth: 1440, naturalHeight: 900 }; res(); }; i.src = src; });
+  await Promise.all([...new Set(NEED)].map(k => load(k, `/shots/${k}.jpg`)).concat([load('logo', '/brand/cs-logo-480.webp')]));
+  await Promise.all(Object.values(IMG).filter(i => i.decode).map(i => i.decode().catch(() => {})));
+  build(); window.render(0); return true;
+})();
+</script>
+</body>
+</html>
