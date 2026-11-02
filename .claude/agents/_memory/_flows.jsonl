@@ -424,3 +424,11 @@
 {"t":"handoff","ts":"2026-11-02T10:55:42.273Z","id":"r36c86012","from":"kachestveniyat","to":"човек","status":"има бележки","run":"de47eddc"}
 {"t":"start","ts":"2026-11-02T10:56:25.287Z","id":"rd49c084f","flow":"авто","lead":"pravniyat-razbirach","auto":true}
 {"t":"handoff","ts":"2026-11-02T10:56:25.287Z","id":"rd49c084f","from":"pravniyat-razbirach","to":"vps-adjiyata","status":"има бележки","run":"54d23207"}
+{"t":"start","ts":"2026-11-02T11:01:51.973Z","id":"rf5eb2194","flow":"авто","lead":"prodavacha","auto":true}
+{"t":"handoff","ts":"2026-11-02T11:01:51.973Z","id":"rf5eb2194","from":"prodavacha","to":"kodadjiyata","status":"наред","run":"7247b32c"}
+{"t":"handoff","ts":"2026-11-02T11:04:35.047Z","id":"rf5eb2194","from":"kodadjiyata","to":"izpitatelya","status":"наред","run":"1ce02e55"}
+{"t":"start","ts":"2026-11-02T11:20:05.873Z","id":"rc72a989a","flow":"авто","lead":"geymara","auto":true}
+{"t":"handoff","ts":"2026-11-02T11:20:05.873Z","id":"rc72a989a","from":"geymara","to":"pravniyat-razbirach","status":"има бележки","run":"996870c8"}
+{"t":"start","ts":"2026-11-02T11:21:12.120Z","id":"r4d2d57fb","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-02T11:21:12.120Z","id":"r4d2d57fb","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"21e358cb"}
+{"t":"handoff","ts":"2026-11-02T11:21:55.923Z","id":"r4d2d57fb","from":"pravniyat-razbirach","to":"kodadjiyata","status":"блокер","run":"488f3a49"}
