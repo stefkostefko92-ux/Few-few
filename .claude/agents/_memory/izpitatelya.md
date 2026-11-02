@@ -8,6 +8,8 @@
 Специалност: **пише и притежава тестовите пакети** (unit/интеграционни/e2e), детерминизъм, борба с flaky.
 Версии на рамки (Playwright/Vitest/MSW) са време-чувствителни → потвърждавай на живо.
 ## Проверени поуки (verified)
+- **2026-11-02:** За червена фаза на износи, които още не съществуват, ползвай `import * as ns` + помощна `exported(name)` с `assert.fail`, вместо именуван import (при ESM би дал SyntaxError за целия файл); разширените сигнатури се викат през cast. _(tsx --test червена фаза, когато имплементацията още няма новите износи; verified; cd linketto && npm test -> 18 fail само нови, 192 pass, причина "липсва износ billing-sync.X")_
+- **2026-11-02:** Стари `deepEqual` на noop/revoke решения в linketto забраняват нови полета в решенията; нова информация (PI, причина) минава през трейлинг аргументи или отделни функции. _(добавки към billing-sync.ts без чупене на съществуващите тестове; verified; linketto/src/lib/__tests__/billing-sync.test.ts:254-275,419,789)_
 - **2026-11-02:** linketto няма инсталиран node_modules в пясъчницата; `npm ci --ignore-scripts` (без prisma generate/мрежа за postinstall) стига за `npm test` (tsx --test), без да пипа проследени файлове. _(linketto, преди червен гейт заради липсващ tsx; verified; cd linketto && npm ci --ignore-scripts && npm test -> 91 pass / 1 fail (само новият файл), tsx в node_modules/.bin)_
 
 - **2026-10-31:** `next dev` в Next 16.3.5 дописва блок nextjs-agent-rules в mastilko/CLAUDE.md при всеки старт, така че след пускане на dev сървър проверявай `git status` и връщай несвързаните промени. _(стартиране на next dev в монорепото; verified; git diff mastilko/CLAUDE.md след `npm run dev` (10 добавени реда), върнат с Edit; git status чист)_
