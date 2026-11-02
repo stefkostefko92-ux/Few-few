@@ -6,6 +6,8 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-02:** vpsdash app.js още слага текст с директен textContent и български литерали без t() (сесия/няма сесия/Зареждам…/Качването се провали) — тези низове заобикалят слоя в el()/toast() и вероятно излизат на български в EN/IT режим. _(одит на i18n покритието в vpsdash (терминал, качване, модален прозорец); verified; /home/user/Few-few/vpsdash/public/app.js:3221,3225,3235,3406,3614,3752,3763,5321,6198)_
+- **2026-11-02:** В linketto/messages низовите ключове са bg 478, en 478, it 429 (de/es/fr 429, останалите 423) — липсата на 49 ключа в it продължава и към 2026-11-02. _(паритет bg/en/it в linketto; verified; Grep '^\s*"[^"]+":\s*"' --count върху /home/user/Few-few/linketto/messages)_
 
 - **2026-10-27:** Глосарът няма одобрени BG/EN/IT редове за DNR и за инсулинозависим диабет, а каноничната BG форма за спешен контакт там е „Спешен контакт“ (не „Контакт при спешност“) _(превод на спешния профил на medqr към IT/EN; verified; .claude/agents/_shared/glossary.md:37 (Grep за DNR|реаним|insulin|инсулин върху glossary.md = 0 съвпадения))_
 - **2026-10-27:** medqr записва избора „Не знам“ за кръвна група като суров BG низ и emergency/sos/dashboard го показват без clin(), така че EN режимът показва кирилица; поправката е clin(profile.blood_type) _(medqr локализация на кръвна група (EN и бъдещ IT); verified; medqr/src/views/profile-edit.ejs:37; medqr/src/views/emergency.ejs:132; medqr/src/views/sos.ejs:21; medqr/src/views/dashboard.ejs:27)_
