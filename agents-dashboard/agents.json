@@ -1184,7 +1184,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 616
+        "lessons": 618
       },
       "evolution": [
         {
@@ -2008,9 +2008,20 @@
           "date": "2026-11-02",
           "event": "v52.1 — учене",
           "detail": "Научи: В adblock FORM_TARGET, FORM_ATTR и UNSAFE_SELECTORS живеят в scriptlets/policy.js (общ …"
+        },
+        {
+          "version": "52.3.0",
+          "date": "2026-11-02",
+          "event": "v52.3 — учене",
+          "detail": "Научи: Към 2026-11-02 OSV дава 14 съвета за next@15.5.20 (вкл. Critical GHSA-2464-fhr4-w9xw и … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Към 2026-11-02 OSV дава 14 съвета за next@15.5.20 (вкл. Critical GHSA-2464-fhr4-w9xw и …\" (+1 още)"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
