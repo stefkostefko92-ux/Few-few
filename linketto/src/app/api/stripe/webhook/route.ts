@@ -40,6 +40,11 @@ import {
   loadSubscription,
   setSubscriptionCollectionPaused,
 } from '@/lib/stripe-state';
+import { customerClaimWhere, customerLinkUpdate } from '@/lib/plan-checkout';
+import { applyCouponStep, couponStepForEvent } from '@/lib/coupon-reservation';
+import { createCouponLedger } from '@/lib/coupon-ledger';
+
+const couponLedger = createCouponLedger(prisma);
 
 type PriceMap = ReadonlyMap<string, SubscriptionPlanId>;
 
@@ -213,7 +218,6 @@ async function grantPlanFromCheckout(
     where,
     data: {
       plan: decision.plan,
-      stripeCustomerId: idOf(session.customer) ?? undefined,
       ...link,
       ...(clearRevocation
         ? { planRevokedAt: null, planRevokedReason: null, planDisputedPaymentIntentId: null }
@@ -221,6 +225,20 @@ async function grantPlanFromCheckout(
     },
   });
   if (updated.count === 0) return;
+  // Customer: записва се само ако потребителят още няма (CAS по null);
+  // различен записан customer НЕ се презаписва — иначе първият абонамент
+  // излиза от Billing Portal. Разминаването се логва (само id-та, без PII).
+  const customerLink = customerLinkUpdate(user.stripeCustomerId, idOf(session.customer));
+  if (customerLink.set) {
+    await prisma.user.updateMany({
+      where: customerClaimWhere(user.id),
+      data: { stripeCustomerId: customerLink.set },
+    });
+  } else if (customerLink.mismatch) {
+    console.warn(
+      `[stripe-webhook] plan checkout ${session.id}: потребител ${user.id} има друг Stripe customer — не е презаписан, провери ръчно`,
+    );
+  }
   // G10: grant е по снимка от момента на четене; ресинхронизацията по живия
   // абонамент затваря състезанието grant↔deleted (закъснял grant след отмяна).
   const resyncId = subscriptionIdToResyncAfterGrant(decision);
@@ -757,14 +775,14 @@ export async function POST(request: Request): Promise<NextResponse> {
         if (purchase) {
           ok = (await payoutSeller(purchase.id)) && ok;
         }
-        // Промо код: увеличаваме броя ползвания веднъж (само при първи запис),
-        // атомарно и само ако е под лимита (пази брояча от преразходване).
-        const couponId = session.metadata?.couponId;
-        if (!existing && purchase && couponId) {
-          await prisma
-            .$executeRaw`UPDATE "Coupon" SET "timesRedeemed" = "timesRedeemed" + 1 WHERE "id" = ${couponId} AND ("maxRedemptions" IS NULL OR "timesRedeemed" < "maxRedemptions")`
-            .catch(() => undefined);
-        }
+        // Промо код: с резервация (нов поток) → CONSUMED, без второ броене;
+        // заварена сесия без маркер → броим веднъж при първия запис, както
+        // досега. CAS по статуса → повторена доставка е безвредна; провал → 500.
+        const couponStep = couponStepForEvent(event.type, session.metadata, {
+          paid: true,
+          firstRecord: !existing && Boolean(purchase),
+        });
+        await track('coupon', () => applyCouponStep(couponLedger, couponStep, session.id));
         // Курс → доживотно право на достъп до уроците.
         if (session.metadata?.type === 'COURSE' && buyerEmail) {
           await grantEntitlement(productId, profileId, buyerEmail, null);
@@ -772,6 +790,22 @@ export async function POST(request: Request): Promise<NextResponse> {
         // Доставяме купеното по имейл (идемпотентно) — само DIGITAL.
         if (purchase) await fulfilProduct(purchase.id);
       }
+      break;
+    }
+    // Незавършена магазинна сесия → резервираното ползване на промо кода се
+    // връща (идемпотентно: CAS HELD → RELEASED). Заварени сесии без маркер не
+    // са резервирали → нищо. Plan сесиите не носят резервация.
+    case 'checkout.session.expired':
+    case 'checkout.session.async_payment_failed': {
+      const session = event.data.object;
+      if (classifyCheckout(session.metadata).kind !== 'shop') break;
+      const couponStep = couponStepForEvent(event.type, session.metadata, {
+        paid: false,
+        firstRecord: false,
+      });
+      await track('coupon release', () =>
+        applyCouponStep(couponLedger, couponStep, session.id),
+      );
       break;
     }
     case 'charge.refunded': {

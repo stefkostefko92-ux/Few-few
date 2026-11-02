@@ -142,6 +142,7 @@ Stripe Dashboard → Developers → Webhooks → Add endpoint:
 - **Събития** (точно тези — кодът ги обработва):
   - `checkout.session.completed`
   - `checkout.session.async_payment_succeeded`
+  - `checkout.session.expired` · `checkout.session.async_payment_failed` (връщат резервираното ползване на промо код при незавършена покупка)
   - `account.updated`
   - `account.application.deauthorized`
   - `customer.subscription.updated` (отнема достъп до членство при спряло плащане — всички dunning изходи; синхронизира `User.plan` при смяна през Portal)
@@ -151,6 +152,25 @@ Stripe Dashboard → Developers → Webhooks → Add endpoint:
   - `charge.dispute.created`
   - `charge.dispute.updated` · `charge.dispute.closed` · `charge.dispute.funds_withdrawn` · `charge.dispute.funds_reinstated` (жизненият цикъл на спора: при `won` се възстановяват FOUNDER, наградата на реферера и таксуването на плановия абонамент)
 - Копирай `Signing secret` → `STRIPE_WEBHOOK_SECRET`.
+- **Почистване на резервациите на промо кодове** (втора мрежа, ако webhook
+  събитие се изгуби или сървърът падне между резервацията и Stripe сесията):
+  systemd timer/cron на всеки 30 мин в `linketto/` —
+  `npx tsx scripts/sweep-coupon-reservations.ts --apply` (без `--apply` е
+  само отчет). Пипа само HELD, по-стари от 2 ч (без Stripe сесия — след 72 ч,
+  колкото Stripe опитва доставката на webhook); идемпотентно; грешка при един
+  ред не спира останалите; exit 1 при грешка (виж журнала). Пример cron:
+  `*/30 * * * * cd /srv/linketto && npx tsx scripts/sweep-coupon-reservations.ts --apply >> /var/log/linketto-sweep.log 2>&1`
+- По избор `COUPON_CLIENT_SECRET` (`openssl rand -hex 32`) — стабилна тайна за
+  тавана на резервациите от един клиент (без нея таванът се нулира при рестарт).
+- **Таванът по клиент вярва на `cf-connecting-ip`/`x-forwarded-for`**
+  (`src/lib/admin.ts` `requestIp`). Origin-ът трябва да приема заявки САМО през
+  Cloudflare (или Nginx да презаписва тези заглавия) — иначе клиентът ги подменя
+  и заобикаля тавана. IPv6 се брои по /64 префикс. Проверка: VPS-аджията.
+- **Заварени plan сесии (до 24 ч след деплоя):** checkout сесии, създадени
+  преди деплоя с `customer_email`, могат да завършат с нов Stripe customer.
+  Webhook-ът вече НЕ презаписва записания `stripeCustomerId` — търси в журнала
+  `има друг Stripe customer — не е презаписан` и провери ръчно (абонаментът
+  на втория customer не се вижда в Billing Portal).
 - Stripe Billing → Settings: dunning да завършва с **cancel** на абонамента (за да дойде `subscription.deleted`).
 - **Проверка по O-2 (задължителна, от собственика):** кодът пази платения план
   по време на `past_due` (гратис докато Smart Retries опитват). Това е безопасно

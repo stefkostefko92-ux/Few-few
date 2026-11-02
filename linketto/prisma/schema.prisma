@@ -194,9 +194,28 @@ model Coupon {
   timesRedeemed  Int       @default(0)
   expiresAt      DateTime? // null = без срок
   createdAt      DateTime  @default(now())
+  reservations   CouponReservation[]
 
   @@unique([profileId, code])
   @@index([profileId])
+}
+
+// Резервация на ползване при старт на checkout (timesRedeemed вече е вдигнат).
+// Статусът се сменя само с условен запис (CAS) → повторено събитие не
+// освобождава/брои два пъти. id-то пътува в metadata.couponReservationId.
+model CouponReservation {
+  id              String    @id @default(cuid())
+  couponId        String
+  coupon          Coupon    @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  status          String    @default("HELD") // HELD | CONSUMED | RELEASED
+  stripeSessionId String?   @unique // записва се веднага след създаването на сесията
+  clientKey       String? // HMAC(IP, код) за тавана на клиента; нулира се при уреждане (без суров IP)
+  createdAt       DateTime  @default(now())
+  settledAt       DateTime?
+
+  @@index([couponId])
+  @@index([status, createdAt])
+  @@index([couponId, clientKey, status])
 }
 
 model ProfileTranslation {

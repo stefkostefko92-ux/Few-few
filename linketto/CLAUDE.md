@@ -160,7 +160,18 @@ Deploy чеклист: DEPLOY.md.
 discountedPriceCents — никога под минималния заряд на Stripe). Модел Coupon
 (@@unique([profileId, code]), maxRedemptions/timesRedeemed/expiresAt).
 Отстъпката се ПРЕИЗЧИСЛЯВА на сървъра в startProductPurchaseAction;
-webhook-ът брои ползването веднъж. CRUD: actions/shop.ts (по userId).
+ползването се РЕЗЕРВИРА атомарно преди Stripe сесията (CouponReservation,
+lib/coupon-reservation.ts + coupon-ledger.ts; metadata.couponReservationId,
+expires_at 35 мин); webhook-ът: completed → CONSUMED, expired/
+async_payment_failed → RELEASED (CAS, веднъж); заварени сесии без маркер се
+броят както преди. Таван ≤2 HELD на (код, клиент) по HMAC(IP) — без суров IP.
+Застояли HELD (>2 ч) → scripts/sweep-coupon-reservations.ts (cron, DEPLOY.md §3).
+Адаптерите (coupon-ledger.ts, plan-checkout-stripe.ts) са без server-only —
+инжектират се и се тестват срещу mock. CRUD: actions/shop.ts (по userId).
+Plan checkout (lib/plan-checkout.ts): винаги `customer` (създава се с
+idempotency key по user.id, CAS запис), живи абонаменти/платен „Основател“
+в Stripe → error=plan, отворените plan сесии се изтичат; webhook-ът не
+презаписва различен stripeCustomerId.
 
 Аналитика: dashboard/analytics/page.tsx (детайлен таб — $queryRaw дневна
 поредица + groupBy разбивки; src/lib/analytics.ts: fillDailySeries/ctr/
