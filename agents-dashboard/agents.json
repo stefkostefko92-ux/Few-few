@@ -15685,7 +15685,7 @@
           "Kubernetes probes docs (liveness/readiness/startup), graceful shutdown/SIGTERM",
           "Това репо: CLAUDE.md (продуктов стек), границата VPS-аджията (машина/деплой) и Конвейерът (CI)"
         ],
-        "lessons": 221
+        "lessons": 220
       },
       "evolution": [
         {
@@ -15747,9 +15747,20 @@
           "date": "2026-11-02",
           "event": "v21.0 — учене",
           "detail": "Научи: medqr systemd unit има Restart=on-failure/RestartSec=3, но НЯМА MemoryMax= (само Memory… (+6 още)"
+        },
+        {
+          "version": "21.1.0",
+          "date": "2026-11-02",
+          "event": "v21.1 — учене",
+          "detail": "Научи: Параметърът `resolve` на `server` в nginx upstream (следи смяната на IP без рестарт, из…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Параметърът `resolve` на `server` в nginx upstream (следи смяната на IP без рестарт, из…\""
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
