@@ -37,6 +37,7 @@ public/assets/    images (served from disk)
 scripts/          hash-password + helpers
 promo/            the Facebook clip: film.html (the site's stitch on a frame clock) + music.mjs
                   (an original ruchenitsa, MIDI → FluidSynth) + render.mjs → dist/ (not committed)
+                  logo.html + logo.mjs: the logo cross-stitched on Aida, as a photo (PNG/JPG)
 ```
 
 ## Conventions (important)
