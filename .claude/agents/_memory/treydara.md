@@ -167,10 +167,6 @@
 - **2026-07-01:** WebSocket устойчивост: auto-reconnect с backoff + resubscribe + heartbeat; при празнина
   пресверявай отворени поръчки/позиции през REST преди да продължиш; listenKey за user-data stream има
   срок → подновявай _(ws resilience; verified; .claude/agents/treydara.md)_
-- **2026-07-01:** Binance (вкл. testnet.binance.vision) връща HTTP 451 „Service unavailable from a
-  restricted location“ за IP на много дейта-центрове/облаци и ограничени юрисдикции — ботът трябва да се
-  пуска от разрешен регион/IP; не е бъг в кода. Наблюдавано на живо при exchangeInfo от CI средата
-  _(Binance 451 geo-block; verified; наблюдение GET https://testnet.binance.vision/api/v3/exchangeInfo → 451)_
 - **2026-07-01:** Референтна имплементация: treydar/ (spot бот, CCXT, ESM) — config.js gate-ва live с
   тройна спирачка (BINANCE_TESTNET=false + TRADING_LIVE=true + I_UNDERSTAND_THE_RISK=РАЗБИРАМ-РИСКА);
   risk.js носи тестваната логика (positionSize от риск, max-drawdown kill-switch); execute.js прави
@@ -204,10 +200,6 @@
 - **2026-07-01:** Kovner (Market Wizards): стоп се решава ПРЕДИ входа, на ниво което доказва че сделката
   греши (не произволна сума); размерът се извежда от стопа; „undertrade, undertrade, undertrade — cut it
   at least in half"; новаци търгуват 3–5× твърде голямо (5–10% риск вместо 1–2%) _(Kovner risk; verified; https://www.newtraderu.com/2020/08/04/market-wizard-bruce-kovner-trading-quotes/)_
-- **2026-07-01:** Признаване на грешка = едж: Soros „I'm only rich because I know when I'm wrong";
-  Druckenmiller наруши правилата си 2000 (FOMO), купи $6B tech на върха, загуби ~$3B за 6 седмици —
-  провалът беше ЕМОЦИОНАЛЕН, не аналитичен; PTJ „always thinking about losing money", цели 5:1 асиметрия,
-  200-дневна MA като защита-филтър _(macro mistake-admission; verified; https://novelinvestor.com/stan-druckenmillers-worst-mistake-ever/ + https://mebfaber.com/2014/11/06/paul-tudor-jones-on-the-200-day-moving-average/)_
 - **2026-07-01:** Eckhardt: „success rate of trades is the LEAST important performance statistic and may
   be inversely related to performance" → НЕ оптимизирай win-rate; Seykota: „if you can't take a small
   loss, sooner or later you take the mother of all losses"; тренд-фолоуинг hit-rate ~35–40%, печели от
