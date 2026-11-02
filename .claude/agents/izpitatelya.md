@@ -6,7 +6,7 @@ skills:
   - agent-doctrine
 omitClaudeMd: true
 model: sonnet
-effort: medium
+effort: high
 maxTurns: 80
 ---
 

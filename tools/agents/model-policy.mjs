@@ -56,7 +56,18 @@ const LOW_EFFORT = new Set(["siydara", "socialdjiyata"]);
 // Пилот 02.11.2026 (същият метод, k=2 на два spec-а): Разбивача medium −23% ($1.63 → $1.25), golden 4/4 и в
 // двете рамена, НО сляпото двойково съдийство (Кодаджията, находки сверени в кода) — high 3 · medium 0 · равно 1:
 // high дава повече различни истински находки и по-точни редове → остава high. Правният Разбирач −3% → остава high.
+// Правило на собственика (02.11.2026): „качеството първо — по-добро и по-бързо, малко по-скъпо е приемливо“;
+// вдигане само при ИЗМЕРЕНО по-добро качество (сляпо двойково, изолирани опити). Дизайнера medium→high:
+// маркери 26/26 и в двете, сляпо 2:2, но 2,1× по-бавно (141 → 299 s) и +64% ($0.47 → $0.77) → остава medium.
+// Сийдъра и Социалджията low→medium (sonnet, k=2 на два spec-а, изолирани опити): маркери 26/26 и в двете;
+// сляпо Сийдъра 2:2 (точки 52:50 за low), Социалджията 2:2 (53:48 за medium — в шума); цена +5%, време +33%/+25%
+// → остават low. Съдийството хвана слабост и на двете усилия („Сигурно“ за блог на трета страна) → обучена.
 const MEDIUM_MEASURED = new Set(["kodadjiyata", "kachestveniyat"]);
+// Изпитателят medium→high по ИЗМЕРВАНЕ (02.11.2026, sonnet, k=2 на два spec-а, всеки опит в свое копие и своя
+// сесия): маркери 12/12 и в двете; сляпо двойково (Качествения, сверено с репото) — high 4 · medium 0, точки
+// 48:37. medium пишеше 9 регистрации при твърд лимит 8/час (Nexus/server/src/server.ts:151) → тестът пада с 429.
+// Цена +28% ($0.52 → $0.67), време +54% (82 → 126 s) — по правилото на собственика качеството печели.
+const HIGH_MEASURED = new Set(["izpitatelya"]);
 
 const REASON = {
   A: "дълбоко разсъждение / безопасно-критично (пари·право·фискал·сигурност·клинично·стат) → opus + effort:high",
@@ -65,7 +76,7 @@ const REASON = {
   effort: "high=критично/дълбоко (TIER_A) · low=шаблонно/механично (LOW_EFFORT) · medium=останалите",
 };
 const rec = (id) => (TIER_C.has(id) ? "haiku" : TIER_A.has(id) ? "opus" : "sonnet");
-const recEffort = (id) => (TIER_A.has(id) && !MEDIUM_MEASURED.has(id) ? "high" : LOW_EFFORT.has(id) ? "low" : "medium");
+const recEffort = (id) => (HIGH_MEASURED.has(id) || (TIER_A.has(id) && !MEDIUM_MEASURED.has(id)) ? "high" : LOW_EFFORT.has(id) ? "low" : "medium");
 
 function agentIds() {
   return readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_") && f !== "README.md").map((f) => f.replace(/\.md$/, "")).sort();
