@@ -41,7 +41,7 @@ Three categories:
 - Session token compromise
 - API key leakage
 - Breach affecting 100-1000 subjects
-- Third-party sub-processor incident (Stripe, Discord, Hetzner, Google)
+- Third-party sub-processor incident (Stripe, Discord, netcup, Google)
 
 ### Tier 3 — Medium (document, assess case-by-case)
 - Temporary DB unavailability (<4 hours)
@@ -57,7 +57,7 @@ Three categories:
 1. **Automated monitoring** (runs without human action):
    - Sentry error tracking (production errors) — active only when `SENTRY_DSN` is
      configured; unset means this source does not exist
-   - VPS monitoring (Hetzner Cloud alerts)
+   - VPS monitoring (netcup Server Control Panel)
    - Docker container health checks (`postgres`, `redis`, `backend`, `bot`,
      `frontend` — see `docker-compose.yml`)
    - Automated dependency scanning (Dependabot, `.github/dependabot.yml`)

@@ -1,6 +1,7 @@
 # Data Processing Agreement (DPA) — Supreme Bot
 
-**Version:** 1.1 (2026-09-13 — sub-processor table: Discord Inc. also acts as seller of record for subscriptions purchased in its Premium Apps store; Stripe limited to legacy subscriptions. No new sub-processor was added.)  
+**Version:** 1.2 (2026-11-02 — infrastructure hosting sub-processor: netcup GmbH replaces Hetzner Online GmbH.)  
+**Previous:** 1.1 (2026-09-13 — sub-processor table: Discord Inc. also acts as seller of record for subscriptions purchased in its Premium Apps store; Stripe limited to legacy subscriptions. No new sub-processor was added.)  
 **Effective Date:** 2026-04-22  
 **Controller:** [Customer Name] ("Customer")  
 **Processor:** Carbon Stealth VCC, EIK 208725180, VAT BG208725180, ul. Samuil 3, Bobov Dol, Bulgaria ("Supreme Bot")
@@ -57,7 +58,7 @@
 
 | Sub-processor | Role | Location | Safeguard |
 |---|---|---|---|
-| Hetzner Online GmbH | Infrastructure hosting | Germany (EU) | Within EEA |
+| netcup GmbH | Infrastructure hosting | Germany (EU) | Within EEA |
 | Stripe Payments Europe Ltd | Payment processing for legacy subscriptions only (no new purchases) | Ireland (EU) | Within EEA |
 | Google LLC (Gemini API) | AI inference (optional, Premium feature) | USA | Standard Contractual Clauses |
 | Discord Inc. | Authentication + bot delivery; seller of record for subscriptions purchased in Discord's Premium Apps store (entitlement/subscription identifiers) | USA | Standard Contractual Clauses |

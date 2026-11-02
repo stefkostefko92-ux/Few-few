@@ -521,7 +521,7 @@ export default {
   "privacy.subprocessorsTitle": "Sous-traitants ultérieurs",
   "privacy.subprocessorsDesc": "Tiers susceptibles de traiter vos données pour le compte de Supreme Bot :",
   "privacy.policy": "Politique →",
-  "privacy.sub.hetzner": "Hébergement (UE, Allemagne)",
+  "privacy.sub.netcup": "Hébergement (UE, Allemagne)",
   "privacy.sub.stripe": "Traitement des paiements (UE, Irlande)",
   "privacy.sub.google": "Réponses automatiques par IA (États-Unis, garanties SCC)",
   "privacy.sub.discord": "Authentification + API du bot (États-Unis, garanties SCC)",
