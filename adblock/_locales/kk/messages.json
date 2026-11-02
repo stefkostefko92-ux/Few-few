@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Жарнаманы барлық жерде бұғаттайды: YouTube бейнежарнамалары, баннерлер, қалқымалы терезелер, трекерлер, cookie сұраулары."
+    "message": "Жарнама бұғаттағышы (YouTube пен веб): бейнежарнама, баннер, қалқымалы терезе, трекер, cookie баннері, анти-адблок қабырғасы."
   },
   "byCarbon": {
     "message": "Carbon Stealth әзірлеген"
@@ -647,6 +647,12 @@
     "message": "Мекенжай жолағының жанындағы пазл белгішесін басып, Supreme AdBlock-ты бекітіңіз. Сонда бір басу арқылы беттегі не бұғатталғанын көресіз.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Құралдар тақтасына бекітілді"
+  },
+  "welPinnedText": {
+    "message": "Белгішесін бір басу беттегі не бұғатталғанын көрсетеді."
+  },
   "welBrokenTitle": {
     "message": "Сайт дұрыс көрсетілмесе",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Ережелер сыйымдылығы"
+  },
+  "helpTitle": {
+    "message": "Сайттар бұзылып жатыр ма?"
+  },
+  "helpText": {
+    "message": "Бір уақытта бір сайт жеткілікті: онда жарнамаға бір сағатқа рұқсат беріңіз немесе элементтерді жасыруды тек сол жерде өшіріңіз. Бізге хабарласаңыз, сайтты бәрі үшін түзетеміз."
+  },
+  "helpFix": {
+    "message": "Бұл сайтты түзету"
+  },
+  "cardNever": {
+    "message": "Қайта көрсетпеу"
+  },
+  "cardClose": {
+    "message": "Жабу"
+  },
+  "receiptTitle": {
+    "message": "Соңғы 30 күніңіз"
+  },
+  "receiptText": {
+    "message": "$1 сұрау бұғатталды · $2 cookie баннеріне жауап берілді · шамамен $3 деректер үнемделді (болжамды есеп)"
+  },
+  "share": {
+    "message": "Бөлісу"
+  },
+  "shareTitle": {
+    "message": "Supreme AdBlock-тың Chrome Web Store сілтемесін көшіру"
+  },
+  "shareCopied": {
+    "message": "Сілтеме көшірілді"
+  },
+  "rep_fixed_q": {
+    "message": "Сайт түзелді ме?"
+  },
+  "rep_fixed_yes": {
+    "message": "Иә, жұмыс істейді"
+  },
+  "rep_fixed_no": {
+    "message": "Жоқ, әлі бұзық"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Жұмыс істегеніне қуаныштымыз. Төменде бізге хабарласаңыз, есепте қай түзету көмектескені көрсетіледі, сөйтіп сайтты бәрі үшін түзете аламыз."
+  },
+  "rep_fixed_next": {
+    "message": "Келесісін байқап көріңіз: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Онда, өтінеміз, төменде бізге хабарлаңыз: сайтты қарап шығамыз."
+  },
+  "rep_webmail": {
+    "message": "Пошта бағдарламасы жоқ па? Есепті көшіріп, веб-поштаңыздан $1 мекенжайына жіберіңіз."
+  },
+  "blk_mistake": {
+    "message": "Бұл қате деп ойлайсыз ба? Бізге хабарлаңыз"
+  },
+  "welTest": {
+    "message": "Тест бетінде жұмысын көріңіз"
   }
 }

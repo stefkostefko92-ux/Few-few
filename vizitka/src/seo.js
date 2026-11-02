@@ -34,19 +34,23 @@ const postalAddress = {
   addressCountry: COMPANY.addressCountry,
 };
 
-// Дата на последна промяна на статичните страници (за sitemap lastmod).
-export const SITE_UPDATED = '2026-09-18';
+// Дата на последна РЕАЛНА промяна на всяка статична страница (sitemap lastmod).
+// По страница, не една обща: обща дата „мести“ всички адреси при всяка промяна и Google
+// спира да ѝ вярва. Сменяй датата само когато съдържанието на страницата се промени.
+export const PAGE_UPDATED = { home: '2026-09-25', privacy: '2026-09-25', terms: '2026-08-02' };
 
 export function robotsTxt(base) {
-  // Приватните/не-SEO пътища (RFC 9309: специфична група НЕ наследява правилата на `*`,
-  // затова ги повтаряме и за AI-обучаващите ботове по-долу).
+  // Не-страници (крайни точки, файлове, редиректи) — RFC 9309: специфична група НЕ
+  // наследява правилата на `*`, затова ги повтаряме и за AI-обучаващите ботове по-долу.
+  //
+  // /login, /register, /dashboard, /forgot, /reset и /p/*/print НАРОЧНО не са тук:
+  // те носят `noindex` (мета + X-Robots-Tag), а Disallow пречи на Google да ВИДИ
+  // noindex. Входът и регистрацията са свързани от менюто на всяка страница, затова
+  // Google ги откриваше, не можеше да ги обходи и ги държеше като „Блокирано от
+  // robots.txt“ (Search Console, 2026-10-22). С noindex отпадат чисто от индекса.
   const disallow = [
-    'Disallow: /dashboard',
-    'Disallow: /login',
-    'Disallow: /register',
     'Disallow: /b/', // клик-редиректи на банери
     'Disallow: /api/', // печатно API
-    'Disallow: /p/*/print', // печатни страници (нямат SEO стойност)
     'Disallow: /p/*/wallet', // портфейл файлове (лични, не за индексиране)
     'Disallow: /v1/', // Apple Wallet update web service
     'Disallow: /mcp', // конекторът за AI асистенти — крайна точка, не страница
@@ -127,14 +131,18 @@ const xmlEsc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').rep
 // Google игнорира <priority>, затова не го генерираме.
 export function sitemapXml(base) {
   const urls = [
-    { loc: `${base}/`, lastmod: SITE_UPDATED },
+    { loc: `${base}/`, lastmod: PAGE_UPDATED.home },
     // Наръчникът — всяка страница носи собствената си дата на промяна, не общата.
     ...GUIDES.map((g) => ({ loc: `${base}/${g.slug}`, lastmod: g.updated })),
-    { loc: `${base}/privacy`, lastmod: SITE_UPDATED },
-    { loc: `${base}/terms`, lastmod: SITE_UPDATED },
+    { loc: `${base}/privacy`, lastmod: PAGE_UPDATED.privacy },
+    { loc: `${base}/terms`, lastmod: PAGE_UPDATED.terms },
   ];
   const profiles = db
-    .prepare('SELECT slug, updated_at FROM profiles WHERE is_public = 1 ORDER BY updated_at DESC')
+    // Само визитките, които собственикът САМ е публикувал (по подразбиране са скрити —
+    // чл. 25(2) ОРЗД); скритата от админ има is_public=0, но я изключваме и изрично.
+    .prepare(
+      'SELECT slug, updated_at FROM profiles WHERE is_public = 1 AND hidden_by_admin = 0 ORDER BY updated_at DESC'
+    )
     .all();
   for (const p of profiles) {
     urls.push({ loc: `${base}/p/${p.slug}`, lastmod: p.updated_at.slice(0, 10) });

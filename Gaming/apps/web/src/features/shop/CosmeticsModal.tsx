@@ -4,7 +4,7 @@ import { makeCustomCosmeticId, type CosmeticType, type GameKey } from "@aso/shar
 import { Badge, Button, Modal } from "../../ui";
 import { ApiError, api, type CosmeticView } from "../../lib/api";
 import { useAuthStore, useCosmeticsModal, useCosmeticsStore, useStoreModal } from "../../lib/store";
-import { GAME_CATALOG } from "../lobby/games";
+import { gameTitle } from "../lobby/games";
 
 const TYPE_ORDER: CosmeticType[] = ["FELT", "CARDBACK", "BOARD", "CUE", "ESTATE"];
 const VIP_TIERS = ["SILVER", "GOLD", "PLATINUM"];
@@ -38,7 +38,7 @@ export function CosmeticsModal() {
   }, [game, t]);
 
   if (!game) return null;
-  const title = GAME_CATALOG.find((g) => g.key === game)?.title ?? game;
+  const title = gameTitle(t, game);
 
   async function buy(item: CosmeticView) {
     if (!game) return;

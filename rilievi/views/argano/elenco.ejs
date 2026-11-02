@@ -1,0 +1,94 @@
+<%
+  // „Calcolo argano“ в менюто: търсенето на уредбата (картите и изчисленията без карта) и записаните
+  // изчисления. Намерена карта води към изчислението ѝ (попълнено от картата); хидравличната — без връзка.
+  const showAzienda = aziende.length > 0;
+  const nome = (r) => [r.matricola ? t('argano.matricola') + ' ' + r.matricola : '', r.numeroImpianto ? t('argano.nImpianto').replace(/ /g, ' ') + ' ' + r.numeroImpianto : ''].filter(Boolean).join(' · ');
+  const base = '/calcolo-argano' + (aziendaFilter ? '?azienda=' + encodeURIComponent(aziendaFilter) : '');
+%><%- include('../partials/top', { titleKey }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('argano.elenco.titolo') %></h1>
+    <p class="page-head__sub"><%= t('argano.elenco.sottotitolo') %></p>
+  </div>
+  <% if (puoNuovo) { %><a class="btn btn--primary" href="/calcolo-argano/nuovo"><%- include('../partials/icon', { name: 'plus' }) %><%= t('argano.elenco.nuovo') %></a><% } %>
+</div>
+<div class="stack-gap">
+<form class="da-scheda__cerca" method="get" action="/calcolo-argano" role="search">
+  <label class="visually-hidden" for="f-cerca"><%= t('argano.elenco.cerca') %></label>
+  <input class="input" id="f-cerca" name="q" type="search" maxlength="100" placeholder="<%= t('argano.elenco.cerca') %>" value="<%= ricerca ? ricerca.query : '' %>">
+  <button class="btn" type="submit"><%- include('../partials/icon', { name: 'search' }) %><%= t('argano.elenco.cercaBtn') %></button>
+</form>
+<% if (ricerca) { %>
+  <% if (ricerca.schede.length === 0 && ricerca.liberi.length === 0) { %>
+  <div class="empty" role="status">
+    <p><strong><%= t('argano.elenco.nessuno', { q: ricerca.query }) %></strong></p>
+    <% if (puoNuovo) { %><p><a class="btn" href="/calcolo-argano/nuovo?da=<%= encodeURIComponent(ricerca.query) %>"><%- include('../partials/icon', { name: 'plus' }) %><%= t('argano.elenco.nuovoPer', { q: ricerca.query }) %></a></p><% } %>
+  </div>
+  <% } %>
+  <% if (ricerca.schede.length > 0) { %>
+  <section class="argano-elenco" aria-labelledby="h-schede">
+    <h2 class="section__title" id="h-schede"><%= t('argano.elenco.schede') %></h2>
+    <ul class="da-scheda__risultati" role="list">
+      <% for (const row of ricerca.schede) { %><li><% if (row.idraulico) { %><div class="da-scheda__risultato argano-elenco__spento"><% } else { %><a class="da-scheda__risultato" href="/schede/<%= row.id %>/calcolo-argano"><% } %>
+        <strong><%= nome(row) || t('cartelli.daScheda.senzaNumero') %></strong>
+        <span><% for (const seg of row.segmenti) { %><% if (seg.hit) { %><mark><%= seg.text %></mark><% } else { %><%= seg.text %><% } %><% } %></span>
+        <span class="muted"><%= row.idraulico ? t('argano.elenco.idraulico') : row.calcolo ? t('argano.elenco.calcolato', { quando: fmt.dateTime(row.calcolo) }) : t('argano.elenco.daCalcolare') %><% if (showAzienda) { %> · <%= row.azienda.name %><% } %></span>
+      <% if (row.idraulico) { %></div><% } else { %></a><% } %></li>
+      <% } %>
+    </ul>
+    <% if (ricerca.schedeTotale > ricerca.schede.length) { %><p class="muted"><%= t('argano.elenco.altreSchede', { n: ricerca.schedeTotale - ricerca.schede.length }) %></p><% } %>
+  </section>
+  <% } %>
+  <% if (ricerca.liberi.length > 0) { %>
+  <section class="argano-elenco" aria-labelledby="h-liberi">
+    <h2 class="section__title" id="h-liberi"><%= t('argano.elenco.liberi') %></h2>
+    <ul class="da-scheda__risultati" role="list">
+      <% for (const row of ricerca.liberi) { %><li><a class="da-scheda__risultato" href="<%= row.href %>">
+        <strong><%= row.indirizzo || '—' %></strong>
+        <% if (nome(row)) { %><span><%= nome(row) %></span><% } %>
+        <span class="muted"><%= t('argano.elenco.calcolato', { quando: fmt.dateTime(row.updatedAt) }) %><% if (showAzienda) { %> · <%= row.aziendaName %><% } %></span>
+      </a></li>
+      <% } %>
+    </ul>
+    <% if (ricerca.liberiTotale > ricerca.liberi.length) { %><p class="muted"><%= t('argano.elenco.altriLiberi', { n: ricerca.liberiTotale - ricerca.liberi.length }) %></p><% } %>
+  </section>
+  <% } %>
+  <% if (puoNuovo && (ricerca.schede.length > 0 || ricerca.liberi.length > 0)) { %><p><a href="/calcolo-argano/nuovo?da=<%= encodeURIComponent(ricerca.query) %>"><%= t('argano.elenco.nuovoPer', { q: ricerca.query }) %></a></p><% } %>
+<% } else { %>
+  <section class="argano-elenco" aria-labelledby="h-salvati">
+    <h2 class="section__title" id="h-salvati"><%= t('argano.elenco.salvati') %></h2>
+    <% if (showAzienda) { %><%- include('../partials/azienda-filter', { action: '/calcolo-argano' }) %><% } %>
+    <% if (page.rows.length === 0) { %>
+    <div class="empty">
+      <p><strong><%= t('argano.elenco.vuoto') %></strong></p>
+      <p class="muted"><%= t('argano.elenco.vuotoHint') %></p>
+    </div>
+    <% } else { %>
+    <table class="table table--stack">
+      <caption class="visually-hidden"><%= t('argano.elenco.salvati') %></caption>
+      <thead>
+        <tr>
+          <th scope="col"><%= t('argano.elenco.colonna.impianto') %></th>
+          <th scope="col"><%= t('argano.elenco.colonna.dati') %></th>
+          <th scope="col"><%= t('argano.elenco.colonna.salvato') %></th>
+          <th scope="col"><%= t('argano.elenco.colonna.autore') %></th>
+          <% if (showAzienda) { %><th scope="col"><%= t('scheda.field.azienda') %></th><% } %>
+        </tr>
+      </thead>
+      <tbody>
+        <% for (const row of page.rows) { %><tr>
+          <td class="wide" data-label="<%= t('argano.elenco.colonna.impianto') %>"><a class="row-link" href="<%= row.href %>"><%= row.indirizzo || nome(row) || '—' %></a><% if (row.indirizzo && nome(row)) { %><br><span class="muted"><%= nome(row) %></span><% } %></td>
+          <td data-label="<%= t('argano.elenco.colonna.dati') %>"><%= row.conScheda ? t('argano.elenco.conScheda') : t('argano.elenco.senzaScheda') %></td>
+          <td class="date" data-label="<%= t('argano.elenco.colonna.salvato') %>"><%= fmt.dateTime(row.updatedAt) %></td>
+          <td data-label="<%= t('argano.elenco.colonna.autore') %>"><%= row.autore || '—' %></td>
+          <% if (showAzienda) { %><td data-label="<%= t('scheda.field.azienda') %>"><%= row.aziendaName %></td><% } %>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+    <%- include('../partials/pager', { base, page: page.page, pages: page.pages }) %>
+    <% } %>
+  </section>
+<% } %>
+</div>
+<%- include('../partials/bottom') %>

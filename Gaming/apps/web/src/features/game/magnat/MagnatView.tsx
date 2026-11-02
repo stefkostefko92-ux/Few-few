@@ -101,6 +101,9 @@ export function MagnatView({ title }: { title: string }) {
   };
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
+  // Фаза „DEBT“: първото неплатено задължение (длъжникът избира какво да ликвидира).
+  const debt = state?.phase === "DEBT" ? (state.debts?.[0] ?? null) : null;
+  const creditorName = (to: number | null) => (to === null ? t("magnat.bank") : name(to));
   const pending = state?.pendingBuy ?? null;
   const myProps = state ? BOARD.map((_, i) => i).filter((i) => isOwnable(i) && state.owner[i] === seat) : [];
 
@@ -162,6 +165,14 @@ export function MagnatView({ title }: { title: string }) {
           return {
             text: t("magnat.potBanner", { name: name(ev.seat), amount: ev.amount }),
             tone: ev.seat === seat ? "win" : "brass",
+          };
+        case "DEBT":
+          return {
+            text:
+              ev.seat === seat
+                ? t("magnat.debtBannerYou", { amount: ev.amount })
+                : t("magnat.debtBanner", { name: name(ev.seat), amount: ev.amount }),
+            tone: ev.seat === seat ? "loss" : "brass",
           };
         case "BANKRUPT":
           return { text: t("magnat.bankruptBanner", { name: name(ev.seat) }), tone: ev.seat === seat ? "loss" : "brass" };
@@ -326,11 +337,28 @@ export function MagnatView({ title }: { title: string }) {
                       {state.trade.want.cash ? ` + ${state.trade.want.cash}` : ""}
                     </p>
                   </div>
+                ) : debt ? (
+                  <p className="mag-hint">
+                    {t("magnat.debtWaiting", { name: name(debt.debtor), amount: debt.amount, to: creditorName(debt.to) })}
+                  </p>
                 ) : (
                   <p className="mag-hint">
                     {state.done ? t("magnat.gameOver") : t("magnat.turnHint", { name: name(state.turn) })}
                   </p>
                 )
+              ) : debt ? (
+                <div className="mag-trade-resp" role="alert">
+                  <p className="mag-hint">
+                    {t("magnat.debtTitle", { amount: debt.amount, to: creditorName(debt.to) })}
+                  </p>
+                  <p className="mag-trade-line">{t("magnat.debtCash", { cash: state.cash[seat] ?? 0 })}</p>
+                  <p className="mag-trade-line">{t("magnat.debtHint")}</p>
+                  <div className="mag-btns">
+                    <Button onClick={() => send({ type: "PAY_DEBT" })} disabled={!has("PAY_DEBT")}>
+                      {t("magnat.payDebt", { amount: debt.amount })}
+                    </Button>
+                  </div>
+                </div>
               ) : state.phase === "ROLL" ? (
                 <div className="mag-btns">
                   {has("JAIL_CARD") ? <Button onClick={() => send({ type: "JAIL_CARD" })}>{t("magnat.jailCard")}</Button> : null}

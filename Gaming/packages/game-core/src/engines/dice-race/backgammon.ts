@@ -8,7 +8,15 @@ import {
 import type { SeededRng } from "../../kernel/rng.js";
 
 /**
- * Backgammon / Табла (dice-race pattern, §7.2). Open information (board + dice
+ * Табла — „обикновена табла“ (Портес), най-играният вариант в България
+ * (dice-race pattern, §7.2). Мач до N точки (3/5/7, по подразбиране 5):
+ *   - обикновена победа = 1 точка, **марс** (противникът не е изнесъл нито един
+ *     пул) = 2 точки; капия ×3 и зар за удвояване в България не се играят;
+ *   - първата игра се открива с начално хвърляне (по един зар, по-високият
+ *     започва с тези два зара); всяка следваща игра — нова начална позиция и
+ *     пръв хвърля (и двата зара) ПОБЕДИТЕЛЯТ от предишната игра;
+ *   - мачът свършва, щом някой стигне целта; `score` отчита мача.
+ * Open information (board + dice
  * are public), so `redact` is a no-op; all randomness is the dice, drawn from
  * the seeded RNG (opening roll in init, then ROLL) → provably fair via
  * commit-reveal. The game opens with the standard opening roll: one die per
@@ -29,26 +37,46 @@ export interface BackgammonState {
   bar: [number, number]; // checkers on the bar [white, black]
   off: [number, number]; // borne-off checkers [white, black]
   turn: Seat;
-  phase: "ROLL" | "MOVE" | "DOUBLE";
+  phase: "ROLL" | "MOVE";
   dice: number[]; // dice rolled this turn (2, or 4 on doubles)
   remaining: number[]; // dice values not yet consumed
   /** Opening roll [white die, black die] — present only during the first turn. */
   openingRoll?: [number, number];
-  /** Doubling cube value: 1 → 2 → 4 → 8 → 16 → 32 → 64. */
-  cube: number;
-  /** Seat that owns the cube (may propose the next double); null = centered. */
-  cubeOwner: Seat | null;
-  /** Set when a player wins by a dropped double (concession); null otherwise. */
+  /** Мачът: до колко точки, текущ резултат [бели, черни] и поредна игра (от 1). */
+  match: BackgammonMatch;
+  /** Последната завършила игра в мача (за UI); null преди първата. */
+  lastGame: { winner: Seat; points: number; mars: boolean } | null;
+  /** Победител в МАЧА; null, докато мачът тече. */
   winner: Seat | null;
+}
+
+export interface BackgammonMatch {
+  target: number;
+  score: [number, number];
+  game: number;
+}
+
+/** Сесийна настройка от лобито: до колко точки е мачът. */
+export interface BackgammonConfig {
+  matchTo?: number;
+}
+
+/** Позволените дължини на мача (избор в лобито). */
+export const BACKGAMMON_MATCH_TARGETS = [3, 5, 7] as const;
+export const DEFAULT_BACKGAMMON_MATCH_TO = 5;
+
+/** Валидира конфигурацията от клиента — непознато → по подразбиране (5). */
+export function resolveBackgammonMatchTo(config: unknown): number {
+  const v = (config as BackgammonConfig | null | undefined)?.matchTo;
+  return (BACKGAMMON_MATCH_TARGETS as readonly number[]).includes(v as number)
+    ? (v as number)
+    : DEFAULT_BACKGAMMON_MATCH_TO;
 }
 
 export type BackgammonAction =
   | { type: "ROLL" }
   | { type: "MOVE"; from: number | "BAR"; die: number }
-  | { type: "PASS" }
-  | { type: "DOUBLE" }
-  | { type: "TAKE" }
-  | { type: "DROP" };
+  | { type: "PASS" };
 
 export type BackgammonEvent =
   | { type: "ROLL"; seat: Seat; dice: number[] }
@@ -56,28 +84,17 @@ export type BackgammonEvent =
   | { type: "HIT"; seat: Seat; point: number }
   | { type: "PASS"; seat: Seat }
   | { type: "BEAR_OFF"; seat: Seat; from: number }
-  /** A player offers to double the stake; `value` is the proposed new cube. */
-  | { type: "DOUBLE"; seat: Seat; value: number }
-  /** The double is accepted; `value` is the new (doubled) cube. */
-  | { type: "TAKE"; seat: Seat; value: number }
-  /** The double is declined — the offerer wins the current stake. */
-  | { type: "DROP"; seat: Seat }
-  | { type: "WIN"; seat: Seat; points: number };
+  /** Край на една игра в мача: точки (1, или 2 при марс) и новият резултат. */
+  | { type: "GAME_WIN"; seat: Seat; points: number; mars: boolean; score: [number, number] }
+  /** Нова игра в мача — пръв хвърля победителят от предишната. */
+  | { type: "NEW_GAME"; game: number; seat: Seat }
+  /** Край на мача. */
+  | { type: "WIN"; seat: Seat; score: [number, number] };
 
 const WHITE = 0;
 const BLACK = 1;
 const dir = (seat: Seat): 1 | -1 => (seat === WHITE ? -1 : 1); // index delta toward off
 const opponent = (seat: Seat): 0 | 1 => (seat === WHITE ? BLACK : WHITE);
-
-/** May `seat` offer a double now? Requires ownership (or a centered cube). */
-function canDouble(s: BackgammonState, seat: Seat): boolean {
-  return (
-    s.phase === "ROLL" &&
-    seat === s.turn &&
-    s.cube < 64 &&
-    (s.cubeOwner === null || s.cubeOwner === seat)
-  );
-}
 
 function startingPoints(): number[] {
   const p = new Array<number>(24).fill(0);
@@ -120,13 +137,6 @@ function allHome(s: BackgammonState, seat: 0 | 1): boolean {
 
 const pipToOff = (seat: Seat, i: number): number => (seat === WHITE ? i + 1 : 24 - i);
 
-/** Total pips the seat must still travel to bear off all checkers (bar = 25). */
-function pipCount(s: BackgammonState, seat: 0 | 1): number {
-  let pip = s.bar[seat] * 25;
-  for (let i = 0; i < 24; i++) pip += ownCount(s, i, seat) * pipToOff(seat, i);
-  return pip;
-}
-
 function canBearOff(s: BackgammonState, seat: 0 | 1, from: number, die: number): boolean {
   if (!allHome(s, seat)) return false;
   const need = pipToOff(seat, from);
@@ -165,7 +175,10 @@ function rawMoves(s: BackgammonState): Array<{ from: number | "BAR"; die: number
   return out;
 }
 
-/** Apply one move to a shallow board copy for max-dice lookahead (own pieces). */
+/** Apply one move to a board copy for max-dice lookahead. Ползва СЪЩАТА логика
+ *  като реалния ход (`placeAt`): ударът по чужд самотен пул го праща на бара —
+ *  иначе сборът давал 0 и ударилият пул „изчезвал“, а правилото за максимален
+ *  брой зарове / по-големия зар се смятало по грешна позиция. */
 function simulate(
   s: BackgammonState,
   mv: { from: number | "BAR"; die: number },
@@ -174,13 +187,12 @@ function simulate(
   const seat = s.turn as 0 | 1;
   if (mv.from === "BAR") {
     next.bar[seat] -= 1;
-    const entry = barEntry(seat, mv.die);
-    next.points[entry] = (next.points[entry] ?? 0) + (seat === WHITE ? 1 : -1);
+    placeAt(next, barEntry(seat, mv.die), seat);
   } else {
-    next.points[mv.from] = (next.points[mv.from] ?? 0) + (seat === WHITE ? -1 : 1);
+    removeFromPoint(next, mv.from, seat);
     const dest = destOf(seat, mv.from, mv.die);
     if (dest === "OFF") next.off[seat] += 1;
-    else next.points[dest] = (next.points[dest] ?? 0) + (seat === WHITE ? 1 : -1);
+    else placeAt(next, dest, seat);
   }
   const di = next.remaining.indexOf(mv.die);
   if (di >= 0) next.remaining.splice(di, 1);
@@ -228,8 +240,8 @@ function clone(s: BackgammonState): BackgammonState {
     phase: s.phase,
     dice: [...s.dice],
     remaining: [...s.remaining],
-    cube: s.cube,
-    cubeOwner: s.cubeOwner,
+    match: { target: s.match.target, score: [s.match.score[0], s.match.score[1]], game: s.match.game },
+    lastGame: s.lastGame ? { ...s.lastGame } : null,
     winner: s.winner,
   };
   if (s.openingRoll) next.openingRoll = [s.openingRoll[0], s.openingRoll[1]];
@@ -259,19 +271,26 @@ function endTurn(s: BackgammonState): void {
   delete s.openingRoll; // the opening turn is over
 }
 
-/** Match points for the winner: 1, gammon = 2, backgammon = 3. */
+/** Точки за спечелената игра: 1, марс (загубилият не е изнесъл нито един пул) = 2. */
 function winPoints(s: BackgammonState, winner: 0 | 1): number {
-  const loser = winner === WHITE ? BLACK : WHITE;
-  if (s.off[loser] > 0) return 1;
-  const inWinnerHome =
-    winner === WHITE
-      ? s.points.slice(0, 6).some((v) => v < 0)
-      : s.points.slice(18, 24).some((v) => v > 0);
-  return s.bar[loser] > 0 || inWinnerHome ? 3 : 2;
+  return s.off[opponent(winner)] > 0 ? 1 : 2;
+}
+
+/** Нова игра в мача: начална позиция, пръв хвърля `starter` (и двата зара). */
+function resetBoard(s: BackgammonState, starter: Seat): void {
+  s.points = startingPoints();
+  s.bar = [0, 0];
+  s.off = [0, 0];
+  s.turn = starter;
+  s.phase = "ROLL";
+  s.dice = [];
+  s.remaining = [];
+  delete s.openingRoll;
+  s.match.game += 1;
 }
 
 export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, BackgammonEvent> = {
-  init(_opts: InitOpts, rng: SeededRng): BackgammonState {
+  init(opts: InitOpts, rng: SeededRng): BackgammonState {
     // Opening roll: each player throws one die, the higher roller starts and
     // plays exactly those two dice (re-rolled on a tie, so never doubles).
     let d1 = rng.die();
@@ -289,24 +308,16 @@ export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, Bac
       dice: [d1, d2],
       remaining: [d1, d2],
       openingRoll: [d1, d2],
-      cube: 1,
-      cubeOwner: null,
+      match: { target: resolveBackgammonMatchTo(opts.config), score: [0, 0], game: 1 },
+      lastGame: null,
       winner: null,
     };
   },
 
   legalActions(state, seat) {
     if (backgammonEngine.isTerminal(state)) return [];
-    // An offered double is answered by the OTHER player (TAKE / DROP).
-    if (state.phase === "DOUBLE") {
-      return seat === opponent(state.turn) ? [{ type: "TAKE" }, { type: "DROP" }] : [];
-    }
     if (seat !== state.turn) return [];
-    if (state.phase === "ROLL") {
-      const acts: BackgammonAction[] = [{ type: "ROLL" }];
-      if (canDouble(state, seat)) acts.push({ type: "DOUBLE" });
-      return acts;
-    }
+    if (state.phase === "ROLL") return [{ type: "ROLL" }];
     const moves = movesFor(state);
     if (moves.length === 0) return [{ type: "PASS" }];
     return moves.map((m) => ({ type: "MOVE", from: m.from, die: m.die }));
@@ -315,33 +326,7 @@ export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, Bac
   reduce(state, action, rng: SeededRng) {
     const seat = state.turn as 0 | 1;
 
-    if (action.type === "DOUBLE") {
-      if (!canDouble(state, seat)) throw new IllegalActionError("Cannot double now");
-      const next = clone(state);
-      next.phase = "DOUBLE";
-      return { state: next, events: [{ type: "DOUBLE", seat, value: next.cube * 2 }] };
-    }
-
-    if (action.type === "TAKE" || action.type === "DROP") {
-      if (state.phase !== "DOUBLE") throw new IllegalActionError("No double to answer");
-      const responder = opponent(seat); // the offerer is `seat` (the turn holder)
-      const next = clone(state);
-      if (action.type === "TAKE") {
-        next.cube *= 2;
-        next.cubeOwner = responder; // ownership passes to the taker
-        next.phase = "ROLL"; // the offerer still owes their roll
-        return { state: next, events: [{ type: "TAKE", seat: responder, value: next.cube }] };
-      }
-      // DROP: the offerer wins the current (un-doubled) stake outright.
-      next.winner = seat;
-      return {
-        state: next,
-        events: [
-          { type: "DROP", seat: responder },
-          { type: "WIN", seat, points: next.cube },
-        ],
-      };
-    }
+    if (state.winner !== null) throw new IllegalActionError("Match over");
 
     if (action.type === "ROLL") {
       if (state.phase !== "ROLL") throw new IllegalActionError("Not in ROLL phase");
@@ -394,7 +379,22 @@ export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, Bac
     if (idx >= 0) next.remaining.splice(idx, 1);
 
     if (next.off[seat] === 15) {
-      events.push({ type: "WIN", seat, points: winPoints(next, seat) * next.cube });
+      // Край на играта: точки в мача; мачът свършва при целта, иначе нова игра.
+      const points = winPoints(next, seat);
+      const mars = points === 2;
+      next.match.score[seat] += points;
+      next.lastGame = { winner: seat, points, mars };
+      const score: [number, number] = [next.match.score[0], next.match.score[1]];
+      events.push({ type: "GAME_WIN", seat, points, mars, score });
+      if (next.match.score[seat] >= next.match.target) {
+        next.winner = seat;
+        next.dice = [];
+        next.remaining = [];
+        events.push({ type: "WIN", seat, score });
+      } else {
+        resetBoard(next, seat); // пръв хвърля победителят от предишната игра
+        events.push({ type: "NEW_GAME", game: next.match.game, seat });
+      }
     } else if (next.remaining.length === 0 || movesFor(next).length === 0) {
       endTurn(next);
     }
@@ -403,19 +403,21 @@ export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, Bac
   },
 
   isTerminal(state) {
-    return state.off[0] === 15 || state.off[1] === 15 || state.winner !== null;
+    return state.winner !== null;
   },
 
   score(state): SeatScore[] {
-    const winner = (state.winner ?? (state.off[0] === 15 ? WHITE : BLACK)) as 0 | 1;
-    const loser = opponent(winner);
-    // A bear-off win multiplies gammon/backgammon by the cube; a dropped double
-    // concedes exactly the current cube value (no gammon multiplier).
-    const points =
-      state.off[winner] === 15 ? winPoints(state, winner) * state.cube : state.cube;
+    if (state.winner === null) {
+      return [
+        { seat: 0, result: "draw" },
+        { seat: 1, result: "draw" },
+      ];
+    }
+    const winner = state.winner;
+    // Спечелен мач = 1 (наградите не зависят от дължината или от марсовете).
     return [
-      { seat: winner, result: "win", points },
-      { seat: loser, result: "loss", points: 0 },
+      { seat: winner, result: "win", points: 1 },
+      { seat: opponent(winner), result: "loss", points: 0 },
     ];
   },
 
@@ -428,24 +430,8 @@ export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, Bac
    *  otherwise advances the rearmost checker. Beats uniform-random by a mile. */
   bot(state, seat) {
     if (backgammonEngine.isTerminal(state)) return null;
-    // Answer an offered double: take from any reasonable position, drop only
-    // when hopelessly behind on the pip count.
-    if (state.phase === "DOUBLE") {
-      if (seat !== opponent(state.turn)) return null;
-      const me = pipCount(state, seat as 0 | 1);
-      const them = pipCount(state, opponent(seat));
-      return me <= them * 1.6 ? { type: "TAKE" } : { type: "DROP" };
-    }
     if (seat !== state.turn) return null;
-    if (state.phase === "ROLL") {
-      // Conservative: only double from a clear pip lead and a still-low cube.
-      if (canDouble(state, seat)) {
-        const me = pipCount(state, seat as 0 | 1);
-        const them = pipCount(state, opponent(seat as 0 | 1));
-        if (state.cube <= 4 && me * 3 <= them * 2) return { type: "DOUBLE" };
-      }
-      return { type: "ROLL" };
-    }
+    if (state.phase === "ROLL") return { type: "ROLL" };
     const actions = backgammonEngine.legalActions(state, seat) as BackgammonAction[];
     const moves = actions.filter((a): a is Extract<BackgammonAction, { type: "MOVE" }> => a.type === "MOVE");
     if (moves.length === 0) return { type: "PASS" };

@@ -3,6 +3,7 @@
 // SVG графики. Нула външни ресурси — самодостатъчно (добро за CSP и Netlify).
 
 import { esc } from './format.js';
+import { keywordsPagina } from './seo.js';
 
 /**
  * Точка от графика: `[година, стойност]` (масив от 2 числа — избягва
@@ -33,6 +34,7 @@ import { esc } from './format.js';
  * @property {Record<string, unknown>|null} [jsonld]
  * @property {string} [ogType]
  * @property {boolean} [noindex]
+ * @property {string[]} [keywords] специфичните ключови думи (допълват се до ≥5 с „Carbon Stealth")
  */
 
 export const CSS = `
@@ -365,7 +367,7 @@ export function siteUrl() {
  * @param {PageOpts} opts
  * @returns {string}
  */
-export function page({ title, active, rel = '', body, description = '', canonical = null, jsonld = null, ogType = 'website', noindex = false }) {
+export function page({ title, active, rel = '', body, description = '', canonical = null, jsonld = null, ogType = 'website', noindex = false, keywords = [] }) {
   const nav = NAV.map(
     ([href, label]) =>
       `<a href="${rel}${href}"${active === href ? ' aria-current="page"' : ''}>${label}</a>`
@@ -405,6 +407,7 @@ export function page({ title, active, rel = '', body, description = '', canonica
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d131a">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
+<meta name="keywords" content="${esc(keywordsPagina(keywords.length ? keywords : [title.split(' — ')[0]]).join(', '))}">
 ${meta}
 <script>/* Анти-FOUC: слага записания ръчен избор ПРЕДИ първия paint, за да няма
 мигане на грешната тема. Единственият blocking script в head — само за темата. */

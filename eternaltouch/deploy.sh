@@ -13,7 +13,10 @@ cd "$SCRIPT_DIR"
 DOMAIN="eternaltouch.it"
 WWW_DOMAIN="www.eternaltouch.it"
 ADMIN_EMAIL="info@eternaltouch.it"
-VPS_IP="178.104.77.242"
+# The server's own public IPv4, detected at run time (the source address of the
+# default route). A hard-coded IP went stale when the VPS was replaced and made the
+# DNS check below warn on a perfectly correct record. Override with VPS_IP=… .
+VPS_IP="${VPS_IP:-$(ip -4 route get 1.1.1.1 2>/dev/null | sed -n 's/.* src \([0-9.]*\).*/\1/p')}"
 
 banner() {
   echo ""

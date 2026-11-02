@@ -97,7 +97,11 @@ const GET_ROUTES = [
   '/api/webserver/coverage',
   '/api/jobs/няма-такава-задача', '/api/webserver/site?file=/etc/nginx/nginx.conf',
   '/api/env/file?path=/tmp/csd-няма.env', '/api/files/read?path=/etc/hostname',
-  '/api/settings/peer', '/api/agent/actions', '/api/agent/proposals', '/api/agent/proposals/0123456789abcdef', '/api/agent/key',
+  '/api/files/info?path=/etc/hostname&hash=1', '/api/files/du?path=/tmp', '/api/files/search?root=/tmp&q=csd',
+  '/api/files/trash', '/api/files/download?path=/etc/hostname&check=1', '/api/files/big?root=/tmp&minMb=50&days=0',
+  '/api/machine', '/api/machine/packages?q=bash', '/api/machine/packages/search?q=htop', '/api/machine/packages/remove-plan?name=htop',
+  '/api/machine/timezones',
+  '/api/selfcheck', '/api/settings/peer', '/api/agent/actions', '/api/agent/proposals', '/api/agent/proposals/0123456789abcdef', '/api/agent/key',
   // `/api/domains/preflight` съзнателно НЕ влиза: прави реален DNS + HTTP навън и
   // би направил теста зависим от мрежата в CI. Проверява се ръчно/в браузър.
 ];

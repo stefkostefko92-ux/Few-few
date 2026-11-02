@@ -15,27 +15,30 @@ import { OutOfChips } from "./OutOfChips";
 // Game views pull in heavy WebGL/3D scene code (three.js). Lazy-load them so the
 // lobby/shell bundle stays small; each game's chunk loads only when entered.
 type ViewProps = { title: string };
-const titled = (p: Promise<Record<string, ComponentType<ViewProps>>>, name: string) =>
-  lazy(() => p.then((m) => ({ default: m[name]! })));
+// The loader is a THUNK: `import()` must run inside lazy()'s factory. Passing an
+// already-started promise (the old signature) fetched every game chunk the
+// moment this module loaded — i.e. on every route, even /login.
+const titled = (load: () => Promise<Record<string, ComponentType<ViewProps>>>, name: string) =>
+  lazy(() => load().then((m) => ({ default: m[name]! })));
 
-const ChessView = titled(import("./chess/ChessView"), "ChessView");
-const SantaseView = titled(import("./santase/SantaseView"), "SantaseView");
-const BeloteView = titled(import("./belote/BeloteView"), "BeloteView");
-const SvaraView = titled(import("./svara/SvaraView"), "SvaraView");
-const KentView = titled(import("./kent/KentView"), "KentView");
-const BridgeView = titled(import("./bridge/BridgeView"), "BridgeView");
-const WarView = titled(import("./war/WarView"), "WarView");
-const RummyView = titled(import("./rummy/RummyView"), "RummyView");
-const GoFishView = titled(import("./gofish/GoFishView"), "GoFishView");
-const DraughtsView = titled(import("./draughts/DraughtsView"), "DraughtsView");
-const BackgammonView = titled(import("./backgammon/BackgammonView"), "BackgammonView");
-const LudoView = titled(import("./ludo/LudoView"), "LudoView");
-const BattleshipView = titled(import("./battleship/BattleshipView"), "BattleshipView");
-const DiceView = titled(import("./dice/DiceView"), "DiceView");
-const BingoView = titled(import("./bingo/BingoView"), "BingoView");
-const WordsView = titled(import("./words/WordsView"), "WordsView");
-const DominoView = titled(import("./domino/DominoView"), "DominoView");
-const MagnatView = titled(import("./magnat/MagnatView"), "MagnatView");
+const ChessView = titled(() => import("./chess/ChessView"), "ChessView");
+const SantaseView = titled(() => import("./santase/SantaseView"), "SantaseView");
+const BeloteView = titled(() => import("./belote/BeloteView"), "BeloteView");
+const SvaraView = titled(() => import("./svara/SvaraView"), "SvaraView");
+const KentView = titled(() => import("./kent/KentView"), "KentView");
+const BridgeView = titled(() => import("./bridge/BridgeView"), "BridgeView");
+const WarView = titled(() => import("./war/WarView"), "WarView");
+const RummyView = titled(() => import("./rummy/RummyView"), "RummyView");
+const GoFishView = titled(() => import("./gofish/GoFishView"), "GoFishView");
+const DraughtsView = titled(() => import("./draughts/DraughtsView"), "DraughtsView");
+const BackgammonView = titled(() => import("./backgammon/BackgammonView"), "BackgammonView");
+const LudoView = titled(() => import("./ludo/LudoView"), "LudoView");
+const BattleshipView = titled(() => import("./battleship/BattleshipView"), "BattleshipView");
+const DiceView = titled(() => import("./dice/DiceView"), "DiceView");
+const BingoView = titled(() => import("./bingo/BingoView"), "BingoView");
+const WordsView = titled(() => import("./words/WordsView"), "WordsView");
+const DominoView = titled(() => import("./domino/DominoView"), "DominoView");
+const MagnatView = titled(() => import("./magnat/MagnatView"), "MagnatView");
 const GenericGameView = lazy(() =>
   import("./generic/GenericGameView").then((m) => ({ default: m.GenericGameView })),
 );

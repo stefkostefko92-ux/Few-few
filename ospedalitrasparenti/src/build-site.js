@@ -345,8 +345,6 @@ async function main() {
 
   // Профили на изпълнителите („segui il fornitore“)
   let paginaForn = 0;
-  /** @type {string[]} */
-  const fornituraCfs = [];
   if (fornAgg.size) {
     await mkdir(join(SITE_DIR, 'fornitore'), { recursive: true });
     const fornList = [...fornAgg.values()].sort((a, b) => b.valore - a.valore);
@@ -362,7 +360,6 @@ async function main() {
         // без рискови флагове, noindex, извън sitemap (правен одит)
         const societa = eSocietaDiCapitali(f.den);
         await writeFile(join(SITE_DIR, 'fornitore', `${f.cf}.html`), renderFornitore({ f, aziendeIdx, societa, coppie: societa ? coiByCf.get(f.cf) || [] : [], strutturaHref: (/** @type {string} */ cod) => `../struttura/${cod}-${slugByCod.get(cod)}.html` }));
-        if (societa) fornituraCfs.push(f.cf);
         paginaForn++;
       }
       idxRows.push(/** @type {[string, string, number, number, number, number]} */ ([f.cf, f.den, f.valore, f.n, f.perOsp.size, haPagina ? 1 : 0]));
@@ -682,81 +679,11 @@ async function main() {
   datasets.sort((a, b) => (b.bytes || 0) - (a.bytes || 0));
   await writeFile(join(SITE_DIR, 'dati.html'), renderDati({ datasets, validaz, generatoIl: (validaz && validaz.generatoIl) || new Date().toISOString() }));
 
-  // Откриваемост: sitemap.xml + robots.txt (само при зададен siteUrl)
+  // Откриваемост: sitemap (индекс + секции) + robots.txt се пишат от src/seo-site.js —
+  // финален проход върху готовия site/ (само индексируеми, самоканонични страници,
+  // реален lastmod). Тук остават IndexNow ключът и llms.txt.
   const su = siteUrl();
   if (su) {
-    const oggi = new Date().toISOString().slice(0, 10);
-    const paths = [
-      'index.html',
-      'inchiesta.html',
-      'classifiche.html',
-      'regioni.html',
-      'strutture.html',
-      'segnalazioni.html',
-      'dati.html',
-      'metodologia.html',
-      'note-legali.html',
-      'privacy.html',
-      ...(appalti ? ['appalti.html'] : []),
-      ...(coi ? ['conflitti.html'] : []),
-      ...(validaz ? ['verifiche.html'] : []),
-      ...(paginaCerca ? ['cerca.html'] : []),
-      ...(paginaForn ? ['fornitori.html'] : []),
-      'approfondimenti.html',
-      'tendenze.html',
-      'top-contratti.html',
-      'categorie.html',
-      'dove.html',
-      'glossario.html',
-      'guida-verifica.html',
-      'segnalare.html',
-      'pagella.html',
-      ...(appalti ? ['pnrr.html'] : []),
-      'storie.html',
-      'aggiornamenti.html',
-      'pagamenti.html',
-      'personale.html',
-      'mobilita.html',
-      'fine-anno.html',
-      ...(sto ? ['storico.html'] : []),
-      ...(apparecchiature ? ['apparecchiature.html'] : []),
-      ...(sdo ? ['sdo.html'] : []),
-      ...(aggiu ? ['aggiudicazioni.html'] : []),
-      ...(ted ? ['ted.html'] : []),
-      ...(cons ? ['consulenze.html'] : []),
-      ...(pnrrSalute ? ['pnrr-salute.html'] : []),
-      ...((await stat(join(SITE_DIR, 'siope.html')).catch(() => null)) ? ['siope.html'] : []),
-      ...((await stat(join(SITE_DIR, 'pne.html')).catch(() => null)) ? ['pne.html'] : []),
-      ...(cordate ? ['cordate.html'] : []),
-      ...(segGare ? ['segnali-gare.html'] : []),
-      'confronta.html',
-      'api.html',
-      'accessibilita.html',
-      ...STORIE.map((s) => `storia/${s.slug}.html`),
-      ...regioniData.map((r) => `regione/${r.key}.html`),
-      ...enti.map((e) => `struttura/${e.codice}-${slugByCod.get(e.codice)}.html`),
-      ...fornituraCfs.map((cf) => `fornitore/${cf}.html`),
-    ];
-    /** @param {string} p */
-    const prio = (p) => (p === 'index.html' ? '1.0' : p.includes('/') ? '0.6' : '0.8');
-    // lastmod = датата на снапшота на ДАННИТЕ (не на билда) — иначе всеки билд
-    // „подновява" 4400 адреса и lastmod губи доверие (SEO одит)
-    const lastmod = (validaz && validaz.generatoIl ? validaz.generatoIl : new Date().toISOString()).slice(0, 10);
-    void oggi;
-    const urls = paths
-      // home → каноничен корен `/` (не `/index.html`) — иначе sitemap се разминава с canonical.
-      .map((p) => `<url><loc>${esc(`${su}/${p === 'index.html' ? '' : p}`)}</loc><lastmod>${lastmod}</lastmod><priority>${prio(p)}</priority></url>`)
-      .join('\n');
-    await writeFile(
-      join(SITE_DIR, 'sitemap.xml'),
-      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
-    );
-    // allow-all е съзнателно: гражданска цел → искаме и AI асистентите да ни
-    // намират и цитират (извличащи + обучаващи ботове са допуснати нарочно)
-    await writeFile(
-      join(SITE_DIR, 'robots.txt'),
-      `# Ospedali Trasparenti — dati aperti sulla sanità pubblica italiana.\n# L'accesso è consentito a tutti i crawler, inclusi i bot AI (ricerca e training):\n# la finalità civica del progetto è massimizzare la diffusione dei dati.\nUser-agent: *\nAllow: /\n\nSitemap: ${su}/sitemap.xml\n`
-    );
     // IndexNow ключов файл (за верификация от Bing/Yandex при push на нови URL-и).
     // Съдържанието Е самият ключ; сервира се на https://<host>/<key>.txt.
     if (config.indexNowKey && /^[a-f0-9]{8,128}$/i.test(config.indexNowKey)) {
@@ -780,7 +707,7 @@ async function main() {
         .filter(Boolean)
         .join('\n')}\n\n## Nota\n\nGli indicatori sono elaborazioni statistiche automatiche su dati ufficiali:\npiste da verificare, non prove né accuse.\n`
     );
-    console.log(`Sitemap: ${paths.length} адреса → sitemap.xml + robots.txt + llms.txt (${su})`);
+    console.log(`IndexNow ключ + llms.txt (${su}); sitemap/robots → src/seo-site.js`);
   }
   // OG картата (мета изображение за споделяния) — статичен асет
   await copyFile(pjoin(ROOT, 'assets', 'og.png'), join(SITE_DIR, 'og.png')).catch(() => {});

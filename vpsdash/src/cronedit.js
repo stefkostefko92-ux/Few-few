@@ -64,7 +64,15 @@ export async function readCrontab() {
 export async function parseCrontab() {
   const { lines, exists, available } = await readCrontab();
   if (!available) return { available: false, exists: false, lines: [], jobs: [] };
+  return { available: true, exists, lines, jobs: parseCronLines(lines) };
+}
+
+// Чиста функция (тества се без crontab). Коментарът над задачата е НЕЙН само ако
+// е единичен ред точно отгоре — така го пише `addCronJob`. Многоредов блок
+// (заглавката на Ubuntu „# Edit this file…") не е етикет на първата задача.
+export function parseCronLines(lines) {
   const jobs = [];
+  const isComment = (n) => n >= 0 && String(lines[n] || '').trim().startsWith('#');
   lines.forEach((raw, i) => {
     const line = raw.trim();
     if (!line || line.startsWith('#')) return;
@@ -82,9 +90,14 @@ export async function parseCrontab() {
       schedule = m[1].trim();
       command = m[2].trim();
     }
-    jobs.push({ index: i, schedule, command, raw });
+    const job = { index: i, schedule, command, raw };
+    if (isComment(i - 1) && !isComment(i - 2)) {
+      job.comment = lines[i - 1].trim().replace(/^#\s?/, '');
+      job.commentIndex = i - 1;
+    }
+    jobs.push(job);
   });
-  return { available: true, exists, lines, jobs };
+  return jobs;
 }
 
 async function installCrontab(lines, audit, user, meta) {
@@ -122,7 +135,9 @@ export async function removeCronJob(index, audit, user) {
   const { lines, jobs } = await parseCrontab();
   const job = jobs.find((j) => j.index === i);
   if (!job) throw Object.assign(new Error('Няма такъв ред'), { status: 400 });
-  const out = lines.filter((_, n) => n !== i);
+  // Заедно с етикета си: иначе коментарът остава сираче и „надписва" следващия
+  // ред (видяно в лабораторията — три „# лабораторен ред" над чужда задача).
+  const out = lines.filter((_, n) => n !== i && n !== job.commentIndex);
   return installCrontab(out, audit, user, { op: 'remove', schedule: job.schedule });
 }
 

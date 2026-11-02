@@ -5,6 +5,7 @@
 import { esc, euroCompact, numeroIt, percentualeIt } from '../lib/format.js';
 import { page, kpi, siteUrl } from '../lib/site-ui.js';
 import { briciole, collezioneLd } from '../lib/site-shared.js';
+import { fornitoreIndicizzabile, descrizioneFornitore, keywordsPerPercorso } from '../lib/seo.js';
 
 /** @typedef {import('../lib/models.js').AppMatch} AppMatch */
 /** @typedef {import('../lib/models.js').CoiCoppia} CoiCoppia */
@@ -90,6 +91,17 @@ export function renderFornitore({ f, aziendeIdx, societa = true, coppie = [], st
   // имена в наименованието (ditta individuale, SNC/SAS) — правен одит
   const flagConc = societa && osp.length >= 3 && osp[0].valore / f.valore > 0.6;
   const flagSg = societa && f.n >= 5 && quotaSg > 0.7;
+  // „In sintesi" — уникален текст само от данните на профила (без оценки)
+  /** @param {string|undefined} d @returns {string|null} */
+  const dataIt = (d) => (d && /^\d{4}-\d{2}-\d{2}/.test(d) ? `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}` : null);
+  const date = f.top.map((c) => c.data).filter((d) => d && /^\d{4}-\d{2}-\d{2}/.test(d)).sort();
+  const regioni = [...new Set(osp.map((o) => o.reg).filter(Boolean))];
+  const primo = dataIt(date[0]);
+  const ultimo = dataIt(date[date.length - 1]);
+  const sintesi = `<p><strong>In sintesi.</strong> ${primo && ultimo && primo !== ultimo ? `Tra il ${primo} e il ${ultimo} ` : primo ? `Il ${primo} ` : ''}${esc(f.den)}
+ha ottenuto ${f.n === 1 ? 'un contratto pubblico' : `${numeroIt(f.n)} contratti pubblici`} da ${f.perOsp.size === 1 ? 'un’azienda sanitaria' : `${numeroIt(f.perOsp.size)} aziende sanitarie`}${regioni.length === 1 ? ` della regione ${esc(regioni[0])}` : regioni.length > 1 ? ` di ${numeroIt(regioni.length)} regioni` : ''},
+per un valore messo a gara di ${euroCompact(f.valore)}.${osp.length > 1 && f.valore > 0 ? ` Il committente principale è ${esc(osp[0].nome)} (${percentualeIt(osp[0].valore / f.valore)} del valore).` : ''}
+${f.n > 0 ? `La quota di contratti affidati senza gara è ${percentualeIt(quotaSg)}.` : ''}</p>`;
   const body = `
 <a class="backlink" href="../fornitori.html">← Tutti i fornitori</a>
 <h1>${esc(f.den)}</h1>
@@ -103,6 +115,7 @@ export function renderFornitore({ f, aziendeIdx, societa = true, coppie = [], st
 <div class="note">Essere un fornitore rilevante del SSN è <strong>pienamente legittimo</strong>. Questi dati mostrano
 <em>dove</em> e <em>come</em> l’operatore ha ottenuto contratti pubblici (2023–2025); non implicano alcuna irregolarità.
 Importi = valore messo a gara. Ogni riga è verificabile tramite il CIG su ANAC.</div>
+${sintesi}
 ${flagSg ? `<div class="seg alta"><div class="t"><span class="badge alta">!</span> <span>Quota elevata di affidamenti senza gara</span></div><div class="d">Il ${percentualeIt(quotaSg)} dei suoi contratti è stato affidato senza confronto competitivo. Indicatore da verificare, non prova.</div></div>` : ''}
 ${flagConc ? `<div class="seg media"><div class="t"><span class="badge media">i</span> <span>Concentrato su poche aziende</span></div><div class="d">Oltre il 60% del valore proviene da una sola azienda (${esc(osp[0].nome)}).</div></div>` : ''}
 ${coppie.length ? `<div class="seg ${coppie.some((p) => p.gravita === 'alta') ? 'alta' : 'media'}"><div class="t"><span class="badge ${coppie.some((p) => p.gravita === 'alta') ? 'alta' : 'media'}">!</span> <span>Relazioni ricorrenti da verificare</span></div><div class="d">Con ${coppie.length === 1 ? `<strong>${esc((aziendeIdx[coppie[0].codice] || [coppie[0].denominazione])[0] || coppie[0].denominazione)}</strong>` : `${coppie.length} aziende`} questo fornitore presenta indicatori di relazione ricorrente (${[...new Set(coppie.flatMap((p) => p.flags))].join(', ')}): affidamenti diretti ripetuti, dipendenza o esclusiva. Spesso hanno spiegazioni legittime (brevetti, monopoli tecnici). → <a href="../conflitti.html">La pagina delle relazioni ricorrenti</a></div></div>` : ''}
@@ -141,11 +154,14 @@ Ritieni un dato inesatto o vuoi fornire contesto? <a href="../note-legali.html#r
     : null;
   return page({
     title: `${f.den} — fornitore del SSN — Ospedali Trasparenti`,
-    description: `Contratti pubblici di ${f.den} con le aziende sanitarie italiane: valore, aziende, procedure.`,
+    description: descrizioneFornitore({ den: f.den, n: numeroIt(f.n), nAziende: numeroIt(f.perOsp.size), valore: euroCompact(f.valore), quotaSenzaGara: percentualeIt(quotaSg) }),
     active: 'fornitori.html',
     rel: '../',
     canonical: `fornitore/${f.cf}.html`,
-    noindex: !societa,
+    keywords: keywordsPerPercorso(`fornitore/${f.cf}.html`, f.den),
+    // noindex: лични имена (GDPR) ИЛИ тънък профил под прага (GSC „Crawled – not
+    // indexed"): страницата остава за хората, но не влиза в индекса/sitemap
+    noindex: !societa || !fornitoreIndicizzabile({ n: f.n, nAziende: f.perOsp.size }),
     jsonld: jsonldForn,
     body,
   });
@@ -157,8 +173,10 @@ Ritieni un dato inesatto o vuoi fornire contesto? <a href="../note-legali.html#r
  */
 export function renderFornitoriIndex({ righe, totali }) {
   // righe: [cf, den, valore, n, nOsp, haPagina]
+  // първите 4000 по стойност + ВСИЧКИ с профил (иначе профилите с малки суми
+  // оставаха сираци — само в sitemap, без нито една вътрешна връзка)
   const rows = righe
-    .slice(0, 4000)
+    .filter((r, i) => i < 4000 || r[5])
     .map((r) => {
       const nome = r[5] ? `<a href="fornitore/${esc(r[0])}.html">${esc(r[1])}</a>` : esc(r[1]);
       return `<tr data-t="${esc(String(r[1]).toLowerCase())}"><td>${nome}</td>
@@ -187,7 +205,7 @@ persone fisiche non sono elencati.</p>
   <thead><tr><th scope="col">Fornitore</th><th class="num" scope="col">Valore aggiudicato</th><th class="num" scope="col">Contratti</th><th class="num" scope="col">Aziende</th></tr></thead>
   <tbody id="rows">${rows}</tbody>
 </table></div>
-<p class="small muted">Mostrati i primi 4.000 per valore. I nomi collegati hanno una scheda dedicata (imprese con ≥ 3 contratti o ≥ 500.000 €).
+<p class="small muted">Mostrati i primi 4.000 per valore e tutte le imprese con scheda. I nomi collegati hanno una scheda dedicata (imprese con ≥ 3 contratti o ≥ 500.000 €).
 A tutela della riservatezza delle persone fisiche (GDPR), gli operatori individuali non sono mai nominati e le imprese
 la cui denominazione contiene nomi di persona (ditte individuali, S.n.c./S.a.s.) sono escluse dagli indicatori di
 rischio e non compaiono tra i <a href="conflitti.html">rapporti ricorrenti</a>.</p>

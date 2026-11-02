@@ -1,0 +1,25 @@
+<%
+  // Иконките за печата в края на формата (src/allegati/stampa.ts, `gruppiScelta`): готовите снимки по
+  // разделите в реда на фирмата, с отметка — отметнатите излизат в края на печата и PDF-а, и от раздел
+  // извън листа (белегът `data-esclusa`, решение на собственика). `fotoMostrate` — кои са показани:
+  // записът пипа само тях. Парчето се сменя след качване или изтриване (stampa-foto.js,
+  // `/schede/<id>/foto-stampa`) и пази отметнатото, още незаписано. „Tutte“ и „Nessuna“ — с JavaScript.
+  const base = '/schede/' + scheda.id + '/allegati/';
+  const ids = fotoStampa.gruppi.flatMap((g) => g.foto.map((a) => a.id));
+%><div class="foto-stampa" data-foto-stampa="/schede/<%= scheda.id %>/foto-stampa" data-msg-conteggio="<%= t('allegati.stampa.conteggio') %>">
+  <input type="hidden" name="fotoMostrate" value="<%= ids.join(' ') %>">
+  <% if (!ids.length) { %><p class="foto-stampa__vuoto"><%= t('allegati.stampa.nessuna') %></p>
+  <% } else { %><div class="foto-stampa__azioni" data-foto-azioni hidden>
+    <button class="btn btn--sm" type="button" data-foto-tutte><%= t('allegati.stampa.tutte') %></button>
+    <button class="btn btn--sm btn--ghost" type="button" data-foto-nessuna><%= t('allegati.stampa.nessunaAzione') %></button>
+    <span class="foto-stampa__conteggio" data-foto-conteggio aria-live="polite"></span>
+  </div>
+  <% for (const g of fotoStampa.gruppi) { %><div class="foto-stampa__gruppo" role="group" aria-labelledby="fs-<%= g.key %>" data-sezione="<%= g.key %>"<% if (g.esclusa) { %> data-esclusa<% } %>>
+    <p class="foto-stampa__titolo" id="fs-<%= g.key %>"><%= g.title %><span class="foto-stampa__esclusa"> (<%= t('allegati.stampa.esclusa') %>)</span></p>
+    <ul class="foto-stampa__lista">
+      <% for (const a of g.foto) { %><li><label class="foto-stampa__voce"><input type="checkbox" name="fotoStampa" value="<%= a.id %>"<% if (fotoStampa.scelte.has(a.id)) { %> checked<% } %>><img src="<%= base + a.id %>?riquadro=1" alt="<%= a.didascalia || t('allegati.foto', { nome: a.nomeOriginale }) %>" width="96" height="72" loading="lazy" decoding="async"><span class="foto-stampa__segno" aria-hidden="true"></span></label></li>
+      <% } %>
+    </ul>
+  </div>
+  <% } } %>
+</div>

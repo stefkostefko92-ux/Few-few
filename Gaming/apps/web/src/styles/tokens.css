@@ -1,13 +1,13 @@
 /* tokens.css — АСО design tokens (concept §3.2). Single source of truth.
    Tailwind theme (tailwind.config.js) references these CSS variables. */
 :root {
-  /* Surfaces — deep cosmos indigo (palette derived from the galaxy hero art).
-     Hue ~230° navy base, keeping the old felt L-steps so contrast holds. */
-  --felt-900: #0b0f24; /* darkest — deep space */
-  --felt-800: #141a38;
-  --felt-700: #1e2750; /* active surface */
-  --felt-glow: #3a4a86; /* indigo halo under cards */
-  --charcoal-900: #070a18; /* near-black indigo */
+  /* Surfaces — опушен дъб от залата на Рейвънхолд (същият свят като масите и
+     сайта). Запазени са L-стъпките на предишната палитра, за да не пада контрастът. */
+  --felt-900: #120d09; /* най-тъмно — сянката на залата */
+  --felt-800: #1d150e;
+  --felt-700: #2b1f14; /* активна повърхност */
+  --felt-glow: #5a4028; /* топъл ореол под картите */
+  --charcoal-900: #0a0705;
   --wood-800: #2a1c12; /* table edge (wood) — unchanged */
 
   /* Brass / gold accents — matches the golden core of the galaxy */
@@ -41,7 +41,7 @@
   --ink-100: #f6f1e4;
   --ink-200: #e2d7bf;
   --ink-300: #cdbfa3;
-  --ink-muted: #9aa0b8; /* cool indigo-grey, 7.31:1 on felt-900 (WCAG AA) */
+  --ink-muted: #ac9f86; /* топъл пергамент, 7.41:1 върху felt-900 и 6.16:1 върху felt-700 (WCAG AA) */
 
   /* Radii / shadows / motion */
   --r-card: 14px;

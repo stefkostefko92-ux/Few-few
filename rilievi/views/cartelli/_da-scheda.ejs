@@ -1,0 +1,34 @@
+<%
+  // Новата табела от картата на уредбата (routes/cartelli-nuovo.ts): избраната карта — или търсенето ѝ
+  // (отделна GET форма, преди формата на табелата: формите не се влагат). Без карта — полетата долу.
+  const nome = (s) => [s.matricola ? t('cartelli.daScheda.matricola', { m: s.matricola }) : '', s.numeroImpianto ? t('cartelli.daScheda.numero', { n: s.numeroImpianto }) : ''].filter(Boolean).join(' · ') || s.indirizzo || '—';
+%><section class="da-scheda" aria-labelledby="h-da-scheda">
+  <h2 class="section__title" id="h-da-scheda"><%= t('cartelli.daScheda.titolo') %></h2>
+  <% if (scheda) { %>
+  <div class="da-scheda__scelta">
+    <p><strong><%= nome(scheda) %></strong><% if (scheda.indirizzo && (scheda.matricola || scheda.numeroImpianto)) { %><br><span class="muted"><%= scheda.indirizzo %></span><% } %><% if (scheda.aziendaName) { %><br><span class="muted"><%= scheda.aziendaName %></span><% } %></p>
+    <p class="da-scheda__azioni"><a href="/schede/<%= scheda.id %>" target="_blank" rel="noopener"><%= t('cartelli.daScheda.apri') %></a> <a href="/cartelli/nuovo"><%= t('cartelli.daScheda.cambia') %></a></p>
+  </div>
+  <% } else { %>
+  <p class="muted"><%= t('cartelli.daScheda.testo') %></p>
+  <form class="da-scheda__cerca" method="get" action="/cartelli/nuovo" role="search">
+    <label class="visually-hidden" for="f-scheda"><%= t('cartelli.daScheda.cerca') %></label>
+    <input class="input" id="f-scheda" name="cerca" type="search" maxlength="100" placeholder="<%= t('cartelli.daScheda.cerca') %>" value="<%= ricerca ? ricerca.query : '' %>"<% if (errors.scheda) { %> aria-invalid="true" aria-describedby="err-scheda"<% } %>>
+    <button class="btn" type="submit"><%- include('../partials/icon', { name: 'search' }) %><%= t('cartelli.daScheda.cercaBtn') %></button>
+  </form>
+  <% if (errors.scheda) { %><p class="field__error" id="err-scheda"><%= t('cartelli.daScheda.nonDisponibile') %></p><% } %>
+  <% if (ricerca) { %>
+  <% if (ricerca.rows.length === 0) { %><p class="muted" role="status"><%= t('cartelli.daScheda.nessuna') %></p><% } else { %>
+  <ul class="da-scheda__risultati" role="list">
+    <% for (const row of ricerca.rows) { %><li><a class="da-scheda__risultato" href="/cartelli/nuovo?scheda=<%= row.id %>">
+      <strong><%= nome(row) %></strong>
+      <span><% for (const seg of row.segmenti) { %><% if (seg.hit) { %><mark><%= seg.text %></mark><% } else { %><%= seg.text %><% } %><% } %></span>
+      <span class="muted"><%= fmt.day(row.data) %><% if (aziende.length > 1) { %> · <%= row.azienda.name %><% } %></span>
+    </a></li>
+    <% } %>
+  </ul>
+  <% if (ricerca.total > ricerca.rows.length) { %><p class="muted"><%= t('cartelli.daScheda.altre', { n: ricerca.total - ricerca.rows.length }) %></p><% } %>
+  <% } %>
+  <% } %>
+  <% } %>
+</section>

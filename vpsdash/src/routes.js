@@ -1,5 +1,6 @@
 // Всички API маршрути + защитите: сесия/Bearer, CSRF маркер, одит.
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import { Router, sendJson, sendError, readJson, parseCookies, openSse, clientIp } from './httpd.js';
 import {
   hashPassword,
@@ -44,6 +45,9 @@ import * as cronedit from './cronedit.js';
 import * as domains from './domains.js';
 import { readRaw, handleGithub } from './webhook.js';
 import * as posture from './posture.js';
+import * as selfcheck from './selfcheck.js';
+import * as fileops from './fileops.js';
+import * as machine from './machine.js';
 import * as investigate from './investigate.js';
 import { AccessLogReader, discoverLogs } from './accesslog.js';
 import { drillSpec, backupAge } from './drill.js';
@@ -83,7 +87,7 @@ const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.14.0';
+export const VERSION = '1.17.1';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -91,7 +95,7 @@ export const PEER_DENY = [
   /^\/api\/terminal\//,
   /^\/api\/pty(\/|$)/,
   /^\/api\/power$/,
-  /^\/api\/files\/(read|write)$/,
+  /^\/api\/files(\/|$)/, // файловете на машината — не на съседа (дори списъкът носи имена)
   /^\/api\/deploy\//,
   /^\/api\/firewall\//,
   /^\/api\/webserver\/site$/,
@@ -167,6 +171,7 @@ export const AGENT_ALLOW = [
   ['GET', /^\/api\/deploy\/state$/],
   ['GET', /^\/api\/logs\/analyze$/],
   ['GET', /^\/api\/security\/posture$/],
+  ['GET', /^\/api\/selfcheck$/],
   ['GET', /^\/api\/agent\/actions$/],
   ['GET', /^\/api\/agent\/proposals(\/[0-9a-f]{16})?$/],
   ['POST', /^\/api\/agent\/proposals$/],
@@ -178,7 +183,9 @@ export const PEER_ALLOW = [/^\/api\/audit\/mirror$/, /^\/api\/backups\/offsite\/
 // контрол над ТАЗИ машина, не право да я ползваш като прокси към трети възел с
 // НЕГОВИЯ жетон (confused deputy, верижи /api/nodes/B/api/nodes/C/…), нито да
 // решаваш колко ти се доверява тя — обхватът е решение на човека ТУК.
-export const PEER_NEVER = [/^\/api\/nodes(\/|$)/, /^\/api\/settings\/peer$/];
+// SSH ключовете са смяна на ДОВЕРИЕТО като peer настройката: ключ, добавен през
+// съседа, е root достъп тук, даден от машина, а не от човек пред тази.
+export const PEER_NEVER = [/^\/api\/nodes(\/|$)/, /^\/api\/settings\/peer$/, /^\/api\/machine\/ssh-keys(\/|$)/];
 
 // Кой човек стои зад заявка от съседа. Проксито на другия възел го слага като
 // `потребител@възел`, след като е проверило НЕГОВАТА сесия и sudo; тук само го
@@ -479,7 +486,7 @@ export function buildRouter(ctx) {
   r.get('/api/ping', (req, res) => {
     const who = auth(req);
     if (!who) return sendError(res, 401, 'unauthorized');
-    sendJson(res, 200, { ok: true, nodeId: cfg.nodeId, nodeName: cfg.nodeName, version: VERSION });
+    sendJson(res, 200, { ok: true, nodeId: cfg.nodeId, nodeName: cfg.nodeName, version: VERSION, instance: nodes.INSTANCE });
   });
 
   r.post('/api/login', async (req, res) => {
@@ -1240,7 +1247,7 @@ export function buildRouter(ctx) {
         const fresh = await reclaim.reclaimable(cfg);
         const item = fresh.items.find((i) => i.id === b.id);
         if (!item) throw Object.assign(new Error('Няма такава категория (или вече е чиста).'), { status: 400 });
-        return jobs.start(reclaim.reclaimSpec(item.id, item), { user: req.user });
+        return jobs.start(reclaim.reclaimSpec(item.id, item, cfg), { user: req.user });
       }),
       { mutating: true }
     )
@@ -1304,11 +1311,52 @@ export function buildRouter(ctx) {
   r.get('/api/backups', guard(J(() => system.backupsInfo(cfg))));
   r.get('/api/cron', guard(J(() => system.cronInfo())));
 
-  // ── Файлове (само четене) ──────────────────────────────────────────────────
-  r.get('/api/files', guard(J((req, res, p, url) => files.listDir(url.searchParams.get('path')))));
+  // ── Файлове ────────────────────────────────────────────────────────────────
+  // Четене: списък, преглед, инфо, размер, търсене. Промени: всяка иска sudo
+  // (SUDO_ON_WRITE) и влиза в одита; правилата за пътищата са в fileops.js.
+  r.get(
+    '/api/files',
+    guard(
+      J((req, res, p, url) => {
+        const out = files.listDir(url.searchParams.get('path'), { owners: fileops.owners() });
+        const hidden = fileops.sandboxNote(out.path);
+        return hidden ? { ...out, sandboxHidden: hidden } : out;
+      })
+    )
+  );
   r.get(
     '/api/files/read',
     guard(J((req, res, p, url) => files.readFilePreview(url.searchParams.get('path'), audit, req.user)))
+  );
+  r.get('/api/files/info', guard(J((req, res, p, url) => fileops.info(url.searchParams.get('path'), { hash: url.searchParams.get('hash') === '1' }))));
+  r.get('/api/files/du', guard(J((req, res, p, url) => fileops.dirSize(url.searchParams.get('path')))));
+  r.get('/api/files/search', guard(J((req, res, p, url) => fileops.search(url.searchParams.get('root'), url.searchParams.get('q')))));
+  r.get(
+    '/api/files/big',
+    guard(
+      J((req, res, p, url) => {
+        const q = url.searchParams;
+        return fileops.bigFiles(q.get('root') || '/', { minMb: Number(q.get('minMb') || 100), days: Number(q.get('days') ?? 30) }, cfg);
+      })
+    )
+  );
+  r.get('/api/files/trash', guard(J(() => fileops.trashList(cfg))));
+  // Сваляне: в SUDO_ALWAYS (като четенето — root чете всичко). `check=1` е
+  // същият път без тялото: интерфейсът първо отключва sudo по него, после отваря
+  // връзката (навигацията на браузъра не може да покаже диалога за парола).
+  r.get(
+    '/api/files/download',
+    guard((req, res, params, url) => {
+      const p = url.searchParams.get('path');
+      try {
+        const plan = fileops.downloadPlan(p, { isSensitive: files.isSensitive, secretDirs: files.secretDirs() });
+        if (url.searchParams.get('check') === '1') return sendJson(res, 200, { ok: true, dir: plan.dir, sizeBytes: plan.sizeBytes ?? null });
+        fileops.streamDownload(plan, res);
+        audit.log({ action: 'file.download', path: plan.path, dir: plan.dir, excluded: plan.excludes?.length ? plan.excludes : undefined, user: req.user });
+      } catch (e) {
+        return sendError(res, e.status || (e.code === 'ENOENT' ? 404 : 400), e.message);
+      }
+    })
   );
 
   r.post(
@@ -1316,7 +1364,85 @@ export function buildRouter(ctx) {
     guard(
       J(async (req) => {
         const b = await readJson(req);
+        if (b.create) fileops.assertCreatable(b.path, cfg);
         return files.writeFile(b.path, b.content, { create: Boolean(b.create) }, audit, req.user);
+      }),
+      { mutating: true }
+    )
+  );
+  r.post('/api/files/mkdir', guard(J(async (req) => fileops.mkdir((await readJson(req)).path, cfg, audit, req.user)), { mutating: true }));
+  r.post(
+    '/api/files/upload',
+    guard(
+      J((req, res, p, url) => fileops.receiveUpload(req, cfg, url.searchParams.get('dir'), url.searchParams.get('name'), { overwrite: url.searchParams.get('overwrite') === '1' }, audit, req.user)),
+      { mutating: true }
+    )
+  );
+  r.post('/api/files/rename', guard(J(async (req) => { const b = await readJson(req); return fileops.rename(b.from, b.to, cfg, audit, req.user); }), { mutating: true }));
+  r.post(
+    '/api/files/copy',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = fileops.copySpec(b.from, b.to, cfg);
+        audit.log({ action: 'file.copy', from: b.from, to: spec.args[3], user: req.user });
+        return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/files/delete',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const paths = (Array.isArray(b.paths) ? b.paths : [b.path]).slice(0, 200);
+        const done = [];
+        const failed = [];
+        for (const p of paths) {
+          try {
+            done.push(await fileops.toTrash(p, cfg, audit, req.user));
+          } catch (e) {
+            failed.push({ path: p, error: e.message });
+          }
+        }
+        return { trashed: done, failed };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post('/api/files/delete-forever', guard(J(async (req) => fileops.removeForever((await readJson(req)).path, cfg, audit, req.user)), { mutating: true }));
+  r.post('/api/files/trash/restore', guard(J(async (req) => fileops.trashRestore((await readJson(req)).id, cfg, audit, req.user)), { mutating: true }));
+  r.post('/api/files/trash/purge', guard(J(async (req) => fileops.trashPurge((await readJson(req)).id, cfg, audit, req.user)), { mutating: true }));
+  r.post(
+    '/api/files/chmod',
+    guard(J(async (req) => { const b = await readJson(req); return fileops.chmod(b.path, b.mode, { recursive: Boolean(b.recursive) }, cfg, audit, req.user); }), { mutating: true })
+  );
+  r.post(
+    '/api/files/chown',
+    guard(J(async (req) => { const b = await readJson(req); return fileops.chown(b.path, b.owner, b.group, { recursive: Boolean(b.recursive) }, cfg, audit, req.user); }), { mutating: true })
+  );
+  r.post(
+    '/api/files/archive',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = fileops.archiveSpec(b.paths, cfg);
+        audit.log({ action: 'file.archive', dest: spec.dest, count: spec.args.length - 5, user: req.user });
+        return { ...jobs.start(spec, { user: req.user }), dest: spec.dest };
+      }),
+      { mutating: true }
+    )
+  );
+  r.post(
+    '/api/files/extract',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = fileops.extractSpec(b.path, cfg);
+        if (spec.mkdirFirst) fs.mkdirSync(spec.dest, { recursive: true });
+        audit.log({ action: 'file.extract', archive: b.path, dest: spec.dest, user: req.user });
+        return { ...jobs.start(spec, { user: req.user }), dest: spec.dest };
       }),
       { mutating: true }
     )
@@ -2443,15 +2569,44 @@ export function buildRouter(ctx) {
   // (`PEER_NEVER`).
   r.get('/api/settings/peer', guard(J(() => ({
     scope: cfg.peerScope === 'full' ? 'full' : 'read',
-    peers: (cfg.peers || []).map((p) => ({ id: p.id, name: p.name })),
+    peers: (cfg.peers || []).map((p) => {
+      let host = null;
+      try {
+        host = new URL(p.url).host;
+      } catch {
+        /* невалиден адрес — показва се като липсващ */
+      }
+      return { id: p.id, name: p.name, host };
+    }),
     tokenSet: Boolean(cfg.peerToken),
   }))));
+  // Три отделни действия, по ЕДНО на заявка — одитът казва точно кое:
+  //   {scope}       колко се доверява този възел на съседа;
+  //   {removePeer}  махане на съсед от НАШИЯ списък (ние спираме да го викаме,
+  //                 да му пращаме бекъп и одит). Нужно, когато машината я няма —
+  //                 иначе стар DNS запис може да сочи към чужд или към нас самите;
+  //   {inbound:'off'} изтрива входящия жетон: никой не вика този панел с Bearer.
+  //                 Връща и обхвата на „read" — пълен контрол без жетон е празно
+  //                 обещание, което после се включва тихо с нов жетон.
   r.post(
     '/api/settings/peer',
     guard(
       J(async (req) => {
         humanOnly(req);
         const b = await readJson(req);
+        if (typeof b.removePeer === 'string') {
+          const list = cfg.peers || [];
+          if (!list.some((p) => p.id === b.removePeer)) throw Object.assign(new Error('Няма такъв съсед.'), { status: 404 });
+          const rest = list.filter((p) => p.id !== b.removePeer);
+          saveConfig(cfg, { peers: rest });
+          audit.log({ action: 'settings.peerRemove', peer: b.removePeer, left: rest.length, user: req.user });
+          return { ok: true, peers: rest.length };
+        }
+        if (b.inbound === 'off') {
+          saveConfig(cfg, { peerToken: '', peerScope: 'read' });
+          audit.log({ action: 'settings.peerInboundOff', user: req.user });
+          return { ok: true, tokenSet: false, scope: 'read' };
+        }
         if (b.scope !== 'read' && b.scope !== 'full') {
           throw Object.assign(new Error('Обхватът е „read" или „full".'), { status: 400 });
         }
@@ -2554,6 +2709,49 @@ export function buildRouter(ctx) {
   );
 
   // ── Federation ─────────────────────────────────────────────────────────────
+  // Проверка на панела срещу машината — след местене конфигът помни СТАРАТА.
+  r.get('/api/selfcheck', guard(J((req) => selfcheck.selfCheck(cfg, { audit, drill: ctx.drill }, req))));
+
+  // ── Машина: SSH ключове, пакети, swap, часовник ─────────────────────────────
+  r.get(
+    '/api/machine',
+    guard(
+      J(async () => {
+        const [ssh, sshd, time] = await Promise.all([machine.listKeys(), machine.sshdState(), machine.timeInfo()]);
+        return { ssh: { ...ssh, sshd }, swap: machine.swapInfo(), time };
+      })
+    )
+  );
+  r.get('/api/machine/packages', guard(J((req, res, p, url) => machine.listPackages(url.searchParams.get('q') || ''))));
+  r.get('/api/machine/packages/search', guard(J((req, res, p, url) => machine.searchAvailable(url.searchParams.get('q')))));
+  r.get('/api/machine/packages/remove-plan', guard(J((req, res, p, url) => machine.removePlan(url.searchParams.get('name')))));
+  r.get(
+    '/api/machine/timezones',
+    guard(
+      J(async () => {
+        const timezones = await machine.listTimezones();
+        return { available: Boolean(timezones), timezones: timezones || [] };
+      })
+    )
+  );
+  r.post('/api/machine/ssh-keys/add', guard(J(async (req) => machine.addKey((await readJson(req)).key, cfg, audit, req.user)), { mutating: true }));
+  r.post('/api/machine/ssh-keys/remove', guard(J(async (req) => machine.removeKey((await readJson(req)).fingerprint, cfg, audit, req.user)), { mutating: true }));
+  r.post('/api/machine/packages/install', guard(J(async (req) => jobs.start(machine.installSpec((await readJson(req)).name), { user: req.user })), { mutating: true }));
+  r.post(
+    '/api/machine/packages/remove',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return jobs.start(await machine.removeSpec(b.name, b.expect), { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+  r.post('/api/machine/swap/create', guard(J(async (req) => jobs.start(machine.createSwapSpec((await readJson(req)).sizeMb), { user: req.user })), { mutating: true }));
+  r.post('/api/machine/swap/remove', guard(J(async (req) => jobs.start(machine.removeSwapSpec(), { user: req.user })), { mutating: true }));
+  r.post('/api/machine/swap/swappiness', guard(J(async (req) => machine.setSwappiness((await readJson(req)).value, audit, req.user)), { mutating: true }));
+  r.post('/api/machine/time', guard(J(async (req) => machine.setTime(await readJson(req), audit, req.user)), { mutating: true }));
+  r.post('/api/machine/daemon-reload', guard(J((req) => machine.daemonReload(audit, req.user)), { mutating: true }));
   r.get('/api/nodes', guard(J(() => nodes.nodesStatus(cfg))));
   r.on(
     '*',

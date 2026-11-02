@@ -63,6 +63,13 @@ src/build-site.js        dataset + segnalazioni + forensics + appalti + aggiudic
                          (main() + home/strutture/struttura/segnalazioni/metodologia; старите
                          тежки render-и са изнесени в src/render/*.js — appalti, fornitori,
                          regioni, inchiesta, legal)
+src/seo-site.js          ФИНАЛЕН проход върху site/ (част от `npm run site`; сам: `npm run seo`):
+                         тънки профили на изпълнители → noindex, keywords/self-canonical ако липсват,
+                         различител при еднакви <title>, връзки за сираци, sitemap.xml = ИНДЕКС →
+                         sitemap-{pagine,strutture,fornitori}.xml (само индексируеми самоканонични),
+                         реален lastmod от data/sitemap-lastmod.json (отпечатък на <main>), robots.txt
+src/lib/seo.js           ЕДИНСТВЕН източник на SEO политиката: SOGLIA_FORNITORE (≥10 договора И ≥3
+                         възложители → индекс), keywordsPagina (≥5 + „Carbon Stealth"), sitemap XML
 src/render/              изнесени render модули (виж по-горе); всеки връща HTML стринг
 src/lib/                 http (retry/кеш/curl + ZIP magic-byte валидация), csv, dataset,
                          format, site-ui, site-shared (споделени helpers/константи +
@@ -100,10 +107,15 @@ src/lib/                 http (retry/кеш/curl + ZIP magic-byte валидац
   релативни адреси). `page()` приема `canonical`/`jsonld`; подстраниците
   (struttura/regione/fornitore) подават свой `canonical`. `setSiteUrl()` в `site-ui.js`.
 - **IndexNow:** `config.indexNowKey` → `build-site` генерира `site/<key>.txt`;
-  `src/indexnow.js` (`npm run indexnow`) чете `sitemap.xml` и POST-ва URL-ите към
-  `api.indexnow.org` (Bing/Yandex/Seznam). Вградено в `deploy_ospedali` — тича ВИНАГИ
-  след деплой. Google не поддържа IndexNow → пасивно (sitemap+robots) + еднократна
-  верификация в Search Console от собственика (виж `deploy/DEPLOY.md`).
+  `src/indexnow.js` (`npm run indexnow`) чете sitemap индекса + секциите и POST-ва към
+  `api.indexnow.org` САМО новите/променените (lastmod) и излезлите адреси — състояние в
+  `server/.state/indexnow.json`. Вградено в `deploy_ospedali` — тича след всеки деплой.
+- **Индексиране (GSC 2026-10):** ~4900 тънки профила на изпълнители в sitemap → „Crawled –
+  not indexed" и срив на целия сайт. Не връщай всички профили в sitemap; прагът е в
+  `lib/seo.js`. Пълният ETL иска сурови данни извън git → политиката се прилага и върху
+  комитнатия site/ с `npm run seo` (идемпотентно).
+- Google не поддържа IndexNow → пасивно (sitemap+robots) + еднократна верификация в
+  Search Console от собственика (виж `deploy/DEPLOY.md`).
 - Профили на изпълнителите: `pIvaValida` (11 цифри, не всички еднакви, контролна
   цифра) пази от боклучави CF; физически лица (16 знака) НЕ се профилират (GDPR).
 - Регионите: `REGIONI` в `build-site.js` (ключ=файл; `istat`=код за картата;

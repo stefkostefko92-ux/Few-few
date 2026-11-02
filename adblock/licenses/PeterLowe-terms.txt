@@ -1,0 +1,16 @@
+Peter Lowe's ad and tracking server list — the author's terms
+
+The author publishes no formal licence for the list. The list's home page,
+https://pgl.yoyo.org/adservers/ , says (checked 23 October 2026):
+
+  "Feel free to combine this list with yours or lists from other sites and put
+  it up on the web, though!"
+
+Supreme AdBlock combines the list with the other bundled lists, converted to
+the browser's blocking-rule format, on that basis. The list's own header gives
+these credits, kept here as the author wrote them:
+
+  Peter Lowe - pgl@yoyo.org - https://pgl.yoyo.org/
+
+Policy for which hostnames are listed: https://pgl.yoyo.org/adservers/policy.php
+Supporting the list: https://patreon.com/blocklist

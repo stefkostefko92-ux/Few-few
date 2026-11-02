@@ -18,6 +18,10 @@ if (window.top !== window) {
     $("host").textContent = target.hostname;
     $("why").href = "https://urlhaus.abuse.ch/browse.php?search=" + encodeURIComponent(target.hostname);
     $("why").hidden = false;
+    // a message in the user's own email app, with only the site name — nothing is sent by the extension
+    $("mistake").href = "mailto:info@carbonstealth.eu?subject=" + encodeURIComponent("Warning page: " + target.hostname) +
+      "&body=" + encodeURIComponent("Site: " + target.hostname + "\n\nWhy I think it is safe: ");
+    $("mistake").hidden = false;
     $("go").hidden = false;
     $("note").hidden = false;
   }

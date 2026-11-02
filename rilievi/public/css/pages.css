@@ -1,0 +1,299 @@
+/* Части на страниците: известия, лентата за запис, страниците за вход, копирането на връзка, логото. */
+
+.notice {
+  padding: 16px 18px;
+  border: 2px solid var(--fg);
+  border-radius: var(--radius);
+}
+
+.notice p + p,
+.notice p + .toolbar {
+  margin-top: 10px;
+}
+
+/* Лентата със „Salva“ остава под палеца, докато се попълва дългата схема — черна като горната лента.
+   Сянката с 100vmax я разпъва до ръбовете на екрана и когато формата е в тясна колона. */
+.actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 0 calc(var(--gutter) * -1);
+  padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom));
+  background: var(--bar);
+  color: var(--bar-fg);
+  border-top: 1px solid var(--bar-edge);
+  box-shadow: 0 0 0 100vmax var(--bar);
+  clip-path: inset(0 -100vmax);
+}
+
+.actions :focus-visible {
+  outline-color: var(--bar-fg);
+}
+
+.actions__hint {
+  margin-left: auto;
+  color: var(--bar-muted);
+  font-size: 0.875rem;
+}
+
+/* Входът: черният панел с марката и чертежа на шахтата вляво, формата вдясно. На телефон панелът е
+   само лента с марката. */
+.main-bare {
+  flex: 1;
+  display: flex;
+}
+
+.auth {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+}
+
+.auth__panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 24px;
+  padding: 28px clamp(24px, 4vw, 56px) 32px;
+  background: var(--bar);
+  color: var(--bar-fg);
+  border-right: 1px solid var(--bar-edge);
+}
+
+.auth__panel :focus-visible {
+  outline-color: var(--bar-fg);
+}
+
+.auth__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: start;
+  color: inherit;
+  text-decoration: none;
+}
+
+.auth__brandtext {
+  display: grid;
+  line-height: 1.1;
+}
+
+.auth__name {
+  font-family: var(--font-cond);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.auth__product {
+  font-size: 0.8125rem;
+  color: var(--bar-muted);
+}
+
+.auth__drawing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.auth__drawing .shaft {
+  height: min(64vh, 600px);
+}
+
+.auth__rule {
+  max-width: 36ch;
+  color: var(--bar-muted);
+}
+
+.auth__main {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 28px;
+  padding: 56px var(--gutter);
+}
+
+.auth__main > .flash,
+.auth__box,
+.auth__request {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth__main > .flash {
+  margin-bottom: 0;
+}
+
+.auth__box,
+.auth__form {
+  display: grid;
+  gap: 18px;
+}
+
+.auth__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.auth__request {
+  display: grid;
+  gap: 12px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.auth__request strong {
+  color: var(--fg);
+}
+
+@media (max-width: 899px) {
+  .main-bare {
+    display: block;
+  }
+
+  .auth {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .auth__panel {
+    grid-template-rows: auto;
+    gap: 6px;
+    padding: 18px var(--gutter);
+    border-right: 0;
+    border-bottom: 1px solid var(--bar-edge);
+  }
+
+  .auth__drawing {
+    display: none;
+  }
+
+  .auth__rule {
+    font-size: 0.875rem;
+  }
+
+  .auth__main {
+    padding: 36px var(--gutter) 48px;
+  }
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.copy {
+  display: flex;
+  gap: 8px;
+}
+
+.copy .input {
+  font-size: 0.9375rem;
+}
+
+/* Логото на фирмата: на бял „лист“ и в тъмната тема — то е за отпечатване върху бяла хартия, а
+   прозрачно черно лого върху черен фон би изчезнало. */
+.logo-paper {
+  display: inline-flex;
+  align-items: center;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+}
+
+.logo-paper img {
+  display: block;
+  width: auto;
+  max-width: min(320px, 100%);
+  height: auto;
+  max-height: 96px;
+}
+
+.logo-paper--thumb {
+  padding: 4px 8px;
+}
+
+.logo-paper--thumb img {
+  max-width: 120px;
+  max-height: 32px;
+}
+
+.file-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px dashed var(--field-line);
+  border-radius: var(--radius);
+  background: var(--field);
+  color: var(--fg);
+  font: inherit;
+}
+
+.file-input:hover {
+  border-color: var(--fg);
+}
+
+.file-input:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 1px;
+}
+
+.form--tight {
+  gap: 14px;
+  margin-top: 16px;
+}
+
+/* Настройките: редът на разделите — номерът, името, „нагоре/надолу“. */
+.order {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.order__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 8px 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.order__item--fixed {
+  color: var(--muted);
+}
+
+.order__name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.order__fixed,
+.order__dirty {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.order__moves {
+  display: flex;
+  gap: 6px;
+}
+
+.order__move {
+  width: 44px;
+  padding: 0;
+}
+
+.order-form .toolbar,
+.order-reset {
+  margin-top: 14px;
+}
