@@ -26,6 +26,8 @@ export const SUDO_ALWAYS = [
   // тайните в `.env`: панелът върви като root, значи /etc/shadow, ключовете в
   // /root/.ssh и всеки конфиг са на един GET разстояние.
   /^\/api\/files\/read$/,
+  // Свалянето е същото четене — само по-удобно за цяла папка.
+  /^\/api\/files\/download$/,
 ];
 
 // САМО мутации: четенето им е безобидно (кой е списъкът с адреси, какви лимити
@@ -58,6 +60,12 @@ export const SUDO_ON_WRITE = [
   // Запис на файл като root е изпълнение на код с една стъпка забавяне: пишеш
   // unit файл или скрипт, после го стартираш от „Услуги".
   /^\/api\/files\/write$/,
+  // Файловият мениджър: качване и разархивиране са запис (код с една стъпка
+  // забавяне), кошчето и окончателното изтриване — загуба, правата — достъп.
+  /^\/api\/files\/(mkdir|upload|rename|copy|delete|delete-forever|chmod|chown|archive|extract|trash\/restore|trash\/purge)$/,
+  // „Машина": ключ = root достъп; пакет = чужд код като root; swap и часовник —
+  // цялост на машината. daemon-reload не е тук: той само препрочита unit-ите.
+  /^\/api\/machine\/(ssh-keys\/(add|remove)|packages\/(install|remove)|swap\/(create|remove|swappiness)|time)$/,
   // Крон записът е същото, само отложено: ред в crontab е код, който ще се
   // изпълни като root без никого наоколо.
   /^\/api\/cron\/(add|remove|run)$/,

@@ -64,6 +64,15 @@ export function el(tag, props = {}, children = []) {
   }
   appendChildren(node, children);
   if (tag === 'button') iconize(node);
+  // Тук всяко поле е ТЕХНИЧЕСКО: команда, път, име на пакет/unit, ключ, порт.
+  // Телефонът по подразбиране пише главна първа буква и „поправя" думите — `ls`
+  // става `Ls`, `/root` — `/Root`, и командата тихо не работи. Полето, което
+  // наистина иска проза, го казва изрично (`autocapitalize: 'sentences'`).
+  if ((tag === 'input' || tag === 'textarea') && !node.hasAttribute('autocapitalize')) {
+    node.setAttribute('autocapitalize', 'none');
+    node.setAttribute('autocorrect', 'off');
+    node.spellcheck = false;
+  }
   return node;
 }
 
@@ -342,9 +351,27 @@ export function liveStream(url, { events = {}, onStatus = () => {} } = {}) {
 // ── Потвърждение за опасно действие ───────────────────────────────────────────
 // Патърнът на GitHub: бутонът стои изключен, докато не изпишеш точното име. Пази
 // от рефлекторно кликане при неща като poweroff, SIGKILL и `compose down`.
+// Изписаната дума срещу очакваната: без значение главни/малки, интервали в края
+// и Unicode формата (й може да дойде като и + кратка). Нищо повече — „изтри" не е
+// „изтрий".
+export function sameWord(typed, expect) {
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('bg');
+  return norm(typed) !== '' && norm(typed) === norm(expect);
+}
+
 export function confirmDanger({ title, what, expect, confirmLabel = 'Потвърди', delayMs = 0 }) {
   return new Promise((resolve) => {
-    const input = el('input', { type: 'text', placeholder: expect, autocomplete: 'off' });
+    // Подсказката е ДОСЛОВНО думата за изписване — преведена („delete") би пратила
+    // човека да пише нещо, което бутонът никога не приема (сравнява се с `expect`).
+    // Телефонът пише ПЪРВАТА буква главна („Изтрий") и поправя „непознатите"
+    // думи, а бутонът сравняваше буквално — на iPhone/Android НИЩО необратимо не
+    // можеше да се потвърди (видяно на живо: „Диск" не чисти нищо). Затова полето
+    // е без главни/автокорекция, а сравнението е без значение от регистъра —
+    // целта е съзнателно изписване на думата, не правопис.
+    const input = el('input', {
+      type: 'text', autocomplete: 'off', autocapitalize: 'none', autocorrect: 'off', spellcheck: 'false', enterkeyhint: 'done',
+    });
+    input.placeholder = expect;
     const btn = el('button', { class: 'btn btn-danger', text: confirmLabel, disabled: true });
     const dlg = el('dialog', { class: 'confirm-dlg' }, [
       el('h3', { text: title }),
@@ -369,9 +396,13 @@ export function confirmDanger({ title, what, expect, confirmLabel = 'Потвъ�
       }, delayMs);
     }
     const check = () => {
-      btn.disabled = timeLocked || input.value.trim() !== expect;
+      btn.disabled = timeLocked || !sameWord(input.value, expect);
     };
     input.oninput = check;
+    // „Готово" на телефонната клавиатура = натискане на бутона (ако вече е позволен).
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !btn.disabled) { e.preventDefault(); btn.click(); }
+    });
     btn.onclick = () => {
       dlg.close();
       cleanup(true);
