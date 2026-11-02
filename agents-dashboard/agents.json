@@ -14242,7 +14242,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 297
+        "lessons": 298
       },
       "evolution": [
         {
@@ -14364,9 +14364,20 @@
           "date": "2026-11-02",
           "event": "v29.3 — учене",
           "detail": "Научи: drift-lint проверява за съществуване само пътища в backticks, които започват с tools/.c… (+1 още)"
+        },
+        {
+          "version": "29.4.0",
+          "date": "2026-11-02",
+          "event": "v29.4 — учене",
+          "detail": "Научи: dod-check куката на Stop връща агента, ако пълният gate.mjs е червен, дори когато единс…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „dod-check куката на Stop връща агента, ако пълният gate.mjs е червен, дори когато единс…\""
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
