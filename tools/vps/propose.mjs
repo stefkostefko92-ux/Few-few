@@ -90,7 +90,6 @@ const DIAG = {
   deploy: '/api/deploy/state',
   logs: '/api/logs/analyze?window=60',
   posture: '/api/security/posture',
-  selfcheck: '/api/selfcheck',
 };
 
 export async function main(argv = process.argv.slice(2), env = process.env) {

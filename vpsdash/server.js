@@ -25,7 +25,6 @@ import { DiskScanStore } from './src/diskusage.js';
 import { TrafficStore } from './src/traffic.js';
 import { backupAllSpec } from './src/backups.js';
 import { ensurePanelKey } from './src/panelbackup.js';
-import { trashExpire } from './src/fileops.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -188,15 +187,6 @@ function watchDiskScan(jobId, scan) {
     diskScan.record({ ...scan, output: j.output, code: j.code });
   }, 3000);
   iv.unref?.();
-}
-
-// Кошчето на файловия мениджър се чисти само: записите над `files.trashDays`
-// (по подразбиране 7) отиват окончателно. Веднъж на час е достатъчно — кошче,
-// което никога не се изпразва, е просто втори диск, който се пълни.
-{
-  const tick = () => trashExpire(cfg, audit).catch(() => {});
-  setTimeout(tick, 60 * 1000).unref?.();
-  setInterval(tick, 60 * 60 * 1000).unref?.();
 }
 
 // Трафикът се натрупва по РАЗЛИКИ на всяка минута. Броячите в /proc/net/dev се

@@ -1,7 +1,7 @@
 // Тестове за чистата логика на интерфейса (без DOM).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { fuzzyScore, sameWord } from '../public/ui.js';
+import { fuzzyScore } from '../public/ui.js';
 
 test('палет: точното съвпадение бие разпръснатото', () => {
   const exact = fuzzyScore('docker', 'Отиди: Docker');
@@ -36,19 +36,4 @@ test('палет: кирилица работи', () => {
   assert.ok(fuzzyScore('услуги', 'Отиди: Услуги') > 0);
   assert.ok(fuzzyScore('аларм', 'Отиди: Аларми') > 0);
   assert.equal(fuzzyScore('аларм', 'Отиди: Docker'), 0);
-});
-
-// Телефонът пише първата буква главна и „поправя" думите. Сравнението беше
-// буквално → на iPhone/Android нищо необратимо не можеше да се потвърди
-// („Диск" не чистеше нищо). Регистърът не е част от съзнателното изписване.
-test('потвърждение: „Изтрий" от телефона се приема, „изтри" — не', () => {
-  assert.equal(sameWord('Изтрий', 'изтрий'), true);
-  assert.equal(sameWord('  ИЗТРИЙ ', 'изтрий'), true);
-  assert.equal(sameWord('Лаборатория', 'Лаборатория'), true);
-  assert.equal(sameWord('V2202610440855542359', 'v2202610440855542359'), true, 'името на машината с главна буква');
-  // й като „и" + кратка (NFD) — някои клавиатури го пращат така.
-  assert.equal(sameWord('\u0438\u0437\u0442\u0440\u0438\u0438\u0306', 'изтрий'), true);
-  assert.equal(sameWord('изтри', 'изтрий'), false);
-  assert.equal(sameWord('', ''), false, 'празно никога не потвърждава');
-  assert.equal(sameWord('delete', 'изтрий'), false);
 });

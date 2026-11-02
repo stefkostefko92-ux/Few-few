@@ -235,7 +235,7 @@ export async function executeAction(action, deps) {
       const fresh = await reclaim.reclaimable(cfg);
       const item = fresh.items.find((i) => i.id === a.params.category);
       if (!item) throw bad('Няма такава категория (или вече е чиста).');
-      return { job: jobs.start(reclaim.reclaimSpec(item.id, item, cfg), { user }) };
+      return { job: jobs.start(reclaim.reclaimSpec(item.id, item), { user }) };
     }
     case 'apt.dpkgRepair':
       return { job: jobs.start(apthealth.dpkgRepairSpec(), { user }) };
