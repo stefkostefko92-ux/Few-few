@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-02:** Правните страници на eternaltouch (privacy/terms/legal.ejs) и footer.ejs носят идентификацията на дружеството твърдо кодирана в EJS, а не в src/locales/*.json; footer редът е общ за трите езика (без t()), затова етикет там не може да се локализира без нов ключ. _(правни/импресум промени в eternaltouch; verified; grep 208725180 eternaltouch/src → само views/pages/*.ejs, partials/footer.ejs, layouts/main.ejs, routes/seo.js; нула в src/locales)_
 
 - **2026-10-12 (пресверена 2026-11-02):** chrome.i18n няма плурални форми: румънски изисква „de“ след числа ≥20 (24 de luni) — ползвай неутрален етикет „Pagini: $COUNT$“ или конструкция с „dintre“, която не зависи от числото. _(deja i18n ro; verified; https://en.wikipedia.org/wiki/Romanian_numbers)_
 - **2026-10-27 (пресверена 2026-11-02):** Значението на medqr emerg.allergies_none „Не са посочени“ е „не са посочени“, а не „няма алергии“; IT „Nessuna allergia“/„Nessuna“ обръща смисъла, затова ползвай „Non indicate“ (чака човешки преглед). _(medqr IT спешен изглед; verified; /home/user/Few-few/medqr/src/i18n.js:214)_
