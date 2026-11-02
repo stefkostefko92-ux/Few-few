@@ -21,7 +21,7 @@ export interface MailMessage {
 let transport: Transporter | null = null;
 
 /**
- * В продукция: SMTP (Brevo на порт 2525 — Hetzner блокира 25/465/587); config.ts не пуска процеса
+ * В продукция: SMTP (Brevo на порт 2525, STARTTLS); config.ts не пуска процеса
  * без SMTP_HOST. При разработка и тестове: JSON транспорт — писмата не напускат машината, а остават
  * в `outbox` за тестовете.
  */
