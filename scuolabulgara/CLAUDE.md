@@ -35,6 +35,8 @@ src/components/, src/lib/
 prisma/           schema.prisma (SQLite) + seed.ts
 public/assets/    images (served from disk)
 scripts/          hash-password + helpers
+promo/            the Facebook clip: film.html (the site's stitch on a frame clock) + music.mjs
+                  (an original ruchenitsa, MIDI → FluidSynth) + render.mjs → dist/ (not committed)
 ```
 
 ## Conventions (important)
