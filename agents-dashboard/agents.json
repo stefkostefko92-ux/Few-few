@@ -1217,7 +1217,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 581
+        "lessons": 582
       },
       "evolution": [
         {
@@ -2059,9 +2059,20 @@
           "date": "2026-11-02",
           "event": "v52.8 — учене",
           "detail": "Научи: React 19 (react-dom 19.2.7) в production подменя javascript: URL в href/src с URL, койт… (+1 още)"
+        },
+        {
+          "version": "52.9.0",
+          "date": "2026-11-02",
+          "event": "v52.9 — учене",
+          "detail": "Научи: linketto webhook — subscription.updated пише само Entitlement (не User.plan), а charge.…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „linketto webhook — subscription.updated пише само Entitlement (не User.plan), а charge.…\""
+        },
         {
           "date": "2026-11-02",
           "type": "learning",

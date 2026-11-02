@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-02:** linketto webhook — subscription.updated пише само Entitlement (не User.plan), а charge.refunded/dispute.created пипат само Purchase; плановото плащане не създава Purchase, затова план/Founder и реферният кредит оцеляват при refund _(linketto billing/webhook ревю; verified; linketto/src/app/api/stripe/webhook/route.ts:185-203,279-338,365-384)_
 
 - **2026-11-02:** React 19 (react-dom 19.2.7) в production подменя javascript: URL в href/src с URL, който хвърля грешка, затова javascript: не е XSS sink в React 19, но data: и други схеми не се филтрират _(ревюта на React/Next.js с недоверен URL в href/src; verified; mastilko/node_modules/react-dom/cjs/react-dom-client.production.js:1411-1416 (sanitizeURL))_
 - **2026-11-02:** React inline style от недоверен низ е безопасен свойство по свойство само в браузъра; при SSR pushStyleAttribute само HTML-екранира стойността, затова `;` в стойността добавя още CSS декларации в атрибута style _(Next.js/React SSR компоненти с style от потребителски или админ вход; verified; mastilko/node_modules/react-dom/cjs/react-dom-server.node.production.js:~702 срещу react-dom-client.production.js:1273-1285)_
