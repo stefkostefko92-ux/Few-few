@@ -477,3 +477,7 @@
 {"t":"handoff","ts":"2026-11-02T14:41:06.624Z","id":"rbf572384","from":"asansyorchika","to":"оркестратор","status":"наред","run":"341a2cd0"}
 {"t":"start","ts":"2026-11-02T14:42:32.799Z","id":"r4509b51f","flow":"авто","lead":"ai-djiyata","auto":true}
 {"t":"handoff","ts":"2026-11-02T14:42:32.800Z","id":"r4509b51f","from":"ai-djiyata","to":"човек","status":"блокер","run":"2b45b7fb"}
+{"t":"start","ts":"2026-11-02T14:53:42.394Z","id":"rb46a26b8","flow":"авто","lead":"prevodach","auto":true}
+{"t":"handoff","ts":"2026-11-02T14:53:42.394Z","id":"rb46a26b8","from":"prevodach","to":"човек","status":"има бележки","run":"d7137ed0"}
+{"t":"start","ts":"2026-11-02T14:54:12.631Z","id":"r09c2a844","flow":"авто","lead":"diskordjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-02T14:54:12.631Z","id":"r09c2a844","from":"diskordjiyata","to":"оркестратор","status":"има бележки","run":"2b5cb750"}
