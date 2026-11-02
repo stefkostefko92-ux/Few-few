@@ -486,3 +486,9 @@
 {"t":"handoff","ts":"2026-11-02T15:00:42.508Z","id":"r3b77ebf7","from":"diskordjiyata","to":"човек","status":"наред","run":"2b5cb750"}
 {"t":"start","ts":"2026-11-02T15:01:30.247Z","id":"r33914a24","flow":"авто","lead":"prodavacha","auto":true}
 {"t":"handoff","ts":"2026-11-02T15:01:30.247Z","id":"r33914a24","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"82569d23"}
+{"t":"start","ts":"2026-11-02T15:07:40.382Z","id":"r127487d3","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-02T15:07:40.382Z","id":"r127487d3","from":"kodadjiyata","to":"prodavacha","status":"има бележки","run":"80f40787"}
+{"t":"start","ts":"2026-11-02T15:20:25.334Z","id":"rffb03817","flow":"авто","lead":"prodavacha","auto":true}
+{"t":"handoff","ts":"2026-11-02T15:20:25.334Z","id":"rffb03817","from":"prodavacha","to":"kodadjiyata","status":"има бележки","run":"82569d23"}
+{"t":"start","ts":"2026-11-02T15:28:13.719Z","id":"rab1210d2","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-02T15:28:13.719Z","id":"rab1210d2","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"59bfe9c4"}

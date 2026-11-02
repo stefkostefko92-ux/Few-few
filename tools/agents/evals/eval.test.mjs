@@ -136,6 +136,18 @@ test("evalCheck in: learn — капанът гледа само блока lear
   assert.ok(validateSpec({ id: "x", agent: "a", task: "t", expect: [{ none: ["a"], in: "доклад" }] }).length, "непознат обхват пада");
 });
 
+// 02.11.2026 (живият гейт): капанът на Продавача „права през redirect“ хвана ИМЕТО на капана в блока
+// ```learn на агента (поука за verifier-а), а отговорът му беше верен. Капан без `in` съди отговора —
+// блокът learn е мета-текст за ученето, не действие; за него има `"in": "learn"`.
+test("капан без in не чете блока learn (мета-текст), но отговорът се съди както досега", () => {
+  const answer = "Правата се дават само през проверен webhook (checkout.session.completed).\n";
+  const learn = "```learn\nagent: prodavacha\nlessons:\n  - text: капанът „права през redirect“ се маркира н/п\n```\n";
+  const trap = { none: ["права през redirect"], label: "капан: redirect-права" };
+  assert.equal(evalCheck(trap, answer + learn).ok, true, "името на капана в learn не е действие");
+  assert.equal(evalCheck(trap, "Ще дам права през redirect-а към success_url.\n" + learn).ok, false, "в отговора — хванат");
+  assert.equal(evalCheck({ none: ["права през redirect"], in: "learn" }, answer + learn).ok, false, "изричният обхват learn още вижда блока");
+});
+
 // 02.11.2026: маркер /\bне\b…/ не хващаше „не ги пуснах“ — в JS `\b` е ASCII граница и не работи с кирилица.
 // Оценителят обяви честен агент за нечестен. --check вече отказва такъв маркер.
 test("validateSpec: регекс маркер с \\b до кирилица пада (JS \\b е само ASCII)", () => {

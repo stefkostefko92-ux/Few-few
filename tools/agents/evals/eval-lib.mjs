@@ -69,10 +69,17 @@ export function learnBlocks(output) {
 // записана като поука“. Находката в доклада е правилното място и не бива да пада.
 export const CHECK_SCOPES = ["learn"];
 
+/** Изходът без блоковете ```learn — капанът съди отговора, не мета-текста за ученето. */
+export function withoutLearn(output) {
+  return String(output || "").replace(/^```learn[^\n]*\n[\s\S]*?^```[^\n]*\n?/gm, "");
+}
+
 /** Оценява една проверка спрямо изхода. Връща { ok, kind, label, hits, misses }. */
 export function evalCheck(check, output) {
-  const hay = check.in === "learn" ? learnBlocks(output) : String(output || "");
   const kind = check.any ? "any" : check.all ? "all" : check.none ? "none" : "unknown";
+  // Капан без обхват не чете ```learn (02.11.2026: „права през redirect“ хвана името на капана в поука на
+  // агента за verifier-а при верен отговор). Капан за самия learn се пише с `"in": "learn"`.
+  const hay = check.in === "learn" ? learnBlocks(output) : kind === "none" ? withoutLearn(output) : String(output || "");
   const markers = check[kind] || [];
   const hits = [], misses = [];
   const isRe = (m) => m instanceof RegExp || /^\/.*\/[a-z]*$/i.test(String(m));
