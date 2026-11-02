@@ -92,7 +92,7 @@ test("live-run: задачите, имената на опитите, обвив
   const jobs = expandJobs("kasadjiyata:kasadjiyata:3,seo", (id) => `задача ${id}`);
   assert.deepEqual(jobs.map((j) => j.name), ["kasadjiyata.1.txt", "kasadjiyata.2.txt", "kasadjiyata.3.txt", "seo.txt"]);
   assert.match(wrapperPrompt("seo", "Т"), /subagent_type: seo/);
-  assert.deepEqual(parseResult(JSON.stringify({ result: "ок", total_cost_usd: 0.3 })), { text: "ок", costUsd: 0.3 });
+  assert.deepEqual(parseResult(JSON.stringify({ result: "ок", total_cost_usd: 0.3 })), { text: "ок", costUsd: 0.3, sessionId: "" });
   assert.equal(parseResult("суров").text, "суров");
 });
 

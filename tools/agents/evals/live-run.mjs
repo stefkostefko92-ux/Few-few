@@ -25,6 +25,7 @@ import { execFile, execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, statSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
+import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { setEvalMode } from "../../lib/eval-mode.mjs";
 
@@ -85,8 +86,42 @@ export function expandJobs(spec, readTask) {
 
 /** JSON изходът на `claude -p --output-format json` → текст и цена; невалиден → суров текст. */
 export function parseResult(out) {
-  try { const j = JSON.parse(out); return { text: String(j.result || ""), costUsd: Number(j.total_cost_usd) || 0 }; }
-  catch { return { text: String(out || ""), costUsd: 0 }; }
+  try { const j = JSON.parse(out); return { text: String(j.result || ""), costUsd: Number(j.total_cost_usd) || 0, sessionId: String(j.session_id || "") }; }
+  catch { return { text: String(out || ""), costUsd: 0, sessionId: "" }; }
+}
+
+/**
+ * Записаното от агента (Write/Edit/MultiEdit) — от транскрипта на СОБСТВЕНАТА сесия на пускането (2026-11-02).
+ * Щом агентите в оценката могат да пишат, кодът им е във файл, а финалният текст е само обобщение: оценителят
+ * мереше обобщението („стабилни селектори“ липсваха, а тестът ги имаше). Транскриптът е точен за всяко пускане,
+ * за разлика от файла в копието, който паралелен опит може да е презаписал.
+ */
+export function attachWrites(text, sessionId, wt, home = process.env.HOME || "/root") {
+  if (!sessionId || !wt || !/^[\w-]+$/.test(sessionId)) return String(text);
+  const dir = join(home, ".claude", "projects", String(wt).replace(/[^A-Za-z0-9-]/g, "-"), sessionId, "subagents");
+  if (!existsSync(dir)) return String(text);
+  const written = [];
+  for (const f of readdirSync(dir).filter((f) => /^agent-.*\.jsonl$/.test(f)).sort()) {
+    for (const line of readFileSync(join(dir, f), "utf8").split("\n")) {
+      let r; try { r = JSON.parse(line); } catch { continue; }
+      const c = r?.message?.content;
+      if (!Array.isArray(c)) continue;
+      for (const b of c) {
+        if (b?.type !== "tool_use" || !b.input?.file_path) continue;
+        if (b.name === "Write") written.push({ path: b.input.file_path, how: "Write", body: String(b.input.content || "") });
+        else if (b.name === "Edit") written.push({ path: b.input.file_path, how: "Edit", body: String(b.input.new_string || "") });
+        else if (b.name === "MultiEdit") for (const e of b.input.edits || []) written.push({ path: b.input.file_path, how: "Edit", body: String(e.new_string || "") });
+      }
+    }
+  }
+  let out = String(text), total = 0;
+  for (const w of written.slice(0, MAX_FILES)) {
+    if (total >= TOTAL_CAP) break;
+    const body = w.body.slice(0, FILE_CAP);
+    total += body.length;
+    out += `\n\n--- записано от агента (${w.how}): ${w.path} ---\n${body}`;
+  }
+  return out;
 }
 
 // 27.10.2026 (жив гейт): при отказан запис в репото агентът пише в scratchpad-а на сесията и посочва пътя —
@@ -179,17 +214,36 @@ export function parseSets(spec) {
   });
 }
 
+/** Аргументите на едно пускане — с ИЗРИЧНА собствена сесия (виж runJobs). */
+export function jobArgs(j, { allowed = ALLOWED, extraArgs = [], sessionId }) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(String(sessionId))) throw new Error("jobArgs: sessionId трябва да е UUID");
+  return ["-p", wrapperPrompt(j.agent, j.task), "--session-id", sessionId, "--allowedTools", ...allowed, "--output-format", "json", ...extraArgs];
+}
+
 /** Пуска задачите (конкурентно) в копието. Връща [{...job, ok, text, costUsd, err, seconds}]. */
-export async function runJobs(jobs, { wt, concurrency = 3, timeoutMs = 900000, extraArgs = [], allowed = ALLOWED, onDone = () => {} } = {}) {
+// wtFor(job) → {dir, cleanup} | null: собствено копие за пускане, което ПИШЕ (2026-11-02 — паралелните опити в едно
+// копие виждаха и си приписваха файловете един на друг; сляпото съдийство го хвана). null → общото `wt`.
+export async function runJobs(jobs, { wt, wtFor = () => null, bin = "claude", concurrency = 3, timeoutMs = 900000, extraArgs = [], allowed = ALLOWED, onDone = () => {} } = {}) {
   const results = new Array(jobs.length);
   let i = 0;
-  const one = (j) => new Promise((resolve) => {
+  const one = async (j) => {
+    const own = wtFor(j);
+    try { return await oneIn(j, own?.dir || wt); } finally { own?.cleanup(); }
+  };
+  const oneIn = (j, wt) => new Promise((resolve) => {
     const t0 = Date.now();
-    execFile("claude", ["-p", wrapperPrompt(j.agent, j.task), "--allowedTools", ...allowed, "--output-format", "json", ...extraArgs],
-      { cwd: wt, timeout: timeoutMs, maxBuffer: 1 << 26, env: { ...process.env, CLAUDE_PROJECT_DIR: wt, AGENT_MEMORY_SYNC: "0" } },
+    // Собствена сесия на всяко пускане (2026-11-02): без нея паралелните опити наследяваха сесията на родителя —
+    // общ транскрипт и общ scratchpad, тоест записаното от един опит се приписваше на друг (сляпото съдийство
+    // видя едни и същи файлове в два опита). Махането на CLAUDE_CODE_SESSION_ID НЕ стига (проба: session_id пак
+    // родителският); `--session-id <uuid>` стига (проба: върнатият session_id = поисканият).
+    const sessionId = randomUUID();
+    const env = { ...process.env, CLAUDE_PROJECT_DIR: wt, AGENT_MEMORY_SYNC: "0" };
+    delete env.CLAUDE_CODE_SESSION_ID;
+    execFile(bin, jobArgs(j, { allowed, extraArgs, sessionId }),
+      { cwd: wt, timeout: timeoutMs, maxBuffer: 1 << 26, env },
       (err, stdout, stderr) => {
         const r = parseResult(stdout);
-        if (r.text) r.text = attachScratchpad(r.text);
+        if (r.text) r.text = attachWrites(attachScratchpad(r.text), sessionId, wt);
         resolve({ ...j, ok: !err && !!r.text.trim(), text: r.text, costUsd: r.costUsd, err: err ? String(stderr || err.message).slice(0, 300) : "", seconds: Math.round((Date.now() - t0) / 1000) });
       });
   });
@@ -212,16 +266,23 @@ async function main(argv) {
   });
   mkdirSync(out, { recursive: true });
   const sets = parseSets(val("--set"));
-  const { dir, cleanup } = makeWorktree(val("--ref") || "HEAD", null, { memory: val("--memory") || "on" });
-  if (val("--memory") === "off") console.log("рамо: без личната памет (само в копието)");
-  try {
-    for (let k = argv.indexOf("--patch"); k >= 0; k = argv.indexOf("--patch", k + 1)) console.log(`рамо: --patch ${applyPatch(dir, argv[k + 1])} (само в копието)`);
+  const patches = [];
+  for (let k = argv.indexOf("--patch"); k >= 0; k = argv.indexOf("--patch", k + 1)) patches.push(argv[k + 1]);
+  // Рамото се строи наново във всяко копие: всяко пускане пише в свое (виж wtFor в runJobs).
+  const arm = (log) => {
+    const w = makeWorktree(val("--ref") || "HEAD", null, { memory: val("--memory") || "on" });
+    for (const p of patches) { const r = applyPatch(w.dir, p); if (log) console.log(`рамо: --patch ${r} (само в копието)`); }
     for (const s of sets) {
-      const f = join(dir, ".claude", "agents", `${s.agent}.md`);
+      const f = join(w.dir, ".claude", "agents", `${s.agent}.md`);
       writeFileSync(f, patchFrontmatter(readFileSync(f, "utf8"), s.field, s.value));
-      console.log(`рамо: ${s.agent}.${s.field} = ${s.value} (само в копието)`);
+      if (log) console.log(`рамо: ${s.agent}.${s.field} = ${s.value} (само в копието)`);
     }
-    const res = await runJobs(jobs, { wt: dir, concurrency: Number(val("--concurrency")) || 3, allowed: EVAL_ALLOWED, onDone: (r) => {
+    return w;
+  };
+  if (val("--memory") === "off") console.log("рамо: без личната памет (само в копието)");
+  const { dir, cleanup } = arm(true);
+  try {
+    const res = await runJobs(jobs, { wt: dir, wtFor: () => arm(false), concurrency: Number(val("--concurrency")) || 3, allowed: EVAL_ALLOWED, onDone: (r) => {
       if (r.ok) writeFileSync(join(out, r.name), r.text);
       console.log(`${r.ok ? "✓" : "✗"} ${r.name} · ${r.agent} · ${r.text.length} зн. · $${r.costUsd.toFixed(2)} · ${r.seconds}s${r.err ? " · " + r.err : ""}`);
     } });

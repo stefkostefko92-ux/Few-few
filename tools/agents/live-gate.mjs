@@ -205,7 +205,8 @@ async function run() {
     const probeJobs = plan.probe.map((a) => ({ agent: a, specId: `probe-${a}`, name: `probe-${a}.txt`, task: probeTask() }));
     const specDir = join(ROOT, "tools", "agents", "evals", "specs");
     const evalJobs = expandJobs(plan.evals.join(","), (id) => JSON.parse(readFileSync(join(specDir, id + ".json"), "utf8")).task);
-    const results = await runJobs([...probeJobs, ...evalJobs], { wt: dir, concurrency: 3, allowed: EVAL_ALLOWED, onDone: (r) => console.log(`  ${r.ok ? "·" : "✗"} ${r.name} (${r.seconds}s, $${r.costUsd.toFixed(2)})${r.err ? " " + r.err : ""}`) });
+    // Пробите само цитират контекста — общо копие; оценките пишат — всяка в свое (02.11.2026, виж wtFor).
+    const results = await runJobs([...probeJobs, ...evalJobs], { wt: dir, wtFor: (j) => (j.name.startsWith("probe-") ? null : makeWorktree(ref)), concurrency: 3, allowed: EVAL_ALLOWED, onDone: (r) => console.log(`  ${r.ok ? "·" : "✗"} ${r.name} (${r.seconds}s, $${r.costUsd.toFixed(2)})${r.err ? " " + r.err : ""}`) });
     const probe = [];
     for (const r of results.filter((x) => x.name.startsWith("probe-"))) {
       const j = r.ok ? judgeProbe(r.text, await expectedFor(r.agent, dir)) : { ok: false, problems: [`пускането се провали: ${r.err}`] };

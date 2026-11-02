@@ -24,7 +24,8 @@ test("от Stop куките отпадат само тези на оркест�
 test("задачите се разгъват по опити, а изходът се чете от JSON на claude -p", () => {
   const jobs = expandJobs("kasadjiyata:kasadjiyata:3,seo", (id) => `задача ${id}`);
   assert.deepEqual(jobs.map((j) => j.name), ["kasadjiyata.1.txt", "kasadjiyata.2.txt", "kasadjiyata.3.txt", "seo.txt"]);
-  assert.deepEqual(parseResult('{"result":"ок","total_cost_usd":0.25}'), { text: "ок", costUsd: 0.25 });
+  assert.deepEqual(parseResult('{"result":"ок","total_cost_usd":0.25}'), { text: "ок", costUsd: 0.25, sessionId: "" });
+  assert.equal(parseResult('{"result":"ок","session_id":"abc-1"}').sessionId, "abc-1", "собствената сесия на пускането");
   assert.equal(parseResult("суров").text, "суров");
 });
 
@@ -113,4 +114,54 @@ test("EVAL_ALLOWED: запис само под /tmp, команди само и�
   for (const r of EVAL_ALLOWED.filter((x) => /^(Write|Edit)\(/.test(x))) assert.match(r, /^(Write|Edit)\(\/\/tmp\//, r);
   assert.ok(!EVAL_ALLOWED.some((r) => /Few-few|\/home\//.test(r)), "истинското репо не е в разрешените пътища");
   assert.ok(!EVAL_ALLOWED.some((r) => /^Bash\(npx \*\)|^Bash\(curl|^Bash\(git (push|commit|reset)/.test(r)), "без мрежови/записващи git команди и произволен npx");
+});
+
+// Регресия 2026-11-02: щом агентите пишат, кодът им е във файл — оценителят трябва да го вижда (от транскрипта
+// на собствената сесия на пускането, не от общото копие, което паралелен опит може да е презаписал).
+test("attachWrites: Write/Edit на агента от собствената сесия се прикачват към оценявания текст", async () => {
+  const { attachWrites } = await import("./live-run.mjs");
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const { tmpdir } = await import("node:os");
+  const home = mkdtempSync(join(tmpdir(), "aw-")), wt = "/tmp/live-run-AbC123", sid = "sess-1";
+  const dir = join(home, ".claude", "projects", "-tmp-live-run-AbC123", sid, "subagents");
+  mkdirSync(dir, { recursive: true });
+  const line = (b) => JSON.stringify({ message: { role: "assistant", content: [b] } });
+  writeFileSync(join(dir, "agent-x.jsonl"), [
+    line({ type: "tool_use", name: "Write", input: { file_path: `${wt}/e2e/login.spec.ts`, content: "await page.getByRole('button')" } }),
+    line({ type: "tool_use", name: "Edit", input: { file_path: `${wt}/a.ts`, old_string: "x", new_string: "getByLabel('Имейл')" } }),
+  ].join("\n"));
+  const out = attachWrites("резюме", sid, wt, home);
+  assert.match(out, /записано от агента \(Write\): .*login\.spec\.ts[\s\S]*getByRole/);
+  assert.match(out, /getByLabel\('Имейл'\)/);
+  assert.equal(attachWrites("резюме", "", wt, home), "резюме", "без сесия — само текстът");
+  assert.equal(attachWrites("резюме", "../evil", wt, home), "резюме", "невалиден id на сесия не отваря път");
+  rmSync(home, { recursive: true, force: true });
+});
+
+// Регресия 2026-11-02: сляпото съдийство видя едни и същи записани файлове в два опита — опитите деляха сесията на
+// родителя (махнатото CLAUDE_CODE_SESSION_ID не стигаше). Всяко пускане носи изричен --session-id.
+test("jobArgs: всяко пускане е с изричен --session-id (UUID), иначе грешка", async () => {
+  const { jobArgs } = await import("./live-run.mjs");
+  const { randomUUID } = await import("node:crypto");
+  const id = randomUUID();
+  const a = jobArgs({ agent: "seo", task: "т" }, { sessionId: id });
+  assert.equal(a[a.indexOf("--session-id") + 1], id);
+  assert.equal(a[0], "-p");
+  assert.throws(() => jobArgs({ agent: "seo", task: "т" }, {}), /UUID/);
+  assert.throws(() => jobArgs({ agent: "seo", task: "т" }, { sessionId: "../x" }), /UUID/);
+});
+
+// Регресия 2026-11-02: паралелните опити в ЕДНО копие виждаха файловете един на друг. wtFor дава свое копие на
+// всяко пускане, което пише, и го чисти след него; null → общото копие (пробите само цитират).
+test("runJobs: wtFor дава собствено копие на пускане и го чисти; null остава общото", async () => {
+  const { runJobs } = await import("./live-run.mjs");
+  const seen = [], cleaned = [];
+  const jobs = [{ agent: "a", task: "т", name: "a.1.txt" }, { agent: "a", task: "т", name: "a.2.txt" }, { agent: "p", task: "т", name: "probe-p.txt" }];
+  await runJobs(jobs, {
+    wt: "/tmp", bin: "true", concurrency: 3,
+    wtFor: (j) => { if (j.name.startsWith("probe-")) return null; const d = `/tmp/own-${j.name}`; seen.push(d); return { dir: "/tmp", cleanup: () => cleaned.push(d) }; },
+  });
+  assert.deepEqual(seen.sort(), ["/tmp/own-a.1.txt", "/tmp/own-a.2.txt"]);
+  assert.deepEqual(cleaned.sort(), seen, "всяко собствено копие се чисти");
 });
