@@ -7,6 +7,7 @@
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
 ## Проверени поуки (verified)
+- **2026-11-02:** node --test с папки като аргумент (tools/fivem/ tools/skills/) дава fail в това репо; тестовете се пускат с глобове на файлове (tools/fivem/*.test.mjs tools/skills/*.test.mjs). _(пускане на тестовете в Few-few; verified; команда node --test tools/fivem/*.test.mjs tools/skills/*.test.mjs -> 55 pass / 0 fail (2026-11-02))_
 - **2026-11-02:** Cfx.re Creator PLA (последно обновен 10.09.2026) в §3.1(7) забранява Creator Content с чужди реклами/спонсорства, а в §3.1(6) препродажба на чужди активи; думата Tebex не се среща в PDF-а. _(ливреи/MLO/дрехи, преди продажба или реални марки; verified; https://static.cfx.re/platform-license-agreement-10-sept-2026.pdf (pdftotext, 2026-11-02))_
 - **2026-11-02:** Sollumz README изисква Blender 4.0 или по-нов; инсталацията като extension (repo.sollumz.org) е за Blender 4.2+; последната версия е 2.9.0 със съвместимост за Blender 5.2. _(избор на Blender версия за FiveM активи; verified; https://docs.sollumz.org/getting-started/installation.md ; https://github.com/Sollumz/Sollumz/releases (2026-11-02))_
 

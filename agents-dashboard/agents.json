@@ -3181,7 +3181,7 @@
           "Manason/effective-fivem-lua — стилов канон (кеширане, дисциплина с natives)",
           "CommunityOx (ox_lib/ox_core/oxmysql) — каноничните модерни модели"
         ],
-        "lessons": 166
+        "lessons": 167
       },
       "evolution": [
         {
@@ -3579,9 +3579,20 @@
           "date": "2026-11-02",
           "event": "v20.4 — учене",
           "detail": "Научи: Cfx.re Creator PLA (последно обновен 10.09.2026) в §3.1(7) забранява Creator Content с … (+1 още)"
+        },
+        {
+          "version": "20.5.0",
+          "date": "2026-11-02",
+          "event": "v20.5 — учене",
+          "detail": "Научи: node --test с папки като аргумент (tools/fivem/ tools/skills/) дава fail в това репо; т…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „node --test с папки като аргумент (tools/fivem/ tools/skills/) дава fail в това репо; т…\""
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
