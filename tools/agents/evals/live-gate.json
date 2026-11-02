@@ -1,9 +1,9 @@
 {
   "date": "2026-11-02",
-  "ref": "64ab9887581922036cfe6c356017cf603f76699f",
+  "ref": "6e46dcfb1d821700991b99784966928ffef97ab6",
   "cli": "2.1.316 (Claude Code)",
-  "summary": "проба 5/5 · оценки 9/9 · pass^k 5/5 · verifier ✓",
-  "costUsd": 12.97,
+  "summary": "проба 4/4 · оценки 7/7 · pass^k 3/3 · verifier ✓",
+  "costUsd": 12.03,
   "probe": [
     {
       "agent": "seo",
@@ -21,17 +21,12 @@
       "problems": []
     },
     {
-      "agent": "izpitatelya",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "socialdjiyata",
+      "agent": "geymara",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "45a74d3bd591bd89772971820cd1276ddd1646585833c2b93584df6a4764e58c",
+  "inputsHash": "f87b5912cb79bfae3bad5493aadc22092f842014443cda2df8d6222805291683",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "416ed21db5dcccc5122628e065fb1ba4c6542accdf39ecfc7c3a1714775a7249",
@@ -42,7 +37,7 @@
     ".claude/agents/asansyorchika.md": "18153eb60b408d9cf46341b3338cb24e45475293e0c665d90dfcb3ef08b47d77",
     ".claude/agents/diskordjiyata.md": "0acfc0d389c8032125485aa585cb59812883e26651e424955d37fb15a2266e3f",
     ".claude/agents/dizayner.md": "68ddb6b4612aca8ef91ea887e25ff8a9f051faed203f44063f3d7caad0441975",
-    ".claude/agents/geymara.md": "324d50fedc6a72c00789894c3ed4a1bb3a7ede54e9bbd6819909231174aeeb20",
+    ".claude/agents/geymara.md": "4b7c7a20f3fb1637780d3d24815e367ed3ed1247f5da5b13955489ba7afa401a",
     ".claude/agents/goladjiyata.md": "0f0f100d590e829b6439e578f28759d470f56c9c150f08f250ec5ba0014d3c99",
     ".claude/agents/hromadjiyata.md": "6746a9aa92371ac4de2a07816ace75facd6c6333dda00f20aa85209caa9479ff",
     ".claude/agents/izpitatelya.md": "607a843d50fc0a296ce6bf4ab11a612a539b1b1fef1caaccebca4ad7c27aafa9",
@@ -68,7 +63,7 @@
     ".claude/hooks/agent-cap.mjs": "a27621aeb9007449d2af7adb3705b7e0bfe76b49e50361d1a493c391bdb61c9d",
     ".claude/hooks/agent-return.mjs": "119db60725be72dce025656f68caf0c72a9f0aa4bbc496bc7dc4343108238573",
     ".claude/hooks/artifact-sync.mjs": "f9ea0a08f60fc13c7388473a885c15af1433784486c60e6c26df7276fe97f9b2",
-    ".claude/hooks/dod-check.mjs": "ea6f79cff81e976f126b0a7aae5de6ebd6b00e483dacb8d0df7982a32b7cf1af",
+    ".claude/hooks/dod-check.mjs": "011ad71e60a6e9b3d661db96ac3427d3a6bfc25e1017e73496647097443b1f9a",
     ".claude/hooks/guard-config.mjs": "29cc10c0a36434c1de1101a69923cf14cb69b11513f3e2140b6c34a4ff7a91f6",
     ".claude/hooks/guard-dangerous.mjs": "0812c3190280b90f0ff3d78622b62605c0c5964360e1b255c384e1b1afd89562",
     ".claude/hooks/guard-exfil.mjs": "ffb548dd56710e015b80d64c2f70289b934171baf320a57eb8d4c06c1b695435",
