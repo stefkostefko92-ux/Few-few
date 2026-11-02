@@ -1228,7 +1228,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 588
+        "lessons": 589
       },
       "evolution": [
         {
@@ -2100,9 +2100,20 @@
           "date": "2026-11-02",
           "event": "v53.5 — учене",
           "detail": "Научи: Id-то на Качествения в полето Към на ПРЕДАВАНЕ е kachestveniyat (не kachestveniya) — do…"
+        },
+        {
+          "version": "53.6.0",
+          "date": "2026-11-02",
+          "event": "v53.6 — учене",
+          "detail": "Научи: В linketto `npm test` глобира само src/lib/__tests__/*.test.ts, затова помощни модули в…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „В linketto `npm test` глобира само src/lib/__tests__/*.test.ts, затова помощни модули в…\""
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
