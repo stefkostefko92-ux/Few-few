@@ -21,6 +21,7 @@ import { publishLessons, pendingLessons, isGitRepo } from "../../tools/lib/memor
 import { evalMode } from "../../tools/lib/eval-mode.mjs";
 import { CREDENTIAL } from "../../tools/lib/secret-patterns.mjs";
 import { contentProblems, operationInProgress } from "../../tools/lib/conflict-guard.mjs";
+import { isMain } from "../../tools/lib/is-main.mjs";
 
 const HOOK_DIR = dirname(fileURLToPath(import.meta.url));
 const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || join(HOOK_DIR, "..", "..");
@@ -487,6 +488,6 @@ function main() {
 }
 
 // Пусни main() САМО като CLI (SubagentStop hook) — иначе import от тест чете stdin и излиза.
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   try { main(); } catch { process.exit(0); } // никога не блокирай агента заради паметта
 }

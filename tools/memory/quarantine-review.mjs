@@ -21,6 +21,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sectionBullets, isRealSource, lessonDate, isRefuted } from "../agents/oversee-lib.mjs";
 import { emitJson, finish } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MEM = join(ROOT, ".claude", "agents", "_memory");
@@ -128,4 +129,4 @@ function main() {
   return finish(0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (isMain(import.meta.url)) main();

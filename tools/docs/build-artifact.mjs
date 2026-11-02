@@ -32,6 +32,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 // Тайните в билда — по единствения списък (същият като secret-scan/куките), в отделен модул.
 import { findSecretsIn } from "./artifact-secrets.mjs";
+import { isMain } from "../lib/is-main.mjs";
 export { findSecretsIn };
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -261,7 +262,7 @@ export function build(dash = DASH, reader = null) {
   return { html, icons: Object.keys(icons).length, agents: lessons.length, lessons: lessons.reduce((a, b) => a + b, 0) };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const argv = process.argv.slice(2);
   const flag = (k) => { const i = argv.indexOf(k); return i === -1 ? null : (argv[i + 1] || ""); };
   const mark = flag("--mark-published");

@@ -11,6 +11,7 @@
 
 import { readFileSync } from "node:fs";
 import { route, loadTeams, names } from "../../tools/agents/teams.mjs";
+import { isMain } from "../../tools/lib/is-main.mjs";
 
 export const MIN_PROMPT = 12; // по-кратко е „ок“/„продължи“ — няма какво да се рутира
 // Системни пликове (известие от фонова задача, GitHub събитие, будилник) минават през същото събитие,
@@ -40,7 +41,7 @@ function main() {
   process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: "UserPromptSubmit", additionalContext: hint } }));
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   try { main(); } catch { /* fail-open */ }
   process.exit(0);
 }

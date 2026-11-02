@@ -23,6 +23,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sanitize } from "./guard-secrets.mjs";
 import { codeView } from "./guard-dangerous.mjs";
+import { isMain } from "../../tools/lib/is-main.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const WRITE_TOOLS = /\b(Write|Edit|MultiEdit|NotebookEdit)\b/;
@@ -110,4 +111,4 @@ function main() {
   process.exit(2);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) { try { main(); } catch { process.exit(0); } }
+if (isMain(import.meta.url)) { try { main(); } catch { process.exit(0); } }

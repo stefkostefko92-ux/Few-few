@@ -22,6 +22,7 @@ import { join, dirname, relative } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { isMain } from "../lib/is-main.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
@@ -246,6 +247,6 @@ async function run() {
   } finally { cleanup(); }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   process.exitCode = process.argv.includes("--check") ? check() : await run();
 }

@@ -17,6 +17,7 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -302,4 +303,4 @@ function main() {
   console.log(`✓ ${T.teams.length} екипа · ${total} агента · ${T.teams.length * 5} тестови задачи минават`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (isMain(import.meta.url)) main();

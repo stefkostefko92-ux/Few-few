@@ -24,6 +24,7 @@ import { join, dirname } from "node:path";
 import { ROOT, ALLOWED, makeWorktree, runJobs, claudeAvailable } from "./evals/live-run.mjs";
 import { LEDGER, triage, changedFiles, loadLedger } from "./pr-triage.mjs";
 import { startBatch, endBatch } from "../lib/learning-batch.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 export const DIFF_CAP = 350_000; // знака — над това агентът чете файловете в дървото по статистиката
 export const LOCKS = [":(exclude,glob)**/package-lock.json", ":(exclude,glob)**/pnpm-lock.yaml", ":(exclude,glob)**/yarn.lock", ":(exclude,glob)**/npm-shrinkwrap.json"];
@@ -220,4 +221,4 @@ function finish(out, all, argv, spent) {
   console.log(`готово: ${all.filter((r) => r.ok).length}/${all.length} · $${spent.toFixed(2)} · доклад: ${join(out, "REPORT.md")}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await main(process.argv.slice(2));
+if (isMain(import.meta.url)) await main(process.argv.slice(2));

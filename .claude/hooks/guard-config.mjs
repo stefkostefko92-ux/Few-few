@@ -24,6 +24,7 @@ import { readFileSync, appendFileSync, mkdirSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isMain } from "../../tools/lib/is-main.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -97,7 +98,7 @@ function log(entry) {
   } catch { /* дневникът не решава */ }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   let payload = {};
   try { payload = JSON.parse(readFileSync(0, "utf8") || "{}"); } catch { process.exit(2); }
   let why;

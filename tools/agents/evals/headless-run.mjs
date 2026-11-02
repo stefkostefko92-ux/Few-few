@@ -32,6 +32,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, rmSync
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { staticPrefixParts } from "../../../.claude/hooks/memory-preload.mjs";
+import { isMain } from "../../lib/is-main.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..", "..");
@@ -195,4 +196,4 @@ function main() {
 
 // CLI guard: без него `import` (за тест или за systemPrompt()) пуска целия main() и излиза —
 // същият клас „код на върха при import", за който имаме import-safety.test.mjs.
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (isMain(import.meta.url)) main();

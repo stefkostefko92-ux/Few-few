@@ -21,6 +21,7 @@ import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { finish } from "../lib/emit.mjs";
 import { assistantTexts } from "../../.claude/hooks/memory-capture.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const HOOK = join(ROOT, ".claude", "hooks", "memory-capture.mjs");
@@ -66,4 +67,4 @@ async function main() {
   return finish(0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await main();
+if (isMain(import.meta.url)) await main();

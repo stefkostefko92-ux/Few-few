@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { publishedTip, ARTIFACT_URL } from "../../tools/docs/build-artifact.mjs";
 import { activeBatch } from "../../tools/lib/learning-batch.mjs";
+import { isMain } from "../../tools/lib/is-main.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -62,4 +63,4 @@ function main() {
   process.exit(2); // върни сесията веднъж
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) { try { main(); } catch { process.exit(0); } }
+if (isMain(import.meta.url)) { try { main(); } catch { process.exit(0); } }

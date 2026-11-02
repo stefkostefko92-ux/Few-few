@@ -38,6 +38,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isRealSource } from "../agents/oversee-lib.mjs";
 import { lessonId } from "./quarantine-review.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MEM_DIR = process.env.CURATE_MEM_DIR || join(ROOT, ".claude", "agents", "_memory");
@@ -298,4 +299,4 @@ function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (isMain(import.meta.url)) main();

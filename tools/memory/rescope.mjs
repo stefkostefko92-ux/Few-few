@@ -27,6 +27,7 @@ import { lessonId } from "./quarantine-review.mjs";
 import { genericScope } from "../lib/lesson-scope.mjs";
 import { looksSecret, looksInjection } from "../../.claude/hooks/memory-capture.mjs";
 import { isRealSource } from "../agents/oversee-lib.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MEM_DIR = process.env.CURATE_MEM_DIR || join(ROOT, ".claude", "agents", "_memory");
@@ -165,4 +166,4 @@ function main() {
   if (r.rejected.length) process.exit(1);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (isMain(import.meta.url)) main();

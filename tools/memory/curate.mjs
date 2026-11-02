@@ -34,6 +34,7 @@
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isMain } from "../lib/is-main.mjs";
 
 // CURATE_MEM_DIR позволява тестът да пусне ИНСТРУМЕНТА върху фикстура вместо върху живата памет.
 // Без него CLI тестът щеше да съди СЪСТОЯНИЕТО на репото („днес няма дубли“) вместо поведението на
@@ -253,4 +254,4 @@ console.log(`\ncurate: ${totalDup} точни дубли, ${totalMerged} сле�
   (WRITE ? " [записано]" : " [dry-run — добави --write за прилагане]"));
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+if (isMain(import.meta.url)) main();

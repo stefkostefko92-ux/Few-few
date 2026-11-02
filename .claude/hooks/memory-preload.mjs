@@ -14,6 +14,7 @@ import { cardFor } from "../../tools/agents/teams.mjs";
 import { LEARN_SCHEMA } from "./memory-capture.mjs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isMain } from "../../tools/lib/is-main.mjs";
 
 const HOOK_DIR = dirname(fileURLToPath(import.meta.url));
 const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || join(HOOK_DIR, "..", "..");
@@ -222,6 +223,6 @@ function main() {
 }
 
 // Пусни main() само като CLI (SubagentStart hook), не при import от тест — иначе import-ът чете stdin/излиза.
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   try { main(); } catch { process.exit(0); }
 }

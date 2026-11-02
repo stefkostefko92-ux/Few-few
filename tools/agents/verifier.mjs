@@ -14,6 +14,7 @@
 
 import { readFileSync } from "node:fs";
 import { emitJsonNow } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 // Проверка: { when: RegExp (темата присъства → проверката важи), any|none: маркери, label }.
 // Маркерите са tolerant (какъвто е eval-lib подходът) — ловим ОТСЪСТВИЕ на дисциплина, не стил.
@@ -129,4 +130,4 @@ async function runCli() {
   process.exit(r.ok ? 0 : 1);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await runCli();
+if (isMain(import.meta.url)) await runCli();

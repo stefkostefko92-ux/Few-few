@@ -12,6 +12,7 @@
 // Ползва се от pr-triage (ядро без тест → и Изпитателят) и от уменията commit-pr и verify.
 
 import { execFileSync } from "node:child_process";
+import { isMain } from "../lib/is-main.mjs";
 
 // Сървърен код по домейни, където грешка струва пари, закон или здраве.
 const CORE_RE = /(fiscal|payment|stripe|checkout|billing|webhook|\bauth|session|login-throttle|password|totp|webauthn|crypto|storno|invoice|refund|orders?\b|risk|kill.?switch|emergency|consent|gdpr|entitlement|premium|subscription|\bsales\b|shifts|ledger|wallet|prisma\/schema\.prisma|\/migrations?\/)/i;
@@ -63,4 +64,4 @@ async function runCli() {
   for (const f of argv) console.log(`${isCore(f) ? "ядро " : "листо"}  ${f}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await runCli();
+if (isMain(import.meta.url)) await runCli();

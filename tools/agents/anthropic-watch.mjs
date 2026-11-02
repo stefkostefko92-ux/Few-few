@@ -26,6 +26,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJson, finish } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const STATE = join(HERE, "anthropic-watch.json");
@@ -183,4 +184,4 @@ async function main(argv) {
   finish(failed.length ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await main(process.argv.slice(2));
+if (isMain(import.meta.url)) await main(process.argv.slice(2));

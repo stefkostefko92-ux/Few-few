@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { isMain as isEntryPoint } from "../../tools/lib/is-main.mjs"; // isMain тук е проверка за клон main
 // guard-dangerous.mjs — PreToolUse(Bash) предпазител. Блокира САМО еднозначно катастрофални команди
 // (трият системата/диска). Всичко останало минава — не пречим на нормалната работа. **Fail-open:**
 // всяка вътрешна грешка → разрешаваме (хук-бъг никога не спира работата).
@@ -399,7 +400,7 @@ export function isCatastrophic(cmd, depth = 0) {
 }
 
 // CLI (fail-open навсякъде)
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isEntryPoint(import.meta.url)) {
   let buf = "";
   process.stdin.on("data", (d) => (buf += d));
   process.stdin.on("end", () => {

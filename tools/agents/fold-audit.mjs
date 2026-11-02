@@ -16,6 +16,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const HUB = new Set(["ai-djiyata", "човек", "human", "собственик", "оркестратор", "main"]);
@@ -53,4 +54,4 @@ async function runCli() {
     : "\nНяма двойка, която да върви заедно достатъчно често — флотът по домейни се държи.");
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await runCli();
+if (isMain(import.meta.url)) await runCli();

@@ -11,6 +11,7 @@ import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const SKILLS_DIR = join(ROOT, ".claude", "skills");
@@ -122,7 +123,7 @@ export function lintSkill(dir, name) {
   return { name, errs, warns };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const JSON_OUT = process.argv.includes("--json");
   const names = existsSync(SKILLS_DIR)
     ? readdirSync(SKILLS_DIR).filter((f) => statSync(join(SKILLS_DIR, f)).isDirectory())

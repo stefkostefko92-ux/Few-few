@@ -23,6 +23,7 @@ import { fileURLToPath } from "node:url";
 import { validateHandoff } from "../../tools/agents/handoff.mjs";
 import { normalizeActor } from "./dod-check.mjs";
 import { looksInjection } from "./memory-capture.mjs";
+import { isMain } from "../../tools/lib/is-main.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -76,4 +77,4 @@ function main() {
   process.exit(0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) { try { main(); } catch { process.exit(0); } }
+if (isMain(import.meta.url)) { try { main(); } catch { process.exit(0); } }

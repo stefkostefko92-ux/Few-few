@@ -17,6 +17,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { securityDoctrine, procedureDoctrine } from "../../.claude/hooks/memory-preload.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const SKILL_NAME = "agent-doctrine";
@@ -60,4 +61,4 @@ function main(argv) {
   process.exitCode = 1;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main(process.argv.slice(2));
+if (isMain(import.meta.url)) main(process.argv.slice(2));

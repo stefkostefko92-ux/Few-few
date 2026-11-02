@@ -11,6 +11,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
 import { inputFiles, fileHashes, inputsHash } from "../../tools/agents/live-gate.mjs";
+import { isMain } from "../../tools/lib/is-main.mjs";
 
 // CLAUDE_PROJECT_DIR override (както в dod-check.mjs): без него хукът е структурно НЕТЕСТВАЕМ на
 // CLI ниво — тестът би трябвало да мутира реалното репо, за да види поведението. Харнесът подава
@@ -70,4 +71,4 @@ function main() {
   process.exit(2); // върни сесията веднъж — „готово" = зелено
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) { try { main(); } catch { process.exit(0); } }
+if (isMain(import.meta.url)) { try { main(); } catch { process.exit(0); } }

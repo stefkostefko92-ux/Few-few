@@ -14,6 +14,7 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isMain } from "../../tools/lib/is-main.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const CAP = 10;
@@ -34,7 +35,7 @@ export function decide(payload, state, ours) {
   return { count: next, block: false };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   try {
     const payload = JSON.parse(readFileSync(0, "utf8") || "{}");
     const dir = join(HERE, "_state");

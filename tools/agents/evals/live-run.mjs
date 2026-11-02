@@ -28,6 +28,7 @@ import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { setEvalMode } from "../../lib/eval-mode.mjs";
+import { isMain } from "../../lib/is-main.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const ROOT = join(HERE, "..", "..", "..");
@@ -292,4 +293,4 @@ async function main(argv) {
   } finally { cleanup(); }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await main(process.argv.slice(2));
+if (isMain(import.meta.url)) await main(process.argv.slice(2));

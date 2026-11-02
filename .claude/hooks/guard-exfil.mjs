@@ -6,6 +6,7 @@
 //
 // Договор: stdin = JSON {tool_name, tool_input}. Bash → tool_input.command; WebFetch → tool_input.url.
 // Регистриран като PreToolUse matcher "Bash|WebFetch".
+import { isMain } from "../../tools/lib/is-main.mjs";
 
 import { SECRET_RE, sanitize } from "./guard-secrets.mjs"; // единствен източник за „какво е тайна" + санитизация
 // Red-team 2026-09-08: `sanitize()` (маха невидими знаци, NFKC) живееше САМО в guard-secrets. Тук
@@ -252,7 +253,7 @@ export function detectExfil(tool, ti = {}) {
   return null;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   let buf = "";
   process.stdin.on("data", (d) => (buf += d));
   process.stdin.on("end", () => {

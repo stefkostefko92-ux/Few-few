@@ -13,6 +13,7 @@ import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../../lib/emit.mjs";
+import { isMain } from "../../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const argv = process.argv.slice(2);
@@ -73,4 +74,4 @@ async function runCli() {
   process.exit(r.errors.length ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await runCli();
+if (isMain(import.meta.url)) await runCli();

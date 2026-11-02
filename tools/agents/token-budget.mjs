@@ -19,6 +19,7 @@ import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -264,4 +265,4 @@ process.exit(failed);
 }
 
 // Пусни CLI само при директно извикване (не при import от тест/табло).
-if (import.meta.url === `file://${process.argv[1]}`) await runCli();
+if (isMain(import.meta.url)) await runCli();

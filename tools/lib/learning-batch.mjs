@@ -15,6 +15,7 @@ import { readFileSync, writeFileSync, rmSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { isAbsolute, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isMain } from "./is-main.mjs";
 
 export const BATCH_FILE = "agents-learning-batch.json";
 export const MAX_MINUTES = 240;
@@ -52,7 +53,7 @@ export function endBatch(cwd) {
   if (p) rmSync(p, { force: true });
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const cwd = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
   const [cmd] = process.argv.slice(2);
   const val = (f) => { const i = process.argv.indexOf(f); return i >= 0 ? process.argv[i + 1] : null; };

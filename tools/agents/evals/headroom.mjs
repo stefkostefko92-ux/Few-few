@@ -13,6 +13,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../../lib/emit.mjs";
+import { isMain } from "../../lib/is-main.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const SATURATED_RATE = 0.95;
@@ -49,4 +50,4 @@ async function runCli() {
   console.log("✓ има запас.");
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await runCli();
+if (isMain(import.meta.url)) await runCli();

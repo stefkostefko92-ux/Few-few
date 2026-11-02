@@ -19,6 +19,7 @@ import { readFileSync, writeFileSync, existsSync, copyFileSync, mkdirSync } from
 import { join, dirname } from "node:path";
 import { homedir, platform } from "node:os";
 import { execFileSync } from "node:child_process";
+import { isMain } from "../lib/is-main.mjs";
 
 // Домейните, които нашата работа реално ползва от Bash (git, npm, документацията). Останалото се
 // одобрява при нужда — първият опит към нов домейн пита, не минава тихо.
@@ -95,4 +96,4 @@ function main(argv) {
   console.log("✓ записано. Провери в нова сесия: /sandbox, после помоли Claude да пусне `touch ~/sandbox-probe` — трябва да откаже.");
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main(process.argv.slice(2));
+if (isMain(import.meta.url)) main(process.argv.slice(2));

@@ -14,6 +14,7 @@
 // Ползваме CREDENTIAL (не ALL): JWT остава само за commit гейта, защото `Authorization: Bearer eyJ…`
 // е ЛЕГИТИМЕН рънтайм трафик и блокирането му би било фалшива тревога (виж secret-patterns.mjs).
 import { CREDENTIAL } from "../../tools/lib/secret-patterns.mjs";
+import { isMain } from "../../tools/lib/is-main.mjs";
 export const SECRET_RE = CREDENTIAL;
 
 // Пътища, където фалшиви ключове са легитимни (фикстури/тестове/eval/scratch) → не вдигай шум.
@@ -53,7 +54,7 @@ export function contentOf(ti = {}) {
     (Array.isArray(ti.edits) ? ti.edits.map((e) => e?.new_string ?? "").join("\n") : "");
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   let buf = "";
   process.stdin.on("data", (d) => (buf += d));
   process.stdin.on("end", () => {

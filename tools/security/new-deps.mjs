@@ -21,6 +21,7 @@
 
 import { execFileSync } from "node:child_process";
 import { emitJsonNow } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 // Популярните пакети в нашия стек (продуктовите package.json + най-честите мишени за typosquat).
 export const POPULAR = [
@@ -139,4 +140,4 @@ async function runCli() {
   process.exit(gate.length ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await runCli();
+if (isMain(import.meta.url)) await runCli();

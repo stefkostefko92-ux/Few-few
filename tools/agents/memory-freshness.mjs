@@ -36,6 +36,7 @@ import { emitJsonNow } from "../lib/emit.mjs";
 // чете блока, както всички останали консуматори.
 import { sectionBullets, lessonDate, reverifiedDate } from "./oversee-lib.mjs";
 import { lessonId } from "../memory/quarantine-review.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
@@ -233,4 +234,4 @@ async function main() {
   process.exit(CHECK && health.problems.length ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await main();
+if (isMain(import.meta.url)) await main();
