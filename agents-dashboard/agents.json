@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 452
+        "lessons": 454
       },
       "evolution": [
         {
@@ -620,9 +620,20 @@
           "date": "2026-11-02",
           "event": "v37.3 — учене",
           "detail": "Научи: YouTube Data API квотата по подразбиране е 100 повиквания search.list на ден ОТДЕЛНО пл… (+1 още)"
+        },
+        {
+          "version": "37.5.0",
+          "date": "2026-11-02",
+          "event": "v37.5 — учене",
+          "detail": "Научи: Страната по YouTube API Services Terms of Service е YouTube LLC, с калифорнийско право … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Страната по YouTube API Services Terms of Service е YouTube LLC, с калифорнийско право …\" (+1 още)"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
