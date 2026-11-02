@@ -14180,7 +14180,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 281
+        "lessons": 284
       },
       "evolution": [
         {
@@ -14254,9 +14254,20 @@
           "date": "2026-10-31",
           "event": "v27.2 — учене",
           "detail": "Научи: guard-exfil.mjs пропуска (exit 0) вход с tool_name Monitor и с ws.url, а от 2.1.314 кук… (+63 още)"
+        },
+        {
+          "version": "27.5.0",
+          "date": "2026-11-02",
+          "event": "v27.5 — учене",
+          "detail": "Научи: Смяна на top-level output_config.effort между заявки рестартира prompt кеша, но per-mes… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Смяна на top-level output_config.effort между заявки рестартира prompt кеша, но per-mes…\" (+2 още)"
+        },
         {
           "date": "2026-10-31",
           "type": "learning",
