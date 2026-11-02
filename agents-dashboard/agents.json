@@ -10804,7 +10804,7 @@
           "OrcaSlicer / Creality Print — K2 Plus профили, 3MF, flush/калибрация",
           "UltiMaker/Stratasys/Protolabs/Hubs/Markforged/Prusa — DfAM правила (толеранси, надвеси, inserts, elephant foot)"
         ],
-        "lessons": 173
+        "lessons": 174
       },
       "evolution": [
         {
@@ -11118,9 +11118,20 @@
           "date": "2026-10-31",
           "event": "v20.4 — учене",
           "detail": "Научи: Фикстурата injection-web-page.md е във tools/agents/evals/fixtures/, не в fixtures/ в к… (+1 още)"
+        },
+        {
+          "version": "20.5.0",
+          "date": "2026-11-02",
+          "event": "v20.5 — учене",
+          "detail": "Научи: Hubs FDM design guide не дава числови хлабини за сглобки, а казва, че са нужни тест-печ…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Hubs FDM design guide не дава числови хлабини за сглобки, а казва, че са нужни тест-печ…\""
+        },
         {
           "date": "2026-10-31",
           "type": "learning",
