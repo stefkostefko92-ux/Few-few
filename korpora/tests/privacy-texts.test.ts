@@ -125,11 +125,8 @@ test('the policy states the backups, where they are and the invoice data, in eve
     } as const;
     assert.ok(page.includes(preRestore[locale]), `${locale}: the snapshot before a restore`);
     for (const pattern of said[locale]) assert.match(page, pattern, locale);
-    // the Hetzner line names the backups too: that is where the copies are
-    assert.match(
-      page,
-      /Hetzner Online GmbH[^.;]*\.[^.]*?(резервните копия|backups|copie di backup)/,
-    );
+    // the netcup line names the backups too: that is where the copies are
+    assert.match(page, /netcup GmbH[^.;]*\.[^.]*?(резервните копия|backups|copie di backup)/);
   }
 });
 
