@@ -440,3 +440,6 @@
 {"t":"start","ts":"2026-11-02T11:39:54.908Z","id":"r5aa79924","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-02T11:39:54.908Z","id":"r5aa79924","from":"kodadjiyata","to":"geymara","status":"има бележки","run":"8388e80a"}
 {"t":"handoff","ts":"2026-11-02T11:43:54.409Z","id":"r5aa79924","from":"pravniyat-razbirach","to":"geymara","status":"има бележки","run":"81f75351"}
+{"t":"start","ts":"2026-11-02T12:16:18.337Z","id":"recdaaf92","flow":"авто","lead":"prodavacha","auto":true}
+{"t":"handoff","ts":"2026-11-02T12:16:18.337Z","id":"recdaaf92","from":"prodavacha","to":"ai-djiyata","status":"има бележки","run":"7a6610a5"}
+{"t":"handoff","ts":"2026-11-02T12:24:22.453Z","id":"recdaaf92","from":"3d-maniac","to":"човек","status":"има бележки","run":"dad19e15"}
