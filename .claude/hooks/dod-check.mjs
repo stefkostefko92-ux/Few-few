@@ -136,15 +136,23 @@ const cmdKey = (c) => String(c || "").replace(/\s+/g, " ").trim();
 // `npm test`) се изчиства от по-късно зелено `npm test` в същия продукт — повтарянето на мутиращата команда
 // само за куката е вредно. `node --test b.test.mjs` пак НЕ изчиства `a.test.mjs` (аргументите са в ключа).
 const TEST_RUN = /(?:npm|pnpm|yarn)\s+(?:run\s+)?test\b|node\s+--test\b[^|;&>\n]*|npx\s+(?:tsx\s+--test|vitest|jest|playwright\s+test)\b[^|;&>\n]*/g;
+// Временно копие (мутационна проба, PoC): /tmp/… или scratchpad — нарочно червено там не е гейт на репото
+// (02.11.2026, Геймъра и Кодаджията: мутация в копие „заключваше“ куката, защото там зелено не идва).
+const SCRATCH = /^(?:\/tmp\/|\/var\/tmp\/)|\/scratchpad(?:\/|$)/;
+export const SCRATCH_RUN = "<временно копие>";
 export function testRunKey(cmd) {
   const c = String(cmd || "");
   const keys = [];
+  let scratch = 0;
   for (const m of c.matchAll(TEST_RUN)) {
     const before = c.slice(0, m.index);
     const cds = [...before.matchAll(/\bcd\s+("[^"]+"|'[^']+'|[^\s;&|]+)/g)];
-    const dir = cds.length ? cds[cds.length - 1][1].replace(/["']/g, "").replace(/\/+$/, "").split("/").pop() : "";
-    keys.push(dir + "::" + m[0].replace(/\s+/g, " ").trim());
+    const full = cds.length ? cds[cds.length - 1][1].replace(/["']/g, "").replace(/\/+$/, "") : "";
+    const arg = m[0].split(/\s+/).slice(2).find((a) => a.startsWith("/")) || "";
+    if (SCRATCH.test(full) || SCRATCH.test(arg)) { scratch++; continue; }
+    keys.push(full.split("/").pop() + "::" + m[0].replace(/\s+/g, " ").trim());
   }
+  if (!keys.length && scratch) return SCRATCH_RUN;
   return keys.length ? keys.join(" && ") : "";
 }
 
@@ -161,6 +169,7 @@ export function checkFailedGates(results) {
     for (const r of results) {
       const out = typeof r === "string" ? r : String(r?.out ?? "");
       const key = typeof r === "string" ? "" : (m.name === "тестовете" && testRunKey(r?.cmd)) || cmdKey(r?.cmd);
+      if (key === SCRATCH_RUN) continue; // временно копие — не е гейт на репото
       if (m.red.test(out)) last.set(key, "red");
       else if (m.green.test(out)) last.set(key, "green");
     }

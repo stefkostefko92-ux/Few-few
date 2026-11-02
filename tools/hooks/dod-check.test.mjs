@@ -289,3 +289,14 @@ test("checkFailedGates: червен TDD ран в heredoc се изчиства
   const a = { cmd: "node --test a.test.mjs", out: "# fail 2" }, b = { cmd: "node --test b.test.mjs", out: "# fail 0" };
   assert.ok(checkFailedGates([a, b]), "друг тестов файл пак не маскира червения");
 });
+
+// Регресия 2026-11-02 (Геймъра, Кодаджията): нарочно червена мутационна проба във временно копие
+// (/tmp, scratchpad) заключваше куката — там зелено не идва. Червено в репото пак хапе.
+test("checkFailedGates: червено във временно копие не е гейт; червено в репото пак хапе", () => {
+  const mut = { cmd: "cd /tmp/claude-0/x/scratchpad/mut && node --test tools/fivem/stream-lint.test.mjs", out: "# fail 4" };
+  const mut2 = { cmd: "node --test /tmp/copy/tools/fivem/stream-lint.test.mjs", out: "# fail 2" };
+  assert.equal(checkFailedGates([mut, mut2]), null);
+  const repo = { cmd: "cd /home/user/Few-few && node --test tools/fivem/stream-lint.test.mjs", out: "# fail 1" };
+  assert.ok(checkFailedGates([mut, repo]), "червено в репото не се маскира");
+  assert.ok(checkFailedGates([repo, { cmd: "cd /tmp/copy && node --test tools/fivem/stream-lint.test.mjs", out: "# fail 0" }]), "зелено в копие не изчиства червено в репото");
+});
