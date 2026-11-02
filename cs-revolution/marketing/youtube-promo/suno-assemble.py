@@ -20,7 +20,16 @@ def onset(bar, verbose=True):
         if all(abs(i - j) > 40 for j in picks): picks.append(i)
         if len(picks) == 3: break
     if verbose: print(f'  bar {bar}: candidates', [(a + i - g, round(float(d[i]), 2)) for i in picks])
-    return (a + picks[0]) / 1000
+    i = picks[0]
+    # набъбване преди удара: ако 40 ms след скока силата е още >5 dB под самия удар, котвата отива там,
+    # където ударът наистина пристига (в рамките на 3 dB) — иначе звукът изостава от картината
+    lvl = 20 * np.log10(np.convolve(env, np.ones(20) / 20, 'same') + 1e-9)
+    post = np.median(lvl[g + 60:g + 600])
+    if lvl[a + i + 40] < post - 5:
+        j = next((j for j in range(a + i, z + 120) if lvl[j] >= post - 3), a + i) - a
+        if verbose: print(f'    swell at {a + i - g} ms → hit at {a + j - g} ms')
+        i = j
+    return (a + i) / 1000
 # runs: (видео такт, такт от песента, котва = такт в рамките на run-а, чийто удар пада точно на видео такта)
 RUNS = [(0, 12, 12, 1), (1, 15, 16, 6), (7, 23, 24, 7), (14, 46, None, 1), (15, 48, 48, 4), (19, 63, 64, 6), (25, 72, 72, 1), (26, 79, 80, 3), (29, 90, 90, None)]
 N = int(DUR * sr); out = np.zeros((N, ch)); XF = int(.015 * sr)
