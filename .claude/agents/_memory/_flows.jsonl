@@ -432,3 +432,11 @@
 {"t":"start","ts":"2026-11-02T11:21:12.120Z","id":"r4d2d57fb","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-11-02T11:21:12.120Z","id":"r4d2d57fb","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"21e358cb"}
 {"t":"handoff","ts":"2026-11-02T11:21:55.923Z","id":"r4d2d57fb","from":"pravniyat-razbirach","to":"kodadjiyata","status":"блокер","run":"488f3a49"}
+{"t":"handoff","ts":"2026-11-02T11:26:45.861Z","id":"r4d2d57fb","from":"kodadjiyata","to":"kachestveniyat","status":"блокер","run":"564784e7"}
+{"t":"handoff","ts":"2026-11-02T11:27:51.476Z","id":"r4d2d57fb","from":"pravniyat-razbirach","to":"geymara","status":"има бележки","run":"db8a8f2a"}
+{"t":"handoff","ts":"2026-11-02T11:30:52.466Z","id":"r4d2d57fb","from":"geymara","to":"друг","status":"наред","run":"996870c8","toRaw":"kodadzhiyata"}
+{"t":"start","ts":"2026-11-02T11:31:08.998Z","id":"r8444bd37","flow":"авто","lead":"geymara","auto":true}
+{"t":"handoff","ts":"2026-11-02T11:31:08.999Z","id":"r8444bd37","from":"geymara","to":"kodadjiyata","status":"наред","run":"996870c8"}
+{"t":"start","ts":"2026-11-02T11:39:54.908Z","id":"r5aa79924","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-02T11:39:54.908Z","id":"r5aa79924","from":"kodadjiyata","to":"geymara","status":"има бележки","run":"8388e80a"}
+{"t":"handoff","ts":"2026-11-02T11:43:54.409Z","id":"r5aa79924","from":"pravniyat-razbirach","to":"geymara","status":"има бележки","run":"81f75351"}
