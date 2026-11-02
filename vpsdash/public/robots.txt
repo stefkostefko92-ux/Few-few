@@ -1,0 +1,4 @@
+# Carbon Stealth · VPS Dashboard — частен панел зад вход.
+# Обхождането е разрешено, за да видят търсачките noindex-а на страницата.
+User-agent: *
+Allow: /

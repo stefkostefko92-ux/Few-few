@@ -1,6 +1,12 @@
 import type { MetadataRoute } from "next";
 import { SITE } from "@/lib/site";
 import { prisma } from "@/lib/prisma";
+import { postHasBody } from "@/lib/seo";
+import { RETIRED_GUIDE_SLUGS } from "@/lib/guide-redirects";
+
+// В sitemap-а са САМО канонични адреси за индексиране: без филтри с `?`
+// (те сочат canonical към основния списък), без пренасочени (оттеглени)
+// ръководства и без празни новини (noindex).
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +16,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // защото това при всяко обхождане казва на Google „всичко се промени току-що“
   // и обезсмисля `lastmod` сигнала. Бумни при същинска промяна по статичните страници.
   const STATIC_LASTMOD = new Date("2026-06-30");
+  // Собствени заглавие/описание/canonical на /signali и видими въпроси на /dostapnost.
+  const SEO_FIX_LASTMOD = new Date("2026-10-22");
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${base}/`, lastModified: STATIC_LASTMOD, changeFrequency: "daily", priority: 1 },
@@ -27,7 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/prekysvaniya`, lastModified: STATIC_LASTMOD, changeFrequency: "daily", priority: 0.6 },
     { url: `${base}/spodeleno-patuvane`, lastModified: STATIC_LASTMOD, changeFrequency: "daily", priority: 0.7 },
     { url: `${base}/novini`, lastModified: STATIC_LASTMOD, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${base}/signali`, lastModified: STATIC_LASTMOD, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${base}/signali`, lastModified: SEO_FIX_LASTMOD, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/prozrachnost`, lastModified: STATIC_LASTMOD, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/smetishta`, lastModified: STATIC_LASTMOD, changeFrequency: "daily", priority: 0.6 },
     { url: `${base}/grafik-smetosabirane`, lastModified: STATIC_LASTMOD, changeFrequency: "monthly", priority: 0.5 },
@@ -40,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/galeriya`, lastModified: STATIC_LASTMOD, changeFrequency: "weekly", priority: 0.6 },
     { url: `${base}/za-nas`, lastModified: STATIC_LASTMOD, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/kak-da-polzvam-sayta`, lastModified: STATIC_LASTMOD, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${base}/dostapnost`, lastModified: STATIC_LASTMOD, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${base}/dostapnost`, lastModified: SEO_FIX_LASTMOD, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/kontakti`, lastModified: STATIC_LASTMOD, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/pechat`, lastModified: STATIC_LASTMOD, changeFrequency: "monthly", priority: 0.4 },
     { url: `${base}/pechat/avtobus`, lastModified: STATIC_LASTMOD, changeFrequency: "monthly", priority: 0.4 },
@@ -59,7 +67,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const [faqs, services, businesses, events, posts, listings, rides, help, memories] =
       await Promise.all([
         prisma.faq.findMany({
-          where: { published: true },
+          where: { published: true, slug: { notIn: [...RETIRED_GUIDE_SLUGS] } },
           select: { slug: true, updatedAt: true },
         }),
         prisma.service.findMany({
@@ -76,7 +84,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }),
         prisma.post.findMany({
           where: { published: true },
-          select: { slug: true, updatedAt: true },
+          select: { slug: true, updatedAt: true, content: true, excerpt: true },
         }),
         prisma.listing.findMany({
           where: { published: true, ...notExpired },
@@ -121,7 +129,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly" as const,
         priority: 0.6,
       })),
-      ...posts.map((x) => ({
+      ...posts.filter(postHasBody).map((x) => ({
         url: `${base}/novini/${x.slug}`,
         lastModified: x.updatedAt,
         changeFrequency: "monthly" as const,

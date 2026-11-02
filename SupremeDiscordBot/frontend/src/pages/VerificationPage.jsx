@@ -12,35 +12,24 @@ import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import EmojiPicker from "../components/EmojiPicker";
+import BaitCard from "../components/BaitCard";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import { useToast } from "../contexts/ToastContext";
 
-const TYPES = [
-  { value: "BUTTON",   label: "One-click button",    hint: "User clicks a button → instantly verified" },
-  { value: "MATH",     label: "Math captcha",        hint: "User solves a simple math problem in a modal" },
-  { value: "REACTION", label: "Reaction (experimental)", hint: "User reacts to the message" },
-];
+// Етикетите са в речника: verify.type.* · verify.hint.* · verify.diff.* · ui.style.*
+const TYPES = ["BUTTON", "MATH", "REACTION"];
+const DIFFICULTIES = ["EASY", "MEDIUM", "HARD"];
+const BUTTON_STYLES = ["PRIMARY", "SECONDARY", "SUCCESS", "DANGER"];
 
-const DIFFICULTIES = [
-  { value: "EASY",   label: "Easy (1-digit)" },
-  { value: "MEDIUM", label: "Medium (2-digit)" },
-  { value: "HARD",   label: "Hard (multiplication)" },
-];
-
-const BUTTON_STYLES = [
-  { value: "PRIMARY",   label: "Blue" },
-  { value: "SECONDARY", label: "Grey" },
-  { value: "SUCCESS",   label: "Green" },
-  { value: "DANGER",    label: "Red" },
-];
-
-const defaultForm = () => ({
+// Заглавието, текстът и бутонът отиват направо в Discord — на езика на таблото.
+const defaultForm = (t) => ({
   name: "",
-  title: "✅ Verify to access the server",
-  description: "Click the button below to verify you're not a bot.",
+  title: t("verify.default.title"),
+  description: t("verify.default.description"),
   color: "#8fe600",
   type: "BUTTON",
-  buttonLabel: "Verify",
+  buttonLabel: t("verify.default.button"),
   buttonEmoji: "",
   buttonStyle: "SUCCESS",
   successMessage: "",
@@ -56,9 +45,9 @@ const defaultForm = () => ({
   cooldownMinutes: 10,
 });
 
-function panelToForm(p) {
+function panelToForm(p, t) {
   return {
-    ...defaultForm(),
+    ...defaultForm(t),
     ...p,
     grantRoleIds: (p.grantRoleIds || []).join(","),
     removeRoleIds: (p.removeRoleIds || []).join(","),
@@ -81,7 +70,7 @@ export default function VerificationPage() {
   // (напр. „Math captcha requires Premium") се губи в „Action failed".
   const errText = (err) => err?.response?.data?.error || t("auto.actionFailed");
   const [editing, setEditing] = useState(null); // null | "new" | panelId
-  const [form, setForm] = useState(defaultForm());
+  const [form, setForm] = useState(() => defaultForm(t));
   const [spawnInputs, setSpawnInputs] = useState({});
   const [confirmState, setConfirmState] = useState(null);
 
@@ -120,8 +109,8 @@ export default function VerificationPage() {
   });
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
-  const openNew = () => { setForm(defaultForm()); setEditing("new"); };
-  const openEdit = (p) => { setForm(panelToForm(p)); setEditing(p.id); };
+  const openNew = () => { setForm(defaultForm(t)); setEditing("new"); };
+  const openEdit = (p) => { setForm(panelToForm(p, t)); setEditing(p.id); };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -146,20 +135,18 @@ export default function VerificationPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl">
-      <div className="flex justify-between items-start mb-8">
-        <div>
-          <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
-            <ShieldCheck className="w-7 h-7 text-cs-cyan" /> Verification
-          </h1>
-          <p className="text-cs-muted mt-2 max-w-xl">
-            Anti-bot gates for your server. Users verify once (button click or math captcha) to
-            receive a role, then ticket panels can require that role before opening.
-          </p>
-        </div>
-        <button onClick={openNew} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New Panel
-        </button>
-      </div>
+      <PageHeader
+        title={t("nav.verification")}
+        subtitle={t("verify.intro")}
+        actions={(
+          <button onClick={openNew} className="cs-btn-primary cs-btn-sm flex items-center gap-2">
+            <Plus className="w-4 h-4" aria-hidden="true" /> {t("panels.new")}
+          </button>
+        )}
+      />
+
+      {/* v52 — канал-стръв за спам ботове: втората защита на страницата. */}
+      <BaitCard serverId={serverId} />
 
       {isLoading && <div className="cs-card h-32 animate-pulse" />}
 
@@ -179,13 +166,13 @@ export default function VerificationPage() {
             <div className="flex-1">
               <div className="flex items-center gap-3">
                 <span className="text-cs-text font-bold">{p.name}</span>
-                <span className="cs-badge text-cs-cyan">{p.type}</span>
+                <span className="cs-badge text-cs-cyan">{t(`verify.type.${p.type}`)}</span>
                 {p.channelId && (
-                  <span className="cs-badge text-success">Spawned</span>
+                  <span className="cs-badge text-success">{t("verify.posted")}</span>
                 )}
               </div>
               <div className="text-xs text-cs-dim mt-1">
-                ✓ {p.successCount} verified · ✗ {p.failCount} failed · Grants {p.grantRoleIds?.length || 0} role(s)
+                {t("verify.stats", { ok: p.successCount, failed: p.failCount, roles: p.grantRoleIds?.length || 0 })}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -206,13 +193,13 @@ export default function VerificationPage() {
                   </button>
                 </>
               )}
-              <button onClick={() => openEdit(p)} aria-label="Edit panel" title="Edit panel" className="text-cs-cyan hover:opacity-80 p-2">
+              <button onClick={() => openEdit(p)} aria-label={t("verify.edit")} title={t("verify.edit")} className="text-cs-cyan hover:opacity-80 p-2">
                 <Pencil className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setConfirmState({
                   title: t("verify.delete"),
-                  message: `Delete "${p.name}"?`,
+                  message: t("verify.deleteConfirm", { name: p.name }),
                   onConfirm: () => { deleteMut.mutate(p.id); setConfirmState(null); },
                 })}
                 aria-label={t("verify.delete")}
@@ -240,20 +227,14 @@ export default function VerificationPage() {
               </label>
               <label className="block">
                 <span className="cs-label flex items-center gap-2">
-                  Type
+                  {t("ui.type")}
                 </span>
                 <select className="cs-select" value={form.type} onChange={(e) => set("type", e.target.value)}>
-                  {TYPES.map((t) => (
-                    <option
-                      key={t.value}
-                      value={t.value}
-
-                    >
-                      {t.label}
-                    </option>
+                  {TYPES.map((v) => (
+                    <option key={v} value={v}>{t(`verify.type.${v}`)}</option>
                   ))}
                 </select>
-                <p className="text-xs text-cs-dim mt-1">{TYPES.find((t) => t.value === form.type)?.hint}</p>
+                <p className="text-xs text-cs-dim mt-1">{TYPES.includes(form.type) ? t(`verify.hint.${form.type}`) : ""}</p>
               </label>
             </div>
 
@@ -292,7 +273,7 @@ export default function VerificationPage() {
               <label className="block">
                 <span className="cs-label">{t("ui.buttonStyle")}</span>
                 <select className="cs-select" value={form.buttonStyle} onChange={(e) => set("buttonStyle", e.target.value)}>
-                  {BUTTON_STYLES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  {BUTTON_STYLES.map((s) => <option key={s} value={s}>{t(`ui.style.${s}`)}</option>)}
                 </select>
               </label>
             </div>
@@ -301,7 +282,7 @@ export default function VerificationPage() {
               <label className="block">
                 <span className="cs-label">{t("ui.mathDifficulty")}</span>
                 <select className="cs-select" value={form.mathDifficulty} onChange={(e) => set("mathDifficulty", e.target.value)}>
-                  {DIFFICULTIES.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
+                  {DIFFICULTIES.map((d) => <option key={d} value={d}>{t(`verify.diff.${d}`)}</option>)}
                 </select>
               </label>
             )}
@@ -327,12 +308,12 @@ export default function VerificationPage() {
             </label>
 
             <details className="cs-card !p-3 !bg-cs-panel">
-              <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan">→ Anti-Bot & Limits</summary>
+              <summary className="cursor-pointer text-xs text-cs-cyan">{t("verify.sec.antiBot")}</summary>
               <div className="pt-3 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <label className="block">
                     <span className="cs-label flex items-center gap-1.5">
-                      Min Account Age (days)
+                      {t("verify.minAccountAge")}
                     </span>
                     <input
                       type="number" min={0} className="cs-input disabled:opacity-50 disabled:cursor-not-allowed"
@@ -357,7 +338,7 @@ export default function VerificationPage() {
                 </label>
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={form.dmOnSuccess} onChange={(e) => set("dmOnSuccess", e.target.checked)} className="accent-cs-cyan" />
-                  <span className="text-sm text-cs-text">DM user on successful verification</span>
+                  <span className="text-sm text-cs-text">{t("verify.dmOnSuccess")}</span>
                 </label>
                 {form.dmOnSuccess && (
                   <label className="block">
@@ -369,7 +350,7 @@ export default function VerificationPage() {
             </details>
 
             <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={() => setEditing(null)} className="cs-btn-secondary">Cancel</button>
+              <button type="button" onClick={() => setEditing(null)} className="cs-btn-secondary">{t("common.cancel")}</button>
               <button type="submit" className="cs-btn-primary" disabled={createMut.isPending || updateMut.isPending}>
                 {editing === "new" ? t("common.createPanel") : t("common.saveChanges")}
               </button>

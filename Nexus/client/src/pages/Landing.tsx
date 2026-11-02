@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Logo from '../components/Logo';
 import LandingDuel from '../components/LandingDuel';
@@ -7,38 +7,16 @@ import LandingSetShowcase from '../components/LandingSetShowcase';
 import LandingEffects from '../components/LandingEffects';
 import CinematicIntro from '../components/CinematicIntro';
 import LanguageSelector from '../components/LanguageSelector';
+import { SUPPORTED, type Locale } from '../i18n';
 import '../styles/landing.css';
 
-// Per-locale page titles + descriptions. Picked up at mount based on
-// ?lang= or the user's browser language, and written into the actual
-// document <title> / <meta name="description"> so search engines and AI
-// crawlers serving Italian / Bulgarian queries see locale-targeted copy
-// rather than the English default.
-const LOCALES: Record<string, { html: string; title: string; description: string }> = {
-  en: {
-    html: 'en',
-    title: 'Nexus Dominion — Free Browser MMORPG',
-    description: 'Server-authoritative turn-based MMORPG. Four classes, 500 levels of roster, ELO arena, real-time auction, five-tier guilds. Free, browser-based, no installer.',
-  },
-  it: {
-    html: 'it-IT',
-    title: 'Nexus Dominion — MMORPG da browser, gratuito',
-    description: "MMORPG con combattimenti a turni validati dal server. Quattro classi, 500 livelli di mostri, arena ELO, casa d'aste in tempo reale, gilde a cinque livelli. Gratuito, senza installazione.",
-  },
-  bg: {
-    html: 'bg-BG',
-    title: 'Nexus Dominion — Безплатна браузърна ММОРПГ',
-    description: 'Пошагова ММОРПГ, валидирана на сървъра. Четири класа, 500 нива монстри, ELO арена, аукцион в реално време, гилдии на пет нива. Безплатна, без инсталация.',
-  },
-};
-
-function pickLocale(): string {
-  if (typeof window === 'undefined') return 'en';
-  const q = new URLSearchParams(window.location.search).get('lang');
-  if (q && LOCALES[q]) return q;
-  const nav = navigator.language?.slice(0, 2).toLowerCase();
-  if (nav && LOCALES[nav]) return nav;
-  return 'en';
+// Заглавието и описанието на всяка езикова версия идват от локалите
+// (seo.landingTitle / seo.landingDescription) и съвпадат дословно със
+// сървърно рендираните (server/src/seo/copy.ts — тестът пази синхрона).
+// Адресът винаги е каноничният адрес на видимия език (`/`, `/?lang=it`,
+// `/?lang=bg`), така че споделен линк води до същата езикова версия.
+function currentLocale(lng: string | undefined): Locale {
+  return (SUPPORTED.find((l) => lng?.startsWith(l)) ?? 'en') as Locale;
 }
 
 function SplitText({ text }: { text: string }) {
@@ -66,21 +44,29 @@ function SplitText({ text }: { text: string }) {
 }
 
 export default function Landing(): React.ReactElement {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showIntro, setShowIntro] = useState(() => {
     if (typeof window === 'undefined') return false;
     try { return sessionStorage.getItem('nd_intro_seen') !== '1'; } catch { return true; }
   });
-  // Locale: pick from ?lang= → browser default → English, then rewrite
-  // <html lang>, <title> and <meta name="description"> so search engines and
-  // share previews pick up the right language for IT / BG visitors.
+  // Езикът на страницата → <html lang>, <title>, description и ?lang= в адреса.
+  const location = useLocation();
+  const navigate = useNavigate();
+  const locale = currentLocale(i18n.resolvedLanguage);
   useEffect(() => {
-    const loc = LOCALES[pickLocale()];
-    document.documentElement.lang = loc.html;
-    document.title = loc.title;
+    document.documentElement.lang = locale;
+    document.title = t('seo.landingTitle');
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', loc.description);
-  }, []);
+    if (meta) meta.setAttribute('content', t('seo.landingDescription'));
+    const params = new URLSearchParams(location.search);
+    const want = locale === 'en' ? null : locale;
+    if (params.get('lang') !== want) {
+      if (want) params.set('lang', want);
+      else params.delete('lang');
+      const search = params.toString();
+      navigate({ pathname: location.pathname, search: search ? `?${search}` : '', hash: location.hash }, { replace: true });
+    }
+  }, [locale, t, location.pathname, location.search, location.hash, navigate]);
 
   return (
     <div className="landing">
@@ -141,6 +127,9 @@ export default function Landing(): React.ReactElement {
           </div>
           <h1 className="hero-title">
             <SplitText text="Nexus Dominion" />
+            {/* Интервалът не се вижда (em е block), но текстът на H1 за
+                търсачките става „Nexus Dominion A realm…“, не „DominionA“. */}
+            {' '}
             <em><SplitText text={t('landing.heroTagline')} /></em>
           </h1>
           <p className="hero-subtitle" data-reveal>

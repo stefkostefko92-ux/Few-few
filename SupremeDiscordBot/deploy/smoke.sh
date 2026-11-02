@@ -42,13 +42,21 @@ note() { printf '  \033[33m·\033[0m %s\n' "$1"; }
 # ненулево — старото `|| echo "000"` добавяше ВТОРО „000" и изходът беше „000000".
 code() { curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$1" 2>/dev/null; }
 body() { curl -s --max-time "$TIMEOUT" "$1" 2>/dev/null || echo ""; }
-# nginx на фронтенда има SPA fallback (`try_files … /index.html`): ЛИПСВАЩ файл
-# или страница връща 200 с index.html. Затова 200 не доказва нищо за статичен
-# файл или пререндирана страница (одит на VPS-аджията 25.09.2026) — сверяваме
+# До 22.10.2026 nginx на фронтенда имаше SPA fallback за ВСЕКИ адрес
+# (`try_files … /index.html`): липсващ файл или страница връщаше 200 с
+# index.html. Сега непознат адрес е истински 404 (SEO одит — „Soft 404“ в
+# Search Console), а index.html получава само /dashboard…. Сверяваме и
 # СЪДЪРЖАНИЕТО: пререндираната страница носи собствения си canonical, файлът —
-# своя Content-Type / подпис.
+# своя Content-Type / подпис (одит на VPS-аджията 25.09.2026).
 ctype() { curl -s -o /dev/null -w '%{content_type}' --max-time "$TIMEOUT" "$1" 2>/dev/null; }
-prerendered() { body "$BASE$1" | grep -q "<link rel=\"canonical\" href=\"[^\"]*$1\""; }
+# Търсене в ВЕЧЕ изтеглен текст (here-string, без pipe). `curl … | grep -q` под
+# `pipefail` лъжеше: grep -q излиза при първото съвпадение, curl/echo пише
+# остатъка в затворения pipe → SIGPIPE → цялата проверка „пада“, макар
+# страницата да е наред. Падаха случайни страници при всеки деплой (06.10.2026:
+# /privacy „липсва“, а 18/18 директни заявки я връщат с canonical).
+has()  { grep -q  -- "$2" <<<"$1"; }
+hasi() { grep -qi -- "$2" <<<"$1"; }
+prerendered() { has "$(body "$BASE$1")" "<link rel=\"canonical\" href=\"[^\"]*$1\""; }
 
 echo "── Smoke: $BASE ──"
 
@@ -56,19 +64,27 @@ echo "── Smoke: $BASE ──"
 c=$(code "$BASE/")
 if [ "$c" = "200" ]; then
   html="$(body "$BASE/")"
-  if echo "$html" | grep -qi '<div id="root"'; then ok "фронтендът отдава приложението"
+  if hasi "$html" '<div id="root"'; then ok "фронтендът отдава приложението"
   else bad "фронтендът връща 200, но без React корен — счупен билд?"; fi
   # Билдът пререндира 19 маршрута; липсата им значи, че prerender стъпката е
   # пропаднала тихо и SEO-то е нула.
   if prerendered /terms; then ok "статичните маршрути са пререндирани"
-  else bad "/terms не носи собствения си canonical — prerender стъпката е пропаднала (SPA fallback)"; fi
+  else bad "/terms не носи собствения си canonical — prerender стъпката е пропаднала"; fi
+  # Непознат адрес → 404, не 200 + началната страница („Soft 404“ за Google).
+  c404=$(code "$BASE/cs-smoke-no-such-page-$$")
+  if [ "$c404" = "404" ]; then ok "непознат адрес връща 404"
+  else bad "непознат адрес върна $c404 (очаквам 404) — върнат ли е SPA fallback-ът в nginx.conf?"; fi
+  # Приложението (зад вход) още получава SPA обвивката.
+  cdash=$(code "$BASE/dashboard")
+  if [ "$cdash" = "200" ]; then ok "/dashboard отдава приложението"
+  else bad "/dashboard върна $cdash (очаквам 200)"; fi
 else
   bad "фронтендът върна $c"
 fi
 
 # ─── 2. Backend-ът е ЖИВ И вижда базата ─────────────────────────────────────
 h="$(body "$API/api/health")"
-if echo "$h" | grep -q '"database":"up"'; then ok "backend + база"
+if has "$h" '"database":"up"'; then ok "backend + база"
 else bad "backend/база: ${h:-без отговор}"; fi
 
 # ─── 3. Съставното състояние (база + Redis + Discord gateway) ───────────────
@@ -99,20 +115,20 @@ if command -v docker >/dev/null && [ -f "$COMPOSE_DIR/docker-compose.yml" ]; the
   # а fetch връща тялото при всеки код. Плюс същото търпение като пробата.
   bot_health() {
     (cd "$COMPOSE_DIR" && docker compose exec -T bot node -e \
-      'fetch("http://localhost:3001/health").then((r)=>r.text()).then((t)=>console.log(t)).catch(()=>process.exit(1))' \
+      'fetch("http://127.0.0.1:3001/health").then((r)=>r.text()).then((t)=>console.log(t)).catch(()=>process.exit(1))' \
       2>/dev/null) || echo ""
   }
   b=""
   for _ in $(seq 1 12); do
     b="$(bot_health)"
-    echo "$b" | grep -q '"gateway":"connected"' && break
+    has "$b" '"gateway":"connected"' && break
     sleep 5
   done
-  if echo "$b" | grep -q '"gateway":"connected"'; then
+  if has "$b" '"gateway":"connected"'; then
     ok "ботът е свързан с Discord"
     down=$(echo "$b" | grep -o '"down":[0-9]*' | head -1 | cut -d: -f2)
     [ "${down:-0}" != "0" ] && note "паднали бранд ботове: $down (чужди токени — не блокира деплоя)"
-  elif echo "$b" | grep -q '"gateway"'; then
+  elif has "$b" '"gateway"'; then
     bad "ботът е жив, но gateway не се свърза за 60s: $b"
   else
     bad "ботът не отговори за 60s — контейнерът не работи (docker compose logs bot)"
@@ -132,14 +148,14 @@ else bad "GET /api/servers върна $c за нелогнат — гардът 
 # /api/billing/config е публичен и без тайни; провайдърът трябва да е discord
 # (или both), а configured=true значи DISCORD_CLIENT_ID + двете SKU са налице.
 b=$(body "$API/api/billing/config")
-if echo "$b" | grep -q '"provider":"discord"\|"provider":"both"'; then
-  if echo "$b" | grep -q '"configured":true'; then ok "Discord магазинът е конфигуриран (SKU + client id)"
+if has "$b" '"provider":"discord"\|"provider":"both"'; then
+  if has "$b" '"configured":true'; then ok "Discord магазинът е конфигуриран (SKU + client id)"
   # СЪЗНАТЕЛЕН деплой без магазин (напр. играта/SEO преди SKU-тата да са готови):
   # SMOKE_ALLOW_BILLING_UNCONFIGURED=1 сваля това до бележка, за да мръдне `current`.
   # Не е подразбиране и не остава за постоянно — клиент не може да купи.
   elif [ "${SMOKE_ALLOW_BILLING_UNCONFIGURED:-0}" = "1" ]; then note "Discord магазинът НЕ е конфигуриран (SKU/client id) — допуснато изрично със SMOKE_ALLOW_BILLING_UNCONFIGURED=1; продажби няма"
   else bad "BILLING_PROVIDER е discord, но SKU/client id липсват — клиент НЕ може да купи (виж backend/.env; съзнателно без магазин: SMOKE_ALLOW_BILLING_UNCONFIGURED=1)"; fi
-elif echo "$b" | grep -q '"provider":"stripe"'; then note "BILLING_PROVIDER=stripe — продажбата е през Stripe (нарочно ли?)"
+elif has "$b" '"provider":"stripe"'; then note "BILLING_PROVIDER=stripe — продажбата е през Stripe (нарочно ли?)"
 else bad "GET /api/billing/config не отговори с провайдър: $b"; fi
 # Легаси Stripe: маршрутите трябва да живеят (заварени абонати), 503 = няма ключ.
 c=$(code "$API/api/stripe/status/000000000000000000")
@@ -157,9 +173,9 @@ done
 
 # ─── 8. SEO артефактите са на място ─────────────────────────────────────────
 seo_ok=1
-body "$BASE/robots.txt"  | grep -qi '^User-agent:'  || { bad "/robots.txt липсва (SPA fallback)"; seo_ok=0; }
-body "$BASE/sitemap.xml" | grep -q '<urlset'       || { bad "/sitemap.xml липсва (SPA fallback)"; seo_ok=0; }
-body "$BASE/llms.txt"    | grep -q '^# Supreme Bot' || { bad "/llms.txt липсва (SPA fallback)"; seo_ok=0; }
+hasi "$(body "$BASE/robots.txt")" '^User-agent:' || { bad "/robots.txt липсва (SPA fallback)"; seo_ok=0; }
+has "$(body "$BASE/sitemap.xml")" '<urlset' || { bad "/sitemap.xml липсва (SPA fallback)"; seo_ok=0; }
+has "$(body "$BASE/llms.txt")" '^# Supreme Bot' || { bad "/llms.txt липсва (SPA fallback)"; seo_ok=0; }
 [ "$seo_ok" = "1" ] && ok "robots/sitemap/llms са на място"
 
 # ─── 9. Играта (v50): картинките на спътниците и страницата ѝ се отдават ─────

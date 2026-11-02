@@ -31,3 +31,8 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </React.StrictMode>,
 );
+
+// Сървърно рендираният текст за краулъри без JS (виж index.html и
+// server/src/seo/pages.ts) е излишен, щом React рисува истинското
+// съдържание — махаме го, за да няма скрит текст в рендираната страница.
+document.getElementById('seo-bootstrap')?.remove();

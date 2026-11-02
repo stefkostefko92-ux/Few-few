@@ -1031,12 +1031,19 @@ router.get("/user/:userId/open-tickets/:guildId", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ─── GET /api/bot/panel/:panelId ─────────────────────────────────────────────
+// ─── GET /api/bot/panel/:panelId?serverId= ───────────────────────────────────
+// serverId е ЗАДЪЛЖИТЕЛЕН и търсенето е по (id, serverId). Без него `/panel spawn`
+// приемаше свободно въведен id: панелът на чужд сървър (id-то се вижда в
+// custom_id на бутоните му) се публикуваше у нападателя, а записът му се
+// презаписваше (червен екип, 10.10.2026). Чужд id → 404, както несъществуващ.
+const BOT_SNOWFLAKE = /^\d{17,20}$/;
 
 router.get("/panel/:panelId", async (req, res, next) => {
+  const serverId = String(req.query.serverId || "");
+  if (!BOT_SNOWFLAKE.test(serverId)) return res.status(400).json({ error: "serverId required" });
   try {
-    const panel = await prisma.panel.findUnique({
-      where: { id: req.params.panelId },
+    const panel = await prisma.panel.findFirst({
+      where: { id: req.params.panelId, serverId },
       include: {
         buttons: { include: { form: { include: { questions: { orderBy: { order: "asc" } } } } } },
         server: { select: { id: true, isPremium: true } },
@@ -1072,7 +1079,7 @@ router.get("/panel/:panelId", async (req, res, next) => {
     // на Discord. Безусловната втора заявка там е чиста загуба.
     if (req.query.siblings === "1" && panel.channelId && panel.messageId) {
       const siblings = await prisma.panel.findMany({
-        where: { channelId: panel.channelId, messageId: panel.messageId },
+        where: { serverId, channelId: panel.channelId, messageId: panel.messageId },
         include: { buttons: { include: { form: { include: { questions: { orderBy: { order: "asc" } } } } } } },
         // Редът, избран от потребителя при публикуване (groupOrder); createdAt
         // е само резервен за заварени групи отпреди полето.
@@ -1103,14 +1110,18 @@ router.get("/panel/:panelId", async (req, res, next) => {
 // Bot reports back the Discord message/channel IDs after spawning a panel
 
 router.patch("/panel/:panelId/spawned", async (req, res, next) => {
-  const { channelId, messageId } = req.body;
+  const { channelId, messageId, serverId } = req.body || {};
+  if (!BOT_SNOWFLAKE.test(String(serverId))) return res.status(400).json({ error: "serverId required" });
+  if (!BOT_SNOWFLAKE.test(String(channelId)) || !BOT_SNOWFLAKE.test(String(messageId))) return res.status(400).json({ error: "channelId and messageId required" });
 
   try {
-    const panel = await prisma.panel.update({
-      where: { id: req.params.panelId },
-      data: { channelId, messageId },
+    // Условно по сървъра: чужд панел не се презаписва (виж GET по-горе).
+    const r = await prisma.panel.updateMany({
+      where: { id: req.params.panelId, serverId: String(serverId) },
+      data: { channelId: String(channelId), messageId: String(messageId) },
     });
-    res.json(panel);
+    if (r.count !== 1) return res.status(404).json({ error: "Panel not found" });
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }

@@ -2,7 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PageHero, Prose } from "@/components/ui";
-import { buildMetadata, newsArticleLd, canonical } from "@/lib/seo";
+import {
+  buildMetadata,
+  newsArticleLd,
+  canonical,
+  postDescription,
+  postHasBody,
+} from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { PrintButton } from "@/components/PrintButton";
@@ -23,9 +29,13 @@ export async function generateMetadata({
   if (!p) return buildMetadata({ title: "Не е намерено", noindex: true });
   return buildMetadata({
     title: p.seoTitle || p.title,
-    description: p.seoDescription || p.excerpt || plainText(p.content, 155),
+    description: postDescription(p),
     path: `/novini/${p.slug}`,
     type: "article",
+    // Само заглавие + връзка към източника, без собствен текст → празна за
+    // читателя страница: не я индексираме (и не е в sitemap-а), докато
+    // редакцията не добави резюме или текст.
+    noindex: !postHasBody(p),
   });
 }
 
@@ -72,7 +82,15 @@ export default async function PostPage({
           )}
         </div>
         <div className="mt-4">
-          <Prose html={renderMarkdown(p.content)} />
+          {p.content.trim() ? (
+            <Prose html={renderMarkdown(p.content)} />
+          ) : (
+            p.excerpt.trim() && (
+              // Внесените новини носят само кратко резюме от източника — показваме
+              // го, за да съвпада видимото съдържание с описанието на страницата.
+              <p className="text-lg text-slate-700">{p.excerpt.trim()}</p>
+            )
+          )}
         </div>
         {p.source && (
           <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">

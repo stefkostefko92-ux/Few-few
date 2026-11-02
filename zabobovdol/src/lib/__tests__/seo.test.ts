@@ -9,6 +9,9 @@ import {
   webPageLd,
   ORG_ID,
   WEBSITE_ID,
+  summarize,
+  postHasBody,
+  postDescription,
 } from "@/lib/seo";
 
 test("canonical строи абсолютни адреси без двойна наклонена черта", () => {
@@ -63,4 +66,66 @@ test("webPageLd включва speakable за гласови асистенти"
   };
   assert.ok(Array.isArray(p.speakable.cssSelector));
   assert.equal(p.isPartOf["@id"], WEBSITE_ID);
+});
+
+// --- Описание на новина (meta description) — никога празно ---
+
+test("summarize връща цели изречения до лимита", () => {
+  const s = summarize(
+    "Първото изречение е кратко. Второто изречение също е тук и е малко по-дълго от първото. " +
+      "Третото изречение вече не се събира в лимита и трябва да отпадне изцяло.",
+    100,
+  );
+  assert.equal(
+    s,
+    "Първото изречение е кратко. Второто изречение също е тук и е малко по-дълго от първото.",
+  );
+  assert.ok(s.length <= 100);
+});
+
+test("summarize реже по дума с „…“, ако първото изречение е твърде дълго", () => {
+  const s = summarize("дума ".repeat(80), 155);
+  assert.ok(s.length <= 155);
+  assert.ok(s.endsWith("…"));
+  assert.ok(!s.endsWith(" …"));
+});
+
+test("summarize маха Markdown и връща кратък текст без промяна", () => {
+  assert.equal(summarize("**Важно:** вижте [сайта](https://egov.bg)."), "Важно: вижте сайта.");
+});
+
+test("postHasBody: само заглавие + връзка няма тяло; резюме или текст — има", () => {
+  assert.equal(postHasBody({ content: "", excerpt: "" }), false);
+  assert.equal(postHasBody({ content: "  \n ", excerpt: "  " }), false);
+  assert.equal(postHasBody({ content: "", excerpt: "Кратко резюме." }), true);
+  assert.equal(postHasBody({ content: "Текст.", excerpt: "" }), true);
+});
+
+test("postDescription спазва реда: SEO описание → резюме → текст", () => {
+  const base = { title: "Заглавие", content: "Текст на новината.", excerpt: "Резюме." };
+  assert.equal(postDescription({ ...base, seoDescription: "Ръчно описание." }), "Ръчно описание.");
+  assert.equal(postDescription({ ...base, seoDescription: "  " }), "Резюме.");
+  assert.equal(postDescription({ ...base, excerpt: "" }), "Текст на новината.");
+});
+
+test("postDescription от дълъг текст е до ~155 знака", () => {
+  const content = "Общината обявява ремонт на улица „Христо Ботев“. ".repeat(10);
+  const d = postDescription({ title: "Ремонт", content, excerpt: "" });
+  assert.ok(d.length > 0 && d.length <= 155, `дължина ${d.length}`);
+});
+
+test("postDescription никога не е празно — фактическо описание по заглавие и източник", () => {
+  const withSource = postDescription({
+    title: "Устройствен правилник",
+    content: "",
+    excerpt: "",
+    seoDescription: null,
+    source: "Община Бобов дол",
+    sourceUrl: "https://bobovdol.egov.bg/x",
+  });
+  assert.ok(withSource.startsWith("Устройствен правилник"));
+  assert.ok(withSource.includes("Община Бобов дол"));
+  const bare = postDescription({ title: "Съобщение", content: "", excerpt: "" });
+  assert.ok(bare.startsWith("Съобщение"));
+  assert.ok(bare.length > "Съобщение".length);
 });

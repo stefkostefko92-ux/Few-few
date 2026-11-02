@@ -24,7 +24,9 @@ export const metadata: Metadata = buildMetadata({
   path: "/dostapnost",
 });
 
-// Въпроси и отговори — за AEO (Answer Engine Optimization) и гласови търсачки.
+// Въпроси и отговори — показват се на страницата (секция „Чести въпроси“) и
+// са в FAQPage разметката: структурираните данни трябва да съвпадат с
+// видимото съдържание.
 const FAQ: { question: string; answerText: string }[] = [
   {
     question: "Как да уголемя текста на сайта?",
@@ -192,6 +194,24 @@ export default function AccessibilityPage() {
           >
             Към 112.mvr.bg
           </a>
+        </section>
+
+        {/* Чести въпроси — същите въпроси и отговори като в FAQPage разметката. */}
+        <section>
+          <h2 className="section-title mb-4">Чести въпроси</h2>
+          <div className="space-y-4">
+            {FAQ.map((f) => (
+              <div
+                key={f.question}
+                className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+              >
+                <h3 className="font-display text-lg font-bold text-slate-900">
+                  {f.question}
+                </h3>
+                <p className="mt-1 text-slate-700">{f.answerText}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* Формална Декларация за достъпност по Закона за изискванията за
