@@ -1184,7 +1184,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 621
+        "lessons": 623
       },
       "evolution": [
         {
@@ -2020,9 +2020,20 @@
           "date": "2026-11-02",
           "event": "v52.6 — учене",
           "detail": "Научи: ABP/uBO към DNR конверторът на adblock е в lib/abp2dnr.js (build_filters.mjs само го за… (+2 още)"
+        },
+        {
+          "version": "52.8.0",
+          "date": "2026-11-02",
+          "event": "v52.8 — учене",
+          "detail": "Научи: React 19 (react-dom 19.2.7) в production подменя javascript: URL в href/src с URL, койт… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „React 19 (react-dom 19.2.7) в production подменя javascript: URL в href/src с URL, койт…\" (+1 още)"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
