@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 423
+        "lessons": 426
       },
       "evolution": [
         {
@@ -614,9 +614,20 @@
           "date": "2026-10-31",
           "event": "v34.4 — учене",
           "detail": "Научи: EUPL-1.2 чл. 1 включва „providing access to its essential functionalities“ в понятието … (+17 още)"
+        },
+        {
+          "version": "34.7.0",
+          "date": "2026-11-02",
+          "event": "v34.7 — учене",
+          "detail": "Научи: Мастилко PismoStudio праща цялото тяло на писмото (s.body) към Gemini по два пътя — cv-… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Мастилко PismoStudio праща цялото тяло на писмото (s.body) към Gemini по два пътя — cv-…\" (+2 още)"
+        },
         {
           "date": "2026-10-31",
           "type": "learning",
