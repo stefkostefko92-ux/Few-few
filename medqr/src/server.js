@@ -36,7 +36,7 @@ const app = express();
 
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
-app.set('trust proxy', 1); // зад reverse proxy (Hetzner) за коректен protocol/IP
+app.set('trust proxy', 1); // зад reverse proxy (netcup) за коректен protocol/IP
 app.disable('x-powered-by');
 
 // Данни на доставчика (импресум). ЕИК/адрес са от публичния импресум на фирмата;

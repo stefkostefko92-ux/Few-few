@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer';
 const prod = process.env.NODE_ENV === 'production';
 const FROM = process.env.MAIL_FROM || 'MedQR <no-reply@example.com>';
 
-// В продукция: реален SMTP (напр. на Hetzner или друг доставчик в ЕС).
+// В продукция: реален SMTP (напр. на netcup или друг доставчик в ЕС).
 // Без конфигурация: JSON транспорт — писмата не се пращат, а се логват.
 let transport;
 if (process.env.SMTP_HOST) {

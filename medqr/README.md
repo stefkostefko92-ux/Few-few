@@ -98,7 +98,7 @@ npm start            # http://localhost:3000
 ## Разгръщане
 
 - **Бързо демо:** Render Blueprint (`render.yaml`) — виж [`docs/render-deploy.md`](docs/render-deploy.md).
-- **Продукция (Hetzner, ЕС):** процесът зад **reverse proxy** (nginx/Caddy) с TLS;
+- **Продукция (netcup, ЕС):** процесът зад **reverse proxy** (nginx/Caddy) с TLS;
   `trust proxy` е включен. Пазете `ENCRYPTION_KEY` извън хранилището (systemd
   `EnvironmentFile`, права 600). Криптирани архиви на `data/`. Виж [`deploy/`](deploy/).
 - **Мобилни приложения:** виж [`mobile/README.md`](mobile/README.md).
