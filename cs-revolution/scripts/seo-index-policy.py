@@ -17,7 +17,9 @@
 import glob
 import re
 
-KEEP_CITIES = {"milano", "sofia", "kyustendil", "dupnitsa"}   # Panev Ascensori (Milano), офис/регион, Evanita Sport (Дупница)
+KEEP_CITIES = {"milano", "kyustendil", "dupnitsa"}   # Panev Ascensori (Milano), седалище/регион (Кюстендилска обл.), Evanita Sport (Дупница)
+# София НЕ: нямаме клиент или офис там (потвърдено от собственика, 02.11.2026) — страница „Изработка на сайт София“
+# без реална връзка е doorway страница по правилата на Google.
 KEEP_SERVICE_CITY = {"erp-milano"}                             # ERP за Panev Ascensori SAS, Milano
 
 GEO_DIRS = ["public/geo", "public/en/geo", "public/bg/geo"]
