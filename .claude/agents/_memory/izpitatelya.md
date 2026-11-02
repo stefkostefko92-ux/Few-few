@@ -8,6 +8,7 @@
 Специалност: **пише и притежава тестовите пакети** (unit/интеграционни/e2e), детерминизъм, борба с flaky.
 Версии на рамки (Playwright/Vitest/MSW) са време-чувствителни → потвърждавай на живо.
 ## Проверени поуки (verified)
+- **2026-11-02:** linketto няма инсталиран node_modules в пясъчницата; `npm ci --ignore-scripts` (без prisma generate/мрежа за postinstall) стига за `npm test` (tsx --test), без да пипа проследени файлове. _(linketto, преди червен гейт заради липсващ tsx; verified; cd linketto && npm ci --ignore-scripts && npm test -> 91 pass / 1 fail (само новият файл), tsx в node_modules/.bin)_
 
 - **2026-10-31:** `next dev` в Next 16.3.5 дописва блок nextjs-agent-rules в mastilko/CLAUDE.md при всеки старт, така че след пускане на dev сървър проверявай `git status` и връщай несвързаните промени. _(стартиране на next dev в монорепото; verified; git diff mastilko/CLAUDE.md след `npm run dev` (10 добавени реда), върнат с Edit; git status чист)_
 - **2026-10-31:** `pkill -f "<шаблон>"`, чийто шаблон се среща в собствената команда на Bash извикването, убива и обвивката (изход 144); ползвай трика с `[n]` в шаблона. _(спиране на фонови сървъри от агентски Bash извиквания; verified; pkill -f "node src/server.js" → exit 144; pkill -f "[n]ext dev" → минава чисто)_
