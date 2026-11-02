@@ -6801,7 +6801,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 268
+        "lessons": 270
       },
       "evolution": [
         {
@@ -7217,9 +7217,20 @@
           "date": "2026-11-02",
           "event": "v23.3 — учене",
           "detail": "Научи: Бекъпите на zabobovdol вече оцеляват чистенето на releases, защото autodeploy трие rele… (+1 още)"
+        },
+        {
+          "version": "23.5.0",
+          "date": "2026-11-02",
+          "event": "v23.5 — учене",
+          "detail": "Научи: health() в autodeploy.sh връща успех на всеки отговор, при който curl -fsS излиза с 0 (… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „health() в autodeploy.sh връща успех на всеки отговор, при който curl -fsS излиза с 0 (…\" (+1 още)"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
