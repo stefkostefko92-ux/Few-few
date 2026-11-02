@@ -1228,7 +1228,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 613
+        "lessons": 615
       },
       "evolution": [
         {
@@ -2148,9 +2148,20 @@
           "date": "2026-11-02",
           "event": "v55.0 — учене",
           "detail": "Научи: В SupremeDiscordBot helper-ът guildChannel(serverId, channelId) в бота връща null при л… (+1 още)"
+        },
+        {
+          "version": "55.2.0",
+          "date": "2026-11-02",
+          "event": "v55.2 — учене",
+          "detail": "Научи: Под guard-readonly мутационното тестване в scratchpad минава само с node fs (cpSync/wri… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Под guard-readonly мутационното тестване в scratchpad минава само с node fs (cpSync/wri…\" (+1 още)"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
