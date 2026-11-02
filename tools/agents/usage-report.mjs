@@ -125,6 +125,22 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   console.log("   най-скъпи агенти:");
   for (const [ag, v] of Object.entries(a.byAgent).sort((x, y) => y[1].usd - x[1].usd).slice(0, 8))
     console.log(`     ${ag.padEnd(22)} ${String(v.runs).padStart(3)} пуск. · ~$${v.usd.toFixed(0).padStart(4)} · ср. ${Math.round(v.turns / v.runs)} хода`);
+  const tb = new Map(); let tbRuns = 0;
+  for (const r of recs) if (r.toolBytes) { tbRuns++; for (const [k, v] of Object.entries(r.toolBytes)) tb.set(k, (tb.get(k) || 0) + v); }
+  if (tbRuns) {
+    const total = [...tb.values()].reduce((x, y) => x + y, 0) || 1;
+    console.log(`   резултати по инструмент (${tbRuns} пускания с разбивка; те са почти целият кеш-запис):`);
+    for (const [k, v] of [...tb].sort((x, y) => y[1] - x[1]).slice(0, 6))
+      console.log(`     ${k.padEnd(22)} ${(v / 1e6).toFixed(1).padStart(6)} MB · ${Math.round(100 * v / total)}%`);
+  }
+  const rr = recs.filter((r) => r.rereads);
+  if (rr.length) {
+    const by = {};
+    for (const r of rr) { const x = (by[r.agent] ??= { runs: 0, n: 0, bytes: 0 }); x.runs++; x.n += r.rereads; x.bytes += r.rereadBytes || 0; }
+    const top = Object.entries(by).sort((x, y) => y[1].bytes - x[1].bytes).slice(0, 4);
+    console.log(`   повторни четения на същия файл: ${rr.length} пускания · ${(rr.reduce((s, r) => s + (r.rereadBytes || 0), 0) / 1e6).toFixed(1)} MB` +
+      ` — най-много: ${top.map(([k, v]) => `${k} ${v.n}× (${(v.bytes / 1e6).toFixed(1)} MB)`).join(", ")}`);
+  }
   if (evals.length) {
     console.log("   живи проверки (извън цифрите горе):");
     const by = {};

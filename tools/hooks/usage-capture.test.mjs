@@ -168,3 +168,37 @@ test("етикет: SubagentStop без тип и без мета → вътре
   assert.equal(agentLabel({ hook_event_name: "SubagentStop" }, { agent: "kodadjiyata" }), "kodadjiyata", "мета-файлът каза кой е");
   assert.equal(agentLabel({ hook_event_name: "Stop" }, { agent: "общ" }), "общ");
 });
+
+// 2026-11-02 (четвърто проучване): резултатите по инструмент и 1-часовите кеш-записи на своята ставка.
+test("резултати по инструмент и 1-часов кеш-запис: броят се отделно и се ценят по ставката си", () => {
+  const dir = mkdtempSync(join(tmpdir(), "uc-tb-"));
+  const p = transcript(dir);
+  const r = summarizeTranscript(p);
+  assert.deepEqual(r.toolBytes, { Read: 4000 }, "резултатът на tool_use 1 (Read) е 4000 байта");
+  assert.equal(r.cacheWrite1h, undefined, "без 1-часови записи полето липсва");
+  const prices = loadPrices();
+  const base = { model: "opus-5-5", input: 0, cacheRead: 0, output: 0, cacheWrite: 1e6 };
+  const c5 = costOf(base, prices), c1h = costOf({ ...base, cacheWrite1h: 1e6 }, prices);
+  assert.ok(Math.abs(c1h / c5 - prices.cache.write1h / prices.cache.write) < 1e-9, "1h запис = write1h/write × 5-мин запис");
+  const half = costOf({ ...base, cacheWrite1h: 5e5 }, prices);
+  assert.ok(half > c5 && half < c1h);
+  const [bad] = [...parseLedger(JSON.stringify({ id: "z", agent: "a", toolBytes: { __proto__: 5, Read: -1 } }))];
+  assert.equal(bad.toolBytes, undefined, "речник с отрицателни или прототипни ключове от диска се изхвърля");
+  rmSync(dir, { recursive: true, force: true });
+});
+
+// Регресия 2026-11-02: Правният Разбирач прочете един PDF 5 пъти (4,7 MB, $3.56 при средно $1.21).
+test("повторно четене на същия файл (и страници) се брои с байтовете; друга част от файла — не", () => {
+  const dir = mkdtempSync(join(tmpdir(), "uc-rr-"));
+  const rd = (id, input) => ({ message: { model: "claude-opus-5-5", role: "assistant", id: `m${id}`, usage: { input_tokens: 1, output_tokens: 1 }, content: [{ type: "tool_use", id, name: "Read", input }] } });
+  const res = (id, n) => ({ message: { role: "user", content: [{ type: "tool_result", tool_use_id: id, content: "x".repeat(n) }] } });
+  const lines = [rd("a", { file_path: "/t/x.pdf" }), res("a", 1000), rd("b", { file_path: "/t/x.pdf" }), res("b", 1000),
+    rd("c", { file_path: "/t/x.pdf", pages: "3" }), res("c", 200), rd("d", { file_path: "/t/x.pdf" }), res("d", 1000)];
+  const p = join(dir, "agent-rr.jsonl");
+  writeFileSync(p, lines.map((l) => JSON.stringify(l)).join("\n") + "\n");
+  const r = summarizeTranscript(p);
+  assert.equal(r.rereads, 2);
+  assert.equal(r.rereadBytes, 2000);
+  assert.equal(r.toolBytes.Read, 3200);
+  rmSync(dir, { recursive: true, force: true });
+});
