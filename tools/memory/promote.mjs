@@ -37,7 +37,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isRealSource } from "../agents/oversee-lib.mjs";
-import { lessonId } from "./quarantine-review.mjs";
+import { lessonId, isDecided } from "./quarantine-review.mjs";
 import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -231,6 +231,8 @@ export function applyVerdicts(md, verdicts, today, ctx = {}) {
     }
 
     // потвърдена
+    // Решен запис (опровергана, дубъл, преместена) не се промотира — иначе маркерът влиза в проверените (02.11.2026).
+    if (isDecided(lines[i])) { errors.push(`${lid}: записът е решен (ОПРОВЕРГАНА/ДУБЪЛ/ПРЕМЕСТЕНА) — не се промотира`); continue; }
     const src = String(rec.source || "").trim();
     if (!isRealSource(src)) { errors.push(`${lid}: „потвърдена“ без реален източник (даден: „${src || "—"}“)`); continue; }
     const nb = promoteBullet(block, src, today, rec.next || null);

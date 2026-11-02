@@ -221,3 +221,19 @@ test("insertVerified: преместената поука влиза най-го
   const ver = out.split("## Карантина")[0];
   assert.ok(ver.indexOf("restic") < ver.indexOf("стара"));
 });
+
+// Регресия 02.11.2026 (вълната по карантината): запис с маркер „ДУБЪЛ на …“ от курирането на 31.10 беше
+// предложен като кандидат и промотиран обратно в проверените — с маркера в текста. Решеният запис
+// (опровергана, дубъл, преместена) не е кандидат и не се промотира.
+test("решен запис (ДУБЪЛ/ПРЕМЕСТЕНА/ОПРОВЕРГАНА) не е кандидат и „потвърдена“ за него се ОТКАЗВА", () => {
+  const D = "- **2026-09-24:** ДУБЪЛ на f4da4eed 2026-10-31 — OWASP MASVS остава 2.1.0. _(mobile; unverified; https://mas.owasp.org/MASVS/)_";
+  const M = "- **2026-09-24:** ПРЕМЕСТЕНА при vps-adjiyata 2026-10-31 — restic иска парола в env. _(бекъп; unverified; https://restic.readthedocs.io/)_";
+  const R = "- **2026-09-24:** ОПРОВЕРГАНА 2026-10-31 (поправено) — старо. _(x; unverified; https://example.org/r)_";
+  const md = mem([Q1, D, M, R]);
+  const cands = reviewAgent("t", md).candidates.map((c) => c.lid);
+  assert.deepEqual(cands, [lessonId(Q1)], "само нерешеният е кандидат");
+  for (const b of [D, M, R]) {
+    const r = applyVerdicts(md, [{ lid: lessonId(b), verdict: "потвърдена", source: "https://example.org/x" }], TODAY);
+    assert.ok(r.error && /решен/.test(r.error), b.slice(0, 40) + " → " + r.error);
+  }
+});

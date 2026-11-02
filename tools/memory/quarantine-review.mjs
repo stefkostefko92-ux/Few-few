@@ -54,6 +54,9 @@ export function lessonId(bullet) {
   return h.toString(16).padStart(8, "0");
 }
 
+/** Решен запис в Карантината: опровергана, дубъл или преместена — вердиктът вече е даден. */
+export const isDecided = (b) => isRefuted(b) || /^-\s*\*\*[^*]*\*\*:?\s*(ДУБЪЛ на|ПРЕМЕСТЕНА при)/.test(String(b).trim());
+
 export function reviewAgent(id, md) {
   const q = sectionBullets(md, "Карантина") || [];
   const items = q.map((b) => {
@@ -67,6 +70,7 @@ export function reviewAgent(id, md) {
       sourceOk: isRealSource(src),
       preFix: !!date && date < CONFIDENCE_FIX_DATE,
       refuted: isRefuted(b),
+      decided: isDecided(b),
     };
   });
   return {
@@ -76,9 +80,11 @@ export function reviewAgent(id, md) {
     // при всеки пуск (118 от 478, от тях 85 „силни“): опашка, която не може да се изпразни, и вечно
     // повторно сверяване на вече отхвърлено знание.
     refuted: items.filter((i) => i.refuted).length,
-    candidates: items.filter((i) => i.sourceOk && !i.refuted),
+    // Решените записи (опровергана, дубъл, преместена) не са кандидати (02.11.2026): запис с „ДУБЪЛ на …“
+    // беше предложен и промотиран обратно в проверените — с маркера в текста.
+    candidates: items.filter((i) => i.sourceOk && !i.decided),
     // Най-силните кандидати: реален източник И карантинирани преди поправката на етикета.
-    strong: items.filter((i) => i.sourceOk && i.preFix && !i.refuted),
+    strong: items.filter((i) => i.sourceOk && i.preFix && !i.decided),
     items,
   };
 }
