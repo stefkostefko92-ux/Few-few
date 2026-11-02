@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { inputFiles, fileHashes, inputsHash, changedSince, planFor, quoteMatches, followText, judgeProbe, firstJson, words, CANARIES } from "./live-gate.mjs";
+import { inputFiles, fileHashes, inputsHash, changedSince, planFor, quoteMatches, followText, judgeProbe, firstJson, words, CANARIES, probeTask } from "./live-gate.mjs";
 import { stripOrchestratorStop, expandJobs, wrapperPrompt, parseResult } from "./evals/live-run.mjs";
 
 function fakeRoot() {
@@ -118,4 +118,12 @@ test("проба: при два обекта важи последният (по
   assert.equal(j.memory, '„letopisetsa" (v6.0 самообучение — ползвай я,');
   assert.equal(j.rootClaudeMd, null);
   assert.deepEqual(firstJson('пред {"a": {"b": 1}} след'), { a: { b: 1 } }, "непробен JSON — както преди");
+});
+
+// Регресия 2026-11-02: Мобилджията виждаше паметта си, но върна null, защото думите след маркера започват
+// с кавичка („mobildjiyata"), а пробата не казваше дали кавичките се копират. null = само липсващ маркер.
+test("пробата: кавичките са част от цитата, null значи само липсващ маркер", () => {
+  const t = probeTask();
+  assert.match(t, /Кавички, скоби и пунктуация след маркера са част от цитата/);
+  assert.match(t, /null значи САМО, че маркерът липсва/);
 });
