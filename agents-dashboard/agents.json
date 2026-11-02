@@ -3128,7 +3128,7 @@
           "Manason/effective-fivem-lua — стилов канон (кеширане, дисциплина с natives)",
           "CommunityOx (ox_lib/ox_core/oxmysql) — каноничните модерни модели"
         ],
-        "lessons": 172
+        "lessons": 173
       },
       "evolution": [
         {
@@ -3520,9 +3520,20 @@
           "date": "2026-11-02",
           "event": "v21.0 — учене",
           "detail": "Научи: CC BY 4.0 забранява допълнителни условия и ефективни технологични мерки за получателя в… (+8 още)"
+        },
+        {
+          "version": "21.1.0",
+          "date": "2026-11-02",
+          "event": "v21.1 — учене",
+          "detail": "Научи: docs.fivem.net server-commands не препоръчва конкретен sv_enforceGameBuild; в таблицата…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „docs.fivem.net server-commands не препоръчва конкретен sv_enforceGameBuild; в таблицата…\""
+        },
         {
           "date": "2026-11-02",
           "type": "quarantine",
