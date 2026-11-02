@@ -43,6 +43,8 @@ python3 scripts/work-images.py     # real project screenshots (public/work/*.web
 python3 scripts/seo-index-policy.py # only cities with a real client/office stay indexed; the rest noindex,follow + out of the sitemaps (doorway policy)
 python3 scripts/geo-cases.py       # real projects on the indexed city pages (Milano = Panev Ascensori, Dupnitsa, Kyustendil)
 python3 scripts/service-depth.py   # web-development page: real sites + packages from src/pricing.json; FAQ schema = visible FAQ
+python3 scripts/related-posts.py   # "Leggi anche / Read next / Прочети още": 3 closest posts (same language) under every blog post
+python3 scripts/hreflang-xdefault.py # x-default → the EN version (Europe outside IT/BG gets English, not Italian)
 python3 scripts/static-theme.py    # shared Carbon/Chrome theme, mobile nav toggle, legal footer — run LAST
 python3 scripts/self-host-fonts.py # every Google Fonts link → /fonts/fonts.css (self-hosted woff2; GDPR) — after the theme
 ```
