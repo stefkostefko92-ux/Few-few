@@ -69,3 +69,30 @@ test("applyScopes: поука с вече конкретен обхват не �
   assert.match(r.rejected[0].reason, /конкретен/);
   assert.equal(r.md, MD);
 });
+
+// ── 02.11.2026: поука в стар формат без мета-опашка — обхват + РЕАЛЕН източник, сверен днес ──
+const OLD = [
+  "## Проверени поуки",
+  "- **2026-06-26:** Винаги fallback под reduced-motion → статичен poster. (Източник: web.dev, Blenra prompt.)",
+  "- **2026-06-26 (преместено от x 2026-07-01):** друга стара поука. (Източник: собствен инструмент.)",
+  "",
+].join("\n");
+
+test("genericLessons изброява и поуките без мета-опашка", () => {
+  const g = genericLessons(OLD, "dizayner");
+  assert.equal(g.length, 2);
+  assert.equal(g[0].why, "без мета-опашка");
+  assert.match(g[0].text, /Винаги fallback/);
+});
+
+test("applyScopes: без мета-опашка иска реален източник; слага опашката и маркер „пресверена“", () => {
+  const [a, b] = genericLessons(OLD, "dizayner");
+  const r = applyScopes(OLD, "dizayner", [
+    { lid: a.lid, scope: "hero анимация с reduced-motion fallback", source: "https://web.dev/articles/prefers-reduced-motion" },
+    { lid: b.lid, scope: "проверка с tools/design/motion-a11y.mjs", source: "собствен инструмент" },
+  ], { today: "2026-11-02" });
+  assert.equal(r.applied.length, 1);
+  assert.match(r.rejected[0].reason, /реален източник/);
+  assert.match(r.md, /^- \*\*2026-06-26 \(пресверена 2026-11-02\):\*\* Винаги fallback .*\(Източник: web\.dev, Blenra prompt\.\) _\(hero анимация с reduced-motion fallback; verified; https:\/\/web\.dev\/articles\/prefers-reduced-motion\)_$/m);
+  assert.match(r.md, /друга стара поука\. \(Източник: собствен инструмент\.\)$/m, "отказаната не е пипната");
+});

@@ -26,6 +26,7 @@ import { fileURLToPath } from "node:url";
 import { lessonId } from "./quarantine-review.mjs";
 import { genericScope } from "../lib/lesson-scope.mjs";
 import { looksSecret, looksInjection } from "../../.claude/hooks/memory-capture.mjs";
+import { isRealSource } from "../agents/oversee-lib.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MEM_DIR = process.env.CURATE_MEM_DIR || join(ROOT, ".claude", "agents", "_memory");
@@ -71,7 +72,11 @@ export function genericLessons(md, agent = "") {
   const out = [];
   for (const b of verifiedBlocks(lines)) {
     const t = tailOf(lines[b.end]);
-    if (!t) continue;
+    if (!t) {
+      // Стар формат (юни 2026): източникът е в прозата „(Източник: …)“, мета-опашка няма → няма и обхват.
+      if (!/_\((.*)\)_\s*$/.test(lines[b.end])) out.push({ lid: lessonId(b.block), scope: "", why: "без мета-опашка", text: textOf(b.block) });
+      continue;
+    }
     const why = genericScope(t.scope, agent);
     if (why) out.push({ lid: lessonId(b.block), scope: t.scope, why, text: textOf(b.block) });
   }
@@ -92,7 +97,7 @@ export function badScope(scope, agent = "") {
 }
 
 /** Чиста функция: текст → { md, applied, rejected }. */
-export function applyScopes(md, agent, entries) {
+export function applyScopes(md, agent, entries, { today = new Date().toISOString().slice(0, 10) } = {}) {
   const lines = String(md).split("\n");
   const byLid = new Map(verifiedBlocks(lines).map((b) => [lessonId(b.block), b]));
   const applied = [], rejected = [], seen = new Set();
@@ -104,7 +109,22 @@ export function applyScopes(md, agent, entries) {
     const b = byLid.get(lid);
     if (!b) { reject("няма такава проверена поука"); continue; }
     const t = tailOf(lines[b.end]);
-    if (!t) { reject("поуката няма мета-опашка"); continue; }
+    if (!t) {
+      // Без мета-опашка: обхват + РЕАЛЕН източник, сверен днес (02.11.2026). Опашката се добавя, датата
+      // получава „(пресверена …)“, текстът (вкл. старото „(Източник: …)“) остава дословно.
+      if (/_\((.*)\)_\s*$/.test(lines[b.end])) { reject("счупена мета-опашка — не гадая"); continue; }
+      if (b.end !== b.i) { reject("многоредова поука без опашка — събери я първо (unwrapLessons)"); continue; }
+      const bad = badScope(e.scope, agent);
+      if (bad) { reject(bad); continue; }
+      const src = String(e.source ?? "").trim();
+      if (!src || !isRealSource(src) || /[;\r\n]/.test(src) || src.includes(")_") || looksSecret(src) || looksInjection(src)) { reject(`поука без мета-опашка иска реален източник (URL, файл:ред или команда), сверен днес — даден: „${src || "—"}“`); continue; }
+      const scope = String(e.scope).trim().replace(/^["„“'`]+|["„“'`]+$/g, "").trim();
+      lines[b.end] = lines[b.end].trimEnd()
+        .replace(/^(-\s*\*\*)([\d-]{10})((?:\s*\([^)]*\))*)(:\*\*)/, (_, a, d, paren, z) => `${a}${d} (пресверена ${today})${paren.replace(/\s*\(пресверена [^)]*\)/g, "")}${z}`)
+        + ` _(${scope}; verified; ${src})_`;
+      applied.push({ lid, from: "", to: scope, source: src });
+      continue;
+    }
     if (!genericScope(t.scope, agent)) { reject(`обхватът вече е конкретен („${t.scope}“)`); continue; }
     const bad = badScope(e.scope, agent);
     if (bad) { reject(bad); continue; }
