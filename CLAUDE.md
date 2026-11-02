@@ -87,6 +87,10 @@ hooks, rules).
   re-render a promo/store/YouTube/social clip on a new version or a UI/site/copy change, don't
   propose one, and don't write "replace the clip" steps into kits/docs. A clip is made only on the
   owner's explicit request. Not covered: video that is a product feature (e.g. Piuma's content engine).
+- **GitHub Actions CI не се следи** (решение на собственика, 2026-11-02; от 2026-10-30 job-овете
+  не стартират в целия репо). Не абонирай PR за CI, не чакай, не пускай повторно и не поправяй
+  червен CI, не пиши коментари за него. Доказателството за качество е **локалният** quality gate
+  на продукта + `scope-check` + `secret-scan` — пусни ги преди commit и ги цитирай в PR-а.
 - **Verification agents: hard cap 10.** Never spawn more than **10** generic/external
   agents (anything other than our custom `.claude/agents/`) for verification in a
   task — it burns tokens. Prefer our purpose-built agents; verify inline when cheap.
