@@ -14653,7 +14653,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 240
+        "lessons": 241
       },
       "evolution": [
         {
@@ -14757,9 +14757,20 @@
           "date": "2026-10-31",
           "event": "v22.6 — учене",
           "detail": "Научи: Apple — скритите, неактивни и недокументирани функции (и обфускацията им) са по guideli… (+15 още)"
+        },
+        {
+          "version": "22.7.0",
+          "date": "2026-11-02",
+          "event": "v22.7 — учене",
+          "detail": "Научи: Android developer verification има три пътя — Full distribution (с проверка на самоличн…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Android developer verification има три пътя — Full distribution (с проверка на самоличн…\""
+        },
         {
           "date": "2026-10-31",
           "type": "learning",

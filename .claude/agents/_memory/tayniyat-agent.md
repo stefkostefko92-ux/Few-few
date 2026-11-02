@@ -11,6 +11,7 @@
 срокове) се потвърждават на живо преди цитиране.
 
 ## Проверени поуки (verified)
+- **2026-11-02:** Android developer verification има три пътя — Full distribution (с проверка на самоличността, всеки канал), Limited distribution (без проверка, до 20 устройства) и sideloading на нерегистрирани апове през advanced flow; от 30.09.2026 се проверяват инсталациите от 7 стора (Google Play, HONOR, OPPO, Samsung Galaxy Store, Transsion Palm Store, vivo, Xiaomi GetApps) в BR/ID/SG/TH. _(Android дистрибуция извън Google Play или през OEM сторове от 2026; verified; https://developer.android.com/developer-verification/guides)_
 
 - **2026-10-27:** Apple — скритите, неактивни и недокументирани функции (и обфускацията им) са по guideline 2.5.19, а 2.3.1(a) изисква всяка функция да е описана конкретно в Notes for Review и достъпна за ревюто; цитирай и двете при анти-cloaking. _(Apple App Review, анти-cloaking; verified; https://developer.apple.com/app-store/review/guidelines/ (сверено 2026-10-27))_
 - **2026-10-27:** Capacitor 6 дава по подразбиране targetSdk 34, а Capacitor 8 дава target/compile 36 (iOS 15, Xcode 26, Node 22); от 31.08.2026 Play иска API 36, значи Capacitor-апп за Play трябва да е на Capacitor 8. _(Capacitor апове за Google Play; verified; https://capacitorjs.com/docs/updating/6-0 ; https://capacitorjs.com/docs/updating/8-0 ; https://developer.android.com/google/play/requirements/target-sdk)_
