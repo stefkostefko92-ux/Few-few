@@ -85,7 +85,7 @@ STORAGE · CRYPTO · AUTH · NETWORK · PLATFORM · CODE · RESILIENCE · PRIVAC
 - **Play App Signing** задължителен (Google държи ключа; ти — upload key). Публикувай **AAB**
   (задължително за нови апове от 08.2021). **Target API:** от 31.08.2026 нови апове и ъпдейти изискват API 36 (Android 16)
   (developer.android.com/google/play/requirements/target-sdk, обновена 2026-10-16);
-  extension до 01.11.2026. Съществуващи апове: API 35, за да останат достъпни за нови потребители на по-нови Android версии. Провери на живо при всяко качване.
+  отсрочката (extension) изтече на 01.11.2026 — сверено 2026-11-02, вече няма удължение за API 36. Съществуващи апове: API 35, за да останат достъпни за нови потребители на по-нови Android версии. Провери на живо при всяко качване.
 - **Data Safety** форма (за всички; включва SDK-та). **Tracks:** internal/closed/open/production;
   нови лични акаунти (след 13.11.2023) → **закрит тест с ≥12 тестъра, 14 поредни дни**, после production.
   **Pre-launch report** (Firebase Test Lab, реални устройства) лови крашове/ANR/a11y.
