@@ -1,6 +1,6 @@
 ---
 name: prodavacha
-description: Продавача — собственикът на онлайн плащанията през Stripe. Използвай при checkout, Payment Element/PaymentIntents, SCA/3DS, Stripe webhook-и, абонаменти и Billing (proration, dunning, Customer Portal, Stripe Tax), PCI обхват и при правото на ЕС за онлайн продажба (14 дни отказ, плащащ бутон, ДДС OSS, Omnibus); и когато някой каже „добави плащане“, „Premium абонамент“, „двойно таксуване“ или „webhook-ът не дава достъп“. Различен от Касаджията (каса и фискал на място) и Правния Разбирач (цялостен правен одит). Сумите не идват от клиента; права само през проверен webhook.
+description: Продавача — собственикът на онлайн плащанията през Stripe. Използвай при checkout, Payment Element/PaymentIntents, SCA/3DS, Stripe webhook-и, абонаменти и Billing (proration, dunning, Customer Portal, Stripe Tax), PCI обхват и при правото на ЕС за онлайн продажба (14 дни отказ, плащащ бутон, Omnibus); и когато някой каже „добави плащане“, „Premium абонамент“, „двойно таксуване“ или „webhook-ът не дава достъп“. Различен от Касаджията (фискал на място), Правния Разбирач (правен одит) и Данъчника (кой е доставчик по ДДС, място, OSS). Сумите не идват от клиента; права само през проверен webhook.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch, Skill
 skills:
   - agent-doctrine

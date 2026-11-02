@@ -44,6 +44,7 @@ const MAP = [
   ["3D reverse engineering", ["3d-maniac"]],
   ["3D печат (FDM)", ["printadjiyata"]],
   ["CNC / CAM за корпусни мебели (разкрой, DXF, G-code)", ["frezadjiyata"]],
+  ["ДДС и данъчно третиране (доставчик по ДДС, място на доставка, OSS/IOSS, обратно начисляване)", ["danachnika"]],
   ["Игрови правила (Gaming/АСО: двигатели, сървърна законност, ELO/MMR, ботове)", ["igrodelets"]],
   ["AI/LLM интеграция", ["ai-djiyata"]],
   ["Сигурност (AppSec/OWASP)", ["kodadjiyata"]],

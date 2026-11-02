@@ -474,3 +474,6 @@
 {"t":"handoff","ts":"2026-11-02T14:27:56.817Z","id":"rbf572384","from":"razbivacha","to":"prodavacha","status":"има бележки","run":"3c503d2f"}
 {"t":"handoff","ts":"2026-11-02T14:28:00.587Z","id":"rbf572384","from":"treydara","to":"човек","status":"има бележки","run":"342a1271"}
 {"t":"handoff","ts":"2026-11-02T14:28:06.031Z","id":"rbf572384","from":"kasadjiyata","to":"оркестратор","status":"наред","run":"f1fc0e75"}
+{"t":"handoff","ts":"2026-11-02T14:41:06.624Z","id":"rbf572384","from":"asansyorchika","to":"оркестратор","status":"наред","run":"341a2cd0"}
+{"t":"start","ts":"2026-11-02T14:42:32.799Z","id":"r4509b51f","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-11-02T14:42:32.800Z","id":"r4509b51f","from":"ai-djiyata","to":"човек","status":"блокер","run":"2b45b7fb"}
