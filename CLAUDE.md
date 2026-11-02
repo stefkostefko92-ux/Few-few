@@ -87,6 +87,10 @@ hooks, rules).
   re-render a promo/store/YouTube/social clip on a new version or a UI/site/copy change, don't
   propose one, and don't write "replace the clip" steps into kits/docs. A clip is made only on the
   owner's explicit request. Not covered: video that is a product feature (e.g. Piuma's content engine).
+- **GitHub Actions CI не се следи** (решение на собственика, 2026-11-02; от 2026-10-30 job-овете
+  не стартират в целия репо). Не абонирай PR за CI, не чакай, не пускай повторно и не поправяй
+  червен CI, не пиши коментари за него. Доказателството за качество е **локалният** quality gate
+  на продукта + `scope-check` + `secret-scan` — пусни ги преди commit и ги цитирай в PR-а.
 - **Verification agents: hard cap 10.** Never spawn more than **10** generic/external
   agents (anything other than our custom `.claude/agents/`) for verification in a
   task — it burns tokens. Prefer our purpose-built agents; verify inline when cheap.
@@ -138,6 +142,13 @@ non-technical-editor pain appears. **Never** put sensitive/transactional/fiscal 
 Н-18/СУПТО, payments, accounts, inventory) in a hosted CMS. Full rationale → `docs/adr/0001-prisma-vs-sanity.md`.
 
 ## Deployment — `deploy/`
+
+**Хостинг: netcup, не Hetzner.** Всички продукти са на **една** KVM машина на netcup в Германия
+(ЕС) — `159.195.130.183` (RIPE `DE-NETCUP-KVM`); всички живи домейни сочат там, освен
+`scuolabulgaramilano.it` (Aruba shared hosting) — проверено 2026-11-02. Старото `178.104.77.242` е
+Hetzner Cloud и не се ползва. Изходящ SMTP: firewall политиката „netcup Mail block“ (SCP → Firewall)
+спира SMTP по подразбиране — правилото „Hetzner блокира 25/465/587“ **не важи**. Политиките за
+поверителност назовават хостинга като обработващ → при смяна на доставчик се сменят и те.
 
 Canonical flow: the server fetches an **immutable archive for an exact ref** from the
 public repo and hands it to `autodeploy.sh`. Still **no `git pull` on the box** (no working
