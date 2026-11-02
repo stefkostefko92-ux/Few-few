@@ -810,13 +810,14 @@
     {
       "id": "platformi",
       "name": "Платформите",
-      "mission": "Продуктите там, където живеят чужди платформи: телефон, браузър, Discord, FiveM.",
+      "mission": "Продуктите там, където живеят чужди платформи: телефон, браузър, Discord, FiveM — и браузърните игри на АСО.",
       "lead": "mobildjiyata",
       "members": [
         "mobildjiyata",
         "hromadjiyata",
         "diskordjiyata",
-        "geymara"
+        "geymara",
+        "igrodelets"
       ],
       "keys": [
         "мобил",
@@ -841,7 +842,10 @@
         "lua",
         "esx",
         "qbcore",
-        "fxmanifest"
+        "fxmanifest",
+        "gaming",
+        "асо",
+        "игр"
       ],
       "workflow": {
         "name": "Билд за платформа",
@@ -887,9 +891,9 @@
           "agent": "geymara"
         },
         {
-          "task": "push известия за ios с nfc четене",
+          "task": "в белота и сантасе обявяванията се броят грешно",
           "team": "platformi",
-          "agent": "mobildjiyata"
+          "agent": "igrodelets"
         }
       ],
       "failureModes": [
@@ -920,6 +924,10 @@
         {
           "tool": "tools/discord/discord-lint.mjs",
           "why": "подпис, intents и defer"
+        },
+        {
+          "tool": "Gaming/packages/game-core/src/games/index.ts",
+          "why": "регистърът на 21-те двигателя — правилата живеят тук, сървърът ги прилага"
         }
       ]
     },
@@ -1875,6 +1883,53 @@
       "output": "проверен CAM изход или причините за 422",
       "done": "npm run test:engine зелен; cncBlockers празен; диалектът сверен",
       "onFail": "моделът има грешка → причината на човека; модел от скан → първо 3D Maniac"
+    },
+    "igrodelets": {
+      "trigger": "правило, ход, точкуване, таймер, бот или рейтинг в игрите на Gaming (АСО)",
+      "receives": "играта и описанието на нарушението (или diff по двигателя)",
+      "outputs": "поправен двигател с регресионен тест или доказано „правилото е спазено“",
+      "handoff": "Кодаджията (ревю на промяната по двигателя)",
+      "human": "деплоя на продукция и спорно тълкуване на правилник",
+      "keys": [
+        "gaming",
+        "асо",
+        "игр",
+        "шах",
+        "дама",
+        "табла",
+        "бридж",
+        "белот",
+        "сантасе",
+        "кент",
+        "свара",
+        "билярд",
+        "снукър",
+        "онор",
+        "ход",
+        "elo",
+        "mmr",
+        "рейтинг",
+        "лоби",
+        "мачмейк",
+        "matchmaking",
+        "таймер",
+        "chips",
+        "gems",
+        "game-core"
+      ],
+      "rules": [
+        "Законността на хода се решава на сървъра (legalActions/validate преди reduce), никога в клиента.",
+        "Правило без източник (официален правилник или gameRules.ts) не влиза в двигателя.",
+        "Chips и gems не се обменят обратно в пари; залог само с виртуални chips."
+      ],
+      "tools": [
+        "Gaming/packages/game-core/src/games/index.ts",
+        "Gaming/apps/realtime/src/room.ts",
+        "Gaming/packages/shared/src/gameRules.ts"
+      ],
+      "output": "поправен двигател с регресионен тест или доказано „правилото е спазено“",
+      "done": "регресионният тест пада на стария двигател и минава на новия; pnpm lint, typecheck и test зелени в Gaming",
+      "onFail": "нарушението не се възпроизвежда → кажи го и спри; FiveM/Lua → Геймъра; плащане → Продавача"
     }
   },
   "launchPlan": [

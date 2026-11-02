@@ -52,6 +52,7 @@ export const FOCUS = {
   geymara: "FiveM ресурсите — сървърна валидация, експлойти през събития, natives",
   goladjiyata: "математиката и отговорната игра — марж, Kelly, калибрация",
   asansyorchika: "нормите за асансьори — точка, стойност, издание",
+  igrodelets: "правилата на игрите в АСО — сървърна законност на хода, точкуване, redact, таймери, ботове, ELO/MMR, chips без пари",
   frezadjiyata: "CAM изхода — cncBlockers/422, диалект ISO↔GRBL, Z0 и безопасна височина, nesting и кант",
 };
 
