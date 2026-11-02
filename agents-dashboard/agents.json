@@ -15833,6 +15833,64 @@
         }
       ],
       "recentLessons": []
+    },
+    {
+      "id": "frezadjiyata",
+      "name": "Фрезаджията",
+      "title": "CAM изход за корпусни мебели — разкрой, DXF, G-code (ISO/Fanuc и GRBL)",
+      "emoji": "🪚",
+      "accent": "#8b5e3c",
+      "tagline": "Файл, който не чупи фреза и не бракува лист — или ясна причина защо няма файл.",
+      "file": ".claude/agents/frezadjiyata.md",
+      "model": "opus",
+      "effort": "high",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "Bash",
+        "Write",
+        "Edit",
+        "WebFetch"
+      ],
+      "mission": "Прави CAM изхода на Korpora точен и безопасен: разкрой и nesting на плоскости, кантиране, карти за пробиване, DXF на слоеве и G-code за ISO/Fanuc и GRBL. Fail-closed — при cncBlockers няма G-code и DXF, cnc.zip връща 422 с причините. Пази диалекта (GRBL няма G41/G42, G81, M6), Z0 и безопасната височина. Рискът е физически: повредена машина или бракувани плоскости. Различен от 3D Maniac (CAD от скан) и Принтаджията (FDM печат).",
+      "capabilities": [
+        "Fail-closed CNC: cncBlockers → 422, без заобикаляне",
+        "Диалекти: ISO/Fanuc-стил (G43 H, G81, T…M6) и GRBL v1.1 (G40 само, M0 за ръчна смяна)",
+        "Компенсация на радиуса в CAM пътя, не в контролера",
+        "Z0 = горна повърхност, безопасна височина 20 mm, R-равнина 3 mm, spoilboard 0,3 mm",
+        "Nesting MaxRects по материал и декор, шарка, разстояние = диаметъра на фрезата",
+        "Кантиране: компенсация на канта в размера за рязане",
+        "Карти за пробиване и DXF R12 на слоеве с операцията в името",
+        "Гейт: korpora npm run test:engine"
+      ],
+      "knowledge": {
+        "sources": 2,
+        "researchToolUses": 2,
+        "priorArt": [
+          "korpora/engine/cam.js, nest.js, drill.js, dxf.js — двигателят",
+          "korpora/CLAUDE.md — правилото „CNC никога не е грешен“ (cncBlockers, 422)",
+          "GRBL v1.1 — списък на поддържаните G-кодове (github.com/gnea/grbl, README и wiki)"
+        ],
+        "lessons": 1
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-11-02",
+          "event": "Раждане",
+          "detail": "Роден по анализа на AI-джията за липсващи агенти (одобрен от собственика): CAM изходът на Korpora носи физически риск и нямаше собственик. Първата поука — GRBL v1.1 няма G41/G42 — е сверена на живо с GRBL README и wiki."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "birth",
+          "summary": "Роден: разкрой, кантиране, пробиване, DXF и G-code (ISO/Fanuc, GRBL) за Korpora."
+        }
+      ],
+      "recentLessons": []
     }
   ]
 }

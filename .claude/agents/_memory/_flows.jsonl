@@ -443,3 +443,9 @@
 {"t":"start","ts":"2026-11-02T12:16:18.337Z","id":"recdaaf92","flow":"авто","lead":"prodavacha","auto":true}
 {"t":"handoff","ts":"2026-11-02T12:16:18.337Z","id":"recdaaf92","from":"prodavacha","to":"ai-djiyata","status":"има бележки","run":"7a6610a5"}
 {"t":"handoff","ts":"2026-11-02T12:24:22.453Z","id":"recdaaf92","from":"3d-maniac","to":"човек","status":"има бележки","run":"dad19e15"}
+{"t":"start","ts":"2026-11-02T13:59:27.725Z","id":"rb6d249c8","flow":"авто","lead":"geymara","auto":true}
+{"t":"handoff","ts":"2026-11-02T13:59:27.725Z","id":"rb6d249c8","from":"geymara","to":"pravniyat-razbirach","status":"има бележки","run":"5edc9578"}
+{"t":"handoff","ts":"2026-11-02T13:59:53.329Z","id":"rb6d249c8","from":"prevodach","to":"pravniyat-razbirach","status":"има бележки","run":"e78ee479"}
+{"t":"handoff","ts":"2026-11-02T14:01:48.952Z","id":"rb6d249c8","from":"pravniyat-razbirach","to":"kodadjiyata","status":"блокер","run":"3e588467"}
+{"t":"handoff","ts":"2026-11-02T14:12:43.567Z","id":"rb6d249c8","from":"ai-djiyata","to":"човек","status":"има бележки","run":"28afcbca"}
+{"t":"handoff","ts":"2026-11-02T14:14:03.596Z","id":"rb6d249c8","from":"pravniyat-razbirach","to":"човек","status":"има бележки","run":"c1322feb"}

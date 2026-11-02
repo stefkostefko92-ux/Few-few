@@ -43,6 +43,7 @@ const MAP = [
   ["Social media", ["socialdjiyata"]],
   ["3D reverse engineering", ["3d-maniac"]],
   ["3D печат (FDM)", ["printadjiyata"]],
+  ["CNC / CAM за корпусни мебели (разкрой, DXF, G-code)", ["frezadjiyata"]],
   ["AI/LLM интеграция", ["ai-djiyata"]],
   ["Сигурност (AppSec/OWASP)", ["kodadjiyata"]],
   ["Червен екип / adversarial тестване", ["razbivacha"]],

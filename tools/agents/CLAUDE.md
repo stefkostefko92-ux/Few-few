@@ -8,7 +8,7 @@ A/B 27.10.2026 на 5 агента: без него 9/9 и pass^k 5/5 срещу
 
 ## Агентите — `.claude/agents/`
 
-29 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
+30 purpose-built subagents (BG system prompt, least-privilege `tools`), each with
 **durable verified memory** + a **hook-enforced self-learning loop**
 (`SubagentStart`/`SubagentStop` → `_memory/<id>.md`; verified-only,
 source-or-nothing, secrets hard-dropped). Every agent also preloads the **security
@@ -84,7 +84,7 @@ loop-engineering, написана нашия начин — zero-dep, fail-clos
 преписвай на ръка) това е **~350k т, 40% от цялата цена на колаборацията**; ако префиксът се
 плащаше веднъж на верига (system-ниво), щяха да паднат ~237k. Затова: **къси, целенасочени вериги
 са по-евтини от дълги обзорни**, а всеки токен, отрязан от префикса, се умножава по броя стъпки
-(74), не по броя агенти (29). `--check` гейтва дела на повторението. Соло задача ≠ верига — не
+(74), не по броя агенти (30). `--check` гейтва дела на повторението. Соло задача ≠ верига — не
 обявявай самостоятелна работа за „поток“ (данъкът на 2-стъпков поток от леки агенти е ~49%).
 
 **Версиите са днешни, не спомени (`version-freshness.mjs`).** Продуктът диктува мажора (чети

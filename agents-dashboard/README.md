@@ -35,7 +35,7 @@ node tools/docs/build-artifact.mjs        # → galaxy-artifact.html (~1.4 MB)
 ```
 
 Билдът маха обвивката `<!doctype>/<html>/<head>/<body>` (публикуването си я слага само),
-вгражда `docs.js` и превръща 28-те маскот-икони в `data:` URI. `fetch("./agents.json")`
+вгражда `docs.js` и превръща 30-те маскот-икони в `data:` URI. `fetch("./agents.json")`
 **се оставя нарочно**: пада тихо и кодът минава на вградения `FALLBACK`, който
 `sync-dashboard.mjs` държи изравнен с `_memory` — значи числата са верни без нито една
 мрежова заявка.

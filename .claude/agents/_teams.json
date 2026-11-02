@@ -926,12 +926,13 @@
     {
       "id": "forma",
       "name": "Формата",
-      "mission": "Как изглежда и как става физически: уеб ефекти, 3D от скан, печат.",
+      "mission": "Как изглежда и как става физически: уеб ефекти, 3D от скан, печат, CNC разкрой.",
       "lead": "dizayner",
       "members": [
         "dizayner",
         "3d-maniac",
-        "printadjiyata"
+        "printadjiyata",
+        "frezadjiyata"
       ],
       "keys": [
         "дизайн",
@@ -955,7 +956,13 @@
         "3mf",
         "нишк",
         "fdm",
-        "stl"
+        "stl",
+        "dxf",
+        "g-code",
+        "grbl",
+        "cnc",
+        "разкро",
+        "фрез"
       ],
       "workflow": {
         "name": "Визуален ефект (уеб) или физическа част",
@@ -973,7 +980,7 @@
           },
           {
             "agent": "printadjiyata",
-            "does": "физическа част: DfAM и слайс за K2 Plus",
+            "does": "физическа част: DfAM и слайс за K2 Plus (CNC разкрой и G-code → Фрезаджията, сам)",
             "gate": "printability зелен"
           }
         ],
@@ -1001,9 +1008,9 @@
           "agent": "dizayner"
         },
         {
-          "task": "поправи stl-а, не е watertight за fdm печат",
+          "task": "g-code за grbl рутера, контурът да е с компенсация на фрезата",
           "team": "forma",
-          "agent": "printadjiyata"
+          "agent": "frezadjiyata"
         }
       ],
       "failureModes": [
@@ -1034,6 +1041,10 @@
         {
           "tool": "tools/3d/clean_and_validate.py",
           "why": "мрежата от скана е годна"
+        },
+        {
+          "tool": "korpora/engine/cam.js",
+          "why": "cncBlockers спира G-code и DXF при грешка (fail-closed)"
         }
       ]
     }
@@ -1832,6 +1843,38 @@
       "output": "печатаем модел и 3MF слайс",
       "done": "printability зелен; ориентация по товар; толеранси заложени",
       "onFail": "моделът идва от скан → първо 3D Maniac, после печат"
+    },
+    "frezadjiyata": {
+      "trigger": "разкрой, DXF или G-code за CNC от Korpora",
+      "receives": "проекта (спецификацията) или готовия .nc/.dxf",
+      "outputs": "проверен CAM изход или причините за 422",
+      "handoff": "човека (симулация и сух ход на машината)",
+      "human": "симулация и сух ход преди рязане",
+      "keys": [
+        "dxf",
+        "g-code",
+        "gcode",
+        "grbl",
+        "cnc",
+        "fanuc",
+        "nesting",
+        "разкро",
+        "фрез",
+        "кантир",
+        "постпроцес",
+        "корпус"
+      ],
+      "rules": [
+        "При cncBlockers няма G-code и DXF — 422, не заобикаляне.",
+        "Само кодове, които диалектът поддържа (GRBL: без G41/G42, G81, M6)."
+      ],
+      "tools": [
+        "korpora/engine/cam.js",
+        "korpora/tests/engine"
+      ],
+      "output": "проверен CAM изход или причините за 422",
+      "done": "npm run test:engine зелен; cncBlockers празен; диалектът сверен",
+      "onFail": "моделът има грешка → причината на човека; модел от скан → първо 3D Maniac"
     }
   },
   "launchPlan": [

@@ -94,7 +94,7 @@ hooks, skills).
 
 ## Custom agents — `.claude/agents/`
 
-29 purpose-built subagents (BG system prompt, least-privilege `tools`, `maxTurns` checkpoint), each with
+30 purpose-built subagents (BG system prompt, least-privilege `tools`, `maxTurns` checkpoint), each with
 **durable verified memory** and a **hook-enforced self-learning loop**: lessons land in their own branch
 `agents/memory` (never the task branch; one standing PR brings them to `main`) and are retrieved at start
 by relevance to the actual task. Every agent preloads the **security doctrine + procedure** as the
