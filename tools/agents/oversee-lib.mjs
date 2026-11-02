@@ -175,7 +175,9 @@ export const isRealSource = (src) => {
     // Пусната команда с изхода ѝ („python3 -c … → (percent, face_count…)“) — точно това е проверка.
     // Без него 19 от 23 измерени поуки на 3D Maniac паднаха в Карантина (2026-09-24).
     // Пусната команда с изхода ѝ; може да стои след кратък увод („възпроизведено днес: sed … → …“).
-    /(?:^|[:;·(]\s*)(?:python3?|pip3?|npx|npm|pnpm|node|bash|git|docker|openssl|sqlite3|psql|cargo|go|ruby|php|file:?|sed|awk|curl|grep|rg|jq|ls|find|wc|systemctl|nginx|caddy|dig)\b[^\n]*?(?:→|->|=>)\s*\S/i.test(s) ||
+    // Списъкът е на изпълними файлове (не „всяка дума“), за да не минава проза като „кеш → по-бързо“.
+    // 2026-11-02: stat/swift/uname/df… липсваха и проверени днес поуки падаха на „без източник“.
+    /(?:^|[:;·(]\s*)(?:python3?|pip3?|npx|npm|pnpm|node|bash|sh|git|docker|openssl|sqlite3|psql|cargo|go|ruby|php|file:?|sed|awk|curl|grep|rg|jq|ls|find|wc|systemctl|journalctl|nginx|caddy|dig|stat|uname|df|du|id|which|ps|ss|lsblk|cat|head|tail|swift|xcodebuild|java|gradle|lua|luac|dotnet)\b[^\n]*?(?:→|->|=>)\s*\S/i.test(s) ||
     /(?:чл|ал|Прил|Регл|Дир|Наредба|ЗДДС|ЗЗП|ЗСч|ЗВЕРБ|GDPR|WCAG|§)\.?\s*№?\s*\d/i.test(s) ||     // правна цитация
     /(?:eval|test|tool|node|grep|stripe-lint|motion-a11y|check-dups|check-integrity|printability|store-readiness|scan\.sh|busted|luacheck|trivy|axe|lighthouse|EUR-Lex|registry\.npmjs|github\.com|developer\.|caniuse)/i.test(s)
   );
