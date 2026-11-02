@@ -4,7 +4,8 @@
 //   node render.mjs --comp composition-bg.html --w 1080 --h 1350 --name <име> --audio music.wav   # българският клип
 //
 // --comp: коя композиция; --w/--h: размерът (композицията чете ?w=&h=); --name: име на MP4 и на папката с кадри;
-// --audio: WAV за звука (силата му се изравнява до −14 LUFS); без --to — дължината идва от window.DURATION.
+// --audio: WAV за звука (силата му се изравнява до −14 LUFS); --sync: JSON с ударите на песента (тресенето ги следва);
+// без --to — дължината идва от window.DURATION.
 //
 // --step 15 рендерира всеки 15-и кадър (бърз преглед, без видео). Без --step: кадрите + MP4. Кадрите носят
 // абсолютния си номер, така че --from/--to пренарежда само една сцена и MP4 се сглобява от всички.
@@ -41,7 +42,7 @@ const frames = path.join(OUT, (STEP > 1 ? 'preview' : 'frames') + (NAME === 'car
 fs.mkdirSync(frames, { recursive: true });
 const b = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium' });
 const p = await b.newPage({ viewport: { width: VW, height: VH }, deviceScaleFactor: 1 });
-await p.goto(`http://127.0.0.1:${port}/${COMP}?w=${VW}&h=${VH}${SUBS ? '' : '&subs=0'}`, { waitUntil: 'networkidle' });
+await p.goto(`http://127.0.0.1:${port}/${COMP}?w=${VW}&h=${VH}${SUBS ? '' : '&subs=0'}${arg('sync', '') ? '&sync=' + arg('sync', '') : ''}`, { waitUntil: 'networkidle' });
 await p.evaluate(() => window.__ready);
 const TO = +arg('to', 0) || await p.evaluate(() => window.DURATION || 75);
 const f0 = Math.round(FROM * FPS), f1 = Math.round(TO * FPS);

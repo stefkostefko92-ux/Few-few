@@ -35,6 +35,17 @@ node render.mjs --comp composition-bg.html --w 1920 --h 1080 --name carbonstealt
 node render.mjs --comp composition-bg.html --w 1080 --h 1350 --name carbonstealth-promo-bg-4x5  --audio out/music-bg.wav
 ```
 
+**С песен от Suno** (2:39, 140 BPM) вместо синтезираната: `suno-assemble.py` сглобява 30 такта от песента —
+откъси, закотвени на точния момент, в който влиза всеки удар (Suno леко ускорява между частите, затова
+всеки откъс се мери поотделно), и пише ударите на готовия микс в `suno-sync.json` за тресенето на камерата.
+Песента не е в репото (права по плана на Suno).
+
+```bash
+ffmpeg -i song.mp3 -ac 2 -ar 48000 song48.wav
+python3 suno-assemble.py song48.wav out/music-suno.wav suno-sync.json
+node render.mjs --comp composition-bg.html --sync suno-sync.json --w 1920 --h 1080 --name suno-16x9 --audio out/music-suno.wav
+```
+
 Chrome Web Store страницата срива headless браузъра — сцената „Established Publisher“ показва
 секцията от нашия сайт adblock.carbonstealth.eu, която го казва.
 
