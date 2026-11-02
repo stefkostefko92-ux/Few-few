@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-02:** В adblock FORM_TARGET, FORM_ATTR и UNSAFE_SELECTORS живеят в scriptlets/policy.js (общ източник за SW, build и тестове), а ReDoS guard-ът в content.js и engine.js е еднакъв (q≤1 и отхвърляне на /\)[*+?{]/) — при одит на селектор/regex санитизация чети policy.js, не background.js _(ревю на adblock cosmetic/regex санитизация и remote-config пътища; verified; adblock/scriptlets/policy.js:115-116,227,393; adblock/content.js:163-168; adblock/scriptlets/engine.js:53-56)_
 
 - **2026-10-31:** CSPos/package-lock.json е lockfileVersion 3 и всичките 482 записа в packages имат поле license, затова лицензен преглед става офлайн с jq без node_modules и без инсталация _(OSS лицензен преглед на npm продукти в монорепото; verified; jq '.lockfileVersion' и броене на .packages[].license в CSPos/package-lock.json (2026-10-31))_
 - **2026-10-31:** CSPos .exe пакетира целия Next standalone сървър като extraResources, затова сървърните зависимости на CSPos са дистрибуирани (не SaaS) за лицензни цели _(копилефт и лицензни оценки за CSPos; verified; CSPos/desktop/prepare.mjs:39-41; CSPos/desktop/electron-builder.yml:9-17)_
