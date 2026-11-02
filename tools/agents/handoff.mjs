@@ -52,6 +52,39 @@ export function knownAgentNames(root = ROOT) {
   return m;
 }
 
+function editDistance(a, b) {
+  const prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    let diag = prev[0];
+    prev[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const up = prev[j];
+      prev[j] = Math.min(prev[j] + 1, prev[j - 1] + 1, diag + (a[i - 1] === b[j - 1] ? 0 : 1));
+      diag = up;
+    }
+  }
+  return prev[b.length];
+}
+
+/**
+ * Най-близкият валиден id за сгрешен адресат (02.11.2026): без подсказка агентът гадаеше id-то в нов ход.
+ * Съвпадение по префикс („pravniyat“ → „pravniyat-razbirach“) или до 2 редакции (до ¼ от дължината при
+ * по-дълги); името от регистъра също води до id-то. Далечно име → нищо (по-добре без подсказка, отколкото грешна).
+ */
+export function nearestAgent(word, agentIds, agentNames = new Map()) {
+  const w = String(word || "").toLowerCase();
+  if (w.length < 4 || !agentIds) return null;
+  const pre = [...agentIds].filter((id) => id.startsWith(w + "-"));
+  if (pre.length === 1) return pre[0];
+  let best = null, bestD = Infinity;
+  const cands = [...[...agentIds].map((id) => [id, id]), ...[...agentNames].map(([n, id]) => [n, id])];
+  for (const [label, id] of cands) {
+    const d = editDistance(w, label);
+    if (d < bestD) { bestD = d; best = id; }
+  }
+  return bestD <= Math.max(2, Math.floor(w.length / 4)) ? best : null;
+}
+
 // Извади блока ПРЕДАВАНЕ (последния, ако има няколко — предаването е ПОСЛЕДНОТО нещо в отговора).
 export function extractBlock(text) {
   const s = String(text || "");
@@ -114,8 +147,10 @@ export function validateHandoff(text, { agentIds = null, agentNames = null, requ
     const clean = toV.replace(/[„“"'`*]/g, "").trim().split(/[\s,(]/)[0];
     const full = toV.replace(/[„“"'`*]/g, "").trim().toLowerCase();
     const byName = [...(agentNames || knownAgentNames()).keys()].some((n) => full === n || full.startsWith(n + " ") || full.startsWith(n + ","));
-    if (!agentIds.has(clean) && !HUMAN_TARGETS.test(clean) && !byName)
-      problems.push({ field: "Към", msg: `непознат адресат „${clean}" — трябва да е id на наш агент или човек` });
+    if (!agentIds.has(clean) && !HUMAN_TARGETS.test(clean) && !byName) {
+      const near = nearestAgent(clean, agentIds, agentNames || knownAgentNames());
+      problems.push({ field: "Към", msg: `непознат адресат „${clean}" — трябва да е id на наш агент или човек${near ? ` (имаше предвид „${near}“?)` : ""}` });
+    }
   }
 
   if (!status) problems.push({ field: "Статус", msg: "липсва „Статус:“" });

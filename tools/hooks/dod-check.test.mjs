@@ -300,3 +300,22 @@ test("checkFailedGates: червено във временно копие не �
   assert.ok(checkFailedGates([mut, repo]), "червено в репото не се маскира");
   assert.ok(checkFailedGates([repo, { cmd: "cd /tmp/copy && node --test tools/fivem/stream-lint.test.mjs", out: "# fail 0" }]), "зелено в копие не изчиства червено в репото");
 });
+
+// Регресия 2026-11-02 (Кодаджията, ревюто на stream-lint): `node --test tools/fivem/` на Node 22 не обхожда
+// папката — пуска самата папка като модул, пада с MODULE_NOT_FOUND и дава „# fail 1“. Куката го броеше за
+// червен тест; по-късното правилно пускане с изброени файлове е друга команда и не го изчистваше.
+test("checkFailedGates: `node --test <папка>` е грешно извикване, не червен тест", () => {
+  const dirRun = (arg, base = "tools/fivem") => ({
+    cmd: `cd /home/user/Few-few && node --test ${arg}`,
+    out: `TAP version 13\n# Error: Cannot find module '/home/user/Few-few/${base}'\n#   code: 'MODULE_NOT_FOUND',\nnot ok 1 - ${base}\n# tests 1\n# pass 0\n# fail 1`,
+  });
+  const files = { cmd: "cd /home/user/Few-few && node --test tools/fivem/stream-lint.test.mjs tools/fivem/manifest-lint.test.mjs", out: "# tests 45\n# pass 45\n# fail 0" };
+  assert.equal(checkFailedGates([dirRun("tools/fivem/"), files]), null, "папка с наклонена черта");
+  assert.equal(checkFailedGates([dirRun("tools/fivem"), files]), null, "папка без наклонена черта");
+  // Липсващ ТЕСТОВ ФАЙЛ е реален провал — тестът, който трябваше да тича, го няма.
+  const missingFile = { cmd: "cd /home/user/Few-few && node --test tools/x/a.test.mjs", out: "# Error: Cannot find module '/home/user/Few-few/tools/x/a.test.mjs'\n#   code: 'MODULE_NOT_FOUND',\n# fail 1" };
+  assert.ok(checkFailedGates([missingFile]), "липсващ тестов файл пак хапе");
+  // Истински червен тест в същата команда с папка не се маскира.
+  const mixed = { cmd: "cd /home/user/Few-few && node --test tools/fivem/ tools/fivem/stream-lint.test.mjs", out: "# Error: Cannot find module '/home/user/Few-few/tools/fivem'\n#   code: 'MODULE_NOT_FOUND',\nnot ok 1 - tools/fivem\nnot ok 2 - stream-lint\n# fail 2" };
+  assert.ok(checkFailedGates([mixed]), "реален провал до грешното извикване пак хапе");
+});

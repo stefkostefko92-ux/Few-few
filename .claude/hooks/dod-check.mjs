@@ -158,6 +158,22 @@ export function testRunKey(cmd) {
 }
 
 /**
+ * `node --test <папка>` (02.11.2026): на Node 22 папката не се обхожда — пуска се като модул, пада с
+ * MODULE_NOT_FOUND и дава „# fail 1“. Това е грешно извикване, не червен тест: не се брои, а следващото
+ * правилно пускане решава. Само когато ВСИЧКИ провали са такива папки (без разширение, назовани в
+ * командата); липсващ тестов ФАЙЛ или истински червен тест в същата команда пак хапе.
+ */
+export function isDirTestMisuse(cmd, out) {
+  const m = /node\s+--test\b([^|;&>\n]*)/.exec(String(cmd || ""));
+  if (!m) return false;
+  const args = m[1].trim().split(/\s+/).filter((a) => a && !a.startsWith("-")).map((a) => a.replace(/["']/g, "").replace(/\/+$/, ""));
+  const missing = [...String(out || "").matchAll(/Cannot find module '([^']+)'/g)].map((x) => x[1].replace(/\/+$/, ""));
+  const fail = Number((/^#\s*fail\s+(\d+)/m.exec(String(out || "")) || [])[1] || 0);
+  if (!missing.length || fail !== missing.length) return false;
+  return missing.every((p) => !/\.[a-z0-9]+$/i.test(p) && args.some((a) => a && (p === a || p.endsWith("/" + a))));
+}
+
+/**
  * Гейт, чийто ПОСЛЕДЕН резултат е ЧЕРВЕН → работата не е „готова". Резултат = низ (стар формат) или
  * { cmd, out }. При сдвоени резултати червеното на ЕДНА команда се изчиства само от по-късно зелено на
  * СЪЩАТА команда — иначе `node --test b.test.mjs` (зелен) маскираше червения `a.test.mjs` (Разбивача, мисия 2).
@@ -171,6 +187,7 @@ export function checkFailedGates(results) {
       const out = typeof r === "string" ? r : String(r?.out ?? "");
       const key = typeof r === "string" ? "" : (m.name === "тестовете" && testRunKey(r?.cmd)) || cmdKey(r?.cmd);
       if (key === SCRATCH_RUN) continue; // временно копие — не е гейт на репото
+      if (m.name === "тестовете" && typeof r !== "string" && isDirTestMisuse(r?.cmd, out)) continue;
       if (m.red.test(out)) last.set(key, "red");
       else if (m.green.test(out)) last.set(key, "green");
     }

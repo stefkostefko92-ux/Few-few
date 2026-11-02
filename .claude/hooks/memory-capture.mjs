@@ -193,7 +193,7 @@ const INJECTION_RE = new RegExp(
     /[\p{L}][\uFE00-\uFE0F]|[\u{E0100}-\u{E01EF}]/u.source,
     // Нулево-широки/bidi/невидими знаци — същият клас като INVISIBLE в guard-secrets (U+2060, U+FEFF,
     // U+00AD, U+180E, U+3164, Tags). Преди: само U+200B-200F/202A-202E/2066-2069 → скрита инструкция минаваше.
-    /[\u00AD\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\u3164\uFEFF\u{E0000}-\u{E007F}]/u.source,
+    /[\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\u3164\uFEFF\uFFA0\u{E0000}-\u{E007F}]/u.source,
   ].join("|"),
   "iu",
 );
