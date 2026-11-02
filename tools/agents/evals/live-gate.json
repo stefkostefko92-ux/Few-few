@@ -1,22 +1,17 @@
 {
   "date": "2026-11-02",
-  "ref": "ee78108bfad1c769f9a1b577bf5b54bdd50f6322",
+  "ref": "4580c9b8f15b543db1a88f35e5833efc25af7a66",
   "cli": "2.1.316 (Claude Code)",
-  "summary": "проба 2/2 · оценки 7/7 · pass^k 3/3 · verifier ✓",
-  "costUsd": 7.59,
+  "summary": "проба 1/1 · оценки 6/6 · pass^k 2/2 · verifier ✓",
+  "costUsd": 6.46,
   "probe": [
-    {
-      "agent": "mobildjiyata",
-      "ok": true,
-      "problems": []
-    },
     {
       "agent": "prodavacha",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "e5399309a1553fc0a66de3419bb2a94269120b883480d0b54d3e079d86174c8a",
+  "inputsHash": "79c9094e323cabe6a9ce5911f09cfdcedfc6f05695d9cd8c48282e53cde63188",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "88d5ec11b12e04c04278aed5f68f63e1a51f6ef8d3148926d53400986ff6bbca",
@@ -41,7 +36,7 @@
     ".claude/agents/pravniyat-razbirach.md": "3f27101daef88135c926f185e921a7f35ccd53fd5a293b54a8f06747922a84dd",
     ".claude/agents/prevodach.md": "7aa99a4ee469bf4abb816e63d854188f98b4c13ca1fbe0c5e7ff7d27cb1ee623",
     ".claude/agents/printadjiyata.md": "17cce75ed4135f3f1a164a7c0dfc71a8483eabe3ca23e1f38d16cec212f53e3d",
-    ".claude/agents/prodavacha.md": "6a7db2c6cf0ba29d36d3990520e6e97e5fa6fca35628d8b176abc6409eaaae5b",
+    ".claude/agents/prodavacha.md": "3e06f4006aa664eb2a178a77e6623118d20e6b4e43a88a99a882d5f72100c649",
     ".claude/agents/razbivacha.md": "a85e4f3f4f543fa01b77f1035f1dd72427104ea64b84f61b046074f7b6a363be",
     ".claude/agents/seo.md": "2ae498fdd0cbd5965560f8c7fbb521ac4c6a70e3b3bb52ed07219776476d2f99",
     ".claude/agents/siydara.md": "c6b5cc0021c2fe1c0c70071383ea4beb77d2acdb5e1cce46e16202598a655693",
