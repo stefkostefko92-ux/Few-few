@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 454
+        "lessons": 415
       },
       "evolution": [
         {
@@ -626,9 +626,20 @@
           "date": "2026-11-02",
           "event": "v37.5 — учене",
           "detail": "Научи: Страната по YouTube API Services Terms of Service е YouTube LLC, с калифорнийско право … (+1 още)"
+        },
+        {
+          "version": "37.7.0",
+          "date": "2026-11-02",
+          "event": "v37.7 — учене",
+          "detail": "Научи: В чл. 22(3) ОРЗД немската версия казва „Erwirkung des Eingreifens einer Person seitens … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „В чл. 22(3) ОРЗД немската версия казва „Erwirkung des Eingreifens einer Person seitens …\" (+1 още)"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
