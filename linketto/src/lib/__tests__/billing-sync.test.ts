@@ -14,13 +14,9 @@ import {
   disputeHoldSubscriptionId,
   decidePlanSubscriptionCollection,
   decidePlanSubscriptionDispute,
-  applyPlanSubscriptionDispute,
   selectAdoptableSubscription,
   decideCheckoutPlanGrant,
   decideReferralReversal,
-  applyPlanSync,
-  applyFounderDecision,
-  applyReferralDecision,
   type PlanUserSnapshot,
   type SubscriptionSnapshot,
   type ChargeSnapshot,
@@ -28,6 +24,12 @@ import {
   type ReferralSnapshot,
   type PayoutSnapshot,
 } from '../billing-sync';
+import {
+  applyFounderDecision,
+  applyPlanSubscriptionDispute,
+  applyPlanSync,
+  applyReferralDecision,
+} from './plan-model';
 import { canWithdraw } from '../referral';
 import type { PlanId } from '../plans';
 
@@ -787,7 +789,7 @@ test('O-1/В4: причината на noop при блокиран план е 
 
 // ── 4.8 Спор по плановия абонамент → FREE и обратно (O-1, O-3) ─────────
 
-test('D1: спор по плащане на плановия абонамент → revoke dispute; apply: FREE, абонаментът остава вързан', () => {
+test('A1: спор по плащане на плановия абонамент → revoke dispute; apply: FREE, абонаментът остава вързан', () => {
   const user = U('PRO', 'sub_1');
   const d = decidePlanSubscriptionDispute(user, 'sub_1', R_DISPUTE);
   assert.deepEqual(d, { action: 'revoke', reason: 'dispute' });
@@ -797,28 +799,28 @@ test('D1: спор по плащане на плановия абонамент 
   assert.equal(after.planSubscriptionId, 'sub_1');
 });
 
-test('D2: повторено събитие за спора → noop unchanged, същото състояние', () => {
+test('A2: повторено събитие за спора → noop unchanged, същото състояние', () => {
   const user1 = applyPlanSubscriptionDispute(U('PRO', 'sub_1'), { action: 'revoke', reason: 'dispute' });
   const d = decidePlanSubscriptionDispute(user1, 'sub_1', R_DISPUTE);
   assert.deepEqual(d, { action: 'noop', reason: 'unchanged' });
   assert.deepEqual(applyPlanSubscriptionDispute(user1, d), user1);
 });
 
-test('D3: пълен refund по абонамента не сваля плана (P7)', () => {
+test('A3: пълен refund по абонамента не сваля плана (P7)', () => {
   const user = U('PRO', 'sub_1');
   const d = decidePlanSubscriptionDispute(user, 'sub_1', R_REFUND);
   assert.deepEqual(d, { action: 'noop', reason: 'unchanged' });
   assert.equal(applyPlanSubscriptionDispute(user, d).plan, 'PRO');
 });
 
-test('D4: inquiry (reversed:false) без наша причина → unchanged', () => {
+test('A4: inquiry (reversed:false) без наша причина → unchanged', () => {
   assert.deepEqual(decidePlanSubscriptionDispute(U('PRO', 'sub_1'), 'sub_1', NOT_REVERSED), {
     action: 'noop',
     reason: 'unchanged',
   });
 });
 
-test('D5: плащане на друг абонамент или без абонамент → not-plan-subscription-payment', () => {
+test('A5: плащане на друг абонамент или без абонамент → not-plan-subscription-payment', () => {
   for (const sub of ['sub_2', null]) {
     assert.deepEqual(decidePlanSubscriptionDispute(U('PRO', 'sub_1'), sub, R_DISPUTE), {
       action: 'noop',
@@ -831,14 +833,14 @@ test('D5: плащане на друг абонамент или без абон
   });
 });
 
-test('D6: FOUNDER не се пипа от спор по абонамент', () => {
+test('A6: FOUNDER не се пипа от спор по абонамент', () => {
   assert.deepEqual(decidePlanSubscriptionDispute(U('FOUNDER', 'sub_1'), 'sub_1', R_DISPUTE), {
     action: 'noop',
     reason: 'founder',
   });
 });
 
-test('D7: спечелен спор → restore чисти причината; планът се връща от синхронизацията по живия статус', () => {
+test('A7: спечелен спор → restore чисти причината; планът се връща от синхронизацията по живия статус', () => {
   const revoked = U('FREE', 'sub_1', null, 'dispute');
   const d = decidePlanSubscriptionDispute(revoked, 'sub_1', paymentReversal(C(400, 0), ['won']));
   assert.deepEqual(d, { action: 'restore' });
@@ -849,7 +851,7 @@ test('D7: спечелен спор → restore чисти причината; �
   assert.equal(sync.action === 'set' && sync.plan, 'PRO');
 });
 
-test('D8: втори won след restore → unchanged', () => {
+test('A8: втори won след restore → unchanged', () => {
   const cleared = U('FREE', 'sub_1');
   assert.deepEqual(decidePlanSubscriptionDispute(cleared, 'sub_1', NOT_REVERSED), {
     action: 'noop',
@@ -857,7 +859,7 @@ test('D8: втори won след restore → unchanged', () => {
   });
 });
 
-test('D9: цял сценарий — спор → пауза и FREE → active събитие не връща → won → възобновяване и PRO', () => {
+test('A9: цял сценарий — спор → пауза и FREE → active събитие не връща → won → възобновяване и PRO', () => {
   const live = S('sub_1', 'active', ['price_pro_m']);
   let user = U('PRO', 'sub_1');
   let paused = false;
@@ -913,7 +915,7 @@ test('L3: събитийният абонамент е жив → не се тъ
   assert.deepEqual(selectAdoptableSubscription(alive, [other, alive], PRICE_MAP), alive);
 });
 
-// ── 9.2 Ревю на Кодаджията (D10, D11, G10, F13, L4, B1) ─────────────────────
+// ── 9.2 Ревю на Кодаджията (A10, A11, G10, F13, L4, B1) ─────────────────────
 // Новите износи се вземат динамично: липсващ износ дава ясен провал на ТЕСТА
 // („липсва износ …"), а не SyntaxError за целия файл.
 import * as billingSync from '../billing-sync';
@@ -946,34 +948,34 @@ const applyDispute = applyPlanSubscriptionDispute as unknown as (
   paymentIntentId?: string | null,
 ) => PlanUserSnapshot & { planDisputedPaymentIntentId?: string | null };
 
-/** Потребител под спор по абонамента, с записан оспорен PaymentIntent (D10). */
+/** Потребител под спор по абонамента, с записан оспорен PaymentIntent (A10). */
 function disputedUser(pi: string | null = 'pi_A'): PlanUserSnapshot {
   return { ...U('FREE', 'sub_1', null, 'dispute'), planDisputedPaymentIntentId: pi } as PlanUserSnapshot;
 }
 const WON: PaymentReversal = NOT_REVERSED;
 
-test('D10a: apply на revoke записва кое плащане е оспорено', () => {
+test('A10a: apply на revoke записва кое плащане е оспорено', () => {
   const after = applyDispute(U('PRO', 'sub_1'), { action: 'revoke', reason: 'dispute' }, 'pi_A');
   assert.equal(after.plan, 'FREE');
   assert.equal(after.planDisputedPaymentIntentId, 'pi_A');
 });
 
-test('D10b: необърнато събитие за ДРУГ PaymentIntent при отворен спор → collection none', () => {
+test('A10b: необърнато събитие за ДРУГ PaymentIntent при отворен спор → collection none', () => {
   assert.equal(collect(disputedUser('pi_A'), 'sub_1', WON, 'active', true, 'pi_B'), 'none');
 });
 
-test('D10c: необърнато събитие за записания оспорен PI → resume', () => {
+test('A10c: необърнато събитие за записания оспорен PI → resume', () => {
   assert.equal(collect(disputedUser('pi_A'), 'sub_1', WON, 'active', true, 'pi_A'), 'resume');
 });
 
-test('D10d: необърнато събитие за ДРУГ PI → dispute noop unchanged (restore не се допуска)', () => {
+test('A10d: необърнато събитие за ДРУГ PI → dispute noop unchanged (restore не се допуска)', () => {
   assert.deepEqual(disputeOf(disputedUser('pi_A'), 'sub_1', WON, 'pi_B'), {
     action: 'noop',
     reason: 'unchanged',
   });
 });
 
-test('D10e: необърнато събитие за записания PI → restore; apply чисти и записания PI', () => {
+test('A10e: необърнато събитие за записания PI → restore; apply чисти и записания PI', () => {
   const user = disputedUser('pi_A');
   const d = disputeOf(user, 'sub_1', WON, 'pi_A');
   assert.deepEqual(d, { action: 'restore' });
@@ -982,7 +984,7 @@ test('D10e: необърнато събитие за записания PI → r
   assert.equal(after.planDisputedPaymentIntentId ?? null, null);
 });
 
-test('D10f: сценарий — успешно друго плащане по време на спора не връща плана; won по pi_A го връща', () => {
+test('A10f: сценарий — успешно друго плащане по време на спора не връща плана; won по pi_A го връща', () => {
   let user = applyDispute(U('PRO', 'sub_1'), disputeOf(U('PRO', 'sub_1'), 'sub_1', R_DISPUTE, 'pi_A'), 'pi_A');
   assert.equal(user.plan, 'FREE');
   // Нов цикъл на таксуване (pause_collection още е зададено): друг PI, не е обърнат.
@@ -997,12 +999,12 @@ test('D10f: сценарий — успешно друго плащане по �
   assert.equal(user.planRevokedReason, null);
 });
 
-test('D10g: заварен ред без записан PI (null) остава съвместим — won възобновява по всеки PI', () => {
+test('A10g: заварен ред без записан PI (null) остава съвместим — won възобновява по всеки PI', () => {
   assert.equal(collect(disputedUser(null), 'sub_1', WON, 'active', true, 'pi_X'), 'resume');
   assert.deepEqual(disputeOf(disputedUser(null), 'sub_1', WON, 'pi_X'), { action: 'restore' });
 });
 
-test('D11a: pause → първо БД (revoke), после Stripe; resume → първо Stripe, после БД', () => {
+test('A11a: pause → първо БД (revoke), после Stripe; resume → първо Stripe, после БД', () => {
   const steps = exported<(c: Collection, d: ReturnType<typeof decidePlanSubscriptionDispute>) => string[]>(
     'planDisputeSteps',
   );
@@ -1010,7 +1012,7 @@ test('D11a: pause → първо БД (revoke), после Stripe; resume → п
   assert.deepEqual(steps('resume', { action: 'restore' }), ['stripe-resume', 'db-restore']);
 });
 
-test('D11b: ретрай — когато едната половина вече е направена, остава само другата', () => {
+test('A11b: ретрай — когато едната половина вече е направена, остава само другата', () => {
   const steps = exported<(c: Collection, d: ReturnType<typeof decidePlanSubscriptionDispute>) => string[]>(
     'planDisputeSteps',
   );
@@ -1023,7 +1025,7 @@ test('D11b: ретрай — когато едната половина вече
   assert.deepEqual(steps('none', { action: 'noop', reason: 'unchanged' }), []);
 });
 
-test('D11c: срив на Stripe след pause не оставя платен план — БД е отнета ПРЕДИ заявката', () => {
+test('A11c: срив на Stripe след pause не оставя платен план — БД е отнета ПРЕДИ заявката', () => {
   const steps = exported<(c: Collection, d: ReturnType<typeof decidePlanSubscriptionDispute>) => string[]>(
     'planDisputeSteps',
   );
@@ -1049,7 +1051,7 @@ test('D11c: срив на Stripe след pause не оставя платен �
   assert.deepEqual(planWhenStripeCalled, ['FREE', 'FREE']);
 });
 
-test('D11d: сторното на реферала е отделен опит — тръгва и когато паузата се провали, и грешката се връща (→ 500/ретрай)', async () => {
+test('A11d: сторното на реферала е отделен опит — тръгва и когато паузата се провали, и грешката се връща (→ 500/ретрай)', async () => {
   const runIsolated = exported<(tasks: readonly (() => Promise<unknown>)[]) => Promise<void>>('runIsolated');
   const ran: string[] = [];
   await assert.rejects(
@@ -1208,7 +1210,7 @@ test('H2: запазен FOUNDER-спор не възобновява и не �
   assert.deepEqual(disputeOf(user, 'sub_9', NOT_REVERSED, 'pi_X'), { action: 'noop', reason: 'unchanged' });
 });
 
-// ── 9.4 Второ ревю на Кодаджията (F13e, F14, D12, R4, R5) ────────────────────
+// ── 9.4 Второ ревю на Кодаджията (F13e, F14, A12, W1, W2) ────────────────────
 // Веригата N1 (проба на Кодаджията): бивш FOUNDER (pi_F) → PRO sub_1 → спор по
 // sub_1 (pi_S) → нов PRO sub_2.
 function formerFounderSubDispute(): PlanUserSnapshot {
@@ -1261,14 +1263,14 @@ test('F14b: чист FOUNDER-спор (без записан PI) → restore к�
   assert.deepEqual(decideFounderPayment(founderOnly, 'pi_F', NOT_REVERSED), { action: 'restore' });
 });
 
-// D12: при необърнато плащане по абонамента стъпките ВИНАГИ завършват с 'resync'.
+// A12: при необърнато плащане по абонамента стъпките ВИНАГИ завършват с 'resync'.
 type StepsFn = (
   c: Collection,
   d: ReturnType<typeof decidePlanSubscriptionDispute>,
   reversal?: PaymentReversal,
 ) => string[];
 
-test('D12a: необърнато плащане → винаги завършва с resync (и при вече свършени половини)', () => {
+test('A12a: необърнато плащане → винаги завършва с resync (и при вече свършени половини)', () => {
   const steps = exported<StepsFn>('planDisputeSteps');
   assert.deepEqual(steps('resume', { action: 'restore' }, NOT_REVERSED), ['stripe-resume', 'db-restore', 'resync']);
   assert.deepEqual(steps('none', { action: 'restore' }, NOT_REVERSED), ['db-restore', 'resync']);
@@ -1276,14 +1278,14 @@ test('D12a: необърнато плащане → винаги завършв�
   assert.deepEqual(steps('none', { action: 'noop', reason: 'not-plan-subscription-payment' }, NOT_REVERSED), ['resync']);
 });
 
-test('D12b: обърнато плащане → без resync; без трети аргумент → стара форма (D11 непроменен)', () => {
+test('A12b: обърнато плащане → без resync; без трети аргумент → стара форма (A11 непроменен)', () => {
   const steps = exported<StepsFn>('planDisputeSteps');
   assert.deepEqual(steps('pause', { action: 'revoke', reason: 'dispute' }, R_DISPUTE), ['db-revoke', 'stripe-pause']);
   assert.deepEqual(steps('none', { action: 'noop', reason: 'unchanged' }, R_REFUND), []);
   assert.deepEqual(steps('none', { action: 'noop', reason: 'unchanged' }), []);
 });
 
-test('D12c: ретрай след срив между restore и sync → планът се връща от resync по живия статус', () => {
+test('A12c: ретрай след срив между restore и sync → планът се връща от resync по живия статус', () => {
   const steps = exported<StepsFn>('planDisputeSteps');
   // Първият опит изчисти причината (db-restore), но се скъса преди sync: FREE, причина null.
   const user = U('FREE', 'sub_1', null, null);
@@ -1298,7 +1300,7 @@ test('D12c: ретрай след срив между restore и sync → пла
   assert.equal(after.plan, 'PRO');
 });
 
-// R4/R5: чисто решение за предупреждение (webhook-ът го праща в console.warn).
+// W1/W2: чисто решение за предупреждение (webhook-ът го праща в console.warn).
 type WarnFn = (
   user: PlanUserSnapshot | null,
   paymentIntentId: string,
@@ -1306,13 +1308,13 @@ type WarnFn = (
   dispute: ReturnType<typeof decidePlanSubscriptionDispute>,
 ) => 'second-dispute' | 'restore-founder-trace' | null;
 
-test('R4: втори спор по ДРУГ PI на същия абонамент при записан → second-dispute', () => {
+test('W1: втори спор по ДРУГ PI на същия абонамент при записан → second-dispute', () => {
   const warn = exported<WarnFn>('planDisputeWarning');
   const user = disputedUser('pi_A');
   assert.equal(warn(user, 'pi_B', R_DISPUTE, disputeOf(user, 'sub_1', R_DISPUTE, 'pi_B')), 'second-dispute');
 });
 
-test('R4b: без предупреждение — повторено събитие за същия PI, първи спор, refund', () => {
+test('W1b: без предупреждение — повторено събитие за същия PI, първи спор, refund', () => {
   const warn = exported<WarnFn>('planDisputeWarning');
   const user = disputedUser('pi_A');
   assert.equal(warn(user, 'pi_A', R_DISPUTE, disputeOf(user, 'sub_1', R_DISPUTE, 'pi_A')), null);
@@ -1321,7 +1323,7 @@ test('R4b: без предупреждение — повторено събит
   assert.equal(warn(user, 'pi_B', R_REFUND, disputeOf(user, 'sub_1', R_REFUND, 'pi_B')), null);
 });
 
-test('R5: restore по абонамента при зададен planPaymentIntentId → restore-founder-trace', () => {
+test('W2: restore по абонамента при зададен planPaymentIntentId → restore-founder-trace', () => {
   const warn = exported<WarnFn>('planDisputeWarning');
   const user = { ...disputedUser('pi_A'), planPaymentIntentId: 'pi_F' } as PlanUserSnapshot;
   const d = disputeOf(user, 'sub_1', WON, 'pi_A');
@@ -1329,9 +1331,18 @@ test('R5: restore по абонамента при зададен planPaymentInt
   assert.equal(warn(user, 'pi_A', WON, d), 'restore-founder-trace');
 });
 
-test('R5b: restore без FOUNDER-следа, и noop решение → без предупреждение', () => {
+test('W2b: restore без FOUNDER-следа, и noop решение → без предупреждение', () => {
   const warn = exported<WarnFn>('planDisputeWarning');
   const user = disputedUser('pi_A'); // planPaymentIntentId = null
   assert.equal(warn(user, 'pi_A', WON, disputeOf(user, 'sub_1', WON, 'pi_A')), null);
   assert.equal(warn(user, 'pi_B', WON, disputeOf(user, 'sub_1', WON, 'pi_B')), null);
+});
+
+// RR1 (ревю 4 на Кодаджията, 02.11.2026): мутантът `return null` в toReversalReason оцеляваше — без тази
+// функция отнетият план и сторнираният реферал се четат като „без причина“ (restore/flag се губят).
+test('RR1: toReversalReason — само refund и dispute, всичко друго → null', () => {
+  const toReversalReason = exported<(v: string | null | undefined) => 'refund' | 'dispute' | null>('toReversalReason');
+  assert.equal(toReversalReason('refund'), 'refund');
+  assert.equal(toReversalReason('dispute'), 'dispute');
+  for (const v of [null, undefined, '', 'Refund', 'foo', 'refund ']) assert.equal(toReversalReason(v), null);
 });

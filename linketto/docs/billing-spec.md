@@ -2,6 +2,18 @@
 
 > Легендата на тестовете в `src/lib/__tests__/billing-sync.test.ts`. Писана тест-първо (02.11.2026):
 > Продавача (спец) → Изпитателя (падащи тестове) → Продавача (код) → Кодаджията (3 кръга ревю).
+>
+> **Кодове** (всеки код значи едно нещо):
+> - `D0`–`D3` — **дефекти** (раздел 0); `L` — базовата линия на stripe-lint. Не са тестове.
+> - Тестове: `C` класификация · `P` цени · `S0`/`U` абонамент → план · `R` обърнато плащане (P5) ·
+>   `F` FOUNDER · `G` предоставяне от checkout · `RF` реферал · `X` таксуване при спор (pause/resume) ·
+>   **`A` спор по плановия абонамент** (FREE и обратно, ред на стъпките, resync) · `L` осиновяване ·
+>   `B` backfill · `H` дискриминатор на hold-а · **`W` предупреждения** за ръчно наблюдение
+>   (`W1` втори спор, `W2` FOUNDER-следа) · `O-1` решение на собственика.
+>   `RR1` преобразуване на причината от базата (`toReversalReason`; ревю 4 — оцелял мутант).
+> - Преименуване (tidy, 02.11.2026): тестовете за спор по абонамента `D1`–`D12` → `A1`–`A12` (сблъсък с
+>   дефектите `D1`–`D3`); предупрежденията `R4`/`R5` от 9.4 → `W1`/`W2` (сблъсък с `R4`/`R5` от 4.3).
+>   Очакванията не са сменени.
 
 Автор: Продавача · 2026-11-02 · само спецификация, кодът не е пипан.
 Обхват: `linketto/src/app/api/stripe/webhook/route.ts` + нов `linketto/src/lib/billing-sync.ts` + адитивна миграция.
@@ -501,12 +513,12 @@ export function applyPlanSubscriptionDispute(user: PlanUserSnapshot, d: PlanSubs
 
 ### 9.2 Ревю на Кодаджията (02.11.2026) — допълнителни критерии, ЗАДЪЛЖИТЕЛНИ (качеството първо)
 Тестове първо (Изпитателя), после поправка (Продавача). ID-тата продължават съществуващите.
-- **D10 (бележка, Сигурно):** спорът по плановия абонамент пази КОЕ плащане е оспорено. Необърнато събитие
+- **A10 (бележка, Сигурно):** спорът по плановия абонамент пази КОЕ плащане е оспорено. Необърнато събитие
   (`reversed:false`) по ДРУГ PaymentIntent на същия абонамент, докато спорът по записания PI е отворен →
   `decidePlanSubscriptionCollection` = `'none'` и `decidePlanSubscriptionDispute` = `noop`/`unchanged`. Resume и restore
   се допускат САМО за записания оспорен PI. Нужно поле (напр. `planDisputedPaymentIntentId`, адитивна колона в
   същата нова миграция) или преизползване на съществуващо — по преценка на Продавача, с обосновка.
-- **D11 (дребно):** при `'pause'` отнемането в базата става ПРЕДИ заявката към Stripe; при `'resume'` остава „първо Stripe“.
+- **A11 (дребно):** при `'pause'` отнемането в базата става ПРЕДИ заявката към Stripe; при `'resume'` остава „първо Stripe“.
   Сторното на реферала е в отделен опит и не зависи от успеха на паузата. Тестът е на нивото на решението/реда,
   без мрежа (напр. чиста функция за реда на стъпките или проверка на плана, който webhook-ът изпълнява).
 - **G10 (дребно):** след успешно предоставяне на план от абонамент webhook-ът синхронизира по живото състояние на
@@ -528,7 +540,7 @@ isSubscriptionDispute(user) =
   (user.planDisputedPaymentIntentId != null || user.planPaymentIntentId === null)
 ```
 Обосновка:
-- `planDisputedPaymentIntentId != null` сам не стига. Заварен ред и тестовете O-1/D9 (без записан PI) трябва да останат под hold.
+- `planDisputedPaymentIntentId != null` сам не стига. Заварен ред и тестовете O-1/A9 (без записан PI) трябва да останат под hold.
 - `planPaymentIntentId === null` сам не стига. Бивш FOUNDER (стар `pi_F`) с нов абонамент, който получи спор по абонамента, би излязъл от hold.
 - Комбинацията: новият път **винаги** записва оспорения PI. Ако го няма, спорът е по абонамента само когато няма FOUNDER плащане, по което да е.
 - Важи навсякъде, където се решава hold:
@@ -537,9 +549,9 @@ isSubscriptionDispute(user) =
   - resume/restore в `decidePlanSubscriptionCollection`/`decidePlanSubscriptionDispute` (тест H2: запазен FOUNDER-спор не възобновява чужда пауза);
   - CAS в `syncPlanSubscription` (`OR: reason null | reason ≠ dispute | (planDisputedPaymentIntentId null И planPaymentIntentId not null)`).
 
-**D10.** Нова колона `User.planDisputedPaymentIntentId` (в същата миграция). Затова не преизползвам `planPaymentIntentId`: той е ключът на FOUNDER и F13 изисква двете да съжителстват. Resume/restore се допускат само при `recorded == null || recorded == paymentIntentId`.
+**A10.** Нова колона `User.planDisputedPaymentIntentId` (в същата миграция). Затова не преизползвам `planPaymentIntentId`: той е ключът на FOUNDER и F13 изисква двете да съжителстват. Resume/restore се допускат само при `recorded == null || recorded == paymentIntentId`.
 
-**D11.** `planDisputeSteps` дава реда на стъпките. Founder, абонамент и реферал са три отделни опита през `runIsolated`; първата грешка води до 500.
+**A11.** `planDisputeSteps` дава реда на стъпките. Founder, абонамент и реферал са три отделни опита през `runIsolated`; първата грешка води до 500.
 
 **G10.** `subscriptionIdToResyncAfterGrant` + `syncPlanSubscription` веднага след успешен grant.
 
@@ -552,19 +564,19 @@ isSubscriptionDispute(user) =
   получава `&& !isSubscriptionDispute(user)`. Верига: бивш FOUNDER (pi_F) → PRO sub_1 → спор по sub_1 (pi_S) → нов
   PRO sub_2 → grant изчиства причината и pi_S; смяна PRO→BUSINESS после НЕ е `dispute-hold`.
 - **F14 (N2):** `decideFounderPayment` при необърнато плащане по pi_F, когато `isSubscriptionDispute(user)` → `flag`, не `restore`.
-- **D12 (N3):** при необърнато плащане по абонамента `syncSubscriptionDispute` ВИНАГИ завършва с ресинхронизация по
+- **A12 (N3):** при необърнато плащане по абонамента `syncSubscriptionDispute` ВИНАГИ завършва с ресинхронизация по
   живото състояние (level-triggered), не само в клона db-restore. Чист тест на решението (напр. стъпка `'resync'` в
   `planDisputeSteps` за необърнато плащане) — по преценка на Изпитателя с Продавача.
-- **R4 (остатъчен риск 4):** втори спор по друг PI на същия абонамент, докато има записан → `console.warn` за ръчно наблюдение.
-- **R5 (остатъчен риск 5б):** restore по абонамента при `planPaymentIntentId !== null` → `console.warn` (FOUNDER-следата).
+- **W1 (остатъчен риск 4):** втори спор по друг PI на същия абонамент, докато има записан → `console.warn` за ръчно наблюдение.
+- **W2 (остатъчен риск 5б):** restore по абонамента при `planPaymentIntentId !== null` → `console.warn` (FOUNDER-следата).
 - **DEPLOY §1 т. 6:** след рестарта backfill dry-run, при нужда `--apply` (идемпотентен) — затваря прозореца apply→рестарт.
-Тестове първо за F13e, F14, D12 (и R4/R5, ако са изразими като чисто решение). Инвариантите от раздел 8 остават.
+Тестове първо за F13e, F14, A12 (и W1/W2, ако са изразими като чисто решение). Инвариантите от раздел 8 остават.
 
 ### 9.4.1 Направено (Продавача, 02.11.2026, стъпка 6)
 - **F13e:** `shouldClearRevocationOnGrant` добавя `&& !isSubscriptionDispute(user)`. Нов grant чисти спора по стар абонамент, затова вече няма вечен hold. Чист FOUNDER-спор се пази както преди (F13a, F13e-b).
 - **F14:** `decideFounderPayment` дава `flag` (не `restore`), когато `isSubscriptionDispute(user)`. Условният запис (CAS) за FOUNDER restore в `route.ts` получава и `planDisputedPaymentIntentId: null` (защита при състезание). Съобщението на flag-а назовава и двата случая.
-- **D12:** `planDisputeSteps(c, d, reversal?)` добавя `'resync'` при `reversed === false`. В `route.ts` `'resync'` вика `syncPlanSubscription`; извикването е махнато от `db-restore`, за да няма двоен sync. Без вързан потребител и при необърнато плащане също се прави sync (осиновяване на заварен).
-- **R4/R5:** `planDisputeWarning` праща резултата в `console.warn` с id-та на абонамента, потребителя и плащането (без лични данни).
+- **A12:** `planDisputeSteps(c, d, reversal?)` добавя `'resync'` при `reversed === false`. В `route.ts` `'resync'` вика `syncPlanSubscription`; извикването е махнато от `db-restore`, за да няма двоен sync. Без вързан потребител и при необърнато плащане също се прави sync (осиновяване на заварен).
+- **W1/W2:** `planDisputeWarning` праща резултата в `console.warn` с id-та на абонамента, потребителя и плащането (без лични данни).
   - `'second-dispute'` се дава само при решение `revoke` или `unchanged`; не при `not-plan-subscription-payment` или `founder`.
   - `'restore-founder-trace'` се дава при всеки `restore`, когато `planPaymentIntentId !== null`.
 - **DEPLOY §1 т. 6:** dry-run след рестарта, при нужда `--apply`.

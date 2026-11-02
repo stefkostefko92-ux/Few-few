@@ -7,6 +7,14 @@
 import { BILLING_INTERVALS, stripePriceEnvFor, type PlanId } from './plans';
 
 export type PaidPlanId = Exclude<PlanId, 'FREE'>;
+
+/** Причина за обърнато плащане / отнет план / сторниран реферал. */
+export type ReversalReason = 'refund' | 'dispute';
+
+/** Низ от базата → ReversalReason; всичко друго (вкл. null) → null. */
+export function toReversalReason(value: string | null | undefined): ReversalReason | null {
+  return value === 'refund' || value === 'dispute' ? value : null;
+}
 export type SubscriptionPlanId = Exclude<PlanId, 'FREE' | 'FOUNDER'>; // PRO | BUSINESS
 
 const PAID_PLANS: readonly PaidPlanId[] = ['PRO', 'BUSINESS', 'FOUNDER'];
@@ -114,13 +122,13 @@ export interface PlanUserSnapshot {
   stripeCustomerId: string | null;
   planSubscriptionId: string | null;
   planPaymentIntentId: string | null;
-  planRevokedReason: 'refund' | 'dispute' | null;
-  /** Оспореното плащане по плановия абонамент (D10); null/липсва = няма или заварено. */
+  planRevokedReason: ReversalReason | null;
+  /** Оспореното плащане по плановия абонамент (A10); null/липсва = няма или заварено. */
   planDisputedPaymentIntentId?: string | null;
 }
 
 /**
- * Дискриминатор (спецификация 9.1, D10/F13): причината 'dispute' е от спор
+ * Дискриминатор (спецификация 9.1, A10/F13): причината 'dispute' е от спор
  * по ПЛАНОВИЯ АБОНАМЕНТ, а не от отнет FOUNDER, когато е записан оспореният PI
  * на абонамента (новият път винаги го записва) ИЛИ потребителят няма FOUNDER
  * плащане (заварен ред: тогава спорът няма как да е по FOUNDER).
@@ -237,7 +245,7 @@ export function selectAdoptableSubscription(
 // ── Обърнато ли е плащането (P5) ─────────────────────────────────────
 export type PaymentReversal =
   | { reversed: false }
-  | { reversed: true; reason: 'refund' | 'dispute' };
+  | { reversed: true; reason: ReversalReason };
 
 // Inquiry (warning_*) не е chargeback; won/prevented не теглят пари.
 // Всеки друг статус (вкл. непознат) се брои за обърнато (fail-closed).
@@ -266,7 +274,7 @@ export function paymentReversal(
 // ── FOUNDER (D1) ─────────────────────────────────────────────────────
 export type FounderDecision =
   | { action: 'noop'; reason: 'not-founder-payment' | 'unchanged' | 'refund-terminal' }
-  | { action: 'revoke'; reason: 'refund' | 'dispute' }
+  | { action: 'revoke'; reason: ReversalReason }
   | { action: 'restore' }
   | { action: 'flag'; reason: 'restore-blocked-plan-changed' };
 
@@ -318,7 +326,7 @@ export function decidePlanSubscriptionCollection(
     return reversal.reason === 'dispute' && !collectionPaused ? 'pause' : 'none';
   }
   // Възобновяваме само пауза, която сме сложили ние, и само при събитие по
-  // оспореното плащане (D10): друго успешно плащане не отменя паузата.
+  // оспореното плащане (A10): друго успешно плащане не отменя паузата.
   return isSubscriptionDispute(user) && collectionPaused && matchesDisputedPayment(user, paymentIntentId)
     ? 'resume'
     : 'none';
@@ -354,7 +362,7 @@ export function decidePlanSubscriptionDispute(
 export type PlanDisputeStep = 'db-revoke' | 'stripe-pause' | 'stripe-resume' | 'db-restore' | 'resync';
 
 /**
- * D11: ред на стъпките. Pause → първо БД (паричният риск се затваря веднага,
+ * A11: ред на стъпките. Pause → първо БД (паричният риск се затваря веднага,
  * дори Stripe да се провали), после Stripe. Resume → първо Stripe, после БД
  * (иначе изчистената причина би загубила resume при ретрай).
  */
@@ -364,7 +372,7 @@ export function planDisputeSteps(
   reversal?: PaymentReversal,
 ): PlanDisputeStep[] {
   const steps = disputeEffectSteps(collection, dispute);
-  // D12: необърнато плащане → винаги завършва с синхронизация по живото
+  // A12: необърнато плащане → винаги завършва с синхронизация по живото
   // състояние (level-triggered): ретрай след срив между db-restore и sync
   // пак връща плана.
   return reversal?.reversed === false ? [...steps, 'resync'] : steps;
@@ -386,7 +394,7 @@ function disputeEffectSteps(
 }
 
 /**
- * D11: пуска ВСИЧКИ задачи последователно (провал на една не спира
+ * A11: пуска ВСИЧКИ задачи последователно (провал на една не спира
  * следващите), после хвърля първата грешка → 500 → Stripe ретрайва.
  */
 export async function runIsolated(tasks: readonly (() => Promise<unknown>)[]): Promise<void> {
@@ -458,7 +466,7 @@ export function decideCheckoutPlanGrant(input: {
 }
 
 /**
- * R4/R5: предупреждение за ръчно наблюдение (webhook-ът го праща в console.warn).
+ * W1/W2: предупреждение за ръчно наблюдение (webhook-ът го праща в console.warn).
  * - 'second-dispute': нов спор по ДРУГО плащане на абонамента, докато има
  *   записан оспорен PI (записва се само първият — остатъчен риск 4).
  * - 'restore-founder-trace': restore по абонамента при потребител със
@@ -532,7 +540,7 @@ export interface ReferralSnapshot {
   createdAt: Date;
   stripePaymentIntentId: string | null;
   reversedAt: Date | null;
-  reversalReason: 'refund' | 'dispute' | null;
+  reversalReason: ReversalReason | null;
 }
 export interface PayoutSnapshot {
   id: string;
@@ -543,7 +551,7 @@ export type ReferralDecision =
   | { action: 'noop'; reason: 'not-referral-payment' | 'unchanged' | 'refund-terminal' }
   | {
       action: 'reverse';
-      reason: 'refund' | 'dispute';
+      reason: ReversalReason;
       decrementCents: number;
       clawbackPayoutId: string | null;
       clawbackPayoutStatus: 'pending' | 'paid' | null;
@@ -583,60 +591,4 @@ export function decideReferralReversal(
     return { action: 'restore', incrementCents: referral.rewardCents };
   }
   return { action: 'noop', reason: 'unchanged' };
-}
-
-// ── Чисти „reducer“-и ─────────────────────────────────────────────────
-export function applyPlanSync(user: PlanUserSnapshot, d: PlanSyncDecision): PlanUserSnapshot {
-  if (d.action === 'noop') return user;
-  return {
-    ...user,
-    plan: d.plan,
-    planSubscriptionId: d.adoptSubscriptionId ?? user.planSubscriptionId,
-  };
-}
-
-export function applyFounderDecision(user: PlanUserSnapshot, d: FounderDecision): PlanUserSnapshot {
-  if (d.action === 'revoke') return { ...user, plan: 'FREE', planRevokedReason: d.reason };
-  if (d.action === 'restore') return { ...user, plan: 'FOUNDER', planRevokedReason: null };
-  return user;
-}
-
-export function applyPlanSubscriptionDispute(
-  user: PlanUserSnapshot,
-  d: PlanSubscriptionDisputeDecision,
-  paymentIntentId?: string | null,
-): PlanUserSnapshot {
-  if (d.action === 'revoke') {
-    return {
-      ...user,
-      plan: 'FREE',
-      planRevokedReason: 'dispute',
-      planDisputedPaymentIntentId: paymentIntentId ?? null,
-    };
-  }
-  // Restore чисти причината и оспорения PI; планът идва от decideSubscriptionSync.
-  if (d.action === 'restore') {
-    return { ...user, planRevokedReason: null, planDisputedPaymentIntentId: null };
-  }
-  return user;
-}
-
-export function applyReferralDecision(
-  state: { referral: ReferralSnapshot; balanceCents: number },
-  d: ReferralDecision,
-  now: Date,
-): { referral: ReferralSnapshot; balanceCents: number } {
-  if (d.action === 'reverse') {
-    return {
-      referral: { ...state.referral, reversedAt: now, reversalReason: d.reason },
-      balanceCents: state.balanceCents - d.decrementCents,
-    };
-  }
-  if (d.action === 'restore') {
-    return {
-      referral: { ...state.referral, reversedAt: null, reversalReason: null },
-      balanceCents: state.balanceCents + d.incrementCents,
-    };
-  }
-  return state;
 }

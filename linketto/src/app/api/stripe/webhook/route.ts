@@ -26,6 +26,7 @@ import {
   shouldClearRevocationOnGrant,
   subscriptionGrantsPlan,
   subscriptionIdToResyncAfterGrant,
+  toReversalReason,
   type PaidPlanId,
   type PaymentReversal,
   type PlanUserSnapshot,
@@ -33,6 +34,7 @@ import {
 } from '@/lib/billing-sync';
 import {
   firstPaymentIntentOfSession,
+  idOf,
   listCustomerSubscriptions,
   loadPaymentState,
   loadSubscription,
@@ -40,11 +42,6 @@ import {
 } from '@/lib/stripe-state';
 
 type PriceMap = ReadonlyMap<string, SubscriptionPlanId>;
-
-function idOf(value: string | { id: string } | null | undefined): string | null {
-  if (!value) return null;
-  return typeof value === 'string' ? value : value.id;
-}
 
 function isUniqueViolation(error: unknown): boolean {
   return (
@@ -78,25 +75,36 @@ const PLAN_USER_SELECT = {
   planPaymentIntentId: true,
   planRevokedReason: true,
   planDisputedPaymentIntentId: true,
-} as const;
+} satisfies Prisma.UserSelect;
 
-type PlanUserRow = {
-  id: string;
-  plan: PlanId;
-  stripeCustomerId: string | null;
-  planSubscriptionId: string | null;
-  planPaymentIntentId: string | null;
-  planRevokedReason: string | null;
-  planDisputedPaymentIntentId: string | null;
+type PlanUserRow = Prisma.UserGetPayload<{ select: typeof PLAN_USER_SELECT }>;
+
+// Условията в базата огледално на чистите функции в billing-sync.ts — за CAS
+// при състезание (решението вече е взето по snapshot).
+
+/** SQL огледало на `!isSubscriptionDispute(user)`: няма спор по абонамента. */
+const NOT_UNDER_SUBSCRIPTION_DISPUTE: Prisma.UserWhereInput = {
+  OR: [
+    { planRevokedReason: null },
+    { planRevokedReason: { not: 'dispute' } },
+    // Запазен FOUNDER-спор (F13): FOUNDER PI зададен, без оспорен PI.
+    { planDisputedPaymentIntentId: null, planPaymentIntentId: { not: null } },
+  ],
 };
+
+/** SQL огледало на `matchesDisputedPayment`: записаният оспорен PI е този (или заварен null). */
+function disputedPaymentIs(paymentIntentId: string): Prisma.UserWhereInput {
+  return {
+    OR: [
+      { planDisputedPaymentIntentId: null },
+      { planDisputedPaymentIntentId: paymentIntentId },
+    ],
+  };
+}
 
 function toPlanUser(row: PlanUserRow | null): PlanUserSnapshot | null {
   if (!row) return null;
-  const reason = row.planRevokedReason;
-  return {
-    ...row,
-    planRevokedReason: reason === 'refund' || reason === 'dispute' ? reason : null,
-  };
+  return { ...row, planRevokedReason: toReversalReason(row.planRevokedReason) };
 }
 
 // Начислява бонус на реферера, когато поканеният си купи платен план.
@@ -271,15 +279,8 @@ async function syncPlanSubscription(
   ];
   if (decision.plan !== 'FREE') {
     // O-1: платен план не се връща, докато трае спор ПО АБОНАМЕНТА (и при
-    // състезание). Същият дискриминатор като isSubscriptionDispute: запазен
-    // FOUNDER-спор (F13: FOUNDER PI зададен, без оспорен PI) не блокира.
-    conditions.push({
-      OR: [
-        { planRevokedReason: null },
-        { planRevokedReason: { not: 'dispute' } },
-        { planDisputedPaymentIntentId: null, planPaymentIntentId: { not: null } },
-      ],
-    });
+    // състезание); запазен FOUNDER-спор (F13) не блокира.
+    conditions.push(NOT_UNDER_SUBSCRIPTION_DISPUTE);
   }
   await prisma.user.updateMany({
     where: { id: row.id, plan: { not: 'FOUNDER' }, AND: conditions },
@@ -295,7 +296,7 @@ async function syncPlanSubscription(
 // Refund/спор на плащане → FOUNDER, плановия абонамент и реферала (D1, D3,
 // O-1). Решението идва от живото състояние, затова е общо за всички
 // charge.refunded / charge.dispute.* събития и е идемпотентно. Трите части са
-// отделни опити (D11): провал в едната не спира другите, а първата грешка
+// отделни опити (A11): провал в едната не спира другите, а първата грешка
 // води до 500 и Stripe ретрайва (повторението е безвредно — решенията са CAS).
 async function syncPaymentReversal(
   stripe: Stripe,
@@ -362,10 +363,10 @@ async function syncFounderReversal(
   }
 }
 
-// Плановият абонамент (O-1, D10, D11): пауза на таксуването + FREE при спор;
+// Плановият абонамент (O-1, A10, A11): пауза на таксуването + FREE при спор;
 // възобновяване + план по живия статус при won по СЪЩОТО оспорено плащане.
 // Ред: pause → първо БД, после Stripe; resume → първо Stripe, после БД.
-// D12: необърнато плащане винаги завършва със синхронизация по живия абонамент.
+// A12: необърнато плащане винаги завършва със синхронизация по живия абонамент.
 async function syncSubscriptionDispute(
   stripe: Stripe,
   subscriptionId: string,
@@ -397,46 +398,53 @@ async function syncSubscriptionDispute(
   const dispute = decidePlanSubscriptionDispute(subUser, subscriptionId, reversal, paymentIntentId);
   const warning = planDisputeWarning(subUser, paymentIntentId, reversal, dispute);
   if (warning) {
-    // R4/R5: ръчно наблюдение (id-та, без лични данни).
+    // W1/W2: ръчно наблюдение (id-та, без лични данни).
     console.warn(
       `[stripe-webhook] спор по абонамент ${subscriptionId}, потребител ${subRow.id}, плащане ${paymentIntentId}: ${warning}`,
     );
   }
   for (const step of planDisputeSteps(collection, dispute, reversal)) {
-    if (step === 'db-revoke') {
-      await prisma.user.updateMany({
-        where: { id: subRow.id, planSubscriptionId: subscriptionId, plan: { not: 'FOUNDER' } },
-        data: {
-          plan: 'FREE',
-          planRevokedAt: now,
-          planRevokedReason: 'dispute',
-          planDisputedPaymentIntentId: paymentIntentId,
-        },
-      });
-    } else if (step === 'stripe-pause' || step === 'stripe-resume') {
-      await setSubscriptionCollectionPaused(
-        stripe,
-        subscriptionId,
-        step === 'stripe-pause',
-        `plan-collection-${step}-${subscriptionId}-${eventId}`,
-      );
-    } else if (step === 'resync') {
-      await syncPlanSubscription(stripe, subscriptionId, priceMap);
-    } else {
-      // db-restore: само за записания оспорен PI (или заварен ред без него).
-      // Планът се връща от следващата стъпка 'resync'.
-      await prisma.user.updateMany({
-        where: {
-          id: subRow.id,
-          planSubscriptionId: subscriptionId,
-          planRevokedReason: 'dispute',
-          OR: [
-            { planDisputedPaymentIntentId: null },
-            { planDisputedPaymentIntentId: paymentIntentId },
-          ],
-        },
-        data: { planRevokedAt: null, planRevokedReason: null, planDisputedPaymentIntentId: null },
-      });
+    switch (step) {
+      case 'db-revoke':
+        await prisma.user.updateMany({
+          where: { id: subRow.id, planSubscriptionId: subscriptionId, plan: { not: 'FOUNDER' } },
+          data: {
+            plan: 'FREE',
+            planRevokedAt: now,
+            planRevokedReason: 'dispute',
+            planDisputedPaymentIntentId: paymentIntentId,
+          },
+        });
+        break;
+      case 'stripe-pause':
+      case 'stripe-resume':
+        await setSubscriptionCollectionPaused(
+          stripe,
+          subscriptionId,
+          step === 'stripe-pause',
+          `plan-collection-${step}-${subscriptionId}-${eventId}`,
+        );
+        break;
+      case 'db-restore':
+        // Само за записания оспорен PI (или заварен ред без него).
+        // Планът се връща от следващата стъпка 'resync'.
+        await prisma.user.updateMany({
+          where: {
+            id: subRow.id,
+            planSubscriptionId: subscriptionId,
+            planRevokedReason: 'dispute',
+            ...disputedPaymentIs(paymentIntentId),
+          },
+          data: { planRevokedAt: null, planRevokedReason: null, planDisputedPaymentIntentId: null },
+        });
+        break;
+      case 'resync':
+        await syncPlanSubscription(stripe, subscriptionId, priceMap);
+        break;
+      default: {
+        const unhandled: never = step;
+        throw new Error(`непозната стъпка ${String(unhandled)}`);
+      }
     }
   }
 }
@@ -463,10 +471,7 @@ async function syncReferralReversal(
       createdAt: referral.createdAt,
       stripePaymentIntentId: referral.stripePaymentIntentId,
       reversedAt: referral.reversedAt,
-      reversalReason:
-        referral.reversalReason === 'refund' || referral.reversalReason === 'dispute'
-          ? referral.reversalReason
-          : null,
+      reversalReason: toReversalReason(referral.reversalReason),
     },
     paymentIntentId,
     reversal,
@@ -511,6 +516,17 @@ async function syncReferralReversal(
       });
     });
   }
+}
+
+// Спор (всяко charge.dispute.* събитие) → общата синхронизация по плащането.
+async function syncDisputeReversal(
+  stripe: Stripe,
+  dispute: Stripe.Dispute,
+  eventId: string,
+  priceMap: PriceMap,
+): Promise<void> {
+  const paymentIntentId = await disputePaymentIntent(stripe, dispute);
+  if (paymentIntentId) await syncPaymentReversal(stripe, paymentIntentId, eventId, priceMap);
 }
 
 // PaymentIntent на спор; при липса — през charge-а му.
@@ -653,8 +669,12 @@ export async function POST(request: Request): Promise<NextResponse> {
   // идемпотентни) — така транзиентно провален превод към продавача или
   // провален нов път (план/refund/спор/реферал) се лекува.
   let ok = true;
+  // Нов път в отделен опит: провал → ok=false → 500 (без гълтане на грешки).
+  const track = async (label: string, fn: () => Promise<void>): Promise<void> => {
+    ok = (await attempt(label, fn)) && ok;
+  };
   // Карта цена → план; грешна конфигурация хвърля → 500 (видимо, не тихо).
-  const priceMap = (): PriceMap => buildPlanPriceMap(process.env);
+  const loadPriceMap = (): PriceMap => buildPlanPriceMap(process.env);
 
   switch (event.type) {
     // И двете събития: completed се излъчва и при delayed-notification методи
@@ -668,10 +688,9 @@ export async function POST(request: Request): Promise<NextResponse> {
       if (checkout.kind === 'plan') {
         // payment_status се проверява в decideCheckoutPlanGrant (subscription
         // приема и no_payment_required само при жив active/trialing).
-        ok =
-          (await attempt('plan checkout', () =>
-            grantPlanFromCheckout(stripe, session, checkout.userId, checkout.plan, priceMap()),
-          )) && ok;
+        await track('plan checkout', () =>
+          grantPlanFromCheckout(stripe, session, checkout.userId, checkout.plan, loadPriceMap()),
+        );
         break;
       }
       if (checkout.kind !== 'shop') {
@@ -794,10 +813,9 @@ export async function POST(request: Request): Promise<NextResponse> {
       }
       // План/реферал по живото състояние (вкл. натрупани частични refund-и).
       if (pi) {
-        ok =
-          (await attempt('payment reversal', () =>
-            syncPaymentReversal(stripe, pi, event.id, priceMap()),
-          )) && ok;
+        await track('payment reversal', () =>
+          syncPaymentReversal(stripe, pi, event.id, loadPriceMap()),
+        );
       }
       break;
     }
@@ -820,13 +838,9 @@ export async function POST(request: Request): Promise<NextResponse> {
         // се възстанови ръчно; загубата иначе е за продавача/платформата).
         await revokeOneOffEntitlements(pi).catch(() => undefined);
       }
-      ok =
-        (await attempt('dispute reversal', async () => {
-          const disputedPi = await disputePaymentIntent(stripe, dispute);
-          if (disputedPi) {
-            await syncPaymentReversal(stripe, disputedPi, event.id, priceMap());
-          }
-        })) && ok;
+      await track('dispute reversal', () =>
+        syncDisputeReversal(stripe, dispute, event.id, loadPriceMap()),
+      );
       break;
     }
     // Жизненият цикъл на спора (won/lost/funds_*) → само план/реферал по
@@ -836,13 +850,9 @@ export async function POST(request: Request): Promise<NextResponse> {
     case 'charge.dispute.funds_withdrawn':
     case 'charge.dispute.funds_reinstated': {
       const dispute = event.data.object;
-      ok =
-        (await attempt('dispute reversal', async () => {
-          const disputedPi = await disputePaymentIntent(stripe, dispute);
-          if (disputedPi) {
-            await syncPaymentReversal(stripe, disputedPi, event.id, priceMap());
-          }
-        })) && ok;
+      await track('dispute reversal', () =>
+        syncDisputeReversal(stripe, dispute, event.id, loadPriceMap()),
+      );
       break;
     }
     case 'account.application.deauthorized': {
@@ -890,29 +900,26 @@ export async function POST(request: Request): Promise<NextResponse> {
         })
         .catch(() => undefined);
       // Плановият абонамент (Portal смяна, dunning изходи) → User.plan.
-      ok =
-        (await attempt('plan subscription sync', () =>
-          syncPlanSubscription(stripe, sub.id, priceMap()),
-        )) && ok;
+      await track('plan subscription sync', () =>
+        syncPlanSubscription(stripe, sub.id, loadPriceMap()),
+      );
       break;
     }
     case 'customer.subscription.paused':
     case 'customer.subscription.resumed': {
       const sub = event.data.object;
-      ok =
-        (await attempt('plan subscription sync', () =>
-          syncPlanSubscription(stripe, sub.id, priceMap()),
-        )) && ok;
+      await track('plan subscription sync', () =>
+        syncPlanSubscription(stripe, sub.id, loadPriceMap()),
+      );
       break;
     }
     case 'customer.subscription.deleted': {
       const subscription = event.data.object;
       // Сваля се само потребителят, вързан към ТОЗИ абонамент (не по
       // customer); Founder не се пипа (решава decideSubscriptionSync).
-      ok =
-        (await attempt('plan subscription sync', () =>
-          syncPlanSubscription(stripe, subscription.id, priceMap()),
-        )) && ok;
+      await track('plan subscription sync', () =>
+        syncPlanSubscription(stripe, subscription.id, loadPriceMap()),
+      );
       // Членство към създател (магазина): отнемаме достъпа по абонамента.
       await prisma.entitlement
         .updateMany({

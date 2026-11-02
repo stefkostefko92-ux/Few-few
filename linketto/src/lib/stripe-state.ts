@@ -3,14 +3,20 @@
 // `stripe listen`). Без 'server-only' импорт, за да ги ползва и
 // scripts/backfill-plan-links.ts; Stripe клиентът е параметър.
 //
-// ВЪРЗАНИ КЪМ API 2025-02-24.acacia (src/lib/stripe.ts). В 2025-03-31.basil
-// са махнати PaymentIntent.invoice и Invoice.payment_intent/subscription
-// (вместо тях invoicePayments.list и invoice.parent) — при ъпгрейд се
-// пренаписва само този файл; чистите функции остават.
+// Пиннатата API версия живее ТУК (STRIPE_API_VERSION) и се внася от
+// src/lib/stripe.ts и от backfill скрипта, защото полетата по-долу зависят
+// от нея. В 2025-03-31.basil са махнати PaymentIntent.invoice и
+// Invoice.payment_intent/subscription (вместо тях invoicePayments.list и
+// invoice.parent) — при ъпгрейд се сменя константата и се пренаписва само
+// този файл; чистите функции остават.
 import type Stripe from 'stripe';
 import type { ChargeSnapshot, SubscriptionSnapshot } from './billing-sync';
 
-function idOf(value: string | { id: string } | null | undefined): string | null {
+/** Пиннатата Stripe API версия (= LatestApiVersion на инсталирания stripe@17). */
+export const STRIPE_API_VERSION = '2025-02-24.acacia' satisfies Stripe.LatestApiVersion;
+
+/** id от разширяем Stripe референс (низ или обект). */
+export function idOf(value: string | { id: string } | null | undefined): string | null {
   if (!value) return null;
   return typeof value === 'string' ? value : value.id;
 }

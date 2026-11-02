@@ -19,7 +19,11 @@ import {
   planForPriceIds,
   subscriptionGrantsPlan,
 } from '../src/lib/billing-sync';
-import { firstPaymentIntentOfSession, listCustomerSubscriptions } from '../src/lib/stripe-state';
+import {
+  firstPaymentIntentOfSession,
+  listCustomerSubscriptions,
+  STRIPE_API_VERSION,
+} from '../src/lib/stripe-state';
 
 const APPLY = process.argv.includes('--apply');
 
@@ -51,7 +55,7 @@ async function planSessions(
 async function main(): Promise<void> {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error('STRIPE_SECRET_KEY липсва в env');
-  const stripe = new Stripe(key, { apiVersion: '2025-02-24.acacia' });
+  const stripe = new Stripe(key, { apiVersion: STRIPE_API_VERSION });
   const prisma = new PrismaClient();
   const priceMap = buildPlanPriceMap(process.env);
   const live = key.includes('_live_');
