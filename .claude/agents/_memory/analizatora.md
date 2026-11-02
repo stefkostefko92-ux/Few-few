@@ -9,6 +9,7 @@
 Български е източникът на истината; никаква метрика без дефиниция; нула PII.
 
 ## Проверени поуки (verified)
+- **2026-11-02:** Валидаторът на ПРЕДАВАНЕ приема за адресат както id на агента (ai-djiyata), така и българското му име от agents.json (AI-джията). „Непознат адресат“ излиза само за име, което не е нито id, нито име от регистъра, нито човек. _(писане на блока ПРЕДАВАНЕ и избор на стойност в полето „Към“; verified; tools/agents/handoff.mjs:115 + реален ран node tools/agents/handoff.mjs (двата варианта → ✓, exit 0))_
 - **2026-10-27:** В linketto click route-ът вече изнася собствен HEAD без запис (route.ts:26), така че HEAD заявките не се броят за кликове; старата поука за route.ts:17 е остаряла. _(linketto, дефиниция на Link Clicked; verified; linketto/src/app/(public)/u/[slug]/l/[linkId]/route.ts:26)_
 - **2026-10-27:** В linketto прегледът записва суровия cf-ipcountry (ProfileScreen.tsx:219), а кликът минава през countryOf (route.ts:61), затова разбивката по държави смесва два различни речника. _(linketto, разбивки по държава от ClickEvent; verified; linketto/src/components/ProfileScreen.tsx:219 + linketto/src/app/(public)/u/[slug]/l/[linkId]/route.ts:61)_
 - **2026-10-27:** В linketto webhook-ът презаписва User.plan (webhook/route.ts:186, понижаване на :393) без история, затова стъпка „платен план“ във фуния не може да се възстанови назад във времето без append-only събитие. _(linketto, фунии и приходни метрики по план; verified; linketto/src/app/api/stripe/webhook/route.ts:186 + :393)_
