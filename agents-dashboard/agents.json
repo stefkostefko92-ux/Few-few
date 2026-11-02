@@ -1228,7 +1228,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 662
+        "lessons": 600
       },
       "evolution": [
         {
@@ -2130,9 +2130,20 @@
           "date": "2026-11-02",
           "event": "v54.5 — учене",
           "detail": "Научи: piuma: при преходи на пост с BullMQ махай job-а САМО след успешния преход на състояниет… (+4 още)"
+        },
+        {
+          "version": "54.7.0",
+          "date": "2026-11-02",
+          "event": "v54.7 — учене",
+          "detail": "Научи: Хукът guard-readonly отказва и `tar -C <репо> ... | tar -C <scratchpad>` в една команда… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Хукът guard-readonly отказва и `tar -C <репо> ... | tar -C <scratchpad>` в една команда…\" (+1 още)"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
