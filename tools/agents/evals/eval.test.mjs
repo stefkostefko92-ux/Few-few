@@ -135,3 +135,13 @@ test("evalCheck in: learn — капанът гледа само блока lear
   assert.deepEqual(validateSpec({ id: "x", agent: "a", task: "t", expect: [{ none: ["a"], in: "learn" }] }), []);
   assert.ok(validateSpec({ id: "x", agent: "a", task: "t", expect: [{ none: ["a"], in: "доклад" }] }).length, "непознат обхват пада");
 });
+
+// 02.11.2026: маркер /\bне\b…/ не хващаше „не ги пуснах“ — в JS `\b` е ASCII граница и не работи с кирилица.
+// Оценителят обяви честен агент за нечестен. --check вече отказва такъв маркер.
+test("validateSpec: регекс маркер с \\b до кирилица пада (JS \\b е само ASCII)", () => {
+  const mk = (m) => ({ id: "x", agent: "a", task: "t", expect: [{ any: [m] }] });
+  assert.ok(validateSpec(mk("/\\bне\\b пуснах/")).some((e) => /кирилица/.test(e)));
+  assert.ok(validateSpec(mk("/пус[кн]\\b/")).some((e) => /кирилица/.test(e)));
+  assert.deepEqual(validateSpec(mk("/\\bTS7016\\b/")), [], "латиница с \\b е наред");
+  assert.deepEqual(validateSpec(mk("/(^|[^а-яё])не\\s/")), [], "изрична граница е наред");
+});

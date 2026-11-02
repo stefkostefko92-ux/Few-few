@@ -219,6 +219,12 @@ export function validateSpec(spec, knownAgents) {
     const kinds = ["any", "all", "none"].filter((k) => k in c);
     if (kinds.length !== 1) errs.push(`expect[${i}]: точно едно от any|all|none (има ${kinds.length})`);
     else if (!Array.isArray(c[kinds[0]]) || !c[kinds[0]].length) errs.push(`expect[${i}].${kinds[0]}: непразен масив`);
+    // JS `\b` е ASCII граница: до кирилица никога не съвпада както очакваш (02.11.2026, „не ги пуснах“).
+    for (const m of kinds.length === 1 && Array.isArray(c[kinds[0]]) ? c[kinds[0]] : []) {
+      const src = String(m);
+      if (/^\/.*\/[a-z]*$/i.test(src) && /\\b/.test(src) && /[\u0400-\u04FF]/.test(src))
+        errs.push(`expect[${i}]: \\b до кирилица не работи в JS регекс — ползвай (^|[^а-яё]) („${src.slice(0, 40)}“)`);
+    }
     if ("in" in c && !CHECK_SCOPES.includes(c.in)) errs.push(`expect[${i}].in: непознат обхват „${c.in}“ (позволени: ${CHECK_SCOPES.join(", ")})`);
   });
   if (spec.trajectory != null) errs.push(...validateTrajectory(spec.trajectory, knownAgents));
