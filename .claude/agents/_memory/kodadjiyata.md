@@ -6,6 +6,8 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-02:** В linketto billing-sync причината planRevokedReason='dispute' за абонамент не пази оспорения PI, затова необърнато събитие по друг PI на същия абонамент дава resume+restore по време на отворен спор _(ревюта на linketto billing/webhook спор и пауза на абонамента; verified; linketto/src/lib/billing-sync.ts:276,300-302; npx tsx probe → {"reversed":false} resume {"action":"restore"})_
+- **2026-11-02:** stripe-node v17 по подразбиране ползва maxNetworkRetries=2, а вътрешните повторения ползват същия Idempotency-Key _(ревюта на Stripe извиквания с idempotencyKey в linketto; verified; linketto/node_modules/stripe/cjs/stripe.core.js:80)_
 - **2026-11-02:** linketto webhook — subscription.updated пише само Entitlement (не User.plan), а charge.refunded/dispute.created пипат само Purchase; плановото плащане не създава Purchase, затова план/Founder и реферният кредит оцеляват при refund _(linketto billing/webhook ревю; verified; linketto/src/app/api/stripe/webhook/route.ts:185-203,279-338,365-384)_
 
 - **2026-11-02:** React 19 (react-dom 19.2.7) в production подменя javascript: URL в href/src с URL, който хвърля грешка, затова javascript: не е XSS sink в React 19, но data: и други схеми не се филтрират _(ревюта на React/Next.js с недоверен URL в href/src; verified; mastilko/node_modules/react-dom/cjs/react-dom-client.production.js:1411-1416 (sanitizeURL))_
