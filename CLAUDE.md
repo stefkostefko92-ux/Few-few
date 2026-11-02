@@ -139,6 +139,13 @@ non-technical-editor pain appears. **Never** put sensitive/transactional/fiscal 
 
 ## Deployment — `deploy/`
 
+**Хостинг: netcup, не Hetzner.** Всички продукти са на **една** KVM машина на netcup в Германия
+(ЕС) — `159.195.130.183` (RIPE `DE-NETCUP-KVM`); всички живи домейни сочат там, освен
+`scuolabulgaramilano.it` (Aruba shared hosting) — проверено 2026-11-02. Старото `178.104.77.242` е
+Hetzner Cloud и не се ползва. Изходящ SMTP: firewall политиката „netcup Mail block“ (SCP → Firewall)
+спира SMTP по подразбиране — правилото „Hetzner блокира 25/465/587“ **не важи**. Политиките за
+поверителност назовават хостинга като обработващ → при смяна на доставчик се сменят и те.
+
 Canonical flow: the server fetches an **immutable archive for an exact ref** from the
 public repo and hands it to `autodeploy.sh`. Still **no `git pull` on the box** (no working
 tree, no `.git` to maintain) and **no CI/CD push** to production — the owner decides when.
