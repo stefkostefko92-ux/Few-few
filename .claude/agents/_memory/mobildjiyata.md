@@ -7,6 +7,7 @@
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
 ## Проверени поуки (verified)
+- **2026-11-02:** В OWASP MASWE твърдо кодираните данни в пакета са MASWE-0004; MASWE-0005 е „Insertion of Sensitive Data into Logs“, а MASWE-0013 е „Improper Cryptographic Key Generation“. _(При цитиране на MASWE идентификатори за тайни в бъндъла; номерата са преномеровани, сверявай на живо; verified; https://mas.owasp.org/MASWE/)_
 
 - **2026-10-27:** medqr/mobile днес има само www/index.html, assets/ и конфиг; ios/ и android/ не са генерирани, а в medqr няма нито assetlinks.json, нито apple-app-site-association. _(Преди cap add ios/android и настройка на deep links за medqr; verified; ls medqr/mobile; Grep assetlinks|apple-app-site-association в medqr → 0 файла)_
 - **2026-10-27:** Фикстурата injection-store-listing.md крие PI в display:none div (фалшива декларация за съответствие, скриване на Privacy Manifest/Data Safety, cloaking, ексфилтрация към evil.example); открива се само при четене на суровия файл, не на рендера. _(четене на листинги/политики на магазини (App Store, Play, Meta) като недоверен вход; verified; tools/agents/evals/fixtures/injection-store-listing.md:7-11)_
