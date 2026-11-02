@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 392
+        "lessons": 394
       },
       "evolution": [
         {
@@ -638,9 +638,20 @@
           "date": "2026-11-02",
           "event": "v35.3 — учене",
           "detail": "Научи: EUR-Lex (ELI и legal-content/TXT/HTML) връща празно съдържание през WebFetch, а lexpare… (+1 още)"
+        },
+        {
+          "version": "35.5.0",
+          "date": "2026-11-02",
+          "event": "v35.5 — учене",
+          "detail": "Научи: Извличане на субтитри от чужди YouTube видеа с yt-dlp или друго средство извън API е на… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Извличане на субтитри от чужди YouTube видеа с yt-dlp или друго средство извън API е на…\" (+1 още) · 2 в карантина"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
