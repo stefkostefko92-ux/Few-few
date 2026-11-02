@@ -33,6 +33,21 @@ export const ROOT = join(HERE, "..", "..", "..");
 export const ORCHESTRATOR_STOP_HOOKS = /session-dod|artifact-sync/;
 export const ALLOWED = ["Agent", "Read", "Grep", "Glob", "WebFetch", "WebSearch"];
 
+/**
+ * Инструментите на ОЦЕНКАТА (2026-11-02, пилот „качество първо“): досега копието позволяваше само четене, а в
+ * продукция същите агенти пишат и пускат тестове — Изпитателят „пишеше“ e2e тест, който не можеше да запише,
+ * Разбивача не можеше да пусне PoC. Оценката мереше описание, не работа. Сега: запис само под /tmp (копието
+ * /tmp/live-run-* и scratchpad-ът; истинското репо е извън /tmp и остава недостъпно за Write/Edit), пускане на
+ * тестове и наши инструменти, git само за четене. Пазачите (guard-*) тичат в копието както в продукция.
+ * Без npx за произволни пакети (мрежа + доставчик) — само конкретните инструменти на продуктите.
+ */
+export const EVAL_ALLOWED = [...ALLOWED, "Skill",
+  "Edit(//tmp/**)", "Write(//tmp/**)",
+  "Bash(node *)", "Bash(npm test*)", "Bash(npm run *)", "Bash(bash tools/*)",
+  "Bash(npx tsx *)", "Bash(npx tsc *)", "Bash(npx vitest *)", "Bash(npx playwright *)",
+  "Bash(git diff *)", "Bash(git log *)", "Bash(git show *)", "Bash(git status*)",
+  "Bash(ffprobe *)", "Bash(mkdir -p /tmp/*)"];
+
 /** Обвивката за главната сесия: пусни агента със задачата дословно, върни дословно отговора. */
 export function wrapperPrompt(agent, task) {
   // 27.10.2026 (жив гейт): агентът по подразбиране тече на ЗАДЕН план и обвивката понякога приключваше с „агентът
@@ -206,7 +221,7 @@ async function main(argv) {
       writeFileSync(f, patchFrontmatter(readFileSync(f, "utf8"), s.field, s.value));
       console.log(`рамо: ${s.agent}.${s.field} = ${s.value} (само в копието)`);
     }
-    const res = await runJobs(jobs, { wt: dir, concurrency: Number(val("--concurrency")) || 3, onDone: (r) => {
+    const res = await runJobs(jobs, { wt: dir, concurrency: Number(val("--concurrency")) || 3, allowed: EVAL_ALLOWED, onDone: (r) => {
       if (r.ok) writeFileSync(join(out, r.name), r.text);
       console.log(`${r.ok ? "✓" : "✗"} ${r.name} · ${r.agent} · ${r.text.length} зн. · $${r.costUsd.toFixed(2)} · ${r.seconds}s${r.err ? " · " + r.err : ""}`);
     } });

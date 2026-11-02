@@ -103,3 +103,14 @@ test("--patch: рамо за аблация сменя точен текст с�
   assert.throws(() => applyPatch(d, "a/P.md::няма такъв ред::"), /не е намерен/);
   assert.throws(() => applyPatch(d, "../x::a::b"), /невалидно/);
 });
+
+// Регресия 2026-11-02: оценката мереше агентите без запис и без команди (само четене), а в продукция те пишат
+// и пускат тестове. Записът е разрешен само под /tmp (копието и scratchpad-ът), никога върху истинското репо.
+test("EVAL_ALLOWED: запис само под /tmp, команди само изброени, без голи Write/Edit/Bash", async () => {
+  const { EVAL_ALLOWED, ALLOWED } = await import("./live-run.mjs");
+  for (const t of ALLOWED) assert.ok(EVAL_ALLOWED.includes(t), t);
+  for (const bare of ["Write", "Edit", "Bash", "Bash(*)", "Write(**)", "Edit(**)"]) assert.ok(!EVAL_ALLOWED.includes(bare), bare);
+  for (const r of EVAL_ALLOWED.filter((x) => /^(Write|Edit)\(/.test(x))) assert.match(r, /^(Write|Edit)\(\/\/tmp\//, r);
+  assert.ok(!EVAL_ALLOWED.some((r) => /Few-few|\/home\//.test(r)), "истинското репо не е в разрешените пътища");
+  assert.ok(!EVAL_ALLOWED.some((r) => /^Bash\(npx \*\)|^Bash\(curl|^Bash\(git (push|commit|reset)/.test(r)), "без мрежови/записващи git команди и произволен npx");
+});
