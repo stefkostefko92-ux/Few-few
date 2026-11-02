@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-02:** Митническото освобождаване за B2C пратки до €150 е отменено от 01.07.2026 с Регламент (ЕС) 2026/382; до 01.07.2028 се прилага временно мито €3 на артикул, след това обичайните мита. _(съвет за внос на пратки до €150 в ЕС, IOSS и цени при доставка от трета държава; verified; https://taxation-customs.ec.europa.eu/news/guidance-and-legal-text-temporary-flat-fee-low-value-imports-which-will-apply-until-1-july-2028-2026-06-08_en)_
 
 - **2026-11-02:** Най-новата стабилна Stripe API версия към 2026-11-02 е 2026-10-28.endive (предишни 2026-09-30.endive, 2026-08-26.dahlia, 2026-07-29.dahlia), всяка с паралелна .preview версия със същата дата. _(пинване или ъпгрейд на Stripe apiVersion и съвет коя е текущата стабилна версия; verified; https://docs.stripe.com/changelog)_
 - **2026-11-02:** Accounts v2 примерите в Stripe docs ползват Stripe-Version 2026-10-28.preview; v2 Account с customer configuration се подава като customer_account във всяка v1 заявка с customer параметър; v1 остава задължителен за OAuth, recipient service agreement, treasury и card_issuing. _(Stripe Connect платформи (linketto, Gaming) — избор между Accounts v1 и v2; verified; https://docs.stripe.com/connect/accounts-v2)_

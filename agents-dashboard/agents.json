@@ -9320,7 +9320,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 245
+        "lessons": 246
       },
       "evolution": [
         {
@@ -9682,9 +9682,20 @@
           "date": "2026-11-02",
           "event": "v23.9 — учене",
           "detail": "Научи: Най-новата стабилна Stripe API версия към 2026-11-02 е 2026-10-28.endive (предишни 2026… (+2 още)"
+        },
+        {
+          "version": "24.0.0",
+          "date": "2026-11-02",
+          "event": "v24.0 — учене",
+          "detail": "Научи: Митническото освобождаване за B2C пратки до €150 е отменено от 01.07.2026 с Регламент (…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „Митническото освобождаване за B2C пратки до €150 е отменено от 01.07.2026 с Регламент (…\""
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
