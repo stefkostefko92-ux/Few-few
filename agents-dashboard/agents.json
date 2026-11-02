@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 399
+        "lessons": 404
       },
       "evolution": [
         {
@@ -650,9 +650,20 @@
           "date": "2026-11-02",
           "event": "v36.0 — учене",
           "detail": "Научи: Creator PLA 10.09.2026 §1.3 вгражда Rockstar Mod Guidelines в Creator Policies; §2.5 да… (+4 още)"
+        },
+        {
+          "version": "36.5.0",
+          "date": "2026-11-02",
+          "event": "v36.5 — учене",
+          "detail": "Научи: docs.fivem.net Asset Escrow днес описва качване през Cfx.re Portal („Create an asset“) … (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "learning",
+          "summary": "Научи: „docs.fivem.net Asset Escrow днес описва качване през Cfx.re Portal („Create an asset“) …\" (+4 още)"
+        },
         {
           "date": "2026-11-02",
           "type": "learning",
