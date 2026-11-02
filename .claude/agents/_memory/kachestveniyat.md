@@ -10,6 +10,8 @@
 (не от гадаене) — затова първите поуки носят книжни/стандартни източници, а не repo факти.
 
 ## Проверени поуки (verified)
+- **2026-11-02:** linketto billing-sync.ts:1 сочи linketto-spec.md, който не е проследен в git (живее само в сесиен scratchpad); около 35 кода в коментарите и имената на тестовете зависят от него — при ревю провери дали легендата е в репото. _(linketto billing ревюта преди commit; verified; git ls-files | grep linketto-spec → празно; linketto/src/lib/billing-sync.ts:1)_
+- **2026-11-02:** linketto apply* редуцерите (billing-sync.ts:588-642) нямат production извикване; сценарийните тестове проверяват модел на CAS данните в webhook route.ts, не самия route — route.ts няма нито един тест. _(рефактор или преглед на linketto webhook и billing-sync; verified; grep -rn applyPlanSync linketto/src --include=*.ts (само __tests__); linketto/src/app/api/stripe/webhook/route.ts:342)_
 - **2026-11-02:** Nexus sensitiveAuthLimiter е rateLimit с windowMs 1 час и max sensitiveAuthMax (8), закачен на /api/auth/register; 9-та регистрация в един ран без NEXUS_E2E_AUTH_RATE_MAX връща 429, затова login спек с по-малко регистрации чрез beforeAll е по-устойчив. _(ревю на Nexus e2e спекове, които регистрират потребители; verified; Nexus/server/src/server.ts:151-152)_
 - **2026-11-02:** Nexus e2e регистрира отделен потребител за всеки тест, а /api/auth/register има твърд лимит 8/час/IP; спек с повече от 8 регистрации пада без NEXUS_E2E_AUTH_RATE_MAX в командата за пускане. _(ревю на Nexus Playwright спекове и инструкции за пускане; verified; Nexus/e2e/README.md:64-71)_
 
