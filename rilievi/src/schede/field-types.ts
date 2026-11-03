@@ -54,7 +54,8 @@ interface BaseField {
   /** При „Sì“ носи таблицата с мерките на старите бутониери — ред за всяка спирка (misure.ts). */
   misure?: boolean;
   /** При „Sì“ отваря модула на доставчика (src/ordini/) — свой PDF, отделно от картата. */
-  modulo?: 'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni' | 'ordineAmi';
+  modulo?:
+    'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni' | 'ordineAmi' | 'ordineBottoniere';
 }
 
 export interface TextField extends BaseField {

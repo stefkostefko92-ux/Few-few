@@ -107,6 +107,7 @@ describe('the field list', () => {
         'allarmePortineria',
         'displayPortineria',
         'bottoniereSostituire',
+        'bottoniereOrdine',
         'bottoniereNote',
         'noteQuadretto',
         'noteImpianto',

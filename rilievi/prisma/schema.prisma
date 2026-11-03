@@ -395,6 +395,11 @@ model Scheda {
   /// Разделът „Bottoniere“ (24 октомври 2026): „Bottoniere da sostituire?“ — при true бележка на ръка.
   bottoniereSostituire         Boolean?
   bottoniereNote               String?
+  /// „Vuoi compilare la scheda ordine bottoniere DMG?“ — при „Bottoniere da sostituire: Sì“ (3 ноември
+  /// 2026); при true — модулът QF Fixtures на DMG.
+  bottoniereOrdine             Boolean?
+  /// Модулът за поръчка на бутониерите (DMG QF Fixtures): {modulo, valori}. Има свой PDF.
+  ordineBottoniere             Json?
   /// „Мерки на старите бутониери?“ — при true редовете са в MisuraBottoniera.
   bottoniereMisure             Boolean?
   misureBottoniere             MisuraBottoniera[]
@@ -417,7 +422,8 @@ model Scheda {
   ami100Tipo                   Ami100Tipo?
   /// Листът на AMI 100 (Mono UCM или Mono RTBS): {modulo, valori}. Има свой PDF.
   ordineAmi                    Json?
-  /// „Да попълня ли модула за поръчка на таблото?“ — само при Pelazza.
+  /// „Да попълня ли модула за поръчка на таблото?“ — при марките с модул (Pelazza, MoviLift, DMG, Mastech,
+  /// Elettroquadri).
   quadroOrdine                 Boolean?
   /// Модулът за поръчка на Pelazza: {modulo, valori} — ключовете са в assets/moduli/*.json. Има свой PDF.
   ordineQuadro                 Json?

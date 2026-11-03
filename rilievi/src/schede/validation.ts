@@ -125,6 +125,7 @@ export const schedaSchema = z
     noteImpianto: textOf('noteImpianto'),
     noteBottoniere: textOf('noteBottoniere'),
     bottoniereSostituire: yesNoOf('bottoniereSostituire'),
+    bottoniereOrdine: yesNoOf('bottoniereOrdine'),
     bottoniereNote: textOf('bottoniereNote'),
     bottoniereMisure: yesNoOf('bottoniereMisure'),
     lavoriExtra: textOf('lavoriExtra'),
@@ -169,6 +170,7 @@ export type SchedaData = z.output<typeof schedaSchema> & {
   preventivoArgano: ModuloDati | null;
   ordineSospensioni: ModuloDati | null;
   ordineAmi: ModuloDati | null;
+  ordineBottoniere: ModuloDati | null;
   /** Поне един модул в печата (за предишния код) и кои — колоните им. */
   riepilogoOrdini: boolean;
   moduliStampati: string[];
@@ -244,6 +246,7 @@ export function parseScheda(
         preventivoArgano: dati('preventivoArgano') ?? null,
         ordineSospensioni: dati('ordineSospensioni') ?? null,
         ordineAmi: dati('ordineAmi') ?? null,
+        ordineBottoniere: dati('ordineBottoniere') ?? null,
         riepilogoOrdini: riepilogo.data.length > 0,
         moduliStampati: riepilogo.data,
         sezioniEscluse: stampa.data,

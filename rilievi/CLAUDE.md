@@ -3,8 +3,9 @@
 Портал само с покана (и публична витрина със заявка за достъп) за схемите за оглед на асансьорни уредби („scheda rilievo impianto“): попълване на
 29-те полета от заданието и полетата от второто (врати, аларма, работна карта, мерки на старите
 бутониери по спирки), търсене (№ на асансьора, матрикула, адрес, марка, работна карта, бележки), печат
-A4 и PDF. Модулите: при табло Pelazza / MoviLift / Mastech (NG120 или QI Touch — втори избор) /
-Elettroquadri (geared, gearless или oleodinamico — сам по вида на уредбата) (поръчката), „Argano da sostituire?“ (листът с данни за аргано) и „Sospensioni da cambiare?“ /
+A4 и PDF. Модулите: при табло Pelazza / MoviLift / DMG (Pitagora 4.0) / Mastech (NG120 или QI Touch — втори избор) /
+Elettroquadri (geared, gearless или oleodinamico — сам по вида на уредбата) (поръчката), „Vuoi compilare la scheda ordine
+bottoniere DMG?“ при „Bottoniere da sostituire: Sì“ (QF Fixtures на DMG), „Argano da sostituire?“ (листът с данни за аргано) и „Sospensioni da cambiare?“ /
 „Operatore da cambiare?“ (листът на 2SG за оператора и окачванията — начертан наново от нас) и „Installare AMI 100?“ при намалена
 яма или горно пространство (листът AMI 100 Mono UCM или Mono RTBS — начертан от нас) се попълва самият модул и излиза
 като отделен PDF — празният лист с данните върху него. Редът на разделите на картата се избира за всяка фирма (настройките на администратора ѝ);
@@ -43,6 +44,7 @@ npm run dev              # локално на :4330, чете .env (README, „
 npm run worker           # компресията на снимките и клиповете (иска ffmpeg/ffprobe; MEDIA_DIR=./media)
 npm run build            # prisma generate + tsc + шрифтовете в public/fonts (scripts/fonts.mjs)
 npm run moduli:disegna   # чертае листовете на 2SG и AMI 100 и картите им (assets/moduli) — после commit
+npm run moduli:dmg       # картите на двата формуляра на DMG от самите PDF-и (scripts/moduli/dmg.mjs) — после commit
 npm run render:encode    # снимките на витрината: scripts/render/out/*.png → public/img/site (AVIF + WebP)
 npm run brand:logo       # логата: scripts/logo/originals/{mark,logo}.png → public/img/brand (WebP) + favicon-*.png
 npm run owner:create     # първият MASTER от OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD (на сървъра: deploy/create-master.sh)
@@ -113,7 +115,8 @@ src/
                      collegamenti.ts (видовете места, проверката при старт) + collegati.ts (правилата
                      им) + collegati-browser.ts (JSON-ът за браузъра) · riepilogo.ts (модулите в печата на
                      картата) · form.ts · pdf.ts (плоските листове: Pelazza, аргано, 2SG, Mastech, Elettroquadri,
-                     AMI 100) + pdf-form.ts (формулярът на MoviLift) + pdf-testo.ts (шрифтът, мястото на
+                     AMI 100) + pdf-form.ts (формулярите на MoviLift и DMG) + pdf-form-pulizia.ts
+                     (почистването на формуляр с JavaScript — DMG) + pdf-testo.ts (шрифтът, мястото на
                      текста) — pdf-lib
   http/              prefs.ts (темата) · colori.ts (темата „Personalizzato“: контраст, стилът) · flash,
                      бисквитки, таванове, помощниците на изгледите
@@ -134,8 +137,9 @@ assets/moduli/       празните PDF-и на Pelazza, MoviLift, листа 
                      2SG (начертан наново от нас — `scripts/moduli/2sg.mjs`), AMI 100 Mono UCM / Mono RTBS
                      (начертани от нас — `scripts/moduli/ami100.mjs`), Mastech NG120 / QI Touch (сканирани; QI Touch — две
                      страници) и Elettroquadri geared / gearless / oleodinamico (официалните им PDF-и
-                     от elettroquadri.net; geared и oleodinamico — две страници) + картата на полетата
-                     им (JSON)
+                     от elettroquadri.net; geared и oleodinamico — две страници), DMG Pitagora 4.0 и QF
+                     Fixtures (формулярите им, непроменени — картите от `scripts/moduli/dmg.mjs`) +
+                     картата на полетата им (JSON)
 views/               EJS: partials/ (горна и долна лента, табелата, филтърът по фирма), site/ (витрината,
                      чертежът на шахтата, политиката), requests/, auth/, schede/, users/, aziende/,
                      account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs; скицникът —
@@ -340,11 +344,16 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   полетата и редът им — от списъка на собственика („Ami_100.pdf“), фиксираните варианти — отметки по
   каталога AMI100 (захранване 24/48 Vdc, въжето на ограничителя отляво/отдясно, водач 7/8/9/16 mm,
   икономайзер), отгоре — подател, дата и асансьорът; листът е начертан от нас
-  (`scripts/moduli/ami100.mjs`). Полетата и редът им са дословно от модула (италиански, не се
-  превеждат). Пазят се като JSON (`ordineQuadro`, `preventivoArgano`, `ordineSospensioni`:
+  (`scripts/moduli/ami100.mjs`). **DMG** (собственикът, 2 ноември 2026): „Marca quadro“ DMG + „Sì“ на
+  въпроса на таблото → „Quote form Pitagora 4.0“ (префикс `dp`, колона `ordineQuadro`); в раздела
+  „Bottoniere“ при „Bottoniere da sostituire: Sì“ — „Vuoi compilare la scheda ordine bottoniere DMG?“
+  (`bottoniereOrdine`; при всяка марка на таблото) → „Quote form Fixtures“ (префикс `db`, колона `ordineBottoniere`). Полетата и редът им са дословно от модула (италиански, не се
+  превеждат). Пазят се като JSON (`ordineQuadro`, `preventivoArgano`, `ordineSospensioni`, `ordineAmi`,
+  `ordineBottoniere`:
   `{modulo, valori}` — `modulo` е id-то на картата, затова записът на Pelazza никога не се чете като
   MoviLift, нито старото запитване към Montanari като листа за аргано) и излизат като свой PDF
-  (`/schede/:id/ordine-quadro`, `/ordine-quadro-movilift`, `/ordine-quadro-mastech-ng120`,
+  (`/schede/:id/ordine-quadro`, `/ordine-quadro-movilift`, `/ordine-quadro-dmg-pitagora`,
+  `/ordine-bottoniere-dmg`, `/ordine-quadro-mastech-ng120`,
   `/ordine-quadro-mastech-qi-touch`, `/ordine-quadro-elettroquadri-geared`, `…-gearless`,
   `…-oleodinamico`, `/dati-argano`, `/sospensioni-2sg`, `/operatore-2sg`; затворен модул → 404). В печата
   и PDF-а на картата влизат САМО модулите, които картата иска — всеки поотделно (таблото, аргано, 2SG:
@@ -374,6 +383,23 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   своят), два бутона без надпис не са в картата, Testo78/79 са надписи, „Fotocellula … V“ е без поле
   (`crea`: създава се при попълването, като Testo77). Отметката/изборът — наш облик с линии (✔/■), не
   невграденият ZapfDingbats. flatten оставя в /Annots връзки към изтритите бутони — `pulisciAnnots`.
+- **DMG** (`assets/moduli/dmg-*`, картите — `npm run moduli:dmg`: скриптът чете полетата от PDF-а и спира
+  при име, състояние или опция, които ги няма, и при поле с данни без място в картата). Формулярите на
+  CorelDRAW са с JavaScript и слоеве за езика (италианският е включен). Изборът е група отметки с ЕДНО
+  име, не радио: опцията сочи бутона по името на „включеното“ му състояние (`stato`; MoviLift — по реда,
+  `widget`); `selectRadio` слага V и облика на избрания, на другите „Off“. Бутоните на Pitagora нямат облик
+  „Off“ (кутийките са в страницата) — неизбраните излизат, без да се рисуват (`togliSenzaAspetto`), а
+  избраният получава само нашия знак. `pulizia` в картата → `pdf-form-pulizia.ts` преди flatten:
+  JavaScript-ът на документа и страниците се маха; бутоните за действие (Salva, Invia, Reset, езиците,
+  стрелките, корицата „00-Home“ на Fixtures) и „кръпките“ (`nonStampare: ["-TOPPA$"]`, сивото, с което
+  скриптът закрива недостъпното) не излизат; скритите полета (енкодерите при затворен контур,
+  „Sovraeccitazione“…) излизат само попълнени. Моделът на бутониерите (Flat standard, Elise, Silverlight,
+  Gilda TM, Luna, Cut, Greta) се избира на корицата от скрипта — в картата е избор без поле (`acro`
+  липсва), който показва картинките и ширините на модела (`mostra`: „00-Piastra-X“, „02/10/11-Dim.X“ и
+  „-IMG“). Ширините на всички модели са във формата с името на модела в етикета. Pitagora: стр. 3–4
+  (бутониерите към таблото) също са в картата; трите кутийки „Flush_0060/0080/0090“ на стр. 4 са вързани
+  от автора към полето на кабината — не се предлагат. „Corsa“ на Pitagora е сумата на интерпиановете в
+  Acrobat — у нас се пише на ръка (без връзка: мерките на листа не са в метри).
 - **Свързаните данни** (`ordini/collegamenti-elenco.ts` + `collegamenti-aggiunti.ts` — ЕДИНСТВЕНИЯТ
   списък, вторият файл е продължението му: новите връзки са в края; видовете места и
   проверката при старт — `collegamenti.ts`; правилата — `collegati.ts`): едно и също нещо от уредбата
@@ -384,7 +410,10 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   на машината (MoviLift; на листа за аргано е текст — само попълване), въжета (брой, диаметър,
   снопове). После („всички полета с еднакви параметри“, октомври 2026): адрес, матрикула и марка
   (листът за аргано), вид на уредбата (Pelazza „Idraulico“), вратите на 2SG (Automatico,
-  Semiautomatico), ток и обороти на мотора. AMI 100 Mono UCM (30 октомври 2026): товарът и спирките. Операторът на картата е махнат (17 октомври): марката му
+  Semiautomatico), ток и обороти на мотора. AMI 100 Mono UCM (30 октомври 2026): товарът и спирките.
+  DMG (2 ноември 2026) — в досегашните връзки: Pitagora — спирки, скорост, товар/хора/№ на дисплея,
+  мотор (V, A, kW, полюси, обороти), спирачка, етажни врати, мястото на машинното, окачване, шейна,
+  марка на централата и на вратите (само попълване); Fixtures — спирки, kg, хора, №, матрикула, адрес. Операторът на картата е махнат (17 октомври): марката му
   остава връзка само между таблата (Pelazza „Modello“, MoviLift — падащ списък, QI Touch; само
   попълване, при смяна на марката), напрежението и светлият отвор — без връзка.
   После (централата и Mastech): марката на централата (картата ↔ MoviLift „Idraulico“, само попълване;

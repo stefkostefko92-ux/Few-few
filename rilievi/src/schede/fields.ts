@@ -102,7 +102,10 @@ export const SECTIONS = [
         question: true,
         modulo: 'ordineQuadro',
         // Марките с модул за поръчка (src/ordini/registry.ts — тестът пази съвпадението).
-        when: { field: 'quadroMarca', values: ['PELAZZA', 'MOVILIFT', 'MASTECH', 'ELETTROQUADRI'] },
+        when: {
+          field: 'quadroMarca',
+          values: ['PELAZZA', 'MOVILIFT', 'DMG', 'MASTECH', 'ELETTROQUADRI'],
+        },
       },
       { key: 'quadroNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
@@ -161,11 +164,19 @@ export const SECTIONS = [
   },
   {
     // „Bottoniere“ — избира се при нужда: „Bottoniere da sostituire?“ и бележка на ръка — винаги, и при
-    // „No“ (собственикът, 24 октомври 2026; засега само това). Бележката за бутониерите в работа и мерките
-    // на старите — в „Note e lavori“.
+    // „No“ (собственикът, 24 октомври 2026). При „Sì“ — модулът за поръчка на бутониерите на DMG (QF
+    // Fixtures; 2 ноември 2026). Бележката за бутониерите в работа и мерките на старите — в „Note e lavori“.
     key: 'bottoniere',
     fields: [
       { key: 'bottoniereSostituire', kind: 'yesno', question: true },
+      {
+        key: 'bottoniereOrdine',
+        kind: 'yesno',
+        wide: true,
+        question: true,
+        modulo: 'ordineBottoniere',
+        when: yes('bottoniereSostituire'),
+      },
       { key: 'bottoniereNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },

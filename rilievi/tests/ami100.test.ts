@@ -112,6 +112,8 @@ describe('AMI 100', () => {
       ordineSospensioni: null,
       ami100: true,
       ami100Tipo: 'MONO_RTBS' as const,
+      bottoniereOrdine: null,
+      ordineBottoniere: null,
       ordineAmi: {
         modulo: AMI_RTBS.id,
         valori: { codiceAmi: 'RTBS-24', tensione48: true, funeDestra: true },

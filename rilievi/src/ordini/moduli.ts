@@ -35,10 +35,17 @@ function load<S extends z.ZodTypeAny>(name: string, schema: S): z.output<S> {
   for (const field of fields) {
     if (field.kind === 'radio') {
       const valori = field.opzioni.map((o) => o.valore);
-      const widgets = field.opzioni.map((o) => o.widget);
+      // Всяка опция сочи бутона си по един начин: номер, състояние — или (избор без поле) нищо.
+      const segno = field.opzioni.map((o) => o.widget ?? o.stato);
+      const acro = 'acro' in field && field.acro !== undefined;
       const ok =
         new Set(valori).size === valori.length &&
-        new Set(widgets).size === widgets.length &&
+        field.opzioni.every((o) =>
+          acro
+            ? (o.widget === undefined) !== (o.stato === undefined)
+            : o.widget === undefined && o.stato === undefined,
+        ) &&
+        (!acro || new Set(segno).size === segno.length) &&
         (field.predefinito === undefined || valori.includes(field.predefinito));
       if (!ok) throw new Error(`${name}: радио ${field.key} не е цяло`);
     }
@@ -102,6 +109,19 @@ export const AMI_RTBS: ModuloOverlay = load(
   moduloSchema(overlayField, 'overlay'),
 );
 
+/**
+ * DMG — формулярите им с логика в JavaScript (`pulizia`): таблото Pitagora 4.0 и бутониерите (QF
+ * Fixtures); картите — от scripts/moduli/dmg.mjs.
+ */
+export const DMG_PITAGORA: ModuloAcro = load(
+  'dmg-pitagora-4-0.json',
+  moduloSchema(acroField, 'acroform'),
+);
+export const DMG_FIXTURES: ModuloAcro = load(
+  'dmg-fixtures.json',
+  moduloSchema(acroField, 'acroform'),
+);
+
 const bytes = new Map<string, Uint8Array>();
 
 /** Празният официален PDF — проверен по SHA-256 (при старт, после от паметта). */
@@ -132,6 +152,8 @@ export function assertModuli(): void {
     EQ_OLEO,
     AMI_UCM,
     AMI_RTBS,
+    DMG_PITAGORA,
+    DMG_FIXTURES,
   ])
     moduloPdf(modulo);
 }

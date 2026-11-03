@@ -65,6 +65,7 @@
       "noteImpianto": "Note impianto",
       "noteBottoniere": "Note bottoniere in opera",
       "bottoniereSostituire": "Bottoniere da sostituire",
+      "bottoniereOrdine": "Scheda ordine bottoniere DMG",
       "bottoniereNote": "Note bottoniere",
       "bottoniereMisure": "Misure bottoniere vecchie",
       "lavoriExtra": "Lavori extra (buono di lavoro)",
@@ -107,6 +108,7 @@
       "sospensioni": "Sospensioni da cambiare?",
       "quadroSostituire": "Quadro di manovra da sostituire?",
       "bottoniereSostituire": "Bottoniere da sostituire?",
+      "bottoniereOrdine": "Vuoi compilare la scheda ordine bottoniere DMG?",
       "centralinaDaFare": "Centralina da sostituire?",
       "ami100": "Installare AMI 100?"
     },

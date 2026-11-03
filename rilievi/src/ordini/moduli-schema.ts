@@ -78,7 +78,10 @@ const overlayField = z.discriminatedUnion('kind', [
 /**
  * Във формуляр: отметка, текст, радио група (опциите — по реда на бутоните ѝ в PDF-а, `widget`) и
  * падащ списък (`vuoto` е опцията „нищо избрано“, напр. „SCEGLI...“). `predefinito` е стойността на
- * празния модул — с нея модулът се отваря, ако нищо друго не го попълни.
+ * празния модул — с нея модулът се отваря, ако нищо друго не го попълни. Формулярите на DMG пишат избора
+ * като група отметки с едно име (не радио): опцията сочи бутона по името на „включеното“ му състояние
+ * (`stato`: „220“, „Geared“). Избор без поле в PDF-а (`acro` липсва — моделът на бутониерите на DMG)
+ * не пише нищо, само показва скритите картинки на опцията (`mostra` — имената на полетата им).
  */
 const acroField = z.discriminatedUnion('kind', [
   z.object({
@@ -117,13 +120,15 @@ const acroField = z.discriminatedUnion('kind', [
   z.object({
     ...base,
     kind: z.literal('radio'),
-    acro: z.string().min(1),
+    acro: z.string().min(1).optional(),
     opzioni: z
       .array(
         z.object({
           valore: z.string().regex(/^[a-z][A-Za-z0-9]{0,30}$/),
           label: z.string().min(1).max(120),
-          widget: z.number().int().min(0),
+          widget: z.number().int().min(0).optional(),
+          stato: z.string().min(1).max(60).optional(),
+          mostra: z.array(z.string().min(1)).min(1).optional(),
         }),
       )
       .min(2),
@@ -152,6 +157,13 @@ function moduloSchema<F extends z.ZodTypeAny, T extends string>(field: F, tipo: 
     tipo: z.literal(tipo),
     /** Плоските листове: размерът на написаното (по подразбиране 8 pt) и колко над линията стои. */
     dimensione: z.number().min(5).max(20).optional(),
+    /**
+     * Формуляр с логика в JavaScript (DMG): JavaScript-ът се маха, бутоните за действие (Salva, Invia,
+     * Reset, езиците, стрелките, корицата) и скритите полета не излизат на листа — освен попълнените и
+     * показаните от избора (`mostra`); полетата по `nonStampare` (регулярни изрази — „кръпките“, с които
+     * JavaScript-ът сиви недостъпното) — никога.
+     */
+    pulizia: z.object({ nonStampare: z.array(z.string().min(1)) }).optional(),
     sopraLinea: z.number().min(0).max(5).optional(),
     gruppi: z.array(
       z.object({

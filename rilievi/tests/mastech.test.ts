@@ -209,6 +209,8 @@ describe('the Mastech orders and the sheet', () => {
       ordineSospensioni: null,
       ami100: null,
       ami100Tipo: null,
+      bottoniereOrdine: null,
+      ordineBottoniere: null,
       ordineAmi: null,
     };
     assert.deepEqual(riepilogoModuli(scheda), [

@@ -61,6 +61,8 @@ type SchedaModuli = Pick<
   | 'ami100'
   | 'ami100Tipo'
   | 'ordineAmi'
+  | 'bottoniereOrdine'
+  | 'ordineBottoniere'
 >;
 
 /**

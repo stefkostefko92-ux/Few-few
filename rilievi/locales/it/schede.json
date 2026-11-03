@@ -135,6 +135,7 @@
       "scheda": "Scheda",
       "oq": "Ordine quadro",
       "om": "Ordine quadro",
+      "dp": "Ordine quadro",
       "mn": "Ordine quadro",
       "mq": "Ordine quadro",
       "eg": "Ordine quadro",
@@ -144,7 +145,8 @@
       "sg": "Ordine 2SG",
       "so": "Ordine 2SG",
       "au": "Ordine AMI 100",
-      "ar": "Ordine AMI 100"
+      "ar": "Ordine AMI 100",
+      "db": "Ordine bottoniere DMG"
     },
     "fermate": "Fermate",
     "velocita": "Velocità (m/s)",
@@ -195,7 +197,8 @@
       "ordineQuadro": "Ordine quadro",
       "preventivoArgano": "Dati argano",
       "ordineSospensioni": "Ordine 2SG (operatori e sospensioni)",
-      "ordineAmi": "Ordine AMI 100"
+      "ordineAmi": "Ordine AMI 100",
+      "ordineBottoniere": "Ordine bottoniere DMG"
     },
     "hint": "Spunta i moduli da aggiungere in fondo al foglio: entra solo quello che è compilato. I moduli restano anche come PDF a parte.",
     "sezioni": "Sezioni nella stampa e nel PDF",

@@ -2,6 +2,8 @@ import {
   AMI_RTBS,
   AMI_UCM,
   ARGANI,
+  DMG_FIXTURES,
+  DMG_PITAGORA,
   EQ_GEARED,
   EQ_GEARLESS,
   EQ_OLEO,
@@ -16,7 +18,7 @@ import {
 /**
  * Кой модул към кое поле на картата: марката, при която се отваря (ако модулът е на една марка),
  * колоната в базата (JSON), въпросът „Sì/No“ и префиксът на полетата му във формата. Пътят на PDF-а е
- * `/schede/:id/<path>`. Таблото има седем модула в една колона и под един въпрос — Pelazza, MoviLift,
+ * `/schede/:id/<path>`. Таблото има осем модула в една колона и под един въпрос — Pelazza, MoviLift, DMG,
  * двата на Mastech (NG120 и QI Touch — по втория избор, модела) и трите на Elettroquadri (по вида на
  * уредбата: електрическа — geared, MRL — gearless, хидравлична — oleodinamico); марката, моделът и
  * видът са по един, затова отворен е най-много единият. Листът с данни за аргано (за всеки вид аргано)
@@ -25,16 +27,20 @@ import {
  * затова два слота (свой префикс и свой път на PDF-а) в една колона. Отворен е най-много единият: при
  * автоматични с „Sì“ и на двата листът е един — този на окачванията (слотът на оператора отстъпва,
  * `cede`). AMI 100 („Installare AMI 100?“ при намалена яма или горно пространство) — два листа в една
- * колона, по втория избор (Mono UCM или Mono RTBS), като моделите на Mastech, но без марка.
+ * колона, по втория избор (Mono UCM или Mono RTBS), като моделите на Mastech, но без марка. DMG (2
+ * ноември 2026): таблото Pitagora 4.0 — осмият модул под въпроса на таблото; бутониерите (QF Fixtures) —
+ * своя колона под „Vuoi compilare la scheda ordine bottoniere DMG?“ в раздела „Bottoniere“, без марка
+ * (бутониерите се поръчват и при табло на друга марка).
  */
 /**
  * Префиксът във формата: `oq` — таблото Pelazza, `om` — таблото MoviLift, `mn` и `mq` — таблото
  * Mastech NG120 и QI Touch, `eg`, `el` и `eo` — таблото Elettroquadri geared, gearless и oleodinamico,
  * `pa` — листът за аргано, `sg` и `so` — листът на 2SG (окачванията при автоматични врати, операторът при
- * автоматични и полуавтоматични), `au` и `ar` — AMI 100 Mono UCM и Mono RTBS.
+ * автоматични и полуавтоматични), `au` и `ar` — AMI 100 Mono UCM и Mono RTBS, `dp` — таблото DMG
+ * (Pitagora 4.0), `db` — бутониерите DMG (QF Fixtures).
  */
 export type Prefisso =
-  'oq' | 'om' | 'mn' | 'mq' | 'eg' | 'el' | 'eo' | 'pa' | 'sg' | 'so' | 'au' | 'ar';
+  'oq' | 'om' | 'dp' | 'mn' | 'mq' | 'eg' | 'el' | 'eo' | 'pa' | 'sg' | 'so' | 'au' | 'ar' | 'db';
 
 export interface ModuloSlot {
   /** Марката, при която модулът се отваря; без нея — при всяка. */
@@ -43,8 +49,15 @@ export interface ModuloSlot {
   modello?: { field: 'quadroModello' | 'ami100Tipo'; value: string };
   /** И видът на уредбата (Elettroquadri: модулът се избира сам по него — собственикът, 30.10.2026). */
   impianto?: { field: 'tipoImpianto'; value: string };
-  column: 'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni' | 'ordineAmi';
-  question: 'quadroOrdine' | 'arganoPreventivo' | 'sospensioni' | 'operatore' | 'ami100';
+  column:
+    'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni' | 'ordineAmi' | 'ordineBottoniere';
+  question:
+    | 'quadroOrdine'
+    | 'arganoPreventivo'
+    | 'sospensioni'
+    | 'operatore'
+    | 'ami100'
+    | 'bottoniereOrdine';
   /** Въпросът на друг слот в същата колона, който има предимство: при неговото видимо „Sì“ този е затворен. */
   cede?: ModuloSlot['question'];
   prefix: Prefisso;
@@ -68,6 +81,14 @@ export const SLOTS: readonly ModuloSlot[] = [
     prefix: 'om',
     path: 'ordine-quadro-movilift',
     modulo: MOVILIFT,
+  },
+  {
+    marca: { field: 'quadroMarca', value: 'DMG' },
+    column: 'ordineQuadro',
+    question: 'quadroOrdine',
+    prefix: 'dp',
+    path: 'ordine-quadro-dmg-pitagora',
+    modulo: DMG_PITAGORA,
   },
   {
     marca: { field: 'quadroMarca', value: 'MASTECH' },
@@ -151,6 +172,13 @@ export const SLOTS: readonly ModuloSlot[] = [
     prefix: 'ar',
     path: 'ami100-mono-rtbs',
     modulo: AMI_RTBS,
+  },
+  {
+    column: 'ordineBottoniere',
+    question: 'bottoniereOrdine',
+    prefix: 'db',
+    path: 'ordine-bottoniere-dmg',
+    modulo: DMG_FIXTURES,
   },
 ];
 

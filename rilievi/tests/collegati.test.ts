@@ -27,6 +27,7 @@ const open = {
   quadroOrdine: 'si',
   'oq-_': '1',
   'om-_': '1',
+  'dp-_': '1',
   'mn-_': '1',
   'mq-_': '1',
   'eg-_': '1',
@@ -36,6 +37,7 @@ const open = {
   'pa-_': '1',
   'au-_': '1',
   'ar-_': '1',
+  'db-_': '1',
 };
 
 describe('numbers in the data the sheet and the orders share', () => {

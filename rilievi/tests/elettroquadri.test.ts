@@ -155,6 +155,8 @@ describe('the Elettroquadri orders and the sheet', () => {
       ordineSospensioni: null,
       ami100: null,
       ami100Tipo: null,
+      bottoniereOrdine: null,
+      ordineBottoniere: null,
       ordineAmi: null,
     };
     const [summary] = riepilogoModuli(scheda);

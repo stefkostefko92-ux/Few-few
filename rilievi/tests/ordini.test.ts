@@ -177,9 +177,9 @@ describe('the questions that open the supplier forms', () => {
     const yes = parseScheda({ ...minimal, quadroMarca: 'PELAZZA', quadroOrdine: 'si', ...order });
     assert.ok(yes.ok);
     assert.deepEqual(yes.ok && yes.data.ordineQuadro?.valori, { ordine: true, nFermate: '6' });
-    const other = parseScheda({ ...minimal, quadroMarca: 'DMG', quadroOrdine: 'si', ...order });
+    const other = parseScheda({ ...minimal, quadroMarca: 'ALTRO', quadroOrdine: 'si', ...order });
     assert.ok(other.ok);
-    assert.equal(other.ok && other.data.quadroOrdine, null, 'the question is not asked for DMG');
+    assert.equal(other.ok && other.data.quadroOrdine, null, 'no order form for another make');
     assert.equal(other.ok && other.data.ordineQuadro, null);
     const no = parseScheda({ ...minimal, quadroMarca: 'PELAZZA', quadroOrdine: 'no', ...order });
     assert.equal(no.ok && no.data.ordineQuadro, null);
