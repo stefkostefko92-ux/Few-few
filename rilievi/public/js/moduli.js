@@ -65,6 +65,11 @@
     if (['azienda', 'utente', 'ruolo', 'email'].includes(token)) {
       return typeof context[token] === 'string' ? context[token] : '';
     }
+    if (token === 'portataPersone') {
+      const kg = surveyValue('portataKg');
+      const persone = surveyValue('capienzaPersone');
+      return kg && persone ? `${kg}/${persone}` : kg;
+    }
     if (['tipoImpianto', 'tipoPorte', 'ubicazioneMacchina'].includes(token))
       return surveyTicks(token);
     return surveyValue(token);

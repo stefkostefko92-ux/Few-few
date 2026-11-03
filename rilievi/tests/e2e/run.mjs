@@ -34,6 +34,7 @@ import {
 import { checkSite } from './site.mjs';
 import { checkInvites } from './inviti.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
+import { checkEveryLink } from './collegati-tutti.mjs';
 import { checkCartelli } from './cartelli.mjs';
 import { checkArgano } from './argano.mjs';
 import { checkInterventi } from './interventi.mjs';
@@ -237,6 +238,8 @@ try {
         sheetPath: new URL(sheetUrl).pathname,
       });
       await checkRealTime(context, { base, aziendaName, sheetUrl, scheme });
+      // Every linked datum, every pair of places, in 30 kinds of sheet; then the panel make changes.
+      await checkEveryLink(context, { base, aziendaName, scheme });
       await checkAttachments(page, { sheetUrl, shots });
       await checkSketches(page, { base, aziendaPath, sheetUrl, shots, scheme });
     }

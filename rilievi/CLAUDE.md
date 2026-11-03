@@ -111,7 +111,7 @@ src/
                      колона ↔ въпрос ↔ модул) · valori.ts · prefill.ts · opzioni.ts (опцията на падащ
                      списък за текст) · collegamenti-elenco.ts (списъкът на свързаните данни) +
                      collegamenti-impianto.ts (втората му част, от адреса нататък) +
-                     collegamenti-aggiunti.ts (добавените по-късно — винаги в края) +
+                     collegamenti-aggiunti.ts + -scheda.ts + -quadri.ts + -pulsantiere.ts (добавените по-късно — винаги в края; `spunta` — collegamenti-spunta.ts) +
                      collegamenti.ts (видовете места, проверката при старт) + collegati.ts (правилата
                      им) + collegati-browser.ts (JSON-ът за браузъра) · riepilogo.ts (модулите в печата на
                      картата) · form.ts · pdf.ts (плоските листове: Pelazza, аргано, 2SG, Mastech, Elettroquadri,
@@ -417,8 +417,8 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   (бутониерите към таблото) също са в картата; трите кутийки „Flush_0060/0080/0090“ на стр. 4 са вързани
   от автора към полето на кабината — не се предлагат. „Corsa“ на Pitagora е сумата на интерпиановете в
   Acrobat — у нас се пише на ръка (без връзка: мерките на листа не са в метри).
-- **Свързаните данни** (`ordini/collegamenti-elenco.ts` + `collegamenti-aggiunti.ts` — ЕДИНСТВЕНИЯТ
-  списък, вторият файл е продължението му: новите връзки са в края; видовете места и
+- **Свързаните данни** (`ordini/collegamenti-elenco.ts` + `collegamenti-aggiunti.ts` + `-scheda`, `-quadri`,
+  `-pulsantiere` — ЕДИНСТВЕНИЯТ списък, другите файлове са продължението му: новите връзки са в края; видовете места и
   проверката при старт — `collegamenti.ts`; правилата — `collegati.ts`): едно и също нещо от уредбата
   в картата и/или в модулите. Решени със собственика: спирки („Piani n°“ на листа за аргано), скорост
   m/s и видът ѝ (табло 1V/2V/VVVF ↔ аргано AC1/AC2/Inverter), ход, товар, капацитет и № на асансьора
@@ -466,6 +466,31 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   отговор („si“ → „2“) гледа само собствените ключове. Свързано поле на модул няма свое `prefill` в
   картата на модула, а място на модул е най-много едно във връзка (проверка при старт). Новите връзки са
   в края на списъка — редът е редът на разминаванията и на отпечатъка.
+  **3 ноември 2026 — всичко еднакво** (собственикът: „tutti i dati possibili vengono compilati
+  automaticamente … in tutti i campi che hanno voci identiche … dobbiamo essere perfetti“; инвентар на
+  картата и 13-те модула поле по поле): 101 връзки. Продължението на списъка, в този ред:
+  `collegamenti-scheda.ts` (картата: новата централа — V на мотора, HP („Cv“ на листа за аргано е
+  същото число от табелата), ход, пускане, електроклапани; „Installare kit A3?“ ↔ „Emendamento A3“;
+  „Testata/Fossa ridotta?“ ↔ Pitagora и „Se EN81.21“ на Elettroquadri; престилката ↔ „Gestione grembiule“
+  на Pitagora; вратите на етажа и на кабината (`portePiano`/`porteCabina`: полуавтоматичните са ръчни
+  на етажа, автоматични в кабината — „Porte di piano“ на Pitagora излезе от `porte`, където „Manuali“
+  спореше с полуавтоматичните); „Tipo argano esistente“; инверторът (kW); напрежението на оператора с
+  2SG; „MRL“ ↔ „per MRL“ на Pelazza и „Armadio MRL“ на MoviLift), `collegamenti-quadri.ts` (таблата
+  помежду си — норми, маневра, simplex/duplex, прекабелиране, кабели, вентилация, сигнали: служат при
+  смяна на марката), `collegamenti-pulsantiere.ts` (Pitagora ↔ QF Fixtures: материал, бутони,
+  осветление, сервизните бутони, ключовете, Smart Key, № CE, бутониерите на етажите); `spunta()` —
+  връзка с една отметка (`collegamenti-spunta.ts`). Място с `idraulico` (Pitagora „VVVF“/„HYDRO“,
+  MoviLift „Fune“/„Idraulico“) е другото поле при хидравлична уредба на картата — сървърът и браузърът
+  избират по вида, а полето, което вече не е мястото, губи поставеното за него. Само стойност (не
+  поле с данни) от картата — `prefill` на Pitagora: „Portata (kg/pers.)“ = „630/8“ (`portataPersone`),
+  „Con pattino elettronico“ при шейна за смяна (като MoviLift). Не са свързани нарочно: различна мерна
+  единица (kW ↔ HP, ход в mm ↔ m), поле без единица („Pot. Mot.“, „ElettroValv.“ на MoviLift), избор, в
+  който едната страна е по-подробна и би се гадало (Display „Matisse 7″/10,1″“ ↔ „Matisse“, „Dardo“
+  квадратен/кръгъл, Geared/Gearless на Pitagora ↔ „Elettrico“), имената на етажите (редът им не е
+  един и същ), данните на фирмата в „Dati cliente“ на MoviLift. Проверката: `tests/collegati-tutti.test.ts`
+  — всяка двойка места на всяка връзка в 30 вида карти (6 марки × електрическа/MRL/хидравлична с
+  аргано, 2SG, AMI 100 и бутониерите DMG), сървърът попълва и сравнява; e2e `collegati-tutti.mjs` —
+  същото в Chromium в реално време (~2000 двойки) и смяната на марката между таблата.
 - **Редът на разделите е на фирмата** (`Azienda.ordineSezioni`, `schede/ordine.ts` + `aziende/sezioni.ts`):
   подрежда го ADMIN на фирмата (и MASTER) в `/impostazioni` (`aziende:settings`), без JavaScript —
   стрелките пращат целия ред и страницата се връща с новия ред незаписан, „Salva ordine“ го пази (един

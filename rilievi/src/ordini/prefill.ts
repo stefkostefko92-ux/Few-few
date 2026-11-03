@@ -56,6 +56,11 @@ function textToken(token: PrefillToken, ctx: PrefillContext): string {
       return ctx.ruolo;
     case 'email':
       return ctx.email;
+    case 'portataPersone': {
+      const kg = text(ctx.values, 'portataKg');
+      const persone = text(ctx.values, 'capienzaPersone');
+      return kg && persone ? `${kg}/${persone}` : kg;
+    }
     case 'tipoImpianto':
     case 'tipoPorte':
     case 'ubicazioneMacchina': {

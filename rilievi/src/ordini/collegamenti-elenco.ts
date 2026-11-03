@@ -1,5 +1,8 @@
 import { AGGIUNTI } from './collegamenti-aggiunti.js';
 import { IMPIANTO } from './collegamenti-impianto.js';
+import { PULSANTIERE } from './collegamenti-pulsantiere.js';
+import { QUADRI } from './collegamenti-quadri.js';
+import { SCHEDA_NUOVI } from './collegamenti-scheda.js';
 import type { Collegamento } from './collegamenti.js';
 
 /**
@@ -73,11 +76,13 @@ const BASE: readonly Collegamento[] = [
     ],
   },
   {
-    // Ходът в метри; „Corsa [mm]“ на QI Touch е в милиметри — не е тук. Ходът на централата на картата —
-    // махнат (21 октомври 2026). Elettroquadri: „Corsa (m)“ на gearless; geared и oleodinamico — същото.
+    // Ходът в метри; „Corsa [mm]“ на QI Touch е в милиметри — не е тук. Elettroquadri: „Corsa (m)“ на
+    // gearless; geared и oleodinamico — същото. В картата — „Corsa impianto“ на новата централа (3
+    // ноември 2026; хидравлична уредба).
     key: 'corsa',
     tipo: 'numero',
     membri: [
+      { luogo: 'scheda', campo: 'centralinaCorsaImpianto' },
       { luogo: 'oq', campo: 'corsa' },
       { luogo: 'om', campo: 'corsa' },
       { luogo: 'mn', campo: 'corsa' },
@@ -123,13 +128,16 @@ const BASE: readonly Collegamento[] = [
     ],
   },
   {
-    // MoviLift: „Tens.“ в данните на аргано („Fune“). Тяхното „Freno“ не казва дали е напрежение.
+    // MoviLift: „Tens.“ в данните на аргано („Fune“), при хидравлична — на централата („Idraulico“);
+    // Pitagora — „VVVF“ или „HYDRO“. Тяхното „Freno“ не казва дали е напрежение. В картата —
+    // захранването на мотора на новата централа (3 ноември 2026).
     key: 'tensioneMotore',
     tipo: 'numero',
     membri: [
+      { luogo: 'scheda', campo: 'centralinaMotoreV' },
       { luogo: 'oq', campo: 'motVca' },
-      { luogo: 'om', campo: 'tensFune' },
-      { luogo: 'dp', campo: 'motoreV' },
+      { luogo: 'om', campo: 'tensFune', idraulico: 'tensCentralina' },
+      { luogo: 'dp', campo: 'motoreV', idraulico: 'centralinaV' },
     ],
   },
   {
@@ -166,12 +174,6 @@ const BASE: readonly Collegamento[] = [
           porteSemiautomatiche: 'SEMIAUTOMATICHE',
           porteManuali: 'MANUALI',
         },
-      },
-      // DMG Pitagora: „Porte di piano“ — автоматични или ръчни (полуавтоматичните нямат своя отметка).
-      {
-        luogo: 'dp',
-        campo: 'portePiano',
-        voci: { automatiche: 'AUTOMATICHE', manuali: 'MANUALI' },
       },
       // NG120: „Tipo di Operatore 1“ — вратите на първия достъп.
       {
@@ -253,4 +255,11 @@ const BASE: readonly Collegamento[] = [
   },
 ];
 
-export const COLLEGAMENTI: readonly Collegamento[] = [...BASE, ...IMPIANTO, ...AGGIUNTI];
+export const COLLEGAMENTI: readonly Collegamento[] = [
+  ...BASE,
+  ...IMPIANTO,
+  ...AGGIUNTI,
+  ...SCHEDA_NUOVI,
+  ...QUADRI,
+  ...PULSANTIERE,
+];

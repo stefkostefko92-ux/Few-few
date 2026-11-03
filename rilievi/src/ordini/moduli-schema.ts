@@ -24,6 +24,8 @@ export const PREFILL_TOKENS = [
   'tipoImpianto',
   'tipoPorte',
   'ubicazioneMacchina',
+  // Товарът и хората на картата като „630/8“ (Pitagora: „Portata (kg/pers.)“).
+  'portataPersone',
 ] as const;
 export type PrefillToken = (typeof PREFILL_TOKENS)[number];
 
