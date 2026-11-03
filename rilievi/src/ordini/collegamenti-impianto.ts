@@ -42,7 +42,9 @@ export const IMPIANTO: readonly Collegamento[] = [
         campo: 'tipoImpianto',
         voci: { ELETTRICO: 'ELETTRICO', IDRAULICO: 'IDRAULICO', GEARLESS: 'GEARLESS' },
       },
-      { luogo: 'oq', voci: { tqIdraulico: 'IDRAULICO' } },
+      // „MRL“ на картата: таблото „per MRL 400 x 2220“ на Pelazza, „Armadio MRL“ на MoviLift.
+      { luogo: 'oq', voci: { tqIdraulico: 'IDRAULICO', dimMrl: 'GEARLESS' } },
+      { luogo: 'om', campo: 'armadio', voci: { mrl: 'GEARLESS' } },
       // Gearless на Elettroquadri се отваря при MRL: „MRL gearless“ (не „Con Locale macchina“).
       { luogo: 'el', voci: { mrlGearless: 'GEARLESS' } },
     ],
@@ -71,7 +73,7 @@ export const IMPIANTO: readonly Collegamento[] = [
     membri: [
       { luogo: 'oq', campo: 'motIn' },
       { luogo: 'om', campo: 'amp' },
-      { luogo: 'dp', campo: 'motoreA' },
+      { luogo: 'dp', campo: 'motoreA', idraulico: 'centralinaA' },
       { luogo: 'mn', campo: 'correnteNominale' },
       { luogo: 'mq', campo: 'correnteMotore' },
       { luogo: 'eg', campo: 'motoreIn' },

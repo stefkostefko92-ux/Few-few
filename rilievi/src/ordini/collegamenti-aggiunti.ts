@@ -33,11 +33,11 @@ export const AGGIUNTI: readonly Collegamento[] = [
     ],
   },
   {
-    // В kW. „Pot. Mot.“ на MoviLift е без мерна единица — не е тук.
+    // В kW. „Pot. Mot.“ на MoviLift е без мерна единица — не е тук. Pitagora: „VVVF“ или „HYDRO“.
     key: 'potenzaMotore',
     tipo: 'numero',
     membri: [
-      { luogo: 'dp', campo: 'motoreKw' },
+      { luogo: 'dp', campo: 'motoreKw', idraulico: 'centralinaKw' },
       { luogo: 'mn', campo: 'potenzaKw' },
       { luogo: 'mq', campo: 'potenzaMotore' },
       { luogo: 'eg', campo: 'motoreKw' },
@@ -76,6 +76,7 @@ export const AGGIUNTI: readonly Collegamento[] = [
     key: 'tensionePattino',
     tipo: 'numero',
     membri: [
+      { luogo: 'oq', campo: 'pattiniRetrattiliVcc' },
       { luogo: 'om', campo: 'elettrPattinoV' },
       { luogo: 'dp', campo: 'pattinoV' },
       { luogo: 'mn', campo: 'tensionePattino' },
