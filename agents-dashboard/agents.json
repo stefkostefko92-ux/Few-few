@@ -24,7 +24,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Одитира уебсайтове спрямо правото на ЕС: GDPR, ePrivacy/бисквитки, DSA, достъпност (EAA / EN 301 549 / WCAG 2.1 AA), импресум, плюс свързаните технически артефакти (политики, банер за съгласие, robots.txt, sitemap.xml, llms.txt, JSON-LD) и SEO/GEO/AEO.",
       "capabilities": [
@@ -1144,7 +1145,7 @@
       "tagline": "Хваща бъгове и уязвимости — с нула шум, всяка находка самопроверена.",
       "file": ".claude/agents/kodadjiyata.md",
       "model": "opus",
-      "effort": "high",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -2767,7 +2768,7 @@
       "tagline": "Прави кода лесен за четене и промяна — поведение-запазващи рефактори, нула шум.",
       "file": ".claude/agents/kachestveniyat.md",
       "model": "opus",
-      "effort": "high",
+      "effort": "medium",
       "status": "active",
       "tools": [
         "Read",
@@ -2944,7 +2945,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Пише, преглежда и оптимизира FiveM ресурси (CFX/FXServer) на Lua: client/server/shared контексти, събития, fxmanifest.lua, рамки (ESX, QBCore, Qbox/ox_core), ox_lib и oxmysql — със server-authoritative валидация и дисциплина с natives/Wait.",
       "capabilities": [
@@ -3736,7 +3738,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Максимизира откриваемостта и класирането: класическо SEO + GEO (Generative Engine Optimization) + AEO (Answer Engine Optimization). Core Web Vitals, JSON-LD покритие, многоезичен hreflang (bg/en/it), sitemap/robots/llms, съдържание „отговор отпред“ за AI цитирания.",
       "capabilities": [
@@ -8288,7 +8291,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Social Media Manager с цел №1 максимална видимост/обхват на постове и кратки видеа (2026): алгоритми и сигнали на TikTok/Reels/Shorts/X/LinkedIn/FB, hook science, retention, social SEO, каданс/repurpose — и УНИКАЛНО добър в генерирането на клипчета през скриптуем pipeline (ffmpeg/WhisperX/auto-editor/yt-dlp).",
       "capabilities": [
@@ -9059,7 +9063,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Изгражда и ревюира e-commerce/checkout/billing код на корпоративно ниво: коректна Stripe интеграция (Checkout/Payment Element/PaymentIntents, SCA/3DS, проверени идемпотентни webhook-и), Stripe Billing (абонаменти, trial, proration, dunning, Customer Portal, Stripe Tax, фактури), минимален PCI обхват (SAQ A) и съответствие с правото на ЕС за онлайн продажби (ДДС OSS/IOSS, 14-дневен отказ + чл. 16(м), Omnibus, ЗЗП). Никога не вярва на сумите от клиента; права се дават през проверен webhook, не през redirect.",
       "capabilities": [
@@ -14708,7 +14713,7 @@
       "tagline": "Пише и притежава тестовете — Playwright e2e, Vitest/Jest, детерминизъм, нула flaky.",
       "file": ".claude/agents/izpitatelya.md",
       "model": "sonnet",
-      "effort": "medium",
+      "effort": "high",
       "status": "active",
       "tools": [
         "Read",
@@ -14718,7 +14723,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Проектира и пише реалните тестови пакети през пирамидата/трофея: unit (Vitest/Jest), компонентни и интеграционни (Testing Library + MSW), end-to-end (Playwright), API/контрактни (supertest/Pact), достъпностни (axe), визуална регресия. Владее детерминизъм и борба с flaky тестове (изолация, чакане по състояние, стабилни селектори по роля/етикет), тестови данни/фабрики, CI изпълнение (паралел/sharding, репорти, trace при провал) и разликата покритие-срещу-поведение. Тества поведение, не имплементация; безопасно-критичните потоци (medqr SOS, каса-бон, плащане) имат e2e. Различен от Качествения (качество на тестовете) и Кодаджията (лов на бъгове) — Изпитателят ПИШЕ тестовете.",
       "capabilities": [
@@ -14964,7 +14970,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Технически писател и собственик на документацията: docs-as-code (документите живеят в репото, ревюират се и се проверяват в CI) + рамката Diátaxis (tutorial/how-to/reference/explanation — не ги смесва). Пише README, onboarding, API докове (OpenAPI/TSDoc), ADR (записи за архитектурни решения), CHANGELOG (Keep a Changelog + semver), CONTRIBUTING, runbook-и, inline коментари „защо не какво“, диаграми (Mermaid) и llms.txt. Пази ги точни, свежи и проверими (без счупени връзки/остарели команди). Български е източникът на истината (после Преводачът локализира). Различен от Преводача (локализация), SEO (откриваемост), Правния (правни документи).",
       "capabilities": [
@@ -15337,7 +15344,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Инженер по продуктова аналитика и данни (приватност-първо): отговаря какво правят потребителите, къде отпадат и работи ли промяната — ДОКАЗАНО, не на око. Владее tracking plan/таксономия на събития, фунии/активиране/retention/cohort, продуктови KPI (AARRR, North Star), контролирани експерименти (A/B, значимост, power, без peeking, SRM, A/A — канонът на Kohavi), атрибуция, и приватностно-съобразена имплементация (GDPR/ePrivacy, съгласие/consent mode, server-side tagging, нула PII, псевдонимизация, retention). Инструменти: GA4, self-host/приватностни (Plausible/Umami/PostHog), warehouse+SQL. Различен от SEO (откриваемост), Продавача (плащания), Наблюдателят (здраве на системата) и Правния (законът). Никаква метрика без дефиниция; съгласие преди проследяване; корелация ≠ причинност.",
       "capabilities": [
@@ -15833,6 +15841,176 @@
           "date": "2026-10-06",
           "type": "learning",
           "summary": "Научи: „UNI EN 81-20:2020 5.9.2.3.1 a) — механично средство само при сила ≤ 150 N, товар (q±0,1…\" (+167 още)"
+        }
+      ],
+      "recentLessons": []
+    },
+    {
+      "id": "frezadjiyata",
+      "name": "Фрезаджията",
+      "title": "CAM изход за корпусни мебели — разкрой, DXF, G-code (ISO/Fanuc и GRBL)",
+      "emoji": "🪚",
+      "accent": "#8b5e3c",
+      "tagline": "Файл, който не чупи фреза и не бракува лист — или ясна причина защо няма файл.",
+      "file": ".claude/agents/frezadjiyata.md",
+      "model": "opus",
+      "effort": "high",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "Bash",
+        "Write",
+        "Edit",
+        "WebFetch"
+      ],
+      "mission": "Прави CAM изхода на Korpora точен и безопасен: разкрой и nesting на плоскости, кантиране, карти за пробиване, DXF на слоеве и G-code за ISO/Fanuc и GRBL. Fail-closed — при cncBlockers няма G-code и DXF, cnc.zip връща 422 с причините. Пази диалекта (GRBL няма G41/G42, G81, M6), Z0 и безопасната височина. Рискът е физически: повредена машина или бракувани плоскости. Различен от 3D Maniac (CAD от скан) и Принтаджията (FDM печат).",
+      "capabilities": [
+        "Fail-closed CNC: cncBlockers → 422, без заобикаляне",
+        "Диалекти: ISO/Fanuc-стил (G43 H, G81, T…M6) и GRBL v1.1 (G40 само, M0 за ръчна смяна)",
+        "Компенсация на радиуса в CAM пътя, не в контролера",
+        "Z0 = горна повърхност, безопасна височина 20 mm, R-равнина 3 mm, spoilboard 0,3 mm",
+        "Nesting MaxRects по материал и декор, шарка, разстояние = диаметъра на фрезата",
+        "Кантиране: компенсация на канта в размера за рязане",
+        "Карти за пробиване и DXF R12 на слоеве с операцията в името",
+        "Гейт: korpora npm run test:engine"
+      ],
+      "knowledge": {
+        "sources": 2,
+        "researchToolUses": 2,
+        "priorArt": [
+          "korpora/engine/cam.js, nest.js, drill.js, dxf.js — двигателят",
+          "korpora/CLAUDE.md — правилото „CNC никога не е грешен“ (cncBlockers, 422)",
+          "GRBL v1.1 — списък на поддържаните G-кодове (github.com/gnea/grbl, README и wiki)"
+        ],
+        "lessons": 1
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-11-02",
+          "event": "Раждане",
+          "detail": "Роден по анализа на AI-джията за липсващи агенти (одобрен от собственика): CAM изходът на Korpora носи физически риск и нямаше собственик. Първата поука — GRBL v1.1 няма G41/G42 — е сверена на живо с GRBL README и wiki."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "birth",
+          "summary": "Роден: разкрой, кантиране, пробиване, DXF и G-code (ISO/Fanuc, GRBL) за Korpora."
+        }
+      ],
+      "recentLessons": []
+    },
+    {
+      "id": "igrodelets",
+      "name": "Игроделеца",
+      "title": "Правилата на 21-те игри в АСО — верни и проверявани на сървъра",
+      "emoji": "♟️",
+      "accent": "#0e7490",
+      "tagline": "Незаконният ход не минава, грешната ръка не се брои — сървърът е съдията.",
+      "file": ".claude/agents/igrodelets.md",
+      "model": "sonnet",
+      "effort": "medium",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "Bash",
+        "Write",
+        "Edit"
+      ],
+      "mission": "Държи правилата на 21-те игри в Gaming (АСО) верни и проверявани на сървъра: двигателите в packages/game-core, проверката на хода в стаята (legalActions/validate преди reduce), скритата информация (redact), синхронизацията в реално време, таймерите на хода, ботовете, ELO/MMR и наградите. Виртуалната икономика (chips и gems) остава без хазарт с реални пари. Всяка поправка носи регресионен тест срещу реалния двигател. Различен от Геймъра (FiveM/Lua и 3D активи) и Кодаджията (общо ревю).",
+      "capabilities": [
+        "Сървърна законност: actionShapeOk → validate/legalActions → reduce, illegal_action при отказ",
+        "21 двигателя: шах, дама, табла, лудо, зарове, сантасе, белот, кент, бридж, война, риба, домино, реми, свара, морски бой, бинго, думи, 8-ball, 9-ball, снукър, магнат",
+        "Точкуване и обявявания по официалния правилник (FIDE, WBF Laws, WPA, WPBSA, българските стандарти)",
+        "Скрита информация: redact и redactEvent без изтичане (карти, талон, тайни знаци)",
+        "Часовник на хода по игра, таймаути, бот-заместник и timeoutAction",
+        "ELO/MMR (K 40/20) и награди по резултата",
+        "Chips и gems без обмен в пари; залог само с виртуални chips",
+        "Гейт: регресионен vitest в game-core + lint/typecheck/test на Gaming"
+      ],
+      "knowledge": {
+        "sources": 2,
+        "researchToolUses": 2,
+        "priorArt": [
+          "Gaming/packages/game-core — kernel/contract.ts и 21-те двигателя (games/index.ts)",
+          "Gaming/apps/realtime/src/room.ts — handleAction, часовник и ботове",
+          "Gaming/docs/microtransactions.md — §1 „Not gambling“"
+        ],
+        "lessons": 1
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-11-02",
+          "event": "Раждане",
+          "detail": "Роден по анализа на AI-джията за липсващи агенти (одобрен от собственика): правилата на 21-те игри в АСО нямаха собственик, а в паметта на Геймъра се бяха събрали 9 поуки за Gaming без маршрут. Първата поука — chess.js отхвърля ход, който оставя своя цар в шах — е проверена с реален ран срещу двигателя."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "birth",
+          "summary": "Роден: правилата на 21-те игри в АСО, сървърна законност, таймери, ботове, ELO/MMR и икономика без хазарт."
+        }
+      ],
+      "recentLessons": []
+    },
+    {
+      "id": "danachnika",
+      "name": "Данъчника",
+      "title": "ДДС на продажбите и платформените приходи — казус с член и източник",
+      "emoji": "💶",
+      "accent": "#a16207",
+      "tagline": "Кой е доставчикът, къде е мястото, каква е ставката — с член, не на око.",
+      "file": ".claude/agents/danachnika.md",
+      "model": "opus",
+      "effort": "high",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Подготвя данъчния казус за продажбите и платформените приходи на нашите продукти в ЕС, България и Италия: кой е доставчик по ДДС (чл. 9а Регл. 282/2011, чл. 14а Дир. 2006/112), място на доставка, ставка, OSS/IOSS и прагове, обратно начисляване, регистрация по ЗДДС и фактура. Всеки извод носи член и източник, отворен в сесията; изходът е за данъчен консултант и не е правен съвет. Различен от Продавача (механиката на Stripe Tax), Касаджията (фискален бон, Н-18) и Правния Разбирач (GDPR, DSA, общи условия).",
+      "capabilities": [
+        "Доставчик по ДДС при платформи: чл. 9а Регл. 282/2011 (услуги по електронен път) и чл. 14а Дир. 2006/112 (стоки)",
+        "Място на доставка: B2B (чл. 44 Дир., чл. 21, ал. 2 ЗДДС) и B2C услуги по електронен път (чл. 58 Дир., чл. 21, ал. 6 ЗДДС)",
+        "Микропраг €10 000 и OSS (чл. 59в Дир., чл. 20б ЗДДС), IOSS за внос до €150",
+        "Обратно начисляване (чл. 196 Дир., чл. 82, ал. 2 ЗДДС) и регистрация по чл. 96 и чл. 97а ЗДДС",
+        "Ставки BG и IT (ЗДДС, DPR 633/1972) — винаги от живия текст, с дата",
+        "Фактура и разписка (чл. 114 ЗДДС), е-фактура през SdI в Италия",
+        "Изход: казус за данъчен консултант, отворени факти, „не е правен съвет“"
+      ],
+      "knowledge": {
+        "sources": 2,
+        "researchToolUses": 2,
+        "priorArt": [
+          "linketto/TAX.md — анализът за магазина и отворените точки за консултанта",
+          "ЗДДС, консолидиран текст (dela.bg) — чл. 20б, 21, 66, 82, 96, 97а, 114",
+          "Регл. (ЕС) 282/2011, чл. 9а — доставчик при електронен интерфейс"
+        ],
+        "lessons": 2
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-11-02",
+          "event": "Раждане",
+          "detail": "Роден по анализа на AI-джията за липсващи агенти (одобрен от собственика): знанието за ДДС беше пръснато в паметта на Касаджията, Продавача и Правния Разбирач, въпросът за linketto по чл. 9а Регл. 282/2011 остана „за данъчен консултант“, а рутерът пращаше ДДС на Продавача. Първите две поуки (чл. 9а и чл. 20б ЗДДС) са от първоизточници, отворени в деня на раждането."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-11-02",
+          "type": "birth",
+          "summary": "Роден: ДДС и данъчно третиране на продажби и платформени приходи в ЕС, България и Италия — казус с член и източник."
         }
       ],
       "recentLessons": []

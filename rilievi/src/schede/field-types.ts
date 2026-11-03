@@ -13,7 +13,7 @@ export type FieldKind =
   | 'choice' // един избор от няколко (или неотбелязано)
   | 'yesno'; // Sì / No / неотбелязано
 
-export type Unit = 'kg' | 'persone' | 'mm' | 'm';
+export type Unit = 'kg' | 'persone' | 'mm' | 'm' | 'volt' | 'hp' | 'lmin' | 'litri';
 
 export type SectionKey =
   | 'impianto'
@@ -54,7 +54,8 @@ interface BaseField {
   /** При „Sì“ носи таблицата с мерките на старите бутониери — ред за всяка спирка (misure.ts). */
   misure?: boolean;
   /** При „Sì“ отваря модула на доставчика (src/ordini/) — свой PDF, отделно от картата. */
-  modulo?: 'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni' | 'ordineAmi';
+  modulo?:
+    'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni' | 'ordineAmi' | 'ordineBottoniere';
 }
 
 export interface TextField extends BaseField {

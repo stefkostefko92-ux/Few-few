@@ -293,21 +293,24 @@
               "kind": "text",
               "label": "Potenza motore (Kw)",
               "maxLength": 12,
-              "line": [193.2, 251.2, 641.5]
+              "line": [193.2, 251.2, 641.5],
+              "allinea": "destra"
             },
             {
               "key": "potenzaCv",
               "kind": "text",
               "label": "Potenza motore (Cv)",
               "maxLength": 12,
-              "line": [292.1, 380.1, 641.5]
+              "line": [292.1, 380.1, 641.5],
+              "allinea": "destra"
             },
             {
               "key": "ampere",
               "kind": "text",
               "label": "Corrente (A)",
               "maxLength": 12,
-              "line": [415.4, 513.4, 641.5]
+              "line": [415.4, 513.4, 641.5],
+              "allinea": "destra"
             }
           ]
         },

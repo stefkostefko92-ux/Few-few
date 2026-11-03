@@ -74,7 +74,9 @@ const PAYLOADS = {
   "memory-capture.mjs": { agent_type: "kodadjiyata", transcript_path: "" },
   "dod-check.mjs": { agent_type: "kodadjiyata", transcript_path: "" },
   "guard-prompt.mjs": { prompt: "нормален потребителски промпт без нищо особено" },
+  "route-hint.mjs": { prompt: "прегледай PR-а за сигурност на medqr" },
   "guard-dangerous.mjs": { tool_name: "Bash", tool_input: { command: "ls -la" } },
+  "guard-readonly.mjs": { tool_name: "Bash", agent_type: "kodadjiyata", tool_input: { command: "git diff HEAD~1" } },
   "guard-exfil.mjs": { tool_name: "Bash", tool_input: { command: "git status --short" } },
   "guard-secrets.mjs": { tool_name: "Write", tool_input: { file_path: "src/app.ts", content: "export const x = 1;" } },
   "precompact-save.mjs": { transcript_path: "", trigger: "auto" },
@@ -82,6 +84,9 @@ const PAYLOADS = {
   "artifact-sync.mjs": {},
   "usage-capture.mjs": { hook_event_name: "SubagentStop", agent_type: "kodadjiyata", agent_transcript_path: "" },
   "agent-return.mjs": { tool_name: "Agent", tool_input: { subagent_type: "kodadjiyata" }, tool_response: { status: "completed", agentType: "kodadjiyata", content: [{ type: "text", text: "готово" }] } },
+  // 31.10.2026: ConfigChange (локални настройки без отслабване → 0) и таванът на общите агенти (наш → 0).
+  "guard-config.mjs": { hook_event_name: "ConfigChange", source: "local_settings", file_path: "/nonexistent/settings.local.json" },
+  "agent-cap.mjs": { session_id: "liveness", tool_name: "Agent", tool_input: { subagent_type: "kodadjiyata" } },
 };
 
 const hooks = registeredHooks();
@@ -95,6 +100,7 @@ const REGISTRATION = {
   "memory-capture.mjs": { event: "SubagentStop" },
   "dod-check.mjs": { event: "SubagentStop" },
   "guard-prompt.mjs": { event: "UserPromptSubmit" },
+  "route-hint.mjs": { event: "UserPromptSubmit" },
   "precompact-save.mjs": { event: "PreCompact" },
   "session-dod.mjs": { event: "Stop" },
   "artifact-sync.mjs": { event: "Stop" },
@@ -104,10 +110,16 @@ const REGISTRATION = {
   "usage-capture.mjs": { event: "SubagentStop" },
   // PreToolUse = ПРЕДИ действието. Ако тези паднат на PostToolUse, блокировката е безсмислена.
   "guard-dangerous.mjs": { event: "PreToolUse", matcher: /Bash/ },
+  // Ревюър без Write/Edit не пише през Bash — ПРЕДИ командата, иначе файлът вече е променен.
+  "guard-readonly.mjs": { event: "PreToolUse", matcher: /Bash/ },
   // 2026-09-21: MCP инструментите (mcp__github__*, mcp__Gmail__* …) са СЪЩО изходен канал — без
   // `mcp__.*` в matcher-а тайна в тяло на коментар/чернова на имейл напускаше без пазач (3/3 на живо).
-  "guard-exfil.mjs": { event: "PreToolUse", matcher: /Bash/, alsoMatcher: [/WebFetch/, /WebSearch/, /mcp__/] },
+  "guard-exfil.mjs": { event: "PreToolUse", matcher: /Bash/, alsoMatcher: [/Monitor/, /WebFetch/, /WebSearch/, /mcp__/] },
   "guard-secrets.mjs": { event: "PostToolUse", matcher: /Write/, alsoMatcher: [/Edit/] },
+  // Настройка, сменена по средата на сесия, не отслабва пазачите на същата сесия.
+  "guard-config.mjs": { event: "ConfigChange" },
+  // ПРЕДИ пускането на агент — иначе 11-ият общ агент вече е тръгнал.
+  "agent-cap.mjs": { event: "PreToolUse", matcher: /Agent/ },
 };
 
 /** Кое събитие и с какъв matcher е регистриран даден хук (истината е settings.json). */

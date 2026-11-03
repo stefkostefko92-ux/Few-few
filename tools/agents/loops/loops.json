@@ -21,7 +21,9 @@
       "autonomy": "L1",
       "escalation": "Само доклад. Сливане/промоция на памет е ЧОВЕШКО решение (закон: не пренаписвай памет мълчаливо).",
       "budgetCap": null,
-      "denylist": ["_memory/*"]
+      "denylist": [
+        "_memory/*"
+      ]
     },
     {
       "id": "behavioral-eval",
@@ -54,7 +56,27 @@
       "autonomy": "L2",
       "escalation": "Двусмислено/архитектурно → AskUserQuestion (човек). Merge/close = терминал. Никога go)не merge-ва без зелен гейт.",
       "budgetCap": 200000,
-      "denylist": ["main (директен push)", "secrets", "force-push на чужда история"]
+      "denylist": [
+        "main (директен push)",
+        "secrets",
+        "force-push на чужда история"
+      ]
+    },
+    {
+      "id": "anthropic-watch",
+      "description": "На всеки 5 дни: новостите от Anthropic/Claude (changelog, страници в документацията, инженерния блог) спрямо снимката tools/agents/anthropic-watch.json; AI-джията ги оценява спрямо флота. Облачна планирана задача „Новости от Anthropic за агентите“.",
+      "trigger": "schedule:every-5-days",
+      "command": "node tools/agents/anthropic-watch.mjs",
+      "owner": "ai-djiyata",
+      "autonomy": "L2",
+      "escalation": "Източник не се свали → деградация: докладът казва кой и продължава с останалите. Червен гейт → спри без PR и ескалация към собственика. Иначе draft PR с таблица „новост · засяга ли ни · предложение · увереност“; собственикът решава какво се слива — нищо не се слива и не се деплойва автоматично.",
+      "budgetCap": null,
+      "denylist": [],
+      "runtime": "cloud",
+      "connectors": [],
+      "network": "trusted",
+      "secretsInEnv": false,
+      "output": "draft-pr"
     }
   ]
 }

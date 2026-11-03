@@ -3,10 +3,11 @@
 Портал само с покана (и публична витрина със заявка за достъп) за схемите за оглед на асансьорни уредби („scheda rilievo impianto“): попълване на
 29-те полета от заданието и полетата от второто (врати, аларма, работна карта, мерки на старите
 бутониери по спирки), търсене (№ на асансьора, матрикула, адрес, марка, работна карта, бележки), печат
-A4 и PDF. Модулите: при табло Pelazza / MoviLift / Mastech (NG120 или QI Touch — втори избор) /
-Elettroquadri (geared, gearless или oleodinamico — сам по вида на уредбата) (поръчката), „Argano da sostituire?“ (листът с данни за аргано) и „Sospensioni da cambiare?“ /
-„Operatore da cambiare?“ (листът на 2SG за оператора и окачванията — начертан наново от нас) и „Installare AMI 100?“ при намалена
-яма или горно пространство (листът AMI 100 Mono UCM или Mono RTBS — начертан от нас) се попълва самият модул и излиза
+A4 и PDF. Модулите: при табло Pelazza / MoviLift / DMG (Pitagora 4.0) / Mastech (NG120 или QI Touch — втори избор) /
+Elettroquadri (geared, gearless или oleodinamico — сам по вида на уредбата) (поръчката), „Vuoi compilare la scheda ordine
+bottoniere DMG?“ при „Bottoniere da sostituire: Sì“ (QF Fixtures на DMG), „Argano da sostituire?“ (листът с данни за аргано) и „Sospensioni da cambiare?“ /
+„Operatore da cambiare?“ (листът на 2SG за оператора и окачванията — начертан наново от нас) и отметката „AMI 100 Mono RTBS“ в
+решенията при намалено горно пространство или яма (листът AMI 100 Mono RTBS — начертан от нас) се попълва самият модул и излиза
 като отделен PDF — празният лист с данните върху него. Редът на разделите на картата се избира за всяка фирма (настройките на администратора ѝ);
 кои раздели влизат в печата и PDF-а — за всяка карта (в края на формата). Снимки и клипове — във
 всеки раздел на картата, компресирани от фонов процес (`worker`); снимките — избрани като иконки в края
@@ -42,9 +43,10 @@ npm run test:e2e         # Chromium + axe (WCAG 2.1 AA) срещу работе�
 npm run dev              # локално на :4330, чете .env (README, „Локално“)
 npm run worker           # компресията на снимките и клиповете (иска ffmpeg/ffprobe; MEDIA_DIR=./media)
 npm run build            # prisma generate + tsc + шрифтовете в public/fonts (scripts/fonts.mjs)
-npm run moduli:disegna   # чертае листовете на 2SG и AMI 100 и картите им (assets/moduli) — после commit
+npm run moduli:disegna   # чертае листовете на 2SG и AMI 100 Mono RTBS и картите им (assets/moduli) — после commit
+npm run moduli:dmg       # картите на двата формуляра на DMG от самите PDF-и (scripts/moduli/dmg.mjs) — после commit
 npm run render:encode    # снимките на витрината: scripts/render/out/*.png → public/img/site (AVIF + WebP)
-npm run brand:logo       # марката: scripts/logo/out/marchio.png → public/img/brand (WebP 1x/2x/3x) + favicon-*.png
+npm run brand:logo       # логата: scripts/logo/originals/{mark,logo}.png → public/img/brand (WebP) + favicon-*.png
 npm run owner:create     # първият MASTER от OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD (на сървъра: deploy/create-master.sh)
 ```
 
@@ -70,10 +72,10 @@ src/
   services/          вход (login.ts, login-2fa.ts — кодът след паролата), reauth.ts (потвърждение в
                      сесия), due-fattori.ts (включване, кодове, изключване, нулиране), покани,
                      потребители, членства (фирми и роли), токени (в базата само SHA-256)
-  schede/            fields.ts (ЕДИНСТВЕНИЯТ списък полета и условията им) + fields-argano.ts +
-                     fields-centralina.ts + fields-serrature.ts (разделите им) + field-conditions.ts +
-                     field-options.ts · field-parsers.ts (zod по вид) ·
-                     validation.ts · stampa.ts (разделите и модулите в печата) · misure.ts (мерките по
+  schede/            fields.ts (ЕДИНСТВЕНИЯТ списък полета и условията им) + fields-quadro.ts +
+                     fields-argano.ts + fields-centralina.ts + fields-serrature.ts (разделите им) +
+                     field-conditions.ts + field-options.ts · field-parsers.ts (zod по вид) ·
+                     validation.ts + validation-campi.ts (проверката на всяко поле) · stampa.ts (разделите и модулите в печата) · misure.ts (мерките по
                      спирки) · search.ts · service.ts +
                      list.ts (списъкът и търсенето) · ordine.ts (редът на разделите, без база) ·
                      format.ts · pdf.ts + pdf-head.ts (заглавната лента, табелата) + pdf-layout.ts +
@@ -93,7 +95,8 @@ src/
                      на табелата: избор, търсене, паметта) · pdf.ts (A4 по посоката на шаблона, логото и данните на фирмата горе)
   argano/            изчислението за аргано по „RT-E MOD 10411-1“: calcolo.ts (формулите на листовете
                      „Macchina“ и „Funi“, без база) · dati.ts (входът — zod, формата) · tabelle.ts
-                     (въжетата TELCAL/DONATI, мерките на компенсацията) · da-scheda.ts (попълването от
+                     (въжетата TELCAL/DONATI, мерките на компенсацията) · fune.ts (въжето за показване:
+                     формация, нишки, клас, cordatura) · da-scheda.ts (попълването от
                      „Modulo rilievi dati argani“) · righe.ts (резултатите като редове — страница и PDF) ·
                      formato.ts · service.ts (четене, запис върху `base`, одит) · pdf.ts (A4) ·
                      impianto.ts (уредбата без карта — zod) · liberi.ts (изчислението без карта) ·
@@ -112,7 +115,8 @@ src/
                      collegamenti.ts (видовете места, проверката при старт) + collegati.ts (правилата
                      им) + collegati-browser.ts (JSON-ът за браузъра) · riepilogo.ts (модулите в печата на
                      картата) · form.ts · pdf.ts (плоските листове: Pelazza, аргано, 2SG, Mastech, Elettroquadri,
-                     AMI 100) + pdf-form.ts (формулярът на MoviLift) + pdf-testo.ts (шрифтът, мястото на
+                     AMI 100) + pdf-form.ts (формулярите на MoviLift и DMG) + pdf-form-pulizia.ts
+                     (почистването на формуляр с JavaScript — DMG) + pdf-testo.ts (шрифтът, мястото на
                      текста) — pdf-lib
   http/              prefs.ts (темата) · colori.ts (темата „Personalizzato“: контраст, стилът) · flash,
                      бисквитки, таванове, помощниците на изгледите
@@ -130,11 +134,12 @@ src/
   worker.ts          фоновият процес (контейнерът `worker`): компресира опашката, файл „жив съм“
 assets/cartelli/     петте шаблона на табелата (JPEG-ите на собственика, увеличени за печат — scripts/cartelli/) + картата им (JSON)
 assets/moduli/       празните PDF-и на Pelazza, MoviLift, листа за аргано (Word-ът на собственика, в PDF),
-                     2SG (начертан наново от нас — `scripts/moduli/2sg.mjs`), AMI 100 Mono UCM / Mono RTBS
-                     (начертани от нас — `scripts/moduli/ami100.mjs`), Mastech NG120 / QI Touch (сканирани; QI Touch — две
+                     2SG (начертан наново от нас — `scripts/moduli/2sg.mjs`), AMI 100 Mono RTBS
+                     (начертан от нас — `scripts/moduli/ami100.mjs`), Mastech NG120 / QI Touch (сканирани; QI Touch — две
                      страници) и Elettroquadri geared / gearless / oleodinamico (официалните им PDF-и
-                     от elettroquadri.net; geared и oleodinamico — две страници) + картата на полетата
-                     им (JSON)
+                     от elettroquadri.net; geared и oleodinamico — две страници), DMG Pitagora 4.0 и QF
+                     Fixtures (формулярите им, непроменени — картите от `scripts/moduli/dmg.mjs`) +
+                     картата на полетата им (JSON)
 views/               EJS: partials/ (горна и долна лента, табелата, филтърът по фирма), site/ (витрината,
                      чертежът на шахтата, политиката), requests/, auth/, schede/, users/, aziende/,
                      account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs; скицникът —
@@ -164,7 +169,7 @@ public/              css/ (портал: base, buttons, shell, layout, plate, fo
                      (менютата — и от клавиатурата) · schizzo-comandi.js (лентите, клавиатурата,
                      отваряне/затваряне); css/schizzo-barre.css — лентите и менютата;
                      img/ (og.png и apple-touch-icon.png — `npm run brand:images`; site/ — снимките на
-                     витрината, `npm run render:encode`; brand/ и favicon-32/192.png — марката,
+                     витрината, `npm run render:encode`; brand/ и favicon-32/192.png — логата,
                      `npm run brand:logo`), indexnow-key.txt
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
 deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh · nginx/ · systemd/
@@ -263,7 +268,17 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   Октомври 2026: хидравличната уредба няма „Argano“ и „Limitatore“, а „Centralina“ (от 21-ви: „Centralina
   da sostituire?“, марка и модел при всеки отговор, при „No“ — „Emendamento A3 da installare“, а при неговото
   „Sì“ — гъвкава тръба: Sì/No, диаметър, дължина, бележки; бележките на раздела — винаги); в „Quadro“ —
-  намалена яма и горно пространство; при „Argano da sostituire? No“ — челюстите на спирачката. 17 октомври:
+  намалена яма и горно пространство; при „Argano da sostituire? No“ — челюстите на спирачката. 3 ноември
+  (листовете на собственика): „Note locale macchina“ веднага под мястото на машинното; „Quantità funi
+  DX/SX“ до „N° funi“ (общият брой остава — него чете листът за аргано); в „Quadro“ (`fields-quadro.ts`)
+  — „Testata ridotta?“, после „Fossa ridotta?“ (само при електрическа), всеки със списък на решенията
+  (`testataInterventi`: W+W puntoni, AMI 100 Mono RTBS, Semaforo, Puntone OKATT contrappeso;
+  `fossaInterventi`: AMI 100 Mono RTBS, Semaforo fondo fossa, Grembiule retrattile 3 stadi — с бележка,
+  Puntone OKATT); в „Centralina“ — при „Sì“ данните за новата (мотор V/HP, помпа l/min, пускане,
+  електровентили, тръба, бутало, стебло, ход, вид бутало, литри масло), при „No“ — „Installare kit A3?“
+  (колоната `emendamentoA3`), после „Tipo centralina in opera“ Hydronic (части + напрежение на бобините)
+  или Altro (HSV-150/440 BIS по дебита, части, шибър ASS/2 или ASS/3), гъвкавата тръба, и накрая „Note
+  raccordi e tubazioni“ при всеки отговор. 17 октомври:
   „Buono di lavoro“ (беше „Buono di riferimento“); операторът на вратите (марка, светъл отвор,
   напрежение) — махнат; „Serrature o sospensioni“ пита само каквото е за вида врати — бравите и шейната
   (тя е тук, след бравите, с „Tipo di pattino retrattile“) при ръчни и полуавтоматични, окачванията и 2SG
@@ -294,8 +309,8 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   по-ранно поле (тестът го пази); веригата работи (поле с условие може да зависи от друго с условие).
   Цял раздел също може да има условие (`SectionDef.when`; `not: true` — обратното: „не при
   хидравлична“) — полетата на скрития раздел нямат смисъл; app.js скрива и полето, чийто родител е скрит.
-  `also` — още полета, от които стига едното („Installare AMI 100?“ при „Fossa ridotta: Sì“ или „Testata
-  ridotta: Sì“; в страницата — `data-when-also`).
+  `also` — още полета, от които стига едното (листът на AMI 100 Mono RTBS при отметката в списъка на
+  ямата или на горното пространство; в страницата — `data-when-also`).
   Махнатите от листа полета (блокировка, донивелиране, брой шейни, марка на аргано, марката и данните на
   оператора, контактите и челюстите на спирачката, данните на централата освен марката) остават в
   колоните си със старите отговори —
@@ -332,27 +347,39 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   (собственикът, 30 октомври 2026 — „non generi un pdf … basato sulla scansione“): същите полета, надписи
   и ред като хартиения им модул; `scripts/moduli/2sg.mjs` (общото — `scripts/moduli/foglio.mjs`) чертае
   листа и пише координатите в картата, ключовете на полетата са старите — записаните карти пазят
-  стойностите си; `npm run moduli:disegna` дава едни и същи байтове. **AMI 100** (30 октомври 2026): при
-  „Fossa ridotta“ или „Testata ridotta: Sì“ — „Installare AMI 100?“; при „Sì“ видът (`ami100Tipo`: Mono
-  UCM или Mono RTBS — като модела на Mastech, но без марка; „Sì“ без вид е грешка `ami100TipoNeeded`) и
-  листът му (колона `ordineAmi`, префикси `au`/`ar`, PDF `/ami100-mono-ucm`, `/ami100-mono-rtbs`):
-  полетата и редът им — от списъка на собственика („Ami_100.pdf“), фиксираните варианти — отметки по
+  стойностите си; `npm run moduli:disegna` дава едни и същи байтове. **AMI 100 Mono RTBS** (30 октомври,
+  от 3 ноември 2026 по листа „Solo su elettrico“): без въпрос „Sì/No“ — отваря го отметката „AMI 100 Mono
+  RTBS“ в решенията на горното пространство или на ямата (слотът има `apertura`: стойността и още
+  полета; `campoCheApre` в registry.ts — на сървъра, в печата, в PDF маршрута и в страницата, където
+  стоят връзките към PDF-а; обвивката в браузъра — `data-when-also`). Колона `ordineAmi`, префикс `ar`,
+  PDF `/ami100-mono-rtbs`. „Installare AMI 100?“, видът и Mono UCM са махнати (колоните `ami100`/
+  `ami100Tipo` пазят старите отговори; миграцията отметна RTBS в списъка на намаленото пространство на
+  картите, които го имаха, за да остане листът им отворен; UCM — не се чете). Полетата и редът им — от
+  списъка на собственика („Ami_100.pdf“), фиксираните варианти — отметки по
   каталога AMI100 (захранване 24/48 Vdc, въжето на ограничителя отляво/отдясно, водач 7/8/9/16 mm,
   икономайзер), отгоре — подател, дата и асансьорът; листът е начертан от нас
-  (`scripts/moduli/ami100.mjs`). Полетата и редът им са дословно от модула (италиански, не се
-  превеждат). Пазят се като JSON (`ordineQuadro`, `preventivoArgano`, `ordineSospensioni`:
+  (`scripts/moduli/ami100.mjs`). **DMG** (собственикът, 2 ноември 2026): „Marca quadro“ DMG + „Sì“ на
+  въпроса на таблото → „Quote form Pitagora 4.0“ (префикс `dp`, колона `ordineQuadro`); в раздела
+  „Bottoniere“ при „Bottoniere da sostituire: Sì“ — „Vuoi compilare la scheda ordine bottoniere DMG?“
+  (`bottoniereOrdine`; при всяка марка на таблото) → „Quote form Fixtures“ (префикс `db`, колона `ordineBottoniere`). Полетата и редът им са дословно от модула (италиански, не се
+  превеждат). Пазят се като JSON (`ordineQuadro`, `preventivoArgano`, `ordineSospensioni`, `ordineAmi`,
+  `ordineBottoniere`:
   `{modulo, valori}` — `modulo` е id-то на картата, затова записът на Pelazza никога не се чете като
   MoviLift, нито старото запитване към Montanari като листа за аргано) и излизат като свой PDF
-  (`/schede/:id/ordine-quadro`, `/ordine-quadro-movilift`, `/ordine-quadro-mastech-ng120`,
+  (`/schede/:id/ordine-quadro`, `/ordine-quadro-movilift`, `/ordine-quadro-dmg-pitagora`,
+  `/ordine-bottoniere-dmg`, `/ordine-quadro-mastech-ng120`,
   `/ordine-quadro-mastech-qi-touch`, `/ordine-quadro-elettroquadri-geared`, `…-gearless`,
-  `…-oleodinamico`, `/dati-argano`, `/sospensioni-2sg`, `/operatore-2sg`; затворен модул → 404). В печата
+  `…-oleodinamico`, `/dati-argano`, `/sospensioni-2sg`, `/operatore-2sg`, `/ami100-mono-rtbs`; затворен
+  модул → 404). В печата
   и PDF-а на картата влизат САМО модулите, които картата иска — всеки поотделно (таблото, аргано, 2SG:
   отметките `riepilogoOrdini` в края на формата, пазят се в `moduliStampati`; `riepilogoOrdini` в базата е
   „поне един“ за предишния код, а карта с него и без списък включва и трите, както преди) — само
   попълненото, по групите на модула (`ordini/riepilogo.ts`). PDF-ът на модула е самият модул: плоските листове (Pelazza, аргано, 2SG) —
   кръстчета и текст по координатите от картата (`dimensione`/`sopraLinea` — размерът на текста по
   листа; `righe` — кутия с редове, NOTE на 2SG; `pagina` — групата е на втората страница, QI Touch;
-  `segno: 'cerchio'` — кръгче около номера на етажа, NG120; `anche: [2]` — същото поле и на тези
+  `segno: 'cerchio'` — кръгче около номера на етажа, NG120; `allinea: 'destra'` — стойността вдясно на
+  реда, до мерната единица след него („Potenza motore: ___ Kw ___ Cv ___ A“ на листа за аргано —
+  собственикът, 3 ноември 2026: отляво CV стоеше веднага след „Kw“); `anche: [2]` — същото поле и на тези
   страници, на същото място: главата на поръчката на Elettroquadri се повтаря на стр. 2); `titolo` на ред — надписът на реда от листа
   („Tensione Allarme“): във формата над отметките (група за четеца), в резюмето пред всяка; знаците — 1,7
   pt (`SEGNO`, pdf-testo.ts); MoviLift — попълнен и „заключен“ формуляр. PDF-ите са
@@ -373,6 +400,23 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   своят), два бутона без надпис не са в картата, Testo78/79 са надписи, „Fotocellula … V“ е без поле
   (`crea`: създава се при попълването, като Testo77). Отметката/изборът — наш облик с линии (✔/■), не
   невграденият ZapfDingbats. flatten оставя в /Annots връзки към изтритите бутони — `pulisciAnnots`.
+- **DMG** (`assets/moduli/dmg-*`, картите — `npm run moduli:dmg`: скриптът чете полетата от PDF-а и спира
+  при име, състояние или опция, които ги няма, и при поле с данни без място в картата). Формулярите на
+  CorelDRAW са с JavaScript и слоеве за езика (италианският е включен). Изборът е група отметки с ЕДНО
+  име, не радио: опцията сочи бутона по името на „включеното“ му състояние (`stato`; MoviLift — по реда,
+  `widget`); `selectRadio` слага V и облика на избрания, на другите „Off“. Бутоните на Pitagora нямат облик
+  „Off“ (кутийките са в страницата) — неизбраните излизат, без да се рисуват (`togliSenzaAspetto`), а
+  избраният получава само нашия знак. `pulizia` в картата → `pdf-form-pulizia.ts` преди flatten:
+  JavaScript-ът на документа и страниците се маха; бутоните за действие (Salva, Invia, Reset, езиците,
+  стрелките, корицата „00-Home“ на Fixtures) и „кръпките“ (`nonStampare: ["-TOPPA$"]`, сивото, с което
+  скриптът закрива недостъпното) не излизат; скритите полета (енкодерите при затворен контур,
+  „Sovraeccitazione“…) излизат само попълнени. Моделът на бутониерите (Flat standard, Elise, Silverlight,
+  Gilda TM, Luna, Cut, Greta) се избира на корицата от скрипта — в картата е избор без поле (`acro`
+  липсва), който показва картинките и ширините на модела (`mostra`: „00-Piastra-X“, „02/10/11-Dim.X“ и
+  „-IMG“). Ширините на всички модели са във формата с името на модела в етикета. Pitagora: стр. 3–4
+  (бутониерите към таблото) също са в картата; трите кутийки „Flush_0060/0080/0090“ на стр. 4 са вързани
+  от автора към полето на кабината — не се предлагат. „Corsa“ на Pitagora е сумата на интерпиановете в
+  Acrobat — у нас се пише на ръка (без връзка: мерките на листа не са в метри).
 - **Свързаните данни** (`ordini/collegamenti-elenco.ts` + `collegamenti-aggiunti.ts` — ЕДИНСТВЕНИЯТ
   списък, вторият файл е продължението му: новите връзки са в края; видовете места и
   проверката при старт — `collegamenti.ts`; правилата — `collegati.ts`): едно и също нещо от уредбата
@@ -383,7 +427,10 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   на машината (MoviLift; на листа за аргано е текст — само попълване), въжета (брой, диаметър,
   снопове). После („всички полета с еднакви параметри“, октомври 2026): адрес, матрикула и марка
   (листът за аргано), вид на уредбата (Pelazza „Idraulico“), вратите на 2SG (Automatico,
-  Semiautomatico), ток и обороти на мотора. AMI 100 Mono UCM (30 октомври 2026): товарът и спирките. Операторът на картата е махнат (17 октомври): марката му
+  Semiautomatico), ток и обороти на мотора.
+  DMG (2 ноември 2026) — в досегашните връзки: Pitagora — спирки, скорост, товар/хора/№ на дисплея,
+  мотор (V, A, kW, полюси, обороти), спирачка, етажни врати, мястото на машинното, окачване, шейна,
+  марка на централата и на вратите (само попълване); Fixtures — спирки, kg, хора, №, матрикула, адрес. Операторът на картата е махнат (17 октомври): марката му
   остава връзка само между таблата (Pelazza „Modello“, MoviLift — падащ списък, QI Touch; само
   попълване, при смяна на марката), напрежението и светлият отвор — без връзка.
   После (централата и Mastech): марката на централата (картата ↔ MoviLift „Idraulico“, само попълване;
@@ -471,16 +518,22 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   Чертежът на шахтата (`views/site/_shaft.ejs`) остава — до легендата на картата и на входа: маркерите
   са номерата на разделите на картата (всеки раздел сочи своята част — `spots` по ключ). Витрината е
   без движение (и без JavaScript).
-- **Марката** (собственикът, 31 октомври 2026 — „un logo (non svg) … per il livello enterprise“; от три
-  концепции избра „Targa nera“): табела като тази на асансьора — стоманена рамка около черен сатенен
-  емайл, четири винта, релефни стоманени букви „RI“ (Fira Sans Condensed Bold), рендерирана от нас
-  (`scripts/logo/logo.py` — Mitsuba, като снимките на витрината; прозрачен фон, правоъгълна камера,
-  1,3 : 1). Картинка, не SVG: `views/partials/brandmark.ejs` — `<img>` 36 px в лентите и на входа, 48 px
-  в долната част на витрината (`marchio: 48`), с 2x и 3x в `srcset`; името до нея остава текст (следва
-  темите и „Personalizzato“). Същият рендер дава иконките на раздела (`favicon-32/192.png`,
-  `/favicon.ico` → 32) и марката в og.png и apple-touch-icon.png (`npm run brand:images`). Нов рендер:
-  `logo.py final` (минути на 4 ядра), после `npm run brand:logo` и `npm run brand:images`; unit тестът
-  пази всеки файл в размера си, с прозрачност, и че няма излишни.
+- **Логата** (собственикът, 1 ноември 2026 — свои две картинки: „Използвай ги като лого където мислиш, че
+  ще паснат най-добре. Искам да са четливи и да се виждат добре“; заменят табелата „Targa nera“ от 31
+  октомври). Оригиналите стоят както са дошли в `scripts/logo/originals` (извън образа): `mark.png` —
+  шестоъгълникът „RI“ с шахтата, `logo.png` — марката с „RILIEVI IMPIANTI“ и „PIATTAFORMA TECNICA
+  ASCENSORI“. `npm run brand:logo` ги изрязва до нарисуваното и пише `public/img/brand` (WebP с
+  прозрачност; малките размери — леко изострени, иначе детайлите на шахтата стават сиво) и
+  `favicon-32/192.png`. Марката — където логото е малко: черните ленти на портала и на витрината
+  (`views/partials/brandmark.ejs`, 44 px, 1x/2x/3x; името до нея остава текст — следва темите и
+  „Personalizzato“), иконките на раздела (`/favicon.ico` → 32) и apple-touch-icon.png. Пълното лого
+  (`views/partials/logo.ejs`, `srcset` 360…1320w) — само където е поне 320 px широко, за да се чете и
+  последният ред (той е ~6,5 % от височината): горе в черния панел на входа (400 px, на телефон 340),
+  над заглавието на първия екран на витрината (440/340 px; тъмен ореол по очертанието и потъмнен таван
+  на снимката отгоре), в долната част на витрината (320 px върху черна табела — на бяло последният ред
+  избледнява) и в og.png. Картинки, не SVG. Нови лога: заменят се файловете в `originals`, после
+  `npm run brand:logo` и `npm run brand:images`; unit тестът пази всеки файл от `srcset` в размера и
+  пропорциите си, с прозрачност, и че в `public/img/brand` няма излишни.
 - **Подредбата на всяко устройство** (собственикът, 31 октомври 2026 — „Искам да сме подредени … визуално
   перфектни на всякакъв вид устройство“): в един ред от полета етикетите, полетата и подсказките стоят на
   три общи линии — `grid--righe` (`public/css/righe.css`, CSS subgrid): полето носи етикет, контрола и
@@ -649,6 +702,20 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   няма), с одит `ARGANO_CALCOLO`; не мести версията на картата. Чете всеки, който вижда картата (формата
   — заключена); пише, който пише карти в нейната фирма, не в кошчето; чужда — 404. Резултатите се
   смятат при всяко показване; редовете са едни и същи на страницата и в PDF-а (`righe.ts`).
+  **Въжетата и компенсацията** (собственикът, 2 ноември 2026 — „manca la cordatura, classe e formazione …
+  migliorare anche nella funzione di scelta“; „funi e catene … una scelta manuale“): изборът на въжето е
+  по производител (`optgroup` TELCAL / DONATI), надписът — диаметър и формация („Ø 10 mm · 6×19 + FC“), а
+  под него карта с данните на избраното от таблиците на файла (формация, нишки, клас 1370/1770, сечение,
+  разрушително усилие, линейна маса — `fune.ts`; възможността ги носи като `data-*`, `public/js/argano.js`
+  сменя картата на живо, без JavaScript — каквото е дошло от сървъра). „Cordatura“ — избор за всяко въже
+  по EN 12385-2 (crociata destra sZ / sinistra zS, parallela (Lang) destra zZ / sinistra sS); таблиците на
+  файла я нямат, затова е по избор и празна не се пази. Въже на ръка (`altro`) — и нишки, формация (до 40
+  знака) и клас („1570“ или „1370/1770“, `CLASSE`), по избор. Компенсация извън таблиците — „Altra misura
+  (dati a mano)“ в мерките: мярка (3–40 mm) и линейна маса (0,05–20 kg/m) в `compAltro`; тежи точно като
+  същата мярка от таблиците (тестът сравнява). Полетата на ръка се виждат само при „altro“ (`data-solo`,
+  argano.js; без JavaScript — винаги). Резултатите и PDF-ът показват производителя, формацията, нишките,
+  класа, cordatura и сечението („—“ за непопълненото на ръка). Новото в `dati` е по избор и липсва, когато
+  е празно — записаното преди него се чете и смята както е.
   **Страницата в менюто и изчислението без карта** (собственикът, 31 октомври 2026 — „cercare il numero di
   matricola o la via e precompilare il calcolo se ho già la scheda impianto“; избра „calcolo libero“):
   „Rilievi“ → „Calcolo argano“ (`/calcolo-argano`, `routes/calcolo-argano-elenco.ts`) — търсене по

@@ -4,6 +4,7 @@ import {
   PDFDict,
   PDFHexString,
   PDFName,
+  PDFRadioGroup,
   PDFRawStream,
   PDFRef,
   PDFString,
@@ -15,6 +16,12 @@ import {
   type PDFWidgetAnnotation,
 } from 'pdf-lib';
 import { fieldsOf, type AcroField, type ModuloAcro } from './moduli.js';
+import {
+  campiVisibili,
+  pulisciFormulario,
+  togliOrfani,
+  togliSenzaAspetto,
+} from './pdf-form-pulizia.js';
 import { apriModulo, fitBlock, fitLine, SEGNO } from './pdf-testo.js';
 import type { Valori } from './valori.js';
 
@@ -36,10 +43,11 @@ function segnoMarcato(form: PDFForm, widget: PDFWidgetAnnotation, forma: 'spunta
   const on = widget.getOnValue();
   const states = widget.dict.lookupMaybe(PDFName.of('AP'), PDFDict);
   const normal = states?.lookupMaybe(PDFName.of('N'), PDFDict);
-  const off = normal?.lookup(PDFName.of('Off'));
-  const bbox =
-    off instanceof PDFRawStream ? off.dict.lookupMaybe(PDFName.of('BBox'), PDFArray) : null;
-  if (!on || !normal || !(off instanceof PDFRawStream) || !bbox) return;
+  // Рамката е обликът „изключено“; DMG я рисува в страницата и бутонът няма такъв — само знакът ни.
+  const base = normal?.lookup(PDFName.of('Off')) ?? (on ? normal?.lookup(on) : undefined);
+  const off = base instanceof PDFRawStream ? base : null;
+  const bbox = off?.dict.lookupMaybe(PDFName.of('BBox'), PDFArray);
+  if (!on || !normal || !off || !bbox) return;
   const { x, y, width, height } = bbox.asRectangle();
   const side = Math.min(width, height);
   const [cx, cy] = [x + width / 2, y + height / 2];
@@ -49,7 +57,9 @@ function segnoMarcato(form: PDFForm, widget: PDFWidgetAnnotation, forma: 'spunta
         `${n(cx - side * 0.36)} ${n(cy)} m ${n(cx - side * 0.1)} ${n(cy - side * 0.26)} l ` +
         `${n(cx + side * 0.36)} ${n(cy + side * 0.28)} l S`
       : `0 g ${n(cx - side * 0.21)} ${n(cy - side * 0.21)} ${n(side * 0.42)} ${n(side * 0.42)} re f`;
-  const cornice = Buffer.from(decodePDFRawStream(off).decode()).toString('latin1');
+  const cornice = normal.has(PDFName.of('Off'))
+    ? Buffer.from(decodePDFRawStream(off).decode()).toString('latin1')
+    : '';
   const matrix = off.dict.get(PDFName.of('Matrix'));
   const stream = form.doc.context.flateStream(`${cornice}\nq\n${segno}\nQ\n`, {
     Type: 'XObject',
@@ -60,19 +70,31 @@ function segnoMarcato(form: PDFForm, widget: PDFWidgetAnnotation, forma: 'spunta
   normal.set(on, form.doc.context.register(stream));
 }
 
-/** Радио група: бутонът на избраната опция (по реда му в PDF-а), всички други — изключени. */
+/**
+ * Избор от няколко бутона: радио група (опцията сочи бутона по реда му в PDF-а) или група отметки с едно
+ * име (DMG — опцията сочи бутона по името на „включеното“ му състояние). Включва се бутонът на избраното,
+ * всички други — изключени. Избор без поле в PDF-а (моделът на бутониерите на DMG) не пише нищо.
+ */
 function selectRadio(form: PDFForm, field: Extract<AcroField, { kind: 'radio' }>, value: unknown) {
-  const group = form.getRadioGroup(field.acro);
-  const widgets = group.acroField.getWidgets();
+  if (field.acro === undefined) return;
+  const target = form.getField(field.acro);
+  const widgets = target.acroField.getWidgets();
   const chosen = field.opzioni.find((o) => o.valore === value);
-  const on = chosen ? widgets[chosen.widget]?.getOnValue() : undefined;
-  // Имената на състоянията са каквито ги е направил авторът („0“, „Sì“, „7“) — взимат се от бутона.
-  group.acroField.dict.set(PDFName.of('V'), on ?? PDFName.of('Off'));
+  const scelto = (widget: PDFWidgetAnnotation, i: number): boolean =>
+    chosen !== undefined &&
+    (chosen.widget !== undefined
+      ? i === chosen.widget
+      : widget.getOnValue()?.decodeText() === chosen.stato);
+  const index = widgets.findIndex(scelto);
+  const on = index >= 0 ? widgets[index]!.getOnValue() : undefined;
+  // Имената на състоянията са каквито ги е направил авторът („0“, „Sì“, „Geared“) — взимат се от бутона.
+  target.acroField.dict.set(PDFName.of('V'), on ?? PDFName.of('Off'));
+  const forma = target instanceof PDFRadioGroup ? 'quadrato' : 'spunta';
   widgets.forEach((widget, i) => {
     const own = widget.getOnValue();
-    const selected = chosen !== undefined && i === chosen.widget && own !== undefined;
+    const selected = own !== undefined && scelto(widget, i);
     widget.setAppearanceState(selected ? own : PDFName.of('Off'));
-    if (selected) segnoMarcato(form, widget, 'quadrato');
+    if (selected) segnoMarcato(form, widget, forma);
   });
 }
 
@@ -246,8 +268,11 @@ export async function renderAcroform(
   const { doc, font } = await apriModulo(modulo, fontDir);
   const form = doc.getForm();
   compilaAcroform(form, modulo, valori, font);
+  if (modulo.pulizia) pulisciFormulario(form, modulo, campiVisibili(modulo, valori));
+  togliSenzaAspetto(form);
   // Пипнатите полета са с нов облик; останалото (празните полета, бутонът) остава оригинално.
   form.flatten({ updateFieldAppearances: false });
   pulisciAnnots(doc);
+  if (modulo.pulizia) togliOrfani(doc);
   return doc.save();
 }

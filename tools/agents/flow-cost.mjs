@@ -21,6 +21,7 @@ import { fileURLToPath } from "node:url";
 import { computeBudget, PREFIX_TOKEN_HARD } from "./token-budget.mjs";
 import { canonicalFlows } from "./trajectory-audit.mjs";
 import { emitJsonNow } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ORCH = join(ROOT, ".claude", "agents", "_orchestration.md");
@@ -193,4 +194,4 @@ async function main() {
   process.exit(CHECK && over.length ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await main();
+if (isMain(import.meta.url)) await main();

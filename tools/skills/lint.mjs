@@ -11,6 +11,7 @@ import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const SKILLS_DIR = join(ROOT, ".claude", "skills");
@@ -54,6 +55,12 @@ export function parseFrontmatter(md) {
 const RESERVED = /^(claude|anthropic)/i;
 const DESC_MAX = 1024;
 const BODY_MAX_WORDS = 5000;
+// След компактиране Claude Code връща всяко извикано умение, но само първите 5 000 ТОКЕНА от него
+// (https://code.claude.com/docs/en/skills.md#skill-content-lifecycle). 5 000 думи на български са ~12 000
+// токена — правилото по думи пропускаше точно отрязването, което се случва в дълга сесия.
+export const BODY_MAX_TOKENS = 5000;
+/** Груба оценка на токените: кирилица ~2,2 знака на токен, останалото ~4 (същата като memory-retrieval). */
+export function estTokens(t) { let c = 0, o = 0; for (const ch of String(t)) { if (/[Ѐ-ӿ]/.test(ch)) c++; else o++; } return Math.round(c / 2.2 + o / 4); }
 
 export function lintSkill(dir, name) {
   const errs = [], warns = [];
@@ -92,6 +99,10 @@ export function lintSkill(dir, name) {
   if (words > BODY_MAX_WORDS) {
     warns.push(`тялото е ${words} думи > ${BODY_MAX_WORDS} — извади подробностите в references/`);
   }
+  const tokens = estTokens(body);
+  if (tokens > BODY_MAX_TOKENS) {
+    warns.push(`тялото е ~${tokens} токена > ${BODY_MAX_TOKENS} — след компактиране остават само първите ${BODY_MAX_TOKENS}; извади подробностите в references/`);
+  }
   // реферирани scripts/ файлове съществуват (лов на счупени пътища от вида scripts/foo)
   for (const ref of body.match(/scripts\/[\w./-]+/g) || []) {
     if (!existsSync(join(dir, ref))) warns.push(`реферира несъществуващ ${ref}`);
@@ -112,7 +123,7 @@ export function lintSkill(dir, name) {
   return { name, errs, warns };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const JSON_OUT = process.argv.includes("--json");
   const names = existsSync(SKILLS_DIR)
     ? readdirSync(SKILLS_DIR).filter((f) => statSync(join(SKILLS_DIR, f)).isDirectory())

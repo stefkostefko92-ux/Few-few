@@ -84,7 +84,8 @@ function drawCampi(
     if ('line' in field) {
       const [x0, x1, y] = field.line;
       const fit = fitLine(font, value, x1 - x0, size);
-      page.drawText(fit.text, { x: x0, y: height - y + lift, size: fit.size, font, color: INK });
+      const x = field.allinea === 'destra' ? x1 - font.widthOfTextAtSize(fit.text, fit.size) : x0;
+      page.drawText(fit.text, { x, y: height - y + lift, size: fit.size, font, color: INK });
     } else if ('area' in field && field.righe) {
       // Кутия с редове на листа (NOTE на 2SG): по ред на линия, не по-едро от другия текст.
       const [x0, , x1] = field.area;

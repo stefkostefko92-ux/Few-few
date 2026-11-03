@@ -10,13 +10,14 @@ description: >-
 # Одит на достъпност (WCAG 2.1/2.2 AA · EAA)
 
 **EAA (European Accessibility Act) = закон** за много от продуктите ни; стандартът е **EN 301 549 = WCAG
-2.1 AA**. `gdpr-launch` изисква AA — тук е процедурата зад него. Автоматиката хваща ~30-40%; останалото е ръчно.
+2.1 AA**. `gdpr-launch` изисква AA — тук е процедурата зад него. Автоматиката хваща само част от проблемите; ръчният слой е задължителен.
 
 ## Автоматизиран слой (в CI)
-- **axe-core през Playwright** — на критичните страници/потоци: `@axe-core/playwright`, `expect(await new
-  AxeBuilder({ page }).analyze()).toHaveNoViolations()` (или assert `.violations.length === 0`). Собственик
+- **axe-core през Playwright** — на критичните страници/потоци: `@axe-core/playwright`, провери, че `(await new
+  AxeBuilder({ page }).analyze()).violations` е `[]` (шаблонът е в `references/axe-playwright.md`). Собственик
   на e2e = **Изпитателят**; вкарване в CI required check = **Конвейерът**.
 - **`eslint-plugin-jsx-a11y`** в Next апс — лови статичните грешки при писане.
+- Готов шаблон (тест + стъпка в CI): [`references/axe-playwright.md`](references/axe-playwright.md).
 
 ## Ръчен слой (задължителен — axe не го хваща)
 1. **Клавиатура** — целият поток само с Tab/Shift-Tab/Enter/Esc/стрелки; видим фокус навсякъде; логичен ред;

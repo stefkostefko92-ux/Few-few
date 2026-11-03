@@ -18,6 +18,7 @@
 
 import { readFileSync, statSync, readdirSync } from "node:fs";
 import { join, extname, basename } from "node:path";
+import { isMain } from "../lib/is-main.mjs";
 
 const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build", ".next", "coverage", "__tests__", "__mocks__"]);
 const CODE_EXTS = new Set([".js", ".mjs", ".cjs", ".ts", ".jsx", ".tsx"]);
@@ -250,7 +251,7 @@ function walk(path, acc, explicit = false) {
   return acc;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const paths = process.argv.slice(2);
   if (!paths.length) {
     console.error("Употреба: node tools/commerce/stripe-lint.mjs <файл-или-папка> [още…]");

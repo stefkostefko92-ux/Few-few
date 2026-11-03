@@ -12,6 +12,8 @@
     <img src="<%= hero.orizzontale.src %>" srcset="<%= hero.orizzontale.webp %>" sizes="100vw" width="<%= hero.orizzontale.width %>" height="<%= hero.orizzontale.height %>" alt="<%= hero.orizzontale.alt %>" fetchpriority="high" decoding="async">
   </picture>
   <div class="hero__text">
+    <%# Пълното лого над заглавието — на тъмното на снимката, достатъчно голямо за реда отдолу. %>
+    <%- include('../partials/logo', { classe: 'hero__logo', sizes: '(max-width: 599px) 340px, 440px' }) %>
     <h1 class="hero__title" id="hero-title"><%= t('site.hero.title') %></h1>
     <p class="hero__lead"><%= t('site.hero.lead') %></p>
     <div class="hero__actions">

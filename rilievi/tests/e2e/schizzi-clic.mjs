@@ -34,6 +34,13 @@ export async function checkTwoClicks(page, dialog) {
     await input.waitFor({ state: 'visible' });
     await input.fill(text);
     await input.press('Enter');
+    // The bar closes and the sheet takes its room back in the next frame (ResizeObserver → fit): a click
+    // sent before that lands on the sheet as it was with the bar open — the next point of a chain of
+    // dimensions missed the end of the last one.
+    await input.waitFor({ state: 'hidden' });
+    await page.evaluate(
+      () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
+    );
   };
   const start = (await elements()).length;
 

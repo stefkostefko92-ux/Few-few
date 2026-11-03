@@ -115,3 +115,38 @@ test("легендата показва РЕАЛНИЯ срок на класа 
   const c = classifyFresh("- **2026-06-01:** CSPos/src/lib/money.ts:9 закръглява симетрично. _(фискал; verified; CSPos/src/lib/money.ts:9)_");
   assert.equal(c.days, 90, "ако това се промени, поправи и легендата в отчета");
 });
+
+// ── Срокът тръгва от ПРЕСВЕРКАТА (2026-10-24) ─────────────────────────────────
+// Реален дефект: срокът се смяташе от датата на научаването, затова 20 пресверени поуки се
+// отчитаха като просрочени и опашката (338) нямаше как да се изпразни.
+import { dueOf } from "./memory-freshness.mjs";
+
+test("пресверена поука НЕ е просрочена — часовникът тръгва от пресверката", () => {
+  const old = '- **2026-01-01:** zabobovdol/src/x.ts:1 прави y _(наш код; verified; "zabobovdol/src/x.ts:1")_';
+  const re = '- **2026-01-01 (пресверена 2026-10-20):** zabobovdol/src/x.ts:1 прави y _(наш код; verified; "zabobovdol/src/x.ts:1")_';
+  assert.ok(dueOf(old).due < "2026-10-24", "непресверената е просрочена");
+  assert.equal(dueOf(re).due, "2027-01-18", "90 дни от пресверката, не от научаването");
+  assert.equal(summarize(collect({ dir: mem([re]) }), "2026-10-24").overdue.length, 0);
+});
+
+test("изричният срок важи, докато пресверка на или след него не го изпълни", () => {
+  const base = (head) => `- **${head}:** x _(a; verified; "https://developer.apple.com/q"; re-verify: 2026-10-01)_`;
+  assert.deepEqual([dueOf(base("2026-07-01")).cls, dueOf(base("2026-07-01")).due], ["изричен", "2026-10-01"]);
+  assert.equal(dueOf(base("2026-07-01 (пресверена 2026-09-01)")).due, "2026-10-01", "по-ранна пресверка не го изпълнява");
+  const done = dueOf(base("2026-07-01 (пресверена 2026-10-02)"));
+  assert.deepEqual([done.cls, done.due], ["платформа", "2027-03-31"], "изпълнен → класът от датата на пресверката");
+});
+
+test("„пресверена“ в ТЯЛОТО на поуката не е пресверка (само датовата глава се брои)", () => {
+  const l = '- **2026-01-01:** Stripe е пресверена 2026-10-20 от трети лица _(a; verified; "https://docs.stripe.com/x")_';
+  assert.equal(dueOf(l).reverified, null);
+  assert.equal(dueOf(l).due, "2026-06-30");
+});
+
+test("опашката на агента носи lid, по който promote.mjs адресира поуката", async () => {
+  const { lessonId } = await import("../memory/quarantine-review.mjs");
+  const l = '- **2026-01-01:** zabobovdol/src/x.ts:1 прави y _(наш код; verified; "zabobovdol/src/x.ts:1")_';
+  const [it] = collect({ dir: mem([l]) });
+  assert.equal(it.lid, lessonId(l));
+  assert.equal(it.full, l, "пълният текст, не отрязаният за отчета");
+});
