@@ -83,6 +83,8 @@ export function createInteractionHandler(deps: InteractionDeps) {
       await i.reply({ content: message, flags: MessageFlags.Ephemeral });
       return;
     }
+    // Отговорът се отлага, щом правата и входът са проверени: записът и текстът не бързат за 3-те секунди.
+    await i.deferReply();
     const at = now();
     const { batch, passed } = await createBatch(
       deps.db,
@@ -99,29 +101,35 @@ export function createInteractionHandler(deps: InteractionDeps) {
       const list = [...new Set(passed.map((r) => formatThreshold(r.kind, r.threshold)))].join(', ');
       lines.push(`Вече е под праг ${list} — за тях няма да има пинг.`);
     }
-    await i.reply({ content: lines.join('\n'), allowedMentions: NO_PINGS });
+    await i.editReply({ content: lines.join('\n'), allowedMentions: NO_PINGS });
   }
 
   async function info(i: ChatInputCommandInteraction) {
+    await i.deferReply();
     const filter = i.options.getString(OPTION_TYPE);
     const key = filter ? seedKeySchema.safeParse(filter) : null;
     const [types, all] = await Promise.all([listSeedTypes(deps.db), listBatches(deps.db)]);
     const batches = key?.success ? all.filter((b) => b.seedTypeKey === key.data) : all;
     const [first, ...rest] = buildInfoMessages(batches, labelsOf(types), now());
-    await i.reply({ content: first ?? 'Няма въведени семки.', allowedMentions: NO_PINGS });
+    await i.editReply({ content: first ?? 'Няма въведени семки.', allowedMentions: NO_PINGS });
     for (const content of rest) await i.followUp({ content, allowedMentions: NO_PINGS });
   }
 
   async function remove(i: ChatInputCommandInteraction) {
     if (!(await ensureManager(i))) return;
     const id = idParamSchema.safeParse(i.options.getInteger(OPTION_BATCH, true));
-    const removed = id.success ? await deleteBatch(deps.db, id.data) : null;
-    if (!removed) {
+    if (!id.success) {
       await i.reply({ content: 'Няма такава партида.', flags: MessageFlags.Ephemeral });
       return;
     }
+    await i.deferReply();
+    const removed = await deleteBatch(deps.db, id.data);
+    if (!removed) {
+      await i.editReply({ content: `Няма партида #${id.data}.`, allowedMentions: NO_PINGS });
+      return;
+    }
     const labels = labelsOf(await listSeedTypes(deps.db));
-    await i.reply({
+    await i.editReply({
       content: `Изтрита партида **${seedLabel(labels, removed.seedTypeKey)}** #${removed.id} ×${removed.count}.`,
       allowedMentions: NO_PINGS,
     });
@@ -141,7 +149,12 @@ export function createInteractionHandler(deps: InteractionDeps) {
           `${formatPercent(percentAt(b, b.rate, at))} · ${left > 0 ? formatDuration(left) : 'изтекла'}`;
         return { name: name.slice(0, 100), value: b.id };
       })
-      .filter((c) => !query || c.name.toLowerCase().includes(query))
+      // Само цифри — по номера на партидата (иначе „12“ хваща и „87,12%“); иначе — по текста.
+      .filter((c) =>
+        /^\d+$/.test(query)
+          ? String(c.value).startsWith(query)
+          : !query || c.name.toLowerCase().includes(query),
+      )
       .slice(0, 25);
     await i.respond(choices);
   }

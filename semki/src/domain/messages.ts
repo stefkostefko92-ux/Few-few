@@ -80,21 +80,43 @@ export function chunkLines(lines: readonly string[], limit = MESSAGE_LIMIT): str
   return parts;
 }
 
-export function buildAlertMessages(group: AlertGroup, labels: SeedLabels, now: Date): string[] {
+// Една част = едно съобщение и партидите в него: при провал по средата се освобождават само
+// неизпратените (иначе изпратените части се пингват пак).
+export interface AlertPart {
+  content: string;
+  batchIds: number[];
+}
+
+export function buildAlertParts(group: AlertGroup, labels: SeedLabels, now: Date): AlertPart[] {
   const byBatch = new Map<number, { batch: BatchLike; rules: RuleLike[] }>();
   for (const { batch, rule } of group.items) {
     const entry = byBatch.get(batch.id) ?? { batch, rules: [] };
     entry.rules.push(rule);
     byBatch.set(batch.id, entry);
   }
-  const lines = [`<@&${group.roleId}> **Семките изтичат**`];
+  const parts: AlertPart[] = [];
+  let current: AlertPart = { content: `<@&${group.roleId}> **Семките изтичат**`, batchIds: [] };
   for (const { batch, rules } of byBatch.values()) {
     const thresholds = rules.map((r) => formatThreshold(r.kind, r.threshold)).join(', ');
-    lines.push(
-      `• **${seedLabel(labels, batch.seedTypeKey)}** #${batch.id} ${batchStatus(batch, now)} · праг ${thresholds}`,
-    );
+    const line =
+      `• **${seedLabel(labels, batch.seedTypeKey)}** #${batch.id} ${batchStatus(batch, now)} · праг ${thresholds}`.slice(
+        0,
+        MESSAGE_LIMIT - 100,
+      );
+    if (current.batchIds.length > 0 && current.content.length + 1 + line.length > MESSAGE_LIMIT) {
+      parts.push(current);
+      current = { content: line, batchIds: [batch.id] };
+    } else {
+      current.content += `\n${line}`;
+      current.batchIds.push(batch.id);
+    }
   }
-  return chunkLines(lines);
+  if (current.batchIds.length > 0) parts.push(current);
+  return parts;
+}
+
+export function buildAlertMessages(group: AlertGroup, labels: SeedLabels, now: Date): string[] {
+  return buildAlertParts(group, labels, now).map((p) => p.content);
 }
 
 export function buildInfoMessages(

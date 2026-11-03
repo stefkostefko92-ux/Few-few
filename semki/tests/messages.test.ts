@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildAlertMessages,
+  buildAlertParts,
   buildInfoMessages,
   discordTime,
   formatDuration,
@@ -107,6 +108,30 @@ test('дълго известие се дели на части до лимит�
   assert.equal(parts.filter((p) => p.includes('<@&222222222222222222>')).length, 1);
   const all = parts.join('\n');
   for (let i = 1; i <= 80; i++) assert.ok(all.includes(`#${i} `), `липсва #${i}`);
+});
+
+test('частите на известието делят партидите без застъпване', () => {
+  const rule = {
+    id: 1,
+    kind: 'PERCENT' as const,
+    threshold: 20,
+    seedTypeKey: null,
+    channelId: '111111111111111111',
+    roleId: '222222222222222222',
+    enabled: true,
+  };
+  const items = Array.from({ length: 60 }, (_, i) => ({ batch: batch(i + 1, 10), rule }));
+  const parts = buildAlertParts(
+    { channelId: rule.channelId, roleId: rule.roleId, items },
+    labels,
+    t0,
+  );
+  const ids = parts.flatMap((p) => p.batchIds);
+  assert.equal(ids.length, 60);
+  assert.equal(new Set(ids).size, 60);
+  for (const p of parts) {
+    for (const id of p.batchIds) assert.ok(p.content.includes(`#${id} `));
+  }
 });
 
 test('/infosemki: празно, групирано по вид, първо изтичащите, изтеклите са отбелязани', () => {

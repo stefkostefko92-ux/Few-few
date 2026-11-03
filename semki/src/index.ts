@@ -9,6 +9,7 @@ import { createInteractionHandler } from './discord/interactions.js';
 import { createLogger } from './log.js';
 import { createNotifier } from './services/notifier.js';
 import { createWebApp } from './web/app.js';
+import type { HealthStatus } from './web/context.js';
 import { createDiscordOAuth } from './web/oauth.js';
 
 async function main(): Promise<void> {
@@ -27,6 +28,7 @@ async function main(): Promise<void> {
     createInteractionHandler({ db, log, guildId: config.DISCORD_GUILD_ID }),
   );
   client.on(Events.Error, (err) => log.error({ err }, 'грешка от Discord клиента'));
+  let commands: 'pending' | 'ok' | 'failed' = 'pending';
   client.once(Events.ClientReady, async (ready) => {
     log.info({ bot: ready.user.tag }, 'ботът е свързан');
     if (!ready.guilds.cache.has(config.DISCORD_GUILD_ID)) {
@@ -41,8 +43,10 @@ async function main(): Promise<void> {
         config.DISCORD_CLIENT_ID,
         config.DISCORD_GUILD_ID,
       );
+      commands = 'ok';
       log.info({ commands: n }, 'slash командите са регистрирани');
     } catch (err) {
+      commands = 'failed';
       log.error({ err }, 'slash командите не се регистрираха');
     }
     notifier.start(config.ALERT_TICK_SECONDS * 1000);
@@ -69,7 +73,11 @@ async function main(): Promise<void> {
       } catch (err) {
         log.warn({ err }, 'health: базата не отговаря');
       }
-      return { db: dbOk, discord: client.isReady() ? 'ready' : 'connecting' };
+      let discord: HealthStatus['discord'] = 'connecting';
+      if (client.isReady() && !guild.ready()) discord = 'no-guild';
+      else if (commands === 'failed') discord = 'commands-failed';
+      else if (client.isReady() && commands === 'ok') discord = 'ready';
+      return { db: dbOk, discord };
     },
   });
 

@@ -21,7 +21,7 @@ const at = (h: number) => new Date(t0.getTime() + h * HOUR_MS);
 const actor = { id: '100000000000000001', name: 'Тестер' };
 const ruleBase = { seedTypeKey: null, channelId: CHANNEL.id, roleId: ROLE.id, enabled: true };
 
-function notifier(sent: SentMessage[], fail = false) {
+function notifier(sent: SentMessage[], fail: boolean | number = false) {
   return createNotifier({
     db,
     sender: fakeSender(sent, fail),
@@ -241,4 +241,73 @@ test('базата отказва невалидни стойности и ми�
       },
     }),
   );
+});
+
+test('провал по средата на дълго известие: изпратените части не се пингват пак', async () => {
+  await createRule(db, { ...ruleBase, kind: 'PERCENT', threshold: 20 }, t0);
+  for (let i = 0; i < 40; i++) {
+    await createBatch(db, { seedTypeKey: 'amnesia', count: 1, percent: 21 }, actor, 'command', t0);
+  }
+  clock = at(2);
+  const first: SentMessage[] = [];
+  const partial = await notifier(first, 1).tick(); // първата част минава, втората пада
+  assert.ok(partial.failed > 0);
+  assert.equal(first.length, 1);
+  const sentIds = [...(first[0]?.content ?? '').matchAll(/#(\d+) /g)].map((m) => Number(m[1]));
+  assert.ok(sentIds.length > 0 && sentIds.length < 40);
+  assert.equal(await db.notification.count(), sentIds.length);
+
+  const rest: SentMessage[] = [];
+  await notifier(rest).tick();
+  const restIds = rest.flatMap((m) => [...m.content.matchAll(/#(\d+) /g)].map((x) => Number(x[1])));
+  assert.equal(restIds.length + sentIds.length, 40);
+  assert.ok(restIds.every((id) => !sentIds.includes(id)));
+  assert.equal(await db.notification.count(), 40);
+});
+
+test('партида, редактирана нагоре по време на цикъла, не се пингва със стари данни', async () => {
+  const otherRole = '333333333333333333';
+  await createRule(db, { ...ruleBase, kind: 'PERCENT', threshold: 20 }, t0);
+  await createRule(db, { ...ruleBase, kind: 'PERCENT', threshold: 20, roleId: otherRole }, t0);
+  const { batch } = await createBatch(
+    db,
+    { seedTypeKey: 'amnesia', count: 1, percent: 21 },
+    actor,
+    'command',
+    t0,
+  );
+  clock = at(2);
+  const sent: SentMessage[] = [];
+  // Докато се праща първата група, някой вдига процента — втората група вече не е дължима.
+  const sender = {
+    async send(channelId: string, roleId: string, content: string, ping = true) {
+      sent.push({ channelId, roleId, content, ping });
+      if (sent.length === 1) await updateBatch(db, batch.id, { count: 1, percent: 90 }, clock);
+    },
+  };
+  const result = await createNotifier({ db, sender, log: silentLog, now: () => clock }).tick();
+  assert.equal(sent.length, 1);
+  assert.equal(result.sent, 1);
+});
+
+test('изтрито правило по време на цикъла не бави другите пингове', async () => {
+  await createRule(db, { ...ruleBase, kind: 'PERCENT', threshold: 20 }, t0);
+  await createRule(
+    db,
+    { ...ruleBase, kind: 'PERCENT', threshold: 25, roleId: '333333333333333333' },
+    t0,
+  );
+  await createBatch(db, { seedTypeKey: 'amnesia', count: 1, percent: 26 }, actor, 'command', t0);
+  clock = at(20);
+  const sent: SentMessage[] = [];
+  const sender = {
+    async send(channelId: string, roleId: string, content: string, ping = true) {
+      sent.push({ channelId, roleId, content, ping });
+      // Трие се правилото на ДРУГАТА група — тя още не е изпратена.
+      if (sent.length === 1) await db.alertRule.deleteMany({ where: { roleId: { not: roleId } } });
+    },
+  };
+  const result = await createNotifier({ db, sender, log: silentLog, now: () => clock }).tick();
+  assert.equal(result.failed, 0);
+  assert.equal(sent.length, 1);
 });

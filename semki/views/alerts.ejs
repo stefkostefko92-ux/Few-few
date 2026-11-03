@@ -30,12 +30,12 @@
     </label>
     <label>Канал
       <select name="channelId" required>
-        <% channels.forEach(function (c) { %><option value="<%= c.id %>"><%= c.name %></option><% }) %>
+        <% channels.forEach(function (c) { %><option value="<%= c.id %>"><%= c.name %><%= c.usable ? '' : ' (ботът няма права)' %></option><% }) %>
       </select>
     </label>
     <label>Роля за тагване
       <select name="roleId" required>
-        <% roles.forEach(function (r) { %><option value="<%= r.id %>"><%= r.name %></option><% }) %>
+        <% roles.forEach(function (r) { %><option value="<%= r.id %>"><%= r.name %><%= r.usable ? '' : ' (не се тагва)' %></option><% }) %>
       </select>
     </label>
     <label class="check"><input type="checkbox" name="enabled" value="on" checked> Включено</label>
@@ -54,10 +54,12 @@
       <div class="b-main">
         <strong><%= r.thresholdText %></strong>
         <span><%= r.seedText %></span>
-        <span class="<%= r.channelKnown ? '' : 'warn-text' %>"><%= r.channelName %></span>
-        <span class="<%= r.roleKnown ? '' : 'warn-text' %>"><%= r.roleName %></span>
+        <span class="<%= r.channelUsable ? '' : 'warn-text' %>"><%= r.channelName %></span>
+        <span class="<%= r.roleUsable ? '' : 'warn-text' %>"><%= r.roleName %></span>
         <% if (!r.enabled) { %><span class="tag">изключено</span><% } %>
       </div>
+      <% if (r.channelKnown && !r.channelUsable) { %><p class="warn-text small">Ботът няма View Channel и Send Messages в този канал — известията не тръгват.</p><% } %>
+      <% if (r.roleKnown && !r.roleUsable) { %><p class="warn-text small">Ролята не може да бъде тагната: включи „Allow anyone to @mention this role“ или дай на бота Mention Everyone — дотогава известията чакат.</p><% } %>
       <details>
         <summary>Редакция</summary>
         <form method="post" action="/alerts/<%= r.id %>" class="grid">
@@ -79,12 +81,12 @@
           </label>
           <label>Канал
             <select name="channelId" required>
-              <% channels.forEach(function (c) { %><option value="<%= c.id %>" <%= r.channelId === c.id ? 'selected' : '' %>><%= c.name %></option><% }) %>
+              <% channels.forEach(function (c) { %><option value="<%= c.id %>" <%= r.channelId === c.id ? 'selected' : '' %>><%= c.name %><%= c.usable ? '' : ' (ботът няма права)' %></option><% }) %>
             </select>
           </label>
           <label>Роля за тагване
             <select name="roleId" required>
-              <% roles.forEach(function (x) { %><option value="<%= x.id %>" <%= r.roleId === x.id ? 'selected' : '' %>><%= x.name %></option><% }) %>
+              <% roles.forEach(function (x) { %><option value="<%= x.id %>" <%= r.roleId === x.id ? 'selected' : '' %>><%= x.name %><%= x.usable ? '' : ' (не се тагва)' %></option><% }) %>
             </select>
           </label>
           <label class="check"><input type="checkbox" name="enabled" value="on" <%= r.enabled ? 'checked' : '' %>> Включено</label>

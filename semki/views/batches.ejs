@@ -53,6 +53,7 @@
         <summary>Редакция</summary>
         <form method="post" action="/batches/<%= r.id %>" class="row">
           <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <input type="hidden" name="percentShown" value="<%= r.percentInput %>">
           <label>Брой <input type="number" name="count" min="1" max="100000" step="1" value="<%= r.count %>" required></label>
           <label>Трайност сега, % <input type="text" name="percent" inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" value="<%= r.percentInput %>" required></label>
           <button type="submit" class="btn">Запази</button>

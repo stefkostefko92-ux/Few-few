@@ -2,7 +2,7 @@ import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SignJWT } from 'jose';
 import { sessionKey, signSession, verifySession } from '../src/web/session.js';
-import { cookieJar, SECRET, startApp, USER_ID } from './helpers.js';
+import { cookieJar, fakeGuild, SECRET, startApp, USER_ID } from './helpers.js';
 
 let app: Awaited<ReturnType<typeof startApp>>;
 
@@ -80,6 +80,14 @@ test('callback с чужд state се отказва', async () => {
   assert.equal(res.status, 400);
 });
 
+test('отказ в Discord дава ясно съобщение', async () => {
+  const res = await fetch(`${app.url}/auth/callback?error=access_denied&state=x`, {
+    redirect: 'manual',
+  });
+  assert.equal(res.status, 400);
+  assert.match(await res.text(), /Входът е отказан/);
+});
+
 test('callback без state бисквитка се отказва', async () => {
   const res = await fetch(`${app.url}/auth/callback?code=good-code&state=x`, {
     redirect: 'manual',
@@ -138,4 +146,33 @@ test('подправен или чужд JWT не е сесия', async () => {
 test('robots.txt забранява всичко', async () => {
   const res = await fetch(`${app.url}/robots.txt`);
   assert.equal(await res.text(), 'User-agent: *\nDisallow: /\n');
+});
+
+test('докато ботът се свързва: изходът работи, а входът казва „свързва се“, не „нямаш достъп“', async () => {
+  const offline = await startApp({ guild: { ...fakeGuild(), ready: () => false } });
+  try {
+    const { cookie, csrf } = await sessionCookie();
+    const out = await fetch(`${offline.url}/auth/logout`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded', cookie },
+      body: `_csrf=${encodeURIComponent(csrf)}`,
+      redirect: 'manual',
+    });
+    assert.equal(out.status, 303);
+    assert.match(out.headers.getSetCookie().join('\n'), /semki_session=;/);
+
+    const start = await fetch(`${offline.url}/auth/discord`, { redirect: 'manual' });
+    const state = new URL(start.headers.get('location') ?? '').searchParams.get('state') ?? '';
+    const cb = await fetch(
+      `${offline.url}/auth/callback?code=good-code&state=${encodeURIComponent(state)}`,
+      {
+        redirect: 'manual',
+        headers: { cookie: `semki_state=${cookieJar(start).get('semki_state') ?? ''}` },
+      },
+    );
+    assert.equal(cb.status, 503);
+    assert.match(await cb.text(), /Ботът се свързва/);
+  } finally {
+    await offline.close();
+  }
 });

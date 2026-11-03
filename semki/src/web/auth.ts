@@ -59,6 +59,19 @@ export function createAuth(kit: WebKit): AuthKit {
     );
   }
 
+  function connecting(req: Request, res: Response): void {
+    kit.render(
+      req,
+      res,
+      'message',
+      {
+        title: 'Ботът се свързва',
+        text: 'Ботът още се свързва с Discord. Опитай пак след няколко секунди.',
+      },
+      503,
+    );
+  }
+
   const authLimiter = rateLimit({
     windowMs: 15 * 60_000,
     limit: 30,
@@ -81,6 +94,20 @@ export function createAuth(kit: WebKit): AuthKit {
   router.get('/auth/callback', authLimiter, async (req, res) => {
     const expected: unknown = req.cookies?.[names.state];
     res.clearCookie(names.state, cookieOptions(secure, 0));
+    // Отказ в Discord („Cancel“) идва като ?error=access_denied без code — казва се ясно.
+    if (typeof req.query.error === 'string') {
+      kit.render(
+        req,
+        res,
+        'message',
+        {
+          title: 'Входът е отказан',
+          text: 'Discord не даде достъп (натиснат е „Cancel“). Опитай пак и натисни „Authorize“.',
+        },
+        400,
+      );
+      return;
+    }
     const q = callbackSchema.safeParse(req.query);
     if (!q.success || typeof expected !== 'string' || !safeEqual(q.data.state, expected)) {
       kit.render(
@@ -112,6 +139,11 @@ export function createAuth(kit: WebKit): AuthKit {
       );
       return;
     }
+    // Докато ботът се свързва, гилдията не е в кеша — без това администратор вижда „Нямаш достъп“.
+    if (!deps.guild.ready()) {
+      connecting(req, res);
+      return;
+    }
     const settings = await getSettings(deps.db);
     if (!canUseDashboard(await memberFacts(identity.id, true), settings.dashboardRoleId)) {
       deps.log.info({ userId: identity.id }, 'отказан вход в дашборда');
@@ -127,16 +159,15 @@ export function createAuth(kit: WebKit): AuthKit {
     res.redirect(302, '/');
   });
 
-  // Сесия → CSRF (за POST) → правото, проверено наново (кеш 60 s). Ролята, махната в Discord, затваря
-  // дашборда най-късно след минута, без да чака изтичането на сесията.
-  async function requireUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  // Сесия и CSRF (за POST), без правото — достатъчно за изхода, който работи и докато ботът се свързва.
+  async function sessionOf(req: Request, res: Response): Promise<SessionUser | null> {
     const token: unknown = req.cookies?.[names.session];
     const user: SessionUser | null =
       typeof token === 'string' ? await verifySession(token, key) : null;
     if (!user) {
       if (req.method === 'GET') res.redirect(302, '/login');
       else res.status(401).type('text/plain').send('Влез отново.');
-      return;
+      return null;
     }
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       const origin = req.get('origin');
@@ -149,20 +180,19 @@ export function createAuth(kit: WebKit): AuthKit {
         !safeEqual(sent, user.csrf)
       ) {
         res.status(403).type('text/plain').send('Невалидна заявка (CSRF). Презареди страницата.');
-        return;
+        return null;
       }
     }
+    return user;
+  }
+
+  // Сесия → CSRF (за POST) → правото, проверено наново (кеш 60 s). Ролята, махната в Discord, затваря
+  // дашборда най-късно след минута, без да чака изтичането на сесията.
+  async function requireUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const user = await sessionOf(req, res);
+    if (!user) return;
     if (!deps.guild.ready()) {
-      kit.render(
-        req,
-        res,
-        'message',
-        {
-          title: 'Ботът се свързва',
-          text: 'Ботът още се свързва с Discord. Опитай пак след няколко секунди.',
-        },
-        503,
-      );
+      connecting(req, res);
       return;
     }
     const settings = await getSettings(deps.db);
@@ -174,7 +204,8 @@ export function createAuth(kit: WebKit): AuthKit {
     next();
   }
 
-  router.post('/auth/logout', requireUser, (_req, res) => {
+  router.post('/auth/logout', async (req, res) => {
+    if (!(await sessionOf(req, res))) return;
     res.clearCookie(names.session, cookieOptions(secure, 0));
     res.redirect(303, '/login');
   });

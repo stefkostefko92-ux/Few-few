@@ -60,17 +60,24 @@ export async function createBatch(
   });
 }
 
-// Новият брой и процент важат от `now`; вече минатите с тях прагове се отбелязват тихо.
+// percent: null — сменя се само броят: процентът и котвата остават, иначе показаното на страницата
+// (вече остаряло) би върнало изминалото време и би пре-въоръжило изпратени известия.
+// Новият процент важи от `now`; вече минатите с него прагове се отбелязват тихо.
 export async function updateBatch(
   db: PrismaClient,
   id: number,
-  input: BatchEditInput,
+  input: { count: BatchEditInput['count']; percent: number | null },
   now: Date,
 ): Promise<boolean> {
+  if (input.percent === null) {
+    const { count } = await db.batch.updateMany({ where: { id }, data: { count: input.count } });
+    return count > 0;
+  }
+  const percent = input.percent;
   return db.$transaction(async (tx) => {
     const updated = await tx.batch.updateMany({
       where: { id },
-      data: { count: input.count, percent: input.percent, anchoredAt: now },
+      data: { count: input.count, percent, anchoredAt: now },
     });
     if (updated.count === 0) return false;
     await syncNotifications(tx, { batchIds: [id] }, now);
@@ -90,7 +97,10 @@ export async function deleteBatch(db: PrismaClient, id: number): Promise<BatchVi
 export async function deleteExpiredBatches(db: PrismaClient, now: Date): Promise<number> {
   const expired = (await listBatches(db)).filter((b) => msLeft(b, b.rate, now) <= 0);
   if (expired.length === 0) return 0;
-  const { count } = await db.batch.deleteMany({ where: { id: { in: expired.map((b) => b.id) } } });
+  // Само ако партидата е същата като прочетената: редактираната междувременно не се трие.
+  const { count } = await db.batch.deleteMany({
+    where: { OR: expired.map((b) => ({ id: b.id, anchoredAt: b.anchoredAt, percent: b.percent })) },
+  });
   return count;
 }
 

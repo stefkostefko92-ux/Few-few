@@ -15,6 +15,7 @@ import {
   type FakeGuild,
   type SentMessage,
 } from '../helpers.js';
+import { createBatch } from '../../src/services/batches.js';
 import { prepareDb, resetDb } from './db.js';
 
 let db: PrismaClient;
@@ -177,4 +178,33 @@ test('изход чисти сесията', () =>
     });
     assert.equal(res.status, 303);
     assert.match(res.headers.getSetCookie().join('\n'), /semki_session=;/);
+  }));
+
+test('редакция само на броя не пипа процента и котвата (страницата е отворена отдавна)', () =>
+  withApp(async () => {
+    guild.members.set(USER_ID, { isOwner: false, isAdmin: true, roleIds: [] });
+    const jar = await login(app.url);
+    const tenHoursAgo = new Date(Date.now() - 10 * 3_600_000);
+    const { batch } = await createBatch(
+      db,
+      { seedTypeKey: 'ak', count: 2, percent: 40 },
+      { id: USER_ID, name: 'Тестер' },
+      'dashboard',
+      tenHoursAgo,
+    );
+    // Страницата е показала 34,00% преди време; междувременно е паднало още.
+    await post(jar, `/batches/${batch.id}`, {
+      count: '9',
+      percent: '34.00',
+      percentShown: '34.00',
+    });
+    const row = await db.batch.findUniqueOrThrow({ where: { id: batch.id } });
+    assert.equal(row.count, 9);
+    assert.equal(row.percent, 40);
+    assert.equal(row.anchoredAt.getTime(), tenHoursAgo.getTime());
+
+    await post(jar, `/batches/${batch.id}`, { count: '9', percent: '50', percentShown: '34.00' });
+    const changed = await db.batch.findUniqueOrThrow({ where: { id: batch.id } });
+    assert.equal(changed.percent, 50);
+    assert.ok(changed.anchoredAt.getTime() > tenHoursAgo.getTime());
   }));

@@ -45,7 +45,6 @@ export function createDiscordOAuth(cfg: OAuthConfig): OAuthClient {
         response_type: 'code',
         scope: 'identify',
         state,
-        prompt: 'none',
       });
       return `https://discord.com/oauth2/authorize?${params.toString()}`;
     },

@@ -11,7 +11,9 @@ import { cookieNames, cookieOptions, type CookieNames, type SessionUser } from '
 
 export interface HealthStatus {
   db: boolean;
-  discord: 'ready' | 'connecting';
+  // ready — свързан, в гилдията, с регистрирани команди; no-guild — не е поканен в DISCORD_GUILD_ID;
+  // commands-failed — Discord отказа командите (обикновено покана без applications.commands).
+  discord: 'ready' | 'connecting' | 'no-guild' | 'commands-failed';
 }
 
 export interface WebDeps {

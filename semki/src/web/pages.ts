@@ -7,6 +7,7 @@ import {
   batchCreateSchema,
   batchEditSchema,
   idParamSchema,
+  parseDecimal,
   ruleSchema,
   seedKeySchema,
   seedTypeSchema,
@@ -105,10 +106,25 @@ export function createPages(kit: WebKit, auth: AuthKit): Router {
     const id = idOf(req);
     const input = parse(batchEditSchema, req.body, res, '/');
     if (!input) return;
+    // Процентът е сменен само ако се различава от показания при зареждането на страницата.
+    const body: unknown = req.body;
+    const shownRaw =
+      typeof body === 'object' && body !== null && 'percentShown' in body
+        ? body.percentShown
+        : undefined;
+    const shown = typeof shownRaw === 'string' ? parseDecimal(shownRaw) : Number.NaN;
+    const percentChanged =
+      !Number.isFinite(shown) || Math.round(shown * 100) !== Math.round(input.percent * 100);
     done(
       res,
       '/',
-      id !== null && (await updateBatch(db, id, input, kit.now())),
+      id !== null &&
+        (await updateBatch(
+          db,
+          id,
+          { count: input.count, percent: percentChanged ? input.percent : null },
+          kit.now(),
+        )),
       `Партида #${id} е обновена.`,
     );
   });

@@ -3,7 +3,7 @@ import type { AddressInfo } from 'node:net';
 import type { PrismaClient } from '@prisma/client';
 import { pino } from 'pino';
 import type { MemberFacts } from '../src/domain/access.js';
-import type { GuildDirectory, NamedItem } from '../src/discord/guild.js';
+import type { GuildDirectory, GuildItem } from '../src/discord/guild.js';
 import type { AlertSender } from '../src/services/notifier.js';
 import { createWebApp } from '../src/web/app.js';
 import type { WebDeps } from '../src/web/context.js';
@@ -12,8 +12,8 @@ import type { DiscordIdentity, OAuthClient } from '../src/web/oauth.js';
 export const SECRET = 'a'.repeat(64);
 export const BASE = 'http://127.0.0.1';
 export const USER_ID = '100000000000000001';
-export const CHANNEL: NamedItem = { id: '111111111111111111', name: '#семки' };
-export const ROLE: NamedItem = { id: '222222222222222222', name: '@Фермери' };
+export const CHANNEL: GuildItem = { id: '111111111111111111', name: '#семки', usable: true };
+export const ROLE: GuildItem = { id: '222222222222222222', name: '@Фермери', usable: true };
 
 export interface FakeGuild extends GuildDirectory {
   members: Map<string, MemberFacts>;
@@ -47,10 +47,14 @@ export interface SentMessage {
   ping: boolean;
 }
 
-export function fakeSender(sent: SentMessage[] = [], fail = false): AlertSender {
+// fail: true — всяко изпращане пада; число N — първите N минават, следващите падат.
+export function fakeSender(sent: SentMessage[] = [], fail: boolean | number = false): AlertSender {
+  let calls = 0;
   return {
     async send(channelId, roleId, content, ping = true) {
-      if (fail) throw new Error('Missing Access');
+      calls += 1;
+      if (fail === true || (typeof fail === 'number' && calls > fail))
+        throw new Error('Missing Access');
       sent.push({ channelId, roleId, content, ping });
     },
   };

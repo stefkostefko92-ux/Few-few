@@ -7,7 +7,7 @@ import {
   formatPercent,
   formatThreshold,
 } from '../domain/messages.js';
-import type { NamedItem } from '../discord/guild.js';
+import type { GuildItem } from '../discord/guild.js';
 import type { BatchView } from '../services/mapping.js';
 
 export function dateTimeFormatter(timezone: string): (d: Date) => string {
@@ -118,17 +118,19 @@ export interface RuleView {
   channelId: string;
   channelName: string;
   channelKnown: boolean;
+  channelUsable: boolean;
   roleId: string;
   roleName: string;
   roleKnown: boolean;
+  roleUsable: boolean;
   enabled: boolean;
 }
 
 export function ruleViews(
   rules: readonly AlertRule[],
   types: readonly SeedType[],
-  channels: readonly NamedItem[],
-  roles: readonly NamedItem[],
+  channels: readonly GuildItem[],
+  roles: readonly GuildItem[],
 ): RuleView[] {
   const labels = new Map(types.map((t) => [t.key, t.label]));
   return rules.map((r) => {
@@ -145,9 +147,11 @@ export function ruleViews(
       channelId: r.channelId,
       channelName: channel?.name ?? `непознат канал (${r.channelId})`,
       channelKnown: channel !== undefined,
+      channelUsable: channel?.usable ?? false,
       roleId: r.roleId,
       roleName: role?.name ?? `непозната роля (${r.roleId})`,
       roleKnown: role !== undefined,
+      roleUsable: role?.usable ?? false,
       enabled: r.enabled,
     };
   });
