@@ -34,7 +34,7 @@ import {
 import { checkSite } from './site.mjs';
 import { checkInvites } from './inviti.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
-import { checkEveryLink } from './collegati-tutti.mjs';
+import { checkCompanyData, checkEveryLink } from './collegati-tutti.mjs';
 import { checkCartelli } from './cartelli.mjs';
 import { checkArgano } from './argano.mjs';
 import { checkInterventi } from './interventi.mjs';
@@ -269,6 +269,7 @@ try {
     await page.screenshot({ path: join(shots, `${scheme}-print.png`), fullPage: true });
     await checkInterventi(page, { base, shots, scheme, aziendaName });
     await checkCartelli(page, { base, shots, scheme, aziendaPath, sheetUrl });
+    if (scheme === 'light') await checkCompanyData(context, { base, aziendaName, scheme });
     await checkArgano(page, { shots, scheme, sheetUrl, aziendaId: aziendaPath.split('/').pop() });
 
     await checkPhone(browser, { base, shots, scheme, email, password, sheetUrl });

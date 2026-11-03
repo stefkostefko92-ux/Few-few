@@ -1,3 +1,4 @@
+import type { DatiSocietari } from '../aziende/dati.js';
 import type { FormValues } from '../schede/field-parsers.js';
 import { activeFields, fieldByKey } from '../schede/fields.js';
 import { prefillCollegati } from './collegati.js';
@@ -21,6 +22,8 @@ export interface PrefillContext {
   utente: string;
   ruolo: string;
   email: string;
+  /** Данните на фирмата от настройките ѝ; null — още не са записани. */
+  societa?: DatiSocietari | null;
   /** Думата за отметка от картата („tipoPorte“, „MANUALI“ → „Manuali“) — от речника. */
   etichetta: (campo: string, valore: string) => string;
 }
@@ -56,6 +59,20 @@ function textToken(token: PrefillToken, ctx: PrefillContext): string {
       return ctx.ruolo;
     case 'email':
       return ctx.email;
+    case 'societaNome':
+      return ctx.societa?.ragioneSociale || ctx.azienda;
+    case 'societaIndirizzo':
+      return ctx.societa?.indirizzo ?? '';
+    case 'societaCap':
+      return ctx.societa?.cap ?? '';
+    case 'societaCitta':
+      return ctx.societa?.citta ?? '';
+    case 'societaProvincia':
+      return ctx.societa?.provincia.toUpperCase() ?? '';
+    case 'societaTelefono':
+      return ctx.societa?.telefono ?? '';
+    case 'societaEmail':
+      return ctx.societa?.email ?? '';
     case 'portataPersone': {
       const kg = text(ctx.values, 'portataKg');
       const persone = text(ctx.values, 'capienzaPersone');

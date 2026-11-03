@@ -26,6 +26,15 @@ export const PREFILL_TOKENS = [
   'ubicazioneMacchina',
   // Товарът и хората на картата като „630/8“ (Pitagora: „Portata (kg/pers.)“).
   'portataPersone',
+  // Данните на фирмата от настройките ѝ (`Azienda.datiSocietari`): „Dati cliente“ на MoviLift.
+  // Наименованието — вписаното, иначе името в портала.
+  'societaNome',
+  'societaIndirizzo',
+  'societaCap',
+  'societaCitta',
+  'societaProvincia',
+  'societaTelefono',
+  'societaEmail',
 ] as const;
 export type PrefillToken = (typeof PREFILL_TOKENS)[number];
 

@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { allegatiDi } from '../allegati/service.js';
 import { aziendeConSchizzi } from '../aziende/funzioni.js';
+import { datiDelleAziende } from '../aziende/intestazione.js';
 import { gruppiScelta, nelFoglioDi, sezioniFoto } from '../allegati/stampa.js';
 import { principalOf } from '../auth/guards.js';
 import { roleIn, spansAziende } from '../auth/scope.js';
@@ -53,6 +54,10 @@ export async function renderForm(
   // човека, който пише (ролята му в ТАЗИ фирма).
   const aziendaId = view.scheda?.aziendaId || view.azienda || null;
   const role = roleIn(user, aziendaId);
+  const societa = await datiDelleAziende([
+    ...(aziendaId ? [aziendaId] : []),
+    ...view.aziende.map((a) => a.id),
+  ]);
   const contesto = {
     azienda:
       view.scheda?.azienda.name ??
@@ -64,6 +69,7 @@ export async function renderForm(
   };
   const { values, auto, scritti } = withPrefill(view.values, {
     ...contesto,
+    societa: (aziendaId && societa.get(aziendaId)) || null,
     etichetta: (campo, valore) => t(`scheda.option.${campo}.${valore}`),
   });
   const discrepanze = discrepanzeDi(values, t);
@@ -114,7 +120,11 @@ export async function renderForm(
       scritti,
       discrepanze: new Map(discrepanze.map((d) => [d.key, d])),
       delGruppo: collegatiDelGruppo,
-      json: collegatiPerBrowser(t, contesto),
+      json: collegatiPerBrowser(t, {
+        ...contesto,
+        aziendaId: aziendaId ?? '',
+        societa: Object.fromEntries(societa),
+      }),
     },
     conferma: view.conferma ? { discrepanze, impronta: improntaDi(discrepanze) } : null,
     allegati,

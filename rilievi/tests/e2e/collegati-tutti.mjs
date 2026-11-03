@@ -355,3 +355,35 @@ export async function checkEveryLink(context, { base, aziendaName, scheme }) {
   await page.close();
   return pairs;
 }
+
+/**
+ * "Dati cliente" of the MoviLift order from the company settings (owner, 3 November 2026: "popola i dati
+ * dell'azienda … dove c'è spazio per l'e-mail che si possa cambiare"): after the settings were saved
+ * (cartelli.mjs), a new sheet of that company has them; a typed email stays.
+ */
+export async function checkCompanyData(context, { base, aziendaName, scheme }) {
+  const page = await context.newPage();
+  page.on('pageerror', (error) => fail(`${scheme} company data: page error ${error.message}`));
+  await openSheet(page, base, aziendaName, [
+    ['quadroMarca', 'MOVILIFT'],
+    ['quadroOrdine', 'si'],
+  ]);
+  for (const [name, wanted] of [
+    ['ragioneSociale', 'Ascensori E2E S.r.l.'],
+    ['indirizzo', 'Via Roma 12'],
+    ['cap', '20121'],
+    ['citta', 'Milano'],
+    ['prov', 'MI'],
+    ['telefono', '02 1234567'],
+    ['email', 'info@ascensori-e2e.example'],
+  ]) {
+    const actual = await page.inputValue(`#f-om-${name}`);
+    if (actual !== wanted)
+      fail(`${scheme} company data: MoviLift ${name} is "${actual}", not "${wanted}"`);
+  }
+  await page.fill('#f-om-email', 'ordini@ascensori-e2e.example');
+  await page.fill('#f-fermate', '5');
+  if ((await page.inputValue('#f-om-email')) !== 'ordini@ascensori-e2e.example')
+    fail(`${scheme} company data: the typed email of the MoviLift order was replaced`);
+  await page.close();
+}

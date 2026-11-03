@@ -33,10 +33,11 @@ describe('the same data in every place, filled in every direction', () => {
     assert.match(page.body, /name="sg-mittente"[^>]*data-auto="([^"]+)"[^>]*>\1<\/textarea>/);
     assert.match(
       page.body,
-      /name="om-ragioneSociale"[^>]*value="([^"]+)" data-auto="\1" data-prefill="azienda"/,
+      /name="om-ragioneSociale"[^>]*value="([^"]+)" data-auto="\1" data-prefill="societaNome"/,
     );
-    // The e-mail of the person writing is no longer put in the MoviLift order (October 21, 2026).
-    assert.match(page.body, /name="om-email"[^>]*value=""(?![^>]*data-prefill)[^>]*>/);
+    // The e-mail of the person writing is never put in the MoviLift order (October 21, 2026); the
+    // company's is (November 3) — this company has written none in its settings.
+    assert.match(page.body, /name="om-email"[^>]*value="" data-prefill="societaEmail">/);
     // The stops of the sheet came from the panel order and still follow it when the form comes back.
     const reply = await browser.submit('/schede/nuova', '/schede', {
       ...PANEL,
@@ -103,7 +104,7 @@ describe('the same data in every place, filled in every direction', () => {
     // The company was emptied by hand: the page tells the browser not to fill it again.
     assert.match(
       form.body,
-      /name="om-ragioneSociale"[^>]*value="" data-prefill="azienda" data-scritto/,
+      /name="om-ragioneSociale"[^>]*value="" data-prefill="societaNome" data-scritto/,
     );
     assert.match(form.body, /name="om-riferimento"[^>]*value="Commessa 77" data-prefill="rif">/);
     // No kind of doors on the sheet: nothing to take, the field still follows the sheet.

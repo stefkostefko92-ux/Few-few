@@ -6,7 +6,7 @@ import { describe, it } from 'node:test';
 import { translatorFor } from '../src/i18n.js';
 import { COLLEGAMENTI } from '../src/ordini/collegamenti.js';
 import { discrepanzeDi, prefillCollegati } from '../src/ordini/collegati.js';
-import { DMG_PITAGORA } from '../src/ordini/moduli.js';
+import { DMG_PITAGORA, MOVILIFT } from '../src/ordini/moduli.js';
 import { prefillValori } from '../src/ordini/prefill.js';
 
 const t = translatorFor('it');
@@ -133,5 +133,60 @@ describe('what Pitagora takes from the sheet with no linked field', () => {
     assert.equal(prefillValori(DMG_PITAGORA, { ...ctx, values }).pattino, true);
     const no = { ...values, pattinoRetrattile: 'no' };
     assert.equal(prefillValori(DMG_PITAGORA, { ...ctx, values: no }).pattino, undefined);
+  });
+});
+
+describe('the client data of the MoviLift order', () => {
+  const societa = {
+    ragioneSociale: 'Ascensori Rossi S.r.l.',
+    indirizzo: 'Via Roma 12',
+    cap: '20121',
+    citta: 'Milano',
+    provincia: 'mi',
+    telefono: '02 1234567',
+    email: 'info@ascensorirossi.example',
+    partitaIva: '01234567890',
+    sito: '',
+  };
+  const ctx = {
+    azienda: 'Ascensori Rossi',
+    utente: 'Mario Rossi',
+    ruolo: 'Tecnico',
+    email: 'mario@example.it',
+    etichetta: (campo: string, valore: string) => t(`scheda.option.${campo}.${valore}`),
+    values: { ...base, quadroMarca: 'MOVILIFT' },
+  };
+
+  it('come from the settings of the company: its registered name, seat, phone and email', () => {
+    const valori = prefillValori(MOVILIFT, { ...ctx, societa });
+    assert.deepEqual(
+      [
+        valori.ragioneSociale,
+        valori.indirizzo,
+        valori.citta,
+        valori.prov,
+        valori.cap,
+        valori.telefono,
+        valori.email,
+      ],
+      [
+        'Ascensori Rossi S.r.l.',
+        'Via Roma 12',
+        'Milano',
+        'MI',
+        '20121',
+        '02 1234567',
+        'info@ascensorirossi.example',
+      ],
+    );
+    // No fax in the settings, and never the email of the person writing.
+    assert.equal(valori.fax, undefined);
+  });
+
+  it('take the name in the portal while the company has written nothing', () => {
+    const valori = prefillValori(MOVILIFT, { ...ctx, societa: null });
+    assert.equal(valori.ragioneSociale, 'Ascensori Rossi');
+    assert.equal(valori.email, undefined);
+    assert.equal(valori.indirizzo, undefined);
   });
 });
