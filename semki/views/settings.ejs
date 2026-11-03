@@ -1,0 +1,49 @@
+<%- include('partials/head') %>
+<h1>Настройки</h1>
+
+<form method="post" action="/settings">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+
+  <section class="card">
+    <h2>Достъп</h2>
+    <p class="muted small">Собственикът на сървъра и всеки с право Administrator имат достъп винаги — така никой не се заключва навън.</p>
+    <div class="grid">
+      <label>Роля за дашборда
+        <select name="dashboardRoleId">
+          <option value="">— само администратори —</option>
+          <% roles.forEach(function (r) { %><option value="<%= r.id %>" <%= settings.dashboardRoleId === r.id ? 'selected' : '' %>><%= r.name %></option><% }) %>
+        </select>
+      </label>
+      <label>Роля за командите (добавяне и триене)
+        <select name="commandRoleId">
+          <option value="">— само администратори —</option>
+          <% roles.forEach(function (r) { %><option value="<%= r.id %>" <%= settings.commandRoleId === r.id ? 'selected' : '' %>><%= r.name %></option><% }) %>
+        </select>
+      </label>
+    </div>
+    <p class="muted small"><code>/infosemki</code> е видима за всички в сървъра.</p>
+  </section>
+
+  <section class="card">
+    <h2>Часови прозорец за тагване</h2>
+    <p class="muted small">Извън прозореца ботът не тагва; праг, минат през нощта, се пингва в началото на прозореца. Може и през полунощ (напр. 18:00–02:00).</p>
+    <div class="grid">
+      <label class="check"><input type="checkbox" name="quietEnabled" value="on" <%= settings.quietEnabled ? 'checked' : '' %>> Тагвай само в прозореца</label>
+      <label>От <input type="time" name="windowStart" value="<%= settings.windowStart %>" required></label>
+      <label>До <input type="time" name="windowEnd" value="<%= settings.windowEnd %>" required></label>
+      <label>Часова зона
+        <select name="timezone" required>
+          <% timezones.forEach(function (tz) { %><option value="<%= tz %>" <%= settings.timezone === tz ? 'selected' : '' %>><%= tz %></option><% }) %>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <button type="submit" class="btn">Запази настройките</button>
+</form>
+
+<section class="card">
+  <h2>Права на бота в Discord</h2>
+  <p class="small">За тагване ботът има нужда от <strong>View Channel</strong> и <strong>Send Messages</strong> в канала. Ролята за тагване трябва да е „Allow anyone to @mention this role“ — или ботът да има <strong>Mention @everyone, @here, and All Roles</strong>. Проверка: бутонът „Пробно съобщение“ в <a href="/alerts">Известия</a>.</p>
+</section>
+<%- include('partials/foot') %>

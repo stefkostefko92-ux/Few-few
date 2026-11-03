@@ -1,0 +1,50 @@
+# Semki Bot
+
+Discord бот, който следи трайността на семките във FiveM сървъра, показва колко време им остава и
+тагва роля в канал, когато партида стигне праг. Малък дашборд на `https://vps2.carbonstealth.eu` с
+вход през Discord.
+
+## Какво прави
+
+- Семките започват от 100% и падат с **0,6% на 60 минути** (100% → 0% за 166 ч 40 мин). Скоростта
+  се сменя за всеки вид от дашборда.
+- Въвеждане с команди — всяка добавя **нова партида**:
+  `/amnesia брой дюрейшън` · `/ak …` · `/ogkush …` · `/purple …` · `/skunk …`
+  (`брой` 1–100000, `дюрейшън` = текущият % от 0 до 100, напр. 87.4).
+- `/infosemki [вид]` — всички партиди: % трайност, оставащо време, кога изтичат. Видима за всички.
+- `/iztriisemki партида` — трие партида (автокомплийт по номер и вид).
+- Известия (от дашборда): правило = вид или всички + **праг в %** (при ≤ X%) или **оставащо време**
+  (X часа до 0%) + канал + роля. Всяко правило тагва ролята най-много веднъж за партида.
+- **Часови прозорец** (по избор): тагване само между напр. 10:00 и 23:00; минатото през нощта се
+  тагва в началото на прозореца.
+- Права: дашбордът — ролята от „Настройки“; командите за добавяне/триене — друга роля от „Настройки“.
+  Собственикът на сървъра и Administrator имат достъп винаги.
+
+## Настройка в Discord (веднъж)
+
+1. https://discord.com/developers/applications → **New Application**.
+2. **Bot** → Reset Token (за `.env`). Привилегировани intents не са нужни.
+3. **OAuth2** → Client Secret (за `.env`) и **Redirects**: `https://vps2.carbonstealth.eu/auth/callback`.
+4. Покана на бота: **OAuth2 → URL Generator** → scopes `bot` + `applications.commands`; права
+   `View Channels`, `Send Messages`, `Mention Everyone` (за да тагва роли, които не са „mentionable“).
+5. Server ID: Discord → Settings → Advanced → Developer Mode, после десен клик върху сървъра → Copy Server ID.
+
+Деплой на VPS-а → [DEPLOY.md](DEPLOY.md).
+
+## Разработка
+
+```bash
+cd semki
+npm ci
+cp .env.example .env      # попълни; DATABASE_URL към локален PostgreSQL
+npx prisma migrate deploy
+npm run dev
+npm run check             # гейтът: prettier + typecheck + тестове + build
+TEST_DATABASE_URL=postgresql://…/semki_test npm run test:integration
+```
+
+Структура и спецификация → [CLAUDE.md](CLAUDE.md).
+
+---
+
+Created and Designed by [Carbon Stealth VCC](https://carbonstealth.eu)

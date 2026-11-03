@@ -1,0 +1,61 @@
+{
+  "name": "semki",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Semki Bot by Carbon Stealth VCC — Discord бот, който следи изтичането на семките във FiveM сървър и тагва роля при праг, с малък дашборд с вход през Discord.",
+  "license": "UNLICENSED",
+  "author": "Carbon Stealth VCC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefkostefko92-ux/Few-few.git",
+    "directory": "semki"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "Carbon Stealth",
+    "FiveM",
+    "Discord бот",
+    "семки",
+    "известия за изтичане",
+    "seed durability"
+  ],
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/index.ts",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
+    "check": "prisma generate && npm run format:check && npm run typecheck && npm test && npm run build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "prettier --check .",
+    "test": "tsx --test tests/*.test.ts",
+    "test:integration": "tsx --test --test-concurrency=1 tests/integration/*.test.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.3",
+    "cookie-parser": "1.4.7",
+    "discord.js": "14.27.0",
+    "ejs": "6.0.1",
+    "express": "5.3.0",
+    "express-rate-limit": "7.5.1",
+    "helmet": "8.3.0",
+    "jose": "6.2.12",
+    "pino": "9.14.0",
+    "prisma": "6.19.3",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "1.4.10",
+    "@types/ejs": "3.1.5",
+    "@types/express": "5.0.6",
+    "@types/node": "22.20.5",
+    "prettier": "3.9.9",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}

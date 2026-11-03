@@ -1,0 +1,90 @@
+<%- include('partials/head') %>
+<h1>Семки</h1>
+
+<section class="card">
+  <h2>Нова партида</h2>
+  <form method="post" action="/batches" class="row">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <label>Вид
+      <select name="seedTypeKey" required>
+        <% types.forEach(function (t) { %><option value="<%= t.key %>"><%= t.label %></option><% }) %>
+      </select>
+    </label>
+    <label>Брой
+      <input type="number" name="count" min="1" max="100000" step="1" required inputmode="numeric">
+    </label>
+    <label>Трайност, %
+      <input type="text" name="percent" required inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" placeholder="напр. 87,4">
+    </label>
+    <button type="submit" class="btn">Добави</button>
+  </form>
+  <p class="muted small">Същото като <code>/amnesia брой дюрейшън</code> в Discord. Всяко добавяне е нова партида.</p>
+</section>
+
+<section class="card">
+  <div class="head-row">
+    <h2>Партиди <small><%= rows.length %></small></h2>
+    <% if (rows.some(function (r) { return r.expired; })) { %>
+    <form method="post" action="/batches/delete-expired">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button type="submit" class="btn ghost">Изтрий изтеклите</button>
+    </form>
+    <% } %>
+  </div>
+  <% if (rows.length === 0) { %>
+  <p class="muted">Няма въведени семки.</p>
+  <% } else { %>
+  <ul class="batches">
+    <% rows.forEach(function (r) { %>
+    <li class="batch <%= r.level %><%= r.expired ? ' expired' : '' %>">
+      <div class="b-main">
+        <span class="id">#<%= r.id %></span>
+        <strong><%= r.typeLabel %></strong>
+        <span class="count">×<%= r.count %></span>
+        <span class="pct"><%= r.percentText %></span>
+      </div>
+      <progress max="100" value="<%= r.percent.toFixed(2) %>" aria-label="Трайност <%= r.percentText %>"></progress>
+      <div class="b-meta">
+        <span><%= r.expired ? 'Изтекла' : 'Остават ' + r.leftText %></span>
+        <span>изтича <%= r.expiresText %></span>
+        <span class="muted">въведена от <%= r.createdByName %> (<%= r.sourceText %>), <%= r.createdText %></span>
+      </div>
+      <details>
+        <summary>Редакция</summary>
+        <form method="post" action="/batches/<%= r.id %>" class="row">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <label>Брой <input type="number" name="count" min="1" max="100000" step="1" value="<%= r.count %>" required></label>
+          <label>Трайност сега, % <input type="text" name="percent" inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" value="<%= r.percentInput %>" required></label>
+          <button type="submit" class="btn">Запази</button>
+        </form>
+        <form method="post" action="/batches/<%= r.id %>/delete" class="inline">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <button type="submit" class="btn danger">Изтрий партидата</button>
+        </form>
+      </details>
+    </li>
+    <% }) %>
+  </ul>
+  <% } %>
+  <p class="muted small">Часовете са в зона <%= timezone %>.</p>
+</section>
+
+<section class="card">
+  <h2>Скорост на спада</h2>
+  <p class="muted small">Новата скорост важи от момента на запазване; текущите проценти на партидите се пазят.</p>
+  <div class="types">
+    <% types.forEach(function (t) { %>
+    <form method="post" action="/types/<%= t.key %>" class="type">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <h3><%= t.label %> <small><%= t.totalCount %> бр. в <%= t.batchCount %> партиди</small></h3>
+      <p class="muted small"><%= t.rateText %> · <%= t.fullText %></p>
+      <div class="row">
+        <label>Спад, % <input type="text" name="decayPercent" inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" value="<%= t.decayPercentInput %>" required></label>
+        <label>на минути <input type="number" name="decayMinutes" min="1" max="10080" step="1" value="<%= t.decayMinutes %>" required></label>
+        <button type="submit" class="btn ghost">Запази</button>
+      </div>
+    </form>
+    <% }) %>
+  </div>
+</section>
+<%- include('partials/foot') %>
