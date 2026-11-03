@@ -50,50 +50,6 @@ export function sectionLessons(txt, which) {
 
 export const countVerifiedText = (txt) => sectionLessons(txt, "verified").length;
 
-// Продължение на поука: непразен ред, който не е нов булет и не е заглавие.
-const isContinuation = (ln) => ln.trim() !== "" && !/^\s*-\s/.test(ln) && !/^\s*#/.test(ln);
-
-/**
- * Поуките като ЦЕЛИ блокове: булетът + продълженията му, слепени с интервал (31.10.2026).
- * За ЧЕТЕНЕ (зареждане при старт, извличане, мерене). `sectionLessons` остава ред-по-ред, защото
- * синхронизацията на клона agents/memory сравнява и дописва редове.
- */
-export function sectionBlocks(txt, which) {
-  const want = which === "verified" ? /verified|Проверени поуки/i : /Карантина/i;
-  const lines = String(txt || "").split("\n");
-  let inSec = false;
-  const out = [];
-  for (let i = 0; i < lines.length; i++) {
-    const ln = lines[i];
-    if (/^##\s/.test(ln)) { inSec = want.test(ln); continue; }
-    if (!inSec || !/^\s*-\s+\*\*/.test(ln)) continue;
-    let block = ln.trimEnd();
-    while (i + 1 < lines.length && isContinuation(lines[i + 1])) block += " " + lines[++i].trim();
-    out.push(block);
-  }
-  return out;
-}
-
-/** Данните: всяка поука (проверена и в Карантина) на един ред. Сменя само празното място. */
-export function unwrapLessons(md) {
-  const lines = String(md).split("\n");
-  const out = [];
-  let inSec = false, joined = 0;
-  for (let i = 0; i < lines.length; i++) {
-    const ln = lines[i];
-    if (/^##\s/.test(ln)) inSec = /Проверени поуки|Карантина/i.test(ln);
-    if (inSec && /^\s*-\s+\*\*/.test(ln) && i + 1 < lines.length && isContinuation(lines[i + 1])) {
-      let block = ln.trimEnd();
-      while (i + 1 < lines.length && isContinuation(lines[i + 1])) block += " " + lines[++i].trim();
-      out.push(block);
-      joined++;
-      continue;
-    }
-    out.push(ln);
-  }
-  return { md: out.join("\n"), joined };
-}
-
 /** Текстът на поуката без датата и мета-опашката `_(…)_`. */
 export function lessonText(line) {
   let s = String(line).replace(/^\s*-\s+\*\*[^*]*\*\*\s*/, "").trimEnd();
@@ -103,33 +59,8 @@ export function lessonText(line) {
   return s.trim();
 }
 
-// Маркерите, които пресверката и кураторът слагат ПРЕД текста (tools/memory/promote.mjs):
-// „ОПРОВЕРГАНА <дата> (бележка) — “, „ДУБЪЛ на <id> <дата> (…) — “, „ПРЕМЕСТЕНА при <агент> <дата> (…) — “.
-const MARKER = /^(?:ОПРОВЕРГАНА|ДУБЪЛ на \S+|ПРЕМЕСТЕНА при \S+) \d{4}-\d{2}-\d{2}/;
-
-/** Текстът без маркерите отпред. Бележката може да съдържа скоби и „ — “, затова скобата се брои. */
-export function stripMarkers(text) {
-  let s = String(text);
-  for (let m = MARKER.exec(s); m; m = MARKER.exec(s)) {
-    let i = m[0].length;
-    if (s[i] === " " && s[i + 1] === "(") {
-      let depth = 0, j = i + 1;
-      for (; j < s.length; j++) { if (s[j] === "(") depth++; else if (s[j] === ")" && --depth === 0) break; }
-      if (j >= s.length) return s;           // незатворена скоба → не режем на сляпо
-      i = j + 1;
-    }
-    if (s.slice(i, i + 3) !== " — ") return s;
-    s = s.slice(i + 3);
-  }
-  return s;
-}
-
-/**
- * Ключ за „почти същата" поука: текстът без дата/мета и без маркерите, първите 80 нормализирани знака.
- * Маркерът не е част от поуката (02.11.2026): с него опровергана поука не съвпадаше с повторно
- * уловеното ѝ копие и то влизаше пак — една поука на Продавача стоеше три пъти, опровергана три пъти.
- */
-export const bodyKey = (line) => norm(stripMarkers(lessonText(line))).slice(0, 80);
+/** Ключ за „почти същата" поука: текстът без дата/мета, първите 80 нормализирани знака. */
+export const bodyKey = (line) => norm(lessonText(line)).slice(0, 80);
 
 /** Индекс на всичко, което вече е в текста (точно + по тяло) — за дедуп. */
 export function lessonIndex(...texts) {
@@ -159,31 +90,6 @@ export function addLessons(txt, { verified = [], quarantine = [] } = {}) {
     out = insertUnder(out, heading, added[which]);
   }
   return { txt: out, added };
-}
-
-const BULLET = /^\s*-\s+\*\*/;
-
-/**
- * Тристранно сливане на файл с памет по ПОУКИ (02.11.2026). Започва от `ours` и прилага промените на `theirs`
- * спрямо общия предшественик `base`: първо махнатите там редове (курация, промоция от Карантина, стария вид на
- * опровергана поука), после добавените (без дубли — точни или по тяло, през маркерите).
- *
- * Защо: сгъването на main взимаше дървото на main и пренасяше само ДОБАВЕНИТЕ в клона на паметта редове —
- * всяка редакция в agents/memory се губеше. Измерено: от 1177 нови обхвата във върха бяха останали 9.
- * Симетрично е за поуките: редакция от която и да е страна оцелява; при редакция и от двете страни на един
- * ред печели `ours` (другата версия е със същото тяло и дедупът я отхвърля).
- */
-export function mergeLessons3(baseTxt, oursTxt, theirsTxt) {
-  const lines = (t) => String(t || "").split("\n").filter((l) => BULLET.test(l)).map((l) => l.trimEnd());
-  const baseSet = new Set(lines(baseTxt));
-  const theirsSet = new Set(lines(theirsTxt));
-  const removed = new Set([...baseSet].filter((l) => !theirsSet.has(l)));
-  let out = String(oursTxt || "").split("\n").filter((l) => !(BULLET.test(l) && removed.has(l.trimEnd()))).join("\n");
-  const added = {
-    verified: sectionLessons(theirsTxt, "verified").filter((l) => !baseSet.has(l.trimEnd())),
-    quarantine: sectionLessons(theirsTxt, "quarantine").filter((l) => !baseSet.has(l.trimEnd())),
-  };
-  return addLessons(out, added).txt;
 }
 
 // ─── Таблото: версии и еволюция ────────────────────────────────────────────────────────────

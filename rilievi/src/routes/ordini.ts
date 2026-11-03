@@ -3,7 +3,7 @@ import { config } from '../config.js';
 import { requireCapability } from '../auth/guards.js';
 import { pdfLimiter } from '../http/limits.js';
 import { renderModulo } from '../ordini/pdf.js';
-import { campoCheApre, sceltoNellaScheda, SLOTS } from '../ordini/registry.js';
+import { sceltoNellaScheda, SLOTS } from '../ordini/registry.js';
 import { storedValori } from '../ordini/valori.js';
 import { getScheda } from '../schede/service.js';
 import { notFound, scope } from './schede-shared.js';
@@ -25,14 +25,12 @@ for (const slot of SLOTS) {
       String(req.params.id),
       scope(req, 'schede:trash'),
     );
-    // Записаната карта пази само видимото: „Sì“ (или отметката, която отваря модула) значи видимо поле;
-    // слотът с предимство го затваря.
-    const valueOf = (key: string): unknown => (scheda ? scheda[key as keyof typeof scheda] : null);
+    // Записаната карта пази само видимото: „Sì“ значи видим въпрос; слотът с предимство го затваря.
     if (
       !scheda ||
-      campoCheApre(slot, valueOf) === undefined ||
+      scheda[slot.question] !== true ||
       (slot.cede && scheda[slot.cede] === true) ||
-      !sceltoNellaScheda(slot, valueOf)
+      !sceltoNellaScheda(slot, (key) => scheda[key as keyof typeof scheda])
     ) {
       return notFound(req, res);
     }

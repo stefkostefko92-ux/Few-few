@@ -2,7 +2,7 @@
   // Модулът на доставчика (src/ordini/, assets/moduli/*.json) — същите полета в същия ред като на
   // хартията, за да излезе в неговия оригинален PDF. Етикетите са дословно от модула (италиански) и не
   // се превеждат. Отваря се при своята марка (и модел — Mastech, и вид на уредбата — Elettroquadri) и „Sì“
-  // на въпроса над него (обвивки с data-when — таблото има осем модула под един въпрос); data-prefill —
+  // на въпроса над него (обвивки с data-when — таблото има седем модула под един въпрос); data-prefill —
   // попълване от огледа
   // (moduli.js); data-auto — поле, попълнено от огледа, от картата, от другия модул или със стойността на
   // празния модул: следва източника си, докато човекът не пише в него (moduli.js, collegati.js);
@@ -24,14 +24,10 @@
   // Отворен само ако и въпросът се вижда — иначе „Sì“ е остатък от друга марка; и ако слотът с
   // предимство в колоната не е отворен (2SG при автоматични: „Sospensioni: Sì“ — листът е неговият).
   const ceduto = slot.cede && active.has(slot.cede) && values[slot.cede] === 'si';
-  // Отваря го „Sì“ на въпроса, а AMI 100 Mono RTBS — отметката в списъка на ямата или на горното
-  // пространство (`apertura`, registry.ts): стига едното видимо поле с нея.
-  const apre = slot.apertura ? slot.apertura.valore : 'si';
-  const campiApre = [slot.question].concat(slot.apertura ? slot.apertura.anche : []);
-  const on = campiApre.some((f) => active.has(f) && (Array.isArray(values[f]) ? values[f].includes(apre) : values[f] === apre));
+  const on = active.has(slot.question) && values[slot.question] === 'si';
 %><% if (slot.cede) { %><div class="field--wide" data-when="<%= slot.cede %>" data-when-values="si" data-when-not<% if (ceduto) { %> data-off<% } %>><% } %><div class="field--wide"<% if (marca) { %> data-when="<%= marca.field %>" data-when-values="<%= marca.value %>"<% } %><% if (off(marca)) { %> data-off<% } %>>
 <% for (const c of [modello, impianto]) if (c) { %><div data-when="<%= c.field %>" data-when-values="<%= c.value %>"<% if (off(c)) { %> data-off<% } %>><% } %>
-<div class="modulo" id="f-<%= slot.prefix %>" data-when="<%= slot.question %>"<% if (slot.apertura) { %> data-when-also="<%= slot.apertura.anche.join(' ') %>"<% } %> data-when-values="<%= apre %>"<% if (!on) { %> data-off<% } %> data-modulo data-gemelli="<%= slot.column %>:<%= slot.modulo.id %>">
+<div class="modulo" id="f-<%= slot.prefix %>" data-when="<%= slot.question %>" data-when-values="si"<% if (!on) { %> data-off<% } %> data-modulo data-gemelli="<%= slot.column %>:<%= slot.modulo.id %>">
   <input type="hidden" name="<%= slot.prefix %>-_" value="1">
   <div class="modulo__head">
     <p class="modulo__title"><strong><%= slot.modulo.titolo %></strong><% if (slot.modulo.fornitore) { %> · <%= slot.modulo.fornitore %><% } %></p>

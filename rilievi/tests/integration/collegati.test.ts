@@ -184,7 +184,6 @@ describe('data the sheet and the orders share', () => {
       'preventivoArgano',
       'ordineSospensioni',
       'ordineAmi',
-      'ordineBottoniere',
     ]);
     const print = await browser.get(`/schede/${id}/stampa`);
     assert.match(print.body, /Modulo d&#39;ordine quadri · Pelazza Peppino/);

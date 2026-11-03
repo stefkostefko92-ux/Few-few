@@ -298,9 +298,7 @@ cron.schedule("* * * * *", job("giveaway-autoend", async () => {
     const { notifyBot } = await import("./botNotifier.js");
     for (const g of due) {
       const winners = pickRandom(g.entries, g.winnerCount).map(e => e.userId);
-      // Условен запис: ако ръчен /giveaway end вече го е приключил, не обявяваме втори път.
-      const won = await prisma.giveaway.updateMany({ where: { id: g.id, endedAt: null }, data: { endedAt: new Date(), winnerIds: winners } });
-      if (won.count === 0) continue;
+      await prisma.giveaway.update({ where: { id: g.id }, data: { endedAt: new Date(), winnerIds: winners } });
       await notifyBot("GIVEAWAY_ENDED", { serverId: g.serverId, giveawayId: g.id, channelId: g.channelId, messageId: g.messageId, prize: g.prize, winners }).catch(()=>{});
     }
   } catch (err) { await jobFail("giveaway-autoend", err); }

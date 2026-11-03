@@ -94,19 +94,13 @@
       "funiSostituzione": "Funi nuove (sostituzione)",
       "funiNumero": "Numero funi",
       "fune": "Fune",
-      "funeCordatura": "Cordatura",
       "altroD": "Diametro fune (mm)",
       "altroSezione": "Sezione fune (mm²)",
       "altroRottura": "Carico di rottura minimo (N)",
       "altroMassa": "Massa lineare (kg/m)",
-      "altroTrefoli": "Numero trefoli",
-      "altroFormazione": "Formazione",
-      "altroClasse": "Classe di resistenza dei fili (N/mm²)",
       "compensazione": "Compensazione",
       "compNumero": "Numero funi o catene",
       "compMisura": "Misura (mm)",
-      "compAltroD": "Misura fune o catena (mm)",
-      "compAltroMassa": "Massa lineare (kg/m)",
       "compMetaCorsa": "Catene da metà corsa al contrappeso",
       "massaTenditore": "Massa tenditore (kg)",
       "diametroTenditore": "Diametro puleggia tenditore (mm)",
@@ -116,17 +110,13 @@
       "velocita": "Quella dell'impianto prima della modifica: la nuova velocità si confronta con questa.",
       "giriMotore": "Per 1 o 2 velocità: la velocità dopo la modifica si calcola dai giri.",
       "velocitaVvvf": "Con inverter: dai giri e dalla frequenza necessari per questa velocità.",
-      "rapporto": "Ad esempio 1 : 50 oppure 2 : 53.",
+      "rapporto": "Ad esempio 1\u00a0:\u00a050 oppure 2\u00a0:\u00a053.",
       "angoloGola": "Cuneo: angolo γ della gola. Semicircolare: angolo β dell'intaglio.",
       "funiSostituzione": "Cambia il coefficiente di attrito per le gole semicircolari, come nella relazione tecnica.",
       "decelerazioneRidotta": "Come nella relazione tecnica, solo se l'aderenza non è verificata con la decelerazione normale.",
-      "altro": "Per una fune che non è nelle tabelle TELCAL e DONATI.",
-      "funeCordatura": "Crociata o parallela (Lang), destra o sinistra: le tabelle non la indicano.",
-      "altroFormazione": "Ad esempio 8×19 Seale + FC.",
-      "altroClasse": "Ad esempio 1570 oppure 1370/1770.",
-      "compAltro": "Solo per una fune o una catena di compensazione che non è nelle tabelle della relazione tecnica.",
+      "altro": "Solo per una fune che non è nelle tabelle TELCAL e DONATI.",
       "gola": "Con gola semicircolare senza intaglio e funi solo verificate la relazione tecnica non ha una formula per l'attrito: l'aderenza risulta non verificata.",
-      "compMisura": "Dalle tabelle della relazione tecnica, catene o funi secondo la compensazione scelta. Se non c'è, scegli «Altra misura» e scrivi i dati qui sotto.",
+      "compMisura": "Dalle tabelle della relazione tecnica: catene o funi, secondo la compensazione scelta.",
       "motoreVvvf": "1000 rpm: motore a 6 poli. 1500 rpm: a 4 poli."
     },
     "opzione": {
@@ -156,15 +146,6 @@
       "fune": {
         "altro": "Altra fune (dati a mano)"
       },
-      "cordatura": {
-        "sZ": "Crociata destra (sZ)",
-        "zS": "Crociata sinistra (zS)",
-        "zZ": "Parallela (Lang) destra (zZ)",
-        "sS": "Parallela (Lang) sinistra (sS)"
-      },
-      "compMisura": {
-        "altro": "Altra misura (dati a mano)"
-      },
       "compensazione": {
         "nessuna": "Nessuna",
         "catene": "Catene",
@@ -176,9 +157,7 @@
       "decimal": "Inserisci un numero, ad esempio 6,5.",
       "range": "Inserisci un valore tra {min} e {max}.",
       "option": "Scelta non valida.",
-      "integer": "Inserisci un numero intero.",
-      "tooLong": "Testo troppo lungo: al massimo 40 caratteri.",
-      "classe": "Scrivi la classe in N/mm², ad esempio 1570 oppure 1370/1770."
+      "integer": "Inserisci un numero intero."
     },
     "flash": {
       "salvato": "Calcolo argano salvato."
@@ -198,13 +177,7 @@
       "funi": "Funi di trazione",
       "fune": "Fune",
       "numeroFuni": "Numero funi (almeno 2)",
-      "costruttore": "Costruttore",
       "diametroFune": "Diametro fune (almeno 8 mm)",
-      "formazione": "Formazione",
-      "trefoli": "Numero trefoli",
-      "classe": "Classe di resistenza dei fili",
-      "cordatura": "Cordatura",
-      "sezione": "Sezione della fune",
       "rottura": "Carico di rottura minimo",
       "massaFuni": "Massa delle funi di trazione",
       "caricoTotale": "Carico totale sulle funi",
@@ -214,7 +187,6 @@
       "diametroMinimo": "Diametro minimo della puleggia (40 × d)",
       "rapportoDiametri": "Rapporto D/d (almeno 40)",
       "compensazione": "Compensazione",
-      "compMassaLineare": "Massa lineare della compensazione",
       "compCabina": "Massa della compensazione con la cabina in alto",
       "compContrappeso": "Massa della compensazione con il contrappeso in alto",
       "compDiametri": "Rapporto D/d della compensazione (almeno 30)",
@@ -231,8 +203,7 @@
       "velocitaFuni": "Velocità delle funi",
       "caricoStatico": "Carico statico massimo",
       "p": "Pressione specifica",
-      "pLim": "Pressione limite (12,5 + 4 v) / (1 + v)",
-      "datiAMano": "Dati a mano"
+      "pLim": "Pressione limite (12,5 + 4 v) / (1 + v)"
     },
     "esito": {
       "velocita": {
@@ -255,16 +226,6 @@
         "ok": "Pressione specifica entro il limite.",
         "no": "Pressione specifica oltre il limite: serve una puleggia più grande o più funi."
       }
-    },
-    "scheda": {
-      "titolo": "Caratteristiche della fune scelta",
-      "formazione": "Formazione",
-      "trefoli": "Numero trefoli",
-      "classe": "Classe di resistenza dei fili",
-      "sezione": "Sezione",
-      "rottura": "Carico di rottura minimo",
-      "massa": "Massa lineare",
-      "nota": "Dalle tabelle della relazione tecnica RT-E MOD."
     }
   }
 }

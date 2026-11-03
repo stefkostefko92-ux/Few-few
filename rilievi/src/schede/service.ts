@@ -64,7 +64,6 @@ function persisted(
     preventivoArgano,
     ordineSospensioni,
     ordineAmi,
-    ordineBottoniere,
     ...fields
   } = data;
   return {
@@ -74,7 +73,6 @@ function persisted(
     preventivoArgano: preventivoArgano ?? Prisma.DbNull,
     ordineSospensioni: ordineSospensioni ?? Prisma.DbNull,
     ordineAmi: ordineAmi ?? Prisma.DbNull,
-    ordineBottoniere: ordineBottoniere ?? Prisma.DbNull,
     searchText: searchTextOf(fields),
   };
 }

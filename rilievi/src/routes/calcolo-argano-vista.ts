@@ -2,7 +2,6 @@ import type { Request, Response } from 'express';
 import { calcolaArgano } from '../argano/calcolo.js';
 import type { ValoriForm } from '../argano/da-scheda.js';
 import { limiteDi, type DatiArgano, type ErroriArgano } from '../argano/dati.js';
-import { CORDATURE, datiFune, etichettaFune } from '../argano/fune.js';
 import type { ErroriImpianto, ValoriImpianto } from '../argano/impianto.js';
 import { renderCalcoloArgano } from '../argano/pdf.js';
 import { righeRisultato } from '../argano/righe.js';
@@ -76,14 +75,6 @@ export const valoriDalBody = (body: Record<string, unknown>): ValoriForm =>
     ),
   );
 
-/** Въжетата от таблиците за избора: група по производител, кратък надпис, данните за картата под него. */
-const FUNI_SCELTA = FUNI.map((f) => ({
-  id: f.id,
-  marca: f.marca,
-  etichetta: etichettaFune(f),
-  dati: datiFune(f),
-}));
-
 export function renderCalcolo(res: Response, status: number, vista: VistaCalcolo): void {
   const t = res.locals.t as T;
   const dati = vista.salvato?.dati ?? null;
@@ -100,8 +91,7 @@ export function renderCalcolo(res: Response, status: number, vista: VistaCalcolo
     // При грешки или конфликт записаните резултати не отговарят на формата — не се показват.
     sezioni:
       dati && senzaErrori && !vista.conflitto ? righeRisultato(calcolaArgano(dati), dati, t) : [],
-    funi: FUNI_SCELTA,
-    cordature: CORDATURE,
+    funi: FUNI,
     catene: CATENE,
     funiCompensazione: FUNI_COMPENSAZIONE,
     limiteDi,

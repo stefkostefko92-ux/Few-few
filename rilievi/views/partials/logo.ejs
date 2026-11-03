@@ -1,6 +1,0 @@
-<%#
-  Пълното лого на собственика (1 ноември 2026): марката, „RILIEVI IMPIANTI“ и „PIATTAFORMA TECNICA
-  ASCENSORI“ (scripts/logo/originals/logo.png → `npm run brand:logo`). Само там, където е достатъчно голямо,
-  за да се чете и последният ред: входът, първият екран и долната част на витрината. `classe` — мястото
-  (ширината е в CSS), `sizes` — ширината му за браузъра, `pigro` — под първия екран (loading="lazy").
-%><% const larghezze = [360, 520, 720, 900, 1320]; %><img class="logo<%= locals.classe ? ' ' + classe : '' %>" src="/static/img/brand/logo-720.webp?v=<%= v %>" srcset="<%= larghezze.map((w) => `/static/img/brand/logo-${w}.webp?v=${v} ${w}w`).join(', ') %>" sizes="<%= locals.sizes || '360px' %>" width="720" height="267" alt="<%= t('app.logo') %>"<% if (locals.pigro) { %> loading="lazy"<% } %> decoding="async">

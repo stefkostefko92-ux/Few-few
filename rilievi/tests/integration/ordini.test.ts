@@ -113,14 +113,14 @@ describe('supplier forms', () => {
       ...SURVEY,
       ...ORDERS,
       // A make without an order form: the question is not asked any more.
-      quadroMarca: 'ALTRO',
+      quadroMarca: 'DMG',
       arganoPreventivo: 'no',
       sospensioni: 'no',
       base,
     });
     assert.equal(saved.status, 303);
     const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
-    assert.equal(row.quadroMarca, 'ALTRO');
+    assert.equal(row.quadroMarca, 'DMG');
     assert.equal(row.quadroOrdine, null);
     assert.equal(row.ordineQuadro, null);
     assert.equal(row.arganoPreventivo, false);

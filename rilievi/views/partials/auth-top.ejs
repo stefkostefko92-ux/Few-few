@@ -1,10 +1,10 @@
 <%- include('top', { bare: true }) %>
 <div class="auth">
   <aside class="auth__panel" aria-label="Carbon Stealth VCC">
-    <div class="auth__brand">
-      <a class="auth__home" href="<%= landingPath %>"><%- include('logo', { classe: 'auth__logo', sizes: '(max-width: 899px) min(calc(100vw - 32px), 340px), 400px' }) %></a>
-      <p class="auth__by"><%= t('site.by') %></p>
-    </div>
+    <a class="auth__brand" href="<%= landingPath %>">
+      <%- include('brandmark') %>
+      <span class="auth__brandtext"><span class="auth__name">Carbon Stealth VCC</span><span class="auth__product"><%= t('app.product') %></span></span>
+    </a>
     <div class="auth__drawing"><%- include('../site/_shaft', { markers: false }) %></div>
     <p class="auth__rule"><%= t('auth.inviteOnly') %></p>
   </aside>

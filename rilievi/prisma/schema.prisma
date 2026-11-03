@@ -321,8 +321,6 @@ model Scheda {
   ubicazioneMacchina           UbicazioneMacchina[]
   /// Къде е кутийката — свободен текст (до октомври 2026 беше цяло число: етажът).
   ubicazioneCassettina         String?                  @db.VarChar(120)
-  /// „Note locale macchina“ — под мястото на машинното (3 ноември 2026).
-  noteLocaleMacchina           String?
   parcheggio                   String?                  @db.VarChar(300)
   tipoImpianto                 TipoImpianto[]
   tipoPorte                    TipoPorte[]
@@ -365,9 +363,6 @@ model Scheda {
   funiDiametroMm               Decimal?                 @db.Decimal(6, 2)
   funiTrefoli                  Int?
   funiNumero                   Int?
-  /// Колко от въжетата са отдясно и колко отляво (3 ноември 2026); общият брой остава в `funiNumero`.
-  funiDx                       Int?
-  funiSx                       Int?
   funiLunghezzaM               Decimal?                 @db.Decimal(8, 2)
   /// Тирантите на въжетата („Funi e tiranti“) — брой и вид за кабината и за противотежестта; при
   /// хидравлична уредба противотежест няма — вторите са тирантите в ямата (`tirantiFossa*`).
@@ -400,11 +395,6 @@ model Scheda {
   /// Разделът „Bottoniere“ (24 октомври 2026): „Bottoniere da sostituire?“ — при true бележка на ръка.
   bottoniereSostituire         Boolean?
   bottoniereNote               String?
-  /// „Vuoi compilare la scheda ordine bottoniere DMG?“ — при „Bottoniere da sostituire: Sì“ (3 ноември
-  /// 2026); при true — модулът QF Fixtures на DMG.
-  bottoniereOrdine             Boolean?
-  /// Модулът за поръчка на бутониерите (DMG QF Fixtures): {modulo, valori}. Има свой PDF.
-  ordineBottoniere             Json?
   /// „Мерки на старите бутониери?“ — при true редовете са в MisuraBottoniera.
   bottoniereMisure             Boolean?
   misureBottoniere             MisuraBottoniera[]
@@ -421,19 +411,13 @@ model Scheda {
   /// Намалената яма и горното пространство — не при хидравлична уредба (от 24 октомври 2026).
   fossaRidotta                 Boolean?
   testataRidotta               Boolean?
-  /// Решенията при намалено горно пространство и при намалена яма (листът на собственика, 3 ноември
-  /// 2026); „AMI100_RTBS“ в който и да е от двата отваря листа на AMI 100 Mono RTBS.
-  testataInterventi            TestataIntervento[]
-  fossaInterventi              FossaIntervento[]
-  grembiuleNote                String?                  @db.VarChar(300)
-  /// „Installare AMI 100?“ и видът (30 октомври 2026) — махнати на 3 ноември 2026 (AMI 100 Mono RTBS е
-  /// отметка в списъците горе, без Mono UCM); пазят старите отговори, проверката не ги чете.
+  /// „Installare AMI 100?“ — при намалена яма или горно пространство (30 октомври 2026); при true — видът
+  /// (Mono UCM или Mono RTBS) и листът му с данните за поръчката.
   ami100                       Boolean?
   ami100Tipo                   Ami100Tipo?
-  /// Листът на AMI 100 Mono RTBS: {modulo, valori}. Има свой PDF.
+  /// Листът на AMI 100 (Mono UCM или Mono RTBS): {modulo, valori}. Има свой PDF.
   ordineAmi                    Json?
-  /// „Да попълня ли модула за поръчка на таблото?“ — при марките с модул (Pelazza, MoviLift, DMG, Mastech,
-  /// Elettroquadri).
+  /// „Да попълня ли модула за поръчка на таблото?“ — само при Pelazza.
   quadroOrdine                 Boolean?
   /// Модулът за поръчка на Pelazza: {modulo, valori} — ключовете са в assets/moduli/*.json. Има свой PDF.
   ordineQuadro                 Json?
@@ -494,26 +478,6 @@ model Scheda {
   tuboFlessibileDiametroMm     Decimal?                 @db.Decimal(8, 2)
   tuboFlessibileLunghezzaM     Decimal?                 @db.Decimal(8, 2)
   tuboFlessibileNote           String?
-  /// Централата по листовете на собственика (3 ноември 2026): при смяна — данните за новата; при „No“ —
-  /// кит A3 за централата, която остава (Hydronic или друга); накрая — бележките за фитингите и тръбите.
-  centralinaMotoreV            Int?
-  centralinaMotoreHp           Decimal?                 @db.Decimal(8, 2)
-  centralinaPompaLMin          Decimal?                 @db.Decimal(8, 2)
-  centralinaAvvio              CentralinaAvviamento?
-  centralinaTensioneValvole    String?                  @db.VarChar(40)
-  centralinaDiametroTubazione  String?                  @db.VarChar(40)
-  centralinaMarcaPistone       String?                  @db.VarChar(120)
-  centralinaDiametroStelo      Decimal?                 @db.Decimal(8, 2)
-  centralinaCorsaImpianto      Decimal?                 @db.Decimal(8, 2)
-  centralinaTipoPistone        TipoPistone?
-  centralinaLitriOlio          Decimal?                 @db.Decimal(10, 2)
-  centralinaInOpera            CentralinaInOpera?
-  kitA3Hydronic                KitA3Hydronic[]
-  kitA3TensioneBobine          String?                  @db.VarChar(40)
-  kitA3Valvola                 KitA3Valvola?
-  kitA3Altro                   KitA3Componente[]
-  kitA3Saracinesca             Saracinesca?
-  centralinaNoteRaccordi       String?
   centralinaDiscesaEmergenza   Boolean?
   centralinaOlioLivello        OlioLivello?
   centralinaOlioStato          OlioStato?
@@ -719,58 +683,6 @@ enum OlioStato {
   BUONO
   DA_SOSTITUIRE
   PERDITE
-}
-
-/// Решенията при намалено горно пространство (src/schede/field-options.ts).
-enum TestataIntervento {
-  PUNTONI_WW
-  AMI100_RTBS
-  SEMAFORO
-  PUNTONE_OKATT
-}
-
-/// Решенията при намалена яма.
-enum FossaIntervento {
-  AMI100_RTBS
-  SEMAFORO
-  GREMBIULE_3_STADI
-  PUNTONE_OKATT
-}
-
-enum TipoPistone {
-  IN_TAGLIA
-  DIRETTO
-}
-
-/// Централата, която остава (кит A3): Hydronic или друга.
-enum CentralinaInOpera {
-  HYDRONIC
-  ALTRO
-}
-
-enum KitA3Hydronic {
-  HSV_150_440_BIS
-  PRESSOSTATO
-  CONNETTORE
-}
-
-/// Вентилът на кита за друга централа — по дебита на помпата.
-enum KitA3Valvola {
-  HSV_150_BIS
-  HSV_440_BIS
-}
-
-enum KitA3Componente {
-  BOBINA_48_12
-  SARACINESCA
-  RACCORDO_MISTO
-  PRESSOSTATO
-}
-
-/// Шибърът 0611/HM-SV/AXI: ASS/2 (1" 1/4) или ASS/3 (1" 1/2).
-enum Saracinesca {
-  ASS_2
-  ASS_3
 }
 
 /// Частта от деня на интервенцията от хартиения лист: „Matt.“ / „Pom.“.

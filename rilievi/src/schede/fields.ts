@@ -8,16 +8,29 @@
  * `scheda.option.<key>.<СТОЙНОСТ>`, `scheda.question.<key>`; опциите — в field-options.ts.
  */
 
-import { TIPO_IMPIANTO, TIPO_PORTE, UBICAZIONE_MACCHINA } from './field-options.js';
+import {
+  AMI100_TIPO,
+  QUADRO_MARCA,
+  QUADRO_MODELLO,
+  TIPO_IMPIANTO,
+  TIPO_PORTE,
+  UBICAZIONE_MACCHINA,
+} from './field-options.js';
 import type { Condition, FieldDef, SectionDef, SectionKey } from './field-types.js';
 
 export * from './field-types.js';
 export * from './field-options.js';
 
-import { IDRAULICO, NON_IDRAULICO, PORTE_SCELTE, yes } from './field-conditions.js';
+import {
+  ALTRA,
+  IDRAULICO,
+  NON_IDRAULICO,
+  PORTE_SCELTE,
+  SPAZI_RIDOTTI,
+  yes,
+} from './field-conditions.js';
 import { SEZIONE_ARGANO } from './fields-argano.js';
 import { SEZIONE_CENTRALINA } from './fields-centralina.js';
-import { SEZIONE_QUADRO } from './fields-quadro.js';
 import { SEZIONE_SERRATURE } from './fields-serrature.js';
 
 export const SECTIONS = [
@@ -42,8 +55,6 @@ export const SECTIONS = [
     key: 'ubicazione',
     fields: [
       { key: 'ubicazioneMacchina', kind: 'checks', options: UBICAZIONE_MACCHINA },
-      // Сразу под мястото на машинното (собственикът, 3 ноември 2026).
-      { key: 'noteLocaleMacchina', kind: 'textarea', maxLength: 4000, wide: true },
       // Къде е кутийката — свободен текст („Piano -1, vano contatori“).
       { key: 'ubicazioneCassettina', kind: 'text', maxLength: 120 },
       { key: 'parcheggio', kind: 'text', maxLength: 300, wide: true },
@@ -62,7 +73,40 @@ export const SECTIONS = [
       { key: 'doppioAccesso', kind: 'yesno', risposte: ['no', 'si'], when: PORTE_SCELTE },
     ],
   },
-  SEZIONE_QUADRO,
+  {
+    // Таблото: сменя ли се (при No — контролът на челюстите в таблото, раздел „Argano“; 24 октомври
+    // 2026); марката (Mastech — и моделът); при Pelazza, MoviLift и Mastech — модулът им за поръчка
+    // (src/ordini/). Намалената яма и горното пространство — за таблото, не при хидравлична уредба (24
+    // октомври); бележките — след модула (октомври 2026).
+    key: 'quadro',
+    fields: [
+      { key: 'quadroSostituire', kind: 'yesno', question: true },
+      { key: 'quadroMarca', kind: 'choice', options: QUADRO_MARCA },
+      { key: 'quadroMarcaAltro', kind: 'text', maxLength: 120, when: ALTRA('quadroMarca') },
+      {
+        key: 'quadroModello',
+        kind: 'choice',
+        options: QUADRO_MODELLO,
+        when: { field: 'quadroMarca', values: ['MASTECH'] },
+      },
+      { key: 'fossaRidotta', kind: 'yesno', when: NON_IDRAULICO },
+      { key: 'testataRidotta', kind: 'yesno', when: NON_IDRAULICO },
+      // При намалена яма или горно пространство — AMI 100: Mono UCM или Mono RTBS, всеки със своя лист
+      // с данните за поръчката (src/ordini/; собственикът, 30 октомври 2026).
+      { key: 'ami100', kind: 'yesno', question: true, modulo: 'ordineAmi', when: SPAZI_RIDOTTI },
+      { key: 'ami100Tipo', kind: 'choice', options: AMI100_TIPO, when: yes('ami100') },
+      {
+        key: 'quadroOrdine',
+        kind: 'yesno',
+        wide: true,
+        question: true,
+        modulo: 'ordineQuadro',
+        // Марките с модул за поръчка (src/ordini/registry.ts — тестът пази съвпадението).
+        when: { field: 'quadroMarca', values: ['PELAZZA', 'MOVILIFT', 'MASTECH', 'ELETTROQUADRI'] },
+      },
+      { key: 'quadroNote', kind: 'textarea', maxLength: 4000, wide: true },
+    ],
+  },
   SEZIONE_ARGANO,
   SEZIONE_CENTRALINA,
   {
@@ -74,10 +118,6 @@ export const SECTIONS = [
       { key: 'funiDiametroMm', kind: 'decimal', min: 0, max: 100, unit: 'mm' },
       { key: 'funiTrefoli', kind: 'int', min: 0, max: 100 },
       { key: 'funiNumero', kind: 'int', min: 0, max: 100 },
-      // Колко от въжетата са отдясно и колко отляво (собственикът, 3 ноември 2026); общият брой остава —
-      // него чете и листът за аргано („N° funi“).
-      { key: 'funiDx', kind: 'int', min: 0, max: 100 },
-      { key: 'funiSx', kind: 'int', min: 0, max: 100 },
       { key: 'funiLunghezzaM', kind: 'decimal', min: 0, max: 10_000, unit: 'm' },
       { key: 'tirantiCabinaNumero', kind: 'int', min: 0, max: 100 },
       { key: 'tirantiCabinaTipo', kind: 'text', maxLength: 120 },
@@ -121,19 +161,11 @@ export const SECTIONS = [
   },
   {
     // „Bottoniere“ — избира се при нужда: „Bottoniere da sostituire?“ и бележка на ръка — винаги, и при
-    // „No“ (собственикът, 24 октомври 2026). При „Sì“ — модулът за поръчка на бутониерите на DMG (QF
-    // Fixtures; 2 ноември 2026). Бележката за бутониерите в работа и мерките на старите — в „Note e lavori“.
+    // „No“ (собственикът, 24 октомври 2026; засега само това). Бележката за бутониерите в работа и мерките
+    // на старите — в „Note e lavori“.
     key: 'bottoniere',
     fields: [
       { key: 'bottoniereSostituire', kind: 'yesno', question: true },
-      {
-        key: 'bottoniereOrdine',
-        kind: 'yesno',
-        wide: true,
-        question: true,
-        modulo: 'ordineBottoniere',
-        when: yes('bottoniereSostituire'),
-      },
       { key: 'bottoniereNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
@@ -177,17 +209,13 @@ export const SEARCHABLE = [
   'marca',
   'buonoLavoro',
   'parcheggio',
-  'noteLocaleMacchina',
-  'grembiuleNote',
   'quadroNote',
   'arganoTipo',
   'kitControlloGanasceTipo',
   'controlloQuadroTipo',
   'arganoNote',
   'centralinaMarca',
-  'centralinaMarcaPistone',
   'tuboFlessibileNote',
-  'centralinaNoteRaccordi',
   'centralinaNote',
   'tirantiCabinaTipo',
   'tirantiContrappesoTipo',

@@ -22,7 +22,6 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sectionBullets } from "./oversee-lib.mjs";
 import { emitJsonNow } from "../lib/emit.mjs";
-import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -209,4 +208,4 @@ async function main() {
   process.exit(hard || (STRICT && soft) ? 1 : 0);
 }
 
-if (isMain(import.meta.url)) await main();
+if (import.meta.url === `file://${process.argv[1]}`) await main();

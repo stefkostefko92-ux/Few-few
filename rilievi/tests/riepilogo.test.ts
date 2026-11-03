@@ -22,10 +22,8 @@ describe('the orders in the sheet print', () => {
     sospensioni: null,
     operatore: null,
     ordineSospensioni: null,
-    testataInterventi: [],
-    fossaInterventi: [],
-    bottoniereOrdine: null,
-    ordineBottoniere: null,
+    ami100: null,
+    ami100Tipo: null,
     ordineAmi: null,
   };
 
@@ -92,10 +90,8 @@ describe('each order chosen for the sheet print on its own', () => {
     sospensioni: true as boolean | null,
     operatore: null as boolean | null,
     ordineSospensioni: { modulo: SG.id, valori: { automatico: true } },
-    testataInterventi: [],
-    fossaInterventi: [],
-    bottoniereOrdine: null,
-    ordineBottoniere: null,
+    ami100: null,
+    ami100Tipo: null,
     ordineAmi: null,
   };
   const nomi = (scheda: typeof tutti) => riepilogoModuli(scheda).map((modulo) => modulo.nome);
@@ -130,7 +126,6 @@ describe('each order chosen for the sheet print on its own', () => {
       'preventivoArgano',
       'ordineSospensioni',
       'ordineAmi',
-      'ordineBottoniere',
     ]);
     assert.equal(nomi(tutti).length, 3);
   });
@@ -148,7 +143,6 @@ describe('each order chosen for the sheet print on its own', () => {
       'preventivoArgano',
       'ordineSospensioni',
       'ordineAmi',
-      'ordineBottoniere',
     ]);
     for (const forged of ['yes', 'constructor', ['ordineQuadro', 'note'], { a: 1 }]) {
       assert.equal(parse(forged).success, false, JSON.stringify(forged));

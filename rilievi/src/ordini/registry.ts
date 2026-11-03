@@ -1,8 +1,7 @@
 import {
   AMI_RTBS,
+  AMI_UCM,
   ARGANI,
-  DMG_FIXTURES,
-  DMG_PITAGORA,
   EQ_GEARED,
   EQ_GEARLESS,
   EQ_OLEO,
@@ -17,7 +16,7 @@ import {
 /**
  * Кой модул към кое поле на картата: марката, при която се отваря (ако модулът е на една марка),
  * колоната в базата (JSON), въпросът „Sì/No“ и префиксът на полетата му във формата. Пътят на PDF-а е
- * `/schede/:id/<path>`. Таблото има осем модула в една колона и под един въпрос — Pelazza, MoviLift, DMG,
+ * `/schede/:id/<path>`. Таблото има седем модула в една колона и под един въпрос — Pelazza, MoviLift,
  * двата на Mastech (NG120 и QI Touch — по втория избор, модела) и трите на Elettroquadri (по вида на
  * уредбата: електрическа — geared, MRL — gearless, хидравлична — oleodinamico); марката, моделът и
  * видът са по един, затова отворен е най-много единият. Листът с данни за аргано (за всеки вид аргано)
@@ -25,44 +24,27 @@ import {
  * da cambiare?“ при автоматични врати и „Operatore da cambiare?“ при автоматични и полуавтоматични — и
  * затова два слота (свой префикс и свой път на PDF-а) в една колона. Отворен е най-много единият: при
  * автоматични с „Sì“ и на двата листът е един — този на окачванията (слотът на оператора отстъпва,
- * `cede`). AMI 100 Mono RTBS (собственикът, 3 ноември 2026) — без въпрос „Sì/No“: отваря го отметката
- * „AMI 100 Mono RTBS“ в списъка на намаленото горно пространство или на намалената яма (`apertura`); Mono
- * UCM и въпросът „Installare AMI 100?“ са махнати. DMG (2
- * ноември 2026): таблото Pitagora 4.0 — осмият модул под въпроса на таблото; бутониерите (QF Fixtures) —
- * своя колона под „Vuoi compilare la scheda ordine bottoniere DMG?“ в раздела „Bottoniere“, без марка
- * (бутониерите се поръчват и при табло на друга марка).
+ * `cede`). AMI 100 („Installare AMI 100?“ при намалена яма или горно пространство) — два листа в една
+ * колона, по втория избор (Mono UCM или Mono RTBS), като моделите на Mastech, но без марка.
  */
 /**
  * Префиксът във формата: `oq` — таблото Pelazza, `om` — таблото MoviLift, `mn` и `mq` — таблото
  * Mastech NG120 и QI Touch, `eg`, `el` и `eo` — таблото Elettroquadri geared, gearless и oleodinamico,
  * `pa` — листът за аргано, `sg` и `so` — листът на 2SG (окачванията при автоматични врати, операторът при
- * автоматични и полуавтоматични), `ar` — AMI 100 Mono RTBS, `dp` — таблото DMG
- * (Pitagora 4.0), `db` — бутониерите DMG (QF Fixtures).
+ * автоматични и полуавтоматични), `au` и `ar` — AMI 100 Mono UCM и Mono RTBS.
  */
 export type Prefisso =
-  'oq' | 'om' | 'dp' | 'mn' | 'mq' | 'eg' | 'el' | 'eo' | 'pa' | 'sg' | 'so' | 'ar' | 'db';
+  'oq' | 'om' | 'mn' | 'mq' | 'eg' | 'el' | 'eo' | 'pa' | 'sg' | 'so' | 'au' | 'ar';
 
 export interface ModuloSlot {
   /** Марката, при която модулът се отваря; без нея — при всяка. */
   marca?: { field: 'quadroMarca'; value: string };
-  /** И моделът под марката (Mastech: NG120 или QI Touch). */
-  modello?: { field: 'quadroModello'; value: string };
+  /** И моделът под марката (Mastech: NG120 или QI Touch) или видът на AMI 100 (Mono UCM или RTBS). */
+  modello?: { field: 'quadroModello' | 'ami100Tipo'; value: string };
   /** И видът на уредбата (Elettroquadri: модулът се избира сам по него — собственикът, 30.10.2026). */
   impianto?: { field: 'tipoImpianto'; value: string };
-  column:
-    'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni' | 'ordineAmi' | 'ordineBottoniere';
-  question:
-    | 'quadroOrdine'
-    | 'arganoPreventivo'
-    | 'sospensioni'
-    | 'operatore'
-    | 'fossaInterventi'
-    | 'bottoniereOrdine';
-  /**
-   * Модулът не се отваря с „Sì“ на въпроса, а с отметката `valore` в него или в някое от полетата `anche`
-   * (AMI 100 Mono RTBS — в решенията на ямата или на горното пространство).
-   */
-  apertura?: { valore: string; anche: readonly string[] };
+  column: 'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni' | 'ordineAmi';
+  question: 'quadroOrdine' | 'arganoPreventivo' | 'sospensioni' | 'operatore' | 'ami100';
   /** Въпросът на друг слот в същата колона, който има предимство: при неговото видимо „Sì“ този е затворен. */
   cede?: ModuloSlot['question'];
   prefix: Prefisso;
@@ -86,14 +68,6 @@ export const SLOTS: readonly ModuloSlot[] = [
     prefix: 'om',
     path: 'ordine-quadro-movilift',
     modulo: MOVILIFT,
-  },
-  {
-    marca: { field: 'quadroMarca', value: 'DMG' },
-    column: 'ordineQuadro',
-    question: 'quadroOrdine',
-    prefix: 'dp',
-    path: 'ordine-quadro-dmg-pitagora',
-    modulo: DMG_PITAGORA,
   },
   {
     marca: { field: 'quadroMarca', value: 'MASTECH' },
@@ -163,19 +137,20 @@ export const SLOTS: readonly ModuloSlot[] = [
     modulo: SG,
   },
   {
+    modello: { field: 'ami100Tipo', value: 'MONO_UCM' },
     column: 'ordineAmi',
-    question: 'fossaInterventi',
-    apertura: { valore: 'AMI100_RTBS', anche: ['testataInterventi'] },
+    question: 'ami100',
+    prefix: 'au',
+    path: 'ami100-mono-ucm',
+    modulo: AMI_UCM,
+  },
+  {
+    modello: { field: 'ami100Tipo', value: 'MONO_RTBS' },
+    column: 'ordineAmi',
+    question: 'ami100',
     prefix: 'ar',
     path: 'ami100-mono-rtbs',
     modulo: AMI_RTBS,
-  },
-  {
-    column: 'ordineBottoniere',
-    question: 'bottoniereOrdine',
-    prefix: 'db',
-    path: 'ordine-bottoniere-dmg',
-    modulo: DMG_FIXTURES,
   },
 ];
 
@@ -218,35 +193,11 @@ export function sceltoNellaScheda(slot: ModuloSlot, valueOf: (key: string) => un
 
 const si = (answer: unknown): boolean => answer === 'si' || answer === true;
 
-/** Полетата, които отварят модула: въпросът му и (`apertura`) другите списъци със същата отметка. */
-export const campiApertura = (slot: ModuloSlot): string[] => [
-  slot.question,
-  ...(slot.apertura?.anche ?? []),
-];
-
-/** Стойността отваря модула: „Sì“ на въпроса (true в записаната карта) или отметката на `apertura`. */
-export const apre = (slot: ModuloSlot, value: unknown): boolean =>
-  slot.apertura ? scelto(value, slot.apertura.valore) : si(value);
-
 /**
- * Полето, което отваря модула (първото видимо с отваряща стойност), иначе undefined — на него стоят
- * връзките към PDF-а в страницата на картата. Без `active` — записаната карта (скритото там е null).
- */
-export function campoCheApre(
-  slot: ModuloSlot,
-  valueOf: (key: string) => unknown,
-  active?: ReadonlySet<string>,
-): string | undefined {
-  return campiApertura(slot).find(
-    (field) => (!active || active.has(field)) && apre(slot, valueOf(field)),
-  );
-}
-
-/**
- * Модулът е отворен: въпросът му се вижда (`active`, полетата с условие), отговорът е „Sì“ (или
- * отметката на `apertura` в някое от полетата ѝ), марката, моделът и видът на уредбата са неговите (ако
- * има) и слотът с предимство в колоната му не е отворен (`cede`). Моделът е поле с условие — броят се
- * само видимият. `valueOf` чете от формата (низове) или от записаната карта (true за „Sì“).
+ * Модулът е отворен: въпросът му се вижда (`active`, полетата с условие), отговорът е „Sì“, марката,
+ * моделът и видът на уредбата са неговите (ако има) и слотът с предимство в колоната му не е отворен
+ * (`cede`). Моделът е поле с условие — броят се само видимият. `valueOf` чете от формата (низове) или от записаната карта (true
+ * за „Sì“).
  */
 export function slotAperto(
   slot: ModuloSlot,
@@ -254,7 +205,8 @@ export function slotAperto(
   valueOf: (key: string) => unknown,
 ): boolean {
   return (
-    campoCheApre(slot, valueOf, active) !== undefined &&
+    active.has(slot.question) &&
+    si(valueOf(slot.question)) &&
     sceltoNellaScheda(slot, valueOf) &&
     (!slot.modello || active.has(slot.modello.field)) &&
     (!slot.impianto || active.has(slot.impianto.field)) &&
@@ -263,8 +215,8 @@ export function slotAperto(
 }
 
 /**
- * „Sì“ на въпрос с модели, но без избран модел (Mastech без NG120 / QI Touch): няма кой модул да се
- * отвори — полетата на моделите, които липсват (празно — нищо не липсва).
+ * „Sì“ на въпрос с модели, но без избран модел (Mastech без NG120 / QI Touch, AMI 100 без Mono UCM /
+ * RTBS): няма кой модул да се отвори — полетата на моделите, които липсват (празно — нищо не липсва).
  */
 export function modelliMancanti(
   active: ReadonlySet<string>,

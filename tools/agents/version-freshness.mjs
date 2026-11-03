@@ -25,7 +25,6 @@ import { readFileSync, writeFileSync, readdirSync, existsSync, statSync } from "
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
-import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const REG = join(ROOT, "tools", "agents", "versions.json");
@@ -82,20 +81,6 @@ export function upgradeRadar(reg, pins) {
   return out.sort((a, b) => b.behindMajors - a.behindMajors || a.pkg.localeCompare(b.pkg));
 }
 
-/**
- * „Световната истина“ е последната СТАБИЛНА версия, не тегът `latest`. Реален дефект (2026-10-24):
- * prisma държи под `latest` предварителната 8.0.0-rc.27, а последната стабилна е 7.10.1 — радарът
- * обявяваше продуктите за мажор назад спрямо неиздадена версия, а съветът „Prisma 7 е текущ стабилен“
- * в дефинициите изглеждаше остарял. Prerelease под `latest` → най-високата x.y.z от `versions`.
- */
-export function stableLatest(latest, versions = []) {
-  if (latest && !/-/.test(latest)) return latest;
-  const num = (v) => v.split(".").map(Number);
-  const stable = versions.filter((v) => /^\d+\.\d+\.\d+$/.test(v))
-    .sort((a, b) => { const x = num(a), y = num(b); return x[0] - y[0] || x[1] - y[1] || x[2] - y[2]; });
-  return stable.at(-1) || latest || null;
-}
-
 async function refresh(reg) {
   let changed = 0;
   for (const e of reg.entries) {
@@ -103,13 +88,7 @@ async function refresh(reg) {
     try {
       const r = await fetch(`https://registry.npmjs.org/${encodeURIComponent(e.npm)}/latest`, { signal: AbortSignal.timeout(15000) });
       const j = await r.json();
-      let version = j.version;
-      if (version && /-/.test(version)) {
-        const full = await (await fetch(`https://registry.npmjs.org/${encodeURIComponent(e.npm)}`, { signal: AbortSignal.timeout(30000) })).json();
-        version = stableLatest(version, Object.keys(full.versions || {}));
-        console.log(`  ${e.id}: \`latest\` е prerelease (${j.version}) → последната стабилна ${version}`);
-      }
-      if (version && version !== e.current) { console.log(`  ${e.id}: ${e.current} → ${version}`); e.current = version; changed++; }
+      if (j.version && j.version !== e.current) { console.log(`  ${e.id}: ${e.current} → ${j.version}`); e.current = j.version; changed++; }
       e.checkedAt = TODAY;
     } catch (err) {
       // недостъпен registry НЕ подновява checkedAt — иначе „освежих", без да съм проверил
@@ -153,4 +132,4 @@ async function main() {
   process.exitCode = breaches.length ? 1 : 0;
 }
 
-if (isMain(import.meta.url)) await main();
+if (import.meta.url === `file://${process.argv[1]}`) await main();

@@ -5,8 +5,6 @@ import {
   referralLink,
   referralRewardCents,
   REFERRAL_PERCENT,
-  payoutProgressPercent,
-  REFERRAL_MIN_PAYOUT_CENTS,
   canWithdraw,
 } from '../referral';
 
@@ -36,14 +34,4 @@ test('прагът за теглене е €100', () => {
   assert.equal(canWithdraw(9999), false);
   assert.equal(canWithdraw(10000), true);
   assert.equal(canWithdraw(25000), true);
-});
-
-// M4 (Правният Разбирач, 02.11.2026): при сторниран бонус балансът е отрицателен → width „-7%“ е
-// невалиден CSS, вътрешният div пада на auto и лентата към прага се рисува ПЪЛНА. Процентът е в [0, 100].
-test('payoutProgressPercent: отрицателен баланс → 0, над прага → 100', () => {
-  assert.equal(payoutProgressPercent(-735), 0);
-  assert.equal(payoutProgressPercent(0), 0);
-  assert.equal(payoutProgressPercent(5000), 50);
-  assert.equal(payoutProgressPercent(REFERRAL_MIN_PAYOUT_CENTS), 100);
-  assert.equal(payoutProgressPercent(25000), 100);
 });

@@ -28,7 +28,6 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { auditAll } from "./consistency-audit.mjs";
 import { emitJsonNow } from "../lib/emit.mjs";
-import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MEM_DIR = join(ROOT, ".claude", "agents", "_memory");
@@ -107,7 +106,7 @@ export function critiqueAll() {
 }
 
 // ── CLI ──
-if (isMain(import.meta.url)) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const argv = process.argv.slice(2);
   const only = argv.includes("--agent") ? argv[argv.indexOf("--agent") + 1] : null;
   let rows = critiqueAll();

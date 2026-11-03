@@ -7,7 +7,7 @@ import type { FormValues } from './field-parsers.js';
 import { misureFromRows, misureTable, type TableView } from './misure.js';
 import { ORDINABILI, sezioniOrdinate } from './ordine.js';
 import { nomeModulo } from '../ordini/moduli.js';
-import { campoCheApre, slotAperto, SLOTS } from '../ordini/registry.js';
+import { slotAperto, SLOTS } from '../ordini/registry.js';
 import { moduliStampatiDi } from '../ordini/riepilogo.js';
 import { moduloFormValues, storedValori } from '../ordini/valori.js';
 
@@ -154,11 +154,10 @@ export function displaySections(
           };
           const options = optionsView(field, values[field.key], t);
           if (options) view.options = options;
-          // Слотът на въпроса — колоната на 2SG има два (окачванията и операторът); AMI 100 Mono RTBS —
-          // на списъка, в който е отметнат (първия видим).
+          // Слотът на въпроса — колоната на 2SG има два (окачванията и операторът).
           const slot = SLOTS.find(
             (s) =>
-              campoCheApre(s, (key) => values[key], active) === field.key &&
+              s.question === field.key &&
               slotAperto(s, active, (key) => values[key]) &&
               storedValori(s.modulo, values[s.column]),
           );

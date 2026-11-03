@@ -20,17 +20,6 @@ import {
   isCouponUsable,
   normalizeCouponCode,
 } from '@/lib/coupon';
-import {
-  COUPON_RESERVATION_KEY,
-  couponClientKey,
-  couponClientSecret,
-  reserveCouponForCheckout,
-  reservedCheckoutExpiresAt,
-} from '@/lib/coupon-reservation';
-import { createCouponLedger } from '@/lib/coupon-ledger';
-import { requestIp } from '@/lib/admin';
-
-const couponLedger = createCouponLedger(prisma);
 
 function baseUrl(): string {
   return process.env.PUBLIC_BASE_URL ?? 'http://localhost:3000';
@@ -141,8 +130,6 @@ export async function startProductPurchaseAction(
   const planId = planFor(owner.plan).id;
   const productName = { name: title, ...(description ? { description } : {}) };
   const metadata = {
-    // kind: явна класификация в webhook-а (plan тук е таксата на продавача).
-    kind: 'shop',
     productId: product.id,
     profileId: product.profileId,
     type: product.type,
@@ -190,8 +177,10 @@ export async function startProductPurchaseAction(
     // Преводът на неговия дял (нето − комисиона) се създава от webhook-а,
     // когато Stripe Tax вече е сметнал ДДС по държавата на купувача.
     // Цената е КРАЙНА (tax-inclusive) — купувачът плаща точно показаното.
-    const createOneOff = (reservationId: string | null) =>
-      stripe.checkout.sessions.create({
+    // try/catch: при включен Stripe Tax без данъчни регистрации в
+    // Dashboard-а заявката се проваля → грациозен shopError, не 500.
+    try {
+      session = await stripe.checkout.sessions.create({
         mode: 'payment',
         line_items: [
           {
@@ -207,57 +196,13 @@ export async function startProductPurchaseAction(
         ...(stripeTaxEnabled() ? { automatic_tax: { enabled: true } } : {}),
         // planId е снапшот за webhook-а — комисионата се смята върху нетото
         // там, по плана на продавача към момента на продажбата.
-        metadata: {
-          ...metadata,
-          plan: planId,
-          ...(reservationId ? { [COUPON_RESERVATION_KEY]: reservationId } : {}),
-        },
-        // Сесия с резервиран код изтича бързо (Stripe минимум 30 мин) —
-        // checkout.session.expired връща резервацията.
-        ...(reservationId
-          ? { expires_at: reservedCheckoutExpiresAt(Date.now()) }
-          : {}),
+        metadata: { ...metadata, plan: planId },
         locale: 'auto',
         success_url: successUrl,
         cancel_url: `${baseUrl()}${back}`,
       });
-    if (appliedCoupon) {
-      // Ползването се резервира АТОМАРНО преди сесията (иначе N отворени
-      // checkout-а с еднократен код = N продажби с отстъпка). Провал при
-      // създаването връща резервацията.
-      // Таван на държаните резервации от един клиент (публично действие):
-      // HMAC ключ от IP + код, без суровия IP (GDPR); без IP — без таван.
-      const ip = await requestIp();
-      const clientKey = ip
-        ? couponClientKey(ip, appliedCoupon.id, couponClientSecret(process.env))
-        : null;
-      const reserved = await reserveCouponForCheckout(
-        couponLedger,
-        appliedCoupon.id,
-        clientKey,
-        createOneOff,
-      );
-      if (!reserved.ok && reserved.reason === 'create-failed') {
-        console.error(
-          '[shop] checkout create failed:',
-          reserved.error instanceof Error ? reserved.error.message : 'unknown error',
-          reserved.releaseError ? '(резервацията остава за sweep)' : '',
-        );
-      }
-      if (!reserved.ok) {
-        redirect(
-          `${back}${hl ? '&' : '?'}${reserved.reason === 'create-failed' ? 'shopError' : 'couponError'}=1`,
-        );
-      }
-      session = reserved.value;
-    } else {
-      // try/catch: при включен Stripe Tax без данъчни регистрации в
-      // Dashboard-а заявката се проваля → грациозен shopError, не 500.
-      try {
-        session = await createOneOff(null);
-      } catch {
-        redirect(`${back}${hl ? '&' : '?'}shopError=1`);
-      }
+    } catch {
+      redirect(`${back}${hl ? '&' : '?'}shopError=1`);
     }
   }
   redirect(session.url ?? `${back}${hl ? '&' : '?'}shopError=1`);

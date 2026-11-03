@@ -17,15 +17,6 @@ export function referralRewardCents(amountCents: number): number {
   return Math.round((amountCents * REFERRAL_PERCENT) / 100);
 }
 
-/**
- * Процент към прага за теглене, ограничен в [0, 100]. Сторниран бонус прави баланса отрицателен, а
- * отрицателна ширина е невалиден CSS — лентата падаше на auto и се рисуваше пълна (02.11.2026).
- */
-export function payoutProgressPercent(creditCents: number): number {
-  if (!Number.isFinite(creditCents) || creditCents <= 0) return 0;
-  return Math.min(100, Math.round((creditCents / REFERRAL_MIN_PAYOUT_CENTS) * 100));
-}
-
 /** Достигнат ли е прагът за теглене на натрупания кредит? */
 export function canWithdraw(creditCents: number): boolean {
   return creditCents >= REFERRAL_MIN_PAYOUT_CENTS;

@@ -194,16 +194,14 @@ mark {
   height: 20px;
 }
 
-/* Марката (шестоъгълникът „RI“, картинка — scripts/logo) — в черните ленти на портала и на витрината. */
+/* Марката (табела „RI“, картинка — scripts/logo) — в лентата, на входа и във витрината. */
 .brand__mark {
   flex: none;
-  width: 38px;
-  height: 44px;
+  width: 47px;
+  height: 36px;
 }
 
-/* Пълното лого (views/partials/logo.ejs): ширината идва от мястото, височината — от картинката. */
-.logo {
-  display: block;
-  max-width: 100%;
-  height: auto;
+.brand__mark--48 {
+  width: 62px;
+  height: 48px;
 }

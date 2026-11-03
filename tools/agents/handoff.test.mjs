@@ -94,18 +94,6 @@ test("Статус наред не изисква находки, но блок�
   assert.ok(r.problems.some((p) => p.field === "Находки"), "блокер без находки е безсмислен");
 });
 
-// 02.11.2026: агент пишеше „izpitatelia“ или „pravniyat“ — dod-check го връщаше с „непознат адресат“ без
-// подсказка и агентът гадаеше id-то в нов ход. Сега съобщението назовава най-близкия валиден id.
-test("сгрешен id на адресат: съобщението предлага най-близкия валиден агент", () => {
-  for (const [typo, want] of [["izpitatelia", "izpitatelya"], ["pravniyat", "pravniyat-razbirach"], ["kodadjiata", "kodadjiyata"]]) {
-    const r = validateHandoff(OK.replace("Към: izpitatelya", "Към: " + typo), opts);
-    const p = r.problems.find((x) => x.field === "Към");
-    assert.ok(p && p.msg.includes("„" + want + "“"), typo + " → " + (p && p.msg));
-  }
-  const far = validateHandoff(OK.replace("Към: izpitatelya", "Към: измисленджията"), opts).problems.find((x) => x.field === "Към");
-  assert.ok(far && !/имаше предвид/.test(far.msg), "далечно име не получава подсказка");
-});
-
 test("непознат адресат пада — веригата не бива да сочи в нищото", () => {
   const r = validateHandoff(OK.replace("Към: izpitatelya", "Към: измисленджията"), opts);
   assert.ok(r.problems.some((p) => p.field === "Към" && /непознат адресат/.test(p.msg)));
@@ -164,12 +152,4 @@ test("extractBlock спира на следващото заглавие, не �
   const b = extractBlock(`${OK}\n\n## Друга секция\nнеща`);
   assert.ok(b.includes("Следваща стъпка"));
   assert.ok(!b.includes("Друга секция"));
-});
-
-test("адресат по българско име от регистъра се приема (агентите го пишат естествено)", () => {
-  const names = new Map([["кодаджията", "kodadjiyata"], ["правният разбирач", "pravniyat-razbirach"]]);
-  const o = { ...opts, agentNames: names };
-  assert.deepEqual(validateHandoff(OK.replace("Към: izpitatelya", "Към: Кодаджията"), o).problems.filter((p) => p.field === "Към"), []);
-  assert.deepEqual(validateHandoff(OK.replace("Към: izpitatelya", "Към: Правният Разбирач"), o).problems.filter((p) => p.field === "Към"), []);
-  assert.ok(validateHandoff(OK.replace("Към: izpitatelya", "Към: измисленджията"), o).problems.some((p) => p.field === "Към"));
 });

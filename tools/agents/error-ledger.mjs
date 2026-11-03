@@ -22,7 +22,6 @@
 import { readFileSync, writeFileSync, appendFileSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { isMain } from "../lib/is-main.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 // Пътят е override-ваем, за да е инструментът тестваем ИЗОЛИРАНО. Без това всеки тест на пътя
@@ -116,4 +115,4 @@ function runCli() {
   console.error("употреба: error-ledger.mjs add|list|--check"); process.exit(2);
 }
 
-if (isMain(import.meta.url)) runCli();
+if (import.meta.url === `file://${process.argv[1]}`) runCli();

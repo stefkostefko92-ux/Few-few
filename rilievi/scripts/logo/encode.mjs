@@ -1,87 +1,41 @@
-// Encodes the owner's two logos (1 November 2026 — "use them as the logo where they fit best; they must be
-// legible and well visible") for the pages. The originals stay as they came, in scripts/logo/originals:
+// Encodes the master of logo.py (scripts/logo/out/marchio.png, grey + alpha) for the pages:
+// public/img/brand/marchio-<height>.webp for the heights the bars and the footer ask for (1x, 2x, 3x of
+// 36 and 48 CSS px — views/partials/brandmark.ejs) and the icons favicon-32.png / favicon-192.png
+// (the plate centred on a transparent square). The unit test checks every file and its size.
 //
-//   mark.png — the hexagon with "RI" and the shaft behind it. Where the logo has to be small: the black
-//     bars of the portal and of the landing (views/partials/brandmark.ejs, 44 CSS px high — 1x, 2x, 3x),
-//     the tab icons favicon-32.png / favicon-192.png (centred on a transparent square) and the home-screen
-//     icon (scripts/brand-images.mjs).
-//   logo.png — the mark with "RILIEVI IMPIANTI" and "PIATTAFORMA TECNICA ASCENSORI". Only where it is
-//     shown large enough for the last line to be read (views/partials/logo.ejs: sign-in, the first screen
-//     and the footer of the landing, the link preview): one WebP per width in WIDTHS, for `srcset`.
-//
-// Both are trimmed to what is drawn (the transparent margin would only shrink the logo on the page).
-// Small sizes get a light sharpening: the details of the shaft blur into grey otherwise. The unit test
-// (tests/marchio.test.ts) checks every file the partials ask for, its size and its transparency.
-//
-//   npm run brand:logo        # then npm run brand:images for og.png and apple-touch-icon.png
-import { mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
+//   npm run brand:logo
+import { mkdirSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const originals = join(here, 'originals');
+const master = join(here, 'out', 'marchio.png');
 const root = join(here, '..', '..', 'public', 'img');
 const brand = join(root, 'brand');
 
-/** The bar height of the mark in CSS px (brandmark.ejs) and its densities. */
-const MARK_HEIGHT = 44;
-const MARK_DENSITIES = [1, 2, 3];
-/** The widths of the full logo (logo.ejs `srcset`): 1x and 2x of the places that show it, 3x of the largest. */
-const WIDTHS = [360, 520, 720, 900, 1320];
+/** The plate is 1.3 : 1. */
+const widthOf = (height) => Math.round(height * 1.3);
+const HEIGHTS = [36, 48, 72, 96, 108, 144];
 
-const trimmed = async (file) => {
-  const { data } = await sharp(join(originals, file))
-    .ensureAlpha()
-    .trim({ threshold: 10 })
-    .png()
-    .toBuffer({ resolveWithObject: true });
-  return data;
-};
-
-const report = (file) =>
-  console.log(`${file.slice(root.length + 1)}: ${Math.round(statSync(file).size / 1024)} KB`);
-
-const webp = (image, file) =>
-  image
-    .webp({ quality: 88, alphaQuality: 100, effort: 6 })
-    .toFile(file)
-    .then(() => report(file));
-
-const mark = await trimmed('mark.png');
-const logo = await trimmed('logo.png');
-
-// public/img/brand holds only what this script writes: the old files go first.
 mkdirSync(brand, { recursive: true });
-for (const name of readdirSync(brand)) rmSync(join(brand, name));
-
-for (const density of MARK_DENSITIES) {
-  const height = MARK_HEIGHT * density;
-  const image = sharp(mark).resize({ height, kernel: 'lanczos3' });
-  await webp(
-    density === 1 ? image.sharpen({ sigma: 0.6 }) : image,
-    join(brand, `marchio-${height}.webp`),
-  );
+for (const height of HEIGHTS) {
+  const file = join(brand, `marchio-${height}.webp`);
+  await sharp(master)
+    .resize({ width: widthOf(height), height, fit: 'fill', kernel: 'lanczos3' })
+    .webp({ quality: 90, alphaQuality: 100, effort: 6 })
+    .toFile(file);
+  console.log(`brand/marchio-${height}.webp: ${Math.round(statSync(file).size / 1024)} KB`);
 }
-
-for (const width of WIDTHS) {
-  const image = sharp(logo).resize({ width, kernel: 'lanczos3' });
-  await webp(
-    width < 600 ? image.sharpen({ sigma: 0.5 }) : image,
-    join(brand, `logo-${width}.webp`),
-  );
-}
-
 for (const size of [32, 192]) {
   const file = join(root, `favicon-${size}.png`);
-  const resized = sharp(mark).resize({ height: size, kernel: 'lanczos3' });
-  const icon = await (size < 64 ? resized.sharpen({ sigma: 0.6 }) : resized).png().toBuffer();
-  const { width } = await sharp(icon).metadata();
+  const plate = await sharp(master).resize({ width: size, kernel: 'lanczos3' }).png().toBuffer();
+  const { height } = await sharp(plate).metadata();
   await sharp({
     create: { width: size, height: size, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
   })
-    .composite([{ input: icon, top: 0, left: Math.round((size - width) / 2) }])
-    .png({ compressionLevel: 9, palette: true, quality: 95, dither: 0.5 })
+    .composite([{ input: plate, top: Math.round((size - height) / 2), left: 0 }])
+    .png({ compressionLevel: 9 })
     .toFile(file);
-  report(file);
+  console.log(`favicon-${size}.png: ${Math.round(statSync(file).size / 1024)} KB`);
 }

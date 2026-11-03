@@ -9,12 +9,7 @@
   const val = (k) => typeof values[k] === 'string' ? values[k] : '';
   const campo = (key, kind, extra = {}) => include('_campo', { key, kind, values, errori, limiteDi, opzioni: [], ...extra });
   const op = (gruppo, valori) => valori.map((v) => ({ value: String(v), label: t('argano.opzione.' + gruppo + '.' + v) }));
-  // Въжетата — по производител (групата), с формацията в надписа и данните си за картата под избора.
-  const opFuni = funi.map((f) => ({ value: f.id, label: f.etichetta, gruppo: f.marca, dati: f.dati })).concat([{ value: 'altro', label: t('argano.opzione.fune.altro') }]);
-  const funeScelta = funi.find((f) => f.id === val('fune'));
-  const datiScheda = ['formazione', 'trefoli', 'classe', 'sezione', 'rottura', 'massa'];
-  // Полетата на ръка се виждат само при „altro“ (argano.js); без JavaScript — винаги.
-  const solo = (campo, valore) => `data-solo="${campo}" data-solo-valore="${valore}"` + (val(campo) === valore ? '' : ' data-off');
+  const opFuni = funi.map((f) => ({ value: f.id, label: f.marca + ' ' + f.d + ' mm, ' + f.trefoli + ' trefoli' })).concat([{ value: 'altro', label: t('argano.opzione.fune.altro') }]);
   // Мерките на компенсацията — веригите и въжетата в две групи; коя важи, казва видът над тях.
   const opMisure = (lista, tipo) => lista.map((m) => ({ value: String(m.d).replace('.', ','), label: String(m.d).replace('.', ',') + ' mm (' + String(m.massa).replace('.', ',') + ' kg/m)', gruppo: t('argano.opzione.compensazione.' + tipo), attiva: val('compensazione') === tipo }));
   const errSummary = (k) => {
@@ -22,7 +17,7 @@
     if (e === 'range') { const [min, max] = limiteDi(k); return t('argano.errore.range', { min: String(min).replace('.', ','), max: String(max).replace('.', ',') }); }
     return t('argano.errore.' + e);
   };
-%><%- include('../partials/top', { title, scripts: ['argano'] }) %>
+%><%- include('../partials/top', { title }) %>
 <div class="page-head">
   <div>
     <a href="<%= percorso.indietro.href %>"><%= percorso.indietro.testo %></a>
@@ -91,22 +86,8 @@
     <div class="grid grid--righe">
       <%- campo('funiNumero', 'numero') %>
       <%- campo('fune', 'scelta', { opzioni: opFuni, classe: 'field--riga-telefono field--doppia' }) %>
-      <%- campo('funeCordatura', 'scelta', { opzioni: op('cordatura', cordature), hint: 'funeCordatura', classe: 'field--riga-telefono field--doppia' }) %>
       <%- campo('funiSostituzione', 'spunta', { hint: 'funiSostituzione' }) %>
-    </div>
-    <div class="argano__scheda" data-scheda-fune<% if (!funeScelta) { %> hidden<% } %>>
-      <p class="argano__scheda-titolo"><%= t('argano.scheda.titolo') %></p>
-      <dl class="argano__dati">
-        <% for (const k of datiScheda) { %><div><dt><%= t('argano.scheda.' + k) %></dt><dd data-dato="<%= k %>"><%= funeScelta ? funeScelta.dati[k] : '' %></dd></div>
-        <% } %>
-      </dl>
-      <p class="muted argano__scheda-nota"><%= t('argano.scheda.nota') %></p>
-    </div>
-    <div class="grid grid--righe argano__mano" <%- solo('fune', 'altro') %>>
       <%- campo('altroD', 'numero', { hint: 'altro' }) %><%- campo('altroSezione', 'numero') %><%- campo('altroRottura', 'numero') %><%- campo('altroMassa', 'numero') %>
-      <%- campo('altroTrefoli', 'numero') %>
-      <%- campo('altroFormazione', 'testo', { hint: 'altroFormazione' }) %>
-      <%- campo('altroClasse', 'testo', { hint: 'altroClasse' }) %>
     </div>
   </fieldset>
   <fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
@@ -114,12 +95,9 @@
     <div class="grid grid--righe">
       <%- campo('compensazione', 'scelta', { opzioni: op('compensazione', ['nessuna', 'catene', 'funi']) }) %>
       <%- campo('compNumero', 'numero') %>
-      <%- campo('compMisura', 'scelta', { opzioni: opMisure(catene, 'catene').concat(opMisure(funiCompensazione, 'funi'), [{ value: 'altro', label: t('argano.opzione.compMisura.altro') }]), hint: 'compMisura', classe: 'field--riga-telefono field--doppia' }) %>
+      <%- campo('compMisura', 'scelta', { opzioni: opMisure(catene, 'catene').concat(opMisure(funiCompensazione, 'funi')), hint: 'compMisura', classe: 'field--riga-telefono' }) %>
       <%- campo('massaTenditore', 'numero') %><%- campo('diametroTenditore', 'numero') %>
       <%- campo('compMetaCorsa', 'spunta') %>
-    </div>
-    <div class="grid grid--righe argano__mano" <%- solo('compMisura', 'altro') %>>
-      <%- campo('compAltroD', 'numero', { hint: 'compAltro' }) %><%- campo('compAltroMassa', 'numero') %>
     </div>
   </fieldset>
   <% if (puoScrivere) { %><div class="toolbar">

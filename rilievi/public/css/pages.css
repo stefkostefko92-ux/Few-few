@@ -67,24 +67,27 @@
   outline-color: var(--bar-fg);
 }
 
-/* Пълното лого горе в черния панел — 400 px: така се чете и „Piattaforma tecnica ascensori“. */
 .auth__brand {
-  display: grid;
-  gap: 6px;
-  justify-items: start;
-}
-
-.auth__home {
-  display: block;
-  width: min(100%, 400px);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: start;
   color: inherit;
+  text-decoration: none;
 }
 
-.auth__logo {
-  width: 100%;
+.auth__brandtext {
+  display: grid;
+  line-height: 1.1;
 }
 
-.auth__by {
+.auth__name {
+  font-family: var(--font-cond);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.auth__product {
   font-size: 0.8125rem;
   color: var(--bar-muted);
 }
@@ -168,10 +171,6 @@
 
   .auth__drawing {
     display: none;
-  }
-
-  .auth__home {
-    width: min(100%, 340px);
   }
 
   .auth__rule {

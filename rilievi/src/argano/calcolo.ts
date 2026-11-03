@@ -114,11 +114,8 @@ export function calcolaArgano(d: DatiArgano): RisultatoArgano {
   const fune = d.fune === 'altro' ? d.funeAltro! : funeDi(d.fune)!;
   const n = d.funiNumero;
   const peso = n * fune.massa * d.corsa * G * taglia;
-  // Компенсацията: от таблиците на файла или — извън тях — мярката и масата, написани на ръка.
   const comp =
-    d.compensazione === 'nessuna'
-      ? undefined
-      : (d.compAltro ?? misuraCompensazione(d.compensazione, d.compMisura));
+    d.compensazione === 'nessuna' ? undefined : misuraCompensazione(d.compensazione, d.compMisura);
   const compPeso = d.compNumero * (comp?.massa ?? 0) * d.corsa * G;
   const metaCorsa = d.compMetaCorsa;
   const compCabina = (compPeso * (metaCorsa ? 0 : 1)) / G;

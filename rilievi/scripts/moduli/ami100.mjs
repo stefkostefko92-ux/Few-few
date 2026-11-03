@@ -1,10 +1,10 @@
-// Draws the order sheet of AMI 100 Mono RTBS and writes its map: assets/moduli/ami100-mono-rtbs.pdf|json.
-// The fields and their order are those of the list the owner of the portal sent (Ami_100.pdf,
-// 30/10/2026: the data to prepare the order); the choices where the catalogue has fixed versions
+// Draws the two order sheets of AMI 100 — Mono UCM and Mono RTBS — and writes their maps:
+// assets/moduli/ami100-mono-ucm.pdf|json and ami100-mono-rtbs.pdf|json. The fields and their order are
+// those of the list the owner of the portal sent (Ami_100.pdf, 30/10/2026: the data to prepare the
+// order, first of the UCM, then of the RTBS); the choices where the catalogue has fixed versions
 // (supply 24/48 Vdc, governor rope on the left or right of the rail, rails of 7, 8, 9 or 16 mm,
 // economiser yes/no) are tick boxes — the owner chose them over free text. On top, like the other
-// order sheets: the sender, the date and the lift the order is for. The Mono UCM sheet was dropped on
-// 3 November 2026: AMI 100 is now a tick in the solutions for a reduced headroom or pit, Mono RTBS only.
+// order sheets: the sender, the date and the lift the order is for.
 //
 //   npm run moduli:disegna      (then commit the PDFs and the maps: each map pins its PDF by SHA-256)
 import { foglio } from './foglio.mjs';
@@ -48,6 +48,26 @@ const INTESTAZIONE = {
 };
 
 const SHEETS = [
+  {
+    id: 'ami100-mono-ucm',
+    titolo: 'AMI 100 Mono UCM',
+    file: 'ami100-mono-ucm.pdf',
+    righe: [
+      { campi: [testo('numeroOrdine', "Numero d'ordine", 30)] },
+      { campi: [testo('portata', 'Portata impianto = Q [Kg]', 10)] },
+      { campi: [testo('pesoP', 'Peso cabina + peso arcata + peso accessori = P [Kg]', 10)] },
+      { campi: [testo('pesoContrappeso', 'Peso contrappeso [Kg]', 10)] },
+      SPESSORE,
+      TENSIONE,
+      FUNE,
+      { campi: [testo('fermate', 'Numero delle fermate', 4)] },
+      scelte('Sopralzi universali', [
+        ['sopralziSi', 'Sì'],
+        ['sopralziNo', 'No'],
+      ]),
+      ECONOMIZZATORE,
+    ],
+  },
   {
     id: 'ami100-mono-rtbs',
     titolo: 'AMI 100 Mono RTBS',

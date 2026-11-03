@@ -28,7 +28,6 @@ import { join, extname, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
 import { emitJson, finish } from "../lib/emit.mjs";
 import { launchChromium } from "../lib/browser.mjs";
-import { isMain } from "../lib/is-main.mjs";
 
 const argv = process.argv.slice(2);
 const TARGET = argv.find((a) => !a.startsWith("--"));
@@ -386,4 +385,4 @@ async function main() {
   finish(0);
 }
 
-if (isMain(import.meta.url)) main();
+if (import.meta.url === `file://${process.argv[1]}`) main();

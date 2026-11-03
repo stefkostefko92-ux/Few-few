@@ -22,7 +22,6 @@ import { cpus } from "node:os";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
-import { isMain } from "./is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const JSON_OUT = process.argv.includes("--json");
@@ -90,4 +89,4 @@ async function main() {
   process.exit(1);
 }
 
-if (isMain(import.meta.url)) await main();
+if (import.meta.url === `file://${process.argv[1]}`) await main();

@@ -63,26 +63,11 @@ export async function checkMastech(page, scheme, aziendaName) {
   await tick(page, 'centralinaDaFare', 'si');
   if (!(await shown(page, '#f-centralinaMarca'))) fail(`${scheme}: no make for a new unit`);
   if (await shown(page, '#f-emendamentoA3')) fail(`${scheme}: A3 amendment asked for a new unit`);
-  // The new unit (owner's sheet, 3 November 2026): motor, pump, start, piston, oil.
-  for (const key of ['centralinaMotoreHp', 'centralinaPompaLMin', 'centralinaLitriOlio'])
-    if (!(await shown(page, `#f-${key}`))) fail(`${scheme}: ${key} not asked for a new unit`);
   await tick(page, 'centralinaDaFare', 'no');
   if (!(await shown(page, '#f-centralinaMarca'))) fail(`${scheme}: no make for an old unit`);
-  if (await shown(page, '#f-centralinaMotoreHp'))
-    fail(`${scheme}: new motor asked for an old unit`);
-  if (!(await shown(page, '#f-emendamentoA3'))) fail(`${scheme}: no A3 kit for an old unit`);
-  if (await shown(page, '#f-tuboFlessibile')) fail(`${scheme}: hose asked without the A3 kit`);
+  if (!(await shown(page, '#f-emendamentoA3'))) fail(`${scheme}: no A3 amendment for an old unit`);
+  if (await shown(page, '#f-tuboFlessibile')) fail(`${scheme}: hose asked without the amendment`);
   await tick(page, 'emendamentoA3', 'si');
-  // The kit by the unit in place: Hydronic, or another one with its valve and gate valve.
-  await tick(page, 'centralinaInOpera', 'HYDRONIC');
-  if (!(await shown(page, '#f-kitA3TensioneBobine')) || (await shown(page, '#f-kitA3Valvola')))
-    fail(`${scheme}: the Hydronic kit is not the one asked`);
-  await tick(page, 'centralinaInOpera', 'ALTRO');
-  if (!(await shown(page, '#f-kitA3Valvola')) || (await shown(page, '#f-kitA3TensioneBobine')))
-    fail(`${scheme}: the kit for another unit is not the one asked`);
-  if (await shown(page, '#f-kitA3Saracinesca')) fail(`${scheme}: gate valve size without it`);
-  await tick(page, 'kitA3Altro', 'SARACINESCA');
-  if (!(await shown(page, '#f-kitA3Saracinesca'))) fail(`${scheme}: no size for the gate valve`);
   await tick(page, 'tuboFlessibile', 'si');
   for (const key of ['tuboFlessibileDiametroMm', 'tuboFlessibileLunghezzaM', 'tuboFlessibileNote'])
     if (!(await shown(page, `#f-${key}`))) fail(`${scheme}: ${key} not shown for the hose`);

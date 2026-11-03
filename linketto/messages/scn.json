@@ -98,6 +98,7 @@
     "processingNote": "Supra li vinniti dû nigòziu s'applica puru na cummissioni di elaborazioni dû pagamentu: 1,9% + €0,30 (copri lu circuitu di pagamentu).",
     "mostPopular": "Cchiù populari",
     "annualOffer": "Sparagna lu {percent}% cu un pianu annuali",
+    "referralPercentNote": "Mmìta l'amici e guadagna lu {percent}% di ogni pagamentu chi fannu.",
     "vatNote": "Li prezzi sù finali — IVA nclusa unni è duvuta."
   },
   "auth": {
@@ -373,7 +374,7 @@
   },
   "footer": {
     "company": "Un prudottu Carbon Stealth VCC",
-    "legalLine": "ID (EIK) 208725180, partita IVA BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgaria",
+    "legalLine": "ID BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgaria",
     "privacy": "Privacy",
     "terms": "Cundizioni",
     "contact": "info@carbonstealth.eu",

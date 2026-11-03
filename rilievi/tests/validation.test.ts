@@ -19,8 +19,7 @@ describe('the field list', () => {
     // lift stands where its machine would; the emergency call is with the alarm, the porter's lodge
     // last; every section with a supplier form ends with its notes. 24 October 2026: is the panel to
     // replace, the stop of the argano, the brake shoes gone, the operator after the suspensions, and
-    // the push-button panels in a section of their own. 3 November 2026: the reduced headroom first, then
-    // the pit, each with its list of solutions (AMI 100 Mono RTBS among them).
+    // the push-button panels in a section of their own.
     assert.deepEqual(
       SECTIONS.map((section) => section.key),
       [
@@ -52,7 +51,6 @@ describe('the field list', () => {
         'fermate',
         'marca',
         'ubicazioneMacchina',
-        'noteLocaleMacchina',
         'ubicazioneCassettina',
         'parcheggio',
         'tipoImpianto',
@@ -62,11 +60,10 @@ describe('the field list', () => {
         'quadroMarca',
         'quadroMarcaAltro',
         'quadroModello',
-        'testataRidotta',
-        'testataInterventi',
         'fossaRidotta',
-        'fossaInterventi',
-        'grembiuleNote',
+        'testataRidotta',
+        'ami100',
+        'ami100Tipo',
         'quadroOrdine',
         'quadroNote',
         'arganoPreventivo',
@@ -81,8 +78,6 @@ describe('the field list', () => {
         'funiDiametroMm',
         'funiTrefoli',
         'funiNumero',
-        'funiDx',
-        'funiSx',
         'funiLunghezzaM',
         'tirantiCabinaNumero',
         'tirantiCabinaTipo',
@@ -112,7 +107,6 @@ describe('the field list', () => {
         'allarmePortineria',
         'displayPortineria',
         'bottoniereSostituire',
-        'bottoniereOrdine',
         'bottoniereNote',
         'noteQuadretto',
         'noteImpianto',

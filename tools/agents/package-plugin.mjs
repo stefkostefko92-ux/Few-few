@@ -20,7 +20,6 @@
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const DIST = join(ROOT, "dist", "carbon-stealth-fleet");
@@ -73,4 +72,4 @@ function main() {
   console.log(`✓ сглобен: dist/carbon-stealth-fleet (+ dist/marketplace.json). Инсталация: /plugin marketplace add <път-до-dist>`);
 }
 
-if (isMain(import.meta.url)) main();
+if (import.meta.url === `file://${process.argv[1]}`) main();

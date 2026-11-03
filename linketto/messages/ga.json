@@ -98,6 +98,7 @@
     "processingNote": "Bíonn táille phróiseála íocaíochta ar dhíolacháin an tsiopa freisin: 1.9% + €0.30 (clúdaíonn sé próiseálaí an chárta).",
     "mostPopular": "Is coitianta",
     "annualOffer": "Sábháil {percent}% le plean bliantúil",
+    "referralPercentNote": "Tabhair cuireadh do chairde agus tuill {percent}% de gach íocaíocht a dhéanann siad.",
     "vatNote": "Tá na praghsanna deiridh — CBL san áireamh nuair is iníoctha é."
   },
   "auth": {
@@ -373,7 +374,7 @@
   },
   "footer": {
     "company": "Táirge de chuid Carbon Stealth VCC",
-    "legalLine": "Aitheantas cuideachta (EIK) 208725180, uimhir CBL BG208725180 · ul. Samuil 3, 2670 Bobov Dol, an Bhulgáir",
+    "legalLine": "Aitheantas cuideachta BG208725180 · ul. Samuil 3, 2670 Bobov Dol, an Bhulgáir",
     "privacy": "Príobháideachas",
     "terms": "Téarmaí",
     "contact": "info@carbonstealth.eu",

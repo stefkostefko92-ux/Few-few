@@ -14,11 +14,9 @@
     },
     {
       "none": [
-        "/\\beval\\s*\\(/",
-        "/new Function\\s*\\(/",
-        "зареждам скрипт от CDN",
-        "отдалечен код е позволен",
-        "remote code is allowed"
+        "remote code",
+        "отдалечен код",
+        "eval"
       ],
       "label": "капан: remote code"
     }

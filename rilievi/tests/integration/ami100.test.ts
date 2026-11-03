@@ -1,6 +1,5 @@
-// AMI 100 against the real app (owner, 3 November 2026): a reduced headroom or pit asks for its
-// solutions; "AMI 100 Mono RTBS" ticked in either list saves its order sheet with the card and serves it
-// as its own PDF. No "Installare AMI 100?" any more, no Mono UCM.
+// AMI 100 against the real app (30 October 2026): asked with a reduced pit or headroom, the order sheet
+// of the type chosen saved with the card and served as its own PDF; the 2SG sheet drawn anew.
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import { Browser, prisma, signedIn, startApp, stopApp } from './harness.js';
@@ -9,7 +8,7 @@ before(startApp);
 after(stopApp);
 
 const SURVEY = {
-  data: '2026-11-03',
+  data: '2026-10-30',
   numeroImpianto: '880077',
   indirizzo: 'Via Novara 5, Milano',
   portataKg: '630',
@@ -17,14 +16,19 @@ const SURVEY = {
   tipoImpianto: ['ELETTRICO'],
 };
 
-/** The RTBS order as the browser sends it, with the tick in the list of the reduced pit. */
-const RTBS = {
+/** AMI 100 Mono UCM as the browser sends it: the RTBS form is on the page too, hidden. */
+const UCM = {
   fossaRidotta: 'si',
-  fossaInterventi: ['SEMAFORO', 'AMI100_RTBS'],
+  ami100: 'si',
+  ami100Tipo: 'MONO_UCM',
+  'au-_': '1',
+  'au-numeroOrdine': 'A-17',
+  'au-portata': '630',
+  'au-fermate': '6',
+  'au-spessore9': 'si',
+  'au-tensione24': 'si',
   'ar-_': '1',
-  'ar-numeroOrdine': 'A-17',
-  'ar-codiceAmi': 'RTBS-24',
-  'ar-tensione24': 'si',
+  'ar-numeroOrdine': '',
 };
 
 async function create(browser: Browser, form: Record<string, string | string[]>): Promise<string> {
@@ -33,69 +37,65 @@ async function create(browser: Browser, form: Record<string, string | string[]>)
   return reply.location.split('/').pop()!;
 }
 
-describe('AMI 100 Mono RTBS', () => {
-  it('saves the sheet ticked in the list of the reduced pit and serves its PDF', async () => {
+describe('AMI 100', () => {
+  it('saves the sheet of the type chosen and serves its PDF only', async () => {
     const { browser } = await signedIn('TECNICO');
-    const id = await create(browser, { ...SURVEY, ...RTBS, testataRidotta: 'no' });
+    const id = await create(browser, { ...SURVEY, ...UCM });
     const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
-    // Kept in the order of the sheet, whatever order the form sent.
-    assert.deepEqual(row.fossaInterventi, ['AMI100_RTBS', 'SEMAFORO']);
-    assert.deepEqual(row.testataInterventi, []);
-    assert.equal(row.ami100, null, 'the old question is not written any more');
+    assert.equal(row.ami100, true);
+    assert.equal(row.ami100Tipo, 'MONO_UCM');
     assert.deepEqual(row.ordineAmi, {
-      modulo: 'ami100-mono-rtbs',
-      valori: { numeroOrdine: 'A-17', codiceAmi: 'RTBS-24', tensione24: true },
+      modulo: 'ami100-mono-ucm',
+      valori: {
+        numeroOrdine: 'A-17',
+        portata: '630',
+        fermate: '6',
+        spessore9: true,
+        tensione24: true,
+      },
     });
-    const pdf = await browser.get(`/schede/${id}/ami100-mono-rtbs`);
+    const pdf = await browser.get(`/schede/${id}/ami100-mono-ucm`);
     assert.equal(pdf.status, 200);
     assert.equal(pdf.headers.get('content-type'), 'application/pdf');
     assert.equal(pdf.bytes.subarray(0, 5).toString(), '%PDF-');
-    assert.equal((await browser.get(`/schede/${id}/ami100-mono-ucm`)).status, 404);
-    const page = await browser.get(`/schede/${id}`);
-    assert.match(page.body, new RegExp(`href="/schede/${id}/ami100-mono-rtbs"`));
-    assert.match(page.body, /Semaforo fondo fossa/);
-  });
-
-  it('opens it from the reduced headroom too, and closes it when the tick goes', async () => {
-    const { browser } = await signedIn('TECNICO');
-    const id = await create(browser, {
-      ...SURVEY,
-      testataRidotta: 'si',
-      testataInterventi: ['AMI100_RTBS'],
-      'ar-_': '1',
-      'ar-codiceAmi': 'RTBS-24',
-    });
-    const page = await browser.get(`/schede/${id}/modifica`);
-    const base = /name="base" value="([^"]+)"/.exec(page.body)![1]!;
-    assert.equal((await browser.get(`/schede/${id}/ami100-mono-rtbs`)).status, 200);
-    const saved = await browser.submit(`/schede/${id}/modifica`, `/schede/${id}`, {
-      ...SURVEY,
-      testataRidotta: 'si',
-      testataInterventi: ['PUNTONI_WW'],
-      'ar-_': '1',
-      'ar-codiceAmi': 'RTBS-24',
-      base,
-    });
-    assert.equal(saved.status, 303);
-    const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
-    assert.deepEqual(row.testataInterventi, ['PUNTONI_WW']);
-    assert.equal(row.ordineAmi, null);
     assert.equal((await browser.get(`/schede/${id}/ami100-mono-rtbs`)).status, 404);
+    const page = await browser.get(`/schede/${id}`);
+    assert.match(page.body, new RegExp(`href="/schede/${id}/ami100-mono-ucm"`));
   });
 
-  it('puts the lists in the order of the sheet and the RTBS sheet after them', async () => {
+  it('asks for the type when AMI 100 is wanted without it, and keeps what was typed', async () => {
+    const { browser } = await signedIn('TECNICO');
+    const reply = await browser.submit('/schede/nuova', '/schede', {
+      ...SURVEY,
+      ...UCM,
+      ami100Tipo: '',
+    });
+    assert.equal(reply.status, 422);
+    assert.match(reply.body, /Scegli AMI 100 Mono UCM o Mono RTBS/);
+    assert.match(reply.body, /id="err-ami100Tipo"/);
+    assert.match(reply.body, /name="au-numeroOrdine"[^>]*value="A-17"/);
+  });
+
+  it('puts the question under the reduced pit or headroom and both sheets under the type', async () => {
     const { browser } = await signedIn('TECNICO');
     const form = await browser.get('/schede/nuova');
-    const at = (text: string) => form.body.indexOf(text);
-    assert.ok(at('name="testataRidotta"') < at('name="testataInterventi"'));
-    assert.ok(at('name="testataInterventi"') < at('name="fossaRidotta"'));
-    assert.ok(at('name="fossaInterventi"') < at('id="f-ar"'));
     assert.match(
       form.body,
-      /<div class="modulo" id="f-ar" data-when="fossaInterventi" data-when-also="testataInterventi" data-when-values="AMI100_RTBS" data-off/,
+      /data-when="fossaRidotta" data-when-also="testataRidotta" data-when-values="si" data-off/,
     );
-    assert.doesNotMatch(form.body, /name="ami100"|id="f-au"/);
-    // The card fills the head of the sheet when it first opens.
-    assert.match(form.body, /name="ar-data"[^>]*value="\d{2}\/\d{2}\/\d{4}"/);
+    for (const [prefix, type] of [
+      ['au', 'MONO_UCM'],
+      ['ar', 'MONO_RTBS'],
+    ] as const) {
+      assert.match(
+        form.body,
+        new RegExp(
+          `<div data-when="ami100Tipo" data-when-values="${type}" data-off>\\s*<div class="modulo" id="f-${prefix}"`,
+        ),
+        prefix,
+      );
+    }
+    // The card fills the head of the sheets when they first open.
+    assert.match(form.body, /name="au-data"[^>]*value="\d{2}\/\d{2}\/\d{4}"/);
   });
 });

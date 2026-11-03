@@ -9,7 +9,6 @@ import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
-import { isMain } from "../../tools/lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const OUT_DIR = join(ROOT, ".claude", "hooks", "_state");
@@ -50,4 +49,4 @@ function main() {
   console.log(`PreCompact: работното състояние е запазено в .claude/hooks/_state/compact-snapshot.md (клон, незакомитнато, комити) — прочети го след уплътняване, ако губиш нишката.${payload.trigger ? ` (trigger: ${payload.trigger})` : ""}`);
 }
 
-if (isMain(import.meta.url)) { try { main(); } catch { /* fail-open */ } process.exit(0); }
+if (import.meta.url === `file://${process.argv[1]}`) { try { main(); } catch { /* fail-open */ } process.exit(0); }

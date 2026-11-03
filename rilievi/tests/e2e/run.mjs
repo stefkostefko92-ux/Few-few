@@ -199,7 +199,7 @@ try {
       await page.waitForFunction(
         () => document.querySelectorAll('[data-results] .row-link').length > 0,
       );
-      for (const path of ['ordine-quadro', 'dati-argano', 'sospensioni-2sg', 'ami100-mono-rtbs']) {
+      for (const path of ['ordine-quadro', 'dati-argano', 'sospensioni-2sg', 'ami100-mono-ucm']) {
         const order = await page.request.get(`${sheetUrl}/${path}`);
         const bytes = await order.body();
         if (order.status() !== 200 || bytes.subarray(0, 5).toString() !== '%PDF-')

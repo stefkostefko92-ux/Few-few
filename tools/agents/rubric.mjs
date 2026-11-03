@@ -14,7 +14,6 @@
 
 // ── Рубрики (чисти функции; праговете са ФИКСИРАНИ, не „на око") ──
 import { emitJsonNow } from "../lib/emit.mjs";
-import { isMain } from "../lib/is-main.mjs";
 export const RUBRICS = {
   // Сигурност/коректност: тежест = exploitability × reach, модулирано от увереност.
   security(f) {
@@ -52,7 +51,7 @@ export function score(kind, factors) {
 }
 
 // ── CLI ──
-if (isMain(import.meta.url)) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const argv = process.argv.slice(2);
   const val = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] : undefined; };
   const run = async (factors) => {

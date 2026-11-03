@@ -91,7 +91,7 @@ describe('the machine calculation of a scheda', () => {
     assert.match(form, /<option value="VVVF" selected>/);
     assert.match(form, /<option value="2" selected>2<\/option>/);
     assert.match(form, /id="f-rapportoB"[^>]*value="53"/);
-    assert.match(form, /<option value="telcal-10-114"[^>]* selected>Ø 10 mm · 6×19 \+ FC</);
+    assert.match(form, /<option value="telcal-10-114" selected>/);
     assert.match(form, /Il calcolo non è ancora stato salvato/);
     assert.equal(
       (await browser.get(`${pagina(scheda.id)}.pdf`)).status,
@@ -207,43 +207,6 @@ describe('the machine calculation of a scheda', () => {
       base: '',
     });
     assert.equal(inTrash.status, 404);
-  });
-
-  it('groups the ropes by maker, keeps the lay and a compensation typed by hand', async () => {
-    const azienda = await makeAzienda();
-    const scheda = await makeScheda(azienda.id);
-    const { browser } = await signedIn('TECNICO', azienda.id);
-    const empty = (await browser.get(pagina(scheda.id))).body;
-    assert.match(empty, /<optgroup label="TELCAL">/);
-    assert.match(empty, /<optgroup label="DONATI">/);
-    assert.match(empty, /data-classe="1370\/1770 N\/mm²"/);
-    assert.match(empty, /data-scheda-fune hidden>/, 'no rope chosen: no card');
-    assert.match(empty, /data-solo="fune" data-solo-valore="altro" data-off>/);
-    const saved = await browser.submit(pagina(scheda.id), pagina(scheda.id), {
-      ...FORM,
-      base: '',
-      funeCordatura: 'sZ',
-      compensazione: 'funi',
-      compNumero: '2',
-      compMisura: 'altro',
-      compAltroD: '11',
-      compAltroMassa: '0,42',
-      diametroTenditore: '400',
-    });
-    assert.equal(saved.status, 303);
-    const row = await prisma.calcoloArgano.findUniqueOrThrow({ where: { schedaId: scheda.id } });
-    assert.deepEqual((row.dati as { compAltro: unknown }).compAltro, { d: 11, massa: 0.42 });
-    const page = (await browser.get(pagina(scheda.id))).body;
-    assert.match(page, /<option value="sZ" selected>Crociata destra \(sZ\)</);
-    assert.match(page, /<option value="altro" selected>Altra misura \(dati a mano\)</);
-    assert.match(page, /data-solo="compMisura" data-solo-valore="altro">/, 'shown');
-    assert.match(page, /id="f-compAltroMassa"[^>]*value="0,42"/);
-    assert.match(page, /data-scheda-fune>/, 'the card of the chosen rope');
-    assert.match(page, /<dd data-dato="formazione">6×19 \+ FC, 114 fili<\/dd>/);
-    assert.match(page, /2 × Funi 11 mm \(Dati a mano\)/);
-    assert.match(page, /Crociata destra \(sZ\)<\/td>/);
-    assert.ok(!/[А-яЁё]/.test(page), 'no Cyrillic in the page');
-    assert.equal((await browser.get(`${pagina(scheda.id)}.pdf`)).status, 200);
   });
 
   it('is not offered for a hydraulic lift (no machine)', async () => {

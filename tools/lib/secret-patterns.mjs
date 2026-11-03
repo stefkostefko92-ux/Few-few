@@ -55,9 +55,6 @@ export const CREDENTIAL = [
   { name: "AWS Secret (aws_secret_access_key)", re: /aws_secret_access_key\s*[:=]\s*['"]?[A-Za-z0-9/+]{40}\b/i },
   { name: "Stripe live secret", re: /\bsk_live_[0-9a-zA-Z]{16,}\b/ },
   { name: "Stripe restricted live key", re: /\brk_live_[0-9a-zA-Z]{16,}\b/ },
-  // Подписният ключ на Stripe webhook (02.11.2026, червеният екип + Кодаджията): с него се подправя всяко
-  // събитие на linketto/panev/SupremeDiscordBot/Gaming. Фикстурите в репото са ≤16 знака → прагът 24 е без шум.
-  { name: "Stripe webhook signing secret", re: /\bwhsec_[0-9a-zA-Z]{24,}\b/ },
   { name: "GitHub PAT (classic)", re: /\bghp_[0-9A-Za-z]{36}\b/ },
   { name: "GitHub PAT (fine-grained)", re: /\bgithub_pat_[0-9A-Za-z_]{60,}\b/ },
   { name: "GitHub OAuth/App token", re: /\b(?:gho|ghu|ghs|ghr)_[0-9A-Za-z]{36}\b/ },

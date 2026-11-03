@@ -98,6 +98,7 @@
     "processingNote": "Parduotuvės pardavimams taip pat taikomas mokėjimo apdorojimo mokestis: 1,9% + €0,30 (padengia kortelių apdorotoją).",
     "mostPopular": "Populiariausias",
     "annualOffer": "Sutaupyk {percent}% su metiniu planu",
+    "referralPercentNote": "Pakviesk draugų ir uždirbk {percent}% nuo kiekvieno jų mokėjimo.",
     "vatNote": "Kainos yra galutinės — su PVM, kai jis taikomas."
   },
   "auth": {
@@ -373,7 +374,7 @@
   },
   "footer": {
     "company": "Carbon Stealth VCC produktas",
-    "legalLine": "Įm. kodas (EIK) 208725180, PVM mokėtojo kodas BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgarija",
+    "legalLine": "Įm. kodas BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgarija",
     "privacy": "Privatumas",
     "terms": "Sąlygos",
     "contact": "info@carbonstealth.eu",

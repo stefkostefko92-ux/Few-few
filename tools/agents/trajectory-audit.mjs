@@ -24,7 +24,6 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { scoreTrajectory } from "./evals/eval-lib.mjs";
 import { emitJsonNow } from "../lib/emit.mjs";
-import { isMain } from "../lib/is-main.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
@@ -145,7 +144,7 @@ export function auditTrajectories(rows, specs) {
 }
 
 // ── CLI ──
-if (isMain(import.meta.url)) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const argv = process.argv.slice(2);
   const specs = loadSpecs();
   const withTraj = specs.filter((s) => s.trajectory).length;

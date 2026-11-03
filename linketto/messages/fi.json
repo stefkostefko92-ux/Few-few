@@ -98,6 +98,7 @@
     "processingNote": "Kaupan myynneistä peritään myös maksun käsittelymaksu 1,9 % + 0,30 € (kattaa korttioperaattorin).",
     "mostPopular": "Suosituin",
     "annualOffer": "Säästä {percent} % vuosipaketilla",
+    "referralPercentNote": "Kutsu ystäviä ja ansaitse {percent} % jokaisesta heidän maksustaan.",
     "vatNote": "Hinnat ovat lopullisia — sisältävät alv:n silloin, kun sitä peritään."
   },
   "auth": {
@@ -373,7 +374,7 @@
   },
   "footer": {
     "company": "Carbon Stealth VCC -tuote",
-    "legalLine": "Yritystunnus (EIK) 208725180, ALV-numero BG208725180 · Samuil 3, 2670 Bobov Dol, Bulgaria",
+    "legalLine": "Y-tunnus BG208725180 · Samuil 3, 2670 Bobov Dol, Bulgaria",
     "privacy": "Tietosuoja",
     "terms": "Ehdot",
     "contact": "info@carbonstealth.eu",

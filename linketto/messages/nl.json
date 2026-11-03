@@ -98,6 +98,7 @@
     "processingNote": "Op verkopen in de shop worden ook verwerkingskosten van 1,9% + €0,30 gerekend (dekt de kaartverwerker).",
     "mostPopular": "Meest populair",
     "annualOffer": "Bespaar {percent}% met een jaarabonnement",
+    "referralPercentNote": "Nodig vrienden uit en verdien {percent}% van elke betaling die ze doen.",
     "vatNote": "De prijzen zijn definitief — inclusief btw waar van toepassing."
   },
   "auth": {
@@ -373,7 +374,7 @@
   },
   "footer": {
     "company": "Een product van Carbon Stealth VCC",
-    "legalLine": "Ondernemingsnr. (EIK) 208725180, btw-nr. BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgarije",
+    "legalLine": "Ondernemingsnr. BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgarije",
     "privacy": "Privacy",
     "terms": "Voorwaarden",
     "contact": "info@carbonstealth.eu",

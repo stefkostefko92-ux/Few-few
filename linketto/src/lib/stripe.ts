@@ -1,6 +1,5 @@
 import 'server-only';
 import Stripe from 'stripe';
-import { STRIPE_API_VERSION } from './stripe-state';
 
 // Ключовете идват само от env (свързаният Stripe акаунт на собственика);
 // нищо не се хардкодва в репото.
@@ -12,7 +11,7 @@ export function getStripe(): Stripe | null {
   if (!client) {
     // Пинваме API версията — ъпгрейд на акаунта да не сменя мълчаливо
     // формата на webhook обектите.
-    client = new Stripe(key, { apiVersion: STRIPE_API_VERSION });
+    client = new Stripe(key, { apiVersion: '2025-02-24.acacia' });
   }
   return client;
 }

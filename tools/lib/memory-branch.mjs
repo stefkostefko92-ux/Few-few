@@ -24,7 +24,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, rmdirSync, statSync, rmSync, existsSync, readFileSync, appendFileSync } from "node:fs";
 import { join, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
-import { addLessons, sectionLessons, countVerifiedText, lessonIndex, lessonText, summarize, applyUpdate, norm, bodyKey, mergeLessons3 } from "./memory-core.mjs";
+import { addLessons, sectionLessons, countVerifiedText, lessonIndex, lessonText, summarize, applyUpdate, norm, bodyKey } from "./memory-core.mjs";
 import { parseFallback, replaceFallback } from "./dashboard-fallback.mjs";
 import { assertCleanFiles, treeProblems, ConflictContentError } from "./conflict-guard.mjs";
 
@@ -201,35 +201,6 @@ function addedSince(cwd, tip, since) {
   return out;
 }
 
-/**
- * Файловете с памет за обединяващ commit върху `base` (02.11.2026). Всеки файл на агент е ТРИСТРАННО слят по
- * поуки (`mergeLessons3`): започва от версията на `other`, прилага промените на `base` спрямо `since`.
- * Дотогава тук беше „файлът на base + добавените в other редове“ — при сгъване на main това значеше
- * „паметта на main + новите поуки“ и всяка редакция в agents/memory (промоция, опровержение, курация, обхват)
- * изчезваше. Агент само в едната страна → неговата версия. Таблото се пресмята от добавеното спрямо base.
- */
-function mergedMemoryFiles(cwd, base, other, since, date) {
-  const files = {}, updates = [];
-  const names = new Set([...agentFiles(cwd, base), ...agentFiles(cwd, other)]);
-  for (const f of names) {
-    const path = `${MEM_PATH}/${f}`;
-    const b = show(cwd, base, path), o = show(cwd, other, path);
-    if (o == null) continue;                       // само в base → остава
-    const merged = b == null ? o : mergeLessons3(since ? show(cwd, since, path) || "" : "", o, b);
-    if (merged === b) continue;
-    files[path] = merged;
-    const had = lessonIndex(b || "");
-    const addV = sectionLessons(merged, "verified").filter((l) => !had.has(l));
-    const addQ = sectionLessons(merged, "quarantine").filter((l) => !had.has(l));
-    if (addV.length || addQ.length) {
-      const s = summarize(addV.map(lessonText), addQ.map(lessonText), date);
-      updates.push({ agent: f.replace(/\.md$/, ""), ...s, lessons: countVerifiedText(merged) });
-    }
-  }
-  Object.assign(files, dashboardFiles(cwd, base, updates));
-  return { files };
-}
-
 /** Редовете на append-only файловете от `other`, които ги няма в `base` → файлове за commit върху base. */
 function appendOnlyUnion(cwd, base, other) {
   const files = {};
@@ -278,7 +249,8 @@ function monotonicDashboard(cwd, base, other, files) {
 /** Обединява `other` в `base` по съдържание: дървото на base + поуките, които other е добавил след общия им предшественик. */
 function unionCommit(cwd, base, other, message, date) {
   const since = mergeBase(cwd, base, other);
-  const { files } = mergedMemoryFiles(cwd, base, other, since, date);
+  const lessons = addedSince(cwd, other, since);
+  const { files } = applyLessons(cwd, base, lessons, date);
   Object.assign(files, appendOnlyUnion(cwd, base, other));
   monotonicDashboard(cwd, base, other, files);
   return commitFiles(cwd, base, files, [other, base], message);

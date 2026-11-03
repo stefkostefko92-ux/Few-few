@@ -23,7 +23,6 @@ import { fileURLToPath } from "node:url";
 import { validateHandoff } from "../../tools/agents/handoff.mjs";
 import { normalizeActor } from "./dod-check.mjs";
 import { looksInjection } from "./memory-capture.mjs";
-import { isMain } from "../../tools/lib/is-main.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -56,11 +55,7 @@ export function nextStepNote(finalText, agentType, nameOf = new Map()) {
   if (/блокер/.test(status)) {
     return `⛔ Блокер от „${nm(from)}“${to && to !== from && to !== "друг" ? ` → „${nm(to)}“` : ""}. ${next ? `Какво казва: ${next} ` : ""}${tag} Не продължавай веригата, докато блокерът не е решен.`;
   }
-  // „Към: човек“ със статус наред и без следваща стъпка е обикновен доклад, не молба за решение
-  // (2026-10-27: две проби с „Следваща стъпка: няма“ излязоха като „иска решение от човек: няма“).
-  const noNext = !next || /^(няма|нищо|—|-|n\/?a|none)[.!]?$/i.test(next);
-  if (to === "човек" && noNext && /наред/.test(status)) return null;
-  if (to === "човек") return `🧑 „${nm(from)}“ иска решение от човек${next && !noNext ? `: ${next}` : ""} ${tag} Покажи го на потребителя.`;
+  if (to === "човек") return `🧑 „${nm(from)}“ иска решение от човек${next ? `: ${next}` : ""} ${tag} Покажи го на потребителя.`;
   if (!to || to === from || to === "друг" || to === "оркестратор") return null;
   return `↪ „${nm(from)}“ предава на „${nm(to)}“ (статус: ${clip(f.status, 30) || "—"}).${next ? ` Следваща стъпка: ${next}` : ""} ${tag} ` +
     `Ако го пуснеш: дай му находките с файл:ред и точните файлове — не преповтаряй свършеното.`;
@@ -77,4 +72,4 @@ function main() {
   process.exit(0);
 }
 
-if (isMain(import.meta.url)) { try { main(); } catch { process.exit(0); } }
+if (import.meta.url === `file://${process.argv[1]}`) { try { main(); } catch { process.exit(0); } }

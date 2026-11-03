@@ -15,7 +15,6 @@ import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
-import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -68,7 +67,7 @@ export function anchorDrift(reg, agentsDir = AGENTS_DIR, memDir = MEM_DIR) {
 
 export function loadClaims() { return JSON.parse(readFileSync(CLAIMS, "utf8")); }
 
-if (isMain(import.meta.url)) await runCli();
+if (import.meta.url === `file://${process.argv[1]}`) await runCli();
 async function runCli() {
   const JSON_OUT = process.argv.includes("--json");
   const CHECK = process.argv.includes("--check");

@@ -29,15 +29,13 @@
   object-position: 50% 40%;
 }
 
-/* Тъмното под текста: отдолу нагоре и отляво надясно, за да се чете бялото върху бетона; отгоре — под
-   логото, за да се чете и малкият му ред върху светлия таван. */
+/* Тъмното под текста: отдолу нагоре и отляво надясно, за да се чете бялото върху бетона. */
 .hero::after {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
   background:
-    linear-gradient(to bottom, rgb(0 0 0 / 0.5) 0%, rgb(0 0 0 / 0) 38%),
     linear-gradient(to top, rgb(0 0 0 / 0.92) 0%, rgb(0 0 0 / 0.7) 32%, rgb(0 0 0 / 0) 68%),
     linear-gradient(to right, rgb(0 0 0 / 0.72) 0%, rgb(0 0 0 / 0.3) 46%, rgb(0 0 0 / 0) 70%);
 }
@@ -48,14 +46,7 @@
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 72px var(--gutter) clamp(48px, 2rem + 4vw, 96px);
-}
-
-/* Пълното лого над заглавието: тъмен ореол по очертанието го отделя от бетона зад него. */
-.hero__logo {
-  width: 440px;
-  margin-bottom: 8px;
-  filter: drop-shadow(0 0 18px rgb(0 0 0 / 0.85));
+  padding: 160px var(--gutter) clamp(48px, 2rem + 4vw, 96px);
 }
 
 .hero__title {
@@ -98,18 +89,16 @@
   }
 
   .hero::after {
-    background:
-      linear-gradient(to bottom, rgb(0 0 0 / 0.6) 0%, rgb(0 0 0 / 0) 40%),
-      linear-gradient(to top, rgb(0 0 0 / 0.94) 0%, rgb(0 0 0 / 0.78) 45%, rgb(0 0 0 / 0.1) 85%);
+    background: linear-gradient(
+      to top,
+      rgb(0 0 0 / 0.94) 0%,
+      rgb(0 0 0 / 0.78) 45%,
+      rgb(0 0 0 / 0.1) 85%
+    );
   }
 
   .hero__text {
     gap: 18px;
-    padding-top: 40px;
-  }
-
-  .hero__logo {
-    width: 340px;
-    margin-bottom: 4px;
+    padding-top: 120px;
   }
 }

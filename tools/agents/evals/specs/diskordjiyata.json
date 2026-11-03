@@ -17,12 +17,7 @@
         "Ed25519",
         "verify",
         "подпис",
-        "interactions endpoint",
-        "deferReply",
-        "SlashCommandBuilder",
-        "interactionCreate",
-        "3 s",
-        "3 секунди"
+        "interactions endpoint"
       ],
       "label": "коректен interactions модел"
     },

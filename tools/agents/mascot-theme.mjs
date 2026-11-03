@@ -26,7 +26,6 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MASCOT = join(ROOT, "mascot");
@@ -288,7 +287,7 @@ export function withInlineBlock(html, block) {
 }
 export const INLINE_MARKERS = { MARK_START, MARK_END };
 
-if (isMain(import.meta.url)) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   if (!existsSync(MASCOT)) {
     console.error("\x1b[31m✗ липсва mascot/ — маскотът идва от пакета, не се рисува тук.\x1b[0m");
     process.exit(1);

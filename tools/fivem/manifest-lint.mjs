@@ -8,9 +8,8 @@
 // Употреба:  node tools/fivem/manifest-lint.mjs <папка-или-файл>
 // Изход: 0 = чисто/само INFO, 1 = има HIGH находки. Евристичен помощник, не заместител на ревю/тест.
 
-import { readFileSync, readdirSync, statSync, existsSync, realpathSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, extname } from "node:path";
-import { fileURLToPath } from "node:url";
 
 // Тайни: Steam Web API ключ, generic токен в конфиг. (FiveM license key живее в server.cfg, не в ресурс.)
 const SECRET_RE = /(steam_webApiKey|sv_licenseKey|api[_-]?key|token|secret)\s*[:=]\s*["'][A-Za-z0-9_\-]{16,}["']/i;
@@ -95,6 +94,4 @@ function runCli() {
   process.exit(findings.some((f) => f.sev === "HIGH") ? 1 : 0);
 }
 
-// Пускане като CLI: realpath и от двете страни — пътят с интервал/кирилица, Windows и symlink (Кодаджията, 02.11.2026).
-const isMain = () => { try { return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url)); } catch { return false; } };
-if (process.argv[1] && isMain()) runCli();
+if (import.meta.url === `file://${process.argv[1]}`) runCli();

@@ -1,53 +1,13 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "0",
-    "CLAUDE_CODE_SUBAGENT_EFFORT": "medium",
-    "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS": "10",
-    "CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS": "10"
-  },
-  "permissions": {
-    "deny": [
-      "Read(.env)",
-      "Read(.env.*)",
-      "Read(!*.example)",
-      "Read(*.pem)",
-      "Read(id_rsa*)",
-      "Read(id_ed25519*)",
-      "Read(~/.ssh/**)",
-      "Read(~/.aws/**)",
-      "Read(~/.config/gh/**)",
-      "Read(~/.netrc)",
-      "Read(~/.claude/.credentials.json)",
-      "Edit(.env)",
-      "Edit(.env.*)",
-      "Edit(!*.example)",
-      "Edit(*.pem)",
-      "Edit(id_rsa*)",
-      "Edit(id_ed25519*)",
-      "Edit(~/.ssh/**)",
-      "Edit(~/.aws/**)",
-      "Edit(~/.config/gh/**)",
-      "Edit(~/.netrc)",
-      "Edit(~/.claude/.credentials.json)",
-      "Read(**/.next/**)",
-      "Edit(**/.next/**)",
-      "Agent(claude-code-guide)"
-    ]
-  },
   "hooks": {
     "SubagentStart": [
       {
-        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha|goladjiyata|skorostnika|asansyorchika|frezadjiyata|igrodelets|danachnika",
+        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha|goladjiyata|skorostnika|asansyorchika",
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-preload.mjs\" --part=shared",
-            "timeout": 15
-          },
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-preload.mjs\" --part=agent",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-preload.mjs\"",
             "timeout": 15
           }
         ]
@@ -55,7 +15,7 @@
     ],
     "SubagentStop": [
       {
-        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha|goladjiyata|skorostnika|asansyorchika|frezadjiyata|igrodelets|danachnika",
+        "matcher": "pravniyat-razbirach|kodadjiyata|geymara|seo|prevodach|siydara|vps-adjiyata|3d-maniac|socialdjiyata|prodavacha|mobildjiyata|printadjiyata|dizayner|hromadjiyata|diskordjiyata|treydara|kachestveniyat|ai-djiyata|kasadjiyata|tayniyat-agent|konveyera|izpitatelya|letopisetsa|nabludatelya|analizatora|razbivacha|goladjiyata|skorostnika|asansyorchika",
         "hooks": [
           {
             "type": "command",
@@ -85,12 +45,6 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-prompt.mjs\"",
-            "timeout": 10,
-            "onFailure": "block"
-          },
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/route-hint.mjs\"",
             "timeout": 10
           }
         ]
@@ -128,53 +82,23 @@
         ]
       }
     ],
-    "ConfigChange": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-config.mjs\"",
-            "timeout": 10,
-            "onFailure": "block"
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
-        "matcher": "Bash|Monitor",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-dangerous.mjs\"",
-            "timeout": 10,
-            "onFailure": "block"
-          },
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-readonly.mjs\"",
-            "timeout": 10,
-            "onFailure": "block"
+            "timeout": 10
           }
         ]
       },
       {
-        "matcher": "Bash|Monitor|WebFetch|WebSearch|mcp__.*",
+        "matcher": "Bash|WebFetch|WebSearch|mcp__.*",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-exfil.mjs\"",
-            "timeout": 10,
-            "onFailure": "block"
-          }
-        ]
-      },
-      {
-        "matcher": "Agent|Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/agent-cap.mjs\"",
             "timeout": 10
           }
         ]

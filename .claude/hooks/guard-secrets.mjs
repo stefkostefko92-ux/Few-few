@@ -14,7 +14,6 @@
 // Ползваме CREDENTIAL (не ALL): JWT остава само за commit гейта, защото `Authorization: Bearer eyJ…`
 // е ЛЕГИТИМЕН рънтайм трафик и блокирането му би било фалшива тревога (виж secret-patterns.mjs).
 import { CREDENTIAL } from "../../tools/lib/secret-patterns.mjs";
-import { isMain } from "../../tools/lib/is-main.mjs";
 export const SECRET_RE = CREDENTIAL;
 
 // Пътища, където фалшиви ключове са легитимни (фикстури/тестове/eval/scratch) → не вдигай шум.
@@ -25,21 +24,12 @@ export const SKIP_PATH = /(^|\/)(evals?|fixtures?|__tests__|test|tests|\.tmp|scr
 // повтаря ASCII, не се вижда в браузър/терминал/ревю, но моделът го чете), както и U+FEFF, U+2060,
 // U+00AD, U+180E, U+3164. Един `sk_live_…` с вмъкнат U+200B преставаше да се разпознава като тайна.
 // Санитизираме ВЕДНЪЖ на едно място, вместо да разширяваме два отделни списъка ad hoc.
-// 02.11.2026: + селекторите на варианти (U+FE00-FE0F, U+E0100-E01EF), CGJ U+034F, U+061C, хангъл
-// пълнителите U+115F/U+1160/U+FFA0, монголските FVS U+180B-180D и кхмерските U+17B4/17B5. Записан с
-// \u escape-и: суровите невидими знаци в изходния код не се виждат при ревю (същата причина, поради
-// която ги махаме).
 export const INVISIBLE =
-  /[\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\u3164\uFE00-\uFE0F\uFEFF\uFFA0]|[\u{E0000}-\u{E007F}\u{E0100}-\u{E01EF}]/gu;
+  /[­᠎​-‏‪-‮⁠-⁤⁦-⁩ㅤ﻿]|[\u{E0000}-\u{E007F}]/gu;
 
-/** Маха невидимите знаци, нормализира (NFKC) и разкодира %XX, за да не се крие payload зад тях. */
+/** Маха невидимите знаци и нормализира (NFKC), за да не се крие payload зад тях. */
 export function sanitize(text) {
-  const s = String(text || "").normalize("NFKC").replace(INVISIBLE, "");
-  // Червен екип 31.10.2026: `sk%5Flive%5F…` в адрес минаваше покрай шаблоните. Разкодираме всяка
-  // %XX двойка поотделно (счупено кодиране не хвърля), два пъти — срещу двойно кодиране.
-  if (!s.includes("%")) return s;
-  const once = (x) => x.replace(/(?:%[0-9A-Fa-f]{2})+/g, (m) => { try { return decodeURIComponent(m); } catch { return m; } });
-  return once(once(s)).normalize("NFKC").replace(INVISIBLE, "");
+  return String(text || "").normalize("NFKC").replace(INVISIBLE, "");
 }
 
 export function findSecret(content) {
@@ -58,7 +48,7 @@ export function contentOf(ti = {}) {
     (Array.isArray(ti.edits) ? ti.edits.map((e) => e?.new_string ?? "").join("\n") : "");
 }
 
-if (isMain(import.meta.url)) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   let buf = "";
   process.stdin.on("data", (d) => (buf += d));
   process.stdin.on("end", () => {

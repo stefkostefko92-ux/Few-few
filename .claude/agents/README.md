@@ -4,16 +4,9 @@
 > извикване). Тук живеят пълният ростер, цикълът на самообучение и инструментите на агентите.
 
 This repo ships a small team of **purpose-built Claude Code subagents**. Each is a
-markdown file with YAML frontmatter (`name`, `description`, `tools`, `model`, plus `effort`, `maxTurns`
-and, where needed, `skills`) and a
+markdown file with YAML frontmatter (`name`, `description`, `tools`, `model`) and a
 Bulgarian system prompt distilled from deep web + GitHub research. Invoke one with the
 Agent tool (e.g. *"пусни Кодаджията върху промените"*); several can run in parallel.
-
-**Екипи — започни оттук.** Агентите са в 9 малки екипа около реален поток (Щабът · Ковачницата ·
-Пускането · Думите · Растежът · Парите · Нормите · Платформите · Формата) — всеки с водач, поток до 3
-стъпки, човешка точка, 5 тестови задачи, 3 вероятни провала и метрики. Източник: `_teams.json`;
-прочетим изглед: [`_teams.md`](_teams.md). Не знаеш кого да викнеш →
-`node tools/agents/teams.mjs --route "<задачата>"`. Всеки агент получава своята карта при старт.
 
 | Agent (file)                              | Викай го за…                                                                 |
 | ----------------------------------------- | ---------------------------------------------------------------------------- |
@@ -46,14 +39,11 @@ Agent tool (e.g. *"пусни Кодаджията върху промените
 | **Голаджията** `goladjiyata.md` ⚽         | **Football betting analyzer** at enterprise grade — **NOT a profit machine, NOT an advisor**. Pulls real match data (form, xG/xGA, lineups/injuries, odds, context) from live sources and **cites it — never invents a match, score or price**. Transparent math: attack/defense strength normalized to opponent (SoS/Elo) + recency time-decay → λ → **Poisson × Dixon-Coles** τ(ρ). Four inviolable rules: (1) **de-vig** (remove overround) before measuring value, (2) the **market is the anchor**, (3) **fractional Kelly** with a cap, (4) **calibration** (Brier/log-loss/CLV), not win-rate. Twin-in-spirit of **Трейдъра** (risk-first). Never guarantees profit; every output ends with a not-advice / 18+ / gambling-risk disclaimer. |
 | **Скоростника** `skorostnika.md` ⚡        | **Pre-launch performance auditing** — thinks like **PageSpeed Insights/Lighthouse**, but runs *before* the site is live. PageSpeed fetches the URL **from Google's servers**, so an unpublished site is unreachable **by design** — but the lab half of PageSpeed *is* Lighthouse, and Lighthouse is Chromium + measurement, which we reproduce locally. `tools/seo/prelaunch-audit.mjs <folder|URL>` measures **FCP · LCP · TBT · CLS** in real Chromium under the Lighthouse mobile profile (4× CPU throttle + ~Slow 4G) and scores them on the **published Lighthouse v10 log-normal curves** (p10 → 90, median → 50) with weights **FCP 10 · LCP 25 · TBT 30 · CLS 25** — Speed Index needs a filmstrip we don't capture, so the weights are **renormalized over what was measured** and the report says so. Returns impact-ordered advice (render-blocking, images without dimensions, missing compression, long tasks, `font-display`). **Never reports a score without the spread** (TBT measured 1003–1491 ms for the same site — a single run is noise with pretensions), **never presents lab data as field data** (CrUX needs 28 days of real users and cannot exist pre-launch), and verifies against the real PSI/CrUX after deploy via `tools/seo/cwv.mjs`. **Distinct from SEO (discoverability & ranking) — Скоростника chases *speed*, with numbers.** |
 | **Асансьорчика** `asansyorchika.md` 🛗     | **Lift & elevator standards (Italy/EU)** — answers *what the standard requires* with **document + edition + clause + value** (with unit) and the `file:line` of the note, or silence. Knows which edition applies: **new lift → UNI EN 81-20/50:2020**; **modification of an existing one → UNI 10411-1:2024** (no CE) or **UNI 10411-11:2024** (CE), hydraulic **-2/-12**; older editions (EN 81-1/2 1998/2008, UNI 10411 2008/2013/2017) for lifts placed under them; plus EN 81-21/28/70/71/73/80, EN 13015, EN 294 and the laws (DPR 162/1999 as enacted, DM 236/1989, DM 23/07/2009). Checks the LiftPilot norm register (`liftpilot/src/calc/norme.ts` and related). **Never reproduces the text of a standard** — UNI/EN are licensed for internal use only, so clause notes live in the **private** repo `norme-ascensori`; Few-few holds only the agent, the public laws (`research/norme-ascensori/leggi/`) and a content-free index. **Compliance is the engineer's call**, not the agent's. |
-| **Фрезаджията** `frezadjiyata.md` 🪚      | **CAM output for cabinet furniture (Korpora)** — cutting lists and **nesting** (MaxRects by stock/decor, grain kept, cutter-diameter spacing), **edge banding** (band compensation in the cut size), drilling maps, **layered DXF R12** (operation in the layer name) and **G-code for ISO/Fanuc and GRBL**. **Fail-closed:** while `cncBlockers()` stands no G-code/DXF is made and `cnc.zip` answers **422** with the reasons. Keeps the dialect honest (GRBL v1.1 has no **G41/G42**, **G81**, **M6** — radius compensation lives in the CAM path), Z0 on the sheet top, safe Z 20 mm, R plane 3 mm. The risk is physical (a broken machine or scrapped boards); simulation and dry run on the machine stay with the human. Distinct from **3D Maniac** (scan→CAD) and **Принтаджията** (FDM print). |
-| **Игроделеца** `igrodelets.md` ♟️        | **Game rules for the 21 games of АСО (`Gaming/`)** — every move is judged **on the server** (`GameRoom.handleAction`: `actionShapeOk` → `validate`/`legalActions` → `reduce`, else `illegal_action`), never in the client; scoring and declarations follow the official rulebook (FIDE, WBF Laws, WPA, WPBSA, Bulgarian belote/santase standards) and the in-game text `gameRules.ts`; hidden information never leaks through `redact`/`redactEvent`. Owns realtime sync, per-game turn timers, bots, **ELO/MMR** and rewards, and the **virtual chips + gems economy without real-money gambling**. Every fix carries a regression test against the real engine. Different from Геймъра (FiveM/Lua, 3D assets) and Кодаджията (general review). |
-| **Данъчника** `danachnika.md` 💶          | **VAT on sales and platform revenue in the EU, Bulgaria and Italy** — who is the VAT supplier (**Art. 9a Reg. 282/2011** for e-services through a platform, **Art. 14a Dir. 2006/112** for goods), place of supply (B2B → reverse charge; B2C e-services → the consumer's country above the **€10 000 micro-threshold**, Art. 59c Dir. / чл. 20б ЗДДС), rates, **OSS/IOSS**, registration (чл. 96, **чл. 97а** ЗДДС) and invoices (чл. 114 ЗДДС; SdI in Italy). Applies the conditions of the norm to the facts before any conclusion; every article carries a source opened in the session. Read-only: the output is a **prepared case for a tax adviser**, never advice — always „не е правен съвет“. Different from Продавача (Stripe Tax mechanics), Касаджията (fiscal receipt, Н-18) and Правния Разбирач (GDPR, DSA, terms). |
-Twenty-nine of the thirty-two agents have reached at least **v10.0** — mastery — through genuine,
+All twenty-nine agents have reached at least **v10.0** — mastery — through genuine,
 source-verified learning (Скоростника, born 2026-07-29, crossed the threshold the same day:
 40 verified lessons from five live-source missions + real audits — vizitka 100/100,
-ospedali's heavy subpage exposed at 67/100 with a 6.4s TBT); Асансьорчика, born 2026-10-05,
-passed it from a real audit; Фрезаджията, Игроделеца and Данъчника, born 2026-11-02, start at v0.1 (current versions: `agents-dashboard/agents.json`). Each definition layers: an **operating contract** (v1.0 —
+ospedali's heavy subpage exposed at 67/100 with a 6.4s TBT); Асансьорчика, born 2026-10-05, is at v16.2
+(161 verified lessons from a real audit; see the version scheme below). Each definition layers: an **operating contract** (v1.0 —
 source-or-silence, verify-before-asserting, confidence labels, self-check, stop-and-ask, Definition
 of Done); a **v1.1** worked example + competence boundary; a **v2.0** *instrumented-executor* block
 (runs real `tools/<area>/`); a **v2.1 reliability** block (Chain-of-Verification for legal/SEO/
@@ -70,48 +60,46 @@ remember. The loop is **read → act → verify → persist → curate**: a `Sub
 the agent ends every turn with a strict, self-identifying ```learn block; a `SubagentStop` hook
 (`.claude/hooks/memory-capture.mjs`) parses it from the transcript and persists it — **verified
 lessons → memory, everything else → a `Карантина` (quarantine) section that is never read as fact** —
+</br>Alongside memory, the `SubagentStart` hook injects **two shared doctrines into every agent** so the
+fleet *acts the same way and chains reliably*: `_memory/SECURITY.md` (state-level security doctrine) and
+`_memory/PROCEDURE.md` (**one lifecycle** — Orient → verify-live → Act → Self-check → **Hand off** — plus
+global red lines and a **typed HANDOFF contract**). Named cross-agent flows (lead · pipeline · escalation)
+live in `.claude/agents/_orchestration.md` (v4.0); `oversee.mjs` hard-gates on both doctrines' presence.
 deduping as it goes (works even for the read-only auditors that can't write files themselves) and
 also **appending a learning entry to that agent's activity feed in the dashboard** (`agents.json` +
 the embedded FALLBACK in `index.html`, atomic write + lock) and **bumping the agent's version**
 (a `vX.Y — учене` timeline entry — verified learning level-ups the agent; quarantine and repeat lessons
-don't). **Where it lands:** not in the task branch — the hook commits to the dedicated
+don't). **Where it lands (2026-09-23):** not in the task branch — the hook commits to the dedicated
 `agents/memory` branch via git plumbing (the human's HEAD/index/worktree are never touched), a detached
 sync folds `main` in and pushes, and one standing PR `agents/memory` → `main` brings it home;
-`memory-preload` reads pending lessons from that branch. Lessons left in task branches are invisible to
-new sessions; `tools/agents/harvest-memory.mjs` recovers them.
+`memory-preload` already reads pending lessons from that branch. Before this, 562 verified lessons sat
+in 32 task branches that new sessions never saw (`tools/agents/harvest-memory.mjs` recovered them).
 **Version scheme (`bumpVersion` in `tools/lib/memory-core.mjs`):** each verified lesson is +0.1 and
 **every 10 verified lessons roll into a +1 major** (6.9 → 7.0 → …); the version tracks verified-lesson
 count (≈ lessons ÷ 10), so **v10.0 = mastery** (≈100 verified lessons) is a *threshold, not a cap* — agents
-keep climbing past it as they learn (current versions: `agents-dashboard/agents.json`). So the agents-lab page updates
+keep climbing past it as they learn (e.g. `ai-djiyata` is at **v15.0**, ~150 lessons). So the agents-lab page updates
 itself on every new lesson; `tools/memory/curate.mjs` then dedups, caps size, and flags contradictions for human review. The
-verify gate (only tool/eval/test/live-source-backed lessons become fact) keeps unverified claims
-out of memory. Hooks are registered in `.claude/settings.json`, scoped by
-matcher to the thirty-two agent types; the schema + `learn`-block format live in `.claude/agents/_memory/PROTOCOL.md`.
+verify gate (only tool/eval/test/live-source-backed lessons become fact) is what keeps it flawless —
+no unverified claim contaminates memory. Hooks are registered in `.claude/settings.json`, scoped by
+matcher to the twenty-nine agent types; the schema + `learn`-block format live in `.claude/agents/_memory/PROTOCOL.md`.
 **v7.0 hardening** (distilled from GitHub prior art — anthropic-cookbook `research_subagent`, wshobson
-PluginEval, Mem0, DSPy/Guardrails/ragas): the capture hook **hard-drops any lesson containing a
+PluginEval, Mem0, DSPy/Guardrails/ragas): the capture hook now **hard-drops any lesson containing a
 secret/key/token**, **downgrades a `verified` lesson whose source isn't a real URL/`file:line`/tool to
-quarantine** (don't trust self-assessment), and verified facts past their freshness class (`memory-freshness.mjs`) or an
-explicit re-verify date are **queued for re-verification** (TTL/provenance); agents must run **Chain-of-Verification** before
+quarantine** (don't trust self-assessment), and `curate.mjs` **flags time-sensitive verified facts older
+than 45 days for re-verification** (TTL/provenance); agents must run **Chain-of-Verification** before
 marking anything `verified`. See PROTOCOL.md's "v7.0 — закалена безгрешност" section.
-
-Alongside memory, every agent preloads **two shared doctrines** as the `agent-doctrine` skill (`skills:`,
-generated by `tools/agents/doctrine-skill.mjs`) so the
-fleet *acts the same way and chains reliably*: `_memory/SECURITY.md` (state-level security doctrine) and
-`_memory/PROCEDURE.md` (**one lifecycle** — Orient → verify-live → Act → Self-check → **Hand off** — plus
-global red lines and a **typed HANDOFF contract**). Named cross-agent flows (lead · pipeline · escalation)
-live in `.claude/agents/_orchestration.md` (v4.0); `oversee.mjs` hard-gates on both doctrines and on `agent-doctrine` in every definition.
 
 Supporting files under `.claude/agents/`:
 - **`_shared/glossary.md`** — canonical BG·EN·IT glossary (incl. the *verified* clinical terms
   and the ready IT base) + base project facts, so agents don't re-derive or drift. Преводач owns it.
-- **`_orchestration.md`** — v4.0 flows (lead · pipeline · escalation: who passes work to whom).
+- **`_orchestration.md`** — v3.0 team handoff map (who passes work to whom, common multi-agent flows).
 - **`_memory/<id>.md`** — per-agent durable memory: a `Проверени поуки (verified)` section (facts,
   preloaded into the agent each run) + a `Карантина` section (unverified hypotheses, never treated as
   fact). v6.0 makes the read/write automatic via hooks; `_memory/PROTOCOL.md` defines the `learn`-block
   schema and the laws (verified-only, source-or-nothing, no secrets, contradiction → stop).
 - **`_proposals/v2.0.md`** — the v2.0 roadmap (✅ shipped vs 🟡 planned, per agent, with effort).
 - **`_evals/reliability.md`** — the v2.1 reliability playbook (which technique per agent + judge
-  calibration); **`tools/evals/run.sh`** is the runnable deterministic-grader gate
+  calibration); **`_evals/run.sh`** under `tools/evals/` is the runnable deterministic-grader gate
   (it caught the 536 duplicate seed slugs). **`_evals/promptfooconfig.yaml`** scaffolds the LLM-rubric layer.
 - **`_evals/golden-cases.md`** — one manual golden case per agent (input + expected traits +
   pitfalls); run an agent against its case after an upgrade to catch regressions.
@@ -148,8 +136,8 @@ auto-selects — **кратко „кога да ме викнеш“** (рол�
 example + competence boundary; bump the version + append an `evolution` entry in
 `agents-dashboard/agents.json` whenever you change what the agent knows (метаданни като
 описание/`maxTurns` не са ново знание — версията брои научено).
-**Разхлабвай, не усилвай:** текущите модели са проактивни и директни по
-подразбиране — при авторство/ъпгрейд не добавяй „бъди старателен/агресивен/провери преди
+**Разхлабвай, не усилвай (модели 4.6+):** новите модели са проактивни и директни по
+подразбиране — при авторство/ъпгрейд НЕ добавяй „бъди старателен/агресивен/провери преди
 да приключиш" (причиняват свръх-многословност и ненужно tool-calling); замени „Default to
 using X" с „Use X when it helps", махни „If in doubt, use X". Ветеранската краткост е в
 `PROCEDURE.md` (инжектира се на всички) — не я преповтаряй в дефиницията.
@@ -161,9 +149,9 @@ A self-contained page (`index.html`, no build step) that visualizes the roster: 
 agent's capabilities, **evolution timeline** (versions) and an **activity feed**, driven by
 `agents.json` (the canonical manifest; the HTML also embeds a fallback snapshot so it opens
 over `file://`). Open it directly, or serve it: `python3 -m http.server -d agents-dashboard`.
-Subagents are stateless between runs; what they learn lives in the hook-managed memory above, and
-the dashboard shows it: each definition's *evolution*, its verified-learning entries and what it's
-*used for*. Keep `agents.json` in sync when you add/upgrade an agent.
+Note: Claude Code subagents are stateless between runs — they don't persistently "learn", so
+the dashboard tracks the honest equivalent: how each definition *evolves* and what it's *used
+for*. Keep `agents.json` in sync when you add/upgrade an agent.
 
 ### Communication style (caveman-inspired)
 

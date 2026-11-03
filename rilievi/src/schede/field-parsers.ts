@@ -32,6 +32,8 @@ export type FieldErrorCode =
   | 'modelloNeeded'
   /** Elettroquadri: „Sì“ на поръчката за таблото без вида на уредбата (модулът зависи от него). */
   | 'impiantoNeeded'
+  /** AMI 100: „Sì“ без вида (Mono UCM или Mono RTBS) — няма кой лист да се попълни. */
+  | 'ami100TipoNeeded'
   /** Само MASTER: не е избрана (активна) фирма за новата карта. */
   | 'azienda';
 
@@ -54,6 +56,7 @@ export const ERROR_CODES: ReadonlySet<string> = new Set<FieldErrorCode>([
   'identifierNeeded',
   'modelloNeeded',
   'impiantoNeeded',
+  'ami100TipoNeeded',
 ]);
 
 /** Липсващото поле е празен низ; масив или обект на мястото на низ е подправен вход. */

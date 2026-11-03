@@ -17,14 +17,11 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const src = (p) => readFileSync(join(ROOT, p), "utf8");
 
-test("oversee и curate ползват dueOf() на memory-freshness — не своя сметка за срока", () => {
-  // До 2026-10-24 тук се искаше само classify(): класът беше общ, но СРОКЪТ се смяташе три пъти от
-  // датата на научаването и пресверената поука оставаше просрочена. Сега се изисква целият срок.
+test("oversee и curate ползват classify() на memory-freshness — не своя евристика", () => {
   for (const f of ["tools/agents/oversee.mjs", "tools/memory/curate.mjs"]) {
     const s = src(f);
-    assert.match(s, /import \{ dueOf \} from "[./]+\/(agents\/)?memory-freshness\.mjs"/, `${f} трябва да импортира dueOf`);
+    assert.match(s, /import \{ classify \} from "[./]+\/(agents\/)?memory-freshness\.mjs"/, `${f} трябва да импортира classify`);
     assert.ok(!/TIME_SENSITIVE|STALE_DAYS/.test(s), `${f} не бива да носи втора дефиниция`);
-    assert.ok(!/REVERIFY_RE\s*=/.test(s), `${f} не бива да смята изричния срок сам`);
   }
   assert.ok(!/export const (STALE_DAYS|TIME_SENSITIVE)/.test(src("tools/agents/oversee-lib.mjs")),
     "oversee-lib не бива да експортира мъртвата евристика (иначе тя се връща)");

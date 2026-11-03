@@ -1,6 +1,6 @@
 import type { Scheda } from '@prisma/client';
 import { nomeModulo, type ModuloField } from './moduli.js';
-import { campoCheApre, COLONNE, sceltoNellaScheda, SLOTS, type ModuloSlot } from './registry.js';
+import { COLONNE, sceltoNellaScheda, SLOTS, type ModuloSlot } from './registry.js';
 import { storedValori } from './valori.js';
 
 /**
@@ -58,11 +58,9 @@ type SchedaModuli = Pick<
   | 'sospensioni'
   | 'operatore'
   | 'ordineSospensioni'
-  | 'testataInterventi'
-  | 'fossaInterventi'
+  | 'ami100'
+  | 'ami100Tipo'
   | 'ordineAmi'
-  | 'bottoniereOrdine'
-  | 'ordineBottoniere'
 >;
 
 /**
@@ -84,8 +82,8 @@ export function riepilogoModuli(scheda: SchedaModuli): RiepilogoModulo[] {
   const viste = new Set<ModuloSlot['column']>();
   for (const slot of SLOTS) {
     if (!stampati.includes(slot.column) || viste.has(slot.column)) continue;
-    const valueOf = (key: string) => scheda[key as keyof SchedaModuli];
-    if (!campoCheApre(slot, valueOf) || !sceltoNellaScheda(slot, valueOf)) continue;
+    if (scheda[slot.question] !== true) continue;
+    if (!sceltoNellaScheda(slot, (key) => scheda[key as keyof SchedaModuli])) continue;
     const valori = storedValori(slot.modulo, scheda[slot.column]);
     if (!valori) continue;
     viste.add(slot.column);

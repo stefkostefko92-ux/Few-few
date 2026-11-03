@@ -31,14 +31,13 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'scheda', campo: 'fermate' },
       { luogo: 'oq', campo: 'nFermate' },
       { luogo: 'om', campo: 'fermate' },
-      { luogo: 'dp', campo: 'nPiani' },
       { luogo: 'mn', campo: 'nFermate' },
       { luogo: 'mq', campo: 'numeroFermate' },
       { luogo: 'eg', campo: 'nFermate' },
       { luogo: 'el', campo: 'nFermate' },
       { luogo: 'eo', campo: 'nFermate' },
       { luogo: 'pa', campo: 'piani' },
-      { luogo: 'db', campo: 'fermate' },
+      { luogo: 'au', campo: 'fermate' },
     ],
   },
   {
@@ -48,7 +47,6 @@ const BASE: readonly Collegamento[] = [
     membri: [
       { luogo: 'oq', campo: 'velocita' },
       { luogo: 'om', campo: 'velocita' },
-      { luogo: 'dp', campo: 'velocita' },
       { luogo: 'mn', campo: 'velocita' },
       { luogo: 'mq', campo: 'velocita' },
       { luogo: 'eg', campo: 'velocita' },
@@ -93,11 +91,9 @@ const BASE: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'portataKg' },
       { luogo: 'om', campo: 'portata' },
-      // DMG Pitagora: „Capacità (Kg)“ на дисплея в кабината („Portata (kg/pers.)“ е „630/8“ — не е тук).
-      { luogo: 'dp', campo: 'displayKg' },
       { luogo: 'mq', campo: 'portataNominale' },
       { luogo: 'pa', campo: 'portata' },
-      { luogo: 'db', campo: 'kg' },
+      { luogo: 'au', campo: 'portata' },
     ],
   },
   {
@@ -106,9 +102,7 @@ const BASE: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'capienzaPersone' },
       { luogo: 'om', campo: 'capienza' },
-      { luogo: 'dp', campo: 'displayPersone' },
       { luogo: 'pa', campo: 'persone' },
-      { luogo: 'db', campo: 'persone' },
     ],
   },
   {
@@ -117,9 +111,7 @@ const BASE: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'numeroImpianto' },
       { luogo: 'om', campo: 'nImpianto' },
-      { luogo: 'dp', campo: 'displayImpianto' },
       { luogo: 'pa', campo: 'nImpianto' },
-      { luogo: 'db', campo: 'nImpianto' },
     ],
   },
   {
@@ -129,7 +121,6 @@ const BASE: readonly Collegamento[] = [
     membri: [
       { luogo: 'oq', campo: 'motVca' },
       { luogo: 'om', campo: 'tensFune' },
-      { luogo: 'dp', campo: 'motoreV' },
     ],
   },
   {
@@ -137,7 +128,6 @@ const BASE: readonly Collegamento[] = [
     tipo: 'numero',
     membri: [
       { luogo: 'oq', campo: 'circuitoFrenoVcc' },
-      { luogo: 'dp', campo: 'frenoTensione' },
       { luogo: 'mn', campo: 'tensioneFreno' },
       { luogo: 'mq', campo: 'tensioneFreno' },
       { luogo: 'eg', campo: 'frenoV' },
@@ -166,12 +156,6 @@ const BASE: readonly Collegamento[] = [
           porteSemiautomatiche: 'SEMIAUTOMATICHE',
           porteManuali: 'MANUALI',
         },
-      },
-      // DMG Pitagora: „Porte di piano“ — автоматични или ръчни (полуавтоматичните нямат своя отметка).
-      {
-        luogo: 'dp',
-        campo: 'portePiano',
-        voci: { automatiche: 'AUTOMATICHE', manuali: 'MANUALI' },
       },
       // NG120: „Tipo di Operatore 1“ — вратите на първия достъп.
       {
@@ -221,7 +205,6 @@ const BASE: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'ubicazioneMacchina', voci: { ALTO: 'ALTO', BASSO: 'BASSO' } },
       { luogo: 'om', campo: 'locMacc', voci: { alto: 'ALTO', basso: 'BASSO' } },
-      { luogo: 'dp', campo: 'posizioneSala', voci: { alto: 'ALTO', basso: 'BASSO' } },
       // Elettroquadri: позицията на централата в машинното (oleodinamico). „Con Locale macchina: Basso /
       // Alto“ на gearless — не: листът се отваря при MRL (без машинно), там е „MRL gearless“ (видът).
       { luogo: 'eo', voci: { centralinaAlto: 'ALTO', centralinaBasso: 'BASSO' } },

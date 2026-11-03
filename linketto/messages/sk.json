@@ -98,6 +98,7 @@
     "processingNote": "Z predajov v obchode sa účtuje aj poplatok za spracovanie platby: 1,9 % + €0,30 (pokrýva kartového operátora).",
     "mostPopular": "Najobľúbenejší",
     "annualOffer": "Ušetri {percent} % s ročným plánom",
+    "referralPercentNote": "Pozvi priateľov a zarábaj {percent} % z každej ich platby.",
     "vatNote": "Ceny sú konečné — vrátane DPH, ak sa uplatňuje."
   },
   "auth": {
@@ -373,7 +374,7 @@
   },
   "footer": {
     "company": "Produkt Carbon Stealth VCC",
-    "legalLine": "IČO (EIK) 208725180, IČ DPH BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulharsko",
+    "legalLine": "IČO BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulharsko",
     "privacy": "Súkromie",
     "terms": "Podmienky",
     "contact": "info@carbonstealth.eu",
