@@ -44,7 +44,7 @@ npm run worker           # компресията на снимките и кл�
 npm run build            # prisma generate + tsc + шрифтовете в public/fonts (scripts/fonts.mjs)
 npm run moduli:disegna   # чертае листовете на 2SG и AMI 100 и картите им (assets/moduli) — после commit
 npm run render:encode    # снимките на витрината: scripts/render/out/*.png → public/img/site (AVIF + WebP)
-npm run brand:logo       # марката: scripts/logo/out/marchio.png → public/img/brand (WebP 1x/2x/3x) + favicon-*.png
+npm run brand:logo       # логата: scripts/logo/originals/{mark,logo}.png → public/img/brand (WebP) + favicon-*.png
 npm run owner:create     # първият MASTER от OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD (на сървъра: deploy/create-master.sh)
 ```
 
@@ -93,7 +93,8 @@ src/
                      на табелата: избор, търсене, паметта) · pdf.ts (A4 по посоката на шаблона, логото и данните на фирмата горе)
   argano/            изчислението за аргано по „RT-E MOD 10411-1“: calcolo.ts (формулите на листовете
                      „Macchina“ и „Funi“, без база) · dati.ts (входът — zod, формата) · tabelle.ts
-                     (въжетата TELCAL/DONATI, мерките на компенсацията) · da-scheda.ts (попълването от
+                     (въжетата TELCAL/DONATI, мерките на компенсацията) · fune.ts (въжето за показване:
+                     формация, нишки, клас, cordatura) · da-scheda.ts (попълването от
                      „Modulo rilievi dati argani“) · righe.ts (резултатите като редове — страница и PDF) ·
                      formato.ts · service.ts (четене, запис върху `base`, одит) · pdf.ts (A4) ·
                      impianto.ts (уредбата без карта — zod) · liberi.ts (изчислението без карта) ·
@@ -164,7 +165,7 @@ public/              css/ (портал: base, buttons, shell, layout, plate, fo
                      (менютата — и от клавиатурата) · schizzo-comandi.js (лентите, клавиатурата,
                      отваряне/затваряне); css/schizzo-barre.css — лентите и менютата;
                      img/ (og.png и apple-touch-icon.png — `npm run brand:images`; site/ — снимките на
-                     витрината, `npm run render:encode`; brand/ и favicon-32/192.png — марката,
+                     витрината, `npm run render:encode`; brand/ и favicon-32/192.png — логата,
                      `npm run brand:logo`), indexnow-key.txt
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
 deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh · nginx/ · systemd/
@@ -471,16 +472,22 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   Чертежът на шахтата (`views/site/_shaft.ejs`) остава — до легендата на картата и на входа: маркерите
   са номерата на разделите на картата (всеки раздел сочи своята част — `spots` по ключ). Витрината е
   без движение (и без JavaScript).
-- **Марката** (собственикът, 31 октомври 2026 — „un logo (non svg) … per il livello enterprise“; от три
-  концепции избра „Targa nera“): табела като тази на асансьора — стоманена рамка около черен сатенен
-  емайл, четири винта, релефни стоманени букви „RI“ (Fira Sans Condensed Bold), рендерирана от нас
-  (`scripts/logo/logo.py` — Mitsuba, като снимките на витрината; прозрачен фон, правоъгълна камера,
-  1,3 : 1). Картинка, не SVG: `views/partials/brandmark.ejs` — `<img>` 36 px в лентите и на входа, 48 px
-  в долната част на витрината (`marchio: 48`), с 2x и 3x в `srcset`; името до нея остава текст (следва
-  темите и „Personalizzato“). Същият рендер дава иконките на раздела (`favicon-32/192.png`,
-  `/favicon.ico` → 32) и марката в og.png и apple-touch-icon.png (`npm run brand:images`). Нов рендер:
-  `logo.py final` (минути на 4 ядра), после `npm run brand:logo` и `npm run brand:images`; unit тестът
-  пази всеки файл в размера си, с прозрачност, и че няма излишни.
+- **Логата** (собственикът, 1 ноември 2026 — свои две картинки: „Използвай ги като лого където мислиш, че
+  ще паснат най-добре. Искам да са четливи и да се виждат добре“; заменят табелата „Targa nera“ от 31
+  октомври). Оригиналите стоят както са дошли в `scripts/logo/originals` (извън образа): `mark.png` —
+  шестоъгълникът „RI“ с шахтата, `logo.png` — марката с „RILIEVI IMPIANTI“ и „PIATTAFORMA TECNICA
+  ASCENSORI“. `npm run brand:logo` ги изрязва до нарисуваното и пише `public/img/brand` (WebP с
+  прозрачност; малките размери — леко изострени, иначе детайлите на шахтата стават сиво) и
+  `favicon-32/192.png`. Марката — където логото е малко: черните ленти на портала и на витрината
+  (`views/partials/brandmark.ejs`, 44 px, 1x/2x/3x; името до нея остава текст — следва темите и
+  „Personalizzato“), иконките на раздела (`/favicon.ico` → 32) и apple-touch-icon.png. Пълното лого
+  (`views/partials/logo.ejs`, `srcset` 360…1320w) — само където е поне 320 px широко, за да се чете и
+  последният ред (той е ~6,5 % от височината): горе в черния панел на входа (400 px, на телефон 340),
+  над заглавието на първия екран на витрината (440/340 px; тъмен ореол по очертанието и потъмнен таван
+  на снимката отгоре), в долната част на витрината (320 px върху черна табела — на бяло последният ред
+  избледнява) и в og.png. Картинки, не SVG. Нови лога: заменят се файловете в `originals`, после
+  `npm run brand:logo` и `npm run brand:images`; unit тестът пази всеки файл от `srcset` в размера и
+  пропорциите си, с прозрачност, и че в `public/img/brand` няма излишни.
 - **Подредбата на всяко устройство** (собственикът, 31 октомври 2026 — „Искам да сме подредени … визуално
   перфектни на всякакъв вид устройство“): в един ред от полета етикетите, полетата и подсказките стоят на
   три общи линии — `grid--righe` (`public/css/righe.css`, CSS subgrid): полето носи етикет, контрола и
@@ -649,6 +656,20 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   няма), с одит `ARGANO_CALCOLO`; не мести версията на картата. Чете всеки, който вижда картата (формата
   — заключена); пише, който пише карти в нейната фирма, не в кошчето; чужда — 404. Резултатите се
   смятат при всяко показване; редовете са едни и същи на страницата и в PDF-а (`righe.ts`).
+  **Въжетата и компенсацията** (собственикът, 2 ноември 2026 — „manca la cordatura, classe e formazione …
+  migliorare anche nella funzione di scelta“; „funi e catene … una scelta manuale“): изборът на въжето е
+  по производител (`optgroup` TELCAL / DONATI), надписът — диаметър и формация („Ø 10 mm · 6×19 + FC“), а
+  под него карта с данните на избраното от таблиците на файла (формация, нишки, клас 1370/1770, сечение,
+  разрушително усилие, линейна маса — `fune.ts`; възможността ги носи като `data-*`, `public/js/argano.js`
+  сменя картата на живо, без JavaScript — каквото е дошло от сървъра). „Cordatura“ — избор за всяко въже
+  по EN 12385-2 (crociata destra sZ / sinistra zS, parallela (Lang) destra zZ / sinistra sS); таблиците на
+  файла я нямат, затова е по избор и празна не се пази. Въже на ръка (`altro`) — и нишки, формация (до 40
+  знака) и клас („1570“ или „1370/1770“, `CLASSE`), по избор. Компенсация извън таблиците — „Altra misura
+  (dati a mano)“ в мерките: мярка (3–40 mm) и линейна маса (0,05–20 kg/m) в `compAltro`; тежи точно като
+  същата мярка от таблиците (тестът сравнява). Полетата на ръка се виждат само при „altro“ (`data-solo`,
+  argano.js; без JavaScript — винаги). Резултатите и PDF-ът показват производителя, формацията, нишките,
+  класа, cordatura и сечението („—“ за непопълненото на ръка). Новото в `dati` е по избор и липсва, когато
+  е празно — записаното преди него се чете и смята както е.
   **Страницата в менюто и изчислението без карта** (собственикът, 31 октомври 2026 — „cercare il numero di
   matricola o la via e precompilare il calcolo se ho già la scheda impianto“; избра „calcolo libero“):
   „Rilievi“ → „Calcolo argano“ (`/calcolo-argano`, `routes/calcolo-argano-elenco.ts`) — търсене по
