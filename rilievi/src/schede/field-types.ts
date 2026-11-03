@@ -13,7 +13,7 @@ export type FieldKind =
   | 'choice' // един избор от няколко (или неотбелязано)
   | 'yesno'; // Sì / No / неотбелязано
 
-export type Unit = 'kg' | 'persone' | 'mm' | 'm';
+export type Unit = 'kg' | 'persone' | 'mm' | 'm' | 'volt' | 'hp' | 'lmin' | 'litri';
 
 export type SectionKey =
   | 'impianto'

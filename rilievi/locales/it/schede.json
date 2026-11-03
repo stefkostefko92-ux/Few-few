@@ -99,7 +99,6 @@
       "identifierNeeded": "Compila almeno indirizzo, matricola o n° impianto.",
       "modelloNeeded": "Scegli la tipologia del quadro (NG120 o QI Touch) per compilare il suo modulo d'ordine.",
       "impiantoNeeded": "Scegli il tipo di impianto (elettrico, idraulico o MRL): il modulo d'ordine Elettroquadri dipende da questo.",
-      "ami100TipoNeeded": "Scegli AMI 100 Mono UCM o Mono RTBS per compilare i dati del suo ordine.",
       "azienda": "Scegli l'azienda della scheda."
     },
     "compiledBy": "Compilata da",
@@ -144,7 +143,6 @@
       "pa": "Dati argano",
       "sg": "Ordine 2SG",
       "so": "Ordine 2SG",
-      "au": "Ordine AMI 100",
       "ar": "Ordine AMI 100",
       "db": "Ordine bottoniere DMG"
     },

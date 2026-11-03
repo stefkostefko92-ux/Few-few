@@ -99,11 +99,7 @@ export const EQ_OLEO: ModuloOverlay = load(
   'elettroquadri-oleodinamico.json',
   moduloSchema(overlayField, 'overlay'),
 );
-/** AMI 100 — листовете с данните за поръчката, начертани от нас (scripts/moduli/ami100.mjs). */
-export const AMI_UCM: ModuloOverlay = load(
-  'ami100-mono-ucm.json',
-  moduloSchema(overlayField, 'overlay'),
-);
+/** AMI 100 Mono RTBS — листът с данните за поръчката, начертан от нас (scripts/moduli/ami100.mjs). */
 export const AMI_RTBS: ModuloOverlay = load(
   'ami100-mono-rtbs.json',
   moduloSchema(overlayField, 'overlay'),
@@ -150,7 +146,6 @@ export function assertModuli(): void {
     EQ_GEARED,
     EQ_GEARLESS,
     EQ_OLEO,
-    AMI_UCM,
     AMI_RTBS,
     DMG_PITAGORA,
     DMG_FIXTURES,

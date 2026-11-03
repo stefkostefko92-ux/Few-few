@@ -42,7 +42,14 @@ const INSTALLAZIONI: ReadonlyArray<{ campi: readonly string[]; testo: string }> 
     testo: 'del sistema di telesoccorso',
   },
   {
-    campi: ['ami100', 'kitControlloGanasce', 'controlloQuadro', 'stopArgano'],
+    // Решенията за намалената яма или горно пространство (AMI 100, семафор, OKATT…) — отметнатото.
+    campi: [
+      'testataInterventi',
+      'fossaInterventi',
+      'kitControlloGanasce',
+      'controlloQuadro',
+      'stopArgano',
+    ],
     testo: 'di nuovi dispositivi di sicurezza',
   },
 ];
@@ -53,14 +60,20 @@ function elenco(parti: readonly string[]): string {
   return `${parti.slice(0, -1).join(', ')} e ${parti.at(-1)}`;
 }
 
-/** Какво се сменя и монтира според картата — само видимите полета с „Sì“ (скритото не казва нищо). */
+/**
+ * Какво се сменя и монтира според картата — само видимите полета с „Sì“ или с поне една отметка
+ * (скритото не казва нищо).
+ */
 export function lavoriDi(scheda: ValoriScheda): {
   sostituzione: string[];
   installazione: string[];
 } {
   const attivi = activeFields((key) => scheda[key]);
   const si = (campi: readonly string[]) =>
-    campi.some((campo) => attivi.has(campo) && scheda[campo] === true);
+    campi.some((campo) => {
+      const value = scheda[campo];
+      return attivi.has(campo) && (value === true || (Array.isArray(value) && value.length > 0));
+    });
   return {
     sostituzione: SOSTITUZIONI.filter((v) => si(v.campi)).map((v) => v.testo),
     installazione: INSTALLAZIONI.filter((v) => si(v.campi)).map((v) => v.testo),

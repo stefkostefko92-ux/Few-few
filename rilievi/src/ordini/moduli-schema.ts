@@ -61,6 +61,12 @@ const overlayField = z.discriminatedUnion('kind', [
     maxLength,
     /** Редът: от x0 до x1, върху линията на височина y (от горе). */
     line: z.tuple([num, num, num]),
+    /**
+     * Вдясно на реда — до мерната единица след него. „Potenza motore: ___ Kw ___ Cv ___ A“ на листа за
+     * аргано: отляво стойността стои веднага след единицата на предишната и „4“ се чете като kW, а е CV
+     * (собственикът, 3 ноември 2026).
+     */
+    allinea: z.literal('destra').optional(),
     anche,
   }),
   z.object({
