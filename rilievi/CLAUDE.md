@@ -47,6 +47,7 @@ npm run moduli:disegna   # чертае листовете на 2SG и AMI 100 M
 npm run moduli:dmg       # картите на двата формуляра на DMG от самите PDF-и (scripts/moduli/dmg.mjs) — после commit
 npm run render:encode    # снимките на витрината: scripts/render/out/*.png → public/img/site (AVIF + WebP)
 npm run brand:logo       # логата: scripts/logo/originals/{mark,logo}.png → public/img/brand (WebP) + favicon-*.png
+                         # + иконите на приложението icon-{192,512}.png и icon-maskable-{192,512}.png
 npm run owner:create     # първият MASTER от OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD (на сървъра: deploy/create-master.sh)
 ```
 
@@ -124,6 +125,8 @@ src/
                      печатът и PDF-ът на картата (schede-stampa.ts) · кошчето · модулите · хора · фирми ·
                      настройките · одит)
   requests/          заявките за достъп: form.ts (публичната форма) · service.ts (запис, решение, срок)
+  pwa/               manifest.ts — приложението на началния екран (манифестът; рутерът — routes/pwa.ts,
+                     страницата „Installa l'app“ — routes/installa.ts)
   site/ · seo/       витрината: landing.ts (разделите, ролите и възможностите до снимките — от кода) ·
                      immagini.ts (снимките: ширини, srcset) · paths.ts · structured-data.ts
                      (JSON-LD) · files.ts (robots, sitemap, llms.txt) · company.ts (данните на фирмата)
@@ -831,6 +834,36 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   събран веднъж индекс — без заявки по целия документ при всяко натискане. Шрифтовете се теглят
   предварително само на витрината (400 и Condensed 600 — иначе текстът се пренарежда); на портала
   отлагат първото рисуване, а текстът там не се мести.
+- **Приложението на началния екран** (собственикът, 4 ноември 2026 — „add to home screen for PC, iOS and
+  Android … raggiungibile facilmente e a schermo intero“): порталът е инсталируемо уеб приложение (PWA).
+  `/manifest.webmanifest` (`src/pwa/manifest.ts`, `routes/pwa.ts` — преди сесията, без бисквитки и база,
+  `no-cache`): „Rilievi Impianti“ / „Rilievi“, `start_url` `/schede` (без сесия — входът), обхват `/`,
+  `display: fullscreen` — на Android целият екран без лентите на системата; Chrome/Edge на компютър и
+  Safari на iPhone/iPad нямат този режим и отварят приложението в негов прозорец без лентите на браузъра
+  (crbug 40650429; на компютър F11 / зеленият бутон на Mac — в стъпките), черен фон и тема, преки пътища
+  (задържане върху иконата: Nuova scheda, Schede, Interventi, Calcolo argano). Иконите — марката върху
+  черно от `npm run brand:logo` (`icon-192/512` — цяла, `icon-maskable-192/512` — в кръга от 80 %, който
+  Android запазва при всяка маска); на iPhone — `apple-touch-icon.png` и мета таговете
+  (`apple-mobile-web-app-capable`, заглавие „Rilievi“, лента `black`) в главата и на портала, и на
+  витрината. Service worker-ът (`public/js/sw.js`, сервиран като `/sw.js` от корена — обхватът е целият
+  сайт; регистрира го app.js на всяка страница на портала, витрината остава без JavaScript) НЕ пази
+  нищо — страниците носят лични данни и картата трябва да е винаги последната от сървъра: всяка заявка
+  отива към мрежата както без него; само страница (GET навигация), която не се зарежда, защото няма
+  мрежа, получава кратка страница „Nessuna connessione“ (503, `no-store`, без данни и без скрипт).
+  Изпратена форма (POST) и всичко друго минават покрай него. Fetch обработчикът е и каквото Chromium
+  иска, за да предложи инсталиране. „Installa l'app“ (`/app`, публична, `noindex`; точка в менюто след
+  групите и връзка на входа — скрити с `display-mode`, когато порталът вече е приложението): бутонът
+  „Installa l'app“, щом браузърът го предлага (`beforeinstallprompt`, `public/js/installa.js`), и стъпките
+  за Android, iPhone/iPad (Condividi → „Aggiungi alla schermata Home“), компютър с Chrome/Edge и Mac със
+  Safari („Archivio → Aggiungi al Dock“) — отворени само тези на устройството (без JavaScript — всички).
+  Менюто и лентата долу пазят изреза и лентата за жестове (`env(safe-area-inset-*)`). Проверката: unit
+  (`tests/pwa.test.ts` — полетата на манифеста, иконите в размера си, непрозрачни, марката в безопасния
+  кръг; работникът в node:vm — нищо освен GET навигации, страницата при липса на мрежа, без кеш),
+  integration (`tests/integration/installa.test.ts`) и e2e (`tests/e2e/installa.mjs`: самият Chrome казва,
+  че е инсталируем — `Page.getInstallabilityErrors` е празно, манифестът и иконите през CDP,
+  работникът контролира страницата, без мрежа — „Nessuna connessione“; Playwright вижда мрежата на
+  работника само с `PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS`, затова — в свой контекст; на телефон
+  с Android — стъпките на Android и без хоризонтален скрол на 360 px).
 - Коментарите в `src/`, `views/`, `deploy/` — на български; тестовете и `scripts/` — на английски. В
   изгледите коментарите са EJS (`<%# … %>`), никога HTML (`<!-- … -->`): страницата е само на италиански и
   няма кирилица дори в изходния код (пазят го тестовете — unit, integration и e2e).
