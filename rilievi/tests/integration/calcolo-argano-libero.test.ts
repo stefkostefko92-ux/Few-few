@@ -146,7 +146,7 @@ describe('a calculation without a scheda', () => {
     const page = (await browser.get(`/calcolo-argano/${id}`)).body;
     assert.match(page, /Via Dante 2, 20121 Milano \(MI\)/);
     assert.match(page, /id="f-matricola"[^>]*value="0/);
-    assert.match(page, /0,733 m\/s/);
+    assert.match(page, /0,73 m\/s/);
     assert.match(page, /Aderenza verificata nei due casi/);
     assert.ok(!/[А-яЁё]/.test(page), 'no Cyrillic in the page');
 

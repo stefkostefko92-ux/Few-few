@@ -112,7 +112,7 @@ describe('the machine calculation of a scheda', () => {
     assert.equal(audit?.aziendaId, azienda.id);
 
     const results = (await browser.get(pagina(scheda.id))).body;
-    assert.match(results, /0,733 m\/s/);
+    assert.match(results, /0,73 m\/s/);
     assert.match(results, /−26,7 %/);
     assert.match(results, /2,223/);
     assert.match(results, /Aderenza verificata nei due casi/);
