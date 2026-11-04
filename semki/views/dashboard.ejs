@@ -1,0 +1,108 @@
+<%- include('partials/head') %>
+<div class="head-row">
+  <h1>Дашборд</h1>
+  <p class="muted small">Обновено <%= updatedText %> · опреснява се на 5 мин</p>
+</div>
+
+<section class="kpis" aria-label="Обобщение">
+  <div class="kpi"><span class="kpi-label">Семки</span><span class="kpi-value"><%= stats.seeds %></span><span class="kpi-sub muted">в <%= stats.batches %> партиди</span></div>
+  <div class="kpi"><span class="kpi-label">Първо изтича</span><span class="kpi-value"><%= stats.nextText %></span><span class="kpi-sub muted"><%= stats.nextWho %></span></div>
+  <div class="kpi"><span class="kpi-label">Изтичат до 24 ч</span><span class="kpi-value"><%= stats.soon %></span><span class="kpi-sub muted">партиди</span></div>
+  <div class="kpi"><span class="kpi-label">Изтекли</span><span class="kpi-value"><%= stats.expired %></span><span class="kpi-sub muted"><% if (stats.expired > 0) { %><a href="/">изтрий ги от „Семки“</a><% } else { %>няма<% } %></span></div>
+</section>
+
+<section class="card">
+  <div class="head-row">
+    <h2>Трайност във времето</h2>
+    <span class="muted small">следващите <%= Math.round(chart.hours / 24) %> дни · <%= timezone %></span>
+  </div>
+  <% if (chart.series.length === 0) { %>
+  <p class="muted">Няма активни партиди — добави от „Семки“ или с команда в Discord.</p>
+  <% } else { %>
+  <ul class="legend" aria-label="Легенда">
+    <% chart.legend.forEach(function (l) { %>
+    <li><svg width="18" height="6" aria-hidden="true"><line x1="1" y1="3" x2="17" y2="3" stroke="<%= l.color %>" stroke-width="2" stroke-linecap="round"/></svg><%= l.label %> <span class="muted"><%= l.count %> бр. · <%= l.batches %> парт.</span></li>
+    <% }) %>
+    <% if (chart.thresholds.length > 0) { %>
+    <li><svg width="18" height="6" aria-hidden="true"><line class="thr" x1="1" y1="3" x2="17" y2="3"/></svg>праг за таг <span class="muted">(от „Известия“)</span></li>
+    <% } %>
+  </ul>
+  <figure class="chart-wrap" id="chart">
+    <svg class="chart-svg" viewBox="0 0 <%= chart.width %> <%= chart.height %>" role="img" aria-labelledby="chart-title chart-desc" tabindex="0">
+      <title id="chart-title">Трайност на партидите във времето</title>
+      <desc id="chart-desc">Всяка линия е една партида: от текущия процент сега до 0% при изтичане. Таблицата под графиката съдържа същите данни.</desc>
+      <g class="grid">
+        <% chart.yTicks.forEach(function (t) { %>
+        <line x1="<%= chart.plot.x %>" x2="<%= chart.plot.x + chart.plot.w %>" y1="<%= t.y %>" y2="<%= t.y %>"/>
+        <text class="ax" x="<%= chart.plot.x - 8 %>" y="<%= t.y + 4 %>" text-anchor="end"><%= t.label %></text>
+        <% }) %>
+        <% chart.xTicks.forEach(function (t) { %>
+        <line x1="<%= t.x %>" x2="<%= t.x %>" y1="<%= chart.plot.y %>" y2="<%= chart.plot.y + chart.plot.h %>"/>
+        <% if (t.label) { %><text class="ax" x="<%= t.x %>" y="<%= chart.plot.y + chart.plot.h + 22 %>" text-anchor="middle"><%= t.label %></text><% } %>
+        <% }) %>
+        <text class="ax" x="<%= chart.plot.x %>" y="<%= chart.plot.y + chart.plot.h + 22 %>" text-anchor="start">сега</text>
+      </g>
+      <% chart.thresholds.forEach(function (t) { %>
+      <line class="thr" x1="<%= chart.plot.x %>" x2="<%= chart.plot.x + chart.plot.w %>" y1="<%= t.y %>" y2="<%= t.y %>"/>
+      <text class="ax thr-label" x="<%= chart.plot.x + chart.plot.w + 6 %>" y="<%= t.y + 4 %>"><%= t.label %></text>
+      <% }) %>
+      <g class="series">
+        <% chart.series.forEach(function (s) { %>
+        <g class="s">
+          <title><%= s.title %></title>
+          <line class="hit" x1="<%= s.x0 %>" y1="<%= s.y0 %>" x2="<%= s.x1 %>" y2="<%= s.y1 %>"/>
+          <line x1="<%= s.x0 %>" y1="<%= s.y0 %>" x2="<%= s.x1 %>" y2="<%= s.y1 %>" stroke="<%= s.color %>" stroke-width="2" stroke-linecap="round"/>
+          <% if (s.endsInside) { %><circle class="end" cx="<%= s.x1 %>" cy="<%= s.y1 %>" r="4" fill="<%= s.color %>"/><% } %>
+        </g>
+        <% }) %>
+      </g>
+      <line class="crosshair" x1="0" x2="0" y1="<%= chart.plot.y %>" y2="<%= chart.plot.y + chart.plot.h %>" visibility="hidden"/>
+    </svg>
+    <div class="chart-tip" role="status" hidden></div>
+  </figure>
+  <p class="muted small">Посочи графиката (или я фокусирай и ползвай ← →), за да видиш процентите в избрания момент.</p>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>По видове</h2>
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th scope="col">Вид</th><th scope="col" class="num">Семки</th><th scope="col" class="num">Партиди</th><th scope="col" class="num">Най-нисък %</th><th scope="col" class="num">Първо изтича след</th></tr></thead>
+      <tbody>
+        <% byType.forEach(function (t) { %>
+        <tr>
+          <th scope="row"><svg width="14" height="6" aria-hidden="true"><line x1="1" y1="3" x2="13" y2="3" stroke="<%= t.color %>" stroke-width="2" stroke-linecap="round"/></svg> <%= t.label %></th>
+          <td class="num"><%= t.count %></td><td class="num"><%= t.batches %></td><td class="num"><%= t.lowest %></td><td class="num"><%= t.soonest %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Всички партиди <small><%= rows.length %></small></h2>
+  <% if (rows.length === 0) { %>
+  <p class="muted">Няма въведени семки.</p>
+  <% } else { %>
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th scope="col">#</th><th scope="col">Вид</th><th scope="col" class="num">Брой</th><th scope="col" class="num">Трайност</th><th scope="col" class="num">Остават</th><th scope="col" class="num">Изтича</th></tr></thead>
+      <tbody>
+        <% rows.forEach(function (r) { %>
+        <tr class="<%= r.expired ? 'expired' : '' %>">
+          <td class="num"><%= r.id %></td>
+          <td><svg width="14" height="6" aria-hidden="true"><line x1="1" y1="3" x2="13" y2="3" stroke="<%= r.color %>" stroke-width="2" stroke-linecap="round"/></svg> <%= r.typeLabel %></td>
+          <td class="num"><%= r.count %></td><td class="num"><%= r.percentText %></td><td class="num"><%= r.leftText %></td><td class="num"><%= r.expiresText %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</section>
+
+<script type="application/json" id="chart-data"><%- chart.hoverJson %></script>
+<script src="/dashboard.js" defer></script>
+<%- include('partials/foot') %>

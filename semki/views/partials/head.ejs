@@ -7,6 +7,7 @@
   <meta name="description" content="Semki Bot — трайността на семките във FiveM сървъра и известията за изтичане в Discord.">
   <meta name="keywords" content="Carbon Stealth, Semki Bot, FiveM, Discord бот, семки, известия за изтичане">
   <meta name="robots" content="noindex, nofollow">
+  <% if (typeof refreshSeconds !== 'undefined') { %><meta http-equiv="refresh" content="<%= refreshSeconds %>"><% } %>
   <meta name="color-scheme" content="dark">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/style.css">
@@ -17,6 +18,7 @@
     <a class="brand" href="/"><img src="/favicon.svg" alt="" width="24" height="24"> Semki Bot</a>
     <% if (user) { %>
     <nav aria-label="Основна навигация">
+      <a href="/dashboard" class="<%= active === 'dashboard' ? 'on' : '' %>">Дашборд</a>
       <a href="/" class="<%= active === 'batches' ? 'on' : '' %>">Семки</a>
       <a href="/alerts" class="<%= active === 'alerts' ? 'on' : '' %>">Известия</a>
       <a href="/settings" class="<%= active === 'settings' ? 'on' : '' %>">Настройки</a>

@@ -284,3 +284,35 @@ test('правило с повторение и съобщение от дашб
     assert.equal(cleared.repeatMinutes, null);
     assert.equal(cleared.message, null);
   }));
+
+test('страницата „Дашборд“: числа, графика, легенда, прагове и таблица', () =>
+  withApp(async () => {
+    guild.members.set(USER_ID, { isOwner: false, isAdmin: true, roleIds: [] });
+    const jar = await login(app.url);
+    await post(jar, '/batches', { seedTypeKey: 'amnesia', count: '5', percent: '80' });
+    await post(jar, '/batches', { seedTypeKey: 'purple', count: '2', percent: '10' });
+    await post(jar, '/alerts', {
+      kind: 'PERCENT',
+      threshold: '20',
+      seedTypeKey: '',
+      channelId: CHANNEL.id,
+      roleId: ROLE.id,
+      enabled: 'on',
+    });
+    const { res, html } = await page(jar, '/dashboard');
+    assert.equal(res.status, 200);
+    assert.match(html, /<h1>Дашборд<\/h1>/);
+    assert.match(html, /<a href="\/dashboard" class="on">Дашборд<\/a>/);
+    assert.match(html, /<meta http-equiv="refresh" content="300">/);
+    assert.match(html, /class="kpi-value">7</); // 5 + 2 семки
+    assert.equal((html.match(/<g class="s">/g) ?? []).length, 2);
+    assert.match(html, /stroke="#3987e5"/); // Amnesia
+    assert.match(html, /stroke="#9085e9"/); // Purple
+    assert.match(html, /≤ 20%/);
+    assert.match(html, /<script type="application\/json" id="chart-data">\{/);
+    assert.match(html, /<script src="\/dashboard.js" defer><\/script>/);
+    // таблицата: първо изтича Purple (10%)
+    const purple = html.indexOf('Purple</td>');
+    const amnesia = html.indexOf('Amnesia</td>');
+    assert.ok(purple > 0 && amnesia > purple);
+  }));

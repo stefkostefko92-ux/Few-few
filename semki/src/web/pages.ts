@@ -35,6 +35,7 @@ import {
 } from '../services/rules.js';
 import type { AuthKit } from './auth.js';
 import { getContext, type WebKit } from './context.js';
+import { dashboardPage } from './dashboard.js';
 import { batchRows, ruleViews, seedTypeViews } from './viewmodels.js';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
@@ -69,6 +70,8 @@ export function createPages(kit: WebKit, auth: AuthKit): Router {
     kit.flash(res, ok ? 'ok' : 'err', ok ? okText : errText);
     res.redirect(303, back);
   }
+
+  router.get('/dashboard', dashboardPage(kit));
 
   // ── Партиди и видове ──
   router.get('/', async (req, res) => {
