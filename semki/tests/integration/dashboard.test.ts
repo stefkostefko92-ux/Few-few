@@ -305,12 +305,18 @@ test('страницата „Дашборд“: числа, графика, л�
     assert.match(html, /<a href="\/dashboard" class="on">Дашборд<\/a>/);
     assert.match(html, /<meta http-equiv="refresh" content="300">/);
     assert.match(html, /class="kpi-value">7</); // 5 + 2 семки
+    assert.match(html, /<span class="kpi-label">Семки<\/span>\s+<span/); // интервал и без CSS
     assert.equal((html.match(/<g class="s">/g) ?? []).length, 2);
     assert.match(html, /stroke="#3987e5"/); // Amnesia
     assert.match(html, /stroke="#9085e9"/); // Purple
     assert.match(html, /≤ 20%/);
     assert.match(html, /<script type="application\/json" id="chart-data">\{/);
-    assert.match(html, /<script src="\/dashboard.js" defer><\/script>/);
+    assert.match(html, /<script src="\/dashboard.js\?v=[0-9a-f]{10}" defer><\/script>/);
+    assert.match(html, /<link rel="stylesheet" href="\/style.css\?v=[0-9a-f]{10}">/);
+    assert.equal((html.match(/<figure class="vial/g) ?? []).length, 2); // по стъкленица на партида
+    assert.match(html, /id="shelf-amnesia"/);
+    assert.match(html, /id="shelf-purple"/);
+    assert.match(html, /под 20%/); // Purple 10%
     // таблицата: първо изтича Purple (10%)
     const purple = html.indexOf('Purple</td>');
     const amnesia = html.indexOf('Amnesia</td>');

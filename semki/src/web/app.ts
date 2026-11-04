@@ -1,4 +1,6 @@
 // Express приложението: сигурност, health, вход и страниците на дашборда.
+import { createHash } from 'node:crypto';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import cookieParser from 'cookie-parser';
@@ -10,6 +12,18 @@ import { WebKit, type WebDeps } from './context.js';
 import { createPages } from './pages.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+// Статичните файлове носят версия по съдържанието си (`/style.css?v=…`): нов файл значи нов адрес и
+// браузърът не държи стария 7 дни (така новите класове на дашборда стояха без стил).
+function assetVersions(dir: string): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const name of readdirSync(dir)) {
+    const file = path.join(dir, name);
+    if (!statSync(file).isFile()) continue;
+    out.set(name, createHash('sha256').update(readFileSync(file)).digest('hex').slice(0, 10));
+  }
+  return out;
+}
 
 function trustProxyValue(raw: string): string | number | boolean {
   if (/^\d+$/.test(raw)) return Number(raw);
@@ -24,6 +38,11 @@ export function createWebApp(deps: WebDeps): express.Express {
   app.set('trust proxy', trustProxyValue(deps.trustProxy));
   app.set('view engine', 'ejs');
   app.set('views', path.join(ROOT, 'views'));
+  const versions = assetVersions(path.join(ROOT, 'public'));
+  app.locals.asset = (name: string): string => {
+    const v = versions.get(name);
+    return v ? `/${name}?v=${v}` : `/${name}`;
+  };
 
   app.use(
     helmet({

@@ -1,9 +1,10 @@
-// Страницата „Дашборд“: всички семки на едно място — числата отгоре, графиката на трайността във
-// времето, обобщението по видове и всички партиди по реда на изтичане.
+// Страницата „Дашборд“: всички семки на едно място — числата отгоре, рафт със стъкленици за всеки вид,
+// прогнозата във времето и всички партиди по реда на изтичане.
 import type { Request, Response } from 'express';
 import { buildChart, seedColor } from '../domain/chart.js';
-import { expiresAt, HOUR_MS, msLeft, percentAt } from '../domain/decay.js';
-import { formatDuration, formatPercent } from '../domain/messages.js';
+import { expiresAt, HOUR_MS, msLeft } from '../domain/decay.js';
+import { formatDuration } from '../domain/messages.js';
+import { buildShelves } from '../domain/vials.js';
 import { listBatches, listSeedTypes } from '../services/batches.js';
 import { labelsOf } from '../services/mapping.js';
 import { listRules } from '../services/rules.js';
@@ -26,10 +27,20 @@ export function dashboardPage(kit: WebKit) {
     const fmt = dateTimeFormatter(settings.timezone);
     const live = batches.filter((b) => msLeft(b, b.rate, now) > 0);
 
+    const thresholds = rules
+      .filter((r) => r.enabled && r.kind === 'PERCENT')
+      .map((r) => r.threshold);
     const chart = buildChart({
       batches,
       labels: labelsOf(types),
-      thresholds: rules.filter((r) => r.enabled && r.kind === 'PERCENT').map((r) => r.threshold),
+      thresholds,
+      now,
+      timezone: settings.timezone,
+    });
+    const { shelves, empty } = buildShelves({
+      batches,
+      types: types.map((t) => ({ key: t.key, label: t.label })),
+      thresholds,
       now,
       timezone: settings.timezone,
     });
@@ -38,22 +49,6 @@ export function dashboardPage(kit: WebKit) {
     const rows = batchRows(batches, types, now, settings.timezone)
       .sort((a, b) => (expiry.get(a.id) ?? 0) - (expiry.get(b.id) ?? 0))
       .map((r) => ({ ...r, color: seedColor(r.typeKey) }));
-
-    const byType = types.map((t) => {
-      const ofType = live.filter((b) => b.seedTypeKey === t.key);
-      const soonest = ofType
-        .map((b) => ({ b, left: msLeft(b, b.rate, now) }))
-        .sort((x, y) => x.left - y.left)[0];
-      return {
-        key: t.key,
-        label: t.label,
-        color: seedColor(t.key),
-        count: ofType.reduce((s, b) => s + b.count, 0),
-        batches: ofType.length,
-        lowest: soonest ? formatPercent(percentAt(soonest.b, soonest.b.rate, now)) : '—',
-        soonest: soonest ? formatDuration(soonest.left) : '—',
-      };
-    });
 
     const next = live
       .map((b) => ({ b, left: msLeft(b, b.rate, now) }))
@@ -67,7 +62,9 @@ export function dashboardPage(kit: WebKit) {
       updatedText: fmt(now),
       chart,
       rows,
-      byType,
+      shelves,
+      empty,
+      hasTicks: thresholds.some((t) => t > 0 && t < 100),
       stats: {
         seeds: live.reduce((s, b) => s + b.count, 0),
         batches: live.length,

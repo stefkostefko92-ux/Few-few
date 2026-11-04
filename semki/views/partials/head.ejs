@@ -9,13 +9,13 @@
   <meta name="robots" content="noindex, nofollow">
   <% if (typeof refreshSeconds !== 'undefined') { %><meta http-equiv="refresh" content="<%= refreshSeconds %>"><% } %>
   <meta name="color-scheme" content="dark">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/style.css">
-  <script src="/confirm.js" defer></script>
+  <link rel="icon" href="<%= asset('favicon.svg') %>" type="image/svg+xml">
+  <link rel="stylesheet" href="<%= asset('style.css') %>">
+  <script src="<%= asset('confirm.js') %>" defer></script>
 </head>
 <body>
   <header class="top">
-    <a class="brand" href="/"><img src="/favicon.svg" alt="" width="24" height="24"> Semki Bot</a>
+    <a class="brand" href="/"><img src="<%= asset('favicon.svg') %>" alt="" width="24" height="24"> Semki Bot</a>
     <% if (user) { %>
     <nav aria-label="Основна навигация">
       <a href="/dashboard" class="<%= active === 'dashboard' ? 'on' : '' %>">Дашборд</a>

@@ -1,36 +1,158 @@
 <%- include('partials/head') %>
-<div class="head-row">
+<div class="dash-head">
   <h1>Дашборд</h1>
-  <p class="muted small">Обновено <%= updatedText %> · опреснява се на 5 мин</p>
+  <p class="muted small">Обновено <%= updatedText %>, опреснява се на 5 мин</p>
 </div>
 
 <section class="kpis" aria-label="Обобщение">
-  <div class="kpi"><span class="kpi-label">Семки</span><span class="kpi-value"><%= stats.seeds %></span><span class="kpi-sub muted">в <%= stats.batches %> партиди</span></div>
-  <div class="kpi"><span class="kpi-label">Първо изтича</span><span class="kpi-value"><%= stats.nextText %></span><span class="kpi-sub muted"><%= stats.nextWho %></span></div>
-  <div class="kpi"><span class="kpi-label">Изтичат до 24 ч</span><span class="kpi-value"><%= stats.soon %></span><span class="kpi-sub muted">партиди</span></div>
-  <div class="kpi"><span class="kpi-label">Изтекли</span><span class="kpi-value"><%= stats.expired %></span><span class="kpi-sub muted"><% if (stats.expired > 0) { %><a href="/">изтрий ги от „Семки“</a><% } else { %>няма<% } %></span></div>
+  <div class="kpi">
+    <span class="kpi-label">Семки</span>
+    <span class="kpi-value"><%= stats.seeds %></span>
+    <span class="kpi-sub">в <%= stats.batches %> партиди</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">Първо изтича</span>
+    <span class="kpi-value"><%= stats.nextText %></span>
+    <span class="kpi-sub"><%= stats.nextWho %></span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">Изтичат до 24 ч</span>
+    <span class="kpi-value"><%= stats.soon %></span>
+    <span class="kpi-sub">партиди</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">Изтекли</span>
+    <span class="kpi-value"><%= stats.expired %></span>
+    <span class="kpi-sub"><% if (stats.expired > 0) { %><a href="/">изтрий ги от „Семки“</a><% } else { %>няма<% } %></span>
+  </div>
 </section>
 
-<section class="card">
-  <div class="head-row">
-    <h2>Трайност във времето</h2>
-    <span class="muted small">следващите <%= Math.round(chart.hours / 24) %> дни · <%= timezone %></span>
+<%# Общите градиенти на стъклениците: стъкло, тапа, семе, светлина под прага и разтворът на всеки вид. %>
+<svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="glass" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="0.1" stop-color="#ffffff" stop-opacity="0.36"/>
+      <stop offset="0.24" stop-color="#ffffff" stop-opacity="0.05"/>
+      <stop offset="0.7" stop-color="#ffffff" stop-opacity="0.02"/>
+      <stop offset="0.87" stop-color="#ffffff" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.07"/>
+    </linearGradient>
+    <linearGradient id="cork" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#6b4627"/>
+      <stop offset="0.35" stop-color="#b98a5a"/>
+      <stop offset="0.6" stop-color="#a5784b"/>
+      <stop offset="1" stop-color="#5c3b20"/>
+    </linearGradient>
+    <radialGradient id="seed" cx="0.38" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#d9b47c"/>
+      <stop offset="0.55" stop-color="#8f6436"/>
+      <stop offset="1" stop-color="#4a2f17"/>
+    </radialGradient>
+    <radialGradient id="warn-glow" cx="0.5" cy="0.6" r="0.6">
+      <stop offset="0" stop-color="#fab219" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#fab219" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="vial-inner"><path d="M14 30 V182 A18 18 0 0 0 50 182 V30 Z"/></clipPath>
+    <% shelves.forEach(function (s) { %>
+    <linearGradient id="liq-<%= s.key %>" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="<%= s.dark %>"/>
+      <stop offset="0.28" stop-color="<%= s.color %>"/>
+      <stop offset="0.46" stop-color="<%= s.light %>"/>
+      <stop offset="0.62" stop-color="<%= s.color %>"/>
+      <stop offset="1" stop-color="<%= s.dark %>"/>
+    </linearGradient>
+    <linearGradient id="depth-<%= s.key %>" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="<%= s.dark %>" stop-opacity="0"/>
+      <stop offset="1" stop-color="<%= s.dark %>" stop-opacity="0.6"/>
+    </linearGradient>
+    <radialGradient id="men-<%= s.key %>" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="<%= s.light %>"/>
+      <stop offset="1" stop-color="<%= s.color %>"/>
+    </radialGradient>
+    <% }) %>
+  </defs>
+</svg>
+
+<% if (shelves.length === 0) { %>
+<section class="card"><p class="muted">Няма въведени семки — добави от „Семки“ или с команда в Discord, например <code>/amnesia брой:10 дюрейшън:100</code>.</p></section>
+<% } %>
+
+<div class="shelves">
+<% shelves.forEach(function (s) { %>
+<section class="shelf" aria-labelledby="shelf-<%= s.key %>">
+  <header class="shelf-head">
+    <h2 id="shelf-<%= s.key %>"><svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="<%= s.color %>"/></svg> <%= s.label %></h2>
+    <dl class="shelf-stats">
+      <div><dt>Семки</dt> <dd><%= s.seeds %></dd></div>
+      <div><dt>Партиди</dt> <dd><%= s.batches %><% if (s.expired > 0) { %> <span class="muted">+ <%= s.expired %> изтекли</span><% } %></dd></div>
+      <div><dt>Най-нисък</dt> <dd><%= s.lowestText %></dd></div>
+      <div><dt>Първо изтича след</dt> <dd><%= s.soonestText %></dd></div>
+    </dl>
+  </header>
+  <div class="shelf-row">
+    <% s.vials.forEach(function (v) { %>
+    <figure class="vial<%= v.expired ? ' is-expired' : '' %><%= v.status ? ' is-low' : '' %>">
+      <svg viewBox="0 0 64 210" width="64" height="210" role="img" aria-label="<%= v.title %>">
+        <title><%= v.title %></title>
+        <ellipse cx="32" cy="205" rx="21" ry="3.5" fill="#000000" opacity="0.5"/>
+        <% if (v.status) { %><ellipse cx="32" cy="160" rx="27" ry="52" fill="url(#warn-glow)"/><% } %>
+        <path d="M10 26 V182 A22 22 0 0 0 54 182 V26 Z" fill="#0b0f0d" opacity="0.55"/>
+        <g clip-path="url(#vial-inner)">
+          <% if (!v.expired) { %>
+          <rect x="14" y="<%= v.levelY %>" width="36" height="<%= 202 - v.levelY %>" fill="url(#liq-<%= s.key %>)"/>
+          <rect x="14" y="<%= v.levelY %>" width="36" height="<%= 202 - v.levelY %>" fill="url(#depth-<%= s.key %>)"/>
+          <% } %>
+          <% v.seeds.forEach(function (seed) { %>
+          <ellipse cx="<%= seed.cx %>" cy="<%= seed.cy %>" rx="3.6" ry="2.2" transform="rotate(<%= seed.angle %> <%= seed.cx %> <%= seed.cy %>)" fill="<%= v.expired ? '#5d5248' : 'url(#seed)' %>" stroke="#2e1d0d" stroke-width="0.4"/>
+          <% }) %>
+          <% if (!v.expired) { %><ellipse cx="32" cy="<%= v.levelY %>" rx="18" ry="2.6" fill="url(#men-<%= s.key %>)" opacity="0.95"/><% } %>
+        </g>
+        <% v.ticks.forEach(function (t) { %>
+        <line x1="43" x2="50" y1="<%= t.y %>" y2="<%= t.y %>" stroke="#ffffff" stroke-opacity="0.55" stroke-width="1"/>
+        <% }) %>
+        <path d="M10 26 V182 A22 22 0 0 0 54 182 V26 Z" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.3" stroke-width="1"/>
+        <rect x="16.5" y="40" width="3.5" height="132" rx="1.75" fill="#ffffff" opacity="0.2"/>
+        <rect x="17" y="46" width="1.6" height="34" rx="0.8" fill="#ffffff" opacity="0.55"/>
+        <ellipse cx="32" cy="26" rx="22" ry="3.6" fill="none" stroke="#ffffff" stroke-opacity="0.4" stroke-width="1.2"/>
+        <rect x="15" y="5" width="34" height="25" rx="4" fill="url(#cork)"/>
+        <ellipse cx="32" cy="6" rx="17" ry="2.6" fill="#c99a68"/>
+      </svg>
+      <figcaption>
+        <strong class="vial-pct"><%= v.expired ? 'изтекла' : v.percentText %></strong>
+        <span>×<%= v.count %> <span class="muted vial-id">#<%= v.id %></span></span>
+        <% if (!v.expired) { %><span class="muted"><%= v.leftText %></span><% } %>
+        <% if (v.status) { %><span class="vial-status"><svg width="8" height="8" aria-hidden="true"><circle cx="4" cy="4" r="3.5" fill="#fab219"/></svg> <%= v.status %></span><% } %>
+      </figcaption>
+    </figure>
+    <% }) %>
   </div>
-  <% if (chart.series.length === 0) { %>
-  <p class="muted">Няма активни партиди — добави от „Семки“ или с команда в Discord.</p>
-  <% } else { %>
+</section>
+<% }) %>
+</div>
+
+<% if (empty.length > 0 && shelves.length > 0) { %>
+<p class="muted small shelf-empty">Без партиди: <%= empty.join(', ') %>.</p>
+<% } %>
+<% if (hasTicks) { %>
+<p class="muted small">Нивото в стъкленицата е трайността, чертичките по стъклото — праговете от „Известия“. Вляво на всеки рафт е партидата, която изтича първа.</p>
+<% } %>
+
+<% if (chart.series.length > 0) { %>
+<details class="card fold">
+  <summary><h2>Прогноза във времето</h2> <span class="muted small">следващите <%= Math.round(chart.hours / 24) %> дни, <%= timezone %></span></summary>
   <ul class="legend" aria-label="Легенда">
     <% chart.legend.forEach(function (l) { %>
-    <li><svg width="18" height="6" aria-hidden="true"><line x1="1" y1="3" x2="17" y2="3" stroke="<%= l.color %>" stroke-width="2" stroke-linecap="round"/></svg><%= l.label %> <span class="muted"><%= l.count %> бр. · <%= l.batches %> парт.</span></li>
+    <li><svg width="18" height="6" aria-hidden="true"><line x1="1" y1="3" x2="17" y2="3" stroke="<%= l.color %>" stroke-width="2" stroke-linecap="round"/></svg> <%= l.label %> <span class="muted"><%= l.count %> бр.</span></li>
     <% }) %>
     <% if (chart.thresholds.length > 0) { %>
-    <li><svg width="18" height="6" aria-hidden="true"><line class="thr" x1="1" y1="3" x2="17" y2="3"/></svg>праг за таг <span class="muted">(от „Известия“)</span></li>
+    <li><svg width="18" height="6" aria-hidden="true"><line class="thr" x1="1" y1="3" x2="17" y2="3"/></svg> праг за таг</li>
     <% } %>
   </ul>
   <figure class="chart-wrap" id="chart">
     <svg class="chart-svg" viewBox="0 0 <%= chart.width %> <%= chart.height %>" role="img" aria-labelledby="chart-title chart-desc" tabindex="0">
       <title id="chart-title">Трайност на партидите във времето</title>
-      <desc id="chart-desc">Всяка линия е една партида: от текущия процент сега до 0% при изтичане. Таблицата под графиката съдържа същите данни.</desc>
+      <desc id="chart-desc">Всяка линия е една партида: от текущия процент сега до 0% при изтичане. Таблицата „Всички партиди“ съдържа същите данни.</desc>
       <g class="grid">
         <% chart.yTicks.forEach(function (t) { %>
         <line x1="<%= chart.plot.x %>" x2="<%= chart.plot.x + chart.plot.w %>" y1="<%= t.y %>" y2="<%= t.y %>"/>
@@ -61,31 +183,12 @@
     <div class="chart-tip" role="status" hidden></div>
   </figure>
   <p class="muted small">Посочи графиката (или я фокусирай и ползвай ← →), за да видиш процентите в избрания момент.</p>
-  <% } %>
-</section>
+</details>
+<% } %>
 
-<section class="card">
-  <h2>По видове</h2>
-  <div class="table-wrap">
-    <table class="data">
-      <thead><tr><th scope="col">Вид</th><th scope="col" class="num">Семки</th><th scope="col" class="num">Партиди</th><th scope="col" class="num">Най-нисък %</th><th scope="col" class="num">Първо изтича след</th></tr></thead>
-      <tbody>
-        <% byType.forEach(function (t) { %>
-        <tr>
-          <th scope="row"><svg width="14" height="6" aria-hidden="true"><line x1="1" y1="3" x2="13" y2="3" stroke="<%= t.color %>" stroke-width="2" stroke-linecap="round"/></svg> <%= t.label %></th>
-          <td class="num"><%= t.count %></td><td class="num"><%= t.batches %></td><td class="num"><%= t.lowest %></td><td class="num"><%= t.soonest %></td>
-        </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<section class="card">
-  <h2>Всички партиди <small><%= rows.length %></small></h2>
-  <% if (rows.length === 0) { %>
-  <p class="muted">Няма въведени семки.</p>
-  <% } else { %>
+<% if (rows.length > 0) { %>
+<details class="card fold">
+  <summary><h2>Всички партиди</h2> <span class="muted small"><%= rows.length %>, по реда на изтичане</span></summary>
   <div class="table-wrap">
     <table class="data">
       <thead><tr><th scope="col">#</th><th scope="col">Вид</th><th scope="col" class="num">Брой</th><th scope="col" class="num">Трайност</th><th scope="col" class="num">Остават</th><th scope="col" class="num">Изтича</th></tr></thead>
@@ -93,16 +196,16 @@
         <% rows.forEach(function (r) { %>
         <tr class="<%= r.expired ? 'expired' : '' %>">
           <td class="num"><%= r.id %></td>
-          <td><svg width="14" height="6" aria-hidden="true"><line x1="1" y1="3" x2="13" y2="3" stroke="<%= r.color %>" stroke-width="2" stroke-linecap="round"/></svg> <%= r.typeLabel %></td>
+          <td><svg width="10" height="10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="<%= r.color %>"/></svg> <%= r.typeLabel %></td>
           <td class="num"><%= r.count %></td><td class="num"><%= r.percentText %></td><td class="num"><%= r.leftText %></td><td class="num"><%= r.expiresText %></td>
         </tr>
         <% }) %>
       </tbody>
     </table>
   </div>
-  <% } %>
-</section>
+</details>
+<% } %>
 
 <script type="application/json" id="chart-data"><%- chart.hoverJson %></script>
-<script src="/dashboard.js" defer></script>
+<script src="<%= asset('dashboard.js') %>" defer></script>
 <%- include('partials/foot') %>
