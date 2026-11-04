@@ -1190,7 +1190,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 620
+        "lessons": 621
       },
       "evolution": [
         {
@@ -2026,9 +2026,20 @@
           "date": "2026-11-04",
           "event": "v56.1 — учене",
           "detail": "Научи: Публичният HTML артефакт на флота (build-artifact.mjs) включва кратките резюмета на поу…"
+        },
+        {
+          "version": "56.2.0",
+          "date": "2026-11-04",
+          "event": "v56.2 — учене",
+          "detail": "Научи: guard-readonly блокира ревюър агента дори при пренасочване към scratchpad файл, когато …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-04",
+          "type": "learning",
+          "summary": "Научи: „guard-readonly блокира ревюър агента дори при пренасочване към scratchpad файл, когато …\""
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
