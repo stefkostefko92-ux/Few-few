@@ -15,7 +15,8 @@ import {
   type ModuloOverlay,
 } from '../src/ordini/moduli.js';
 import { renderModulo } from '../src/ordini/pdf.js';
-import { modelliMancanti, sceltoNellaScheda, SLOTS } from '../src/ordini/registry.js';
+import { modelliMancanti } from '../src/ordini/registry-controlli.js';
+import { sceltoNellaScheda, SLOTS } from '../src/ordini/registry.js';
 import { riepilogoModuli } from '../src/ordini/riepilogo.js';
 import { activeFields } from '../src/schede/fields.js';
 import { pdfFontPaths } from '../src/schede/pdf.js';

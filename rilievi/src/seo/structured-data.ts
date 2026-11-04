@@ -14,8 +14,21 @@ import { HOME_PATH } from './paths.js';
 /** Езикът на сайта — само италиански. */
 const IN_LANGUAGE = LOCALE_TAG[DEFAULT_LOCALE];
 
-/** Фирмата — един възел за Organization и LocalBusiness (едно `@id`). Работно време не е обявено. */
-function organization(t: Translator) {
+/** Какво знае фирмата — за търсачките и AI отговорите; само областите, които порталът покрива. */
+const KNOWS_ABOUT = [
+  'ascensori',
+  'rilievo impianti ascensori',
+  'manutenzione ascensori',
+  'quadri di manovra',
+  'argani e funi per ascensori',
+];
+
+/**
+ * Фирмата — един възел за Organization и LocalBusiness (едно `@id`). Работно време не е обявено. Логото
+ * е марката на портала върху черно (`npm run brand:logo`, 512 × 512 — квадратно, както го иска Google),
+ * на този сайт; образът — картинката за споделяне.
+ */
+function organization(t: Translator, base: string) {
   const email = config().CONTACT_EMAIL;
   return {
     '@type': ['Organization', 'LocalBusiness'],
@@ -23,6 +36,14 @@ function organization(t: Translator) {
     name: COMPANY.name,
     legalName: COMPANY.name,
     url: COMPANY.url,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${base}/static/img/icon-512.png`,
+      width: 512,
+      height: 512,
+    },
+    image: `${base}/static/img/og.png`,
+    knowsAbout: KNOWS_ABOUT,
     email,
     telephone: COMPANY.phone,
     contactPoint: COMPANY.phones.map(({ number }) => ({
@@ -78,7 +99,7 @@ function breadcrumb(canonical: string, items: Array<{ name: string; url: string 
 export function landingStructuredData(t: Translator, canonical: string): string {
   const base = config().PUBLIC_BASE_URL;
   const graph = [
-    organization(t),
+    organization(t, base),
     website(base),
     {
       '@type': 'WebPage',
@@ -146,7 +167,7 @@ export function privacyStructuredData(t: Translator, canonical: string, updated:
   return jsonForScript({
     '@context': 'https://schema.org',
     '@graph': [
-      organization(t),
+      organization(t, base),
       website(base),
       {
         '@type': 'WebPage',

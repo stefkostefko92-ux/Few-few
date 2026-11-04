@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import PDFDocument from 'pdfkit';
 import type { AziendaCartello } from '../cartelli/pdf.js';
+import type { Translator } from '../i18n.js';
 import { pdfFontPaths } from '../schede/pdf.js';
 import type { DatiArgano } from './dati.js';
 import { numero } from './formato.js';
@@ -19,12 +20,10 @@ const INK = '#000000';
 const MUTED = '#555555';
 const LOGO = { width: 170, height: 44 };
 
-type Translate = (key: string, params?: Record<string, string | number>) => string;
-
 export interface CalcoloPdfOptions {
   dati: DatiArgano;
   sezioni: SezioneRisultati[];
-  t: Translate;
+  t: Translator;
   impianto: { indirizzo: string; matricola: string; numeroImpianto: string };
   salvato: { quando: string; autore: string };
   testata: AziendaCartello;
@@ -44,7 +43,7 @@ function fontsOf(dir: string): { regular: Buffer; bold: Buffer } {
 }
 
 /** Входните данни като двойки „надпис — стойност“ (мерките са в надписа). */
-function datiInRighe(d: DatiArgano, t: Translate): Array<[string, string]> {
+function datiInRighe(d: DatiArgano, t: Translator): Array<[string, string]> {
   const n = (v: number) => numero(v, v % 1 ? 2 : 0);
   const righe: Array<[string, string]> = [
     [t('argano.campo.portata'), `${n(d.portata)} kg`],

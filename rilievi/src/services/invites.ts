@@ -15,6 +15,8 @@ import type { SessionUser } from '../types.js';
 import { inviteLink, newToken, tokenHash } from './tokens.js';
 
 /** Поканата важи 7 дни; после се праща нова. */
+/** Неприетата покана се трие толкова дни след срока си (maintenance.ts) — и политиката го казва. */
+export const INVITI_SCADUTI_GIORNI = 30;
 export const INVITE_DAYS = 7;
 
 export type CreateInviteResult =

@@ -8,9 +8,9 @@
     { name: 'rilievi_theme', purpose: t('privacy.cookies.theme'), kept: t('privacy.cookies.prefKept') },
     { name: 'rilievi_flash', purpose: t('privacy.cookies.flash'), kept: t('privacy.cookies.flashKept') },
   ];
-  const rows = ['request', 'account', 'media', 'audit', 'ip'];
+  const rows = ['request', 'account', 'inviti', 'lavoro', 'media', 'audit', 'ip', 'backup'];
   const headers = ['data', 'why', 'basis', 'kept'];
-  const params = { days: retentionDays, auditDays };
+  const params = { days: retentionDays, auditDays, inviteDays };
 %><%- include('top', { pageTitle: t('privacy.title') + ' — Rilievi Impianti', description: t('privacy.metaDescription') }) %>
 <article class="prose">
   <h1><%= t('privacy.title') %></h1>

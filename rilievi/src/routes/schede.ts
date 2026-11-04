@@ -92,7 +92,8 @@ schedeRouter.post('/schede', write, requireCsrf, async (req, res) => {
       base: '',
       conflict: false,
       aziende: choices,
-      azienda: only?.id ?? (typeof body.azienda === 'string' ? body.azienda : ''),
+      // Само фирма, в която пише: чужд id не носи данните на чуждата фирма в страницата.
+      azienda: azienda?.id ?? '',
       ordineSezioni,
     });
     return;

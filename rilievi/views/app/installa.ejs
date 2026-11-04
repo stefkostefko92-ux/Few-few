@@ -1,7 +1,8 @@
 <%- include('../partials/top', { titleKey: 'installa.title', narrowMain: true }) %>
 <%#
   „Installa l'app“: бутонът на браузъра, когато го предлага (Chrome, Edge — installa.js), и стъпките за
-  всяко устройство. Без JavaScript се виждат всички стъпки; с него — отворени само тези на устройството.
+  всяко устройство. Отворени са тези на устройството (`sistema` — от User-Agent, src/pwa/sistema.ts);
+  непознато устройство — всички.
 %>
 <div class="page-head">
   <div>
@@ -18,8 +19,8 @@
   <p class="notice" data-installa-fatta role="status" hidden><%= t('installa.done') %></p>
   <div class="installa__elenco">
   <% for (const [os, passi] of [['android', 4], ['ios', 4], ['pc', 4], ['mac', 3]]) { %>
-  <details class="installa__os" data-os="<%= os %>" open>
-    <summary><span class="installa__testa"><span><%= t('installa.' + os + '.title') %></span><span class="installa__tuo" hidden><%= t('installa.yourDevice') %></span></span></summary>
+  <details class="installa__os" data-os="<%= os %>"<% if (!sistema || sistema === os) { %> open<% } %>>
+    <summary><span class="installa__testa"><span><%= t('installa.' + os + '.title') %></span><span class="installa__tuo"<% if (sistema !== os) { %> hidden<% } %>><%= t('installa.yourDevice') %></span></span></summary>
     <ol class="installa__passi">
       <% for (let n = 1; n <= passi; n += 1) { %><li><%= t('installa.' + os + '.s' + n) %></li>
       <% } %>

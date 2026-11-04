@@ -74,7 +74,7 @@ describe('the MoviLift panel order', () => {
     // The shared values first, then one sheet in two places, the survey fields, the linked data.
     assert.match(
       page.body,
-      /\/static\/js\/valori\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/moduli-gemelli\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/moduli\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/collegati\.js/,
+      /\/static\/js\/valori\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/moduli-gemelli\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/moduli\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/collegati-luoghi\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/collegati\.js/,
     );
   });
 

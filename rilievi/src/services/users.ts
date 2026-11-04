@@ -16,6 +16,7 @@ import { sendMail, type MailResult } from '../mail/mailer.js';
 import { HOUR } from '../time.js';
 import type { SessionUser } from '../types.js';
 import { ADMIN_RESET_HOURS } from './auth.js';
+import { revokeInvitesOf, revokeResetLinks } from './revoche.js';
 import { newToken, resetLink } from './tokens.js';
 
 const USER_ID = /^[a-z0-9]{20,40}$/;
@@ -137,21 +138,6 @@ export async function getUser(actor: SessionUser, id: string): Promise<UserView 
   return row ? viewOf(actor, row, scope) : null;
 }
 
-/**
- * Неизползваните връзки за нова парола спират. Вика се, когато се смени кой управлява акаунта (нова фирма,
- * по-висока роля) или накъде отиват писмата (нов имейл): иначе връзка, дадена от човек, който вече не
- * управлява акаунта, пак би го отворила.
- */
-export async function revokeResetLinks(
-  tx: Prisma.TransactionClient,
-  userId: string,
-): Promise<void> {
-  await tx.passwordReset.updateMany({
-    where: { userId, usedAt: null },
-    data: { usedAt: new Date() },
-  });
-}
-
 /** Човекът с ВСИЧКИТЕ му членства — проверката за управление гледа и фирмите извън обхвата. */
 export function loadTarget(id: string) {
   if (!USER_ID.test(id)) return Promise.resolve(null);
@@ -184,7 +170,12 @@ export async function setActive(
         ? { deactivatedAt: null, failedLogins: 0, lockedUntil: null }
         : { deactivatedAt: new Date() },
     });
-    if (!active) await destroyAllSessions(target.id, undefined, tx);
+    if (!active) {
+      await destroyAllSessions(target.id, undefined, tx);
+      // Нито връзка за парола (и при повторно активиране), нито покана от него остава жива.
+      await revokeResetLinks(tx, target.id);
+      await revokeInvitesOf(tx, target.id);
+    }
     await writeUserAudit(
       {
         actorId: actor.id,

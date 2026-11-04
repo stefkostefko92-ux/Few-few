@@ -9,6 +9,7 @@ import vm from 'node:vm';
 import sharp from 'sharp';
 import { translatorFor } from '../src/i18n.js';
 import { ICONE, manifestDi, START_URL } from '../src/pwa/manifest.js';
+import { sistemaDi } from '../src/pwa/sistema.js';
 
 const PUBLIC = join(import.meta.dirname, '..', 'public');
 const t = translatorFor('it');
@@ -136,5 +137,34 @@ describe('the service worker', () => {
 
   it('keeps nothing on the device', () => {
     assert.doesNotMatch(source, /caches\.|indexedDB|localStorage/);
+  });
+});
+
+describe('the device of "Installa l\'app"', () => {
+  it('is told from the user agent, as the browser script tells it', () => {
+    const ua = {
+      iphone:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+      android:
+        'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36',
+      macSafari:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15',
+      macChrome:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+      windowsEdge:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0',
+      linux:
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/130.0.0.0 Safari/537.36',
+    };
+    assert.equal(sistemaDi(ua.iphone), 'ios');
+    assert.equal(sistemaDi(ua.android), 'android');
+    assert.equal(sistemaDi(ua.macSafari), 'mac');
+    // Chrome on a Mac installs as on any computer.
+    assert.equal(sistemaDi(ua.macChrome), 'pc');
+    assert.equal(sistemaDi(ua.windowsEdge), 'pc');
+    assert.equal(sistemaDi(ua.linux), 'pc');
+    // Not told: every step stays open.
+    assert.equal(sistemaDi(undefined), null);
+    assert.equal(sistemaDi('curl/8.5.0'), null);
   });
 });

@@ -28,6 +28,7 @@ NGINX_SITE="${RILIEVI_NGINX_SITE:-/etc/nginx/sites-available/rilievi}"
 NGINX_LINK="${RILIEVI_NGINX_LINK:-/etc/nginx/sites-enabled/rilievi}"
 LE_DIR="${RILIEVI_LE_DIR:-/etc/letsencrypt}"
 HEALTH_WAIT="${RILIEVI_HEALTH_WAIT:-90}"
+MIGRATION_WAIT="${RILIEVI_MIGRATION_WAIT:-1800}"
 KEEP_BACKUPS="${RILIEVI_KEEP_BACKUPS:-5}"
 SKIP_BACKUP="${RILIEVI_SKIP_BACKUP:-0}"
 LAST_GOOD="${RILIEVI_LAST_GOOD:-$SHARED/last-good}"
@@ -158,16 +159,33 @@ backup_db() {
     tail -n "+$((KEEP_BACKUPS + 1))" | cut -d' ' -f2- | xargs -r rm -f
 }
 
+# Миграция, която още тече (entrypoint-ът на app я прилага): ред в _prisma_migrations без край, без
+# отказ и без грешка. Провалената има `logs` — по нея не се чака.
+migration_running() {
+  local n
+  n="$(docker compose exec -T db psql -U rilievi -d rilievi -tAc \
+    'SELECT count(*) FROM _prisma_migrations WHERE finished_at IS NULL AND rolled_back_at IS NULL AND logs IS NULL' \
+    2>/dev/null | tr -dc '0-9')" || n=""
+  [ -n "$n" ] && [ "$n" -gt 0 ]
+}
+
 # Код 200 сам не казва КОЙ отговаря на порта: чака се маркерът на Rilievi и база, която отговаря.
+# Докато миграция още тече, се чака и след HEALTH_WAIT (до MIGRATION_WAIT): провал посред миграция
+# би пуснал отката върху полуприложена схема (одит, 4 ноември 2026).
 wait_healthy() {
   local url="http://127.0.0.1:$1/health" body deadline=$((SECONDS + HEALTH_WAIT))
+  local hard=$((SECONDS + MIGRATION_WAIT))
   while :; do
     body="$(curl -fsS --max-time 5 "$url" 2>/dev/null)" || body=""
     case "$body" in *'"app":"rilievi"'*)
       case "$body" in *'"status":"ok"'*) return 0 ;; esac
       ;;
     esac
-    [ "$SECONDS" -lt "$deadline" ] || return 1
+    if [ "$SECONDS" -ge "$deadline" ]; then
+      [ "$SECONDS" -lt "$hard" ] && migration_running || return 1
+      log "миграцията още тече — чакам…"
+      deadline=$((SECONDS + 30))
+    fi
     sleep 3
   done
 }
@@ -271,12 +289,17 @@ main() {
   docker compose build app worker || fail 1 "build се провали — работещите контейнери не са пипани."
   backup_db
   log "up (entrypoint-ът прилага миграциите)…"
-  docker compose up -d --remove-orphans || fail 4 "docker compose up се провали."
+  # Първо базата и приложението: worker-ът чака здраво приложение (depends_on), а `up` на всичко наведнъж
+  # пада, ако дълга миграция надживее healthcheck-а — тогава откатът би тръгнал посред миграцията.
+  # Старият worker спира (връща файла си в опашката), за да не чете схема, която миграцията сменя.
+  docker compose stop worker >/dev/null 2>&1 || true
+  docker compose up -d --remove-orphans db app || fail 4 "docker compose up се провали."
   wait_healthy "$port" ||
     fail 4 "на 127.0.0.1:$port не отговаря Rilievi след ${HEALTH_WAIT} s. Виж: cd $APP_DIR && docker compose logs --tail=80 app"
   ok "жив на 127.0.0.1:$port"
   # Новият код вече работи: оттук нататък нищо не сменя изхода 0.
   remember_live || warn "не записах $LAST_GOOD — откатът сочи предишния release"
+  docker compose up -d worker >/dev/null 2>&1 || true
   check_worker || warn "фоновият процес на снимките не върви — каченото чака в опашката. Виж: cd $APP_DIR && docker compose logs --tail=80 worker"
   install_backup_timer || warn "дневният бекъп не е сложен — DEPLOY.md, т. 6"
   sync_nginx "$port" || warn "nginx не е обновен — Rilievi е жив на 127.0.0.1:$port"

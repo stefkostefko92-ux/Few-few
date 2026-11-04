@@ -6,6 +6,7 @@ import { pulisciErrori } from './auth/rete.js';
 import { purgeExpiredSessions } from './auth/sessions.js';
 import { pulisciSfide } from './services/login-2fa.js';
 import { purgeOldRequests } from './requests/service.js';
+import { INVITI_SCADUTI_GIORNI } from './services/invites.js';
 import { DAY, HOUR } from './time.js';
 
 /**
@@ -22,7 +23,7 @@ export async function runMaintenance(): Promise<void> {
   const sfide = await pulisciSfide(now);
   const errori = await pulisciErrori(now);
   const invites = await prisma.invite.deleteMany({
-    where: { expiresAt: { lt: new Date(now - 30 * DAY) }, acceptedAt: null },
+    where: { expiresAt: { lt: new Date(now - INVITI_SCADUTI_GIORNI * DAY) }, acceptedAt: null },
   });
   const resets = await prisma.passwordReset.deleteMany({
     where: { expiresAt: { lt: new Date(now - 30 * DAY) } },

@@ -79,4 +79,25 @@ describe('the installed app', () => {
     assert.match(page.body, /\/static\/js\/installa\.js/);
     assert.doesNotMatch(page.body, /\p{Script=Cyrillic}/u, 'no Cyrillic on the page');
   });
+
+  it('comes with the steps of the device already open, so nothing moves once it loads', async () => {
+    const android = await new Browser().request('GET', '/app', {
+      headers: {
+        'user-agent':
+          'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36',
+      },
+    });
+    assert.equal(android.status, 200);
+    assert.match(android.headers.get('vary') ?? '', /User-Agent/i);
+    const open = [...android.body.matchAll(/<details class="installa__os" data-os="(\w+)" open>/g)];
+    assert.deepEqual(
+      open.map((m) => m[1]),
+      ['android'],
+    );
+    const badges = [...android.body.matchAll(/<span class="installa__tuo"( hidden)?>/g)];
+    assert.deepEqual(
+      badges.map((m) => m[1] ?? ''),
+      ['', ' hidden', ' hidden', ' hidden'],
+    );
+  });
 });
