@@ -196,6 +196,7 @@ describe('the structured data', () => {
       logo: { '@type': string; url: string; width: number; height: number };
       image: string;
       knowsAbout: string[];
+      sameAs: string[];
       address: { postalCode: string };
       vatID: string;
       telephone: string;
@@ -208,6 +209,8 @@ describe('the structured data', () => {
     assert.deepEqual([org.logo.width, org.logo.height], [512, 512]);
     assert.equal(org.image, `${BASE}/static/img/og.png`);
     assert.ok(org.knowsAbout.length >= 3 && org.knowsAbout.every((k) => /^[a-zà-ù ]+$/i.test(k)));
+    // Only profiles that answer (checked 4 November 2026): the YouTube channel of Carbon Stealth VCC.
+    assert.deepEqual(org.sameAs, ['https://www.youtube.com/@CarbonStealth']);
     assert.equal(org.vatID, 'BG208725180');
     // The Italian number first (the site is for Italy), then the one of the registered office.
     assert.equal(org.telephone, '+39 379 29 69 699');

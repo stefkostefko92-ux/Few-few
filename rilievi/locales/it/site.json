@@ -240,7 +240,7 @@
     },
     "roles": {
       "title": "Titolare e responsabile",
-      "text": "Per il sito pubblico e per le richieste di accesso il titolare del trattamento è Carbon Stealth VCC. Per gli account e le schede di un'azienda che usa il portale, titolare è l'azienda: Carbon Stealth li tratta per suo conto, come responsabile del trattamento (art. 28 GDPR), solo per fornire il portale. Per questi dati rivolgetevi prima all'azienda per cui lavorate."
+      "text": "Per il sito pubblico e per le richieste di accesso il titolare del trattamento è Carbon Stealth VCC. Per gli account e le schede di un'azienda che usa il portale, titolare è l'azienda: Carbon Stealth li tratta per suo conto, come responsabile del trattamento (art. 28 GDPR), solo per fornire il portale. Per questi dati rivolgetevi prima all'azienda per cui lavorate. Alla fine del servizio l'azienda riceve tutti i suoi dati in un unico file e, {endDays} giorni dopo la disattivazione, li cancelliamo definitivamente (art. 28, par. 3, lett. g) GDPR)."
     },
     "table": {
       "title": "Quali dati, perché e per quanto tempo",
@@ -258,7 +258,7 @@
         "data": "Email, nome, aziende e ruolo in ognuna, tema, hash della password (Argon2id), data dell'ultimo accesso, numero di password e codici errati, blocchi consecutivi e sessioni attive; se la attivi, la verifica in due passaggi: la chiave dell'app (cifrata, AES-256-GCM) e i codici di recupero (solo come impronta HMAC)",
         "why": "L'account e l'accesso al portale per conto dell'azienda",
         "basis": "Scelta dall'azienda titolare (di norma art. 6, par. 1, lett. b) o f) GDPR); Carbon Stealth tratta i dati per suo conto (art. 28 GDPR)",
-        "kept": "Finché l'account esiste; le sessioni fino all'uscita o alla scadenza"
+        "kept": "Finché l'account esiste; le sessioni fino all'uscita o alla scadenza. Chi lavora solo per un'azienda che smette di usare il portale: {endDays} giorni dopo la sua disattivazione, insieme ai suoi dati"
       },
       "inviti": {
         "data": "Inviti: email e nome della persona invitata, azienda e ruolo",
@@ -270,13 +270,13 @@
         "data": "Schede, moduli dei fornitori, schizzi, calcoli dell'argano, cartelli di fermo impianto e fogli di intervento: dati tecnici e indirizzi degli impianti e il nome di chi li compila; nei fogli di intervento anche i nomi dei tecnici e del cliente, le due firme tracciate sullo schermo (solo il tracciato, senza tempi né pressione) e l'impronta del contenuto firmato. L'indirizzo a cui si invia un foglio in PDF non viene conservato",
         "why": "Il lavoro dell'azienda sugli impianti: rilievi, ordini ai fornitori, assistenza e cantiere",
         "basis": "Scelta dall'azienda titolare (di norma art. 6, par. 1, lett. b) o f) GDPR); Carbon Stealth tratta i dati per suo conto (art. 28 GDPR)",
-        "kept": "Finché l'azienda li conserva: le schede fino all'eliminazione dal cestino, cartelli e calcoli fino alla loro eliminazione; i fogli di intervento confermati non si modificano e non si eliminano"
+        "kept": "Finché l'azienda li conserva: le schede fino all'eliminazione dal cestino, cartelli e calcoli fino alla loro eliminazione; i fogli di intervento confermati non si modificano. Tutto viene cancellato {endDays} giorni dopo la disattivazione dell'azienda"
       },
       "media": {
         "data": "Foto e video caricati nelle schede: compressi sul server e senza i metadati del file (posizione GPS, modello del telefono, data dello scatto); il file originale non viene conservato",
         "why": "Documentare il sopralluogo dell'impianto nella scheda dell'azienda",
         "basis": "Scelta dall'azienda titolare (di norma art. 6, par. 1, lett. b) o f) GDPR); Carbon Stealth tratta i dati per suo conto (art. 28 GDPR)",
-        "kept": "Finché esistono il file e la scheda; eliminandoli (la scheda: dal cestino) vengono cancellati anche dal server"
+        "kept": "Finché esistono il file e la scheda; eliminandoli (la scheda: dal cestino) vengono cancellati anche dal server, e comunque {endDays} giorni dopo la disattivazione dell'azienda"
       },
       "audit": {
         "data": "Registro delle attività: chi ha fatto cosa e quando (senza il contenuto delle schede e senza indirizzi IP)",
@@ -291,10 +291,10 @@
         "kept": "Nella memoria del server al massimo un'ora; per un accesso fallito, solo un'impronta cifrata (HMAC) della rete da cui arriva, mai l'indirizzo, per 24 ore. Non viene scritto nei log"
       },
       "backup": {
-        "data": "Copie di sicurezza del database (i dati qui sopra, senza foto e video)",
+        "data": "Copie di sicurezza del database e di foto e video (i dati qui sopra)",
         "why": "Ripristinare il portale dopo un guasto o un errore",
         "basis": "Sicurezza del trattamento (art. 32 GDPR), per conto dell'azienda titolare",
-        "kept": "Le copie giornaliere 14 giorni, poi sovrascritte; le copie fatte prima di ogni aggiornamento del portale, le ultime cinque"
+        "kept": "Le copie giornaliere 14 giorni, poi cancellate: anche quello che eliminate resta nelle copie per questo tempo. Le copie fatte prima di ogni aggiornamento del portale: le ultime cinque"
       }
     },
     "required": "Nome, azienda ed email servono per rispondere alla richiesta: senza di essi non possiamo valutarla. Gli altri campi sono facoltativi.",

@@ -44,6 +44,7 @@ function organization(t: Translator, base: string) {
     },
     image: `${base}/static/img/og.png`,
     knowsAbout: KNOWS_ABOUT,
+    sameAs: [...COMPANY.profiles],
     email,
     telephone: COMPANY.phone,
     contactPoint: COMPANY.phones.map(({ number }) => ({

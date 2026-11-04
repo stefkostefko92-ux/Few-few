@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 import { emailSchema, personNameSchema } from '../auth/email.js';
 import { principalOf, requireCapability, requireCsrf, sendError } from '../auth/guards.js';
+import { clearSessionCookie } from '../auth/sessions.js';
 import { assignableRoles, isRole } from '../auth/roles.js';
 import { roleIn } from '../auth/scope.js';
 import { activeAziende, isAziendaId } from '../aziende/service.js';
@@ -70,9 +71,20 @@ usersManageRouter.post('/utenti/:id/account', manage, requireCsrf, async (req, r
   const result = await updateAccount(principalOf(req).user, id, {
     name: name.data,
     email: email.data,
+    password: typeof body.password === 'string' ? body.password.slice(0, 256) : '',
   });
   if (!result.ok && result.error === 'emailTaken') {
     return renderUser(req, res, 409, typed, 'users.error.emailTaken');
+  }
+  if (!result.ok && result.error === 'password') {
+    return renderUser(req, res, 400, typed, 'users.error.password');
+  }
+  if (!result.ok && result.error === 'locked') {
+    // Грешните пароли заключиха акаунта: всички сесии вече ги няма — към входа.
+    clearSessionCookie(res);
+    setFlash(res, 'error', 'flash.bloccatoSessione');
+    res.redirect(303, '/accesso');
+    return;
   }
   setFlash(res, result.ok ? 'ok' : 'error', result.ok ? 'flash.accountSaved' : 'flash.notAllowed');
   back(res, id);

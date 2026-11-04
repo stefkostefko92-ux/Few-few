@@ -24,7 +24,17 @@
     "usersHere": "Persone dell'azienda",
     "schedeHere": "Schede dell'azienda",
     "accessTitle": "Accesso",
-    "deactivateText": "Le persone dell'azienda non potranno più accedere e le loro sessioni si chiudono subito. Le schede restano.",
+    "fine": {
+      "title": "Fine del servizio",
+      "esportaText": "Tutti i dati dell'azienda in un unico file .tar: schede con misure e schizzi, foto e video, fogli di intervento con le firme, cartelli, calcoli dell'argano, persone e registro (dati.json). Password e chiavi non ci sono.",
+      "esporta": "Scarica tutti i dati",
+      "eliminaIl": "Il {date} l'azienda viene eliminata definitivamente.",
+      "eliminaText": "Con lei spariscono tutti i suoi dati e gli account di chi lavora solo qui; chi lavora anche in altre aziende resta lì. Riattivandola prima, non succede nulla. Le copie di sicurezza la conservano ancora 14 giorni.",
+      "conferma": "Per eliminarla adesso scrivi il nome dell'azienda: {name}",
+      "elimina": "Elimina adesso, definitivamente",
+      "soloDisattivata": "Un'azienda disattivata viene eliminata definitivamente con tutti i suoi dati dopo {days} giorni, oppure prima, da qui."
+    },
+    "deactivateText": "Le persone dell'azienda non potranno più accedere e le loro sessioni si chiudono subito. I dati restano {days} giorni: poi l'azienda viene eliminata definitivamente con tutti i suoi dati, a meno che non la riattivi prima.",
     "reactivateText": "Le persone dell'azienda potranno accedere di nuovo.",
     "deactivate": "Disattiva azienda",
     "reactivate": "Riattiva azienda",
@@ -43,7 +53,9 @@
       "logoType": "Il logo deve essere un'immagine PNG, JPEG o WebP.",
       "logoTooLarge": "Il logo supera 1 MB: riducilo e riprova.",
       "logoCorrupt": "Non riesco a leggere questa immagine. Salvala di nuovo come PNG o JPEG e riprova.",
-      "logoMissing": "Scegli un file per il logo."
+      "logoMissing": "Scegli un file per il logo.",
+      "eliminaAttiva": "Un'azienda attiva non si elimina: prima disattivala.",
+      "eliminaNome": "Per confermare scrivi il nome dell'azienda esattamente com'è."
     }
   },
   "impostazioni": {

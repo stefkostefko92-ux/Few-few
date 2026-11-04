@@ -10,7 +10,7 @@
   ];
   const rows = ['request', 'account', 'inviti', 'lavoro', 'media', 'audit', 'ip', 'backup'];
   const headers = ['data', 'why', 'basis', 'kept'];
-  const params = { days: retentionDays, auditDays, inviteDays };
+  const params = { days: retentionDays, auditDays, inviteDays, endDays };
 %><%- include('top', { pageTitle: t('privacy.title') + ' — Rilievi Impianti', description: t('privacy.metaDescription') }) %>
 <article class="prose">
   <h1><%= t('privacy.title') %></h1>
@@ -21,7 +21,7 @@
   <p><%= t('company.legalName') %>, <%= t('company.legalForm') %>, <%= t('company.eikLabel') %> <%= company.eik %>, <%= t('company.vatLabel') %> <%= company.vat %>, <%= t('company.street') %>, <%= company.postalCode %> <%= t('company.city') %>, <%= t('company.region') %>, <%= t('company.country') %>, <%= t('company.phoneLabel') %> <% company.phones.forEach((p, i) => { %><%= i ? ', ' : '' %><a href="<%= p.href %>"><%= p.number %></a><% }) %>. <%= t('privacy.who.contact') %> <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a>.</p>
 
   <h2><%= t('privacy.roles.title') %></h2>
-  <p><%= t('privacy.roles.text') %></p>
+  <p><%= t('privacy.roles.text', { endDays }) %></p>
 
   <h2><%= t('privacy.table.title') %></h2>
   <div class="table-wrap">

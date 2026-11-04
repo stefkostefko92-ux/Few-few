@@ -2,6 +2,7 @@ import { config } from './config.js';
 import { prisma } from './db.js';
 import { errorMessage, logger } from './logger.js';
 import { pulisciArrivi } from './allegati/archivio.js';
+import { eliminaAziendeScadute } from './aziende/eliminazione.js';
 import { pulisciErrori } from './auth/rete.js';
 import { purgeExpiredSessions } from './auth/sessions.js';
 import { pulisciSfide } from './services/login-2fa.js';
@@ -34,8 +35,18 @@ export async function runMaintenance(): Promise<void> {
   });
   // Каченото от прекъсната заявка (обикновено заявката го трие сама).
   const arrivi = await pulisciArrivi(DAY, now);
+  // Фирмите, деактивирани преди повече от 90 дни — окончателно, с всичките им данни.
+  const aziende = await eliminaAziendeScadute(now);
   if (
-    sessions + sfide + errori + invites.count + resets.count + requests + audit.count + arrivi >
+    sessions +
+      sfide +
+      errori +
+      invites.count +
+      resets.count +
+      requests +
+      audit.count +
+      arrivi +
+      aziende >
     0
   ) {
     logger.info(
@@ -48,6 +59,7 @@ export async function runMaintenance(): Promise<void> {
         requests,
         audit: audit.count,
         arrivi,
+        aziende,
       },
       'поддръжка: изчистено',
     );

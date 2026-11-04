@@ -24,6 +24,7 @@ import { allegatiRouter } from './routes/allegati.js';
 import { auditRouter } from './routes/audit.js';
 import { accessoRouter, calcoloRouter } from './routes/accesso.js';
 import { aziendeRouter } from './routes/aziende.js';
+import { aziendeFineRouter } from './routes/aziende-fine.js';
 import { cartelliNuovoRouter } from './routes/cartelli-nuovo.js';
 import { cartelliRouter } from './routes/cartelli.js';
 import { cestinoRouter } from './routes/cestino.js';
@@ -254,6 +255,7 @@ export function createServer(): Express {
   // След usersRouter: `/utenti/invita` е преди `/utenti/:id`.
   app.use(usersManageRouter);
   app.use(aziendeRouter);
+  app.use(aziendeFineRouter);
   app.use(impostazioniRouter);
   app.use(impostazioniRuoliRouter);
   app.use(requestsRouter);

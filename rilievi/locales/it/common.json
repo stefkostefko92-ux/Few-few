@@ -107,6 +107,7 @@
     "aziendaSaved": "Nome dell'azienda aggiornato.",
     "logoSaved": "Logo aggiornato.",
     "logoRemoved": "Logo rimosso.",
+    "aziendaEliminata": "Azienda eliminata definitivamente con tutti i suoi dati.",
     "aziendaDeactivated": "Azienda disattivata: chi lavorava solo per questa azienda non può più accedere, gli altri continuano nelle loro aziende.",
     "aziendaReactivated": "Azienda riattivata.",
     "schizziOn": "Schizzi a mano libera attivati: il campo è alla fine di ogni scheda dell'azienda.",

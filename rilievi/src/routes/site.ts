@@ -24,6 +24,7 @@ import { llmsTxt, robotsTxt, sitemapXml } from '../seo/files.js';
 import { HOME_PATH, PRIVACY_PATH, SENT_PATH } from '../seo/paths.js';
 import { landingStructuredData, privacyStructuredData } from '../seo/structured-data.js';
 import { INVITE_DAYS, INVITI_SCADUTI_GIORNI } from '../services/invites.js';
+import { GIORNI_PRIMA_DELL_ELIMINAZIONE } from '../aziende/eliminazione.js';
 import { fotoVista, IMMAGINI } from '../site/immagini.js';
 import {
   FAQ_IDS,
@@ -158,6 +159,7 @@ siteRouter.get(PRIVACY_PATH, (req, res) => {
     retentionDays: REQUEST_RETENTION_DAYS,
     auditDays: config().AUDIT_RETENTION_DAYS,
     inviteDays: INVITI_SCADUTI_GIORNI,
+    endDays: GIORNI_PRIMA_DELL_ELIMINAZIONE,
     sessionDays: SESSION_LIMITS.standard.absoluteMs / DAY,
     adminSessionDays: SESSION_LIMITS.privileged.absoluteMs / DAY,
     preCsrfHours: PRE_CSRF_MAX_AGE_MS / HOUR,

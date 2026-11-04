@@ -30,12 +30,13 @@ export function canManageMembership(actor: Actor, target: Target, aziendaId: str
 }
 
 /**
- * Акаунтът важи във всичките фирми на човека: MASTER управлява всеки акаунт, и своя; администратор —
- * само ако управлява членството му във ВСЯКА негова фирма. Иначе промяната би стигнала до фирма,
- * която не е негова.
+ * Акаунтът важи във всичките фирми на човека: MASTER управлява всеки акаунт извън MASTER, и своя (името;
+ * имейла — с паролата си, services/users.ts); администратор — само ако управлява членството му във ВСЯКА
+ * негова фирма. Иначе промяната би стигнала до фирма, която не е негова. Друг MASTER — никой: откраднатата
+ * сесия на един не поема акаунта на другия (одит, 4 ноември 2026).
  */
 export function canManageAccount(actor: Actor, target: Target): boolean {
-  if (actor.master) return true;
+  if (actor.master) return !target.master || actor.id === target.id;
   if (target.master || actor.id === target.id || target.memberships.length === 0) return false;
   return target.memberships.every((m) => canManageMembership(actor, target, m.aziendaId));
 }

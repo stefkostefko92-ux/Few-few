@@ -212,10 +212,11 @@ remember_live() {
 install_backup_timer() {
   command -v systemctl >/dev/null 2>&1 || { warn "няма systemd — дневният бекъп не е сложен"; return 0; }
   install -m 644 "$APP_DIR/deploy/systemd/rilievi-backup.service" /etc/systemd/system/rilievi-backup.service &&
+    install -m 644 "$APP_DIR/deploy/systemd/rilievi-backup-alert.service" /etc/systemd/system/rilievi-backup-alert.service &&
     install -m 644 "$APP_DIR/deploy/systemd/rilievi-backup.timer" /etc/systemd/system/rilievi-backup.timer &&
     systemctl daemon-reload &&
     systemctl enable --now rilievi-backup.timer >/dev/null 2>&1 &&
-    ok "дневният бекъп е включен (rilievi-backup.timer, 14 дни)"
+    ok "дневният бекъп е включен (rilievi-backup.timer, 14 дни: базата и снимките, проверено възстановяване)"
 }
 
 # Vhost-ът е файл в репото: щом има сертификат, сървърът носи точно него, с порта от HTTP_PORT

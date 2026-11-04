@@ -25,6 +25,11 @@ export const COMPANY = {
   /** Всички номера, в реда на показване. */
   phones: PHONES.map((number) => ({ number, href: tel(number) })),
   url: 'https://carbonstealth.eu',
+  /**
+   * Официалните профили (`sameAs` в JSON-LD) — само проверените, че отговарят (4 ноември 2026): каналът
+   * „Carbon Stealth VCC“ в YouTube. Нов профил влиза тук, след като се провери.
+   */
+  profiles: ['https://www.youtube.com/@CarbonStealth'],
   geo: { region: 'BG-10', latitude: 42.3539, longitude: 23.0008 },
 } as const;
 

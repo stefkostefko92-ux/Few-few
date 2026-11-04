@@ -169,15 +169,35 @@ Google не поддържа IndexNow — там sitemap-ът се открив�
 ## 6. Бекъпи
 
 - Преди всяка миграция: `/opt/few-few/shared/rilievi/backups/pre-deploy-*.sql.gz` (последните 5).
-- Дневно 03:10 UTC: `rilievi-backup.timer` → `backups/daily/rilievi-*.sql.gz` (последните 14).
+- Дневно 03:10 UTC: `rilievi-backup.timer` → `deploy/backup.sh` (последните 14 от всяко):
+  - базата — `backups/daily/rilievi-*.sql.gz`;
+  - снимките и клиповете — `backups/media/<дата>/`: моментна снимка с твърди връзки към тома
+    `rilievi_media` (без допълнително място; изтрита снимка, карта или фирма остава в нея 14 дни, колкото
+    и в дъмповете). Томът на друг диск — снимка няма, пази ги копието извън сървъра;
+  - проверено възстановяване: всеки дъмп се възстановява във временен PostgreSQL без мрежа и се броят
+    миграциите, фирмите и картите (`deploy/restore-test.sh`); провал — бекъпът е провал;
+  - `backups/ULTIMO_OK` (часът на последния успешен), а при провал — `backups/ULTIMO_ERRORE`, критичен
+    ред в журнала (`rilievi-backup-alert.service`) и сигнал до `RILIEVI_ALERT_URL`, ако е зададен.
+
   Ръчно: `sudo bash "$(sudo cat /opt/few-few/shared/rilievi/last-good)/deploy/backup.sh"`.
-- Бекъп на същия диск не пази от загуба на диска: копирай `backups/daily/` извън сървъра (VPS
-  Dashboard, Storage Box или `rsync` към друг сървър).
-- `INTERVENTI_SEAL_KEY` (в `/opt/few-few/shared/rilievi/.env`) не е в дъмпа на базата, а без него
-  потвърдените листове за интервенция не минават проверката: копието на `.env` стои извън сървъра,
-  заедно с бекъпите.
-- Снимките и клиповете НЕ са в дъмпа на базата — те са в тома `rilievi_media` и се копират извън
-  сървъра отделно (само `schede/`; `arrivi/` е временно). Пътят на тома на хоста:
+
+- **Копие извън сървъра** (бекъп на същия диск не пази от загуба на диска) — веднъж, във файла
+  `/opt/few-few/shared/rilievi/backup.env` (600, `root`):
+
+  ```bash
+  RILIEVI_OFFSITE=u123456@u123456.your-storagebox.de:rilievi   # папката там я създай веднъж
+  RILIEVI_OFFSITE_SSH="-p 23 -i /root/.ssh/rilievi_backup"      # ключ само за това, без парола
+  RILIEVI_HEARTBEAT_URL=https://…/push/…   # Uptime Kuma push / Healthchecks: пропуснат ден = аларма
+  RILIEVI_ALERT_URL=https://ntfy.sh/…     # по избор: сигнал при провал
+  ```
+
+  Всяка нощ дъмповете (`daily/`) и снимките (`media/`) отиват там по SSH.
+
+- **Тайните не ги изнася нито скриптът, нито агент.** `INTERVENTI_SEAL_KEY` (в
+  `/opt/few-few/shared/rilievi/.env`) не е в дъмпа на базата, а без него потвърдените листове за
+  интервенция не минават проверката: копирай файла с тайните извън сървъра веднъж, на ръка (ключът не
+  се сменя никога), на място, достъпно само за собственика.
+- Снимките и клиповете не са в дъмпа на базата (`schede/` в тома; `arrivi/` е временно). Пътят на тома на хоста:
   `sudo docker volume inspect -f '{{.Mountpoint}}' rilievi_media`. Дъмп, възстановен без тях, не
   чупи нищо: липсващ файл е 404 в галерията и не влиза в PDF-а.
 
