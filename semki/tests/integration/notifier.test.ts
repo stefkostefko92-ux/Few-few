@@ -22,7 +22,14 @@ const t0 = new Date('2026-11-03T10:00:00Z'); // 12:00 в София
 let clock = t0;
 const at = (h: number) => new Date(t0.getTime() + h * HOUR_MS);
 const actor = { id: '100000000000000001', name: 'Тестер' };
-const ruleBase = { seedTypeKey: null, channelId: CHANNEL.id, roleId: ROLE.id, enabled: true };
+const ruleBase = {
+  seedTypeKey: null,
+  channelId: CHANNEL.id,
+  roleId: ROLE.id,
+  enabled: true,
+  repeatMinutes: null,
+  message: null,
+};
 
 function notifier(sent: SentMessage[], fail: boolean | number = false) {
   return createNotifier({
@@ -370,4 +377,68 @@ test('махане на семки: част от партида, цяла, ня
     (await listBatches(db)).map((x) => x.id),
     [d.batch.id],
   );
+});
+
+test('повторение на тага на всеки X минути, със съобщението на правилото', async () => {
+  await createRule(
+    db,
+    { ...ruleBase, kind: 'PERCENT', threshold: 20, repeatMinutes: 60, message: 'Освежете ги!' },
+    t0,
+  );
+  const { batch } = await createBatch(
+    db,
+    { seedTypeKey: 'amnesia', count: 1, percent: 21 },
+    actor,
+    'command',
+    t0,
+  );
+  const sent: SentMessage[] = [];
+  const n = notifier(sent);
+  clock = at(2); // 21% → 20% за 1,67 ч
+  await n.tick();
+  assert.equal(sent.length, 1);
+  assert.ok(sent[0]?.content.startsWith(`<@&${ROLE.id}> Освежете ги!`));
+  clock = at(2.5);
+  await n.tick();
+  assert.equal(sent.length, 1); // още не е минал час
+  clock = at(3);
+  await n.tick();
+  assert.equal(sent.length, 2); // напомняне
+  // Изтрита (освежена) партида — край на напомнянията.
+  await db.batch.delete({ where: { id: batch.id } });
+  clock = at(10);
+  await n.tick();
+  assert.equal(sent.length, 2);
+});
+
+test('повторението и при партида, въведена под прага (тихата отметка брои като първи път)', async () => {
+  await createRule(db, { ...ruleBase, kind: 'PERCENT', threshold: 20, repeatMinutes: 30 }, t0);
+  await createBatch(db, { seedTypeKey: 'ak', count: 1, percent: 10 }, actor, 'command', t0);
+  const sent: SentMessage[] = [];
+  const n = notifier(sent);
+  clock = at(0.25);
+  await n.tick();
+  assert.equal(sent.length, 0);
+  clock = at(0.5);
+  await n.tick();
+  assert.equal(sent.length, 1);
+});
+
+test('провалено напомняне връща предишното време — опитва пак след паузата', async () => {
+  await createRule(db, { ...ruleBase, kind: 'PERCENT', threshold: 20, repeatMinutes: 60 }, t0);
+  const { batch } = await createBatch(
+    db,
+    { seedTypeKey: 'ak', count: 1, percent: 10 },
+    actor,
+    'command',
+    t0,
+  );
+  clock = at(1);
+  const failing = await notifier([], true).tick();
+  assert.equal(failing.failed, 1);
+  const row = await db.notification.findFirstOrThrow({ where: { batchId: batch.id } });
+  assert.equal(row.sentAt.getTime(), t0.getTime());
+  const sent: SentMessage[] = [];
+  await notifier(sent).tick();
+  assert.equal(sent.length, 1);
 });

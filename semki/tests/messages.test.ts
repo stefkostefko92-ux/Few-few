@@ -60,6 +60,7 @@ test('известието тагва ролята веднъж и описва 
   const group: AlertGroup = {
     channelId: '111111111111111111',
     roleId: '222222222222222222',
+    message: null,
     items: [
       {
         batch: batch(7, 15),
@@ -71,6 +72,8 @@ test('известието тагва ролята веднъж и описва 
           channelId: '111111111111111111',
           roleId: '222222222222222222',
           enabled: true,
+          repeatMinutes: null,
+          message: null,
         },
       },
     ],
@@ -96,10 +99,12 @@ test('дълго известие се дели на части до лимит�
     channelId: '111111111111111111',
     roleId: '222222222222222222',
     enabled: true,
+    repeatMinutes: null,
+    message: null,
   };
   const items = Array.from({ length: 80 }, (_, i) => ({ batch: batch(i + 1, 10), rule }));
   const parts = buildAlertMessages(
-    { channelId: rule.channelId, roleId: rule.roleId, items },
+    { channelId: rule.channelId, roleId: rule.roleId, message: null, items },
     labels,
     t0,
   );
@@ -119,10 +124,12 @@ test('частите на известието делят партидите б�
     channelId: '111111111111111111',
     roleId: '222222222222222222',
     enabled: true,
+    repeatMinutes: null,
+    message: null,
   };
   const items = Array.from({ length: 60 }, (_, i) => ({ batch: batch(i + 1, 10), rule }));
   const parts = buildAlertParts(
-    { channelId: rule.channelId, roleId: rule.roleId, items },
+    { channelId: rule.channelId, roleId: rule.roleId, message: null, items },
     labels,
     t0,
   );
@@ -145,4 +152,31 @@ test('/infosemki: празно, групирано по вид, първо из�
   // в рамките на вида: първо тази, която изтича най-скоро (#3 при 50% преди #1 при 80%)
   assert.ok(text.indexOf('#3 ') < text.indexOf('#1 '));
   for (const p of parts) assert.ok(p.length <= MESSAGE_LIMIT);
+});
+
+test('съобщението по избор заменя заглавието след тага', () => {
+  const rule = {
+    id: 1,
+    kind: 'PERCENT' as const,
+    threshold: 20,
+    seedTypeKey: null,
+    channelId: '111111111111111111',
+    roleId: '222222222222222222',
+    enabled: true,
+    repeatMinutes: null,
+    message: 'Освежете семките до довечера!',
+  };
+  const [msg] = buildAlertMessages(
+    {
+      channelId: rule.channelId,
+      roleId: rule.roleId,
+      message: rule.message,
+      items: [{ batch: batch(3, 12), rule }],
+    },
+    labels,
+    t0,
+  );
+  assert.ok(msg?.startsWith('<@&222222222222222222> Освежете семките до довечера!'));
+  assert.doesNotMatch(msg ?? '', /Семките изтичат/);
+  assert.match(msg ?? '', /#3 /);
 });

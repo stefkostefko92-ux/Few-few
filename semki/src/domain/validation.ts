@@ -96,6 +96,19 @@ export const ruleSchema = z
     channelId: snowflake,
     roleId: snowflake,
     enabled: checkbox,
+    // Празно — тагва веднъж; иначе пак на всеки толкова минути, докато партидата е под прага.
+    repeatMinutes: z.preprocess(
+      (v) => (v === '' || v === undefined || v === null ? null : v),
+      integer(5, 10_080, 'Повторението е от 5 до 10080 минути (празно — само веднъж)').nullable(),
+    ),
+    message: z
+      .string()
+      .max(500, 'Съобщението е до 500 знака')
+      .optional()
+      .transform((v) => {
+        const text = v?.replace(/\r/g, '').trim();
+        return text ? text : null;
+      }),
   })
   .superRefine((rule, ctx) => {
     if (rule.kind === 'PERCENT' && rule.threshold > 100) {

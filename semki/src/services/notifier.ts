@@ -5,6 +5,7 @@ import type { PrismaClient } from '@prisma/client';
 import {
   inWindow,
   isDue,
+  repeatDue,
   pairKey,
   planAlerts,
   type AlertGroup,
@@ -49,7 +50,8 @@ export function createNotifier(deps: NotifierDeps): Notifier {
 
   // Групата е планирана от снимка в началото на цикъла, а изпращането на предните групи отнема
   // секунди: преди заявката партидите и правилата се четат наново (редактирани, изтрити, вече не
-  // дължими отпадат), а пингва се само за двойките, които заявката наистина е вмъкнала.
+  // дължими отпадат), а пингва се само за двойките, които заявката наистина е взела: нова двойка —
+  // вмъкнат ред; напомняне — ред, чийто час на последния таг още е същият (compare-and-set).
   async function sendGroup(
     group: AlertGroup,
     labels: Record<string, string>,
@@ -70,24 +72,56 @@ export function createNotifier(deps: NotifierDeps): Notifier {
     for (const item of group.items) {
       const batch = batches.get(item.batch.id);
       const rule = rules.get(item.rule.id);
-      if (!batch || !rule || rule.channelId !== group.channelId || rule.roleId !== group.roleId) {
+      if (
+        !batch ||
+        !rule ||
+        rule.channelId !== group.channelId ||
+        rule.roleId !== group.roleId ||
+        rule.message !== group.message
+      ) {
         continue;
       }
       if (isDue(rule, batch, at)) fresh.push({ batch, rule });
     }
     if (fresh.length === 0) return 0;
 
-    const claimed = await deps.db.notification.createManyAndReturn({
-      data: fresh.map((i) => ({
-        batchId: i.batch.id,
-        ruleId: i.rule.id,
-        silent: false,
-        sentAt: at,
-      })),
-      skipDuplicates: true,
-      select: { batchId: true, ruleId: true },
-    });
-    const claimedKeys = new Set(claimed.map((c) => pairKey(c.batchId, c.ruleId)));
+    const pairOf = (i: PendingItem) => ({ batchId: i.batch.id, ruleId: i.rule.id });
+    const existing = new Map(
+      (
+        await deps.db.notification.findMany({
+          where: { OR: fresh.map(pairOf) },
+          select: { batchId: true, ruleId: true, sentAt: true },
+        })
+      ).map((n) => [pairKey(n.batchId, n.ruleId), n.sentAt]),
+    );
+    const toCreate: PendingItem[] = [];
+    const toRenew: Array<{ item: PendingItem; prev: Date }> = [];
+    for (const item of fresh) {
+      const prev = existing.get(pairKey(item.batch.id, item.rule.id));
+      if (!prev) toCreate.push(item);
+      else if (repeatDue(item.rule, prev, at)) toRenew.push({ item, prev });
+    }
+
+    const claimedKeys = new Set<string>();
+    if (toCreate.length > 0) {
+      const created = await deps.db.notification.createManyAndReturn({
+        data: toCreate.map((i) => ({ ...pairOf(i), silent: false, sentAt: at })),
+        skipDuplicates: true,
+        select: { batchId: true, ruleId: true },
+      });
+      for (const c of created) claimedKeys.add(pairKey(c.batchId, c.ruleId));
+    }
+    const renewed = new Map<string, Date>();
+    for (const { item, prev } of toRenew) {
+      const { count } = await deps.db.notification.updateMany({
+        where: { ...pairOf(item), sentAt: prev },
+        data: { sentAt: at, silent: false },
+      });
+      if (count === 1) {
+        claimedKeys.add(pairKey(item.batch.id, item.rule.id));
+        renewed.set(pairKey(item.batch.id, item.rule.id), prev);
+      }
+    }
     const items = fresh.filter((i) => claimedKeys.has(pairKey(i.batch.id, i.rule.id)));
     if (items.length === 0) return 0;
 
@@ -96,15 +130,23 @@ export function createNotifier(deps: NotifierDeps): Notifier {
       try {
         await deps.sender.send(group.channelId, group.roleId, part.content);
       } catch (err) {
-        // Освобождават се само неизпратените части — изпратените не се пингват втори път.
+        // Освобождават се само неизпратените части — изпратените не се пингват втори път. Новата
+        // двойка се маха, а напомнянето връща предишния час (иначе следващото чака цял интервал).
         const unsent = new Set(parts.slice(index).flatMap((p) => p.batchIds));
-        await deps.db.notification.deleteMany({
-          where: {
-            OR: items
-              .filter((i) => unsent.has(i.batch.id))
-              .map((i) => ({ batchId: i.batch.id, ruleId: i.rule.id })),
-          },
-        });
+        const release = items.filter((i) => unsent.has(i.batch.id));
+        const firstTime = release.filter((i) => !renewed.has(pairKey(i.batch.id, i.rule.id)));
+        if (firstTime.length > 0) {
+          await deps.db.notification.deleteMany({ where: { OR: firstTime.map(pairOf) } });
+        }
+        for (const i of release) {
+          const prev = renewed.get(pairKey(i.batch.id, i.rule.id));
+          if (prev) {
+            await deps.db.notification.updateMany({
+              where: { ...pairOf(i), sentAt: at },
+              data: { sentAt: prev },
+            });
+          }
+        }
         throw err;
       }
     }
@@ -120,12 +162,12 @@ export function createNotifier(deps: NotifierDeps): Notifier {
       deps.db.seedType.findMany(),
       deps.db.batch.findMany({ include: { seedType: true } }),
       deps.db.alertRule.findMany({ where: { enabled: true } }),
-      deps.db.notification.findMany({ select: { batchId: true, ruleId: true } }),
+      deps.db.notification.findMany({ select: { batchId: true, ruleId: true, sentAt: true } }),
     ]);
     const groups = planAlerts(
       batchRows.map(toBatchLike),
       ruleRows.map(toRuleLike),
-      new Set(notified.map((n) => pairKey(n.batchId, n.ruleId))),
+      new Map(notified.map((n) => [pairKey(n.batchId, n.ruleId), n.sentAt])),
       at,
     );
     const labels = labelsOf(types);

@@ -124,6 +124,15 @@ export interface RuleView {
   roleKnown: boolean;
   roleUsable: boolean;
   enabled: boolean;
+  repeatInput: string;
+  repeatText: string;
+  messageInput: string;
+}
+
+function repeatText(minutes: number | null): string {
+  if (minutes === null) return 'веднъж';
+  if (minutes % 60 === 0) return `на всеки ${minutes / 60} ч`;
+  return `на всеки ${minutes} мин`;
 }
 
 export function ruleViews(
@@ -153,6 +162,9 @@ export function ruleViews(
       roleKnown: role !== undefined,
       roleUsable: role?.usable ?? false,
       enabled: r.enabled,
+      repeatInput: r.repeatMinutes === null ? '' : String(r.repeatMinutes),
+      repeatText: repeatText(r.repeatMinutes),
+      messageInput: r.message ?? '',
     };
   });
 }

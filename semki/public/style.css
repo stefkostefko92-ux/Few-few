@@ -187,6 +187,21 @@ main {
   align-items: end;
 }
 
+.grid .wide {
+  grid-column: 1 / -1;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 3.2rem;
+}
+
+.rule-msg {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  white-space: pre-line;
+}
+
 .head-row {
   display: flex;
   flex-wrap: wrap;
@@ -216,7 +231,8 @@ label.check {
 }
 
 input,
-select {
+select,
+textarea {
   font: inherit;
   color: var(--text);
   background: var(--bg);

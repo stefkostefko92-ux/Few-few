@@ -256,3 +256,31 @@ test('дашборд: изтрий отметнатите и всички от �
     assert.match(bad.html, /Няма такъв запис/);
     assert.equal(await db.batch.count(), 1);
   }));
+
+test('правило с повторение и съобщение от дашборда', () =>
+  withApp(async () => {
+    guild.members.set(USER_ID, { isOwner: false, isAdmin: true, roleIds: [] });
+    const jar = await login(app.url);
+    const fields = {
+      kind: 'PERCENT',
+      threshold: '20',
+      seedTypeKey: '',
+      channelId: CHANNEL.id,
+      roleId: ROLE.id,
+      enabled: 'on',
+    };
+    const bad = await post(jar, '/alerts', { ...fields, repeatMinutes: '2' });
+    assert.match(bad.html, /Повторението е от 5 до 10080 минути/);
+    await post(jar, '/alerts', { ...fields, repeatMinutes: '120', message: 'Освежете семките!' });
+    const rule = await db.alertRule.findFirstOrThrow();
+    assert.equal(rule.repeatMinutes, 120);
+    assert.equal(rule.message, 'Освежете семките!');
+    const { html } = await page(jar, '/alerts');
+    assert.match(html, /тагва на всеки 2 ч/);
+    assert.match(html, /„Освежете семките!“/);
+
+    await post(jar, `/alerts/${rule.id}`, { ...fields, repeatMinutes: '', message: '' });
+    const cleared = await db.alertRule.findUniqueOrThrow({ where: { id: rule.id } });
+    assert.equal(cleared.repeatMinutes, null);
+    assert.equal(cleared.message, null);
+  }));

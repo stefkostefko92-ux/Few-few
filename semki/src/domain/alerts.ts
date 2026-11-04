@@ -11,6 +11,8 @@ export interface RuleLike {
   channelId: string;
   roleId: string;
   enabled: boolean;
+  repeatMinutes: number | null;
+  message: string | null;
 }
 
 export interface BatchLike extends BatchAnchor {
@@ -35,6 +37,7 @@ export interface PendingItem {
 export interface AlertGroup {
   channelId: string;
   roleId: string;
+  message: string | null;
   items: PendingItem[];
 }
 
@@ -94,21 +97,36 @@ export function inWindow(now: Date, w: QuietWindow): boolean {
   return start < end ? t >= start && t < end : t >= start || t < end;
 }
 
-// Дължимите и още неизвестени двойки (партида, правило), събрани по канал и роля.
+// Напомняне: правилото има интервал и от последния таг (или тихата отметка) е минал поне толкова.
+export function repeatDue(rule: RuleLike, sentAt: Date, now: Date): boolean {
+  return (
+    rule.repeatMinutes !== null && now.getTime() - sentAt.getTime() >= rule.repeatMinutes * 60_000
+  );
+}
+
+// Дължимите двойки (партида, правило): още неизвестени или чакащи напомняне (`notified` — кога е
+// бил последният таг), събрани по канал, роля и съобщение.
 export function planAlerts(
   batches: readonly BatchLike[],
   rules: readonly RuleLike[],
-  notified: ReadonlySet<string>,
+  notified: ReadonlyMap<string, Date>,
   now: Date,
 ): AlertGroup[] {
   const groups = new Map<string, AlertGroup>();
   for (const batch of batches) {
     for (const rule of rules) {
-      if (notified.has(pairKey(batch.id, rule.id)) || !isDue(rule, batch, now)) continue;
-      const key = `${rule.channelId}:${rule.roleId}`;
+      if (!isDue(rule, batch, now)) continue;
+      const sentAt = notified.get(pairKey(batch.id, rule.id));
+      if (sentAt && !repeatDue(rule, sentAt, now)) continue;
+      const key = `${rule.channelId}:${rule.roleId}:${rule.message ?? ''}`;
       let group = groups.get(key);
       if (!group) {
-        group = { channelId: rule.channelId, roleId: rule.roleId, items: [] };
+        group = {
+          channelId: rule.channelId,
+          roleId: rule.roleId,
+          message: rule.message,
+          items: [],
+        };
         groups.set(key, group);
       }
       group.items.push({ batch, rule });

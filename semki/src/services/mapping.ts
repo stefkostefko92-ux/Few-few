@@ -33,6 +33,8 @@ export function toRuleLike(row: AlertRule): RuleLike {
     channelId: row.channelId,
     roleId: row.roleId,
     enabled: row.enabled,
+    repeatMinutes: row.repeatMinutes,
+    message: row.message,
   };
 }
 

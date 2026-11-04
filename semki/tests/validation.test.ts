@@ -62,6 +62,8 @@ test('правило: вид по избор, snowflake-ове, отметка',
     channelId: CH,
     roleId: RO,
     enabled: true,
+    repeatMinutes: null,
+    message: null,
   });
   const off = ruleSchema.parse({
     kind: 'HOURS_LEFT',
@@ -120,4 +122,18 @@ test('списък с партиди от отметките: един, няко
     idListSchema.safeParse(Array.from({ length: 501 }, (_, i) => String(i + 1))).success,
     false,
   );
+});
+
+test('правило: повторение в минути и съобщение по избор', () => {
+  const base = { kind: 'PERCENT', threshold: '20', seedTypeKey: '', channelId: CH, roleId: RO };
+  const r = ruleSchema.parse({ ...base, repeatMinutes: '60', message: '  Освежете ги!  ' });
+  assert.equal(r.repeatMinutes, 60);
+  assert.equal(r.message, 'Освежете ги!');
+  const empty = ruleSchema.parse({ ...base, repeatMinutes: '', message: '   ' });
+  assert.equal(empty.repeatMinutes, null);
+  assert.equal(empty.message, null);
+  assert.equal(ruleSchema.safeParse({ ...base, repeatMinutes: '4' }).success, false);
+  assert.equal(ruleSchema.safeParse({ ...base, repeatMinutes: '10081' }).success, false);
+  assert.equal(ruleSchema.safeParse({ ...base, repeatMinutes: '1.5' }).success, false);
+  assert.equal(ruleSchema.safeParse({ ...base, message: 'x'.repeat(501) }).success, false);
 });

@@ -8,6 +8,7 @@ import {
   minutesOfDay,
   pairKey,
   planAlerts,
+  repeatDue,
   type BatchLike,
   type RuleLike,
 } from '../src/domain/alerts.js';
@@ -30,6 +31,8 @@ function rule(id: number, over: Partial<RuleLike> = {}): RuleLike {
     channelId: '111111111111111111',
     roleId: '222222222222222222',
     enabled: true,
+    repeatMinutes: null,
+    message: null,
     ...over,
   };
 }
@@ -122,7 +125,7 @@ test('planAlerts групира по канал и роля и пропуска 
     rule(3, { threshold: 50, enabled: false }),
   ];
   const batches = [batch(1, 15), batch(2, 8), batch(3, 90)];
-  const notified = new Set([pairKey(1, 1)]);
+  const notified = new Map([[pairKey(1, 1), t0]]);
   const groups = planAlerts(batches, rules, notified, t0);
   assert.equal(groups.length, 2);
   const g1 = groups.find((g) => g.roleId === '222222222222222222');
@@ -138,5 +141,28 @@ test('planAlerts групира по канал и роля и пропуска 
 });
 
 test('planAlerts без нищо дължимо връща празно', () => {
-  assert.deepEqual(planAlerts([batch(1, 90)], [rule(1)], new Set(), t0), []);
+  assert.deepEqual(planAlerts([batch(1, 90)], [rule(1)], new Map(), t0), []);
+});
+
+test('повторение: тагва отново след интервала, само докато е под прага', () => {
+  const r = rule(1, { threshold: 20, repeatMinutes: 60 });
+  const b = batch(1, 15);
+  assert.equal(repeatDue(r, t0, at(0.99)), false);
+  assert.equal(repeatDue(r, t0, at(1)), true);
+  assert.equal(repeatDue(rule(1, { repeatMinutes: null }), t0, at(100)), false);
+  const sent = new Map([[pairKey(1, 1), t0]]);
+  assert.equal(planAlerts([b], [r], sent, at(0.5)).length, 0);
+  assert.equal(planAlerts([b], [r], sent, at(1)).length, 1);
+  // над прага повторение няма
+  assert.equal(planAlerts([batch(1, 90)], [r], sent, at(5)).length, 0);
+});
+
+test('съобщението по избор е част от групата: различни текстове — различни съобщения', () => {
+  const rules = [
+    rule(1, { threshold: 20, message: 'Освежете семките!' }),
+    rule(2, { threshold: 30, message: null }),
+  ];
+  const groups = planAlerts([batch(1, 10)], rules, new Map(), t0);
+  assert.equal(groups.length, 2);
+  assert.deepEqual(groups.map((g) => g.message).sort(), [null, 'Освежете семките!'].sort());
 });

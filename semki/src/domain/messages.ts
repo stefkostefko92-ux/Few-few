@@ -95,7 +95,8 @@ export function buildAlertParts(group: AlertGroup, labels: SeedLabels, now: Date
     byBatch.set(batch.id, entry);
   }
   const parts: AlertPart[] = [];
-  let current: AlertPart = { content: `<@&${group.roleId}> **Семките изтичат**`, batchIds: [] };
+  const header = group.message ?? '**Семките изтичат**';
+  let current: AlertPart = { content: `<@&${group.roleId}> ${header}`, batchIds: [] };
   for (const { batch, rules } of byBatch.values()) {
     const thresholds = rules.map((r) => formatThreshold(r.kind, r.threshold)).join(', ');
     const line =

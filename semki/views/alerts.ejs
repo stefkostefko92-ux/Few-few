@@ -3,7 +3,7 @@
 
 <section class="card">
   <h2>Как работи</h2>
-  <p class="small">Всяко правило тагва избраната роля в избрания канал, когато партида стигне прага — <strong>веднъж за партида</strong>. „Праг в %“ пингва при ≤ X%, „Оставащо време“ — когато до 0% останат X часа. Партиди, които вече са под прага при въвеждането, не се пингват. Часовият прозорец е в <a href="/settings">Настройки</a>.</p>
+  <p class="small">Всяко правило тагва избраната роля в избрания канал, когато партида стигне прага — веднъж или, ако зададеш повторение, отново на всеки X минути, докато партидата е под прага (до триене или освежаване). „Праг в %“ пингва при ≤ X%, „Оставащо време“ — когато до 0% останат X часа. Партиди, които вече са под прага при въвеждането, не се пингват. Часовият прозорец е в <a href="/settings">Настройки</a>.</p>
   <% if (channels.length === 0 || roles.length === 0) { %>
   <p class="flash err">Ботът още не вижда каналите и ролите на сървъра — презареди след малко.</p>
   <% } %>
@@ -38,6 +38,12 @@
         <% roles.forEach(function (r) { %><option value="<%= r.id %>"><%= r.name %><%= r.usable ? '' : ' (не се тагва)' %></option><% }) %>
       </select>
     </label>
+    <label>Повтаряй тага на всеки (мин)
+      <input type="number" name="repeatMinutes" min="5" max="10080" step="1" inputmode="numeric" placeholder="празно — само веднъж">
+    </label>
+    <label class="wide">Съобщение след тага (по избор)
+      <textarea name="message" maxlength="500" rows="2" placeholder="Семките изтичат"></textarea>
+    </label>
     <label class="check"><input type="checkbox" name="enabled" value="on" checked> Включено</label>
     <button type="submit" class="btn">Добави правило</button>
   </form>
@@ -56,8 +62,10 @@
         <span><%= r.seedText %></span>
         <span class="<%= r.channelUsable ? '' : 'warn-text' %>"><%= r.channelName %></span>
         <span class="<%= r.roleUsable ? '' : 'warn-text' %>"><%= r.roleName %></span>
+        <span class="muted">тагва <%= r.repeatText %></span>
         <% if (!r.enabled) { %><span class="tag">изключено</span><% } %>
       </div>
+      <% if (r.messageInput) { %><p class="small rule-msg">„<%= r.messageInput %>“</p><% } %>
       <% if (r.channelKnown && !r.channelUsable) { %><p class="warn-text small">Ботът няма View Channel и Send Messages в този канал — известията не тръгват.</p><% } %>
       <% if (r.roleKnown && !r.roleUsable) { %><p class="warn-text small">Ролята не може да бъде тагната: включи „Allow anyone to @mention this role“ или дай на бота Mention Everyone — дотогава известията чакат.</p><% } %>
       <details>
@@ -88,6 +96,12 @@
             <select name="roleId" required>
               <% roles.forEach(function (x) { %><option value="<%= x.id %>" <%= r.roleId === x.id ? 'selected' : '' %>><%= x.name %><%= x.usable ? '' : ' (не се тагва)' %></option><% }) %>
             </select>
+          </label>
+          <label>Повтаряй тага на всеки (мин)
+            <input type="number" name="repeatMinutes" min="5" max="10080" step="1" inputmode="numeric" value="<%= r.repeatInput %>" placeholder="празно — само веднъж">
+          </label>
+          <label class="wide">Съобщение след тага (по избор)
+            <textarea name="message" maxlength="500" rows="2" placeholder="Семките изтичат"><%= r.messageInput %></textarea>
           </label>
           <label class="check"><input type="checkbox" name="enabled" value="on" <%= r.enabled ? 'checked' : '' %>> Включено</label>
           <button type="submit" class="btn">Запази</button>

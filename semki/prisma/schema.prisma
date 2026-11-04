@@ -54,6 +54,10 @@ model AlertRule {
   channelId     String
   roleId        String
   enabled       Boolean        @default(true)
+  // null — тагва веднъж; иначе пак на всеки толкова минути, докато партидата е под прага.
+  repeatMinutes Int?
+  // Текстът след тага вместо „Семките изтичат“; null — подразбиращият се.
+  message       String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   notifications Notification[]
