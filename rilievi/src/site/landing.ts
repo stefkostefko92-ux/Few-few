@@ -19,7 +19,6 @@ export const FAQ_IDS = [
   'cartelli',
   'data',
 ] as const;
-export type FaqId = (typeof FAQ_IDS)[number];
 
 /** Стъпките на „Come si ottiene l'accesso“ (`site.steps.s1…s4`) — за страницата и за HowTo. */
 export const STEPS = [1, 2, 3, 4] as const;

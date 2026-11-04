@@ -52,7 +52,15 @@ export async function renderForm(
   const t = res.locals.t;
   // Модулите на доставчиците: при първото отваряне — от огледа, от другия модул, от фирмата и от
   // човека, който пише (ролята му в ТАЗИ фирма).
-  const aziendaId = view.scheda?.aziendaId || view.azienda || null;
+  // Нова карта: само фирма, в която човекът е (от избора или единствената му) — никога каквото е
+  // пратила формата, иначе данните на чужда фирма биха излезли в страницата (одит, 4 ноември 2026).
+  const aziendaNuova =
+    view.azienda &&
+    (view.aziende.some((a) => a.id === view.azienda) ||
+      user.memberships.some((m) => m.aziendaId === view.azienda))
+      ? view.azienda
+      : null;
+  const aziendaId = view.scheda?.aziendaId || aziendaNuova;
   const role = roleIn(user, aziendaId);
   const societa = await datiDelleAziende([
     ...(aziendaId ? [aziendaId] : []),

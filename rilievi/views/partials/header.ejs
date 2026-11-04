@@ -72,6 +72,10 @@
       <% } %>
     </ul>
     <% } %>
+    <%# Приложението на началния екран (/app): скрито, когато порталът вече е отворен като приложение. %>
+    <ul class="sidenav__app" data-installa-link>
+      <li><a href="/app"<% if (path === '/app') { %> aria-current="page"<% } %>><%- include('icon', { name: 'download' }) %><span><%= t('installa.nav') %></span></a></li>
+    </ul>
   </nav>
   <a class="who" href="/account"<% if (path === '/account') { %> aria-current="page"<% } %>><%- include('icon', { name: 'user' }) %><span class="who__text"><span class="who__name"><%= currentUser.name %></span><span class="who__role"><%= roleLine %></span></span></a>
 </div>
