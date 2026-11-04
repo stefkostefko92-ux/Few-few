@@ -2820,7 +2820,7 @@
           "Sandi Metz „The Wrong Abstraction“ + Page-Jones connascence",
           "Google eng-practices (code review/readability); граница спрямо .claude/agents/kodadjiyata.md"
         ],
-        "lessons": 126
+        "lessons": 128
       },
       "evolution": [
         {
@@ -2876,9 +2876,20 @@
           "date": "2026-11-04",
           "event": "v21.2 — учене",
           "detail": "Научи: linketto billing-sync.ts:1 сочи linketto-spec.md, който не е проследен в git (живее сам… (+7 още)"
+        },
+        {
+          "version": "21.4.0",
+          "date": "2026-11-04",
+          "event": "v21.4 — учене",
+          "detail": "Научи: В rilievi PDF генераторите на pdfkit (schede, argano, interventi, cartelli) повтарят A4… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-04",
+          "type": "learning",
+          "summary": "Научи: „В rilievi PDF генераторите на pdfkit (schede, argano, interventi, cartelli) повтарят A4…\" (+1 още)"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
