@@ -512,3 +512,9 @@
 {"t":"start","ts":"2026-11-04T19:13:41.388Z","id":"rc0b24438","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-04T19:13:41.389Z","id":"rc0b24438","from":"kodadjiyata","to":"човек","status":"има бележки","run":"e1246f32"}
 {"t":"handoff","ts":"2026-11-04T19:13:47.782Z","id":"rc0b24438","from":"kodadjiyata","to":"човек","status":"има бележки","run":"86b1b651"}
+{"t":"handoff","ts":"2026-11-04T19:13:59.587Z","id":"rc0b24438","from":"kodadjiyata","to":"човек","status":"има бележки","run":"01c46baa"}
+{"t":"handoff","ts":"2026-11-04T19:14:05.002Z","id":"rc0b24438","from":"kodadjiyata","to":"човек","status":"блокер","run":"1e77581c"}
+{"t":"handoff","ts":"2026-11-04T19:14:05.906Z","id":"rc0b24438","from":"kodadjiyata","to":"човек","status":"има бележки","run":"b576155c"}
+{"t":"start","ts":"2026-11-04T19:14:15.963Z","id":"r6e07bc7e","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-04T19:14:15.964Z","id":"r6e07bc7e","from":"kodadjiyata","to":"човек","status":"има бележки","run":"6b9b2a63"}
+{"t":"handoff","ts":"2026-11-04T19:14:17.000Z","id":"r6e07bc7e","from":"kodadjiyata","to":"човек","status":"има бележки","run":"a3bdfddb"}
