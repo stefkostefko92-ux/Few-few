@@ -6,7 +6,8 @@ Discord бот, който следи трайността на семките �
 ## Стек
 
 Node 22 · TypeScript strict (ESM) · Express 5 · EJS · Prisma 6 · PostgreSQL 16 · discord.js v14 ·
-zod · jose (JWT в httpOnly бисквитка) · pino · Docker Compose (db + app на `127.0.0.1:4340`) зад
+zod · jose (JWT в httpOnly бисквитка) · pino · Docker Compose (db + app на `127.0.0.1:<HTTP_PORT>`,
+първият свободен от 4340 — `setup-env.sh`) зад
 nginx на хоста. Един процес: ботът и дашбордът делят кеша на гилдията (роли, канали, права).
 
 ## Команди (гейтът)

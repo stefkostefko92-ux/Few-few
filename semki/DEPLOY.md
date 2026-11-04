@@ -1,6 +1,7 @@
 # Деплой — Semki Bot
 
-Docker Compose (db + app на `127.0.0.1:4340`) зад nginx на хоста; домейн `vps2.carbonstealth.eu`.
+Docker Compose (db + app на `127.0.0.1:<HTTP_PORT>`, първият свободен от 4340 нагоре) зад nginx на
+хоста; домейн `vps2.carbonstealth.eu`.
 Каноничният път е общият `deploy/autodeploy.sh` (проект `semki`) — той вика `semki/deploy/deploy.sh`.
 
 ## 1. Discord приложението
@@ -15,7 +16,9 @@ sudo bash /opt/few-few/current/semki/deploy/setup-env.sh
 ```
 
 Пише `/opt/few-few/shared/semki/.env` (600): генерира `POSTGRES_PASSWORD` и `SESSION_SECRET`, пита за
-данните от т. 1 (токенът и secret-ът не се показват). Промяна по-късно:
+данните от т. 1 (токенът и secret-ът не се показват) и записва `HTTP_PORT` — първия свободен порт от
+4340 нагоре (заетите ги държат други продукти). `deploy.sh` спира преди build-а, ако портът е зает от
+нещо, което не е Semki. Промяна по-късно:
 
 ```bash
 sudoedit /opt/few-few/shared/semki/.env
@@ -23,13 +26,7 @@ sudoedit /opt/few-few/shared/semki/.env
 
 ## 3. DNS и TLS (веднъж)
 
-DNS A/AAAA за `vps2.carbonstealth.eu` → VPS-а. Проверка, че портът е свободен:
-
-```bash
-ss -tlnp | grep ':4340 ' || echo свободен
-```
-
-Сертификатът (vhost-ът от репото се слага от `deploy.sh`, щом сертификатът съществува):
+DNS A/AAAA за `vps2.carbonstealth.eu` → VPS-а. Сертификатът (vhost-ът от репото се слага от `deploy.sh`, щом сертификатът съществува):
 
 ```bash
 sudo certbot certonly --nginx -d vps2.carbonstealth.eu --deploy-hook 'systemctl reload nginx'
@@ -48,7 +45,7 @@ vhost. При провал на сондата `autodeploy.sh` връща пос
 Проверка:
 
 ```bash
-curl -fsS http://127.0.0.1:4340/health
+curl -fsS "http://127.0.0.1:$(sudo sed -n 's/^HTTP_PORT=//p' /opt/few-few/shared/semki/.env)/health"
 ```
 
 Очаквано: `{"app":"semki","status":"ok","db":true,"discord":"ready"}`.

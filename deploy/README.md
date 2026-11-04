@@ -158,7 +158,7 @@ ZIP отпреди месец.
   `RILIEVI_LAST_GOOD` с `RILIEVI_SKIP_BACKUP=1`; при провалена миграция — човек → `rilievi/DEPLOY.md`.
   Първият MASTER — веднъж с `rilievi/deploy/create-master.sh`; останалите само с покана.
 - **semki** (Semki Bot — Discord бот за семките във FiveM + дашборд): моделът на rilievi — Docker
-  Compose (db + app на `127.0.0.1:4340`), стъпките са в `semki/deploy/deploy.sh`: тайните от
+  Compose (db + app на `127.0.0.1:<HTTP_PORT>`, първият свободен от 4340), стъпките са в `semki/deploy/deploy.sh`: тайните от
   `/opt/few-few/shared/semki/.env` (прави ги веднъж `semki/deploy/setup-env.sh` — Discord токен, client
   secret, ID-тата; без тях semki се пропуска като „още ненастроен“), `pg_dump` преди смяната, сонда с
   маркер `"app":"semki"`, vhost-ът `vps2.carbonstealth.eu` от репото щом има сертификат. Откатът е към

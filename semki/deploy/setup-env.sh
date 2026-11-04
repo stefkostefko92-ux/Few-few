@@ -25,6 +25,19 @@ plain() {
   [ -n "$2" ] || fail "$1 е празно."
 }
 
+# Първият свободен порт от 4340 нагоре (127.0.0.1); заетите ги държат други продукти на машината.
+free_port() {
+  local p
+  command -v ss >/dev/null 2>&1 || { printf '4340'; return 0; }
+  for p in $(seq 4340 4399); do
+    if [ -z "$(ss -Htln "sport = :$p" 2>/dev/null)" ]; then
+      printf '%s' "$p"
+      return 0
+    fi
+  done
+  return 1
+}
+
 snowflake() {
   printf '%s' "$2" | grep -Eqx '[0-9]{17,20}' || fail "$1 трябва да е Discord ID (17–20 цифри)."
 }
@@ -44,6 +57,9 @@ main() {
   read -rp 'Server ID на Discord сървъра: ' guild_id
   snowflake 'Server ID' "$guild_id"
 
+  local port
+  port="$(free_port)" || fail "няма свободен порт между 4340 и 4399."
+
   install -d -m 700 "$SHARED" "$SHARED/backups"
   local tmp
   tmp="$(mktemp "$SHARED/.env.XXXXXX")"
@@ -55,10 +71,12 @@ main() {
     printf 'DISCORD_CLIENT_SECRET=%s\n' "$client_secret"
     printf 'DISCORD_TOKEN=%s\n' "$bot_token"
     printf 'DISCORD_GUILD_ID=%s\n' "$guild_id"
+    printf 'HTTP_PORT=%s\n' "$port"
   } >"$tmp"
   chmod 600 "$tmp"
   mv -f "$tmp" "$ENV_FILE"
   ok "$ENV_FILE е готов (600): паролата на базата и ключът на сесиите са генерирани."
+  ok "дашбордът ще слуша на 127.0.0.1:$port (HTTP_PORT; nginx се насочва там сам)."
   ok "в Discord Developer Portal → OAuth2 → Redirects добави: https://$DOMAIN/auth/callback"
 }
 

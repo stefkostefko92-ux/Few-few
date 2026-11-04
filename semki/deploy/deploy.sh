@@ -136,6 +136,15 @@ wait_healthy() {
   done
 }
 
+# Портът на хоста е свободен или е публикуваният порт на НАШИЯ app контейнер. Иначе (друг процес
+# или чужд контейнер на същия порт) деплоят спира преди build-а: health-ът би питал чуждата услуга.
+port_is_ours_or_free() {
+  local port="$1"
+  command -v ss >/dev/null 2>&1 || return 0
+  [ -n "$(ss -Htln "sport = :$port" 2>/dev/null)" ] || return 0
+  [ "$(docker compose port app 4340 2>/dev/null)" = "127.0.0.1:$port" ]
+}
+
 # Последният release, който е отговорил — целта на отката. Истинският път, без symlink-а current.
 remember_live() {
   local real
@@ -198,6 +207,8 @@ main() {
   check_secrets
   port="$(env_value HTTP_PORT | tr -dc '0-9')"
   port="${port:-4340}"
+  port_is_ours_or_free "$port" ||
+    fail 1 "портът 127.0.0.1:$port е зает от друг процес (виж: ss -tlnp | grep ':$port ') — сложи свободен HTTP_PORT в $SHARED/.env."
   plan_backup
   log "build…"
   docker compose build app || fail 1 "build се провали — работещите контейнери не са пипани."
