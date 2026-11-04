@@ -40,6 +40,7 @@ file holds only what is true across all products. Keep it that way.
 | `agentgw/` | Агентски шлюз — нашите агенти от собствен ЕС сървър за сайтовете чрез агентски ключове (ключ = сайт → позволени агенти + домейни) | Node 22 · TS strict (ESM) · Express 5 · Zod · Prisma · PostgreSQL · `@anthropic-ai/vertex-sdk` · ванилов уиджет | BG/EN/IT · Claude **само през Vertex AI в ЕС** (`eu`) · публичните агенти са само разговорни (нула инструменти) · разговорите не се пазят · `cs_pk_`/`cs_sk_` ключове с месечен таван |
 | `korpora/` | Korpora — проектиране на корпусни мебели в браузъра (3D, разкрой, чертежи с карта за пробиване, DXF/G-code) с акаунти и админ панел | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · zod · Argon2id + TOTP · three.js (esbuild, без CDN) · Docker | BG/EN/IT (редакторът засега BG) · korpora.carbonstealth.eu · 30 дни тест от потвърждаване на имейла · Premium 25 €/мес. без ДДС (−5/10/20 % за 3/6/12) · Lifetime 750 € · плановете се активират **ръчно** · каталогът от магазините е в репото **само шифрован** (ключът е само на сървъра) |
 | `rilievi/` | Rilievi Impianti — портал за схемите за оглед на асансьори (карти, модули на доставчиците, листове за интервенция, табели, изчисление за аргано) | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · Docker | IT · rilievi.carbonstealth.eu (порт 4330) · **само покана** · многофирмен, 7 роли · 2FA по избор |
+| `semki/` | Semki Bot — Discord бот за изтичането на семките във FiveM (праг в % / оставащо време → таг на роля в канал) + дашборд с вход през Discord | Node 22 · TS strict (ESM) · Express 5 · EJS · discord.js v14 · Prisma · PostgreSQL · Docker | BG · vps2.carbonstealth.eu (порт — първият свободен от 4340, `HTTP_PORT`) · партиди с команди и от дашборда · роли за дашборда и командите от настройките · часови прозорец |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
@@ -89,6 +90,10 @@ hooks, skills).
 - **Promo clips are frozen — any product** (owner, 2026-10-15): no re-render, proposal or "replace
   the clip" step on any version/UI/copy change; only on the owner's explicit request. Not covered:
   video that is a product feature (e.g. Piuma's content engine).
+- **Never SVG — any product** (owner, 2026-11-04): drawings, illustrations, charts and icons are never
+  SVG. Illustrations → photorealistic 3D (three.js/WebGL, PBR, bundled from our origin — no CDN);
+  charts → `<canvas>`; icons/images → raster (PNG/WebP/AVIF). First applied in `semki/` (dashboard);
+  SVG already shipped in other products stays until the owner asks for it to be replaced.
 - **Generic agents: hard cap 10 per session** (anything not in `.claude/agents/`; enforced by the
   `agent-cap` hook) — it burns tokens. Our agents first (owner's rules below); verify inline when cheap.
 

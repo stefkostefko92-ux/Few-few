@@ -1,0 +1,112 @@
+<%- include('partials/head') %>
+<div class="dash-head">
+  <h1>Дашборд</h1>
+  <p class="muted small">Обновено <%= updatedText %>, опреснява се на 5 мин</p>
+</div>
+
+<section class="kpis" aria-label="Обобщение">
+  <div class="kpi">
+    <span class="kpi-label">Семки</span>
+    <span class="kpi-value"><%= stats.seeds %></span>
+    <span class="kpi-sub">в <%= stats.batches %> партиди</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">Първо изтича</span>
+    <span class="kpi-value"><%= stats.nextText %></span>
+    <span class="kpi-sub"><%= stats.nextWho %></span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">Изтичат до 24 ч</span>
+    <span class="kpi-value"><%= stats.soon %></span>
+    <span class="kpi-sub">партиди</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi-label">Изтекли</span>
+    <span class="kpi-value"><%= stats.expired %></span>
+    <span class="kpi-sub"><% if (stats.expired > 0) { %><a href="/">изтрий ги от „Семки“</a><% } else { %>няма<% } %></span>
+  </div>
+</section>
+
+<% if (shelves.length === 0) { %>
+<section class="card"><p class="muted">Няма въведени семки — добави от „Семки“ или с команда в Discord, например <code>/amnesia брой:10 дюрейшън:100</code>.</p></section>
+<% } %>
+
+<div class="shelves">
+<% shelves.forEach(function (s) { %>
+<section class="shelf" id="shelf-box-<%= s.key %>" aria-labelledby="shelf-<%= s.key %>">
+  <header class="shelf-head">
+    <h2 id="shelf-<%= s.key %>"><span class="swatch sw-<%= s.swatch %>" aria-hidden="true"></span> <%= s.label %></h2>
+    <dl class="shelf-stats">
+      <div><dt>Семки</dt> <dd><%= s.seeds %></dd></div>
+      <div><dt>Партиди</dt> <dd><%= s.batches %><% if (s.expired > 0) { %> <span class="muted">+ <%= s.expired %> изтекли</span><% } %></dd></div>
+      <div><dt>Най-нисък</dt> <dd><%= s.lowestText %></dd></div>
+      <div><dt>Първо изтича след</dt> <dd><%= s.soonestText %></dd></div>
+    </dl>
+  </header>
+  <div class="shelf-row">
+    <% s.vials.forEach(function (v) { %>
+    <figure class="vial sw-<%= s.swatch %><%= v.expired ? ' is-expired' : '' %><%= v.status ? ' is-low' : '' %>">
+      <div class="vial-slot" data-vial="<%= v.id %>" role="img" aria-label="<%= v.title %>" title="<%= v.title %>"><div class="vial-fill" data-vial="<%= v.id %>"></div></div>
+      <figcaption>
+        <strong class="vial-pct"><%= v.expired ? 'изтекла' : v.percentText %></strong>
+        <span>×<%= v.count %> <span class="muted vial-id">#<%= v.id %></span></span>
+        <% if (!v.expired) { %><span class="muted"><%= v.leftText %></span><% } %>
+        <% if (v.status) { %><span class="vial-status"><span class="dot" aria-hidden="true"></span> <%= v.status %></span><% } %>
+      </figcaption>
+    </figure>
+    <% }) %>
+  </div>
+</section>
+<% }) %>
+</div>
+
+<% if (empty.length > 0 && shelves.length > 0) { %>
+<p class="muted small shelf-empty">Без партиди: <%= empty.join(', ') %>.</p>
+<% } %>
+<% if (hasTicks) { %>
+<p class="muted small">Нивото в стъкленицата е трайността, чертичките по стъклото — праговете от „Известия“. Вляво на всеки рафт е партидата, която изтича първа.</p>
+<% } %>
+
+<% if (chart.series.length > 0) { %>
+<details class="card fold">
+  <summary><h2>Прогноза във времето</h2> <span class="muted small">следващите <%= Math.round(chart.hours / 24) %> дни, <%= timezone %></span></summary>
+  <ul class="legend" aria-label="Легенда">
+    <% chart.legend.forEach(function (l) { %>
+    <li><span class="swatch line sw-<%= l.swatch %>" aria-hidden="true"></span> <%= l.label %> <span class="muted"><%= l.count %> бр.</span></li>
+    <% }) %>
+    <% if (chart.thresholds.length > 0) { %>
+    <li><span class="swatch line dashed" aria-hidden="true"></span> праг за таг</li>
+    <% } %>
+  </ul>
+  <figure class="chart-wrap" id="chart">
+    <canvas class="chart-canvas" tabindex="0" role="img" aria-label="Трайност на партидите във времето: всяка линия е една партида, от текущия процент сега до 0% при изтичане. Таблицата „Всички партиди“ съдържа същите данни."></canvas>
+    <div class="chart-tip" role="status" hidden></div>
+  </figure>
+  <p class="muted small">Посочи графиката (или я фокусирай и ползвай ← →), за да видиш процентите в избрания момент.</p>
+</details>
+<% } %>
+
+<% if (rows.length > 0) { %>
+<details class="card fold">
+  <summary><h2>Всички партиди</h2> <span class="muted small"><%= rows.length %>, по реда на изтичане</span></summary>
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th scope="col">#</th><th scope="col">Вид</th><th scope="col" class="num">Брой</th><th scope="col" class="num">Трайност</th><th scope="col" class="num">Остават</th><th scope="col" class="num">Изтича</th></tr></thead>
+      <tbody>
+        <% rows.forEach(function (r) { %>
+        <tr class="<%= r.expired ? 'expired' : '' %>">
+          <td class="num"><%= r.id %></td>
+          <td><span class="swatch sw-<%= r.swatch %>" aria-hidden="true"></span> <%= r.typeLabel %></td>
+          <td class="num"><%= r.count %></td><td class="num"><%= r.percentText %></td><td class="num"><%= r.leftText %></td><td class="num"><%= r.expiresText %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</details>
+<% } %>
+
+<script type="application/json" id="shelves-data"><%- sceneJson %></script>
+<script type="application/json" id="chart-data"><%- chart.clientJson %></script>
+<script type="module" src="<%= asset('js/dashboard.js') %>"></script>
+<%- include('partials/foot') %>
