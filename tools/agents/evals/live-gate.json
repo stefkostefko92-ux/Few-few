@@ -1,9 +1,9 @@
 {
-  "date": "2026-11-02",
-  "ref": "c725e33cff0f2a31109517d348f195a7d915cdc9",
-  "cli": "2.1.316 (Claude Code)",
-  "summary": "проба 11/11 · оценки 12/12 · pass^k 8/8 · verifier ✓",
-  "costUsd": 20.52,
+  "date": "2026-11-04",
+  "ref": "bbfcd03a4be1ccae88fb71685094c7f106539ca7",
+  "cli": "2.1.318 (Claude Code)",
+  "summary": "проба 4/4 · оценки 7/7 · pass^k 3/3 · verifier ✓",
+  "costUsd": 12.83,
   "probe": [
     {
       "agent": "seo",
@@ -21,51 +21,16 @@
       "problems": []
     },
     {
-      "agent": "danachnika",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "frezadjiyata",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "geymara",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "igrodelets",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "izpitatelya",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "kasadjiyata",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "pravniyat-razbirach",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "prodavacha",
+      "agent": "razbivacha",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "f84134279fd1a80b5d9b311cc0a7a5a65b46cf9d84f4a245f0c404b065d0ea31",
+  "inputsHash": "f7eb863997134df5f584f64c3e1f705540f04034bad96c0b86cdadb788fd0e2d",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "df03642aee24f3b2365e8cc3590ce2ca3505933e16eceb75cf854947ef6e41cd",
-    ".claude/agents/_memory/SECURITY.md": "69b6984a7d18a8af105035b7ac6846f1d2dfacec82d5e517439f4e833553ab87",
+    ".claude/agents/_memory/SECURITY.md": "bcc847a4090956d5b8b4e36b22cc9be3f76e1ea91990b1b7e97bf7055fea1253",
     ".claude/agents/_teams.json": "e068c37efb1b257cbd9641dc4768ca07ad782f0d0d6abf116c19efecf6d91f09",
     ".claude/agents/ai-djiyata.md": "f6b7cf76e32cea776a465e7d59718d30b8617fa9d9754ab6df87626226234e05",
     ".claude/agents/analizatora.md": "2118d101411068abcf9ca1cfe409df484d330848b2701fd99ae808b66a1354ff",
@@ -90,7 +55,7 @@
     ".claude/agents/prevodach.md": "7aa99a4ee469bf4abb816e63d854188f98b4c13ca1fbe0c5e7ff7d27cb1ee623",
     ".claude/agents/printadjiyata.md": "17cce75ed4135f3f1a164a7c0dfc71a8483eabe3ca23e1f38d16cec212f53e3d",
     ".claude/agents/prodavacha.md": "ae210b0008655def191b971353ee2490e74bd1c25e10e230197d1dbcf04cf5c3",
-    ".claude/agents/razbivacha.md": "a85e4f3f4f543fa01b77f1035f1dd72427104ea64b84f61b046074f7b6a363be",
+    ".claude/agents/razbivacha.md": "cf28dde504aaa56b48df5f6b1c787a2d24276a929efcd6d608fa105edff19fb8",
     ".claude/agents/seo.md": "2ae498fdd0cbd5965560f8c7fbb521ac4c6a70e3b3bb52ed07219776476d2f99",
     ".claude/agents/siydara.md": "af3fd19f820426163706daf6a2a423577e994b8bb4e35e2cb67f62f61ace3899",
     ".claude/agents/skorostnika.md": "0ad5b9114475b291ef17eaf1efcd2806af42f39a35f490ce67da0608fbdc2881",
@@ -115,7 +80,7 @@
     ".claude/hooks/session-dod.mjs": "3f320021c2227fb5554a1d34551a5bac0d3b4e1046fd39cc8d3902fdab43b0c9",
     ".claude/hooks/usage-capture.mjs": "b6dee83a4a53f425c0e8dfab3c8b050e36b7c70b4f45c8dd9d041a5780530981",
     ".claude/settings.json": "5cc44d8bab55709fa6c1a18a8aa29f679ab3d55873595be07e2daec13fb29b08",
-    ".claude/skills/agent-doctrine/SKILL.md": "e885bda75b2c663db720fd5f653f713f4bd33400972e674b2a8fd4907ae72761",
+    ".claude/skills/agent-doctrine/SKILL.md": "6a1928bb23b98dbf76dc0f4d7c5e46f259b323765a3b8c60df59d109437a3993",
     "tools/agents/handoff.mjs": "088afa443cf1c3a6325b28a80bc74426aba907a1d7c287d0add05497b29dcba3",
     "tools/agents/teams.mjs": "955295f80b10250391714245bf5b6906c3341f2b8217c960cf07e290b4035fbb",
     "tools/lib/memory-branch.mjs": "7c81bd029381e5f15d101a465a27ba275ea80fc8fcc029a25f45b9d89e6083ad",

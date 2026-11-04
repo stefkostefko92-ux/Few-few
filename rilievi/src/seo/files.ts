@@ -9,7 +9,7 @@ import { HOME_PATH, PRIVACY_PATH, PUBLIC_PATHS, type PublicPath } from './paths.
  */
 
 /**
- * Обхождат се само публичните страници. Входът и „забравена парола“ са разрешени, за да види
+ * Обхождат се само публичните страници. Входът, „забравена парола“ и `/app` са разрешени, за да види
  * търсачката техния `noindex` (забранена страница пак може да излезе като гол адрес); всичко останало
  * е частно. `$` значи „точно този адрес“ — `/accesso?next=…` вече не е разрешен.
  */
@@ -19,6 +19,8 @@ export function robotsTxt(base: string, indexNowKey: string): string {
     ...PUBLIC_PATHS.map((path) => `Allow: ${path}$`),
     'Allow: /accesso$',
     'Allow: /password-dimenticata$',
+    // „Installa l'app“ е публична с `noindex` — роботът трябва да влезе, за да го види.
+    'Allow: /app$',
     'Allow: /static/',
     'Allow: /favicon.ico',
     'Allow: /sitemap.xml',

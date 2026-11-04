@@ -1,3 +1,4 @@
+import type { DatiSocietari } from '../aziende/dati.js';
 import type { Translator } from '../i18n.js';
 import { fieldByKey } from '../schede/fields.js';
 import { COLLEGAMENTI, confrontato, type MembroNumero, type MembroScelta } from './collegamenti.js';
@@ -9,6 +10,9 @@ export interface ContestoBrowser {
   utente: string;
   ruolo: string;
   email: string;
+  /** Фирмата на картата (при нова — избраната) и данните на фирмите, които могат да се изберат. */
+  aziendaId: string;
+  societa: Record<string, DatiSocietari>;
 }
 
 /**

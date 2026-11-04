@@ -164,7 +164,6 @@ describe('prefilling the MoviLift order', () => {
       alimentazioneA: 'conLimiti',
       pianoB1: '-',
       interpianiStandard: true,
-      armadio: 'standard',
       anta: 'sx',
       uscita: 'poloPiano',
       comune: 'neg',
@@ -181,6 +180,8 @@ describe('prefilling the MoviLift order', () => {
       nImpianto: '104552',
       ingressi: 'doppio',
       locMacc: 'basso',
+      // "MRL" on the sheet: the MRL cabinet, over the standard one of the blank form.
+      armadio: 'mrl',
     });
   });
 

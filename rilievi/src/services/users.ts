@@ -16,6 +16,8 @@ import { sendMail, type MailResult } from '../mail/mailer.js';
 import { HOUR } from '../time.js';
 import type { SessionUser } from '../types.js';
 import { ADMIN_RESET_HOURS } from './auth.js';
+import { reauthPassword } from './reauth.js';
+import { revokeInvitesOf, revokeResetLinks } from './revoche.js';
 import { newToken, resetLink } from './tokens.js';
 
 const USER_ID = /^[a-z0-9]{20,40}$/;
@@ -137,21 +139,6 @@ export async function getUser(actor: SessionUser, id: string): Promise<UserView 
   return row ? viewOf(actor, row, scope) : null;
 }
 
-/**
- * Неизползваните връзки за нова парола спират. Вика се, когато се смени кой управлява акаунта (нова фирма,
- * по-висока роля) или накъде отиват писмата (нов имейл): иначе връзка, дадена от човек, който вече не
- * управлява акаунта, пак би го отворила.
- */
-export async function revokeResetLinks(
-  tx: Prisma.TransactionClient,
-  userId: string,
-): Promise<void> {
-  await tx.passwordReset.updateMany({
-    where: { userId, usedAt: null },
-    data: { usedAt: new Date() },
-  });
-}
-
 /** Човекът с ВСИЧКИТЕ му членства — проверката за управление гледа и фирмите извън обхвата. */
 export function loadTarget(id: string) {
   if (!USER_ID.test(id)) return Promise.resolve(null);
@@ -184,7 +171,12 @@ export async function setActive(
         ? { deactivatedAt: null, failedLogins: 0, lockedUntil: null }
         : { deactivatedAt: new Date() },
     });
-    if (!active) await destroyAllSessions(target.id, undefined, tx);
+    if (!active) {
+      await destroyAllSessions(target.id, undefined, tx);
+      // Нито връзка за парола (и при повторно активиране), нито покана от него остава жива.
+      await revokeResetLinks(tx, target.id);
+      await revokeInvitesOf(tx, target.id);
+    }
     await writeUserAudit(
       {
         actorId: actor.id,
@@ -208,7 +200,10 @@ export async function createResetLink(
   targetId: string,
 ): Promise<{ link: string; mail: MailResult } | null> {
   const target = await loadTarget(targetId);
-  if (!target || !canManageAccount(actor, target) || target.deactivatedAt) return null;
+  // Своята парола — само в „Il tuo account“, със старата: връзка за себе си би дала акаунта на всеки,
+  // който държи сесията (одит, 4 ноември 2026).
+  if (!target || actor.id === target.id || !canManageAccount(actor, target) || target.deactivatedAt)
+    return null;
   const { token, hash } = newToken();
   await prisma.$transaction(async (tx) => {
     await revokeResetLinks(tx, target.id);
@@ -232,7 +227,8 @@ export async function createResetLink(
 }
 
 export type AccountOutcome =
-  { ok: true; changed: boolean } | { ok: false; error: 'notAllowed' | 'emailTaken' };
+  | { ok: true; changed: boolean }
+  | { ok: false; error: 'notAllowed' | 'emailTaken' | 'password' | 'locked' };
 
 /**
  * Име и имейл на акаунта (стойностите са вече проверени). Нов имейл: старите връзки за парола спират
@@ -242,7 +238,7 @@ export type AccountOutcome =
 export async function updateAccount(
   actor: SessionUser,
   targetId: string,
-  input: { name: string; email: string },
+  input: { name: string; email: string; password?: string },
 ): Promise<AccountOutcome> {
   const target = await loadTarget(targetId);
   if (!target || !canManageAccount(actor, target)) return { ok: false, error: 'notAllowed' };
@@ -251,6 +247,16 @@ export async function updateAccount(
     ...(input.email !== target.email ? ['email'] : []),
   ];
   if (fields.length === 0) return { ok: true, changed: false };
+  // Своят имейл — с паролата (броена в заключването): иначе откраднатата сесия го сменя и после взима
+  // акаунта с „password dimenticata“.
+  if (actor.id === target.id && fields.includes('email')) {
+    const own = await prisma.user.findUniqueOrThrow({
+      where: { id: actor.id },
+      select: { id: true, passwordHash: true },
+    });
+    const denied = await reauthPassword(own, input.password ?? '');
+    if (denied) return { ok: false, error: denied === 'locked' ? 'locked' : 'password' };
+  }
   try {
     await prisma.$transaction(async (tx) => {
       await tx.user.update({

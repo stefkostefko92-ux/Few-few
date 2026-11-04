@@ -9,7 +9,10 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/static/img/favicon-32.png?v=<%= v %>" type="image/png" sizes="32x32">
 <link rel="icon" href="/static/img/favicon-192.png?v=<%= v %>" type="image/png" sizes="192x192">
-<link rel="stylesheet" href="/static/fonts/fonts.css?v=<%= v %>">
+<%# Петте шрифта, с които листът се рисува: изтеглени заедно с CSS-а, иначе пристигат след първото
+    рисуване и текстът се пренарежда (CLS 0,09 — одит, 4 ноември 2026). %>
+<% for (const font of ['fira-sans-latin-400', 'fira-sans-latin-600', 'fira-sans-latin-700', 'fira-sans-condensed-latin-500', 'fira-sans-condensed-latin-600']) { %><link rel="preload" href="/static/fonts/<%= font %>-normal.woff2" as="font" type="font/woff2" crossorigin>
+<% } %><link rel="stylesheet" href="/static/fonts/fonts.css?v=<%= v %>">
 <link rel="stylesheet" href="/static/css/base.css?v=<%= v %>">
 <link rel="stylesheet" href="/static/css/buttons.css?v=<%= v %>">
 <link rel="stylesheet" href="/static/css/plate.css?v=<%= v %>">

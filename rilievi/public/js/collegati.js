@@ -18,9 +18,8 @@
   }
 
   // Numbers the Italian way, the option of a list, what a field of the sheet takes (valori.js).
-  if (!window.rilieviValori) return;
-  const { same, optionFor, forSheet, pairOf, splitPair } = window.rilieviValori;
-  const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
+  if (!window.rilieviValori || !window.rilieviLuoghi) return;
+  const { same } = window.rilieviValori;
 
   // The places of each group: a field of the sheet or of a form, read as one value (a number group) or
   // as the categories of its ticks, its Sì/No or its radio group (a choice group). The form's fields by
@@ -34,10 +33,34 @@
   });
   const byName = (name) => named.get(name) || [];
   const nameOf = (m, key) => (m.luogo === 'scheda' ? key : `${m.luogo}-${key}`);
+  // The sheet says the plant is hydraulic: a place with a hydraulic field (`idraulico` — Pitagora's
+  // "HYDRO" next to "VVVF", MoviLift's "Idraulico" next to "Fune") is that field. Same in collegati.ts.
+  const hydraulic = () =>
+    byName('tipoImpianto').some(
+      (el) => el.checked && el.value === 'IDRAULICO' && !el.closest('[data-off]'),
+    );
   const placeOf = (group, m) => {
     const sheet = m.luogo === 'scheda';
     let els;
     let kind;
+    if (group.tipo === 'numero' && !sheet && m.idraulico) {
+      const dry = byName(nameOf(m, m.campo));
+      const wet = byName(nameOf(m, m.idraulico));
+      if (!dry.length || !wet.length) return null;
+      return {
+        group,
+        m,
+        sheet,
+        kind: 'text',
+        id: `${m.luogo}-${m.campo}`,
+        get els() {
+          return hydraulic() ? wet : dry;
+        },
+        get idle() {
+          return hydraulic() ? dry[0] : wet[0];
+        },
+      };
+    }
     if (group.tipo === 'numero' && m.campi) {
       els = m.campi.map((key) => byName(nameOf(m, key))[0]).filter(Boolean);
       kind = els.length === 2 ? 'pair' : null;
@@ -67,21 +90,7 @@
     places: group.membri.map((m) => placeOf(group, m)).filter(Boolean),
   }));
 
-  const keyOf = (p, el) =>
-    p.sheet || p.kind === 'radio' ? el.value : el.name.slice(p.m.luogo.length + 1);
-  const ticked = (p) => p.els.filter((el) => el.checked && hasOwn(p.m.voci, keyOf(p, el)));
-  // What a place says: text for a number group, categories for a choice; null — nothing.
-  const read = (p) => {
-    if (p.kind === 'pair') return pairOf(...p.els.map((el) => el.value.trim())) || null;
-    if (p.kind === 'map') {
-      // Only the map's own keys: "constructor" from a tampered form is not an answer.
-      const box = p.els.find((el) => el.checked);
-      return box && hasOwn(p.m.valori, box.value) ? p.m.valori[box.value] : null;
-    }
-    if (p.kind === 'text') return p.els[0].value.trim() || null;
-    const boxes = ticked(p);
-    return boxes.length ? new Set(boxes.map((el) => p.m.voci[keyOf(p, el)])) : null;
-  };
+  const { keyOf, ticked, read, touched, isTick, follows, setText, write } = window.rilieviLuoghi;
 
   // Hidden says nothing: a field whose condition is off, a form whose question is not "Sì". Filling is
   // the one exception: the other make's form of the same column (Pelazza ↔ MoviLift), hidden only by
@@ -96,68 +105,17 @@
     return box !== null && !box.hasAttribute('data-off');
   };
 
-  // A place follows while nobody has typed in it: empty, or still what was put there for it.
-  const touched = (el) => el.dataset.touched === '1';
-  const isTick = (el) => el.type === 'checkbox' || el.type === 'radio';
-  const follows = (p) =>
-    !p.els.some(touched) &&
-    p.els.every((el) =>
-      isTick(el)
-        ? !el.checked || el.dataset.auto === 'si'
-        : el.value === '' || el.value === el.dataset.auto,
-    );
-
-  // Writing into a following place; the elements that changed come back (the sheet's get events).
-  const setText = (el, value) => {
-    const before = el.value;
-    el.value = value;
-    el.dataset.auto = el.value;
-    return el.value !== before;
-  };
-  const setTick = (el, on) => {
-    const changed = el.checked !== on;
-    el.checked = on;
-    el.dataset.auto = on ? 'si' : '';
-    return changed;
-  };
-  const write = (p, value) => {
-    if (p.kind === 'pair') {
-      const parts = splitPair(value || '');
-      return p.els.filter((el, i) => setText(el, parts[i]));
-    }
-    if (p.kind === 'map') {
-      const key = value ? Object.keys(p.m.valori).find((k) => same(p.m.valori[k], value)) : null;
-      return p.els.filter((el) => setTick(el, el.value === key));
-    }
-    if (p.kind === 'text') {
-      const el = p.els[0];
-      const text = value || '';
-      const next =
-        el instanceof HTMLSelectElement
-          ? optionFor(el, text)
-          : p.sheet
-            ? forSheet(p.m, text)
-            : text.slice(0, el.maxLength > 0 ? el.maxLength : undefined);
-      return setText(el, next) ? [el] : [];
-    }
-    const wanted = new Set();
-    for (const category of value || []) {
-      const keys = Object.keys(p.m.voci).filter((key) => p.m.voci[key] === category);
-      // A radio has one answer: only for one category over there, and its first button here. A
-      // category ticks a box only when exactly one box means it.
-      if (p.kind === 'radio' && value.size === 1 && keys.length) wanted.add(keys[0]);
-      if (p.kind !== 'radio' && keys.length === 1) wanted.add(keys[0]);
-    }
-    // Nothing said elsewhere: a radio goes back to the blank form's own answer, if it has one.
-    const fallback =
-      p.kind === 'radio' && !wanted.size ? p.els.find((el) => 'predefinito' in el.dataset) : null;
-    return p.els.filter((el) => setTick(el, el === fallback || wanted.has(keyOf(p, el))));
-  };
-
   // Every following place takes the first place that says something — someone's own value before one
   // filled in this round, which carries a value from one group to the next (a form → the sheet's
   // "Accessi" → the other form). Followers nobody speaks for are emptied.
   const fill = () => {
+    // The field a hydraulic place is not using now keeps nothing put there for it (the plant type changed).
+    groups.forEach(({ places }) =>
+      places.forEach((p) => {
+        const el = p.idle;
+        if (el && !touched(el) && el.value !== '' && el.value === el.dataset.auto) setText(el, '');
+      }),
+    );
     const followers = new Set();
     groups.forEach(({ places }) => places.forEach((p) => follows(p) && followers.add(p.id)));
     const done = new Set();

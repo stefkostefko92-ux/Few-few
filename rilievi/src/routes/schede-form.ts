@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { allegatiDi } from '../allegati/service.js';
 import { aziendeConSchizzi } from '../aziende/funzioni.js';
+import { datiDelleAziende } from '../aziende/intestazione.js';
 import { gruppiScelta, nelFoglioDi, sezioniFoto } from '../allegati/stampa.js';
 import { principalOf } from '../auth/guards.js';
 import { roleIn, spansAziende } from '../auth/scope.js';
@@ -51,8 +52,20 @@ export async function renderForm(
   const t = res.locals.t;
   // Модулите на доставчиците: при първото отваряне — от огледа, от другия модул, от фирмата и от
   // човека, който пише (ролята му в ТАЗИ фирма).
-  const aziendaId = view.scheda?.aziendaId || view.azienda || null;
+  // Нова карта: само фирма, в която човекът е (от избора или единствената му) — никога каквото е
+  // пратила формата, иначе данните на чужда фирма биха излезли в страницата (одит, 4 ноември 2026).
+  const aziendaNuova =
+    view.azienda &&
+    (view.aziende.some((a) => a.id === view.azienda) ||
+      user.memberships.some((m) => m.aziendaId === view.azienda))
+      ? view.azienda
+      : null;
+  const aziendaId = view.scheda?.aziendaId || aziendaNuova;
   const role = roleIn(user, aziendaId);
+  const societa = await datiDelleAziende([
+    ...(aziendaId ? [aziendaId] : []),
+    ...view.aziende.map((a) => a.id),
+  ]);
   const contesto = {
     azienda:
       view.scheda?.azienda.name ??
@@ -64,6 +77,7 @@ export async function renderForm(
   };
   const { values, auto, scritti } = withPrefill(view.values, {
     ...contesto,
+    societa: (aziendaId && societa.get(aziendaId)) || null,
     etichetta: (campo, valore) => t(`scheda.option.${campo}.${valore}`),
   });
   const discrepanze = discrepanzeDi(values, t);
@@ -114,7 +128,11 @@ export async function renderForm(
       scritti,
       discrepanze: new Map(discrepanze.map((d) => [d.key, d])),
       delGruppo: collegatiDelGruppo,
-      json: collegatiPerBrowser(t, contesto),
+      json: collegatiPerBrowser(t, {
+        ...contesto,
+        aziendaId: aziendaId ?? '',
+        societa: Object.fromEntries(societa),
+      }),
     },
     conferma: view.conferma ? { discrepanze, impronta: improntaDi(discrepanze) } : null,
     allegati,

@@ -108,7 +108,7 @@
       "impronta": "Impronta del contenuto firmato (SHA-256)",
       "alterato": "Il sigillo non corrisponde al contenuto firmato: il modulo risulta modificato dopo la firma, oppure è stato confermato prima dell'introduzione del sigillo. PDF e invio per email sono bloccati — avvisa l'amministrazione del portale.",
       "bloccato": "PDF e invio bloccati: il sigillo del modulo non corrisponde al contenuto firmato.",
-      "pdf": "Impronta del contenuto firmato (SHA-256): {impronta} — sigillo verificato"
+      "pdf": "Impronta del contenuto firmato (SHA-256): {impronta} — verificata dal portale alla generazione di questo PDF"
     }
   }
 }

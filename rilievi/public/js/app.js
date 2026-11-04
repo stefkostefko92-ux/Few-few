@@ -3,6 +3,12 @@
 (() => {
   'use strict';
 
+  // The installed app (src/pwa/manifest.ts): its service worker keeps nothing and only answers a page
+  // that cannot load because the device is offline (public/js/sw.js, served as /sw.js).
+  if ('serviceWorker' in navigator && window.isSecureContext) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+
   // Live search: the server renders the results fragment (X-Partial), we swap it in and keep the URL.
   const searchForm = document.querySelector('[data-live-search]');
   const results = document.querySelector('[data-results]');

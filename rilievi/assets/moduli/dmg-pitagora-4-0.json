@@ -247,7 +247,8 @@
               "kind": "text",
               "label": "Portata (kg/pers.)",
               "acro": "02_Dati.Imp_Portata",
-              "maxLength": 18
+              "maxLength": 18,
+              "prefill": "portataPersone"
             },
             {
               "key": "nPiani",
@@ -1734,7 +1735,8 @@
               "key": "pattino",
               "kind": "check",
               "label": "Con pattino elettronico",
-              "acro": "06_Porte-Piano-Pattino"
+              "acro": "06_Porte-Piano-Pattino",
+              "prefill": "pattinoRetrattile=si"
             },
             {
               "key": "pattinoV",

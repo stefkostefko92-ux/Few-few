@@ -59,10 +59,10 @@ function costruttore(campi, file) {
       return { key, kind: 'text', label, acro, maxLength, ...extra };
     },
     /** One tick box with one "on" state. */
-    spunta(acro, key, label) {
+    spunta(acro, key, label, extra = {}) {
       const f = prendi(acro, PDFCheckBox);
       if (stati(f).length !== 1) throw new Error(`${file}: «${acro}» has ${stati(f).length} boxes`);
-      return { key, kind: 'check', label, acro };
+      return { key, kind: 'check', label, acro, ...extra };
     },
     /**
      * A choice: [state, value, label] for every box of the group (`salta` — states of the group that
@@ -277,7 +277,10 @@ async function pitagora() {
           ]),
         ),
         riga(
-          testo('02_Dati.Imp_Portata', 'portata', 'Portata (kg/pers.)'),
+          // "630/8": the load and the persons of the sheet.
+          testo('02_Dati.Imp_Portata', 'portata', 'Portata (kg/pers.)', {
+            prefill: 'portataPersone',
+          }),
           testo('02_Dati.Imp_N.Piani', 'nPiani', 'N. Piani'),
           testo('02_Dati.Imp_Velocità', 'velocita', 'Velocità (m/s)'),
         ),
@@ -465,7 +468,10 @@ async function pitagora() {
             ['Automatiche', 'automatiche', 'Automatiche'],
             ['Manuali', 'manuali', 'Manuali'],
           ]),
-          spunta('06_Porte-Piano-Pattino', 'pattino', 'Con pattino elettronico'),
+          // As MoviLift's "Elettr. Pattino": ticked by "Pattino retrattile da cambiare: Sì".
+          spunta('06_Porte-Piano-Pattino', 'pattino', 'Con pattino elettronico', {
+            prefill: 'pattinoRetrattile=si',
+          }),
           testo('06_Porte-Piano-Patt.V', 'pattinoV', 'Pattino: tensione (V)'),
           testo('06_Porte-Piano-Patt.A', 'pattinoA', 'Pattino: assorbimento (A)'),
         ),

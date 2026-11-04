@@ -293,6 +293,8 @@ describe('the linked data themselves', () => {
       'giriMotore',
       'poli',
       'potenzaMotore',
+      'potenzaHp',
+      'potenzaInverter',
     ]);
     assert.deepEqual(collegatiDelGruppo('pa', groupOf('Trazione e funi', ARGANI)), [
       'funiNumero',
@@ -301,6 +303,16 @@ describe('the linked data themselves', () => {
       'diametroPuleggia',
       'rapportoRiduzione',
     ]);
-    assert.deepEqual(collegatiDelGruppo('oq', groupOf('Accessori', PELAZZA)), []);
+    // What the other panel orders also ask (their accessories, never the sheet).
+    assert.deepEqual(collegatiDelGruppo('oq', groupOf('Accessori', PELAZZA)), [
+      'cavoSchermato',
+      'precablato',
+      'fondoMobile',
+      'pienoCarico',
+    ]);
+    assert.deepEqual(collegatiDelGruppo('oq', groupOf('Tipo di Quadro', PELAZZA)), [
+      'tipoVelocita',
+      'tipoImpianto',
+    ]);
   });
 });
