@@ -7148,6 +7148,11 @@
       "activity": [
         {
           "date": "2026-11-04",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „При Compose услуга с depends_on condition service_healthy командата `docker compose up …\""
+        },
+        {
+          "date": "2026-11-04",
           "type": "learning",
           "summary": "Научи: „www.openssh.com/releasenotes.html отговаря с 301 от OpenBSD httpd, затова curl без -L в…\" (+37 още)"
         },
