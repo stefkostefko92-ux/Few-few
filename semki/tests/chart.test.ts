@@ -113,7 +113,7 @@ test('делениeта по времето: полунощ местно вре�
 
 test('данните за посочването са без HTML', () => {
   const m = build([batch(1, 'amnesia', 50)]);
-  const json = m.hoverJson;
+  const json = m.clientJson;
   assert.doesNotMatch(json, /</);
   const data = JSON.parse(json) as { series: Array<{ id: number }> };
   assert.equal(data.series[0]?.id, 1);

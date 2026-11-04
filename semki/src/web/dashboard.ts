@@ -1,10 +1,11 @@
 // Страницата „Дашборд“: всички семки на едно място — числата отгоре, рафт със стъкленици за всеки вид,
 // прогнозата във времето и всички партиди по реда на изтичане.
 import type { Request, Response } from 'express';
-import { buildChart, seedColor } from '../domain/chart.js';
+import { buildChart, seedColor, swatchKey } from '../domain/chart.js';
 import { expiresAt, HOUR_MS, msLeft } from '../domain/decay.js';
 import { formatDuration } from '../domain/messages.js';
-import { buildShelves } from '../domain/vials.js';
+import { safeJson } from '../domain/json.js';
+import { buildShelves, sceneOf } from '../domain/vials.js';
 import { listBatches, listSeedTypes } from '../services/batches.js';
 import { labelsOf } from '../services/mapping.js';
 import { listRules } from '../services/rules.js';
@@ -48,7 +49,7 @@ export function dashboardPage(kit: WebKit) {
     const expiry = new Map(batches.map((b) => [b.id, expiresAt(b, b.rate).getTime()]));
     const rows = batchRows(batches, types, now, settings.timezone)
       .sort((a, b) => (expiry.get(a.id) ?? 0) - (expiry.get(b.id) ?? 0))
-      .map((r) => ({ ...r, color: seedColor(r.typeKey) }));
+      .map((r) => ({ ...r, color: seedColor(r.typeKey), swatch: swatchKey(r.typeKey) }));
 
     const next = live
       .map((b) => ({ b, left: msLeft(b, b.rate, now) }))
@@ -58,11 +59,13 @@ export function dashboardPage(kit: WebKit) {
       title: 'Дашборд',
       active: 'dashboard',
       refreshSeconds: REFRESH_SECONDS,
+      pageCss: ['dashboard.css', 'dashboard-data.css'],
       timezone: settings.timezone,
       updatedText: fmt(now),
       chart,
       rows,
       shelves,
+      sceneJson: safeJson(sceneOf(shelves)),
       empty,
       hasTicks: thresholds.some((t) => t > 0 && t < 100),
       stats: {

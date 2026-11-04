@@ -15,12 +15,13 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 
 // Статичните файлове носят версия по съдържанието си (`/style.css?v=…`): нов файл значи нов адрес и
 // браузърът не държи стария 7 дни (така новите класове на дашборда стояха без стил).
-function assetVersions(dir: string): Map<string, string> {
-  const out = new Map<string, string>();
+// Ключът е пътят спрямо public/ с „/“ (`js/dashboard.js`).
+function assetVersions(dir: string, prefix = '', out = new Map<string, string>()) {
   for (const name of readdirSync(dir)) {
     const file = path.join(dir, name);
-    if (!statSync(file).isFile()) continue;
-    out.set(name, createHash('sha256').update(readFileSync(file)).digest('hex').slice(0, 10));
+    const key = `${prefix}${name}`;
+    if (statSync(file).isDirectory()) assetVersions(file, `${key}/`, out);
+    else out.set(key, createHash('sha256').update(readFileSync(file)).digest('hex').slice(0, 10));
   }
   return out;
 }

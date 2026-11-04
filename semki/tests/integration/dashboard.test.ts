@@ -306,14 +306,29 @@ test('страницата „Дашборд“: числа, графика, л�
     assert.match(html, /<meta http-equiv="refresh" content="300">/);
     assert.match(html, /class="kpi-value">7</); // 5 + 2 семки
     assert.match(html, /<span class="kpi-label">Семки<\/span>\s+<span/); // интервал и без CSS
-    assert.equal((html.match(/<g class="s">/g) ?? []).length, 2);
-    assert.match(html, /stroke="#3987e5"/); // Amnesia
-    assert.match(html, /stroke="#9085e9"/); // Purple
-    assert.match(html, /≤ 20%/);
+    // Собственикът: никога SVG — стъклениците са 3D (WebGL), графиката е <canvas>.
+    assert.doesNotMatch(html, /<svg|\.svg/);
+    assert.match(html, /class="swatch line sw-amnesia"/); // легендата
+    assert.match(html, /class="swatch line sw-purple"/);
+    assert.match(html, /<canvas class="chart-canvas"/);
     assert.match(html, /<script type="application\/json" id="chart-data">\{/);
-    assert.match(html, /<script src="\/dashboard.js\?v=[0-9a-f]{10}" defer><\/script>/);
+    const scene = /<script type="application\/json" id="shelves-data">(.*?)<\/script>/.exec(html);
+    const shelves = JSON.parse(scene?.[1] ?? 'null') as Array<{ key: string; vials: unknown[] }>;
+    assert.deepEqual(
+      shelves.map((s) => [s.key, s.vials.length]),
+      [
+        ['amnesia', 1],
+        ['purple', 1],
+      ],
+    );
+    assert.match(
+      html,
+      /<script type="module" src="\/js\/dashboard.js(\?v=[0-9a-f]{10})?"><\/script>/,
+    );
     assert.match(html, /<link rel="stylesheet" href="\/style.css\?v=[0-9a-f]{10}">/);
+    assert.match(html, /<link rel="stylesheet" href="\/dashboard.css\?v=[0-9a-f]{10}">/);
     assert.equal((html.match(/<figure class="vial/g) ?? []).length, 2); // по стъкленица на партида
+    assert.equal((html.match(/class="vial-slot" data-vial="\d+"/g) ?? []).length, 2);
     assert.match(html, /id="shelf-amnesia"/);
     assert.match(html, /id="shelf-purple"/);
     assert.match(html, /под 20%/); // Purple 10%

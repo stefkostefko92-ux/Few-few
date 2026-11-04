@@ -1,7 +1,9 @@
 // Графиката на дашборда: всяка партида е отсечка от текущия % сега до 0% при изтичане (или до ръба на
-// хоризонта). Чиста геометрия — сървърът я рисува като SVG, браузърът само добавя посочване.
+// хоризонта). Чиста геометрия в логически единици (WIDTH × HEIGHT); браузърът я рисува на Canvas
+// (client/chart.ts) и добавя посочването.
 import { minutesOfDay, type BatchLike } from './alerts.js';
 import { expiresAt, HOUR_MS, msLeft, percentAt, percentPerMs } from './decay.js';
+import { safeJson } from './json.js';
 import {
   formatDuration,
   formatNumber,
@@ -20,6 +22,11 @@ export const SEED_COLORS: Readonly<Record<string, string>> = {
   skunk: '#c98500',
 };
 const OTHER_COLOR = '#898781';
+// Класът на цветното квадратче в разметката (public/dashboard.css): познатите видове имат свой,
+// останалите — „other“. Без style="" — CSP-то го забранява.
+export function swatchKey(key: string): string {
+  return Object.hasOwn(SEED_COLORS, key) ? key : 'other';
+}
 
 const WIDTH = 960;
 const HEIGHT = 360;
@@ -58,21 +65,21 @@ export interface ChartModel {
   thresholds: Array<{ y: number; label: string }>;
   xTicks: Array<{ x: number; label: string }>;
   yTicks: Array<{ y: number; label: string }>;
-  legend: Array<{ key: string; label: string; color: string; count: number; batches: number }>;
+  legend: Array<{
+    key: string;
+    label: string;
+    color: string;
+    swatch: string;
+    count: number;
+    batches: number;
+  }>;
   expired: number;
-  // Данните за посочването (dashboard.js), вече безопасни за <script type="application/json">.
-  hoverJson: string;
+  // Всичко за рисуването и посочването (client/chart.ts), безопасно за <script type="application/json">.
+  clientJson: string;
 }
 
 export function seedColor(key: string): string {
   return SEED_COLORS[key] ?? OTHER_COLOR;
-}
-
-function safeJson(value: unknown): string {
-  return JSON.stringify(value)
-    .replace(/</g, '\\u003c')
-    .replace(/>/g, '\\u003e')
-    .replace(/&/g, '\\u0026');
 }
 
 export function buildChart(input: ChartInput): ChartModel {
@@ -148,26 +155,39 @@ export function buildChart(input: ChartInput): ChartModel {
       key,
       label: seedLabel(input.labels, key),
       color: seedColor(key),
+      swatch: swatchKey(key),
       count: ofType.reduce((s, b) => s + b.count, 0),
       batches: ofType.length,
     };
   });
 
-  const hoverJson = safeJson({
+  const clientJson = safeJson({
     start,
     end,
     plot: PLOT,
     width: WIDTH,
+    height: HEIGHT,
     timezone: input.timezone,
-    series: live.map((b) => ({
-      id: b.id,
-      label: seedLabel(input.labels, b.seedTypeKey),
-      color: seedColor(b.seedTypeKey),
-      count: b.count,
-      p0: percentAt(b, b.rate, input.now),
-      slope: percentPerMs(b.rate),
-      exp: expiresAt(b, b.rate).getTime(),
-    })),
+    thresholds,
+    xTicks,
+    yTicks,
+    series: live.map((b, i) => {
+      const g = series[i];
+      return {
+        id: b.id,
+        label: seedLabel(input.labels, b.seedTypeKey),
+        color: seedColor(b.seedTypeKey),
+        count: b.count,
+        p0: percentAt(b, b.rate, input.now),
+        slope: percentPerMs(b.rate),
+        exp: expiresAt(b, b.rate).getTime(),
+        x0: g?.x0 ?? 0,
+        y0: g?.y0 ?? 0,
+        x1: g?.x1 ?? 0,
+        y1: g?.y1 ?? 0,
+        endsInside: g?.endsInside ?? false,
+      };
+    }),
   });
 
   return {
@@ -181,6 +201,6 @@ export function buildChart(input: ChartInput): ChartModel {
     yTicks,
     legend,
     expired: input.batches.length - live.length,
-    hoverJson,
+    clientJson,
   };
 }

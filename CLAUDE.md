@@ -90,6 +90,10 @@ hooks, skills).
 - **Promo clips are frozen — any product** (owner, 2026-10-15): no re-render, proposal or "replace
   the clip" step on any version/UI/copy change; only on the owner's explicit request. Not covered:
   video that is a product feature (e.g. Piuma's content engine).
+- **Never SVG — any product** (owner, 2026-11-04): drawings, illustrations, charts and icons are never
+  SVG. Illustrations → photorealistic 3D (three.js/WebGL, PBR, bundled from our origin — no CDN);
+  charts → `<canvas>`; icons/images → raster (PNG/WebP/AVIF). First applied in `semki/` (dashboard);
+  SVG already shipped in other products stays until the owner asks for it to be replaced.
 - **Generic agents: hard cap 10 per session** (anything not in `.claude/agents/`; enforced by the
   `agent-cap` hook) — it burns tokens. Our agents first (owner's rules below); verify inline when cheap.
 

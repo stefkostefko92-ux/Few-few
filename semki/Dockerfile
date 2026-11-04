@@ -14,7 +14,7 @@ FROM base AS deps
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# --- Билд: prisma generate + TypeScript → dist ---
+# --- Билд: prisma generate + TypeScript → dist, браузърният код (three.js) → public/js ---
 FROM deps AS build
 COPY . .
 RUN npm run build
@@ -35,7 +35,7 @@ COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY prisma ./prisma
 COPY views ./views
-COPY public ./public
+COPY --from=build /app/public ./public
 COPY package.json ./package.json
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 # Кодът остава на root, node само го чете — процесът няма право да пише собствения си код.

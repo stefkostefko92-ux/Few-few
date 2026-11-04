@@ -1,30 +1,22 @@
-// Рафтовете на дашборда: за всеки вид рафт със стъкленици, по една на партида. Нивото на разтвора е
-// трайността, деленията по стъклото — праговете, семената в разтвора — броят (до 7). Чиста геометрия;
-// сървърът я рисува като SVG (views/dashboard.ejs).
+// Рафтовете на дашборда: за всеки вид рафт със стъкленици, по една на партида. Тук са само данните на
+// сцената (нормирани, без пиксели): нивото на разтвора (трайността), праговете като деления по стъклото и
+// семената в разтвора (броят, до 7). Браузърът ги рисува в 3D (client/shelves3d.ts).
 import type { BatchLike } from './alerts.js';
-import { seedColor } from './chart.js';
+import { seedColor, swatchKey } from './chart.js';
 import { expiresAt, msLeft, percentAt } from './decay.js';
 import { formatDuration, formatNumber, formatPercent } from './messages.js';
 
-// Стъкленицата във viewBox 0 0 64 210: тапа отгоре, гърло, тяло с кръгло дъно.
-export const VIAL = {
-  width: 64,
-  height: 210,
-  innerLeft: 14,
-  innerRight: 50,
-  innerTop: 34,
-  innerBottom: 200,
-  get innerHeight(): number {
-    return this.innerBottom - this.innerTop;
-  },
-} as const;
-
 const MAX_SEEDS = 7;
 
+// Семе в стъкленицата: височина в разтвора (0 — дъното, 1 — повърхността), ъгъл около оста,
+// разстояние от оста (0 — центъра, 1 — до стъклото) и завъртане. Всичко в [0, 1] или в радиани.
 export interface VialSeed {
-  cx: number;
-  cy: number;
+  u: number;
   angle: number;
+  radial: number;
+  rx: number;
+  ry: number;
+  rz: number;
 }
 
 export interface Vial {
@@ -33,8 +25,10 @@ export interface Vial {
   percentText: string;
   leftText: string;
   expiresText: string;
-  levelY: number;
-  ticks: Array<{ y: number; label: string }>;
+  // 0..1 — колко от стъкленицата е пълна (= трайността / 100).
+  level: number;
+  // Праговете в % като части от пълната стъкленица, от горния към долния.
+  ticks: number[];
   seeds: VialSeed[];
   status: string | null;
   expired: boolean;
@@ -45,8 +39,7 @@ export interface Shelf {
   key: string;
   label: string;
   color: string;
-  dark: string;
-  light: string;
+  swatch: string;
   seeds: number;
   batches: number;
   expired: number;
@@ -63,18 +56,17 @@ export interface ShelvesInput {
   timezone: string;
 }
 
-// Смесване към черно (amount < 0) или бяло (amount > 0); 0 — същият цвят.
-export function shade(hex: string, amount: number): string {
-  const n = Number.parseInt(hex.slice(1), 16);
-  const target = amount < 0 ? 0 : 255;
-  const k = Math.min(1, Math.abs(amount));
-  const ch = (shift: number) => {
-    const c = (n >> shift) & 255;
-    return Math.round(c + (target - c) * k)
-      .toString(16)
-      .padStart(2, '0');
-  };
-  return `#${ch(16)}${ch(8)}${ch(0)}`;
+// Данните, които браузърът рисува: по рафт — цветът на разтвора и стъклениците.
+export interface SceneShelf {
+  key: string;
+  color: string;
+  vials: Array<{
+    id: number;
+    level: number;
+    expired: boolean;
+    ticks: number[];
+    seeds: VialSeed[];
+  }>;
 }
 
 // Детерминистичен генератор (mulberry32): семената стоят на едно място при всяко опресняване.
@@ -89,6 +81,8 @@ function random(seed: number): () => number {
   };
 }
 
+const round3 = (n: number): number => Math.round(n * 1000) / 1000;
+
 // Под стъкленицата е тясно: при дни минутите отпадат („3 д 19 ч“).
 export function shortDuration(ms: number): string {
   const full = formatDuration(ms);
@@ -96,34 +90,17 @@ export function shortDuration(ms: number): string {
   return m?.[1] ?? full;
 }
 
-function levelOf(percent: number): number {
-  return VIAL.innerBottom - (Math.max(0, Math.min(100, percent)) / 100) * VIAL.innerHeight;
-}
-
-function seedsFor(id: number, count: number, levelY: number, expired: boolean): VialSeed[] {
+function seedsFor(id: number, count: number): VialSeed[] {
   const rnd = random(id * 7919);
-  const n = Math.min(count, MAX_SEEDS);
   const out: VialSeed[] = [];
-  const mid = (VIAL.innerLeft + VIAL.innerRight) / 2;
-  for (let i = 0; i < n; i++) {
-    if (expired) {
-      // Изсъхнали на дъното, около средата — дъното е заоблено.
-      out.push({
-        cx: mid - 8 + rnd() * 16,
-        cy: VIAL.innerBottom - 9 + rnd() * 5,
-        angle: Math.round(-60 + rnd() * 120),
-      });
-      continue;
-    }
-    const top = Math.min(levelY + 7, VIAL.innerBottom - 10);
-    const bottom = VIAL.innerBottom - 10;
-    const cy = top >= bottom ? (levelY + VIAL.innerBottom) / 2 : top + rnd() * (bottom - top);
-    // В долната заоблена част стъклото се стеснява — семето се държи по-близо до средата.
-    const narrow = cy > VIAL.innerBottom - 18 ? 6 : 13;
+  for (let i = 0; i < Math.min(count, MAX_SEEDS); i++) {
     out.push({
-      cx: mid - narrow + rnd() * narrow * 2,
-      cy,
-      angle: Math.round(-60 + rnd() * 120),
+      u: round3(rnd()),
+      angle: round3(rnd() * Math.PI * 2),
+      radial: round3(Math.sqrt(rnd())), // равномерно по кръга, не струпани в центъра
+      rx: round3(rnd() * Math.PI),
+      ry: round3(rnd() * Math.PI),
+      rz: round3(rnd() * Math.PI),
     });
   }
   return out;
@@ -133,7 +110,7 @@ export function buildShelves(input: ShelvesInput): { shelves: Shelf[]; empty: st
   const thresholds = [...new Set(input.thresholds)]
     .filter((t) => t > 0 && t < 100)
     .sort((a, b) => b - a);
-  const ticks = thresholds.map((t) => ({ y: levelOf(t), label: `${formatNumber(t)}%` }));
+  const ticks = thresholds.map((t) => t / 100);
   const dateTime = new Intl.DateTimeFormat('bg-BG', {
     timeZone: input.timezone,
     day: '2-digit',
@@ -157,7 +134,6 @@ export function buildShelves(input: ShelvesInput): { shelves: Shelf[]; empty: st
       const p = percentAt(b, b.rate, input.now);
       const left = msLeft(b, b.rate, input.now);
       const expired = left <= 0;
-      const levelY = expired ? VIAL.innerBottom : levelOf(p);
       const crossed = thresholds.filter((t) => p <= t);
       const status =
         !expired && crossed.length > 0 ? `под ${formatNumber(Math.min(...crossed))}%` : null;
@@ -168,9 +144,9 @@ export function buildShelves(input: ShelvesInput): { shelves: Shelf[]; empty: st
         percentText: formatPercent(p),
         leftText: expired ? 'изтекла' : shortDuration(left),
         expiresText,
-        levelY,
+        level: expired ? 0 : round3(Math.max(0, Math.min(100, p)) / 100),
         ticks,
-        seeds: seedsFor(b.id, b.count, levelY, expired),
+        seeds: seedsFor(b.id, b.count),
         status,
         expired,
         title:
@@ -183,13 +159,11 @@ export function buildShelves(input: ShelvesInput): { shelves: Shelf[]; empty: st
       ? Math.min(...live.map((b) => percentAt(b, b.rate, input.now)))
       : null;
     const soonest = live.length ? Math.min(...live.map((b) => msLeft(b, b.rate, input.now))) : null;
-    const color = seedColor(type.key);
     shelves.push({
       key: type.key,
       label: type.label,
-      color,
-      dark: shade(color, -0.55),
-      light: shade(color, 0.45),
+      color: seedColor(type.key),
+      swatch: swatchKey(type.key),
       seeds: live.reduce((s, b) => s + b.count, 0),
       batches: live.length,
       expired: ofType.length - live.length,
@@ -199,4 +173,18 @@ export function buildShelves(input: ShelvesInput): { shelves: Shelf[]; empty: st
     });
   }
   return { shelves, empty };
+}
+
+export function sceneOf(shelves: readonly Shelf[]): SceneShelf[] {
+  return shelves.map((s) => ({
+    key: s.key,
+    color: s.color,
+    vials: s.vials.map((v) => ({
+      id: v.id,
+      level: v.level,
+      expired: v.expired,
+      ticks: v.ticks,
+      seeds: v.seeds,
+    })),
+  }));
 }
