@@ -15925,7 +15925,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 172
+        "lessons": 175
       },
       "evolution": [
         {
@@ -15963,9 +15963,20 @@
           "date": "2026-11-04",
           "event": "v26.9 — учене",
           "detail": "Научи: Промо-лимит (maxRedemptions) в linketto е TOCTOU — isCouponUsable е при старт на checko… (+40 още)"
+        },
+        {
+          "version": "27.2.0",
+          "date": "2026-11-04",
+          "event": "v27.2 — учене",
+          "detail": "Научи: guard-exfil DATA_FILE_SEND блокира curl с --data поле на име password/token дори към lo… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-04",
+          "type": "learning",
+          "summary": "Научи: „guard-exfil DATA_FILE_SEND блокира curl с --data поле на име password/token дори към lo…\" (+2 още)"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
