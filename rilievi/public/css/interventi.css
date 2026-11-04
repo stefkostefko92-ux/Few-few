@@ -1,0 +1,147 @@
+/* Листът за интервенция („Servizio assistenza elevatori“): точките във формата с полетата на реда, двата
+   подписа с пръст и листът като на хартия — бял и в тъмната тема, като печата. */
+
+.intervento__num {
+  font-family: var(--font-cond);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.stato {
+  display: inline-block;
+  padding: 1px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.stato--chiuso {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+
+.voci__lead {
+  margin: 8px 0 0;
+  font-weight: 600;
+}
+
+.voci__list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.voce {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.voce:last-child {
+  border-bottom: 0;
+}
+
+.voce__tick {
+  flex: 1 1 280px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+}
+
+.voce__n {
+  display: inline-block;
+  min-width: 2ch;
+  font-variant-numeric: tabular-nums;
+}
+
+.voce__q {
+  width: 7.5rem;
+  max-width: 100%;
+}
+
+.voce__q--testo {
+  width: 18rem;
+}
+
+.voce__dopo {
+  flex: 1 1 200px;
+}
+
+.voce__scelta {
+  min-height: 40px;
+}
+
+/* Отпечатъкът на съдържанието при подписа: моноширинен, пренася се на групи по четири. */
+.intervento-impronta {
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+
+.impronta {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+
+.firme__grid {
+  display: grid;
+  gap: 20px 28px;
+  margin-top: 12px;
+}
+
+@media (min-width: 760px) {
+  .firme__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.firma__label {
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+
+.firma__pad {
+  position: relative;
+  /* Под полето остава място за залепналата лента „Salva“ — подписът не започва под нея. */
+  scroll-margin-bottom: 96px;
+}
+
+/* Полето е бяло и в тъмната тема: подписът е черно мастило, като на хартия. */
+.firma__canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 1;
+  background: #ffffff;
+  border: 1px solid var(--field-line);
+  border-radius: var(--radius);
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.firma__clear {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color-scheme: light;
+}
+
+.firma .field {
+  margin-top: 10px;
+}
+
+.intervento-email__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.intervento-email__row .input {
+  flex: 1 1 260px;
+}

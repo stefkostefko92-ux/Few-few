@@ -1,0 +1,346 @@
+{
+  "id": "rilievo-dati-argani",
+  "titolo": "Modulo rilievi dati argani",
+  "fonte": "MODULO_RILIEVI_DATI_RELAZIONE_ARGANI.doc (Word) caricato dal proprietario del portale il 13/10/2026 come modello per tutti i tipi di argano; convertito in PDF con LibreOffice 24.2 (Liberation Serif, metrica di Times New Roman); dai metadati sono tolti autore e titolo del documento Word",
+  "file": "rilievo-dati-argani.pdf",
+  "sha256": "a724e51afca123545b5ff2e2f55e5ef743ef0b913a5d2fe0678c4a0f0062fa05",
+  "tipo": "overlay",
+  "dimensione": 14,
+  "sopraLinea": 0,
+  "gruppi": [
+    {
+      "titolo": "Impianto",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "indirizzo",
+              "kind": "text",
+              "label": "Indirizzo",
+              "maxLength": 120,
+              "line": [140.5, 531.0, 91.1]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "matricola",
+              "kind": "text",
+              "label": "Matr.",
+              "maxLength": 40,
+              "line": [112.2, 531.0, 114.1]
+            },
+            {
+              "key": "nImpianto",
+              "kind": "text",
+              "label": "N° imp.",
+              "maxLength": 40,
+              "line": [126.8, 531.0, 137.1]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "marca",
+              "kind": "text",
+              "label": "Marca",
+              "maxLength": 80,
+              "line": [119.4, 531.0, 160.1]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Cabina e corsa",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "pesoCabina",
+              "kind": "text",
+              "label": "Peso cabina (KG)",
+              "maxLength": 12,
+              "line": [163.2, 222.4, 232.1]
+            },
+            {
+              "key": "pesoContrappeso",
+              "kind": "text",
+              "label": "Peso c/p (KG)",
+              "maxLength": 12,
+              "line": [135.5, 223.5, 255.1]
+            },
+            {
+              "key": "portata",
+              "kind": "text",
+              "label": "Portata (KG)",
+              "maxLength": 12,
+              "line": [124.9, 222.9, 278.1]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "velocita",
+              "kind": "text",
+              "label": "Velocità (m/s)",
+              "maxLength": 12,
+              "line": [136.0, 224.0, 301.1]
+            },
+            {
+              "key": "taglia11",
+              "kind": "check",
+              "label": "Taglia 1:1",
+              "box": [158.9, 310.3, 171.1, 327.5]
+            },
+            {
+              "key": "taglia12",
+              "kind": "check",
+              "label": "Taglia 1:2",
+              "box": [232.8, 310.3, 244.9, 327.5]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "persone",
+              "kind": "text",
+              "label": "Persone n°",
+              "maxLength": 12,
+              "line": [154.6, 531.0, 347.1]
+            },
+            {
+              "key": "corsa",
+              "kind": "text",
+              "label": "Corsa Mt",
+              "maxLength": 12,
+              "line": [143.3, 231.3, 370.1]
+            },
+            {
+              "key": "piani",
+              "kind": "text",
+              "label": "Piani n°",
+              "maxLength": 12,
+              "line": [312.9, 531.0, 370.1]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "macchina",
+              "kind": "text",
+              "label": "Macchina basso/alto",
+              "maxLength": 40,
+              "line": [232.0, 531.0, 393.1],
+              "prefill": "ubicazioneMacchina"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Trazione e funi",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "diametroPuleggia",
+              "kind": "text",
+              "label": "D puleggia di trazione",
+              "maxLength": 20,
+              "line": [246.4, 349.4, 416.1]
+            },
+            {
+              "key": "mano",
+              "kind": "text",
+              "label": "Mano",
+              "maxLength": 20,
+              "line": [413.6, 531.0, 416.1]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "gole",
+              "kind": "text",
+              "label": "N° gole",
+              "maxLength": 12,
+              "line": [130.2, 531.0, 439.1]
+            },
+            {
+              "key": "cuneo",
+              "kind": "text",
+              "label": "Cuneo - gradi",
+              "maxLength": 20,
+              "line": [178.2, 531.0, 462.1]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "avvolgimento",
+              "kind": "text",
+              "label": "Avvolgimento",
+              "maxLength": 40,
+              "line": [183.8, 531.0, 485.1]
+            },
+            {
+              "key": "pulegginaRinvio",
+              "kind": "text",
+              "label": "Puleggia di rinvio",
+              "maxLength": 40,
+              "line": [211.5, 531.0, 508.1]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "catenaSi",
+              "kind": "check",
+              "label": "Catena compensazione: sì",
+              "box": [281.5, 517.3, 293.7, 534.5]
+            },
+            {
+              "key": "catenaNo",
+              "kind": "check",
+              "label": "Catena compensazione: no",
+              "box": [338.2, 517.3, 350.3, 534.5]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "funiN",
+              "kind": "text",
+              "label": "N° funi",
+              "maxLength": 12,
+              "line": [128.0, 531.0, 554.1]
+            },
+            {
+              "key": "funiDiametro",
+              "kind": "text",
+              "label": "Diametro funi",
+              "maxLength": 12,
+              "line": [181.0, 279.0, 577.1]
+            },
+            {
+              "key": "trefoli",
+              "kind": "text",
+              "label": "Trefoli",
+              "maxLength": 12,
+              "line": [352.0, 531.0, 577.1]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "rapportoRiduzione",
+              "kind": "text",
+              "label": "Rap/rid argano",
+              "maxLength": 30,
+              "line": [187.6, 531.0, 600.1]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Motore",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "motoreAc1",
+              "kind": "check",
+              "label": "AC1",
+              "box": [121.3, 608.3, 130.8, 622.0]
+            },
+            {
+              "key": "motoreAc2",
+              "kind": "check",
+              "label": "AC2",
+              "box": [183.5, 608.3, 193.0, 622.0]
+            },
+            {
+              "key": "motoreInverter",
+              "kind": "check",
+              "label": "Inverter",
+              "box": [249.7, 608.3, 259.2, 622.0]
+            },
+            {
+              "key": "potenzaInverter",
+              "kind": "text",
+              "label": "Potenza inverter (Kw)",
+              "maxLength": 12,
+              "line": [449.5, 489.5, 619.3]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "potenzaKw",
+              "kind": "text",
+              "label": "Potenza motore (Kw)",
+              "maxLength": 12,
+              "line": [193.2, 251.2, 641.5]
+            },
+            {
+              "key": "potenzaCv",
+              "kind": "text",
+              "label": "Potenza motore (Cv)",
+              "maxLength": 12,
+              "line": [292.1, 380.1, 641.5]
+            },
+            {
+              "key": "ampere",
+              "kind": "text",
+              "label": "Corrente (A)",
+              "maxLength": 12,
+              "line": [415.4, 513.4, 641.5]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "giri",
+              "kind": "text",
+              "label": "Giri/min",
+              "maxLength": 12,
+              "line": [132.7, 531.0, 664.5]
+            },
+            {
+              "key": "poli",
+              "kind": "text",
+              "label": "Poli",
+              "maxLength": 12,
+              "line": [99.4, 531.0, 687.5]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tensioneFreno",
+              "kind": "text",
+              "label": "Tensione freno (V)",
+              "maxLength": 12,
+              "line": [188.8, 247.8, 710.5]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

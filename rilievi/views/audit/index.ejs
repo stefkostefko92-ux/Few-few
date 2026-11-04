@@ -1,0 +1,31 @@
+<%- include('../partials/top', { titleKey: 'audit.title' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('audit.title') %></h1>
+    <p class="page-head__sub"><%= t('audit.subtitle') %></p>
+  </div>
+</div>
+<% if (showAzienda) { %><%- include('../partials/azienda-filter', { action: '/registro' }) %><% } %>
+<% if (entries.length === 0) { %><div class="empty"><p><%= t('audit.empty') %></p></div><% } else { %>
+<table class="table table--stack">
+  <thead><tr>
+    <th scope="col"><%= t('audit.when') %></th>
+    <th scope="col"><%= t('audit.who') %></th>
+    <% if (showAzienda) { %><th scope="col"><%= t('audit.azienda') %></th><% } %>
+    <th scope="col"><%= t('audit.what') %></th>
+    <th scope="col"><%= t('audit.target') %></th>
+  </tr></thead>
+  <tbody>
+    <% for (const entry of entries) { %><tr>
+      <td data-label="<%= t('audit.when') %>"><%= fmt.dateTime(entry.at) %></td>
+      <td data-label="<%= t('audit.who') %>"><%= entry.actor ? entry.actor.name : t('audit.system') %></td>
+      <% if (showAzienda) { %><td data-label="<%= t('audit.azienda') %>"><%= entry.azienda ? entry.azienda.name : t('audit.platform') %></td><% } %>
+      <td data-label="<%= t('audit.what') %>"><%= t('audit.action.' + entry.action) %><% if (entry.meta && typeof entry.meta === 'object' && entry.meta.to) { %>: <%= ruolo(entry.meta.from, entry.aziendaId) %> → <%= ruolo(entry.meta.to, entry.aziendaId) %><% } else if (entry.meta && typeof entry.meta === 'object' && entry.meta.role) { %> (<%= ruolo(entry.meta.role, entry.aziendaId) %>)<% } %></td>
+      <td data-label="<%= t('audit.target') %>"><% if (entry.targetType === 'scheda' && entry.targetId && entry.action !== 'SCHEDA_PURGE') { %><a href="/schede/<%= entry.targetId %>"><%= t('audit.openScheda') %></a><% } else if (entry.targetType === 'intervento' && entry.targetId) { %><a href="/interventi/<%= entry.targetId %>"><%= t('audit.openIntervento') %></a><% } else if (entry.targetType === 'cartello' && entry.targetId && entry.action !== 'CARTELLO_DELETE') { %><a href="/cartelli/<%= entry.targetId %>"><%= t('audit.openCartello') %></a><% } else if (entry.targetType === 'calcolo' && entry.targetId && entry.action !== 'ARGANO_CALCOLO_DELETE') { %><a href="/calcolo-argano/<%= entry.targetId %>"><%= t('audit.openCalcolo') %></a><% } else if (entry.targetType === 'user' && entry.targetId) { %><a href="/utenti/<%= entry.targetId %>"><%= t('audit.openUser') %></a><% } else if (entry.targetType === 'azienda' && entry.targetId && showAzienda) { %><a href="/aziende/<%= entry.targetId %>"><%= t('audit.openAzienda') %></a><% } else if (entry.targetType === 'request' && entry.targetId && can('requests:manage') && entry.action !== 'ACCESS_REQUEST_DELETE') { %><a href="/richieste/<%= entry.targetId %>"><%= t('audit.openRequest') %></a><% } else { %>—<% } %></td>
+    </tr>
+    <% } %>
+  </tbody>
+</table>
+<%- include('../partials/pager', { base: '/registro' + (aziendaFilter ? '?azienda=' + aziendaFilter : ''), page, pages }) %>
+<% } %>
+<%- include('../partials/bottom') %>

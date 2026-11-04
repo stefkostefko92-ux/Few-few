@@ -1,0 +1,325 @@
+{
+  "company": {
+    "street": "ul. Samuil 3",
+    "city": "Bobov Dol",
+    "region": "provincia di Kyustendil",
+    "country": "Bulgaria",
+    "areaServed": "Unione europea",
+    "legalName": "Carbon Stealth VCC",
+    "legalForm": "società a capitale variabile (VCC) di diritto bulgaro",
+    "eikLabel": "codice EIK",
+    "vatLabel": "P. IVA",
+    "phoneLabel": "tel."
+  },
+  "site": {
+    "name": "Rilievi Impianti",
+    "by": "di Carbon Stealth VCC",
+    "home": "Pagina iniziale",
+    "nav": {
+      "label": "Sezioni della pagina",
+      "scheda": "La scheda",
+      "come": "Come funziona",
+      "assistenza": "Assistenza",
+      "faq": "Domande",
+      "login": "Accedi",
+      "request": "Richiedi l'accesso",
+      "app": "Vai alle schede"
+    },
+    "meta": {
+      "title": "Rilievi Impianti: la scheda di rilievo degli ascensori",
+      "description": "Scheda di rilievo dell'ascensore dal telefono, foglio di intervento firmato e cartelli di fermo impianto con il tuo logo. Accesso su richiesta.",
+      "keywords": "Carbon Stealth, scheda rilievo ascensore, rilievo impianti ascensori, sopralluogo ascensore, manutenzione ascensori, software per ascensoristi, matricola impianto, foglio di intervento ascensore, cartello fermo impianto",
+      "imageAlt": "Rendering 3D di un vano ascensore visto dalla fossa verso l'alto, con il nome Rilievi Impianti e Carbon Stealth VCC",
+      "browser": "Un browser recente: Chrome, Edge, Firefox o Safari"
+    },
+    "hero": {
+      "title": "Il rilievo dell'ascensore, campo per campo.",
+      "lead": "Dati di targa, funi, porte, quadro, argano o centralina, le bottoniere piano per piano: il tecnico compila la scheda dal telefono, l'ufficio la ritrova per matricola o indirizzo e la stampa con il logo dell'azienda.",
+      "request": "Richiedi l'accesso",
+      "login": "Accedi",
+      "note": "Non c'è registrazione libera: ogni azienda entra su richiesta e poi invita i propri tecnici."
+    },
+    "photo": {
+      "vano": "Rendering 3D di un vano ascensore visto dalla fossa verso l'alto: pareti in calcestruzzo, guide con le staffe, porte di piano illuminate, lampade del vano e la cabina in alto.",
+      "bottoniera": "Rendering 3D di una bottoniera di cabina in acciaio satinato: i pulsanti dei piani da 0 a 7, l'apertura e la chiusura delle porte, l'allarme e il display che indica il piano 3.",
+      "tablet": "Rendering 3D di un tablet appoggiato su un quadro elettrico, con aperta la pagina «Nuova scheda» del portale, e un foglio accanto."
+    },
+    "shaft": {
+      "title": "Sezione di un vano ascensore",
+      "desc": "Locale macchina con quadro, argano e limitatore; funi, cabina e contrappeso; porte e bottoniere ai piani da 0 a 4; cavo flessibile e tenditore in fossa. I numeri rimandano alle sezioni della scheda."
+    },
+    "legend": {
+      "title": "La scheda, sezione per sezione",
+      "lead": "{fields} campi in {sections} sezioni, nell'ordine della scheda di carta. Ogni numero è anche nel disegno, nel punto dell'impianto che la sezione descrive.",
+      "extra": "Le domande che non riguardano l'impianto non si vedono: serrature e pattino retrattile compaiono con porte manuali o semiautomatiche, l'operatore della cabina con porte semiautomatiche o automatiche, le sospensioni solo con porte automatiche, i tiranti in fossa solo negli impianti idraulici, fossa e testata ridotte solo negli impianti non idraulici."
+    },
+    "features": {
+      "title": "Dal sopralluogo all'ufficio",
+      "search": {
+        "title": "Ritrovi ogni impianto in un attimo",
+        "text": "Cerca per numero impianto, matricola, indirizzo, marca, buono di lavoro o note. I risultati arrivano mentre scrivi e il numero esatto viene per primo."
+      },
+      "phone": {
+        "title": "Compili sul posto, dal telefono",
+        "text": "Campi grandi anche per le dita con i guanti, l'unità di misura dentro il campo e la data del giorno già scritta. Funziona nel browser, senza app da installare."
+      },
+      "print": {
+        "title": "Stampi o mandi il PDF",
+        "text": "La scheda esce in A4 o in PDF, con il logo della tua azienda in alto e il nome di chi l'ha compilata."
+      },
+      "orders": {
+        "title": "Moduli d'ordine dal rilievo",
+        "text": "Con un quadro Pelazza, Movilift, Mastech (NG120 o QI Touch) o Elettroquadri (geared, gearless o oleodinamico, secondo il tipo di impianto) la scheda compila il modulo d'ordine originale; con l'argano da sostituire, la scheda dati dell'argano; con le sospensioni o l'operatore da cambiare, il modulo 2SG per operatori e sospensioni; con la fossa o la testata ridotta, i dati per l'ordine di AMI 100 (Mono UCM o Mono RTBS). Ogni modulo esce come PDF a parte. Pelazza, Movilift, Mastech, Elettroquadri, 2SG e AMI 100 sono marchi dei rispettivi titolari."
+      },
+      "misure": {
+        "title": "Misuri le bottoniere piano per piano",
+        "text": "Lunghezza, larghezza, interassi dei fori e display delle bottoniere vecchie: una riga per ogni fermata dell'impianto."
+      },
+      "safe": {
+        "title": "Nessun lavoro si perde",
+        "text": "Se due persone modificano la stessa scheda, la seconda viene avvisata invece di sovrascrivere. Le schede eliminate restano nel cestino e ogni operazione finisce nel registro."
+      }
+    },
+    "servizi": {
+      "title": "Dopo il rilievo: assistenza e cantiere",
+      "lead": "Lo stesso portale accompagna l'impianto anche dopo il sopralluogo, con i dati che la scheda già conosce.",
+      "intervento": {
+        "title": "Il foglio di intervento, firmato sul telefono",
+        "text": "Come il blocchetto di pronto intervento: numerato per azienda, con le voci da spuntare, le prove e gli orari. Tecnico e cliente firmano con il dito; dopo la conferma il foglio non si modifica più ed esce in PDF A4, anche via email."
+      },
+      "cartelli": {
+        "title": "Cartelli di fermo impianto con il tuo logo",
+        "text": "Cinque modelli pronti, con il logo e i dati della tua azienda in alto. Dalla scheda dell'impianto si compilano da soli indirizzo, città e il testo per gli utenti, preso dai lavori previsti; per un impianto senza scheda li scrivi a mano."
+      },
+      "allegati": {
+        "title": "Foto, video e schizzi nella scheda",
+        "text": "Foto e video in ogni sezione, compressi in automatico; scegli tu quali foto finiscono in stampa. Su richiesta, gli schizzi a mano con quote e simboli del vano."
+      },
+      "permessi": {
+        "title": "Ruoli e permessi su misura",
+        "text": "L'amministratore dell'azienda rinomina i ruoli e sceglie cosa può fare ognuno. Nel registro ciascuno vede le proprie operazioni e quelle dei ruoli sotto il suo."
+      },
+      "colori": {
+        "title": "I tuoi colori",
+        "text": "Ognuno sceglie per sé i colori di pagina, menu, testo e pulsanti; il portale controlla che restino leggibili."
+      }
+    },
+    "roles": {
+      "title": "Ogni azienda nel suo spazio",
+      "lead": "Schede, persone e logo di un'azienda li vede solo quell'azienda. Dentro, sei ruoli decidono chi consulta, chi compila, chi elimina e chi invita; l'amministratore dell'azienda può rinominarli e cambiarne i permessi.",
+      "caption": "Che cosa può fare ogni ruolo",
+      "role": "Ruolo",
+      "yes": "Sì",
+      "no": "No",
+      "cap": {
+        "schede:read": "Consulta",
+        "schede:write": "Compila",
+        "schede:delete": "Elimina",
+        "schede:trash": "Cestino",
+        "users:manage": "Invita persone",
+        "audit:view": "Registro"
+      },
+      "note": "La tabella mostra i permessi iniziali. Ognuno invita solo ruoli sotto il proprio. L'amministrazione del portale (Carbon Stealth) crea le aziende e può accedere a tutte."
+    },
+    "steps": {
+      "title": "Come si ottiene l'accesso",
+      "s1": {
+        "title": "Invii la richiesta",
+        "text": "Con il modulo qui sotto: bastano nome, azienda ed email."
+      },
+      "s2": {
+        "title": "La verifichiamo",
+        "text": "Leggiamo la richiesta e creiamo lo spazio della tua azienda."
+      },
+      "s3": {
+        "title": "L'amministratore riceve l'invito",
+        "text": "Un link personale, valido {days} giorni, per scegliere la password."
+      },
+      "s4": {
+        "title": "L'amministratore invita i colleghi",
+        "text": "Tecnici e ufficio, ognuno con il suo ruolo."
+      }
+    },
+    "faq": {
+      "title": "Domande frequenti",
+      "selfSignup": {
+        "q": "Posso registrarmi da solo?",
+        "a": "No. L'accesso si ottiene solo su richiesta: compili il modulo, verifichiamo i dati e mandiamo l'invito all'amministratore della tua azienda."
+      },
+      "visibility": {
+        "q": "Chi vede le schede della mia azienda?",
+        "a": "Solo le persone della tua azienda, secondo il loro ruolo. Le altre aziende non vedono nulla; l'amministrazione del portale (Carbon Stealth) può accedere a tutte le aziende."
+      },
+      "app": {
+        "q": "Serve un'app da installare?",
+        "a": "No. Il portale si apre nel browser, su telefono, tablet e computer."
+      },
+      "print": {
+        "q": "Si può stampare la scheda?",
+        "a": "Sì: in A4 dal browser o come PDF, con il logo dell'azienda in alto e il nome di chi ha compilato la scheda."
+      },
+      "firma": {
+        "q": "Il cliente può firmare il foglio di intervento sul telefono?",
+        "a": "Sì: tecnico e cliente firmano con il dito sullo schermo. Dopo la conferma il foglio non si modifica più ed esce come PDF A4, anche via email."
+      },
+      "cartelli": {
+        "q": "Si possono preparare i cartelli di fermo impianto?",
+        "a": "Sì: scegli uno dei cinque modelli e il cartello esce in PDF con il logo e i dati della tua azienda in alto. Se l'impianto ha una scheda, indirizzo, città e testo per gli utenti si compilano da soli; altrimenti li scrivi a mano."
+      },
+      "data": {
+        "q": "Dove sono conservati i dati?",
+        "a": "Su un server nell'Unione europea, in un database con un backup ogni giorno."
+      }
+    },
+    "request": {
+      "title": "Richiedi l'accesso",
+      "lead": "Raccontaci chi siete: ti rispondiamo all'email che indichi.",
+      "next": {
+        "title": "Cosa succede dopo",
+        "s1": "Leggiamo la richiesta e ti rispondiamo per email.",
+        "s2": "Se è tutto a posto, creiamo lo spazio della tua azienda e l'amministratore riceve l'invito.",
+        "s3": "I dati servono solo per rispondere alla richiesta e li cancelliamo dopo {days} giorni."
+      },
+      "contact": "Preferisci scrivere?",
+      "privacyLink": "Informativa sulla privacy",
+      "optional": "facoltativo",
+      "name": "Nome e cognome",
+      "company": "Azienda",
+      "email": "Email di lavoro",
+      "phone": "Telefono",
+      "city": "Città",
+      "teamSize": "Quante persone useranno il portale?",
+      "teamSizeNone": "—",
+      "team": {
+        "S1_5": "Da 1 a 5",
+        "S6_20": "Da 6 a 20",
+        "S21_50": "Da 21 a 50",
+        "S50_PLUS": "Più di 50"
+      },
+      "message": "Messaggio",
+      "messageHint": "Per esempio quanti impianti seguite o che cosa vi serve.",
+      "privacy": "Ho letto l'informativa sulla privacy",
+      "honeypot": "Lascia vuoto questo campo",
+      "submit": "Invia la richiesta",
+      "errorSummary": {
+        "one": "Controlla 1 campo",
+        "other": "Controlla {n} campi"
+      },
+      "error": {
+        "required": "Compila questo campo.",
+        "tooShort": "Scrivi almeno 2 caratteri.",
+        "tooLong": "Testo troppo lungo: al massimo {max} caratteri.",
+        "email": "Scrivi un indirizzo email valido, per esempio nome@azienda.it.",
+        "phone": "Scrivi il numero con le cifre, ed eventualmente spazi e i simboli + ( ) - . /",
+        "invalid": "Scegli una delle opzioni.",
+        "privacy": "Spunta la casella per inviare la richiesta.",
+        "busy": "Oggi abbiamo ricevuto troppe richieste. Riprova domani oppure scrivici a {email}."
+      },
+      "phoneCall": "Preferisci telefonare?"
+    },
+    "sent": {
+      "title": "Richiesta inviata",
+      "text": "Grazie. Leggiamo la richiesta e ti rispondiamo all'indirizzo email che hai indicato. Se è tutto a posto, l'amministratore della tua azienda riceverà un invito per email.",
+      "back": "Torna alla pagina iniziale"
+    },
+    "footer": {
+      "pages": "Pagine",
+      "contact": "Contatti",
+      "legal": "Note legali",
+      "trademarks": "I marchi citati appartengono ai rispettivi titolari."
+    }
+  },
+  "privacy": {
+    "title": "Informativa sulla privacy",
+    "metaDescription": "Quali dati personali tratta Rilievi Impianti di Carbon Stealth VCC, perché, per quanto tempo e quali diritti avete secondo il GDPR.",
+    "updated": "Ultimo aggiornamento: {date}",
+    "intro": "Questa informativa spiega quali dati personali tratta il portale Rilievi Impianti, perché, per quanto tempo li conserviamo e quali diritti avete secondo il Regolamento generale sulla protezione dei dati (GDPR).",
+    "who": {
+      "title": "Chi tratta i dati",
+      "contact": "Per domande sui dati personali scrivete a"
+    },
+    "roles": {
+      "title": "Titolare e responsabile",
+      "text": "Per il sito pubblico e per le richieste di accesso il titolare del trattamento è Carbon Stealth VCC. Per gli account e le schede di un'azienda che usa il portale, titolare è l'azienda: Carbon Stealth li tratta per suo conto, come responsabile del trattamento (art. 28 GDPR), solo per fornire il portale. Per questi dati rivolgetevi prima all'azienda per cui lavorate."
+    },
+    "table": {
+      "title": "Quali dati, perché e per quanto tempo",
+      "data": "Dati",
+      "why": "Perché",
+      "basis": "Base giuridica",
+      "kept": "Conservazione",
+      "request": {
+        "data": "Nome, azienda, email, telefono, città, numero di persone e messaggio della richiesta di accesso",
+        "why": "Valutare la richiesta, rispondervi e, se accettata, creare lo spazio della vostra azienda e invitare il suo amministratore",
+        "basis": "Misure precontrattuali su vostra richiesta, art. 6, par. 1, lett. b) GDPR",
+        "kept": "{days} giorni dall'ultima modifica della richiesta, poi cancellati automaticamente; prima, se ce lo chiedete"
+      },
+      "account": {
+        "data": "Email, nome, aziende e ruolo in ognuna, tema, hash della password (Argon2id), data dell'ultimo accesso, numero di password e codici errati, blocchi consecutivi e sessioni attive; se la attivi, la verifica in due passaggi: la chiave dell'app (cifrata, AES-256-GCM) e i codici di recupero (solo come impronta HMAC)",
+        "why": "L'account e l'accesso al portale per conto dell'azienda",
+        "basis": "Per conto dell'azienda titolare (art. 28 GDPR)",
+        "kept": "Finché l'account esiste; le sessioni fino all'uscita o alla scadenza"
+      },
+      "media": {
+        "data": "Foto e video caricati nelle schede: compressi sul server e senza i metadati del file (posizione GPS, modello del telefono, data dello scatto); il file originale non viene conservato",
+        "why": "Documentare il sopralluogo dell'impianto nella scheda dell'azienda",
+        "basis": "Per conto dell'azienda titolare (art. 28 GDPR)",
+        "kept": "Finché esistono il file e la scheda; eliminandoli (la scheda: dal cestino) vengono cancellati anche dal server"
+      },
+      "audit": {
+        "data": "Registro delle attività: chi ha fatto cosa e quando (senza il contenuto delle schede e senza indirizzi IP)",
+        "why": "Responsabilità delle operazioni e tutela in caso di contestazione",
+        "basis": "Per conto dell'azienda titolare; per le richieste di accesso, legittimo interesse, art. 6, par. 1, lett. f) GDPR",
+        "kept": "{auditDays} giorni, poi cancellato automaticamente"
+      },
+      "ip": {
+        "data": "Indirizzo IP",
+        "why": "Limitare i tentativi ripetuti di accesso e l'invio massiccio di richieste",
+        "basis": "Legittimo interesse, art. 6, par. 1, lett. f) GDPR",
+        "kept": "Nella memoria del server al massimo un'ora; per un accesso fallito, solo un'impronta cifrata (HMAC) della rete da cui arriva, mai l'indirizzo, per 24 ore. Non viene scritto nei log"
+      }
+    },
+    "required": "Nome, azienda ed email servono per rispondere alla richiesta: senza di essi non possiamo valutarla. Gli altri campi sono facoltativi.",
+    "cookies": {
+      "title": "Cookie",
+      "text": "Usiamo solo cookie senza i quali il portale non funziona o non è protetto. Non abbiamo cookie pubblicitari, analitici o di terze parti, per questo non mostriamo un banner per il consenso.",
+      "name": "Nome",
+      "purpose": "A cosa serve",
+      "duration": "Durata",
+      "session": "La sessione dopo l'accesso",
+      "sessionKept": "Fino all'uscita; al massimo {days} giorni ({adminDays} per gli amministratori)",
+      "pre": "Proteggere i moduli prima dell'accesso (accesso, richiesta di accesso, password) da richieste contraffatte",
+      "preKept": "{hours} ore",
+      "dueFattori": "La verifica in due passaggi in corso, tra la password e il codice dell'app (solo se l'hai attivata)",
+      "dueFattoriKept": "{minutes} minuti",
+      "theme": "Il tema scelto (chiaro, scuro o automatico)",
+      "prefKept": "1 anno",
+      "flash": "Un messaggio una tantum dopo un'azione, per esempio «Salvato»",
+      "flashKept": "1 minuto"
+    },
+    "recipients": {
+      "title": "Chi altro vede i dati",
+      "hosting": "Hetzner Online GmbH, Germania — il server su cui funziona il portale, in un data center nell'Unione europea.",
+      "mail": "Sendinblue SAS (Brevo), Francia — l'invio delle email, quando è attivo: inviti, link per una nuova password e avvisi di nuove richieste agli amministratori del portale.",
+      "text": "Non vendiamo dati e non li cediamo per pubblicità. Non trasferiamo dati personali fuori dall'Unione europea; se un sub-responsabile di Brevo tratta dati fuori dall'UE, il trasferimento è tutelato da clausole contrattuali tipo (art. 46 GDPR)."
+    },
+    "security": {
+      "title": "Sicurezza",
+      "text": "La connessione è solo HTTPS. Le password sono conservate come hash Argon2id, le sessioni stanno sul server e terminano subito all'uscita, al cambio della password o alla disattivazione dell'account. Il server web non tiene un registro delle richieste: registra un indirizzo IP solo nel suo log degli errori gravi, quando una richiesta non può essere servita. I log dell'applicazione non contengono indirizzi IP né password."
+    },
+    "decisions": {
+      "title": "Decisioni automatizzate",
+      "text": "Non prendiamo decisioni con effetti giuridici basate unicamente su un trattamento automatizzato. Dopo {attempts} password o codici errati l'accesso si blocca per {minutes} minuti, poi per periodi più lunghi se gli errori continuano (al massimo 24 ore): è una misura di sicurezza che si annulla da sola, e un link per una nuova password la toglie subito. Ogni richiesta di accesso la valuta una persona."
+    },
+    "rights": {
+      "title": "I vostri diritti",
+      "text": "Avete diritto di accesso, rettifica, cancellazione, limitazione del trattamento, portabilità e opposizione al trattamento basato sul legittimo interesse. Per esercitarli scrivete a",
+      "reply": "Rispondiamo entro un mese.",
+      "complaint": "Avete anche il diritto di proporre reclamo alla Commissione bulgara per la protezione dei dati personali (bul. «Prof. Tsvetan Lazarov» 2, Sofia 1592, www.cpdp.bg) o all'autorità di controllo del paese UE in cui vivete, in Italia il Garante per la protezione dei dati personali."
+    },
+    "changes": {
+      "title": "Modifiche",
+      "text": "Se modificheremo questa informativa, la nuova versione sarà pubblicata su questa pagina con la data dell'ultimo aggiornamento in alto."
+    }
+  }
+}

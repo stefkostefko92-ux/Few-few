@@ -1,0 +1,70 @@
+<%
+  const logoUrl = azienda.logoType ? '/aziende/' + azienda.id + '/logo?v=' + (azienda.logoUpdatedAt ? azienda.logoUpdatedAt.getTime() : 0) : null;
+%><%- include('../partials/top', { title: azienda.name, narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="/aziende"><%= t('aziende.back') %></a>
+    <h1><%= azienda.name %></h1>
+    <p class="page-head__sub"><% if (azienda.deactivatedAt) { %><span class="badge badge--off"><%= t('aziende.deactivated') %></span><% } else { %><span class="badge"><%= t('aziende.active') %></span><% } %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <% if (error) { %><div class="errors" role="alert" id="form-error" tabindex="-1"><h2><%= t(error) %></h2></div><% } %>
+  <div class="toolbar">
+    <% if (!azienda.deactivatedAt) { %><a class="btn btn--primary" href="/utenti/invita?azienda=<%= azienda.id %>"><%- include('../partials/icon', { name: 'plus' }) %><%= t('aziende.inviteHere') %></a><% } %>
+    <a class="btn" href="/utenti?azienda=<%= azienda.id %>"><%= t('aziende.usersHere') %></a>
+    <a class="btn" href="/schede?azienda=<%= azienda.id %>"><%= t('aziende.schedeHere') %></a>
+  </div>
+  <section aria-labelledby="h-name">
+    <h2 class="section__title" id="h-name"><%= t('aziende.name') %></h2>
+    <form class="row-form" method="post" action="/aziende/<%= azienda.id %>">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label class="visually-hidden" for="name"><%= t('aziende.name') %></label>
+        <input class="input" id="name" name="name" type="text" required minlength="2" maxlength="120" autocomplete="organization" value="<%= azienda.name %>"<% if (error === 'aziende.error.name' || error === 'aziende.error.nameTaken') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+      </div>
+      <button class="btn" type="submit"><%= t('aziende.rename') %></button>
+    </form>
+  </section>
+  <section aria-labelledby="h-logo">
+    <h2 class="section__title" id="h-logo"><%= t('aziende.logo') %></h2>
+    <% if (logoUrl) { %>
+    <div class="logo-paper"><img src="<%= logoUrl %>" alt="<%= t('aziende.logoAlt', { name: azienda.name }) %>" width="<%= azienda.logoWidth %>" height="<%= azienda.logoHeight %>"></div>
+    <% } else { %>
+    <p class="muted"><%= t('aziende.logoNone') %></p>
+    <% } %>
+    <form class="form form--tight" method="post" action="/aziende/<%= azienda.id %>/logo" enctype="multipart/form-data" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label class="field__label" for="logo"><%= t(logoUrl ? 'aziende.logoReplace' : 'aziende.logoUpload') %></label>
+        <input class="file-input" id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp" required aria-describedby="logo-hint"<% if (error && error.startsWith('aziende.error.logo')) { %> aria-invalid="true"<% } %>>
+        <p class="field__hint" id="logo-hint"><%= t('aziende.logoHint', { kb: maxKb }) %></p>
+      </div>
+      <div class="toolbar"><button class="btn" type="submit"><%= t(logoUrl ? 'aziende.logoReplace' : 'aziende.logoUpload') %></button></div>
+    </form>
+    <% if (logoUrl) { %>
+    <form method="post" action="/aziende/<%= azienda.id %>/logo/rimuovi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><div class="toolbar"><button class="btn btn--ghost" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t('aziende.logoRemove') %></button></div></form>
+    <% } %>
+  </section>
+  <section aria-labelledby="h-funzioni">
+    <h2 class="section__title" id="h-funzioni"><%= t('aziende.funzioniTitle') %></h2>
+    <h3><%= t('aziende.schizzi') %></h3>
+    <p class="muted"><%= t('aziende.schizziText') %></p>
+    <p><%= t('aziende.schizziStato', { stato: t(azienda.schizzi ? 'aziende.schizziAttivi' : 'aziende.schizziSpenti') }) %><% if (azienda.schizzi) { %> <%= t('aziende.schizziSpegniText') %><% } %></p>
+    <form method="post" action="/aziende/<%= azienda.id %>/schizzi">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="attivi" value="<%= azienda.schizzi ? '0' : '1' %>">
+      <div class="toolbar"><button class="btn<%= azienda.schizzi ? '' : ' btn--primary' %>" type="submit"><%= t(azienda.schizzi ? 'aziende.schizziDisattiva' : 'aziende.schizziAttiva') %></button></div>
+    </form>
+  </section>
+  <section aria-labelledby="h-access">
+    <h2 class="section__title" id="h-access"><%= t('aziende.accessTitle') %></h2>
+    <p class="muted"><%= t(azienda.deactivatedAt ? 'aziende.reactivateText' : 'aziende.deactivateText') %></p>
+    <form method="post" action="/aziende/<%= azienda.id %>/stato">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="active" value="<%= azienda.deactivatedAt ? '1' : '0' %>">
+      <div class="toolbar"><button class="btn<%= azienda.deactivatedAt ? '' : ' btn--danger' %>" type="submit"><%= t(azienda.deactivatedAt ? 'aziende.reactivate' : 'aziende.deactivate') %></button></div>
+    </form>
+  </section>
+</div>
+<%- include('../partials/bottom') %>

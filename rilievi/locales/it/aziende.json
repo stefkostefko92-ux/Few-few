@@ -1,0 +1,125 @@
+{
+  "aziende": {
+    "title": "Aziende",
+    "subtitle": "Ogni azienda vede solo le sue schede e le sue persone. Il logo va in cima a ogni scheda stampata.",
+    "new": "Nuova azienda",
+    "empty": "Ancora nessuna azienda. Crea la prima, poi invita il suo amministratore.",
+    "name": "Nome dell'azienda",
+    "logo": "Logo",
+    "logoHint": "PNG, JPEG o WebP, al massimo {kb} KB. Sfondo trasparente o bianco: va in cima alla scheda stampata e al PDF.",
+    "logoNone": "Nessun logo: sulla scheda stampata compare il nome dell'azienda.",
+    "logoAlt": "Logo di {name}",
+    "logoUpload": "Carica logo",
+    "logoReplace": "Sostituisci logo",
+    "logoRemove": "Rimuovi logo",
+    "create": "Crea azienda",
+    "rename": "Salva nome",
+    "users": "Persone",
+    "schede": "Schede",
+    "status": "Stato",
+    "active": "Attiva",
+    "deactivated": "Disattivata",
+    "back": "Tutte le aziende",
+    "inviteHere": "Invita una persona",
+    "usersHere": "Persone dell'azienda",
+    "schedeHere": "Schede dell'azienda",
+    "accessTitle": "Accesso",
+    "deactivateText": "Le persone dell'azienda non potranno più accedere e le loro sessioni si chiudono subito. Le schede restano.",
+    "reactivateText": "Le persone dell'azienda potranno accedere di nuovo.",
+    "deactivate": "Disattiva azienda",
+    "reactivate": "Riattiva azienda",
+    "funzioniTitle": "Funzioni",
+    "schizzi": "Schizzi a mano libera",
+    "schizziText": "Alla fine della scheda, fogli da disegnare a mano — penna, linee, rettangoli e testo, su carta a quadretti. Gli schizzi entrano nella stampa e nel PDF.",
+    "schizziStato": "Ora: {stato}.",
+    "schizziAttivi": "attivi",
+    "schizziSpenti": "spenti",
+    "schizziSpegniText": "Se li spegni, il campo sparisce dalla scheda; gli schizzi già fatti restano e si stampano.",
+    "schizziAttiva": "Attiva gli schizzi",
+    "schizziDisattiva": "Disattiva gli schizzi",
+    "error": {
+      "name": "Inserisci il nome dell'azienda (da 2 a 120 caratteri).",
+      "nameTaken": "Esiste già un'azienda con questo nome.",
+      "logoType": "Il logo deve essere un'immagine PNG, JPEG o WebP.",
+      "logoTooLarge": "Il logo supera 1 MB: riducilo e riprova.",
+      "logoCorrupt": "Non riesco a leggere questa immagine. Salvala di nuovo come PNG o JPEG e riprova.",
+      "logoMissing": "Scegli un file per il logo."
+    }
+  },
+  "impostazioni": {
+    "title": "Impostazioni",
+    "choose": "Apri",
+    "dati": {
+      "title": "Dati societari",
+      "text": "Vanno in alto sul cartello di fermo impianto, accanto al logo. Compila solo quello che vuoi mostrare.",
+      "logoSi": "Il logo dell'azienda va accanto ai dati.",
+      "logoNo": "L'azienda non ha un logo: il cartello mostra solo i dati. Il logo lo carica il Master del portale.",
+      "save": "Salva dati societari",
+      "campo": {
+        "ragioneSociale": "Ragione sociale",
+        "indirizzo": "Indirizzo",
+        "cap": "CAP",
+        "citta": "Città",
+        "provincia": "Provincia (sigla)",
+        "telefono": "Telefono",
+        "email": "Email",
+        "partitaIva": "Partita IVA",
+        "sito": "Sito web"
+      },
+      "hint": {
+        "ragioneSociale": "Vuota: si usa il nome dell'azienda nel portale."
+      },
+      "error": {
+        "tooLong": "Massimo {maxLength} caratteri.",
+        "invalid": "Valore non valido.",
+        "phone": "Solo cifre, spazi e + ( ) . / -",
+        "email": "Indirizzo email non valido."
+      }
+    },
+    "cartello": {
+      "title": "Cartello di fermo impianto",
+      "text": "Scegli l'aspetto del cartello. In alto vanno automaticamente il logo e i dati societari; data, indirizzo, ubicazione e testo li scrive chi crea il cartello.",
+      "inUso": "In uso",
+      "anteprimaAlt": "Modello «{titolo}» con il logo e i dati societari dell'azienda in alto",
+      "mancaLogo": "L'azienda non ha ancora un logo: in alto nei cartelli ci sono solo i dati societari. Il logo lo carica l'amministrazione del portale.",
+      "mancaLogoMaster": "L'azienda non ha ancora un logo: in alto nei cartelli ci sono solo i dati societari. Caricalo nella pagina dell'azienda.",
+      "save": "Usa il modello scelto"
+    },
+    "ruoli": {
+      "title": "Ruoli e permessi",
+      "text": "Rinomina i ruoli dell'azienda e scegli cosa può fare ognuno. Valgono per tutti i suoi utenti dal clic successivo. Invitare e gestire gli utenti e queste impostazioni restano solo all'amministratore.",
+      "nome": "Nome nell'azienda",
+      "nomeHint": "Vuoto: «{nome}».",
+      "permessiDi": "Permessi di «{nome}»",
+      "admin": "Ha sempre tutti i permessi dell'azienda: non si può limitare.",
+      "implica": "Chi può compilare, eliminare o aprire il cestino può anche vedere: la spunta «vedere» si aggiunge da sola.",
+      "save": "Salva ruoli e permessi",
+      "errore": "Ruoli non salvati: correggi i campi segnati.",
+      "cap": {
+        "schede_read": "Vedere le schede",
+        "schede_write": "Compilare e modificare le schede",
+        "schede_delete": "Spostare le schede nel cestino",
+        "schede_trash": "Aprire il cestino: ripristinare ed eliminare per sempre",
+        "interventi_read": "Vedere interventi e cartelli",
+        "interventi_write": "Compilare interventi e cartelli",
+        "audit_view": "Vedere il registro: le proprie azioni e quelle dei ruoli sotto il proprio"
+      },
+      "error": {
+        "tooLong": "Massimo 40 caratteri.",
+        "duplicato": "Due ruoli non possono avere lo stesso nome.",
+        "invalid": "Valore non valido."
+      }
+    },
+    "error": "L'ordine inviato non è valido. Ecco quello salvato: riprova.",
+    "sezioni": {
+      "title": "Ordine delle sezioni della scheda",
+      "text": "Vale per tutte le schede dell'azienda: modulo, pagina della scheda, stampa e PDF.",
+      "fixed": "Sempre in cima",
+      "hint": "Sposta una sezione con le frecce, poi salva. Impianto resta in cima: identifica l'impianto.",
+      "up": "Sposta su «{name}»",
+      "down": "Sposta giù «{name}»",
+      "save": "Salva ordine",
+      "reset": "Ripristina l'ordine predefinito"
+    }
+  }
+}
