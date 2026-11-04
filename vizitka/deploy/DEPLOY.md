@@ -96,7 +96,7 @@ cat > /etc/vizitka/vizitka.env <<'EOF'
 NODE_ENV=production
 PORT=3105
 PUBLIC_BASE_URL=https://vizitka-bg.com
-ADMIN_EMAILS=stefan.kostadinov16@gmail.com
+ADMIN_EMAILS=admin@example.com
 MASTILKO_URL=https://mastilko-bg.com
 
 # Задължителна в продукция — подписва печатния handoff токен към Мастилко.

@@ -115,6 +115,9 @@ describe('the Elettroquadri orders and the sheet', () => {
       accessi2: true,
       motoreIn: '12',
       motoreKw: '5,5',
+      // Automatic doors on the sheet: automatic landing and car doors.
+      pianoAutomatiche: true,
+      cabinaAutomatiche: true,
     });
     assert.deepEqual(prefillCollegati('el', { ...values, tipoImpianto: ['GEARLESS'] }), {
       nFermate: '6',
@@ -126,6 +129,8 @@ describe('the Elettroquadri orders and the sheet', () => {
       mrlGearless: true,
       motoreAmp: '12',
       motoreKw: '5,5',
+      pianoAutomatiche: true,
+      cabinaAutomatiche: true,
     });
     // Hydraulic: no argano sheet — the power unit of the sheet instead.
     assert.deepEqual(
@@ -135,7 +140,14 @@ describe('the Elettroquadri orders and the sheet', () => {
         centralinaDaFare: 'si',
         centralinaMarca: 'GMV',
       }),
-      { nFermate: '6', accessi2: true, centralinaAlto: true, centralinaMarca: 'GMV' },
+      {
+        nFermate: '6',
+        accessi2: true,
+        centralinaAlto: true,
+        centralinaMarca: 'GMV',
+        pianoAutomatiche: true,
+        cabinaAutomatiche: true,
+      },
     );
   });
 
@@ -153,8 +165,10 @@ describe('the Elettroquadri orders and the sheet', () => {
       sospensioni: null,
       operatore: null,
       ordineSospensioni: null,
-      ami100: null,
-      ami100Tipo: null,
+      testataInterventi: [],
+      fossaInterventi: [],
+      bottoniereOrdine: null,
+      ordineBottoniere: null,
       ordineAmi: null,
     };
     const [summary] = riepilogoModuli(scheda);

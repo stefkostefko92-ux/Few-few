@@ -17,6 +17,57 @@
   min-width: 0;
 }
 
+/* Карта с данните на въжето от таблиците (под избора; argano.js я сменя при нов избор). */
+.argano__scheda {
+  margin-top: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--wash);
+}
+
+.argano__scheda[hidden] {
+  display: none;
+}
+
+.argano__scheda-titolo {
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+
+.argano__dati {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
+  gap: 10px 20px;
+  margin: 0;
+}
+
+.argano__dati dt {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.argano__dati dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.argano__scheda-nota {
+  margin: 10px 0 0;
+  font-size: 0.8125rem;
+}
+
+/* Полетата на ръка („Altra fune“, „Altra misura“): скрити, докато изборът не е „altro“ (argano.js). */
+.argano__mano {
+  margin-top: 16px;
+}
+
+.js [data-solo][data-off] {
+  display: none;
+}
+
 .argano__risultati {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

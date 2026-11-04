@@ -34,10 +34,34 @@
   });
   const byName = (name) => named.get(name) || [];
   const nameOf = (m, key) => (m.luogo === 'scheda' ? key : `${m.luogo}-${key}`);
+  // The sheet says the plant is hydraulic: a place with a hydraulic field (`idraulico` — Pitagora's
+  // "HYDRO" next to "VVVF", MoviLift's "Idraulico" next to "Fune") is that field. Same in collegati.ts.
+  const hydraulic = () =>
+    byName('tipoImpianto').some(
+      (el) => el.checked && el.value === 'IDRAULICO' && !el.closest('[data-off]'),
+    );
   const placeOf = (group, m) => {
     const sheet = m.luogo === 'scheda';
     let els;
     let kind;
+    if (group.tipo === 'numero' && !sheet && m.idraulico) {
+      const dry = byName(nameOf(m, m.campo));
+      const wet = byName(nameOf(m, m.idraulico));
+      if (!dry.length || !wet.length) return null;
+      return {
+        group,
+        m,
+        sheet,
+        kind: 'text',
+        id: `${m.luogo}-${m.campo}`,
+        get els() {
+          return hydraulic() ? wet : dry;
+        },
+        get idle() {
+          return hydraulic() ? dry[0] : wet[0];
+        },
+      };
+    }
     if (group.tipo === 'numero' && m.campi) {
       els = m.campi.map((key) => byName(nameOf(m, key))[0]).filter(Boolean);
       kind = els.length === 2 ? 'pair' : null;
@@ -158,6 +182,13 @@
   // filled in this round, which carries a value from one group to the next (a form → the sheet's
   // "Accessi" → the other form). Followers nobody speaks for are emptied.
   const fill = () => {
+    // The field a hydraulic place is not using now keeps nothing put there for it (the plant type changed).
+    groups.forEach(({ places }) =>
+      places.forEach((p) => {
+        const el = p.idle;
+        if (el && !touched(el) && el.value !== '' && el.value === el.dataset.auto) setText(el, '');
+      }),
+    );
     const followers = new Set();
     groups.forEach(({ places }) => places.forEach((p) => follows(p) && followers.add(p.id)));
     const done = new Set();

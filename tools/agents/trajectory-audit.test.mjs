@@ -36,7 +36,28 @@ test("isSubsequence: вмъкната стъпка е ок, разменен р�
 test("scoreTrajectory: правилният път минава всички проверки", () => {
   const r = scoreTrajectory(["a", "b", "c"], { path: ["a", "c"], mustVisit: ["b"], forbid: ["z"], maxSteps: 4 });
   assert.equal(r.ok, true);
-  assert.equal(r.total, 4);
+  assert.equal(r.total, 3, "path е съвет — не се брои в твърдите проверки");
+  assert.equal(r.checks.length, 4, "но се показва");
+});
+
+test("scoreTrajectory: друг ред при спазени критични спирки НЕ е провал (оценява се резултатът)", () => {
+  const r = scoreTrajectory(["c", "b", "a"], { path: ["a", "c"], mustVisit: ["a", "c"], maxSteps: 4 });
+  assert.equal(r.ok, true);
+  const p = r.checks.find((x) => x.kind === "path");
+  assert.equal(p.ok, false);
+  assert.equal(p.advisory, true);
+});
+
+test("scoreTrajectory: strictOrder: true връща реда като твърда проверка", () => {
+  const r = scoreTrajectory(["c", "a"], { path: ["a", "c"], strictOrder: true, maxSteps: 4 });
+  assert.equal(r.ok, false);
+  assert.equal(r.total, 2);
+});
+
+test("validateTrajectory: само path без твърда проверка = spec, който не може да падне", () => {
+  assert.ok(validateTrajectory({ path: ["a"] }).some((e) => /само path е съвет/.test(e)));
+  assert.deepEqual(validateTrajectory({ path: ["a"], strictOrder: true }), []);
+  assert.ok(validateTrajectory({ path: ["a"], maxSteps: 2, strictOrder: "да" }).some((e) => /strictOrder/.test(e)));
 });
 
 test("scoreTrajectory: прескочена КРИТИЧНА спирка пада (верен изход, грешен път)", () => {

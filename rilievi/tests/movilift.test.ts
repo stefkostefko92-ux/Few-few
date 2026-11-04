@@ -37,10 +37,15 @@ const fontsHere = existsSync(pdfFontPaths(fontDir).regular);
 const blankForm = async (): Promise<PDFForm> =>
   (await PDFDocument.load(moduloPdf(MOVILIFT))).getForm();
 
+/** A radio group of MoviLift: its own field, every option by the order of its button. */
 const radio = (key: string) => {
   const field = fieldsOf(MOVILIFT).find((f) => f.key === key);
-  assert.ok(field?.kind === 'radio', key);
-  return field;
+  assert.ok(field?.kind === 'radio' && field.acro !== undefined, key);
+  const opzioni = field.opzioni.map((o) => {
+    assert.ok(o.widget !== undefined, `${key}.${o.valore}`);
+    return { ...o, widget: o.widget };
+  });
+  return { ...field, acro: field.acro, opzioni };
 };
 
 describe('the MoviLift order form', () => {
@@ -57,7 +62,7 @@ describe('the MoviLift order form', () => {
     };
     const mapped = new Set<string>();
     for (const field of fields) {
-      assert.ok('acro' in field, field.key);
+      assert.ok('acro' in field && field.acro !== undefined, field.key);
       if ('crea' in field && field.crea) {
         // The voltage of the photocell: the paper prints its "V", the form has no field for it.
         assert.equal(form.getFieldMaybe(field.acro), undefined, field.key);
@@ -106,11 +111,18 @@ describe('the MoviLift order form', () => {
   });
 
   it('opens under the question of the panel order only for its own make', () => {
-    assert.deepEqual(marcheOf('quadroOrdine'), ['PELAZZA', 'MOVILIFT', 'MASTECH', 'ELETTROQUADRI']);
+    assert.deepEqual(marcheOf('quadroOrdine'), [
+      'PELAZZA',
+      'MOVILIFT',
+      'DMG',
+      'MASTECH',
+      'ELETTROQUADRI',
+    ]);
     assert.deepEqual(fieldByKey('quadroOrdine')?.when?.values, marcheOf('quadroOrdine'));
-    // The argano sheet and the 2SG sheet are for every make: no make in their condition (the 2SG
-    // sheet follows the doors with an operator, the argano sheet has none).
-    for (const question of ['arganoPreventivo', 'sospensioni'] as const) {
+    // The argano sheet, the 2SG sheet and the DMG fixtures are for every make: no make in their
+    // condition (the 2SG sheet follows the doors with an operator, the argano sheet has none, the
+    // fixtures follow «Bottoniere da sostituire»).
+    for (const question of ['arganoPreventivo', 'sospensioni', 'bottoniereOrdine'] as const) {
       assert.deepEqual(marcheOf(question), [], question);
     }
     assert.equal(fieldByKey('arganoPreventivo')?.when, undefined);
@@ -152,7 +164,6 @@ describe('prefilling the MoviLift order', () => {
       alimentazioneA: 'conLimiti',
       pianoB1: '-',
       interpianiStandard: true,
-      armadio: 'standard',
       anta: 'sx',
       uscita: 'poloPiano',
       comune: 'neg',
@@ -169,6 +180,8 @@ describe('prefilling the MoviLift order', () => {
       nImpianto: '104552',
       ingressi: 'doppio',
       locMacc: 'basso',
+      // "MRL" on the sheet: the MRL cabinet, over the standard one of the blank form.
+      armadio: 'mrl',
     });
   });
 
@@ -340,8 +353,10 @@ describe('saving the MoviLift order', () => {
       sospensioni: null,
       operatore: null,
       ordineSospensioni: null,
-      ami100: null,
-      ami100Tipo: null,
+      testataInterventi: [],
+      fossaInterventi: [],
+      bottoniereOrdine: null,
+      ordineBottoniere: null,
       ordineAmi: null,
     };
     assert.deepEqual(riepilogoModuli(scheda), [

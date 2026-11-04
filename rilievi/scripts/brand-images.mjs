@@ -1,8 +1,9 @@
 // Renders the link-preview picture public/img/og.png (1200 × 630) and public/img/apple-touch-icon.png
 // (180 × 180) from what the landing shows: the render of the shaft of its first screen
-// (public/img/site, `npm run render:encode`), the brand mark (public/img/brand, `npm run brand:logo`) and
-// Fira Sans Condensed from public/fonts (run `npm run build` first). Language-neutral on purpose: product
-// name and maker over the photo. Run after changing the hero render or the brand mark:
+// (public/img/site, `npm run render:encode`), the owner's logos (public/img/brand, `npm run brand:logo` —
+// the full logo on the preview, the hexagon mark on the home-screen icon) and Fira Sans from public/fonts
+// (run `npm run build` first). The full logo carries the product name; under it, the maker. Run after
+// changing the hero render or the logos:
 // `npm run brand:images` (needs the Playwright dev dependency and a Chromium it can launch).
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -14,34 +15,34 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const fontUrl = (file) =>
   `data:font/woff2;base64,${readFileSync(join(root, 'public', 'fonts', file)).toString('base64')}`;
 const photo = `data:image/webp;base64,${readFileSync(join(root, 'public', 'img', 'site', 'vano-1280.webp')).toString('base64')}`;
-const markUrl = `data:image/webp;base64,${readFileSync(join(root, 'public', 'img', 'brand', 'marchio-144.webp')).toString('base64')}`;
-const mark = `<img class="brand__mark" src="${markUrl}" alt="">`;
+const brandUrl = (file) =>
+  `data:image/webp;base64,${readFileSync(join(root, 'public', 'img', 'brand', file)).toString('base64')}`;
+const logo = `<img class="logo" src="${brandUrl('logo-900.webp')}" alt="">`;
+// The square tab icon (the mark centred on transparency) is the largest copy of the mark: 192 px high.
+const mark = `<img class="mark" src="data:image/png;base64,${readFileSync(join(root, 'public', 'img', 'favicon-192.png')).toString('base64')}" alt="">`;
 
 const page = (body, css) => `<!doctype html><html lang="it"><head><meta charset="utf-8"><style>
-@font-face { font-family: 'Fira Sans Condensed'; font-weight: 600; src: url(${fontUrl('fira-sans-condensed-latin-600-normal.woff2')}) format('woff2'); }
 @font-face { font-family: 'Fira Sans'; font-weight: 400; src: url(${fontUrl('fira-sans-latin-400-normal.woff2')}) format('woff2'); }
-:root { --font-cond: 'Fira Sans Condensed', sans-serif; }
 html, body { margin: 0; background: #000; color: #fff; overflow: hidden; }
 ${css}
 </style></head><body>${body}</body></html>`;
 
 const og = page(
-  `<div class="card"><img class="photo" src="${photo}" alt=""><div class="text"><div class="name">${mark}<span>Rilievi Impianti</span></div><p class="by">Carbon Stealth VCC</p></div></div>`,
+  `<div class="card"><img class="photo" src="${photo}" alt=""><div class="text">${logo}<p class="by">Carbon Stealth VCC</p></div></div>`,
   `body { width: 1200px; height: 630px; }
 .card { position: relative; display: flex; align-items: flex-end; height: 630px; padding: 0 80px 76px; box-sizing: border-box; }
 .photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; }
 .card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgb(0 0 0 / 0.9) 0%, rgb(0 0 0 / 0.55) 48%, rgb(0 0 0 / 0.1) 100%); }
 .text { position: relative; z-index: 1; }
-.name { display: flex; align-items: center; gap: 26px; font-family: 'Fira Sans Condensed'; font-weight: 600; font-size: 104px; line-height: 1; letter-spacing: -0.01em; }
-.name .brand__mark { width: 91px; height: 70px; flex: none; }
-.by { margin: 22px 0 0 117px; font-family: 'Fira Sans'; font-size: 34px; color: #d0d0d0; }`,
+.logo { display: block; width: 760px; height: auto; filter: drop-shadow(0 0 24px rgb(0 0 0 / 0.85)); }
+.by { margin: 18px 0 0 4px; font-family: 'Fira Sans'; font-size: 32px; color: #d0d0d0; }`,
 );
 
 const icon = page(
   `<div class="icon">${mark}</div>`,
   `body { width: 180px; height: 180px; }
 .icon { display: flex; align-items: center; justify-content: center; width: 180px; height: 180px; }
-.icon .brand__mark { width: 140px; height: 108px; }`,
+.icon .mark { width: 156px; height: 156px; }`,
 );
 
 const browser = await chromium.launch();
