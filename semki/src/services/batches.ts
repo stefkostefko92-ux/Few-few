@@ -94,6 +94,62 @@ export async function deleteBatch(db: PrismaClient, id: number): Promise<BatchVi
   });
 }
 
+// Няколко партиди наведнъж (менюто с отметки, дашбордът); липсващите се прескачат.
+export async function deleteBatches(
+  db: PrismaClient,
+  ids: readonly number[],
+): Promise<BatchView[]> {
+  if (ids.length === 0) return [];
+  return db.$transaction(async (tx) => {
+    const rows = await tx.batch.findMany({
+      where: { id: { in: [...ids] } },
+      include: { seedType: true },
+      orderBy: { id: 'asc' },
+    });
+    if (rows.length > 0)
+      await tx.batch.deleteMany({ where: { id: { in: rows.map((r) => r.id) } } });
+    return rows.map(toBatchLike);
+  });
+}
+
+export async function deleteBatchesOfType(db: PrismaClient, key: string): Promise<BatchView[]> {
+  return db.$transaction(async (tx) => {
+    const rows = await tx.batch.findMany({
+      where: { seedTypeKey: key },
+      include: { seedType: true },
+      orderBy: { id: 'asc' },
+    });
+    if (rows.length > 0)
+      await tx.batch.deleteMany({ where: { id: { in: rows.map((r) => r.id) } } });
+    return rows.map(toBatchLike);
+  });
+}
+
+export type RemoveResult =
+  { kind: 'partial'; batch: BatchView; removed: number } | { kind: 'all'; batch: BatchView };
+
+// Маха `amount` семки от партидата; при толкова или повече — цялата. Процентът и котвата не се пипат.
+export async function removeSeeds(
+  db: PrismaClient,
+  id: number,
+  amount: number,
+): Promise<RemoveResult | null> {
+  return db.$transaction(async (tx) => {
+    const row = await tx.batch.findUnique({ where: { id }, include: { seedType: true } });
+    if (!row) return null;
+    if (amount >= row.count) {
+      await tx.batch.delete({ where: { id } });
+      return { kind: 'all', batch: toBatchLike(row) };
+    }
+    const updated = await tx.batch.update({
+      where: { id },
+      data: { count: { decrement: amount } },
+      include: { seedType: true },
+    });
+    return { kind: 'partial', batch: toBatchLike(updated), removed: amount };
+  });
+}
+
 export async function deleteExpiredBatches(db: PrismaClient, now: Date): Promise<number> {
   const expired = (await listBatches(db)).filter((b) => msLeft(b, b.rate, now) <= 0);
   if (expired.length === 0) return 0;

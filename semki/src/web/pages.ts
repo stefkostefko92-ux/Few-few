@@ -6,6 +6,7 @@ import { formatThreshold } from '../domain/messages.js';
 import {
   batchCreateSchema,
   batchEditSchema,
+  idListSchema,
   idParamSchema,
   parseDecimal,
   ruleSchema,
@@ -16,6 +17,8 @@ import {
 import {
   createBatch,
   deleteBatch,
+  deleteBatches,
+  deleteBatchesOfType,
   deleteExpiredBatches,
   listBatches,
   listSeedTypes,
@@ -100,6 +103,29 @@ export function createPages(kit: WebKit, auth: AuthKit): Router {
   router.post('/batches/delete-expired', async (_req, res) => {
     const n = await deleteExpiredBatches(db, kit.now());
     done(res, '/', true, n ? `Изтрити изтекли партиди: ${n}.` : 'Няма изтекли партиди.');
+  });
+
+  // Отметнатите в списъка (поле `ids` — едно или няколко).
+  router.post('/batches/delete-selected', async (req, res) => {
+    const body: unknown = req.body;
+    const raw = typeof body === 'object' && body !== null && 'ids' in body ? body.ids : undefined;
+    const ids = parse(idListSchema, raw, res, '/');
+    if (!ids) return;
+    const removed = await deleteBatches(db, ids);
+    done(
+      res,
+      '/',
+      removed.length > 0,
+      `Изтрити партиди: ${removed.length}.`,
+      'Няма такива партиди.',
+    );
+  });
+
+  router.post('/types/:key/delete-all', async (req, res) => {
+    const key = seedKeySchema.safeParse(req.params.key);
+    if (!key.success) return done(res, '/', false, '');
+    const removed = await deleteBatchesOfType(db, key.data);
+    done(res, '/', true, `Изтрити партиди: ${removed.length}.`);
   });
 
   router.post('/batches/:id', async (req, res) => {

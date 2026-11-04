@@ -114,6 +114,24 @@ export const settingsSchema = z.object({
 
 export const idParamSchema = integer(1, 2_147_483_647, 'Невалиден номер');
 
+// Отметките от дашборда: едно поле идва като низ, няколко — като масив; повторенията отпадат.
+const NONE_SELECTED = 'Не си избрал нито една партида.';
+export const idListSchema = z
+  .union([z.string(), z.array(z.string())], { error: NONE_SELECTED })
+  .transform((v, ctx) => {
+    const ids: number[] = [];
+    for (const raw of Array.isArray(v) ? v : [v]) {
+      const r = idParamSchema.safeParse(raw);
+      if (!r.success) {
+        ctx.addIssue({ code: 'custom', message: 'Невалиден номер на партида' });
+        return z.NEVER;
+      }
+      ids.push(r.data);
+    }
+    return [...new Set(ids)];
+  })
+  .pipe(z.array(z.number()).min(1, NONE_SELECTED).max(500, 'Най-много 500 партиди наведнъж'));
+
 export type BatchCreateInput = z.output<typeof batchCreateSchema>;
 export type BatchEditInput = z.output<typeof batchEditSchema>;
 export type SeedTypeInput = z.output<typeof seedTypeSchema>;

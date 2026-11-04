@@ -1,13 +1,11 @@
-// Обработката на slash командите и автокомплийта.
+// Обработката на slash командите, автокомплийта и компонентите (менюто за триене).
 import {
   MessageFlags,
-  PermissionFlagsBits,
   type AutocompleteInteraction,
   type ChatInputCommandInteraction,
   type Interaction,
 } from 'discord.js';
 import type { PrismaClient } from '@prisma/client';
-import { canManageSeeds, type MemberFacts } from '../domain/access.js';
 import { msLeft, percentAt } from '../domain/decay.js';
 import {
   batchStatus,
@@ -18,19 +16,13 @@ import {
   seedLabel,
 } from '../domain/messages.js';
 import { isSeedKey } from '../domain/seeds.js';
-import { batchCreateSchema, idParamSchema, seedKeySchema } from '../domain/validation.js';
+import { batchCreateSchema, seedKeySchema } from '../domain/validation.js';
 import type { Logger } from '../log.js';
-import { createBatch, deleteBatch, listBatches, listSeedTypes } from '../services/batches.js';
+import { createBatch, listBatches, listSeedTypes } from '../services/batches.js';
 import { labelsOf } from '../services/mapping.js';
-import { getSettings } from '../services/rules.js';
-import {
-  CMD_DELETE,
-  CMD_INFO,
-  OPTION_BATCH,
-  OPTION_COUNT,
-  OPTION_PERCENT,
-  OPTION_TYPE,
-} from './commands.js';
+import { CMD_DELETE, CMD_INFO, OPTION_COUNT, OPTION_PERCENT, OPTION_TYPE } from './commands.js';
+import { actorName, ensureManager, NO_PINGS } from './common.js';
+import { createRemoveFlow } from './remove-flow.js';
 
 export interface InteractionDeps {
   db: PrismaClient;
@@ -39,40 +31,12 @@ export interface InteractionDeps {
   now?: () => Date;
 }
 
-const NO_PINGS = { parse: [] } as const;
-
-function memberFacts(i: ChatInputCommandInteraction | AutocompleteInteraction): MemberFacts | null {
-  if (!i.inGuild()) return null;
-  const roles = i.member.roles;
-  return {
-    isOwner: i.guild?.ownerId === i.user.id,
-    isAdmin: i.memberPermissions.has(PermissionFlagsBits.Administrator),
-    roleIds: Array.isArray(roles) ? roles : [...roles.cache.keys()],
-  };
-}
-
-function actorName(i: ChatInputCommandInteraction): string {
-  if (i.inCachedGuild()) return i.member.displayName;
-  return i.user.globalName ?? i.user.username;
-}
-
 export function createInteractionHandler(deps: InteractionDeps) {
   const now = deps.now ?? (() => new Date());
-
-  async function ensureManager(i: ChatInputCommandInteraction): Promise<boolean> {
-    const settings = await getSettings(deps.db);
-    if (canManageSeeds(memberFacts(i), settings.commandRoleId)) return true;
-    const need = settings.commandRoleId ? `ролята <@&${settings.commandRoleId}>` : 'администратор';
-    await i.reply({
-      content: `Нямаш права за тази команда — нужна е ${need}.`,
-      flags: MessageFlags.Ephemeral,
-      allowedMentions: NO_PINGS,
-    });
-    return false;
-  }
+  const removal = createRemoveFlow({ db: deps.db, now });
 
   async function addBatch(i: ChatInputCommandInteraction) {
-    if (!(await ensureManager(i))) return;
+    if (!(await ensureManager(deps.db, i))) return;
     const parsed = batchCreateSchema.safeParse({
       seedTypeKey: i.commandName,
       count: i.options.getInteger(OPTION_COUNT, true),
@@ -115,26 +79,6 @@ export function createInteractionHandler(deps: InteractionDeps) {
     for (const content of rest) await i.followUp({ content, allowedMentions: NO_PINGS });
   }
 
-  async function remove(i: ChatInputCommandInteraction) {
-    if (!(await ensureManager(i))) return;
-    const id = idParamSchema.safeParse(i.options.getInteger(OPTION_BATCH, true));
-    if (!id.success) {
-      await i.reply({ content: 'Няма такава партида.', flags: MessageFlags.Ephemeral });
-      return;
-    }
-    await i.deferReply();
-    const removed = await deleteBatch(deps.db, id.data);
-    if (!removed) {
-      await i.editReply({ content: `Няма партида #${id.data}.`, allowedMentions: NO_PINGS });
-      return;
-    }
-    const labels = labelsOf(await listSeedTypes(deps.db));
-    await i.editReply({
-      content: `Изтрита партида **${seedLabel(labels, removed.seedTypeKey)}** #${removed.id} ×${removed.count}.`,
-      allowedMentions: NO_PINGS,
-    });
-  }
-
   async function autocomplete(i: AutocompleteInteraction) {
     if (i.commandName !== CMD_DELETE) return i.respond([]);
     const query = String(i.options.getFocused()).trim().toLowerCase().replace(/^#/, '');
@@ -164,6 +108,11 @@ export function createInteractionHandler(deps: InteractionDeps) {
       if (interaction.guildId !== deps.guildId) return interaction.respond([]);
       return autocomplete(interaction);
     }
+    if (interaction.isStringSelectMenu() || interaction.isButton()) {
+      if (interaction.guildId !== deps.guildId) return;
+      await removal.component(interaction);
+      return;
+    }
     if (!interaction.isChatInputCommand()) return;
     if (interaction.guildId !== deps.guildId) {
       await interaction.reply({
@@ -175,7 +124,7 @@ export function createInteractionHandler(deps: InteractionDeps) {
     const name = interaction.commandName;
     if (isSeedKey(name)) return addBatch(interaction);
     if (name === CMD_INFO) return info(interaction);
-    if (name === CMD_DELETE) return remove(interaction);
+    if (name === CMD_DELETE) return removal.command(interaction);
   }
 
   // Грешка в една команда не сваля бота: логва се и потребителят вижда кратко съобщение.
@@ -184,7 +133,7 @@ export function createInteractionHandler(deps: InteractionDeps) {
       await handle(interaction);
     } catch (err) {
       deps.log.error({ err, kind: interaction.type }, 'командата се провали');
-      if (!interaction.isChatInputCommand()) return;
+      if (!interaction.isRepliable()) return;
       const reply = {
         content: 'Нещо се обърка — опитай пак.',
         flags: MessageFlags.Ephemeral,

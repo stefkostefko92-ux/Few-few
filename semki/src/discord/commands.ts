@@ -54,17 +54,34 @@ export function buildCommands(): RESTPostAPIChatInputApplicationCommandsJSONBody
     )
     .toJSON();
 
+  // Без опции — меню с отметки; с `вид` — партидите му, всички отметнати; с `партида` — само тя;
+  // с `партида` и `брой` — маха толкова семки от нея.
   const remove = new SlashCommandBuilder()
     .setName(CMD_DELETE)
-    .setDescription('Изтрий партида семки (засадени, продадени или изтекли)')
+    .setDescription('Изтрий семки: меню с отметки, цяла партида или само няколко семки от нея')
     .setContexts(InteractionContextType.Guild)
     .addIntegerOption((o) =>
       o
         .setName(OPTION_BATCH)
-        .setDescription('Номерът на партидата (#)')
-        .setRequired(true)
+        .setDescription('Само тази партида (#); без нея — меню с отметки')
+        .setRequired(false)
         .setMinValue(1)
         .setAutocomplete(true),
+    )
+    .addIntegerOption((o) =>
+      o
+        .setName(OPTION_COUNT)
+        .setDescription('Колко семки да махнеш от партидата (без него — цялата)')
+        .setRequired(false)
+        .setMinValue(1)
+        .setMaxValue(MAX_COUNT),
+    )
+    .addStringOption((o) =>
+      o
+        .setName(OPTION_TYPE)
+        .setDescription('Меню само с този вид, всички отметнати')
+        .setRequired(false)
+        .addChoices(...SEED_KEYS.map((key) => ({ name: SEED_DEFAULT_LABELS[key], value: key }))),
     )
     .toJSON();
 

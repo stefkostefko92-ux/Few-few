@@ -208,3 +208,51 @@ test('редакция само на броя не пипа процента и 
     assert.equal(changed.percent, 50);
     assert.ok(changed.anchoredAt.getTime() > tenHoursAgo.getTime());
   }));
+
+test('дашборд: изтрий отметнатите и всички от вид', () =>
+  withApp(async () => {
+    guild.members.set(USER_ID, { isOwner: false, isAdmin: true, roleIds: [] });
+    const jar = await login(app.url);
+    for (const [seedTypeKey, percent] of [
+      ['amnesia', '80'],
+      ['amnesia', '60'],
+      ['ak', '50'],
+      ['skunk', '40'],
+    ] as const) {
+      await post(jar, '/batches', { seedTypeKey, count: '2', percent });
+    }
+    const [a1, a2, ak, sk] = await db.batch.findMany({ orderBy: { id: 'asc' } });
+    assert.ok(a1 && a2 && ak && sk);
+
+    // Без отметки — съобщение, нищо не се трие.
+    const none = await post(jar, '/batches/delete-selected', {});
+    assert.match(none.html, /Не си избрал нито една партида/);
+    assert.equal(await db.batch.count(), 4);
+
+    // Две отметки — поле `ids` два пъти.
+    const { html } = await page(jar, '/');
+    assert.match(html, /name="ids" value="\d+" form="bulk"/);
+    const body = new URLSearchParams({ _csrf: csrfFrom(html) });
+    body.append('ids', String(a2.id));
+    body.append('ids', String(sk.id));
+    const res = await fetch(`${app.url}/batches/delete-selected`, {
+      method: 'POST',
+      headers: { cookie: cookieHeader(jar), 'content-type': 'application/x-www-form-urlencoded' },
+      body,
+      redirect: 'manual',
+    });
+    assert.equal(res.status, 303);
+    assert.deepEqual(
+      (await db.batch.findMany({ orderBy: { id: 'asc' } })).map((b) => b.id),
+      [a1.id, ak.id],
+    );
+
+    await post(jar, '/types/amnesia/delete-all', {});
+    assert.deepEqual(
+      (await db.batch.findMany()).map((b) => b.id),
+      [ak.id],
+    );
+    const bad = await post(jar, '/types/hash/delete-all', {});
+    assert.match(bad.html, /Няма такъв запис/);
+    assert.equal(await db.batch.count(), 1);
+  }));

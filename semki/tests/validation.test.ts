@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   batchCreateSchema,
   batchEditSchema,
+  idListSchema,
   ruleSchema,
   seedTypeSchema,
   settingsSchema,
@@ -105,6 +106,18 @@ test('настройки: час HH:MM, часова зона, празна ро
   );
   assert.equal(
     settingsSchema.safeParse({ ...base, timezone: 'UTC', windowEnd: '9:00' }).success,
+    false,
+  );
+});
+
+test('списък с партиди от отметките: един, няколко, повторения, грешни', () => {
+  assert.deepEqual(idListSchema.parse('7'), [7]);
+  assert.deepEqual(idListSchema.parse(['3', '9', '3']), [3, 9]);
+  assert.equal(idListSchema.safeParse(undefined).success, false);
+  assert.equal(idListSchema.safeParse([]).success, false);
+  assert.equal(idListSchema.safeParse(['3', 'x']).success, false);
+  assert.equal(
+    idListSchema.safeParse(Array.from({ length: 501 }, (_, i) => String(i + 1))).success,
     false,
   );
 });

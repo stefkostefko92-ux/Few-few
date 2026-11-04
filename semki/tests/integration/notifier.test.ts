@@ -4,8 +4,11 @@ import type { PrismaClient } from '@prisma/client';
 import { HOUR_MS, percentAt } from '../../src/domain/decay.js';
 import {
   createBatch,
+  deleteBatches,
+  deleteBatchesOfType,
   deleteExpiredBatches,
   listBatches,
+  removeSeeds,
   updateBatch,
   updateSeedTypeRate,
 } from '../../src/services/batches.js';
@@ -310,4 +313,61 @@ test('изтрито правило по време на цикъла не ба�
   const result = await createNotifier({ db, sender, log: silentLog, now: () => clock }).tick();
   assert.equal(result.failed, 0);
   assert.equal(sent.length, 1);
+});
+
+test('махане на семки: част от партида, цяла, няколко, цял вид', async () => {
+  const a = await createBatch(
+    db,
+    { seedTypeKey: 'amnesia', count: 10, percent: 80 },
+    actor,
+    'command',
+    t0,
+  );
+  const b = await createBatch(
+    db,
+    { seedTypeKey: 'amnesia', count: 4, percent: 60 },
+    actor,
+    'command',
+    t0,
+  );
+  const c = await createBatch(
+    db,
+    { seedTypeKey: 'ak', count: 2, percent: 50 },
+    actor,
+    'command',
+    t0,
+  );
+  const d = await createBatch(
+    db,
+    { seedTypeKey: 'skunk', count: 1, percent: 50 },
+    actor,
+    'command',
+    t0,
+  );
+
+  const part = await removeSeeds(db, a.batch.id, 3);
+  assert.equal(part?.kind, 'partial');
+  assert.equal(part?.kind === 'partial' ? part.batch.count : -1, 7);
+  const row = await db.batch.findUniqueOrThrow({ where: { id: a.batch.id } });
+  assert.equal(row.percent, 80); // процентът и котвата не се пипат
+  assert.equal(row.anchoredAt.getTime(), t0.getTime());
+
+  assert.equal((await removeSeeds(db, c.batch.id, 99))?.kind, 'all');
+  assert.equal(await removeSeeds(db, c.batch.id, 1), null);
+
+  const many = await deleteBatches(db, [b.batch.id, 99999]);
+  assert.deepEqual(
+    many.map((x) => x.id),
+    [b.batch.id],
+  );
+
+  const ofType = await deleteBatchesOfType(db, 'amnesia');
+  assert.deepEqual(
+    ofType.map((x) => x.id),
+    [a.batch.id],
+  );
+  assert.deepEqual(
+    (await listBatches(db)).map((x) => x.id),
+    [d.batch.id],
+  );
 });

@@ -332,6 +332,14 @@ form.inline {
   gap: 0.35rem 0.8rem;
 }
 
+.b-main .pick {
+  display: inline-flex;
+  align-items: center;
+  min-width: 1.75rem;
+  min-height: 1.75rem;
+  cursor: pointer;
+}
+
 .b-main .id {
   color: var(--muted);
   font-variant-numeric: tabular-nums;

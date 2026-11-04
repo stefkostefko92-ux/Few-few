@@ -24,12 +24,20 @@
 <section class="card">
   <div class="head-row">
     <h2>Партиди <small><%= rows.length %></small></h2>
-    <% if (rows.some(function (r) { return r.expired; })) { %>
-    <form method="post" action="/batches/delete-expired">
-      <input type="hidden" name="_csrf" value="<%= csrf %>">
-      <button type="submit" class="btn ghost">Изтрий изтеклите</button>
-    </form>
-    <% } %>
+    <div class="row">
+      <% if (rows.length > 0) { %>
+      <form method="post" action="/batches/delete-selected" id="bulk" data-confirm="Да изтрия ли отметнатите партиди?">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button type="submit" class="btn danger">Изтрий отметнатите</button>
+      </form>
+      <% } %>
+      <% if (rows.some(function (r) { return r.expired; })) { %>
+      <form method="post" action="/batches/delete-expired" data-confirm="Да изтрия ли всички изтекли партиди?">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button type="submit" class="btn ghost">Изтрий изтеклите</button>
+      </form>
+      <% } %>
+    </div>
   </div>
   <% if (rows.length === 0) { %>
   <p class="muted">Няма въведени семки.</p>
@@ -38,6 +46,7 @@
     <% rows.forEach(function (r) { %>
     <li class="batch <%= r.level %><%= r.expired ? ' expired' : '' %>">
       <div class="b-main">
+        <label class="pick"><input type="checkbox" name="ids" value="<%= r.id %>" form="bulk" aria-label="Отметни партида #<%= r.id %>"></label>
         <span class="id">#<%= r.id %></span>
         <strong><%= r.typeLabel %></strong>
         <span class="count">×<%= r.count %></span>
@@ -58,7 +67,7 @@
           <label>Трайност сега, % <input type="text" name="percent" inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" value="<%= r.percentInput %>" required></label>
           <button type="submit" class="btn">Запази</button>
         </form>
-        <form method="post" action="/batches/<%= r.id %>/delete" class="inline">
+        <form method="post" action="/batches/<%= r.id %>/delete" class="inline" data-confirm="Да изтрия ли партида #<%= r.id %>?">
           <input type="hidden" name="_csrf" value="<%= csrf %>">
           <button type="submit" class="btn danger">Изтрий партидата</button>
         </form>
@@ -71,20 +80,28 @@
 </section>
 
 <section class="card">
-  <h2>Скорост на спада</h2>
+  <h2>Видове: скорост на спада</h2>
   <p class="muted small">Новата скорост важи от момента на запазване; текущите проценти на партидите се пазят.</p>
   <div class="types">
     <% types.forEach(function (t) { %>
-    <form method="post" action="/types/<%= t.key %>" class="type">
-      <input type="hidden" name="_csrf" value="<%= csrf %>">
-      <h3><%= t.label %> <small><%= t.totalCount %> бр. в <%= t.batchCount %> партиди</small></h3>
-      <p class="muted small"><%= t.rateText %> · <%= t.fullText %></p>
-      <div class="row">
-        <label>Спад, % <input type="text" name="decayPercent" inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" value="<%= t.decayPercentInput %>" required></label>
-        <label>на минути <input type="number" name="decayMinutes" min="1" max="10080" step="1" value="<%= t.decayMinutes %>" required></label>
-        <button type="submit" class="btn ghost">Запази</button>
-      </div>
-    </form>
+    <div class="type">
+      <form method="post" action="/types/<%= t.key %>">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <h3><%= t.label %> <small><%= t.totalCount %> бр. в <%= t.batchCount %> партиди</small></h3>
+        <p class="muted small"><%= t.rateText %> · <%= t.fullText %></p>
+        <div class="row">
+          <label>Спад, % <input type="text" name="decayPercent" inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" value="<%= t.decayPercentInput %>" required></label>
+          <label>на минути <input type="number" name="decayMinutes" min="1" max="10080" step="1" value="<%= t.decayMinutes %>" required></label>
+          <button type="submit" class="btn ghost">Запази</button>
+        </div>
+      </form>
+      <% if (t.batchCount > 0) { %>
+      <form method="post" action="/types/<%= t.key %>/delete-all" class="inline" data-confirm="Да изтрия ли всички <%= t.batchCount %> партиди <%= t.label %>?">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button type="submit" class="btn danger">Изтрий всички <%= t.label %> (<%= t.batchCount %>)</button>
+      </form>
+      <% } %>
+    </div>
     <% }) %>
   </div>
 </section>
