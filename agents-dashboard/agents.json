@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-10-28",
+    "updated": "2026-11-04",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -4668,7 +4668,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 249
+        "lessons": 250
       },
       "evolution": [
         {
@@ -5198,9 +5198,20 @@
           "date": "2026-10-27",
           "event": "v22.4 — учене",
           "detail": "Научи: PR с имена на дружеството във vizitka (COMPANY.nameBg, legalName/alternateName в organi…"
+        },
+        {
+          "version": "22.5.0",
+          "date": "2026-11-04",
+          "event": "v22.5 — учене",
+          "detail": "Научи: Страница с noindex, която е извън Allow-списъка на robots.txt (Disallow: /), не показва…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-04",
+          "type": "learning",
+          "summary": "Научи: „Страница с noindex, която е извън Allow-списъка на robots.txt (Disallow: /), не показва…\""
+        },
         {
           "date": "2026-10-27",
           "type": "learning",
