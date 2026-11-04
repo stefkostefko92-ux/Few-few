@@ -36,7 +36,9 @@ function cifra(info: string, plaintext: string): string {
 function decifra(info: string, payload: string): string {
   const raw = Buffer.from(payload, 'base64');
   if (raw.length <= IV_BYTES + TAG_BYTES) throw new Error('Повреден шифрован запис');
-  const decipher = createDecipheriv('aes-256-gcm', derived(info), raw.subarray(0, IV_BYTES));
+  const decipher = createDecipheriv('aes-256-gcm', derived(info), raw.subarray(0, IV_BYTES), {
+    authTagLength: TAG_BYTES,
+  });
   decipher.setAuthTag(raw.subarray(IV_BYTES, IV_BYTES + TAG_BYTES));
   return Buffer.concat([
     decipher.update(raw.subarray(IV_BYTES + TAG_BYTES)),

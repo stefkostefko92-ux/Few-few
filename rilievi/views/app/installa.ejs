@@ -1,0 +1,41 @@
+<%- include('../partials/top', { titleKey: 'installa.title', narrowMain: true }) %>
+<%#
+  „Installa l'app“: бутонът на браузъра, когато го предлага (Chrome, Edge — installa.js), и стъпките за
+  всяко устройство. Отворени са тези на устройството (`sistema` — от User-Agent, src/pwa/sistema.ts);
+  непознато устройство — всички.
+%>
+<div class="page-head">
+  <div>
+    <h1><%= t('installa.title') %></h1>
+    <p class="page-head__sub"><%= t('installa.lead') %></p>
+  </div>
+</div>
+<div class="stack-gap installa">
+  <p class="notice" data-installa-installata hidden><%= t('installa.installed') %></p>
+  <div class="notice installa__pronta" data-installa-pronta hidden>
+    <p><%= t('installa.ready') %></p>
+    <button class="btn btn--primary" type="button" data-installa-ora><%- include('../partials/icon', { name: 'download' }) %><span><%= t('installa.button') %></span></button>
+  </div>
+  <p class="notice" data-installa-fatta role="status" hidden><%= t('installa.done') %></p>
+  <div class="installa__elenco">
+  <% for (const [os, passi] of [['android', 4], ['ios', 4], ['pc', 4], ['mac', 3]]) { %>
+  <details class="installa__os" data-os="<%= os %>"<% if (!sistema || sistema === os) { %> open<% } %>>
+    <summary><span class="installa__testa"><span><%= t('installa.' + os + '.title') %></span><span class="installa__tuo"<% if (sistema !== os) { %> hidden<% } %>><%= t('installa.yourDevice') %></span></span></summary>
+    <ol class="installa__passi">
+      <% for (let n = 1; n <= passi; n += 1) { %><li><%= t('installa.' + os + '.s' + n) %></li>
+      <% } %>
+    </ol>
+  </details>
+  <% } %>
+  </div>
+  <p class="muted"><%= t('installa.firefox') %></p>
+  <section aria-labelledby="h-perche">
+    <h2 class="section__title" id="h-perche"><%= t('installa.whyTitle') %></h2>
+    <ul class="installa__perche">
+      <% for (const n of [1, 2, 3, 4]) { %><li><%= t('installa.why' + n) %></li>
+      <% } %>
+    </ul>
+  </section>
+  <% if (!currentUser) { %><p><a href="/accesso"><%= t('installa.back') %></a></p><% } %>
+</div>
+<%- include('../partials/bottom') %>

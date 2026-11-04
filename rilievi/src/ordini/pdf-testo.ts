@@ -30,6 +30,55 @@ export async function apriModulo(
   return { doc, font };
 }
 
+const larghezze = new WeakMap<PDFFont, Map<string, number>>();
+
+/** Ширината на един знак при 1 pt — помнена: мери се веднъж за шрифта. */
+function larghezzaSegno(font: PDFFont, segno: string): number {
+  let known = larghezze.get(font);
+  if (!known) larghezze.set(font, (known = new Map()));
+  let w = known.get(segno);
+  if (w === undefined) known.set(segno, (w = font.widthOfTextAtSize(segno, 1)));
+  return w;
+}
+
+/**
+ * Горна граница колко знака от началото могат да влязат: сборът на ширините им един по един стига
+ * двойната ширина (лигатурите стесняват думата, но не наполовина). Мерене на целия низ оформя всеки
+ * знак (fontkit) — така се мерят само низове от около два реда, не 600 знака на всяка стъпка.
+ */
+function tettoSegni(font: PDFFont, text: string, size: number, width: number): number {
+  let sum = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    sum += larghezzaSegno(font, text[i]!) * size;
+    if (sum > width * 2) return i;
+  }
+  return text.length;
+}
+
+/**
+ * Колко знака от началото на `text` (поне 1, най-много `max`), заедно с `dopo`, влизат в ширината —
+ * двоично търсене. PDF-ът се рисува в единствената нишка на портала, а `widthOfTextAtSize` оформя целия
+ * низ при всяко мерене: дума от 600 знака, рязана знак по знак, държеше портала ~20 s (одит, 4 ноември
+ * 2026). Ширината на началото расте със знаците, затова мястото е същото като при рязането знак по знак.
+ */
+function segniCheEntrano(
+  font: PDFFont,
+  text: string,
+  max: number,
+  size: number,
+  width: number,
+  dopo = '',
+): number {
+  let low = 1;
+  let high = Math.max(1, Math.min(max, tettoSegni(font, text, size, width)));
+  while (low < high) {
+    const mid = Math.ceil((low + high) / 2);
+    if (font.widthOfTextAtSize(`${text.slice(0, mid)}${dopo}`, size) <= width) low = mid;
+    else high = mid - 1;
+  }
+  return low;
+}
+
 /** Един ред: никога не се пренася — смалява се до 5 pt, после се реже с многоточие. */
 export function fitLine(
   font: PDFFont,
@@ -41,10 +90,16 @@ export function fitLine(
   if (wide <= width) return { text, size };
   const smaller = Math.max(MIN_SIZE, Math.floor(((size * width) / wide) * 10) / 10);
   if (font.widthOfTextAtSize(text, smaller) <= width) return { text, size: smaller };
-  let cut = text;
-  while (cut.length > 1 && font.widthOfTextAtSize(`${cut}…`, smaller) > width)
-    cut = cut.slice(0, -1);
-  return { text: `${cut}…`, size: smaller };
+  const cut = segniCheEntrano(font, text, text.length - 1, smaller, width, '…');
+  return { text: `${text.slice(0, cut)}…`, size: smaller };
+}
+
+/** Низът влиза ли в ширината — дългият се познава без мерене (горната граница е под дължината му). */
+function entra(font: PDFFont, text: string, size: number, width: number): boolean {
+  return (
+    tettoSegni(font, text, size, width) >= text.length &&
+    font.widthOfTextAtSize(text, size) <= width
+  );
 }
 
 /** Редовете на абзац в ширината (по думи; дълга дума се реже по знаци). */
@@ -60,9 +115,8 @@ export function wrap(font: PDFFont, text: string, width: number, size: number): 
       }
       if (line) lines.push(line);
       line = word;
-      while (font.widthOfTextAtSize(line, size) > width && line.length > 1) {
-        let cut = line.length - 1;
-        while (cut > 1 && font.widthOfTextAtSize(line.slice(0, cut), size) > width) cut -= 1;
+      while (line.length > 1 && !entra(font, line, size, width)) {
+        const cut = segniCheEntrano(font, line, line.length - 1, size, width);
         lines.push(line.slice(0, cut));
         line = line.slice(cut);
       }

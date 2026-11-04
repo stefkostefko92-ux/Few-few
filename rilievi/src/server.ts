@@ -24,11 +24,14 @@ import { allegatiRouter } from './routes/allegati.js';
 import { auditRouter } from './routes/audit.js';
 import { accessoRouter, calcoloRouter } from './routes/accesso.js';
 import { aziendeRouter } from './routes/aziende.js';
+import { aziendeFineRouter } from './routes/aziende-fine.js';
 import { cartelliNuovoRouter } from './routes/cartelli-nuovo.js';
 import { cartelliRouter } from './routes/cartelli.js';
 import { cestinoRouter } from './routes/cestino.js';
 import { ordiniRouter } from './routes/ordini.js';
 import { healthRouter } from './routes/health.js';
+import { installaRouter } from './routes/installa.js';
+import { pwaRouter } from './routes/pwa.js';
 import { impostazioniRouter } from './routes/impostazioni.js';
 import { impostazioniCartelloRouter } from './routes/impostazioni-cartello.js';
 import { impostazioniRuoliRouter } from './routes/impostazioni-ruoli.js';
@@ -194,6 +197,7 @@ export function createServer(): Express {
     }),
   );
   app.use(healthRouter);
+  app.use(pwaRouter);
 
   // Всичко отвъд статиката: сесия → речник и тема → еднократно съобщение → общото за шаблоните.
   app.use(attachSession);
@@ -232,6 +236,7 @@ export function createServer(): Express {
   });
   app.use(writeLimiter);
   app.use(siteRouter);
+  app.use(installaRouter);
   app.use(accessoRouter);
   app.use(schedeRouter);
   app.use(schedeStampaRouter);
@@ -250,6 +255,7 @@ export function createServer(): Express {
   // След usersRouter: `/utenti/invita` е преди `/utenti/:id`.
   app.use(usersManageRouter);
   app.use(aziendeRouter);
+  app.use(aziendeFineRouter);
   app.use(impostazioniRouter);
   app.use(impostazioniRuoliRouter);
   app.use(requestsRouter);

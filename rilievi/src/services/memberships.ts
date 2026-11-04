@@ -2,10 +2,11 @@ import type { Role } from '@prisma/client';
 import { prisma } from '../db.js';
 import { writeAudit } from '../audit.js';
 import { canAssignRole, canManageMembership } from '../auth/manage.js';
-import { outranks } from '../auth/roles.js';
+import { can, outranks } from '../auth/roles.js';
 import { activeAzienda, isUniqueViolation } from '../aziende/service.js';
 import type { SessionUser } from '../types.js';
-import { loadTarget, revokeResetLinks } from './users.js';
+import { revokeInvitesOf, revokeResetLinks } from './revoche.js';
+import { loadTarget } from './users.js';
 
 /**
  * Членствата: в кои фирми е човекът и с каква роля във всяка. Фирми слага и маха само MASTER; ролята в
@@ -33,6 +34,8 @@ export async function changeMembershipRole(
     });
     // С новата роля може да го управлява по-малко хора — връзка за парола, дадена преди, спира.
     await revokeResetLinks(tx, target.id);
+    // Вече не кани във фирмата: поканите му там спират.
+    if (!can(role, 'users:manage')) await revokeInvitesOf(tx, target.id, aziendaId);
     await writeAudit(
       {
         actorId: actor.id,
@@ -111,6 +114,7 @@ export async function removeMembership(
     await tx.membership.delete({
       where: { userId_aziendaId: { userId: target.id, aziendaId } },
     });
+    await revokeInvitesOf(tx, target.id, aziendaId);
     await writeAudit(
       {
         actorId: actor.id,

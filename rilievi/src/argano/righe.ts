@@ -1,3 +1,4 @@
+import type { Translator } from '../i18n.js';
 import type { RisultatoArgano } from './calcolo.js';
 import type { DatiArgano } from './dati.js';
 import { numero, percentuale } from './formato.js';
@@ -9,8 +10,6 @@ import { funeDi } from './tabelle.js';
  * компенсация, сцепление, натиск), редове „надпис — стойност — мярка“, отметка ОК/НЕ на проверките и
  * заключението на раздела. Текстовете са от речника (`argano.r.*`).
  */
-
-type Translate = (key: string, params?: Record<string, string | number>) => string;
 
 export interface Riga {
   etichetta: string;
@@ -30,7 +29,7 @@ export interface SezioneRisultati {
 export function righeRisultato(
   r: RisultatoArgano,
   d: DatiArgano,
-  t: Translate,
+  t: Translator,
 ): SezioneRisultati[] {
   const v = r.velocita;
   const velocita: Riga[] = [
