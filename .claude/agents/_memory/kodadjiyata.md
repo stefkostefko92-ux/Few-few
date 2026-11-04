@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-04:** Публичният HTML артефакт на флота (build-artifact.mjs) включва кратките резюмета на поуките от agents.json, а там се виждат описания на байпаси на нашите хукове (guard-exfil, guard-dangerous) и незакърпени продуктови уязвимости; при публичен преглед сверявай всяко такова споменаване с текущия код на хука/продукта, за да разделиш закърпено от отворено _(ревю на публичния артефакт на агентското табло; verified; part-5.txt:396,2193,2205 срещу .claude/hooks/guard-exfil.mjs:240-249 и .claude/hooks/guard-dangerous.mjs:21-22 и linketto/src/app/actions/shop.ts:134)_
 
 - **2026-11-04:** sharp 0.35 с limitInputPixels не пази паметта при прогресивен JPEG (208 Mpx, 4:4:4, файл 2,4 MB → 1305 MB пик) и AVIF (60 Mpx, файл 1,7 KB → 1122 MB), докато обикновен JPEG 208 Mpx е 113 MB заради shrink-on-load _(таван на пикселите и mem_limit за sharp във фонови процеси; verified; node -e със sharp.concurrency(1), cache(false), rotate→resize 2560→jpeg и process.resourceUsage().maxRSS в rilievi/node_modules, 2026-11-04)_
 - **2026-11-04:** multer 2.5.0 пак попълва req.body с текстовите полета след файловете дори при LIMIT_FILE_COUNT, затова редът файл→_csrf не чупи CSRF проверката след multer _(ревю на multipart маршрути с CSRF след multer; verified; node -e express+multer тест с 3 файла (1 B и 3 MB) преди _csrf → body {_csrf, sezione}, 2026-11-04)_
