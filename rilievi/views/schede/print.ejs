@@ -23,7 +23,7 @@
 <body class="print-body"<% if (autoPrint) { %> data-auto-print<% } %>>
 <div class="print-bar">
   <button class="btn btn--primary btn--sm" type="button" data-print><%- include('../partials/icon', { name: 'print' }) %><%= t('scheda.actions.print') %></button>
-  <a class="btn btn--sm" href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
+  <a class="btn btn--sm" data-pdf href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
   <a class="btn btn--sm" href="/schede/<%= scheda.id %>"><%- include('../partials/icon', { name: 'back' }) %><%= t('print.back') %></a>
 </div>
 <article class="paper">

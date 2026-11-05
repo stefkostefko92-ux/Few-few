@@ -33,9 +33,10 @@
 <% } %><script nonce="<%= cspNonce %>">document.documentElement.classList.add('js')</script>
 <script src="/static/js/app.js?v=<%= v %>" defer></script>
 <% if (currentUser && !bareMain) { %><script src="/static/js/menu.js?v=<%= v %>" defer></script>
+<script src="/static/js/pdf-app.js?v=<%= v %>" defer></script>
 <% } %><% for (const script of (typeof scripts !== 'undefined' ? scripts : [])) { %><script src="/static/js/<%= script %>.js?v=<%= v %>" defer></script>
 <% } %></head>
-<body<% if (currentUser && !bareMain) { %> class="with-nav"<% } %>>
+<body<% if (currentUser && !bareMain) { %> class="with-nav" data-pdf-attesa="<%= t('pdfApp.attesa') %>" data-pdf-pronto="<%= t('pdfApp.pronto') %>" data-pdf-errore="<%= t('pdfApp.errore') %>" data-pdf-non-supportato="<%= t('pdfApp.nonSupportato') %>"<% } %>>
 <a class="skip" href="#main"><%= t('nav.skip') %></a>
 <% if (currentUser && !bareMain) { %><%- include('header') %><% } %>
 <main id="main" class="<%= bareMain ? 'main-bare' : 'main' + (narrow ? ' main--narrow' : '') %>" tabindex="-1">

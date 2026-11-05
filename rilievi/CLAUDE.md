@@ -758,6 +758,13 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   „Cabina“ (Circuito cabina, Bottoniera, Tetto cabina, Varie), „Finiture“ (Bottoniere, Imbotti, Varie);
   „Certificato“ SÌ/NO само на Quadro, Argano, Funi, Limitatore и Serrature — другите клетки вдясно са
   празни (собственикът: „само текст“). „Verbale positivo“ SÌ/NO — без него протоколът не се подписва.
+  PDF-ът е „uguale identico“ на хартиения лист (собственикът, 5 ноември 2026; `verbali/pdf*.ts`): две
+  страници A4 в рамка, логото на фирмата горе в средата на всяка, DejaVu Serif (в образа —
+  `fonts-dejavu-core`; без него — Sans). Стр. 1: заглавието, „Indirizzo“ / „N° buono“, „Locale macchina“,
+  „Vano corsa“; стр. 2 (винаги от „Cabina“): „Cabina“, „Finiture“, „Verbale positivo SI NO“, подписите над
+  черта, „Data:“ долу вляво, копието долу в средата. Редът е една клетка „Quadro: <текст>“; „Certificato /
+  Si No“ — в дясната клетка на реда. Под рамката, дребно — потвърждението и отпечатъкът (на хартия ги
+  няма). Страницата на протокола (`views/verbali/_foglio.ejs`) е същата подредба.
   Подписите — като листа за интервенция (собственикът: „като листа за интервенция“): „Firma tecnico
   esecutore“ и „Firma supervisore“ на отделна страница върху окончателния протокол, отпечатък
   (`rilievi/verbale/v1` — без връзката с картата, за да оцелее окончателното ѝ изтриване) и печат HMAC
@@ -922,6 +929,17 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   работникът контролира страницата, без мрежа — „Nessuna connessione“; Playwright вижда мрежата на
   работника само с `PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS`, затова — в свой контекст; на телефон
   с Android — стъпките на Android и без хоризонтален скрол на 360 px).
+  **PDF в приложението на iPhone** (собственикът, 5 ноември 2026 — „è aperto un pdf non ho modo di
+  chiuderlo“): в приложението от началния екран на iOS PDF-ът (и `attachment`, и `inline`) заема
+  прозореца без изход — WebKit bug 290847, без решение от Apple. Затова ВСЕКИ линк към PDF носи
+  `data-pdf` (`tests/pdf-app.test.ts` го пази във всички изгледи), а `public/js/pdf-app.js` — само при
+  `navigator.standalone` — тегли файла и го подава на „Condividi“ на системата (отвори, запази във
+  „File“, печат, изпрати), която се затваря сама; не-PDF отговор (вход, блокиран печат) се отваря като
+  страница. В браузъра, на Android и на компютър линковете са както винаги. Текстовете — `pdfApp.*` в
+  `data-pdf-*` на `<body>`. На iPhone `/app` казва, че Apple инсталира само от „Condividi“, с бутон към
+  стъпките (бутон, който да инсталира, на iOS няма). Предупреждение „non sicura“ на Android: в
+  конфигурацията ни причина няма (HTTPS/HSTS, манифест, икони, работник — проверени); вероятно браузърът
+  (Samsung Internet) или Play Protect за WebAPK — затова стъпките препоръчват Chrome.
 - Коментарите в `src/`, `views/`, `deploy/` — на български; тестовете и `scripts/` — на английски. В
   изгледите коментарите са EJS (`<%# … %>`), никога HTML (`<!-- … -->`): страницата е само на италиански и
   няма кирилица дори в изходния код (пазят го тестовете — unit, integration и e2e).

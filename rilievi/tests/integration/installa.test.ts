@@ -99,5 +99,34 @@ describe('the installed app', () => {
       badges.map((m) => m[1] ?? ''),
       ['', ' hidden', ' hidden', ' hidden'],
     );
+    assert.match(android.body, /data-installa-ios hidden>/, 'no iPhone note on Android');
+  });
+
+  it('tells the iPhone that Apple installs only from "Condividi", with a button to the steps', async () => {
+    // The owner, 5 November 2026: "Su iPhone non funziona il pulsante installa" — iOS has no install call.
+    const iphone = await new Browser().request('GET', '/app', {
+      headers: {
+        'user-agent':
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1',
+      },
+    });
+    assert.equal(iphone.status, 200);
+    assert.match(iphone.body, /data-installa-ios>/, 'the note is visible from the first paint');
+    assert.match(iphone.body, /Apple lo permette solo dal menu Condividi/);
+    assert.match(iphone.body, /data-installa-ios-passi/);
+    assert.match(iphone.body, /<details class="installa__os" data-os="ios" open>/);
+  });
+
+  it('marks every PDF link for the iPhone app, which cannot close a PDF (WebKit bug 290847)', async () => {
+    const { browser } = await signedIn('TECNICO');
+    const page = await browser.get('/schede');
+    assert.match(page.body, /<script src="\/static\/js\/pdf-app\.js\?v=[^"]+" defer>/);
+    assert.match(page.body, /data-pdf-attesa="Preparo il PDF…"/);
+    assert.match(page.body, /data-pdf-non-supportato="[^"]+"/);
+    // The script is served, and it only acts in the home-screen app (navigator.standalone).
+    const script = await browser.get('/static/js/pdf-app.js');
+    assert.equal(script.status, 200);
+    assert.match(script.body, /navigator\.standalone !== true/);
+    assert.match(script.body, /navigator\.share\(\{ files: \[file\] \}\)/);
   });
 });

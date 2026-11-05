@@ -7,40 +7,41 @@
   const az = r.azienda;
   const segno = (on) => '<span class="foglio__box' + (on ? ' foglio__box--on' : '') + '" aria-hidden="true"></span>';
   const stato = (on) => '<span class="visually-hidden">' + (on ? t('interventi.segnato') : t('interventi.nonSegnato')) + '</span>';
-  const siNo = (valore) => ['si', 'no'].map((v) => '<span class="verbale-foglio__sn">' + t('verbali.' + v) + ' ' + segno(valore === v) + stato(valore === v) + '</span>').join('');
+  const siNo = (valore, si, no) => [['si', si], ['no', no]].map(([v, key]) => '<span class="verbale-foglio__sn">' + t('verbali.' + key) + ' ' + segno(valore === v) + stato(valore === v) + '</span>').join('');
   const positivo = r.positivo === null ? null : r.positivo ? 'si' : 'no';
 %><article class="foglio verbale-foglio" aria-labelledby="foglio-title">
   <header class="foglio__head">
     <% if (az.logoType) { %><img class="foglio__logo" src="/aziende/<%= az.id %>/logo?v=<%= az.logoUpdatedAt ? az.logoUpdatedAt.getTime() : 0 %>" alt="<%= t('aziende.logoAlt', { name: az.name }) %>"<% if (az.logoWidth && az.logoHeight) { %> width="<%= az.logoWidth %>" height="<%= az.logoHeight %>"<% } %>><% } else { %><span class="foglio__azienda"><%= az.name %></span><% } %>
-    <h2 class="verbale-foglio__titolo" id="foglio-title"><%= t('verbali.titolo') %></h2>
   </header>
+  <h2 class="verbale-foglio__titolo" id="foglio-title"><%= t('verbali.titolo') %></h2>
   <div class="verbale-foglio__testa">
-    <div><span class="foglio__k"><%= t('verbali.campo.indirizzo') %></span><strong><%= r.indirizzo || '—' %></strong></div>
-    <div><span class="foglio__k"><%= t('verbali.campo.buono') %></span><strong><%= r.buono || '—' %></strong></div>
+    <p class="verbale-foglio__indirizzo-k"><%= t('verbali.campo.indirizzo') %></p>
+    <p class="verbale-foglio__indirizzo"><strong><%= r.indirizzo || '' %></strong></p>
+    <p class="verbale-foglio__buono"><%= t('verbali.campo.buono') %><br><strong><%= r.buono || '' %></strong></p>
   </div>
   <% for (const sezione of sezioni) { %>
   <table class="verbale-foglio__tab">
     <thead>
-      <tr><th scope="colgroup" colspan="2"><%= t('verbali.sezione.' + sezione.key) %></th><th scope="col" class="verbale-foglio__cert"><%= sezione.voci.some((v) => v.certificato) ? t('verbali.certificato') : '' %></th></tr>
+      <tr><th scope="colgroup" colspan="2"><%= t('verbali.sezione.' + sezione.key) %></th></tr>
     </thead>
     <tbody>
       <% for (const voce of sezione.voci) { const value = voci[voce.key] || {}; %><tr<% if (voce.varie) { %> class="is-varie"<% } %>>
-        <th scope="row"><%= t('verbali.voce.' + voce.key) %></th>
-        <td class="verbale-foglio__testo"><%= value.t || '' %></td>
-        <td class="verbale-foglio__cert"><% if (voce.certificato) { %><%- siNo(value.c) %><% } %></td>
+        <td class="verbale-foglio__testo"><span class="verbale-foglio__voce"><%= t('verbali.voce.' + voce.key) %>:</span> <%= value.t || '' %></td>
+        <td class="verbale-foglio__cert"><% if (voce.certificato) { %><span class="verbale-foglio__cert-k"><%= t('verbali.certificato') %></span><%- siNo(value.c, 'carta.si', 'carta.no') %><% } %></td>
       </tr>
       <% } %>
     </tbody>
   </table>
   <% } %>
-  <p class="verbale-foglio__positivo"><strong><%= t('verbali.positivo') %></strong> <%- siNo(positivo) %></p>
-  <p class="verbale-foglio__data"><span class="foglio__k"><%= t('verbali.campo.data') %></span> <strong><%= fmt.day(r.data) %></strong></p>
-  <% if (typeof senzaFirme === 'undefined' || !senzaFirme) { %><div class="foglio__firme">
+  <p class="verbale-foglio__positivo"><strong><%= t('verbali.positivo') %></strong> <%- siNo(positivo, 'carta.siPositivo', 'carta.noPositivo') %></p>
+  <% if (typeof senzaFirme === 'undefined' || !senzaFirme) { %><div class="foglio__firme verbale-foglio__firme">
     <% for (const [chi, path, nome] of [['tecnico', firme.tecnico, r.firmaTecnicoNome], ['supervisore', firme.supervisore, r.firmaSupervisoreNome]]) { %><figure>
-      <figcaption><%= t('verbali.firma.' + chi) %>: <strong><%= nome || '—' %></strong></figcaption>
+      <figcaption><%= t('verbali.firma.' + chi) %></figcaption>
       <% if (path) { %><svg class="foglio__firma" viewBox="0 0 600 200" role="img" aria-label="<%= t('verbali.firma.' + chi) %>"><path d="<%= path %>" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><% } else { %><p class="foglio__firma foglio__firma--vuota"><%= t('interventi.firma.vuota') %></p><% } %>
+      <p class="verbale-foglio__nome"><%= nome || '' %></p>
     </figure><% } %>
   </div><% } %>
+  <p class="verbale-foglio__data"><%= t('verbali.campo.data') %>: <strong><%= fmt.day(r.data) %></strong></p>
   <% if (r.confermatoAt) { %><p class="foglio__confermato"><%= t('verbali.confermato', { at: fmt.dateTime(r.confermatoAt), name: r.confermatoBy ? r.confermatoBy.name : '—' }) %></p><% } %>
   <% if (typeof impronta !== 'undefined' && impronta && r.confermatoAt) { %><p class="foglio__impronta"><%= t('interventi.sigillo.impronta') %>: <span class="impronta"><%= impronta %></span></p><% } %>
 </article>

@@ -50,6 +50,12 @@
     "certificatoDi": "Certificato: {voce}",
     "si": "SÌ",
     "no": "NO",
+    "carta": {
+      "si": "Si",
+      "no": "No",
+      "siPositivo": "SI",
+      "noPositivo": "NO"
+    },
     "positivo": "Verbale positivo",
     "segue": "segue",
     "pagina": "Pagina {n} di {tot}",

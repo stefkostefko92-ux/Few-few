@@ -12,7 +12,7 @@
   </div>
   <div class="toolbar">
     <% if (modifica) { %><a class="btn" href="/verbali/<%= r.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('verbali.modifica') %></a><% } %>
-    <% if (sigillo === true) { for (const copia of copie) { %><a class="btn<%= copia === 'azienda' ? ' btn--primary' : '' %>" href="/verbali/<%= r.id %>/pdf/<%= copia %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('verbali.pdf.' + copia) %></a><% } } %>
+    <% if (sigillo === true) { for (const copia of copie) { %><a class="btn<%= copia === 'azienda' ? ' btn--primary' : '' %>" data-pdf href="/verbali/<%= r.id %>/pdf/<%= copia %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('verbali.pdf.' + copia) %></a><% } } %>
   </div>
 </div>
 <div class="stack-gap">

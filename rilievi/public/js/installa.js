@@ -37,6 +37,21 @@
     if (badge) badge.hidden = !mine;
   });
 
+  // iPhone/iPad have no install call (no beforeinstallprompt): the button opens the steps through
+  // "Condividi" and moves to them; once installed the note is gone.
+  show('[data-installa-ios]', os === 'ios' && !installed);
+  const guida = root.querySelector('[data-installa-ios-passi]');
+  if (guida) {
+    guida.addEventListener('click', () => {
+      const passi = root.querySelector('details[data-os="ios"]');
+      if (!passi) return;
+      passi.open = true;
+      passi.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      const summary = passi.querySelector('summary');
+      if (summary) summary.focus({ preventScroll: true });
+    });
+  }
+
   let offer = null;
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();

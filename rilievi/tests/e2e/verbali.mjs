@@ -102,4 +102,33 @@ export async function checkVerbali(page, { base, shots, scheme, sheetUrl }) {
   }
   await audit(page, `${name} confirmed`);
   await page.screenshot({ path: join(shots, `${scheme}-verbale.png`), fullPage: true });
+  await checkPdfInApp(page, { name, url });
+}
+
+/**
+ * The app on the iPhone home screen cannot close a PDF (WebKit bug 290847): there a PDF link hands the
+ * file to the share sheet and the app stays on its page (public/js/pdf-app.js). Emulated in Chromium:
+ * navigator.standalone on, the share sheet recorded instead of shown.
+ */
+async function checkPdfInApp(page, { name, url }) {
+  const app = await page.context().newPage();
+  await app.addInitScript(() => {
+    Object.defineProperty(Navigator.prototype, 'standalone', { get: () => true });
+    window.__condiviso = null;
+    Navigator.prototype.canShare = () => true;
+    Navigator.prototype.share = async (data) => {
+      const file = data.files[0];
+      window.__condiviso = { name: file.name, type: file.type, size: file.size };
+    };
+  });
+  await app.goto(url);
+  await app.locator('a[data-pdf][href$="/pdf/installatore"]').click();
+  await app.waitForFunction(() => window.__condiviso !== null, null, { timeout: 15000 });
+  const condiviso = await app.evaluate(() => window.__condiviso);
+  if (condiviso.type !== 'application/pdf' || condiviso.size < 1000)
+    fail(`${name}: the app shares ${JSON.stringify(condiviso)}, not the PDF`);
+  if (!/copia-installatore\.pdf$/.test(condiviso.name))
+    fail(`${name}: shared file named ${condiviso.name}`);
+  if (app.url() !== url) fail(`${name}: the app left the page for the PDF (${app.url()})`);
+  await app.close();
 }

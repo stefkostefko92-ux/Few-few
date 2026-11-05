@@ -31,8 +31,8 @@
     <p class="page-head__sub"><%= t('argano.sottotitolo') %></p>
   </div>
   <% if (salvato && salvato.dati && percorso.pdf) { %><div class="toolbar">
-    <a class="btn" href="<%= percorso.pdf %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('argano.pdf') %></a>
-    <a class="btn" href="<%= percorso.pdf %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('argano.stampa') %></a>
+    <a class="btn" data-pdf href="<%= percorso.pdf %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('argano.pdf') %></a>
+    <a class="btn" data-pdf href="<%= percorso.pdf %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('argano.stampa') %></a>
   </div><% } %>
 </div>
 <div class="stack-gap argano">

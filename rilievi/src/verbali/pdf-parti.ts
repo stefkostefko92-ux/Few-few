@@ -1,80 +1,137 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { Translator } from '../i18n.js';
-import { box, INK, MUTED } from '../interventi/pdf-parti.js';
+import { box, INK } from '../interventi/pdf-parti.js';
+import { fontsOf } from '../interventi/pdf.js';
 import type { ValoriVerbale, VoceVerbale } from './voci.js';
 
 /**
- * Частите на PDF-а на протокола (pdf.ts): мерките на листа, клетката SÌ/NO, заглавието на раздела, редът
- * (надпис, текст, „Certificato“) и долът на всяка страница с копието.
+ * Частите на PDF-а на протокола (pdf.ts) — мерките и клетките на хартиения лист на собственика (5 ноември
+ * 2026, „uguale identico“): рамка около страницата, логото горе в средата, редът „Quadro: …“ в една клетка
+ * с текста след надписа, вдясно „Certificato / Si No“ в клетката на всеки ред, който го има (другите —
+ * празни), заглавието на раздела — центриран ред през цялата ширина. Шрифтът е serif като на листа
+ * (DejaVu Serif — кирилицата е покрита); без него — DejaVu Sans.
  */
 
 export const PAGE = { width: 595.28, height: 841.89 };
-export const M = 32;
+/** Рамката на листа и полето вътре в нея. */
+export const CORNICE = 28;
+export const M = 50;
 export const W = PAGE.width - M * 2;
-export const LOGO = { width: 170, height: 44 };
-/** Долната граница на съдържанието: под нея е редът с копието и страницата. */
-export const FONDO = PAGE.height - M - 18;
-export const LABEL_W = 128;
-export const CERT_W = 78;
-export const TEXT_W = W - LABEL_W - CERT_W;
-export const FS = 8.5;
-export const PAD = 3.5;
-export const FILL = '#ececec';
+export const LOGO = { width: 380, height: 92 };
+/** Долът на рамката; под нея е само редът с отпечатъка. */
+export const FONDO_CORNICE = PAGE.height - CORNICE;
+export const FONDO = FONDO_CORNICE - 14;
+export const CERT_W = 70;
+export const TESTO_W = W - CERT_W;
+export const FS = 10;
+export const PAD = 4;
+export const RIGA_H = 27;
+export const VARIE_H = 54;
+export const TESTA_SEZIONE = 17;
 
-/** „SÌ ☐ NO ☐“ в клетка, с кръстче на избраното. */
+const serifCache = new Map<string, { regular: Buffer; bold: Buffer }>();
+
+/** DejaVu Serif (в образа — `fonts-dejavu-core`); ако го няма — DejaVu Sans, който портът проверява при старт. */
+export function fontsVerbale(dir: string): { regular: Buffer; bold: Buffer } {
+  let fonts = serifCache.get(dir);
+  if (!fonts) {
+    const regular = join(dir, 'DejaVuSerif.ttf');
+    const bold = join(dir, 'DejaVuSerif-Bold.ttf');
+    fonts =
+      existsSync(regular) && existsSync(bold)
+        ? { regular: readFileSync(regular), bold: readFileSync(bold) }
+        : fontsOf(dir);
+    serifCache.set(dir, fonts);
+  }
+  return fonts;
+}
+
+/** Рамката около страницата — като на хартиения лист. */
+export function cornice(doc: PDFKit.PDFDocument): void {
+  doc
+    .save()
+    .lineWidth(0.8)
+    .strokeColor(INK)
+    .rect(CORNICE, CORNICE, PAGE.width - CORNICE * 2, PAGE.height - CORNICE * 2)
+    .stroke()
+    .restore();
+}
+
+/** Логото на фирмата горе в средата (без лого — името ѝ); връща долния край. */
+export function intestazione(
+  doc: PDFKit.PDFDocument,
+  logo: Buffer | null,
+  azienda: string,
+): number {
+  const top = CORNICE + 16;
+  if (logo) {
+    doc.image(logo, M + (W - LOGO.width) / 2, top, {
+      fit: [LOGO.width, LOGO.height],
+      align: 'center',
+      valign: 'center',
+    });
+  } else {
+    doc
+      .font('Serif-Bold')
+      .fontSize(18)
+      .fillColor(INK)
+      .text(azienda, M, top + LOGO.height / 2 - 12, {
+        width: W,
+        align: 'center',
+        height: 26,
+        ellipsis: true,
+      });
+  }
+  return top + LOGO.height;
+}
+
+/** „Si ☐   No ☐“ — кутийката до думата, с кръстче на избраното. */
 export function siNo(
   doc: PDFKit.PDFDocument,
-  t: Translator,
+  etichette: { si: string; no: string },
   x: number,
   y: number,
   valore: 'si' | 'no' | null,
+  passo: number,
+  fs = FS,
+  font: 'Serif' | 'Serif-Bold' = 'Serif',
 ): void {
-  const segni = [
-    ['si', t('verbali.si')],
-    ['no', t('verbali.no')],
-  ] as const;
-  segni.forEach(([key, label], i) => {
-    const sx = x + i * 36;
-    doc.font('Sans').fontSize(FS).fillColor(INK).text(label, sx, y, { lineBreak: false });
-    box(doc, sx + doc.widthOfString(label) + 3, y + 1.4, valore === key);
+  (['si', 'no'] as const).forEach((key, i) => {
+    const sx = x + i * passo;
+    doc.font(font).fontSize(fs).fillColor(INK).text(etichette[key], sx, y, { lineBreak: false });
+    box(doc, sx + doc.widthOfString(etichette[key]) + 3, y + fs * 0.18, valore === key);
   });
 }
 
-/** Колко висок е редът: текстът в средната колона, най-малко един ред (при „Varie“ — няколко). */
-export function altezzaRiga(doc: PDFKit.PDFDocument, voce: VoceVerbale, testo: string): number {
-  doc.font('Sans').fontSize(FS);
-  const h = testo ? doc.heightOfString(testo, { width: TEXT_W - PAD * 2 }) : 0;
-  return Math.max(voce.varie ? 34 : 18, h + PAD * 2 + 1);
-}
+/** Надписът на реда и текстът след него — един абзац в лявата клетка. */
+const testoRiga = (t: Translator, voce: VoceVerbale, testo: string) =>
+  `${t(`verbali.voce.${voce.key}`)}:${testo ? ` ${testo}` : ''}`;
 
-export function intestazioneSezione(
+/** Колко висок е редът: като на листа (Varie — двойно), или колкото текстът му. */
+export function altezzaRiga(
   doc: PDFKit.PDFDocument,
   t: Translator,
-  titolo: string,
-  certificati: boolean,
-  y: number,
+  voce: VoceVerbale,
+  testo: string,
 ): number {
-  const h = 15;
-  doc.lineWidth(0.6).strokeColor(INK);
-  doc.rect(M, y, W - CERT_W, h).fillAndStroke(FILL, INK);
-  doc.rect(M + W - CERT_W, y, CERT_W, h).fillAndStroke(FILL, INK);
-  doc
-    .font('Sans-Bold')
-    .fontSize(9)
-    .fillColor(INK)
-    .text(titolo.toUpperCase(), M + PAD, y + 3, { lineBreak: false });
-  if (certificati) {
-    doc
-      .font('Sans-Bold')
-      .fontSize(7.5)
-      .text(t('verbali.certificato'), M + W - CERT_W, y + 3.5, {
-        width: CERT_W,
-        align: 'center',
-        lineBreak: false,
-      });
-  }
-  return y + h;
+  doc.font('Serif').fontSize(FS);
+  const h = doc.heightOfString(testoRiga(t, voce, testo), { width: TESTO_W - PAD * 2 });
+  return Math.max(voce.varie ? VARIE_H : RIGA_H, h + PAD * 2 + 2);
 }
 
+/** Заглавието на раздела — центриран ред през цялата ширина. */
+export function intestazioneSezione(doc: PDFKit.PDFDocument, titolo: string, y: number): number {
+  doc.lineWidth(0.7).strokeColor(INK).rect(M, y, W, TESTA_SEZIONE).stroke();
+  doc
+    .font('Serif')
+    .fontSize(11)
+    .fillColor(INK)
+    .text(titolo, M, y + 3, { width: W, align: 'center', lineBreak: false });
+  return y + TESTA_SEZIONE;
+}
+
+/** Един ред: „Quadro: …“ вляво, вдясно „Certificato / Si No“ или празна клетка. */
 export function riga(
   doc: PDFKit.PDFDocument,
   t: Translator,
@@ -84,51 +141,28 @@ export function riga(
   h: number,
 ): void {
   const value = voci[voce.key];
-  doc.lineWidth(0.6).strokeColor(INK);
-  doc.rect(M, y, LABEL_W, h).stroke();
-  doc.rect(M + LABEL_W, y, TEXT_W, h).stroke();
-  doc.rect(M + LABEL_W + TEXT_W, y, CERT_W, h).stroke();
+  doc.lineWidth(0.7).strokeColor(INK);
+  doc.rect(M, y, TESTO_W, h).stroke();
+  doc.rect(M + TESTO_W, y, CERT_W, h).stroke();
   doc
-    .font('Sans-Bold')
+    .font('Serif')
     .fontSize(FS)
     .fillColor(INK)
-    .text(t(`verbali.voce.${voce.key}`), M + PAD, y + PAD + 0.5, { width: LABEL_W - PAD * 2 });
-  if (value?.t) {
-    doc
-      .font('Sans')
-      .fontSize(FS)
-      .fillColor(INK)
-      .text(value.t, M + LABEL_W + PAD, y + PAD + 0.5, { width: TEXT_W - PAD * 2 });
-  }
-  // „Certificato“ — само на редовете, които го имат; другите клетки остават празни (като на хартията).
-  if (voce.certificato) siNo(doc, t, M + LABEL_W + TEXT_W + 8, y + PAD + 0.5, value?.c ?? null);
-}
-
-/** Долу на всяка страница: копието (удебелено) и „Pagina n di m“. */
-export function piedi(doc: PDFKit.PDFDocument, t: Translator, copia: string): void {
-  const { start, count } = doc.bufferedPageRange();
-  for (let i = start; i < start + count; i += 1) {
-    doc.switchToPage(i);
-    const y = PAGE.height - M - 4;
-    doc
-      .font('Sans-Bold')
-      .fontSize(10)
-      .fillColor(INK)
-      .text(t(`verbali.copia.${copia}`), M, y, {
-        width: W,
-        align: 'center',
-        lineBreak: false,
-      });
-    if (count > 1) {
-      doc
-        .font('Sans')
-        .fontSize(7)
-        .fillColor(MUTED)
-        .text(t('verbali.pagina', { n: i - start + 1, tot: count }), M, y + 2, {
-          width: W,
-          align: 'right',
-          lineBreak: false,
-        });
-    }
-  }
+    .text(testoRiga(t, voce, value?.t ?? ''), M + PAD, y + PAD, { width: TESTO_W - PAD * 2 });
+  if (!voce.certificato) return;
+  const x = M + TESTO_W;
+  doc
+    .font('Serif')
+    .fontSize(8.5)
+    .fillColor(INK)
+    .text(t('verbali.certificato'), x, y + 3, { width: CERT_W, align: 'center', lineBreak: false });
+  siNo(
+    doc,
+    { si: t('verbali.carta.si'), no: t('verbali.carta.no') },
+    x + 7,
+    y + 14,
+    value?.c ?? null,
+    31,
+    8.5,
+  );
 }

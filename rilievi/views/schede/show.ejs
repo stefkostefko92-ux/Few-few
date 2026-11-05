@@ -10,7 +10,7 @@
   <div class="toolbar">
     <% if (!scheda.deletedAt && canIn('schede:write', scheda.aziendaId)) { %><a class="btn btn--primary" href="/schede/<%= scheda.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('scheda.actions.edit') %></a><% } %>
     <a class="btn" href="/schede/<%= scheda.id %>/stampa?auto=1"><%- include('../partials/icon', { name: 'print' }) %><%= t('scheda.actions.print') %></a>
-    <a class="btn" href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
+    <a class="btn" data-pdf href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
     <%# Изчислението за аргано — не при хидравлична уредба (там аргано няма). %>
     <% if (!(scheda.tipoImpianto || []).includes('IDRAULICO')) { %><a class="btn" href="/schede/<%= scheda.id %>/calcolo-argano"><%- include('../partials/icon', { name: 'calc' }) %><%= t('argano.apri') %></a><% } %>
     <% if (!scheda.deletedAt && canIn('interventi:write', scheda.aziendaId)) { %><a class="btn" href="/cartelli/nuovo?scheda=<%= scheda.id %>"><%- include('../partials/icon', { name: 'stop' }) %><%= t('cartelli.daScheda.crea') %></a><% } %>
@@ -45,8 +45,8 @@
         <dt><%= field.label %></dt>
         <% if (field.value) { %><dd><%= field.value %><% if (field.table) { %><%- include('_table', { table: field.table }) %><% } %><% if (field.modulo) { %>
           <span class="modulo-links"><span class="modulo-links__name"><%= field.modulo.nome %></span>
-            <a class="btn btn--sm" href="/schede/<%= scheda.id %>/<%= field.modulo.path %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('ordini.download') %></a>
-            <a class="btn btn--sm" href="/schede/<%= scheda.id %>/<%= field.modulo.path %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('ordini.print') %></a>
+            <a class="btn btn--sm" data-pdf href="/schede/<%= scheda.id %>/<%= field.modulo.path %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('ordini.download') %></a>
+            <a class="btn btn--sm" data-pdf href="/schede/<%= scheda.id %>/<%= field.modulo.path %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('ordini.print') %></a>
           </span><% } %></dd><% } else { %><dd class="empty-value">—</dd><% } %>
       </div>
       <% } %>

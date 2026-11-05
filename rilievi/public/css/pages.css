@@ -298,3 +298,11 @@
 .order-reset {
   margin-top: 14px;
 }
+
+/* Съобщението до PDF линка в приложението на iPhone (public/js/pdf-app.js): „Preparo il PDF…“ и др. */
+.pdf-stato:not(:empty) {
+  flex-basis: 100%;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}

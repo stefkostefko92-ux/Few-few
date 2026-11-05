@@ -17,6 +17,11 @@
     <button class="btn btn--primary" type="button" data-installa-ora><%- include('../partials/icon', { name: 'download' }) %><span><%= t('installa.button') %></span></button>
   </div>
   <p class="notice" data-installa-fatta role="status" hidden><%= t('installa.done') %></p>
+  <%# iPhone/iPad: няма API за инсталиране — бутонът води до стъпките през „Condividi“ (installa.js). %>
+  <div class="notice installa__pronta" data-installa-ios<% if (sistema !== 'ios') { %> hidden<% } %>>
+    <p><%= t('installa.iosNote') %></p>
+    <button class="btn btn--primary" type="button" data-installa-ios-passi><%- include('../partials/icon', { name: 'download' }) %><span><%= t('installa.iosButton') %></span></button>
+  </div>
   <div class="installa__elenco">
   <% for (const [os, passi] of [['android', 4], ['ios', 4], ['pc', 4], ['mac', 3]]) { %>
   <details class="installa__os" data-os="<%= os %>"<% if (!sistema || sistema === os) { %> open<% } %>>

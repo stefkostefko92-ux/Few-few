@@ -349,13 +349,14 @@ describe(
   () => {
     const options = { t, fmt: viewHelpers('it'), fontDir, logo: null };
 
-    it('makes the company copy and the installer copy of the same content, on A4', async () => {
+    it('makes the company copy and the installer copy of the same content, on two A4 pages like the paper', async () => {
       const row = { ...pieno(), voci: CONTENUTO.voci } as VerbaleFull;
       const titoli: string[] = [];
       for (const copia of COPIE) {
         const doc = await PDFDocument.load(await renderVerbalePdf(row, { ...options, copia }));
-        assert.equal(doc.getPageCount(), 1, `${copia}: an ordinary report is one page`);
-        assert.deepEqual(doc.getPage(0).getSize(), { width: 595.28, height: 841.89 });
+        assert.equal(doc.getPageCount(), 2, `${copia}: two pages, as the paper sheet`);
+        for (const page of doc.getPages())
+          assert.deepEqual(page.getSize(), { width: 595.28, height: 841.89 });
         titoli.push(doc.getTitle() ?? '');
       }
       assert.deepEqual(titoli, [
@@ -368,7 +369,7 @@ describe(
       const doc = await PDFDocument.load(
         await renderVerbalePdf(pieno(), { ...options, copia: 'installatore' }),
       );
-      assert.ok(doc.getPageCount() >= 2 && doc.getPageCount() <= 4, `${doc.getPageCount()}`);
+      assert.ok(doc.getPageCount() >= 3 && doc.getPageCount() <= 6, `${doc.getPageCount()}`);
       for (const page of doc.getPages())
         assert.deepEqual(page.getSize(), { width: 595.28, height: 841.89 });
     });
