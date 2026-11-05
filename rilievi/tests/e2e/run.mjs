@@ -9,7 +9,8 @@
 // who sees the company's sheets (inviti.mjs), photos in a section of the sheet (allegati.mjs — the worker
 // must run next to the portal: `npm run worker`), the sketch pad turned on for the company and drawn in its
 // full-screen editor (schizzi.mjs), the side bar and an intervention form signed and confirmed
-// (interventi.mjs), the company data and the stop sign (cartelli.mjs), the machine calculation
+// (interventi.mjs), the company data and the stop sign (cartelli.mjs), the closing report signed
+// with its two PDFs (verbali.mjs), the machine calculation
 // (argano.mjs), the phone (telefono.mjs), and accessibility (axe-core, WCAG 2.1 AA) on every page, in
 // the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
 //
@@ -39,6 +40,7 @@ import { checkInstallableApp, checkInstallPhone } from './installa.mjs';
 import { checkCartelli } from './cartelli.mjs';
 import { checkArgano } from './argano.mjs';
 import { checkInterventi } from './interventi.mjs';
+import { checkVerbali } from './verbali.mjs';
 import { checkPhone } from './telefono.mjs';
 import { checkMovilift } from './movilift.mjs';
 import { checkPrintedNotes, fillDoorsAndChecks } from './porte.mjs';
@@ -273,6 +275,7 @@ try {
     await page.screenshot({ path: join(shots, `${scheme}-print.png`), fullPage: true });
     await checkInterventi(page, { base, shots, scheme, aziendaName });
     await checkCartelli(page, { base, shots, scheme, aziendaPath, sheetUrl });
+    await checkVerbali(page, { base, shots, scheme, sheetUrl });
     if (scheme === 'light') await checkCompanyData(context, { base, aziendaName, scheme });
     await checkArgano(page, { shots, scheme, sheetUrl, aziendaId: aziendaPath.split('/').pop() });
 

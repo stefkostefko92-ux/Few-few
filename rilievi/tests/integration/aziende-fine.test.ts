@@ -51,6 +51,9 @@ async function companyWithData(name: string) {
   await prisma.calcoloArgano.create({
     data: { aziendaId: azienda.id, indirizzo: 'Via Fine 1', dati: {} },
   });
+  await prisma.verbale.create({
+    data: { aziendaId: azienda.id, data: new Date('2026-11-05'), schedaId },
+  });
   return { azienda, user, schedaId };
 }
 
@@ -72,6 +75,7 @@ describe('the end of the service for a company', () => {
       interventi: unknown[];
       cartelli: unknown[];
       calcoliArgano: unknown[];
+      verbali: unknown[];
     };
     assert.equal(dati.azienda.id, azienda.id);
     assert.deepEqual(
@@ -83,6 +87,7 @@ describe('the end of the service for a company', () => {
     assert.equal(dati.interventi.length, 1);
     assert.equal(dati.cartelli.length, 1);
     assert.equal(dati.calcoliArgano.length, 1);
+    assert.equal(dati.verbali.length, 1);
     const file = dati.schede[0]!.allegati[0]!.file;
     assert.ok(
       file && [...entries.keys()].some((name) => name.endsWith(file)),
@@ -136,6 +141,7 @@ describe('the end of the service for a company', () => {
       prisma.intervento.count({ where: { aziendaId: azienda.id } }),
       prisma.cartello.count({ where: { aziendaId: azienda.id } }),
       prisma.calcoloArgano.count({ where: { aziendaId: azienda.id } }),
+      prisma.verbale.count({ where: { aziendaId: azienda.id } }),
       prisma.invite.count({ where: { aziendaId: azienda.id } }),
       prisma.auditLog.count({ where: { aziendaId: azienda.id } }),
       prisma.user.count({ where: { id: user.id } }),

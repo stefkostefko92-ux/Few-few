@@ -1,0 +1,131 @@
+/* „Verbale di chiusura cantiere“: формата (редът — текст и вдясно „Certificato“ SÌ/NO) и протоколът като
+   на хартия (views/verbali/_foglio.ejs) — върху листа за интервенция (foglio.css). */
+
+.verbale-riga {
+  display: grid;
+  gap: 4px 16px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.verbale-riga:first-of-type {
+  border-top: 0;
+}
+
+@media (min-width: 640px) {
+  .verbale-riga--cert {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+}
+
+.verbale-sn {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.verbale-sn legend {
+  margin-bottom: 4px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.verbale-foglio__titolo {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.verbale-foglio__testa {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  margin: 14px 0 12px;
+  border: 1px solid #000000;
+}
+
+.verbale-foglio__testa > div {
+  display: grid;
+  gap: 2px;
+  padding: 6px 8px;
+  overflow-wrap: anywhere;
+}
+
+.verbale-foglio__testa > div + div {
+  border-left: 1px solid #000000;
+}
+
+.verbale-foglio__tab {
+  width: 100%;
+  margin: 0 0 12px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.verbale-foglio__tab th,
+.verbale-foglio__tab td {
+  padding: 4px 6px;
+  border: 1px solid #000000;
+  text-align: left;
+  vertical-align: top;
+}
+
+.verbale-foglio__tab thead th {
+  background: #ececec;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+}
+
+.verbale-foglio__tab tbody th {
+  width: 30%;
+  font-weight: 700;
+}
+
+.verbale-foglio__testo {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.verbale-foglio__tab .is-varie td {
+  height: 4.2em;
+}
+
+.verbale-foglio__tab .verbale-foglio__cert {
+  width: 9.5em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.verbale-foglio__sn + .verbale-foglio__sn {
+  margin-left: 10px;
+}
+
+.verbale-foglio__positivo {
+  margin: 4px 0 0;
+  padding: 6px 8px;
+  border: 1px solid #000000;
+}
+
+.verbale-foglio__positivo strong {
+  margin-right: 16px;
+}
+
+.verbale-foglio__data {
+  margin: 10px 0 0;
+}
+
+@media (max-width: 480px) {
+  .verbale-foglio__testa {
+    grid-template-columns: 1fr;
+  }
+
+  .verbale-foglio__testa > div + div {
+    border-left: 0;
+    border-top: 1px solid #000000;
+  }
+
+  .verbale-foglio__tab tbody th {
+    width: 38%;
+  }
+}

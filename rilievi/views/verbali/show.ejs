@@ -1,0 +1,33 @@
+<%
+  // Страницата на протокола: протоколът като на хартия и действията според състоянието — чернова:
+  // „Modifica“ и „Firma e conferma“ (подписите — на отделна страница, върху окончателния протокол);
+  // потвърден: печатът, и само при непокътнат печат — двата PDF-а (копие на фирмата и на монтажника).
+  const r = verbale;
+%><%- include('../partials/top', { titleKey: 'verbali.titolo', scripts: [] }) %>
+<div class="page-head">
+  <div>
+    <a href="/verbali"><%= t('verbali.indietro') %></a>
+    <h1><%= t('verbali.titolo') %></h1>
+    <p class="page-head__sub"><%= r.azienda.name %> · <span class="stato<%= r.confermatoAt ? ' stato--chiuso' : '' %>"><%= t(r.confermatoAt ? 'verbali.stato.chiuso' : 'verbali.stato.bozza') %></span><% if (r.scheda && !r.scheda.deletedAt) { %> · <a href="/schede/<%= r.scheda.id %>"><%= t('cartelli.daScheda.apri') %></a><% } %></p>
+  </div>
+  <div class="toolbar">
+    <% if (modifica) { %><a class="btn" href="/verbali/<%= r.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('verbali.modifica') %></a><% } %>
+    <% if (sigillo === true) { for (const copia of copie) { %><a class="btn<%= copia === 'azienda' ? ' btn--primary' : '' %>" href="/verbali/<%= r.id %>/pdf/<%= copia %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('verbali.pdf.' + copia) %></a><% } } %>
+  </div>
+</div>
+<div class="stack-gap">
+<% if (r.confermatoAt && sigillo === true) { %>
+  <p class="notice"><%= t('verbali.chiuso') %> <%= t('verbali.sigillo.valido') %></p>
+<% } else if (r.confermatoAt) { %>
+  <div class="errors intervento-sigillo" role="alert"><p><strong><%= t('verbali.sigillo.alterato') %></strong></p></div>
+<% } else if (modifica) { %>
+  <div class="panel intervento-conferma">
+    <h2><%= t('verbali.conferma.titolo') %></h2>
+    <p><%= t('verbali.conferma.testo') %></p>
+    <% if (r.positivo === null) { %><p class="muted"><%= t('verbali.positivoMancante') %></p><% } %>
+    <a class="btn btn--primary" href="/verbali/<%= r.id %>/firma"><%- include('../partials/icon', { name: 'sign' }) %><%= t('verbali.conferma.pulsante') %></a>
+  </div>
+<% } %>
+<%- include('_foglio') %>
+</div>
+<%- include('../partials/bottom') %>

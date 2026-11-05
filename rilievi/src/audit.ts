@@ -39,6 +39,9 @@ export const AUDIT_ACTIONS = [
   'CARTELLO_CREATE',
   'CARTELLO_UPDATE',
   'CARTELLO_DELETE',
+  'VERBALE_CREATE',
+  'VERBALE_UPDATE',
+  'VERBALE_CONFIRM',
   'ARGANO_CALCOLO',
   'ARGANO_CALCOLO_DELETE',
   'AZIENDA_CREATE',
@@ -76,7 +79,15 @@ export interface AuditEntry {
    */
   aziendaId: string | null;
   targetType?:
-    'user' | 'invite' | 'scheda' | 'azienda' | 'request' | 'intervento' | 'cartello' | 'calcolo';
+    | 'user'
+    | 'invite'
+    | 'scheda'
+    | 'azienda'
+    | 'request'
+    | 'intervento'
+    | 'cartello'
+    | 'calcolo'
+    | 'verbale';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */
   meta?: Prisma.InputJsonObject;

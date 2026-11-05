@@ -82,63 +82,65 @@ export async function esportaAzienda(
     },
   });
   if (!azienda) return null;
-  const [persone, schede, interventi, cartelli, calcoliArgano, registro] = await Promise.all([
-    prisma.membership.findMany({
-      where: { aziendaId },
-      orderBy: { createdAt: 'asc' },
-      select: {
-        role: true,
-        createdAt: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            createdAt: true,
-            deactivatedAt: true,
-            lastLoginAt: true,
+  const [persone, schede, interventi, cartelli, calcoliArgano, verbali, registro] =
+    await Promise.all([
+      prisma.membership.findMany({
+        where: { aziendaId },
+        orderBy: { createdAt: 'asc' },
+        select: {
+          role: true,
+          createdAt: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              createdAt: true,
+              deactivatedAt: true,
+              lastLoginAt: true,
+            },
           },
         },
-      },
-    }),
-    prisma.scheda.findMany({
-      where: { aziendaId },
-      orderBy: { createdAt: 'asc' },
-      include: {
-        misureBottoniere: true,
-        schizzi: { orderBy: { ordine: 'asc' } },
-        allegati: {
-          orderBy: { createdAt: 'asc' },
-          select: {
-            id: true,
-            schedaId: true,
-            sezione: true,
-            tipo: true,
-            stato: true,
-            didascalia: true,
-            nomeOriginale: true,
-            inStampa: true,
-            createdAt: true,
+      }),
+      prisma.scheda.findMany({
+        where: { aziendaId },
+        orderBy: { createdAt: 'asc' },
+        include: {
+          misureBottoniere: true,
+          schizzi: { orderBy: { ordine: 'asc' } },
+          allegati: {
+            orderBy: { createdAt: 'asc' },
+            select: {
+              id: true,
+              schedaId: true,
+              sezione: true,
+              tipo: true,
+              stato: true,
+              didascalia: true,
+              nomeOriginale: true,
+              inStampa: true,
+              createdAt: true,
+            },
           },
         },
-      },
-    }),
-    prisma.intervento.findMany({ where: { aziendaId }, orderBy: { numero: 'asc' } }),
-    prisma.cartello.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
-    prisma.calcoloArgano.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
-    prisma.auditLog.findMany({
-      where: { aziendaId },
-      orderBy: { at: 'asc' },
-      select: {
-        at: true,
-        actorId: true,
-        action: true,
-        targetType: true,
-        targetId: true,
-        meta: true,
-      },
-    }),
-  ]);
+      }),
+      prisma.intervento.findMany({ where: { aziendaId }, orderBy: { numero: 'asc' } }),
+      prisma.cartello.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
+      prisma.calcoloArgano.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
+      prisma.verbale.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
+      prisma.auditLog.findMany({
+        where: { aziendaId },
+        orderBy: { at: 'asc' },
+        select: {
+          at: true,
+          actorId: true,
+          action: true,
+          targetType: true,
+          targetId: true,
+          meta: true,
+        },
+      }),
+    ]);
   const files: FileNelTar[] = [];
   const schedeJson = schede.map(({ allegati, ...scheda }) => ({
     ...scheda,
@@ -165,6 +167,7 @@ export async function esportaAzienda(
         interventi,
         cartelli,
         calcoliArgano,
+        verbali,
         registro,
       },
       null,

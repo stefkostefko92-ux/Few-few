@@ -96,6 +96,12 @@ src/
                      само без pdftoppm) · form.ts (zod) · service.ts (запис с `base`, изтриване,
                      одит) · da-scheda.ts (попълването от картата — без база) · scheda.ts (картата
                      на табелата: избор, търсене, паметта) · pdf.ts (A4 по посоката на шаблона, логото и данните на фирмата горе)
+  verbali/           „Verbale di chiusura cantiere“: voci.ts (разделите и редовете на листа, кои са с
+                     „Certificato“; разборът и четенето с недоверие) · form.ts (черновата, zod; попълването
+                     от картата — само адрес, „N° buono“, дата) · service.ts (нов — картата пак в
+                     транзакцията с `FOR SHARE`; черновата с `base`; одитът) · conferma.ts (двата подписа и
+                     потвърждението — един UPDATE) · sigillo.ts (отпечатък и печат, свой етикет) · pdf.ts +
+                     pdf-parti.ts (A4, „Copia azienda“ / „Copia installatore“)
   argano/            изчислението за аргано по „RT-E MOD 10411-1“: calcolo.ts (формулите на листовете
                      „Macchina“ и „Funi“, без база) · dati.ts (входът — zod, формата) · tabelle.ts
                      (въжетата TELCAL/DONATI, мерките на компенсацията) · fune.ts (въжето за показване:
@@ -152,10 +158,10 @@ views/               EJS: partials/ (горна и долна лента, таб
                      account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs; скицникът —
                      schede/_schizzo.ejs (листът като SVG), _schizzo-foglio.ejs, _schizzo-editor.ejs
 locales/it/          common · auth · schede · users · aziende · requests · site · mail · allegati · schizzi ·
-                     interventi · cartelli · argano
+                     interventi · cartelli · argano · verbali
                      (.json) — единственият
 public/              css/ (портал: base, buttons, shell, layout, plate, forms, pages, data, sheet, misure,
-                     moduli, allegati, foto-stampa, schizzi, schizzo-editor, interventi, foglio, cartelli, argano, print;
+                     moduli, allegati, foto-stampa, schizzi, schizzo-editor, interventi, foglio, verbali, cartelli, argano, print;
                      витрина: site, shaft,
                      site-hero, site-parts,
                      site-request),
@@ -240,12 +246,12 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   `/aziende/:id/esporta` — един `.tar` (`aziende/tar.ts` — свой ustar, имената само `[A-Za-z0-9._/-]`;
   `aziende/esportazione.ts` — поток, не в паметта): `dati.json` (фирмата, хората с ролите, картите с
   мерките, скиците и описанието на снимките, листовете за интервенция с подписите и печата, табелите,
-  изчисленията, регистърът), логото и готовите снимки и клипове; без пароли, тайни на 2FA, токени и
+  изчисленията, протоколите за приключване, регистърът), логото и готовите снимки и клипове; без пароли, тайни на 2FA, токени и
   HMAC-и. Одит `AZIENDA_EXPORT`. Изтриване (`aziende/eliminazione.ts`): деактивираната фирма пази всичко
   `GIORNI_PRIMA_DELL_ELIMINAZIONE` (90) дни — активирана наново, нищо не се губи, — после `maintenance.ts`
   я изтрива окончателно; MASTER може и веднага, но само деактивирана и с името ѝ, написано на ръка. Една
   транзакция (редът на фирмата `FOR UPDATE` — активиране и изтриване не се разминават): картите (със
-  снимките, скиците и мерките), листовете, табелите, изчисленията, поканите, регистърът, членствата и
+  снимките, скиците и мерките), листовете, табелите, изчисленията, протоколите, поканите, регистърът, членствата и
   хората, които са били САМО в нея; който е и в друга фирма, губи само членството. Папките в тома — след
   записа (провал оставя файл без карта, никога карта без файл). В регистъра остава `AZIENDA_DELETE` без
   фирма и без лични данни (кой, кога, колко). Политиката казва 90-те дни от същата константа (`endDays`).
@@ -740,6 +746,27 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   лого или без данни страницата и настройките го казват (логото слага само MASTER). Без pdftoppm (машина
   за разработка) — голият шаблон и едно предупреждение в лога; в образа и в CI го има. Ново поле на табелата = нова колона в
   картата на всеки шаблон и поглед в PDF-а на петте.
+- **„Verbale di chiusura cantiere“** (`src/verbali/`, `routes/verbali*.ts`; собственикът, 5 ноември 2026, по
+  хартиения лист: „свързано със Scheda … да се попълва автоматично само indirizzo, Nº Buono и дата. Всичко
+  друго трябва да попълним и да изберем ние. След подписа на двете места трябва да се генерират 2 pdf с
+  надпис Copia Azienda и Copia Installatore“): в „Assistenza elevatori“ → „Verbali chiusura cantiere“ и бутон
+  „Verbale di chiusura“ на картата. От картата (`/verbali/nuovo?scheda=<id>`, търсенето `?cerca=` — като
+  при табелата, общите части от `routes/cartelli-nuovo.ts` и `views/cartelli/_da-scheda.ejs`) или без карта;
+  от картата идват САМО адресът и `buonoLavoro`, датата е днешната (може да се смени). Редовете —
+  `verbali/voci.ts`: „Locale macchina“ (Quadro, Argano/centralina, Funi/tubazione, Impianto elettrico,
+  Limitatore, Varie), „Vano corsa“ (Linee elettriche, Cavi, Serrature/sospensioni, Luce vano, Varie),
+  „Cabina“ (Circuito cabina, Bottoniera, Tetto cabina, Varie), „Finiture“ (Bottoniere, Imbotti, Varie);
+  „Certificato“ SÌ/NO само на Quadro, Argano, Funi, Limitatore и Serrature — другите клетки вдясно са
+  празни (собственикът: „само текст“). „Verbale positivo“ SÌ/NO — без него протоколът не се подписва.
+  Подписите — като листа за интервенция (собственикът: „като листа за интервенция“): „Firma tecnico
+  esecutore“ и „Firma supervisore“ на отделна страница върху окончателния протокол, отпечатък
+  (`rilievi/verbale/v1` — без връзката с картата, за да оцелее окончателното ѝ изтриване) и печат HMAC
+  със същия ключ и свой етикет; CHECK `Verbale_firme_check`. Повторен подпис се търси и в листовете, и в
+  протоколите (`interventi/conferma.ts`, `firmeGiaUsate`, същото заключване `LOCK_FIRME`). След
+  потвърждението — два PDF-а от едно съдържание: `/verbali/:id/pdf/azienda` и `/pdf/installatore`
+  („COPIA AZIENDA“ / „COPIA INSTALLATORE“ долу на всяка страница и в заглавието на файла), само при
+  непокътнат печат. Права — тези на асистенцията (`interventi:read`/`interventi:write`). Без номер и без
+  изтриване (както листа за интервенция); в износа и в изтриването на фирмата.
 - **Изчислението за аргано** (`src/argano/`, `routes/calcolo-argano.ts`; собственикът, 31 октомври 2026 — от
   своя „RT-E MOD 10411-1“ (Excel по UNI 10411-1): изчисление и проверки, отделна страница и PDF, по метода
   на файла, без мощност на мотора): бутон „Calcolo argano“ на картата (не при хидравлична), страница
