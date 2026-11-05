@@ -1,7 +1,6 @@
 import type { FotoPdf, GruppoFotoPdf } from '../allegati/stampa.js';
 import {
   CONTENT_WIDTH,
-  drawSectionTitle,
   ensureSpace,
   INK,
   MARGIN,
@@ -11,12 +10,13 @@ import {
 } from './pdf-layout.js';
 
 /**
- * Снимките в края на PDF-а (src/allegati/stampa.ts) — по разделите на листа, плътно, за да се пести
+ * Снимките в края на PDF-а (src/allegati/stampa.ts) — в реда на разделите на листа, плътно, за да се пести
  * хартия (собственикът, 5 ноември 2026: „Поправи позиционирането на снимките при принтиране да се
  * икономиса някой лист“). Редовете са „подравнени“: снимките в един ред са с еднаква височина и заедно
  * запълват ширината — около три хоризонтални или четири вертикални на ред, без рязане и без разтягане.
  * Не започват от нова страница: продължават под листа, ако заглавието и първият ред се побират.
- * Надписът на снимката е под нея. Същата подредба има и печатът от браузъра (print.css).
+ * Под снимката — разделът ѝ и надписът. Раздели не делят редовете: снимки от различни раздели стоят една
+ * до друга. Същата подредба има и печатът от браузъра (print.css).
  */
 
 /** Желаната височина на ред (pt): ~49 mm — хоризонтална снимка ~58 mm широка, три на ред. */
@@ -85,53 +85,76 @@ export function righeFoto(
 const rapportoDi = (foto: FotoPdf) =>
   foto.larghezza > 0 && foto.altezza > 0 ? foto.larghezza / foto.altezza : 4 / 3;
 
-/** Колко висок е надписът под снимка с тази ширина. */
-function altezzaDidascalia(ctx: PdfContext, foto: FotoPdf, larghezza: number): number {
-  if (!foto.didascalia) return 0;
-  ctx.doc.font('Sans').fontSize(SIZE.label);
-  return ctx.doc.heightOfString(foto.didascalia, { width: larghezza }) + 3;
+/** Снимка в общия поток: от кой раздел е — името стои в надписа ѝ. */
+interface FotoInFila {
+  foto: FotoPdf;
+  sezione: string;
 }
 
+/** „Quadro — надписът“ (без надпис — само разделът): разделът е удебелен. */
+const didascaliaDi = (f: FotoInFila) =>
+  f.foto.didascalia ? `${f.sezione} — ${f.foto.didascalia}` : f.sezione;
+
+/** Колко висок е надписът под снимка с тази ширина (мерен с удебеления шрифт — горна граница). */
+function altezzaDidascalia(ctx: PdfContext, f: FotoInFila, larghezza: number): number {
+  ctx.doc.font('Sans-Bold').fontSize(SIZE.label);
+  return ctx.doc.heightOfString(didascaliaDi(f), { width: larghezza }) + 3;
+}
+
+/**
+ * Всички снимки — един поток в реда на разделите (собственикът, 5 ноември 2026: „puoi metterle una
+ * accanto all'altra anche se sono di sezioni diverse, così risparmiamo il foglio“): раздел с една снимка
+ * не заема цял ред, а името на раздела е в надписа на всяка снимка.
+ */
 export function drawFoto(ctx: PdfContext, gruppi: readonly GruppoFotoPdf[]): void {
-  if (gruppi.length === 0) return;
+  const fila: FotoInFila[] = gruppi.flatMap((g) =>
+    g.foto.map((foto) => ({ foto, sezione: g.titolo })),
+  );
+  if (fila.length === 0) return;
   const { doc, t } = ctx;
-  let primo = true;
-  for (const gruppo of gruppi) {
-    const righe = righeFoto(gruppo.foto.map(rapportoDi), CONTENT_WIDTH);
-    const altezzaDi = (riga: readonly PostoFoto[]) =>
-      riga[0]!.altezza +
-      Math.max(...riga.map((p) => altezzaDidascalia(ctx, gruppo.foto[p.indice]!, p.larghezza))) +
-      SOTTO_RIGA;
-    // „Foto“ и заглавието на раздела — само заедно с първия ред снимки под тях.
-    ensureSpace(ctx, (primo ? 26 : 0) + 34 + altezzaDi(righe[0]!));
-    if (primo) {
-      doc.y += 10;
+  const righe = righeFoto(
+    fila.map((f) => rapportoDi(f.foto)),
+    CONTENT_WIDTH,
+  );
+  const altezzaDi = (riga: readonly PostoFoto[]) =>
+    riga[0]!.altezza +
+    Math.max(...riga.map((p) => altezzaDidascalia(ctx, fila[p.indice]!, p.larghezza))) +
+    SOTTO_RIGA;
+  // „Foto“ — само заедно с първия ред снимки под него.
+  ensureSpace(ctx, 40 + altezzaDi(righe[0]!));
+  doc.y += 10;
+  doc
+    .font('Sans-Bold')
+    .fontSize(SIZE.section + 2)
+    .fillColor(INK)
+    .text(t('allegati.stampa.titolo'), MARGIN, doc.y);
+  const lineY = doc.y + 3;
+  doc
+    .moveTo(MARGIN, lineY)
+    .lineTo(MARGIN + CONTENT_WIDTH, lineY)
+    .lineWidth(0.6)
+    .stroke(INK);
+  doc.y = lineY + 8;
+  for (const riga of righe) {
+    const altezza = altezzaDi(riga);
+    ensureSpace(ctx, altezza);
+    const y = doc.y;
+    let x = MARGIN;
+    for (const posto of riga) {
+      const f = fila[posto.indice]!;
+      doc.image(f.foto.immagine, x, y, { width: posto.larghezza, height: posto.altezza });
+      doc.rect(x, y, posto.larghezza, posto.altezza).lineWidth(0.5).stroke(RULE);
       doc
         .font('Sans-Bold')
-        .fontSize(SIZE.section + 2)
+        .fontSize(SIZE.label)
         .fillColor(INK)
-        .text(t('allegati.stampa.titolo'), MARGIN, doc.y);
-      primo = false;
+        .text(f.sezione, x, y + posto.altezza + 3, {
+          width: posto.larghezza,
+          continued: Boolean(f.foto.didascalia),
+        });
+      if (f.foto.didascalia) doc.font('Sans').text(` — ${f.foto.didascalia}`);
+      x += posto.larghezza + SPAZIO;
     }
-    drawSectionTitle(ctx, gruppo.titolo);
-    for (const riga of righe) {
-      const altezza = altezzaDi(riga);
-      ensureSpace(ctx, altezza);
-      const y = doc.y;
-      let x = MARGIN;
-      for (const posto of riga) {
-        const foto = gruppo.foto[posto.indice]!;
-        doc.image(foto.immagine, x, y, { width: posto.larghezza, height: posto.altezza });
-        doc.rect(x, y, posto.larghezza, posto.altezza).lineWidth(0.5).stroke(RULE);
-        if (foto.didascalia)
-          doc
-            .font('Sans')
-            .fontSize(SIZE.label)
-            .fillColor(INK)
-            .text(foto.didascalia, x, y + posto.altezza + 3, { width: posto.larghezza });
-        x += posto.larghezza + SPAZIO;
-      }
-      doc.y = y + altezza;
-    }
+    doc.y = y + altezza;
   }
 }

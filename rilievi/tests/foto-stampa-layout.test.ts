@@ -92,5 +92,34 @@ describe(
       assert.equal(doc.bufferedPageRange().count, 1);
       doc.end();
     });
+
+    it('puts photos of different sections side by side: one portrait each takes one row, not three', async () => {
+      // The owner, 5 November 2026: "puoi metterle una accanto all'altra anche se sono di sezioni
+      // diverse, così risparmiamo il foglio" — Quadro, Argano and Limitatore, one portrait photo each.
+      const immagine = await sharp({
+        create: { width: 90, height: 120, channels: 3, background: { r: 90, g: 90, b: 90 } },
+      })
+        .jpeg()
+        .toBuffer();
+      const paths = pdfFontPaths(fontDir);
+      const doc = new PDFDocument({ size: 'A4', margin: MARGIN, bufferPages: true });
+      doc.registerFont('Sans', paths.regular);
+      doc.registerFont('Sans-Bold', paths.bold);
+      const ctx: PdfContext = { doc, t: translatorFor('it') };
+      const una = (titolo: string, didascalia: string) => ({
+        titolo,
+        foto: [{ immagine, larghezza: 900, altezza: 1200, didascalia }],
+      });
+      const prima = doc.y;
+      drawFoto(ctx, [
+        una('Quadro', 'QUADRO LABEL'),
+        una('Argano', 'ARGANO'),
+        una('Limitatore', 'LIMITATORE'),
+      ]);
+      // The title, one row of three photos with their captions — well under two rows of photos.
+      assert.ok(doc.y - prima < 40 + 2 * ALTEZZA_RIGA, `${doc.y - prima}`);
+      assert.equal(doc.bufferedPageRange().count, 1);
+      doc.end();
+    });
   },
 );
