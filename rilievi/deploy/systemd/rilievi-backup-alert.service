@@ -1,0 +1,8 @@
+# Дневният бекъп на Rilievi Impianti се провали (OnFailure на rilievi-backup.service): журнал, файл
+# ULTIMO_ERRORE и — ако е зададен — RILIEVI_ALERT_URL (deploy/backup-alert.sh, DEPLOY.md, т. 6).
+[Unit]
+Description=Rilievi Impianti — daily backup failed
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'exec /usr/bin/env bash "$(head -n 1 /opt/few-few/shared/rilievi/last-good)/deploy/backup-alert.sh"'

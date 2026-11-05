@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { AUTO_KEY } from '../ordini/collegamenti.js';
-import { impiantoMancante, modelliMancanti, slotAperto, SLOTS } from '../ordini/registry.js';
+import { slotAperto, SLOTS } from '../ordini/registry.js';
+import { impiantoMancante, modelliMancanti } from '../ordini/registry-controlli.js';
 import { moduloFromBody, parseModulo, type ModuloDati } from '../ordini/valori.js';
 import { activeFields, FIELDS, IDENTIFIERS } from './fields.js';
 import {

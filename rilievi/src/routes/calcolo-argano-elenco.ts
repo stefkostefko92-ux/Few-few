@@ -60,7 +60,7 @@ calcoloElencoRouter.get('/calcolo-argano', read, async (req, res) => {
   const page = await elencoCalcoli({
     scope: readScope,
     azienda: aziendaFilter,
-    page: req.query.page,
+    page: req.query.p,
   });
   res.render('argano/elenco', {
     titleKey: 'argano.elenco.titolo',

@@ -89,6 +89,9 @@ describe('who manages whom', () => {
 
   it('lets the MASTER manage every account, its own too, but never switch itself off', () => {
     assert.equal(canManageAccount(master, { id: 'master', master: true, memberships: [] }), true);
+    // Another MASTER is nobody's to manage: one stolen session does not take the other account.
+    assert.equal(canManageAccount(master, { id: 'other', master: true, memberships: [] }), false);
+    assert.equal(canSetActive(master, { id: 'other', master: true, memberships: [] }), false);
     assert.equal(canSetActive(master, { id: 'master', master: true, memberships: [] }), false);
     assert.equal(canSetActive(master, target('x', { [A]: 'ADMIN' })), true);
     assert.equal(canManageMembership(master, target('x', { [A]: 'ADMIN' }), A), true);

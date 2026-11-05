@@ -35,6 +35,7 @@ import { checkSite } from './site.mjs';
 import { checkInvites } from './inviti.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
 import { checkCompanyData, checkEveryLink } from './collegati-tutti.mjs';
+import { checkInstallableApp, checkInstallPhone } from './installa.mjs';
 import { checkCartelli } from './cartelli.mjs';
 import { checkArgano } from './argano.mjs';
 import { checkInterventi } from './interventi.mjs';
@@ -240,6 +241,9 @@ try {
       await checkRealTime(context, { base, aziendaName, sheetUrl, scheme });
       // Every linked datum, every pair of places, in 30 kinds of sheet; then the panel make changes.
       await checkEveryLink(context, { base, aziendaName, scheme });
+      // The app on the home screen: installable for Chrome, offline notice, the steps of each device.
+      await checkInstallableApp(browser, { base, shots, scheme, email, password });
+      await checkInstallPhone(browser, { base, shots, scheme });
       await checkAttachments(page, { sheetUrl, shots });
       await checkSketches(page, { base, aziendaPath, sheetUrl, shots, scheme });
     }

@@ -3,8 +3,8 @@
 //
 //   mark.png — the hexagon with "RI" and the shaft behind it. Where the logo has to be small: the black
 //     bars of the portal and of the landing (views/partials/brandmark.ejs, 44 CSS px high — 1x, 2x, 3x),
-//     the tab icons favicon-32.png / favicon-192.png (centred on a transparent square) and the home-screen
-//     icon (scripts/brand-images.mjs).
+//     the tab icons favicon-32.png / favicon-192.png (centred on a transparent square), the home-screen
+//     icon (scripts/brand-images.mjs) and the icons of the installed app (icon-*.png, below).
 //   logo.png — the mark with "RILIEVI IMPIANTI" and "PIATTAFORMA TECNICA ASCENSORI". Only where it is
 //     shown large enough for the last line to be read (views/partials/logo.ejs: sign-in, the first screen
 //     and the footer of the landing, the link preview): one WebP per width in WIDTHS, for `srcset`.
@@ -82,6 +82,34 @@ for (const size of [32, 192]) {
   })
     .composite([{ input: icon, top: 0, left: Math.round((size - width) / 2) }])
     .png({ compressionLevel: 9, palette: true, quality: 95, dither: 0.5 })
+    .toFile(file);
+  report(file);
+}
+
+// The icons of the installed app (src/pwa/manifest.ts — owner, 4 November 2026: "add to home screen …
+// raggiungibile facilmente e a schermo intero"): the mark on black, like the iPhone icon. "any" — the mark
+// fills the square as in apple-touch-icon.png; "maskable" — the mark inside the circle of 80 % of the side
+// that Android keeps whatever shape it cuts (circle, squircle, drop), the rest black.
+for (const [name, size, share] of [
+  ['icon-192', 192, 0.86],
+  ['icon-512', 512, 0.86],
+  ['icon-maskable-192', 192, 0.64],
+  ['icon-maskable-512', 512, 0.64],
+]) {
+  const file = join(root, `${name}.png`);
+  const icon = await sharp(mark)
+    .resize({ height: Math.round(size * share), kernel: 'lanczos3' })
+    .png()
+    .toBuffer();
+  const { width, height } = await sharp(icon).metadata();
+  await sharp({
+    create: { width: size, height: size, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 1 } },
+  })
+    .composite([
+      { input: icon, top: Math.round((size - height) / 2), left: Math.round((size - width) / 2) },
+    ])
+    .flatten({ background: '#000000' })
+    .png({ compressionLevel: 9 })
     .toFile(file);
   report(file);
 }

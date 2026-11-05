@@ -15,6 +15,6 @@
       <% for (const item of themes) { %><a href="<%= themeUrl(item.value) %>"<% if (item.on) { %> aria-current="true"<% } %>><%- include('icon', { name: item.icon }) %><%= t(item.key) %></a>
       <% } %>
     </nav><% } else { %><span></span><% } %>
-    <p class="credit">Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
+    <p class="credit"><a href="/privacy"><%= t('privacy.title') %></a> · Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
   </div>
 </footer>

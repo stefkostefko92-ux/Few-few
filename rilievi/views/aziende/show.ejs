@@ -59,12 +59,31 @@
   </section>
   <section aria-labelledby="h-access">
     <h2 class="section__title" id="h-access"><%= t('aziende.accessTitle') %></h2>
-    <p class="muted"><%= t(azienda.deactivatedAt ? 'aziende.reactivateText' : 'aziende.deactivateText') %></p>
+    <p class="muted"><%= t(azienda.deactivatedAt ? 'aziende.reactivateText' : 'aziende.deactivateText', { days: giorniPrimaEliminazione }) %></p>
     <form method="post" action="/aziende/<%= azienda.id %>/stato">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="active" value="<%= azienda.deactivatedAt ? '1' : '0' %>">
       <div class="toolbar"><button class="btn<%= azienda.deactivatedAt ? '' : ' btn--danger' %>" type="submit"><%= t(azienda.deactivatedAt ? 'aziende.reactivate' : 'aziende.deactivate') %></button></div>
     </form>
+  </section>
+  <%# Краят на услугата: износът винаги; изтриването — само на деактивирана фирма, с името ѝ. %>
+  <section aria-labelledby="h-fine">
+    <h2 class="section__title" id="h-fine"><%= t('aziende.fine.title') %></h2>
+    <p class="muted"><%= t('aziende.fine.esportaText') %></p>
+    <p><a class="btn" href="/aziende/<%= azienda.id %>/esporta" download><%- include('../partials/icon', { name: 'download' }) %><%= t('aziende.fine.esporta') %></a></p>
+    <% if (eliminaIl) { %>
+    <p><strong><%= t('aziende.fine.eliminaIl', { date: fmt.day(eliminaIl) }) %></strong> <%= t('aziende.fine.eliminaText', { days: giorniPrimaEliminazione }) %></p>
+    <form class="form form--tight" method="post" action="/aziende/<%= azienda.id %>/elimina" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label class="field__label" for="fine-conferma"><%= t('aziende.fine.conferma', { name: azienda.name }) %></label>
+        <input class="input" id="fine-conferma" name="conferma" type="text" autocomplete="off" required maxlength="120"<% if (error === 'aziende.error.eliminaNome') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+      </div>
+      <div class="toolbar"><button class="btn btn--danger" type="submit"><%= t('aziende.fine.elimina') %></button></div>
+    </form>
+    <% } else { %>
+    <p class="muted"><%= t('aziende.fine.soloDisattivata', { days: giorniPrimaEliminazione }) %></p>
+    <% } %>
   </section>
 </div>
 <%- include('../partials/bottom') %>
