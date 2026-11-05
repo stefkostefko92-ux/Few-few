@@ -143,7 +143,7 @@ describe('the side bar', () => {
   it('groups the pages: Rilievi, Assistenza elevatori, Amministrazione — by what each one may do', async () => {
     const admin = (await signedIn('ADMIN')).browser;
     const page = (await admin.get('/interventi/nuovo')).body;
-    assert.match(page, /<body class="with-nav">/);
+    assert.match(page, /<body class="with-nav"[ >]/);
     assert.match(page, /aria-controls="sidenav" aria-expanded="false" data-nav-open>/);
     const groups = [...page.matchAll(/<p class="sidenav__group" id="nav-(\w+)">/g)].map(
       (m) => m[1],
