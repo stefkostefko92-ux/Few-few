@@ -123,15 +123,16 @@ model Azienda {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  memberships    Membership[]
-  invites        Invite[]
-  schede         Scheda[]
-  interventi     Intervento[]
-  cartelli       Cartello[]
-  calcoliArgano  CalcoloArgano[]
-  verbali        Verbale[]
-  audit          AuditLog[]
-  accessRequests AccessRequest[]
+  memberships       Membership[]
+  invites           Invite[]
+  schede            Scheda[]
+  interventi        Intervento[]
+  cartelli          Cartello[]
+  calcoliArgano     CalcoloArgano[]
+  calcoliLimitatore CalcoloLimitatore[]
+  verbali           Verbale[]
+  audit             AuditLog[]
+  accessRequests    AccessRequest[]
 }
 
 /// Акаунт. Създава се САМО от приета покана (или от `owner:create` за първия MASTER) — регистрация няма.
@@ -171,29 +172,30 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  invitedUsers     User[]           @relation("InvitedUsers")
-  memberships      Membership[]
-  sessions         Session[]
-  invitesSent      Invite[]         @relation("InvitesSent")
-  resets           PasswordReset[]  @relation("ResetsFor")
-  resetsCreated    PasswordReset[]  @relation("ResetsCreated")
-  schedeCreated    Scheda[]         @relation("SchedeCreated")
-  schedeUpdated    Scheda[]         @relation("SchedeUpdated")
-  schedeDeleted    Scheda[]         @relation("SchedeDeleted")
-  allegatiCaricati Allegato[]       @relation("AllegatiCaricati")
-  interventiCreati Intervento[]     @relation("InterventiCreati")
-  interventiMod    Intervento[]     @relation("InterventiModificati")
-  interventiChiusi Intervento[]     @relation("InterventiChiusi")
-  cartelliCreati   Cartello[]       @relation("CartelliCreati")
-  recoveryCodes    RecoveryCode[]
-  loginChallenges  LoginChallenge[]
-  cartelliMod      Cartello[]       @relation("CartelliModificati")
-  calcoliArgano    CalcoloArgano[]
-  verbaliCreati    Verbale[]        @relation("VerbaliCreati")
-  verbaliMod       Verbale[]        @relation("VerbaliModificati")
-  verbaliChiusi    Verbale[]        @relation("VerbaliChiusi")
-  auditEntries     AuditLog[]
-  requestsDecided  AccessRequest[]  @relation("AccessRequestsDecided")
+  invitedUsers      User[]              @relation("InvitedUsers")
+  memberships       Membership[]
+  sessions          Session[]
+  invitesSent       Invite[]            @relation("InvitesSent")
+  resets            PasswordReset[]     @relation("ResetsFor")
+  resetsCreated     PasswordReset[]     @relation("ResetsCreated")
+  schedeCreated     Scheda[]            @relation("SchedeCreated")
+  schedeUpdated     Scheda[]            @relation("SchedeUpdated")
+  schedeDeleted     Scheda[]            @relation("SchedeDeleted")
+  allegatiCaricati  Allegato[]          @relation("AllegatiCaricati")
+  interventiCreati  Intervento[]        @relation("InterventiCreati")
+  interventiMod     Intervento[]        @relation("InterventiModificati")
+  interventiChiusi  Intervento[]        @relation("InterventiChiusi")
+  cartelliCreati    Cartello[]          @relation("CartelliCreati")
+  recoveryCodes     RecoveryCode[]
+  loginChallenges   LoginChallenge[]
+  cartelliMod       Cartello[]          @relation("CartelliModificati")
+  calcoliArgano     CalcoloArgano[]
+  calcoliLimitatore CalcoloLimitatore[]
+  verbaliCreati     Verbale[]           @relation("VerbaliCreati")
+  verbaliMod        Verbale[]           @relation("VerbaliModificati")
+  verbaliChiusi     Verbale[]           @relation("VerbaliChiusi")
+  auditEntries      AuditLog[]
+  requestsDecided   AccessRequest[]     @relation("AccessRequestsDecided")
 
   @@index([invitedById])
   @@index([master])
@@ -556,6 +558,7 @@ model Scheda {
   /// Протоколите „Verbale di chiusura cantiere“, попълнени от тази карта.
   verbali                      Verbale[]
   calcoloArgano                CalcoloArgano?
+  calcoloLimitatore            CalcoloLimitatore?
   createdAt                    DateTime                 @default(now())
   updatedAt                    DateTime                 @updatedAt
 
@@ -932,6 +935,34 @@ model CalcoloArgano {
   id             String   @id @default(cuid())
   /// Картата на уредбата (едно изчисление на карта); null — изчисление без карта (собственикът, 31
   /// октомври 2026): тогава адресът, матрикулата и номерът са тук (`CalcoloArgano_impianto_check`).
+  schedaId       String?  @unique
+  scheda         Scheda?  @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  /// Фирмата — на картата или избраната при новото изчисление без карта; обхватът се решава по нея.
+  aziendaId      String
+  azienda        Azienda  @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  indirizzo      String?
+  matricola      String?
+  numeroImpianto String?
+  /// Нормализираният адрес, матрикула и номер (като `Scheda.searchText`) — само без карта.
+  searchText     String   @default("")
+  dati           Json
+  updatedById    String?
+  updatedBy      User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([updatedById])
+  @@index([aziendaId, updatedAt])
+}
+
+/// Изчислението за ограничителя на скоростта по „Limitatore_velocita_EN81-20-2020.xlsx“ на собственика (5
+/// ноември 2026): входът (`limitatore/dati.ts`, чете се с недоверие), по едно на карта или без карта —
+/// както `CalcoloArgano`; резултатите се смятат при всяко показване. Записът не мести версията на картата,
+/// а окончателно изтритата карта го взима със себе си.
+model CalcoloLimitatore {
+  id             String   @id @default(cuid())
+  /// Картата на уредбата; null — изчисление без карта: тогава адресът, матрикулата и номерът са тук
+  /// (`CalcoloLimitatore_impianto_check`).
   schedaId       String?  @unique
   scheda         Scheda?  @relation(fields: [schedaId], references: [id], onDelete: Cascade)
   /// Фирмата — на картата или избраната при новото изчисление без карта; обхватът се решава по нея.

@@ -38,6 +38,7 @@ export async function eliminaAzienda(aziendaId: string, actorId: string | null):
       await tx.intervento.deleteMany({ where: { aziendaId } });
       await tx.verbale.deleteMany({ where: { aziendaId } });
       await tx.calcoloArgano.deleteMany({ where: { aziendaId } });
+      await tx.calcoloLimitatore.deleteMany({ where: { aziendaId } });
       // Снимките, скиците, мерките и изчислението на картата падат с нея (Cascade).
       await tx.scheda.deleteMany({ where: { aziendaId } });
       await tx.invite.deleteMany({ where: { aziendaId } });

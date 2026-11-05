@@ -160,3 +160,36 @@
   border-style: dashed;
   color: var(--muted);
 }
+
+/* Изчислението за ограничителя (views/limitatore/calcolo.ejs) — същите таблици; под надписа на реда —
+   бележката на листа (точката на нормата), по-дребно; „Dato mancante“ — тихо, без етикет. */
+.limitatore__nota {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.limitatore__tabella .argano__valore {
+  white-space: normal;
+}
+
+.limitatore__mancante {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.limitatore__avvertenze {
+  display: grid;
+  gap: 6px;
+}
+
+.limitatore__avvertenze p {
+  margin: 0;
+}
+
+.limitatore__riferimenti summary {
+  cursor: pointer;
+  font-weight: 600;
+}

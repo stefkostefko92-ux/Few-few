@@ -10,8 +10,8 @@
 // must run next to the portal: `npm run worker`), the sketch pad turned on for the company and drawn in its
 // full-screen editor (schizzi.mjs), the side bar and an intervention form signed and confirmed
 // (interventi.mjs), the company data and the stop sign (cartelli.mjs), the closing report signed
-// with its two PDFs (verbali.mjs), the machine calculation
-// (argano.mjs), the phone (telefono.mjs), and accessibility (axe-core, WCAG 2.1 AA) on every page, in
+// with its two PDFs (verbali.mjs), the machine calculation (argano.mjs) and the overspeed governor
+// calculation (limitatore.mjs), the phone (telefono.mjs), and accessibility (axe-core, WCAG 2.1 AA) on every page, in
 // the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
 //
 //   RILIEVI_URL=http://127.0.0.1:4330 E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e
@@ -39,6 +39,7 @@ import { checkCompanyData, checkEveryLink } from './collegati-tutti.mjs';
 import { checkInstallableApp, checkInstallPhone } from './installa.mjs';
 import { checkCartelli } from './cartelli.mjs';
 import { checkArgano } from './argano.mjs';
+import { checkLimitatore } from './limitatore.mjs';
 import { checkInterventi } from './interventi.mjs';
 import { checkVerbali } from './verbali.mjs';
 import { checkPhone } from './telefono.mjs';
@@ -278,6 +279,7 @@ try {
     await checkVerbali(page, { base, shots, scheme, sheetUrl });
     if (scheme === 'light') await checkCompanyData(context, { base, aziendaName, scheme });
     await checkArgano(page, { shots, scheme, sheetUrl, aziendaId: aziendaPath.split('/').pop() });
+    await checkLimitatore(page, { shots, scheme, sheetUrl });
 
     await checkPhone(browser, { base, shots, scheme, email, password, sheetUrl });
     await context.close();

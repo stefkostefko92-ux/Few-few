@@ -1,0 +1,110 @@
+<%
+  // Изчислението за ограничителя — на карта или без карта (routes/calcolo-limitatore-vista.ts): формата в
+  // разделите на листа „Limitatore“ (без карта — първо адресът и матрикулата) и резултатите ред по ред —
+  // същите редове като в PDF-а (limitatore/righe.ts), с бележката на листа под всеки. Кой не пише — само чете.
+  const errorKeys = Object.keys(errori).filter((k) => k !== '_');
+  const erroriImpianto = identita ? Object.keys(identita.errori) : [];
+  const nErrori = errorKeys.length + erroriImpianto.length + (errori._ ? 1 : 0) + (identita && identita.aziendaErrore ? 1 : 0);
+  const msgImpianto = (k) => identita.errori[k] === 'required' ? t('argano.libero.erroreIndirizzo') : identita.errori[k] === 'digitsOnly' ? t('scheda.error.digitsOnly') : t('scheda.error.tooLong', { maxLength: k === 'indirizzo' ? 200 : 20 });
+  const campo = (key, hint) => include('_campo', { key, hint, values, errori, limiteDi, tipi });
+  const errSummary = (k) => {
+    const e = errori[k];
+    if (e === 'range') { const [min, max] = limiteDi(k); return t('limitatore.errore.range', { min: String(min).replace('.', ','), max: String(max).replace('.', ',') }); }
+    return t('limitatore.errore.' + e);
+  };
+  const SEZIONI = [
+    { key: 'v1', campi: [['vn', false], ['tipo', true], ['v1', true]] },
+    { key: 'contatto', campi: [['vc', true]] },
+    { key: 'forza', campi: [['forzaParacadute', true], ['forzaLimitatore', true]] },
+    { key: 'fune', campi: [['mbl', true], ['d', false], ['dp', false]] },
+  ];
+%><%- include('../partials/top', { title }) %>
+<div class="page-head">
+  <div>
+    <a href="<%= percorso.indietro.href %>"><%= percorso.indietro.testo %></a>
+    <h1><%= t('limitatore.titolo') %></h1>
+    <% if (impianto) { %><p class="page-head__sub"><strong><%= impianto %></strong></p><% } %>
+    <p class="page-head__sub"><%= t('limitatore.sottotitolo') %></p>
+  </div>
+  <% if (salvato && salvato.dati && percorso.pdf) { %><div class="toolbar">
+    <a class="btn" data-pdf href="<%= percorso.pdf %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('limitatore.pdf') %></a>
+    <a class="btn" data-pdf href="<%= percorso.pdf %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('limitatore.stampa') %></a>
+  </div><% } %>
+</div>
+<div class="stack-gap argano">
+<% if (conflitto) { %><div class="notice" role="alert"><p><strong><%= t('limitatore.conflitto') %></strong></p></div><% } %>
+<% if (nErrori) { %>
+  <div class="errors" role="alert" id="error-summary" tabindex="-1">
+    <h2><%= t('scheda.errorSummary', { n: nErrori }) %></h2>
+    <ul>
+      <% if (identita && identita.aziendaErrore) { %><li><a href="#f-azienda"><%= t('scheda.field.azienda') %>: <%= t('scheda.error.azienda') %></a></li><% } %>
+      <% for (const k of erroriImpianto) { %><li><a href="#f-<%= k %>"><%= t('argano.libero.campo.' + k) %>: <%= msgImpianto(k) %></a></li><% } %>
+      <% if (errori._) { %><li><a href="#f-vn"><%= t('limitatore.errore.vuoto') %></a></li><% } %>
+      <% for (const k of errorKeys) { %><li><a href="#f-<%= k %>"><%= t('limitatore.campo.' + k) %>: <%= errSummary(k) %></a></li><% } %>
+    </ul>
+  </div>
+<% } %>
+<% if (proposto && puoScrivere) { %><p class="notice"><%= t('limitatore.proposto') %></p><% } %>
+<% if (!puoScrivere) { %><p class="muted"><%= t('limitatore.soloLettura') %></p><% } %>
+<% if (salvato && salvato.dati) { %><p class="muted"><%= t('limitatore.salvatoIl', { quando: fmt.dateTime(salvato.updatedAt), nome: salvato.autore || '—' }) %></p><% } %>
+<form class="form" method="post" action="<%= percorso.azione %>" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="base" value="<%= base %>">
+  <% if (identita) { %><%- include('../argano/_impianto', { msgImpianto }) %><% } %>
+  <% for (const s of SEZIONI) { %><fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
+    <legend class="section__title"><%= t('limitatore.sezione.' + s.key) %></legend>
+    <div class="grid grid--righe">
+      <% for (const [key, hint] of s.campi) { %><%- campo(key, hint) %><% } %>
+    </div>
+  </fieldset>
+  <% } %>
+  <% if (puoScrivere) { %><p class="muted"><%= t('limitatore.facoltativi') %></p>
+  <div class="toolbar">
+    <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'check' }) %><%= t('limitatore.calcola') %></button>
+    <a class="btn btn--ghost" href="<%= percorso.annulla %>"><%= t('common.cancel') %></a>
+  </div><% } %>
+</form>
+<section class="argano__risultati" id="risultati" aria-labelledby="h-risultati">
+  <h2 class="section__title" id="h-risultati"><%= t('limitatore.r.titolo') %></h2>
+  <%# При грешки или конфликт записаните резултати не отговарят на формата — не се показват. %>
+  <% if (!sezioni.length && !(salvato && salvato.dati)) { %><p class="muted"><%= t('limitatore.nessunCalcolo') %></p><% } %>
+  <% for (const s of sezioni) { %>
+  <div class="argano__sezione">
+    <h3><%= s.titolo %></h3>
+    <table class="table argano__tabella limitatore__tabella">
+      <tbody>
+        <% for (const r of s.righe) { %><tr data-riga="<%= r.key %>"><th scope="row"><%= r.etichetta %><% if (r.nota) { %><span class="limitatore__nota"><%= r.nota %></span><% } %></th><td class="argano__valore<%= r.ok === null ? ' limitatore__mancante' : '' %>"><%= r.valore %><% if (r.unita) { %>&nbsp;<%= r.unita %><% } %></td><td class="argano__esito"><% if (r.ok === true || r.ok === false) { %><span class="esito esito--<%= r.ok ? 'ok' : 'no' %>"><%= r.ok ? t('argano.r.ok') : t('argano.r.no') %></span><% } %></td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+  <% if (sezioni.length) { %><div class="limitatore__avvertenze">
+    <p class="muted argano__nota"><%= t('limitatore.avvertenze.ambito') %></p>
+    <p class="muted argano__nota"><%= t('limitatore.avvertenze.importante') %></p>
+  </div><% } %>
+</section>
+<details class="limitatore__riferimenti">
+  <summary><%= t('limitatore.riferimenti.titolo') %></summary>
+  <p class="muted"><%= t('limitatore.riferimenti.testo') %></p>
+  <table class="table table--stack">
+    <caption class="visually-hidden"><%= t('limitatore.riferimenti.titolo') %></caption>
+    <thead><tr><% for (const c of ['argomento', 'valore', 'documento', 'stato']) { %><th scope="col"><%= t('limitatore.riferimenti.colonna.' + c) %></th><% } %></tr></thead>
+    <tbody>
+      <% for (const k of riferimenti) { %><tr><% for (const c of ['argomento', 'valore', 'documento', 'stato']) { %><td data-label="<%= t('limitatore.riferimenti.colonna.' + c) %>"><%= t('limitatore.riferimenti.righe.' + k + '.' + c) %></td><% } %></tr>
+      <% } %>
+    </tbody>
+  </table>
+</details>
+<% if (percorso.elimina) { %>
+<details class="danger-zone">
+  <summary><%= t('argano.libero.elimina.titolo') %></summary>
+  <p class="muted"><%= t('argano.libero.elimina.testo') %></p>
+  <form method="post" action="<%= percorso.elimina %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button class="btn btn--danger" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t('argano.libero.elimina.submit') %></button>
+  </form>
+</details>
+<% } %>
+</div>
+<%- include('../partials/bottom') %>

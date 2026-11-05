@@ -142,6 +142,8 @@
       "CARTELLO_UPDATE": "Cartello di fermo impianto modificato",
       "ARGANO_CALCOLO": "Calcolo argano salvato",
       "ARGANO_CALCOLO_DELETE": "Calcolo argano senza scheda eliminato",
+      "LIMITATORE_CALCOLO": "Calcolo limitatore salvato",
+      "LIMITATORE_CALCOLO_DELETE": "Calcolo limitatore senza scheda eliminato",
       "CARTELLO_DELETE": "Cartello di fermo impianto eliminato",
       "VERBALE_CREATE": "Verbale di chiusura cantiere creato",
       "VERBALE_UPDATE": "Verbale di chiusura cantiere modificato",

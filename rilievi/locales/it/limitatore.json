@@ -1,0 +1,250 @@
+{
+  "limitatore": {
+    "titolo": "Calcolo limitatore",
+    "sottotitolo": "Limitatore di velocità del paracadute di cabina: i dati di targa e dei certificati confrontati con i limiti della UNI EN 81-20:2020.",
+    "normativa": "UNI EN 81-20:2020, 5.6.2 — limitatore di velocità del paracadute di cabina",
+    "apri": "Calcolo limitatore",
+    "pdf": "Scarica PDF",
+    "stampa": "Apri il PDF",
+    "indietro": "Torna alla scheda",
+    "calcola": "Calcola e salva",
+    "proposto": "Dati proposti dalla scheda: la velocità dal modulo rilievi dati argani e il diametro della funicella del limitatore. Controllali e completa con i dati di targa e dei certificati.",
+    "soloLettura": "Puoi vedere il calcolo ma non modificarlo.",
+    "salvatoIl": "Salvato il {quando} da {nome}",
+    "nessunCalcolo": "Il calcolo non è ancora stato salvato.",
+    "conflitto": "Nel frattempo qualcuno ha salvato un altro calcolo per questo impianto. I tuoi dati sono qui sotto: controllali e salva di nuovo.",
+    "facoltativi": "Ogni dato è facoltativo: un dato che manca dà «Dato mancante» solo nelle righe che lo usano.",
+    "flash": {
+      "salvato": "Calcolo limitatore salvato.",
+      "eliminato": "Calcolo limitatore eliminato."
+    },
+    "sezione": {
+      "v1": "Limiti di intervento V1",
+      "contatto": "Contatto elettrico di sicurezza",
+      "forza": "Forza di trazione nella fune",
+      "fune": "Fune del limitatore"
+    },
+    "campo": {
+      "vn": "Velocità nominale Vn (m/s)",
+      "tipo": "Tipo di paracadute di cabina",
+      "v1": "V1 tarata, da targa o certificato (m/s)",
+      "vc": "Velocità del contatto Vc (m/s)",
+      "forzaParacadute": "Forza che fa prendere il paracadute (N)",
+      "forzaLimitatore": "Forza generata dal limitatore (N)",
+      "mbl": "Carico minimo di rottura della fune MBL (N)",
+      "d": "Diametro nominale della fune d (mm)",
+      "dp": "Diametro primitivo della puleggia Dp (mm)"
+    },
+    "hint": {
+      "tipo": "Istantaneo, anche a rulli: solo con Vn ≤ 0,63 m/s (5.6.2.1.2.1).",
+      "v1": "La targa riporta la V1 effettiva (5.6.2.2.1.8).",
+      "vc": "Dal produttore o dal certificato.",
+      "forzaParacadute": "Dato del paracadute.",
+      "forzaLimitatore": "Dal certificato del limitatore.",
+      "mbl": "Dato della fune (EN 12385-5:2002)."
+    },
+    "opzione": {
+      "tipo": {
+        "progressivo": "Progressivo",
+        "istantaneo": "Istantaneo",
+        "rulli": "Istantaneo a rulli"
+      }
+    },
+    "errore": {
+      "decimal": "Inserisci un numero, ad esempio 1,6.",
+      "range": "Inserisci un valore tra {min} e {max}.",
+      "option": "Scelta non valida.",
+      "vuoto": "Inserisci almeno un dato."
+    },
+    "r": {
+      "titolo": "Risultati",
+      "sogliaMin": "Soglia minima (inclusa)",
+      "sogliaMax": "Soglia massima (esclusa)",
+      "esitoV1": "Esito V1",
+      "min2": "Minimo a 2 decimali",
+      "max2": "Massimo a 2 decimali",
+      "momento": "Momento richiesto",
+      "esitoContatto": "Esito contatto",
+      "forzaMinima": "Forza minima richiesta",
+      "esitoForza": "Esito forza",
+      "mblMinimo": "MBL minimo richiesto",
+      "esitoMbl": "Esito MBL",
+      "rapporto": "Rapporto Dp/d",
+      "esitoRapporto": "Esito Dp/d"
+    },
+    "nota": {
+      "tipo": "5.6.2.1.2.1: istantaneo, anche a rulli, solo con Vn ≤ 0,63 m/s.",
+      "sogliaMin": "5.6.2.2.1.1 a): almeno il 115 % di Vn.",
+      "sogliaMax": "5.6.2.2.1.1 a) 1)–4): V1 deve restare strettamente sotto questo valore. Fa fede il massimo a 2 decimali.",
+      "v1": "5.6.2.2.1.8: la targa riporta la V1 effettiva. Vn > 1 m/s: tarare vicino al limite superiore; velocità basse: vicino al limite inferiore.",
+      "esitoV1": "Solo confronto numerico: non attesta la conformità dell'impianto.",
+      "min2": "Primo valore a 2 decimali non inferiore alla soglia minima.",
+      "max2": "Ultimo valore a 2 decimali sotto la soglia massima. Con Vn = 1,6: 2,15 e non 2,16.",
+      "vc": "La norma non fissa il 110 % né un'altra percentuale di Vn.",
+      "momento": "5.6.2.2.1.6 a): richiesto a ogni Vn, in salita e in discesa; cambia solo il momento di intervento.",
+      "esitoContatto": "Confronto con la V1 tarata. Vc deve anche restare sopra le velocità di esercizio: verifica del progettista.",
+      "forzaMinima": "5.6.2.2.1.1 d): il maggiore fra 300 N e il doppio della forza che fa prendere il paracadute.",
+      "esitoForza": "Forza generata dal limitatore almeno pari alla forza minima.",
+      "mbl": "5.6.2.2.1.3 a): fune secondo EN 12385-5:2002.",
+      "mblMinimo": "5.6.2.2.1.3 b): 8 volte la forza all'intervento (limitatori ad aderenza: calcolata con μmax = 0,2).",
+      "esitoMbl": "MBL della fune almeno pari al minimo richiesto.",
+      "rapporto": "Diametro primitivo della puleggia diviso per il diametro della fune.",
+      "esitoRapporto": "5.6.2.2.1.3 c): Dp ≥ 30 × d."
+    },
+    "esito": {
+      "vnNonValida": "Vn non valida",
+      "nonAmmesso": "Non ammesso: Vn>0,63",
+      "tipoNonValido": "Tipo non valido",
+      "mancante": "Dato mancante",
+      "entro": "Entro i limiti",
+      "fuori": "Fuori limiti",
+      "prima": "Prima di V1",
+      "alPiuTardi": "Al più tardi a V1",
+      "coerente": "Coerente con V1",
+      "sufficiente": "Sufficiente",
+      "insufficiente": "Insufficiente"
+    },
+    "avvertenze": {
+      "ambito": "Ambito: nuovo ascensore, paracadute di cabina azionato da limitatore, UNI EN 81-20:2020. Non coperti: contrappeso, ascensori idraulici con valvola, ascensori esistenti (UNI 10411 o edizione d'epoca), EN ISO 8100.",
+      "importante": "Importante: il calcolo esegue confronti numerici. Conformità, taratura e scelta dell'edizione spettano al progettista e all'organismo competente. Valori tratti dalle note interne, non dal testo originale: verificare sul testo della norma."
+    },
+    "riferimenti": {
+      "titolo": "Riferimenti",
+      "testo": "Da dove vengono i valori del calcolo, con le nostre parole. «Aperto»: da verificare sul testo della norma.",
+      "colonna": {
+        "argomento": "Argomento",
+        "valore": "Valore",
+        "documento": "Documento e punto",
+        "stato": "Stato"
+      },
+      "righe": {
+        "sogliaMin": {
+          "argomento": "Soglia minima V1",
+          "valore": "≥ 115 % di Vn",
+          "documento": "UNI EN 81-20:2020, 5.6.2.2.1.1 a)",
+          "stato": "Da note"
+        },
+        "sogliaMax": {
+          "argomento": "Soglia massima V1",
+          "valore": "< 0,80 m/s istantaneo non a rulli; < 1 m/s a rulli; < 1,5 m/s progressivo con Vn ≤ 1; < 1,25·v + 0,25/v progressivo con Vn > 1",
+          "documento": "UNI EN 81-20:2020, 5.6.2.2.1.1 a) 1)–4)",
+          "stato": "Da note"
+        },
+        "taratura": {
+          "argomento": "Consiglio di taratura",
+          "valore": "Vn > 1 m/s: vicino al limite superiore. Velocità basse: vicino al limite inferiore",
+          "documento": "UNI EN 81-20:2020, 5.6.2.2.1.1 a)",
+          "stato": "Da note"
+        },
+        "tipo": {
+          "argomento": "Tipo di paracadute di cabina",
+          "valore": "Istantaneo solo con Vn ≤ 0,63 m/s; altrimenti progressivo",
+          "documento": "UNI EN 81-20:2020, 5.6.2.1.2.1",
+          "stato": "Da note"
+        },
+        "contatto": {
+          "argomento": "Contatto elettrico",
+          "valore": "A ogni Vn. Vn > 1: prima di V1. Vn ≤ 1: al più tardi a V1. In salita e discesa",
+          "documento": "UNI EN 81-20:2020, 5.6.2.2.1.6 a)",
+          "stato": "Da note"
+        },
+        "altriContatti": {
+          "argomento": "Altri contatti",
+          "valore": "Riarmo; fune rotta o troppo allungata",
+          "documento": "UNI EN 81-20:2020, 5.6.2.2.1.6 b), c)",
+          "stato": "Da note, non calcolato"
+        },
+        "forza": {
+          "argomento": "Forza nella fune",
+          "valore": "≥ max(300 N; 2 × forza che fa prendere il paracadute)",
+          "documento": "UNI EN 81-20:2020, 5.6.2.2.1.1 d)",
+          "stato": "Da note"
+        },
+        "fune": {
+          "argomento": "Fune",
+          "valore": "MBL ≥ 8 × forza; Dp ≥ 30 × d",
+          "documento": "UNI EN 81-20:2020, 5.6.2.2.1.3 b), c)",
+          "stato": "Da note"
+        },
+        "risposta": {
+          "argomento": "Tempo di risposta",
+          "valore": "Punti di intervento a ≤ 250 mm di corsa della fune",
+          "documento": "UNI EN 81-20:2020, 5.6.2.2.1.2",
+          "stato": "Da note, non calcolato"
+        },
+        "prova": {
+          "argomento": "Prova e sigillo",
+          "valore": "Intervento possibile a velocità ridotta in prova; taratura piombata",
+          "documento": "UNI EN 81-20:2020, 5.6.2.2.1.5",
+          "stato": "Da note, non calcolato"
+        },
+        "targa": {
+          "argomento": "Targa",
+          "valore": "Riporta anche la V1 effettiva",
+          "documento": "UNI EN 81-20:2020, 5.6.2.2.1.8",
+          "stato": "Da note, non calcolato"
+        },
+        "contatto110": {
+          "argomento": "Percentuale 110 % per il contatto",
+          "valore": "Non presente nelle note: non risulta requisito di norma",
+          "documento": "UNI EN 81-20:2020, 5.6.2.2.1.6",
+          "stato": "Da note"
+        },
+        "contrappeso": {
+          "argomento": "Limitatore del contrappeso",
+          "valore": "+10 % massimo sulla V1 di cabina nella EN 81-1:2008; assente dalla nota 2020",
+          "documento": "UNI EN 81-1:2008, 9.9.3",
+          "stato": "Aperto: verificare p. 82 del testo 2020"
+        },
+        "istantaneoContrappeso": {
+          "argomento": "Istantaneo su contrappeso fino a 1 m/s",
+          "valore": "Ammesso, ma con 115 % e soglie 0,80/1 m/s non resta alcuna V1 sopra Vn ≈ 0,70 / 0,87",
+          "documento": "UNI EN 81-20:2020, 5.6.2.1.2.3 e 5.6.2.2.1.1 a)",
+          "stato": "Aperto: interpretazione del tecnico"
+        },
+        "diametro6": {
+          "argomento": "Diametro minimo fune 6 mm",
+          "valore": "Presente nella EN 81-1:2008; nessun valore nella nota 2020",
+          "documento": "UNI EN 81-1:2008, 9.9.6.3",
+          "stato": "Aperto: verificare sul testo 2020"
+        },
+        "iso8100": {
+          "argomento": "EN ISO 8100-1/-2:2026",
+          "valore": "Sostituiscono EN 81-20/50; non presenti nelle note. Effetti sui valori non verificati",
+          "documento": "EN ISO 8100-1/-2:2026",
+          "stato": "Aperto: verificare sulla norma"
+        }
+      }
+    },
+    "libero": {
+      "indietro": "Tutti i calcoli"
+    },
+    "elenco": {
+      "titolo": "Calcolo limitatore",
+      "sottotitolo": "Cerca l'impianto per matricola, numero o via: se ha la scheda, il calcolo si compila dai suoi dati. Impianto senza scheda? Crea un calcolo e scrivi tu indirizzo e matricola.",
+      "cerca": "Matricola, numero impianto o via",
+      "cercaBtn": "Cerca",
+      "nuovo": "Nuovo calcolo senza scheda",
+      "nuovoPer": "Nuovo calcolo senza scheda per «{q}»",
+      "schede": "Schede",
+      "liberi": "Calcoli senza scheda",
+      "nessuno": "Nessuna scheda e nessun calcolo trovati per «{q}».",
+      "altreSchede": "Altre {n} schede: aggiungi una parola alla ricerca.",
+      "altriLiberi": "Altri {n} calcoli: aggiungi una parola alla ricerca.",
+      "salvati": "Calcoli salvati",
+      "vuoto": "Nessun calcolo salvato.",
+      "vuotoHint": "Cerca una scheda qui sopra o crea un calcolo senza scheda.",
+      "daCalcolare": "Nessun calcolo: si compila dalla scheda",
+      "calcolato": "Calcolo salvato il {quando}",
+      "idraulico": "Impianto idraulico: fuori dall'ambito del calcolo",
+      "conScheda": "Dalla scheda",
+      "senzaScheda": "Senza scheda",
+      "colonna": {
+        "impianto": "Impianto",
+        "dati": "Dati",
+        "salvato": "Salvato",
+        "autore": "Da"
+      }
+    }
+  }
+}

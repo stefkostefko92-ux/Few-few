@@ -108,8 +108,14 @@ src/
                      формация, нишки, клас, cordatura) · da-scheda.ts (попълването от
                      „Modulo rilievi dati argani“) · righe.ts (резултатите като редове — страница и PDF) ·
                      formato.ts · service.ts (четене, запис върху `base`, одит) · pdf.ts (A4) ·
-                     impianto.ts (уредбата без карта — zod) · liberi.ts (изчислението без карта) ·
-                     elenco.ts (списъкът и търсенето на страницата в менюто)
+                     pdf-testata.ts (общото на PDF-ите на изчисленията: шрифтът, главата на фирмата,
+                     долният ред) · impianto.ts (уредбата без карта — zod) · liberi.ts (изчислението
+                     без карта) · elenco.ts (списъкът и търсенето на страницата в менюто)
+  limitatore/        изчислението за ограничителя по „Limitatore_velocita_EN81-20-2020.xlsx“: calcolo.ts
+                     (клетките B5–B27 на листа „Limitatore“, без база) · dati.ts (входът — zod, формата,
+                     попълването от картата) · righe.ts (редовете на листа — страница и PDF; листът
+                     „Riferimenti“) · service.ts (на карта и без карта: четене, запис върху `base`,
+                     изтриване, одит) · elenco.ts (списъкът и търсенето) · pdf.ts (A4, една страница)
   schizzi/           скицникът: elementi.ts (видът на елементите — zod, тежестта) · costanti.ts (мерките,
                      таваните, стрелките, пунктирите, котите) · simboli.ts (символите за шахтата) ·
                      forme.ts (елементът → примитиви: линии, запълнени върхове, елипси, надписи — за SVG и
@@ -158,7 +164,7 @@ views/               EJS: partials/ (горна и долна лента, таб
                      account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs; скицникът —
                      schede/_schizzo.ejs (листът като SVG), _schizzo-foglio.ejs, _schizzo-editor.ejs
 locales/it/          common · auth · schede · users · aziende · requests · site · mail · allegati · schizzi ·
-                     interventi · cartelli · argano · verbali
+                     interventi · cartelli · argano · limitatore · verbali
                      (.json) — единственият
 public/              css/ (портал: base, buttons, shell, layout, plate, forms, pages, data, sheet, misure,
                      moduli, allegati, foto-stampa, schizzi, schizzo-editor, interventi, foglio, verbali, cartelli, argano, print;
@@ -836,6 +842,32 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   добавя): `schedaId` по избор, `aziendaId` на всяко изчисление (досегашните — от картата си),
   `indirizzo`/`matricola`/`numeroImpianto`/`searchText` и `CalcoloArgano_impianto_check` — без карта
   не се пази без адрес.
+- **Изчислението за ограничителя** (`src/limitatore/`, `routes/calcolo-limitatore*.ts`; собственикът, 5
+  ноември 2026 — „таб calcolo limitatore … следвайки досегашната логика“, по своя
+  „Limitatore_velocita_EN81-20-2020.xlsx“): като изчислението за аргано във всичко — бутон „Calcolo
+  limitatore“ на картата (не при хидравлична: там картата няма раздела „Limitatore“), страница
+  `/schede/:id/calcolo-limitatore` и PDF `…/calcolo-limitatore.pdf`, „Rilievi“ → „Calcolo limitatore“
+  (`/calcolo-limitatore` — търсенето и списъкът са общата страница `routes/calcolo-elenco.ts` +
+  `views/argano/elenco.ejs` с `calcolo` на изчислението), изчисление без карта (`/nuovo`, `/:id`, `/pdf`,
+  `/elimina`), същите права, `base`, одит `LIMITATORE_CALCOLO`/`LIMITATORE_CALCOLO_DELETE`, износ и
+  изтриване на фирмата. Модел `CalcoloLimitatore` (миграция `20261105180000_calcolo_limitatore`, само
+  добавя; `CalcoloLimitatore_impianto_check`). **Формулите са клетките B5–B27 на листа „Limitatore“
+  една към една** (`limitatore/calcolo.ts`) — с особеностите на файла: долният праг (115 % от Vn) е
+  празен, щом горният не е число; V1 при липсващ горен праг е „Fuori limiti“; при Vn ≤ 0 моментът на
+  контакта пак е „Al più tardi a V1“; минимумът и максимумът с 2 знака — `ROUNDUP(ROUND(x;10);2)` и
+  `ROUND(ROUNDUP(ROUND(x;10);2)−0,01;2)`; MBL минимум = 8 × силата на ограничителя (B18), не на
+  парашута. Сравненията и закръглянията са като в електронната таблица — с 15 значещи цифри (249 / 8,3
+  е 30 и „Sufficiente“; с обикновено сравнение е 29,999…996 и „Insufficiente“ — тестът го хваща).
+  Текстовете на изходите са дословно от листа („Entro i limiti“, „Non ammesso: Vn>0,63“, „Dato
+  mancante“…). Всяко поле е по избор като в листа (празно → „Dato mancante“ само в своите редове);
+  празна форма не се записва. Първото отваряне от картата: Vn — от „Modulo rilievi dati argani“, d — от
+  „Diametro funicella“; другото е от табелата и сертификатите. Резултатите — четирите раздела на листа
+  ред по ред, под всеки — бележката на листа (точката на нормата); накрая „Ambito“ и „Importante“ и
+  листът „Riferimenti“ (без пътищата към вътрешните бележки). Проверката: unit — 27-те случая на листа
+  „Test“ и 28 случая, преизчислени в самия файл (LibreOffice, без макроси; `tests/limitatore-excel.json`
+  — всяка клетка B5–B27), PDF-ът на една страница за всеки; integration и e2e — като при аргано. Самият
+  Excel не е в репото („USO INTERNO … Non pubblicare“); на витрината изчислението не се споменава с
+  нормата.
 - **Менюто** (`views/partials/header.ejs`, `public/css/sidenav.css`, `public/js/menu.js`; собственикът, 30
   октомври 2026 — като в LiftPilot, вляво): групи Rilievi · Assistenza elevatori · Amministrazione (на
   фирмата: Utenti, Impostazioni, Registro) · Master (нашето — Aziende и Richieste, само за собственика на

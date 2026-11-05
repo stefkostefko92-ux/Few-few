@@ -1,0 +1,26 @@
+<%
+  // Едно поле на изчислението за ограничителя: число (с десетична запетая) или изборът на парашута;
+  // подсказката (`hint: true` — бележката на листа) и грешката — под него, в подножието на реда
+  // (`grid--righe`).
+  const id = 'f-' + key;
+  const text = typeof values[key] === 'string' ? values[key] : '';
+  const hintText = typeof hint !== 'undefined' && hint ? t('limitatore.hint.' + key) : null;
+  const e = errori[key];
+  let errText = null;
+  if (e === 'range') {
+    const [min, max] = limiteDi(key);
+    errText = t('limitatore.errore.range', { min: String(min).replace('.', ','), max: String(max).replace('.', ',') });
+  } else if (e) errText = t('limitatore.errore.' + e);
+  const describedBy = [hintText ? 'hint-' + key : null, errText ? 'err-' + key : null].filter(Boolean).join(' ');
+%><div class="field field--<%= key %><%= key === 'tipo' ? ' field--riga-telefono' : '' %>">
+  <label class="field__label" for="<%= id %>"><%= t('limitatore.campo.' + key) %></label>
+  <% if (key === 'tipo') { %><select class="select" id="<%= id %>" name="tipo"<% if (errText) { %> aria-invalid="true"<% } %><% if (describedBy) { %> aria-describedby="<%= describedBy %>"<% } %>>
+    <option value="">—</option>
+    <% for (const tipo of tipi) { %><option value="<%= tipo %>"<% if (text === tipo) { %> selected<% } %>><%= t('limitatore.opzione.tipo.' + tipo) %></option>
+    <% } %>
+  </select>
+  <% } else { %><input class="input" id="<%= id %>" name="<%= key %>" type="text" inputmode="decimal" autocomplete="off" value="<%= text %>"<% if (errText) { %> aria-invalid="true"<% } %><% if (describedBy) { %> aria-describedby="<%= describedBy %>"<% } %>>
+  <% } %>
+  <%# Подножието е винаги тук (и празно): третата линия на реда в `.grid--righe`. %>
+  <div class="field__piede"><% if (hintText) { %><p class="field__hint" id="hint-<%= key %>"><%= hintText %></p><% } %><% if (errText) { %><p class="field__error" id="err-<%= key %>"><%= errText %></p><% } %></div>
+</div>
