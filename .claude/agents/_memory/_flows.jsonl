@@ -503,3 +503,5 @@
 {"t":"handoff","ts":"2026-11-04T09:24:59.979Z","id":"r8129a734","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"b0c662c5"}
 {"t":"handoff","ts":"2026-11-04T09:25:08.120Z","id":"r8129a734","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"ca19e31d"}
 {"t":"handoff","ts":"2026-11-04T09:34:53.703Z","id":"r8129a734","from":"razbivacha","to":"kodadjiyata","status":"наред","run":"18806aee"}
+{"t":"start","ts":"2026-11-05T09:40:39.760Z","id":"r29dcf0de","flow":"авто","lead":"mobildjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-05T09:40:39.760Z","id":"r29dcf0de","from":"mobildjiyata","to":"kodadjiyata","status":"има бележки","run":"e95d6281"}
