@@ -100,6 +100,7 @@ describe('the installed app', () => {
       ['', ' hidden', ' hidden', ' hidden'],
     );
     assert.match(android.body, /data-installa-ios hidden>/, 'no iPhone note on Android');
+    assert.doesNotMatch(android.body, /data-installa-samsung/, 'Chrome is not sent to Chrome');
   });
 
   it('tells the iPhone that Apple installs only from "Condividi", with a button to the steps', async () => {
@@ -115,6 +116,24 @@ describe('the installed app', () => {
     assert.match(iphone.body, /Apple lo permette solo dal menu Condividi/);
     assert.match(iphone.body, /data-installa-ios-passi/);
     assert.match(iphone.body, /<details class="installa__os" data-os="ios" open>/);
+  });
+
+  it('sends Samsung Internet to Chrome: the app it installs, Android marks as unsafe', async () => {
+    // The owner, 5 November 2026: "Проблема с несигурно приложение идва от Самсунг браузър".
+    const samsung = await new Browser().request('GET', '/app', {
+      headers: {
+        'user-agent':
+          'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/25.0 Chrome/121.0.0.0 Mobile Safari/537.36',
+      },
+    });
+    assert.equal(samsung.status, 200);
+    assert.match(samsung.body, /data-installa-samsung>/);
+    assert.match(samsung.body, /Android segnala come «non sicura»/);
+    assert.match(
+      samsung.body,
+      /href="intent:\/\/[^"\/]+\/app#Intent;scheme=https?;package=com\.android\.chrome;end"/,
+    );
+    assert.match(samsung.body, /<details class="installa__os" data-os="android" open>/);
   });
 
   it('marks every PDF link for the iPhone app, which cannot close a PDF (WebKit bug 290847)', async () => {

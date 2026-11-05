@@ -8,6 +8,11 @@
     "ready": "Questo browser può installarla subito.",
     "iosNote": "Su iPhone e iPad nessun pulsante può installare l'app: Apple lo permette solo dal menu Condividi. Bastano tre tocchi.",
     "iosButton": "Mostra come aggiungerla",
+    "samsung": {
+      "nota": "Con Samsung Internet l'app si installa in un modo che Android segnala come «non sicura». Installala da Chrome: è la stessa app, senza avvisi.",
+      "giaInstallata": "Se l'hai già installata da Samsung Internet, eliminala dalla schermata Home e installala di nuovo da Chrome.",
+      "apri": "Apri in Chrome"
+    },
     "button": "Installa l'app",
     "done": "App installata: la trovi nella schermata Home o tra le applicazioni del computer.",
     "yourDevice": "Il tuo dispositivo",

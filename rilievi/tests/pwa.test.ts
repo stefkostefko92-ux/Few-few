@@ -9,7 +9,7 @@ import vm from 'node:vm';
 import sharp from 'sharp';
 import { translatorFor } from '../src/i18n.js';
 import { ICONE, manifestDi, START_URL } from '../src/pwa/manifest.js';
-import { sistemaDi } from '../src/pwa/sistema.js';
+import { apriInChrome, samsungInternet, sistemaDi } from '../src/pwa/sistema.js';
 
 const PUBLIC = join(import.meta.dirname, '..', 'public');
 const t = translatorFor('it');
@@ -166,5 +166,24 @@ describe('the device of "Installa l\'app"', () => {
     // Not told: every step stays open.
     assert.equal(sistemaDi(undefined), null);
     assert.equal(sistemaDi('curl/8.5.0'), null);
+  });
+
+  it('knows Samsung Internet, whose installed app Android marks as unsafe, and opens the page in Chrome', () => {
+    // The owner, 5 November 2026: the "non sicura" warning comes from the Samsung browser.
+    const samsung =
+      'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/25.0 Chrome/121.0.0.0 Mobile Safari/537.36';
+    assert.equal(samsungInternet(samsung), true);
+    assert.equal(sistemaDi(samsung), 'android');
+    assert.equal(
+      samsungInternet(
+        'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36',
+      ),
+      false,
+    );
+    assert.equal(samsungInternet(undefined), false);
+    assert.equal(
+      apriInChrome('https://rilievi.carbonstealth.eu', '/app'),
+      'intent://rilievi.carbonstealth.eu/app#Intent;scheme=https;package=com.android.chrome;end',
+    );
   });
 });
