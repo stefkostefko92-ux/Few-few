@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Edhe brenda kornizave të ngulitura: fsheh më shumë, përdor më shumë memorie."
+  },
+  "opt_who": {
+    "message": "Kë ndaluam"
+  },
+  "opt_who_sub": {
+    "message": "Kompanitë me serverët e të cilave nuk e lamë shfletuesin tuaj të lidhej në 30 ditët e fundit. Numërohet vetëm në këtë pajisje, sipas kompanisë dhe ditës: pa adresa, pa sajte."
+  },
+  "opt_who_empty": {
+    "message": "Ende s’është numëruar asgjë. Shfletoni pak dhe shikoni sërish."
+  },
+  "opt_who_row": {
+    "message": "Kërkesa: $1 · Ditë: $2"
   }
 }

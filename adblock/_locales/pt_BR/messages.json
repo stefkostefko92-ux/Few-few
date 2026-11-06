@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Também dentro de frames incorporados: oculta mais e usa mais memória."
+  },
+  "opt_who": {
+    "message": "Quem nós barramos"
+  },
+  "opt_who_sub": {
+    "message": "As empresas cujos servidores impedimos seu navegador de contatar nos últimos 30 dias. Contado só neste dispositivo, por empresa e por dia: sem endereços, sem sites."
+  },
+  "opt_who_empty": {
+    "message": "Nada contado ainda. Navegue um pouco e volte a olhar."
+  },
+  "opt_who_row": {
+    "message": "Solicitações: $1 · Dias: $2"
   }
 }

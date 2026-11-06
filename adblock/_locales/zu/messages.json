@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Nangaphakathi kwamafreyimu ashumekiwe: kufihla okuningi, kusebenzisa inkumbulo eningi."
+  },
+  "opt_who": {
+    "message": "Esibavimbile"
+  },
+  "opt_who_sub": {
+    "message": "Izinkampani esivimbele isiphequluli sakho ukuthi sixhumane namaseva azo ezinsukwini ezingu-30 ezedlule. Kubalwa kule divayisi kuphela, ngenkampani nangosuku: awekho amakheli, awekho amasayithi."
+  },
+  "opt_who_empty": {
+    "message": "Akukabalwa lutho okwamanje. Phequlula isikhashana bese ubheka futhi."
+  },
+  "opt_who_row": {
+    "message": "Izicelo: $1 · Izinsuku: $2"
   }
 }

@@ -888,5 +888,17 @@
   },
   "modeStrictDesc": {
     "message": "Anche dentro i frame incorporati: nasconde di più, usa più memoria."
+  },
+  "opt_who": {
+    "message": "Chi abbiamo fermato"
+  },
+  "opt_who_sub": {
+    "message": "Le aziende i cui server abbiamo impedito al tuo browser di contattare negli ultimi 30 giorni. Contate solo su questo dispositivo, per azienda e per giorno: niente indirizzi, niente siti."
+  },
+  "opt_who_empty": {
+    "message": "Ancora niente di contato. Naviga un po’ e torna a guardare."
+  },
+  "opt_who_row": {
+    "message": "Richieste: $1 · Giorni: $2"
   }
 }

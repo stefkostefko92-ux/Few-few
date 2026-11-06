@@ -40,6 +40,11 @@ twitch_main.js          MAIN world (регистриран от SW, sa-twitch) �
 rules/                  DNR статични правила: ad_rules + youtube_rules +
                         easylist/easyprivacy/urlhaus/removeparam (билднати от
                         tools/build_filters.mjs) + козметичен bundle + counts
+lib/who.js · rules/who.json  6.0 „Кого спряхме“ (Настройки): блокираните заявки по компания и ден, 31 дни, само на
+                        устройството. Chrome казва само КОЕ правило е блокирало — rules/who.json („правило → компания“)
+                        се ГЕНЕРИРА: `node tools/build_who.mjs` след build_filters/generate_rules и след промяна на
+                        popup/companies.js (`--check` е в tests/who.test.mjs); броенето е в refreshBadge (getMatchedRules,
+                        по timeStamp, белегът на раздела в storage.session), картата — options/who.js
 lib/modes.js            6.0 режими Basic/Standard/Strict (глобално + `siteModes` по сайт): чист планер (SA_MODES) —
                         кои страницови скриптове къде (`pageScriptPlan`, id `sa-page-*`); SW, Firefox background,
                         manifest-ът преди meta.js и tests/modes.test.mjs го ползват
@@ -152,9 +157,11 @@ bash tools/package.sh                         # билд + самопровер�
   SW ги регистрира по `lib/modes.js` (`syncPageScripts`, persistAcrossSessions). Basic — нищо наше на страницата
   (и без main.js/uBO парчета/gpc.js, без meta.js; YouTube/Twitch остават — свой превключвател); Standard — само
   top frame + cookies.js в рамките на CMP-тата (`CMP_FRAME_HOSTS` == регекса в cookies.js, гейт); Strict — всички
-  рамки (поведението на 5.8). Нов страницов скрипт = ред в `PAGE_SCRIPTS`, не в manifest-а. Всяко писане на
-  mode/siteModes вика `syncPageScripts` само (без storage слушател — двойна работа: всяко scripting извикване
-  струва на Chrome ~0,6 s); main.js се пререгистрира само ако Basic се промени (`scriptletModeKey`). Popup-ът
+  рамки (поведението на 5.8). **main.js следва същия план** (`-content` записите: Standard — главната рамка,
+  Strict — всички, id `sa-scriptlets[-strict|-standard]`); uBO парчетата остават във всички рамки (поправки по
+  хост). Нов страницов скрипт = ред в `PAGE_SCRIPTS`, не в manifest-а. Всяко писане на mode/siteModes вика
+  `syncPageScripts` + `syncScriptlets` само (без storage слушател — двойна работа: всяко scripting извикване
+  струва на Chrome ~0,6 s, смяна на режим ≈ 2 s). Popup-ът
   има ЕДИН ред „Protection here“ — заместил „Hide ad boxes here“ (старият `noCosmetics` се сгъва в Basic при
   ъпдейт/внос, `foldNoCosmetics`); нов ред = над 600 px. Гейт: tests/modes.test.mjs + extension.browser (режимите
   в истински Chromium).

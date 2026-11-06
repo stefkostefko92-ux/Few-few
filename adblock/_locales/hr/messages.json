@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "I unutar ugrađenih okvira: skriva najviše, troši najviše memorije."
+  },
+  "opt_who": {
+    "message": "Koga smo zaustavili"
+  },
+  "opt_who_sub": {
+    "message": "Tvrtke s čijim poslužiteljima nismo dopustili vašem pregledniku da se poveže u posljednjih 30 dana. Broji se samo na ovom uređaju, po tvrtki i danu: bez adresa, bez stranica."
+  },
+  "opt_who_empty": {
+    "message": "Još ništa nije prebrojano. Pregledavajte neko vrijeme i pogledajte ponovno."
+  },
+  "opt_who_row": {
+    "message": "Zahtjevi: $1 · Dani: $2"
   }
 }

@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Pati sa loob ng mga naka-embed na frame: pinakamaraming itinatago, pinakamaraming memory ang ginagamit."
+  },
+  "opt_who": {
+    "message": "Sino ang aming pinigilan"
+  },
+  "opt_who_sub": {
+    "message": "Ang mga kumpanyang hindi namin pinayagang makontak ng iyong browser ang mga server sa nakaraang 30 araw. Binibilang lang sa device na ito, bawat kumpanya at araw: walang address, walang site."
+  },
+  "opt_who_empty": {
+    "message": "Wala pang nabibilang. Mag-browse muna nang kaunti at tingnan ulit."
+  },
+  "opt_who_row": {
+    "message": "Mga request: $1 · Mga araw: $2"
   }
 }

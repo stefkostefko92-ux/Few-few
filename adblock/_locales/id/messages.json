@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Juga di dalam frame tersemat: paling banyak menyembunyikan, paling banyak memakai memori."
+  },
+  "opt_who": {
+    "message": "Siapa yang kami hentikan"
+  },
+  "opt_who_sub": {
+    "message": "Perusahaan yang servernya tidak kami izinkan dihubungi browser Anda dalam 30 hari terakhir. Dihitung hanya di perangkat ini, per perusahaan dan per hari: tanpa alamat, tanpa situs."
+  },
+  "opt_who_empty": {
+    "message": "Belum ada yang dihitung. Jelajahi sebentar lalu lihat lagi."
+  },
+  "opt_who_row": {
+    "message": "Permintaan: $1 · Hari: $2"
   }
 }

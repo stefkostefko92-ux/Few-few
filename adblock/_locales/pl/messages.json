@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Także wewnątrz osadzonych ramek: ukrywa najwięcej, zużywa najwięcej pamięci."
+  },
+  "opt_who": {
+    "message": "Kogo zatrzymaliśmy"
+  },
+  "opt_who_sub": {
+    "message": "Firmy, z których serwerami nie pozwoliliśmy Twojej przeglądarce się połączyć w ciągu ostatnich 30 dni. Liczone tylko na tym urządzeniu, według firmy i dnia: bez adresów, bez stron."
+  },
+  "opt_who_empty": {
+    "message": "Jeszcze nic nie policzono. Poprzeglądaj strony i zajrzyj tu ponownie."
+  },
+  "opt_who_row": {
+    "message": "Żądania: $1 · Dni: $2"
   }
 }

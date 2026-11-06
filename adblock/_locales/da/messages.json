@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Også inde i indlejrede rammer: skjuler mest, bruger mest hukommelse."
+  },
+  "opt_who": {
+    "message": "Hvem vi stoppede"
+  },
+  "opt_who_sub": {
+    "message": "De virksomheder, hvis servere vi forhindrede din browser i at kontakte de seneste 30 dage. Tælles kun på denne enhed, pr. virksomhed og dag: ingen adresser, ingen websteder."
+  },
+  "opt_who_empty": {
+    "message": "Intet talt endnu. Surf lidt, og kig igen."
+  },
+  "opt_who_row": {
+    "message": "Forespørgsler: $1 · Dage: $2"
   }
 }

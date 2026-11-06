@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Txertatutako markoen barruan ere bai: gehien ezkutatzen du, memoria gehien erabiltzen du."
+  },
+  "opt_who": {
+    "message": "Nor gelditu dugu"
+  },
+  "opt_who_sub": {
+    "message": "Azken 30 egunetan zure arakatzailea zein enpresaren zerbitzariekin konektatzea eragotzi dugun. Gailu honetan soilik zenbatzen da, enpresaka eta egunka: helbiderik eta gunerik gabe."
+  },
+  "opt_who_empty": {
+    "message": "Oraindik ez da ezer zenbatu. Nabigatu pixka bat eta begiratu berriro."
+  },
+  "opt_who_row": {
+    "message": "Eskaerak: $1 · Egunak: $2"
   }
 }

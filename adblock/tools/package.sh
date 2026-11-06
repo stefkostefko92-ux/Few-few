@@ -58,6 +58,7 @@ refs.add("lib/foreign.js");       // Settings + welcome: import from another ad 
 refs.add("blocked/blocked.js"); refs.add("blocked/blocked.css"); // the warning page instead of a malware site
 refs.add("report/report.html");   // opened from the popup
 refs.add("popup/companies.js");   // the company behind each host in "Connections on this page"
+refs.add("lib/who.js"); refs.add("rules/who.json"); refs.add("options/who.js"); // 6.0 "Who we stopped"
 refs.add("welcome/welcome.html"); refs.add("welcome/welcome.js"); refs.add("welcome/welcome.css"); // first install
 refs.add("THIRD_PARTY_NOTICES.txt"); // linked from Settings; list licences ask for it
 refs.add("licenses/*");            // the licence texts the notices point to
@@ -102,7 +103,7 @@ node - "$ff_tmp/manifest.json" <<'NODE'
 const fs = require("fs");
 const p = process.argv[2];
 const m = JSON.parse(fs.readFileSync(p, "utf8"));
-m.background = { scripts: ["scriptlets/policy.js", "lib/abp2dnr.js", "lib/modes.js", "background.js"] };
+m.background = { scripts: ["scriptlets/policy.js", "lib/abp2dnr.js", "lib/modes.js", "lib/who.js", "background.js"] };
 // gecko_android: без него AMO не показва разширението във Firefox за Android (Extension Workshop,
 // „version compatibility“). contextMenus/commands ги няма там — кодът ги вика само в try/?.
 m.browser_specific_settings = {

@@ -888,5 +888,17 @@
   },
   "modeStrictDesc": {
     "message": "Auch in eingebetteten Frames: blendet am meisten aus, braucht am meisten Speicher."
+  },
+  "opt_who": {
+    "message": "Wen wir gestoppt haben"
+  },
+  "opt_who_sub": {
+    "message": "Die Unternehmen, deren Server Ihr Browser in den letzten 30 Tagen dank uns nicht kontaktiert hat. Nur auf diesem Gerät gezählt, je Unternehmen und Tag: keine Adressen, keine Websites."
+  },
+  "opt_who_empty": {
+    "message": "Noch nichts gezählt. Surfen Sie eine Weile und schauen Sie dann wieder hier."
+  },
+  "opt_who_row": {
+    "message": "Anfragen: $1 · Tage: $2"
   }
 }

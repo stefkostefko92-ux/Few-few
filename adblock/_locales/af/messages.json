@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Ook binne ingebedde rame: steek die meeste weg, gebruik die meeste geheue."
+  },
+  "opt_who": {
+    "message": "Wie ons gestop het"
+  },
+  "opt_who_sub": {
+    "message": "Die maatskappye wie se bedieners ons jou blaaier die afgelope 30 dae verhoed het om te kontak. Slegs op hierdie toestel getel, per maatskappy en per dag: geen adresse, geen webwerwe nie."
+  },
+  "opt_who_empty": {
+    "message": "Nog niks getel nie. Blaai ’n rukkie en kyk weer."
+  },
+  "opt_who_row": {
+    "message": "Versoeke: $1 · Dae: $2"
   }
 }

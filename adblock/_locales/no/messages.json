@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Også inne i innebygde rammer: skjuler mest, bruker mest minne."
+  },
+  "opt_who": {
+    "message": "Hvem vi stoppet"
+  },
+  "opt_who_sub": {
+    "message": "Selskapene som vi hindret nettleseren din i å kontakte serverne til de siste 30 dagene. Telles bare på denne enheten, per selskap og dag: ingen adresser, ingen nettsteder."
+  },
+  "opt_who_empty": {
+    "message": "Ingenting er talt ennå. Surf en stund, og se igjen."
+  },
+  "opt_who_row": {
+    "message": "Forespørsler: $1 · Dager: $2"
   }
 }

@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Även inuti inbäddade ramar: döljer mest, använder mest minne."
+  },
+  "opt_who": {
+    "message": "Vilka vi stoppade"
+  },
+  "opt_who_sub": {
+    "message": "De företag vars servrar vi hindrade din webbläsare från att kontakta de senaste 30 dagarna. Räknas bara på den här enheten, per företag och dag: inga adresser, inga webbplatser."
+  },
+  "opt_who_empty": {
+    "message": "Inget räknat än. Surfa en stund och titta igen."
+  },
+  "opt_who_row": {
+    "message": "Förfrågningar: $1 · Dagar: $2"
   }
 }

@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Tudi v vdelanih okvirjih: skrije največ, porabi največ pomnilnika."
+  },
+  "opt_who": {
+    "message": "Koga smo ustavili"
+  },
+  "opt_who_sub": {
+    "message": "Podjetja, s strežniki katerih v zadnjih 30 dneh nismo pustili vašemu brskalniku vzpostaviti stika. Šteje se le v tej napravi, po podjetju in dnevu: brez naslovov, brez spletnih mest."
+  },
+  "opt_who_empty": {
+    "message": "Še nič ni prešteto. Nekaj časa brskajte in poglejte znova."
+  },
+  "opt_who_row": {
+    "message": "Zahteve: $1 · Dnevi: $2"
   }
 }

@@ -79,20 +79,38 @@ ok(`consent platforms == CMP_FRAME_HOST_RE in cookies.js (${fromCookies})`, from
   const page = mock.registered().filter((s) => s.id.startsWith(M.PAGE_PREFIX));
   ok(`SW: page scripts registered by the plan (${page.length}), persistent, the basic site excluded`,
     page.length === 6 && page.every((s) => s.persistAcrossSessions === true) && page.find((s) => s.id === "sa-page-standard-content").excludeMatches.includes("*://*.shop.test.net/*"));
+  const unregBefore = mock.calls.unregistered.length, regBefore = mock.calls.registered.length;
+  await bg.doSyncPageScripts();
+  ok("SW: the same plan again (every browser start) → nothing unregistered or registered (no gap for restored tabs)",
+    mock.calls.unregistered.length === unregBefore && mock.calls.registered.length === regBefore);
   await bg.doSyncScriptlets(true);
   const main = mock.registered().find((s) => s.id === "sa-scriptlets");
   ok("SW: a basic site gets no MAIN-world scripts either (main.js, GPC)",
     main.excludeMatches.includes("*://*.shop.test.net/*") && mock.registered().find((s) => s.id === "sa-gpc").excludeMatches.includes("*://*.shop.test.net/*"));
+  ok("SW: main.js follows the level — Standard: the top frame only (in every frame it cost ~33 MB on the test pages)", main.allFrames === false && main.matches.join() === "<all_urls>");
+  mock.store.set("siteModes", { "shop.test.net": "basic", "video.example": "strict" });
+  await bg.doSyncScriptlets(true);
+  const strictMain = mock.registered().find((s) => s.id === "sa-scriptlets-strict");
+  ok("SW: a Strict site gets main.js in every frame, and the global registration skips it",
+    strictMain && strictMain.allFrames === true && strictMain.matches.includes("*://*.video.example/*") &&
+    mock.registered().find((s) => s.id === "sa-scriptlets").excludeMatches.includes("*://*.video.example/*"));
+  const u0 = mock.calls.unregistered.length, r0 = mock.calls.registered.length;
+  await bg.doSyncScriptlets(true);
+  ok("SW: the same MAIN-world group again (browser start) → nothing re-registered (restored YouTube tabs keep it)",
+    mock.calls.unregistered.length === u0 && mock.calls.registered.length === r0);
+  ok("SW: the uBO chunks stay in every frame (host-specific fixes)", !mock.registered().some((s) => s.id.startsWith("sa-ubo-") && s.allFrames !== true));
+  mock.store.set("siteModes", { "shop.test.net": "basic" });
 
   mock.store.set("mode", "basic");
   mock.store.set("siteModes", { "news.example.org": "strict" });
   await bg.doSyncScriptlets(true);
-  const m2 = mock.registered().find((s) => s.id === "sa-scriptlets");
-  ok("SW: Basic for every site → main.js only on the site set higher, no GPC script",
-    m2 && m2.matches.join() === "*://news.example.org/*,*://*.news.example.org/*" && !mock.registered().some((s) => s.id === "sa-gpc"));
+  const m2 = mock.registered().filter((s) => (s.js || []).includes("scriptlets/main.js"));
+  ok("SW: Basic for every site → main.js only on the site set higher (in every frame: it is Strict), no GPC script",
+    m2.length === 1 && m2[0].id === "sa-scriptlets-strict" && m2[0].allFrames === true &&
+    m2[0].matches.join() === "*://news.example.org/*,*://*.news.example.org/*" && !mock.registered().some((s) => s.id === "sa-gpc"));
   mock.store.set("siteModes", {});
   await bg.doSyncScriptlets(true);
-  ok("SW: Basic everywhere and no exceptions → no main.js at all", !mock.registered().some((s) => s.id === "sa-scriptlets"));
+  ok("SW: Basic everywhere and no exceptions → no main.js at all", !mock.registered().some((s) => (s.js || []).includes("scriptlets/main.js")));
   await bg.doSyncPageScripts();
   ok("SW: Basic everywhere → no page scripts", !mock.registered().some((s) => s.id.startsWith(M.PAGE_PREFIX)));
 
@@ -149,6 +167,6 @@ ok("manifest: content.js, cookies.js, anti-adblock, picker and the generic CSS a
   ["content.js", "cookies.js", "antiadblock.js", "picker.js", "cosmetic_generic.css"].every((f) => !inManifest.includes(f)));
 const pkg = readFileSync(join(ROOT, "tools", "package.sh"), "utf8");
 ok("package.sh insists on the page scripts and lib/modes.js",
-  ["content.js", "cookies.js", "antiadblock.js", "picker.js", "cosmetic_generic.css", "lib/modes.js"].every((f) => pkg.includes(`"${f}"`)) && /"lib\/modes\.js", "background\.js"\]/.test(pkg));
+  ["content.js", "cookies.js", "antiadblock.js", "picker.js", "cosmetic_generic.css", "lib/modes.js"].every((f) => pkg.includes(`"${f}"`)) && /"lib\/modes\.js", ("lib\/who\.js", )?"background\.js"\]/.test(pkg));
 
 done();

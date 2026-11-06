@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Ka manustatud raamide sees: peidab kõige rohkem, kasutab kõige rohkem mälu."
+  },
+  "opt_who": {
+    "message": "Keda me peatasime"
+  },
+  "opt_who_sub": {
+    "message": "Ettevõtted, kelle serveritega me ei lasknud teie brauseril viimase 30 päeva jooksul ühendust võtta. Loetakse ainult selles seadmes, ettevõtte ja päeva kaupa: ei aadresse ega saite."
+  },
+  "opt_who_empty": {
+    "message": "Veel pole midagi loetud. Sirvige veidi ja vaadake uuesti."
+  },
+  "opt_who_row": {
+    "message": "Päringud: $1 · Päevad: $2"
   }
 }

@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "También dentro de marcos incrustados: oculta lo máximo y usa más memoria."
+  },
+  "opt_who": {
+    "message": "A quién detuvimos"
+  },
+  "opt_who_sub": {
+    "message": "Las empresas con cuyos servidores impedimos que su navegador se conectara en los últimos 30 días. Se cuenta solo en este dispositivo, por empresa y día: sin direcciones ni sitios."
+  },
+  "opt_who_empty": {
+    "message": "Aún no se contó nada. Navegue un rato y vuelva a mirar."
+  },
+  "opt_who_row": {
+    "message": "Solicitudes: $1 · Días: $2"
   }
 }

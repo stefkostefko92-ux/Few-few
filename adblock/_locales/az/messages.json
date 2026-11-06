@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Daxil edilmiş freymlərin içində də: ən çox gizlədir, ən çox yaddaş işlədir."
+  },
+  "opt_who": {
+    "message": "Kimləri dayandırdıq"
+  },
+  "opt_who_sub": {
+    "message": "Son 30 gündə brauzerinizin serverləri ilə əlaqə qurmasının qarşısını aldığımız şirkətlər. Yalnız bu cihazda, şirkət və gün üzrə sayılır: ünvan yoxdur, sayt yoxdur."
+  },
+  "opt_who_empty": {
+    "message": "Hələ heç nə sayılmayıb. Bir müddət gəzin və yenidən baxın."
+  },
+  "opt_who_row": {
+    "message": "Sorğular: $1 · Günlər: $2"
   }
 }

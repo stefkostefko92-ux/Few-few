@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Arī iegulto rāmju iekšpusē: paslēpj visvairāk, izmanto visvairāk atmiņas."
+  },
+  "opt_who": {
+    "message": "Ko mēs apturējām"
+  },
+  "opt_who_sub": {
+    "message": "Uzņēmumi, ar kuru serveriem pēdējo 30 dienu laikā neļāvām jūsu pārlūkam sazināties. Tiek skaitīts tikai šajā ierīcē, pa uzņēmumiem un dienām: nekādu adrešu, nekādu vietņu."
+  },
+  "opt_who_empty": {
+    "message": "Vēl nekas nav saskaitīts. Kādu laiku pārlūkojiet un apskatiet vēlreiz."
+  },
+  "opt_who_row": {
+    "message": "Pieprasījumi: $1 · Dienas: $2"
   }
 }

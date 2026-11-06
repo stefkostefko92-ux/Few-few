@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Aj vnútri vložených rámcov: skryje najviac, spotrebuje najviac pamäte."
+  },
+  "opt_who": {
+    "message": "Koho sme zastavili"
+  },
+  "opt_who_sub": {
+    "message": "Spoločnosti, s ktorých servermi sme vášmu prehliadaču za posledných 30 dní nedovolili spojiť sa. Počíta sa len v tomto zariadení, podľa spoločnosti a dňa: žiadne adresy, žiadne weby."
+  },
+  "opt_who_empty": {
+    "message": "Zatiaľ nič nespočítané. Chvíľu prehliadajte a pozrite sa znova."
+  },
+  "opt_who_row": {
+    "message": "Požiadavky: $1 · Dni: $2"
   }
 }

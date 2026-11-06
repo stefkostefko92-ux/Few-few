@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Joylangan freymlar ichida ham: eng koʻp yashiradi, eng koʻp xotira ishlatadi."
+  },
+  "opt_who": {
+    "message": "Kimlarni toʻxtatdik"
+  },
+  "opt_who_sub": {
+    "message": "Soʻnggi 30 kunda brauzeringizga serverlari bilan bogʻlanishga yoʻl qoʻymaganimiz kompaniyalar. Faqat shu qurilmada, kompaniya va kun boʻyicha sanaladi: manzillar ham, saytlar ham yoʻq."
+  },
+  "opt_who_empty": {
+    "message": "Hali hech narsa sanalmadi. Biroz koʻrib chiqing va yana qarang."
+  },
+  "opt_who_row": {
+    "message": "Soʻrovlar: $1 · Kunlar: $2"
   }
 }

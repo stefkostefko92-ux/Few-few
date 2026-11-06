@@ -146,7 +146,7 @@ function renderHealth() {
     ul.innerHTML = "";
     if (!h) { emptyRow(ul, L("opt_no_sw", "No response from the service worker.")); return; }
     const rows = [
-      [L("opt_h_engine", "Anti-adblock engine"), h.engineRegistered ? "registered (MAIN world, document_start)" : "NOT registered" + (h.scriptletsError ? " — " + h.scriptletsError : ""), h.engineRegistered],
+      [L("opt_h_engine", "Anti-adblock engine"), h.engineRegistered ? "registered (MAIN world, document_start)" : h.engineBasic && !h.scriptletsError ? "off (Basic)" : "NOT registered" + (h.scriptletsError ? " — " + h.scriptletsError : ""), h.engineRegistered || (h.engineBasic && !h.scriptletsError)],
       [L("opt_h_rulesets", "Static rulesets on"), h.enabledRulesets.length ? h.enabledRulesets.join(", ") : "none", h.enabledRulesets.length > 0],
       [L("opt_h_live", "Live filter domains"), String(h.dynamic.live) + (h.liveVersion ? " (filter set v" + h.liveVersion + ", " + ago(h.liveUpdated) + ")" : " (no update yet)"), !h.liveError],
       [L("opt_h_last", "Last update"), h.liveError ? "failed: " + h.liveError : h.liveUpdated ? "ok, " + ago(h.liveUpdated) : "not yet", !h.liveError],

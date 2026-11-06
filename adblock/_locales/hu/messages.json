@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "A beágyazott keretekben is: a legtöbbet rejti el, a legtöbb memóriát használja."
+  },
+  "opt_who": {
+    "message": "Kiket állítottunk meg"
+  },
+  "opt_who_sub": {
+    "message": "Azok a cégek, amelyek szervereivel az elmúlt 30 napban nem engedtük kapcsolatba lépni a böngészőjét. Csak ezen az eszközön számoljuk, cégenként és naponként: nincs cím, nincs webhely."
+  },
+  "opt_who_empty": {
+    "message": "Még semmi sincs megszámolva. Böngésszen egy kicsit, és nézzen vissza."
+  },
+  "opt_who_row": {
+    "message": "Kérések: $1 · Napok: $2"
   }
 }

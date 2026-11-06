@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "També dins dels marcs incrustats: amaga més coses i fa servir més memòria."
+  },
+  "opt_who": {
+    "message": "A qui hem aturat"
+  },
+  "opt_who_sub": {
+    "message": "Les empreses amb els servidors de les quals hem impedit que el vostre navegador es connectés en els darrers 30 dies. Es compta només en aquest dispositiu, per empresa i dia: sense adreces ni llocs."
+  },
+  "opt_who_empty": {
+    "message": "Encara no s’ha comptat res. Navegueu una estona i torneu a mirar."
+  },
+  "opt_who_row": {
+    "message": "Peticions: $1 · Dies: $2"
   }
 }

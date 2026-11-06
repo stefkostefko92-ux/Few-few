@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Y tu mewn i fframiau wedi’u mewnosod hefyd: yn cuddio fwyaf, yn defnyddio’r mwyaf o gof."
+  },
+  "opt_who": {
+    "message": "Pwy wnaethon ni eu hatal"
+  },
+  "opt_who_sub": {
+    "message": "Y cwmnïau na wnaethon ni adael i’ch porwr gysylltu â’u gweinyddion yn ystod y 30 diwrnod diwethaf. Yn cael ei gyfrif ar y ddyfais hon yn unig, fesul cwmni a diwrnod: dim cyfeiriadau, dim gwefannau."
+  },
+  "opt_who_empty": {
+    "message": "Dim byd wedi’i gyfrif eto. Porwch am ychydig ac edrychwch eto."
+  },
+  "opt_who_row": {
+    "message": "Ceisiadau: $1 · Diwrnodau: $2"
   }
 }

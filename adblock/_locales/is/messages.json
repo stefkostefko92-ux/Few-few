@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Líka inni í ívöfðum römmum: felur mest, notar mest minni."
+  },
+  "opt_who": {
+    "message": "Hverja við stöðvuðum"
+  },
+  "opt_who_sub": {
+    "message": "Fyrirtækin sem við komum í veg fyrir að vafrinn þinn hefði samband við netþjóna hjá síðustu 30 daga. Talið aðeins á þessu tæki, eftir fyrirtæki og degi: engin vistföng, engin vefsvæði."
+  },
+  "opt_who_empty": {
+    "message": "Ekkert talið enn. Vafraðu í smástund og líttu aftur við."
+  },
+  "opt_who_row": {
+    "message": "Beiðnir: $1 · Dagar: $2"
   }
 }

@@ -919,5 +919,21 @@
   "modeStrictDesc": {
     "message": "Also inside embedded frames: hides the most, uses the most memory.",
     "description": "Settings: what Strict does."
+  },
+  "opt_who": {
+    "message": "Who we stopped",
+    "description": "Settings: card title — the companies whose requests were blocked."
+  },
+  "opt_who_sub": {
+    "message": "The companies whose servers we kept your browser from contacting in the last 30 days. Counted on this device only, per company and day: no addresses, no sites.",
+    "description": "Settings: what the card shows and what is stored (nothing leaves the device)."
+  },
+  "opt_who_empty": {
+    "message": "Nothing counted yet. Browse for a while and look again.",
+    "description": "Settings: the card before anything was counted."
+  },
+  "opt_who_row": {
+    "message": "Requests: $1 · Days: $2",
+    "description": "Settings: one company's row. $1 = blocked requests, $2 = days seen (of the last 30)."
   }
 }

@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Cả bên trong khung nhúng: ẩn được nhiều nhất, dùng nhiều bộ nhớ nhất."
+  },
+  "opt_who": {
+    "message": "Những bên chúng tôi đã chặn"
+  },
+  "opt_who_sub": {
+    "message": "Các công ty mà chúng tôi không để trình duyệt của bạn liên hệ với máy chủ của họ trong 30 ngày qua. Chỉ đếm trên thiết bị này, theo công ty và theo ngày: không có địa chỉ, không có trang web."
+  },
+  "opt_who_empty": {
+    "message": "Chưa đếm được gì. Hãy duyệt web một lúc rồi xem lại."
+  },
+  "opt_who_row": {
+    "message": "Yêu cầu: $1 · Ngày: $2"
   }
 }

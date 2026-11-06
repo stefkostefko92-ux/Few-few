@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Myös upotettujen kehysten sisällä: piilottaa eniten, käyttää eniten muistia."
+  },
+  "opt_who": {
+    "message": "Keidät pysäytimme"
+  },
+  "opt_who_sub": {
+    "message": "Yritykset, joiden palvelimiin emme antaneet selaimesi ottaa yhteyttä viimeisten 30 päivän aikana. Lasketaan vain tällä laitteella, yrityksittäin ja päivittäin: ei osoitteita, ei sivustoja."
+  },
+  "opt_who_empty": {
+    "message": "Mitään ei ole vielä laskettu. Selaa hetki ja katso uudelleen."
+  },
+  "opt_who_row": {
+    "message": "Pyynnöt: $1 · Päivät: $2"
   }
 }

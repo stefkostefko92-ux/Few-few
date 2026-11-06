@@ -886,5 +886,17 @@
   },
   "modeStrictDesc": {
     "message": "Juga di dalam bingkai terbenam: menyembunyikan paling banyak, menggunakan memori paling banyak."
+  },
+  "opt_who": {
+    "message": "Siapa yang kami hentikan"
+  },
+  "opt_who_sub": {
+    "message": "Syarikat yang pelayannya kami halang daripada dihubungi oleh penyemak imbas anda dalam 30 hari lalu. Dikira pada peranti ini sahaja, mengikut syarikat dan hari: tiada alamat, tiada laman."
+  },
+  "opt_who_empty": {
+    "message": "Belum ada yang dikira. Layari sebentar dan lihat semula."
+  },
+  "opt_who_row": {
+    "message": "Permintaan: $1 · Hari: $2"
   }
 }
