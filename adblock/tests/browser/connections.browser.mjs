@@ -100,6 +100,18 @@ try {
   await site.reload();
   await site.waitForTimeout(800);
   ok("…and the site loads it again", seen.some((s) => s.startsWith("px.tracker-third.net")));
+
+  // 5.8: who is behind a host (popup/companies.js) — a known one gets the company, an unknown one nothing
+  await sw.evaluate(() => chrome.storage.local.set({ siteBlocks: { "news-site.org": ["www.google-analytics.com"] } }));
+  p = await popup();
+  const cos = await p.evaluate(() => Object.fromEntries([...document.querySelectorAll("#connList li")].map((li) =>
+    [li.querySelector(".host").textContent, (li.querySelector(".co") || {}).textContent || ""])));
+  ok(`a known host shows its company, an unknown one shows none (${JSON.stringify(cos)})`,
+    cos["www.google-analytics.com"] === "Google" && cos["img.cdn-other.org"] === "" && cos["js.tracker-third.net"] === "");
+  const fits = await p.evaluate(() => [...document.querySelectorAll("#connList li")].every((li) => li.scrollWidth <= li.clientWidth + 1));
+  ok("…and no row gets wider than the list", fits);
+  await p.close();
+  await sw.evaluate(() => chrome.storage.local.set({ siteBlocks: {} }));
 } finally {
   await ctx.close();
   srv.close();

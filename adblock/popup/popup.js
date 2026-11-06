@@ -270,6 +270,17 @@ function renderConnections(rows) {
     name.className = "host";
     name.textContent = host;
     name.title = host;
+    // who is behind it (popup/companies.js; an unknown host gets no label, never a guess)
+    const cell = document.createElement("span");
+    cell.className = "cell";
+    cell.append(name);
+    const company = globalThis.SA_COMPANIES ? SA_COMPANIES.companyOf(host) : "";
+    if (company) {
+      const co = document.createElement("span");
+      co.className = "co";
+      co.textContent = company;
+      cell.append(co);
+    }
     const cnt = document.createElement("span");
     cnt.className = "type";
     cnt.textContent = n ? "×" + n.toLocaleString(UI_LANG) : "";
@@ -290,7 +301,7 @@ function renderConnections(rows) {
         if (r && r.ok) { siteBlocked = r.hosts; show(block); }
       });
     });
-    if (n) li.append(name, cnt, btn); else li.append(name, btn);
+    if (n) li.append(cell, cnt, btn); else li.append(cell, btn);
     ul.appendChild(li);
   }
 }
