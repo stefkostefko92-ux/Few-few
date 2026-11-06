@@ -5,12 +5,13 @@ import { engine, type Spec, type TypeParam } from './engine.js';
  * за превода (`furniture.group.<ключ>`), а името на всеки вид е `furniture.<id>`. Размерите идват от
  * формата на двигателя, за да не се разминават с това, което редакторът позволява.
  */
-export type FurnitureGroup = 'kitchen' | 'bedroom' | 'living' | 'other';
+export type FurnitureGroup = 'kitchen' | 'bedroom' | 'living' | 'custom' | 'other';
 
 const GROUP_KEY: Record<string, FurnitureGroup> = {
   'Кухня и шкафове': 'kitchen',
   Спалня: 'bedroom',
   'Хол и кабинет': 'living',
+  Конструктор: 'custom',
 };
 
 function furnitureGroup(type: string): FurnitureGroup {
@@ -60,7 +61,7 @@ export interface FurnitureKind {
 
 /** Всички видове в реда на двигателя, с групата и диапазона на размера. */
 export function furnitureKinds(): FurnitureKind[] {
-  return engine().typeOrder.map((id) => ({
+  return engine().listedTypes.map((id) => ({
     id,
     group: furnitureGroup(id),
     range: furnitureRange(id),

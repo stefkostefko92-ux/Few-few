@@ -1,6 +1,6 @@
 // The parameter rail: furniture type cards, schema-driven size fields, materials and colours, hardware and
 // machine settings. Every control carries data-field; the rail reports changes and the pipeline re-normalizes.
-import { TYPES, TYPE_ORDER } from '../engine/types.js';
+import { TYPES, LISTED_TYPES } from '../engine/types.js';
 import { decor, decorName, ralList, isBaseDecor } from '../engine/materials.js';
 import {
   hingeList,
@@ -23,11 +23,11 @@ import { typeIcon, handleIcon } from './icons.js';
 import { paramsHtml } from './params-html.js';
 
 export function renderTypes(host) {
-  const groups = [...new Set(TYPE_ORDER.map((t) => TYPES[t].group))];
+  const groups = [...new Set(LISTED_TYPES.map((t) => TYPES[t].group))];
   host.innerHTML = groups
     .map(
       (g) =>
-        `<p class="tgroup">${esc(g)}</p><div class="types">${TYPE_ORDER.filter(
+        `<p class="tgroup">${esc(g)}</p><div class="types">${LISTED_TYPES.filter(
           (t) => TYPES[t].group === g,
         )
           .map(

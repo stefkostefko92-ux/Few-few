@@ -159,10 +159,12 @@
     "tv": "TV unit",
     "desk": "Desk",
     "wallunit": "Living-room wall unit",
+    "custom": "Free-form cabinet",
     "group": {
       "kitchen": "Kitchen and cabinets",
       "bedroom": "Bedroom",
       "living": "Living room and study",
+      "custom": "Builder",
       "other": "Other"
     }
   }

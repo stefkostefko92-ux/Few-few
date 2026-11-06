@@ -2,6 +2,7 @@
 // and the parameter variants every engine test walks through.
 import assert from 'node:assert/strict';
 import { TYPES } from '../../engine/types.js';
+import { MIN_WEB, CONFIRMAT } from '../../engine/joinery.js';
 
 // A type at its defaults, at the min and max of every range and at every option of the others: [label, spec].
 export function paramVariants(type) {
@@ -14,6 +15,44 @@ export function paramVariants(type) {
     }
   }
   return cases;
+}
+
+// Two different holes of one part keep MIN_WEB of board between them (in the plan of the face), and no spot is drilled
+// twice by two different joints (addHoleOnce merges what may share a hole; two screws never go into one).
+export function assertNoHoleOnHole(m, label) {
+  for (const p of m.parts) {
+    const holes = p.features.filter((f) => f.type === 'hole');
+    for (let a = 0; a < holes.length; a++) {
+      for (let b = a + 1; b < holes.length; b++) {
+        const [h, k] = [holes[a], holes[b]];
+        if (h.hw === 'hinge' && k.hw === 'hinge' && h.ref === k.ref && h.hingeY === k.hingeY) continue; // one hinge: its cup and its own dowels
+        assert.ok(!(h.u === k.u && h.v === k.v && h.d === k.d), `${label}: ${p.name} ${h.kind} and ${k.kind} drilled twice at ${h.u},${h.v}`);
+        const web = Math.hypot(h.u - k.u, h.v - k.v) - (h.d + k.d) / 2;
+        assert.ok(web >= MIN_WEB - 0.01, `${label}: ${p.name} ${h.kind} at ${h.u},${h.v} and ${k.kind} at ${k.u},${k.v} leave ${web.toFixed(1)} mm`);
+      }
+    }
+  }
+}
+
+// Confirmats through a partition into a fixed shelf (free carcass) whose heads end under a fixed shelf on the other
+// face that is itself screwed to the partition: whichever of the two goes in second cannot be driven. A shelf doweled
+// there goes in after the screws, over their heads.
+export function blockedScrews(m) {
+  const dividers = m.parts.filter((p) => p.role === 'divider');
+  const touching = (x, y, reach = 0) => dividers.filter((d) => (d.box.min[0] === x || d.box.max[0] === x) && y > d.box.min[1] - reach && y < d.box.max[1] + reach);
+  let blocked = 0;
+  for (const P of m.parts.filter((p) => p.role === 'partition')) {
+    const screws = P.features.filter((f) => f.type === 'hole' && f.kind === 'confirmat');
+    for (const f of screws) {
+      const [x, y] = f.world;
+      const [into] = touching(x, y);
+      if (!into) continue;
+      const headX = x === P.box.min[0] ? P.box.max[0] : P.box.min[0];
+      const over = touching(headX, y, CONFIRMAT.head / 2).filter((d) => d !== into);
+      if (over.some((d) => screws.some((g) => g.world[0] === headX && g.world[1] > d.box.min[1] && g.world[1] < d.box.max[1]))) blocked += 1;
+    }
+  }
+  return blocked;
 }
 
 // Every hinge plate screw has its own hole: no two plates share one (from either face of a partition).
