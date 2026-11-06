@@ -9,6 +9,7 @@ import { resetMail } from '../mail/templates.js';
 import { sendMail } from '../mail/mailer.js';
 import { HOUR } from '../time.js';
 import { reauthPassword } from './reauth.js';
+import { revokeResetLinks } from './revoche.js';
 import { newToken, resetLink, tokenHash } from './tokens.js';
 
 /** Самостоятелната връзка за нова парола живее час; дадената от администратор — 24 часа. */
@@ -142,6 +143,8 @@ export async function changePassword(
       data: { passwordHash, passwordChangedAt: new Date(), mustChangePassword: false },
     });
     await destroyAllSessions(user.id, principal.sessionId, tx);
+    // Връзка за нова парола, дадена преди, вече не я сменя наново.
+    await revokeResetLinks(tx, user.id);
     await writeUserAudit(
       { actorId: user.id, action: 'PASSWORD_CHANGE', targetType: 'user', targetId: user.id },
       user.id,

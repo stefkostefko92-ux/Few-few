@@ -1,6 +1,8 @@
+import type { Translator } from '../i18n.js';
 import type { RisultatoArgano } from './calcolo.js';
 import type { DatiArgano } from './dati.js';
 import { numero, percentuale } from './formato.js';
+import { caratteristicheFune, formazioneLeggibile } from './fune.js';
 import { funeDi } from './tabelle.js';
 
 /**
@@ -8,8 +10,6 @@ import { funeDi } from './tabelle.js';
  * компенсация, сцепление, натиск), редове „надпис — стойност — мярка“, отметка ОК/НЕ на проверките и
  * заключението на раздела. Текстовете са от речника (`argano.r.*`).
  */
-
-type Translate = (key: string, params?: Record<string, string | number>) => string;
 
 export interface Riga {
   etichetta: string;
@@ -29,7 +29,7 @@ export interface SezioneRisultati {
 export function righeRisultato(
   r: RisultatoArgano,
   d: DatiArgano,
-  t: Translate,
+  t: Translator,
 ): SezioneRisultati[] {
   const v = r.velocita;
   const velocita: Riga[] = [
@@ -48,14 +48,33 @@ export function righeRisultato(
     );
   }
   const f = r.funi;
+  // Какво е въжето — като „Caratteristiche delle funi“ в релацията; празното на ръка е „—“.
+  const cf = caratteristicheFune(d);
+  const oppure = (valore: string | null, unita?: string): Pick<Riga, 'valore' | 'unita'> =>
+    valore === null ? { valore: '—' } : { valore, ...(unita ? { unita } : {}) };
   const funi: Riga[] = [
     { etichetta: t('argano.r.numeroFuni'), valore: String(d.funiNumero), ok: f.okNumero },
+    {
+      etichetta: t('argano.r.costruttore'),
+      valore: cf.marca ?? t('argano.r.datiAMano'),
+    },
     {
       etichetta: t('argano.r.diametroFune'),
       valore: numero(f.d, 1),
       unita: 'mm',
       ok: f.okDiametro,
     },
+    { etichetta: t('argano.r.formazione'), ...oppure(cf.formazione) },
+    {
+      etichetta: t('argano.r.trefoli'),
+      ...oppure(cf.trefoli === null ? null : String(cf.trefoli)),
+    },
+    { etichetta: t('argano.r.classe'), ...oppure(cf.classe, 'N/mm²') },
+    {
+      etichetta: t('argano.r.cordatura'),
+      ...oppure(cf.cordatura && t(`argano.opzione.cordatura.${cf.cordatura}`)),
+    },
+    { etichetta: t('argano.r.sezione'), valore: numero(f.sezione, 1), unita: 'mm²' },
     { etichetta: t('argano.r.rottura'), valore: numero(f.rottura, 0), unita: 'N' },
     { etichetta: t('argano.r.massaFuni'), valore: numero(f.massa, 1), unita: 'kg' },
     { etichetta: t('argano.r.caricoTotale'), valore: numero(f.caricoTotale, 0), unita: 'N' },
@@ -89,7 +108,12 @@ export function righeRisultato(
       : [
           {
             etichetta: t('argano.campo.compensazione'),
-            valore: `${d.compNumero} × ${t(`argano.opzione.compensazione.${d.compensazione}`)} ${numero(c.d, c.d % 1 ? 1 : 0)} mm`,
+            valore: `${d.compNumero} × ${t(`argano.opzione.compensazione.${d.compensazione}`)} ${numero(c.d, c.d % 1 ? 1 : 0)} mm${d.compAltro ? ` (${t('argano.r.datiAMano')})` : ''}`,
+          },
+          {
+            etichetta: t('argano.r.compMassaLineare'),
+            valore: numero(c.massaLineare, 2),
+            unita: 'kg/m',
           },
           { etichetta: t('argano.r.compCabina'), valore: numero(c.massaCabina, 1), unita: 'kg' },
           {
@@ -162,8 +186,8 @@ export function righeRisultato(
   ];
 }
 
-/** „TELCAL 10 mm, 6 trefoli (6*19 + FC = 114 fili)“. */
+/** „TELCAL Ø 10 mm, 6×19 + FC, 114 fili“. */
 export function nomeFune(id: string): string {
   const f = funeDi(id);
-  return f ? `${f.marca} ${f.d} mm, ${f.trefoli} trefoli (${f.formazione})` : id;
+  return f ? `${f.marca} Ø ${f.d} mm, ${formazioneLeggibile(f.formazione)}` : id;
 }

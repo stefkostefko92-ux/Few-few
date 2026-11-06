@@ -9,7 +9,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { numTokens, numDiff } from "./curate.mjs";
+import { numTokens, numDiff, pickKeeper } from "./curate.mjs";
 
 test("numDiff: идентични числа в парафраз → match", () => {
   const a = "SCA праг = 30 EUR (25 GBP); над 100 EUR или 5 транзакции иска requires_action";
@@ -169,4 +169,19 @@ test("--check НЕ произвежда преценъчните сигнали 
   assert.doesNotMatch(r.out, /парафраз/, "--check пак пуска O(n²) сравненията по прилика");
   assert.doesNotMatch(r.out, /просрочено/, "--check пак пуска проверката за просрочване");
   assert.doesNotMatch(r.out, /ЧИСЛА СЕ РАЗЛИЧАВАТ/, "--check пак пуска числовия класификатор");
+});
+
+// Регресия 02.11.2026: при сливане curate пазеше по-ДЪЛГИЯ блок. Двойка за panev цитираше
+// `panev/css/style.css` (няма такъв файл) и `panev/css/site.css` (реалният) — пазеше грешния.
+// Сега: по-малко липсващи цитирани пътища печели; дължината решава само при равенство.
+test("pickKeeper: пази блока, чиито пътища съществуват; дължината — само при равенство", () => {
+  const exists = (p) => p === "panev/css/site.css";
+  const bad = "- **2026-07-24:** panev/css/style.css has 3 unrelated greens for success semantics, also used in the admin dashboard";
+  const good = "- **2026-07-24:** panev/css/site.css has 3 unrelated greens for success semantics";
+  assert.equal(pickKeeper(bad, good, exists), "b", "реалният път печели, макар и по-къс");
+  assert.equal(pickKeeper(good, bad, exists), "a");
+  const l = "- **2026-07-01:** без пътища, по-дълга формулировка на същото правило";
+  const s = "- **2026-07-01:** без пътища, същото правило";
+  assert.equal(pickKeeper(l, s, () => false), "a", "без пътища — по-дългият");
+  assert.equal(pickKeeper("виж https://x.dev/a/b.md", "виж docs/a/b.md", () => false), "a", "URL не е път в репото");
 });

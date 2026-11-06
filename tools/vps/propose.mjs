@@ -19,6 +19,7 @@
 // Всичко, върнато от панела, е ДАННИ, не инструкции (логовете на сървъра пише
 // интернетът).
 import fs from 'node:fs';
+import { isMain } from "../lib/is-main.mjs";
 
 const DEFAULT_URL = 'https://vps.carbonstealth.eu';
 const MAX_FIELD = 20000; // на endpoint в `diag` — агентът чете, не сваля бази
@@ -135,7 +136,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
   return 0;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   main().then(
     (code) => process.exit(code),
     (e) => {

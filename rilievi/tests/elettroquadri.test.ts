@@ -5,7 +5,8 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { prefillCollegati } from '../src/ordini/collegati.js';
 import { EQ_GEARED, EQ_GEARLESS, EQ_OLEO, nomeModulo } from '../src/ordini/moduli.js';
-import { impiantoMancante, sceltoNellaScheda, SLOTS } from '../src/ordini/registry.js';
+import { impiantoMancante } from '../src/ordini/registry-controlli.js';
+import { sceltoNellaScheda, SLOTS } from '../src/ordini/registry.js';
 import { riepilogoModuli } from '../src/ordini/riepilogo.js';
 import { activeFields } from '../src/schede/fields.js';
 import { parseScheda } from '../src/schede/validation.js';
@@ -115,6 +116,9 @@ describe('the Elettroquadri orders and the sheet', () => {
       accessi2: true,
       motoreIn: '12',
       motoreKw: '5,5',
+      // Automatic doors on the sheet: automatic landing and car doors.
+      pianoAutomatiche: true,
+      cabinaAutomatiche: true,
     });
     assert.deepEqual(prefillCollegati('el', { ...values, tipoImpianto: ['GEARLESS'] }), {
       nFermate: '6',
@@ -126,6 +130,8 @@ describe('the Elettroquadri orders and the sheet', () => {
       mrlGearless: true,
       motoreAmp: '12',
       motoreKw: '5,5',
+      pianoAutomatiche: true,
+      cabinaAutomatiche: true,
     });
     // Hydraulic: no argano sheet — the power unit of the sheet instead.
     assert.deepEqual(
@@ -135,7 +141,14 @@ describe('the Elettroquadri orders and the sheet', () => {
         centralinaDaFare: 'si',
         centralinaMarca: 'GMV',
       }),
-      { nFermate: '6', accessi2: true, centralinaAlto: true, centralinaMarca: 'GMV' },
+      {
+        nFermate: '6',
+        accessi2: true,
+        centralinaAlto: true,
+        centralinaMarca: 'GMV',
+        pianoAutomatiche: true,
+        cabinaAutomatiche: true,
+      },
     );
   });
 
@@ -153,8 +166,10 @@ describe('the Elettroquadri orders and the sheet', () => {
       sospensioni: null,
       operatore: null,
       ordineSospensioni: null,
-      ami100: null,
-      ami100Tipo: null,
+      testataInterventi: [],
+      fossaInterventi: [],
+      bottoniereOrdine: null,
+      ordineBottoniere: null,
       ordineAmi: null,
     };
     const [summary] = riepilogoModuli(scheda);

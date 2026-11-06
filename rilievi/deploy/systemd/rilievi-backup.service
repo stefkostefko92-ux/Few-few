@@ -1,8 +1,11 @@
-# Дневният бекъп на Rilievi Impianti (deploy/backup.sh от последния работещ release).
+# Дневният бекъп на Rilievi Impianti (deploy/backup.sh от последния работещ release): базата, снимките,
+# проверено възстановяване, копие извън сървъра по избор.
 [Unit]
 Description=Rilievi Impianti — daily database backup
 Requires=docker.service
 After=docker.service
+# Провал — аларма (журнал, ULTIMO_ERRORE, RILIEVI_ALERT_URL).
+OnFailure=rilievi-backup-alert.service
 
 [Service]
 Type=oneshot

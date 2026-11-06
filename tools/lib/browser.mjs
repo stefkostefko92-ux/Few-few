@@ -8,6 +8,17 @@
 
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { createRequire } from "node:module";
+
+/**
+ * Зарежда пакет първо през ESM import, после през require. ESM import НЕ чете NODE_PATH, а средата
+ * държи Playwright глобално (NODE_PATH) — без require-пътя одитите казваха „няма playwright“, докато
+ * `require('playwright')` работи от всяка папка (2026-11-02, Скоростника не можа да мери kebab).
+ */
+export async function loadPkg(name, { importer = (n) => import(n), requirer = createRequire(import.meta.url) } = {}) {
+  try { return await importer(name); } catch { /* пробваме require (NODE_PATH) */ }
+  try { return requirer(name); } catch { return null; }
+}
 
 export function findChromium(base = process.env.PLAYWRIGHT_BROWSERS_PATH || "/opt/pw-browsers") {
   if (!existsSync(base)) return null;
@@ -29,8 +40,10 @@ const isDir = (p) => { try { return readdirSync(p) && true; } catch { return fal
  */
 export async function launchChromium(extra = {}) {
   let chromium = null, how = null;
-  try { ({ chromium } = await import("playwright")); how = "playwright"; } catch { /* пробваме core */ }
-  if (!chromium) { try { ({ chromium } = await import("playwright-core")); how = "playwright-core"; } catch { /* няма */ } }
+  for (const name of ["playwright", "playwright-core"]) {
+    const mod = await loadPkg(name);
+    if (mod?.chromium) { chromium = mod.chromium; how = name; break; }
+  }
   if (!chromium) return { error: "няма нито playwright, нито playwright-core (npm i -D playwright-core)" };
 
   const opts = { headless: true, args: ["--no-sandbox"], ...extra };

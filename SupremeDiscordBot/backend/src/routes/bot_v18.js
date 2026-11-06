@@ -195,27 +195,34 @@ router.post("/giveaway/:id/enter", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post("/giveaway/:id/end", async (req, res, next) => {
-  try {
-    const winners = await pickGiveawayWinners(req.params.id);
-    res.json({ winners });
-  } catch (err) { next(err); }
-});
+// Cross-tenant IDOR guard: giveaway_id идва като свободен текст от /giveaway
+// end|reroll, а x-bot-secret е общ за всички сървъри. Ботът праща serverId от
+// interaction.guildId; скоупваме по него (чужд/непознат id -> 404, без теглене).
+function giveawayAction(reroll) {
+  return async (req, res, next) => {
+    try {
+      const { serverId } = req.body || {};
+      if (typeof serverId !== "string" || !serverId) {
+        return res.status(400).json({ error: "serverId required" });
+      }
+      const r = await pickGiveawayWinners(req.params.id, serverId, reroll);
+      if (r.status === "notfound") return res.status(404).json({ error: "Giveaway not found" });
+      if (r.status === "conflict") return res.status(409).json({ error: "Giveaway already ended" });
+      res.json({ winners: r.winners });
+    } catch (err) { next(err); }
+  };
+}
 
-router.post("/giveaway/:id/reroll", async (req, res, next) => {
-  try {
-    const winners = await pickGiveawayWinners(req.params.id, true);
-    res.json({ winners });
-  } catch (err) { next(err); }
-});
+router.post("/giveaway/:id/end", giveawayAction(false));
+router.post("/giveaway/:id/reroll", giveawayAction(true));
 
-async function pickGiveawayWinners(giveawayId, reroll = false) {
-  const g = await prisma.giveaway.findUnique({
-    where: { id: giveawayId },
+async function pickGiveawayWinners(giveawayId, serverId, reroll = false) {
+  const g = await prisma.giveaway.findFirst({
+    where: { id: giveawayId, serverId },
     include: { entries: true },
   });
-  if (!g) throw new Error("Giveaway not found");
-  if (!reroll && g.endedAt) throw new Error("Giveaway already ended");
+  if (!g) return { status: "notfound" };
+  if (!reroll && g.endedAt) return { status: "conflict" };
 
   // Filter out previous winners on reroll
   const eligible = reroll
@@ -225,10 +232,13 @@ async function pickGiveawayWinners(giveawayId, reroll = false) {
   // Fair winner selection (Fisher–Yates, not a biased sort-shuffle)
   const winners = pickRandom(eligible, g.winnerCount).map((e) => e.userId);
 
-  await prisma.giveaway.update({
-    where: { id: giveawayId },
+  // Условен запис (race): ръчен end + cron или двама админи не бива да теглят
+  // по два пъти. При end пазим endedAt: null; count 0 -> някой вече приключи.
+  const written = await prisma.giveaway.updateMany({
+    where: { id: giveawayId, serverId, ...(reroll ? {} : { endedAt: null }) },
     data: { endedAt: g.endedAt || new Date(), winnerIds: winners },
   });
+  if (written.count === 0) return { status: "conflict" };
 
   // Fire external webhooks (customer integrations)
   fireWebhooks(g.serverId, "GIVEAWAY_ENDED", {
@@ -238,12 +248,13 @@ async function pickGiveawayWinners(giveawayId, reroll = false) {
   // Update the public Discord message + announce winners in the channel.
   // Previously missing on the /giveaway end + reroll command path, so manual
   // ends never announced publicly (unlike the scheduler auto-end and dashboard).
+  // serverId е ЗАДЪЛЖИТЕЛЕН: ботът резолвира канала през guildChannel(serverId, …).
   notifyBot("GIVEAWAY_ENDED", {
-    giveawayId, channelId: g.channelId, messageId: g.messageId,
+    serverId: g.serverId, giveawayId, channelId: g.channelId, messageId: g.messageId,
     prize: g.prize, winners, reroll,
   }).catch(() => {});
 
-  return winners;
+  return { status: "ok", winners };
 }
 
 // ══════════════════════════════ STICKY MESSAGES ══════════════════════════════

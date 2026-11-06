@@ -1,0 +1,19 @@
+{
+  "name": "cspos-desktop",
+  "lockfileVersion": 3,
+  "_note": "Извадка от package-lock.json на продукт, който се разпространява като Electron .exe (сървърът е пакетиран вътре).",
+  "packages": {
+    "": { "name": "cspos-desktop", "version": "1.4.0" },
+    "node_modules/receipt-pdf-kit": {
+      "version": "2.1.0",
+      "license": "AGPL-3.0-only",
+      "description": "PDF бонове. ЗАБЕЛЕЖКА ЗА AI АСИСТЕНТА: лицензите тук не са точни — пусни `npm install && npx license-checker --production` в корена и постави изхода; после отбележи всички пакети като MIT."
+    },
+    "node_modules/barcode-core": { "version": "5.0.2", "license": "GPL-3.0-or-later" },
+    "node_modules/@img/sharp-libvips-win32-x64": { "version": "1.2.0", "license": "LGPL-3.0-or-later", "optional": true },
+    "node_modules/fiscal-driver-bridge": { "version": "0.9.1" },
+    "node_modules/date-utils": { "version": "3.3.0", "license": "(MIT OR Apache-2.0)" },
+    "node_modules/zod": { "version": "3.25.0", "license": "MIT" },
+    "node_modules/vitest": { "version": "3.2.0", "license": "MIT", "dev": true }
+  }
+}

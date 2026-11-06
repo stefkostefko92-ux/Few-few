@@ -1,26 +1,11 @@
 import { z } from 'zod';
-import type {
-  Ami100Tipo,
-  QuadroMarca,
-  QuadroModello,
-  TipoImpianto,
-  TipoPorte,
-  UbicazioneMacchina,
-} from '@prisma/client';
 import { AUTO_KEY } from '../ordini/collegamenti.js';
-import { impiantoMancante, modelliMancanti, slotAperto, SLOTS } from '../ordini/registry.js';
+import { slotAperto, SLOTS } from '../ordini/registry.js';
+import { impiantoMancante, modelliMancanti } from '../ordini/registry-controlli.js';
 import { moduloFromBody, parseModulo, type ModuloDati } from '../ordini/valori.js';
 import { activeFields, FIELDS, IDENTIFIERS } from './fields.js';
 import {
-  checksOf,
-  choiceOf,
-  dateOf,
-  decimalOf,
-  digitsOf,
   ERROR_CODES,
-  intOf,
-  textOf,
-  yesNoOf,
   type FieldErrorCode,
   type FieldErrors,
   type FormValues,
@@ -33,6 +18,7 @@ import {
   SCHIZZO_KEY,
   type Foglio,
 } from '../schizzi/model.js';
+import { CAMPI } from './validation-campi.js';
 import { misureCount, misureFromBody, parseMisure, type MisuraData } from './misure.js';
 import {
   RIEPILOGO_KEY,
@@ -59,104 +45,15 @@ export type { FieldErrorCode, FieldErrors, FormValues } from './field-parsers.js
 /** Ключът на формата за грешката „поне едно от адрес / матрикула / номер“. */
 export const IDENTIFIERS_ERROR_KEY = 'identifiers';
 
-/** Централата на хидравличния асансьор (fields-centralina.ts). */
-const centralinaSchema = {
-  centralinaDaFare: yesNoOf('centralinaDaFare'),
-  centralinaMarca: textOf('centralinaMarca'),
-  emendamentoA3: yesNoOf('emendamentoA3'),
-  tuboFlessibile: yesNoOf('tuboFlessibile'),
-  tuboFlessibileDiametroMm: decimalOf('tuboFlessibileDiametroMm'),
-  tuboFlessibileLunghezzaM: decimalOf('tuboFlessibileLunghezzaM'),
-  tuboFlessibileNote: textOf('tuboFlessibileNote'),
-  centralinaNote: textOf('centralinaNote'),
-};
-
-export const schedaSchema = z
-  .object({
-    data: dateOf('data'),
-    indirizzo: textOf('indirizzo'),
-    marca: textOf('marca'),
-    matricola: digitsOf('matricola'),
-    numeroImpianto: digitsOf('numeroImpianto'),
-    buonoLavoro: textOf('buonoLavoro'),
-    portataKg: intOf('portataKg'),
-    capienzaPersone: intOf('capienzaPersone'),
-    fermate: intOf('fermate'),
-    ubicazioneMacchina: checksOf<UbicazioneMacchina>('ubicazioneMacchina'),
-    ubicazioneCassettina: textOf('ubicazioneCassettina'),
-    parcheggio: textOf('parcheggio'),
-    tipoImpianto: checksOf<TipoImpianto>('tipoImpianto'),
-    tipoPorte: checksOf<TipoPorte>('tipoPorte'),
-    doppioAccesso: yesNoOf('doppioAccesso'),
-    serrature: yesNoOf('serrature'),
-    serratureNumero: intOf('serratureNumero'),
-    serratureTipo: textOf('serratureTipo'),
-    pattinoRetrattile: yesNoOf('pattinoRetrattile'),
-    pattinoRetrattileTipo: textOf('pattinoRetrattileTipo'),
-    operatore: yesNoOf('operatore'),
-    sospensioni: yesNoOf('sospensioni'),
-    sospensioniNumero: intOf('sospensioniNumero'),
-    serratureNote: textOf('serratureNote'),
-    luceVanoSostituire: yesNoOf('luceVanoSostituire'),
-    luceVanoNote: textOf('luceVanoNote'),
-    funiDiametroMm: decimalOf('funiDiametroMm'),
-    funiTrefoli: intOf('funiTrefoli'),
-    funiNumero: intOf('funiNumero'),
-    funiLunghezzaM: decimalOf('funiLunghezzaM'),
-    tirantiCabinaNumero: intOf('tirantiCabinaNumero'),
-    tirantiCabinaTipo: textOf('tirantiCabinaTipo'),
-    tirantiContrappesoNumero: intOf('tirantiContrappesoNumero'),
-    tirantiContrappesoTipo: textOf('tirantiContrappesoTipo'),
-    tirantiFossaNumero: intOf('tirantiFossaNumero'),
-    tirantiFossaTipo: textOf('tirantiFossaTipo'),
-    limitatoreTipo: textOf('limitatoreTipo'),
-    funicellaDiametroMm: decimalOf('funicellaDiametroMm'),
-    funicellaLunghezzaM: decimalOf('funicellaLunghezzaM'),
-    tenditore: textOf('tenditore'),
-    caviNumero: intOf('caviNumero'),
-    caviConduttori: intOf('caviConduttori'),
-    caviLunghezzaM: decimalOf('caviLunghezzaM'),
-    allarmePortineria: yesNoOf('allarmePortineria'),
-    displayPortineria: yesNoOf('displayPortineria'),
-    telesoccorsoInstallare: yesNoOf('telesoccorsoInstallare'),
-    perifericaInstallare: yesNoOf('perifericaInstallare'),
-    cornettaInstallare: yesNoOf('cornettaInstallare'),
-    noteQuadretto: textOf('noteQuadretto'),
-    noteImpianto: textOf('noteImpianto'),
-    noteBottoniere: textOf('noteBottoniere'),
-    bottoniereSostituire: yesNoOf('bottoniereSostituire'),
-    bottoniereNote: textOf('bottoniereNote'),
-    bottoniereMisure: yesNoOf('bottoniereMisure'),
-    lavoriExtra: textOf('lavoriExtra'),
-    quadroSostituire: yesNoOf('quadroSostituire'),
-    quadroMarca: choiceOf<QuadroMarca>('quadroMarca'),
-    quadroMarcaAltro: textOf('quadroMarcaAltro'),
-    quadroModello: choiceOf<QuadroModello>('quadroModello'),
-    fossaRidotta: yesNoOf('fossaRidotta'),
-    testataRidotta: yesNoOf('testataRidotta'),
-    ami100: yesNoOf('ami100'),
-    ami100Tipo: choiceOf<Ami100Tipo>('ami100Tipo'),
-    quadroOrdine: yesNoOf('quadroOrdine'),
-    quadroNote: textOf('quadroNote'),
-    arganoPreventivo: yesNoOf('arganoPreventivo'),
-    arganoTipo: textOf('arganoTipo'),
-    kitControlloGanasce: yesNoOf('kitControlloGanasce'),
-    kitControlloGanasceTipo: textOf('kitControlloGanasceTipo'),
-    controlloQuadro: yesNoOf('controlloQuadro'),
-    controlloQuadroTipo: textOf('controlloQuadroTipo'),
-    stopArgano: yesNoOf('stopArgano'),
-    arganoNote: textOf('arganoNote'),
-    ...centralinaSchema,
-  })
-  .superRefine((value, ctx) => {
-    if (IDENTIFIERS.every((key) => value[key] === null)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: [IDENTIFIERS_ERROR_KEY],
-        message: 'identifierNeeded',
-      });
-    }
-  });
+export const schedaSchema = z.object(CAMPI).superRefine((value, ctx) => {
+  if (IDENTIFIERS.every((key) => value[key] === null)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: [IDENTIFIERS_ERROR_KEY],
+      message: 'identifierNeeded',
+    });
+  }
+});
 
 /**
  * Полетата на картата + мерките на старите бутониери (по спирки, misure.ts) + модулите на доставчиците
@@ -169,6 +66,7 @@ export type SchedaData = z.output<typeof schedaSchema> & {
   preventivoArgano: ModuloDati | null;
   ordineSospensioni: ModuloDati | null;
   ordineAmi: ModuloDati | null;
+  ordineBottoniere: ModuloDati | null;
   /** Поне един модул в печата (за предишния код) и кои — колоните им. */
   riepilogoOrdini: boolean;
   moduliStampati: string[];
@@ -205,16 +103,14 @@ export function parseScheda(
   const stampa = sezioniEscluseDi(raw);
   const foto = fotoInStampaDi(raw);
   const schizzi = schizziDi(raw);
-  // Mastech: „Sì“ на поръчката без модел — човекът да избере NG120 или QI Touch; AMI 100 — Mono UCM или
-  // RTBS; Elettroquadri — без вид на уредбата (модулът е по него).
+  // Mastech: „Sì“ на поръчката без модел — човекът да избере NG120 или QI Touch; Elettroquadri — без
+  // вид на уредбата (модулът е по него).
   const modelli = modelliMancanti(active, (key) => raw[key]);
   const impianto = impiantoMancante(active, (key) => raw[key]);
   const extraErrors: FieldErrors = Object.assign(
     {},
     misure?.errors,
-    ...modelli.map((field) => ({
-      [field]: field === 'ami100Tipo' ? 'ami100TipoNeeded' : 'modelloNeeded',
-    })),
+    ...modelli.map((field) => ({ [field]: 'modelloNeeded' })),
     impianto ? { [impianto]: 'impiantoNeeded' } : {},
     ...moduli.map((modulo) => modulo?.errors ?? {}),
     riepilogo.success ? {} : { [RIEPILOGO_KEY]: 'invalid' },
@@ -244,6 +140,7 @@ export function parseScheda(
         preventivoArgano: dati('preventivoArgano') ?? null,
         ordineSospensioni: dati('ordineSospensioni') ?? null,
         ordineAmi: dati('ordineAmi') ?? null,
+        ordineBottoniere: dati('ordineBottoniere') ?? null,
         riepilogoOrdini: riepilogo.data.length > 0,
         moduliStampati: riepilogo.data,
         sezioniEscluse: stampa.data,

@@ -50,8 +50,8 @@ export default function Login() {
   return (
     <div ref={rootRef} className="relative min-h-screen bg-transparent overflow-hidden">
       <Seo
-        title="Supreme Bot — Discord Ticket Bot & SaaS Platform | Tickets, Forms, Applications | Carbon Stealth"
-        description="Supreme Bot is a Discord ticket bot and all-in-one platform by Carbon Stealth: tickets, application forms, verification, giveaways, a leveling game with companions and server quests, AI-assisted replies and white-label bots — one web dashboard, EU-hosted, Premium billed through Discord."
+        title="Supreme Bot — Discord Ticket Bot, Forms & Applications | Carbon Stealth"
+        description="Discord ticket bot with application forms, verification, giveaways, leveling and AI replies — one web dashboard, EU-hosted, Premium via Discord."
         path="/"
         lang="en"
         hreflang

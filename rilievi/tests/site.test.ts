@@ -103,6 +103,8 @@ describe('the public addresses', () => {
     for (const path of ['/', '/privacy']) assert.ok(robots.includes(`Allow: ${path}$\n`), path);
     assert.doesNotMatch(robots, /\/bg\/|\/en\//);
     assert.match(robots, /Allow: \/accesso\$\n/);
+    // "Installa l'app" is public and noindex: a robot must be allowed in to read the noindex.
+    assert.match(robots, /Allow: \/app\$\n/);
     assert.match(robots, /Allow: \/abc123\.txt\n/);
     assert.match(robots, /\nDisallow: \/\n/);
     assert.match(robots, new RegExp(`Sitemap: ${BASE}/sitemap.xml`));
@@ -191,12 +193,24 @@ describe('the structured data', () => {
     assert.equal(howTo.step.length, STEPS.length);
     assert.equal(howTo.step[0]?.url, `${BASE}/#passo-1`);
     const org = graph.find((node) => Array.isArray(node['@type'])) as {
+      logo: { '@type': string; url: string; width: number; height: number };
+      image: string;
+      knowsAbout: string[];
+      sameAs: string[];
       address: { postalCode: string };
       vatID: string;
       telephone: string;
       contactPoint: Array<{ telephone: string; availableLanguage: string }>;
     };
     assert.equal(org.address.postalCode, '2670');
+    // The mark of the portal as the logo of the company node, on this site; the knowledge areas in Italian.
+    assert.equal(org.logo['@type'], 'ImageObject');
+    assert.match(org.logo.url, new RegExp(`^${BASE}/static/img/icon-512\\.png$`));
+    assert.deepEqual([org.logo.width, org.logo.height], [512, 512]);
+    assert.equal(org.image, `${BASE}/static/img/og.png`);
+    assert.ok(org.knowsAbout.length >= 3 && org.knowsAbout.every((k) => /^[a-zà-ù ]+$/i.test(k)));
+    // Only profiles that answer (checked 4 November 2026): the YouTube channel of Carbon Stealth VCC.
+    assert.deepEqual(org.sameAs, ['https://www.youtube.com/@CarbonStealth']);
     assert.equal(org.vatID, 'BG208725180');
     // The Italian number first (the site is for Italy), then the one of the registered office.
     assert.equal(org.telephone, '+39 379 29 69 699');

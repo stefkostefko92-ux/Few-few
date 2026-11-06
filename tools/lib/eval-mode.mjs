@@ -16,6 +16,7 @@ import { readFileSync, writeFileSync, rmSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { isAbsolute, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isMain } from "./is-main.mjs";
 
 export const EVAL_FILE = "agents-eval.json";
 export const MAX_MINUTES = 180;
@@ -56,7 +57,7 @@ export function clearEvalMode(cwd) {
   if (p) rmSync(p, { force: true });
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const cwd = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
   const argv = process.argv.slice(2);
   const val = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] : undefined; };

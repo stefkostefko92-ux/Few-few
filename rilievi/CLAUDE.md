@@ -3,10 +3,11 @@
 Портал само с покана (и публична витрина със заявка за достъп) за схемите за оглед на асансьорни уредби („scheda rilievo impianto“): попълване на
 29-те полета от заданието и полетата от второто (врати, аларма, работна карта, мерки на старите
 бутониери по спирки), търсене (№ на асансьора, матрикула, адрес, марка, работна карта, бележки), печат
-A4 и PDF. Модулите: при табло Pelazza / MoviLift / Mastech (NG120 или QI Touch — втори избор) /
-Elettroquadri (geared, gearless или oleodinamico — сам по вида на уредбата) (поръчката), „Argano da sostituire?“ (листът с данни за аргано) и „Sospensioni da cambiare?“ /
-„Operatore da cambiare?“ (листът на 2SG за оператора и окачванията — начертан наново от нас) и „Installare AMI 100?“ при намалена
-яма или горно пространство (листът AMI 100 Mono UCM или Mono RTBS — начертан от нас) се попълва самият модул и излиза
+A4 и PDF. Модулите: при табло Pelazza / MoviLift / DMG (Pitagora 4.0) / Mastech (NG120 или QI Touch — втори избор) /
+Elettroquadri (geared, gearless или oleodinamico — сам по вида на уредбата) (поръчката), „Vuoi compilare la scheda ordine
+bottoniere DMG?“ при „Bottoniere da sostituire: Sì“ (QF Fixtures на DMG), „Argano da sostituire?“ (листът с данни за аргано) и „Sospensioni da cambiare?“ /
+„Operatore da cambiare?“ (листът на 2SG за оператора и окачванията — начертан наново от нас) и отметката „AMI 100 Mono RTBS“ в
+решенията при намалено горно пространство или яма (листът AMI 100 Mono RTBS — начертан от нас) се попълва самият модул и излиза
 като отделен PDF — празният лист с данните върху него. Редът на разделите на картата се избира за всяка фирма (настройките на администратора ѝ);
 кои раздели влизат в печата и PDF-а — за всяка карта (в края на формата). Снимки и клипове — във
 всеки раздел на картата, компресирани от фонов процес (`worker`); снимките — избрани като иконки в края
@@ -42,9 +43,11 @@ npm run test:e2e         # Chromium + axe (WCAG 2.1 AA) срещу работе�
 npm run dev              # локално на :4330, чете .env (README, „Локално“)
 npm run worker           # компресията на снимките и клиповете (иска ffmpeg/ffprobe; MEDIA_DIR=./media)
 npm run build            # prisma generate + tsc + шрифтовете в public/fonts (scripts/fonts.mjs)
-npm run moduli:disegna   # чертае листовете на 2SG и AMI 100 и картите им (assets/moduli) — после commit
+npm run moduli:disegna   # чертае листовете на 2SG и AMI 100 Mono RTBS и картите им (assets/moduli) — после commit
+npm run moduli:dmg       # картите на двата формуляра на DMG от самите PDF-и (scripts/moduli/dmg.mjs) — после commit
 npm run render:encode    # снимките на витрината: scripts/render/out/*.png → public/img/site (AVIF + WebP)
-npm run brand:logo       # марката: scripts/logo/out/marchio.png → public/img/brand (WebP 1x/2x/3x) + favicon-*.png
+npm run brand:logo       # логата: scripts/logo/originals/{mark,logo}.png → public/img/brand (WebP) + favicon-*.png
+                         # + иконите на приложението icon-{192,512}.png и icon-maskable-{192,512}.png
 npm run owner:create     # първият MASTER от OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD (на сървъра: deploy/create-master.sh)
 ```
 
@@ -62,6 +65,7 @@ src/
                      nomi-ruoli.ts (`ruolo()` в изгледите) · registro.ts (кои записи на регистъра се
                      виждат), пароли, JWT сесии, заключване, CSRF
   aziende/           service.ts (фирмите) · logo.ts (проверка по байтове + прекодиране през sharp) ·
+                     esportazione.ts + tar.ts (износът на фирмата) · eliminazione.ts (изтриването, 90 дни) ·
                      sezioni.ts (редът на разделите на фирмата — запис, одит) · funzioni.ts (функциите
                      по избор: скицникът — само MASTER, с одит) · dati.ts (данните на фирмата — zod,
                      четене с недоверие, главата на табелата) · intestazione.ts (запис на данните и на
@@ -69,11 +73,12 @@ src/
                      ruoli.ts (имената и правата от настройките, одит)
   services/          вход (login.ts, login-2fa.ts — кодът след паролата), reauth.ts (потвърждение в
                      сесия), due-fattori.ts (включване, кодове, изключване, нулиране), покани,
-                     потребители, членства (фирми и роли), токени (в базата само SHA-256)
-  schede/            fields.ts (ЕДИНСТВЕНИЯТ списък полета и условията им) + fields-argano.ts +
-                     fields-centralina.ts + fields-serrature.ts (разделите им) + field-conditions.ts +
-                     field-options.ts · field-parsers.ts (zod по вид) ·
-                     validation.ts · stampa.ts (разделите и модулите в печата) · misure.ts (мерките по
+                     потребители, членства (фирми и роли), токени (в базата само SHA-256), revoche.ts
+                     (връзките за парола и поканите, които спират с причината си)
+  schede/            fields.ts (ЕДИНСТВЕНИЯТ списък полета и условията им) + fields-quadro.ts +
+                     fields-argano.ts + fields-centralina.ts + fields-serrature.ts (разделите им) +
+                     field-conditions.ts + field-options.ts · field-parsers.ts (zod по вид) ·
+                     validation.ts + validation-campi.ts (проверката на всяко поле) · stampa.ts (разделите и модулите в печата) · misure.ts (мерките по
                      спирки) · search.ts · service.ts +
                      list.ts (списъкът и търсенето) · ordine.ts (редът на разделите, без база) ·
                      format.ts · pdf.ts + pdf-head.ts (заглавната лента, табелата) + pdf-layout.ts +
@@ -93,7 +98,8 @@ src/
                      на табелата: избор, търсене, паметта) · pdf.ts (A4 по посоката на шаблона, логото и данните на фирмата горе)
   argano/            изчислението за аргано по „RT-E MOD 10411-1“: calcolo.ts (формулите на листовете
                      „Macchina“ и „Funi“, без база) · dati.ts (входът — zod, формата) · tabelle.ts
-                     (въжетата TELCAL/DONATI, мерките на компенсацията) · da-scheda.ts (попълването от
+                     (въжетата TELCAL/DONATI, мерките на компенсацията) · fune.ts (въжето за показване:
+                     формация, нишки, клас, cordatura) · da-scheda.ts (попълването от
                      „Modulo rilievi dati argani“) · righe.ts (резултатите като редове — страница и PDF) ·
                      formato.ts · service.ts (четене, запис върху `base`, одит) · pdf.ts (A4) ·
                      impianto.ts (уредбата без карта — zod) · liberi.ts (изчислението без карта) ·
@@ -105,14 +111,16 @@ src/
                      върната форма) · service.ts (четене и запис в транзакцията на картата)
   ordini/            модулите: moduli.ts (картите от assets/moduli, SHA-256) + moduli-schema.ts (zod
                      схемата на картите) · registry.ts (марка ↔
-                     колона ↔ въпрос ↔ модул) · valori.ts · prefill.ts · opzioni.ts (опцията на падащ
+                     колона ↔ въпрос ↔ модул) + registry-controlli.ts (втория избор на пратената карта:
+                     модел, вид на уредбата) · valori.ts · prefill.ts · opzioni.ts (опцията на падащ
                      списък за текст) · collegamenti-elenco.ts (списъкът на свързаните данни) +
                      collegamenti-impianto.ts (втората му част, от адреса нататък) +
-                     collegamenti-aggiunti.ts (добавените по-късно — винаги в края) +
+                     collegamenti-aggiunti.ts + -scheda.ts + -quadri.ts + -pulsantiere.ts (добавените по-късно — винаги в края; `spunta` — collegamenti-spunta.ts) +
                      collegamenti.ts (видовете места, проверката при старт) + collegati.ts (правилата
                      им) + collegati-browser.ts (JSON-ът за браузъра) · riepilogo.ts (модулите в печата на
                      картата) · form.ts · pdf.ts (плоските листове: Pelazza, аргано, 2SG, Mastech, Elettroquadri,
-                     AMI 100) + pdf-form.ts (формулярът на MoviLift) + pdf-testo.ts (шрифтът, мястото на
+                     AMI 100) + pdf-form.ts (формулярите на MoviLift и DMG) + pdf-form-pulizia.ts
+                     (почистването на формуляр с JavaScript — DMG) + pdf-testo.ts (шрифтът, мястото на
                      текста) — pdf-lib
   http/              prefs.ts (темата) · colori.ts (темата „Personalizzato“: контраст, стилът) · flash,
                      бисквитки, таванове, помощниците на изгледите
@@ -120,6 +128,9 @@ src/
                      печатът и PDF-ът на картата (schede-stampa.ts) · кошчето · модулите · хора · фирми ·
                      настройките · одит)
   requests/          заявките за достъп: form.ts (публичната форма) · service.ts (запис, решение, срок)
+  pwa/               manifest.ts — приложението на началния екран (манифестът; рутерът — routes/pwa.ts,
+                     страницата „Installa l'app“ — routes/installa.ts) · sistema.ts (устройството по
+                     User-Agent — стъпките му идват отворени от сървъра)
   site/ · seo/       витрината: landing.ts (разделите, ролите и възможностите до снимките — от кода) ·
                      immagini.ts (снимките: ширини, srcset) · paths.ts · structured-data.ts
                      (JSON-LD) · files.ts (robots, sitemap, llms.txt) · company.ts (данните на фирмата)
@@ -130,11 +141,12 @@ src/
   worker.ts          фоновият процес (контейнерът `worker`): компресира опашката, файл „жив съм“
 assets/cartelli/     петте шаблона на табелата (JPEG-ите на собственика, увеличени за печат — scripts/cartelli/) + картата им (JSON)
 assets/moduli/       празните PDF-и на Pelazza, MoviLift, листа за аргано (Word-ът на собственика, в PDF),
-                     2SG (начертан наново от нас — `scripts/moduli/2sg.mjs`), AMI 100 Mono UCM / Mono RTBS
-                     (начертани от нас — `scripts/moduli/ami100.mjs`), Mastech NG120 / QI Touch (сканирани; QI Touch — две
+                     2SG (начертан наново от нас — `scripts/moduli/2sg.mjs`), AMI 100 Mono RTBS
+                     (начертан от нас — `scripts/moduli/ami100.mjs`), Mastech NG120 / QI Touch (сканирани; QI Touch — две
                      страници) и Elettroquadri geared / gearless / oleodinamico (официалните им PDF-и
-                     от elettroquadri.net; geared и oleodinamico — две страници) + картата на полетата
-                     им (JSON)
+                     от elettroquadri.net; geared и oleodinamico — две страници), DMG Pitagora 4.0 и QF
+                     Fixtures (формулярите им, непроменени — картите от `scripts/moduli/dmg.mjs`) +
+                     картата на полетата им (JSON)
 views/               EJS: partials/ (горна и долна лента, табелата, филтърът по фирма), site/ (витрината,
                      чертежът на шахтата, политиката), requests/, auth/, schede/, users/, aziende/,
                      account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs; скицникът —
@@ -147,7 +159,8 @@ public/              css/ (портал: base, buttons, shell, layout, plate, fo
                      витрина: site, shaft,
                      site-hero, site-parts,
                      site-request),
-                     js/app.js + js/valori.js + js/moduli.js + js/collegati.js (последните три — само във
+                     js/app.js + js/valori.js + js/moduli.js + js/collegati-luoghi.js (едно място на
+                     връзката: четене, следване, запис) + js/collegati.js (последните четири — само във
                      формата на картата, в този ред) + js/allegati.js (галерията) + js/carica.js
                      (качването, умаляването на снимките в браузъра) — формата и страницата на картата
                      + js/stampa-foto.js (иконките за печата) + скицникът — само във формата, в реда от
@@ -164,10 +177,11 @@ public/              css/ (портал: base, buttons, shell, layout, plate, fo
                      (менютата — и от клавиатурата) · schizzo-comandi.js (лентите, клавиатурата,
                      отваряне/затваряне); css/schizzo-barre.css — лентите и менютата;
                      img/ (og.png и apple-touch-icon.png — `npm run brand:images`; site/ — снимките на
-                     витрината, `npm run render:encode`; brand/ и favicon-32/192.png — марката,
+                     витрината, `npm run render:encode`; brand/ и favicon-32/192.png — логата,
                      `npm run brand:logo`), indexnow-key.txt
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
-deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh · nginx/ · systemd/
+deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh (базата + снимките, копие
+                     извън сървъра) · restore-test.sh · backup-alert.sh · nginx/ · systemd/
 ```
 
 ## Правила, които не се нарушават
@@ -201,8 +215,12 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
 - **Регистърът** (`auth/registro.ts`, собственикът, 30 октомври 2026): който има `audit:view`, вижда във
   всяка своя фирма своите действия и тези на хората, чиято роля там е под неговата; равните, по-високите,
   MASTER и автор, който вече не е във фирмата, не се виждат. MASTER вижда всичко.
-- **Кой управлява кого** (`auth/manage.ts`, без база — тества се само): MASTER управлява всеки акаунт, и
-  своя (име, имейл, връзка за парола), но никога не се деактивира сам; само той слага и маха фирми на
+- **Кой управлява кого** (`auth/manage.ts`, без база — тества се само): MASTER управлява всеки акаунт,
+  който не е MASTER, и своя, но никога друг MASTER (одит, 4 ноември 2026: откраднатата сесия на единия не
+  взима другия — нов имейл и връзка за парола биха го превзели) и никога не се деактивира сам. Своя акаунт
+  — име и имейл; новият имейл иска текущата парола (`reauthPassword` в `services/users.ts`, броят се в
+  заключването — откраднатата сесия не пренасочва писмата), а връзка за нова парола за себе си не прави
+  (`createResetLink` отказва; паролата си сменя в `/account` със старата). Само той слага и маха фирми на
   човек (последната не се маха — за пълно спиране се деактивира). ADMIN управлява ролята на човек в
   своята фирма (само под своята, никога себе си), а акаунта му (име, имейл, парола, достъп) — само ако
   управлява членството му във ВСЯКА негова фирма; иначе акаунтът е на MASTER. Нов имейл: известие до
@@ -217,6 +235,20 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   картите им заедно с филтър; нова карта — само във фирма, в която пише. Деактивирана фирма спира само
   себе си; човек без нито една активна фирма излиза веднага. В базата: `Membership_role_check` (MASTER
   не е роля във фирма), `aziendaId` NOT NULL на карта и покана.
+- **Краят на услугата за фирма** (чл. 28, ал. 3, б. „g“ GDPR; одит, 4 ноември 2026; само MASTER,
+  `routes/aziende-fine.ts`, раздел „Fine del servizio“ на страницата на фирмата). Износ:
+  `/aziende/:id/esporta` — един `.tar` (`aziende/tar.ts` — свой ustar, имената само `[A-Za-z0-9._/-]`;
+  `aziende/esportazione.ts` — поток, не в паметта): `dati.json` (фирмата, хората с ролите, картите с
+  мерките, скиците и описанието на снимките, листовете за интервенция с подписите и печата, табелите,
+  изчисленията, регистърът), логото и готовите снимки и клипове; без пароли, тайни на 2FA, токени и
+  HMAC-и. Одит `AZIENDA_EXPORT`. Изтриване (`aziende/eliminazione.ts`): деактивираната фирма пази всичко
+  `GIORNI_PRIMA_DELL_ELIMINAZIONE` (90) дни — активирана наново, нищо не се губи, — после `maintenance.ts`
+  я изтрива окончателно; MASTER може и веднага, но само деактивирана и с името ѝ, написано на ръка. Една
+  транзакция (редът на фирмата `FOR UPDATE` — активиране и изтриване не се разминават): картите (със
+  снимките, скиците и мерките), листовете, табелите, изчисленията, поканите, регистърът, членствата и
+  хората, които са били САМО в нея; който е и в друга фирма, губи само членството. Папките в тома — след
+  записа (провал оставя файл без карта, никога карта без файл). В регистъра остава `AZIENDA_DELETE` без
+  фирма и без лични данни (кой, кога, колко). Политиката казва 90-те дни от същата константа (`endDays`).
 - **Логото** се проверява по байтовете (PNG/JPEG/WebP, никога SVG), до 1 MB, и се ПРЕКОДИРА през sharp
   (`aziende/logo.ts`): до 1200×600, без EXIF. Прекодирането пази и процеса — pdfkit декодира PNG с
   прозрачност асинхронно и при повреден файл хвърля извън всеки try/catch. Пази се в базата (bytea —
@@ -227,6 +259,8 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   пазят synchronizer CSRF токен + проверка на Origin. Формите преди вход — двойна бисквитка.
 - **Без изброяване на акаунти:** непознат имейл и грешна парола — един отговор, едно време (фиктивен хеш),
   едно заключване (`auth/lockout.ts`; непознатите се броят в паметта, със същите поредни заключвания).
+  Неуспешният вход трае поне `ESITO_NEGATIVO_MS` (400 ms, `services/login.ts`; одит, 4 ноември 2026):
+  заключен акаунт и мрежа над тавана отговарят преди хеша и иначе биха се познали по бързия отговор.
 - **Налучкване (brute force)** (собственикът, 31 октомври 2026 — „максимална защита“), на пластове:
   nginx — 10 POST-а в минута на адрес към входа и формите преди вход (`limit_req`, само POST); приложението
   — 10/мин. на мрежа в паметта (`loginLimiter`) и таван в базата: 30 грешни входа (парола, непознат имейл,
@@ -262,8 +296,19 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   цифри — водещата нула се пази. Десетичните приемат „6,5“ и „6.5“, пазят се като Decimal.
   Октомври 2026: хидравличната уредба няма „Argano“ и „Limitatore“, а „Centralina“ (от 21-ви: „Centralina
   da sostituire?“, марка и модел при всеки отговор, при „No“ — „Emendamento A3 da installare“, а при неговото
-  „Sì“ — гъвкава тръба: Sì/No, диаметър, дължина, бележки; бележките на раздела — винаги); в „Quadro“ —
-  намалена яма и горно пространство; при „Argano da sostituire? No“ — челюстите на спирачката. 17 октомври:
+  „Sì“ — гъвкава тръба: Sì/No, диаметър, дължина, бележки; бележките на раздела — винаги); намалената
+  яма и горно пространство в „Quadro“ — НЕ при хидравлична (`NON_IDRAULICO`, виж по-долу); при „Argano da
+  sostituire? No“ — челюстите на спирачката. 3 ноември
+  (листовете на собственика): „Note locale macchina“ веднага под мястото на машинното; „Quantità funi
+  DX/SX“ до „N° funi“ (общият брой остава — него чете листът за аргано); в „Quadro“ (`fields-quadro.ts`)
+  — „Testata ridotta?“, после „Fossa ridotta?“ (двата — само при електрическа и MRL, `NON_IDRAULICO`), всеки със списък на решенията
+  (`testataInterventi`: W+W puntoni, AMI 100 Mono RTBS, Semaforo, Puntone OKATT contrappeso;
+  `fossaInterventi`: AMI 100 Mono RTBS, Semaforo fondo fossa, Grembiule retrattile 3 stadi — с бележка,
+  Puntone OKATT); в „Centralina“ — при „Sì“ данните за новата (мотор V/HP, помпа l/min, пускане,
+  електровентили, тръба, бутало, стебло, ход, вид бутало, литри масло), при „No“ — „Installare kit A3?“
+  (колоната `emendamentoA3`), после „Tipo centralina in opera“ Hydronic (части + напрежение на бобините)
+  или Altro (HSV-150/440 BIS по дебита, части, шибър ASS/2 или ASS/3), гъвкавата тръба, и накрая „Note
+  raccordi e tubazioni“ при всеки отговор. 17 октомври:
   „Buono di lavoro“ (беше „Buono di riferimento“); операторът на вратите (марка, светъл отвор,
   напрежение) — махнат; „Serrature o sospensioni“ пита само каквото е за вида врати — бравите и шейната
   (тя е тук, след бравите, с „Tipo di pattino retrattile“) при ръчни и полуавтоматични, окачванията и 2SG
@@ -294,8 +339,8 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   по-ранно поле (тестът го пази); веригата работи (поле с условие може да зависи от друго с условие).
   Цял раздел също може да има условие (`SectionDef.when`; `not: true` — обратното: „не при
   хидравлична“) — полетата на скрития раздел нямат смисъл; app.js скрива и полето, чийто родител е скрит.
-  `also` — още полета, от които стига едното („Installare AMI 100?“ при „Fossa ridotta: Sì“ или „Testata
-  ridotta: Sì“; в страницата — `data-when-also`).
+  `also` — още полета, от които стига едното (листът на AMI 100 Mono RTBS при отметката в списъка на
+  ямата или на горното пространство; в страницата — `data-when-also`).
   Махнатите от листа полета (блокировка, донивелиране, брой шейни, марка на аргано, марката и данните на
   оператора, контактите и челюстите на спирачката, данните на централата освен марката) остават в
   колоните си със старите отговори —
@@ -332,35 +377,47 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   (собственикът, 30 октомври 2026 — „non generi un pdf … basato sulla scansione“): същите полета, надписи
   и ред като хартиения им модул; `scripts/moduli/2sg.mjs` (общото — `scripts/moduli/foglio.mjs`) чертае
   листа и пише координатите в картата, ключовете на полетата са старите — записаните карти пазят
-  стойностите си; `npm run moduli:disegna` дава едни и същи байтове. **AMI 100** (30 октомври 2026): при
-  „Fossa ridotta“ или „Testata ridotta: Sì“ — „Installare AMI 100?“; при „Sì“ видът (`ami100Tipo`: Mono
-  UCM или Mono RTBS — като модела на Mastech, но без марка; „Sì“ без вид е грешка `ami100TipoNeeded`) и
-  листът му (колона `ordineAmi`, префикси `au`/`ar`, PDF `/ami100-mono-ucm`, `/ami100-mono-rtbs`):
-  полетата и редът им — от списъка на собственика („Ami_100.pdf“), фиксираните варианти — отметки по
+  стойностите си; `npm run moduli:disegna` дава едни и същи байтове. **AMI 100 Mono RTBS** (30 октомври,
+  от 3 ноември 2026 по листа „Solo su elettrico“): без въпрос „Sì/No“ — отваря го отметката „AMI 100 Mono
+  RTBS“ в решенията на горното пространство или на ямата (слотът има `apertura`: стойността и още
+  полета; `campoCheApre` в registry.ts — на сървъра, в печата, в PDF маршрута и в страницата, където
+  стоят връзките към PDF-а; обвивката в браузъра — `data-when-also`). Колона `ordineAmi`, префикс `ar`,
+  PDF `/ami100-mono-rtbs`. „Installare AMI 100?“, видът и Mono UCM са махнати (колоните `ami100`/
+  `ami100Tipo` пазят старите отговори; миграцията отметна RTBS в списъка на намаленото пространство на
+  картите, които го имаха, за да остане листът им отворен; UCM — не се чете). Полетата и редът им — от
+  списъка на собственика („Ami_100.pdf“), фиксираните варианти — отметки по
   каталога AMI100 (захранване 24/48 Vdc, въжето на ограничителя отляво/отдясно, водач 7/8/9/16 mm,
   икономайзер), отгоре — подател, дата и асансьорът; листът е начертан от нас
-  (`scripts/moduli/ami100.mjs`). Полетата и редът им са дословно от модула (италиански, не се
-  превеждат). Пазят се като JSON (`ordineQuadro`, `preventivoArgano`, `ordineSospensioni`:
+  (`scripts/moduli/ami100.mjs`). **DMG** (собственикът, 2 ноември 2026): „Marca quadro“ DMG + „Sì“ на
+  въпроса на таблото → „Quote form Pitagora 4.0“ (префикс `dp`, колона `ordineQuadro`); в раздела
+  „Bottoniere“ при „Bottoniere da sostituire: Sì“ — „Vuoi compilare la scheda ordine bottoniere DMG?“
+  (`bottoniereOrdine`; при всяка марка на таблото) → „Quote form Fixtures“ (префикс `db`, колона `ordineBottoniere`). Полетата и редът им са дословно от модула (италиански, не се
+  превеждат). Пазят се като JSON (`ordineQuadro`, `preventivoArgano`, `ordineSospensioni`, `ordineAmi`,
+  `ordineBottoniere`:
   `{modulo, valori}` — `modulo` е id-то на картата, затова записът на Pelazza никога не се чете като
   MoviLift, нито старото запитване към Montanari като листа за аргано) и излизат като свой PDF
-  (`/schede/:id/ordine-quadro`, `/ordine-quadro-movilift`, `/ordine-quadro-mastech-ng120`,
+  (`/schede/:id/ordine-quadro`, `/ordine-quadro-movilift`, `/ordine-quadro-dmg-pitagora`,
+  `/ordine-bottoniere-dmg`, `/ordine-quadro-mastech-ng120`,
   `/ordine-quadro-mastech-qi-touch`, `/ordine-quadro-elettroquadri-geared`, `…-gearless`,
-  `…-oleodinamico`, `/dati-argano`, `/sospensioni-2sg`, `/operatore-2sg`; затворен модул → 404). В печата
+  `…-oleodinamico`, `/dati-argano`, `/sospensioni-2sg`, `/operatore-2sg`, `/ami100-mono-rtbs`; затворен
+  модул → 404). В печата
   и PDF-а на картата влизат САМО модулите, които картата иска — всеки поотделно (таблото, аргано, 2SG:
   отметките `riepilogoOrdini` в края на формата, пазят се в `moduliStampati`; `riepilogoOrdini` в базата е
   „поне един“ за предишния код, а карта с него и без списък включва и трите, както преди) — само
   попълненото, по групите на модула (`ordini/riepilogo.ts`). PDF-ът на модула е самият модул: плоските листове (Pelazza, аргано, 2SG) —
   кръстчета и текст по координатите от картата (`dimensione`/`sopraLinea` — размерът на текста по
   листа; `righe` — кутия с редове, NOTE на 2SG; `pagina` — групата е на втората страница, QI Touch;
-  `segno: 'cerchio'` — кръгче около номера на етажа, NG120; `anche: [2]` — същото поле и на тези
+  `segno: 'cerchio'` — кръгче около номера на етажа, NG120; `allinea: 'destra'` — стойността вдясно на
+  реда, до мерната единица след него („Potenza motore: ___ Kw ___ Cv ___ A“ на листа за аргано —
+  собственикът, 3 ноември 2026: отляво CV стоеше веднага след „Kw“); `anche: [2]` — същото поле и на тези
   страници, на същото място: главата на поръчката на Elettroquadri се повтаря на стр. 2); `titolo` на ред — надписът на реда от листа
   („Tensione Allarme“): във формата над отметките (група за четеца), в резюмето пред всяка; знаците — 1,7
   pt (`SEGNO`, pdf-testo.ts); MoviLift — попълнен и „заключен“ формуляр. PDF-ите са
   закрепени по SHA-256: нова версия = нова карта (координати/имена), иначе процесът не тръгва.
   Montanari е махнат (октомври 2026): старите записи остават в колоната, но не се четат. При първото
   отваряне модулът идва попълнен: стойностите на празния модул (`predefinito`) < огледът и човекът
-  (`prefill`: датата, препратката към асансьора, фирмата, отметките на картата като думи; имейлът — не,
-  от 21 октомври) < свързаните данни (`prefill.ts`); скрито поле на картата не попълва. После полетата с
+  (`prefill`: датата, препратката към асансьора, фирмата, отметките на картата като думи; имейлът на човека — не,
+  от 21 октомври; на фирмата — да, от 3 ноември) < свързаните данни (`prefill.ts`); скрито поле на картата не попълва. После полетата с
   `prefill` следват картата (`public/js/moduli.js`, същите правила; еднакво `prefill` следва първото
   писано), докато човекът не пише в тях (`data-auto`); изпразненото в записан модул остава (`data-scritto`).
 - **MoviLift** (`assets/moduli/movilift-*`): идва шифрован (RC4, без парола за отваряне; авторът
@@ -373,8 +430,25 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   своят), два бутона без надпис не са в картата, Testo78/79 са надписи, „Fotocellula … V“ е без поле
   (`crea`: създава се при попълването, като Testo77). Отметката/изборът — наш облик с линии (✔/■), не
   невграденият ZapfDingbats. flatten оставя в /Annots връзки към изтритите бутони — `pulisciAnnots`.
-- **Свързаните данни** (`ordini/collegamenti-elenco.ts` + `collegamenti-aggiunti.ts` — ЕДИНСТВЕНИЯТ
-  списък, вторият файл е продължението му: новите връзки са в края; видовете места и
+- **DMG** (`assets/moduli/dmg-*`, картите — `npm run moduli:dmg`: скриптът чете полетата от PDF-а и спира
+  при име, състояние или опция, които ги няма, и при поле с данни без място в картата). Формулярите на
+  CorelDRAW са с JavaScript и слоеве за езика (италианският е включен). Изборът е група отметки с ЕДНО
+  име, не радио: опцията сочи бутона по името на „включеното“ му състояние (`stato`; MoviLift — по реда,
+  `widget`); `selectRadio` слага V и облика на избрания, на другите „Off“. Бутоните на Pitagora нямат облик
+  „Off“ (кутийките са в страницата) — неизбраните излизат, без да се рисуват (`togliSenzaAspetto`), а
+  избраният получава само нашия знак. `pulizia` в картата → `pdf-form-pulizia.ts` преди flatten:
+  JavaScript-ът на документа и страниците се маха; бутоните за действие (Salva, Invia, Reset, езиците,
+  стрелките, корицата „00-Home“ на Fixtures) и „кръпките“ (`nonStampare: ["-TOPPA$"]`, сивото, с което
+  скриптът закрива недостъпното) не излизат; скритите полета (енкодерите при затворен контур,
+  „Sovraeccitazione“…) излизат само попълнени. Моделът на бутониерите (Flat standard, Elise, Silverlight,
+  Gilda TM, Luna, Cut, Greta) се избира на корицата от скрипта — в картата е избор без поле (`acro`
+  липсва), който показва картинките и ширините на модела (`mostra`: „00-Piastra-X“, „02/10/11-Dim.X“ и
+  „-IMG“). Ширините на всички модели са във формата с името на модела в етикета. Pitagora: стр. 3–4
+  (бутониерите към таблото) също са в картата; трите кутийки „Flush_0060/0080/0090“ на стр. 4 са вързани
+  от автора към полето на кабината — не се предлагат. „Corsa“ на Pitagora е сумата на интерпиановете в
+  Acrobat — у нас се пише на ръка (без връзка: мерките на листа не са в метри).
+- **Свързаните данни** (`ordini/collegamenti-elenco.ts` + `collegamenti-aggiunti.ts` + `-scheda`, `-quadri`,
+  `-pulsantiere` — ЕДИНСТВЕНИЯТ списък, другите файлове са продължението му: новите връзки са в края; видовете места и
   проверката при старт — `collegamenti.ts`; правилата — `collegati.ts`): едно и също нещо от уредбата
   в картата и/или в модулите. Решени със собственика: спирки („Piani n°“ на листа за аргано), скорост
   m/s и видът ѝ (табло 1V/2V/VVVF ↔ аргано AC1/AC2/Inverter), ход, товар, капацитет и № на асансьора
@@ -383,7 +457,10 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   на машината (MoviLift; на листа за аргано е текст — само попълване), въжета (брой, диаметър,
   снопове). После („всички полета с еднакви параметри“, октомври 2026): адрес, матрикула и марка
   (листът за аргано), вид на уредбата (Pelazza „Idraulico“), вратите на 2SG (Automatico,
-  Semiautomatico), ток и обороти на мотора. AMI 100 Mono UCM (30 октомври 2026): товарът и спирките. Операторът на картата е махнат (17 октомври): марката му
+  Semiautomatico), ток и обороти на мотора.
+  DMG (2 ноември 2026) — в досегашните връзки: Pitagora — спирки, скорост, товар/хора/№ на дисплея,
+  мотор (V, A, kW, полюси, обороти), спирачка, етажни врати, мястото на машинното, окачване, шейна,
+  марка на централата и на вратите (само попълване); Fixtures — спирки, kg, хора, №, матрикула, адрес. Операторът на картата е махнат (17 октомври): марката му
   остава връзка само между таблата (Pelazza „Modello“, MoviLift — падащ списък, QI Touch; само
   попълване, при смяна на марката), напрежението и светлият отвор — без връзка.
   После (централата и Mastech): марката на централата (картата ↔ MoviLift „Idraulico“, само попълване;
@@ -419,6 +496,34 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   отговор („si“ → „2“) гледа само собствените ключове. Свързано поле на модул няма свое `prefill` в
   картата на модула, а място на модул е най-много едно във връзка (проверка при старт). Новите връзки са
   в края на списъка — редът е редът на разминаванията и на отпечатъка.
+  **3 ноември 2026 — всичко еднакво** (собственикът: „tutti i dati possibili vengono compilati
+  automaticamente … in tutti i campi che hanno voci identiche … dobbiamo essere perfetti“; инвентар на
+  картата и 13-те модула поле по поле): 101 връзки. Продължението на списъка, в този ред:
+  `collegamenti-scheda.ts` (картата: новата централа — V на мотора, HP („Cv“ на листа за аргано е
+  същото число от табелата — собственикът го потвърди), ход, пускане, електроклапани; „Installare kit A3?“ ↔ „Emendamento A3“;
+  „Testata/Fossa ridotta?“ ↔ Pitagora и „Se EN81.21“ на Elettroquadri; престилката ↔ „Gestione grembiule“
+  на Pitagora; вратите на етажа и на кабината (`portePiano`/`porteCabina`: полуавтоматичните са ръчни
+  на етажа, автоматични в кабината — „Porte di piano“ на Pitagora излезе от `porte`, където „Manuali“
+  спореше с полуавтоматичните); „Tipo argano esistente“; инверторът (kW); напрежението на оператора с
+  2SG; „MRL“ ↔ „per MRL“ на Pelazza и „Armadio MRL“ на MoviLift), `collegamenti-quadri.ts` (таблата
+  помежду си — норми, маневра, simplex/duplex, прекабелиране, кабели, вентилация, сигнали: служат при
+  смяна на марката), `collegamenti-pulsantiere.ts` (Pitagora ↔ QF Fixtures: материал, бутони,
+  осветление, сервизните бутони, ключовете, Smart Key, № CE, бутониерите на етажите); `spunta()` —
+  връзка с една отметка (`collegamenti-spunta.ts`). Място с `idraulico` (Pitagora „VVVF“/„HYDRO“,
+  MoviLift „Fune“/„Idraulico“) е другото поле при хидравлична уредба на картата — сървърът и браузърът
+  избират по вида, а полето, което вече не е мястото, губи поставеното за него. Само стойност (не
+  поле с данни) от картата — `prefill` на Pitagora: „Portata (kg/pers.)“ = „630/8“ (`portataPersone`),
+  „Con pattino elettronico“ при шейна за смяна (като MoviLift). Не са свързани нарочно: различна мерна
+  единица (kW ↔ HP, ход в mm ↔ m), поле без единица („Pot. Mot.“, „ElettroValv.“ на MoviLift), избор, в
+  който едната страна е по-подробна и би се гадало (Display „Matisse 7″/10,1″“ ↔ „Matisse“, „Dardo“
+  квадратен/кръгъл, Geared/Gearless на Pitagora ↔ „Elettrico“), имената на етажите (редът им не е
+  един и същ). „Dati cliente“ на MoviLift — от данните на фирмата в настройките ѝ (`societa*` в
+  `prefill`: наименование — вписаното, иначе името в портала; адрес, CAP, град, провинция, телефон,
+  имейл — на фирмата, не на човека; всяко поле се пише отгоре и написаното остава; при нова карта —
+  на избраната фирма, `datiDelleAziende` в `aziende/intestazione.ts`). Проверката: `tests/collegati-tutti.test.ts`
+  — всяка двойка места на всяка връзка в 30 вида карти (6 марки × електрическа/MRL/хидравлична с
+  аргано, 2SG, AMI 100 и бутониерите DMG), сървърът попълва и сравнява; e2e `collegati-tutti.mjs` —
+  същото в Chromium в реално време (~2000 двойки) и смяната на марката между таблата.
 - **Редът на разделите е на фирмата** (`Azienda.ordineSezioni`, `schede/ordine.ts` + `aziende/sezioni.ts`):
   подрежда го ADMIN на фирмата (и MASTER) в `/impostazioni` (`aziende:settings`), без JavaScript —
   стрелките пращат целия ред и страницата се връща с новия ред незаписан, „Salva ordine“ го пази (един
@@ -446,7 +551,8 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
 - **Индексира се само витрината:** `/` и `/privacy` (`seo/paths.ts`, един език — без hreflang) —
   `index, follow`, canonical, Open Graph/Twitter, geo, JSON-LD (Organization+LocalBusiness, WebSite,
   WebPage със speakable, BreadcrumbList, SoftwareApplication, HowTo, FAQPage — текстовете дума по дума
-  от екрана), sitemap.xml, llms.txt, ключ за IndexNow. Порталът (вход, карти, хора…) остава
+  от екрана; `sameAs` — само проверените профили от `COMPANY.profiles`: YouTube „Carbon Stealth VCC“),
+  sitemap.xml, llms.txt, ключ за IndexNow. Порталът (вход, карти, хора…) остава
   `noindex, nofollow`; robots.txt разрешава точно публичните адреси (`$`), входа (за да се види
   noindex) и статиката, а забранява всичко друго. Разделите и ролите на витрината идват от `fields.ts`
   и `roles.ts` — тя не може да обещае поле или право, което порталът няма. Данните на фирмата
@@ -471,16 +577,22 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   Чертежът на шахтата (`views/site/_shaft.ejs`) остава — до легендата на картата и на входа: маркерите
   са номерата на разделите на картата (всеки раздел сочи своята част — `spots` по ключ). Витрината е
   без движение (и без JavaScript).
-- **Марката** (собственикът, 31 октомври 2026 — „un logo (non svg) … per il livello enterprise“; от три
-  концепции избра „Targa nera“): табела като тази на асансьора — стоманена рамка около черен сатенен
-  емайл, четири винта, релефни стоманени букви „RI“ (Fira Sans Condensed Bold), рендерирана от нас
-  (`scripts/logo/logo.py` — Mitsuba, като снимките на витрината; прозрачен фон, правоъгълна камера,
-  1,3 : 1). Картинка, не SVG: `views/partials/brandmark.ejs` — `<img>` 36 px в лентите и на входа, 48 px
-  в долната част на витрината (`marchio: 48`), с 2x и 3x в `srcset`; името до нея остава текст (следва
-  темите и „Personalizzato“). Същият рендер дава иконките на раздела (`favicon-32/192.png`,
-  `/favicon.ico` → 32) и марката в og.png и apple-touch-icon.png (`npm run brand:images`). Нов рендер:
-  `logo.py final` (минути на 4 ядра), после `npm run brand:logo` и `npm run brand:images`; unit тестът
-  пази всеки файл в размера си, с прозрачност, и че няма излишни.
+- **Логата** (собственикът, 1 ноември 2026 — свои две картинки: „Използвай ги като лого където мислиш, че
+  ще паснат най-добре. Искам да са четливи и да се виждат добре“; заменят табелата „Targa nera“ от 31
+  октомври). Оригиналите стоят както са дошли в `scripts/logo/originals` (извън образа): `mark.png` —
+  шестоъгълникът „RI“ с шахтата, `logo.png` — марката с „RILIEVI IMPIANTI“ и „PIATTAFORMA TECNICA
+  ASCENSORI“. `npm run brand:logo` ги изрязва до нарисуваното и пише `public/img/brand` (WebP с
+  прозрачност; малките размери — леко изострени, иначе детайлите на шахтата стават сиво) и
+  `favicon-32/192.png`. Марката — където логото е малко: черните ленти на портала и на витрината
+  (`views/partials/brandmark.ejs`, 44 px, 1x/2x/3x; името до нея остава текст — следва темите и
+  „Personalizzato“), иконките на раздела (`/favicon.ico` → 32) и apple-touch-icon.png. Пълното лого
+  (`views/partials/logo.ejs`, `srcset` 360…1320w) — само където е поне 320 px широко, за да се чете и
+  последният ред (той е ~6,5 % от височината): горе в черния панел на входа (400 px, на телефон 340),
+  над заглавието на първия екран на витрината (440/340 px; тъмен ореол по очертанието и потъмнен таван
+  на снимката отгоре), в долната част на витрината (320 px върху черна табела — на бяло последният ред
+  избледнява) и в og.png. Картинки, не SVG. Нови лога: заменят се файловете в `originals`, после
+  `npm run brand:logo` и `npm run brand:images`; unit тестът пази всеки файл от `srcset` в размера и
+  пропорциите си, с прозрачност, и че в `public/img/brand` няма излишни.
 - **Подредбата на всяко устройство** (собственикът, 31 октомври 2026 — „Искам да сме подредени … визуално
   перфектни на всякакъв вид устройство“): в един ред от полета етикетите, полетата и подсказките стоят на
   три общи линии — `grid--righe` (`public/css/righe.css`, CSS subgrid): полето носи етикет, контрола и
@@ -649,6 +761,20 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   няма), с одит `ARGANO_CALCOLO`; не мести версията на картата. Чете всеки, който вижда картата (формата
   — заключена); пише, който пише карти в нейната фирма, не в кошчето; чужда — 404. Резултатите се
   смятат при всяко показване; редовете са едни и същи на страницата и в PDF-а (`righe.ts`).
+  **Въжетата и компенсацията** (собственикът, 2 ноември 2026 — „manca la cordatura, classe e formazione …
+  migliorare anche nella funzione di scelta“; „funi e catene … una scelta manuale“): изборът на въжето е
+  по производител (`optgroup` TELCAL / DONATI), надписът — диаметър и формация („Ø 10 mm · 6×19 + FC“), а
+  под него карта с данните на избраното от таблиците на файла (формация, нишки, клас 1370/1770, сечение,
+  разрушително усилие, линейна маса — `fune.ts`; възможността ги носи като `data-*`, `public/js/argano.js`
+  сменя картата на живо, без JavaScript — каквото е дошло от сървъра). „Cordatura“ — избор за всяко въже
+  по EN 12385-2 (crociata destra sZ / sinistra zS, parallela (Lang) destra zZ / sinistra sS); таблиците на
+  файла я нямат, затова е по избор и празна не се пази. Въже на ръка (`altro`) — и нишки, формация (до 40
+  знака) и клас („1570“ или „1370/1770“, `CLASSE`), по избор. Компенсация извън таблиците — „Altra misura
+  (dati a mano)“ в мерките: мярка (3–40 mm) и линейна маса (0,05–20 kg/m) в `compAltro`; тежи точно като
+  същата мярка от таблиците (тестът сравнява). Полетата на ръка се виждат само при „altro“ (`data-solo`,
+  argano.js; без JavaScript — винаги). Резултатите и PDF-ът показват производителя, формацията, нишките,
+  класа, cordatura и сечението („—“ за непопълненото на ръка). Новото в `dati` е по избор и липсва, когато
+  е празно — записаното преди него се чете и смята както е.
   **Страницата в менюто и изчислението без карта** (собственикът, 31 октомври 2026 — „cercare il numero di
   matricola o la via e precompilare il calcolo se ho già la scheda impianto“; избра „calcolo libero“):
   „Rilievi“ → „Calcolo argano“ (`/calcolo-argano`, `routes/calcolo-argano-elenco.ts`) — търсене по
@@ -736,18 +862,95 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   събран веднъж индекс — без заявки по целия документ при всяко натискане. Шрифтовете се теглят
   предварително само на витрината (400 и Condensed 600 — иначе текстът се пренарежда); на портала
   отлагат първото рисуване, а текстът там не се мести.
+- **Приложението на началния екран** (собственикът, 4 ноември 2026 — „add to home screen for PC, iOS and
+  Android … raggiungibile facilmente e a schermo intero“): порталът е инсталируемо уеб приложение (PWA).
+  `/manifest.webmanifest` (`src/pwa/manifest.ts`, `routes/pwa.ts` — преди сесията, без бисквитки и база,
+  `no-cache`): „Rilievi Impianti“ / „Rilievi“, `start_url` `/schede` (без сесия — входът), обхват `/`,
+  `display: fullscreen` — на Android целият екран без лентите на системата; Chrome/Edge на компютър и
+  Safari на iPhone/iPad нямат този режим и отварят приложението в негов прозорец без лентите на браузъра
+  (crbug 40650429; на компютър F11 / зеленият бутон на Mac — в стъпките), черен фон и тема, преки пътища
+  (задържане върху иконата: Nuova scheda, Schede, Interventi, Calcolo argano). Иконите — марката върху
+  черно от `npm run brand:logo` (`icon-192/512` — цяла, `icon-maskable-192/512` — в кръга от 80 %, който
+  Android запазва при всяка маска); на iPhone — `apple-touch-icon.png` и мета таговете
+  (`apple-mobile-web-app-capable`, заглавие „Rilievi“, лента `black`) в главата и на портала, и на
+  витрината. Service worker-ът (`public/js/sw.js`, сервиран като `/sw.js` от корена — обхватът е целият
+  сайт; регистрира го app.js на всяка страница на портала, витрината остава без JavaScript) НЕ пази
+  нищо — страниците носят лични данни и картата трябва да е винаги последната от сървъра: всяка заявка
+  отива към мрежата както без него; само страница (GET навигация), която не се зарежда, защото няма
+  мрежа, получава кратка страница „Nessuna connessione“ (503, `no-store`, без данни и без скрипт).
+  Изпратена форма (POST) и всичко друго минават покрай него. Fetch обработчикът е и каквото Chromium
+  иска, за да предложи инсталиране. „Installa l'app“ (`/app`, публична, `noindex`; точка в менюто след
+  групите и връзка на входа — скрити с `display-mode`, когато порталът вече е приложението): бутонът
+  „Installa l'app“, щом браузърът го предлага (`beforeinstallprompt`, `public/js/installa.js`), и стъпките
+  за Android, iPhone/iPad (Condividi → „Aggiungi alla schermata Home“), компютър с Chrome/Edge и Mac със
+  Safari („Archivio → Aggiungi al Dock“) — отворени само тези на устройството (без JavaScript — всички).
+  Менюто и лентата долу пазят изреза и лентата за жестове (`env(safe-area-inset-*)`). Проверката: unit
+  (`tests/pwa.test.ts` — полетата на манифеста, иконите в размера си, непрозрачни, марката в безопасния
+  кръг; работникът в node:vm — нищо освен GET навигации, страницата при липса на мрежа, без кеш),
+  integration (`tests/integration/installa.test.ts`) и e2e (`tests/e2e/installa.mjs`: самият Chrome казва,
+  че е инсталируем — `Page.getInstallabilityErrors` е празно, манифестът и иконите през CDP,
+  работникът контролира страницата, без мрежа — „Nessuna connessione“; Playwright вижда мрежата на
+  работника само с `PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS`, затова — в свой контекст; на телефон
+  с Android — стъпките на Android и без хоризонтален скрол на 360 px).
 - Коментарите в `src/`, `views/`, `deploy/` — на български; тестовете и `scripts/` — на английски. В
   изгледите коментарите са EJS (`<%# … %>`), никога HTML (`<!-- … -->`): страницата е само на италиански и
   няма кирилица дори в изходния код (пазят го тестовете — unit, integration и e2e).
 - Файл над 300 реда се разделя преди да се добавя.
+- **Одит на целия продукт, 4 ноември 2026** (собственикът: „Искам да сме перфектни“ — 10 наши агента:
+  Кодаджията ×3, Разбивача на живо, Качествения, VPS-аджията, Асансьорчика, Правният Разбирач,
+  Скоростника, SEO). Червеният екип не намери пробив (IDOR 16/16 = 404, ескалация 18/18 = 403, CSRF,
+  сесии, качване). Поправеното остава правило:
+  - **Текст в PDF се реже двоично** (`ordini/pdf-testo.ts`, `cartelli/pdf.ts`, `interventi/pdf-parti.ts`):
+    PDF-ът се рисува в единствената нишка на портала, а pdf-lib оформя целия низ при всяко мерене — 600
+    знака без интервал, рязани знак по знак, държаха портала ~20 s за всички фирми. В `pdf-testo.ts`
+    горната граница идва и от ширините на знаците един по един (кеш за шрифта): мерят се низове от около
+    два реда. `tests/pdf-testo.test.ts` пази същите редове като рязането знак по знак и времето на всеки
+    модул с всички полета пълни (под 3 s).
+  - **Паметта на worker-а (1 GB)**: прогресивен JPEG (~6 B/px) и AVIF (~19 B/px) се декодират цели —
+    таван 50 и 30 Mpx (`limitePixel`, проверка по главата на файла преди декодирането, `FotoTroppoGrande`
+    → „troppo grande“); ffmpeg декодира на една нишка (`-threads 1 -filter_threads 1` ПРЕДИ `-i`).
+  - **Опашката не трие чуждото готово** (`coda.ts`, `rimuoviSeNostro`): файловете на реда се трият само
+    ако той е бил наш или го няма — втори worker, пуснат докато първият работи, оставяше ред „готов“ без
+    файл. Качване, чиято транзакция падне, трие преместените оригинали (`allegati/service.ts`).
+  - **Връзки, които спират с причината си** (`services/revoche.ts`): връзката за нова парола — и при
+    смяна на паролата от самия човек и при деактивиране (активиран отново в същия ден, старата връзка го
+    отваряше); поканите на човек — при деактивиране, при роля без `users:manage` във фирмата и при
+    махане от нея.
+  - **Върната форма за нова карта** носи само фирма на човека (`azienda?.id`, а `renderForm` приема
+    `view.azienda` само от избора или от членствата му): чужд id носеше данните на чуждата фирма.
+  - Страниците на „Calcolo argano“ — `?p=`, както навсякъде (pager.ejs).
+  - CLS: листът за печат тегли предварително петте си шрифта; „Installa l'app“ идва с отворените стъпки
+    на устройството (`pwa/sistema.ts`, `Vary: User-Agent`).
+  - SEO: robots пуска `/app` (за да се види `noindex`), Organization носи `logo` (марката 512 × 512),
+    `image` и `knowsAbout`. Политиката: редове за поканите, работните данни (с подписите на листа за
+    интервенция) и бекъпите; правното основание е на фирмата (чл. 6), ние сме по чл. 28; Brevo — и
+    листовете в PDF; регистърът на фирмата; връзка към политиката в долната лента на портала.
+  - Деплой: първо `db app`, после worker (старият спира преди миграцията); докато миграция още тече
+    (`_prisma_migrations` без край и без грешка), се чака до `RILIEVI_MIGRATION_WAIT` (30 мин.), вместо
+    да се пусне откат посред нея.
+  - После (собственикът: „Изчисленията ги остави така както са на pdf, другото го направи по
+    най-добрият възможен начин“): MASTER не пипа друг MASTER и не си прави връзка за парола, а имейлът
+    си сменя с паролата; краят на услугата за фирма (износ + изтриване); бекъпът на снимките, копието
+    извън сървъра, провереното възстановяване и алармата; долният праг на неуспешния вход; `sameAs` —
+    всяко в правилото си по-горе. **Изчислението за аргано остава точно по листа на собственика** („RT-E
+    MOD 10411-1“, със особеностите му) — разлика от нормата се казва на собственика, не се „поправя“.
 - Миграциите се пишат на ръка (`prisma migrate diff`) и се прилагат само с `migrate deploy`; никога
   `db push` в продукция. `pg_trgm` е в първата миграция.
 
 ## Деплой
 
 Docker Compose (db + app на 127.0.0.1:4330 + `worker` с ffmpeg; томовете `db-data` и `media`) + nginx на
-хоста — `DEPLOY.md` (снимките не са в дъмпа на базата — копират се отделно, т. 6). Веднъж: `deploy/setup-env.sh`
+хоста — `DEPLOY.md` (снимките не са в дъмпа на базата — бекъпът им е отделен, т. 6). Веднъж: `deploy/setup-env.sh`
 (тайните в `/opt/few-few/shared/rilievi/.env`, 600), сертификат, после `deploy/create-master.sh`. Един
 път за ръчния и автоматичния деплой: `deploy/deploy.sh` (вика го `deploy/autodeploy.sh`, проект
 `rilievi`): бекъп преди миграция, сонда с маркер `"app":"rilievi"`, `last-good`, дневен бекъп
-(`rilievi-backup.timer`, 14 дни), vhost-ът от репото. Изход 0/3/4/1 — като korpora.
+(`rilievi-backup.timer`), vhost-ът от репото. Изход 0/3/4/1 — като korpora.
+
+Дневният бекъп (`deploy/backup.sh`; одит, 4 ноември 2026 — DEPLOY.md, т. 6): дъмпът на базата и
+моментна снимка на снимките с твърди връзки (`cp -al` — без място; изтритото остава 14 дни, колкото
+дъмповете), последните 14 от всяко; всеки дъмп се възстановява във временен PostgreSQL без мрежа
+(`restore-test.sh`); по избор копие извън сървъра (rsync по SSH — САМО дъмповете и снимките; тайните
+скриптът никога не изнася, копират се веднъж на ръка) и сигнал „жив съм“ — `RILIEVI_OFFSITE`,
+`RILIEVI_HEARTBEAT_URL`, `RILIEVI_ALERT_URL` в `$SHARED/backup.env` (600). Провал →
+`rilievi-backup-alert.service` (OnFailure): `ULTIMO_ERRORE`, критичен ред в журнала, сигнал. Тестът
+(`tests/deploy-backup.test.ts`) пуска истинския скрипт със заместител на docker.

@@ -1,5 +1,8 @@
 import { AGGIUNTI } from './collegamenti-aggiunti.js';
 import { IMPIANTO } from './collegamenti-impianto.js';
+import { PULSANTIERE } from './collegamenti-pulsantiere.js';
+import { QUADRI } from './collegamenti-quadri.js';
+import { SCHEDA_NUOVI } from './collegamenti-scheda.js';
 import type { Collegamento } from './collegamenti.js';
 
 /**
@@ -31,13 +34,14 @@ const BASE: readonly Collegamento[] = [
       { luogo: 'scheda', campo: 'fermate' },
       { luogo: 'oq', campo: 'nFermate' },
       { luogo: 'om', campo: 'fermate' },
+      { luogo: 'dp', campo: 'nPiani' },
       { luogo: 'mn', campo: 'nFermate' },
       { luogo: 'mq', campo: 'numeroFermate' },
       { luogo: 'eg', campo: 'nFermate' },
       { luogo: 'el', campo: 'nFermate' },
       { luogo: 'eo', campo: 'nFermate' },
       { luogo: 'pa', campo: 'piani' },
-      { luogo: 'au', campo: 'fermate' },
+      { luogo: 'db', campo: 'fermate' },
     ],
   },
   {
@@ -47,6 +51,7 @@ const BASE: readonly Collegamento[] = [
     membri: [
       { luogo: 'oq', campo: 'velocita' },
       { luogo: 'om', campo: 'velocita' },
+      { luogo: 'dp', campo: 'velocita' },
       { luogo: 'mn', campo: 'velocita' },
       { luogo: 'mq', campo: 'velocita' },
       { luogo: 'eg', campo: 'velocita' },
@@ -71,11 +76,13 @@ const BASE: readonly Collegamento[] = [
     ],
   },
   {
-    // Ходът в метри; „Corsa [mm]“ на QI Touch е в милиметри — не е тук. Ходът на централата на картата —
-    // махнат (21 октомври 2026). Elettroquadri: „Corsa (m)“ на gearless; geared и oleodinamico — същото.
+    // Ходът в метри; „Corsa [mm]“ на QI Touch е в милиметри — не е тук. Elettroquadri: „Corsa (m)“ на
+    // gearless; geared и oleodinamico — същото. В картата — „Corsa impianto“ на новата централа (3
+    // ноември 2026; хидравлична уредба).
     key: 'corsa',
     tipo: 'numero',
     membri: [
+      { luogo: 'scheda', campo: 'centralinaCorsaImpianto' },
       { luogo: 'oq', campo: 'corsa' },
       { luogo: 'om', campo: 'corsa' },
       { luogo: 'mn', campo: 'corsa' },
@@ -91,9 +98,11 @@ const BASE: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'portataKg' },
       { luogo: 'om', campo: 'portata' },
+      // DMG Pitagora: „Capacità (Kg)“ на дисплея в кабината („Portata (kg/pers.)“ е „630/8“ — не е тук).
+      { luogo: 'dp', campo: 'displayKg' },
       { luogo: 'mq', campo: 'portataNominale' },
       { luogo: 'pa', campo: 'portata' },
-      { luogo: 'au', campo: 'portata' },
+      { luogo: 'db', campo: 'kg' },
     ],
   },
   {
@@ -102,7 +111,9 @@ const BASE: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'capienzaPersone' },
       { luogo: 'om', campo: 'capienza' },
+      { luogo: 'dp', campo: 'displayPersone' },
       { luogo: 'pa', campo: 'persone' },
+      { luogo: 'db', campo: 'persone' },
     ],
   },
   {
@@ -111,16 +122,22 @@ const BASE: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'numeroImpianto' },
       { luogo: 'om', campo: 'nImpianto' },
+      { luogo: 'dp', campo: 'displayImpianto' },
       { luogo: 'pa', campo: 'nImpianto' },
+      { luogo: 'db', campo: 'nImpianto' },
     ],
   },
   {
-    // MoviLift: „Tens.“ в данните на аргано („Fune“). Тяхното „Freno“ не казва дали е напрежение.
+    // MoviLift: „Tens.“ в данните на аргано („Fune“), при хидравлична — на централата („Idraulico“);
+    // Pitagora — „VVVF“ или „HYDRO“. Тяхното „Freno“ не казва дали е напрежение. В картата —
+    // захранването на мотора на новата централа (3 ноември 2026).
     key: 'tensioneMotore',
     tipo: 'numero',
     membri: [
+      { luogo: 'scheda', campo: 'centralinaMotoreV' },
       { luogo: 'oq', campo: 'motVca' },
-      { luogo: 'om', campo: 'tensFune' },
+      { luogo: 'om', campo: 'tensFune', idraulico: 'tensCentralina' },
+      { luogo: 'dp', campo: 'motoreV', idraulico: 'centralinaV' },
     ],
   },
   {
@@ -128,6 +145,7 @@ const BASE: readonly Collegamento[] = [
     tipo: 'numero',
     membri: [
       { luogo: 'oq', campo: 'circuitoFrenoVcc' },
+      { luogo: 'dp', campo: 'frenoTensione' },
       { luogo: 'mn', campo: 'tensioneFreno' },
       { luogo: 'mq', campo: 'tensioneFreno' },
       { luogo: 'eg', campo: 'frenoV' },
@@ -205,6 +223,7 @@ const BASE: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'ubicazioneMacchina', voci: { ALTO: 'ALTO', BASSO: 'BASSO' } },
       { luogo: 'om', campo: 'locMacc', voci: { alto: 'ALTO', basso: 'BASSO' } },
+      { luogo: 'dp', campo: 'posizioneSala', voci: { alto: 'ALTO', basso: 'BASSO' } },
       // Elettroquadri: позицията на централата в машинното (oleodinamico). „Con Locale macchina: Basso /
       // Alto“ на gearless — не: листът се отваря при MRL (без машинно), там е „MRL gearless“ (видът).
       { luogo: 'eo', voci: { centralinaAlto: 'ALTO', centralinaBasso: 'BASSO' } },
@@ -236,4 +255,11 @@ const BASE: readonly Collegamento[] = [
   },
 ];
 
-export const COLLEGAMENTI: readonly Collegamento[] = [...BASE, ...IMPIANTO, ...AGGIUNTI];
+export const COLLEGAMENTI: readonly Collegamento[] = [
+  ...BASE,
+  ...IMPIANTO,
+  ...AGGIUNTI,
+  ...SCHEDA_NUOVI,
+  ...QUADRI,
+  ...PULSANTIERE,
+];

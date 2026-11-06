@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import { Browser, prisma, signedIn, startApp, stopApp } from './harness.js';
+import { Browser, makeAzienda, prisma, signedIn, startApp, stopApp } from './harness.js';
 
 before(startApp);
 after(stopApp);
@@ -74,7 +74,56 @@ describe('the MoviLift panel order', () => {
     // The shared values first, then one sheet in two places, the survey fields, the linked data.
     assert.match(
       page.body,
-      /\/static\/js\/valori\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/moduli-gemelli\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/moduli\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/collegati\.js/,
+      /\/static\/js\/valori\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/moduli-gemelli\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/moduli\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/collegati-luoghi\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/collegati\.js/,
+    );
+  });
+
+  it('fills "Dati cliente" with the data of the company from its settings, each still editable', async () => {
+    const azienda = await makeAzienda();
+    await prisma.azienda.update({
+      where: { id: azienda.id },
+      data: {
+        datiSocietari: {
+          ragioneSociale: 'Ascensori Bianchi S.r.l.',
+          indirizzo: 'Corso Italia 3',
+          cap: '10121',
+          citta: 'Torino',
+          provincia: 'to',
+          telefono: '011 765432',
+          email: 'ordini@bianchi.example',
+          partitaIva: '',
+          sito: '',
+        },
+      },
+    });
+    const { browser } = await signedIn('TECNICO', azienda.id);
+    const page = await browser.get('/schede/nuova');
+    for (const [name, value] of [
+      ['ragioneSociale', 'Ascensori Bianchi S.r.l.'],
+      ['indirizzo', 'Corso Italia 3'],
+      ['citta', 'Torino'],
+      ['prov', 'TO'],
+      ['cap', '10121'],
+      ['telefono', '011 765432'],
+      ['email', 'ordini@bianchi.example'],
+    ] as const) {
+      // A plain field with a value put there for it (data-auto): typing over it keeps what is typed.
+      assert.match(
+        page.body,
+        new RegExp(`name="om-${name}"[^>]*value="${value.replaceAll('.', '\\.')}"[^>]*data-auto=`),
+        name,
+      );
+    }
+    // A different email on the order is saved as written.
+    const id = await create(browser, {
+      ...SURVEY,
+      ...MOVILIFT,
+      'om-email': 'tecnico@bianchi.example',
+    });
+    const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
+    assert.equal(
+      (row.ordineQuadro as { valori: Record<string, string> }).valori.email,
+      'tecnico@bianchi.example',
     );
   });
 

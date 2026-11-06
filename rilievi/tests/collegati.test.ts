@@ -27,6 +27,7 @@ const open = {
   quadroOrdine: 'si',
   'oq-_': '1',
   'om-_': '1',
+  'dp-_': '1',
   'mn-_': '1',
   'mq-_': '1',
   'eg-_': '1',
@@ -36,6 +37,7 @@ const open = {
   'pa-_': '1',
   'au-_': '1',
   'ar-_': '1',
+  'db-_': '1',
 };
 
 describe('numbers in the data the sheet and the orders share', () => {
@@ -291,6 +293,8 @@ describe('the linked data themselves', () => {
       'giriMotore',
       'poli',
       'potenzaMotore',
+      'potenzaHp',
+      'potenzaInverter',
     ]);
     assert.deepEqual(collegatiDelGruppo('pa', groupOf('Trazione e funi', ARGANI)), [
       'funiNumero',
@@ -299,6 +303,16 @@ describe('the linked data themselves', () => {
       'diametroPuleggia',
       'rapportoRiduzione',
     ]);
-    assert.deepEqual(collegatiDelGruppo('oq', groupOf('Accessori', PELAZZA)), []);
+    // What the other panel orders also ask (their accessories, never the sheet).
+    assert.deepEqual(collegatiDelGruppo('oq', groupOf('Accessori', PELAZZA)), [
+      'cavoSchermato',
+      'precablato',
+      'fondoMobile',
+      'pienoCarico',
+    ]);
+    assert.deepEqual(collegatiDelGruppo('oq', groupOf('Tipo di Quadro', PELAZZA)), [
+      'tipoVelocita',
+      'tipoImpianto',
+    ]);
   });
 });

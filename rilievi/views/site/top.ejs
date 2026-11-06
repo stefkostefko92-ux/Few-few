@@ -40,6 +40,11 @@
 <% } %><link rel="icon" href="/static/img/favicon-32.png?v=<%= v %>" type="image/png" sizes="32x32">
 <link rel="icon" href="/static/img/favicon-192.png?v=<%= v %>" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png?v=<%= v %>">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rilievi">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <%# Двата шрифта, които пренареждат текста, ако дойдат след първото рисуване (CLS) — основният текст
    (400) и заглавията (Condensed 600) — тръгват веднага с HTML-а, не чак след fonts.css; адресът е
    точно този от fonts.css. На портала не трябват: там текстът не се мести, а шрифтовете са в кеша. %>

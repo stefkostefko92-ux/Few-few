@@ -9,6 +9,7 @@ import {
   sendError,
 } from '../auth/guards.js';
 import { inScope, scopeFor } from '../auth/scope.js';
+import { eliminazioneIl, GIORNI_PRIMA_DELL_ELIMINAZIONE } from '../aziende/eliminazione.js';
 import { setSchizzi } from '../aziende/funzioni.js';
 import { LOGO_MAX_BYTES, normalizeLogo, type Logo } from '../aziende/logo.js';
 import {
@@ -108,7 +109,7 @@ aziendeRouter.post('/aziende', manage, multipart, requireCsrf, async (req, res) 
   res.redirect(303, `/aziende/${result.id}`);
 });
 
-async function renderShow(
+export async function renderShow(
   req: Request,
   res: Response,
   status: number,
@@ -116,7 +117,13 @@ async function renderShow(
 ): Promise<void> {
   const azienda = await getAzienda(String(req.params.id));
   if (!azienda) return notFound(req, res);
-  res.status(status).render('aziende/show', { azienda, error, maxKb: LOGO_MAX_BYTES / 1024 });
+  res.status(status).render('aziende/show', {
+    azienda,
+    error,
+    maxKb: LOGO_MAX_BYTES / 1024,
+    eliminaIl: azienda.deactivatedAt ? eliminazioneIl(azienda.deactivatedAt) : null,
+    giorniPrimaEliminazione: GIORNI_PRIMA_DELL_ELIMINAZIONE,
+  });
 }
 
 aziendeRouter.get('/aziende/:id', manage, async (req, res) => {

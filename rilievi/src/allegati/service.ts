@@ -162,7 +162,31 @@ export async function aggiungiAllegati(
     }
   }
   if (spostati.length === 0) return { ok: false, error: 'spostamento' };
-  const esito = await prisma.$transaction(async (tx) => {
+  const rimuoviSpostati = () => Promise.all(spostati.map((s) => rm(s.originale, { force: true })));
+  let esito: 'ok' | 'scheda' | 'limite';
+  try {
+    esito = await salvaRighe(scheda, sezione, didascalia, spostati, actorId);
+  } catch (error) {
+    // Транзакцията падна (изтекло чакане на заключена карта, базата): оригиналите не остават без ред.
+    await rimuoviSpostati();
+    throw error;
+  }
+  if (esito !== 'ok') {
+    await rimuoviSpostati();
+    return { ok: false, error: esito };
+  }
+  return { ok: true, ids: spostati.map((s) => s.id) };
+}
+
+/** Редовете в опашката и одитът — една транзакция, с картата проверена пак вътре. */
+function salvaRighe(
+  scheda: { id: string; aziendaId: string },
+  sezione: SectionKey,
+  didascalia: string | null,
+  spostati: ReadonlyArray<{ file: Caricato; id: string }>,
+  actorId: string,
+): Promise<'ok' | 'scheda' | 'limite'> {
+  return prisma.$transaction(async (tx) => {
     const viva = await tx.$queryRaw<Array<{ id: string }>>`
       SELECT id FROM "Scheda" WHERE id = ${scheda.id} AND "deletedAt" IS NULL FOR SHARE`;
     if (viva.length === 0) return 'scheda' as const;
@@ -197,11 +221,6 @@ export async function aggiungiAllegati(
     );
     return 'ok' as const;
   });
-  if (esito !== 'ok') {
-    await Promise.all(spostati.map((s) => rm(s.originale, { force: true })));
-    return { ok: false, error: esito };
-  }
-  return { ok: true, ids: spostati.map((s) => s.id) };
 }
 
 /**
