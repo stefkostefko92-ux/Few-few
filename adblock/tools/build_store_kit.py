@@ -208,7 +208,7 @@ Chrome Web Store **One Stop Support** → опцията за номинация
 
 ## 10. Microsoft Edge Add-ons (същият zip)
 
-Partner Center → https://partner.microsoft.com/dashboard/microsoftedge/ → Create new extension → качи `supreme-adblock-{ver}.zip` (същия като за Chrome). Category Productivity; privacy/website/support — като горе. Edge иска описание за всеки език в `_locales` — ползвай САМО `listing/<код>.txt` (дългото описание от т. 1 споменава Chrome, а Edge 1.1.2 забранява други браузъри). Search terms (≤7): `ad blocker` · `block ads` · `youtube ad blocker` · `tracker blocker` · `cookie banner blocker` · `popup blocker` · `Carbon Stealth`. Screenshots — същите. Notes for certification — бележката от т. 7 плюс: домейните идват от мрежата, защото рекламните мрежи ги сменят всеки ден; файлът е подписан и съдържа само имена на домейни; листите от автора са по избор.
+Partner Center → https://partner.microsoft.com/dashboard/microsoftedge/ → Create new extension → качи `supreme-adblock-{ver}.zip` (същия като за Chrome). Category Productivity; privacy/website/support — като горе. Edge иска описание за всеки език в `_locales` — ползвай САМО `listing/<код>.txt` (дългото описание от т. 1 споменава Chrome, а Edge 1.1.2 забранява други браузъри). Search terms (≤7): `ad blocker` · `block ads` · `youtube ad blocker` · `tracker blocker` · `cookie banner blocker` · `popup blocker` · `Carbon Stealth`. Screenshots — същите; логото — `edge/logo_300x300.png`. Notes for certification — бележката от т. 7 плюс: домейните идват от мрежата, защото рекламните мрежи ги сменят всеки ден; файлът е подписан и съдържа само имена на домейни; листите от автора са по избор.
 
 ## 11. Firefox Add-ons (AMO)
 
@@ -236,6 +236,10 @@ for i in range(1, 6):
 for i in range(1, 6):
     subprocess.run(["convert", str(A / "store" / "screenshots" / f"screenshot-{i}.png"), "-resize", "800x500", "-strip",
                     str(KIT / "opera" / f"screenshot-{i}.png")], check=True)
+# Edge Add-ons: логото — минимум 128×128, препоръчано 300×300 (docs/EDGE.md) — от иконата 512 на сайта.
+(KIT / "edge").mkdir(exist_ok=True)
+subprocess.run(["convert", str(A / "server" / "icon-512.png"), "-resize", "300x300", "-strip",
+                str(KIT / "edge" / "logo_300x300.png")], check=True)
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}.zip", KIT / f"supreme-adblock-{ver}.zip")
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}-firefox.zip", KIT / f"supreme-adblock-{ver}-firefox.zip")
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}-source.zip", KIT / f"supreme-adblock-{ver}-source.zip")
