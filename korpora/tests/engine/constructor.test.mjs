@@ -2,16 +2,16 @@
 // with a fixed shelf between them, each cell open, with shelves, with drawers or with a hanging rail, and doors over
 // one cell or several. What it must keep: the sizes asked for, the fixed shelves joined to both panels, no hole on
 // another, fronts and hinges clear of the fixed shelves, wide carcasses split at a column, every output producible —
-// and the templates turned into it (the „Персонализирай“ button) building with the same outside.
+// and the templates turned into it (the „Персонализирай“ button) building with the same outside. What the CNC must
+// never get from it: constructor-safety.test.mjs.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { registerFixtures, outputMeta } from './fixtures.mjs';
-import { checkModel } from './check.mjs';
+import { checkModel, assertNoHoleOnHole } from './check.mjs';
 import { buildModel, normalizeSpec } from '../../engine/model.js';
 import { TYPES, TYPE_ORDER, typeDims } from '../../engine/types.js';
 import { templateLayout, CONVERTIBLE, LAYOUT_LIMITS } from '../../engine/layout.js';
 import { RAIL } from '../../engine/rail.js';
-import { MIN_WEB } from '../../engine/joinery.js';
 import { buildBom } from '../../engine/bom.js';
 import { nest } from '../../engine/nest.js';
 import { toGcode, cncBlockers } from '../../engine/cam.js';
@@ -26,22 +26,6 @@ const col = (cells, fronts = [], w = null) => ({ w, cells, fronts });
 const byKey = (m, key) => m.parts.find((p) => p.key === key);
 const errors = (m) => m.warnings.filter((w) => w.level === 'error').map((w) => w.text);
 const notInfo = (m) => m.warnings.filter((w) => w.level !== 'info').map((w) => `[${w.level}] ${w.text}`);
-
-// Two different holes of one part keep MIN_WEB of board between them (in the plan of the face), and no spot is drilled
-// twice by two different joints (addHoleOnce merges what may share a hole; two screws never go into one).
-function assertNoHoleOnHole(m, label) {
-  for (const p of m.parts) {
-    const holes = p.features.filter((f) => f.type === 'hole');
-    for (let a = 0; a < holes.length; a++) {
-      for (let b = a + 1; b < holes.length; b++) {
-        const [h, k] = [holes[a], holes[b]];
-        assert.ok(!(h.u === k.u && h.v === k.v && h.d === k.d), `${label}: ${p.name} ${h.kind} and ${k.kind} drilled twice at ${h.u},${h.v}`);
-        const web = Math.hypot(h.u - k.u, h.v - k.v) - (h.d + k.d) / 2;
-        assert.ok(web >= MIN_WEB - 0.01, `${label}: ${p.name} ${h.kind} at ${h.u},${h.v} and ${k.kind} at ${k.u},${k.v} leave ${web.toFixed(1)} mm`);
-      }
-    }
-  }
-}
 
 test('the free carcass is a type of its own, in the form and at its defaults without a warning', () => {
   assert.ok(TYPE_ORDER.includes('custom'));
@@ -85,14 +69,6 @@ test('cells: a fixed shelf between every two, at the heights asked for, joined w
   }
   checkModel(m, 'cells');
   assertNoHoleOnHole(m, 'cells');
-});
-
-test('fixed shelves at one height on both faces of a partition do not share or touch a hole', () => {
-  const cells = [{ h: 700, fill: 'open' }, { fill: 'open' }];
-  const m = buildModel(custom({ grid: { columns: [col(cells), col(cells), col(cells)] } }));
-  assert.equal(m.parts.filter((p) => p.role === 'divider').length, 3);
-  assertNoHoleOnHole(m, 'same heights');
-  assert.deepEqual(errors(m), []);
 });
 
 test('fill: drawers in their cell over a fixed shelf, the rail under the top of its cell, shelves inside theirs', () => {

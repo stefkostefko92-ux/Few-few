@@ -8,7 +8,7 @@ import { edgeLabels, cutSize } from './panel.js';
 import { STOCK, decorName } from './materials.js';
 import { esc, neg } from './util.js';
 
-const KEY = new Set(['cup', 'cup-dowel', 'plate', 'handle', 'slide', 'confirmat', 'pilot', 'screw']);
+const KEY = new Set(['cup', 'cup-dowel', 'plate', 'handle', 'slide', 'confirmat', 'dowel', 'pilot', 'screw']);
 const LETTERS = 'ABCDEFGHJKLMNPRSTUVWXYZ';
 
 export function holeLetters(holes) {

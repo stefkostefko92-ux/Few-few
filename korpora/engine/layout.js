@@ -79,7 +79,9 @@ export function normalizeLayout(raw) {
 }
 
 // Sizes along one direction: the ones asked for, the rest shared by the „авто“ ones; what does not fit is shared in
-// proportion. `over` is true when the asked sizes had to change (the caller warns).
+// proportion — the „авто“ ones counted at the minimum — and none goes under the minimum: what would, keeps it, and the
+// others share the rest. `over` is true when the asked sizes had to change (the caller warns). The caller makes sure
+// that avail holds every size at the minimum (fitCount).
 export function resolveSizes(asked, avail, min) {
   const fixed = asked.reduce((a, v) => a + (v ?? 0), 0);
   const autos = asked.filter((v) => v === null).length;
@@ -87,11 +89,25 @@ export function resolveSizes(asked, avail, min) {
     const each = (avail - fixed) / autos;
     return { sizes: asked.map((v) => v ?? each), over: false };
   }
-  // everything in proportion: the „авто“ ones as the minimum, the asked ones as asked
   const want = asked.map((v) => v ?? min);
   const total = want.reduce((a, v) => a + v, 0);
   const over = Math.abs(total - avail) > 0.5;
-  return { sizes: want.map((v) => (v * avail) / total), over };
+  if (total <= avail) return { sizes: want.map((v) => (v * avail) / total), over };
+  const floor = new Set();
+  for (;;) {
+    const room = avail - floor.size * min;
+    const rest = want.reduce((a, v, i) => a + (floor.has(i) ? 0 : v), 0);
+    const low = want.flatMap((v, i) => (!floor.has(i) && (v * room) / rest < min ? [i] : []));
+    if (!low.length || floor.size + low.length === want.length) return { sizes: want.map((v, i) => (floor.has(i) ? min : (v * room) / rest)), over };
+    for (const i of low) floor.add(i);
+  }
+}
+
+// How many of n sizes (columns or cells, in order) fit at the minimum: room(k) is the space k of them get.
+export function fitCount(n, room, min) {
+  let k = n;
+  while (k > 1 && room(k) < k * min) k -= 1;
+  return k;
 }
 
 // Columns into as few carcasses as fit MAX_CARCASS_W, split only between columns and as evenly as can be (the widest

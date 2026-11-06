@@ -149,8 +149,8 @@ function shelfSag(spanMm, depthMm, tMm, loadKg) {
 
 function checkModel(ctx, spec) {
   const { parts } = ctx;
-  // shelves
-  for (const p of parts.filter((x) => x.role === 'shelf')) {
+  // shelves, the fixed ones of a free carcass too (simply supported, as the adjustable ones: on the safe side)
+  for (const p of parts.filter((x) => x.role === 'shelf' || x.role === 'divider')) {
     const loadKg = ((p.L / 100) * (p.W / 100)) * spec.shelfLoad;
     const sag = shelfSag(p.L, p.W, p.T, loadKg);
     if (sag.ratio > 1) ctx.warn('warn', `${p.name}: провисване ≈ ${dimTxt(sag.mm)} mm при ${Math.round(loadKg)} kg (${dimTxt(spec.shelfLoad)} kg/dm²) — над 0,5 % от разстоянието между опорите (${dimTxt(sag.limit)} mm). Добавете делител или стеснете колоната.`);
@@ -181,17 +181,18 @@ function checkModel(ctx, spec) {
   // horizontal holes are not cut by the 3-axis router
   const edge = parts.reduce((a, p) => a + p.edgeOps.reduce((b, e) => b + e.count, 0), 0);
   if (edge) ctx.warn('info', `${plural(edge, 'хоризонтален отвор', 'хоризонтални отвора')} в челата — пробиват се на хоризонтална машина или с шаблон, не са в G-кода.`);
-  // confirmat heads on visible faces get caps in the colour of the panel
+  // confirmat heads on visible faces get caps in the colour of the panel: by the role of the panel, or marked where
+  // they are made (the heads of a fixed shelf's confirmats in the next column, cells.js)
   const caps = new Map();
   for (const p of parts) {
-    if (!CAP_ROLES.has(p.role) && !CAP_KEYS.has(p.key)) continue;
-    const n = p.features.filter((f) => f.type === 'hole' && f.kind === 'confirmat').length;
+    const byRole = CAP_ROLES.has(p.role) || CAP_KEYS.has(p.key);
+    const n = p.features.filter((f) => f.type === 'hole' && f.kind === 'confirmat' && (byRole || f.cap)).length;
     if (n) caps.set(p.decor, (caps.get(p.decor) ?? 0) + n);
   }
   for (const [decor, qty] of caps) ctx.hw(`caps:${decor}`, { name: `Капачка за конфирмат, ${decorName(decor)}`, qty, unit: 'бр.', group: 'Крепежи' });
 }
 
-function checkHoles(ctx, p, spec) {
+export function checkHoles(ctx, p, spec) {
   const holes = p.features.filter((f) => f.type === 'hole');
   const grooves = p.features.filter((f) => f.type === 'groove');
   const bores = edgeBores(p);
@@ -220,7 +221,8 @@ function checkHoles(ctx, p, spec) {
       const dist = Math.hypot(a.u - b.u, a.v - b.v);
       // holes exactly MIN_WEB apart are fine: 1e-6 absorbs the floating-point error of positions on the 0,1 mm grid
       if (dist - (a.d + b.d) / 2 < MIN_WEB - 1e-6) {
-        ctx.warn(a.kind === 'cup' && b.kind === 'cup' ? 'error' : 'warn', `${p.name}: отворите Ø${dimTxt(a.d)} „${purposeOf(a.kind)}“ и Ø${dimTxt(b.d)} „${purposeOf(b.kind)}“ при u ${dimTxt(a.u)}, v ${dimTxt(a.v)} се застъпват — преместете единия.`);
+        // the drill would break into the other hole, or two screws meet in it: the CNC files are withheld (fail closed)
+        ctx.warn('error', `${p.name}: отворите Ø${dimTxt(a.d)} „${purposeOf(a.kind)}“ и Ø${dimTxt(b.d)} „${purposeOf(b.kind)}“ при u ${dimTxt(a.u)}, v ${dimTxt(a.v)} се застъпват — преместете единия.`);
       }
     }
   }

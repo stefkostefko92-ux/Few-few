@@ -4,7 +4,7 @@
 import { panel, groove, edgeHoles } from './panel.js';
 import { r1, dimTxt } from './util.js';
 import { slideModel, slideSystemOf, slideLength } from './hardware.js';
-import { GROOVE, HDF_T, CONFIRMAT, FRONT_GAP_Z, MIN_WEB, confirmat, addHoleOnce, hasHole } from './joinery.js';
+import { GROOVE, HDF_T, CONFIRMAT, FRONT_GAP_Z, MIN_WEB, confirmat, addHoleOnce, hasHole, taken } from './joinery.js';
 import { mountHandle } from './fronts.js';
 import { STOCK } from './materials.js';
 import { sideStabiliser } from './stabiliser.js';
@@ -60,17 +60,21 @@ export function buildDrawers(ctx, o, a) {
   const floor = sys.mount === 'under' ? sys.clearBelow + (stab?.below ?? 0) - sys.bottomUp : 6;
   const L = sys.drawerLength(NL);
   const fh = r1((dzH - drawers * gap) / drawers);
+  if (!(fh > 0)) {
+    ctx.warn('error', `${nm(`Колона ${i + 1}`)}: ${drawers} чекмеджета не се побират в ${dimTxt(r1(dzH))} mm.`);
+    return;
+  }
   // the top edges of the box sides, front and back show whenever the drawer is open: banded like the carcass
   const box = { stock: boxStock.id, decor: 'demo:white', grain: false, module: mod, bands: { '+y': o.bands?.carcass ?? 1 } };
   const product = family.products?.[NL] ?? null;
   const label = product ? `${product.brand ?? family.brand} ${product.sku ?? ''}`.trim() : `${family.brand} ${NL} mm`;
   // height of the slide's screw axis for a box starting at yb
   const slideY = (yb) => r1(sys.mount === 'under' ? yb + sys.bottomUp + sys.axisAboveBottom : yb + sys.axisAboveBox);
-  // The slides on the two faces of a partition share its through holes. Where this drawer's pilots would come closer
-  // than MIN_WEB to the pilots the column on the other face has drilled there, its box starts sys.hole.d + MIN_WEB
-  // higher: the box gets that much lower, the front and the room above the box (TOP_GAP) stay.
-  const otherSlides = a.left?.role === 'partition' ? a.left.features.filter((f) => f.kind === 'slide') : [];
-  const meets = (ys) => sys.holes[NL].some((zf2) => otherSlides.some((f) => Math.hypot(f.world[1] - ys, f.world[2] - (zEnd - zf2)) < (f.d + sys.hole.d) / 2 + MIN_WEB - 0.01));
+  // The slides on the two faces of a partition share its through holes, and the hinge plates of a door on its other
+  // face are drilled through too. Where this drawer's pilots would come closer than MIN_WEB to a hole already drilled
+  // for another fitting (or share it), its box starts sys.hole.d + MIN_WEB higher, as often as it takes: the box gets
+  // that much lower, the front and the room above the box (TOP_GAP) stay; a box left too low is an error below.
+  const meets = (ys) => [[a.left, xa], [a.right, xb]].some(([cp, fx]) => sys.holes[NL].some((zf2) => taken(cp, [fx, ys, zEnd - zf2], sys.hole.d)));
   for (let k = 0; k < drawers; k++) {
     const y0 = dz0 + gap / 2 + k * (fh + gap);
     const y1 = y0 + fh;
@@ -82,9 +86,9 @@ export function buildDrawers(ctx, o, a) {
       bands: bf ? { '+x': bf, '-x': bf, '+y': bf, '-y': bf } : {}, explode: [0, 0, 2.2],
     });
     mountHandle(ctx, o, front, { orientation: 'horizontal', kind: o.kind });
-    const yb0 = Math.max(y0 + 12, floorY + floor);
-    const yb = meets(slideY(yb0)) ? yb0 + sys.hole.d + MIN_WEB : yb0;
     const yt = y1 - TOP_GAP;
+    let yb = Math.max(y0 + 12, floorY + floor);
+    while (meets(slideY(yb)) && yb < yt - MIN_BOX) yb += sys.hole.d + MIN_WEB;
     const hb = r1(yt - yb);
     if (hb < MIN_BOX) {
       ctx.warn('error', `${front.name}: кутията на чекмеджето би била ${dimTxt(hb)} mm (нужни са поне ${MIN_BOX}) — намалете броя на чекмеджетата или увеличете височината.`);
