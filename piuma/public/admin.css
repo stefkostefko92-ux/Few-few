@@ -784,23 +784,6 @@ form.stack .grid2,
   color: var(--data);
 }
 
-/* ---------- „Отговор по ключова дума“ ----------
-   Адресът на webhook-а и бележката са дълги неразделими низове (URL в моноширинен шрифт):
-   без пренасяне те разтягат панела, а полетата на формата излизат отдясно на телефон. */
-.replies-panel {
-  min-width: 0;
-}
-.replies-panel .mono,
-.replies-panel .preview {
-  overflow-wrap: anywhere;
-}
-.replies-panel select,
-.replies-panel textarea {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-}
-
 /* ---------- празно състояние ---------- */
 .empty {
   display: grid;

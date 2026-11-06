@@ -192,46 +192,6 @@ PIUMA_ENV_FILE=/etc/piuma/agent.env node tools/social/piuma.mjs insights --brand
 
 ---
 
-## 6а. „Отговор по ключова дума“ (по избор — изключено по подразбиране)
-
-Коментар с обявена дума под наш пост → **едно** лично съобщение с одобрен текст (официален
-Private Replies API). Пълната спецификация, правното основание и абзацът за политиката:
-`docs/private-replies.md`. Включва се само ако всичко по-долу е готово:
-
-1. **Meta:**
-   - приложението е **Live**;
-   - App Review е одобрил `instagram_business_manage_comments`;
-   - полето `comments` е с **Advanced Access**.
-2. **Политиката за поверителност** с абзаца от спецификацията е публикувана, а адресът ѝ е
-   записан в App Dashboard.
-3. **`.env` на сървъра:**
-
-   ```ini
-   IG_SCOPES=instagram_business_basic,instagram_business_content_publish,instagram_business_manage_insights,instagram_business_manage_comments
-   IG_WEBHOOK_VERIFY_TOKEN=<openssl rand -hex 24>
-   REPLY_PRIVACY_URL=<адресът на политиката>
-   REPLY_CONTACT_EMAIL=info@carbonstealth.eu
-   PRIVATE_REPLIES_RETENTION_DAYS=9   # до 30 — решение на собственика (жалби)
-   ```
-
-4. **Деплой**, после в App Dashboard → Webhooks → Instagram:
-   - Callback URL `https://piuma.carbonstealth.eu/webhooks/instagram`;
-   - Verify Token = същият низ;
-   - абонамент за полето `comments`.
-
-   nginx-ът вече пуска всичко под `/` към приложението, затова нов `location` не трябва.
-
-5. **В панела:**
-   - **Акаунти** → свържи акаунта отново (за новото право) → „Отговори“ → „Включи
-     известията за коментари“;
-   - правило за конкретен пост, чийто надпис обявява думата;
-   - одобрение от **втори** човек.
-
-Проверка: `curl -s "https://piuma.carbonstealth.eu/webhooks/instagram?hub.mode=subscribe&hub.verify_token=<токена>&hub.challenge=42"`
-връща `42`. Грешен токен → 403. Без `IG_WEBHOOK_VERIFY_TOKEN` → 404.
-
----
-
 ## 7. Проверка, че наистина работи
 
 ```bash

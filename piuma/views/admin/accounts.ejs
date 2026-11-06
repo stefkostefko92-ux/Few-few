@@ -37,7 +37,6 @@
     </td>
     <td class="num" data-label="<%= t('brands.posts') %>"><a href="/admin/posts?brand=<%= a.brand.slug %>"><%= a._count.posts %></a></td>
     <td class="row full">
-      <a class="btn ghost small" href="/admin/accounts/<%= a.id %>/replies"><%- icon('metric-comments', { class: 'ic-sm' }) %> <%= t('accounts.replies') %></a>
       <% if (a.status === 'ACTIVE') { %>
         <form method="post" action="/admin/accounts/<%= a.id %>/quota" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('quota', { class: 'ic-sm' }) %> <%= t('accounts.quota') %></button></form>
         <% if (can('accounts:manage')) { %>

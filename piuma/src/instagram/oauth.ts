@@ -74,7 +74,7 @@ export async function fetchProfile(
   fetchImpl?: typeof fetch,
 ): Promise<InstagramProfile> {
   return instagramRequest(`${GRAPH_HOST}/${cfg.IG_GRAPH_VERSION}/me`, profileSchema, {
-    query: { fields: 'id,user_id,username,account_type', access_token: accessToken },
+    query: { fields: 'id,username,account_type', access_token: accessToken },
     fetchImpl,
   });
 }

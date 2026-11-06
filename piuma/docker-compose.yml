@@ -8,8 +8,7 @@
 # Тайните НЕ са тук — идват от `.env` до този файл (mode 600 на сървъра, никога в репото).
 # Задължителни: POSTGRES_PASSWORD · TOKEN_ENC_KEY · IG_APP_ID · IG_APP_SECRET ·
 # IG_REDIRECT_URI · PUBLIC_BASE_URL. По избор: ANTHROPIC_API_KEY (без него автопилотът
-# не пише чернови), HTTP_PORT (по подразбиране 4310), IG_WEBHOOK_VERIFY_TOKEN +
-# REPLY_PRIVACY_URL („Отговор по ключова дума“ — DEPLOY.md §6а). Празно = липсва.
+# не пише чернови), HTTP_PORT (по подразбиране 4310).
 name: piuma
 
 x-logging: &logging
@@ -33,13 +32,6 @@ x-app-env: &app-env
   IG_APP_SECRET: ${IG_APP_SECRET:?липсва IG_APP_SECRET}
   IG_REDIRECT_URI: ${IG_REDIRECT_URI:?липсва IG_REDIRECT_URI}
   IG_GRAPH_VERSION: ${IG_GRAPH_VERSION:-v24.0}
-  IG_SCOPES: ${IG_SCOPES:-instagram_business_basic,instagram_business_content_publish,instagram_business_manage_insights}
-  # „Отговор по ключова дума“ (docs/private-replies.md) — без verify token е изключено.
-  IG_WEBHOOK_VERIFY_TOKEN: ${IG_WEBHOOK_VERIFY_TOKEN:-}
-  REPLY_PRIVACY_URL: ${REPLY_PRIVACY_URL:-}
-  REPLY_CONTACT_EMAIL: ${REPLY_CONTACT_EMAIL:-info@carbonstealth.eu}
-  PRIVATE_REPLIES_PER_HOUR: ${PRIVATE_REPLIES_PER_HOUR:-60}
-  PRIVATE_REPLIES_RETENTION_DAYS: ${PRIVATE_REPLIES_RETENTION_DAYS:-9}
   ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
   TOTP_ISSUER: ${TOTP_ISSUER:-Piuma}
   # Къде води „Поискай достъп“ на витрината (страница за контакт или mailto:).

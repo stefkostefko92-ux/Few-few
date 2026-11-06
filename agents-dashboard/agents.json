@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 431
+        "lessons": 436
       },
       "evolution": [
         {
@@ -615,9 +615,31 @@
           "date": "2026-11-04",
           "event": "v38.4 — учене",
           "detail": "Научи: TDM изключението не спасява достъп в нарушение на условията на платформа — Дир. 2019/79… (+57 още)"
+        },
+        {
+          "version": "38.7.0",
+          "date": "2026-11-06",
+          "event": "v38.7 — учене",
+          "detail": "Научи: AI Act чл. 2(12) изключва системите под свободен лиценз, но изрично НЕ тези по чл. 5 и … (+2 още)"
+        },
+        {
+          "version": "38.9.0",
+          "date": "2026-11-06",
+          "event": "v38.9 — учене",
+          "detail": "Научи: ЗЕС чл. 261, ал. 5 забранява съобщение за маркетинг дори при дадено съгласие, ако изпра… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-06",
+          "type": "learning",
+          "summary": "Научи: „ЗЕС чл. 261, ал. 5 забранява съобщение за маркетинг дори при дадено съгласие, ако изпра…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-06",
+          "type": "learning",
+          "summary": "Научи: „AI Act чл. 2(12) изключва системите под свободен лиценз, но изрично НЕ тези по чл. 5 и …\" (+2 още)"
+        },
         {
           "date": "2026-11-04",
           "type": "quarantine",
@@ -1190,7 +1212,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 620
+        "lessons": 625
       },
       "evolution": [
         {
@@ -2023,8 +2045,32 @@
         },
         {
           "version": "56.1.0",
-          "date": "2026-11-06",
+          "date": "2026-11-04",
           "event": "v56.1 — учене",
+          "detail": "Научи: Публичният HTML артефакт на флота (build-artifact.mjs) включва кратките резюмета на поу…"
+        },
+        {
+          "version": "56.2.0",
+          "date": "2026-11-04",
+          "event": "v56.2 — учене",
+          "detail": "Научи: guard-readonly блокира ревюър агента дори при пренасочване към scratchpad файл, когато …"
+        },
+        {
+          "version": "56.4.0",
+          "date": "2026-11-06",
+          "event": "v56.4 — учене",
+          "detail": "Научи: OpenSEO standalone (password mode) пуска първата регистрация без проверка и показва неа… (+1 още)"
+        },
+        {
+          "version": "56.5.0",
+          "date": "2026-11-06",
+          "event": "v56.5 — учене",
+          "detail": "Научи: При Instagram API with Instagram Login полето id от GET /me е app-scoped ID, а user_id …"
+        },
+        {
+          "version": "56.6.0",
+          "date": "2026-11-06",
+          "event": "v56.6 — учене",
           "detail": "Научи: zod 3.25.76 z.object({...}).catchall(...) върху JSON.parse вход с ключ \"__proto__\" не з…"
         }
       ],
@@ -2033,6 +2079,26 @@
           "date": "2026-11-06",
           "type": "learning",
           "summary": "Научи: „zod 3.25.76 z.object({...}).catchall(...) върху JSON.parse вход с ключ \"__proto__\" не з…\""
+        },
+        {
+          "date": "2026-11-06",
+          "type": "learning",
+          "summary": "Научи: „При Instagram API with Instagram Login полето id от GET /me е app-scoped ID, а user_id …\""
+        },
+        {
+          "date": "2026-11-06",
+          "type": "learning",
+          "summary": "Научи: „OpenSEO standalone (password mode) пуска първата регистрация без проверка и показва неа…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-04",
+          "type": "learning",
+          "summary": "Научи: „guard-readonly блокира ревюър агента дори при пренасочване към scratchpad файл, когато …\""
+        },
+        {
+          "date": "2026-11-04",
+          "type": "learning",
+          "summary": "Научи: „Публичният HTML артефакт на флота (build-artifact.mjs) включва кратките резюмета на поу…\""
         },
         {
           "date": "2026-11-04",
@@ -4298,6 +4364,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-06",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „DataForSEO е премахнал $100 месечния минимум за Backlinks и LLM Mentions API от 2026-07…\" (+1)"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -6787,7 +6858,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 273
+        "lessons": 275
       },
       "evolution": [
         {
@@ -7197,9 +7268,20 @@
           "date": "2026-11-04",
           "event": "v24.5 — учене",
           "detail": "Научи: www.openssh.com/releasenotes.html отговаря с 301 от OpenBSD httpd, затова curl без -L в… (+37 още)"
+        },
+        {
+          "version": "24.7.0",
+          "date": "2026-11-06",
+          "event": "v24.7 — учене",
+          "detail": "Научи: Docker тагът на OpenSEO standalone v0.1.25 сочи към друг digest от sha-78c5d85 (по-нов … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-06",
+          "type": "learning",
+          "summary": "Научи: „Docker тагът на OpenSEO standalone v0.1.25 сочи към друг digest от sha-78c5d85 (по-нов …\" (+1 още)"
+        },
         {
           "date": "2026-11-04",
           "type": "quarantine",
@@ -8476,7 +8558,7 @@
           "ffmpeg/WhisperX/auto-editor — скриптуем clip pipeline",
           "Caveman стил — телеграфен изход с точни технически токени"
         ],
-        "lessons": 165
+        "lessons": 166
       },
       "evolution": [
         {
@@ -8856,9 +8938,20 @@
           "date": "2026-11-04",
           "event": "v21.0 — учене",
           "detail": "Научи: Бриф от външен канал може да крие инструкции в HTML коментар (автопубликуване, ексфилтр… (+6 още)"
+        },
+        {
+          "version": "21.1.0",
+          "date": "2026-11-06",
+          "event": "v21.1 — учене",
+          "detail": "Научи: Private Reply (Instagram) стига до Inbox на коментиращия, ако той следва акаунта, иначе…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-06",
+          "type": "learning",
+          "summary": "Научи: „Private Reply (Instagram) стига до Inbox на коментиращия, ако той следва акаунта, иначе…\""
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -10030,7 +10123,7 @@
           "developer.apple.com / developer.android.com — App Review, Privacy Manifest, AAB, target API, Data Safety",
           "Bubblewrap / Capacitor / EAA (EN 301 549) — двата пътя на обвиване + достъпност"
         ],
-        "lessons": 217
+        "lessons": 218
       },
       "evolution": [
         {
@@ -10356,9 +10449,20 @@
           "date": "2026-11-04",
           "event": "v20.8 — учене",
           "detail": "Научи: Репо стек: `medqr/mobile` е **Capacitor 6**, `appId: eu.carbonstealth.medqr`, `server.u… (+4 още)"
+        },
+        {
+          "version": "20.9.0",
+          "date": "2026-11-05",
+          "event": "v20.9 — учене",
+          "detail": "Научи: Във WebKit bug 290847 линк с Content-Disposition attachment (и inline PDF) в iOS home-s…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-05",
+          "type": "learning",
+          "summary": "Научи: „Във WebKit bug 290847 линк с Content-Disposition attachment (и inline PDF) в iOS home-s…\" · 1 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -14107,7 +14211,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 302
+        "lessons": 305
       },
       "evolution": [
         {
@@ -14241,9 +14345,20 @@
           "date": "2026-11-02",
           "event": "v29.6 — учене",
           "detail": "Научи: Рутерът в teams.mjs брои ключовете на екипа като обединение от team.keys и ключовете на… (+1 още)"
+        },
+        {
+          "version": "29.9.0",
+          "date": "2026-11-06",
+          "event": "v29.9 — учене",
+          "detail": "Научи: Теглата на k2-fsa/OmniVoice (TTS за 646 езика, вкл. bg) са CC-BY-NC, а аудио токенизато… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-06",
+          "type": "learning",
+          "summary": "Научи: „Теглата на k2-fsa/OmniVoice (TTS за 646 езика, вкл. bg) са CC-BY-NC, а аудио токенизато…\" (+2 още)"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -15936,7 +16051,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 175
+        "lessons": 177
       },
       "evolution": [
         {
@@ -15980,9 +16095,20 @@
           "date": "2026-11-04",
           "event": "v27.2 — учене",
           "detail": "Научи: guard-exfil DATA_FILE_SEND блокира curl с --data поле на име password/token дори към lo… (+2 още)"
+        },
+        {
+          "version": "27.4.0",
+          "date": "2026-11-06",
+          "event": "v27.4 — учене",
+          "detail": "Научи: Официалният PyPI пакет omnivoice 0.2.1 (k2-fsa) тегли модела със snapshot_download без … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-06",
+          "type": "learning",
+          "summary": "Научи: „Официалният PyPI пакет omnivoice 0.2.1 (k2-fsa) тегли модела със snapshot_download без …\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
