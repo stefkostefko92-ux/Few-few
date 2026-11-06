@@ -10,20 +10,21 @@ export default function Terms(): React.ReactElement {
       </header>
       <article>
         <h1>Terms of Service</h1>
-        <p className="muted">Last updated: 2026-06-26</p>
+        <p className="muted">Last updated: 2026-10-03</p>
 
         <h2>1. The service and operator (Impressum)</h2>
         <p>
           Nexus Dominion (the "Game") is a free-to-play browser MMORPG. The Game is operated by:
         </p>
         <address style={{ fontStyle: 'normal' }}>
-          <strong>{OPERATOR.legalName}</strong> (trading as Nexus Dominion)<br />
+          <strong>{OPERATOR.legalName}</strong> (Bulgarian name: <span lang="bg">{OPERATOR.legalNameBg}</span>), a {OPERATOR.legalForm}, trading as {OPERATOR.tradingName}<br />
           {OPERATOR.address.street}, {OPERATOR.address.postal} {OPERATOR.address.city}, {OPERATOR.address.country}<br />
-          VAT/EIK: {OPERATOR.vat} · Registry: {OPERATOR.registry}<br />
+          Company no. (EIK): {OPERATOR.eik} · VAT no.: {OPERATOR.vat} · Registered in the {OPERATOR.registry}<br />
           Legal representative: {OPERATOR.representative}<br />
+          Phone: <a href={`tel:${OPERATOR.phone.replace(/\s/g, '')}`}>{OPERATOR.phone}</a><br />
           Support: <a href={`mailto:${OPERATOR.email.support}`}>{OPERATOR.email.support}</a>
-          · Legal: <a href={`mailto:${OPERATOR.email.legal}`}>{OPERATOR.email.legal}</a>
-          · Abuse: <a href={`mailto:${OPERATOR.email.abuse}`}>{OPERATOR.email.abuse}</a>
+          {' · '}Legal: <a href={`mailto:${OPERATOR.email.legal}`}>{OPERATOR.email.legal}</a>
+          {' · '}Abuse: <a href={`mailto:${OPERATOR.email.abuse}`}>{OPERATOR.email.abuse}</a>
         </address>
         <p>
           By registering an account you agree to these terms.
