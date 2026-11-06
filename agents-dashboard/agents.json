@@ -15974,7 +15974,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 175
+        "lessons": 177
       },
       "evolution": [
         {
@@ -16018,9 +16018,20 @@
           "date": "2026-11-04",
           "event": "v27.2 — учене",
           "detail": "Научи: guard-exfil DATA_FILE_SEND блокира curl с --data поле на име password/token дори към lo… (+2 още)"
+        },
+        {
+          "version": "27.4.0",
+          "date": "2026-11-06",
+          "event": "v27.4 — учене",
+          "detail": "Научи: Официалният PyPI пакет omnivoice 0.2.1 (k2-fsa) тегли модела със snapshot_download без … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-06",
+          "type": "learning",
+          "summary": "Научи: „Официалният PyPI пакет omnivoice 0.2.1 (k2-fsa) тегли модела със snapshot_download без …\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
