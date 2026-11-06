@@ -56,11 +56,11 @@ Browsing data never leaves the device. The only automatic network request to us 
 
 Both are free, Manifest V3, with EasyList and EasyPrivacy and no telemetry. uBlock Origin Lite's built-in rules update with each extension release (since June 2026 it can also subscribe to external lists); Supreme AdBlock also updates signed filter data twice a day and adds list-free Smart Detection, a dedicated YouTube pipeline and cookie-banner handling.
 
-## Measured results (25 September 2026)
+## Measured results (27 October 2026)
 
-Same conditions for every blocker (fresh profile, default settings, 60 s set-up, headless Chromium, two identical runs; tools/compare_blockers.mjs):
-- adblock.turtlecute.org (hosts blocked of 132): Supreme AdBlock 130, Ghostery 98, uBlock Origin Lite 82, AdGuard 24–26, Adblock Plus 25–26, no blocker 4.
-- adblock-tester.com (score of 100): Ghostery 96, Supreme AdBlock 95, uBlock Origin Lite 91, AdGuard 77, Adblock Plus 77, no blocker 48.
+Same conditions for every blocker (fresh profile, default settings, 60 s set-up, headless Chromium, two runs; tools/compare_blockers.mjs). Versions: Supreme AdBlock 5.7.0, uBlock Origin Lite 2026.1026.1812, Ghostery 10.6.9, AdGuard 5.5.3.28, Adblock Plus 4.48.0 (each the Chrome Web Store release that day). The test machine's network refused a few ad hosts by itself, so the no-blocker baseline is 10; compare rows within the run (method: https://adblock.carbonstealth.eu/how-we-measure).
+- adblock.turtlecute.org (hosts blocked of 132): Supreme AdBlock 130, Ghostery 98–100, uBlock Origin Lite 83, Adblock Plus 31–32, AdGuard 30–31, no blocker 10.
+- adblock-tester.com (score of 100): Ghostery 96, Supreme AdBlock 95, uBlock Origin Lite 91, AdGuard 75, Adblock Plus 75, no blocker 41.
 
 ## Common questions
 
@@ -70,4 +70,4 @@ Q: Does it collect data? A: No browsing data leaves the device; no analytics or 
 Q: Will it break websites? A: Rarely; one click in the popup allows a site or turns off element hiding for it.
 Q: Who makes it? A: Carbon Stealth VCC, a software studio in Bulgaria (EU).
 
-_Last updated: 25 October 2026 (version 5.7.0)._
+_Last updated: 27 October 2026 (version 5.7.0)._
