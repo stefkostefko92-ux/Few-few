@@ -52,6 +52,9 @@ refs.add("lib/abp2dnr.js");       // importScripts() — author-hosted lists
 refs.add("gpc.js");               // registered by the service worker (MAIN world, Global Privacy Control)
 refs.add("scriptlets/entities-off.js"); // registered by the SW while the uBO list is off
 refs.add("lib/foreign.js");       // Settings + welcome: import from another ad blocker
+// 6.0: the page scripts are registered by the SW by protection mode (lib/modes.js), not the manifest
+["scriptlets/policy.js", "content.js", "content.css", "cosmetic_generic.css", "cookies.js", "cookies.css",
+ "antiadblock.js", "antiadblock.css", "picker.js", "picker.css", "lib/modes.js"].forEach((f) => refs.add(f));
 refs.add("blocked/blocked.js"); refs.add("blocked/blocked.css"); // the warning page instead of a malware site
 refs.add("report/report.html");   // opened from the popup
 refs.add("popup/companies.js");   // the company behind each host in "Connections on this page"
@@ -99,7 +102,7 @@ node - "$ff_tmp/manifest.json" <<'NODE'
 const fs = require("fs");
 const p = process.argv[2];
 const m = JSON.parse(fs.readFileSync(p, "utf8"));
-m.background = { scripts: ["scriptlets/policy.js", "lib/abp2dnr.js", "background.js"] };
+m.background = { scripts: ["scriptlets/policy.js", "lib/abp2dnr.js", "lib/modes.js", "background.js"] };
 // gecko_android: без него AMO не показва разширението във Firefox за Android (Extension Workshop,
 // „version compatibility“). contextMenus/commands ги няма там — кодът ги вика само в try/?.
 m.browser_specific_settings = {

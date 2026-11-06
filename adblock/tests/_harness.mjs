@@ -82,7 +82,9 @@ export function loadBackground(opts = {}) {
   let body = readFileSync(join(ROOT, "background.js"), "utf8");
   if (opts.patch) body = opts.patch(body);
   const extra = opts.exports ? ", " + opts.exports : "";
-  const src = policy + "\n" + body +
+  // …and importScripts("lib/modes.js") (6.0): the protection modes, used by the page-script registration.
+  const modes = readFileSync(join(ROOT, "lib", "modes.js"), "utf8");
+  const src = policy + "\n" + modes + "\n" + body +
     "\n;globalThis.__bg = { sanitizeConfig, safeSelector, parseUserDomains, domainBlockRules" + extra + " };";
   runInThisContext(src, { filename: "background.js" });
   return globalThis.__bg;

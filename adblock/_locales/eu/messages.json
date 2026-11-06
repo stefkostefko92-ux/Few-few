@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Ikusi nola dabilen proba-orri batean"
+  },
+  "modeHere": {
+    "message": "Babesa hemen"
+  },
+  "modeBasic": {
+    "message": "Oinarrizkoa"
+  },
+  "modeStandard": {
+    "message": "Estandarra"
+  },
+  "modeStrict": {
+    "message": "Zorrotza"
+  },
+  "opt_mode": {
+    "message": "Babes-maila"
+  },
+  "opt_mode_sub": {
+    "message": "Gune guztietarako. Gune bati maila berezia emateko, ireki luzapena gune horretan."
+  },
+  "modeHint": {
+    "message": "Oinarrizkoa: sarean blokeatzea soilik. Estandarra: gomendatua. Zorrotza: markoen barruan ere bai. Orria berriro kargatzen da."
+  },
+  "modeBasicDesc": {
+    "message": "Sarean blokeatzea soilik: arinena, ia ezer ez da hausten. YouTubek bere babesa mantentzen du."
+  },
+  "modeStandardDesc": {
+    "message": "Gomendatua: babes osoa orrian bertan."
+  },
+  "modeStrictDesc": {
+    "message": "Txertatutako markoen barruan ere bai: gehien ezkutatzen du, memoria gehien erabiltzen du."
   }
 }

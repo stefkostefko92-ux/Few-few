@@ -66,75 +66,13 @@
   "content_scripts": [
     {
       "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "scriptlets/policy.js",
-        "content.js"
-      ],
-      "css": [
-        "content.css"
-      ],
-      "run_at": "document_start",
-      "all_frames": true
-    },
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "css": [
-        "cosmetic_generic.css"
-      ],
-      "run_at": "document_start",
-      "all_frames": false
-    },
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "cookies.js"
-      ],
-      "css": [
-        "cookies.css"
-      ],
-      "run_at": "document_idle",
-      "all_frames": true
-    },
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "antiadblock.js"
-      ],
-      "css": [
-        "antiadblock.css"
-      ],
-      "run_at": "document_idle",
-      "all_frames": false
-    },
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "picker.js"
-      ],
-      "css": [
-        "picker.css"
-      ],
-      "run_at": "document_idle",
-      "all_frames": false
-    },
-    {
-      "matches": [
         "*://*.facebook.com/*",
         "*://*.instagram.com/*",
         "*://*.threads.com/*",
         "*://*.threads.net/*"
       ],
       "js": [
+        "lib/modes.js",
         "meta.js"
       ],
       "run_at": "document_idle",

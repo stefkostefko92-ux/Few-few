@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "테스트 페이지에서 작동 확인하기"
+  },
+  "modeHere": {
+    "message": "이 사이트 보호"
+  },
+  "modeBasic": {
+    "message": "기본"
+  },
+  "modeStandard": {
+    "message": "표준"
+  },
+  "modeStrict": {
+    "message": "엄격"
+  },
+  "opt_mode": {
+    "message": "보호 수준"
+  },
+  "opt_mode_sub": {
+    "message": "모든 사이트에 적용됩니다. 사이트별로 다르게 하려면 해당 사이트에서 확장 프로그램을 여세요."
+  },
+  "modeHint": {
+    "message": "기본: 네트워크 차단만. 표준: 권장. 엄격: 프레임 안에서도. 페이지가 새로고침됩니다."
+  },
+  "modeBasicDesc": {
+    "message": "네트워크 차단만 합니다. 가장 가볍고 거의 아무것도 깨지지 않습니다. YouTube는 자체 보호를 유지합니다."
+  },
+  "modeStandardDesc": {
+    "message": "권장. 페이지 자체를 완전히 보호합니다."
+  },
+  "modeStrictDesc": {
+    "message": "삽입된 프레임 안에서도 보호합니다. 가장 많이 숨기고 메모리를 가장 많이 씁니다."
   }
 }

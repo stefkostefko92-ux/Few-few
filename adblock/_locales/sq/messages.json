@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Shihni si funksionon në një faqe testimi"
+  },
+  "modeHere": {
+    "message": "Mbrojtja këtu"
+  },
+  "modeBasic": {
+    "message": "Bazë"
+  },
+  "modeStandard": {
+    "message": "Standarde"
+  },
+  "modeStrict": {
+    "message": "E rreptë"
+  },
+  "opt_mode": {
+    "message": "Niveli i mbrojtjes"
+  },
+  "opt_mode_sub": {
+    "message": "Për çdo sajt. Për t’i dhënë një sajti nivelin e vet, hapeni shtesën në atë sajt."
+  },
+  "modeHint": {
+    "message": "Bazë: vetëm bllokim në rrjet. Standarde: e rekomanduar. E rreptë: edhe brenda kornizave. Faqja ringarkohet."
+  },
+  "modeBasicDesc": {
+    "message": "Vetëm bllokim në rrjet: më e lehta, pothuajse asgjë nuk prishet. YouTube e ruan mbrojtjen e vet."
+  },
+  "modeStandardDesc": {
+    "message": "E rekomanduar: mbrojtje e plotë në vetë faqen."
+  },
+  "modeStrictDesc": {
+    "message": "Edhe brenda kornizave të ngulitura: fsheh më shumë, përdor më shumë memorie."
   }
 }

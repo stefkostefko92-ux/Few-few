@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "በሙከራ ገጽ ላይ ሲሠራ ይመልከቱ"
+  },
+  "modeHere": {
+    "message": "ጥበቃ እዚህ"
+  },
+  "modeBasic": {
+    "message": "መሠረታዊ"
+  },
+  "modeStandard": {
+    "message": "መደበኛ"
+  },
+  "modeStrict": {
+    "message": "ጥብቅ"
+  },
+  "opt_mode": {
+    "message": "የጥበቃ ደረጃ"
+  },
+  "opt_mode_sub": {
+    "message": "ለሁሉም ድረ-ገጾች። ለአንድ ድረ-ገጽ የተለየ ደረጃ ለመስጠት በዚያ ድረ-ገጽ ላይ ቅጥያውን ይክፈቱ።"
+  },
+  "modeHint": {
+    "message": "መሠረታዊ፦ በአውታረ መረብ ላይ ማገድ ብቻ። መደበኛ፦ የሚመከር። ጥብቅ፦ በፍሬሞች ውስጥም። ገጹ እንደገና ይጫናል።"
+  },
+  "modeBasicDesc": {
+    "message": "በአውታረ መረብ ላይ ማገድ ብቻ፦ በጣም ቀላሉ፣ ምንም ማለት ይቻላል አይበላሽም። YouTube የራሱን ጥበቃ ይይዛል።"
+  },
+  "modeStandardDesc": {
+    "message": "የሚመከር፦ በገጹ ራሱ ላይ ሙሉ ጥበቃ።"
+  },
+  "modeStrictDesc": {
+    "message": "በተካተቱ ፍሬሞች ውስጥም፦ በጣም ብዙ ይደብቃል፣ በጣም ብዙ ማህደረ ትውስታ ይጠቀማል።"
   }
 }

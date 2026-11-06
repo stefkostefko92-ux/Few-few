@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Yibone isebenza ekhasini lokuhlola"
+  },
+  "modeHere": {
+    "message": "Ukuvikela lapha"
+  },
+  "modeBasic": {
+    "message": "Okuyisisekelo"
+  },
+  "modeStandard": {
+    "message": "Okujwayelekile"
+  },
+  "modeStrict": {
+    "message": "Okuqinile"
+  },
+  "opt_mode": {
+    "message": "Izinga lokuvikela"
+  },
+  "opt_mode_sub": {
+    "message": "Kuwo wonke amasayithi. Ukunika isayithi elilodwa izinga lalo, vula isandiso kulelo sayithi."
+  },
+  "modeHint": {
+    "message": "Okuyisisekelo: ukuvimba kunethiwekhi kuphela. Okujwayelekile: kunconywa. Okuqinile: nangaphakathi kwamafreyimu. Ikhasi lizolayishwa kabusha."
+  },
+  "modeBasicDesc": {
+    "message": "Ukuvimba kunethiwekhi kuphela: kulula kakhulu, cishe akukho okuphukayo. I-YouTube igcina ukuvikela kwayo."
+  },
+  "modeStandardDesc": {
+    "message": "Kunconywa: ukuvikela okuphelele ekhasini uqobo."
+  },
+  "modeStrictDesc": {
+    "message": "Nangaphakathi kwamafreyimu ashumekiwe: kufihla okuningi, kusebenzisa inkumbulo eningi."
   }
 }

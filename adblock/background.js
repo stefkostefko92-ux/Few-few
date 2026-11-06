@@ -3,9 +3,10 @@
 // Single source of the scriptlet/selector policy (shared with the engine and the
 // build). Classic worker → synchronous importScripts; if it ever fails the
 // live-config path throws and the update is rejected (fail-closed).
-// Firefox (MV3 event page) has no importScripts: its manifest lists the same two
-// files before this one (tools/package.sh builds that variant).
-if (typeof importScripts === "function") importScripts("scriptlets/policy.js", "lib/abp2dnr.js");
+// Firefox (MV3 event page) has no importScripts: its manifest lists the same
+// files before this one (tools/package.sh builds that variant). lib/modes.js (6.0):
+// the protection modes — which page scripts are registered where.
+if (typeof importScripts === "function") importScripts("scriptlets/policy.js", "lib/abp2dnr.js", "lib/modes.js");
 
 const RULESET_IDS = ["ad_rules", "youtube_rules", "easylist", "easyprivacy", "removeparam", "urlhaus", "surrogates", "headers", "privacy", "gpc"];
 
@@ -162,6 +163,8 @@ const DEFAULTS = {
   reviewAsk: true,     // Chrome Web Store review: the ★ link + the rare card in the popup (Settings → off)
   daily: {},           // { "YYYY-MM-DD": { b: blocked, c: cookie banners rejected } } — last 30 days, numbers only
   siteBlocks: {},      // { site: [host, …] } — "Block here" in the popup's Connections on this page
+  mode: "standard",    // 6.0: protection level for every site — basic | standard | strict (lib/modes.js)
+  siteModes: {},       // { site: mode } — the popup's "Protection here"; a site's own frames follow it
 };
 
 // ---- Daily totals (the Settings chart): device-local days, numbers only, never sites ----
@@ -185,7 +188,7 @@ function bumpDaily(daily, field, n, t = Date.now()) {
 // NOT `enabled`: on/off and a timed pause are per device — the pause's resume
 // alarm lives on the device that paused, so a synced `enabled:false` left the
 // OTHER device switched off with nothing to turn it back on.
-const SYNC_KEYS = ["features", "theme", "allowlist", "userFilters", "subscriptions", "noCosmetics", "lists", "reviewAsk", "siteBlocks"];
+const SYNC_KEYS = ["features", "theme", "allowlist", "userFilters", "subscriptions", "noCosmetics", "lists", "reviewAsk", "siteBlocks", "mode", "siteModes"];
 
 // ---- Отзив в Chrome Web Store ----
 // Молбата е тиха и рядка: само в popup-а, който потребителят сам е отворил — никога по сайтовете,
@@ -223,12 +226,27 @@ function reviewDue(st, now) {
 // календарен месец, от дневните броячи). Най-много една карта на отваряне и никога пред картата за
 // отзив: reviewDue не се пипа и не зависи от тези признаци (без филтър по мнение — CWS spam policy).
 const HELP = { allowed: 3, noCosmetics: 2, pauses: 3 };
+// 6.0: сайт на Basic е старото „скриване изключено“ (същият признак за картата)
+const basicSiteCount = (m) => (m && typeof m === "object" && !Array.isArray(m) ? Object.values(m).filter((v) => v === "basic").length : 0);
+// 6.0: „Скрий рекламните кутии тук: Изкл.“ стана режим Basic за сайта — същото (нищо не се крие), по-леко.
+// Чиста функция: старият списък → siteModes (съществуващ запис печели; при глобален Basic няма нужда).
+function foldNoCosmetics(list, mode, siteModes) {
+  const next = SA_MODES.cleanSiteModes(siteModes);
+  if (SA_MODES.normMode(mode) === "basic") return next;
+  for (const h of Array.isArray(list) ? list : []) {
+    const site = typeof h === "string" ? h.trim().toLowerCase().replace(/^www\./, "") : "";
+    if (!isHost(site) || site in next) continue;
+    if (Object.keys(next).length >= 2000) break;
+    next[site] = "basic";
+  }
+  return next;
+}
 const recentPauses = (log, now) => (Array.isArray(log) ? log : []).filter((t) => typeof t === "number" && t <= now && now - t < 7 * DAY_MS);
 function helpDue(st, now) {
   const h = st.helpCard && typeof st.helpCard === "object" ? st.helpCard : {};
   if (h.shown || h.never) return false;
   return (Array.isArray(st.allowlist) ? st.allowlist.length : 0) >= HELP.allowed ||
-    (Array.isArray(st.noCosmetics) ? st.noCosmetics.length : 0) >= HELP.noCosmetics ||
+    (Array.isArray(st.noCosmetics) ? st.noCosmetics.length : 0) + basicSiteCount(st.siteModes) >= HELP.noCosmetics ||
     recentPauses(st.pauseLog, now).length >= HELP.pauses;
 }
 const monthKey = (t) => dayKey(t).slice(0, 7);
@@ -298,10 +316,16 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   }
   // откъдето броим 7-те дни до първата молба за отзив (при ъпдейт от по-стара версия — от ъпдейта)
   if (!(stored.installedAt > 0)) patch.installedAt = Date.now();
+  // 6.0: the old per-site "hide ad boxes: off" list becomes Basic for those sites (once)
+  if (Array.isArray(stored.noCosmetics) && stored.noCosmetics.length) {
+    patch.siteModes = foldNoCosmetics(stored.noCosmetics, stored.mode, stored.siteModes);
+    patch.noCosmetics = [];
+  }
   if (Object.keys(patch).length) await chrome.storage.local.set(patch);
   // An update wipes alarms: without this a pause in progress lost its resume
   // alarm and protection stayed OFF until the next browser restart.
   await restorePause();
+  await syncPageScripts(); // 6.0: the page scripts left the manifest — registered here, by mode
   await applyState();
   await syncAllowRules();
   await syncUserRules();
@@ -326,6 +350,7 @@ chrome.runtime.onStartup.addListener(async () => {
   ]);
   if (sync) await pullFromSync();
   await restorePause(pausedUntil);
+  await syncPageScripts();
   await applyState();
   await syncAllowRules();
   await syncUserRules();
@@ -407,6 +432,9 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
     }
     if (Object.keys(diff).length) {
       await chrome.storage.local.set(diff);
+      // 6.0: a mode from another device → its page scripts (applyState below does the MAIN-world ones).
+      // Every writer of mode/siteModes calls this itself — a storage listener ran it twice per change.
+      if ("mode" in diff || "siteModes" in diff) await syncPageScripts();
       await applyState();
       await syncAllowRules();
       await syncUserRules();
@@ -621,6 +649,59 @@ function syncScriptlets(on) {
   return scriptletChain;
 }
 
+// ---- Page scripts (6.0): content.js, the generic CSS, cookies.js, anti-adblock, the picker ----
+// Registered here by protection mode (lib/modes.js) instead of the manifest: Basic sites get none,
+// Standard the top frame only (+ the consent platforms' frames), Strict every frame — the frames cost
+// ~0.7 MB each. They stay registered while the extension is paused or a site is allowed: they switch
+// themselves off and on again without a reload, as before.
+let pageChain = Promise.resolve();
+function syncPageScripts() {
+  pageChain = pageChain.then(doSyncPageScripts).catch((e) => console.warn("page scripts", e));
+  return pageChain;
+}
+// What the MAIN-world registrations (main.js, uBO chunks, GPC) depend on: only Basic matters to them.
+// Standard ↔ Strict leaves it equal — then they are not re-registered (each scripting call costs Chrome
+// ~0.6 s with the uBO chunks registered: measured, 6.0).
+function scriptletModeKey(mode, siteModes) {
+  const basic = SA_MODES.normMode(mode) === "basic";
+  const sm = SA_MODES.cleanSiteModes(siteModes);
+  const upgraded = basic ? Object.keys(sm).filter((h) => sm[h] !== "basic").sort() : [];
+  return JSON.stringify([basic, SA_MODES.basicSites(sm).sort(), upgraded]);
+}
+
+// 6.0: one site's mode (the popup's "Protection here", the repair page); the global mode clears the entry
+async function setSiteMode(host, want) {
+  const site = typeof host === "string" ? host.trim().toLowerCase().replace(/^www\./, "") : "";
+  if (!isHost(site) || !SA_MODES.MODES.includes(want)) return { ok: false };
+  const { mode, siteModes } = await chrome.storage.local.get(["mode", "siteModes"]);
+  const next = SA_MODES.cleanSiteModes(siteModes);
+  if (want === SA_MODES.normMode(mode)) delete next[site]; else next[site] = want;
+  if (Object.keys(next).length > 2000) return { ok: false, reason: "full" };
+  await chrome.storage.local.set({ siteModes: next });
+  await syncPageScripts();
+  if (scriptletModeKey(mode, siteModes) !== scriptletModeKey(mode, next)) await syncScriptlets();
+  return { ok: true, siteModes: next };
+}
+
+async function doSyncPageScripts() {
+  if (!chrome.scripting?.registerContentScripts) return;
+  const { mode, siteModes } = await chrome.storage.local.get(["mode", "siteModes"]);
+  const plan = (sm) => SA_MODES.pageScriptPlan(mode, sm).map((r) => ({ ...r, persistAcrossSessions: true }));
+  try {
+    const old = (await chrome.scripting.getRegisteredContentScripts()).map((c) => c.id).filter((id) => id.startsWith(SA_MODES.PAGE_PREFIX));
+    if (old.length) await chrome.scripting.unregisterContentScripts({ ids: old });
+  } catch (e) {}
+  try {
+    const p = plan(siteModes);
+    if (p.length) await chrome.scripting.registerContentScripts(p);
+  } catch (e) {
+    // a site entry Chrome refused must not leave every page without content scripts: the global mode alone
+    console.warn("page scripts: per-site modes refused, global mode only", e);
+    const p = plan({});
+    if (p.length) await chrome.scripting.registerContentScripts(p);
+  }
+}
+
 async function doSyncScriptlets(on) {
   if (!chrome.scripting?.registerContentScripts) return;
   if (on === undefined) {
@@ -635,10 +716,13 @@ async function doSyncScriptlets(on) {
   } catch (e) {}
   if (!on) return;
 
-  const { allowlist = [], features = {}, ytBypassUntil = 0 } = await chrome.storage.local.get(["allowlist", "features", "ytBypassUntil"]);
+  const { allowlist = [], features = {}, ytBypassUntil = 0, mode, siteModes } = await chrome.storage.local.get(["allowlist", "features", "ytBypassUntil", "mode", "siteModes"]);
   const ytBypass = ytBypassUntil > Date.now();
+  // 6.0: a site in Basic gets none of our MAIN-world scripts either, exactly like an allowed one
+  const basicMode = SA_MODES.normMode(mode) === "basic";
+  const upgraded = Object.entries(SA_MODES.cleanSiteModes(siteModes)).filter(([, m]) => m !== "basic").map(([h]) => h);
   const excludeMatches = [];
-  for (const d of allowlist) {
+  for (const d of allowlist.concat(SA_MODES.basicSites(siteModes))) {
     if (!isHost(d)) continue; // an invalid match pattern would fail the whole registration
     excludeMatches.push(`*://${d}/*`);
     if (!isIPv4(d) && d.includes(".")) excludeMatches.push(`*://*.${d}/*`);
@@ -655,7 +739,8 @@ async function doSyncScriptlets(on) {
   try {
     const { on: listsOn } = await listState();
     uboOn = listsOn.has("ubo");
-    if (uboOn) {
+    // Basic for every site: no uBO chunks (they cannot be narrowed to the sites set higher)
+    if (uboOn && !basicMode) {
       const index = await (await fetch(chrome.runtime.getURL("scriptlets/ubo_index.json"))).json();
       for (const c of index) {
         const m = /c(\d+)\.js$/.exec(c.file);
@@ -683,15 +768,17 @@ async function doSyncScriptlets(on) {
     persistAcrossSessions: true,
   };
   if (excludeMatches.length || ytBypass) script.excludeMatches = excludeMatches.concat(ytBypass ? YT_PATTERNS : []);
+  // Basic for every site: main.js only where a site was set higher (popup → Protection here)
+  if (basicMode) script.matches = SA_MODES.patternsFor(upgraded);
 
-  const all = [script, ...uboScripts];
+  const all = [...(script.matches.length ? [script] : []), ...uboScripts];
   if (!uboOn) {
     all.unshift({
       id: UBO_ENTITIES_OFF_ID, matches: ["<all_urls>"], js: ["scriptlets/entities-off.js"],
       runAt: "document_start", allFrames: true, world: "MAIN", persistAcrossSessions: true,
     });
   }
-  if (features.gpc !== false) {
+  if (features.gpc !== false && !basicMode) { // Basic: the Sec-GPC header (rules/gpc.json) still goes out
     all.push({
       id: GPC_SCRIPT_ID, matches: ["<all_urls>"], js: ["gpc.js"], runAt: "document_start",
       allFrames: true, world: "MAIN", persistAcrossSessions: true,
@@ -1684,15 +1771,29 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
     }
 
+    // 6.0: Settings → Protection level (every site)
+    case "setMode": {
+      (async () => {
+        if (!SA_MODES.MODES.includes(msg.mode)) return sendResponse({ ok: false });
+        const { mode: was, siteModes } = await chrome.storage.local.get(["mode", "siteModes"]);
+        await chrome.storage.local.set({ mode: msg.mode });
+        await syncPageScripts();
+        if (scriptletModeKey(was, siteModes) !== scriptletModeKey(msg.mode, siteModes)) await syncScriptlets();
+        sendResponse({ ok: true, mode: msg.mode });
+      })();
+      return true;
+    }
+
+    // 6.0: the popup's "Protection here" — a site's mode; the global one clears the entry
+    case "setSiteMode":
+      setSiteMode(msg.host, msg.mode).then(sendResponse);
+      return true;
+
+    // the repair page's "turn off element hiding here" — since 6.0 that is the site's Basic mode
+    // (on again = the global mode); the old noCosmetics list is folded into siteModes on update
     case "setNoCosmetics":
-      chrome.storage.local.get("noCosmetics", async (data) => {
-        let list = Array.isArray(data.noCosmetics) ? data.noCosmetics : [];
-        const host = typeof msg.host === "string" ? msg.host.trim().toLowerCase() : "";
-        if (!isHost(host)) return sendResponse({ ok: false });
-        list = list.filter((d) => d !== host);
-        if (msg.off && list.length < 5000) list.push(host);
-        await chrome.storage.local.set({ noCosmetics: list });
-        sendResponse({ ok: true, noCosmetics: list });
+      chrome.storage.local.get("mode", ({ mode }) => {
+        setSiteMode(msg.host, msg.off ? "basic" : SA_MODES.normMode(mode)).then(sendResponse);
       });
       return true;
 
@@ -1760,7 +1861,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "getStats":
       chrome.storage.local.get(
-        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics", "cookieRejections", "reviewAsk", "review", "installedAt", "daily", "customHidden", "allowUntil", "siteBlocks", "helpCard", "receipt", "pauseLog"],
+        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics", "cookieRejections", "reviewAsk", "review", "installedAt", "daily", "customHidden", "allowUntil", "siteBlocks", "helpCard", "receipt", "pauseLog", "mode", "siteModes"],
         async (data) => {
           let host = null;
           let allowed = false;
@@ -1817,6 +1918,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             host,
             allowed,
             noCosmetics,
+            // 6.0: protection level — for every site, and the one in force here (siteMode = explicit or null)
+            mode: SA_MODES.normMode(data.mode),
+            effectiveMode: host ? SA_MODES.effectiveMode(host, data.mode, data.siteModes) : SA_MODES.normMode(data.mode),
             review: { url: storeUrl, on: reviewOn, ask: reviewAsk },
             // „Сайтовете се чупят?“ — само на уебсайт (бутонът отваря поправките за него)
             help: { ask: onSite && helpDue(data, now) },
@@ -2075,19 +2179,32 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             }
             clean[k] = m;
           }
+        } else if (k === "mode") {
+          if (SA_MODES.MODES.includes(v)) clean[k] = v; // 6.0: only a known mode, never any string
+        } else if (k === "siteModes") {
+          clean[k] = SA_MODES.cleanSiteModes(v);
         } else if (k === "siteBlocks") {
           clean[k] = cleanSiteBlocks(v); // { site: [host…] }: valid hosts, caps, never a protected host
         } else if (typeof v === typeof DEFAULTS[k]) {
           clean[k] = v; // прости скаларни ключове само при съвпадащ тип
         }
       }
-      chrome.storage.local.set(clean, async () => {
+      // a backup from before 6.0: its "hiding off" sites become Basic sites
+      const legacyOff = clean.noCosmetics;
+      delete clean.noCosmetics;
+      (async () => {
+        if (Array.isArray(legacyOff) && legacyOff.length) {
+          const cur = await chrome.storage.local.get(["mode", "siteModes"]);
+          clean.siteModes = foldNoCosmetics(legacyOff, "mode" in clean ? clean.mode : cur.mode, "siteModes" in clean ? clean.siteModes : cur.siteModes);
+        }
+        await chrome.storage.local.set(clean);
+        if ("mode" in clean || "siteModes" in clean) await syncPageScripts();
         await applyState();
         await syncAllowRules();
         await syncUserRules();
         await syncSiteBlocks();
         sendResponse({ ok: true });
-      });
+      })().catch((e) => { console.warn("import failed", e); sendResponse({ ok: false }); });
       return true;
     }
 

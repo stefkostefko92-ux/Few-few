@@ -59,6 +59,7 @@ function load() {
     $("featTopics").checked = res.features.topics !== false;
     $("featPrivacy").checked = res.features.privacy !== false;
     $("featGpc").checked = res.features.gpc !== false;
+    renderMode(res.mode || "standard");
     renderDays(res.daily || {});
     $("smartCount").textContent = (res.smartBlocked || 0).toLocaleString(UI_LANG);
     $("autoUpdate").checked = res.autoUpdate !== false;
@@ -440,6 +441,20 @@ function saveFeatures() {
   });
 }
 
+// 6.0: protection level for every site (a site can have its own in the popup)
+const MODE_DESC = { basic: ["modeBasicDesc", "Network blocking only: the lightest, almost nothing breaks. YouTube keeps its own protection."],
+  standard: ["modeStandardDesc", "Recommended: full protection on the page itself."],
+  strict: ["modeStrictDesc", "Also inside embedded frames: hides the most, uses the most memory."] };
+function renderMode(mode) {
+  $("modeSelect").value = MODE_DESC[mode] ? mode : "standard";
+  const [key, en] = MODE_DESC[$("modeSelect").value];
+  $("modeDesc").textContent = (window.saI18n && window.saI18n.t(key)) || en;
+}
+$("modeSelect").addEventListener("change", () => {
+  renderMode($("modeSelect").value);
+  chrome.runtime.sendMessage({ type: "setMode", mode: $("modeSelect").value });
+});
+
 $("theme").addEventListener("change", () =>
   chrome.runtime.sendMessage({ type: "setTheme", theme: $("theme").value })
 );
@@ -556,7 +571,7 @@ $("resetStats").addEventListener("click", () => {
 });
 
 // ---- Backup ----
-const EXPORT_KEYS = ["enabled", "allowlist", "features", "customHidden", "theme", "subscriptions", "noCosmetics", "userFilters", "reviewAsk", "siteBlocks"];
+const EXPORT_KEYS = ["enabled", "allowlist", "features", "customHidden", "theme", "subscriptions", "noCosmetics", "userFilters", "reviewAsk", "siteBlocks", "mode", "siteModes"];
 
 $("exportBtn").addEventListener("click", () => {
   chrome.storage.local.get(EXPORT_KEYS, (data) => {

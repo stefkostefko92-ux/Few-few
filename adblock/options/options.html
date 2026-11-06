@@ -68,6 +68,21 @@
       <p class="row-sub" id="keysHint" hidden data-i18n="opt_shortcuts_ff">In Firefox: Extensions and themes → ⚙ → Manage Extension Shortcuts.</p>
     </section>
 
+    <section class="card" id="modeCard">
+      <h2 data-i18n="opt_mode">Protection level</h2>
+      <label class="row">
+        <div>
+          <div class="row-title" data-i18n="opt_mode_sub">For every site. To set one site apart, open the extension on that site.</div>
+          <div class="row-sub" id="modeDesc"></div>
+        </div>
+        <select id="modeSelect" class="select">
+          <option value="basic" data-i18n="modeBasic">Basic</option>
+          <option value="standard" data-i18n="modeStandard">Standard</option>
+          <option value="strict" data-i18n="modeStrict">Strict</option>
+        </select>
+      </label>
+    </section>
+
     <section class="card">
       <h2 data-i18n="opt_extra_protection">Extra protection</h2>
       <label class="row">

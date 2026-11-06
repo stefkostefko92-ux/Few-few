@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Pogledajte kako radi na testnoj stranici"
+  },
+  "modeHere": {
+    "message": "Zaštita ovdje"
+  },
+  "modeBasic": {
+    "message": "Osnovna"
+  },
+  "modeStandard": {
+    "message": "Standardna"
+  },
+  "modeStrict": {
+    "message": "Stroga"
+  },
+  "opt_mode": {
+    "message": "Razina zaštite"
+  },
+  "opt_mode_sub": {
+    "message": "Za svaku stranicu. Da jednoj stranici date vlastitu razinu, otvorite proširenje na njoj."
+  },
+  "modeHint": {
+    "message": "Osnovna: samo blokiranje na mreži. Standardna: preporučeno. Stroga: i unutar okvira. Stranica se ponovno učitava."
+  },
+  "modeBasicDesc": {
+    "message": "Samo blokiranje na mreži: najlakša, gotovo se ništa ne kvari. YouTube zadržava svoju zaštitu."
+  },
+  "modeStandardDesc": {
+    "message": "Preporučeno: potpuna zaštita na samoj stranici."
+  },
+  "modeStrictDesc": {
+    "message": "I unutar ugrađenih okvira: skriva najviše, troši najviše memorije."
   }
 }

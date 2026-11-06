@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Xem cách hoạt động trên trang thử nghiệm"
+  },
+  "modeHere": {
+    "message": "Bảo vệ tại đây"
+  },
+  "modeBasic": {
+    "message": "Cơ bản"
+  },
+  "modeStandard": {
+    "message": "Tiêu chuẩn"
+  },
+  "modeStrict": {
+    "message": "Nghiêm ngặt"
+  },
+  "opt_mode": {
+    "message": "Mức bảo vệ"
+  },
+  "opt_mode_sub": {
+    "message": "Cho mọi trang web. Để đặt mức riêng cho một trang, hãy mở tiện ích trên trang đó."
+  },
+  "modeHint": {
+    "message": "Cơ bản: chỉ chặn trên mạng. Tiêu chuẩn: nên dùng. Nghiêm ngặt: cả bên trong khung. Trang sẽ tải lại."
+  },
+  "modeBasicDesc": {
+    "message": "Chỉ chặn trên mạng: nhẹ nhất, hầu như không có gì bị hỏng. YouTube vẫn giữ cơ chế bảo vệ riêng."
+  },
+  "modeStandardDesc": {
+    "message": "Nên dùng: bảo vệ đầy đủ ngay trên trang."
+  },
+  "modeStrictDesc": {
+    "message": "Cả bên trong khung nhúng: ẩn được nhiều nhất, dùng nhiều bộ nhớ nhất."
   }
 }

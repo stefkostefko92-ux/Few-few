@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Oglejte si delovanje na preizkusni strani"
+  },
+  "modeHere": {
+    "message": "Zaščita tukaj"
+  },
+  "modeBasic": {
+    "message": "Osnovna"
+  },
+  "modeStandard": {
+    "message": "Standardna"
+  },
+  "modeStrict": {
+    "message": "Stroga"
+  },
+  "opt_mode": {
+    "message": "Raven zaščite"
+  },
+  "opt_mode_sub": {
+    "message": "Za vsa spletna mesta. Če želite enemu mestu dati lastno raven, odprite razširitev na njem."
+  },
+  "modeHint": {
+    "message": "Osnovna: samo blokiranje v omrežju. Standardna: priporočeno. Stroga: tudi v okvirjih. Stran se znova naloži."
+  },
+  "modeBasicDesc": {
+    "message": "Samo blokiranje v omrežju: najlažja, skoraj nič se ne pokvari. YouTube ohrani svojo zaščito."
+  },
+  "modeStandardDesc": {
+    "message": "Priporočeno: polna zaščita na sami strani."
+  },
+  "modeStrictDesc": {
+    "message": "Tudi v vdelanih okvirjih: skrije največ, porabi največ pomnilnika."
   }
 }

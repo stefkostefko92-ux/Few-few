@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Vegeu com funciona en una pàgina de prova"
+  },
+  "modeHere": {
+    "message": "Protecció aquí"
+  },
+  "modeBasic": {
+    "message": "Bàsica"
+  },
+  "modeStandard": {
+    "message": "Estàndard"
+  },
+  "modeStrict": {
+    "message": "Estricta"
+  },
+  "opt_mode": {
+    "message": "Nivell de protecció"
+  },
+  "opt_mode_sub": {
+    "message": "Per a tots els llocs. Per donar un nivell propi a un lloc, obriu l’extensió en aquell lloc."
+  },
+  "modeHint": {
+    "message": "Bàsica: només bloqueig a la xarxa. Estàndard: recomanada. Estricta: també dins dels marcs. La pàgina es torna a carregar."
+  },
+  "modeBasicDesc": {
+    "message": "Només bloqueig a la xarxa: la més lleugera, gairebé res no es trenca. YouTube manté la seva pròpia protecció."
+  },
+  "modeStandardDesc": {
+    "message": "Recomanada: protecció completa a la mateixa pàgina."
+  },
+  "modeStrictDesc": {
+    "message": "També dins dels marcs incrustats: amaga més coses i fa servir més memòria."
   }
 }

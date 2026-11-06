@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Vaadake seda testlehel töös"
+  },
+  "modeHere": {
+    "message": "Kaitse siin"
+  },
+  "modeBasic": {
+    "message": "Põhiline"
+  },
+  "modeStandard": {
+    "message": "Tavaline"
+  },
+  "modeStrict": {
+    "message": "Range"
+  },
+  "opt_mode": {
+    "message": "Kaitsetase"
+  },
+  "opt_mode_sub": {
+    "message": "Kõigile saitidele. Ühele saidile eraldi taseme andmiseks avage laiendus sellel saidil."
+  },
+  "modeHint": {
+    "message": "Põhiline: ainult blokeerimine võrgus. Tavaline: soovitatav. Range: ka raamide sees. Leht laaditakse uuesti."
+  },
+  "modeBasicDesc": {
+    "message": "Ainult blokeerimine võrgus: kõige kergem, peaaegu midagi ei lähe katki. YouTube jääb oma kaitse juurde."
+  },
+  "modeStandardDesc": {
+    "message": "Soovitatav: täielik kaitse lehel endal."
+  },
+  "modeStrictDesc": {
+    "message": "Ka manustatud raamide sees: peidab kõige rohkem, kasutab kõige rohkem mälu."
   }
 }

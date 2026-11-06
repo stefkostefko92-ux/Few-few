@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Le voir à l’œuvre sur une page de test"
+  },
+  "modeHere": {
+    "message": "Protection ici"
+  },
+  "modeBasic": {
+    "message": "Basique"
+  },
+  "modeStandard": {
+    "message": "Standard"
+  },
+  "modeStrict": {
+    "message": "Strict"
+  },
+  "opt_mode": {
+    "message": "Niveau de protection"
+  },
+  "opt_mode_sub": {
+    "message": "Pour tous les sites. Pour donner à un site son propre niveau, ouvrez l’extension sur ce site."
+  },
+  "modeHint": {
+    "message": "Basique : blocage réseau uniquement. Standard : recommandé. Strict : aussi dans les cadres. La page se recharge."
+  },
+  "modeBasicDesc": {
+    "message": "Blocage réseau uniquement : le plus léger, presque rien ne casse. YouTube garde sa propre protection."
+  },
+  "modeStandardDesc": {
+    "message": "Recommandé : protection complète sur la page elle-même."
+  },
+  "modeStrictDesc": {
+    "message": "Aussi dans les cadres intégrés : masque le plus, utilise le plus de mémoire."
   }
 }

@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Pozrite sa, ako to funguje, na testovacej stránke"
+  },
+  "modeHere": {
+    "message": "Ochrana tu"
+  },
+  "modeBasic": {
+    "message": "Základná"
+  },
+  "modeStandard": {
+    "message": "Štandardná"
+  },
+  "modeStrict": {
+    "message": "Prísna"
+  },
+  "opt_mode": {
+    "message": "Úroveň ochrany"
+  },
+  "opt_mode_sub": {
+    "message": "Pre všetky weby. Ak chcete jednému webu nastaviť vlastnú úroveň, otvorte na ňom rozšírenie."
+  },
+  "modeHint": {
+    "message": "Základná: iba blokovanie v sieti. Štandardná: odporúča sa. Prísna: aj vnútri rámcov. Stránka sa znovu načíta."
+  },
+  "modeBasicDesc": {
+    "message": "Iba blokovanie v sieti: najľahšia, takmer nič sa nepokazí. YouTube si ponecháva vlastnú ochranu."
+  },
+  "modeStandardDesc": {
+    "message": "Odporúča sa: plná ochrana priamo na stránke."
+  },
+  "modeStrictDesc": {
+    "message": "Aj vnútri vložených rámcov: skryje najviac, spotrebuje najviac pamäte."
   }
 }

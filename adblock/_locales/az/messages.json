@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Test səhifəsində necə işlədiyini görün"
+  },
+  "modeHere": {
+    "message": "Burada qoruma"
+  },
+  "modeBasic": {
+    "message": "Əsas"
+  },
+  "modeStandard": {
+    "message": "Standart"
+  },
+  "modeStrict": {
+    "message": "Sərt"
+  },
+  "opt_mode": {
+    "message": "Qoruma səviyyəsi"
+  },
+  "opt_mode_sub": {
+    "message": "Bütün saytlar üçün. Bir sayta ayrıca səviyyə vermək üçün genişləndirməni həmin saytda açın."
+  },
+  "modeHint": {
+    "message": "Əsas: yalnız şəbəkədə bloklama. Standart: tövsiyə olunur. Sərt: freymlərin içində də. Səhifə yenidən yüklənir."
+  },
+  "modeBasicDesc": {
+    "message": "Yalnız şəbəkədə bloklama: ən yüngülü, demək olar ki, heç nə pozulmur. YouTube öz qorumasını saxlayır."
+  },
+  "modeStandardDesc": {
+    "message": "Tövsiyə olunur: səhifənin özündə tam qoruma."
+  },
+  "modeStrictDesc": {
+    "message": "Daxil edilmiş freymlərin içində də: ən çox gizlədir, ən çox yaddaş işlədir."
   }
 }

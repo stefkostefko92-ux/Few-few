@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Ione ikifanya kazi kwenye ukurasa wa majaribio"
+  },
+  "modeHere": {
+    "message": "Ulinzi hapa"
+  },
+  "modeBasic": {
+    "message": "Msingi"
+  },
+  "modeStandard": {
+    "message": "Kawaida"
+  },
+  "modeStrict": {
+    "message": "Mkali"
+  },
+  "opt_mode": {
+    "message": "Kiwango cha ulinzi"
+  },
+  "opt_mode_sub": {
+    "message": "Kwa kila tovuti. Ili kuipa tovuti moja kiwango chake, fungua kiendelezi kwenye tovuti hiyo."
+  },
+  "modeHint": {
+    "message": "Msingi: kuzuia kwenye mtandao tu. Kawaida: inapendekezwa. Mkali: hata ndani ya fremu. Ukurasa utapakiwa upya."
+  },
+  "modeBasicDesc": {
+    "message": "Kuzuia kwenye mtandao tu: nyepesi zaidi, karibu hakuna kinachoharibika. YouTube inabaki na ulinzi wake."
+  },
+  "modeStandardDesc": {
+    "message": "Inapendekezwa: ulinzi kamili kwenye ukurasa wenyewe."
+  },
+  "modeStrictDesc": {
+    "message": "Hata ndani ya fremu zilizopachikwa: huficha zaidi, hutumia kumbukumbu zaidi."
   }
 }

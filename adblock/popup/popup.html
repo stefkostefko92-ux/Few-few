@@ -78,16 +78,16 @@
       </label>
     </section>
 
-    <section class="site sub" id="cosmRow">
+    <section class="site sub" id="modeRow">
       <div class="site-id">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM3 9h18M8 13h8"/></svg>
-        <span data-i18n="cosmetics">Hide ad boxes here</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z"/><path d="M9 12h6"/></svg>
+        <label for="modeSel" data-i18n="modeHere">Protection here</label>
       </div>
-      <label class="switch sm" data-i18n-title="cosmeticsTitle" title="Hide ad boxes on this site (turn it off if the page layout breaks)">
-        <span class="lbl" id="cosmLabel" data-i18n="on" aria-live="polite">On</span>
-        <input type="checkbox" id="cosmToggle" checked />
-        <span class="track"><span class="thumb"></span></span>
-      </label>
+      <select id="modeSel" class="mode-sel" data-i18n-title="modeHint" title="Basic: network blocking only. Standard: recommended. Strict: also inside frames. The page reloads.">
+        <option value="basic" data-i18n="modeBasic">Basic</option>
+        <option value="standard" data-i18n="modeStandard">Standard</option>
+        <option value="strict" data-i18n="modeStrict">Strict</option>
+      </select>
     </section>
   </div>
 

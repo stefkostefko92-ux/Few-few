@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Bir test sayfasında çalışırken görün"
+  },
+  "modeHere": {
+    "message": "Burada koruma"
+  },
+  "modeBasic": {
+    "message": "Temel"
+  },
+  "modeStandard": {
+    "message": "Standart"
+  },
+  "modeStrict": {
+    "message": "Sıkı"
+  },
+  "opt_mode": {
+    "message": "Koruma düzeyi"
+  },
+  "opt_mode_sub": {
+    "message": "Tüm siteler için. Bir siteye ayrı bir düzey vermek için uzantıyı o sitede açın."
+  },
+  "modeHint": {
+    "message": "Temel: yalnızca ağda engelleme. Standart: önerilen. Sıkı: çerçevelerin içinde de. Sayfa yeniden yüklenir."
+  },
+  "modeBasicDesc": {
+    "message": "Yalnızca ağda engelleme: en hafifi, neredeyse hiçbir şey bozulmaz. YouTube kendi korumasını korur."
+  },
+  "modeStandardDesc": {
+    "message": "Önerilen: sayfanın kendisinde tam koruma."
+  },
+  "modeStrictDesc": {
+    "message": "Gömülü çerçevelerin içinde de: en çok gizler, en çok bellek kullanır."
   }
 }

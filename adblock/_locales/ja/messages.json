@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "テストページで動作を確認する"
+  },
+  "modeHere": {
+    "message": "このサイトの保護"
+  },
+  "modeBasic": {
+    "message": "ベーシック"
+  },
+  "modeStandard": {
+    "message": "スタンダード"
+  },
+  "modeStrict": {
+    "message": "ストリクト"
+  },
+  "opt_mode": {
+    "message": "保護レベル"
+  },
+  "opt_mode_sub": {
+    "message": "すべてのサイトに適用されます。サイトごとに変えるには、そのサイトで拡張機能を開いてください。"
+  },
+  "modeHint": {
+    "message": "ベーシック：ネットワークでのブロックのみ。スタンダード：おすすめ。ストリクト：フレーム内も。ページが再読み込みされます。"
+  },
+  "modeBasicDesc": {
+    "message": "ネットワークでのブロックのみ。最も軽く、ほとんど何も壊れません。YouTube は専用の保護を維持します。"
+  },
+  "modeStandardDesc": {
+    "message": "おすすめ。ページ自体を完全に保護します。"
+  },
+  "modeStrictDesc": {
+    "message": "埋め込みフレーム内も保護。最も多く非表示にし、最も多くのメモリを使います。"
   }
 }

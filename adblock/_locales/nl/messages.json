@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Bekijk hoe het werkt op een testpagina"
+  },
+  "modeHere": {
+    "message": "Bescherming hier"
+  },
+  "modeBasic": {
+    "message": "Basis"
+  },
+  "modeStandard": {
+    "message": "Standaard"
+  },
+  "modeStrict": {
+    "message": "Strikt"
+  },
+  "opt_mode": {
+    "message": "Beschermingsniveau"
+  },
+  "opt_mode_sub": {
+    "message": "Voor alle websites. Wilt u één website een eigen niveau geven, open dan de extensie op die website."
+  },
+  "modeHint": {
+    "message": "Basis: alleen blokkeren op het netwerk. Standaard: aanbevolen. Strikt: ook binnen frames. De pagina wordt opnieuw geladen."
+  },
+  "modeBasicDesc": {
+    "message": "Alleen blokkeren op het netwerk: het lichtst, er gaat bijna niets stuk. YouTube houdt zijn eigen bescherming."
+  },
+  "modeStandardDesc": {
+    "message": "Aanbevolen: volledige bescherming op de pagina zelf."
+  },
+  "modeStrictDesc": {
+    "message": "Ook binnen ingesloten frames: verbergt het meest, gebruikt het meeste geheugen."
   }
 }

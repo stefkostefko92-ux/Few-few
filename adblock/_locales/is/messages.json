@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Sjáðu það virka á prófunarsíðu"
+  },
+  "modeHere": {
+    "message": "Vörn hér"
+  },
+  "modeBasic": {
+    "message": "Grunnvörn"
+  },
+  "modeStandard": {
+    "message": "Venjuleg"
+  },
+  "modeStrict": {
+    "message": "Ströng"
+  },
+  "opt_mode": {
+    "message": "Verndarstig"
+  },
+  "opt_mode_sub": {
+    "message": "Fyrir öll vefsvæði. Til að gefa einu vefsvæði eigið stig skaltu opna viðbótina á því vefsvæði."
+  },
+  "modeHint": {
+    "message": "Grunnvörn: aðeins lokun á netinu. Venjuleg: mælt með. Ströng: líka inni í römmum. Síðan endurhleðst."
+  },
+  "modeBasicDesc": {
+    "message": "Aðeins lokun á netinu: léttust, nánast ekkert brotnar. YouTube heldur sinni eigin vörn."
+  },
+  "modeStandardDesc": {
+    "message": "Mælt með: full vörn á síðunni sjálfri."
+  },
+  "modeStrictDesc": {
+    "message": "Líka inni í ívöfðum römmum: felur mest, notar mest minni."
   }
 }

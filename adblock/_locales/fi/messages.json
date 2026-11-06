@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Katso, miten se toimii testisivulla"
+  },
+  "modeHere": {
+    "message": "Suojaus täällä"
+  },
+  "modeBasic": {
+    "message": "Perus"
+  },
+  "modeStandard": {
+    "message": "Vakio"
+  },
+  "modeStrict": {
+    "message": "Tiukka"
+  },
+  "opt_mode": {
+    "message": "Suojaustaso"
+  },
+  "opt_mode_sub": {
+    "message": "Kaikille sivustoille. Jos haluat sivustolle oman tason, avaa laajennus kyseisellä sivustolla."
+  },
+  "modeHint": {
+    "message": "Perus: vain esto verkossa. Vakio: suositeltu. Tiukka: myös kehysten sisällä. Sivu ladataan uudelleen."
+  },
+  "modeBasicDesc": {
+    "message": "Vain esto verkossa: kevein, lähes mikään ei rikkoudu. YouTube säilyttää oman suojauksensa."
+  },
+  "modeStandardDesc": {
+    "message": "Suositeltu: täysi suojaus itse sivulla."
+  },
+  "modeStrictDesc": {
+    "message": "Myös upotettujen kehysten sisällä: piilottaa eniten, käyttää eniten muistia."
   }
 }

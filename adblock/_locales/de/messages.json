@@ -858,5 +858,35 @@
   },
   "welTest": {
     "message": "Auf einer Testseite sehen, wie es funktioniert"
+  },
+  "modeHere": {
+    "message": "Schutz hier"
+  },
+  "modeBasic": {
+    "message": "Basis"
+  },
+  "modeStandard": {
+    "message": "Standard"
+  },
+  "modeStrict": {
+    "message": "Streng"
+  },
+  "opt_mode": {
+    "message": "Schutzstufe"
+  },
+  "opt_mode_sub": {
+    "message": "Für alle Websites. Für eine eigene Stufe einer Website öffnen Sie die Erweiterung auf dieser Website."
+  },
+  "modeHint": {
+    "message": "Basis: nur Blockieren im Netzwerk. Standard: empfohlen. Streng: auch in Frames. Die Seite wird neu geladen."
+  },
+  "modeBasicDesc": {
+    "message": "Nur Blockieren im Netzwerk: am leichtesten, fast nichts geht kaputt. YouTube behält seinen eigenen Schutz."
+  },
+  "modeStandardDesc": {
+    "message": "Empfohlen: voller Schutz auf der Seite selbst."
+  },
+  "modeStrictDesc": {
+    "message": "Auch in eingebetteten Frames: blendet am meisten aus, braucht am meisten Speicher."
   }
 }

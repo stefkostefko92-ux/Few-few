@@ -54,6 +54,7 @@ const PAGES = {
       <button class="iubenda-cs-reject-btn" onclick="__clicks.push('pay')">Rifiuta e abbonati</button>
       <button class="iubenda-cs-accept-btn" onclick="__clicks.push('accept')">Accetta</button></div>
   </body></html>`,
+  "/framed": `<!doctype html><html><body><iframe src="/cosmetic" width="420" height="320"></iframe></body></html>`,
   "/pause": `<!doctype html><html><body><script>window.__loaded=false;</script><script src="/pausetest.js"></script></body></html>`,
   "/focus": `<!doctype html><html><body><ytd-reel-shelf-renderer id="shorts">shorts shelf</ytd-reel-shelf-renderer><ytd-video-renderer id="video">a normal video</ytd-video-renderer></body></html>`,
   "/cookie": `<!doctype html><html><body style="min-height:2000px">
@@ -241,9 +242,12 @@ try {
     await rep.click("#fullUrl");
     ok("report: the full address only when the user ticks it", (await rep.evaluate(() => document.getElementById("preview").textContent)).includes("secret=1"));
     await rep.click("#fixCosm");
-    await rep.waitForTimeout(800);
-    ok("report: 'turn off element hiding here' applies to that site", (await sw.evaluate(async () => (await chrome.storage.local.get("noCosmetics")).noCosmetics || [])).includes("127.0.0.1"));
-    await sw.evaluate(async () => chrome.storage.local.set({ noCosmetics: [] }));
+    // 6.0: element hiding off = the site's Basic mode (re-registering the scripts takes Chrome ~2 s)
+    const basicHere = async () => ((await sw.evaluate(async () => (await chrome.storage.local.get("siteModes")).siteModes || {}))["127.0.0.1"]) === "basic";
+    for (let i = 0; i < 40 && !(await basicHere()); i++) await rep.waitForTimeout(100);
+    ok("report: 'turn off element hiding here' applies to that site (its Basic mode since 6.0)", await basicHere());
+    await rep.waitForSelector("#fixedAsk", { state: "visible", timeout: 6000 }).catch(() => {});
+    await sw.evaluate(async () => { await chrome.storage.local.set({ noCosmetics: [], siteModes: {} }); await syncPageScripts(); await syncScriptlets(); });
     await rep.close(); await site.close();
   }
 
@@ -253,6 +257,9 @@ try {
     await sw.evaluate(() => chrome.declarativeNetRequest.updateDynamicRules({ addRules: [{ id: 80999, priority: 1, action: { type: "block" }, condition: { urlFilter: "/pausetest.js", resourceTypes: ["script"] } }] }));
     const before = await loaded();
     await sw.evaluate(() => pauseFor(1));
+    // the pause rule is readable back before the page loads (right after the update Chrome sometimes
+    // still applied the old set to the next navigation: 2 of 7 runs, 6.0)
+    await sw.evaluate(async () => (await chrome.declarativeNetRequest.getDynamicRules()).some((r) => r.action.type === "allowAllRequests"));
     const during = await loaded();
     await sw.evaluate(() => resumeNow());
     const after = await loaded();
@@ -277,6 +284,26 @@ try {
   const c2 = await p2.evaluate(() => window.__clicks.slice());
   ok("removed from the allowlist → handled again without a reload", c2.join() === "reject");
   await p2.close();
+
+  // ---- 6.0 protection modes, in the real browser (the page scripts are registered by the SW) ----
+  {
+    const adShown = async (path, inFrame) => {
+      const pg = await ctx.newPage(); await pg.goto(origin + path); await pg.waitForTimeout(900);
+      const fr = inFrame ? pg.frames().find((f) => f !== pg.mainFrame()) : pg.mainFrame();
+      const v = await fr.evaluate(() => getComputedStyle(document.getElementById("ad")).display !== "none");
+      await pg.close(); return v;
+    };
+    const std = await adShown("/cosmetic", false);
+    const stdFrame = await adShown("/framed", true);
+    await sw.evaluate(() => setSiteMode("127.0.0.1", "basic"));
+    const basic = await adShown("/cosmetic", false);
+    await sw.evaluate(() => setSiteMode("127.0.0.1", "strict"));
+    const strictFrame = await adShown("/framed", true);
+    await sw.evaluate(() => setSiteMode("127.0.0.1", "standard"));
+    const back = await adShown("/cosmetic", false);
+    ok(`modes: Standard hides in the page but not in its frames; Basic adds nothing of ours; Strict hides inside frames too (shown: standard ${std}, its frame ${stdFrame}, basic ${basic}, strict frame ${strictFrame}, standard again ${back})`,
+      std === false && stdFrame === true && basic === true && strictFrame === false && back === false);
+  }
 } finally {
   await ctx.close();
 }

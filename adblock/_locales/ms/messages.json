@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Lihat ia berfungsi pada halaman ujian"
+  },
+  "modeHere": {
+    "message": "Perlindungan di sini"
+  },
+  "modeBasic": {
+    "message": "Asas"
+  },
+  "modeStandard": {
+    "message": "Standard"
+  },
+  "modeStrict": {
+    "message": "Ketat"
+  },
+  "opt_mode": {
+    "message": "Tahap perlindungan"
+  },
+  "opt_mode_sub": {
+    "message": "Untuk setiap laman. Untuk memberi satu laman tahapnya sendiri, buka sambungan di laman itu."
+  },
+  "modeHint": {
+    "message": "Asas: sekatan di rangkaian sahaja. Standard: disyorkan. Ketat: juga di dalam bingkai. Halaman dimuat semula."
+  },
+  "modeBasicDesc": {
+    "message": "Sekatan di rangkaian sahaja: paling ringan, hampir tiada yang rosak. YouTube mengekalkan perlindungannya sendiri."
+  },
+  "modeStandardDesc": {
+    "message": "Disyorkan: perlindungan penuh pada halaman itu sendiri."
+  },
+  "modeStrictDesc": {
+    "message": "Juga di dalam bingkai terbenam: menyembunyikan paling banyak, menggunakan memori paling banyak."
   }
 }

@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Gweld sut mae’n gweithio ar dudalen brawf"
+  },
+  "modeHere": {
+    "message": "Diogelwch yma"
+  },
+  "modeBasic": {
+    "message": "Sylfaenol"
+  },
+  "modeStandard": {
+    "message": "Safonol"
+  },
+  "modeStrict": {
+    "message": "Llym"
+  },
+  "opt_mode": {
+    "message": "Lefel diogelwch"
+  },
+  "opt_mode_sub": {
+    "message": "Ar gyfer pob gwefan. I roi lefel ei hun i un wefan, agorwch yr estyniad ar y wefan honno."
+  },
+  "modeHint": {
+    "message": "Sylfaenol: rhwystro ar y rhwydwaith yn unig. Safonol: argymhellir. Llym: y tu mewn i fframiau hefyd. Mae’r dudalen yn ail-lwytho."
+  },
+  "modeBasicDesc": {
+    "message": "Rhwystro ar y rhwydwaith yn unig: yr ysgafnaf, bron dim yn torri. Mae YouTube yn cadw ei ddiogelwch ei hun."
+  },
+  "modeStandardDesc": {
+    "message": "Argymhellir: diogelwch llawn ar y dudalen ei hun."
+  },
+  "modeStrictDesc": {
+    "message": "Y tu mewn i fframiau wedi’u mewnosod hefyd: yn cuddio fwyaf, yn defnyddio’r mwyaf o gof."
   }
 }

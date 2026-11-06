@@ -856,5 +856,35 @@
   },
   "welTest": {
     "message": "Se det virke på en testside"
+  },
+  "modeHere": {
+    "message": "Beskyttelse her"
+  },
+  "modeBasic": {
+    "message": "Basis"
+  },
+  "modeStandard": {
+    "message": "Standard"
+  },
+  "modeStrict": {
+    "message": "Streng"
+  },
+  "opt_mode": {
+    "message": "Beskyttelsesniveau"
+  },
+  "opt_mode_sub": {
+    "message": "For alle websteder. Vil du give ét websted sit eget niveau, så åbn udvidelsen på det websted."
+  },
+  "modeHint": {
+    "message": "Basis: kun blokering på netværket. Standard: anbefalet. Streng: også inde i rammer. Siden genindlæses."
+  },
+  "modeBasicDesc": {
+    "message": "Kun blokering på netværket: den letteste, næsten intet går i stykker. YouTube beholder sin egen beskyttelse."
+  },
+  "modeStandardDesc": {
+    "message": "Anbefalet: fuld beskyttelse på selve siden."
+  },
+  "modeStrictDesc": {
+    "message": "Også inde i indlejrede rammer: skjuler mest, bruger mest hukommelse."
   }
 }

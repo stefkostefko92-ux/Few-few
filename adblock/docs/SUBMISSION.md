@@ -126,14 +126,20 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
   `document_start`) — see the Twitch reviewer note. And, unless the user
   switches Global Privacy Control off, the bundled `gpc.js` (MAIN world, every
   site except allowed ones), which only defines `navigator.globalPrivacyControl = true`.
+  Since 6.0 the extension's own page scripts (`content.js`/`.css`, `cosmetic_generic.css`,
+  `cookies.js`/`.css`, `antiadblock.js`/`.css`, `picker.js`/`.css` — isolated world, the same bundled
+  files the manifest used to list) are registered here too, so the user's **protection level**
+  decides where they run: Basic — none (network blocking only), Standard (default) — the top
+  frame, Strict — every frame; globally or per site, chosen in Settings or the popup.
 - **host permissions `<all_urls>`** — a universal ad blocker must filter and
   cosmetically clean ads on every site the user visits; all processing is local.
 
 > **Reviewer note (MAIN-world scriptlets).** The extension registers MAIN-world
 > content scripts from this package only: `scriptlets/main.js` (plain, unminified,
 > commented JavaScript) and, on the hosts the uBlock Origin filters target, a
-> data chunk `scriptlets/ubo/cNN.js` placed before it (host → routine name +
-> arguments; no functions). It neutralises
+> data chunk `scriptlets/ubo/cNN.js` (host → routine name + arguments; no functions)
+> followed by `scriptlets/ubo_engine.js` — the same routines as `main.js`, built from the
+> same `scriptlets/engine.js`, which runs only that chunk's rows. It neutralises
 > anti-adblock detectors — the same mechanism established ad blockers use for
 > `##+js(...)`.
 > `main.js` contains (a) a fixed set of **39 named routines** — `set-constant`,
@@ -150,8 +156,8 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 > Both the routines and the host table are **fixed in the package** (since 5.1.4):
 > nothing downloaded can add, change or trigger a scriptlet directive, and
 > `main.js` listens to no page or extension message. The routines run only the
-> rows baked at build time; `node tools/build_scriptlets.mjs` reproduces `main.js`
-> and `ubo/*` byte for byte from `scriptlets/list.txt` and the bundled uBlock
+> rows baked at build time; `node tools/build_scriptlets.mjs` reproduces `main.js`,
+> `ubo_engine.js` and `ubo/*` byte for byte from `scriptlets/list.txt` and the bundled uBlock
 > Origin filters.
 > There is no `eval`, no `Function()`, no `<script src>`, and no code path that
 > executes a string received over the network.
