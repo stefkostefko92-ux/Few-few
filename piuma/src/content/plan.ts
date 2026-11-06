@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 /**
  * План за поддръжка на управлявана страница. Живее в `Brand.plan` (Json) и се валидира
