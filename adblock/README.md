@@ -48,8 +48,10 @@ stays on your device.
 - **Element picker**, click any element to hide it permanently on that site;
   the popup's ↶ N takes the last one back at once, no reload.
 - **Connections on this page**, the popup lists the other sites a page loaded
-  something from (Resource Timing, read when you open the box) and blocks one on
-  that site only (a dynamic rule with `initiatorDomains`, priority 5000).
+  something from (Resource Timing, read when you open the box), names the company
+  behind each known host (Google, Meta, Amazon…, from our own map in
+  `popup/companies.js`) and blocks one on that site only (a dynamic rule with
+  `initiatorDomains`, priority 5000).
 - **Import from another ad blocker**, the allowed sites and own filters of a
   uBlock Origin, AdGuard or Adblock Plus backup (`lib/foreign.js`, checked
   again in the service worker; a rule it cannot apply is left out, never
