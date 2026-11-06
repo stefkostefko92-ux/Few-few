@@ -60,6 +60,30 @@ export function severity(level: string): Presented {
   return SEVERITY[level] ?? UNKNOWN;
 }
 
+const RULE_STATUS: Record<string, Presented> = {
+  DRAFT: { key: 'status.DRAFT', icon: 'status-draft', tone: 'neutral' },
+  ACTIVE: { key: 'status.ACTIVE', icon: 'status-active', tone: 'good' },
+  PAUSED: { key: 'status.PAUSED', icon: 'status-disabled', tone: 'warn' },
+};
+
+const REPLY_STATUS: Record<string, Presented> = {
+  QUEUED: { key: 'status.QUEUED', icon: 'status-scheduled', tone: 'info' },
+  SENDING: { key: 'status.SENDING', icon: 'status-publishing', tone: 'warn' },
+  SENT: { key: 'status.SENT', icon: 'status-published', tone: 'good' },
+  FAILED: { key: 'status.FAILED', icon: 'status-failed', tone: 'critical' },
+  SKIPPED: { key: 'status.SKIPPED', icon: 'severity-info', tone: 'neutral' },
+};
+
+/** Правило „отговор по ключова дума“: чернова · активно · на пауза. */
+export function ruleStatus(status: string): Presented {
+  return RULE_STATUS[status] ?? UNKNOWN;
+}
+
+/** Едно лично съобщение по пътя си: в опашка · изпраща се · изпратено · провалено · пропуснато. */
+export function replyStatus(status: string): Presented {
+  return REPLY_STATUS[status] ?? UNKNOWN;
+}
+
 export function actor(type: string): Presented {
   return ACTOR[type] ?? UNKNOWN;
 }
