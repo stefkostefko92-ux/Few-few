@@ -27,7 +27,7 @@ await new Promise((r) => srv.listen(0, "127.0.0.1", r));
 const profile = mkdtempSync(join(tmpdir(), "sa-cards-"));
 const ctx = await chromium.launchPersistentContext(profile, {
   channel: "chromium", headless: true,
-  args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`, "--host-resolver-rules=MAP chromewebstore.google.com ~NOTFOUND"],
+  args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`, "--host-resolver-rules=MAP chromewebstore.google.com ~NOTFOUND", "--no-proxy-server"],
 });
 try {
   const sw = ctx.serviceWorkers()[0] || await ctx.waitForEvent("serviceworker", { timeout: 20000 });
