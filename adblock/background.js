@@ -643,10 +643,21 @@ const YT_PATTERNS = ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"];
 // Serialise register/unregister so a fast on/off/on burst (alarm + message
 // racing through applyState) can't interleave the awaits and leave the engine
 // registered while disabled, or vice versa. Same pattern as smartChain below.
-let scriptletChain = Promise.resolve();
+// 6.0: ONE queue for every chrome.scripting registration (the scriptlets and the page scripts) —
+// Chrome never sees two of our updates at once — and no call may hold it forever: a scripting
+// promise Chrome never settles is given up after SCRIPTING_TIMEOUT_MS and reported (health card).
+let scriptingChain = Promise.resolve();
+const SCRIPTING_TIMEOUT_MS = 20000;
+function scripting(name, ...args) {
+  let timer;
+  return Promise.race([
+    Promise.resolve(chrome.scripting[name](...args)),
+    new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`scripting.${name}: no answer in ${SCRIPTING_TIMEOUT_MS / 1000} s`)), SCRIPTING_TIMEOUT_MS); }),
+  ]).finally(() => clearTimeout(timer));
+}
 function syncScriptlets(on) {
-  scriptletChain = scriptletChain.then(() => doSyncScriptlets(on)).catch(() => {});
-  return scriptletChain;
+  scriptingChain = scriptingChain.then(() => doSyncScriptlets(on)).catch(() => {});
+  return scriptingChain;
 }
 
 // ---- Page scripts (6.0): content.js, the generic CSS, cookies.js, anti-adblock, the picker ----
@@ -654,10 +665,9 @@ function syncScriptlets(on) {
 // Standard the top frame only (+ the consent platforms' frames), Strict every frame — the frames cost
 // ~0.7 MB each. They stay registered while the extension is paused or a site is allowed: they switch
 // themselves off and on again without a reload, as before.
-let pageChain = Promise.resolve();
 function syncPageScripts() {
-  pageChain = pageChain.then(doSyncPageScripts).catch((e) => console.warn("page scripts", e));
-  return pageChain;
+  scriptingChain = scriptingChain.then(doSyncPageScripts).catch((e) => console.warn("page scripts", e));
+  return scriptingChain;
 }
 // 6.0: one site's mode (the popup's "Protection here", the repair page); the global mode clears the entry
 async function setSiteMode(host, want) {
@@ -686,20 +696,20 @@ async function doSyncPageScripts() {
   const { mode, siteModes } = await chrome.storage.local.get(["mode", "siteModes"]);
   const plan = (sm) => SA_MODES.pageScriptPlan(mode, sm).map((r) => ({ ...r, persistAcrossSessions: true }));
   try {
-    const cur = (await chrome.scripting.getRegisteredContentScripts()).filter((c) => c.id.startsWith(SA_MODES.PAGE_PREFIX));
+    const cur = (await scripting("getRegisteredContentScripts")).filter((c) => c.id.startsWith(SA_MODES.PAGE_PREFIX));
     // Already registered exactly so (every browser start, an update with the same plan): touch nothing —
     // unregister + register leaves ~1 s in which restored tabs would load without our page scripts.
     if (cur.length && sameRegistrations(cur, plan(siteModes))) return;
-    if (cur.length) await chrome.scripting.unregisterContentScripts({ ids: cur.map((c) => c.id) });
+    if (cur.length) await scripting("unregisterContentScripts", { ids: cur.map((c) => c.id) });
   } catch (e) {}
   try {
     const p = plan(siteModes);
-    if (p.length) await chrome.scripting.registerContentScripts(p);
+    if (p.length) await scripting("registerContentScripts", p);
   } catch (e) {
     // a site entry Chrome refused must not leave every page without content scripts: the global mode alone
     console.warn("page scripts: per-site modes refused, global mode only", e);
     const p = plan({});
-    if (p.length) await chrome.scripting.registerContentScripts(p);
+    if (p.length) await scripting("registerContentScripts", p);
   }
 }
 
@@ -712,16 +722,16 @@ async function doSyncScriptlets(on) {
   const ours = (id) => id === SCRIPTLET_SCRIPT_ID || id.startsWith(SCRIPTLET_SCRIPT_ID + "-") || id === YT_MAIN_SCRIPT_ID || id === YT_CSS_ID ||
     id === TW_MAIN_SCRIPT_ID || id === GPC_SCRIPT_ID || id.startsWith(UBO_CHUNK_PREFIX);
   let existing = [];
-  try { existing = (await chrome.scripting.getRegisteredContentScripts()).filter((c) => ours(c.id)); } catch (e) {}
+  try { existing = (await scripting("getRegisteredContentScripts")).filter((c) => ours(c.id)); } catch (e) {}
   const all = on ? await scriptletPlan() : [];
   // Exactly what is registered already (every browser start: Chrome restored them): touch nothing —
   // unregister + register leaves ~1 s in which restored tabs (YouTube too) would load without them.
   if (existing.length && all.length && sameRegistrations(existing, all)) return;
   // Otherwise clear first, so a re-register can't throw "already registered".
-  try { if (existing.length) await chrome.scripting.unregisterContentScripts({ ids: existing.map((c) => c.id) }); } catch (e) {}
+  try { if (existing.length) await scripting("unregisterContentScripts", { ids: existing.map((c) => c.id) }); } catch (e) {}
   if (!all.length) return;
   try {
-    await chrome.scripting.registerContentScripts(all);
+    await scripting("registerContentScripts", all);
     try { await chrome.storage.local.set({ scriptletsError: "" }); } catch {}
   } catch (e) {
     console.warn("scriptlet registration failed", e);

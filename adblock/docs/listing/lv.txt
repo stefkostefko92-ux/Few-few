@@ -12,3 +12,4 @@ Supreme AdBlock bloķē reklāmas visur — YouTube video reklāmas, banerus, uz
 • Vietne nedarbojas? Viens klikšķis to salabo — vai pastāstiet mums; nekas netiek nosūtīts, pirms jūs to neesat redzējis.
 • Pārejat no uBlock Origin, AdGuard vai Adblock Plus? Pārnesiet atļautās vietnes un filtrus ar vienu failu.
 • Redziet, ar kurām citām vietnēm lapa savienojas, un ar vienu klikšķi bloķējiet kādu no tām tikai tur.
+• Aizsardzības līmenis: Pamata · Standarta · Stingrā

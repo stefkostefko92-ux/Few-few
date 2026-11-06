@@ -94,6 +94,7 @@ function load() {
       } else {
         siteHost.textContent = t("thisPage");
         allowToggle.disabled = true;
+        modeSel.value = res.mode || "standard"; // no site here (a browser page): the level for every site
         modeSel.disabled = true;
       }
 

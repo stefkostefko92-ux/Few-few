@@ -300,6 +300,8 @@ Adblock Plus 4.48.0  turtlecute  31/132 blocked · adblock-tester  75/100</code>
             <thead><tr><th scope="col">Blocker</th><th scope="col">Extension's own processes (MB)</th><th scope="col">5 open pages (MB)</th><th scope="col">Browser in total (MB)</th><th scope="col">Speedtest-style page, fetch (Mbps)</th></tr></thead>
             <tbody>
               <tr><th scope="row">No blocker</th><td>—</td><td>243–245</td><td>459–461</td><td>7,158–7,213</td></tr>
+              <tr class="us"><th scope="row">Supreme AdBlock 6.0.0, Standard (default)<small>separate run, 6 Nov 2026 *</small></th><td>52–53</td><td>307–308</td><td>601–603</td><td>7,639–7,726</td></tr>
+              <tr class="us"><th scope="row">Supreme AdBlock 6.0.0, Basic<small>separate run, 6 Nov 2026 *</small></th><td>41</td><td>227–228</td><td>492–496</td><td>7,536–7,972</td></tr>
               <tr class="us"><th scope="row">Supreme AdBlock 5.8.0</th><td>49–58</td><td>338–370</td><td>585–683</td><td>6,771–6,790</td></tr>
               <tr><th scope="row">uBlock Origin Lite 2026.1026.1812</th><td>31–32</td><td>272–273</td><td>544–548</td><td>6,980–7,247</td></tr>
               <tr><th scope="row">Ghostery 10.6.9</th><td>132–149</td><td>256–381</td><td>567–774</td><td>6,760–7,444</td></tr>
@@ -309,7 +311,8 @@ Adblock Plus 4.48.0  turtlecute  31/132 blocked · adblock-tester  75/100</code>
           </table>
         </div>
         <div class="limit">
-          <p><b>Where we lose.</b> uBlock Origin Lite uses less memory, both in its own processes and in the pages: with five heavy pages open, Supreme AdBlock added 95–125 MB to the pages, uBlock Origin Lite about 29 MB. Our content scripts and the element-hiding style sheet run in every page, and that is where the cost is. On the fetch download test Supreme AdBlock was about 6% below the browser without a blocker in both rounds; on the WebSocket test (1,163–1,223 Mbps against 1,088–1,255 without a blocker) the rounds overlap. This is the first thing we are working on for the next major version.</p>
+          <p>* Version 6.0.0 was measured in a separate run on the same day with the same tool and pages, three rounds; in that run the browser without a blocker used 242–243 MB for the pages and 5.8.0 used 366–368 MB, the same as in the table above.</p>
+          <p><b>Where we lose.</b> uBlock Origin Lite uses less memory, both in its own processes and in the pages: with five heavy pages open it added about 29 MB to the pages. Supreme AdBlock 5.8.0 added 123–125 MB; 6.0.0 adds 64–65 MB on its default level (Standard), because our page scripts now run where the level says (the page itself, not every embedded frame) and the anti-adblock engine no longer carries a copy of the uBlock Origin host list into every page process. On Basic, which blocks on the network only, the pages used 14–16 MB <em>less</em> than with no blocker at all, because the blocked ads never load. Most of what is left — about 36 MB on these five pages — is the price of the uBlock Origin fixes against anti-adblock walls on 16,817 sites: Chrome keeps the list of those sites in every page process. Without them 6.0.0 would add about 30 MB, like uBlock Origin Lite; we keep them, because they are what gets you past “disable your ad blocker” walls. On the Speedtest-style page in that separate run, the fetch test gave 7,368–7,602 Mbps without a blocker, 7,484–7,635 for 5.8.0 and 7,639–7,726 for 6.0.0 (Basic 7,536–7,972): the rounds overlap, so there is no slowdown we can measure — in the main run above, 5.8.0 was about 6% below the browser without a blocker on the same test.</p>
         </div>
         <h3>How these were measured</h3>
         <ul class="dots">

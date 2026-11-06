@@ -12,3 +12,4 @@ Supreme AdBlock lokar á auglýsingar alls staðar — YouTube-myndskeiðsauglý
 • Virkar vefsvæðið ekki? Einn smellur lagar það, eða láttu okkur vita — ekkert er sent án þess að þú sjáir það fyrst.
 • Ertu að skipta úr uBlock Origin, AdGuard eða Adblock Plus? Taktu leyfðu vefsvæðin og síurnar með þér í einni skrá.
 • Sjáðu við hvaða önnur vefsvæði síða tengist og lokaðu á eitt þeirra bara þar með einum smelli.
+• Verndarstig: Grunnvörn · Venjuleg · Ströng

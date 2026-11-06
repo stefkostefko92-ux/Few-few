@@ -12,3 +12,4 @@ Bina-block ng Supreme AdBlock ang ads kahit saan — mga video ad sa YouTube, ba
 • Sira ang site? Isang click lang para maayos, o sabihin sa amin — walang ipinapadala hangga't hindi ninyo muna nakikita.
 • Lilipat mula sa uBlock Origin, AdGuard o Adblock Plus? Dalhin ang inyong mga pinayagang site at filter gamit ang isang file.
 • Tingnan kung saang ibang site kumokonekta ang isang page, at i-block ang isa roon lang sa isang click.
+• Antas ng proteksyon: Basic · Standard · Mahigpit

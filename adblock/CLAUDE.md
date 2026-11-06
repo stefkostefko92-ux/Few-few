@@ -161,7 +161,9 @@ bash tools/package.sh                         # билд + самопровер�
   Strict — всички, id `sa-scriptlets[-strict|-standard]`); uBO парчетата остават във всички рамки (поправки по
   хост). Нов страницов скрипт = ред в `PAGE_SCRIPTS`, не в manifest-а. Всяко писане на mode/siteModes вика
   `syncPageScripts` + `syncScriptlets` само (без storage слушател — двойна работа: всяко scripting извикване
-  струва на Chrome ~0,6 s, смяна на режим ≈ 2 s). Popup-ът
+  струва на Chrome ~0,6 s, смяна на режим ≈ 2 s). И двете минават през ЕДНА опашка (`scriptingChain`), всяко
+  извикване — през `scripting()` с таймаут 20 s (обещание, което Chrome не разреши, не държи опашката вечно), и
+  не пипат нищо, ако вече е регистрирано точно така (`sameRegistrations` — всеки старт на браузъра). Popup-ът
   има ЕДИН ред „Protection here“ — заместил „Hide ad boxes here“ (старият `noCosmetics` се сгъва в Basic при
   ъпдейт/внос, `foldNoCosmetics`); нов ред = над 600 px. Гейт: tests/modes.test.mjs + extension.browser (режимите
   в истински Chromium).

@@ -12,3 +12,4 @@ Supreme AdBlock bloquea os anuncios en todas partes —anuncios de vídeo de You
 • O sitio non funciona? Un clic arránxao, ou avísenos: non se envía nada sen que vostede o vexa antes.
 • Vén de uBlock Origin, AdGuard ou Adblock Plus? Traia os seus sitios permitidos e filtros cun só ficheiro.
 • Vexa con que outros sitios se conecta unha páxina e bloquee calquera deles só nese sitio cun clic.
+• Nivel de protección: Básica · Estándar · Estrita

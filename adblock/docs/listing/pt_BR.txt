@@ -12,3 +12,4 @@ O Supreme AdBlock bloqueia anúncios em todo lugar — anúncios em vídeo do Yo
 • Site com problemas? Um clique resolve, ou nos avise — nada é enviado sem que você veja antes.
 • Vindo do uBlock Origin, AdGuard ou Adblock Plus? Traga seus sites permitidos e filtros com um só arquivo.
 • Veja a quais outros sites uma página se conecta e bloqueie qualquer um deles só nesse site com um clique.
+• Nível de proteção: Básica · Padrão · Rigorosa

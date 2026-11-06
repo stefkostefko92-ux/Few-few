@@ -159,6 +159,10 @@ ok("popup: in Basic the picker button is off (what it hid would not apply)", /ef
 const metaSrc = readFileSync(join(ROOT, "meta.js"), "utf8");
 ok("meta.js: gated on Basic, and lib/modes.js runs before it", /!st\.noCosm && !st\.basic/.test(metaSrc) && /SA_MODES\.effectiveMode\(location\.hostname, st\.mode, st\.siteModes\) === "basic"/.test(metaSrc));
 
+ok("one queue for every scripting registration, and no Chrome call can hold it forever",
+  /function syncScriptlets\(on\) \{\s*scriptingChain = scriptingChain\.then/.test(bgSrc) && /function syncPageScripts\(\) \{\s*scriptingChain = scriptingChain\.then/.test(bgSrc) &&
+  /Promise\.race\(\[/.test(bgSrc) && !/await chrome\.scripting\.(register|unregister)ContentScripts/.test(bgSrc));
+
 // ---- the manifest no longer injects them; the package still ships them ----
 const manifest = JSON.parse(readFileSync(join(ROOT, "manifest.json"), "utf8"));
 const inManifest = manifest.content_scripts.flatMap((c) => [...(c.js || []), ...(c.css || [])]);

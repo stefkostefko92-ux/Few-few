@@ -12,3 +12,4 @@ Supreme AdBlock estää mainokset kaikkialla – YouTuben videomainokset, banner
 • Sivusto rikki? Yksi klikkaus korjaa sen, tai kerro meille – mitään ei lähetetä ilman, että näet sen ensin.
 • Vaihdatko uBlock Originista, AdGuardista tai Adblock Plusista? Tuo sallitut sivustosi ja suodattimesi yhdellä tiedostolla.
 • Näe, mihin muihin sivustoihin sivu muodostaa yhteyden, ja estä niistä yksi yhdellä klikkauksella vain siellä.
+• Suojaustaso: Perus · Vakio · Tiukka
