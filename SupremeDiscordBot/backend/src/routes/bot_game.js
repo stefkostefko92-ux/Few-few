@@ -4,7 +4,7 @@
 // минути), /daily, профил, класация, магазин. Всичко е скопирано по serverId
 // (мулти-тенант); правилата за XP/нива живеят в lib/game/xp.js.
 import { Router } from "express";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { requireBotSecret } from "../middleware/auth.js";
 import { getServerTier } from "../lib/premium.js";

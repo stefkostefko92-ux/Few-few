@@ -3,7 +3,7 @@
 import { Router } from "express";
 import { createWithinLimit } from "../lib/withinLimit.js";
 import { PREMIUM_PANEL_LIMIT } from "./panels.js";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { VALID_EVENTS, validateWebhookUrl } from "../services/webhooks.js";

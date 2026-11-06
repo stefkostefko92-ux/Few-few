@@ -9,7 +9,7 @@
 // продуктово решение на собственика — TODO маркиран по-долу; данните вече
 // се събират, така че перкът може да е ретроактивен.
 import { Router } from "express";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { check, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 import { prisma } from "../lib/prisma.js";
 import { timingSafeEqual } from "crypto";

@@ -3,7 +3,7 @@
 // Едно съобщение (embed) с до 20 двойки emoji → роля; ботът слуша
 // messageReactionAdd/Remove (bot/src/events/) и дава/маха ролята.
 import { Router } from "express";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { getServerTier } from "../lib/premium.js";
