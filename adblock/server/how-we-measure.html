@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>How we measure ad blocking — Supreme AdBlock</title>
-<meta name="description" content="How the Supreme AdBlock home-page numbers were measured: two public tests, default settings, headless Chromium, the rerun command, and what they do not show." />
+<meta name="description" content="How we measured Supreme AdBlock: two public ad-blocking tests, memory and page speed against four other blockers, and what the numbers do not show." />
 <meta name="keywords" content="ad blocker test method, how we measure ad blocking, adblock-tester score, Turtlecute test, Supreme AdBlock, Carbon Stealth" />
 <meta name="author" content="Carbon Stealth" />
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
@@ -292,8 +292,31 @@ Adblock Plus 4.48.0  turtlecute  31/132 blocked · adblock-tester  75/100</code>
 
     <section class="blk" id="speed">
       <div class="wrap prose">
-        <h2>Page speed</h2>
-        <p>We publish no speed numbers. The repository has a tool, <a href="https://github.com/stefkostefko92-ux/Few-few/blob/main/adblock/tools/perf_speedtest.mjs" target="_blank" rel="noopener"><code>tools/perf_speedtest.mjs</code></a>, that measures how much an extension slows a page doing Speedtest-style work (a large page, an animation every frame and six parallel connections). It runs on your own computer over loopback in headless Chromium, so its output compares variants with each other, not with your real connection. We use it to catch regressions before a release.</p>
+        <h2>Memory and page speed</h2>
+        <p>Measured on 6 November 2026 with Supreme AdBlock 5.8.0 and the same competitor releases as above, two rounds each, every blocker on its default settings with a fresh profile and 60 seconds to set itself up (Ghostery's onboarding confirmed). The ranges are the two rounds. Lower memory is better; higher speed is better.</p>
+        <div class="tablewrap">
+          <table>
+            <caption class="sr">Memory and page speed of five ad blockers, 6 November 2026</caption>
+            <thead><tr><th scope="col">Blocker</th><th scope="col">Extension's own processes (MB)</th><th scope="col">5 open pages (MB)</th><th scope="col">Browser in total (MB)</th><th scope="col">Speedtest-style page, fetch (Mbps)</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">No blocker</th><td>—</td><td>243–245</td><td>459–461</td><td>7,158–7,213</td></tr>
+              <tr class="us"><th scope="row">Supreme AdBlock 5.8.0</th><td>49–58</td><td>338–370</td><td>585–683</td><td>6,771–6,790</td></tr>
+              <tr><th scope="row">uBlock Origin Lite 2026.1026.1812</th><td>31–32</td><td>272–273</td><td>544–548</td><td>6,980–7,247</td></tr>
+              <tr><th scope="row">Ghostery 10.6.9</th><td>132–149</td><td>256–381</td><td>567–774</td><td>6,760–7,444</td></tr>
+              <tr><th scope="row">AdGuard 5.5.3.28</th><td>275–286</td><td>301–341</td><td>764–871</td><td>6,943–6,971</td></tr>
+              <tr><th scope="row">Adblock Plus 4.48.0</th><td>283–284</td><td>340–341</td><td>861–866</td><td>7,021–7,238</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="limit">
+          <p><b>Where we lose.</b> uBlock Origin Lite uses less memory, both in its own processes and in the pages: with five heavy pages open, Supreme AdBlock added 95–125 MB to the pages, uBlock Origin Lite about 29 MB. Our content scripts and the element-hiding style sheet run in every page, and that is where the cost is. On the fetch download test Supreme AdBlock was about 6% below the browser without a blocker in both rounds; on the WebSocket test (1,163–1,223 Mbps against 1,088–1,255 without a blocker) the rounds overlap. This is the first thing we are working on for the next major version.</p>
+        </div>
+        <h3>How these were measured</h3>
+        <ul class="dots">
+          <li><b>Memory:</b> <a href="https://github.com/stefkostefko92-ux/Few-few/blob/main/adblock/tools/perf_memory.mjs" target="_blank" rel="noopener"><code>tools/perf_memory.mjs</code></a> opens the same five local pages (a large page with 120 ad-sized boxes and six frames) in five tabs, waits five seconds and adds up the proportional set size (PSS) of the browser's processes from <code>/proc</code> (Linux): the extension's own processes, the page processes and the whole browser.</li>
+          <li><b>Speed:</b> <a href="https://github.com/stefkostefko92-ux/Few-few/blob/main/adblock/tools/perf_speedtest.mjs" target="_blank" rel="noopener"><code>tools/perf_speedtest.mjs</code></a> runs a Speedtest-style page (a large page, an animation every frame, six parallel downloads) over loopback and reports the throughput. It measures how much a blocker slows the page's main thread, not your connection.</li>
+          <li>Headless Chromium on a cloud machine; local pages only, so the network does not play a part. Numbers on your computer will differ; compare the rows with each other.</li>
+        </ul>
       </div>
     </section>
 
