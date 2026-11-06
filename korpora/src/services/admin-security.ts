@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { audited } from '../audit.js';
 import { sha256Hex } from '../crypto.js';
 import { destroyAllSessions } from '../auth/sessions.js';
