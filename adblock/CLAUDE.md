@@ -25,7 +25,10 @@ scriptlets/             scriptlet engine (##+js): policy.js (ЕДИНСТВЕН 
                         политиката — инлайнва се в engine-а, importScripts в SW, content
                         script ПРЕДИ content.js в изолирания свят, vm в билда) + engine.js
                         (clean-room код) + list.txt (данни) → main.js
-                        (пече се от build_scriptlets.mjs; MAIN world при document_start)
+                        (пече се от build_scriptlets.mjs; MAIN world при document_start) + ubo_engine.js (същият
+                        engine в ролята „парче“: чете само `__tbabScriptletChunk` на своето uBO парче — main.js вече
+                        НЕ носи 16 817-те хоста като excludeMatches; Chrome копира всеки регистриран шаблон във всеки
+                        renderer, дублираният списък струваше ~4 MB на процес)
 youtube_loader.js       подава live добавките (данни) на youtube_main чрез DOM събитие
 youtube_main.js         MAIN world (регистриран от SW) — маха рекламите от player/feed отговорите като текст;
                         5.7: скок над вшита реклама (SSAP), формите на /player след отказ, „abnormality“ колбекът
@@ -37,6 +40,14 @@ twitch_main.js          MAIN world (регистриран от SW, sa-twitch) �
 rules/                  DNR статични правила: ad_rules + youtube_rules +
                         easylist/easyprivacy/urlhaus/removeparam (билднати от
                         tools/build_filters.mjs) + козметичен bundle + counts
+lib/who.js · rules/who.json  6.0 „Кого спряхме“ (Настройки): блокираните заявки по компания и ден, 31 дни, само на
+                        устройството. Chrome казва само КОЕ правило е блокирало — rules/who.json („правило → компания“)
+                        се ГЕНЕРИРА: `node tools/build_who.mjs` след build_filters/generate_rules и след промяна на
+                        popup/companies.js (`--check` е в tests/who.test.mjs); броенето е в refreshBadge (getMatchedRules,
+                        по timeStamp, белегът на раздела в storage.session), картата — options/who.js
+lib/modes.js            6.0 режими Basic/Standard/Strict (глобално + `siteModes` по сайт): чист планер (SA_MODES) —
+                        кои страницови скриптове къде (`pageScriptPlan`, id `sa-page-*`); SW, Firefox background,
+                        manifest-ът преди meta.js и tests/modes.test.mjs го ползват
 lib/foreign.js          внос от uBlock Origin / AdGuard / Adblock Plus (Настройки + welcome): само разделя
                         текста на сайтове и редове; SW проверява всичко отново (`importForeign` →
                         parseImportedList — правило с път НИКОГА не става блок на целия домейн)
@@ -141,6 +152,21 @@ bash tools/package.sh                         # билд + самопровер�
 ```
 
 ## Инварианти (не чупи)
+
+- **Режими (6.0).** content.js/.css, cosmetic_generic.css, cookies, antiadblock и picker НЕ са в manifest-а:
+  SW ги регистрира по `lib/modes.js` (`syncPageScripts`, persistAcrossSessions). Basic — нищо наше на страницата
+  (и без main.js/uBO парчета/gpc.js, без meta.js; YouTube/Twitch остават — свой превключвател); Standard — само
+  top frame + cookies.js в рамките на CMP-тата (`CMP_FRAME_HOSTS` == регекса в cookies.js, гейт); Strict — всички
+  рамки (поведението на 5.8). **main.js следва същия план** (`-content` записите: Standard — главната рамка,
+  Strict — всички, id `sa-scriptlets[-strict|-standard]`); uBO парчетата остават във всички рамки (поправки по
+  хост). Нов страницов скрипт = ред в `PAGE_SCRIPTS`, не в manifest-а. Всяко писане на mode/siteModes вика
+  `syncPageScripts` + `syncScriptlets` само (без storage слушател — двойна работа: всяко scripting извикване
+  струва на Chrome ~0,6 s, смяна на режим ≈ 2 s). И двете минават през ЕДНА опашка (`scriptingChain`), всяко
+  извикване — през `scripting()` с таймаут 20 s (обещание, което Chrome не разреши, не държи опашката вечно), и
+  не пипат нищо, ако вече е регистрирано точно така (`sameRegistrations` — всеки старт на браузъра). Popup-ът
+  има ЕДИН ред „Protection here“ — заместил „Hide ad boxes here“ (старият `noCosmetics` се сгъва в Basic при
+  ъпдейт/внос, `foldNoCosmetics`); нов ред = над 600 px. Гейт: tests/modes.test.mjs + extension.browser (режимите
+  в истински Chromium).
 
 - **Единствена цел** (Web Store): блокиране на реклами/тракери. **Без remote
   code, никога.** Единствените мрежови заявки са дневен GET на

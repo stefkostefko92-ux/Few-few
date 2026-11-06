@@ -856,5 +856,47 @@
   },
   "welTest": {
     "message": "Se hur det fungerar på en testsida"
+  },
+  "modeHere": {
+    "message": "Skydd här"
+  },
+  "modeBasic": {
+    "message": "Bas"
+  },
+  "modeStandard": {
+    "message": "Standard"
+  },
+  "modeStrict": {
+    "message": "Strikt"
+  },
+  "opt_mode": {
+    "message": "Skyddsnivå"
+  },
+  "opt_mode_sub": {
+    "message": "För alla webbplatser. Vill du ge en webbplats en egen nivå öppnar du tillägget på den webbplatsen."
+  },
+  "modeHint": {
+    "message": "Bas: bara blockering i nätverket. Standard: rekommenderas. Strikt: även inuti ramar. Sidan laddas om."
+  },
+  "modeBasicDesc": {
+    "message": "Bara blockering i nätverket: lättast, nästan inget går sönder. YouTube behåller sitt eget skydd."
+  },
+  "modeStandardDesc": {
+    "message": "Rekommenderas: fullt skydd på själva sidan."
+  },
+  "modeStrictDesc": {
+    "message": "Även inuti inbäddade ramar: döljer mest, använder mest minne."
+  },
+  "opt_who": {
+    "message": "Vilka vi stoppade"
+  },
+  "opt_who_sub": {
+    "message": "De företag vars servrar vi hindrade din webbläsare från att kontakta de senaste 30 dagarna. Räknas bara på den här enheten, per företag och dag: inga adresser, inga webbplatser."
+  },
+  "opt_who_empty": {
+    "message": "Inget räknat än. Surfa en stund och titta igen."
+  },
+  "opt_who_row": {
+    "message": "Förfrågningar: $1 · Dagar: $2"
   }
 }

@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.7.0.zip
+bash tools/package.sh      # → dist/supreme-adblock-6.0.0.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -126,14 +126,21 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
   `document_start`) — see the Twitch reviewer note. And, unless the user
   switches Global Privacy Control off, the bundled `gpc.js` (MAIN world, every
   site except allowed ones), which only defines `navigator.globalPrivacyControl = true`.
+  Since 6.0 the extension's own page scripts (`content.js`/`.css`, `cosmetic_generic.css`,
+  `cookies.js`/`.css`, `antiadblock.js`/`.css`, `picker.js`/`.css` — isolated world, the same bundled
+  files the manifest used to list) are registered here too, so the user's **protection level**
+  decides where they run: Basic — none (network blocking only), Standard (default) — the top
+  frame, Strict — every frame; globally or per site, chosen in Settings or the popup. `main.js`
+  follows the same level (top frame / every frame / none); the uBO data chunks stay in every frame.
 - **host permissions `<all_urls>`** — a universal ad blocker must filter and
   cosmetically clean ads on every site the user visits; all processing is local.
 
 > **Reviewer note (MAIN-world scriptlets).** The extension registers MAIN-world
 > content scripts from this package only: `scriptlets/main.js` (plain, unminified,
 > commented JavaScript) and, on the hosts the uBlock Origin filters target, a
-> data chunk `scriptlets/ubo/cNN.js` placed before it (host → routine name +
-> arguments; no functions). It neutralises
+> data chunk `scriptlets/ubo/cNN.js` (host → routine name + arguments; no functions)
+> followed by `scriptlets/ubo_engine.js` — the same routines as `main.js`, built from the
+> same `scriptlets/engine.js`, which runs only that chunk's rows. It neutralises
 > anti-adblock detectors — the same mechanism established ad blockers use for
 > `##+js(...)`.
 > `main.js` contains (a) a fixed set of **39 named routines** — `set-constant`,
@@ -150,8 +157,8 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 > Both the routines and the host table are **fixed in the package** (since 5.1.4):
 > nothing downloaded can add, change or trigger a scriptlet directive, and
 > `main.js` listens to no page or extension message. The routines run only the
-> rows baked at build time; `node tools/build_scriptlets.mjs` reproduces `main.js`
-> and `ubo/*` byte for byte from `scriptlets/list.txt` and the bundled uBlock
+> rows baked at build time; `node tools/build_scriptlets.mjs` reproduces `main.js`,
+> `ubo_engine.js` and `ubo/*` byte for byte from `scriptlets/list.txt` and the bundled uBlock
 > Origin filters.
 > There is no `eval`, no `Function()`, no `<script src>`, and no code path that
 > executes a string received over the network.
@@ -277,7 +284,7 @@ so this is an **update of the existing item**, not a new one:
    the privacy policy with Google's Limited Use statement goes live, and `filters.json`
    (data only — no `scriptlets` key) is published with a fresh Ed25519 signature. Check
    `https://adblock.carbonstealth.eu/privacy` shows the Limited Use section before you submit.
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.7.0.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-6.0.0.zip`.
 2. Refresh the listing (§3: description + the new feature bullets) **in every
    language that has its own description** — a package update does NOT replace the
    live text, and an old localised description still saying "100% free" fails the
@@ -314,7 +321,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.7.0)
+- [ ] `manifest.json` and `package.json` versions match (6.0.0)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] `PW_ROOT=$(npm root -g) npm run test:browser` is green — real Chromium, including the
       back/forward-cache check (the page is restored on Back, with the extension on)
@@ -372,3 +379,14 @@ miner domains — say so in the reviewer notes).
    Description: for AMO drop the Manifest V3 history paragraph (it is about Chrome) and any
    mention of Chrome — use the text of `docs/listing/<lang>.txt`.
 3. Privacy policy, homepage, support: as above. Data collection: none.
+
+## 10. Opera Add-ons
+
+The **same zip** as Chrome. Free account at <https://addons.opera.com/developer/>; the steps, the
+screenshot size (up to 800×600 — the kit carries `opera/screenshot-1…5.png`, 800×500) and Opera's
+acceptance criteria are in `docs/OPERA.md`.
+
+## 11. Safari
+
+Needs a paid Apple Developer Program membership — on hold by the owner's decision (6 November 2026).
+What it would take: `docs/SAFARI.md`.

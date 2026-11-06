@@ -856,5 +856,47 @@
   },
   "welTest": {
     "message": "Lihat cara kerjanya di halaman uji"
+  },
+  "modeHere": {
+    "message": "Perlindungan di sini"
+  },
+  "modeBasic": {
+    "message": "Dasar"
+  },
+  "modeStandard": {
+    "message": "Standar"
+  },
+  "modeStrict": {
+    "message": "Ketat"
+  },
+  "opt_mode": {
+    "message": "Tingkat perlindungan"
+  },
+  "opt_mode_sub": {
+    "message": "Untuk semua situs. Agar satu situs punya tingkat sendiri, buka ekstensi di situs itu."
+  },
+  "modeHint": {
+    "message": "Dasar: hanya pemblokiran di jaringan. Standar: disarankan. Ketat: juga di dalam frame. Halaman dimuat ulang."
+  },
+  "modeBasicDesc": {
+    "message": "Hanya pemblokiran di jaringan: paling ringan, hampir tidak ada yang rusak. YouTube tetap punya perlindungannya sendiri."
+  },
+  "modeStandardDesc": {
+    "message": "Disarankan: perlindungan penuh di halaman itu sendiri."
+  },
+  "modeStrictDesc": {
+    "message": "Juga di dalam frame tersemat: paling banyak menyembunyikan, paling banyak memakai memori."
+  },
+  "opt_who": {
+    "message": "Siapa yang kami hentikan"
+  },
+  "opt_who_sub": {
+    "message": "Perusahaan yang servernya tidak kami izinkan dihubungi browser Anda dalam 30 hari terakhir. Dihitung hanya di perangkat ini, per perusahaan dan per hari: tanpa alamat, tanpa situs."
+  },
+  "opt_who_empty": {
+    "message": "Belum ada yang dihitung. Jelajahi sebentar lalu lihat lagi."
+  },
+  "opt_who_row": {
+    "message": "Permintaan: $1 · Hari: $2"
   }
 }

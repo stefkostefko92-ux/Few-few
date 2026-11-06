@@ -856,5 +856,47 @@
   },
   "welTest": {
     "message": "Katso, miten se toimii testisivulla"
+  },
+  "modeHere": {
+    "message": "Suojaus täällä"
+  },
+  "modeBasic": {
+    "message": "Perus"
+  },
+  "modeStandard": {
+    "message": "Vakio"
+  },
+  "modeStrict": {
+    "message": "Tiukka"
+  },
+  "opt_mode": {
+    "message": "Suojaustaso"
+  },
+  "opt_mode_sub": {
+    "message": "Kaikille sivustoille. Jos haluat sivustolle oman tason, avaa laajennus kyseisellä sivustolla."
+  },
+  "modeHint": {
+    "message": "Perus: vain esto verkossa. Vakio: suositeltu. Tiukka: myös kehysten sisällä. Sivu ladataan uudelleen."
+  },
+  "modeBasicDesc": {
+    "message": "Vain esto verkossa: kevein, lähes mikään ei rikkoudu. YouTube säilyttää oman suojauksensa."
+  },
+  "modeStandardDesc": {
+    "message": "Suositeltu: täysi suojaus itse sivulla."
+  },
+  "modeStrictDesc": {
+    "message": "Myös upotettujen kehysten sisällä: piilottaa eniten, käyttää eniten muistia."
+  },
+  "opt_who": {
+    "message": "Keidät pysäytimme"
+  },
+  "opt_who_sub": {
+    "message": "Yritykset, joiden palvelimiin emme antaneet selaimesi ottaa yhteyttä viimeisten 30 päivän aikana. Lasketaan vain tällä laitteella, yrityksittäin ja päivittäin: ei osoitteita, ei sivustoja."
+  },
+  "opt_who_empty": {
+    "message": "Mitään ei ole vielä laskettu. Selaa hetki ja katso uudelleen."
+  },
+  "opt_who_row": {
+    "message": "Pyynnöt: $1 · Päivät: $2"
   }
 }

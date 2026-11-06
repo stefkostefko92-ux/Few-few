@@ -12,3 +12,4 @@ Supreme AdBlock blokkeert overal advertenties — YouTube-videoadvertenties, ban
 • Website kapot? Eén klik lost het op, of laat het ons weten — er wordt niets verzonden zonder dat u het eerst ziet.
 • Overstappen van uBlock Origin, AdGuard of Adblock Plus? Neem uw toegestane websites en filters mee met één bestand.
 • Zie met welke andere websites een pagina verbinding maakt, en blokkeer er een met één klik, alleen op die website.
+• Beschermingsniveau: Basis · Standaard · Strikt

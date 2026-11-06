@@ -43,6 +43,7 @@ if (m.options_ui?.page) refs.add(m.options_ui.page);
 // Registered dynamically via chrome.scripting (not in the manifest), so add it
 // explicitly — otherwise a forgotten `build_scriptlets.mjs` ships without it.
 refs.add("scriptlets/main.js");
+refs.add("scriptlets/ubo_engine.js"); // registered after each uBO data chunk (6.0: no duplicate host list)
 refs.add("scriptlets/policy.js"); // importScripts() in the service worker
 refs.add("youtube_main.js");          // registered by the service worker (MAIN world, YouTube)
 refs.add("youtube_ads.css");          // registered by the service worker with it (sa-youtube-css)
@@ -51,8 +52,13 @@ refs.add("lib/abp2dnr.js");       // importScripts() — author-hosted lists
 refs.add("gpc.js");               // registered by the service worker (MAIN world, Global Privacy Control)
 refs.add("scriptlets/entities-off.js"); // registered by the SW while the uBO list is off
 refs.add("lib/foreign.js");       // Settings + welcome: import from another ad blocker
+// 6.0: the page scripts are registered by the SW by protection mode (lib/modes.js), not the manifest
+["scriptlets/policy.js", "content.js", "content.css", "cosmetic_generic.css", "cookies.js", "cookies.css",
+ "antiadblock.js", "antiadblock.css", "picker.js", "picker.css", "lib/modes.js"].forEach((f) => refs.add(f));
 refs.add("blocked/blocked.js"); refs.add("blocked/blocked.css"); // the warning page instead of a malware site
 refs.add("report/report.html");   // opened from the popup
+refs.add("popup/companies.js");   // the company behind each host in "Connections on this page"
+refs.add("lib/who.js"); refs.add("rules/who.json"); refs.add("options/who.js"); // 6.0 "Who we stopped"
 refs.add("welcome/welcome.html"); refs.add("welcome/welcome.js"); refs.add("welcome/welcome.css"); // first install
 refs.add("THIRD_PARTY_NOTICES.txt"); // linked from Settings; list licences ask for it
 refs.add("licenses/*");            // the licence texts the notices point to
@@ -97,9 +103,12 @@ node - "$ff_tmp/manifest.json" <<'NODE'
 const fs = require("fs");
 const p = process.argv[2];
 const m = JSON.parse(fs.readFileSync(p, "utf8"));
-m.background = { scripts: ["scriptlets/policy.js", "lib/abp2dnr.js", "background.js"] };
+m.background = { scripts: ["scriptlets/policy.js", "lib/abp2dnr.js", "lib/modes.js", "lib/who.js", "background.js"] };
+// gecko_android: без него AMO не показва разширението във Firefox за Android (Extension Workshop,
+// „version compatibility“). contextMenus/commands ги няма там — кодът ги вика само в try/?.
 m.browser_specific_settings = {
   gecko: { id: "supreme-adblock@carbonstealth.eu", strict_min_version: "128.0", data_collection_permissions: { required: ["none"] } },
+  gecko_android: { strict_min_version: "128.0" },
 };
 delete m.minimum_chrome_version;
 m.web_accessible_resources = (m.web_accessible_resources || []).map((w) => { const c = { ...w }; delete c.use_dynamic_url; return c; });

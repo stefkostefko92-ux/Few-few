@@ -66,8 +66,8 @@ ok("live channel: 25 000 domains capped to 20 000 across 20 chunked rules; scrip
 // ---------- 2) scriptlet registration ----------
 await bg.doSyncScriptlets(true);
 const reg = mock.calls.registered.filter((s) => s.id === "sa-scriptlets").at(-1);
-ok("engine registered MAIN/document_start/allFrames with excludeMatches only for valid allowlist hosts",
-  reg && reg.world === "MAIN" && reg.runAt === "document_start" && reg.allFrames === true && reg.persistAcrossSessions === true &&
+ok("engine registered MAIN/document_start, top frame (Standard, 6.0), with excludeMatches only for valid allowlist hosts",
+  reg && reg.world === "MAIN" && reg.runAt === "document_start" && reg.allFrames === false && reg.persistAcrossSessions === true &&
   reg.excludeMatches.join() === "*://example.com/*,*://*.example.com/*,*://sub.test.org/*,*://*.sub.test.org/*");
 await bg.doSyncScriptlets(false);
 ok("off → unregistered, nothing registered", mock.registered().length === 0 && mock.calls.unregistered.length >= 1);

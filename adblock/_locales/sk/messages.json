@@ -856,5 +856,47 @@
   },
   "welTest": {
     "message": "Pozrite sa, ako to funguje, na testovacej stránke"
+  },
+  "modeHere": {
+    "message": "Ochrana tu"
+  },
+  "modeBasic": {
+    "message": "Základná"
+  },
+  "modeStandard": {
+    "message": "Štandardná"
+  },
+  "modeStrict": {
+    "message": "Prísna"
+  },
+  "opt_mode": {
+    "message": "Úroveň ochrany"
+  },
+  "opt_mode_sub": {
+    "message": "Pre všetky weby. Ak chcete jednému webu nastaviť vlastnú úroveň, otvorte na ňom rozšírenie."
+  },
+  "modeHint": {
+    "message": "Základná: iba blokovanie v sieti. Štandardná: odporúča sa. Prísna: aj vnútri rámcov. Stránka sa znovu načíta."
+  },
+  "modeBasicDesc": {
+    "message": "Iba blokovanie v sieti: najľahšia, takmer nič sa nepokazí. YouTube si ponecháva vlastnú ochranu."
+  },
+  "modeStandardDesc": {
+    "message": "Odporúča sa: plná ochrana priamo na stránke."
+  },
+  "modeStrictDesc": {
+    "message": "Aj vnútri vložených rámcov: skryje najviac, spotrebuje najviac pamäte."
+  },
+  "opt_who": {
+    "message": "Koho sme zastavili"
+  },
+  "opt_who_sub": {
+    "message": "Spoločnosti, s ktorých servermi sme vášmu prehliadaču za posledných 30 dní nedovolili spojiť sa. Počíta sa len v tomto zariadení, podľa spoločnosti a dňa: žiadne adresy, žiadne weby."
+  },
+  "opt_who_empty": {
+    "message": "Zatiaľ nič nespočítané. Chvíľu prehliadajte a pozrite sa znova."
+  },
+  "opt_who_row": {
+    "message": "Požiadavky: $1 · Dni: $2"
   }
 }

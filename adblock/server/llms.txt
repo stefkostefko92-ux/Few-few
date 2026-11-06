@@ -8,7 +8,7 @@
 - Maker: Carbon Stealth VCC, Bulgaria (EU) — carbonstealth.eu, info@carbonstealth.eu
 - Platform: Chrome Manifest V3 extension; Chrome, Edge, Brave and other Chromium browsers, version 121+
 - Price: free, no account, no paid tier; optional donations
-- Current version: 5.7.0 (25 October 2026)
+- Current version: 6.0.0 (6 November 2026)
 - Homepage: https://adblock.carbonstealth.eu
 - Chrome Web Store: https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=llms&utm_medium=llms
 - Trust: Established Publisher badge on the Chrome Web Store — the publisher's identity is verified by Google, the listing is published by the owner of carbonstealth.eu, and the publisher has a good record with no history of policy violations
@@ -44,8 +44,10 @@
 - Smart Detection: a list-free heuristic that hides cross-origin frames sized like ad slots.
 - Dangerous sites (on by default): opening an address on URLhaus (abuse.ch's public malware list, built in) shows a local warning page instead, with "Go back" and "Continue anyway" (this site only, until the browser closes).
 - Connections on this page: the popup lists the other sites a page loaded something from and blocks any one of them on that site only, with one click.
-- Broken site? A repair page offers one-click fixes (turn off element hiding for the site, allow ads there for an hour or for good, pause) and prepares a report e-mail the user reviews and sends themselves — the extension never sends it.
-- Controls: per-site allowlist, per-site switch for element hiding, element picker with one-click undo, procedural selectors, filter-list subscriptions by URL, import from uBlock Origin, AdGuard or Adblock Plus, keyboard shortcuts, a per-page breakdown of what each list blocked, a 30-day chart, an engine health card (including Chrome's rule budget), a count of cookie banners rejected.
+- Protection levels: Basic (network blocking only — nothing of the extension's runs inside the page), Standard (the default: everything in the page itself; inside frames only the consent-platform cookie handling and the uBlock Origin fixes for the frame's own host) and Strict (everything in every embedded frame), for every site or per site.
+- Who we stopped (Settings): the companies whose servers the browser was kept from contacting in the last 30 days, with request and day counts — company name and number per day only, kept on the device, never sent.
+- Broken site? A repair page offers one-click fixes (switch the site to Basic, allow ads there for an hour or for good, pause) and prepares a report e-mail the user reviews and sends themselves — the extension never sends it.
+- Controls: per-site allowlist, per-site protection level, element picker with one-click undo, procedural selectors, filter-list subscriptions by URL, import from uBlock Origin, AdGuard or Adblock Plus, keyboard shortcuts, a per-page breakdown of what each list blocked, a 30-day chart, an engine health card (including Chrome's rule budget), a count of cookie banners rejected.
 - Interface: 70 languages, including right-to-left Arabic, Hebrew, Persian and Urdu; translations other than English, Bulgarian, Italian and German are machine-assisted.
 
 ## Privacy
@@ -56,11 +58,11 @@ Browsing data never leaves the device. The only automatic network request to us 
 
 Both are free, Manifest V3, with EasyList and EasyPrivacy and no telemetry. uBlock Origin Lite's built-in rules update with each extension release (since June 2026 it can also subscribe to external lists); Supreme AdBlock also updates signed filter data twice a day and adds list-free Smart Detection, a dedicated YouTube pipeline and cookie-banner handling.
 
-## Measured results (25 September 2026)
+## Measured results (27 October 2026)
 
-Same conditions for every blocker (fresh profile, default settings, 60 s set-up, headless Chromium, two identical runs; tools/compare_blockers.mjs):
-- adblock.turtlecute.org (hosts blocked of 132): Supreme AdBlock 130, Ghostery 98, uBlock Origin Lite 82, AdGuard 24–26, Adblock Plus 25–26, no blocker 4.
-- adblock-tester.com (score of 100): Ghostery 96, Supreme AdBlock 95, uBlock Origin Lite 91, AdGuard 77, Adblock Plus 77, no blocker 48.
+Same conditions for every blocker (fresh profile, default settings, 60 s set-up, headless Chromium, two runs; tools/compare_blockers.mjs). Versions: Supreme AdBlock 5.7.0, uBlock Origin Lite 2026.1026.1812, Ghostery 10.6.9, AdGuard 5.5.3.28, Adblock Plus 4.48.0 (each the Chrome Web Store release that day). The test machine's network refused a few ad hosts by itself, so the no-blocker baseline is 10; compare rows within the run (method: https://adblock.carbonstealth.eu/how-we-measure).
+- adblock.turtlecute.org (hosts blocked of 132): Supreme AdBlock 130, Ghostery 98–100, uBlock Origin Lite 83, Adblock Plus 31–32, AdGuard 30–31, no blocker 10.
+- adblock-tester.com (score of 100): Ghostery 96, Supreme AdBlock 95, uBlock Origin Lite 91, AdGuard 75, Adblock Plus 75, no blocker 41.
 
 ## Common questions
 
@@ -70,4 +72,4 @@ Q: Does it collect data? A: No browsing data leaves the device; no analytics or 
 Q: Will it break websites? A: Rarely; one click in the popup allows a site or turns off element hiding for it.
 Q: Who makes it? A: Carbon Stealth VCC, a software studio in Bulgaria (EU).
 
-_Last updated: 25 October 2026 (version 5.7.0)._
+_Last updated: 6 November 2026 (version 6.0.0)._

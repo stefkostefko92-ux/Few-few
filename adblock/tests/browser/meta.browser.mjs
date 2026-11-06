@@ -4,18 +4,29 @@
 // еднобуквени span-ове с примамки, етикет, дорисуван по-късно, други езици. Органичните
 // публикации, „Paid partnership“ и коментарите остават. metaDebug очертава вместо да крие.
 // Не е в `npm test` (CI няма Playwright) — `PW_ROOT=$(npm root -g) npm run test:browser`.
+// HTTPS, не HTTP: Chromium вдига facebook/instagram/threads към https (HSTS preload) — фикстура на
+// http:// пада с ERR_SSL_PROTOCOL_ERROR. Иска Playwright (PW_ROOT) и openssl.
 import { createRequire } from "node:module";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import http from "node:http";
+import { execFileSync } from "node:child_process";
+import https from "node:https";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const require = createRequire(join(process.env.PW_ROOT || join(ROOT, "node_modules"), "/"));
 let chromium;
 try { ({ chromium } = require("playwright")); } catch {
   console.log("SKIP: playwright not available (PW_ROOT)"); process.exit(process.env.PW_REQUIRED ? 1 : 0);
+}
+const hosts = ["www.facebook.com", "www.instagram.com", "www.threads.com", "www.threads.net"];
+const tmp = mkdtempSync(join(tmpdir(), "meta-cert-"));
+try {
+  execFileSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", join(tmp, "k.pem"), "-out", join(tmp, "c.pem"),
+    "-days", "1", "-subj", "/CN=www.facebook.com", "-addext", "subjectAltName=" + hosts.map((h) => "DNS:" + h).join(",")], { stdio: "ignore" });
+} catch {
+  console.log("SKIP: openssl not available"); process.exit(process.env.PW_REQUIRED ? 1 : 0);
 }
 
 let pass = 0, fail = 0;
@@ -49,20 +60,19 @@ const TH = `<!doctype html><title>th</title>${CSS}<div id="feed">
 </div>
 <div id="feed2"><div data-pressable-container="true" id="th-pc-ad"><span>Sponsored</span><p>x</p></div><div data-pressable-container="true" id="th-pc-org"><p>y</p></div></div>`;
 
-const srv = http.createServer((q, r) => {
+const srv = https.createServer({ key: readFileSync(join(tmp, "k.pem")), cert: readFileSync(join(tmp, "c.pem")) }, (q, r) => {
   const host = (q.headers.host || "").split(":")[0];
   r.setHeader("content-type", "text/html");
   r.end(host.includes("instagram") ? IG : host.includes("threads") ? TH : FB);
 });
 await new Promise((res) => srv.listen(0, "127.0.0.1", res));
 const port = srv.address().port;
-const hosts = ["www.facebook.com", "www.instagram.com", "www.threads.com", "www.threads.net"];
 
 const profile = mkdtempSync(join(tmpdir(), "sa-meta-"));
 const ctx = await chromium.launchPersistentContext(profile, {
   channel: "chromium", headless: true,
   args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`,
-    `--host-resolver-rules=${hosts.map((h) => `MAP ${h} 127.0.0.1:${port}`).join(", ")}`],
+    `--host-resolver-rules=${hosts.map((h) => `MAP ${h} 127.0.0.1:${port}`).join(", ")}`, "--ignore-certificate-errors", "--no-proxy-server"],
 });
 const shown = (p, id) => p.evaluate((i) => { const e = document.getElementById(i); return !!e && getComputedStyle(e).display !== "none"; }, id);
 try {
@@ -70,7 +80,7 @@ try {
   await new Promise((r) => setTimeout(r, 2500));
 
   const fb = await ctx.newPage();
-  await fb.goto(`http://www.facebook.com:${port}/`);
+  await fb.goto(`https://www.facebook.com:${port}/`);
   await fb.waitForTimeout(1800);
   ok("facebook: plain “Sponsored” label → the post is hidden", !(await shown(fb, "fb-plain")));
   ok("facebook: aria-labelledby → a hidden span with the word", !(await shown(fb, "fb-aria")));
@@ -83,7 +93,7 @@ try {
   await fb.close();
 
   const ig = await ctx.newPage();
-  await ig.goto(`http://www.instagram.com:${port}/`);
+  await ig.goto(`https://www.instagram.com:${port}/`);
   await ig.waitForTimeout(1200);
   ok("instagram: a sponsored post is hidden", !(await shown(ig, "ig-ad")));
   ok("instagram: Polish “Sponsorowane”", !(await shown(ig, "ig-pl")));
@@ -93,7 +103,7 @@ try {
 
   for (const h of ["www.threads.com", "www.threads.net"]) {
     const th = await ctx.newPage();
-    await th.goto(`http://${h}:${port}/`);
+    await th.goto(`https://${h}:${port}/`);
     await th.waitForTimeout(1200);
     ok(`${h}: a sponsored post among look-alike posts is hidden, its neighbours stay`,
       !(await shown(th, "th-ad")) && (await shown(th, "th-org")) && (await shown(th, "th-org2")) && (await shown(th, "th-org3")));
@@ -104,7 +114,7 @@ try {
   // metaDebug: outline instead of hide, with the reason
   await sw.evaluate(() => chrome.storage.local.set({ metaDebug: true }));
   const dbg = await ctx.newPage();
-  await dbg.goto(`http://www.facebook.com:${port}/`);
+  await dbg.goto(`https://www.facebook.com:${port}/`);
   await dbg.waitForTimeout(1500);
   const why = await dbg.evaluate(() => ({ shown: getComputedStyle(document.getElementById("fb-letters")).display !== "none", why: document.getElementById("fb-letters").getAttribute("data-tbab-why") }));
   ok(`metaDebug: the post stays visible, outlined, with the reason (${why.why})`, why.shown && why.why === "letters");
@@ -114,14 +124,14 @@ try {
   // an allowed site: nothing is hidden
   await sw.evaluate(() => chrome.storage.local.set({ allowlist: ["facebook.com"] }));
   const al = await ctx.newPage();
-  await al.goto(`http://www.facebook.com:${port}/`);
+  await al.goto(`https://www.facebook.com:${port}/`);
   await al.waitForTimeout(1500);
   ok("allowed site: sponsored posts are left alone", await shown(al, "fb-plain"));
   await al.close();
 } finally {
   await ctx.close();
   srv.close();
-  rmSync(profile, { recursive: true, force: true });
+  rmSync(profile, { recursive: true, force: true }); rmSync(tmp, { recursive: true, force: true });
 }
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -12,3 +12,4 @@ Supreme AdBlock blockiert Werbung überall – YouTube-Videoanzeigen, Banner, Po
 • Website kaputt? Ein Klick behebt es – oder melden Sie es uns; nichts wird gesendet, ohne dass Sie es vorher sehen.
 • Sie wechseln von uBlock Origin, AdGuard oder Adblock Plus? Nehmen Sie erlaubte Websites und Filter mit einer Datei mit.
 • Sehen Sie, mit welchen anderen Websites sich eine Seite verbindet, und blockieren Sie eine davon mit einem Klick nur dort.
+• Schutzstufe: Basis · Standard · Streng

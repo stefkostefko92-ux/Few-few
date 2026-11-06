@@ -856,5 +856,47 @@
   },
   "welTest": {
     "message": "Zobacz, jak to działa, na stronie testowej"
+  },
+  "modeHere": {
+    "message": "Ochrona tutaj"
+  },
+  "modeBasic": {
+    "message": "Podstawowa"
+  },
+  "modeStandard": {
+    "message": "Standardowa"
+  },
+  "modeStrict": {
+    "message": "Ścisła"
+  },
+  "opt_mode": {
+    "message": "Poziom ochrony"
+  },
+  "opt_mode_sub": {
+    "message": "Dla wszystkich witryn. Aby nadać jednej witrynie własny poziom, otwórz rozszerzenie na tej witrynie."
+  },
+  "modeHint": {
+    "message": "Podstawowa: tylko blokowanie w sieci. Standardowa: zalecana. Ścisła: także wewnątrz ramek. Strona zostanie przeładowana."
+  },
+  "modeBasicDesc": {
+    "message": "Tylko blokowanie w sieci: najlżejsza, prawie nic się nie psuje. YouTube zachowuje własną ochronę."
+  },
+  "modeStandardDesc": {
+    "message": "Zalecana: pełna ochrona na samej stronie."
+  },
+  "modeStrictDesc": {
+    "message": "Także wewnątrz osadzonych ramek: ukrywa najwięcej, zużywa najwięcej pamięci."
+  },
+  "opt_who": {
+    "message": "Kogo zatrzymaliśmy"
+  },
+  "opt_who_sub": {
+    "message": "Firmy, z których serwerami nie pozwoliliśmy Twojej przeglądarce się połączyć w ciągu ostatnich 30 dni. Liczone tylko na tym urządzeniu, według firmy i dnia: bez adresów, bez stron."
+  },
+  "opt_who_empty": {
+    "message": "Jeszcze nic nie policzono. Poprzeglądaj strony i zajrzyj tu ponownie."
+  },
+  "opt_who_row": {
+    "message": "Żądania: $1 · Dni: $2"
   }
 }

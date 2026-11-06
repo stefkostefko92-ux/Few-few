@@ -38,6 +38,12 @@
       <p class="row-sub days-sum" id="daysSum"></p>
       <p class="row-sub" data-i18n="opt_last30_sub">Only daily totals, kept on this device for 30 days. No sites, no addresses.</p>
     </section>
+    <section class="card" id="whoCard" hidden>
+      <h2 data-i18n="opt_who">Who we stopped</h2>
+      <p class="row-sub" data-i18n="opt_who_sub">The companies whose servers we kept your browser from contacting in the last 30 days. Counted on this device only, per company and day: no addresses, no sites.</p>
+      <ol id="whoList" class="who"></ol>
+      <p class="row-sub" id="whoEmpty" hidden data-i18n="opt_who_empty">Nothing counted yet. Browse for a while and look again.</p>
+    </section>
     <button id="resetStats" class="btn ghost wide" data-i18n="opt_reset_statistics">Reset statistics</button>
 
     <section class="card">
@@ -66,6 +72,21 @@
       <ul id="keysList" class="list keys"></ul>
       <button id="keysChange" class="btn ghost" type="button" data-i18n="opt_shortcuts_change">Change shortcuts</button>
       <p class="row-sub" id="keysHint" hidden data-i18n="opt_shortcuts_ff">In Firefox: Extensions and themes → ⚙ → Manage Extension Shortcuts.</p>
+    </section>
+
+    <section class="card" id="modeCard">
+      <h2 data-i18n="opt_mode">Protection level</h2>
+      <label class="row">
+        <div>
+          <div class="row-title" data-i18n="opt_mode_sub">For every site. To set one site apart, open the extension on that site.</div>
+          <div class="row-sub" id="modeDesc"></div>
+        </div>
+        <select id="modeSelect" class="select">
+          <option value="basic" data-i18n="modeBasic">Basic</option>
+          <option value="standard" data-i18n="modeStandard">Standard</option>
+          <option value="strict" data-i18n="modeStrict">Strict</option>
+        </select>
+      </label>
     </section>
 
     <section class="card">
@@ -263,5 +284,6 @@
 
   <script src="../lib/foreign.js"></script>
   <script src="options.js"></script>
+  <script src="who.js"></script>
 </body>
 </html>

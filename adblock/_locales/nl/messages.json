@@ -856,5 +856,47 @@
   },
   "welTest": {
     "message": "Bekijk hoe het werkt op een testpagina"
+  },
+  "modeHere": {
+    "message": "Bescherming hier"
+  },
+  "modeBasic": {
+    "message": "Basis"
+  },
+  "modeStandard": {
+    "message": "Standaard"
+  },
+  "modeStrict": {
+    "message": "Strikt"
+  },
+  "opt_mode": {
+    "message": "Beschermingsniveau"
+  },
+  "opt_mode_sub": {
+    "message": "Voor alle websites. Wilt u één website een eigen niveau geven, open dan de extensie op die website."
+  },
+  "modeHint": {
+    "message": "Basis: alleen blokkeren op het netwerk. Standaard: aanbevolen. Strikt: ook binnen frames. De pagina wordt opnieuw geladen."
+  },
+  "modeBasicDesc": {
+    "message": "Alleen blokkeren op het netwerk: het lichtst, er gaat bijna niets stuk. YouTube houdt zijn eigen bescherming."
+  },
+  "modeStandardDesc": {
+    "message": "Aanbevolen: volledige bescherming op de pagina zelf."
+  },
+  "modeStrictDesc": {
+    "message": "Ook binnen ingesloten frames: verbergt het meest, gebruikt het meeste geheugen."
+  },
+  "opt_who": {
+    "message": "Wie we hebben tegengehouden"
+  },
+  "opt_who_sub": {
+    "message": "De bedrijven waarvan we uw browser de afgelopen 30 dagen geen contact lieten maken met hun servers. Alleen op dit apparaat geteld, per bedrijf en per dag: geen adressen, geen websites."
+  },
+  "opt_who_empty": {
+    "message": "Nog niets geteld. Surf een tijdje en kijk dan nog eens."
+  },
+  "opt_who_row": {
+    "message": "Verzoeken: $1 · Dagen: $2"
   }
 }

@@ -856,5 +856,47 @@
   },
   "welTest": {
     "message": "Véxao funcionar nunha páxina de proba"
+  },
+  "modeHere": {
+    "message": "Protección aquí"
+  },
+  "modeBasic": {
+    "message": "Básica"
+  },
+  "modeStandard": {
+    "message": "Estándar"
+  },
+  "modeStrict": {
+    "message": "Estrita"
+  },
+  "opt_mode": {
+    "message": "Nivel de protección"
+  },
+  "opt_mode_sub": {
+    "message": "Para todos os sitios. Para darlle a un sitio o seu propio nivel, abra a extensión nese sitio."
+  },
+  "modeHint": {
+    "message": "Básica: só bloqueo na rede. Estándar: recomendada. Estrita: tamén dentro dos marcos. A páxina recárgase."
+  },
+  "modeBasicDesc": {
+    "message": "Só bloqueo na rede: a máis lixeira, case nada se rompe. YouTube mantén a súa propia protección."
+  },
+  "modeStandardDesc": {
+    "message": "Recomendada: protección completa na propia páxina."
+  },
+  "modeStrictDesc": {
+    "message": "Tamén dentro dos marcos incrustados: agocha o máximo e usa máis memoria."
+  },
+  "opt_who": {
+    "message": "A quen detivemos"
+  },
+  "opt_who_sub": {
+    "message": "As empresas con cuxos servidores impedimos que o seu navegador se conectase nos últimos 30 días. Cóntase só neste dispositivo, por empresa e día: sen enderezos nin sitios."
+  },
+  "opt_who_empty": {
+    "message": "Aínda non se contou nada. Navegue un pouco e volva mirar."
+  },
+  "opt_who_row": {
+    "message": "Solicitudes: $1 · Días: $2"
   }
 }

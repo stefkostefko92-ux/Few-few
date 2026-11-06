@@ -856,5 +856,47 @@
   },
   "welTest": {
     "message": "Vedeți-l în acțiune pe o pagină de test"
+  },
+  "modeHere": {
+    "message": "Protecție aici"
+  },
+  "modeBasic": {
+    "message": "De bază"
+  },
+  "modeStandard": {
+    "message": "Standard"
+  },
+  "modeStrict": {
+    "message": "Strictă"
+  },
+  "opt_mode": {
+    "message": "Nivel de protecție"
+  },
+  "opt_mode_sub": {
+    "message": "Pentru toate site-urile. Ca să dați unui site propriul nivel, deschideți extensia pe acel site."
+  },
+  "modeHint": {
+    "message": "De bază: doar blocare în rețea. Standard: recomandată. Strictă: și în cadre. Pagina se reîncarcă."
+  },
+  "modeBasicDesc": {
+    "message": "Doar blocare în rețea: cea mai ușoară, aproape nimic nu se strică. YouTube își păstrează propria protecție."
+  },
+  "modeStandardDesc": {
+    "message": "Recomandată: protecție completă chiar pe pagină."
+  },
+  "modeStrictDesc": {
+    "message": "Și în cadrele încorporate: ascunde cel mai mult, folosește cea mai multă memorie."
+  },
+  "opt_who": {
+    "message": "Pe cine am oprit"
+  },
+  "opt_who_sub": {
+    "message": "Companiile cu ale căror servere nu am lăsat browserul dvs. să comunice în ultimele 30 de zile. Numărate doar pe acest dispozitiv, pe companie și pe zi: fără adrese, fără site-uri."
+  },
+  "opt_who_empty": {
+    "message": "Încă nu s-a numărat nimic. Navigați puțin și reveniți."
+  },
+  "opt_who_row": {
+    "message": "Cereri: $1 · Zile: $2"
   }
 }
