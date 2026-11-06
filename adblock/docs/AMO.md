@@ -10,7 +10,7 @@ Firefox пакетът е същият код с друг manifest (`tools/packa
 
 1. `bash tools/package.sh` → `dist/` съдържа `-firefox.zip` и `-source.zip` (изходният код от HEAD
    през `git archive` — комитни преди това).
-2. `npx web-ext@8 lint --source-dir <разархивиран -firefox.zip>` → **0 грешки** (5.7.0 на 6 ноември 2026:
+2. `npx web-ext@8 lint --source-dir <разархивиран -firefox.zip>` → **0 грешки** (5.8.0 на 6 ноември 2026:
    0 грешки, 15 предупреждения, 0 бележки). Очакваните предупреждения и какво да кажеш за тях:
    - `UNSUPPORTED_API` `getMatchedRules` / `onRuleMatchedDebug` — липсват във Firefox; кодът проверява
      за тях и popup-ът скрива дневника „Блокирано на тази страница“;
