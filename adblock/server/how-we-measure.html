@@ -44,7 +44,7 @@
       "publisher": { "@id": "https://carbonstealth.eu/#organization" },
       "breadcrumb": { "@id": "https://adblock.carbonstealth.eu/how-we-measure#breadcrumb" },
       "datePublished": "2026-10-23",
-      "dateModified": "2026-10-27"
+      "dateModified": "2026-11-06"
     },
     {
       "@type": "BreadcrumbList",
@@ -246,6 +246,7 @@
         </div>
         <div class="limit">
           <p><b>Where we lose.</b> Ghostery scored 96 on adblock-tester; Supreme AdBlock scored 95. That is one point behind, the same gap as on 25 September 2026.</p>
+          <p><b>Why, as far as we can see.</b> On adblock-tester, the Google AdSense, Google Analytics and "Custom" script checks show "test has most likely passed (file size does not match the original)" rather than a plain pass. For Google's ad and analytics scripts we load small stand-ins that ship inside the extension instead of blocking the request, so pages that wait for those scripts keep working; the test sees a different file and gives partial credit. Blocking them outright could gain the point and break sites, so we keep the stand-ins. On Turtlecute, the two hosts we did not block are the test site's own bait scripts, <code>/js/widget/ads.js</code> and <code>/js/pagead.js</code>. Checked with version 5.7.0 on 6 November 2026.</p>
         </div>
         <h3>The script's output, as printed</h3>
 <pre><code>date 2026-10-27 · headless Chromium · default settings · 60 s setup · rounds 2
