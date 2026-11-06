@@ -2,6 +2,7 @@
 // (shelf sag, sheet fit, small parts, holes against each other, grooves and edge bores, confirmat caps, horizontal holes).
 import { createCtx, cutSize } from './panel.js';
 import { TYPES, BUILDERS, normalizeParams } from './types.js';
+import { normalizeLayout } from './layout.js';
 import { STOCK, hasDecor, hasRal, decorName } from './materials.js';
 import { hingeList, handleList, slideList, bedFittingList } from './hardware.js';
 import { clamp, plural, dimTxt, r1 } from './util.js';
@@ -56,6 +57,8 @@ export function normalizeSpec(raw = {}) {
   const type = Object.hasOwn(TYPES, input.type) ? input.type : SPEC_DEFAULTS.type;
   const d = SPEC_DEFAULTS;
   const s = { v: SPEC_VERSION, type, ...normalizeParams(type, input) };
+  // the columns, cells and fronts of a free carcass (layout.js); no other type has one
+  if (type === 'custom') s.grid = normalizeLayout(input.grid);
   s.carcassDecor = hasDecor(input.carcassDecor) ? input.carcassDecor : d.carcassDecor;
   s.frontDecor = hasDecor(input.frontDecor) ? input.frontDecor : d.frontDecor;
   s.frontRal = hasRal(input.frontRal) ? input.frontRal : hasRal(d.frontRal) ? d.frontRal : null;

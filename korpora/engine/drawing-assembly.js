@@ -41,7 +41,7 @@ export function drawingAssembly(model, meta) {
     const ys = [p.box.min[1] + 2, (p.box.min[1] + p.box.max[1]) / 2, p.box.max[1] - 2];
     return xs.every((x) => ys.every((y) => behind(x, y, p.box.max[2])));
   };
-  for (const p of parts.filter((q) => (q.role === 'shelf' || q.role === 'partition') && covered(q))) {
+  for (const p of parts.filter((q) => (q.role === 'shelf' || q.role === 'partition' || q.role === 'divider') && covered(q))) {
     g += `<rect class="d-hid" x="${X(p.box.min[0])}" y="${Y(p.box.max[1])}" width="${(p.box.max[0] - p.box.min[0]) * k}" height="${(p.box.max[1] - p.box.min[1]) * k}"/>`;
   }
   for (const d of parts.filter((p) => p.role === 'door')) {

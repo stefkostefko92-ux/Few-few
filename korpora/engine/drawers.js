@@ -19,6 +19,8 @@ export function buildDrawers(ctx, o, a) {
   const sys = slideSystemOf(family);
   const { i, n, xa, xb, fl, fr, c, dzH, drawers, gap, zEnd, backFront, T, fs, frontGrain, bf, fT, nm, key, mod } = a;
   const dz0 = a.dz0 ?? c; // bottom of the drawer zone: the carcass bottom, or the top of the doors below it
+  // the board the lowest box clears: the carcass bottom, or a fixed shelf of a free carcass (cells.js)
+  const floorY = a.floorY ?? dz0 + T;
   if (!family || !sys) {
     ctx.warn('error', 'Няма избран водач с данни за пробиване.');
     return;
@@ -80,7 +82,7 @@ export function buildDrawers(ctx, o, a) {
       bands: bf ? { '+x': bf, '-x': bf, '+y': bf, '-y': bf } : {}, explode: [0, 0, 2.2],
     });
     mountHandle(ctx, o, front, { orientation: 'horizontal', kind: o.kind });
-    const yb0 = Math.max(y0 + 12, dz0 + T + floor);
+    const yb0 = Math.max(y0 + 12, floorY + floor);
     const yb = meets(slideY(yb0)) ? yb0 + sys.hole.d + MIN_WEB : yb0;
     const yt = y1 - TOP_GAP;
     const hb = r1(yt - yb);
