@@ -1,6 +1,6 @@
 "use client";
 
-import { z } from "zod";
+import { z } from "zod/v3";
 import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";

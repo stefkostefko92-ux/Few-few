@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { clientIp, pruneHits } from "@/lib/client-ip";
 
 // AI подсказки чрез безплатния Google Gemini Flash. Ключът живее САМО на

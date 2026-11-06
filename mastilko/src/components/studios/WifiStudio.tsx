@@ -1,6 +1,6 @@
 "use client";
 
-import { z } from "zod";
+import { z } from "zod/v3";
 import { sheetGrid } from "@/lib/print";
 import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, qrSafeColor, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { wifiQr, type WifiAuth } from "@/lib/wifi";

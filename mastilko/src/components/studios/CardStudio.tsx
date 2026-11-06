@@ -1,6 +1,6 @@
 "use client";
 
-import { z } from "zod";
+import { z } from "zod/v3";
 import { CARD, cardGrid } from "@/lib/print";
 import { type WarmTheme } from "@/lib/themes";
 import { resolveTheme, fontVars, sheetBg, photoFilterCss, qrSafeColor, accentTextOn, StyleSchemaShape, type StyleState } from "@/lib/style";
