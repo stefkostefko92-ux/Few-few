@@ -212,7 +212,15 @@ Partner Center → https://partner.microsoft.com/dashboard/microsoftedge/ → Cr
 
 ## 11. Firefox Add-ons (AMO)
 
-https://addons.mozilla.org/developers/ → Submit a New Add-on → On this site → качи `supreme-adblock-{ver}-firefox.zip`. `web-ext lint` дава 0 грешки; предупрежденията (getMatchedRules/onRuleMatchedDebug/onUserSettingsChanged — проверяват се преди употреба; DANGEROUS_EVAL — рутините noeval ПОДМЕНЯТ window.eval на страницата; coin miner — правила, които БЛОКИРАТ майнъри) и бележката за ревюъра са в `docs/AMO.md` — постави я дословно. Изходният код е ЗАДЪЛЖИТЕЛЕН (генерирани файлове): качи `supreme-adblock-{ver}-source.zip` от кита; бележка: `node tools/build_scriptlets.mjs` възпроизвежда main.js и ubo/* байт по байт, а rules/*.json са записан снимка на листите (източници, дати и SHA-256 в THIRD_PARTY_NOTICES.txt). Описание за AMO — от `listing/en.txt` (без абзаца за Manifest V3, той е за Chrome). Data collection: none.
+https://addons.mozilla.org/developers/ → Submit a New Add-on → On this site → качи `supreme-adblock-{ver}-firefox.zip`. `web-ext lint` дава 0 грешки; предупрежденията (getMatchedRules/onRuleMatchedDebug/onUserSettingsChanged — проверяват се преди употреба; DANGEROUS_EVAL — рутините noeval ПОДМЕНЯТ window.eval на страницата; coin miner — правила, които БЛОКИРАТ майнъри) и бележката за ревюъра са в `docs/AMO.md` — постави я дословно. Изходният код е ЗАДЪЛЖИТЕЛЕН (генерирани файлове): качи `supreme-adblock-{ver}-source.zip` от кита; бележка: `node tools/build_scriptlets.mjs` възпроизвежда main.js и ubo/* байт по байт, а rules/*.json са записан снимка на листите (източници, дати и SHA-256 в THIRD_PARTY_NOTICES.txt). Описание за AMO — от `listing/en.txt` (без абзаца за Manifest V3, той е за Chrome). Data collection: none. Пакетът е видим и във Firefox за Android (`gecko_android`) — преди това го пробвай на телефон (`docs/AMO.md`).
+
+## 12. Opera Add-ons (същият zip)
+
+https://addons.opera.com/developer/ → влез с Opera акаунт (безплатен) → Upload → `supreme-adblock-{ver}.zip`. Скрийншоти: `opera/screenshot-1…5.png` (800×500 — Opera иска до 800×600). Лиценз: MIT. Описание: `listing/en.txt`. Без „Opera“ в името. Подробно: `docs/OPERA.md`.
+
+## 13. Safari
+
+Иска платено членство в Apple Developer Program — на пауза по решение на собственика. Какво би трябвало: `docs/SAFARI.md`.
 """
 
 KIT.mkdir(parents=True, exist_ok=True)
@@ -223,6 +231,11 @@ for f in ["store_icon_128.png", "promo_small_440x280.png", "marquee_1400x560.png
     shutil.copy2(A / "store" / f, KIT / f)
 for i in range(1, 6):
     shutil.copy2(A / "store" / "screenshots" / f"screenshot-{i}.png", KIT / f"screenshot-{i}.png")
+# Opera Add-ons: скрийншоти до 800×600 (help.opera.com, „Publishing Guidelines“) — същите пет, смалени.
+(KIT / "opera").mkdir(exist_ok=True)
+for i in range(1, 6):
+    subprocess.run(["convert", str(A / "store" / "screenshots" / f"screenshot-{i}.png"), "-resize", "800x500", "-strip",
+                    str(KIT / "opera" / f"screenshot-{i}.png")], check=True)
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}.zip", KIT / f"supreme-adblock-{ver}.zip")
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}-firefox.zip", KIT / f"supreme-adblock-{ver}-firefox.zip")
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}-source.zip", KIT / f"supreme-adblock-{ver}-source.zip")

@@ -372,3 +372,14 @@ miner domains — say so in the reviewer notes).
    Description: for AMO drop the Manifest V3 history paragraph (it is about Chrome) and any
    mention of Chrome — use the text of `docs/listing/<lang>.txt`.
 3. Privacy policy, homepage, support: as above. Data collection: none.
+
+## 10. Opera Add-ons
+
+The **same zip** as Chrome. Free account at <https://addons.opera.com/developer/>; the steps, the
+screenshot size (up to 800×600 — the kit carries `opera/screenshot-1…5.png`, 800×500) and Opera's
+acceptance criteria are in `docs/OPERA.md`.
+
+## 11. Safari
+
+Needs a paid Apple Developer Program membership — on hold by the owner's decision (6 November 2026).
+What it would take: `docs/SAFARI.md`.

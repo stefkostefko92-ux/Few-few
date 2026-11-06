@@ -98,8 +98,11 @@ const fs = require("fs");
 const p = process.argv[2];
 const m = JSON.parse(fs.readFileSync(p, "utf8"));
 m.background = { scripts: ["scriptlets/policy.js", "lib/abp2dnr.js", "background.js"] };
+// gecko_android: без него AMO не показва разширението във Firefox за Android (Extension Workshop,
+// „version compatibility“). contextMenus/commands ги няма там — кодът ги вика само в try/?.
 m.browser_specific_settings = {
   gecko: { id: "supreme-adblock@carbonstealth.eu", strict_min_version: "128.0", data_collection_permissions: { required: ["none"] } },
+  gecko_android: { strict_min_version: "128.0" },
 };
 delete m.minimum_chrome_version;
 m.web_accessible_resources = (m.web_accessible_resources || []).map((w) => { const c = { ...w }; delete c.use_dynamic_url; return c; });
