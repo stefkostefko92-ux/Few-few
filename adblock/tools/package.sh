@@ -43,6 +43,7 @@ if (m.options_ui?.page) refs.add(m.options_ui.page);
 // Registered dynamically via chrome.scripting (not in the manifest), so add it
 // explicitly — otherwise a forgotten `build_scriptlets.mjs` ships without it.
 refs.add("scriptlets/main.js");
+refs.add("scriptlets/ubo_engine.js"); // registered after each uBO data chunk (6.0: no duplicate host list)
 refs.add("scriptlets/policy.js"); // importScripts() in the service worker
 refs.add("youtube_main.js");          // registered by the service worker (MAIN world, YouTube)
 refs.add("youtube_ads.css");          // registered by the service worker with it (sa-youtube-css)

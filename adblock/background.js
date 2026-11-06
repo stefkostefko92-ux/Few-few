@@ -644,12 +644,13 @@ async function doSyncScriptlets(on) {
     if (!isIPv4(d) && d.includes(".")) excludeMatches.push(`*://*.${d}/*`);
   }
 
-  // uBlock Origin directives: DATA chunks (scriptlets/ubo/cNN.js) registered
-  // right before main.js, only on their own hosts; main.js alone everywhere else.
-  // A host belongs to exactly one chunk (grouped by its last two labels), so no
-  // page gets the engine twice.
+  // uBlock Origin directives: DATA chunks (scriptlets/ubo/cNN.js) registered right
+  // before the chunk build of the engine (scriptlets/ubo_engine.js), only on their own
+  // hosts. main.js (globals, entities, popup guard) runs everywhere and no longer
+  // lists the chunk hosts as excludeMatches: Chrome copies every registered pattern
+  // into every renderer, and that duplicate list cost ~4 MB per page process (6.0,
+  // measured with tools/perf_memory.mjs). A host belongs to exactly one chunk.
   const uboScripts = [];
-  const uboPatterns = [];
   let uboOn = true;
   try {
     const { on: listsOn } = await listState();
@@ -660,9 +661,8 @@ async function doSyncScriptlets(on) {
         const m = /c(\d+)\.js$/.exec(c.file);
         const matches = c.hosts.filter((h) => HOST_RE.test(h)).map((h) => `*://*.${h}/*`);
         if (!m || !matches.length) continue;
-        uboPatterns.push(...matches);
         uboScripts.push({
-          id: UBO_CHUNK_PREFIX + m[1], matches, js: [c.file, "scriptlets/main.js"],
+          id: UBO_CHUNK_PREFIX + m[1], matches, js: [c.file, "scriptlets/ubo_engine.js"],
           runAt: "document_start", allFrames: true, world: "MAIN", persistAcrossSessions: true,
           ...(excludeMatches.length || ytBypass ? { excludeMatches: excludeMatches.concat(ytBypass ? YT_PATTERNS : []) } : {}),
         });
@@ -682,7 +682,7 @@ async function doSyncScriptlets(on) {
     // excludeMatches. We rely on injection without a live service worker.
     persistAcrossSessions: true,
   };
-  if (excludeMatches.length || uboPatterns.length || ytBypass) script.excludeMatches = excludeMatches.concat(uboPatterns, ytBypass ? YT_PATTERNS : []);
+  if (excludeMatches.length || ytBypass) script.excludeMatches = excludeMatches.concat(ytBypass ? YT_PATTERNS : []);
 
   const all = [script, ...uboScripts];
   if (!uboOn) {

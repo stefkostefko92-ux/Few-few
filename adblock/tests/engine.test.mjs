@@ -173,11 +173,29 @@ function bake(lines) {
   const run = (host) => {
     const { win } = makeWorld(host);
     Object.defineProperty(globalThis.document, "__tbabScriptletChunk", { value: chunk, configurable: true });
-    loadEngine();
+    loadEngine(join(ROOT, "scriptlets", "ubo_engine.js")); // 6.0: the chunk build runs the chunk
     return win.setTimeout(function () { (function () {}).call(null); }, 10);
   };
   ok("uBO chunk: parent directive applies on mt.de and www.mt.de", run("mt.de") === 0 && run("www.mt.de") === 0);
   ok("uBO chunk: job.mt.de#@#+js cancels it there (and on its subdomains)", run("job.mt.de") === 42 && run("a.job.mt.de") === 42);
+
+  // 6.0: two builds, no shared state — main.js leaves the chunk to ubo_engine.js (either order works),
+  // and ubo_engine.js has no globals, no entities and no popup guard of its own.
+  {
+    const { win } = makeWorld("mt.de");
+    Object.defineProperty(globalThis.document, "__tbabScriptletChunk", { value: chunk, configurable: true });
+    loadEngine(); // main.js first
+    const untouched = !!Object.getOwnPropertyDescriptor(globalThis.document, "__tbabScriptletChunk");
+    const notByMain = win.setTimeout(function () { (function () {}).call(null); }, 10) === 42;
+    loadEngine(join(ROOT, "scriptlets", "ubo_engine.js"));
+    ok("main.js leaves the chunk alone; ubo_engine.js after it still applies it and removes the data",
+      untouched && notByMain && win.setTimeout(function () { (function () {}).call(null); }, 10) === 0 &&
+      !Object.getOwnPropertyDescriptor(globalThis.document, "__tbabScriptletChunk"));
+  }
+  const chunkSrc = readFileSync(join(ROOT, "scriptlets", "ubo_engine.js"), "utf8");
+  ok("ubo_engine.js: chunk role, empty MAP, empty popup list",
+    /var ROLE = "chunk";/.test(chunkSrc) && /var MAP = \{\};/.test(chunkSrc) && /var POPUP_HOSTS = \[\];/.test(chunkSrc));
+  ok("main.js: global role", /var ROLE = "global";/.test(readFileSync(join(ROOT, "scriptlets", "main.js"), "utf8")));
 }
 
 done();
