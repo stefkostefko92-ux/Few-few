@@ -1212,7 +1212,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 623
+        "lessons": 624
       },
       "evolution": [
         {
@@ -2060,9 +2060,20 @@
           "date": "2026-11-06",
           "event": "v56.4 — учене",
           "detail": "Научи: OpenSEO standalone (password mode) пуска първата регистрация без проверка и показва неа… (+1 още)"
+        },
+        {
+          "version": "56.5.0",
+          "date": "2026-11-06",
+          "event": "v56.5 — учене",
+          "detail": "Научи: При Instagram API with Instagram Login полето id от GET /me е app-scoped ID, а user_id …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-06",
+          "type": "learning",
+          "summary": "Научи: „При Instagram API with Instagram Login полето id от GET /me е app-scoped ID, а user_id …\""
+        },
         {
           "date": "2026-11-06",
           "type": "learning",
