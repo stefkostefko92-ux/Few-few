@@ -128,5 +128,11 @@ Chrome 137+ **изисква** валиден подпис на `filters.json` (
   `/sorry`, а Chromium на Playwright няма H.264):** от домашна връзка, с разпакетирания билд — 3 клипа в
   YouTube подред (без реклама, без „ad blockers are not allowed“, без спиране на 0x0) и 2 минути канал в
   Twitch от началото (без preroll, картината тръгва). Резултатът — ред в `tools/status.json`.
+  **YouTube частта е автоматизирана (5.8.0):** от домашна връзка `PW_ROOT=$(npm root -g) node
+  tools/youtube_check.mjs` — три клипа от търсенето, ~25 s всеки; ако и трите вървят без реклама и без
+  прозореца срещу блокерите, записва `youtubeCheckedAt` и прегенерира `/status` (после commit + деплой). От
+  облак или VPN спира с „/sorry“ и не записва нищо. Нужно: `npm i -g playwright && npx playwright install
+  chromium` (безплатно). Twitch остава на ръка. Може да се пуска по график (cron / Task Scheduler) —
+  `/status` показва проверката като непроверена след 48 ч.
 - **Сигнал отвън.** Темата на uBO за YouTube (github.com/uBlockOrigin/uAssets/issues/30157) и
   `filters/quick-fixes.txt` — нова вълна там значи вероятно и при нас.
