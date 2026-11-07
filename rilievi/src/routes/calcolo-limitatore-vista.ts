@@ -3,6 +3,7 @@ import { testataDi } from '../aziende/intestazione.js';
 import { config } from '../config.js';
 import {
   calcolaLimitatore,
+  INTERVENTI,
   NORME_IMPIANTO,
   TIPI_PARACADUTE,
   type DatiLimitatore,
@@ -60,6 +61,7 @@ export function renderLimitatore(res: Response, status: number, vista: VistaLimi
         : null,
     tipi: TIPI_PARACADUTE,
     norme: NORME_IMPIANTO,
+    interventi: INTERVENTI,
     limitiVn: LIMITI_VN,
   });
 }

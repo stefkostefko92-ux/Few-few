@@ -1,11 +1,14 @@
 <%
-  // Изчислението за ограничителя — на карта или без карта (routes/calcolo-limitatore-vista.ts): три полета
-  // (скоростта, видът на парашута, нормата при монтажа; без карта — първо адресът и матрикулата) и резултатът — същите редове
+  // Изчислението за ограничителя — на карта или без карта (routes/calcolo-limitatore-vista.ts): четири полета
+  // (скоростта, видът на парашута, нормата при монтажа, какво се сменя; без карта — първо адресът и матрикулата) и резултатът — същите редове
   // като в PDF-а (limitatore/righe.ts), без обяснения. Кой не пише — само чете.
   const errorKeys = Object.keys(errori);
   const erroriImpianto = identita ? Object.keys(identita.errori) : [];
   const nErrori = errorKeys.length + erroriImpianto.length + (identita && identita.aziendaErrore ? 1 : 0);
   const msgImpianto = (k) => identita.errori[k] === 'required' ? t('argano.libero.erroreIndirizzo') : identita.errori[k] === 'digitsOnly' ? t('scheda.error.digitsOnly') : t('scheda.error.tooLong', { maxLength: k === 'indirizzo' ? 200 : 20 });
+  // Означението на нормата не се дели на два реда („UNI“ | „10411-11:2024“, „UNI 10411-“ | „11:2024“): твърд
+  // интервал след „UNI“/„EN“ и U+2060 (word joiner) след тирето между цифри — като `inRiga` в PDF-а.
+  const cifreUnite = (testo) => testo.replace(/\b(UNI|EN) (?=EN |\d)/g, '$1\u00a0').replace(/(\d)-(\d)/g, '$1-\u2060$2');
   const errSummary = (k) => errori[k] === 'range'
     ? t('limitatore.errore.range', { min: String(limitiVn[0]).replace('.', ','), max: String(limitiVn[1]).replace('.', ',') })
     : t('limitatore.errore.' + errori[k]);
@@ -44,7 +47,7 @@
   <fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
     <legend class="section__title"><%= t('limitatore.sezione') %></legend>
     <div class="grid grid--righe">
-      <%- include('_campo', { key: 'vn' }) %><%- include('_campo', { key: 'tipo' }) %><%- include('_campo', { key: 'norma' }) %>
+      <%- include('_campo', { key: 'vn' }) %><%- include('_campo', { key: 'tipo' }) %><%- include('_campo', { key: 'norma' }) %><%- include('_campo', { key: 'intervento' }) %>
     </div>
   </fieldset>
   <% if (puoScrivere) { %><div class="toolbar">
@@ -61,9 +64,13 @@
   <dl class="limitatore__dati">
     <div><dt><%= t('limitatore.r.limite') %></dt><dd data-esito="limite"><%= sintesi.limite %></dd></div>
     <% if (sintesi.contatto) { %><div><dt><%= t('limitatore.r.contatto') %></dt><dd data-esito="contatto"><%= sintesi.contatto %></dd></div><% } %>
+    <div><dt><%= t('limitatore.r.applicata') %></dt><dd data-esito="applicata"><%= cifreUnite(sintesi.applicata) %></dd></div>
   </dl>
   <% } else { %>
   <p class="limitatore__no" data-esito="motivo"><%= sintesi.motivo %></p>
+  <dl class="limitatore__dati">
+    <div><dt><%= t('limitatore.r.applicata') %></dt><dd data-esito="applicata"><%= cifreUnite(sintesi.applicata) %></dd></div>
+  </dl>
   <% } %>
 </section>
 <% if (percorso.elimina) { %>

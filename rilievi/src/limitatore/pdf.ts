@@ -15,8 +15,8 @@ import type { SintesiLimitatore } from './righe.js';
 
 /**
  * PDF-ът на изчислението за ограничителя (A4, една страница — като изчислението за аргано, но кратък):
- * горе логото и данните на фирмата, заглавието, нормата и уредбата, после данните (скорост, парашут, норма) и
- * резултатът — същите редове като на страницата, долу кога и от кого е записано. DejaVu Sans, вграден.
+ * горе логото и данните на фирмата, заглавието, нормата и уредбата, после данните (скорост, парашут, норма,
+ * смяна) и резултатът — същите редове като на страницата, долу кога и от кого е записано. DejaVu Sans, вграден.
  */
 
 export interface LimitatorePdfOptions {
@@ -31,8 +31,14 @@ export interface LimitatorePdfOptions {
 /**
  * Числото и мярката не се делят на два реда: твърд интервал пред „m/s“, а около наклонената черта —
  * „word joiner“ (U+2060, нулева ширина; DejaVu го има) — иначе pdfkit пренася след „/“ („0,63 m/“ | „s“).
+ * Означението на нормата също остава цяло: твърд интервал след „UNI“/„EN“ и U+2060 след тирето между
+ * цифри („UNI“ | „10411-11:2024“, „UNI 10411-“ | „11:2024“).
  */
-export const inRiga = (testo: string) => testo.replace(/ m\/s/g, '\u00a0m\u2060/\u2060s');
+export const inRiga = (testo: string) =>
+  testo
+    .replace(/ m\/s/g, '\u00a0m\u2060/\u2060s')
+    .replace(/\b(UNI|EN) (?=EN |\d)/g, '$1\u00a0')
+    .replace(/(\d)-(\d)/g, '$1-\u2060$2');
 
 export function renderCalcoloLimitatore(o: LimitatorePdfOptions): Promise<Buffer> {
   const fonts = fontsOf(o.fontDir);
@@ -103,6 +109,7 @@ export function renderCalcoloLimitatore(o: LimitatorePdfOptions): Promise<Buffer
   riga(t('limitatore.r.vn'), s.vn);
   riga(t('limitatore.r.tipo'), s.tipo);
   riga(t('limitatore.r.norma'), s.norma);
+  riga(t('limitatore.r.intervento'), s.intervento);
   linea();
   if (s.v1) {
     riga(t('limitatore.r.v1'), s.v1, true);
@@ -110,7 +117,9 @@ export function renderCalcoloLimitatore(o: LimitatorePdfOptions): Promise<Buffer
     if (s.contatto) riga(t('limitatore.r.contatto'), s.contatto);
   } else if (s.motivo) {
     doc.font('Sans-Bold').fontSize(12).fillColor(INK).text(inRiga(s.motivo), M, y, { width: W });
+    y = doc.y + 12;
   }
+  riga(t('limitatore.r.applicata'), s.applicata);
 
   disegnaPiede(
     doc,

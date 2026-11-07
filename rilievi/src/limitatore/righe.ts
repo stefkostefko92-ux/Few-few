@@ -1,22 +1,34 @@
 import { numero as formatoNumero } from '../argano/formato.js';
 import type { Translator } from '../i18n.js';
-import { numero, type DatiLimitatore, type RisultatoLimitatore } from './calcolo.js';
+import {
+  normaDeiLimiti,
+  numero,
+  primaDelCe,
+  type DatiLimitatore,
+  type RisultatoLimitatore,
+} from './calcolo.js';
 
 /**
  * Резултатът с думи — един и същ на страницата и в PDF-а, без обяснения (собственикът, 7 ноември 2026 —
  * „il risultato senza troppe spiegazioni“): между кои стойности се настройва V1 (с 2 знака — по тях се
- * настройва), точният праг на нормата и кога действа контактът; иначе — само защо няма праг.
+ * настройва), точният праг на нормата, кога действа контактът и по коя норма и точка са границите; иначе —
+ * защо няма праг и пак по коя норма.
  */
 
 export interface SintesiLimitatore {
   vn: string;
   tipo: string;
+  /** Нормата при монтажа — цялото име. */
   norma: string;
+  /** Какво се сменя заедно с ограничителя. */
+  intervento: string;
+  /** „UNI EN 81-20:2020 — UNI 10411-1:2024, punto 6.7“ — по коя норма и точка са границите. */
+  applicata: string;
   /** „da 1,84 a 2,15 m/s“ — null, когато няма допустим праг. */
   v1: string | null;
   /** „da 1,84 m/s (incluso) a 2,15625 m/s (escluso)“ — null, когато няма допустим праг. */
   limite: string | null;
-  /** „Prima di V1“, „Al più tardi a V1“ или двата случая на UNI EN 81-1:1987. */
+  /** „Prima di V1“ или „Al più tardi a V1“. */
   contatto: string | null;
   /** Защо няма праг (недопустим вид, норма без стойности в нашите бележки). */
   motivo: string | null;
@@ -35,13 +47,9 @@ export function sintesiLimitatore(
 ): SintesiLimitatore {
   const ammesso = numero(r.sogliaMax) && r.max2 !== null;
   const max = numero(r.sogliaMax) ? r.sogliaMax : 0;
-  const contatto = !ammesso
-    ? null
-    : r.momento === 'alPiuTardi1987' && r.contatto115 !== null
-      ? t('limitatore.esito.alPiuTardi1987', { v: cifra(r.contatto115, 2) })
-      : r.momento
-        ? t(`limitatore.esito.${r.momento}`)
-        : null;
+  const contatto = ammesso && r.momento ? t(`limitatore.esito.${r.momento}`) : null;
+  // UNI 10411-1:2024 за уредбите отпреди CE, UNI 10411-11:2024 за CE — точката по смяната.
+  const gruppo = primaDelCe(d.norma) ? 'primaCe' : 'ce';
   // Без долен праг (D.P.R. 1497/1963, art. 32) — само „fino a“, горният праг е включен.
   const conMinimo = ammesso && r.sogliaMin !== null && r.min2 !== null;
   return {
@@ -49,6 +57,11 @@ export function sintesiLimitatore(
     tipo: t(`limitatore.opzione.tipo.${d.tipo}`),
     // В резултата и в PDF-а — цялото име; в менюто — краткото (събира се на телефон).
     norma: t(`limitatore.nomeNorma.${d.norma}`),
+    intervento: t(`limitatore.opzione.intervento.${d.intervento}`),
+    applicata: t('limitatore.r.applicataValore', {
+      norma: t(`limitatore.nomeNorma.${normaDeiLimiti(d)}`),
+      punto: t(`limitatore.riferimento.${gruppo}.${d.intervento}`),
+    }),
     v1: !ammesso
       ? null
       : conMinimo

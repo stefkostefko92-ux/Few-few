@@ -1,7 +1,7 @@
 // The overspeed governor calculation in a real browser (the owner, 5 November 2026 — from the workbook
 // Limitatore_velocita_EN81-20-2020.xlsx; 7 November — only the speed of the lift and the type of safety
-// gear, and the result without long explanations; 8 November — and the standard in force when the lift was
-// installed): the button on the scheda, three fields (axe; aligned at
+// gear, and the result without long explanations; then the standard in force when the lift was installed
+// and what else is changed): the button on the scheda, four fields (axe; aligned at
 // 360 and 1280 px), the example of the sheet typed in and saved, the V1 to set, no horizontal scroll on a
 // phone, the PDF. Then the page in the menu: the number of the lift leads straight to this calculation.
 import { join } from 'node:path';
@@ -14,7 +14,7 @@ export async function checkLimitatore(page, { shots, scheme, sheetUrl }) {
   await page.click(`a[href="${sheetPath}/calcolo-limitatore"]`);
   await page.waitForURL(/\/calcolo-limitatore$/);
   const campi = await page.locator('form.form .input, form.form .select').count();
-  if (campi !== 3) fail(`${name}: ${campi} fields instead of 3`);
+  if (campi !== 4) fail(`${name}: ${campi} fields instead of 4`);
   await audit(page, `${name} form`);
   const viewport = page.viewportSize();
   for (const width of [360, 1280]) {
@@ -25,15 +25,20 @@ export async function checkLimitatore(page, { shots, scheme, sheetUrl }) {
   await page.fill('#f-vn', '1,6');
   await page.selectOption('#f-tipo', 'progressivo');
   await page.selectOption('#f-norma', 'en81-20-2020');
+  await page.selectOption('#f-intervento', 'limitatore');
   await page.click('form.form button[type=submit]');
   await page.waitForURL(/\/calcolo-limitatore#risultati$/);
   if (await page.locator('#error-summary').count()) fail(`${name}: the form was refused`);
   const esito = async (key) =>
-    ((await page.textContent(`[data-esito="${key}"]`)) ?? '').replace(/ /g, ' ').trim();
+    ((await page.textContent(`[data-esito="${key}"]`)) ?? '')
+      .replace(/\u00a0/g, ' ')
+      .replace(/\u2060/g, '')
+      .trim();
   const attesi = {
     v1: 'da 1,84 a 2,15 m/s',
     limite: 'da 1,84 m/s (incluso) a 2,15625 m/s (escluso)',
     contatto: 'Prima di V1',
+    applicata: 'UNI EN 81-20:2020 — UNI 10411-11:2024, punto 18',
   };
   for (const [key, atteso] of Object.entries(attesi)) {
     const valore = await esito(key);

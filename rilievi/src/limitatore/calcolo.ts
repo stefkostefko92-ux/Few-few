@@ -1,17 +1,27 @@
 /**
  * Изчислението за ограничителя на скоростта (собственикът, 5 ноември 2026 — от своя
  * „Limitatore_velocita_EN81-20-2020.xlsx“, листът „Limitatore“; 7 ноември — само скоростта и видът на
- * парашута, кратък резултат; 8 ноември — UNI 10411-1:2024, т. 18, uni-10411-1-2024.md:365):
- * между кои стойности се настройва V1 и кога действа контактът. Без база — tests/limitatore-calcolo.test.ts.
+ * парашута, кратък резултат, после нормата при монтажа и „Cosa si modifica“ — всички точки за смяната в
+ * бележките): между кои стойности се настройва V1 и кога действа контактът. Без база —
+ * tests/limitatore-calcolo.test.ts и tests/limitatore-norme.test.ts.
+ *
+ * По коя норма са границите (само точка и бележката на Асансьорчика):
+ * - преди CE (UNI 10411-1:2024): само нов ограничител — нормата при монтажа (18, uni-10411-1-2024.md:365;
+ *   бележка 9 — D.Lgt. 600/1945, D.P.R. 1497/1963, D.M. 587/1987); и нов парашут — UNI EN 81-20:2020
+ *   (6.7, :105); Vn нагоре над 5 % — UNI EN 81-20:2020 (15.1, 15.13, :298, :317); контактите при нов
+ *   ограничител — винаги UNI EN 81-20:2020, 5.6.2.2.1 (18, 15.13, 6.7).
+ * - CE (UNI 10411-11:2024): като оригинала (18, uni-10411-11-2024.md:288; 6.7, :117; 15 f), :252).
+ * - Vn надолу над 5 % — пак нормата при монтажа (UNI 10411-1:2024, 15.16–15.17, :320, :324): като „само
+ *   нов ограничител“, затова отделен избор няма.
  *
  * Стойностите по норми (само точка, стойност и бележката на Асансьорчика — ../norme-ascensori):
  * - UNI EN 81-20:2020 — 5.6.2.1.2.1 (0,63 m/s), 5.6.2.2.1.1 a) (115 %; 0,80 / 1 / 1,5 m/s; 1,25·v + 0,25/v),
  *   5.6.2.2.1.6 a) (1 m/s) — uni-en-81-20-2020.md:670, :683, :688; клетките B5, B6, B9, B10, B13 на листа.
  * - UNI EN 81-1:1999/2008 — 9.8.2.1 (0,63 и 1 m/s), 9.9.1 (и 1,5 m/s за `ammortizzato`), 9.9.11.1 —
  *   uni-en-81-1-2008.md:412, :425, :443.
- * - UNI EN 81-1:1987 (D.M. 587/1987) — B 9.8.2.1, B 9.9.1, B 9.9.11.1 (при Vn ≤ 1 и VVVF: 115 % от Vn) —
- *   uni-10411-1-2008.md:800, :821, :848.
- * - D.P.R. 1497/1963, art. 32 (собственикът, 8 ноември 2026 — бележките го нямат): при Vn от 0,6 до
+ * - UNI EN 81-1:1987 (D.M. 587/1987) — B 9.8.2.1, B 9.9.1 — uni-10411-1-2008.md:800, :821 (контактът по
+ *   B 9.9.11.1, :848, не важи за нов ограничител — 18 иска 5.6.2.2.1 на UNI EN 81-20:2020).
+ * - D.P.R. 1497/1963, art. 32 (собственикът, 7 ноември 2026 — бележките го нямат): при Vn от 0,6 до
  *   1,5 m/s V1 ≤ 1,40·Vn (включен), без долен праг; извън тези скорости — изчисление няма. Сравнението
  *   с UNI 10411-1:2024 собственикът прави сам („in alcuni casi va in contrasto“).
  * - D.Lgt. 600/1945 — стойностите му не са в бележките: изчисление няма.
@@ -23,7 +33,7 @@
 export const TIPI_PARACADUTE = ['progressivo', 'istantaneo', 'rulli', 'ammortizzato'] as const;
 export type TipoParacadute = (typeof TIPI_PARACADUTE)[number];
 
-/** Нормата, по която е монтирана уредбата (UNI 10411-1:2024, т. 15.17 и 18). */
+/** Нормата, по която е монтирана уредбата (UNI 10411-1:2024, т. 15.17 и 18, бележки 8 и 9). */
 export const NORME_IMPIANTO = [
   'en81-20-2020',
   'en81-1-1999',
@@ -33,11 +43,30 @@ export const NORME_IMPIANTO = [
 ] as const;
 export type NormaImpianto = (typeof NORME_IMPIANTO)[number];
 
-/** Входът — B2 (Vn, m/s), B3 (видът на парашута на кабината) и нормата на уредбата. */
+/** Какво се сменя заедно с ограничителя (UNI 10411-1:2024, т. 18, 6.7 и 15.13). */
+export const INTERVENTI = ['limitatore', 'paracadute', 'velocita'] as const;
+export type Intervento = (typeof INTERVENTI)[number];
+
+/** Входът — B2 (Vn, m/s), B3 (видът на парашута на кабината), нормата на уредбата и какво се сменя. */
 export interface DatiLimitatore {
   vn: number;
   tipo: TipoParacadute;
   norma: NormaImpianto;
+  intervento: Intervento;
+}
+
+/** Уредба отпреди UNI EN 81-1:1999 — за нея е UNI 10411-1:2024; за CE — UNI 10411-11:2024. */
+export const primaDelCe = (norma: unknown): boolean =>
+  norma === 'en81-1-1987' || norma === 'dpr-1497-1963' || norma === 'dlgt-600-1945';
+
+/**
+ * По коя норма са границите: преди CE с нов парашут (6.7) или с Vn нагоре над 5 % (15.13) — UNI EN
+ * 81-20:2020; иначе — нормата при монтажа (18; при CE — оригиналът).
+ */
+export function normaDeiLimiti(d: Pick<DatiLimitatore, 'norma' | 'intervento'>): NormaImpianto {
+  return primaDelCe(d.norma) && (d.intervento === 'paracadute' || d.intervento === 'velocita')
+    ? 'en81-20-2020'
+    : d.norma;
 }
 
 export type SogliaMassima =
@@ -65,12 +94,11 @@ export interface RisultatoLimitatore {
    */
   max2: number | null;
   /**
-   * B13 — кога трябва да действа контактът; празно без Vn. `alPiuTardi1987` — UNI EN 81-1:1987 при
-   * Vn ≤ 1: при V1 (скорост по честотата на мрежата) или най-късно при `contatto115` (VVVF).
+   * B13 — кога трябва да действа контактът; празно без Vn. Едно и също правило за всички норми: UNI EN
+   * 81-20:2020, 5.6.2.2.1.6 a) = UNI EN 81-1:1999/2008, 9.9.11.1, а преди CE новият ограничител взима
+   * контактите от UNI EN 81-20:2020 (UNI 10411-1:2024, т. 18).
    */
-  momento: 'prima' | 'alPiuTardi' | 'alPiuTardi1987' | null;
-  /** 1,15·Vn — само при `alPiuTardi1987`. */
-  contatto115: number | null;
+  momento: 'prima' | 'alPiuTardi' | null;
 }
 
 /** `ISNUMBER` на листа: само крайно число (празно, текст, NaN — не). */
@@ -119,21 +147,12 @@ function sogliaMassima(vn: unknown, tipo: unknown, norma: unknown): SogliaMassim
 }
 
 export function calcolaLimitatore(d: DatiLimitatore): RisultatoLimitatore {
-  const { vn, norma } = d;
+  const { vn } = d;
+  const norma = normaDeiLimiti(d);
   const dpr = norma === 'dpr-1497-1963';
   const sogliaMax = sogliaMassima(vn, d.tipo, norma);
   // B5: долният праг има смисъл само с горния (иначе празно); D.P.R. 1497/1963 долен праг няма.
   const sogliaMin = numero(sogliaMax) && numero(vn) && !dpr ? vn * 1.15 : null;
-  // B13 (EN 81-20 и EN 81-1:1999/2008); EN 81-1:1987 при Vn ≤ 1 — и таванът 115 % за VVVF; D.P.R.
-  // 1497/1963 — правило за контакта не е дадено.
-  const momento =
-    !numero(vn) || dpr
-      ? null
-      : vn > 1
-        ? 'prima'
-        : norma === 'en81-1-1987'
-          ? 'alPiuTardi1987'
-          : 'alPiuTardi';
   const max2 = !numero(sogliaMax)
     ? null
     : dpr
@@ -145,7 +164,6 @@ export function calcolaLimitatore(d: DatiLimitatore): RisultatoLimitatore {
     maxIncluso: dpr,
     min2: sogliaMin === null ? null : arrotondaSu(arrotonda(sogliaMin, 10), 2),
     max2,
-    momento,
-    contatto115: momento === 'alPiuTardi1987' ? vn * 1.15 : null,
+    momento: !numero(vn) ? null : vn > 1 ? 'prima' : 'alPiuTardi',
   };
 }
