@@ -18,8 +18,8 @@ import { loadScheda, notFound } from './schede-shared.js';
 
 /**
  * Изчислението за ограничителя на картата (собственикът, 5 ноември 2026 — „таб calcolo limitatore“ по
- * неговия Excel, като изчислението за аргано): формата (първия път — Vn и d от картата), записът и
- * резултатите. Бутонът на картата го няма при хидравлична уредба (там картата няма раздела „Limitatore“) —
+ * неговия Excel, като изчислението за аргано): формата (скоростта и видът на парашута; първия път — Vn от
+ * картата), записът и резултатът. Бутонът на картата го няма при хидравлична уредба (там картата няма раздела „Limitatore“) —
  * като при аргано. Чете всеки, който вижда картата; пише, който пише карти в нейната фирма — не в
  * кошчето. Записът е върху отворената версия на изчислението (`base`). Без карта —
  * calcolo-limitatore-libero.ts.
@@ -68,7 +68,7 @@ calcoloLimitatoreRouter.get('/schede/:id/calcolo-limitatore', read, async (req, 
   const salvato = await leggiCalcolo(scheda.id);
   const values = salvato?.dati
     ? formDaDati(salvato.dati)
-    : prefillLimitatore(storedValori(ARGANI, scheda.preventivoArgano), scheda.funicellaDiametroMm);
+    : prefillLimitatore(storedValori(ARGANI, scheda.preventivoArgano));
   render(req, res, 200, scheda, {
     salvato,
     values,

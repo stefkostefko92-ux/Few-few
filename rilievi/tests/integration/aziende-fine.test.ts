@@ -52,7 +52,7 @@ async function companyWithData(name: string) {
     data: { aziendaId: azienda.id, indirizzo: 'Via Fine 1', dati: {} },
   });
   await prisma.calcoloLimitatore.create({
-    data: { aziendaId: azienda.id, schedaId, dati: { vn: 1 } },
+    data: { aziendaId: azienda.id, schedaId, dati: { vn: 1, tipo: 'progressivo' } },
   });
   await prisma.verbale.create({
     data: { aziendaId: azienda.id, data: new Date('2026-11-05'), schedaId },

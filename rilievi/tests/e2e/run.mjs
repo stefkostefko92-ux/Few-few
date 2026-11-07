@@ -15,6 +15,7 @@
 // the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
 //
 //   RILIEVI_URL=http://127.0.0.1:4330 E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e
+//   (E2E_CHROMIUM=/path/to/chrome — optional, another Chromium than Playwright's own)
 //
 // The account must be a MASTER (companies are theirs). It creates real records — run it against a
 // local or staging portal, never production.
@@ -62,7 +63,10 @@ if (!email || !password) {
 const shots = join(here, 'shots');
 mkdirSync(shots, { recursive: true });
 const signIn = (page, who, secret) => signInAt(page, base, who, secret);
-const browser = await chromium.launch();
+// E2E_CHROMIUM: a Chromium already on the machine, when it is not the build the pinned Playwright expects.
+const browser = await chromium.launch(
+  process.env.E2E_CHROMIUM ? { executablePath: process.env.E2E_CHROMIUM } : {},
+);
 let sheetUrl = '';
 let aziendaPath = '';
 const aziendaName = `Ascensori E2E ${Date.now()}`;

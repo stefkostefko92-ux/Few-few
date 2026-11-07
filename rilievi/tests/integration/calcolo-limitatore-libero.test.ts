@@ -31,17 +31,7 @@ async function makeScheda(aziendaId: string, extra: Record<string, unknown> = {}
 }
 
 // The example of the sheet "Limitatore", as the form sends it.
-const FORM: Record<string, string> = {
-  vn: '1,6',
-  tipo: 'progressivo',
-  v1: '2,1',
-  vc: '1,9',
-  forzaParacadute: '200',
-  forzaLimitatore: '500',
-  mbl: '25000',
-  d: '8',
-  dp: '240',
-};
+const FORM: Record<string, string> = { vn: '1,6', tipo: 'progressivo' };
 
 const pagina = (id: string) => `/schede/${id}/calcolo-limitatore`;
 
@@ -110,7 +100,7 @@ describe('the governor calculation page and the calculation without a scheda', (
     const p = `/calcolo-limitatore/${id}`;
     const page = (await tecnico.browser.get(p)).body;
     assert.match(page, /Via Dante 2, 20121 Milano \(MI\)/);
-    assert.match(page, /Entro i limiti/);
+    assert.match(page, /data-esito="v1">da 1,84 a 2,15 m\/s</);
     assert.ok(!page.includes('danger-zone'), 'TECNICO does not delete');
     const pdf = await tecnico.browser.get(`${p}/pdf`);
     assert.equal(pdf.status, 200);

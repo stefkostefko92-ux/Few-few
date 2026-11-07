@@ -2,9 +2,9 @@ import type { Request, Response } from 'express';
 import { testataDi } from '../aziende/intestazione.js';
 import { config } from '../config.js';
 import { calcolaLimitatore, TIPI_PARACADUTE, type DatiLimitatore } from '../limitatore/calcolo.js';
-import { limiteDi, type ErroriLimitatore, type ValoriForm } from '../limitatore/dati.js';
+import { LIMITI_VN, type ErroriLimitatore, type ValoriForm } from '../limitatore/dati.js';
 import { renderCalcoloLimitatore } from '../limitatore/pdf.js';
-import { RIFERIMENTI, righeLimitatore } from '../limitatore/righe.js';
+import { sintesiLimitatore } from '../limitatore/righe.js';
 import { aziendaDelCalcolo } from '../argano/service.js';
 import type { CalcoloSalvato } from '../limitatore/service.js';
 import {
@@ -48,14 +48,13 @@ export function renderLimitatore(res: Response, status: number, vista: VistaLimi
     proposto: false,
     ...vista,
     impianto: vista.impianto ? rigaImpianto(vista.impianto, t) : '',
-    // При грешки или конфликт записаните резултати не отговарят на формата — не се показват.
-    sezioni:
+    // При грешки или конфликт записаният резултат не отговаря на формата — не се показва.
+    sintesi:
       dati && senzaErrori && !vista.conflitto
-        ? righeLimitatore(dati, calcolaLimitatore(dati), t)
-        : [],
+        ? sintesiLimitatore(dati, calcolaLimitatore(dati), t)
+        : null,
     tipi: TIPI_PARACADUTE,
-    riferimenti: RIFERIMENTI,
-    limiteDi,
+    limitiVn: LIMITI_VN,
   });
 }
 
@@ -73,7 +72,7 @@ export async function inviaPdfLimitatore(
 ): Promise<void> {
   const t = res.locals.t as T;
   const pdf = await renderCalcoloLimitatore({
-    sezioni: righeLimitatore(opts.dati, calcolaLimitatore(opts.dati), t),
+    sintesi: sintesiLimitatore(opts.dati, calcolaLimitatore(opts.dati), t),
     t,
     impianto: {
       indirizzo: opts.impianto.indirizzo ?? '',

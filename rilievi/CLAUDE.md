@@ -112,10 +112,11 @@ src/
                      долният ред) · impianto.ts (уредбата без карта — zod) · liberi.ts (изчислението
                      без карта) · elenco.ts (списъкът и търсенето на страницата в менюто)
   limitatore/        изчислението за ограничителя по „Limitatore_velocita_EN81-20-2020.xlsx“: calcolo.ts
-                     (клетките B5–B27 на листа „Limitatore“, без база) · dati.ts (входът — zod, формата,
-                     попълването от картата) · righe.ts (редовете на листа — страница и PDF; листът
-                     „Riferimenti“) · service.ts (на карта и без карта: четене, запис върху `base`,
-                     изтриване, одит) · elenco.ts (списъкът и търсенето) · pdf.ts (A4, една страница)
+                     (клетките B5, B6, B9, B10, B13 на листа „Limitatore“, без база) · dati.ts (скоростта и
+                     видът на парашута — zod, формата, попълването от картата) · righe.ts (резултатът с
+                     думи — страница и PDF) · service.ts (на карта и без карта: четене, запис върху
+                     `base`, изтриване, одит) · elenco.ts (списъкът и търсенето) · pdf.ts (A4, една
+                     страница)
   schizzi/           скицникът: elementi.ts (видът на елементите — zod, тежестта) · costanti.ts (мерките,
                      таваните, стрелките, пунктирите, котите) · simboli.ts (символите за шахтата) ·
                      forme.ts (елементът → примитиви: линии, запълнени върхове, елипси, надписи — за SVG и
@@ -851,23 +852,25 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   `views/argano/elenco.ejs` с `calcolo` на изчислението), изчисление без карта (`/nuovo`, `/:id`, `/pdf`,
   `/elimina`), същите права, `base`, одит `LIMITATORE_CALCOLO`/`LIMITATORE_CALCOLO_DELETE`, износ и
   изтриване на фирмата. Модел `CalcoloLimitatore` (миграция `20261105180000_calcolo_limitatore`, само
-  добавя; `CalcoloLimitatore_impianto_check`). **Формулите са клетките B5–B27 на листа „Limitatore“
-  една към една** (`limitatore/calcolo.ts`) — с особеностите на файла: долният праг (115 % от Vn) е
-  празен, щом горният не е число; V1 при липсващ горен праг е „Fuori limiti“; при Vn ≤ 0 моментът на
-  контакта пак е „Al più tardi a V1“; минимумът и максимумът с 2 знака — `ROUNDUP(ROUND(x;10);2)` и
-  `ROUND(ROUNDUP(ROUND(x;10);2)−0,01;2)`; MBL минимум = 8 × силата на ограничителя (B18), не на
-  парашута. Сравненията и закръглянията са като в електронната таблица — с 15 значещи цифри (249 / 8,3
-  е 30 и „Sufficiente“; с обикновено сравнение е 29,999…996 и „Insufficiente“ — тестът го хваща).
-  Текстовете на изходите са дословно от листа („Entro i limiti“, „Non ammesso: Vn>0,63“, „Dato
-  mancante“…). Всяко поле е по избор като в листа (празно → „Dato mancante“ само в своите редове);
-  празна форма не се записва. Първото отваряне от картата: Vn — от „Modulo rilievi dati argani“, d — от
-  „Diametro funicella“; другото е от табелата и сертификатите. Резултатите — четирите раздела на листа
-  ред по ред, под всеки — бележката на листа (точката на нормата); накрая „Ambito“ и „Importante“ и
-  листът „Riferimenti“ (без пътищата към вътрешните бележки). Проверката: unit — 27-те случая на листа
-  „Test“ и 28 случая, преизчислени в самия файл (LibreOffice, без макроси; `tests/limitatore-excel.json`
-  — всяка клетка B5–B27), PDF-ът на една страница за всеки; integration и e2e — като при аргано. Самият
-  Excel не е в репото („USO INTERNO … Non pubblicare“); на витрината изчислението не се споменава с
-  нормата.
+  добавя; `CalcoloLimitatore_impianto_check`). **Само скоростта и видът на парашута** (собственикът, 7
+  ноември 2026 — „Il limitatore non si capisce. Troppi dati da inserire … far inserire la velocità
+  dell'impianto e il tipo di paracadute, da lì estrarre il risultato senza troppe spiegazioni“; първата
+  версия беше целият лист — 9 полета, 4 раздела, бележка под всеки ред и листът „Riferimenti“): две
+  задължителни полета (Vn 0,01–20 m/s; Progressivo / Istantaneo / Istantaneo a rulli) и резултатът —
+  „Tarare V1 da 1,84 a 2,15 m/s“ (с 2 знака — по тях се настройва), „Limite di norma“ (точните прагове) и
+  „Contatto elettrico“ (преди V1 / най-късно при V1); при моментален парашут над 0,63 m/s — само защо
+  („serve il progressivo“). PDF-ът — същите редове, една страница. Формулите са клетките B5, B6, B9, B10
+  и B13 на листа „Limitatore“ една към една (`limitatore/calcolo.ts`): долният праг 115 % от Vn
+  (включен), горният (изключен) — 0,80 моментален, 1 с ролки, 1,5 прогресивен при Vn ≤ 1 и **1,25·v +
+  0,25/v** прогресивен при Vn > 1 (UNI EN 81-20:2020, 5.6.2.2.1.1 a) 4) — собственикът го провери по
+  нормата, 6 ноември 2026), моментален и с ролки само до 0,63 m/s; с 2 знака — `ROUNDUP(ROUND(x;10);2)`
+  и `ROUND(ROUNDUP(ROUND(x;10);2)−0,01;2)`, с 15 значещи цифри като електронната таблица. Записаното е
+  `{vn, tipo}` (непознатите ключове на по-стар запис се пропускат при четене). Първото отваряне от
+  картата: Vn — от „Modulo rilievi dati argani“; видът се избира. Проверката: unit — 16-те случая на
+  праговете от листа „Test“, клетките B5/B6/B9/B10/B13 на 28 случая, преизчислени в самия файл
+  (LibreOffice, без макроси; `tests/limitatore-excel.json` пази всички клетки B5–B27), формулата
+  1,25·v + 0,25/v на 900 стойности, PDF-ът; integration и e2e — като при аргано. Самият Excel не е в
+  репото („USO INTERNO … Non pubblicare“).
 - **Менюто** (`views/partials/header.ejs`, `public/css/sidenav.css`, `public/js/menu.js`; собственикът, 30
   октомври 2026 — като в LiftPilot, вляво): групи Rilievi · Assistenza elevatori · Amministrazione (на
   фирмата: Utenti, Impostazioni, Registro) · Master (нашето — Aziende и Richieste, само за собственика на

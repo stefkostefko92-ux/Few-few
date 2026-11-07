@@ -1,8 +1,9 @@
-// The overspeed governor calculation against the owner's workbook "Limitatore_velocita_EN81-20-2020.xlsx"
-// (5 November 2026): the 27 cases of its own sheet "Test" (copied here as they are there), then 28 cases
-// recalculated in the workbook itself (tests/limitatore-excel.json — every result cell B5–B27 of the
-// sheet "Limitatore"), word for word for the texts; then the form: Italian decimals, every field optional
-// like in the sheet, an empty form refused, forged choices.
+// The overspeed governor calculation against the owner's workbook "Limitatore_velocita_EN81-20-2020.xlsx",
+// reduced on 7 November 2026 to what the owner asked for ("solo la velocità dell'impianto e il tipo di
+// paracadute, da lì il risultato"): the 16 threshold cases of the sheet "Test" (copied as they are there)
+// and the cells B5, B6, B9, B10 and B13 of 28 cases recalculated in the workbook itself
+// (tests/limitatore-excel.json); the progressive formula of UNI EN 81-20:2020, 5.6.2.2.1.1 a) 4)
+// (1,25·v + 0,25/v) on its own; the short result in words; then the form.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -14,7 +15,6 @@ import {
   calcolaLimitatore,
   type DatiLimitatore,
   type RisultatoLimitatore,
-  type TipoParacadute,
 } from '../src/limitatore/calcolo.js';
 import {
   datiSalvati,
@@ -22,33 +22,26 @@ import {
   parseDatiLimitatore,
   prefillLimitatore,
 } from '../src/limitatore/dati.js';
+import { sintesiLimitatore } from '../src/limitatore/righe.js';
 
 const t = translatorFor('it');
-const VUOTI: DatiLimitatore = {
-  vn: null,
-  tipo: null,
-  v1: null,
-  vc: null,
-  forzaParacadute: null,
-  forzaLimitatore: null,
-  mbl: null,
-  d: null,
-  dp: null,
-};
-const dati = (parte: Partial<Record<keyof DatiLimitatore, unknown>>) =>
-  ({ ...VUOTI, ...parte }) as DatiLimitatore;
+// The sheet takes any cell content; the calculation guards the same way (a number stored as text, a
+// misspelt or missing type), so the cases go in as they are.
+const dati = (vn: unknown, tipo: unknown) => ({ vn, tipo }) as DatiLimitatore;
 
-/** What the sheet shows for a result: a number, or its text (the dictionary holds the sheet's words). */
-function mostrato(v: RisultatoLimitatore[keyof RisultatoLimitatore]): number | string | null {
-  if (v === null || typeof v === 'number') return v;
-  return t(`limitatore.esito.${v}`);
-}
+/** The words of the sheet for the results that are not numbers. */
+const FOGLIO: Record<string, string> = {
+  'Vn non valida': 'vnNonValida',
+  'Non ammesso: Vn>0,63': 'nonAmmesso',
+  'Tipo non valido': 'tipoNonValido',
+  'Prima di V1': 'prima',
+  'Al più tardi a V1': 'alPiuTardi',
+};
 
 const vicino = (a: unknown, b: number) =>
   typeof a === 'number' && Math.abs(a - b) <= Math.max(1e-9, Math.abs(b) * 1e-12);
 
-describe('the sheet "Test" of the workbook: 27 cases', () => {
-  // Rows 5–20: Vn, type → min (empty = null), max (number or the sheet's text).
+describe('the sheet "Test" of the workbook: the 16 threshold cases', () => {
   const SOGLIE: Array<[string, unknown, unknown, number | null, number | string]> = [
     ['Progressivo, esempio', 1.6, 'progressivo', 1.84, 2.15625],
     ['Progressivo, Vn = 1 (limite)', 1, 'progressivo', 1.15, 1.5],
@@ -60,82 +53,65 @@ describe('the sheet "Test" of the workbook: 27 cases', () => {
     ['Istantaneo, Vn = 0,64', 0.64, 'istantaneo', null, 'Non ammesso: Vn>0,63'],
     ['Rulli, Vn = 0,70', 0.7, 'rulli', null, 'Non ammesso: Vn>0,63'],
     ['Istantaneo, Vn = 1,6', 1.6, 'istantaneo', null, 'Non ammesso: Vn>0,63'],
-    // The sheet takes any text as the type; here a misspelt one is just as invalid.
     ['Tipo scritto male', 1.6, 'Prograssivo', null, 'Tipo non valido'],
     ['Tipo vuoto', 1.6, null, null, 'Tipo non valido'],
     ['Vn zero', 0, 'progressivo', null, 'Vn non valida'],
     ['Vn negativa', -1, 'progressivo', null, 'Vn non valida'],
-    // A number stored as text is not a number for ISNUMBER — nor here.
     ['Vn come testo', '1.6', 'progressivo', null, 'Vn non valida'],
     ['Vn vuota', null, 'progressivo', null, 'Vn non valida'],
   ];
   for (const [caso, vn, tipo, min, max] of SOGLIE) {
     it(caso, () => {
-      const r = calcolaLimitatore(dati({ vn, tipo: tipo as TipoParacadute }));
+      const r = calcolaLimitatore(dati(vn, tipo));
       if (min === null) assert.equal(r.sogliaMin, null);
       else assert.ok(vicino(r.sogliaMin, min), `min ${r.sogliaMin} ≠ ${min}`);
       if (typeof max === 'number') assert.ok(vicino(r.sogliaMax, max), `max ${r.sogliaMax}`);
-      else assert.equal(mostrato(r.sogliaMax), max);
+      else assert.equal(r.sogliaMax, FOGLIO[max]);
     });
   }
-  // Rows 23–28: V1 against Vn = 1,6 progressive.
-  const V1: Array<[string, number | null, string]> = [
-    ['Esattamente al minimo', 1.84, 'Entro i limiti'],
-    ['Sotto il minimo', 1.83, 'Fuori limiti'],
-    ['Appena sotto il massimo', 2.1562, 'Entro i limiti'],
-    ['Appena sopra il massimo', 2.1563, 'Fuori limiti'],
-    ['Valore 2,16 del testo originale', 2.16, 'Fuori limiti'],
-    ['V1 vuota', null, 'Dato mancante'],
-  ];
-  for (const [caso, v1, atteso] of V1) {
-    it(caso, () => {
-      const r = calcolaLimitatore(dati({ vn: 1.6, tipo: 'progressivo', v1 }));
-      assert.equal(mostrato(r.esitoV1), atteso);
-    });
-  }
-  // Rows 31–35: the contact.
-  const CONTATTO: Array<[string, number, number, number | null, string]> = [
-    ['Vn > 1, Vc sotto V1', 1.6, 2.1, 1.9, 'Coerente con V1'],
-    ['Vn > 1, Vc uguale a V1', 1.6, 2, 2, 'Fuori limiti'],
-    ['Vn = 1, Vc uguale a V1', 1, 1.3, 1.3, 'Coerente con V1'],
-    ['Vn ≤ 1, Vc sopra V1', 0.8, 1.2, 1.25, 'Fuori limiti'],
-    ['Vc vuota', 1.6, 2.1, null, 'Dato mancante'],
-  ];
-  for (const [caso, vn, v1, vc, atteso] of CONTATTO) {
-    it(caso, () => {
-      const r = calcolaLimitatore(dati({ vn, v1, vc }));
-      assert.equal(mostrato(r.esitoContatto), atteso);
-    });
-  }
-  it('counts 27 cases, like the summary cell of the sheet', () => {
-    assert.equal(SOGLIE.length + V1.length + CONTATTO.length, 27);
-  });
 });
 
-type Caso = { dati: DatiLimitatore; excel: Record<string, number | string | null> };
+type Caso = { dati: { vn: unknown; tipo: unknown }; excel: Record<string, number | string | null> };
 const EXCEL = JSON.parse(
   readFileSync(join(import.meta.dirname, 'limitatore-excel.json'), 'utf8'),
 ) as {
   testDelFoglio: string;
   casi: Record<string, Caso>;
 };
+/** The cells of the sheet the calculation still gives. */
+const CELLE = ['B5', 'B6', 'B9', 'B10', 'B13'];
 
-describe('every result cell, as recalculated in the workbook', () => {
+describe('the cells B5, B6, B9, B10 and B13, as recalculated in the workbook', () => {
   it('the workbook passed its own sheet "Test" in that recalculation', () => {
     assert.equal(EXCEL.testDelFoglio, 'OK');
   });
   for (const [nome, caso] of Object.entries(EXCEL.casi)) {
     it(nome, () => {
-      const r = calcolaLimitatore(caso.dati);
+      const r = calcolaLimitatore(dati(caso.dati.vn, caso.dati.tipo));
       for (const [chiave, atteso] of Object.entries(caso.excel)) {
-        const campo = chiave.split(' ')[1] as keyof RisultatoLimitatore;
-        const valore = mostrato(r[campo]);
+        const [cella, campo] = chiave.replace('Limitatore!', '').split(' ') as [
+          string,
+          keyof RisultatoLimitatore,
+        ];
+        if (!CELLE.includes(cella)) continue;
+        const valore = r[campo];
         if (typeof atteso === 'number')
           assert.ok(vicino(valore, atteso), `${chiave}: ${valore} ≠ ${atteso}`);
-        else assert.equal(valore, atteso, chiave);
+        else if (atteso === null) assert.equal(valore, null, chiave);
+        else assert.equal(valore, FOGLIO[atteso], chiave);
       }
     });
   }
+});
+
+describe('the progressive safety gear above 1 m/s', () => {
+  it('stops V1 below 1,25·v + 0,25/v (UNI EN 81-20:2020, 5.6.2.2.1.1 a) 4))', () => {
+    for (let i = 101; i <= 1000; i += 1) {
+      const v = i / 100;
+      const r = calcolaLimitatore({ vn: v, tipo: 'progressivo' });
+      assert.ok(vicino(r.sogliaMax, 1.25 * v + 0.25 / v), `Vn ${v}: ${r.sogliaMax}`);
+    }
+  });
 });
 
 describe('the rounding of the sheet', () => {
@@ -148,44 +124,72 @@ describe('the rounding of the sheet', () => {
   });
 });
 
-describe('the form', () => {
-  it('reads Italian decimals and keeps every empty field as missing', () => {
-    const { dati: d, errori } = parseDatiLimitatore({
-      vn: '1,6',
-      tipo: 'progressivo',
-      v1: '2.1',
-      d: '',
+describe('the result in words', () => {
+  it('gives the V1 to set, the limit of the norm and the contact', () => {
+    const d: DatiLimitatore = { vn: 1.6, tipo: 'progressivo' };
+    assert.deepEqual(sintesiLimitatore(d, calcolaLimitatore(d), t), {
+      vn: '1,6 m/s',
+      tipo: 'Progressivo',
+      v1: 'da 1,84 a 2,15 m/s',
+      limite: 'da 1,84 m/s (incluso) a 2,15625 m/s (escluso)',
+      contatto: 'Prima di V1',
+      motivo: null,
     });
-    assert.deepEqual(errori, {});
-    assert.deepEqual(d, { ...VUOTI, vn: 1.6, tipo: 'progressivo', v1: 2.1 });
-    assert.deepEqual(formDaDati(d!), { vn: '1,6', tipo: 'progressivo', v1: '2,1' });
+    const lenta: DatiLimitatore = { vn: 0.63, tipo: 'rulli' };
+    const r = sintesiLimitatore(lenta, calcolaLimitatore(lenta), t);
+    assert.equal(r.v1, 'da 0,73 a 0,99 m/s');
+    assert.equal(r.contatto, 'Al più tardi a V1');
   });
 
-  it('refuses an empty form, words, negative numbers, out-of-range values and a forged type', () => {
-    assert.deepEqual(parseDatiLimitatore({ tipo: '' }).errori, { _: 'vuoto' });
-    assert.deepEqual(parseDatiLimitatore({ vn: 'uno' }).errori, { vn: 'decimal' });
-    assert.deepEqual(parseDatiLimitatore({ vn: '-1' }).errori, { vn: 'decimal' });
-    assert.deepEqual(parseDatiLimitatore({ vn: '25' }).errori, { vn: 'range' });
+  it('says only why, when the type is not allowed at that speed', () => {
+    const d: DatiLimitatore = { vn: 1, tipo: 'istantaneo' };
+    const s = sintesiLimitatore(d, calcolaLimitatore(d), t);
+    assert.equal(s.v1, null);
+    assert.equal(s.limite, null);
+    assert.equal(s.contatto, null);
+    assert.match(s.motivo ?? '', /non ammesso con velocità oltre 0,63 m\/s/);
+  });
+});
+
+describe('the form', () => {
+  it('asks the speed and the type, reads Italian decimals', () => {
+    const { dati: d, errori } = parseDatiLimitatore({ vn: '1,6', tipo: 'progressivo', v1: '9' });
+    assert.deepEqual(errori, {});
+    assert.deepEqual(d, { vn: 1.6, tipo: 'progressivo' });
+    assert.deepEqual(formDaDati(d!), { vn: '1,6', tipo: 'progressivo' });
+  });
+
+  it('refuses a missing value, words, negative or zero speed, out of range and a forged type', () => {
+    assert.deepEqual(parseDatiLimitatore({ tipo: '' }).errori, {
+      vn: 'required',
+      tipo: 'required',
+    });
+    assert.deepEqual(parseDatiLimitatore({ vn: 'uno', tipo: 'rulli' }).errori, { vn: 'decimal' });
+    assert.deepEqual(parseDatiLimitatore({ vn: '-1', tipo: 'rulli' }).errori, { vn: 'decimal' });
+    assert.deepEqual(parseDatiLimitatore({ vn: '0', tipo: 'rulli' }).errori, { vn: 'range' });
+    assert.deepEqual(parseDatiLimitatore({ vn: '25', tipo: 'rulli' }).errori, { vn: 'range' });
     assert.deepEqual(parseDatiLimitatore({ vn: '1', tipo: 'paracadute' }).errori, {
       tipo: 'option',
     });
-    assert.deepEqual(parseDatiLimitatore({ vn: ['1', '2'] }).errori, { vn: 'decimal' });
+    assert.deepEqual(parseDatiLimitatore({ vn: ['1', '2'], tipo: 'rulli' }).errori, {
+      vn: 'decimal',
+    });
   });
 
-  it('reads the stored JSON with distrust', () => {
-    assert.deepEqual(datiSalvati({ ...VUOTI, vn: 1 }), { ...VUOTI, vn: 1 });
-    assert.equal(datiSalvati({ ...VUOTI }), null);
-    assert.equal(datiSalvati({ ...VUOTI, vn: '1.6' }), null);
-    assert.equal(datiSalvati({ ...VUOTI, vn: 1, extra: true }), null);
+  it('reads the stored JSON with distrust; a fuller older record keeps its speed and type', () => {
+    assert.deepEqual(datiSalvati({ vn: 1, tipo: 'rulli' }), { vn: 1, tipo: 'rulli' });
+    assert.deepEqual(datiSalvati({ vn: 1.6, tipo: 'progressivo', v1: 2.1, mbl: null }), {
+      vn: 1.6,
+      tipo: 'progressivo',
+    });
+    assert.equal(datiSalvati({ vn: 1, tipo: null }), null);
+    assert.equal(datiSalvati({ vn: '1.6', tipo: 'rulli' }), null);
     assert.equal(datiSalvati(null), null);
   });
 
-  it('proposes Vn from the lift machine module and d from the governor section of the scheda', () => {
-    assert.deepEqual(prefillLimitatore({ velocita: '1,6 m/s' }, { toString: () => '6.5' }), {
-      vn: '1,6',
-      d: '6,5',
-    });
-    assert.deepEqual(prefillLimitatore(null, null), {});
-    assert.deepEqual(prefillLimitatore({ velocita: 'veloce' }, { toString: () => '0' }), {});
+  it('proposes the speed from the lift machine module of the scheda', () => {
+    assert.deepEqual(prefillLimitatore({ velocita: '1,6 m/s' }), { vn: '1,6' });
+    assert.deepEqual(prefillLimitatore(null), {});
+    assert.deepEqual(prefillLimitatore({ velocita: 'veloce' }), {});
   });
 });

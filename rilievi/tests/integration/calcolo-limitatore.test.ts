@@ -1,8 +1,9 @@
 // The overspeed governor calculation against the real app (the owner, 5 November 2026 — "tab calcolo
-// limitatore" from the workbook Limitatore_velocita_EN81-20-2020.xlsx, following the machine calculation):
-// on a scheda (Vn and d proposed from the scheda), saved on the open version, audited, results row by row
-// with the sheet's words, a PDF; read-only for CLIENTE; never another company's. The menu page and the
-// calculation without a scheda — calcolo-limitatore-libero.test.ts.
+// limitatore" from the workbook Limitatore_velocita_EN81-20-2020.xlsx; 7 November — only the speed of the
+// lift and the type of safety gear, and the result without long explanations): on a scheda (the speed
+// proposed from the scheda), saved on the open version, audited, the V1 to set, a PDF; read-only for
+// CLIENTE; never another company's. The menu page and the calculation without a scheda —
+// calcolo-limitatore-libero.test.ts.
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import { makeAzienda, prisma, signedIn, startApp, stopApp } from './harness.js';
@@ -31,25 +32,14 @@ async function makeScheda(aziendaId: string, extra: Record<string, unknown> = {}
 }
 
 // The example of the sheet "Limitatore", as the form sends it.
-const FORM: Record<string, string> = {
-  vn: '1,6',
-  tipo: 'progressivo',
-  v1: '2,1',
-  vc: '1,9',
-  forzaParacadute: '200',
-  forzaLimitatore: '500',
-  mbl: '25000',
-  d: '8',
-  dp: '240',
-};
+const FORM: Record<string, string> = { vn: '1,6', tipo: 'progressivo' };
 
 const pagina = (id: string) => `/schede/${id}/calcolo-limitatore`;
 
 describe('the governor calculation of a scheda', () => {
-  it('proposes Vn and d from the scheda, is saved, audited, shown row by row and drawn', async () => {
+  it('proposes the speed from the scheda, is saved, audited, gives the V1 to set and a PDF', async () => {
     const azienda = await makeAzienda();
     const scheda = await makeScheda(azienda.id, {
-      funicellaDiametroMm: 6.5,
       preventivoArgano: { modulo: 'rilievo-dati-argani', valori: { velocita: '1,0 m/s' } },
     });
     const { user, browser } = await signedIn('TECNICO', azienda.id);
@@ -58,10 +48,14 @@ describe('the governor calculation of a scheda', () => {
       new RegExp(`href="${pagina(scheda.id)}"`),
     );
     const form = (await browser.get(pagina(scheda.id))).body;
-    assert.match(form, /Dati proposti dalla scheda/);
+    assert.match(form, /Velocità presa dal modulo rilievi dati argani/);
     assert.match(form, /id="f-vn"[^>]*value="1"/);
-    assert.match(form, /id="f-d"[^>]*value="6,5"/);
-    assert.match(form, /id="f-v1"[^>]*value=""/);
+    assert.match(
+      form,
+      /<option value="">—<\/option>\s*<option value="progressivo">/,
+      'no type chosen',
+    );
+    assert.equal((form.match(/class="(?:input|select)"/g) ?? []).length, 2, 'two fields');
     assert.match(form, /Il calcolo non è ancora stato salvato/);
     assert.equal((await browser.get(`${pagina(scheda.id)}.pdf`)).status, 404, 'no PDF yet');
 
@@ -73,38 +67,16 @@ describe('the governor calculation of a scheda', () => {
     });
     assert.equal(row.updatedById, user.id);
     assert.equal(row.aziendaId, azienda.id);
-    assert.deepEqual(row.dati, {
-      vn: 1.6,
-      tipo: 'progressivo',
-      v1: 2.1,
-      vc: 1.9,
-      forzaParacadute: 200,
-      forzaLimitatore: 500,
-      mbl: 25000,
-      d: 8,
-      dp: 240,
-    });
+    assert.deepEqual(row.dati, { vn: 1.6, tipo: 'progressivo' });
     const audit = await prisma.auditLog.findFirst({
       where: { action: 'LIMITATORE_CALCOLO', targetId: scheda.id },
     });
     assert.equal(audit?.aziendaId, azienda.id);
 
     const page = (await browser.get(pagina(scheda.id))).body;
-    const riga = (key: string) =>
-      new RegExp(`data-riga="${key}">[\\s\\S]*?</tr>`).exec(page)?.[0] ?? '';
-    assert.match(riga('sogliaMin'), /1,84&nbsp;m\/s/);
-    assert.match(riga('sogliaMax'), /2,15625&nbsp;m\/s/);
-    assert.match(riga('esitoV1'), /Entro i limiti[\s\S]*esito--ok/);
-    assert.match(riga('max2'), /2,15&nbsp;m\/s/);
-    assert.match(riga('momento'), /Prima di V1/);
-    assert.match(riga('esitoContatto'), /Coerente con V1/);
-    assert.match(riga('forzaMinima'), /400&nbsp;N/);
-    assert.match(riga('mblMinimo'), /4000&nbsp;N/);
-    assert.match(riga('mbl'), /25\.000&nbsp;N/);
-    assert.match(riga('rapporto'), />30</);
-    assert.match(riga('esitoRapporto'), /Sufficiente/);
-    assert.match(page, /5\.6\.2\.2\.1\.3 c\): Dp ≥ 30 × d\./, 'the note of the sheet');
-    assert.match(page, /Riferimenti/);
+    assert.match(page, /data-esito="v1">da 1,84 a 2,15 m\/s</);
+    assert.match(page, /data-esito="limite">da 1,84 m\/s \(incluso\) a 2,15625 m\/s \(escluso\)</);
+    assert.match(page, /data-esito="contatto">Prima di V1</);
     assert.ok(!/[А-яЁё]/.test(page), 'no Cyrillic in the page');
 
     const pdf = await browser.get(`${pagina(scheda.id)}.pdf`);
@@ -113,37 +85,34 @@ describe('the governor calculation of a scheda', () => {
     assert.equal(pdf.bytes.subarray(0, 5).toString('latin1'), '%PDF-');
   });
 
-  it('says "Dato mancante" only where a value is missing, refuses an empty form', async () => {
+  it('asks both values, and says only why when the type is not allowed', async () => {
     const azienda = await makeAzienda();
     const scheda = await makeScheda(azienda.id);
     const { browser } = await signedIn('TECNICO', azienda.id);
-    const vuoto = await browser.submit(pagina(scheda.id), pagina(scheda.id), {
-      base: '',
-      tipo: '',
-    });
+    const vuoto = await browser.submit(pagina(scheda.id), pagina(scheda.id), { base: '', vn: '' });
     assert.equal(vuoto.status, 422);
-    assert.match(vuoto.body, /Inserisci almeno un dato/);
+    assert.match(vuoto.body, /Correggi 2 campi/);
     const errato = await browser.submit(pagina(scheda.id), pagina(scheda.id), {
       base: '',
       vn: '25',
-      d: 'otto',
       tipo: 'a molla',
     });
     assert.equal(errato.status, 422);
-    assert.match(errato.body, /Correggi 3 campi/);
-    assert.match(errato.body, /Inserisci un valore tra 0 e 20/);
+    assert.match(errato.body, /Inserisci un valore tra 0,01 e 20/);
     assert.equal(await prisma.calcoloLimitatore.count({ where: { schedaId: scheda.id } }), 0);
 
-    const parziale = await browser.submit(pagina(scheda.id), pagina(scheda.id), {
+    const istantaneo = await browser.submit(pagina(scheda.id), pagina(scheda.id), {
       base: '',
-      forzaLimitatore: '450',
-      mbl: '3600',
+      vn: '1',
+      tipo: 'istantaneo',
     });
-    assert.equal(parziale.status, 303);
+    assert.equal(istantaneo.status, 303);
     const page = (await browser.get(pagina(scheda.id))).body;
-    assert.match(page, /data-riga="sogliaMax">[\s\S]*?Vn non valida/);
-    assert.match(page, /data-riga="esitoForza">[\s\S]*?Dato mancante/);
-    assert.match(page, /data-riga="esitoMbl">[\s\S]*?Sufficiente/);
+    assert.match(
+      page,
+      /data-esito="motivo">Paracadute istantaneo non ammesso con velocità oltre 0,63/,
+    );
+    assert.ok(!page.includes('data-esito="v1"'));
   });
 
   it('saves only on the open version; read-only for CLIENTE; 404 elsewhere; closed in the trash', async () => {
@@ -158,11 +127,11 @@ describe('the governor calculation of a scheda', () => {
     const stale = await browser.submit(pagina(scheda.id), pagina(scheda.id), {
       ...FORM,
       base: '',
-      v1: '2,2',
+      vn: '2,5',
     });
     assert.equal(stale.status, 409);
     assert.match(stale.body, /Nel frattempo qualcuno ha salvato/);
-    assert.match(stale.body, /id="f-v1"[^>]*value="2,2"/);
+    assert.match(stale.body, /id="f-vn"[^>]*value="2,5"/);
 
     const cliente = await signedIn('CLIENTE', azienda.id);
     const read = (await cliente.browser.get(pagina(scheda.id))).body;
