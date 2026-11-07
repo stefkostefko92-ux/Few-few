@@ -23,7 +23,7 @@
 <body class="print-body"<% if (autoPrint) { %> data-auto-print<% } %>>
 <div class="print-bar">
   <button class="btn btn--primary btn--sm" type="button" data-print><%- include('../partials/icon', { name: 'print' }) %><%= t('scheda.actions.print') %></button>
-  <a class="btn btn--sm" href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
+  <a class="btn btn--sm" data-pdf href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
   <a class="btn btn--sm" href="/schede/<%= scheda.id %>"><%- include('../partials/icon', { name: 'back' }) %><%= t('print.back') %></a>
 </div>
 <article class="paper">
@@ -85,21 +85,22 @@
     <% }) %>
   </section>
   <% } %>
-  <%# Снимките на разделите — накрая, от нова страница, само при отметката на картата (клиповете
-     остават в портала). Миниатюрите (до 960 px) стигат за половин A4; без lazy — печатът ги чака. %>
+  <%# Снимките на разделите — накрая, под листа (не от нова страница), само при отметката на картата
+     (клиповете остават в портала); един поток в реда на разделите — снимки от различни раздели стоят
+     една до друга, разделът е в надписа на всяка (собственикът, 5 ноември 2026 — „così risparmiamo il
+     foglio“); плътни редове — класът по формата на снимката (print.css). Миниатюрите (до 960 px) стигат
+     за половин A4; без lazy — печатът ги чака. %>
+  <% const forma = (f) => { const r = f.larghezza && f.altezza ? f.larghezza / f.altezza : 4 / 3; return r < 0.9 ? 'v' : r < 1.15 ? 'q' : r < 1.55 ? 'o' : 'l'; }; %>
   <% if (foto.length) { %>
   <section class="paper__section paper__foto">
     <h2><%= t('allegati.stampa.titolo') %></h2>
-    <% for (const gruppo of foto) { %>
-    <h3 class="paper__foto-titolo"><%= gruppo.section.title %></h3>
     <div class="paper__foto-grid">
-      <% for (const f of gruppo.foto) { %><figure class="paper__figura">
-        <img src="/schede/<%= scheda.id %>/allegati/<%= f.id %>?mini=1" alt="<%= f.didascalia || t('allegati.foto', { nome: f.nomeOriginale }) %>"<% if (f.larghezza && f.altezza) { %> width="<%= f.larghezza %>" height="<%= f.altezza %>"<% } %>>
-        <% if (f.didascalia) { %><figcaption><%= f.didascalia %></figcaption><% } %>
+      <% for (const gruppo of foto) { for (const f of gruppo.foto) { %><figure class="paper__figura paper__figura--<%= forma(f) %>">
+        <img src="/schede/<%= scheda.id %>/allegati/<%= f.id %>?mini=1" alt="<%= gruppo.section.title %>: <%= f.didascalia || t('allegati.foto', { nome: f.nomeOriginale }) %>"<% if (f.larghezza && f.altezza) { %> width="<%= f.larghezza %>" height="<%= f.altezza %>"<% } %>>
+        <figcaption><strong class="paper__foto-sezione"><%= gruppo.section.title %></strong><% if (f.didascalia) { %> — <%= f.didascalia %><% } %></figcaption>
       </figure>
-      <% } %>
+      <% } } %>
     </div>
-    <% } %>
   </section>
   <% } %>
   <footer class="paper__foot"><%= t('pdf.generated', { at: fmt.dateTime(new Date()), name: currentUser.name }) %> — Created and Designed by Carbon Stealth VCC — carbonstealth.eu</footer>

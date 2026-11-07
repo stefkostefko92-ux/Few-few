@@ -1,0 +1,130 @@
+{
+  "limitatore": {
+    "titolo": "Calcolo limitatore",
+    "sottotitolo": "Inserisci velocità, tipo di paracadute, norma alla data di installazione e cosa si modifica: il risultato è la velocità di intervento V1 da tarare.",
+    "normativa": "UNI 10411-1:2024 e UNI 10411-11:2024 — limitatore di velocità del paracadute di cabina",
+    "apri": "Calcolo limitatore",
+    "pdf": "Scarica PDF",
+    "stampa": "Apri il PDF",
+    "indietro": "Torna alla scheda",
+    "calcola": "Calcola e salva",
+    "proposto": "Velocità presa dal modulo rilievi dati argani della scheda: controllala, poi scegli il tipo di paracadute, la norma e cosa si modifica.",
+    "soloLettura": "Puoi vedere il calcolo ma non modificarlo.",
+    "salvatoIl": "Salvato il {quando} da {nome}",
+    "nessunCalcolo": "Il calcolo non è ancora stato salvato.",
+    "conflitto": "Nel frattempo qualcuno ha salvato un altro calcolo per questo impianto. I tuoi dati sono qui sotto: controllali e salva di nuovo.",
+    "sezione": "Dati dell'impianto",
+    "flash": {
+      "salvato": "Calcolo limitatore salvato.",
+      "eliminato": "Calcolo limitatore eliminato."
+    },
+    "campo": {
+      "vn": "Velocità nominale (m/s)",
+      "tipo": "Tipo di paracadute",
+      "norma": "Norma alla data di installazione",
+      "intervento": "Cosa si modifica"
+    },
+    "opzione": {
+      "tipo": {
+        "progressivo": "Progressivo",
+        "istantaneo": "Istantaneo",
+        "rulli": "Istantaneo a rulli",
+        "ammortizzato": "Istantaneo ammortizzato"
+      },
+      "norma": {
+        "en81-20-2020": "EN 81-20:2020",
+        "en81-1-1999": "EN 81-1:1999/2008 (CE)",
+        "en81-1-1987": "EN 81-1:1987 (DM 587/87)",
+        "dpr-1497-1963": "D.P.R. 1497/1963",
+        "dlgt-600-1945": "D.Lgt. 600/1945"
+      },
+      "intervento": {
+        "limitatore": "Solo il limitatore",
+        "paracadute": "Limitatore e paracadute",
+        "velocita": "Vn aumentata oltre il 5 %"
+      }
+    },
+    "nomeNorma": {
+      "en81-20-2020": "UNI EN 81-20:2020",
+      "en81-1-1999": "UNI EN 81-1:1999 o 2008",
+      "en81-1-1987": "UNI EN 81-1:1987 (D.M. 587/1987)",
+      "dpr-1497-1963": "D.P.R. 1497/1963, art. 32",
+      "dlgt-600-1945": "D.Lgt. 600/1945"
+    },
+    "riferimento": {
+      "primaCe": {
+        "limitatore": "UNI 10411-1:2024, punto 18",
+        "paracadute": "UNI 10411-1:2024, punto 6.7",
+        "velocita": "UNI 10411-1:2024, punti 15.1 e 15.13"
+      },
+      "ce": {
+        "limitatore": "UNI 10411-11:2024, punto 18",
+        "paracadute": "UNI 10411-11:2024, punto 6.7",
+        "velocita": "UNI 10411-11:2024, punto 15 f)"
+      }
+    },
+    "errore": {
+      "required": "Campo obbligatorio.",
+      "decimal": "Inserisci un numero, ad esempio 1,6.",
+      "range": "Inserisci un valore tra {min} e {max}.",
+      "option": "Scelta non valida."
+    },
+    "r": {
+      "titolo": "Risultato",
+      "v1": "Tarare V1",
+      "v1Valore": "da {da} a {a} m/s",
+      "v1Fino": "fino a {a} m/s",
+      "limite": "Limite di norma",
+      "limiteValore": "da {min} m/s (incluso) a {max} m/s (escluso)",
+      "limiteFino": "fino a {max} m/s (140 % di Vn, incluso)",
+      "contatto": "Contatto elettrico",
+      "vn": "Velocità nominale",
+      "tipo": "Paracadute",
+      "norma": "Norma all'installazione",
+      "intervento": "Si modifica",
+      "applicata": "Limiti secondo",
+      "applicataValore": "{norma} — {punto}"
+    },
+    "esito": {
+      "vnNonValida": "Velocità nominale non valida.",
+      "nonAmmesso": "Paracadute istantaneo ammesso solo con velocità nominale fino a 0,63 m/s: serve il progressivo.",
+      "nonAmmessoAmmortizzato": "Istantaneo con effetto ammortizzato ammesso solo con velocità nominale fino a 1 m/s: serve il progressivo.",
+      "tipoNonValido": "Tipo di paracadute non valido.",
+      "tipoNonPrevisto": "La UNI EN 81-20:2020 non prevede il paracadute istantaneo con effetto ammortizzato.",
+      "fuoriCampoDpr": "Il D.P.R. 1497/1963, art. 32 fissa il limite solo per velocità nominali da 0,6 a 1,5 m/s.",
+      "normaNonDisponibile": "I limiti del D.Lgt. 600/1945 non sono nelle nostre norme: vanno verificati sul testo di legge.",
+      "prima": "Prima di V1",
+      "alPiuTardi": "Al più tardi a V1"
+    },
+    "libero": {
+      "indietro": "Tutti i calcoli"
+    },
+    "elenco": {
+      "titolo": "Calcolo limitatore",
+      "sottotitolo": "Cerca l'impianto per matricola, numero o via: se ha la scheda, la velocità si prende dalla scheda. Impianto senza scheda? Crea un calcolo e scrivi tu indirizzo e matricola.",
+      "cerca": "Matricola, numero impianto o via",
+      "cercaBtn": "Cerca",
+      "nuovo": "Nuovo calcolo senza scheda",
+      "nuovoPer": "Nuovo calcolo senza scheda per «{q}»",
+      "schede": "Schede",
+      "liberi": "Calcoli senza scheda",
+      "nessuno": "Nessuna scheda e nessun calcolo trovati per «{q}».",
+      "altreSchede": "Altre {n} schede: aggiungi una parola alla ricerca.",
+      "altriLiberi": "Altri {n} calcoli: aggiungi una parola alla ricerca.",
+      "salvati": "Calcoli salvati",
+      "vuoto": "Nessun calcolo salvato.",
+      "vuotoHint": "Cerca una scheda qui sopra o crea un calcolo senza scheda.",
+      "daCalcolare": "Nessun calcolo: si compila dalla scheda",
+      "calcolato": "Calcolo salvato il {quando}",
+      "idraulico": "Impianto idraulico: fuori dall'ambito del calcolo",
+      "conScheda": "Dalla scheda",
+      "senzaScheda": "Senza scheda",
+      "colonna": {
+        "impianto": "Impianto",
+        "dati": "Dati",
+        "salvato": "Salvato",
+        "autore": "Da"
+      }
+    }
+  }
+}

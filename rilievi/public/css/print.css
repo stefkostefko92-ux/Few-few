@@ -218,40 +218,64 @@
 
 /* Снимките на разделите: от нова страница, по две на ред, до четири на лист A4; цялата снимка (без
    изрязване), с надписа отдолу. */
-.paper__foto {
-  break-before: page;
-}
-
-.paper__foto-titolo {
-  margin: 12px 0 6px;
-  font-size: 11pt;
+/* Снимките — плътно, за да се пести хартия (собственикът, 5 ноември 2026): не от нова страница, а под
+   листа; „подравнени“ редове — снимките в реда са с близка височина и заедно запълват ширината (~3
+   хоризонтални, ~4 вертикални на ред), без рязане. Основата на всяка е пропорционална на формата ѝ
+   (класът от print.ejs по ширина/височина), растежът — също; псевдоелементът накрая поема празното на
+   последния ред, за да не се разпъне. Един поток за всички раздели — разделът е в надписа. Същата подредба като в PDF-а (src/schede/pdf-foto.ts). */
+.paper__foto h2 {
   break-after: avoid;
 }
 
+/* Разделът на снимката — в надписа ѝ: снимките на различни раздели са в един поток. */
+.paper__foto-sezione {
+  font-weight: 700;
+}
+
 .paper__foto-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 16px;
-  align-items: start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 3mm;
+}
+
+.paper__foto-grid::after {
+  content: '';
+  flex: 999 1 0;
 }
 
 .paper__figura {
+  min-width: 0;
   margin: 0;
   break-inside: avoid;
 }
 
+.paper__figura--v {
+  flex: 0.75 1 36mm;
+}
+
+.paper__figura--q {
+  flex: 1 1 44mm;
+}
+
+.paper__figura--o {
+  flex: 1.333 1 58mm;
+}
+
+.paper__figura--l {
+  flex: 1.78 1 78mm;
+}
+
 .paper__figura img {
   display: block;
-  width: auto;
-  max-width: 100%;
+  width: 100%;
   height: auto;
-  max-height: 100mm;
   border: 0.5pt solid #bdbdbd;
 }
 
 .paper__figura figcaption {
-  margin-top: 3px;
-  font-size: 10pt;
+  margin-top: 2px;
+  font-size: 9pt;
   overflow-wrap: anywhere;
 }
 

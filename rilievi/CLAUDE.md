@@ -96,14 +96,28 @@ src/
                      само без pdftoppm) · form.ts (zod) · service.ts (запис с `base`, изтриване,
                      одит) · da-scheda.ts (попълването от картата — без база) · scheda.ts (картата
                      на табелата: избор, търсене, паметта) · pdf.ts (A4 по посоката на шаблона, логото и данните на фирмата горе)
+  verbali/           „Verbale di chiusura cantiere“: voci.ts (разделите и редовете на листа, кои са с
+                     „Certificato“; разборът и четенето с недоверие) · form.ts (черновата, zod; попълването
+                     от картата — само адрес, „N° buono“, дата) · service.ts (нов — картата пак в
+                     транзакцията с `FOR SHARE`; черновата с `base`; одитът) · conferma.ts (двата подписа и
+                     потвърждението — един UPDATE) · sigillo.ts (отпечатък и печат, свой етикет) · pdf.ts +
+                     pdf-parti.ts (A4, „Copia azienda“ / „Copia installatore“)
   argano/            изчислението за аргано по „RT-E MOD 10411-1“: calcolo.ts (формулите на листовете
                      „Macchina“ и „Funi“, без база) · dati.ts (входът — zod, формата) · tabelle.ts
                      (въжетата TELCAL/DONATI, мерките на компенсацията) · fune.ts (въжето за показване:
                      формация, нишки, клас, cordatura) · da-scheda.ts (попълването от
                      „Modulo rilievi dati argani“) · righe.ts (резултатите като редове — страница и PDF) ·
                      formato.ts · service.ts (четене, запис върху `base`, одит) · pdf.ts (A4) ·
-                     impianto.ts (уредбата без карта — zod) · liberi.ts (изчислението без карта) ·
-                     elenco.ts (списъкът и търсенето на страницата в менюто)
+                     pdf-testata.ts (общото на PDF-ите на изчисленията: шрифтът, главата на фирмата,
+                     долният ред) · impianto.ts (уредбата без карта — zod) · liberi.ts (изчислението
+                     без карта) · elenco.ts (списъкът и търсенето на страницата в менюто)
+  limitatore/        изчислението за ограничителя по „Limitatore_velocita_EN81-20-2020.xlsx“: calcolo.ts
+                     (клетките B5, B6, B9, B10, B13 на листа „Limitatore“ и границите по нормата при
+                     монтажа, без база) · dati.ts (скоростта, видът на парашута и нормата — zod, формата,
+                     попълването от картата) · righe.ts (резултатът с
+                     думи — страница и PDF) · service.ts (на карта и без карта: четене, запис върху
+                     `base`, изтриване, одит) · elenco.ts (списъкът и търсенето) · pdf.ts (A4, една
+                     страница)
   schizzi/           скицникът: elementi.ts (видът на елементите — zod, тежестта) · costanti.ts (мерките,
                      таваните, стрелките, пунктирите, котите) · simboli.ts (символите за шахтата) ·
                      forme.ts (елементът → примитиви: линии, запълнени върхове, елипси, надписи — за SVG и
@@ -152,10 +166,10 @@ views/               EJS: partials/ (горна и долна лента, таб
                      account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs; скицникът —
                      schede/_schizzo.ejs (листът като SVG), _schizzo-foglio.ejs, _schizzo-editor.ejs
 locales/it/          common · auth · schede · users · aziende · requests · site · mail · allegati · schizzi ·
-                     interventi · cartelli · argano
+                     interventi · cartelli · argano · limitatore · verbali
                      (.json) — единственият
 public/              css/ (портал: base, buttons, shell, layout, plate, forms, pages, data, sheet, misure,
-                     moduli, allegati, foto-stampa, schizzi, schizzo-editor, interventi, foglio, cartelli, argano, print;
+                     moduli, allegati, foto-stampa, schizzi, schizzo-editor, interventi, foglio, verbali, cartelli, argano, print;
                      витрина: site, shaft,
                      site-hero, site-parts,
                      site-request),
@@ -240,12 +254,12 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   `/aziende/:id/esporta` — един `.tar` (`aziende/tar.ts` — свой ustar, имената само `[A-Za-z0-9._/-]`;
   `aziende/esportazione.ts` — поток, не в паметта): `dati.json` (фирмата, хората с ролите, картите с
   мерките, скиците и описанието на снимките, листовете за интервенция с подписите и печата, табелите,
-  изчисленията, регистърът), логото и готовите снимки и клипове; без пароли, тайни на 2FA, токени и
+  изчисленията, протоколите за приключване, регистърът), логото и готовите снимки и клипове; без пароли, тайни на 2FA, токени и
   HMAC-и. Одит `AZIENDA_EXPORT`. Изтриване (`aziende/eliminazione.ts`): деактивираната фирма пази всичко
   `GIORNI_PRIMA_DELL_ELIMINAZIONE` (90) дни — активирана наново, нищо не се губи, — после `maintenance.ts`
   я изтрива окончателно; MASTER може и веднага, но само деактивирана и с името ѝ, написано на ръка. Една
   транзакция (редът на фирмата `FOR UPDATE` — активиране и изтриване не се разминават): картите (със
-  снимките, скиците и мерките), листовете, табелите, изчисленията, поканите, регистърът, членствата и
+  снимките, скиците и мерките), листовете, табелите, изчисленията, протоколите, поканите, регистърът, членствата и
   хората, които са били САМО в нея; който е и в друга фирма, губи само членството. Папките в тома — след
   записа (провал оставя файл без карта, никога карта без файл). В регистъра остава `AZIENDA_DELETE` без
   фирма и без лични данни (кой, кога, колко). Политиката казва 90-те дни от същата константа (`endDays`).
@@ -644,8 +658,15 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   с тях пипа само показаните (`fotoMostrate`) — качената междувременно остава каквато е; и върнатата
   форма (409/422) взима пратеното само за тогава показаните, а другите — от базата. Отметнатата
   излиза и от раздел извън листа (изключен или скрит от условие — иконките го белязват на живо), под
-  името на раздела, по разделите в реда на фирмата, от нова страница, по две на ред; клиповете — само в
-  портала. Иконките се взимат пак от `/schede/:id/foto-stampa`, когато галерия се смени (allegati.js
+  името на раздела, по разделите в реда на фирмата; клиповете — само в портала. Подредбата пести хартия
+  (собственикът, 5 ноември 2026 — „да се икономиса някой лист“): НЕ от нова страница — под листа, ако
+  заглавието и първият ред се побират; „подравнени“ редове — снимките в реда са с една височина и
+  заедно запълват ширината (~3 хоризонтални, ~4 вертикални на ред, без рязане и разтягане; последният
+  ред остава с желаната височина); всички раздели са ЕДИН поток — снимки от различни раздели стоят една
+  до друга, а разделът е удебелен в надписа на всяка („Quadro — надписът“; собственикът, 5 ноември 2026
+  — „anche se sono di sezioni diverse, così risparmiamo il foglio“). PDF — `schede/pdf-foto.ts` (`righeFoto`, ~49 mm ред, ≤ 4 на ред; 12
+  хоризонтални с надписи на страница, бяха 6); печатът от браузъра — `print.css` (flex с основа и
+  растеж по формата: класът `paper__figura--v|q|o|l` от print.ejs; без inline style — CSP). Иконките се взимат пак от `/schede/:id/foto-stampa`, когато галерия се смени (allegati.js
   праща `rilievi:galleria`), и пазят отметнатото, но незаписано. `Scheda.fotoStampate` остава за
   предишния код — „поне една снимка в печата“, без да мести `updatedAt`; миграцията отметна всички
   снимки на картите с досегашната отметка „Includi le foto“.
@@ -740,6 +761,34 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   лого или без данни страницата и настройките го казват (логото слага само MASTER). Без pdftoppm (машина
   за разработка) — голият шаблон и едно предупреждение в лога; в образа и в CI го има. Ново поле на табелата = нова колона в
   картата на всеки шаблон и поглед в PDF-а на петте.
+- **„Verbale di chiusura cantiere“** (`src/verbali/`, `routes/verbali*.ts`; собственикът, 5 ноември 2026, по
+  хартиения лист: „свързано със Scheda … да се попълва автоматично само indirizzo, Nº Buono и дата. Всичко
+  друго трябва да попълним и да изберем ние. След подписа на двете места трябва да се генерират 2 pdf с
+  надпис Copia Azienda и Copia Installatore“): в „Assistenza elevatori“ → „Verbali chiusura cantiere“ и бутон
+  „Verbale di chiusura“ на картата. От картата (`/verbali/nuovo?scheda=<id>`, търсенето `?cerca=` — като
+  при табелата, общите части от `routes/cartelli-nuovo.ts` и `views/cartelli/_da-scheda.ejs`) или без карта;
+  от картата идват САМО адресът и `buonoLavoro`, датата е днешната (може да се смени). Редовете —
+  `verbali/voci.ts`: „Locale macchina“ (Quadro, Argano/centralina, Funi/tubazione, Impianto elettrico,
+  Limitatore, Varie), „Vano corsa“ (Linee elettriche, Cavi, Serrature/sospensioni, Luce vano, Varie),
+  „Cabina“ (Circuito cabina, Bottoniera, Tetto cabina, Varie), „Finiture“ (Bottoniere, Imbotti, Varie);
+  „Certificato“ SÌ/NO само на Quadro, Argano, Funi, Limitatore и Serrature — другите клетки вдясно са
+  празни (собственикът: „само текст“). „Verbale positivo“ SÌ/NO — без него протоколът не се подписва.
+  PDF-ът е „uguale identico“ на хартиения лист (собственикът, 5 ноември 2026; `verbali/pdf*.ts`): две
+  страници A4 в рамка, логото на фирмата горе в средата на всяка, DejaVu Serif (в образа —
+  `fonts-dejavu-core`; без него — Sans). Стр. 1: заглавието, „Indirizzo“ / „N° buono“, „Locale macchina“,
+  „Vano corsa“; стр. 2 (винаги от „Cabina“): „Cabina“, „Finiture“, „Verbale positivo SI NO“, подписите над
+  черта, „Data:“ долу вляво, копието долу в средата. Редът е една клетка „Quadro: <текст>“; „Certificato /
+  Si No“ — в дясната клетка на реда. Под рамката, дребно — потвърждението и отпечатъкът (на хартия ги
+  няма). Страницата на протокола (`views/verbali/_foglio.ejs`) е същата подредба.
+  Подписите — като листа за интервенция (собственикът: „като листа за интервенция“): „Firma tecnico
+  esecutore“ и „Firma supervisore“ на отделна страница върху окончателния протокол, отпечатък
+  (`rilievi/verbale/v1` — без връзката с картата, за да оцелее окончателното ѝ изтриване) и печат HMAC
+  със същия ключ и свой етикет; CHECK `Verbale_firme_check`. Повторен подпис се търси и в листовете, и в
+  протоколите (`interventi/conferma.ts`, `firmeGiaUsate`, същото заключване `LOCK_FIRME`). След
+  потвърждението — два PDF-а от едно съдържание: `/verbali/:id/pdf/azienda` и `/pdf/installatore`
+  („COPIA AZIENDA“ / „COPIA INSTALLATORE“ долу на всяка страница и в заглавието на файла), само при
+  непокътнат печат. Права — тези на асистенцията (`interventi:read`/`interventi:write`). Без номер и без
+  изтриване (както листа за интервенция); в износа и в изтриването на фирмата.
 - **Изчислението за аргано** (`src/argano/`, `routes/calcolo-argano.ts`; собственикът, 31 октомври 2026 — от
   своя „RT-E MOD 10411-1“ (Excel по UNI 10411-1): изчисление и проверки, отделна страница и PDF, по метода
   на файла, без мощност на мотора): бутон „Calcolo argano“ на картата (не при хидравлична), страница
@@ -749,7 +798,10 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   компенсацията D/d ≥ 30; сцеплението (T1/T2)·C1·C2 ≤ e^(f·α) с кабина долу и 125 % товар и кабина горе
   празна; специфичният натиск ≤ (12,5 + 4v)/(1 + v)·0,981) — едно към едно, и с особеностите на файла:
   „a“ е минималното C1 на EN 81-1 (1,10…1,25 по скоростта), взето като забавяне (C1 ≈ 1,25–1,29);
-  кабелите влизат в T'2 в kg без × g; при полукръгъл канал без подрез и „solo verifica“ f = 0. Въжетата —
+  кабелите влизат в T'1 в kg без × g; при полукръгъл канал без подрез и „solo verifica“ f = 0. Имената са
+  от листа „Funi“ (собственикът, 4 ноември 2026): T1/T'1 — страната на кабината, T2/T'2 — на
+  противотежестта, при кабина горе отношението е T'2 / T'1 (числото е същото като преди); скоростта след
+  промяната — с 2 знака; мярката на компенсацията на ръка е „Diametro fune o catena (mm)“. Въжетата —
   таблиците TELCAL и DONATI от файла (въже без данни не е в списъка; другото — `altro`, на ръка), не по
   номер на ред (във файла DONATI има два реда „8“ и VLOOKUP взима 12 mm вместо 11). Unit тестът
   (`tests/argano-rt.json`) пази пет случая, сметнати в самия Excel (LibreOffice, без макросите): 1:1, 1:2,
@@ -792,6 +844,67 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   добавя): `schedaId` по избор, `aziendaId` на всяко изчисление (досегашните — от картата си),
   `indirizzo`/`matricola`/`numeroImpianto`/`searchText` и `CalcoloArgano_impianto_check` — без карта
   не се пази без адрес.
+- **Изчислението за ограничителя** (`src/limitatore/`, `routes/calcolo-limitatore*.ts`; собственикът, 5
+  ноември 2026 — „таб calcolo limitatore … следвайки досегашната логика“, по своя
+  „Limitatore_velocita_EN81-20-2020.xlsx“): като изчислението за аргано във всичко — бутон „Calcolo
+  limitatore“ на картата (не при хидравлична: там картата няма раздела „Limitatore“), страница
+  `/schede/:id/calcolo-limitatore` и PDF `…/calcolo-limitatore.pdf`, „Rilievi“ → „Calcolo limitatore“
+  (`/calcolo-limitatore` — търсенето и списъкът са общата страница `routes/calcolo-elenco.ts` +
+  `views/argano/elenco.ejs` с `calcolo` на изчислението), изчисление без карта (`/nuovo`, `/:id`, `/pdf`,
+  `/elimina`), същите права, `base`, одит `LIMITATORE_CALCOLO`/`LIMITATORE_CALCOLO_DELETE`, износ и
+  изтриване на фирмата. Модел `CalcoloLimitatore` (миграция `20261105180000_calcolo_limitatore`, само
+  добавя; `CalcoloLimitatore_impianto_check`). **Само скоростта и видът на парашута** (собственикът, 7
+  ноември 2026 — „Il limitatore non si capisce. Troppi dati da inserire … far inserire la velocità
+  dell'impianto e il tipo di paracadute, da lì estrarre il risultato senza troppe spiegazioni“; първата
+  версия беше целият лист — 9 полета, 4 раздела, бележка под всеки ред и листът „Riferimenti“): две
+  задължителни полета (Vn 0,01–20 m/s; Progressivo / Istantaneo / Istantaneo a rulli / Istantaneo con effetto
+  ammortizzato) и резултатът —
+  „Tarare V1 da 1,84 a 2,15 m/s“ (с 2 знака — по тях се настройва), „Limite di norma“ (точните прагове) и
+  „Contatto elettrico“ (преди V1 / най-късно при V1); при моментален парашут над 0,63 m/s — само защо
+  („serve il progressivo“). PDF-ът — същите редове, една страница (числото и „m/s“ не се делят:
+  твърд интервал и U+2060 около „/“ — `inRiga`). **Нормата на уредбата** (собственикът, 7 ноември 2026 —
+  UNI 10411-1:2024, т. 18 и 15.17, `../norme-ascensori/uni-10411-1-2024.md:365`, `:324`): трето задължително поле — EN 81-20:2020 · EN 81-1:1999/2008 · EN 81-1:1987
+  (DM 587/87) · D.P.R. 1497/1963 · D.Lgt. 600/1945 (в менюто кратките имена — събират се на 320 px; в
+  резултата и PDF-а — цялото, `limitatore.nomeNorma`). Стойностите — само от бележките на
+  Асансьорчика в частното репо `norme-ascensori` (в този публичен репо: само точка, стойност и
+  `../norme-ascensori/<файл>.md:<ред>`, никога текст или парафраза — правилото на онова репо): при трите
+  EN 81 праговете на прогресивния, моменталния и този с ролки са едни и същи (EN 81-20:2020 5.6.2.1.2.1,
+  5.6.2.2.1.1 a); EN 81-1:2008 9.8.2.1, 9.9.1; EN 81-1:1987 B 9.8.2.1, B 9.9.1); само EN 81-1 има и
+  „Istantaneo con effetto ammortizzato“ (Vn ≤ 1 m/s, V1 < 1,5 m/s; при EN 81-20:2020 — „non prevede“).
+  **„Cosa si modifica“** (собственикът, 7 ноември 2026 — „провери за sostituzione всички файлове с
+  нормативи“): четвърто задължително поле, без предварителен избор — „Solo il limitatore“ · „Limitatore e
+  paracadute“ · „Vn aumentata oltre il 5 %“. Уредба отпреди CE (UNI 10411-1:2024): само ограничителят —
+  нормата при монтажа (т. 18, `uni-10411-1-2024.md:365`); и парашутът — UNI EN 81-20:2020 (т. 6.7, `:105`);
+  Vn нагоре над 5 % — UNI EN 81-20:2020 (т. 15.1 и 15.13, `:298`, `:317`); Vn надолу над 5 % — пак нормата
+  при монтажа (т. 15.17, `:324`), затова отделен избор няма. CE уредба (UNI 10411-11:2024): границите на
+  оригинала при трите (т. 18, 6.7, 15 f) — `uni-10411-11-2024.md:288`, `:117`, `:252`). Контактът на нов
+  ограничител — винаги по UNI EN 81-20:2020, 5.6.2.2.1.6 a) (т. 18; = EN 81-1:1999/2008, 9.9.11.1): преди V1
+  при Vn > 1, иначе най-късно при V1 — и при EN 81-1:1987 (правилото B 9.9.11.1 за VVVF не важи за нов
+  ограничител) и при D.P.R. 1497/1963. Резултатът и PDF-ът казват по коя норма и точка са границите
+  („Limiti secondo“, `limitatore.riferimento`); означенията на нормите не се делят на два реда (твърд
+  интервал след „UNI“/„EN“, U+2060 след тирето между цифри). Хидравличните уредби остават извън
+  изчислението (решението от октомври — картата им няма „Limitatore“); точките им за смяната са в
+  `uni-10411-2-2024.md` и `uni-10411-12-2024.md`. D.P.R. 1497/1963, art. 32
+  (собственикът, 7 ноември 2026 — „in linea di principio tenere il +40%“; бележките го нямат): при Vn от
+  0,6 до 1,5 m/s V1 ≤ 1,40·Vn — горният праг е включен („fino a … m/s“, с 2 знака `ROUNDDOWN`), долен праг
+  няма; извън 0,6–1,5 m/s — изчисление няма.
+  Сравнението с UNI 10411-1:2024 (по думите на собственика „in alcuni casi va in contrasto“) прави той.
+  За D.Lgt. 600/1945 стойности няма — изчисление няма, страницата го казва. 0,63 m/s е
+  границата на **номиналната** скорост за моментален парашут, 0,80 m/s — на **V1** (въпросът на
+  собственика от 6 ноември; затова съобщението казва „velocità nominale“). Формулите са клетките B5, B6, B9, B10
+  и B13 на листа „Limitatore“ една към една (`limitatore/calcolo.ts`): долният праг 115 % от Vn
+  (включен), горният (изключен) — 0,80 моментален, 1 с ролки, 1,5 прогресивен при Vn ≤ 1 и **1,25·v +
+  0,25/v** прогресивен при Vn > 1 (UNI EN 81-20:2020, 5.6.2.2.1.1 a) 4) — собственикът го провери по
+  нормата, 6 ноември 2026), моментален и с ролки само до 0,63 m/s; с 2 знака — `ROUNDUP(ROUND(x;10);2)`
+  и `ROUND(ROUNDUP(ROUND(x;10);2)−0,01;2)`, с 15 значещи цифри като електронната таблица. Записаното е
+  `{vn, tipo, norma, intervento}` (запис без норма е от времето само с EN 81-20:2020, без `intervento` — от
+  времето само с т. 18, и се четат така). Първото отваряне от картата: Vn — от „Modulo rilievi dati
+  argani“; видът, нормата и смяната се избират (картата няма годината на монтажа). Проверката: unit — 16-те случая на праговете от листа „Test“, клетките
+  B5/B6/B9/B10/B13 на 28 случая, преизчислени в самия файл (LibreOffice, без макроси;
+  `tests/limitatore-excel.json` пази всички клетки B5–B27), формулата 1,25·v + 0,25/v на 900 стойности;
+  нормите и смяната — `tests/limitatore-norme.test.ts` (5 норми × 3 смени); PDF-ът; integration и e2e —
+  като при аргано. Самият Excel не е в репото („USO INTERNO …
+  Non pubblicare“).
 - **Менюто** (`views/partials/header.ejs`, `public/css/sidenav.css`, `public/js/menu.js`; собственикът, 30
   октомври 2026 — като в LiftPilot, вляво): групи Rilievi · Assistenza elevatori · Amministrazione (на
   фирмата: Utenti, Impostazioni, Registro) · Master (нашето — Aziende и Richieste, само за собственика на
@@ -892,6 +1005,19 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   работникът контролира страницата, без мрежа — „Nessuna connessione“; Playwright вижда мрежата на
   работника само с `PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS`, затова — в свой контекст; на телефон
   с Android — стъпките на Android и без хоризонтален скрол на 360 px).
+  **PDF в приложението на iPhone** (собственикът, 5 ноември 2026 — „è aperto un pdf non ho modo di
+  chiuderlo“): в приложението от началния екран на iOS PDF-ът (и `attachment`, и `inline`) заема
+  прозореца без изход — WebKit bug 290847, без решение от Apple. Затова ВСЕКИ линк към PDF носи
+  `data-pdf` (`tests/pdf-app.test.ts` го пази във всички изгледи), а `public/js/pdf-app.js` — само при
+  `navigator.standalone` — тегли файла и го подава на „Condividi“ на системата (отвори, запази във
+  „File“, печат, изпрати), която се затваря сама; не-PDF отговор (вход, блокиран печат) се отваря като
+  страница. В браузъра, на Android и на компютър линковете са както винаги. Текстовете — `pdfApp.*` в
+  `data-pdf-*` на `<body>`. На iPhone `/app` казва, че Apple инсталира само от „Condividi“, с бутон към
+  стъпките (бутон, който да инсталира, на iOS няма). Предупреждението „non sicura“ на Android идва от
+  Samsung Internet (собственикът, 5 ноември 2026 — потвърдено на телефона му; конфигурацията ни е
+  чиста: HTTPS/HSTS, манифест, икони, работник). Затова там (`samsungInternet`, src/pwa/sistema.ts)
+  `/app` не предлага бутона за инсталиране, а казва защо и дава „Apri in Chrome“ — Android intent към
+  същата страница в Chrome (`apriInChrome`; без Chrome — Google Play); стъпките препоръчват Chrome.
 - Коментарите в `src/`, `views/`, `deploy/` — на български; тестовете и `scripts/` — на английски. В
   изгледите коментарите са EJS (`<%# … %>`), никога HTML (`<!-- … -->`): страницата е само на италиански и
   няма кирилица дори в изходния код (пазят го тестовете — unit, integration и e2e).

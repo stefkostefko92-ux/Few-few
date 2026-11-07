@@ -160,3 +160,57 @@
   border-style: dashed;
   color: var(--muted);
 }
+
+/* Изчислението за ограничителя (views/limitatore/calcolo.ejs): резултатът е едно голямо число — между кои
+   стойности се настройва V1, — под него границата на нормата и контактът; недопустимият вид — удебелено. */
+.limitatore__risultato {
+  display: grid;
+  gap: 14px;
+  scroll-margin-top: calc(var(--chrome-top, 0px) + 16px);
+}
+
+.limitatore__v1 {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 18px 20px;
+  border: 1.5px solid var(--fg);
+  border-radius: var(--radius);
+}
+
+.limitatore__v1 span {
+  color: var(--muted);
+}
+
+.limitatore__v1 strong {
+  font-family: var(--font-cond);
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.limitatore__dati {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: 10px 24px;
+  margin: 0;
+}
+
+.limitatore__dati dt {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.limitatore__dati dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.limitatore__no {
+  margin: 0;
+  padding: 18px 20px;
+  border: 1.5px solid var(--fg);
+  border-radius: var(--radius);
+  font-weight: 700;
+}

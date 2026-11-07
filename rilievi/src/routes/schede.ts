@@ -4,6 +4,7 @@ import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/
 import { canIn, spansAziende } from '../auth/scope.js';
 import { aziendeConSchizzi } from '../aziende/funzioni.js';
 import { cartelliDellaScheda } from '../cartelli/scheda.js';
+import { verbaliDellaScheda } from '../verbali/service.js';
 import { ordineSezioniDi } from '../aziende/sezioni.js';
 import { setFlash } from '../http/flash.js';
 import { businessDay } from '../time.js';
@@ -147,6 +148,10 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
     // Табелите „Avviso di fermo impianto“, попълнени от картата — за който вижда табелите на фирмата.
     cartelli: canIn(principalOf(req).user, 'interventi:read', scheda.aziendaId)
       ? await cartelliDellaScheda(scope(req, 'interventi:read'), scheda.id)
+      : null,
+    // Протоколите „Verbale di chiusura cantiere“ от картата — за който вижда асистенцията на фирмата.
+    verbali: canIn(principalOf(req).user, 'interventi:read', scheda.aziendaId)
+      ? await verbaliDellaScheda(scope(req, 'interventi:read'), scheda.id)
       : null,
   });
 });

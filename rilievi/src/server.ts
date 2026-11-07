@@ -37,6 +37,9 @@ import { impostazioniCartelloRouter } from './routes/impostazioni-cartello.js';
 import { impostazioniRuoliRouter } from './routes/impostazioni-ruoli.js';
 import { interventiRouter } from './routes/interventi.js';
 import { interventiFirmaRouter } from './routes/interventi-firma.js';
+import { verbaliFirmaRouter } from './routes/verbali-firma.js';
+import { verbaliNuovoRouter } from './routes/verbali-nuovo.js';
+import { verbaliRouter } from './routes/verbali.js';
 import { interventiInvioRouter } from './routes/interventi-invio.js';
 import { requestsRouter } from './routes/requests.js';
 import { schedeRouter } from './routes/schede.js';
@@ -251,6 +254,10 @@ export function createServer(): Express {
   // Преди cartelliRouter: `/cartelli/nuovo` е преди `/cartelli/:id`.
   app.use(cartelliNuovoRouter);
   app.use(cartelliRouter);
+  // Преди verbaliRouter: `/verbali/nuovo` е преди `/verbali/:id`.
+  app.use(verbaliNuovoRouter);
+  app.use(verbaliRouter);
+  app.use(verbaliFirmaRouter);
   app.use(usersRouter);
   // След usersRouter: `/utenti/invita` е преди `/utenti/:id`.
   app.use(usersManageRouter);

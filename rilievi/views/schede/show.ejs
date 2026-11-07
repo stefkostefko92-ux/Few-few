@@ -10,10 +10,12 @@
   <div class="toolbar">
     <% if (!scheda.deletedAt && canIn('schede:write', scheda.aziendaId)) { %><a class="btn btn--primary" href="/schede/<%= scheda.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('scheda.actions.edit') %></a><% } %>
     <a class="btn" href="/schede/<%= scheda.id %>/stampa?auto=1"><%- include('../partials/icon', { name: 'print' }) %><%= t('scheda.actions.print') %></a>
-    <a class="btn" href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
-    <%# Изчислението за аргано — не при хидравлична уредба (там аргано няма). %>
-    <% if (!(scheda.tipoImpianto || []).includes('IDRAULICO')) { %><a class="btn" href="/schede/<%= scheda.id %>/calcolo-argano"><%- include('../partials/icon', { name: 'calc' }) %><%= t('argano.apri') %></a><% } %>
+    <a class="btn" data-pdf href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
+    <%# Изчисленията за аргано и за ограничителя — не при хидравлична уредба (там аргано и раздел „Limitatore“ няма). %>
+    <% if (!(scheda.tipoImpianto || []).includes('IDRAULICO')) { %><a class="btn" href="/schede/<%= scheda.id %>/calcolo-argano"><%- include('../partials/icon', { name: 'calc' }) %><%= t('argano.apri') %></a>
+    <a class="btn" href="/schede/<%= scheda.id %>/calcolo-limitatore"><%- include('../partials/icon', { name: 'gauge' }) %><%= t('limitatore.apri') %></a><% } %>
     <% if (!scheda.deletedAt && canIn('interventi:write', scheda.aziendaId)) { %><a class="btn" href="/cartelli/nuovo?scheda=<%= scheda.id %>"><%- include('../partials/icon', { name: 'stop' }) %><%= t('cartelli.daScheda.crea') %></a><% } %>
+    <% if (!scheda.deletedAt && canIn('interventi:write', scheda.aziendaId)) { %><a class="btn" href="/verbali/nuovo?scheda=<%= scheda.id %>"><%- include('../partials/icon', { name: 'sign' }) %><%= t('verbali.daScheda.crea') %></a><% } %>
     <% if (!scheda.deletedAt && canIn('schede:delete', scheda.aziendaId)) { %><a class="btn btn--ghost" href="/schede/<%= scheda.id %>/elimina"><%- include('../partials/icon', { name: 'trash' }) %><%= t('scheda.actions.delete') %></a><% } %>
   </div>
 </div>
@@ -44,8 +46,8 @@
         <dt><%= field.label %></dt>
         <% if (field.value) { %><dd><%= field.value %><% if (field.table) { %><%- include('_table', { table: field.table }) %><% } %><% if (field.modulo) { %>
           <span class="modulo-links"><span class="modulo-links__name"><%= field.modulo.nome %></span>
-            <a class="btn btn--sm" href="/schede/<%= scheda.id %>/<%= field.modulo.path %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('ordini.download') %></a>
-            <a class="btn btn--sm" href="/schede/<%= scheda.id %>/<%= field.modulo.path %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('ordini.print') %></a>
+            <a class="btn btn--sm" data-pdf href="/schede/<%= scheda.id %>/<%= field.modulo.path %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('ordini.download') %></a>
+            <a class="btn btn--sm" data-pdf href="/schede/<%= scheda.id %>/<%= field.modulo.path %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('ordini.print') %></a>
           </span><% } %></dd><% } else { %><dd class="empty-value">—</dd><% } %>
       </div>
       <% } %>
@@ -77,6 +79,15 @@
     <h2 class="section__title" id="h-cartelli-scheda"><%= t('cartelli.daScheda.dellaScheda') %></h2>
     <ul role="list">
       <% for (const c of cartelli) { %><li><a href="/cartelli/<%= c.id %>"><%= fmt.day(c.data) %></a><% if (c.ubicazione) { %> · <%= c.ubicazione %><% } %></li>
+      <% } %>
+    </ul>
+  </section>
+  <% } %>
+  <% if (verbali && verbali.length) { %>
+  <section class="cartelli-scheda" aria-labelledby="h-verbali-scheda">
+    <h2 class="section__title" id="h-verbali-scheda"><%= t('verbali.daScheda.dellaScheda') %></h2>
+    <ul role="list">
+      <% for (const v of verbali) { %><li><a href="/verbali/<%= v.id %>"><%= fmt.day(v.data) %></a><% if (v.buono) { %> · <%= t('verbali.campo.buono') %> <%= v.buono %><% } %> · <%= t(v.confermatoAt ? 'verbali.stato.chiuso' : 'verbali.stato.bozza') %></li>
       <% } %>
     </ul>
   </section>

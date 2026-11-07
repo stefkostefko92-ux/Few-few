@@ -23,7 +23,9 @@
     "impostazioni": "Impostazioni",
     "interventi": "Interventi",
     "cartelli": "Cartelli fermo impianto",
+    "verbali": "Verbali chiusura cantiere",
     "calcoloArgano": "Calcolo argano",
+    "calcoloLimitatore": "Calcolo limitatore",
     "open": "Apri il menu",
     "close": "Chiudi il menu",
     "group": {
@@ -125,5 +127,11 @@
     "ruoliSaved": "Ruoli e permessi salvati.",
     "coloriSaved": "Colori salvati: il tema è ora «Personalizzato».",
     "coloriReset": "Tornati ai colori del portale."
+  },
+  "pdfApp": {
+    "attesa": "Preparo il PDF…",
+    "pronto": "PDF pronto: tocca di nuovo per aprirlo, salvarlo o stamparlo.",
+    "errore": "Il PDF non si è aperto: controlla la connessione e riprova.",
+    "nonSupportato": "In questa versione di iOS il PDF dall'app non si apre: apri il portale in Safari per scaricarlo."
   }
 }

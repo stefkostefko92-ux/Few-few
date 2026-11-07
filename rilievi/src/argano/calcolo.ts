@@ -7,7 +7,7 @@ import { funeDi } from './tabelle.js';
  * при VVVF — нужните обороти и честота; разлика до 5 % спрямо досегашната) и лист „Funi“ (въжетата:
  * сигурност, D/d; сцеплението по EN 81-1 с C1·C2 в двата случая; специфичният натиск). Особеностите на
  * файла са запазени нарочно, за да излизат същите числа: „a“ е минималното C1 на EN 81-1 (1,10…1,25), взето
- * като забавяне; кабелите се добавят към T'2 в килограми; при полукръгъл канал без подрез и „solo verifica“
+ * като забавяне; кабелите се добавят към T'1 в килограми; при полукръгъл канал без подрез и „solo verifica“
  * f = 0. Без база и без вход/изход — тества се срещу стойностите от самия Excel.
  */
 
@@ -135,11 +135,13 @@ export function calcolaArgano(d: DatiArgano): RisultatoArgano {
   const rapportoDiametri = d.diametroPuleggia / fune.d;
   const compRapporto = d.compensazione === 'funi' && comp ? d.diametroTenditore / comp.d : null;
 
-  // Сцеплението: кабина долу със 125 % товар, кабина горе празна.
+  // Сцеплението: кабина долу със 125 % товар, кабина горе празна. Имената са тези от листа „Funi“
+  // (собственикът, 4 ноември 2026): T1 и T'1 — страната на кабината, T2 и T'2 — на противотежестта;
+  // при кабина горе отношението е T'2 / T'1 (по-голямото към по-малкото, както T1 / T2 долу).
   const t1 = ((d.massaCabina + 1.25 * d.portata + tenditore) * G + peso * conFuni) / taglia;
   const t2 = ((d.massaContrappeso + tenditore + compContrappeso) * G) / taglia;
-  const t2Alto = ((d.massaCabina + tenditore + compCabina) * G + cavi) / taglia;
-  const t1Alto = ((d.massaContrappeso + tenditore) * G + peso * conFuni) / taglia;
+  const t1Alto = ((d.massaCabina + tenditore + compCabina) * G + cavi) / taglia;
+  const t2Alto = ((d.massaContrappeso + tenditore) * G + peso * conFuni) / taglia;
   const decelerazione = decelerazioneDi(d.velocita, d.decelerazioneRidotta);
   const c1 = (G + decelerazione) / (G - decelerazione);
   const c2 = d.gola === 'cuneo' ? 1.2 : 1;
@@ -148,7 +150,7 @@ export function calcolaArgano(d: DatiArgano): RisultatoArgano {
   const f = coefficienteF(d, gamma);
   const efa = Math.exp(f * alfa);
   const rapportoBasso = c1 * c2 * (t1 / t2);
-  const rapportoAlto = (c1 * c2 * t1Alto) / t2Alto;
+  const rapportoAlto = (c1 * c2 * t2Alto) / t1Alto;
 
   // Специфичният натиск.
   const velocitaFuni = d.velocita * taglia;

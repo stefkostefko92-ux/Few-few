@@ -6,7 +6,7 @@
   // Входът е без лентата на портала, но с чертежа на шахтата (shaft.css).
   // Темата „Personalizzato“: класът и светла/тъмна основа на <html>, стилът с цветовете — след останалите.
   const personale = typeof temaPersonale !== 'undefined' && temaPersonale ? temaPersonale : null;
-  const sheets = ['base', 'buttons', 'shell', 'sidenav', 'layout', 'plate', 'forms', 'righe', 'pages', 'data', 'sheet', 'misure', 'moduli', 'allegati', 'foto-stampa', 'schizzi', 'schizzo-editor', 'schizzo-barre', 'interventi', 'foglio', 'cartelli', 'impostazioni', 'argano', 'due-fattori', 'installa'].concat(bareMain ? ['shaft'] : []);
+  const sheets = ['base', 'buttons', 'shell', 'sidenav', 'layout', 'plate', 'forms', 'righe', 'pages', 'data', 'sheet', 'misure', 'moduli', 'allegati', 'foto-stampa', 'schizzi', 'schizzo-editor', 'schizzo-barre', 'interventi', 'foglio', 'verbali', 'cartelli', 'impostazioni', 'argano', 'due-fattori', 'installa'].concat(bareMain ? ['shaft'] : []);
 %><!doctype html>
 <html lang="<%= locale %>"<% if (personale) { %> class="tema-personale" data-theme="<%= personale.schema %>"<% } else if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>
 <head>
@@ -33,9 +33,10 @@
 <% } %><script nonce="<%= cspNonce %>">document.documentElement.classList.add('js')</script>
 <script src="/static/js/app.js?v=<%= v %>" defer></script>
 <% if (currentUser && !bareMain) { %><script src="/static/js/menu.js?v=<%= v %>" defer></script>
+<script src="/static/js/pdf-app.js?v=<%= v %>" defer></script>
 <% } %><% for (const script of (typeof scripts !== 'undefined' ? scripts : [])) { %><script src="/static/js/<%= script %>.js?v=<%= v %>" defer></script>
 <% } %></head>
-<body<% if (currentUser && !bareMain) { %> class="with-nav"<% } %>>
+<body<% if (currentUser && !bareMain) { %> class="with-nav" data-pdf-attesa="<%= t('pdfApp.attesa') %>" data-pdf-pronto="<%= t('pdfApp.pronto') %>" data-pdf-errore="<%= t('pdfApp.errore') %>" data-pdf-non-supportato="<%= t('pdfApp.nonSupportato') %>"<% } %>>
 <a class="skip" href="#main"><%= t('nav.skip') %></a>
 <% if (currentUser && !bareMain) { %><%- include('header') %><% } %>
 <main id="main" class="<%= bareMain ? 'main-bare' : 'main' + (narrow ? ' main--narrow' : '') %>" tabindex="-1">
