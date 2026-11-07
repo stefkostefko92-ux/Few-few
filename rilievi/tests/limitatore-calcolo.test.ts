@@ -4,8 +4,8 @@
 // and the cells B5, B6, B9, B10 and B13 of 28 cases recalculated in the workbook itself
 // (tests/limitatore-excel.json); the progressive formula of UNI EN 81-20:2020, 5.6.2.2.1.1 a) 4)
 // (1,25·v + 0,25/v) on its own; the limits of the standard in force when the lift was installed (UNI
-// 10411-1:2024, 18 — the owner, 8 November 2026: UNI EN 81-20:2020, UNI EN 81-1:1999/2008 and :1987, and no
-// values for the rules before 1987); the short result in words; then the form.
+// 10411-1:2024, 18 — the owner, 8 November 2026: UNI EN 81-20:2020, UNI EN 81-1:1999/2008 and :1987, D.P.R.
+// 1497/1963 art. 32 as the owner gave it, no values for D.Lgt. 600/1945); the short result in words; the form.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -150,11 +150,32 @@ describe('the standard in force when the lift was installed', () => {
     assert.equal(r(0.8, 'progressivo', 'en81-1-1999').contatto115, null);
   });
 
-  it('has no values for D.Lgt. 600/1945 and D.P.R. 1497/1963 and says so', () => {
-    const vecchio = r(0.5, 'istantaneo', 'dpr-1497-1963');
+  it('D.P.R. 1497/1963, art. 32: from 0,6 to 1,5 m/s, V1 not above 140 % of Vn, no lower limit', () => {
+    for (const [vn, max, max2] of [
+      [0.6, 0.84, 0.84],
+      [0.63, 0.882, 0.88],
+      [1, 1.4, 1.4],
+      [1.5, 2.1, 2.1],
+    ] as const) {
+      for (const tipo of ['progressivo', 'istantaneo', 'rulli', 'ammortizzato'] as const) {
+        const x = r(vn, tipo, 'dpr-1497-1963');
+        assert.ok(vicino(x.sogliaMax, max), `${vn} ${tipo}: ${x.sogliaMax}`);
+        assert.equal(x.maxIncluso, true);
+        assert.equal(x.max2, max2, `${vn} ${tipo}`);
+        assert.equal(x.sogliaMin, null);
+        assert.equal(x.min2, null);
+        assert.equal(x.momento, null, 'no rule for the contact was given');
+      }
+    }
+    assert.equal(r(0.59, 'progressivo', 'dpr-1497-1963').sogliaMax, 'fuoriCampoDpr');
+    assert.equal(r(1.51, 'progressivo', 'dpr-1497-1963').sogliaMax, 'fuoriCampoDpr');
+  });
+
+  it('has no values for D.Lgt. 600/1945 and says so', () => {
+    const vecchio = r(0.5, 'istantaneo', 'dlgt-600-1945');
     assert.equal(vecchio.sogliaMax, 'normaNonDisponibile');
     assert.equal(vecchio.sogliaMin, null);
-    assert.equal(vecchio.min2, null);
+    assert.equal(vecchio.max2, null);
   });
 
   it('never leaves an instantaneous gear without a possible V1', () => {
@@ -201,6 +222,19 @@ describe('the result in words', () => {
     );
   });
 
+  it('gives only the upper limit under D.P.R. 1497/1963, included, and no contact', () => {
+    const d: DatiLimitatore = { vn: 1, tipo: 'istantaneo', norma: 'dpr-1497-1963' };
+    assert.deepEqual(sintesiLimitatore(d, calcolaLimitatore(d), t), {
+      vn: '1 m/s',
+      tipo: 'Istantaneo',
+      norma: 'D.P.R. 1497/1963, art. 32',
+      v1: 'fino a 1,40 m/s',
+      limite: 'fino a 1,4 m/s (140 % di Vn, incluso)',
+      contatto: null,
+      motivo: null,
+    });
+  });
+
   it('says only why, when the type is not allowed at that speed', () => {
     const d: DatiLimitatore = { vn: 1, tipo: 'istantaneo', norma: 'en81-20-2020' };
     const s = sintesiLimitatore(d, calcolaLimitatore(d), t);
@@ -208,10 +242,15 @@ describe('the result in words', () => {
     assert.equal(s.limite, null);
     assert.equal(s.contatto, null);
     assert.match(s.motivo ?? '', /solo con velocità nominale fino a 0,63 m\/s/);
-    const vecchio: DatiLimitatore = { vn: 0.5, tipo: 'progressivo', norma: 'dpr-1497-1963' };
+    const vecchio: DatiLimitatore = { vn: 0.5, tipo: 'progressivo', norma: 'dlgt-600-1945' };
     assert.match(
       sintesiLimitatore(vecchio, calcolaLimitatore(vecchio), t).motivo ?? '',
-      /D\.P\.R\. 1497\/1963 .* non sono nelle nostre norme/,
+      /D\.Lgt\. 600\/1945 non sono nelle nostre norme/,
+    );
+    const lenta: DatiLimitatore = { vn: 0.5, tipo: 'progressivo', norma: 'dpr-1497-1963' };
+    assert.match(
+      sintesiLimitatore(lenta, calcolaLimitatore(lenta), t).motivo ?? '',
+      /art\. 32 fissa il limite solo per velocità nominali da 0,6 a 1,5 m\/s/,
     );
   });
 });

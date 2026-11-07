@@ -60,7 +60,7 @@
   <p class="limitatore__v1"><span><%= t('limitatore.r.v1') %></span> <strong data-esito="v1"><%= sintesi.v1 %></strong></p>
   <dl class="limitatore__dati">
     <div><dt><%= t('limitatore.r.limite') %></dt><dd data-esito="limite"><%= sintesi.limite %></dd></div>
-    <div><dt><%= t('limitatore.r.contatto') %></dt><dd data-esito="contatto"><%= sintesi.contatto %></dd></div>
+    <% if (sintesi.contatto) { %><div><dt><%= t('limitatore.r.contatto') %></dt><dd data-esito="contatto"><%= sintesi.contatto %></dd></div><% } %>
   </dl>
   <% } else { %>
   <p class="limitatore__no" data-esito="motivo"><%= sintesi.motivo %></p>

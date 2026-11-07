@@ -56,7 +56,7 @@ describe('the governor calculation of a scheda', () => {
       'no type chosen',
     );
     assert.equal((form.match(/class="(?:input|select)"/g) ?? []).length, 3, 'three fields');
-    assert.match(form, /<option value="en81-1-1987">UNI EN 81-1:1987 \(D\.M\. 587\/1987\)</);
+    assert.match(form, /<option value="en81-1-1987">EN 81-1:1987 \(DM 587\/87\)</);
     assert.match(form, /Il calcolo non è ancora stato salvato/);
     assert.equal((await browser.get(`${pagina(scheda.id)}.pdf`)).status, 404, 'no PDF yet');
 
@@ -140,10 +140,22 @@ describe('the governor calculation of a scheda', () => {
       tipo: 'ammortizzato',
       norma: 'en81-20-2020',
     });
+    const page2 = (await browser.get(pagina(scheda.id))).body;
     assert.match(
-      (await browser.get(pagina(scheda.id))).body,
+      page2,
       /data-esito="motivo">La UNI EN 81-20:2020 non prevede il paracadute istantaneo con effetto ammortizzato/,
     );
+    // D.P.R. 1497/1963, art. 32: only "up to 140 % of Vn", no lower limit and no contact row.
+    await browser.submit(pagina(scheda.id), pagina(scheda.id), {
+      base: /name="base" value="([^"]+)"/.exec(page2)![1]!,
+      vn: '1',
+      tipo: 'progressivo',
+      norma: 'dpr-1497-1963',
+    });
+    const page3 = (await browser.get(pagina(scheda.id))).body;
+    assert.match(page3, /data-esito="v1">fino a 1,40 m\/s</);
+    assert.match(page3, /data-esito="limite">fino a 1,4 m\/s \(140 % di Vn, incluso\)</);
+    assert.ok(!page3.includes('data-esito="contatto"'));
   });
 
   it('saves only on the open version; read-only for CLIENTE; 404 elsewhere; closed in the trash', async () => {

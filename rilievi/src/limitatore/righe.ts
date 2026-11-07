@@ -33,7 +33,8 @@ export function sintesiLimitatore(
   r: RisultatoLimitatore,
   t: Translator,
 ): SintesiLimitatore {
-  const ammesso = numero(r.sogliaMax) && r.sogliaMin !== null && r.min2 !== null && r.max2 !== null;
+  const ammesso = numero(r.sogliaMax) && r.max2 !== null;
+  const max = numero(r.sogliaMax) ? r.sogliaMax : 0;
   const contatto = !ammesso
     ? null
     : r.momento === 'alPiuTardi1987' && r.contatto115 !== null
@@ -41,19 +42,26 @@ export function sintesiLimitatore(
       : r.momento
         ? t(`limitatore.esito.${r.momento}`)
         : null;
+  // Без долен праг (D.P.R. 1497/1963, art. 32) — само „fino a“, горният праг е включен.
+  const conMinimo = ammesso && r.sogliaMin !== null && r.min2 !== null;
   return {
     vn: `${cifra(d.vn)} m/s`,
     tipo: t(`limitatore.opzione.tipo.${d.tipo}`),
-    norma: t(`limitatore.opzione.norma.${d.norma}`),
-    v1: ammesso
-      ? t('limitatore.r.v1Valore', { da: formatoNumero(r.min2!, 2), a: formatoNumero(r.max2!, 2) })
-      : null,
-    limite: ammesso
-      ? t('limitatore.r.limiteValore', {
-          min: cifra(r.sogliaMin!),
-          max: cifra(r.sogliaMax as number),
-        })
-      : null,
+    // В резултата и в PDF-а — цялото име; в менюто — краткото (събира се на телефон).
+    norma: t(`limitatore.nomeNorma.${d.norma}`),
+    v1: !ammesso
+      ? null
+      : conMinimo
+        ? t('limitatore.r.v1Valore', {
+            da: formatoNumero(r.min2!, 2),
+            a: formatoNumero(r.max2!, 2),
+          })
+        : t('limitatore.r.v1Fino', { a: formatoNumero(r.max2!, 2) }),
+    limite: !ammesso
+      ? null
+      : conMinimo
+        ? t('limitatore.r.limiteValore', { min: cifra(r.sogliaMin!), max: cifra(max) })
+        : t('limitatore.r.limiteFino', { max: cifra(max) }),
     contatto,
     motivo: ammesso ? null : t(`limitatore.esito.${String(r.sogliaMax)}`),
   };
