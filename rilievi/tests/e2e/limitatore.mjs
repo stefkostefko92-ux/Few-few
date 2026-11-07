@@ -1,6 +1,7 @@
 // The overspeed governor calculation in a real browser (the owner, 5 November 2026 — from the workbook
 // Limitatore_velocita_EN81-20-2020.xlsx; 7 November — only the speed of the lift and the type of safety
-// gear, and the result without long explanations): the button on the scheda, two fields (axe; aligned at
+// gear, and the result without long explanations; 8 November — and the standard in force when the lift was
+// installed): the button on the scheda, three fields (axe; aligned at
 // 360 and 1280 px), the example of the sheet typed in and saved, the V1 to set, no horizontal scroll on a
 // phone, the PDF. Then the page in the menu: the number of the lift leads straight to this calculation.
 import { join } from 'node:path';
@@ -13,7 +14,7 @@ export async function checkLimitatore(page, { shots, scheme, sheetUrl }) {
   await page.click(`a[href="${sheetPath}/calcolo-limitatore"]`);
   await page.waitForURL(/\/calcolo-limitatore$/);
   const campi = await page.locator('form.form .input, form.form .select').count();
-  if (campi !== 2) fail(`${name}: ${campi} fields instead of 2`);
+  if (campi !== 3) fail(`${name}: ${campi} fields instead of 3`);
   await audit(page, `${name} form`);
   const viewport = page.viewportSize();
   for (const width of [360, 1280]) {
@@ -23,6 +24,7 @@ export async function checkLimitatore(page, { shots, scheme, sheetUrl }) {
   await page.setViewportSize(viewport);
   await page.fill('#f-vn', '1,6');
   await page.selectOption('#f-tipo', 'progressivo');
+  await page.selectOption('#f-norma', 'en81-20-2020');
   await page.click('form.form button[type=submit]');
   await page.waitForURL(/\/calcolo-limitatore#risultati$/);
   if (await page.locator('#error-summary').count()) fail(`${name}: the form was refused`);

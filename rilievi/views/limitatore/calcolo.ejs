@@ -1,6 +1,6 @@
 <%
-  // Изчислението за ограничителя — на карта или без карта (routes/calcolo-limitatore-vista.ts): две полета
-  // (скоростта и видът на парашута; без карта — първо адресът и матрикулата) и резултатът — същите редове
+  // Изчислението за ограничителя — на карта или без карта (routes/calcolo-limitatore-vista.ts): три полета
+  // (скоростта, видът на парашута, нормата при монтажа; без карта — първо адресът и матрикулата) и резултатът — същите редове
   // като в PDF-а (limitatore/righe.ts), без обяснения. Кой не пише — само чете.
   const errorKeys = Object.keys(errori);
   const erroriImpianto = identita ? Object.keys(identita.errori) : [];
@@ -44,7 +44,7 @@
   <fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>
     <legend class="section__title"><%= t('limitatore.sezione') %></legend>
     <div class="grid grid--righe">
-      <%- include('_campo', { key: 'vn' }) %><%- include('_campo', { key: 'tipo' }) %>
+      <%- include('_campo', { key: 'vn' }) %><%- include('_campo', { key: 'tipo' }) %><%- include('_campo', { key: 'norma' }) %>
     </div>
   </fieldset>
   <% if (puoScrivere) { %><div class="toolbar">

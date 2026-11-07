@@ -1,14 +1,14 @@
 {
   "limitatore": {
     "titolo": "Calcolo limitatore",
-    "sottotitolo": "Inserisci la velocità dell'impianto e il tipo di paracadute: il risultato è la velocità di intervento V1 da tarare.",
-    "normativa": "UNI EN 81-20:2020, 5.6.2.2.1.1 a) — limitatore di velocità del paracadute di cabina",
+    "sottotitolo": "Inserisci velocità, tipo di paracadute e norma alla data di installazione: il risultato è la velocità di intervento V1 da tarare.",
+    "normativa": "UNI 10411-1:2024, punto 18 — limitatore di velocità del paracadute di cabina",
     "apri": "Calcolo limitatore",
     "pdf": "Scarica PDF",
     "stampa": "Apri il PDF",
     "indietro": "Torna alla scheda",
     "calcola": "Calcola e salva",
-    "proposto": "Velocità presa dal modulo rilievi dati argani della scheda: controllala e scegli il tipo di paracadute.",
+    "proposto": "Velocità presa dal modulo rilievi dati argani della scheda: controllala, poi scegli il tipo di paracadute e la norma.",
     "soloLettura": "Puoi vedere il calcolo ma non modificarlo.",
     "salvatoIl": "Salvato il {quando} da {nome}",
     "nessunCalcolo": "Il calcolo non è ancora stato salvato.",
@@ -20,13 +20,21 @@
     },
     "campo": {
       "vn": "Velocità nominale (m/s)",
-      "tipo": "Tipo di paracadute"
+      "tipo": "Tipo di paracadute",
+      "norma": "Norma alla data di installazione"
     },
     "opzione": {
       "tipo": {
         "progressivo": "Progressivo",
         "istantaneo": "Istantaneo",
-        "rulli": "Istantaneo a rulli"
+        "rulli": "Istantaneo a rulli",
+        "ammortizzato": "Istantaneo con effetto ammortizzato"
+      },
+      "norma": {
+        "en81-20-2020": "UNI EN 81-20:2020",
+        "en81-1-1999": "UNI EN 81-1:1999 o 2008 (marcatura CE)",
+        "en81-1-1987": "UNI EN 81-1:1987 (D.M. 587/1987)",
+        "dpr-1497-1963": "D.P.R. 1497/1963 o D.Lgt. 600/1945"
       }
     },
     "errore": {
@@ -43,14 +51,19 @@
       "limiteValore": "da {min} m/s (incluso) a {max} m/s (escluso)",
       "contatto": "Contatto elettrico",
       "vn": "Velocità nominale",
-      "tipo": "Paracadute"
+      "tipo": "Paracadute",
+      "norma": "Norma"
     },
     "esito": {
       "vnNonValida": "Velocità nominale non valida.",
-      "nonAmmesso": "Paracadute istantaneo non ammesso con velocità oltre 0,63 m/s: serve il progressivo.",
+      "nonAmmesso": "Paracadute istantaneo ammesso solo con velocità nominale fino a 0,63 m/s: serve il progressivo.",
+      "nonAmmessoAmmortizzato": "Istantaneo con effetto ammortizzato ammesso solo con velocità nominale fino a 1 m/s: serve il progressivo.",
       "tipoNonValido": "Tipo di paracadute non valido.",
+      "tipoNonPrevisto": "La UNI EN 81-20:2020 non prevede il paracadute istantaneo con effetto ammortizzato.",
+      "normaNonDisponibile": "I limiti del D.P.R. 1497/1963 e del D.Lgt. 600/1945 non sono nelle nostre norme: vanno verificati sul testo di legge.",
       "prima": "Prima di V1",
-      "alPiuTardi": "Al più tardi a V1"
+      "alPiuTardi": "Al più tardi a V1",
+      "alPiuTardi1987": "Al più tardi a V1; con tensione variabile o VVVF al più tardi a {v} m/s (115 % di Vn)"
     },
     "libero": {
       "indietro": "Tutti i calcoli"

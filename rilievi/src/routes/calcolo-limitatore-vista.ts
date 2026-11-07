@@ -1,7 +1,12 @@
 import type { Request, Response } from 'express';
 import { testataDi } from '../aziende/intestazione.js';
 import { config } from '../config.js';
-import { calcolaLimitatore, TIPI_PARACADUTE, type DatiLimitatore } from '../limitatore/calcolo.js';
+import {
+  calcolaLimitatore,
+  NORME_IMPIANTO,
+  TIPI_PARACADUTE,
+  type DatiLimitatore,
+} from '../limitatore/calcolo.js';
 import { LIMITI_VN, type ErroriLimitatore, type ValoriForm } from '../limitatore/dati.js';
 import { renderCalcoloLimitatore } from '../limitatore/pdf.js';
 import { sintesiLimitatore } from '../limitatore/righe.js';
@@ -54,6 +59,7 @@ export function renderLimitatore(res: Response, status: number, vista: VistaLimi
         ? sintesiLimitatore(dati, calcolaLimitatore(dati), t)
         : null,
     tipi: TIPI_PARACADUTE,
+    norme: NORME_IMPIANTO,
     limitiVn: LIMITI_VN,
   });
 }

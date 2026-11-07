@@ -32,7 +32,7 @@ async function makeScheda(aziendaId: string, extra: Record<string, unknown> = {}
 }
 
 // The example of the sheet "Limitatore", as the form sends it.
-const FORM: Record<string, string> = { vn: '1,6', tipo: 'progressivo' };
+const FORM: Record<string, string> = { vn: '1,6', tipo: 'progressivo', norma: 'en81-20-2020' };
 
 const pagina = (id: string) => `/schede/${id}/calcolo-limitatore`;
 
@@ -55,7 +55,8 @@ describe('the governor calculation of a scheda', () => {
       /<option value="">—<\/option>\s*<option value="progressivo">/,
       'no type chosen',
     );
-    assert.equal((form.match(/class="(?:input|select)"/g) ?? []).length, 2, 'two fields');
+    assert.equal((form.match(/class="(?:input|select)"/g) ?? []).length, 3, 'three fields');
+    assert.match(form, /<option value="en81-1-1987">UNI EN 81-1:1987 \(D\.M\. 587\/1987\)</);
     assert.match(form, /Il calcolo non è ancora stato salvato/);
     assert.equal((await browser.get(`${pagina(scheda.id)}.pdf`)).status, 404, 'no PDF yet');
 
@@ -67,7 +68,7 @@ describe('the governor calculation of a scheda', () => {
     });
     assert.equal(row.updatedById, user.id);
     assert.equal(row.aziendaId, azienda.id);
-    assert.deepEqual(row.dati, { vn: 1.6, tipo: 'progressivo' });
+    assert.deepEqual(row.dati, { vn: 1.6, tipo: 'progressivo', norma: 'en81-20-2020' });
     const audit = await prisma.auditLog.findFirst({
       where: { action: 'LIMITATORE_CALCOLO', targetId: scheda.id },
     });
@@ -91,11 +92,12 @@ describe('the governor calculation of a scheda', () => {
     const { browser } = await signedIn('TECNICO', azienda.id);
     const vuoto = await browser.submit(pagina(scheda.id), pagina(scheda.id), { base: '', vn: '' });
     assert.equal(vuoto.status, 422);
-    assert.match(vuoto.body, /Correggi 2 campi/);
+    assert.match(vuoto.body, /Correggi 3 campi/);
     const errato = await browser.submit(pagina(scheda.id), pagina(scheda.id), {
       base: '',
       vn: '25',
       tipo: 'a molla',
+      norma: 'en81-20-2020',
     });
     assert.equal(errato.status, 422);
     assert.match(errato.body, /Inserisci un valore tra 0,01 e 20/);
@@ -105,14 +107,43 @@ describe('the governor calculation of a scheda', () => {
       base: '',
       vn: '1',
       tipo: 'istantaneo',
+      norma: 'en81-20-2020',
     });
     assert.equal(istantaneo.status, 303);
     const page = (await browser.get(pagina(scheda.id))).body;
     assert.match(
       page,
-      /data-esito="motivo">Paracadute istantaneo non ammesso con velocità oltre 0,63/,
+      /data-esito="motivo">Paracadute istantaneo ammesso solo con velocità nominale fino a 0,63/,
     );
     assert.ok(!page.includes('data-esito="v1"'));
+  });
+
+  it('takes the limits of the standard in force when the lift was installed (UNI 10411-1:2024, 18)', async () => {
+    const azienda = await makeAzienda();
+    const scheda = await makeScheda(azienda.id);
+    const { browser } = await signedIn('TECNICO', azienda.id);
+    const saved = await browser.submit(pagina(scheda.id), pagina(scheda.id), {
+      base: '',
+      vn: '0,8',
+      tipo: 'ammortizzato',
+      norma: 'en81-1-1987',
+    });
+    assert.equal(saved.status, 303);
+    const page = (await browser.get(pagina(scheda.id))).body;
+    assert.match(page, /data-esito="v1">da 0,92 a 1,49 m\/s</);
+    assert.match(page, /con tensione variabile o VVVF al più tardi a 0,92 m\/s/);
+    assert.match(page, /<option value="en81-1-1987" selected>/);
+    const base = /name="base" value="([^"]+)"/.exec(page)![1]!;
+    await browser.submit(pagina(scheda.id), pagina(scheda.id), {
+      base,
+      vn: '0,8',
+      tipo: 'ammortizzato',
+      norma: 'en81-20-2020',
+    });
+    assert.match(
+      (await browser.get(pagina(scheda.id))).body,
+      /data-esito="motivo">La UNI EN 81-20:2020 non prevede il paracadute istantaneo con effetto ammortizzato/,
+    );
   });
 
   it('saves only on the open version; read-only for CLIENTE; 404 elsewhere; closed in the trash', async () => {

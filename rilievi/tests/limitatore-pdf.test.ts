@@ -32,7 +32,13 @@ async function pdfDi(d: DatiLimitatore) {
 
 const parole = (pdf: Buffer) => {
   const text = spawnSync('pdftotext', ['-layout', '-', '-'], { input: pdf });
-  return text.error === undefined ? text.stdout.toString('utf8') : null;
+  // The word joiner and the no-break space that keep "0,63 m/s" on one line read as nothing and a space.
+  return text.error === undefined
+    ? text.stdout
+        .toString('utf8')
+        .replace(/\u2060/g, '')
+        .replace(/\u00a0/g, ' ')
+    : null;
 };
 
 describe(
@@ -40,7 +46,7 @@ describe(
   { skip: !fontsHere && 'DejaVu fonts are not installed here' },
   () => {
     it('is one A4 page with the V1 to set', async () => {
-      const pdf = await pdfDi({ vn: 1.6, tipo: 'progressivo' });
+      const pdf = await pdfDi({ vn: 1.6, tipo: 'progressivo', norma: 'en81-20-2020' });
       const doc = await PDFDocument.load(pdf);
       assert.equal(doc.getPageCount(), 1);
       const { width, height } = doc.getPage(0).getSize();
@@ -54,15 +60,17 @@ describe(
           /Limite di norma\s+da 1,84 m\/s \(incluso\) a 2,15625 m\/s \(escluso\)/,
         );
         assert.match(words, /Contatto elettrico\s+Prima di V1/);
+        assert.match(words, /Norma\s+UNI EN 81-20:2020/);
       }
     });
 
     it('says why when the type is not allowed', async () => {
-      const pdf = await pdfDi({ vn: 1, tipo: 'istantaneo' });
+      const pdf = await pdfDi({ vn: 1, tipo: 'istantaneo', norma: 'en81-1-1999' });
       assert.equal((await PDFDocument.load(pdf)).getPageCount(), 1);
       const words = parole(pdf);
       if (words !== null) {
-        assert.match(words, /non ammesso con velocità oltre 0,63 m\/s/);
+        assert.match(words.replace(/\s+/g, ' '), /solo con velocità nominale fino a 0,63 m\/s/);
+        assert.doesNotMatch(words, /m\/\s*\n\s*s/, 'm/s is never split over two lines');
         assert.doesNotMatch(words, /Tarare V1/);
       }
     });

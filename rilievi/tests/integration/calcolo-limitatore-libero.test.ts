@@ -31,7 +31,7 @@ async function makeScheda(aziendaId: string, extra: Record<string, unknown> = {}
 }
 
 // The example of the sheet "Limitatore", as the form sends it.
-const FORM: Record<string, string> = { vn: '1,6', tipo: 'progressivo' };
+const FORM: Record<string, string> = { vn: '1,6', tipo: 'progressivo', norma: 'en81-20-2020' };
 
 const pagina = (id: string) => `/schede/${id}/calcolo-limitatore`;
 

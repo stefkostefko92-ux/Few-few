@@ -15,7 +15,7 @@ import type { SintesiLimitatore } from './righe.js';
 
 /**
  * PDF-ът на изчислението за ограничителя (A4, една страница — като изчислението за аргано, но кратък):
- * горе логото и данните на фирмата, заглавието, нормата и уредбата, после данните (скорост, парашут) и
+ * горе логото и данните на фирмата, заглавието, нормата и уредбата, после данните (скорост, парашут, норма) и
  * резултатът — същите редове като на страницата, долу кога и от кого е записано. DejaVu Sans, вграден.
  */
 
@@ -27,6 +27,12 @@ export interface LimitatorePdfOptions {
   testata: AziendaCartello;
   fontDir: string;
 }
+
+/**
+ * Числото и мярката не се делят на два реда: твърд интервал пред „m/s“, а около наклонената черта —
+ * „word joiner“ (U+2060, нулева ширина; DejaVu го има) — иначе pdfkit пренася след „/“ („0,63 m/“ | „s“).
+ */
+export const inRiga = (testo: string) => testo.replace(/ m\/s/g, '\u00a0m\u2060/\u2060s');
 
 export function renderCalcoloLimitatore(o: LimitatorePdfOptions): Promise<Buffer> {
   const fonts = fontsOf(o.fontDir);
@@ -80,7 +86,7 @@ export function renderCalcoloLimitatore(o: LimitatorePdfOptions): Promise<Buffer
       .font('Sans-Bold')
       .fontSize(size)
       .fillColor(INK)
-      .text(valore, M + W * 0.4, y - (grande ? 2 : 0), { width: W * 0.6 });
+      .text(inRiga(valore), M + W * 0.4, y - (grande ? 2 : 0), { width: W * 0.6 });
     y = Math.max(doc.y, y + size) + 10;
   };
   const linea = () => {
@@ -96,13 +102,14 @@ export function renderCalcoloLimitatore(o: LimitatorePdfOptions): Promise<Buffer
   linea();
   riga(t('limitatore.r.vn'), s.vn);
   riga(t('limitatore.r.tipo'), s.tipo);
+  riga(t('limitatore.r.norma'), s.norma);
   linea();
   if (s.v1) {
     riga(t('limitatore.r.v1'), s.v1, true);
     if (s.limite) riga(t('limitatore.r.limite'), s.limite);
     if (s.contatto) riga(t('limitatore.r.contatto'), s.contatto);
   } else if (s.motivo) {
-    doc.font('Sans-Bold').fontSize(12).fillColor(INK).text(s.motivo, M, y, { width: W });
+    doc.font('Sans-Bold').fontSize(12).fillColor(INK).text(inRiga(s.motivo), M, y, { width: W });
   }
 
   disegnaPiede(
