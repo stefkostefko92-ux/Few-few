@@ -521,3 +521,8 @@
 {"t":"handoff","ts":"2026-11-06T09:05:22.365Z","id":"ra21c9762","from":"kodadjiyata","to":"човек","status":"блокер","run":"ff8df98e"}
 {"t":"start","ts":"2026-11-08T08:01:23.587Z","id":"r1b73f9cd","flow":"авто","lead":"ai-djiyata","auto":true}
 {"t":"handoff","ts":"2026-11-08T08:01:23.588Z","id":"r1b73f9cd","from":"ai-djiyata","to":"човек","status":"има бележки","run":"e7290283"}
+{"t":"start","ts":"2026-11-08T08:10:33.963Z","id":"r8f977d30","flow":"авто","lead":"socialdjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-08T08:10:33.963Z","id":"r8f977d30","from":"socialdjiyata","to":"човек","status":"има бележки","run":"0d608c09"}
+{"t":"handoff","ts":"2026-11-08T08:20:45.271Z","id":"r8f977d30","from":"ai-djiyata","to":"човек","status":"има бележки","run":"9ccc2bc1"}
+{"t":"start","ts":"2026-11-08T08:28:22.733Z","id":"r5ccca861","flow":"авто","lead":"pravniyat-razbirach","auto":true}
+{"t":"handoff","ts":"2026-11-08T08:28:22.733Z","id":"r5ccca861","from":"pravniyat-razbirach","to":"nabludatelya","status":"има бележки","run":"ebff3b9b"}
