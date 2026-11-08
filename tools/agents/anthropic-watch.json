@@ -1,6 +1,6 @@
 {
-  "checkedAt": "2026-10-31",
-  "changelogVersion": "2.1.316",
+  "checkedAt": "2026-11-08",
+  "changelogVersion": "2.1.319",
   "docs": [
     {
       "url": "https://code.claude.com/docs/en/overview.md",
@@ -929,6 +929,10 @@
       "title": "Read more"
     },
     {
+      "slug": "components-of-agent-memory",
+      "title": "The components of agent memory"
+    },
+    {
       "slug": "how-we-contain-claude",
       "title": "How we contain Claude across products"
     },
@@ -1007,10 +1011,6 @@
     {
       "slug": "claude-code-best-practices",
       "title": "Claude Code: Best practices for agentic coding"
-    },
-    {
-      "slug": "claude-think-tool",
-      "title": "The \"think\" tool: Enabling Claude to stop and think in complex tool use situations"
     }
   ],
   "skills": [

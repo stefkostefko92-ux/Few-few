@@ -150,6 +150,29 @@ test("договорите с харнеса: ред от changelog-а, койт
   assert.ok(touchedContracts("Changed hook additionalContext limit to 20,000 characters", contracts).includes("additional-context-10k"));
   assert.ok(touchedContracts("Fixed skills not preloading into subagents", contracts).includes("skills-preload-subagent"));
   assert.deepEqual(touchedContracts("[VSCode] Added syntax coloring to code blocks", contracts), []);
+  // Шум от 2.1.317–2.1.319 (08.11.2026): 41 от 53 удара бяха поднизове („ws“ в shows/AWS, „timeout“, „compaction“ …).
+  for (const noise of [
+    "Added an optional `login_notice` setting to the Claude apps gateway that shows an operator-defined message",
+    "Added `assume_role` on `mantle` upstreams of the Claude apps gateway, for a role in another AWS account",
+    "Improved config saves on Windows: Claude Code waits longer for a file another program has open",
+    "Fixed needless permission prompts for read-only commands wrapped in a plain `timeout DURATION`, such as `timeout 30 rg foo`",
+    "Improved auto-update reliability: a brief network failure while verifying a release is now retried right away",
+    "Fixed idle compaction replacing a conversation with a reply that was not a summary",
+    "Changed exit to skip the \"Background work is running\" prompt for plugin monitors",
+    "Fixed workflows re-running finished agents when resumed after a usage limit",
+    "[VSCode] Fixed `ultrathink` not raising effort for its turn or showing its rainbow when telemetry is off",
+    "Fixed agent team teammates in tmux or iTerm2 panes starting in auto mode when the lead session was in manual mode",
+  ]) assert.deepEqual(touchedContracts(noise, contracts), [], noise);
+  // Истинските удари остават.
+  assert.ok(touchedContracts("Changed Monitor's WebSocket watch to follow a rule on every Bash command", contracts).includes("monitor-bash-hooks"));
+  assert.ok(touchedContracts("Hooks with a Bash matcher now also run for the Monitor tool's shell commands", contracts).includes("monitor-bash-hooks"));
+  assert.ok(touchedContracts("Changed subagents and teammates on a different model to use that model's saved effort level", contracts).includes("subagent-effort-env"));
+  assert.ok(touchedContracts("Changed skills to keep the first 10,000 tokens after compaction", contracts).includes("skill-compaction-5k"));
+  assert.ok(touchedContracts("Fixed hook timeout not honoring onFailure", contracts).includes("hook-onfailure-default"));
+  assert.ok(touchedContracts("Raised the workflow concurrency limit to 32", contracts).includes("workflow-concurrency-cap"));
+  // Ключ-масив изисква всички части; празен масив не удря.
+  assert.deepEqual(touchedContracts("a skill", [{ id: "x", keywords: [["skill", "compact"]] }]), []);
+  assert.deepEqual(touchedContracts("anything", [{ id: "x", keywords: [[]] }]), []);
   const d = diffSnapshot({ changelogVersion: "2.1.310" }, { changelog: [{ version: "2.1.311", date: "", bullets: ["Changed hook additionalContext limit to 20,000 characters"] }] }, contracts);
   assert.equal(d.contractHits.length, 1);
   assert.match(renderReport(d, []), /ЗАСЯГАТ ДОГОВОР С ХАРНЕСА/);

@@ -38,10 +38,12 @@ export function loadContracts(file = CONTRACTS) {
   try { return JSON.parse(readFileSync(file, "utf8")).contracts || []; } catch { return []; }
 }
 
-/** Кои договори засяга ред от changelog-а (ключова дума, без значение регистъра). */
+/** Кои договори засяга ред от changelog-а (ключова дума, без значение регистъра). Ключ-масив = всички части
+ *  в реда (["skill", "compact"]) — общи думи като „compaction“ сами вдигаха шум (08.11.2026: 41 от 53 удара). */
 export function touchedContracts(line, contracts = loadContracts()) {
   const l = String(line || "").toLowerCase();
-  return contracts.filter((c) => (c.keywords || []).some((k) => l.includes(String(k).toLowerCase()))).map((c) => c.id);
+  const hit = (k) => (Array.isArray(k) ? k.length > 0 && k.every(hit) : l.includes(String(k).toLowerCase()));
+  return contracts.filter((c) => (c.keywords || []).some(hit)).map((c) => c.id);
 }
 export const SOURCES = {
   docs: "https://code.claude.com/docs/llms.txt",
