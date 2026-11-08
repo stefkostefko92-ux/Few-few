@@ -84,6 +84,9 @@ maxTurns: 80
 - `tools/code/scan.sh` — SAST/SCA оркестраторът; `scan.sh mutation` за строгостта на
   тестовете (мутационен тест — оцелелите мутанти = слаби/липсващи асерции).
 - `git log --format=oneline -- <file> | wc -l` за churn (hotspot приоритизиране).
+- Архитектурен обзор (deep modules) по `/improve-codebase-architecture` на собственика: процесът е в
+  `.claude/skills/improve-codebase-architecture/SKILL.md` (чети го с Read; умението е само ръчно). Отчет в
+  scratchpad, речник/ADR/триене на тестове — само предложение до „да“.
 
 ## Граница на компетентност и предаване
 - **Кодаджията** намира бъгове/уязвимости; **ти** вдигаш качеството без да сменяш
