@@ -28,6 +28,33 @@ test("командите, които пишат, се хващат", () => {
   ]) assert.ok(mutationReason(c), `трябва да се хване: ${c}`);
 });
 
+test("съди се по думите на обвивката: път, кавички, блокове, обвивки, sh -c (проба 08.11.2026, 2)", () => {
+  for (const c of [
+    "/usr/bin/sed -i x a.ts", "\\sed -i x a.ts", '"sed" -i x a.ts', "/usr/bin/git commit -m x", "g''it commit -m x",
+    "{ sed -i x a; }", "if true; then sed -i x a; fi", "while read f; do rm \"$f\"; done < list",
+    "timeout -s KILL 30 sed -i x a", "ionice -c3 sed -i x a", "chrt 1 sed -i x a", "taskset -c 0-3 git push",
+    "doas sed -i x a", "busybox sed -i x a", "builtin command rm a", "setsid rm a.ts",
+    "bash -c 'sed -i x a.ts'", "sh -c \"git commit -m x\"", "echo $(rm a.ts)", "x=`git reset --hard`",
+    "echo $(/usr/bin/rm a.ts)", "x=`\\sed -i y a.ts`",
+    "find . -name '*.bak' -delete", "find src -exec rm {} +", "rm \"src/a b.ts\"", "ionice -c 2 -n 7 env X=1 npm install y",
+  ]) assert.ok(mutationReason(c), `трябва да се хване: ${c}`);
+  for (const c of [
+    "grep -rn \"rm -rf\" src", "echo 'git commit'", "rg -n 'sed -i' .", "git log --format='%s rm x' -n 5",
+    "timeout -s KILL 30 rg foo", "ionice -c3 grep -r x .", "/usr/bin/git status", "bash -c 'git diff --stat'",
+    "find . -name '*.ts' -print", "busybox wc -l a", "FOO=1 rm /tmp/x", "sh -c 'cp a /tmp/b'",
+  ]) assert.equal(mutationReason(c), "", `не бива да се хване: ${c}`);
+});
+
+test("присвояване или обвивка пред командата не я крие (проба 08.11.2026)", () => {
+  for (const c of [
+    "LC_ALL=C sed -i s/a/b/ a.ts", "env LC_ALL=C sed -i s/a/b/ a.ts", 'A="x y" git commit -m x', "env -u X git add -A",
+    "timeout 30 sed -i s/a/b/ a.ts", "nice -n 5 git push", "command rm a.ts", "xargs -I{} rm {}", "nohup npm install x",
+    "time git commit -m x", "stdbuf -oL sed -i x a", "FOO=1 rm -f src/a.ts", "sudo -u bob git reset --hard", "cd x && FOO=1 touch y",
+  ]) assert.ok(mutationReason(c), `трябва да се хване: ${c}`);
+  for (const c of ["LC_ALL=C grep -rn foo src", "timeout 30 rg foo", "env FOO=1 node --test tools", "time git status", "FOO=1 rm /tmp/x"])
+    assert.equal(mutationReason(c), "", `не бива да се хване: ${c}`);
+});
+
 test("четене, тестове и временни файлове минават", () => {
   for (const c of [
     "git diff origin/main...HEAD", "git log --oneline -5", "git status --short", "git show HEAD:src/a.ts", "git config --get user.name",

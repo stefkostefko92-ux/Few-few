@@ -22,7 +22,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sanitize } from "./guard-secrets.mjs";
-import { codeView } from "./guard-dangerous.mjs";
+import { codeView, shellWords, commandOf, execStrings, base } from "./guard-dangerous.mjs";
 import { isMain } from "../../tools/lib/is-main.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -37,16 +37,24 @@ export function isReadOnlyAgent(agentType, root = ROOT) {
   return /\bBash\b/.test(tools) && !WRITE_TOOLS.test(tools);
 }
 
-// Начало на команда: начало на реда или след ; & | ( ` $( и празно място.
-const CMD = String.raw`(?:^|[;&|(\x60]|\$\()\s*(?:sudo\s+)?`;
-const RULES = [
-  [new RegExp(CMD + String.raw`git\s+(?:-C\s+\S+\s+)?(commit|push|reset|checkout|switch|restore|rebase|merge|cherry-pick|revert|stash|clean|rm|mv|tag|am|add|init|pull|fetch\s+.*--update-head-ok|worktree\s+(?:add|remove|move)|branch\s+-[dDmMcC]|config\s+(?!--get|--list|-l\b))\b`), "git команда, която пише"],
-  [new RegExp(CMD + String.raw`git\s+apply\b(?![^;&|]*--(?:check|stat))`), "git apply пише файлове"],
-  [new RegExp(CMD + String.raw`(?:sed|perl)\s+(?:-[a-zA-Z]*\s+)*-[a-zA-Z]*i`), "редакция на място (-i)"],
-  [/--(?:write|fix)\b/, "форматер/линтер с --write/--fix пише файлове"],
-  [new RegExp(CMD + String.raw`npm\s+(?:install|i|add|uninstall|remove|rm|un|update|up|upgrade|version|pkg\s+set|audit\s+fix|dedupe|prune|link)\b`), "npm, който сменя package.json/lockfile (за тестове ползвай npm ci)"],
-  [new RegExp(CMD + String.raw`(?:pnpm|yarn)\s+(?:add|remove|rm|update|up|upgrade|install|i|link|dedupe)\b(?![^;&|]*--frozen-lockfile)`), "pnpm/yarn, който сменя манифест/lockfile (ползвай --frozen-lockfile)"],
+// Начало на команда: начало на реда или след ; & | ( ` $( и празно място, после по желание присвоявания
+// (`LC_ALL=C`) и обвивки (env, timeout 30, nice -n 5, xargs, command …). Проба 08.11.2026: `LC_ALL=C sed -i`,
+// `timeout 30 sed -i`, `xargs rm` минаваха (2.1.319 затвори същия клас байпас в правата, не в нашите куки).
+const PREFIX = String.raw`(?:(?:[A-Za-z_]\w*=\S*|(?:sudo|env|command|exec|nice|nohup|time|stdbuf|timeout|xargs)(?:\s+(?:-u\s+\S+|-n\s+-?\d+|-\S+|\d\S*))*)\s+)*`;
+const CMD = String.raw`(?:^|[;&|(\x60]|\$\()\s*` + PREFIX;
+// Тяло на правило → [проверка на суровия ред, проверка на простата команда по думи (котва ^)].
+const BODIES = [
+  [String.raw`git\s+(?:-C\s+\S+\s+)?(commit|push|reset|checkout|switch|restore|rebase|merge|cherry-pick|revert|stash|clean|rm|mv|tag|am|add|init|pull|fetch\s+.*--update-head-ok|worktree\s+(?:add|remove|move)|branch\s+-[dDmMcC]|config\s+(?!--get|--list|-l\b))\b`, "git команда, която пише"],
+  [String.raw`git\s+apply\b(?![^;&|]*--(?:check|stat))`, "git apply пише файлове"],
+  [String.raw`(?:sed|perl)\s+(?:-[a-zA-Z]*\s+)*-[a-zA-Z]*i`, "редакция на място (-i)"],
+  [String.raw`npm\s+(?:install|i|add|uninstall|remove|rm|un|update|up|upgrade|version|pkg\s+set|audit\s+fix|dedupe|prune|link)\b`, "npm, който сменя package.json/lockfile (за тестове ползвай npm ci)"],
+  [String.raw`(?:pnpm|yarn)\s+(?:add|remove|rm|update|up|upgrade|install|i|link|dedupe)\b(?![^;&|]*--frozen-lockfile)`, "pnpm/yarn, който сменя манифест/lockfile (ползвай --frozen-lockfile)"],
 ];
+const RULES = [
+  ...BODIES.map(([b, why]) => [new RegExp(CMD + b), why]),
+  [/--(?:write|fix)\b/, "форматер/линтер с --write/--fix пише файлове"],
+];
+const WORD_RULES = BODIES.map(([b, why]) => [new RegExp("^" + b), why]);
 
 /** Махни съдържанието на кавичките — „> файл“ в текстов аргумент не е пренасочване. */
 const unquote = (s) => s.replace(/'[^']*'/g, "''").replace(/"(?:\\.|[^"\\])*"/g, '""');
@@ -87,13 +95,70 @@ function writesFile(cmd, scratch) {
   return "";
 }
 
-/** Чиста логика: команда → причина за блок или "" . */
-export function mutationReason(command, { scratch = "" } = {}) {
+// ── По думите на обвивката (08.11.2026, второ кръгче) ────────────────────────────────────────────────
+// Регексът върху суровия ред не вижда `/usr/bin/git commit`, `\sed -i`, `"sed" -i`, `{ sed -i …; }`,
+// `then sed -i`, `timeout -s KILL 30 …`, `ionice -c3 …`, `bash -c '…'` (кавичките се махат преди проверката).
+// Затова всяка проста команда се съди и като думи: shellWords + commandOf от guard-dangerous (общият парсер на
+// пазачите), базовото име на програмата и допълнителните обвивки по-долу; низовете за изпълнение (sh -c, eval,
+// $(…), `…`) — рекурсивно. Пренасочванията остават на суровия ред (в думите „> x“ от кавички изглежда като такова).
+const EXTRA_WRAP = new Set(["ionice", "chrt", "taskset", "busybox", "setsid", "unbuffer"]);
+const FILE_NAMES = new Set(["rm", "mv", "cp", "touch", "truncate", "chmod", "chown", "ln", "install", "rsync", "unlink", "shred"]);
+
+function unwrap(argv) {
+  let a = commandOf(argv);
+  for (let n = 0; a.length && EXTRA_WRAP.has(base(a[0])) && n < 10; n++) {
+    a = a.slice(1);
+    while (a.length && (a[0].startsWith("-") || /^[\d.,:x-]+$/i.test(a[0]))) a = a.slice(1);
+    a = commandOf(a);
+  }
+  return a;
+}
+
+function fileArgvReason(name, args, scratch) {
+  if (!FILE_NAMES.has(name)) return "";
+  const ok = tempTarget(scratch);
+  const plain = args.filter((x) => x && !x.startsWith("-"));
+  const targets = DEST_ONLY.has(name) ? plain.slice(-1) : /^ch(?:mod|own)$/.test(name) ? plain.slice(1) : plain;
+  return !targets.length || !targets.every(ok) ? "команда, която пише/трие файлове извън /tmp и scratchpad-а" : "";
+}
+
+function wordReason(src, scratch, depth) {
+  let parsed;
+  try { parsed = shellWords(src); } catch { return ""; }
+  for (const argv of parsed.cmds) {
+    const a = unwrap(argv);
+    if (a.length) {
+      const name = base(a[0]), args = a.slice(1);
+      const line = [name, ...args].join(" ");
+      for (const [re, why] of WORD_RULES) if (re.test(line)) return why;
+      const f = fileArgvReason(name, args, scratch);
+      if (f) return f;
+      // find -delete / -exec rm … — find сам трие или пуска команда, която пише.
+      if (name === "find") {
+        if (args.includes("-delete")) return "find -delete трие файлове";
+        const k = args.findIndex((x) => /^-(?:exec|execdir|ok|okdir)$/.test(x));
+        if (k >= 0) { const why = mutationReasonAt(args.slice(k + 1).filter((x) => x !== ";" && x !== "+").join(" "), scratch, depth + 1); if (why) return why; }
+      }
+    }
+    for (const inner of execStrings(argv)) { const why = mutationReasonAt(inner, scratch, depth + 1); if (why) return why; }
+  }
+  for (const inner of parsed.subs) { const why = mutationReasonAt(inner, scratch, depth + 1); if (why) return why; }
+  return "";
+}
+
+function mutationReasonAt(command, scratch, depth) {
+  if (depth > 3) return "";
   // codeView: тялото на heredoc към python/node/cat е данни (знаците му стават `_`), към обвивка — код.
   // Хванато на 28.10.2026: `ord(ch) > 127` в python heredoc се четеше като пренасочване към файл.
-  const cmd = unquote(codeView(sanitize(String(command || ""))));
+  const src = codeView(sanitize(String(command || "")));
+  const cmd = unquote(src);
   for (const [re, why] of RULES) if (re.test(cmd)) return why;
-  return fileCmdReason(cmd, scratch) || writesFile(cmd, scratch);
+  return fileCmdReason(cmd, scratch) || writesFile(cmd, scratch) || wordReason(src, scratch, depth);
+}
+
+/** Чиста логика: команда → причина за блок или "" . */
+export function mutationReason(command, { scratch = "" } = {}) {
+  return mutationReasonAt(command, scratch, 0);
 }
 
 function main() {
