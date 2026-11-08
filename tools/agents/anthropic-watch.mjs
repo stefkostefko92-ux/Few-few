@@ -5,10 +5,11 @@
 // Anthropic/Claude за новости в процедурата. Ръчното „прочети пак всичко“ е скъпо и пропуска
 // тихите промени (нова страница, нов флаг в changelog-а). Тук сравняваме снимка със снимка.
 //
-// Три публични източника, без ключове:
+// Четири публични източника, без ключове:
 //   1. https://code.claude.com/docs/llms.txt          — списъкът на всички страници в документацията
 //   2. https://code.claude.com/docs/en/changelog.md   — версиите на Claude Code след последната видяна
 //   3. https://www.anthropic.com/engineering          — инженерният блог (агенти, evals, harness)
+//   4. anthropics/skills → .claude-plugin/marketplace.json — официалните умения (нови/махнати)
 //
 //   node tools/agents/anthropic-watch.mjs              # доклад: какво е ново спрямо снимката
 //   node tools/agents/anthropic-watch.mjs --update     # доклад + записва новата снимка
@@ -46,7 +47,11 @@ export const SOURCES = {
   docs: "https://code.claude.com/docs/llms.txt",
   changelog: "https://code.claude.com/docs/en/changelog.md",
   engineering: "https://www.anthropic.com/engineering",
+  // Официалните умения: нови/махнати се виждат тук (смяната на лиценза на Office уменията на 06.11.2026
+  // мина покрай трите източника по-горе). raw.githubusercontent.com — без ключ и без GitHub API.
+  skills: "https://raw.githubusercontent.com/anthropics/skills/main/.claude-plugin/marketplace.json",
 };
+export const SKILLS_TREE = "https://github.com/anthropics/skills/tree/main/skills/";
 
 // Редовете от changelog-а, които засягат НАШИЯ агентски процес (агенти, куки, умения, права, кеш,
 // памет, оркестрация). Останалото (VSCode теми, Windows поправки) е шум за флота.
@@ -89,6 +94,27 @@ export function parseEngineering(html) {
   return [...seen.values()];
 }
 
+/**
+ * marketplace.json на anthropics/skills → [{ id: "плъгин/умение", plugin, skill }]. Само пътища
+ * `./skills/<kebab>` и имена в kebab-case: всичко друго от чуждия файл се пропуска (данни, не команди).
+ */
+export function parseSkillsMarketplace(text) {
+  let data;
+  try { data = JSON.parse(String(text)); } catch { return []; }
+  const seen = new Map();
+  for (const p of Array.isArray(data?.plugins) ? data.plugins : []) {
+    const plugin = String(p?.name || "");
+    if (!/^[a-z0-9-]{1,64}$/.test(plugin)) continue;
+    for (const s of Array.isArray(p.skills) ? p.skills : []) {
+      const m = typeof s === "string" && s.match(/^\.\/skills\/([a-z0-9-]{1,64})$/);
+      if (!m) continue;
+      const id = `${plugin}/${m[1]}`;
+      if (!seen.has(id)) seen.set(id, { id, plugin, skill: m[1] });
+    }
+  }
+  return [...seen.values()];
+}
+
 /** a > b за версии x.y.z. */
 export function newer(a, b) {
   const pa = String(a).split(".").map(Number), pb = String(b || "0.0.0").split(".").map(Number);
@@ -106,7 +132,13 @@ export function diffSnapshot(prev, cur, contracts = loadContracts()) {
   const docsNow = new Set((cur.docs || []).map((d) => d.url));
   const engBefore = new Set((p.engineering || []).map((e) => e.slug));
   const versions = (cur.changelog || []).filter((r) => newer(r.version, p.changelogVersion));
+  // Снимка отпреди източника `skills` е начална точка: иначе всички умения излизат „нови“ веднъж.
+  const skillsKnown = Array.isArray(p.skills);
+  const skillsBefore = new Set((p.skills || []).map((s) => s.id));
+  const skillsNow = new Set((cur.skills || []).map((s) => s.id));
   return {
+    newSkills: cur.skills && skillsKnown ? cur.skills.filter((s) => !skillsBefore.has(s.id)) : [],
+    removedSkills: cur.skills ? (p.skills || []).filter((s) => !skillsNow.has(s.id)) : [],
     newDocs: cur.docs ? cur.docs.filter((d) => !docsBefore.has(d.url)) : [],
     removedDocs: cur.docs ? (p.docs || []).filter((d) => !docsNow.has(d.url)) : [],
     newVersions: versions.map((r) => ({ ...r, relevant: r.bullets.filter((b) => RELEVANT.test(b)) })),
@@ -126,12 +158,14 @@ export function nextState(prev, cur, today) {
     changelogVersion: top && newer(top.version, p.changelogVersion) ? top.version : p.changelogVersion || null,
     docs: cur.docs || p.docs || [],
     engineering: cur.engineering || p.engineering || [],
+    skills: cur.skills || p.skills || [],
   };
 }
 
 export function renderReport(d, failed) {
   const lines = [];
-  const none = !d.newDocs.length && !d.removedDocs.length && !d.newVersions.length && !d.newPosts.length;
+  const none = !d.newDocs.length && !d.removedDocs.length && !d.newVersions.length && !d.newPosts.length &&
+    !d.newSkills?.length && !d.removedSkills?.length;
   lines.push(none ? "Няма новости от последната проверка." : "Новости от последната проверка:");
   if (d.contractHits?.length) {
     lines.push("", `⚠ ЗАСЯГАТ ДОГОВОР С ХАРНЕСА (${d.contractHits.length}) — оцени първо, после node tools/agents/live-gate.mjs:`);
@@ -149,6 +183,11 @@ export function renderReport(d, failed) {
   if (d.newDocs.length) { lines.push("", `Нови страници в документацията (${d.newDocs.length}):`); for (const x of d.newDocs) lines.push(`  - ${x.title} — ${x.url}`); }
   if (d.removedDocs.length) { lines.push("", `Махнати страници (${d.removedDocs.length}):`); for (const x of d.removedDocs) lines.push(`  - ${x.title} — ${x.url}`); }
   if (d.newPosts.length) { lines.push("", `Нови статии в инженерния блог (${d.newPosts.length}):`); for (const x of d.newPosts) lines.push(`  - ${x.title} — https://www.anthropic.com/engineering/${x.slug}`); }
+  if (d.newSkills?.length) {
+    lines.push("", `Нови умения в anthropics/skills (${d.newSkills.length}) — външни, влизат само по пътя в tools/agents/CLAUDE.md:`);
+    for (const x of d.newSkills) lines.push(`  - ${x.id} — ${SKILLS_TREE}${x.skill}`);
+  }
+  if (d.removedSkills?.length) { lines.push("", `Махнати умения в anthropics/skills (${d.removedSkills.length}):`); for (const x of d.removedSkills) lines.push(`  - ${x.id}`); }
   if (failed.length) lines.push("", `Не се свалиха: ${failed.join(", ")} — за тях снимката остава старата.`);
   return lines.join("\n");
 }
@@ -164,7 +203,7 @@ async function main(argv) {
   const prev = existsSync(STATE) ? JSON.parse(readFileSync(STATE, "utf8")) : null;
 
   const cur = {}, failed = [];
-  const parsers = { docs: parseDocsIndex, changelog: parseChangelog, engineering: parseEngineering };
+  const parsers = { docs: parseDocsIndex, changelog: parseChangelog, engineering: parseEngineering, skills: parseSkillsMarketplace };
   await Promise.all(Object.entries(SOURCES).map(async ([k, url]) => {
     try {
       const parsed = parsers[k](await get(url));

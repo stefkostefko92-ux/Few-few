@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { parseDocsIndex, parseChangelog, parseEngineering, diffSnapshot, nextState, newer, clean, renderReport, STATE } from "./anthropic-watch.mjs";
+import { parseDocsIndex, parseChangelog, parseEngineering, parseSkillsMarketplace, diffSnapshot, nextState, newer, clean, renderReport, STATE } from "./anthropic-watch.mjs";
 
 const DOCS = `# Claude Code Docs
 - [Overview](https://code.claude.com/docs/en/overview.md): Claude Code is…
@@ -97,6 +97,46 @@ test("записаната снимка в репото е валидна и н�
   assert.match(s.checkedAt, /^\d{4}-\d{2}-\d{2}$/);
   assert.match(s.changelogVersion, /^\d+\.\d+\.\d+$/);
   assert.ok(s.docs.length > 50 && s.engineering.length > 5, "снимката не е празна");
+  assert.ok(Array.isArray(s.skills) && s.skills.length >= 10, "снимката на anthropics/skills е записана");
+  for (const x of s.skills) assert.match(x.id, /^[a-z0-9-]+\/[a-z0-9-]+$/, `умение ${x.id}`);
+});
+
+const MARKETPLACE = JSON.stringify({
+  name: "anthropic-agent-skills",
+  plugins: [
+    { name: "document-skills", skills: ["./skills/xlsx", "./skills/docx"] },
+    { name: "example-skills", skills: ["./skills/frontend-design", "./skills/frontend-design"] },
+    { name: "discernment-nudge", skills: ["./skills/discernment-nudge"] },
+    { name: "bad", skills: ["../../etc/passwd", "./skills/../x", 42, "./skills/Bad Name", "./skills/ok"] },
+    { name: "лош плъгин", skills: ["./skills/fine"] },
+  ],
+});
+
+test("parseSkillsMarketplace: плъгин/умение от marketplace.json, без дубли и без чужди пътища", () => {
+  const s = parseSkillsMarketplace(MARKETPLACE);
+  assert.deepEqual(s.map((x) => x.id), ["document-skills/xlsx", "document-skills/docx", "example-skills/frontend-design", "discernment-nudge/discernment-nudge", "bad/ok"]);
+  assert.equal(s[0].skill, "xlsx");
+  assert.deepEqual(parseSkillsMarketplace("не е JSON"), [], "счупен файл → празно, не изключение");
+});
+
+test("diffSnapshot: нови и махнати умения в anthropics/skills; снимка без умения е начална точка", () => {
+  const cur = { skills: parseSkillsMarketplace(MARKETPLACE) };
+  const prev = { skills: [{ id: "document-skills/xlsx", plugin: "document-skills", skill: "xlsx" }, { id: "example-skills/webapp-testing", plugin: "example-skills", skill: "webapp-testing" }] };
+  const d = diffSnapshot(prev, cur);
+  assert.deepEqual(d.newSkills.map((x) => x.id), ["document-skills/docx", "example-skills/frontend-design", "discernment-nudge/discernment-nudge", "bad/ok"]);
+  assert.deepEqual(d.removedSkills.map((x) => x.id), ["example-skills/webapp-testing"]);
+  const r = renderReport(d, []);
+  assert.match(r, /Нови умения в anthropics\/skills \(4\)/);
+  assert.match(r, /https:\/\/github\.com\/anthropics\/skills\/tree\/main\/skills\/discernment-nudge/);
+  assert.match(r, /Махнати умения/);
+  assert.doesNotMatch(r, /Няма новости/, "само нови умения пак са новост");
+  // Стара снимка от преди източника: не вдига всичките 20 умения като „нови“.
+  const base = diffSnapshot({ checkedAt: "2026-10-31", docs: [] }, cur);
+  assert.equal(base.newSkills.length, 0);
+  assert.deepEqual(nextState({ checkedAt: "2026-10-31" }, cur, "2026-11-08").skills.map((x) => x.id), cur.skills.map((x) => x.id));
+  // Неуспешно сваляне на умения пренася старата снимка.
+  assert.deepEqual(nextState(prev, {}, "2026-11-08").skills, prev.skills);
+  assert.equal(diffSnapshot(prev, {}).removedSkills.length, 0);
 });
 
 test("договорите с харнеса: ред от changelog-а, който ги засяга, излиза първи", async () => {
