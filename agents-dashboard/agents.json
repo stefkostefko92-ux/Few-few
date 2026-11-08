@@ -8558,7 +8558,7 @@
           "ffmpeg/WhisperX/auto-editor — скриптуем clip pipeline",
           "Caveman стил — телеграфен изход с точни технически токени"
         ],
-        "lessons": 166
+        "lessons": 167
       },
       "evolution": [
         {
@@ -8944,9 +8944,20 @@
           "date": "2026-11-06",
           "event": "v21.1 — учене",
           "detail": "Научи: Private Reply (Instagram) стига до Inbox на коментиращия, ако той следва акаунта, иначе…"
+        },
+        {
+          "version": "21.2.0",
+          "date": "2026-11-08",
+          "event": "v21.2 — учене",
+          "detail": "Научи: YouTube закачането на коментар иска включени advanced features (до 24 ч), води се през …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-08",
+          "type": "learning",
+          "summary": "Научи: „YouTube закачането на коментар иска включени advanced features (до 24 ч), води се през …\""
+        },
         {
           "date": "2026-11-06",
           "type": "learning",
