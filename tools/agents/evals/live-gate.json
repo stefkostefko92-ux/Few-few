@@ -1,9 +1,9 @@
 {
   "date": "2026-11-08",
-  "ref": "60f9e2a483a611692af6ad0fdc3b336f0e5b7b61",
+  "ref": "3bc511d712d0c1984d3ceefc8fbc9fb43039ef92",
   "cli": "2.1.319 (Claude Code)",
-  "summary": "проба 6/6 · оценки 9/9 · pass^k 5/5 · verifier ✓",
-  "costUsd": 14.35,
+  "summary": "проба 3/3 · оценки 6/6 · pass^k 2/2 · verifier ✓",
+  "costUsd": 9.01,
   "probe": [
     {
       "agent": "seo",
@@ -19,24 +19,9 @@
       "agent": "dizayner",
       "ok": true,
       "problems": []
-    },
-    {
-      "agent": "ai-djiyata",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "izpitatelya",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "kachestveniyat",
-      "ok": true,
-      "problems": []
     }
   ],
-  "inputsHash": "11eca8d121be42fee091b05932e463e6eea0d4256be66d95664655f9f37fbc3e",
+  "inputsHash": "58e4ffaff6ae94f845cab79639eb1ca698003cae6f4d8e7a563a0435e7626b9a",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -78,10 +63,10 @@
     ".claude/hooks/artifact-sync.mjs": "1d33833db1a0a73eb3e818bb4360dddd3f807abe8b848adae684e48c77add80a",
     ".claude/hooks/dod-check.mjs": "0894630c593574889b2b355e4abd6c4bdc68d461c3f1675d84d65b8d51587c81",
     ".claude/hooks/guard-config.mjs": "4cd1d3f3dd2fec2b569e1d481fef3030a247b004d9a5bc995a5c04c623b095b6",
-    ".claude/hooks/guard-dangerous.mjs": "410fa0b9f0e6689d4086f16e8e2987662b104adc8d8d5073eb011f9f326e7def",
+    ".claude/hooks/guard-dangerous.mjs": "0fe423625b183d2b5158d9bd71ee304a7b017747dcc5735230b1425ac5c216ce",
     ".claude/hooks/guard-exfil.mjs": "9d3ea25d3fabdc77ec017ebbf2ce63554aa3bc9c8d4dfd4c4c91173e18c2b656",
     ".claude/hooks/guard-prompt.mjs": "d9d1f3de98903425d16405ac261d505786af824e9ba4b9a666c522b92f0d58b2",
-    ".claude/hooks/guard-readonly.mjs": "ff10fb84dce72c5ad6a1ee982cdd9d30616c54725d0fa701d49291c7220ce3fc",
+    ".claude/hooks/guard-readonly.mjs": "0b8f8d6be353d49e266514b5b3ef3bf0de83467a70776451f3271f7104f97411",
     ".claude/hooks/guard-secrets.mjs": "7e0e1ac04fab4fd8c5749fc7dc95791868561e05ef67400827c4bd900c8bced2",
     ".claude/hooks/memory-capture.mjs": "4d306e6be02b975e15509d3c7dd9d0e9f29afc14305001dcb871c2d5a6fc8448",
     ".claude/hooks/memory-preload.mjs": "9bae8442c919471c22722b42888067cdab83952efdad08e530a826862c328461",
