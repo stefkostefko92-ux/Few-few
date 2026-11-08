@@ -14222,7 +14222,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 307
+        "lessons": 308
       },
       "evolution": [
         {
@@ -14368,9 +14368,20 @@
           "date": "2026-11-08",
           "event": "v30.1 — учене",
           "detail": "Научи: Официалните LINDDUN категории са Linking, Identifying, Non-repudiation, Detecting, Data… (+1 още)"
+        },
+        {
+          "version": "30.2.0",
+          "date": "2026-11-08",
+          "event": "v30.2 — учене",
+          "detail": "Научи: Коренният CLAUDE.md стои на ръба на твърдия таван 4800 т в token-budget, затова дори ед…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-08",
+          "type": "learning",
+          "summary": "Научи: „Коренният CLAUDE.md стои на ръба на твърдия таван 4800 т в token-budget, затова дори ед…\""
+        },
         {
           "date": "2026-11-08",
           "type": "learning",
