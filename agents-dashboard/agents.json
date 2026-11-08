@@ -14255,7 +14255,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 311
+        "lessons": 313
       },
       "evolution": [
         {
@@ -14413,9 +14413,20 @@
           "date": "2026-11-08",
           "event": "v30.5 — учене",
           "detail": "Научи: Умение с disable-model-invocation true не носи описанието си в контекста, не може да се… (+2 още)"
+        },
+        {
+          "version": "30.7.0",
+          "date": "2026-11-08",
+          "event": "v30.7 — учене",
+          "detail": "Научи: Регулярен израз в кука, закотвен в началото на команда (след ^ ; & | ( $( и sudo), проп… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-08",
+          "type": "learning",
+          "summary": "Научи: „Регулярен израз в кука, закотвен в началото на команда (след ^ ; & | ( $( и sudo), проп…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-08",
           "type": "learning",
