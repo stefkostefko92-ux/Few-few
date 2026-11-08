@@ -526,3 +526,7 @@
 {"t":"handoff","ts":"2026-11-08T08:20:45.271Z","id":"r8f977d30","from":"ai-djiyata","to":"човек","status":"има бележки","run":"9ccc2bc1"}
 {"t":"start","ts":"2026-11-08T08:28:22.733Z","id":"r5ccca861","flow":"авто","lead":"pravniyat-razbirach","auto":true}
 {"t":"handoff","ts":"2026-11-08T08:28:22.733Z","id":"r5ccca861","from":"pravniyat-razbirach","to":"nabludatelya","status":"има бележки","run":"ebff3b9b"}
+{"t":"start","ts":"2026-11-08T09:18:09.141Z","id":"r3281e9cc","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-08T09:18:09.141Z","id":"r3281e9cc","from":"kodadjiyata","to":"razbivacha","status":"има бележки","run":"68eb48fe"}
+{"t":"start","ts":"2026-11-08T09:19:43.081Z","id":"rbabb8873","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-08T09:19:43.081Z","id":"rbabb8873","from":"razbivacha","to":"kodadjiyata","status":"има бележки","run":"16199396"}
