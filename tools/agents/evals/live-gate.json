@@ -1,22 +1,12 @@
 {
-  "date": "2026-11-04",
-  "ref": "bbfcd03a4be1ccae88fb71685094c7f106539ca7",
-  "cli": "2.1.318 (Claude Code)",
-  "summary": "проба 4/4 · оценки 7/7 · pass^k 3/3 · verifier ✓",
-  "costUsd": 12.83,
+  "date": "2026-11-08",
+  "ref": "8d3a374a78d2f4d84eb1c91fcd17d03aa3f34bb4",
+  "cli": "2.1.319 (Claude Code)",
+  "summary": "проба 4/4 · оценки 10/10 · pass^k 6/6 · verifier ✓",
+  "costUsd": 17.63,
   "probe": [
     {
-      "agent": "seo",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "kodadjiyata",
-      "ok": true,
-      "problems": []
-    },
-    {
-      "agent": "dizayner",
+      "agent": "nabludatelya",
       "ok": true,
       "problems": []
     },
@@ -24,9 +14,19 @@
       "agent": "razbivacha",
       "ok": true,
       "problems": []
+    },
+    {
+      "agent": "socialdjiyata",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "vps-adjiyata",
+      "ok": true,
+      "problems": []
     }
   ],
-  "inputsHash": "f7eb863997134df5f584f64c3e1f705540f04034bad96c0b86cdadb788fd0e2d",
+  "inputsHash": "6b5f227b1d13d349c9628eb48f5ed4c130d92a80df994406d23c1ce6383f8505",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "df03642aee24f3b2365e8cc3590ce2ca3505933e16eceb75cf854947ef6e41cd",
@@ -50,19 +50,19 @@
     ".claude/agents/konveyera.md": "93e9c7a605d0d9a6f1c54cc56522d3903e35ebd16cabacf34ff391a37c394233",
     ".claude/agents/letopisetsa.md": "8d2872442e3edbb732f79b1452cc6bdbf0501302122cac0bbc62aa456ad5b5b4",
     ".claude/agents/mobildjiyata.md": "a632d13bd67854d418381a9cae4de6a313737f00554f2166b851ebdea2fede98",
-    ".claude/agents/nabludatelya.md": "df037c4eace131e920c7d3499ca7b4d12b4c5bede130d6055e333f6de77be034",
+    ".claude/agents/nabludatelya.md": "69fc3f9e59f847e54062687495c0970cd18fb12d7fd1b4c77f8531605561cdd5",
     ".claude/agents/pravniyat-razbirach.md": "4634f1b7d53f6e6de2050003c45a57868790481e4c94ce8e96d0d6ef8b8d5975",
     ".claude/agents/prevodach.md": "7aa99a4ee469bf4abb816e63d854188f98b4c13ca1fbe0c5e7ff7d27cb1ee623",
     ".claude/agents/printadjiyata.md": "17cce75ed4135f3f1a164a7c0dfc71a8483eabe3ca23e1f38d16cec212f53e3d",
     ".claude/agents/prodavacha.md": "ae210b0008655def191b971353ee2490e74bd1c25e10e230197d1dbcf04cf5c3",
-    ".claude/agents/razbivacha.md": "cf28dde504aaa56b48df5f6b1c787a2d24276a929efcd6d608fa105edff19fb8",
+    ".claude/agents/razbivacha.md": "12a3dc5e2124eae9a96562f32973cd3f0f0b9aa68f261fb0d35c4b8d78b300b6",
     ".claude/agents/seo.md": "2ae498fdd0cbd5965560f8c7fbb521ac4c6a70e3b3bb52ed07219776476d2f99",
     ".claude/agents/siydara.md": "af3fd19f820426163706daf6a2a423577e994b8bb4e35e2cb67f62f61ace3899",
     ".claude/agents/skorostnika.md": "0ad5b9114475b291ef17eaf1efcd2806af42f39a35f490ce67da0608fbdc2881",
-    ".claude/agents/socialdjiyata.md": "25a8094782e70041d8c13bb1e46f5e340365d9b694e175df208192b3f6e4a2d0",
+    ".claude/agents/socialdjiyata.md": "9d476569003d9d71fb512f17687af1818e3f8fc31d89a3a12bb3b67bcc249713",
     ".claude/agents/tayniyat-agent.md": "22ce18f5fe48538cabcb4216005823861c2708047438e6c5fcf11e1162b5a617",
     ".claude/agents/treydara.md": "0047d1976157ad45f4483f8a65c458d462d594770502f27afe3a7b79bc7cb1e0",
-    ".claude/agents/vps-adjiyata.md": "7947e6bc3970319572114170d1adf40790d33aa06fe72191351ada0de15fe642",
+    ".claude/agents/vps-adjiyata.md": "2e7862eaa91636b4be370956df95dcb584a3b1054a1b2dc8154f3172fe1dd86f",
     ".claude/hooks/agent-cap.mjs": "1e8dc510561658ee1bfb28e8916ae4f0d98a14a375f8377d7b2b758c3f64f64c",
     ".claude/hooks/agent-return.mjs": "e9b76f4e211ad024fc6bf02c6f088f6474ef7232dea8401841efcd17d54615f8",
     ".claude/hooks/artifact-sync.mjs": "1d33833db1a0a73eb3e818bb4360dddd3f807abe8b848adae684e48c77add80a",
