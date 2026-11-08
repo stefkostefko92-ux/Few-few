@@ -14244,7 +14244,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 308
+        "lessons": 311
       },
       "evolution": [
         {
@@ -14396,9 +14396,20 @@
           "date": "2026-11-08",
           "event": "v30.2 — учене",
           "detail": "Научи: Коренният CLAUDE.md стои на ръба на твърдия таван 4800 т в token-budget, затова дори ед…"
+        },
+        {
+          "version": "30.5.0",
+          "date": "2026-11-08",
+          "event": "v30.5 — учене",
+          "detail": "Научи: Умение с disable-model-invocation true не носи описанието си в контекста, не може да се… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-08",
+          "type": "learning",
+          "summary": "Научи: „Умение с disable-model-invocation true не носи описанието си в контекста, не може да се…\" (+2 още)"
+        },
         {
           "date": "2026-11-08",
           "type": "learning",
