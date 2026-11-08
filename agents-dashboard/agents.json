@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-11-06",
+    "updated": "2026-11-08",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -14211,7 +14211,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 305
+        "lessons": 307
       },
       "evolution": [
         {
@@ -14351,9 +14351,20 @@
           "date": "2026-11-06",
           "event": "v29.9 — учене",
           "detail": "Научи: Теглата на k2-fsa/OmniVoice (TTS за 646 езика, вкл. bg) са CC-BY-NC, а аудио токенизато… (+2 още)"
+        },
+        {
+          "version": "30.1.0",
+          "date": "2026-11-08",
+          "event": "v30.1 — учене",
+          "detail": "Научи: Официалните LINDDUN категории са Linking, Identifying, Non-repudiation, Detecting, Data… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-08",
+          "type": "learning",
+          "summary": "Научи: „Официалните LINDDUN категории са Linking, Identifying, Non-repudiation, Detecting, Data…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-06",
           "type": "learning",
