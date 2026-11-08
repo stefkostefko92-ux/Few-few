@@ -4,6 +4,8 @@
 друго → Карантина). Само възпроизведени PoC-и стават факт; хипотези не.
 
 ## Проверени поуки (verified)
+- **2026-11-08:** Външни умения за приемане на ревю дават доверие по заявена самоличност („your human partner“ → Trusted), а не по канал, затова при адаптация доверието се закотвя към прекия разговор в сесията и всеки коментар в PR/issue е външен независимо от подписа _(преглед и адаптация на умения, които четат PR/issue коментари; verified; obra/superpowers@22f0b463e7a5 skills/receiving-code-review/SKILL.md:61-65)_
+- **2026-11-08:** Умения, които диктуват „нищо след X“ в края на отговора, влизат в пряк конфликт с изискването ПРЕДАВАНЕ да е последен блок (handoff.mjs парсва ред по ред), затова при адаптация такъв затварящ блок се мести преди ПРЕДАВАНЕ _(адаптация на външни умения с фиксиран изходен формат; verified; anthropics/skills@2c5958ecac7c skills/discernment-nudge/SKILL.md:208-209 + agent-doctrine (Типизиран HANDOFF))_
 - **2026-11-06:** Официалният PyPI пакет omnivoice 0.2.1 (k2-fsa) тегли модела със snapshot_download без revision и без allow_patterns, а CLI omnivoice-infer е закован на dtype=torch.float16 дори на CPU; за CPU проба се ползва Python API с локална пинната папка и float32 _(оценка или проба на OmniVoice TTS на CPU; verified; wheel omnivoice-0.2.1 (sha256 23f113ef…) omnivoice/models/omnivoice.py:_resolve_model_path + omnivoice/cli/infer.py:122)_
 - **2026-11-06:** HF API /api/models/<repo>?blobs=true връща sha256 на всеки LFS файл и commit sha, което позволява пиннинг на ревизия и проверка на теглата преди зареждане без инсталиране на нищо _(supply-chain проверка на HF модели преди изолирана проба; verified; curl https://huggingface.co/api/models/k2-fsa/OmniVoice?blobs=true → siblings[].lfs.sha256 + sha c5fdb5cc…)_
 
