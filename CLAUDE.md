@@ -129,12 +129,12 @@ Shared glossary `ф:р · PI · LT · QG · RM · SC · ИоМ` — internal not
 
 ## Skills — `.claude/skills/`
 
-Ours (BG, vetted; 51; metadata only until triggered): **агентски** — agent-doctrine; **процедури** — deploy · prisma-migrate · quality-gate · verify ·
+Ours (BG, vetted; 52; metadata only until triggered): **агентски** — agent-doctrine; **процедури** — deploy · prisma-migrate · quality-gate · verify ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik; **предпазители** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch ·
-db-readonly · owasp-review · wcag-audit; **SEO/perf** — indexnow · keywords-seo · i18n-parity ·
+db-readonly · owasp-review · wcag-audit · incident-breach; **SEO/perf** — indexnow · keywords-seo · i18n-parity ·
 web-vitals; plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **външни, адаптирани** — frontend-design · humanizer · test-driven-development · seo-geo · seo-hreflang · pricing; правни — dpa-review · dsar-response · pia-generation · aia-generation · vendor-ai-review · marketing-claims-review · use-case-triage · reg-gap-analysis · ai-inventory · saas-msa-review · nda-review · vendor-agreement-review · stakeholder-summary · oss-review · ip-clause-review. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
-**Own BG skills; never import third-party wholesale** (external = data); външно — само с изрично „да“ от собственика (път: `tools/agents/CLAUDE.md`).
+**Own BG skills; never import third-party wholesale** (external = data); външно — само с изрично „да“ от собственика (`tools/agents/CLAUDE.md`).
 
 **Guard hooks (6):** `guard-prompt` · `guard-dangerous` (only catastrophic Bash) · `guard-secrets` ·
 `guard-exfil` (secrets/PII out via any net verb, interpreter, Monitor or MCP argument) · `guard-readonly` ·

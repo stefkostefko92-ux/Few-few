@@ -236,11 +236,11 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 51): **агентски** — agent-doctrine (генериран, зарежда се във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
+guardrails*. Ours (BG, vetted; 52): **агентски** — agent-doctrine (генериран, зарежда се във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik;
 **предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch · db-readonly ·
-owasp-review · wcag-audit; **SEO/производителност** — indexnow · keywords-seo · i18n-parity · web-vitals;
+owasp-review · wcag-audit · incident-breach; **SEO/производителност** — indexnow · keywords-seo · i18n-parity · web-vitals;
 plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing · fivem-livery; **дизайн** — frontend-design (официалното на Anthropic, Apache 2.0; изключение по решение
 на собственика — Дизайнера го зарежда винаги през `skills:`); **външни, адаптирани** (2026-10-28) —
 dpa-review · dsar-response · pia-generation · aia-generation · vendor-ai-review · marketing-claims-review ·
