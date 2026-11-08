@@ -1,38 +1,48 @@
 {
   "date": "2026-11-08",
-  "ref": "8d3a374a78d2f4d84eb1c91fcd17d03aa3f34bb4",
+  "ref": "60f9e2a483a611692af6ad0fdc3b336f0e5b7b61",
   "cli": "2.1.319 (Claude Code)",
-  "summary": "проба 4/4 · оценки 10/10 · pass^k 6/6 · verifier ✓",
-  "costUsd": 17.63,
+  "summary": "проба 6/6 · оценки 9/9 · pass^k 5/5 · verifier ✓",
+  "costUsd": 14.35,
   "probe": [
     {
-      "agent": "nabludatelya",
+      "agent": "seo",
       "ok": true,
       "problems": []
     },
     {
-      "agent": "razbivacha",
+      "agent": "kodadjiyata",
       "ok": true,
       "problems": []
     },
     {
-      "agent": "socialdjiyata",
+      "agent": "dizayner",
       "ok": true,
       "problems": []
     },
     {
-      "agent": "vps-adjiyata",
+      "agent": "ai-djiyata",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "izpitatelya",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "kachestveniyat",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "6b5f227b1d13d349c9628eb48f5ed4c130d92a80df994406d23c1ce6383f8505",
+  "inputsHash": "11eca8d121be42fee091b05932e463e6eea0d4256be66d95664655f9f37fbc3e",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
-    ".claude/agents/_memory/PROCEDURE.md": "df03642aee24f3b2365e8cc3590ce2ca3505933e16eceb75cf854947ef6e41cd",
+    ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
     ".claude/agents/_memory/SECURITY.md": "bcc847a4090956d5b8b4e36b22cc9be3f76e1ea91990b1b7e97bf7055fea1253",
     ".claude/agents/_teams.json": "e068c37efb1b257cbd9641dc4768ca07ad782f0d0d6abf116c19efecf6d91f09",
-    ".claude/agents/ai-djiyata.md": "f6b7cf76e32cea776a465e7d59718d30b8617fa9d9754ab6df87626226234e05",
+    ".claude/agents/ai-djiyata.md": "bf4c98e5bfcbac4e30fdf8ba428699538e488c0a956121226eb5287671517c1d",
     ".claude/agents/analizatora.md": "2118d101411068abcf9ca1cfe409df484d330848b2701fd99ae808b66a1354ff",
     ".claude/agents/asansyorchika.md": "18153eb60b408d9cf46341b3338cb24e45475293e0c665d90dfcb3ef08b47d77",
     ".claude/agents/danachnika.md": "260e00c5e2b4800d7f4938fbdd3cdc31bb74f01791b531230fd03b96ee235250",
@@ -43,8 +53,8 @@
     ".claude/agents/goladjiyata.md": "0f0f100d590e829b6439e578f28759d470f56c9c150f08f250ec5ba0014d3c99",
     ".claude/agents/hromadjiyata.md": "6746a9aa92371ac4de2a07816ace75facd6c6333dda00f20aa85209caa9479ff",
     ".claude/agents/igrodelets.md": "c92fbba576b4dacc2667f2aec76171aa30dba3762a6831aeca0b92148e036b2a",
-    ".claude/agents/izpitatelya.md": "02be8bedb2dfe30c5c017b24f5d9a55fb7bc74cf5c05e096b857a41bb0606590",
-    ".claude/agents/kachestveniyat.md": "df1dea0fc82d981346d7ec0f73957a92dbe85dbbef657d75e16c59efbf9af33a",
+    ".claude/agents/izpitatelya.md": "64132054fc335b6b88a58cc65c44dacc103bb9ee372cc88884224a80c04dba4d",
+    ".claude/agents/kachestveniyat.md": "bff750cd11b56fb577916950b740b20adab8bf65f4defdd58e8c04bc4f03374c",
     ".claude/agents/kasadjiyata.md": "149f597ac3d05d84748fbad08f617279aa0786d2b3647dc85cc88ce0cf6a4151",
     ".claude/agents/kodadjiyata.md": "a798f3f469ac4ecd6e38f5a3bd79f4a886b2f86fad8d71636cd917f4cc2f245e",
     ".claude/agents/konveyera.md": "93e9c7a605d0d9a6f1c54cc56522d3903e35ebd16cabacf34ff391a37c394233",
@@ -80,7 +90,7 @@
     ".claude/hooks/session-dod.mjs": "3f320021c2227fb5554a1d34551a5bac0d3b4e1046fd39cc8d3902fdab43b0c9",
     ".claude/hooks/usage-capture.mjs": "b6dee83a4a53f425c0e8dfab3c8b050e36b7c70b4f45c8dd9d041a5780530981",
     ".claude/settings.json": "5cc44d8bab55709fa6c1a18a8aa29f679ab3d55873595be07e2daec13fb29b08",
-    ".claude/skills/agent-doctrine/SKILL.md": "6a1928bb23b98dbf76dc0f4d7c5e46f259b323765a3b8c60df59d109437a3993",
+    ".claude/skills/agent-doctrine/SKILL.md": "9e910f00f812006d9e59f6a40e77ca38835fdf8d19eab7be3219d0aaea8e3411",
     "tools/agents/handoff.mjs": "088afa443cf1c3a6325b28a80bc74426aba907a1d7c287d0add05497b29dcba3",
     "tools/agents/teams.mjs": "955295f80b10250391714245bf5b6906c3341f2b8217c960cf07e290b4035fbb",
     "tools/lib/memory-branch.mjs": "7c81bd029381e5f15d101a465a27ba275ea80fc8fcc029a25f45b9d89e6083ad",
