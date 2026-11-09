@@ -1,0 +1,5 @@
+Minimon fleece set — asset attribution
+
+Mesh (jbib_000, lowr_000): original procedural model, built in Blender 5.2 for this resource. No Rockstar mesh or texture data.
+Textures (diffuse a/b/c, normal, spec): baked from the same original model. No third-party images.
+Back lettering font: Pacifico, Copyright 2018 The Pacifico Project Authors, SIL Open Font License 1.1, https://github.com/googlefonts/Pacifico
