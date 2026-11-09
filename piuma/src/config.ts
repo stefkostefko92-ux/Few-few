@@ -30,26 +30,6 @@ const schema = z.object({
       'instagram_business_basic,instagram_business_content_publish,instagram_business_manage_insights',
     ),
 
-  /**
-   * „Отговор по ключова дума“ (docs/private-replies.md). Без verify token маршрутът за
-   * известията от Meta НЕ съществува — функцията е изключена по подразбиране.
-   */
-  IG_WEBHOOK_VERIFY_TOKEN: z
-    .string()
-    .regex(/^[A-Za-z0-9_-]{24,128}$/, 'IG_WEBHOOK_VERIFY_TOKEN: 24–128 знака [A-Za-z0-9_-]')
-    .optional(),
-  /** Таван на изпратените лични съобщения на акаунт за плаващ час (PR11). */
-  PRIVATE_REPLIES_PER_HOUR: z.coerce.number().int().min(1).max(500).default(60),
-  /**
-   * Колко дни живее `commentId` (PR22). 9 = 7 дни прозорец + 36 ч. повторни опити; до 30, ако
-   * собственикът реши да пази за жалби. Под 9 не се пуска — повторна доставка би пратила второ.
-   */
-  PRIVATE_REPLIES_RETENTION_DAYS: z.coerce.number().int().min(9).max(30).default(9),
-  /** Публикуваната политика с абзаца за личните съобщения — без нея одобрение няма (PR18). */
-  REPLY_PRIVACY_URL: z.string().url().optional(),
-  /** Адресът за отказ в бележката под всяко съобщение (PR16a). */
-  REPLY_CONTACT_EMAIL: z.string().email().default('info@carbonstealth.eu'),
-
   TOKEN_ENC_KEY: z.string().regex(/^[0-9a-fA-F]{64}$/, 'TOKEN_ENC_KEY трябва да е 32 байта в hex'),
 
   /** Име на издателя в приложението за TOTP кодове. */
@@ -63,10 +43,7 @@ export type AppConfig = z.infer<typeof schema>;
 let cached: AppConfig | null = null;
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
-  // Compose подава незадължителните като `${X:-}` — празен низ. Празното е „липсва“: иначе
-  // zod отказва `''` за ключ „по избор“ и процесът не тръгва. Задължителният пак пада.
-  const present = Object.fromEntries(Object.entries(env).filter(([, value]) => value !== ''));
-  const parsed = schema.safeParse(present);
+  const parsed = schema.safeParse(env);
   if (!parsed.success) {
     const details = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
     throw new Error(`Невалидна конфигурация: ${details}`);

@@ -42,10 +42,6 @@ export interface RequestOptions {
   method?: 'GET' | 'POST';
   query?: Record<string, string | undefined>;
   form?: Record<string, string | undefined>;
-  /** JSON тяло (Messaging API го иска така); взаимно изключва `form`. */
-  json?: unknown;
-  /** Токен в `Authorization: Bearer` — не в адреса, където остава в логовете на проксита. */
-  bearer?: string;
   timeoutMs?: number;
   fetchImpl?: typeof fetch;
 }
@@ -58,36 +54,20 @@ export async function instagramRequest<T>(
   schema: z.ZodType<T, z.ZodTypeDef, unknown>,
   options: RequestOptions = {},
 ): Promise<T> {
-  const {
-    method = 'GET',
-    query,
-    form,
-    json,
-    bearer,
-    timeoutMs = 20_000,
-    fetchImpl = fetch,
-  } = options;
-  if (form && json !== undefined) throw new Error('form и json са взаимно изключващи се');
+  const { method = 'GET', query, form, timeoutMs = 20_000, fetchImpl = fetch } = options;
 
   const target = new URL(url);
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value !== undefined) target.searchParams.set(key, value);
   }
 
-  const headers: Record<string, string> = {};
-  let body: URLSearchParams | string | undefined;
+  let body: URLSearchParams | undefined;
   if (form) {
-    const encoded = new URLSearchParams();
+    body = new URLSearchParams();
     for (const [key, value] of Object.entries(form)) {
-      if (value !== undefined) encoded.set(key, value);
+      if (value !== undefined) body.set(key, value);
     }
-    body = encoded;
-    headers['content-type'] = 'application/x-www-form-urlencoded';
-  } else if (json !== undefined) {
-    body = JSON.stringify(json);
-    headers['content-type'] = 'application/json';
   }
-  if (bearer) headers.authorization = `Bearer ${bearer}`;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -96,7 +76,7 @@ export async function instagramRequest<T>(
     response = await fetchImpl(target.toString(), {
       method,
       body,
-      headers: Object.keys(headers).length ? headers : undefined,
+      headers: body ? { 'content-type': 'application/x-www-form-urlencoded' } : undefined,
       signal: controller.signal,
     });
   } catch (error) {

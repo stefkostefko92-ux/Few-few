@@ -13,13 +13,7 @@ export const longLivedTokenSchema = z.object({
 });
 
 export const profileSchema = z.object({
-  /** App-scoped id — НЕ е id-то в webhook-ите. */
   id: z.string(),
-  /** IG_ID на професионалния акаунт: стойността на `entry.id` в webhook-ите (get-started, 2026-11-06). */
-  user_id: z
-    .union([z.string(), z.number()])
-    .transform((value) => String(value))
-    .optional(),
   username: z.string(),
   account_type: z.string().optional(),
 });

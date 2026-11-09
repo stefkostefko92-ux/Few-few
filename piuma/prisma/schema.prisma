@@ -36,29 +36,24 @@ model Brand {
 /// Instagram професионален акаунт (Business/Creator), свързан през OAuth.
 /// Акаунтът се СЪЗДАВА РЪЧНО от човек — Meta забранява автоматизирано създаване.
 model InstagramAccount {
-  id               String        @id @default(cuid())
-  brandId          String
-  brand            Brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  igUserId         String        @unique
-  /// IG_ID (`user_id` от /me) — това id идва като `entry.id` в webhook-ите и е адресът на
-  /// `/messages`; `igUserId` е app-scoped и НЕ съвпада. null = свързан преди 2026-11-06 → ново свързване.
-  igProfessionalId String?       @unique
-  username         String
+  id             String        @id @default(cuid())
+  brandId        String
+  brand          Brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  igUserId       String        @unique
+  username       String
   /// Дълготраен токен, криптиран в покой (AES-256-GCM).
-  accessTokenEnc   String
-  tokenExpiresAt   DateTime
-  scopes           String
-  status           AccountStatus @default(ACTIVE)
-  quotaUsed        Int?
-  quotaTotal       Int?
-  quotaCheckedAt   DateTime?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  accessTokenEnc String
+  tokenExpiresAt DateTime
+  scopes         String
+  status         AccountStatus @default(ACTIVE)
+  quotaUsed      Int?
+  quotaTotal     Int?
+  quotaCheckedAt DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  posts          Post[]
-  insights       AccountInsight[]
-  replyRules     ReplyRule[]
-  privateReplies PrivateReply[]
+  posts    Post[]
+  insights AccountInsight[]
 
   @@index([brandId])
   @@index([status, tokenExpiresAt])
@@ -268,72 +263,6 @@ model MediaInsight {
   totalInteractions Int?
 
   @@index([postId, fetchedAt])
-}
-
-enum ReplyRuleStatus {
-  DRAFT
-  ACTIVE
-  PAUSED
-}
-
-/// „Отговор по ключова дума“ (docs/private-replies.md): коментар с думата → ЕДНО лично
-/// съобщение. Действа само след одобрение от ДРУГ човек (четири очи).
-model ReplyRule {
-  id          String           @id @default(cuid())
-  accountId   String
-  account     InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  /// Нормализирана (NFKC, малки букви), 2–30 знака: букви, цифри, тире.
-  keyword     String
-  /// Публикацията (IG media id), чийто надпис обявява думата — правило без нея няма
-  /// (ЗЕС чл. 261, ал. 1: съгласието е коментарът след ясна обява).
-  mediaId     String
-  /// Текстът на личното съобщение — до 1000 байта UTF-8 (лимитът на Meta).
-  message     String
-  status      ReplyRuleStatus  @default(DRAFT)
-  /// Човекът потвърждава, че публикацията казва какво ще получи коментиращият.
-  announced   Boolean          @default(false)
-  /// Автор на ТЕКУЩИЯ текст — редакцията го сменя, за да не одобри човек собствения си текст.
-  createdById String
-  approvedBy  String?
-  approvedAt  DateTime?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-
-  replies PrivateReply[]
-
-  @@index([accountId, status])
-}
-
-enum PrivateReplyStatus {
-  QUEUED
-  SENDING
-  SENT
-  FAILED
-  SKIPPED
-}
-
-/// Едно лично съобщение на коментар. Уникалният `commentId` е идемпотентността (Meta
-/// повтаря доставките до 36 ч., а позволено е само едно съобщение). `commentId` е
-/// псевдонимен личен данен — пази се 30 дни и не влиза в одита.
-model PrivateReply {
-  id        String             @id @default(cuid())
-  commentId String             @unique
-  accountId String
-  account   InstagramAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  ruleId    String?
-  rule      ReplyRule?         @relation(fields: [ruleId], references: [id], onDelete: SetNull)
-  mediaId   String?
-  status    PrivateReplyStatus @default(QUEUED)
-  /// Защо е пропуснато или провалено — за нас, на български.
-  reason    String?
-  /// `entry.time` на известието — горна граница за 7-те дни на Meta.
-  eventAt   DateTime
-  sentAt    DateTime?
-  messageId String?
-  createdAt DateTime           @default(now())
-
-  @@index([accountId, createdAt])
-  @@index([createdAt])
 }
 
 /// Дневни метрики на акаунт (един ред на ден).

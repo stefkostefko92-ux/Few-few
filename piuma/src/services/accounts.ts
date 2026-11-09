@@ -28,7 +28,6 @@ export async function connectAccount(brandId: string, code: string): Promise<Ins
   const data = {
     brandId,
     username: profile.username,
-    igProfessionalId: profile.user_id ?? null,
     accessTokenEnc: encryptSecret(longLived.access_token, cfg.TOKEN_ENC_KEY),
     tokenExpiresAt: expiryFrom(longLived.expires_in),
     scopes: cfg.IG_SCOPES,

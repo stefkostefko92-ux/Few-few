@@ -54,10 +54,6 @@ description: >-
    - файл от автора;
    - писмено разрешение от YouTube;
    - човек гледа видеото и си води кратки бележки.
-
-   Файл, който имаме законно, се „гледа“ локално с `node tools/research/video-notes.mjs <файл>
-   --source own|author|permission`. Резултатът е кадри + транскрипт в плик, извън репото. Умение от
-   видео се пише само през `skill-author`, от човек.
 9. **Връзки:** ползвайки инструментите, приемаш Условията на YouTube (https://www.youtube.com/t/terms);
    Google Privacy Policy: https://policies.google.com/privacy.
 

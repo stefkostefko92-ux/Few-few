@@ -25,11 +25,8 @@ import { dashboardRouter } from './admin/dashboard-routes.js';
 import { keyRouter } from './admin/key-routes.js';
 import { manageRouter } from './admin/manage-routes.js';
 import { postRouter } from './admin/post-routes.js';
-import { replyRouter } from './admin/reply-routes.js';
 import { userRouter } from './admin/user-routes.js';
 import { healthRouter } from './routes/health.js';
-import { webhookRouter } from './replies/webhook-routes.js';
-import { ingestCommentEvents } from './services/replies.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -82,18 +79,6 @@ export function createServer(deps: ServerDeps): Express {
     }),
   );
 
-  // Известията от Meta — ПРЕДИ общия JSON парсер: подписът им е върху суровите байтове.
-  // Без IG_WEBHOOK_VERIFY_TOKEN маршрутът не съществува (docs/private-replies.md, PR4).
-  app.use(
-    webhookRouter({
-      appSecret: cfg.IG_APP_SECRET,
-      verifyToken: cfg.IG_WEBHOOK_VERIFY_TOKEN,
-      ingest: async (events) => {
-        await ingestCommentEvents(events);
-      },
-    }),
-  );
-
   // Суровото тяло се пази за HMAC подписа на агента; JSON лимитът е малък нарочно.
   app.use(
     express.json({
@@ -142,7 +127,6 @@ export function createServer(deps: ServerDeps): Express {
   app.use(brandRouter);
   app.use(manageRouter);
   app.use(accountRouter);
-  app.use(replyRouter);
   app.use(postRouter);
   app.use(userRouter);
   app.use(keyRouter);
