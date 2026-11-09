@@ -75,18 +75,31 @@ def assign(letter):
         o.data.materials.append(game_mat(p, letter))
 
 
-assign("a")
 for o in (JB, LW):
     o.data.polygons.foreach_set("use_smooth", [True] * len(o.data.polygons))
-bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "minimon_fleece_game.blend"))
-for o, p in ((JB, "jbib"), (LW, "lowr")):
-    for x in scene.objects:
-        x.select_set(False)
-    o.select_set(True)
-    bpy.context.view_layer.objects.active = o
-    bpy.ops.export_scene.fbx(filepath=os.path.join(OUT, f"{p}_000.fbx"), use_selection=True, apply_unit_scale=True,
-                             axis_forward="-Z", axis_up="Y", path_mode="STRIP", mesh_smooth_type="FACE")
-print("EXPORTED game blend + fbx", flush=True)
+assign("a")
+GAME_BLEND = os.path.join(OUT, "minimon_fleece_game.blend")
+bpy.ops.wm.save_as_mainfile(filepath=GAME_BLEND)
+print("SAVED game blend", flush=True)
+
+
+def export_fbx_clean():
+    """FBX от празен файл, само геометрия и UV: без материали и без пътя на изходния .blend вътре."""
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    addon_utils.enable("io_scene_fbx", default_set=True)
+    with bpy.data.libraries.load(GAME_BLEND, link=False) as (src, dst):
+        dst.objects = ["jbib_000", "lowr_000"]
+    for o, p in zip(dst.objects, ("jbib", "lowr")):
+        bpy.context.scene.collection.objects.link(o)
+        o.data.materials.clear()
+    for o, p in zip(dst.objects, ("jbib", "lowr")):
+        for x in bpy.context.scene.objects:
+            x.select_set(False)
+        o.select_set(True)
+        bpy.context.view_layer.objects.active = o
+        bpy.ops.export_scene.fbx(filepath=os.path.join(OUT, f"{p}_000.fbx"), use_selection=True, apply_unit_scale=True,
+                                 axis_forward="-Z", axis_up="Y", path_mode="STRIP", mesh_smooth_type="FACE")
+    print("EXPORTED fbx", flush=True)
 
 # ---- контролни рендери с манекен
 with bpy.data.libraries.load(os.path.abspath(args.high), link=False) as (src, dst):
@@ -142,4 +155,5 @@ def shot(name, deg, letter):
 shot("game_front_a", 0, "a")
 shot("game_back_b", 180, "b")
 shot("game_hero_c", -32, "c")
+export_fbx_clean()
 print("PREVIEW DONE", flush=True)

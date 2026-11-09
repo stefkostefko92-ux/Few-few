@@ -23,7 +23,8 @@ for prefix in ('jbib', 'lowr'):
     ao_rgb = Image.merge('RGB', (ao, ao, ao))
     cu, cv = man[f'{prefix}_cell']
     cx, cy = int(cu * S), int((1 - cv) * S)
-    half = max(6, int(0.012 / 1.45 * S))
+    # клетката е 0,03 m в атлас със страна side (m); по-стари манифести нямат side
+    half = max(6, int(0.012 / man.get(f'{prefix}_side', 1.45) * S))
     for letter, pal in man['palettes'].items():
         alb = Image.open(os.path.join(src, f'{prefix}_albedo_{letter}.png')).convert('RGB')
         diff = ImageChops.multiply(alb, ao_rgb)

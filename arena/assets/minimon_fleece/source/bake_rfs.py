@@ -195,11 +195,11 @@ def build_drawable(name, parts):
         bpy.data.objects.remove(low_objs[pn])
     tris = sum(len(p.vertices) - 2 for p in me.polygons)
     print(f"{name}: {tris} tris, atlas {side:.2f} m -> {S / side / 100:.1f} px/cm", flush=True)
-    return ob, cell_uv
+    return ob, cell_uv, side
 
 
-JB, JB_CELL = build_drawable("jbib_000", JBIB)
-LW, LW_CELL = build_drawable("lowr_000", LOWR)
+JB, JB_CELL, JB_SIDE = build_drawable("jbib_000", JBIB)
+LW, LW_CELL, LW_SIDE = build_drawable("lowr_000", LOWR)
 
 # ---------------------------------------------------------------- изпичане
 ORIG = {}
@@ -314,6 +314,6 @@ bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "bake_work.blend"))
 import json  # noqa: E402
 
 with open(os.path.join(OUT, "bake_manifest.json"), "w") as fh:
-    json.dump({"size": S, "jbib_cell": JB_CELL, "lowr_cell": LW_CELL,
+    json.dump({"size": S, "jbib_cell": JB_CELL, "lowr_cell": LW_CELL, "jbib_side": JB_SIDE, "lowr_side": LW_SIDE,
                "palettes": {k: v[1] for k, v in PALETTES.items()}}, fh, indent=1)
 print("BAKE DONE", flush=True)
