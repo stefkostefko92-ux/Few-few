@@ -64,6 +64,7 @@ contenuto delle norme**, e non deve mai contenerlo.
 
 | Documento | Pagine | Nota |
 |---|---|---|
+| Quaderno normativo ANACAM (2017): dal DPR 1497/63 e DM 1635/79 alle EN 81-20/-50:2014, tabelle di confronto (Parte I) — fotografa le edizioni del 2014, non le 2020 | 52 | `anacam-quaderno-dpr1497-en8120-parte1.md` |
 | Presentazione a un convegno di settore (2014) su testata e fossa della EN 81-20/50 | 28 | `presentazione-en81-20-testata-fossa-2014.md` |
 | Presentazione (2011) sull'emendamento A3 della EN 81-1/-2 | 71 diapositive | `presentazione-emendamento-a3-2011.md` |
 | Scheda VSA (2016) su ventilazione e aerazione del vano e del locale del macchinario | 9 | `vsa-aerazione-vano-2016.md` |
@@ -78,6 +79,7 @@ contenuto delle norme**, e non deve mai contenerlo.
   8100-1/-2. Per queste l'agente risponde «non è nei testi imparati» e rimanda alla mappa delle edizioni con le fonti
   in [`../argano-geared/16-quadro-normativo-completo.md`](../argano-geared/16-quadro-normativo-completo.md).
 - Il testo della Legge 13/1989 e le modifiche al DPR 162/1999 successive al 1999.
+- Il testo del DPR 1497/1963 e del DM 1635/1979: l'agente ne conosce solo la sintesi del quaderno ANACAM (2017).
 
 ## Come si cerca
 
