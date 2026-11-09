@@ -115,6 +115,7 @@ export function renderCalcoloLimitatore(o: LimitatorePdfOptions): Promise<Buffer
     riga(t('limitatore.r.v1'), s.v1, true);
     if (s.limite) riga(t('limitatore.r.limite'), s.limite);
     if (s.contatto) riga(t('limitatore.r.contatto'), s.contatto);
+    if (s.avviso) riga(t('limitatore.r.avviso'), s.avviso);
   } else if (s.motivo) {
     doc.font('Sans-Bold').fontSize(12).fillColor(INK).text(inRiga(s.motivo), M, y, { width: W });
     y = doc.y + 12;

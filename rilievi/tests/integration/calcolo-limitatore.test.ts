@@ -181,20 +181,26 @@ describe('the governor calculation of a scheda', () => {
       /data-esito="motivo">La UNI EN 81-20:2020 non prevede il paracadute istantaneo con effetto ammortizzato/,
     );
     assert.match(page2, /data-esito="applicata">UNI EN 81-20:2020 — UNI 10411-1:2024, punto 6\.7</);
-    // D.P.R. 1497/1963, art. 32: only "up to 140 % of Vn", no lower limit; the contact of a new governor.
+    // D.P.R. 1497/1963, art. 32.2 (the owner's case, 9 November 2026): 0,82 m/s, rollers, only the
+    // governor — up to 140 % of the operating speed, no lower limit; the contact of a new governor; the
+    // warning for a category A bed lift (art. 32.3).
     await browser.submit(pagina(scheda.id), pagina(scheda.id), {
       base: /name="base" value="([^"]+)"/.exec(page2)![1]!,
-      vn: '1',
-      tipo: 'progressivo',
+      vn: '0,82',
+      tipo: 'rulli',
       norma: 'dpr-1497-1963',
       intervento: 'limitatore',
     });
     const page3 = (await browser.get(pagina(scheda.id))).body
       .replace(/\u2060/g, '')
       .replace(/\u00a0/g, ' ');
-    assert.match(page3, /data-esito="v1">fino a 1,40 m\/s</);
-    assert.match(page3, /data-esito="limite">fino a 1,4 m\/s \(140 % di Vn, incluso\)</);
+    assert.match(page3, /data-esito="v1">fino a 1,14 m\/s</);
+    assert.match(
+      page3,
+      /data-esito="limite">fino a 1,148 m\/s \(140 % della velocità di esercizio, incluso\)</,
+    );
     assert.match(page3, /data-esito="contatto">Al più tardi a V1</);
+    assert.match(page3, /data-esito="avviso">Se è un montalettighe di categoria A/);
     // The same lift with the rated speed raised over 5 %: UNI EN 81-20:2020 (UNI 10411-1:2024, 15.13).
     await browser.submit(pagina(scheda.id), pagina(scheda.id), {
       base: /name="base" value="([^"]+)"/.exec(page3)![1]!,

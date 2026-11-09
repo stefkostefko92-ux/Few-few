@@ -30,6 +30,11 @@ export interface SintesiLimitatore {
   limite: string | null;
   /** „Prima di V1“ или „Al più tardi a V1“. */
   contatto: string | null;
+  /**
+   * D.P.R. 1497/1963 с моментален парашут над 0,50 m/s: при montalettighe кат. A там е нужен прогресивен
+   * (art. 32.3) — картата не знае категорията, затова само предупреждение.
+   */
+  avviso: string | null;
   /** Защо няма праг (недопустим вид, норма без стойности в нашите бележки). */
   motivo: string | null;
 }
@@ -50,8 +55,14 @@ export function sintesiLimitatore(
   const contatto = ammesso && r.momento ? t(`limitatore.esito.${r.momento}`) : null;
   // UNI 10411-1:2024 за уредбите отпреди CE, UNI 10411-11:2024 за CE — точката по смяната.
   const gruppo = primaDelCe(d.norma) ? 'primaCe' : 'ce';
-  // Без долен праг (D.P.R. 1497/1963, art. 32) — само „fino a“, горният праг е включен.
+  // Без долен праг (D.P.R. 1497/1963, art. 32.2) — само „fino a“; горният праг е включен (+40/33/25 %),
+  // а при V ≤ 0,60 m/s — „sotto 0,85 m/s“, изключен.
   const conMinimo = ammesso && r.sogliaMin !== null && r.min2 !== null;
+  const dpr = normaDeiLimiti(d) === 'dpr-1497-1963';
+  const limiteSenzaMinimo = () =>
+    r.maxIncluso && r.aumento !== null
+      ? t('limitatore.r.limiteFino', { max: cifra(max), perc: 100 + r.aumento })
+      : t('limitatore.r.limiteSotto', { max: cifra(max) });
   return {
     vn: `${cifra(d.vn)} m/s`,
     tipo: t(`limitatore.opzione.tipo.${d.tipo}`),
@@ -74,8 +85,12 @@ export function sintesiLimitatore(
       ? null
       : conMinimo
         ? t('limitatore.r.limiteValore', { min: cifra(r.sogliaMin!), max: cifra(max) })
-        : t('limitatore.r.limiteFino', { max: cifra(max) }),
+        : limiteSenzaMinimo(),
     contatto,
+    avviso:
+      ammesso && dpr && d.tipo !== 'progressivo' && d.vn > 0.5
+        ? t('limitatore.esito.montalettighe')
+        : null,
     motivo: ammesso ? null : t(`limitatore.esito.${String(r.sogliaMax)}`),
   };
 }

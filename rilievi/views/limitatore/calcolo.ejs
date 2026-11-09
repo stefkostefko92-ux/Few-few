@@ -64,6 +64,7 @@
   <dl class="limitatore__dati">
     <div><dt><%= t('limitatore.r.limite') %></dt><dd data-esito="limite"><%= sintesi.limite %></dd></div>
     <% if (sintesi.contatto) { %><div><dt><%= t('limitatore.r.contatto') %></dt><dd data-esito="contatto"><%= sintesi.contatto %></dd></div><% } %>
+    <% if (sintesi.avviso) { %><div><dt><%= t('limitatore.r.avviso') %></dt><dd data-esito="avviso"><%= sintesi.avviso %></dd></div><% } %>
     <div><dt><%= t('limitatore.r.applicata') %></dt><dd data-esito="applicata"><%= cifreUnite(sintesi.applicata) %></dd></div>
   </dl>
   <% } else { %>

@@ -21,9 +21,11 @@
  *   uni-en-81-1-2008.md:412, :425, :443.
  * - UNI EN 81-1:1987 (D.M. 587/1987) — B 9.8.2.1, B 9.9.1 — uni-10411-1-2008.md:800, :821 (контактът по
  *   B 9.9.11.1, :848, не важи за нов ограничител — 18 иска 5.6.2.2.1 на UNI EN 81-20:2020).
- * - D.P.R. 1497/1963, art. 32 (собственикът, 7 ноември 2026 — бележките го нямат): при Vn от 0,6 до
- *   1,5 m/s V1 ≤ 1,40·Vn (включен), без долен праг; извън тези скорости — изчисление няма. Сравнението
- *   с UNI 10411-1:2024 собственикът прави сам („in alcuni casi va in contrasto“).
+ * - D.P.R. 1497/1963 (квадерното на ANACAM, 2017 — собственикът, 9 ноември 2026;
+ *   anacam-quaderno-dpr1497-en8120-parte1.md): art. 32.2 — V ≤ 0,60 m/s: V1 < 0,85 m/s; до 1,50: +40 %; до
+ *   2,50: +33 %; над: +25 % (включен, :258–:261); долен праг няма (:262); art. 32.3 — над 0,85 m/s само
+ *   прогресивен (при montalettighe кат. A — над 0,50, :238); V е скоростта на експлоатация (art. 3, :245).
+ *   Сравнението с UNI 10411-1:2024 собственикът прави сам („in alcuni casi va in contrasto“).
  * - D.Lgt. 600/1945 — стойностите му не са в бележките: изчисление няма.
  *
  * `ISNUMBER` на листа е `numero()` тук: празно, текст и NaN не са число. Закръглянията са като в
@@ -76,16 +78,18 @@ export type SogliaMassima =
   | 'nonAmmessoAmmortizzato'
   | 'tipoNonValido'
   | 'tipoNonPrevisto'
-  | 'fuoriCampoDpr'
+  | 'nonAmmessoDpr'
   | 'normaNonDisponibile';
 
 export interface RisultatoLimitatore {
   /** B5 — праг отдолу (включен): 115 % от Vn; празно, ако горният не е число или нормата няма долен праг. */
   sogliaMin: number | null;
-  /** B6 — праг отгоре (изключен; по D.P.R. 1497/1963 — включен), или защо го няма. */
+  /** B6 — праг отгоре (изключен; по D.P.R. 1497/1963 над 0,60 m/s — включен), или защо го няма. */
   sogliaMax: SogliaMassima;
-  /** Горният праг е включен („non maggiore“ — D.P.R. 1497/1963, art. 32). */
+  /** Горният праг е включен (D.P.R. 1497/1963, art. 32.2: увеличение „≤“ 40/33/25 %). */
   maxIncluso: boolean;
+  /** D.P.R. 1497/1963 над 0,60 m/s: с колко процента V1 може да е над V (40, 33 или 25); иначе празно. */
+  aumento: number | null;
   /** B9 — първата стойност с 2 знака не под долния праг. */
   min2: number | null;
   /**
@@ -128,12 +132,37 @@ export function arrotondaGiu(x: number, n: number): number {
 /** Нормите с моментален парашут с амортизиран ефект (EN 81-1). Без норма — като EN 81-20 (листът). */
 const conAmmortizzato = (norma: unknown) => norma === 'en81-1-1999' || norma === 'en81-1-1987';
 
+interface Soglia {
+  max: SogliaMassima;
+  incluso: boolean;
+  aumento: number | null;
+}
+
+/**
+ * D.P.R. 1497/1963: моментален парашут (с ролки, с амортизиран ефект — всички, които не са прогресивни)
+ * само до 0,85 m/s (art. 32.3); V1 под 0,85 m/s при V ≤ 0,60, иначе най-много +40/33/25 % (art. 32.2).
+ */
+function sogliaDpr(vn: number, tipo: unknown): Soglia {
+  if (!TIPI_PARACADUTE.some((t) => t === tipo))
+    return { max: 'tipoNonValido', incluso: false, aumento: null };
+  if (tipo !== 'progressivo' && vn > 0.85)
+    return { max: 'nonAmmessoDpr', incluso: false, aumento: null };
+  if (vn <= 0.6) return { max: 0.85, incluso: false, aumento: null };
+  const aumento = vn <= 1.5 ? 40 : vn <= 2.5 ? 33 : 25;
+  return { max: vn * (1 + aumento / 100), incluso: true, aumento };
+}
+
 /** B6: горният праг по вида на парашута и нормата. */
-function sogliaMassima(vn: unknown, tipo: unknown, norma: unknown): SogliaMassima {
-  if (!numero(vn) || vn <= 0) return 'vnNonValida';
-  if (norma === 'dlgt-600-1945') return 'normaNonDisponibile';
-  // D.P.R. 1497/1963, art. 32: само за Vn от 0,6 до 1,5 m/s, всеки вид парашут.
-  if (norma === 'dpr-1497-1963') return vn >= 0.6 && vn <= 1.5 ? 1.4 * vn : 'fuoriCampoDpr';
+function sogliaMassima(vn: unknown, tipo: unknown, norma: unknown): Soglia {
+  const fuori = (max: SogliaMassima): Soglia => ({ max, incluso: false, aumento: null });
+  if (!numero(vn) || vn <= 0) return fuori('vnNonValida');
+  if (norma === 'dlgt-600-1945') return fuori('normaNonDisponibile');
+  if (norma === 'dpr-1497-1963') return sogliaDpr(vn, tipo);
+  return fuori(sogliaEn81(vn, tipo, norma));
+}
+
+/** B6 по EN 81 (UNI EN 81-20:2020, UNI EN 81-1:1999/2008 и :1987). */
+function sogliaEn81(vn: number, tipo: unknown, norma: unknown): SogliaMassima {
   if (tipo === 'progressivo') return vn <= 1 ? 1.5 : 1.25 * vn + 0.25 / vn;
   if (tipo === 'ammortizzato') {
     if (!conAmmortizzato(norma)) return 'tipoNonPrevisto';
@@ -150,18 +179,20 @@ export function calcolaLimitatore(d: DatiLimitatore): RisultatoLimitatore {
   const { vn } = d;
   const norma = normaDeiLimiti(d);
   const dpr = norma === 'dpr-1497-1963';
-  const sogliaMax = sogliaMassima(vn, d.tipo, norma);
+  const { max: sogliaMax, incluso, aumento } = sogliaMassima(vn, d.tipo, norma);
   // B5: долният праг има смисъл само с горния (иначе празно); D.P.R. 1497/1963 долен праг няма.
   const sogliaMin = numero(sogliaMax) && numero(vn) && !dpr ? vn * 1.15 : null;
+  // Включен праг — последната стойност с 2 знака не над него; изключен — под него (листът).
   const max2 = !numero(sogliaMax)
     ? null
-    : dpr
+    : incluso
       ? arrotondaGiu(arrotonda(sogliaMax, 10), 2)
       : arrotonda(arrotondaSu(arrotonda(sogliaMax, 10), 2) - 0.01, 2);
   return {
     sogliaMin,
     sogliaMax,
-    maxIncluso: dpr,
+    maxIncluso: incluso,
+    aumento,
     min2: sogliaMin === null ? null : arrotondaSu(arrotonda(sogliaMin, 10), 2),
     max2,
     momento: !numero(vn) ? null : vn > 1 ? 'prima' : 'alPiuTardi',

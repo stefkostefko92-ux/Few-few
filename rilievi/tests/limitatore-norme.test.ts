@@ -2,7 +2,7 @@
 // else is changed with the governor — every replacement clause of our norm notes (../norme-ascensori; the
 // owner, 7 November 2026: UNI 10411-1:2024, 18, then "check every norm file for the replacement"):
 // - lifts before UNI EN 81-1:1999, UNI 10411-1:2024: the governor alone — the standard of the lift (18;
-//   D.P.R. 1497/1963 art. 32 as the owner gave it, no values for D.Lgt. 600/1945); with a new safety gear
+//   D.P.R. 1497/1963 — tests/limitatore-dpr.test.ts, no values for D.Lgt. 600/1945); with a new safety gear
 //   (6.7) or the rated speed raised by more than 5 % (15.1, 15.13) — UNI EN 81-20:2020;
 // - CE lifts, UNI 10411-11:2024 (18, 6.7, 15 f)): the standard of the lift;
 // - the electric contact of a new governor — always UNI EN 81-20:2020, 5.6.2.2.1.6 a);
@@ -51,26 +51,6 @@ describe('only the governor is new: the standard in force when the lift was inst
       assert.equal(r(1.01, 'ammortizzato', norma).sogliaMax, 'nonAmmessoAmmortizzato');
     }
     assert.equal(r(0.8, 'ammortizzato', 'en81-20-2020').sogliaMax, 'tipoNonPrevisto');
-  });
-
-  it('D.P.R. 1497/1963, art. 32: from 0,6 to 1,5 m/s, V1 not above 140 % of Vn, no lower limit', () => {
-    for (const [vn, max, max2] of [
-      [0.6, 0.84, 0.84],
-      [0.63, 0.882, 0.88],
-      [1, 1.4, 1.4],
-      [1.5, 2.1, 2.1],
-    ] as const) {
-      for (const tipo of ['progressivo', 'istantaneo', 'rulli', 'ammortizzato'] as const) {
-        const x = r(vn, tipo, 'dpr-1497-1963');
-        assert.ok(vicino(x.sogliaMax, max), `${vn} ${tipo}: ${x.sogliaMax}`);
-        assert.equal(x.maxIncluso, true);
-        assert.equal(x.max2, max2, `${vn} ${tipo}`);
-        assert.equal(x.sogliaMin, null);
-        assert.equal(x.min2, null);
-      }
-    }
-    assert.equal(r(0.59, 'progressivo', 'dpr-1497-1963').sogliaMax, 'fuoriCampoDpr');
-    assert.equal(r(1.51, 'progressivo', 'dpr-1497-1963').sogliaMax, 'fuoriCampoDpr');
   });
 
   it('has no values for D.Lgt. 600/1945 and says so', () => {
@@ -152,6 +132,7 @@ describe('the result in words', () => {
         v1: 'da 1,84 a 2,15 m/s',
         limite: 'da 1,84 m/s (incluso) a 2,15625 m/s (escluso)',
         contatto: 'Prima di V1',
+        avviso: null,
         motivo: null,
       },
     );
@@ -174,23 +155,6 @@ describe('the result in words', () => {
     assert.equal(
       vecchia.applicata,
       'UNI EN 81-1:1987 (D.M. 587/1987) — UNI 10411-1:2024, punto 18',
-    );
-  });
-
-  it('gives only the upper limit under D.P.R. 1497/1963, included, and the contact of a new governor', () => {
-    assert.deepEqual(
-      sintesi({ vn: 1, tipo: 'istantaneo', norma: 'dpr-1497-1963', intervento: 'limitatore' }),
-      {
-        vn: '1 m/s',
-        tipo: 'Istantaneo',
-        norma: 'D.P.R. 1497/1963, art. 32',
-        intervento: 'Solo il limitatore',
-        applicata: 'D.P.R. 1497/1963, art. 32 — UNI 10411-1:2024, punto 18',
-        v1: 'fino a 1,40 m/s',
-        limite: 'fino a 1,4 m/s (140 % di Vn, incluso)',
-        contatto: 'Al più tardi a V1',
-        motivo: null,
-      },
     );
   });
 
@@ -238,11 +202,6 @@ describe('the result in words', () => {
     });
     assert.match(vecchio.motivo ?? '', /D\.Lgt\. 600\/1945 non sono nelle nostre norme/);
     assert.equal(vecchio.applicata, 'D.Lgt. 600/1945 — UNI 10411-1:2024, punto 18');
-    assert.match(
-      sintesi({ vn: 0.5, tipo: 'progressivo', norma: 'dpr-1497-1963', intervento: 'limitatore' })
-        .motivo ?? '',
-      /art\. 32 fissa il limite solo per velocità nominali da 0,6 a 1,5 m\/s/,
-    );
     // A new safety gear before CE: UNI EN 81-20:2020, so no buffered instantaneous gear.
     assert.match(
       sintesi({ vn: 0.8, tipo: 'ammortizzato', norma: 'en81-1-1987', intervento: 'paracadute' })
