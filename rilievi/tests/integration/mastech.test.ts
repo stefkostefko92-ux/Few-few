@@ -133,7 +133,7 @@ describe('a hydraulic lift', () => {
       kitA3Altro: ['SARACINESCA', 'PRESSOSTATO'],
       kitA3Saracinesca: 'ASS_2',
       tuboFlessibile: 'si',
-      tuboFlessibileDiametroMm: '25',
+      tuboFlessibileDiametroMm: '3/4"',
       tuboFlessibileLunghezzaM: '6,5',
       tuboFlessibileNote: 'Passaggio sotto il pavimento',
       centralinaNote: 'Perdita alla valvola',
@@ -154,12 +154,8 @@ describe('a hydraulic lift', () => {
     assert.equal(row.centralinaMarca, 'GMV');
     assert.equal(row.emendamentoA3, true);
     assert.deepEqual(
-      [
-        row.tuboFlessibile,
-        String(row.tuboFlessibileDiametroMm),
-        String(row.tuboFlessibileLunghezzaM),
-      ],
-      [true, '25', '6.5'],
+      [row.tuboFlessibile, row.tuboFlessibileDiametroMm, String(row.tuboFlessibileLunghezzaM)],
+      [true, '3/4"', '6.5'],
     );
     assert.equal(row.centralinaNote, 'Perdita alla valvola');
     assert.equal(row.arganoPreventivo, null);

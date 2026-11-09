@@ -53,7 +53,7 @@ const CENTRALINA = {
   kitA3Altro: checksOf<KitA3Componente>('kitA3Altro'),
   kitA3Saracinesca: choiceOf<Saracinesca>('kitA3Saracinesca'),
   tuboFlessibile: yesNoOf('tuboFlessibile'),
-  tuboFlessibileDiametroMm: decimalOf('tuboFlessibileDiametroMm'),
+  tuboFlessibileDiametroMm: textOf('tuboFlessibileDiametroMm'),
   tuboFlessibileLunghezzaM: decimalOf('tuboFlessibileLunghezzaM'),
   tuboFlessibileNote: textOf('tuboFlessibileNote'),
   centralinaNoteRaccordi: textOf('centralinaNoteRaccordi'),

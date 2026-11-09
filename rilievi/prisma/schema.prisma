@@ -495,9 +495,10 @@ model Scheda {
   centralinaMotore             CentralinaMotore?
   centralinaBloccoValvole      String?                  @db.VarChar(120)
   emendamentoA3                Boolean?
-  /// При „Emendamento A3 da installare“: гъвкава тръба за монтиране — диаметър, дължина, бележки.
+  /// При „Emendamento A3 da installare“: гъвкава тръба за монтиране — диаметър (текст от 9 ноември 2026),
+  /// дължина, бележки.
   tuboFlessibile               Boolean?
-  tuboFlessibileDiametroMm     Decimal?                 @db.Decimal(8, 2)
+  tuboFlessibileDiametroMm     String?                  @db.VarChar(40)
   tuboFlessibileLunghezzaM     Decimal?                 @db.Decimal(8, 2)
   tuboFlessibileNote           String?
   /// Централата по листовете на собственика (3 ноември 2026): при смяна — данните за новата; при „No“ —
