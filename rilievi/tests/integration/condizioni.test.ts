@@ -7,13 +7,24 @@
 // is sealed evidence that outlives the person and the company; the ADMIN gets a PDF copy by email and can
 // download it in the portal.
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 import { eliminaAzienda } from '../../src/aziende/eliminazione.js';
 import { runMaintenance } from '../../src/maintenance.js';
 import { CAMPI_ACCETTAZIONE, sigilloValido } from '../../src/legale/sigillo.js';
 import { clausoleSpecifiche, hashTesto, leggiTesto } from '../../src/legale/testi.js';
 import { VERSIONE } from '../../src/legale/versioni.js';
-import { Browser, makeAzienda, outbox, prisma, signedIn, startApp, stopApp } from './harness.js';
+import {
+  Browser,
+  makeAzienda,
+  makeUser,
+  outbox,
+  prisma,
+  signedIn,
+  startApp,
+  stopApp,
+} from './harness.js';
 
 before(startApp);
 after(stopApp);
@@ -344,6 +355,36 @@ describe('a person in several companies', () => {
     });
     assert.equal((await browser.get('/schede')).status, 303, 'closed until every company has them');
     assert.ok((await browser.get(ACCETTA)).body.includes(html(beta.name)));
+  });
+});
+
+describe('the companies and people present before the terms (the owner’s test data)', () => {
+  it('get in without the acceptance page after the migration, with nothing in the register', async () => {
+    const azienda = await aziendaNuova();
+    const { browser, user } = await senzaRegole('TECNICO', azienda.id);
+    assert.equal((await browser.get('/schede')).status, 303);
+    const owner = await makeUser('MASTER');
+    await prisma.user.update({ where: { id: owner.id }, data: { regoleVersione: null } });
+    const sql = readFileSync(
+      join(
+        import.meta.dirname,
+        '../../prisma/migrations/20261110230000_condizioni_esistenti/migration.sql',
+      ),
+      'utf8',
+    );
+    for (const statement of sql
+      .split('\n')
+      .filter((line) => !line.startsWith('--'))
+      .join('\n')
+      .split(';')
+      .map((s) => s.trim())
+      .filter(Boolean))
+      await prisma.$executeRawUnsafe(statement);
+    assert.equal((await browser.get('/schede')).status, 200);
+    assert.equal(await prisma.accettazione.count({ where: { userId: user.id } }), 0);
+    assert.equal(await prisma.accettazione.count({ where: { aziendaId: azienda.id } }), 0);
+    const dopo = await prisma.user.findUniqueOrThrow({ where: { id: owner.id } });
+    assert.equal(dopo.regoleVersione, null, 'the owner is not touched');
   });
 });
 
