@@ -67,8 +67,25 @@
   padding: 0 8px;
 }
 
+.plate__id {
+  min-width: 0;
+}
+
+/* Матрикулата е свободен текст до 40 знака (10 ноември 2026): от 600 px двете стойности са на един ред —
+   номерът вдясно колкото му трябва, матрикулата взима останалото и се пренася в своята колона. */
 .plate__id--end {
+  flex: none;
   text-align: right;
+}
+
+@media (min-width: 600px) {
+  .plate__ids {
+    flex-wrap: nowrap;
+  }
+
+  .plate__id:first-child {
+    flex: 1 1 auto;
+  }
 }
 
 .plate__big {
@@ -78,6 +95,7 @@
   font-size: clamp(1.75rem, 1.2rem + 2.4vw, 2.75rem);
   line-height: 1.05;
   letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
 }
 
 .plate__big--empty {

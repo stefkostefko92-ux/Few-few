@@ -1,11 +1,11 @@
 <%
   // Уредбата на изчислението без карта: фирмата (само при новото и няколко фирми), адресът
-  // (задължителен), матрикулата и номерът — само цифри. Редовете са на трите линии на `grid--righe`.
+  // (задължителен), матрикулата (свободен текст до 40) и номерът (само цифри). Редовете са на трите линии на `grid--righe`.
   const v = (k) => typeof identita.values[k] === 'string' ? identita.values[k] : '';
   const describedBy = (k, hint) => [hint ? 'hint-' + k : null, identita.errori[k] ? 'err-' + k : null].filter(Boolean).join(' ');
   const campi = [
     { key: 'indirizzo', max: 200, classe: ' field--doppia field--riga-telefono', autocomplete: 'street-address', inputmode: 'text', hint: t('argano.libero.testo') },
-    { key: 'matricola', max: 20, classe: '', autocomplete: 'off', inputmode: 'numeric', hint: null },
+    { key: 'matricola', max: 40, classe: '', autocomplete: 'off', inputmode: 'text', hint: null },
     { key: 'numeroImpianto', max: 20, classe: '', autocomplete: 'off', inputmode: 'numeric', hint: null },
   ];
 %><fieldset class="section"<% if (!puoScrivere) { %> disabled<% } %>>

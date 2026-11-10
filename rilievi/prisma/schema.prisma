@@ -311,13 +311,14 @@ model PasswordReset {
 }
 
 /// Схемата на уредбата — полетата и редът им са дословно от заданието (src/schede/fields.ts).
-/// Идентификаторите (matricola, numeroImpianto) са низове само от цифри: водещата нула се пази.
+/// N° impianto е низ само от цифри (водещата нула се пази); матрикулата — свободен текст до 40 знака
+/// (собственикът, 10 ноември 2026).
 model Scheda {
   id                           String                   @id @default(cuid())
   data                         DateTime                 @db.Date
   indirizzo                    String?                  @db.VarChar(200)
   marca                        String?                  @db.VarChar(120)
-  matricola                    String?                  @db.VarChar(20)
+  matricola                    String?                  @db.VarChar(40)
   numeroImpianto               String?                  @db.VarChar(20)
   /// Работната поръчка, по която е огледът (по желание).
   buonoLavoro                  String?                  @db.VarChar(60)
@@ -348,6 +349,10 @@ model Scheda {
   pattinoRetrattile            Boolean?
   pattinoRetrattileNumero      Int?
   pattinoRetrattileTipo        String?                  @db.VarChar(120)
+  /// Само при ръчни врати (собственикът, 10 ноември 2026).
+  contattiAntine               Boolean?
+  /// Не `bloccaPortine` — тя е махнатият въпрос от октомври със старите си отговори.
+  bloccaPortineDaInstallare    Boolean?
   /// „Serrature da cambiare“ (до октомври 2026 — „Serrature/sospensioni“) — при ръчни и полуавтоматични
   /// врати. numero/tipo — само при true.
   serrature                    Boolean?

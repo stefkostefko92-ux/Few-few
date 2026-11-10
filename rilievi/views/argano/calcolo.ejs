@@ -5,7 +5,7 @@
   const errorKeys = Object.keys(errori).filter((k) => k !== '_');
   const erroriImpianto = identita ? Object.keys(identita.errori) : [];
   const nErrori = errorKeys.length + erroriImpianto.length + (identita && identita.aziendaErrore ? 1 : 0);
-  const msgImpianto = (k) => identita.errori[k] === 'required' ? t('argano.libero.erroreIndirizzo') : identita.errori[k] === 'digitsOnly' ? t('scheda.error.digitsOnly') : t('scheda.error.tooLong', { maxLength: k === 'indirizzo' ? 200 : 20 });
+  const msgImpianto = (k) => identita.errori[k] === 'required' ? t('argano.libero.erroreIndirizzo') : identita.errori[k] === 'digitsOnly' ? t('scheda.error.digitsOnly') : t('scheda.error.tooLong', { maxLength: k === 'indirizzo' ? 200 : k === 'matricola' ? 40 : 20 });
   const val = (k) => typeof values[k] === 'string' ? values[k] : '';
   const campo = (key, kind, extra = {}) => include('_campo', { key, kind, values, errori, limiteDi, opzioni: [], ...extra });
   const op = (gruppo, valori) => valori.map((v) => ({ value: String(v), label: t('argano.opzione.' + gruppo + '.' + v) }));

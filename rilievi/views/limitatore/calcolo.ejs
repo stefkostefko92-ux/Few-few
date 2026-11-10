@@ -5,7 +5,7 @@
   const errorKeys = Object.keys(errori);
   const erroriImpianto = identita ? Object.keys(identita.errori) : [];
   const nErrori = errorKeys.length + erroriImpianto.length + (identita && identita.aziendaErrore ? 1 : 0);
-  const msgImpianto = (k) => identita.errori[k] === 'required' ? t('argano.libero.erroreIndirizzo') : identita.errori[k] === 'digitsOnly' ? t('scheda.error.digitsOnly') : t('scheda.error.tooLong', { maxLength: k === 'indirizzo' ? 200 : 20 });
+  const msgImpianto = (k) => identita.errori[k] === 'required' ? t('argano.libero.erroreIndirizzo') : identita.errori[k] === 'digitsOnly' ? t('scheda.error.digitsOnly') : t('scheda.error.tooLong', { maxLength: k === 'indirizzo' ? 200 : k === 'matricola' ? 40 : 20 });
   // Означението на нормата не се дели на два реда („UNI“ | „10411-11:2024“, „UNI 10411-“ | „11:2024“): твърд
   // интервал след „UNI“/„EN“ и U+2060 (word joiner) след тирето между цифри — като `inRiga` в PDF-а.
   const cifreUnite = (testo) => testo.replace(/\b(UNI|EN) (?=EN |\d)/g, '$1\u00a0').replace(/(\d)-(\d)/g, '$1-\u2060$2');

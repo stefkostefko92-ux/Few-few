@@ -43,11 +43,18 @@ export async function fillDoorsAndChecks(page) {
   await page.fill('#f-serratureTipo', 'Elettromeccaniche');
   await tick(page, 'pattinoRetrattile', 'si');
   await page.fill('#f-pattinoRetrattileTipo', 'Wittur');
+  // Manual doors only (the owner, 10 November 2026): the cabin door contacts and the door lock.
+  for (const key of ['contattiAntine', 'bloccaPortineDaInstallare'])
+    if (!(await page.locator(`#f-${key}`).isVisible())) fail(`${key} not asked with manual doors`);
+  await tick(page, 'contattiAntine', 'si');
+  await tick(page, 'bloccaPortineDaInstallare', 'no');
   // Automatic doors at last (the panel order and the 2SG sheet follow them): the locks and the cam go,
   // the suspensions come.
   await tick(page, 'tipoPorte', 'AUTOMATICHE');
   if (await page.locator('#f-pattinoRetrattile').isVisible())
     fail('retiring cam shown with automatic doors');
+  if (await page.locator('#f-contattiAntine').isVisible())
+    fail('cabin door contacts asked with automatic doors');
   if (!(await page.locator('#f-sospensioni').isVisible()))
     fail('suspensions not shown with automatic doors');
   // The operator with automatic doors too (24 October 2026): its 2SG sheet on "Sì" — and with the

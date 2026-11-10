@@ -2,6 +2,7 @@ import {
   PORTE_AUTOMATICHE,
   PORTE_CON_OPERATORE,
   PORTE_CON_PATTINO,
+  PORTE_MANUALI,
   yes,
 } from './field-conditions.js';
 import type { SectionDef } from './field-types.js';
@@ -14,6 +15,8 @@ import type { SectionDef } from './field-types.js';
  * оператор — 22 октомври 2026) и автоматични (24 октомври). Бравите — брой и вид; шейната — видът ѝ;
  * окачванията — брой и листът 2SG; операторът — същият лист (src/ordini/: двата въпроса — една колона,
  * два слота; при автоматични с „Sì“ и на двата листът е един — на окачванията). Бележките — винаги.
+ * При ръчни врати — до шейната и „Contatti antine da sostituire?“ и „Blocca portine da installare?“
+ * (собственикът, 10 ноември 2026).
  */
 export const SEZIONE_SERRATURE = {
   key: 'serrature',
@@ -30,6 +33,9 @@ export const SEZIONE_SERRATURE = {
       maxLength: 120,
       when: yes('pattinoRetrattile'),
     },
+    { key: 'contattiAntine', kind: 'yesno', when: PORTE_MANUALI },
+    // Не `bloccaPortine` — колоната на махнатия въпрос от октомври пази старите отговори.
+    { key: 'bloccaPortineDaInstallare', kind: 'yesno', when: PORTE_MANUALI },
     {
       key: 'sospensioni',
       kind: 'yesno',

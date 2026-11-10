@@ -37,6 +37,8 @@
       "serratureTipo": "Tipo serrature",
       "pattinoRetrattile": "Pattino retrattile da cambiare",
       "pattinoRetrattileTipo": "Tipo di pattino retrattile",
+      "contattiAntine": "Contatti antine da sostituire?",
+      "bloccaPortineDaInstallare": "Blocca portine da installare?",
       "operatore": "Operatore da cambiare",
       "sospensioni": "Sospensioni da cambiare",
       "sospensioniNumero": "Numero sospensioni",

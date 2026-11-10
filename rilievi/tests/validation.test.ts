@@ -102,6 +102,8 @@ describe('the field list', () => {
         'serratureTipo',
         'pattinoRetrattile',
         'pattinoRetrattileTipo',
+        'contattiAntine',
+        'bloccaPortineDaInstallare',
         'sospensioni',
         'sospensioniNumero',
         'operatore',
@@ -125,9 +127,10 @@ describe('the field list', () => {
     );
   });
 
-  it('gives every number a kind the brief asked for: the identifiers are digits, never numbers', () => {
+  it('gives every number a kind the brief asked for: the number of the lift is digits, never a number', () => {
     const kind = (key: string) => FIELDS.find((field) => field.key === key)?.kind;
-    assert.equal(kind('matricola'), 'digits');
+    // The matricola is free text since 10 November 2026 (tests/porte-manuali.test.ts).
+    assert.equal(kind('matricola'), 'text');
     assert.equal(kind('numeroImpianto'), 'digits');
     assert.equal(kind('indirizzo'), 'text');
     assert.equal(kind('ubicazioneCassettina'), 'text', 'where the box is, in words');
@@ -154,20 +157,20 @@ describe('parseScheda', () => {
     assert.equal(!result.ok && result.errors.identifiers, 'identifierNeeded');
   });
 
-  it('keeps leading zeros in the identifiers and drops spaces', () => {
+  it('keeps leading zeros in the identifiers; the number of the lift drops spaces', () => {
     const data = parsedOrFail({
       data: '2026-10-12',
-      matricola: ' 0033 871 ',
-      numeroImpianto: '000104552',
+      matricola: ' 0033871 ',
+      numeroImpianto: ' 000 104552 ',
     });
     assert.equal(data.matricola, '0033871');
     assert.equal(data.numeroImpianto, '000104552');
   });
 
-  it('refuses letters and symbols in the identifiers', () => {
+  it('refuses letters and symbols in the number of the lift', () => {
     for (const value of ['MI 123', '123/98', '12-3', '1e5']) {
-      const result = parseScheda({ data: '2026-10-12', matricola: value });
-      assert.equal(!result.ok && result.errors.matricola, 'digitsOnly', value);
+      const result = parseScheda({ data: '2026-10-12', numeroImpianto: value });
+      assert.equal(!result.ok && result.errors.numeroImpianto, 'digitsOnly', value);
     }
   });
 
