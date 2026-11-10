@@ -40,6 +40,32 @@ export async function signIn(page, base, who, secret) {
   await page.fill('#password', secret);
   await page.click('form button[type=submit]');
   await page.waitForURL(/\/(schede|account)/);
+  await readUpdates(page);
+}
+
+// The popup of the updates (views/partials/novita.ejs, novita.js) comes on the first page after an
+// update: modal, checked once with axe, read with "Ho capito" in the background — it closes and does not
+// come back on the next page. A new account has nothing to read: no popup.
+let updatesAudited = false;
+export async function readUpdates(page) {
+  const dialog = page.locator('dialog[data-novita]');
+  if (!(await dialog.count())) return;
+  await page.waitForFunction(() =>
+    document.querySelector('dialog[data-novita]')?.matches(':modal'),
+  );
+  if (!updatesAudited) {
+    updatesAudited = true;
+    await audit(page, 'updates popup');
+    if (!(await dialog.locator('li[data-voce]').count())) fail('updates popup without updates');
+  }
+  const read = page.waitForResponse(
+    (r) => r.url().endsWith('/novita/lette') && r.request().method() === 'POST',
+  );
+  await dialog.locator('button[type=submit]').click();
+  if ((await read).status() !== 204) fail('updates popup: "Ho capito" not saved');
+  if (await dialog.evaluate((d) => d.open)) fail('updates popup still open after "Ho capito"');
+  await page.reload();
+  if (await page.locator('dialog[data-novita]').count()) fail('updates popup back after reading');
 }
 
 // The real input sits under its label (visually a tick box); a DOM click is what a tap on the label does,

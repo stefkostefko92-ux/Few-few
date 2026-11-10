@@ -166,6 +166,9 @@ model User {
   /// Последната приета стъпка от 30 s: същият код не минава втори път.
   totpLastStep       Int?
   lastLoginAt        DateTime?
+  /// Докога човекът е прочел новините на портала (src/novita/): прозорецът показва публикуваните след
+  /// това. Нов акаунт — от създаването си (по-старите новини не са новост за него); „Ho capito“ — сега.
+  novitaLetteAt      DateTime  @default(now())
   passwordChangedAt  DateTime  @default(now())
   invitedById        String?
   invitedBy          User?     @relation("InvitedUsers", fields: [invitedById], references: [id], onDelete: SetNull)
@@ -1050,4 +1053,11 @@ model LoginFailure {
 
   @@index([rete, createdAt])
   @@index([createdAt])
+}
+
+/// Кога всяка новина на портала (src/novita/voci.ts) е излязла: при първото пускане на портал, който я
+/// знае — на нова инсталация в деня на новината. Текстовете са в речника, тук — само кога.
+model Novita {
+  id           String   @id
+  pubblicataAt DateTime
 }

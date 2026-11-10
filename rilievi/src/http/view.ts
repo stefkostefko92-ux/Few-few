@@ -20,6 +20,13 @@ function buildViewHelpers(locale: Locale) {
     year: 'numeric',
     timeZone: 'UTC',
   });
+  /** „10 novembre 2026“ — заглавията на новините. */
+  const dayLongFmt = new Intl.DateTimeFormat(tag, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
   const dateTimeFmt = new Intl.DateTimeFormat(tag, {
     day: '2-digit',
     month: '2-digit',
@@ -33,6 +40,7 @@ function buildViewHelpers(locale: Locale) {
   const inputFmt = new Intl.NumberFormat(tag, { maximumFractionDigits: 2, useGrouping: false });
   return {
     day: (value: Date | null | undefined) => (value ? dayFmt.format(value) : ''),
+    dayLong: (value: Date | null | undefined) => (value ? dayLongFmt.format(value) : ''),
     dateTime: (value: Date | null | undefined) => (value ? dateTimeFmt.format(value) : ''),
     num: (value: NumberLike) => {
       const n = toNumber(value);

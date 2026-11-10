@@ -2,6 +2,7 @@ import { COMPANY, CONTENT_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { jsonForScript } from '../http/json-script.js';
 import { DEFAULT_LOCALE, LOCALE_TAG, type Translator } from '../i18n.js';
+import { ULTIMO_AGGIORNAMENTO, VOCI } from '../novita/voci.js';
 import { INVITE_DAYS } from '../services/invites.js';
 import { FAQ_IDS, FEATURES, SERVIZI, STEPS } from '../site/landing.js';
 import { HOME_PATH } from './paths.js';
@@ -185,6 +186,54 @@ export function privacyStructuredData(t: Translator, canonical: string, updated:
         { name: 'Rilievi Impianti', url: `${base}${HOME_PATH}` },
         { name: title, url: canonical },
       ]),
+    ],
+  });
+}
+
+/**
+ * Новините: страницата, пътят до нея и всяка новина като елемент на списък с котвата си — заглавията
+ * дума по дума от страницата.
+ */
+export function novitaStructuredData(t: Translator, canonical: string): string {
+  const base = config().PUBLIC_BASE_URL;
+  const title = t('novita.titolo');
+  return jsonForScript({
+    '@context': 'https://schema.org',
+    '@graph': [
+      organization(t, base),
+      website(base),
+      {
+        '@type': 'WebPage',
+        '@id': `${canonical}#page`,
+        url: canonical,
+        name: t('novita.meta.title'),
+        description: t('novita.meta.description'),
+        inLanguage: IN_LANGUAGE,
+        isPartOf: { '@id': `${base}/#website` },
+        about: { '@id': `${base}/#app` },
+        dateModified: ULTIMO_AGGIORNAMENTO,
+        breadcrumb: { '@id': `${canonical}#breadcrumb` },
+        mainEntity: { '@id': `${canonical}#elenco` },
+        speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.novita-pagina__lead'] },
+      },
+      breadcrumb(canonical, [
+        { name: 'Rilievi Impianti', url: `${base}${HOME_PATH}` },
+        { name: title, url: canonical },
+      ]),
+      {
+        '@type': 'ItemList',
+        '@id': `${canonical}#elenco`,
+        name: t('novita.elenco'),
+        itemListOrder: 'https://schema.org/ItemListOrderDescending',
+        numberOfItems: VOCI.length,
+        itemListElement: VOCI.map((voce, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: t(`novita.voci.${voce.id}.titolo`),
+          description: t(`novita.voci.${voce.id}.testo`),
+          url: `${canonical}#${voce.id}`,
+        })),
+      },
     ],
   });
 }

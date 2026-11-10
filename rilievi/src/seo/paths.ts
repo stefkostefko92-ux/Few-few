@@ -1,5 +1,5 @@
 /**
- * Публичните адреси — витрината и политиката (само на италиански, без езикови варианти). Чист модул:
+ * Публичните адреси — витрината, политиката и новините (само на италиански, без езикови варианти). Чист модул:
  * ползват го маршрутите, sitemap, llms.txt и robots.txt. Всичко останало (входът, картите, хората,
  * фирмите) е частно и не се обхожда.
  */
@@ -8,6 +8,10 @@ export const PRIVACY_PATH = '/privacy';
 /** Страницата след пратена заявка — само след формата, не се обхожда. */
 export const SENT_PATH = '/richiesta-inviata';
 
+/** Новините на портала (src/novita/voci.ts) и емисията им (RSS 2.0). */
+export const NOVITA_PATH = '/novita';
+export const FEED_NOVITA_PATH = '/novita.xml';
+
 /** Индексираните страници — за sitemap и robots.txt. */
-export const PUBLIC_PATHS = [HOME_PATH, PRIVACY_PATH] as const;
+export const PUBLIC_PATHS = [HOME_PATH, PRIVACY_PATH, NOVITA_PATH] as const;
 export type PublicPath = (typeof PUBLIC_PATHS)[number];

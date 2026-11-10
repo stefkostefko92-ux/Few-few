@@ -1,8 +1,16 @@
 import { COMPANY, CONTENT_UPDATED, PRIVACY_UPDATED } from '../company.js';
 import { DEFAULT_LOCALE, translate } from '../i18n.js';
 import { INVITE_DAYS } from '../services/invites.js';
+import { ULTIMO_AGGIORNAMENTO, VOCI } from '../novita/voci.js';
 import { FAQ_IDS, SERVIZI, sheetCounts, sheetLegend } from '../site/landing.js';
-import { HOME_PATH, PRIVACY_PATH, PUBLIC_PATHS, type PublicPath } from './paths.js';
+import {
+  FEED_NOVITA_PATH,
+  HOME_PATH,
+  NOVITA_PATH,
+  PRIVACY_PATH,
+  PUBLIC_PATHS,
+  type PublicPath,
+} from './paths.js';
 
 /**
  * robots.txt, sitemap.xml и llms.txt — чисти функции от публичния адрес, без сървъра (тестват се сами).
@@ -21,6 +29,8 @@ export function robotsTxt(base: string, indexNowKey: string): string {
     'Allow: /password-dimenticata$',
     // „Installa l'app“ е публична с `noindex` — роботът трябва да влезе, за да го види.
     'Allow: /app$',
+    // Емисията на новините (RSS) — за читателите на емисии и за търсачките.
+    `Allow: ${FEED_NOVITA_PATH}`,
     'Allow: /static/',
     'Allow: /favicon.ico',
     'Allow: /sitemap.xml',
@@ -37,6 +47,7 @@ export function robotsTxt(base: string, indexNowKey: string): string {
 const PAGE_META: Record<PublicPath, { priority: string; freq: string; updated: string }> = {
   [HOME_PATH]: { priority: '1.0', freq: 'monthly', updated: CONTENT_UPDATED },
   [PRIVACY_PATH]: { priority: '0.3', freq: 'yearly', updated: PRIVACY_UPDATED },
+  [NOVITA_PATH]: { priority: '0.6', freq: 'weekly', updated: ULTIMO_AGGIORNAMENTO },
 };
 
 /** Всяка публична страница — един адрес, без езикови варианти. */
@@ -66,6 +77,7 @@ export function llmsTxt(base: string, contactEmail: string): string {
     '',
     '## Pagine',
     `- [Rilievi Impianti](${base}${HOME_PATH}): ${it('site.nav.scheda').toLowerCase()}, ${it('site.nav.come').toLowerCase()}, ${it('site.nav.assistenza').toLowerCase()}, ${it('site.nav.faq').toLowerCase()}, ${it('site.nav.request').toLowerCase()}`,
+    `- [${it('novita.titolo')}](${base}${NOVITA_PATH}): ${it('novita.meta.description')}`,
     `- [${it('privacy.title')}](${base}${PRIVACY_PATH})`,
     '',
     '## Fatti',
@@ -77,6 +89,12 @@ export function llmsTxt(base: string, contactEmail: string): string {
     ...SERVIZI.map((id) => `- ${it(`site.servizi.${id}.title`)}: ${it(`site.servizi.${id}.text`)}`),
     `- ${it('site.roles.lead')} Ruoli: ${roles}. ${it('site.roles.note')}`,
     `- ${it('site.steps.s3.title')}. ${it('site.steps.s3.text', { days: INVITE_DAYS })}`,
+    '',
+    `## ${it('novita.titolo')}`,
+    ...VOCI.slice(0, 5).map(
+      (v) =>
+        `- ${v.data}, ${it(`novita.voci.${v.id}.area`)}: ${it(`novita.voci.${v.id}.titolo`)}. ${it(`novita.voci.${v.id}.testo`)}`,
+    ),
     '',
     `## ${it('site.faq.title')}`,
     ...FAQ_IDS.map((id) => `- ${it(`site.faq.${id}.q`)} ${it(`site.faq.${id}.a`)}`),

@@ -15,7 +15,8 @@ bottoniere DMG?“ при „Bottoniere da sostituire: Sì“ (QF Fixtures на 
 фирми, винаги включен): листове, нарисувани на ръка в края на картата, в печата и PDF-а. Листът за интервенция („Servizio assistenza elevatori ·
 Modulo di pronto intervento“, като хартиения блок): номер за фирмата от 1, точките 01–97 с кръстчета,
 подписите на техника и на клиента с пръст; след „Conferma“ не се пипа — само PDF A4 и имейл.
-Многофирмен: всяка фирма (клиент на портала) има свои хора, свои карти и свое лого на листа. Един човек
+Новините на портала — публична страница `/novita` и прозорец в портала при първата страница след всяко обновяване
+с новото от последното прочитане. Многофирмен: всяка фирма (клиент на портала) има свои хора, свои карти и свое лого на листа. Един човек
 може да е в няколко фирми, с различна роля във всяка (слага го само MASTER).
 Бранд Carbon Stealth VCC, монохромен (бяло/черно, светла и тъмна тема). Самостоятелен продукт —
 `cd rilievi/` за всичко. Домейн: rilievi.carbonstealth.eu (порт 4330).
@@ -56,7 +57,10 @@ npm run owner:create     # първият MASTER от OWNER_EMAIL/OWNER_NAME/OWN
 ```
 src/
   config.ts          zod схема на средата (процесът не тръгва с полуготов конфиг)
-  server.ts          helmet/CSP, редът на middleware-ите и рутерите, грешките
+  server.ts          helmet/CSP, редът на middleware-ите, грешките; рутерите в реда им — routes/montaggio.ts
+  novita/            новините: voci.ts (ЕДИНСТВЕНИЯТ списък, без база: кога, кое не е прочетено, по дни) ·
+                     registro.ts (таблицата `Novita` — кога е излязла всяка; прочитането) · popup.ts
+                     (прозорецът в портала — middleware)
   auth/              роли (7 нива), scope.ts (обхватът по фирма и способност), manage.ts (кой управлява
                      кого), memberships.ts, permessi.ts (имената и правата на ролите по фирма) ·
                      lockout.ts (заемане на опит, поредни заключвания) · rete.ts (таванът по мрежа) ·
@@ -144,7 +148,7 @@ src/
   pwa/               manifest.ts — приложението на началния екран (манифестът; рутерът — routes/pwa.ts,
                      страницата „Installa l'app“ — routes/installa.ts) · sistema.ts (устройството по
                      User-Agent — стъпките му идват отворени от сървъра)
-  site/ · seo/       витрината: landing.ts (разделите, ролите и възможностите до снимките — от кода) ·
+  site/ · seo/       витрината (+ seo/feed.ts — емисията на новините): landing.ts (разделите, ролите и възможностите до снимките — от кода) ·
                      immagini.ts (снимките: ширини, srcset) · paths.ts · structured-data.ts
                      (JSON-LD) · files.ts (robots, sitemap, llms.txt) · company.ts (данните на фирмата)
   allegati/          снимките и клиповете на картата: archivio.ts (пътищата в тома — само от id-тата) ·
@@ -578,7 +582,7 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   (`audit.ts`, само добавяне, без съдържание на схемите и без IP).
 - **PDF:** DejaVu Sans от `PDF_FONT_DIR` (в образа: `fonts-dejavu-core`); без шрифта процесът не тръгва.
   Никога Helvetica/Times — нямат кирилица.
-- **Индексира се само витрината:** `/` и `/privacy` (`seo/paths.ts`, един език — без hreflang) —
+- **Индексира се само витрината:** `/`, `/privacy` и `/novita` (`seo/paths.ts`, един език — без hreflang) —
   `index, follow`, canonical, Open Graph/Twitter, geo, JSON-LD (Organization+LocalBusiness, WebSite,
   WebPage със speakable, BreadcrumbList, SoftwareApplication, HowTo, FAQPage — текстовете дума по дума
   от екрана; `sameAs` — само проверените профили от `COMPANY.profiles`: YouTube „Carbon Stealth VCC“),
@@ -592,6 +596,29 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   табелите, снимките и скиците, ролите и правата, цветовете — и във `featureList`, и в llms.txt. Keywords ≥5 с „Carbon Stealth“; футърът
   носи „Created and Designed by Carbon Stealth VCC“. Промяна на витрината → `CONTENT_UPDATED` и след
   деплой IndexNow (`node tools/seo/indexnow.mjs https://rilievi.carbonstealth.eu`).
+- **Новините на портала** (`src/novita/`, `routes/novita.ts`; собственикът, 10 ноември 2026 — „Fai una pagina sul
+  nostro sito web con tutte queste cose. Al primo accesso di ogni utente dopo ogni aggiornamento fai uscire messaggio
+  popup con descrizione degli aggiornamenti fatti dal suo ultimo accesso“; страницата — публична, по негов избор):
+  ЕДИНСТВЕНИЯТ списък е `VOCI` в `novita/voci.ts` (най-новите отгоре; id `<ден>-<дума>` — котва и ключ, не се сменя
+  никога), текстовете — `locales/it/novita.json` (`novita.voci.<id>`: раздел, заглавие, описание за външен читател;
+  тестът пази двете страни). **Всяко видимо за хората обновяване = ред най-отгоре + текстовете му.** Страницата
+  `/novita` (по дни, `index, follow`, canonical, OG, свои ключови думи с „Carbon Stealth“, видим път, „Ultimo
+  aggiornamento“; JSON-LD WebPage + BreadcrumbList + ItemList; стиловете — `site-novita.css` само там), емисия RSS
+  `/novita.xml` (`seo/feed.ts`), sitemap (`lastmod` — последната новина, weekly), robots, llms.txt (връзка и
+  последните 5) и долната лента на витрината. Прозорецът в портала (`novita/popup.ts`,
+  `views/partials/novita.ejs`, `public/js/novita.js`, `novita.css`): на вписан човек, само на цяла страница (GET с
+  `Accept: text/html`, без `X-Partial`), новините, излезли след `User.novitaLetteAt` — до 6 (`MAX_POPUP`), после
+  „E altre N“ и връзка към страницата. Стои, докато не се затвори: с JavaScript е модален и всяко затваряне („Ho
+  capito“, Esc, „Tutte le novità“) праща `POST /novita/lette` във фонов режим (204); без него е отворен в
+  страницата, а формата връща на същата страница (`safeNext`); CSRF. Прочитането е директен UPDATE —
+  `updatedAt` на акаунта остава. Кога е излязла новина — таблица `Novita` (id, `pubblicataAt`), попълвана при
+  първата страница на процес, който знае новината (`registro.ts`; после в паметта): празна таблица (нова
+  инсталация, тестова база) — денят на новината (няма обновяване за обявяване), иначе — сега (самото обновяване:
+  денят на новината може да е преди деплоя). Нов акаунт — `novitaLetteAt` от създаването (по-старото не е новост
+  за него); миграцията `20261110200000_novita` даде на досегашните хора началото на деня на последния им вход
+  минус 1 ms („dal suo ultimo accesso“, по деня), а на никога невлезлите — момента на миграцията. Грешка при
+  четенето — без прозорец, страницата върви. e2e: `readUpdates` (helpers.mjs) след всеки вход — модален, axe,
+  „Ho capito“ записано и не се връща; `/novita` — в обиколката на витрината.
 - **Визията** е от заданието: бяло/черно, сивите са само линии и тихи повърхности, червеното — само за
   грешки. Витрината (собственикът, 30 октомври 2026 — „landing fotorealistica, professionale e con gli
   stessi colori bianco e nero“) е със **снимки, които сме направили сами**: черно-бели 3D рендери

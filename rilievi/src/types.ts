@@ -27,6 +27,8 @@ export interface SessionUser {
   /** Цветовете на темата „Personalizzato“ (src/http/colori.ts); null — няма свои. */
   colori: Colori | null;
   mustChangePassword: boolean;
+  /** Докога е прочел новините на портала (src/novita/) — прозорецът показва по-новите. */
+  novitaLetteAt?: Date;
 }
 
 export interface Principal {
