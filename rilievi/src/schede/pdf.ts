@@ -132,7 +132,7 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
     drawFields(ctx, modulo.gruppi.map(gruppoField));
   }
   drawSchizzi(ctx, options.schizzi ?? []);
-  drawFoto(ctx, options.foto ?? []);
+  drawFoto(ctx, options.foto ?? [], scheda.fotoDimensione);
   drawFooters(ctx, t('pdf.generated', { at: fmt.dateTime(new Date()), name: options.generatedBy }));
   doc.end();
   return done;

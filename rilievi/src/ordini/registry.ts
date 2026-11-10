@@ -55,7 +55,7 @@ export interface ModuloSlot {
     | 'quadroOrdine'
     | 'arganoPreventivo'
     | 'sospensioni'
-    | 'operatore'
+    | 'operatoreModulo'
     | 'fossaInterventi'
     | 'bottoniereOrdine';
   /**
@@ -156,7 +156,10 @@ export const SLOTS: readonly ModuloSlot[] = [
   },
   {
     column: 'ordineSospensioni',
-    question: 'operatore',
+    // „Vuoi cambiare operatore?“ → „Vuoi compilare modulo d'ordine?“ → „2SG“ (собственикът, 10 ноември
+    // 2026); досега го отваряше „Sì“ на оператора — миграцията даде „2SG“ на тези карти.
+    question: 'operatoreModulo',
+    apertura: { valore: 'MODULO_2SG', anche: [] },
     cede: 'sospensioni',
     prefix: 'so',
     path: 'operatore-2sg',

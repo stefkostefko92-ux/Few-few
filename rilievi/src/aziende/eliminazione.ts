@@ -1,6 +1,7 @@
 import { rimuoviScheda } from '../allegati/archivio.js';
 import { writeAudit } from '../audit.js';
 import { prisma } from '../db.js';
+import { conservaFinoDa } from '../legale/emissioni.js';
 import { errorMessage, logger } from '../logger.js';
 import { DAY } from '../time.js';
 
@@ -36,11 +37,18 @@ export async function eliminaAzienda(aziendaId: string, actorId: string | null):
       });
       await tx.cartello.deleteMany({ where: { aziendaId } });
       await tx.intervento.deleteMany({ where: { aziendaId } });
+      await tx.verbale.deleteMany({ where: { aziendaId } });
       await tx.calcoloArgano.deleteMany({ where: { aziendaId } });
+      await tx.calcoloLimitatore.deleteMany({ where: { aziendaId } });
       // Снимките, скиците, мерките и изчислението на картата падат с нея (Cascade).
       await tx.scheda.deleteMany({ where: { aziendaId } });
       await tx.invite.deleteMany({ where: { aziendaId } });
       await tx.auditLog.deleteMany({ where: { aziendaId } });
+      // Приеманията на условията остават (src/legale/): срокът им тече от края на договора — сега.
+      await tx.accettazione.updateMany({
+        where: { aziendaId },
+        data: { conservaFino: conservaFinoDa(new Date()) },
+      });
       await tx.membership.deleteMany({ where: { aziendaId } });
       const soli = await tx.user.deleteMany({
         where: {

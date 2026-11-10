@@ -110,7 +110,48 @@ export async function checkInstallPhone(browser, { base, shots, scheme }) {
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
   );
   if (sideways) fail(`${scheme} app: "Installa l'app" scrolls sideways at 360 px`);
+  if (await page.locator('[data-installa-ios]').isVisible())
+    fail(`${scheme} app: the iPhone note shows on Android`);
   await audit(page, `${scheme} app install phone`);
   await page.screenshot({ path: join(shots, `${scheme}-installa-telefono.png`), fullPage: true });
   await context.close();
+  await checkInstallOther(browser, { base, shots, scheme });
+}
+
+/**
+ * iPhone and Samsung Internet (the owner, 5 November 2026): no install button where it cannot work — iOS
+ * has no install call, and what Samsung Internet installs Android marks as "non sicura". The button was
+ * hidden only by the `hidden` attribute, which `display: grid` overrode, so it showed everywhere.
+ */
+async function checkInstallOther(browser, { base, shots, scheme }) {
+  const devices = {
+    iphone:
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1',
+    samsung:
+      'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/25.0 Chrome/121.0.0.0 Mobile Safari/537.36',
+  };
+  for (const [name, userAgent] of Object.entries(devices)) {
+    const context = await browser.newContext({
+      colorScheme: scheme,
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+      userAgent,
+    });
+    const page = await context.newPage();
+    await page.goto(`${base}/app`);
+    await page.waitForTimeout(500);
+    if (await page.locator('[data-installa-pronta]').isVisible())
+      fail(`${scheme} app (${name}): an install button that cannot install`);
+    const note = name === 'iphone' ? '[data-installa-ios]' : '[data-installa-samsung]';
+    const other = name === 'iphone' ? '[data-installa-samsung]' : '[data-installa-ios]';
+    if (!(await page.locator(note).isVisible())) fail(`${scheme} app (${name}): no note for it`);
+    if (await page.locator(other).isVisible())
+      fail(`${scheme} app (${name}): the other note shows`);
+    if (name === 'samsung' && !(await page.locator('a[href^="intent://"]').isVisible()))
+      fail(`${scheme} app (samsung): no "Apri in Chrome"`);
+    await audit(page, `${scheme} app install ${name}`);
+    await page.screenshot({ path: join(shots, `${scheme}-installa-${name}.png`), fullPage: true });
+    await context.close();
+  }
 }

@@ -7,6 +7,21 @@
   gap: 8px;
 }
 
+/* Много действия (страницата на картата) на телефон — две равни колони: в ред те се пренасяха 2/2/1/1/2
+   (визуалната проверка, 10 ноември 2026). Дългият надпис се пренася в бутона. */
+@media (max-width: 559px) {
+  .toolbar--griglia {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .toolbar--griglia > .btn {
+    justify-content: flex-start;
+    white-space: normal;
+    text-align: left;
+  }
+}
+
 .flash {
   display: flex;
   gap: 12px;

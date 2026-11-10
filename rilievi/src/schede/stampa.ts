@@ -1,3 +1,4 @@
+import type { FotoDimensione } from '@prisma/client';
 import { z } from 'zod';
 import { MAX_PER_SCHEDA } from '../allegati/service.js';
 import { COLONNE } from '../ordini/registry.js';
@@ -91,13 +92,36 @@ export function stampaFromBody(source: Record<string, unknown>): string[] {
  */
 export const FOTO_KEY = 'fotoStampa';
 export const FOTO_MOSTRATE = 'fotoMostrate';
+/**
+ * Редът и големината на снимките в печата (собственикът, 10 ноември 2026 — „scegliere … con un'anteprima
+ * la dimensione e l'ordine delle foto“): `fotoOrdine` — отметнатите id-та в реда на печата (с интервал),
+ * `fotoDimensione` — една от `DIMENSIONI_FOTO`. Без тях (страница отпреди) — не се пипат.
+ */
+export const FOTO_ORDINE = 'fotoOrdine';
+export const FOTO_DIMENSIONE = 'fotoDimensione';
+export const DIMENSIONI_FOTO = [
+  'PICCOLE',
+  'MEDIE',
+  'GRANDI',
+  'UNA',
+] as const satisfies readonly FotoDimensione[];
 const ID_FOTO = /^[a-z0-9]{20,40}$/;
 const idsSchema = z.array(z.string().regex(ID_FOTO)).max(MAX_PER_SCHEDA);
+const dimensioneSchema = z.enum(DIMENSIONI_FOTO);
 
 export interface SceltaFoto {
   mostrate: string[];
   scelte: string[];
+  /** Отметнатите в реда на печата; undefined — страница без подредбата (редът не се пипа). */
+  ordine?: string[];
+  dimensione?: FotoDimensione;
 }
+
+/** Отметнатите от `ordine` в реда му, всяка веднъж; отметнатите, които липсват в него — накрая. */
+const ordinaScelte = (ordine: readonly string[], scelte: readonly string[]): string[] => {
+  const tenute = [...new Set(ordine)].filter((id) => scelte.includes(id));
+  return [...tenute, ...scelte.filter((id) => !tenute.includes(id))];
+};
 
 /** Изборът от пратеното: undefined — без иконки (не се пипа); неуспех — подправен списък. */
 export function fotoInStampaDi(
@@ -109,9 +133,24 @@ export function fotoInStampaDi(
   const ticked = idsSchema.safeParse(scelte(raw[FOTO_KEY]));
   if (!mostrate.success || !ticked.success) return { success: false };
   const visti = new Set(mostrate.data);
+  const scelteVisibili = [...new Set(ticked.data)].filter((id) => visti.has(id));
+  const rawOrdine = raw[FOTO_ORDINE];
+  const ordine =
+    typeof rawOrdine === 'string'
+      ? idsSchema.safeParse(rawOrdine.split(/\s+/).filter(Boolean))
+      : undefined;
+  const rawDimensione = raw[FOTO_DIMENSIONE];
+  const dimensione =
+    rawDimensione === undefined ? undefined : dimensioneSchema.safeParse(rawDimensione);
+  if ((ordine && !ordine.success) || (dimensione && !dimensione.success)) return { success: false };
   return {
     success: true,
-    data: { mostrate: [...visti], scelte: [...new Set(ticked.data)].filter((id) => visti.has(id)) },
+    data: {
+      mostrate: [...visti],
+      scelte: scelteVisibili,
+      ...(ordine?.success ? { ordine: ordinaScelte(ordine.data, scelteVisibili) } : {}),
+      ...(dimensione?.success ? { dimensione: dimensione.data } : {}),
+    },
   };
 }
 
@@ -129,5 +168,15 @@ export function fotoFromBody(source: Record<string, unknown>): SceltaFoto | unde
           .slice(0, MAX_PER_SCHEDA)
       : [];
   const mostrate = ids(shown.split(/\s+/));
-  return { mostrate, scelte: ids(scelte(source[FOTO_KEY])).filter((id) => mostrate.includes(id)) };
+  const scelteVisibili = ids(scelte(source[FOTO_KEY])).filter((id) => mostrate.includes(id));
+  const rawOrdine = source[FOTO_ORDINE];
+  const dimensione = dimensioneSchema.safeParse(source[FOTO_DIMENSIONE]);
+  return {
+    mostrate,
+    scelte: scelteVisibili,
+    ...(typeof rawOrdine === 'string'
+      ? { ordine: ordinaScelte(ids(rawOrdine.split(/\s+/)), scelteVisibili) }
+      : {}),
+    ...(dimensione.success ? { dimensione: dimensione.data } : {}),
+  };
 }

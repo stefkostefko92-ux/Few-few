@@ -1,7 +1,9 @@
 // The upload of photos and videos in each section (views/schede/_allegati.ejs). Without this file the
 // upload form posts and comes back to its section. Here it is checked first (count, size by kind), the
 // photos larger than the server keeps get smaller on the phone, and it is sent in the background with
-// its progress; the section's gallery comes back in place (allegati.js, loaded before this file).
+// its progress; the section's gallery comes back in place (allegati.js, loaded before this file). The
+// camera button of a phone or tablet ("Scatta foto", the owner, 10 November 2026) is a second file input
+// of the same form: the photo it takes goes up at once, with whatever is chosen in the first.
 (() => {
   'use strict';
 
@@ -81,15 +83,25 @@
     const box = boxOf(sezione);
     const wrap = document.getElementById(`a-${sezione}`);
     if (!box || !wrap) return;
-    const input = wrap.querySelector(`input[type="file"][form="${form.id}"]`);
+    const inputs = Array.from(wrap.querySelectorAll(`input[type="file"][form="${form.id}"]`));
+    const input = inputs.find((i) => !i.hasAttribute('data-scatta'));
+    const camera = inputs.find((i) => i.hasAttribute('data-scatta'));
     const caption = wrap.querySelector(`input[name="didascalia"][form="${form.id}"]`);
     const progress = wrap.querySelector('[data-progress]');
     const button = wrap.querySelector(`button[form="${form.id}"]`);
     if (!input) return;
+    // The photo just taken goes up at once: one more step on a ladder or in a pit is one too many.
+    if (camera) {
+      camera.addEventListener('change', () => {
+        if (!camera.files || !camera.files.length) return;
+        if (typeof form.requestSubmit === 'function') form.requestSubmit();
+        else form.dispatchEvent(new Event('submit', { cancelable: true }));
+      });
+    }
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const texts = textsOf(sezione);
-      let files = Array.from(input.files || []);
+      let files = inputs.flatMap((i) => Array.from(i.files || []));
       if (!files.length) return notice(sezione, [texts.msgNessuno], true);
       if (files.length > Number(texts.maxFile)) return notice(sezione, [texts.msgTroppi], true);
       const done = () => {
@@ -152,7 +164,9 @@
         }
         if (!result) return;
         if (result.ok) {
-          input.value = '';
+          inputs.forEach((i) => {
+            i.value = '';
+          });
           if (caption) caption.value = '';
         }
         show(box, result.html);

@@ -3,8 +3,12 @@
   // черната лента с марката, „Accedi“ и „Richiedi l'accesso“. Езикът е един — италиански.
   // Страницата след заявка е `noindex` — достига се само след формата.
   const indexable = !(typeof noindex !== 'undefined' && noindex);
-  const sheets = ['base', 'buttons', 'forms', 'site', 'shaft', 'site-hero', 'site-scene', 'site-parts', 'site-request'];
+  // Стиловете на една страница (новините) — само на нея, не на витрината.
+  const sheets = ['base', 'buttons', 'forms', 'site', 'shaft', 'site-hero', 'site-scene', 'site-parts', 'site-request', 'site-foot'].concat(typeof extraSheets !== 'undefined' ? extraSheets : []);
   const showNav = typeof sectionNav !== 'undefined' && sectionNav;
+  // Свои ключови думи на страницата (новините), иначе тези на витрината; емисията — само където я има.
+  const pageKeywords = typeof keywords !== 'undefined' && keywords ? keywords : t('site.meta.keywords');
+  const feedHref = typeof feed !== 'undefined' && feed ? feed : null;
 %><!doctype html>
 <html lang="<%= locale %>"<% if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>
 <head>
@@ -12,7 +16,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title><%= pageTitle %></title>
 <meta name="description" content="<%= description %>">
-<meta name="keywords" content="<%= t('site.meta.keywords') %>">
+<meta name="keywords" content="<%= pageKeywords %>">
 <meta name="author" content="Carbon Stealth VCC">
 <meta name="robots" content="<%= indexable ? 'index, follow' : 'noindex, nofollow' %>">
 <meta name="color-scheme" content="light dark">
@@ -37,6 +41,7 @@
 <meta name="geo.placename" content="<%= t('company.city') %>">
 <meta name="geo.position" content="<%= company.geo.latitude %>;<%= company.geo.longitude %>">
 <meta name="ICBM" content="<%= company.geo.latitude %>, <%= company.geo.longitude %>">
+<% } %><% if (feedHref) { %><link rel="alternate" type="application/rss+xml" title="<%= t('novita.feed') %>" href="<%= feedHref %>">
 <% } %><link rel="icon" href="/static/img/favicon-32.png?v=<%= v %>" type="image/png" sizes="32x32">
 <link rel="icon" href="/static/img/favicon-192.png?v=<%= v %>" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png?v=<%= v %>">

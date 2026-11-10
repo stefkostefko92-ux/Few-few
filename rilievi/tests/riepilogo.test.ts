@@ -20,7 +20,7 @@ describe('the orders in the sheet print', () => {
     arganoPreventivo: false,
     preventivoArgano: { modulo: ARGANI.id, valori: { taglia12: true } },
     sospensioni: null,
-    operatore: null,
+    operatoreModulo: null,
     ordineSospensioni: null,
     testataInterventi: [],
     fossaInterventi: [],
@@ -90,7 +90,7 @@ describe('each order chosen for the sheet print on its own', () => {
     arganoPreventivo: true,
     preventivoArgano: { modulo: ARGANI.id, valori: { taglia12: true } },
     sospensioni: true as boolean | null,
-    operatore: null as boolean | null,
+    operatoreModulo: null as 'MODULO_2SG' | 'ALTRO' | null,
     ordineSospensioni: { modulo: SG.id, valori: { automatico: true } },
     testataInterventi: [],
     fossaInterventi: [],
@@ -115,10 +115,17 @@ describe('each order chosen for the sheet print on its own', () => {
   });
 
   it('prints the 2SG sheet of a semi-automatic lift (the operator) once', () => {
-    const semi = { ...tutti, sospensioni: null, operatore: true };
+    // "Vuoi cambiare operatore?" → "Vuoi compilare modulo d'ordine?" → "2SG" (10 November 2026).
+    const op = { operatore: true, operatoreOrdine: true, operatoreModulo: 'MODULO_2SG' as const };
+    const semi = { ...tutti, sospensioni: null, ...op };
     assert.deepEqual(nomi({ ...semi, moduliStampati: ['ordineSospensioni'] }), [nomeModulo(SG)]);
     assert.deepEqual(
-      nomi({ ...tutti, operatore: true, moduliStampati: ['ordineSospensioni'] }),
+      nomi({ ...semi, operatoreModulo: 'ALTRO', moduliStampati: ['ordineSospensioni'] }),
+      [],
+      'another form: no 2SG sheet',
+    );
+    assert.deepEqual(
+      nomi({ ...tutti, ...op, moduliStampati: ['ordineSospensioni'] }),
       [nomeModulo(SG)],
       'one column, one sheet',
     );

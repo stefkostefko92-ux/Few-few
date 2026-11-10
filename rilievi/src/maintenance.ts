@@ -3,6 +3,7 @@ import { prisma } from './db.js';
 import { errorMessage, logger } from './logger.js';
 import { pulisciArrivi } from './allegati/archivio.js';
 import { eliminaAziendeScadute } from './aziende/eliminazione.js';
+import { pulisciProve } from './legale/emissioni.js';
 import { pulisciErrori } from './auth/rete.js';
 import { purgeExpiredSessions } from './auth/sessions.js';
 import { pulisciSfide } from './services/login-2fa.js';
@@ -14,7 +15,7 @@ import { DAY, HOUR } from './time.js';
  * Чистене веднъж на час: изтекли сесии и входове, чакали кода на 2FA, грешните опити по мрежа (след ден),
  * стари покани и връзки за парола (след 30 дни — дотогава се
  * виждат като „изтекли“), заявки за достъп след срока си, одит по-стар от срока, качено от прекъсната
- * заявка (по-старо от ден). Грешка тук не спира
+ * заявка (по-старо от ден), доказателствата след срока им. Грешка тук не спира
  * процеса — опитва пак след час.
  */
 export async function runMaintenance(): Promise<void> {
@@ -37,6 +38,8 @@ export async function runMaintenance(): Promise<void> {
   const arrivi = await pulisciArrivi(DAY, now);
   // Фирмите, деактивирани преди повече от 90 дни — окончателно, с всичките им данни.
   const aziende = await eliminaAziendeScadute(now);
+  // Доказателствата (приемания и изтеглени изчисления) след своя срок — src/legale/.
+  const prove = await pulisciProve(now);
   if (
     sessions +
       sfide +
@@ -46,7 +49,8 @@ export async function runMaintenance(): Promise<void> {
       requests +
       audit.count +
       arrivi +
-      aziende >
+      aziende +
+      prove >
     0
   ) {
     logger.info(
@@ -60,6 +64,7 @@ export async function runMaintenance(): Promise<void> {
         audit: audit.count,
         arrivi,
         aziende,
+        prove,
       },
       'поддръжка: изчистено',
     );

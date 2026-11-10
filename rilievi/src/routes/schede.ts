@@ -2,8 +2,8 @@ import { Router } from 'express';
 import { allegatiDi } from '../allegati/service.js';
 import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { canIn, spansAziende } from '../auth/scope.js';
-import { aziendeConSchizzi } from '../aziende/funzioni.js';
 import { cartelliDellaScheda } from '../cartelli/scheda.js';
+import { verbaliDellaScheda } from '../verbali/service.js';
 import { ordineSezioniDi } from '../aziende/sezioni.js';
 import { setFlash } from '../http/flash.js';
 import { businessDay } from '../time.js';
@@ -114,12 +114,9 @@ schedeRouter.post('/schede', write, requireCsrf, async (req, res) => {
     });
     return;
   }
-  // Листовете на скицника — само във фирма, която го има; иначе пратеното се пренебрегва.
-  const conSchizzi = (await aziendeConSchizzi([azienda.id])).has(azienda.id);
   const scheda = await createScheda(
     {
       ...parsed.data,
-      schizzi: conSchizzi ? parsed.data.schizzi : undefined,
       discrepanzeConfermate: discrepanze.impronta,
     },
     user.id,
@@ -147,6 +144,10 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
     // Табелите „Avviso di fermo impianto“, попълнени от картата — за който вижда табелите на фирмата.
     cartelli: canIn(principalOf(req).user, 'interventi:read', scheda.aziendaId)
       ? await cartelliDellaScheda(scope(req, 'interventi:read'), scheda.id)
+      : null,
+    // Протоколите „Verbale di chiusura cantiere“ от картата — за който вижда асистенцията на фирмата.
+    verbali: canIn(principalOf(req).user, 'interventi:read', scheda.aziendaId)
+      ? await verbaliDellaScheda(scope(req, 'interventi:read'), scheda.id)
       : null,
   });
 });
@@ -199,8 +200,6 @@ schedeRouter.post('/schede/:id', write, requireCsrf, async (req, res) => {
     base,
     {
       ...parsed.data,
-      // Фирма без скицника: листовете не се пипат (нарисуваното преди изключването остава).
-      schizzi: scheda.azienda.schizzi ? parsed.data.schizzi : undefined,
       discrepanzeConfermate: discrepanze.impronta,
     },
     principalOf(req).user.id,

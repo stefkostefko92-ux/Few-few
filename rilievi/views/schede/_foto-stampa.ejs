@@ -4,7 +4,12 @@
   // извън листа (белегът `data-esclusa`, решение на собственика). `fotoMostrate` — кои са показани:
   // записът пипа само тях. Парчето се сменя след качване или изтриване (stampa-foto.js,
   // `/schede/<id>/foto-stampa`) и пази отметнатото, още незаписано. „Tutte“ и „Nessuna“ — с JavaScript.
+  // Под тях — редът и големината в печата (собственикът, 10 ноември 2026): големината е радио (и без
+  // JavaScript), редът — скритото `fotoOrdine` (отметнатите id-та); списъкът със стрелките и прегледът на
+  // страниците — foto-ordine.js. Етикетът на всяка иконка носи формата ѝ и надписа за тях (`data-rapporto`,
+  // `data-titolo`).
   const base = '/schede/' + scheda.id + '/allegati/';
+  const rapportoDi = (a) => (a.larghezza && a.altezza ? (a.larghezza / a.altezza).toFixed(4) : '1.3333');
   const ids = fotoStampa.gruppi.flatMap((g) => g.foto.map((a) => a.id));
 %><div class="foto-stampa" data-foto-stampa="/schede/<%= scheda.id %>/foto-stampa" data-msg-conteggio="<%= t('allegati.stampa.conteggio') %>">
   <input type="hidden" name="fotoMostrate" value="<%= ids.join(' ') %>">
@@ -17,9 +22,33 @@
   <% for (const g of fotoStampa.gruppi) { %><div class="foto-stampa__gruppo" role="group" aria-labelledby="fs-<%= g.key %>" data-sezione="<%= g.key %>"<% if (g.esclusa) { %> data-esclusa<% } %>>
     <p class="foto-stampa__titolo" id="fs-<%= g.key %>"><%= g.title %><span class="foto-stampa__esclusa"> (<%= t('allegati.stampa.esclusa') %>)</span></p>
     <ul class="foto-stampa__lista">
-      <% for (const a of g.foto) { %><li><label class="foto-stampa__voce"><input type="checkbox" name="fotoStampa" value="<%= a.id %>"<% if (fotoStampa.scelte.has(a.id)) { %> checked<% } %>><img src="<%= base + a.id %>?riquadro=1" alt="<%= a.didascalia || t('allegati.foto', { nome: a.nomeOriginale }) %>" width="96" height="72" loading="lazy" decoding="async"><span class="foto-stampa__segno" aria-hidden="true"></span></label></li>
+      <% for (const a of g.foto) { %><li><label class="foto-stampa__voce" data-rapporto="<%= rapportoDi(a) %>" data-titolo="<%= g.title %><%= a.didascalia ? ' — ' + a.didascalia : '' %>"><input type="checkbox" name="fotoStampa" value="<%= a.id %>"<% if (fotoStampa.scelte.has(a.id)) { %> checked<% } %>><img src="<%= base + a.id %>?riquadro=1" alt="<%= a.didascalia || t('allegati.foto', { nome: a.nomeOriginale }) %>" width="96" height="72" loading="lazy" decoding="async"><span class="foto-stampa__segno" aria-hidden="true"></span></label></li>
       <% } %>
     </ul>
   </div>
-  <% } } %>
+  <% } %>
+  <div class="foto-disposizione">
+    <fieldset class="foto-disposizione__dimensione">
+      <legend class="foto-stampa__titolo"><%= t('allegati.stampa.dimensione') %></legend>
+      <div class="choice__opts">
+        <% for (const d of ['PICCOLE', 'MEDIE', 'GRANDI', 'UNA']) { %><label class="tick"><input type="radio" name="fotoDimensione" value="<%= d %>"<% if (fotoStampa.dimensione === d) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('allegati.stampa.dimensioni.' + d) %></span></label>
+        <% } %>
+      </div>
+    </fieldset>
+    <input type="hidden" name="fotoOrdine" value="<%= fotoStampa.ordine.join(' ') %>">
+    <div class="foto-disposizione__ordine" data-foto-ordine-blocco data-msg-prima="<%= t('allegati.stampa.prima') %>" data-msg-dopo="<%= t('allegati.stampa.dopo') %>" data-msg-spostata="<%= t('allegati.stampa.spostata') %>" hidden>
+      <div>
+        <p class="foto-stampa__titolo" id="fo-ordine"><%= t('allegati.stampa.ordine') %></p>
+        <p class="foto-stampa__conteggio" data-foto-ordine-vuoto><%= t('allegati.stampa.ordineVuoto') %></p>
+        <ol class="foto-ordine" data-foto-ordine aria-labelledby="fo-ordine"></ol>
+      </div>
+      <div>
+        <p class="foto-stampa__titolo"><%= t('allegati.stampa.anteprima') %></p>
+        <div class="foto-anteprima" data-foto-anteprima aria-hidden="true"></div>
+        <p class="field__hint"><%= t('allegati.stampa.anteprimaHint') %></p>
+      </div>
+      <p class="visually-hidden" data-foto-annuncio aria-live="polite"></p>
+    </div>
+  </div>
+  <% } %>
 </div>

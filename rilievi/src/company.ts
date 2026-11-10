@@ -34,7 +34,7 @@ export const COMPANY = {
 } as const;
 
 /** Последната промяна на публичната страница — сменя се ръчно с текста ѝ; отива в sitemap и JSON-LD. */
-export const CONTENT_UPDATED = '2026-11-04';
+export const CONTENT_UPDATED = '2026-11-10';
 
 /** Последната промяна на политиката за поверителност — показва се на страницата и отива в sitemap. */
-export const PRIVACY_UPDATED = '2026-11-04';
+export const PRIVACY_UPDATED = '2026-11-10';

@@ -3,12 +3,14 @@ import { normalizeSearch } from '../schede/search.js';
 
 /**
  * Уредбата на изчислението без карта (собственикът, 31 октомври 2026): адресът е задължителен (по него
- * изчислението се намира и с него излиза PDF-ът), матрикулата и номерът — по избор, само цифри, като в
- * картата (водещата нула остава). Без база — тества се само.
+ * изчислението се намира и с него излиза PDF-ът), матрикулата и номерът — по избор, като в картата:
+ * матрикулата — свободен текст до 40 знака (собственикът, 10 ноември 2026), номерът — само цифри до 20
+ * (водещата нула остава). Без база — тества се само.
  */
 
 export const MAX_INDIRIZZO = 200;
 export const MAX_IDENTIFICATIVO = 20;
+export const MAX_MATRICOLA = 40;
 
 export interface ImpiantoLibero {
   indirizzo: string;
@@ -30,6 +32,7 @@ const indirizzo = testo.pipe(z.string().min(1, 'required').max(MAX_INDIRIZZO, 't
 const identificativo = testo.pipe(
   z.string().max(MAX_IDENTIFICATIVO, 'tooLong').regex(/^\d*$/, 'digitsOnly'),
 );
+const matricolaTesto = testo.pipe(z.string().max(MAX_MATRICOLA, 'tooLong'));
 
 /** Кодът на грешката от zod — съобщенията на схемите горе са самите кодове. */
 function codice(error: z.ZodError): ErroreImpianto {
@@ -54,7 +57,7 @@ export function parseImpianto(body: Record<string, unknown>): {
     return null;
   };
   const via = leggi('indirizzo', indirizzo);
-  const matricola = leggi('matricola', identificativo);
+  const matricola = leggi('matricola', matricolaTesto);
   const numeroImpianto = leggi('numeroImpianto', identificativo);
   if (Object.keys(errori).length > 0 || via === null) return { impianto: null, errori };
   return {

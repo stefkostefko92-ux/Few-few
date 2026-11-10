@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
+import { VERSIONE } from '../../src/legale/versioni.js';
 import {
   Browser,
   linkFrom,
@@ -157,6 +158,17 @@ describe('invitations', () => {
     });
     assert.equal(done.status, 302);
     assert.equal(done.location, '/schede');
+    // A new person accepts the rules of use first (src/legale/), then the portal opens.
+    const gate = await guest.get('/schede');
+    assert.equal(gate.status, 303);
+    assert.equal(gate.location, '/condizioni/accetta?next=%2Fschede');
+    const rules = await guest.submit('/condizioni/accetta', '/condizioni/accetta', {
+      versioneCondizioni: VERSIONE.CONDIZIONI,
+      versioneRegole: VERSIONE.REGOLE,
+      regole: 'si',
+      next: '/schede',
+    });
+    assert.equal(rules.status, 303);
     assert.equal((await guest.get('/schede')).status, 200);
     const user = await prisma.user.findUniqueOrThrow({
       where: { email: 'tecnico.due@rilievi.test' },

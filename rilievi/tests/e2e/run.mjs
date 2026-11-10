@@ -7,13 +7,15 @@
 // company settings (impostazioni.mjs), the same data filled in real time in every direction
 // (tempo-reale.mjs), the company ADMIN invited by the MASTER and a technician invited by that ADMIN
 // who sees the company's sheets (inviti.mjs), photos in a section of the sheet (allegati.mjs — the worker
-// must run next to the portal: `npm run worker`), the sketch pad turned on for the company and drawn in its
-// full-screen editor (schizzi.mjs), the side bar and an intervention form signed and confirmed
-// (interventi.mjs), the company data and the stop sign (cartelli.mjs), the machine calculation
-// (argano.mjs), the phone (telefono.mjs), and accessibility (axe-core, WCAG 2.1 AA) on every page, in
+// must run next to the portal: `npm run worker`), their size and order in the print with the preview
+// (foto-ordine.mjs), the sketch pad (on for every company) drawn in its full-screen editor (schizzi.mjs), the side bar and an intervention form signed and confirmed
+// (interventi.mjs), the company data and the stop sign (cartelli.mjs), the closing report signed
+// with its two PDFs (verbali.mjs), the machine calculation (argano.mjs) and the overspeed governor
+// calculation (limitatore.mjs), the phone (telefono.mjs), and accessibility (axe-core, WCAG 2.1 AA) on every page, in
 // the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
 //
 //   RILIEVI_URL=http://127.0.0.1:4330 E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e
+//   (E2E_CHROMIUM=/path/to/chrome — optional, another Chromium than Playwright's own)
 //
 // The account must be a MASTER (companies are theirs). It creates real records — run it against a
 // local or staging portal, never production.
@@ -38,13 +40,16 @@ import { checkCompanyData, checkEveryLink } from './collegati-tutti.mjs';
 import { checkInstallableApp, checkInstallPhone } from './installa.mjs';
 import { checkCartelli } from './cartelli.mjs';
 import { checkArgano } from './argano.mjs';
+import { checkLimitatore } from './limitatore.mjs';
 import { checkInterventi } from './interventi.mjs';
+import { checkVerbali } from './verbali.mjs';
 import { checkPhone } from './telefono.mjs';
 import { checkMovilift } from './movilift.mjs';
 import { checkPrintedNotes, fillDoorsAndChecks } from './porte.mjs';
 import { checkQuadro } from './quadro.mjs';
 import { checkSettings } from './impostazioni.mjs';
 import { checkAttachments } from './allegati.mjs';
+import { checkPhotoOrder } from './foto-ordine.mjs';
 import { checkSketches } from './schizzi.mjs';
 import { checkRealTime } from './tempo-reale.mjs';
 
@@ -59,7 +64,10 @@ if (!email || !password) {
 const shots = join(here, 'shots');
 mkdirSync(shots, { recursive: true });
 const signIn = (page, who, secret) => signInAt(page, base, who, secret);
-const browser = await chromium.launch();
+// E2E_CHROMIUM: a Chromium already on the machine, when it is not the build the pinned Playwright expects.
+const browser = await chromium.launch(
+  process.env.E2E_CHROMIUM ? { executablePath: process.env.E2E_CHROMIUM } : {},
+);
 let sheetUrl = '';
 let aziendaPath = '';
 const aziendaName = `Ascensori E2E ${Date.now()}`;
@@ -245,6 +253,7 @@ try {
       await checkInstallableApp(browser, { base, shots, scheme, email, password });
       await checkInstallPhone(browser, { base, shots, scheme });
       await checkAttachments(page, { sheetUrl, shots });
+      await checkPhotoOrder(page, { sheetUrl, shots });
       await checkSketches(page, { base, aziendaPath, sheetUrl, shots, scheme });
     }
 
@@ -273,8 +282,10 @@ try {
     await page.screenshot({ path: join(shots, `${scheme}-print.png`), fullPage: true });
     await checkInterventi(page, { base, shots, scheme, aziendaName });
     await checkCartelli(page, { base, shots, scheme, aziendaPath, sheetUrl });
+    await checkVerbali(page, { base, shots, scheme, sheetUrl });
     if (scheme === 'light') await checkCompanyData(context, { base, aziendaName, scheme });
     await checkArgano(page, { shots, scheme, sheetUrl, aziendaId: aziendaPath.split('/').pop() });
+    await checkLimitatore(page, { shots, scheme, sheetUrl });
 
     await checkPhone(browser, { base, shots, scheme, email, password, sheetUrl });
     await context.close();

@@ -34,8 +34,10 @@ export async function checkAttachments(page, { sheetUrl, shots }) {
 
   await page.goto(sheetUrl);
   const block = page.locator('[data-allegati="quadro"]');
+  // The camera button is for a touch screen only (telefono.mjs): not on a desktop.
+  if (await block.locator('.allegati__scatta').isVisible()) fail('camera button on a desktop');
   await block.locator('summary').click();
-  await block.locator('input[type=file]').setInputFiles(files);
+  await block.locator('#up-quadro').setInputFiles(files);
   await block.locator('input[name=didascalia]').fill('Quadro, lato sinistro');
   // What the page really sends: the files of the request's form.
   await page.evaluate(() => {

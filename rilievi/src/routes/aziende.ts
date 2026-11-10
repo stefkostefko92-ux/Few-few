@@ -10,7 +10,6 @@ import {
 } from '../auth/guards.js';
 import { inScope, scopeFor } from '../auth/scope.js';
 import { eliminazioneIl, GIORNI_PRIMA_DELL_ELIMINAZIONE } from '../aziende/eliminazione.js';
-import { setSchizzi } from '../aziende/funzioni.js';
 import { LOGO_MAX_BYTES, normalizeLogo, type Logo } from '../aziende/logo.js';
 import {
   aziendaLogo,
@@ -155,16 +154,6 @@ aziendeRouter.post('/aziende/:id/logo/rimuovi', manage, requireCsrf, async (req,
   const id = String(req.params.id);
   if (!(await setAziendaLogo(principalOf(req).user, id, null))) return notFound(req, res);
   setFlash(res, 'ok', 'flash.logoRemoved');
-  res.redirect(303, `/aziende/${encodeURIComponent(id)}`);
-});
-
-aziendeRouter.post('/aziende/:id/schizzi', manage, requireCsrf, async (req, res) => {
-  const id = String(req.params.id);
-  const attivi = (req.body as Record<string, unknown>).attivi === '1';
-  if (!isAziendaId(id) || !(await setSchizzi(principalOf(req).user, id, attivi))) {
-    return notFound(req, res);
-  }
-  setFlash(res, 'ok', attivi ? 'flash.schizziOn' : 'flash.schizziOff');
   res.redirect(303, `/aziende/${encodeURIComponent(id)}`);
 });
 

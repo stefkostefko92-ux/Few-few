@@ -3,6 +3,8 @@ import { config, isProduction } from '../config.js';
 import { randomToken, safeEqual } from '../crypto.js';
 import { readCookie } from '../http/cookies.js';
 import { setFlash } from '../http/flash.js';
+import { ACCETTA_PATH, FIRMA_PATH } from '../legale/percorsi.js';
+import { daAccettare, inAttesa } from '../legale/stato.js';
 import { HOUR } from '../time.js';
 import type { Capability } from './roles.js';
 import { canAnywhere } from './scope.js';
@@ -50,6 +52,9 @@ export function safeNext(raw: unknown, fallback = '/schede'): string {
 /** Докато първата парола не е сменена, отворени са само тези пътища. */
 const WHILE_MUST_CHANGE = new Set(['/account', '/account/password', '/esci']);
 
+/** Докато условията или правилата не са приети, отворени са само приемането, подписът и изходът. */
+const WHILE_PENDING = new Set([ACCETTA_PATH, FIRMA_PATH, `${FIRMA_PATH}/nuovo-codice`, '/esci']);
+
 /** Вписан човек. Без това — към входа (с връщане тук след него). */
 export function requireUser(req: Request, res: Response, next: NextFunction): void {
   const principal = req.principal;
@@ -65,6 +70,16 @@ export function requireUser(req: Request, res: Response, next: NextFunction): vo
   if (principal.user.mustChangePassword && !WHILE_MUST_CHANGE.has(req.path)) {
     setFlash(res, 'info', 'flash.mustChangePassword');
     res.redirect('/account');
+    return;
+  }
+  // Без приети условия за услугата и правила за ползване порталът не се ползва (src/legale/).
+  if (inAttesa(daAccettare(principal.user)) && !WHILE_PENDING.has(req.path)) {
+    if (isPartial(req)) {
+      res.status(403).type('text/plain').send(res.locals.t('legale.inAttesa'));
+      return;
+    }
+    const back = req.method === 'GET' ? `?next=${encodeURIComponent(req.originalUrl)}` : '';
+    res.redirect(303, `${ACCETTA_PATH}${back}`);
     return;
   }
   next();

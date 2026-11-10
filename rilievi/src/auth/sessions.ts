@@ -143,6 +143,8 @@ export async function resolveSession(token: string | undefined): Promise<Princip
           theme: true,
           colori: true,
           mustChangePassword: true,
+          novitaLetteAt: true,
+          regoleVersione: true,
           deactivatedAt: true,
           memberships: { select: MEMBERSHIP_SELECT },
         },
@@ -174,7 +176,8 @@ export async function resolveSession(token: string | undefined): Promise<Princip
     if (slid.count === 0) return null;
   }
 
-  const { id, email, name, master, theme, mustChangePassword } = session.user;
+  const { id, email, name, master, theme, mustChangePassword, novitaLetteAt, regoleVersione } =
+    session.user;
   const colori = coloriSalvati(session.user.colori);
   const user: SessionUser = {
     id,
@@ -185,6 +188,8 @@ export async function resolveSession(token: string | undefined): Promise<Princip
     theme,
     colori,
     mustChangePassword,
+    novitaLetteAt,
+    regoleVersione,
   };
   return { user, session: { id: session.id, csrfToken: session.csrfToken } };
 }

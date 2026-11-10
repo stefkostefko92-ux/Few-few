@@ -65,7 +65,9 @@ describe('the photos to print, chosen as icons at the end of the form', () => {
     assert.match(print.body, /class="paper__section paper__foto"/);
     assert.match(print.body, new RegExp(`/schede/${id}/allegati/${two!.id}\\?mini=1`));
     assert.doesNotMatch(print.body, new RegExp(`/allegati/${one!.id}\\?mini=1`));
-    assert.equal(await pages(), before + 1, 'the photos start on a page of their own');
+    // One photo continues under the sheet (to save paper — the owner, 5 November 2026), or on one page more.
+    const con = await pages();
+    assert.ok(con === before || con === before + 1, `${before} → ${con} pages`);
 
     // Only the photos shown change: one uploaded after the page opened keeps its choice.
     assert.deepEqual(await save({ fotoMostrate: one!.id }), [two!.id]);
@@ -115,7 +117,9 @@ describe('the photos to print, chosen as icons at the end of the form', () => {
     assert.equal(saved.status, 303);
     const print = (await browser.get(`/schede/${id}/stampa`)).body;
     assert.match(print, new RegExp(`/allegati/${argano.id}\\?mini=1`), 'ticked: printed anyway');
-    assert.match(print, /<h3 class="paper__foto-titolo">Argano<\/h3>/);
+    // One flow for every section, the section in each caption (the owner, 5 November 2026).
+    assert.match(print, /<strong class="paper__foto-sezione">Argano<\/strong>/);
+    assert.doesNotMatch(print, /paper__foto-titolo/);
     assert.doesNotMatch(print, new RegExp(`/allegati/${quadro.id}\\?mini=1`));
 
     // A new sheet has no photos yet: no icons, the hint says when they come.
