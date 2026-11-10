@@ -1,4 +1,5 @@
-// The portal on a phone (390 px, touch, then the narrowest 320 px): the side bar from ☰ (interventi.mjs)
+// The portal on a phone (390 px, touch, then the narrowest 320 px, and a tablet's 810 px for sideways
+// scroll): the side bar from ☰ (interventi.mjs)
 // and the pages a technician opens on site — no horizontal scroll, every row of fields on one line,
 // every control keeps its name (axe), a full-page screenshot each. Then the camera button of a section
 // (the owner, 10 November 2026: "dammi la possibilità di fare la foto istantanea"): it opens the camera
@@ -44,6 +45,14 @@ export async function checkPhone(browser, { base, shots, scheme, email, password
       if (overflow) fail(`${scheme} mobile ${name} @${width}px: horizontal scroll`);
       await aligned(mobile, `${scheme} mobile ${name} @${width}px`);
     }
+    // A tablet held upright (810 px): the tables are not yet cards there — a long email must wrap.
+    await mobile.setViewportSize({ width: 810, height: 1080 });
+    if (
+      await mobile.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      )
+    )
+      fail(`${scheme} tablet ${name} @810px: horizontal scroll`);
     await mobile.setViewportSize({ width: 390, height: 844 });
     // The phone layout hides labels behind icons: check that every control keeps its name.
     await audit(mobile, `${scheme} mobile ${name}`);
