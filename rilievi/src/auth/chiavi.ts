@@ -68,6 +68,18 @@ export function hmacRecupero(code: string): string {
   return createHmac('sha256', derived('recovery-code-v1')).update(code).digest('hex');
 }
 
+/** HMAC на доказателствата (src/legale/sigillo.ts): приемания и изтеглени изчисления. */
+export function hmacProva(contenuto: string): string {
+  return createHmac('sha256', derived('prove-legali-v1')).update(contenuto, 'utf8').digest('hex');
+}
+
+/** HMAC на кода за подписа на условията, вързан за своя опит — в базата не стои самият код. */
+export function hmacCodiceFirma(sfidaId: string, codice: string): string {
+  return createHmac('sha256', derived('firma-condizioni-v1'))
+    .update(`${sfidaId}:${codice}`, 'utf8')
+    .digest('hex');
+}
+
 /** HMAC на мрежата на грешен вход — броят се опитите, без да се пази адресът. */
 export function hmacRete(rete: string): string {
   return createHmac('sha256', derived('login-net-v1')).update(rete).digest('hex');

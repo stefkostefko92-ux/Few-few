@@ -65,7 +65,7 @@ describe(
       const words = parole(pdf);
       if (words !== null) {
         assert.match(words, /Ascensori Esempio S\.r\.l\./);
-        assert.match(words, /Tarare V1\s+da 1,84 a 2,15 m\/s/);
+        assert.match(words, /V1 calcolata \(da verificare\)\s+da 1,84 a 2,15 m\/s/);
         assert.match(
           words,
           /Limite di norma\s+da 1,84 m\/s \(incluso\) a 2,15625 m\/s \(escluso\)/,
@@ -89,7 +89,7 @@ describe(
       if (words !== null) {
         assert.match(words.replace(/\s+/g, ' '), /solo con velocità nominale fino a 0,63 m\/s/);
         assert.doesNotMatch(words, /m\/\s*\n\s*s/, 'm/s is never split over two lines');
-        assert.doesNotMatch(words, /Tarare V1/);
+        assert.doesNotMatch(words, /V1 calcolata/);
         assert.match(words, /Limiti secondo\s+UNI EN 81-20:2020 — UNI 10411-1:2024, punto 6\.7/);
       }
     });

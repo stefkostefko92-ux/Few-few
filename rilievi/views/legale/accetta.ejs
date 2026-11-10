@@ -1,0 +1,65 @@
+<%
+  // Приемането преди портала (src/legale/): правилата — всеки; условията — ADMIN за фирмата, с данните ѝ
+  // и отметка, после подписът с код (firma.ejs); другите чакат администратора. Отметките никога не идват
+  // отметнати — и след грешка се слагат наново.
+  const giorno = (v) => fmt.day(new Date(v + 'T00:00:00Z'));
+  const aria = (key) => errori[key] ? ' aria-invalid="true" aria-describedby="err-' + key + '"' : '';
+  const campi = ['ragioneSociale', 'sede', 'partitaIva'];
+  const ordine = ['ragioneSociale', 'sede', 'partitaIva', 'condizioni', 'regole'].filter((k) => errori[k]);
+%><%- include('../partials/top', { titleKey: 'legale.accetta.titolo', narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('legale.accetta.titolo') %></h1>
+    <p class="page-head__sub"><%= t('legale.accetta.intro') %></p>
+  </div>
+  <form method="post" action="/esci"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit"><%= t('legale.accetta.esci') %></button></form>
+</div>
+<div class="stack-gap legale">
+  <% if (errore) { %><div class="errors" role="alert"><h2><%= t(errore) %></h2></div><% } %>
+  <% if (ordine.length) { %><div class="errors" role="alert" id="legale-errori" tabindex="-1">
+    <ul>
+      <% for (const key of ordine) { %><li><a href="#f-<%= key %>"><%= t(errori[key]) %></a></li>
+      <% } %>
+    </ul>
+  </div><% } %>
+
+  <% if (stato.condizioni === 'attendi') { %><section class="legale__attesa" aria-labelledby="h-attesa">
+    <h2 class="section__title" id="h-attesa"><%= t('legale.accetta.attesaTitolo') %></h2>
+    <p><%= t('legale.accetta.attesa', { azienda }) %></p>
+    <p><%= amministratori.length ? t('legale.accetta.attesaChi', { nomi: amministratori.join(', ') }) : t('legale.accetta.attesaNessuno') %></p>
+    <% if (!stato.regole) { %><p class="muted"><%= t('legale.accetta.attesaFatto') %></p><% } %>
+  </section><% } %>
+
+  <% if (stato.condizioni === 'accetta' || stato.regole) { %><form class="form" method="post" action="/condizioni/accetta" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="next" value="<%= next %>">
+    <input type="hidden" name="versioneCondizioni" value="<%= versione.CONDIZIONI %>">
+    <input type="hidden" name="versioneRegole" value="<%= versione.REGOLE %>">
+    <p><a href="<%= condizioniPath %>" target="_blank" rel="noopener"><%= t('legale.accetta.leggi') %></a></p>
+
+    <% if (stato.condizioni === 'accetta') { %><fieldset class="legale__blocco">
+      <legend class="section__title"><%= t('legale.accetta.aziendaTitolo') %></legend>
+      <p><%= t('legale.accetta.aziendaTesto', { azienda }) %></p>
+      <% for (const key of campi) { %><div class="field">
+        <label class="field__label" for="f-<%= key %>"><%= t('legale.accetta.' + key) %></label>
+        <input class="input" id="f-<%= key %>" name="<%= key %>" type="text" required maxlength="<%= key === 'partitaIva' ? 20 : key === 'sede' ? 300 : 200 %>"<% if (key === 'partitaIva') { %> autocapitalize="characters" spellcheck="false"<% } else if (key === 'ragioneSociale') { %> autocomplete="organization"<% } %> value="<%= valori[key] ?? '' %>"<%- aria(key) %>>
+        <% if (key === 'partitaIva') { %><p class="field__hint"><%= t('legale.accetta.partitaIvaHint') %></p><% } %>
+        <% if (errori[key]) { %><p class="field__error" id="err-<%= key %>"><%= t(errori[key]) %></p><% } %>
+      </div>
+      <% } %>
+      <label class="tick legale__spunta"><input type="checkbox" id="f-condizioni" name="condizioni" value="si"<%- aria('condizioni') %>><span class="tick__box" aria-hidden="true"></span><span><%= t('legale.accetta.condizioni', { versione: giorno(versione.CONDIZIONI) }) %></span></label>
+      <% if (errori.condizioni) { %><p class="field__error" id="err-condizioni"><%= t(errori.condizioni) %></p><% } %>
+      <p class="muted"><%= t('legale.accetta.passo') %></p>
+    </fieldset><% } %>
+
+    <% if (stato.regole) { %><fieldset class="legale__blocco">
+      <legend class="section__title"><%= t('legale.accetta.regoleTitolo') %></legend>
+      <p><a href="<%= condizioniPath %>#regole" target="_blank" rel="noopener"><%= t('legale.accetta.leggiRegole') %></a></p>
+      <label class="tick legale__spunta"><input type="checkbox" id="f-regole" name="regole" value="si"<%- aria('regole') %>><span class="tick__box" aria-hidden="true"></span><span><%= t('legale.accetta.regole') %></span></label>
+      <% if (errori.regole) { %><p class="field__error" id="err-regole"><%= t(errori.regole) %></p><% } %>
+    </fieldset><% } %>
+
+    <div class="toolbar"><button class="btn btn--primary" type="submit"><%= t(stato.condizioni === 'accetta' ? 'legale.accetta.continua' : 'legale.accetta.accetta') %></button></div>
+  </form><% } %>
+</div>
+<%- include('../partials/bottom') %>

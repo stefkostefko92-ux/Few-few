@@ -1,7 +1,7 @@
 <%
   // Новините на портала (src/novita/voci.ts): по дни, от най-новия; всяка новина — със своята котва
   // (прозорецът в портала и емисията сочат дотам). Видимият път до страницата е и в JSON-LD.
-%><%- include('top', { pageTitle: t('novita.meta.title'), description: t('novita.meta.description'), keywords: t('novita.meta.keywords'), feed, extraSheets: ['site-novita'] }) %>
+%><%- include('top', { pageTitle: t('novita.meta.title'), description: t('novita.meta.description'), keywords: t('novita.meta.keywords'), feed, extraSheets: ['site-percorso', 'site-novita'] }) %>
 <div class="prose novita-pagina">
   <nav class="percorso" aria-label="<%= t('novita.percorso') %>">
     <ol>

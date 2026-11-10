@@ -49,6 +49,8 @@ COPY prisma ./prisma
 COPY assets ./assets
 COPY views ./views
 COPY locales ./locales
+# Условията и правилата — всяка приета версия (src/legale/testi.ts).
+COPY legale ./legale
 COPY package.json ./package.json
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 # Кодът остава на root, node само го чете — процесът няма право да пише собствения си код.

@@ -115,7 +115,10 @@ describe('the machine calculation of a scheda', () => {
     assert.match(results, /0,73 m\/s/);
     assert.match(results, /−26,7 %/);
     assert.match(results, /2,223/);
-    assert.match(results, /Aderenza verificata nei due casi/);
+    assert.match(
+      results,
+      /Verifica di calcolo soddisfatta con i dati inseriti: aderenza nei due casi/,
+    );
     assert.ok(!/[А-яЁё]/.test(results), 'no Cyrillic in the page');
 
     const pdf = await browser.get(`${pagina(scheda.id)}.pdf`);

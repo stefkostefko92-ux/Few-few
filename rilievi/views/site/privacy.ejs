@@ -8,7 +8,7 @@
     { name: 'rilievi_theme', purpose: t('privacy.cookies.theme'), kept: t('privacy.cookies.prefKept') },
     { name: 'rilievi_flash', purpose: t('privacy.cookies.flash'), kept: t('privacy.cookies.flashKept') },
   ];
-  const rows = ['request', 'account', 'inviti', 'lavoro', 'media', 'audit', 'ip', 'backup'];
+  const rows = ['request', 'account', 'inviti', 'lavoro', 'media', 'audit', 'accettazioni', 'calcoli', 'ip', 'backup'];
   const headers = ['data', 'why', 'basis', 'kept'];
   const params = { days: retentionDays, auditDays, inviteDays, endDays };
 %><%- include('top', { pageTitle: t('privacy.title') + ' — Rilievi Impianti', description: t('privacy.metaDescription') }) %>
@@ -22,6 +22,7 @@
 
   <h2><%= t('privacy.roles.title') %></h2>
   <p><%= t('privacy.roles.text', { endDays }) %></p>
+  <p><%= t('privacy.roles.contract') %> <a href="<%= condizioniPath %>"><%= t('legale.pagina.title') %></a>.</p>
 
   <h2><%= t('privacy.table.title') %></h2>
   <div class="table-wrap">
@@ -62,6 +63,7 @@
 
   <h2><%= t('privacy.rights.title') %></h2>
   <p><%= t('privacy.rights.text') %> <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a>. <%= t('privacy.rights.reply') %></p>
+  <p><%= t('privacy.rights.registri') %></p>
   <p><%= t('privacy.rights.complaint') %></p>
 
   <h2><%= t('privacy.changes.title') %></h2>

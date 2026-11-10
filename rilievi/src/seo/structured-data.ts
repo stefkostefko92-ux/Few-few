@@ -163,9 +163,13 @@ export function landingStructuredData(t: Translator, canonical: string): string 
   return jsonForScript({ '@context': 'https://schema.org', '@graph': graph });
 }
 
-export function privacyStructuredData(t: Translator, canonical: string, updated: string): string {
+/** Обикновена правна страница (поверителността, условията): страницата и пътят до нея. */
+export function paginaStructuredData(
+  t: Translator,
+  canonical: string,
+  p: { title: string; description: string; updated: string },
+): string {
   const base = config().PUBLIC_BASE_URL;
-  const title = t('privacy.title');
   return jsonForScript({
     '@context': 'https://schema.org',
     '@graph': [
@@ -175,18 +179,26 @@ export function privacyStructuredData(t: Translator, canonical: string, updated:
         '@type': 'WebPage',
         '@id': `${canonical}#page`,
         url: canonical,
-        name: title,
-        description: t('privacy.metaDescription'),
+        name: p.title,
+        description: p.description,
         inLanguage: IN_LANGUAGE,
         isPartOf: { '@id': `${base}/#website` },
-        dateModified: updated,
+        dateModified: p.updated,
         breadcrumb: { '@id': `${canonical}#breadcrumb` },
       },
       breadcrumb(canonical, [
         { name: 'Rilievi Impianti', url: `${base}${HOME_PATH}` },
-        { name: title, url: canonical },
+        { name: p.title, url: canonical },
       ]),
     ],
+  });
+}
+
+export function privacyStructuredData(t: Translator, canonical: string, updated: string): string {
+  return paginaStructuredData(t, canonical, {
+    title: t('privacy.title'),
+    description: t('privacy.metaDescription'),
+    updated,
   });
 }
 

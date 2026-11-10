@@ -10,7 +10,9 @@ import { righeRisultato } from '../argano/righe.js';
 import { aziendaDelCalcolo, type CalcoloSalvato } from '../argano/service.js';
 import { CATENE, FUNI, FUNI_COMPENSAZIONE } from '../argano/tabelle.js';
 import { testataDi } from '../aziende/intestazione.js';
+import { principalOf } from '../auth/guards.js';
 import { config } from '../config.js';
+import { registraEmissione } from '../legale/emissioni.js';
 
 /**
  * Общото на изчислението за аргано на карта (calcolo-argano.ts) и без карта (calcolo-argano-libero.ts):
@@ -119,12 +121,18 @@ export async function inviaPdf(
     impianto: Impianto;
     aziendaId: string;
     nome: string;
+    /** Изчислението и картата му — за записа на изтеглянето (src/legale/emissioni.ts). */
+    rif: { calcoloId: string | null; schedaId: string | null };
   },
 ): Promise<void> {
   const t = res.locals.t as T;
+  const sezioni = righeRisultato(calcolaArgano(opts.dati), opts.dati, t);
+  const build = buildCorrente();
+  const impronta = improntaCalcolo('argano', build, opts.dati);
+  const azienda = await aziendaDelCalcolo(opts.aziendaId);
   const pdf = await renderCalcoloArgano({
     dati: opts.dati,
-    sezioni: righeRisultato(calcolaArgano(opts.dati), opts.dati, t),
+    sezioni,
     t,
     impianto: {
       indirizzo: opts.impianto.indirizzo ?? '',
@@ -139,12 +147,26 @@ export async function inviaPdf(
     generato: {
       quando: res.locals.fmt.dateTime(new Date()),
       autore: res.locals.currentUser?.name ?? '',
-      build: buildCorrente(),
-      impronta: improntaCalcolo('argano', buildCorrente(), opts.dati),
+      build,
+      impronta,
     },
-    testata: await testataDi(await aziendaDelCalcolo(opts.aziendaId)),
+    testata: await testataDi(azienda),
     fontDir: config().PDF_FONT_DIR,
   });
+  const { id, name: nome, email } = principalOf(req).user;
+  // Само изпратен PDF (HEAD изрисува, но не праща).
+  if (req.method === 'GET')
+    await registraEmissione({
+      calcolo: 'argano',
+      impronta,
+      build,
+      dati: opts.dati,
+      risultato: sezioni,
+      ...opts.rif,
+      azienda,
+      user: { id, name: nome, email },
+      pdf,
+    });
   const name = `calcolo-argano-${opts.nome}.pdf`.replace(/[^A-Za-z0-9._-]/g, '');
   res
     .status(200)

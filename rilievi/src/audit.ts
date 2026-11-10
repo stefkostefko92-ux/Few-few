@@ -68,6 +68,9 @@ export const AUDIT_ACTIONS = [
   'ACCESS_REQUEST_ACCEPT',
   'ACCESS_REQUEST_REJECT',
   'ACCESS_REQUEST_DELETE',
+  // Условията за услугата (ADMIN за фирмата) и правилата за ползване (всеки) — src/legale/.
+  'CONDIZIONI_ACCETTATE',
+  'REGOLE_ACCETTATE',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

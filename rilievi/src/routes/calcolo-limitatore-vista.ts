@@ -1,7 +1,9 @@
 import type { Request, Response } from 'express';
 import { buildCorrente, improntaCalcolo } from '../build.js';
 import { testataDi } from '../aziende/intestazione.js';
+import { principalOf } from '../auth/guards.js';
 import { config } from '../config.js';
+import { registraEmissione } from '../legale/emissioni.js';
 import {
   calcolaLimitatore,
   INTERVENTI,
@@ -77,11 +79,17 @@ export async function inviaPdfLimitatore(
     impianto: Impianto;
     aziendaId: string;
     nome: string;
+    /** Изчислението и картата му — за записа на изтеглянето (src/legale/emissioni.ts). */
+    rif: { calcoloId: string | null; schedaId: string | null };
   },
 ): Promise<void> {
   const t = res.locals.t as T;
+  const sintesi = sintesiLimitatore(opts.dati, calcolaLimitatore(opts.dati), t);
+  const build = buildCorrente();
+  const impronta = improntaCalcolo('limitatore', build, opts.dati);
+  const azienda = await aziendaDelCalcolo(opts.aziendaId);
   const pdf = await renderCalcoloLimitatore({
-    sintesi: sintesiLimitatore(opts.dati, calcolaLimitatore(opts.dati), t),
+    sintesi,
     t,
     impianto: {
       indirizzo: opts.impianto.indirizzo ?? '',
@@ -96,12 +104,26 @@ export async function inviaPdfLimitatore(
     generato: {
       quando: res.locals.fmt.dateTime(new Date()),
       autore: res.locals.currentUser?.name ?? '',
-      build: buildCorrente(),
-      impronta: improntaCalcolo('limitatore', buildCorrente(), opts.dati),
+      build,
+      impronta,
     },
-    testata: await testataDi(await aziendaDelCalcolo(opts.aziendaId)),
+    testata: await testataDi(azienda),
     fontDir: config().PDF_FONT_DIR,
   });
+  const { id, name: nome, email } = principalOf(req).user;
+  // Само изпратен PDF (HEAD изрисува, но не праща).
+  if (req.method === 'GET')
+    await registraEmissione({
+      calcolo: 'limitatore',
+      impronta,
+      build,
+      dati: opts.dati,
+      risultato: sintesi,
+      ...opts.rif,
+      azienda,
+      user: { id, name: nome, email },
+      pdf,
+    });
   const name = `calcolo-limitatore-${opts.nome}.pdf`.replace(/[^A-Za-z0-9._-]/g, '');
   res
     .status(200)

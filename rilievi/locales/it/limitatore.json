@@ -1,7 +1,7 @@
 {
   "limitatore": {
     "titolo": "Calcolo limitatore",
-    "sottotitolo": "Inserisci velocità, tipo di paracadute, norma alla data di installazione e cosa si modifica: il risultato è la velocità di intervento V1 da tarare.",
+    "sottotitolo": "Inserisci velocità, tipo di paracadute, norma alla data di installazione e cosa si modifica: il risultato indica la velocità di intervento V1 calcolata, da verificare da un tecnico abilitato prima della taratura.",
     "normativa": "UNI 10411-1:2024 e UNI 10411-11:2024 — limitatore di velocità del paracadute di cabina",
     "apri": "Calcolo limitatore",
     "pdf": "Scarica PDF",
@@ -71,7 +71,7 @@
     },
     "r": {
       "titolo": "Risultato",
-      "v1": "Tarare V1",
+      "v1": "V1 calcolata (da verificare)",
       "v1Valore": "da {da} a {a} m/s",
       "v1Fino": "fino a {a} m/s",
       "limite": "Limite di norma",

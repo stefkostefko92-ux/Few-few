@@ -89,39 +89,42 @@ enum AccessRequestStatus {
 /// Фирма — клиент на портала: свои хора, свои карти, свое лого на листа. Създава я само MASTER
 /// (собственикът на портала); всяка фирма вижда само своето (src/auth/scope.ts).
 model Azienda {
-  id               String    @id @default(cuid())
-  name             String    @unique @db.VarChar(120)
+  id                 String    @id @default(cuid())
+  name               String    @unique @db.VarChar(120)
   /// Логото за листа и PDF-а — вече прекодирано от src/aziende/logo.ts (PNG или JPEG, без метаданни).
-  logo             Bytes?
-  logoType         String?   @db.VarChar(20)
-  logoWidth        Int?
-  logoHeight       Int?
-  logoUpdatedAt    DateTime?
+  logo               Bytes?
+  logoType           String?   @db.VarChar(20)
+  logoWidth          Int?
+  logoHeight         Int?
+  logoUpdatedAt      DateTime?
   /// Деактивирана фирма: хората ѝ не влизат и сесиите им падат; картите ѝ остават.
-  deactivatedAt    DateTime?
+  deactivatedAt      DateTime?
   /// Редът на разделите на картата във фирмата (ключовете от src/schede/fields.ts); празно — редът по
   /// подразбиране. Подрежда го администраторът ѝ (src/aziende/sezioni.ts).
-  ordineSezioni    String[]  @default([])
+  ordineSezioni      String[]  @default([])
   /// Скицникът — от 10 ноември 2026 винаги включен за всички (собственикът: „attiva gli schizzi per tutti
   /// … togli l'opzione per disattivarli“); кодът не чете колоната, тя остава за връщане назад.
-  schizzi          Boolean   @default(true)
+  schizzi            Boolean   @default(true)
   /// Последният даден номер на лист за интервенция във фирмата (собствен брояч от 1, без дупки):
   /// новият лист взема +1 в транзакцията си (src/interventi/service.ts).
-  interventiNumero Int       @default(0)
+  interventiNumero   Int       @default(0)
   /// Данните на фирмата за главата на табелата „Avviso di fermo impianto“ (име, дейност, адрес,
   /// контакти, P. IVA) — попълва ги администраторът ѝ; проверени при запис и четени с недоверие
   /// (src/aziende/dati.ts). null — още не са записани.
-  datiSocietari    Json?
+  datiSocietari      Json?
   /// Шаблонът на табелата, избран в настройките (src/cartelli/modelli.ts); непознат или null — първият.
-  cartelloModello  String?   @db.VarChar(40)
+  cartelloModello    String?   @db.VarChar(40)
   /// Имената на ролите във фирмата ({ADMIN: „Titolare“, …}) — сменя ги администраторът ѝ; липсващото
   /// е името по подразбиране (src/auth/permessi.ts).
-  nomiRuoli        Json?
+  nomiRuoli          Json?
   /// Правата на ролите под ADMIN за картите, листовете, табелите и регистъра ({TECNICO: [...], …}) —
   /// сменя ги администраторът ѝ; липсващата роля е по йерархията (src/auth/permessi.ts).
-  permessiRuoli    Json?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  permessiRuoli      Json?
+  /// Версията на условията за услугата, приети за фирмата от неин ADMIN (src/legale/); различна от
+  /// текущата — хората ѝ не ползват портала до приемането. Доказателството е в `Accettazione`.
+  condizioniVersione String?   @db.VarChar(20)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   memberships       Membership[]
   invites           Invite[]
@@ -169,6 +172,9 @@ model User {
   /// Докога човекът е прочел новините на портала (src/novita/): прозорецът показва публикуваните след
   /// това. Нов акаунт — от създаването си (по-старите новини не са новост за него); „Ho capito“ — сега.
   novitaLetteAt      DateTime  @default(now())
+  /// Версията на правилата за ползване, които човекът е приел (src/legale/); различна от текущата —
+  /// порталът иска приемане, преди да отвори нещо друго. Доказателството е в `Accettazione`.
+  regoleVersione     String?   @db.VarChar(20)
   passwordChangedAt  DateTime  @default(now())
   invitedById        String?
   invitedBy          User?     @relation("InvitedUsers", fields: [invitedById], references: [id], onDelete: SetNull)
@@ -190,6 +196,7 @@ model User {
   interventiChiusi  Intervento[]        @relation("InterventiChiusi")
   cartelliCreati    Cartello[]          @relation("CartelliCreati")
   recoveryCodes     RecoveryCode[]
+  firmeCondizioni   FirmaCondizioni[]
   loginChallenges   LoginChallenge[]
   cartelliMod       Cartello[]          @relation("CartelliModificati")
   calcoliArgano     CalcoloArgano[]
@@ -1060,4 +1067,116 @@ model LoginFailure {
 model Novita {
   id           String   @id
   pubblicataAt DateTime
+}
+
+/// Видът на правния текст, който се приема (src/legale/): условията за услугата — за фирмата, от неин ADMIN,
+/// със специалното одобрение на клаузите (чл. 1341–1342 c.c.); правилата за ползване — от всеки човек.
+enum TipoTesto {
+  CONDIZIONI
+  REGOLE
+}
+
+/// Точният текст на всяка версия, както е бил приет: пише се веднъж при първото приемане на версията и не
+/// се сменя никога (src/legale/testi.ts). Доказателството не зависи от историята на репото.
+model TestoLegale {
+  tipo         TipoTesto
+  versione     String    @db.VarChar(20)
+  /// SHA-256 (hex) на `testo`.
+  hash         String    @db.Char(64)
+  testo        String
+  registratoAt DateTime  @default(now())
+
+  @@id([tipo, versione])
+}
+
+/// Едно приемане — доказателство, не настройка. Без връзки към човека и фирмата: редът остава и след
+/// изтриването им (чл. 17, ал. 3, б. „e“ GDPR), със снимка на имената. Пази се докато фирмата съществува
+/// и още ANNI_CONSERVAZIONE години след изтриването ѝ (`conservaFino` се мести тогава); изтрива го само
+/// поддръжката (src/legale/).
+model Accettazione {
+  id              String    @id @default(cuid())
+  at              DateTime  @default(now())
+  tipo            TipoTesto
+  versione        String    @db.VarChar(20)
+  hash            String    @db.Char(64)
+  /// Номерата на клаузите, одобрени специално с отделната отметка и кода (само за CONDIZIONI).
+  clausole        String[]  @default([])
+  userId          String
+  userNome        String    @db.VarChar(120)
+  userEmail       String    @db.VarChar(254)
+  /// Фирмата на човека към момента и ролята му в нея.
+  aziendaId       String?
+  aziendaNome     String?   @db.VarChar(120)
+  ruolo           Role?
+  /// Данните на фирмата, декларирани от ADMIN при приемането (само за CONDIZIONI).
+  ragioneSociale  String?   @db.VarChar(200)
+  sede            String?   @db.VarChar(300)
+  partitaIva      String?   @db.VarChar(20)
+  /// Кодът за подписа (FES): до кой адрес, кога е пратен и кога е въведен (само за CONDIZIONI).
+  otpEmail        String?   @db.VarChar(254)
+  otpInviatoAt    DateTime?
+  otpVerificatoAt DateTime?
+  /// Адресът и браузърът при приемането (чл. 19.1 от условията; privacy — регистърът на приеманията).
+  ip              String?   @db.VarChar(45)
+  userAgent       String?   @db.VarChar(300)
+  /// SHA-256 на PDF копието, пратено на администратора (само за CONDIZIONI).
+  copiaHash       String?   @db.Char(64)
+  /// HMAC над всички полета отгоре (src/legale/sigillo.ts): промяна на кое да е се вижда.
+  sigillo         String    @db.Char(64)
+  conservaFino    DateTime
+
+  @@index([userId, tipo, versione])
+  @@index([aziendaId, tipo, versione])
+  @@index([conservaFino])
+}
+
+/// Чакащ подпис на условията с код (втората стъпка на ADMIN): HMAC на кода, никога самият код. Важи 10
+/// минути и веднъж; поддръжката чисти старите.
+model FirmaCondizioni {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aziendaId  String
+  versione   String    @db.VarChar(20)
+  /// Декларираните данни на фирмата от първата стъпка ({ragioneSociale, sede, partitaIva}).
+  dichiarati Json
+  codiceHmac String    @db.Char(64)
+  email      String    @db.VarChar(254)
+  inviatoAt  DateTime  @default(now())
+  scadeAt    DateTime
+  tentativi  Int       @default(0)
+  usataAt    DateTime?
+
+  @@index([userId])
+  @@index([scadeAt])
+}
+
+/// Всеки изтеглен PDF с изчисление — какво е въвел човекът и какво е отпечатал софтуерът (входните данни,
+/// редовете на резултата, build-ът, отпечатъкът „Rif.“ от листа). Без връзки: остава и след изтриването
+/// на изчислението, картата и фирмата, до `conservaFino` (src/legale/emissioni.ts).
+model EmissioneCalcolo {
+  id           String   @id @default(cuid())
+  at           DateTime @default(now())
+  /// `argano` | `limitatore` (и бъдещите изчисления).
+  calcolo      String   @db.VarChar(20)
+  impronta     String   @db.VarChar(14)
+  build        String   @db.VarChar(10)
+  /// SHA-256 на байтовете на изпратения PDF.
+  pdfHash      String   @db.Char(64)
+  dati         Json
+  risultato    Json
+  calcoloId    String?
+  schedaId     String?
+  aziendaId    String
+  aziendaNome  String   @db.VarChar(120)
+  userId       String
+  userNome     String   @db.VarChar(120)
+  userEmail    String   @db.VarChar(254)
+  /// HMAC над всички полета отгоре (src/legale/sigillo.ts).
+  sigillo      String   @db.Char(64)
+  conservaFino DateTime
+
+  @@index([aziendaId, at])
+  @@index([impronta])
+  @@index([conservaFino])
 }

@@ -1,29 +1,4 @@
 /* Новините на портала (`/novita`): денят вляво, новините му вдясно — на телефон едно под друго. */
-.percorso ol {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 0 20px;
-  padding: 0;
-  list-style: none;
-  font-size: 0.9375rem;
-  color: var(--muted);
-}
-
-.percorso li + li::before {
-  content: '/';
-  margin-right: 6px;
-}
-
-.percorso a {
-  color: inherit;
-}
-
-.percorso a[aria-current='page'] {
-  color: var(--fg);
-  text-decoration: none;
-}
-
 .novita-pagina__lead {
   margin-top: 16px;
   font-size: 1.1875rem;

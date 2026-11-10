@@ -9,6 +9,7 @@ const PAGES = [
   ['home', '/'],
   ['privacy', '/privacy'],
   ['novita', '/novita'],
+  ['condizioni', '/condizioni'],
 ];
 
 export async function checkSite(browser, { base, shots, email, password }) {

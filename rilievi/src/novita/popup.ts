@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { isPartial } from '../auth/guards.js';
+import { daAccettare, inAttesa } from '../legale/stato.js';
 import { errorMessage, logger } from '../logger.js';
 import { pubblicazioni } from './registro.js';
 import { MAX_POPUP, nonLette, type VoceNovita } from './voci.js';
@@ -27,8 +28,8 @@ export async function novitaLocals(req: Request, res: Response, next: NextFuncti
   res.locals.novitaPopup = null;
   const user = req.principal?.user;
   const lette = user?.novitaLetteAt;
-  // Който трябва да смени паролата, вижда само профила си — новините го чакат след смяната.
-  if (!lette || user.mustChangePassword || !vuolePagina(req)) {
+  // Който трябва да смени паролата или да приеме условията, вижда само това — новините го чакат след него.
+  if (!lette || user.mustChangePassword || inAttesa(daAccettare(user)) || !vuolePagina(req)) {
     next();
     return;
   }

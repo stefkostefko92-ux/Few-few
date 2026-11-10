@@ -128,6 +128,7 @@ calcoloLimitatoreRouter.get(
       impianto: scheda,
       aziendaId: scheda.aziendaId,
       nome: identificativo(scheda),
+      rif: { calcoloId: null, schedaId: scheda.id },
     });
   },
 );

@@ -80,7 +80,7 @@ export async function checkArgano(page, { shots, scheme, sheetUrl, aziendaId }) 
   if (sezioni !== 5) fail(`${name}: ${sezioni} result sections instead of 5`);
   const testo = await page.textContent('#risultati');
   // The first case of the workbook: 0,733 m/s (shown as 0,73) from 1400 rpm, 1:50, Ø 500; traction 2,223 ≤ 2,286.
-  for (const atteso of ['0,73 m/s', '2,223', '2,286', 'Aderenza verificata nei due casi'])
+  for (const atteso of ['0,73 m/s', '2,223', '2,286', 'aderenza nei due casi'])
     if (!testo.includes(atteso)) fail(`${name}: "${atteso}" missing from the results`);
   await audit(page, `${name} results`);
   await page.screenshot({ path: join(shots, `${scheme}-calcolo-argano.png`), fullPage: true });

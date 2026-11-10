@@ -9,7 +9,15 @@ import { nomiSalvati, permessiSalvati } from './permessi.js';
 export const MEMBERSHIP_SELECT = {
   aziendaId: true,
   role: true,
-  azienda: { select: { name: true, deactivatedAt: true, permessiRuoli: true, nomiRuoli: true } },
+  azienda: {
+    select: {
+      name: true,
+      deactivatedAt: true,
+      permessiRuoli: true,
+      nomiRuoli: true,
+      condizioniVersione: true,
+    },
+  },
 } as const;
 
 interface MembershipRow {
@@ -20,6 +28,7 @@ interface MembershipRow {
     deactivatedAt: Date | null;
     permessiRuoli?: Prisma.JsonValue;
     nomiRuoli?: Prisma.JsonValue;
+    condizioniVersione?: string | null;
   };
 }
 
@@ -36,6 +45,7 @@ export function activeMemberships(rows: readonly MembershipRow[]): MembershipVie
       role: row.role,
       permessi: permessiSalvati(row.azienda.permessiRuoli),
       nomiRuoli: nomiSalvati(row.azienda.nomiRuoli),
+      condizioniVersione: row.azienda.condizioniVersione ?? null,
     }))
     .sort((a, b) => a.aziendaName.localeCompare(b.aziendaName, 'it'));
 }

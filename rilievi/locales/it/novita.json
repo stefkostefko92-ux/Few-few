@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-10-condizioni": {
+        "area": "Portale",
+        "titolo": "Condizioni di servizio e regole d'uso",
+        "testo": "Al primo accesso l'amministratore di ogni azienda accetta le condizioni di servizio e l'accordo sul trattamento dei dati, con l'approvazione specifica delle clausole firmata con un codice inviato per email; ogni utente accetta le regole d'uso. La copia delle condizioni accettate arriva per email e si scarica dalla pagina Account."
+      },
       "2026-11-10-avvertenza-calcoli": {
         "area": "Calcoli",
         "titolo": "Firma del tecnico su ogni foglio di calcolo",

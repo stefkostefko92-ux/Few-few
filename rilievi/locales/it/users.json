@@ -167,6 +167,8 @@
       "ACCESS_REQUEST_ACCEPT": "Richiesta di accesso accettata",
       "ACCESS_REQUEST_REJECT": "Richiesta di accesso rifiutata",
       "ACCESS_REQUEST_DELETE": "Richiesta di accesso eliminata",
+      "CONDIZIONI_ACCETTATE": "Condizioni di servizio accettate per l'azienda",
+      "REGOLE_ACCETTATE": "Regole d'uso accettate",
       "USER_EDIT": "Nome o email cambiati",
       "MEMBERSHIP_ADD": "Account aggiunto a un'azienda",
       "MEMBERSHIP_REMOVE": "Account tolto da un'azienda"

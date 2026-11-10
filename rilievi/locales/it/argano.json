@@ -236,19 +236,19 @@
     },
     "esito": {
       "velocita": {
-        "ok": "La variazione di velocità è entro il 5 %: non servono le condizioni del paragrafo 15 della UNI 10411-1.",
+        "ok": "Secondo il calcolo la variazione di velocità è entro il 5 %: il tecnico valuta se si applica il paragrafo 15 della UNI 10411-1.",
         "no": "La variazione di velocità è oltre il 5 %: vanno rispettate le condizioni del paragrafo 15 della UNI 10411-1."
       },
       "funi": {
-        "ok": "Funi di trazione verificate.",
+        "ok": "Verifica di calcolo soddisfatta con i dati inseriti: funi di trazione.",
         "no": "Funi di trazione non verificate: controlla numero, diametro, coefficiente di sicurezza e rapporto D/d."
       },
       "compensazione": {
-        "ok": "Compensazione verificata.",
+        "ok": "Verifica di calcolo soddisfatta con i dati inseriti: compensazione.",
         "no": "Compensazione non verificata: il rapporto D/d è sotto 30."
       },
       "aderenza": {
-        "ok": "Aderenza verificata nei due casi.",
+        "ok": "Verifica di calcolo soddisfatta con i dati inseriti: aderenza nei due casi.",
         "no": "Aderenza non verificata: cambia gola, angolo di avvolgimento, contrappeso o funi."
       },
       "pressione": {
