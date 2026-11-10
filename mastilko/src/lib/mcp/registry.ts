@@ -13,7 +13,7 @@
 // мълчалив провал. Затова маxимумите долу са ОГЛЕДАЛО на студията; при промяна
 // там, промени и тук (пази ги тестът „границите съвпадат със студията“).
 
-import { z } from "zod";
+import { z } from "zod/v3";
 import { encodeState } from "@/lib/share";
 import { CATALOG, catalogById, searchCatalog } from "@/lib/mcp/catalog";
 
