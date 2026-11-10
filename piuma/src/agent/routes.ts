@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { audit } from '../audit.js';
 import { prisma } from '../db.js';
 import { parsePlan } from '../content/plan.js';
