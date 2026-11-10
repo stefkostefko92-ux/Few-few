@@ -56,7 +56,7 @@ type SchedaModuli = Pick<
   | 'arganoPreventivo'
   | 'preventivoArgano'
   | 'sospensioni'
-  | 'operatore'
+  | 'operatoreModulo'
   | 'ordineSospensioni'
   | 'testataInterventi'
   | 'fossaInterventi'

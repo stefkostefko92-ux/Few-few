@@ -16,13 +16,22 @@ export async function fillDoorsAndChecks(page) {
     fail('locks not shown with semi-automatic doors');
   if (await page.locator('#f-sospensioni').isVisible())
     fail('suspensions shown with semi-automatic doors');
-  // Semi-automatic: the car door is automatic, on an operator — its question, and on "Sì" the 2SG
-  // sheet right after it, with the kind of doors already ticked (the linked data).
+  // Semi-automatic: the car door is automatic, on an operator — "Vuoi cambiare operatore?", then "Vuoi
+  // compilare modulo d'ordine?", then 2SG or another (10 November 2026): the 2SG sheet only on "2SG",
+  // with the kind of doors already ticked (the linked data); "Altro" asks which.
   if (!(await page.locator('#f-operatore').isVisible()))
     fail('operator not asked with semi-automatic doors');
-  if (await page.locator('#f-so').isVisible()) fail('2SG sheet of the operator shown before "Sì"');
+  if (await page.locator('#f-operatoreOrdine').isVisible())
+    fail('order form asked before "Vuoi cambiare operatore? Sì"');
   await tick(page, 'operatore', 'si');
-  if (!(await page.locator('#f-so').isVisible())) fail('no 2SG sheet of the operator on "Sì"');
+  if (await page.locator('#f-so').isVisible()) fail('2SG sheet of the operator before "2SG"');
+  await tick(page, 'operatoreOrdine', 'si');
+  await tick(page, 'operatoreModulo', 'ALTRO');
+  if (!(await page.locator('#f-operatoreModuloAltro').isVisible()))
+    fail('no field for another order form');
+  if (await page.locator('#f-so').isVisible()) fail('2SG sheet of the operator with "Altro"');
+  await tick(page, 'operatoreModulo', 'MODULO_2SG');
+  if (!(await page.locator('#f-so').isVisible())) fail('no 2SG sheet of the operator on "2SG"');
   if (!(await page.isChecked('#f-so-semiautomatico')))
     fail('the 2SG sheet of the operator without the semi-automatic doors');
   // The whole row of the section, as every supplier form (its wrapper is a cell of the grid).
@@ -62,7 +71,9 @@ export async function fillDoorsAndChecks(page) {
   if (!(await page.locator('#f-operatore').isVisible()))
     fail('operator not asked with automatic doors');
   await tick(page, 'operatore', 'si');
-  if (!(await page.locator('#f-so').isVisible())) fail('no 2SG sheet of the operator on "Sì"');
+  await tick(page, 'operatoreOrdine', 'si');
+  await tick(page, 'operatoreModulo', 'MODULO_2SG');
+  if (!(await page.locator('#f-so').isVisible())) fail('no 2SG sheet of the operator on "2SG"');
   // One sheet, one order: what was written in the one on screen goes on in the other — both ways.
   await page.fill('#f-so-ordNo', '78');
   await tick(page, 'sospensioni', 'si');

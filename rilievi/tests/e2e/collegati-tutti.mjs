@@ -31,6 +31,8 @@ const PLANTS = [
     ['pattinoRetrattile', 'si'],
     ['arganoPreventivo', 'no'],
     ['operatore', 'si'],
+    ['operatoreOrdine', 'si'],
+    ['operatoreModulo', 'MODULO_2SG'],
     ['testataRidotta', 'si'],
     ['testataInterventi', 'AMI100_RTBS'],
   ],

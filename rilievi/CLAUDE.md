@@ -339,7 +339,13 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   първият е „meccanismi delle porte“, вторият — „nuovi dispositivi di sicurezza“; а от
   22 октомври при полуавтоматични — и операторът на кабината („Operatore da cambiare?“ след шейната: на
   етажите са бравите, кабината е автоматична врата с оператор), а от 24 октомври и при автоматични
-  (`PORTE_CON_OPERATORE`; след окачванията и броя им);
+  (`PORTE_CON_OPERATORE`; след окачванията и броя им); от 10 ноември — верига (собственикът: „Vuoi cambiare
+  operatore? Si/no. Vuoi compilare modulo d'ordine? Se si fai scegliere modulo 2sg o altro“): „Vuoi
+  cambiare operatore?“ → „Vuoi compilare modulo d'ordine?“ (`operatoreOrdine`) → „2SG“ или „Altro“
+  (`operatoreModulo`, enum `OperatoreModulo`; при „Altro“ — кой, на ръка, `operatoreModuloAltro`); листът
+  на 2SG се отваря от „2SG“ (`apertura` на слота `so` в registry.ts), не от „Sì“ на оператора — миграцията
+  `20261110140000_operatore_modulo_ordine` даде „Sì“ и „2SG“ на картите с „Sì“ на оператора, за да остане
+  листът им отворен;
   бележки в „Quadro“, „Argano“ (`fields-argano.ts`) и „Serrature, sospensioni o operatore“ (така от 24
   октомври) — винаги; при „Argano da sostituire? No“ — „Tipo argano esistente“ (на ръка) и „Kit controllo
   ganasce da installare?“ с вида си на ръка при „Sì“; „Controllo su quadro manovra da installare?“ (с вида
@@ -642,7 +648,11 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   портала = токен в base.css, иначе темата не го стига (`--bar-hover`, `--bar-current`, `--primary-*`).
 - **Снимки и клипове** (`src/allegati/`, `src/routes/allegati.ts`, решение на собственика, 21 октомври
   2026): качват се във всеки раздел на записана карта (нова — след първия запис), до 10 файла наведнъж,
-  с общ надпис; само хората, които пишат във фирмата, и не в кошчето. Формите са ИЗВЪН формата на картата
+  с общ надпис; само хората, които пишат във фирмата, и не в кошчето. На сензорен екран (телефон, таблет —
+  `any-pointer: coarse`) до „Aggiungi foto o video“ стои „Scatta foto“ (собственикът, 10 ноември 2026 —
+  „dammi la possibilità di fare la foto istantanea e non solo di caricarla“): второ поле за файл на
+  същата форма с `capture="environment"` — отваря камерата, а снимката тръгва веднага (`carica.js`,
+  `requestSubmit`; без JavaScript — с „Carica“; празното поле multer прескача). На компютър бутонът го няма. Формите са ИЗВЪН формата на картата
   (`form=…`, `_allegati-forms.ejs`): качването не праща картата, а app.js не брои техните полета за
   промяна. Преди тялото: вход, Origin, таван (клип + 16 MB; без Content-Length — 411), картата в
   обхвата, свободно място (`MEDIA_MIN_FREE_MB`, запазено за текущите качвания); тялото — право в тома

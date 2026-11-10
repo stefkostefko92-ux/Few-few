@@ -187,7 +187,25 @@ a.galleria__media:hover {
   font-weight: 600;
 }
 
-/* Качването: сгънато, за да не тежи на всеки раздел; отворено — файл, надпис, бутон и ход. */
+/* Качването: сгънато, за да не тежи на всеки раздел; отворено — файл, надпис, бутон и ход. До него на
+   сензорен екран — „Scatta foto“ (камерата); отвореното качване взима целия ред. */
+.allegati__azioni {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.allegati__aggiungi[open] {
+  flex-basis: 100%;
+}
+
+.allegati__scatta:focus-within {
+  outline: 2px solid var(--fg);
+  outline-offset: 3px;
+}
+
+.allegati__scatta,
 .allegati__aggiungi > summary {
   display: inline-flex;
   align-items: center;
@@ -208,6 +226,21 @@ a.galleria__media:hover {
 .allegati__aggiungi > summary:hover,
 .allegati__aggiungi[open] > summary {
   background: var(--hover);
+}
+
+.allegati__scatta:hover {
+  background: var(--hover);
+}
+
+/* Камерата — само на сензорен екран (телефон, таблет); на компютър `capture` не значи нищо. */
+.allegati__scatta {
+  display: none;
+}
+
+@media (any-pointer: coarse) {
+  .allegati__scatta {
+    display: inline-flex;
+  }
 }
 
 .allegati__carica {
@@ -276,7 +309,7 @@ a.galleria__media:hover {
 }
 
 @media print {
-  .allegati__aggiungi,
+  .allegati__azioni,
   .allegati__avvisi,
   .galleria__azioni {
     display: none;

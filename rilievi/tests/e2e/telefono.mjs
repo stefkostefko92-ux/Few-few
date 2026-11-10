@@ -1,7 +1,10 @@
 // The portal on a phone (390 px, touch, then the narrowest 320 px): the side bar from ☰ (interventi.mjs)
 // and the pages a technician opens on site — no horizontal scroll, every row of fields on one line,
-// every control keeps its name (axe), a full-page screenshot each.
+// every control keeps its name (axe), a full-page screenshot each. Then the camera button of a section
+// (the owner, 10 November 2026: "dammi la possibilità di fare la foto istantanea"): it opens the camera
+// (`capture`) and the photo goes up at once.
 import { join } from 'node:path';
+import sharp from 'sharp';
 import { aligned, audit, fail, signIn } from './helpers.mjs';
 import { checkPhoneMenu } from './interventi.mjs';
 
@@ -46,5 +49,39 @@ export async function checkPhone(browser, { base, shots, scheme, email, password
       fullPage: true,
     });
   }
+  // A fresh page of the touch context: setViewportSize above drops the emulated coarse pointer of `mobile`.
+  const cam = await phone.newPage();
+  await cam.goto(sheetUrl);
+  const block = cam.locator('[data-allegati="cavi"]');
+  const button = block.locator('.allegati__scatta');
+  if (!(await button.isVisible())) {
+    const why = await cam.evaluate(() => ({
+      url: location.pathname,
+      blocks: document.querySelectorAll('[data-allegati="cavi"]').length,
+      buttons: document.querySelectorAll('.allegati__scatta').length,
+      coarse: matchMedia('(any-pointer: coarse)').matches,
+    }));
+    return fail(`${scheme} mobile: no camera button on a touch screen ${JSON.stringify(why)}`);
+  }
+  const camera = block.locator('input[data-scatta]');
+  if ((await camera.getAttribute('capture')) !== 'environment')
+    fail(`${scheme} mobile: the camera button does not open the camera`);
+  const shot = join(shots, `${scheme}-scatto-e2e.jpg`);
+  await sharp({ create: { width: 1600, height: 1200, channels: 3, background: '#406080' } })
+    .jpeg()
+    .toFile(shot);
+  const tiles = '[data-galleria="cavi"] [data-allegato]';
+  const before = await cam.locator(tiles).count();
+  await camera.setInputFiles(shot);
+  try {
+    await cam.waitForFunction(
+      ([selector, n]) => document.querySelectorAll(selector).length === n + 1,
+      [tiles, before],
+      { timeout: 30_000 },
+    );
+  } catch {
+    fail(`${scheme} mobile: the photo taken did not go up by itself`);
+  }
+  await cam.screenshot({ path: join(shots, `${scheme}-mobile-scatta.png`) });
   await phone.close();
 }

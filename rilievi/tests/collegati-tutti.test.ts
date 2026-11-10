@@ -48,7 +48,10 @@ const IMPIANTI: ReadonlyArray<Values> = [
     tipoPorte: ['SEMIAUTOMATICHE'],
     pattinoRetrattile: 'si',
     arganoPreventivo: 'no',
+    // The operator's 2SG sheet: "Sì", an order form, "2SG" (10 November 2026).
     operatore: 'si',
+    operatoreOrdine: 'si',
+    operatoreModulo: 'MODULO_2SG',
     testataRidotta: 'si',
     testataInterventi: ['AMI100_RTBS'],
   },

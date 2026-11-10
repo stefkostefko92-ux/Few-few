@@ -366,6 +366,10 @@ model Scheda {
   /// собственикът, 22 октомври 2026) и от 24 октомври и при автоматични; при true — листът 2SG, в същата
   /// колона (при автоматични и „Sospensioni: Sì“ листът е един — на окачванията).
   operatore                    Boolean?
+  /// „Vuoi compilare modulo d'ordine?“ и кой — 2SG (листът) или друг (собственикът, 10 ноември 2026).
+  operatoreOrdine              Boolean?
+  operatoreModulo              OperatoreModulo?
+  operatoreModuloAltro         String?                  @db.VarChar(120)
   /// Листът 2SG: {modulo, valori}. Има свой PDF.
   ordineSospensioni            Json?
   /// Бележките на раздела „Serrature o sospensioni“.
@@ -773,6 +777,11 @@ enum KitA3Hydronic {
 enum KitA3Valvola {
   HSV_150_BIS
   HSV_440_BIS
+}
+
+enum OperatoreModulo {
+  MODULO_2SG
+  ALTRO
 }
 
 enum KitA3Componente {

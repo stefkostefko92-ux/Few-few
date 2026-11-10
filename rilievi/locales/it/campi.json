@@ -40,6 +40,9 @@
       "contattiAntine": "Contatti antine da sostituire?",
       "bloccaPortineDaInstallare": "Blocca portine da installare?",
       "operatore": "Operatore da cambiare",
+      "operatoreOrdine": "Modulo d'ordine operatore",
+      "operatoreModulo": "Modulo d'ordine",
+      "operatoreModuloAltro": "Altro modulo d'ordine",
       "sospensioni": "Sospensioni da cambiare",
       "sospensioniNumero": "Numero sospensioni",
       "serratureNote": "Note serrature e sospensioni",
@@ -128,7 +131,8 @@
       "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?",
       "quadroOrdine": "Vuoi compilare la scheda per l'ordine quadro?",
       "arganoPreventivo": "Argano da sostituire?",
-      "operatore": "Operatore da cambiare?",
+      "operatore": "Vuoi cambiare operatore?",
+      "operatoreOrdine": "Vuoi compilare modulo d'ordine?",
       "sospensioni": "Sospensioni da cambiare?",
       "quadroSostituire": "Quadro di manovra da sostituire?",
       "bottoniereSostituire": "Bottoniere da sostituire?",
@@ -211,6 +215,10 @@
       "kitA3Saracinesca": {
         "ASS_2": "ASS/2 (1\" 1/4)",
         "ASS_3": "ASS/3 (1\" 1/2)"
+      },
+      "operatoreModulo": {
+        "MODULO_2SG": "2SG",
+        "ALTRO": "Altro"
       }
     },
     "unit": {

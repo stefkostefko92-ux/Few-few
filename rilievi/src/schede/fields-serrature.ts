@@ -1,4 +1,6 @@
+import { OPERATORE_MODULO } from './field-options.js';
 import {
+  ALTRA,
   PORTE_AUTOMATICHE,
   PORTE_CON_OPERATORE,
   PORTE_CON_PATTINO,
@@ -16,7 +18,8 @@ import type { SectionDef } from './field-types.js';
  * окачванията — брой и листът 2SG; операторът — същият лист (src/ordini/: двата въпроса — една колона,
  * два слота; при автоматични с „Sì“ и на двата листът е един — на окачванията). Бележките — винаги.
  * При ръчни врати — до шейната и „Contatti antine da sostituire?“ и „Blocca portine da installare?“
- * (собственикът, 10 ноември 2026).
+ * (собственикът, 10 ноември 2026). Операторът (10 ноември 2026): „Vuoi cambiare operatore?“ → „Vuoi
+ * compilare modulo d'ordine?“ → кой: 2SG (тогава листът) или друг (написан на ръка).
  */
 export const SEZIONE_SERRATURE = {
   key: 'serrature',
@@ -45,13 +48,21 @@ export const SEZIONE_SERRATURE = {
       when: PORTE_AUTOMATICHE,
     },
     { key: 'sospensioniNumero', kind: 'int', min: 0, max: 999, when: yes('sospensioni') },
+    { key: 'operatore', kind: 'yesno', wide: true, question: true, when: PORTE_CON_OPERATORE },
+    { key: 'operatoreOrdine', kind: 'yesno', wide: true, question: true, when: yes('operatore') },
     {
-      key: 'operatore',
-      kind: 'yesno',
-      wide: true,
-      question: true,
+      key: 'operatoreModulo',
+      kind: 'choice',
+      options: OPERATORE_MODULO,
+      // Листът на 2SG — при „2SG“ (registry.ts, `apertura`), след „Altro“ и полето му.
       modulo: 'ordineSospensioni',
-      when: PORTE_CON_OPERATORE,
+      when: yes('operatoreOrdine'),
+    },
+    {
+      key: 'operatoreModuloAltro',
+      kind: 'text',
+      maxLength: 120,
+      when: ALTRA('operatoreModulo'),
     },
     { key: 'serratureNote', kind: 'textarea', maxLength: 4000, wide: true },
   ],

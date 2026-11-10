@@ -194,7 +194,8 @@ describe('the sheet form, laid out like the printed sheet', () => {
       ['quadroOrdine', 'quadroOrdine', 'mq', 'quadroNote'],
       ['arganoPreventivo', 'kitControlloGanasceTipo', 'pa', 'arganoNote'],
       ['sospensioni', 'sospensioniNumero', 'sg', 'serratureNote'],
-      ['operatore', 'operatore', 'so', 'serratureNote'],
+      // The operator's sheet after "2SG o altro" and its "Altro" field (10 November 2026).
+      ['operatoreModulo', 'operatoreModuloAltro', 'so', 'serratureNote'],
     ] as const) {
       const ids = [...new Set([question, last, modulo, note])].map((key) => `id="f-${key}"`);
       assert.ok(ascending(positions(form.body, ids)), question);

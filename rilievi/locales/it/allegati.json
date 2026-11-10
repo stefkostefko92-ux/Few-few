@@ -2,6 +2,7 @@
   "allegati": {
     "titolo": "Foto e video",
     "aggiungi": "Aggiungi foto o video",
+    "scatta": "Scatta foto",
     "dopoSalvataggio": "Foto e video si aggiungono dopo il primo salvataggio della scheda.",
     "scegli": "Foto o video",
     "scegliHint": "Fino a {file} file per volta: foto fino a {foto} MB, video fino a {video} MB e {minuti} minuti. Vengono compressi in automatico per occupare meno spazio.",

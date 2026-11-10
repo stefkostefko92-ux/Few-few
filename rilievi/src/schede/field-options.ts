@@ -41,6 +41,8 @@ export const TIPO_PISTONE = ['IN_TAGLIA', 'DIRETTO'] as const;
 export const CENTRALINA_IN_OPERA = ['HYDRONIC', 'ALTRO'] as const;
 export const KIT_A3_HYDRONIC = ['HSV_150_440_BIS', 'PRESSOSTATO', 'CONNETTORE'] as const;
 export const KIT_A3_VALVOLA = ['HSV_150_BIS', 'HSV_440_BIS'] as const;
+/** Модулът за поръчка на оператора (собственикът, 10 ноември 2026 — „modulo 2sg o altro“). */
+export const OPERATORE_MODULO = ['MODULO_2SG', 'ALTRO'] as const;
 export const KIT_A3_ALTRO = [
   'BOBINA_48_12',
   'SARACINESCA',
