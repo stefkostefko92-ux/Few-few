@@ -27,7 +27,7 @@ import {
   type StreamPlatformId,
 } from './streamers';
 
-const USER_AGENT = 'FiveMBulgaria/1.0 (+https://fivembulgaria.carbonstealth.eu)';
+const USER_AGENT = 'ThraexPVP/1.0 (+https://thraex.carbonstealth.eu)';
 const TIMEOUT = 15_000;
 
 /** Едно намерено живо излъчване, вече изчистено и нормализирано. */

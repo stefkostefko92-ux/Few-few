@@ -1,4 +1,4 @@
-# Промени — FiveM Bulgaria
+# Промени — Thraex PVP
 
 Форматът следва [Keep a Changelog](https://keepachangelog.com/bg/1.1.0/),
 версиите — [SemVer](https://semver.org/lang/bg/).

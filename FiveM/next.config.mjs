@@ -41,7 +41,13 @@ const nextConfig = {
       "frame-ancestors 'none'",
     ].join('; ');
 
+    // Кадрите, плакатите и видеото на лендинга: стотици заявки на посещение.
+    // Без кеш всяка се потвърждава наново при всяко превъртане.
+    const heavyArt = [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' }];
+
     return [
+      { source: '/thraex/:path*', headers: heavyArt },
+      { source: '/media/:path*', headers: heavyArt },
       {
         source: '/:path*',
         headers: [

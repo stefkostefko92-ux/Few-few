@@ -20,14 +20,14 @@ export type PagesBundle = {
 
 const bg: PagesBundle = {
   team: {
-    title: 'Екипът зад FiveM BG',
+    title: 'Екипът зад Thraex PVP',
     description: 'Кой поддържа директорията, как се модерира и как да се включиш.',
     intro:
-      'Проектът се поддържа от Carbon Stealth VCC. Не е сървър и не е общност — директория е, затова екипът е малък, а работата му е видима: модерация, проверка на данните и поддръжка на списъка.',
+      'Сайтът се поддържа от Carbon Stealth VCC, операторът на сървъра Thraex PVP. Екипът е малък, а работата му е видима: модерация, проверка на данните и поддръжка на списъка.',
     blocks: [
       { h: 'Кой стои зад проекта' },
       {
-        p: 'Издател и администратор на данните е Carbon Stealth VCC (пълни реквизити в импресума). Директорията не е свързана със сървър, не приема пари за оценки и не участва в спорове между сървъри.',
+        p: 'Издател и администратор на данните е Carbon Stealth VCC (пълни реквизити в импресума). Carbon Stealth VCC е и операторът на сървъра Thraex PVP, който няма предимство в подредбата. Директорията не приема пари за оценки и не участва в спорове между сървъри.',
       },
       { h: 'Какво прави екипът' },
       {
@@ -46,7 +46,7 @@ const bg: PagesBundle = {
   },
   contact: {
     title: 'Контакти',
-    description: 'Как да се свържеш с екипа на FiveM BG — Discord, имейл и официални точки за контакт.',
+    description: 'Как да се свържеш с екипа на Thraex PVP — Discord, имейл и официални точки за контакт.',
     intro: 'Най-бързият път е Discord. За правни въпроси и сигнали ползвай имейла — той се завежда.',
     blocks: [
       { h: 'Кой канал за какво' },
@@ -74,7 +74,7 @@ const bg: PagesBundle = {
   },
   support: {
     title: 'Подкрепи проекта',
-    description: 'Как да подкрепиш FiveM BG — без реклами и без платени оценки.',
+    description: 'Как да подкрепиш директорията — без реклами и без платени оценки.',
     intro:
       'Директорията е безплатна за играчите и за сървърите. Разходите са хостинг и време. Подкрепата е доброволна и не купува нищо — нито оценка, нито място в подредбата.',
     blocks: [
@@ -176,14 +176,14 @@ const bg: PagesBundle = {
 
 const en: PagesBundle = {
   team: {
-    title: 'The team behind FiveM BG',
+    title: 'The team behind Thraex PVP',
     description: 'Who maintains the directory, how moderation works, and how to join in.',
     intro:
-      'The project is maintained by Carbon Stealth VCC. It is not a server and not a community — it is a directory, so the team is small and its work is visible: moderation, data checks and keeping the list alive.',
+      'The website is maintained by Carbon Stealth VCC, the operator of the Thraex PVP server. The team is small and its work is visible: moderation, data checks and keeping the list alive.',
     blocks: [
       { h: 'Who is behind it' },
       {
-        p: 'The publisher and data controller is Carbon Stealth VCC (full details in the legal notice). The directory is not affiliated with any server, does not take money for ratings, and does not take sides in disputes between servers.',
+        p: 'The publisher and data controller is Carbon Stealth VCC (full details in the legal notice). Carbon Stealth VCC also operates the Thraex PVP server, which gets no advantage in the ranking. The directory does not take money for ratings and does not take sides in disputes between servers.',
       },
       { h: 'What the team does' },
       {
@@ -202,7 +202,7 @@ const en: PagesBundle = {
   },
   contact: {
     title: 'Contact',
-    description: 'How to reach the FiveM BG team — Discord, email and official points of contact.',
+    description: 'How to reach the Thraex PVP team — Discord, email and official points of contact.',
     intro: 'Discord is the fastest route. For legal matters and reports use email — it is formally logged.',
     blocks: [
       { h: 'Which channel for what' },
@@ -230,7 +230,7 @@ const en: PagesBundle = {
   },
   support: {
     title: 'Support the project',
-    description: 'How to support FiveM BG — no ads and no paid ratings.',
+    description: 'How to support the directory — no ads and no paid ratings.',
     intro:
       'The directory is free for players and for servers. The costs are hosting and time. Support is voluntary and buys nothing — neither a rating nor a place in the ordering.',
     blocks: [

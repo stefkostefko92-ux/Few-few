@@ -40,19 +40,19 @@ export default async function AdminHome({ params }: { params: Promise<{ locale: 
         {tiles.map((tile) => (
           <li
             key={tile.label}
-            className="flex items-center gap-4 rounded-xl border border-white/[0.08] bg-ink-900/70 p-4"
+            className="flex items-center gap-4 rounded-xl border border-bronze-400/20 bg-ink-900/70 p-4"
           >
             <Badge name={tile.badge} size={40} />
             <div>
-              <p className="text-2xl font-semibold text-silver-100">{tile.value}</p>
-              <p className="text-sm text-silver-500">{tile.label}</p>
+              <p className="text-2xl font-semibold text-ivory-100">{tile.value}</p>
+              <p className="text-sm text-ivory-500">{tile.label}</p>
             </div>
           </li>
         ))}
       </ul>
 
       {waiting > 0 && (
-        <p className="mt-6 rounded-lg border border-cyan-700/40 bg-cyan-900/10 p-4">
+        <p className="mt-6 rounded-lg border border-bronze-700/40 bg-bronze-900/10 p-4">
           {waiting} неща чакат решение.{' '}
           <Link href={`/${locale}/admin/queue`} className="link">
             Към опашката
@@ -62,21 +62,21 @@ export default async function AdminHome({ params }: { params: Promise<{ locale: 
 
       <section className="mt-10">
         <h2 className="text-lg font-semibold">Дневник на решенията</h2>
-        <p className="mt-1 text-sm text-silver-500">
+        <p className="mt-1 text-sm text-ivory-500">
           Всяко решение оставя следа — включително промоциите, защото те са пари.
         </p>
         {audit.length === 0 ? (
-          <p className="mt-4 text-silver-400">Още няма записи.</p>
+          <p className="mt-4 text-ivory-400">Още няма записи.</p>
         ) : (
           <ul className="mt-4 space-y-2 text-sm">
             {audit.map((entry) => (
-              <li key={entry.id} className="flex flex-wrap gap-x-3 rounded border border-white/[0.08] p-2">
-                <time dateTime={entry.at.toISOString()} className="text-silver-500">
+              <li key={entry.id} className="flex flex-wrap gap-x-3 rounded border border-bronze-400/20 p-2">
+                <time dateTime={entry.at.toISOString()} className="text-ivory-500">
                   {entry.at.toLocaleString('bg-BG')}
                 </time>
-                <span className="text-cyan-300">{entry.action}</span>
-                <span className="text-silver-300">{entry.target}</span>
-                {entry.detail && <span className="text-silver-500">· {entry.detail}</span>}
+                <span className="text-bronze-300">{entry.action}</span>
+                <span className="text-ivory-300">{entry.target}</span>
+                {entry.detail && <span className="text-ivory-500">· {entry.detail}</span>}
               </li>
             ))}
           </ul>

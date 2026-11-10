@@ -29,6 +29,7 @@ type Props = { params: Promise<{ locale: string }> };
  * drop-in — слагаш файла, тя излиза; махаш го, героят пада обратно на
  * градиента. Същият подход като `Icon`/`Badge`, които и днес четат от диска.
  *
+ * Сега файлът е рендер на арената на сървъра: наша геометрия, не кадър от играта.
  * ВНИМАНИЕ ЗА ПРАВАТА: тук НЕ върви кадър от GTA V или FiveM. Те са
  * интелектуална собственост на Take-Two/Rockstar, а сайтът изрично обявява, че
  * не е свързан с тях — снимка от играта прави точно обратното твърдение.
@@ -121,13 +122,13 @@ export async function generateMetadata({ params }: Props) {
             'къде да играя FiveM в България',
             'FiveM roleplay България',
             'GTA V RP сървъри',
-            'FiveM BG общност',
+            'българска FiveM общност',
           ]
         : [
             'where to play FiveM in Bulgaria',
             'FiveM roleplay Bulgaria',
             'GTA V RP servers',
-            'FiveM BG community',
+            'Bulgarian FiveM community',
           ],
   });
 }
@@ -196,32 +197,26 @@ export default async function HomePage({ params }: Props) {
                 долния ръб на кадъра с фона на страницата — иначе плакатът
                 свършва с видима хоризонтална черта. Хоризонталното пази
                 контраста ТАМ, КЪДЕТО СТОИ ТЕКСТЪТ — вляво: над произволен кадър
-                `silver-300` иначе пада под 4,5:1 (1.4.3). */}
+                `ivory-300` иначе пада под 4,5:1 (1.4.3). */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-ink-950/60 via-transparent via-60% to-ink-950"
             />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-ink-950/90 via-ink-950/35 to-transparent"
+              className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-ink-950/95 via-ink-950/75 via-55% to-ink-950/20"
             />
           </>
         ) : null}
-        {/* Цианов ореол зад таблото — „светлината на града“. Нула байта. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(45%_55%_at_78%_45%,rgba(32,168,192,0.20),transparent_70%)]"
-        />
-
         <div className="mx-auto grid max-w-site items-center gap-12 px-4 pb-16 pt-16 sm:px-6 sm:pb-20 sm:pt-24 lg:min-h-[44rem] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14 lg:pb-24">
           <div className="flex gap-5 sm:gap-7">
             {/* Трикольорът като НОСЕЩА греда, не като кант отгоре. */}
-            <div className="flag-rule w-1.5 shrink-0 rounded-full shadow-[0_0_24px_rgba(255,255,255,0.12)]" aria-hidden="true" />
+            <div className="flag-rule w-1.5 shrink-0 rounded-full" aria-hidden="true" />
 
             <div className="min-w-0">
               {/* Без етикет с разредени главни над заглавието: той повтаряше
                   водещия абзац и е най-честият белег на шаблонна страница. */}
-              <h1 className="font-display text-[2.75rem] font-semibold leading-[0.98] tracking-[-0.04em] sm:text-[4.25rem] lg:text-[3.75rem] xl:text-[5.25rem]">
+              <h1 className="font-display text-[2.75rem] font-semibold leading-[0.98] sm:text-[4.25rem] lg:text-[3.75rem] xl:text-[5.25rem]">
                 <span className="text-chrome">{t.home.h1}</span>
               </h1>
               <p className="lead mt-7">{t.home.intro}</p>
@@ -230,7 +225,7 @@ export default async function HomePage({ params }: Props) {
                 <Link href={`/${locale}/servers`} className="btn-primary btn-lg">
                   {t.home.ctaBrowse}
                 </Link>
-                <p className="text-silver-400">
+                <p className="text-ivory-400">
                   {t.home.ctaOr}{' '}
                   {/* Отделен ключ, а не `ctaSubmit.toLowerCase()`: смяната на
                       регистър по време на изпълнение е правило за ЕЗИК, не за
@@ -250,12 +245,12 @@ export default async function HomePage({ params }: Props) {
                   {stats.map((stat, index) => (
                     <div
                       key={stat.label}
-                      className={`flex flex-col-reverse ${index % 2 === 1 ? 'border-s border-white/[0.08] ps-5' : ''} ${index > 0 ? 'sm:border-s sm:border-white/[0.08] sm:ps-5' : ''}`}
+                      className={`flex flex-col-reverse ${index % 2 === 1 ? 'border-s border-bronze-400/20 ps-5' : ''} ${index > 0 ? 'sm:border-s sm:border-bronze-400/20 sm:ps-5' : ''}`}
                     >
-                      <dt className="mt-1.5 text-sm text-silver-400">{stat.label}</dt>
+                      <dt className="mt-1.5 text-sm text-ivory-400">{stat.label}</dt>
                       <dd
-                        className={`font-display text-[2rem] font-medium leading-none tabular-nums tracking-[-0.03em] sm:text-[2.25rem] ${
-                          stat.accent ? 'text-cyan-300' : 'text-silver-100'
+                        className={`font-display text-[2rem] font-medium leading-none tabular-nums sm:text-[2.25rem] ${
+                          stat.accent ? 'text-bronze-300' : 'text-ivory-100'
                         }`}
                       >
                         {stat.value}
@@ -270,10 +265,10 @@ export default async function HomePage({ params }: Props) {
           {/* ── Живото табло (класацията) ──────────────────────────────────── */}
           {featured.length > 0 ? (
             <section aria-labelledby="teaser-heading" className="panel-chrome overflow-hidden">
-              <div className="flex items-center justify-between gap-4 border-b border-white/[0.07] px-4 py-4 sm:px-5">
+              <div className="flex items-center justify-between gap-4 border-b border-bronze-400/20 px-4 py-4 sm:px-5">
                 <h2
                   id="teaser-heading"
-                  className="flex items-center gap-3 font-display text-[0.9375rem] font-semibold tracking-[-0.01em] text-silver-100 sm:text-lg"
+                  className="flex items-center gap-3 font-display text-[0.9375rem] font-semibold text-ivory-100 sm:text-lg"
                 >
                   {online.length > 0 ? <span className="live-dot" aria-hidden="true" /> : <span className="idle-dot" aria-hidden="true" />}
                   {t.home.teaserHeading}
@@ -292,14 +287,14 @@ export default async function HomePage({ params }: Props) {
               {/* Тук СЪЩО има класирани резултати (промотираните са първи), значи
                   разкритието по чл. 7, ал. 4а от Дир. 2005/29/ЕО трябва да е и тук,
                   не само на /servers — и то ДО резултатите, не някъде по-долу. */}
-              <p className="border-t border-white/[0.07] px-4 py-3.5 text-xs sm:px-5">
+              <p className="border-t border-bronze-400/20 px-4 py-3.5 text-xs sm:px-5">
                 <Link href={`/${locale}/terms#kak-podrezhdame-sarvarite`} className="link-quiet">
                   {t.home.rankingLink}
                 </Link>
               </p>
             </section>
           ) : (
-            <section className="panel p-6 text-silver-300">
+            <section className="panel p-6 text-ivory-300">
               {t.home.emptyLead}{' '}
               <Link href={`/${locale}/submit`} className="link">
                 {t.home.emptyCta}
@@ -315,14 +310,14 @@ export default async function HomePage({ params }: Props) {
         <h2 id="why-heading" className="sr-only">
           {t.home.whyHeading}
         </h2>
-        <ul className="grid gap-px overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.06] sm:grid-cols-3">
+        <ul className="grid gap-px overflow-hidden rounded-2xl border border-bronze-400/20 bg-white/[0.06] sm:grid-cols-3">
           {why.map((item) => (
             <li key={item.title} className="bg-ink-950 p-6 sm:p-8">
-              <div className="h-[3px] w-10 rounded-full bg-gradient-to-r from-cyan-300 to-cyan-600" aria-hidden="true" />
-              <h3 className="mt-5 font-display text-lg font-semibold leading-snug tracking-[-0.015em] text-silver-100">
+              <div className="h-[3px] w-10 rounded-full bg-gradient-to-r from-bronze-300 to-bronze-600" aria-hidden="true" />
+              <h3 className="mt-5 font-display text-lg font-semibold leading-snug text-ivory-100">
                 {item.title}
               </h3>
-              <p className="mt-3 leading-relaxed text-silver-400">{item.body}</p>
+              <p className="mt-3 leading-relaxed text-ivory-400">{item.body}</p>
             </li>
           ))}
         </ul>
@@ -337,20 +332,20 @@ export default async function HomePage({ params }: Props) {
           {/* Нишката между стъпките — само на широк екран, където са в ред. */}
           <span
             aria-hidden="true"
-            className="absolute start-6 end-6 top-6 hidden h-px bg-gradient-to-r from-cyan-400/50 via-white/10 to-transparent sm:block"
+            className="absolute start-6 end-6 top-6 hidden h-px bg-gradient-to-r from-bronze-400/50 via-white/10 to-transparent sm:block"
           />
           {steps.map((step, index) => (
             <li key={step.title} className="relative">
               {/* Номерът тук Е информация (стъпките са последователност), значи
                   се вижда — за разлика от декоративните маркери другаде. */}
-              <span className="relative flex size-12 items-center justify-center rounded-full border border-cyan-300/30 bg-ink-950 font-display text-lg font-semibold tabular-nums text-cyan-300 shadow-[0_0_30px_-6px_rgba(60,204,228,0.6)]">
+              <span className="relative flex size-12 items-center justify-center rounded-full border border-bronze-300/30 bg-ink-950 font-display text-lg font-semibold tabular-nums text-bronze-300">
                 {index + 1}
               </span>
-              <h3 className="mt-5 flex items-center gap-2 font-display text-lg font-semibold tracking-[-0.015em] text-silver-100">
+              <h3 className="mt-5 flex items-center gap-2 font-display text-lg font-semibold text-ivory-100">
                 <Icon group="ui" name={step.icon} size={18} />
                 {step.title}
               </h3>
-              <p className="mt-2 leading-relaxed text-silver-400">{step.body}</p>
+              <p className="mt-2 leading-relaxed text-ivory-400">{step.body}</p>
             </li>
           ))}
         </ol>
@@ -361,11 +356,11 @@ export default async function HomePage({ params }: Props) {
         {streamers.total > 0 && (
           <div className="panel flex flex-col justify-between gap-6 p-6 sm:p-8">
             <div>
-              <h2 className="flex items-center gap-3 font-display text-xl font-semibold tracking-[-0.015em] text-silver-100">
+              <h2 className="flex items-center gap-3 font-display text-xl font-semibold text-ivory-100">
                 {streamers.live > 0 ? <span className="live-dot" aria-hidden="true" /> : <span className="idle-dot" aria-hidden="true" />}
                 {t.home.streamersHeading}
               </h2>
-              <p className="mt-2 text-silver-400">
+              <p className="mt-2 text-ivory-400">
                 {streamers.live > 0 ? `${streamers.live} ${t.home.streamersLive}` : t.home.streamersNone}
               </p>
             </div>
@@ -375,7 +370,7 @@ export default async function HomePage({ params }: Props) {
           </div>
         )}
         <div className={`panel flex flex-col justify-between gap-6 p-6 sm:p-8 ${streamers.total > 0 ? '' : 'lg:col-span-2'}`}>
-          <p className="font-display text-xl font-semibold leading-snug tracking-[-0.015em] text-silver-100">
+          <p className="font-display text-xl font-semibold leading-snug text-ivory-100">
             {t.home.discordLead}
           </p>
           <a href={DISCORD_INVITE} rel="noopener nofollow" className="btn-primary self-start">
@@ -398,25 +393,25 @@ export default async function HomePage({ params }: Props) {
           </div>
           <ul className="mt-8 grid gap-4 sm:grid-cols-3">
             {news.map((post) => (
-              <li key={post.slug} className="panel group relative flex flex-col p-6 transition-colors hover:border-cyan-400/30">
+              <li key={post.slug} className="panel group relative flex flex-col p-6 transition-colors hover:border-bronze-400/30">
                 {post.publishedAt && (
-                  <p className="text-xs text-silver-500">
+                  <p className="text-xs text-ivory-500">
                     <time dateTime={post.publishedAt.toISOString()}>
                       {post.publishedAt.toLocaleDateString(locale === 'bg' ? 'bg-BG' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </time>
                   </p>
                 )}
-                <h3 className="mt-3 font-display text-lg font-semibold leading-snug tracking-[-0.015em] text-silver-100">
+                <h3 className="mt-3 font-display text-lg font-semibold leading-snug text-ivory-100">
                   {/* Цялата карта е цел за клик чрез разтегнат псевдоелемент на
                       ЕДИНСТВЕНАТА връзка — без вложени връзки и без втори таб-стоп. */}
                   <Link
                     href={`/${locale}/news/${post.slug}`}
-                    className="after:absolute after:inset-0 after:rounded-2xl group-hover:text-cyan-200"
+                    className="after:absolute after:inset-0 after:rounded-2xl group-hover:text-bronze-200"
                   >
                     {post.title}
                   </Link>
                 </h3>
-                <p className="mt-2 leading-relaxed text-silver-400">{post.excerpt}</p>
+                <p className="mt-2 leading-relaxed text-ivory-400">{post.excerpt}</p>
               </li>
             ))}
           </ul>
@@ -429,7 +424,7 @@ export default async function HomePage({ params }: Props) {
           <h2 id="faq-heading" className="section-title">
             {t.home.faqHeading}
           </h2>
-          <p className="mt-4 max-w-sm text-silver-400">
+          <p className="mt-4 max-w-sm text-ivory-400">
             {t.home.discordLead}{' '}
             <a href={DISCORD_INVITE} rel="noopener nofollow" className="link">
               {t.home.discordCta}
@@ -440,11 +435,11 @@ export default async function HomePage({ params }: Props) {
         {/* Родният `details`: отговорът е в HTML-а и за търсачката, и без
             JavaScript — разгъвачът само го прибира визуално. Първият е отворен,
             за да се вижда веднага, че вътре има отговор. */}
-        <div className="border-t border-white/[0.08]">
+        <div className="border-t border-bronze-400/20">
           {faq.map((item, index) => (
             <details key={item.question} className="faq-item" open={index === 0}>
               <summary>{item.question}</summary>
-              <p className="pb-6 pe-8 leading-relaxed text-silver-400">{item.answer}</p>
+              <p className="pb-6 pe-8 leading-relaxed text-ivory-400">{item.answer}</p>
             </details>
           ))}
         </div>

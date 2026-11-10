@@ -30,11 +30,11 @@ export default async function FaqPage({ params }: Props) {
       </div>
       <p className="lead mt-6">{page.intro}</p>
 
-      <dl className="mt-10 border-t border-white/[0.08]">
+      <dl className="mt-10 border-t border-bronze-400/20">
         {page.entries.map((entry) => (
-          <div key={entry.id} id={entry.id} className="scroll-mt-28 border-b border-white/[0.08] py-6">
-            <dt className="font-display text-lg font-semibold tracking-[-0.015em] text-silver-100">{entry.q}</dt>
-            <dd className="mt-2 leading-relaxed text-silver-400">{entry.a}</dd>
+          <div key={entry.id} id={entry.id} className="scroll-mt-28 border-b border-bronze-400/20 py-6">
+            <dt className="font-display text-lg font-semibold text-ivory-100">{entry.q}</dt>
+            <dd className="mt-2 leading-relaxed text-ivory-400">{entry.a}</dd>
           </div>
         ))}
       </dl>

@@ -60,7 +60,7 @@ export default async function AdminIntegrations({
 
   return (
     <div className="max-w-2xl">
-      <p className="rounded-2xl border border-cyan-300/20 bg-cyan-400/[0.05] p-5 text-sm leading-relaxed text-silver-300">
+      <p className="rounded-2xl border border-bronze-300/20 bg-bronze-400/[0.05] p-5 text-sm leading-relaxed text-ivory-300">
         Тук няма поле за поставяне на ключ — нарочно. Ключ, който мине през уеб форма, минава през
         процеса, мрежата и евентуален лог, а щом се запише, вече има какво да се открадне при пробив
         в базата. Тайните остават във файл на сървъра с права 600.
@@ -74,12 +74,12 @@ export default async function AdminIntegrations({
             <li key={item.name} className="panel p-5">
               <div className="flex flex-wrap items-center gap-3">
                 <Badge name={item.badge} size={32} />
-                <strong className="text-silver-100">{item.name}</strong>
+                <strong className="text-ivory-100">{item.name}</strong>
                 <span
                   className={
                     ready
-                      ? 'flex items-center gap-1 rounded bg-cyan-700/25 px-2 py-0.5 text-xs text-cyan-200'
-                      : 'flex items-center gap-1 rounded border border-white/[0.12] px-2 py-0.5 text-xs text-silver-500'
+                      ? 'flex items-center gap-1 rounded bg-bronze-700/25 px-2 py-0.5 text-xs text-bronze-200'
+                      : 'flex items-center gap-1 rounded border border-bronze-400/20 px-2 py-0.5 text-xs text-ivory-500'
                   }
                 >
                   <Badge name={ready ? 'success' : 'offline'} size={24} />
@@ -87,22 +87,22 @@ export default async function AdminIntegrations({
                 </span>
               </div>
 
-              <p className="mt-2 text-sm text-silver-400">{item.note}</p>
+              <p className="mt-2 text-sm text-ivory-400">{item.note}</p>
 
               {item.vars.length > 0 && (
                 <ul className="mt-3 space-y-1 text-sm">
                   {item.vars.map((name) => (
                     <li key={name} className="flex items-center gap-2">
                       <Badge name={present(name) ? 'success' : 'warning'} size={24} />
-                      <code className="text-silver-300">{name}</code>
-                      <span className="text-silver-500">{present(name) ? 'зададен' : 'липсва'}</span>
+                      <code className="text-ivory-300">{name}</code>
+                      <span className="text-ivory-500">{present(name) ? 'зададен' : 'липсва'}</span>
                     </li>
                   ))}
                 </ul>
               )}
 
               {missing.length > 0 && (
-                <pre className="mt-3 overflow-x-auto rounded border border-white/[0.08] bg-ink-950 p-3 text-xs text-silver-400">
+                <pre className="mt-3 overflow-x-auto rounded border border-bronze-400/20 bg-ink-950 p-3 text-xs text-ivory-400">
 {`# на сървъра, в .env на продукта
 ${missing.map((name) => `${name}=…`).join('\n')}
 chmod 600 .env`}

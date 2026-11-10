@@ -54,7 +54,7 @@ export default async function PostPage({ params }: Params) {
 
   return (
     <article className="mx-auto max-w-[68ch]">
-      <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-silver-400">
+      <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-ivory-400">
         <Link
           href={`/${locale}/news`}
           className="link-quiet inline-flex min-h-6 items-center"
@@ -64,11 +64,11 @@ export default async function PostPage({ params }: Params) {
       </nav>
 
       <h1 className="page-title mt-4">{post.title}</h1>
-      <p className="mt-3 text-sm text-silver-400">
+      <p className="mt-3 text-sm text-ivory-400">
         {post.author}
         {post.publishedAt && (
           <>
-            <span aria-hidden="true" className="mx-2 text-silver-500">·</span>
+            <span aria-hidden="true" className="mx-2 text-ivory-500">·</span>
             <time dateTime={post.publishedAt.toISOString()}>
               {post.publishedAt.toLocaleDateString(locale === 'bg' ? 'bg-BG' : 'en-GB', {
                 day: 'numeric',
@@ -79,10 +79,10 @@ export default async function PostPage({ params }: Params) {
           </>
         )}
       </p>
-      {post.excerpt && <p className="mt-6 text-lg leading-relaxed text-silver-200">{post.excerpt}</p>}
+      {post.excerpt && <p className="mt-6 text-lg leading-relaxed text-ivory-200">{post.excerpt}</p>}
 
       {/* Съдържанието е наше и се рендира като чист текст — без dangerouslySetInnerHTML. */}
-      <div className="mt-10 space-y-5 border-t border-white/[0.08] pt-10 text-[1.0625rem] leading-[1.8] text-silver-300">
+      <div className="mt-10 space-y-5 border-t border-bronze-400/20 pt-10 text-[1.0625rem] leading-[1.8] text-ivory-300">
         {paragraphs.map((paragraph, index) => (
           <p key={index} className="whitespace-pre-line">
             {paragraph}

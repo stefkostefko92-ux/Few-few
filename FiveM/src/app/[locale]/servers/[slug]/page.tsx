@@ -159,7 +159,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
           Същият кадър на града като на началната, но приглушен: тук звездата е
           името на сървъра. `isolate` пази фоновите слоеве над атмосферата на
           `body` (виж героя на началната). */}
-      <header className="relative isolate -mt-10 mx-[calc(50%-50vw)] w-screen overflow-hidden border-b border-white/[0.06] sm:-mt-14">
+      <header className="relative isolate -mt-10 mx-[calc(50%-50vw)] w-screen overflow-hidden border-b border-bronze-400/20 sm:-mt-14">
         <Image
           src="/brand/hero.webp"
           alt=""
@@ -174,16 +174,16 @@ export default async function ServerPage({ params, searchParams }: Props) {
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(40%_80%_at_15%_60%,rgba(32,168,192,0.18),transparent_70%)]"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(40%_80%_at_15%_60%,rgba(201,130,60,0.14),transparent_70%)]"
         />
 
         <div className="mx-auto max-w-site px-4 pb-10 pt-8 sm:px-6 sm:pb-14 sm:pt-10">
-          <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-silver-400">
+          <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-ivory-400">
             <Link href={`/${locale}/servers`} className="link-quiet inline-flex min-h-6 items-center">
               {t.server.breadcrumb}
             </Link>
-            <span aria-hidden="true" className="mx-2 text-silver-600">/</span>
-            <span aria-current="page" className="text-silver-300">{head.name}</span>
+            <span aria-hidden="true" className="mx-2 text-ivory-600">/</span>
+            <span aria-current="page" className="text-ivory-300">{head.name}</span>
           </nav>
 
           <div className="mt-8 flex items-start gap-5 sm:gap-7">
@@ -194,17 +194,17 @@ export default async function ServerPage({ params, searchParams }: Props) {
               alt=""
               width={96}
               height={96}
-              className="size-16 shrink-0 rounded-2xl border border-white/[0.12] bg-ink-900 shadow-[0_0_40px_-8px_rgba(60,204,228,0.55)] sm:size-24"
+              className="size-16 shrink-0 rounded-2xl border border-bronze-400/20 bg-ink-900 sm:size-24"
               unoptimized
             />
             <div className="min-w-0">
-              <h1 className="break-words font-display text-[2.125rem] font-semibold leading-[1.02] tracking-[-0.035em] sm:text-5xl lg:text-[3.75rem]">
+              <h1 className="break-words font-display text-[2.125rem] font-semibold leading-[1.02] sm:text-5xl lg:text-[3.75rem]">
                 <span className="text-chrome">{head.name}</span>
               </h1>
               {(featured || server.source === 'DISCOVERED' || server.lastProbe === 'ONLINE') && (
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   {server.lastProbe === 'ONLINE' && (
-                    <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-400/[0.07] px-3 py-1 text-xs font-medium text-cyan-200">
+                    <span className="inline-flex items-center gap-2 rounded-lg border border-bronze-300/25 bg-bronze-400/[0.07] px-3 py-1 text-xs font-medium text-bronze-200">
                       <span className="live-dot" aria-hidden="true" />
                       {t.server.liveBadge}
                     </span>
@@ -228,8 +228,8 @@ export default async function ServerPage({ params, searchParams }: Props) {
                   емоджитата. Заглавието е само марката (`serverTitle`); тук стои
                   останалото, обозначено като чуждо, за да не се губи нищо. */}
               {fullName && fullName !== head.name && (
-                <p className="mt-3 max-w-2xl break-words text-sm text-silver-400">
-                  <span className="text-silver-500">{t.server.cfxName}:</span> {fullName}
+                <p className="mt-3 max-w-2xl break-words text-sm text-ivory-400">
+                  <span className="text-ivory-500">{t.server.cfxName}:</span> {fullName}
                 </p>
               )}
             </div>
@@ -242,7 +242,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
             стоят веднага под името, не след графиката и описанието. На широк
             екран отива вдясно и остава видима при превъртане. */}
         <aside className="panel-chrome self-start p-5 sm:p-6 lg:sticky lg:top-28 lg:col-start-2 lg:row-start-1">
-          <div className="text-silver-200">
+          <div className="text-ivory-200">
             <PlayerList
               names={server.playerNames}
               seenAt={server.online ? server.playersSeenAt : null}
@@ -261,10 +261,10 @@ export default async function ServerPage({ params, searchParams }: Props) {
                     // Числото е главното на картата — то отговаря на „има ли
                     // хора вътре“. Текстът остава същият низ като в списъка.
                     <span className="flex items-baseline gap-1.5">
-                      <span className="font-display text-[2.5rem] font-medium leading-none tabular-nums tracking-[-0.03em] text-silver-100">
+                      <span className="font-display text-[2.5rem] font-medium leading-none tabular-nums text-ivory-100">
                         {server.players}
                       </span>
-                      <span className="tabular-nums text-silver-400">
+                      <span className="tabular-nums text-ivory-400">
                         / {server.maxPlayers || '?'} {t.status.online}
                       </span>
                     </span>
@@ -313,17 +313,17 @@ export default async function ServerPage({ params, searchParams }: Props) {
             )}
           </div>
 
-          <dl className="mt-6 divide-y divide-white/[0.07] border-t border-white/[0.07] text-sm">
+          <dl className="mt-6 divide-y divide-white/[0.07] border-t border-bronze-400/20 text-sm">
             <div className="flex items-center justify-between gap-4 py-3">
-              <dt className="text-silver-400">{t.server.framework}</dt>
-              <dd className="flex items-center gap-2 text-right text-silver-100">
+              <dt className="text-ivory-400">{t.server.framework}</dt>
+              <dd className="flex items-center gap-2 text-right text-ivory-100">
                 <Badge name={FRAMEWORK_ICON[server.framework as FrameworkId]} size={24} />
                 {t.frameworks[server.framework as FrameworkId]}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-4 py-3">
-              <dt className="text-silver-400">{t.server.access}</dt>
-              <dd className="flex items-center gap-2 text-right text-silver-100">
+              <dt className="text-ivory-400">{t.server.access}</dt>
+              <dd className="flex items-center gap-2 text-right text-ivory-100">
                 <Badge name={server.whitelist ? 'whitelist' : 'open'} size={24} />
                 {server.whitelist ? t.server.whitelisted : t.server.open}
               </dd>
@@ -332,13 +332,13 @@ export default async function ServerPage({ params, searchParams }: Props) {
                 от базата, нищо не се извежда и нищо не се закръгля. */}
             {server.maxPlayers > 0 && (
               <div className="flex items-center justify-between gap-4 py-3">
-                <dt className="text-silver-400">{t.server.slots}</dt>
-                <dd className="text-right tabular-nums text-silver-100">{server.maxPlayers}</dd>
+                <dt className="text-ivory-400">{t.server.slots}</dt>
+                <dd className="text-right tabular-nums text-ivory-100">{server.maxPlayers}</dd>
               </div>
             )}
             <div className="flex items-center justify-between gap-4 py-3">
-              <dt className="text-silver-400">{t.server.lastOnline}</dt>
-              <dd className="text-right text-silver-100">
+              <dt className="text-ivory-400">{t.server.lastOnline}</dt>
+              <dd className="text-right text-ivory-100">
                 {server.lastProbe === 'ONLINE' ? (
                   t.server.onlineNow
                 ) : seen ? (
@@ -350,22 +350,22 @@ export default async function ServerPage({ params, searchParams }: Props) {
             </div>
             {server.lastCheckedAt && (
               <div className="flex items-center justify-between gap-4 py-3">
-                <dt className="text-silver-400">{t.server.lastChecked}</dt>
-                <dd className="text-right text-silver-100">
+                <dt className="text-ivory-400">{t.server.lastChecked}</dt>
+                <dd className="text-right text-ivory-100">
                   <time dateTime={server.lastCheckedAt.toISOString()}>{formatMoment(server.lastCheckedAt, locale)}</time>
                 </dd>
               </div>
             )}
             <div className="flex items-center justify-between gap-4 py-3">
-              <dt className="text-silver-400">{t.server.listedSince}</dt>
-              <dd className="text-right text-silver-100">
+              <dt className="text-ivory-400">{t.server.listedSince}</dt>
+              <dd className="text-right text-ivory-100">
                 <time dateTime={server.createdAt.toISOString()}>{formatDay(server.createdAt, locale)}</time>
               </dd>
             </div>
             {/* `dl > div > dt + dd + dd` — без вложен div: той е невалиден в `dl`. */}
             <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 py-3">
-              <dt className="text-silver-400">{t.server.rating}</dt>
-              <dd className="flex flex-wrap items-center justify-end gap-2 text-right text-silver-100">
+              <dt className="text-ivory-400">{t.server.rating}</dt>
+              <dd className="flex flex-wrap items-center justify-end gap-2 text-right text-ivory-100">
                 {summary.average === null ? (
                   t.server.noReviews
                 ) : (
@@ -382,7 +382,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
                   твърдението, не някъде на страницата. Позицията се сверява в JSX,
                   не по наличието на низа. */}
               {summary.average !== null && (
-                <dd className="col-span-2 mt-2 text-xs leading-relaxed text-silver-400">
+                <dd className="col-span-2 mt-2 text-xs leading-relaxed text-ivory-400">
                   {t.server.ratingDisclaimer}
                 </dd>
               )}
@@ -417,13 +417,13 @@ export default async function ServerPage({ params, searchParams }: Props) {
             />
 
             {server.source === 'DISCOVERED' && (
-              <p className="panel p-5 text-sm leading-relaxed text-silver-400">
+              <p className="panel p-5 text-sm leading-relaxed text-ivory-400">
                 {t.server.discoveredNote}
               </p>
             )}
 
             {server.lastProbe === 'HIDDEN' && (
-              <p className="panel p-5 text-sm leading-relaxed text-silver-400">
+              <p className="panel p-5 text-sm leading-relaxed text-ivory-400">
                 {t.server.hiddenNotice}
               </p>
             )}
@@ -441,7 +441,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
                 </Link>
               </div>
               {/* Текстът е подаден от собственика — чист текст, без HTML/Markdown. */}
-              <p className="mt-4 max-w-[68ch] whitespace-pre-line leading-relaxed text-silver-300">
+              <p className="mt-4 max-w-[68ch] whitespace-pre-line leading-relaxed text-ivory-300">
                 {server.description}
               </p>
             </section>
@@ -451,7 +451,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
             <h2 className="section-title">{t.server.reviews}</h2>
 
             {review === 'ok' && (
-              <p role="status" className="mt-5 rounded-xl border border-cyan-300/30 bg-cyan-400/[0.07] p-4 text-cyan-100">
+              <p role="status" className="mt-5 rounded-xl border border-bronze-300/30 bg-bronze-400/[0.07] p-4 text-bronze-100">
                 {t.server.reviewOk}
               </p>
             )}
@@ -462,17 +462,17 @@ export default async function ServerPage({ params, searchParams }: Props) {
             )}
 
             {data.reviews.length === 0 ? (
-              <p className="mt-4 text-silver-400">{t.server.reviewsEmpty}</p>
+              <p className="mt-4 text-ivory-400">{t.server.reviewsEmpty}</p>
             ) : (
               <>
                 <ul className="mt-6 space-y-3">
                   {data.reviews.map((item) => (
                     <li key={item.id} className="panel p-5 sm:p-6">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="flex items-center gap-2.5 text-sm text-silver-300">
+                        <p className="flex items-center gap-2.5 text-sm text-ivory-300">
                           <Stars value={item.rating} size={14} />
                           <span className="tabular-nums">{item.rating} / 5</span>
-                          <span aria-hidden="true" className="text-silver-500">·</span>
+                          <span aria-hidden="true" className="text-ivory-500">·</span>
                           <span>{item.authorAlias ?? t.server.anonymous}</span>
                         </p>
                         <Link
@@ -483,7 +483,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
                         </Link>
                       </div>
                       {item.body && (
-                        <p className="mt-2.5 max-w-[68ch] whitespace-pre-line leading-relaxed text-silver-200">
+                        <p className="mt-2.5 max-w-[68ch] whitespace-pre-line leading-relaxed text-ivory-200">
                           {item.body}
                         </p>
                       )}
@@ -491,8 +491,8 @@ export default async function ServerPage({ params, searchParams }: Props) {
                           обещават. Визуално подчинен на ревюто и изрично назован,
                           за да не мине за втори отзив. */}
                       {item.reply && (
-                        <div className="mt-4 rounded-xl border-s-2 border-cyan-400/60 bg-white/[0.02] py-2.5 pe-3 ps-4">
-                          <p className="text-xs font-medium text-cyan-300">
+                        <div className="mt-4 rounded-xl border-s-2 border-bronze-400/60 bg-white/[0.02] py-2.5 pe-3 ps-4">
+                          <p className="text-xs font-medium text-bronze-300">
                             {t.server.replyLabel}
                             {item.repliedAt && (
                               <>
@@ -503,14 +503,14 @@ export default async function ServerPage({ params, searchParams }: Props) {
                               </>
                             )}
                           </p>
-                          <p className="mt-1 whitespace-pre-line text-sm text-silver-300">{item.reply}</p>
+                          <p className="mt-1 whitespace-pre-line text-sm text-ivory-300">{item.reply}</p>
                         </div>
                       )}
                     </li>
                   ))}
                 </ul>
                 {summary.count > REVIEWS_SHOWN && (
-                  <p className="mt-3 text-sm text-silver-400">
+                  <p className="mt-3 text-sm text-ivory-400">
                     {t.server.reviewsShownOf} {REVIEWS_SHOWN} {t.server.reviewsOfTotal} {summary.count}.
                   </p>
                 )}
@@ -521,7 +521,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
               action={submitReviewAction}
               className="panel mt-10 max-w-xl space-y-6 p-6 sm:p-8"
             >
-              <h3 className="font-display text-xl font-semibold tracking-[-0.015em] text-silver-100">{t.server.leaveReview}</h3>
+              <h3 className="font-display text-xl font-semibold text-ivory-100">{t.server.leaveReview}</h3>
               <input type="hidden" hidden name="slug" value={server.slug} />
               <input type="hidden" hidden name="locale" value={locale} />
 
@@ -534,7 +534,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
                   {[1, 2, 3, 4, 5].map((value) => (
                     <label
                       key={value}
-                      className="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/[0.12] bg-white/[0.02] px-3 tabular-nums text-silver-300 transition-colors hover:border-cyan-400/60 has-[:checked]:border-cyan-300 has-[:checked]:bg-cyan-400/15 has-[:checked]:text-cyan-100 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-cyan-300"
+                      className="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-bronze-400/20 bg-white/[0.02] px-3 tabular-nums text-ivory-300 transition-colors hover:border-bronze-400/60 has-[:checked]:border-bronze-300 has-[:checked]:bg-bronze-400/15 has-[:checked]:text-bronze-100 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-bronze-300"
                     >
                       <input type="radio" name="rating" value={value} required className="sr-only" />
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

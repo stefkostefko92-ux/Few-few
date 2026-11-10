@@ -38,7 +38,7 @@ const bg: LegalSet = {
     title: 'Политика за поверителност',
     effective: '2026-08-02',
     description:
-      'Какви данни обработва FiveM BG, на какво основание, за колко време и кой още ги вижда. Без бисквитки за проследяване.',
+      'Какви данни обработва този сайт, на какво основание, за колко време и кой още ги вижда. Без бисквитки за проследяване.',
     blocks: [
       {
         p: 'Не сме назначили длъжностно лице по защита на данните: обработването не изисква редовно и систематично мащабно наблюдение и не включва мащабна обработка на чувствителни данни.',
@@ -134,10 +134,10 @@ const bg: LegalSet = {
     title: 'Общи условия',
     effective: '2026-08-02',
     description:
-      'Условия за ползване на директорията FiveM BG: листване, модерация, ревюта, класиране и сигнали за незаконно съдържание.',
+      'Условия за ползване на директорията на Thraex PVP: листване, модерация, ревюта, класиране и сигнали за незаконно съдържание.',
     blocks: [
       {
-        p: 'FiveM BG е независима директория на български FiveM сървъри. Проектът не е свързан с Rockstar Games, Take-Two Interactive Software, Inc. или Cfx.re и не предоставя игрови сървъри.',
+        p: 'Thraex PVP е сайт с директория на български FiveM сървъри. Сайтът и сървърът Thraex PVP са на Carbon Stealth VCC. Директорията е отворена за чужди сървъри, а Thraex PVP няма предимство в подредбата ѝ. Проектът не е свързан с Rockstar Games, Take-Two Interactive Software, Inc. или Cfx.re.',
       },
       { h: 'Листване на сървър' },
       {
@@ -210,7 +210,7 @@ const en: LegalSet = {
     title: 'Privacy policy',
     effective: '2026-08-02',
     description:
-      'What data FiveM BG processes, on what legal basis, for how long, and who else sees it. No tracking cookies.',
+      'What data this website processes, on what legal basis, for how long, and who else sees it. No tracking cookies.',
     blocks: [
       {
         p: 'We have not appointed a data protection officer: the processing does not require regular and systematic large-scale monitoring and does not involve large-scale processing of special categories of data.',
@@ -306,10 +306,10 @@ const en: LegalSet = {
     title: 'Terms of use',
     effective: '2026-08-02',
     description:
-      'Terms for using the FiveM BG directory: listings, moderation, reviews, ranking and reports of illegal content.',
+      'Terms for using the Thraex PVP directory: listings, moderation, reviews, ranking and reports of illegal content.',
     blocks: [
       {
-        p: 'FiveM BG is an independent directory of Bulgarian FiveM servers. The project is not affiliated with Rockstar Games, Take-Two Interactive Software, Inc. or Cfx.re and does not operate game servers.',
+        p: 'Thraex PVP is a website with a directory of Bulgarian FiveM servers. The website and the Thraex PVP server are both run by Carbon Stealth VCC. The directory is open to other servers, and Thraex PVP gets no advantage in its ranking. The project is not affiliated with Rockstar Games, Take-Two Interactive Software, Inc. or Cfx.re.',
       },
       { h: 'Listing a server' },
       {

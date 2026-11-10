@@ -23,10 +23,10 @@ test('заглавието носи рамката и се събира в 60 з
   assert.equal(serverPageTitle('Nova RP', 'ESX', bg.server), 'Nova RP — ESX FiveM сървър');
   assert.equal(serverPageTitle('Nova RP', null, bg.server), 'Nova RP — FiveM RP сървър');
   assert.equal(serverPageTitle('Nova RP', 'QBCore', en.server), 'Nova RP — QBCore FiveM server');
-  // Шаблонът на layout-а добавя „ · FiveM BG“ (11 знака).
+  // Шаблонът на layout-а добавя „ · Thraex PVP“ (13 знака).
   const long = serverPageTitle('Euphoric City Rolleplay SUMMER SEASON EDITION', 'ESX', bg.server);
   assert.ok(long.length <= SERVER_TITLE_MAX, long);
-  assert.ok(`${long} · FiveM BG`.length <= 60);
+  assert.ok(`${long} · Thraex PVP`.length <= 60);
 });
 
 test('описанието е от фактите на сървъра — различни сървъри, различни описания', () => {

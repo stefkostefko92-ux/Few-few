@@ -4,7 +4,7 @@
  * са `aria-hidden`: прочетени на глас, пет „звезда“ не казват нищо повече.
  *
  * Дробната част се показва с изрязване по ширина, не със закръгляне: 4,4 и 4,6
- * не бива да изглеждат еднакво. Празните звезди са silver-600 (3,62:1 върху
+ * не бива да изглеждат еднакво. Празните звезди са ivory-600 (3,62:1 върху
  * ink-950 — над 3:1 за нетекстово съдържание по WCAG 1.4.11).
  */
 const STAR =
@@ -26,9 +26,9 @@ export function Stars({ value, size = 16 }: { value: number; size?: number }) {
   const percent = Math.min(100, Math.max(0, (value / 5) * 100));
   return (
     <span aria-hidden="true" className="relative inline-flex align-middle">
-      <Row size={size} className="text-silver-600" />
+      <Row size={size} className="text-ivory-600" />
       <span className="absolute inset-y-0 left-0 overflow-hidden" style={{ width: `${percent}%` }}>
-        <Row size={size} className="text-cyan-300" />
+        <Row size={size} className="text-bronze-300" />
       </span>
     </span>
   );

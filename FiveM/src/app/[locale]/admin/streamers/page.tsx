@@ -9,7 +9,7 @@ import { PLATFORM_BADGE, STREAM_PLATFORMS, type StreamPlatformId } from '@/lib/s
 export const dynamic = 'force-dynamic';
 
 const input = 'field mt-0 rounded-lg px-2.5 py-1.5 text-sm';
-const button = 'rounded border border-white/[0.12] px-3 py-1 text-sm hover:border-cyan-500';
+const button = 'rounded border border-bronze-400/20 px-3 py-1 text-sm hover:border-bronze-500';
 
 const STATUS_LABEL: Record<string, string> = {
   APPROVED: 'публичен',
@@ -35,33 +35,33 @@ export default async function AdminStreamers({
 
   return (
     <div>
-      <p className="rounded-2xl border border-cyan-300/20 bg-cyan-400/[0.05] p-5 text-sm leading-relaxed text-silver-300">
+      <p className="rounded-2xl border border-bronze-300/20 bg-bronze-400/[0.05] p-5 text-sm leading-relaxed text-ivory-300">
         Тук има <strong>лични данни</strong> на реални хора. „Свален по възражение“ (чл. 21 ОРЗД) е
         записът, който спира автоматичното откриване да го върне — <strong>не изтривай</strong>
         {' '}вместо това, защото изтрит запис се появява пак при следващия пробег на cron-а.
         Обещаният срок е 72 часа.
       </p>
 
-      <p className="mt-3 text-sm text-silver-500">
+      <p className="mt-3 text-sm text-ivory-500">
         Показани {streamers.length}
         {pending > 0 && (
           <>
             {' · '}
-            <strong className="text-cyan-300">{pending} чакат преглед</strong>
+            <strong className="text-bronze-300">{pending} чакат преглед</strong>
           </>
         )}
         . YouTube никога не влиза публично автоматично — платформата не обявява език на излъчването.
       </p>
 
-      <section className="mt-8 max-w-xl rounded-xl border border-white/[0.08] bg-ink-900/70 p-4">
-        <h2 className="text-lg font-medium text-silver-100">Добави ръчно</h2>
-        <p className="mt-1 text-sm text-silver-500">
+      <section className="mt-8 max-w-xl rounded-xl border border-bronze-400/20 bg-ink-900/70 p-4">
+        <h2 className="text-lg font-medium text-ivory-100">Добави ръчно</h2>
+        <p className="mt-1 text-sm text-ivory-500">
           Единственият път за TikTok: платформата няма публично откриване на живи излъчвания.
           Приема се цял адрес, „@име“ или голо име.
         </p>
         <form action={addStreamerAction} className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-silver-500">Платформа</span>
+            <span className="text-ivory-500">Платформа</span>
             <select name="platform" defaultValue="TIKTOK" className={input}>
               {STREAM_PLATFORMS.map((platform) => (
                 <option key={platform} value={platform}>
@@ -71,11 +71,11 @@ export default async function AdminStreamers({
             </select>
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-silver-500">Канал</span>
+            <span className="text-ivory-500">Канал</span>
             <input name="channel" required maxLength={200} className={input} />
           </label>
           <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-            <span className="text-silver-500">Показвано име (по избор)</span>
+            <span className="text-ivory-500">Показвано име (по избор)</span>
             <input name="displayName" maxLength={80} className={input} />
           </label>
           <div className="sm:col-span-2">
@@ -91,15 +91,15 @@ export default async function AdminStreamers({
           <li key={streamer.id} className="panel p-5">
             <div className="flex flex-wrap items-center gap-3">
               <Badge name={PLATFORM_BADGE[streamer.platform as StreamPlatformId]} size={28} />
-              <strong className="text-silver-100">{streamer.displayName}</strong>
-              <code className="text-xs text-silver-500">
+              <strong className="text-ivory-100">{streamer.displayName}</strong>
+              <code className="text-xs text-ivory-500">
                 {streamer.platform}/{streamer.channel}
               </code>
               <span
                 className={
                   streamer.status === 'APPROVED'
-                    ? 'rounded bg-cyan-700/25 px-2 py-0.5 text-xs text-cyan-200'
-                    : 'rounded border border-white/[0.12] px-2 py-0.5 text-xs text-silver-400'
+                    ? 'rounded bg-bronze-700/25 px-2 py-0.5 text-xs text-bronze-200'
+                    : 'rounded border border-bronze-400/20 px-2 py-0.5 text-xs text-ivory-400'
                 }
               >
                 {STATUS_LABEL[streamer.status]}
@@ -110,17 +110,17 @@ export default async function AdminStreamers({
                 </span>
               )}
               {streamer.manual && (
-                <span className="rounded border border-white/[0.12] px-2 py-0.5 text-xs text-silver-500">
+                <span className="rounded border border-bronze-400/20 px-2 py-0.5 text-xs text-ivory-500">
                   ръчен
                 </span>
               )}
               {streamer.language && (
-                <span className="text-xs text-silver-500">език: {streamer.language}</span>
+                <span className="text-xs text-ivory-500">език: {streamer.language}</span>
               )}
             </div>
 
             {streamer.streamTitle && (
-              <p className="mt-2 text-sm text-silver-400">{streamer.streamTitle}</p>
+              <p className="mt-2 text-sm text-ivory-400">{streamer.streamTitle}</p>
             )}
 
             <div className="mt-3 flex flex-wrap gap-2">
@@ -136,7 +136,7 @@ export default async function AdminStreamers({
               <a
                 href={streamer.profileUrl}
                 rel="noopener nofollow"
-                className="rounded border border-white/[0.12] px-3 py-1 text-sm text-cyan-300 hover:border-cyan-500"
+                className="rounded border border-bronze-400/20 px-3 py-1 text-sm text-bronze-300 hover:border-bronze-500"
               >
                 Отвори канала
               </a>

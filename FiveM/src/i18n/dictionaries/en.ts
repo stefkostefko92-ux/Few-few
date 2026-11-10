@@ -8,10 +8,11 @@ import type { Dictionary } from './bg';
  */
 export const en: Dictionary = {
   meta: {
-    siteName: 'FiveM BG',
+    siteName: 'Thraex PVP',
     tagline: 'The directory of Bulgarian FiveM RP servers',
   },
   nav: {
+    thraex: 'Thraex PVP',
     servers: 'Servers',
     rules: 'Rules',
     tutorials: 'Tutorials',
@@ -38,8 +39,113 @@ export const en: Dictionary = {
     terms: 'Terms',
     report: 'Report',
     discord: 'Community Discord',
+    thraexOperator: "Thraex PVP is a server by Carbon Stealth VCC. Contact:",
     disclaimer:
       'An independent project. Not affiliated with Rockstar Games, Take-Two Interactive Software, Inc. or Cfx.re. GTA V, Grand Theft Auto and Rockstar Games are trademarks of Take-Two Interactive Software, Inc.; FiveM and Cfx.re are trademarks of their respective owners; Twitch, Kick, YouTube and TikTok are trademarks of their respective owners. They are used here solely to identify the platform this content refers to.',
+  },
+  thraex: {
+    "metaTitle": "Thraex PVP: a PvP server with no paid advantages",
+    "metaDescription": "Ten modes, match-earned rating, server-side damage and an arena built from scratch. You only ever pay for looks, never for an edge.",
+    "heroTitle": "The arena forgives nothing.",
+    "heroLead": "A PvP server where the server counts every bullet, rating is earned in matches and nothing in combat is for sale.",
+    "watchCta": "Watch the full video",
+    "discordCta": "Join the Discord",
+    "joinCta": "Join the server",
+    "manifesto": [
+      {
+        "title": "The server counts every bullet.",
+        "body": "No client can claim a hit it did not land."
+      },
+      {
+        "title": "Rating is earned in the match.",
+        "body": "The ladder starts at zero, and quitters pay for it."
+      },
+      {
+        "title": "Money buys looks. Nothing else.",
+        "body": "No paid queue. The Odrys currency is earned only by playing."
+      },
+      {
+        "title": "The defence reads the fight.",
+        "body": "A verdict needs an impossible act and independent proof."
+      }
+    ],
+    "videoTitle": "See the arena.",
+    "videoLead": "The full video from the loading screen. The arena was built from scratch and is lit by fire.",
+    "videoFallback": "Your browser cannot play this video.",
+    "modesTitle": "Ten ways to fall.",
+    "modesLead": "Every mode has its own rules, weapons and maps.",
+    "modes": [
+      {
+        "id": "ffa",
+        "label": "FFA",
+        "body": "Everyone for themselves. First to 30 kills wins."
+      },
+      {
+        "id": "facecheck",
+        "label": "Facecheck",
+        "body": "Team rounds with pistols and axes, no radar, no armor. First to 5 rounds wins."
+      },
+      {
+        "id": "5v5",
+        "label": "5v5",
+        "body": "Two teams with cars parked at their start. A round ends when a whole team is down. First to 7 rounds wins."
+      },
+      {
+        "id": "duel",
+        "label": "1v1 Duel",
+        "body": "One opponent. A round ends when one of you is down. First to 5 rounds wins."
+      },
+      {
+        "id": "wingman",
+        "label": "Wingman 2v2",
+        "body": "Two on two with pistols and cars at each start. First to 5 rounds wins."
+      },
+      {
+        "id": "gungame",
+        "label": "Gun Game",
+        "body": "Every kill gives you the next weapon. The first kill with the axe wins."
+      },
+      {
+        "id": "tdm",
+        "label": "Team Deathmatch",
+        "body": "Two teams with respawns. First team to 50 kills wins."
+      },
+      {
+        "id": "koth",
+        "label": "King of the Hill",
+        "body": "Hold the hill alone to score. It moves every minute. First team to 150 points wins."
+      },
+      {
+        "id": "royale",
+        "label": "Battle Royale",
+        "body": "Everyone for themselves, one life and a closing zone. The last one alive wins."
+      },
+      {
+        "id": "hopouts",
+        "label": "Hopouts",
+        "body": "Each team starts on foot next to its cars. Drive in, hop out, no respawns. First to 5 rounds wins."
+      }
+    ],
+    "ranksTitle": "From Komat to Heros.",
+    "ranksLead": "Ten Thracian ranks. You start at zero and every match moves your rating.",
+    "ranksFrom": "from",
+    "more": [
+      {
+        "title": "Crew Wars",
+        "body": "A crew with a tag, a color and roles. Fight other crews and share one rating and season."
+      },
+      {
+        "title": "Custom lobbies",
+        "body": "Pick the mode, the map and the rules, invite your friends and play on your own terms, off the leaderboard."
+      },
+      {
+        "title": "Battle pass",
+        "body": "Thirty tiers unlocked only by playing. The rewards are cosmetics from a fixed list, with no randomness."
+      }
+    ],
+    "finalTitle": "Enter the arena.",
+    "finalLead": "Everything you need to start is in the Discord.",
+    "operator": "Thraex PVP is a server by Carbon Stealth VCC, the publisher of this site. Contact:"
   },
   home: {
     title: 'Bulgarian FiveM RP servers — live list with status and players',
@@ -252,7 +358,7 @@ export const en: Dictionary = {
     optOut:
       'Write to us and the channel is removed within 72 hours — we record the objection so automatic discovery cannot bring it back. This is your right under Art. 21 GDPR and we do not ask for a reason.',
     optOutCta: 'Write to us',
-    optOutSubject: 'Objection under Art. 21 GDPR — remove my channel from FiveM BG',
+    optOutSubject: 'Objection under Art. 21 GDPR — remove my channel from Thraex PVP',
     privacyCta: 'How we process this data',
   },
   news: {

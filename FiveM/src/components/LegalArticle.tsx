@@ -16,7 +16,7 @@ export function LegalArticle({ doc, withController = false }: { doc: LegalDoc; w
       {/* Дата на редакцията — чл. 12, ал. 1 ОРЗД и чл. 14, ал. 2 DSA. Без нея
           читателят не знае коя версия чете, а уведомяването за промяна е
           недоказуемо. */}
-        <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.02] px-3 py-1 text-sm text-silver-400">
+        <p className="mt-5 inline-flex items-center gap-2 rounded-lg border border-bronze-400/20 bg-white/[0.02] px-3 py-1 text-sm text-ivory-400">
           <time dateTime={doc.effective}>{doc.effective}</time> — дата, от която тази редакция е в сила
         </p>
       </header>
@@ -70,7 +70,7 @@ export function LegalArticle({ doc, withController = false }: { doc: LegalDoc; w
         return <p key={index}>{block.p}</p>;
       })}
 
-      <p className="pt-4 text-sm text-silver-500">
+      <p className="pt-4 text-sm text-ivory-500">
         <a href={`mailto:${PUBLISHER.email}`} className="link">
           {PUBLISHER.email}
         </a>

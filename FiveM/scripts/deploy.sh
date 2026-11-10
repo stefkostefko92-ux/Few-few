@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Деплой на FiveM Bulgaria — идемпотентен, викан от `deploy/autodeploy.sh` или
+# Деплой на Thraex PVP — идемпотентен, викан от `deploy/autodeploy.sh` или
 # на ръка от папката на продукта.
 #
 #   ./scripts/deploy.sh              # нормално

@@ -43,14 +43,14 @@ export default async function StreamersPage({ params }: Props) {
       </h1>
       <p className="lead mt-5">{t.streamers.intro}</p>
 
-      <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-silver-400">
+      <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ivory-400">
         <Badge name="online" size={24} />
-        <strong className="text-cyan-300">{counts.live}</strong> {t.streamers.liveNow} ·{' '}
-        <strong className="text-silver-100">{counts.total}</strong> {t.streamers.totalWord}
+        <strong className="text-bronze-300">{counts.live}</strong> {t.streamers.liveNow} ·{' '}
+        <strong className="text-ivory-100">{counts.total}</strong> {t.streamers.totalWord}
       </p>
 
       {groups.length === 0 ? (
-        <p className="panel mt-10 p-8 text-silver-300">
+        <p className="panel mt-10 p-8 text-ivory-300">
           {t.streamers.empty}
         </p>
       ) : (
@@ -59,7 +59,7 @@ export default async function StreamersPage({ params }: Props) {
             <h2 className="section-title flex items-center gap-3">
               <Badge name={PLATFORM_BADGE[group.platform]} size={40} />
               {t.streamers.platforms[group.platform]}
-              <span className="text-base font-normal text-silver-500">
+              <span className="text-base font-normal text-ivory-500">
                 ({group.streamers.length})
               </span>
             </h2>
@@ -83,9 +83,9 @@ export default async function StreamersPage({ params }: Props) {
           прозрачността и пътят за възражение стоят на СЪЩАТА страница, не
           само в политиката. */}
       <section className="panel mt-16 max-w-3xl p-6 sm:p-8">
-        <p className="text-sm text-silver-400">{t.streamers.dataNotice}</p>
-        <h2 className="mt-5 font-display text-lg font-semibold tracking-[-0.015em] text-silver-100">{t.streamers.optOutTitle}</h2>
-        <p className="mt-2 text-sm text-silver-400">{t.streamers.optOut}</p>
+        <p className="text-sm text-ivory-400">{t.streamers.dataNotice}</p>
+        <h2 className="mt-5 font-display text-lg font-semibold text-ivory-100">{t.streamers.optOutTitle}</h2>
+        <p className="mt-2 text-sm text-ivory-400">{t.streamers.optOut}</p>
         <p className="mt-3 flex flex-wrap gap-4 text-sm">
           {/* ПРЯК `mailto`, не линк към „Контакти“: чл. 12(2) иска пътят за
               упражняване на право да е УЛЕСНЕН, а страницата с контакти беше
@@ -131,7 +131,7 @@ function StreamerCard({
         <Badge name={PLATFORM_BADGE[platform]} size={24} />
         {/* Показваното име идва от чужда платформа — минало е през
             `displayName` при записа, тук се рендира като текст, не като HTML. */}
-        <strong className="truncate text-silver-100">{streamer.displayName}</strong>
+        <strong className="truncate text-ivory-100">{streamer.displayName}</strong>
       </div>
 
       <p className="mt-2 flex items-center gap-2 text-sm">
@@ -141,12 +141,12 @@ function StreamerCard({
               <span className="h-1.5 w-1.5 rounded-full bg-red-400" aria-hidden="true" />
               {t.streamers.live}
             </span>
-            <span className="text-silver-400">
+            <span className="text-ivory-400">
               {streamer.viewers} {t.streamers.viewers}
             </span>
           </>
         ) : (
-          <span className="text-silver-500">
+          <span className="text-ivory-500">
             {t.streamers.offline}
             {streamer.lastLiveAt && (
               <>
@@ -163,7 +163,7 @@ function StreamerCard({
 
       {/* Заглавието излиза само след ЧОВЕШКИ преглед — виж `publicStreamerSelect`. */}
       {streamer.reviewedAt && streamer.streamTitle && (
-        <p className="mt-2 line-clamp-2 text-sm text-silver-400">{streamer.streamTitle}</p>
+        <p className="mt-2 line-clamp-2 text-sm text-ivory-400">{streamer.streamTitle}</p>
       )}
 
       {/* `nofollow`, защото не предаваме тежест на чужд домейн; `noopener`,

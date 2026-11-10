@@ -42,7 +42,7 @@ export function ServerCard({
   return (
     <li
       className={`group relative flex flex-col p-5 transition-[border-color,box-shadow] duration-200 ${
-        featured ? 'panel-chrome' : 'panel hover:border-cyan-400/30'
+        featured ? 'panel-chrome' : 'panel hover:border-bronze-400/30'
       }`}
     >
       {/* `items-center`: значката стои по средата на името + подзаглавието, а не
@@ -51,15 +51,15 @@ export function ServerCard({
         {/* Рамката е първото, което търси играчът — затова е обемната значка. */}
         <Badge name={FRAMEWORK_ICON[server.framework as FrameworkId]} size={40} />
         <div className="min-w-0 flex-1">
-          <h2 className="font-display text-[1.0625rem] font-semibold leading-snug tracking-[-0.015em] text-silver-100">
+          <h2 className="font-display text-[1.0625rem] font-semibold leading-snug text-ivory-100">
             <Link
               href={`/${locale}/servers/${server.slug}`}
-              className="rounded after:absolute after:inset-0 after:rounded-2xl group-hover:text-cyan-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
+              className="rounded after:absolute after:inset-0 after:rounded-2xl group-hover:text-bronze-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bronze-400"
             >
               {title}
             </Link>
           </h2>
-          {server.tagline && <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-silver-400">{server.tagline}</p>}
+          {server.tagline && <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-ivory-400">{server.tagline}</p>}
         </div>
       </div>
 
@@ -75,7 +75,7 @@ export function ServerCard({
 
       {/* Статусът Е бутонът към „кой играе“. Иконата е декорация: статусът е и
           текст, защото цветът и формата сами не са информация (WCAG 1.4.1). */}
-      <div className="relative z-10 mt-auto pt-5 text-sm text-silver-300">
+      <div className="relative z-10 mt-auto pt-5 text-sm text-ivory-300">
         <PlayerList
           names={server.playerNames}
           seenAt={server.online ? server.playersSeenAt : null}
@@ -91,16 +91,16 @@ export function ServerCard({
             live ? (
               <span className="flex items-center gap-2.5">
                 <span className="live-dot" aria-hidden="true" />
-                <span className="font-display text-xl font-medium tabular-nums tracking-[-0.02em] text-silver-100">
+                <span className="font-display text-xl font-medium tabular-nums text-ivory-100">
                   {server.players}
                 </span>
-                <span className="tabular-nums text-silver-400">
+                <span className="tabular-nums text-ivory-400">
                   / {server.maxPlayers || '?'} {t.status.online}
                 </span>
                 <span className="sr-only">{status}</span>
               </span>
             ) : (
-              <span className="flex items-center gap-2 text-silver-400">
+              <span className="flex items-center gap-2 text-ivory-400">
                 <Badge name={STATUS_ICON[server.lastProbe]} size={22} />
                 {status}
               </span>

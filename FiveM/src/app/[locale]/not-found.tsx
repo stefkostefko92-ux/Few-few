@@ -1,7 +1,7 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 
-import { Mascot } from '@/components/Mascot';
 import { getDictionary } from '@/i18n';
 import { DEFAULT_LOCALE, isLocale, LOCALE_HEADER } from '@/i18n/config';
 
@@ -24,14 +24,14 @@ export default async function NotFound() {
 
   return (
     <div className="flex flex-col items-center gap-7 py-16 text-center">
-      <Mascot detail="medium" size={140} expression="surprised" title={null} />
+      <Image src="/brand/logo-thraex.webp" alt="" width={900} height={259} className="h-24 w-auto" />
 
       <div>
-        <p className="font-display text-6xl font-semibold leading-none tracking-[-0.03em] text-silver-600" aria-hidden="true">
+        <p className="font-display text-6xl font-semibold leading-none text-ivory-600" aria-hidden="true">
           404
         </p>
         <h1 className="page-title mt-4">{t.notFound.h1}</h1>
-        <p className="mx-auto mt-3 max-w-md text-silver-400">{t.notFound.body}</p>
+        <p className="mx-auto mt-3 max-w-md text-ivory-400">{t.notFound.body}</p>
       </div>
 
       <div className="flex flex-wrap justify-center gap-3">

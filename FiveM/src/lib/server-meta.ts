@@ -37,9 +37,9 @@ export function formatMoment(date: Date, locale: string): string {
 
 /**
  * Таван на заглавието на страницата БЕЗ бранда: шаблонът в `layout.tsx`
- * добавя „ · FiveM BG“ (11 знака), значи цялото заглавие остава ≤ 60.
+ * добавя „ · Thraex PVP“ (13 знака), значи цялото заглавие остава ≤ 60.
  */
-export const SERVER_TITLE_MAX = 49;
+export const SERVER_TITLE_MAX = 47;
 
 export type TitleWords = {
   /** „FiveM RP сървър“ — когато рамката е неизвестна. */

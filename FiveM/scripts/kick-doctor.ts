@@ -17,7 +17,7 @@
 // Средата идва от контейнера (`env_file` в docker-compose.yml) — затова няма
 // dotenv и няма нова зависимост само заради един диагностичен скрипт.
 const API = 'https://api.kick.com/public/v1';
-const UA = 'FiveMBulgaria/1.0 (+https://fivembulgaria.carbonstealth.eu)';
+const UA = 'ThraexPVP/1.0 (+https://thraex.carbonstealth.eu)';
 
 /** Кандидатите за стойност на `language`, в реда на пробване. */
 const LANGUAGE_CANDIDATES = ['bg', 'Bulgarian', 'bulgarian', 'BG'];

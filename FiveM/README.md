@@ -1,4 +1,4 @@
-# FiveM Bulgaria
+# Thraex PVP
 
 Директория на българските **FiveM** (GTA V multiplayer) roleplay сървъри: жив
 статус, брой играчи, рамка (ESX/QBCore/Qbox), whitelist, Discord, ревюта,

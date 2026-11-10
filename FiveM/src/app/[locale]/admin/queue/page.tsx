@@ -14,7 +14,7 @@ import { prisma } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 const yes = 'btn-primary min-h-9 rounded-lg px-3 text-sm';
-const no = 'rounded border border-white/[0.12] px-3 py-1 text-sm hover:border-red-500';
+const no = 'rounded border border-bronze-400/20 px-3 py-1 text-sm hover:border-red-500';
 
 export default async function AdminQueue({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
@@ -54,21 +54,21 @@ export default async function AdminQueue({ params }: { params: Promise<{ locale:
         <h2 className="flex items-center gap-3 text-lg font-semibold">
           <Badge name="notification" size={32} /> Ревюта ({reviews.length})
         </h2>
-        <p className="mt-1 text-sm text-silver-500">
+        <p className="mt-1 text-sm text-ivory-500">
           Нищо не излиза публично без „Публикувай“. Ревютата се пишат само от посетители.
         </p>
         {reviews.length === 0 ? (
-          <p className="mt-3 text-silver-400">Празно.</p>
+          <p className="mt-3 text-ivory-400">Празно.</p>
         ) : (
           <ul className="mt-4 space-y-3">
             {reviews.map((review) => (
               <li key={review.id} className="panel p-5">
-                <p className="text-sm text-silver-500">
+                <p className="text-sm text-ivory-500">
                   {review.rating} / 5 · {review.authorAlias ?? 'анонимен'} · {review.server.name} ·{' '}
                   {review.createdAt.toLocaleDateString('bg-BG')}
                 </p>
                 {/* Съдържанието е недоверено — чист текст, никога HTML. */}
-                {review.body && <p className="mt-2 whitespace-pre-line text-silver-200">{review.body}</p>}
+                {review.body && <p className="mt-2 whitespace-pre-line text-ivory-200">{review.body}</p>}
                 <div className="mt-3 flex gap-2">
                   {(['APPROVED', 'REJECTED'] as const).map((decision) => (
                     <form key={decision} action={moderateReviewAction}>
@@ -89,20 +89,20 @@ export default async function AdminQueue({ params }: { params: Promise<{ locale:
 
       <section>
         <h2 className="text-lg font-semibold">Публикувани ревюта — отговор на сървъра ({published.length})</h2>
-        <p className="mt-1 text-sm text-silver-500">
+        <p className="mt-1 text-sm text-ivory-500">
           Последните 30. Тук се вписва отговорът на собственика; „Свали“ скрива ревюто от страницата.
         </p>
         {published.length === 0 ? (
-          <p className="mt-3 text-silver-400">Празно.</p>
+          <p className="mt-3 text-ivory-400">Празно.</p>
         ) : (
           <ul className="mt-4 space-y-3">
             {published.map((review) => (
               <li key={review.id} className="panel p-5">
-                <p className="text-sm text-silver-500">
+                <p className="text-sm text-ivory-500">
                   {review.rating} / 5 · {review.authorAlias ?? 'анонимен'} · {review.server.name} ·{' '}
                   {review.createdAt.toLocaleDateString('bg-BG')}
                 </p>
-                {review.body && <p className="mt-2 whitespace-pre-line text-silver-200">{review.body}</p>}
+                {review.body && <p className="mt-2 whitespace-pre-line text-ivory-200">{review.body}</p>}
                 <div className="mt-3 flex flex-wrap items-start gap-3">
                   <form action={moderateReviewAction}>
                     <input type="hidden" name="id" value={review.id} />
@@ -121,22 +121,22 @@ export default async function AdminQueue({ params }: { params: Promise<{ locale:
         <h2 className="flex items-center gap-3 text-lg font-semibold">
           <Badge name="contact" size={32} /> Заявки за листване ({submissions.length})
         </h2>
-        <p className="mt-1 text-sm text-silver-500">
+        <p className="mt-1 text-sm text-ivory-500">
           Одобряването създава публичния сървър от заявката.
         </p>
         {submissions.length === 0 ? (
-          <p className="mt-3 text-silver-400">Празно.</p>
+          <p className="mt-3 text-ivory-400">Празно.</p>
         ) : (
           <ul className="mt-4 space-y-3">
             {submissions.map((submission) => (
               <li key={submission.id} className="panel p-5">
-                <p className="font-medium text-silver-100">{submission.serverName}</p>
-                <p className="mt-1 text-sm text-silver-500">
+                <p className="font-medium text-ivory-100">{submission.serverName}</p>
+                <p className="mt-1 text-sm text-ivory-500">
                   {submission.cfxJoinCode ?? submission.address ?? '—'} · {submission.contactEmail} ·{' '}
                   {submission.createdAt.toLocaleDateString('bg-BG')}
                 </p>
                 {submission.note && (
-                  <p className="mt-2 whitespace-pre-line text-silver-300">{submission.note}</p>
+                  <p className="mt-2 whitespace-pre-line text-ivory-300">{submission.note}</p>
                 )}
                 <div className="mt-3 flex gap-2">
                   <form action={approveSubmissionAction}>
@@ -168,23 +168,23 @@ export default async function AdminQueue({ params }: { params: Promise<{ locale:
         <h2 className="flex items-center gap-3 text-lg font-semibold">
           <Badge name="warning" size={32} /> Сигнали по чл. 16 DSA ({reports.length})
         </h2>
-        <p className="mt-1 text-sm text-silver-500">
+        <p className="mt-1 text-sm text-ivory-500">
           Решението записва и часа — от него тече уведомяването по чл. 16, ал. 5. „Основателен“ НЕ
           сваля нищо само: първо свали или скрий съдържанието (сървър, ревю, стриймър), после
           натисни — писмото до подателя казва, че е свалено.
         </p>
         {reports.length === 0 ? (
-          <p className="mt-3 text-silver-400">Празно.</p>
+          <p className="mt-3 text-ivory-400">Празно.</p>
         ) : (
           <ul className="mt-4 space-y-3">
             {reports.map((report) => (
               <li key={report.id} className="panel p-5">
-                <p className="break-all text-sm text-cyan-300">{report.targetUrl}</p>
-                <p className="mt-1 text-sm text-silver-500">
+                <p className="break-all text-sm text-bronze-300">{report.targetUrl}</p>
+                <p className="mt-1 text-sm text-ivory-500">
                   {report.reporterName} · {report.reporterEmail} ·{' '}
                   {report.createdAt.toLocaleDateString('bg-BG')}
                 </p>
-                <p className="mt-2 whitespace-pre-line text-silver-200">{report.reason}</p>
+                <p className="mt-2 whitespace-pre-line text-ivory-200">{report.reason}</p>
                 <div className="mt-3 flex gap-2">
                   <form action={handleReportAction}>
                     <input type="hidden" name="id" value={report.id} />
@@ -214,7 +214,7 @@ export default async function AdminQueue({ params }: { params: Promise<{ locale:
 function ReplyForm({ id, reply }: { id: string; reply: string | null }) {
   return (
     <details className="mt-3">
-      <summary className="cursor-pointer text-sm text-cyan-300">
+      <summary className="cursor-pointer text-sm text-bronze-300">
         Отговор от сървъра {reply ? '(публикуван)' : ''}
       </summary>
       <form action={replyToReviewAction} className="mt-2 space-y-2">
@@ -227,10 +227,10 @@ function ReplyForm({ id, reply }: { id: string; reply: string | null }) {
           placeholder="Текстът, който собственикът на сървъра иска да се покаже под ревюто"
           className="field mt-0 rounded-lg px-2.5 py-1.5 text-sm"
         />
-        <button className="rounded border border-white/[0.12] px-3 py-1 text-sm hover:border-cyan-500">
+        <button className="rounded border border-bronze-400/20 px-3 py-1 text-sm hover:border-bronze-500">
           Запази отговора
         </button>
-        <span className="ms-2 text-xs text-silver-500">празно поле = сваля отговора</span>
+        <span className="ms-2 text-xs text-ivory-500">празно поле = сваля отговора</span>
       </form>
     </details>
   );

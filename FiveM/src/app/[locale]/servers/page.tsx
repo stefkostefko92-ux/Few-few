@@ -80,7 +80,7 @@ export default async function ServersPage({ params, searchParams }: Props) {
         <h1 className="page-title">{t.servers.h1}</h1>
         <p className="lead mt-5">{t.servers.intro}</p>
         {servers.length > 0 && (
-          <p className="mt-5 flex items-center gap-2.5 text-sm text-silver-400">
+          <p className="mt-5 flex items-center gap-2.5 text-sm text-ivory-400">
             {online.length > 0 ? <span className="live-dot" aria-hidden="true" /> : <span className="idle-dot" aria-hidden="true" />}
             <span className="tabular-nums">
               {online.length} {t.home.statsOnline} {servers.length} · {totalPlayers} {t.home.statsPlayers}
@@ -98,7 +98,7 @@ export default async function ServersPage({ params, searchParams }: Props) {
             <Link
               key={filter.href}
               href={filter.href}
-              className="flex min-h-11 items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.02] py-1 pe-4 ps-1.5 text-silver-200 transition-colors hover:border-cyan-400/60 hover:text-cyan-200"
+              className="flex min-h-11 items-center gap-2 rounded-lg border border-bronze-400/20 bg-white/[0.02] py-1 pe-4 ps-1.5 text-ivory-200 transition-colors hover:border-bronze-400/60 hover:text-bronze-200"
             >
               <Badge name={filter.badge} size={30} />
               {filter.label}
@@ -123,7 +123,7 @@ export default async function ServersPage({ params, searchParams }: Props) {
           </label>
           <button className="btn-ghost">{t.filters.searchButton}</button>
           {query && (
-            <span className="pb-3 text-sm text-silver-400">
+            <span className="pb-3 text-sm text-ivory-400">
               {servers.length} {t.filters.found}
             </span>
           )}
@@ -145,11 +145,11 @@ export default async function ServersPage({ params, searchParams }: Props) {
           </Link>
         </p>
         {servers.length === 0 && query ? (
-          <p className="panel p-8 text-center text-silver-300">
+          <p className="panel p-8 text-center text-ivory-300">
             {t.filters.noMatch}
           </p>
         ) : servers.length === 0 ? (
-          <p className="panel p-8 text-center text-silver-300">
+          <p className="panel p-8 text-center text-ivory-300">
             {t.home.emptyLead}{' '}
             <Link href={`/${locale}/submit`} className="link">
               {t.home.emptyCta}

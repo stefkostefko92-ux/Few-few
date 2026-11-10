@@ -1,4 +1,4 @@
-# FiveM/ — „FiveM Bulgaria“, директорията на българските FiveM сървъри
+# FiveM/ — Thraex PVP, директорията на българските FiveM сървъри
 
 Публичен, SEO-оптимизиран каталог на българските **FiveM** (GTA V multiplayer)
 roleplay сървъри: жив статус, брой играчи, рамка, whitelist, Discord, ревюта и
@@ -85,7 +85,7 @@ src/lib/server-identity.ts  ЧИСТО: serverTitle (марката от чуж�
                         ≤60 знака), serverIdentityKey/isGenericServerName,
                         planIdentities (кой ред е каноничен), indexDecision —
                         ПРАВИЛОТО ЗА ИНДЕКСИРАНЕ, buildServerSlug.
-src/lib/server-meta.ts  ЧИСТО: <title> (≤49 + „ · FiveM BG“) и meta description
+src/lib/server-meta.ts  ЧИСТО: <title> (≤47 + „ · Thraex PVP“) и meta description
                         от фактите на сървъра; formatDay/formatMoment (София).
 src/lib/server-registry.ts  Prisma: applyIdentityPlan (пише canonicalId),
                         rebindRegistration (живият Cfx код → каноничния ред),
@@ -93,10 +93,10 @@ src/lib/server-registry.ts  Prisma: applyIdentityPlan (пише canonicalId),
 src/lib/pagination.ts   ЧИСТО: ?page= за каталога (48 на страница).
 scripts/dedupe-servers.ts  Преглед на плана и на броя индексирани (само чете;
                         `--apply` пише). `npm run servers:dedupe`.
-src/app/[locale]/page.tsx        LANDING „НОЩЕН ЕФИР“: герой на цяла ширина (кадър + хром
+src/app/[locale]/page.tsx        Началната: герой на цяла ширина (кадър от арената + бронзово
                         заглавие + трикольорът като носеща греда + живите числа)
                         и до него ЖИВОТО ТАБЛО — класацията от 6 сървъра
-                        (`ServerRow`, не карти) в панел с хромов кант; после
+                        (`ServerRow`, не карти) в панел с бронзов кант; после
                         „защо тук“, „как работи“, стриймъри + Discord, новини,
                         FAQ като родни `details` („отговор отпред“ за AI
                         отговарачите). Слоевете на фона са `-z-10` в секция с
@@ -148,10 +148,27 @@ src/app/[locale]/[...rest]/  Catch-all → `notFound()`: непознат адр
                         рендира НАШАТА 404 (с lang, хедър, път назад), не
                         бялата на Next. `not-found.tsx` няма `params` — езикът
                         идва от `LOCALE_HEADER`, който middleware ЗАДАВА.
-src/app/globals.css     ДИЗАЙН СИСТЕМАТА „Нощен ефир“. Шрифтове: Unbounded
-                        (заглавия, числа) + Onest (текст) — SIL OFL, самохостнати,
-                        cyrillic+latin, `swap`, LCP сабсетите се `preload`-ват в
-                        layout-а. Без Google Fonts — ГДПР. Атмосферата е в
+src/app/[locale]/thraex/  ЛЕНДИНГЪТ НА СЪРВЪРА THRAEX PVP (bg и en). Всичко е истински Cycles
+                        рендер на арената (`arena/tools/ui-art/render_site.py`): герой от два
+                        слоя (името минава между фона и сабята, `hero-blade.webp` има алфа от
+                        отделен рендер и се реже със същия `object-position`), спускане в
+                        арената, лента с плакатите, званията върху трибуните, път към знамето.
+                        Без броячи и номерирани карти: собственикът ги отхвърли като шаблон.
+                        Текстовете са в `t.thraex`. Твърденията са само истински.
+                        Бутонът за влизане излиза само с `THRAEX_JOIN_URL` (cfx.re/join).
+src/components/ThraexDescent.tsx  Кадрите на спускането върху canvas, следват превъртането
+                        (`public/thraex/descent/d` 96 кадъра, `m` 48 за телефон). Зарежда се
+                        на прескачане. Без JS, при намалено движение и пестене на данни: един кадър.
+src/components/ThraexRail.tsx   Плакатите: вертикалното превъртане ги движи настрани (от `lg`).
+src/components/ThraexFilm.tsx   Цялото видео от loading екрана (`public/media/arena.webm`, 30 s,
+                        копие от `arena/resources/[arena]/thraex_loading/ui/media/`): без звук,
+                        с контроли, тръгва при видимост, спряно от човек остава спряно.
+src/app/globals.css     ДИЗАЙН СИСТЕМАТА: визията на Thraex PVP (топло черно, слонова кост,
+                        бронз, знамето; токени `ink`, `ivory`, `bronze`, `flag`, `live`).
+                        Без неон и сияния. Заглавията са с главни букви: Cinzel
+                        за латиницата и Playfair Display 700 за кирилицата (Cinzel
+                        няма кирилица). Onest е текстът. Всичко е самохостнато, SIL OFL.
+                        Без Google Fonts — ГДПР. Атмосферата е в
                         `body::before/::after` (фиксирани, `z-index: -1`).
                         Компоненти: `.page-title`/`.section-title`/`.lead`
                         (единствената скала), `.panel` и `.panel-chrome` (САМО за
@@ -159,26 +176,31 @@ src/app/globals.css     ДИЗАЙН СИСТЕМАТА „Нощен ефир�
                         `.field`/`.field-label`/`.field-help`, `.chip`,
                         `.tag-promoted`, `.link`/`.link-quiet`, `.live-dot`,
                         `.gauge`, `.prose-doc`, `.faq-item`. Нов изглед се сглобява
-                        от тях, не от низ класове. Хромът (`.text-chrome`) е САМО
+                        от тях, не от низ класове. Бронзът (`.text-chrome`) е САМО
                         на героите (началната, страницата на сървъра).
-scripts/logo-alpha.mjs  `public/brand/logo.png` е на черен фон без алфа →
-                        `logo-alpha.png` (unmultiply). Хедърът и подвалът ползват
-                        прозрачното. Пуска се ръчно при смяна на логото.
+public/brand/logo-thraex*.webp  Логото на сървъра (`arena/brand/logo-3d.png`) с алфа канал.
 src/components/PlayersChart.tsx  24 HTML колони (flex), НЕ разтегнат SVG — SVG с
                         фиксирана височина се мащабираше по височина и стоеше
                         като тясна ивица в средата на широк екран.
 src/components/Stars.tsx  Звезди — само визуално (`aria-hidden`); числото е
                         текст до тях. Изборът на оценка във формата е радио група
                         БЕЗ стойност по подразбиране (`has-[:checked]`).
-src/app/favicon.ico     16/32/48 от емблемата; `public/brand/logo-square.png` и
-                        `apple-touch-icon.png` са изрязани наново около кръга
-                        (оригиналите бяха накриво — емблема горе, светъл
-                        правоъгълник отдолу).
+src/app/favicon.ico     16/32/48, `public/brand/logo-square.png` и `apple-touch-icon.png`:
+                        буквата T от логото на сървъра и трикольор отдолу.
+                        `placeholder-server.png` е НЕУТРАЛНА плоча: иконата стои на
+                        чужди сървъри и не бива да носи нашето лого.
 scripts/prune.ts        Cron: изтрива по обявените в /privacy срокове.
 ```
 
 ## Правила на продукта
 
+- **Името на сайта е Thraex PVP (`SITE_NAME`).** „FiveM“ остава само като име на платформата в описанията: марка на Rockstar не може да е в името и брандинга (лиценз §2.3). Адресът е `thraex.carbonstealth.eu`, старият `fivembulgaria.carbonstealth.eu` е постоянно пренасочване (`deploy/move-domain.sh`, стъпките са в `DEPLOY.md`). Пътищата на дневниците остават със старото име нарочно: срокът в политиката виси на тях. Операторът на директорията е и операторът на сървъра: `legal.ts` и `pages.ts` го казват, а подредбата няма изключение за него.
+- **Логото и визията са на Thraex PVP.** Затова подвалът на всяка страница и `/thraex` носят
+  контакта на оператора и точния текст „THRAEX PVP IS NOT APPROVED, SPONSORED, OR ENDORSED BY
+  ROCKSTAR GAMES.“ (лиценз на платформата §2.3): на английски и в двата езика, не се маха.
+  Лендингът казва изрично, че сървърът е на издателя на сайта: той стои в директория с чужди сървъри.
+  Кадрите са рендери на арената (наша геометрия), не кадри от играта.
+  Знамето е винаги хоризонтално, бяло горе: вертикални ивици го правят да прилича на италианско.
 - **Един сървър — един адрес.** Cfx.re дава НОВ код при всяка нова регистрация
   на сървъра, а откриването прави ред за всеки код — на живо (22.10.2026) един
   сървър стоеше под до 12 адреса. Редовете с една и съща МАРКА
@@ -282,6 +304,7 @@ scripts/prune.ts        Cron: изтрива по обявените в /privacy
   регенериране там и повторно копиране; не редактирай копието. Нивата не са
   козметика: `icon` (≤32 px — подвалът), `medium` (без филтри — 404),
   `full` (пълните ефекти — градиенти, ореол, мехурчета).
+  **От смяната на визията (ноември 2026) маскотът не стои на нито една страница.** Копието остава.
   **`full` днес НЕ се ползва никъде**: плакатният герой на началната е кадър и
   типография, маскот в него няма. Това е решение на собственика от 18.08.2026 г.,
   не пропуск — не го „поправяй“, като върнеш маскота, без да питаш.

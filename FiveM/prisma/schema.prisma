@@ -1,4 +1,4 @@
-// FiveM Bulgaria — схема на директорията.
+// Thraex PVP — схема на директорията.
 // Правило: от players.json на сървърите влизат САМО показваните имена —
 // моментна снимка в `Server.playerNames`, презаписвана на всеки пробег, без
 // история. Идентификаторите (steam:/license:/discord:/ip:) нямат поле тук, не
@@ -336,7 +336,7 @@ model Post {
   title   String
   excerpt String
   body    String
-  author  String @default("Екипът на FiveM Bulgaria")
+  author  String @default("Екипът на Thraex PVP")
   /// Езикът на текста. Без него sitemap-ът обявяваше един и същ български
   /// текст като отделна английска версия — тоест лъжеше търсачките.
   locale  String @default("bg")

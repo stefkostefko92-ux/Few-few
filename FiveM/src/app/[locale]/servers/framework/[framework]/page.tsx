@@ -105,7 +105,7 @@ export default async function FrameworkPage({ params, searchParams }: Props) {
 
   return (
     <div>
-      <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-silver-500">
+      <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-ivory-500">
         <Link
           href={`/${locale}/servers`}
           className="link-quiet inline-flex min-h-6 items-center"
@@ -121,7 +121,7 @@ export default async function FrameworkPage({ params, searchParams }: Props) {
       <p className="lead mt-4">{filter.intro[locale]}</p>
 
       {servers.length === 0 ? (
-        <p className="mt-8 text-silver-400">
+        <p className="mt-8 text-ivory-400">
           {t.home.emptyLead}{' '}
           <Link href={`/${locale}/submit`} className="link">
             {t.home.emptyCta}

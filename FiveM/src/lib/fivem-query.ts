@@ -45,7 +45,7 @@ import {
 /** Таван на тялото — 512 KB стигат; `info.json` на голям сървър е ~100 KB. */
 export const MAX_BODY_BYTES = 512 * 1024;
 
-const USER_AGENT = 'FiveMBulgaria/1.0 (+https://fivembulgaria.carbonstealth.eu)';
+const USER_AGENT = 'ThraexPVP/1.0 (+https://thraex.carbonstealth.eu)';
 
 function timeoutMs(): number {
   const raw = Number(readEnv('FIVEM_PING_TIMEOUT_MS'));

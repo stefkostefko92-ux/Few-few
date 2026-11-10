@@ -18,7 +18,7 @@ import { isFeatured, type PublicServer } from '@/lib/servers';
  * каталогът дава решетка за сравняване по признаци, таблото дава четене
  * отгоре надолу, като табло на гара. Смениш ли единия, другият НЕ се мени.
  *
- * Номерът е ВИДИМ (silver-600, 4,1:1 върху ink-950 — едър текст), но е
+ * Номерът е ВИДИМ (ivory-600, 4,1:1 върху ink-950 — едър текст), но е
  * `aria-hidden` за екранния четец. Причината не е стилова: „01“ до платено
  * промотиран сървър, прочетено на глас, звучи като редакционна оценка
  * „най-добрият“ — твърдение, което не можем да подкрепим (ревютата не са
@@ -53,13 +53,13 @@ export function ServerRow({
 
   return (
     <li
-      className="animate-board-in border-t border-white/[0.06] first:border-t-0"
+      className="animate-board-in border-t border-bronze-400/20 first:border-t-0"
       style={{ animationDelay: `${120 + rank * 70}ms` }}
     >
       <div className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] items-center gap-x-3 px-4 py-3.5 transition-colors hover:bg-white/[0.025] sm:grid-cols-[2.25rem_minmax(0,1fr)_auto] sm:gap-x-4 sm:px-5 sm:py-4">
         <span
           aria-hidden="true"
-          className="font-display text-lg font-medium tabular-nums tracking-[-0.02em] text-silver-600 sm:text-xl"
+          className="font-display text-lg font-medium tabular-nums text-ivory-600 sm:text-xl"
         >
           {String(rank).padStart(2, '0')}
         </span>
@@ -68,7 +68,7 @@ export function ServerRow({
           <h3 className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
             <Link
               href={`/${locale}/servers/${server.slug}`}
-              className="truncate rounded text-[1.0625rem] font-semibold tracking-[-0.01em] text-silver-100 transition-colors hover:text-cyan-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 sm:text-lg"
+              className="truncate rounded text-[1.0625rem] font-semibold text-ivory-100 transition-colors hover:text-bronze-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bronze-400 sm:text-lg"
             >
               {title}
             </Link>
@@ -88,12 +88,12 @@ export function ServerRow({
           {/* Рамката и достъпът са признаците, по които се избира сървър — тук
               вървят като текст в един ред, вместо като чипове: таблото се
               чете отгоре надолу, а решетка от чипове го накъсва. */}
-          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[0.8125rem] text-silver-400 sm:text-sm">
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[0.8125rem] text-ivory-400 sm:text-sm">
             <span className="flex items-center gap-1.5">
               <Badge name={FRAMEWORK_ICON[server.framework as FrameworkId]} size={20} />
               {t.frameworks[server.framework as FrameworkId]}
             </span>
-            <span aria-hidden="true" className="text-silver-600">
+            <span aria-hidden="true" className="text-ivory-600">
               ·
             </span>
             <span>{server.whitelist ? t.filters.whitelist : t.server.open}</span>
@@ -103,7 +103,7 @@ export function ServerRow({
         {/* Статусът Е бутонът към „кой играе“ — същият договор като в каталога.
             Едрото число е за онлайн сървър; при офлайн/скрит/недостъпен се
             показва думата, защото „0“ там е лъжа, а не стойност. */}
-        <div className="flex flex-col items-end gap-1.5 text-end text-sm text-silver-300">
+        <div className="flex flex-col items-end gap-1.5 text-end text-sm text-ivory-300">
           <PlayerList
             names={server.playerNames}
             seenAt={server.online ? server.playersSeenAt : null}
@@ -118,10 +118,10 @@ export function ServerRow({
             trigger={
               live ? (
                 <span className="flex items-baseline gap-1.5">
-                  <span className="font-display text-xl font-medium tabular-nums tracking-[-0.02em] text-cyan-300 sm:text-2xl">
+                  <span className="font-display text-xl font-medium tabular-nums text-bronze-300 sm:text-2xl">
                     {server.players}
                   </span>
-                  <span className="text-xs tabular-nums text-silver-500">
+                  <span className="text-xs tabular-nums text-ivory-500">
                     {t.home.outOf} {server.maxPlayers || '?'}
                   </span>
                   {/* Текстовият статус остава достъпен: числото само по себе си
@@ -129,7 +129,7 @@ export function ServerRow({
                   <span className="sr-only">{status}</span>
                 </span>
               ) : (
-                <span className="flex items-center gap-1.5 text-silver-400">
+                <span className="flex items-center gap-1.5 text-ivory-400">
                   <Badge name={STATUS_ICON[server.lastProbe]} size={20} />
                   {status}
                 </span>

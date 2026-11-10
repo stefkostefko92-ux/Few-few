@@ -30,11 +30,11 @@ export function PlayersChart({
   return (
     <figure className="panel p-5 sm:p-6">
       <div className="flex items-end justify-between gap-4">
-        <figcaption className="text-sm text-silver-400">{label}</figcaption>
+        <figcaption className="text-sm text-ivory-400">{label}</figcaption>
         {!empty && (
-          <p className="text-right text-sm text-silver-400">
+          <p className="text-right text-sm text-ivory-400">
             {peakLabel}{' '}
-            <span className="font-display text-2xl font-medium tabular-nums tracking-[-0.02em] text-silver-100">
+            <span className="font-display text-2xl font-medium tabular-nums text-ivory-100">
               {peak}
             </span>
           </p>
@@ -42,13 +42,13 @@ export function PlayersChart({
       </div>
 
       {empty ? (
-        <p className="mt-4 text-sm text-silver-500">{emptyLabel}</p>
+        <p className="mt-4 text-sm text-ivory-500">{emptyLabel}</p>
       ) : (
         <>
           <div
             role="img"
             aria-label={`${label}: ${peakLabel} ${peak} ${playersLabel}`}
-            className="mt-5 flex h-36 items-end gap-[3px] border-b border-white/[0.08]"
+            className="mt-5 flex h-36 items-end gap-[3px] border-b border-bronze-400/20"
           >
             {values.map((value, index) => (
               // Колоната е на цялата височина: мишката хваща и празното над
@@ -61,11 +61,11 @@ export function PlayersChart({
                 className="flex h-full flex-1 items-end"
               >
                 <div
-                  // Градиентът започва от cyan-600, не от cyan-700: срещу фона на
-                  // панела cyan-700 дава ≈3,1:1 — точно на ръба на 1.4.11 за
-                  // нетекстово съдържание, cyan-600 дава ≈4,6:1. Най-тъмната
+                  // Градиентът започва от bronze-600, не от bronze-700: срещу фона на
+                  // панела bronze-700 дава ≈3,1:1 — точно на ръба на 1.4.11 за
+                  // нетекстово съдържание, bronze-600 дава ≈4,6:1. Най-тъмната
                   // точка на стълба е тази, която трябва да минава.
-                  className={`w-full rounded-t-[3px] ${value === peak ? 'bg-cyan-300 shadow-[0_0_18px_rgba(96,224,240,0.7)]' : 'bg-gradient-to-t from-cyan-600 to-cyan-400'}`}
+                  className={`w-full rounded-t-[3px] ${value === peak ? 'bg-bronze-300' : 'bg-gradient-to-t from-bronze-600 to-bronze-400'}`}
                   style={{ height: `${Math.max(2, (value / peak) * 100)}%` }}
                 />
               </div>
@@ -73,7 +73,7 @@ export function PlayersChart({
           </div>
           {/* Четири опорни часа вместо 24 етикета: на 390 px 24 надписа се
               застъпват. Последният е „сега“ — дясната колона. */}
-          <div aria-hidden="true" className="mt-2 flex justify-between text-xs tabular-nums text-silver-500">
+          <div aria-hidden="true" className="mt-2 flex justify-between text-xs tabular-nums text-ivory-500">
             {[...new Set([0, 8, 16, labels.length - 1])].filter((index) => index < labels.length).map((index) => (
               <span key={index}>{labels[index] ?? ''}</span>
             ))}

@@ -8,7 +8,7 @@ import { prisma } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 const input = 'field mt-0 rounded-lg px-2.5 py-1.5 text-sm';
-const button = 'rounded border border-white/[0.12] px-3 py-1 text-sm hover:border-cyan-500';
+const button = 'rounded border border-bronze-400/20 px-3 py-1 text-sm hover:border-bronze-500';
 
 function formatDate(value: Date | null): string {
   return value ? value.toISOString().slice(0, 16).replace('T', ' ') : '—';
@@ -28,7 +28,7 @@ export default async function AdminNews({ params }: { params: Promise<{ locale: 
 
   return (
     <div>
-      <p className="rounded-2xl border border-cyan-300/20 bg-cyan-400/[0.05] p-5 text-sm leading-relaxed text-silver-300">
+      <p className="rounded-2xl border border-bronze-300/20 bg-bronze-400/[0.05] p-5 text-sm leading-relaxed text-ivory-300">
         Новината се създава като <strong>чернова</strong> и излиза публично чак с „Публикувай“ —
         нищо не става видимо от само себе си. Езикът има значение: текст на български, обявен като
         английски, кара sitemap-а да лъже търсачките, че има превод.
@@ -40,7 +40,7 @@ export default async function AdminNews({ params }: { params: Promise<{ locale: 
           <Badge name="news" size={28} /> Нова новина
         </h2>
 
-        <form action={savePostAction} className="mt-3 grid gap-3 rounded-xl border border-white/[0.08] p-4 sm:grid-cols-2">
+        <form action={savePostAction} className="mt-3 grid gap-3 rounded-xl border border-bronze-400/20 p-4 sm:grid-cols-2">
           <label className="text-sm">
             Заглавие
             <input name="title" required minLength={3} maxLength={160} className={input} />
@@ -58,7 +58,7 @@ export default async function AdminNews({ params }: { params: Promise<{ locale: 
           </label>
           <label className="text-sm">
             Автор
-            <input name="author" defaultValue="Екипът на FiveM Bulgaria" maxLength={80} className={input} />
+            <input name="author" defaultValue="Екипът на Thraex PVP" maxLength={80} className={input} />
           </label>
           <label className="text-sm sm:col-span-2">
             Кратко описание (показва се в списъка и в OG)
@@ -83,15 +83,15 @@ export default async function AdminNews({ params }: { params: Promise<{ locale: 
         </h2>
 
         {posts.length === 0 ? (
-          <p className="mt-3 text-sm text-silver-500">Още няма нито една новина.</p>
+          <p className="mt-3 text-sm text-ivory-500">Още няма нито една новина.</p>
         ) : (
           <ul className="mt-3 space-y-3">
             {posts.map((post) => (
-              <li key={post.id} className="rounded-xl border border-white/[0.08] p-4">
+              <li key={post.id} className="rounded-xl border border-bronze-400/20 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="font-medium">{post.title}</p>
-                    <p className="mt-0.5 text-xs text-silver-500">
+                    <p className="mt-0.5 text-xs text-ivory-500">
                       /{post.locale}/news/{post.slug} · {post.author} ·{' '}
                       {post.publishedAt ? `публикувана ${formatDate(post.publishedAt)}` : 'чернова'}
                     </p>
@@ -116,7 +116,7 @@ export default async function AdminNews({ params }: { params: Promise<{ locale: 
                 {/* Редакцията е същото действие като създаването — една форма,
                     един път за запис. `id` е разликата. */}
                 <details className="mt-3">
-                  <summary className="cursor-pointer text-sm text-cyan-300">Редактирай</summary>
+                  <summary className="cursor-pointer text-sm text-bronze-300">Редактирай</summary>
                   <form action={savePostAction} className="mt-3 grid gap-3 sm:grid-cols-2">
                     <input type="hidden" name="id" value={post.id} />
                     <label className="text-sm">

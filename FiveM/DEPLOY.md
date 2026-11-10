@@ -1,4 +1,4 @@
-# Разгръщане — FiveM BG
+# Разгръщане — Thraex PVP
 
 Каноничният поток на репото: сървърът тегли **неизменим архив за точен ref**
 през `deploy/fetch-deploy.sh` и го подава на `deploy/autodeploy.sh` (виж
@@ -14,25 +14,25 @@ sudo REF=main PROJECTS="fivem" bash /root/deploy/fetch-deploy.sh
 ## Еднократно, преди първия деплой
 
 1. **DNS — ПЪРВО това, преди certbot.** A (и AAAA само ако сървърът наистина
-   отговаря по IPv6) за `fivembulgaria.carbonstealth.eu` към VPS-а. Без запис
+   отговаря по IPv6) за `thraex.carbonstealth.eu` към VPS-а. Без запис
    certbot пада с `NXDOMAIN ... During secondary validation`, а Let's Encrypt
    брои неуспешните опити (5/час на домейн) — не пускай certbot „за проба“.
    Сверявай преди него, не след:
    ```bash
-   dig +short A fivembulgaria.carbonstealth.eu    # трябва да върне IP-то на VPS-а
-   curl -sI http://fivembulgaria.carbonstealth.eu/api/health | head -1   # 200 ОТВЪН
+   dig +short A thraex.carbonstealth.eu    # трябва да върне IP-то на VPS-а
+   curl -sI http://thraex.carbonstealth.eu/api/health | head -1   # 200 ОТВЪН
    ```
 2. **Nginx** — блокът е готов файл в репото, не откъс в документация. Папката за
    дневниците се създава ПРЕДИ `nginx -t`: сочи ли `access_log` към несъществуваща
    директория, nginx не тръгва изобщо.
    ```bash
    sudo install -d -o www-data -g adm -m 0755 /var/log/nginx/fivembulgaria
-   sudo cp /opt/few-few/current/FiveM/deploy/nginx.conf /etc/nginx/sites-available/fivembulgaria
+   sudo cp /opt/few-few/current/FiveM/deploy/nginx.conf /etc/nginx/sites-available/thraex
    # `-sfn`, не `-s`: второто пускане на реда гърми с „File exists“ и спира
    # веригата с `&&` след него. Стъпката трябва да е повторяема.
-   sudo ln -sfn /etc/nginx/sites-available/fivembulgaria /etc/nginx/sites-enabled/fivembulgaria
+   sudo ln -sfn /etc/nginx/sites-available/thraex /etc/nginx/sites-enabled/thraex
    sudo nginx -t && sudo systemctl reload nginx
-   sudo certbot --nginx -d fivembulgaria.carbonstealth.eu
+   sudo certbot --nginx -d thraex.carbonstealth.eu
    ```
    `nginx -t` показва `protocol options redefined` и `ssl_stapling ignored` за
    ЧУЖДИТЕ сайт-блокове на машината — те не идват от този файл и не пречат;
@@ -82,10 +82,10 @@ sudo REF=main PROJECTS="fivem" bash /root/deploy/fetch-deploy.sh
    # преместваме и вече завъртените (.1, .2.gz …), за да не останат под пакетния глоб
    sudo bash -c 'shopt -s nullglob; for f in /var/log/nginx/fivembulgaria.*; do
      mv "$f" /var/log/nginx/fivembulgaria/"${f##*/fivembulgaria.}"; done'
-   sudo cp -a /etc/nginx/sites-available/fivembulgaria /root/fivembulgaria.nginx.bak
+   sudo cp -a /etc/nginx/sites-available/thraex /root/thraex.nginx.bak
    # и ДВАТА server блока (certbot ги е дублирал) — затова `g`
    sudo sed -i 's#/var/log/nginx/fivembulgaria\.\(access\|error\)\.log#/var/log/nginx/fivembulgaria/\1.log#g' \
-     /etc/nginx/sites-available/fivembulgaria
+     /etc/nginx/sites-available/thraex
    sudo nginx -t && sudo systemctl reload nginx
    sudo ls -la /var/log/nginx/fivembulgaria/          # nginx пише тук след reload
    ls /var/log/nginx/fivembulgaria.* 2>/dev/null       # трябва да е ПРАЗНО
@@ -95,8 +95,8 @@ sudo REF=main PROJECTS="fivem" bash /root/deploy/fetch-deploy.sh
    файл не се презаписва. Например `server_tokens off;` (без версия в `Server:`
    — измерено на живо `nginx/1.24.0 (Ubuntu)`) се нанася така:
    ```bash
-   grep -q 'server_tokens off' /etc/nginx/sites-available/fivembulgaria \
-     || sudo sed -i '0,/client_max_body_size 1m;/s//client_max_body_size 1m;\n  server_tokens off;/' /etc/nginx/sites-available/fivembulgaria
+   grep -q 'server_tokens off' /etc/nginx/sites-available/thraex \
+     || sudo sed -i '0,/client_max_body_size 1m;/s//client_max_body_size 1m;\n  server_tokens off;/' /etc/nginx/sites-available/thraex
    sudo nginx -t && sudo systemctl reload nginx
    ```
 4. **Docker + Compose** на машината.
@@ -230,7 +230,7 @@ Cloudflare да е единственият източник на този хе�
 `public/indexnow-key.txt`). Ръчно, при нужда:
 
 ```bash
-node tools/seo/indexnow.mjs https://fivembulgaria.carbonstealth.eu
+node tools/seo/indexnow.mjs https://thraex.carbonstealth.eu
 ```
 
 Sitemap-ът и страниците се менят при всяко откриване на нови сървъри и
@@ -256,6 +256,42 @@ docker compose exec -T cron npx tsx scripts/dedupe-servers.ts --apply    # бе�
 В Search Console след деплоя: подай наново `sitemap.xml` (спада от ~2100 на
 стотици адреса — това е целта), а в „Проверка на URL“ мини по един псевдоним
 (трябва 308), една празна страница (`noindex`) и една индексирана.
+
+## Смяна на адреса
+
+Сайтът се премества от `fivembulgaria.carbonstealth.eu` на `thraex.carbonstealth.eu`. Всичко на сървъра прави
+`FiveM/deploy/move-domain.sh`. Старият адрес остава завинаги като постоянно
+пренасочване със същия път: по него има индексирани страници и външни връзки.
+
+1. **DNS, преди всичко друго.** A запис за `thraex.carbonstealth.eu` към IP-то на сървъра.
+2. **Деплой** на кода, защото скриптът идва с него.
+3. **Преместване:**
+   ```bash
+   sudo bash /opt/few-few/current/FiveM/deploy/move-domain.sh
+   ```
+   Проверява DNS, създава сайт-блока, издава сертификата, сменя `PUBLIC_BASE_URL` и
+   показваното име в `EMAIL_FROM`, пресъздава `web` и `cron`, и чак тогава прави стария
+   адрес пренасочване. Спре ли по пътя, старият адрес работи както досега. Може да се
+   пусне отново.
+4. **Подателят на имейлите.** Потвърди `thraex.carbonstealth.eu` в Resend (DKIM и SPF записи), после:
+   ```bash
+   sudo bash /opt/few-few/current/FiveM/deploy/move-domain.sh --mail
+   ```
+5. **Search Console:** нов ресурс за `thraex.carbonstealth.eu`, „Промяна на адреса“ от стария и нов
+   `sitemap.xml`.
+
+Вписаните в панела трябва да влязат наново: бисквитката `__Host-` важи само за един адрес.
+
+Дневниците остават в `/var/log/nginx/fivembulgaria/` и `/etc/logrotate.d/fivembulgaria`
+нарочно: срокът от 14 дни в политиката виси на тези пътища, а посетител не ги вижда.
+
+Откат преди стъпка 5 на скрипта: нищо, старият адрес работи. След нея:
+```bash
+sudo cp /root/fivembulgaria.nginx.bak-<час> /etc/nginx/sites-available/fivembulgaria
+sudo cp /opt/few-few/shared/fivem/.env.pre-move /opt/few-few/shared/fivem/.env
+cd /opt/few-few/current/FiveM && sudo docker compose up -d --force-recreate web cron
+sudo nginx -t && sudo systemctl reload nginx
+```
 
 ## Откат
 

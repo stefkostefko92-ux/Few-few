@@ -65,7 +65,7 @@ export default async function SubmitPage({ params, searchParams }: Props) {
       <div className="min-w-0">
 
       {ok && (
-        <p role="status" className="mb-6 rounded-xl border border-cyan-300/30 bg-cyan-400/[0.07] p-4 text-cyan-100">
+        <p role="status" className="mb-6 rounded-xl border border-bronze-300/30 bg-bronze-400/[0.07] p-4 text-bronze-100">
           {t.submit.ok}
         </p>
       )}
@@ -163,7 +163,7 @@ export default async function SubmitPage({ params, searchParams }: Props) {
           <input id="website" name="website" tabIndex={-1} autoComplete="off" />
         </div>
 
-        <p className="text-sm text-silver-500">
+        <p className="text-sm text-ivory-500">
           {t.submit.consent1}{' '}
           <Link href={`/${locale}/terms`} className="link">
             {t.footer.terms}

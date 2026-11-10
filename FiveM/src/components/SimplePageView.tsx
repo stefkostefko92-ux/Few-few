@@ -10,7 +10,7 @@ export function SimplePageView({ page, badge }: { page: SimplePage; badge: strin
     <article>
       <header className="max-w-3xl">
         <div className="flex items-center gap-5">
-          <span className="flex size-16 shrink-0 items-center justify-center rounded-2xl border border-white/[0.1] bg-ink-900 shadow-[0_0_40px_-10px_rgba(60,204,228,0.5)]">
+          <span className="flex size-16 shrink-0 items-center justify-center rounded-2xl border border-bronze-400/20 bg-ink-900">
             <Badge name={badge} size={48} />
           </span>
           <h1 className="page-title">{page.title}</h1>

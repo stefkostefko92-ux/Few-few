@@ -158,7 +158,7 @@ export function serverIconUrl(server: CfxServer): string | null {
 
 // ── Мрежа ───────────────────────────────────────────────────────────────────
 
-const USER_AGENT = 'FiveMBulgaria/1.0 (+https://fivembulgaria.carbonstealth.eu)';
+const USER_AGENT = 'ThraexPVP/1.0 (+https://thraex.carbonstealth.eu)';
 
 /** Пълният снапшот е около 19 MB — таванът е с голям запас, но го има. */
 const MAX_SNAPSHOT_BYTES = 64 * 1024 * 1024;

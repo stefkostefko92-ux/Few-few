@@ -23,7 +23,7 @@ set -euo pipefail
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
 PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fivem}"
 
-# fivem (FiveM Bulgaria — Docker Compose модел) — web слуша само на
+# fivem (Thraex PVP — Docker Compose модел) — web слуша само на
 # 127.0.0.1:3010, зад Nginx с TLS. Отделен `cron` контейнер върти пингването,
 # откриването на сървъри и стриймъри, и прочистването по срокове. Тайните живеят
 # в FiveM/.env на сървъра (mode 600) и се пренасят при всеки деплой.
@@ -31,7 +31,7 @@ PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko 
 # `PUBLIC_BASE_URL` ТРЯБВА да е `https://…`: под http сесийната бисквитка на
 # админ панела пада до слабата форма (без `__Host-`, без `secure`).
 FIVEM_HEALTH_URL="${FIVEM_HEALTH_URL:-http://127.0.0.1:3010/api/health}"
-FIVEM_DOMAIN="${FIVEM_DOMAIN:-fivembulgaria.carbonstealth.eu}"
+FIVEM_DOMAIN="${FIVEM_DOMAIN:-thraex.carbonstealth.eu}"
 # Тайните и бекъпите живеят ИЗВЪН releases (моделът на nexus): в release папката
 # прекъснат пробег ги губи, а следващият генерира нова парола за база върху вече
 # инициализиран том — Postgres я игнорира и деплоят пада чак на миграцията.
@@ -1967,7 +1967,7 @@ TRUST_PROXY_IP_HEADER=x-real-ip
 # Без RESEND_API_KEY уведомленията по чл. 16 и чл. 17 DSA НЕ тръгват —
 # липсата се логва, но обещанието остава неизпълнено. Попълни го.
 RESEND_API_KEY=
-EMAIL_FROM=FiveM BG <no-reply@${FIVEM_DOMAIN}>
+EMAIL_FROM=Thraex PVP <no-reply@${FIVEM_DOMAIN}>
 # По избор — без тях съответната платформа просто се пропуска.
 TWITCH_CLIENT_ID=
 TWITCH_CLIENT_SECRET=

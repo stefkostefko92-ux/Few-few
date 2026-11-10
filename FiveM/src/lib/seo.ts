@@ -5,8 +5,8 @@ import { readEnv } from '@/lib/env';
 import { serverTitle } from '@/lib/server-identity';
 import { DISCORD_INVITE } from '@/lib/site';
 
-export const SITE_NAME = 'FiveM BG';
-export const SITE_URL = (readEnv('PUBLIC_BASE_URL') ?? 'https://fivembulgaria.carbonstealth.eu').replace(
+export const SITE_NAME = 'Thraex PVP';
+export const SITE_URL = (readEnv('PUBLIC_BASE_URL') ?? 'https://thraex.carbonstealth.eu').replace(
   /\/+$/,
   '',
 );
@@ -31,7 +31,7 @@ export function isOurUrl(value: string, base: string = SITE_URL): boolean {
  */
 export const BASE_KEYWORDS: Record<Locale, string[]> = {
   bg: [
-    'FiveM България',
+    'Thraex PVP',
     'български FiveM сървъри',
     'FiveM RP сървъри',
     'GTA V roleplay България',
@@ -39,7 +39,7 @@ export const BASE_KEYWORDS: Record<Locale, string[]> = {
     'Carbon Stealth',
   ],
   en: [
-    'FiveM Bulgaria',
+    'Thraex PVP',
     'Bulgarian FiveM servers',
     'FiveM RP servers',
     'GTA V roleplay Bulgaria',

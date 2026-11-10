@@ -48,6 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/streamers', changeFrequency: 'hourly', priority: 0.7 },
     { path: '/faq', changeFrequency: 'monthly', priority: 0.8 },
     { path: '/news', changeFrequency: 'daily', priority: 0.7 },
+    { path: '/thraex', changeFrequency: 'monthly', priority: 0.8 },
     { path: '/team', changeFrequency: 'yearly', priority: 0.4 },
     { path: '/contact', changeFrequency: 'yearly', priority: 0.4 },
     { path: '/support', changeFrequency: 'yearly', priority: 0.4 },

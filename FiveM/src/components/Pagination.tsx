@@ -24,7 +24,7 @@ export function Pagination({
 }) {
   if (pages <= 1) return null;
   const link =
-    'inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.02] px-4 text-sm tabular-nums text-silver-200 transition-colors hover:border-cyan-400/60 hover:text-cyan-200';
+    'inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-bronze-400/20 bg-white/[0.02] px-4 text-sm tabular-nums text-ivory-200 transition-colors hover:border-bronze-400/60 hover:text-bronze-200';
 
   return (
     <nav aria-label={labels.pagination} className="mt-10">
@@ -38,13 +38,13 @@ export function Pagination({
         )}
         {pageWindow(page, pages).map((n, index) =>
           n === null ? (
-            <li key={`gap-${index}`} aria-hidden="true" className="px-1 text-silver-500">
+            <li key={`gap-${index}`} aria-hidden="true" className="px-1 text-ivory-500">
               …
             </li>
           ) : (
             <li key={n}>
               {n === page ? (
-                <span aria-current="page" className={`${link} border-cyan-300/50 bg-cyan-400/10 text-cyan-200`}>
+                <span aria-current="page" className={`${link} border-bronze-300/50 bg-bronze-400/10 text-bronze-200`}>
                   <span className="sr-only">{labels.page} </span>
                   {n}
                 </span>

@@ -46,7 +46,7 @@ export default async function ReportPage({ params, searchParams }: Props) {
       <div className="min-w-0">
 
       {ok && (
-        <p role="status" className="mb-6 rounded-xl border border-cyan-300/30 bg-cyan-400/[0.07] p-4 text-cyan-100">
+        <p role="status" className="mb-6 rounded-xl border border-bronze-300/30 bg-bronze-400/[0.07] p-4 text-bronze-100">
           {t.report.ok}
         </p>
       )}
@@ -98,7 +98,7 @@ export default async function ReportPage({ params, searchParams }: Props) {
             Безусловно задължителните полета бяха по-ограничителни от закона и
             възпираха точно най-тежкия сигнал — затова изключението стои ПРЕДИ
             тях, а не скрито в дребен шрифт отдолу. */}
-        <div className="flex items-start gap-3 rounded-xl border border-white/[0.1] bg-white/[0.02] p-4">
+        <div className="flex items-start gap-3 rounded-xl border border-bronze-400/20 bg-white/[0.02] p-4">
           <input
             id="anonymousAllowed"
             name="anonymousAllowed"
@@ -110,7 +110,7 @@ export default async function ReportPage({ params, searchParams }: Props) {
             <label htmlFor="anonymousAllowed" className="font-medium">
               {t.report.anonymousLabel}
             </label>
-            <p id="anon-help" className="mt-1 text-sm text-silver-400">
+            <p id="anon-help" className="mt-1 text-sm text-ivory-400">
               {t.report.anonymousHelp}
             </p>
           </div>
@@ -149,7 +149,7 @@ export default async function ReportPage({ params, searchParams }: Props) {
             className="mt-0.5"
             aria-describedby="goodfaith-help"
           />
-          <label htmlFor="goodFaith" id="goodfaith-help" className="text-sm text-silver-400">
+          <label htmlFor="goodFaith" id="goodfaith-help" className="text-sm text-ivory-400">
             {t.report.goodFaith}
           </label>
         </div>
@@ -168,7 +168,7 @@ export default async function ReportPage({ params, searchParams }: Props) {
         </button>
       </form>
 
-      <p className="mt-8 text-sm text-silver-500">
+      <p className="mt-8 text-sm text-ivory-500">
         {t.report.mailFallback}{' '}
         <a
           href={`mailto:${PUBLISHER.email}`}

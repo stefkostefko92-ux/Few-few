@@ -65,7 +65,7 @@ export function PlayerList({
         onClick={() => ref.current?.showModal()}
         disabled={!known}
         title={known ? undefined : labels.hidden}
-        className="flex items-center gap-2 rounded-lg px-1 text-start transition-colors enabled:hover:text-cyan-300 enabled:focus-visible:outline enabled:focus-visible:outline-2 enabled:focus-visible:outline-cyan-400 disabled:cursor-default"
+        className="flex items-center gap-2 rounded-lg px-1 text-start transition-colors enabled:hover:text-bronze-300 enabled:focus-visible:outline enabled:focus-visible:outline-2 enabled:focus-visible:outline-bronze-400 disabled:cursor-default"
       >
         {trigger}
         {known && <span className="sr-only">{labels.open}</span>}
@@ -79,16 +79,16 @@ export function PlayerList({
           се рендират на сървъра; решение на собственика, отбелязано в одита. */}
       <dialog
         ref={ref}
-        className="panel w-[min(28rem,calc(100vw-2rem))] p-0 text-silver-200 backdrop:bg-ink-950/80 backdrop:backdrop-blur-sm open:flex open:flex-col"
+        className="panel w-[min(28rem,calc(100vw-2rem))] p-0 text-ivory-200 backdrop:bg-ink-950/80 backdrop:backdrop-blur-sm open:flex open:flex-col"
       >
-        <div className="flex items-center justify-between gap-4 border-b border-white/[0.08] px-5 py-4">
-          <h2 className="font-display text-base font-semibold tracking-[-0.01em] text-silver-100">
+        <div className="flex items-center justify-between gap-4 border-b border-bronze-400/20 px-5 py-4">
+          <h2 className="font-display text-base font-semibold text-ivory-100">
             {labels.title} ({names.length})
           </h2>
           <button
             type="button"
             onClick={() => ref.current?.close()}
-            className="btn-ghost min-h-9 rounded-full px-3 text-sm font-medium"
+            className="btn-ghost min-h-9 rounded-lg px-3 text-sm font-medium"
           >
             {labels.close}
           </button>
@@ -99,7 +99,7 @@ export function PlayerList({
             декорация. Пренесен след бележка на червения екип. */}
         <div data-nosnippet="" className="max-h-[60dvh] overflow-y-auto px-5 py-4">
           {names.length === 0 ? (
-            <p className="text-sm text-silver-400">{labels.none}</p>
+            <p className="text-sm text-ivory-400">{labels.none}</p>
           ) : (
             <ul className="flex flex-wrap gap-1.5">
               {names.map((name, index) => (
@@ -114,7 +114,7 @@ export function PlayerList({
               ))}
             </ul>
           )}
-          <p className="mt-4 border-t border-white/[0.08] pt-3 text-xs leading-relaxed text-silver-500">{labels.note}</p>
+          <p className="mt-4 border-t border-bronze-400/20 pt-3 text-xs leading-relaxed text-ivory-500">{labels.note}</p>
         </div>
       </dialog>
     </>

@@ -6,24 +6,24 @@
    НЕ от Google Fonts: заявка към fonts.googleapis.com изпраща IP-то на всеки
    посетител на трета страна (решение на LG München, 20.01.2022), а CSP-то и
    без това позволява само `font-src 'self'`.
-   Unbounded — заглавия и числа (широкият строеж стои до широкия курсив на
-   логото). Onest — текстът (рисуван за кирилица).
-   Два сабсета на шрифт с `unicode-range`: браузърът тегли само този, който
-   страницата реално ползва. LCP сабсетът се предзарежда в layout.tsx. */
+   Заглавията следват менюто на сървъра: Cinzel за латиницата. Cinzel няма
+   кирилица, затова българските букви са Playfair Display 700 в същото семейство.
+   Onest е текстът (рисуван за кирилица). Браузърът тегли само сабсета, който
+   страницата реално ползва; LCP сабсетът се предзарежда в layout.tsx. */
 @font-face {
-  font-family: 'Unbounded';
+  font-family: 'Thraex Display';
   font-style: normal;
   font-display: swap;
-  font-weight: 200 900;
-  src: url('/fonts/unbounded-cyrillic.woff2') format('woff2-variations');
+  font-weight: 400 900;
+  src: url('/fonts/playfair-700-cyrillic.woff') format('woff');
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
 @font-face {
-  font-family: 'Unbounded';
+  font-family: 'Thraex Display';
   font-style: normal;
   font-display: swap;
-  font-weight: 200 900;
-  src: url('/fonts/unbounded-latin.woff2') format('woff2-variations');
+  font-weight: 400 900;
+  src: url('/fonts/cinzel-var.ttf') format('truetype');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
     U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
     U+FEFF, U+FFFD;
@@ -49,29 +49,16 @@
 
 :root {
   color-scheme: dark;
-
-  /* Маскотът се пребоядисва по бранда през собствените си променливи —
-     пакетът е направен точно за това. Зеленото от Carbon Stealth отстъпва на
-     цианa от логото, силуетът остава същият. */
-  --jm-deep: #08303c;
-  --jm-bottle: #106880;
-  --jm-neon: #20a8c0;
-  --jm-olive: #60e0f0;
-  --jm-pale: #a7f0fa;
-  --jm-soft-olive: #7f8f96;
 }
 
 body {
-  @apply bg-ink-950 font-ui text-[15.5px] text-silver-200 antialiased sm:text-base;
+  @apply bg-ink-950 font-ui text-[15.5px] text-ivory-200 antialiased sm:text-base;
   font-feature-settings: 'ss01', 'cv11';
 }
 
-/* Атмосферата: небето над града от кадъра на героя, разлято зад ЦЕЛИЯ сайт —
-   цианов ореол горе, нощ отдолу, и фино зърно, за да не е плосък градиент
-   (на 8-битов екран гладкият тъмен градиент се разпада на ивици; зърното ги
-   разбива). Фиксиран псевдоелемент, не `background-attachment: fixed` — той
-   кара мобилния Safari да прерисува целия фон при всеки скрол.
-   Зърното е SVG `data:` — CSP-то позволява `img-src data:`. */
+/* Атмосферата: каменната стена от менюто, топла светлина от огън отдолу и нощ горе.
+   Фиксиран псевдоелемент, не `background-attachment: fixed`: той кара мобилния
+   Safari да прерисува целия фон при всеки скрол. */
 body::before {
   content: '';
   position: fixed;
@@ -79,33 +66,35 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(70% 45% at 50% -8%, rgba(32, 168, 192, 0.16), transparent 70%),
-    radial-gradient(40% 30% at 100% 0%, rgba(96, 224, 240, 0.06), transparent 70%),
-    radial-gradient(60% 40% at 0% 100%, rgba(16, 104, 128, 0.08), transparent 70%),
-    #03070b;
+    radial-gradient(70% 42% at 50% 112%, rgba(206, 112, 38, 0.17), transparent 70%),
+    radial-gradient(50% 30% at 50% -8%, rgba(201, 165, 107, 0.07), transparent 70%),
+    linear-gradient(rgba(12, 10, 8, 0.74), rgba(12, 10, 8, 0.9)),
+    url('/brand/page-bg.webp') center / cover no-repeat,
+    #0c0a08;
 }
+/* Зърното разбива ивиците на тъмния градиент върху 8-битов екран. */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.05;
+  opacity: 0.06;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 ::selection {
-  background: rgba(96, 224, 240, 0.28);
-  color: #f4f7fa;
+  background: rgba(201, 165, 107, 0.35);
+  color: #f4ecdd;
 }
 
-/* Родните отметки — в цианa на марката и 20 px вместо 13 px по подразбиране:
+/* Родните отметки — в бронза на марката и 20 px вместо 13 px по подразбиране:
    с етикета (свързан през `for`) целта минава 24 px по WCAG 2.5.8.
    `:where()` държи специфичността на нула — `sr-only` и другите помощни
    класове печелят, иначе скритият радио бутон в избора на оценка изплува. */
 :where(input[type='checkbox'], input[type='radio']) {
-  accent-color: #20a8c0;
+  accent-color: #c9a56b;
   width: 1.25rem;
   height: 1.25rem;
   flex-shrink: 0;
@@ -113,14 +102,19 @@ body::after {
 
 /* Видим фокус навсякъде — клавиатурната навигация е изискване (EAA/WCAG 2.4.7). */
 :focus-visible {
-  @apply outline-none ring-2 ring-cyan-300 ring-offset-2 ring-offset-ink-950;
+  @apply outline-none ring-2 ring-bronze-300 ring-offset-2 ring-offset-ink-950;
 }
 
-/* Металният надпис от логото, като текст: същата сребърна стълбица.
-   САМО на героите (началната и страницата на сървъра). Смелостта се харчи на
-   едно място — вътрешните заглавия са плътно сребро. */
+/* Заглавията са с главни букви, като плочите в менюто. */
+.font-display {
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+  font-synthesis: none;
+}
+
+/* Кован бронз като текст: САМО на героите. Смелостта се харчи на едно място. */
 .text-chrome {
-  background: linear-gradient(180deg, #ffffff 0%, #e2e8ee 38%, #8b98a4 52%, #c9d2da 64%, #ffffff 100%);
+  background: linear-gradient(180deg, #fff7e8 0%, #ecd2a2 42%, #a8824c 56%, #e3c48f 72%, #fff7e8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -129,48 +123,41 @@ body::after {
 @layer components {
   /* ── Типографската скала — единственото място за размерите на заглавия ── */
   .page-title {
-    @apply font-display text-[2rem] font-semibold leading-[1.08] tracking-[-0.025em] text-silver-100 sm:text-[2.75rem] lg:text-[3.25rem];
+    @apply font-display text-[2rem] font-bold leading-[1.08] text-ivory-100 sm:text-[2.75rem] lg:text-[3.25rem];
     text-wrap: balance;
   }
   .section-title {
-    @apply font-display text-[1.5rem] font-semibold leading-[1.12] tracking-[-0.02em] text-silver-100 sm:text-[2rem];
+    @apply font-display text-[1.5rem] font-bold leading-[1.12] text-ivory-100 sm:text-[2rem];
     text-wrap: balance;
   }
   /* Водещият абзац под заглавие. */
   .lead {
-    @apply max-w-2xl text-[1.0625rem] leading-relaxed text-silver-300 sm:text-lg;
+    @apply max-w-2xl text-[1.0625rem] leading-relaxed text-ivory-300 sm:text-lg;
     text-wrap: pretty;
   }
 
-  /* ── Повърхности ──────────────────────────────────────────────────────────
-     Стъкло без размиване: размиването (`backdrop-filter`) е скъпо на телефон
-     и тук няма какво да размие — под панела е тъмният фон. Илюзията идва от
-     светлия горен кант (хромът на логото, хванат от светлина отгоре) и
-     дълбоката сянка под панела. */
+  /* ── Повърхности: ковани плочи ──────────────────────────────────────────── */
   .panel {
-    @apply rounded-2xl border border-white/[0.07] bg-ink-900/80;
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.008) 40%);
+    @apply rounded-2xl border border-bronze-400/[0.16] bg-ink-900/90;
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      0 30px 60px -40px rgba(0, 0, 0, 0.9);
+      inset 0 1px 0 rgba(236, 210, 162, 0.07),
+      0 24px 48px -36px rgba(0, 0, 0, 0.9);
   }
-  /* Хромов кант — за единствения ОТЛИЧЕН елемент в група (промотиран сървър,
+  /* Бронзов кант — за единствения ОТЛИЧЕН елемент в група (промотиран сървър,
      картата с действията). Градиентът е в border-box, плътният фон в
      padding-box — така рамката е градиент, а вътрешността не. */
   .panel-chrome {
     @apply rounded-2xl;
     border: 1px solid transparent;
     background:
-      linear-gradient(180deg, rgba(14, 26, 37, 0.98), rgba(8, 17, 26, 0.98)) padding-box,
-      linear-gradient(150deg, rgba(167, 240, 250, 0.75), rgba(255, 255, 255, 0.08) 38%, rgba(32, 168, 192, 0.5)) border-box;
-    box-shadow:
-      0 0 0 1px rgba(32, 168, 192, 0.06),
-      0 30px 80px -40px rgba(32, 168, 192, 0.35);
+      linear-gradient(180deg, rgba(29, 24, 18, 0.98), rgba(22, 18, 14, 0.98)) padding-box,
+      linear-gradient(160deg, #ecd2a2, #6b4f28 42%, #c9a56b) border-box;
+    box-shadow: 0 30px 60px -40px rgba(0, 0, 0, 0.95);
   }
   /* Тънка разделителна линия, която изтънява към краищата. */
   .hairline {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12) 20%, rgba(255, 255, 255, 0.12) 80%, transparent);
+    background: linear-gradient(90deg, transparent, rgba(201, 165, 107, 0.28) 20%, rgba(201, 165, 107, 0.28) 80%, transparent);
   }
 
   /* ── Бутони ───────────────────────────────────────────────────────────── */
@@ -181,90 +168,83 @@ body::after {
     @apply min-h-[3.25rem] px-7 text-base;
   }
   .btn-primary {
-    @apply btn text-ink-950;
-    background: linear-gradient(180deg, #6fe6f3 0%, #3ccce4 45%, #20a8c0 100%);
+    @apply btn border border-bronze-700 text-ink-950;
+    background: linear-gradient(180deg, #f2dcb2 0%, #d9b981 44%, #b08a50 100%);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.55),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.18),
-      0 10px 30px -12px rgba(60, 204, 228, 0.7);
+      inset 0 1px 0 rgba(255, 246, 225, 0.75),
+      inset 0 -2px 0 rgba(58, 38, 12, 0.45),
+      0 10px 20px -14px rgba(0, 0, 0, 0.9);
   }
   .btn-primary:hover {
-    background: linear-gradient(180deg, #a7f0fa 0%, #60e0f0 45%, #3ccce4 100%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.6),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.15),
-      0 14px 40px -12px rgba(96, 224, 240, 0.85);
+    background: linear-gradient(180deg, #fbeccb 0%, #e6c995 44%, #c29a5e 100%);
   }
   .btn-ghost {
-    @apply btn border border-white/[0.12] bg-white/[0.03] text-silver-100 hover:border-cyan-400/60 hover:bg-cyan-400/[0.06] hover:text-cyan-200;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    @apply btn border border-bronze-400/40 bg-ink-950/40 text-ivory-100 hover:border-bronze-300 hover:bg-bronze-400/10 hover:text-bronze-200;
   }
 
   /* ── Връзки в текст ───────────────────────────────────────────────────── */
   .link {
-    @apply text-cyan-300 underline decoration-cyan-300/40 decoration-1 underline-offset-[5px] transition-colors hover:text-cyan-200 hover:decoration-cyan-200;
+    @apply text-bronze-300 underline decoration-bronze-300/40 decoration-1 underline-offset-[5px] transition-colors hover:text-bronze-200 hover:decoration-bronze-200;
   }
   /* Тиха връзка — за вторични действия („Сигнал“, „Виж всички“). */
   .link-quiet {
-    @apply text-silver-400 underline decoration-white/20 underline-offset-[5px] transition-colors hover:text-cyan-300 hover:decoration-cyan-300/60;
+    @apply text-ivory-400 underline decoration-bronze-400/30 underline-offset-[5px] transition-colors hover:text-bronze-300 hover:decoration-bronze-300/60;
   }
 
   /* ── Форми ────────────────────────────────────────────────────────────── */
   .field {
-    @apply mt-1.5 w-full rounded-xl border border-white/[0.1] bg-ink-950/80 px-3.5 py-2.5 text-silver-100 transition-[border-color,box-shadow] duration-200 placeholder:text-silver-500 hover:border-white/20 focus:border-cyan-400;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+    @apply mt-1.5 w-full rounded-xl border border-bronze-400/20 bg-ink-950/80 px-3.5 py-2.5 text-ivory-100 transition-[border-color,box-shadow] duration-200 placeholder:text-ivory-500 hover:border-bronze-400/40 focus:border-bronze-400;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
   }
   .field:focus {
     box-shadow:
-      inset 0 1px 2px rgba(0, 0, 0, 0.4),
-      0 0 0 4px rgba(60, 204, 228, 0.12);
+      inset 0 1px 2px rgba(0, 0, 0, 0.5),
+      0 0 0 3px rgba(201, 165, 107, 0.16);
   }
   .field-label {
-    @apply text-[0.9375rem] font-medium text-silver-200;
+    @apply text-[0.9375rem] font-medium text-ivory-200;
   }
   .field-help {
-    @apply mt-2 text-sm leading-relaxed text-silver-400;
+    @apply mt-2 text-sm leading-relaxed text-ivory-400;
   }
 
   /* ── Чипове (етикети, филтри) ─────────────────────────────────────────── */
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-white/[0.09] bg-white/[0.025] px-2.5 py-1 text-xs text-silver-300;
+    @apply inline-flex items-center gap-1.5 rounded-lg border border-bronze-400/20 bg-bronze-400/[0.05] px-2.5 py-1 text-xs text-ivory-300;
   }
 
   /* ── Значки за състояние ──────────────────────────────────────────────── */
   .tag-promoted {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-0.5 text-xs font-medium text-cyan-200;
+    @apply inline-flex items-center gap-1.5 rounded-lg border border-bronze-300/40 bg-bronze-400/15 px-2.5 py-0.5 text-xs font-medium text-bronze-200;
   }
 
-  /* ── Живата точка: ядро + разливащ се ореол ────────────────────────────── */
+  /* ── Живата точка: ядро + разливащ се кръг ─────────────────────────────── */
   .live-dot {
-    @apply relative inline-block size-2 shrink-0 rounded-full bg-cyan-300;
-    box-shadow: 0 0 10px rgba(96, 224, 240, 0.9);
+    @apply relative inline-block size-2 shrink-0 rounded-full bg-live;
   }
   .live-dot::after {
     content: '';
-    @apply absolute inset-0 animate-live-ring rounded-full bg-cyan-300;
+    @apply absolute inset-0 animate-live-ring rounded-full bg-live;
   }
   .idle-dot {
-    @apply inline-block size-2 shrink-0 rounded-full bg-silver-600;
+    @apply inline-block size-2 shrink-0 rounded-full bg-ivory-600;
   }
 
   /* ── Уредът за запълване (играчи / слотове) ───────────────────────────── */
   .gauge {
-    @apply relative h-1 overflow-hidden rounded-full bg-white/[0.07];
+    @apply relative h-1 overflow-hidden rounded-full bg-bronze-400/15;
   }
   .gauge > span {
     @apply absolute inset-y-0 start-0 rounded-full;
-    background: linear-gradient(90deg, #106880, #3ccce4 70%, #a7f0fa);
-    box-shadow: 0 0 12px rgba(60, 204, 228, 0.6);
+    background: linear-gradient(90deg, #6b4f28, #c9a56b 70%, #ecd2a2);
   }
 
   /* ── Текстови документи (правни, „Екип“, „Контакти“) ─────────────────── */
   .prose-doc {
-    @apply max-w-[68ch] space-y-4 leading-[1.75] text-silver-300;
+    @apply max-w-[68ch] space-y-4 leading-[1.75] text-ivory-300;
   }
   .prose-doc h2 {
-    @apply scroll-mt-28 pt-6 font-display text-xl font-semibold tracking-[-0.015em] text-silver-100 sm:text-[1.375rem];
+    @apply scroll-mt-28 pt-6 font-display text-xl font-bold text-ivory-100 sm:text-[1.375rem];
   }
   .prose-doc ul {
     @apply space-y-2.5 ps-5;
@@ -274,45 +254,111 @@ body::after {
   }
   .prose-doc li::before {
     content: '';
-    @apply absolute -start-4 top-[0.72em] size-1.5 rounded-full bg-cyan-400;
+    @apply absolute -start-4 top-[0.72em] size-1.5 rounded-full bg-bronze-400;
   }
   .prose-doc strong {
-    @apply font-semibold text-silver-100;
+    @apply font-semibold text-ivory-100;
   }
 
   /* ── Въпроси и отговори като разгъвачи (родният `details`) ────────────── */
   .faq-item {
-    @apply border-b border-white/[0.08];
+    @apply border-b border-bronze-400/15;
   }
   .faq-item > summary {
-    @apply flex min-h-14 cursor-pointer list-none items-center justify-between gap-6 py-4 text-[1.0625rem] font-medium text-silver-100 transition-colors hover:text-cyan-200 sm:text-lg;
+    @apply flex min-h-14 cursor-pointer list-none items-center justify-between gap-6 py-4 text-[1.0625rem] font-medium text-ivory-100 transition-colors hover:text-bronze-200 sm:text-lg;
   }
   .faq-item > summary::-webkit-details-marker {
     display: none;
   }
   .faq-item > summary::after {
     content: '';
-    @apply size-3 shrink-0 rotate-45 border-b-2 border-e-2 border-cyan-300 transition-transform duration-200;
+    @apply size-3 shrink-0 rotate-45 border-b-2 border-e-2 border-bronze-300 transition-transform duration-200;
     margin-top: -0.25rem;
   }
   .faq-item[open] > summary::after {
     @apply -rotate-[135deg];
     margin-top: 0.35rem;
   }
+
+  /* ── Лендингът на сървъра: мащаб, който се харчи само там ─────────────── */
+  .arena-title {
+    @apply font-display font-bold leading-[0.98] text-ivory-100;
+    font-size: clamp(2.5rem, 7vw, 6.75rem);
+    text-wrap: balance;
+  }
+  /* Истинският бутон от менюто на сървъра: кована плоча с нитове. */
+  .btn-forged {
+    @apply inline-flex min-h-[4rem] items-center justify-center gap-3 whitespace-nowrap px-9 font-display text-[1.0625rem] font-bold text-ivory-100 sm:min-w-[18rem] sm:px-14 sm:text-[1.1875rem];
+    background: url('/thraex/kit/cta.webp') center / 100% 100% no-repeat;
+    text-shadow: 0 1px 2px rgba(60, 8, 4, 0.7);
+  }
+  .btn-forged:hover {
+    background-image: url('/thraex/kit/cta-on.webp');
+  }
 }
 
-/* Трикольорът от логото — тънка лента, не декорация върху текст. */
-.flag-rule {
-  background: linear-gradient(
-    180deg,
-    theme('colors.flag.white') 0 33.33%,
-    theme('colors.flag.green') 33.33% 66.66%,
-    theme('colors.flag.red') 66.66% 100%
-  );
+/* ── Лендингът: от ръб до ръб, мащаб и слоеве, които живеят само там ───────── */
+.thraex-bleed {
+  margin-inline: calc(50% - 50vw);
+  width: 100vw;
 }
+.thraex-giant {
+  font-size: clamp(4.75rem, 21.4vw, 30rem);
+  line-height: 0.82;
+  letter-spacing: 0.01em;
+}
+.thraex-beat {
+  font-size: clamp(2.5rem, 7.2vw, 8rem);
+  line-height: 0.96;
+  text-wrap: balance;
+}
+.thraex-outline {
+  font-size: clamp(2.75rem, 8.4vw, 8.5rem);
+  line-height: 0.95;
+  color: transparent;
+  -webkit-text-stroke: 1.5px #c9a56b;
+  transition: color 0.25s ease;
+}
+.thraex-row:hover .thraex-outline {
+  color: #ecd2a2;
+}
+@supports not (-webkit-text-stroke: 1px black) {
+  .thraex-outline {
+    color: #c9a56b;
+  }
+}
+/* Стълбата: всяко звание стои по-високо и е по-голямо от предишното. */
+@media (min-width: 1024px) {
+  .thraex-rung {
+    margin-bottom: calc(var(--rung) * 2.5rem);
+  }
+  .thraex-rung-badge {
+    width: calc(5rem + var(--rung) * 0.48rem);
+    height: calc(5rem + var(--rung) * 0.48rem);
+  }
+}
+/* Името бавно слиза зад сабята: само там, където браузърът го може без скрипт. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .thraex-drift {
+      animation: thraex-drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+    @keyframes thraex-drift {
+      to {
+        transform: translate3d(0, 22vh, 0);
+      }
+    }
+  }
+}
+
+/* Знамето: винаги хоризонтално, бяло горе, зелено, червено долу.
+   Вертикални ивици го правят да прилича на италианско. */
+.flag-rule,
 .flag-rule-x {
   background: linear-gradient(
-    90deg,
+    180deg,
     theme('colors.flag.white') 0 33.33%,
     theme('colors.flag.green') 33.33% 66.66%,
     theme('colors.flag.red') 66.66% 100%
@@ -329,7 +375,7 @@ body::after {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  /* Ореолът на живата точка не „замръзва“ разлят — изобщо го няма. */
+  /* Кръгът на живата точка не „замръзва“ разлят — изобщо го няма. */
   .live-dot::after {
     display: none;
   }

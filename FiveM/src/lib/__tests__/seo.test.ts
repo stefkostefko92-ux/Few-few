@@ -150,10 +150,10 @@ test('singleLocale: новината обявява само своя език, 
 });
 
 test('isOurUrl приема само адрес от нашия хост', () => {
-  const base = 'https://fivembulgaria.carbonstealth.eu';
-  assert.equal(isOurUrl('https://fivembulgaria.carbonstealth.eu/bg/servers/x', base), true);
-  assert.equal(isOurUrl('https://evil.example/fivembulgaria.carbonstealth.eu', base), false);
-  assert.equal(isOurUrl('https://fivembulgaria.carbonstealth.eu.evil.example/', base), false);
+  const base = 'https://thraex.carbonstealth.eu';
+  assert.equal(isOurUrl('https://thraex.carbonstealth.eu/bg/servers/x', base), true);
+  assert.equal(isOurUrl('https://evil.example/thraex.carbonstealth.eu', base), false);
+  assert.equal(isOurUrl('https://thraex.carbonstealth.eu.evil.example/', base), false);
   assert.equal(isOurUrl('javascript:alert(1)', base), false);
   assert.equal(isOurUrl('не е адрес', base), false);
 });
