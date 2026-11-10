@@ -8,7 +8,7 @@
   const msgImpianto = (k) => identita.errori[k] === 'required' ? t('argano.libero.erroreIndirizzo') : identita.errori[k] === 'digitsOnly' ? t('scheda.error.digitsOnly') : t('scheda.error.tooLong', { maxLength: k === 'indirizzo' ? 200 : k === 'matricola' ? 40 : 20 });
   // Означението на нормата не се дели на два реда („UNI“ | „10411-11:2024“, „UNI 10411-“ | „11:2024“): твърд
   // интервал след „UNI“/„EN“ и U+2060 (word joiner) след тирето между цифри — като `inRiga` в PDF-а.
-  const cifreUnite = (testo) => testo.replace(/\b(UNI|EN) (?=EN |\d)/g, '$1\u00a0').replace(/(\d)-(\d)/g, '$1-\u2060$2');
+  const cifreUnite = (testo) => testo.replace(/\b(UNI|EN) (?=EN |\d)/g, '$1\u00a0').replace(/(\d)-(\d)/g, '$1-\u2060$2').replace(/\bpunto (?=\d)/g, 'punto\u00a0');
   const errSummary = (k) => errori[k] === 'range'
     ? t('limitatore.errore.range', { min: String(limitiVn[0]).replace('.', ','), max: String(limitiVn[1]).replace('.', ',') })
     : t('limitatore.errore.' + errori[k]);

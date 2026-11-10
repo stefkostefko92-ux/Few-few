@@ -41,7 +41,8 @@ export const inRiga = (testo: string) =>
   testo
     .replace(/ m\/s/g, '\u00a0m\u2060/\u2060s')
     .replace(/\b(UNI|EN) (?=EN |\d)/g, '$1\u00a0')
-    .replace(/(\d)-(\d)/g, '$1-\u2060$2');
+    .replace(/(\d)-(\d)/g, '$1-\u2060$2')
+    .replace(/\bpunto (?=\d)/g, 'punto\u00a0');
 
 export function renderCalcoloLimitatore(o: LimitatorePdfOptions): Promise<Buffer> {
   const fonts = fontsOf(o.fontDir);

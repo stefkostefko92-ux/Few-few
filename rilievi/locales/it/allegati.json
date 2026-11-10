@@ -8,7 +8,7 @@
     "scegliHint": "Fino a {file} file per volta: foto fino a {foto} MB, video fino a {video} MB e {minuti} minuti. Vengono compressi in automatico per occupare meno spazio.",
     "didascalia": "Didascalia",
     "didascaliaHint": "Facoltativa, vale per tutti i file caricati insieme (es. «quadro, lato sinistro»).",
-    "didascaliaPlaceholder": "Aggiungi una didascalia",
+    "didascaliaPlaceholder": "Didascalia",
     "carica": "Carica",
     "preparazione": "Preparazione delle foto…",
     "caricamento": "Caricamento in corso… {pct}%",

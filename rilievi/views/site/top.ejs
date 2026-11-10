@@ -4,7 +4,7 @@
   // Страницата след заявка е `noindex` — достига се само след формата.
   const indexable = !(typeof noindex !== 'undefined' && noindex);
   // Стиловете на една страница (новините) — само на нея, не на витрината.
-  const sheets = ['base', 'buttons', 'forms', 'site', 'shaft', 'site-hero', 'site-scene', 'site-parts', 'site-request'].concat(typeof extraSheets !== 'undefined' ? extraSheets : []);
+  const sheets = ['base', 'buttons', 'forms', 'site', 'shaft', 'site-hero', 'site-scene', 'site-parts', 'site-request', 'site-foot'].concat(typeof extraSheets !== 'undefined' ? extraSheets : []);
   const showNav = typeof sectionNav !== 'undefined' && sectionNav;
   // Свои ключови думи на страницата (новините), иначе тези на витрината; емисията — само където я има.
   const pageKeywords = typeof keywords !== 'undefined' && keywords ? keywords : t('site.meta.keywords');

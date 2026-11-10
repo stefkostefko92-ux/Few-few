@@ -110,8 +110,8 @@
   </fieldset>
 
   <div class="actions">
-    <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'check' }) %><%= t('verbali.salva') %></button>
-    <a class="btn btn--ghost" href="<%= isEdit ? '/verbali/' + verbale.id : '/verbali' %>"><%= t('common.cancel') %></a>
+    <button class="btn btn--inverse" type="submit"><%- include('../partials/icon', { name: 'check' }) %><%= t('verbali.salva') %></button>
+    <a class="btn btn--bar" href="<%= isEdit ? '/verbali/' + verbale.id : '/verbali' %>"><%= t('common.cancel') %></a>
   </div>
 </form>
 </div>
