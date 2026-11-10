@@ -20,6 +20,8 @@ export async function checkPhone(browser, { base, shots, scheme, email, password
   await checkPhoneMenu(mobile, { base, scheme });
   for (const [name, path] of [
     ['list', '/schede?q=verdi'],
+    // Every sheet: a matricola is free text up to 40 characters and must wrap in its cell.
+    ['all', '/schede'],
     ['sheet', new URL(sheetUrl).pathname],
     ['interventi', '/interventi'],
     ['intervento', '/interventi/nuovo'],
@@ -35,8 +37,9 @@ export async function checkPhone(browser, { base, shots, scheme, email, password
     await mobile.goto(base + path);
     for (const width of [390, 320]) {
       await mobile.setViewportSize({ width, height: 844 });
+      // Not `innerWidth`: on a phone the layout viewport grows with what overflows it.
       const overflow = await mobile.evaluate(
-        () => document.documentElement.scrollWidth > window.innerWidth,
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
       );
       if (overflow) fail(`${scheme} mobile ${name} @${width}px: horizontal scroll`);
       await aligned(mobile, `${scheme} mobile ${name} @${width}px`);

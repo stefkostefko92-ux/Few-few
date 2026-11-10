@@ -41,7 +41,7 @@
     <tbody>
       <% for (const row of page.rows) { %><tr>
         <td class="num" data-label="<%= t('scheda.field.numeroImpianto') %>"><a class="row-link" href="/schede/<%= row.id %>" aria-label="<%= t('schede.openRow', { id: ident(row) }) %>"><%- include('_hl', { text: row.numeroImpianto, tokens: page.tokens }) %></a></td>
-        <td class="num" data-label="<%= t('scheda.field.matricola') %>"><%- include('_hl', { text: row.matricola, tokens: page.tokens }) %></td>
+        <td class="num num--testo" data-label="<%= t('scheda.field.matricola') %>"><%- include('_hl', { text: row.matricola, tokens: page.tokens }) %></td>
         <td class="wide" data-label="<%= t('scheda.field.indirizzo') %>"><%- include('_hl', { text: row.indirizzo, tokens: page.tokens }) %></td>
         <td data-label="<%= t('scheda.field.marca') %>"><%- include('_hl', { text: row.marca, tokens: page.tokens }) %></td>
         <td data-label="<%= t('scheda.field.tipoImpianto') %>"><%= tipo(row) || '—' %></td>

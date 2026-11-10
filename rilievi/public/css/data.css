@@ -114,6 +114,12 @@
   white-space: nowrap;
 }
 
+/* Матрикулата е свободен текст до 40 знака (10 ноември 2026) — пренася се, иначе разширява страницата. */
+.table .num--testo {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .table .date {
   white-space: nowrap;
 }
