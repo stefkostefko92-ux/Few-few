@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-10-avvertenza-calcoli": {
+        "area": "Calcoli",
+        "titolo": "Firma del tecnico su ogni foglio di calcolo",
+        "testo": "I PDF del calcolo argano e del calcolo limitatore riportano su ogni pagina chi li ha generati, quando, la versione del software e un codice di riferimento. In fondo c'è lo spazio per la verifica e la firma del tecnico abilitato: senza, il foglio non è valido."
+      },
       "2026-11-10-novita": {
         "area": "Portale",
         "titolo": "Le novità dopo ogni aggiornamento",
@@ -56,6 +61,11 @@
         "area": "Scheda",
         "titolo": "Porte manuali: contatti antine e blocca portine",
         "testo": "Con le porte manuali, dopo il pattino retrattile, la scheda chiede «Contatti antine da sostituire?» e «Blocca portine da installare?». Le risposte entrano anche nel cartello di fermo impianto."
+      },
+      "2026-11-10-impaginazione": {
+        "area": "Portale",
+        "titolo": "Pagine più ordinate su tablet e telefono",
+        "testo": "Le tabelle non fanno più scorrere la pagina di lato, i pulsanti della scheda su telefono stanno in due colonne e le misure delle bottoniere restano nel loro riquadro. Nei moduli di intervento e nei verbali i pulsanti «Salva» e «Firma e conferma» sono di nuovo ben visibili."
       },
       "2026-11-09-tubo-flessibile": {
         "area": "Scheda",

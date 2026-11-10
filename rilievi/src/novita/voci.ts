@@ -17,6 +17,7 @@ export interface VoceNovita {
 
 /** Най-новите отгоре; в един ден — по важност. */
 export const VOCI: readonly VoceNovita[] = [
+  { id: '2026-11-10-avvertenza-calcoli', data: '2026-11-10' },
   { id: '2026-11-10-novita', data: '2026-11-10' },
   { id: '2026-11-10-foto-stampa', data: '2026-11-10' },
   { id: '2026-11-10-schizzi', data: '2026-11-10' },
@@ -24,6 +25,7 @@ export const VOCI: readonly VoceNovita[] = [
   { id: '2026-11-10-operatore', data: '2026-11-10' },
   { id: '2026-11-10-matricola', data: '2026-11-10' },
   { id: '2026-11-10-porte-manuali', data: '2026-11-10' },
+  { id: '2026-11-10-impaginazione', data: '2026-11-10' },
   { id: '2026-11-09-tubo-flessibile', data: '2026-11-09' },
   { id: '2026-11-09-limitatore-dpr', data: '2026-11-09' },
   { id: '2026-11-07-limitatore-semplice', data: '2026-11-07' },

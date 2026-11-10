@@ -105,6 +105,17 @@ export async function checkVerbali(page, { base, shots, scheme, sheetUrl }) {
   await checkPdfInApp(page, { name, url });
 }
 
+/** The home-screen app on iOS, emulated: navigator.standalone on, the share sheet recorded. */
+const comeApp = () => {
+  Object.defineProperty(Navigator.prototype, 'standalone', { get: () => true });
+  window.__condiviso = null;
+  Navigator.prototype.canShare = () => true;
+  Navigator.prototype.share = async (data) => {
+    const file = data.files[0];
+    window.__condiviso = { name: file.name, type: file.type, size: file.size };
+  };
+};
+
 /**
  * The app on the iPhone home screen cannot close a PDF (WebKit bug 290847): there a PDF link hands the
  * file to the share sheet and the app stays on its page (public/js/pdf-app.js). Emulated in Chromium:
@@ -112,15 +123,7 @@ export async function checkVerbali(page, { base, shots, scheme, sheetUrl }) {
  */
 async function checkPdfInApp(page, { name, url }) {
   const app = await page.context().newPage();
-  await app.addInitScript(() => {
-    Object.defineProperty(Navigator.prototype, 'standalone', { get: () => true });
-    window.__condiviso = null;
-    Navigator.prototype.canShare = () => true;
-    Navigator.prototype.share = async (data) => {
-      const file = data.files[0];
-      window.__condiviso = { name: file.name, type: file.type, size: file.size };
-    };
-  });
+  await app.addInitScript(comeApp);
   await app.goto(url);
   await app.locator('a[data-pdf][href$="/pdf/installatore"]').click();
   await app.waitForFunction(() => window.__condiviso !== null, null, { timeout: 15000 });
@@ -131,4 +134,45 @@ async function checkPdfInApp(page, { name, url }) {
     fail(`${name}: shared file named ${condiviso.name}`);
   if (app.url() !== url) fail(`${name}: the app left the page for the PDF (${app.url()})`);
   await app.close();
+  await checkRefusedPdfInApp(page, { name, url });
+}
+
+/**
+ * A PDF the server refuses with a redirect and a one-time message (a blocked seal: 303 back to the sheet,
+ * the flash in its cookie): the app lands on the sheet WITH the message — a fetch that followed the
+ * redirect itself would draw the sheet unseen and eat the message first. The refusal is staged by a route,
+ * in a context of its own with the same session: no other tab to read the message, and no service worker
+ * between the navigation and the route (Chromium lets a worker registered earlier bypass it).
+ */
+async function checkRefusedPdfInApp(page, { name, url }) {
+  const context = await page
+    .context()
+    .browser()
+    .newContext({ storageState: await page.context().storageState(), serviceWorkers: 'block' });
+  const app = await context.newPage();
+  await app.addInitScript(comeApp);
+  await app.goto(url);
+  await app.route('**/pdf/azienda', (route) =>
+    route.fulfill({ status: 303, headers: { location: url } }),
+  );
+  await context.addCookies([
+    {
+      name: 'rilievi_flash',
+      value: encodeURIComponent(
+        JSON.stringify({ kind: 'error', key: 'verbali.sigillo.bloccato', params: {} }),
+      ),
+      url: new URL(url).origin,
+      httpOnly: true,
+      sameSite: 'Lax',
+    },
+  ]);
+  await app.locator('a[data-pdf][href$="/pdf/azienda"]').click();
+  const avvisato = await app
+    .locator('.flash--error')
+    .waitFor({ timeout: 10000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!avvisato) fail(`${name}: the app lost the message of the refused PDF`);
+  else if (app.url() !== url) fail(`${name}: the refused PDF led to ${app.url()}`);
+  await context.close();
 }

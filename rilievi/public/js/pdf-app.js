@@ -43,7 +43,13 @@
     try {
       if (!file) {
         stato(link, testi.pdfAttesa);
-        const response = await fetch(link.href, { credentials: 'same-origin' });
+        // A redirect is not followed here: the page it leads to would be drawn inside the fetch and eat its
+        // one-time message (the blocked seal, src/http/flash.ts) before the window shows it.
+        const response = await fetch(link.href, { credentials: 'same-origin', redirect: 'manual' });
+        if (response.type === 'opaqueredirect') {
+          window.location.href = link.href;
+          return;
+        }
         const tipo = response.headers.get('content-type') || '';
         if (!tipo.includes('application/pdf')) {
           // The page the server sends instead (sign-in, the sheet with its blocked seal): it has a way back.
