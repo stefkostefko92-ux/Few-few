@@ -145,6 +145,7 @@
   <% } %>
   <% if (sezioni.length) { %><p class="muted argano__nota"><%= t('argano.nota') %></p><% } %>
 </section>
+<%- include('../partials/avvertenza-calcolo') %>
 <% if (percorso.elimina) { %>
 <details class="danger-zone">
   <summary><%= t('argano.libero.elimina.titolo') %></summary>

@@ -849,6 +849,31 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   („COPIA AZIENDA“ / „COPIA INSTALLATORE“ долу на всяка страница и в заглавието на файла), само при
   непокътнат печат. Права — тези на асистенцията (`interventi:read`/`interventi:write`). Без номер и без
   изтриване (както листа за интервенция); в износа и в изтриването на фирмата.
+- **Всеки лист с изчисление казва кой, с какво и кой трябва да го провери** (собственикът, 10 ноември 2026 —
+  „Su ogni foglio dobbiamo scrivere che è stato generato dal nostro software, che non abbiamo nessuna
+  responsabilità perché deve essere comunque controllato e firmato da persona istruita e da chi è stato
+  generato“; правният преглед — Правният Разбирач, същия ден). PDF-ът (`argano/pdf-testata.ts`, общото на
+  изчисленията): долу на ВСЯКА страница (`disegnaPiede`, три реда, всеки се събира — шрифтът пада до 5,6 pt,
+  после „…“) — „Generato con Rilievi Impianti (Carbon Stealth VCC), build <код>, da <който тегли PDF-а> il
+  <кога> · Rif. <XXXX-XXXX-XXXX>“, „privo di validità senza verifica e firma di un tecnico abilitato“, кога и
+  от кого е записано изчислението и номерът; в края — „Avvertenza“ и „Verifica del tecnico abilitato“
+  (квадратче „Dati di ingresso verificati“, име, квалификация и № в регистъра, дата, подпис —
+  `disegnaAvvertenza`, цяло на една страница). Build-ът е отпечатъкът на работещия код (`src/build.ts` —
+  `dist/` или `src/` и `locales/`; на сървъра няма `.git`), Rif. — SHA-256 на вида изчисление, build-а и
+  входа (`improntaCalcolo`, ключовете подредени): същият вход и същият софтуер дават същия Rif., така
+  отпечатан лист се сверява със записаното изчисление. Страницата на изчислението — същото предупреждение
+  (`views/partials/avvertenza-calcolo.ejs`). Текстовете — `locales/it/calcoli.json`. **Ограничението на
+  отговорността е „nei limiti consentiti dalla legge applicabile“ и изрично оставя неизключимото — никога
+  „nessuna responsabilità“:** пълно изключване е нищожно при умисъл и груба небрежност (чл. 1229 c.c.; чл. 94
+  ЗЗД), а от 9 декември 2026 отговорността към физически лица за дефектен продукт — и софтуер, и SaaS — не
+  се изключва с договор (Дир. (ЕС) 2024/2853); листът е предупреждение и доказателство (съпричиняване — чл.
+  1227 c.c., чл. 83 ЗЗД), не освобождаване. Тестът пази формулировката. Отворено (решение на собственика с
+  avvocato): condizioni d'uso с клауза за ограничение и специално писмено одобрение (чл. 1341–1342 c.c.),
+  избрано право и подсъдност (без тях — българското по Рим I, чл. 4(1)(б); при вреда на човек — правото на
+  пострадалия по Рим II, чл. 5), застраховка RC prodotto / RC professionale. **Нов калкулатор**: PDF с
+  `disegnaTestata` ⇒ `disegnaAvvertenza` + `disegnaPiede(doc, t, { generato, … })` с build и Rif., а изгледът
+  `calcolo*.ejs` включва предупреждението — `tests/calcoli-avvertenza.test.ts` проверява всеки такъв файл и
+  всяка страница на PDF-ите.
 - **Изчислението за аргано** (`src/argano/`, `routes/calcolo-argano.ts`; собственикът, 31 октомври 2026 — от
   своя „RT-E MOD 10411-1“ (Excel по UNI 10411-1): изчисление и проверки, отделна страница и PDF, по метода
   на файла, без мощност на мотора): бутон „Calcolo argano“ на картата (не при хидравлична), страница

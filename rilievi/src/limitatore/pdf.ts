@@ -1,5 +1,6 @@
 import PDFDocument from 'pdfkit';
 import {
+  disegnaAvvertenza,
   disegnaPiede,
   disegnaTestata,
   fontsOf,
@@ -24,6 +25,8 @@ export interface LimitatorePdfOptions {
   t: Translator;
   impianto: { indirizzo: string; matricola: string; numeroImpianto: string };
   salvato: { quando: string; autore: string };
+  /** Кой тегли PDF-а и кога — „Generato con Rilievi Impianti da …“ на всяка страница. */
+  generato: { quando: string; autore: string; build: string; impronta: string };
   testata: AziendaCartello;
   fontDir: string;
 }
@@ -122,9 +125,8 @@ export function renderCalcoloLimitatore(o: LimitatorePdfOptions): Promise<Buffer
   }
   riga(t('limitatore.r.applicata'), s.applicata);
 
-  disegnaPiede(
-    doc,
-    t('limitatore.salvatoIl', { quando: o.salvato.quando, nome: o.salvato.autore || '—' }),
-  );
+  // Предупреждението и полето за подпис на техника; долу на всяка страница — кой, кога, с какво.
+  disegnaAvvertenza(doc, t, y + 6);
+  disegnaPiede(doc, t, { generato: o.generato, salvato: o.salvato });
   return inBuffer(doc);
 }

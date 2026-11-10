@@ -4,6 +4,7 @@ import type { Translator } from '../i18n.js';
 import type { DatiArgano } from './dati.js';
 import { numero } from './formato.js';
 import {
+  disegnaAvvertenza,
   disegnaPiede,
   disegnaTestata,
   fontsOf,
@@ -20,7 +21,8 @@ import { nomeFune } from './righe.js';
 /**
  * PDF-ът на изчислението за аргано (A4, отделен от картата — собственикът, 31 октомври 2026): горе логото
  * и данните на фирмата, заглавието и уредбата, после входните данни и раздели с резултатите (стойност,
- * мярка, ОК/НЕ) и заключение на всеки, долу кога и от кого е записано. DejaVu Sans, вграден.
+ * мярка, ОК/НЕ) и заключение на всеки, предупреждението и полето за подпис на техника; долу на всяка
+ * страница кой и кога е генерирал листа и кога и от кого е записано. DejaVu Sans, вграден.
  */
 
 export interface CalcoloPdfOptions {
@@ -29,6 +31,8 @@ export interface CalcoloPdfOptions {
   t: Translator;
   impianto: { indirizzo: string; matricola: string; numeroImpianto: string };
   salvato: { quando: string; autore: string };
+  /** Кой тегли PDF-а и кога — „Generato con Rilievi Impianti da …“ на всяка страница. */
+  generato: { quando: string; autore: string; build: string; impronta: string };
   testata: AziendaCartello;
   fontDir: string;
 }
@@ -160,11 +164,8 @@ export function renderCalcoloArgano(o: CalcoloPdfOptions): Promise<Buffer> {
   }
   y += 8;
   doc.font('Sans').fontSize(7.5).fillColor(MUTED).text(t('argano.nota'), M, y, { width: W });
-
-  // Под последния ред на всяка страница: кога и от кого, и номерът на страницата.
-  disegnaPiede(
-    doc,
-    t('argano.salvatoIl', { quando: o.salvato.quando, nome: o.salvato.autore || '—' }),
-  );
+  // Предупреждението и полето за подпис на техника; долу на всяка страница — кой, кога, с какво.
+  disegnaAvvertenza(doc, t, doc.y + 12);
+  disegnaPiede(doc, t, { generato: o.generato, salvato: o.salvato });
   return inBuffer(doc);
 }

@@ -139,6 +139,30 @@
   font-size: 0.875rem;
 }
 
+/* Предупреждението под всяко изчисление (views/partials/avvertenza-calcolo.ejs): рамка с плътна линия
+   отляво — забелязва се, без да вика като грешка (червеното е само за грешки). */
+.avvertenza-calcolo {
+  display: grid;
+  gap: 6px;
+  max-width: 72ch;
+  margin-top: 24px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--fg);
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.avvertenza-calcolo__titolo {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.avvertenza-calcolo p {
+  margin: 0;
+}
+
 @media (max-width: 640px) {
   .argano__tabella th {
     width: auto;

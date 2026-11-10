@@ -4,6 +4,7 @@
 // lift listed but not linked) and a calculation without a scheda with its own address, read-only for
 // CLIENTE, deleted for good by who deletes schede, never another company's.
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { after, before, describe, it } from 'node:test';
 import { Browser, makeAzienda, prisma, signedIn, startApp, stopApp } from './harness.js';
 
@@ -110,6 +111,17 @@ describe('the governor calculation page and the calculation without a scheda', (
     const pdf = await tecnico.browser.get(`${p}/pdf`);
     assert.equal(pdf.status, 200);
     assert.match(pdf.headers.get('content-disposition') ?? '', /calcolo-limitatore-9\.pdf/);
+    // The notice on the page; on the sheet the software and who generated it — the one who downloads it.
+    assert.match(page, /<aside class="avvertenza-calcolo"/);
+    const words = spawnSync('pdftotext', ['-layout', '-', '-'], { input: pdf.bytes });
+    if (words.error === undefined) {
+      const testo = words.stdout.toString('utf8');
+      assert.ok(testo.includes(`, da ${tecnico.user.name} il `));
+      assert.match(
+        testo,
+        /Generato con Rilievi Impianti \(Carbon Stealth VCC\), build [0-9a-f]{10}, .+ · Rif\. [0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}/,
+      );
+    }
     assert.match(
       (await tecnico.browser.get(`/calcolo-limitatore?q=dante+${matricola}`)).body,
       new RegExp(`href="${p}"`),

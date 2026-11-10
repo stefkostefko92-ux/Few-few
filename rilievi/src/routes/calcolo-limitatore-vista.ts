@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { buildCorrente, improntaCalcolo } from '../build.js';
 import { testataDi } from '../aziende/intestazione.js';
 import { config } from '../config.js';
 import {
@@ -90,6 +91,13 @@ export async function inviaPdfLimitatore(
     salvato: {
       quando: res.locals.fmt.dateTime(opts.salvato.updatedAt),
       autore: opts.salvato.autore ?? '',
+    },
+    // Който тегли PDF-а сега: „Generato con Rilievi Impianti da <име> il <кога>“ на всяка страница.
+    generato: {
+      quando: res.locals.fmt.dateTime(new Date()),
+      autore: res.locals.currentUser?.name ?? '',
+      build: buildCorrente(),
+      impronta: improntaCalcolo('limitatore', buildCorrente(), opts.dati),
     },
     testata: await testataDi(await aziendaDelCalcolo(opts.aziendaId)),
     fontDir: config().PDF_FONT_DIR,

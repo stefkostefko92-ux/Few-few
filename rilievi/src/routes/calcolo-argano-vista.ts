@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { buildCorrente, improntaCalcolo } from '../build.js';
 import { calcolaArgano } from '../argano/calcolo.js';
 import type { ValoriForm } from '../argano/da-scheda.js';
 import { limiteDi, type DatiArgano, type ErroriArgano } from '../argano/dati.js';
@@ -133,6 +134,13 @@ export async function inviaPdf(
     salvato: {
       quando: res.locals.fmt.dateTime(opts.salvato.updatedAt),
       autore: opts.salvato.autore ?? '',
+    },
+    // Който тегли PDF-а сега: „Generato con Rilievi Impianti da <име> il <кога>“ на всяка страница.
+    generato: {
+      quando: res.locals.fmt.dateTime(new Date()),
+      autore: res.locals.currentUser?.name ?? '',
+      build: buildCorrente(),
+      impronta: improntaCalcolo('argano', buildCorrente(), opts.dati),
     },
     testata: await testataDi(await aziendaDelCalcolo(opts.aziendaId)),
     fontDir: config().PDF_FONT_DIR,
