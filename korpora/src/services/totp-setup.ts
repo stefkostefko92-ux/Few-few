@@ -1,6 +1,6 @@
 import type { User } from '@prisma/client';
 import QRCode from 'qrcode';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { config } from '../config.js';
 import { decryptSecret, encryptSecret, safeEqual } from '../crypto.js';
 import { otpauthUrl } from '../auth/totp.js';

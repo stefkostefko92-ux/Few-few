@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { config, isProduction } from '../config.js';
 import { canonicalJson, hmacHex, randomToken, safeEqual, sha256Hex } from '../crypto.js';
 import { readCookie } from '../http/cookies.js';
