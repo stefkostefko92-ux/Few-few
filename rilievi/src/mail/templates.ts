@@ -107,3 +107,24 @@ export function interventoMail(params: {
     ],
   };
 }
+
+/** Съобщение на портала до администраторите на фирмите (src/master/comunicazioni.ts). */
+export function comunicazioneMail(params: {
+  to: string;
+  titolo: string;
+  testo: string;
+  /** „dal 12/11/2026 al 14/11/2026“ — кога лентата е в портала. */
+  quando: string;
+  link: string;
+}): MailMessage {
+  return {
+    to: params.to,
+    subject: t('master.comunicazioni.mail.oggetto', { titolo: params.titolo }),
+    text: t('master.comunicazioni.mail.corpo', {
+      titolo: params.titolo,
+      testo: params.testo,
+      quando: params.quando,
+      link: params.link,
+    }),
+  };
+}

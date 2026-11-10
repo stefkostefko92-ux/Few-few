@@ -25,8 +25,13 @@ import { siteRouter } from './site.js';
 import { usersRouter } from './users.js';
 import { usersManageRouter } from './users-manage.js';
 import { novitaRouter } from './novita.js';
+import { navigazioneRouter } from './navigazione.js';
 import { condizioniRouter } from './condizioni.js';
 import { condizioniFirmaRouter } from './condizioni-firma.js';
+import { masterRouter } from './master.js';
+import { masterComunicazioniRouter } from './master-comunicazioni.js';
+import { masterContrattiRouter } from './master-contratti.js';
+import { masterVerificaRouter } from './master-verifica.js';
 
 /**
  * Рутерите на страниците в реда им (изнесени от server.ts, за да не расте над 300 реда). Редът е част от
@@ -35,6 +40,11 @@ import { condizioniFirmaRouter } from './condizioni-firma.js';
 export function montaRouter(app: Express): void {
   app.use(siteRouter);
   app.use(novitaRouter);
+  app.use(navigazioneRouter);
+  app.use(masterRouter);
+  app.use(masterContrattiRouter);
+  app.use(masterVerificaRouter);
+  app.use(masterComunicazioniRouter);
   app.use(condizioniRouter);
   app.use(condizioniFirmaRouter);
   app.use(installaRouter);

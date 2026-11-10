@@ -140,7 +140,7 @@ describe('the intervention forms', () => {
 });
 
 describe('the side bar', () => {
-  it('groups the pages: Rilievi, Assistenza elevatori, Amministrazione — by what each one may do', async () => {
+  it('groups the pages: Impianti, Calcoli, Documenti, Amministrazione — by what each one may do', async () => {
     const admin = (await signedIn('ADMIN')).browser;
     const page = (await admin.get('/interventi/nuovo')).body;
     assert.match(page, /<body class="with-nav"[ >]/);
@@ -148,15 +148,20 @@ describe('the side bar', () => {
     const groups = [...page.matchAll(/<p class="sidenav__group" id="nav-(\w+)">/g)].map(
       (m) => m[1],
     );
-    assert.deepEqual(groups, ['rilievi', 'assistenza', 'amministrazione']);
-    // The deepest page is the current one: "Nuovo intervento", not "Interventi".
+    assert.deepEqual(groups, ['impianti', 'calcoli', 'documenti', 'amministrazione']);
+    // A page of "Nuovo" is the current one there; "Interventi" in its group says only "we are here".
     assert.match(page, /<a href="\/interventi\/nuovo" aria-current="page">/);
-    assert.doesNotMatch(page, /<a href="\/interventi" aria-current="page">/);
+    assert.match(page, /<a href="\/interventi" aria-current="true">/);
+    assert.equal(
+      page.match(/aria-current="page"/g)?.length,
+      2,
+      'the list of Nuovo and the phone bar',
+    );
     const cliente = (await signedIn('CLIENTE')).browser;
     const own = (await cliente.get('/interventi')).body;
     assert.deepEqual(
       [...own.matchAll(/<p class="sidenav__group" id="nav-(\w+)">/g)].map((m) => m[1]),
-      ['rilievi', 'assistenza'],
+      ['impianti', 'calcoli', 'documenti'],
     );
     assert.doesNotMatch(own, /href="\/interventi\/nuovo"/);
     assert.doesNotMatch(own, /href="\/schede\/nuova"/);

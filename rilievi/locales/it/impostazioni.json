@@ -1,0 +1,54 @@
+{
+  "impostazioni": {
+    "sottonav": "Sezioni delle impostazioni",
+    "panoramica": "Panoramica",
+    "pagine": {
+      "azienda": {
+        "titolo": "Dati dell'azienda",
+        "desc": "Ragione sociale, indirizzo e contatti: vanno sul cartello accanto al logo e nei moduli d'ordine."
+      },
+      "scheda": {
+        "titolo": "Ordine delle sezioni",
+        "desc": "In che ordine compaiono le sezioni della scheda: modulo, pagina, stampa e PDF."
+      },
+      "cartelli": {
+        "titolo": "Cartello fermo impianto",
+        "desc": "L'aspetto del cartello da affiggere, con il logo e i dati dell'azienda."
+      },
+      "ruoli": {
+        "titolo": "Ruoli e permessi",
+        "desc": "Il nome di ogni ruolo nell'azienda e cosa può fare chi lo ha."
+      },
+      "condizioni": {
+        "titolo": "Condizioni di servizio",
+        "desc": "La versione in vigore, chi l'ha firmata e quante persone hanno accettato le regole d'uso."
+      }
+    },
+    "hub": {
+      "datiSi": "Dati compilati",
+      "datiNo": "Dati da compilare",
+      "logoSi": "con logo",
+      "logoNo": "senza logo",
+      "ordineSuo": "Ordine personalizzato",
+      "ordineBase": "Ordine predefinito",
+      "modello": "Modello: {nome}",
+      "ruoliSuoi": "Nomi o permessi personalizzati",
+      "ruoliBase": "Ruoli predefiniti",
+      "firmate": "Firmate con codice il {data}",
+      "esistente": "Accettate (azienda precedente alle condizioni)",
+      "attesa": "Da accettare: l'amministratore deve firmarle"
+    },
+    "condizioni": {
+      "vigente": "Versione in vigore",
+      "stato": "Stato",
+      "firmate": "Firmate",
+      "accettate": "Accettate",
+      "attesa": "In attesa",
+      "daChi": "da {nome} il {quando}, con il codice inviato per email.",
+      "esistente": "L'azienda era nel portale prima delle condizioni: non c'è una firma con codice.",
+      "attesaTesto": "Al prossimo accesso l'amministratore le accetta e le firma con il codice.",
+      "regole": "Regole d'uso",
+      "regoleN": "{n} persone su {totale} le hanno accettate"
+    }
+  }
+}

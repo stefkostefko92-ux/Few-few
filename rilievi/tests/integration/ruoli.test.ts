@@ -50,7 +50,7 @@ describe('the roles of a company', () => {
     assert.equal((await operatore.get('/registro')).status, 403);
 
     const saved = await admin.submit(
-      '/impostazioni',
+      '/impostazioni/ruoli',
       '/impostazioni/ruoli',
       form(azienda.id, {
         'nome-TECNICO': 'Manutentore',
@@ -98,18 +98,18 @@ describe('the roles of a company', () => {
     });
     assert.equal(post.status, 403);
     assert.equal(
-      (await admin.submit('/impostazioni', '/impostazioni/ruoli', form(altra.id, {}))).status,
+      (await admin.submit('/impostazioni/ruoli', '/impostazioni/ruoli', form(altra.id, {}))).status,
       404,
     );
     const forged = await admin.submit(
-      '/impostazioni',
+      '/impostazioni/ruoli',
       '/impostazioni/ruoli',
       form(azienda.id, { 'perm-CLIENTE': ['schede:read', 'users:manage'] }),
     );
     assert.equal(forged.status, 422);
     assert.match(forged.body, /Valore non valido\./);
     const twin = await admin.submit(
-      '/impostazioni',
+      '/impostazioni/ruoli',
       '/impostazioni/ruoli',
       form(azienda.id, { 'nome-TECNICO': 'Amministratore' }),
     );
@@ -153,7 +153,7 @@ describe('the audit log', () => {
       await scheda(altroAdmin),
       await scheda(tecnico),
     ];
-    await master.submit('/impostazioni', '/impostazioni/cartello', {
+    await master.submit('/impostazioni/cartelli', '/impostazioni/cartello', {
       azienda: azienda.id,
       modello: 'blu',
     });

@@ -37,6 +37,7 @@ export function aziendeImpostabili(user: SessionUser) {
       logoType: true,
       nomiRuoli: true,
       permessiRuoli: true,
+      condizioniVersione: true,
     },
   });
 }

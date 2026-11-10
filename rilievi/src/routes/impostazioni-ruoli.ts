@@ -3,7 +3,7 @@ import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { setRuoli, parseRuoli } from '../aziende/ruoli.js';
 import { aziendeImpostabili } from '../aziende/sezioni.js';
 import { setFlash } from '../http/flash.js';
-import { notFound, renderImpostazioni } from './impostazioni.js';
+import { notFound, pathSezione, renderImpostazioni } from './impostazioni-vista.js';
 
 /**
  * Имената и правата на ролите на фирмата (собственикът, 30 октомври 2026). Пишат администраторът ѝ и
@@ -22,6 +22,7 @@ impostazioniRuoliRouter.post('/impostazioni/ruoli', settings, requireCsrf, async
   const parsed = parseRuoli(body, (role) => res.locals.t(`role.${role}`));
   if (!parsed.ok) {
     return renderImpostazioni(res, 422, {
+      sezione: 'ruoli',
       aziende,
       azienda,
       ruoli: { values: parsed.valori, errors: parsed.errors },
@@ -29,5 +30,5 @@ impostazioniRuoliRouter.post('/impostazioni/ruoli', settings, requireCsrf, async
   }
   if (!(await setRuoli(user, azienda.id, parsed.nomi, parsed.permessi))) return notFound(req, res);
   setFlash(res, 'ok', 'flash.ruoliSaved');
-  res.redirect(303, `/impostazioni?azienda=${encodeURIComponent(azienda.id)}#h-ruoli`);
+  res.redirect(303, pathSezione('ruoli', azienda.id));
 });

@@ -22,6 +22,26 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-10-menu": {
+        "area": "Portale",
+        "titolo": "Un menu più chiaro, su ogni dispositivo",
+        "testo": "Il menu è diviso in Impianti, Calcoli, Documenti e Amministrazione. Il pulsante «Nuovo» raccoglie tutto quello che puoi creare: scheda, modulo di intervento, verbale, cartello, calcoli. Sul telefono le voci principali sono in una barra in basso, sempre a portata di pollice; sul tablet in una colonna di icone a sinistra."
+      },
+      "2026-11-10-cerca": {
+        "area": "Portale",
+        "titolo": "Una ricerca per tutto il portale",
+        "testo": "Dalla casella «Cerca impianto» in cima al menu, o con Ctrl K (⌘ K sul Mac), cerchi per matricola, numero o indirizzo in schede e calcoli, e arrivi a qualsiasi pagina del portale. Con le frecce scegli il risultato, con Invio lo apri."
+      },
+      "2026-11-10-impostazioni": {
+        "area": "Impostazioni",
+        "titolo": "Impostazioni divise per argomento",
+        "testo": "Le impostazioni dell'azienda hanno una pagina di riepilogo con lo stato di ogni parte e una pagina per ciascuna: dati dell'azienda, ordine delle sezioni della scheda, cartello fermo impianto, ruoli e permessi, condizioni di servizio."
+      },
+      "2026-11-10-comunicazioni": {
+        "area": "Portale",
+        "titolo": "Comunicazioni del portale",
+        "testo": "Avvisi importanti, come una manutenzione programmata, compaiono in cima alle pagine del portale per i giorni indicati. Ognuno li chiude per sé con «Chiudi» e non li rivede più."
+      },
       "2026-11-10-condizioni": {
         "area": "Portale",
         "titolo": "Condizioni di servizio e regole d'uso",

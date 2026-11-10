@@ -14,6 +14,7 @@ import type { Capability } from './auth/roles.js';
 import { canAnywhere, canIn } from './auth/scope.js';
 import { attachSession } from './auth/sessions.js';
 import { readFlash } from './http/flash.js';
+import { correnteDi, menuPer, rapidoCorrente } from './http/menu.js';
 import { writeLimiter } from './http/limits.js';
 import { applyPrefs, attachPrefs, themeUrl } from './http/prefs.js';
 import { PASSWORD_MIN_LENGTH } from './auth/password.js';
@@ -23,6 +24,7 @@ import { VISTA_SCHIZZO } from './schizzi/model.js';
 import { healthRouter } from './routes/health.js';
 import { pwaRouter } from './routes/pwa.js';
 import { novitaLocals } from './novita/popup.js';
+import { comunicazioniLocals } from './master/banner.js';
 import { countNewRequests } from './requests/service.js';
 import { montaRouter } from './routes/montaggio.js';
 import { HOME_PATH } from './seo/paths.js';
@@ -62,6 +64,10 @@ function baseLocals(req: Request, res: Response): void {
   res.locals.canIn = (capability: Capability, aziendaId: string | null): boolean =>
     user ? canIn(user, capability, aziendaId) : false;
   res.locals.ruolo = nomeRuolo(res.locals.t, nomiDellaSessione(user));
+  // Менюто — единственият списък в src/http/menu.ts (header.ejs, `/nuovo`, търсенето).
+  res.locals.menuPer = menuPer;
+  res.locals.correnteDi = correnteDi;
+  res.locals.rapidoCorrente = rapidoCorrente;
   res.locals.mailEnabled = mailEnabled();
   const cfg = config();
   res.locals.limitiAllegati = {
@@ -217,6 +223,8 @@ export function createServer(): Express {
   app.use(writeLimiter);
   // Прозорецът с новините след обновяване — на цяла страница на вписан човек (src/novita/popup.ts).
   app.use(novitaLocals);
+  // Съобщенията на MASTER до фирмите — лентите над страницата (src/master/banner.ts).
+  app.use(comunicazioniLocals);
   montaRouter(app);
 
   app.use((req: Request, res: Response) => {

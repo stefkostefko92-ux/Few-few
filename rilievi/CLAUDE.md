@@ -139,7 +139,10 @@ src/
                      AMI 100) + pdf-form.ts (формулярите на MoviLift и DMG) + pdf-form-pulizia.ts
                      (почистването на формуляр с JavaScript — DMG) + pdf-testo.ts (шрифтът, мястото на
                      текста) — pdf-lib
-  http/              prefs.ts (темата) · colori.ts (темата „Personalizzato“: контраст, стилът) · flash,
+  cerca/             service.ts — търсенето в целия портал (`/cerca`, палитрата Ctrl K)
+  master/            конзолата на MASTER: panoramica.ts (числата, седмиците) · sistema.ts (здравето) ·
+                     contratti.ts · verifica.ts · comunicazioni.ts + banner.ts (лентите) · tempo.ts (дните по Рим)
+  http/              menu.ts (менюто — единственият списък) · prefs.ts (темата) · colori.ts (темата „Personalizzato“: контраст, стилът) · flash,
                      бисквитки, таванове, помощниците на изгледите
   routes/            тънки рутери: проверка → услуга → изглед (витрината · заявките · картите ·
                      печатът и PDF-ът на картата (schede-stampa.ts) · кошчето · модулите · хора · фирми ·
@@ -1030,15 +1033,54 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   нормите и смяната — `tests/limitatore-norme.test.ts` (5 норми × 3 смени); PDF-ът; integration и e2e —
   като при аргано. Самият Excel не е в репото („USO INTERNO …
   Non pubblicare“).
-- **Менюто** (`views/partials/header.ejs`, `public/css/sidenav.css`, `public/js/menu.js`; собственикът, 30
-  октомври 2026 — като в LiftPilot, вляво): групи Rilievi · Assistenza elevatori · Amministrazione (на
-  фирмата: Utenti, Impostazioni, Registro) · Master (нашето — Aziende и Richieste, само за собственика на
-  портала; „Separa il nostro menu master dal menu amministrazione“, 30 октомври 2026), само
-  точките, които човекът може; текуща е най-дългата пасваща точка („/schede/nuova“ — „Nuova scheda“).
-  От 1100 px лентата стои вляво (`body.with-nav` отстъпва `--nav-w`); под това горе остава тънка лента с ☰,
-  а лентата се отваря отляво над страницата — останалото е `inert`, Esc и фонът я затварят, фокусът се
-  връща на ☰. Без JavaScript лентата е над съдържанието, отворена. `--chrome-top` е височината на горната
-  лента (0 от 1100 px) — за котвите и залепналия индекс на разделите.
+- **Менюто** (`src/http/menu.ts` — ЕДИНСТВЕНИЯТ списък, `menuPer(can, nuoveRichieste)`; `views/partials/header.ejs`,
+  `public/css/sidenav.css` + `navigazione.css`, `public/js/menu.js`; собственикът, 10 ноември 2026 — проучването на
+  менюто, варианти A+B+C: NN/g „Hamburger Menus and Hidden Navigation Hurt UX Metrics“ (2016), „Menu-Design
+  Checklist“ (2024), Android и Apple HIG за лентата долу): групи Impianti · Calcoli · Documenti · Amministrazione (на
+  фирмата: Utenti, Impostazioni, Registro, Cestino) · Master (нашето — Console, Aziende, Richieste, Contratti,
+  Comunicazioni, Verifica documenti; само за собственика на портала), само точките, които човекът може; текуща е
+  най-дългата пасваща точка. В групите НЯМА „нова …“ — всичко за създаване е в един „Nuovo“ над тях (`<details>`, и
+  без JavaScript; `/nuovo` — същото като страница с карти). Над него — търсенето (по-долу). От 1100 px лентата стои
+  вляво; 768–1099 px — колона с иконите на главното (88 px, `nav.rapida`) и „Menu“, което отваря цялата лента; до
+  767 px — лента долу (до четири места: Schede, Interventi, Nuovo, Cerca — по правата — и „Menu“), която отстъпва
+  на страниците с черната лента „Salva“ (`body:has(.actions)` — тогава горе е ☰). Отворената лента: останалото е
+  `inert`, Esc и фонът я затварят, фокусът се връща на отворилия. Без JavaScript лентата е над съдържанието, отворена.
+  `--chrome-top` е височината на горната лента (0 от 1100 px). Unit тестът (`tests/menu.test.ts`) пази групите по
+  роля, че в групите няма връзки за създаване, лентата долу и текущата точка.
+- **Търсенето** (`src/cerca/service.ts`, `routes/navigazione.ts`, `public/js/cerca.js`; собственикът, 10 ноември
+  2026): `/cerca?q=` — уредбите (търсачката на „Schede“: матрикула, номер, адрес), изчисленията без карта (аргано и
+  ограничител), фирмите (само MASTER) и страниците/действията на менюто — всеки вид в обхвата на своята способност,
+  до 8 от вид (`PER_GRUPPO`) с връзка към всички. Ctrl K / ⌘ K или полето в лентата отварят палитрата (`<dialog>`;
+  частта идва с `X-Partial: 1`, стрелките и Enter); без JavaScript полето е обикновена форма към `/cerca`.
+- **Настройките на малки страници** (`routes/impostazioni.ts` + `impostazioni-vista.ts`; собственикът, 10 ноември
+  2026 — „Riordina anche /impostazioni e fai piccole directory dentro per le cose separate“): `/impostazioni` —
+  карти на разделите със състоянието им; `/impostazioni/<раздел>` (`azienda`, `scheda`, `cartelli`, `ruoli`,
+  `condizioni` — `SEZIONI_IMPOSTAZIONI`) със своята навигация; записите (`/impostazioni/dati`, `/cartello`, `/ruoli`,
+  `/sezioni`) връщат на своя раздел (`pathSezione`). „Condizioni di servizio“: версията, кой и кога е подписал,
+  колко души са приели правилата, копието.
+- **Конзолата на MASTER** (`src/master/`, `routes/master*.ts`, `views/master/`; собственикът, 10 ноември 2026 —
+  „Espandi le funzioni di master con tutto quello che ti viene in mente … Super High Enterprise Premium“). Само
+  `aziende:manage`. `/master` — числата на портала, дейността по седмици от одита (12 седмици, SVG без цвят —
+  `panoramica.ts`, `SERIE`), най-активните фирми за 30 дни, здравето на системата като светлини (`sistema.ts`:
+  build, процесът, отговорът и размерът на базата, последната миграция, свободното място за снимките спрямо
+  `MEDIA_MIN_FREE_MB`, опашката — работникът е в свой контейнер и се познава по най-стария чакащ файл, пощата;
+  само числа — без пътища, адреси и тайни), последните изтеглени изчисления с проверката на печата и последните
+  действия без входовете. `/master/contratti` (`contratti.ts`) — договорът на всяка фирма: `firmate` (ред в
+  регистъра за текущата версия), `esistente` (приета от миграцията без подпис), `attesa`; печатът на подписа,
+  копието, правилата; „Richiedi la firma“ — само при `esistente`: `condizioniVersione = NULL` в една транзакция с
+  одита `CONDIZIONI_RICHIESTE` (ADMIN-ът подписва наистина при следващата заявка). `/master/verifica`
+  (`verifica.ts`) — по кода от листа (Rif. от 12 знака — `EmissioneCalcolo.impronta`; 64 знака — SHA-256 на PDF,
+  копието на условията или отпечатъкът на лист за интервенция/протокол) или по самия PDF (до 25 MB, в паметта, не
+  се пази — SHA-256 срещу `pdfHash`/`copiaHash`); всяко намерено — с проверката на печата си; одит
+  `PROVA_VERIFICA` само с начина и броя, никога кода. `/master/comunicazioni` (`comunicazioni.ts`, модели
+  `Comunicazione` + `ComunicazioneChiusa`, миграция `20261111090000_comunicazioni`, само добавя; CHECK за прозореца
+  и празния текст) — съобщение до всички или избрани активни фирми, от ден до ден по Рим (`tempo.ts`,
+  `mezzanotteRoma`: от полунощ на първия до полунощ след последния, до година), вид INFO/AVVISO/URGENTE, по избор
+  писмо до всеки ADMIN поотделно (в базата — само броят на тръгналите); спиране по всяко време; одит без текста.
+  Лентите (`master/banner.ts`, `views/partials/comunicazioni.ejs`, `avvisi.css`, `public/js/comunicazioni.js`): на
+  вписан човек от фирма-получател, на цяла страница, след паролата и условията, до 3 наведнъж (спешните първи);
+  „Chiudi“ — за себе си (`POST /comunicazioni/:id/chiudi`, 204 във фонов режим, без JavaScript — обратно на
+  страницата); MASTER не ги вижда над страниците. Текстът — само текст (`white-space: pre-line`, без HTML).
 - **Скицникът** (`src/schizzi/`, решение на собственика, 22 октомври 2026): **за всички фирми, винаги
   включен** (собственикът, 10 ноември 2026 — „attiva gli schizzi per tutti gli utenti e togli l'opzione per
   disattivarli … Gli schizzi diventano attivi di default“; до тогава — функция по фирма, която включваше

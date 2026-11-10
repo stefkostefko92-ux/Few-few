@@ -169,6 +169,10 @@
       "ACCESS_REQUEST_DELETE": "Richiesta di accesso eliminata",
       "CONDIZIONI_ACCETTATE": "Condizioni di servizio accettate per l'azienda",
       "REGOLE_ACCETTATE": "Regole d'uso accettate",
+      "CONDIZIONI_RICHIESTE": "Firma delle condizioni di servizio richiesta all'azienda",
+      "COMUNICAZIONE_CREATE": "Comunicazione alle aziende pubblicata",
+      "COMUNICAZIONE_STOP": "Comunicazione alle aziende interrotta",
+      "PROVA_VERIFICA": "Documento verificato nei registri",
       "USER_EDIT": "Nome o email cambiati",
       "MEMBERSHIP_ADD": "Account aggiunto a un'azienda",
       "MEMBERSHIP_REMOVE": "Account tolto da un'azienda"

@@ -71,6 +71,12 @@ export const AUDIT_ACTIONS = [
   // Условията за услугата (ADMIN за фирмата) и правилата за ползване (всеки) — src/legale/.
   'CONDIZIONI_ACCETTATE',
   'REGOLE_ACCETTATE',
+  // Конзолата на MASTER (src/master/): договорът поискан наново, съобщенията до фирмите, проверката на
+  // документ по кода или файла.
+  'CONDIZIONI_RICHIESTE',
+  'COMUNICAZIONE_CREATE',
+  'COMUNICAZIONE_STOP',
+  'PROVA_VERIFICA',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
@@ -92,7 +98,8 @@ export interface AuditEntry {
     | 'intervento'
     | 'cartello'
     | 'calcolo'
-    | 'verbale';
+    | 'verbale'
+    | 'comunicazione';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */
   meta?: Prisma.InputJsonObject;

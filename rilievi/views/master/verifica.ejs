@@ -1,0 +1,53 @@
+<%
+  // „Verifica documento“ (routes/master-verifica.ts): една форма — кодът от листа или самият PDF; отдолу
+  // намереното, всяко с проверката на печата си. Полето за файл е първо по смисъл, но кодът е по-честият.
+  const link = (r) => r.tipo === 'intervento' ? '/interventi/' + r.id : r.tipo === 'verbale' ? '/verbali/' + r.id : null;
+%><%- include('../partials/top', { titleKey: 'master.verifica.title', narrowMain: true, scripts: ['master'] }) %>
+<div class="page-head">
+  <div>
+    <a href="/master"><%= t('master.console.title') %></a>
+    <h1><%= t('master.verifica.title') %></h1>
+    <p class="page-head__sub"><%= t('master.verifica.sub') %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <% if (errore) { %><div class="errors" role="alert"><h2><%= t(errore) %></h2></div><% } %>
+  <form class="form verifica" method="post" action="/master/verifica" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field">
+      <label class="field__label" for="verifica-codice"><%= t('master.verifica.codice') %></label>
+      <input id="verifica-codice" name="codice" type="text" value="<%= codice %>" autocomplete="off" spellcheck="false" autocapitalize="characters" maxlength="200" aria-describedby="verifica-codice-aiuto" class="input codice">
+      <p class="field__hint" id="verifica-codice-aiuto"><%= t('master.verifica.codiceAiuto') %></p>
+    </div>
+    <div class="field">
+      <label class="field__label" for="verifica-file"><%= t('master.verifica.file') %></label>
+      <input class="input" id="verifica-file" name="file" type="file" accept="application/pdf,.pdf" aria-describedby="verifica-file-aiuto">
+      <p class="field__hint" id="verifica-file-aiuto"><%= t('master.verifica.fileAiuto') %></p>
+    </div>
+    <div><button class="btn" type="submit"><%- include('../partials/icon', { name: 'shield' }) %><span><%= t('master.verifica.cerca') %></span></button></div>
+  </form>
+
+  <% if (esito) { %><section class="verifica-esito" aria-labelledby="verifica-risultato" tabindex="-1" data-esito>
+    <h2 id="verifica-risultato"><%= t('master.verifica.risultato') %></h2>
+    <% if (hash) { %><p class="muted"><%= t('master.verifica.impronta', { hash: '' }) %><span class="codice codice--lungo"><%= hash %></span></p><% } %>
+    <% if (esito.length === 0) { %><p class="verifica-esito__vuoto"><%= t(per === 'file' ? 'master.verifica.nessunoFile' : 'master.verifica.nessuno') %></p><% } %>
+    <ul class="verifica-esito__lista">
+      <% for (const r of esito) { %><li class="prova prova--<%= r.integro ? 'ok' : 'ko' %>">
+        <p class="prova__esito"><%- include('../partials/icon', { name: r.integro ? 'check' : 'alert' }) %><span><%= t(r.integro ? 'master.verifica.integro' : 'master.verifica.rotto') %></span></p>
+        <h3 class="prova__titolo"><%= r.tipo === 'emissione' ? t('master.verifica.tipo.emissione', { calcolo: t('master.verifica.calcolo.' + r.calcolo) }) : r.tipo === 'intervento' ? t('master.verifica.tipo.intervento', { numero: r.numero }) : t('master.verifica.tipo.' + r.tipo) %></h3>
+        <% if (r.tipo === 'emissione') { %><p class="muted"><%= t('master.verifica.per.' + r.per) %></p><% } %>
+        <dl class="prova__dati">
+          <div><dt><%= t('master.verifica.dettagli.quando') %></dt><dd><%= r.at ? fmt.dateTime(r.at) : '—' %></dd></div>
+          <div><dt><%= t('master.verifica.dettagli.azienda') %></dt><dd><%= r.azienda || '—' %></dd></div>
+          <% if (r.tipo === 'emissione' || r.tipo === 'accettazione') { %><div><dt><%= t('master.verifica.dettagli.chi') %></dt><dd><%= r.autore %></dd></div><% } %>
+          <% if (r.tipo === 'emissione') { %><div><dt><%= t('master.verifica.dettagli.rif') %></dt><dd class="codice"><%= r.impronta %></dd></div>
+          <div><dt><%= t('master.verifica.dettagli.build') %></dt><dd class="codice"><%= r.build %></dd></div><% } %>
+          <% if (r.tipo === 'accettazione') { %><div><dt><%= t('master.verifica.dettagli.versione') %></dt><dd><%= fmt.day(new Date(r.versione + 'T00:00:00Z')) %></dd></div><% } %>
+        </dl>
+        <% if (link(r)) { %><p><a href="<%= link(r) %>"><%= t('master.verifica.apri') %></a></p><% } %>
+      </li>
+      <% } %>
+    </ul>
+  </section><% } %>
+</div>
+<%- include('../partials/bottom') %>

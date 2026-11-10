@@ -6,10 +6,12 @@
   // Входът е без лентата на портала, но с чертежа на шахтата (shaft.css).
   // Темата „Personalizzato“: класът и светла/тъмна основа на <html>, стилът с цветовете — след останалите.
   const personale = typeof temaPersonale !== 'undefined' && temaPersonale ? temaPersonale : null;
-  const sheets = ['base', 'buttons', 'shell', 'sidenav', 'layout', 'plate', 'forms', 'righe', 'pages', 'data', 'tabelle-strette', 'sheet', 'misure', 'moduli', 'allegati', 'foto-stampa', 'schizzi', 'schizzo-editor', 'schizzo-barre', 'interventi', 'foglio', 'verbali', 'cartelli', 'impostazioni', 'argano', 'due-fattori', 'installa', 'legale'].concat(bareMain ? ['shaft'] : []);
+  const sheets = ['base', 'buttons', 'shell', 'sidenav', 'navigazione', 'cerca', 'layout', 'plate', 'forms', 'righe', 'pages', 'data', 'tabelle-strette', 'sheet', 'misure', 'moduli', 'allegati', 'foto-stampa', 'schizzi', 'schizzo-editor', 'schizzo-barre', 'interventi', 'foglio', 'verbali', 'cartelli', 'impostazioni', 'impostazioni-hub', 'master', 'master-grafico', 'master-strumenti', 'avvisi', 'argano', 'due-fattori', 'installa', 'legale'].concat(bareMain ? ['shaft'] : []);
   // Прозорецът с новините след обновяване (src/novita/popup.ts) — само на вписан човек в портала.
   const novita = currentUser && !bareMain && typeof novitaPopup !== 'undefined' && novitaPopup ? novitaPopup : null;
   if (novita) sheets.push('novita');
+  // Съобщенията на MASTER до фирмите (src/master/banner.ts) — лентите над съдържанието.
+  const avvisi = currentUser && !bareMain && typeof comunicazioni !== 'undefined' && comunicazioni.length > 0;
 %><!doctype html>
 <html lang="<%= locale %>"<% if (personale) { %> class="tema-personale" data-theme="<%= personale.schema %>"<% } else if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>
 <head>
@@ -36,7 +38,9 @@
 <% } %><script nonce="<%= cspNonce %>">document.documentElement.classList.add('js')</script>
 <script src="/static/js/app.js?v=<%= v %>" defer></script>
 <% if (currentUser && !bareMain) { %><script src="/static/js/menu.js?v=<%= v %>" defer></script>
+<script src="/static/js/cerca.js?v=<%= v %>" defer></script>
 <script src="/static/js/pdf-app.js?v=<%= v %>" defer></script>
+<% } %><% if (avvisi) { %><script src="/static/js/comunicazioni.js?v=<%= v %>" defer></script>
 <% } %><% if (novita) { %><script src="/static/js/novita.js?v=<%= v %>" defer></script>
 <% } %><% for (const script of (typeof scripts !== 'undefined' ? scripts : [])) { %><script src="/static/js/<%= script %>.js?v=<%= v %>" defer></script>
 <% } %></head>
@@ -46,3 +50,4 @@
 <% if (novita) { %><%- include('novita') %><% } %>
 <main id="main" class="<%= bareMain ? 'main-bare' : 'main' + (narrow ? ' main--narrow' : '') %>" tabindex="-1">
 <% if (!bareMain) { %><%- include('flash') %><% } %>
+<% if (avvisi) { %><%- include('comunicazioni') %><% } %>

@@ -1,0 +1,49 @@
+<%
+  // „Contratti“ (routes/master-contratti.ts): трите числа отгоре, после всяка фирма — състоянието на
+  // договора, подписът с печата му, правилата за ползване и действията (копието, „Richiedi la firma“).
+%><%- include('../partials/top', { titleKey: 'master.contratti.title', scripts: ['master'] }) %>
+<div class="page-head">
+  <div>
+    <a href="/master"><%= t('master.console.title') %></a>
+    <h1><%= t('master.contratti.title') %></h1>
+    <p class="page-head__sub"><%= t('master.contratti.sub', { versione: fmt.day(new Date(versione + 'T00:00:00Z')) }) %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <ul class="cifre cifre--tre">
+    <% for (const k of ['firmate', 'esistente', 'attesa']) { %><li class="cifra">
+      <span class="cifra__nome"><%= t('master.contratti.riepilogo.' + k) %></span>
+      <span class="cifra__valore"><%= totali[k] %></span>
+    </li>
+    <% } %>
+  </ul>
+  <p class="muted"><%= t('master.contratti.esistenteNota') %></p>
+  <div class="table-scorre">
+  <table class="table table--stack contratti">
+    <thead><tr>
+      <th scope="col"><%= t('master.contratti.colonne.azienda') %></th>
+      <th scope="col"><%= t('master.contratti.colonne.stato') %></th>
+      <th scope="col"><%= t('master.contratti.colonne.firma') %></th>
+      <th scope="col"><%= t('master.contratti.colonne.regole') %></th>
+      <th scope="col"><%= t('master.contratti.colonne.azioni') %></th>
+    </tr></thead>
+    <tbody>
+      <% for (const r of righe) { %><tr<% if (r.disattivata) { %> class="riga-spenta"<% } %>>
+        <th scope="row" data-label="<%= t('master.contratti.colonne.azienda') %>"><a href="/aziende/<%= r.id %>"><%= r.name %></a><% if (r.disattivata) { %> <span class="badge"><%= t('master.contratti.disattivata') %></span><% } %></th>
+        <td data-label="<%= t('master.contratti.colonne.stato') %>"><span class="stato-contratto stato-contratto--<%= r.stato %>"><%= t('master.contratti.stato.' + r.stato) %></span><% if (r.admin === 0 && r.stato !== 'firmate') { %><br><span class="muted"><%= t('master.contratti.senzaAdmin') %></span><% } %></td>
+        <td data-label="<%= t('master.contratti.colonne.firma') %>"><% if (r.firma) { %><%= t('master.contratti.firmaDi', { nome: r.firma.nome, data: fmt.dateTime(r.firma.at) }) %><% if (r.firma.versione !== versione) { %>, <%= t('master.contratti.versioneVecchia', { versione: fmt.day(new Date(r.firma.versione + 'T00:00:00Z')) }) %><% } %><br><span class="<%= r.firma.integro ? 'muted' : 'testo-errore' %>"><%= t(r.firma.integro ? 'master.console.sigilloOk' : 'master.console.sigilloKo') %></span><% } else { %><span class="muted"><%= t('master.contratti.nessunaFirma') %></span><% } %></td>
+        <td data-label="<%= t('master.contratti.colonne.regole') %>"><%= t('master.contratti.regole', r.regole) %></td>
+        <td data-label="<%= t('master.contratti.colonne.azioni') %>"><div class="azioni-riga">
+          <% if (r.firma && r.firma.copia) { %><a class="btn btn--ghost btn--sm" href="/condizioni/copia?azienda=<%= encodeURIComponent(r.id) %>" data-pdf><%- include('../partials/icon', { name: 'download' }) %><span><%= t('master.contratti.copia') %></span></a><% } %>
+          <% if (r.stato === 'esistente') { %><form method="post" action="/master/contratti/<%= r.id %>/richiedi" data-conferma="<%= t('master.contratti.richiediConferma', { azienda: r.name }) %>">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn--sm" type="submit" title="<%= t('master.contratti.richiediDesc') %>"><%- include('../partials/icon', { name: 'seal' }) %><span><%= t('master.contratti.richiedi') %></span></button>
+          </form><% } %>
+        </div></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+  </div>
+</div>
+<%- include('../partials/bottom') %>

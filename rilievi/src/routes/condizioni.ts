@@ -133,13 +133,15 @@ condizioniRouter.post(ACCETTA_PATH, requireUser, requireCsrf, async (req, res) =
 
 /** Копието на последното приемане за фирмата — само за нейния ADMIN; печатът се проверява първо. */
 condizioniRouter.get(COPIA_PATH, requireUser, pdfLimiter, async (req, res) => {
-  // Фирмата от `?azienda=` (човек в няколко фирми), иначе първата — само където е ADMIN.
-  const admin = principalOf(req).user.memberships.filter((m) => m.role === 'ADMIN');
-  const membership =
-    typeof req.query.azienda === 'string'
-      ? admin.find((m) => m.aziendaId === req.query.azienda)
-      : admin[0];
-  const riga = membership ? await ultimaAccettazione(membership.aziendaId) : null;
+  // Фирмата от `?azienda=` (човек в няколко фирми), иначе първата — само където е ADMIN; MASTER (ние,
+  // доставчикът — „Contratti“ в конзолата) — на всяка фирма по `?azienda=`.
+  const user = principalOf(req).user;
+  const wanted = typeof req.query.azienda === 'string' ? req.query.azienda : null;
+  const admin = user.memberships.filter((m) => m.role === 'ADMIN');
+  const aziendaId = user.master
+    ? wanted
+    : (wanted ? admin.find((m) => m.aziendaId === wanted) : admin[0])?.aziendaId;
+  const riga = aziendaId ? await ultimaAccettazione(aziendaId) : null;
   if (!riga?.otpEmail || !riga.otpInviatoAt || !riga.otpVerificatoAt) {
     res.status(404).render('errors/error', {
       titleKey: 'error.notFoundTitle',

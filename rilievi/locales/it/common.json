@@ -23,17 +23,26 @@
     "impostazioni": "Impostazioni",
     "interventi": "Interventi",
     "cartelli": "Cartelli fermo impianto",
-    "verbali": "Verbali chiusura cantiere",
+    "verbali": "Verbali di cantiere",
     "calcoloArgano": "Calcolo argano",
     "calcoloLimitatore": "Calcolo limitatore",
     "open": "Apri il menu",
     "close": "Chiudi il menu",
     "group": {
-      "rilievi": "Rilievi",
-      "assistenza": "Assistenza elevatori",
+      "impianti": "Impianti",
+      "calcoli": "Calcoli",
+      "documenti": "Documenti",
       "amministrazione": "Amministrazione",
       "master": "Master"
-    }
+    },
+    "console": "Console",
+    "contratti": "Contratti",
+    "comunicazioni": "Comunicazioni",
+    "verifica": "Verifica documenti",
+    "nuovo": "Nuovo",
+    "cerca": "Cerca",
+    "menu": "Menu",
+    "rapida": "Navigazione rapida"
   },
   "common": {
     "yes": "Sì",

@@ -181,31 +181,33 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  invitedUsers      User[]              @relation("InvitedUsers")
-  memberships       Membership[]
-  sessions          Session[]
-  invitesSent       Invite[]            @relation("InvitesSent")
-  resets            PasswordReset[]     @relation("ResetsFor")
-  resetsCreated     PasswordReset[]     @relation("ResetsCreated")
-  schedeCreated     Scheda[]            @relation("SchedeCreated")
-  schedeUpdated     Scheda[]            @relation("SchedeUpdated")
-  schedeDeleted     Scheda[]            @relation("SchedeDeleted")
-  allegatiCaricati  Allegato[]          @relation("AllegatiCaricati")
-  interventiCreati  Intervento[]        @relation("InterventiCreati")
-  interventiMod     Intervento[]        @relation("InterventiModificati")
-  interventiChiusi  Intervento[]        @relation("InterventiChiusi")
-  cartelliCreati    Cartello[]          @relation("CartelliCreati")
-  recoveryCodes     RecoveryCode[]
-  firmeCondizioni   FirmaCondizioni[]
-  loginChallenges   LoginChallenge[]
-  cartelliMod       Cartello[]          @relation("CartelliModificati")
-  calcoliArgano     CalcoloArgano[]
-  calcoliLimitatore CalcoloLimitatore[]
-  verbaliCreati     Verbale[]           @relation("VerbaliCreati")
-  verbaliMod        Verbale[]           @relation("VerbaliModificati")
-  verbaliChiusi     Verbale[]           @relation("VerbaliChiusi")
-  auditEntries      AuditLog[]
-  requestsDecided   AccessRequest[]     @relation("AccessRequestsDecided")
+  invitedUsers        User[]                @relation("InvitedUsers")
+  memberships         Membership[]
+  sessions            Session[]
+  invitesSent         Invite[]              @relation("InvitesSent")
+  resets              PasswordReset[]       @relation("ResetsFor")
+  resetsCreated       PasswordReset[]       @relation("ResetsCreated")
+  schedeCreated       Scheda[]              @relation("SchedeCreated")
+  schedeUpdated       Scheda[]              @relation("SchedeUpdated")
+  schedeDeleted       Scheda[]              @relation("SchedeDeleted")
+  allegatiCaricati    Allegato[]            @relation("AllegatiCaricati")
+  interventiCreati    Intervento[]          @relation("InterventiCreati")
+  interventiMod       Intervento[]          @relation("InterventiModificati")
+  interventiChiusi    Intervento[]          @relation("InterventiChiusi")
+  cartelliCreati      Cartello[]            @relation("CartelliCreati")
+  recoveryCodes       RecoveryCode[]
+  firmeCondizioni     FirmaCondizioni[]
+  loginChallenges     LoginChallenge[]
+  cartelliMod         Cartello[]            @relation("CartelliModificati")
+  calcoliArgano       CalcoloArgano[]
+  calcoliLimitatore   CalcoloLimitatore[]
+  verbaliCreati       Verbale[]             @relation("VerbaliCreati")
+  verbaliMod          Verbale[]             @relation("VerbaliModificati")
+  verbaliChiusi       Verbale[]             @relation("VerbaliChiusi")
+  auditEntries        AuditLog[]
+  requestsDecided     AccessRequest[]       @relation("AccessRequestsDecided")
+  comunicazioni       Comunicazione[]       @relation("ComunicazioniScritte")
+  comunicazioniChiuse ComunicazioneChiusa[]
 
   @@index([invitedById])
   @@index([master])
@@ -1179,4 +1181,49 @@ model EmissioneCalcolo {
   @@index([aziendaId, at])
   @@index([impronta])
   @@index([conservaFino])
+}
+
+enum LivelloComunicazione {
+  INFO
+  AVVISO
+  URGENTE
+}
+
+/// Съобщение на MASTER до фирмите (собственикът, 10 ноември 2026 — „Espandi le funzioni di master“): лента
+/// над страниците на портала за хората на избраните фирми (празно `aziendaIds` — всички) в прозореца
+/// `inizioAt`…`fineAt`; всеки я затваря за себе си (`ComunicazioneChiusa`). Пише и спира само MASTER
+/// (src/master/comunicazioni.ts); в одита — без текста.
+model Comunicazione {
+  id           String                @id @default(cuid())
+  titolo       String                @db.VarChar(120)
+  testo        String                @db.VarChar(2000)
+  livello      LivelloComunicazione  @default(INFO)
+  /// Фирмите, до които е; празно — до всички.
+  aziendaIds   String[]              @default([])
+  inizioAt     DateTime
+  /// Краят на показването; null — докато MASTER не я спре.
+  fineAt       DateTime?
+  /// Спряна на ръка от MASTER.
+  fermataAt    DateTime?
+  autoreId     String?
+  autore       User?                 @relation("ComunicazioniScritte", fields: [autoreId], references: [id], onDelete: SetNull)
+  /// Колко писма до администраторите на фирмите са тръгнали при създаването (null — без писма).
+  emailInviate Int?
+  createdAt    DateTime              @default(now())
+  chiusure     ComunicazioneChiusa[]
+
+  @@index([inizioAt])
+  @@index([autoreId])
+}
+
+/// Човекът е затворил лентата на съобщението — не я вижда повече.
+model ComunicazioneChiusa {
+  comunicazioneId String
+  comunicazione   Comunicazione @relation(fields: [comunicazioneId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  at              DateTime      @default(now())
+
+  @@id([comunicazioneId, userId])
+  @@index([userId])
 }
