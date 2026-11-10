@@ -250,20 +250,44 @@
   break-inside: avoid;
 }
 
+/* Големината, избрана в „Stampa e PDF“ (10 ноември 2026): основата на всяка снимка по формата ѝ, умножена
+   по `--foto` на мрежата — малки ~0,7, средни 1 (досегашните), големи ~1,5; „una“ — една на ред. */
+.paper__foto-grid {
+  --foto: 1;
+}
+
+.paper__foto-grid--piccole {
+  --foto: 0.7;
+}
+
+.paper__foto-grid--grandi {
+  --foto: 1.5;
+}
+
 .paper__figura--v {
-  flex: 0.75 1 36mm;
+  flex: 0.75 1 calc(36mm * var(--foto));
 }
 
 .paper__figura--q {
-  flex: 1 1 44mm;
+  flex: 1 1 calc(44mm * var(--foto));
 }
 
 .paper__figura--o {
-  flex: 1.333 1 58mm;
+  flex: 1.333 1 calc(58mm * var(--foto));
 }
 
 .paper__figura--l {
-  flex: 1.78 1 78mm;
+  flex: 1.78 1 calc(78mm * var(--foto));
+}
+
+.paper__foto-grid--una .paper__figura {
+  flex: 0 0 100%;
+}
+
+.paper__foto-grid--una .paper__figura img {
+  width: auto;
+  max-width: 100%;
+  max-height: 176mm;
 }
 
 .paper__figura img {

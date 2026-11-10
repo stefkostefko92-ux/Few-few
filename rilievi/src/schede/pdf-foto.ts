@@ -1,3 +1,4 @@
+import type { FotoDimensione } from '@prisma/client';
 import type { FotoPdf, GruppoFotoPdf } from '../allegati/stampa.js';
 import {
   CONTENT_WIDTH,
@@ -23,10 +24,28 @@ import {
 export const ALTEZZA_RIGA = 140;
 /** Най-много снимки на ред — вертикалните остават четливи (~43 mm широки). */
 export const MAX_PER_RIGA = 4;
-/** Ред, който се разпъва до ширината (малко снимки), не става по-висок от това. */
-const ALTEZZA_MAX = ALTEZZA_RIGA * 1.4;
 export const SPAZIO = 8;
 const SOTTO_RIGA = 8;
+
+/** Редът на дадена големина: желаната височина, най-много снимки и най-високият разпънат ред (pt). */
+export interface Misura {
+  altezza: number;
+  maxPerRiga: number;
+  altezzaMax: number;
+}
+
+/**
+ * Големините, които човекът избира в „Stampa e PDF“ (собственикът, 10 ноември 2026): малки ~35 mm (до 5
+ * на ред), средни ~49 mm (досегашните, до 4), големи ~74 mm (до 3), една на ред — цялата ширина, а
+ * вертикалната до ~176 mm висока. Същите числа има прегледът във формата (public/js/foto-righe.js —
+ * тестът ги сравнява).
+ */
+export const DIMENSIONI: Readonly<Record<FotoDimensione, Misura>> = {
+  PICCOLE: { altezza: 100, maxPerRiga: 5, altezzaMax: 140 },
+  MEDIE: { altezza: ALTEZZA_RIGA, maxPerRiga: MAX_PER_RIGA, altezzaMax: ALTEZZA_RIGA * 1.4 },
+  GRANDI: { altezza: 210, maxPerRiga: 3, altezzaMax: 294 },
+  UNA: { altezza: 500, maxPerRiga: 1, altezzaMax: 500 },
+};
 
 export interface PostoFoto {
   indice: number;
@@ -43,8 +62,9 @@ export interface PostoFoto {
 export function righeFoto(
   rapporti: readonly number[],
   larghezza: number,
-  altezza = ALTEZZA_RIGA,
+  misura: Misura = DIMENSIONI.MEDIE,
 ): PostoFoto[][] {
+  const { altezza, maxPerRiga, altezzaMax: ALTEZZA_MAX } = misura;
   const righe: PostoFoto[][] = [];
   const chiudi = (indici: number[], piena: boolean) => {
     const somma = indici.reduce((s, i) => s + rapporti[i]!, 0);
@@ -57,7 +77,7 @@ export function righeFoto(
     const prova = [...corrente, i];
     const somma = prova.reduce((s, j) => s + rapporti[j]!, 0);
     const libera = larghezza - SPAZIO * (prova.length - 1);
-    if (somma * altezza < libera && prova.length < MAX_PER_RIGA) {
+    if (somma * altezza < libera && prova.length < maxPerRiga) {
       corrente = prova;
       continue;
     }
@@ -102,11 +122,16 @@ function altezzaDidascalia(ctx: PdfContext, f: FotoInFila, larghezza: number): n
 }
 
 /**
- * Всички снимки — един поток в реда на разделите (собственикът, 5 ноември 2026: „puoi metterle una
- * accanto all'altra anche se sono di sezioni diverse, così risparmiamo il foglio“): раздел с една снимка
- * не заема цял ред, а името на раздела е в надписа на всяка снимка.
+ * Всички снимки — един поток (собственикът, 5 ноември 2026: „puoi metterle una accanto all'altra anche se
+ * sono di sezioni diverse, così risparmiamo il foglio“): раздел с една снимка не заема цял ред, а името
+ * на раздела е в надписа на всяка снимка. Редът и големината — избраните в „Stampa e PDF“ (10 ноември
+ * 2026; групите идват подредени, src/allegati/stampa.ts).
  */
-export function drawFoto(ctx: PdfContext, gruppi: readonly GruppoFotoPdf[]): void {
+export function drawFoto(
+  ctx: PdfContext,
+  gruppi: readonly GruppoFotoPdf[],
+  dimensione: FotoDimensione = 'MEDIE',
+): void {
   const fila: FotoInFila[] = gruppi.flatMap((g) =>
     g.foto.map((foto) => ({ foto, sezione: g.titolo })),
   );
@@ -115,6 +140,7 @@ export function drawFoto(ctx: PdfContext, gruppi: readonly GruppoFotoPdf[]): voi
   const righe = righeFoto(
     fila.map((f) => rapportoDi(f.foto)),
     CONTENT_WIDTH,
+    DIMENSIONI[dimensione],
   );
   const altezzaDi = (riga: readonly PostoFoto[]) =>
     riga[0]!.altezza +

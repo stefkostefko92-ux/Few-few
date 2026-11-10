@@ -49,13 +49,27 @@
     },
     "stampa": {
       "legenda": "Foto da stampare",
-      "hint": "Le foto selezionate vanno in fondo alla stampa e al PDF, sezione per sezione, anche quelle di una sezione non stampata; i video restano nel portale.",
+      "hint": "Le foto selezionate vanno in fondo alla stampa e al PDF, nell'ordine e nella dimensione scelti, anche quelle di una sezione non stampata; i video restano nel portale.",
       "nessuna": "Nessuna foto pronta: si aggiungono nelle sezioni della scheda.",
       "tutte": "Seleziona tutte",
       "nessunaAzione": "Deseleziona tutte",
       "conteggio": "{n} di {totale} selezionate",
       "esclusa": "sezione non stampata",
-      "titolo": "Foto"
+      "titolo": "Foto",
+      "dimensione": "Dimensione delle foto",
+      "dimensioni": {
+        "PICCOLE": "Piccole",
+        "MEDIE": "Medie",
+        "GRANDI": "Grandi",
+        "UNA": "Una per riga"
+      },
+      "ordine": "Ordine nella stampa",
+      "ordineVuoto": "Seleziona le foto qui sopra: qui scegli in che ordine vanno stampate.",
+      "prima": "Sposta prima: {titolo}",
+      "dopo": "Sposta dopo: {titolo}",
+      "spostata": "{titolo}: posizione {n} di {totale}.",
+      "anteprima": "Anteprima",
+      "anteprimaHint": "Indicativa: nel PDF e nella stampa le foto continuano sotto la scheda."
     }
   }
 }

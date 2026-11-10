@@ -178,7 +178,9 @@ describe('the sheet form, laid out like the printed sheet', () => {
     const legends = [
       ...form.body.matchAll(/<legend class="section__title"><span class="secnum"[^>]*><\/span>/g),
     ];
-    assert.equal(legends.length, 13);
+    // 13 sections of the sheet and the sketch pad, on for every company (the owner, 10 November 2026).
+    assert.equal(legends.length, 14);
+    assert.match(form.body, /id="s-schizzi"/);
     assert.match(form.body, /<fieldset class="section"[^>]*id="s-centralina"[^>]*data-off/);
     assert.match(form.body, /<fieldset class="section"[^>]*id="s-argano"(?![^>]*data-off)[^>]*>/);
     const css = await browser.get('/static/css/sheet.css');

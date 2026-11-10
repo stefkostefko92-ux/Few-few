@@ -7,8 +7,8 @@
 // company settings (impostazioni.mjs), the same data filled in real time in every direction
 // (tempo-reale.mjs), the company ADMIN invited by the MASTER and a technician invited by that ADMIN
 // who sees the company's sheets (inviti.mjs), photos in a section of the sheet (allegati.mjs — the worker
-// must run next to the portal: `npm run worker`), the sketch pad turned on for the company and drawn in its
-// full-screen editor (schizzi.mjs), the side bar and an intervention form signed and confirmed
+// must run next to the portal: `npm run worker`), their size and order in the print with the preview
+// (foto-ordine.mjs), the sketch pad (on for every company) drawn in its full-screen editor (schizzi.mjs), the side bar and an intervention form signed and confirmed
 // (interventi.mjs), the company data and the stop sign (cartelli.mjs), the closing report signed
 // with its two PDFs (verbali.mjs), the machine calculation (argano.mjs) and the overspeed governor
 // calculation (limitatore.mjs), the phone (telefono.mjs), and accessibility (axe-core, WCAG 2.1 AA) on every page, in
@@ -49,6 +49,7 @@ import { checkPrintedNotes, fillDoorsAndChecks } from './porte.mjs';
 import { checkQuadro } from './quadro.mjs';
 import { checkSettings } from './impostazioni.mjs';
 import { checkAttachments } from './allegati.mjs';
+import { checkPhotoOrder } from './foto-ordine.mjs';
 import { checkSketches } from './schizzi.mjs';
 import { checkRealTime } from './tempo-reale.mjs';
 
@@ -252,6 +253,7 @@ try {
       await checkInstallableApp(browser, { base, shots, scheme, email, password });
       await checkInstallPhone(browser, { base, shots, scheme });
       await checkAttachments(page, { sheetUrl, shots });
+      await checkPhotoOrder(page, { sheetUrl, shots });
       await checkSketches(page, { base, aziendaPath, sheetUrl, shots, scheme });
     }
 

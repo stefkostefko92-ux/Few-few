@@ -102,9 +102,9 @@ model Azienda {
   /// Редът на разделите на картата във фирмата (ключовете от src/schede/fields.ts); празно — редът по
   /// подразбиране. Подрежда го администраторът ѝ (src/aziende/sezioni.ts).
   ordineSezioni    String[]  @default([])
-  /// Скицникът в края на картата (листове за рисуване на ръка, src/schizzi/) — включва го само MASTER.
-  /// Изключен: полето изчезва от формата, а нарисуваното остава и се печата.
-  schizzi          Boolean   @default(false)
+  /// Скицникът — от 10 ноември 2026 винаги включен за всички (собственикът: „attiva gli schizzi per tutti
+  /// … togli l'opzione per disattivarli“); кодът не чете колоната, тя остава за връщане назад.
+  schizzi          Boolean   @default(true)
   /// Последният даден номер на лист за интервенция във фирмата (собствен брояч от 1, без дупки):
   /// новият лист взема +1 в транзакцията си (src/interventi/service.ts).
   interventiNumero Int       @default(0)
@@ -545,6 +545,9 @@ model Scheda {
   /// Поне една снимка влиза в печата и PDF-а — за предишния код (той печаташе всички при `true`). От 21
   /// октомври изборът е на всяка снимка (`Allegato.inStampa`); тази колона само го следва.
   fotoStampate                 Boolean                  @default(false)
+  /// Колко големи са снимките в печата и PDF-а (собственикът, 10 ноември 2026 — избор с преглед в
+  /// „Stampa e PDF“ в края на формата; src/schede/pdf-foto.ts, `DIMENSIONI`).
+  fotoDimensione               FotoDimensione           @default(MEDIE)
   /// Листовете на скицника влизат в печата и PDF-а (отметката „Schizzi“ в края на формата).
   schizziStampati              Boolean                  @default(true)
   /// Отпечатъкът на разминаванията карта ↔ модули, потвърдени при последния запис (src/ordini/collegati.ts):
@@ -648,6 +651,9 @@ model Allegato {
   /// Снимката влиза в края на печата и PDF-а — иконките в края на формата (по подразбиране не;
   /// клиповете — никога).
   inStampa      Boolean       @default(false)
+  /// Мястото на снимката в печата и PDF-а, избрано в „Stampa e PDF“ (10 ноември 2026); празно — по
+  /// разделите в реда на фирмата и по реда на качване, след подредените.
+  ordineStampa  Int?
   tentativi     Int           @default(0)
   caricatoDaId  String?
   caricatoDa    User?         @relation("AllegatiCaricati", fields: [caricatoDaId], references: [id], onDelete: SetNull)
@@ -782,6 +788,15 @@ enum KitA3Valvola {
 enum OperatoreModulo {
   MODULO_2SG
   ALTRO
+}
+
+/// Снимките в печата: малки (~35 mm, до 5 на ред), средни (~49 mm, до 4 — досегашните), големи (~74 mm,
+/// до 3) и една на ред (цялата ширина).
+enum FotoDimensione {
+  PICCOLE
+  MEDIE
+  GRANDI
+  UNA
 }
 
 enum KitA3Componente {

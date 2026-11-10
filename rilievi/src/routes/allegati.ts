@@ -1,7 +1,7 @@
 import { access } from 'node:fs/promises';
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { percorsi } from '../allegati/archivio.js';
-import { gruppiScelta, nelFoglioDi, sezioniFoto } from '../allegati/stampa.js';
+import { gruppiScelta, nelFoglioDi, ordineScelte, sezioniFoto } from '../allegati/stampa.js';
 import {
   limiteCorpo,
   multipart,
@@ -165,15 +165,19 @@ allegatiRouter.get('/schede/:id/foto-stampa', write, async (req, res) => {
   if (!scheda) return notFound(req, res);
   const allegati = await allegatiDi(scheda.id);
   const valori = scheda as unknown as Record<string, unknown>;
+  const sezioni = sezioniFoto(scheda.azienda.ordineSezioni, res.locals.t);
+  const scelte = new Set(allegati.filter((a) => a.inStampa).map((a) => a.id));
   res.render('schede/_foto-stampa', {
     scheda,
     fotoStampa: {
       gruppi: gruppiScelta(
-        sezioniFoto(scheda.azienda.ordineSezioni, res.locals.t),
+        sezioni,
         allegati,
         nelFoglioDi(activeParts((key) => valori[key]).sections, scheda.sezioniEscluse),
       ),
-      scelte: new Set(allegati.filter((a) => a.inStampa).map((a) => a.id)),
+      scelte,
+      ordine: ordineScelte(sezioni, allegati, scelte),
+      dimensione: scheda.fotoDimensione,
     },
   });
 });

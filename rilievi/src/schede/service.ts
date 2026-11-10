@@ -120,14 +120,31 @@ async function aziendaOf(
 /**
  * Снимките в печата (иконките в края на формата): само показаните — отметнатите влизат, другите не;
  * снимка, качена междувременно, остава каквато е. Само снимките на тази карта. `fotoStampate` следва
- * избора („поне една“) за предишния код — без да мести `updatedAt` на картата.
+ * избора („поне една“) за предишния код — без да мести `updatedAt` на картата. Редът (`ordine`):
+ * отметнатите взимат мястото си от 1, другите показани — празно; големината — на картата.
  */
 async function salvaFotoInStampa(
   tx: Prisma.TransactionClient,
   schedaId: string,
-  { mostrate, scelte }: SceltaFoto,
+  { mostrate, scelte, ordine, dimensione }: SceltaFoto,
 ): Promise<void> {
+  if (dimensione) {
+    await tx.$executeRaw`
+      UPDATE "Scheda" SET "fotoDimensione" = ${dimensione}::"FotoDimensione" WHERE id = ${schedaId}`;
+  }
   if (mostrate.length === 0) return;
+  if (ordine) {
+    await tx.allegato.updateMany({
+      where: { schedaId, id: { in: mostrate } },
+      data: { ordineStampa: null },
+    });
+    if (ordine.length > 0) {
+      await tx.$executeRaw`
+        UPDATE "Allegato" AS a SET "ordineStampa" = o.posto
+        FROM unnest(${ordine}::text[]) WITH ORDINALITY AS o(id, posto)
+        WHERE a.id = o.id AND a."schedaId" = ${schedaId} AND a.tipo = 'FOTO'`;
+    }
+  }
   await tx.allegato.updateMany({
     where: { schedaId, id: { in: mostrate } },
     data: { inStampa: false },
