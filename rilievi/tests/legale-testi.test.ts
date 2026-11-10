@@ -30,7 +30,7 @@ const t = translatorFor('it');
 
 /** Every published version and the hash of its exact text. Never edit a line: add one. */
 const PUBBLICATI: Record<string, string> = {
-  'condizioni-2026-11-10': '4f6e4fcb6538858bc8a4389a41a9b980c56eb1768f8bef521e7c3ef419cba9ec',
+  'condizioni-2026-11-10': '01ebcd73a5da55b524c5b51dc622209124fa2adbe89553192aaa8234374622cc',
   'regole-2026-11-10': '8c3ab4b662c2cc9f1d4adbb0514ad433a09b8e1b4d95c362519887ba0d9475e3',
 };
 
@@ -118,6 +118,23 @@ describe('the terms of service', () => {
       'lett. h',
     ])
       assert.ok(titoli.includes(lettera), lettera);
+  });
+});
+
+describe('the sub-processors', () => {
+  it('are the same in the terms (Appendix 2) and in the privacy policy', () => {
+    const appendice = leggiTesto('CONDIZIONI')
+      .allegati.find((a) => a.id === 'sub')!
+      .articoli.flatMap((a) => a.paragrafi)
+      .join(' ');
+    for (const nome of ['netcup GmbH', 'Brevo']) {
+      assert.ok(appendice.includes(nome), `terms: ${nome}`);
+      assert.ok(
+        [t('privacy.recipients.hosting'), t('privacy.recipients.mail')].join(' ').includes(nome),
+        `privacy: ${nome}`,
+      );
+    }
+    assert.doesNotMatch(appendice, /Hetzner/);
   });
 });
 

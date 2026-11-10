@@ -62,7 +62,7 @@ const schema = z
      * а „Забравена парола“ казва да се поиска връзка от администратор.
      */
     SMTP_HOST: optionalText(),
-    /** Brevo приема 2525 — Hetzner блокира 25/465/587. */
+    /** Brevo приема 2525 — минава и при хостинг, който блокира 25/465/587 (Hetzner го правеше). */
     SMTP_PORT: z.coerce.number().int().positive().default(2525),
     SMTP_SECURE: flag.default(false),
     SMTP_USER: optionalText(),
