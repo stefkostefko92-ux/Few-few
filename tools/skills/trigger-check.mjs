@@ -22,6 +22,7 @@ import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseFrontmatter } from "./lint.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SKILLS = join(ROOT, ".claude", "skills");
@@ -121,7 +122,7 @@ export function loadSkills(dir = SKILLS) {
     });
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const CHECK = process.argv.includes("--check");
   const skills = loadSkills();
   const corpus = JSON.parse(readFileSync(CORPUS, "utf8")).skills;

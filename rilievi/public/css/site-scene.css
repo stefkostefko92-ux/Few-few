@@ -1,0 +1,168 @@
+/* Витрината: възможностите до снимките и картата раздел по раздел до чертежа. Номерът в кръга
+   (.secnum, site-parts.css) е маркерът на чертежа. */
+
+/* Възможностите до снимките (рендерите в scripts/render): снимката до ръба на екрана, списъкът — в
+   колоната на страницата; втората снимка е отдясно. На телефон — снимката, после списъкът. */
+.band--scene {
+  container-type: inline-size;
+}
+
+.scena {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+}
+
+.scena + .scena {
+  margin-top: clamp(48px, 2rem + 4vw, 96px);
+}
+
+.scena__foto img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--bar);
+}
+
+.scena__lista {
+  margin: 0;
+  padding: 0 max(var(--gutter), calc((100cqw - 1200px) / 2 + var(--gutter))) 0
+    clamp(32px, 1rem + 4vw, 80px);
+  list-style: none;
+}
+
+.scena--destra .scena__foto {
+  order: 2;
+}
+
+.scena--destra .scena__lista {
+  padding: 0 clamp(32px, 1rem + 4vw, 80px) 0
+    max(var(--gutter), calc((100cqw - 1200px) / 2 + var(--gutter)));
+}
+
+.feature {
+  display: grid;
+  gap: 8px;
+  padding: 22px 0 24px;
+}
+
+.feature + .feature {
+  border-top: 1px solid var(--line);
+}
+
+.feature h3 {
+  font-size: 1.25rem;
+}
+
+.feature p {
+  color: var(--muted);
+}
+
+@media (max-width: 899px) {
+  .scena {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scena--destra .scena__foto {
+    order: 0;
+  }
+
+  .scena__lista,
+  .scena--destra .scena__lista {
+    padding: 8px var(--gutter) 0;
+  }
+}
+
+/* Картата раздел по раздел: чертежът в черно вляво (стои, докато легендата минава), разделите до него —
+   номерът в кръга е маркерът на чертежа. На телефон — чертежът над легендата. */
+.disegno {
+  display: grid;
+  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+  gap: clamp(32px, 1rem + 4vw, 72px);
+  align-items: start;
+}
+
+.disegno__figura {
+  position: sticky;
+  top: 88px;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding: 32px 24px;
+  border: 1px solid var(--bar-edge);
+  background: var(--bar);
+  color: var(--bar-fg);
+}
+
+.disegno__figura .shaft {
+  height: min(calc(100svh - 160px), 680px);
+}
+
+.legend__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 0 40px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 14px;
+  align-items: start;
+  align-content: start;
+  padding: 20px 0 22px;
+  border-top: 1px solid var(--line);
+}
+
+.legend__item h3 {
+  align-self: center;
+  font-size: 1.125rem;
+}
+
+.legend__item p {
+  grid-column: 2;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+@media (max-width: 899px) {
+  .disegno {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .disegno__figura {
+    position: static;
+    padding: 28px var(--gutter);
+  }
+
+  .disegno__figura .shaft {
+    width: min(100%, 340px);
+    height: auto;
+  }
+}
+
+/* „Dopo il rilievo“: възможностите след огледа — две колони, всяка с линия отгоре. */
+.servizi {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 clamp(32px, 4vw, 64px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.servizi .feature {
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 899px) {
+  .servizi {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

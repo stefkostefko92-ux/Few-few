@@ -37,3 +37,6 @@ pg-*.png
 q-*.png
 d-*.png
 screenshots/
+
+# promo clip output (promo/render.mjs)
+/dist/

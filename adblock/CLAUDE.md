@@ -27,9 +27,13 @@ scriptlets/             scriptlet engine (##+js): policy.js (ЕДИНСТВЕН 
                         (clean-room код) + list.txt (данни) → main.js
                         (пече се от build_scriptlets.mjs; MAIN world при document_start)
 youtube_loader.js       подава live добавките (данни) на youtube_main чрез DOM събитие
-youtube_main.js         MAIN world (регистриран от SW) — маха рекламите от player/feed отговорите като текст
+youtube_main.js         MAIN world (регистриран от SW) — маха рекламите от player/feed отговорите като текст;
+                        5.7: скок над вшита реклама (SSAP), формите на /player след отказ, „abnormality“ колбекът
 youtube_skip.js         auto-skip + enforcement fallback (видеото винаги зарежда)
-youtube.css             скрива рекламните UI елементи на YouTube
+youtube.css             (manifest) само backdrop/scroll на enforcement диалога — остава и при bypass
+youtube_ads.css         рекламните UI елементи на YouTube — регистрира го SW заедно с youtube_main (sa-youtube-css)
+twitch_main.js          MAIN world (регистриран от SW, sa-twitch) — обвива Worker-а на плейъра; вшитите реклами в HLS →
+                        чист поток от друг тип плейър, иначе рекламните сегменти се махат
 rules/                  DNR статични правила: ad_rules + youtube_rules +
                         easylist/easyprivacy/urlhaus/removeparam (билднати от
                         tools/build_filters.mjs) + козметичен bundle + counts
@@ -166,6 +170,32 @@ bash tools/package.sh                         # билд + самопровер�
   filters.json `requestFlags` може да ги пусне, с plain-retry резервата. `youtube_skip` само mute +
   родния Skip — **никога** 16× (YouTube го брои). Ако YouTube все пак откаже, bypass-ът (6 ч) маха
   и `sa-youtube`, и scriptlet-ите от YouTube страниците.
+- **YouTube 5.7 (флагнат клиент: вшита реклама, отказ, 0x0, изкуствено забавяне).** По метода на поддръжниците на uBO,
+  като НАШ код в `youtube_main.js` (само www.youtube.com, не за Premium): реклама, вшита в потока („SSAP, AD“ в
+  `getStatsForNerds`) → `seekTo` до края ѝ през API-то на плейъра — единственото позволено превъртане, и никога ако
+  „продължителността на рекламата“ е тази на клипа; `<video>` не се пипа. Отказ (UNPLAYABLE → answer/3037019 +
+  WEB_PAGE_TYPE_UNKNOWN, без captcha) или 0x0 за 10 s → `loadVideoById` на място със следващата форма
+  (channel → lactmilli → inline → yahi → както е), всяка веднъж, изчаква новия отговор (8 s); ПРЕДИ отказ заявката не
+  се пипа. „abnormality“ колбекът (иглата е сглобена, за да не я съдържа нашата функция) не тича. Аварийни стопове —
+  `youtube.noShapes` / `youtube.noSsapJump` (булеви). **Изключение от „никога googlevideo“:** само фалшивата заявка с
+  `expire` в миналото — динамично правило 69998 от днешната дата (`fakeGvRule`, опреснява се на 12 ч), НИКОГА фиксиран
+  регекс (този на uBO хваща истински заявки от януари 2027); RE2 има 2 KB лимит — `tests/ytrules.test.mjs`.
+- **Невидимост (5.7).** Всяка кука (youtube_main, twitch_main, `cloak` в engine.js) маха своите `chrome-extension://`
+  редове от `e.stack` при хвърляне — `Function.prototype.toString.call({})` трябва да хвърля като родния. **Никакви
+  обвивки на `appendChild`/`insertBefore`/`append`/`prepend`** в YouTube: под всеки вмъкнат елемент стоеше наш кадър;
+  iframe-ите се закачат през `contentWindow`/`contentDocument` getter-ите и при вмъкване (MutationObserver). На YouTube
+  нищо наше не се пише по страницата: `content.js` там е `genericHideHost` (без AD_SELECTORS, unhide маркери, Smart
+  Detection), рекламното CSS е стил на разширението (`youtube_ads.css`, регистриран — го няма в `document.styleSheets`), `data-tbab-yt-bypass` — само при
+  `attrForced`. Browser гейт: `tests/browser/youtube.browser.mjs`.
+- **Twitch (5.7).** `twitch_main.js` обвива `Worker` само за IVS worker-а на плейъра (blob с
+  `amazon-ivs-wasmworker`): новият blob = изходният текст на `twitchWorker` от САМИЯ файл + JSON константи + скриптът на
+  плейъра непроменен (синхронен XHR на blob-а). Нищо в blob-а не идва от мрежата; без eval/Function. В worker-а:
+  реклама в media плейлистата → токен за embed/popout/autoplay от gql.twitch.tv (публичният client id, БЕЗ
+  Authorization и бисквитки) → същото качество; качеството остава на другия поток за сесията (v3 срещу v6), нов токен
+  само след грешка (нов токен = нова сесия = скок). Всички с реклама → `strip` (сегментите + техните тагове, ad
+  DATERANGE, PREFETCH; MEDIA-SEQUENCE остава верен). Заявки САМО към Twitch. Наш код, който хвърли, не спира плейъра
+  (`try` около него в blob-а). Изключване: разрешен twitch.tv / пауза / `features.twitch: false`. Гейт:
+  `tests/twitch.test.mjs` (истинският blob срещу фалшив Twitch) + `tests/browser/twitch.browser.mjs`.
 - `rules/ad_rules.json` и `rules/youtube_rules.json` идват **само** от `tools/generate_rules.py` — правило се
   добавя там, не в JSON-а. Id-тата са фиксирани (изваден id не се ползва повторно: YouTube 1001/1003);
   `tests/generate_rules.test.mjs` ребилдва във временна папка и сравнява байт по байт.

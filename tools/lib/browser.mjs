@@ -12,26 +12,24 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 /**
- * Внася голо име, като пробва ДВЕ места: първо оттук, после от `process.cwd()`.
- *
- * ЗАЩО двете. Резолвът на голо име в ESM тръгва от папката на ФАЙЛА, който
- * внася — тоест от `tools/lib/`, и обхожда `tools/lib/node_modules` →
- * `tools/node_modules` → `<корен>/node_modules`. `FiveM/node_modules` НЕ се
- * поглежда НИКОГА. За инструментите в `tools/` това е без значение (те живеят
- * тук), но `FiveM/scripts/authz-probe.mjs` посяга през папки — и там съветът в
- * съобщението за грешка („npm i -D playwright-core") беше НЕИЗПЪЛНИМ: инстали-
- * раш в продукта, а търсенето е от `tools/`. Измерено на цял деплой пробег —
- * инструментът излизаше с „НЕИЗМЕРЕНО" при налична зависимост.
+ * Зарежда пакет от ТРИ места, по ред:
+ *  1. ESM import оттук (`tools/lib/` нагоре до корена);
+ *  2. require (чете NODE_PATH) — средата държи Playwright глобално, а ESM import
+ *     NODE_PATH не чете (2026-11-02, Скоростника не можа да мери kebab);
+ *  3. от `process.cwd()` — продукт, пуснал инструмента от своята папка
+ *     (`FiveM/scripts/authz-probe.mjs`): резолвът от `tools/lib/` НИКОГА не
+ *     поглежда `FiveM/node_modules`, и съветът „npm i -D playwright-core“ беше
+ *     неизпълним.
  */
-async function importFrom(name) {
+export async function loadPkg(
+  name,
+  { importer = (n) => import(n), requirer = createRequire(import.meta.url), cwd = process.cwd() } = {},
+) {
+  try { return await importer(name); } catch { /* пробваме require (NODE_PATH) */ }
+  try { return requirer(name); } catch { /* пробваме от папката на викащия */ }
   try {
-    return await import(name);
-  } catch {
-    /* пробваме от папката на викащия процес */
-  }
-  try {
-    const req = createRequire(join(process.cwd(), "package.json"));
-    return await import(pathToFileURL(req.resolve(name)).href);
+    const req = createRequire(join(cwd, "package.json"));
+    return await importer(pathToFileURL(req.resolve(name)).href);
   } catch {
     return null;
   }
@@ -72,10 +70,10 @@ export function pickChromium(mod) {
  */
 export async function launchChromium(extra = {}) {
   let chromium = null, how = null;
-  let mod = await importFrom("playwright");
-  if (mod) how = "playwright";
-  if (!mod) { mod = await importFrom("playwright-core"); if (mod) how = "playwright-core"; }
-  chromium = pickChromium(mod);
+  for (const name of ["playwright", "playwright-core"]) {
+    chromium = pickChromium(await loadPkg(name));
+    if (chromium) { how = name; break; }
+  }
   if (!chromium) return { error: "няма нито playwright, нито playwright-core (npm i -D playwright-core в папката, от която пускаш инструмента)" };
 
   const opts = { headless: true, args: ["--no-sandbox"], ...extra };

@@ -1,0 +1,75 @@
+{
+  "cartelli": {
+    "list": "Cartelli fermo impianto",
+    "listSub": "Gli avvisi da affiggere quando l'ascensore è fermo, dal più recente. Il PDF usa il modello, il logo e i dati societari scelti nelle impostazioni dell'azienda.",
+    "new": "Nuovo cartello",
+    "modifica": "Modifica",
+    "titolo": "Cartello di fermo impianto",
+    "sottotitolo": "Avviso di fermo impianto ascensore",
+    "indietro": "Torna ai cartelli",
+    "empty": "Nessun cartello di fermo impianto.",
+    "emptyHint": "Crea il primo con «Nuovo cartello».",
+    "colonna": {
+      "data": "Data",
+      "luogo": "Indirizzo",
+      "ubicazione": "Ubicazione impianto",
+      "autore": "Creato da"
+    },
+    "campo": {
+      "data": "Data",
+      "indirizzo": "Indirizzo",
+      "citta": "Città",
+      "ubicazione": "Ubicazione impianto",
+      "testo": "Informazione agli utenti"
+    },
+    "hint": {
+      "ubicazione": "Ad esempio: Scala B, ascensore di sinistra.",
+      "testo": "Sul cartello va in maiuscolo, sotto «Informazione agli utenti». Ad esempio: dal 3/11 l'impianto è fermo per lavori di ammodernamento e verrà riattivato il 7/11."
+    },
+    "error": {
+      "dataMancante": "Indica la data del cartello.",
+      "testoMancante": "Scrivi l'informazione per gli utenti."
+    },
+    "modello": "Modello «{titolo}»",
+    "modelloTesto": "Il PDF usa il modello scelto nelle impostazioni dell'azienda, con il logo e i dati societari in alto.",
+    "modelloCambia": "Cambia modello o dati societari",
+    "anteprimaAlt": "Il cartello di fermo impianto come esce nel PDF, modello «{titolo}», con il logo e i dati societari in alto",
+    "mancaLogo": "L'azienda non ha ancora un logo: in alto ci sono solo i dati societari. Il logo lo carica l'amministrazione del portale.",
+    "mancaDati": "Mancano i dati societari: in alto compare solo il nome dell'azienda. Si compilano nelle impostazioni dell'azienda.",
+    "salva": "Salva cartello",
+    "pdf": "Scarica PDF",
+    "apri": "Apri PDF",
+    "creato": "Creato da {name} il {date}",
+    "elimina": {
+      "title": "Elimina cartello",
+      "text": "Il cartello viene eliminato definitivamente. I fogli già stampati restano come sono.",
+      "submit": "Elimina definitivamente"
+    },
+    "flash": {
+      "creato": "Cartello salvato.",
+      "salvato": "Modifiche salvate.",
+      "eliminato": "Cartello eliminato.",
+      "conflitto": "Nel frattempo qualcuno ha modificato questo cartello. Ecco i tuoi dati: controlla e salva di nuovo."
+    },
+    "daScheda": {
+      "titolo": "Dalla scheda dell'impianto",
+      "testo": "Cerca la scheda: indirizzo, città e testo si compilano da soli. Impianto senza scheda? Compila i campi qui sotto.",
+      "cerca": "Matricola, numero impianto o indirizzo",
+      "cercaBtn": "Cerca",
+      "nessuna": "Nessuna scheda trovata: compila il cartello a mano qui sotto.",
+      "altre": "Altre {n} schede: aggiungi una parola alla ricerca.",
+      "apri": "Apri la scheda",
+      "cambia": "Usa un'altra scheda o nessuna",
+      "proposto": "Testo proposto dai lavori indicati nella scheda: controllalo e aggiungi quando l'impianto torna in servizio.",
+      "nonDisponibile": "La scheda scelta non è più disponibile: scegline un'altra o compila senza scheda.",
+      "impianto": "Impianto",
+      "matricola": "Matr. {m}",
+      "numero": "Impianto n. {n}",
+      "senzaNumero": "Scheda senza matricola",
+      "nelCestino": "scheda nel cestino",
+      "collegato": "Compilato dalla scheda: {nome}.",
+      "crea": "Cartello di fermo impianto",
+      "dellaScheda": "Cartelli di fermo impianto"
+    }
+  }
+}

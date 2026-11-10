@@ -10,6 +10,7 @@
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, extname } from "node:path";
+import { isMain } from "../lib/is-main.mjs";
 
 // Оценява едно shell съдържание. Чиста функция — тестваема.
 export function lintShell(src, rel) {
@@ -339,4 +340,4 @@ function runCli() {
   process.exit(findings.some((f) => f.sev === "HIGH") ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) runCli();
+if (isMain(import.meta.url)) runCli();

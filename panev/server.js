@@ -211,11 +211,16 @@ app.use((req, res, next) => {
 //  Старите адреси (servizi, carrello…) получават траен 301 към
 //  съответната нова страница — сайтът 2026 е изцяло нов.
 // ─────────────────────────────────────────────────────────────
-const LEGACY_REDIRECTS = new Map([
-  ['/servizi', '/'], ['/chi-siamo', '/'], ['/brevetto', '/'],
-  ['/faq', '/contatti'], ['/carrello', '/prodotti'], ['/success', '/prodotti'],
-  ['/cookie', '/privacy'], ['/termini', '/condizioni'], ['/en', '/en/'],
-]);
+// Картата е в lib/legacy.js (тествана: test/legacy.test.js) — вкл. адресите на стария Wix сайт
+// (`/product-page/<код>`, `/en/lavora-con-noi`), които търсачките още държат. Серийните котви се
+// четат от генерираната страница с продукти — единственият им източник е site/data/products.mjs.
+const { legacyTarget } = require('./lib/legacy');
+const LEGACY_SERIES = (() => {
+  try {
+    const html = fs.readFileSync(path.join(__dirname, 'prodotti.html'), 'utf8');
+    return [...html.matchAll(/id="serie-([a-z0-9-]+)"/g)].map((m) => m[1]);
+  } catch { return []; }
+})();
 
 app.use((req, res, next) => {
   const p = req.path;
@@ -234,11 +239,11 @@ app.use((req, res, next) => {
 
   const query = req.url.slice(p.length) || '';
   const bare = p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p;
-  const legacyKey = bare.toLowerCase().replace(/\.html$/, '');
-  if (LEGACY_REDIRECTS.has(legacyKey)) {
-    const target = LEGACY_REDIRECTS.get(legacyKey);
-    // Не пренасочвай към самия себе си (напр. /en/ → /en/)
-    if (target !== p) return res.redirect(301, target + query);
+  const target = legacyTarget(bare, LEGACY_SERIES);
+  if (target) {
+    // Не пренасочвай към самия себе си (напр. /en/ → /en/); котвата отива СЛЕД query низа.
+    const [tPath, tHash] = target.split('#');
+    if (tPath !== p) return res.redirect(301, tPath + query + (tHash ? `#${tHash}` : ''));
   }
 
   // Директория с index.html → сервирай индекса директно (без верига редиректи)

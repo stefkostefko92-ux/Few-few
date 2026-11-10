@@ -1,0 +1,17 @@
+<%
+  // Формите на снимките — извън формата на картата (вложена форма няма): една обща за надписа и
+  // изтриването (бутонът носи адреса си — `formaction`) и по една за качването във всеки раздел.
+  // Полетата в разделите са вързани към тях с `form=…`. `ritorno` — накъде се връща страницата без
+  // JavaScript: картата или редакцията ѝ.
+%><div class="allegati-forms" hidden>
+  <form id="allegati-azione" method="post" action="/schede/<%= scheda.id %>/allegati" data-allegati-form>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="ritorno" value="<%= ritorno %>">
+  </form>
+  <% for (const section of sections) { %><form id="carica-<%= section.key %>" method="post" action="/schede/<%= scheda.id %>/allegati" enctype="multipart/form-data" data-allegati-form data-carica="<%= section.key %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="sezione" value="<%= section.key %>">
+    <input type="hidden" name="ritorno" value="<%= ritorno %>">
+  </form>
+  <% } %>
+</div>

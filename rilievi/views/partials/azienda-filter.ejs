@@ -1,0 +1,15 @@
+<%
+  // Филтър по фирма — само за Master. Работи и без JavaScript (GET с бутона „Filtra“).
+  const keepQuery = typeof query !== 'undefined' && query ? query : '';
+%><form class="filter" method="get" action="<%= action %>">
+  <% if (keepQuery) { %><input type="hidden" name="q" value="<%= keepQuery %>"><% } %>
+  <label class="field__label" for="azienda-filter"><%= t('scheda.field.azienda') %></label>
+  <div class="filter__row">
+    <select class="select" id="azienda-filter" name="azienda" data-azienda-filter>
+      <option value=""><%= t('schede.filter.all') %></option>
+      <% for (const azienda of aziende) { %><option value="<%= azienda.id %>"<% if (aziendaFilter === azienda.id) { %> selected<% } %>><%= azienda.name %></option>
+      <% } %>
+    </select>
+    <button class="btn" type="submit"><%= t('schede.filter.apply') %></button>
+  </div>
+</form>

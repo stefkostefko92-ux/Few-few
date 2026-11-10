@@ -1,0 +1,92 @@
+{
+  "requests": {
+    "nav": "Richieste",
+    "title": "Richieste di accesso",
+    "subtitle": "Le aziende che chiedono di entrare nel portale dalla pagina pubblica. Si accettano creando l'azienda e invitando il suo amministratore.",
+    "filter": {
+      "label": "Stato",
+      "NEW": "Nuove",
+      "ACCEPTED": "Accettate",
+      "REJECTED": "Rifiutate",
+      "ALL": "Tutte"
+    },
+    "status": {
+      "NEW": "Nuova",
+      "ACCEPTED": "Accettata",
+      "REJECTED": "Rifiutata"
+    },
+    "empty": {
+      "NEW": "Nessuna richiesta in attesa.",
+      "other": "Nessuna richiesta in questo elenco."
+    },
+    "count": {
+      "one": "1 richiesta",
+      "other": "{n} richieste"
+    },
+    "col": {
+      "company": "Azienda",
+      "name": "Persona",
+      "city": "Città",
+      "teamSize": "Persone",
+      "status": "Stato",
+      "received": "Ricevuta"
+    },
+    "open": "Apri la richiesta di {company}",
+    "back": "Tutte le richieste",
+    "received": "Ricevuta il {at}",
+    "decided": "{status} da {name} il {at}",
+    "decidedNobody": "{status} il {at}",
+    "field": {
+      "name": "Nome e cognome",
+      "company": "Azienda",
+      "email": "Email",
+      "phone": "Telefono",
+      "city": "Città",
+      "teamSize": "Persone che useranno il portale",
+      "message": "Messaggio"
+    },
+    "accept": {
+      "title": "Accetta e invita l'amministratore",
+      "text": "Crea l'azienda (o scegli una già esistente) e manda l'invito alla persona della richiesta. Puoi correggere nome ed email prima di inviare.",
+      "newAzienda": "Nuova azienda",
+      "aziendaName": "Nome della nuova azienda",
+      "existing": "Azienda già esistente",
+      "existingNone": "Nessuna azienda attiva",
+      "role": "Ruolo",
+      "submit": "Crea e invita"
+    },
+    "reject": {
+      "title": "Rifiuta",
+      "text": "La richiesta resta nell'elenco «Rifiutate» e viene cancellata dopo {days} giorni. Al richiedente non viene inviato nulla.",
+      "submit": "Rifiuta la richiesta"
+    },
+    "delete": {
+      "title": "Elimina la richiesta",
+      "text": "Cancella subito i dati della richiesta, per esempio se il richiedente lo chiede. L'azienda e l'invito già creati restano.",
+      "submit": "Elimina definitivamente"
+    },
+    "result": {
+      "azienda": "Azienda",
+      "invite": "Invito",
+      "inviteAccepted": "Accettato: l'account è attivo.",
+      "inviteRevoked": "Revocato.",
+      "inviteExpired": "Scaduto senza essere usato.",
+      "invitePending": "In attesa, valido fino al {at}."
+    },
+    "error": {
+      "decided": "Questa richiesta è già stata decisa.",
+      "userExists": "Esiste già un account con questa email.",
+      "nameTaken": "Esiste già un'azienda con questo nome: sceglila tra quelle esistenti.",
+      "azienda": "Scegli un'azienda attiva.",
+      "roleNotAllowed": "Questo ruolo non si può assegnare con un invito.",
+      "email": "Scrivi un indirizzo email valido.",
+      "name": "Il nome deve avere almeno 2 caratteri.",
+      "aziendaName": "Il nome dell'azienda deve avere almeno 2 caratteri."
+    }
+  },
+  "flash": {
+    "requestRejected": "Richiesta rifiutata.",
+    "requestDeleted": "Richiesta eliminata.",
+    "requestDecided": "Questa richiesta è già stata decisa."
+  }
+}

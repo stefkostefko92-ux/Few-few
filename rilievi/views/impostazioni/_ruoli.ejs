@@ -1,0 +1,44 @@
+<%
+  // Имената и правата на ролите на фирмата (src/auth/permessi.ts). Всяка роля е група: името във
+  // фирмата (празно — това по подразбиране) и, за ролите под администратора, отметките на правата.
+  const values = ruoli.values;
+  const errors = ruoli.errors;
+  const checked = (role, cap) => Array.isArray(values['perm-' + role]) && values['perm-' + role].includes(cap);
+  const capKey = (cap) => 'impostazioni.ruoli.cap.' + cap.replace(':', '_');
+%><section aria-labelledby="h-ruoli">
+  <h2 class="section__title" id="h-ruoli"><%= t('impostazioni.ruoli.title') %></h2>
+  <p class="muted"><%= t('impostazioni.ruoli.text') %></p>
+  <% if (Object.keys(errors).length) { %><div class="errors" role="alert"><h2><%= t('impostazioni.ruoli.errore') %></h2></div><% } %>
+  <form class="form ruoli" method="post" action="/impostazioni/ruoli" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <% ruoliAzienda.forEach((role, i) => {
+         const nomeKey = 'nome-' + role;
+         const nomeErr = errors[nomeKey];
+         const permErr = errors['perm-' + role];
+         const predefinito = t('role.' + role); %>
+    <fieldset class="ruolo" id="r-<%= role %>">
+      <legend class="ruolo__titolo"><span class="secnum" aria-hidden="true"><%= i + 2 %></span><%= predefinito %></legend>
+      <div class="field">
+        <label class="field__label" for="f-<%= nomeKey %>"><%= t('impostazioni.ruoli.nome') %></label>
+        <input class="input" id="f-<%= nomeKey %>" name="<%= nomeKey %>" type="text" maxlength="40" autocomplete="off" placeholder="<%= predefinito %>" value="<%= typeof values[nomeKey] === 'string' ? values[nomeKey] : '' %>" aria-describedby="hint-<%= nomeKey %><%= nomeErr ? ' err-' + nomeKey : '' %>"<% if (nomeErr) { %> aria-invalid="true"<% } %>>
+        <p class="field__hint" id="hint-<%= nomeKey %>"><%= t('impostazioni.ruoli.nomeHint', { nome: predefinito }) %></p>
+        <% if (nomeErr) { %><p class="field__error" id="err-<%= nomeKey %>"><%= t('impostazioni.ruoli.error.' + nomeErr) %></p><% } %>
+      </div>
+      <% if (ruoliConfigurabili.includes(role)) { %>
+      <div class="ruolo__permessi" role="group" aria-label="<%= t('impostazioni.ruoli.permessiDi', { nome: predefinito }) %>">
+        <% for (const cap of capacita) { %><label class="tick tick--sm"><input type="checkbox" name="perm-<%= role %>" value="<%= cap %>"<% if (checked(role, cap)) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t(capKey(cap)) %></span></label>
+        <% } %>
+      </div>
+      <% if (permErr) { %><p class="field__error"><%= t('impostazioni.ruoli.error.' + permErr) %></p><% } %>
+      <% } else { %>
+      <p class="field__hint"><%= t('impostazioni.ruoli.admin') %></p>
+      <% } %>
+    </fieldset>
+    <% }) %>
+    <p class="field__hint"><%= t('impostazioni.ruoli.implica') %></p>
+    <div class="toolbar">
+      <button class="btn btn--primary" type="submit"><%= t('impostazioni.ruoli.save') %></button>
+    </div>
+  </form>
+</section>
