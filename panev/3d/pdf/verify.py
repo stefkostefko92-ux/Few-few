@@ -11,7 +11,8 @@
 - every 3D page carries only its own text and links to the drawing page its label names;
 - the summary pages before the back hold every article of the price list once, each linked to its page
   (summary.check);
-- the outline and the index links still reach the same printed pages;
+- the outline and the index links still reach the same printed pages, the index's right column whole
+  (indice.check);
 - the page labels are PDFDocEncoded."""
 import json
 import os
@@ -19,6 +20,7 @@ import sys
 from collections import Counter
 import numpy as np
 import pymupdf
+import indice as I
 import inline
 import layout as L
 import logo
@@ -74,6 +76,7 @@ for p in inline_pages:
     bar, inner, note = p["panel"]["bar"], p["panel"]["inner"], p["panel"]["note"]
     changed[p["target"] - 1] = [pymupdf.Rect(bar[0], bar[1], bar[2], inner[3] + 11)] + ([pymupdf.Rect(note[0] - 1, note[1] - 1, bar[2], note[3] + 1)] if note else [])
     renders[p["target"] - 1] = [pymupdf.Rect(x, y, x + w, y + h) for x, y, w, h in (sh["rect"] for sh in p["shots"])]
+changed[I.PAGE] = [I.AREA]
 changed[5] = [pymupdf.Rect(r) for _, _, r, _, _ in L.P5] + [pymupdf.Rect(r) for r in L.P5_OLD]
 renders[5] = [pymupdf.Rect(r) for _, _, r, _, _ in L.P5]
 renders[6] = [pymupdf.Rect(r) for _, r in L.P7]
@@ -154,7 +157,8 @@ problems += S.check(new, base, data["summary"])
 for (_, title, pa), (_, tb, pb) in zip(base.get_toc(), new.get_toc()):
     if title != tb or new[pb - 1].get_label() != ("Copertina" if pa == 1 else f"{pa - 1:02d}"):
         problems.append(f"outline {title}: page {pa} -> {pb} ({new[pb - 1].get_label()})")
-for la, lb in zip(base[1].get_links(), new[1].get_links()):
+problems += I.check(new, base, data["index"])
+for la, lb in zip(*([lk for lk in d[1].get_links() if not I.in_column(lk)] for d in (base, new))):  # the right column: indice.check
     if la.get("nameddest") != lb.get("nameddest") or new[lb["page"]].get_label() != f"{la['page']:02d}":
         problems.append(f"index link {la.get('nameddest')}: {la['page']} -> {lb['page']}")
 if "\\302" in new.xref_get_key(new.pdf_catalog(), "PageLabels")[1]:

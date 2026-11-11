@@ -3,7 +3,7 @@
 export default {
   privacyPage: {
     title: 'Privacy notice',
-    updated: 'Last updated: July 2026',
+    updated: 'Last updated: November 2026',
     intro: 'Notice provided under Articles 13–14 of Regulation (EU) 2016/679 (“GDPR”) for users of panevascensori.it.',
     sections: [
       {
@@ -20,7 +20,7 @@ export default {
       },
       {
         h: 'Retention',
-        p: 'Messages are kept for a maximum of 24 months from the enquiry; in case of an order, commercial and tax documentation is kept for the statutory periods (10 years).',
+        p: 'Messages are kept for a maximum of 24 months from the enquiry; the IP address recorded with a message is deleted after 30 days; in case of an order, commercial and tax documentation is kept for the statutory periods (10 years).',
       },
       {
         h: 'Recipients',

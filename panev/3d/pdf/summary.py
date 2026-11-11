@@ -35,6 +35,8 @@ TW = (X1 - X0 - (COLS - 1) * GX) / COLS
 TH = TW * 0.75
 TOP, BAR, BAR_GAP, ROW_GAP, GROUP_GAP = 107.0, 17.3, 6.0, 7.0, 12.0
 NOTE = (X0, 534.0, X1, 558.0)
+# Where a page has room under its last row: how to read its codes, the prefixes' lines of the code legend (printed 11), linked to it.
+LEGEND_PAGE, LEG_GAP, LEG_HEAD, LEG_ROW = 11, 14.0, 21.0, 13.5
 HEAD = pymupdf.Rect(705, 10, 812, 30)  # the header bar's icon and label ("LISTINO PREZZI")
 SIDE = pymupdf.Rect(819, 247, 841.9, 351)  # the side tab
 # The side tab instead: the code index page's (printed 64), whose "CODICI" is as long as "GAMMA", with its soft shadow.
@@ -57,6 +59,20 @@ def describe(item, doc):
     return text if item["page"] in NO_THICKNESS else f"{text} · sp. {item['t']} mm"
 
 
+def prefixes(doc):
+    """The code legend page's prefixes and their lines: {"A": "Piastra di fissaggio ...", ...}, and its lead."""
+    page, chips, lines = doc[LEGEND_PAGE], [], []
+    for b in page.get_text("dict", clip=pymupdf.Rect(400, 140, 815, 420))["blocks"]:
+        for line in b.get("lines", []):
+            s = line["spans"]
+            (chips if s[0]["bbox"][0] < 470 else lines).append((s[0]["origin"][1], "".join(x["text"] for x in s).strip()))
+    out = {k: min(lines, key=lambda t: abs(t[0] - y - 3))[1] for y, k in chips}
+    lead = next(t for t in page.get_text("text").split("\n") if t.startswith("Ogni codice"))
+    if len(out) != 8 or not all(v.endswith(".") for v in out.values()):
+        raise SystemExit(f"summary: the code legend reads {out}")
+    return out, lead
+
+
 def build(base_pdf):
     """The summary pages: label, title and groups, each with its bar and its tiles (code, render, description,
     printed page, rect (x, y, w, h), indicative?)."""
@@ -70,7 +86,7 @@ def build(base_pdf):
         groups.append((title, sub, list(rows.values())))
     if sum(len(r) for _, _, rows in groups for r in rows) != len(items) or any(len(r) > COLS for _, _, rows in groups for r in rows):
         raise SystemExit("summary: an article in no group, or a row longer than the grid")
-    out = []
+    out, (legend, lead) = [], prefixes(doc)
     for n, which in enumerate(SPLIT):
         y, placed = TOP, []
         for title, sub, rows in (groups[g] for g in which):
@@ -84,7 +100,12 @@ def build(base_pdf):
             y += GROUP_GAP - ROW_GAP
         if y - GROUP_GAP > NOTE[1] - 4:
             raise SystemExit(f"summary: page {n + 1} runs into its note")
-        out.append(dict(label=f"{doc.page_count - 1 + n:02d}", title=TITLE if n == 0 else f"{TITLE} (segue)", groups=placed))
+        keys = list(dict.fromkeys(t["code"].split()[0] for g in placed for t in g["tiles"]))
+        top = y - GROUP_GAP + LEG_GAP
+        box = (X0, top, X1, top + LEG_HEAD + LEG_ROW * len(keys) + 5)
+        fits = box[3] <= NOTE[1] - 10
+        out.append(dict(label=f"{doc.page_count - 1 + n:02d}", title=TITLE if n == 0 else f"{TITLE} (segue)", groups=placed,
+                        legend=dict(rect=box, lead=lead, rows=[(k, legend[k]) for k in keys]) if fits else None))
     return out
 
 
@@ -102,7 +123,7 @@ CSS = """
 .gbar .s { font-size: 5.85pt; font-weight: 500; color: #b7c4d6; white-space: nowrap; }
 .sum .tags { left: 5pt; top: 5pt; right: 5pt; flex-direction: column; align-items: flex-start; gap: 2.2pt; }
 .sum .tags .ds { display: flex; flex-wrap: wrap; gap: 2.2pt; }
-.sum .tags span, .sum .pg, .sum .ind { font-size: 5.4pt; padding: 2pt 4pt 1.8pt; }
+.sum .tags span, .sum .pg, .sum .ind { font-size: 6pt; padding: 2.2pt 4.4pt 2pt; }
 .sum .pg, .sum .ind { position: absolute; bottom: 5pt; border-radius: 2.5pt; line-height: 1.15; white-space: nowrap; }
 .sum .pg { right: 5pt; background: rgba(255, 255, 255, 0.88); color: #162862; font-weight: 700; }
 .sum .ind { left: 5pt; background: rgba(99, 99, 95, 0.9); color: #fff; font-weight: 600; }
@@ -110,6 +131,14 @@ CSS = """
   font-size: 6.38pt; color: #1b2733; }
 .sum-note b { font-weight: 700; color: #162862; }
 .sum-note svg { width: 11pt; height: 11pt; flex: none; }
+.sum-legend { background: #f4f6f9; border: 0.75pt solid #e2e6ea; border-radius: 4pt; padding: 0 12pt; }
+.sum-legend .lh { display: flex; align-items: baseline; gap: 10pt; height: 21pt; padding-top: 7.5pt; white-space: nowrap; }
+.sum-legend .k { font-size: 6.38pt; font-weight: 700; letter-spacing: 0.16em; color: #162862; text-transform: uppercase; }
+.sum-legend .l { font-size: 6.6pt; color: #5a6875; flex: 1; }
+.sum-legend .go { font-size: 6.38pt; font-weight: 700; color: #162862; }
+.sum-legend .lr { display: flex; align-items: center; gap: 10pt; height: 13.5pt; font-size: 6.75pt; color: #1b2733; white-space: nowrap; }
+.sum-legend .chip { width: 30pt; height: 10pt; border-radius: 2pt; background: #162862; color: #fff; font-size: 5.6pt; font-weight: 700; display: flex;
+  align-items: center; justify-content: center; letter-spacing: 0.03em; }
 """
 ICON = ('<svg viewBox="0 0 11.34 12.75" fill="none" stroke="#9fb0cc" stroke-width="1.346" stroke-linecap="round" stroke-linejoin="round">'
         '<path d="M5.67 0 11.34 3.18v6.38L5.67 12.75 0 9.57V3.18zM5.67 6.37l5.67-3.19M5.67 6.37v6.38M5.67 6.37 0 3.18"/></svg>')
@@ -129,6 +158,11 @@ def sheet(p, img, count, cube):
             chips = "".join(f'<span class="d">{escape(part)}</span>' for part in t["desc"].split(" · "))  # each whole on a line
             body += (f'<div class="abs shot" style="{pos((x, y, x + w, y + h))}"><img src="{img(t["render"])}" alt="">'
                      f'<div class="tags"><span class="c">{escape(t["code"])}</span><div class="ds">{chips}</div></div>{extra}<span class="pg">p. {t["page"]}</span></div>')
+    leg = p["legend"]
+    if leg:
+        rows = "".join(f'<div class="lr"><span class="chip">{escape(k)}</span><span>{escape(t)}</span></div>' for k, t in leg["rows"])
+        body += (f'<div class="abs sum-legend" style="{pos(leg["rect"])}"><div class="lh"><span class="k">Come leggere i codici</span>'
+                 f'<span class="l">{escape(leg["lead"])}</span><span class="go">Legenda completa · pag. {LEGEND_PAGE}</span></div>{rows}</div>')
     lead = (f"Tutti i {count} articoli a catalogo, raggruppati come nel listino, con la pagina in cui sono illustrati. "
             "Nella versione digitale (PDF) tocca un articolo per aprire direttamente la sua pagina.")
     return (
@@ -177,6 +211,8 @@ def insert(doc, tpl, gen, data, order, body, pageno):
         for t in (t for g in p["groups"] for t in g["tiles"]):
             x, y, w, h = t["rect"]
             doc[at + k].insert_link({"kind": pymupdf.LINK_GOTO, "from": pymupdf.Rect(x, y, x + w, y + h), "page": order.index(t["page"]), "to": pymupdf.Point(0, 0)})
+        if p["legend"]:
+            doc[at + k].insert_link({"kind": pymupdf.LINK_GOTO, "from": pymupdf.Rect(p["legend"]["rect"]), "page": order.index(LEGEND_PAGE), "to": pymupdf.Point(0, 0)})
     toc = doc.get_toc(simple=False)
     doc.set_toc(toc + [[1, OUTLINE, at + 1, {"kind": pymupdf.LINK_GOTO, "page": at, "to": pymupdf.Point(0, 0)}]])
 
@@ -184,7 +220,8 @@ def insert(doc, tpl, gen, data, order, body, pageno):
 def check(doc, base, data):
     """verify.py's checks of the summary pages: each right before the back with its label, the price list's bar
     titles and subtitles, its codes and pages on their tiles and nothing of the page it copies; a link per tile
-    to the page labelled with the tile's page; every code of the price list exactly once; the outline entry."""
+    to the page labelled with the tile's page; the legend, where there is one, as on the code legend page and linked
+    to it; every code of the price list exactly once; the outline entry."""
     flat = lambda t: "".join(t.split()).upper()
     problems, codes = [], []
     listino = flat(base[TEMPLATE].get_text())
@@ -200,8 +237,16 @@ def check(doc, base, data):
             if any(flat(s) not in text or flat(s) not in listino for s in (g["title"], g["sub"])):
                 problems.append(f"page {page.number + 1}: bar {g['title']} / {g['sub']}")
         tiles = [t for g in p["groups"] for t in g["tiles"]]
-        if len(links) != len(tiles):
-            problems.append(f"page {page.number + 1}: {len(links)} links for {len(tiles)} articles")
+        leg = p["legend"]
+        if len(links) != len(tiles) + bool(leg):
+            problems.append(f"page {page.number + 1}: {len(links)} links for {len(tiles)} articles{' and the legend' if leg else ''}")
+        if leg:
+            r = pymupdf.Rect(leg["rect"])
+            want = flat("Come leggere i codici" + leg["lead"] + f"Legenda completa · pag. {LEGEND_PAGE}" + "".join(k + t for k, t in leg["rows"]))
+            hit = [lk for lk in links if abs(lk["from"].y0 - r.y0) < 0.5]
+            legend_page = flat(base[LEGEND_PAGE].get_text())
+            if flat(page.get_text(clip=r)) != want or any(flat(t) not in legend_page for _, t in leg["rows"]) or len(hit) != 1 or doc[hit[0]["page"]].get_label() != f"{LEGEND_PAGE:02d}":
+                problems.append(f"page {page.number + 1}: the legend reads {flat(page.get_text(clip=r))}")
         for t in tiles:
             codes.append(t["code"])
             x, y, w, h = t["rect"]

@@ -45,8 +45,17 @@ function organizationLd(t) {
     '@type': 'Organization',
     '@id': `${ORIGIN}/#organization`,
     name: COMPANY.name,
+    legalName: COMPANY.name,
     url: `${ORIGIN}/`,
-    logo: `${ORIGIN}/img/panev-logo.png`,
+    logo: { '@type': 'ImageObject', url: `${ORIGIN}/img/panev-logo.png`, width: 640, height: 130 },
+    image: `${ORIGIN}${versioned('img/og-panev.jpg')}`,
+    areaServed: ['IT', 'EU'],
+    // Седалището е адресът; производството е в Cornaredo (без пощенски код — не е в данните).
+    location: {
+      '@type': 'Place',
+      name: t.contactsPage.rows.operative,
+      address: { '@type': 'PostalAddress', streetAddress: 'Via Milano 7', addressLocality: 'Cornaredo', addressRegion: 'MI', addressCountry: 'IT' },
+    },
     email: COMPANY.email,
     telephone: COMPANY.phone,
     vatID: COMPANY.vat,
@@ -76,13 +85,21 @@ function organizationLd(t) {
   };
 }
 
-export function jsonLd(t, pageKey, extra = []) {
+// Името на страница в пътеката (видима и в JSON-LD): изрично, не от заглавието, което се сменя за SEO.
+export function crumbName(t, pageKey) {
+  const named = { home: t.nav.home, products: t.nav.products, catalog: t.nav.catalog, contacts: t.nav.contacts,
+    viewer3d: t.nav.viewer3d, privacy: t.meta.privacy.title.split('—')[0].trim(), terms: t.termsPage.title };
+  return named[pageKey] ?? t.families[pageKey].crumb;
+}
+
+// parents: ключовете на страниците между началната и тази (страница на семейство → ['products']).
+export function jsonLd(t, pageKey, extra = [], parents = []) {
+  const url = `${ORIGIN}${pagePath(t, pageKey)}`;
+  const trail = ['home', ...parents, pageKey];
   const breadcrumb = pageKey === 'home' ? [] : [{
     '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: t.nav.home, item: `${ORIGIN}${pagePath(t, 'home')}` },
-      { '@type': 'ListItem', position: 2, name: t.meta[pageKey].title.split(/[—|]/)[0].trim(), item: `${ORIGIN}${pagePath(t, pageKey)}` },
-    ],
+    '@id': `${url}#breadcrumb`,
+    itemListElement: trail.map((key, i) => ({ '@type': 'ListItem', position: i + 1, name: crumbName(t, key), item: `${ORIGIN}${pagePath(t, key)}` })),
   }];
   const graph = [
     organizationLd(t),
@@ -92,16 +109,19 @@ export function jsonLd(t, pageKey, extra = []) {
       '@id': `${ORIGIN}/#website`,
       url: `${ORIGIN}/`,
       name: COMPANY.name,
-      inLanguage: t.htmlLang,
+      inLanguage: ['it', 'en', 'bg'],
       publisher: { '@id': `${ORIGIN}/#organization` },
     },
     {
       '@type': 'WebPage',
-      url: `${ORIGIN}${pagePath(t, pageKey)}`,
+      '@id': `${url}#webpage`,
+      url,
       name: t.meta[pageKey].title,
       description: t.meta[pageKey].description,
       inLanguage: t.htmlLang,
       isPartOf: { '@id': `${ORIGIN}/#website` },
+      about: { '@id': `${ORIGIN}/#organization` },
+      ...(breadcrumb.length ? { breadcrumb: { '@id': `${url}#breadcrumb` } } : {}),
     },
     ...extra,
   ];
@@ -110,8 +130,8 @@ export function jsonLd(t, pageKey, extra = []) {
 
 // styles/htmlAttrs/viewport: 3D страниците (viewer.mjs) идват със собствен стил и данни.
 export function head(t, locales, pageKey, {
-  ldExtra = [], ogImage = versioned('img/og-panev.jpg'), htmlAttrs = '',
-  viewport = 'width=device-width, initial-scale=1', styles = '<link rel="stylesheet" href="/css/site.css">',
+  ldExtra = [], ogImage = versioned('img/og-panev.jpg'), htmlAttrs = '', parents = [],
+  viewport = 'width=device-width, initial-scale=1', styles = `<link rel="stylesheet" href="${versioned('css/site.css')}">`,
 } = {}) {
   const m = t.meta[pageKey];
   const canonical = `${ORIGIN}${pagePath(t, pageKey)}`;
@@ -124,16 +144,21 @@ export function head(t, locales, pageKey, {
   <meta name="description" content="${esc(m.description)}">
   <meta name="keywords" content="${esc(m.keywords.join(', '))}">
   <meta name="author" content="${esc(COMPANY.name)}">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
   <meta name="theme-color" content="#162862">
   <link rel="canonical" href="${canonical}">
 ${hreflangLinks(locales, pageKey)}
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="${esc(COMPANY.name)}">
   <meta property="og:locale" content="${t.ogLocale}">
+${locales.filter((lt) => lt.lang !== t.lang).map((lt) => `  <meta property="og:locale:alternate" content="${lt.ogLocale}">`).join('\n')}
   <meta property="og:title" content="${esc(m.title)}">
   <meta property="og:description" content="${esc(m.description)}">
   <meta property="og:url" content="${canonical}">
   <meta property="og:image" content="${ORIGIN}${ogImage}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="${esc(m.title)}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${esc(m.title)}">
   <meta name="twitter:description" content="${esc(m.description)}">
@@ -144,7 +169,7 @@ ${hreflangLinks(locales, pageKey)}
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preload" href="/fonts/Inter-var-${t.lang === 'bg' ? 'cyrillic' : 'latin'}.woff2" as="font" type="font/woff2" crossorigin>
   ${styles}
-  ${jsonLd(t, pageKey, ldExtra)}
+  ${jsonLd(t, pageKey, ldExtra, parents)}
 </head>`;
 }
 
@@ -213,13 +238,10 @@ export function orderDrawer(t) {
 export function footer(t, locales, pageKey) {
   const f = t.footer;
   const year = 2026;
-  const prodHref = pagePath(t, 'products');
-  const prodLinks = [
-    [f.productLinks[0], `${prodHref}#sezione-01`],
-    [f.productLinks[1], `${prodHref}#sezione-02`],
-    [f.productLinks[2], `${prodHref}#sezione-05`],
-    [f.productLinks[3], `${prodHref}#sezione-06`],
-  ].map(([label, href]) => `<li><a href="${href}">${esc(label)}</a></li>`).join('');
+  // Към страниците по семейства (по една за всяко търсене), после листата и каталогът.
+  const prodLinks = ['famDoors', 'famGuides', 'famSg', 'famSpecial']
+    .map((key, i) => `<li><a href="${pagePath(t, key)}">${esc(f.productLinks[i])}</a></li>`).join('')
+    + `<li><a href="${pagePath(t, 'products')}">${esc(t.nav.products)}</a></li>`;
 
   return `</main>
 ${orderDrawer(t)}
@@ -263,7 +285,7 @@ ${orderDrawer(t)}
     <p>Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
   </div>
 </footer>
-<script src="/js/site.js" defer></script>
+<script src="${versioned('js/site.js')}" defer></script>
 <script type="application/json" id="i18n-order">${jsonEmbed({
     mailto: COMPANY.email,
     subject: t.orderList.mailSubject,

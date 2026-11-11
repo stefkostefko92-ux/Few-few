@@ -1,4 +1,4 @@
-// Italiano — Страниците „Каталог“ и „Контакти“.
+// Italiano — Страниците “Каталог” и “Контакти”.
 
 export default {
   catalogPage: {

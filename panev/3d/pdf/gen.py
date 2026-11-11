@@ -1,8 +1,9 @@
 """Builds the "Vista 3D" pages of the catalogue as HTML (print.mjs prints them, merge.py puts them into
 the catalogue): the renders over every product page's drawing card (one page of its own after the rigid
-arm), the overlays of pages 6 and 7, and the summary pages of the whole range (summary.py).
+arm), the overlays of pages 6 and 7, the summary pages of the whole range (summary.py) and the index's
+right column (indice.py).
 Writes dist/pdf/: base.pdf (the catalogue before the 3D pages), img/*.jpg, sheets.html (the sheets, the page-7
-overlay, the intellectual property stamps, the summary), spec.json.
+overlay, the intellectual property stamps, the summary, the index), spec.json.
 Renders: lossless PNG from dist/renders* when present, else the committed WebP in renders/."""
 import json
 import math
@@ -11,6 +12,7 @@ import subprocess
 from html import escape
 from PIL import Image
 import layout as L
+import indice as I
 import summary as S
 
 OUT = os.path.join(L.PKG, "dist", "pdf")
@@ -38,6 +40,7 @@ def source(name, catalogue=False):
 ASSEMBLIES = sorted({os.path.splitext(n)[0] for d in ("dist/renders", "renders") if os.path.isdir(os.path.join(L.PKG, d)) for n in os.listdir(os.path.join(L.PKG, d)) if "+" in n})
 pages = L.build(BASE, ASSEMBLIES)
 summary = S.build(BASE)
+index = I.build(BASE, summary[0]["label"], S.OUTLINE)
 
 # Placed width of every image (the widest placement wins), then one JPEG per image.
 placed = {}
@@ -121,7 +124,7 @@ html, body {{ margin: 0; padding: 0; background: transparent; }}
 .ip {{ position: absolute; right: 3pt; bottom: 3pt; width: {IP_BOX[0]}pt; height: {IP_BOX[1]}pt; display: flex; align-items: center; justify-content: center;
   border-radius: 2pt; background: rgba(255, 255, 255, 0.82); font-size: 5.6pt; font-weight: 500; letter-spacing: 0.02em; color: #667298; white-space: nowrap; }}
 .foot {{ top: 578.9pt; font-size: 6.38pt; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; white-space: nowrap; }}
-""" + S.CSS
+""" + S.CSS + I.CSS
 CUBE = ('<svg viewBox="0 0 24 24" fill="none" stroke="#162862" stroke-width="1.6" stroke-linejoin="round">'
         '<path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4z"/><path d="M3.5 7.4 12 12l8.5-4.6M12 12v9.2"/></svg>')
 
@@ -190,13 +193,14 @@ def stamps():
 
 articles = sum(len(g["tiles"]) for p in summary for g in p["groups"])
 ending = "".join(S.sheet(p, lambda r: files[(r, False)], articles, CUBE) for p in summary)
-html = f'<!doctype html><html lang="it"><head><meta charset="utf-8"><style>{CSS}</style></head><body>{"".join(sheet_inline(p) if p["mode"] == "inline" else sheet(p) for p in pages)}{sheet_p06()}{sheet_p05()}{stamps()}{ending}</body></html>'
+html = f'<!doctype html><html lang="it"><head><meta charset="utf-8"><style>{CSS}</style></head><body>{"".join(sheet_inline(p) if p["mode"] == "inline" else sheet(p) for p in pages)}{sheet_p06()}{sheet_p05()}{stamps()}{ending}{I.sheet(index)}</body></html>'
 with open(os.path.join(OUT, "sheets.html"), "w") as f:
     f.write(html)
 with open(os.path.join(OUT, "spec.json"), "w") as f:
-    # gen.pdf: the sheets in the order of `pages`, then page 7's renders, page 6's, the stamps, the summary.
+    # gen.pdf: the sheets in the order of `pages`, then page 7's renders, page 6's, the stamps, the summary, the index.
     json.dump(dict(pages=pages, p06=len(pages), p05=len(pages) + 1, stamps={k: [len(pages) + 2 + n, r] for k, (n, r, _) in STAMPS.items()},
-                   summary=dict(first=len(pages) + 2 + len(STAMPS), pages=summary)), f, ensure_ascii=False, indent=1)
+                   summary=dict(first=len(pages) + 2 + len(STAMPS), pages=summary),
+                   index=dict(index, pno=len(pages) + 2 + len(STAMPS) + len(summary))), f, ensure_ascii=False, indent=1)
 size = sum(os.path.getsize(os.path.join(OUT, v)) for v in files.values())
 inline = sum(p["mode"] == "inline" for p in pages)
 print(f"{inline} product pages with renders, {len(pages) - inline} 3D pages, pages 6 and 7, {len(STAMPS)} stamps, {len(summary)} summary pages "
