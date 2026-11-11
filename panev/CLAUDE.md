@@ -45,7 +45,10 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
 - **Дизайн:** само каталожната палитра (`#162862`, `#1d3271`, `#f4f6f9`,
   `#e2e6ea`, `#667298`, `#878786`) + студийното сиво на рендерите (`#cfd2d5`, фонът на сцената);
   Inter variable self-hosted (latin + cyrillic в `fonts/Inter-var-*.woff2`); без емоджита и
-  декоративни SVG. Сенките са леки, картите не подскачат при посочване.
+  декоративни SVG. Сенките са леки, картите не подскачат при посочване. Приглушеният текст е
+  `--muted: #5a6690` (каталожното `#667298` е 4,38:1 върху `--tint`, под WCAG AA); axe-core
+  (WCAG 2.2 AA + best-practice) е чист на всички шаблони — дръж го така.
+- **CSP:** домейните на Stripe се разрешават само при `PAYMENTS_ENABLED=true` (`server.js`).
 - **Лого:** оригиналът на собственика е `img/brand/panev-ascensori-logo.webp` (прозрачен фон).
   - `cd 3d && npm run logo` прави `img/panev-logo.png` (640 px, логото в JSON-LD),
     `panev-logo{,-360,-180}.webp` и `img/og-panev.jpg` (картинката за споделяне на страниците без 3D).
