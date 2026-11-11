@@ -14,11 +14,10 @@ export function homePage(t, locales) {
     `<div class="stat"><strong>${esc(s.value)}</strong><span>${esc(s.label)}</span></div>`
   ).join('');
 
-  const apps = t.applications.items.map((a, i) => `
+  const apps = t.applications.items.map((a) => `
     <article class="app-card">
       ${render3d(a.img, a.title, { sizes: '(max-width: 860px) 100vw, 380px' })}
       <div class="app-body">
-        <p class="app-num">0${i + 1}</p>
         <h3>${esc(a.title)}</h3>
         <p>${esc(a.body)}</p>
       </div>
@@ -90,11 +89,11 @@ ${viewerSection(t)}
       <p class="tools-label">${esc(t.problem.toolsLabel)}</p>
       <div class="chips">${t.problem.tools.map((x) => `<span class="chip">${esc(x)}</span>`).join('')}</div>
     </div>
-    <aside class="highlight-card">
+    <div class="highlight-card">
       <h3>${esc(t.problem.highlight)}</h3>
       <p>${esc(t.problem.highlightBody)}</p>
       ${render3d('a-37-170-2_b-37-320', t.problem.highlight, { sizes: '(max-width: 860px) 100vw, 440px' })}
-    </aside>
+    </div>
   </div>
 </section>
 ${cantiereSection(t, 'home')}
