@@ -7,6 +7,7 @@
 публични. Без тайни/лични данни.
 
 ## Проверени поуки (verified)
+- **2026-11-11:** Подмяната на етажни врати е modifica costruttiva по DPR 162/1999 (първоначален текст) чл. 2, ал. 1, б. i), т. 5 и води до извънредна проверка по чл. 14; планки и конзоли не са в All. IV, затова нямат CE и се оценяват в асансьора _(аксесоари от трета страна за водачи и етажни врати; verified; research/norme-ascensori/leggi/dpr-162-1999.md:67)_
 - **2026-11-04:** DPR 162/1999 Capo II art. 15 c. 4 — manutentore almeno ogni 6 mesi (ascensori) / ogni anno (montacarichi) verifica paracadute, limitatore, funi e attacchi, isolamento e terra; annota nel libretto _(cita della verifica semestrale nei moduli di intervento e manutenzione; verified; research/norme-ascensori/leggi/dpr-162-1999.md:296)_
 - **2026-11-04:** Processo — rilievi/src/argano/calcolo.ts usa il metodo C1·C2 dell'RT-E MOD (EN 81-1:1985) con β fisso 1,83 rad nella formula di f per funi nuove; in audit confrontare f e S_f con UNI EN 81-50:2020 5.11/5.12, non con il golden Excel _(audit del calcolo argano di Rilievi Impianti; verified; rilievi/src/argano/calcolo.ts:17 (BETA) + tests/argano-rt.json caso C (f 0,194))_
 - **2026-10-24 (пресверена 2026-11-02):** Codice PI (DM 3/8/2015, текст в сила от 1/1/2023) V.3.3.2 т.2 — шахта SB: огнеустойчивост като на обслужваните отсеци и поне 30; V.3.3.4 т.3 — шахта SD: като отсеците и поне 60 _(шахта на асансьор в дейност по Codice PI; verified; https://www.unipr.it/sites/default/files/2023-11/DM_03_08_2015_Codice_Prevenzione_Incendi.pdf)_
