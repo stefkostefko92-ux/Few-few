@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 440
+        "lessons": 442
       },
       "evolution": [
         {
@@ -621,9 +621,20 @@
           "date": "2026-11-11",
           "event": "v39.3 — учене",
           "detail": "Научи: anthropics/skills @2c5958ecac7c няма NOTICE файл; кореновият THIRD_PARTY_NOTICES.md пок… (+8 още)"
+        },
+        {
+          "version": "39.5.0",
+          "date": "2026-11-11",
+          "event": "v39.5 — учене",
+          "detail": "Научи: ПОПРАВКА на записа от 2026-07-24 — чл. 2250 ал. 7 c.c. (данните на дружеството в „spazi… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „ПОПРАВКА на записа от 2026-07-24 — чл. 2250 ал. 7 c.c. (данните на дружеството в „spazi…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-11",
           "type": "learning",
