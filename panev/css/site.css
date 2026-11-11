@@ -446,18 +446,13 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
   padding: 1.5rem 1.6rem; box-shadow: var(--shadow); position: sticky; top: 92px;
 }
 .catalog-toc ol {
-  padding-left: 0; list-style: none; margin: 0 0 1.2rem; counter-reset: toc;
+  padding-left: 0; list-style: none; margin: 0 0 1.2rem;
 }
 .catalog-toc li {
   padding: .55rem 0; border-bottom: 1px solid var(--line);
   font-size: .92rem; font-weight: 600; color: var(--navy);
-  counter-increment: toc; display: flex; align-items: baseline; gap: .7rem;
 }
-.catalog-toc li::before {
-  content: counter(toc, decimal-leading-zero);
-  font-size: .74rem; font-weight: 700; letter-spacing: .06em;
-  color: var(--steel);
-}
+/* Номерът на секцията е в самия текст („01 · …“), като в каталога — без втори брояч. */
 .catalog-toc li:last-child { border-bottom: 0; }
 .catalog-toc .btn { width: 100%; text-align: center; }
 .preview-strip {
