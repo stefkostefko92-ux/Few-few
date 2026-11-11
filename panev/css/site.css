@@ -56,7 +56,7 @@
   --flag-green: #008c45;
   --flag-red: #cd212a;
   --radius: 10px;
-  --shadow: 0 1px 2px rgba(22, 40, 98, .06), 0 8px 28px rgba(22, 40, 98, .08);
+  --shadow: 0 1px 2px rgba(22, 40, 98, .05), 0 6px 18px rgba(22, 40, 98, .06);
   --wrap: 1160px;
   --dur: .25s;
 }
@@ -317,21 +317,11 @@ p { margin: 0 0 1em; }
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
   overflow: hidden; text-decoration: none; color: inherit; box-shadow: var(--shadow);
   display: flex; flex-direction: column; position: relative;
-  transition: border-color var(--dur), transform var(--dur), box-shadow var(--dur);
+  transition: border-color var(--dur);
 }
-.fam-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: var(--navy-2); transform: scaleX(0); transform-origin: left;
-  transition: transform var(--dur);
-}
-.fam-card:hover {
-  border-color: var(--navy-2); transform: translateY(-4px);
-  box-shadow: 0 4px 10px rgba(22, 40, 98, .1), 0 18px 34px rgba(22, 40, 98, .14);
-}
-.fam-card:hover::before { transform: scaleX(1); }
+.fam-card:hover, .fam-card:focus-visible { border-color: var(--navy-2); }
 .fam-card picture { aspect-ratio: 4 / 3; background: #fff; border-bottom: 1px solid var(--line); overflow: hidden; }
-.fam-card img { object-fit: contain; width: 100%; height: 100%; padding: 10px; transition: transform var(--dur) ease; }
-.fam-card:hover img { transform: scale(1.035); }
+.fam-card img { object-fit: contain; width: 100%; height: 100%; padding: 10px; }
 .fam-body { padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: .2rem; flex: 1; }
 .fam-body h3 { transition: color var(--dur); }
 .fam-card:hover .fam-body h3 { color: var(--navy-2); }
@@ -367,9 +357,7 @@ p { margin: 0 0 1em; }
 .step {
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
   padding: 1.4rem 1.4rem 1rem; box-shadow: var(--shadow); position: relative;
-  transition: box-shadow var(--dur), transform var(--dur);
 }
-.step:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(22, 40, 98, .08), 0 16px 30px rgba(22, 40, 98, .1); }
 .step-num {
   font-size: 2.6rem; font-weight: 800; color: var(--card); line-height: 1;
   margin: 0 0 .5rem; padding-bottom: .5rem;
@@ -596,12 +584,6 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
   color: rgba(255, 255, 255, .55);
 }
 .footer-bottom a { color: rgba(255, 255, 255, .75); text-decoration: underline; }
-
-/* ── Появяване при скрол (изключено при reduced-motion) ── */
-@media (prefers-reduced-motion: no-preference) {
-  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
-  .reveal.is-visible { opacity: 1; transform: none; }
-}
 
 /* ── Отзивчивост ── */
 @media (max-width: 1020px) {
