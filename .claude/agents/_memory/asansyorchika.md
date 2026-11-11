@@ -7,6 +7,7 @@
 публични. Без тайни/лични данни.
 
 ## Проверени поуки (verified)
+- **2026-11-11:** Подмяната на етажни врати е modifica costruttiva по DPR 162/1999 (първоначален текст) чл. 2, ал. 1, б. i), т. 5 и води до извънредна проверка по чл. 14; планки и конзоли не са в All. IV, затова нямат CE и се оценяват в асансьора _(аксесоари от трета страна за водачи и етажни врати; verified; research/norme-ascensori/leggi/dpr-162-1999.md:67)_
 - **2026-11-11:** DPR 162/1999 (текст 1999) чл. 2 ал. 1 б. i) т. 5 не изброява поименно въжетата и тирантите; основата за подмяна на износени въжета като поддръжка е чл. 15 ал. 5 (износени части) с ал. 4 б. b) и d) (запис в libretto) — тълкуване, решава органът _(оферти за подмяна на въжета на съществуващ асансьор; текстът от 1999, без DPR 23/2017; verified; research/norme-ascensori/leggi/dpr-162-1999.md:67-71 и :296-302)_
 - **2026-11-11:** DPR 162/1999 прил. VI 4 (1,25 × номиналния товар, ход празен и с пълен товар) е окончателният преглед на нов асансьор с CE, не изпитване при поддръжка _(ред „prove e collaudo“ в оферта за поддръжка; verified; research/norme-ascensori/leggi/dpr-162-1999.md:609-616)_
 - **2026-11-04:** DPR 162/1999 Capo II art. 15 c. 4 — manutentore almeno ogni 6 mesi (ascensori) / ogni anno (montacarichi) verifica paracadute, limitatore, funi e attacchi, isolamento e terra; annota nel libretto _(cita della verifica semestrale nei moduli di intervento e manutenzione; verified; research/norme-ascensori/leggi/dpr-162-1999.md:296)_
