@@ -149,6 +149,8 @@ test("договорите с харнеса: ред от changelog-а, койт
   }
   assert.ok(touchedContracts("Changed hook additionalContext limit to 20,000 characters", contracts).includes("additional-context-10k"));
   assert.ok(touchedContracts("Fixed skills not preloading into subagents", contracts).includes("skills-preload-subagent"));
+  // Boris Cherny, 30.03.2026: -p и SDK ще минат на --bare по подразбиране → live-run губи куките.
+  assert.ok(touchedContracts("Changed `claude -p` to default to --bare mode", contracts).includes("print-mode-loads-hooks"));
   assert.deepEqual(touchedContracts("[VSCode] Added syntax coloring to code blocks", contracts), []);
   // Шум от 2.1.317–2.1.319 (08.11.2026): 41 от 53 удара бяха поднизове („ws“ в shows/AWS, „timeout“, „compaction“ …).
   for (const noise of [

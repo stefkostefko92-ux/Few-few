@@ -411,6 +411,27 @@
       "relies": [
         ".claude/settings.json"
       ]
+    },
+    {
+      "id": "print-mode-loads-hooks",
+      "claim": "claude -p без --bare зарежда куките от settings, CLAUDE.md и агентите; --bare ги пропуска (CLI 2.1.322 --help). Boris Cherny (30.03.2026) обяви, че по-късна версия ще направи --bare подразбиране за -p и SDK — тогава live-run (жив гейт, pr-review) би тръгнал без memory-preload и без пазачите. Пробата на живия гейт пада шумно (липсват маркерите на паметта), но всяко друго -p пускане би загубило пазачите тихо.",
+      "source": "https://threadreaderapp.com/thread/2038454336355999749",
+      "keywords": [
+        "--bare",
+        [
+          "bare",
+          "default"
+        ],
+        [
+          "bare",
+          "print mode"
+        ]
+      ],
+      "relies": [
+        "tools/agents/evals/live-run.mjs",
+        "tools/agents/evals/rubric-grade.mjs",
+        ".claude/settings.json"
+      ]
     }
   ]
 }
