@@ -113,7 +113,8 @@ export function contactsPage(t, locales) {
       <h2>${esc(c.formTitle)}</h2>
       <p>${esc(c.formLead)}</p>
       <p class="note">${esc(f.requiredNote)}</p>
-      <form class="contact-form" data-contact-form novalidate>
+      <form class="contact-form" data-contact-form method="post" action="/api/contact" novalidate>
+        <input type="hidden" name="source" value="sito-${t.lang}">
         <label>${esc(f.name)}<input type="text" name="nome" autocomplete="name" required maxlength="150"></label>
         <label>${esc(f.company)}<input type="text" name="azienda" autocomplete="organization" required maxlength="150"></label>
         <div class="form-row">

@@ -187,6 +187,19 @@
   });
   var closeBtn = document.querySelector('[data-order-close]');
   if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+  // „Изпрати чрез формата“ на самата страница с формата: hash-ът само се сменя и страницата не се
+  // презарежда — затваряме списъка, попълваме съобщението и скролваме до формата.
+  var formLink = document.querySelector('[data-order-form]');
+  if (formLink) formLink.addEventListener('click', function (e) {
+    var target = document.getElementById('modulo');
+    if (!target) return;
+    e.preventDefault();
+    closeDrawer();
+    fillFromOrder(true);
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    var first = target.querySelector('input:not([type="hidden"]):not(.hp)');
+    if (first) first.focus({ preventScroll: true });
+  });
   var clearBtn = document.querySelector('[data-order-clear]');
   if (clearBtn) clearBtn.addEventListener('click', function () {
     saveOrder([]);
@@ -222,17 +235,21 @@
     }, 1200);
   });
 
+  // Съобщението във формата от списъка за поръчка; replace: и когато вече има текст (кликът по-горе).
+  function fillFromOrder(replace) {
+    var field = document.querySelector('[data-contact-form] [name="messaggio"]');
+    var list = loadOrder();
+    if (!field || !list.length || (field.value && !replace)) return;
+    field.value = list.map(function (it) {
+      return '- ' + it.code + ' — ' + CFG.qty + ' ' + it.qty + (it.hand ? ' — ' + it.hand : '');
+    }).join('\n');
+  }
+
   // ── Контактна форма → POST /api/contact ──
   var form = document.querySelector('[data-contact-form]');
   if (form) {
     // Ако идваме от „Изпрати чрез формата“, предпопълни съобщението.
-    var msgField = form.querySelector('[name="messaggio"]');
-    var list = loadOrder();
-    if (msgField && !msgField.value && list.length && location.hash === '#modulo') {
-      msgField.value = list.map(function (it) {
-        return '- ' + it.code + ' — ' + CFG.qty + ' ' + it.qty + (it.hand ? ' — ' + it.hand : '');
-      }).join('\n');
-    }
+    if (location.hash === '#modulo') fillFromOrder(false);
 
     var status = form.querySelector('[data-form-status]');
     var submit = form.querySelector('[type="submit"]');
@@ -242,9 +259,10 @@
       if (!form.reportValidity()) return;
 
       var items = loadOrder().map(function (it) {
-        return { codice: it.code + (it.hand ? ' (' + it.hand + ')' : ''), name: it.name, qty: it.qty, price: it.price || 0 };
+        // Кодовете „a preventivo“ са без цена: null, не 0 (иначе в имейла излиза € 0,00).
+        return { codice: it.code + (it.hand ? ' (' + it.hand + ')' : ''), name: it.name, qty: it.qty, price: it.price || null };
       });
-      var totale = items.reduce(function (a, it) { return a + it.price * it.qty; }, 0);
+      var totale = items.reduce(function (a, it) { return a + (it.price || 0) * it.qty; }, 0);
 
       var payload = {
         nome: form.nome.value.trim(),
