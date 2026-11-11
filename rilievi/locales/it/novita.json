@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-11-note-sezioni": {
+        "area": "Schede",
+        "titolo": "Una nota in fondo a più sezioni della scheda",
+        "testo": "Impianto, Ubicazione e accesso, Tipologia, Funi e tiranti, Limitatore e Allarme e telesoccorso hanno ora un campo di testo per le note. «Note impianto» è passato dalla sezione Note e lavori alla sezione Impianto: le note già scritte restano, e nella stampa e nel PDF compaiono sotto la targa."
+      },
       "2026-11-10-menu": {
         "area": "Portale",
         "titolo": "Un menu più chiaro, su ogni dispositivo",

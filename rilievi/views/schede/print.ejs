@@ -48,6 +48,12 @@
     </div>
   </header>
   <%- include('../partials/plate', { byKey, withAddress: false }) %>
+  <%# „Note impianto“ е в раздела Impianto, който не се печата отделно: под табелата, само попълнена. %>
+  <% if (byKey.noteImpianto && byKey.noteImpianto.value) { %><section class="paper__section paper__nota-impianto">
+    <dl class="paper__grid">
+      <div class="paper__cell paper__cell--wide"><dt><%= byKey.noteImpianto.label %></dt><dd><%= byKey.noteImpianto.value %></dd></div>
+    </dl>
+  </section><% } %>
   <% for (const section of printed) { %>
   <section class="paper__section">
     <h2><%= section.title %></h2>

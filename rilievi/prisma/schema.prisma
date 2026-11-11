@@ -423,6 +423,14 @@ model Scheda {
   cornettaInstallare           Boolean?
   noteQuadretto                String?
   noteImpianto                 String?
+  /// Бележка на всеки раздел (собственикът, 11 ноември 2026): „Note ubicazione e accesso“, „Note
+  /// tipologia“, „Note funi, tiranti e contrappeso“, „Note limitatore, tenditore, funicella“, „Note allarme
+  /// e telesoccorso“; „Note impianto“ (горе) — вече в раздела Impianto.
+  ubicazioneNote               String?
+  tipologiaNote                String?
+  funiNote                     String?
+  limitatoreNote               String?
+  allarmeNote                  String?
   noteBottoniere               String?
   /// Разделът „Bottoniere“ (24 октомври 2026): „Bottoniere da sostituire?“ — при true бележка на ръка.
   bottoniereSostituire         Boolean?

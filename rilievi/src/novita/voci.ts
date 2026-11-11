@@ -17,6 +17,7 @@ export interface VoceNovita {
 
 /** Най-новите отгоре; в един ден — по важност. */
 export const VOCI: readonly VoceNovita[] = [
+  { id: '2026-11-11-note-sezioni', data: '2026-11-11' },
   { id: '2026-11-10-menu', data: '2026-11-10' },
   { id: '2026-11-10-cerca', data: '2026-11-10' },
   { id: '2026-11-10-impostazioni', data: '2026-11-10' },
