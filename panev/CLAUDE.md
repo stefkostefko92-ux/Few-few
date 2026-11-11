@@ -18,13 +18,21 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
   `i18n/<език>/{common,home,products,pages,legal}.mjs`), `site/templates/*.mjs`.
   `site/data` беше извън git (стар `.gitignore` с `data/`) и е възстановен от
   генерираните страници: билдът ги възпроизвеждаше байт по байт.
+- **Страници по семейства** (`site/templates/families.mjs`, текстове в
+  `i18n/<език>/families.mjs`): `staffe-porte-di-piano`, `supporti-guide-contrappeso`, `staffe-guida-sg`,
+  `staffe-su-misura` (+ EN/BG slug-ове) — H1 с търсената фраза, отговор отпред, таблиците от
+  ценоразписа, FAQ, линк към страниците в PDF-а, breadcrumbs (визуални + schema). Продуктите носят
+  Product + Offer (`priceValidUntil` = `CATALOG_VALID_UNTIL` в `products.mjs` — **поднови го за 2027**).
+- **lastmod в sitemap** е от хеш на съдържанието (`site/data/lastmod.json`, комитва се): датата се
+  мести само когато страницата наистина се смени.
 - **Изход:** статични страници в корена (`index.html`, `prodotti.html`,
   `catalogo.html`, `contatti.html`, `privacy.html`, `condizioni.html`) + `en/`
   + `bg/` + `sitemap.xml` + `404.html`. **Не редактирай генерираните файлове
   ръчно** — променяй източника и пусни билда.
 - **Каталог:** `docs/catalogo-staffe-panev-2026.pdf` (вграден + за сваляне);
-  превюта в `img/catalogo/` (адреси с `?v=`). 72 страници, около 7,8 MB: 68-те на каталога,
-  „62 · 3D“ и накрая три страници обобщение на гамата (67–69, `3d/pdf/summary.py`). По решение на
+  превюта в `img/catalogo/` (адреси с `?v=`). 72 страници, около 7,9 MB: 68-те на каталога,
+  „62 · 3D“ и накрая три страници обобщение на гамата (67–69, `3d/pdf/summary.py`). Индексът на
+  стр. 01 е пренареден (`3d/pdf/indice.py`): в оригинала два реда бяха скрити под колонтитула. По решение на
   собственика 3D рендерите заместват продуктовите чертежи; остават монтажните и този на твърдото
   рамо. PDF-ът и превютата се правят с `cd 3d && npm run catalog-pdf`,
   никога на ръка. На всяка страница без корицата и на всеки чертеж и рендер пише „Proprietà
@@ -94,7 +102,7 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
 ## Команди (в `panev/`)
 
 ```bash
-npm run build:site       # node site/build.mjs — регенерира 24-те страници (18 + три 3D + три рамки) + sitemap
+npm run build:site       # node site/build.mjs — регенерира 36-те страници (18 + 12 по семейства + три 3D + три рамки) + sitemap
 npm run dev              # nodemon server.js
 npm start                # node server.js
 npm run db:seed          # node scripts/seed.js (admin/legacy данни)

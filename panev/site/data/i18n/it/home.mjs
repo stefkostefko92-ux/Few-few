@@ -3,7 +3,7 @@
 export default {
   hero: {
     kicker: 'Staffe & accessori per ascensori e montacarichi',
-    title: 'Staffe brevettate per guide e porte di piano',
+    title: 'Staffe brevettate per ascensori: porte di piano e guide del contrappeso',
     lead: 'Sistema forato, snodato e asolato per il fissaggio regolabile di guide del contrappeso e porte di piano — ideato per adattarsi a murature irregolari, non perpendicolari e con ferri d’armatura. Brevetto per Modello di Utilità riconosciuto dal Ministero delle Imprese e del Made in Italy.',
     chips: ['Made in Italy', 'Acciaio zincato', 'Sistema ambidestro', 'Brevettato'],
     ctaProducts: 'Vedi prodotti e listino',
@@ -139,7 +139,7 @@ export default {
     items: [
       {
         q: 'Come si ordina?',
-        a: 'Via email a info@panevascensori.it: indica codice, quantità e — dove prevista — la mano DX o SX. Il pulsante „Ordina via email“ e la lista d’ordine precompilano il messaggio. Rispondiamo con conferma d’ordine, totale e tempi di consegna.',
+        a: 'Via email a info@panevascensori.it: indica codice, quantità e — dove prevista — la mano DX o SX. Il pulsante “Ordina via email” e la lista d’ordine precompilano il messaggio. Rispondiamo con conferma d’ordine, totale e tempi di consegna.',
       },
       {
         q: 'I prezzi includono l’IVA?',

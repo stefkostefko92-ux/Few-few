@@ -3,7 +3,7 @@
 export default {
   hero: {
     kicker: 'Brackets & accessories for lifts and goods lifts',
-    title: 'Patented brackets for guide rails and landing doors',
+    title: 'Patented lift brackets for landing doors and counterweight guide rails',
     lead: 'A perforated, hinged and slotted system for the adjustable fixing of counterweight guide rails and landing doors — designed to adapt to irregular, out-of-plumb masonry and walls with rebar. A utility model patent recognised by the Italian Ministry of Enterprises and Made in Italy.',
     chips: ['Made in Italy', 'Galvanised steel', 'Ambidextrous system', 'Patented'],
     ctaProducts: 'See products & prices',

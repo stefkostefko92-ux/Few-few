@@ -691,3 +691,15 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 
 /* Непрекъсваеми низове (имейл, URL, дълъг код) да не разпъват решетките */
 .spec-row dd, .contact-mail, .legal-body { overflow-wrap: anywhere; }
+
+/* Пътеката на страниците по семейства (видима; същата е в JSON-LD BreadcrumbList) */
+.crumbs { margin: 0 0 1rem; font-size: .86rem; color: rgba(255, 255, 255, .72); }
+.crumbs a { color: rgba(255, 255, 255, .86); text-decoration: underline; text-underline-offset: 3px; }
+.crumbs [aria-current] { color: #fff; }
+
+/* Линковете към страниците по семейства (листата, долу на всяко семейство) */
+.fam-links ul { list-style: none; margin: 1.4rem 0; padding: 0; display: flex; flex-wrap: wrap; gap: .6rem; }
+.fam-links a { display: inline-block; padding: .55rem 1rem; border: 1px solid var(--line); border-radius: 999px; color: var(--navy); font-weight: 600; text-decoration: none; }
+.fam-links a:hover, .fam-links a:focus-visible { border-color: var(--navy); background: var(--tint); }
+.sec-more { margin: 1.2rem 0 0; }
+.sec-more a { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
