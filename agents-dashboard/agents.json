@@ -3860,7 +3860,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 240
+        "lessons": 241
       },
       "evolution": [
         {
@@ -4306,9 +4306,20 @@
           "date": "2026-11-04",
           "event": "v23.0 — учене",
           "detail": "Научи: zabobovdol layout.tsx задава alternates.canonical=SITE.url за всички страници; page.tsx… (+22 още)"
+        },
+        {
+          "version": "23.1.0",
+          "date": "2026-11-11",
+          "event": "v23.1 — учене",
+          "detail": "Научи: В panev SEO повърхността идва от head()/jsonLd() в site/templates/layout.mjs; допълните…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „В panev SEO повърхността идва от head()/jsonLd() в site/templates/layout.mjs; допълните…\""
+        },
         {
           "date": "2026-11-11",
           "type": "quarantine",
