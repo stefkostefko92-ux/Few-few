@@ -1,9 +1,9 @@
 {
-  "date": "2026-11-08",
-  "ref": "3bc511d712d0c1984d3ceefc8fbc9fb43039ef92",
-  "cli": "2.1.319 (Claude Code)",
+  "date": "2026-11-11",
+  "ref": "7fb6a0534fcb2e4644c832883875bfeff071b122",
+  "cli": "2.1.322 (Claude Code)",
   "summary": "проба 3/3 · оценки 6/6 · pass^k 2/2 · verifier ✓",
-  "costUsd": 9.01,
+  "costUsd": 10.17,
   "probe": [
     {
       "agent": "seo",
@@ -21,7 +21,7 @@
       "problems": []
     }
   ],
-  "inputsHash": "58e4ffaff6ae94f845cab79639eb1ca698003cae6f4d8e7a563a0435e7626b9a",
+  "inputsHash": "a1e7f71903cfbadd9814fbd570b6b2129865b09e91dfae196db707c7798f6968",
   "files": {
     ".claude/agents/3d-maniac.md": "ba08fab4bde197873196f2854a4d8afe5bbaadf7570d3f39e3d5d38128331c54",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -62,6 +62,7 @@
     ".claude/hooks/agent-return.mjs": "e9b76f4e211ad024fc6bf02c6f088f6474ef7232dea8401841efcd17d54615f8",
     ".claude/hooks/artifact-sync.mjs": "1d33833db1a0a73eb3e818bb4360dddd3f807abe8b848adae684e48c77add80a",
     ".claude/hooks/dod-check.mjs": "0894630c593574889b2b355e4abd6c4bdc68d461c3f1675d84d65b8d51587c81",
+    ".claude/hooks/format-on-edit.mjs": "d4f5c6bfd6296f2cc6f64c05927c72a2c71f0f17f5ade5b4b5930b8a60164c4c",
     ".claude/hooks/guard-config.mjs": "4cd1d3f3dd2fec2b569e1d481fef3030a247b004d9a5bc995a5c04c623b095b6",
     ".claude/hooks/guard-dangerous.mjs": "0fe423625b183d2b5158d9bd71ee304a7b017747dcc5735230b1425ac5c216ce",
     ".claude/hooks/guard-exfil.mjs": "9d3ea25d3fabdc77ec017ebbf2ce63554aa3bc9c8d4dfd4c4c91173e18c2b656",
@@ -69,12 +70,12 @@
     ".claude/hooks/guard-readonly.mjs": "0b8f8d6be353d49e266514b5b3ef3bf0de83467a70776451f3271f7104f97411",
     ".claude/hooks/guard-secrets.mjs": "7e0e1ac04fab4fd8c5749fc7dc95791868561e05ef67400827c4bd900c8bced2",
     ".claude/hooks/memory-capture.mjs": "4d306e6be02b975e15509d3c7dd9d0e9f29afc14305001dcb871c2d5a6fc8448",
-    ".claude/hooks/memory-preload.mjs": "9bae8442c919471c22722b42888067cdab83952efdad08e530a826862c328461",
+    ".claude/hooks/memory-preload.mjs": "72f1682b3552179dcecc10214c7fce93f1c90d6186655b6c97630c1ca9ae57d7",
     ".claude/hooks/precompact-save.mjs": "dcd1e2219e44321453526b317d13884ba4c6e617e601763682b91afdb7e03d0e",
     ".claude/hooks/route-hint.mjs": "3e08a41a31192edb5053a67e5a2e8a6ab8d05d5d884211365b99396e285a8abb",
     ".claude/hooks/session-dod.mjs": "3f320021c2227fb5554a1d34551a5bac0d3b4e1046fd39cc8d3902fdab43b0c9",
     ".claude/hooks/usage-capture.mjs": "b6dee83a4a53f425c0e8dfab3c8b050e36b7c70b4f45c8dd9d041a5780530981",
-    ".claude/settings.json": "5cc44d8bab55709fa6c1a18a8aa29f679ab3d55873595be07e2daec13fb29b08",
+    ".claude/settings.json": "c98257fe971b1651baf4d711b890156703ba0d430bf6c40aaf000f794afa3c02",
     ".claude/skills/agent-doctrine/SKILL.md": "9e910f00f812006d9e59f6a40e77ca38835fdf8d19eab7be3219d0aaea8e3411",
     "tools/agents/handoff.mjs": "088afa443cf1c3a6325b28a80bc74426aba907a1d7c287d0add05497b29dcba3",
     "tools/agents/teams.mjs": "955295f80b10250391714245bf5b6906c3341f2b8217c960cf07e290b4035fbb",
