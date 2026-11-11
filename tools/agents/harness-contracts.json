@@ -432,6 +432,27 @@
         "tools/agents/evals/rubric-grade.mjs",
         ".claude/settings.json"
       ]
+    },
+    {
+      "id": "min-cli-2-1-319",
+      "claim": "Под Claude Code 2.1.319 създаването на worktree може да избяга от sandbox-а, а sed може да прескочи проверката на правата в accept-edits/auto; живият гейт отказва да тръгне под MIN_CLI (tools/lib/cli-version.mjs), sandbox-setup предупреждава.",
+      "source": "https://code.claude.com/docs/en/changelog.md",
+      "keywords": [
+        [
+          "sandbox",
+          "worktree"
+        ],
+        [
+          "sed",
+          "permission"
+        ],
+        "sandbox escape"
+      ],
+      "relies": [
+        "tools/lib/cli-version.mjs",
+        "tools/agents/live-gate.mjs",
+        "tools/agents/sandbox-setup.mjs"
+      ]
     }
   ]
 }

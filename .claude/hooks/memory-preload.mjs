@@ -167,6 +167,9 @@ export function agentPart(agent, payload = {}) {
   const own = memOff ? [] : verifiedSection(file);
   const pending = memOff ? [] : pendingLessons(PROJECT_DIR, agent, readFileSync(file, "utf8"));
   const lessons = select([...pending, ...own], task, { budget: MEM_TOKEN_BUDGET, maxCount: MAX_LESSONS, today: TODAY() });
+  // Индекс (Anthropic, „The components of agent memory“, 06.11.2026): горният слой е малък и казва къде е
+  // останалото — иначе агентът мисли, че показаното е цялата му памет.
+  const total = new Set([...pending, ...own]).size;
   // Знанието циркулира по смисъл: до 3 поуки на ДРУГИ агенти, само ако са сред най-релевантните в
   // целия флот за тази задача. Етикетът казва чия е поуката — тя е бележка на колега, не твоя опит.
   const cross = memOff ? [] : crossAgentPicks(MEM_DIR, agent, task, { today: TODAY() });
@@ -176,7 +179,8 @@ export function agentPart(agent, payload = {}) {
     `Накрая на отговора си добави блок learn само с НОВО проверено знание — точно по тази схема, иначе поуката не стига до паметта:\n${LEARN_SCHEMA.replace("agent: <id>", `agent: ${agent}`)}`;
   const render = () => [
     card,
-    lessons.length ? `Проверена памет на „${agent}" (v6.0 самообучение — ползвай я, не повтаряй научена грешка):\n${lessons.join("\n")}` : "",
+    lessons.length ? `Проверена памет на „${agent}" (v6.0 самообучение — ползвай я, не повтаряй научена грешка):\n${lessons.join("\n")}` +
+      (total > lessons.length ? `\nИндекс: показани ${lessons.length} от ${total} поуки по релевантност; останалите са в .claude/agents/_memory/${agent}.md — Grep по дума от задачата, ако тук липсва нещо.` : "") : "",
     cross.length ? `От паметта на колеги (релевантно за задачата — провери, преди да приложиш в своя домейн):\n${cross.map((c) => `${c.line} — [${c.agent}]`).join("\n")}` : "",
     schema,
   ].filter(Boolean).join("\n\n");

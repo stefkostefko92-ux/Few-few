@@ -85,6 +85,16 @@ test("умението + частите на куката заедно нося�
   }
 });
 
+// „The components of agent memory“ (Anthropic, 06.11.2026): горният слой на паметта е малък и служи за
+// индекс — казва какво знаеш и къде е останалото. Без този ред агентът не знае, че вижда част от паметта си.
+test("паметта носи индекс: колко поуки са показани от колко и къде са останалите", () => {
+  const out = run("agent", "kodadjiyata");
+  const m = out.match(/Индекс: показани (\d+) от (\d+) поуки[^\n]*\.claude\/agents\/_memory\/kodadjiyata\.md/);
+  assert.ok(m, "липсва индексът на паметта");
+  assert.ok(Number(m[1]) < Number(m[2]), "показаните са част от всички");
+  assert.ok(out.indexOf("Проверена памет на „kodadjiyata\"") < out.indexOf("Индекс:"), "индексът е след поуките, маркерът на пробата остава непокътнат");
+});
+
 test("capText реже с явна бележка и път, никога над тавана", () => {
   const long = "а".repeat(CONTEXT_CHAR_LIMIT + 5000);
   const out = capText(long, "x/y.md");
