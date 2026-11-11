@@ -101,7 +101,7 @@ export const FONDO_PAGINA = PAGE.height - M;
 /** DejaVu се чете веднъж за процеса (pdfkit иначе чете файловете синхронно при всеки документ). */
 const fontCache = new Map<string, { regular: Buffer; bold: Buffer }>();
 
-function fontsOf(dir: string): { regular: Buffer; bold: Buffer } {
+export function fontsOf(dir: string): { regular: Buffer; bold: Buffer } {
   let fonts = fontCache.get(dir);
   if (!fonts) {
     const paths = pdfFontPaths(dir);

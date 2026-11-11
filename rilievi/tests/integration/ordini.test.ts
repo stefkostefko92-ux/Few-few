@@ -160,8 +160,14 @@ describe('supplier forms', () => {
     const at = (pattern: string) => form.body.indexOf(pattern);
     assert.ok(at('name="pattinoRetrattile"') < at('name="sospensioni"'));
     assert.ok(at('name="sospensioni"') < at('name="operatore"'));
-    assert.ok(at('name="operatore"') < at('id="f-so"'));
-    assert.match(form.body, /id="f-so" data-when="operatore" data-when-values="si" data-off/);
+    // "Vuoi cambiare operatore?" → "Vuoi compilare modulo d'ordine?" → 2SG o altro (10 November 2026).
+    assert.ok(at('name="operatore"') < at('name="operatoreOrdine"'));
+    assert.ok(at('name="operatoreOrdine"') < at('name="operatoreModulo"'));
+    assert.ok(at('name="operatoreModuloAltro"') < at('id="f-so"'));
+    assert.match(
+      form.body,
+      /id="f-so" data-when="operatoreModulo" data-when-values="MODULO_2SG" data-off/,
+    );
     assert.match(
       form.body,
       /<div class="field--wide" data-when="sospensioni" data-when-values="si" data-when-not><div class="field--wide">\s*<div class="modulo" id="f-so"/,
@@ -174,6 +180,8 @@ describe('supplier forms', () => {
       ...semi,
       base,
       operatore: 'si',
+      operatoreOrdine: 'si',
+      operatoreModulo: 'MODULO_2SG',
       'so-_': '1',
       'so-ordNo': '78',
       'so-semiautomatico': 'si',
@@ -185,7 +193,10 @@ describe('supplier forms', () => {
     });
     assert.equal(saved.status, 303);
     const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
-    assert.equal(row.operatore, true);
+    assert.deepEqual(
+      [row.operatore, row.operatoreOrdine, row.operatoreModulo],
+      [true, true, 'MODULO_2SG'],
+    );
     assert.equal(row.sospensioni, null);
     assert.deepEqual(row.ordineSospensioni, {
       modulo: '2sg-ordine-porte',
@@ -214,6 +225,8 @@ describe('supplier forms', () => {
       tipoPorte: ['MANUALI'],
       base: /name="base" value="([^"]+)"/.exec(again.body)![1]!,
       operatore: 'si',
+      operatoreOrdine: 'si',
+      operatoreModulo: 'MODULO_2SG',
       'so-_': '1',
       'so-ordNo': '78',
     });

@@ -105,7 +105,7 @@
       "compensazione": "Compensazione",
       "compNumero": "Numero funi o catene",
       "compMisura": "Misura (mm)",
-      "compAltroD": "Misura fune o catena (mm)",
+      "compAltroD": "Diametro fune o catena (mm)",
       "compAltroMassa": "Massa lineare (kg/m)",
       "compMetaCorsa": "Catene da metà corsa al contrappeso",
       "massaTenditore": "Massa tenditore (kg)",
@@ -221,12 +221,12 @@
       "aderenza": "Aderenza",
       "t1": "T1 — lato cabina, cabina in basso con il 125 % del carico",
       "t2": "T2 — lato contrappeso, cabina in basso",
-      "t1Alto": "T'1 — lato contrappeso, cabina in alto vuota",
-      "t2Alto": "T'2 — lato cabina, cabina in alto vuota",
+      "t1Alto": "T'1 — lato cabina, cabina in alto vuota",
+      "t2Alto": "T'2 — lato contrappeso, cabina in alto vuota",
       "decelerazione": "Decelerazione a",
       "f": "Coefficiente di attrito f",
       "rapportoBasso": "(T1 / T2) × C1 × C2, al massimo e^(f·α)",
-      "rapportoAlto": "(T'1 / T'2) × C1 × C2, al massimo e^(f·α)",
+      "rapportoAlto": "(T'2 / T'1) × C1 × C2, al massimo e^(f·α)",
       "pressione": "Pressione specifica",
       "velocitaFuni": "Velocità delle funi",
       "caricoStatico": "Carico statico massimo",
@@ -236,19 +236,19 @@
     },
     "esito": {
       "velocita": {
-        "ok": "La variazione di velocità è entro il 5 %: non servono le condizioni del paragrafo 15 della UNI 10411-1.",
+        "ok": "Secondo il calcolo la variazione di velocità è entro il 5 %: il tecnico valuta se si applica il paragrafo 15 della UNI 10411-1.",
         "no": "La variazione di velocità è oltre il 5 %: vanno rispettate le condizioni del paragrafo 15 della UNI 10411-1."
       },
       "funi": {
-        "ok": "Funi di trazione verificate.",
+        "ok": "Verifica di calcolo soddisfatta con i dati inseriti: funi di trazione.",
         "no": "Funi di trazione non verificate: controlla numero, diametro, coefficiente di sicurezza e rapporto D/d."
       },
       "compensazione": {
-        "ok": "Compensazione verificata.",
+        "ok": "Verifica di calcolo soddisfatta con i dati inseriti: compensazione.",
         "no": "Compensazione non verificata: il rapporto D/d è sotto 30."
       },
       "aderenza": {
-        "ok": "Aderenza verificata nei due casi.",
+        "ok": "Verifica di calcolo soddisfatta con i dati inseriti: aderenza nei due casi.",
         "no": "Aderenza non verificata: cambia gola, angolo di avvolgimento, contrappeso o funi."
       },
       "pressione": {

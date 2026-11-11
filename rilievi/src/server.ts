@@ -20,31 +20,11 @@ import { PASSWORD_MIN_LENGTH } from './auth/password.js';
 import { MAX_FILE_PER_VOLTA } from './allegati/caricamento.js';
 import { primitiviFoglio } from './schizzi/forme.js';
 import { VISTA_SCHIZZO } from './schizzi/model.js';
-import { allegatiRouter } from './routes/allegati.js';
-import { auditRouter } from './routes/audit.js';
-import { accessoRouter, calcoloRouter } from './routes/accesso.js';
-import { aziendeRouter } from './routes/aziende.js';
-import { aziendeFineRouter } from './routes/aziende-fine.js';
-import { cartelliNuovoRouter } from './routes/cartelli-nuovo.js';
-import { cartelliRouter } from './routes/cartelli.js';
-import { cestinoRouter } from './routes/cestino.js';
-import { ordiniRouter } from './routes/ordini.js';
 import { healthRouter } from './routes/health.js';
-import { installaRouter } from './routes/installa.js';
 import { pwaRouter } from './routes/pwa.js';
-import { impostazioniRouter } from './routes/impostazioni.js';
-import { impostazioniCartelloRouter } from './routes/impostazioni-cartello.js';
-import { impostazioniRuoliRouter } from './routes/impostazioni-ruoli.js';
-import { interventiRouter } from './routes/interventi.js';
-import { interventiFirmaRouter } from './routes/interventi-firma.js';
-import { interventiInvioRouter } from './routes/interventi-invio.js';
-import { requestsRouter } from './routes/requests.js';
-import { schedeRouter } from './routes/schede.js';
-import { schedeStampaRouter } from './routes/schede-stampa.js';
-import { siteRouter } from './routes/site.js';
-import { usersRouter } from './routes/users.js';
-import { usersManageRouter } from './routes/users-manage.js';
+import { novitaLocals } from './novita/popup.js';
 import { countNewRequests } from './requests/service.js';
+import { montaRouter } from './routes/montaggio.js';
 import { HOME_PATH } from './seo/paths.js';
 
 /** Записът на картата: нова (`/schede`) и промяна (`/schede/<id>`). */
@@ -235,31 +215,9 @@ export function createServer(): Express {
     next();
   });
   app.use(writeLimiter);
-  app.use(siteRouter);
-  app.use(installaRouter);
-  app.use(accessoRouter);
-  app.use(schedeRouter);
-  app.use(schedeStampaRouter);
-  app.use(allegatiRouter);
-  app.use(cestinoRouter);
-  app.use(ordiniRouter);
-  app.use(calcoloRouter);
-  app.use(interventiRouter);
-  app.use(interventiFirmaRouter);
-  app.use(interventiInvioRouter);
-  app.use(impostazioniCartelloRouter);
-  // Преди cartelliRouter: `/cartelli/nuovo` е преди `/cartelli/:id`.
-  app.use(cartelliNuovoRouter);
-  app.use(cartelliRouter);
-  app.use(usersRouter);
-  // След usersRouter: `/utenti/invita` е преди `/utenti/:id`.
-  app.use(usersManageRouter);
-  app.use(aziendeRouter);
-  app.use(aziendeFineRouter);
-  app.use(impostazioniRouter);
-  app.use(impostazioniRuoliRouter);
-  app.use(requestsRouter);
-  app.use(auditRouter);
+  // Прозорецът с новините след обновяване — на цяла страница на вписан човек (src/novita/popup.ts).
+  app.use(novitaLocals);
+  montaRouter(app);
 
   app.use((req: Request, res: Response) => {
     failRequest(req, res, 404, 'error.notFoundTitle', 'error.notFound');

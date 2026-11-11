@@ -82,7 +82,16 @@ export async function esportaAzienda(
     },
   });
   if (!azienda) return null;
-  const [persone, schede, interventi, cartelli, calcoliArgano, registro] = await Promise.all([
+  const [
+    persone,
+    schede,
+    interventi,
+    cartelli,
+    calcoliArgano,
+    calcoliLimitatore,
+    verbali,
+    registro,
+  ] = await Promise.all([
     prisma.membership.findMany({
       where: { aziendaId },
       orderBy: { createdAt: 'asc' },
@@ -126,6 +135,8 @@ export async function esportaAzienda(
     prisma.intervento.findMany({ where: { aziendaId }, orderBy: { numero: 'asc' } }),
     prisma.cartello.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
     prisma.calcoloArgano.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
+    prisma.calcoloLimitatore.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
+    prisma.verbale.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
     prisma.auditLog.findMany({
       where: { aziendaId },
       orderBy: { at: 'asc' },
@@ -165,6 +176,8 @@ export async function esportaAzienda(
         interventi,
         cartelli,
         calcoliArgano,
+        calcoliLimitatore,
+        verbali,
         registro,
       },
       null,

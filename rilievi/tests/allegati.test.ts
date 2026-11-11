@@ -328,6 +328,7 @@ describe('the photos on the print and the PDF', () => {
     durataMs: null,
     errore: null,
     inStampa: true,
+    ordineStampa: null,
     createdAt: new Date('2026-10-21T08:00:00Z'),
     ...over,
   });

@@ -1,0 +1,23 @@
+<%
+  // Едно от полетата на изчислението за ограничителя: скоростта (число с десетична запетая), видът на
+  // парашута, нормата при монтажа или какво се сменя (избор); грешката — под него, в подножието на реда (`grid--righe`).
+  const id = 'f-' + key;
+  const text = typeof values[key] === 'string' ? values[key] : '';
+  const e = errori[key];
+  const errText = e === 'range'
+    ? t('limitatore.errore.range', { min: String(limitiVn[0]).replace('.', ','), max: String(limitiVn[1]).replace('.', ',') })
+    : e ? t('limitatore.errore.' + e) : null;
+  const scelte = key === 'tipo' ? tipi : key === 'norma' ? norme : key === 'intervento' ? interventi : null;
+  // Изборите са дълги — взимат две колони, на телефон — цял ред (righe.css).
+%><div class="field field--<%= key %><%= scelte ? ' field--doppia field--riga-telefono' : '' %>">
+  <label class="field__label" for="<%= id %>"><%= t('limitatore.campo.' + key) %></label>
+  <% if (scelte) { %><select class="select" id="<%= id %>" name="<%= key %>" required<% if (errText) { %> aria-invalid="true" aria-describedby="err-<%= key %>"<% } %>>
+    <option value="">—</option>
+    <% for (const scelta of scelte) { %><option value="<%= scelta %>"<% if (text === scelta) { %> selected<% } %>><%= t('limitatore.opzione.' + key + '.' + scelta) %></option>
+    <% } %>
+  </select>
+  <% } else { %><input class="input" id="<%= id %>" name="<%= key %>" type="text" inputmode="decimal" autocomplete="off" required value="<%= text %>"<% if (errText) { %> aria-invalid="true" aria-describedby="err-<%= key %>"<% } %>>
+  <% } %>
+  <%# Подножието е винаги тук (и празно): третата линия на реда в `.grid--righe`. %>
+  <div class="field__piede"><% if (errText) { %><p class="field__error" id="err-<%= key %>"><%= errText %></p><% } %></div>
+</div>

@@ -2,7 +2,7 @@
 // a technician into the same company (never another one); the technician sees the company's sheet but
 // not the people or the companies; then the people pages themselves (people.mjs) and the technician's
 // two-step sign-in (due-fattori.mjs).
-import { audit, fail, signIn as signInAt } from './helpers.mjs';
+import { acceptTerms, audit, fail, signIn as signInAt } from './helpers.mjs';
 import { checkTwoFactor } from './due-fattori.mjs';
 import { checkPeople } from './people.mjs';
 
@@ -14,7 +14,8 @@ async function acceptInvite(context, base, link, name) {
   await page.fill('#password', 'Fune-Trefolo-Tenditore-7');
   await page.fill('#confirm', 'Fune-Trefolo-Tenditore-7');
   await page.click('form button[type=submit]');
-  await page.waitForURL(/\/schede/);
+  await page.waitForURL(/\/(schede|condizioni\/accetta)/);
+  await acceptTerms(page, name);
   return page;
 }
 

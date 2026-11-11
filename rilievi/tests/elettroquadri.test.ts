@@ -164,7 +164,7 @@ describe('the Elettroquadri orders and the sheet', () => {
       arganoPreventivo: null,
       preventivoArgano: null,
       sospensioni: null,
-      operatore: null,
+      operatoreModulo: null,
       ordineSospensioni: null,
       testataInterventi: [],
       fossaInterventi: [],

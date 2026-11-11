@@ -1,0 +1,120 @@
+{
+  "verbali": {
+    "list": "Verbali di chiusura cantiere",
+    "listSub": "I verbali di fine lavori, dal più recente. Dopo le due firme si scaricano due PDF: copia azienda e copia installatore.",
+    "new": "Nuovo verbale",
+    "titolo": "Verbale di chiusura cantiere",
+    "indietro": "Torna ai verbali",
+    "empty": "Nessun verbale di chiusura cantiere.",
+    "emptyHint": "Crea il primo con «Nuovo verbale», anche dalla scheda dell'impianto.",
+    "colonna": {
+      "data": "Data",
+      "indirizzo": "Indirizzo",
+      "buono": "N° buono"
+    },
+    "campo": {
+      "data": "Data",
+      "indirizzo": "Indirizzo",
+      "buono": "N° buono"
+    },
+    "sezione": {
+      "testata": "Cantiere",
+      "locale": "Locale macchina",
+      "vano": "Vano corsa",
+      "cabina": "Cabina",
+      "finiture": "Finiture",
+      "esito": "Esito"
+    },
+    "voce": {
+      "quadro": "Quadro",
+      "argano": "Argano/centralina",
+      "funi": "Funi/tubazione",
+      "impiantoElettrico": "Impianto elettrico",
+      "limitatore": "Limitatore",
+      "varieLocale": "Varie",
+      "lineeElettriche": "Linee elettriche",
+      "cavi": "Cavi",
+      "serrature": "Serrature/sospensioni",
+      "luceVano": "Luce vano",
+      "varieVano": "Varie",
+      "circuitoCabina": "Circuito cabina",
+      "bottoniera": "Bottoniera",
+      "tettoCabina": "Tetto cabina",
+      "varieCabina": "Varie",
+      "bottoniere": "Bottoniere",
+      "imbotti": "Imbotti",
+      "varieFiniture": "Varie"
+    },
+    "voceDi": "{voce} — {sezione}",
+    "certificato": "Certificato",
+    "certificatoDi": "Certificato: {voce}",
+    "si": "SÌ",
+    "no": "NO",
+    "carta": {
+      "si": "Si",
+      "no": "No",
+      "siPositivo": "SI",
+      "noPositivo": "NO"
+    },
+    "positivo": "Verbale positivo",
+    "segue": "segue",
+    "pagina": "Pagina {n} di {tot}",
+    "stato": {
+      "label": "Stato",
+      "bozza": "Bozza",
+      "chiuso": "Firmato"
+    },
+    "salva": "Salva verbale",
+    "modifica": "Modifica",
+    "copia": {
+      "azienda": "COPIA AZIENDA",
+      "installatore": "COPIA INSTALLATORE"
+    },
+    "pdf": {
+      "azienda": "PDF copia azienda",
+      "installatore": "PDF copia installatore"
+    },
+    "confermato": "Firmato e confermato il {at} da {name}",
+    "chiuso": "Verbale firmato e confermato: non si può più modificare.",
+    "dataMancante": "Indica la data del verbale.",
+    "positivoMancante": "Prima di firmare indica se il verbale è positivo (SÌ o NO).",
+    "daScheda": {
+      "testo": "Cerca la scheda: indirizzo e N° buono si compilano da soli. Impianto senza scheda? Compila i campi qui sotto.",
+      "nessuna": "Nessuna scheda trovata: compila il verbale a mano qui sotto.",
+      "crea": "Verbale di chiusura",
+      "dellaScheda": "Verbali di chiusura cantiere"
+    },
+    "firma": {
+      "tecnico": "Firma tecnico esecutore",
+      "supervisore": "Firma supervisore",
+      "errore": {
+        "mancante": "Manca la firma nel riquadro.",
+        "invalid": "Firma non leggibile: cancellala e rifalla.",
+        "uguale": "Le due firme sono identiche: il supervisore deve firmare nel proprio riquadro.",
+        "nome": "Scrivi nome e cognome.",
+        "ripetuta": "Questa firma è già presente su un altro documento: va tracciata di nuovo, a mano, qui."
+      }
+    },
+    "conferma": {
+      "titolo": "Firma e conferma",
+      "testo": "Quando il verbale è completo, rileggetelo insieme e firmate: la firma vale per il contenuto mostrato e dopo la conferma il verbale non si può più modificare.",
+      "pulsante": "Firma e conferma",
+      "leggi": "Rileggete il verbale qui sotto: le firme del tecnico esecutore e del supervisore si riferiscono esattamente a questo contenuto. Dopo la conferma non si potrà più modificare; resteranno i due PDF, copia azienda e copia installatore.",
+      "invio": "Firma e conferma il verbale",
+      "cambiato": "Il verbale è stato modificato dopo l'apertura di questa pagina: rileggetelo e firmate di nuovo.",
+      "torna": "Torna al verbale"
+    },
+    "sigillo": {
+      "valido": "Sigillo verificato: il contenuto è quello firmato.",
+      "alterato": "Il sigillo non corrisponde al contenuto firmato: il verbale risulta modificato dopo la firma. I PDF sono bloccati — avvisa l'amministrazione del portale.",
+      "bloccato": "PDF bloccati: il sigillo del verbale non corrisponde al contenuto firmato.",
+      "pdf": "Impronta del contenuto firmato (SHA-256): {impronta} — verificata dal portale alla generazione di questo PDF"
+    },
+    "flash": {
+      "creato": "Verbale salvato.",
+      "salvato": "Modifiche salvate.",
+      "confermato": "Verbale firmato e confermato: scarica la copia azienda e la copia installatore.",
+      "conflitto": "Il verbale è stato modificato da qualcun altro mentre lo guardavi: ecco i tuoi dati, controlla e salva di nuovo."
+    }
+  }
+}

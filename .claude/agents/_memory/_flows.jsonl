@@ -14,6 +14,9 @@
 {"t":"handoff","ts":"2026-08-04T13:25:21.348Z","id":"auto","from":"3d-maniac","to":"оркестратор","status":"наред"}
 {"t":"handoff","ts":"2026-08-04T13:28:49.433Z","id":"auto","from":"ai-djiyata","to":"човек","status":"наред"}
 {"t":"handoff","ts":"2026-08-05T05:00:23.682Z","id":"auto","from":"kasadjiyata","to":"ai-djiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-02T15:56:01.836Z","id":"auto","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-02T15:59:41.573Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-08T16:38:42.948Z","id":"auto","from":"razbivacha","to":"vps-adjiyata","status":"блокер"}
 {"t":"handoff","ts":"2026-09-09T06:04:00.884Z","id":"auto","from":"kachestveniyat","to":"kodadjiyata","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-09T06:05:48.301Z","id":"auto","from":"kodadjiyata","to":"hromadjiyata","status":"блокер"}
 {"t":"handoff","ts":"2026-09-09T06:05:55.607Z","id":"auto","from":"tayniyat-agent","to":"kodadjiyata","status":"блокер"}
@@ -503,3 +506,21 @@
 {"t":"handoff","ts":"2026-11-04T09:24:59.979Z","id":"r8129a734","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"b0c662c5"}
 {"t":"handoff","ts":"2026-11-04T09:25:08.120Z","id":"r8129a734","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"ca19e31d"}
 {"t":"handoff","ts":"2026-11-04T09:34:53.703Z","id":"r8129a734","from":"razbivacha","to":"kodadjiyata","status":"наред","run":"18806aee"}
+{"t":"start","ts":"2026-11-05T09:40:39.760Z","id":"r29dcf0de","flow":"авто","lead":"mobildjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-05T09:40:39.760Z","id":"r29dcf0de","from":"mobildjiyata","to":"kodadjiyata","status":"има бележки","run":"e95d6281"}
+{"t":"start","ts":"2026-11-06T07:55:14.398Z","id":"ra8c9d82e","flow":"авто","lead":"seo","auto":true}
+{"t":"handoff","ts":"2026-11-06T07:55:14.398Z","id":"ra8c9d82e","from":"seo","to":"човек","status":"блокер (инструментът Write липсва; файлът не е записан)","run":"f3afcf78"}
+{"t":"handoff","ts":"2026-11-06T07:55:24.672Z","id":"ra8c9d82e","from":"kodadjiyata","to":"човек","status":"има бележки","run":"bfda242a"}
+{"t":"start","ts":"2026-11-06T07:55:45.703Z","id":"rb1c0af36","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-06T07:55:45.703Z","id":"rb1c0af36","from":"razbivacha","to":"човек","status":"има бележки","run":"72d4a602"}
+{"t":"handoff","ts":"2026-11-06T07:55:49.681Z","id":"rb1c0af36","from":"seo","to":"човек","status":"блокер","run":"f3afcf78"}
+{"t":"start","ts":"2026-11-06T07:56:20.083Z","id":"rdd1f0ddf","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-06T07:56:20.083Z","id":"rdd1f0ddf","from":"razbivacha","to":"човек","status":"има бележки","run":"72d4a602"}
+{"t":"handoff","ts":"2026-11-06T07:57:11.225Z","id":"rdd1f0ddf","from":"ai-djiyata","to":"pravniyat-razbirach","status":"има бележки","run":"6bca1063"}
+{"t":"start","ts":"2026-11-06T07:57:53.353Z","id":"r0adb8e5f","flow":"авто","lead":"pravniyat-razbirach","auto":true}
+{"t":"handoff","ts":"2026-11-06T07:57:53.353Z","id":"r0adb8e5f","from":"pravniyat-razbirach","to":"vps-adjiyata","status":"има бележки","run":"eb71731d"}
+{"t":"handoff","ts":"2026-11-06T08:00:51.575Z","id":"r0adb8e5f","from":"vps-adjiyata","to":"човек","status":"има бележки","run":"a49af1c2"}
+{"t":"start","ts":"2026-11-06T08:44:56.915Z","id":"ra21c9762","flow":"авто","lead":"pravniyat-razbirach","auto":true}
+{"t":"handoff","ts":"2026-11-06T08:44:56.915Z","id":"ra21c9762","from":"pravniyat-razbirach","to":"човек","status":"блокер","run":"34d22f95"}
+{"t":"handoff","ts":"2026-11-06T09:05:14.359Z","id":"ra21c9762","from":"socialdjiyata","to":"човек","status":"има бележки","run":"99cfb204"}
+{"t":"handoff","ts":"2026-11-06T09:05:22.365Z","id":"ra21c9762","from":"kodadjiyata","to":"човек","status":"блокер","run":"ff8df98e"}

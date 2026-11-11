@@ -10,6 +10,7 @@ import type { Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Role } from '@prisma/client';
+import { VERSIONE } from '../../src/legale/versioni.js';
 
 export const PORT = 4398;
 export const BASE = `http://127.0.0.1:${PORT}`;
@@ -92,7 +93,8 @@ let defaultAzienda: Promise<string> | null = null;
 export async function makeAzienda(
   name = `Azienda ${++aziendaCounter} ${randomBytes(2).toString('hex')}`,
 ) {
-  return prisma.azienda.create({ data: { name } });
+  // Accepted terms of service (src/legale/): the tests of the acceptance itself clear them.
+  return prisma.azienda.create({ data: { name, condizioniVersione: VERSIONE.CONDIZIONI } });
 }
 
 /** The company every account of a test file lands in unless the test says otherwise. */
@@ -116,6 +118,7 @@ export async function makeUser(role: Role, name = `${role} ${++userCounter}`, az
       name,
       passwordHash: await hashed,
       master: role === 'MASTER',
+      regoleVersione: VERSIONE.REGOLE,
       ...(azienda ? { memberships: { create: { aziendaId: azienda, role } } } : {}),
     },
   });

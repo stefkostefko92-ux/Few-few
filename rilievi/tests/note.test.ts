@@ -212,10 +212,11 @@ describe('the supplier forms in the form', () => {
     // The check on the panel follows the panel, not the argano (24 October 2026).
     assert.deepEqual(after('argano'), { kitControlloGanasceTipo: ['arganoPreventivo'] });
     // The 2SG sheet twice, each after its own question: the suspensions (automatic doors) and the
-    // operator (automatic and semi-automatic doors) — one of them open at a time.
+    // operator (automatic and semi-automatic doors) — one of them open at a time. The operator's comes
+    // after "2SG o altro" and the field of "Altro" (10 November 2026).
     assert.deepEqual(after('serrature'), {
       sospensioniNumero: ['sospensioni'],
-      operatore: ['operatore'],
+      operatoreModuloAltro: ['operatoreModulo'],
     });
     assert.deepEqual(after('note'), {});
     for (const key of ['quadro', 'argano', 'serrature']) {

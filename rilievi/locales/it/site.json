@@ -76,7 +76,7 @@
         "text": "Lunghezza, larghezza, interassi dei fori e display delle bottoniere vecchie: una riga per ogni fermata dell'impianto."
       },
       "safe": {
-        "title": "Nessun lavoro si perde",
+        "title": "Il lavoro di squadra è protetto",
         "text": "Se due persone modificano la stessa scheda, la seconda viene avvisata invece di sovrascrivere. Le schede eliminate restano nel cestino e ogni operazione finisce nel registro."
       }
     },
@@ -240,7 +240,8 @@
     },
     "roles": {
       "title": "Titolare e responsabile",
-      "text": "Per il sito pubblico e per le richieste di accesso il titolare del trattamento è Carbon Stealth VCC. Per gli account e le schede di un'azienda che usa il portale, titolare è l'azienda: Carbon Stealth li tratta per suo conto, come responsabile del trattamento (art. 28 GDPR), solo per fornire il portale. Per questi dati rivolgetevi prima all'azienda per cui lavorate. Alla fine del servizio l'azienda riceve tutti i suoi dati in un unico file e, {endDays} giorni dopo la disattivazione, li cancelliamo definitivamente (art. 28, par. 3, lett. g) GDPR)."
+      "text": "Per il sito pubblico e per le richieste di accesso il titolare del trattamento è Carbon Stealth VCC. Per gli account e le schede di un'azienda che usa il portale, titolare è l'azienda: Carbon Stealth li tratta per suo conto, come responsabile del trattamento (art. 28 GDPR), solo per fornire il portale. Per questi dati rivolgetevi prima all'azienda per cui lavorate. Alla fine del servizio l'azienda riceve tutti i suoi dati in un unico file e, {endDays} giorni dopo la disattivazione, li cancelliamo definitivamente (art. 28, par. 3, lett. g) GDPR). Fanno eccezione il registro delle accettazioni e il registro dei calcoli emessi: Carbon Stealth li conserva come titolare, per dimostrare il contenuto del contratto e dei documenti generati e per difendersi in giudizio (vedi tabella). Non vengono cancellati con gli altri dati alla fine del servizio.",
+      "contract": "Il rapporto con le aziende è regolato dalle Condizioni generali di servizio e dall'Accordo sul trattamento dei dati (Allegato A):"
     },
     "table": {
       "title": "Quali dati, perché e per quanto tempo",
@@ -284,11 +285,23 @@
         "basis": "Per conto dell'azienda titolare; per le richieste di accesso, legittimo interesse, art. 6, par. 1, lett. f) GDPR",
         "kept": "{auditDays} giorni, poi cancellato automaticamente"
       },
+      "accettazioni": {
+        "data": "Registro delle accettazioni: per l'accettazione delle Condizioni generali di servizio, nome, email e ruolo dell'amministratore, ragione sociale, sede e partita IVA dichiarate, data e ora, versione e impronta del testo, clausole approvate specificamente, invio e verifica del codice monouso, indirizzo IP e tipo di browser, impronta della copia inviata; per ogni utente, la presa visione delle regole d'uso e dell'avvertenza sui calcoli (data, ora, versione, indirizzo IP e tipo di browser)",
+        "why": "Dimostrare chi ha concluso il contratto per l'azienda, quando e su quale testo; accertare, esercitare o difendere un diritto in sede giudiziaria",
+        "basis": "Conclusione del contratto, art. 6, par. 1, lett. b); conservazione per legittimo interesse, art. 6, par. 1, lett. f) GDPR. Titolare: Carbon Stealth",
+        "kept": "Per tutta la durata del contratto e per 10 anni dopo la sua cessazione; in caso di contestazione, fino alla sua definizione (art. 17, par. 3, lett. e) GDPR)"
+      },
+      "calcoli": {
+        "data": "Registro dei calcoli emessi: per ogni PDF di un calcolo, chi lo ha generato (nome ed email), per quale azienda, data e ora, tipo di calcolo, versione (build) del software, dati di ingresso, risultati riportati, riferimento del calcolo e impronta del file",
+        "why": "Dimostrare con quali dati e con quale versione del software è stato prodotto un documento e che indicava l'obbligo di verifica e firma del tecnico abilitato; accertare, esercitare o difendere un diritto in sede giudiziaria",
+        "basis": "Legittimo interesse, art. 6, par. 1, lett. f) GDPR. Titolare: Carbon Stealth",
+        "kept": "10 anni dalla generazione del documento; in caso di contestazione, fino alla sua definizione"
+      },
       "ip": {
         "data": "Indirizzo IP",
         "why": "Limitare i tentativi ripetuti di accesso e l'invio massiccio di richieste",
         "basis": "Legittimo interesse, art. 6, par. 1, lett. f) GDPR",
-        "kept": "Nella memoria del server al massimo un'ora; per un accesso fallito, solo un'impronta cifrata (HMAC) della rete da cui arriva, mai l'indirizzo, per 24 ore. Non viene scritto nei log"
+        "kept": "Nella memoria del server al massimo un'ora; per un accesso fallito, solo un'impronta cifrata (HMAC) della rete da cui arriva, mai l'indirizzo, per 24 ore. Non viene scritto nei log. Fa eccezione l'accettazione delle condizioni e delle regole d'uso: l'indirizzo IP è conservato nel registro delle accettazioni, per i tempi indicati sopra"
       },
       "backup": {
         "data": "Copie di sicurezza del database e di foto e video (i dati qui sopra)",
@@ -317,8 +330,8 @@
     },
     "recipients": {
       "title": "Chi altro vede i dati",
-      "hosting": "Hetzner Online GmbH, Germania — il server su cui funziona il portale, in un data center nell'Unione europea.",
-      "mail": "Sendinblue SAS (Brevo), Francia — l'invio delle email, quando è attivo: inviti, link per una nuova password, avvisi di sicurezza dell'account (verifica in due passaggi, cambio di email), avvisi di nuove richieste agli amministratori del portale e i moduli di intervento in PDF, con i nomi e le firme, che gli utenti inviano a un indirizzo scelto da loro.",
+      "hosting": "netcup GmbH, Karlsruhe, Germania — il server su cui funziona il portale, in un data center in Germania. Con netcup è in vigore un accordo sul trattamento dei dati (art. 28 GDPR).",
+      "mail": "Sendinblue SAS (Brevo), Francia — l'invio delle email, quando è attivo: inviti, link per una nuova password, avvisi di sicurezza dell'account (verifica in due passaggi, cambio di email), avvisi di nuove richieste agli amministratori del portale, il codice per firmare le condizioni di servizio e la copia delle condizioni accettate, e i moduli di intervento in PDF, con i nomi e le firme, che gli utenti inviano a un indirizzo scelto da loro.",
       "text": "Non vendiamo dati e non li cediamo per pubblicità. Il portale e i suoi dati restano nell'Unione europea; Brevo può affidare parte dell'invio delle email a sub-responsabili fuori dall'UE, e in quel caso il trasferimento è tutelato da clausole contrattuali tipo (art. 46 GDPR)."
     },
     "security": {
@@ -333,7 +346,8 @@
       "title": "I vostri diritti",
       "text": "Avete diritto di accesso, rettifica, cancellazione, limitazione del trattamento, portabilità e opposizione al trattamento basato sul legittimo interesse. Per esercitarli scrivete a",
       "reply": "Rispondiamo entro un mese.",
-      "complaint": "Avete anche il diritto di proporre reclamo alla Commissione bulgara per la protezione dei dati personali (bul. «Prof. Tsvetan Lazarov» 2, Sofia 1592, www.cpdp.bg) o all'autorità di controllo del paese UE in cui vivete, in Italia il Garante per la protezione dei dati personali."
+      "complaint": "Avete anche il diritto di proporre reclamo alla Commissione bulgara per la protezione dei dati personali (bul. «Prof. Tsvetan Lazarov» 2, Sofia 1592, www.cpdp.bg) o all'autorità di controllo del paese UE in cui vivete, in Italia il Garante per la protezione dei dati personali.",
+      "registri": "Per il registro delle accettazioni e il registro dei calcoli emessi l'opposizione e la cancellazione possono non essere accolte finché i dati servono ad accertare, esercitare o difendere un diritto in sede giudiziaria (artt. 17, par. 3, lett. e) e 21, par. 1, GDPR)."
     },
     "changes": {
       "title": "Modifiche",

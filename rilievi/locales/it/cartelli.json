@@ -64,7 +64,7 @@
       "nonDisponibile": "La scheda scelta non è più disponibile: scegline un'altra o compila senza scheda.",
       "impianto": "Impianto",
       "matricola": "Matr. {m}",
-      "numero": "Impianto n. {n}",
+      "numero": "Impianto n. {n}",
       "senzaNumero": "Scheda senza matricola",
       "nelCestino": "scheda nel cestino",
       "collegato": "Compilato dalla scheda: {nome}.",

@@ -12,8 +12,8 @@
   </div>
   <div class="toolbar">
     <% if (modifica) { %><a class="btn" href="/cartelli/<%= c.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('cartelli.modifica') %></a><% } %>
-    <a class="btn" href="/cartelli/<%= c.id %>/pdf?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('cartelli.apri') %></a>
-    <a class="btn btn--primary" href="/cartelli/<%= c.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('cartelli.pdf') %></a>
+    <a class="btn" data-pdf href="/cartelli/<%= c.id %>/pdf?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('cartelli.apri') %></a>
+    <a class="btn btn--primary" data-pdf href="/cartelli/<%= c.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('cartelli.pdf') %></a>
   </div>
 </div>
 <div class="stack-gap cartello">

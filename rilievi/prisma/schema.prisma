@@ -89,48 +89,53 @@ enum AccessRequestStatus {
 /// Фирма — клиент на портала: свои хора, свои карти, свое лого на листа. Създава я само MASTER
 /// (собственикът на портала); всяка фирма вижда само своето (src/auth/scope.ts).
 model Azienda {
-  id               String    @id @default(cuid())
-  name             String    @unique @db.VarChar(120)
+  id                 String    @id @default(cuid())
+  name               String    @unique @db.VarChar(120)
   /// Логото за листа и PDF-а — вече прекодирано от src/aziende/logo.ts (PNG или JPEG, без метаданни).
-  logo             Bytes?
-  logoType         String?   @db.VarChar(20)
-  logoWidth        Int?
-  logoHeight       Int?
-  logoUpdatedAt    DateTime?
+  logo               Bytes?
+  logoType           String?   @db.VarChar(20)
+  logoWidth          Int?
+  logoHeight         Int?
+  logoUpdatedAt      DateTime?
   /// Деактивирана фирма: хората ѝ не влизат и сесиите им падат; картите ѝ остават.
-  deactivatedAt    DateTime?
+  deactivatedAt      DateTime?
   /// Редът на разделите на картата във фирмата (ключовете от src/schede/fields.ts); празно — редът по
   /// подразбиране. Подрежда го администраторът ѝ (src/aziende/sezioni.ts).
-  ordineSezioni    String[]  @default([])
-  /// Скицникът в края на картата (листове за рисуване на ръка, src/schizzi/) — включва го само MASTER.
-  /// Изключен: полето изчезва от формата, а нарисуваното остава и се печата.
-  schizzi          Boolean   @default(false)
+  ordineSezioni      String[]  @default([])
+  /// Скицникът — от 10 ноември 2026 винаги включен за всички (собственикът: „attiva gli schizzi per tutti
+  /// … togli l'opzione per disattivarli“); кодът не чете колоната, тя остава за връщане назад.
+  schizzi            Boolean   @default(true)
   /// Последният даден номер на лист за интервенция във фирмата (собствен брояч от 1, без дупки):
   /// новият лист взема +1 в транзакцията си (src/interventi/service.ts).
-  interventiNumero Int       @default(0)
+  interventiNumero   Int       @default(0)
   /// Данните на фирмата за главата на табелата „Avviso di fermo impianto“ (име, дейност, адрес,
   /// контакти, P. IVA) — попълва ги администраторът ѝ; проверени при запис и четени с недоверие
   /// (src/aziende/dati.ts). null — още не са записани.
-  datiSocietari    Json?
+  datiSocietari      Json?
   /// Шаблонът на табелата, избран в настройките (src/cartelli/modelli.ts); непознат или null — първият.
-  cartelloModello  String?   @db.VarChar(40)
+  cartelloModello    String?   @db.VarChar(40)
   /// Имената на ролите във фирмата ({ADMIN: „Titolare“, …}) — сменя ги администраторът ѝ; липсващото
   /// е името по подразбиране (src/auth/permessi.ts).
-  nomiRuoli        Json?
+  nomiRuoli          Json?
   /// Правата на ролите под ADMIN за картите, листовете, табелите и регистъра ({TECNICO: [...], …}) —
   /// сменя ги администраторът ѝ; липсващата роля е по йерархията (src/auth/permessi.ts).
-  permessiRuoli    Json?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  permessiRuoli      Json?
+  /// Версията на условията за услугата, приети за фирмата от неин ADMIN (src/legale/); различна от
+  /// текущата — хората ѝ не ползват портала до приемането. Доказателството е в `Accettazione`.
+  condizioniVersione String?   @db.VarChar(20)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  memberships    Membership[]
-  invites        Invite[]
-  schede         Scheda[]
-  interventi     Intervento[]
-  cartelli       Cartello[]
-  calcoliArgano  CalcoloArgano[]
-  audit          AuditLog[]
-  accessRequests AccessRequest[]
+  memberships       Membership[]
+  invites           Invite[]
+  schede            Scheda[]
+  interventi        Intervento[]
+  cartelli          Cartello[]
+  calcoliArgano     CalcoloArgano[]
+  calcoliLimitatore CalcoloLimitatore[]
+  verbali           Verbale[]
+  audit             AuditLog[]
+  accessRequests    AccessRequest[]
 }
 
 /// Акаунт. Създава се САМО от приета покана (или от `owner:create` за първия MASTER) — регистрация няма.
@@ -164,32 +169,43 @@ model User {
   /// Последната приета стъпка от 30 s: същият код не минава втори път.
   totpLastStep       Int?
   lastLoginAt        DateTime?
+  /// Докога човекът е прочел новините на портала (src/novita/): прозорецът показва публикуваните след
+  /// това. Нов акаунт — от създаването си (по-старите новини не са новост за него); „Ho capito“ — сега.
+  novitaLetteAt      DateTime  @default(now())
+  /// Версията на правилата за ползване, които човекът е приел (src/legale/); различна от текущата —
+  /// порталът иска приемане, преди да отвори нещо друго. Доказателството е в `Accettazione`.
+  regoleVersione     String?   @db.VarChar(20)
   passwordChangedAt  DateTime  @default(now())
   invitedById        String?
   invitedBy          User?     @relation("InvitedUsers", fields: [invitedById], references: [id], onDelete: SetNull)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  invitedUsers     User[]           @relation("InvitedUsers")
-  memberships      Membership[]
-  sessions         Session[]
-  invitesSent      Invite[]         @relation("InvitesSent")
-  resets           PasswordReset[]  @relation("ResetsFor")
-  resetsCreated    PasswordReset[]  @relation("ResetsCreated")
-  schedeCreated    Scheda[]         @relation("SchedeCreated")
-  schedeUpdated    Scheda[]         @relation("SchedeUpdated")
-  schedeDeleted    Scheda[]         @relation("SchedeDeleted")
-  allegatiCaricati Allegato[]       @relation("AllegatiCaricati")
-  interventiCreati Intervento[]     @relation("InterventiCreati")
-  interventiMod    Intervento[]     @relation("InterventiModificati")
-  interventiChiusi Intervento[]     @relation("InterventiChiusi")
-  cartelliCreati   Cartello[]       @relation("CartelliCreati")
-  recoveryCodes    RecoveryCode[]
-  loginChallenges  LoginChallenge[]
-  cartelliMod      Cartello[]       @relation("CartelliModificati")
-  calcoliArgano    CalcoloArgano[]
-  auditEntries     AuditLog[]
-  requestsDecided  AccessRequest[]  @relation("AccessRequestsDecided")
+  invitedUsers      User[]              @relation("InvitedUsers")
+  memberships       Membership[]
+  sessions          Session[]
+  invitesSent       Invite[]            @relation("InvitesSent")
+  resets            PasswordReset[]     @relation("ResetsFor")
+  resetsCreated     PasswordReset[]     @relation("ResetsCreated")
+  schedeCreated     Scheda[]            @relation("SchedeCreated")
+  schedeUpdated     Scheda[]            @relation("SchedeUpdated")
+  schedeDeleted     Scheda[]            @relation("SchedeDeleted")
+  allegatiCaricati  Allegato[]          @relation("AllegatiCaricati")
+  interventiCreati  Intervento[]        @relation("InterventiCreati")
+  interventiMod     Intervento[]        @relation("InterventiModificati")
+  interventiChiusi  Intervento[]        @relation("InterventiChiusi")
+  cartelliCreati    Cartello[]          @relation("CartelliCreati")
+  recoveryCodes     RecoveryCode[]
+  firmeCondizioni   FirmaCondizioni[]
+  loginChallenges   LoginChallenge[]
+  cartelliMod       Cartello[]          @relation("CartelliModificati")
+  calcoliArgano     CalcoloArgano[]
+  calcoliLimitatore CalcoloLimitatore[]
+  verbaliCreati     Verbale[]           @relation("VerbaliCreati")
+  verbaliMod        Verbale[]           @relation("VerbaliModificati")
+  verbaliChiusi     Verbale[]           @relation("VerbaliChiusi")
+  auditEntries      AuditLog[]
+  requestsDecided   AccessRequest[]     @relation("AccessRequestsDecided")
 
   @@index([invitedById])
   @@index([master])
@@ -305,13 +321,14 @@ model PasswordReset {
 }
 
 /// Схемата на уредбата — полетата и редът им са дословно от заданието (src/schede/fields.ts).
-/// Идентификаторите (matricola, numeroImpianto) са низове само от цифри: водещата нула се пази.
+/// N° impianto е низ само от цифри (водещата нула се пази); матрикулата — свободен текст до 40 знака
+/// (собственикът, 10 ноември 2026).
 model Scheda {
   id                           String                   @id @default(cuid())
   data                         DateTime                 @db.Date
   indirizzo                    String?                  @db.VarChar(200)
   marca                        String?                  @db.VarChar(120)
-  matricola                    String?                  @db.VarChar(20)
+  matricola                    String?                  @db.VarChar(40)
   numeroImpianto               String?                  @db.VarChar(20)
   /// Работната поръчка, по която е огледът (по желание).
   buonoLavoro                  String?                  @db.VarChar(60)
@@ -342,6 +359,10 @@ model Scheda {
   pattinoRetrattile            Boolean?
   pattinoRetrattileNumero      Int?
   pattinoRetrattileTipo        String?                  @db.VarChar(120)
+  /// Само при ръчни врати (собственикът, 10 ноември 2026).
+  contattiAntine               Boolean?
+  /// Не `bloccaPortine` — тя е махнатият въпрос от октомври със старите си отговори.
+  bloccaPortineDaInstallare    Boolean?
   /// „Serrature da cambiare“ (до октомври 2026 — „Serrature/sospensioni“) — при ръчни и полуавтоматични
   /// врати. numero/tipo — само при true.
   serrature                    Boolean?
@@ -355,6 +376,10 @@ model Scheda {
   /// собственикът, 22 октомври 2026) и от 24 октомври и при автоматични; при true — листът 2SG, в същата
   /// колона (при автоматични и „Sospensioni: Sì“ листът е един — на окачванията).
   operatore                    Boolean?
+  /// „Vuoi compilare modulo d'ordine?“ и кой — 2SG (листът) или друг (собственикът, 10 ноември 2026).
+  operatoreOrdine              Boolean?
+  operatoreModulo              OperatoreModulo?
+  operatoreModuloAltro         String?                  @db.VarChar(120)
   /// Листът 2SG: {modulo, valori}. Има свой PDF.
   ordineSospensioni            Json?
   /// Бележките на раздела „Serrature o sospensioni“.
@@ -489,9 +514,10 @@ model Scheda {
   centralinaMotore             CentralinaMotore?
   centralinaBloccoValvole      String?                  @db.VarChar(120)
   emendamentoA3                Boolean?
-  /// При „Emendamento A3 da installare“: гъвкава тръба за монтиране — диаметър, дължина, бележки.
+  /// При „Emendamento A3 da installare“: гъвкава тръба за монтиране — диаметър (текст от 9 ноември 2026),
+  /// дължина, бележки.
   tuboFlessibile               Boolean?
-  tuboFlessibileDiametroMm     Decimal?                 @db.Decimal(8, 2)
+  tuboFlessibileDiametroMm     String?                  @db.VarChar(40)
   tuboFlessibileLunghezzaM     Decimal?                 @db.Decimal(8, 2)
   tuboFlessibileNote           String?
   /// Централата по листовете на собственика (3 ноември 2026): при смяна — данните за новата; при „No“ —
@@ -529,6 +555,9 @@ model Scheda {
   /// Поне една снимка влиза в печата и PDF-а — за предишния код (той печаташе всички при `true`). От 21
   /// октомври изборът е на всяка снимка (`Allegato.inStampa`); тази колона само го следва.
   fotoStampate                 Boolean                  @default(false)
+  /// Колко големи са снимките в печата и PDF-а (собственикът, 10 ноември 2026 — избор с преглед в
+  /// „Stampa e PDF“ в края на формата; src/schede/pdf-foto.ts, `DIMENSIONI`).
+  fotoDimensione               FotoDimensione           @default(MEDIE)
   /// Листовете на скицника влизат в печата и PDF-а (отметката „Schizzi“ в края на формата).
   schizziStampati              Boolean                  @default(true)
   /// Отпечатъкът на разминаванията карта ↔ модули, потвърдени при последния запис (src/ordini/collegati.ts):
@@ -549,7 +578,10 @@ model Scheda {
   deletedBy                    User?                    @relation("SchedeDeleted", fields: [deletedById], references: [id], onDelete: SetNull)
   /// Табелите „Avviso di fermo impianto“, попълнени от тази карта.
   cartelli                     Cartello[]
+  /// Протоколите „Verbale di chiusura cantiere“, попълнени от тази карта.
+  verbali                      Verbale[]
   calcoloArgano                CalcoloArgano?
+  calcoloLimitatore            CalcoloLimitatore?
   createdAt                    DateTime                 @default(now())
   updatedAt                    DateTime                 @updatedAt
 
@@ -629,6 +661,9 @@ model Allegato {
   /// Снимката влиза в края на печата и PDF-а — иконките в края на формата (по подразбиране не;
   /// клиповете — никога).
   inStampa      Boolean       @default(false)
+  /// Мястото на снимката в печата и PDF-а, избрано в „Stampa e PDF“ (10 ноември 2026); празно — по
+  /// разделите в реда на фирмата и по реда на качване, след подредените.
+  ordineStampa  Int?
   tentativi     Int           @default(0)
   caricatoDaId  String?
   caricatoDa    User?         @relation("AllegatiCaricati", fields: [caricatoDaId], references: [id], onDelete: SetNull)
@@ -760,6 +795,20 @@ enum KitA3Valvola {
   HSV_440_BIS
 }
 
+enum OperatoreModulo {
+  MODULO_2SG
+  ALTRO
+}
+
+/// Снимките в печата: малки (~35 mm, до 5 на ред), средни (~49 mm, до 4 — досегашните), големи (~74 mm,
+/// до 3) и една на ред (цялата ширина).
+enum FotoDimensione {
+  PICCOLE
+  MEDIE
+  GRANDI
+  UNA
+}
+
 enum KitA3Componente {
   BOBINA_48_12
   SARACINESCA
@@ -865,6 +914,59 @@ model Cartello {
   @@index([updatedById])
 }
 
+/// „Verbale di chiusura cantiere“ (собственикът, 5 ноември 2026, по хартиения лист): от картата на
+/// уредбата или без карта; от картата идват само адресът и „N° buono“, датата е днешната — всичко друго
+/// пише и избира човекът. Редовете по раздели (src/verbali/voci.ts): текст, а при някои „Certificato“
+/// SÌ/NO; накрая „Verbale positivo“ SÌ/NO. Подписват техникът изпълнител и супервайзърът — както листа
+/// за интервенция: само с потвърждението, върху окончателното съдържание, с отпечатък и печат; след това
+/// не се пипа и излиза в два PDF-а — „Copia azienda“ и „Copia installatore“.
+model Verbale {
+  id                   String    @id @default(cuid())
+  aziendaId            String
+  azienda              Azienda   @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  /// Картата, от която е попълнен (същата фирма — проверява се при записа). Окончателно изтритата карта
+  /// оставя протокола без връзка; връзката не е в отпечатъка, затова печатът остава верен.
+  schedaId             String?
+  scheda               Scheda?   @relation(fields: [schedaId], references: [id], onDelete: SetNull)
+  data                 DateTime  @db.Date
+  indirizzo            String?   @db.VarChar(200)
+  buono                String?   @db.VarChar(60)
+  /// Редовете по ключ ({t: текстът, c: „si“/„no“ — само при редовете с „Certificato“). Проверени при
+  /// запис (src/verbali/voci.ts); непознатите ключове не влизат.
+  voci                 Json      @default("{}")
+  positivo             Boolean?
+  /// Подписите (щрихи 600 × 200, src/interventi/firma.ts) и имената — само с потвърждението
+  /// (CHECK `Verbale_firme_check`).
+  firmaTecnico         Json?
+  firmaTecnicoNome     String?   @db.VarChar(120)
+  firmaSupervisore     Json?
+  firmaSupervisoreNome String?   @db.VarChar(120)
+  confermatoAt         DateTime?
+  /// SHA-256 на подписаното съдържание (src/verbali/sigillo.ts).
+  impronta             String?   @db.Char(64)
+  /// HMAC-SHA256 (INTERVENTI_SEAL_KEY) над отпечатъка, подписите, имената, часа и кой е потвърдил.
+  sigillo              String?   @db.Char(64)
+  /// SHA-256 на щрихите на всеки подпис: подпис, който вече стои на лист или протокол, се отказва.
+  firmaTecnicoHash     String?   @db.Char(64)
+  firmaSupervisoreHash String?   @db.Char(64)
+  confermatoById       String?
+  confermatoBy         User?     @relation("VerbaliChiusi", fields: [confermatoById], references: [id], onDelete: SetNull)
+  createdById          String?
+  createdBy            User?     @relation("VerbaliCreati", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById          String?
+  updatedBy            User?     @relation("VerbaliModificati", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@index([aziendaId, createdAt])
+  @@index([schedaId, createdAt])
+  @@index([createdById])
+  @@index([updatedById])
+  @@index([confermatoById])
+  @@index([firmaTecnicoHash])
+  @@index([firmaSupervisoreHash])
+}
+
 /// Изчислението за аргано по „RT-E MOD 10411-1“ на собственика (31 октомври 2026): входът (`argano/dati.ts`,
 /// чете се с недоверие), по едно на карта или без карта; резултатите се смятат при всяко показване.
 /// Отделна таблица — записът не мести версията на картата (`base`), а окончателно изтритата карта го
@@ -873,6 +975,34 @@ model CalcoloArgano {
   id             String   @id @default(cuid())
   /// Картата на уредбата (едно изчисление на карта); null — изчисление без карта (собственикът, 31
   /// октомври 2026): тогава адресът, матрикулата и номерът са тук (`CalcoloArgano_impianto_check`).
+  schedaId       String?  @unique
+  scheda         Scheda?  @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  /// Фирмата — на картата или избраната при новото изчисление без карта; обхватът се решава по нея.
+  aziendaId      String
+  azienda        Azienda  @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  indirizzo      String?
+  matricola      String?
+  numeroImpianto String?
+  /// Нормализираният адрес, матрикула и номер (като `Scheda.searchText`) — само без карта.
+  searchText     String   @default("")
+  dati           Json
+  updatedById    String?
+  updatedBy      User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([updatedById])
+  @@index([aziendaId, updatedAt])
+}
+
+/// Изчислението за ограничителя на скоростта по „Limitatore_velocita_EN81-20-2020.xlsx“ на собственика (5
+/// ноември 2026): входът (`limitatore/dati.ts`, чете се с недоверие), по едно на карта или без карта —
+/// както `CalcoloArgano`; резултатите се смятат при всяко показване. Записът не мести версията на картата,
+/// а окончателно изтритата карта го взима със себе си.
+model CalcoloLimitatore {
+  id             String   @id @default(cuid())
+  /// Картата на уредбата; null — изчисление без карта: тогава адресът, матрикулата и номерът са тук
+  /// (`CalcoloLimitatore_impianto_check`).
   schedaId       String?  @unique
   scheda         Scheda?  @relation(fields: [schedaId], references: [id], onDelete: Cascade)
   /// Фирмата — на картата или избраната при новото изчисление без карта; обхватът се решава по нея.
@@ -930,4 +1060,123 @@ model LoginFailure {
 
   @@index([rete, createdAt])
   @@index([createdAt])
+}
+
+/// Кога всяка новина на портала (src/novita/voci.ts) е излязла: при първото пускане на портал, който я
+/// знае — на нова инсталация в деня на новината. Текстовете са в речника, тук — само кога.
+model Novita {
+  id           String   @id
+  pubblicataAt DateTime
+}
+
+/// Видът на правния текст, който се приема (src/legale/): условията за услугата — за фирмата, от неин ADMIN,
+/// със специалното одобрение на клаузите (чл. 1341–1342 c.c.); правилата за ползване — от всеки човек.
+enum TipoTesto {
+  CONDIZIONI
+  REGOLE
+}
+
+/// Точният текст на всяка версия, както е бил приет: пише се веднъж при първото приемане на версията и не
+/// се сменя никога (src/legale/testi.ts). Доказателството не зависи от историята на репото.
+model TestoLegale {
+  tipo         TipoTesto
+  versione     String    @db.VarChar(20)
+  /// SHA-256 (hex) на `testo`.
+  hash         String    @db.Char(64)
+  testo        String
+  registratoAt DateTime  @default(now())
+
+  @@id([tipo, versione])
+}
+
+/// Едно приемане — доказателство, не настройка. Без връзки към човека и фирмата: редът остава и след
+/// изтриването им (чл. 17, ал. 3, б. „e“ GDPR), със снимка на имената. Пази се докато фирмата съществува
+/// и още ANNI_CONSERVAZIONE години след изтриването ѝ (`conservaFino` се мести тогава); изтрива го само
+/// поддръжката (src/legale/).
+model Accettazione {
+  id              String    @id @default(cuid())
+  at              DateTime  @default(now())
+  tipo            TipoTesto
+  versione        String    @db.VarChar(20)
+  hash            String    @db.Char(64)
+  /// Номерата на клаузите, одобрени специално с отделната отметка и кода (само за CONDIZIONI).
+  clausole        String[]  @default([])
+  userId          String
+  userNome        String    @db.VarChar(120)
+  userEmail       String    @db.VarChar(254)
+  /// Фирмата на човека към момента и ролята му в нея.
+  aziendaId       String?
+  aziendaNome     String?   @db.VarChar(120)
+  ruolo           Role?
+  /// Данните на фирмата, декларирани от ADMIN при приемането (само за CONDIZIONI).
+  ragioneSociale  String?   @db.VarChar(200)
+  sede            String?   @db.VarChar(300)
+  partitaIva      String?   @db.VarChar(20)
+  /// Кодът за подписа (FES): до кой адрес, кога е пратен и кога е въведен (само за CONDIZIONI).
+  otpEmail        String?   @db.VarChar(254)
+  otpInviatoAt    DateTime?
+  otpVerificatoAt DateTime?
+  /// Адресът и браузърът при приемането (чл. 19.1 от условията; privacy — регистърът на приеманията).
+  ip              String?   @db.VarChar(45)
+  userAgent       String?   @db.VarChar(300)
+  /// SHA-256 на PDF копието, пратено на администратора (само за CONDIZIONI).
+  copiaHash       String?   @db.Char(64)
+  /// HMAC над всички полета отгоре (src/legale/sigillo.ts): промяна на кое да е се вижда.
+  sigillo         String    @db.Char(64)
+  conservaFino    DateTime
+
+  @@index([userId, tipo, versione])
+  @@index([aziendaId, tipo, versione])
+  @@index([conservaFino])
+}
+
+/// Чакащ подпис на условията с код (втората стъпка на ADMIN): HMAC на кода, никога самият код. Важи 10
+/// минути и веднъж; поддръжката чисти старите.
+model FirmaCondizioni {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aziendaId  String
+  versione   String    @db.VarChar(20)
+  /// Декларираните данни на фирмата от първата стъпка ({ragioneSociale, sede, partitaIva}).
+  dichiarati Json
+  codiceHmac String    @db.Char(64)
+  email      String    @db.VarChar(254)
+  inviatoAt  DateTime  @default(now())
+  scadeAt    DateTime
+  tentativi  Int       @default(0)
+  usataAt    DateTime?
+
+  @@index([userId])
+  @@index([scadeAt])
+}
+
+/// Всеки изтеглен PDF с изчисление — какво е въвел човекът и какво е отпечатал софтуерът (входните данни,
+/// редовете на резултата, build-ът, отпечатъкът „Rif.“ от листа). Без връзки: остава и след изтриването
+/// на изчислението, картата и фирмата, до `conservaFino` (src/legale/emissioni.ts).
+model EmissioneCalcolo {
+  id           String   @id @default(cuid())
+  at           DateTime @default(now())
+  /// `argano` | `limitatore` (и бъдещите изчисления).
+  calcolo      String   @db.VarChar(20)
+  impronta     String   @db.VarChar(14)
+  build        String   @db.VarChar(10)
+  /// SHA-256 на байтовете на изпратения PDF.
+  pdfHash      String   @db.Char(64)
+  dati         Json
+  risultato    Json
+  calcoloId    String?
+  schedaId     String?
+  aziendaId    String
+  aziendaNome  String   @db.VarChar(120)
+  userId       String
+  userNome     String   @db.VarChar(120)
+  userEmail    String   @db.VarChar(254)
+  /// HMAC над всички полета отгоре (src/legale/sigillo.ts).
+  sigillo      String   @db.Char(64)
+  conservaFino DateTime
+
+  @@index([aziendaId, at])
+  @@index([impronta])
+  @@index([conservaFino])
 }

@@ -28,7 +28,9 @@ import {
   fotoFromBody,
   fotoInStampaDi,
   FOTO_KEY,
+  FOTO_DIMENSIONE,
   FOTO_MOSTRATE,
+  FOTO_ORDINE,
   sezioniEscluseDi,
   stampaFromBody,
   type SceltaFoto,
@@ -177,6 +179,8 @@ export function formValuesFromBody(body: unknown): FormValues {
   if (foto) {
     values[FOTO_MOSTRATE] = foto.mostrate;
     values[FOTO_KEY] = foto.scelte;
+    if (foto.ordine) values[FOTO_ORDINE] = foto.ordine;
+    if (foto.dimensione) values[FOTO_DIMENSIONE] = foto.dimensione;
   }
   const fogli = schizziFromBody(source);
   if (fogli) values[SCHIZZO_KEY] = fogli;

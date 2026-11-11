@@ -96,8 +96,8 @@ export async function listSchede(options: {
       SELECT "id" FROM "Scheda" WHERE ${where}
       ORDER BY
         CASE
-          WHEN "numeroImpianto" = ${exact} OR "matricola" = ${exact} THEN 0
-          WHEN "numeroImpianto" LIKE ${prefix} OR "matricola" LIKE ${prefix} THEN 1
+          WHEN "numeroImpianto" = ${exact} OR lower("matricola") = lower(${exact}) THEN 0
+          WHEN "numeroImpianto" LIKE ${prefix} OR lower("matricola") LIKE lower(${prefix}) THEN 1
           ELSE 2
         END,
         "data" DESC, "createdAt" DESC

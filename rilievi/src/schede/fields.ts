@@ -30,7 +30,8 @@ export const SECTIONS = [
       { key: 'indirizzo', kind: 'text', maxLength: 200, wide: true },
       // Работната поръчка, по която е огледът — може да остане празно.
       { key: 'buonoLavoro', kind: 'text', maxLength: 60 },
-      { key: 'matricola', kind: 'digits', maxLength: 20 },
+      // Свободен текст (собственикът, 10 ноември 2026 — „Nel numero matricola fallo campo di tipo testo“).
+      { key: 'matricola', kind: 'text', maxLength: 40 },
       { key: 'numeroImpianto', kind: 'digits', maxLength: 20 },
       { key: 'portataKg', kind: 'int', min: 0, max: 100_000, unit: 'kg' },
       { key: 'capienzaPersone', kind: 'int', min: 0, max: 1_000, unit: 'persone' },

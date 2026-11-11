@@ -70,7 +70,7 @@
       "titoloNumero": "Firma del modulo n. {n}",
       "testo": "Quando il modulo è completo, rileggetelo insieme al cliente e firmate: la firma vale per il contenuto mostrato e dopo la conferma il modulo non si può più modificare.",
       "pulsante": "Firma e conferma",
-      "leggi": "Rileggete il modulo qui sotto insieme al cliente: le firme valgono esattamente per questo contenuto. Dopo la conferma non si potrà più modificare; resteranno solo il PDF e l'invio per email.",
+      "leggi": "Rileggete il modulo qui sotto insieme al cliente: le firme si riferiscono esattamente a questo contenuto. Dopo la conferma non si potrà più modificare; resteranno solo il PDF e l'invio per email.",
       "impronta": "Impronta del contenuto (SHA-256)",
       "improntaHint": "La stessa impronta viene stampata sul PDF: identifica il contenuto firmato.",
       "invio": "Firma e conferma il modulo",

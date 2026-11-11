@@ -18,6 +18,16 @@
     </dl>
   </section>
   <% } %>
+  <% if (!currentUser.master) { const m = currentUser.memberships[0]; const giorno = (v) => fmt.day(new Date(v + 'T00:00:00Z')); %><section aria-labelledby="h-condizioni">
+    <h2 class="section__title" id="h-condizioni"><%= t('legale.account.titolo') %></h2>
+    <% if (m && m.condizioniVersione) { %><p><%= t('legale.account.versione', { versione: giorno(m.condizioniVersione) }) %></p><% } %>
+    <% if (currentUser.regoleVersione) { %><p><%= t('legale.account.regole', { versione: giorno(currentUser.regoleVersione) }) %></p><% } %>
+    <div class="toolbar">
+      <a class="btn" href="/condizioni"><%= t('legale.account.pagina') %></a>
+      <% for (const a of currentUser.memberships.filter((x) => x.role === 'ADMIN' && x.condizioniVersione)) { %><a class="btn" data-pdf href="/condizioni/copia?azienda=<%= encodeURIComponent(a.aziendaId) %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('legale.copia.scarica') %><%= currentUser.memberships.length > 1 ? ' — ' + a.aziendaName : '' %></a><% } %>
+    </div>
+  </section>
+  <% } %>
   <section aria-labelledby="h-password">
     <h2 class="section__title" id="h-password"><%= t('account.passwordTitle') %></h2>
     <form class="form" method="post" action="/account/password" novalidate>

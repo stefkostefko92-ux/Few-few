@@ -1,4 +1,4 @@
-// The public side in a real Chromium: the landing page and the privacy policy, in Italian only (light
+// The public side in a real Chromium: the landing page, the privacy policy and the updates, in Italian only (light
 // and dark, desktop and phone, axe-core WCAG 2.1 AA, no horizontal scroll, no Cyrillic, every photo
 // loaded), then an access request sent from the form and accepted by the MASTER: a new company and the
 // invitation of its administrator.
@@ -8,6 +8,8 @@ import { audit, fail, italianOnly, signIn } from './helpers.mjs';
 const PAGES = [
   ['home', '/'],
   ['privacy', '/privacy'],
+  ['novita', '/novita'],
+  ['condizioni', '/condizioni'],
 ];
 
 export async function checkSite(browser, { base, shots, email, password }) {
