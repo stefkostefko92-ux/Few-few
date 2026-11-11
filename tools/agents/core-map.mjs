@@ -45,6 +45,12 @@ export function coreReport(files) {
   return { core, tests, coreWithoutTest: untested };
 }
 
+// Ядро → планът минава през втори наш агент ПРЕДИ кода (Boris Cherny, 2026: „one Claude writes the plan,
+// a second reviews it as a staff engineer“). Сам авторът не вижда дупките в собствения си план.
+export const PLAN_REVIEW = "↳ ядро: планът минава през втори наш агент преди кода — Разбивача (инварианти: пари, фискал, достъп), " +
+  "Качествения (дизайн и поддръжка) или умение razpit; после тест първо, човекът чете тестовете.";
+export function planReviewHint(report) { return report?.core?.length ? PLAN_REVIEW : ""; }
+
 async function runCli() {
   const argv = process.argv.slice(2);
   if (argv[0] === "--diff") {
@@ -54,6 +60,7 @@ async function runCli() {
     const r = coreReport([...new Set(files)]);
     if (!r.core.length) { console.log("✓ core-map: diff-ът не пипа ядро — листа."); process.exit(0); }
     console.log(`ядро (${r.core.length}): ${r.core.join(", ")}`);
+    console.log(planReviewHint(r));
     if (r.coreWithoutTest.length) {
       console.log(`✗ ядро без тест в същия продукт: ${r.coreWithoutTest.join(", ")} — първо тест (умение test-driven-development), човекът чете тестовете.`);
       process.exit(1);

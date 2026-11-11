@@ -38,6 +38,9 @@ jobs:
         run: node tools/agents/defect-rate.mjs
       - name: Всички тестове
         run: node --test $(find tools -name '*.test.mjs')
+      # Loop „code-hygiene“ (L1): продуктовият код — дълг, дубли, големи файлове, дял тестове. Само доклад.
+      - name: Чистота на продуктовия код (доклад, не гейт)
+        run: node tools/qa/hygiene.mjs
       # Реалният ПОВЕДЕНЧЕСКИ eval (жив LLM) — не може евтин PR гейт, затова тича по КАДАНС тук.
       # Детерминистичният слой (invariant-check) вече е в гейта горе; това мери реалното поведение
       # на агентите срещу golden spec-овете. Без ANTHROPIC_API_KEY secret → скрипта излиза 0 с ясно
