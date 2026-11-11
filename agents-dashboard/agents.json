@@ -1212,7 +1212,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 626
+        "lessons": 628
       },
       "evolution": [
         {
@@ -2048,9 +2048,20 @@
           "date": "2026-11-11",
           "event": "v56.7 — учене",
           "detail": "Научи: mattpocock improve-codebase-architecture HTML-REPORT шаблонът зарежда Tailwind Play CDN… (+6 още)"
+        },
+        {
+          "version": "56.9.0",
+          "date": "2026-11-11",
+          "event": "v56.9 — учене",
+          "detail": "Научи: Express обработчик на грешки, който винаги връща 500, превръща грешките на body-parser … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „Express обработчик на грешки, който винаги връща 500, превръща грешките на body-parser …\" (+1 още)"
+        },
         {
           "date": "2026-11-11",
           "type": "learning",
