@@ -84,3 +84,10 @@ export function hmacCodiceFirma(sfidaId: string, codice: string): string {
 export function hmacRete(rete: string): string {
   return createHmac('sha256', derived('login-net-v1')).update(rete).digest('hex');
 }
+
+/** HMAC на тайната част на API ключ (src/api/chiavi.ts), вързан за префикса му — в базата не стои ключът. */
+export function hmacChiaveApi(prefisso: string, segreto: string): string {
+  return createHmac('sha256', derived('api-key-v1'))
+    .update(`${prefisso}:${segreto}`, 'utf8')
+    .digest('hex');
+}

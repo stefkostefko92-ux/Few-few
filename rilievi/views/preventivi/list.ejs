@@ -14,6 +14,7 @@
     <p class="page-head__sub"><%= t('preventivi.listSub') %></p>
   </div>
   <div class="toolbar">
+    <a class="btn" href="/preventivi/esporta.csv<%= params.toString() ? '?' + params.toString() : '' %>" download><%- include('../partials/icon', { name: 'download' }) %><%= t('csv.scarica') %></a>
     <a class="btn" href="/preventivi/listino<%= aziendaFilter ? '?azienda=' + encodeURIComponent(aziendaFilter) : '' %>"><%- include('../partials/icon', { name: 'euro' }) %><%= t('preventivi.listino.titolo') %></a>
     <% if (can('preventivi:write')) { %><a class="btn btn--primary" href="/preventivi/nuovo"><%- include('../partials/icon', { name: 'plus' }) %><%= t('preventivi.new') %></a><% } %>
   </div>

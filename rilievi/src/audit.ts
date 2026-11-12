@@ -120,6 +120,9 @@ export const AUDIT_ACTIONS = [
   'ALLEGATO_ANNOTAZIONI',
   // Съобщенията на /stato (src/stato/avvisi.ts): видът, ново ли е, затворено ли е — без текста.
   'STATO_AVVISO',
+  // Ключовете за API (src/api/chiavi.ts): кой ред — без ключа.
+  'API_CHIAVE_CREATA',
+  'API_CHIAVE_REVOCATA',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-12-csv-api": {
+        "area": "Portale",
+        "titolo": "Elenchi in Excel e chiavi API",
+        "testo": "Gli elenchi delle schede e dei preventivi si scaricano in un file CSV che Excel apre direttamente, con la ricerca e il filtro che stai usando. L'amministratore dell'azienda può creare chiavi API (in Impostazioni → Chiavi API) per far leggere le schede a un altro programma, solo in lettura: ogni chiave si vede una volta, scade dopo un anno e si può revocare."
+      },
       "2026-11-12-stato-servizio": {
         "area": "Portale",
         "titolo": "Pagina dello stato del servizio",

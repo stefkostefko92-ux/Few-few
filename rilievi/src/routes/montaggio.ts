@@ -24,7 +24,10 @@ import { verbaliFirmaRouter } from './verbali-firma.js';
 import { verbaliNuovoRouter } from './verbali-nuovo.js';
 import { verbaliRouter } from './verbali.js';
 import { allegatiAnnotazioniRouter } from './allegati-annotazioni.js';
+import { apiRouter } from './api.js';
+import { impostazioniApiRouter } from './impostazioni-api.js';
 import { buoniFirmeRouter } from './buoni-firme.js';
+import { esportaCsvRouter } from './esporta-csv.js';
 import { statoRouter } from './stato.js';
 import { buoniNuovoRouter } from './buoni-nuovo.js';
 import { buoniRouter } from './buoni.js';
@@ -58,6 +61,8 @@ import { masterRegistriRouter } from './master-registri.js';
  * значението: `/cartelli/nuovo` и `/verbali/nuovo` — преди `/:id`, `/utenti/invita` — преди `/utenti/:id`.
  */
 export function montaRouter(app: Express): void {
+  // API само за четене (ключ, не бисквитка) — най-напред: нищо от портала не стига до нея.
+  app.use(apiRouter);
   app.use(siteRouter);
   app.use(novitaRouter);
   app.use(esportazioneRouter);
@@ -72,6 +77,8 @@ export function montaRouter(app: Express): void {
   app.use(condizioniFirmaRouter);
   app.use(installaRouter);
   app.use(accessoRouter);
+  // Пред `/schede/:id` и `/preventivi/:id`: `/schede/esporta.csv`, `/preventivi/esporta.csv`.
+  app.use(esportaCsvRouter);
   app.use(schedeRouter);
   app.use(schedeStampaRouter);
   app.use(schedeEtichettaRouter);
@@ -104,6 +111,7 @@ export function montaRouter(app: Express): void {
   app.use(preventiviRouter);
   app.use(preventiviAzioniRouter);
   app.use(impostazioniPreventiviRouter);
+  app.use(impostazioniApiRouter);
   app.use(usersRouter);
   // След usersRouter: `/utenti/invita` е преди `/utenti/:id`.
   app.use(usersManageRouter);

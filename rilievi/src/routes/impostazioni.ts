@@ -1,4 +1,5 @@
 import { Router, type Request } from 'express';
+import { chiaviDi } from '../api/chiavi.js';
 import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { nomiSalvati, permessiSalvati } from '../auth/permessi.js';
 import { ultimaEsportazione } from '../aziende/cambio.js';
@@ -85,6 +86,9 @@ async function riepilogo(
     ultimaEsportazione(azienda.id),
     prisma.fornitore.count({ where: { aziendaId: azienda.id } }),
   ]);
+  const nChiavi = await prisma.chiaveApi.count({
+    where: { aziendaId: azienda.id, revocataAt: null, scadeAt: { gt: new Date() } },
+  });
   const righe: Record<SezioneImpostazioni, string> = {
     azienda:
       t(dati?.ragioneSociale ? 'impostazioni.hub.datiSi' : 'impostazioni.hub.datiNo') +
@@ -96,6 +100,7 @@ async function riepilogo(
         : 'impostazioni.hub.ordineBase',
     ),
     cartelli: t('impostazioni.hub.modello', { nome: modelloDi(azienda.cartelloModello).titolo }),
+    api: nChiavi > 0 ? t('api.hubN', { n: nChiavi }) : t('api.hub0'),
     preventivi: t(
       azienda.preventivoCondizioni
         ? 'preventivi.impostazioni.hubSi'
@@ -154,6 +159,7 @@ impostazioniRouter.get('/impostazioni/:sezione', settings, async (req, res, next
     azienda,
     ...(sezione === 'condizioni' ? { condizioni: await statoCondizioni(azienda) } : {}),
     ...(sezione === 'fornitori' ? { fornitori: await fornitoriDi(azienda.id) } : {}),
+    ...(sezione === 'api' ? { chiaviApi: await chiaviDi(azienda.id) } : {}),
   });
 });
 

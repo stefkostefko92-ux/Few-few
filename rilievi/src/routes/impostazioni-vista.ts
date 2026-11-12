@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { config } from '../config.js';
 import { sendError } from '../auth/guards.js';
 import {
   CAPACITA_CONFIGURABILI,
@@ -33,6 +34,7 @@ export const SEZIONI_IMPOSTAZIONI = [
   'fornitori',
   'firme',
   'condizioni',
+  'api',
   'esportazione',
 ] as const;
 export type SezioneImpostazioni = (typeof SEZIONI_IMPOSTAZIONI)[number];
@@ -47,6 +49,7 @@ export const ICONE_SEZIONI: Readonly<Record<SezioneImpostazioni, string>> = {
   fornitori: 'mail',
   firme: 'sign',
   condizioni: 'seal',
+  api: 'key',
   esportazione: 'download',
 };
 
@@ -96,6 +99,10 @@ export interface VistaSezione {
   dati?: { values: Record<string, string>; errors: Partial<Record<string, string>> };
   ruoli?: { values: Record<string, string | string[]>; errors: Partial<Record<string, string>> };
   preventivi?: { valore: string; errore: boolean };
+  /** Раздел „Chiavi API“ — ключовете на фирмата и новият (показан веднъж). */
+  chiaviApi?: unknown;
+  chiaveNuova?: string | null;
+  erroreChiave?: string | null;
   /** Раздел „Condizioni“ — приемането и правилата на хората (routes/impostazioni.ts). */
   condizioni?: unknown;
   /** Раздел „Firme“ — информацията по чл. 13 на страницата на подписа (routes/impostazioni-firme.ts). */
@@ -137,6 +144,10 @@ export function renderImpostazioni(res: Response, status: number, view: VistaSez
       errors: {},
     },
     preventivi: { valore: azienda.preventivoCondizioni ?? '', errore: false },
+    chiaviApi: [],
+    chiaveNuova: null,
+    erroreChiave: null,
+    publicBase: config().PUBLIC_BASE_URL,
     maxCondizioniPreventivo: MAX_CONDIZIONI,
     maxCodice: 80,
     maxClausola: 1000,

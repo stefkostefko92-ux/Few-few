@@ -42,6 +42,10 @@
       "fornitori": {
         "titolo": "Fornitori",
         "desc": "La rubrica dei fornitori a cui inviare i moduli d'ordine dal portale."
+      },
+      "api": {
+        "titolo": "Chiavi API",
+        "desc": "Chiavi per leggere le schede dell'azienda da un altro programma, in sola lettura."
       }
     },
     "hub": {

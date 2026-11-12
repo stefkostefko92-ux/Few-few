@@ -165,6 +165,7 @@ model Azienda {
   listino           VoceListino[]
   audit             AuditLog[]
   accessRequests    AccessRequest[]
+  chiaviApi         ChiaveApi[]
 }
 
 /// Акаунт. Създава се САМО от приета покана (или от `owner:create` за първия MASTER) — регистрация няма.
@@ -247,6 +248,7 @@ model User {
   preventiviCreati    Preventivo[]          @relation("PreventiviCreati")
   preventiviMod       Preventivo[]          @relation("PreventiviModificati")
   avvisiStato         AvvisoStato[]         @relation("AvvisiStato")
+  chiaviApi           ChiaveApi[]           @relation("ChiaviApi")
 
   @@index([invitedById])
   @@index([master])
@@ -1598,4 +1600,24 @@ model AvvisoStato {
 enum TipoAvvisoStato {
   INTERRUZIONE
   MANUTENZIONE
+}
+
+/// Ключ за API само за четене на фирма (D2): в базата — префиксът (за търсене) и HMAC на тайната част; самият
+/// ключ се показва веднъж. Изтича (`scadeAt`), отменя се (`revocataAt`); не влиза в износа (Allegato B, B.7).
+model ChiaveApi {
+  id          String    @id @default(cuid())
+  aziendaId   String
+  azienda     Azienda   @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  nome        String    @db.VarChar(80)
+  prefisso    String    @unique @db.VarChar(16)
+  hash        String    @db.VarChar(64)
+  scadeAt     DateTime
+  usataAt     DateTime?
+  revocataAt  DateTime?
+  createdById String?
+  createdBy   User?     @relation("ChiaviApi", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  @@index([aziendaId])
+  @@index([createdById])
 }

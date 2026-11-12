@@ -77,3 +77,16 @@ export const copiaLimiter = limiter(60 * 60_000, 20, {
     return typeof body?.copiaEmail !== 'string' || body.copiaEmail.trim() === '';
   },
 });
+
+/**
+ * API-то (routes/api.ts): 600 заявки в час на ключ (префиксът от заглавката; без ключ — мрежата), отговорът — JSON.
+ */
+export const apiLimiter = limiter(60 * 60_000, 600, {
+  keyGenerator: (req) => {
+    const m = /^Bearer\s+rk_([a-z0-9]{12})_/.exec(req.get('authorization') ?? '');
+    return m ? `k:${m[1]}` : `n:${networkKey(req)}`;
+  },
+  handler: (_req, res) => {
+    res.status(429).json({ errore: 'troppe_richieste' });
+  },
+});

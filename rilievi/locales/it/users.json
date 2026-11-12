@@ -209,6 +209,8 @@
       "AZIENDA_PREVENTIVI_CONDIZIONI": "Condizioni predefinite dei preventivi modificate",
       "ALLEGATO_ANNOTAZIONI": "Annotazioni di una foto modificate",
       "STATO_AVVISO": "Avviso della pagina di stato scritto o aggiornato",
+      "API_CHIAVE_CREATA": "Chiave API creata",
+      "API_CHIAVE_REVOCATA": "Chiave API revocata",
       "USER_EDIT": "Nome o email cambiati",
       "MEMBERSHIP_ADD": "Account aggiunto a un'azienda",
       "MEMBERSHIP_REMOVE": "Account tolto da un'azienda"

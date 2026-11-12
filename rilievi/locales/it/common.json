@@ -182,5 +182,10 @@
       "cartelli": "Cartello fermo impianto",
       "preventivi": "Preventivo"
     }
+  },
+  "csv": {
+    "aggiornata": "Ultima modifica",
+    "totaleEuro": "Totale (€)",
+    "scarica": "Scarica in Excel (CSV)"
   }
 }

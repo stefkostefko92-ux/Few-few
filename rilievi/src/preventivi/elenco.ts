@@ -66,8 +66,11 @@ export async function listPreventivi(options: {
   stato?: StatoPreventivo | null;
   page?: unknown;
   query?: string;
+  /** Колко на страница — списъкът 25, износът в CSV повече (до 5000). */
+  pageSize?: number;
 }) {
   const page = pageOf(options.page);
+  const size = Math.min(5000, Math.max(1, options.pageSize ?? PAGE_SIZE));
   const tokens = queryTokens(options.query ?? '');
   const where: Prisma.PreventivoWhereInput = {
     ...aziendaWhere(options.scope, options.azienda),
@@ -81,11 +84,11 @@ export async function listPreventivi(options: {
       where,
       select: LIST_SELECT,
       orderBy: [{ data: 'desc' }, { numero: 'desc' }, { id: 'desc' }],
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
+      skip: (page - 1) * size,
+      take: size,
     }),
   ]);
-  return { rows, total, page, pages: Math.max(1, Math.ceil(total / PAGE_SIZE)), tokens };
+  return { rows, total, page, pages: Math.max(1, Math.ceil(total / size)), tokens };
 }
 
 /** Офертите на картата (най-новите отгоре) в обхвата — за страницата на картата. */
