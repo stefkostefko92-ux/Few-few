@@ -27,17 +27,17 @@
     },
     "meta": {
       "title": "Rilievi Impianti: la scheda di rilievo degli ascensori",
-      "description": "Scheda di rilievo dell'ascensore dal telefono, foglio di intervento firmato e cartelli di fermo impianto con il tuo logo. Accesso su richiesta.",
-      "keywords": "Carbon Stealth, scheda rilievo ascensore, rilievo impianti ascensori, sopralluogo ascensore, manutenzione ascensori, software per ascensoristi, matricola impianto, foglio di intervento ascensore, cartello fermo impianto",
+      "description": "Scheda di rilievo dell'ascensore dal telefono, foglio di intervento firmato, moduli d'ordine e cartelli di fermo impianto. Primo mese gratuito.",
+      "keywords": "Carbon Stealth, scheda rilievo ascensore, rilievo impianti ascensori, sopralluogo ascensore, manutenzione ascensori, software per ascensoristi, matricola impianto, foglio di intervento ascensore, cartello fermo impianto, calcolo argano, verbale chiusura cantiere",
       "imageAlt": "Rendering 3D di un vano ascensore visto dalla fossa verso l'alto, con il nome Rilievi Impianti e Carbon Stealth VCC",
       "browser": "Un browser recente: Chrome, Edge, Firefox o Safari"
     },
     "hero": {
       "title": "Il rilievo dell'ascensore, campo per campo.",
-      "lead": "Dati di targa, funi, porte, quadro, argano o centralina, le bottoniere piano per piano: il tecnico compila la scheda dal telefono, l'ufficio la ritrova per matricola o indirizzo e la stampa con il logo dell'azienda.",
+      "lead": "Il tecnico compila la scheda dal telefono: dati di targa, funi, porte, quadro, argano o centralina, bottoniere piano per piano. In ufficio la trovi per matricola o indirizzo e la stampi con il logo della tua azienda.",
       "request": "Richiedi l'accesso",
       "login": "Accedi",
-      "note": "Non c'è registrazione libera: ogni azienda entra su richiesta e poi invita i propri tecnici."
+      "note": "L'accesso è su richiesta: ogni azienda entra con il suo amministratore, che poi invita i colleghi. Il primo mese è gratuito."
     },
     "photo": {
       "vano": "Rendering 3D di un vano ascensore visto dalla fossa verso l'alto: pareti in calcestruzzo, guide con le staffe, porte di piano illuminate, lampade del vano e la cabina in alto.",
@@ -51,49 +51,49 @@
     "legend": {
       "title": "La scheda, sezione per sezione",
       "lead": "{fields} campi in {sections} sezioni, nell'ordine della scheda di carta. Ogni numero è anche nel disegno, nel punto dell'impianto che la sezione descrive.",
-      "extra": "Le domande che non riguardano l'impianto non si vedono: serrature e pattino retrattile compaiono con porte manuali o semiautomatiche, l'operatore della cabina con porte semiautomatiche o automatiche, le sospensioni solo con porte automatiche, i tiranti in fossa solo negli impianti idraulici, fossa e testata ridotte solo negli impianti non idraulici."
+      "extra": "Le domande che non riguardano l'impianto restano nascoste. Per esempio: serrature e pattino solo con porte manuali o semiautomatiche, sospensioni solo con porte automatiche, tiranti in fossa solo negli impianti idraulici."
     },
     "features": {
       "title": "Dal sopralluogo all'ufficio",
       "search": {
-        "title": "Ritrovi ogni impianto in un attimo",
-        "text": "Cerca per numero impianto, matricola, indirizzo, marca, buono di lavoro o note. I risultati arrivano mentre scrivi e il numero esatto viene per primo."
+        "title": "Trovi l'impianto mentre scrivi",
+        "text": "Cerca per numero impianto, matricola, indirizzo, marca, buono di lavoro o note. I risultati compaiono mentre scrivi e il numero esatto viene per primo. Con Ctrl K cerchi in tutto il portale da qualsiasi pagina."
       },
       "phone": {
         "title": "Compili sul posto, dal telefono",
-        "text": "Campi grandi anche per le dita con i guanti, l'unità di misura dentro il campo e la data del giorno già scritta. Funziona nel browser, senza app da installare."
+        "text": "Campi grandi, comodi anche con i guanti; l'unità di misura è già nel campo e la data del giorno è già scritta. Si usa dal browser, senza installare nulla. Se nel vano non c'è rete, il modulo resta salvato sul telefono e lo invii quando torna il segnale."
       },
       "print": {
         "title": "Stampi o mandi il PDF",
-        "text": "La scheda esce in A4 o in PDF, con il logo della tua azienda in alto e il nome di chi l'ha compilata."
+        "text": "La scheda esce in A4 o in PDF, con il logo della tua azienda in alto e il nome di chi l'ha compilata. Per il locale macchina stampi anche un'etichetta con il codice QR della scheda."
       },
       "orders": {
-        "title": "Moduli d'ordine dal rilievo",
-        "text": "Con un quadro Pelazza, Movilift, DMG (Pitagora 4.0), Mastech (NG120 o QI Touch) o Elettroquadri (geared, gearless o oleodinamico, secondo il tipo di impianto) la scheda compila il modulo d'ordine originale; con le bottoniere da sostituire, il modulo d'ordine delle bottoniere DMG; con l'argano da sostituire, la scheda dati dell'argano; con le sospensioni o l'operatore da cambiare, il modulo 2SG per operatori e sospensioni; con la fossa o la testata ridotta, le soluzioni da installare e i dati per l'ordine di AMI 100 Mono RTBS. Ogni modulo esce come PDF a parte. Pelazza, Movilift, DMG, Pitagora, Mastech, Elettroquadri, 2SG e AMI 100 sono marchi dei rispettivi titolari."
+        "title": "I moduli d'ordine si compilano dal rilievo",
+        "text": "Se il quadro va sostituito, la scheda compila il modulo d'ordine del costruttore: Pelazza, Movilift, DMG Pitagora 4.0, Mastech (NG120 o QI Touch), Elettroquadri (in base al tipo di impianto) e GEAT. Allo stesso modo prepara il modulo delle bottoniere DMG, la scheda dati dell'argano, il modulo 2SG per operatore e sospensioni e i dati di AMI 100 Mono RTBS quando la fossa o la testata sono ridotte. Ogni modulo esce in PDF e lo mandi al fornitore per email dal portale. I marchi citati appartengono ai rispettivi titolari."
       },
       "misure": {
         "title": "Misuri le bottoniere piano per piano",
-        "text": "Lunghezza, larghezza, interassi dei fori e display delle bottoniere vecchie: una riga per ogni fermata dell'impianto."
+        "text": "Per ogni fermata: lunghezza, larghezza, interasse dei fori e display della bottoniera da sostituire."
       },
       "safe": {
-        "title": "Il lavoro di squadra è protetto",
-        "text": "Se due persone modificano la stessa scheda, la seconda viene avvisata invece di sovrascrivere. Le schede eliminate restano nel cestino e ogni operazione finisce nel registro."
+        "title": "Nessuna modifica va persa",
+        "text": "Se due persone modificano la stessa scheda, la seconda riceve un avviso invece di sovrascrivere. Le ultime 100 versioni di ogni scheda restano consultabili, le schede eliminate passano dal cestino e ogni operazione è registrata. Se vuoi, una scheda passa dall'approvazione di un responsabile prima dell'ordine."
       }
     },
     "servizi": {
       "title": "Dopo il rilievo: assistenza e cantiere",
-      "lead": "Lo stesso portale accompagna l'impianto anche dopo il sopralluogo, con i dati che la scheda già conosce.",
+      "lead": "Lo stesso portale segue l'impianto anche dopo il sopralluogo e usa i dati che la scheda già contiene.",
       "intervento": {
         "title": "Il foglio di intervento, firmato sul telefono",
         "text": "Come il blocchetto di pronto intervento: numerato per azienda, con le voci da spuntare, le prove e gli orari. Tecnico e cliente firmano con il dito; dopo la conferma il foglio non si modifica più ed esce in PDF A4, anche via email."
       },
       "cartelli": {
         "title": "Cartelli di fermo impianto con il tuo logo",
-        "text": "Cinque modelli pronti, con il logo e i dati della tua azienda in alto. Dalla scheda dell'impianto si compilano da soli indirizzo, città e il testo per gli utenti, preso dai lavori previsti; per un impianto senza scheda li scrivi a mano."
+        "text": "Cinque modelli pronti, con il logo e i dati della tua azienda in alto. Se l'impianto ha una scheda, indirizzo, città e testo per gli utenti si compilano da soli in base ai lavori previsti; per un impianto senza scheda li scrivi a mano."
       },
       "allegati": {
         "title": "Foto, video e schizzi nella scheda",
-        "text": "Foto e video in ogni sezione, compressi in automatico; scegli tu quali foto finiscono in stampa. Su richiesta, gli schizzi a mano con quote e simboli del vano."
+        "text": "Foto e video in ogni sezione, compressi in automatico. Scegli quali foto vanno in stampa, in che ordine e di che grandezza, e puoi scriverci sopra. Gli schizzi a mano hanno quote e simboli del vano."
       },
       "permessi": {
         "title": "Ruoli e permessi su misura",
@@ -102,11 +102,23 @@
       "colori": {
         "title": "I tuoi colori",
         "text": "Ognuno sceglie per sé i colori di pagina, menu, testo e pulsanti; il portale controlla che restino leggibili."
+      },
+      "documenti": {
+        "title": "Buono di lavoro e verbale di chiusura cantiere",
+        "text": "Il buono di lavoro raccoglie le lavorazioni, i controlli e le firme; quelle che non fai sul telefono le metti a mano sul foglio stampato. Il verbale di chiusura cantiere lo firmano tecnico e supervisore ed esce in due copie PDF, per l'azienda e per l'installatore."
+      },
+      "calcoli": {
+        "title": "Calcolo dell'argano e del limitatore",
+        "text": "Il calcolo dell'argano sul modello RT-E MOD 10411-1 (velocità, funi, aderenza, pressione specifica) e i valori di taratura del limitatore di velocità secondo la norma dell'impianto. Ogni foglio riporta i dati usati e va controllato e firmato da un tecnico abilitato."
+      },
+      "dati": {
+        "title": "I dati restano tuoi",
+        "text": "L'amministratore scarica quando vuole tutti i dati dell'azienda in un unico file, anche per passare a un altro fornitore, senza costi. Ci sono anche l'esportazione in Excel (CSV) e un'API in sola lettura."
       }
     },
     "roles": {
       "title": "Ogni azienda nel suo spazio",
-      "lead": "Schede, persone e logo di un'azienda li vede solo quell'azienda. Dentro, sei ruoli decidono chi consulta, chi compila, chi elimina e chi invita; l'amministratore dell'azienda può rinominarli e cambiarne i permessi.",
+      "lead": "Schede, persone e logo di un'azienda li vede solo quell'azienda. Al suo interno sei ruoli stabiliscono chi consulta, chi compila, chi elimina e chi invita; l'amministratore dell'azienda può rinominarli e cambiarne i permessi.",
       "caption": "Che cosa può fare ogni ruolo",
       "role": "Ruolo",
       "yes": "Sì",
@@ -129,11 +141,11 @@
       },
       "s2": {
         "title": "La verifichiamo",
-        "text": "Leggiamo la richiesta e creiamo lo spazio della tua azienda."
+        "text": "Leggiamo la richiesta e prepariamo lo spazio della tua azienda."
       },
       "s3": {
         "title": "L'amministratore riceve l'invito",
-        "text": "Un link personale, valido {days} giorni, per scegliere la password."
+        "text": "Un link personale, valido {days} giorni, per scegliere la password. Quando accetta le condizioni inizia il mese di prova gratuita."
       },
       "s4": {
         "title": "L'amministratore invita i colleghi",
@@ -144,7 +156,7 @@
       "title": "Domande frequenti",
       "selfSignup": {
         "q": "Posso registrarmi da solo?",
-        "a": "No. L'accesso si ottiene solo su richiesta: compili il modulo, verifichiamo i dati e mandiamo l'invito all'amministratore della tua azienda."
+        "a": "No. L'accesso si ottiene su richiesta: compili il modulo, verifichiamo i dati e mandiamo l'invito all'amministratore della tua azienda."
       },
       "visibility": {
         "q": "Chi vede le schede della mia azienda?",
@@ -152,7 +164,7 @@
       },
       "app": {
         "q": "Serve un'app da installare?",
-        "a": "Non è obbligatoria: il portale si apre nel browser, su telefono, tablet e computer. Se vuoi, puoi aggiungerlo alla schermata Home o al computer come app, a schermo intero."
+        "a": "No: il portale si apre nel browser, su telefono, tablet e computer. Se vuoi, lo aggiungi alla schermata Home e si apre a schermo intero, come un'app."
       },
       "print": {
         "q": "Si può stampare la scheda?",
@@ -168,17 +180,37 @@
       },
       "data": {
         "q": "Dove sono conservati i dati?",
-        "a": "Su un server nell'Unione europea, in un database con un backup ogni giorno."
+        "a": "Su server nell'Unione europea, con un backup ogni giorno."
+      },
+      "costo": {
+        "q": "Quanto costa?",
+        "a": "Il primo mese è gratuito, con tutte le funzioni. Poi scegli un piano in base al numero di persone: fino a 10, fino a 25 oppure oltre 25. Si paga in anticipo, non si rinnova da solo e i prezzi, IVA esclusa, li vedi prima di pagare."
+      },
+      "scadenza": {
+        "q": "Cosa succede se l'abbonamento scade?",
+        "a": "Il portale passa in sola lettura: vedi, stampi e scarichi tutto, ma non crei né modifichi dati. Nessun dato viene cancellato e con un nuovo piano tutto torna come prima."
+      },
+      "offline": {
+        "q": "Si può lavorare dove non c'è rete?",
+        "a": "Sì. Se invii una scheda o un foglio senza rete, il modulo resta salvato sul telefono fino a 7 giorni e lo invii quando torna il segnale."
+      },
+      "esporta": {
+        "q": "Posso portare via i miei dati?",
+        "a": "Sì, sempre e senza costi: l'amministratore scarica in un unico file tutti i dati dell'azienda, con foto e documenti, anche per passare a un altro fornitore."
+      },
+      "calcolo": {
+        "q": "Il calcolo dell'argano sostituisce il progettista?",
+        "a": "No. Il foglio di calcolo aiuta a controllare l'impianto con i dati del rilievo, ma va sempre verificato e firmato da un tecnico abilitato."
       }
     },
     "request": {
       "title": "Richiedi l'accesso",
-      "lead": "Raccontaci chi siete: ti rispondiamo all'email che indichi.",
+      "lead": "Scrivi chi sei e per quale azienda: ti rispondiamo all'email che indichi.",
       "next": {
         "title": "Cosa succede dopo",
         "s1": "Leggiamo la richiesta e ti rispondiamo per email.",
         "s2": "Se è tutto a posto, creiamo lo spazio della tua azienda e l'amministratore riceve l'invito. Quando accetta le condizioni inizia un mese di prova gratuita, con tutte le funzioni.",
-        "prova": "Dopo la prova, per continuare a creare e modificare dati serve un piano Premium a pagamento, in base al numero di persone (fino a 10, fino a 25, oltre 25), pagato in anticipo e senza rinnovo automatico; i prezzi, IVA esclusa, sono indicati nel portale prima del pagamento e su richiesta. Senza piano il portale resta in sola lettura e i dati si esportano sempre gratuitamente. Il servizio è riservato a imprese e professionisti.",
+        "prova": "Dopo la prova, per creare e modificare dati serve un piano a pagamento in base al numero di persone (fino a 10, fino a 25, oltre 25). Si paga in anticipo, non si rinnova da solo e i prezzi, IVA esclusa, li vedi nel portale prima di pagare. Senza piano il portale resta in sola lettura e l'esportazione dei dati è sempre gratuita. Il servizio è per imprese e professionisti.",
         "s3": "I dati servono solo per rispondere alla richiesta e li cancelliamo dopo {days} giorni."
       },
       "contact": "Preferisci scrivere?",
