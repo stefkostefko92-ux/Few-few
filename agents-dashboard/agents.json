@@ -13509,6 +13509,11 @@
         {
           "date": "2026-11-12",
           "type": "quarantine",
+          "summary": "Хипотеза → карантина: „prismaMock.updateMany връща undefined, ако не е мокнат; handler, който чете count от ус…\""
+        },
+        {
+          "date": "2026-11-12",
+          "type": "quarantine",
           "summary": "Хипотеза → карантина: „prismaMock.updateMany връща undefined, ако не е мокнат; всеки handler, който чете count…\""
         },
         {
