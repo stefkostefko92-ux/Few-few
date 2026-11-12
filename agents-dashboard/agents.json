@@ -13203,7 +13203,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 221
+        "lessons": 223
       },
       "evolution": [
         {
@@ -13547,9 +13547,20 @@
           "date": "2026-11-12",
           "event": "v21.6 — учене",
           "detail": "Научи: SupremeDiscordBot - таблото пише само categoryOpenId, а formSession.js праща ticket-фор… (+2 още)"
+        },
+        {
+          "version": "21.8.0",
+          "date": "2026-11-12",
+          "event": "v21.8 — учене",
+          "detail": "Научи: Audit log събитието MemberDisconnect (и MemberMove) не носи target потребител (само cou… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „Audit log събитието MemberDisconnect (и MemberMove) не носи target потребител (само cou…\" (+1 още)"
+        },
         {
           "date": "2026-11-12",
           "type": "learning",
