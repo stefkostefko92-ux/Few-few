@@ -36,18 +36,17 @@
 @container (max-width: 680px) {
   .sg-table .sg-cell { min-width: 0; }
   .sg-table .add-btn { font-size: 0; padding: .3rem .6rem; line-height: 1; }
-  .sg-table .add-btn::before { content: '+'; font-size: 1.05rem; font-weight: 700; }
+  .sg-table .add-btn::before { content: '+'; font-size: 1.05rem; font-weight: 700; margin-right: 0; }
 }
 
 @container (max-width: 560px) {
   .price-table th, .price-table td, .table-scroll th, .table-scroll td { padding-left: .5rem; padding-right: .5rem; }
   .price-table .add-btn { font-size: 0; padding: .3rem .6rem; line-height: 1; }
-  .price-table .add-btn::before { content: '+'; font-size: 1.05rem; font-weight: 700; }
+  .price-table .add-btn::before { content: '+'; font-size: 1.05rem; font-weight: 700; margin-right: 0; }
 }
-/* На най-тясното заглавките са с нормални букви (една дума с главни
-   и разредка не се пренася и не пуска колоната да се свие). */
+/* На най-тясното заглавките са по-дребни. */
 @container (max-width: 400px) {
-  .price-table thead th, .table-scroll thead th { text-transform: none; letter-spacing: 0; font-size: .74rem; }
+  .price-table thead th, .table-scroll thead th { font-size: .74rem; }
   .price-table th, .price-table td, .table-scroll th, .table-scroll td { padding-left: .3rem; padding-right: .3rem; font-size: .84rem; }
   .sg-table thead th:first-child { min-width: 0; }
   .price-table .price-quote { white-space: normal; }

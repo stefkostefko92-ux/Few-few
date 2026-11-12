@@ -11,6 +11,7 @@ import {
   createSpawn, catchSpawn, listOwned, feedCompanion, activateCompanion, releaseCompanion, proposeTrade, resolveTrade,
 } from "../lib/game/companionOps.js";
 import { getCurrentSeason, publicSeason } from "../lib/game/seasons.js";
+import { trainStat, attack, setPvp } from "../lib/game/battleOps.js";
 
 const router = Router();
 router.use(requireBotSecret);
@@ -32,10 +33,21 @@ async function gameOff(res, serverId) {
   res.status(403).json({ error: "GAME_DISABLED", code: "GAME_DISABLED" });
   return true;
 }
+// v53 — битките имат и собствен превключвател (game_settings.battlesEnabled).
+async function battlesOff(res, serverId) {
+  const s = await getGameSettings(serverId);
+  if (s?.enabled && s.battlesEnabled !== false) return false;
+  const code = s?.enabled ? "BATTLES_DISABLED" : "GAME_DISABLED";
+  res.status(403).json({ error: code, code });
+  return true;
+}
 const fail = (res, out) => {
   const status = { UNKNOWN_COMPANION: 404, COMPANION_NOT_ALLOWED: 403, SPAWN_ACTIVE: 409, SPAWN_TOO_SOON: 429, SPAWN_NOT_FOUND: 404, ALREADY_CAUGHT: 409, SPAWN_EXPIRED: 410, COLLECTION_FULL: 403,
     NOT_OWNED: 404, MAX_STAGE: 409, NOT_ENOUGH_SPARKS: 402, INVALID_AMOUNT: 400, SELF_TRADE: 400, TRADE_PENDING: 409, TRADE_NOT_FOUND: 404,
-    TRADE_CLOSED: 409, TRADE_EXPIRED: 410, NOT_RECIPIENT: 403, TRADE_STALE: 409 }[out.code] || 400;
+    TRADE_CLOSED: 409, TRADE_EXPIRED: 410, NOT_RECIPIENT: 403, TRADE_STALE: 409,
+    // v53 — тренировка и битки
+    INVALID_STAT: 400, STAT_CAP: 409, STAT_MAXED: 409, BUSY: 409, SELF: 400, NO_ACTIVE: 409, TARGET_NO_COMPANION: 404,
+    PVP_OFF_SELF: 403, TARGET_PVP_OFF: 403, COOLDOWN: 429, DAILY_LIMIT: 429, PAIR_COOLDOWN: 429, SHIELD: 429, PVP_LOCKED: 409 }[out.code] || 400;
   return res.status(status).json({ error: out.code, ...out });
 };
 
@@ -140,6 +152,45 @@ router.post("/game/companions/:serverId/:userId/release", async (req, res, next)
   try {
     if (await gameOff(res, req.params.serverId)) return;
     const out = await releaseCompanion(req.params.serverId, req.params.userId, ownedId);
+    if (!out.ok) return fail(res, out);
+    res.json(out);
+  } catch (err) { next(err); }
+});
+
+// ─── v53 — статистики и битки ────────────────────────────────────────────────
+// Тренировка: +1 ниво на ⚔️/🛡️/💨/❤️ срещу искри (цената и таванът — battles.js).
+router.post("/game/companions/:serverId/:userId/train", async (req, res, next) => {
+  const { ownedId, stat } = req.body || {};
+  if (typeof ownedId !== "string" || typeof stat !== "string") return bad(res, "ownedId and stat required");
+  try {
+    if (await gameOff(res, req.params.serverId)) return;
+    const out = await trainStat(req.params.serverId, req.params.userId, ownedId, stat);
+    if (!out.ok) return fail(res, out);
+    res.json(out);
+  } catch (err) { next(err); }
+});
+
+// Атака: активният спътник срещу активния на друг член. Зърното на битката се
+// тегли тук (crypto), никога от заявката.
+router.post("/game/battle", async (req, res, next) => {
+  const { serverId, attackerId, defenderId } = req.body || {};
+  if (![serverId, attackerId, defenderId].every((x) => SNOWFLAKE.test(String(x)))) return bad(res, "serverId, attackerId and defenderId required");
+  try {
+    if (await battlesOff(res, String(serverId))) return;
+    const out = await attack(String(serverId), String(attackerId), String(defenderId));
+    if (!out.ok) return fail(res, out);
+    res.status(201).json(out);
+  } catch (err) { next(err); }
+});
+
+// „Не ме нападай“: { enabled: false } маха члена от битките (и като нападател).
+router.post("/game/pvp/:serverId/:userId", async (req, res, next) => {
+  const { enabled } = req.body || {};
+  if (!SNOWFLAKE.test(String(req.params.serverId)) || !SNOWFLAKE.test(String(req.params.userId))) return bad(res, "serverId and userId required");
+  if (typeof enabled !== "boolean") return bad(res, "enabled (boolean) required");
+  try {
+    if (await gameOff(res, req.params.serverId)) return;
+    const out = await setPvp(req.params.serverId, req.params.userId, enabled);
     if (!out.ok) return fail(res, out);
     res.json(out);
   } catch (err) { next(err); }

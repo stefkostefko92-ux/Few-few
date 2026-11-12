@@ -8,6 +8,8 @@
   footer, its body is removed by redaction and the sheet is laid over it, with a link back to the
   drawing;
 - the general index's right column whole, in two lists, every entry visible and linked (indice.py);
+- on each section cover, a row of the section's renders, each linked to its page (sezioni.py);
+- the legend of page 04 and the comparison table of page 63 whole, the side tabs' cut labels whole (ritocchi.py);
 - before the back, the summary of the whole range (summary.py): copies of the price list page with
   the sheets over them, every article linked to its page, and an outline entry;
 - page labels follow the printed numbers ("14", "14 · 3D", ..., the summary "67" to "69");
@@ -23,6 +25,8 @@ import indice as I
 import inline
 import logo
 import notice
+import ritocchi as R
+import sezioni as Z
 import summary as S
 
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dist", "pdf")
@@ -33,7 +37,7 @@ gen = pymupdf.open(os.path.join(OUT, "gen.pdf"))
 doc = pymupdf.open(os.path.join(OUT, "base.pdf"))
 tpl = pymupdf.open(os.path.join(OUT, "base.pdf"))  # untouched copy: templates of the inserted pages
 n_base = doc.page_count
-if gen.page_count != len(spec) + 2 + len(stamps) + len(data["summary"]["pages"]) + 1:  # the sheets, pages 7 and 6, the stamps, the summary, the index
+if gen.page_count != len(spec) + 2 + len(stamps) + len(data["summary"]["pages"]) + 1 + len(data["sezioni"]["pages"]) + len(data["ritocchi"]["pages"]):  # the sheets, pages 7 and 6, the stamps, the summary, the index, the covers' rows, the retouches
     raise SystemExit("gen.pdf does not match spec.json: run gen.py and print.mjs again")
 
 # Page 7: remove the two line illustrations, lay the renders over the cards.
@@ -46,6 +50,8 @@ for info in drawings:
 p06.show_pdf_page(p06.rect, gen, data["p06"])
 inline.p05(doc[5], gen, data["p05"])
 I.apply(doc[I.PAGE], gen, data["index"]["pno"])
+Z.apply(doc, gen, data["sezioni"])
+R.apply(doc, tpl, gen, data["ritocchi"])
 for k, page_spec in enumerate(spec):
     if page_spec["mode"] == "inline":
         inline.product(doc[page_spec["target"] - 1], gen, k, page_spec)
@@ -69,6 +75,7 @@ for k, page_spec in sorted(standalone, key=lambda t: -t[1]["after"]):  # from th
     order.insert(at, page_spec["label"])
 S.insert(doc, tpl, gen, data["summary"], order, BODY, PAGENO)
 I.links(doc, data["index"], order)
+Z.links(doc, data["sezioni"], order)
 
 logo.apply(doc, tpl)  # the owner's logo on every page, in place of the old one (logo.py)
 

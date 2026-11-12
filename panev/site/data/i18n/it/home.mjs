@@ -4,18 +4,15 @@ export default {
   hero: {
     kicker: 'Staffe & accessori per ascensori e montacarichi',
     title: 'Staffe brevettate per ascensori: porte di piano e guide del contrappeso',
-    lead: 'Sistema forato, snodato e asolato per il fissaggio regolabile di guide del contrappeso e porte di piano — ideato per adattarsi a murature irregolari, non perpendicolari e con ferri d’armatura. Brevetto per Modello di Utilità riconosciuto dal Ministero delle Imprese e del Made in Italy.',
-    chips: ['Made in Italy', 'Acciaio zincato', 'Sistema ambidestro', 'Brevettato'],
+    lead: 'Sistema forato, snodato e asolato per il fissaggio regolabile di guide del contrappeso e porte di piano — ideato per adattarsi a murature irregolari, non perpendicolari e con ferri d’armatura.',
+    chips: ['Made in Italy', 'Acciaio zincato'],
     ctaProducts: 'Vedi prodotti e listino',
     ctaCatalog: 'Scarica il catalogo (PDF)',
-    cta3d: 'Guarda in 3D',
     patentLabel: 'Brevetto per Modello di Utilità',
     numAbbr: 'N.',
     patentOffice: 'Ministero delle Imprese e del Made in Italy — UIBM · deposito 19/05/2023',
-    visualAlt: 'Render 3D della piastra A 65 170 7 montata con la staffa B 65 320',
   },
   viewer3d: {
-    kicker: 'Vista 3D',
     title: 'Le staffe in 3D, prima di ordinare',
     lead: 'Tutti i 48 articoli del catalogo, modellati in lamiera zincata dalle quote in mm: ruotali, passa da DX a SX, guardali montati con la staffa abbinata e prova la regolazione.',
     start: 'Avvia la vista 3D',
@@ -36,7 +33,6 @@ export default {
     { value: '4 / 5', label: 'Spessore lamiera (mm)' },
   ],
   problem: {
-    kicker: 'Il problema del cantiere',
     title: 'Muri storti, ferri d’armatura, tempi stretti',
     body1: 'Lungo il vano di corsa il calcestruzzo gettato in opera presenta spesso sporgenze e rientranze che rendono problematico un montaggio preciso. Le staffe tradizionali non si adattano e costringono il montatore a modifiche sul posto, con perdita di tempo e materiali aggiuntivi.',
     body2: 'La staffa Panev unisce un elemento di fissaggio alla muratura e un elemento di supporto per il componente, collegati da un giunto articolato che regola l’angolo e da un elemento di bloccaggio che lo fissa. Le nervature di irrigidimento sono più larghe proprio in prossimità del giunto — la zona più sollecitata in opera.',
@@ -46,7 +42,6 @@ export default {
     highlightBody: 'Nervature contigue e più larghe presso il giunto articolato: la staffa resiste meglio proprio nel punto più sollecitato.',
   },
   applications: {
-    kicker: 'Campi di impiego',
     title: 'Tre applicazioni, un solo sistema',
     items: [
       {
@@ -68,7 +63,6 @@ export default {
     ambi: 'Sistema ambidestro. La nervatura di irrigidimento può essere disposta a sinistra o a destra: questo permette di aggirare i ferri d’armatura nelle pareti in calcestruzzo e di realizzare i fori nei punti più adatti, senza spostare i componenti della porta.',
   },
   featured: {
-    kicker: 'Le famiglie di prodotto',
     title: 'Dal listino: le staffe più richieste',
     families: [
       {
@@ -97,7 +91,6 @@ export default {
     seeAll: 'Listino completo con tutti i codici',
   },
   patent: {
-    kicker: 'Proprietà industriale',
     title: 'Un sistema brevettato',
     body: 'La staffa di supporto Panev Ascensori è tutelata da brevetto per Modello di Utilità rilasciato dal Ministero delle Imprese e del Made in Italy (UIBM). Il titolo protegge la soluzione di fissaggio regolabile per i componenti strutturali di impianti di ascensore e montacarichi.',
     conformity: 'Prodotti conformi alla normativa UNI EN 81 (regole di sicurezza per ascensori), acciaio conforme UNI EN 10025, idonei al collaudo UNI 10411.',
@@ -111,7 +104,6 @@ export default {
     ],
   },
   order: {
-    kicker: 'Come ordinare',
     title: 'Ordine diretto via email',
     lead: 'Nessun carrello, nessuna registrazione: scegli i codici dal listino e invia l’ordine via email. Rispondiamo con conferma d’ordine o preventivo.',
     steps: [
@@ -134,7 +126,6 @@ export default {
     mailBody: 'Spett.le Panev Ascensori,\n\ndesideriamo ordinare i seguenti articoli:\n\n- CODICE — quantità — mano DX/SX (se prevista)\n\nDati aziendali (ragione sociale, P.IVA, indirizzo di consegna):\n\nCordiali saluti',
   },
   faq: {
-    kicker: 'Domande frequenti',
     title: 'FAQ — ordini, prezzi, spedizione',
     items: [
       {

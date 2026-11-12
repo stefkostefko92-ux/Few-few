@@ -145,4 +145,27 @@ export default {
     legalTitle: 'Legal',
     rights: 'All rights reserved.',
   },
+  regola: {
+    porta: { label: 'Angular adjustment', alt: 'A 65 170 7 plate with B 65 320 bracket: angular adjustment from −8° to +8°, 3D render' },
+    guida: { label: 'Rail-to-wall distance', alt: 'SU 220 160 support with SG 80 150 bracket and counterweight guide rail: wall distance from 45 to 155 mm, 3D render' },
+    hint: 'Drag the bracket or the slider',
+    open3d: 'Open the 3D view',
+  },
+  cantiere: {
+    title: 'From the press brake to the shaft',
+    lead: 'Made in Cornaredo, fitted to uneven concrete and out-of-square walls: real photos from production and from building sites.',
+    famTitle: 'Fitted to real walls',
+    famLead: 'Photos from building sites: Panev brackets on uneven concrete and out-of-square walls, adjusted on the spot.',
+    photos: {
+      'produzione': 'Brackets in production in Cornaredo',
+      'vano-finito': 'A finished shaft: guide rails bracketed along the full height',
+      'guida-giunzione': 'Support and joining bracket on the rail, anchored to the concrete',
+      'porta-pulita': 'Three B brackets under the landing door sill',
+      'guida-supporto': 'Counterweight guide rail fixing: support and joining bracket adjusted on the shaft wall, with the plumb line',
+      'guida-vano': 'The counterweight guide rail bracketed along the shaft',
+      'porta-soglia': 'Brackets under the landing door sill, on uneven concrete',
+      'porta-staffe': 'A plates and B brackets under the sill, adjusted to an out-of-square wall',
+      'porta-regolazione': 'The hinged joint on site: the bracket follows the wall',
+    },
+  },
 };

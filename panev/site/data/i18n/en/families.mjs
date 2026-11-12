@@ -35,7 +35,6 @@ export default {
       more: 'Dedicated page',
       familiesLabel: 'Bracket families',
       crumbsLabel: 'Breadcrumb',
-      faqKicker: 'Frequently asked questions',
       otherTitle: 'Other bracket families',
       fullList: 'Full price list with every code',
       see3d: 'View in 3D',
@@ -71,6 +70,7 @@ export default {
       crumb: 'SG guide brackets',
       kicker: 'Standard guide brackets · fixed version',
       h1: 'Fixed SG guide brackets for lifts',
+      visualAlt: 'Fixed SG 80 190 guide bracket, 3D render',
       lead: 'Fixed L-shaped guide brackets in 4 mm sheet: three widths (50, 60 and 80 mm) and five lengths (130 to 220 mm), 15 codes on the price list, ready to combine with SU, SD, SC supports or with the rigid arm wall fixing.',
       faqTitle: 'SG guide brackets: FAQ',
       faq: [
@@ -83,6 +83,7 @@ export default {
       crumb: 'Custom brackets',
       kicker: 'Special and custom solutions',
       h1: 'Custom brackets and wall fixing with a rigid arm',
+      visualAlt: 'BRACCIO 160 190 adjustable rigid arm for wall fixing, 3D render',
       lead: 'For non-standard installations: the SC 50 170 support, whose projection “A” is set on the site’s shop drawing, the modular SG 225 50 guide and wall fixing with the SN 60 65 corner bracket, the SN 65 200 square bracket and the BRACCIO 160 190 adjustable rigid arm. Quoted on request.',
       faqTitle: 'Custom brackets: FAQ',
       faq: [
