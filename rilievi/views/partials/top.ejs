@@ -40,11 +40,13 @@
 <% if (currentUser && !bareMain) { %><script src="/static/js/menu.js?v=<%= v %>" defer></script>
 <script src="/static/js/cerca.js?v=<%= v %>" defer></script>
 <script src="/static/js/pdf-app.js?v=<%= v %>" defer></script>
+<script src="/static/js/bozze.js?v=<%= v %>" defer></script>
 <% } %><% if (avvisi) { %><script src="/static/js/comunicazioni.js?v=<%= v %>" defer></script>
 <% } %><% if (novita) { %><script src="/static/js/novita.js?v=<%= v %>" defer></script>
 <% } %><% for (const script of (typeof scripts !== 'undefined' ? scripts : [])) { %><script src="/static/js/<%= script %>.js?v=<%= v %>" defer></script>
 <% } %></head>
-<body<% if (currentUser && !bareMain) { %> class="with-nav" data-pdf-attesa="<%= t('pdfApp.attesa') %>" data-pdf-pronto="<%= t('pdfApp.pronto') %>" data-pdf-errore="<%= t('pdfApp.errore') %>" data-pdf-non-supportato="<%= t('pdfApp.nonSupportato') %>"<% } %>>
+<body<% if (currentUser && !bareMain) { %> class="with-nav" data-pdf-attesa="<%= t('pdfApp.attesa') %>" data-pdf-pronto="<%= t('pdfApp.pronto') %>" data-pdf-errore="<%= t('pdfApp.errore') %>" data-pdf-non-supportato="<%= t('pdfApp.nonSupportato') %>" data-bozze-utente="<%= locals.utenteBozze || '' %>" data-bozze-csrf="<%= csrfToken %>"<% } %>>
+<% if (currentUser && !bareMain) { %><script type="application/json" id="bozze-testi" nonce="<%= cspNonce %>"><%- JSON.stringify(Object.assign(Object.fromEntries(['titolo', 'testo', 'nuovo', 'modifica', 'salvata', 'invia', 'elimina', 'conferma', 'invio', 'ancoraOffline', 'accedi', 'errore', 'eliminata', 'tornata'].map((k) => [k, t('bozze.' + k)])), { tipo: Object.fromEntries(['schede', 'interventi', 'buoni', 'verbali', 'cartelli', 'preventivi'].map((k) => [k, t('bozze.tipo.' + k)])) })).replace(/</g, '\\u003c') %></script><% } %>
 <a class="skip" href="#main"><%= t('nav.skip') %></a>
 <% if (currentUser && !bareMain) { %><%- include('header') %><% } %>
 <% if (novita) { %><%- include('novita') %><% } %>

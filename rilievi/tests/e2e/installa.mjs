@@ -3,6 +3,7 @@
 // errors, the manifest parsed with its icons), the service worker runs and keeps nothing, a page opened
 // offline says so instead of the browser's error, and "Installa l'app" shows the steps of this device.
 import { join } from 'node:path';
+import { checkBozze } from './bozze.mjs';
 import { audit, fail, signIn } from './helpers.mjs';
 
 /**
@@ -72,6 +73,7 @@ async function installable(context, { base, shots, scheme, email, password }) {
   await page.goto(`${base}/schede/nuova`);
   if ((await page.textContent('h1'))?.trim() === 'Nessuna connessione')
     fail(`${scheme} app: still offline once the network is back`);
+  await checkBozze(page, context, { base, scheme });
 
   // "Installa l'app": on a computer the computer's steps are open, the others closed.
   await page.goto(`${base}/app`);

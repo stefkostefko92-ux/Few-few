@@ -157,5 +157,29 @@
     "pronto": "PDF pronto: tocca di nuovo per aprirlo, salvarlo o stamparlo.",
     "errore": "Il PDF non si è aperto: controlla la connessione e riprova.",
     "nonSupportato": "In questa versione di iOS il PDF dall'app non si apre: apri il portale in Safari per scaricarlo."
+  },
+  "bozze": {
+    "titolo": "Moduli salvati su questo dispositivo, non ancora inviati",
+    "testo": "Erano stati inviati senza rete: sono qui così com'erano. Inviali ora, oppure eliminali se non servono più. Restano al massimo 7 giorni e si cancellano quando esci dall'account.",
+    "nuovo": "nuovo",
+    "modifica": "modifica",
+    "salvata": "salvato il {quando}",
+    "invia": "Invia ora",
+    "elimina": "Elimina",
+    "conferma": "Eliminare il modulo salvato su questo dispositivo? Quello che contiene non è sul portale e andrà perso.",
+    "invio": "Invio in corso…",
+    "ancoraOffline": "Ancora nessuna connessione: il modulo resta salvato. Riprova quando torna la rete.",
+    "accedi": "Accedi di nuovo e poi premi «Invia ora»: il modulo resta salvato.",
+    "errore": "Il portale non ha potuto salvare il modulo: resta salvato qui. Riprova tra qualche minuto.",
+    "eliminata": "Modulo eliminato da questo dispositivo.",
+    "tornata": "La rete è tornata: puoi inviare i moduli salvati.",
+    "tipo": {
+      "schede": "Scheda di rilievo",
+      "interventi": "Foglio di intervento",
+      "buoni": "Buono di lavoro",
+      "verbali": "Verbale di cantiere",
+      "cartelli": "Cartello fermo impianto",
+      "preventivi": "Preventivo"
+    }
   }
 }

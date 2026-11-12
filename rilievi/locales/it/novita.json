@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-12-senza-rete": {
+        "area": "Portale",
+        "titolo": "Moduli salvati anche senza rete",
+        "testo": "Se invii una scheda, un foglio di intervento, un buono, un verbale, un cartello o un preventivo mentre il telefono non ha rete, il modulo non si perde: resta salvato sul dispositivo così com'era e, quando torna la rete, in cima a ogni pagina del portale trovi «Invia ora». Il salvataggio vale solo per chi ha compilato il modulo, resta fino a 7 giorni e si cancella uscendo dall'account."
+      },
       "2026-11-12-preventivi": {
         "area": "Documenti",
         "titolo": "Preventivi con listino prezzi",
