@@ -25,7 +25,7 @@
       "annullato": "Accesso con {fornitore} annullato.",
       "verifica": "{fornitore} non ha confermato l'accesso. Riprova tra qualche minuto.",
       "nonRaggiungibile": "{fornitore} non risponde in questo momento. Riprova tra qualche minuto oppure entra con email e password.",
-      "sconosciuto": "Questo account {fornitore} non è collegato a nessun utente del portale. Entra con email e password, poi collegalo dalla pagina Account.",
+      "sconosciuto": "Questo account {fornitore} non è collegato a nessun utente del portale. Entra con email e password, poi collegalo dalla pagina «Il tuo account».",
       "nonAttivo": "La tua azienda non permette l'accesso con questo account {fornitore}. Entra con email e password.",
       "altraOrganizzazione": "Questo account {fornitore} non appartiene all'organizzazione indicata dalla tua azienda. Usa l'account di lavoro.",
       "giaUsato": "Questo account {fornitore} è già collegato a un altro utente del portale."
@@ -43,9 +43,9 @@
       "erroreGoogle": "Dominio non valido: scrivi solo il dominio, per esempio ascensorirossi.it.",
       "comeTitolo": "Come funziona",
       "passo1": "Indica qui l'ID tenant di Microsoft o il dominio Google Workspace dell'azienda e salva.",
-      "passo2": "Ogni persona apre la pagina Account, inserisce la password del portale e collega il proprio account di lavoro.",
+      "passo2": "Ogni persona apre la pagina «Il tuo account», inserisce la password del portale e collega il proprio account di lavoro.",
       "passo3": "Da quel momento può entrare con il pulsante «Accedi con Microsoft» o «Accedi con Google» nella pagina di accesso.",
-      "responsabilita": "Il fornitore di identità lo sceglie e lo gestisce la vostra azienda (art. 4.6 delle Condizioni). Quando una persona lascia l'azienda, disattivate il suo account presso Microsoft o Google e anche qui, nella pagina Utenti: la password del portale resta valida finché l'account non viene disattivato.",
+      "responsabilita": "Il fornitore di identità lo sceglie e lo gestisce la tua azienda (art. 4.6 delle Condizioni). Quando una persona lascia l'azienda, disattiva il suo account in Microsoft o Google e anche qui, in Utenti: la password del portale resta valida finché l'account non viene disattivato.",
       "hub0": "Non attivo",
       "disattivato": "Accesso con Microsoft e Google disattivato per l'azienda."
     }

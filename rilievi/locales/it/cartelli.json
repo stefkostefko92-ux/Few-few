@@ -57,7 +57,10 @@
       "cerca": "Matricola, numero impianto o indirizzo",
       "cercaBtn": "Cerca",
       "nessuna": "Nessuna scheda trovata: compila il cartello a mano qui sotto.",
-      "altre": "Altre {n} schede: aggiungi una parola alla ricerca.",
+      "altre": {
+        "one": "Un'altra scheda: aggiungi una parola alla ricerca.",
+        "other": "Altre {n} schede: aggiungi una parola alla ricerca."
+      },
       "apri": "Apri la scheda",
       "cambia": "Usa un'altra scheda o nessuna",
       "proposto": "Testo proposto dai lavori indicati nella scheda: controllalo e aggiungi quando l'impianto torna in servizio.",

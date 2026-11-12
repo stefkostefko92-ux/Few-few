@@ -6,7 +6,7 @@
     "empty": "Ancora nessuna azienda. Crea la prima, poi invita il suo amministratore.",
     "name": "Nome dell'azienda",
     "logo": "Logo",
-    "logoHint": "PNG, JPEG o WebP, al massimo {kb} KB. Sfondo trasparente o bianco: va in cima alla scheda stampata e al PDF.",
+    "logoHint": "PNG, JPEG o WebP, al massimo 1 MB. Sfondo trasparente o bianco: va in cima alla scheda stampata e al PDF.",
     "logoNone": "Nessun logo: sulla scheda stampata compare il nome dell'azienda.",
     "logoAlt": "Logo di {name}",
     "logoUpload": "Carica logo",
@@ -29,7 +29,7 @@
       "esportaText": "Tutti i dati dell'azienda in un unico file .tar: schede con misure e schizzi, foto e video, fogli di intervento con le firme, cartelli, calcoli dell'argano, persone e registro (dati.json). Password e chiavi non ci sono.",
       "esporta": "Scarica tutti i dati",
       "eliminaIl": "Il {date} l'azienda viene eliminata definitivamente.",
-      "eliminaText": "Con lei spariscono tutti i suoi dati e gli account di chi lavora solo qui; chi lavora anche in altre aziende resta lì. Riattivandola prima, non succede nulla. Le copie di sicurezza la conservano ancora 14 giorni.",
+      "eliminaText": "Con l'azienda spariscono tutti i suoi dati e gli account di chi lavora solo qui; chi lavora anche in altre aziende resta lì. Riattivandola prima, non succede nulla. Le copie di sicurezza la conservano ancora 14 giorni.",
       "conferma": "Per eliminarla adesso scrivi il nome dell'azienda: {name}",
       "elimina": "Elimina adesso, definitivamente",
       "soloDisattivata": "Un'azienda disattivata viene eliminata definitivamente con tutti i suoi dati dopo {days} giorni, oppure prima, da qui."
@@ -43,7 +43,7 @@
       "nameTaken": "Esiste già un'azienda con questo nome.",
       "logoType": "Il logo deve essere un'immagine PNG, JPEG o WebP.",
       "logoTooLarge": "Il logo supera 1 MB: riducilo e riprova.",
-      "logoCorrupt": "Non riesco a leggere questa immagine. Salvala di nuovo come PNG o JPEG e riprova.",
+      "logoCorrupt": "Immagine non leggibile: salvala di nuovo come PNG o JPEG e riprova.",
       "logoMissing": "Scegli un file per il logo.",
       "eliminaAttiva": "Un'azienda attiva non si elimina: prima disattivala.",
       "eliminaNome": "Per confermare scrivi il nome dell'azienda esattamente com'è."
@@ -66,7 +66,7 @@
       "title": "Dati societari",
       "text": "Vanno in alto sul cartello di fermo impianto, accanto al logo. Compila solo quello che vuoi mostrare.",
       "logoSi": "Il logo dell'azienda va accanto ai dati.",
-      "logoNo": "L'azienda non ha un logo: il cartello mostra solo i dati. Il logo lo carica il Master del portale.",
+      "logoNo": "L'azienda non ha un logo: il cartello mostra solo i dati. Il logo lo carica l'amministrazione del portale.",
       "save": "Salva dati societari",
       "campo": {
         "ragioneSociale": "Ragione sociale",
@@ -100,7 +100,7 @@
     },
     "ruoli": {
       "title": "Ruoli e permessi",
-      "text": "Rinomina i ruoli dell'azienda e scegli cosa può fare ognuno. Valgono per tutti i suoi utenti dal clic successivo. Invitare e gestire gli utenti e queste impostazioni restano solo all'amministratore.",
+      "text": "Rinomina i ruoli dell'azienda e scegli cosa può fare ognuno. Le modifiche valgono subito per tutte le persone dell'azienda. Solo l'amministratore può invitare e gestire le persone e cambiare queste impostazioni.",
       "nome": "Nome nell'azienda",
       "nomeHint": "Vuoto: «{nome}».",
       "permessiDi": "Permessi di «{nome}»",

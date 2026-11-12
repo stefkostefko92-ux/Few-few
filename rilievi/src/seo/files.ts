@@ -2,7 +2,8 @@ import { testiAggiornati } from '../legale/versioni.js';
 import { COMPANY, CONTENT_UPDATED, ESPORTAZIONE_UPDATED, PRIVACY_UPDATED } from '../company.js';
 import { DEFAULT_LOCALE, translate } from '../i18n.js';
 import { INVITE_DAYS } from '../services/invites.js';
-import { ULTIMO_AGGIORNAMENTO, VOCI } from '../novita/voci.js';
+import { vociAttive } from '../novita/attive.js';
+import { ULTIMO_AGGIORNAMENTO } from '../novita/voci.js';
 import { FAQ_IDS, SERVIZI, sheetCounts, sheetLegend } from '../site/landing.js';
 import { VERSIONE_SOFTWARE } from '../versione.js';
 import {
@@ -93,14 +94,17 @@ export function llmsTxt(base: string, contactEmail: string): string {
     '',
     `> Rilievi Impianti è un portale web in cui le aziende di ascensori compilano la scheda di rilievo di un impianto esistente, la ritrovano e la stampano. ${it('site.hero.note')}`,
     '',
-    `${it('versione.titolo')}: ${VERSIONE_SOFTWARE}.`,
+    `${it('versione.titolo')}: ${VERSIONE_SOFTWARE}. Ultimo aggiornamento: ${CONTENT_UPDATED}.`,
+    'Lingua: solo italiano. Accesso: su richiesta. Prova: un mese gratuito.',
     '',
     '## Pagine',
-    `- [Rilievi Impianti](${base}${HOME_PATH}): ${it('site.nav.scheda').toLowerCase()}, ${it('site.nav.come').toLowerCase()}, ${it('site.nav.assistenza').toLowerCase()}, ${it('site.nav.faq').toLowerCase()}, ${it('site.nav.request').toLowerCase()}`,
+    `- [Rilievi Impianti](${base}${HOME_PATH}): ${it('site.meta.description')}`,
     `- [${it('novita.titolo')}](${base}${NOVITA_PATH}): ${it('novita.meta.description')}`,
     `- [${it('privacy.title')}](${base}${PRIVACY_PATH})`,
     `- [${it('legale.pagina.title')}](${base}${CONDIZIONI_PATH}): ${it('legale.pagina.metaDescription')}`,
     `- [${it('esportazione.pagina.titolo')}](${base}${ESPORTAZIONE_PATH}): ${it('esportazione.pagina.meta.description')}`,
+    `- [${it('stato.nav')}](${base}${STATO_PATH})`,
+    `- [${it('novita.titolo')} (RSS)](${base}${FEED_NOVITA_PATH})`,
     '',
     '## Fatti',
     `- La scheda: ${counts.fields} campi in ${counts.sections} sezioni, nell'ordine della scheda di carta: ${sections}.`,
@@ -114,10 +118,12 @@ export function llmsTxt(base: string, contactEmail: string): string {
     `- ${it('esportazione.pagina.lead')} ${it('esportazione.pagina.costi.testo')}`,
     '',
     `## ${it('novita.titolo')}`,
-    ...VOCI.slice(0, 5).map(
-      (v) =>
-        `- ${v.data}, ${it(`novita.voci.${v.id}.area`)}: ${it(`novita.voci.${v.id}.titolo`)}. ${it(`novita.voci.${v.id}.testo`)}`,
-    ),
+    ...vociAttive()
+      .slice(0, 5)
+      .map(
+        (v) =>
+          `- ${v.data}, ${it(`novita.voci.${v.id}.area`)}: ${it(`novita.voci.${v.id}.titolo`)}. ${it(`novita.voci.${v.id}.testo`)}`,
+      ),
     '',
     `## ${it('site.faq.title')}`,
     ...FAQ_IDS.map((id) => `- ${it(`site.faq.${id}.q`)} ${it(`site.faq.${id}.a`)}`),

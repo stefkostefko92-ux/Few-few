@@ -32,6 +32,7 @@
       <h2><%= t('site.footer.legal') %></h2>
       <ul>
         <li><a href="<%= privacyPath %>"><%= t('privacy.title') %></a></li>
+        <li><a href="<%= privacyPath %>#segnalazioni"><%= t('site.footer.segnalazioni') %></a></li>
         <li><a href="<%= condizioniPath %>"><%= t('legale.pagina.title') %></a></li>
         <li><a href="<%= esportazionePath %>"><%= t('esportazione.pagina.nav') %></a></li>
         <li><a href="<%= statoPath %>"><%= t('stato.nav') %></a></li>
@@ -44,7 +45,7 @@
       <% for (const item of themes) { %><a href="<%= themeUrl(item.value) %>" rel="nofollow"<% if (item.on) { %> aria-current="true"<% } %>><%- include('../partials/icon', { name: item.icon }) %><%= t(item.key) %></a>
       <% } %>
     </nav><% } else { %><span></span><% } %>
-    <p class="credit"><% if (locals.versioneSoftware) { %><a href="/novita"><%= t('versione.piede', { versione: versioneSoftware }) %></a> · <% } %>Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
+    <p class="credit"><% if (locals.contentUpdated) { %><time datetime="<%= contentUpdated %>"><%= t('site.footer.aggiornato', { data: fmt.day(new Date(contentUpdated + 'T12:00:00Z')) }) %></time> · <% } %><% if (locals.versioneSoftware) { %><a href="/novita"><%= t('versione.piede', { versione: versioneSoftware }) %></a> · <% } %>Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
   </div>
 </footer>
 </body>

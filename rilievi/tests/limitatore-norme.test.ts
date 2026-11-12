@@ -200,7 +200,7 @@ describe('the result in words', () => {
       norma: 'dlgt-600-1945',
       intervento: 'limitatore',
     });
-    assert.match(vecchio.motivo ?? '', /D\.Lgt\. 600\/1945 non sono nelle nostre norme/);
+    assert.match(vecchio.motivo ?? '', /D\.Lgt\. 600\/1945 non sono nelle tabelle del portale/);
     assert.equal(vecchio.applicata, 'D.Lgt. 600/1945 — UNI 10411-1:2024, punto 18');
     // A new safety gear before CE: UNI EN 81-20:2020, so no buffered instantaneous gear.
     assert.match(

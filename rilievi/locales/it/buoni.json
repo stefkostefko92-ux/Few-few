@@ -165,7 +165,7 @@
       "firmato": "Un buono con firme non si elimina: togli prima le firme.",
       "inviato": "Buono inviato a {email}.",
       "emailNonValida": "Indirizzo email non valido.",
-      "mailDisattivata": "L'invio delle email non è attivo su questo portale.",
+      "mailDisattivata": "L'invio delle email non è attivo su questo portale: scarica il PDF e invialo tu.",
       "nonInviato": "L'email non è partita: riprova più tardi.",
       "intestazione": "Codice e clausola del buono salvati."
     },

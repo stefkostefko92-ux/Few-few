@@ -3,7 +3,8 @@
 // state of a notice and of a contract, and the lights of the system health.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { leggiForm, statoDi } from '../src/master/comunicazioni.js';
+import { statoDi } from '../src/master/comunicazioni.js';
+import { leggiForm } from '../src/master/comunicazioni-form.js';
 import { statoContratto } from '../src/master/contratti.js';
 import { perSettimana, SETTIMANE } from '../src/master/panoramica.js';
 import { byteLeggibili, durata, esitoCoda, esitoSpazio } from '../src/master/sistema.js';

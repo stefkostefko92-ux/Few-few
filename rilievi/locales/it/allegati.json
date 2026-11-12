@@ -39,7 +39,7 @@
       "caricamento": "Il caricamento si è interrotto. Riprova.",
       "nessuno": "Scegli almeno una foto o un video.",
       "limite": "La scheda ha già il numero massimo di file ({max}).",
-      "spazio": "Spazio esaurito sul server: il caricamento è sospeso. Avvisa l'amministratore del portale.",
+      "spazio": "Spazio esaurito sul server: il caricamento è sospeso. Avvisa l'amministrazione del portale.",
       "illeggibile": "il file non si legge come foto o video.",
       "senzaVideo": "il file non contiene un video.",
       "troppoLungo": "il video supera {minuti} minuti.",

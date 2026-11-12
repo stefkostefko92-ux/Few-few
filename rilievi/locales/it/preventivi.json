@@ -100,12 +100,12 @@
       "troppeRighe": "Al massimo {n} righe.",
       "quantita": "Quantità maggiore di zero, al massimo 3 decimali (es. 1,5).",
       "prezzo": "Importo in euro, al massimo 2 decimali (es. 1.250,00).",
-      "sconto": "Sconto da 0 a 100 %, al massimo 2 decimali.",
-      "iva": "Scegli l'aliquota IVA: 22, 10 o 4 %.",
+      "sconto": "Sconto da 0 a 100%, al massimo 2 decimali.",
+      "iva": "Scegli l'aliquota IVA: 22, 10 o 4%.",
       "clientePiva": "P. IVA di 11 cifre o codice fiscale di 16 caratteri.",
       "clienteEmail": "Indirizzo email non valido.",
       "validitaGiorni": "Da 1 a 365 giorni.",
-      "totale": "Il totale supera 21.474.836,47 €: dividi il lavoro in più preventivi."
+      "totale": "Il totale è troppo alto per un solo preventivo: dividi il lavoro in più preventivi."
     },
     "daScheda": {
       "testo": "Dalla scheda arrivano l'impianto, l'oggetto e una riga per ogni lavoro previsto (senza prezzi). Senza scheda, compila i campi qui sotto.",
@@ -116,7 +116,7 @@
     "email": {
       "titolo": "Invia al cliente",
       "label": "Email del destinatario",
-      "hint": "Il PDF del preventivo parte in allegato; la risposta arriva al tuo indirizzo. L'indirizzo non viene salvato. Una bozza diventa «Inviato».",
+      "hint": "Il PDF del preventivo parte in allegato; la risposta arriva al tuo indirizzo. L'indirizzo non viene salvato. Se è una bozza, passa allo stato «Inviato».",
       "messaggio": "Messaggio (facoltativo)",
       "invia": "Invia il preventivo"
     },
@@ -132,16 +132,16 @@
       "bloccato": "Il preventivo è accettato o rifiutato: riportalo a «Inviato» per modificarlo.",
       "inviato": "Preventivo inviato a {email}.",
       "emailNonValida": "Indirizzo email non valido: il preventivo non è partito.",
-      "mailDisattivata": "L'invio delle email non è configurato: scarica il PDF e invialo tu.",
+      "mailDisattivata": "L'invio delle email non è attivo su questo portale: scarica il PDF e invialo tu.",
       "nonInviato": "Invio non riuscito. Riprova tra qualche minuto.",
       "stato": "Stato del preventivo aggiornato.",
       "statoNo": "Cambio di stato non consentito: ricarica la pagina.",
-      "nonEliminabile": "Si elimina solo una bozza.",
+      "nonEliminabile": "Puoi eliminare solo le bozze.",
       "eliminato": "Bozza del preventivo n. {n} eliminata.",
       "condizioni": "Condizioni predefinite dei preventivi salvate."
     },
     "mail": {
-      "oggetto": "Preventivo n. {n} – {azienda}",
+      "oggetto": "Preventivo n. {n} — {azienda}",
       "corpo": "Buongiorno,\n\nin allegato il preventivo n. {n} di {azienda} per: {oggetto}.",
       "firma": "Cordiali saluti,\n{mittente}\n{azienda}"
     },

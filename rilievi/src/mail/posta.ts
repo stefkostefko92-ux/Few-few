@@ -172,8 +172,3 @@ export async function disattivaPosta(actorId: string): Promise<boolean> {
   await caricaPosta();
   return count > 0;
 }
-
-/** За тестовете: следващото писмо чете базата наново. */
-export const dimenticaPosta = (): void => {
-  memoria = undefined;
-};

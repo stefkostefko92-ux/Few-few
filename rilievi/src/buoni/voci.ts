@@ -28,14 +28,9 @@ export const CONTROLLI = [
 ] as const;
 export type ControlloKey = (typeof CONTROLLI)[number]['key'];
 export const CONTROLLO_KEYS: readonly ControlloKey[] = CONTROLLI.map((c) => c.key);
-export const isControllo = (value: unknown): value is ControlloKey =>
-  typeof value === 'string' && (CONTROLLO_KEYS as readonly string[]).includes(value);
-
 /** Подписите долу на листа — в реда им; фамилиите на техниците са текст (`tecnici`), не подпис. */
 export const FIRME_FINALI = ['custode', 'capoTecnico', 'geometra', 'capoOfficina'] as const;
 export type FirmaFinale = (typeof FIRME_FINALI)[number];
-export const isFirmaFinale = (value: unknown): value is FirmaFinale =>
-  typeof value === 'string' && (FIRME_FINALI as readonly string[]).includes(value);
 
 /** Най-много редове с работа на един лист; формата показва записаните и още `RIGHE_VUOTE` празни. */
 export const MAX_SEQUENZE = 30;

@@ -33,7 +33,12 @@ schedeApprovazioneRouter.post(
   async (req, res) => {
     const id = String(req.params.id);
     const esito = await inviaApprovazione(scope(req, 'schede:write'), id, principalOf(req).user.id);
-    setFlash(res, esito === 'ok' ? 'ok' : 'error', `flusso.approvazione.flash.${esito}`);
+    // Всяко действие казва какво е станало, не „Fatto.“ (одитът на италианския, 12 ноември 2026).
+    setFlash(
+      res,
+      esito === 'ok' ? 'ok' : 'error',
+      `flusso.approvazione.flash.${esito === 'ok' ? 'inviata' : esito}`,
+    );
     res.redirect(303, `/schede/${encodeURIComponent(id)}`);
   },
 );
@@ -59,7 +64,11 @@ schedeApprovazioneRouter.post(
       nota(body.nota),
       typeof body.base === 'string' ? body.base : '',
     );
-    setFlash(res, esito === 'ok' ? 'ok' : 'error', `flusso.approvazione.flash.${esito}`);
+    setFlash(
+      res,
+      esito === 'ok' ? 'ok' : 'error',
+      `flusso.approvazione.flash.${esito === 'ok' ? (decisione === 'approva' ? 'approvata' : 'respinta') : esito}`,
+    );
     res.redirect(303, `/schede/${encodeURIComponent(id)}`);
   },
 );

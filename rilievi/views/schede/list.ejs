@@ -6,7 +6,8 @@
   </div>
   <%# CSV — с филтъра и търсенето на страницата (routes/esporta-csv.ts). %>
   <% const csvQ = new URLSearchParams(Object.entries({ azienda: aziendaFilter, q: query }).filter(([, v]) => v)).toString(); %>
-  <div class="toolbar"><a class="btn" href="/schede/esporta.csv<%= csvQ ? '?' + csvQ : '' %>" download><%- include('../partials/icon', { name: 'download' }) %><%= t('csv.scarica') %></a></div>
+  <%# Bez nishto za svalyane — bez butona. %>
+  <% if (page.total > 0) { %><div class="toolbar"><a class="btn" href="/schede/esporta.csv<%= csvQ ? '?' + csvQ : '' %>" download><%- include('../partials/icon', { name: 'download' }) %><%= t('csv.scarica') %></a></div><% } %>
 </div>
 <% if (locals.daApprovareN > 0) { %><p class="notice"><a href="/approvazioni"><%= daApprovareN === 1 ? t('flusso.approvazione.daApprovare1') : t('flusso.approvazione.daApprovare', { n: daApprovareN }) %></a></p><% } %>
 <% if (aziende.length > 0) { %><%- include('../partials/azienda-filter', { action: '/schede' }) %><% } %>

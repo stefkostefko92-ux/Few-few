@@ -16,6 +16,10 @@ process.env.INTERVENTI_SEAL_KEY ??= 'b'.repeat(64);
 
 const { VOCI, ULTIMO_AGGIORNAMENTO, MAX_POPUP, daRegistrare, inizioGiorno, nonLette, perGiorno } =
   await import('../src/novita/voci.js');
+const { vociAttive } = await import('../src/novita/attive.js');
+// What this portal announces: an entry about something that must be switched on (the sign-in with Microsoft or
+// Google) is left out where it is not (the audit of 12 November 2026).
+const ATTIVE = vociAttive();
 const { llmsTxt, robotsTxt, sitemapXml } = await import('../src/seo/files.js');
 const { novitaRss } = await import('../src/seo/feed.js');
 const { FEED_NOVITA_PATH, NOVITA_PATH, PUBLIC_PATHS } = await import('../src/seo/paths.js');
@@ -153,6 +157,30 @@ describe('the page of the updates', () => {
     assert.ok(keywords.includes('Carbon Stealth'));
   });
 
+  it('does not announce what is not switched on on this portal', () => {
+    const condizionate = VOCI.filter((v) => v.se !== undefined);
+    assert.deepEqual(
+      condizionate.map((v) => v.id),
+      ['2026-11-12-accesso-microsoft-google'],
+    );
+    // No application registered with Microsoft or Google in the tests: the entry is not there, the rest is.
+    assert.deepEqual(
+      ATTIVE.map((v) => v.id),
+      VOCI.filter((v) => v.se === undefined).map((v) => v.id),
+    );
+    assert.deepEqual(
+      daRegistrare(new Set(), new Date(0), ATTIVE).map((r) => r.id),
+      ATTIVE.map((v) => v.id),
+    );
+    const insieme = new Date('2026-11-12T12:00:00Z');
+    const pubblicate = new Map(VOCI.map((v) => [v.id, insieme] as const));
+    assert.ok(
+      !nonLette(pubblicate, new Date(0), ATTIVE).some(
+        (v) => v.id === '2026-11-12-accesso-microsoft-google',
+      ),
+    );
+  });
+
   it('describes itself to the search engines: the page, the path to it and every entry', () => {
     const canonical = `${BASE}/novita`;
     const data = JSON.parse(novitaStructuredData(t, canonical)) as {
@@ -174,7 +202,7 @@ describe('the page of the updates', () => {
     }>;
     assert.deepEqual(
       list.map((item) => [item.position, item.name, item.url]),
-      VOCI.map((v, i) => [i + 1, t(`novita.voci.${v.id}.titolo`), `${canonical}#${v.id}`]),
+      ATTIVE.map((v, i) => [i + 1, t(`novita.voci.${v.id}.titolo`), `${canonical}#${v.id}`]),
     );
     assert.doesNotMatch(JSON.stringify(data), CYRILLIC);
   });
@@ -185,9 +213,9 @@ describe('the page of the updates', () => {
     assert.match(rss, new RegExp(`<link>${BASE}/novita</link>`));
     assert.match(rss, new RegExp(`<atom:link href="${BASE}/novita\\.xml" rel="self"`));
     const items = [...rss.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((m) => m[1]!);
-    assert.equal(items.length, VOCI.length);
+    assert.equal(items.length, ATTIVE.length);
     items.forEach((item, i) => {
-      const voce = VOCI[i]!;
+      const voce = ATTIVE[i]!;
       assert.match(item, new RegExp(`<guid isPermaLink="false">${voce.id}</guid>`));
       assert.match(item, new RegExp(`<link>${BASE}/novita#${voce.id}</link>`));
       assert.match(item, /<pubDate>\w{3}, \d{2} \w{3} \d{4} 00:00:00 GMT<\/pubDate>/);

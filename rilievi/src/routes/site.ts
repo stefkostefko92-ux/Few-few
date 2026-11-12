@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Router, type Request, type Response } from 'express';
-import { COMPANY, PRIVACY_UPDATED } from '../company.js';
+import { COMPANY, PRIVACY_UPDATED, CONTENT_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { issuePreCsrf, PRE_CSRF_MAX_AGE_MS, requirePreAuthCsrf } from '../auth/guards.js';
 import { LOCK_MINUTES, MAX_FAILED_LOGINS } from '../auth/lockout.js';
@@ -98,6 +98,8 @@ export function siteLocals(req: Request, path: string | null) {
     signedIn: Boolean(req.principal),
     company: COMPANY,
     contactEmail: config().CONTACT_EMAIL,
+    // Видимата дата на последната промяна на витрината (същата като `dateModified` в JSON-LD).
+    contentUpdated: CONTENT_UPDATED,
   };
 }
 

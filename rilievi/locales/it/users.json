@@ -1,7 +1,7 @@
 {
   "users": {
     "title": "Utenti",
-    "subtitle": "Al portale si accede solo su invito. Inviti e gestisci le persone delle aziende in cui sei amministratore, con un ruolo inferiore al tuo.",
+    "subtitle": "Al portale si accede solo su invito. Puoi invitare e gestire le persone delle aziende in cui sei amministratore, con un ruolo inferiore al tuo.",
     "invite": "Invita utente",
     "accounts": {
       "one": "1 account",
@@ -39,7 +39,7 @@
     "linkOnce": "Il link si vede solo ora: copialo e mandalo alla persona (WhatsApp, SMS o email).",
     "mail": {
       "sent": "Email inviata.",
-      "disabled": "L'invio di email non è attivo: manda tu il link.",
+      "disabled": "L'invio delle email non è attivo su questo portale: manda tu il link.",
       "failed": "L'email non è partita: manda tu il link."
     },
     "saveRole": "Salva ruolo",
@@ -60,7 +60,7 @@
       "name": "Inserisci nome e cognome (da 2 a 120 caratteri).",
       "azienda": "Scegli un'azienda attiva.",
       "emailTaken": "Questo indirizzo è già usato da un altro account.",
-      "password": "Per cambiare la tua email scrivi la tua password attuale, quella giusta.",
+      "password": "La password attuale non è corretta: scrivila di nuovo per cambiare l'email.",
       "limitePersone": "L'azienda ha raggiunto il numero massimo di persone previsto dal suo abbonamento. Per invitare altre persone scegli un livello superiore in Impostazioni → Abbonamento.",
       "solaLettura": "L'abbonamento dell'azienda è scaduto: non si possono invitare nuove persone. Rinnova l'abbonamento in Impostazioni → Abbonamento."
     },
@@ -82,15 +82,15 @@
     "accountTitle": "Nome ed email",
     "saveAccount": "Salva nome ed email",
     "currentPassword": "Password attuale",
-    "currentPasswordHint": "Serve solo per cambiare la tua email: così chi trovasse aperta la tua sessione non può prendersi l'account.",
+    "currentPasswordHint": "Serve solo per cambiare la tua email: così chi trova aperta la tua sessione non può prendersi l'account.",
     "selfResetText": "La tua password si cambia solo da «Il tuo account», scrivendo quella attuale: un link creato per te stesso darebbe l'account a chiunque trovasse aperta la tua sessione.",
-    "selfResetLink": "Vai a Il tuo account",
+    "selfResetLink": "Apri «Il tuo account»",
     "emailChangeHint": "Se cambi l'email, il vecchio indirizzo riceve un avviso e i link per la password ancora aperti smettono di valere.",
     "selfAccessNote": "Non puoi disattivare il tuo account.",
     "accountByPortal": "Nome, email, password e accesso di questo account li gestisce l'amministrazione del portale.",
     "dueFattori": {
       "title": "Verifica in due passaggi",
-      "attiva": "Attiva: dopo la password l'accesso chiede il codice dell'app. Se ha perso il telefono e i codici di recupero, puoi disattivarla: riceverà un'email e potrà riattivarla dal suo account.",
+      "attiva": "Attiva: dopo la password l'accesso chiede il codice dell'app. Se la persona ha perso il telefono e i codici di recupero, puoi disattivarla: le arriva un'email e potrà riattivarla dal suo account.",
       "spenta": "Non attiva. La attiva solo la persona, dal suo account.",
       "azzera": "Disattiva la verifica in due passaggi"
     }

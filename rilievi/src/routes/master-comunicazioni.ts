@@ -15,10 +15,9 @@ import {
   creaComunicazione,
   elencoComunicazioni,
   fermaComunicazione,
-  leggiForm,
-  LIVELLI,
   statoDi,
 } from '../master/comunicazioni.js';
+import { leggiForm, LIVELLI } from '../master/comunicazioni-form.js';
 import { businessDay } from '../time.js';
 
 /**

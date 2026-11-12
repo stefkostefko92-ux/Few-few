@@ -1,6 +1,6 @@
 {
   "pagamenti": {
-    "euro": "{importo} €",
+    "euro": "{importo} €",
     "mesi": {
       "uno": "1 mese",
       "altri": "{n} mesi"
@@ -17,11 +17,11 @@
       "inizioDopoProva": "Il piano inizia il {inizio}, alla fine della prova gratuita: fino ad allora la prova continua con tutte le funzioni. Per i nuovi inviti vale già da oggi il limite di persone del piano.",
       "inizioDopoPiano": "Il piano inizia il {inizio}, alla fine del piano attuale: fino ad allora il piano attuale resta com'è. Per i nuovi inviti vale già da oggi il limite di persone più basso tra i due piani.",
       "inizioSubito": "Il piano inizia alla conferma del pagamento.",
-      "credito": "Giorni già pagati: i {giorni} giorni già pagati e non ancora usati valgono {valore} € IVA esclusa e diventano {extra} giorni del nuovo piano, già compresi nella durata (art. 12.4 delle Condizioni).",
-      "prezzo": "Prezzo: {prezzo} € IVA esclusa, da pagare ora in un'unica soluzione.",
+      "credito": "Giorni già pagati: i {giorni} giorni già pagati e non ancora usati valgono {valore} € IVA esclusa e diventano {extra} giorni del nuovo piano, già compresi nella durata (art. 12.4 delle Condizioni).",
+      "prezzo": "Prezzo: {prezzo} € IVA esclusa, da pagare ora in un'unica soluzione.",
       "ivaInversione": "Fattura senza IVA bulgara, con inversione contabile (art. 196 della Direttiva 2006/112/CE): l'IVA la applica la tua azienda nel suo Paese.",
-      "ivaBg": "IVA bulgara 20 %: {iva} €.",
-      "totale": "Totale da pagare ora: {totale} €.",
+      "ivaBg": "IVA bulgara 20 %: {iva} €.",
+      "totale": "Totale da pagare ora: {totale} €.",
       "rinnovo": "Nessun rinnovo automatico. Alla scadenza non addebitiamo nulla. Ti avvisiamo nel portale e per email 14 e 3 giorni prima e il giorno della scadenza.",
       "scadenza": "Alla scadenza, senza un nuovo periodo, l'azienda passa in sola lettura: tutti possono vedere, stampare e scaricare i dati e i documenti già presenti, ma non si possono creare nuovi dati né modificarli. L'esportazione di tutti i dati e il cambio di fornitore restano sempre disponibili e gratuiti. Nessun dato viene cancellato.",
       "persone": "Più persone: puoi passare a un livello superiore con una nuova offerta, che tiene conto dei giorni già pagati. Non addebitiamo nulla in automatico.",
@@ -40,7 +40,7 @@
       "partitaIva": "Partita IVA",
       "partitaIvaHint": "11 cifre per un'azienda italiana; per un altro Paese dell'UE, con la sigla (es. DE123456789).",
       "accetto": "Ho letto l'offerta e la accetto per conto di {azienda}.",
-      "paga": "Accetta e paga {totale} €",
+      "paga": "Accetta e paga {totale} €",
       "indietro": "Puoi ancora tornare indietro e correggere i dati: il pagamento parte solo con questo pulsante.",
       "torna": "Torna all'abbonamento",
       "sandbox": "Ambiente di prova (Sandbox): il pagamento è simulato e non attiva l'abbonamento.",
@@ -198,7 +198,7 @@
       "cambiatiChiave": "Ciao,\n\n{chi} ha inserito una nuova chiave di Revolut per i pagamenti (ambiente: {ambiente}).\n\nSe non sei stato tu o un collega, cambia subito la password e controlla la pagina Pagamenti della console.\n\nCarbon Stealth VCC — https://carbonstealth.eu",
       "cambiatiAmbiente": "Ciao,\n\n{chi} ha cambiato l'ambiente dei pagamenti di Revolut: ora è {ambiente}.\n\nSe non sei stato tu o un collega, cambia subito la password e controlla la pagina Pagamenti della console.\n\nCarbon Stealth VCC — https://carbonstealth.eu",
       "regime": {
-        "ivaBg": "IVA bulgara 20 %",
+        "ivaBg": "IVA bulgara 20%",
         "inversione": "inversione contabile (art. 196 Dir. 2006/112/CE), senza IVA"
       },
       "masterSubject": "Nuovo pagamento: {azienda} — {totale} € — da fatturare",

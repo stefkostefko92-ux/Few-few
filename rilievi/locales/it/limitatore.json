@@ -1,14 +1,14 @@
 {
   "limitatore": {
     "titolo": "Calcolo limitatore",
-    "sottotitolo": "Inserisci velocità, tipo di paracadute, norma alla data di installazione e cosa si modifica: il risultato indica la velocità di intervento V1 calcolata, da verificare da un tecnico abilitato prima della taratura.",
+    "sottotitolo": "Inserisci velocità, tipo di paracadute, norma alla data di installazione e cosa si modifica. Il risultato indica i limiti della velocità di intervento V1: prima della taratura li verifica un tecnico abilitato.",
     "normativa": "UNI 10411-1:2024 e UNI 10411-11:2024 — limitatore di velocità del paracadute di cabina",
     "apri": "Calcolo limitatore",
     "pdf": "Scarica PDF",
     "stampa": "Apri il PDF",
     "indietro": "Torna alla scheda",
     "calcola": "Calcola e salva",
-    "proposto": "Velocità presa dal modulo rilievi dati argani della scheda: controllala, poi scegli il tipo di paracadute, la norma e cosa si modifica.",
+    "proposto": "Velocità presa dal modulo «Dati argano» della scheda: controllala, poi scegli il tipo di paracadute, la norma e cosa si modifica.",
     "soloLettura": "Puoi vedere il calcolo ma non modificarlo.",
     "salvatoIl": "Salvato il {quando} da {nome}",
     "nessunCalcolo": "Il calcolo non è ancora stato salvato.",
@@ -41,7 +41,7 @@
       "intervento": {
         "limitatore": "Solo il limitatore",
         "paracadute": "Limitatore e paracadute",
-        "velocita": "Vn aumentata oltre il 5 %"
+        "velocita": "Velocità nominale modificata (pre-CE: aumento oltre il 5%)"
       }
     },
     "nomeNorma": {
@@ -71,12 +71,12 @@
     },
     "r": {
       "titolo": "Risultato",
-      "v1": "V1 calcolata (da verificare)",
+      "v1": "Campo di taratura di V1 (da verificare)",
       "v1Valore": "da {da} a {a} m/s",
       "v1Fino": "fino a {a} m/s",
       "limite": "Limite di norma",
       "limiteValore": "da {min} m/s (incluso) a {max} m/s (escluso)",
-      "limiteFino": "fino a {max} m/s ({perc} % della velocità di esercizio, incluso)",
+      "limiteFino": "fino a {max} m/s ({perc}% della velocità di esercizio, incluso)",
       "limiteSotto": "sotto {max} m/s (escluso)",
       "avviso": "Attenzione",
       "contatto": "Contatto elettrico",
@@ -94,8 +94,8 @@
       "tipoNonValido": "Tipo di paracadute non valido.",
       "tipoNonPrevisto": "La UNI EN 81-20:2020 non prevede il paracadute istantaneo con effetto ammortizzato.",
       "nonAmmessoDpr": "Con il D.P.R. 1497/1963 il paracadute istantaneo è ammesso solo fino a 0,85 m/s di velocità di esercizio: serve il progressivo.",
-      "montalettighe": "Se è un montalettighe di categoria A, sopra 0,50 m/s il D.P.R. 1497/1963 vuole il paracadute progressivo.",
-      "normaNonDisponibile": "I limiti del D.Lgt. 600/1945 non sono nelle nostre norme: vanno verificati sul testo di legge.",
+      "montalettighe": "Se è un montalettighe di categoria A, sopra 0,50 m/s il D.P.R. 1497/1963 richiede il paracadute progressivo.",
+      "normaNonDisponibile": "I limiti del D.Lgt. 600/1945 non sono nelle tabelle del portale: vanno verificati sul testo di legge.",
       "prima": "Prima di V1",
       "alPiuTardi": "Al più tardi a V1"
     },
@@ -112,8 +112,14 @@
       "schede": "Schede",
       "liberi": "Calcoli senza scheda",
       "nessuno": "Nessuna scheda e nessun calcolo trovati per «{q}».",
-      "altreSchede": "Altre {n} schede: aggiungi una parola alla ricerca.",
-      "altriLiberi": "Altri {n} calcoli: aggiungi una parola alla ricerca.",
+      "altreSchede": {
+        "one": "Un'altra scheda: aggiungi una parola alla ricerca.",
+        "other": "Altre {n} schede: aggiungi una parola alla ricerca."
+      },
+      "altriLiberi": {
+        "one": "Un altro calcolo: aggiungi una parola alla ricerca.",
+        "other": "Altri {n} calcoli: aggiungi una parola alla ricerca."
+      },
       "salvati": "Calcoli salvati",
       "vuoto": "Nessun calcolo salvato.",
       "vuotoHint": "Cerca una scheda qui sopra o crea un calcolo senza scheda.",
@@ -128,6 +134,9 @@
         "salvato": "Salvato",
         "autore": "Da"
       }
+    },
+    "hint": {
+      "vn": "Con il D.P.R. 1497/1963 inserisci la velocità di esercizio."
     }
   }
 }

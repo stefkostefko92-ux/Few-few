@@ -138,7 +138,7 @@ describe('a payment that does not go the plain way', () => {
 
     // The higher level, with the offer that counts the waiting plan: it replaces it from the end of the trial.
     const quattro = await accetta(browser, a.id, p2.id);
-    assert.match(quattro.vista.body, /290,00 €/);
+    assert.match(quattro.vista.body, /290,00[  ]€/);
     assert.equal(quattro.esito.status, 303);
     const ordine2 = ordineDa(quattro.esito.location);
     assert.equal(ordine2.amount, 49000);

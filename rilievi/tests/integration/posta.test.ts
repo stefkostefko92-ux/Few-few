@@ -23,7 +23,7 @@ const form = {
 };
 
 const posta = async () => (await new Browser().get('/password-dimenticata')).body;
-const NO_MAIL = /L&#39;invio di email non è attivo/;
+const NO_MAIL = /L&#39;invio delle email non è attivo/;
 
 describe('the portal email server', () => {
   it('belongs to MASTER only', async () => {

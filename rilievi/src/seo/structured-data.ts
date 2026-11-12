@@ -3,7 +3,8 @@ import { VERSIONE_SOFTWARE } from '../versione.js';
 import { config } from '../config.js';
 import { jsonForScript } from '../http/json-script.js';
 import { DEFAULT_LOCALE, LOCALE_TAG, type Translator } from '../i18n.js';
-import { ULTIMO_AGGIORNAMENTO, VOCI } from '../novita/voci.js';
+import { vociAttive } from '../novita/attive.js';
+import { ULTIMO_AGGIORNAMENTO } from '../novita/voci.js';
 import { INVITE_DAYS } from '../services/invites.js';
 import { FAQ_IDS, FEATURES, SERVIZI, STEPS } from '../site/landing.js';
 import { HOME_PATH } from './paths.js';
@@ -116,7 +117,8 @@ export function landingStructuredData(t: Translator, canonical: string): string 
       dateModified: CONTENT_UPDATED,
       breadcrumb: { '@id': `${canonical}#breadcrumb` },
       primaryImageOfPage: `${base}/static/img/og.png`,
-      speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.hero__lead', '.faq__a'] },
+      // Един-два кратки пасажа, не всичките отговори (SEO, 12 ноември 2026).
+      speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.hero__lead'] },
     },
     breadcrumb(canonical, [{ name: 'Rilievi Impianti', url: canonical }]),
     {
@@ -239,8 +241,8 @@ export function novitaStructuredData(t: Translator, canonical: string): string {
         '@id': `${canonical}#elenco`,
         name: t('novita.elenco'),
         itemListOrder: 'https://schema.org/ItemListOrderDescending',
-        numberOfItems: VOCI.length,
-        itemListElement: VOCI.map((voce, index) => ({
+        numberOfItems: vociAttive().length,
+        itemListElement: vociAttive().map((voce, index) => ({
           '@type': 'ListItem',
           position: index + 1,
           name: t(`novita.voci.${voce.id}.titolo`),

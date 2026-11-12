@@ -92,14 +92,14 @@ describe('paying a plan', () => {
     const { a, browser, user } = await azienda('Paga Srl');
     const p = await piano(1, 12, 29000);
     const page = await browser.get(`/impostazioni/abbonamento?azienda=${a.id}`, HTML);
-    assert.match(page.body, /290,00 €/);
+    assert.match(page.body, /290,00[  ]€/);
     const offerta = await browser.get(
       `/impostazioni/abbonamento/offerta?azienda=${a.id}&piano=${p.id}`,
       HTML,
     );
     assert.equal(offerta.status, 200);
     assert.match(offerta.body, /Offerta Premium/);
-    assert.match(offerta.body, /Totale da pagare ora: 290,00 €/);
+    assert.match(offerta.body, /Totale da pagare ora: 290,00 €/);
     assert.match(offerta.body, /inversione contabile/);
     assert.doesNotMatch(offerta.body, /name="accetto"[^>]*checked/);
 
@@ -274,7 +274,7 @@ describe('paying a plan', () => {
     const p = await piano(3, 12, 99000);
     assert.doesNotMatch(
       (await browser.get(`/impostazioni/abbonamento?azienda=${a.id}`, HTML)).body,
-      /990,00 €/,
+      /990,00[  ]€/,
     );
     assert.equal((await paga(browser, a.id, p.id)).status, 404);
     await prisma.configPagamenti.update({ where: { id: 'revolut' }, data: { attivo: true } });

@@ -32,9 +32,11 @@
       "daApprovare": "{n} schede da approvare",
       "daApprovare1": "1 scheda da approvare",
       "flash": {
-        "ok": "Fatto.",
+        "inviata": "Scheda inviata per l'approvazione.",
+        "approvata": "Scheda approvata.",
+        "respinta": "Scheda respinta.",
         "stato": "La scheda non è più in quello stato: ricarica la pagina.",
-        "stessa": "Hai inviato tu questa scheda: la approva un'altra persona.",
+        "stessa": "Hai inviato tu questa scheda: deve approvarla un'altra persona.",
         "spenta": "L'azienda non usa l'approvazione delle schede.",
         "missing": "Scheda non trovata."
       },
@@ -92,7 +94,7 @@
       "errore": "Scegli un fornitore dalla rubrica o scrivi nome ed email validi.",
       "flash": {
         "sent": "Modulo inviato al fornitore.",
-        "disabled": "L'invio di email non è configurato su questo server: scarica il PDF e invialo tu.",
+        "disabled": "L'invio delle email non è attivo su questo portale: scarica il PDF e invialo tu.",
         "failed": "L'email non è partita. Riprova più tardi.",
         "approvazione": "La scheda va prima approvata.",
         "modulo": "Il modulo non è compilato."
@@ -137,7 +139,7 @@
       "aggiungi": "Aggiungi",
       "togli": "Togli",
       "nessuno": "Nessun fornitore in rubrica.",
-      "errore": "Scrivi un nome e un'email valida.",
+      "errore": "Scrivi un nome e un'email validi.",
       "flash": {
         "ok": "Fornitore aggiunto.",
         "doppio": "Questa email è già in rubrica.",

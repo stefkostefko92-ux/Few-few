@@ -119,6 +119,30 @@
         "interessati": "Amministratori dei Clienti",
         "base": "Esecuzione del contratto e obblighi di legge (art. 6, par. 1, lett. b) e c))",
         "conservazione": "Finché esiste l'account"
+      },
+      {
+        "id": "C5",
+        "nome": "Fatturazione, pagamenti e abbonamenti",
+        "dati": "Ragione sociale, sede e partita IVA del Cliente; nome ed email dell'amministratore che paga; piano, periodo e importi; numero dell'ordine di Revolut; rimborsi. I dati della carta restano a Revolut Bank UAB (titolare autonomo): il fornitore non li riceve. Destinatari: Revolut Bank UAB per il pagamento, il consulente contabile e il software di fatturazione del fornitore",
+        "interessati": "Amministratori dei Clienti",
+        "base": "Esecuzione del contratto e obblighi di legge contabili e fiscali (art. 6, par. 1, lett. b) e c))",
+        "conservazione": "10 anni dalla fine dell'esercizio (art. 12 della legge bulgara sulla contabilità)"
+      },
+      {
+        "id": "C6",
+        "nome": "Accettazione delle offerte a pagamento (prova della conclusione)",
+        "dati": "Nome ed email di chi accetta, azienda, testo e impronta dell'offerta, data e ora, IP e browser, sigillo",
+        "interessati": "Amministratori dei Clienti",
+        "base": "Legittimo interesse alla prova del contratto (art. 6, par. 1, lett. f))",
+        "conservazione": "{anni} anni dalla cancellazione dei dati del Cliente"
+      },
+      {
+        "id": "C7",
+        "nome": "Avvisi di scadenza della prova e dell'abbonamento",
+        "dati": "Nome ed email degli amministratori, data di scadenza, livello",
+        "interessati": "Amministratori dei Clienti",
+        "base": "Esecuzione del contratto (art. 6, par. 1, lett. b))",
+        "conservazione": "Finché esiste l'account; dell'avviso inviato resta solo la soglia raggiunta"
       }
     ]
   },

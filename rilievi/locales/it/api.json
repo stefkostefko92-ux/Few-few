@@ -1,6 +1,6 @@
 {
   "api": {
-    "intro": "Una chiave API permette a un altro programma (il vostro gestionale, un foglio di calcolo) di leggere le schede dell'azienda. Solo lettura: con una chiave non si può modificare né cancellare nulla. Ogni chiave scade dopo un anno e si può revocare in qualsiasi momento.",
+    "intro": "Una chiave API permette a un altro programma (il gestionale della tua azienda, un foglio di calcolo) di leggere le schede dell'azienda. Solo lettura: con una chiave non si può modificare né cancellare nulla. Ogni chiave scade dopo un anno e si può revocare in qualsiasi momento.",
     "nome": "Nome della chiave",
     "nomeHint": "Per riconoscerla, ad esempio «Gestionale ufficio». Al massimo 80 caratteri.",
     "crea": "Crea la chiave",
@@ -34,7 +34,7 @@
     },
     "uso": {
       "titolo": "Come si usa",
-      "testo": "Il programma invia la chiave nell'intestazione Authorization. Risponde in JSON: l'elenco delle schede (con la stessa ricerca del portale, 100 per pagina, parametro p per la pagina) e una scheda con i suoi campi.",
+      "testo": "Il programma invia la chiave nell'intestazione Authorization. Il portale risponde in JSON: l'elenco delle schede (con la stessa ricerca del portale, 100 per pagina, parametro p per la pagina) e una scheda con i suoi campi.",
       "limiti": "Al massimo 600 richieste all'ora per chiave. Le schede nel cestino non compaiono."
     }
   }

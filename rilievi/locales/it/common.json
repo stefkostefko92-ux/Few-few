@@ -1,6 +1,6 @@
 {
   "app": {
-    "product": "Rilievi impianti",
+    "product": "Rilievi Impianti",
     "logo": "Rilievi Impianti, piattaforma tecnica ascensori"
   },
   "meta": {
@@ -106,7 +106,7 @@
     "mustChangePassword": "Prima di continuare, scegli una nuova password.",
     "passwordChanged": "Password aggiornata. Le altre sessioni sono state chiuse.",
     "dueFattoriAzzerata": "Verifica in due passaggi disattivata. La persona riceverà un'email.",
-    "bloccatoSessione": "Troppi tentativi errati: per sicurezza tutte le tue sessioni sono state chiuse e l'accesso è bloccato per un po'.",
+    "bloccatoSessione": "Troppi tentativi errati: per sicurezza abbiamo chiuso tutte le tue sessioni e bloccato l'accesso. Nella pagina di accesso vedi tra quanto puoi riprovare.",
     "codiceRecupero": {
       "one": "Hai usato un codice di recupero: ne resta {n}. Creane di nuovi dal tuo account.",
       "other": "Hai usato un codice di recupero: ne restano {n}. Creane di nuovi dal tuo account quando stanno per finire."

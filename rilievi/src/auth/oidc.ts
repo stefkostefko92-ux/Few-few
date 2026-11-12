@@ -233,6 +233,3 @@ async function verificaIdToken(
     etichetta: testo(payload.email, 254),
   };
 }
-
-/** За тестовете: следващото откриване не идва от паметта. */
-export const dimenticaScoperte = (): void => scoperte.clear();

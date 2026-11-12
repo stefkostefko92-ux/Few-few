@@ -38,7 +38,7 @@
     },
     "bloccoCodici": {
       "subject": "Accesso bloccato: codici errati — Rilievi Impianti",
-      "body": "Ciao,\n\nqualcuno ha inserito la password corretta del tuo account sul portale Rilievi Impianti, ma poi codici di verifica sbagliati: l'accesso è bloccato per un po'.\n\nSe non eri tu, la tua password è nota a qualcun altro: cambiala appena puoi e avvisa l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      "body": "Ciao,\n\nqualcuno ha inserito la password corretta del tuo account sul portale Rilievi Impianti, ma poi codici di verifica sbagliati: per sicurezza abbiamo bloccato l'accesso. Nella pagina di accesso vedi tra quanto puoi riprovare.\n\nSe non eri tu, la tua password è nota a qualcun altro: cambiala appena puoi e avvisa l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
     },
     "emailChanged": {
       "subject": "Email del tuo account cambiata — Rilievi Impianti",
@@ -76,13 +76,13 @@
       },
       "cancellato": {
         "subject": "Dati di {azienda} cancellati",
-        "body": "Ciao,\n\nti confermiamo che i dati dell'azienda {azienda} sono stati cancellati definitivamente da Rilievi Impianti. Le copie di sicurezza che li contenevano scadono entro i prossimi 14 giorni.\n\nRestano solo i registri delle accettazioni delle condizioni e dei calcoli emessi, che conserviamo per legge, e una riga anonima nel registro del portale (chi, quando, quante schede).\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+        "body": "Ciao,\n\nti confermiamo che i dati dell'azienda {azienda} sono stati cancellati definitivamente da Rilievi Impianti. Le copie di sicurezza che li contenevano scadono entro i prossimi 14 giorni.\n\nRestano solo i registri delle accettazioni (condizioni e offerte) e dei calcoli emessi, che conserviamo come titolare per dimostrare il contratto e difenderci in giudizio (art. 19 delle Condizioni), i documenti contabili che la legge ci obbliga a tenere, e una riga anonima nel registro del portale (chi, quando, quante schede).\n\nCarbon Stealth VCC — https://carbonstealth.eu"
       }
     },
     "accessoEsterno": {
       "collegato": {
         "subject": "Accesso con {fornitore} collegato — Rilievi Impianti",
-        "body": "Ciao,\n\nal tuo account del portale Rilievi Impianti è stato collegato un account {fornitore}: da ora puoi entrare anche con il pulsante «Accedi con {fornitore}». La password continua a funzionare.\n\nSe non sei stato tu, apri la pagina Account, scollega {fornitore}, cambia la password e avvisa l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+        "body": "Ciao,\n\nal tuo account del portale Rilievi Impianti è stato collegato un account {fornitore}: da ora puoi entrare anche con il pulsante «Accedi con {fornitore}». La password continua a funzionare.\n\nSe non sei stato tu, apri la pagina «Il tuo account», scollega {fornitore}, cambia la password e avvisa l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
       },
       "scollegato": {
         "subject": "Accesso con {fornitore} scollegato — Rilievi Impianti",

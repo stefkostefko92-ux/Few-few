@@ -1,4 +1,5 @@
 import { prisma } from '../db.js';
+import { vociAttive } from './attive.js';
 import { daRegistrare } from './voci.js';
 
 /**
@@ -11,7 +12,7 @@ let pubblicate: Promise<ReadonlyMap<string, Date>> | null = null;
 
 async function carica(): Promise<ReadonlyMap<string, Date>> {
   const righe = await prisma.novita.findMany();
-  const nuove = daRegistrare(new Set(righe.map((r) => r.id)), new Date());
+  const nuove = daRegistrare(new Set(righe.map((r) => r.id)), new Date(), vociAttive());
   if (nuove.length === 0) return new Map(righe.map((r) => [r.id, r.pubblicataAt]));
   // Два процеса едновременно: вторият не пише нищо, а чете записаното от първия.
   await prisma.novita.createMany({ data: nuove, skipDuplicates: true });

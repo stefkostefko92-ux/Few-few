@@ -58,6 +58,7 @@ npm run worker           # компресията на снимките и кл�
 npm run build            # prisma generate + tsc + шрифтовете в public/fonts (scripts/fonts.mjs)
 npm run moduli:disegna   # чертае листовете на 2SG и AMI 100 Mono RTBS и картите им (assets/moduli) — после commit
 npm run moduli:dmg       # картите на двата формуляра на DMG от самите PDF-и (scripts/moduli/dmg.mjs) — после commit
+npm run moduli:geat      # картата на формуляра на GEAT от самия PDF (scripts/moduli/geat.mjs) — после commit
 npm run render:encode    # снимките на витрината: scripts/render/out/*.png → public/img/site (AVIF + WebP)
 npm run brand:logo       # логата: scripts/logo/originals/{mark,logo}.png → public/img/brand (WebP) + favicon-*.png
                          # + иконите на приложението icon-{192,512}.png и icon-maskable-{192,512}.png
@@ -180,6 +181,18 @@ src/
                      formati.ts (видът по байтовете) · caricamento.ts (тялото на качването, таваните) ·
                      service.ts (запис, надписи, изтриване, одит) · coda.ts (опашката в базата) ·
                      foto.ts (sharp) · video.ts (ffmpeg/ffprobe) · stampa.ts (снимките в печата и PDF-а)
+  abbonamenti/       абонаментът на фирмата: regole.ts (нива, дати, състояние — без база) · persone.ts (таванът) ·
+                     servizio.ts (пробата, ръчното задаване, плановете в опашка) · scadenze.ts + avvisi.ts
+  pagamenti/         Revolut: config.ts · revolut.ts (клиентът) · firma.ts (подписът на известията) · importi.ts (ДДС,
+                     P. IVA) · offerta.ts · periodo.ts + situazione.ts (кога започва купеното) · servizio.ts (нова
+                     поръчка) · riconcilia.ts + applica.ts (сверката, даването на периода) · avvisi.ts (писмата) ·
+                     rimborsi.ts (дължимото връщане, „фактурирано“) · piani.ts
+  legale/            условията и доказателствата: versioni.ts · accettazioni.ts · firma.ts (кодът) · annunci.ts ·
+                     emissioni.ts · sigillo.ts · stato.ts · informativa.ts · pdfa.ts · registro-trattamenti.ts
+  mail/              mailer.ts (пращането, пълният подпис, последният изход) · posta.ts + posta-form.ts (пощата от
+                     конзолата) · prova.ts · templates*.ts
+  api/ · stato/      chiavi.ts (ключовете на API-то) · servizio.ts (страницата `/stato`)
+  maintenance.ts     часовата поддръжка от независими стъпки (manutenzione-passi.ts)
   worker.ts          фоновият процес (контейнерът `worker`): компресира опашката, файл „жив съм“
 assets/cartelli/     петте шаблона на табелата (JPEG-ите на собственика, увеличени за печат — scripts/cartelli/) + картата им (JSON)
 assets/moduli/       празните PDF-и на Pelazza, MoviLift, листа за аргано (Word-ът на собственика, в PDF),
@@ -1598,6 +1611,39 @@ annotazioni`, само който пише във фирмата, само на 
     полетата `…firma` се изпразват преди записа (страницата казва „Le firme non sono state salvate“), форма с
     `togli` не се пази; „Invia ora“ маха копието само ако отговорът е страница на същия вид документ
     (пренасочване към условията или друга страница-пазач го оставя), а при 429/413 копието остава.
+  - **Износът не държи фирмата в паметта** (`aziende/esportazione-dati.ts`, `esportazione-archivio.ts`):
+    `dati.json` се пише на диска в тома (`arrivi/esportazione-*.json`, трие се след свалянето и от поддръжката)
+    раздел по раздел, големите таблици на страници по 200 реда (`aPagine`); един ред JSON на запис. Нов голям
+    раздел = източник на редове, не `findMany` на всичко.
+  - **Поддръжката е от независими стъпки** (`manutenzione-passi.ts`, `maintenance.ts`): паднала стъпка се записва
+    (`evento: 'manutenzione.passo'`) и не спира другите; последното пускане е в „Salute del sistema“
+    („Ultima manutenzione oraria“ — червено при паднала стъпка или без пускане от два часа). Там са и пощата ПО
+    ИЗХОД (`ultimoEsitoPosta` — настроена поща, чието последно писмо не е тръгнало, е червена; същото на
+    `/stato`) и „Pagamenti da verificare“ с отказаните известия на Revolut. `/stato` се показва и при паднала
+    база (и на вписан човек — като гост). Редът на pino-http е `error` за 5xx, `warn` за 429/413; обработчикът
+    на грешки пише с `req.log` (номерът на заявката); нови логове носят ключ `evento` (алармите са по него, не
+    по текста). „Жив съм“ на worker-а следва цикъла му (най-много 2 ч без завъртане).
+  - **Всеки POST маршрут се обхожда от тест** (`tests/integration/rotte.test.ts`, списъкът идва от самия
+    рутер): без сесия — нищо; без CSRF — 403; `/master`, `/aziende`, `/richieste` — само MASTER; изтекла фирма —
+    403 навсякъде освен изброеното в `ANCHE_SCADUTA` с причината му. Нов маршрут, който пише, или минава тези
+    проверки, или влиза в списъка нарочно.
+  - **Новина с условие** (`VoceNovita.se`, `novita/attive.ts`): входът с Microsoft/Google се обявява само на
+    портал, на който е включен (иначе е реклама на нещо, което го няма). Страницата, емисията, JSON-LD, llms.txt
+    и прозорецът четат `vociAttive()`.
+  - **Писмата носят пълните данни на изпращача** (`mail/mailer.ts`, `conFirma`): текстовете в речника завършват
+    с краткия подпис, mailer-ът го заменя с правната форма, седалището, ЕИК и ДДС номера.
+  - Политиката: редове за боновете, протоколите, офертите, анотациите, самоличността при Microsoft/Google,
+    API ключовете, счетоводителя; бисквитката `__Host-rilievi_oidc`; пазеното на устройството; раздел
+    „Segnalare un contenuto illegale e punti di contatto“ (Рег. (ЕС) 2022/2065, чл. 11, 12, 16 — `/privacy#segnalazioni`,
+    връзка в долната лента). Регистърът по чл. 30(1) — C5–C7 (плащания, оферти, известия). Не е правен съвет.
+  - SEO: заглавието и първият абзац казват какво е продуктът („software per ascensoristi“), FAQ — „Che cos'è“,
+    марките на таблата, езикът; `speakable` — само първият абзац; видима дата в долната лента; llms.txt — описание,
+    дата, `/stato`, емисията. Текстовете на изчисленията назовават изданията (UNI 10411-1:2024 / -11:2024,
+    приложение D) и казват какво е резултатът („Campo di taratura di V1“) — формулите не са пипани.
+  - Деплой (VPS-аджията): възстановяването е в празна схема и в една транзакция, с `gzip -t` преди това; ключът
+    на печата не се създава наново, ако в базата има каквото и да е вързано за него; общ `flock` за деплоя и
+    бекъпа; чистене на старите образи; страница за поддръжка при 502; IndexNow след здрав деплой при променен
+    sitemap; раздел „Нов сървър“ в DEPLOY.md.
   - Дребни: таванът на API-то — първо по мрежа (1200/ч), после по ПРОВЕРЕН ключ (600/ч); състоянието на оферта
     се сменя само върху видяната версия (`base`); анотациите върху снимка — тяло до 4 MB; нова заявка за достъп
     от същия имейл поправя чакащата само 10 минути (`CORREZIONE_MS`), после е отделен ред.

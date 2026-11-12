@@ -102,7 +102,7 @@ describe('the intervention forms', () => {
     // Here the server has no SMTP: the page says so instead of "sent".
     assert.match(
       (await browser.get(`/interventi/${id}`)).body,
-      /L&#39;invio di email non è configurato/,
+      /L&#39;invio delle email non è attivo su questo portale/,
     );
 
     const audit = await prisma.auditLog.findMany({

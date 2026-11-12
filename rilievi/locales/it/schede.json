@@ -38,7 +38,7 @@
     },
     "conflict": {
       "title": "Qualcuno ha modificato questa scheda mentre la stavi compilando.",
-      "text": "I tuoi dati sono ancora qui sotto. Apri la versione attuale in un'altra scheda del browser e confronta: se salvi ora, sostituisci le modifiche dell'altra persona.",
+      "text": "I tuoi dati sono ancora qui sotto. Apri la versione attuale in un'altra finestra del browser e confronta: se salvi ora, sostituisci le modifiche dell'altra persona.",
       "open": "Apri la versione attuale"
     },
     "filter": {
@@ -283,7 +283,7 @@
       "24": "Foglio da 24 (70 × 37 mm)"
     },
     "aggiorna": "Aggiorna",
-    "nota": "Stampa al 100 % su fogli A4 da 24 etichette (3 × 8, 70 × 37 mm). Il QR apre la scheda nel portale a chi ha accesso all'azienda.",
+    "nota": "Stampa al 100% su fogli A4 da 24 etichette (3 × 8, 70 × 37 mm). Il QR apre la scheda nel portale a chi ha accesso all'azienda.",
     "qrAria": "Codice QR che apre la scheda dell'impianto",
     "matricola": "Matricola",
     "numero": "N° impianto",

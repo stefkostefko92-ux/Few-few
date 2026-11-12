@@ -17,7 +17,10 @@
     "popup": {
       "titolo": "Novità dal tuo ultimo accesso",
       "lead": "Abbiamo aggiornato Rilievi Impianti. Ecco cosa cambia:",
-      "altre": "E altre {n} novità.",
+      "altre": {
+        "one": "E un'altra novità.",
+        "other": "E altre {n} novità."
+      },
       "tutte": "Tutte le novità",
       "ok": "Ho capito"
     },
@@ -25,7 +28,7 @@
       "2026-11-12-versione-3-1": {
         "area": "Portale",
         "titolo": "Versione 3.1: controllo completo prima dell'apertura",
-        "testo": "Abbiamo ricontrollato il portale in ogni sua parte e corretto quello che non andava. Abbonamento: chi ha già comprato un piano può passare subito a un livello superiore e i giorni già pagati vengono contati; un secondo pagamento non parte finché il primo è ancora aperto; la partita IVA italiana viene controllata cifra per cifra; se un pagamento non attiva il piano in automatico, lo vediamo subito e ti scriviamo."
+        "testo": "Abbiamo ricontrollato il portale in ogni sua parte e corretto quello che non andava. Abbonamento: chi ha già comprato un piano può passare subito a un livello superiore e i giorni già pagati vengono contati; un secondo pagamento non parte finché il primo è ancora aperto; la partita IVA italiana viene controllata cifra per cifra. Con l'abbonamento scaduto puoi ancora eliminare singoli dati e revocare chiavi API e accessi. Le firme non restano mai salvate sul telefono quando manca la rete. Per scaricare tutti i dati dell'azienda e per chiedere il cambio di fornitore serve la password. Testi più chiari in tutto il portale."
       },
       "2026-11-12-versione-3": {
         "area": "Portale",
@@ -45,7 +48,7 @@
       "2026-11-12-accesso-microsoft-google": {
         "area": "Portale",
         "titolo": "Accesso con Microsoft o Google",
-        "testo": "Le aziende che usano Microsoft 365 o Google Workspace possono far entrare le proprie persone con l'account di lavoro. L'amministratore indica l'organizzazione dell'azienda in Impostazioni → Accesso con Microsoft o Google; poi ognuno collega il proprio account dalla pagina Account, confermando con la password. La verifica in due passaggi, se attiva, resta valida."
+        "testo": "Le aziende che usano Microsoft 365 o Google Workspace possono far entrare le proprie persone con l'account di lavoro. L'amministratore indica l'organizzazione dell'azienda in Impostazioni → Accesso con Microsoft o Google; poi ognuno collega il proprio account dalla pagina «Il tuo account», confermando con la password. La verifica in due passaggi, se attiva, resta valida."
       },
       "2026-11-12-csv-api": {
         "area": "Portale",
@@ -70,7 +73,7 @@
       "2026-11-12-preventivi": {
         "area": "Documenti",
         "titolo": "Preventivi con listino prezzi",
-        "testo": "Per le aziende in cui l'amministrazione del portale li attiva: preventivi numerati dalla scheda dell'impianto o liberi, righe dal listino prezzi dell'azienda, sconto per riga, IVA al 22, 10 o 4 % riepilogata per aliquota, PDF/A con «Per accettazione» e invio al cliente per email. Stato bozza, inviato, accettato o rifiutato; condizioni predefinite nelle impostazioni."
+        "testo": "Per le aziende in cui l'amministrazione del portale li attiva: preventivi numerati dalla scheda dell'impianto o liberi, righe dal listino prezzi dell'azienda, sconto per riga, IVA al 22, 10 o 4% riepilogata per aliquota, PDF/A con «Per accettazione» e invio al cliente per email. Stato bozza, inviato, accettato o rifiutato; condizioni predefinite nelle impostazioni."
       },
       "2026-11-12-quadro-geat": {
         "area": "Schede",
@@ -90,7 +93,7 @@
       "2026-11-12-approvazione": {
         "area": "Schede",
         "titolo": "Approvazione delle schede in due passaggi, se la vuoi",
-        "testo": "L'amministratore può attivarla in Impostazioni → Scheda: il tecnico invia la scheda, un responsabile la approva o la respinge con una nota, e solo allora partono gli ordini. Chi invia non approva la propria scheda. Di base è spenta."
+        "testo": "L'amministratore può attivarla in Impostazioni → Scheda: il tecnico invia la scheda, un responsabile la approva o la respinge con una nota, e solo allora partono gli ordini. Chi invia non approva la propria scheda. All'inizio è disattivata."
       },
       "2026-11-12-versioni": {
         "area": "Schede",
@@ -150,11 +153,11 @@
       "2026-11-10-condizioni": {
         "area": "Portale",
         "titolo": "Condizioni di servizio e regole d'uso",
-        "testo": "Al primo accesso l'amministratore di ogni azienda accetta le condizioni di servizio e l'accordo sul trattamento dei dati, con l'approvazione specifica delle clausole firmata con un codice inviato per email; ogni utente accetta le regole d'uso. La copia delle condizioni accettate arriva per email e si scarica dalla pagina Account."
+        "testo": "Al primo accesso l'amministratore di ogni azienda accetta le condizioni di servizio e l'accordo sul trattamento dei dati. Le clausole che richiedono un'approvazione specifica le firma con un codice inviato per email. Ogni utente accetta le regole d'uso. La copia delle condizioni accettate arriva per email e si scarica dalla pagina «Il tuo account»."
       },
       "2026-11-10-avvertenza-calcoli": {
         "area": "Calcoli",
-        "titolo": "Firma del tecnico su ogni foglio di calcolo",
+        "titolo": "Spazio per la firma del tecnico su ogni calcolo",
         "testo": "I PDF del calcolo argano e del calcolo limitatore riportano su ogni pagina chi li ha generati, quando, la versione del software e un codice di riferimento. In fondo c'è lo spazio per la verifica e la firma del tecnico abilitato: senza, il foglio non è valido."
       },
       "2026-11-10-novita": {
@@ -170,7 +173,7 @@
       "2026-11-10-schizzi": {
         "area": "Schizzi",
         "titolo": "Schizzi per tutte le aziende",
-        "testo": "Gli schizzi a mano libera in fondo alla scheda sono attivi per tutti, senza doverli attivare."
+        "testo": "Gli schizzi a mano libera in fondo alla scheda ora sono attivi per tutte le aziende."
       },
       "2026-11-10-scatta-foto": {
         "area": "Foto",
@@ -185,7 +188,7 @@
       "2026-11-10-matricola": {
         "area": "Scheda",
         "titolo": "Matricola anche con lettere",
-        "testo": "La matricola è testo libero fino a 40 caratteri. Nella ricerca maiuscole e minuscole valgono uguali; nel PDF matricola e numero dell'impianto stanno su una riga."
+        "testo": "La matricola è testo libero fino a 40 caratteri. La ricerca non distingue maiuscole e minuscole; nel PDF matricola e numero dell'impianto stanno su una riga."
       },
       "2026-11-10-porte-manuali": {
         "area": "Scheda",
@@ -215,7 +218,7 @@
       "2026-11-05-limitatore": {
         "area": "Calcolo limitatore",
         "titolo": "Nuovo: calcolo del limitatore di velocità",
-        "testo": "Dalla scheda dell'impianto o senza scheda, dal menu «Rilievi», con il PDF di una pagina. Per gli impianti a fune; non per gli idraulici."
+        "testo": "Dalla scheda dell'impianto o senza scheda, dal menu «Calcoli», con il PDF di una pagina. Per gli impianti a fune; non per gli idraulici."
       },
       "2026-11-05-verbale": {
         "area": "Verbali",
@@ -230,7 +233,7 @@
       "2026-11-05-pdf-iphone": {
         "area": "App",
         "titolo": "PDF nell'app su iPhone",
-        "testo": "Nell'app sulla schermata Home dell'iPhone un PDF si apre in «Condividi», da dove si salva, si stampa o si invia, e si chiude."
+        "testo": "Nell'app sulla schermata Home dell'iPhone il PDF si apre nel menu «Condividi»: da lì lo salvi, lo stampi o lo invii."
       },
       "2026-11-05-installa": {
         "area": "App",

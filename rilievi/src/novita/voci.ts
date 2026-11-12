@@ -13,6 +13,11 @@ export interface VoceNovita {
   id: string;
   /** Денят на новината (YYYY-MM-DD) — на страницата и в емисията. */
   data: string;
+  /**
+   * Новина за нещо, което порталът има само ако е включено на сървъра (входът с Microsoft/Google иска
+   * регистрирани приложения): без него не се обявява — нито на страницата, нито в прозореца (novita/attive.ts).
+   */
+  se?: 'accessoEsterno';
 }
 
 /** Най-новите отгоре; в един ден — по важност. */
@@ -21,7 +26,7 @@ export const VOCI: readonly VoceNovita[] = [
   { id: '2026-11-12-versione-3', data: '2026-11-12' },
   { id: '2026-11-12-pagamento-carta', data: '2026-11-12' },
   { id: '2026-11-12-prova-abbonamento', data: '2026-11-12' },
-  { id: '2026-11-12-accesso-microsoft-google', data: '2026-11-12' },
+  { id: '2026-11-12-accesso-microsoft-google', data: '2026-11-12', se: 'accessoEsterno' },
   { id: '2026-11-12-csv-api', data: '2026-11-12' },
   { id: '2026-11-12-stato-servizio', data: '2026-11-12' },
   { id: '2026-11-12-annotazioni-foto', data: '2026-11-12' },
@@ -82,20 +87,28 @@ export function inizioGiorno(data: string): Date {
 export function daRegistrare(
   esistenti: ReadonlySet<string>,
   ora: Date,
+  voci: readonly VoceNovita[] = VOCI,
 ): Array<{ id: string; pubblicataAt: Date }> {
   const nuova = esistenti.size === 0;
-  return VOCI.filter((v) => !esistenti.has(v.id)).map((v) => ({
-    id: v.id,
-    pubblicataAt: nuova ? inizioGiorno(v.data) : ora,
-  }));
+  return voci
+    .filter((v) => !esistenti.has(v.id))
+    .map((v) => ({
+      id: v.id,
+      pubblicataAt: nuova ? inizioGiorno(v.data) : ora,
+    }));
 }
 
 /**
  * Новините за прозореца: излезли след `lette` (последното „Ho capito“ на човека), най-новите първи, в един
  * момент — по реда на списъка. Ред в таблицата за новина, махната от списъка, не се показва.
  */
-export function nonLette(pubblicate: ReadonlyMap<string, Date>, lette: Date): VoceNovita[] {
-  return VOCI.map((voce, ordine) => ({ voce, ordine, quando: pubblicate.get(voce.id) }))
+export function nonLette(
+  pubblicate: ReadonlyMap<string, Date>,
+  lette: Date,
+  voci: readonly VoceNovita[] = VOCI,
+): VoceNovita[] {
+  return voci
+    .map((voce, ordine) => ({ voce, ordine, quando: pubblicate.get(voce.id) }))
     .filter(
       (x): x is { voce: VoceNovita; ordine: number; quando: Date } =>
         x.quando !== undefined && x.quando.getTime() > lette.getTime(),

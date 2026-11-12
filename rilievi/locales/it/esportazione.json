@@ -3,15 +3,15 @@
     "inCorso": "L'esportazione di questa azienda è già in corso. Attendi che finisca e riprova.",
     "scarica": {
       "titolo": "Scarica tutti i dati",
-      "testo": "Un unico file .tar con tutto quello che l'azienda ha nel portale: il file dati.json (azienda, persone e ruoli, schede con misure e schizzi, fogli di intervento con firme e sigilli, cartelli, calcoli, verbali, buoni di lavoro, preventivi e listino, registro delle attività), il logo, le foto e i video già elaborati e i documenti confermati in PDF/A. Si apre con qualsiasi programma per archivi (7-Zip, Archivio di Windows e Mac, tar).",
+      "testo": "Un unico file .tar con tutto quello che l'azienda ha nel portale. Dentro trovi il file dati.json, il logo, le foto e i video già elaborati e i documenti confermati in PDF/A. Il file dati.json contiene azienda, persone e ruoli, schede con misure e schizzi, fogli di intervento con firme e sigilli, cartelli, calcoli, verbali, buoni di lavoro, preventivi e listino, registro delle attività. Si apre con qualsiasi programma per archivi (7-Zip, Archivio di Windows e Mac, tar).",
       "esclusi": "Non contiene password, chiavi della verifica in due passaggi, link e codici di accesso: non sono dati dell'azienda, ma chiavi personali.",
-      "bottone": "Scarica i dati (.tar)",
+      "bottone": "Scarica tutti i dati",
       "ultima": "Ultima esportazione: {data}, da {nome}.",
       "ultimaPortale": "Ultima esportazione: {data}, dall'amministrazione del portale.",
       "mai": "Nessuna esportazione finora.",
       "formato": "Formato e struttura del file",
       "password": "La tua password",
-      "passwordAiuto": "Per sicurezza: chi usasse il tuo account senza la password non può scaricare tutti i dati dell'azienda."
+      "passwordAiuto": "Per sicurezza: chi usa il tuo account senza conoscere la password non può scaricare tutti i dati dell'azienda."
     },
     "cambio": {
       "titolo": "Cambio di fornitore",
@@ -60,7 +60,7 @@
     "pagina": {
       "nav": "Esportazione dei dati",
       "meta": {
-        "title": "Esportazione dati e cambio fornitore – Rilievi Impianti",
+        "title": "Esportazione dati e cambio fornitore — Rilievi Impianti",
         "description": "Scarica tutti i dati della tua azienda: formato del file, struttura di dati.json, procedura e tempi del cambio di fornitore. Sempre gratis.",
         "keywords": "esportazione dati, cambio di fornitore, Data Act, portabilità dei dati, Rilievi Impianti, Carbon Stealth"
       },
@@ -128,7 +128,7 @@
           "p5": "Alla fine il servizio termina e te lo confermiamo per email. Per 90 giorni gli amministratori entrano solo nella pagina di esportazione e scaricano il file.",
           "p6": "Poi cancelliamo tutto; le copie di sicurezza scadono entro altri 14 giorni. Ti confermiamo la cancellazione per email."
         },
-        "impossibile": "Se 30 giorni fossero tecnicamente impossibili, te lo diciamo entro 14 giorni lavorativi e proponiamo un periodo fino a sette mesi, con il servizio attivo."
+        "impossibile": "Se 30 giorni sono tecnicamente impossibili, te lo diciamo entro 14 giorni lavorativi e proponiamo un periodo fino a sette mesi, con il servizio attivo."
       },
       "costi": {
         "titolo": "Quanto costa?",

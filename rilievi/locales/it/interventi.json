@@ -95,7 +95,7 @@
       "conflitto": "Il modulo è stato modificato da qualcun altro mentre lo guardavi: ricarica la pagina e ricontrolla.",
       "inviato": "PDF inviato a {email}.",
       "nonInviato": "L'email non è partita. Riprova più tardi o scarica il PDF.",
-      "mailDisattivata": "L'invio di email non è configurato su questo server: scarica il PDF.",
+      "mailDisattivata": "L'invio delle email non è attivo su questo portale: scarica il PDF e invialo tu.",
       "emailNonValida": "Scrivi un indirizzo email valido.",
       "confermatoCopia": "Modulo firmato e confermato. La copia in PDF è stata inviata all'indirizzo indicato.",
       "confermatoCopiaNo": "Modulo firmato e confermato, ma l'email con la copia non è partita: scarica il PDF e invialo tu."

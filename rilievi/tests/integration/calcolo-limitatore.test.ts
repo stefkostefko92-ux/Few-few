@@ -55,7 +55,7 @@ describe('the governor calculation of a scheda', () => {
     const form = (await browser.get(pagina(scheda.id))).body
       .replace(/\u2060/g, '')
       .replace(/\u00a0/g, ' ');
-    assert.match(form, /Velocità presa dal modulo rilievi dati argani/);
+    assert.match(form, /Velocità presa dal modulo «Dati argano»/);
     assert.match(form, /id="f-vn"[^>]*value="1"/);
     assert.match(
       form,
@@ -197,7 +197,7 @@ describe('the governor calculation of a scheda', () => {
     assert.match(page3, /data-esito="v1">fino a 1,14 m\/s</);
     assert.match(
       page3,
-      /data-esito="limite">fino a 1,148 m\/s \(140 % della velocità di esercizio, incluso\)</,
+      /data-esito="limite">fino a 1,148 m\/s \(140% della velocità di esercizio, incluso\)</,
     );
     assert.match(page3, /data-esito="contatto">Al più tardi a V1</);
     assert.match(page3, /data-esito="avviso">Se è un montalettighe di categoria A/);
