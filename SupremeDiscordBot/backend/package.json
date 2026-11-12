@@ -27,7 +27,7 @@
     "test:integration": "vitest run --config vitest.integration.config.js"
   },
   "dependencies": {
-    "@prisma/client": "^5.10.0",
+    "@prisma/client": "^7.9.1",
     "@sentry/node": "^10.62.0",
     "axios": "^1.6.7",
     "connect-pg-simple": "^9.0.1",
