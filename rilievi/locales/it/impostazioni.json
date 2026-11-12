@@ -13,10 +13,10 @@
       },
       "scheda": {
         "titolo": "Scheda",
-        "desc": "L'ordine delle sezioni della scheda (modulo, pagina, stampa e PDF) e l'approvazione delle schede."
+        "desc": "L'ordine delle sezioni (nel modulo della scheda, nella sua pagina, nella stampa e nel PDF) e l'approvazione delle schede."
       },
       "cartelli": {
-        "titolo": "Cartello fermo impianto",
+        "titolo": "Cartello di fermo impianto",
         "desc": "L'aspetto del cartello da affiggere, con il logo e i dati dell'azienda."
       },
       "buoni": {

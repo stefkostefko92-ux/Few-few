@@ -1,7 +1,7 @@
 {
   "verbali": {
     "list": "Verbali di chiusura cantiere",
-    "listSub": "I verbali di fine lavori, dal più recente. Dopo le due firme si scaricano due PDF: copia azienda e copia installatore.",
+    "listSub": "I verbali di chiusura cantiere, dal più recente. Dopo le due firme si scaricano due PDF: copia azienda e copia installatore.",
     "new": "Nuovo verbale",
     "titolo": "Verbale di chiusura cantiere",
     "indietro": "Torna ai verbali",
@@ -81,7 +81,7 @@
     "daScheda": {
       "testo": "Cerca la scheda: indirizzo e N° buono si compilano da soli. Impianto senza scheda? Compila i campi qui sotto.",
       "nessuna": "Nessuna scheda trovata: compila il verbale a mano qui sotto.",
-      "crea": "Verbale di chiusura",
+      "crea": "Verbale di chiusura cantiere",
       "dellaScheda": "Verbali di chiusura cantiere"
     },
     "firma": {

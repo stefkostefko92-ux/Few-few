@@ -6,7 +6,7 @@
     "scheda": "Scheda di rilievo",
     "schedaDesc": "Il rilievo dell'impianto: dati, foto, schizzi e moduli d'ordine.",
     "intervento": "Foglio di intervento",
-    "interventoDesc": "Il modulo di pronto intervento, firmato dal tecnico e dal cliente.",
+    "interventoDesc": "Come il blocchetto di pronto intervento, firmato dal tecnico e dal cliente.",
     "buono": "Buono di lavoro",
     "buonoDesc": "Il cantiere passo per passo: sequenze di lavoro, controlli, resoconto e firme.",
     "preventivo": "Preventivo",

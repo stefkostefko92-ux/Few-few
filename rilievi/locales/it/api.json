@@ -1,6 +1,6 @@
 {
   "api": {
-    "intro": "Una chiave API permette a un altro programma (il gestionale della tua azienda, un foglio di calcolo) di leggere le schede dell'azienda. Solo lettura: con una chiave non si può modificare né cancellare nulla. Ogni chiave scade dopo un anno e si può revocare in qualsiasi momento.",
+    "intro": "Una chiave API permette a un altro programma (il gestionale della tua azienda, Excel) di leggere le schede dell'azienda. Solo lettura: con una chiave non si può modificare né cancellare nulla. Ogni chiave scade dopo un anno e si può revocare in qualsiasi momento.",
     "nome": "Nome della chiave",
     "nomeHint": "Per riconoscerla, ad esempio «Gestionale ufficio». Al massimo 80 caratteri.",
     "crea": "Crea la chiave",

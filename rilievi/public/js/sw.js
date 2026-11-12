@@ -67,7 +67,7 @@ const SALVATA = `<!doctype html>
 <body>
 <main>
 <h1>Salvato su questo dispositivo</h1>
-<p>Rilievi Impianti non raggiunge il server: il modulo che hai inviato <strong>non è ancora sul portale</strong>, ma è salvato su questo dispositivo così com'era.</p>
+<p>Rilievi Impianti non raggiunge il server: il documento che hai inviato <strong>non è ancora sul portale</strong>, ma è salvato su questo dispositivo così com'era.</p>
 <p>Quando torna la rete apri il portale da questo dispositivo e premi «Invia ora». Il salvataggio resta fino a 7 giorni e si cancella se esci dall'account.</p>
 <a href="/schede">Apri il portale</a>
 </main>

@@ -25,10 +25,10 @@
       "annullato": "Accesso con {fornitore} annullato.",
       "verifica": "{fornitore} non ha confermato l'accesso. Riprova tra qualche minuto.",
       "nonRaggiungibile": "{fornitore} non risponde in questo momento. Riprova tra qualche minuto oppure entra con email e password.",
-      "sconosciuto": "Questo account {fornitore} non è collegato a nessun utente del portale. Entra con email e password, poi collegalo dalla pagina «Il tuo account».",
+      "sconosciuto": "Questo account {fornitore} non è collegato a nessuna persona del portale. Entra con email e password, poi collegalo dalla pagina «Il tuo account».",
       "nonAttivo": "La tua azienda non permette l'accesso con questo account {fornitore}. Entra con email e password.",
       "altraOrganizzazione": "Questo account {fornitore} non appartiene all'organizzazione indicata dalla tua azienda. Usa l'account di lavoro.",
-      "giaUsato": "Questo account {fornitore} è già collegato a un altro utente del portale."
+      "giaUsato": "Questo account {fornitore} è già collegato a un'altra persona del portale."
     },
     "impostazioni": {
       "intro": "Le persone dell'azienda possono entrare con l'account di lavoro Microsoft o Google invece che con la password del portale. Indica qui l'organizzazione dell'azienda: il portale accetta solo gli account che ne fanno parte.",

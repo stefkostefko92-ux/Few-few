@@ -54,7 +54,7 @@ export async function checkBozze(page, context, { base, scheme }) {
   await page.goto(`${base}/schede`);
   const box = page.locator('.bozze');
   await box.waitFor({ timeout: 5000 }).catch(() => fail(`${name}: no list of unsent forms`));
-  if (!(await box.getByText('Cartello fermo impianto — nuovo').count()))
+  if (!(await box.getByText('Cartello di fermo impianto — nuovo').count()))
     fail(`${name}: the unsent sign is not listed`);
   await audit(page, `${name} list`);
   await box.getByRole('button', { name: 'Invia ora' }).first().click();

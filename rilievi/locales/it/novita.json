@@ -43,7 +43,7 @@
       "2026-11-12-prova-abbonamento": {
         "area": "Portale",
         "titolo": "Un mese di prova e abbonamento per numero di persone",
-        "testo": "Ogni nuova azienda ha un mese di prova gratuita con tutte le funzioni, da quando l'amministratore accetta le condizioni. Poi si sceglie un abbonamento in base al numero di persone: fino a 10, fino a 25 oppure oltre 25. Non si rinnova da solo e avvisiamo 14 e 3 giorni prima della fine. Senza abbonamento il portale passa in sola lettura: i dati restano tutti, si consultano, si stampano e si esportano. Lo stato è in Impostazioni → Abbonamento."
+        "testo": "Ogni nuova azienda ha un mese di prova gratuita con tutte le funzioni, da quando l'amministratore accetta le condizioni. Poi si sceglie un piano in base al numero di persone: fino a 10, fino a 25 oppure oltre 25. Non si rinnova da solo e avvisiamo 14 e 3 giorni prima della fine. Senza abbonamento il portale passa in sola lettura: i dati restano tutti, si consultano, si stampano e si esportano. Lo stato è in Impostazioni → Abbonamento."
       },
       "2026-11-12-accesso-microsoft-google": {
         "area": "Portale",
@@ -63,12 +63,12 @@
       "2026-11-12-annotazioni-foto": {
         "area": "Schede",
         "titolo": "Annotazioni sulle foto",
-        "testo": "Nel modulo della scheda ogni foto ha «Annota»: si apre l'editor degli schizzi a schermo intero con la foto sotto, e frecce, cerchi, quote e testi si disegnano direttamente sopra. Le annotazioni si vedono sulla miniatura, nella stampa e nel PDF della scheda e si salvano senza toccare il resto del modulo."
+        "testo": "Nel modulo della scheda ogni foto ha «Annota»: si apre l'editor degli schizzi a schermo intero con la foto sotto, e frecce, cerchi, quote e testi si disegnano direttamente sopra. Le annotazioni si vedono sulla miniatura, nella stampa e nel PDF della scheda e si salvano senza toccare il resto della scheda."
       },
       "2026-11-12-senza-rete": {
         "area": "Portale",
-        "titolo": "Moduli salvati anche senza rete",
-        "testo": "Se invii una scheda, un foglio di intervento, un buono, un verbale, un cartello o un preventivo mentre il telefono non ha rete, il modulo non si perde: resta salvato sul dispositivo così com'era e, quando torna la rete, in cima a ogni pagina del portale trovi «Invia ora». Il salvataggio vale solo per chi ha compilato il modulo, resta fino a 7 giorni e si cancella uscendo dall'account."
+        "titolo": "Documenti salvati anche senza rete",
+        "testo": "Se invii una scheda, un foglio di intervento, un buono, un verbale, un cartello o un preventivo mentre il telefono non ha rete, il documento non si perde: resta salvato sul dispositivo così com'era e, quando torna la rete, in cima a ogni pagina del portale trovi «Invia ora». Il salvataggio vale solo per chi ha compilato il documento, resta fino a 7 giorni e si cancella uscendo dall'account."
       },
       "2026-11-12-preventivi": {
         "area": "Documenti",
@@ -103,7 +103,7 @@
       "2026-11-12-etichette-qr": {
         "area": "Schede",
         "titolo": "Etichette con QR per gli impianti",
-        "testo": "«Etichetta QR» stampa un foglio A4 di etichette (70 × 37 mm) con il QR della scheda, la matricola, il numero e l'indirizzo: in sala macchine basta inquadrarlo per aprire la scheda."
+        "testo": "«Etichetta QR» stampa un foglio A4 di etichette (70 × 37 mm) con il QR della scheda, la matricola, il numero e l'indirizzo: nel locale macchina basta inquadrarlo per aprire la scheda."
       },
       "2026-11-12-copia-firmatario": {
         "area": "Assistenza",
@@ -133,7 +133,7 @@
       "2026-11-10-menu": {
         "area": "Portale",
         "titolo": "Un menu più chiaro, su ogni dispositivo",
-        "testo": "Il menu è diviso in Impianti, Calcoli, Documenti e Amministrazione. Il pulsante «Nuovo» raccoglie tutto quello che puoi creare: scheda, modulo di intervento, verbale, cartello, calcoli. Sul telefono le voci principali sono in una barra in basso, sempre a portata di pollice; sul tablet in una colonna di icone a sinistra."
+        "testo": "Il menu è diviso in Impianti, Calcoli, Documenti e Amministrazione. Il pulsante «Nuovo» raccoglie tutto quello che puoi creare: scheda, foglio di intervento, verbale, cartello, calcoli. Sul telefono le voci principali sono in una barra in basso, sempre a portata di pollice; sul tablet in una colonna di icone a sinistra."
       },
       "2026-11-10-cerca": {
         "area": "Portale",
@@ -143,7 +143,7 @@
       "2026-11-10-impostazioni": {
         "area": "Impostazioni",
         "titolo": "Impostazioni divise per argomento",
-        "testo": "Le impostazioni dell'azienda hanno una pagina di riepilogo con lo stato di ogni parte e una pagina per ciascuna: dati dell'azienda, ordine delle sezioni della scheda, cartello fermo impianto, ruoli e permessi, condizioni di servizio."
+        "testo": "Le impostazioni dell'azienda hanno una pagina di riepilogo con lo stato di ogni parte e una pagina per ciascuna: dati dell'azienda, ordine delle sezioni della scheda, cartello di fermo impianto, ruoli e permessi, condizioni di servizio."
       },
       "2026-11-10-comunicazioni": {
         "area": "Portale",
@@ -153,7 +153,7 @@
       "2026-11-10-condizioni": {
         "area": "Portale",
         "titolo": "Condizioni di servizio e regole d'uso",
-        "testo": "Al primo accesso l'amministratore di ogni azienda accetta le condizioni di servizio e l'accordo sul trattamento dei dati. Le clausole che richiedono un'approvazione specifica le firma con un codice inviato per email. Ogni utente accetta le regole d'uso. La copia delle condizioni accettate arriva per email e si scarica dalla pagina «Il tuo account»."
+        "testo": "Al primo accesso l'amministratore di ogni azienda accetta le condizioni di servizio e l'accordo sul trattamento dei dati. Le clausole che richiedono un'approvazione specifica le firma con un codice inviato per email. Ogni persona accetta le regole d'uso. La copia delle condizioni accettate arriva per email e si scarica dalla pagina «Il tuo account»."
       },
       "2026-11-10-avvertenza-calcoli": {
         "area": "Calcoli",
@@ -198,7 +198,7 @@
       "2026-11-10-impaginazione": {
         "area": "Portale",
         "titolo": "Pagine più ordinate su tablet e telefono",
-        "testo": "Le tabelle non fanno più scorrere la pagina di lato, i pulsanti della scheda su telefono stanno in due colonne e le misure delle bottoniere restano nel loro riquadro. Nei moduli di intervento e nei verbali i pulsanti «Salva» e «Firma e conferma» sono di nuovo ben visibili."
+        "testo": "Le tabelle non fanno più scorrere la pagina di lato, i pulsanti della scheda su telefono stanno in due colonne e le misure delle bottoniere restano nel loro riquadro. Nei fogli di intervento e nei verbali i pulsanti «Salva» e «Firma e conferma» sono di nuovo ben visibili."
       },
       "2026-11-09-tubo-flessibile": {
         "area": "Scheda",

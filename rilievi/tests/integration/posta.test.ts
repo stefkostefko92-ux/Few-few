@@ -32,7 +32,7 @@ describe('the portal email server', () => {
     const { browser: master } = await signedIn('MASTER');
     const page = await master.get('/master/posta');
     assert.equal(page.status, 200);
-    assert.match(page.body, /L&#39;invio delle email è spento/);
+    assert.match(page.body, /L&#39;invio delle email non è attivo: inviti/);
     assert.match(page.body, /value="smtp-relay\.brevo\.com"/);
   });
 

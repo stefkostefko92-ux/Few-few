@@ -84,7 +84,7 @@
       "sub": "Revolut Business: i piani Premium che le aziende pagano con carta dal portale.",
       "stato": {
         "attivo": "I pagamenti sono attivi. Ambiente: {ambiente}.",
-        "spento": "I pagamenti sono spenti: le aziende non vedono i piani."
+        "spento": "I pagamenti non sono attivi: le aziende non vedono i piani."
       },
       "ambiente": {
         "SANDBOX": "Sandbox (prove)",
@@ -110,7 +110,7 @@
       "webhookOk": "Webhook registrato su Revolut.",
       "webhookErrore": "Revolut non ha accettato la registrazione (codice {codice}). Controlla la chiave e l'ambiente.",
       "pianiTitolo": "Piani",
-      "pianiIntro": "Il prezzo è IVA esclusa. Un piano spento non si offre più, ma resta nei pagamenti già fatti.",
+      "pianiIntro": "Il prezzo è IVA esclusa. Un piano che non offri più resta nei pagamenti già fatti.",
       "livello": "Livello",
       "mesi": "Mesi",
       "prezzo": "Prezzo (€ IVA esclusa)",
@@ -120,7 +120,7 @@
       "attiva": "Offri di nuovo",
       "spegni": "Non offrire più",
       "attivoSi": "Offerto",
-      "attivoNo": "Spento",
+      "attivoNo": "Non offerto",
       "pagamentiTitolo": "Ultimi pagamenti",
       "verifica": "Verifica su Revolut",
       "nessunPagamento": "Nessun pagamento ancora.",

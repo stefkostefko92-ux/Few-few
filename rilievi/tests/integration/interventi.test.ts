@@ -57,7 +57,10 @@ describe('the intervention forms', () => {
     const file = `modulo-intervento-${String(row.numero).padStart(6, '0')}-2026-10-30.pdf`;
 
     const page = await browser.get(`/interventi/${id}`);
-    assert.match(page.body, /Modulo firmato e confermato: non si può più modificare\./);
+    assert.match(
+      page.body,
+      /Foglio di intervento firmato e confermato: non si può più modificare\./,
+    );
     assert.match(page.body, /Sigillo verificato: il contenuto è quello firmato\./);
     assert.match(page.body, new RegExp(improntaLeggibile(row.impronta!)));
     assert.doesNotMatch(page.body, new RegExp(`href="/interventi/${id}/modifica"`));
@@ -96,7 +99,7 @@ describe('the intervention forms', () => {
     assert.equal(sent.status, 303);
     const mail = outbox.at(-1)!;
     assert.equal(mail.to, 'cliente@esempio.test');
-    assert.match(mail.subject, /^Modulo di pronto intervento n\. \d{6} — /);
+    assert.match(mail.subject, /^Foglio di intervento n\. \d{6} — /);
     assert.equal(mail.attachments?.[0]?.filename, file);
     assert.equal(mail.attachments?.[0]?.contentType, 'application/pdf');
     // Here the server has no SMTP: the page says so instead of "sent".

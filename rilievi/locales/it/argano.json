@@ -85,7 +85,7 @@
       "velocita": "Velocità preesistente (m/s)",
       "corsa": "Corsa (m)",
       "sospensione": "Sospensione",
-      "macchina": "Locale macchinario",
+      "macchina": "Locale macchina",
       "azionamento": "Azionamento",
       "giriMotore": "Giri motore (giri/min)",
       "velocitaVvvf": "Velocità di esercizio con inverter (m/s)",

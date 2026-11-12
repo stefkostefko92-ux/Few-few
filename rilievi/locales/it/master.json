@@ -11,7 +11,7 @@
       "schede": "Schede impianto",
       "schedeNota": "{ultimi30} nuove negli ultimi 30 giorni · {cestino} nel cestino",
       "documenti": "Documenti di assistenza",
-      "documentiNota": "{interventi} moduli di intervento · {verbali} verbali · {cartelli} cartelli",
+      "documentiNota": "{interventi} fogli di intervento · {verbali} verbali · {cartelli} cartelli",
       "calcoli": "Calcoli salvati",
       "calcoliNota": "{argano} argano · {limitatore} limitatore · {emissioni} PDF scaricati in 30 giorni",
       "richieste": "Richieste di accesso",
@@ -68,7 +68,7 @@
       },
       "nota": {
         "versione": "Ogni correzione aumenta il secondo numero, ogni grande novità il primo.",
-        "build": "La stessa impronta stampata su ogni foglio di calcolo.",
+        "build": "La stessa impronta stampata su ogni calcolo in PDF.",
         "processo": "Node {node}, memoria {memoria}.",
         "database": "Dimensione {dimensione}.",
         "migrazione": "Lo schema del database è aggiornato a questa versione.",
@@ -143,7 +143,7 @@
       "title": "Verifica documento",
       "sub": "Un foglio del portale è autentico e non è stato modificato? Scrivi il codice stampato o carica il PDF.",
       "codice": "Codice stampato sul foglio",
-      "codiceAiuto": "Il Rif. di un calcolo (12 caratteri, es. A1B2-C3D4-E5F6) o l'impronta sotto le firme di un modulo di intervento o di un verbale (64 caratteri).",
+      "codiceAiuto": "Il Rif. di un calcolo (12 caratteri, es. A1B2-C3D4-E5F6) o l'impronta sotto le firme di un foglio di intervento o di un verbale (64 caratteri).",
       "file": "Oppure il PDF",
       "fileAiuto": "Lo stesso file scaricato dal portale, fino a 25 MB. Non viene salvato: se ne calcola solo l'impronta.",
       "cerca": "Verifica",
@@ -154,7 +154,7 @@
       "tipo": {
         "emissione": "Calcolo {calcolo} scaricato in PDF",
         "accettazione": "Copia delle condizioni di servizio firmate",
-        "intervento": "Modulo di pronto intervento n. {numero}",
+        "intervento": "Foglio di intervento n. {numero}",
         "verbale": "Verbale di chiusura cantiere"
       },
       "calcolo": {

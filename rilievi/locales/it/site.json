@@ -61,7 +61,7 @@
       },
       "phone": {
         "title": "Compili sul posto, dal telefono",
-        "text": "Campi grandi, comodi anche con i guanti; l'unità di misura è già nel campo e la data del giorno è già scritta. Si usa dal browser, senza installare nulla. Se nel vano non c'è rete, il modulo resta salvato sul telefono e lo invii quando torna il segnale."
+        "text": "Campi grandi, comodi anche con i guanti; l'unità di misura è già nel campo e la data del giorno è già scritta. Si usa dal browser, senza installare nulla. Se nel vano non c'è rete, la scheda resta salvata sul telefono e la invii quando torna il segnale."
       },
       "print": {
         "title": "Stampi o mandi il PDF",
@@ -204,7 +204,7 @@
       },
       "offline": {
         "q": "Si può lavorare dove non c'è rete?",
-        "a": "Sì. Se invii una scheda o un foglio senza rete, il modulo resta salvato sul telefono fino a 7 giorni e lo invii quando torna il segnale."
+        "a": "Sì. Se invii una scheda o un foglio di intervento senza rete, il documento resta salvato sul telefono fino a 7 giorni e lo invii quando torna il segnale."
       },
       "esporta": {
         "q": "Posso portare via i miei dati?",
@@ -212,7 +212,7 @@
       },
       "calcolo": {
         "q": "I calcoli dell'argano e del limitatore sostituiscono il progettista?",
-        "a": "No. Il foglio di calcolo aiuta a controllare l'impianto con i dati del rilievo, ma va sempre verificato e firmato da un tecnico abilitato."
+        "a": "No. Il calcolo aiuta a controllare l'impianto con i dati del rilievo, ma va sempre verificato e firmato da un tecnico abilitato."
       }
     },
     "request": {

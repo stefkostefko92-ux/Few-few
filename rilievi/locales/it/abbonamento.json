@@ -41,7 +41,7 @@
       "scaduto": "Scaduto il {data}: sola lettura"
     },
     "banner": {
-      "link": "Scegli un abbonamento",
+      "link": "Scegli un piano",
       "scaduto": {
         "titolo": "L'abbonamento di {azienda} è scaduto",
         "testo": "È scaduto il {data}: puoi consultare e scaricare i dati, ma non crearne di nuovi né modificarli."

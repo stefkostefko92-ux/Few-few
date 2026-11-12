@@ -6,7 +6,7 @@
       "titolo": "Invio delle email",
       "portale": "Le email partono dal server impostato in questa pagina.",
       "ambiente": "Le email partono dal server indicato nella configurazione del server. Se salvi un server qui, il portale usa questo.",
-      "spenta": "L'invio delle email è spento: inviti e link per la nuova password si copiano dallo schermo.",
+      "spenta": "L'invio delle email non è attivo: inviti e link per la nuova password si copiano dallo schermo.",
       "disattivata": "Il server impostato qui è disattivato.",
       "modifica": "Ultima modifica: {data}, {nome}.",
       "modificaSenza": "Ultima modifica: {data}."
@@ -54,7 +54,7 @@
       "salvata": "Server email salvato: da ora le email partono da qui.",
       "disattivata": "Server email disattivato.",
       "provaInviata": "Email di prova inviata a {email}.",
-      "provaSpenta": "L'invio delle email è spento: salva prima un server.",
+      "provaSpenta": "L'invio delle email non è attivo: salva prima un server.",
       "provaErrore": "Il server non ha accettato la prova (codice {codice}). Controlla server, porta, login e chiave."
     }
   }

@@ -29,7 +29,7 @@ describe('the payments console', () => {
     const { browser } = await signedIn('MASTER');
     const page = await browser.get('/master/pagamenti', HTML);
     assert.equal(page.status, 200);
-    assert.match(page.body, /I pagamenti sono spenti/);
+    assert.match(page.body, /I pagamenti non sono attivi/);
     // On without a key: refused.
     const senza = await browser.submit('/master/pagamenti', '/master/pagamenti', {
       attivo: '1',
