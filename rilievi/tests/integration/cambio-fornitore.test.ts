@@ -164,7 +164,6 @@ describe('switching provider', () => {
       null,
     );
 
-    const prima = outbox.length;
     const ora = new Date();
     const ok = await browser.submit(pagina(azienda.id), `${PAGE}/cambio`, {
       azienda: azienda.id,
@@ -177,15 +176,15 @@ describe('switching provider', () => {
     assert.equal(dopo.cambioEsito, 'ALTRO_FORNITORE');
     assert.equal(dopo.cambioFineAt?.toISOString(), fineTransizione(ora).toISOString());
     assert.equal(dopo.deactivatedAt, null);
-    // The emails go out after the reply.
-    // Both emails go out after the reply, in the background: wait for them (up to 5 s under load).
+    // Both emails go out after the reply, in the background: wait for them (up to 15 s under load). By
+    // time, not by position: the outbox keeps only its last 200 messages.
+    const nuoveDa = () => outbox.filter((m) => m.at >= ora.getTime()).map((m) => m.subject);
+    // One of each kind: with two MASTERs, their two emails may come before the admins' one.
     const arrivate = () =>
-      outbox
-        .slice(prima)
-        .filter((m) => /Cambio di fornitore richiesto|chiede il cambio/.test(m.subject)).length >=
-      2;
-    for (let i = 0; i < 250 && !arrivate(); i += 1) await new Promise((r) => setTimeout(r, 20));
-    const nuove = outbox.slice(prima).map((m) => m.subject);
+      nuoveDa().some((s) => /Cambio di fornitore richiesto per/.test(s)) &&
+      nuoveDa().some((s) => /chiede il cambio di fornitore/.test(s));
+    for (let i = 0; i < 750 && !arrivate(); i += 1) await new Promise((r) => setTimeout(r, 20));
+    const nuove = nuoveDa();
     assert.ok(nuove.some((s) => /Cambio di fornitore richiesto per Cambia Ascensori/.test(s)));
     assert.ok(nuove.some((s) => /chiede il cambio di fornitore/.test(s)));
 
@@ -355,9 +354,9 @@ describe('switching provider', () => {
   it('confirms the deletion of the data by email to the admins', async () => {
     const { azienda, admin } = await aziendaConAdmin('Cancella Ascensori');
     await prisma.azienda.update({ where: { id: azienda.id }, data: { deactivatedAt: new Date() } });
-    const prima = outbox.length;
     assert.equal(await eliminaAzienda(azienda.id, null), true);
-    const mail = outbox.slice(prima).find((m) => m.to === admin.email);
+    // By recipient (one admin, one company), not by position: the outbox keeps only its last 200.
+    const mail = outbox.find((m) => m.to === admin.email && /cancellati/.test(m.subject));
     assert.ok(mail, 'the admin hears of it');
     assert.match(mail.subject, /Dati di Cancella Ascensori cancellati/);
   });

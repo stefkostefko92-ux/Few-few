@@ -1,10 +1,12 @@
 <%
   // Подпис с пръст на ред, проверка или долу (public/js/firma.js): по избор — затворен, докато не се
-  // поиска; отворен, ако вече има щрихи (върната форма) или грешка.
+  // поиска; отворен, ако вече има щрихи (върната форма) или грешка. `etichettaFuori` — надписът стои над
+  // бутона (подписите долу), вътре е само за четеца.
+  const fuori = typeof etichettaFuori !== 'undefined' && etichettaFuori;
 %><details class="buono-firma"<% if (value || errore) { %> open<% } %>>
   <summary class="btn btn--sm"><%- include('../partials/icon', { name: 'sign' }) %><%= t('buoni.firma.apri') %></summary>
   <div class="firma" data-firma>
-    <p class="firma__label" id="l-<%= name %>"><%= label %></p>
+    <p class="firma__label<%= fuori ? ' visually-hidden' : '' %>" id="l-<%= name %>"><%= label %></p>
     <div class="firma__pad" id="f-<%= name %>" tabindex="-1">
       <canvas class="firma__canvas" width="600" height="200" role="img" aria-label="<%= t('buoni.firma.area', { chi: label }) %>" data-firma-canvas></canvas>
       <button type="button" class="btn btn--sm firma__clear" data-firma-clear aria-describedby="l-<%= name %>"><%= t('buoni.firma.cancella') %></button>

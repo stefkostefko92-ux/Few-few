@@ -50,7 +50,8 @@
       <div class="buono-finale">
         <% if (stato) { %><p class="firma__label"><%= finaleLabel(k) %></p>
         <%- include('_firma-fatta', { stato, name, posto: postoFinale(k), label: finaleLabel(k), puoTogliere: modifica, errore }) %>
-        <% } else if (modifica) { %><%- include('_firma-pad', { name, label: finaleLabel(k), value: typeof values[name] === 'string' ? values[name] : '', errore }) %>
+        <% } else if (modifica) { %><p class="firma__label"><%= finaleLabel(k) %></p>
+        <%- include('_firma-pad', { name, label: finaleLabel(k), value: typeof values[name] === 'string' ? values[name] : '', errore, etichettaFuori: true }) %>
         <% } else { %><p class="firma__label"><%= finaleLabel(k) %></p><p class="muted"><%= t('buoni.firma.vuota') %></p><% } %>
       </div>
       <% } %>
