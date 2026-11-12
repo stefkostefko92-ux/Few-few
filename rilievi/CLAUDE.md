@@ -1311,6 +1311,40 @@ annotazioni`, само който пише във фирмата, само на 
   Пробното писмо — до самия MASTER, `verify` + писмо, казва само кода на грешката. Одит `POSTA_IMPOSTATA` (порт, нов
   ли е ключът), `POSTA_DISATTIVATA`, `POSTA_PROVA` (изходът). Тест: `tests/posta.test.ts`,
   `tests/integration/posta.test.ts`.
+- **Плащанията с Revolut Business** (#31 — собственикът, 12 ноември 2026: „системата за плащания … да мога да
+  конфигурирам напълно от настройките на мастър акаунта по най-лесния възможен начин, както и да включвам и
+  изключвам плащанията“; избра Revolut Business — Revolut Pro няма Merchant API; условията 2026-11-12, чл. 12;
+  `src/pagamenti/`, `routes/master-pagamenti.ts`, `routes/abbonamento-pagamento.ts`, `routes/webhook-revolut.ts`).
+  **Конзолата** `/master/pagamenti` (`aziende:manage`): вкл./изкл., Sandbox/Produzione, ключът на Merchant API (само
+  се пише; AES-256-GCM, HKDF етикет `revolut-v1`; празно — остава), „Registra il webhook“ (POST /api/webhooks →
+  signing secret-ът шифрован), плановете `PianoAbbonamento` (ниво 1–3, 1–36 месеца, цена БЕЗ ДДС в цели центове,
+  „1.290,50“ се чете; изключват се, не се трият), последните 50 плащания с „Verifica su Revolut“. Одит
+  `PAGAMENTI_IMPOSTATI` (без ключа), `PIANO_*`, `PAGAMENTO_*`. Една таблица `ConfigPagamenti` (id `revolut`, CHECK:
+  включени ⇒ ключ). **Фирмата**: „Impostazioni → Abbonamento“ показва плановете само на ADMIN на фирмата, при
+  включени плащания и фирма със срок (`abbonamentoFino`; „без срок“ не купува — чл. 12.8); план под заетите места
+  (`personeOccupate`) не се предлага. Офертата (`/impostazioni/abbonamento/offerta`, `offerta.ts` — текстът от
+  `locales/it/pagamenti.json`, Правният Разбирач, не е правен съвет): доставчикът, клиентът (данните на фирмата —
+  поправими), планът, срокът от–до (започва от края на пробата/плана — `scadenzaDopoMesi`), цената, ДДС (`importi.ts`:
+  БГ ДДС-номер — 20 %, иначе обратно начисляване чл. 196 Дир. 2006/112; само ЕС ДДС-номер — `partitaIvaDa`), без
+  подновяване, само четенето, връщането (12.9), фактурата до `GIORNI_FATTURA` (5) дни, „Revolut, ние не виждаме
+  картата“. Отметката — никога отметната; „Accetta e paga {totale} €“. **Записът преди Revolut**: `Pagamento`
+  (IN_ATTESA, сумите — от плана, никога от формата) + `AccettazioneOfferta` (текстът, SHA-256, IP, браузър, печат HMAC
+  `sigilloDi` по `CAMPI_OFFERTA` — като регистъра на приеманията, без връзки — надживява фирмата) в една транзакция;
+  после POST /api/orders (сума, EUR, `merchant_order_data.reference` = нашият id, `redirect_url` — страницата за
+  връщане, `expire_pending_after` PT1H); `checkout_url` се приема само от произхода на Revolut (`originiCheckout`),
+  който е и във `form-action` на CSP. **Периодът се дава САМО** за поръчка, прочетена обратно от Revolut като
+  `completed` със същата сума, валута и id (`riconcilia.ts`) — от връщането (`/esito/:id`), от webhook-а или от
+  поддръжката; веднъж (`applica`: редът на плащането, после на фирмата `FOR UPDATE`, само от IN_ATTESA) — ниво,
+  нов край, край на пробата, одит `AZIENDA_ABBONAMENTO` с `origine: revolut`, писмо с копието на офертата.
+  **Webhook-ът** `/webhook/revolut` е монтиран в server.ts ПРЕДИ парсерите и сесията (суровото тяло, до 64 KB,
+  `webhookLimiter` 120/мин.): `Revolut-Signature` `v1=` HMAC-SHA256 над `v1.{timestamp}.{тяло}`, допуск 5 мин.,
+  сравнение в постоянно време (`firma.ts`); грешен — 401 и нищо; верен — сверката (известието само казва „питай“).
+  Поддръжката (всеки час): висящите от последните 7 дни — сверка; по-старите — още една сверка, после SCADUTO.
+  Задържане: `AccettazioneOfferta` и плащането ѝ — като приеманията (докато фирмата я има и 10 години след
+  изтриването ѝ — `eliminaAzienda` мести `conservaFino`, `pulisciProve` трие двете заедно). Фактурата се издава
+  извън портала. Настройката — DEPLOY.md, „Плащанията с Revolut Business“. Тестове: `tests/pagamenti.test.ts`
+  (подписът, ДДС, цената, офертата), `tests/integration/pagamenti*.test.ts` с фалшив Revolut (`revolut-finto.ts` —
+  по официалния OpenAPI 2026-08-17).
 - **Входът с Microsoft / Google** (точка D1; условията 2026-11-12, чл. 4.6, A.3, A.13, B.8 b): OpenID Connect,
   authorization code + PKCE S256, поверителен клиент (`src/auth/oidc.ts` — откриването, страницата за вход, обменът,
   проверката на ID токена: RS256 от `jwks_uri`, издател — на Microsoft този на подписалата директория

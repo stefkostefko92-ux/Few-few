@@ -220,6 +220,12 @@
       "POSTA_DISATTIVATA": "Server email del portale disattivato",
       "POSTA_PROVA": "Email di prova inviata",
       "AZIENDA_ABBONAMENTO": "Abbonamento modificato",
+      "PAGAMENTI_IMPOSTATI": "Pagamenti impostati",
+      "PIANO_CREATO": "Piano creato",
+      "PIANO_MODIFICATO": "Piano modificato",
+      "PAGAMENTO_AVVIATO": "Pagamento avviato",
+      "PAGAMENTO_COMPLETATO": "Pagamento ricevuto",
+      "PAGAMENTO_FALLITO": "Pagamento non riuscito",
       "USER_EDIT": "Nome o email cambiati",
       "MEMBERSHIP_ADD": "Account aggiunto a un'azienda",
       "MEMBERSHIP_REMOVE": "Account tolto da un'azienda"

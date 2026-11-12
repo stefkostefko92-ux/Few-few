@@ -1,0 +1,130 @@
+{
+  "pagamenti": {
+    "euro": "{importo} €",
+    "mesi": {
+      "uno": "1 mese",
+      "altri": "{n} mesi"
+    },
+    "offerta": {
+      "titolo": "Offerta Premium — Rilievi Impianti",
+      "fornitore": "Fornitore: Carbon Stealth VCC, {via}, {cap} {citta} (Bulgaria), P. IVA {piva}.",
+      "cliente": "Cliente: {ragioneSociale}, sede {sede}, P. IVA {partitaIva}. La fattura è intestata a questi dati: se non sono corretti, correggili prima di pagare.",
+      "piano": "Piano: Premium fino a {utenti}. Si contano le persone con accesso attivo all'azienda, compreso l'amministratore, e gli inviti in attesa. Oggi l'azienda ne ha {utentiAttuali}.",
+      "pianoOltre": "Piano: Premium oltre 25 utenti, senza limite di persone. Oggi l'azienda ne ha {utentiAttuali}.",
+      "utenti": "{n} utenti",
+      "durata": "Durata: {durata}, dal {inizio} al {fine} compreso (fino a mezzanotte, ora di Roma).",
+      "prezzo": "Prezzo: {prezzo} € IVA esclusa, da pagare ora in un'unica soluzione.",
+      "ivaInversione": "Fattura senza IVA bulgara, con inversione contabile (art. 196 della Direttiva 2006/112/CE): l'IVA la applica la tua azienda nel suo Paese.",
+      "ivaBg": "IVA bulgara 20 %: {iva} €.",
+      "totale": "Totale da pagare ora: {totale} €.",
+      "rinnovo": "Nessun rinnovo automatico. Alla scadenza non addebitiamo nulla. Ti avvisiamo nel portale e per email 14 e 3 giorni prima e il giorno della scadenza.",
+      "scadenza": "Alla scadenza, senza un nuovo periodo, l'azienda passa in sola lettura: tutti possono vedere, stampare e scaricare i dati e i documenti già presenti, ma non si possono creare nuovi dati né modificarli. L'esportazione di tutti i dati e il cambio di fornitore restano sempre disponibili e gratuiti. Nessun dato viene cancellato.",
+      "persone": "Più persone: puoi passare a un piano superiore con una nuova offerta. Non addebitiamo nulla in automatico.",
+      "rimborso": "Rimborso: se il contratto cessa per qualsiasi motivo prima del {fine}, ti rimborsiamo i giorni interi non goduti, in proporzione, entro 30 giorni (art. 12.9 delle Condizioni).",
+      "fattura": "Fattura: la emettiamo in euro e la inviamo per email a {email} entro {giorni} giorni dal pagamento.",
+      "pagamento": "Pagamento: con carta, sulla pagina sicura di Revolut. Noi non vediamo e non conserviamo il numero della carta.",
+      "integra": "La presente offerta integra le Condizioni generali di servizio (versione del {versione}) e prevale su di esse per gli aspetti economici (artt. 12.1 e 23.1). Lingua: italiano."
+    },
+    "pagina": {
+      "titolo": "Offerta",
+      "intro": "Leggi l'offerta, controlla i dati della fattura e accetta. Il pagamento parte solo con il pulsante in fondo.",
+      "dati": "Dati per la fattura",
+      "ragioneSociale": "Ragione sociale",
+      "sede": "Sede",
+      "partitaIva": "Partita IVA",
+      "partitaIvaHint": "11 cifre per un'azienda italiana; per un altro Paese dell'UE, con la sigla (es. DE123456789).",
+      "accetto": "Ho letto l'offerta e la accetto per conto di {azienda}.",
+      "paga": "Accetta e paga {totale} €",
+      "indietro": "Puoi ancora tornare indietro e correggere i dati: il pagamento parte solo con questo pulsante.",
+      "torna": "Torna all'abbonamento"
+    },
+    "errore": {
+      "titolo": "Controlla i campi evidenziati.",
+      "ragioneSociale": "Scrivi la ragione sociale.",
+      "sede": "Scrivi la sede.",
+      "partitaIva": "Partita IVA non valida per un'azienda dell'UE.",
+      "accetto": "Per pagare devi accettare l'offerta.",
+      "persone": "Questo piano non basta: l'azienda ha {n} persone (inviti compresi). Scegli un livello superiore.",
+      "revolut": "Revolut non risponde in questo momento. Riprova tra qualche minuto: non è stato addebitato nulla."
+    },
+    "piani": {
+      "titolo": "Scegli un piano",
+      "intro": "Prezzi IVA esclusa, pagamento anticipato con carta su Revolut, nessun rinnovo automatico.",
+      "riga": "Livello {livello} ({persone}) — {durata}",
+      "scegli": "Scegli",
+      "scegliCosa": "il livello {livello} per {durata}",
+      "nessuno": "Nessun piano disponibile in questo momento. Per attivare l'abbonamento scrivi a {email}.",
+      "troppoPiccolo": "Non basta per {n} persone",
+      "inizio": "Se la prova o il piano attuale sono ancora in corso, il nuovo periodo inizia alla loro fine."
+    },
+    "esito": {
+      "completato": "Pagamento ricevuto: l'abbonamento è attivo fino al {data}. Ti abbiamo inviato per email la copia dell'offerta.",
+      "attesa": "Revolut non ha ancora confermato il pagamento. Se hai pagato, l'abbonamento si attiva appena arriva la conferma.",
+      "fallito": "Il pagamento non è andato a buon fine: non è stato addebitato nulla. Puoi riprovare."
+    },
+    "master": {
+      "titolo": "Pagamenti",
+      "sub": "Revolut Business: i piani Premium che le aziende pagano con carta dal portale.",
+      "stato": {
+        "attivo": "I pagamenti sono attivi. Ambiente: {ambiente}.",
+        "spento": "I pagamenti sono spenti: le aziende non vedono i piani."
+      },
+      "ambiente": {
+        "SANDBOX": "Sandbox (prove)",
+        "PRODUZIONE": "Produzione"
+      },
+      "configTitolo": "Revolut Business",
+      "configIntro": "La chiave segreta si crea nel conto Revolut Business, in Merchant API. Usa prima Sandbox per provare, poi Produzione.",
+      "attivoTitolo": "Pagamenti con carta",
+      "ambienteTitolo": "Ambiente",
+      "attivo": "Pagamenti attivi",
+      "chiave": "Chiave segreta API",
+      "chiaveHint": "Viene salvata cifrata e non si vede più. C'è già una chiave: lascia vuoto per tenerla.",
+      "chiaveHintNuova": "Viene salvata cifrata e non si vede più.",
+      "salva": "Salva",
+      "ultimaModifica": "Ultima modifica il {data} da {nome}.",
+      "senzaChiave": "Per attivare i pagamenti serve la chiave segreta API.",
+      "salvato": "Impostazioni dei pagamenti salvate.",
+      "webhookTitolo": "Conferme automatiche (webhook)",
+      "webhookTesto": "Revolut avvisa il portale quando un pagamento è completato. Registra l'indirizzo una volta, e di nuovo se cambi chiave o ambiente.",
+      "webhookSi": "Registrato.",
+      "webhookNo": "Non registrato: i pagamenti si confermano solo quando chi paga torna sul portale.",
+      "webhookRegistra": "Registra il webhook",
+      "webhookOk": "Webhook registrato su Revolut.",
+      "webhookErrore": "Revolut non ha accettato la registrazione (codice {codice}). Controlla la chiave e l'ambiente.",
+      "pianiTitolo": "Piani",
+      "pianiIntro": "Il prezzo è IVA esclusa. Un piano spento non si offre più, ma resta nei pagamenti già fatti.",
+      "livello": "Livello",
+      "mesi": "Mesi",
+      "prezzo": "Prezzo (€ IVA esclusa)",
+      "crea": "Aggiungi il piano",
+      "pianoErrore": "Controlla livello (1, 2 o 3), mesi (da 1 a 36) e prezzo (per esempio 290,00).",
+      "pianoCreato": "Piano aggiunto.",
+      "attiva": "Offri di nuovo",
+      "spegni": "Non offrire più",
+      "attivoSi": "Offerto",
+      "attivoNo": "Spento",
+      "pagamentiTitolo": "Ultimi pagamenti",
+      "verifica": "Verifica su Revolut",
+      "nessunPagamento": "Nessun pagamento ancora.",
+      "colonna": {
+        "data": "Data",
+        "azienda": "Azienda",
+        "piano": "Piano",
+        "totale": "Totale",
+        "stato": "Stato"
+      },
+      "statoPagamento": {
+        "IN_ATTESA": "In attesa",
+        "COMPLETATO": "Completato",
+        "FALLITO": "Non riuscito",
+        "ANNULLATO": "Annullato",
+        "SCADUTO": "Scaduto"
+      }
+    },
+    "mail": {
+      "subject": "Pagamento ricevuto — {azienda} — Rilievi Impianti",
+      "body": "Ciao,\n\nabbiamo ricevuto il pagamento di {totale} € per {azienda}: l'abbonamento è attivo fino al {data}.\n\nQui sotto la copia dell'offerta che hai accettato.\n\n{offerta}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+    }
+  }
+}

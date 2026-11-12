@@ -54,6 +54,26 @@ sudo bash /opt/few-few/current/rilievi/deploy/setup-env.sh
 или домейн в „Impostazioni → Accesso con Microsoft o Google“, а всеки човек свързва акаунта си от „Account“
 с паролата. Без тези стойности бутоните и настройката ги няма.
 
+### Плащанията с Revolut Business (по избор)
+
+Всичко се настройва от конзолата — в `.env` няма нищо за плащанията (`REVOLUT_API_BASE` е само за тестовете и в
+продукция не се чете). Собственикът веднъж:
+
+1. В Revolut Business — ключът на Merchant API (Secret key). За проба първо ключът от sandbox акаунта
+   (developer.revolut.com → Merchant API → Get started обяснява къде е всеки).
+2. В портала, MASTER → „Pagamenti“: „Pagamenti attivi“, средата (Sandbox или Produzione), ключът → „Salva“.
+   Ключът се пази шифрован и не се показва повече; празно поле при следващ запис го оставя.
+3. „Registra il webhook“ — порталът записва в Revolut адреса `https://rilievi.carbonstealth.eu/webhook/revolut`
+   (от `PUBLIC_BASE_URL`) и пази signing secret-а шифрован. Наново при смяна на ключа или на средата.
+4. Плановете (ниво, месеци, цена без ДДС) — в същата страница; „Non offrire più“ спира план, без да го трие.
+5. Проба в Sandbox с тестова карта на Revolut → „Ultimi pagamenti“ казва „Completato“, а фирмата — нивото и
+   края. После — Produzione с нейния ключ и пак „Registra il webhook“.
+
+Контейнерът излиза към `merchant.revolut.com` и `sandbox-merchant.revolut.com` (HTTPS). Webhook-ът не иска нищо
+в nginx (тялото е до 64 KB, общото `location /`). Изгубено известие не губи плащане: връщането на човека и
+поддръжката (всеки час) питат Revolut за поръчката. Фактурата (до 5 дни, ЗДДС чл. 113(4)) се издава извън портала —
+данните са в „Ultimi pagamenti“ и в писмото с офертата до платилия.
+
 ## 2. DNS и TLS сертификат (веднъж)
 
 `A` запис `rilievi.carbonstealth.eu` → IP-то на VPS-а (ако няма wildcard за `*.carbonstealth.eu`).

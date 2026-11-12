@@ -115,3 +115,13 @@ export function decifraSmtp(payload: string): string | null {
     return null;
   }
 }
+
+/** Ключът на Revolut Merchant API и signing secret-ът на webhook-а (#31) — в базата шифровани, никога показани. */
+export const cifraRevolut = (plaintext: string): string => cifra('revolut-v1', plaintext);
+export function decifraRevolut(payload: string): string | null {
+  try {
+    return decifra('revolut-v1', payload);
+  } catch {
+    return null;
+  }
+}

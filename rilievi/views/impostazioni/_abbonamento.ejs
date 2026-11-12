@@ -20,5 +20,16 @@
     <% for (const l of ab.livelli) { %><li<% if (s.livello === l.n) { %> aria-current="true"<% } %>><strong><%= t('abbonamento.livello', { n: l.n }) %></strong> — <%= l.max === null ? t('abbonamento.livelli.oltre', { n: 25 }) : t('abbonamento.livelli.fino', { n: l.max }) %></li>
     <% } %>
   </ul>
-  <p class="field__hint"><%= t('abbonamento.contatto', { email: ab.contatto }) %></p>
+  <% if (ab.piani) { %><h3 id="h-piani"><%= t('pagamenti.piani.titolo') %></h3>
+  <p class="muted"><%= t('pagamenti.piani.intro') %></p>
+  <% if (ab.piani.length) { %><ul class="abbonamento-piani" aria-labelledby="h-piani">
+    <% for (const p of ab.piani) { const durata = t(p.mesi === 1 ? 'pagamenti.mesi.uno' : 'pagamenti.mesi.altri', { n: p.mesi }); %><li>
+      <span><%= t('pagamenti.piani.riga', { livello: p.livello, persone: p.max === null ? t('abbonamento.livelli.oltre', { n: 25 }) : t('abbonamento.livelli.fino', { n: p.max }), durata }) %></span>
+      <span class="abbonamento-piani__prezzo"><%= t('pagamenti.euro', { importo: p.prezzo }) %></span>
+      <% if (p.basta) { %><a class="btn btn--sm" href="/impostazioni/abbonamento/offerta?azienda=<%= encodeURIComponent(azienda.id) %>&amp;piano=<%= encodeURIComponent(p.id) %>"><%= t('pagamenti.piani.scegli') %><span class="visually-hidden"> <%= t('pagamenti.piani.scegliCosa', { livello: p.livello, durata }) %></span></a><% } else { %><span class="muted"><%= t('pagamenti.piani.troppoPiccolo', { n: ab.occupati }) %></span><% } %>
+    </li>
+    <% } %>
+  </ul>
+  <p class="field__hint"><%= t('pagamenti.piani.inizio') %></p><% } else { %><p><%= t('pagamenti.piani.nessuno', { email: ab.contatto }) %></p><% } %>
+  <% } else { %><p class="field__hint"><%= t('abbonamento.contatto', { email: ab.contatto }) %></p><% } %>
 </section>

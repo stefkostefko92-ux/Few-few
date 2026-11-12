@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-12-pagamento-carta": {
+        "area": "Portale",
+        "titolo": "Abbonamento pagabile con carta",
+        "testo": "L'amministratore dell'azienda sceglie il piano in Impostazioni → Abbonamento, legge l'offerta con prezzo, IVA e date, e paga con carta sulla pagina sicura di Revolut. L'abbonamento si attiva appena arriva la conferma del pagamento e la copia dell'offerta arriva per email. Se la prova o il piano sono ancora in corso, il nuovo periodo parte dalla loro fine. Il numero della carta non passa dal portale."
+      },
       "2026-11-12-prova-abbonamento": {
         "area": "Portale",
         "titolo": "Un mese di prova e abbonamento per numero di persone",

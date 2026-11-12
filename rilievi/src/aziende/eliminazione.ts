@@ -64,6 +64,11 @@ export async function eliminaAzienda(aziendaId: string, actorId: string | null):
         where: { aziendaId },
         data: { conservaFino: conservaFinoDa(new Date()) },
       });
+      // Също приетите оферти; плащанията остават с името на фирмата (aziendaId → NULL) — до срока на офертата.
+      await tx.accettazioneOfferta.updateMany({
+        where: { aziendaId },
+        data: { conservaFino: conservaFinoDa(new Date()) },
+      });
       await tx.membership.deleteMany({ where: { aziendaId } });
       const soli = await tx.user.deleteMany({
         where: {

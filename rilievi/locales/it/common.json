@@ -50,7 +50,8 @@
     "ordini": "Ordini ai fornitori",
     "approvazioni": "Da approvare",
     "stato": "Stato del servizio",
-    "posta": "Email del portale"
+    "posta": "Email del portale",
+    "pagamenti": "Pagamenti"
   },
   "common": {
     "yes": "Sì",

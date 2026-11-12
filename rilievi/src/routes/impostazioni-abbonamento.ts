@@ -4,6 +4,9 @@ import { LIVELLI, statoAbbonamento, type CampiAbbonamento } from '../abbonamenti
 import { principalOf, requireUser, sendError } from '../auth/guards.js';
 import { config } from '../config.js';
 import { prisma } from '../db.js';
+import { clienteAttivo } from '../pagamenti/config.js';
+import { formatoEuro } from '../pagamenti/offerta.js';
+import { pianiAttivi } from '../pagamenti/piani.js';
 import type { SessionUser } from '../types.js';
 import { ICONE_SEZIONI, sezioniDi } from './impostazioni-vista.js';
 
@@ -57,6 +60,26 @@ async function render(req: Request, res: Response): Promise<void> {
   const now = new Date();
   const stato = statoAbbonamento(azienda, now);
   const posti = await personeOccupate(prisma, azienda.id, now);
+  const occupati = posti.membri + posti.inviti;
+  // Плановете — само на ADMIN на фирмата (MASTER не плаща), при включени плащания и при фирма със срок
+  // („без срок“ остава така, докато MASTER реши — чл. 12.8).
+  const admin = user.memberships.some(
+    (m) => m.aziendaId === azienda.id && m.role === 'ADMIN' && !m.soloEsportazione,
+  );
+  const piani =
+    admin && azienda.abbonamentoFino && (await clienteAttivo())
+      ? (await pianiAttivi()).map((p) => {
+          const max = LIVELLI[p.livello as keyof typeof LIVELLI];
+          return {
+            id: p.id,
+            livello: p.livello,
+            mesi: p.mesi,
+            max,
+            prezzo: formatoEuro(p.prezzoCent),
+            basta: max === null || occupati <= max,
+          };
+        })
+      : null;
   res.render('impostazioni/sezione', {
     sezione: 'abbonamento',
     // Изтекла фирма: другите раздели са само за четене — тук и износът стигат.
@@ -72,6 +95,8 @@ async function render(req: Request, res: Response): Promise<void> {
       posti,
       livelli: Object.entries(LIVELLI).map(([n, max]) => ({ n: Number(n), max })),
       contatto: config().CONTACT_EMAIL,
+      piani,
+      occupati,
     },
   });
 }

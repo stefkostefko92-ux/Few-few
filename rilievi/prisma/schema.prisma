@@ -181,6 +181,7 @@ model Azienda {
   audit             AuditLog[]
   accessRequests    AccessRequest[]
   chiaviApi         ChiaveApi[]
+  pagamenti         Pagamento[]
 
   @@index([abbonamentoFino])
 }
@@ -257,6 +258,8 @@ model User {
   comunicazioniChiuse ComunicazioneChiusa[]
   identitaEsterne     IdentitaEsterna[]
   postaAggiornata     PostaPortale[]        @relation("PostaAggiornata")
+  pagamentiAggiornati ConfigPagamenti[]     @relation("PagamentiAggiornati")
+  pagamenti           Pagamento[]           @relation("PagamentiCreati")
   violazioni          Violazione[]          @relation("ViolazioniScritte")
   schedeApprovate     Scheda[]              @relation("SchedeApprovate")
   versioniScritte     SchedaVersione[]      @relation("VersioniScritte")
@@ -1682,4 +1685,116 @@ model PostaPortale {
   updatedBy     User?    @relation("PostaAggiornata", fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@index([updatedById])
+}
+
+enum AmbienteRevolut {
+  SANDBOX
+  PRODUZIONE
+}
+
+/// Плащанията през Revolut Business (#31), настроени от MASTER в конзолата: един ред (`id` = "revolut").
+/// Ключът на API и signing secret-ът на webhook-а — шифровани (src/auth/chiavi.ts), никога показани.
+model ConfigPagamenti {
+  id                String          @id @default("revolut") @db.VarChar(10)
+  attivo            Boolean         @default(false)
+  ambiente          AmbienteRevolut @default(SANDBOX)
+  chiaveEnc         String?
+  webhookId         String?         @db.VarChar(100)
+  webhookSegretoEnc String?
+  updatedAt         DateTime        @updatedAt
+  updatedById       String?
+  updatedBy         User?           @relation("PagamentiAggiornati", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+}
+
+/// Плановете Premium (#31): ниво по брой хора, срок в месеци, цена в центове БЕЗ ДДС — задава ги MASTER.
+/// Стар план не се трие, а се изключва (плащанията го помнят).
+model PianoAbbonamento {
+  id         String      @id @default(cuid())
+  livello    Int
+  mesi       Int
+  prezzoCent Int
+  attivo     Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  pagamenti  Pagamento[]
+
+  @@index([attivo])
+}
+
+enum StatoPagamento {
+  IN_ATTESA
+  COMPLETATO
+  FALLITO
+  ANNULLATO
+  SCADUTO
+}
+
+/// Плащане на план през Revolut (#31): сумите — смятани на сървъра при офертата (центове), данните за фактурата
+/// — каквито ги е декларирал ADMIN; счетоводен запис на Carbon Stealth като администратор — надживява фирмата
+/// (`aziendaId` става празно, името остава). Поръчката в Revolut — една на плащане.
+model Pagamento {
+  id             String            @id @default(cuid())
+  aziendaId      String?
+  azienda        Azienda?          @relation(fields: [aziendaId], references: [id], onDelete: SetNull)
+  aziendaNome    String            @db.VarChar(120)
+  pianoId        String?
+  piano          PianoAbbonamento? @relation(fields: [pianoId], references: [id], onDelete: SetNull)
+  livello        Int
+  mesi           Int
+  imponibileCent Int
+  ivaCent        Int
+  totaleCent     Int
+  regimeIva      String            @db.VarChar(20)
+  ragioneSociale String            @db.VarChar(200)
+  sede           String            @db.VarChar(300)
+  partitaIva     String            @db.VarChar(20)
+  stato          StatoPagamento    @default(IN_ATTESA)
+  ambiente       AmbienteRevolut
+  revolutOrderId String?           @unique @db.VarChar(100)
+  checkoutUrl    String?           @db.VarChar(500)
+  createdById    String?
+  createdBy      User?             @relation("PagamentiCreati", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime          @default(now())
+  completatoAt   DateTime?
+  /// Периодът, който плащането е дало (полунощ по Рим).
+  inizio         DateTime?
+  fine           DateTime?
+
+  @@index([aziendaId])
+  @@index([pianoId])
+  @@index([createdById])
+  @@index([stato, createdAt])
+}
+
+/// Приетата оферта (чл. 12.1 и 19.1 a на условията 2026-11-12): кой, за коя фирма, планът, сумите, точният текст
+/// и отпечатъкът му, кога, IP и браузър, плащането — запечатано с HMAC (src/legale/sigillo.ts), без връзки към
+/// човека и фирмата (надживява ги). Пази се 10 години (`conservaFino`), изтрива го само поддръжката.
+model AccettazioneOfferta {
+  id             String   @id @default(cuid())
+  at             DateTime
+  userId         String
+  userNome       String   @db.VarChar(120)
+  userEmail      String   @db.VarChar(254)
+  aziendaId      String?
+  aziendaNome    String   @db.VarChar(120)
+  ragioneSociale String   @db.VarChar(200)
+  sede           String   @db.VarChar(300)
+  partitaIva     String   @db.VarChar(20)
+  livello        Int
+  mesi           Int
+  imponibileCent Int
+  ivaCent        Int
+  totaleCent     Int
+  versione       String   @db.VarChar(20)
+  testo          String
+  hash           String   @db.Char(64)
+  ip             String?  @db.VarChar(45)
+  userAgent      String?  @db.VarChar(300)
+  pagamentoId    String   @unique
+  sigillo        String   @db.Char(64)
+  conservaFino   DateTime
+
+  @@index([aziendaId])
+  @@index([conservaFino])
 }

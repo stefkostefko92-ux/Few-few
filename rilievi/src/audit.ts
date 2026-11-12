@@ -135,6 +135,14 @@ export const AUDIT_ACTIONS = [
   'POSTA_PROVA',
   // Абонаментът на фирмата (src/abbonamenti/): нивото и денят (на ръка от MASTER или от плащане), без суми.
   'AZIENDA_ABBONAMENTO',
+  // Плащанията (src/pagamenti/): настройката (без ключове), плановете (нивото, срокът, цената), плащането
+  // (започнато, завършено, неуспешно — сумата в центове, без данни на картата).
+  'PAGAMENTI_IMPOSTATI',
+  'PIANO_CREATO',
+  'PIANO_MODIFICATO',
+  'PAGAMENTO_AVVIATO',
+  'PAGAMENTO_COMPLETATO',
+  'PAGAMENTO_FALLITO',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
@@ -164,7 +172,9 @@ export interface AuditEntry {
     | 'buono'
     | 'preventivo'
     | 'avviso'
-    | 'posta';
+    | 'posta'
+    | 'pagamento'
+    | 'piano';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */
   meta?: Prisma.InputJsonObject;

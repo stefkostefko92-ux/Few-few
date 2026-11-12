@@ -31,6 +31,8 @@ import { countNewRequests } from './requests/service.js';
 import { montaRouter } from './routes/montaggio.js';
 import { HOME_PATH } from './seo/paths.js';
 import { originiFornitori } from './auth/oidc.js';
+import { originiCheckout } from './pagamenti/config.js';
+import { webhookRevolutRouter } from './routes/webhook-revolut.js';
 
 /** Записът на картата: нова (`/schede`) и промяна (`/schede/<id>`). */
 const FORMA_SCHEDA = /^\/schede(?:\/[a-z0-9]{20,40})?$/;
@@ -138,8 +140,8 @@ export function createServer(): Express {
           objectSrc: ["'none'"],
           baseUri: ["'none'"],
           frameAncestors: ["'none'"],
-          // Входът с Microsoft/Google: формата пренасочва към страницата за вход на доставчика (D1).
-          formAction: ["'self'", ...originiFornitori()],
+          // Входът с Microsoft/Google (D1) и плащането (#31): формата пренасочва към доставчика.
+          formAction: ["'self'", ...originiFornitori(), ...originiCheckout()],
           manifestSrc: ["'self'"],
           ...(isProduction() ? { upgradeInsecureRequests: [] } : {}),
         },
@@ -166,6 +168,8 @@ export function createServer(): Express {
       ...httpLogOptions,
     }),
   );
+  // Известията на Revolut — суровото тяло (подписът е над него), преди всеки парсер, сесия и таван за записи.
+  app.use(webhookRevolutRouter);
   // Четири бележки по 4000 знака на кирилица са ~100 KB urlencoded, мерките на бутониерите — до 300
   // спирки (измерено: формата праща ~1950 параметъра с 300 спирки), отметките на снимките за печата —
   // до 300 (`MAX_PER_SCHEDA`). Таванът е над това, не повече. Само формата на картата носи и листовете

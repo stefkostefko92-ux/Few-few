@@ -59,6 +59,8 @@ import { masterContrattiRouter } from './master-contratti.js';
 import { masterVerificaRouter } from './master-verifica.js';
 import { masterPostaRouter } from './master-posta.js';
 import { masterRegistriRouter } from './master-registri.js';
+import { masterPagamentiRouter } from './master-pagamenti.js';
+import { abbonamentoPagamentoRouter } from './abbonamento-pagamento.js';
 
 /**
  * Рутерите на страниците в реда им (изнесени от server.ts, за да не расте над 300 реда). Редът е част от
@@ -78,6 +80,7 @@ export function montaRouter(app: Express): void {
   app.use(masterComunicazioniRouter);
   app.use(masterRegistriRouter);
   app.use(masterPostaRouter);
+  app.use(masterPagamentiRouter);
   app.use(condizioniRouter);
   app.use(condizioniFirmaRouter);
   app.use(installaRouter);
@@ -126,7 +129,8 @@ export function montaRouter(app: Express): void {
   app.use(aziendeAbbonamentoRouter);
   // Преди impostazioniRouter: `/impostazioni/esportazione` е свой раздел с своя проверка (не по способност).
   app.use(impostazioniEsportazioneRouter);
-  // Също: „Abbonamento“ е по роля ADMIN — и изтеклата фирма го вижда.
+  // Също: „Abbonamento“ е по роля ADMIN — и изтеклата фирма го вижда и плаща (офертата, плащането, връщането).
+  app.use(abbonamentoPagamentoRouter);
   app.use(impostazioniAbbonamentoRouter);
   app.use(impostazioniRouter);
   app.use(impostazioniFirmeRouter);

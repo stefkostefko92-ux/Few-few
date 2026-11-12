@@ -88,6 +88,15 @@ const schema = z
       .url()
       .default('https://accounts.google.com')
       .transform((url) => url.replace(/\/+$/, '')),
+    /**
+     * Само за тестовете: адресът на фалшивия Revolut (src/pagamenti/config.ts). В продукция не се чете — там
+     * адресът идва от средата, избрана в конзолата (sandbox или продукция на Revolut).
+     */
+    REVOLUT_API_BASE: z
+      .string()
+      .url()
+      .optional()
+      .transform((url) => url?.replace(/\/+$/, '')),
     /** Шрифтовете за PDF (DejaVu Sans — кирилица и италиански ударения). В образа: fonts-dejavu-core. */
     PDF_FONT_DIR: z.string().min(1).default('/usr/share/fonts/truetype/dejavu'),
     /** Срок за пазене на одита в дни (по подразбиране 2 години). */

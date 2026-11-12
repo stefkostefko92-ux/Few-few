@@ -1,0 +1,52 @@
+<%
+  // Офертата преди Revolut (routes/abbonamento-pagamento.ts, pagamenti/offerta.ts): текстът, който се
+  // запечатва, данните за фактурата, отметката (никога отметната) и бутонът със сумата. Грешките — под полето.
+  const p = 'pagamenti.pagina.';
+  const aria = (k, hint) => {
+    const ids = [hint ? 'hint-' + k : null, errori[k] ? 'err-' + k : null].filter(Boolean).join(' ');
+    return (ids ? ' aria-describedby="' + ids + '"' : '') + (errori[k] ? ' aria-invalid="true"' : '');
+  };
+  const campi = ['ragioneSociale', 'sede', 'partitaIva'];
+  const tornaA = '/impostazioni/abbonamento?azienda=' + encodeURIComponent(azienda.id);
+%><%- include('../partials/top', { title: t(p + 'titolo') + ' — ' + azienda.name, narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="<%= tornaA %>"><%= t(p + 'torna') %></a>
+    <h1><%= t(p + 'titolo') %></h1>
+    <p class="page-head__sub"><%= azienda.name %></p>
+  </div>
+</div>
+<div class="stack-gap offerta">
+  <% if (errore) { %><div class="errors" id="form-error" role="alert" tabindex="-1"><h2><%= t(errore, { n: occupati }) %></h2>
+    <% const elenco = campi.concat(['accetto']).filter((k) => errori[k]); if (elenco.length) { %><ul>
+      <% for (const k of elenco) { %><li><a href="#o-<%= k %>"><%= t(errori[k]) %></a></li>
+      <% } %>
+    </ul><% } %>
+  </div><% } %>
+  <p><%= t(p + 'intro') %></p>
+  <section class="offerta__testo" aria-labelledby="h-offerta">
+    <h2 class="section__title" id="h-offerta"><%= offerta.righe[0] %></h2>
+    <% for (const riga of offerta.righe.slice(1)) { %><p><%= riga %></p>
+    <% } %>
+  </section>
+  <form class="form" method="post" action="/impostazioni/abbonamento/paga" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <input type="hidden" name="piano" value="<%= piano.id %>">
+    <fieldset class="legale__blocco">
+      <legend class="section__title"><%= t(p + 'dati') %></legend>
+      <% for (const k of campi) { %><div class="field">
+        <label class="field__label" for="o-<%= k %>"><%= t(p + k) %></label>
+        <input class="input" id="o-<%= k %>" name="<%= k %>" type="text" required maxlength="<%= k === 'partitaIva' ? 40 : k === 'sede' ? 300 : 200 %>"<% if (k === 'partitaIva') { %> autocapitalize="characters" spellcheck="false" autocomplete="off"<% } else if (k === 'ragioneSociale') { %> autocomplete="organization"<% } else { %> autocomplete="street-address"<% } %> value="<%= valori[k] %>"<%- aria(k, k === 'partitaIva') %>>
+        <% if (k === 'partitaIva') { %><p class="field__hint" id="hint-<%= k %>"><%= t(p + 'partitaIvaHint') %></p><% } %>
+        <% if (errori[k]) { %><p class="field__error" id="err-<%= k %>"><%= t(errori[k]) %></p><% } %>
+      </div>
+      <% } %>
+      <label class="tick legale__spunta"><input type="checkbox" id="o-accetto" name="accetto" value="si"<%- aria('accetto', false) %>><span class="tick__box" aria-hidden="true"></span><span><%= t(p + 'accetto', { azienda: azienda.name }) %></span></label>
+      <% if (errori.accetto) { %><p class="field__error" id="err-accetto"><%= t(errori.accetto) %></p><% } %>
+    </fieldset>
+    <p class="muted"><%= t(p + 'indietro') %></p>
+    <div class="toolbar"><button class="btn btn--primary" type="submit"><%= t(p + 'paga', { totale }) %></button></div>
+  </form>
+</div>
+<%- include('../partials/bottom') %>

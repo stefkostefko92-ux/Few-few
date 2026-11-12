@@ -15,3 +15,63 @@
   gap: 6px;
   padding-left: 1.2em;
 }
+
+/* Офертата преди плащането (views/impostazioni/offerta.ejs): текстът като лист, по един абзац на точка. */
+.offerta__testo {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--wash);
+}
+
+.offerta__testo p,
+.offerta__testo h2 {
+  margin: 0;
+}
+
+/* Плановете в „Abbonamento“: цената вдясно, бутонът под нея на телефон. */
+.abbonamento-piani {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.abbonamento-piani li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px 24px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+/* На телефон: описанието на свой ред, цената и бутонът под него. */
+@media (max-width: 560px) {
+  .abbonamento-piani li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .abbonamento-piani li > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+.abbonamento-piani__prezzo {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Конзолата „Pagamenti“ (views/master/pagamenti.ejs): частите на панела с въздух помежду им. */
+.pagamenti-pannello {
+  display: grid;
+  gap: 12px;
+}
+
+.pagamenti-pannello > * {
+  margin: 0;
+}
