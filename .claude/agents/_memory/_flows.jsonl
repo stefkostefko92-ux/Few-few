@@ -529,5 +529,3 @@
 {"t":"handoff","ts":"2026-11-11T07:32:07.914Z","id":"ra01a74db","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки","run":"100172a2"}
 {"t":"handoff","ts":"2026-11-11T07:33:11.427Z","id":"ra01a74db","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"2c2881c6"}
 {"t":"handoff","ts":"2026-11-11T07:35:34.776Z","id":"ra01a74db","from":"skorostnika","to":"kodadjiyata","status":"блокер","run":"58a71ac2"}
-{"t":"start","ts":"2026-11-11T07:59:54.898Z","id":"re52b88e2","flow":"авто","lead":"asansyorchika","auto":true}
-{"t":"handoff","ts":"2026-11-11T07:59:54.898Z","id":"re52b88e2","from":"asansyorchika","to":"човек","status":"има бележки","run":"d3a0ef9f"}

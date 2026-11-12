@@ -2,8 +2,6 @@
 
 import { esc, pagePath } from './layout.mjs';
 import { render3d } from './parts.mjs';
-import { regola, regolaScript } from './regola.mjs';
-import { cantiereSection } from './cantiere.mjs';
 import { COMPANY, PATENT, CATALOG_PDF, doorSystems, guideConfigs, sgFixed } from '../data/products.mjs';
 
 // ── Начална страница ─────────────────────────────────────────
@@ -14,10 +12,11 @@ export function homePage(t, locales) {
     `<div class="stat"><strong>${esc(s.value)}</strong><span>${esc(s.label)}</span></div>`
   ).join('');
 
-  const apps = t.applications.items.map((a) => `
+  const apps = t.applications.items.map((a, i) => `
     <article class="app-card">
       ${render3d(a.img, a.title, { sizes: '(max-width: 860px) 100vw, 380px' })}
       <div class="app-body">
+        <p class="app-num">0${i + 1}</p>
         <h3>${esc(a.title)}</h3>
         <p>${esc(a.body)}</p>
       </div>
@@ -29,10 +28,8 @@ export function homePage(t, locales) {
     Math.min(...guideConfigs.sc.flatMap((c) => [c.sup.price, c.gui.price])),
     Math.min(...Object.values(sgFixed.prices)),
   ];
-  // Картите водят към страниците по семейства (SC е секция на страницата за водачите).
-  const famHref = [pagePath(t, 'famDoors'), pagePath(t, 'famGuides'), `${pagePath(t, 'famGuides')}#sezione-04`, pagePath(t, 'famSg')];
   const fams = t.featured.families.map((f, i) => `
-    <a class="fam-card" href="${famHref[i]}">
+    <a class="fam-card" href="${pagePath(t, 'products')}#sezione-0${[1, 2, 4, 5][i]}">
       ${render3d(f.img, f.title, { sizes: '(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 280px' })}
       <div class="fam-body">
         <h3>${esc(f.title)}</h3>
@@ -64,19 +61,19 @@ export function homePage(t, locales) {
       <div class="hero-cta">
         <a class="btn btn-white" href="${pagePath(t, 'products')}">${esc(h.ctaProducts)}</a>
         <a class="btn btn-outline" href="${CATALOG_PDF}" download>${esc(h.ctaCatalog)}</a>
+        <a class="btn btn-outline" href="#vista-3d">${esc(h.cta3d)}</a>
       </div>
       <div class="patent-badge">
         <p><strong>${esc(h.patentLabel)} ${esc(h.numAbbr || 'N.')} ${PATENT.number}</strong></p>
         <p>${esc(h.patentOffice)}</p>
       </div>
     </div>
-    <div class="hero-visual hero-regola">
-      ${regola(t, 'porta', { priority: true })}
+    <div class="hero-visual">
+      ${render3d('a-65-170-7_b-65-320-hero', h.visualAlt, { sizes: '(max-width: 1020px) 420px, 460px', lazy: false, priority: true, h: 1200 })}
     </div>
   </div>
   <div class="wrap stats-band">${stats}</div>
 </section>
-${regolaScript()}
 ${viewerSection(t)}
 
 <section class="section">
@@ -89,14 +86,13 @@ ${viewerSection(t)}
       <p class="tools-label">${esc(t.problem.toolsLabel)}</p>
       <div class="chips">${t.problem.tools.map((x) => `<span class="chip">${esc(x)}</span>`).join('')}</div>
     </div>
-    <div class="highlight-card">
+    <aside class="highlight-card">
       <h3>${esc(t.problem.highlight)}</h3>
       <p>${esc(t.problem.highlightBody)}</p>
       ${render3d('a-37-170-2_b-37-320', t.problem.highlight, { sizes: '(max-width: 860px) 100vw, 440px' })}
-    </div>
+    </aside>
   </div>
 </section>
-${cantiereSection(t, 'home')}
 
 <section class="section section-tint">
   <div class="wrap">

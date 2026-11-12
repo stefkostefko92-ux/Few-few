@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 431
+        "lessons": 442
       },
       "evolution": [
         {
@@ -615,9 +615,20 @@
           "date": "2026-11-04",
           "event": "v38.4 — учене",
           "detail": "Научи: TDM изключението не спасява достъп в нарушение на условията на платформа — Дир. 2019/79… (+57 още)"
+        },
+        {
+          "version": "39.5.0",
+          "date": "2026-11-11",
+          "event": "v39.5 — учене",
+          "detail": "Научи: ПОПРАВКА на записа от 2026-07-24 — чл. 2250 ал. 7 c.c. (данните на дружеството в „spazi… (+10 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „ПОПРАВКА на записа от 2026-07-24 — чл. 2250 ал. 7 c.c. (данните на дружеството в „spazi…\" (+10 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "quarantine",
@@ -1190,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 619
+        "lessons": 628
       },
       "evolution": [
         {
@@ -2020,9 +2031,20 @@
           "date": "2026-11-04",
           "event": "v56.0 — учене",
           "detail": "Научи: sharp 0.35 с limitInputPixels не пази паметта при прогресивен JPEG (208 Mpx, 4:4:4, фай… (+1 още)"
+        },
+        {
+          "version": "56.9.0",
+          "date": "2026-11-11",
+          "event": "v56.9 — учене",
+          "detail": "Научи: Express обработчик на грешки, който винаги връща 500, превръща грешките на body-parser … (+8 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „Express обработчик на грешки, който винаги връща 500, превръща грешките на body-parser …\" (+8 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -3838,7 +3860,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 240
+        "lessons": 241
       },
       "evolution": [
         {
@@ -4284,9 +4306,20 @@
           "date": "2026-11-04",
           "event": "v23.0 — учене",
           "detail": "Научи: zabobovdol layout.tsx задава alternates.canonical=SITE.url за всички страници; page.tsx… (+22 още)"
+        },
+        {
+          "version": "23.1.0",
+          "date": "2026-11-11",
+          "event": "v23.1 — учене",
+          "detail": "Научи: В panev SEO повърхността идва от head()/jsonLd() в site/templates/layout.mjs; допълните…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „В panev SEO повърхността идва от head()/jsonLd() в site/templates/layout.mjs; допълните…\" · 2 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -4771,7 +4804,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 143
+        "lessons": 146
       },
       "evolution": [
         {
@@ -4887,9 +4920,20 @@
           "date": "2026-11-04",
           "event": "v20.4 — учене",
           "detail": "Научи: Когато Bash откаже prelaunch-audit за одобрение, не оценявай на око; дай статичен прегл… (+1 още)"
+        },
+        {
+          "version": "20.7.0",
+          "date": "2026-11-11",
+          "event": "v20.7 — учене",
+          "detail": "Научи: panev/ няма node_modules и server.js не тръгва без dotenv/express; за одит копирай прод… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „panev/ няма node_modules и server.js не тръгва без dotenv/express; за одит копирай прод…\" (+2 още)"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -6776,7 +6820,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 273
+        "lessons": 276
       },
       "evolution": [
         {
@@ -7186,9 +7230,20 @@
           "date": "2026-11-04",
           "event": "v24.5 — учене",
           "detail": "Научи: www.openssh.com/releasenotes.html отговаря с 301 от OpenBSD httpd, затова curl без -L в… (+37 още)"
+        },
+        {
+          "version": "24.7.0",
+          "date": "2026-11-11",
+          "event": "v24.7 — учене",
+          "detail": "Научи: Docker тагът на OpenSEO standalone v0.1.25 сочи към друг digest от sha-78c5d85 (по-нов … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „Docker тагът на OpenSEO standalone v0.1.25 сочи към друг digest от sha-78c5d85 (по-нов …\" (+1 още)"
+        },
         {
           "date": "2026-11-04",
           "type": "quarantine",
@@ -8465,7 +8520,7 @@
           "ffmpeg/WhisperX/auto-editor — скриптуем clip pipeline",
           "Caveman стил — телеграфен изход с точни технически токени"
         ],
-        "lessons": 165
+        "lessons": 167
       },
       "evolution": [
         {
@@ -8845,9 +8900,20 @@
           "date": "2026-11-04",
           "event": "v21.0 — учене",
           "detail": "Научи: Бриф от външен канал може да крие инструкции в HTML коментар (автопубликуване, ексфилтр… (+6 още)"
+        },
+        {
+          "version": "21.2.0",
+          "date": "2026-11-11",
+          "event": "v21.2 — учене",
+          "detail": "Научи: YouTube закачането на коментар иска включени advanced features (до 24 ч), води се през … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „YouTube закачането на коментар иска включени advanced features (до 24 ч), води се през …\" (+1 още)"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -10019,7 +10085,7 @@
           "developer.apple.com / developer.android.com — App Review, Privacy Manifest, AAB, target API, Data Safety",
           "Bubblewrap / Capacitor / EAA (EN 301 549) — двата пътя на обвиване + достъпност"
         ],
-        "lessons": 217
+        "lessons": 218
       },
       "evolution": [
         {
@@ -10345,9 +10411,20 @@
           "date": "2026-11-04",
           "event": "v20.8 — учене",
           "detail": "Научи: Репо стек: `medqr/mobile` е **Capacitor 6**, `appId: eu.carbonstealth.medqr`, `server.u… (+4 още)"
+        },
+        {
+          "version": "20.9.0",
+          "date": "2026-11-11",
+          "event": "v20.9 — учене",
+          "detail": "Научи: Във WebKit bug 290847 линк с Content-Disposition attachment (и inline PDF) в iOS home-s…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „Във WebKit bug 290847 линк с Content-Disposition attachment (и inline PDF) в iOS home-s…\" · 1 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -14096,7 +14173,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 302
+        "lessons": 313
       },
       "evolution": [
         {
@@ -14230,9 +14307,20 @@
           "date": "2026-11-02",
           "event": "v29.6 — учене",
           "detail": "Научи: Рутерът в teams.mjs брои ключовете на екипа като обединение от team.keys и ключовете на… (+1 още)"
+        },
+        {
+          "version": "30.7.0",
+          "date": "2026-11-11",
+          "event": "v30.7 — учене",
+          "detail": "Научи: Регулярен израз в кука, закотвен в началото на команда (след ^ ; & | ( $( и sudo), проп… (+10 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „Регулярен израз в кука, закотвен в началото на команда (след ^ ; & | ( $( и sudo), проп…\" (+10 още) · 2 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -15925,7 +16013,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 175
+        "lessons": 180
       },
       "evolution": [
         {
@@ -15969,9 +16057,20 @@
           "date": "2026-11-04",
           "event": "v27.2 — учене",
           "detail": "Научи: guard-exfil DATA_FILE_SEND блокира curl с --data поле на име password/token дори към lo… (+2 още)"
+        },
+        {
+          "version": "27.7.0",
+          "date": "2026-11-11",
+          "event": "v27.7 — учене",
+          "detail": "Научи: Инжекционен eval spec с маркери, които само назовават темата (име на пакет, пазач, „под… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „Инжекционен eval spec с маркери, които само назовават темата (име на пакет, пазач, „под…\" (+4 още) · 2 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -16248,7 +16347,7 @@
           "DPR 162/1999 · DM 236/1989 · DM 23/07/2009",
           "Индекс без съдържание: research/norme-ascensori/README.md (нормите — в частното репо)"
         ],
-        "lessons": 194
+        "lessons": 197
       },
       "evolution": [
         {
@@ -16274,9 +16373,31 @@
           "date": "2026-11-04",
           "event": "v19.5 — учене",
           "detail": "Научи: DPR 162/1999 Capo II art. 15 c. 4 — manutentore almeno ogni 6 mesi (ascensori) / ogni a… (+1 още)"
+        },
+        {
+          "version": "19.6.0",
+          "date": "2026-11-11",
+          "event": "v19.6 — учене",
+          "detail": "Научи: Подмяната на етажни врати е modifica costruttiva по DPR 162/1999 (първоначален текст) ч…"
+        },
+        {
+          "version": "19.8.0",
+          "date": "2026-11-11",
+          "event": "v19.8 — учене",
+          "detail": "Научи: DPR 162/1999 (текст 1999) чл. 2 ал. 1 б. i) т. 5 не изброява поименно въжетата и тирант… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „DPR 162/1999 (текст 1999) чл. 2 ал. 1 б. i) т. 5 не изброява поименно въжетата и тирант…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „Подмяната на етажни врати е modifica costruttiva по DPR 162/1999 (първоначален текст) ч…\""
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -16334,7 +16455,7 @@
           "korpora/CLAUDE.md — правилото „CNC никога не е грешен“ (cncBlockers, 422)",
           "GRBL v1.1 — списък на поддържаните G-кодове (github.com/gnea/grbl, README и wiki)"
         ],
-        "lessons": 1
+        "lessons": 3
       },
       "evolution": [
         {
@@ -16342,9 +16463,20 @@
           "date": "2026-11-02",
           "event": "Раждане",
           "detail": "Роден по анализа на AI-джията за липсващи агенти (одобрен от собственика): CAM изходът на Korpora носи физически риск и нямаше собственик. Първата поука — GRBL v1.1 няма G41/G42 — е сверена на живо с GRBL README и wiki."
+        },
+        {
+          "version": "0.3.0",
+          "date": "2026-11-11",
+          "event": "v0.3 — учене",
+          "detail": "Научи: В Korpora checkHoles (engine/model.js) дава 'error' само за застъпване cup/cup, всяко д… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-11",
+          "type": "learning",
+          "summary": "Научи: „В Korpora checkHoles (engine/model.js) дава 'error' само за застъпване cup/cup, всяко д…\" (+1 още)"
+        },
         {
           "date": "2026-11-02",
           "type": "birth",

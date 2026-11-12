@@ -38,12 +38,12 @@ export function catalogPage(t, locales) {
         <p class="callout">${esc(c.fallback)}</p>
       </object>
     </div>
-    <div class="catalog-toc">
+    <aside class="catalog-toc">
       <h2>${esc(c.tocTitle)}</h2>
       <ol>${toc}</ol>
       <p class="note">${esc(c.interactiveNote)}</p>
       <a class="btn btn-primary" href="${CATALOG_PDF}" download>${esc(c.download)}</a>
-    </div>
+    </aside>
   </div>
 </section>
 
@@ -51,7 +51,7 @@ export function catalogPage(t, locales) {
   <div class="wrap">
     <p class="kicker">${esc(c.previewKicker)}</p>
     <h2>${esc(c.previewTitle)}</h2>
-    <ul class="preview-strip" tabindex="0" aria-label="${esc(c.previewTitle)}">${previews}</ul>
+    <ul class="preview-strip">${previews}</ul>
   </div>
 </section>`;
 }
