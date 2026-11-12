@@ -35,7 +35,6 @@ export default {
       more: 'Отделна страница',
       familiesLabel: 'Семейства планки',
       crumbsLabel: 'Път',
-      faqKicker: 'Често задавани въпроси',
       otherTitle: 'Други семейства планки',
       fullList: 'Пълният ценоразпис с всички кодове',
       see3d: 'Виж в 3D',

@@ -43,7 +43,7 @@ export function familyPage(t, key) {
   return `
 <section class="page-head">
   <div class="wrap page-head-grid">
-    <div>
+    <div class="page-head-copy">
     ${crumbs(t, key)}
     <p class="kicker kicker-light">${esc(f.kicker)}</p>
     <h1>${esc(f.h1)}</h1>
@@ -59,12 +59,11 @@ export function familyPage(t, key) {
 </section>
 ${key === 'famDoors' || key === 'famGuides' ? regolaScript() : ''}
 
-${sectionsHtml(t, fam.sections)}
+${sectionsHtml(t, fam.sections, { covers: false })}
 ${cantiereSection(t, key)}
 
 <section class="section section-tint" id="faq">
   <div class="wrap">
-    <p class="kicker">${esc(sh.faqKicker)}</p>
     <h2>${esc(f.faqTitle)}</h2>
     <div class="faq-list">${faq}
     </div>

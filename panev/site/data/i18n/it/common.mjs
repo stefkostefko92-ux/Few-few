@@ -152,7 +152,6 @@ export default {
     open3d: 'Apri la vista 3D',
   },
   cantiere: {
-    kicker: 'Dal cantiere',
     title: 'Dalla piegatura al vano',
     lead: 'Prodotte a Cornaredo, montate su calcestruzzo irregolare e murature fuori squadra: foto reali dalla produzione e dai cantieri.',
     famTitle: 'Montate su muri veri',

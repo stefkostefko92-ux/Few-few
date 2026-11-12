@@ -152,7 +152,6 @@ export default {
     open3d: 'Open the 3D view',
   },
   cantiere: {
-    kicker: 'On site',
     title: 'From the press brake to the shaft',
     lead: 'Made in Cornaredo, fitted to uneven concrete and out-of-square walls: real photos from production and from building sites.',
     famTitle: 'Fitted to real walls',
