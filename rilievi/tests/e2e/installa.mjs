@@ -2,22 +2,33 @@
 // schermo intero"). In a real Chromium: Chrome itself says the portal is installable (no installability
 // errors, the manifest parsed with its icons), the service worker runs and keeps nothing, a page opened
 // offline says so instead of the browser's error, and "Installa l'app" shows the steps of this device.
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { chromium } from 'playwright';
 import { checkBozze } from './bozze.mjs';
 import { audit, fail, signIn } from './helpers.mjs';
 
 /**
  * In a context of its own: Playwright sees what a service worker fetches (and takes it offline) only
  * with this flag, read when the worker attaches — the rest of the run keeps the default.
+ * A profile on disk, not `browser.newContext()`: that one is an incognito window, where Chrome answers
+ * "in-incognito" to the question whether the app can be installed — an error of the test, not of the portal
+ * (the audit of 12 November 2026).
  */
-export async function checkInstallableApp(browser, { base, shots, scheme, email, password }) {
+export async function checkInstallableApp(_browser, { base, shots, scheme, email, password }) {
   const flag = process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS;
   process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = '1';
-  const context = await browser.newContext({ colorScheme: scheme });
+  const profilo = await mkdtemp(join(tmpdir(), 'rilievi-e2e-app-'));
+  const context = await chromium.launchPersistentContext(profilo, {
+    colorScheme: scheme,
+    ...(process.env.E2E_CHROMIUM ? { executablePath: process.env.E2E_CHROMIUM } : {}),
+  });
   try {
     await installable(context, { base, shots, scheme, email, password });
   } finally {
     await context.close();
+    await rm(profilo, { recursive: true, force: true });
     if (flag === undefined) delete process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS;
     else process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = flag;
   }

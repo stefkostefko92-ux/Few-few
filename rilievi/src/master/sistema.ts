@@ -2,7 +2,10 @@ import { buildCorrente } from '../build.js';
 import { VERSIONE_SOFTWARE } from '../versione.js';
 import { spazioLibero } from '../allegati/archivio.js';
 import { mediaConfig } from '../config.js';
+import { ultimoEsitoPosta } from '../mail/mailer.js';
 import { mailEnabled } from '../mail/posta.js';
+import { esitoManutenzione, ultimaManutenzione } from '../manutenzione-passi.js';
+import { webhookVisti } from '../pagamenti/riconcilia.js';
 import { prisma } from '../db.js';
 import { errorMessage, logger } from '../logger.js';
 import { HOUR, MINUTE } from '../time.js';
@@ -81,22 +84,31 @@ export async function statoSistema(now: Date = new Date()): Promise<Controllo[]>
     await prisma.$queryRaw`SELECT 1`;
     return Math.round(performance.now() - t0);
   })();
-  const [latenza, dimensione, migrazione, coda, errori, spazioDisco] = await Promise.allSettled([
-    latenzaDb,
-    prisma.$queryRaw<Array<{ byte: bigint }>>`SELECT pg_database_size(current_database()) AS byte`,
-    prisma.$queryRaw<Array<{ nome: string; fine: Date | null }>>`
+  const [latenza, dimensione, migrazione, coda, errori, spazioDisco, daVerificare] =
+    await Promise.allSettled([
+      latenzaDb,
+      prisma.$queryRaw<
+        Array<{ byte: bigint }>
+      >`SELECT pg_database_size(current_database()) AS byte`,
+      prisma.$queryRaw<Array<{ nome: string; fine: Date | null }>>`
       SELECT migration_name AS nome, finished_at AS fine FROM "_prisma_migrations"
       ORDER BY started_at DESC LIMIT 1`,
-    prisma.allegato.findFirst({
-      where: { stato: { in: ['IN_CODA', 'IN_LAVORAZIONE'] } },
-      orderBy: { createdAt: 'asc' },
-      select: { createdAt: true },
-    }),
-    prisma.allegato.count({ where: { stato: 'ERRORE' } }),
-    spazio(),
-  ]);
+      prisma.allegato.findFirst({
+        where: { stato: { in: ['IN_CODA', 'IN_LAVORAZIONE'] } },
+        orderBy: { createdAt: 'asc' },
+        select: { createdAt: true },
+      }),
+      prisma.allegato.count({ where: { stato: 'ERRORE' } }),
+      spazio(),
+      // Платено, а периодът не е даден (pagamenti/applica.ts) — чака MASTER.
+      prisma.pagamento.count({ where: { stato: 'DA_VERIFICARE' } }),
+    ]);
+
   const ok = <T>(r: PromiseSettledResult<T>): T | undefined =>
     r.status === 'fulfilled' ? r.value : undefined;
+  const manutenzione = ultimaManutenzione();
+  const posta = ultimoEsitoPosta();
+  const pagamentiAperti = ok(daVerificare);
   const ms = ok(latenza);
   const ultima = ok(migrazione)?.[0];
   const statoCoda = coda.status === 'fulfilled' && errori.status === 'fulfilled';
@@ -131,10 +143,29 @@ export async function statoSistema(now: Date = new Date()): Promise<Controllo[]>
       valore: !statoCoda ? '—' : piuVecchio === null ? '0' : durata(piuVecchio),
       nota: { errori: ok(errori) ?? '—' },
     },
+    // По изхода, не по настройката: настроена поща, чието последно писмо не е тръгнало, е червена.
     {
       chiave: 'posta',
-      esito: mailEnabled() ? 'ok' : 'attenzione',
-      valore: mailEnabled() ? 'master.sistema.posta.attiva' : 'master.sistema.posta.spenta',
+      esito: !mailEnabled() ? 'attenzione' : posta && !posta.riuscito ? 'errore' : 'ok',
+      valore: !mailEnabled()
+        ? 'master.sistema.posta.spenta'
+        : posta && !posta.riuscito
+          ? 'master.sistema.posta.fallita'
+          : 'master.sistema.posta.attiva',
+    },
+    {
+      chiave: 'manutenzione',
+      esito: esitoManutenzione(manutenzione, now, process.uptime() * 1000),
+      valore: manutenzione
+        ? durata(now.getTime() - manutenzione.at.getTime())
+        : 'master.sistema.manutenzione.mai',
+      nota: { falliti: manutenzione?.falliti.length ? manutenzione.falliti.join(', ') : '0' },
+    },
+    {
+      chiave: 'pagamenti',
+      esito: pagamentiAperti === undefined ? 'errore' : pagamentiAperti > 0 ? 'errore' : 'ok',
+      valore: pagamentiAperti === undefined ? '—' : String(pagamentiAperti),
+      nota: { rifiutati: webhookVisti.rifiutati },
     },
   ];
 }

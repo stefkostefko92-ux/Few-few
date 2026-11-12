@@ -1,6 +1,7 @@
 import { config } from './config.js';
 import { prisma } from './db.js';
 import { errorMessage, logger } from './logger.js';
+import { eseguiPassi, ricordaManutenzione } from './manutenzione-passi.js';
 import { pulisciArrivi } from './allegati/archivio.js';
 import { concludiCambi } from './aziende/cambio.js';
 import { caricaAnnunci } from './legale/annunci.js';
@@ -20,81 +21,77 @@ import { avviaPianiInCoda } from './abbonamenti/servizio.js';
  * Чистене веднъж на час: изтекли сесии и входове, чакали кода на 2FA, грешните опити по мрежа (след ден),
  * стари покани и връзки за парола (след 30 дни — дотогава се
  * виждат като „изтекли“), заявки за достъп след срока си, одит по-стар от срока, качено от прекъсната
- * заявка (по-старо от ден), доказателствата след срока им. Грешка тук не спира
- * процеса — опитва пак след час.
+ * заявка (по-старо от ден), доказателствата след срока им. Грешка в една стъпка не спира нито процеса, нито
+ * другите стъпки — опитва пак след час; последното пускане се вижда в „Salute del sistema“.
  */
 export async function runMaintenance(): Promise<void> {
   const now = Date.now();
-  // Обявите на новите версии (legale/versioni.ts) — наново от базата, ако са записани другаде.
-  await caricaAnnunci();
-  const sessions = await purgeExpiredSessions();
-  // Входовете, чакали кода, и грешните опити по мрежа (пазят се ден).
-  const sfide = await pulisciSfide(now);
-  const errori = await pulisciErrori(now);
-  const invites = await prisma.invite.deleteMany({
-    where: { expiresAt: { lt: new Date(now - INVITI_SCADUTI_GIORNI * DAY) }, acceptedAt: null },
-  });
-  const resets = await prisma.passwordReset.deleteMany({
-    where: { expiresAt: { lt: new Date(now - 30 * DAY) } },
-  });
-  const requests = await purgeOldRequests(now);
-  const audit = await prisma.auditLog.deleteMany({
-    where: { at: { lt: new Date(now - config().AUDIT_RETENTION_DAYS * DAY) } },
-  });
-  // Каченото от прекъсната заявка (обикновено заявката го трие сама).
-  const arrivi = await pulisciArrivi(DAY, now);
-  // Смяната на доставчика: преходите, които са свършили — фирмата се деактивира (src/aziende/cambio.ts).
-  const cambi = await concludiCambi(new Date(now));
-  // Фирмите, деактивирани преди повече от 90 дни — окончателно, с всичките им данни.
-  const aziende = await eliminaAziendeScadute(now);
-  // Доказателствата (приемания и изтеглени изчисления) след своя срок — src/legale/.
-  const prove = await pulisciProve(now);
-  // Известията за края на пробния месец и на плана (чл. 12.6) — src/abbonamenti/scadenze.ts.
-  const avvisi = await avvisaScadenze(new Date(now));
-  // Плащанията без отговор: сверка с Revolut (изгубен webhook); след 7 дни — изтекли, ако Revolut каже „неплатена“.
-  const pagamenti =
-    (await riconciliaInSospeso(new Date(now))) + (await avviaPianiInCoda(new Date(now)));
-  if (
-    sessions +
-      sfide +
-      errori +
-      invites.count +
-      resets.count +
-      requests +
-      audit.count +
-      arrivi +
-      cambi +
-      aziende +
-      prove +
-      avvisi +
-      pagamenti >
-    0
-  ) {
-    logger.info(
-      {
-        sessions,
-        sfide,
-        errori,
-        invites: invites.count,
-        resets: resets.count,
-        requests,
-        audit: audit.count,
-        arrivi,
-        cambi,
-        aziende,
-        prove,
-        avvisi,
-        pagamenti,
-      },
-      'поддръжка: изчистено',
-    );
-  }
+  const quando = new Date(now);
+  // Всяка стъпка е сама за себе си: паднала не спира другите (manutenzione-passi.ts).
+  const esito = await eseguiPassi(
+    [
+      // Обявите на новите версии (legale/versioni.ts) — наново от базата, ако са записани другаде.
+      ['annunci', async () => (await caricaAnnunci(), 0)],
+      ['sessions', () => purgeExpiredSessions()],
+      // Входовете, чакали кода, и грешните опити по мрежа (пазят се ден).
+      ['sfide', () => pulisciSfide(now)],
+      ['errori', () => pulisciErrori(now)],
+      [
+        'invites',
+        async () =>
+          (
+            await prisma.invite.deleteMany({
+              where: {
+                expiresAt: { lt: new Date(now - INVITI_SCADUTI_GIORNI * DAY) },
+                acceptedAt: null,
+              },
+            })
+          ).count,
+      ],
+      [
+        'resets',
+        async () =>
+          (
+            await prisma.passwordReset.deleteMany({
+              where: { expiresAt: { lt: new Date(now - 30 * DAY) } },
+            })
+          ).count,
+      ],
+      ['requests', () => purgeOldRequests(now)],
+      [
+        'audit',
+        async () =>
+          (
+            await prisma.auditLog.deleteMany({
+              where: { at: { lt: new Date(now - config().AUDIT_RETENTION_DAYS * DAY) } },
+            })
+          ).count,
+      ],
+      // Каченото от прекъсната заявка (обикновено заявката го трие сама) и прекъснатите износи.
+      ['arrivi', () => pulisciArrivi(DAY, now)],
+      // Смяната на доставчика: преходите, които са свършили — фирмата се деактивира (src/aziende/cambio.ts).
+      ['cambi', () => concludiCambi(quando)],
+      // Фирмите, деактивирани преди повече от 90 дни — окончателно, с всичките им данни.
+      ['aziende', () => eliminaAziendeScadute(now)],
+      // Доказателствата (приемания и изтеглени изчисления) след своя срок — src/legale/.
+      ['prove', () => pulisciProve(now)],
+      // Известията за края на пробния месец и на плана (чл. 12.6) — src/abbonamenti/scadenze.ts.
+      ['avvisi', () => avvisaScadenze(quando)],
+      // Плащанията без отговор: сверка с Revolut (изгубен webhook); плановете в опашка, чийто ден е дошъл.
+      ['pagamenti', () => riconciliaInSospeso(quando)],
+      ['piani', () => avviaPianiInCoda(quando)],
+    ],
+    quando,
+  );
+  ricordaManutenzione(esito);
+  if (Object.values(esito.conteggi).some((n) => n > 0))
+    logger.info({ evento: 'manutenzione', ...esito.conteggi }, 'поддръжка: изчистено');
 }
 
 export function startMaintenance(): NodeJS.Timeout {
   const run = (): void => {
     runMaintenance().catch((error: unknown) => {
-      logger.error({ err: errorMessage(error) }, 'поддръжката се провали');
+      logger.error({ evento: 'manutenzione', err: errorMessage(error) }, 'поддръжката се провали');
     });
   };
   run();

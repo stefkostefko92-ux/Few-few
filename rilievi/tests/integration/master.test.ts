@@ -21,10 +21,12 @@ import {
 
 const HTML = { accept: 'text/html' };
 const oggi = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome' }).format(new Date());
-const traGiorni = (n: number) =>
-  new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome' }).format(
-    new Date(Date.now() + n * 86_400_000),
-  );
+// Days of the calendar in Rome, not 24-hour steps: across the change of the clocks "now + n × 24 h" lands on
+// the day before or after (the audit of 12 November 2026).
+const traGiorni = (n: number) => {
+  const [y, m, d] = oggi().split('-').map(Number);
+  return new Date(Date.UTC(y!, m! - 1, d! + n)).toISOString().slice(0, 10);
+};
 
 let master: Browser;
 

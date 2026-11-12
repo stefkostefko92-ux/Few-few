@@ -1,4 +1,5 @@
 import type { TipoAvvisoStato } from '@prisma/client';
+import { ultimoEsitoPosta } from '../mail/mailer.js';
 import { mailEnabled } from '../mail/posta.js';
 import { prisma } from '../db.js';
 import { esitoCoda, type Esito } from '../master/sistema.js';
@@ -91,7 +92,11 @@ export async function componenti(now: Date = new Date()): Promise<Componente[]> 
     { chiave: 'dati', esito: db.status === 'fulfilled' ? 'ok' : 'errore', critico: true },
     // Опашката: без грешките на отделни файлове (те са на файла, не на услугата).
     { chiave: 'foto', esito: coda.status === 'fulfilled' ? esitoCoda(piuVecchio, 0) : 'errore' },
-    { chiave: 'email', esito: mailEnabled() ? 'ok' : 'errore' },
+    // По изхода: настроена поща, чието последно писмо не е тръгнало, не „работи“.
+    {
+      chiave: 'email',
+      esito: mailEnabled() && ultimoEsitoPosta()?.riuscito !== false ? 'ok' : 'errore',
+    },
   ];
   memoria = { at: now.getTime(), componenti: risultato };
   return risultato;
@@ -108,8 +113,3 @@ export function avvisiPubblici(now: Date = new Date()): Promise<AvvisoVista[]> {
     take: 200,
   });
 }
-
-/** За тестовете: следващата проверка не идва от паметта. */
-export const dimenticaComponenti = (): void => {
-  memoria = null;
-};

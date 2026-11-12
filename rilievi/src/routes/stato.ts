@@ -20,6 +20,7 @@ import {
   statoGenerale,
 } from '../stato/servizio.js';
 import { setFlash } from '../http/flash.js';
+import { errorMessage, logger } from '../logger.js';
 import { notFound } from './schede-shared.js';
 import { siteLocals } from './site.js';
 
@@ -32,7 +33,15 @@ export const statoRouter: Router = Router();
 
 statoRouter.get(STATO_PATH, async (req, res) => {
   const now = new Date();
-  const [parti, avvisi] = await Promise.all([componenti(now), avvisiPubblici(now)]);
+  // Паднала база: страницата на състоянието е точно за този момент — показва червеното, не дава 500
+  // (одитът от 12 ноември 2026); съобщенията тогава ги няма.
+  const [parti, avvisi] = await Promise.all([
+    componenti(now),
+    avvisiPubblici(now).catch((error: unknown) => {
+      logger.error({ evento: 'stato.avvisi', err: errorMessage(error) }, 'stato: avvisi non letti');
+      return [];
+    }),
+  ]);
   const c = classifica(avvisi, now);
   res.set('Cache-Control', 'no-store').render('site/stato', {
     ...siteLocals(req, STATO_PATH),

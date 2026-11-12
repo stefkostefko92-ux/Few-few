@@ -62,7 +62,9 @@
         "migrazione": "Ultima migrazione",
         "spazio": "Spazio libero per foto e video",
         "coda": "Coda di foto e video",
-        "posta": "Invio delle email"
+        "posta": "Invio delle email",
+        "manutenzione": "Ultima manutenzione oraria",
+        "pagamenti": "Pagamenti da verificare"
       },
       "nota": {
         "versione": "Ogni correzione aumenta il secondo numero, ogni grande novità il primo.",
@@ -72,11 +74,17 @@
         "migrazione": "Lo schema del database è aggiornato a questa versione.",
         "spazio": "Sotto {minimo} i caricamenti si fermano.",
         "coda": "Il file più vecchio in attesa di compressione · {errori} non riusciti.",
-        "posta": "Senza posta il codice di firma e gli inviti non partono."
+        "posta": "Senza posta il codice di firma e gli inviti non partono.",
+        "manutenzione": "Ogni ora: pulizia, avvisi di scadenza, pagamenti in sospeso. Passi non riusciti: {falliti}.",
+        "pagamenti": "Pagati su Revolut senza periodo assegnato: vedi Pagamenti. Avvisi di Revolut rifiutati dall'avvio: {rifiutati}."
       },
       "posta": {
         "attiva": "Attivo",
-        "spenta": "Non configurato"
+        "spenta": "Non configurato",
+        "fallita": "L'ultima email non è partita"
+      },
+      "manutenzione": {
+        "mai": "Non ancora eseguita"
       }
     },
     "contratti": {

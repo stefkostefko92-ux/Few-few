@@ -114,7 +114,7 @@ describe('the export of a company by its own ADMIN', () => {
       ['nuovo@esempio.it'],
     );
     assert.doesNotMatch(raw, /tokenHash|passwordHash|hash-/);
-    assert.match(raw, new RegExp(`"versioni": "versioni/${schedaId}\\.json"`));
+    assert.match(raw, new RegExp(`"versioni":\\s*"versioni/${schedaId}\\.json"`));
     // The portal owner stays out of the company's log, also in its export.
     assert.ok(!raw.includes(master.id), 'no MASTER id');
     assert.ok(

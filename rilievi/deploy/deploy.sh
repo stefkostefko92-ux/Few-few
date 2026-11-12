@@ -5,18 +5,21 @@
 #   sudo bash /opt/few-few/current/rilievi/deploy/deploy.sh    # ръчно (DEPLOY.md)
 #   deploy/autodeploy.sh го вика за всеки release с rilievi/   # автоматично — същият път
 #
-# Ред: тайните от стабилния път → build (приложението и фоновият процес на снимките) → бекъп на
-# базата преди миграция (след build-а: дъмпът е отпреди самата смяна) → up (entrypoint-ът прилага
-# `prisma migrate deploy`) → чака, докато на порта отговори именно Rilievi → фоновият процес върви →
-# дневният бекъп → vhost-ът от репото, щом има сертификат → подсказки.
+# Ред: общото заключване с дневния бекъп → тайните от стабилния път → build (приложението и фоновият
+# процес на снимките) → бекъп на базата преди миграция (след build-а: дъмпът е отпреди самата смяна) →
+# страницата за поддръжка на nginx → up (entrypoint-ът прилага `prisma migrate deploy`) → чака, докато на
+# порта отговори именно Rilievi → чистене на старите образи → фоновият процес върви → дневният бекъп →
+# vhost-ът от репото, щом има сертификат → IndexNow при променен sitemap → подсказки.
 #
-# Тайни не се измислят — освен ключа на печата на листовете за интервенция (ensure_seal_key): нов, без
-# предишно състояние, създава се веднъж и после само се чете. Изход: 0 — жив; 3 — няма .env (машината не е настроена); 4 — контейнерите са
+# Тайни не се измислят — освен ключа на печата (ensure_seal_key): нов, без предишно състояние, създава се
+# веднъж и после само се чете. Изход: 0 — жив; 3 — няма .env (машината не е настроена); 4 — контейнерите са
 # сменени, но Rilievi не отговаря (autodeploy връща предишния код); 1 — спрян преди смяната
 # (работещите не са пипани). След успешната сонда нищо не сменя изхода 0.
 #
 # RILIEVI_SKIP_BACKUP=1 — без нов дъмп (откатът на autodeploy): иначе всеки провал гори слот от
 # ротацията и изтласква дъмпа отпреди счупената миграция.
+# RILIEVI_LOCK / RILIEVI_LOCK_WAIT — общото заключване с backup.sh и колко секунди се чака за него.
+# RILIEVI_INDEXNOW=0 — без IndexNow след деплоя.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 umask 077
@@ -32,6 +35,10 @@ MIGRATION_WAIT="${RILIEVI_MIGRATION_WAIT:-1800}"
 KEEP_BACKUPS="${RILIEVI_KEEP_BACKUPS:-5}"
 SKIP_BACKUP="${RILIEVI_SKIP_BACKUP:-0}"
 LAST_GOOD="${RILIEVI_LAST_GOOD:-$SHARED/last-good}"
+LOCK="${RILIEVI_LOCK:-/run/lock/rilievi-deploy.lock}"
+LOCK_WAIT="${RILIEVI_LOCK_WAIT:-1800}"
+INDEXNOW="${RILIEVI_INDEXNOW:-1}"
+MAINT_DIR="${RILIEVI_MAINT_DIR:-/var/www/rilievi}"
 TS="$(date +%Y%m%d-%H%M%S)"
 
 log()  { printf '\033[1;36m▸ rilievi: %s\033[0m\n' "$*"; }
@@ -42,6 +49,20 @@ fail() {
   shift
   printf '\033[31m✘ rilievi: %s\033[0m\n' "$*" >&2
   exit "$code"
+}
+
+# Деплоят и дневният бекъп (backup.sh, 03:10 UTC) не вървят едновременно: pg_dump държи заключвания, на
+# които ALTER TABLE на миграцията чака, а дъмп посред миграция е от половин схема. Същият файл и в
+# backup.sh. Заключването е на дескриптор 9 и пада само при изхода на процеса.
+take_lock() {
+  command -v flock >/dev/null 2>&1 || fail 1 "липсва flock (util-linux) — без него деплоят може да тръгне посред бекъпа."
+  install -d -m 755 "$(dirname "$LOCK")" || fail 1 "няма папка за заключването $LOCK."
+  exec 9>>"$LOCK" || fail 1 "не мога да отворя $LOCK."
+  if ! flock -n 9; then
+    log "дневният бекъп (или друг деплой) върви — чакам до ${LOCK_WAIT} s…"
+    flock -w "$LOCK_WAIT" 9 ||
+      fail 1 "заключването $LOCK не се освободи за ${LOCK_WAIT} s — работещото не е пипано. Виж: systemctl status rilievi-backup.service"
+  fi
 }
 
 # Стойност от .env, без файлът да се изпълнява (`source` би пуснал всеки ред като код). Не се печата.
@@ -72,35 +93,70 @@ sync_env() {
 # (дефиницията ѝ не се сменя, базата не се пресъздава), а app не се пуска оттук.
 db_compose() { INTERVENTI_SEAL_KEY=chiave-mancante docker compose "$@"; }
 
-# Колко потвърдени листа за интервенция носят печат: 0 — и при база без такава таблица/колона (машина
-# отпреди листовете) или без том (пръв деплой). Грешка — няма отговор: тогава ключ не се създава.
-sealed_sheets() {
-  docker volume inspect rilievi_db-data >/dev/null 2>&1 || { printf '0'; return 0; }
+# Всичко в базата, което е вързано за INTERVENTI_SEAL_KEY (src/auth/chiavi.ts извежда от него и други
+# ключове): печатите на листовете, протоколите и регистрите на доказателствата, тайните на 2FA и
+# резервните кодове, шифрованата поща и ключовете на Revolut, API ключовете. Имената — от
+# prisma/schema.prisma. Таблица или колона, която още я няма (машина отпреди миграцията ѝ), не се брои и
+# не чупи заявката: CASE пуска преброяването само за съществуваща колона. Един ред за всеки обект:
+# `Таблица.колона|брой` (празен брой — няма го в тази база).
+KEY_BOUND_SQL="$(cat <<'SQL'
+SELECT t.tab || '.' || t.col || '|' || coalesce(
+  CASE WHEN EXISTS (
+    SELECT 1 FROM information_schema.columns c
+    WHERE c.table_schema = 'public' AND c.table_name = t.tab AND c.column_name = t.col
+  ) THEN (xpath('/row/n/text()', query_to_xml(
+    format('SELECT count(*) AS n FROM public.%I WHERE %I IS NOT NULL', t.tab, t.col),
+    false, true, '')))[1]::text END, '')
+FROM (VALUES
+  ('Intervento', 'sigillo'),
+  ('Verbale', 'sigillo'),
+  ('BuonoFirma', 'sigillo'),
+  ('Accettazione', 'sigillo'),
+  ('AccettazioneOfferta', 'sigillo'),
+  ('EmissioneCalcolo', 'sigillo'),
+  ('User', 'totpSecretEnc'),
+  ('RecoveryCode', 'codeHash'),
+  ('ConfigPagamenti', 'chiaveEnc'),
+  ('ConfigPagamenti', 'webhookSegretoEnc'),
+  ('PostaPortale', 'passwordEnc'),
+  ('ChiaveApi', 'hash')
+) AS t(tab, col)
+SQL
+)"
+
+# Редовете `Таблица.колона|брой` от базата: нищо — и при база без том (пръв деплой). Грешка — няма
+# отговор: тогава ключ не се създава.
+key_bound_rows() {
+  docker volume inspect rilievi_db-data >/dev/null 2>&1 || return 0
   # --no-recreate: работещата база не се пресъздава по дефиницията на новия release (както при бекъпа).
   db_compose up -d --no-recreate --wait db >/dev/null || return 1
-  local has_column
-  has_column="$(db_compose exec -T db psql -U rilievi -d rilievi -tAc \
-    "SELECT count(*) FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'Intervento' AND column_name = 'sigillo'")" ||
-    return 1
-  if [ "$has_column" != "1" ]; then printf '0'; return 0; fi
-  db_compose exec -T db psql -U rilievi -d rilievi -tAc \
-    'SELECT count(*) FROM "Intervento" WHERE "sigillo" IS NOT NULL'
+  db_compose exec -T db psql -U rilievi -d rilievi -v ON_ERROR_STOP=1 -tAc "$KEY_BOUND_SQL"
 }
 
-# Ключът на печата на потвърдените листове за интервенция (src/interventi/sigillo.ts): липсва ли в
-# $SHARED/.env, се създава веднъж там — САМО ако в базата още няма запечатан лист (машина отпреди
-# листовете). Има ли, ключът е загубен, не нов: нов ключ би обезсилил всички стари печати (PDF и имейл
-# спират), затова деплоят спира и казва да се върне старият от бекъпа на тайните — DEPLOY.md, т. 1.
+# Ключът на печата (src/auth/chiavi.ts): липсва ли в $SHARED/.env, се създава веднъж там — САМО ако в
+# базата няма нищо, вързано за него (машина отпреди листовете или празна). Има ли, ключът е загубен, не
+# нов: нов ключ би обезсилил печатите, 2FA, шифрованите ключове за пощата и Revolut и API ключовете —
+# затова деплоят спира и казва да се върне старият от бекъпа на тайните (DEPLOY.md, т. 1 и „Нов сървър“).
 ensure_seal_key() {
   [ -z "$(env_value INTERVENTI_SEAL_KEY)" ] || return 0
   command -v openssl >/dev/null 2>&1 || fail 1 "липсва openssl — не мога да създам INTERVENTI_SEAL_KEY."
-  local sealed
-  sealed="$(sealed_sheets | tr -dc '0-9')" ||
-    fail 1 "не мога да проверя в базата дали има запечатани листове — не създавам INTERVENTI_SEAL_KEY наслуки."
-  [ -n "$sealed" ] ||
-    fail 1 "базата не каза колко листа са запечатани — не създавам INTERVENTI_SEAL_KEY наслуки."
-  [ "$sealed" = "0" ] ||
-    fail 1 "INTERVENTI_SEAL_KEY липсва в $SHARED/.env, а в базата има $sealed запечатани листа: ключът е загубен, не нов. Върни го от бекъпа на тайните (DEPLOY.md, т. 1) — нов ключ би обезсилил всичките им печати."
+  local rows what n total=0 seen=0 found=""
+  rows="$(key_bound_rows)" ||
+    fail 1 "не мога да проверя в базата какво е вързано за ключа — не създавам INTERVENTI_SEAL_KEY наслуки."
+  if docker volume inspect rilievi_db-data >/dev/null 2>&1; then
+    while IFS='|' read -r what n; do
+      [ -n "$what" ] || continue
+      seen=$((seen + 1))
+      [ -n "$n" ] || continue
+      case "$n" in *[!0-9]*) fail 1 "базата върна „$n“ за $what — не създавам INTERVENTI_SEAL_KEY наслуки." ;; esac
+      total=$((total + n))
+      [ "$n" = "0" ] || found="$found $what=$n"
+    done <<<"$rows"
+    [ "$seen" -gt 0 ] ||
+      fail 1 "базата не каза какво е вързано за ключа — не създавам INTERVENTI_SEAL_KEY наслуки."
+  fi
+  [ "$total" = "0" ] ||
+    fail 1 "INTERVENTI_SEAL_KEY липсва в $SHARED/.env, а в базата има $total записа, вързани за ключа (${found# }): ключът е загубен, не нов. Върни го от бекъпа на тайните (DEPLOY.md, т. 1) — нов ключ би ги обезсилил."
   # Без нов ред накрая новият ключ би се залепил за последния ред на файла.
   [ -z "$(tail -c 1 "$SHARED/.env")" ] || printf '\n' >>"$SHARED/.env"
   printf 'INTERVENTI_SEAL_KEY=%s\n' "$(openssl rand -hex 32)" >>"$SHARED/.env"
@@ -208,6 +264,24 @@ remember_live() {
     printf '%s\n' "$real" >"$LAST_GOOD.tmp" && mv -f "$LAST_GOOD.tmp" "$LAST_GOOD"
 }
 
+# Всеки build тагва образите отново като rilievi-app / rilievi-worker: предишните остават висящи (<none>)
+# и се трупат на диска, на който са и базата, снимките и дъмповете (под MEDIA_MIN_FREE_MB качването спира).
+# След успешната сонда: висящите образи само на този compose проект и build кешът, по-стар от 7 дни
+# (по-новият остава — от него откатът се билдва бързо). Кешът на builder-а е общ за машината.
+prune_images() {
+  docker image prune -f --filter label=com.docker.compose.project=rilievi >/dev/null &&
+    docker builder prune -f --filter until=168h >/dev/null
+}
+
+# Страницата, която nginx показва, докато приложението не отговаря (error_page във vhost-а): слага се
+# преди `up`, за да я има още при рестарта на този деплой. Чете я nginx (www-data) — затова 755/644
+# въпреки umask 077 на скрипта; в нея няма нищо тайно.
+install_maint() {
+  local page="$APP_DIR/deploy/nginx/manutenzione.html"
+  [ -f "$page" ] || return 1
+  (umask 022 && install -d -m 755 "$MAINT_DIR" && install -m 644 "$page" "$MAINT_DIR/manutenzione.html")
+}
+
 # Дневният бекъп: таймер на systemd (03:10 UTC) пуска deploy/backup.sh от последния работещ release.
 install_backup_timer() {
   command -v systemctl >/dev/null 2>&1 || { warn "няма systemd — дневният бекъп не е сложен"; return 0; }
@@ -263,8 +337,76 @@ sync_nginx() {
   return 1
 }
 
+# IndexNow (Bing, Yandex, Seznam, Naver, Yep — Google не участва): само когато sitemap-ът се е променил,
+# не на всеки деплой. Никога провал: докато сайтът не е публичен с TLS, ключът не се проверява и
+# следващият деплой опитва пак. С node и tools/seo/indexnow.mjs от същия архив — него; иначе същата
+# заявка с curl (ключът — public/indexnow-key.txt, адресите — от локалния sitemap).
+ping_indexnow() {
+  local port="$1" tool="$APP_DIR/../tools/seo/indexnow.mjs" stamp="$SHARED/indexnow-sitemap.sha256"
+  local xml sum site host key urls payload
+  [ "$INDEXNOW" = "1" ] || return 0
+  if ! xml="$(curl -fsS --max-time 10 "http://127.0.0.1:$port/sitemap.xml")"; then
+    warn "IndexNow: sitemap.xml не се чете локално — пропускам"
+    return 0
+  fi
+  sum="$(printf '%s' "$xml" | sha256sum | cut -d' ' -f1)"
+  if [ -f "$stamp" ] && [ "$(cat "$stamp")" = "$sum" ]; then
+    log "IndexNow: sitemap-ът не е променян — няма какво да се подава"
+    return 0
+  fi
+  site="$(env_value PUBLIC_BASE_URL)"
+  site="${site%/}"
+  case "$site" in
+    https://*) ;;
+    *) warn "IndexNow: PUBLIC_BASE_URL не е https — сайтът още не е публичен, пропускам"; return 0 ;;
+  esac
+  if [ -f "$tool" ] && command -v node >/dev/null 2>&1; then
+    if node "$tool" "$site" >/dev/null; then
+      printf '%s\n' "$sum" >"$stamp"
+      ok "IndexNow: подаден е sitemap-ът на $site"
+    else
+      warn "IndexNow: подаването не мина (сайтът публичен ли е, с TLS?) — следващият деплой опитва пак"
+    fi
+    return 0
+  fi
+  key="$(tr -dc '0-9A-Za-z-' <"$APP_DIR/public/indexnow-key.txt" 2>/dev/null)" || key=""
+  [ -n "$key" ] || { warn "IndexNow: няма $APP_DIR/public/indexnow-key.txt — пропускам"; return 0; }
+  host="${site#https://}"
+  host="${host%%/*}"
+  # Само адреси на този сайт и без знаци, които биха счупили JSON-а.
+  urls="$(printf '%s' "$xml" | grep -o '<loc>[^<]*</loc>' | sed 's#</\{0,1\}loc>##g' |
+    grep -E "^https://${host//./\\.}(/[A-Za-z0-9._~/?=&%:+,;@!*()'-]*)?\$" |
+    sed 's/.*/"&"/' | paste -sd, -)" || urls=""
+  [ -n "$urls" ] || { warn "IndexNow: в sitemap-а няма адреси на $host — пропускам"; return 0; }
+  payload="$(printf '{"host":"%s","key":"%s","keyLocation":"%s/indexnow-key.txt","urlList":[%s]}' \
+    "$host" "$key" "$site" "$urls")"
+  if curl -fsS --max-time 20 -o /dev/null -A "$host IndexNow client" \
+    -H 'content-type: application/json; charset=utf-8' --data-binary "$payload" \
+    https://api.indexnow.org/indexnow; then
+    printf '%s\n' "$sum" >"$stamp"
+    ok "IndexNow: подаден е sitemap-ът на $site (curl — без node на хоста)"
+  else
+    warn "IndexNow: подаването не мина (сайтът публичен ли е, с TLS?) — следващият деплой опитва пак"
+  fi
+}
+
 # Първият MASTER не се създава сам (паролата не минава през скрипт): казваме командата.
+# Без копие извън сървъра и без аларма никой не разбира, че бекъпът е спрял или че дискът е загубен
+# (одитът от 12 ноември 2026): деплоят го казва всеки път, докато не се настрои. Чете само ИМЕНАТА на
+# променливите в backup.env, никога стойностите им (адресите носят ключове).
+backup_gaps() {
+  local env_file="$SHARED/backup.env" name missing=""
+  for name in RILIEVI_OFFSITE RILIEVI_ALERT_URL RILIEVI_HEARTBEAT_URL; do
+    if ! { [ -f "$env_file" ] && grep -Eq "^[[:space:]]*(export[[:space:]]+)?${name}=[^[:space:]]" "$env_file"; }; then
+      missing="$missing $name"
+    fi
+  done
+  [ -z "$missing" ] ||
+    warn "в $env_file липсват:${missing} — без тях няма копие извън сървъра и/или никой не научава за провален бекъп (DEPLOY.md, т. 6)"
+}
+
 hints() {
+  backup_gaps || true
   local users
   users="$(docker compose exec -T db psql -U rilievi -d rilievi -tAc 'SELECT count(*) FROM "User"' 2>/dev/null | tr -dc '0-9')" || users=""
   if [ "$users" = "0" ]; then
@@ -280,6 +422,7 @@ main() {
     fail 1 "липсва Docker с compose plugin."
   fi
   cd "$APP_DIR"
+  take_lock
   sync_env
   ensure_seal_key
   check_secrets
@@ -289,6 +432,7 @@ main() {
   log "build…"
   docker compose build app worker || fail 1 "build се провали — работещите контейнери не са пипани."
   backup_db
+  install_maint || warn "страницата за поддръжка не е в $MAINT_DIR — докато приложението тръгва, nginx връща 404 вместо нея"
   log "up (entrypoint-ът прилага миграциите)…"
   # Първо базата и приложението: worker-ът чака здраво приложение (depends_on), а `up` на всичко наведнъж
   # пада, ако дълга миграция надживее healthcheck-а — тогава откатът би тръгнал посред миграцията.
@@ -300,10 +444,12 @@ main() {
   ok "жив на 127.0.0.1:$port"
   # Новият код вече работи: оттук нататък нищо не сменя изхода 0.
   remember_live || warn "не записах $LAST_GOOD — откатът сочи предишния release"
+  prune_images || warn "старите образи на rilievi не са изчистени — docker image ls --filter dangling=true"
   docker compose up -d worker >/dev/null 2>&1 || true
   check_worker || warn "фоновият процес на снимките не върви — каченото чака в опашката. Виж: cd $APP_DIR && docker compose logs --tail=80 worker"
   install_backup_timer || warn "дневният бекъп не е сложен — DEPLOY.md, т. 6"
   sync_nginx "$port" || warn "nginx не е обновен — Rilievi е жив на 127.0.0.1:$port"
+  ping_indexnow "$port" || warn "IndexNow не мина — следващият деплой опитва пак"
   hints || true
 }
 

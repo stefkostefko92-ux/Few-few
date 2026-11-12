@@ -5,8 +5,9 @@
 #   sudo bash restore-test.sh /opt/few-few/shared/rilievi/backups/daily/rilievi-<дата>.sql.gz
 #
 # Временен PostgreSQL (същият образ като базата на портала, без мрежа, с временна парола) → дъмпът
-# вътре с ON_ERROR_STOP → броят се миграциите, фирмите и картите → контейнерът се маха. Живата база не
-# се пипа. Изход 0 — дъмпът се възстановява; иначе 1 и какво не е минало.
+# вътре в празна схема, както в DEPLOY.md (т. 6): една транзакция с ON_ERROR_STOP → броят се миграциите,
+# фирмите и картите → контейнерът се маха. Живата база не се пипа. Изход 0 — дъмпът се възстановява;
+# иначе 1 и какво не е минало. Печата и колко секунди е отнело възстановяването — мярка за RTO.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
@@ -35,7 +36,14 @@ docker exec "$name" pg_isready -U rilievi -d rilievi >/dev/null 2>&1 || {
 }
 # Първият pg_isready минава и докато initdb рестартира сървъра — кратка пауза и пак.
 sleep 2
-gzip -dc "$dump" | docker exec -i "$name" psql -v ON_ERROR_STOP=1 -q -U rilievi -d rilievi >/dev/null || {
+# Отрязан дъмп би стигнал до psql като „края на файла“ и транзакцията би се записала с половин база.
+gzip -t "$dump" || {
+  echo "restore-test: дъмпът е повреден или отрязан: $dump" >&2
+  exit 1
+}
+start=$SECONDS
+{ echo 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'; gzip -dc "$dump"; } |
+  docker exec -i "$name" psql --single-transaction -v ON_ERROR_STOP=1 -q -U rilievi -d rilievi >/dev/null || {
   echo "restore-test: дъмпът не се възстановява" >&2
   exit 1
 }
@@ -47,4 +55,4 @@ schede="$(count 'SELECT count(*) FROM "Scheda"')"
   echo "restore-test: в дъмпа няма приложени миграции" >&2
   exit 1
 }
-echo "restore-test: ok — $migrations миграции, $aziende фирми, $schede карти"
+echo "restore-test: ok — $migrations миграции, $aziende фирми, $schede карти; възстановяването отне $((SECONDS - start)) s"

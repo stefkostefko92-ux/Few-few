@@ -8,3 +8,5 @@ test-results
 tests/e2e/shots
 scripts/render/.venv
 scripts/render/out
+# Стилът ѝ е закован с хеш в CSP на nginx (tests/deploy-nginx.test.ts) — не се преформатира.
+deploy/nginx/manutenzione.html

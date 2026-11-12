@@ -18,6 +18,8 @@
 # 5. „Жив съм“: RILIEVI_HEARTBEAT_URL (Uptime Kuma push и подобни) — пропуснат ден е аларма там;
 #    провал — rilievi-backup-alert.service (OnFailure). DEPLOY.md, т. 6.
 # Работи от последния release, който е отговорил (last-good) — там е docker-compose.yml с тайните.
+# Не върви едновременно с деплой: общото заключване RILIEVI_LOCK (същото в deploy.sh) — чака до
+# RILIEVI_LOCK_WAIT секунди (3600), после провал (и аларма), не дъмп посред миграция.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 umask 077
@@ -32,6 +34,8 @@ DIR="$SHARED/backups/daily"
 MEDIA="$SHARED/backups/media"
 VOLUME="${RILIEVI_MEDIA_VOLUME:-rilievi_media}"
 VERIFY="${RILIEVI_BACKUP_VERIFY:-1}"
+LOCK="${RILIEVI_LOCK:-/run/lock/rilievi-deploy.lock}"
+LOCK_WAIT="${RILIEVI_LOCK_WAIT:-3600}"
 
 say() { echo "rilievi-backup: $*"; }
 fail() {
@@ -44,6 +48,16 @@ keep_newest() {
   find "$1" -mindepth 1 -maxdepth 1 -name "$3" -printf '%T@ %p\n' | sort -rn |
     tail -n "+$(($2 + 1))" | cut -d' ' -f2- | xargs -r rm -rf
 }
+
+# Деплой посред дъмпа: pg_dump държи заключвания, на които миграцията чака, а дъмп от половин схема
+# не е бекъп. Дескриптор 9 — заключването пада само при изхода на скрипта.
+command -v flock >/dev/null 2>&1 || fail "липсва flock (util-linux) — бекъпът може да тръгне посред деплой"
+install -d -m 755 "$(dirname "$LOCK")"
+exec 9>>"$LOCK"
+if ! flock -n 9; then
+  say "деплой върви — чакам до ${LOCK_WAIT} s…"
+  flock -w "$LOCK_WAIT" 9 || fail "деплоят държи $LOCK повече от ${LOCK_WAIT} s — днешният бекъп не е направен"
+fi
 
 app="$(head -n 1 "$SHARED/last-good" 2>/dev/null || true)"
 if [ -z "$app" ] || [ ! -f "$app/docker-compose.yml" ]; then
@@ -100,5 +114,5 @@ fi
 date -u +%FT%TZ >"$SHARED/backups/ULTIMO_OK"
 if [ -n "${RILIEVI_HEARTBEAT_URL:-}" ]; then
   curl -fsS -m 10 --retry 3 -o /dev/null "$RILIEVI_HEARTBEAT_URL" ||
-    say "внимание — сигналът жив-съм не стигна до ${RILIEVI_HEARTBEAT_URL}"
+    say "внимание — сигналът жив-съм не стигна (RILIEVI_HEARTBEAT_URL; адресът носи ключ и не се печата)"
 fi

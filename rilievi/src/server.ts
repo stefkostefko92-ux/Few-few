@@ -29,7 +29,7 @@ import { novitaLocals } from './novita/popup.js';
 import { comunicazioniLocals } from './master/banner.js';
 import { countNewRequests } from './requests/service.js';
 import { montaRouter } from './routes/montaggio.js';
-import { HOME_PATH } from './seo/paths.js';
+import { HOME_PATH, STATO_PATH } from './seo/paths.js';
 import { originiFornitori } from './auth/oidc.js';
 import { originiCheckout } from './pagamenti/config.js';
 import { webhookRevolutRouter } from './routes/webhook-revolut.js';
@@ -203,7 +203,17 @@ export function createServer(): Express {
   app.use(pwaRouter);
 
   // Всичко отвъд статиката: сесия → речник и тема → еднократно съобщение → общото за шаблоните.
-  app.use(attachSession);
+  // Паднала база: страницата на състоянието е за този момент — и вписаният я вижда (като гост), не 500.
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    attachSession(req, res, next).catch((error: unknown) => {
+      if (req.method !== 'GET' || req.path !== STATO_PATH) return next(error);
+      logger.error({ evento: 'sessione.db', err: errorMessage(error) }, 'stato: без сесия');
+      res.locals.currentUser = null;
+      res.locals.csrfToken = '';
+      res.locals.utenteBozze = '';
+      next();
+    });
+  });
   // Записът на картата: до 4 MB само за влязъл човек (листовете на скицника), иначе — до 1 MB.
   app.use((req, res, next) => {
     if (req.method !== 'POST' || !FORMA_SCHEDA.test(req.path)) return next();
@@ -253,8 +263,10 @@ export function createServer(): Express {
   app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
     // Грешка на заявката (твърде голямо тяло, счупено кодиране) остава 4xx и не е тревога: без стек.
     const status = errorStatus(error);
+    // С `req.log` редът носи номера на заявката (X-Request-Id) — същия като в реда на pino-http.
+    const log = (req as Request & { log?: typeof logger }).log ?? logger;
     if (status >= 400 && status < 500) {
-      logger.warn({ status, path: req.path }, 'отказана заявка');
+      log.warn({ evento: 'http.rifiutata', status, path: req.path }, 'отказана заявка');
       failRequest(
         req,
         res,
@@ -264,8 +276,9 @@ export function createServer(): Express {
       );
       return;
     }
-    logger.error(
+    log.error(
       {
+        evento: 'http.errore',
         err: errorMessage(error),
         stack:
           error instanceof Error ? error.stack?.split('\n').slice(0, 4).join(' | ') : undefined,
