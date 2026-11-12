@@ -1,0 +1,98 @@
+<%
+  const isErr = !locals.seo;
+  const wordmark = lang === 'bg' ? brand.name : brand.nameLatin;
+  const app = locals.appUrls || { register: '/registraciya', login: '/vhod' };
+  const navIds = ['home', 'pricing', 'accountants', 'einvoicing2028'];
+  const pageTitle = isErr ? locals.title : seo.title;
+  const preload = lang === 'bg' ? 'cyrillic' : 'latin';
+-%>
+<!doctype html>
+<html lang="<%= htmlLang %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= pageTitle %></title>
+<% if (!isErr) { -%>
+<meta name="description" content="<%= seo.description %>">
+<meta name="keywords" content="<%= seo.keywords.join(', ') %>">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="<%= seo.canonical %>">
+<link rel="alternate" hreflang="bg" href="<%= seo.alternates.bg %>">
+<link rel="alternate" hreflang="en" href="<%= seo.alternates.en %>">
+<link rel="alternate" hreflang="x-default" href="<%= seo.xDefault %>">
+<meta property="og:type" content="<%= page === 'einvoicing2028' ? 'article' : 'website' %>">
+<meta property="og:site_name" content="<%= wordmark %>">
+<meta property="og:title" content="<%= seo.title %>">
+<meta property="og:description" content="<%= seo.description %>">
+<meta property="og:url" content="<%= seo.canonical %>">
+<meta property="og:locale" content="<%= seo.ogLocale %>">
+<meta property="og:locale:alternate" content="<%= seo.ogLocale === 'bg_BG' ? 'en_GB' : 'bg_BG' %>">
+<meta property="og:image" content="<%= seo.ogImage %>">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="<%= t('site.og.alt') %>">
+<% if (page === 'einvoicing2028') { -%>
+<meta property="article:published_time" content="2026-11-12">
+<meta property="article:modified_time" content="<%= contentUpdated %>">
+<meta property="article:author" content="<%= company.name %>">
+<% } -%>
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= seo.title %>">
+<meta name="twitter:description" content="<%= seo.description %>">
+<meta name="twitter:image" content="<%= seo.ogImage %>">
+<meta name="twitter:image:alt" content="<%= t('site.og.alt') %>">
+<meta name="author" content="<%= company.name %>">
+<meta name="geo.region" content="<%= company.geo.region %>">
+<meta name="geo.placename" content="<%= company.geo.placename %>">
+<meta name="geo.position" content="<%= company.geo.latitude %>;<%= company.geo.longitude %>">
+<meta name="ICBM" content="<%= company.geo.latitude %>, <%= company.geo.longitude %>">
+<script type="application/ld+json" nonce="<%= cspNonce %>"><%- seo.jsonLd %></script>
+<% } else { -%>
+<meta name="robots" content="noindex">
+<% } -%>
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e121a" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/img/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+<link rel="preload" href="/fonts/ibm-plex-sans-<%= preload %>-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/ibm-plex-sans-<%= preload %>-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css?v=<%= v %>">
+<link rel="stylesheet" href="/css/site.css?v=<%= v %>">
+</head>
+<body class="page-<%= isErr ? 'error' : page %>">
+<a class="skip" href="#main"><%= t('site.skip') %></a>
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="<%= urls.home %>" aria-label="<%= wordmark %>">
+      <svg class="brand-mark" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M4 2h19l7 7v21H4z" fill="currentColor"/><path d="M23 2v7h7" fill="none" stroke="var(--paper)" stroke-width="2"/><path d="M9 14h14M9 19h14M9 24h8" stroke="var(--paper)" stroke-width="2" fill="none"/></svg>
+      <span class="brand-name"><%= wordmark %></span>
+    </a>
+    <nav class="nav" aria-label="<%= t('site.nav.label') %>">
+      <ul>
+<% for (const id of navIds) { -%>
+        <li><a href="<%= urls[id] %>"<% if (!isErr && page === id) { %> aria-current="page"<% } %>><%= t('site.nav.' + id) %></a></li>
+<% } -%>
+      </ul>
+    </nav>
+    <div class="top-cta">
+      <a class="link-quiet" href="<%= app.login %>"><%= t('site.cta.login') %></a>
+<% if (locals.registrationOpen !== false) { -%>
+      <a class="btn btn-small" href="<%= app.register %>"><%= t('site.cta.register') %></a>
+<% } -%>
+    </div>
+  </div>
+</header>
+<%
+  const crumbPage = !isErr && page !== 'home';
+-%>
+<% if (crumbPage) { -%>
+<nav class="crumbs wrap" aria-label="<%= t('site.crumbs.label') %>">
+  <ol>
+    <li><a href="<%= urls.home %>"><%= t('site.nav.home') %></a></li>
+    <li><span aria-current="page"><%= t('site.nav.' + page) %></span></li>
+  </ol>
+</nav>
+<% } -%>

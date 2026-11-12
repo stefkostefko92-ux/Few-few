@@ -1,0 +1,32 @@
+<%- include('../partials/app-head', { title: org.legalName }) %>
+<div class="head-row">
+  <div>
+    <h1><%= org.legalName %></h1>
+    <p class="mono muted"><%= lang === 'bg' ? 'ЕИК' : 'EIK' %> <%= org.eik %><%= org.vatNumber ? ' · ' + org.vatNumber : '' %></p>
+    <% if (access.viaFirmId) { %><p class="tag"><%= t('app.org.via') %></p><% } %>
+  </div>
+  <% if (canIssue) { %><a class="button" href="/app/o/<%= org.id %>/nov"><%= t('app.org.new') %></a><% } %>
+</div>
+<p class="muted"><%= t('app.org.usage', { issued: usage.issued }) %></p>
+<% if (usage.overLimit) { %><p class="callout"><%= t('app.org.limit', { limit: usage.limit }) %></p><% } %>
+<h2><%= t('app.org.documents') %></h2>
+<% if (documents.length === 0) { %><p class="muted"><%= t('app.org.none') %></p><% } else { %>
+<div class="table-wrap"><table>
+  <thead><tr>
+    <th scope="col"><%= t('app.org.number') %></th><th scope="col"><%= t('app.org.type') %></th><th scope="col"><%= t('app.org.date') %></th>
+    <th scope="col"><%= t('app.org.buyer') %></th><th scope="col" class="num"><%= t('app.org.total') %></th>
+  </tr></thead>
+  <tbody>
+  <% documents.forEach((d) => { %>
+    <tr>
+      <td class="mono"><a href="/app/o/<%= org.id %>/d/<%= d.id %>"><%= d.number || '—' %></a></td>
+      <td><%= t('app.types.' + d.typeCode) %><% if (d.status !== 'ISSUED') { %> · <%= t('app.statuses.' + d.status) %><% } %></td>
+      <td class="mono"><%= d.issueDate.toISOString().slice(0, 10) %></td>
+      <td><%= d.buyerName %></td>
+      <td class="num mono"><%= money(d.payableCents, d.currency) %></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/app-foot') %>

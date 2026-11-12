@@ -1,0 +1,51 @@
+{
+  "title": "Master panel",
+  "dashboard": "Dashboard",
+  "settings": "Settings",
+  "features": "Features",
+  "plans": "Plans and prices",
+  "groups": {
+    "accounts": "Accounts",
+    "documents": "Documents",
+    "billing": "Billing",
+    "platform": "Platform"
+  },
+  "kpi": {
+    "issued": "Documents issued this month",
+    "firms": "Accounting firms",
+    "companies": "Companies",
+    "revenue": "Paid this month"
+  },
+  "records": "{count} records",
+  "recent": "Latest audit events",
+  "search": "Search",
+  "searchButton": "Search",
+  "page": "Page {page} of {pages}",
+  "prev": "Previous",
+  "next": "Next",
+  "open": "Open",
+  "save": "Save",
+  "saved": "Saved.",
+  "chain": "Verify the chain",
+  "chainOk": "The chain is intact: {count} documents, every fingerprint and seal matches.",
+  "chainBroken": "The chain breaks at link no. {at} ({kind}).",
+  "confirmPayment": "Confirm the payment",
+  "planFields": {
+    "nameBg": "Name (BG)",
+    "nameEn": "Name (EN)",
+    "priceMonthly": "Monthly price, € excl. VAT",
+    "priceYearly": "Yearly price, € excl. VAT",
+    "perClientCompany": "Per client company, € a month",
+    "includedClientCompanies": "Included client companies",
+    "maxUsers": "Users (empty — unlimited)",
+    "maxCompanies": "Companies (empty — unlimited)",
+    "monthlyDocumentSoftLimit": "Soft monthly document limit (empty — none)",
+    "sortOrder": "Order on the site",
+    "highlighted": "Highlighted",
+    "isPublic": "Shown on the site",
+    "isActive": "Active",
+    "features": "Features"
+  },
+  "featuresHelp": "A disabled feature is offered nowhere, whatever the plan.",
+  "planned": "coming"
+}

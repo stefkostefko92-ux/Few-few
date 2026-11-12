@@ -1,0 +1,23 @@
+import express, { type Express } from 'express';
+import { attachSession } from '../auth/sessions.js';
+import { csrf } from '../auth/guards.js';
+import { appLocals } from '../http/view.js';
+import { webhooksRouter } from './webhooks.js';
+import { authRouter } from './auth.js';
+import { appRouter } from './app.js';
+import { adminRouter } from './admin.js';
+
+/**
+ * Рутерите на приложението — в реда им. Webhook-ът е преди парсването на формите (иска суровото тяло) и
+ * без сесия и CSRF (пази го подписът). Витрината и SEO са в server.ts преди тях.
+ */
+export function mountApp(app: Express): void {
+  app.use(webhooksRouter());
+  app.use(express.urlencoded({ extended: true, limit: '256kb', parameterLimit: 2000 }));
+  app.use(attachSession());
+  app.use(csrf());
+  app.use(appLocals());
+  app.use(authRouter());
+  app.use(appRouter());
+  app.use(adminRouter());
+}

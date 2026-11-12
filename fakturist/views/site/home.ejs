@@ -1,0 +1,187 @@
+<%
+  const app = locals.appUrls || { register: '/registraciya', login: '/vhod' };
+  const planName = (p) => (lang === 'bg' ? p.nameBg : p.nameEn);
+  const plural = (key, n) => t('site.units.' + key + (n === 1 ? '.one' : '.other'), { n });
+  const firm = plans ? plans.find((p) => p.audience === 'accountant') : null;
+  const limitsOf = (p) => {
+    const bits = [];
+    if (p.audience === 'accountant') {
+      if (p.includedClientCompanies !== null) bits.push(plural('clients', p.includedClientCompanies));
+    } else if (p.maxCompanies !== null) bits.push(plural('companies', p.maxCompanies));
+    if (p.maxUsers !== null) bits.push(plural('users', p.maxUsers));
+    if (p.monthlyDocumentSoftLimit !== null) bits.push(t('site.home.pricing.softLimit', { documents: plural('documents', p.monthlyDocumentSoftLimit) }));
+    return bits.join(', ');
+  };
+-%>
+<%- include('../partials/site-head') %>
+<main id="main">
+
+<section class="hero" aria-labelledby="h1">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <h1 id="h1"><%= t('site.home.hero.title') %></h1>
+      <p class="lead"><%= t('site.home.hero.lead') %></p>
+      <div class="actions">
+<% if (registrationOpen) { -%>
+        <a class="btn" href="<%= app.register %>"><%= t('site.cta.registerFree') %></a>
+<% } else { -%>
+        <p class="muted"><%= t('site.cta.closed') %></p>
+<% } -%>
+        <a class="btn btn-ghost" href="<%= urls.pricing %>"><%= t('site.home.hero.secondary') %></a>
+      </div>
+    </div>
+
+    <div class="specimen">
+      <figure class="doc">
+        <div class="doc-head">
+          <p class="doc-kind"><%= t('site.home.doc.title') %></p>
+          <p class="doc-no"><span class="doc-label"><%= t('site.home.doc.number') %></span> <span class="mono">0000000124</span> <span class="bt">BT-1</span></p>
+        </div>
+        <dl class="doc-meta">
+          <div><dt><%= t('site.home.doc.issueDate') %></dt><dd><time datetime="2026-11-12">12.11.2026</time> <span class="bt">BT-2</span></dd></div>
+          <div><dt><%= t('site.home.doc.currency') %></dt><dd>EUR <span class="bt">BT-5</span></dd></div>
+          <div><dt><%= t('site.home.doc.seller') %></dt><dd><%= t('site.home.doc.sellerName') %></dd></div>
+          <div><dt><%= t('site.home.doc.buyer') %></dt><dd><%= t('site.home.doc.buyerName') %></dd></div>
+        </dl>
+        <table class="doc-lines">
+          <tbody>
+            <tr><th scope="row"><%= t('site.home.doc.line') %></th><td class="num"><%= formatEuro(100000) %></td></tr>
+            <tr><th scope="row"><%= t('site.home.doc.vat') %> <span class="bt">BT-110</span></th><td class="num"><%= formatEuro(20000) %></td></tr>
+            <tr class="doc-total"><th scope="row"><%= t('site.home.doc.total') %> <span class="bt">BT-115</span></th><td class="num"><%= formatEuro(120000) %></td></tr>
+          </tbody>
+        </table>
+        <p class="doc-seal"><span class="seal-mark" aria-hidden="true"></span><span><%= t('site.home.doc.chain') %><br><span class="mono"><%= t('site.home.doc.hash') %> 7c41…e90a</span></span></p>
+        <figcaption><%= t('site.home.doc.caption') %></figcaption>
+      </figure>
+      <%- include('../partials/site-xml') %>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="rules-h">
+  <div class="wrap split">
+    <div class="split-head">
+      <h2 id="rules-h"><%= t('site.home.rules.title') %></h2>
+      <p class="muted"><%= t('site.home.rules.lead') %></p>
+    </div>
+    <dl class="ledger">
+<% for (const n of [1, 2, 3, 4, 5]) { -%>
+      <div class="ledger-row">
+        <dt><%= t('site.home.rules.' + n + '.name') %></dt>
+        <dd><%= t('site.home.rules.' + n + '.text') %></dd>
+        <dd class="ledger-ref"><%= t('site.home.rules.' + n + '.ref') %></dd>
+      </div>
+<% } -%>
+    </dl>
+  </div>
+</section>
+
+<section class="section section-tint" aria-labelledby="chain-h">
+  <div class="wrap split">
+    <div class="split-head">
+      <h2 id="chain-h"><%= t('site.home.chain.title') %></h2>
+      <p><%= t('site.home.chain.text') %></p>
+    </div>
+    <figure class="chain">
+      <ol class="chain-list">
+        <li><span class="chain-doc mono">0000000123</span><span class="chain-f"><span class="chain-k"><%= t('site.home.chain.hash') %></span> <span class="mono">a41f…09c2</span></span></li>
+        <li><span class="chain-doc mono">0000000124</span><span class="chain-f"><span class="chain-k"><%= t('site.home.chain.prev') %></span> <span class="mono">a41f…09c2</span></span><span class="chain-f"><span class="chain-k"><%= t('site.home.chain.hash') %></span> <span class="mono">7c41…e90a</span></span></li>
+        <li><span class="chain-doc mono">0000000125</span><span class="chain-f"><span class="chain-k"><%= t('site.home.chain.prev') %></span> <span class="mono">7c41…e90a</span></span><span class="chain-f"><span class="chain-k"><%= t('site.home.chain.hash') %></span> <span class="mono">d208…5b71</span></span></li>
+      </ol>
+      <figcaption><%= t('site.home.chain.caption') %></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="why-h">
+  <div class="wrap split">
+    <div class="split-head">
+      <h2 id="why-h"><%= t('site.home.why.title') %></h2>
+      <p><%= t('site.home.why.p1') %></p>
+      <p><%= t('site.home.why.p2') %></p>
+      <p><a class="link" href="<%= urls.einvoicing2028 %>"><%= t('site.home.why.more') %></a></p>
+    </div>
+    <div>
+      <p class="timeline-label"><%= t('site.home.why.timelineLabel') %></p>
+      <ol class="timeline">
+<% for (const n of [1, 2, 3, 4]) { -%>
+        <li>
+          <p class="tl-date"><%= t('site.home.why.t' + n + '.date') %></p>
+          <p class="tl-title"><%= t('site.home.why.t' + n + '.title') %></p>
+          <p class="tl-text"><%= t('site.home.why.t' + n + '.text') %></p>
+        </li>
+<% } -%>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint" aria-label="<%= t('site.nav.accountants') %>">
+  <div class="wrap two">
+    <div>
+      <h2><%= t('site.home.who.companies.title') %></h2>
+      <p><%= t('site.home.who.companies.text') %></p>
+<% if (registrationOpen) { -%>
+      <p><a class="link" href="<%= app.register %>"><%= t('site.home.who.companies.cta') %></a></p>
+<% } -%>
+    </div>
+    <div>
+      <h2><%= t('site.home.who.firms.title') %></h2>
+      <p><%= t('site.home.who.firms.text') %></p>
+<% if (firm && firm.perClientCompanyCents !== null && firm.includedClientCompanies !== null) { -%>
+      <p><%= t('site.home.who.firms.price', { included: plural('clients', firm.includedClientCompanies), price: formatEuro(firm.perClientCompanyCents), unit: t('site.units.perClientMonth') }) %></p>
+<% } -%>
+      <p><a class="link" href="<%= urls.accountants %>"><%= t('site.home.who.firms.cta') %></a></p>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="price-h">
+  <div class="wrap split">
+    <div class="split-head">
+      <h2 id="price-h"><%= t('site.home.pricing.title') %></h2>
+      <p class="muted"><%= t('site.home.pricing.lead') %></p>
+      <p><a class="link" href="<%= urls.pricing %>"><%= t('site.home.pricing.link') %></a></p>
+    </div>
+<% if (plans) { -%>
+    <table class="mini">
+      <caption class="sr"><%= t('site.home.pricing.title') %></caption>
+      <tbody>
+<% for (const p of plans) { -%>
+        <tr<% if (p.highlighted) { %> class="is-hl"<% } %>>
+          <th scope="row"><%= planName(p) %></th>
+          <td class="mini-limits"><%= limitsOf(p) %><% if (p.audience === 'accountant' && p.perClientCompanyCents !== null) { %>, <%= formatEuro(p.perClientCompanyCents) %> <%= t('site.units.perClientMonth') %><% } %></td>
+          <td class="mini-price">
+<% if (p.priceMonthlyCents === null) { -%>
+            <%= t('site.home.pricing.contract') %>
+<% } else if (p.priceMonthlyCents === 0) { -%>
+            <%= t('site.home.pricing.free') %>
+<% } else { -%>
+            <%- include('../partials/site-price', { cents: p.priceMonthlyCents, unit: t('site.units.perMonth') }) %>
+<% } -%>
+          </td>
+        </tr>
+<% } -%>
+      </tbody>
+    </table>
+<% } else { -%>
+    <p class="notice" role="status"><%= t('site.home.pricing.unavailable', { email: company.email }) %></p>
+<% } -%>
+  </div>
+</section>
+
+<section class="section section-tint" aria-labelledby="sec-h">
+  <div class="wrap split">
+    <h2 id="sec-h"><%= t('site.home.security.title') %></h2>
+    <dl class="trio">
+<% for (const n of [1, 2, 3]) { -%>
+      <div><dt><%= t('site.home.security.' + n + '.name') %></dt><dd><%= t('site.home.security.' + n + '.text') %></dd></div>
+<% } -%>
+    </dl>
+  </div>
+</section>
+
+<%- include('../partials/site-faq') %>
+<%- include('../partials/site-cta') %>
+</main>
+<%- include('../partials/site-foot') %>

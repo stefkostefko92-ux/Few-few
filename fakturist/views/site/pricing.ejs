@@ -1,0 +1,159 @@
+<%
+  const app = locals.appUrls || { register: '/registraciya', login: '/vhod' };
+  const planName = (p) => (lang === 'bg' ? p.nameBg : p.nameEn);
+  const plural = (key, n) => t('site.units.' + key + (n === 1 ? '.one' : '.other'), { n });
+-%>
+<%- include('../partials/site-head') %>
+<main id="main">
+
+<section class="page-head">
+  <div class="wrap">
+    <h1 id="h1"><%= t('site.pricing.title') %></h1>
+    <p class="lead"><%= t('site.pricing.lead') %></p>
+  </div>
+</section>
+
+<section class="section tight" aria-labelledby="h1">
+  <div class="wrap">
+<% if (plans) { -%>
+    <p class="scroll-hint"><%= t('site.pricing.table.scroll') %></p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="<%= t('site.pricing.table.caption') %>">
+      <table class="compare">
+        <caption class="sr"><%= t('site.pricing.table.caption') %></caption>
+        <thead>
+          <tr>
+            <td class="corner"></td>
+<% for (const p of plans) { -%>
+            <th scope="col"<% if (p.highlighted) { %> class="is-hl"<% } %>>
+              <span class="plan-name"><%= planName(p) %></span>
+              <span class="plan-for"><%= p.audience === 'accountant' ? t('site.pricing.table.forFirm') : t('site.pricing.table.forCompany') %></span>
+            </th>
+<% } -%>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr><th scope="colgroup" colspan="<%= plans.length + 1 %>" class="grp"><%= t('site.pricing.table.prices') %></th></tr>
+          <tr>
+            <th scope="row"><%= t('site.pricing.table.monthly') %></th>
+<% for (const p of plans) { -%>
+            <td<% if (p.highlighted) { %> class="is-hl"<% } %>>
+<% if (p.priceMonthlyCents === null) { -%>
+              <%= t('site.pricing.table.contract') %>
+<% } else if (p.priceMonthlyCents === 0) { -%>
+              <span class="price-net"><%= t('site.pricing.table.free') %></span>
+<% } else { -%>
+              <%- include('../partials/site-price', { cents: p.priceMonthlyCents }) %>
+<% } -%>
+            </td>
+<% } -%>
+          </tr>
+          <tr>
+            <th scope="row"><%= t('site.pricing.table.yearly') %></th>
+<% for (const p of plans) { -%>
+            <td<% if (p.highlighted) { %> class="is-hl"<% } %>>
+<% if (p.priceYearlyCents === null) { -%>
+              <%= t('site.pricing.table.contract') %>
+<% } else if (p.priceYearlyCents === 0) { -%>
+              <span class="price-net"><%= t('site.pricing.table.free') %></span>
+<% } else { -%>
+              <%- include('../partials/site-price', { cents: p.priceYearlyCents }) %>
+<% } -%>
+            </td>
+<% } -%>
+          </tr>
+        </tbody>
+
+        <tbody>
+          <tr><th scope="colgroup" colspan="<%= plans.length + 1 %>" class="grp"><%= t('site.pricing.table.limits') %></th></tr>
+          <tr>
+            <th scope="row"><%= t('site.pricing.table.companies') %></th>
+<% for (const p of plans) { -%>
+            <td<% if (p.highlighted) { %> class="is-hl"<% } %>>
+<% if (p.audience === 'accountant') { -%>
+              <span class="muted" aria-label="<%= t('site.pricing.table.notIncluded') %>">–</span>
+<% } else { -%>
+              <%= p.maxCompanies === null ? t('site.pricing.table.unlimited') : p.maxCompanies %>
+<% } -%>
+            </td>
+<% } -%>
+          </tr>
+          <tr>
+            <th scope="row"><%= t('site.pricing.table.clients') %></th>
+<% for (const p of plans) { -%>
+            <td<% if (p.highlighted) { %> class="is-hl"<% } %>>
+<% if (p.audience === 'accountant' && p.includedClientCompanies !== null && p.perClientCompanyCents !== null) { -%>
+              <%= t('site.pricing.table.firmClients', { included: p.includedClientCompanies, price: formatEuro(p.perClientCompanyCents) }) %>
+              <span class="price-unit"><%= t('site.pricing.table.firmUnit') %></span>
+<% } else { -%>
+              <span class="muted" aria-label="<%= t('site.pricing.table.notIncluded') %>">–</span>
+<% } -%>
+            </td>
+<% } -%>
+          </tr>
+          <tr>
+            <th scope="row"><%= t('site.pricing.table.users') %></th>
+<% for (const p of plans) { -%>
+            <td<% if (p.highlighted) { %> class="is-hl"<% } %>><%= p.maxUsers === null ? t('site.pricing.table.unlimited') : p.maxUsers %></td>
+<% } -%>
+          </tr>
+          <tr>
+            <th scope="row"><%= t('site.pricing.table.documents') %></th>
+<% for (const p of plans) { -%>
+            <td<% if (p.highlighted) { %> class="is-hl"<% } %>><%= p.monthlyDocumentSoftLimit === null ? t('site.pricing.table.unlimited') : t('site.pricing.table.softLimit', { n: p.monthlyDocumentSoftLimit }) %></td>
+<% } -%>
+          </tr>
+        </tbody>
+
+<% for (const group of featureGroups) {
+     const rows = features.filter((f) => f.group === group);
+     if (rows.length === 0) continue; -%>
+        <tbody>
+          <tr><th scope="colgroup" colspan="<%= plans.length + 1 %>" class="grp"><%= t('features.groups.' + group) %></th></tr>
+<% for (const f of rows) { -%>
+          <tr>
+            <th scope="row">
+              <span class="f-name"><%= t('features.' + f.code + '.name') %></span>
+              <span class="f-desc"><%= t('features.' + f.code + '.description') %></span>
+            </th>
+<% for (const p of plans) {
+     const has = p.features.includes(f.code); -%>
+            <td<% if (p.highlighted) { %> class="is-hl"<% } %>>
+<% if (!has) { -%>
+              <span class="muted" aria-label="<%= t('site.pricing.table.notIncluded') %>">–</span>
+<% } else if (f.status === 'planned') { -%>
+              <span class="tag-planned"><%= t('features.planned', { target: f.target }) %></span>
+<% } else { -%>
+              <svg class="tick" width="18" height="18" viewBox="0 0 18 18" role="img" aria-label="<%= t('site.pricing.table.included') %>"><path d="M3.5 9.5l3.5 3.5 7.5-8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+<% } -%>
+            </td>
+<% } -%>
+          </tr>
+<% } -%>
+        </tbody>
+<% } -%>
+      </table>
+    </div>
+<% } else { -%>
+    <p class="notice" role="status"><%= t('site.pricing.unavailable', { email: company.email }) %></p>
+<% } -%>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="pay-h">
+  <div class="wrap two">
+    <div>
+      <h2 id="pay-h"><%= t('site.pricing.pay.title') %></h2>
+      <p><%= t('site.pricing.pay.text') %></p>
+    </div>
+    <div>
+      <h2><%= t('site.pricing.planned.title') %></h2>
+      <p><%= t('site.pricing.planned.text') %></p>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/site-faq') %>
+<%- include('../partials/site-cta') %>
+</main>
+<%- include('../partials/site-foot') %>

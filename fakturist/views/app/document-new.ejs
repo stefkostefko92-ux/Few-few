@@ -1,0 +1,114 @@
+<%- include('../partials/app-head', { title: t('app.doc.title') }) %>
+<%
+  const val = (path, fallback) => {
+    let cur = values;
+    for (const part of path.split('.')) { if (cur && typeof cur === 'object') cur = cur[part]; else { cur = undefined; break; } }
+    return typeof cur === 'string' ? cur : (fallback || '');
+  };
+  const sel = (path, option, fallback) => (val(path, fallback) === option ? ' selected' : '');
+  // Банков превод по подразбиране само ако фирмата има IBAN (иначе BR-61 спира издаването).
+  const means = org.iban ? '30' : '';
+%>
+<p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
+<h1><%= t('app.doc.title') %></h1>
+<p class="muted"><%= t('app.doc.issueHelp') %></p>
+<% if (issues && issues.length) { %>
+  <div class="error-box" role="alert">
+    <p><strong><%= t('app.doc.problems') %></strong></p>
+    <ul><% issues.forEach((issue) => { %><li><span class="mono"><%= issue.rule %></span> · <%= issue.message[lang] %> <span class="muted mono"><%= issue.path %></span></li><% }) %></ul>
+  </div>
+<% } %>
+<form method="post" action="/app/o/<%= org.id %>/nov" class="doc-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <fieldset class="grid-4">
+    <label><%= t('app.doc.type') %><select name="typeCode">
+      <% ['380','381','383','386'].forEach((code) => { %><option value="<%= code %>"<%= sel('typeCode', code, '380') %>><%= t('app.types.' + code) %></option><% }) %>
+    </select></label>
+    <label><%= t('app.doc.series') %><select name="seriesId">
+      <% series.forEach((s) => { %><option value="<%= s.id %>"<%= sel('seriesId', s.id, series.find((x) => x.isDefault)?.id) %>><%= s.name %> (<%= String(s.nextNumber).padStart(10, '0') %>)</option><% }) %>
+    </select></label>
+    <label><%= t('app.doc.issueDate') %><input type="date" name="issueDate" required value="<%= val('issueDate', today) %>"></label>
+    <label><%= t('app.doc.taxPointDate') %><input type="date" name="taxPointDate" value="<%= val('taxPointDate', today) %>"></label>
+    <label><%= t('app.doc.dueDate') %><input type="date" name="dueDate" value="<%= val('dueDate') %>"></label>
+    <label><%= t('app.doc.currency') %><input name="currency" maxlength="3" class="mono" value="<%= val('currency', 'EUR') %>"></label>
+    <label><%= t('app.doc.rate') %><input name="eurExchangeRate" inputmode="decimal" class="mono" value="<%= val('eurExchangeRate') %>"><span class="hint"><%= t('app.doc.rateHelp') %></span></label>
+  </fieldset>
+
+  <fieldset>
+    <legend><%= t('app.doc.buyer') %></legend>
+    <div class="grid-3">
+      <label class="span-2"><%= t('app.doc.buyerName') %><input name="buyer[name]" required value="<%= val('buyer.name') %>"></label>
+      <label><%= t('app.doc.buyerEik') %><input name="buyer[legalId]" class="mono" value="<%= val('buyer.legalId') %>"></label>
+      <label><%= t('app.doc.buyerVat') %><input name="buyer[vatId]" class="mono" value="<%= val('buyer.vatId') %>"></label>
+      <label class="span-2"><%= t('app.doc.street') %><input name="buyer[street]" required value="<%= val('buyer.street') %>"></label>
+      <label><%= t('app.doc.city') %><input name="buyer[city]" required value="<%= val('buyer.city') %>"></label>
+      <label><%= t('app.doc.postalCode') %><input name="buyer[postalCode]" class="mono" value="<%= val('buyer.postalCode') %>"></label>
+      <label><%= t('app.doc.country') %><input name="buyer[countryCode]" maxlength="2" class="mono" value="<%= val('buyer.countryCode', 'BG') %>"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend><%= t('app.doc.lines') %></legend>
+    <p class="hint"><%= t('app.doc.linesHelp') %></p>
+    <div class="table-wrap"><table class="lines">
+      <thead><tr>
+        <th scope="col">#</th><th scope="col"><%= t('app.doc.lineName') %></th><th scope="col"><%= t('app.doc.quantity') %></th><th scope="col"><%= t('app.doc.unit') %></th>
+        <th scope="col"><%= t('app.doc.price') %></th><th scope="col"><%= t('app.doc.category') %></th><th scope="col"><%= t('app.doc.vatRate') %></th><th scope="col"><%= t('app.doc.discount') %></th>
+      </tr></thead>
+      <tbody>
+      <% for (let i = 0; i < lineCount; i++) { %>
+        <tr>
+          <td class="mono muted"><%= i + 1 %></td>
+          <td><input name="lines[<%= i %>][name]" aria-label="<%= t('app.doc.lineName') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.name') %>"></td>
+          <td><input name="lines[<%= i %>][quantity]" inputmode="decimal" class="mono s" aria-label="<%= t('app.doc.quantity') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.quantity') %>"></td>
+          <td><select name="lines[<%= i %>][unitCode]" aria-label="<%= t('app.doc.unit') %> <%= i + 1 %>"><% units.forEach((u) => { %><option<%= sel('lines.' + i + '.unitCode', u, 'C62') %>><%= u %></option><% }) %></select></td>
+          <td><input name="lines[<%= i %>][netPrice]" inputmode="decimal" class="mono s" aria-label="<%= t('app.doc.price') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.netPrice') %>"></td>
+          <td><select name="lines[<%= i %>][category]" aria-label="<%= t('app.doc.category') %> <%= i + 1 %>"><% categories.forEach((c) => { %><option<%= sel('lines.' + i + '.category', c, 'S') %>><%= c %></option><% }) %></select></td>
+          <td><input name="lines[<%= i %>][rate]" inputmode="decimal" class="mono xs" aria-label="<%= t('app.doc.vatRate') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.rate', '20') %>"></td>
+          <td><input name="lines[<%= i %>][discount]" inputmode="decimal" class="mono xs" aria-label="<%= t('app.doc.discount') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.discount') %>"></td>
+        </tr>
+      <% } %>
+      </tbody>
+    </table></div>
+  </fieldset>
+
+  <div class="grid-2">
+    <fieldset>
+      <legend><%= t('app.doc.payment') %></legend>
+      <label><%= t('app.doc.means') %><select name="payment[meansCode]">
+        <option value=""<%= sel('payment.meansCode', '', means) %>>—</option>
+        <option value="30"<%= sel('payment.meansCode', '30', means) %>>30 · <%= lang === 'bg' ? 'банков превод' : 'credit transfer' %></option>
+        <option value="10"<%= sel('payment.meansCode', '10', means) %>>10 · <%= lang === 'bg' ? 'в брой' : 'cash' %></option>
+        <option value="48"<%= sel('payment.meansCode', '48', means) %>>48 · <%= lang === 'bg' ? 'карта' : 'card' %></option>
+      </select></label>
+      <label><%= t('app.doc.iban') %><input name="payment[accountId]" class="mono" value="<%= val('payment.accountId', org.iban || '') %>"></label>
+      <label><%= t('app.doc.bic') %><input name="payment[bic]" class="mono" value="<%= val('payment.bic', org.bic || '') %>"></label>
+      <label><%= t('app.doc.terms') %><input name="paymentTerms" value="<%= val('paymentTerms') %>"></label>
+    </fieldset>
+    <fieldset>
+      <legend><%= t('app.doc.exemption') %></legend>
+      <label><%= t('app.doc.exemptionCategory') %><select name="exemption[category]">
+        <option value="">—</option>
+        <% ['Z','E','AE','K','G','O'].forEach((c) => { %><option<%= sel('exemption.category', c) %>><%= c %></option><% }) %>
+      </select></label>
+      <label><%= t('app.doc.exemptionReason') %><input name="exemption[reason]" value="<%= val('exemption.reason') %>"></label>
+      <label><%= t('app.doc.exemptionCode') %><input name="exemption[code]" class="mono" value="<%= val('exemption.code') %>"></label>
+    </fieldset>
+  </div>
+
+  <div class="grid-2">
+    <fieldset>
+      <legend><%= t('app.doc.preceding') %></legend>
+      <label><%= t('app.doc.precedingNumber') %><input name="preceding[number]" class="mono" value="<%= val('preceding.number') %>"></label>
+      <label><%= t('app.doc.precedingDate') %><input type="date" name="preceding[issueDate]" value="<%= val('preceding.issueDate') %>"></label>
+    </fieldset>
+    <fieldset>
+      <legend><%= t('app.doc.references') %></legend>
+      <label><%= t('app.doc.buyerReference') %><input name="buyerReference" value="<%= val('buyerReference') %>"></label>
+      <label><%= t('app.doc.orderReference') %><input name="orderReference" value="<%= val('orderReference') %>"></label>
+      <label><%= t('app.doc.note') %><textarea name="note" rows="2"><%= val('note') %></textarea></label>
+    </fieldset>
+  </div>
+  <button type="submit" class="big"><%= t('app.doc.issue') %></button>
+</form>
+<%- include('../partials/app-foot') %>

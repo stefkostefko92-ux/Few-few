@@ -1,0 +1,197 @@
+import { z } from 'zod';
+import type { Prisma } from '@prisma/client';
+import { prisma } from '../db.js';
+import { audit } from '../audit.js';
+import { sealHmac } from '../auth/keys.js';
+import { setting } from '../admin/settings.js';
+import {
+  buildEInvoice,
+  InvoiceInputSchema,
+  type InvoiceInput,
+  type Issue,
+} from '../einvoice/index.js';
+import { toCents } from '../einvoice/decimal.js';
+import { EAS_BG_VAT } from '../einvoice/codes.js';
+import { entryHash, GENESIS, sha256 } from '../ledger/chain.js';
+import { formatNumber } from './numbering.js';
+import type { OrgAccess } from '../auth/guards.js';
+
+/**
+ * Това, което издаващият подава: всичко без номера и без доставчика. Доставчикът идва от данните на
+ * фирмата в базата (никога от формата), номерът — от серията в транзакцията.
+ */
+export const IssueRequestSchema = InvoiceInputSchema.omit({ number: true, seller: true }).extend({
+  seriesId: z.string().regex(/^[a-z0-9]{20,40}$/),
+});
+export type IssueRequest = z.infer<typeof IssueRequestSchema>;
+
+export class IssueRejected extends Error {
+  constructor(readonly issues: Issue[]) {
+    super('Документът не минава проверките');
+  }
+}
+
+export class SeriesExhausted extends Error {
+  constructor() {
+    super('Серията е изчерпана');
+  }
+}
+
+type Seller = InvoiceInput['seller'];
+
+function sellerOf(org: {
+  legalName: string;
+  eik: string | null;
+  vatNumber: string | null;
+  addressStreet: string;
+  addressCity: string;
+  postalCode: string;
+  countryCode: string;
+  email: string | null;
+  eAddressScheme: string | null;
+  eAddressValue: string | null;
+}): Seller {
+  return {
+    name: org.legalName,
+    legalId: org.eik ?? undefined,
+    vatId: org.vatNumber ?? undefined,
+    address: {
+      street: org.addressStreet,
+      city: org.addressCity,
+      postalCode: org.postalCode,
+      countryCode: org.countryCode,
+    },
+    electronicAddress:
+      org.eAddressScheme && org.eAddressValue
+        ? { scheme: org.eAddressScheme, value: org.eAddressValue }
+        : org.vatNumber
+          ? { scheme: EAS_BG_VAT, value: org.vatNumber }
+          : undefined,
+    contact: org.email ? { email: org.email } : undefined,
+  };
+}
+
+/**
+ * Издава документ в една транзакция:
+ * 1. заключва фирмата (веригата е по фирма — един издаващ наведнъж);
+ * 2. взема следващия номер от серията (UPDATE … RETURNING — rollback го връща, пропуск няма);
+ * 3. строи е-фактурата през ядрото (EN 16931 + ЗДДС); с фатална грешка — rollback;
+ * 4. добавя звено във веригата (отпечатък + печат) и записва документа и одита.
+ */
+export async function issueDocument(
+  access: OrgAccess,
+  actorId: string,
+  request: IssueRequest,
+): Promise<{ id: string; number: string; warnings: Issue[] }> {
+  const [deadlineDays, requireBankAccount, profile] = await Promise.all([
+    setting('issue.deadlineDays'),
+    setting('issue.requireBankAccount'),
+    setting('issue.profile'),
+  ]);
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const orgs = await tx.$queryRaw<Array<{ id: string }>>`
+      SELECT "id" FROM "Organization" WHERE "id" = ${access.organizationId} FOR UPDATE`;
+    if (orgs.length !== 1) throw new Error('Фирмата не съществува');
+    const org = await tx.organization.findUniqueOrThrow({ where: { id: access.organizationId } });
+
+    const allocated = await tx.$queryRaw<Array<{ number: bigint }>>`
+      UPDATE "DocumentSeries" SET "nextNumber" = "nextNumber" + 1
+      WHERE "id" = ${request.seriesId} AND "organizationId" = ${org.id} AND "nextNumber" <= "rangeEnd"
+      RETURNING "nextNumber" - 1 AS "number"`;
+    const raw = allocated[0]?.number;
+    if (raw === undefined) throw new SeriesExhausted();
+    const number = formatNumber(BigInt(raw));
+
+    const { seriesId: _series, ...rest } = request;
+    const built = buildEInvoice(
+      { ...rest, number, seller: sellerOf(org) },
+      { profile, issueDeadlineDays: deadlineDays, requireBankAccount },
+    );
+    if (!built.ok) throw new IssueRejected(built.issues);
+
+    const last = await tx.document.findFirst({
+      where: { organizationId: org.id, chainIndex: { not: null } },
+      orderBy: { chainIndex: 'desc' },
+      select: { chainIndex: true, sha256: true },
+    });
+    const chainIndex = (last?.chainIndex ?? 0n) + 1n;
+    const prevHash = last?.sha256 ?? GENESIS;
+    const t = built.calc.totals;
+    const content = {
+      organizationId: org.id,
+      chainIndex,
+      number,
+      typeCode: built.input.typeCode,
+      status: 'ISSUED' as const,
+      issueDate: built.input.issueDate,
+      payableCents: toCents(t.payable),
+      vatCents: toCents(t.vat),
+      ublSha256: sha256(built.ubl),
+      ciiSha256: sha256(built.cii),
+      prevHash,
+    };
+    const hash = entryHash(content);
+
+    const preceding = built.input.precedingInvoices[0]
+      ? await tx.document.findFirst({
+          where: { organizationId: org.id, number: built.input.precedingInvoices[0].number },
+          select: { id: true },
+        })
+      : null;
+
+    const document = await tx.document.create({
+      data: {
+        organizationId: org.id,
+        seriesId: request.seriesId,
+        status: 'ISSUED',
+        typeCode: built.input.typeCode,
+        number,
+        issueDate: new Date(`${built.input.issueDate}T00:00:00Z`),
+        taxPointDate: built.input.taxPointDate
+          ? new Date(`${built.input.taxPointDate}T00:00:00Z`)
+          : null,
+        dueDate: built.input.dueDate ? new Date(`${built.input.dueDate}T00:00:00Z`) : null,
+        currency: built.input.currency,
+        input: built.input as unknown as Prisma.InputJsonValue,
+        buyerName: built.input.buyer.name,
+        buyerEik: built.input.buyer.legalId ?? null,
+        lineExtensionCents: toCents(t.lineExtension),
+        taxExclusiveCents: toCents(t.taxExclusive),
+        vatCents: toCents(t.vat),
+        taxInclusiveCents: toCents(t.taxInclusive),
+        payableCents: toCents(t.payable),
+        vatEurCents: t.vatInEur ? toCents(t.vatInEur) : null,
+        ublXml: built.ubl,
+        ciiXml: built.cii,
+        chainIndex,
+        sha256: hash,
+        prevHash,
+        seal: sealHmac(hash),
+        issuedById: actorId,
+        firmId: access.viaFirmId,
+        mandateId: access.mandateId,
+        precedingId: preceding?.id ?? null,
+        issuedAt: new Date(),
+      },
+      select: { id: true },
+    });
+    await audit(tx, {
+      actorId,
+      organizationId: org.id,
+      action: 'document.issued',
+      targetType: 'Document',
+      targetId: document.id,
+      details: {
+        number,
+        typeCode: built.input.typeCode,
+        viaFirmId: access.viaFirmId,
+        mandateId: access.mandateId,
+      },
+    });
+    return {
+      id: document.id,
+      number,
+      warnings: built.issues.filter((issue) => issue.severity === 'warning'),
+    };
+  });
+}

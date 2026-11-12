@@ -1,0 +1,30 @@
+<%- include('../partials/app-head', { title: t('admin.title') }) %>
+<h1><%= t('admin.title') %></h1>
+<%- include('_nav') %>
+<dl class="kpis">
+  <div><dt><%= t('admin.kpi.issued') %></dt><dd class="mono"><%= issuedThisMonth %></dd></div>
+  <div><dt><%= t('admin.kpi.companies') %></dt><dd class="mono"><%= companies %></dd></div>
+  <div><dt><%= t('admin.kpi.firms') %></dt><dd class="mono"><%= firms %></dd></div>
+  <div><dt><%= t('admin.kpi.revenue') %></dt><dd class="mono"><%= revenue %></dd></div>
+</dl>
+<% ['accounts', 'documents', 'billing', 'platform'].forEach((group) => { %>
+<section>
+  <h2><%= t('admin.groups.' + group) %></h2>
+  <ul class="tiles">
+    <% counts.filter((c) => c.resource.group === group).forEach((c) => { %>
+      <li><a href="/admin/r/<%= c.resource.slug %>"><span><%= c.resource.label[lang] %></span><span class="mono"><%= c.count %></span></a></li>
+    <% }) %>
+  </ul>
+</section>
+<% }) %>
+<section>
+  <h2><%= t('admin.recent') %></h2>
+  <div class="table-wrap"><table>
+    <tbody>
+    <% recent.forEach((e) => { %>
+      <tr><td class="mono muted"><%= e.at.toISOString().replace('T', ' ').slice(0, 19) %></td><td class="mono"><%= e.action %></td><td class="mono muted"><%= e.targetType || '' %> <%= e.targetId || '' %></td></tr>
+    <% }) %>
+    </tbody>
+  </table></div>
+</section>
+<%- include('../partials/app-foot') %>

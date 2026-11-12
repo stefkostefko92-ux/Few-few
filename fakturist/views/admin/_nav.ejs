@@ -1,0 +1,6 @@
+<nav class="admin-nav" aria-label="<%= t('admin.title') %>">
+  <a href="/admin"<%= path === '/admin' ? ' aria-current="page"' : '' %>><%= t('admin.dashboard') %></a>
+  <a href="/admin/nastroyki"<%= path.startsWith('/admin/nastroyki') ? ' aria-current="page"' : '' %>><%= t('admin.settings') %></a>
+  <a href="/admin/funktsii"<%= path.startsWith('/admin/funktsii') ? ' aria-current="page"' : '' %>><%= t('admin.features') %></a>
+  <a href="/admin/r/plans"<%= path.startsWith('/admin/r/plans') || path.startsWith('/admin/planove') ? ' aria-current="page"' : '' %>><%= t('admin.plans') %></a>
+</nav>

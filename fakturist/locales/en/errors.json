@@ -1,0 +1,13 @@
+{
+  "notFound": {
+    "title": "Page not found",
+    "text": "The address does not exist or has changed. Go back to the home page or see the pricing.",
+    "home": "To the home page",
+    "pricing": "Pricing"
+  },
+  "serverError": {
+    "title": "The request could not be processed",
+    "text": "Something went wrong on our side and the page did not load. Try again shortly. If it keeps happening, write to {email}.",
+    "home": "To the home page"
+  }
+}

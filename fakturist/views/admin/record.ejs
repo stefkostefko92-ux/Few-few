@@ -1,0 +1,17 @@
+<%- include('../partials/app-head', { title: resource.label[lang] }) %>
+<p><a href="/admin/r/<%= resource.slug %>">← <%= resource.label[lang] %></a></p>
+<h1><%= resource.label[lang] %></h1>
+<%- include('_nav') %>
+<dl class="record">
+  <% Object.entries(row).forEach(([key, value]) => { %>
+    <div><dt class="mono"><%= key %></dt><dd class="mono"><%- include('_value', { value }) %></dd></div>
+  <% }) %>
+</dl>
+<% if (resource.model === 'Organization') { %><p><a class="button-secondary" href="/admin/veriga/<%= row.id %>"><%= t('admin.chain') %></a></p><% } %>
+<% if (resource.model === 'Payment' && row.status === 'PENDING') { %>
+<form method="post" action="/admin/plashtaniya/<%= row.id %>/potvardi">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <button type="submit"><%= t('admin.confirmPayment') %></button>
+</form>
+<% } %>
+<%- include('../partials/app-foot') %>

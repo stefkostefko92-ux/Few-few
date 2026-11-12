@@ -1,0 +1,32 @@
+<%- include('../partials/app-head', { title: t('app.security.title') }) %>
+<h1><%= t('app.security.title') %></h1>
+<% if (ok === 'password' || ok === '2fa') { %><p class="ok" role="status"><%= t('app.security.ok.' + ok) %></p><% } %>
+<% if (err) { %><p class="error" role="alert"><%= err === 'code' ? t('app.security.err.code') : tOr('auth.errors.password.' + err, t('auth.errors.invalid')) %></p><% } %>
+<% if (currentUser.mustChangePassword) { %><p class="callout"><%= t('app.security.mustChange') %></p><% } %>
+<section class="panel">
+  <h2><%= t('app.security.password') %></h2>
+  <form method="post" action="/app/sigurnost/parola" class="stack narrow-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('app.security.current') %><input type="password" name="current" autocomplete="current-password" required></label>
+    <label><%= t('app.security.next') %><input type="password" name="next" autocomplete="new-password" minlength="12" required><span class="hint"><%= t('auth.passwordHelp') %></span></label>
+    <button type="submit"><%= t('app.security.change') %></button>
+  </form>
+</section>
+<section class="panel">
+  <h2><%= t('app.security.twoFactor') %></h2>
+  <% if (currentUser.totpEnabled) { %>
+    <p class="ok"><%= t('app.security.enabled') %></p>
+  <% } else { %>
+    <% if (currentUser.platformRole !== 'NONE') { %><p class="callout"><%= t('app.security.required') %></p><% } %>
+    <p><%= t('app.security.setup') %></p>
+    <div class="qr"><%- qr %></div>
+    <p><%= t('app.security.key') %>: <code class="mono"><%= readable %></code></p>
+    <form method="post" action="/app/sigurnost/2fa" class="stack narrow-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="draft" value="<%= draft %>">
+      <label><%= t('auth.code') %><input name="code" inputmode="numeric" autocomplete="one-time-code" required class="mono"></label>
+      <button type="submit"><%= t('app.security.enable') %></button>
+    </form>
+  <% } %>
+</section>
+<%- include('../partials/app-foot') %>

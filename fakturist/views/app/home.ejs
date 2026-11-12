@@ -1,0 +1,37 @@
+<%- include('../partials/app-head', { title: t('app.home.title') }) %>
+<h1><%= t('app.home.title') %></h1>
+<section>
+  <h2><%= t('app.home.own') %></h2>
+  <ul class="cards">
+    <% own.forEach((org) => { %>
+    <li>
+      <a href="/app/o/<%= org.id %>" class="card-link"><strong><%= org.legalName %></strong></a>
+      <span class="mono muted"><%= lang === 'bg' ? 'ЕИК' : 'EIK' %> <%= org.eik %></span>
+      <span class="tag"><%= t('app.roles.' + org.role) %></span>
+      <% if (org.kind === 'ACCOUNTING_FIRM' && (org.role === 'OWNER' || org.role === 'ADMIN')) { %>
+        <a class="button-secondary" href="/app/o/<%= org.id %>/klienti/nov"><%= t('app.home.addClient') %></a>
+      <% } %>
+    </li>
+    <% }) %>
+  </ul>
+</section>
+<% if (own.some((org) => org.kind === 'ACCOUNTING_FIRM')) { %>
+<section>
+  <h2><%= t('app.home.clients') %></h2>
+  <% if (clients.length === 0) { %><p class="muted"><%= t('app.home.noClients') %></p><% } else { %>
+  <div class="table-wrap"><table>
+    <thead><tr><th scope="col"><%= t('auth.legalName') %></th><th scope="col"><%= t('auth.eik') %></th><th scope="col"><%= t('app.home.mandate') %></th></tr></thead>
+    <tbody>
+    <% clients.forEach((m) => { %>
+      <tr>
+        <td><% if (m.status === 'ACTIVE') { %><a href="/app/o/<%= m.client.id %>"><%= m.client.legalName %></a><% } else { %><%= m.client.legalName %><% } %></td>
+        <td class="mono"><%= m.client.eik %></td>
+        <td><span class="tag tag-<%= m.status.toLowerCase() %>"><%= t('app.home.status.' + m.status) %></span> <span class="muted"><%= m.documentRef %></span></td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table></div>
+  <% } %>
+</section>
+<% } %>
+<%- include('../partials/app-foot') %>

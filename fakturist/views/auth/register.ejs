@@ -1,0 +1,50 @@
+<%- include('../partials/app-head', { title: t('auth.registerTitle') }) %>
+<%
+  const v = (name) => (values && typeof values[name] === 'string' ? values[name] : '');
+  const err = (name) => errors[name] ? t('auth.errors.' + errors[name]) : '';
+  const field = (name, label, attrs) => {
+    const e = err(name);
+    return '<label' + (e ? ' class="has-error"' : '') + '>' + label +
+      '<input name="' + name + '" value="' + v(name).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;') + '" ' + (attrs || '') +
+      (e ? ' aria-invalid="true" aria-describedby="e-' + name + '"' : '') + '>' +
+      (e ? '<span class="field-error" id="e-' + name + '">' + e.replace(/</g,'&lt;') + '</span>' : '') + '</label>';
+  };
+%>
+<section class="narrow wide-ish">
+  <h1><%= t('auth.registerTitle') %></h1>
+  <% if (!open) { %>
+    <p class="callout"><%= t('auth.closed', { email: company.email }) %></p>
+  <% } else { %>
+  <form method="post" action="/registraciya" class="stack" novalidate>
+    <fieldset class="choice">
+      <legend><%= t('auth.kind') %></legend>
+      <label class="radio"><input type="radio" name="kind" value="company"<%= v('kind') !== 'accountant' ? ' checked' : '' %>> <%= t('auth.kindCompany') %></label>
+      <label class="radio"><input type="radio" name="kind" value="accountant"<%= v('kind') === 'accountant' ? ' checked' : '' %>> <%= t('auth.kindAccountant') %></label>
+    </fieldset>
+    <fieldset>
+      <legend><%= t('auth.you') %></legend>
+      <%- field('name', t('auth.name'), 'autocomplete="name" required') %>
+      <%- field('email', t('auth.email'), 'type="email" autocomplete="email" required') %>
+      <label<%= errors.password ? ' class="has-error"' : '' %>><%= t('auth.password') %><input type="password" name="password" autocomplete="new-password" minlength="12" required aria-describedby="pw-help"><span class="hint" id="pw-help"><%= t('auth.passwordHelp') %></span><% if (errors.password) { %><span class="field-error"><%= t('auth.errors.' + errors.password) %></span><% } %></label>
+    </fieldset>
+    <fieldset>
+      <legend><%= v('kind') === 'accountant' ? t('auth.firm') : t('auth.company') %></legend>
+      <%- field('legalName', t('auth.legalName'), 'required autocomplete="organization"') %>
+      <div class="row">
+        <%- field('eik', t('auth.eik'), 'inputmode="numeric" required class="mono"') %>
+        <%- field('vatNumber', t('auth.vatNumber'), 'class="mono"') %>
+      </div>
+      <%- field('addressStreet', t('auth.addressStreet'), 'required autocomplete="street-address"') %>
+      <div class="row">
+        <%- field('addressCity', t('auth.addressCity'), 'required autocomplete="address-level2"') %>
+        <%- field('postalCode', t('auth.postalCode'), 'inputmode="numeric" required autocomplete="postal-code" class="mono"') %>
+      </div>
+      <%- field('iban', t('auth.iban'), 'class="mono"') %>
+    </fieldset>
+    <label class="check<%= errors.acceptTerms ? ' has-error' : '' %>"><input type="checkbox" name="acceptTerms" required> <%= t('auth.acceptTerms') %></label>
+    <button type="submit"><%= t('auth.create') %></button>
+  </form>
+  <% } %>
+  <p class="muted"><%= t('auth.haveAccount') %> <a href="/vhod"><%= t('auth.login') %></a></p>
+</section>
+<%- include('../partials/app-foot') %>

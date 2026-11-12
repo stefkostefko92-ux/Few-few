@@ -1,0 +1,13 @@
+<%- include('../partials/app-head', { title: t('auth.loginTitle') }) %>
+<section class="narrow">
+  <h1><%= t('auth.loginTitle') %></h1>
+  <% if (error) { %><p class="error" role="alert"><%= t(error) %></p><% } %>
+  <form method="post" action="/vhod" class="stack">
+    <input type="hidden" name="next" value="<%= next %>">
+    <label><%= t('auth.email') %><input type="email" name="email" autocomplete="username" required value="<%= email %>"></label>
+    <label><%= t('auth.password') %><input type="password" name="password" autocomplete="current-password" required></label>
+    <button type="submit"><%= t('auth.login') %></button>
+  </form>
+  <p class="muted"><%= t('auth.noAccount') %> <a href="/registraciya"><%= t('auth.register') %></a></p>
+</section>
+<%- include('../partials/app-foot') %>

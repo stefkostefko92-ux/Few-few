@@ -1,0 +1,29 @@
+<%- include('../partials/app-head', { title: t('app.types.' + document.typeCode) + ' ' + (document.number || '') }) %>
+<p><a href="/app/o/<%= document.organizationId %>">← <%= t('app.view.back') %></a></p>
+<% if (issued) { %><p class="ok" role="status"><%= t('app.view.issued') %></p><% } %>
+<div class="head-row">
+  <div>
+    <p class="muted"><%= t('app.types.' + document.typeCode) %> · <%= t('app.statuses.' + document.status) %></p>
+    <h1 class="mono"><%= document.number %></h1>
+  </div>
+  <div class="actions">
+    <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/ubl.xml"><%= t('app.view.download') %> <%= t('app.view.ubl') %></a>
+    <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/cii.xml"><%= t('app.view.download') %> <%= t('app.view.cii') %></a>
+  </div>
+</div>
+<dl class="facts">
+  <div><dt><%= t('app.doc.issueDate') %></dt><dd class="mono"><%= document.issueDate.toISOString().slice(0, 10) %></dd></div>
+  <% if (document.taxPointDate) { %><div><dt><%= t('app.doc.taxPointDate') %></dt><dd class="mono"><%= document.taxPointDate.toISOString().slice(0, 10) %></dd></div><% } %>
+  <% if (document.dueDate) { %><div><dt><%= t('app.doc.dueDate') %></dt><dd class="mono"><%= document.dueDate.toISOString().slice(0, 10) %></dd></div><% } %>
+  <div><dt><%= t('app.org.buyer') %></dt><dd><%= document.buyerName %><% if (document.buyerEik) { %> <span class="mono muted"><%= document.buyerEik %></span><% } %></dd></div>
+  <div><dt><%= t('app.view.net') %></dt><dd class="mono"><%= money(document.taxExclusiveCents) %></dd></div>
+  <div><dt><%= t('app.view.vat') %></dt><dd class="mono"><%= money(document.vatCents) %></dd></div>
+  <% if (document.vatEurCents !== null) { %><div><dt><%= t('app.view.vatEur') %></dt><dd class="mono"><%= (Number(document.vatEurCents) / 100).toFixed(2) %> EUR</dd></div><% } %>
+  <div><dt><%= t('app.view.payable') %></dt><dd class="mono strong"><%= money(document.payableCents) %></dd></div>
+  <% if (document.issuedBy) { %><div><dt><%= t('app.view.issuedBy') %></dt><dd><%= document.issuedBy.name %></dd></div><% } %>
+  <% if (document.firm) { %><div><dt><%= t('app.view.viaFirm') %></dt><dd><%= document.firm.legalName %><% if (document.mandate) { %> · <span class="muted"><%= document.mandate.documentRef %></span><% } %></dd></div><% } %>
+</dl>
+<% if (document.sha256) { %>
+<p class="chain mono"><%= t('app.view.chain', { index: String(document.chainIndex) }) %> <%= document.sha256.slice(0, 16) %>…</p>
+<% } %>
+<%- include('../partials/app-foot') %>

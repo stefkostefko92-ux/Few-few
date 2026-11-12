@@ -1,0 +1,18 @@
+<%- include('../partials/app-head', { title: t('admin.settings') }) %>
+<h1><%= t('admin.settings') %></h1>
+<%- include('_nav') %>
+<% if (saved) { %><p class="ok" role="status"><%= t('admin.saved') %></p><% } %>
+<form method="post" action="/admin/nastroyki" class="stack narrow-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% Object.entries(settings).forEach(([key, def]) => { const value = values[key]; %>
+    <% if (typeof def.default === 'boolean') { %>
+      <label class="check"><input type="checkbox" name="<%= key %>"<%= value ? ' checked' : '' %>> <%= def.label[lang] %><span class="hint"><%= def.help[lang] %></span></label>
+    <% } else if (key === 'issue.profile') { %>
+      <label><%= def.label[lang] %><select name="<%= key %>"><% ['en16931', 'peppol'].forEach((p) => { %><option<%= value === p ? ' selected' : '' %>><%= p %></option><% }) %></select><span class="hint"><%= def.help[lang] %></span></label>
+    <% } else { %>
+      <label><%= def.label[lang] %><input name="<%= key %>" value="<%= value %>"<%= typeof def.default === 'number' ? ' inputmode="numeric"' : '' %>><span class="hint"><%= def.help[lang] %></span></label>
+    <% } %>
+  <% }) %>
+  <button type="submit"><%= t('admin.save') %></button>
+</form>
+<%- include('../partials/app-foot') %>

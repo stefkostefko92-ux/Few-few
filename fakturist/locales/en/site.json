@@ -1,0 +1,453 @@
+{
+  "skip": "Skip to content",
+  "og": {
+    "alt": "Fakturist: Bulgarian VAT invoices and structured XML under EN 16931, sample document no. 0000000124"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "home": "Home",
+    "pricing": "Pricing",
+    "accountants": "For accountants",
+    "einvoicing2028": "E-invoicing 2028"
+  },
+  "cta": {
+    "login": "Sign in",
+    "register": "Sign up",
+    "registerFree": "Create a free account",
+    "closed": "Registration is not open yet."
+  },
+  "crumbs": {
+    "label": "Breadcrumb"
+  },
+  "lang": {
+    "label": "Language"
+  },
+  "vat": {
+    "net": "excl. VAT",
+    "gross": "incl. 20% VAT"
+  },
+  "units": {
+    "users": {
+      "one": "{n} user",
+      "other": "{n} users"
+    },
+    "companies": {
+      "one": "{n} company",
+      "other": "{n} companies"
+    },
+    "clients": {
+      "one": "{n} client company",
+      "other": "{n} client companies"
+    },
+    "documents": {
+      "one": "{n} document",
+      "other": "{n} documents"
+    },
+    "perMonth": "per month",
+    "perYear": "per year",
+    "perClientMonth": "per client company per month"
+  },
+  "foot": {
+    "eik": "Company ID (EIK)",
+    "vat": "VAT no.",
+    "phone": "tel.",
+    "nav": "Footer links",
+    "note": "Prices are in euro. Fakturist is a product of Carbon Stealth VCC."
+  },
+  "home": {
+    "meta": {
+      "title": "Fakturist: Bulgarian VAT invoices and EN 16931 e-invoices",
+      "description": "Online invoicing for Bulgarian companies and accounting firms. VAT rules checked on issue and EN 16931 XML on every plan, the free one included.",
+      "keywords": "Carbon Stealth, Fakturist, online invoicing Bulgaria, e-invoice, EN 16931, UBL 2.1, invoicing software, invoicing for accountants"
+    },
+    "hero": {
+      "title": "Bulgarian VAT invoices, also saved as structured XML",
+      "lead": "Fakturist checks the VAT Act rules at the moment of issue and saves every document under the European standard EN 16931, in UBL 2.1 and CII. That includes the free plan.",
+      "secondary": "See pricing",
+      "tertiary": "For accounting firms"
+    },
+    "doc": {
+      "title": "Invoice",
+      "number": "No.",
+      "issueDate": "Issue date",
+      "currency": "Currency",
+      "seller": "Supplier",
+      "buyer": "Customer",
+      "sellerName": "Primer Ltd",
+      "buyerName": "Obrazets JSC",
+      "line": "Consulting service",
+      "vat": "VAT 20%",
+      "total": "Amount due",
+      "chain": "In the chain after no. 0000000123",
+      "hash": "SHA-256",
+      "caption": "Sample document. The companies and amounts are made up.",
+      "xmlCaption": "The same document as UBL 2.1. The column shows the EN 16931 field numbers."
+    },
+    "rules": {
+      "1": {
+        "name": "Number",
+        "text": "Ten digits, sequential, no gaps. After 0000000124 comes 0000000125.",
+        "ref": "Art. 114(1)(2) VAT Act"
+      },
+      "2": {
+        "name": "Basis for not charging VAT",
+        "text": "When you do not charge VAT, you state the basis, and it is checked on issue.",
+        "ref": "Art. 114 VAT Act"
+      },
+      "3": {
+        "name": "VAT in euro",
+        "text": "On an invoice in a foreign currency the tax is also shown in euro.",
+        "ref": "Art. 114(5) VAT Act"
+      },
+      "4": {
+        "name": "Credit and debit notes",
+        "text": "A credit or debit note points to the invoice it relates to.",
+        "ref": "Art. 115 VAT Act"
+      },
+      "5": {
+        "name": "Integrity",
+        "text": "An issued document gets a SHA-256 fingerprint and joins a chain. A change after issue shows.",
+        "ref": "Art. 114(6) VAT Act"
+      },
+      "title": "What we check before a document goes out",
+      "lead": "The rules are not in a manual you have to read. They are part of issuing."
+    },
+    "chain": {
+      "title": "A change after issue shows",
+      "text": "Every document carries a SHA-256 fingerprint of its content and the fingerprint of the previous document, sealed with an HMAC. If someone alters an issued document, the chain after it stops matching.",
+      "doc": "Document",
+      "prev": "previous",
+      "hash": "fingerprint",
+      "caption": "Sample values, shortened.",
+      "sealed": "Seal matches"
+    },
+    "why": {
+      "title": "Why EN 16931 now",
+      "p1": "A PDF invoice is a picture of the data. The recipient's software cannot read the total or the VAT from it without text recognition. A structured document carries the same data in named fields: BT-1 is the number, BT-2 is the date, BT-3 is the document type.",
+      "p2": "According to the bill as introduced, mandatory structured e-invoices between companies and to the state start on 1 July 2028. Most invoicing programs today produce PDF, not structured XML. The documents you issue in Fakturist now are already in these formats.",
+      "more": "Guide to the 2028 e-invoices",
+      "timelineLabel": "According to the text of the bill as introduced",
+      "t1": {
+        "date": "5 Nov 2026",
+        "title": "Introduced in the National Assembly",
+        "text": "Bill no. 52-602-01-60 amending the VAT Act."
+      },
+      "t2": {
+        "date": "12 Nov 2026",
+        "title": "First reading",
+        "text": "Passed at first reading. The text may change before the second."
+      },
+      "t3": {
+        "date": "1 Jul 2027",
+        "title": "Deadline for the ordinance",
+        "text": "The conditions for accredited providers and for software. The ordinance is not out yet."
+      },
+      "t4": {
+        "date": "1 Jul 2028",
+        "title": "Mandatory e-invoices",
+        "text": "Between companies and to the state, over the CEF eDelivery AS4 network, in UBL 2.1 and CII."
+      }
+    },
+    "who": {
+      "companies": {
+        "title": "If you invoice for your own company",
+        "text": "You issue invoices and credit and debit notes, in several number series. Every document also comes out as XML. You choose “company” when you sign up.",
+        "cta": "Register a company"
+      },
+      "firms": {
+        "title": "If you work for many companies",
+        "text": "One firm, one dashboard, many client companies. You issue on the company's behalf under an authorisation (Art. 113(7) VAT Act), and the document carries the authorisation it was issued under.",
+        "price": "The first {included} are free, then {price} {unit}, excl. VAT.",
+        "cta": "How the firm workflow works"
+      }
+    },
+    "pricing": {
+      "title": "Pricing at a glance",
+      "lead": "Prices exclude VAT. The full table by feature is on the pricing page.",
+      "link": "All plans and features",
+      "unavailable": "Prices cannot be loaded right now. Try again shortly or write to {email}.",
+      "free": "Free",
+      "contract": "By contract",
+      "softLimit": "up to {documents}, soft limit"
+    },
+    "security": {
+      "1": {
+        "name": "Two-factor sign-in",
+        "text": "A code from an authenticator app on every sign-in."
+      },
+      "2": {
+        "name": "Roles and audit trail",
+        "text": "It is recorded who may do what and who did what. Which plans include them is in the pricing table."
+      },
+      "3": {
+        "name": "Servers in the EU",
+        "text": "Data is stored on servers in the European Union."
+      },
+      "title": "Data and security"
+    },
+    "faq": {
+      "1": {
+        "q": "What is EN 16931?",
+        "a": "The European standard for the content of an electronic invoice. It defines which data an invoice holds and what the fields are called, for example BT-1 for the number and BT-2 for the date. Fakturist saves every document under it, in UBL 2.1 and CII."
+      },
+      "2": {
+        "q": "Is Fakturist approved by the National Revenue Agency?",
+        "a": "No. No such approval exists today. According to the bill as introduced there will be accredited providers and certified software, with the conditions set in an ordinance that is not out yet. When they are published, we will say so here."
+      },
+      "3": {
+        "q": "What does the free plan include?",
+        "a": "One company and one user, the VAT checks and EN 16931 XML. There is a soft monthly limit on documents: a document is always issued, and above the limit we invite you to choose a paid plan."
+      },
+      "4": {
+        "q": "Can I send my customer a PDF?",
+        "a": "The PDF copy is planned for the first quarter of 2027. Today every document is issued as structured XML in UBL 2.1 and CII. Sending over the e-invoicing network is also still to come and is not offered as available."
+      },
+      "5": {
+        "q": "Where is the data stored?",
+        "a": "On servers in the European Union. For the data in our customers' invoices we act as processor under Art. 28 GDPR, on your instructions."
+      },
+      "title": "Frequently asked questions"
+    },
+    "cta": {
+      "title": "Create an account and issue your first document",
+      "text": "When you sign up, you choose whether it is for a company or an accounting firm."
+    }
+  },
+  "pricing": {
+    "meta": {
+      "title": "Fakturist pricing for companies and accounting firms",
+      "description": "Plans for companies and accounting firms, with and without VAT. The free plan has a soft limit: a document is always issued. Pay through Revolut.",
+      "keywords": "Carbon Stealth, Fakturist pricing, invoicing software price, free invoicing Bulgaria, invoicing for accounting firms, e-invoice, EN 16931"
+    },
+    "title": "Pricing",
+    "lead": "Prices are in euro. We show them excluding VAT, with the amount including 20% VAT below, rounded to the cent.",
+    "unavailable": "Prices cannot be loaded right now. Try again shortly or write to {email}. We do not show old figures.",
+    "table": {
+      "caption": "Plan comparison by feature",
+      "scroll": "The table scrolls sideways",
+      "feature": "Feature",
+      "forCompany": "for companies",
+      "forFirm": "for accounting firms",
+      "monthly": "Per month",
+      "yearly": "Per year",
+      "companies": "Companies",
+      "users": "Users",
+      "documents": "Documents per month",
+      "clients": "Client companies",
+      "unlimited": "no limit",
+      "contract": "By contract",
+      "free": "Free",
+      "softLimit": "up to {n}, soft limit",
+      "firmClients": "{included} included, then {price}",
+      "firmUnit": "per client company per month",
+      "included": "Included",
+      "notIncluded": "Not included",
+      "limits": "Limits",
+      "prices": "Price"
+    },
+    "pay": {
+      "title": "How to pay",
+      "text": "By bank transfer to Revolut Business or by card through Revolut. We activate the plan once we receive the payment. We do not offer automatic renewal: each period is paid separately."
+    },
+    "planned": {
+      "title": "What “Coming” means",
+      "text": "The feature is not available yet. The date next to its name is when we plan to release it. We do not sell it as ready."
+    },
+    "faq": {
+      "1": {
+        "q": "What happens when I go over the free plan limit?",
+        "a": "Nothing is blocked. A document is always issued, because an invoice has legal deadlines. Above the limit you see an invitation to choose a paid plan."
+      },
+      "2": {
+        "q": "Do the prices include VAT?",
+        "a": "Prices exclude VAT. Under each price we show the amount including 20% VAT, calculated from the euro cents and rounded to the cent."
+      },
+      "3": {
+        "q": "How do I pay?",
+        "a": "By bank transfer to Revolut Business or by card through Revolut. We activate the plan once we receive the payment."
+      },
+      "4": {
+        "q": "Does the plan renew automatically?",
+        "a": "We do not promise automatic renewal. Each period is paid separately, and activation is manual."
+      },
+      "5": {
+        "q": "How much does the accounting firm plan cost?",
+        "a": "The first three client companies are free; each further one is charged per month. The amounts by number of companies are on the accountants page."
+      },
+      "6": {
+        "q": "What does “Coming” mean in the table?",
+        "a": "The feature is not available yet. The date beside it is a planned target, not a promise for a particular day. We do not sell it as ready."
+      },
+      "title": "Questions about pricing"
+    }
+  },
+  "accountants": {
+    "meta": {
+      "title": "Invoicing for accounting firms | Fakturist",
+      "description": "Issue on behalf of client companies under an authorisation (Art. 113(7) VAT Act), from one dashboard, with EN 16931 XML. The first three companies are free.",
+      "keywords": "Carbon Stealth, invoicing for accountants, accounting firm software Bulgaria, authorisation Art. 113(7) VAT Act, invoice on behalf of a client, e-invoice"
+    },
+    "title": "Invoicing for accounting firms",
+    "lead": "You issue on behalf of each client company under an authorisation, from one dashboard. Every document carries the authorisation and also comes out as structured XML.",
+    "flow": {
+      "1": {
+        "title": "Register the firm",
+        "text": "At sign-up you choose “accounting firm”, not “company”."
+      },
+      "2": {
+        "title": "Add a client company",
+        "text": "You enter its details and the authorisation under Art. 113(7) of the VAT Act."
+      },
+      "3": {
+        "title": "Issue on its behalf",
+        "text": "The document is checked against the VAT rules, carries the authorisation and also comes out as XML."
+      },
+      "4": {
+        "title": "Give colleagues roles",
+        "text": "Who issues, who only views and who manages access is set by role."
+      },
+      "title": "How a firm works in Fakturist"
+    },
+    "mandate": {
+      "title": "The authorisation is part of the document",
+      "text": "Art. 113(7) of the VAT Act lets another person issue an invoice on the supplier's behalf. In Fakturist every document the firm issues carries the authorisation it was issued under, so on an inspection it is visible on what basis it was issued."
+    },
+    "roles": {
+      "title": "Roles in the firm",
+      "owner": {
+        "name": "Owner",
+        "text": "Responsible for the account and the plan."
+      },
+      "admin": {
+        "name": "Administrator",
+        "text": "Manages people and access."
+      },
+      "accountant": {
+        "name": "Accountant",
+        "text": "Works with the client companies."
+      },
+      "issuer": {
+        "name": "Issuer",
+        "text": "Issues documents."
+      },
+      "viewer": {
+        "name": "Viewer",
+        "text": "Read only."
+      }
+    },
+    "price": {
+      "title": "Price by number of client companies",
+      "lead": "The first {included} are free, each further one is {price} per month, excl. VAT.",
+      "clients": "Client companies",
+      "net": "Per month excl. VAT",
+      "gross": "Per month incl. 20% VAT",
+      "free": "Free",
+      "unavailable": "The accounting firm plan price cannot be loaded right now. Write to {email}.",
+      "caption": "Monthly amount by number of client companies"
+    },
+    "included": {
+      "title": "What the firm plan includes",
+      "lead": "Features marked “Coming” are not available yet."
+    },
+    "faq": {
+      "1": {
+        "q": "Can the firm issue on behalf of a client?",
+        "a": "Yes, under an authorisation. Art. 113(7) of the VAT Act lets another person issue an invoice on the supplier's behalf. A document in Fakturist carries the authorisation it was issued under."
+      },
+      "2": {
+        "q": "How do I choose between “company” and “accounting firm”?",
+        "a": "You choose at sign-up. A company issues for itself; a firm issues for many client companies from one dashboard."
+      },
+      "3": {
+        "q": "What do my colleagues see?",
+        "a": "What their role allows: owner, administrator, accountant, issuer or viewer."
+      },
+      "4": {
+        "q": "Are my clients ready for the 2028 e-invoices?",
+        "a": "Documents issued through Fakturist are already also structured XML under EN 16931, in UBL 2.1 and CII. Sending over the network and reporting to the National Revenue Agency are still to come and depend on an ordinance that is not out yet."
+      },
+      "title": "Questions from accountants"
+    }
+  },
+  "einvoicing2028": {
+    "meta": {
+      "title": "Bulgarian e-invoicing from 2028: a guide for companies",
+      "description": "What bill no. 52-602-01-60 amending the VAT Act provides: structured e-invoices from 1 July 2028, dates, UBL and CII formats, and what to do now.",
+      "keywords": "Carbon Stealth, e-invoicing Bulgaria 2028, mandatory e-invoice Bulgaria, bill 52-602-01-60, EN 16931, UBL 2.1, CII, CEF eDelivery AS4"
+    },
+    "title": "E-invoicing in Bulgaria from 2028: a guide for companies",
+    "summary": "According to bill no. 52-602-01-60 amending the VAT Act, as introduced, structured e-invoices become mandatory between companies and to the state from 1 July 2028. The invoice will be a document in UBL 2.1 or CII under EN 16931, not a PDF. The bill has passed only a first reading, on 12 November 2026, so the text may change.",
+    "byline": {
+      "author": "Author",
+      "updated": "Last updated"
+    },
+    "toc": "In this article",
+    "q1": {
+      "title": "What does the bill provide?",
+      "p1": "The bill provides for mandatory structured e-invoices between companies (B2B) and to the state (B2G) from 1 July 2028. They will travel over the CEF eDelivery AS4 network in UBL 2.1 and CII under EN 16931.",
+      "p2": "The issuer will send the invoice only to the recipient's address in a National Register. There will be accredited providers and certified software. The conditions for them will be set in an ordinance."
+    },
+    "q2": {
+      "title": "What are the dates?",
+      "p1": "The dates below follow the text as introduced. The ordinance is not out yet, so its deadline is a provision, not a fact."
+    },
+    "q3": {
+      "title": "What is a structured e-invoice?",
+      "p1": "A structured e-invoice is a document in which every item of data sits in a named field that software can read without text recognition. A PDF is not such a document: it displays the data, it does not describe it.",
+      "p2": "The EN 16931 standard gives every field a code. Here is an excerpt of an invoice in UBL 2.1, with the field codes in the left column:",
+      "colCode": "Code",
+      "colField": "What it means",
+      "bt1": "Invoice number. Ten digits, no gaps (Art. 114(1)(2) VAT Act).",
+      "bt2": "Issue date.",
+      "bt3": "Document type. 380 is an invoice, 381 is a credit note.",
+      "bt5": "Document currency.",
+      "bt110": "Total VAT amount.",
+      "bt115": "Amount due for payment."
+    },
+    "q4": {
+      "title": "What happens to the recipient?",
+      "p1": "According to the text as introduced, the recipient loses the input VAT credit if there is no structured e-invoice. So it is not only issuers who need to be ready: companies that only receive invoices will also want the documents in this form."
+    },
+    "q5": {
+      "title": "How will the invoice be sent?",
+      "p1": "The issuer will send only to the recipient's address in a National Register, over the CEF eDelivery AS4 network. The details of the register and of the providers will be in the ordinance. Those conditions are not published yet."
+    },
+    "q6": {
+      "title": "What is still unclear?",
+      "p1": "The ordinance with the conditions for accredited providers and certified software is not out yet. According to the text as introduced, its deadline is 1 July 2027. No approval from the National Revenue Agency exists today, and Fakturist does not claim one. Nor do we claim to meet requirements that have not been set."
+    },
+    "q7": {
+      "1": "Check your numbering: ten digits and no gaps. Art. 114(1)(2) of the VAT Act already requires it.",
+      "2": "Ask your accountant and your software provider whether they will issue UBL 2.1 or CII, not only PDF.",
+      "3": "Keep counterparty data accurate: company ID, VAT number and address. A structured document carries them in separate fields.",
+      "4": "Follow the ordinance and the text at the second reading. The conditions for providers and software will decide what is needed.",
+      "title": "What should a company do now?"
+    },
+    "q8": {
+      "title": "What does Fakturist already do today?",
+      "p1": "Every document is issued as both UBL 2.1 and CII under EN 16931, the free plan included. Not available yet, but planned: {planned}.",
+      "link": "Pricing and features by plan"
+    },
+    "sources": {
+      "title": "Sources",
+      "p1": "The facts above follow the text and the file of the bill. Check them at the source.",
+      "parliament": "National Assembly: the bill's file",
+      "strategy": "Public consultations portal: the consultation on the bill"
+    },
+    "faq": {
+      "1": {
+        "q": "Has the bill been passed?",
+        "a": "Not finally. It was introduced in the National Assembly on 5 November 2026 and passed at first reading on 12 November 2026. The text may change before the second reading."
+      },
+      "2": {
+        "q": "From when are e-invoices mandatory?",
+        "a": "According to the text as introduced, from 1 July 2028, between companies (B2B) and to the state (B2G). The date is in a bill and is not final."
+      },
+      "3": {
+        "q": "Is Fakturist approved by the National Revenue Agency?",
+        "a": "No. No such approval exists today. The conditions for accredited providers and certified software will be in an ordinance that is not out yet."
+      },
+      "title": "More questions"
+    }
+  }
+}

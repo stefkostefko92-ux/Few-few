@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="<%= htmlLang %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title><%= title %> · <%= lang === 'bg' ? brand.name : brand.nameLatin %></title>
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/fonts/fonts.css?v=<%= v %>">
+<link rel="stylesheet" href="/css/app.css?v=<%= v %>">
+</head>
+<body class="app">
+<a class="skip" href="#main"><%= lang === 'bg' ? 'Към съдържанието' : 'Skip to content' %></a>
+<header class="bar">
+  <a class="mark" href="<%= currentUser ? '/app' : '/' %>"><span class="mark-no" aria-hidden="true">0000000001</span> <%= lang === 'bg' ? brand.name : brand.nameLatin %></a>
+  <% if (currentUser) { %>
+  <nav aria-label="<%= lang === 'bg' ? 'Основно' : 'Main' %>">
+    <a href="/app"<%= path === '/app' ? ' aria-current="page"' : '' %>><%= t('app.nav.companies') %></a>
+    <a href="/app/sigurnost"<%= path.startsWith('/app/sigurnost') ? ' aria-current="page"' : '' %>><%= t('app.nav.security') %></a>
+    <% if (currentUser.platformRole === 'MASTER') { %><a href="/admin"<%= path.startsWith('/admin') ? ' aria-current="page"' : '' %>><%= t('app.nav.admin') %></a><% } %>
+  </nav>
+  <form method="post" action="/izhod" class="logout">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <span class="who"><%= currentUser.name %></span>
+    <button type="submit" class="link"><%= t('auth.logout') %></button>
+  </form>
+  <% } %>
+</header>
+<% if (locals.notice) { %><p class="notice" role="status"><%= notice %></p><% } %>
+<main id="main" class="wrap">
