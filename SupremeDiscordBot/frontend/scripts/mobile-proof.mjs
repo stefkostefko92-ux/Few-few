@@ -278,7 +278,9 @@ mkdirSync(SHOTS, { recursive: true });
 
 for (const view of [
   { tag: "mobile", viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
-  { tag: "desktop", viewport: { width: 1280, height: 800 } },
+  // MP_TALL=2600 — висок десктоп за ПРЕГЛЕД на цяла страница на една снимка (таблото скролира
+  // вътре в <main>, затова fullPage не помага). Гейтът върви без него, на 800.
+  { tag: "desktop", viewport: { width: 1280, height: Number(process.env.MP_TALL) || 800 } },
 ]) {
   const ctx = await browser.newContext({ ...view, tag: undefined });
   // Външни заявки (аватари от cdn.discordapp.com в тестовите данни, шрифтове,
