@@ -82,7 +82,6 @@ ${viewerSection(t)}
 <section class="section">
   <div class="wrap section-grid">
     <div>
-      <p class="kicker">${esc(t.problem.kicker)}</p>
       <h2>${esc(t.problem.title)}</h2>
       <p>${esc(t.problem.body1)}</p>
       <p>${esc(t.problem.body2)}</p>
@@ -100,7 +99,6 @@ ${cantiereSection(t, 'home')}
 
 <section class="section section-tint">
   <div class="wrap">
-    <p class="kicker">${esc(t.applications.kicker)}</p>
     <h2>${esc(t.applications.title)}</h2>
     <div class="app-grid">${apps}</div>
     <p class="callout">${esc(t.applications.ambi)}</p>
@@ -109,17 +107,15 @@ ${cantiereSection(t, 'home')}
 
 <section class="section">
   <div class="wrap">
-    <p class="kicker">${esc(t.featured.kicker)}</p>
     <h2>${esc(t.featured.title)}</h2>
     <div class="fam-grid">${fams}</div>
-    <p class="center"><a class="btn btn-primary" href="${pagePath(t, 'products')}">${esc(t.featured.seeAll)}</a></p>
+    <p class="cta-row"><a class="btn btn-primary" href="${pagePath(t, 'products')}">${esc(t.featured.seeAll)}</a></p>
   </div>
 </section>
 
 <section class="section section-navy">
   <div class="wrap section-grid">
     <div>
-      <p class="kicker kicker-light">${esc(t.patent.kicker)}</p>
       <h2>${esc(t.patent.title)}</h2>
       <p>${esc(t.patent.body)}</p>
       <p class="conformity">${esc(t.patent.conformity)}</p>
@@ -130,18 +126,16 @@ ${cantiereSection(t, 'home')}
 
 <section class="section" id="ordina">
   <div class="wrap">
-    <p class="kicker">${esc(t.order.kicker)}</p>
     <h2>${esc(t.order.title)}</h2>
     <p class="lead">${esc(t.order.lead)}</p>
     <ol class="steps">${steps}</ol>
     <p class="callout">${esc(t.order.freeShipping)} ${esc(t.order.b2b)}</p>
-    <p class="center"><a class="btn btn-primary" href="${mailHref}">${esc(t.nav.orderCta)}</a></p>
+    <p class="cta-row"><a class="btn btn-primary" href="${mailHref}">${esc(t.nav.orderCta)}</a></p>
   </div>
 </section>
 
 <section class="section section-tint" id="faq">
   <div class="wrap">
-    <p class="kicker">${esc(t.faq.kicker)}</p>
     <h2>${esc(t.faq.title)}</h2>
     <div class="faq-list">
       ${t.faq.items.map((f, i) => `
@@ -167,7 +161,6 @@ function viewerSection(t) {
   <div class="wrap">
     <div class="viewer-head">
       <div>
-        <p class="kicker">${esc(v.kicker)}</p>
         <h2>${esc(v.title)}</h2>
         <p class="lead">${esc(v.lead)}</p>
       </div>

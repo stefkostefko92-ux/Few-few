@@ -21,7 +21,6 @@ export default {
       '06 · Special and custom solutions',
     ],
     interactiveNote: 'Interactive index: in the digital version every entry is clickable.',
-    previewKicker: 'Preview',
     previewTitle: 'A few pages from the catalogue',
   },
   contactsPage: {

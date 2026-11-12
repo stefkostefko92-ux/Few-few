@@ -35,7 +35,6 @@ export default {
       more: 'Pagina dedicata',
       familiesLabel: 'Famiglie di staffe',
       crumbsLabel: 'Percorso',
-      faqKicker: 'Domande frequenti',
       otherTitle: 'Altre famiglie di staffe',
       fullList: 'Listino completo con tutti i codici',
       see3d: 'Vedi in 3D',
