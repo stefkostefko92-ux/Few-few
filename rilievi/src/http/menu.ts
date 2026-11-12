@@ -62,11 +62,12 @@ const GRUPPI: ReadonlyArray<{ key: string; voci: readonly Definizione[] }> = [
   {
     key: 'documenti',
     voci: [
-      { href: '/interventi', key: 'nav.interventi', icon: 'wrench', cap: 'interventi:read' },
-      { href: '/buoni', key: 'nav.buoni', icon: 'buono', cap: 'interventi:read' },
+      // В реда на собственика (12 ноември 2026): Preventivi, Buoni, Cartelli, Interventi, Verbali.
       { href: '/preventivi', key: 'nav.preventivi', icon: 'euro', cap: 'preventivi:read' },
-      { href: '/verbali', key: 'nav.verbali', icon: 'sign', cap: 'interventi:read' },
+      { href: '/buoni', key: 'nav.buoni', icon: 'buono', cap: 'interventi:read' },
       { href: '/cartelli', key: 'nav.cartelli', icon: 'stop', cap: 'interventi:read' },
+      { href: '/interventi', key: 'nav.interventi', icon: 'wrench', cap: 'interventi:read' },
+      { href: '/verbali', key: 'nav.verbali', icon: 'sign', cap: 'interventi:read' },
     ],
   },
   {
@@ -103,7 +104,7 @@ const GRUPPI: ReadonlyArray<{ key: string; voci: readonly Definizione[] }> = [
   },
 ];
 
-/** Какво се създава — в реда, в който се ползва в работата. */
+/** Какво се създава: картата, документите в реда на менюто „Documenti“, изчисленията. */
 const NUOVO: readonly Definizione[] = [
   {
     href: '/schede/nuova',
@@ -113,11 +114,11 @@ const NUOVO: readonly Definizione[] = [
     cap: 'schede:write',
   },
   {
-    href: '/interventi/nuovo',
-    key: 'nuovo.intervento',
-    descKey: 'nuovo.interventoDesc',
-    icon: 'wrench',
-    cap: 'interventi:write',
+    href: '/preventivi/nuovo',
+    key: 'nuovo.preventivo',
+    descKey: 'nuovo.preventivoDesc',
+    icon: 'euro',
+    cap: 'preventivi:write',
   },
   {
     href: '/buoni/nuovo',
@@ -127,24 +128,24 @@ const NUOVO: readonly Definizione[] = [
     cap: 'interventi:write',
   },
   {
-    href: '/preventivi/nuovo',
-    key: 'nuovo.preventivo',
-    descKey: 'nuovo.preventivoDesc',
-    icon: 'euro',
-    cap: 'preventivi:write',
+    href: '/cartelli/nuovo',
+    key: 'nuovo.cartello',
+    descKey: 'nuovo.cartelloDesc',
+    icon: 'stop',
+    cap: 'interventi:write',
+  },
+  {
+    href: '/interventi/nuovo',
+    key: 'nuovo.intervento',
+    descKey: 'nuovo.interventoDesc',
+    icon: 'wrench',
+    cap: 'interventi:write',
   },
   {
     href: '/verbali/nuovo',
     key: 'nuovo.verbale',
     descKey: 'nuovo.verbaleDesc',
     icon: 'sign',
-    cap: 'interventi:write',
-  },
-  {
-    href: '/cartelli/nuovo',
-    key: 'nuovo.cartello',
-    descKey: 'nuovo.cartelloDesc',
-    icon: 'stop',
     cap: 'interventi:write',
   },
   {
