@@ -12,8 +12,8 @@ AI auto-replies, round-robin assignment, white-label bots, per-server subscripti
 | Service  | Host port | Container port | Notes |
 |----------|-----------|----------------|-------|
 | Frontend | `127.0.0.1:8080` | 8080    | Localhost-only — put host nginx/Caddy in front for SSL |
-| Postgres | `5435`    | 5432           | localhost-only bind (127.0.0.1:5435) |
-| Redis    | `6381`    | 6379           | localhost-only bind (127.0.0.1:6381) |
+| Postgres | —         | 5432           | Internal only — admin: `docker compose exec postgres psql -U bot discordbot` |
+| Redis    | —         | 6379           | Internal only — admin: `docker compose exec redis sh -c 'REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli'` |
 | Backend  | —         | 3000           | Internal only, reached via frontend nginx |
 | Bot      | —         | 3001           | Internal only, called by backend |
 
@@ -241,7 +241,7 @@ Frontend container :8080 (nginx + built React SPA)
     └── /*      ─────────► React SPA (built at image build time)
 ```
 
-Only `frontend:8080` is exposed to the host. Postgres & Redis are bound to `127.0.0.1:5435` / `127.0.0.1:6381` for direct admin access from the VPS itself but are not public.
+Only `frontend:8080` is exposed to the host (on `127.0.0.1`). Postgres and Redis have no host port since 23.10.2026 — backups, autodeploy and vpsdash already reach them through `docker exec`, and a loopback port is still open to every local process on a shared VPS. The backend, bot and frontend containers run with a read-only root filesystem (only `/tmp` is writable, in memory), and `deploy.sh` pulls fresh base images on every deploy.
 
 ---
 
@@ -325,7 +325,7 @@ Served by the frontend SPA at `/terms`, `/privacy`, `/cookies`, `/eula`. Content
 
 ## Security
 - AES-256-GCM encryption for custom bot tokens in DB
-- Session cookies: HttpOnly, Secure (production), SameSite=Lax, signed
+- Session cookie: `__Host-sid` in production (Secure, Path=/, no Domain — cannot be planted from a subdomain or over HTTP), HttpOnly, SameSite=Lax, signed; `sid` in local development
 - Rate limiting: 200/min global, 20/15min auth, 600/min bot-internal
 - Helmet.js HTTP security headers (HSTS in production, 1-year max-age)
 - Discord OAuth2 token auto-refresh on expiry
