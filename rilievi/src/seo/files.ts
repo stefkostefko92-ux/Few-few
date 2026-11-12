@@ -1,5 +1,5 @@
-import { TESTI_AGGIORNATI } from '../legale/versioni.js';
-import { COMPANY, CONTENT_UPDATED, PRIVACY_UPDATED } from '../company.js';
+import { testiAggiornati } from '../legale/versioni.js';
+import { COMPANY, CONTENT_UPDATED, ESPORTAZIONE_UPDATED, PRIVACY_UPDATED } from '../company.js';
 import { DEFAULT_LOCALE, translate } from '../i18n.js';
 import { INVITE_DAYS } from '../services/invites.js';
 import { ULTIMO_AGGIORNAMENTO, VOCI } from '../novita/voci.js';
@@ -10,6 +10,7 @@ import {
   NOVITA_PATH,
   CONDIZIONI_PATH,
   CONDIZIONI_PDF_PATH,
+  ESPORTAZIONE_PATH,
   PRIVACY_PATH,
   PUBLIC_PATHS,
   type PublicPath,
@@ -53,7 +54,15 @@ const PAGE_META: Record<PublicPath, { priority: string; freq: string; updated: s
   [HOME_PATH]: { priority: '1.0', freq: 'monthly', updated: CONTENT_UPDATED },
   [PRIVACY_PATH]: { priority: '0.3', freq: 'yearly', updated: PRIVACY_UPDATED },
   [NOVITA_PATH]: { priority: '0.6', freq: 'weekly', updated: ULTIMO_AGGIORNAMENTO },
-  [CONDIZIONI_PATH]: { priority: '0.3', freq: 'yearly', updated: TESTI_AGGIORNATI },
+  // Getter: новата версия на условията влиза сама в полунощ (legale/versioni.ts).
+  [CONDIZIONI_PATH]: {
+    priority: '0.3',
+    freq: 'yearly',
+    get updated() {
+      return testiAggiornati();
+    },
+  },
+  [ESPORTAZIONE_PATH]: { priority: '0.4', freq: 'monthly', updated: ESPORTAZIONE_UPDATED },
 };
 
 /** Всяка публична страница — един адрес, без езикови варианти. */
@@ -86,6 +95,7 @@ export function llmsTxt(base: string, contactEmail: string): string {
     `- [${it('novita.titolo')}](${base}${NOVITA_PATH}): ${it('novita.meta.description')}`,
     `- [${it('privacy.title')}](${base}${PRIVACY_PATH})`,
     `- [${it('legale.pagina.title')}](${base}${CONDIZIONI_PATH}): ${it('legale.pagina.metaDescription')}`,
+    `- [${it('esportazione.pagina.titolo')}](${base}${ESPORTAZIONE_PATH}): ${it('esportazione.pagina.meta.description')}`,
     '',
     '## Fatti',
     `- La scheda: ${counts.fields} campi in ${counts.sections} sezioni, nell'ordine della scheda di carta: ${sections}.`,
@@ -96,6 +106,7 @@ export function llmsTxt(base: string, contactEmail: string): string {
     ...SERVIZI.map((id) => `- ${it(`site.servizi.${id}.title`)}: ${it(`site.servizi.${id}.text`)}`),
     `- ${it('site.roles.lead')} Ruoli: ${roles}. ${it('site.roles.note')}`,
     `- ${it('site.steps.s3.title')}. ${it('site.steps.s3.text', { days: INVITE_DAYS })}`,
+    `- ${it('esportazione.pagina.lead')} ${it('esportazione.pagina.costi.testo')}`,
     '',
     `## ${it('novita.titolo')}`,
     ...VOCI.slice(0, 5).map(

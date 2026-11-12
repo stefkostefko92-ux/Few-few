@@ -5,6 +5,7 @@
     <p class="page-head__sub"><%= t('schede.subtitle') %></p>
   </div>
 </div>
+<% if (locals.daApprovareN > 0) { %><p class="notice"><a href="/approvazioni"><%= daApprovareN === 1 ? t('flusso.approvazione.daApprovare1') : t('flusso.approvazione.daApprovare', { n: daApprovareN }) %></a></p><% } %>
 <% if (aziende.length > 0) { %><%- include('../partials/azienda-filter', { action: '/schede' }) %><% } %>
 <form class="search" role="search" method="get" action="/schede" data-live-search>
   <% if (aziendaFilter) { %><input type="hidden" name="azienda" value="<%= aziendaFilter %>"><% } %>

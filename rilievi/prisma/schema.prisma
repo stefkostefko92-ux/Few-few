@@ -89,11 +89,11 @@ enum AccessRequestStatus {
 /// Фирма — клиент на портала: свои хора, свои карти, свое лого на листа. Създава я само MASTER
 /// (собственикът на портала); всяка фирма вижда само своето (src/auth/scope.ts).
 model Azienda {
-  id                 String    @id @default(cuid())
-  name               String    @unique @db.VarChar(120)
+  id                 String       @id @default(cuid())
+  name               String       @unique @db.VarChar(120)
   /// Логото за листа и PDF-а — вече прекодирано от src/aziende/logo.ts (PNG или JPEG, без метаданни).
   logo               Bytes?
-  logoType           String?   @db.VarChar(20)
+  logoType           String?      @db.VarChar(20)
   logoWidth          Int?
   logoHeight         Int?
   logoUpdatedAt      DateTime?
@@ -101,19 +101,19 @@ model Azienda {
   deactivatedAt      DateTime?
   /// Редът на разделите на картата във фирмата (ключовете от src/schede/fields.ts); празно — редът по
   /// подразбиране. Подрежда го администраторът ѝ (src/aziende/sezioni.ts).
-  ordineSezioni      String[]  @default([])
+  ordineSezioni      String[]     @default([])
   /// Скицникът — от 10 ноември 2026 винаги включен за всички (собственикът: „attiva gli schizzi per tutti
   /// … togli l'opzione per disattivarli“); кодът не чете колоната, тя остава за връщане назад.
-  schizzi            Boolean   @default(true)
+  schizzi            Boolean      @default(true)
   /// Последният даден номер на лист за интервенция във фирмата (собствен брояч от 1, без дупки):
   /// новият лист взема +1 в транзакцията си (src/interventi/service.ts).
-  interventiNumero   Int       @default(0)
+  interventiNumero   Int          @default(0)
   /// Данните на фирмата за главата на табелата „Avviso di fermo impianto“ (име, дейност, адрес,
   /// контакти, P. IVA) — попълва ги администраторът ѝ; проверени при запис и четени с недоверие
   /// (src/aziende/dati.ts). null — още не са записани.
   datiSocietari      Json?
   /// Шаблонът на табелата, избран в настройките (src/cartelli/modelli.ts); непознат или null — първият.
-  cartelloModello    String?   @db.VarChar(40)
+  cartelloModello    String?      @db.VarChar(40)
   /// Имената на ролите във фирмата ({ADMIN: „Titolare“, …}) — сменя ги администраторът ѝ; липсващото
   /// е името по подразбиране (src/auth/permessi.ts).
   nomiRuoli          Json?
@@ -122,9 +122,22 @@ model Azienda {
   permessiRuoli      Json?
   /// Версията на условията за услугата, приети за фирмата от неин ADMIN (src/legale/); различна от
   /// текущата — хората ѝ не ползват портала до приемането. Доказателството е в `Accettazione`.
-  condizioniVersione String?   @db.VarChar(20)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  condizioniVersione String?      @db.VarChar(20)
+  /// Смяната на доставчика (Data Act, чл. 23–30; src/aziende/cambio.ts): поискана от ADMIN на фирмата;
+  /// услугата продължава през прехода, който свършва в `cambioFineAt` (30 дни, веднъж удължен) — тогава
+  /// фирмата се деактивира. Трите полета са заедно или ги няма (CHECK `Azienda_cambio_check`).
+  cambioRichiestoAt  DateTime?
+  cambioFineAt       DateTime?
+  cambioEsito        CambioEsito?
+  /// Преходът е удължен веднъж (чл. 25(5) Data Act — правото е еднократно).
+  cambioProrogato    Boolean      @default(false)
+  /// Информацията по чл. 13 GDPR на страницата на подписа (листът за интервенция, протоколът), както
+  /// фирмата я е написала — тя е администраторът; null — моделът, попълнен с данните ѝ (legale/informativa.ts).
+  informativaFirme   String?      @db.VarChar(4000)
+  /// Одобрението на две стъпки на картите (C7) — включва го администраторът ѝ; по подразбиране — не.
+  approvazioneSchede Boolean      @default(false)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
   memberships       Membership[]
   invites           Invite[]
@@ -134,6 +147,8 @@ model Azienda {
   calcoliArgano     CalcoloArgano[]
   calcoliLimitatore CalcoloLimitatore[]
   verbali           Verbale[]
+  fornitori         Fornitore[]
+  ordini            OrdineFornitore[]
   audit             AuditLog[]
   accessRequests    AccessRequest[]
 }
@@ -208,6 +223,10 @@ model User {
   requestsDecided     AccessRequest[]       @relation("AccessRequestsDecided")
   comunicazioni       Comunicazione[]       @relation("ComunicazioniScritte")
   comunicazioniChiuse ComunicazioneChiusa[]
+  violazioni          Violazione[]          @relation("ViolazioniScritte")
+  schedeApprovate     Scheda[]              @relation("SchedeApprovate")
+  versioniScritte     SchedaVersione[]      @relation("VersioniScritte")
+  ordiniInviati       OrdineFornitore[]     @relation("OrdiniInviati")
 
   @@index([invitedById])
   @@index([master])
@@ -592,9 +611,22 @@ model Scheda {
   verbali                      Verbale[]
   calcoloArgano                CalcoloArgano?
   calcoloLimitatore            CalcoloLimitatore?
+  /// Одобрението на две стъпки (src/schede/approvazione.ts) — само във фирма с `approvazioneSchede`:
+  /// техникът праща, отговорникът одобрява или връща с бележка; промяна на одобрена карта я връща в чернова.
+  /// null — фирмата не го ползва (или картата е отпреди).
+  statoApprovazione            StatoApprovazione?
+  approvazioneAt               DateTime?
+  approvazioneDaId             String?
+  approvazioneDa               User?                    @relation("SchedeApprovate", fields: [approvazioneDaId], references: [id], onDelete: SetNull)
+  notaApprovazione             String?                  @db.VarChar(1000)
+  /// Записаните версии (src/schede/versioni.ts) и пратените поръчки (src/ordini/invio.ts).
+  versioni                     SchedaVersione[]
+  ordini                       OrdineFornitore[]
   createdAt                    DateTime                 @default(now())
   updatedAt                    DateTime                 @updatedAt
 
+  @@index([aziendaId, statoApprovazione])
+  @@index([approvazioneDaId])
   @@index([aziendaId, deletedAt])
   @@index([data])
   @@index([matricola])
@@ -1234,4 +1266,149 @@ model ComunicazioneChiusa {
 
   @@id([comunicazioneId, userId])
   @@index([userId])
+}
+
+/// Какво ще стане с данните след прехода (Data Act, чл. 25(2)(d)) — изборът на клиента.
+enum CambioEsito {
+  ALTRO_FORNITORE
+  INFRASTRUTTURA_PROPRIA
+  CANCELLAZIONE
+}
+
+/// Рискът за хората (чл. 33–34 GDPR): малко вероятен — без уведомяване на органа; риск — органът;
+/// висок риск — и самите хора.
+enum RischioViolazione {
+  IMPROBABILE
+  RISCHIO
+  ELEVATO
+}
+
+/// В каква роля сме при нарушението: обработващ (данните на фирмите-клиенти — уведомяваме тях, чл. 33(2))
+/// или администратор (нашите обработвания — уведомяваме органа, чл. 33(1)).
+enum RuoloViolazione {
+  RESPONSABILE
+  TITOLARE
+}
+
+/// Регистърът на нарушенията на сигурността на личните данни (чл. 33(5) GDPR; src/master/violazioni.ts):
+/// пише само MASTER, редове не се трият (доказателство пред надзорния орган); фирмите — като текст, за да
+/// надживее изтриването им. Без лични данни отвъд необходимото — описания, не копия.
+model Violazione {
+  id                    String            @id @default(cuid())
+  /// Кога е открито (T0 — от него текат 72-та часа на чл. 33(1)).
+  rilevataAt            DateTime
+  /// Кога се е случило (оценка), ако се знае.
+  eventoAt              DateTime?
+  titolo                String            @db.VarChar(160)
+  rilevazione           String            @db.VarChar(2000)
+  natura                String            @db.VarChar(4000)
+  ruolo                 RuoloViolazione
+  categorieDati         String            @db.VarChar(2000)
+  interessati           String            @db.VarChar(2000)
+  aziende               String            @db.VarChar(2000)
+  conseguenze           String            @db.VarChar(4000)
+  misure                String            @db.VarChar(4000)
+  rischio               RischioViolazione
+  /// Уведомени администратори на данните (фирмите-клиенти; чл. 33(2) — ние сме обработващ).
+  titolariAvvisatiAt    DateTime?
+  /// Уведомен надзорен орган (чл. 33(1) — само където ние сме администратор) и номерът при него.
+  autoritaNotificataAt  DateTime?
+  autoritaProtocollo    String?           @db.VarChar(80)
+  /// Уведомени хора (чл. 34).
+  interessatiAvvisatiAt DateTime?
+  /// Защо е решено така (и защо някой не е уведомен, или защо със закъснение).
+  motivazione           String?           @db.VarChar(4000)
+  /// Какво научихме и какво променяме.
+  lezioni               String?           @db.VarChar(4000)
+  chiusaAt              DateTime?
+  autoreId              String?
+  autore                User?             @relation("ViolazioniScritte", fields: [autoreId], references: [id], onDelete: SetNull)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  @@index([rilevataAt])
+  @@index([autoreId])
+}
+
+/// Обявата на нова версия на правен текст (чл. 18.1 на условията; src/legale/annunci.ts): кога е обявена
+/// и със кое съобщение. Версията влиза в сила най-рано 30 дни след обявата (src/legale/versioni.ts); без ред
+/// тук не влиза никога. Не се трие — доказателството за предизвестието.
+model AnnuncioTesto {
+  tipo            TipoTesto
+  versione        String    @db.VarChar(20)
+  annunciatoAt    DateTime  @default(now())
+  autoreId        String?
+  comunicazioneId String?
+  /// Колко писма до администраторите са тръгнали (попълва се след изпращането).
+  emailInviate    Int?
+
+  @@id([tipo, versione])
+}
+
+/// Одобрението на картата (C7; src/schede/approvazione.ts).
+enum StatoApprovazione {
+  BOZZA
+  INVIATA
+  APPROVATA
+  RESPINTA
+}
+
+/// Пратената поръчка към доставчика (C2): пратена, потвърдена от доставчика (на ръка) или отменена.
+enum StatoOrdine {
+  INVIATO
+  CONFERMATO
+  ANNULLATO
+}
+
+/// Записаните версии на картата (C4; src/schede/versioni.ts): снимка на полетата и мерките след всеки
+/// запис — за разликите между версиите. Пазят се последните 100; падат с картата.
+model SchedaVersione {
+  id       String   @id @default(cuid())
+  schedaId String
+  scheda   Scheda   @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  numero   Int
+  at       DateTime @default(now())
+  autoreId String?
+  autore   User?    @relation("VersioniScritte", fields: [autoreId], references: [id], onDelete: SetNull)
+  dati     Json
+
+  @@unique([schedaId, numero])
+  @@index([autoreId])
+}
+
+/// Адресникът на доставчиците на фирмата за поръчките (C2) — пише го администраторът ѝ.
+model Fornitore {
+  id        String   @id @default(cuid())
+  aziendaId String
+  azienda   Azienda  @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  nome      String   @db.VarChar(120)
+  email     String   @db.VarChar(254)
+  createdAt DateTime @default(now())
+
+  @@unique([aziendaId, email])
+}
+
+/// Модул за поръчка, пратен от портала на доставчика (C2; src/ordini/invio.ts): кой, кога, до кого, кой
+/// модул и състоянието. Пази адреса — той е поръчката (износът го носи, Allegato B, B.7 k).
+model OrdineFornitore {
+  id                String      @id @default(cuid())
+  aziendaId         String
+  azienda           Azienda     @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  schedaId          String
+  scheda            Scheda      @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  modulo            String      @db.VarChar(60)
+  destinatarioNome  String      @db.VarChar(120)
+  destinatarioEmail String      @db.VarChar(254)
+  messaggio         String?     @db.VarChar(2000)
+  stato             StatoOrdine @default(INVIATO)
+  inviatoAt         DateTime    @default(now())
+  inviatoDaId       String?
+  inviatoDa         User?       @relation("OrdiniInviati", fields: [inviatoDaId], references: [id], onDelete: SetNull)
+  confermatoAt      DateTime?
+  nota              String?     @db.VarChar(1000)
+  updatedAt         DateTime    @updatedAt
+
+  @@index([aziendaId, stato])
+  @@index([schedaId])
+  @@index([inviatoDaId])
 }

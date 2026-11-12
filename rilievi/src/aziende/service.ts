@@ -217,7 +217,20 @@ export async function setAziendaActive(
   if (!current) return false;
   if (active === (current.deactivatedAt === null)) return true;
   await prisma.$transaction(async (tx) => {
-    await tx.azienda.update({ where: { id }, data: { deactivatedAt: active ? null : new Date() } });
+    // Активирана наново: и искането за смяна на доставчика (ако е довело до края) отпада — договорът
+    // продължава (src/aziende/cambio.ts).
+    await tx.azienda.update({
+      where: { id },
+      data: active
+        ? {
+            deactivatedAt: null,
+            cambioRichiestoAt: null,
+            cambioFineAt: null,
+            cambioEsito: null,
+            cambioProrogato: false,
+          }
+        : { deactivatedAt: new Date() },
+    });
     // Хората без друга активна фирма излизат веднага (resolveSession би ги спрял и сам); останалите
     // продължават в другите си фирми, без тази.
     if (!active) {

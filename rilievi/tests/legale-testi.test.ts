@@ -32,6 +32,8 @@ const t = translatorFor('it');
 const PUBBLICATI: Record<string, string> = {
   'condizioni-2026-11-10': '01ebcd73a5da55b524c5b51dc622209124fa2adbe89553192aaa8234374622cc',
   'regole-2026-11-10': '8c3ab4b662c2cc9f1d4adbb0514ad433a09b8e1b4d95c362519887ba0d9475e3',
+  // Allegato B (Data Act) — in force only once announced, 30 days later at the earliest (versioni.ts).
+  'condizioni-2027-01-12': '94fdec9fafbe730a38703ec96e49f0750d296b31e2ea9e12a572f4708a772903',
 };
 
 const tutto = (doc: TestoLegaleDoc): string => testoPiano(doc);

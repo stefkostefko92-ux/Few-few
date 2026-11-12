@@ -18,6 +18,7 @@ describe('the menu', () => {
     );
     assert.deepEqual(hrefs('CLIENTE'), [
       '/schede',
+      '/ordini',
       '/calcolo-argano',
       '/calcolo-limitatore',
       '/interventi',

@@ -11,6 +11,7 @@ import {
 import { CAMPI_DATI, datiSalvati, type DatiSocietari } from '../aziende/dati.js';
 import type { aziendeImpostabili } from '../aziende/sezioni.js';
 import { MODELLI, MODELLI_ID, modelloDi } from '../cartelli/modelli.js';
+import { modelloInformativa } from '../legale/informativa.js';
 import { misuraVista } from '../cartelli/vista.js';
 import type { SectionKey } from '../schede/fields.js';
 import { FISSE, ordineEffettivo, type Verso } from '../schede/ordine.js';
@@ -25,7 +26,10 @@ export const SEZIONI_IMPOSTAZIONI = [
   'scheda',
   'cartelli',
   'ruoli',
+  'fornitori',
+  'firme',
   'condizioni',
+  'esportazione',
 ] as const;
 export type SezioneImpostazioni = (typeof SEZIONI_IMPOSTAZIONI)[number];
 
@@ -34,7 +38,10 @@ export const ICONE_SEZIONI: Readonly<Record<SezioneImpostazioni, string>> = {
   scheda: 'sheet',
   cartelli: 'stop',
   ruoli: 'users',
+  fornitori: 'mail',
+  firme: 'sign',
   condizioni: 'seal',
+  esportazione: 'download',
 };
 
 export const isSezione = (value: unknown): value is SezioneImpostazioni =>
@@ -80,6 +87,11 @@ export interface VistaSezione {
   ruoli?: { values: Record<string, string | string[]>; errors: Partial<Record<string, string>> };
   /** Раздел „Condizioni“ — приемането и правилата на хората (routes/impostazioni.ts). */
   condizioni?: unknown;
+  /** Раздел „Firme“ — информацията по чл. 13 на страницата на подписа (routes/impostazioni-firme.ts). */
+  informativa?: { valore: string; propria: boolean; errore: boolean };
+  /** Раздел „Fornitori“ — адресникът за поръчките (routes/impostazioni-flusso.ts). */
+  fornitori?: Array<{ id: string; nome: string; email: string }>;
+  nuovoFornitore?: { nome: string; email: string; errore: boolean };
 }
 
 /** Страницата на един раздел — всичко, което частта му чете, с подразбиране от записаното. */
@@ -105,6 +117,13 @@ export function renderImpostazioni(res: Response, status: number, view: VistaSez
     ruoliConfigurabili: RUOLI_CONFIGURABILI,
     capacita: CAPACITA_CONFIGURABILI,
     condizioni: null,
+    fornitori: [],
+    nuovoFornitore: { nome: '', email: '', errore: false },
+    informativa: {
+      valore: azienda.informativaFirme ?? modelloInformativa(azienda),
+      propria: azienda.informativaFirme !== null,
+      errore: false,
+    },
     ...view,
   });
 }

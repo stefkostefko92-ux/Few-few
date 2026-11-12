@@ -8,6 +8,8 @@ export interface MailMessage {
   text: string;
   /** Прикачени файлове (PDF-ът на листа за интервенция) — създадени на сървъра, никога пратени отвън. */
   attachments?: Array<{ filename: string; content: Buffer; contentType: string }>;
+  /** Отговорът — до човека, който е пратил (поръчката до доставчика); иначе — до портала. */
+  replyTo?: string;
 }
 
 /** `disabled` — няма SMTP: връзката се показва на екрана за копиране, нищо не е изгубено. */
@@ -46,7 +48,7 @@ function remember(message: MailMessage, result: MailResult): void {
 }
 
 export async function sendMail(message: MailMessage): Promise<MailResult> {
-  if (/[\r\n]/.test(message.to)) return 'failed';
+  if (/[\r\n]/.test(message.to) || /[\r\n]/.test(message.replyTo ?? '')) return 'failed';
   if (!mailEnabled()) {
     remember(message, 'disabled');
     return 'disabled';

@@ -31,3 +31,35 @@
   margin-top: 24px;
   scroll-margin-top: 80px;
 }
+
+/* `/esportazione`: разделите на dati.json — името, описанието и полетата (свити, дългите се пренасят). */
+.esportazione-campi {
+  margin: 16px 0 0;
+}
+
+.esportazione-campi > div {
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.esportazione-campi dt code {
+  font-weight: 600;
+}
+
+.esportazione-campi dd {
+  margin: 4px 0 0;
+}
+
+.esportazione-campi dd p {
+  margin: 0 0 6px;
+}
+
+.esportazione-campi summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.esportazione-campi__elenco {
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}

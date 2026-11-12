@@ -96,7 +96,9 @@
       "inviato": "PDF inviato a {email}.",
       "nonInviato": "L'email non è partita. Riprova più tardi o scarica il PDF.",
       "mailDisattivata": "L'invio di email non è configurato su questo server: scarica il PDF.",
-      "emailNonValida": "Scrivi un indirizzo email valido."
+      "emailNonValida": "Scrivi un indirizzo email valido.",
+      "confermatoCopia": "Modulo firmato e confermato. La copia in PDF è stata inviata all'indirizzo indicato.",
+      "confermatoCopiaNo": "Modulo firmato e confermato, ma l'email con la copia non è partita: scarica il PDF e invialo tu."
     },
     "dataMancante": "Indica la data dell'intervento.",
     "voce": "Voce {n}",

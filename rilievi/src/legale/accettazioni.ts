@@ -40,7 +40,8 @@ const contesto = (ctx: Contesto) => ({
 });
 
 const persona = (user: SessionUser) => {
-  const m = user.memberships[0];
+  // Свършила фирма (само износ) не е тази, за която човекът приема: първата жива.
+  const m = user.memberships.find((x) => !x.soloEsportazione);
   return {
     userId: user.id,
     userNome: taglia(user.name, 120),
@@ -110,6 +111,9 @@ export async function firmaCondizioni(
       const esito = await verificaCodice(tx, user, codice);
       if (!esito.ok) return esito;
       const { sfida } = esito;
+      // Кодът е пратен за друга версия (новата е влязла в полунощ междувременно): изгорен, нов код —
+      // подписва се текстът, който човекът е видял (Кодаджията, 12 ноември 2026).
+      if (sfida.versione !== doc.versione) return { ok: false, motivo: 'scaduto' } as const;
       const dichiarati = sfida.dichiarati as unknown as Dichiarati;
       const at = new Date();
       const hash = await registraTesto(tx, doc);

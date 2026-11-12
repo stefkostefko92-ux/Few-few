@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { isPartial } from '../auth/guards.js';
 import { daAccettare, inAttesa } from '../legale/stato.js';
 import { errorMessage, logger } from '../logger.js';
+import { cambiInCorso } from '../aziende/cambio.js';
 import { comunicazioniPer } from './comunicazioni.js';
 
 /**
@@ -15,6 +16,7 @@ export async function comunicazioniLocals(
   next: NextFunction,
 ): Promise<void> {
   res.locals.comunicazioni = [];
+  res.locals.cambiInCorso = [];
   const user = req.principal?.user;
   const pagina =
     req.method === 'GET' && !isPartial(req) && (req.get('accept') ?? '').includes('text/html');
@@ -23,7 +25,11 @@ export async function comunicazioniLocals(
     return;
   }
   try {
-    res.locals.comunicazioni = await comunicazioniPer(user);
+    // Смяната на доставчика тече (Data Act, чл. 25(2)(a)(iii)): лента без „Chiudi“ до края на прехода.
+    [res.locals.comunicazioni, res.locals.cambiInCorso] = await Promise.all([
+      comunicazioniPer(user),
+      cambiInCorso(user),
+    ]);
     // Без JavaScript „Chiudi“ връща на същата страница (`safeNext` пак проверява пътя).
     res.locals.comunicazioniTorna = req.originalUrl;
   } catch (error) {

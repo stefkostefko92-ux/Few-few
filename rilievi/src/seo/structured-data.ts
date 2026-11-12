@@ -13,7 +13,7 @@ import { HOME_PATH } from './paths.js';
  */
 
 /** Езикът на сайта — само италиански. */
-const IN_LANGUAGE = LOCALE_TAG[DEFAULT_LOCALE];
+export const IN_LANGUAGE = LOCALE_TAG[DEFAULT_LOCALE];
 
 /** Какво знае фирмата — за търсачките и AI отговорите; само областите, които порталът покрива. */
 const KNOWS_ABOUT = [
@@ -29,7 +29,7 @@ const KNOWS_ABOUT = [
  * е марката на портала върху черно (`npm run brand:logo`, 512 × 512 — квадратно, както го иска Google),
  * на този сайт; образът — картинката за споделяне.
  */
-function organization(t: Translator, base: string) {
+export function organization(t: Translator, base: string) {
   const email = config().CONTACT_EMAIL;
   return {
     '@type': ['Organization', 'LocalBusiness'],
@@ -74,7 +74,7 @@ function organization(t: Translator, base: string) {
   };
 }
 
-function website(base: string) {
+export function website(base: string) {
   return {
     '@type': 'WebSite',
     '@id': `${base}/#website`,
@@ -85,7 +85,7 @@ function website(base: string) {
   };
 }
 
-function breadcrumb(canonical: string, items: Array<{ name: string; url: string }>) {
+export function breadcrumb(canonical: string, items: Array<{ name: string; url: string }>) {
   return {
     '@type': 'BreadcrumbList',
     '@id': `${canonical}#breadcrumb`,

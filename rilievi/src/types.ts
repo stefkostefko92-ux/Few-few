@@ -14,6 +14,11 @@ export interface MembershipView {
   /** Версията на условията за услугата, приети за фирмата (src/legale/); друга или липсваща — неприети. */
   condizioniVersione?: string | null;
   nomiRuoli?: NomiRuoli;
+  /**
+   * Фирмата е деактивирана (краят на услугата) и човекът е неин ADMIN: 90 дни влиза само за износа —
+   * никаква способност в нея (auth/scope.ts), нищо за приемане (legale/stato.ts).
+   */
+  soloEsportazione?: true;
 }
 
 /** Вписаният човек, както го виждат маршрутите и шаблоните. */

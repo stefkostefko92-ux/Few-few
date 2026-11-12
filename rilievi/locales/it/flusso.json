@@ -1,0 +1,151 @@
+{
+  "ordini": {
+    "email": {
+      "oggetto": "Ordine: {modulo} — {azienda}",
+      "corpo": "Buongiorno {fornitore},\n\nin allegato il modulo «{modulo}» compilato per l'impianto {impianto}.\n\nPer domande o conferme rispondete a questa email: arriva a {mittente}.",
+      "nota": "Nota:",
+      "firma": "{mittente} — {azienda}\nInviato con Rilievi Impianti (Carbon Stealth VCC) per conto di {azienda}."
+    }
+  },
+  "flusso": {
+    "approvazione": {
+      "titolo": "Approvazione",
+      "stati": {
+        "BOZZA": "Bozza: non ancora inviata per approvazione",
+        "INVIATA": "Inviata per approvazione",
+        "APPROVATA": "Approvata",
+        "RESPINTA": "Respinta: da correggere"
+      },
+      "approvataDa": "Approvata il {data} da {nome}.",
+      "respintaDa": "Respinta da {nome}.",
+      "nota": "Nota",
+      "notaHint": "Facoltativa per l'approvazione, consigliata per il rifiuto: cosa correggere.",
+      "invia": "Invia per approvazione",
+      "approva": "Approva",
+      "respingi": "Respingi",
+      "ordiniBloccati": "Gli ordini ai fornitori partono solo da una scheda approvata.",
+      "riapre": "Se modifichi una scheda approvata, torna in bozza e va approvata di nuovo.",
+      "elenco": "Schede da approvare",
+      "elencoSub": "Le schede inviate per approvazione nelle aziende che usano l'approvazione.",
+      "nessuna": "Nessuna scheda da approvare.",
+      "inviataDa": "Ultima modifica di {nome}, {data}",
+      "daApprovare": "{n} schede da approvare",
+      "daApprovare1": "1 scheda da approvare",
+      "flash": {
+        "ok": "Fatto.",
+        "stato": "La scheda non è più in quello stato: ricarica la pagina.",
+        "stessa": "Hai inviato tu questa scheda: la approva un'altra persona.",
+        "spenta": "L'azienda non usa l'approvazione delle schede.",
+        "missing": "Scheda non trovata."
+      },
+      "impostazione": {
+        "titolo": "Approvazione delle schede",
+        "testo": "Con l'approvazione attiva, il tecnico invia la scheda e un responsabile la approva o la respinge con una nota; solo dopo l'approvazione si possono inviare gli ordini ai fornitori dal portale. Chi può approvare si decide in Ruoli e permessi.",
+        "attiva": "Attiva",
+        "spenta": "Non attiva",
+        "attivare": "Attiva l'approvazione",
+        "disattivare": "Disattiva l'approvazione",
+        "flashOn": "Approvazione delle schede attivata.",
+        "flashOff": "Approvazione delle schede disattivata."
+      }
+    },
+    "versioni": {
+      "titolo": "Versioni della scheda",
+      "link": "Versioni ({n})",
+      "sub": "Ogni salvataggio crea una versione; si conservano le ultime 100.",
+      "colonne": {
+        "numero": "Versione",
+        "data": "Salvata il",
+        "autore": "Da"
+      },
+      "prima": "Prima",
+      "dopo": "Dopo",
+      "differenzeDi": "Versione {n}: che cosa è cambiato",
+      "prima_versione": "Prima versione: la scheda come è stata creata.",
+      "nessunaDifferenza": "Nessuna differenza nei campi.",
+      "vuoto": "—",
+      "si": "Sì",
+      "no": "No",
+      "misure": "Misure delle bottoniere",
+      "modulo": "Modulo d'ordine",
+      "altro": "Altre impostazioni ({chiave})",
+      "torna": "Torna alla scheda",
+      "elenco": "Tutte le versioni"
+    },
+    "duplica": {
+      "azione": "Duplica",
+      "titolo": "Nuova scheda da {ident}",
+      "nota": "Copiata da un'altra scheda: controlla i dati, scrivi matricola, numero e buono di questo impianto. Foto e schizzi non vengono copiati."
+    },
+    "invio": {
+      "titolo": "Invia al fornitore",
+      "azione": "Invia al fornitore",
+      "modulo": "Modulo",
+      "fornitore": "Fornitore dalla rubrica",
+      "nessunoRubrica": "— Scrivi nome ed email qui sotto —",
+      "nome": "Nome del fornitore",
+      "email": "Email del fornitore",
+      "messaggio": "Messaggio (facoltativo)",
+      "messaggioHint": "Va nel testo dell'email, sotto il modulo. Le risposte arrivano al tuo indirizzo.",
+      "rubrica": "La rubrica dei fornitori si compila in Impostazioni → Fornitori.",
+      "invia": "Invia il modulo",
+      "errore": "Scegli un fornitore dalla rubrica o scrivi nome ed email validi.",
+      "flash": {
+        "sent": "Modulo inviato al fornitore.",
+        "disabled": "L'invio di email non è configurato su questo server: scarica il PDF e invialo tu.",
+        "failed": "L'email non è partita. Riprova più tardi.",
+        "approvazione": "La scheda va prima approvata.",
+        "modulo": "Il modulo non è compilato."
+      }
+    },
+    "ordini": {
+      "titolo": "Ordini ai fornitori",
+      "sezione": "Ordini inviati",
+      "nessuno": "Nessun ordine inviato da questa scheda.",
+      "elencoSub": "I moduli d'ordine inviati dal portale e il loro stato.",
+      "filtro": "Stato",
+      "tutti": "Tutti",
+      "stati": {
+        "INVIATO": "Inviato",
+        "CONFERMATO": "Confermato",
+        "ANNULLATO": "Annullato"
+      },
+      "colonne": {
+        "data": "Inviato il",
+        "impianto": "Impianto",
+        "modulo": "Modulo",
+        "fornitore": "Fornitore",
+        "stato": "Stato",
+        "da": "Da"
+      },
+      "confermato": "Confermato il {data}",
+      "conferma": "Segna come confermato",
+      "annulla": "Annulla l'ordine",
+      "nota": "Nota (facoltativa)",
+      "flash": {
+        "ok": "Stato dell'ordine aggiornato.",
+        "no": "L'ordine non è più nello stato «Inviato»."
+      },
+      "nessunoElenco": "Nessun ordine."
+    },
+    "fornitori": {
+      "titolo": "Fornitori",
+      "desc": "La rubrica dei fornitori a cui inviare i moduli d'ordine dal portale.",
+      "testo": "Nome ed email dei fornitori a cui la tua azienda invia i moduli d'ordine. Chi compila la scheda li sceglie al momento dell'invio.",
+      "nome": "Nome",
+      "email": "Email",
+      "aggiungi": "Aggiungi",
+      "togli": "Togli",
+      "nessuno": "Nessun fornitore in rubrica.",
+      "errore": "Scrivi un nome e un'email valida.",
+      "flash": {
+        "ok": "Fornitore aggiunto.",
+        "doppio": "Questa email è già in rubrica.",
+        "troppi": "La rubrica ha già 200 fornitori.",
+        "tolto": "Fornitore tolto dalla rubrica."
+      },
+      "hubN": "{n} in rubrica",
+      "hub0": "Rubrica vuota"
+    }
+  }
+}

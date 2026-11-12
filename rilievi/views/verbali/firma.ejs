@@ -64,6 +64,7 @@
       <% } %>
     </div>
   </fieldset>
+  <%- include('../partials/firma-informativa') %>
   <div class="actions">
     <button class="btn btn--inverse" type="submit"><%- include('../partials/icon', { name: 'sign' }) %><%= t('verbali.conferma.invio') %></button>
     <a class="btn btn--bar" href="/verbali/<%= r.id %>"><%= t('common.cancel') %></a>

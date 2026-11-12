@@ -128,3 +128,89 @@ export function comunicazioneMail(params: {
     }),
   };
 }
+
+export type TipoCambioMail =
+  | 'richiesto'
+  | 'masterRichiesto'
+  | 'prorogato'
+  | 'annullato'
+  | 'masterAnnullato'
+  | 'concluso'
+  | 'cancellato';
+
+/**
+ * Смяната на доставчика (src/aziende/cambio.ts): до администраторите на фирмата — искането, удължаването,
+ * оттеглянето, краят; до MASTER — искането и оттеглянето. Дните са по Рим, „“ — няма такъв.
+ */
+export function cambioMail(params: {
+  to: string;
+  tipo: TipoCambioMail;
+  azienda: string;
+  esito: string | null;
+  /** Последният ден на прехода („12/12/2026“). */
+  fine: string;
+  /** Денят на окончателното изтриване („12/03/2027“). */
+  eliminazione: string;
+  link: string;
+}): MailMessage {
+  const esito = params.esito ? t(`mail.cambio.esiti.${params.esito}`) : '';
+  const p = { azienda: params.azienda, esito, fine: params.fine, link: params.link };
+  return {
+    to: params.to,
+    subject: t(`mail.cambio.${params.tipo}.subject`, p),
+    text: t(`mail.cambio.${params.tipo}.body`, { ...p, eliminazione: params.eliminazione }),
+  };
+}
+
+/** Двете копия на подписания протокол — на адреса, който подписалият е написал при подписа. */
+export function verbaleMail(params: {
+  to: string;
+  data: string;
+  azienda: string;
+  allegati: ReadonlyArray<{ pdf: Buffer; filename: string }>;
+}): MailMessage {
+  return {
+    to: params.to,
+    subject: t('verbali.email.oggetto', { data: params.data, azienda: params.azienda }),
+    text: t('verbali.email.corpo', { data: params.data, azienda: params.azienda }),
+    attachments: params.allegati.map((a) => ({
+      filename: a.filename,
+      content: a.pdf,
+      contentType: 'application/pdf',
+    })),
+  };
+}
+
+/** Модулът за поръчка до доставчика (ordini/invio.ts): PDF-ът прикачен, отговорът — до пратилия. */
+export function ordineMail(params: {
+  to: string;
+  replyTo: string;
+  fornitore: string;
+  azienda: string;
+  mittente: string;
+  modulo: string;
+  impianto: string;
+  messaggio: string | null;
+  pdf: Buffer;
+  filename: string;
+}): MailMessage {
+  const p = {
+    fornitore: params.fornitore,
+    azienda: params.azienda,
+    mittente: params.mittente,
+    modulo: params.modulo,
+    impianto: params.impianto || '—',
+  };
+  return {
+    to: params.to,
+    replyTo: params.replyTo,
+    subject: t('ordini.email.oggetto', p),
+    text:
+      t('ordini.email.corpo', p) +
+      (params.messaggio ? `\n\n${t('ordini.email.nota')}\n${params.messaggio}` : '') +
+      `\n\n${t('ordini.email.firma', p)}`,
+    attachments: [
+      { filename: params.filename, content: params.pdf, contentType: 'application/pdf' },
+    ],
+  };
+}

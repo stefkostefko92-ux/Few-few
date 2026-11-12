@@ -2,6 +2,8 @@ import { config } from './config.js';
 import { prisma } from './db.js';
 import { errorMessage, logger } from './logger.js';
 import { pulisciArrivi } from './allegati/archivio.js';
+import { concludiCambi } from './aziende/cambio.js';
+import { caricaAnnunci } from './legale/annunci.js';
 import { eliminaAziendeScadute } from './aziende/eliminazione.js';
 import { pulisciProve } from './legale/emissioni.js';
 import { pulisciErrori } from './auth/rete.js';
@@ -20,6 +22,8 @@ import { DAY, HOUR } from './time.js';
  */
 export async function runMaintenance(): Promise<void> {
   const now = Date.now();
+  // Обявите на новите версии (legale/versioni.ts) — наново от базата, ако са записани другаде.
+  await caricaAnnunci();
   const sessions = await purgeExpiredSessions();
   // Входовете, чакали кода, и грешните опити по мрежа (пазят се ден).
   const sfide = await pulisciSfide(now);
@@ -36,6 +40,8 @@ export async function runMaintenance(): Promise<void> {
   });
   // Каченото от прекъсната заявка (обикновено заявката го трие сама).
   const arrivi = await pulisciArrivi(DAY, now);
+  // Смяната на доставчика: преходите, които са свършили — фирмата се деактивира (src/aziende/cambio.ts).
+  const cambi = await concludiCambi(new Date(now));
   // Фирмите, деактивирани преди повече от 90 дни — окончателно, с всичките им данни.
   const aziende = await eliminaAziendeScadute(now);
   // Доказателствата (приемания и изтеглени изчисления) след своя срок — src/legale/.
@@ -49,6 +55,7 @@ export async function runMaintenance(): Promise<void> {
       requests +
       audit.count +
       arrivi +
+      cambi +
       aziende +
       prove >
     0
@@ -63,6 +70,7 @@ export async function runMaintenance(): Promise<void> {
         requests,
         audit: audit.count,
         arrivi,
+        cambi,
         aziende,
         prove,
       },

@@ -6,6 +6,8 @@ import { writeAudit } from '../audit.js';
 import { inScope, schedaScope, type Scope } from '../auth/scope.js';
 import { salvaSchizzi } from '../schizzi/service.js';
 import { searchTextOf } from './search.js';
+import { riapriApprovazione } from './approvazione.js';
+import { salvaVersione } from './versioni.js';
 import type { SceltaFoto } from './stampa.js';
 import type { SchedaData } from './validation.js';
 
@@ -20,6 +22,8 @@ const WITH_PEOPLE = {
   createdBy: { select: { name: true } },
   updatedBy: { select: { name: true } },
   deletedBy: { select: { name: true } },
+  approvazioneDa: { select: { name: true } },
+  _count: { select: { versioni: true } },
   azienda: {
     select: {
       id: true,
@@ -30,6 +34,7 @@ const WITH_PEOPLE = {
       logoUpdatedAt: true,
       ordineSezioni: true,
       schizzi: true,
+      approvazioneSchede: true,
     },
   },
 } satisfies Prisma.SchedaInclude;
@@ -96,6 +101,7 @@ export async function createScheda(
       },
     });
     if (data.schizzi) await salvaSchizzi(tx, scheda.id, data.schizzi);
+    await salvaVersione(tx, scheda.id, actorId);
     await writeAudit(
       { actorId, action: 'SCHEDA_CREATE', aziendaId, targetType: 'scheda', targetId: scheda.id },
       tx,
@@ -197,6 +203,9 @@ export async function updateScheda(
     }
     if (data.fotoInStampa) await salvaFotoInStampa(tx, id, data.fotoInStampa);
     if (data.schizzi) await salvaSchizzi(tx, id, data.schizzi);
+    // Променената одобрена карта иска ново одобрение (schede/approvazione.ts); версията — след всичко.
+    await riapriApprovazione(tx, id);
+    await salvaVersione(tx, id, actorId);
     await writeAudit(
       { actorId, action: 'SCHEDA_UPDATE', aziendaId, targetType: 'scheda', targetId: id },
       tx,

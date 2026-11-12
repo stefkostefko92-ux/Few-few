@@ -8,8 +8,8 @@
         "desc": "Ragione sociale, indirizzo e contatti: vanno sul cartello accanto al logo e nei moduli d'ordine."
       },
       "scheda": {
-        "titolo": "Ordine delle sezioni",
-        "desc": "In che ordine compaiono le sezioni della scheda: modulo, pagina, stampa e PDF."
+        "titolo": "Scheda",
+        "desc": "L'ordine delle sezioni della scheda (modulo, pagina, stampa e PDF) e l'approvazione delle schede."
       },
       "cartelli": {
         "titolo": "Cartello fermo impianto",
@@ -22,6 +22,18 @@
       "condizioni": {
         "titolo": "Condizioni di servizio",
         "desc": "La versione in vigore, chi l'ha firmata e quante persone hanno accettato le regole d'uso."
+      },
+      "esportazione": {
+        "titolo": "Esportazione e cambio fornitore",
+        "desc": "Scarica tutti i dati dell'azienda in un unico file, quando vuoi. Da qui si chiede anche il cambio di fornitore."
+      },
+      "firme": {
+        "titolo": "Informativa per chi firma",
+        "desc": "Il testo sul trattamento dei dati (art. 13 GDPR) che il cliente legge prima di firmare il foglio di intervento o il verbale."
+      },
+      "fornitori": {
+        "titolo": "Fornitori",
+        "desc": "La rubrica dei fornitori a cui inviare i moduli d'ordine dal portale."
       }
     },
     "hub": {
@@ -36,7 +48,12 @@
       "ruoliBase": "Ruoli predefiniti",
       "firmate": "Firmate con codice il {data}",
       "esistente": "Accettate (azienda precedente alle condizioni)",
-      "attesa": "Da accettare: l'amministratore deve firmarle"
+      "attesa": "Da accettare: l'amministratore deve firmarle",
+      "esportazioneMai": "Nessuna esportazione finora",
+      "esportazioneUltima": "Ultima esportazione il {data}",
+      "cambioInCorso": "Cambio di fornitore in corso: servizio fino al {data}",
+      "informativaPropria": "Testo dell'azienda",
+      "informativaModello": "Modello predefinito"
     },
     "condizioni": {
       "vigente": "Versione in vigore",
@@ -49,6 +66,16 @@
       "attesaTesto": "Al prossimo accesso l'amministratore le accetta e le firma con il codice.",
       "regole": "Regole d'uso",
       "regoleN": "{n} persone su {totale} le hanno accettate"
+    },
+    "firme": {
+      "intro": "Chi firma sullo schermo (il cliente sul foglio di intervento, il supervisore sul verbale) legge questo testo prima della firma. Il titolare del trattamento è l'azienda: verifica e adatta il testo alla tua realtà, in particolare la base giuridica e la conservazione.",
+      "modello": "Il testo qui sotto è il modello, già compilato con i dati dell'azienda. Finché non lo salvi, sulla pagina della firma compare il modello aggiornato con i dati di quel momento.",
+      "propria": "Sulla pagina della firma compare il testo salvato dall'azienda.",
+      "etichetta": "Testo dell'informativa",
+      "hint": "Fino a {max} caratteri; i ritorni a capo restano.",
+      "errore": "Scrivi il testo dell'informativa (al massimo {max} caratteri).",
+      "salva": "Salva l'informativa",
+      "ripristina": "Torna al modello"
     }
   }
 }

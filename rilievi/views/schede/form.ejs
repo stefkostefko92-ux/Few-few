@@ -25,6 +25,7 @@
   </div>
 </div>
 <div class="stack-gap">
+<% if (locals.duplicataDa) { %><p class="notice" role="status"><strong><%= t('flusso.duplica.titolo', { ident: duplicataDa }) %></strong> <%= t('flusso.duplica.nota') %></p><% } %>
 <% if (conflict) { %>
   <div class="notice" role="alert">
     <p><strong><%= t('schede.conflict.title') %></strong></p>

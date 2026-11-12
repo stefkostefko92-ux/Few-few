@@ -268,7 +268,7 @@
         "kept": "Accettato, finché esiste l'account; non accettato, {inviteDays} giorni dopo la scadenza, poi cancellato automaticamente"
       },
       "lavoro": {
-        "data": "Schede, moduli dei fornitori, schizzi, calcoli dell'argano, cartelli di fermo impianto e fogli di intervento: dati tecnici e indirizzi degli impianti e il nome di chi li compila; nei fogli di intervento anche i nomi dei tecnici e del cliente, le due firme tracciate sullo schermo (solo il tracciato, senza tempi né pressione) e l'impronta del contenuto firmato. L'indirizzo a cui si invia un foglio in PDF non viene conservato",
+        "data": "Schede, moduli dei fornitori, schizzi, calcoli dell'argano, cartelli di fermo impianto e fogli di intervento: dati tecnici e indirizzi degli impianti e il nome di chi li compila; nei fogli di intervento anche i nomi dei tecnici e del cliente, le due firme tracciate sullo schermo (solo il tracciato, senza tempi né pressione) e l'impronta del contenuto firmato. la versione di ogni salvataggio della scheda; la rubrica dei fornitori (nome ed email) e gli ordini inviati ai fornitori, con il destinatario. L'indirizzo a cui si invia un foglio o un verbale in PDF, anche in copia a chi firma, non viene conservato",
         "why": "Il lavoro dell'azienda sugli impianti: rilievi, ordini ai fornitori, assistenza e cantiere",
         "basis": "Scelta dall'azienda titolare (di norma art. 6, par. 1, lett. b) o f) GDPR); Carbon Stealth tratta i dati per suo conto (art. 28 GDPR)",
         "kept": "Finché l'azienda li conserva: le schede fino all'eliminazione dal cestino, cartelli e calcoli fino alla loro eliminazione; i fogli di intervento confermati non si modificano. Tutto viene cancellato {endDays} giorni dopo la disattivazione dell'azienda"
@@ -331,7 +331,7 @@
     "recipients": {
       "title": "Chi altro vede i dati",
       "hosting": "netcup GmbH, Karlsruhe, Germania — il server su cui funziona il portale, in un data center in Germania. Con netcup è in vigore un accordo sul trattamento dei dati (art. 28 GDPR).",
-      "mail": "Sendinblue SAS (Brevo), Francia — l'invio delle email, quando è attivo: inviti, link per una nuova password, avvisi di sicurezza dell'account (verifica in due passaggi, cambio di email), avvisi di nuove richieste agli amministratori del portale, il codice per firmare le condizioni di servizio e la copia delle condizioni accettate, e i moduli di intervento in PDF, con i nomi e le firme, che gli utenti inviano a un indirizzo scelto da loro.",
+      "mail": "Sendinblue SAS (Brevo), Francia — l'invio delle email, quando è attivo: inviti, link per una nuova password, avvisi di sicurezza dell'account (verifica in due passaggi, cambio di email), avvisi di nuove richieste agli amministratori del portale, il codice per firmare le condizioni di servizio e la copia delle condizioni accettate, gli avvisi sul cambio di fornitore e sulla cancellazione dei dati, i moduli di intervento e i verbali in PDF, con i nomi e le firme, che gli utenti inviano a un indirizzo scelto da loro o in copia a chi firma, e i moduli d'ordine che gli utenti inviano ai fornitori.",
       "text": "Non vendiamo dati e non li cediamo per pubblicità. Il portale e i suoi dati restano nell'Unione europea; Brevo può affidare parte dell'invio delle email a sub-responsabili fuori dall'UE, e in quel caso il trasferimento è tutelato da clausole contrattuali tipo (art. 46 GDPR)."
     },
     "security": {

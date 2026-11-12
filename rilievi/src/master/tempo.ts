@@ -36,6 +36,24 @@ export function mezzanotteRoma(day: string, giorni = 0): Date {
   return new Date(utc - scartoRoma(prima));
 }
 
+/**
+ * Час, написан в Рим (`YYYY-MM-DDTHH:mm` от `<input type="datetime-local">`), като момент; null — не е
+ * истински ден и час. В часа на смяната (2–3 ч) — както Date го нагласи; регистрите не стигат дотам.
+ */
+export function momentoRoma(value: string): Date | null {
+  const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})$/.exec(value);
+  if (!m || !giornoValido(m[1]!) || Number(m[2]) > 23 || Number(m[3]) > 59) return null;
+  const utc = Date.parse(`${value}:00.000Z`);
+  const prima = utc - scartoRoma(utc);
+  return new Date(utc - scartoRoma(prima));
+}
+
+/** Моментът като `YYYY-MM-DDTHH:mm` по Рим — стойността на `<input type="datetime-local">`. */
+export function inputRoma(at: Date): string {
+  const p = Object.fromEntries(parti.formatToParts(at).map((x) => [x.type, x.value]));
+  return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
+}
+
 /** `YYYY-MM-DD` е истински ден („2026-02-31“ не е — Date би го преместил тихо на 3 март). */
 export function giornoValido(day: string): boolean {
   const t = Date.parse(`${day}T00:00:00.000Z`);

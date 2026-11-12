@@ -11,11 +11,13 @@
     <% if (!scheda.deletedAt && canIn('schede:write', scheda.aziendaId)) { %><a class="btn btn--primary" href="/schede/<%= scheda.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('scheda.actions.edit') %></a><% } %>
     <a class="btn" href="/schede/<%= scheda.id %>/stampa?auto=1"><%- include('../partials/icon', { name: 'print' }) %><%= t('scheda.actions.print') %></a>
     <a class="btn" data-pdf href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
+    <a class="btn" href="/schede/<%= scheda.id %>/etichetta"><%- include('../partials/icon', { name: 'print' }) %><%= t('etichetta.apri') %></a>
     <%# Изчисленията за аргано и за ограничителя — не при хидравлична уредба (там аргано и раздел „Limitatore“ няма). %>
     <% if (!(scheda.tipoImpianto || []).includes('IDRAULICO')) { %><a class="btn" href="/schede/<%= scheda.id %>/calcolo-argano"><%- include('../partials/icon', { name: 'calc' }) %><%= t('argano.apri') %></a>
     <a class="btn" href="/schede/<%= scheda.id %>/calcolo-limitatore"><%- include('../partials/icon', { name: 'gauge' }) %><%= t('limitatore.apri') %></a><% } %>
     <% if (!scheda.deletedAt && canIn('interventi:write', scheda.aziendaId)) { %><a class="btn" href="/cartelli/nuovo?scheda=<%= scheda.id %>"><%- include('../partials/icon', { name: 'stop' }) %><%= t('cartelli.daScheda.crea') %></a><% } %>
     <% if (!scheda.deletedAt && canIn('interventi:write', scheda.aziendaId)) { %><a class="btn" href="/verbali/nuovo?scheda=<%= scheda.id %>"><%- include('../partials/icon', { name: 'sign' }) %><%= t('verbali.daScheda.crea') %></a><% } %>
+    <% if (!scheda.deletedAt && canIn('schede:write', scheda.aziendaId)) { %><a class="btn" href="/schede/nuova?da=<%= scheda.id %>"><%- include('../partials/icon', { name: 'copy' }) %><%= t('flusso.duplica.azione') %></a><% } %>
     <% if (!scheda.deletedAt && canIn('schede:delete', scheda.aziendaId)) { %><a class="btn btn--ghost" href="/schede/<%= scheda.id %>/elimina"><%- include('../partials/icon', { name: 'trash' }) %><%= t('scheda.actions.delete') %></a><% } %>
   </div>
 </div>
@@ -92,10 +94,12 @@
     </ul>
   </section>
   <% } %>
+  <%- include('_flusso') %>
   <p class="sheet__meta">
     <% if (showAzienda) { %><span><%= t('scheda.field.azienda') %>: <%= scheda.azienda.name %></span><% } %>
     <span><%= t('scheda.meta.created', { name: scheda.createdBy ? scheda.createdBy.name : '—', at: fmt.dateTime(scheda.createdAt) }) %></span>
     <span><%= t('scheda.meta.updated', { name: scheda.updatedBy ? scheda.updatedBy.name : '—', at: fmt.dateTime(scheda.updatedAt) }) %></span>
+    <% if (scheda._count.versioni > 0) { %><span><a href="/schede/<%= scheda.id %>/versioni"><%= t('flusso.versioni.link', { n: scheda._count.versioni }) %></a></span><% } %>
   </p>
 </div>
 <% if (modifica) { %><%- include('_allegati-forms', { ritorno: 'scheda' }) %><% } %>

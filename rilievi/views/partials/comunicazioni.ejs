@@ -2,8 +2,16 @@
   // Лентите със съобщенията на MASTER (src/master/banner.ts) — над съдържанието на страницата, най-спешните
   // първи. „Chiudi“ е форма (и без JavaScript — връща на същата страница); comunicazioni.js я праща във фонов
   // режим и маха лентата. Текстът е на редове, както е написан (CSS `white-space: pre-line`, без HTML).
+  // Над тях — смяната на доставчика, която тече (src/aziende/cambio.ts): без „Chiudi“, до края на прехода.
 %><div class="avvisi" role="region" aria-label="<%= t('master.comunicazioni.banner.regione') %>">
-  <% for (const c of comunicazioni) { %><section class="avviso avviso--<%= c.livello.toLowerCase() %>" aria-labelledby="avviso-<%= c.id %>" data-avviso>
+  <% for (const c of (locals.cambiInCorso || [])) { %><section class="avviso avviso--avviso" aria-labelledby="cambio-<%= c.id %>">
+    <div class="avviso__testa">
+      <h2 class="avviso__titolo" id="cambio-<%= c.id %>"><%- include('icon', { name: 'alert' }) %><span><%= t('esportazione.banner.titolo', { azienda: c.name }) %></span></h2>
+    </div>
+    <p class="avviso__testo"><%= t('esportazione.banner.testo', { data: fmt.dayRoma(c.ultimoGiorno) }) %><% if (c.admin) { %> <a href="/impostazioni/esportazione?azienda=<%= encodeURIComponent(c.id) %>"><%= t('esportazione.banner.link') %></a><% } %></p>
+  </section>
+  <% } %>
+  <% for (const c of (locals.comunicazioni || [])) { %><section class="avviso avviso--<%= c.livello.toLowerCase() %>" aria-labelledby="avviso-<%= c.id %>" data-avviso>
     <div class="avviso__testa">
       <h2 class="avviso__titolo" id="avviso-<%= c.id %>"><%- include('icon', { name: c.livello === 'INFO' ? 'megaphone' : 'alert' }) %><span><%= c.titolo %></span></h2>
       <form class="avviso__chiudi" method="post" action="/comunicazioni/<%= c.id %>/chiudi" data-avviso-chiudi>

@@ -60,3 +60,8 @@ export const vistaLimiter = limiter(60_000, 120, {
 export const mailLimiter = limiter(60 * 60_000, 20, {
   keyGenerator: (req) => (req.principal ? `u:${req.principal.user.id}` : networkKey(req)),
 });
+
+/** Износът на фирма (всичките ѝ снимки и клипове) — по акаунт, десет на час. */
+export const esportaLimiter = limiter(60 * 60_000, 10, {
+  keyGenerator: (req) => (req.principal ? `u:${req.principal.user.id}` : networkKey(req)),
+});

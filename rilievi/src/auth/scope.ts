@@ -21,8 +21,9 @@ export function roleIn(user: AccessUser, aziendaId: string | null): Role | null 
 }
 
 type Membro = AccessUser['memberships'][number];
+/** Свършила фирма (`soloEsportazione`) не дава нищо — износът има своя проверка (routes/impostazioni-esportazione.ts). */
 const puoMembro = (m: Membro, capability: Capability): boolean =>
-  puo(m.role, capability, m.permessi);
+  !m.soloEsportazione && puo(m.role, capability, m.permessi);
 
 /** Способността във фирмата на конкретен запис (карта, покана, човек). */
 export function canIn(user: AccessUser, capability: Capability, aziendaId: string | null): boolean {

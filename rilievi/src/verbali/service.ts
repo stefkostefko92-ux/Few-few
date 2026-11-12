@@ -33,6 +33,15 @@ const INCLUDE = {
 
 export type VerbaleFull = Prisma.VerbaleGetPayload<{ include: typeof INCLUDE }>;
 
+/** Потвърдените протоколи на фирмата, цели — за PDF/A-тата в износа (aziende/esportazione-documenti.ts). */
+export function verbaliConfermatiDi(aziendaId: string): Promise<VerbaleFull[]> {
+  return prisma.verbale.findMany({
+    where: { aziendaId, confermatoAt: { not: null } },
+    orderBy: { createdAt: 'asc' },
+    include: INCLUDE,
+  });
+}
+
 const LIST_SELECT = {
   id: true,
   data: true,

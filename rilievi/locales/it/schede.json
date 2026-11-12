@@ -271,5 +271,21 @@
     "hint": "Spunta i moduli da aggiungere in fondo al foglio: entra solo quello che è compilato. I moduli restano anche come PDF a parte.",
     "sezioni": "Sezioni nella stampa e nel PDF",
     "sezioniHint": "Togli la spunta alle sezioni da lasciare fuori dal foglio stampato. L'intestazione con indirizzo, matricola e n° impianto c'è sempre."
+  },
+  "etichetta": {
+    "titolo": "Etichetta QR dell'impianto",
+    "apri": "Etichetta QR",
+    "quante": "Etichette sul foglio",
+    "copie": {
+      "1": "Una",
+      "3": "Tre",
+      "24": "Foglio da 24 (70 × 37 mm)"
+    },
+    "aggiorna": "Aggiorna",
+    "nota": "Stampa al 100 % su fogli A4 da 24 etichette (3 × 8, 70 × 37 mm). Il QR apre la scheda nel portale a chi ha accesso all'azienda.",
+    "qrAria": "Codice QR che apre la scheda dell'impianto",
+    "matricola": "Matricola",
+    "numero": "N° impianto",
+    "piede": "Inquadra il QR per aprire la scheda · Rilievi Impianti"
   }
 }

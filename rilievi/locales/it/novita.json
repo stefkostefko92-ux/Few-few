@@ -22,6 +22,46 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-12-ordini-fornitori": {
+        "area": "Schede",
+        "titolo": "Invia il modulo d'ordine al fornitore dal portale",
+        "testo": "Dalla scheda, «Invia al fornitore» manda il modulo compilato in PDF al fornitore scelto dalla rubrica (Impostazioni → Fornitori) o scritto a mano; le risposte arrivano a chi invia. Ogni ordine resta nella scheda e in «Ordini ai fornitori», e si segna come confermato o annullato."
+      },
+      "2026-11-12-approvazione": {
+        "area": "Schede",
+        "titolo": "Approvazione delle schede in due passaggi, se la vuoi",
+        "testo": "L'amministratore può attivarla in Impostazioni → Scheda: il tecnico invia la scheda, un responsabile la approva o la respinge con una nota, e solo allora partono gli ordini. Chi invia non approva la propria scheda. Di base è spenta."
+      },
+      "2026-11-12-versioni": {
+        "area": "Schede",
+        "titolo": "Versioni della scheda e «Duplica»",
+        "testo": "Ogni salvataggio crea una versione: dalla scheda, «Versioni» mostra che cosa è cambiato, campo per campo. «Duplica» apre una nuova scheda con i dati di un'altra, senza matricola, numero e buono."
+      },
+      "2026-11-12-etichette-qr": {
+        "area": "Schede",
+        "titolo": "Etichette con QR per gli impianti",
+        "testo": "«Etichetta QR» stampa un foglio A4 di etichette (70 × 37 mm) con il QR della scheda, la matricola, il numero e l'indirizzo: in sala macchine basta inquadrarlo per aprire la scheda."
+      },
+      "2026-11-12-copia-firmatario": {
+        "area": "Assistenza",
+        "titolo": "Copia in PDF a chi firma, con l'informativa privacy",
+        "testo": "Sulla pagina della firma del foglio di intervento e del verbale chi firma legge l'informativa sul trattamento dei dati dell'azienda e può lasciare un'email: appena confermato, riceve la copia in PDF. L'informativa si personalizza in Impostazioni → Informativa per chi firma; l'indirizzo non viene conservato."
+      },
+      "2026-11-12-pdfa": {
+        "area": "Assistenza",
+        "titolo": "Fogli di intervento e verbali in PDF/A",
+        "testo": "I PDF dei fogli di intervento e dei verbali confermati sono ora in formato PDF/A, il formato pensato per l'archiviazione a lungo termine: caratteri incorporati e profilo colore incluso."
+      },
+      "2026-11-12-esportazione": {
+        "area": "Impostazioni",
+        "titolo": "Scarica tutti i dati dell'azienda, quando vuoi",
+        "testo": "In Impostazioni → Esportazione e cambio fornitore l'amministratore dell'azienda scarica, con la sua password, un unico file con tutto: schede, fogli di intervento con le firme, cartelli, calcoli, verbali, foto e video. Il formato è descritto, campo per campo, nella pagina pubblica Esportazione dei dati."
+      },
+      "2026-11-12-cambio-fornitore": {
+        "area": "Impostazioni",
+        "titolo": "Cambio di fornitore senza costi e senza interruzioni",
+        "testo": "Dalla stessa pagina si può chiedere il cambio di fornitore: il portale continua a funzionare per 30 giorni, il periodo si proroga una volta e la richiesta si può annullare. Alla fine l'amministratore può ancora scaricare i dati per 90 giorni. È quanto prevede il Data Act europeo."
+      },
       "2026-11-11-note-sezioni": {
         "area": "Schede",
         "titolo": "Una nota in fondo a più sezioni della scheda",

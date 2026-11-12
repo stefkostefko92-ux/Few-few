@@ -21,7 +21,14 @@ import {
 } from '../requests/form.js';
 import { REQUEST_RETENTION_DAYS, submitAccessRequest } from '../requests/service.js';
 import { llmsTxt, robotsTxt, sitemapXml } from '../seo/files.js';
-import { HOME_PATH, NOVITA_PATH, CONDIZIONI_PATH, PRIVACY_PATH, SENT_PATH } from '../seo/paths.js';
+import {
+  CONDIZIONI_PATH,
+  ESPORTAZIONE_PATH,
+  HOME_PATH,
+  NOVITA_PATH,
+  PRIVACY_PATH,
+  SENT_PATH,
+} from '../seo/paths.js';
 import { landingStructuredData, privacyStructuredData } from '../seo/structured-data.js';
 import { INVITE_DAYS, INVITI_SCADUTI_GIORNI } from '../services/invites.js';
 import { GIORNI_PRIMA_DELL_ELIMINAZIONE } from '../aziende/eliminazione.js';
@@ -84,6 +91,7 @@ export function siteLocals(req: Request, path: string | null) {
     privacyPath: PRIVACY_PATH,
     novitaPath: NOVITA_PATH,
     condizioniPath: CONDIZIONI_PATH,
+    esportazionePath: ESPORTAZIONE_PATH,
     loginUrl: '/accesso',
     signedIn: Boolean(req.principal),
     company: COMPANY,

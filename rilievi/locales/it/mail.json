@@ -43,6 +43,41 @@
     "emailChanged": {
       "subject": "Email del tuo account cambiata — Rilievi Impianti",
       "body": "Ciao,\n\nl'indirizzo email del tuo account sul portale Rilievi Impianti è stato cambiato: da ora per accedere si usa il nuovo indirizzo.\n\nSe non hai chiesto tu questa modifica, avvisa subito l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+    },
+    "cambio": {
+      "esiti": {
+        "ALTRO_FORNITORE": "passaggio a un altro fornitore",
+        "INFRASTRUTTURA_PROPRIA": "trasferimento su un'infrastruttura propria",
+        "CANCELLAZIONE": "cancellazione dei dati"
+      },
+      "richiesto": {
+        "subject": "Cambio di fornitore richiesto per {azienda}",
+        "body": "Ciao,\n\nper l'azienda {azienda} è stato richiesto il cambio di fornitore, con questa scelta: {esito}.\n\nIl portale continua a funzionare come sempre fino al {fine} compreso (periodo di transizione). In qualsiasi momento puoi scaricare tutti i dati dell'azienda in un unico file, prorogare una volta il periodo o annullare la richiesta:\n{link}\n\nDopo il {fine} il servizio termina: per 90 giorni gli amministratori potranno ancora accedere solo per scaricare i dati, fino al {eliminazione}; poi i dati sono cancellati definitivamente.\n\nSe non hai fatto tu questa richiesta, annullala subito dal link qui sopra e avvisaci.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      },
+      "masterRichiesto": {
+        "subject": "Rilievi Impianti: {azienda} chiede il cambio di fornitore",
+        "body": "L'azienda {azienda} ha richiesto il cambio di fornitore ({esito}). Fine del periodo di transizione: {fine} compreso.\n\nIl servizio continua per tutto il periodo. Se l'azienda chiede assistenza per il passaggio, rispondi entro pochi giorni.\n\n{link}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      },
+      "prorogato": {
+        "subject": "Periodo di transizione prorogato per {azienda}",
+        "body": "Ciao,\n\nil periodo di transizione per il cambio di fornitore dell'azienda {azienda} è stato prorogato: il portale funziona come sempre fino al {fine} compreso. La proroga si può chiedere una sola volta.\n\nI dati restano scaricabili in qualsiasi momento:\n{link}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      },
+      "annullato": {
+        "subject": "Cambio di fornitore annullato per {azienda}",
+        "body": "Ciao,\n\nla richiesta di cambio di fornitore per l'azienda {azienda} è stata annullata. Il servizio continua come prima, senza scadenze.\n\n{link}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      },
+      "masterAnnullato": {
+        "subject": "Rilievi Impianti: {azienda} ha annullato il cambio di fornitore",
+        "body": "L'azienda {azienda} ha annullato la richiesta di cambio di fornitore. Il servizio continua come prima.\n\n{link}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      },
+      "concluso": {
+        "subject": "Servizio terminato per {azienda}: scarica i dati entro il {eliminazione}",
+        "body": "Ciao,\n\nil periodo di transizione per l'azienda {azienda} si è concluso e il servizio è terminato.\n\nFino al {eliminazione} puoi ancora accedere al portale, solo per scaricare tutti i dati dell'azienda in un unico file:\n{link}\n\nDopo quella data i dati sono cancellati definitivamente; le copie di sicurezza scadono entro i 14 giorni successivi.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      },
+      "cancellato": {
+        "subject": "Dati di {azienda} cancellati",
+        "body": "Ciao,\n\nti confermiamo che i dati dell'azienda {azienda} sono stati cancellati definitivamente da Rilievi Impianti. Le copie di sicurezza che li contenevano scadono entro i prossimi 14 giorni.\n\nRestano solo i registri delle accettazioni delle condizioni e dei calcoli emessi, che conserviamo per legge, e una riga anonima nel registro del portale (chi, quando, quante schede).\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      }
     }
   }
 }

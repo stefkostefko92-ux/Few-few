@@ -1,10 +1,11 @@
 import { pipeline } from 'node:stream/promises';
-import { Router } from 'express';
+import { Router, type Request, type Response } from 'express';
 import { principalOf, requireCapability, requireCsrf, sendError } from '../auth/guards.js';
 import { eliminaAzienda } from '../aziende/eliminazione.js';
 import { esportaAzienda } from '../aziende/esportazione.js';
 import { getAzienda } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
+import { esportaLimiter } from '../http/limits.js';
 import { errorMessage, logger } from '../logger.js';
 import { renderShow } from './aziende.js';
 
@@ -15,25 +16,46 @@ import { renderShow } from './aziende.js';
 export const aziendeFineRouter: Router = Router();
 const manage = requireCapability('aziende:manage');
 
-aziendeFineRouter.get('/aziende/:id/esporta', manage, async (req, res) => {
-  const esportazione = await esportaAzienda(String(req.params.id), principalOf(req).user.id);
-  if (!esportazione) {
-    sendError(req, res, 404, 'error.notFoundTitle', 'error.notFound');
+/** Фирмите, чийто износ тече в момента — втори едновременно не тръгва (всичките снимки и клипове). */
+const inCorso = new Set<string>();
+
+/** Праща архива на фирмата (.tar) като изтегляне; общото на MASTER и на ADMIN (impostazioni-esportazione.ts). */
+export async function scaricaEsportazione(
+  req: Request,
+  res: Response,
+  aziendaId: string,
+): Promise<void> {
+  if (inCorso.has(aziendaId)) {
+    sendError(req, res, 429, 'error.tooManyTitle', 'esportazione.inCorso');
     return;
   }
-  res.set({
-    'Content-Type': 'application/x-tar',
-    'Content-Disposition': `attachment; filename="${esportazione.nomeFile}"`,
-    'Cache-Control': 'no-store',
-    'X-Content-Type-Options': 'nosniff',
-  });
+  inCorso.add(aziendaId);
   try {
-    await pipeline(esportazione.stream, res);
-  } catch (error) {
-    // Заглавките са пратени: прекъснатият архив е непълен — връзката се затваря, не се кърпи.
-    logger.warn({ err: errorMessage(error) }, 'azienda: износът прекъсна');
-    res.destroy();
+    const esportazione = await esportaAzienda(aziendaId, principalOf(req).user);
+    if (!esportazione) {
+      sendError(req, res, 404, 'error.notFoundTitle', 'error.notFound');
+      return;
+    }
+    res.set({
+      'Content-Type': 'application/x-tar',
+      'Content-Disposition': `attachment; filename="${esportazione.nomeFile}"`,
+      'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff',
+    });
+    try {
+      await pipeline(esportazione.stream, res);
+    } catch (error) {
+      // Заглавките са пратени: прекъснатият архив е непълен — връзката се затваря, не се кърпи.
+      logger.warn({ err: errorMessage(error) }, 'azienda: износът прекъсна');
+      res.destroy();
+    }
+  } finally {
+    inCorso.delete(aziendaId);
   }
+}
+
+aziendeFineRouter.get('/aziende/:id/esporta', manage, esportaLimiter, async (req, res) => {
+  await scaricaEsportazione(req, res, String(req.params.id));
 });
 
 aziendeFineRouter.post('/aziende/:id/elimina', manage, requireCsrf, async (req, res) => {

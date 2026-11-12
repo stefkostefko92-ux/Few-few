@@ -1,12 +1,9 @@
 import { Router, type Request, type Response } from 'express';
 import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { canIn } from '../auth/scope.js';
-import { aziendaLogo } from '../aziende/service.js';
-import { config } from '../config.js';
 import { setFlash } from '../http/flash.js';
 import { pdfLimiter } from '../http/limits.js';
 import { improntaLeggibile } from '../interventi/sigillo.js';
-import { dayFromDate } from '../time.js';
 import {
   confermaVerbale,
   parseFirmeVerbale,
@@ -15,10 +12,13 @@ import {
   type CampoFirmaVerbale,
   type ErroriFirmaVerbale,
 } from '../verbali/conferma.js';
-import { COPIE, renderVerbalePdf, type Copia } from '../verbali/pdf.js';
+import { COPIE, type Copia } from '../verbali/pdf.js';
+import { pdfVerbale } from './firma-copia.js';
 import type { VerbaleFull } from '../verbali/service.js';
 import { improntaVerbale } from '../verbali/sigillo.js';
 import { scope } from './interventi.js';
+import { copiaEmailSchema } from '../legale/informativa.js';
+import { copiaVerbale, informativaDi } from './firma-copia.js';
 import { notFound } from './schede-shared.js';
 import { loadVerbale, vistaFoglio } from './verbali.js';
 
@@ -34,13 +34,22 @@ const read = requireCapability('interventi:read');
 const write = requireCapability('interventi:write');
 
 interface FirmaView {
+  /** Имейлът за копието (по избор) и грешката му — връщат се с формата. */
+  copiaEmail?: string;
+  erroreCopia?: boolean;
   values: Record<CampoFirmaVerbale, string>;
   errors: ErroriFirmaVerbale;
   conflict?: boolean;
 }
 
-function renderFirma(res: Response, status: number, row: VerbaleFull, view: FirmaView): void {
+async function renderFirma(
+  res: Response,
+  status: number,
+  row: VerbaleFull,
+  view: FirmaView,
+): Promise<void> {
   const impronta = improntaVerbale(row);
+  const informativa = await informativaDi(row.aziendaId);
   res.status(status).render('verbali/firma', {
     titleKey: 'verbali.conferma.titolo',
     scripts: ['firma'],
@@ -50,6 +59,9 @@ function renderFirma(res: Response, status: number, row: VerbaleFull, view: Firm
     base: row.updatedAt.toISOString(),
     improntaHex: impronta,
     improntaTesto: improntaLeggibile(impronta),
+    informativa,
+    copiaEmail: '',
+    erroreCopia: false,
     ...view,
   });
 }
@@ -84,13 +96,16 @@ async function bozzaDaFirmare(req: Request, res: Response): Promise<VerbaleFull 
 verbaliFirmaRouter.get('/verbali/:id/firma', write, async (req, res) => {
   const row = await bozzaDaFirmare(req, res);
   if (!row) return;
-  renderFirma(res, 200, row, { values: valoriVuoti(req), errors: {} });
+  await renderFirma(res, 200, row, { values: valoriVuoti(req), errors: {} });
 });
 
 verbaliFirmaRouter.post('/verbali/:id/conferma', write, requireCsrf, async (req, res) => {
   const row = await bozzaDaFirmare(req, res);
   if (!row) return;
   const body = req.body as Record<string, unknown>;
+  // По избор: имейлът за копието (legale/informativa.ts) — само адрес или нищо; не се пази.
+  const copiaEmail = typeof body.copiaEmail === 'string' ? body.copiaEmail.slice(0, 254) : '';
+  const copia = copiaEmailSchema.safeParse(copiaEmail);
   const vista = {
     base: typeof body.base === 'string' ? body.base : '',
     impronta: typeof body.impronta === 'string' ? body.impronta : '',
@@ -101,12 +116,24 @@ verbaliFirmaRouter.post('/verbali/:id/conferma', write, requireCsrf, async (req,
       values: { ...valoriFirmeVerbale(body), firmaTecnico: '', firmaSupervisore: '' },
       errors: {},
       conflict: true,
+      copiaEmail,
     });
   if (vista.base !== row.updatedAt.toISOString() || vista.impronta !== improntaVerbale(row))
     return cambiato(row);
+  if (!copia.success)
+    return renderFirma(res, 422, row, {
+      values: valoriFirmeVerbale(body),
+      errors: {},
+      copiaEmail,
+      erroreCopia: true,
+    });
   const parsed = parseFirmeVerbale(body);
   if (!parsed.ok)
-    return renderFirma(res, 422, row, { values: valoriFirmeVerbale(body), errors: parsed.errors });
+    return renderFirma(res, 422, row, {
+      values: valoriFirmeVerbale(body),
+      errors: parsed.errors,
+      copiaEmail,
+    });
   const esito = await confermaVerbale(
     scope(req, 'interventi:write'),
     row.id,
@@ -117,7 +144,7 @@ verbaliFirmaRouter.post('/verbali/:id/conferma', write, requireCsrf, async (req,
   if (esito === 'missing') return notFound(req, res);
   if (esito === 'conflict' || esito === 'incompleto') {
     const current = await bozzaDaFirmare(req, res);
-    if (current) cambiato(current);
+    if (current) await cambiato(current);
     return;
   }
   if (typeof esito === 'object') {
@@ -128,7 +155,21 @@ verbaliFirmaRouter.post('/verbali/:id/conferma', write, requireCsrf, async (req,
       values[campo] = '';
       errors[campo] = 'ripetuta';
     }
-    return renderFirma(res, 422, row, { values, errors });
+    return renderFirma(res, 422, row, { values, errors, copiaEmail });
+  }
+  if (esito === 'ok' && copia.data) {
+    // Копието за подписалия — от потвърдения документ, с проверката на печата.
+    const confermato = await loadVerbale(req);
+    const inviata = confermato
+      ? await copiaVerbale(res, confermato, copia.data, principalOf(req).user.id)
+      : 'failed';
+    setFlash(
+      res,
+      inviata === 'sent' ? 'ok' : 'error',
+      inviata === 'sent' ? 'verbali.flash.confermatoCopia' : 'verbali.flash.confermatoCopiaNo',
+    );
+    res.redirect(303, `/verbali/${row.id}`);
+    return;
   }
   setFlash(
     res,
@@ -151,15 +192,7 @@ verbaliFirmaRouter.get('/verbali/:id/pdf/:copia', read, pdfLimiter, async (req, 
     res.redirect(303, `/verbali/${row.id}`);
     return;
   }
-  const logo = row.azienda.logoType ? await aziendaLogo(row.aziendaId) : null;
-  const pdf = await renderVerbalePdf(row, {
-    t: res.locals.t,
-    fmt: res.locals.fmt,
-    fontDir: config().PDF_FONT_DIR,
-    logo: logo?.data ?? null,
-    copia,
-  });
-  const filename = `verbale-chiusura-cantiere-${dayFromDate(row.data)}-copia-${copia}.pdf`;
+  const { pdf, filename } = await pdfVerbale(res, row, copia);
   res
     .status(200)
     .set({

@@ -111,7 +111,23 @@
         "ok": "Firma richiesta: l'amministratore la vedrà al prossimo accesso.",
         "stato": "La firma si chiede solo a un'azienda che ha le condizioni accettate senza firma."
       },
-      "esistenteNota": "Accettate senza firma: aziende create prima delle condizioni di servizio, segnate come accettate senza una riga nel registro. Quando un'azienda diventa cliente, chiedi la firma."
+      "esistenteNota": "Accettate senza firma: aziende create prima delle condizioni di servizio, segnate come accettate senza una riga nel registro. Quando un'azienda diventa cliente, chiedi la firma.",
+      "prossima": {
+        "titolo": "Prossima versione delle condizioni",
+        "testo": "Versione del {versione}: entra in vigore {quando}. Le modifiche: {link}.",
+        "dal": "il {data}",
+        "nonAnnunciata": "solo 30 giorni dopo l'annuncio (art. 18.1), non prima del {data}",
+        "annunciata": "Annunciata il {data}: banner nel portale fino all'entrata in vigore ed email a {n} amministratori.",
+        "annunciataSenzaNumero": "Annunciata il {data}: banner nel portale fino all'entrata in vigore.",
+        "ultimoGiorno": "Per entrare in vigore il giorno previsto va annunciata entro il {data}.",
+        "annuncia": "Annuncia agli amministratori",
+        "conferma": "Inviare a tutti gli amministratori l'annuncio delle nuove condizioni (banner ed email)? Non si può annullare.",
+        "flash": {
+          "ok": "Annuncio inviato: banner nel portale ed email agli amministratori.",
+          "gia": "Questa versione è già stata annunciata.",
+          "nessuna": "Non c'è una nuova versione da annunciare."
+        }
+      }
     },
     "verifica": {
       "title": "Verifica documento",
@@ -226,6 +242,114 @@
       "mail": {
         "oggetto": "Rilievi Impianti — {titolo}",
         "corpo": "Ciao,\n\nuna comunicazione dal portale Rilievi Impianti.\n\n{titolo}\n\n{testo}\n\nLa trovi anche in cima alle pagine del portale, {quando}:\n{link}\n\nCarbon Stealth VCC"
+      }
+    },
+    "registri": {
+      "title": "Registro dei trattamenti",
+      "sub": "Art. 30 GDPR · versione del {data}",
+      "responsabileDati": "Responsabile e titolare",
+      "contatto": "Contatto privacy",
+      "rappresentante": "Rappresentante nell'Unione",
+      "rpd": "Responsabile della protezione dei dati",
+      "revisione": "Revisione",
+      "titolari": "Titolari per conto dei quali si tratta (art. 30, par. 2, lett. a))",
+      "titolariNota": "Dai dati dichiarati all'accettazione delle Condizioni. Le aziende cancellate non compaiono più.",
+      "colonne": {
+        "azienda": "Azienda",
+        "dichiarati": "Dati dichiarati",
+        "admin": "Amministratori",
+        "versione": "Allegato A accettato",
+        "stato": "Stato",
+        "id": "#",
+        "trattamento": "Trattamento",
+        "dati": "Dati",
+        "interessati": "Interessati",
+        "sub": "Sub-responsabile",
+        "base": "Base giuridica",
+        "conservazione": "Conservazione",
+        "nome": "Sub-responsabile",
+        "sede": "Sede",
+        "attivita": "Attività",
+        "accordo": "Accordo"
+      },
+      "stati": {
+        "attiva": "Attiva",
+        "transizione": "Cambio di fornitore in corso",
+        "recupero": "Servizio terminato: periodo di recupero"
+      },
+      "nessunaFirma": "Senza firma registrata",
+      "subResponsabili": "Sub-responsabili",
+      "trasferimenti": "Trasferimenti verso paesi terzi (art. 30, par. 2, lett. c))",
+      "misure": "Misure tecniche e organizzative (art. 30, par. 2, lett. d))",
+      "stampa": "Stampa il registro"
+    },
+    "violazioni": {
+      "title": "Registro delle violazioni dei dati",
+      "sub": "Art. 33, par. 5 GDPR: ogni violazione, anche quella non notificata.",
+      "nuova": "Registra una violazione",
+      "nessuna": "Nessuna violazione registrata.",
+      "procedura": "Procedura: contenere e conservare le prove; valutare entro 24 ore dati, aziende, nostro ruolo e rischio; come responsabile avvisare ogni azienda coinvolta entro 48 ore (art. A.10); come titolare notificare l'autorità di controllo entro 72 ore dalla scoperta, salvo rischio improbabile; con rischio elevato avvisare gli interessati (art. 34).",
+      "colonne": {
+        "rilevata": "Scoperta",
+        "titolo": "Violazione",
+        "ruolo": "Nostro ruolo",
+        "rischio": "Rischio",
+        "avvisi": "Avvisi",
+        "stato": "Stato"
+      },
+      "aperta": "Aperta",
+      "chiusa": "Chiusa il {data}",
+      "scadenza": "Notifica all'autorità entro il {data}",
+      "avvisiTitolari": "aziende avvisate",
+      "avvisiAutorita": "autorità notificata",
+      "avvisiInteressati": "interessati avvisati",
+      "nessunAvviso": "nessun avviso",
+      "ruoli": {
+        "RESPONSABILE": "Responsabile (dati delle aziende clienti)",
+        "TITOLARE": "Titolare (trattamenti nostri)"
+      },
+      "rischi": {
+        "IMPROBABILE": "Rischio improbabile",
+        "RISCHIO": "Rischio",
+        "ELEVATO": "Rischio elevato"
+      },
+      "modifica": "Violazione registrata il {data}",
+      "autore": "Registrata da {nome}",
+      "salva": "Salva",
+      "torna": "Torna al registro",
+      "sezioni": {
+        "evento": "L'evento",
+        "impatto": "Dati e persone coinvolte",
+        "valutazione": "Valutazione e misure",
+        "avvisi": "Avvisi e notifiche",
+        "chiusura": "Chiusura"
+      },
+      "campi": {
+        "rilevataAt": "Scoperta il (ora di Roma)",
+        "eventoAt": "Avvenuta il (stima, se nota)",
+        "titolo": "Titolo breve",
+        "rilevazione": "Come è stata scoperta",
+        "natura": "Descrizione e natura (riservatezza, integrità, disponibilità)",
+        "ruolo": "Nostro ruolo",
+        "categorieDati": "Categorie di dati e numero approssimativo di registrazioni",
+        "interessati": "Categorie e numero approssimativo di interessati",
+        "aziende": "Aziende clienti (titolari) coinvolte",
+        "conseguenze": "Conseguenze probabili",
+        "misure": "Misure adottate o proposte",
+        "rischio": "Rischio per gli interessati",
+        "titolariAvvisatiAt": "Aziende avvisate il",
+        "autoritaNotificataAt": "Autorità di controllo notificata il",
+        "autoritaProtocollo": "Protocollo della notifica",
+        "interessatiAvvisatiAt": "Interessati avvisati il",
+        "motivazione": "Motivazione delle decisioni (anche della mancata notifica o del ritardo)",
+        "lezioni": "Lezioni apprese e azioni correttive",
+        "chiusaAt": "Chiusa il"
+      },
+      "errore": "Controlla i campi segnati.",
+      "erroreCampo": "Campo mancante o non valido.",
+      "flash": {
+        "creata": "Violazione registrata.",
+        "salvata": "Violazione aggiornata."
       }
     }
   }

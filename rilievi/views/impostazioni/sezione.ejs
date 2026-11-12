@@ -5,19 +5,22 @@
 %><%- include('../partials/top', { title: t('impostazioni.pagine.' + sezione + '.titolo') + ' — ' + t('impostazioni.title'), narrowMain: true }) %>
 <div class="page-head">
   <div>
-    <a href="/impostazioni?azienda=<%= encodeURIComponent(azienda.id) %>"><%= t('impostazioni.title') %></a>
+    <% if (!locals.senzaPanoramica) { %><a href="/impostazioni?azienda=<%= encodeURIComponent(azienda.id) %>"><%= t('impostazioni.title') %></a><% } %>
     <h1><%= t('impostazioni.pagine.' + sezione + '.titolo') %></h1>
     <p class="page-head__sub"><%= azienda.name %></p>
   </div>
 </div>
 <div class="stack-gap impostazioni-pagina">
-  <%- include('_nav') %>
+  <% if (!locals.senzaPanoramica) { %><%- include('_nav') %><% } %>
   <%- include('_scelta', { azione: '/impostazioni/' + sezione }) %>
-  <% if (error) { %><div class="errors" role="alert"><h2><%= t(error) %></h2></div><% } %>
+  <% if (error) { %><div class="errors" id="form-error" role="alert"><h2><%= t(error) %></h2></div><% } %>
   <% if (sezione === 'azienda') { %><%- include('_dati') %><% } %>
-  <% if (sezione === 'scheda') { %><%- include('_sezioni') %><% } %>
+  <% if (sezione === 'scheda') { %><%- include('_sezioni') %><%- include('_approvazione') %><% } %>
   <% if (sezione === 'cartelli') { %><%- include('_cartello') %><% } %>
   <% if (sezione === 'ruoli') { %><%- include('_ruoli') %><% } %>
+  <% if (sezione === 'fornitori') { %><%- include('_fornitori') %><% } %>
+  <% if (sezione === 'firme') { %><%- include('_firme') %><% } %>
   <% if (sezione === 'condizioni') { %><%- include('_condizioni') %><% } %>
+  <% if (sezione === 'esportazione') { %><%- include('_esportazione') %><% } %>
 </div>
 <%- include('../partials/bottom') %>

@@ -30,6 +30,15 @@ const INCLUDE = {
 
 export type InterventoFull = Prisma.InterventoGetPayload<{ include: typeof INCLUDE }>;
 
+/** Потвърдените листове на фирмата, цели — за PDF/A-тата в износа (aziende/esportazione-documenti.ts). */
+export function interventiConfermatiDi(aziendaId: string): Promise<InterventoFull[]> {
+  return prisma.intervento.findMany({
+    where: { aziendaId, confermatoAt: { not: null } },
+    orderBy: { numero: 'asc' },
+    include: INCLUDE,
+  });
+}
+
 const LIST_SELECT = {
   id: true,
   numero: true,

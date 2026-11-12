@@ -1,0 +1,87 @@
+<%
+  // Износът и смяната на доставчика (routes/impostazioni-esportazione.ts; Data Act, чл. 23–30): свалянето с
+  // паролата; искането с избора какво става с данните, удължаването веднъж, оттеглянето; свършилата фирма —
+  // само свалянето до изтриването.
+  const e = esportazione;
+  const az = encodeURIComponent(azienda.id);
+%><section aria-labelledby="h-scarica">
+  <h2 class="section__title" id="h-scarica"><%= t('esportazione.scarica.titolo') %></h2>
+  <% if (!e.attiva) { %><div class="notice" role="status">
+    <p><strong><%= t('esportazione.cambio.terminato', { data: fmt.dayRoma(azienda.deactivatedAt) }) %></strong></p>
+    <% if (e.eliminazione) { %><p><%= t('esportazione.cambio.eliminazione', { data: fmt.dayRoma(e.eliminazione) }) %></p><% } %>
+  </div><% } %>
+  <p><%= t('esportazione.scarica.testo') %></p>
+  <p class="muted"><%= t('esportazione.scarica.esclusi') %> <a href="/esportazione"><%= t('esportazione.scarica.formato') %></a></p>
+  <p class="muted"><% if (!e.ultima) { %><%= t('esportazione.scarica.mai') %><% } else if (e.ultima.nome) { %><%= t('esportazione.scarica.ultima', { data: fmt.dateTime(e.ultima.at), nome: e.ultima.nome }) %><% } else { %><%= t('esportazione.scarica.ultimaPortale', { data: fmt.dateTime(e.ultima.at) }) %><% } %></p>
+  <form class="form form--tight" method="post" action="/impostazioni/esportazione/scarica" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <div class="field">
+      <label class="field__label" for="esp-password"><%= t('esportazione.scarica.password') %></label>
+      <input class="input" id="esp-password" name="password" type="password" autocomplete="current-password" required aria-describedby="hint-esp-password<% if (error === 'esportazione.errore.password') { %> form-error<% } %>"<% if (error === 'esportazione.errore.password') { %> aria-invalid="true"<% } %>>
+      <p class="field__hint" id="hint-esp-password"><%= t('esportazione.scarica.passwordAiuto') %></p>
+    </div>
+    <div class="toolbar"><button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'download' }) %><%= t('esportazione.scarica.bottone') %></button></div>
+  </form>
+</section>
+<% if (e.attiva) { %><section aria-labelledby="h-cambio">
+  <h2 class="section__title" id="h-cambio"><%= t('esportazione.cambio.titolo') %></h2>
+  <% if (e.stato === 'in_corso') { %>
+  <div class="notice" role="status">
+    <p><strong><%= t('esportazione.cambio.inCorso', { data: fmt.dayRoma(azienda.cambioRichiestoAt), esito: t('esportazione.cambio.esiti.' + azienda.cambioEsito) }) %></strong></p>
+    <p><%= t('esportazione.cambio.fino', { data: fmt.dayRoma(e.ultimoGiorno) }) %> <%= e.giorni === 1 ? t('esportazione.cambio.giorno') : t('esportazione.cambio.giorni', { n: e.giorni }) %></p>
+  </div>
+  <form class="form form--tight" method="post" action="/impostazioni/esportazione/esito" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <fieldset class="choice">
+      <legend><%= t('esportazione.cambio.esito') %></legend>
+      <div class="choice__opts">
+        <% for (const esito of e.esiti) { %><label class="tick"><input type="radio" name="esito" value="<%= esito %>"<% if (esito === azienda.cambioEsito) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('esportazione.cambio.esiti.' + esito) %></span></label>
+        <% } %>
+      </div>
+    </fieldset>
+    <div class="toolbar"><button class="btn" type="submit"><%= t('esportazione.cambio.cambiaEsito') %></button></div>
+  </form>
+  <% if (azienda.cambioProrogato) { %><p class="muted"><%= t('esportazione.cambio.prorogato') %></p>
+  <% } else { %><form class="form form--tight" method="post" action="/impostazioni/esportazione/proroga" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <div class="field">
+      <label class="field__label" for="esp-proroga"><%= t('esportazione.cambio.prorogaDi') %></label>
+      <select class="select" id="esp-proroga" name="giorni">
+        <% for (const g of e.proroghe) { %><option value="<%= g %>"><%= t('esportazione.cambio.prorogaGiorni', { n: g }) %></option>
+        <% } %>
+      </select>
+      <p class="field__hint"><%= t('esportazione.cambio.prorogaAltro') %></p>
+    </div>
+    <div class="toolbar"><button class="btn" type="submit"><%= t('esportazione.cambio.proroga') %></button></div>
+  </form><% } %>
+  <form class="form form--tight" method="post" action="/impostazioni/esportazione/annulla" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <p class="muted"><%= t('esportazione.cambio.annullaTesto') %></p>
+    <div class="toolbar"><button class="btn" type="submit"><%= t('esportazione.cambio.annulla') %></button></div>
+  </form>
+  <% } else { %>
+  <p><%= t('esportazione.cambio.intro') %></p>
+  <p class="muted"><%= t('esportazione.cambio.comeFunziona') %></p>
+  <form class="form form--tight" method="post" action="/impostazioni/esportazione/cambio" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <fieldset class="choice"<% if (error === 'esportazione.errore.esito') { %> aria-describedby="form-error"<% } %>>
+      <legend><%= t('esportazione.cambio.esito') %></legend>
+      <div class="choice__opts">
+        <% for (const esito of e.esiti) { %><label class="tick"><input type="radio" name="esito" value="<%= esito %>"><span class="tick__box" aria-hidden="true"></span><span><%= t('esportazione.cambio.esiti.' + esito) %></span></label>
+        <% } %>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label class="field__label" for="esp-conferma"><%= t('esportazione.cambio.conferma', { nome: azienda.name }) %></label>
+      <input class="input" id="esp-conferma" name="conferma" type="text" autocomplete="off" required maxlength="120"<% if (error === 'esportazione.errore.conferma') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+    </div>
+    <label class="tick"><input type="checkbox" name="letto" value="1"><span class="tick__box" aria-hidden="true"></span><span><%= t('esportazione.cambio.letto') %> <a href="/condizioni#allegato-cambio"><%= t('esportazione.cambio.allegato') %></a></span></label>
+    <div class="toolbar"><button class="btn btn--danger" type="submit"><%= t('esportazione.cambio.richiedi') %></button></div>
+  </form>
+  <% } %>
+</section><% } %>

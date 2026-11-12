@@ -17,6 +17,14 @@ export interface VoceNovita {
 
 /** Най-новите отгоре; в един ден — по важност. */
 export const VOCI: readonly VoceNovita[] = [
+  { id: '2026-11-12-ordini-fornitori', data: '2026-11-12' },
+  { id: '2026-11-12-approvazione', data: '2026-11-12' },
+  { id: '2026-11-12-versioni', data: '2026-11-12' },
+  { id: '2026-11-12-etichette-qr', data: '2026-11-12' },
+  { id: '2026-11-12-copia-firmatario', data: '2026-11-12' },
+  { id: '2026-11-12-pdfa', data: '2026-11-12' },
+  { id: '2026-11-12-esportazione', data: '2026-11-12' },
+  { id: '2026-11-12-cambio-fornitore', data: '2026-11-12' },
   { id: '2026-11-11-note-sezioni', data: '2026-11-11' },
   { id: '2026-11-10-menu', data: '2026-11-10' },
   { id: '2026-11-10-cerca', data: '2026-11-10' },

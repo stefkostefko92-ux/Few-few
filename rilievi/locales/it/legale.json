@@ -109,6 +109,30 @@
       "versione": "Condizioni accettate per l'azienda: versione del {versione}.",
       "regole": "Le tue regole d'uso: versione del {versione}.",
       "pagina": "Leggi le condizioni e le regole d'uso"
+    },
+    "annuncio": {
+      "titolo": "Nuove Condizioni di servizio dal {data}",
+      "testo": "Dal {data} entrano in vigore le nuove Condizioni di servizio, con il nuovo Allegato B sul cambio di fornitore e l'esportazione dei dati (Data Act). Le modifiche sono elencate su rilievi.carbonstealth.eu/condizioni/prossima. L'amministratore dell'azienda dovrà accettarle; fino ad allora vale la versione attuale. Chi non le accetta può recedere senza oneri prima della loro entrata in vigore (art. 18.3)."
+    },
+    "prossima": {
+      "title": "Prossima versione delle Condizioni",
+      "lead": "Questa versione entrerà in vigore il {data}. Fino ad allora vale la versione attuale.",
+      "nonAnnunciata": "Questa versione non è ancora in vigore e non ha ancora una data: entra in vigore solo 30 giorni dopo l'annuncio agli amministratori.",
+      "cambia": "Che cosa cambia",
+      "tipi": {
+        "nuovo": "nuovo",
+        "modificato": "modificato",
+        "eliminato": "eliminato"
+      },
+      "vigente": "La versione in vigore"
+    },
+    "informativa": {
+      "titolo": "Informativa sul trattamento dei dati personali (art. 13 GDPR)",
+      "modello": "Titolare del trattamento: {azienda}{sede}. Contatto: {contatto}.\n\nQuali dati: il nome, la firma tracciata su questo schermo, i dati dell'intervento o del verbale e, se lo indicate, l'indirizzo email.\n\nPerché e su quale base: per documentare il lavoro eseguito e la vostra conferma, sulla base del legittimo interesse di {azienda} a documentare l'intervento e la sua accettazione (art. 6, par. 1, lett. f) GDPR) e, per chi firma come parte del contratto, dell'esecuzione del contratto (lett. b)). Se indicate l'email, vi inviamo copia in PDF; l'email è facoltativa e non viene conservata.\n\nChi altro vede i dati: Carbon Stealth VCC (Bulgaria), che gestisce il portale per conto di {azienda} come responsabile del trattamento (art. 28 GDPR), con server in Germania (netcup GmbH) e invio delle email tramite Brevo (Francia). Eventuali trasferimenti fuori dall'Unione per l'invio delle email sono tutelati da clausole contrattuali tipo (art. 46 GDPR).\n\nConservazione: per il tempo necessario a documentare l'intervento e a far valere o difendere un diritto, di regola 10 anni dalla firma.\n\nDiritti: accesso, rettifica, cancellazione, limitazione e opposizione (artt. 15–21 GDPR), scrivendo a {contatto}. Dopo la firma il documento non si modifica: per correzioni rivolgetevi a {azienda}. Potete proporre reclamo al Garante per la protezione dei dati personali (garanteprivacy.it) o all'autorità del vostro paese. Non ci sono decisioni automatizzate.",
+      "contattoMancante": "i recapiti dell'azienda",
+      "copiaEmail": "Email per ricevere la copia in PDF (facoltativa)",
+      "copiaEmailHint": "La copia firmata parte appena confermato. L'indirizzo serve solo per l'invio e non viene conservato.",
+      "copiaEmailErrata": "Scrivi un indirizzo email valido, o lascia il campo vuoto."
     }
   }
 }

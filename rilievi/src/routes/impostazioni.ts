@@ -1,13 +1,15 @@
 import { Router, type Request } from 'express';
 import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { nomiSalvati, permessiSalvati } from '../auth/permessi.js';
+import { ultimaEsportazione } from '../aziende/cambio.js';
+import { fornitoriDi } from '../ordini/fornitori.js';
 import { datiSalvati } from '../aziende/dati.js';
 import { aziendeImpostabili, setOrdineSezioni } from '../aziende/sezioni.js';
 import { modelloDi } from '../cartelli/modelli.js';
 import { prisma } from '../db.js';
 import { setFlash } from '../http/flash.js';
 import { ultimaAccettazione } from '../legale/accettazioni.js';
-import { VERSIONE } from '../legale/versioni.js';
+import { VERSIONE, versioneProssima } from '../legale/versioni.js';
 import { parseMossa, parseOrdine, sposta } from '../schede/ordine.js';
 import {
   ICONE_SEZIONI,
@@ -56,6 +58,11 @@ async function statoCondizioni(azienda: AziendaImpostabile) {
         ? 'firmate'
         : 'esistente',
     versione: VERSIONE.CONDIZIONI,
+    // La prossima versione — solo annunciata (art. 18.1): prima non ha una data.
+    prossima: (() => {
+      const p = versioneProssima('CONDIZIONI');
+      return p?.dal ? { versione: p.versione, dal: p.dal } : null;
+    })(),
     accettazione: accettazione
       ? { at: accettazione.at, nome: accettazione.userNome, versione: accettazione.versione }
       : null,
@@ -73,7 +80,11 @@ async function riepilogo(
   const ruoli =
     Object.keys(nomiSalvati(azienda.nomiRuoli)).length +
     Object.keys(permessiSalvati(azienda.permessiRuoli)).length;
-  const condizioni = await statoCondizioni(azienda);
+  const [condizioni, ultima, nFornitori] = await Promise.all([
+    statoCondizioni(azienda),
+    ultimaEsportazione(azienda.id),
+    prisma.fornitore.count({ where: { aziendaId: azienda.id } }),
+  ]);
   const righe: Record<SezioneImpostazioni, string> = {
     azienda:
       t(dati?.ragioneSociale ? 'impostazioni.hub.datiSi' : 'impostazioni.hub.datiNo') +
@@ -90,6 +101,20 @@ async function riepilogo(
       condizioni.stato === 'firmate' && condizioni.accettazione
         ? t('impostazioni.hub.firmate', { data: giorno(condizioni.accettazione.at) })
         : t(`impostazioni.hub.${condizioni.stato}`),
+    fornitori:
+      nFornitori > 0 ? t('flusso.fornitori.hubN', { n: nFornitori }) : t('flusso.fornitori.hub0'),
+    firme: t(
+      azienda.informativaFirme
+        ? 'impostazioni.hub.informativaPropria'
+        : 'impostazioni.hub.informativaModello',
+    ),
+    esportazione: azienda.cambioFineAt
+      ? t('impostazioni.hub.cambioInCorso', {
+          data: giorno(new Date(azienda.cambioFineAt.getTime() - 1)),
+        })
+      : ultima
+        ? t('impostazioni.hub.esportazioneUltima', { data: giorno(ultima.at) })
+        : t('impostazioni.hub.esportazioneMai'),
   };
   return righe;
 }
@@ -102,7 +127,7 @@ impostazioniRouter.get('/impostazioni', settings, async (req, res) => {
     azienda,
     sezioni: SEZIONI_IMPOSTAZIONI,
     icone: ICONE_SEZIONI,
-    riepilogo: await riepilogo(azienda, res.locals.t, res.locals.fmt.day),
+    riepilogo: await riepilogo(azienda, res.locals.t, res.locals.fmt.dayRoma),
     pathSezione,
   });
 });
@@ -118,6 +143,7 @@ impostazioniRouter.get('/impostazioni/:sezione', settings, async (req, res, next
     aziende,
     azienda,
     ...(sezione === 'condizioni' ? { condizioni: await statoCondizioni(azienda) } : {}),
+    ...(sezione === 'fornitori' ? { fornitori: await fornitoriDi(azienda.id) } : {}),
   });
 });
 

@@ -11,7 +11,7 @@
   const novita = currentUser && !bareMain && typeof novitaPopup !== 'undefined' && novitaPopup ? novitaPopup : null;
   if (novita) sheets.push('novita');
   // Съобщенията на MASTER до фирмите (src/master/banner.ts) — лентите над съдържанието.
-  const avvisi = currentUser && !bareMain && typeof comunicazioni !== 'undefined' && comunicazioni.length > 0;
+  const avvisi = currentUser && !bareMain && ((typeof comunicazioni !== 'undefined' && comunicazioni.length > 0) || (typeof cambiInCorso !== 'undefined' && cambiInCorso.length > 0));
 %><!doctype html>
 <html lang="<%= locale %>"<% if (personale) { %> class="tema-personale" data-theme="<%= personale.schema %>"<% } else if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>
 <head>

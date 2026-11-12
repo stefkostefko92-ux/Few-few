@@ -77,6 +77,28 @@ export const AUDIT_ACTIONS = [
   'COMUNICAZIONE_CREATE',
   'COMUNICAZIONE_STOP',
   'PROVA_VERIFICA',
+  // Смяната на доставчика (Data Act; src/aziende/cambio.ts) и регистърът на нарушенията (чл. 33(5) GDPR).
+  'AZIENDA_CAMBIO_RICHIESTO',
+  'AZIENDA_CAMBIO_PROROGATO',
+  'AZIENDA_CAMBIO_ANNULLATO',
+  'AZIENDA_CAMBIO_ESITO',
+  'AZIENDA_CAMBIO_CONCLUSO',
+  'VIOLAZIONE_CREATE',
+  'VIOLAZIONE_UPDATE',
+  'CONDIZIONI_ANNUNCIATE',
+  // Информацията по чл. 13 на страницата на подписа (legale/informativa.ts).
+  'AZIENDA_INFORMATIVA',
+  // Двете копия на подписания протокол по имейл до подписалия (routes/firma-copia.ts).
+  'VERBALE_EMAIL',
+  // Одобрението на картите (schede/approvazione.ts), адресникът на доставчиците и поръчките (ordini/invio.ts).
+  'SCHEDA_INVIATA',
+  'SCHEDA_APPROVATA',
+  'SCHEDA_RESPINTA',
+  'AZIENDA_APPROVAZIONE',
+  'FORNITORE_CREATE',
+  'FORNITORE_DELETE',
+  'ORDINE_INVIATO',
+  'ORDINE_STATO',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
@@ -99,7 +121,10 @@ export interface AuditEntry {
     | 'cartello'
     | 'calcolo'
     | 'verbale'
-    | 'comunicazione';
+    | 'comunicazione'
+    | 'violazione'
+    | 'fornitore'
+    | 'ordine';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */
   meta?: Prisma.InputJsonObject;

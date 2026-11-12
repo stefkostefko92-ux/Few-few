@@ -1,0 +1,117 @@
+<%
+  // Износът на данните и смяната на доставчика (routes/esportazione.ts; чл. 26 и 28 Data Act): файлът,
+  // полетата на dati.json от кода (aziende/formato.ts), стъпките, цената, ограниченията, юрисдикцията.
+  // Въпросите и стъпките са дума по дума тези в JSON-LD (seo/structured-esportazione.ts).
+  const p = 'esportazione.pagina.';
+%><%- include('top', { pageTitle: t(p + 'meta.title'), description: t(p + 'meta.description'), keywords: t(p + 'meta.keywords'), extraSheets: ['site-percorso', 'site-legale'] }) %>
+<div class="prose legale-pagina">
+  <nav class="percorso" aria-label="<%= t('novita.percorso') %>">
+    <ol>
+      <li><a href="<%= homePath %>">Rilievi Impianti</a></li>
+      <li><a href="<%= esportazionePath %>" aria-current="page"><%= t(p + 'nav') %></a></li>
+    </ol>
+  </nav>
+  <h1><%= t(p + 'titolo') %></h1>
+  <p class="legale-pagina__lead"><%= t(p + 'lead') %></p>
+  <p><%= t(p + 'intro') %> <a href="<%= condizioniPath %>#allegato-cambio"><%= t('esportazione.cambio.allegato') %></a></p>
+  <p class="prose__updated"><%= t(p + 'aggiornato', { data: fmt.dayLong(aggiornato) }) %></p>
+
+  <nav class="legale-indice" aria-labelledby="h-indice">
+    <h2 id="h-indice"><%= t(p + 'indice') %></h2>
+    <ul>
+      <% for (const id of ['scaricare', 'file', 'struttura', 'esclusi', 'cambio', 'costi', 'limiti', 'giurisdizione', 'faq']) { %><li><a href="#<%= id %>"><%= t(p + id + '.titolo') %></a></li>
+      <% } %>
+    </ul>
+  </nav>
+
+  <section aria-labelledby="scaricare">
+    <h2 id="scaricare"><%= t(p + 'scaricare.titolo') %></h2>
+    <p><%= t(p + 'scaricare.testo') %></p>
+    <p class="muted"><%= t(p + 'scaricare.tecnico', { indirizzo: scaricaPath }) %></p>
+  </section>
+
+  <section aria-labelledby="file">
+    <h2 id="file"><%= t(p + 'file.titolo') %></h2>
+    <p><%= t(p + 'file.testo') %></p>
+    <ul>
+      <li><%= t(p + 'file.dati') %></li>
+      <li><%= t(p + 'file.logo') %></li>
+      <li><%= t(p + 'file.allegati') %></li>
+      <li><%= t(p + 'file.documenti') %></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="struttura">
+    <h2 id="struttura"><%= t(p + 'struttura.titolo') %></h2>
+    <p><%= t(p + 'struttura.intro') %></p>
+    <dl class="esportazione-campi">
+      <% for (const s of sezioni) { %><div>
+        <dt><code><%= s %></code></dt>
+        <dd>
+          <p><%= t(p + 'struttura.sezioni.' + s, { formato }) %></p>
+          <% if (campi[s].length > 0) { %><details>
+            <summary><%= t(p + 'struttura.campi') %> (<%= campi[s].length %>)</summary>
+            <p class="esportazione-campi__elenco"><% campi[s].forEach((c, i) => { %><%= i ? ', ' : '' %><code><%= c %></code><% }) %></p>
+          </details><% } %>
+          <% if (s === 'schede') { %><p><%= t(p + 'struttura.figli') %></p>
+          <ul>
+            <% for (const [f, elenco] of Object.entries(figli)) { %><li><%= t(p + 'struttura.figliNomi.' + f) %>.
+              <details>
+                <summary><%= t(p + 'struttura.campi') %> (<%= elenco.length %>)</summary>
+                <p class="esportazione-campi__elenco"><% elenco.forEach((c, i) => { %><%= i ? ', ' : '' %><code><%= c %></code><% }) %></p>
+              </details>
+            </li>
+            <% } %>
+          </ul><% } %>
+        </dd>
+      </div>
+      <% } %>
+    </dl>
+  </section>
+
+  <section aria-labelledby="esclusi">
+    <h2 id="esclusi"><%= t(p + 'esclusi.titolo') %></h2>
+    <p><%= t(p + 'esclusi.testo') %></p>
+  </section>
+
+  <section aria-labelledby="cambio">
+    <h2 id="cambio"><%= t(p + 'cambio.titolo') %></h2>
+    <ol>
+      <% for (const id of passi) { %><li><%= t(p + 'cambio.passi.' + id) %></li>
+      <% } %>
+    </ol>
+    <p><%= t(p + 'cambio.impossibile') %></p>
+  </section>
+
+  <section aria-labelledby="costi">
+    <h2 id="costi"><%= t(p + 'costi.titolo') %></h2>
+    <p><%= t(p + 'costi.testo') %></p>
+  </section>
+
+  <section aria-labelledby="limiti">
+    <h2 id="limiti"><%= t(p + 'limiti.titolo') %></h2>
+    <p><%= t(p + 'limiti.testo') %></p>
+  </section>
+
+  <section aria-labelledby="giurisdizione">
+    <h2 id="giurisdizione"><%= t(p + 'giurisdizione.titolo') %></h2>
+    <ul>
+      <li><%= t(p + 'giurisdizione.fornitore') %></li>
+      <li><%= t(p + 'giurisdizione.infrastruttura') %></li>
+      <li><%= t(p + 'giurisdizione.email') %></li>
+    </ul>
+    <p><%= t(p + 'giurisdizione.misureTitolo') %></p>
+    <ul>
+      <% for (const id of misure) { %><li><%= t(p + 'giurisdizione.misure.' + id) %></li>
+      <% } %>
+    </ul>
+  </section>
+
+  <section aria-labelledby="faq">
+    <h2 id="faq"><%= t(p + 'faq.titolo') %></h2>
+    <% for (const id of faq) { %><h3 class="faq__q"><%= t(p + 'faq.voci.' + id + '.q') %></h3>
+    <p class="faq__a"><%= t(p + 'faq.voci.' + id + '.a') %></p>
+    <% } %>
+  </section>
+</div>
+<%- include('bottom') %>

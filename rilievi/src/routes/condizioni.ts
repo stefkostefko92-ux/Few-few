@@ -11,7 +11,7 @@ import { ACCETTA_PATH, COPIA_PATH } from '../legale/percorsi.js';
 import { CAMPI_ACCETTAZIONE, sigilloValido } from '../legale/sigillo.js';
 import { daAccettare, inAttesa } from '../legale/stato.js';
 import { hashTesto, leggiTesto } from '../legale/testi.js';
-import { TESTI_AGGIORNATI, VERSIONE } from '../legale/versioni.js';
+import { modifiche, testiAggiornati, versioneProssima, VERSIONE } from '../legale/versioni.js';
 import { logger } from '../logger.js';
 import { CONDIZIONI_PATH, CONDIZIONI_PDF_PATH } from '../seo/paths.js';
 import { paginaStructuredData } from '../seo/structured-data.js';
@@ -38,12 +38,36 @@ condizioniRouter.get(CONDIZIONI_PATH, (req, res) => {
     jsonLd: paginaStructuredData(t, locals.canonical ?? '', {
       title: t('legale.pagina.title'),
       description: t('legale.pagina.metaDescription'),
-      updated: TESTI_AGGIORNATI,
+      updated: testiAggiornati(),
     }),
     condizioni,
     regole,
     hash: { condizioni: hashTesto(condizioni), regole: hashTesto(regole) },
     pdfPath: CONDIZIONI_PDF_PATH,
+  });
+});
+
+/**
+ * Следващата версия на условията с това, което се сменя (обявата по чл. 18.1 сочи тук) — извън индекса:
+ * докато не е в сила, тя не е „условията“; каноничната страница остава `/condizioni`.
+ */
+condizioniRouter.get(`${CONDIZIONI_PATH}/prossima`, (req, res) => {
+  publicCache(req, res);
+  const prossima = versioneProssima('CONDIZIONI');
+  if (!prossima) return res.redirect(303, CONDIZIONI_PATH);
+  const condizioni = leggiTesto('CONDIZIONI', prossima.versione);
+  const regole = leggiTesto('REGOLE');
+  res.render('site/condizioni', {
+    ...siteLocals(req, null),
+    jsonLd: null,
+    condizioni,
+    regole,
+    hash: { condizioni: hashTesto(condizioni), regole: hashTesto(regole) },
+    pdfPath: CONDIZIONI_PDF_PATH,
+    prossima: {
+      dal: prossima.dal,
+      modifiche: modifiche(leggiTesto('CONDIZIONI'), condizioni),
+    },
   });
 });
 

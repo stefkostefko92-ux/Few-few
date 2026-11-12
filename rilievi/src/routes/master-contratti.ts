@@ -3,7 +3,8 @@ import { principalOf, requireCapability, requireCsrf, sendError } from '../auth/
 import { isAziendaId } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
 import { elencoContratti, richiediFirma } from '../master/contratti.js';
-import { VERSIONE } from '../legale/versioni.js';
+import { annunciaVersione, statoAnnuncio } from '../legale/annunci.js';
+import { PREAVVISO_GIORNI, VERSIONE } from '../legale/versioni.js';
 
 /**
  * „Contratti“ в конзолата на MASTER: договорът на всяка фирма (подписан с код, приет без подпис отпреди
@@ -19,6 +20,8 @@ masterContrattiRouter.get('/master/contratti', manage, async (_req, res) => {
   res.set('Cache-Control', 'no-store').render('master/contratti', {
     righe,
     versione: VERSIONE.CONDIZIONI,
+    prossima: await statoAnnuncio('CONDIZIONI'),
+    preavviso: PREAVVISO_GIORNI,
     totali: { firmate: conta('firmate'), esistente: conta('esistente'), attesa: conta('attesa') },
   });
 });
@@ -38,3 +41,10 @@ masterContrattiRouter.post(
     res.redirect(303, '/master/contratti');
   },
 );
+
+/** Обявата на следващата версия на условията (чл. 18.1): лента и писмо до всички администратори. */
+masterContrattiRouter.post('/master/contratti/annuncia', manage, requireCsrf, async (req, res) => {
+  const esito = await annunciaVersione(principalOf(req).user, 'CONDIZIONI');
+  setFlash(res, esito === 'ok' ? 'ok' : 'info', `master.contratti.prossima.flash.${esito}`);
+  res.redirect(303, '/master/contratti');
+});

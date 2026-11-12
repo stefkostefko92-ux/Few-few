@@ -3,10 +3,11 @@ import { config, isProduction } from '../config.js';
 import { randomToken, safeEqual } from '../crypto.js';
 import { readCookie } from '../http/cookies.js';
 import { setFlash } from '../http/flash.js';
-import { ACCETTA_PATH, FIRMA_PATH } from '../legale/percorsi.js';
+import { ACCETTA_PATH, COPIA_PATH, FIRMA_PATH } from '../legale/percorsi.js';
 import { daAccettare, inAttesa } from '../legale/stato.js';
 import { HOUR } from '../time.js';
 import type { Capability } from './roles.js';
+import { soloEsportazione } from './memberships.js';
 import { canAnywhere } from './scope.js';
 import type { Principal } from '../types.js';
 
@@ -52,6 +53,21 @@ export function safeNext(raw: unknown, fallback = '/schede'): string {
 /** Докато първата парола не е сменена, отворени са само тези пътища. */
 const WHILE_MUST_CHANGE = new Set(['/account', '/account/password', '/esci']);
 
+/**
+ * Свършилата фирма (само износ, auth/memberships.ts): отворени са износът, копието на договора, изходът и
+ * сигурността на собствения акаунт (парола, 2FA — маршрутите проверяват записа сами; способностите
+ * остават затворени в scope.ts).
+ */
+export const ESPORTAZIONE_PORTALE_PATH = '/impostazioni/esportazione';
+const WHILE_EXPORT_ONLY = new Set([
+  ESPORTAZIONE_PORTALE_PATH,
+  `${ESPORTAZIONE_PORTALE_PATH}/scarica`,
+  COPIA_PATH,
+  '/esci',
+]);
+const exportOnlyAllowed = (path: string): boolean =>
+  WHILE_EXPORT_ONLY.has(path) || path === '/account' || path.startsWith('/account/');
+
 /** Докато условията или правилата не са приети, отворени са само приемането, подписът и изходът. */
 const WHILE_PENDING = new Set([ACCETTA_PATH, FIRMA_PATH, `${FIRMA_PATH}/nuovo-codice`, '/esci']);
 
@@ -70,6 +86,15 @@ export function requireUser(req: Request, res: Response, next: NextFunction): vo
   if (principal.user.mustChangePassword && !WHILE_MUST_CHANGE.has(req.path)) {
     setFlash(res, 'info', 'flash.mustChangePassword');
     res.redirect('/account');
+    return;
+  }
+  // ADMIN на свършила фирма (и само на такива): 90 дни само износът — всичко друго води там.
+  if (soloEsportazione(principal.user) && !exportOnlyAllowed(req.path)) {
+    if (isPartial(req)) {
+      res.status(403).type('text/plain').send(res.locals.t('esportazione.cambio.soloEsportazione'));
+      return;
+    }
+    res.redirect(303, ESPORTAZIONE_PORTALE_PATH);
     return;
   }
   // Без приети условия за услугата и правила за ползване порталът не се ползва (src/legale/).

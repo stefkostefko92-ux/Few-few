@@ -17,6 +17,7 @@ export const CAPACITA_CONFIGURABILI = [
   'schede:write',
   'schede:delete',
   'schede:trash',
+  'schede:approve',
   'interventi:read',
   'interventi:write',
   'audit:view',
@@ -45,6 +46,7 @@ const IMPLICA: Readonly<Partial<Record<CapacitaConfigurabile, CapacitaConfigurab
   'schede:write': 'schede:read',
   'schede:delete': 'schede:read',
   'schede:trash': 'schede:read',
+  'schede:approve': 'schede:read',
   'interventi:write': 'interventi:read',
 };
 

@@ -20,6 +20,7 @@ export type Capability =
   | 'schede:write'
   | 'schede:delete'
   | 'schede:trash'
+  | 'schede:approve'
   | 'interventi:read'
   | 'interventi:write'
   | 'users:manage'
@@ -34,6 +35,8 @@ const REQUIRED: Readonly<Record<Capability, Role>> = {
   'schede:write': 'OPERATORE',
   'schede:delete': 'RESPONSABILE',
   'schede:trash': 'ADMIN',
+  // Одобрението на картите (само във фирма, която го е включила — schede/approvazione.ts).
+  'schede:approve': 'RESPONSABILE',
   // Листовете за интервенция („Servizio assistenza elevatori“, src/interventi/): четат ги като картите;
   // попълва, подписва и праща техникът (като писането на карта). Подписаният лист не се пипа от никого.
   'interventi:read': 'CLIENTE',

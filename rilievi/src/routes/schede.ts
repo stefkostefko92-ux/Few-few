@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { allegatiDi } from '../allegati/service.js';
+import { ordiniDellaScheda } from '../ordini/invio.js';
+import { moduliDellaScheda } from '../ordini/modulo-scheda.js';
+import { contaDaApprovare, ordineConsentito } from '../schede/approvazione.js';
 import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
-import { canIn, spansAziende } from '../auth/scope.js';
+import { canAnywhere, canIn, spansAziende } from '../auth/scope.js';
 import { cartelliDellaScheda } from '../cartelli/scheda.js';
 import { verbaliDellaScheda } from '../verbali/service.js';
 import { ordineSezioniDi } from '../aziende/sezioni.js';
@@ -53,7 +56,11 @@ schedeRouter.get('/schede', read, async (req, res) => {
     res.render('schede/_results', view);
     return;
   }
-  res.render('schede/list', view);
+  // Картите, които чакат одобрение (точка C7) — лента за който одобрява.
+  const daApprovareN = canAnywhere(principalOf(req).user, 'schede:approve')
+    ? await contaDaApprovare(scope(req, 'schede:approve'))
+    : 0;
+  res.render('schede/list', { ...view, daApprovareN });
 });
 
 schedeRouter.get('/schede/nuova', write, async (req, res) => {
@@ -62,15 +69,33 @@ schedeRouter.get('/schede/nuova', write, async (req, res) => {
   const azienda =
     only?.id ??
     (choices.some((a) => a.id === preset) ? preset : choices.length === 1 ? choices[0]!.id : '');
+  // „Duplica“ (точка C4): новата карта взима полетата на друга (видима за човека, във фирма, в която пише),
+  // без самоличността на уредбата (матрикула, номер, бон) и с днешната дата; снимки и скици — не.
+  const da = typeof req.query.da === 'string' ? req.query.da : null;
+  const origine = da ? await getScheda(scope(req, 'schede:read'), da) : null;
+  const scrivibile = (aziendaId: string) =>
+    only ? only.id === aziendaId : choices.some((a) => a.id === aziendaId);
+  if (da && (!origine || !scrivibile(origine.aziendaId))) return notFound(req, res);
+  const values = origine
+    ? {
+        ...formValuesFromScheda(origine, res.locals.fmt),
+        data: businessDay(),
+        matricola: '',
+        numeroImpianto: '',
+        buonoLavoro: '',
+      }
+    : emptyFormValues(businessDay());
+  const scelta = origine?.aziendaId ?? azienda;
   await renderForm(req, res, 200, {
     scheda: null,
-    values: emptyFormValues(businessDay()),
+    values,
     errors: {},
     base: '',
     conflict: false,
     aziende: choices,
-    azienda,
-    ordineSezioni: await ordineSezioniDi(azienda || null),
+    azienda: scelta,
+    ordineSezioni: await ordineSezioniDi(scelta || null),
+    ...(origine ? { duplicataDa: schedaTitle(origine, res.locals.t) } : {}),
   });
 });
 
@@ -149,6 +174,13 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
     verbali: canIn(principalOf(req).user, 'interventi:read', scheda.aziendaId)
       ? await verbaliDellaScheda(scope(req, 'interventi:read'), scheda.id)
       : null,
+    // Одобрението, поръчките към доставчиците и версиите (routes/schede-approvazione.ts, ordini-invio.ts).
+    flusso: {
+      approva: canIn(principalOf(req).user, 'schede:approve', scheda.aziendaId),
+      consentito: ordineConsentito(scheda, scheda.azienda),
+      moduli: moduliDellaScheda(scheda),
+      ordini: await ordiniDellaScheda(scheda.id),
+    },
   });
 });
 

@@ -41,7 +41,11 @@ interface Definizione extends VoceMenu {
 const GRUPPI: ReadonlyArray<{ key: string; voci: readonly Definizione[] }> = [
   {
     key: 'impianti',
-    voci: [{ href: '/schede', key: 'nav.schede', icon: 'sheet', cap: 'schede:read' }],
+    voci: [
+      { href: '/schede', key: 'nav.schede', icon: 'sheet', cap: 'schede:read' },
+      // Пратените поръчки към доставчиците (точка C2; routes/ordini-invio.ts).
+      { href: '/ordini', key: 'nav.ordini', icon: 'mail', cap: 'schede:read' },
+    ],
   },
   {
     key: 'calcoli',
@@ -86,6 +90,13 @@ const GRUPPI: ReadonlyArray<{ key: string; voci: readonly Definizione[] }> = [
         cap: 'aziende:manage',
       },
       { href: '/master/verifica', key: 'nav.verifica', icon: 'shield', cap: 'aziende:manage' },
+      {
+        href: '/master/registri',
+        key: 'nav.trattamenti',
+        icon: 'clipboard',
+        cap: 'aziende:manage',
+      },
+      { href: '/master/violazioni', key: 'nav.violazioni', icon: 'alert', cap: 'aziende:manage' },
     ],
   },
 ];

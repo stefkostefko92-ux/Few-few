@@ -42,7 +42,11 @@
     "nuovo": "Nuovo",
     "cerca": "Cerca",
     "menu": "Menu",
-    "rapida": "Navigazione rapida"
+    "rapida": "Navigazione rapida",
+    "trattamenti": "Registro trattamenti",
+    "violazioni": "Violazioni dei dati",
+    "ordini": "Ordini ai fornitori",
+    "approvazioni": "Da approvare"
   },
   "common": {
     "yes": "Sì",
@@ -133,7 +137,18 @@
     "cartelloSaved": "Modello del cartello salvato.",
     "ruoliSaved": "Ruoli e permessi salvati.",
     "coloriSaved": "Colori salvati: il tema è ora «Personalizzato».",
-    "coloriReset": "Tornati ai colori del portale."
+    "coloriReset": "Tornati ai colori del portale.",
+    "cambio": {
+      "ok": "Cambio di fornitore richiesto. Il portale continua a funzionare fino alla fine del periodo di transizione; agli amministratori è arrivata un'email.",
+      "gia": "Per questa azienda c'è già una richiesta di cambio di fornitore.",
+      "prorogato": "Periodo di transizione prorogato.",
+      "nonProrogabile": "Il periodo di transizione non si può più prorogare: la proroga è una sola, ed è possibile solo finché il periodo è in corso.",
+      "annullato": "Richiesta di cambio di fornitore annullata. Il servizio continua come prima.",
+      "nessuno": "Non c'è nessuna richiesta di cambio di fornitore in corso.",
+      "esito": "Scelta sui dati aggiornata."
+    },
+    "informativaSalvata": "Informativa salvata.",
+    "informativaModello": "L'informativa torna al modello predefinito."
   },
   "pdfApp": {
     "attesa": "Preparo il PDF…",

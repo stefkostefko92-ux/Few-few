@@ -1,9 +1,12 @@
 import { rimuoviScheda } from '../allegati/archivio.js';
 import { writeAudit } from '../audit.js';
 import { prisma } from '../db.js';
+import { sendMail } from '../mail/mailer.js';
+import { cambioMail } from '../mail/templates.js';
 import { conservaFinoDa } from '../legale/emissioni.js';
 import { errorMessage, logger } from '../logger.js';
 import { DAY } from '../time.js';
+import { GIORNI_PRIMA_DELL_ELIMINAZIONE } from './cambio-tempi.js';
 
 /**
  * Краят на услугата за фирма (чл. 28, ал. 3, б. „g“ GDPR; одит, 4 ноември 2026). Деактивираната фирма
@@ -16,7 +19,7 @@ import { DAY } from '../time.js';
  * които са били САМО в нея (сесиите и връзките им падат с тях). Който е и в друга фирма, губи само
  * това членство. В регистъра остава един ред без фирма и без лични данни: кой, кога и колко.
  */
-export const GIORNI_PRIMA_DELL_ELIMINAZIONE = 90;
+export { GIORNI_PRIMA_DELL_ELIMINAZIONE };
 
 /** Денят, в който деактивираната фирма ще бъде изтрита. */
 export const eliminazioneIl = (deactivatedAt: Date): Date =>
@@ -27,9 +30,16 @@ export async function eliminaAzienda(aziendaId: string, actorId: string | null):
   const esito = await prisma.$transaction(
     async (tx) => {
       // Редът на фирмата се заключва: активиране наново и изтриване не се разминават.
-      const rows = await tx.$queryRaw<Array<{ deactivatedAt: Date | null }>>`
-        SELECT "deactivatedAt" FROM "Azienda" WHERE id = ${aziendaId} FOR UPDATE`;
-      if (!rows[0]?.deactivatedAt) return null;
+      const rows = await tx.$queryRaw<Array<{ deactivatedAt: Date | null; name: string }>>`
+        SELECT "deactivatedAt", name FROM "Azienda" WHERE id = ${aziendaId} FOR UPDATE`;
+      const riga = rows[0];
+      if (!riga?.deactivatedAt) return null;
+      // Адресите на администраторите — преди да изчезнат с хората: потвърждението на изтриването
+      // (Allegato B, B.13; чл. 25(2)(h) Data Act) тръгва след записа.
+      const admin = await tx.membership.findMany({
+        where: { aziendaId, role: 'ADMIN', user: { deactivatedAt: null } },
+        select: { user: { select: { email: true } } },
+      });
       const schede = await tx.scheda.findMany({ where: { aziendaId }, select: { id: true } });
       const membri = await tx.membership.findMany({
         where: { aziendaId },
@@ -69,13 +79,32 @@ export async function eliminaAzienda(aziendaId: string, actorId: string | null):
         },
         tx,
       );
-      return schede.map((s) => s.id);
+      return {
+        schede: schede.map((s) => s.id),
+        nome: riga.name,
+        indirizzi: [...new Set(admin.map((a) => a.user.email))],
+      };
     },
     { timeout: 120_000 },
   );
   if (!esito) return false;
+  for (const to of esito.indirizzi) {
+    await sendMail(
+      cambioMail({
+        to,
+        tipo: 'cancellato',
+        azienda: esito.nome,
+        esito: null,
+        fine: '',
+        eliminazione: '',
+        link: '',
+      }),
+    ).catch((error: unknown) =>
+      logger.warn({ err: errorMessage(error) }, 'azienda: потвърждението на изтриването не тръгна'),
+    );
+  }
   // Папките след записа: провал тук оставя файлове без карта, никога карта без файлове.
-  for (const schedaId of esito) {
+  for (const schedaId of esito.schede) {
     await rimuoviScheda(schedaId).catch((error: unknown) =>
       logger.warn({ schedaId, err: errorMessage(error) }, 'azienda: папката на картата остана'),
     );

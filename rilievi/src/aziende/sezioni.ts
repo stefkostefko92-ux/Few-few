@@ -38,6 +38,9 @@ export function aziendeImpostabili(user: SessionUser) {
       nomiRuoli: true,
       permessiRuoli: true,
       condizioniVersione: true,
+      cambioFineAt: true,
+      informativaFirme: true,
+      approvazioneSchede: true,
     },
   });
 }

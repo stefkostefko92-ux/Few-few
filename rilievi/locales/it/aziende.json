@@ -105,7 +105,8 @@
         "schede_trash": "Aprire il cestino: ripristinare ed eliminare per sempre",
         "interventi_read": "Vedere interventi e cartelli",
         "interventi_write": "Compilare interventi e cartelli",
-        "audit_view": "Vedere il registro: le proprie azioni e quelle dei ruoli sotto il proprio"
+        "audit_view": "Vedere il registro: le proprie azioni e quelle dei ruoli sotto il proprio",
+        "schede_approve": "Approvare le schede (se l'azienda usa l'approvazione)"
       },
       "error": {
         "tooLong": "Massimo 40 caratteri.",
