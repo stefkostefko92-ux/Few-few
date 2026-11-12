@@ -125,3 +125,13 @@ export function decifraRevolut(payload: string): string | null {
     return null;
   }
 }
+
+/** Адресът на webhook-а за алармите в Discord (съдържа токена му) — в базата шифрован, никога показан. */
+export const cifraAllarmi = (plaintext: string): string => cifra('discord-webhook-v1', plaintext);
+export function decifraAllarmi(payload: string): string | null {
+  try {
+    return decifra('discord-webhook-v1', payload);
+  } catch {
+    return null;
+  }
+}

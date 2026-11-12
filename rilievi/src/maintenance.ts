@@ -1,7 +1,10 @@
 import { config } from './config.js';
 import { prisma } from './db.js';
 import { errorMessage, logger } from './logger.js';
+import { allarme } from './allarmi/servizio.js';
 import { eseguiPassi, ricordaManutenzione } from './manutenzione-passi.js';
+import { aggiornaContestazioniAperte } from './pagamenti/contestazioni.js';
+import { riconciliaRimborsi } from './pagamenti/rimborsi-riconcilia.js';
 import { pulisciArrivi } from './allegati/archivio.js';
 import { concludiCambi } from './aziende/cambio.js';
 import { caricaAnnunci } from './legale/annunci.js';
@@ -79,11 +82,16 @@ export async function runMaintenance(): Promise<void> {
       ['avvisi', () => avvisaScadenze(quando)],
       // Плащанията без отговор: сверка с Revolut (изгубен webhook); плановете в опашка, чийто ден е дошъл.
       ['pagamenti', () => riconciliaInSospeso(quando)],
+      // Връщанията през Revolut, които още чакат крайното си състояние, и отворените спорове.
+      ['rimborsi', () => riconciliaRimborsi(quando)],
+      ['contestazioni', () => aggiornaContestazioniAperte()],
       ['piani', () => avviaPianiInCoda(quando)],
     ],
     quando,
   );
   ricordaManutenzione(esito);
+  // Паднала стъпка — и в Discord (само броят; имената са в „Salute del sistema“ и в лога).
+  if (esito.falliti.length > 0) void allarme('manutenzione', esito.falliti.length);
   if (Object.values(esito.conteggi).some((n) => n > 0))
     logger.info({ evento: 'manutenzione', ...esito.conteggi }, 'поддръжка: изчистено');
 }

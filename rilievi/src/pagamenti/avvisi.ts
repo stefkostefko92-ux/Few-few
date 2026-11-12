@@ -1,3 +1,4 @@
+import { allarme } from '../allarmi/servizio.js';
 import { config } from '../config.js';
 import { prisma } from '../db.js';
 import { errorMessage, logger } from '../logger.js';
@@ -43,6 +44,8 @@ export async function avvisaDopoPagamento(esito: EsitoApplica): Promise<void> {
     const link = `${config().PUBLIC_BASE_URL}/master/pagamenti`;
     const [master, chi] = await Promise.all([indirizziMaster(), emailDi(p.createdById)]);
     if (esito.tipo === 'verifica') {
+      // Платено, а планът не е тръгнал: и в Discord (без име и сума).
+      void allarme('pagamentoDaVerificare');
       for (const to of master)
         await invia(
           p.id,

@@ -188,7 +188,9 @@
         "credito": "Credito convertito",
         "rimborso": "Rimborsato",
         "fatturato": "Fatturato il",
-        "ordine": "Ordine Revolut"
+        "ordine": "Ordine Revolut",
+        "vies": "Consultazione VIES",
+        "viesData": "Data VIES"
       }
     },
     "mail": {

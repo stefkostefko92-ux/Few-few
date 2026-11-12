@@ -325,7 +325,8 @@ Google не поддържа IndexNow — там sitemap-ът се открив�
   - проверено възстановяване: всеки дъмп се възстановява във временен PostgreSQL без мрежа и се броят
     миграциите, фирмите и картите (`deploy/restore-test.sh`); провал — бекъпът е провал;
   - `backups/ULTIMO_OK` (часът на последния успешен), а при провал — `backups/ULTIMO_ERRORE`, критичен
-    ред в журнала (`rilievi-backup-alert.service`) и сигнал до `RILIEVI_ALERT_URL`, ако е зададен.
+    ред в журнала (`rilievi-backup-alert.service`) и аларма до `RILIEVI_ALERT_URL`, ако е зададен (по-долу,
+    „Аларми в Discord“).
 
   Ръчно: `sudo bash "$(sudo cat /opt/few-few/shared/rilievi/last-good)/deploy/backup.sh"`.
 
@@ -336,7 +337,7 @@ Google не поддържа IndexNow — там sitemap-ът се открив�
   RILIEVI_OFFSITE=u123456@u123456.your-storagebox.de:rilievi   # папката там я създай веднъж
   RILIEVI_OFFSITE_SSH="-p 23 -i /root/.ssh/rilievi_backup"      # ключ само за това, без парола
   RILIEVI_HEARTBEAT_URL=https://…/push/…   # Uptime Kuma push / Healthchecks: пропуснат ден = аларма
-  RILIEVI_ALERT_URL=https://ntfy.sh/…     # по избор: сигнал при провал
+  RILIEVI_ALERT_URL=https://discord.com/api/webhooks/…   # аларма при провал („Аларми в Discord“)
   ```
 
   Всяка нощ дъмповете (`daily/`) и снимките (`media/`) отиват там по SSH.
@@ -377,6 +378,41 @@ sudo docker compose start app worker
 (`DUMP="$(sudo sh -c 'ls -1t /opt/few-few/shared/rilievi/backups/pre-deploy-*.sql.gz | head -n 1')"`) и от
 папката на стария release в `/opt/few-few/releases/`, а вместо `start` —
 `sudo RILIEVI_SKIP_BACKUP=1 bash "$PWD/deploy/deploy.sh"` (той записва стария release в `last-good`).
+
+### Аларми в Discord
+
+Провалите на сървърните скриптове отиват в канал на Discord (`deploy/alert.sh`): дневният бекъп (и копието извън
+сървъра), проверката на възстановяването (`restore-test.sh`), бекъп, убит преди края
+(`rilievi-backup-alert.service`), и деплой, спрял с изход 1 или 4. Успешен деплой не пише (шум). Текстът е само
+кой скрипт, кой сървър, какво и кога — напр. `rilievi backup FALLITO su <host>: pg_dump exit 1 — 2026-11-12 03:10
+UTC`; без лични данни, пътища и адреси.
+
+1. Webhook-ът (по интерфейса на Discord; официалната помощ не е сверена тук): Server Settings → Integrations →
+   Webhooks → New Webhook → избери канала → Copy Webhook URL. Иска правото „Manage Webhooks“ в сървъра.
+2. Адресът носи токен — пише се само на сървъра, във файла `/opt/few-few/shared/rilievi/backup.env` (600,
+   `root`), никога в репото или в чат:
+
+   ```bash
+   sudo nano /opt/few-few/shared/rilievi/backup.env   # ред RILIEVI_ALERT_URL=https://discord.com/api/webhooks/…
+   sudo chmod 600 /opt/few-few/shared/rilievi/backup.env
+   ```
+
+   Друг адрес (ntfy, Uptime Kuma, Healthchecks `/fail`) също работи: получава текста като тяло, както преди.
+
+3. Проба — едно съобщение в канала; адресът не се печата, при провал излиза само `alert non inviato (curl exit N)`:
+
+   ```bash
+   sudo bash -c '. "$(cat /opt/few-few/shared/rilievi/last-good)/deploy/alert.sh" && alert "rilievi: prova allarme da $(hostname -s), nessun guasto"'
+   ```
+
+Изтекъл токен (webhook-ът изтрит в Discord): нов webhook, новият адрес на същия ред.
+
+**Граница:** мъртъв сървър (спрял, без мрежа, пълен диск преди скрипта) не може да се обади сам. За това трябва
+външен монитор, който пита `https://rilievi.carbonstealth.eu/health` отвън и алармира, когато не отговаря
+(`RILIEVI_HEARTBEAT_URL` покрива само пропуснатия бекъп). **Отворено за собственика:** кой монитор (UptimeRobot,
+healthchecks.io или друг) и къде отиват неговите аларми.
+
+Порталът има и свои аларми към същия или друг webhook — настройват се от конзолата на MASTER (`/master/allarmi`).
 
 ## 7. Провалена миграция
 

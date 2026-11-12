@@ -75,11 +75,19 @@ export async function rimborsiDovuti(now: Date = new Date()) {
     select: SELECT,
     take: 100,
   });
+  // Вече върнатото през Revolut за същото плащане (част от нареждане, чиято друга част не е минала).
+  const resi = await prisma.rimborso.groupBy({
+    by: ['perPagamentoId'],
+    where: { perPagamentoId: { in: righe.map((r) => r.id) }, stato: 'COMPLETATO' },
+    _sum: { importoCent: true },
+  });
+  const reso = (id: string) => resi.find((r) => r.perPagamentoId === id)?._sum.importoCent ?? 0;
   return righe
     .filter((p) => !gia.has(p.id))
     .map((p) => {
       const cessazione = p.azienda?.deactivatedAt ?? now;
-      return { ...p, cessazione, dovutoCent: rimborsoDovuto(p, cessazione) };
+      const dovutoCent = Math.max(0, rimborsoDovuto(p, cessazione) - reso(p.id));
+      return { ...p, cessazione, dovutoCent };
     })
     .filter((p) => p.dovutoCent > 0);
 }
@@ -134,8 +142,9 @@ export function importoDa(raw: unknown): number | null {
 }
 
 /**
- * MASTER отбелязва върнатото (сумата с ДДС): плащането става „RIMBORSATO“ и не се брои повече за платен период
- * (нито за кредит). Абонаментът на още активна фирма не се пипа оттук — MASTER го задава на ръка на страницата ѝ.
+ * MASTER отбелязва върнатото извън портала (сумата с ДДС): плащането става „RIMBORSATO“ и не се брои повече за
+ * платен период (нито за кредит). Абонаментът на още активна фирма не се пипа оттук — MASTER го задава на ръка на
+ * страницата ѝ. Докато тече връщане през Revolut за същото плащане — не (rimborso-revolut.ts го затваря само).
  */
 export async function segnaRimborsato(
   actorId: string,
@@ -143,6 +152,8 @@ export async function segnaRimborsato(
   rimborsoCent: number,
 ): Promise<boolean> {
   return prisma.$transaction(async (tx) => {
+    if ((await tx.rimborso.count({ where: { perPagamentoId: id, stato: 'IN_CORSO' } })) > 0)
+      return false;
     const { count } = await tx.pagamento.updateMany({
       where: { id, stato: { in: ['COMPLETATO', 'DA_VERIFICARE'] } },
       data: { stato: 'RIMBORSATO', rimborsoCent, rimborsatoAt: new Date() },

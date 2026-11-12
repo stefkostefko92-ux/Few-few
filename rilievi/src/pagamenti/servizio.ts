@@ -14,13 +14,15 @@ import { periodoDi } from './periodo.js';
 import { situazioneDi } from './situazione.js';
 import { riconcilia, segnaFallito } from './riconcilia.js';
 import { creaOrdine, ErroreRevolut } from './revolut.js';
+import { verificaPartitaIva } from './vies-ordine.js';
 
 /**
  * Плащането на план (#31; условията 2026-11-12, чл. 12): офертата се записва и запечатва (чл. 19.1 a) ПРЕДИ
  * Revolut; сумата — от плана на сървъра; поръчката в Revolut носи нашия id. Периодът се дава САМО за поръчка,
  * прочетена обратно от Revolut като `completed` със същата сума и валута — при връщането на човека, от
  * подписания webhook или от поддръжката — веднъж (редът на плащането и на фирмата `FOR UPDATE`, условно
- * „IN_ATTESA“). Планът, купен по време на пробата или на друг план, започва от края им (чл. 12.3).
+ * „IN_ATTESA“). Планът, купен по време на пробата или на друг план, започва от края им (чл. 12.3). Преди записа
+ * ДДС номерът на фирма от друга държава от ЕС се проверява във VIES (чл. 12.10; pagamenti/vies-ordine.ts).
  */
 
 type T = (key: string, p?: Record<string, string | number>) => string;
@@ -52,7 +54,16 @@ export type EsitoAvvio =
   | { ok: true; checkoutUrl: string }
   | {
       ok: false;
-      errore: 'spenti' | 'piano' | 'persone' | 'revolut' | 'cambiata' | 'inCoda' | 'manuale';
+      errore:
+        | 'spenti'
+        | 'piano'
+        | 'persone'
+        | 'revolut'
+        | 'cambiata'
+        | 'inCoda'
+        | 'manuale'
+        | 'viesNonValida'
+        | 'viesNonDisponibile';
     }
   /** Друго плащане на фирмата още е отворено в Revolut: връзката му и до кога (после може ново). */
   | { ok: false; errore: 'inAttesa'; checkoutUrl: string | null; fino: Date };
@@ -136,9 +147,18 @@ export async function avviaPagamento(
   if (!basta) return { ok: false, errore: 'persone' };
   // Запечатва се само офертата, която човекът е видял (чл. 12.1): друга (сменени данни, ДДС, ден) — наново.
   if (hashVisto !== offerta.hash) return { ok: false, errore: 'cambiata' };
+  // Обратно начисляване — само с номер, който VIES потвърждава сега; иначе нищо не се записва и не се плаща.
+  const iva = await verificaPartitaIva(
+    aziendaId,
+    offerta.hash,
+    dichiarati.partitaIva,
+    new Date(now.getTime() - ATTESA_MS),
+  );
+  if (!iva.ok) return { ok: false, errore: iva.errore };
   const periodo = pronta.periodo;
   type Creato =
     | { tipo: 'riusa'; checkoutUrl: string }
+    | { tipo: 'cambiata' }
     | { tipo: 'attesa'; checkoutUrl: string | null; fino: Date }
     | { tipo: 'nuovo'; pagamento: { id: string } };
   const creato = await prisma.$transaction(async (tx): Promise<Creato> => {
@@ -168,8 +188,11 @@ export async function avviaPagamento(
         fino: new Date(aperto.createdAt.getTime() + ATTESA_MS),
       };
     }
+    // Проверката е била за поръчка, която междувременно е затворена: нова поръчка — с нова проверка.
+    if (iva.gia) return { tipo: 'cambiata' };
     const p = await tx.pagamento.create({
       data: {
+        ...(iva.prova ?? {}),
         aziendaId,
         aziendaNome: azienda.name,
         pianoId: piano.id,
@@ -237,6 +260,7 @@ export async function avviaPagamento(
     return { tipo: 'nuovo', pagamento: p };
   });
   if (creato.tipo === 'riusa') return { ok: true, checkoutUrl: creato.checkoutUrl };
+  if (creato.tipo === 'cambiata') return { ok: false, errore: 'cambiata' };
   if (creato.tipo === 'attesa')
     return { ok: false, errore: 'inAttesa', checkoutUrl: creato.checkoutUrl, fino: creato.fino };
   const { pagamento } = creato;

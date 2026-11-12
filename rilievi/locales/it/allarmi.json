@@ -1,0 +1,55 @@
+{
+  "allarmi": {
+    "testo": {
+      "prova": "Rilievi Impianti · messaggio di prova: gli allarmi del portale arrivano in questo canale.",
+      "manutenzione": "Rilievi Impianti · manutenzione: {n} passi non riusciti. Apri «Salute del sistema»: {link}",
+      "pagamentoDaVerificare": "Rilievi Impianti · un pagamento è arrivato ma il piano non è partito da solo. Decidi tu: {link}",
+      "contestazione": "Rilievi Impianti · un cliente ha contestato un pagamento presso la sua banca (chargeback). Controlla la scadenza e rispondi in Revolut Business: {link}",
+      "rimborsoFallito": "Rilievi Impianti · un rimborso su Revolut non è riuscito. Guarda cosa è successo: {link}",
+      "posta": "Rilievi Impianti · le email del portale non partono. Controlla la posta: {link}",
+      "segnalazione": "Rilievi Impianti · è arrivata una segnalazione di contenuto illegale da esaminare: {link}"
+    },
+    "salvato": "Allarmi salvati.",
+    "errore": {
+      "url": "Questo indirizzo non è un webhook di Discord. Copialo da Discord: inizia con https://discord.com/api/webhooks/.",
+      "senzaUrl": "Incolla l'indirizzo del webhook di Discord per attivare gli allarmi.",
+      "password": "Password non corretta: non è cambiato nulla."
+    },
+    "prova": {
+      "ok": "Messaggio di prova inviato: guarda il canale di Discord.",
+      "spenti": "Gli allarmi non sono attivi: nessun messaggio inviato.",
+      "rete": "Discord non ha risposto. Riprova tra poco.",
+      "errore": "Discord ha risposto {codice}: il webhook è stato cancellato o l'indirizzo non è più valido. Creane uno nuovo e incollalo qui."
+    },
+    "pagina": {
+      "titolo": "Allarmi",
+      "sub": "Gli avvisi del portale in un canale di Discord.",
+      "statoTitolo": "Stato",
+      "attivi": "Gli allarmi sono attivi.",
+      "spenti": "Gli allarmi non sono attivi.",
+      "modifica": "Ultima modifica: {data}, {nome}.",
+      "prova": "Invia un messaggio di prova",
+      "cosaTitolo": "Quando arriva un allarme",
+      "cosa": {
+        "manutenzione": "un passo della manutenzione oraria non riesce",
+        "pagamento": "un pagamento arriva ma il piano non parte da solo",
+        "contestazione": "un cliente contesta un pagamento presso la sua banca (chargeback)",
+        "rimborso": "un rimborso su Revolut non riesce",
+        "posta": "le email del portale non partono",
+        "segnalazione": "arriva una segnalazione di contenuto illegale"
+      },
+      "senzaDati": "Un allarme dice solo che cosa è successo, quante volte, e porta il link alla console: mai nomi, email o aziende. Lo stesso tipo di allarme non si ripete per un po', così il canale non si riempie.",
+      "limite": "Se il server è spento, il portale non può avvisare da solo: per questo serve anche un controllo esterno che interroghi l'indirizzo /health. Le copie di sicurezza hanno i loro allarmi, impostati sul server.",
+      "formTitolo": "Webhook di Discord",
+      "come": "In Discord: Impostazioni del server → Integrazioni → Webhook → Nuovo webhook, scegli il canale e premi «Copia URL webhook». Incolla qui l'indirizzo.",
+      "attivoTitolo": "Allarmi",
+      "attivo": "Invia gli allarmi a Discord",
+      "url": "Indirizzo del webhook",
+      "urlHint": "Un indirizzo è già salvato e non si mostra. Lascia vuoto per tenerlo; incollane uno nuovo per cambiarlo.",
+      "urlHintNuovo": "Si salva cifrato e dopo non si mostra più: chi lo conosce può scrivere nel canale.",
+      "password": "La tua password",
+      "passwordHint": "Serve per confermare ogni modifica.",
+      "salva": "Salva"
+    }
+  }
+}

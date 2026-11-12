@@ -115,6 +115,7 @@ async function vistaOfferta(
     sandboxProva: cli !== null && !daPeriodo(cli.ambiente),
     aperto,
     oraAperto: aperto ? oraRoma(aperto.fino) : '',
+    contatto: config().CONTACT_EMAIL,
   });
 }
 
@@ -183,7 +184,11 @@ abbonamentoPagamentoRouter.post(
           ? [422, 'pagamenti.errore.persone']
           : esito.errore === 'revolut'
             ? [503, 'pagamenti.errore.revolut']
-            : [409, `pagamenti.errore.${esito.errore}`];
+            : esito.errore === 'viesNonValida'
+              ? [422, 'vies.errore.nonValida']
+              : esito.errore === 'viesNonDisponibile'
+                ? [503, 'vies.errore.nonDisponibile']
+                : [409, `pagamenti.errore.${esito.errore}`];
     return vistaOfferta(req, res, status, azienda, piano, valori, {}, chiave);
   },
 );

@@ -146,6 +146,19 @@ export const AUDIT_ACTIONS = [
   'PAGAMENTO_DA_VERIFICARE',
   'PAGAMENTO_RIMBORSATO',
   'PAGAMENTO_FATTURATO',
+  // Връщането през Revolut (src/pagamenti/rimborso-revolut.ts): наредено (сумата, на колко поръчки) и неуспешно
+  // (кодът); спорът за плащане (chargeback) — само състоянието.
+  'PAGAMENTO_RIMBORSO_AVVIATO',
+  'PAGAMENTO_RIMBORSO_FALLITO',
+  'PAGAMENTO_CONTESTATO',
+  // Алармите към Discord (src/allarmi/): включени ли са и нов ли е адресът — без адреса; пробата — само изходът.
+  'ALLARMI_IMPOSTATI',
+  'ALLARMI_PROVA',
+  // Сигналите за незаконно съдържание (src/segnalazioni/; чл. 16–18 Рег. (ЕС) 2022/2065): получен, решен
+  // (изходът), преглед — без текста, без името и имейла на подателя.
+  'SEGNALAZIONE_RICEVUTA',
+  'SEGNALAZIONE_DECISA',
+  'SEGNALAZIONE_RIESAME',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
@@ -177,6 +190,8 @@ export interface AuditEntry {
     | 'avviso'
     | 'posta'
     | 'pagamento'
+    | 'allarmi'
+    | 'segnalazione'
     | 'piano';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */

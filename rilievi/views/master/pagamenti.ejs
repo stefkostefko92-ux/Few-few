@@ -99,7 +99,7 @@
           <td data-label="<%= t(m + 'colonna.azienda') %>"><%= p.aziendaNome %></td>
           <td data-label="<%= t(m + 'colonna.totale') %>"><%= euro(p.totaleCent) %> €</td>
           <td data-label="<%= t(m + 'colonna.stato') %>"><%= t(m + 'motivo.' + (p.verificaMotivo || 'periodo')) %></td>
-          <td data-label="<%= t(m + 'rimborsoImporto') %>"><form class="row-form" method="post" action="/master/pagamenti/<%= p.id %>/rimborso"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><label class="visually-hidden" for="rv-<%= p.id %>"><%= t(m + 'rimborsoImporto') %></label><input class="input" id="rv-<%= p.id %>" name="importo" type="text" inputmode="decimal" maxlength="12" value="<%= euro(p.totaleCent) %>"><button class="btn btn--sm" type="submit"><%= t(m + 'segnaRimborsato') %></button></form></td>
+          <td data-label="<%= t(m + 'rimborsoImporto') %>"><a class="btn btn--sm" href="/master/pagamenti/<%= p.id %>/rimborso" aria-label="<%= t('rimborsi.console.apri', { azienda: p.aziendaNome }) %>"><%= t('rimborsi.console.rimborsa') %></a></td>
         </tr>
         <% } %>
       </tbody>
@@ -115,7 +115,7 @@
       <tbody>
         <% for (const p of daFatturare) { %><tr>
           <th scope="row" data-label="<%= t(m + 'colonna.data') %>"><%= fmt.dateTime(p.completatoAt || p.createdAt) %></th>
-          <td data-label="<%= t(m + 'cliente') %>"><%= p.ragioneSociale %> — <%= p.partitaIva %></td>
+          <td data-label="<%= t(m + 'cliente') %>"><%= p.ragioneSociale %> — <%= p.partitaIva %><% if (p.viesAt) { %><br><span class="muted"><%= p.viesConsultazione ? t('vies.master.consultazione', { numero: p.viesConsultazione, data: fmt.dayRoma(p.viesAt) }) : t('vies.master.senzaNumero', { data: fmt.dayRoma(p.viesAt) }) %><% if (p.viesNome) { %> — <%= t('vies.master.nome', { nome: p.viesNome }) %><% } %></span><% } %></td>
           <td data-label="<%= t(m + 'colonna.piano') %>"><%= t('abbonamento.livello', { n: p.livello }) %>, <%= t(p.mesi === 1 ? 'pagamenti.mesi.uno' : 'pagamenti.mesi.altri', { n: p.mesi }) %></td>
           <td data-label="<%= t(m + 'colonna.totale') %>"><%= euro(p.totaleCent) %> €</td>
           <td><form method="post" action="/master/pagamenti/<%= p.id %>/fatturato"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--sm" type="submit"><%= t(m + 'segnaFatturato') %></button></form></td>
@@ -137,12 +137,32 @@
           <th scope="row" data-label="<%= t(m + 'colonna.azienda') %>"><%= p.aziendaNome %></th>
           <td data-label="<%= t(m + 'rimborsoCessazione') %>"><%= fmt.dayRoma(p.cessazione) %></td>
           <td data-label="<%= t(m + 'rimborsoDovuto') %>"><%= euro(p.dovutoCent) %> €</td>
-          <td data-label="<%= t(m + 'rimborsoImporto') %>"><form class="row-form" method="post" action="/master/pagamenti/<%= p.id %>/rimborso"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><label class="visually-hidden" for="rb-<%= p.id %>"><%= t(m + 'rimborsoImporto') %></label><input class="input" id="rb-<%= p.id %>" name="importo" type="text" inputmode="decimal" maxlength="12" value="<%= euro(p.dovutoCent) %>"><button class="btn btn--sm" type="submit"><%= t(m + 'segnaRimborsato') %></button></form></td>
+          <td data-label="<%= t(m + 'rimborsoImporto') %>"><a class="btn btn--sm" href="/master/pagamenti/<%= p.id %>/rimborso" aria-label="<%= t('rimborsi.console.apri', { azienda: p.aziendaNome }) %>"><%= t('rimborsi.console.rimborsa') %></a></td>
         </tr>
         <% } %>
       </tbody>
     </table></div><% } %>
   </section>
+
+  <% if (contestazioni.length) { const c = 'rimborsi.contestazioni.'; %><section class="panel pagamenti-pannello" aria-labelledby="h-contestazioni">
+    <h2 class="section__title" id="h-contestazioni"><%= t(c + 'titolo') %></h2>
+    <p class="muted"><%= t(c + 'testo') %></p>
+    <div class="table-scorre"><table class="table table--stack">
+      <caption class="visually-hidden"><%= t(c + 'titolo') %></caption>
+      <thead><tr><th scope="col"><%= t(c + 'colonna.aperta') %></th><th scope="col"><%= t(c + 'colonna.azienda') %></th><th scope="col"><%= t(c + 'colonna.importo') %></th><th scope="col"><%= t(c + 'colonna.stato') %></th><th scope="col"><%= t(c + 'colonna.entro') %></th><th scope="col"><%= t(c + 'colonna.motivo') %></th></tr></thead>
+      <tbody>
+        <% for (const x of contestazioni) { %><tr>
+          <th scope="row" data-label="<%= t(c + 'colonna.aperta') %>"><%= fmt.dayRoma(x.apertaAt || x.createdAt) %></th>
+          <td data-label="<%= t(c + 'colonna.azienda') %>"><%= x.pagamento ? x.pagamento.aziendaNome : t(c + 'senzaPagamento') %></td>
+          <td data-label="<%= t(c + 'colonna.importo') %>"><%= euro(x.importoCent) %> €</td>
+          <td data-label="<%= t(c + 'colonna.stato') %>"><%= t(c + 'stato.' + x.stato) %></td>
+          <td data-label="<%= t(c + 'colonna.entro') %>"><%= x.rispostaEntro ? fmt.dayRoma(x.rispostaEntro) : t(c + 'senzaData') %></td>
+          <td data-label="<%= t(c + 'colonna.motivo') %>"><%= x.motivo || t(c + 'senzaData') %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table></div>
+  </section><% } %>
 
   <section class="panel" aria-labelledby="h-pagamenti">
     <h2 class="section__title" id="h-pagamenti"><%= t(m + 'pagamentiTitolo') %></h2>

@@ -1,0 +1,72 @@
+<%
+  // Връщането на едно плащане (routes/master-pagamenti-rimborsi.ts): дължимото, колко най-много през Revolut и
+  // върху кои поръчки, нареждането с паролата, ръчното отбелязване и досегашните връщания.
+  const r = 'rimborsi.pagina.';
+  const m = 'pagamenti.master.';
+  const piano = t('abbonamento.livello', { n: p.livello }) + ', ' + t(p.mesi === 1 ? 'pagamenti.mesi.uno' : 'pagamenti.mesi.altri', { n: p.mesi });
+%><%- include('../partials/top', { title: t(r + 'titolo') + ' — ' + p.aziendaNome, narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="/master/pagamenti#h-rimborsi"><%= t(r + 'torna') %></a>
+    <h1><%= t(r + 'titolo') %></h1>
+    <p class="page-head__sub"><%= p.aziendaNome %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <% if (errore) { %><div class="errors" id="form-error" role="alert" tabindex="-1"><h2><%= t(errore.chiave, { max: euro(errore.max || 0) }) %></h2></div><% } %>
+  <section class="panel" aria-labelledby="h-pagato">
+    <h2 class="section__title" id="h-pagato"><%= t(m + 'statoPagamento.' + p.stato) %></h2>
+    <p><%= t(r + 'pagato', { data: fmt.dateTime(p.completatoAt || p.createdAt), totale: euro(p.totaleCent), piano }) %></p>
+    <% if (p.stato === 'DA_VERIFICARE') { %><p><%= t(r + 'verifica') %></p>
+    <% } else if (dovutoCent > 0 && cessazione) { %><p><strong><%= t(r + 'dovuto', { data: fmt.dayRoma(cessazione), importo: euro(dovutoCent) }) %></strong></p><% } %>
+    <% if (p.rimborsoCent !== null) { %><p><%= t(r + 'chiuso', { importo: euro(p.rimborsoCent) }) %></p><% } %>
+  </section>
+
+  <% if (rimborsabile) { %><form class="panel form" method="post" action="/master/pagamenti/<%= p.id %>/rimborso-revolut" novalidate>
+    <h2 class="section__title"><%= t(r + 'revolutTitolo') %></h2>
+    <p class="muted"><%= t(r + 'revolutTesto') %></p>
+    <p><%= t(r + 'massimo', { max: euro(maxCent) }) %></p>
+    <% if (parti.length > 1) { %><p><%= t(r + 'riparto') %></p>
+    <ul><% for (const x of parti) { %><li><%= t(r + 'parte', { importo: euro(x.cent), data: fmt.dayRoma(x.data) }) %></li><% } %></ul><% } %>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field">
+      <label class="field__label" for="rr-importo"><%= t(r + 'importo') %></label>
+      <input class="input" id="rr-importo" name="importo" type="text" inputmode="decimal" maxlength="12" autocomplete="off" required value="<%= importo %>">
+    </div>
+    <div class="field field--wide">
+      <label class="field__label" for="rr-password"><%= t(r + 'password') %></label>
+      <input class="input" id="rr-password" name="password" type="password" autocomplete="current-password" maxlength="256" required value="" aria-describedby="rr-password-hint">
+      <p class="field__hint" id="rr-password-hint"><%= t(r + 'passwordHint') %></p>
+    </div>
+    <div class="toolbar"><button class="btn btn--primary" type="submit"><%= t(r + 'rimborsa') %></button></div>
+  </form>
+
+  <form class="panel form" method="post" action="/master/pagamenti/<%= p.id %>/rimborso" novalidate>
+    <h2 class="section__title"><%= t(r + 'manualeTitolo') %></h2>
+    <p class="muted"><%= t(r + 'manualeTesto') %></p>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field">
+      <label class="field__label" for="rm-importo"><%= t(r + 'importoManuale') %></label>
+      <input class="input" id="rm-importo" name="importo" type="text" inputmode="decimal" maxlength="12" autocomplete="off" required value="<%= euro(dovutoCent) %>">
+    </div>
+    <div class="toolbar"><button class="btn" type="submit"><%= t(m + 'segnaRimborsato') %></button></div>
+  </form><% } else if (p.rimborsoCent === null) { %><p class="muted"><%= t(r + 'nonRimborsabile') %></p><% } %>
+
+  <section class="panel" aria-labelledby="h-storia">
+    <h2 class="section__title" id="h-storia"><%= t(r + 'storia') %></h2>
+    <% if (!righe.length) { %><p class="muted"><%= t(r + 'nessuno') %></p><% } else { %><div class="table-scorre"><table class="table table--stack">
+      <caption class="visually-hidden"><%= t(r + 'storia') %></caption>
+      <thead><tr><th scope="col"><%= t(r + 'colonna.data') %></th><th scope="col"><%= t(r + 'colonna.importo') %></th><th scope="col"><%= t(r + 'colonna.ordine') %></th><th scope="col"><%= t(r + 'colonna.stato') %></th></tr></thead>
+      <tbody>
+        <% for (const x of righe) { %><tr>
+          <th scope="row" data-label="<%= t(r + 'colonna.data') %>"><%= fmt.dateTime(x.createdAt) %></th>
+          <td data-label="<%= t(r + 'colonna.importo') %>"><%= euro(x.importoCent) %> €</td>
+          <td data-label="<%= t(r + 'colonna.ordine') %>"><%= fmt.dayRoma(x.pagamento.createdAt) %></td>
+          <td data-label="<%= t(r + 'colonna.stato') %>"><%= t(r + 'stato.' + x.stato, { codice: x.errore || '' }) %><% if (x.stato === 'IN_CORSO') { %><% if (!x.revolutRefundId) { %><br><span><%= t(r + 'senzaRisposta') %></span><% } %> <form class="inline-form" method="post" action="/master/pagamenti/rimborsi/<%= x.id %>/riprova"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--sm" type="submit"><%= t(r + 'riprova') %></button></form><% } %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table></div><% } %>
+  </section>
+</div>
+<%- include('../partials/bottom') %>

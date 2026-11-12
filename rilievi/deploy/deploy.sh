@@ -20,6 +20,8 @@
 # ротацията и изтласква дъмпа отпреди счупената миграция.
 # RILIEVI_LOCK / RILIEVI_LOCK_WAIT — общото заключване с backup.sh и колко секунди се чака за него.
 # RILIEVI_INDEXNOW=0 — без IndexNow след деплоя.
+# Провал (изход 1 или 4, след проверката за root) — аларма до RILIEVI_ALERT_URL (deploy/alert.sh: Discord
+# webhook или друг адрес; адресът — от backup.env, не се печата). Изход 3 (машината не е настроена) — не.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 umask 077
@@ -44,10 +46,26 @@ TS="$(date +%Y%m%d-%H%M%S)"
 log()  { printf '\033[1;36m▸ rilievi: %s\033[0m\n' "$*"; }
 ok()   { printf '\033[32m✔ rilievi: %s\033[0m\n' "$*"; }
 warn() { printf '\033[33m⚠ rilievi: %s\033[0m\n' "$*" >&2; }
+# shellcheck source=alert.sh
+if [ -f "$APP_DIR/deploy/alert.sh" ]; then
+  . "$APP_DIR/deploy/alert.sh"
+else
+  alert_fallito() { warn "alert non inviato (manca deploy/alert.sh)"; }
+fi
+# 1 — от main нататък провалът е провал на деплоя (не „пусни като root“ в терминала).
+ALERT_ARMED=0
 fail() {
   local code="$1"
   shift
   printf '\033[31m✘ rilievi: %s\033[0m\n' "$*" >&2
+  if [ "$ALERT_ARMED" = "1" ]; then
+    case "$code" in
+      3) ;;
+      4) alert_fallito deploy "il portale non risponde dopo il cambio dei contenitori, health-check (exit 4)" ;;
+      1) alert_fallito deploy "interrotto prima del cambio, il portale in servizio non è toccato (exit 1)" ;;
+      *) alert_fallito deploy "exit $code" ;;
+    esac
+  fi
   exit "$code"
 }
 
@@ -403,6 +421,11 @@ backup_gaps() {
   done
   [ -z "$missing" ] ||
     warn "в $env_file липсват:${missing} — без тях няма копие извън сървъра и/или никой не научава за провален бекъп (DEPLOY.md, т. 6)"
+  case " $missing " in
+    *" RILIEVI_ALERT_URL "*)
+      warn "без RILIEVI_ALERT_URL провален бекъп, проверка на възстановяването или деплой не се обявяват никъде — Discord webhook: DEPLOY.md, „Аларми в Discord“"
+      ;;
+  esac
 }
 
 hints() {
@@ -418,6 +441,7 @@ hints() {
 main() {
   local port
   [ "$(id -u)" = "0" ] || fail 1 "пусни като root (sudo)."
+  ALERT_ARMED=1
   if ! command -v docker >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
     fail 1 "липсва Docker с compose plugin."
   fi

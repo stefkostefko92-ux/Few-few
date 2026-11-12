@@ -6,9 +6,12 @@ import { logger } from '../logger.js';
 import { DAY } from '../time.js';
 import { applica } from './applica.js';
 import { avvisaDopoPagamento } from './avvisi.js';
+import { allarme } from '../allarmi/servizio.js';
 import { clientePer, leggiConfig } from './config.js';
+import { aggiornaContestazione } from './contestazioni.js';
 import { firmaValida } from './firma.js';
 import { ErroreRevolut, leggiOrdine } from './revolut.js';
+import { rimborsoDaNotifica } from './rimborsi-riconcilia.js';
 
 /**
  * Сверката на плащанията с Revolut (#31): кое е вярно решава поръчката, прочетена обратно от Revolut (не
@@ -98,8 +101,13 @@ export async function riconcilia(id: string): Promise<StatoPagamento | null> {
   return (await verifica(id)).stato;
 }
 
+/** Известието: поръчка (и връщане — то е поръчка) носи `order_id`, спор — само `dispute_id`. */
 const eventoSchema = z
-  .object({ event: z.string().max(80), order_id: z.string().max(100) })
+  .object({
+    event: z.string().max(80),
+    order_id: z.string().max(100).optional(),
+    dispute_id: z.string().max(100).optional(),
+  })
   .passthrough();
 
 /** Последният webhook за „Salute del sistema“: валиден и отказан (в паметта на процеса). */
@@ -129,11 +137,18 @@ export async function elaboraWebhook(
   } catch {
     return 'ok';
   }
+  if (dati.event.startsWith('DISPUTE_')) {
+    if (dati.dispute_id) await aggiornaContestazione(dati.dispute_id);
+    return 'ok';
+  }
+  if (!dati.order_id) return 'ok';
   const p = await prisma.pagamento.findUnique({
     where: { revolutOrderId: dati.order_id },
     select: { id: true },
   });
   if (p) await riconcilia(p.id);
+  // Не е плащане: може да е поръчка за връщане (тя също носи `order_id`).
+  else await rimborsoDaNotifica(dati.order_id);
   return 'ok';
 }
 
@@ -158,11 +173,13 @@ export async function riconciliaInSospeso(now: Date = new Date()): Promise<numbe
     if (stato !== 'IN_ATTESA') continue;
     // Само когато Revolut е казал „неплатена“ — непрочетената може да е платена (смяна на ключ, срив).
     if (nonPagato) await segnaFallito(v.id, 'SCADUTO', null);
-    else if (v.createdAt.getTime() < now.getTime() - GIORNI_NON_LETTO * DAY)
-      await prisma.pagamento.updateMany({
+    else if (v.createdAt.getTime() < now.getTime() - GIORNI_NON_LETTO * DAY) {
+      const { count } = await prisma.pagamento.updateMany({
         where: { id: v.id, stato: 'IN_ATTESA' },
         data: { stato: 'DA_VERIFICARE', verificaMotivo: 'nonLetto' },
       });
+      if (count === 1) void allarme('pagamentoDaVerificare');
+    }
   }
   const sospesi = await prisma.pagamento.findMany({
     where: {

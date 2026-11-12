@@ -1,4 +1,5 @@
 import nodemailer, { type Transporter } from 'nodemailer';
+import { allarme } from '../allarmi/servizio.js';
 import { COMPANY } from '../company.js';
 import { isProduction } from '../config.js';
 import { translatorFor } from '../i18n.js';
@@ -121,6 +122,8 @@ export async function sendMail(grezzo: MailMessage): Promise<MailResult> {
       'писмото не тръгна',
     );
     remember(message, 'failed');
+    // Пощата не тръгва: и в Discord (без адреса) — писмата са единственият път към клиентите.
+    void allarme('posta');
     return 'failed';
   }
 }

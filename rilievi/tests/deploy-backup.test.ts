@@ -38,10 +38,11 @@ function setup() {
   const mount = join(dir, 'volume');
   for (const d of [join(release, 'deploy'), join(dir, 'bin'), join(mount, 'schede', 'c1'), shared])
     mkdirSync(d, { recursive: true });
-  copyFileSync(
-    join(import.meta.dirname, '..', 'deploy', 'backup.sh'),
-    join(release, 'deploy', 'backup.sh'),
-  );
+  for (const script of ['backup.sh', 'alert.sh'])
+    copyFileSync(
+      join(import.meta.dirname, '..', 'deploy', script),
+      join(release, 'deploy', script),
+    );
   writeFileSync(join(release, 'docker-compose.yml'), 'services: {}\n');
   writeFileSync(join(shared, 'last-good'), `${release}\n`);
   writeFileSync(join(shared, '.env'), 'INTERVENTI_SEAL_KEY=chiave\n');

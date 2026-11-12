@@ -17,7 +17,7 @@
   </div>
 </div>
 <div class="stack-gap offerta">
-  <% if (errore) { %><div class="errors" id="form-error" role="alert" tabindex="-1"><h2><%= t(errore, { n: occupati, ora: oraAperto }) %></h2>
+  <% if (errore) { %><div class="errors" id="form-error" role="alert" tabindex="-1"><h2><%= t(errore, { n: occupati, ora: oraAperto, email: contatto, numero: valori.partitaIva }) %></h2>
     <% const elenco = campi.concat(['accetto']).filter((k) => errori[k]); if (elenco.length) { %><ul>
       <% for (const k of elenco) { %><li><a href="#o-<%= k %>"><%= t(errori[k]) %></a></li>
       <% } %>
@@ -41,7 +41,7 @@
       <% for (const k of campi) { %><div class="field">
         <label class="field__label" for="o-<%= k %>"><%= t(p + k) %></label>
         <input class="input" id="o-<%= k %>" name="<%= k %>" type="text" required maxlength="<%= k === 'partitaIva' ? 40 : k === 'sede' ? 300 : 200 %>"<% if (k === 'partitaIva') { %> autocapitalize="characters" spellcheck="false" autocomplete="off"<% } else if (k === 'ragioneSociale') { %> autocomplete="organization"<% } else { %> autocomplete="street-address"<% } %> value="<%= valori[k] %>"<%- aria(k, k === 'partitaIva') %>>
-        <% if (k === 'partitaIva') { %><p class="field__hint" id="hint-<%= k %>"><%= t(p + 'partitaIvaHint') %></p><% } %>
+        <% if (k === 'partitaIva') { %><p class="field__hint" id="hint-<%= k %>"><%= t(p + 'partitaIvaHint') %> <%= t('vies.hint') %></p><% } %>
         <% if (errori[k]) { %><p class="field__error" id="err-<%= k %>"><%= t(errori[k]) %></p><% } %>
       </div>
       <% } %>

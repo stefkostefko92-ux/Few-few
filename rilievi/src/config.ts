@@ -97,6 +97,24 @@ const schema = z
       .url()
       .optional()
       .transform((url) => url?.replace(/\/+$/, '')),
+    /**
+     * Само за тестовете и машината за разработка: адресът на фалшивия VIES (src/pagamenti/vies.ts). В продукция
+     * не се чете — там се пита самата услуга на Европейската комисия.
+     */
+    VIES_API_BASE: z
+      .string()
+      .url()
+      .optional()
+      .transform((url) => url?.replace(/\/+$/, '')),
+    /**
+     * Само за тестовете: адресът на фалшивия Discord (src/allarmi/discord.ts). В продукция не се чете — алармите
+     * отиват само на discord.com, на адреса на webhook-а от конзолата.
+     */
+    DISCORD_API_BASE: z
+      .string()
+      .url()
+      .optional()
+      .transform((url) => url?.replace(/\/+$/, '')),
     /** Шрифтовете за PDF (DejaVu Sans — кирилица и италиански ударения). В образа: fonts-dejavu-core. */
     PDF_FONT_DIR: z.string().min(1).default('/usr/share/fonts/truetype/dejavu'),
     /** Срок за пазене на одита в дни (по подразбиране 2 години). */

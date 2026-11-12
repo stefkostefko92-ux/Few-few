@@ -105,14 +105,30 @@ export async function salvaConfig(
   return 'ok';
 }
 
-/** Регистрира адреса за известията в Revolut и пази signing secret-а шифрован. */
-export async function registraIlWebhook(actorId: string): Promise<'ok' | 'senzaChiave'> {
+/**
+ * Регистрира адреса за известията в Revolut и пази signing secret-а шифрован. Иска и известията за спорове
+ * (`DISPUTE_*`); ако Revolut ги откаже за този ключ или среда (400/422), регистрира само поръчките —
+ * `senzaDispute` (плащанията и връщанията работят, споровете се гледат в Revolut Business).
+ */
+export async function registraIlWebhook(
+  actorId: string,
+): Promise<'ok' | 'senzaDispute' | 'senzaChiave'> {
   const cfg = await leggiConfig();
   if (!cfg.chiave) return 'senzaChiave';
   const cliente = { base: baseDi(cfg.ambiente), chiave: cfg.chiave };
   // Наново — първо старият (иначе всяко известие идва два пъти, а след 10 Revolut отказва).
   if (cfg.webhookId) await togliWebhook(cliente, cfg.webhookId);
-  const w = await registraWebhook(cliente, `${config().PUBLIC_BASE_URL}/webhook/revolut`);
+  const url = `${config().PUBLIC_BASE_URL}/webhook/revolut`;
+  let conDispute = true;
+  let w: Awaited<ReturnType<typeof registraWebhook>>;
+  try {
+    w = await registraWebhook(cliente, url);
+  } catch (error) {
+    if (!(error instanceof ErroreRevolut) || (error.stato !== 400 && error.stato !== 422))
+      throw error;
+    conDispute = false;
+    w = await registraWebhook(cliente, url, false);
+  }
   await prisma.$transaction(async (tx) => {
     await tx.configPagamenti.update({
       where: { id: 'revolut' },
@@ -125,12 +141,12 @@ export async function registraIlWebhook(actorId: string): Promise<'ok' | 'senzaC
         aziendaId: null,
         targetType: 'pagamento',
         targetId: 'revolut',
-        meta: { webhook: true },
+        meta: { webhook: true, dispute: conDispute },
       },
       tx,
     );
   });
-  return 'ok';
+  return conDispute ? 'ok' : 'senzaDispute';
 }
 
 /** Маха webhook-а в Revolut; неуспехът само се записва в лога (вече изтрит, друг акаунт, срив). */

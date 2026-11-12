@@ -75,6 +75,8 @@ masterPagamentiRegistroRouter.get(`${PATH}/esporta.csv`, manage, async (_req, re
       c('rimborso'),
       c('fatturato'),
       c('ordine'),
+      c('vies'),
+      c('viesData'),
     ],
     righe.map((p) => [
       fmt.dateTime(p.createdAt),
@@ -97,6 +99,8 @@ masterPagamentiRegistroRouter.get(`${PATH}/esporta.csv`, manage, async (_req, re
       p.rimborsoCent !== null ? formatoEuro(p.rimborsoCent) : '',
       giorno(p.fatturataAt),
       p.revolutOrderId ?? '',
+      p.viesConsultazione ?? '',
+      giorno(p.viesAt),
     ]),
   );
   res.set({

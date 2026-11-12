@@ -186,6 +186,7 @@ model Azienda {
   accessRequests    AccessRequest[]
   chiaviApi         ChiaveApi[]
   pagamenti         Pagamento[]
+  segnalazioni      Segnalazione[]
 
   @@index([abbonamentoFino])
   @@index([abbonamentoCambioAt])
@@ -265,6 +266,9 @@ model User {
   postaAggiornata     PostaPortale[]        @relation("PostaAggiornata")
   pagamentiAggiornati ConfigPagamenti[]     @relation("PagamentiAggiornati")
   pagamenti           Pagamento[]           @relation("PagamentiCreati")
+  rimborsi            Rimborso[]            @relation("RimborsiCreati")
+  allarmiAggiornati   ConfigAllarmi[]       @relation("AllarmiAggiornati")
+  segnalazioniDecise  Segnalazione[]        @relation("SegnalazioniDecise")
   violazioni          Violazione[]          @relation("ViolazioniScritte")
   schedeApprovate     Scheda[]              @relation("SchedeApprovate")
   versioniScritte     SchedaVersione[]      @relation("VersioniScritte")
@@ -1744,49 +1748,61 @@ enum StatoPagamento {
 /// — каквито ги е декларирал ADMIN; счетоводен запис на Carbon Stealth като администратор — надживява фирмата
 /// (`aziendaId` става празно, името остава). Поръчката в Revolut — една на плащане.
 model Pagamento {
-  id             String            @id @default(cuid())
-  aziendaId      String?
-  azienda        Azienda?          @relation(fields: [aziendaId], references: [id], onDelete: SetNull)
-  aziendaNome    String            @db.VarChar(120)
-  pianoId        String?
-  piano          PianoAbbonamento? @relation(fields: [pianoId], references: [id], onDelete: SetNull)
-  livello        Int
-  mesi           Int
-  imponibileCent Int
-  ivaCent        Int
-  totaleCent     Int
-  regimeIva      String            @db.VarChar(20)
-  ragioneSociale String            @db.VarChar(200)
-  sede           String            @db.VarChar(300)
-  partitaIva     String            @db.VarChar(20)
-  stato          StatoPagamento    @default(IN_ATTESA)
-  ambiente       AmbienteRevolut
-  revolutOrderId String?           @unique @db.VarChar(100)
-  checkoutUrl    String?           @db.VarChar(500)
-  createdById    String?
-  createdBy      User?             @relation("PagamentiCreati", fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt      DateTime          @default(now())
-  completatoAt   DateTime?
+  id                String            @id @default(cuid())
+  aziendaId         String?
+  azienda           Azienda?          @relation(fields: [aziendaId], references: [id], onDelete: SetNull)
+  aziendaNome       String            @db.VarChar(120)
+  pianoId           String?
+  piano             PianoAbbonamento? @relation(fields: [pianoId], references: [id], onDelete: SetNull)
+  livello           Int
+  mesi              Int
+  imponibileCent    Int
+  ivaCent           Int
+  totaleCent        Int
+  regimeIva         String            @db.VarChar(20)
+  ragioneSociale    String            @db.VarChar(200)
+  sede              String            @db.VarChar(300)
+  partitaIva        String            @db.VarChar(20)
+  stato             StatoPagamento    @default(IN_ATTESA)
+  ambiente          AmbienteRevolut
+  revolutOrderId    String?           @unique @db.VarChar(100)
+  checkoutUrl       String?           @db.VarChar(500)
+  createdById       String?
+  createdBy         User?             @relation("PagamentiCreati", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt         DateTime          @default(now())
+  completatoAt      DateTime?
   /// Периодът от офертата (полунощ по Рим): нивото важи от `inizio`, краят на абонамента става `fine`.
-  inizio         DateTime?
-  fine           DateTime?
+  inizio            DateTime?
+  fine              DateTime?
   /// Отпечатъкът на приетата оферта — второ „Accetta e paga“ на същата оферта отива на същата поръчка.
-  offertaHash    String?           @db.Char(64)
+  offertaHash       String?           @db.Char(64)
   /// Стойността на платените и неизползвани дни, превърната в дни на по-високото ниво (чл. 12.4), без ДДС.
-  creditoCent    Int               @default(0)
+  creditoCent       Int               @default(0)
   /// Абонаментът при офертата: ако при плащането е друг, периодът се смята наново.
-  baseFino       DateTime?
-  baseLivello    Int?
-  baseCambioAt   DateTime?
+  baseFino          DateTime?
+  baseLivello       Int?
+  baseCambioAt      DateTime?
   /// Плащанията, чиито неизползвани дни са превърнати в това (за фактурата на надграждането).
-  creditoDa      String[]          @default([])
+  creditoDa         String[]          @default([])
   /// Защо чака MASTER (при DA_VERIFICARE): senzaScadenza, aziendaAssente, aziendaDisattivata, periodo, nonLetto.
-  verificaMotivo String?           @db.VarChar(30)
+  verificaMotivo    String?           @db.VarChar(30)
   /// Върнатото (чл. 12.9), отбелязано от MASTER — сумата с ДДС и кога.
-  rimborsoCent   Int?
-  rimborsatoAt   DateTime?
+  rimborsoCent      Int?
+  rimborsatoAt      DateTime?
   /// Фактурата е издадена (извън портала) — отбелязва MASTER; празно = „da fatturare“.
-  fatturataAt    DateTime?
+  fatturataAt       DateTime?
+  /// Проверката на ДДС номера във VIES при приемането на офертата (чл. 12.10; чл. 18, пар. 1, б. „а“ Регл.
+  /// 282/2011): номерът на консултацията, кога и какво име и адрес е върнал VIES. Празно — български номер
+  /// (20 % ДДС, без проверка) или плащане отпреди проверката.
+  viesConsultazione String?           @db.VarChar(40)
+  viesAt            DateTime?
+  viesNome          String?           @db.VarChar(300)
+  viesIndirizzo     String?           @db.VarChar(500)
+  /// Връщанията през Revolut върху поръчката на това плащане.
+  rimborsi          Rimborso[]        @relation("RimborsiOrdine")
+  /// Връщанията, направени ЗАРАДИ това плащане (и върху по-стари поръчки — кредитът по чл. 12.4).
+  rimborsiPer       Rimborso[]        @relation("RimborsiPer")
+  contestazioni     Contestazione[]
 
   @@index([aziendaId])
   @@index([pianoId])
@@ -1798,6 +1814,143 @@ model Pagamento {
 /// Приетата оферта (чл. 12.1 и 19.1 a на условията 2026-11-12): кой, за коя фирма, планът, сумите, точният текст
 /// и отпечатъкът му, кога, IP и браузър, плащането — запечатано с HMAC (src/legale/sigillo.ts), без връзки към
 /// човека и фирмата (надживява ги). Пази се 10 години (`conservaFino`), изтрива го само поддръжката.
+enum StatoRimborso {
+  /// Наредено към Revolut; чака се крайното състояние (до 2 дни) или отговорът не е дошъл.
+  IN_CORSO
+  COMPLETATO
+  FALLITO
+}
+
+/// Връщане през Revolut върху поръчката на едно плащане (условията 2026-11-13, чл. 12.9): `POST
+/// /api/orders/{id}/refund` със собствения id като Idempotency-Key — повторено нареждане не връща два пъти.
+model Rimborso {
+  id              String        @id @default(cuid())
+  /// Плащането, върху чиято поръчка в Revolut се връща.
+  pagamentoId     String
+  pagamento       Pagamento     @relation("RimborsiOrdine", fields: [pagamentoId], references: [id], onDelete: Cascade)
+  /// Плащането, за което се дължи връщането (при надграждане — по-новото; иначе същото).
+  perPagamentoId  String
+  perPagamento    Pagamento     @relation("RimborsiPer", fields: [perPagamentoId], references: [id], onDelete: Cascade)
+  importoCent     Int
+  stato           StatoRimborso @default(IN_CORSO)
+  /// Поръчката за връщане в Revolut (`type: refund`); празно — отговорът не е дошъл (повтаря се със същия ключ).
+  revolutRefundId String?       @unique @db.VarChar(100)
+  /// При FALLITO: кодът от Revolut (HTTP или състоянието на поръчката) — без текст.
+  errore          String?       @db.VarChar(30)
+  createdById     String?
+  createdBy       User?         @relation("RimborsiCreati", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt       DateTime      @default(now())
+  completatoAt    DateTime?
+
+  @@index([pagamentoId])
+  @@index([perPagamentoId])
+  @@index([createdById])
+  @@index([stato, createdAt])
+}
+
+enum StatoContestazione {
+  DA_RISPONDERE
+  IN_ESAME
+  VINTA
+  PERSA
+}
+
+/// Спор за плащане (chargeback), отворен от клиента при банката му: Revolut го съобщава (`DISPUTE_*`), порталът
+/// го чете обратно (`GET /api/disputes/{id}`) и го показва на MASTER. Отговаря се в Revolut Business; порталът
+/// нищо не решава сам (чл. 12.9).
+model Contestazione {
+  /// id-то на спора в Revolut.
+  id            String             @id @db.VarChar(100)
+  pagamentoId   String?
+  pagamento     Pagamento?         @relation(fields: [pagamentoId], references: [id], onDelete: SetNull)
+  stato         StatoContestazione
+  sottostato    String?            @db.VarChar(30)
+  /// Кодът и описанието на причината от картовата схема.
+  motivo        String?            @db.VarChar(300)
+  importoCent   Int
+  valuta        String             @db.Char(3)
+  rispostaEntro DateTime?
+  apertaAt      DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([pagamentoId])
+  @@index([stato])
+}
+
+/// Алармите на портала към Discord (собственикът, 12 ноември 2026): адресът на webhook-а — шифрован (съдържа
+/// токена), само се пише. Съобщенията са без лични данни: вид на събитието, брой и връзка към конзолата.
+model ConfigAllarmi {
+  id          String   @id @default("discord") @db.VarChar(10)
+  attivo      Boolean  @default(false)
+  urlEnc      String?
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  updatedBy   User?    @relation("AllarmiAggiornati", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+}
+
+enum StatoSegnalazione {
+  RICEVUTA
+  IN_ESAME
+  DECISA
+  /// Поискан е преглед на решението (чл. 25.7).
+  RIESAME
+  /// Прегледът е приключил.
+  CHIUSA
+}
+
+enum EsitoSegnalazione {
+  RIMOSSO
+  LIMITATO
+  NESSUNA_AZIONE
+  NON_VALIDA
+}
+
+/// Сигнал за незаконно съдържание (чл. 16 Рег. (ЕС) 2022/2065; условията 2026-11-13, чл. 25): от публичната
+/// страница `/segnalazioni`; решава MASTER — отговорникът за модерирането — с мотиви (чл. 16(5), 17).
+model Segnalazione {
+  id           String             @id @default(cuid())
+  /// Номерът за подателя („SG-AB12CD34“).
+  riferimento  String             @unique @db.VarChar(20)
+  createdAt    DateTime           @default(now())
+  dove         String             @db.VarChar(2000)
+  motivo       String             @db.VarChar(5000)
+  /// По избор само при `minori` (чл. 16(2)(c)).
+  nome         String?            @db.VarChar(200)
+  email        String?            @db.VarChar(254)
+  minori       Boolean            @default(false)
+  stato        StatoSegnalazione  @default(RICEVUTA)
+  esito        EsitoSegnalazione?
+  /// Мотивите към подателя (чл. 16(5)).
+  motivazione  String?            @db.VarChar(5000)
+  /// Чл. 17(3) — при RIMOSSO и LIMITATO: мярката с обхвата и срока, фактите, основанието.
+  misura       String?            @db.VarChar(500)
+  fatti        String?            @db.VarChar(5000)
+  fondamento   String?            @db.VarChar(500)
+  /// Фирмата, качила съдържанието (за известието по чл. 17); името остава и след изтриването ѝ.
+  aziendaId    String?
+  azienda      Azienda?           @relation(fields: [aziendaId], references: [id], onDelete: SetNull)
+  aziendaNome  String?            @db.VarChar(120)
+  decisaAt     DateTime?
+  decisaById   String?
+  decisaBy     User?              @relation("SegnalazioniDecise", fields: [decisaById], references: [id], onDelete: SetNull)
+  /// Чл. 18: кой орган е уведомен и кога.
+  autorita     String?            @db.VarChar(200)
+  autoritaAt   DateTime?
+  /// Прегледът (чл. 25.7): кога е поискан и изходът му.
+  riesameAt    DateTime?
+  riesameEsito String?            @db.VarChar(5000)
+  /// До кога се пази (от решението или от изхода на прегледа); трие го поддръжката.
+  conservaFino DateTime?
+
+  @@index([stato, createdAt])
+  @@index([aziendaId])
+  @@index([decisaById])
+  @@index([conservaFino])
+}
+
 model AccettazioneOfferta {
   id             String   @id @default(cuid())
   at             DateTime

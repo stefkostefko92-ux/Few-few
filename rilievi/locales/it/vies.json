@@ -1,0 +1,14 @@
+{
+  "vies": {
+    "hint": "Per un'azienda fuori dalla Bulgaria, quando accetti verifichiamo la partita IVA nel VIES, il registro della Commissione europea.",
+    "errore": {
+      "nonValida": "La partita IVA {numero} non risulta valida nel VIES, il registro europeo delle partite IVA: l'acquisto qui non si può concludere. Non ti abbiamo addebitato nulla. Controlla il numero; se è giusto, chiedi all'amministrazione fiscale del tuo paese l'iscrizione al VIES (in Italia, all'Agenzia delle Entrate) oppure scrivi a {email}.",
+      "nonDisponibile": "Il VIES, il registro europeo delle partite IVA, in questo momento non risponde, e senza la sua conferma non possiamo concludere l'acquisto. Non ti abbiamo addebitato nulla: riprova tra qualche minuto."
+    },
+    "master": {
+      "consultazione": "VIES n. {numero} del {data}",
+      "senzaNumero": "VIES: valida il {data} (senza numero di consultazione)",
+      "nome": "Nel VIES: {nome}"
+    }
+  }
+}
