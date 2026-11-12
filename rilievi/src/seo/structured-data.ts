@@ -1,4 +1,5 @@
 import { COMPANY, CONTENT_UPDATED } from '../company.js';
+import { VERSIONE_SOFTWARE } from '../versione.js';
 import { config } from '../config.js';
 import { jsonForScript } from '../http/json-script.js';
 import { DEFAULT_LOCALE, LOCALE_TAG, type Translator } from '../i18n.js';
@@ -125,6 +126,7 @@ export function landingStructuredData(t: Translator, canonical: string): string 
       image: `${base}/static/img/og.png`,
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web',
+      softwareVersion: VERSIONE_SOFTWARE,
       browserRequirements: t('site.meta.browser'),
       url: canonical,
       description: t('site.meta.description'),

@@ -160,7 +160,7 @@
       "accettazione": "Per accettazione",
       "dataAccettazione": "Data",
       "firmaCliente": "Timbro e firma del cliente",
-      "piede": "Preventivo n. {numero} · Generato con Rilievi Impianti (Carbon Stealth VCC) il {data}",
+      "piede": "Preventivo n. {numero} · Generato con Rilievi Impianti {versione} (Carbon Stealth VCC) il {data}",
       "pagina": "Pagina {n} di {tot}",
       "colonna": {
         "codice": "Codice",

@@ -33,6 +33,7 @@ import { HOME_PATH } from './seo/paths.js';
 import { originiFornitori } from './auth/oidc.js';
 import { originiCheckout } from './pagamenti/config.js';
 import { webhookRevolutRouter } from './routes/webhook-revolut.js';
+import { VERSIONE_SOFTWARE } from './versione.js';
 
 /** Записът на картата: нова (`/schede`) и промяна (`/schede/<id>`). */
 const FORMA_SCHEDA = /^\/schede(?:\/[a-z0-9]{20,40})?$/;
@@ -74,6 +75,8 @@ function baseLocals(req: Request, res: Response): void {
   res.locals.correnteDi = correnteDi;
   res.locals.rapidoCorrente = rapidoCorrente;
   res.locals.mailEnabled = mailEnabled();
+  // Версията на софтуера (src/versione.ts) — долу на всяка страница.
+  res.locals.versioneSoftware = VERSIONE_SOFTWARE;
   const cfg = config();
   res.locals.limitiAllegati = {
     file: MAX_FILE_PER_VOLTA,

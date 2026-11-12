@@ -189,5 +189,9 @@
     "aggiornata": "Ultima modifica",
     "totaleEuro": "Totale (€)",
     "scarica": "Scarica in Excel (CSV)"
+  },
+  "versione": {
+    "piede": "Versione {versione}",
+    "titolo": "Versione del portale"
   }
 }

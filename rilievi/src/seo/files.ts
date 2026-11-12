@@ -4,6 +4,7 @@ import { DEFAULT_LOCALE, translate } from '../i18n.js';
 import { INVITE_DAYS } from '../services/invites.js';
 import { ULTIMO_AGGIORNAMENTO, VOCI } from '../novita/voci.js';
 import { FAQ_IDS, SERVIZI, sheetCounts, sheetLegend } from '../site/landing.js';
+import { VERSIONE_SOFTWARE } from '../versione.js';
 import {
   CONDIZIONI_PATH,
   CONDIZIONI_PDF_PATH,
@@ -91,6 +92,8 @@ export function llmsTxt(base: string, contactEmail: string): string {
     '# Rilievi Impianti by Carbon Stealth',
     '',
     `> Rilievi Impianti è un portale web in cui le aziende di ascensori compilano la scheda di rilievo di un impianto esistente, la ritrovano e la stampano. ${it('site.hero.note')}`,
+    '',
+    `${it('versione.titolo')}: ${VERSIONE_SOFTWARE}.`,
     '',
     '## Pagine',
     `- [Rilievi Impianti](${base}${HOME_PATH}): ${it('site.nav.scheda').toLowerCase()}, ${it('site.nav.come').toLowerCase()}, ${it('site.nav.assistenza').toLowerCase()}, ${it('site.nav.faq').toLowerCase()}, ${it('site.nav.request').toLowerCase()}`,

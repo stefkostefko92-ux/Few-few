@@ -55,7 +55,8 @@
         "errore": "Non funziona"
       },
       "voci": {
-        "build": "Versione del codice",
+        "versione": "Versione del portale",
+        "build": "Impronta del codice",
         "processo": "Portale acceso da",
         "database": "Risposta del database",
         "migrazione": "Ultima migrazione",
@@ -64,6 +65,7 @@
         "posta": "Invio delle email"
       },
       "nota": {
+        "versione": "Ogni correzione aumenta il secondo numero, ogni grande novità il primo.",
         "build": "La stessa impronta stampata su ogni foglio di calcolo.",
         "processo": "Node {node}, memoria {memoria}.",
         "database": "Dimensione {dimensione}.",
@@ -161,7 +163,7 @@
         "azienda": "Azienda",
         "chi": "Chi",
         "rif": "Rif.",
-        "build": "Versione del codice",
+        "build": "Impronta del codice",
         "versione": "Versione"
       },
       "integro": "Intatto: il sigillo corrisponde al contenuto registrato.",

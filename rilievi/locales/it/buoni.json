@@ -170,7 +170,7 @@
       "intestazione": "Codice e clausola del buono salvati."
     },
     "pdfTesto": {
-      "generato": "Generato con Rilievi Impianti (Carbon Stealth VCC) il {data}.",
+      "generato": "Generato con Rilievi Impianti {versione} (Carbon Stealth VCC) il {data}.",
       "firme": "Firme acquisite sul portale: {n}.",
       "impronta": "Impronta del buono firmato in fondo: {impronta}.",
       "nonValide": "Firme non valide (contenuto cambiato dopo la firma): {n}.",

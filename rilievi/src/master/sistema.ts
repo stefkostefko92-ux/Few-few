@@ -1,4 +1,5 @@
 import { buildCorrente } from '../build.js';
+import { VERSIONE_SOFTWARE } from '../versione.js';
 import { spazioLibero } from '../allegati/archivio.js';
 import { mediaConfig } from '../config.js';
 import { mailEnabled } from '../mail/posta.js';
@@ -104,6 +105,7 @@ export async function statoSistema(now: Date = new Date()): Promise<Controllo[]>
   if (latenza.status === 'rejected')
     logger.warn({ err: errorMessage(latenza.reason) }, 'конзолата: базата не отговаря');
   return [
+    { chiave: 'versione', esito: 'ok', valore: VERSIONE_SOFTWARE },
     { chiave: 'build', esito: 'ok', valore: buildCorrente() },
     {
       chiave: 'processo',

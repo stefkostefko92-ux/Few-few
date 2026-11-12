@@ -13,6 +13,7 @@ import {
   sequenze,
   testata,
 } from './pdf-sezioni.js';
+import { VERSIONE_SOFTWARE } from '../versione.js';
 
 export type { BuonoPdfOptions, FirmaPdf } from './pdf-foglio.js';
 
@@ -28,7 +29,10 @@ export type { BuonoPdfOptions, FirmaPdf } from './pdf-foglio.js';
 /** Номерът на страницата и редът „Generato con…“ — под долното поле, на всяка страница. */
 function piedi(doc: Doc, o: BuonoPdfOptions, firme: { n: number; nonValide: number }): void {
   const range = doc.bufferedPageRange();
-  const generato = o.t('buoni.pdfTesto.generato', { data: o.fmt.dateTime(o.generatoIl) });
+  const generato = o.t('buoni.pdfTesto.generato', {
+    versione: VERSIONE_SOFTWARE,
+    data: o.fmt.dateTime(o.generatoIl),
+  });
   const stato = [
     firme.n > 0 ? o.t('buoni.pdfTesto.firme', { n: firme.n }) : '',
     o.impronta ? o.t('buoni.pdfTesto.impronta', { impronta: o.impronta }) : '',

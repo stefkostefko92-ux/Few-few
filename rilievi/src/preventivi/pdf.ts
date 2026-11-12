@@ -16,6 +16,7 @@ import {
   type Doc,
   type PreventivoPdfOptions,
 } from './pdf-parti.js';
+import { VERSIONE_SOFTWARE } from '../versione.js';
 
 export type { PreventivoPdfOptions } from './pdf-parti.js';
 
@@ -110,6 +111,7 @@ function testata(p: Pagina, d: PreventivoData): void {
 function piedi(doc: Doc, o: PreventivoPdfOptions): void {
   const range = doc.bufferedPageRange();
   const sinistra = o.t('preventivi.pdf.piede', {
+    versione: VERSIONE_SOFTWARE,
     numero: o.numero,
     data: o.fmt.dateTime(o.generatoIl),
   });

@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-12-versione-3": {
+        "area": "Portale",
+        "titolo": "Rilievi Impianti 3.0",
+        "testo": "Il portale ha ora un numero di versione: 3.0. Lo trovi in fondo a ogni pagina e sui fogli in PDF. Ogni correzione aumenta il secondo numero (3.1, 3.2 e così via), ogni grande novità il primo. Se ci scrivi per un problema, indicaci la versione."
+      },
       "2026-11-12-pagamento-carta": {
         "area": "Portale",
         "titolo": "Abbonamento pagabile con carta",
