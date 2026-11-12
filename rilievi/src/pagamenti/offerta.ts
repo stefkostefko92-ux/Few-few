@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import { maxPersone } from '../abbonamenti/regole.js';
 import { COMPANY } from '../company.js';
+import { config } from '../config.js';
+import { BUSINESS_TZ } from '../time.js';
 import { importoDi, type Importo } from './importi.js';
 import type { Credito } from './periodo.js';
 
@@ -29,7 +31,7 @@ export const durataMesi = (t: T, mesi: number): string =>
   t(mesi === 1 ? 'pagamenti.mesi.uno' : 'pagamenti.mesi.altri', { n: mesi });
 
 const giorno = new Intl.DateTimeFormat('it-IT', {
-  timeZone: 'Europe/Rome',
+  timeZone: BUSINESS_TZ,
   day: '2-digit',
   month: '2-digit',
   year: 'numeric',
@@ -78,6 +80,7 @@ export function offertaDi(t: T, d: DatiOfferta): Offerta {
       cap: COMPANY.postalCode,
       citta: t('company.city'),
       piva: COMPANY.vat,
+      email: config().CONTACT_EMAIL,
     }),
     t('pagamenti.offerta.cliente', {
       ragioneSociale: d.ragioneSociale,
@@ -103,7 +106,7 @@ export function offertaDi(t: T, d: DatiOfferta): Offerta {
           inizio: giorno.format(inizio),
         })
       : t('pagamenti.offerta.inizioSubito'),
-    ...(credito
+    ...(credito && credito.giorniExtra > 0
       ? [
           t('pagamenti.offerta.credito', {
             giorni: credito.giorni,
@@ -123,6 +126,8 @@ export function offertaDi(t: T, d: DatiOfferta): Offerta {
     t('pagamenti.offerta.rimborso', { fine: ultimo }),
     t('pagamenti.offerta.fattura', { email: d.email, giorni: GIORNI_FATTURA }),
     t('pagamenti.offerta.pagamento'),
+    // Чл. 10 от Дир. 2000/31: офертата се пази и е достъпна за клиента.
+    t('pagamenti.offerta.archivio', { email: config().CONTACT_EMAIL }),
     t('pagamenti.offerta.integra', {
       versione: giorno.format(new Date(`${d.versione}T12:00:00Z`)),
     }),

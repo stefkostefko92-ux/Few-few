@@ -54,8 +54,8 @@ describe('the webhook signature', () => {
 
 describe('the amount of a plan', () => {
   it('reads the VAT number and the country it belongs to', () => {
-    assert.deepEqual(partitaIvaDa(' 01234567890 '), { numero: 'IT01234567890', paese: 'IT' });
-    assert.deepEqual(partitaIvaDa('it 012 345 678 90'), { numero: 'IT01234567890', paese: 'IT' });
+    assert.deepEqual(partitaIvaDa(' 01234567897 '), { numero: 'IT01234567897', paese: 'IT' });
+    assert.deepEqual(partitaIvaDa('it 012 345 678 97'), { numero: 'IT01234567897', paese: 'IT' });
     assert.deepEqual(partitaIvaDa('BG208725180'), { numero: 'BG208725180', paese: 'BG' });
     assert.deepEqual(partitaIvaDa('DE123456789'), { numero: 'DE123456789', paese: 'DE' });
     for (const bad of ['', '123', 'IT123', 'XX', 'US123456789', 'IT0123456789A', 'a'.repeat(30)])

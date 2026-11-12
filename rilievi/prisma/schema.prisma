@@ -1733,6 +1733,11 @@ enum StatoPagamento {
   FALLITO
   ANNULLATO
   SCADUTO
+  /// Платено в Revolut, но периодът НЕ е даден (фирма без срок, изтрита или спряна; период, който вече не се
+  /// смята; поръчка, която не се чете от 30 дни) — MASTER решава: връща парите или го дава на ръка.
+  DA_VERIFICARE
+  /// Върнато (изцяло или отчасти — чл. 12.9): не се брои повече за платен период.
+  RIMBORSATO
 }
 
 /// Плащане на план през Revolut (#31): сумите — смятани на сървъра при офертата (центове), данните за фактурата
@@ -1772,11 +1777,22 @@ model Pagamento {
   /// Абонаментът при офертата: ако при плащането е друг, периодът се смята наново.
   baseFino       DateTime?
   baseLivello    Int?
+  baseCambioAt   DateTime?
+  /// Плащанията, чиито неизползвани дни са превърнати в това (за фактурата на надграждането).
+  creditoDa      String[]          @default([])
+  /// Защо чака MASTER (при DA_VERIFICARE): senzaScadenza, aziendaAssente, aziendaDisattivata, periodo, nonLetto.
+  verificaMotivo String?           @db.VarChar(30)
+  /// Върнатото (чл. 12.9), отбелязано от MASTER — сумата с ДДС и кога.
+  rimborsoCent   Int?
+  rimborsatoAt   DateTime?
+  /// Фактурата е издадена (извън портала) — отбелязва MASTER; празно = „da fatturare“.
+  fatturataAt    DateTime?
 
   @@index([aziendaId])
   @@index([pianoId])
   @@index([createdById])
   @@index([stato, createdAt])
+  @@index([fatturataAt])
 }
 
 /// Приетата оферта (чл. 12.1 и 19.1 a на условията 2026-11-12): кой, за коя фирма, планът, сумите, точният текст

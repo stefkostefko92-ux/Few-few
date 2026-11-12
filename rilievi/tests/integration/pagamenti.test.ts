@@ -43,7 +43,7 @@ const GIORNO = 24 * 60 * 60 * 1000;
 const dati = {
   ragioneSociale: 'Ascensori Rossi S.r.l.',
   sede: 'Via Roma 1, Milano',
-  partitaIva: '01234567890',
+  partitaIva: '01234567897',
 };
 
 async function azienda(nome: string, fino = new Date(Date.now() + 10 * GIORNO), prova = true) {
@@ -119,7 +119,7 @@ describe('paying a plan', () => {
       where: { pagamentoId: pagamento.id },
     });
     assert.match(prova.testo, /Offerta Premium/);
-    assert.equal(prova.partitaIva, 'IT01234567890');
+    assert.equal(prova.partitaIva, 'IT01234567897');
     assert.equal(prova.userId, user.id);
     assert.match(prova.sigillo, /^[0-9a-f]{64}$/);
 

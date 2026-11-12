@@ -1,7 +1,8 @@
 import { writeAudit } from '../audit.js';
 import { prisma } from '../db.js';
 import { giornoValido, mezzanotteRoma } from '../master/tempo.js';
-import { businessDay } from '../time.js';
+import { businessDay, DAY } from '../time.js';
+import { isProduction } from '../config.js';
 import type { Prisma } from '@prisma/client';
 import { isLivello, MESI_PROVA, scadenzaDopoMesi, type Livello } from './regole.js';
 
@@ -29,13 +30,22 @@ export function leggiAbbonamentoManuale(body: Record<string, unknown>): Abboname
 export const ultimoGiornoDi = (fino: Date | null): string =>
   fino ? businessDay(new Date(fino.getTime() - 1)) : '';
 
-/** `base` — краят, който MASTER е видял (ISO или празно); друг сега (плащане междувременно) — 'cambiato'. */
+/** Чл. 12.8: на клиент „без срок“ срок се слага с поне 30 дни предизвестие. */
+export const GIORNI_PREAVVISO_SCADENZA = 30;
+
+/**
+ * `base` — краят, който MASTER е видял (ISO или празно); друг сега (плащане междувременно) — 'cambiato'. Две
+ * неща искат изрично потвърждение (`confermo`): има платен през Revolut период, който ръчното задаване сменя
+ * ('pagato' — платеното не изчезва тихо, чл. 12.3 и 12.9), и срок под 30 дни на фирма „без срок“ ('preavviso',
+ * чл. 12.8).
+ */
 export async function impostaAbbonamento(
   actorId: string,
   aziendaId: string,
   v: AbbonamentoManuale,
   base: string,
-): Promise<'ok' | 'assente' | 'cambiato'> {
+  confermo = false,
+): Promise<'ok' | 'assente' | 'cambiato' | 'pagato' | 'preavviso'> {
   return prisma.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT id FROM "Azienda" WHERE id = ${aziendaId} FOR UPDATE`;
     const a = await tx.azienda.findUnique({
@@ -44,6 +54,25 @@ export async function impostaAbbonamento(
     });
     if (!a) return 'assente';
     if ((a.abbonamentoFino?.toISOString() ?? '') !== base) return 'cambiato';
+    if (!confermo) {
+      const now = new Date();
+      const nuovo = v.ultimoGiorno ? mezzanotteRoma(v.ultimoGiorno, 1) : null;
+      if (
+        a.abbonamentoFino === null &&
+        nuovo !== null &&
+        nuovo.getTime() < now.getTime() + GIORNI_PREAVVISO_SCADENZA * DAY
+      )
+        return 'preavviso';
+      const pagato = await tx.pagamento.count({
+        where: {
+          aziendaId,
+          stato: 'COMPLETATO',
+          fine: { gt: now },
+          ...(isProduction() ? { ambiente: 'PRODUZIONE' as const } : {}),
+        },
+      });
+      if (pagato > 0) return 'pagato';
+    }
     await tx.azienda.update({
       where: { id: aziendaId },
       data: {

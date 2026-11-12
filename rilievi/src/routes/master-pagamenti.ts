@@ -4,13 +4,15 @@ import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { prisma } from '../db.js';
 import { setFlash } from '../http/flash.js';
 import { leggiConfig, registraIlWebhook, salvaConfig } from '../pagamenti/config.js';
-import { formatoEuro } from '../pagamenti/offerta.js';
+import { formatoEuro, GIORNI_FATTURA } from '../pagamenti/offerta.js';
 import { attivaPiano, creaPiano, leggiPiano, tuttiIPiani } from '../pagamenti/piani.js';
 import { riconcilia } from '../pagamenti/riconcilia.js';
 import { ErroreRevolut } from '../pagamenti/revolut.js';
+import { rimborsiDovuti } from '../pagamenti/rimborsi.js';
+import { isProduction } from '../config.js';
 import { clearSessionCookie } from '../auth/sessions.js';
 import { sendMail } from '../mail/mailer.js';
-import { pagamentiCambiatiMail } from '../mail/templates-abbonamento.js';
+import { pagamentiCambiatiMail } from '../mail/templates-pagamenti.js';
 import { reauthPassword } from '../services/reauth.js';
 
 /**
@@ -27,22 +29,43 @@ async function vista(
   status: number,
   extra: { errore?: string | null; erroreConfig?: string | null } = {},
 ): Promise<void> {
-  const [cfg, piani, pagamenti] = await Promise.all([
+  const riga = {
+    id: true,
+    createdAt: true,
+    completatoAt: true,
+    aziendaNome: true,
+    livello: true,
+    mesi: true,
+    totaleCent: true,
+    stato: true,
+    verificaMotivo: true,
+    ragioneSociale: true,
+    partitaIva: true,
+    rimborsoCent: true,
+  } as const;
+  const [cfg, piani, pagamenti, daVerificare, daFatturare, rimborsi] = await Promise.all([
     leggiConfig(),
     tuttiIPiani(),
+    prisma.pagamento.findMany({ orderBy: { createdAt: 'desc' }, take: 50, select: riga }),
+    // Платено, а периодът не е даден — чака решението на MASTER (връщане или на ръка).
     prisma.pagamento.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-      select: {
-        id: true,
-        createdAt: true,
-        aziendaNome: true,
-        livello: true,
-        mesi: true,
-        totaleCent: true,
-        stato: true,
-      },
+      where: { stato: 'DA_VERIFICARE' },
+      orderBy: { createdAt: 'asc' },
+      take: 100,
+      select: riga,
     }),
+    // За фактуриране (до 5 дни от плащането): завършените без отметка; пробите в Sandbox на живия сървър — не.
+    prisma.pagamento.findMany({
+      where: {
+        stato: 'COMPLETATO',
+        fatturataAt: null,
+        ...(isProduction() ? { ambiente: 'PRODUZIONE' as const } : {}),
+      },
+      orderBy: { completatoAt: 'asc' },
+      take: 100,
+      select: riga,
+    }),
+    rimborsiDovuti(),
   ]);
   res.status(status).render('master/pagamenti', {
     cfg: {
@@ -55,6 +78,10 @@ async function vista(
     },
     piani,
     pagamenti,
+    daVerificare,
+    daFatturare,
+    rimborsi,
+    giorniFattura: GIORNI_FATTURA,
     euro: formatoEuro,
     errore: extra.errore ?? null,
     erroreConfig: extra.erroreConfig ?? null,

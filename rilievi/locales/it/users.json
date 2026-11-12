@@ -226,6 +226,9 @@
       "PAGAMENTO_AVVIATO": "Pagamento avviato",
       "PAGAMENTO_COMPLETATO": "Pagamento ricevuto",
       "PAGAMENTO_FALLITO": "Pagamento non riuscito",
+      "PAGAMENTO_DA_VERIFICARE": "Pagamento da verificare",
+      "PAGAMENTO_RIMBORSATO": "Pagamento rimborsato",
+      "PAGAMENTO_FATTURATO": "Pagamento fatturato",
       "USER_EDIT": "Nome o email cambiati",
       "MEMBERSHIP_ADD": "Account aggiunto a un'azienda",
       "MEMBERSHIP_REMOVE": "Account tolto da un'azienda"

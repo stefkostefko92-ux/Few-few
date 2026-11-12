@@ -70,8 +70,7 @@ async function render(req: Request, res: Response): Promise<void> {
   const admin = user.memberships.some(
     (m) => m.aziendaId === azienda.id && m.role === 'ADMIN' && !m.soloEsportazione,
   );
-  // План в опашка — нов не се купува, докато не започне (чл. 12.3): разделът казва кога.
-  const vendibile = admin && azienda.abbonamentoFino && !stato.poi && (await clienteAttivo());
+  const vendibile = admin && azienda.abbonamentoFino && (await clienteAttivo());
   const situazione = vendibile ? await situazioneDi(prisma, azienda.id, now) : null;
   const piani = situazione
     ? (await pianiAttivi()).map((p) => {
@@ -86,6 +85,8 @@ async function render(req: Request, res: Response): Promise<void> {
           basta: max === null || occupati <= max,
           // По-високо ниво при период, даден на ръка — само чрез MASTER (не се смята онлайн).
           manuale: !periodo.ok && periodo.errore === 'manuale',
+          // Вече има купен план в опашка: същото или по-ниско ниво — след началото му (чл. 12.3).
+          inCoda: !periodo.ok && periodo.errore === 'inCoda',
         };
       })
     : null;

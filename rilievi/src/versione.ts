@@ -6,4 +6,4 @@
  * `package.json` го следва (`MAJOR.MINOR.0` — тестът `versione.test.ts`), а новината в `novita/voci.ts` казва
  * какво е дошло. Вижда се долу на страниците, на листовете с изчисление, в конзолата на MASTER и в JSON-LD.
  */
-export const VERSIONE_SOFTWARE = '3.0';
+export const VERSIONE_SOFTWARE = '3.1';

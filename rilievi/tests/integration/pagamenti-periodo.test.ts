@@ -62,7 +62,7 @@ async function pagata(nome: string, livello: number, inizio: Date, fine: Date, p
       datiSocietari: {
         ragioneSociale: dati.ragioneSociale,
         indirizzo: dati.sede,
-        partitaIva: '01234567890',
+        partitaIva: '01234567897',
       },
     },
   });
@@ -77,7 +77,7 @@ async function pagata(nome: string, livello: number, inizio: Date, fine: Date, p
       totaleCent: prezzoCent,
       regimeIva: 'inversione',
       ...dati,
-      partitaIva: 'IT01234567890',
+      partitaIva: 'IT01234567897',
       stato: 'COMPLETATO',
       ambiente: 'SANDBOX',
       revolutOrderId: randomUUID(),
@@ -148,7 +148,7 @@ describe('the offer and the period of a plan', () => {
       azienda: a.id,
       piano: p.id,
       ...dati,
-      partitaIva: '01234567890',
+      partitaIva: '01234567897',
       accetto: 'si',
       hash: hashDi(vista.body),
     });
@@ -186,7 +186,7 @@ describe('the offer and the period of a plan', () => {
       azienda: a.id,
       piano: p.id,
       ...dati,
-      partitaIva: '01234567890',
+      partitaIva: '01234567897',
       accetto: 'si',
       hash: hashDi(vista.body),
     });
@@ -233,7 +233,7 @@ describe('the offer and the period of a plan', () => {
           totaleCent: 2900,
           regimeIva: 'inversione',
           ...dati,
-          partitaIva: 'IT01234567890',
+          partitaIva: 'IT01234567897',
           ambiente: 'SANDBOX',
           revolutOrderId: orderId,
           createdAt: vecchio,

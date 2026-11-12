@@ -7,28 +7,29 @@
     },
     "offerta": {
       "titolo": "Offerta Premium — Rilievi Impianti",
-      "fornitore": "Fornitore: Carbon Stealth VCC, {via}, {cap} {citta} (Bulgaria), P. IVA {piva}.",
+      "fornitore": "Fornitore: Carbon Stealth VCC, {via}, {cap} {citta} (Bulgaria), P. IVA {piva}, {email}.",
       "cliente": "Cliente: {ragioneSociale}, sede {sede}, P. IVA {partitaIva}. La fattura è intestata a questi dati: se non sono corretti, correggili prima di pagare.",
       "piano": "Piano: Premium fino a {utenti}. Si contano le persone con accesso attivo all'azienda, compreso l'amministratore, e gli inviti in attesa. Oggi l'azienda ne ha {utentiAttuali}.",
       "pianoOltre": "Piano: Premium oltre 25 utenti, senza limite di persone. Oggi l'azienda ne ha {utentiAttuali}.",
       "utenti": "{n} utenti",
       "durata": "Durata: {durata}, dal {inizio} al {fine} compreso (fino a mezzanotte, ora di Roma).",
       "durataCredito": "Durata: {durata} più {extra} giorni, dal {inizio} al {fine} compreso (fino a mezzanotte, ora di Roma).",
-      "inizioDopoProva": "Il piano inizia il {inizio}, alla fine della prova gratuita: fino ad allora la prova continua come oggi.",
-      "inizioDopoPiano": "Il piano inizia il {inizio}, alla fine del piano attuale: fino ad allora il piano attuale resta com'è.",
+      "inizioDopoProva": "Il piano inizia il {inizio}, alla fine della prova gratuita: fino ad allora la prova continua con tutte le funzioni. Per i nuovi inviti vale già da oggi il limite di persone del piano.",
+      "inizioDopoPiano": "Il piano inizia il {inizio}, alla fine del piano attuale: fino ad allora il piano attuale resta com'è. Per i nuovi inviti vale già da oggi il limite di persone più basso tra i due piani.",
       "inizioSubito": "Il piano inizia alla conferma del pagamento.",
-      "credito": "Giorni già pagati: i {giorni} giorni che restano del piano attuale valgono {valore} € IVA esclusa e diventano {extra} giorni del nuovo piano, già compresi nella durata (art. 12.4 delle Condizioni).",
+      "credito": "Giorni già pagati: i {giorni} giorni già pagati e non ancora usati valgono {valore} € IVA esclusa e diventano {extra} giorni del nuovo piano, già compresi nella durata (art. 12.4 delle Condizioni).",
       "prezzo": "Prezzo: {prezzo} € IVA esclusa, da pagare ora in un'unica soluzione.",
       "ivaInversione": "Fattura senza IVA bulgara, con inversione contabile (art. 196 della Direttiva 2006/112/CE): l'IVA la applica la tua azienda nel suo Paese.",
       "ivaBg": "IVA bulgara 20 %: {iva} €.",
       "totale": "Totale da pagare ora: {totale} €.",
       "rinnovo": "Nessun rinnovo automatico. Alla scadenza non addebitiamo nulla. Ti avvisiamo nel portale e per email 14 e 3 giorni prima e il giorno della scadenza.",
       "scadenza": "Alla scadenza, senza un nuovo periodo, l'azienda passa in sola lettura: tutti possono vedere, stampare e scaricare i dati e i documenti già presenti, ma non si possono creare nuovi dati né modificarli. L'esportazione di tutti i dati e il cambio di fornitore restano sempre disponibili e gratuiti. Nessun dato viene cancellato.",
-      "persone": "Più persone: puoi passare a un piano superiore con una nuova offerta. Non addebitiamo nulla in automatico.",
+      "persone": "Più persone: puoi passare a un livello superiore con una nuova offerta, che tiene conto dei giorni già pagati. Non addebitiamo nulla in automatico.",
       "rimborso": "Rimborso: se il contratto cessa per qualsiasi motivo prima del {fine}, ti rimborsiamo i giorni interi non goduti, in proporzione, entro 30 giorni (art. 12.9 delle Condizioni).",
       "fattura": "Fattura: la emettiamo in euro e la inviamo per email a {email} entro {giorni} giorni dal pagamento.",
       "pagamento": "Pagamento: con carta, sulla pagina sicura di Revolut. Noi non vediamo e non conserviamo il numero della carta.",
-      "integra": "La presente offerta integra le Condizioni generali di servizio (versione del {versione}) e prevale su di esse per gli aspetti economici (artt. 12.1 e 23.1). Lingua: italiano."
+      "integra": "La presente offerta integra le Condizioni generali di servizio (versione del {versione}) e prevale su di esse per gli aspetti economici (artt. 12.1 e 23.1). Lingua: italiano.",
+      "archivio": "Questa offerta viene registrata con data e ora quando la accetti. Dopo il pagamento ne ricevi una copia per email; puoi chiederne un'altra in ogni momento a {email}."
     },
     "pagina": {
       "titolo": "Offerta",
@@ -42,7 +43,8 @@
       "paga": "Accetta e paga {totale} €",
       "indietro": "Puoi ancora tornare indietro e correggere i dati: il pagamento parte solo con questo pulsante.",
       "torna": "Torna all'abbonamento",
-      "sandbox": "Ambiente di prova (Sandbox): il pagamento è simulato e non attiva l'abbonamento."
+      "sandbox": "Ambiente di prova (Sandbox): il pagamento è simulato e non attiva l'abbonamento.",
+      "continua": "Continua il pagamento aperto"
     },
     "errore": {
       "titolo": "Controlla i campi evidenziati.",
@@ -53,8 +55,9 @@
       "persone": "Questo piano non basta: l'azienda ha {n} persone (inviti compresi). Scegli un livello superiore.",
       "revolut": "Revolut non risponde in questo momento. Riprova tra qualche minuto: non è stato addebitato nulla.",
       "cambiata": "Abbiamo aggiornato l'offerta con i dati che hai scritto (per esempio l'IVA o le date): leggila e conferma di nuovo. Non è stato addebitato nulla.",
-      "inCoda": "Hai già acquistato il prossimo piano: potrai sceglierne un altro quando sarà iniziato.",
-      "manuale": "Il piano attuale è stato attivato fuori dal portale: per passare a un livello superiore prima della scadenza scrivi a {email}."
+      "inCoda": "Hai già acquistato il prossimo piano. Puoi passare solo a un livello superiore; per rinnovare aspetta che sia iniziato.",
+      "manuale": "Il piano attuale è stato attivato fuori dal portale: per passare a un livello superiore prima della scadenza scrivi a {email}.",
+      "inAttesa": "C'è già un pagamento aperto per questa azienda. Completalo, oppure riprova dopo le {ora}: fino ad allora non possiamo aprirne un altro. Non è stato addebitato nulla."
     },
     "piani": {
       "titolo": "Scegli un piano",
@@ -65,14 +68,16 @@
       "nessuno": "Nessun piano disponibile in questo momento. Per attivare l'abbonamento scrivi a {email}.",
       "troppoPiccolo": "Non basta per {n} persone",
       "inizio": "Se la prova o il piano attuale sono ancora in corso, il nuovo periodo inizia alla loro fine.",
-      "manuale": "Per questo livello prima della scadenza scrivi a {email}"
+      "manuale": "Per questo livello prima della scadenza scrivi a {email}",
+      "inCoda": "Dopo l'inizio del piano acquistato"
     },
     "esito": {
       "completato": "Pagamento ricevuto: l'abbonamento è attivo fino al {data}. Ti abbiamo inviato per email la copia dell'offerta.",
       "attesa": "Revolut non ha ancora confermato il pagamento. Se hai pagato, l'abbonamento si attiva appena arriva la conferma.",
       "fallito": "Il pagamento non è andato a buon fine: non è stato addebitato nulla. Puoi riprovare.",
       "completatoCoda": "Pagamento ricevuto: il nuovo piano inizia il {inizio} e vale fino al {data}. Ti abbiamo inviato per email la copia dell'offerta.",
-      "prova": "Pagamento di prova ricevuto (Sandbox): l'abbonamento non cambia."
+      "prova": "Pagamento di prova ricevuto (Sandbox): l'abbonamento non cambia.",
+      "verifica": "Abbiamo ricevuto il pagamento, ma il piano non si è attivato in automatico. Lo stiamo verificando e ti scriviamo per email: non devi pagare di nuovo."
     },
     "master": {
       "titolo": "Pagamenti",
@@ -131,18 +136,81 @@
         "COMPLETATO": "Completato",
         "FALLITO": "Non riuscito",
         "ANNULLATO": "Annullato",
-        "SCADUTO": "Scaduto"
+        "SCADUTO": "Scaduto",
+        "DA_VERIFICARE": "Da verificare",
+        "RIMBORSATO": "Rimborsato"
       },
       "password": "Per cambiare la chiave o l'ambiente scrivi la tua password.",
       "passwordCampo": "La tua password",
-      "passwordHint": "Serve solo se cambi la chiave o l'ambiente."
+      "passwordHint": "Serve solo se cambi la chiave o l'ambiente.",
+      "verificareTitolo": "Pagamenti da verificare",
+      "verificareTesto": "Pagati su Revolut, ma il periodo non è stato dato. Rimborsa il cliente oppure imposta l'abbonamento a mano dalla pagina dell'azienda; poi segna qui il rimborso.",
+      "motivo": {
+        "senzaScadenza": "L'azienda non ha una scadenza (cliente già attivo, art. 12.8).",
+        "aziendaAssente": "L'azienda è stata eliminata.",
+        "aziendaDisattivata": "L'azienda è disattivata.",
+        "periodo": "L'abbonamento è cambiato tra l'offerta e il pagamento: il periodo non si può calcolare da solo.",
+        "nonLetto": "Da 30 giorni Revolut non risponde su questo ordine (chiave o ambiente cambiati?). Non sappiamo se è stato pagato: controlla nel conto Revolut."
+      },
+      "fatturareTitolo": "Da fatturare",
+      "fatturareTesto": "Pagamenti completati senza fattura segnata. La fattura va emessa entro {giorni} giorni dal pagamento, fuori dal portale.",
+      "fatturareNessuno": "Nessun pagamento da fatturare.",
+      "segnaFatturato": "Segna come fatturato",
+      "fatturato": "Pagamento segnato come fatturato.",
+      "rimborsiTitolo": "Rimborsi dovuti",
+      "rimborsiTesto": "Aziende disattivate o eliminate con giorni pagati e non usati: il rimborso è dovuto entro 30 giorni dalla cessazione (art. 12.9). L'importo proposto comprende l'IVA, se era stata applicata. Fai il rimborso dal conto Revolut o con bonifico, poi segnalo qui.",
+      "rimborsiNessuno": "Nessun rimborso dovuto.",
+      "rimborsoImporto": "Importo rimborsato (€)",
+      "rimborsoCessazione": "Cessazione",
+      "rimborsoDovuto": "Dovuto",
+      "segnaRimborsato": "Segna come rimborsato",
+      "rimborsato": "Rimborso registrato.",
+      "rimborsoErrore": "Scrivi l'importo rimborsato, per esempio 120,50.",
+      "esportaCsv": "Scarica i pagamenti in Excel (CSV)",
+      "cliente": "Cliente",
+      "csv": {
+        "creato": "Creato",
+        "completato": "Completato",
+        "stato": "Stato",
+        "ambiente": "Ambiente",
+        "azienda": "Azienda",
+        "ragioneSociale": "Ragione sociale",
+        "sede": "Sede",
+        "partitaIva": "Partita IVA",
+        "livello": "Livello",
+        "mesi": "Mesi",
+        "dal": "Dal",
+        "al": "Al (compreso)",
+        "imponibile": "Imponibile",
+        "iva": "IVA",
+        "totale": "Totale",
+        "regime": "Regime IVA",
+        "credito": "Credito convertito",
+        "rimborso": "Rimborsato",
+        "fatturato": "Fatturato il",
+        "ordine": "Ordine Revolut"
+      }
     },
     "mail": {
       "subject": "Pagamento ricevuto — {azienda} — Rilievi Impianti",
       "body": "Ciao,\n\nabbiamo ricevuto il pagamento di {totale} € per {azienda}: l'abbonamento è attivo fino al {data}.\n\nQui sotto la copia dell'offerta che hai accettato.\n\n{offerta}\n\nCarbon Stealth VCC — https://carbonstealth.eu",
       "cambiatiSubject": "Pagamenti: impostazioni di Revolut cambiate — Rilievi Impianti",
       "cambiatiChiave": "Ciao,\n\n{chi} ha inserito una nuova chiave di Revolut per i pagamenti (ambiente: {ambiente}).\n\nSe non sei stato tu o un collega, cambia subito la password e controlla la pagina Pagamenti della console.\n\nCarbon Stealth VCC — https://carbonstealth.eu",
-      "cambiatiAmbiente": "Ciao,\n\n{chi} ha cambiato l'ambiente dei pagamenti di Revolut: ora è {ambiente}.\n\nSe non sei stato tu o un collega, cambia subito la password e controlla la pagina Pagamenti della console.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      "cambiatiAmbiente": "Ciao,\n\n{chi} ha cambiato l'ambiente dei pagamenti di Revolut: ora è {ambiente}.\n\nSe non sei stato tu o un collega, cambia subito la password e controlla la pagina Pagamenti della console.\n\nCarbon Stealth VCC — https://carbonstealth.eu",
+      "regime": {
+        "ivaBg": "IVA bulgara 20 %",
+        "inversione": "inversione contabile (art. 196 Dir. 2006/112/CE), senza IVA"
+      },
+      "masterSubject": "Nuovo pagamento: {azienda} — {totale} € — da fatturare",
+      "masterBody": "Nuovo pagamento ricevuto su Revolut.\n\nAzienda: {azienda}\nPiano: {piano}, {durata}, dal {inizio} al {fine} compreso\nImponibile: {imponibile} € — IVA: {iva} € — Totale: {totale} €\nRegime: {regime}\n\nDati per la fattura\nRagione sociale: {ragioneSociale}\nSede: {sede}\nPartita IVA: {partitaIva}\nOrdine Revolut: {ordine}\n\nLa fattura va emessa entro {giorni} giorni dal pagamento. Quando l'hai emessa, segnala qui:\n{link}",
+      "masterCredito": "Passaggio a un livello superiore: nel periodo sono compresi i giorni già pagati e non usati dei pagamenti precedenti, per un valore di {credito} € IVA esclusa.",
+      "masterRicalcolato": "Attenzione: l'abbonamento è cambiato tra l'offerta e il pagamento, quindi il periodo è stato ricalcolato al momento del pagamento e può essere diverso da quello scritto nell'offerta.",
+      "verificaSubject": "Pagamento da verificare: {azienda}",
+      "verificaBody": "Un pagamento è stato completato su Revolut, ma il periodo NON è stato dato.\n\nMotivo: {motivo}\n\nAzienda: {azienda}\nPiano: {piano}, {durata}\nTotale pagato: {totale} €\nOrdine Revolut: {ordine}\n\nRimborsa il cliente (art. 12.9) oppure imposta l'abbonamento a mano, poi segna il rimborso qui:\n{link}",
+      "inVerificaSubject": "Pagamento ricevuto, piano in verifica — {azienda} — Rilievi Impianti",
+      "inVerificaBody": "Ciao,\n\nabbiamo ricevuto il pagamento di {totale} € per {azienda}, ma il piano non si è attivato in automatico.\n\nLo stiamo verificando: ti scriviamo a breve. Non devi pagare di nuovo.\n\nCarbon Stealth VCC — https://carbonstealth.eu",
+      "rimborsoSubject": "Rimborso dovuto: {azienda}",
+      "rimborsoBody": "{azienda} è stata disattivata con giorni pagati e non usati.\n\nRimborso dovuto (art. 12.9, entro 30 giorni): {importo} €\n\nDettagli e registrazione del rimborso:\n{link}"
     }
   }
 }

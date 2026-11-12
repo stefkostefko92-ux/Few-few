@@ -60,6 +60,7 @@ import { masterVerificaRouter } from './master-verifica.js';
 import { masterPostaRouter } from './master-posta.js';
 import { masterRegistriRouter } from './master-registri.js';
 import { masterPagamentiRouter } from './master-pagamenti.js';
+import { masterPagamentiRegistroRouter } from './master-pagamenti-registro.js';
 import { abbonamentoPagamentoRouter } from './abbonamento-pagamento.js';
 
 /**
@@ -80,6 +81,8 @@ export function montaRouter(app: Express): void {
   app.use(masterComunicazioniRouter);
   app.use(masterRegistriRouter);
   app.use(masterPostaRouter);
+  // Преди masterPagamentiRouter: `/master/pagamenti/esporta.csv` и отметките на счетоводството.
+  app.use(masterPagamentiRegistroRouter);
   app.use(masterPagamentiRouter);
   app.use(condizioniRouter);
   app.use(condizioniFirmaRouter);

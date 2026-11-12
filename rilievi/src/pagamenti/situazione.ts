@@ -34,12 +34,19 @@ export async function situazioneDi(
         fine: { gt: now },
         ...(isProduction() ? { ambiente: 'PRODUZIONE' as const } : {}),
       },
-      select: { inizio: true, fine: true, imponibileCent: true, creditoCent: true },
+      select: { id: true, inizio: true, fine: true, imponibileCent: true, creditoCent: true },
     }),
   ]);
   const segmenti = pagati.flatMap((p) =>
     p.inizio && p.fine
-      ? [{ inizio: p.inizio, fine: p.fine, valoreCent: p.imponibileCent + p.creditoCent }]
+      ? [
+          {
+            id: p.id,
+            inizio: p.inizio,
+            fine: p.fine,
+            valoreCent: p.imponibileCent + p.creditoCent,
+          },
+        ]
       : [],
   );
   return { campi, segmenti };

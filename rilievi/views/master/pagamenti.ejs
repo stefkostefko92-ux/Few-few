@@ -87,6 +87,63 @@
     </form>
   </section>
 
+  <% if (daVerificare.length) { %><section class="panel pagamenti-pannello" aria-labelledby="h-verificare">
+    <h2 class="section__title" id="h-verificare"><%= t(m + 'verificareTitolo') %></h2>
+    <div class="errors" role="status"><p><%= t(m + 'verificareTesto') %></p></div>
+    <div class="table-scorre"><table class="table table--stack">
+      <caption class="visually-hidden"><%= t(m + 'verificareTitolo') %></caption>
+      <thead><tr><th scope="col"><%= t(m + 'colonna.data') %></th><th scope="col"><%= t(m + 'colonna.azienda') %></th><th scope="col"><%= t(m + 'colonna.totale') %></th><th scope="col"><%= t(m + 'colonna.stato') %></th><th scope="col"><%= t(m + 'rimborsoImporto') %></th></tr></thead>
+      <tbody>
+        <% for (const p of daVerificare) { %><tr>
+          <th scope="row" data-label="<%= t(m + 'colonna.data') %>"><%= fmt.dateTime(p.createdAt) %></th>
+          <td data-label="<%= t(m + 'colonna.azienda') %>"><%= p.aziendaNome %></td>
+          <td data-label="<%= t(m + 'colonna.totale') %>"><%= euro(p.totaleCent) %> €</td>
+          <td data-label="<%= t(m + 'colonna.stato') %>"><%= t(m + 'motivo.' + (p.verificaMotivo || 'periodo')) %></td>
+          <td data-label="<%= t(m + 'rimborsoImporto') %>"><form class="row-form" method="post" action="/master/pagamenti/<%= p.id %>/rimborso"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><label class="visually-hidden" for="rv-<%= p.id %>"><%= t(m + 'rimborsoImporto') %></label><input class="input" id="rv-<%= p.id %>" name="importo" type="text" inputmode="decimal" maxlength="12" value="<%= euro(p.totaleCent) %>"><button class="btn btn--sm" type="submit"><%= t(m + 'segnaRimborsato') %></button></form></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table></div>
+  </section><% } %>
+
+  <section class="panel pagamenti-pannello" aria-labelledby="h-fatturare">
+    <h2 class="section__title" id="h-fatturare"><%= t(m + 'fatturareTitolo') %></h2>
+    <p class="muted"><%= t(m + 'fatturareTesto', { giorni: giorniFattura }) %></p>
+    <% if (!daFatturare.length) { %><p class="muted"><%= t(m + 'fatturareNessuno') %></p><% } else { %><div class="table-scorre"><table class="table table--stack">
+      <caption class="visually-hidden"><%= t(m + 'fatturareTitolo') %></caption>
+      <thead><tr><th scope="col"><%= t(m + 'colonna.data') %></th><th scope="col"><%= t(m + 'cliente') %></th><th scope="col"><%= t(m + 'colonna.piano') %></th><th scope="col"><%= t(m + 'colonna.totale') %></th><th scope="col"><span class="visually-hidden"><%= t(m + 'segnaFatturato') %></span></th></tr></thead>
+      <tbody>
+        <% for (const p of daFatturare) { %><tr>
+          <th scope="row" data-label="<%= t(m + 'colonna.data') %>"><%= fmt.dateTime(p.completatoAt || p.createdAt) %></th>
+          <td data-label="<%= t(m + 'cliente') %>"><%= p.ragioneSociale %> — <%= p.partitaIva %></td>
+          <td data-label="<%= t(m + 'colonna.piano') %>"><%= t('abbonamento.livello', { n: p.livello }) %>, <%= t(p.mesi === 1 ? 'pagamenti.mesi.uno' : 'pagamenti.mesi.altri', { n: p.mesi }) %></td>
+          <td data-label="<%= t(m + 'colonna.totale') %>"><%= euro(p.totaleCent) %> €</td>
+          <td><form method="post" action="/master/pagamenti/<%= p.id %>/fatturato"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--sm" type="submit"><%= t(m + 'segnaFatturato') %></button></form></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table></div><% } %>
+    <div class="toolbar"><a class="btn" href="/master/pagamenti/esporta.csv"><%- include('../partials/icon', { name: 'download' }) %><span><%= t(m + 'esportaCsv') %></span></a></div>
+  </section>
+
+  <section class="panel pagamenti-pannello" aria-labelledby="h-rimborsi">
+    <h2 class="section__title" id="h-rimborsi"><%= t(m + 'rimborsiTitolo') %></h2>
+    <p class="muted"><%= t(m + 'rimborsiTesto') %></p>
+    <% if (!rimborsi.length) { %><p class="muted"><%= t(m + 'rimborsiNessuno') %></p><% } else { %><div class="table-scorre"><table class="table table--stack">
+      <caption class="visually-hidden"><%= t(m + 'rimborsiTitolo') %></caption>
+      <thead><tr><th scope="col"><%= t(m + 'colonna.azienda') %></th><th scope="col"><%= t(m + 'rimborsoCessazione') %></th><th scope="col"><%= t(m + 'rimborsoDovuto') %></th><th scope="col"><%= t(m + 'rimborsoImporto') %></th></tr></thead>
+      <tbody>
+        <% for (const p of rimborsi) { %><tr>
+          <th scope="row" data-label="<%= t(m + 'colonna.azienda') %>"><%= p.aziendaNome %></th>
+          <td data-label="<%= t(m + 'rimborsoCessazione') %>"><%= fmt.dayRoma(p.cessazione) %></td>
+          <td data-label="<%= t(m + 'rimborsoDovuto') %>"><%= euro(p.dovutoCent) %> €</td>
+          <td data-label="<%= t(m + 'rimborsoImporto') %>"><form class="row-form" method="post" action="/master/pagamenti/<%= p.id %>/rimborso"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><label class="visually-hidden" for="rb-<%= p.id %>"><%= t(m + 'rimborsoImporto') %></label><input class="input" id="rb-<%= p.id %>" name="importo" type="text" inputmode="decimal" maxlength="12" value="<%= euro(p.dovutoCent) %>"><button class="btn btn--sm" type="submit"><%= t(m + 'segnaRimborsato') %></button></form></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table></div><% } %>
+  </section>
+
   <section class="panel" aria-labelledby="h-pagamenti">
     <h2 class="section__title" id="h-pagamenti"><%= t(m + 'pagamentiTitolo') %></h2>
     <% if (!pagamenti.length) { %><p class="muted"><%= t(m + 'nessunPagamento') %></p><% } else { %><div class="table-scorre"><table class="table table--stack">
@@ -98,7 +155,7 @@
           <td data-label="<%= t(m + 'colonna.azienda') %>"><%= p.aziendaNome %></td>
           <td data-label="<%= t(m + 'colonna.piano') %>"><%= t('abbonamento.livello', { n: p.livello }) %>, <%= t(p.mesi === 1 ? 'pagamenti.mesi.uno' : 'pagamenti.mesi.altri', { n: p.mesi }) %></td>
           <td data-label="<%= t(m + 'colonna.totale') %>"><%= euro(p.totaleCent) %> €</td>
-          <td data-label="<%= t(m + 'colonna.stato') %>"><%= t(m + 'statoPagamento.' + p.stato) %><% if (p.stato === 'IN_ATTESA') { %> <form class="inline-form" method="post" action="/master/pagamenti/<%= p.id %>/verifica"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--sm" type="submit"><%= t(m + 'verifica') %></button></form><% } %></td>
+          <td data-label="<%= t(m + 'colonna.stato') %>"><%= t(m + 'statoPagamento.' + p.stato) %><% if (p.rimborsoCent !== null) { %> (<%= euro(p.rimborsoCent) %> €)<% } %><% if (p.stato === 'IN_ATTESA') { %> <form class="inline-form" method="post" action="/master/pagamenti/<%= p.id %>/verifica"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--sm" type="submit"><%= t(m + 'verifica') %></button></form><% } %></td>
         </tr>
         <% } %>
       </tbody>

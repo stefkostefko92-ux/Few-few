@@ -20,6 +20,10 @@ export function maxPersone(livello: number | null): number | null {
   return isLivello(livello) ? LIVELLI[livello] : LIVELLI[1];
 }
 
+/** По-малкият от два тавана; null е „без таван“. */
+const minPersone = (a: number | null, b: number | null): number | null =>
+  a === null ? b : b === null ? a : Math.min(a, b);
+
 /** Безплатният пробен период на нова фирма — в месеци. */
 export const MESI_PROVA = 1;
 
@@ -105,7 +109,11 @@ export function statoAbbonamento(a: CampiAbbonamento, now: Date): StatoAbbonamen
     tipo: scaduto ? 'scaduto' : prova ? 'prova' : 'attivo',
     fino: coda && !scaduto ? coda.dal : a.abbonamentoFino,
     livello,
-    maxPersone: prova && !scaduto ? null : maxPersone(livello),
+    maxPersone: minPersone(
+      prova && !scaduto ? null : maxPersone(livello),
+      // Таванът на купения план важи от покупката (иначе пробата кани 60 души на цената за 10 — чл. 12.4).
+      coda && !scaduto ? maxPersone(coda.livello) : null,
+    ),
     solaLettura: scaduto,
     poi: coda && !scaduto ? { ...coda, fino: a.abbonamentoFino } : null,
   };

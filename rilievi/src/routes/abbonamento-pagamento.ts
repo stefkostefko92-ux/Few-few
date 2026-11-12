@@ -10,6 +10,7 @@ import { partitaIvaDa } from '../pagamenti/importi.js';
 import { riconcilia } from '../pagamenti/riconcilia.js';
 import { daPeriodo } from '../pagamenti/situazione.js';
 import { config } from '../config.js';
+import { BUSINESS_TZ } from '../time.js';
 import { avviaPagamento, preparaOfferta, type Dichiarati } from '../pagamenti/servizio.js';
 
 /**
@@ -19,6 +20,13 @@ import { avviaPagamento, preparaOfferta, type Dichiarati } from '../pagamenti/se
  */
 export const abbonamentoPagamentoRouter: Router = Router();
 const BASE = '/impostazioni/abbonamento';
+
+const oraRoma = (d: Date): string =>
+  new Intl.DateTimeFormat('it-IT', {
+    timeZone: BUSINESS_TZ,
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(d);
 
 const notFound = (req: Request, res: Response) =>
   sendError(req, res, 404, 'error.notFoundTitle', 'error.notFound');
@@ -76,6 +84,8 @@ async function vistaOfferta(
   valori: { ragioneSociale: string; sede: string; partitaIva: string },
   errori: Record<string, string>,
   errore: string | null = null,
+  /** Друго плащане на фирмата е още отворено в Revolut: връзката към него и до колко часа. */
+  aperto: { checkoutUrl: string | null; fino: Date } | null = null,
 ): Promise<void> {
   const t = res.locals.t as (k: string, p?: Record<string, string | number>) => string;
   const user = principalOf(req).user;
@@ -103,6 +113,8 @@ async function vistaOfferta(
     errore: errore ?? (pronta.basta ? null : 'pagamenti.errore.persone'),
     occupati: pronta.occupati,
     sandboxProva: cli !== null && !daPeriodo(cli.ambiente),
+    aperto,
+    oraAperto: aperto ? oraRoma(aperto.fino) : '',
   });
 }
 
@@ -159,6 +171,11 @@ abbonamentoPagamentoRouter.post(
     );
     if (esito.ok) return res.redirect(303, esito.checkoutUrl);
     if (esito.errore === 'spenti' || esito.errore === 'piano') return notFound(req, res);
+    if (esito.errore === 'inAttesa')
+      return vistaOfferta(req, res, 409, azienda, piano, valori, {}, 'pagamenti.errore.inAttesa', {
+        checkoutUrl: esito.checkoutUrl,
+        fino: esito.fino,
+      });
     const [status, chiave] =
       esito.errore === 'cambiata'
         ? [409, 'pagamenti.errore.cambiata']
@@ -191,7 +208,7 @@ abbonamentoPagamentoRouter.get(
       });
       const giorno = (d: Date) =>
         new Intl.DateTimeFormat('it-IT', {
-          timeZone: 'Europe/Rome',
+          timeZone: BUSINESS_TZ,
           day: '2-digit',
           month: '2-digit',
           year: 'numeric',
@@ -204,6 +221,9 @@ abbonamentoPagamentoRouter.get(
           data: fine,
         });
       else setFlash(res, 'ok', 'pagamenti.esito.completato', { data: fine });
+    } else if (stato === 'DA_VERIFICARE') {
+      // Платено, но планът не се е включил сам (MASTER е известен): казва се честно.
+      setFlash(res, 'info', 'pagamenti.esito.verifica');
     } else if (stato === 'IN_ATTESA') {
       setFlash(res, 'info', 'pagamenti.esito.attesa');
     } else {

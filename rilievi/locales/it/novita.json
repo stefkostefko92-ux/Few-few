@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-12-versione-3-1": {
+        "area": "Portale",
+        "titolo": "Versione 3.1: controllo completo prima dell'apertura",
+        "testo": "Abbiamo ricontrollato il portale in ogni sua parte e corretto quello che non andava. Abbonamento: chi ha già comprato un piano può passare subito a un livello superiore e i giorni già pagati vengono contati; un secondo pagamento non parte finché il primo è ancora aperto; la partita IVA italiana viene controllata cifra per cifra; se un pagamento non attiva il piano in automatico, lo vediamo subito e ti scriviamo."
+      },
       "2026-11-12-versione-3": {
         "area": "Portale",
         "titolo": "Rilievi Impianti 3.0",

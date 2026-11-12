@@ -12,7 +12,7 @@ import { clienteAttivo, originiCheckout } from './config.js';
 import { offertaDi } from './offerta.js';
 import { periodoDi } from './periodo.js';
 import { situazioneDi } from './situazione.js';
-import { segnaFallito } from './riconcilia.js';
+import { riconcilia, segnaFallito } from './riconcilia.js';
 import { creaOrdine, ErroreRevolut } from './revolut.js';
 
 /**
@@ -53,7 +53,12 @@ export type EsitoAvvio =
   | {
       ok: false;
       errore: 'spenti' | 'piano' | 'persone' | 'revolut' | 'cambiata' | 'inCoda' | 'manuale';
-    };
+    }
+  /** Друго плащане на фирмата още е отворено в Revolut: връзката му и до кога (после може ново). */
+  | { ok: false; errore: 'inAttesa'; checkoutUrl: string | null; fino: Date };
+
+/** Колко е отворена поръчката в Revolut (`expire_pending_after` PT1H) — толкова не се пуска втора. */
+const ATTESA_MS = 60 * 60_000;
 
 export interface Dichiarati {
   ragioneSociale: string;
@@ -72,7 +77,7 @@ export async function preparaOfferta(
 ) {
   const azienda = await prisma.azienda.findUniqueOrThrow({
     where: { id: aziendaId },
-    select: { name: true, abbonamentoFino: true, abbonamentoLivello: true },
+    select: { name: true },
   });
   const [posti, { campi, segmenti }] = await Promise.all([
     personeOccupate(prisma, aziendaId, now),
@@ -82,7 +87,8 @@ export async function preparaOfferta(
   const periodo = periodoDi(campi, segmenti, piano, now);
   const max = maxPersone(piano.livello);
   const basta = max === null || occupati <= max;
-  if (!periodo.ok) return { azienda, occupati, basta, errore: periodo.errore, offerta: null };
+  if (!periodo.ok)
+    return { azienda, campi, occupati, basta, errore: periodo.errore, offerta: null };
   const offerta = offertaDi(t, {
     ...dichiarati,
     ...piano,
@@ -92,7 +98,7 @@ export async function preparaOfferta(
     periodo,
     dopoProva: statoAbbonamento(campi, now).tipo === 'prova',
   });
-  return { azienda, occupati, basta, errore: null, offerta, periodo };
+  return { azienda, campi, occupati, basta, errore: null, offerta, periodo };
 }
 
 export async function avviaPagamento(
@@ -110,6 +116,18 @@ export async function avviaPagamento(
   const piano = await prisma.pianoAbbonamento.findFirst({ where: { id: pianoId, attivo: true } });
   if (!piano) return { ok: false, errore: 'piano' };
   const now = new Date();
+  // Отворените поръчки на фирмата от последния час: първо какво казва Revolut за тях (платена, отказана,
+  // изтекла) — платена току-що дава периода си сега, и офертата се смята върху него.
+  const aperti = await prisma.pagamento.findMany({
+    where: {
+      aziendaId,
+      stato: 'IN_ATTESA',
+      createdAt: { gt: new Date(now.getTime() - ATTESA_MS) },
+    },
+    select: { id: true },
+    take: 5,
+  });
+  for (const a of aperti) await riconcilia(a.id);
   const pronta = await preparaOfferta(t, user, aziendaId, piano, dichiarati, now);
   const { azienda, offerta, basta } = pronta;
   // „Без срок“ (фирмите отпреди — чл. 12.8) не купува: планът би въвел срок, който още не важи за нея.
@@ -118,20 +136,38 @@ export async function avviaPagamento(
   if (!basta) return { ok: false, errore: 'persone' };
   // Запечатва се само офертата, която човекът е видял (чл. 12.1): друга (сменени данни, ДДС, ден) — наново.
   if (hashVisto !== offerta.hash) return { ok: false, errore: 'cambiata' };
-  // Второ „Accetta e paga“ на същата оферта (назад, втори раздел) — същата поръчка, не втора.
-  const stessa = await prisma.pagamento.findFirst({
-    where: {
-      aziendaId,
-      offertaHash: offerta.hash,
-      stato: 'IN_ATTESA',
-      checkoutUrl: { not: null },
-      createdAt: { gt: new Date(now.getTime() - 50 * 60_000) },
-    },
-    select: { checkoutUrl: true },
-  });
-  if (stessa?.checkoutUrl) return { ok: true, checkoutUrl: stessa.checkoutUrl };
   const periodo = pronta.periodo;
-  const pagamento = await prisma.$transaction(async (tx) => {
+  type Creato =
+    | { tipo: 'riusa'; checkoutUrl: string }
+    | { tipo: 'attesa'; checkoutUrl: string | null; fino: Date }
+    | { tipo: 'nuovo'; pagamento: { id: string } };
+  const creato = await prisma.$transaction(async (tx): Promise<Creato> => {
+    // Редът на фирмата е заключен: две „Accetta e paga“ едновременно не отварят две поръчки.
+    await tx.$queryRaw`SELECT id FROM "Azienda" WHERE id = ${aziendaId} FOR UPDATE`;
+    const aperto = await tx.pagamento.findFirst({
+      where: {
+        aziendaId,
+        stato: 'IN_ATTESA',
+        createdAt: { gt: new Date(now.getTime() - ATTESA_MS) },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { offertaHash: true, checkoutUrl: true, ambiente: true, createdAt: true },
+    });
+    if (aperto) {
+      // Второ „Accetta e paga“ на същата оферта (назад, втори раздел) — същата поръчка, не втора.
+      if (
+        aperto.offertaHash === offerta.hash &&
+        aperto.ambiente === cli.ambiente &&
+        aperto.checkoutUrl
+      )
+        return { tipo: 'riusa', checkoutUrl: aperto.checkoutUrl };
+      // Друга оферта, докато първата може още да се плати: двете заедно биха дали грешен период (чл. 12.3).
+      return {
+        tipo: 'attesa',
+        checkoutUrl: aperto.checkoutUrl,
+        fino: new Date(aperto.createdAt.getTime() + ATTESA_MS),
+      };
+    }
     const p = await tx.pagamento.create({
       data: {
         aziendaId,
@@ -152,8 +188,10 @@ export async function avviaPagamento(
         inizio: periodo.inizio,
         fine: periodo.fine,
         creditoCent: periodo.credito?.valoreCent ?? 0,
-        baseFino: azienda.abbonamentoFino,
-        baseLivello: azienda.abbonamentoLivello,
+        creditoDa: periodo.credito?.da ?? [],
+        baseFino: pronta.campi.abbonamentoFino,
+        baseLivello: pronta.campi.abbonamentoLivello,
+        baseCambioAt: pronta.campi.abbonamentoCambioAt ?? null,
       },
     });
     const campi = {
@@ -196,8 +234,12 @@ export async function avviaPagamento(
       },
       tx,
     );
-    return p;
+    return { tipo: 'nuovo', pagamento: p };
   });
+  if (creato.tipo === 'riusa') return { ok: true, checkoutUrl: creato.checkoutUrl };
+  if (creato.tipo === 'attesa')
+    return { ok: false, errore: 'inAttesa', checkoutUrl: creato.checkoutUrl, fino: creato.fino };
+  const { pagamento } = creato;
   try {
     const ordine = await creaOrdine(cli.c, {
       amount: offerta.importo.totale,

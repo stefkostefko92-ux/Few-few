@@ -1,14 +1,10 @@
 import type { CambioEsito } from '@prisma/client';
 import { writeAudit } from '../audit.js';
-import { config } from '../config.js';
 import { prisma } from '../db.js';
-import { errorMessage, logger } from '../logger.js';
-import { sendMail } from '../mail/mailer.js';
-import { cambioMail, type TipoCambioMail } from '../mail/templates.js';
-import { giornoRoma } from '../master/tempo.js';
+import { avvisaRimborsiDovuti } from '../pagamenti/rimborsi.js';
 import type { SessionUser } from '../types.js';
+import { indirizziAdmin, indirizziMaster, invia } from './cambio-posta.js';
 import { fineProroga, fineTransizione, type Proroga } from './cambio-tempi.js';
-import { eliminazioneIl } from './eliminazione.js';
 
 /**
  * Смяната на доставчика (Data Act, чл. 23–30; собственикът, 12 ноември 2026 — точки A1 и A4). ADMIN на
@@ -21,56 +17,6 @@ import { eliminazioneIl } from './eliminazione.js';
  */
 
 export type EsitoRichiesta = 'ok' | 'gia' | 'assente';
-
-/** Адресите на активните ADMIN на фирмата (и на деактивирана — писмото за края отива и тогава). */
-async function indirizziAdmin(aziendaId: string): Promise<string[]> {
-  const righe = await prisma.membership.findMany({
-    where: { aziendaId, role: 'ADMIN', user: { deactivatedAt: null } },
-    select: { user: { select: { email: true } } },
-  });
-  return [...new Set(righe.map((r) => r.user.email))];
-}
-
-async function indirizziMaster(): Promise<string[]> {
-  const righe = await prisma.user.findMany({
-    where: { master: true, deactivatedAt: null },
-    select: { email: true },
-  });
-  return righe.map((r) => r.email);
-}
-
-/** Писмата — след отговора на заявката, всяко поотделно; провалът се записва, не спира нищо. */
-function invia(
-  tipo: TipoCambioMail,
-  destinatari: Promise<string[]>,
-  dati: { azienda: string; aziendaId: string; esito: CambioEsito | null; fine: Date | null },
-): void {
-  const link = new URL(
-    `/impostazioni/esportazione?azienda=${encodeURIComponent(dati.aziendaId)}`,
-    config().PUBLIC_BASE_URL,
-  ).href;
-  const fine = dati.fine ? giornoRoma(new Date(dati.fine.getTime() - 1)) : '';
-  const eliminazione = dati.fine ? giornoRoma(eliminazioneIl(dati.fine)) : '';
-  destinatari
-    .then(async (indirizzi) => {
-      for (const to of indirizzi) {
-        await sendMail(
-          cambioMail({
-            to,
-            tipo,
-            azienda: dati.azienda,
-            esito: dati.esito,
-            fine,
-            eliminazione,
-            link,
-          }),
-        );
-      }
-    })
-    .catch((error: unknown) => {
-      logger.error({ err: errorMessage(error), tipo }, 'cambio: писмата не тръгнаха');
-    });
-}
 
 /** Искането: само за активна фирма без друго искане; краят — `fineTransizione`. */
 export async function richiediCambio(
@@ -262,6 +208,8 @@ export async function concludiCambi(now = new Date()): Promise<number> {
     });
     if (!fatto) continue;
     invia('concluso', indirizziAdmin(id), fatto);
+    // Платено и неизползвано време: MASTER дължи връщане до 30 дни (чл. 12.9) — писмо до него.
+    void avvisaRimborsiDovuti(id, now);
     n += 1;
   }
   return n;

@@ -17,12 +17,13 @@
   </div>
 </div>
 <div class="stack-gap offerta">
-  <% if (errore) { %><div class="errors" id="form-error" role="alert" tabindex="-1"><h2><%= t(errore, { n: occupati }) %></h2>
+  <% if (errore) { %><div class="errors" id="form-error" role="alert" tabindex="-1"><h2><%= t(errore, { n: occupati, ora: oraAperto }) %></h2>
     <% const elenco = campi.concat(['accetto']).filter((k) => errori[k]); if (elenco.length) { %><ul>
       <% for (const k of elenco) { %><li><a href="#o-<%= k %>"><%= t(errori[k]) %></a></li>
       <% } %>
     </ul><% } %>
   </div><% } %>
+  <% if (aperto && aperto.checkoutUrl) { %><div class="toolbar"><a class="btn" href="<%= aperto.checkoutUrl %>"><%= t(p + 'continua') %></a></div><% } %>
   <% if (sandboxProva) { %><div class="notice" role="status"><p><strong><%= t(p + 'sandbox') %></strong></p></div><% } %>
   <p><%= t(p + 'intro') %></p>
   <section class="offerta__testo" aria-labelledby="h-offerta">

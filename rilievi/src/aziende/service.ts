@@ -4,6 +4,7 @@ import { writeAudit } from '../audit.js';
 import type { SessionUser } from '../types.js';
 import type { Logo } from './logo.js';
 import { MESI_PROVA, scadenzaDopoMesi } from '../abbonamenti/regole.js';
+import { avvisaRimborsiDovuti } from '../pagamenti/rimborsi.js';
 
 /**
  * Фирмите. Създава ги и ги управлява само MASTER (маршрутите проверяват `aziende:manage`); тук е
@@ -270,5 +271,7 @@ export async function setAziendaActive(
       tx,
     );
   });
+  // Спряна с платено и неизползвано време: MASTER дължи връщане до 30 дни (чл. 12.9) — писмо до него.
+  if (!active) void avvisaRimborsiDovuti(id, new Date());
   return true;
 }
