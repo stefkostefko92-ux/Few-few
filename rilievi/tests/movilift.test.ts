@@ -117,6 +117,7 @@ describe('the MoviLift order form', () => {
       'DMG',
       'MASTECH',
       'ELETTROQUADRI',
+      'GEAT',
     ]);
     assert.deepEqual(fieldByKey('quadroOrdine')?.when?.values, marcheOf('quadroOrdine'));
     // The argano sheet, the 2SG sheet and the DMG fixtures are for every make: no make in their

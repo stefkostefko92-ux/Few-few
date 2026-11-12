@@ -77,10 +77,19 @@ export const PULSANTIERE: readonly Collegamento[] = [
       },
     })),
   },
-  ...(['Apri', 'Chiudi', 'Allarme', 'Stop'] as const).map((nome) =>
+  // GEAT: услугите на бутониерата в кабината (аларма, отваряне, затваряне, стоп) — същото нещо.
+  ...(
+    [
+      ['Apri', 'servApriporta'],
+      ['Chiudi', 'servChiudiporta'],
+      ['Allarme', 'servAllarme'],
+      ['Stop', 'servStop'],
+    ] as const
+  ).map(([nome, geat]) =>
     spunta(`servizio${nome}`, [
       ['dp', `servizio${nome}`],
       ['db', `servizio${nome}`],
+      ['gt', geat],
     ]),
   ),
   ...([1, 2] as const).flatMap((n): Collegamento[] => [

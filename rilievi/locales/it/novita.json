@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-12-quadro-geat": {
+        "area": "Schede",
+        "titolo": "Quadro GEAT con il suo modulo",
+        "testo": "In «Marca quadro» c'è anche GEAT: con «Sì» all'ordine del quadro si apre il modulo GEAT (preventivo o ordine), già compilato con i dati della scheda — cliente, impianto, fermate, porte, motore, normative — e si scarica nel PDF originale del fornitore, su due pagine."
+      },
       "2026-11-12-buono-lavoro": {
         "area": "Documenti",
         "titolo": "Il buono di lavoro, dalla scheda o da zero",

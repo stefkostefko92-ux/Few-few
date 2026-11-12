@@ -33,6 +33,7 @@ const open = {
   'eg-_': '1',
   'el-_': '1',
   'eo-_': '1',
+  'gt-_': '1',
   arganoPreventivo: 'si',
   'pa-_': '1',
   'au-_': '1',

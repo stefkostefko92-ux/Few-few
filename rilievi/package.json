@@ -42,6 +42,7 @@
     "brand:logo": "node scripts/logo/encode.mjs",
     "moduli:disegna": "node scripts/moduli/2sg.mjs && node scripts/moduli/ami100.mjs && prettier --write assets/moduli/2sg-ordine-porte.json assets/moduli/ami100-mono-*.json",
     "moduli:dmg": "node scripts/moduli/dmg.mjs && prettier --write assets/moduli/dmg-*.json",
+    "moduli:geat": "node scripts/moduli/geat.mjs && prettier --write assets/moduli/geat-*.json",
     "render:encode": "node scripts/render/encode.mjs"
   },
   "dependencies": {
