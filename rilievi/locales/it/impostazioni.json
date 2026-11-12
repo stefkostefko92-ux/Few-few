@@ -43,6 +43,10 @@
         "titolo": "Fornitori",
         "desc": "La rubrica dei fornitori a cui inviare i moduli d'ordine dal portale."
       },
+      "accesso": {
+        "titolo": "Accesso con Microsoft o Google",
+        "desc": "Entrare con l'account di lavoro invece che con la password del portale."
+      },
       "api": {
         "titolo": "Chiavi API",
         "desc": "Chiavi per leggere le schede dell'azienda da un altro programma, in sola lettura."

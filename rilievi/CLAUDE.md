@@ -65,7 +65,7 @@ src/
                      кого), memberships.ts, permessi.ts (имената и правата на ролите по фирма) ·
                      lockout.ts (заемане на опит, поредни заключвания) · rete.ts (таванът по мрежа) ·
                      totp.ts · recovery.ts · codice.ts (проверката на втория фактор) · chiavi.ts (HKDF,
-                     AES-256-GCM, HMAC) ·
+                     AES-256-GCM, HMAC) · oidc.ts + oidc-stato.ts + oidc-valori.ts (входът с Microsoft/Google) ·
                      nomi-ruoli.ts (`ruolo()` в изгледите) · registro.ts (кои записи на регистъра се
                      виждат), пароли, JWT сесии, заключване, CSRF
   aziende/           service.ts (фирмите) · logo.ts (проверка по байтове + прекодиране през sharp) ·
@@ -1276,6 +1276,23 @@ annotazioni`, само който пише във фирмата, само на 
   `/api/v1/schede/:id` (полетата от fields.ts; Decimal — текст) — само картите на фирмата на ключа, без кошчето;
   без бисквитки и CORS, `no-store`, 600 заявки в час на ключ (`apiLimiter`), грешен ключ — 401 + `WWW-Authenticate`.
   Монтиран най-напред (`montaggio.ts`). Миграция `20261113120000_chiavi_api`.
+- **Входът с Microsoft / Google** (точка D1; условията 2027-01-12, чл. 4.6, A.3, A.13, B.8 b): OpenID Connect,
+  authorization code + PKCE S256, поверителен клиент (`src/auth/oidc.ts` — откриването, страницата за вход, обменът,
+  проверката на ID токена: RS256 от `jwks_uri`, издател — на Microsoft този на подписалата директория
+  `<authority>/<tid>/v2.0`, аудитория, срок, nonce; `oidc-stato.ts` — state, nonce и verifier в шифрована бисквитка
+  `__Host-rilievi_oidc`, SameSite=Lax, 10 мин, веднъж; `oidc-valori.ts` — tenant ID като GUID, домейн на Workspace,
+  без личните на Microsoft и Gmail). Приложението при доставчика — от средата (`OIDC_*`, DEPLOY.md); без него
+  бутоните, разделът и маршрутите ги няма. ADMIN включва фирмата в „Impostazioni → Accesso con Microsoft o Google“
+  (`Azienda.accessoMicrosoft`/`accessoGoogle`, CHECK, одит `AZIENDA_ACCESSO_ESTERNO` без стойностите); всеки човек
+  свързва СВОЯ акаунт от „Account“ с паролата си (`reauthPassword`), а връщането трябва да е в същата сесия (`uid`/`sid`
+  в състоянието); самоличността — `IdentitaEsterna` (`<tid>:<oid>` / `sub`, единствена; одит `ACCESSO_ESTERNO_*` без
+  нея; писмо при свързване и откачане). Входът намира акаунта САМО по самоличността — никога по имейл; пуска само
+  докато активна фирма на човека позволява същата директория/домейн, акаунтът е активен и не е заключен; MASTER —
+  никога; включена 2FA — кодът се иска и тогава (доставчикът замества само паролата). `LOGIN` с `meta.fornitore`.
+  `form-action` на CSP пуска и произхода на доставчиците (формата пренасочва там); страницата за вход на доставчика —
+  само на произхода от настройката. Паролата остава валидна: ADMIN деактивира човека и тук (текстът на раздела го
+  казва). Не влиза в износа. Тест: `tests/oidc.test.ts`, `tests/integration/accesso-esterno.test.ts` с фалшив доставчик
+  (`oidc-finto.ts` — Microsoft с много директории и Google на един локален сървър).
 - **Скицникът** (`src/schizzi/`, решение на собственика, 22 октомври 2026): **за всички фирми, винаги
   включен** (собственикът, 10 ноември 2026 — „attiva gli schizzi per tutti gli utenti e togli l'opzione per
   disattivarli … Gli schizzi diventano attivi di default“; до тогава — функция по фирма, която включваше

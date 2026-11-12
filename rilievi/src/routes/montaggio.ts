@@ -25,6 +25,7 @@ import { verbaliNuovoRouter } from './verbali-nuovo.js';
 import { verbaliRouter } from './verbali.js';
 import { allegatiAnnotazioniRouter } from './allegati-annotazioni.js';
 import { apiRouter } from './api.js';
+import { impostazioniAccessoRouter } from './impostazioni-accesso.js';
 import { impostazioniApiRouter } from './impostazioni-api.js';
 import { buoniFirmeRouter } from './buoni-firme.js';
 import { esportaCsvRouter } from './esporta-csv.js';
@@ -112,6 +113,7 @@ export function montaRouter(app: Express): void {
   app.use(preventiviAzioniRouter);
   app.use(impostazioniPreventiviRouter);
   app.use(impostazioniApiRouter);
+  app.use(impostazioniAccessoRouter);
   app.use(usersRouter);
   // След usersRouter: `/utenti/invita` е преди `/utenti/:id`.
   app.use(usersManageRouter);

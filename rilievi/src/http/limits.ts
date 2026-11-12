@@ -28,6 +28,11 @@ function limiter(
 }
 
 export const loginLimiter = limiter(60_000, 10);
+/**
+ * Връщането от доставчика на самоличност (D1) — свой таван по мрежа, по-широк от входа (един вход е едно
+ * започване и едно връщане): всяко живо състояние минава веднъж (oidc-stato.ts), таванът реже засипването.
+ */
+export const ritornoLimiter = limiter(60_000, 30);
 /** Връзките с токен (покана, нова парола). Токенът е 256-битов — таванът е само срещу засипване. */
 export const tokenLimiter = limiter(15 * 60_000, 20);
 export const forgotLimiter = limiter(60 * 60_000, 5);

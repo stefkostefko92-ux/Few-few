@@ -29,6 +29,7 @@ import { comunicazioniLocals } from './master/banner.js';
 import { countNewRequests } from './requests/service.js';
 import { montaRouter } from './routes/montaggio.js';
 import { HOME_PATH } from './seo/paths.js';
+import { originiFornitori } from './auth/oidc.js';
 
 /** Записът на картата: нова (`/schede`) и промяна (`/schede/<id>`). */
 const FORMA_SCHEDA = /^\/schede(?:\/[a-z0-9]{20,40})?$/;
@@ -136,7 +137,8 @@ export function createServer(): Express {
           objectSrc: ["'none'"],
           baseUri: ["'none'"],
           frameAncestors: ["'none'"],
-          formAction: ["'self'"],
+          // Входът с Microsoft/Google: формата пренасочва към страницата за вход на доставчика (D1).
+          formAction: ["'self'", ...originiFornitori()],
           manifestSrc: ["'self'"],
           ...(isProduction() ? { upgradeInsecureRequests: [] } : {}),
         },

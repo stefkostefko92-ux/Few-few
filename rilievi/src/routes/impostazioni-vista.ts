@@ -1,5 +1,7 @@
 import type { Request, Response } from 'express';
 import { config } from '../config.js';
+import { fornitoriConfigurati } from '../auth/oidc.js';
+import type { Fornitore } from '../auth/oidc-stato.js';
 import { sendError } from '../auth/guards.js';
 import {
   CAPACITA_CONFIGURABILI,
@@ -34,6 +36,7 @@ export const SEZIONI_IMPOSTAZIONI = [
   'fornitori',
   'firme',
   'condizioni',
+  'accesso',
   'api',
   'esportazione',
 ] as const;
@@ -49,6 +52,7 @@ export const ICONE_SEZIONI: Readonly<Record<SezioneImpostazioni, string>> = {
   fornitori: 'mail',
   firme: 'sign',
   condizioni: 'seal',
+  accesso: 'shield',
   api: 'key',
   esportazione: 'download',
 };
@@ -58,9 +62,16 @@ export const isSezione = (value: unknown): value is SezioneImpostazioni =>
 
 export type AziendaImpostabile = Awaited<ReturnType<typeof aziendeImpostabili>>[number];
 
-/** Разделите на фирмата: „Preventivi“ — само когато MASTER е включил офертите ѝ. */
+/**
+ * Разделите на фирмата: „Preventivi“ — само когато MASTER е включил офертите ѝ; „Accesso con Microsoft o
+ * Google“ — само когато порталът има регистрирано приложение при поне един доставчик (src/auth/oidc.ts).
+ */
 export const sezioniDi = (azienda: { preventiviAttivi: boolean }): SezioneImpostazioni[] =>
-  SEZIONI_IMPOSTAZIONI.filter((s) => s !== 'preventivi' || azienda.preventiviAttivi);
+  SEZIONI_IMPOSTAZIONI.filter(
+    (s) =>
+      (s !== 'preventivi' || azienda.preventiviAttivi) &&
+      (s !== 'accesso' || fornitoriConfigurati().length > 0),
+  );
 
 /** Адресът на раздел за фирмата. */
 export const pathSezione = (sezione: SezioneImpostazioni, aziendaId: string): string =>
@@ -112,6 +123,12 @@ export interface VistaSezione {
   nuovoFornitore?: { nome: string; email: string; errore: boolean };
   /** Раздел „Buono di lavoro“ — кодът на модула и клаузата (routes/impostazioni-buono.ts). */
   buono?: { values: { codice: string; clausola: string }; errors: Record<string, string> };
+  /** Раздел „Accesso“ — директорията и домейнът, свързаните хора (routes/impostazioni-accesso.ts). */
+  esterni?: {
+    values: { microsoft: string; google: string };
+    errors: Partial<Record<Fornitore, string>>;
+    collegati: Partial<Record<Fornitore, number>>;
+  };
 }
 
 /** Страницата на един раздел — всичко, което частта му чете, с подразбиране от записаното. */
@@ -144,6 +161,12 @@ export function renderImpostazioni(res: Response, status: number, view: VistaSez
       errors: {},
     },
     preventivi: { valore: azienda.preventivoCondizioni ?? '', errore: false },
+    fornitoriEsterni: fornitoriConfigurati(),
+    esterni: {
+      values: { microsoft: azienda.accessoMicrosoft ?? '', google: azienda.accessoGoogle ?? '' },
+      errors: {},
+      collegati: {},
+    },
     chiaviApi: [],
     chiaveNuova: null,
     erroreChiave: null,

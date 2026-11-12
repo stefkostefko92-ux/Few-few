@@ -33,6 +33,25 @@ sudo bash /opt/few-few/current/rilievi/deploy/setup-env.sh
 вече има запечатани листове, `deploy.sh` НЕ създава нов ключ: спира (изход 1, работещото не е пипано) и
 казва да се върне старият от бекъпа на тайните.
 
+### Входът с Microsoft / Google (по избор)
+
+Клиент, който иска своите хора да влизат с акаунта си в Microsoft Entra или Google Workspace (условията
+2027-01-12, чл. 4.6), иска приложение на портала при доставчика — регистрира го собственикът веднъж:
+
+- **Microsoft Entra** (portal.azure.com → App registrations → New registration): „Accounts in any
+  organizational directory (Multitenant)“; Redirect URI (Web)
+  `https://rilievi.carbonstealth.eu/accesso/esterno/microsoft/ritorno`; Certificates & secrets → New client
+  secret (срокът му — в календара: изтекла тайна = входът спира). В `.env`: `OIDC_MICROSOFT_CLIENT_ID`
+  (Application ID) и `OIDC_MICROSOFT_CLIENT_SECRET` (стойността на тайната).
+- **Google Cloud** (APIs & Services → Credentials → OAuth client ID → Web application): Authorized redirect
+  URI `https://rilievi.carbonstealth.eu/accesso/esterno/google/ritorno`; екранът за съгласие — External, само
+  `openid` и `email`. В `.env`: `OIDC_GOOGLE_CLIENT_ID` и `OIDC_GOOGLE_CLIENT_SECRET`.
+
+После `docker compose up -d app`. Контейнерът излиза към `login.microsoftonline.com`, `accounts.google.com`,
+`oauth2.googleapis.com` и `www.googleapis.com` (HTTPS). Всяка фирма го включва сама: ADMIN пише своя tenant ID
+или домейн в „Impostazioni → Accesso con Microsoft o Google“, а всеки човек свързва акаунта си от „Account“
+с паролата. Без тези стойности бутоните и настройката ги няма.
+
 ## 2. DNS и TLS сертификат (веднъж)
 
 `A` запис `rilievi.carbonstealth.eu` → IP-то на VPS-а (ако няма wildcard за `*.carbonstealth.eu`).

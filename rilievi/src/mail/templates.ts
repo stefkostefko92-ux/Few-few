@@ -69,6 +69,19 @@ export function bloccoCodiciMail(params: { to: string }): MailMessage {
   };
 }
 
+/** Входът с Microsoft/Google е свързан или откачен от акаунта (D1) — да знае човекът, ако не е бил той. */
+export function accessoEsternoMail(params: {
+  to: string;
+  fornitore: string;
+  evento: 'collegato' | 'scollegato';
+}): MailMessage {
+  return {
+    to: params.to,
+    subject: t(`mail.accessoEsterno.${params.evento}.subject`, { fornitore: params.fornitore }),
+    text: t(`mail.accessoEsterno.${params.evento}.body`, { fornitore: params.fornitore }),
+  };
+}
+
 /**
  * Нова заявка за достъп — до всеки активен MASTER. В писмото е само името на фирмата и връзката към
  * заявката (зад вход): имейлът и телефонът на заявителя не пътуват по пощата.

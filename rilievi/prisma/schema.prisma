@@ -147,6 +147,11 @@ model Azienda {
   preventiviNumero     Int          @default(0)
   /// Условията за плащане по подразбиране на новата оферта (настройките на фирмата).
   preventivoCondizioni String?      @db.VarChar(2000)
+  /// Входът с доставчика на самоличност на клиента (D1, чл. 4.6 на условията): директорията на Microsoft
+  /// Entra (tenant ID — GUID с малки букви) и домейнът на Google Workspace (`hd`). Пише ги ADMIN;
+  /// null — изключено. Сменени или махнати, свързаните акаунти спират при следващия вход (src/auth/oidc*.ts).
+  accessoMicrosoft     String?      @db.VarChar(36)
+  accessoGoogle        String?      @db.VarChar(253)
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
@@ -238,6 +243,7 @@ model User {
   requestsDecided     AccessRequest[]       @relation("AccessRequestsDecided")
   comunicazioni       Comunicazione[]       @relation("ComunicazioniScritte")
   comunicazioniChiuse ComunicazioneChiusa[]
+  identitaEsterne     IdentitaEsterna[]
   violazioni          Violazione[]          @relation("ViolazioniScritte")
   schedeApprovate     Scheda[]              @relation("SchedeApprovate")
   versioniScritte     SchedaVersione[]      @relation("VersioniScritte")
@@ -1620,4 +1626,29 @@ model ChiaveApi {
 
   @@index([aziendaId])
   @@index([createdById])
+}
+
+enum FornitoreIdentita {
+  MICROSOFT
+  GOOGLE
+}
+
+/// Акаунтът на човека при доставчика на самоличност на клиента (D1): свързва го самият човек от „Account“ с
+/// паролата си; входът го намира САМО по `soggetto` — никога по имейл. Не влиза в износа (B.8 b).
+model IdentitaEsterna {
+  id             String            @id @default(cuid())
+  userId         String
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fornitore      FornitoreIdentita
+  /// Microsoft: `<tid>:<oid>` (oid е единствен в директорията си); Google: `sub`.
+  soggetto       String            @db.VarChar(200)
+  /// Директорията (tid) или домейнът (hd), от които е дошъл — входът ги сверява с настройката на фирмата.
+  organizzazione String            @db.VarChar(253)
+  /// Имейлът/UPN от токена — само за да го види човекът в „Account“.
+  etichetta      String?           @db.VarChar(254)
+  createdAt      DateTime          @default(now())
+  usataAt        DateTime?
+
+  @@unique([fornitore, soggetto])
+  @@unique([userId, fornitore])
 }

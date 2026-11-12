@@ -12,6 +12,7 @@ import { setFlash } from '../http/flash.js';
 import { ultimaAccettazione } from '../legale/accettazioni.js';
 import { VERSIONE, versioneProssima } from '../legale/versioni.js';
 import { parseMossa, parseOrdine, sposta } from '../schede/ordine.js';
+import { vistaAccesso } from './impostazioni-accesso.js';
 import {
   ICONE_SEZIONI,
   isSezione,
@@ -101,6 +102,10 @@ async function riepilogo(
     ),
     cartelli: t('impostazioni.hub.modello', { nome: modelloDi(azienda.cartelloModello).titolo }),
     api: nChiavi > 0 ? t('api.hubN', { n: nChiavi }) : t('api.hub0'),
+    accesso:
+      [azienda.accessoMicrosoft ? 'Microsoft' : null, azienda.accessoGoogle ? 'Google' : null]
+        .filter(Boolean)
+        .join(', ') || t('esterno.impostazioni.hub0'),
     preventivi: t(
       azienda.preventivoCondizioni
         ? 'preventivi.impostazioni.hubSi'
@@ -160,6 +165,7 @@ impostazioniRouter.get('/impostazioni/:sezione', settings, async (req, res, next
     ...(sezione === 'condizioni' ? { condizioni: await statoCondizioni(azienda) } : {}),
     ...(sezione === 'fornitori' ? { fornitori: await fornitoriDi(azienda.id) } : {}),
     ...(sezione === 'api' ? { chiaviApi: await chiaviDi(azienda.id) } : {}),
+    ...(sezione === 'accesso' ? { esterni: await vistaAccesso(azienda) } : {}),
   });
 });
 

@@ -45,6 +45,8 @@ export function aziendeImpostabili(user: SessionUser) {
       approvazioneSchede: true,
       preventiviAttivi: true,
       preventivoCondizioni: true,
+      accessoMicrosoft: true,
+      accessoGoogle: true,
     },
   });
 }

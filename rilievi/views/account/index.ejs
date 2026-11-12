@@ -8,7 +8,7 @@
 </div>
 <div class="stack-gap">
   <% if (currentUser.mustChangePassword) { %><div class="notice" role="alert"><p><strong><%= t('account.mustChange') %></strong></p></div><% } %>
-  <% if (error) { %><div class="errors" role="alert" id="form-error"><h2><%= t(error) %></h2></div><% } %>
+  <% if (error) { %><div class="errors" role="alert" id="form-error"><h2><%= t(error, locals.errorParams || {}) %></h2></div><% } %>
   <% if (currentUser.memberships.length > 0) { %>
   <section aria-labelledby="h-aziende">
     <h2 class="section__title" id="h-aziende"><%= t('account.aziendeTitle') %></h2>
@@ -49,7 +49,8 @@
     </form>
   </section>
   <% if (!currentUser.mustChangePassword) { %>
-  <%# Двуфакторният вход — по избор; състоянието идва само от GET /account (формите с грешка не го носят). %>
+  <%- include('_esterni') %>
+  <%# Двуфакторният вход — по избор. %>
   <section aria-labelledby="h-2fa">
     <h2 class="section__title" id="h-2fa"><%= t('account.dueFattori.title') %></h2>
     <% const df = typeof dueFattori !== 'undefined' ? dueFattori : null; %>

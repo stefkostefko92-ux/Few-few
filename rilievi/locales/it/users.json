@@ -211,6 +211,9 @@
       "STATO_AVVISO": "Avviso della pagina di stato scritto o aggiornato",
       "API_CHIAVE_CREATA": "Chiave API creata",
       "API_CHIAVE_REVOCATA": "Chiave API revocata",
+      "ACCESSO_ESTERNO_COLLEGATO": "Accesso con Microsoft o Google collegato",
+      "ACCESSO_ESTERNO_SCOLLEGATO": "Accesso con Microsoft o Google scollegato",
+      "AZIENDA_ACCESSO_ESTERNO": "Accesso con Microsoft o Google modificato",
       "USER_EDIT": "Nome o email cambiati",
       "MEMBERSHIP_ADD": "Account aggiunto a un'azienda",
       "MEMBERSHIP_REMOVE": "Account tolto da un'azienda"

@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-12-accesso-microsoft-google": {
+        "area": "Portale",
+        "titolo": "Accesso con Microsoft o Google",
+        "testo": "Le aziende che usano Microsoft 365 o Google Workspace possono far entrare le proprie persone con l'account di lavoro. L'amministratore indica l'organizzazione dell'azienda in Impostazioni → Accesso con Microsoft o Google; poi ognuno collega il proprio account dalla pagina Account, confermando con la password. La verifica in due passaggi, se attiva, resta valida."
+      },
       "2026-11-12-csv-api": {
         "area": "Portale",
         "titolo": "Elenchi in Excel e chiavi API",

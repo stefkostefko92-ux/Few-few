@@ -68,6 +68,26 @@ const schema = z
     SMTP_USER: optionalText(),
     SMTP_PASS: optionalText(),
     MAIL_FROM: z.string().min(3).default('Rilievi Impianti <no-reply@carbonstealth.eu>'),
+    /**
+     * Входът с доставчика на самоличност на клиента (D1, чл. 4.6) — по избор: без двете стойности на един
+     * доставчик бутонът и настройката му ги няма. Регистрацията на приложението (Microsoft Entra — много
+     * директории; Google Cloud — уеб клиент) с адрес за връщане `<PUBLIC_BASE_URL>/accesso/esterno/<доставчик>/ritorno`.
+     * AUTHORITY/ISSUER се сменят само за тестове (в продукция — само https).
+     */
+    OIDC_MICROSOFT_CLIENT_ID: optionalText(),
+    OIDC_MICROSOFT_CLIENT_SECRET: optionalText(),
+    OIDC_MICROSOFT_AUTHORITY: z
+      .string()
+      .url()
+      .default('https://login.microsoftonline.com')
+      .transform((url) => url.replace(/\/+$/, '')),
+    OIDC_GOOGLE_CLIENT_ID: optionalText(),
+    OIDC_GOOGLE_CLIENT_SECRET: optionalText(),
+    OIDC_GOOGLE_ISSUER: z
+      .string()
+      .url()
+      .default('https://accounts.google.com')
+      .transform((url) => url.replace(/\/+$/, '')),
     /** Шрифтовете за PDF (DejaVu Sans — кирилица и италиански ударения). В образа: fonts-dejavu-core. */
     PDF_FONT_DIR: z.string().min(1).default('/usr/share/fonts/truetype/dejavu'),
     /** Срок за пазене на одита в дни (по подразбиране 2 години). */

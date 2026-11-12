@@ -123,6 +123,11 @@ export const AUDIT_ACTIONS = [
   // Ключовете за API (src/api/chiavi.ts): кой ред — без ключа.
   'API_CHIAVE_CREATA',
   'API_CHIAVE_REVOCATA',
+  // Входът с доставчика на самоличност (D1): свързването и откачането (доставчикът, без самоличността)
+  // и настройката на фирмата (включено ли е — без директорията и домейна).
+  'ACCESSO_ESTERNO_COLLEGATO',
+  'ACCESSO_ESTERNO_SCOLLEGATO',
+  'AZIENDA_ACCESSO_ESTERNO',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

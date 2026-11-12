@@ -78,6 +78,16 @@
         "subject": "Dati di {azienda} cancellati",
         "body": "Ciao,\n\nti confermiamo che i dati dell'azienda {azienda} sono stati cancellati definitivamente da Rilievi Impianti. Le copie di sicurezza che li contenevano scadono entro i prossimi 14 giorni.\n\nRestano solo i registri delle accettazioni delle condizioni e dei calcoli emessi, che conserviamo per legge, e una riga anonima nel registro del portale (chi, quando, quante schede).\n\nCarbon Stealth VCC — https://carbonstealth.eu"
       }
+    },
+    "accessoEsterno": {
+      "collegato": {
+        "subject": "Accesso con {fornitore} collegato — Rilievi Impianti",
+        "body": "Ciao,\n\nal tuo account del portale Rilievi Impianti è stato collegato un account {fornitore}: da ora puoi entrare anche con il pulsante «Accedi con {fornitore}». La password continua a funzionare.\n\nSe non sei stato tu, apri la pagina Account, scollega {fornitore}, cambia la password e avvisa l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      },
+      "scollegato": {
+        "subject": "Accesso con {fornitore} scollegato — Rilievi Impianti",
+        "body": "Ciao,\n\ndal tuo account del portale Rilievi Impianti è stato scollegato l'account {fornitore}: per entrare ora serve la password.\n\nSe non sei stato tu, cambia la password e avvisa l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      }
     }
   }
 }

@@ -91,3 +91,17 @@ export function hmacChiaveApi(prefisso: string, segreto: string): string {
     .update(`${prefisso}:${segreto}`, 'utf8')
     .digest('hex');
 }
+
+/**
+ * Състоянието на входа с доставчика на самоличност (D1) — в бисквитка, шифровано със свой ключ (base64url):
+ * state, nonce и PKCE verifier не се виждат и не се подменят от браузъра; подправеното не се чете.
+ */
+export const cifraStatoOidc = (plaintext: string): string =>
+  Buffer.from(cifra('oidc-state-v1', plaintext), 'base64').toString('base64url');
+export function decifraStatoOidc(payload: string): string | null {
+  try {
+    return decifra('oidc-state-v1', Buffer.from(payload, 'base64url').toString('base64'));
+  } catch {
+    return null;
+  }
+}
