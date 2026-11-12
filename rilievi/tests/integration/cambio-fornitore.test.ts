@@ -70,7 +70,7 @@ describe('the export of a company by its own ADMIN', () => {
     assert.equal((await firma(browser, interventoId)).status, 303);
     const page = await browser.get(pagina(azienda.id));
     assert.equal(page.status, 200);
-    assert.match(page.body, /Scarica i dati \(\.tar\)/);
+    assert.match(page.body, /Scarica tutti i dati/);
     assert.match(page.body, /Nessuna esportazione finora/);
 
     const wrong = await browser.submit(pagina(azienda.id), `${PAGE}/scarica`, {
