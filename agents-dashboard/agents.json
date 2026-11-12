@@ -11446,7 +11446,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 237
+        "lessons": 238
       },
       "evolution": [
         {
@@ -11886,9 +11886,20 @@
           "date": "2026-11-04",
           "event": "v22.7 — учене",
           "detail": "Научи: Nexus Dominion desktop nav-profile overflow (дълго име+титла) — правилният фикс е таван… (+14 още)"
+        },
+        {
+          "version": "22.8.0",
+          "date": "2026-11-12",
+          "event": "v22.8 — учене",
+          "detail": "Научи: IBM Plex Sans Condensed във @fontsource няма основна кирилица (само cyrillic-ext), зато…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „IBM Plex Sans Condensed във @fontsource няма основна кирилица (само cyrillic-ext), зато…\" · 1 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
