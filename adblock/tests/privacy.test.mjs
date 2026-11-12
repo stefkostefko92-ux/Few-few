@@ -69,12 +69,30 @@ await mock.listeners.installed[0]({ reason: "install" });
 await mock.listeners.installed[0]({ reason: "update" });
 const un = mock.calls.uninstallUrl;
 ok(`install and update set the uninstall page to exactly https://adblock.carbonstealth.eu/bye (${un.join(" | ")})`, un.length === 2 && un.every((u) => u === "https://adblock.carbonstealth.eu/bye"));
+// /bye leads to the Chrome Web Store listing: other stores (Edge Add-ons, AMO) allow no reference to another
+// store, so an install from them gets no uninstall page at all ("" clears it)
+const realManifest = mock.chrome.runtime.getManifest;
+for (const [name, m, want] of [
+  ["Chrome Web Store", { manifest_version: 3, update_url: "https://clients2.google.com/service/update2/crx" }, "https://adblock.carbonstealth.eu/bye"],
+  ["Edge Add-ons", { manifest_version: 3, update_url: "https://edge.microsoft.com/extensionwebstorebase/v1/crx" }, ""],
+  ["Firefox (AMO)", { manifest_version: 3, browser_specific_settings: { gecko: { id: "supreme-adblock@carbonstealth.eu" } } }, ""],
+]) {
+  mock.chrome.runtime.getManifest = () => structuredClone(m);
+  await mock.listeners.installed[0]({ reason: "update" });
+  ok(`${name} install → uninstall page ${want ? want : "none (cleared)"}`, un.at(-1) === want);
+}
+mock.chrome.runtime.getManifest = realManifest;
 const bgSrc = readFileSync(join(ROOT, "background.js"), "utf8");
-ok("…set from a constant only: no version, id, reason or anything else appended", (bgSrc.match(/setUninstallURL\(/g) || []).length === 1 && /setUninstallURL\(UNINSTALL_URL\)/.test(bgSrc) &&
+ok("…set from a constant only: no version, id, reason or anything else appended", (bgSrc.match(/setUninstallURL\(/g) || []).length === 1 && /setUninstallURL\(url\)/.test(bgSrc) &&
+  /const url = fromChromeStore\(chrome\.runtime\.getManifest\(\)\) \? UNINSTALL_URL : "";/.test(bgSrc) &&
   /const UNINSTALL_URL = "https:\/\/adblock\.carbonstealth\.eu\/bye";/.test(bgSrc));
 const bye = readFileSync(join(ROOT, "server", "bye.html"), "utf8");
 ok("server/bye.html: help first, then the reinstall link, then the feedback address — and no script at all", bye.indexOf('class="fixes"') < bye.indexOf('id="reinstall"') && bye.indexOf('id="reinstall"') < bye.indexOf('id="feedback"') &&
   !/<script(?! type="application\/ld\+json")/.test(bye) && !/<form/.test(bye));
-ok("privacy.html explains the uninstall page (#uninstall)", readFileSync(join(ROOT, "server", "privacy.html"), "utf8").includes('id="uninstall"'));
+const policy = readFileSync(join(ROOT, "server", "privacy.html"), "utf8");
+ok("privacy.html explains the uninstall page (#uninstall), only for Chrome Web Store installs", policy.includes('id="uninstall"') && /installed from the Chrome Web Store, your browser opens adblock\.carbonstealth\.eu\/bye/.test(policy) && /another store, the extension opens no page/.test(policy));
+ok("privacy.html says what happens to email sent to us (purpose, basis, 12 months) — /bye and /support ask for it", /id="email"/.test(policy) && /Art\. 6\(1\)\(f\)/.test(policy.slice(policy.indexOf('id="email"'))) && /deleted within 12 months/.test(policy));
+const md = readFileSync(join(ROOT, "PRIVACY.md"), "utf8");
+ok("PRIVACY.md carries the same three passages", md.includes("**Writing to us.**") && md.includes("installed from the Chrome Web Store, your browser opens") && md.includes("only the first in browsers older than Chrome 137"));
 
 done();

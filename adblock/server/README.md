@@ -42,16 +42,20 @@ Step (2), after the release with both keys has reached the users (check the
 store's version stats):
 
 ```bash
-cd /etc/caddy && mv adblock-signing.key adblock-signing.old.key && mv adblock-signing.next.key adblock-signing.key
+sudo sh -c 'cd /etc/caddy && mv adblock-signing.key adblock-signing.old.key && mv adblock-signing.next.key adblock-signing.key'
 sudo REF=main PROJECTS="adblock" bash /opt/few-few/current/deploy/fetch-deploy.sh   # re-signs filters.json
 ```
 
 `tests/background.test.mjs` pins the key the server signs with today
 (`SERVER_KEY_NOW`): change it in the same release that drops the old key.
 
+`/sources/<sha256>.txt.gz` holds the exact text of every bundled filter list, as compiled into a
+release (THIRD_PARTY_NOTICES.txt links each one; `docs/LICENSES.md` explains why). The deploy copies
+`server/sources/` without deleting older files, so earlier releases keep their sources online.
+
 The site (`robots.txt`) is deliberately open to every crawler, search engines and
 AI answer engines alike: one `User-agent: *` group, with only `filters.json` and
-its signature disallowed (data, not a page). A named group would replace that one
+its signature and `/sources/` disallowed (data, not pages). A named group would replace that one
 for its bot, which is how the filter file once leaked into an index.
 
 ## Schema

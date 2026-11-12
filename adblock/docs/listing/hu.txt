@@ -2,7 +2,7 @@ A Supreme AdBlock mindenhol blokkolja a hirdetéseket – YouTube-videóreklámo
 
 • Aláírt szűrőfrissítések naponta kétszer: az új hirdetési hálózatokat órákon belül kezeli, távoli kód nélkül.
 • A YouTube-reklámokat már a forrásnál megállítja, így a videók egyszerűen lejátszódnak.
-• Cookie-sávok: megnyomja Ön helyett az Elutasítás gombot, eltünteti a visszamaradt elmosást és görgetészárat, és soha nem nyom meg bejelentkezési, OAuth- vagy fizetési gombot.
+• Cookie-sávok: megnyomja Ön helyett az Elutasítás gombot, ha a sávon van ilyen, az Elfogadás gombot pedig csak akkor, ha a sávot másképp nem lehet bezárni; eltünteti a visszamaradt elmosást és görgetészárat, és soha nem nyom meg bejelentkezési, OAuth- vagy fizetési gombot.
 • Nincs fiók, nincs telemetria, nincs adatgyűjtés, és pénzért egyetlen hirdetést sem enged át. A Global Privacy Control minden webhelyet megkér, hogy ne adja el és ne ossza meg az adatait.
 • Beépített EasyList, EasyPrivacy és más nyílt szűrőlisták, valamint az Ön nyelvének listája (31 regionális lista).
 • A szponzorált bejegyzések a Facebookon, az Instagramon és a Threadsen rejtve maradnak.

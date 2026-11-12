@@ -44,7 +44,8 @@ How it works:
 - Scriptlets (##+js): a clean-room engine with 39 routines. The per-site directives are compiled
   into the package at build time; nothing from the network reaches the page's main world. (Until
   5.1.4 there was a live channel for them; it was removed to stay clearly inside the store policy.)
-- Cookie banners: only consent-platform-specific Reject buttons are clicked everywhere. Generic
+- Cookie banners: Reject is pressed when the banner offers it, Accept only when there is no other
+  way to close it. Only consent-platform-specific buttons are clicked anywhere on a page; generic
   text matching runs only inside a container that is about cookies, and never on sign-in, OAuth or
   payment pages.
 - When you uninstall, the browser opens a static page with no parameters, and the site keeps no
@@ -96,7 +97,8 @@ I'd especially like to hear where it breaks a site.
   ```
   Supreme AdBlock is a free, open-source (MIT) ad blocker for Chrome, Edge and Brave. It blocks
   video ads on YouTube at the source, banners, pop-ups and trackers with EasyList, EasyPrivacy and
-  31 regional lists built in. Cookie banners are answered with Reject where the banner offers it.
+  31 regional lists built in. Cookie banners are answered with Reject where the banner offers it
+  (Accept only when there is no other way to close one).
   Filter data is updated about twice a day with an Ed25519 signature, without a new version of the
   extension. A repair page fixes a broken site in one click, and settings can be imported from
   uBlock Origin, AdGuard or Adblock Plus. No account, no analytics, no telemetry.
@@ -116,7 +118,7 @@ I'd especially like to hear where it breaks a site.
 privacy extensions?“ → Add an option. Slant иска плюсове и минуси — давай ги честно:
 
 - **Pros:** signed filter-data updates twice a day · YouTube video ads removed from the player data ·
-  Reject on cookie banners · no account or telemetry · import from uBO/AdGuard/ABP · 70 languages
+  Reject on cookie banners where offered · no account or telemetry · import from uBO/AdGuard/ABP · 70 languages
 - **Cons:** Manifest V3 limits (no HTML filtering, no CNAME uncloaking) · not on Firefox AMO yet ·
   a young project with few reviews
 - **Link:** `https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=slant&utm_medium=listing`

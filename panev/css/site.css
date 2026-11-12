@@ -47,7 +47,7 @@
   --navy-3: #24408c;
   --navy-deep: #101d49;
   --ink: #1a2340;
-  --muted: #667298;
+  --muted: #5a6690;  /* каталожното #667298 е 4,38:1 върху --tint — под WCAG AA 4,5:1; същият тон, по-тъмен */
   --steel: #878786;
   --bg: #ffffff;
   --tint: #f4f6f9;
@@ -56,7 +56,7 @@
   --flag-green: #008c45;
   --flag-red: #cd212a;
   --radius: 10px;
-  --shadow: 0 1px 2px rgba(22, 40, 98, .06), 0 8px 28px rgba(22, 40, 98, .08);
+  --shadow: 0 1px 2px rgba(22, 40, 98, .05), 0 6px 18px rgba(22, 40, 98, .06);
   --wrap: 1160px;
   --dur: .25s;
 }
@@ -309,7 +309,6 @@ p { margin: 0 0 1em; }
 .app-card picture { background: #fff; border-bottom: 1px solid var(--line); aspect-ratio: 4 / 3; }
 .app-card img { object-fit: contain; width: 100%; height: 100%; padding: 10px; }
 .app-body { padding: 1.2rem 1.3rem .6rem; }
-.app-num { font-size: .78rem; font-weight: 700; letter-spacing: .2em; color: var(--steel); margin: 0 0 .4rem; }
 
 /* Продуктови фамилии (начало) */
 .fam-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.3rem; margin: 1.8rem 0 2rem; }
@@ -317,21 +316,11 @@ p { margin: 0 0 1em; }
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
   overflow: hidden; text-decoration: none; color: inherit; box-shadow: var(--shadow);
   display: flex; flex-direction: column; position: relative;
-  transition: border-color var(--dur), transform var(--dur), box-shadow var(--dur);
+  transition: border-color var(--dur);
 }
-.fam-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: var(--navy-2); transform: scaleX(0); transform-origin: left;
-  transition: transform var(--dur);
-}
-.fam-card:hover {
-  border-color: var(--navy-2); transform: translateY(-4px);
-  box-shadow: 0 4px 10px rgba(22, 40, 98, .1), 0 18px 34px rgba(22, 40, 98, .14);
-}
-.fam-card:hover::before { transform: scaleX(1); }
+.fam-card:hover, .fam-card:focus-visible { border-color: var(--navy-2); }
 .fam-card picture { aspect-ratio: 4 / 3; background: #fff; border-bottom: 1px solid var(--line); overflow: hidden; }
-.fam-card img { object-fit: contain; width: 100%; height: 100%; padding: 10px; transition: transform var(--dur) ease; }
-.fam-card:hover img { transform: scale(1.035); }
+.fam-card img { object-fit: contain; width: 100%; height: 100%; padding: 10px; }
 .fam-body { padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: .2rem; flex: 1; }
 .fam-body h3 { transition: color var(--dur); }
 .fam-card:hover .fam-body h3 { color: var(--navy-2); }
@@ -367,9 +356,7 @@ p { margin: 0 0 1em; }
 .step {
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
   padding: 1.4rem 1.4rem 1rem; box-shadow: var(--shadow); position: relative;
-  transition: box-shadow var(--dur), transform var(--dur);
 }
-.step:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(22, 40, 98, .08), 0 16px 30px rgba(22, 40, 98, .1); }
 .step-num {
   font-size: 2.6rem; font-weight: 800; color: var(--card); line-height: 1;
   margin: 0 0 .5rem; padding-bottom: .5rem;
@@ -459,18 +446,13 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
   padding: 1.5rem 1.6rem; box-shadow: var(--shadow); position: sticky; top: 92px;
 }
 .catalog-toc ol {
-  padding-left: 0; list-style: none; margin: 0 0 1.2rem; counter-reset: toc;
+  padding-left: 0; list-style: none; margin: 0 0 1.2rem;
 }
 .catalog-toc li {
   padding: .55rem 0; border-bottom: 1px solid var(--line);
   font-size: .92rem; font-weight: 600; color: var(--navy);
-  counter-increment: toc; display: flex; align-items: baseline; gap: .7rem;
 }
-.catalog-toc li::before {
-  content: counter(toc, decimal-leading-zero);
-  font-size: .74rem; font-weight: 700; letter-spacing: .06em;
-  color: var(--steel);
-}
+/* Номерът на секцията е в самия текст („01 · …“), като в каталога — без втори брояч. */
 .catalog-toc li:last-child { border-bottom: 0; }
 .catalog-toc .btn { width: 100%; text-align: center; }
 .preview-strip {
@@ -597,12 +579,6 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 }
 .footer-bottom a { color: rgba(255, 255, 255, .75); text-decoration: underline; }
 
-/* ── Появяване при скрол (изключено при reduced-motion) ── */
-@media (prefers-reduced-motion: no-preference) {
-  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
-  .reveal.is-visible { opacity: 1; transform: none; }
-}
-
 /* ── Отзивчивост ── */
 @media (max-width: 1020px) {
   .hero-grid, .section-grid, .catalog-grid, .contact-grid { grid-template-columns: 1fr; }
@@ -691,3 +667,15 @@ tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
 
 /* Непрекъсваеми низове (имейл, URL, дълъг код) да не разпъват решетките */
 .spec-row dd, .contact-mail, .legal-body { overflow-wrap: anywhere; }
+
+/* Пътеката на страниците по семейства (видима; същата е в JSON-LD BreadcrumbList) */
+.crumbs { margin: 0 0 1rem; font-size: .86rem; color: rgba(255, 255, 255, .72); }
+.crumbs a { color: rgba(255, 255, 255, .86); text-decoration: underline; text-underline-offset: 3px; }
+.crumbs [aria-current] { color: #fff; }
+
+/* Линковете към страниците по семейства (листата, долу на всяко семейство) */
+.fam-links ul { list-style: none; margin: 1.4rem 0; padding: 0; display: flex; flex-wrap: wrap; gap: .6rem; }
+.fam-links a { display: inline-block; padding: .55rem 1rem; border: 1px solid var(--line); border-radius: 999px; color: var(--navy); font-weight: 600; text-decoration: none; }
+.fam-links a:hover, .fam-links a:focus-visible { border-color: var(--navy); background: var(--tint); }
+.sec-more { margin: 1.2rem 0 0; }
+.sec-more a { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }

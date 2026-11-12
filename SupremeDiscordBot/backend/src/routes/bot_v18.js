@@ -209,25 +209,34 @@ router.post("/giveaway/:id/enter", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-for (const action of ["end", "reroll"]) {
-  router.post(`/giveaway/:id/${action}`, async (req, res, next) => {
+// Cross-tenant IDOR guard: giveaway_id идва като свободен текст от /giveaway
+// end|reroll, а x-bot-secret е общ за всички сървъри. Ботът праща serverId от
+// interaction.guildId; скоупваме по него (чужд/непознат id -> 404, без теглене).
+// serverId минава през същата проверка за snowflake като останалите маршрути
+// за томболи (gwServer/GW_SNOWFLAKE) — обект или празно е 400.
+function giveawayAction(reroll) {
+  return async (req, res, next) => {
     const serverId = gwServer(req);
     if (!GW_SNOWFLAKE.test(serverId)) return res.status(400).json({ error: "serverId required" });
     try {
-      const out = await pickGiveawayWinners(req.params.id, action === "reroll", serverId);
-      if (out.error) return res.status(out.status).json({ error: out.error });
-      res.json({ winners: out.winners });
+      const r = await pickGiveawayWinners(req.params.id, serverId, reroll);
+      if (r.status === "notfound") return res.status(404).json({ error: "Giveaway not found" });
+      if (r.status === "conflict") return res.status(409).json({ error: "Giveaway already ended" });
+      res.json({ winners: r.winners });
     } catch (err) { next(err); }
-  });
+  };
 }
 
-async function pickGiveawayWinners(giveawayId, reroll, serverId) {
+router.post("/giveaway/:id/end", giveawayAction(false));
+router.post("/giveaway/:id/reroll", giveawayAction(true));
+
+async function pickGiveawayWinners(giveawayId, serverId, reroll = false) {
   const g = await prisma.giveaway.findFirst({
     where: { id: giveawayId, serverId },
     include: { entries: true },
   });
-  if (!g) return { status: 404, error: "Giveaway not found" };
-  if (!reroll && g.endedAt) return { status: 409, error: "Giveaway already ended" };
+  if (!g) return { status: "notfound" };
+  if (!reroll && g.endedAt) return { status: "conflict" };
 
   // Filter out previous winners on reroll
   const eligible = reroll
@@ -237,10 +246,13 @@ async function pickGiveawayWinners(giveawayId, reroll, serverId) {
   // Fair winner selection (Fisher–Yates, not a biased sort-shuffle)
   const winners = pickRandom(eligible, g.winnerCount).map((e) => e.userId);
 
-  await prisma.giveaway.update({
-    where: { id: g.id },
+  // Условен запис (race): ръчен end + cron или двама админи не бива да теглят
+  // по два пъти. При end пазим endedAt: null; count 0 -> някой вече приключи.
+  const written = await prisma.giveaway.updateMany({
+    where: { id: giveawayId, serverId, ...(reroll ? {} : { endedAt: null }) },
     data: { endedAt: g.endedAt || new Date(), winnerIds: winners },
   });
+  if (written.count === 0) return { status: "conflict" };
 
   // Fire external webhooks (customer integrations)
   fireWebhooks(g.serverId, "GIVEAWAY_ENDED", {
@@ -250,14 +262,13 @@ async function pickGiveawayWinners(giveawayId, reroll, serverId) {
   // Update the public Discord message + announce winners in the channel.
   // Previously missing on the /giveaway end + reroll command path, so manual
   // ends never announced publicly (unlike the scheduler auto-end and dashboard).
-  // serverId липсваше → ботът не намираше канала (guildChannel иска сървъра) и
-  // обявата за победителите след /giveaway end|reroll не излизаше.
+  // serverId е ЗАДЪЛЖИТЕЛЕН: ботът резолвира канала през guildChannel(serverId, …).
   notifyBot("GIVEAWAY_ENDED", {
     serverId: g.serverId, giveawayId, channelId: g.channelId, messageId: g.messageId,
     prize: g.prize, winners, reroll,
   }).catch(() => {});
 
-  return { winners };
+  return { status: "ok", winners };
 }
 
 // ══════════════════════════════ STICKY MESSAGES ══════════════════════════════

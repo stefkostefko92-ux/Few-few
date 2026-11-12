@@ -72,13 +72,13 @@ describe("томболите — само по (id, serverId)", () => {
       expect(r.status).toBe(404);
       expect(prismaMock.giveaway.findFirst).toHaveBeenLastCalledWith(expect.objectContaining({ where: { id: "gw_theirs", serverId: MINE } }));
     }
-    expect(prismaMock.giveaway.update).not.toHaveBeenCalled();
+    expect(prismaMock.giveaway.updateMany).not.toHaveBeenCalled();
     expect(notifyBot).not.toHaveBeenCalled();
   });
 
   it("собствена томбола: тегли и обявата към бота носи serverId (иначе каналът не се намира)", async () => {
     prismaMock.giveaway.findFirst.mockResolvedValueOnce({ id: "gw_1", serverId: MINE, channelId: "500000000000000001", messageId: "600000000000000001", prize: "Nitro", winnerCount: 1, winnerIds: [], endedAt: null, entries: [{ userId: "333333333333333333" }] });
-    prismaMock.giveaway.update.mockResolvedValueOnce({});
+    prismaMock.giveaway.updateMany.mockResolvedValueOnce({ count: 1 }); // условен запис срещу двоен край (от main)
     const r = await request(app).post("/api/bot/giveaway/gw_1/end").send({ serverId: MINE, actorId: "1" });
     expect(r.status).toBe(200);
     expect(r.body.winners).toEqual(["333333333333333333"]);

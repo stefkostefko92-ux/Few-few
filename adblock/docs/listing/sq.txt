@@ -2,7 +2,7 @@ Supreme AdBlock bllokon reklamat kudo — reklamat video në YouTube, banerat, d
 
 • Përditësime të nënshkruara të filtrave dy herë në ditë: rrjetet e reja të reklamave trajtohen brenda pak orësh, pa kod në distancë.
 • Reklamat në YouTube ndalen që në burim, kështu që videot thjesht luhen.
-• Banerat e kukive: shtyp «Refuzo» për ju, heq turbullimin dhe bllokimin e lëvizjes që mbeten, dhe nuk shtyp kurrë butona identifikimi, OAuth apo pagese.
+• Banerat e kukive: shtyp «Refuzo» për ju kur baneri e ofron, dhe «Prano» vetëm kur nuk ka mënyrë tjetër për ta mbyllur; heq turbullimin dhe bllokimin e lëvizjes që mbeten, dhe nuk shtyp kurrë butona identifikimi, OAuth apo pagese.
 • Pa llogari, pa telemetri, pa mbledhje të dhënash dhe asnjë reklamë nuk lejohet kundrejt pagesës. Global Privacy Control i kërkon çdo sajti të mos i shesë ose ndajë të dhënat tuaja.
 • EasyList, EasyPrivacy dhe lista të tjera të hapura filtrash janë të integruara, plus lista për gjuhën tuaj (31 lista rajonale).
 • Postimet e sponsorizuara në Facebook, Instagram dhe Threads fshihen.

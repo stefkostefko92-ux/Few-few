@@ -32,7 +32,8 @@ interface SantaseState {
 type SantaseAction =
   | { type: "PLAY"; card: string; marriage?: boolean }
   | { type: "CLOSE" }
-  | { type: "EXCHANGE" };
+  | { type: "EXCHANGE" }
+  | { type: "DECLARE"; marriage?: string };
 
 const SUIT_GLYPH: Record<string, string> = { S: "♠", H: "♥", D: "♦", C: "♣" };
 
@@ -70,6 +71,12 @@ export function SantaseView({ title }: { title: string }) {
         return { text: t("santase.closedBy", { name: oppNameOf(ev.seat) }), tone: "loss" };
       if (ev.type === "EXCHANGE" && typeof ev.seat === "number")
         return { text: t("santase.exchangedBy", { name: oppNameOf(ev.seat) }), tone: "brass" };
+      if (ev.type === "DECLARE" && typeof ev.seat === "number" && typeof ev.points === "number") {
+        const name = oppNameOf(ev.seat);
+        return ev.valid
+          ? { text: t("santase.declaredOk", { name, n: ev.points }), tone: ev.seat === seat ? "win" : "loss" }
+          : { text: t("santase.declaredFalse", { name, n: ev.points }), tone: ev.seat === seat ? "loss" : "win" };
+      }
       if (ev.type === "DEAL_END" && typeof ev.seat === "number" && typeof ev.gamePoints === "number")
         return {
           text: t("santase.dealEnd", { name: oppNameOf(ev.seat), n: ev.gamePoints }),
@@ -102,6 +109,8 @@ export function SantaseView({ title }: { title: string }) {
   }, [myTurn]);
   const closeAction = legal.find((a) => a.type === "CLOSE");
   const exchangeAction = legal.find((a) => a.type === "EXCHANGE");
+  // „Имам 66“ — играчът сам преценява (невярното обявяване носи 3 точки на съперника).
+  const declareActions = legal.filter((a): a is Extract<SantaseAction, { type: "DECLARE" }> => a.type === "DECLARE");
 
   const dealtRef = useRef(false);
   useEffect(() => {
@@ -227,6 +236,24 @@ export function SantaseView({ title }: { title: string }) {
                 {noAnnounce ? t("santase.quietOn") : t("santase.quiet")}
               </Button>
             ) : null}
+            {declareActions.map((a) => (
+              <Button
+                key={a.marriage ?? "plain"}
+                variant="brass"
+                title={t("santase.declareHint")}
+                onClick={() => {
+                  playCue("flip");
+                  m.send(a);
+                }}
+              >
+                {a.marriage
+                  ? t("santase.declareWith", {
+                      n: a.marriage[1] === state.trump ? 40 : 20,
+                      suit: SUIT_GLYPH[a.marriage[1] ?? ""] ?? "",
+                    })
+                  : t("santase.declare")}
+              </Button>
+            ))}
             {exchangeAction ? (
               <Button variant="felt" onClick={() => m.send(exchangeAction)}>
                 {t("santase.exchange")}

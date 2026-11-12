@@ -2,7 +2,7 @@ Supreme AdBlock blocks ads everywhere — YouTube video ads, banners, pop-ups an
 
 • Signed filter updates twice a day: new ad networks can be added within hours, with no remote code.
 • YouTube ads are stopped at the source, so videos simply play.
-• Cookie banners: it presses Reject for you, clears the leftover blur and scroll lock, and never presses a sign-in, OAuth or payment button.
+• Cookie banners: it presses Reject when the banner offers it, and Accept only when there is no other way to close it; it clears the leftover blur and scroll lock and never presses a sign-in, OAuth or payment button.
 • No account, no telemetry, no data collection, and no ad is let through for a fee. Global Privacy Control asks every site not to sell or share your data.
 • EasyList, EasyPrivacy and other open filter lists are built in, plus the list for your language (31 regional lists).
 • Sponsored posts on Facebook, Instagram and Threads are hidden.

@@ -46,6 +46,27 @@ const CLASS = new Map(Object.entries({
   '/api/reclaim/run': 'A · трие файлове',
   '/api/disk/vacuum': 'A · трие логове (заличаване на следи)',
   '/api/files/write': 'A · запис като root = изпълнение на код с една стъпка забавяне',
+  '/api/files/mkdir': 'C · нова празна папка — нищо не се губи',
+  '/api/files/upload': 'T · качен файл може да е код; заменяният отива в кошчето',
+  '/api/machine/packages/install': 'T · чужд код като root (postinst) — изписаното име Е решението',
+  '/api/machine/swap/create': 'T · пише файл и fstab (с копие); провал по пътя чисти след себе си',
+  '/api/files/rename': 'B · местене/преименуване — обратимо, без тихо презаписване',
+  '/api/files/copy': 'C · оригиналът не се пипа, целта не се презаписва',
+  '/api/files/delete': 'B · в кошчето — обратимо до изтичането му',
+  '/api/files/delete-forever': 'A · окончателно изтриване, без кошче',
+  '/api/machine/ssh-keys/add': 'A · нов ключ = root достъп до машината',
+  '/api/machine/ssh-keys/remove': 'A · махнат ключ може да е входът на собственика (последният се пази)',
+  '/api/machine/packages/remove': 'A · маха софтуер и зависимите му — по видян план, сверен при изпълнение',
+  '/api/machine/swap/remove': 'A · swapoff връща всичко в RAM; при малко памет — OOM (проверява се преди)',
+  '/api/files/trash/restore': 'C · връщане от кошчето на старото място',
+  '/api/files/trash/purge': 'A · изпразване на кошчето — необратимо',
+  '/api/files/chmod': 'S · права на файл — стойността се вижда и се връща',
+  '/api/files/chown': 'S · собственик — стойността се вижда и се връща',
+  '/api/machine/swap/swappiness': 'S · число от 0 до 100 — вижда се и се връща',
+  '/api/machine/time': 'S · часова зона/NTP — вижда се и се връща (засяга крон и логовете)',
+  '/api/machine/daemon-reload': 'C · само препрочита unit файловете',
+  '/api/files/archive': 'C · нов архив до оригинала, нищо не се презаписва',
+  '/api/files/extract': 'C · винаги в НОВА папка — нищо не се презаписва',
   '/api/env/file': 'S · пише тайните на продукцията',
   '/api/cron/add': 'A · ред в crontab е код, който ще се пусне като root',
   '/api/cron/run': 'B · пуска планираната задача СЕГА (не чакаш до 3 сутринта)',
@@ -174,16 +195,45 @@ const audited = (r) =>
 // включително сметнато и подминато `ok` — не се брои за потвърждение.
 const GATE_RX = /\)\)+\s*return|\bif\s*\(\s*!?\s*ok\b|\bok\s*&&|\)\s*&&\s*(runJob|api|streamJob)/;
 const confirmed = new Set();
-for (const m of app.matchAll(/confirmDanger\(/g)) {
+const ROUTE_RX = /(?:api|runJob|streamJob)\(\s*`?'?\/([\w/:${}.-]+)'?`?/g;
+// Помощни функции от най-горно ниво → маршрутите, които викат. Диалогът често
+// стои в обработчика, а заявката — в помощник (`if (ok) power('poweroff')`).
+// Без проследяването одитът или пропуска такова потвърждение, или (по-лошо) го
+// „намира" по случайна близост в съседния код.
+const helperRoutes = new Map();
+for (const f of app.matchAll(/\n(?:async )?function (\w+)\(/g)) {
+  const rest = app.slice(f.index + 1);
+  const end = rest.slice(1).search(/\n(?:async )?function /);
+  const body = end < 0 ? rest : rest.slice(0, end + 1);
+  const routes = [...body.matchAll(ROUTE_RX)].map((c) => c[1]);
+  if (routes.length) helperRoutes.set(f[1], routes);
+}
+// Обвивки над диалога (`confirmStop`) се броят като самия диалог.
+const DIALOG_RX = /\b(?:confirmDanger|confirmStop)\(/g;
+for (const m of app.matchAll(DIALOG_RX)) {
+  // Тялото на самата обвивка също съдържа confirmDanger(, но прозорецът му спира
+  // в края на функцията — маршрут вътре няма, значи нищо не се отчита погрешно.
   // Прозорецът започва МАЛКО ПРЕДИ диалога: при формата
   // `if (!(await confirmDanger({…}))) return;` решаващата конструкция стои от
   // ЛЯВАТА страна и иначе не се вижда.
   const before = app.slice(Math.max(0, m.index - 40), m.index);
-  const win = app.slice(m.index, m.index + 2600);
-  for (const c of win.matchAll(/(?:api|runJob|streamJob)\(\s*`?'?\/([\w/:${}.-]+)'?`?/g)) {
+  // Прозорецът СПИРА на следващата функция от най-горно ниво: иначе диалогът на
+  // един таб „покриваше" маршрут в СЪСЕДНИЯ. Точно така разблокирането във
+  // fail2ban минаваше одита без нито едно потвърждение — пред него стоеше
+  // диалогът на „Целост на /etc"; излезе наяве, когато целостта порасна.
+  const fnEnd = app.slice(m.index).search(/\n(?:async )?function /);
+  const win = app.slice(m.index, m.index + Math.min(2600, fnEnd < 0 ? 2600 : fnEnd));
+  for (const c of win.matchAll(ROUTE_RX)) {
     const between = before + win.slice(0, c.index);
     if (!GATE_RX.test(between)) continue; // диалогът се показва, но нищо не спира
     confirmed.add('/api/' + c[1].replace(/\$\{[^}]+\}/g, ':id'));
+  }
+  for (const h of win.matchAll(/\b(\w+)\(/g)) {
+    const routes = helperRoutes.get(h[1]);
+    if (!routes) continue;
+    const between = before + win.slice(0, h.index);
+    if (!/\bif\s*\(\s*ok\s*\)|\bok\s*&&|\)\)+\s*return|if\s*\(\s*!\s*ok\s*\)\s*return/.test(between)) continue;
+    for (const r of routes) confirmed.add('/api/' + r.replace(/\$\{[^}]+\}/g, ':id'));
   }
 }
 // `confirm(...)` на браузъра също е потвърждение — по-слабо, но е. Двете форми:
@@ -193,7 +243,8 @@ for (const m of app.matchAll(/confirmDanger\(/g)) {
 // точно толкова, колкото пропуснатата истинска.
 for (const m of app.matchAll(/confirm\(/g)) {
   if (app.slice(Math.max(0, m.index - 8), m.index).includes('Danger')) continue; // confirmDanger се брои другаде
-  const win = app.slice(m.index, m.index + 900);
+  const fnEnd = app.slice(m.index).search(/\n(?:async )?function /);
+  const win = app.slice(m.index, m.index + Math.min(900, fnEnd < 0 ? 900 : fnEnd));
   for (const c of win.matchAll(/(?:api|runJob|streamJob)\(\s*`?'?\/([\w/:${}.-]+)'?`?/g)) {
     confirmed.add('/api/' + c[1].replace(/\$\{[^}]+\}/g, ':id'));
   }

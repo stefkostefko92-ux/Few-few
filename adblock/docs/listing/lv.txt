@@ -2,7 +2,7 @@ Supreme AdBlock bloķē reklāmas visur — YouTube video reklāmas, banerus, uz
 
 • Parakstīti filtru atjauninājumi divreiz dienā: jaunie reklāmu tīkli tiek apstrādāti dažu stundu laikā, bez attāla koda.
 • YouTube reklāmas tiek apturētas jau avotā, tāpēc video vienkārši tiek atskaņoti.
-• Sīkdatņu paziņojumi: jūsu vietā nospiež „Noraidīt“, notīra palikušo aizmiglojumu un ritināšanas bloķēšanu un nekad nenospiež pierakstīšanās, OAuth vai maksājuma pogu.
+• Sīkdatņu paziņojumi: jūsu vietā nospiež „Noraidīt“, ja paziņojumā tāda poga ir, un „Pieņemt“ tikai tad, ja citādi paziņojumu aizvērt nav iespējams; notīra palikušo aizmiglojumu un ritināšanas bloķēšanu un nekad nenospiež pierakstīšanās, OAuth vai maksājuma pogu.
 • Bez konta, bez telemetrijas, bez datu vākšanas, un neviena reklāma netiek izlaista cauri par maksu. Global Privacy Control lūdz katrai vietnei nepārdot un nekopīgot jūsu datus.
 • Iebūvēti EasyList, EasyPrivacy un citi atvērti filtru saraksti, kā arī jūsu valodas saraksts (31 reģionālais saraksts).
 • Sponsorētās ziņas Facebook, Instagram un Threads tiek paslēptas.

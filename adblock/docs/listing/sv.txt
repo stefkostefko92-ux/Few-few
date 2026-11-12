@@ -2,7 +2,7 @@ Supreme AdBlock blockerar annonser överallt – YouTube-videoannonser, banners,
 
 • Signerade filteruppdateringar två gånger om dagen: nya annonsnätverk hanteras inom några timmar, utan fjärrkod.
 • YouTube-annonser stoppas vid källan, så videor spelas upp direkt.
-• Cookie-banners: tillägget trycker på Avvisa åt dig, tar bort kvarvarande oskärpa och scrollspärr och trycker aldrig på en knapp för inloggning, OAuth eller betalning.
+• Cookie-banners: tillägget trycker på Avvisa åt dig när bannern erbjuder det, och på Godkänn bara när det inte finns något annat sätt att stänga den; det tar bort kvarvarande oskärpa och scrollspärr och trycker aldrig på en knapp för inloggning, OAuth eller betalning.
 • Inget konto, ingen telemetri, ingen datainsamling, och ingen annons släpps igenom mot betalning. Global Privacy Control ber alla webbplatser att inte sälja eller dela dina uppgifter.
 • EasyList, EasyPrivacy och andra öppna filterlistor är inbyggda, plus listan för ditt språk (31 regionala listor).
 • Sponsrade inlägg på Facebook, Instagram och Threads döljs.

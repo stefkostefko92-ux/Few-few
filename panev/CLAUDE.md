@@ -18,13 +18,22 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
   `i18n/<език>/{common,home,products,pages,legal}.mjs`), `site/templates/*.mjs`.
   `site/data` беше извън git (стар `.gitignore` с `data/`) и е възстановен от
   генерираните страници: билдът ги възпроизвеждаше байт по байт.
+- **Страници по семейства** (`site/templates/families.mjs`, текстове в
+  `i18n/<език>/families.mjs`): `staffe-porte-di-piano`, `supporti-guide-contrappeso`, `staffe-guida-sg`,
+  `staffe-su-misura` (+ EN/BG slug-ове) — H1 с търсената фраза, отговор отпред, таблиците от
+  ценоразписа, FAQ, линк към страниците в PDF-а, breadcrumbs (визуални + schema). Продуктите носят
+  Product + Offer (`priceValidUntil` = `CATALOG_VALID_UNTIL` в `products.mjs` — **поднови го за 2027**).
+- **lastmod в sitemap** е от хеш на съдържанието (`site/data/lastmod.json`, комитва се): датата се
+  мести само когато страницата наистина се смени.
 - **Изход:** статични страници в корена (`index.html`, `prodotti.html`,
   `catalogo.html`, `contatti.html`, `privacy.html`, `condizioni.html`) + `en/`
   + `bg/` + `sitemap.xml` + `404.html`. **Не редактирай генерираните файлове
   ръчно** — променяй източника и пусни билда.
 - **Каталог:** `docs/catalogo-staffe-panev-2026.pdf` (вграден + за сваляне);
-  превюта в `img/catalogo/` (адреси с `?v=`). 72 страници, около 7,8 MB: 68-те на каталога,
-  „62 · 3D“ и накрая три страници обобщение на гамата (67–69, `3d/pdf/summary.py`). По решение на
+  превюта в `img/catalogo/` (адреси с `?v=`). 72 страници, около 7,9 MB: 68-те на каталога,
+  „62 · 3D“ и накрая три страници обобщение на гамата (67–69, `3d/pdf/summary.py`). Индексът на
+  стр. 01 е пренареден (`3d/pdf/indice.py`): в оригинала два реда бяха скрити под колонтитула. Кориците
+  на секциите показват рендерите на артикулите си с линкове (`3d/pdf/sezioni.py`). По решение на
   собственика 3D рендерите заместват продуктовите чертежи; остават монтажните и този на твърдото
   рамо. PDF-ът и превютата се правят с `cd 3d && npm run catalog-pdf`,
   никога на ръка. На всяка страница без корицата и на всеки чертеж и рендер пише „Proprietà
@@ -34,8 +43,12 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
   `/docs/` е `no-cache` (nginx + `server.js`): браузърът проверява при всяко отваряне и сваля
   наново само ако файлът е сменен (ETag → 304).
 - **Дизайн:** само каталожната палитра (`#162862`, `#1d3271`, `#f4f6f9`,
-  `#e2e6ea`, `#667298`, `#878786`); Inter variable self-hosted (latin +
-  cyrillic в `fonts/Inter-var-*.woff2`); без емоджита и декоративни SVG.
+  `#e2e6ea`, `#667298`, `#878786`) + студийното сиво на рендерите (`#cfd2d5`, фонът на сцената);
+  Inter variable self-hosted (latin + cyrillic в `fonts/Inter-var-*.woff2`); без емоджита и
+  декоративни SVG. Сенките са леки, картите не подскачат при посочване. Приглушеният текст е
+  `--muted: #5a6690` (каталожното `#667298` е 4,38:1 върху `--tint`, под WCAG AA); axe-core
+  (WCAG 2.2 AA + best-practice) е чист на всички шаблони — дръж го така.
+- **CSP:** домейните на Stripe се разрешават само при `PAYMENTS_ENABLED=true` (`server.js`).
 - **Лого:** оригиналът на собственика е `img/brand/panev-ascensori-logo.webp` (прозрачен фон).
   - `cd 3d && npm run logo` прави `img/panev-logo.png` (640 px, логото в JSON-LD),
     `panev-logo{,-360,-180}.webp` и `img/og-panev.jpg` (картинката за споделяне на страниците без 3D).
@@ -55,7 +68,8 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
 - **Поръчка:** списък в `localStorage` (`js/site.js`) → mailto или
   `POST /api/contact` (съществуващият бекенд с honeypot + rate limit + nodemailer).
 - **server.js:** clean URLs (без `.html`, важи и за `en/`/`bg/`), 301 legacy
-  редиректи от стария сайт, static + admin + contact API. Stripe кодът е
+  редиректи от стария сайт (`lib/legacy.js`, тест `test/legacy.test.js` — вкл. адресите на стария
+  Wix: `/product-page/<код>` → серията ѝ в продуктите, `/en/lavora-con-noi` → `/en/contacts`), static + admin + contact API. Stripe кодът е
   спрян с kill-switch (`PAYMENTS_ENABLED`) и фронтът не го ползва.
 
 ## 3D каталог (`3d/`)
@@ -85,6 +99,18 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
   админът (сийдът в `scripts/seed.js`). Адресите им носят `?v=<хеш на файла>` (`versioned()` в
   `site/templates/asset.mjs`): nginx кешира `/img/` 30 дни без проверка, а имената не се менят,
   когато рендерите се прерисуват.
+- **„Regola tu“:** в заглавния блок на началото и на страниците за вратите и за водачите планката се
+  регулира пред очите: плъзгач и влачене по снимката сменят кадрите от `img/regola/` (прави ги
+  `3d/scripts/frames.mjs`; шаблон `site/templates/regola.mjs`, стил `css/regola.css`, скрипт
+  `js/regola.js`). Една-единствена анимация — един ход при влизане в изгледа, никога при
+  reduced-motion. Без JS снимката стои в покой, управлението се крие. Появяването на картите при
+  скрол е махнато нарочно (шаблонен ефект).
+- **Снимки от обектите („Dal cantiere“):** истинските снимки на собственика (монтаж в шахтата,
+  производството в Корнаредо) в `img/cantiere/` — колаж на началото, по семейство на страниците за
+  вратите, водачите и SG (`site/templates/cantiere.mjs`, текстовете в `i18n/<език>/common.mjs` →
+  `cantiere`). Внасят се само с `cd 3d && node scripts/photos.mjs <файл>=<име>`: оставя само снимката
+  от скрийншота (без лентите, интерфейса и чуждите миниатюри), **маха всички метаданни (EXIF/GPS)**
+  и леко изравнява нивата. Надписите описват само видимото на снимката.
 - **Ред:** `cd 3d && npm run site` (бъндъл + текстури → `3d-viewer/`, снимки → `img/3d/`,
   `img/og-3d.jpg`), после `npm run build:site`. И двете папки се комитват — деплоят е rsync.
 - **server.js:** `frame-src 'self'` е за рамката; `/3d/` (изходният пакет) и `DEPLOY.md` не се
@@ -93,7 +119,7 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
 ## Команди (в `panev/`)
 
 ```bash
-npm run build:site       # node site/build.mjs — регенерира 24-те страници (18 + три 3D + три рамки) + sitemap
+npm run build:site       # node site/build.mjs — регенерира 36-те страници (18 + 12 по семейства + три 3D + три рамки) + sitemap
 npm run dev              # nodemon server.js
 npm start                # node server.js
 npm run db:seed          # node scripts/seed.js (admin/legacy данни)
@@ -107,6 +133,10 @@ node scripts/admin-password.js --list | <имейл> | --stdin <имейл> | --
 в `lib/auth.js`).
 
 ## Конвенции (важно)
+
+- **Никакви CAD/чертежи за сваляне — никога** (решение на собственика, 2026-11-11): без STEP, DWG,
+  DXF, STL, GLB или друг файл с геометрията на планките — иначе ще ги копират. Не го предлагай.
+  3D изгледът и рендерите показват, не дават файл; данните остават в PDF каталога.
 
 - **Plain JavaScript**, без build step освен `build:site`; ESM в `site/`.
 - **Продуктовите данни се пипат само в `site/data/products.mjs`** и трябва да

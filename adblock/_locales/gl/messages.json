@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bloqueador de anuncios para YouTube e a web: vídeo, báners, pop-ups, rastrexadores, cookies («Rexeitar») e muros anti-adblock."
+    "message": "Bloqueador de anuncios para YouTube e a web: vídeo, báners, pop-ups, rastrexadores, avisos de cookies e muros anti-adblock."
   },
   "byCarbon": {
     "message": "de Carbon Stealth"
@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Capacidade de regras"
+  },
+  "helpTitle": {
+    "message": "Os sitios non funcionan?"
+  },
+  "helpText": {
+    "message": "Abonda cun sitio cada vez: permita os seus anuncios durante unha hora ou desactive a ocultación de elementos só nese sitio. Se nos avisa, arranxámolo para todo o mundo."
+  },
+  "helpFix": {
+    "message": "Arranxar este sitio"
+  },
+  "cardNever": {
+    "message": "Non volver mostrar"
+  },
+  "cardClose": {
+    "message": "Pechar"
+  },
+  "receiptTitle": {
+    "message": "Os seus últimos 30 días"
+  },
+  "receiptText": {
+    "message": "$1 solicitudes bloqueadas · $2 avisos de cookies respondidos · uns $3 de datos aforrados (unha estimación)"
+  },
+  "share": {
+    "message": "Compartir"
+  },
+  "shareTitle": {
+    "message": "Copiar a ligazón de Supreme AdBlock na Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Ligazón copiada"
+  },
+  "rep_fixed_q": {
+    "message": "Arranxouse o sitio?"
+  },
+  "rep_fixed_yes": {
+    "message": "Si, funciona"
+  },
+  "rep_fixed_no": {
+    "message": "Non, segue sen funcionar"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Alegrámonos de que funcione. Se nos avisa aquí abaixo, o informe indicará que solución funcionou, para que poidamos arranxar o sitio para todo o mundo."
+  },
+  "rep_fixed_next": {
+    "message": "Probe a seguinte: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Entón avísenos aquí abaixo: revisaremos o sitio."
+  },
+  "rep_webmail": {
+    "message": "Non ten aplicación de correo? Copie o informe e envíeo a $1 desde o seu correo web."
+  },
+  "blk_mistake": {
+    "message": "Cre que é un erro? Avísenos"
+  },
+  "welTest": {
+    "message": "Véxao funcionar nunha páxina de proba"
   }
 }

@@ -230,6 +230,40 @@ test('снимка на /etc се записва и се чете обратно
 });
 
 
+test('цялост: път, добавен към наблюдението СЛЕД отпечатъка, не вдига фалшив дрейф', () => {
+  // Ъпдейтът разшири списъка (sshd_config.d, ld.so.preload, ключовете на root…).
+  // Без `watched` в отпечатъка всеки файл под новите пътища изглеждаше „добавен" и
+  // самият ъпдейт вдигаше аларма за дрейф на здрав сървър.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-snap-'));
+  const now = snapshotEtc();
+  assert.ok(Object.keys(now.files).includes('/etc/passwd'), 'има поне един следен файл');
+  // Отпечатък, който НЕ е следял нищо: всичко е „ново за следене", нищо не е промяна.
+  saveBaseline(dir, { takenAt: now.takenAt, watched: [], files: {} });
+  let d = diffEtc(dir);
+  assert.equal(d.clean, true);
+  assert.equal(d.added.length, 0);
+  assert.ok(d.newlyTracked.includes('/etc/passwd'));
+  // Същият празен отпечатък, но със СЕГАШНИЯ списък: тогава файловете наистина са добавени.
+  saveBaseline(dir, { takenAt: now.takenAt, watched: now.watched, files: {} });
+  d = diffEtc(dir);
+  assert.equal(d.clean, false);
+  assert.ok(d.added.some((a) => a.path === '/etc/passwd'));
+  // Стар отпечатък без `watched`: старите пътища важат, ключовете на root — не.
+  saveBaseline(dir, { takenAt: now.takenAt, files: {} });
+  d = diffEtc(dir);
+  assert.ok(d.added.some((a) => a.path === '/etc/passwd'), 'стар път — промяна');
+  assert.ok(!d.added.some((a) => a.path.startsWith('/root/.ssh/') || a.path.startsWith('/etc/ssh/sshd_config.d/')), 'нов път — не е промяна');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('уеб сървър: празен конфиг се отказва — nginx -t го приема и сайтът изчезва тихо', async () => {
+  const { writeSite } = await import('../src/webserver.js');
+  const audit = { log: () => {} };
+  for (const empty of ['', '   \n\t ']) {
+    await assert.rejects(writeSite('nginx', 'demo.lab', empty, audit, 'u'), /Празен конфиг/);
+  }
+});
+
 // ── Находки на Разбивача (фаза Ж) ─────────────────────────────────────────────
 test('изходящият адрес не бива да сочи към самата машина или към метаданните', () => {
   // Законни: панелът трябва да може да пинга външен монитор ИЛИ другия ни VPS

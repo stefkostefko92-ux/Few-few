@@ -8,7 +8,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { systemPrompt } from "./headless-run.mjs";
+import { systemPrompt, evalEnv, outNames } from "./headless-run.mjs";
 import { staticPrefixParts } from "../../../.claude/hooks/memory-preload.mjs";
 
 test("import не пуска main() (CLI guard) — стигнахме дотук без изход", () => {
@@ -44,4 +44,42 @@ test("реалният статичен префикс е непразен и с
   assert.ok(parts.length >= 1, "доктрина/процедура/споделено трябва да заредят");
   const sp = systemPrompt("razbivacha");
   assert.ok(sp.startsWith(parts.join("\n\n")), "реалният префикс води системния промпт");
+});
+
+test("evalEnv: 1-часов кеш за eval рънa, --cache-5m го изключва, средата се пази", () => {
+  assert.equal(evalEnv({ A: "1" }, []).CLAUDE_CODE_PROMPT_CACHE_TTL, "1h");
+  assert.equal(evalEnv({ A: "1" }, []).A, "1");
+  assert.equal(evalEnv({ A: "1" }, ["--cache-5m"]).CLAUDE_CODE_PROMPT_CACHE_TTL, undefined);
+});
+
+test("outNames: един опит пази старото име, k опита → .1 … .k (за pass^k в eval.mjs)", () => {
+  assert.deepEqual(outNames("treydara"), ["treydara.txt"]);
+  assert.deepEqual(outNames("kasadjiyata", 3), ["kasadjiyata.1.txt", "kasadjiyata.2.txt", "kasadjiyata.3.txt"]);
+});
+
+test("agentConfig: модел, усилие, инструменти и maxTurns от frontmatter-а", async () => {
+  const { agentConfig } = await import("./headless-run.mjs");
+  const c = agentConfig("x", "---\nname: x\ntools: Read, Grep, Bash\nmodel: sonnet\neffort: medium\nmaxTurns: 80\n---\nтяло");
+  assert.deepEqual(c, { model: "sonnet", effort: "medium", tools: ["Read", "Grep", "Bash"], maxTurns: 80 });
+});
+
+test("agentArgs: ревюърът тича със своите инструменти и dontAsk, само с флагове, които CLI-то има", async () => {
+  const { agentArgs } = await import("./headless-run.mjs");
+  const cfg = { model: "opus", effort: "high", tools: ["Read", "Grep"], maxTurns: 80 };
+  const all = agentArgs(cfg, () => true, "2");
+  assert.deepEqual(all.slice(all.indexOf("--tools"), all.indexOf("--tools") + 2), ["--tools", "Read,Grep"]);
+  assert.ok(all.includes("dontAsk") && all.includes("--max-budget-usd"));
+  const noTurns = agentArgs(cfg, (f) => f !== "--max-turns");
+  assert.ok(!noTurns.includes("--max-turns"), "флаг, който CLI-то не обявява, не се подава");
+});
+
+test("parseRun: текст, цена и ходове от JSON; суров текст при невалиден JSON", async () => {
+  const { parseRun } = await import("./headless-run.mjs");
+  assert.deepEqual(parseRun(JSON.stringify({ result: "ок", total_cost_usd: 0.42, num_turns: 7 })), { text: "ок", costUsd: 0.42, turns: 7 });
+  assert.equal(parseRun("не е json").text, "не е json");
+});
+
+test("systemPrompt: --without-agent пуска само доктрината (рамо за сравнение)", () => {
+  const sp = systemPrompt("razbivacha", ["DOCTRINE_X"], { withoutAgent: true });
+  assert.equal(sp, "DOCTRINE_X");
 });

@@ -2,7 +2,7 @@ Supreme AdBlock blokkeer advertensies oral — YouTube-videoadvertensies, banier
 
 • Ondertekende filterbywerkings twee keer per dag: nuwe advertensienetwerke word binne ure hanteer, sonder afgeleë kode.
 • YouTube-advertensies word by die bron gestop, sodat video’s sommer net speel.
-• Koekiebaniere: dit druk Weier namens u, verwyder die oorblywende vervaging en rolslot, en druk nooit ’n aanmeld-, OAuth- of betaalknoppie nie.
+• Koekiebaniere: dit druk Weier namens u wanneer die banier dit bied, en Aanvaar slegs wanneer daar geen ander manier is om dit toe te maak nie; dit verwyder die oorblywende vervaging en rolslot, en druk nooit ’n aanmeld-, OAuth- of betaalknoppie nie.
 • Geen rekening, geen telemetrie, geen data-insameling nie, en geen advertensie word teen betaling deurgelaat nie. Global Privacy Control vra elke werf om u data nie te verkoop of te deel nie.
 • EasyList, EasyPrivacy en ander oop filterlyste is ingebou, plus die lys vir u taal (31 streekslyste).
 • Geborgde plasings op Facebook, Instagram en Threads word versteek.

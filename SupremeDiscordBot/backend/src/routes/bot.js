@@ -1263,6 +1263,10 @@ router.post("/application/:appId/review", async (req, res, next) => {
   if (!["approve", "deny"].includes(action)) {
     return res.status(400).json({ error: "action must be approve or deny" });
   }
+  // Prisma маха филтъра при undefined -> без тази проверка скоупът се губи.
+  if (typeof serverId !== "string" || !serverId) {
+    return res.status(400).json({ error: "serverId required" });
+  }
 
   try {
     const application = await prisma.application.findFirst({

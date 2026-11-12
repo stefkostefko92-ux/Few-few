@@ -1,0 +1,318 @@
+<!doctype html>
+<!-- Клипът за Facebook (4:5): сайтът на училището, ушит на кадри. Рендира го render.mjs —
+     window.renderAt(t) рисува момента t, без собствен часовник. Сцените режат на силното
+     време на ръченицата (такт = 7 импулса × 0,125 с), за да вървят с музиката. -->
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<title>Qui Bulgaria — клип</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root { --paper:#fdfcf9; --linen:#f2ede4; --ink:#1c1917; --ink2:#45403b; --muted:#6e665e; --red:#b3171d; --redink:#a3141a; --wine:#7a0e12; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1350px; overflow: hidden; background: var(--linen); }
+  body { font-family: "Sofia Sans", sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+  #film { position: relative; width: 1080px; height: 1350px; overflow: hidden; }
+  .scene { position: absolute; inset: 0; overflow: hidden; visibility: hidden; }
+  .paper { background: var(--paper); } .linen { background: var(--linen); } .redf { background: var(--red); }
+  .a { position: absolute; }
+  .h { font-family: "Sofia Sans Extra Condensed", sans-serif; font-weight: 800; line-height: .92; letter-spacing: -.008em; padding-bottom: .12em; }
+  .t { font-family: "Sofia Sans", sans-serif; font-weight: 450; line-height: 1.22; color: var(--muted); padding-bottom: .1em; }
+  .c { text-align: center; }
+  .frame { overflow: hidden; background: #ddd5c8; }
+  .frame img, .fit { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .print { border: 7px solid var(--paper); box-shadow: 0 14px 30px rgba(28,25,23,.22); }
+  .run { height: 6px; background: repeating-linear-gradient(90deg, var(--red) 0 18px, transparent 18px 30px); border-radius: 3px; }
+  .run.w { background: repeating-linear-gradient(90deg, var(--paper) 0 18px, transparent 18px 30px); }
+  .aida { background: #f8f4ec; box-shadow: inset 0 0 0 1px rgba(28,25,23,.12); }
+  .band { background-color: #efe8dc; background-image: radial-gradient(circle at 0 0, rgba(90,60,40,.3) 1.2px, transparent 1.8px); background-size: 12px 12px; }
+  .phone { border-radius: 66px; background: #1c1917; box-shadow: 0 40px 80px rgba(28,25,23,.28), inset 0 0 0 2px #3a3532; }
+  .screen { border-radius: 46px; overflow: hidden; background: var(--paper); }
+  .island { border-radius: 20px; background: #0c0a09; }
+</style>
+</head>
+<body>
+<div id="film"></div>
+<script src="film-lib.js"></script>
+<script>
+/*__DATA__*/
+const P = TL.pulse, BAR = 7 * P, T0 = TL.introBars * BAR;
+const bar = (n) => T0 + (n - 1) * BAR;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const easeOut = (x) => 1 - Math.pow(1 - clamp(x), 3);
+const easeInOut = (x) => { x = clamp(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const film = document.getElementById("film");
+const IMG = {};
+const scenes = [];
+
+function el(tag, cls, parent, style = {}) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  for (const [k, v] of Object.entries(style)) e.style[k] = typeof v === "number" ? v + "px" : v;
+  parent.append(e);
+  return e;
+}
+/** Текст: lang задава българските форми на буквите (lang="bg"). */
+function txt(parent, html, { x = 60, y, w = 960, size, cls = "h", lang = "bg", color, align, weight }) {
+  const e = el("div", "a " + cls, parent, { left: x, top: y, width: w, fontSize: size });
+  e.lang = lang; e.innerHTML = html;
+  if (color) e.style.color = color;
+  if (align) e.style.textAlign = align;
+  if (weight) e.style.fontWeight = weight;
+  return e;
+}
+/** Появява се с „издърпване“ отляво надясно, като конец през плата — не с избледняване. */
+function wipe(e, t0, d = 0.42, rise = 18) {
+  return (lt) => {
+    const p = clamp((lt - t0) / d), k = easeOut(p);
+    e.style.visibility = p > 0 ? "visible" : "hidden";
+    e.style.clipPath = `inset(0 ${(1 - k) * 100}% 0 0)`;
+    e.style.transform = `translateY(${(1 - k) * rise}px)`;
+  };
+}
+/** Отдолу нагоре (снимки, които „влизат“ в кадъра). */
+function rise(e, t0, d = 0.24) {
+  return (lt) => {
+    const p = clamp((lt - t0) / d), k = easeOut(p);
+    e.style.visibility = p > 0 ? "visible" : "hidden";
+    e.style.clipPath = `inset(${(1 - k) * 100}% 0 0 0)`;
+    e.style.transform = `translateY(${(1 - k) * 14}px)`;
+  };
+}
+function canvas(parent, x, y, w, h) {
+  const c = el("canvas", "a", parent, { left: x, top: y, width: w, height: h });
+  c.width = Math.ceil(w); c.height = Math.ceil(h);
+  const ctx = c.getContext("2d");
+  ctx.lineCap = "round";
+  return { c, ctx, last: -1 };
+}
+/** Ушитото до p — прерисува само ако p се е сменило. */
+function sewn(cv, list, s, p, lag) {
+  const q = Math.round(clamp(p) * 2000) / 2000;
+  if (q === cv.last) return;
+  cv.last = q;
+  QB.paint(cv.ctx, list, s, q, lag);
+}
+function photo(parent, src, { x, y, w, h, focus = [0.5, 0.5], cls = "frame" }) {
+  const f = el("div", "a " + cls, parent, { left: x, top: y, width: w, height: h });
+  const im = el("img", "", f);
+  im.src = src;
+  im.style.objectPosition = `${focus[0] * 100}% ${focus[1] * 100}%`;
+  im.style.transformOrigin = "50% 100%";
+  return { f, im };
+}
+/** Снимка, чийто долен ръб се разплита в бод с цветовете ѝ (StitchedPhoto на сайта). */
+function stitchedPhoto(parent, src, { x, y, w, h, s = 12, depth = 0.3, focus = [0.5, 0.5] }) {
+  const ph = photo(parent, src, { x, y, w, h, focus });
+  const hem = QB.hemStitches(IMG[src], w, h, s, depth, focus);
+  const cv = canvas(parent, x, y + h - hem.zone, w, hem.h);
+  return (p, kb) => {
+    const e = easeOut(p * 1.5);
+    const m = `linear-gradient(0deg, transparent ${hem.zone * 0.2 * e}px, #000 ${Math.max(1, hem.zone * 0.9 * e)}px)`;
+    ph.f.style.webkitMaskImage = m; ph.f.style.maskImage = m;
+    ph.im.style.transform = `scale(${kb})`;
+    sewn(cv, hem.list, s, p, 0.05);
+  };
+}
+function scene(start, end, cls, build) {
+  const e = el("div", "scene " + cls, film);
+  scenes.push({ start, end, e, upd: build(e) });
+}
+
+// ------------------------------------------------------------------ сцените
+function build() {
+  // 0 · розетката се ушива, кавалът пее
+  scene(0, bar(1), "paper", (S) => {
+    const r = QB.rosetteStitches(26), cv = canvas(S, 540 - r.w / 2, 220, r.w, r.h);
+    const title = txt(S, "Qui Bulgaria", { y: 805, size: 132, lang: "it", align: "center" });
+    const bg = txt(S, "Българско училище в Милано", { y: 950, size: 62, color: "var(--redink)", align: "center" });
+    const it = txt(S, "Scuola bulgara di Milano", { y: 1038, size: 38, cls: "t", lang: "it", align: "center" });
+    const run = el("div", "a run", S, { left: 390, top: 1130, width: 300 });
+    const fx = [wipe(title, 1.45), wipe(bg, 1.95), wipe(it, 2.3), wipe(run, 2.55, 0.5, 0)];
+    return (lt) => {
+      cv.c.style.transform = `scale(${0.96 + 0.04 * easeOut(lt / 3.4)})`;
+      sewn(cv, r.list, 26, easeInOut((lt - 0.12) / 2.3), 0.06);
+      if (lt > 2.2) QB.contour(cv.ctx, r.outline, 26, r.pad, r.colour, easeOut((lt - 2.2) / 0.75));
+      if (lt > 2.2) cv.last = -1; // контурът се рисува върху бода: следващият кадър прерисува
+      fx.forEach((f) => f(lt));
+    };
+  });
+
+  // 1 · заглавието на сайта — тъпанът влиза
+  scene(bar(1), bar(5), "linen", (S) => {
+    const sp = stitchedPhoto(S, "site/photos/comunita-in-costume.webp", { x: 0, y: 0, w: 1080, h: 880, focus: [0.5, 0.42] });
+    const h = txt(S, "Българският език и&nbsp;култура, в&nbsp;сърцето на Милано.", { y: 975, size: 86 });
+    const it = txt(S, "La lingua e la cultura bulgara, nel cuore di Milano.", { y: 1165, size: 36, cls: "t", lang: "it" });
+    const fx = [wipe(h, 0.5), wipe(it, 1.05)];
+    return (lt) => { sp(clamp(lt / 1.6), 1.07 - 0.07 * easeOut(lt / 3.5)); fx.forEach((f) => f(lt)); };
+  });
+
+  // 2 · общността
+  scene(bar(5), bar(9), "linen", (S) => {
+    const h = txt(S, "Общност, която расте в&nbsp;любов към българската култура", { y: 70, size: 80 });
+    const it = txt(S, "Una comunità che cresce nell'amore per la cultura bulgara", { y: 245, size: 34, cls: "t", lang: "it" });
+    const sp = stitchedPhoto(S, "site/photos/festa-della-scuola.webp", { x: 60, y: 350, w: 960, h: 770, depth: 0.28, focus: [0.5, 0.55] });
+    const since = txt(S, "от 2014 г. до днес", { y: 1205, size: 54, color: "var(--redink)", align: "center" });
+    const since2 = txt(S, "dal 2014 ad oggi", { y: 1270, size: 30, cls: "t", lang: "it", align: "center" });
+    const fx = [wipe(h, -0.15), wipe(it, 0.3), wipe(since, 1.9), wipe(since2, 2.25)];
+    return (lt) => { sp(clamp((lt - 0.3) / 1.5), 1.06 - 0.06 * easeOut(lt / 3.5)); fx.forEach((f) => f(lt)); };
+  });
+
+  // 3 · курсовете
+  scene(bar(9), bar(13), "paper", (S) => {
+    const h = txt(S, "Български език за всяка възраст и&nbsp;всяко ниво", { y: 75, size: 82 });
+    const it = txt(S, "Lingua bulgara per ogni età e ogni livello", { y: 245, size: 34, cls: "t", lang: "it" });
+    const rows = [["kids", "Деца", "Bambini"], ["adults", "Възрастни", "Adulti"], ["culture", "Култура и литература", "Cultura e letteratura"]];
+    const fx = [wipe(h, -0.15), wipe(it, 0.25)];
+    rows.forEach(([icon, b, i], n) => {
+      const y = 360 + n * 205, at = 0.75 + n * BAR * 0.62;
+      const ic = el("img", "a fit", S, { left: 70, top: y, width: 170, height: 170, objectFit: "contain" });
+      ic.src = `site/icons/${icon}.webp`;
+      const lb = txt(S, b, { x: 285, y: y + 26, w: 735, size: 78 });
+      const li = txt(S, i, { x: 287, y: y + 106, w: 735, size: 34, cls: "t", lang: "it" });
+      fx.push(rise(ic, at), wipe(lb, at + 0.08), wipe(li, at + 0.3));
+    });
+    const run = el("div", "a run", S, { left: 60, top: 1010, width: 960 });
+    const f1 = txt(S, "Присъствено · Дистанционно · Хибридно", { y: 1045, size: 56 });
+    const f2 = txt(S, "In presenza · A distanza · Formato ibrido", { y: 1120, size: 32, cls: "t", lang: "it" });
+    fx.push(wipe(run, 2.3, 0.5, 0), wipe(f1, 2.45), wipe(f2, 2.75));
+    return (lt) => fx.forEach((f) => f(lt));
+  });
+
+  // 4 · учителите — по един на импулс
+  scene(bar(13), bar(17), "linen", (S) => {
+    const h = txt(S, "Нашите учители", { y: 175, size: 124, align: "center" });
+    const it = txt(S, "I nostri insegnanti", { y: 315, size: 40, cls: "t", lang: "it", align: "center" });
+    const names = ["gergana-hristova", "krasimira-dimitrova", "darina-naumova", "asya-maria-daskalova", "iliana-nikolova", "daniela-vukovska", "angelina-velinova",
+      "elza-milenova", "mariana-velikova", "assia-assenova", "kristina-grozeva", "ana-dimitrova", "lora-hadjidimieva", "stanimir-minev"];
+    const W = 176, H = 206, G = 22, fx = [wipe(h, -0.15), wipe(it, 0.2)];
+    let i = 0;
+    [5, 4, 5].forEach((n, r) => {
+      const x0 = (1080 - (n * W + (n - 1) * G)) / 2;
+      for (let k = 0; k < n; k++, i++) {
+        const p = photo(S, `site/teachers/${names[i]}.webp`, { x: x0 + k * (W + G), y: 410 + r * (H + G), w: W, h: H, focus: [0.5, 0.3], cls: "frame print" });
+        fx.push(rise(p.f, 0.55 + i * P, 0.2));
+      }
+    });
+    const run = el("div", "a run", S, { left: 390, top: 1150, width: 300 });
+    fx.push(wipe(run, 2.6, 0.5, 0));
+    return (lt) => fx.forEach((f) => f(lt));
+  });
+
+  // 5 · танците — червеното поле, хиджаз
+  scene(bar(17), bar(21), "redf", (S) => {
+    const a = photo(S, "site/photos/horo.webp", { x: 0, y: 0, w: 1080, h: 380, focus: [0.5, 0.55] });
+    const b = photo(S, "site/photos/gruppo-veselie.webp", { x: 60, y: 420, w: 600, h: 340, cls: "frame print" });
+    const c = photo(S, "site/teachers/stanimir-minev.webp", { x: 690, y: 420, w: 330, h: 340, focus: [0.5, 0.25], cls: "frame print" });
+    const h = txt(S, "Групата „Веселие“: вулкан от&nbsp;емоции", { y: 815, size: 100, color: "var(--paper)" });
+    const it = txt(S, "Il gruppo «Veselie»: un vulcano di emozioni", { y: 1020, size: 36, cls: "t", lang: "it", color: "rgba(253,252,249,.82)" });
+    const run = el("div", "a run w", S, { left: 60, top: 1110, width: 300 });
+    const d1 = txt(S, "Български народни танци", { y: 1150, size: 56, color: "var(--paper)" });
+    const d2 = txt(S, "Danze popolari bulgare", { y: 1222, size: 32, cls: "t", lang: "it", color: "rgba(253,252,249,.82)" });
+    const fx = [rise(b.f, BAR), rise(c.f, 2 * BAR), wipe(h, 0.3), wipe(it, 0.85), wipe(run, 2.2, 0.5, 0), wipe(d1, 2.35), wipe(d2, 2.65)];
+    return (lt) => {
+      // всяко силно време на такта „подскача“ — като хорото
+      let bump = 0;
+      for (let k = 0; k < 4; k++) { const d = lt - k * BAR; if (d >= 0) bump += Math.exp(-d / 0.11) * (d < 0.6 ? 1 : 0); }
+      a.im.style.transform = `scale(${1.06 - 0.05 * easeOut(lt / 3.5) + 0.012 * bump})`;
+      b.im.style.transform = `scale(${1.02 + 0.015 * bump})`;
+      c.im.style.transform = `scale(${1.02 + 0.015 * bump})`;
+      fx.forEach((f) => f(lt));
+    };
+  });
+
+  // 6 · азбуката, ушита на канава
+  scene(bar(21), bar(25), "paper", (S) => {
+    const h = txt(S, "Българската азбука, буква по&nbsp;буква", { y: 120, size: 86 });
+    const it = txt(S, "L'alfabeto bulgaro, lettera per lettera", { y: 300, size: 34, cls: "t", lang: "it" });
+    const fx = [wipe(h, -0.15), wipe(it, 0.25)];
+    const cards = [["А", "азбука", "alfabeto"], ["Б", "баница", "banitsa"], ["Г", "гайда", "cornamusa"]].map(([L, w, wi], n) => {
+      const x = 60 + n * 330, y = 430, Z = 300;
+      const box = el("div", "a aida", S, { left: x, top: y, width: Z, height: Z });
+      const holes = canvas(S, x, y, Z, Z); QB.aida(holes.ctx, Z);
+      const cv = canvas(S, x, y, Z, Z);
+      const st = QB.letterStitches('"Sofia Sans Extra Condensed"', L, Z);
+      const t0 = 0.35 + n * 0.82;
+      const wb = txt(S, w, { x, y: y + Z + 26, w: Z, size: 58, color: "var(--redink)", align: "center" });
+      const wt = txt(S, wi, { x, y: y + Z + 92, w: Z, size: 30, cls: "t", lang: "it", align: "center" });
+      fx.push(wipe(wb, t0 + 0.62), wipe(wt, t0 + 0.8));
+      return (lt) => sewn(cv, st.list, st.s, easeInOut((lt - t0) / 0.72), 0.08);
+    });
+    const band = el("div", "a band", S, { left: 0, top: 1150, width: 1080, height: 180 });
+    const bs = QB.borderStitches(1080, 12), bcv = canvas(S, 0, 1150 + (180 - bs.h) / 2, 1080, bs.h);
+    return (lt) => { fx.forEach((f) => f(lt)); cards.forEach((c) => c(lt)); sewn(bcv, bs.list, 12, (lt - 0.1) / 3.2, 0.04); };
+  });
+
+  // 7 · сайтът на телефон
+  scene(bar(25), bar(33), "linen", (S) => {
+    const capA = [txt(S, "Всичко за училището — на&nbsp;един сайт", { y: 70, size: 76, align: "center" }),
+      txt(S, "Tutta la scuola in un unico sito", { y: 164, size: 34, cls: "t", lang: "it", align: "center" })];
+    const capB = [txt(S, "Курсове, учители, танци, документи", { y: 70, size: 76, align: "center" }),
+      txt(S, "Corsi, insegnanti, danze, documenti", { y: 164, size: 34, cls: "t", lang: "it", align: "center" })];
+    const SW = 480, k = SW / PHONE.width, top = 262, BAR_H = 46; // BAR_H: лентата на телефона (час, батерия)
+    const phone = el("div", "a phone", S, { left: 540 - SW / 2 - 20, top, width: SW + 40, height: 1200 });
+    const screen = el("div", "a screen", S, { left: 540 - SW / 2, top: top + 20, width: SW, height: 1160 });
+    const strip = el("div", "a", screen, { left: 0, top: BAR_H, width: SW });
+    for (const ch of PHONE.chunks) { const im = el("img", "a", strip, { left: 0, top: ch.y * k, width: SW, height: ch.h * k }); im.src = "site/" + ch.f; }
+    const head = el("img", "a", screen, { left: 0, top: BAR_H, width: SW, height: PHONE.header * k }); head.src = "site/phone-header.jpg";
+    const status = el("div", "a", screen, { left: 0, top: 0, width: SW, height: BAR_H, background: "var(--paper)" });
+    txt(status, "9:41", { x: 36, y: 11, w: 80, size: 20, cls: "t", lang: "it", color: "var(--ink)", weight: 650 });
+    el("div", "a", status, { left: SW - 64, top: 17, width: 28, height: 13, border: "2px solid var(--ink)", borderRadius: "4px" });
+    el("div", "a", status, { left: SW - 61, top: 20, width: 19, height: 7, background: "var(--ink)", borderRadius: "1px" });
+    el("div", "a island", screen, { left: SW / 2 - 58, top: 9, width: 116, height: 30 });
+    const viewH = (1350 - top - 20 - BAR_H) / k, max = PHONE.height - viewH;
+    const to = (id) => clamp(PHONE.anchors[id] - PHONE.header - 12, 0, max);
+    const keys = [0, to("chi-siamo"), to("alfabeto"), to("insegnanti"), to("corsi"), to("danza"), to("documenti"), to("contatti")];
+    const fx = [wipe(capA[0], -0.15), wipe(capA[1], 0.25)];
+    const swap = [wipe(capB[0], 4 * BAR), wipe(capB[1], 4 * BAR + 0.3)];
+    return (lt) => {
+      let y = 0;
+      keys.forEach((v, i) => { if (i === 0) y = v; else y += (v - keys[i - 1]) * easeInOut((lt - i * BAR) / 0.5); });
+      strip.style.transform = `translateY(${-y * k}px)`;
+      head.style.boxShadow = y > 4 ? "0 1px 0 #ddd5c8" : "none";
+      const late = lt >= 4 * BAR;
+      capA.forEach((e) => (e.style.display = late ? "none" : ""));
+      capB.forEach((e) => (e.style.display = late ? "" : "none"));
+      fx.forEach((f) => f(lt)); swap.forEach((f) => f(lt));
+    };
+  });
+
+  // 8 · адресът и бордюрът под трите удара
+  scene(bar(33), TL.duration + 1, "paper", (S) => {
+    const logo = el("img", "a", S, { left: 540 - 150, top: 70, width: 300, height: 261 }); logo.src = "site/brand/logo.webp";
+    const h = txt(S, "Запишете се или поискайте информация", { y: 395, size: 76, align: "center" });
+    const it = txt(S, "Iscriviti o richiedi informazioni", { y: 560, size: 36, cls: "t", lang: "it", align: "center" });
+    const url = txt(S, TL.url, { x: 40, y: 650, w: 1000, size: 108, color: "var(--red)", align: "center", lang: "it" });
+    const hi = txt(S, '<span lang="bg">Добре дошли!</span> · <span lang="it">Benvenuti!</span>', { y: 815, size: 62, align: "center" });
+    // адресът — на един ред, колкото позволява ширината
+    url.style.whiteSpace = "nowrap";
+    for (let size = 108; url.scrollWidth > 1000 && size > 60; size -= 2) url.style.fontSize = size + "px";
+    const band = el("div", "a band", S, { left: 0, top: 1120, width: 1080, height: 180 });
+    const bs = QB.borderStitches(1080, 12), bcv = canvas(S, 0, 1120 + (180 - bs.h) / 2, 1080, bs.h);
+    const fx = [rise(logo, 0, 0.2), wipe(h, 0.25), wipe(it, 0.6), wipe(url, 0.8, 0.5), wipe(hi, 1.35)];
+    return (lt) => { fx.forEach((f) => f(lt)); sewn(bcv, bs.list, 12, easeOut(lt / 1.6), 0.04); };
+  });
+}
+
+window.renderAt = (t) => {
+  for (const s of scenes) {
+    const on = t >= s.start && t < s.end;
+    s.e.style.visibility = on ? "visible" : "hidden";
+    if (on) s.upd(t - s.start);
+  }
+};
+
+(async () => {
+  const srcs = ["site/photos/comunita-in-costume.webp", "site/photos/festa-della-scuola.webp"];
+  await Promise.all(srcs.map((src) => new Promise((ok, bad) => { const im = new Image(); im.onload = () => ok(); im.onerror = () => bad(new Error(src)); im.src = src; IMG[src] = im; })));
+  await document.fonts.load('800 100px "Sofia Sans Extra Condensed"', "Бб");
+  await document.fonts.load('450 40px "Sofia Sans"', "Бб");
+  await document.fonts.ready;
+  build();
+  await Promise.all([...document.images].map((im) => im.decode().catch(() => { throw new Error("image " + im.src); })));
+  window.renderAt(0);
+  window.__ready = true;
+})().catch((e) => { console.error(String(e && e.stack || e)); });
+</script>
+</body>
+</html>

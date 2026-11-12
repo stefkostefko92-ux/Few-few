@@ -2,7 +2,7 @@ Supreme AdBlock nə etdiyinizi izləmədən reklamları hər yerdə bloklayır �
 
 • Gündə iki dəfə imzalı filtr yeniləmələri: yeni reklam şəbəkələri saatlar ərzində həll olunur, uzaq kod olmadan.
 • YouTube reklamları mənbədə dayandırılır, ona görə videolar sadəcə oynayır.
-• Kuki bannerləri: sizin əvəzinizə «Rədd et» düyməsini basır, qalan bulanıqlığı və sürüşdürmə kilidini təmizləyir, giriş, OAuth və ya ödəniş düyməsini heç vaxt basmır.
+• Kuki bannerləri: banner «Rədd et» təklif edəndə onu basır, «Qəbul et» düyməsini isə yalnız banneri bağlamağın başqa yolu olmadıqda basır; qalan bulanıqlığı və sürüşdürmə kilidini təmizləyir, giriş, OAuth və ya ödəniş düyməsini heç vaxt basmır.
 • Hesab yoxdur, telemetriya yoxdur, məlumat toplanmır və heç bir reklam pul müqabilində buraxılmır. Global Privacy Control hər saytdan məlumatlarınızı satmamasını və ya paylaşmamasını xahiş edir.
 • EasyList, EasyPrivacy və digər açıq filtr siyahıları daxildir, üstəlik diliniz üçün siyahı (31 regional siyahı).
 • Facebook, Instagram və Threads-də sponsorlu paylaşımlar gizlədilir.

@@ -5,16 +5,18 @@ import { LocaleLink as Link } from "./LocaleLink";
 import { SITE } from "../lib/site";
 import { useLocale, useT } from "../i18n/I18nProvider";
 import { LEGAL } from "../i18n/legal";
+import { ACCESSIBILITY } from "../i18n/accessibility";
 import { JsonLd } from "./JsonLd";
 import { breadcrumbLd } from "../lib/jsonld";
 
-type LegalKey = "terms" | "privacy" | "cookies" | "responsible";
+type LegalKey = "terms" | "privacy" | "cookies" | "responsible" | "accessibility";
 
 const PATHS: Record<LegalKey, string> = {
   terms: "/terms/",
   privacy: "/privacy/",
   cookies: "/cookies/",
   responsible: "/responsible/",
+  accessibility: "/accessibility/",
 };
 
 /** Split on `**bold**` and render the bold runs as <strong>. */
@@ -33,7 +35,7 @@ function renderBold(text: string, keyPrefix: string): ReactNode[] {
  */
 function renderParagraph(text: string, labels: Record<LegalKey, string>): ReactNode[] {
   const TOKEN =
-    /(\{org\}|\{begambleaware\}|\{terms\}|\{privacy\}|\{cookies\}|\{responsible\}|legal@carbonstealth\.eu|privacy@carbonstealth\.eu)/g;
+    /(\{org\}|\{begambleaware\}|\{terms\}|\{privacy\}|\{cookies\}|\{responsible\}|\{accessibility\}|legal@carbonstealth\.eu|privacy@carbonstealth\.eu)/g;
   const out: ReactNode[] = [];
   const parts = text.split(TOKEN);
   parts.forEach((part, i) => {
@@ -55,7 +57,8 @@ function renderParagraph(text: string, labels: Record<LegalKey, string>): ReactN
       case "{terms}":
       case "{privacy}":
       case "{cookies}":
-      case "{responsible}": {
+      case "{responsible}":
+      case "{accessibility}": {
         const k = part.slice(1, -1) as LegalKey;
         out.push(
           <Link key={i} href={PATHS[k]}>
@@ -79,18 +82,19 @@ function renderParagraph(text: string, labels: Record<LegalKey, string>): ReactN
   return out;
 }
 
-const FOOTER_TOKEN = /\{(terms|privacy|cookies|responsible)\}/;
+const FOOTER_TOKEN = /\{(terms|privacy|cookies|responsible|accessibility)\}/;
 
 export function LegalArticle({ pageKey }: { pageKey: LegalKey }) {
   const t = useT();
   const locale = useLocale();
-  const page = LEGAL[locale][pageKey];
+  const page = pageKey === "accessibility" ? ACCESSIBILITY[locale] : LEGAL[locale][pageKey];
   const crossLinkLabels = t.breadcrumbs; // reuse localized page names
   const labels: Record<LegalKey, string> = {
     terms: crossLinkLabels.terms,
     privacy: crossLinkLabels.privacy,
     cookies: crossLinkLabels.cookies,
     responsible: crossLinkLabels.responsible,
+    accessibility: crossLinkLabels.accessibility,
   };
 
   return (

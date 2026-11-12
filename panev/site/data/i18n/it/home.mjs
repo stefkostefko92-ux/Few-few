@@ -3,16 +3,14 @@
 export default {
   hero: {
     kicker: 'Staffe & accessori per ascensori e montacarichi',
-    title: 'Staffe brevettate per guide e porte di piano',
-    lead: 'Sistema forato, snodato e asolato per il fissaggio regolabile di guide del contrappeso e porte di piano — ideato per adattarsi a murature irregolari, non perpendicolari e con ferri d’armatura. Brevetto per Modello di Utilità riconosciuto dal Ministero delle Imprese e del Made in Italy.',
+    title: 'Staffe brevettate per ascensori: porte di piano e guide del contrappeso',
+    lead: 'Sistema forato, snodato e asolato per il fissaggio regolabile di guide del contrappeso e porte di piano — ideato per adattarsi a murature irregolari, non perpendicolari e con ferri d’armatura.',
     chips: ['Made in Italy', 'Acciaio zincato', 'Sistema ambidestro', 'Brevettato'],
     ctaProducts: 'Vedi prodotti e listino',
     ctaCatalog: 'Scarica il catalogo (PDF)',
-    cta3d: 'Guarda in 3D',
     patentLabel: 'Brevetto per Modello di Utilità',
     numAbbr: 'N.',
     patentOffice: 'Ministero delle Imprese e del Made in Italy — UIBM · deposito 19/05/2023',
-    visualAlt: 'Render 3D della piastra A 65 170 7 montata con la staffa B 65 320',
   },
   viewer3d: {
     kicker: 'Vista 3D',
@@ -139,7 +137,7 @@ export default {
     items: [
       {
         q: 'Come si ordina?',
-        a: 'Via email a info@panevascensori.it: indica codice, quantità e — dove prevista — la mano DX o SX. Il pulsante „Ordina via email“ e la lista d’ordine precompilano il messaggio. Rispondiamo con conferma d’ordine, totale e tempi di consegna.',
+        a: 'Via email a info@panevascensori.it: indica codice, quantità e — dove prevista — la mano DX o SX. Il pulsante “Ordina via email” e la lista d’ordine precompilano il messaggio. Rispondiamo con conferma d’ordine, totale e tempi di consegna.',
       },
       {
         q: 'I prezzi includono l’IVA?',

@@ -2,7 +2,7 @@ Supreme AdBlock blokeerib reklaamid kõikjal — YouTube'i videoreklaamid, bänn
 
 • Allkirjastatud filtrivärskendused kaks korda päevas: uued reklaamivõrgud kaetakse tundidega, ilma kaugkoodita.
 • YouTube'i reklaamid peatatakse juba allikas, nii et videod lihtsalt mängivad.
-• Küpsisebännerid: vajutab teie eest „Keeldu“, eemaldab järelejäänud hägususe ja kerimislukustuse ega vajuta kunagi sisselogimis-, OAuth- ega maksenuppu.
+• Küpsisebännerid: vajutab teie eest „Keeldu“, kui bänner seda pakub, ja „Nõustu“ ainult siis, kui bännerit ei saa muul viisil sulgeda; eemaldab järelejäänud hägususe ja kerimislukustuse ega vajuta kunagi sisselogimis-, OAuth- ega maksenuppu.
 • Ilma kontota, ilma telemeetriata, ilma andmekogumiseta ning ühtegi reklaami ei lasta tasu eest läbi. Global Privacy Control palub igal saidil teie andmeid mitte müüa ega jagada.
 • Sisse on ehitatud EasyList, EasyPrivacy ja teised avatud filtriloendid ning teie keele loend (31 piirkondlikku loendit).
 • Sponsitud postitused Facebookis, Instagramis ja Threadsis peidetakse.

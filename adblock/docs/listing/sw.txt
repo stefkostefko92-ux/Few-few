@@ -2,7 +2,7 @@ Supreme AdBlock huzuia matangazo kila mahali — matangazo ya video ya YouTube, 
 
 • Masasisho ya vichujio yaliyotiwa sahihi mara mbili kwa siku: mitandao mipya ya matangazo hushughulikiwa ndani ya saa chache, bila msimbo wa mbali.
 • Matangazo ya YouTube yanazuiwa kwenye chanzo, kwa hivyo video zinacheza tu.
-• Mabango ya vidakuzi: inabofya “Kataa” kwa niaba yako, inaondoa ukungu na kufuli ya kusogeza vilivyobaki, na kamwe haibofyi kitufe cha kuingia, OAuth au malipo.
+• Mabango ya vidakuzi: inabofya “Kataa” ikiwa bango linatoa chaguo hilo, na inabofya “Kubali” tu ikiwa hakuna njia nyingine ya kulifunga; inaondoa ukungu na kufuli ya kusogeza vilivyobaki, na kamwe haibofyi kitufe cha kuingia, OAuth au malipo.
 • Hakuna akaunti, hakuna telemetria, hakuna ukusanyaji wa data, na hakuna tangazo linaloruhusiwa kupita kwa malipo. Global Privacy Control inaomba kila tovuti isiuze wala kushiriki data yako.
 • EasyList, EasyPrivacy na orodha nyingine huria za vichujio zimejumuishwa, pamoja na orodha ya lugha yako (orodha 31 za kikanda).
 • Machapisho yaliyofadhiliwa kwenye Facebook, Instagram na Threads yanafichwa.

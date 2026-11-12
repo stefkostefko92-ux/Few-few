@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "חוסם פרסומות ל-YouTube ולאינטרנט: פרסומות וידאו, באנרים, חלונות קופצים, רכיבי מעקב, באנרים של עוגיות (\"דחייה\") וחומות אנטי-חוסם."
+    "message": "חוסם פרסומות ל-YouTube ולאינטרנט: פרסומות וידאו, באנרים, חלונות קופצים, רכיבי מעקב, באנרים של עוגיות וחומות אנטי-חוסם."
   },
   "byCarbon": {
     "message": "מאת Carbon Stealth"
@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "קיבולת כללים"
+  },
+  "helpTitle": {
+    "message": "אתרים נשברים?"
+  },
+  "helpText": {
+    "message": "מספיק אתר אחד בכל פעם: התירו בו פרסומות לשעה, או כבו את הסתרת הרכיבים רק שם. אם תספרו לנו, נתקן את זה לכולם."
+  },
+  "helpFix": {
+    "message": "תיקון האתר הזה"
+  },
+  "cardNever": {
+    "message": "לא להציג שוב"
+  },
+  "cardClose": {
+    "message": "סגירה"
+  },
+  "receiptTitle": {
+    "message": "30 הימים האחרונים שלכם"
+  },
+  "receiptText": {
+    "message": "$1 בקשות נחסמו · $2 באנרים של עוגיות נענו · נחסכו כ-$3 נתונים (הערכה)"
+  },
+  "share": {
+    "message": "שיתוף"
+  },
+  "shareTitle": {
+    "message": "העתקת הקישור ל-Supreme AdBlock ב-Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "הקישור הועתק"
+  },
+  "rep_fixed_q": {
+    "message": "האתר תוקן?"
+  },
+  "rep_fixed_yes": {
+    "message": "כן, זה עובד"
+  },
+  "rep_fixed_no": {
+    "message": "לא, עדיין שבור"
+  },
+  "rep_fixed_yes_note": {
+    "message": "שמחים שזה עובד. אם תספרו לנו למטה, הדיווח יציין איזה תיקון עזר, כדי שנתקן את האתר לכולם."
+  },
+  "rep_fixed_next": {
+    "message": "נסו את התיקון הבא: $1"
+  },
+  "rep_fixed_none": {
+    "message": "אז ספרו לנו למטה, בבקשה: נבדוק את האתר."
+  },
+  "rep_webmail": {
+    "message": "אין אפליקציית דואר? העתיקו את הדיווח ושלחו אותו אל $1 מהדואר האינטרנטי שלכם."
+  },
+  "blk_mistake": {
+    "message": "חושבים שזו טעות? ספרו לנו"
+  },
+  "welTest": {
+    "message": "לראות את זה פועל בדף בדיקה"
   }
 }

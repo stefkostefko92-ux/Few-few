@@ -66,6 +66,11 @@ ok(`popup.js FALLBACK == en for every key (drift: ${drift.join(",") || "none"})`
         if (d[k].message.split(ph).length !== en[k].message.split(ph).length) bad.push(`${L}: ${k} placeholder ${ph}`);
       }
       if (en[k].placeholders && JSON.stringify(d[k].placeholders) !== JSON.stringify(en[k].placeholders)) bad.push(`${L}: ${k} placeholders object`);
+      // A translation (also one sent as a pull request, CONTRIBUTING.md) can carry no markup and no link of
+      // its own: only the URL examples the English text already has ("https://…/list.txt").
+      if (/<\/?[a-z][^>]*>/i.test(d[k].message)) bad.push(`${L}: ${k} contains markup`);
+      const hosts = (t) => (t.match(/(?:https?:\/\/|\bwww\.)[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}/gi) || []).map((h) => h.toLowerCase());
+      if (hosts(d[k].message).some((h) => !hosts(en[k].message).includes(h))) bad.push(`${L}: ${k} adds a link (${hosts(d[k].message).join(" ")})`);
     }
     if (d.extName && d.extName.message !== (NAMED[L] || "Supreme AdBlock")) bad.push(`${L}: extName is “${d.extName.message}”`);
     if (d.extDescription && d.extDescription.message.length > 132) bad.push(`${L}: extDescription ${d.extDescription.message.length} > 132`);

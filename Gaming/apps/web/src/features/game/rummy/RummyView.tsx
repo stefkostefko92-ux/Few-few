@@ -1,57 +1,115 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  RUMMY_LIMIT,
+  RUMMY_OPEN_MIN,
+  arrangeMeld,
+  extendMeld,
+  isJoker,
+  jokerSwapIndex,
+  penaltyValue,
+  rummyFace,
+  rummyRank,
+  rummySuit,
+  type RummyAction,
+  type RummyMeld,
+  type RummyRoundResult,
+  type RummyState,
+} from "@aso/game-core";
 import { useAuthStore } from "../../../lib/store";
 import { Button } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
-import { FeltTable, Seat, TableCenter } from "../table/FeltTable";
+import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useCardFlight } from "../anim/useCardFlight";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { useGameEvents } from "../useGameEvents";
 import { useMatch } from "../useMatch";
-import { Scene, ScorePill, HandCard } from "../scene/SceneShell";
+import { Scene, ScorePill, fitOverlap } from "../scene/SceneShell";
 
-/** The previous deal fully revealed by the engine (public — see rummy.ts). */
-interface RummyShowdown {
-  dealNo: number;
-  knocker: number | null;
-  winner: number | null;
-  gin: boolean;
-  undercut: boolean;
-  dead: boolean;
-  melds: string[][][]; // [seat][meld][card]
-  unmatched: string[][]; // [seat][card]
-  layoffs: string[];
-  deadwood: [number, number];
-  points: number;
-  matchScore: [number, number];
+/**
+ * Българско реми (виж engines/draw-discard/rummy.ts). Сървърът е източникът на
+ * истината; клиентът ползва същите чисти помощници от game-core само за
+ * подсказки (точки на избраното, дали картите пасват към комбинация).
+ */
+
+const SIZES = { sm: { w: 60, h: 84 }, md: { w: 88, h: 124 } } as const;
+const SUIT_ORDER = "SHDC";
+const RANK_ORDER = "A23456789TJQK";
+
+function positionsFor(count: number, mySeat: number): Map<number, SeatPos> {
+  const order: SeatPos[] = count === 2 ? ["top"] : count === 3 ? ["left", "right"] : ["left", "top", "right"];
+  const map = new Map<number, SeatPos>();
+  for (let i = 1; i < count; i++) map.set((mySeat + i) % count, order[i - 1]!);
+  return map;
 }
 
-interface RummyState {
-  hands: string[][];
-  stock: string[];
-  discard: string[];
-  turn: number;
-  phase: "DRAW" | "DISCARD";
-  matchScore: [number, number];
-  dealNo: number;
-  showdown: RummyShowdown | null;
-}
-type RummyAction =
-  | { type: "DRAW"; from: "stock" | "discard" }
-  | { type: "DISCARD"; card: string }
-  | { type: "KNOCK"; card: string };
-
-/** Compact face-up card strip (melds / deadwood in the showdown report). */
-function CardStrip({ cards, dim }: { cards: string[]; dim?: boolean }) {
+/** Карта от реми: жокерът се рисува тук (PlayingCard не познава жокер). */
+function RummyCard({
+  card,
+  size = "md",
+  selected,
+  dimmed,
+  onClick,
+  style,
+  label,
+}: {
+  card: string;
+  size?: "sm" | "md";
+  selected?: boolean;
+  dimmed?: boolean;
+  onClick?: () => void;
+  style?: React.CSSProperties;
+  label: string;
+}) {
+  const lift: React.CSSProperties = selected ? { transform: "translateY(-14px)", filter: "drop-shadow(0 0 6px var(--brass-300))" } : {};
+  if (!isJoker(card)) {
+    return (
+      <div style={{ ...style, ...lift, transition: "transform .12s" }}>
+        <PlayingCard card={rummyFace(card)} size={size} dimmed={dimmed} onClick={onClick} />
+      </div>
+    );
+  }
+  const { w, h } = SIZES[size];
+  const Tag = onClick ? "button" : "div";
   return (
-    <div style={{ display: "flex", opacity: dim ? 0.55 : 1 }}>
-      {cards.map((c, j) => (
-        <PlayingCard key={`${c}-${j}`} card={c} size="sm" style={{ marginLeft: j ? -34 : 0 }} />
-      ))}
-    </div>
+    <Tag
+      type={onClick ? "button" : undefined}
+      onClick={onClick}
+      aria-label={label}
+      className="aso-card"
+      style={{
+        ...style,
+        ...lift,
+        width: w,
+        height: h,
+        borderRadius: 10,
+        background: "linear-gradient(160deg,#fbf6e9,#efe3c2)",
+        border: "1px solid rgba(120,90,30,.45)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#7a1f2b",
+        fontWeight: 800,
+        opacity: dimmed ? 0.55 : 1,
+        transition: "transform .12s",
+        boxShadow: "0 2px 6px rgba(0,0,0,.35)",
+      }}
+    >
+      <span style={{ fontSize: size === "md" ? 34 : 24, lineHeight: 1 }} aria-hidden>
+        🃏
+      </span>
+      <span style={{ fontSize: size === "md" ? 11 : 9, letterSpacing: ".08em", textTransform: "uppercase" }}>{label}</span>
+    </Tag>
   );
+}
+
+function sortHand(hand: string[]): string[] {
+  const key = (c: string) =>
+    isJoker(c) ? 999 : SUIT_ORDER.indexOf(rummySuit(c)) * 20 + RANK_ORDER.indexOf(rummyRank(c));
+  return [...hand].sort((a, b) => key(a) - key(b));
 }
 
 export function RummyView({ title }: { title: string }) {
@@ -66,35 +124,25 @@ export function RummyView({ title }: { title: string }) {
   const { dealIn } = useCardAnimations(tableRef);
   const { flyGhost } = useCardFlight(tableRef);
 
-  const opp = seat === 0 ? 1 : 0;
   const myTurn = !!state && state.turn === seat && legal.length > 0;
+  const nameFor = (s: number) =>
+    s === seat ? (user?.displayName ?? t("game.you")) : (players.find((p) => p.seat === s)?.displayName ?? `#${s + 1}`);
+  const jokerLabel = t("rummy.joker");
 
-  const oppName = players.find((p) => p.seat === opp)?.displayName ?? t("game.opponent");
-  const myName = user?.displayName ?? t("game.you");
-  const nameFor = (s: number) => (s === seat ? t("game.you") : oppName);
-
-  // Deal/match announcements from the authoritative event stream. WIN carries
-  // the same seat as DEAL_END, so only the latter becomes a banner.
   const { banners } = useGameAnnouncements({
     matchId: m.matchId,
     toBanner: (ev) => {
       const evSeat = typeof ev.seat === "number" ? ev.seat : -1;
       const mine = evSeat === seat;
-      const name = nameFor(evSeat);
+      const name = evSeat >= 0 ? nameFor(evSeat) : "";
       switch (ev.type) {
-        case "KNOCK": {
-          const pts = typeof ev.deadwood === "number" ? ev.deadwood : 0;
-          return pts === 0
-            ? { text: t("rummy.ginBanner", { name }), tone: mine ? "win" : "brass" }
-            : { text: t("rummy.knockBanner", { name, pts }), tone: "brass" };
-        }
-        case "DEAL_END": {
-          const pts = typeof ev.points === "number" ? ev.points : 0;
-          const won = { text: t("rummy.dealWonBanner", { name, pts }), tone: mine ? ("win" as const) : ("loss" as const) };
-          return ev.undercut ? [{ text: t("rummy.undercutBanner", { name }), tone: won.tone }, won] : won;
-        }
-        case "DEAD_HAND":
-          return { text: t("rummy.deadHandBanner"), tone: "brass" };
+        case "OPEN":
+          return { text: t("rummy.openBanner", { name, pts: Number(ev.points) || 0 }), tone: mine ? "win" : "brass" };
+        case "ROUND_END":
+          if (ev.exhausted) return { text: t("rummy.exhaustedBanner"), tone: "brass" };
+          return ev.hand
+            ? { text: t("rummy.handBanner", { name }), tone: mine ? "win" : "loss" }
+            : { text: t("rummy.outBanner", { name }), tone: mine ? "win" : "brass" };
         case "MATCH":
           return { text: t("rummy.matchBanner", { name }), tone: mine ? "win" : "loss" };
         default:
@@ -103,142 +151,175 @@ export function RummyView({ title }: { title: string }) {
     },
   });
 
-  // Opponent draws/discards fly between their seat and the piles (the events
-  // land BEFORE the new state, so the pre-action DOM is still up).
   useGameEvents(m.matchId, (events) => {
     for (const raw of events) {
-      const ev = raw as { type?: string; seat?: number; from?: string };
-      if (ev.seat === seat) continue; // my own actions animate on click
-      if (ev.type === "DRAW") {
+      const ev = raw as { type?: string; seat?: number };
+      if (ev.seat === seat) continue;
+      if (ev.type === "DRAW" || ev.type === "TAKE") {
         playCue("flip");
-        flyGhost(ev.from === "discard" ? discardRef.current : stockRef.current, "top");
+        flyGhost(ev.type === "TAKE" ? discardRef.current : stockRef.current, "top");
       } else if (ev.type === "DISCARD") {
         playCue("flip");
         flyGhost("top", discardRef.current);
+      } else if (ev.type === "OPEN" || ev.type === "MELD" || ev.type === "LAYOFF") {
+        playCue("flip");
       }
     }
   });
 
-  const drawStock = legal.find((a) => a.type === "DRAW" && a.from === "stock");
-  const drawDiscard = legal.find((a) => a.type === "DRAW" && a.from === "discard");
-  // Each hand card maps to its discard + (optional) knock action.
-  const discardFor = useMemo(
-    () => new Map(legal.filter((a) => a.type === "DISCARD").map((a) => [(a as { card: string }).card, a])),
-    [legal],
-  );
-  const knockFor = useMemo(
-    () => new Map(legal.filter((a) => a.type === "KNOCK").map((a) => [(a as { card: string }).card, a])),
-    [legal],
-  );
-  const inDiscardPhase = state?.phase === "DISCARD";
-  // Knock mode: the engine offers KNOCK per eligible card — let the player PICK
-  // the card (mirrors discard) instead of auto-firing an arbitrary one.
-  const [knockMode, setKnockMode] = useState(false);
-  useEffect(() => {
-    if (!myTurn) setKnockMode(false);
-  }, [myTurn]);
+  // ── локално състояние: избрани карти, натрупано отваряне, подредба ──
+  const [selected, setSelected] = useState<string[]>([]);
+  const [staged, setStaged] = useState<string[][]>([]);
+  const [sorted, setSorted] = useState(true);
+  const hand = useMemo(() => state?.hands[seat] ?? [], [state, seat]);
+  const opened = !!state?.opened[seat];
+  const inPlay = myTurn && state?.phase === "PLAY";
 
-  // Deal-in flight for MY hand — re-runs on every new deal, not just the first.
+  // Изчисти избора, ако картите вече не са в ръката (след ход / нов рунд).
+  useEffect(() => {
+    setSelected((sel) => sel.filter((c) => hand.includes(c)));
+    setStaged((st) => (st.every((g) => g.every((c) => hand.includes(c))) ? st : []));
+  }, [hand]);
+  useEffect(() => {
+    if (!inPlay) setStaged([]);
+  }, [inPlay]);
+
   const dealtForRef = useRef(0);
   useEffect(() => {
-    if (state && dealtForRef.current !== state.dealNo && (state.hands[seat]?.length ?? 0) > 0) {
-      dealtForRef.current = state.dealNo;
+    if (state && dealtForRef.current !== state.round && hand.length > 0) {
+      dealtForRef.current = state.round;
       requestAnimationFrame(() => dealIn(".aso-myhand .aso-card"));
       playCue("deal");
     }
-  }, [state, seat, dealIn]);
+  }, [state, hand.length, dealIn]);
 
-  // Showdown report: pops when the engine publishes a NEW revealed deal (the
-  // table behind already holds the next hand). Skipped on (re)mount so a stale
-  // report isn't replayed after a refresh.
-  const [report, setReport] = useState<RummyShowdown | null>(null);
-  const seenDealRef = useRef<number | null>(null);
+  // Отчет за рунда — изскача при нов `lastRound` (не при презареждане).
+  const [report, setReport] = useState<RummyRoundResult | null>(null);
+  const seenRoundRef = useRef<number | null>(null);
   useEffect(() => {
     if (!state) return;
-    const sd = state.showdown;
-    if (seenDealRef.current === null) {
-      seenDealRef.current = sd?.dealNo ?? 0;
+    const lr = state.lastRound;
+    if (seenRoundRef.current === null) {
+      seenRoundRef.current = lr?.round ?? 0;
       return;
     }
-    if (sd && sd.dealNo > seenDealRef.current) {
-      seenDealRef.current = sd.dealNo;
-      setReport(sd);
+    if (lr && lr.round > seenRoundRef.current) {
+      seenRoundRef.current = lr.round;
+      setReport(lr);
     }
   }, [state]);
   useEffect(() => {
     if (!report) return;
-    const id = setTimeout(() => setReport(null), 9000);
+    const id = setTimeout(() => setReport(null), 12000);
     return () => clearTimeout(id);
   }, [report]);
 
-  function onDiscard(card: string, node: HTMLElement | null) {
-    const a = knockMode ? knockFor.get(card) : discardFor.get(card);
-    if (!a) return;
-    setKnockMode(false);
-    flyGhost(node, discardRef.current); // my card flies onto the pile
+  const stagedCards = staged.flat();
+  const free = hand.filter((c) => !stagedCards.includes(c));
+  const shown = sorted ? sortHand(free) : free;
+  const selMeld = selected.length >= 3 ? arrangeMeld(selected) : null;
+  const selPts = selected.reduce((a, c) => a + (isJoker(c) ? 0 : penaltyValue(c)), 0);
+  const stagedPts = staged.reduce((a, g) => a + (arrangeMeld(g)?.value ?? 0), 0);
+  const leavesOne = (n: number) => hand.length - n >= 1;
+  const pending = state?.mustUse.filter((c) => hand.includes(c)) ?? [];
+
+  const drawA = legal.find((a) => a.type === "DRAW");
+  const takeA = legal.find((a) => a.type === "TAKE");
+  const discardOk = inPlay && pending.length === 0 && selected.length === 1 && staged.length === 0;
+  const meldOk = inPlay && opened && !!selMeld && leavesOne(selected.length);
+  const stageOk = inPlay && !opened && !!selMeld && leavesOne(stagedCards.length + selected.length);
+  const openOk =
+    inPlay && !opened && stagedPts >= RUMMY_OPEN_MIN && leavesOne(stagedCards.length) && pending.every((c) => stagedCards.includes(c));
+
+  const toggle = (c: string) => {
+    if (!inPlay) return;
+    setSelected((s) => (s.includes(c) ? s.filter((x) => x !== c) : [...s, c]));
+  };
+
+  const send = (a: RummyAction) => {
     playCue("flip");
     m.send(a);
-  }
+  };
 
   function onDraw(action: RummyAction, from: HTMLElement | null) {
     flyGhost(from, "bottom");
-    playCue("flip");
-    m.send(action);
+    send(action);
+  }
+
+  function onDiscard() {
+    const card = selected[0];
+    if (!discardOk || !card) return;
+    flyGhost(document.querySelector<HTMLElement>(`[data-rcard="${card}"]`), discardRef.current);
+    setSelected([]);
+    send({ type: "DISCARD", card });
+  }
+
+  /** Натиснат е комбинация на масата: долепване на избраните или смяна на жокер. */
+  function meldAction(meld: RummyMeld): RummyAction | null {
+    if (!inPlay || !opened || selected.length === 0) return null;
+    if (leavesOne(selected.length) && extendMeld(meld, selected)) return { type: "LAYOFF", meldId: meld.id, cards: selected };
+    const only = selected[0];
+    if (selected.length === 1 && only && hand.length >= 2 && jokerSwapIndex(meld, only) >= 0) {
+      return { type: "SWAP", meldId: meld.id, card: only };
+    }
+    return null;
   }
 
   const top = state?.discard[state.discard.length - 1];
-  const reportTitle = report
-    ? report.dead
-      ? t("rummy.deadHandBanner")
-      : report.gin
-        ? t("rummy.ginBanner", { name: nameFor(report.knocker ?? 0) })
-        : t("rummy.knockBanner", {
-            name: nameFor(report.knocker ?? 0),
-            pts: report.deadwood[report.knocker ?? 0] ?? 0,
-          })
-    : "";
+  const seats = state?.seats ?? 2;
+  const positions = positionsFor(seats, seat);
+  const overlap = fitOverlap(shown.length, "md");
 
   return (
-    <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
+    <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result} wide>
       {state ? (
         <>
           <div ref={tableRef} style={{ position: "relative" }}>
             <Announcements banners={banners} />
-            <FeltTable crest="🂠" feltColor="#163a2c" feltDark="#0a1d15">
-              <Seat
-                pos="top"
-                name={oppName}
-                active={state.turn === opp}
-                badge={<span className="tnum">{state.hands[opp]?.length ?? 0}</span>}
-              >
-                <div style={{ display: "flex" }}>
-                  {Array.from({ length: state.hands[opp]?.length ?? 0 }).map((_, i) => (
-                    <PlayingCard key={i} card="?" size="sm" style={{ marginLeft: i ? -24 : 0 }} />
-                  ))}
-                </div>
-              </Seat>
+            <FeltTable crest="🃏" feltColor="#163a2c" feltDark="#0a1d15">
+              {[...positions.entries()].map(([s, pos]) => (
+                <Seat
+                  key={s}
+                  pos={pos}
+                  name={nameFor(s)}
+                  active={state.turn === s}
+                  badge={
+                    <span className="tnum text-xs">
+                      🂠 {state.hands[s]?.length ?? 0} · {state.scores[s] ?? 0}
+                      {state.opened[s] ? " ✓" : ""}
+                    </span>
+                  }
+                >
+                  <div style={{ display: "flex" }}>
+                    {Array.from({ length: Math.min(state.hands[s]?.length ?? 0, 10) }).map((_, i) => (
+                      <PlayingCard key={i} card="?" size="sm" style={{ marginLeft: i ? -40 : 0 }} />
+                    ))}
+                  </div>
+                </Seat>
+              ))}
 
-              {/* Stock + discard piles in the center. */}
               <TableCenter>
-                <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
+                <div style={{ display: "flex", gap: 18, alignItems: "center", justifyContent: "center" }}>
                   <div ref={stockRef} style={{ textAlign: "center" }}>
                     <PlayingCard
                       card="?"
                       size="md"
-                      onClick={drawStock ? () => onDraw(drawStock, stockRef.current) : undefined}
+                      onClick={drawA ? () => onDraw(drawA, stockRef.current) : undefined}
                     />
-                    <p className="mt-1 text-xs text-ink-muted">{t("rummy.stock")}: {state.stock.length}</p>
+                    <p className="mt-1 text-xs text-ink-muted">
+                      {t("rummy.stock")}: <span className="tnum">{state.stock.length}</span>
+                    </p>
                   </div>
                   <div ref={discardRef} style={{ textAlign: "center" }}>
                     {top ? (
-                      <PlayingCard
+                      <RummyCard
                         key={`${top}-${state.discard.length}`}
                         card={top}
-                        size="md"
-                        onClick={drawDiscard ? () => onDraw(drawDiscard, discardRef.current) : undefined}
+                        label={jokerLabel}
+                        onClick={takeA ? () => onDraw(takeA, discardRef.current) : undefined}
+                        dimmed={myTurn && state.phase === "DRAW" && !takeA}
                       />
                     ) : (
-                      /* 88×124 = md card size, so the first discard doesn't shift the layout */
                       <div style={{ width: 88, height: 124, borderRadius: 10, border: "1px dashed rgba(217,178,95,.3)" }} />
                     )}
                     <p className="mt-1 text-xs text-ink-muted">{t("rummy.discard")}</p>
@@ -248,30 +329,35 @@ export function RummyView({ title }: { title: string }) {
 
               <Seat
                 pos="bottom"
-                name={myName}
+                name={nameFor(seat)}
                 active={myTurn}
-                badge={<span className="tnum">{state.hands[seat]?.length ?? 0}</span>}
+                badge={
+                  <span className="tnum text-xs">
+                    {state.scores[seat] ?? 0} · {opened ? t("rummy.opened") : t("rummy.notOpened")}
+                  </span>
+                }
               >
-                <div className="aso-myhand" style={{ display: "flex" }}>
-                  {(state.hands[seat] ?? []).map((card, i) => (
-                    <HandCard
-                      key={`${card}-${i}`}
-                      card={card}
-                      index={i}
-                      count={(state.hands[seat] ?? []).length}
-                      playable={myTurn && inDiscardPhase && (knockMode ? knockFor.has(card) : discardFor.has(card))}
-                      onPlay={onDiscard}
-                    />
+                <div className="aso-myhand" style={{ display: "flex", paddingTop: 16 }}>
+                  {shown.map((card, i) => (
+                    <div key={card} data-rcard={card} style={{ marginLeft: i ? -overlap : 0 }}>
+                      <RummyCard
+                        card={card}
+                        label={jokerLabel}
+                        selected={selected.includes(card)}
+                        dimmed={!inPlay}
+                        onClick={inPlay ? () => toggle(card) : undefined}
+                        style={pending.includes(card) ? { outline: "2px solid var(--brass-300)", borderRadius: 10 } : undefined}
+                      />
+                    </div>
                   ))}
                 </div>
               </Seat>
             </FeltTable>
 
-            {/* Showdown report: who knocked, revealed melds, lay-offs, points. */}
             {report ? (
               <div
                 role="dialog"
-                aria-label={reportTitle}
+                aria-label={t("rummy.roundReport", { n: report.round })}
                 style={{
                   position: "absolute",
                   inset: 0,
@@ -285,44 +371,29 @@ export function RummyView({ title }: { title: string }) {
               >
                 <div
                   className="rounded-panel border border-brass-400/25 bg-felt-800/95 p-4"
-                  style={{ width: "min(92%, 560px)", maxHeight: "94%", overflowY: "auto" }}
+                  style={{ width: "min(92%, 600px)", maxHeight: "94%", overflowY: "auto" }}
                 >
-                  <h3 className="text-center text-lg text-brass-300">
-                    {reportTitle}
-                    {report.undercut ? ` · ${t("rummy.undercutBanner", { name: nameFor(report.winner ?? 0) })}` : ""}
-                  </h3>
-                  {[seat, opp].map((s) => (
+                  <h3 className="text-center text-lg text-brass-300">{t("rummy.roundReport", { n: report.round })}</h3>
+                  <p className="mt-1 text-center text-sm text-ink-300">
+                    {report.exhausted
+                      ? t("rummy.exhaustedBanner")
+                      : report.hand
+                        ? t("rummy.handBanner", { name: nameFor(report.outSeat ?? 0) })
+                        : t("rummy.outBanner", { name: nameFor(report.outSeat ?? 0) })}
+                  </p>
+                  {report.penalties.map((p, s) => (
                     <div key={s} className="mt-3">
                       <p className="text-xs text-ink-muted">
-                        {s === seat ? myName : oppName} — {t("rummy.deadwood")}:{" "}
-                        <b className="tnum">{report.deadwood[s] ?? 0}</b>
+                        {nameFor(s)} — {t("rummy.penalty")}: <b className="tnum">{p}</b> · {t("rummy.total")}:{" "}
+                        <b className="tnum">{report.scores[s] ?? 0}</b>
                       </p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 4 }}>
-                        {(report.melds[s] ?? []).map((meld, i) => (
-                          <CardStrip key={i} cards={meld} />
+                      <div style={{ display: "flex", flexWrap: "wrap", marginTop: 4 }}>
+                        {(report.hands[s] ?? []).map((c, j) => (
+                          <RummyCard key={c} card={c} size="sm" label={jokerLabel} style={{ marginLeft: j ? -34 : 0 }} />
                         ))}
-                        {(report.unmatched[s] ?? []).length > 0 ? (
-                          <CardStrip cards={report.unmatched[s] ?? []} dim />
-                        ) : null}
                       </div>
                     </div>
                   ))}
-                  {report.layoffs.length > 0 ? (
-                    <div className="mt-3">
-                      <p className="text-xs text-ink-muted">{t("rummy.layoffs")}</p>
-                      <div style={{ marginTop: 4 }}>
-                        <CardStrip cards={report.layoffs} />
-                      </div>
-                    </div>
-                  ) : null}
-                  <p className="mt-3 text-center text-sm text-ink-300">
-                    {report.dead
-                      ? t("rummy.deadHandBanner")
-                      : t("rummy.dealWonBanner", { name: nameFor(report.winner ?? 0), pts: report.points })}
-                  </p>
-                  <p className="tnum mt-1 text-center text-xs text-ink-muted">
-                    {t("rummy.match")}: {report.matchScore[seat] ?? 0} : {report.matchScore[opp] ?? 0}
-                  </p>
                   <div className="mt-3 text-center">
                     <Button variant="brass" onClick={() => setReport(null)}>
                       {t("rummy.continue")}
@@ -333,34 +404,144 @@ export function RummyView({ title }: { title: string }) {
             ) : null}
           </div>
 
+          {/* Масата: комбинациите по играчи; натисни, за да долепиш/смениш жокер. */}
+          <section className="mt-4 rounded-panel border border-brass-400/20 bg-felt-900/60 p-3" aria-label={t("rummy.table")}>
+            <h3 className="text-xs uppercase tracking-wide text-brass-300">{t("rummy.table")}</h3>
+            {state.melds.length === 0 ? (
+              <p className="mt-1 text-xs text-ink-muted">{t("rummy.emptyTable")}</p>
+            ) : (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 6 }}>
+                {state.melds.map((meld) => {
+                  const a = meldAction(meld);
+                  return (
+                    <button
+                      key={meld.id}
+                      type="button"
+                      disabled={!a}
+                      onClick={() => {
+                        if (!a) return;
+                        setSelected([]);
+                        send(a);
+                      }}
+                      title={a ? (a.type === "SWAP" ? t("rummy.swapHere") : t("rummy.layoffHere")) : nameFor(meld.owner)}
+                      aria-label={`${nameFor(meld.owner)}: ${meld.cards.map((c) => (isJoker(c) ? jokerLabel : rummyFace(c))).join(" ")}`}
+                      className="rounded-lg p-1"
+                      style={{
+                        display: "flex",
+                        border: a ? "1px solid var(--brass-300)" : "1px solid transparent",
+                        cursor: a ? "pointer" : "default",
+                        background: a ? "rgba(217,178,95,.08)" : "transparent",
+                      }}
+                    >
+                      {meld.cards.map((c, j) => (
+                        <RummyCard key={c} card={c} size="sm" label={jokerLabel} style={{ marginLeft: j ? -36 : 0 }} />
+                      ))}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          {/* Натрупано отваряне (неотворен играч). */}
+          {staged.length > 0 ? (
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+              {staged.map((g, i) => (
+                <div key={i} style={{ display: "flex" }}>
+                  {(arrangeMeld(g)?.cards ?? g).map((c, j) => (
+                    <RummyCard key={c} card={c} size="sm" label={jokerLabel} style={{ marginLeft: j ? -36 : 0 }} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          ) : null}
+
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
             <ScorePill
-              label={t("rummy.match")}
-              value={`${state.matchScore?.[seat] ?? 0} : ${state.matchScore?.[opp] ?? 0}`}
-              highlight={(state.matchScore?.[seat] ?? 0) >= (state.matchScore?.[opp] ?? 0)}
+              label={t("rummy.score")}
+              value={state.scores[seat] ?? 0}
+              highlight={(state.scores[seat] ?? 0) <= Math.min(...state.scores)}
             />
             <ScorePill
               label={t("rummy.phase")}
-              value={inDiscardPhase ? t("rummy.discardPhase") : t("rummy.drawPhase")}
+              value={state.phase === "PLAY" ? t("rummy.playPhase") : t("rummy.drawPhase")}
               highlight={myTurn}
             />
             <span className="tnum text-xs text-ink-muted">
-              {t("rummy.dealNo")} {state.dealNo ?? 1} · {t("rummy.toHundred")}
+              {t("rummy.round")} {state.round} · {t("rummy.limit", { limit: RUMMY_LIMIT })}
             </span>
-            {/* Knock: toggle a pick mode, then click the card to knock with. */}
-            {myTurn && knockFor.size > 0 ? (
-              <Button variant={knockMode ? "felt" : "brass"} onClick={() => setKnockMode((v) => !v)}>
-                {knockMode ? t("rummy.cancelKnock") : t("rummy.knock")}
-              </Button>
-            ) : null}
           </div>
+
+          {inPlay ? (
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              <span className="tnum text-xs text-ink-300">
+                {t("rummy.selected", { count: selected.length, pts: selMeld ? selMeld.value : selPts })}
+                {selected.length >= 3 && !selMeld ? ` · ${t("rummy.notMeld")}` : ""}
+              </span>
+              {!opened ? (
+                <>
+                  <Button
+                    variant="felt"
+                    disabled={!stageOk}
+                    onClick={() => {
+                      setStaged((s) => [...s, selected]);
+                      setSelected([]);
+                    }}
+                  >
+                    {t("rummy.addToOpening")}
+                  </Button>
+                  <span className="tnum text-xs text-brass-200">
+                    {t("rummy.openingTotal", { pts: stagedPts, min: RUMMY_OPEN_MIN })}
+                  </span>
+                  <Button
+                    variant="brass"
+                    disabled={!openOk}
+                    onClick={() => {
+                      send({ type: "OPEN", melds: staged });
+                      setStaged([]);
+                      setSelected([]);
+                    }}
+                  >
+                    {t("rummy.open", { pts: stagedPts })}
+                  </Button>
+                  {staged.length > 0 ? (
+                    <Button variant="felt" onClick={() => setStaged([])}>
+                      {t("rummy.clearOpening")}
+                    </Button>
+                  ) : null}
+                </>
+              ) : (
+                <Button
+                  variant="brass"
+                  disabled={!meldOk}
+                  onClick={() => {
+                    send({ type: "MELD", cards: selected });
+                    setSelected([]);
+                  }}
+                >
+                  {t("rummy.meld")}
+                </Button>
+              )}
+              <Button variant="brass" disabled={!discardOk} onClick={onDiscard}>
+                {t("rummy.discardBtn")}
+              </Button>
+              <Button variant="felt" onClick={() => setSorted((v) => !v)}>
+                {t("rummy.sort")}
+              </Button>
+            </div>
+          ) : null}
+
           {myTurn ? (
             <p className="mt-2 text-center text-xs text-ink-muted">
-              {inDiscardPhase
-                ? knockMode
-                  ? t("rummy.knockHint")
-                  : t("rummy.discardHint")
-                : t("rummy.drawHint")}
+              {state.phase === "DRAW"
+                ? t("rummy.drawHint")
+                : pending.length > 0
+                  ? opened
+                    ? t("rummy.mustUseHint")
+                    : t("rummy.mustOpenHint")
+                  : selected.length > 0 && !leavesOne(selected.length + stagedCards.length)
+                    ? t("rummy.keepOne")
+                    : t("rummy.playHint")}
             </p>
           ) : null}
         </>

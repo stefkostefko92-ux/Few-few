@@ -30,7 +30,7 @@ node tools/seo/cwv.mjs https://<domain>/<path> mobile      # НА ЖИВО: Page
 - Hero текст/изображение = чист HTML/SSR, не чака JS/hydration. `priority` на LCP `<Image>` (Next).
   **Никога `loading=lazy` на LCP изображението.**
 - Оразмерявай/компресирай изображения (AVIF/WebP, `sizes`), preload на критичния шрифт/изображение.
-- Server Components / кеш за данните (Next 15 App Router: `use cache`/ISR) — не блокирай paint с fetch.
+- Server Components / кеш за данните (според версията на Next в `package.json` на продукта: ISR, `use cache` където е наличен) — не блокирай paint с fetch.
 - Минимизирай render-blocking CSS/JS; критичният CSS inline, останалото defer.
 
 ## INP / TBT (бавен отговор на интеракция)

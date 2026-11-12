@@ -109,6 +109,8 @@ export default {
         const { data } = await api.post(`/bot/giveaway/${giveawayId}/${sub}`, {
           serverId: interaction.guildId,
           actorId: interaction.user.id,
+          // Backend скоупва по serverId (cross-tenant IDOR) — без него връща 400.
+          serverId: interaction.guildId,
         });
         if (data.winners?.length) {
           await interaction.editReply(`✅ Winner(s): ${data.winners.map((id) => `<@${id}>`).join(", ")}`);

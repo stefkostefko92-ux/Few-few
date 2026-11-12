@@ -26,6 +26,7 @@ interface LudoState {
   die: number | null; // stays set on a dead roll so everyone sees what fell
   rolledSix: boolean;
   attempts: number; // rolls taken this turn ("three throws for a six")
+  finished?: number[]; // finishing order (1st, 2nd, …) — 3–4 players race on for places
 }
 type LudoAction = { type: "ROLL" } | { type: "MOVE"; token: number } | { type: "PASS" };
 
@@ -61,6 +62,12 @@ export function LudoView({ title }: { title: string }) {
         return { text: t("fx.capture"), tone: "brass" };
       }
       if (ev.type === "ROLL" && ev.die === 6) return { text: t("fx.six"), tone: "brass" };
+      if (ev.type === "FINISH" && typeof ev.seat === "number") {
+        return {
+          text: t("ludo.finishedBanner", { name: nameFor(ev.seat), n: ev.place as number }),
+          tone: ev.seat === seat ? "win" : "brass",
+        };
+      }
       // A roll with no legal move: the die stays on the board, and the banner
       // says whether the turn is skipped or a re-throw was granted.
       if (ev.type === "NO_MOVE") {
@@ -191,6 +198,11 @@ export function LudoView({ title }: { title: string }) {
                 <span className="ludo-dot" style={{ background: SEAT_COLORS[s] }} />
                 {nameFor(s)}
                 {s === seat ? ` (${t("game.you")})` : ""}
+                {state.finished?.includes(s) ? (
+                  <span className="ml-1 font-semibold text-brass-300">
+                    · {t("ludo.place", { n: state.finished.indexOf(s) + 1 })}
+                  </span>
+                ) : null}
               </span>
             ))}
           </div>
@@ -203,7 +215,6 @@ export function LudoView({ title }: { title: string }) {
                 borderRadius: 16,
                 overflow: "hidden",
                 lineHeight: 0,
-                boxShadow: "0 16px 40px -16px rgba(0,0,0,.7)",
               }}
             >
               <canvas

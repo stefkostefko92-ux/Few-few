@@ -2,7 +2,7 @@ Supreme AdBlock menyekat iklan di mana-mana — iklan video YouTube, sepanduk, t
 
 • Kemas kini penapis bertandatangan dua kali sehari: rangkaian iklan baharu ditangani dalam beberapa jam, tanpa kod jauh.
 • Iklan YouTube dihentikan pada sumbernya, jadi video terus dimainkan.
-• Sepanduk kuki: menekan Tolak untuk anda, membersihkan kesan kabur dan kunci tatal yang tertinggal, dan tidak sekali-kali menekan butang log masuk, OAuth atau pembayaran.
+• Sepanduk kuki: menekan Tolak apabila sepanduk menyediakannya, dan menekan Terima hanya apabila tiada cara lain untuk menutupnya; membersihkan kesan kabur dan kunci tatal yang tertinggal, dan tidak sekali-kali menekan butang log masuk, OAuth atau pembayaran.
 • Tiada akaun, tiada telemetri, tiada pengumpulan data, dan tiada iklan yang dibenarkan lalu dengan bayaran. Global Privacy Control meminta tapak yang anda lawati supaya tidak menjual atau berkongsi data anda.
 • EasyList, EasyPrivacy dan senarai penapis terbuka lain sudah terbina dalam, serta senarai untuk bahasa anda (31 senarai serantau).
 • Siaran tajaan pada Facebook, Instagram dan Threads disembunyikan.

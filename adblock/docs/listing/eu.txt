@@ -2,7 +2,7 @@ Supreme AdBlock-ek iragarkiak nonahi blokeatzen ditu — YouTubeko bideo-iragark
 
 • Iragazki-eguneratze sinatuak egunean bitan: iragarki-sare berriak ordu gutxitan kudeatzen dira, urruneko koderik gabe.
 • YouTubeko iragarkiak iturburuan geldiarazten dira, eta bideoak arazorik gabe erreproduzitzen dira.
-• Cookie-bannerrak: zure ordez sakatzen du Baztertu, geratzen den lausotzea eta korritze-blokeoa kentzen ditu, eta ez du inoiz saioa hasteko, OAuth edo ordaintzeko botoirik sakatzen.
+• Cookie-bannerrak: Baztertu sakatzen du bannerrak eskaintzen duenean, eta Onartu, ixteko beste modurik ez dagoenean bakarrik; geratzen den lausotzea eta korritze-blokeoa kentzen ditu, eta ez du inoiz saioa hasteko, OAuth edo ordaintzeko botoirik sakatzen.
 • Konturik ez, telemetriarik ez, datu-bilketarik ez, eta ez da iragarkirik onartzen ordainketa baten truke. Global Privacy Control-ek webgune bakoitzari eskatzen dio zure datuak ez saltzeko eta ez partekatzeko.
 • EasyList, EasyPrivacy eta beste iragazki-zerrenda ireki batzuk integratuta daude, baita zure hizkuntzako zerrenda ere (31 eskualde-zerrenda).
 • Facebook-en, Instagram-en eta Threads-en babestutako argitalpenak ezkutatu egiten dira.

@@ -2,7 +2,7 @@ Supreme AdBlock blokuje reklamy wszędzie — reklamy wideo na YouTube, banery, 
 
 • Podpisane aktualizacje filtrów dwa razy dziennie: nowe sieci reklamowe są obsługiwane w ciągu kilku godzin, bez zdalnego kodu.
 • Reklamy na YouTube są zatrzymywane u źródła, więc filmy po prostu się odtwarzają.
-• Banery cookies: rozszerzenie klika za Ciebie „Odrzuć”, usuwa pozostałe rozmycie i blokadę przewijania i nigdy nie klika przycisku logowania, OAuth ani płatności.
+• Banery cookies: rozszerzenie klika za Ciebie „Odrzuć”, jeśli baner ma taki przycisk, a „Akceptuj” tylko wtedy, gdy nie da się go zamknąć inaczej; usuwa pozostałe rozmycie i blokadę przewijania i nigdy nie klika przycisku logowania, OAuth ani płatności.
 • Bez konta, bez telemetrii, bez zbierania danych i żadna reklama nie jest przepuszczana za opłatą. Global Privacy Control prosi każdą witrynę, aby nie sprzedawała ani nie udostępniała Twoich danych.
 • Wbudowane są EasyList, EasyPrivacy i inne otwarte listy filtrów, a także lista dla Twojego języka (31 list regionalnych).
 • Posty sponsorowane na Facebooku, Instagramie i Threads są ukrywane.

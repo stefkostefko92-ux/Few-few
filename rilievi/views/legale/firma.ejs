@@ -1,0 +1,60 @@
+<%
+  // Втората стъпка на ADMIN (src/routes/condizioni-firma.ts): специалното одобрение на клаузите от чл. 24
+  // на своя страница — всяка с номер, описание и пълния си текст (разгъва се), отметката (никога готова)
+  // и кодът от имейла, който я подписва.
+  const giorno = (v) => fmt.day(new Date(v + 'T00:00:00Z'));
+  const aria = (key) => errori[key] ? ' aria-invalid="true" aria-describedby="err-' + key + '"' : '';
+%><%- include('../partials/top', { titleKey: 'legale.firma.titolo', narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('legale.firma.titolo') %></h1>
+    <p class="page-head__sub"><%= azienda %></p>
+  </div>
+  <form method="post" action="/esci"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit"><%= t('legale.accetta.esci') %></button></form>
+</div>
+<div class="stack-gap legale">
+  <% if (errore) { %><div class="errors" role="alert"><h2><%= t(errore) %></h2></div><% } %>
+  <section aria-labelledby="h-clausole">
+    <h2 class="section__title" id="h-clausole"><%= t('legale.firma.clausoleTitolo') %></h2>
+    <p><%= t('legale.firma.intro') %></p>
+    <ul class="legale__clausole">
+      <% for (const c of clausole) { %><li>
+        <details>
+          <summary><strong><%= t('legale.firma.art', { numero: c.numero }) %></strong> – <%= c.descrizione %></summary>
+          <% for (const p of c.paragrafi) { %><p><%= p %></p>
+          <% } %>
+        </details>
+      </li>
+      <% } %>
+    </ul>
+    <p><a href="<%= condizioniPath %>" target="_blank" rel="noopener"><%= t('legale.accetta.leggi') %></a></p>
+  </section>
+
+  <form class="form" method="post" action="/condizioni/firma" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="next" value="<%= next %>">
+    <label class="tick legale__spunta"><input type="checkbox" id="f-clausole" name="clausole" value="si"<%- aria('clausole') %>><span class="tick__box" aria-hidden="true"></span><span><%= t('legale.firma.clausole', { azienda, versione: giorno(versione) }) %></span></label>
+    <% if (errori.clausole) { %><p class="field__error" id="err-clausole"><%= t(errori.clausole) %></p><% } %>
+
+    <fieldset class="legale__blocco">
+      <legend class="section__title"><%= t('legale.firma.codiceTitolo') %></legend>
+      <p><%= t('legale.firma.codiceTesto', { email, versione: giorno(versione), minuti }) %></p>
+      <div class="field">
+        <label class="field__label" for="f-codice"><%= t('legale.firma.codice') %></label>
+        <input class="input legale__codice" id="f-codice" name="codice" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]*" maxlength="8" required<%- aria('codice') %>>
+        <% if (errori.codice) { %><p class="field__error" id="err-codice"><%= t(errori.codice, { n: rimasti }) %></p><% } %>
+      </div>
+    </fieldset>
+    <div class="toolbar"><button class="btn btn--primary" type="submit"><%= t('legale.firma.firma') %></button></div>
+  </form>
+
+  <div class="toolbar">
+    <form method="post" action="/condizioni/firma/nuovo-codice">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="next" value="<%= next %>">
+      <button class="btn" type="submit"><%= t('legale.firma.nuovoCodice') %></button>
+    </form>
+    <a class="btn" href="/condizioni/accetta?next=<%= encodeURIComponent(next) %>"><%= t('legale.firma.indietro') %></a>
+  </div>
+</div>
+<%- include('../partials/bottom') %>

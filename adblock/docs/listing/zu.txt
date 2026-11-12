@@ -2,7 +2,7 @@ I-Supreme AdBlock ivimba izikhangiso yonke indawo — izikhangiso zevidiyo ze-Yo
 
 • Izibuyekezo zezihlungi ezisayiniwe kabili ngosuku: amanethiwekhi amasha ezikhangiso asingathwa phakathi namahora, ngaphandle kwekhodi evela kude.
 • Izikhangiso ze-YouTube zimiswa emthonjeni, ngakho amavidiyo avele adlale.
-• Amabhena amakhukhi: icindezela u-“Nqaba” esikhundleni sakho, isuse ukufiphala nokukhiywa kokuskrola okusele, futhi ayilokothi icindezele inkinobho yokungena, ye-OAuth noma yokukhokha.
+• Amabhena amakhukhi: icindezela u-“Nqaba” uma ibhena linikeza lokho, futhi icindezela u-“Yamukela” kuphela uma ingekho enye indlela yokulivala; isusa ukufiphala nokukhiywa kokuskrola okusele, futhi ayilokothi icindezele inkinobho yokungena, ye-OAuth noma yokukhokha.
 • Ayikho i-akhawunti, ayikho i-telemetry, akuqoqwa datha, futhi asikho isikhangiso esivunyelwa ukudlula ngokukhokhelwa. I-Global Privacy Control icela yonke isayithi ukuthi ingadayisi noma yabelane ngedatha yakho.
 • I-EasyList, i-EasyPrivacy nezinye izinhlu zezihlungi ezivulekile kwakhelwe ngaphakathi, kanye nohlu lolimi lwakho (izinhlu zesifunda ezingu-31).
 • Okuthunyelwe okuxhasiwe ku-Facebook, ku-Instagram naku-Threads kuyafihlwa.

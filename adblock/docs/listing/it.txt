@@ -2,7 +2,7 @@ Supreme AdBlock blocca la pubblicità ovunque — annunci video di YouTube, bann
 
 • Aggiornamenti dei filtri firmati due volte al giorno: le nuove reti pubblicitarie sono coperte in poche ore, senza codice remoto.
 • Gli annunci di YouTube vengono fermati alla fonte, così i video partono e basta.
-• Banner dei cookie: preme «Rifiuta» al posto tuo, toglie la sfocatura e il blocco dello scorrimento rimasti e non preme mai un pulsante di accesso, OAuth o pagamento.
+• Banner dei cookie: preme «Rifiuta» quando il banner lo offre, e «Accetta» solo se non c'è altro modo per chiuderlo; toglie la sfocatura e il blocco dello scorrimento rimasti e non preme mai un pulsante di accesso, OAuth o pagamento.
 • Nessun account, nessuna telemetria, nessuna raccolta di dati e nessun annuncio lasciato passare a pagamento. Global Privacy Control chiede a ogni sito di non vendere né condividere i tuoi dati.
 • EasyList, EasyPrivacy e altre liste di filtri aperte sono integrate, più la lista per la tua lingua (31 liste regionali).
 • I post sponsorizzati su Facebook, Instagram e Threads vengono nascosti.

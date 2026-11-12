@@ -16,7 +16,7 @@ const BASE = "https://adblock.carbonstealth.eu";
 const STORE = "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk";
 // every link to the store carries the closed UTM vocabulary of docs/METRICS.md: site / home_<language>
 const storeOf = (code) => `${STORE}?utm_source=site&amp;utm_medium=home_${code.replace(/-/g, "_")}`;
-const DATE = "2026-10-16";
+const DATE = "2026-10-23";
 
 // path segment, hreflang, the language's own name (for the switcher)
 export const LANGS = [

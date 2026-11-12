@@ -47,9 +47,8 @@ Paste as-is:
 > (Settings → auto-update). All JavaScript ships in the package, unminified. The MAIN-world script
 > `scriptlets/main.js` and its per-site directives are compiled into the package at build time
 > (`node tools/build_scriptlets.mjs` reproduces them); since version 5.1.4 nothing from the network
-> configures or adds to them, and a `scriptlets` key in the data file is ignored. When the extension
-> is removed, the browser opens a static page, `https://adblock.carbonstealth.eu/bye`, with no
-> parameters.
+> configures or adds to them, and a `scriptlets` key in the data file is ignored. Installed from
+> Edge Add-ons, the extension sets no uninstall page and links to no other store.
 
 ## Ъпдейти
 

@@ -5,6 +5,7 @@ import { Badge, Button, Panel } from "../../../ui";
 import { useLobbyStore, useMatchStore } from "../../../lib/store";
 import type { GameOverMsg } from "@aso/shared";
 import type { MatchPhase } from "../useMatch";
+import { SceneHeader } from "../scene/SceneShell";
 
 interface Props {
   title: string;
@@ -28,11 +29,9 @@ export function MatchChrome({ title, phase, seat, result, children }: Props) {
 
   return (
     <div className="mx-auto flex w-full max-w-[min(94vw,1240px)] flex-col items-center gap-6">
-      <div className="flex w-full items-center justify-between">
-        <h1 className="text-3xl text-brass-300">{title}</h1>
-        <Button variant="ghost" onClick={() => navigate("/")}>
-          {t("game.leave")}
-        </Button>
+      {/* Shared header: leaving mid-match resigns the seat (no bot finishing for us). */}
+      <div className="w-full">
+        <SceneHeader title={title} />
       </div>
 
       {phase === "searching" ? (

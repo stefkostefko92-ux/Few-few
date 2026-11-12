@@ -1,0 +1,114 @@
+{
+  "legale": {
+    "inAttesa": "Prima di continuare servono le condizioni di servizio e le regole d'uso: apri la pagina per accettarle.",
+    "versione": "Versione del {versione}",
+    "impronta": "Impronta SHA-256 del testo: {hash}",
+    "pagina": {
+      "title": "Condizioni di servizio e regole d'uso",
+      "metaDescription": "Condizioni generali di servizio di Rilievi Impianti per le aziende, accordo sul trattamento dei dati (art. 28 GDPR) e regole d'uso per gli utenti.",
+      "lead": "Il rapporto tra Carbon Stealth VCC e le aziende che usano Rilievi Impianti è regolato dalle Condizioni generali di servizio e dall'Allegato A. Le accetta per l'azienda il suo amministratore, al primo accesso, con l'approvazione specifica delle clausole elencate all'art. 24 firmata con un codice inviato per email. Le regole d'uso valgono per ogni utente.",
+      "salva": "Puoi leggere, stampare e salvare questi testi prima di accettarli: usa la stampa del browser oppure scarica il PDF.",
+      "pdf": "Scarica il PDF",
+      "indice": "In questa pagina",
+      "condizioni": "Condizioni generali di servizio",
+      "regole": "Regole d'uso per gli utenti",
+      "inVigore": "In vigore dal {data}",
+      "keywords": "condizioni di servizio, Rilievi Impianti, accordo trattamento dati, art. 28 GDPR, regole d'uso, Carbon Stealth"
+    },
+    "accetta": {
+      "titolo": "Condizioni di servizio",
+      "intro": "Prima di usare Rilievi Impianti servono le condizioni di servizio dell'azienda e le tue regole d'uso.",
+      "leggi": "Leggi le condizioni complete (si aprono in una nuova scheda)",
+      "aziendaTitolo": "Accettazione per l'azienda",
+      "aziendaTesto": "Sei l'amministratore di {azienda}: accetti le condizioni per l'azienda. Indica i dati dell'azienda come risultano dal registro delle imprese: se sono sbagliati, ne rispondi personalmente (art. 3.3).",
+      "ragioneSociale": "Ragione sociale",
+      "sede": "Sede legale",
+      "partitaIva": "Partita IVA",
+      "partitaIvaHint": "11 cifre per l'Italia; per un altro Paese dell'UE con il codice del Paese (es. DE123456789).",
+      "condizioni": "Ho letto e accetto, in nome e per conto dell'azienda indicata sopra, le Condizioni generali di servizio (versione del {versione}) e l'Allegato A – Accordo sul trattamento dei dati personali (art. 28 GDPR). Dichiaro di avere il potere di rappresentare e obbligare l'azienda.",
+      "passo": "Al passo successivo approvi specificamente le clausole dell'art. 24 e firmi con un codice che ti mandiamo per email.",
+      "regoleTitolo": "Le tue regole d'uso",
+      "regole": "Ho letto le Regole d'uso (art. 4.4 delle Condizioni) e l'avvertenza sui calcoli: i risultati sono un ausilio e prima di qualsiasi uso devono essere verificati e firmati da un tecnico abilitato.",
+      "leggiRegole": "Leggi le regole d'uso",
+      "continua": "Continua",
+      "accetta": "Accetto",
+      "attesaTitolo": "In attesa dell'amministratore",
+      "attesa": "Le condizioni di servizio di {azienda} devono essere accettate dal suo amministratore. Finché non lo fa, il portale resta chiuso per tutti gli utenti dell'azienda.",
+      "attesaChi": "Chiedi a: {nomi}.",
+      "attesaNessuno": "L'azienda non ha un amministratore attivo: scrivi a Carbon Stealth per assegnarne uno.",
+      "attesaFatto": "Le tue regole d'uso sono già accettate.",
+      "esci": "Esci",
+      "errore": {
+        "condizioni": "Per continuare spunta l'accettazione delle condizioni per l'azienda.",
+        "regole": "Per continuare spunta le regole d'uso.",
+        "ragioneSociale": "Scrivi la ragione sociale dell'azienda.",
+        "sede": "Scrivi la sede legale dell'azienda.",
+        "partitaIva": "La partita IVA non è valida.",
+        "versione": "Le condizioni sono state aggiornate mentre la pagina era aperta: rileggile e accetta di nuovo.",
+        "ruolo": "Il tuo ruolo è cambiato: solo l'amministratore dell'azienda accetta le condizioni per essa.",
+        "invio": "Non siamo riusciti a inviare il codice per email. Riprova tra qualche minuto; se l'errore resta, scrivi a Carbon Stealth.",
+        "attendi": "Abbiamo appena inviato un codice: aspetta un minuto prima di chiederne un altro.",
+        "troppi": "Hai chiesto troppi codici: riprova tra un'ora."
+      }
+    },
+    "firma": {
+      "titolo": "Approvazione specifica e firma",
+      "clausoleTitolo": "Clausole da approvare specificamente (artt. 1341 e 1342 c.c.)",
+      "intro": "Le clausole seguenti limitano la responsabilità del Fornitore o pongono obblighi a carico dell'azienda. Leggile prima di approvarle: ogni voce si apre sul testo completo.",
+      "art": "art. {numero}",
+      "clausole": "Ai sensi e per gli effetti degli artt. 1341 e 1342 del codice civile approvo specificamente, per conto dell'azienda {azienda}, le clausole sopra elencate delle Condizioni generali di servizio, versione del {versione}.",
+      "codiceTitolo": "Firma con codice",
+      "codiceTesto": "Abbiamo inviato un codice di 6 cifre a {email}. Inserendolo firmi elettronicamente l'approvazione specifica delle clausole elencate e l'accettazione delle Condizioni, versione del {versione}. Il codice vale {minuti} minuti e una sola volta.",
+      "codice": "Codice",
+      "firma": "Firma e accetta",
+      "nuovoCodice": "Invia un nuovo codice",
+      "indietro": "Torna al passo precedente",
+      "prova": "Ambiente di prova senza email: il codice è {codice}.",
+      "errore": {
+        "clausole": "Per firmare spunta l'approvazione specifica delle clausole.",
+        "formato": "Il codice è di 6 cifre.",
+        "codice": "Il codice non è corretto. Tentativi rimasti: {n}.",
+        "scaduto": "Il codice è scaduto o è già stato usato: chiedine uno nuovo.",
+        "bloccato": "Troppi tentativi sbagliati: chiedi un nuovo codice.",
+        "ruolo": "Il tuo ruolo è cambiato: solo l'amministratore dell'azienda accetta le condizioni per essa."
+      }
+    },
+    "copia": {
+      "titolo": "Copia delle condizioni accettate",
+      "azienda": "Azienda",
+      "aziendaValore": "{ragioneSociale}, P. IVA {partitaIva}, {sede}",
+      "accettateDa": "Accettate da",
+      "accettateDaValore": "{nome} ({email}), amministratore dell'azienda",
+      "quando": "Data e ora",
+      "quandoValore": "{quando} (UTC {utc})",
+      "testo": "Testo accettato",
+      "testoValore": "Condizioni generali di servizio e Allegato A, versione del {versione}; impronta SHA-256 {hash}",
+      "clausole": "Clausole approvate specificamente (artt. 1341 e 1342 c.c.)",
+      "firma": "Firma elettronica",
+      "firmaValore": "codice monouso inviato a {email} il {inviato} e inserito il {verificato}",
+      "scarica": "Scarica la copia delle condizioni accettate",
+      "nessuna": "Nessuna accettazione registrata per l'azienda."
+    },
+    "mail": {
+      "codice": {
+        "subject": "Codice per firmare le condizioni di servizio di Rilievi Impianti",
+        "text": "Il tuo codice è {codice}.\n\nInserendolo nella pagina di Rilievi Impianti firmi elettronicamente l'approvazione specifica delle clausole dell'art. 24 e l'accettazione delle Condizioni generali di servizio (versione del {versione}) per l'azienda {azienda}.\n\nIl codice vale {minuti} minuti e una sola volta. Se non lo hai chiesto tu, ignora questa email e avvisa Carbon Stealth."
+      },
+      "copia": {
+        "subject": "Condizioni di servizio di Rilievi Impianti accettate per {azienda}",
+        "text": "Le Condizioni generali di servizio di Rilievi Impianti e l'Allegato A (accordo sul trattamento dei dati, art. 28 GDPR) sono state accettate per {azienda}.\n\n{riepilogo}\n\nIn allegato trovi il PDF con il testo completo e il riepilogo dell'accettazione. Puoi scaricarlo di nuovo in qualsiasi momento dalla pagina Account del portale."
+      }
+    },
+    "flash": {
+      "accettate": "Condizioni accettate e firmate: ti abbiamo inviato la copia per email.",
+      "regole": "Regole d'uso accettate.",
+      "codiceInviato": "Ti abbiamo inviato un nuovo codice per email."
+    },
+    "account": {
+      "titolo": "Condizioni di servizio",
+      "versione": "Condizioni accettate per l'azienda: versione del {versione}.",
+      "regole": "Le tue regole d'uso: versione del {versione}.",
+      "pagina": "Leggi le condizioni e le regole d'uso"
+    }
+  }
+}

@@ -2,7 +2,7 @@ Supreme AdBlock lokar á auglýsingar alls staðar — YouTube-myndskeiðsauglý
 
 • Undirritaðar síuuppfærslur tvisvar á dag: ný auglýsinganet eru meðhöndluð innan nokkurra klukkustunda, án fjarkóða.
 • YouTube-auglýsingar eru stöðvaðar við upptökin, svo myndskeið spilast einfaldlega.
-• Vafrakökuborðar: viðbótin ýtir á Hafna fyrir þig, fjarlægir móðuna og skrunlásinn sem sitja eftir og ýtir aldrei á innskráningar-, OAuth- eða greiðsluhnapp.
+• Vafrakökuborðar: viðbótin ýtir á Hafna fyrir þig þegar borðinn býður upp á það, og á Samþykkja aðeins þegar engin önnur leið er til að loka honum; hún fjarlægir móðuna og skrunlásinn sem sitja eftir og ýtir aldrei á innskráningar-, OAuth- eða greiðsluhnapp.
 • Enginn aðgangur, engin fjarmæling, engin gagnasöfnun, og engri auglýsingu er hleypt framhjá gegn greiðslu. Global Privacy Control biður öll vefsvæði um að selja hvorki né deila gögnunum þínum.
 • EasyList, EasyPrivacy og aðrir opnir síulistar eru innbyggðir, auk listans fyrir þitt tungumál (31 svæðisbundinn listi).
 • Kostaðar færslur á Facebook, Instagram og Threads eru faldar.
