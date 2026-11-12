@@ -37,6 +37,8 @@ function aziendeAbbonamento(user: SessionUser) {
       abbonamentoLivello: true,
       abbonamentoCambioAt: true,
       abbonamentoCambioLivello: true,
+      accessoMicrosoft: true,
+      accessoGoogle: true,
     },
   });
 }
@@ -90,6 +92,19 @@ async function render(req: Request, res: Response): Promise<void> {
         };
       })
     : null;
+  // Изтекла фирма: живите ключове и входът с Microsoft/Google се отнемат оттук (другите раздели ги няма).
+  const chiavi =
+    stato.solaLettura && (admin || user.master)
+      ? await prisma.chiaveApi.findMany({
+          where: { aziendaId: azienda.id, revocataAt: null, scadeAt: { gt: now } },
+          orderBy: { createdAt: 'asc' },
+          select: { id: true, nome: true, prefisso: true, scadeAt: true },
+        })
+      : [];
+  const esterno =
+    stato.solaLettura &&
+    (admin || user.master) &&
+    (azienda.accessoMicrosoft !== null || azienda.accessoGoogle !== null);
   res.render('impostazioni/sezione', {
     sezione: 'abbonamento',
     // Изтекла фирма: другите раздели са само за четене — тук и износът стигат.
@@ -107,6 +122,7 @@ async function render(req: Request, res: Response): Promise<void> {
       contatto: config().CONTACT_EMAIL,
       piani,
       occupati,
+      accessi: chiavi.length > 0 || esterno ? { chiavi, esterno } : null,
     },
   });
 }

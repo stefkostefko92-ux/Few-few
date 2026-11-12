@@ -42,7 +42,12 @@ const emailSchema = z.string().max(254).email();
 
 export function leggiFormPosta(
   body: Record<string, unknown>,
-  opzioni: { produzione: boolean; passwordSalvata: boolean },
+  opzioni: {
+    produzione: boolean;
+    passwordSalvata: boolean;
+    /** Записаният сървър и логин — за тях важи записаният ключ. */
+    salvato?: { host: string; utente: string } | null;
+  },
 ): EsitoFormPosta {
   const errori: Partial<Record<CampoPosta, string>> = {};
   const host = hostDa(body.host, opzioni.produzione);
@@ -61,6 +66,14 @@ export function leggiFormPosta(
   let password: string | null = null;
   if (pass.length === 0) {
     if (!opzioni.passwordSalvata) errori.password = 'posta.errore.password';
+    // Друг сървър или друг логин със записания ключ: ключът на Brevo би отишъл при непознат сървър (одитът от
+    // 12 ноември 2026) — пише се наново.
+    else if (
+      opzioni.salvato &&
+      host &&
+      (host !== opzioni.salvato.host || utente !== opzioni.salvato.utente)
+    )
+      errori.password = 'posta.errore.passwordNuovoServer';
   } else if (pass.length > 512 || CONTROLLO.test(pass)) {
     errori.password = 'posta.errore.password';
   } else {

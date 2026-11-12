@@ -157,8 +157,24 @@ describe('switching provider', () => {
       esito: 'ALTRO_FORNITORE',
       conferma: 'Altro nome',
       letto: '1',
+      password: PASSWORD,
     });
     assert.equal(sbagliato.status, 422);
+    assert.equal(
+      (await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } })).cambioFineAt,
+      null,
+    );
+
+    // Without the password of the account: nothing starts.
+    const senzaPassword = await browser.submit(pagina(azienda.id), `${PAGE}/cambio`, {
+      azienda: azienda.id,
+      esito: 'ALTRO_FORNITORE',
+      conferma: 'Cambia Ascensori',
+      letto: '1',
+      password: 'sbagliata-9',
+    });
+    assert.equal(senzaPassword.status, 422);
+    assert.match(senzaPassword.body, /Password non corretta/);
     assert.equal(
       (await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } })).cambioFineAt,
       null,
@@ -170,6 +186,7 @@ describe('switching provider', () => {
       esito: 'ALTRO_FORNITORE',
       conferma: 'Cambia Ascensori',
       letto: '1',
+      password: PASSWORD,
     });
     assert.equal(ok.status, 303);
     const dopo = await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } });
@@ -203,6 +220,7 @@ describe('switching provider', () => {
       esito: 'CANCELLAZIONE',
       conferma: 'Cambia Ascensori',
       letto: '1',
+      password: PASSWORD,
     });
     assert.equal(di_nuovo.status, 303);
     assert.equal(
@@ -219,6 +237,7 @@ describe('switching provider', () => {
       esito: 'INFRASTRUTTURA_PROPRIA',
       conferma: 'Proroga Ascensori',
       letto: '1',
+      password: PASSWORD,
     });
     const fine = (await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } }))
       .cambioFineAt!;
@@ -294,6 +313,7 @@ describe('switching provider', () => {
       esito: 'ALTRO_FORNITORE',
       conferma: 'Fine Ascensori',
       letto: '1',
+      password: PASSWORD,
     });
     await prisma.azienda.update({
       where: { id: azienda.id },
@@ -327,6 +347,7 @@ describe('switching provider', () => {
       esito: 'ALTRO_FORNITORE',
       conferma: 'Fine Ascensori',
       letto: '1',
+      password: PASSWORD,
     });
     // Anything but the export leads back to it, and changes nothing.
     assert.equal(cambio.status, 303);

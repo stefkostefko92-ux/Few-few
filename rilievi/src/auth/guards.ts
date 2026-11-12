@@ -8,7 +8,7 @@ import { daAccettare, inAttesa } from '../legale/stato.js';
 import { HOUR } from '../time.js';
 import { can, type Capability } from './roles.js';
 import { soloEsportazione } from './memberships.js';
-import { canAnywhere } from './scope.js';
+import { canAnywhere, canAnywherePerTogliere } from './scope.js';
 import type { Principal } from '../types.js';
 
 /** Методите, които не променят нищо: без CSRF проверка и извън тавана на записите. */
@@ -126,6 +126,22 @@ export function requireCapability(capability: Capability) {
         const scaduto = user.memberships.some((m) => m.solaLettura && can(m.role, capability));
         if (scaduto) sendError(req, res, 403, 'abbonamento.bloccoTitolo', 'abbonamento.blocco');
         else sendError(req, res, 403, 'error.forbiddenTitle', 'error.forbidden');
+        return;
+      }
+      next();
+    });
+  };
+}
+
+/**
+ * Същото за маршрут, който само ТРИЕ данни: правото на ролята важи и при изтекъл абонамент (auth/scope.ts,
+ * `canInPerTogliere`; условията, чл. 12.5 в) и A.9). Записът се проверява в своята фирма със същата функция.
+ */
+export function requireCapabilityPerTogliere(capability: Capability) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    requireUser(req, res, () => {
+      if (!canAnywherePerTogliere(principalOf(req).user, capability)) {
+        sendError(req, res, 403, 'error.forbiddenTitle', 'error.forbidden');
         return;
       }
       next();

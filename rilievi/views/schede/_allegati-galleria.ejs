@@ -35,6 +35,8 @@
         <a class="btn btn--sm btn--ghost" href="<%= base + a.id %>/elimina?ritorno=<%= ritorno %>" data-elimina="<%= a.id %>" data-conferma="<%= t('allegati.eliminaConferma', { nome: a.nomeOriginale }) %>"><%- include('../partials/icon', { name: 'trash' }) %><span class="visually-hidden"><%= t('allegati.elimina') %>: <%= label %></span></a>
       </div>
     </div><% } else if (a.didascalia) { %><p class="galleria__didascalia-testo"><%= a.didascalia %></p><% } %>
+    <%# Samo iztrivaneto: firma s iztekal abonament (usloviyata, chl. 12.5 c) — bez JavaScript, prez stranitsata za potvarzhdenie. %>
+    <% if (!modifica && locals.elimina) { %><div class="galleria__bottoni"><a class="btn btn--sm btn--ghost" href="<%= base + a.id %>/elimina?ritorno=scheda"><%- include('../partials/icon', { name: 'trash' }) %><span><%= t('allegati.elimina') %></span><span class="visually-hidden">: <%= label %></span></a></div><% } %>
   </li>
   <% } %>
 </ul><% } -%>

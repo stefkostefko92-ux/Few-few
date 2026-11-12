@@ -197,11 +197,20 @@ describe('quotes', () => {
     assert.equal(stale.status, 409);
     assert.match(stale.body, /Oggetto vecchio/);
 
-    const stato = (a: string) =>
-      browser.submit(`/preventivi/${id}`, `/preventivi/${id}/stato`, { stato: a });
+    // The state changes only on the version the person has seen: a stale page changes nothing.
+    const baseStato = async () =>
+      /name="base" value="([^"]+)"/.exec((await browser.get(`/preventivi/${id}`)).body)?.[1] ?? '';
+    const vecchiaBase = await baseStato();
+    const stato = async (a: string, b?: string) =>
+      browser.submit(`/preventivi/${id}`, `/preventivi/${id}/stato`, {
+        stato: a,
+        base: b ?? (await baseStato()),
+      });
     await stato('ACCETTATO');
     assert.equal((await prisma.preventivo.findUniqueOrThrow({ where: { id } })).stato, 'BOZZA');
     await stato('INVIATO');
+    await stato('ACCETTATO', vecchiaBase);
+    assert.equal((await prisma.preventivo.findUniqueOrThrow({ where: { id } })).stato, 'INVIATO');
     await stato('ACCETTATO');
     assert.equal((await prisma.preventivo.findUniqueOrThrow({ where: { id } })).stato, 'ACCETTATO');
     assert.equal((await browser.get(`/preventivi/${id}/modifica`)).status, 303);

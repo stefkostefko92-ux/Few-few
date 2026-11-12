@@ -76,6 +76,9 @@
     <p class="field__hint" id="h-email"><%= t('buoni.email.hint') %></p>
   </div>
 </form>
+<% } %>
+<%# Iztrivaneto ostava i pri iztekal abonament (usloviyata, chl. 12.5 c). %>
+<% if (locals.elimina) { %>
 <% if (nFirme === 0) { %>
 <details class="panel buono-elimina">
   <summary><%= t('buoni.elimina.titolo') %></summary>

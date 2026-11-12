@@ -96,7 +96,14 @@
   <section aria-labelledby="h-fine">
     <h2 class="section__title" id="h-fine"><%= t('aziende.fine.title') %></h2>
     <p class="muted"><%= t('aziende.fine.esportaText') %></p>
-    <p><a class="btn" href="/aziende/<%= azienda.id %>/esporta" download><%- include('../partials/icon', { name: 'download' }) %><%= t('aziende.fine.esporta') %></a></p>
+    <form class="form form--tight" method="post" action="/aziende/<%= azienda.id %>/esporta" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label class="field__label" for="f-esporta-password"><%= t('esportazione.scarica.password') %></label>
+        <input class="input" id="f-esporta-password" name="password" type="password" autocomplete="current-password" required<% if (error === 'esportazione.errore.password') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+      </div>
+      <div class="toolbar"><button class="btn" type="submit"><%- include('../partials/icon', { name: 'download' }) %><%= t('aziende.fine.esporta') %></button></div>
+    </form>
     <% if (eliminaIl) { %>
     <p><strong><%= t('aziende.fine.eliminaIl', { date: fmt.day(eliminaIl) }) %></strong> <%= t('aziende.fine.eliminaText', { days: giorniPrimaEliminazione }) %></p>
     <form class="form form--tight" method="post" action="/aziende/<%= azienda.id %>/elimina" novalidate>

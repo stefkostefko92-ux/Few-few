@@ -4,7 +4,7 @@
 // to the environment. The audit never carries the key, the login or the server.
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import { Browser, prisma, signedIn, startApp, stopApp } from './harness.js';
+import { Browser, PASSWORD, prisma, signedIn, startApp, stopApp } from './harness.js';
 
 const { decifraSmtp } = await import('../../src/auth/chiavi.js');
 
@@ -17,6 +17,7 @@ const form = {
   porta: '2525',
   utente: 'login-prova@smtp-brevo.com',
   password: SEGRETO,
+  passwordAccount: PASSWORD,
   mittenteNome: 'Rilievi Impianti',
   mittenteEmail: 'no-reply@carbonstealth.eu',
 };
@@ -49,6 +50,15 @@ describe('the portal email server', () => {
     assert.doesNotMatch(bad.body, new RegExp(SEGRETO));
     assert.equal(await prisma.postaPortale.count(), 0);
 
+    // Not without the password of the account: every email of the portal leaves from here.
+    const senza = await browser.submit('/master/posta', '/master/posta', {
+      ...form,
+      passwordAccount: 'sbagliata-9',
+    });
+    assert.equal(senza.status, 422);
+    assert.match(senza.body, /Password non corretta/);
+    assert.equal(await prisma.postaPortale.count(), 0);
+
     const saved = await browser.submit('/master/posta', '/master/posta', form);
     assert.equal(saved.status, 303);
     const riga = await prisma.postaPortale.findUniqueOrThrow({ where: { id: 'posta' } });
@@ -73,6 +83,26 @@ describe('the portal email server', () => {
     const dopo = await prisma.postaPortale.findUniqueOrThrow({ where: { id: 'posta' } });
     assert.equal(dopo.porta, 587);
     assert.equal(decifraSmtp(dopo.passwordEnc), SEGRETO);
+
+    // Another server or another login with the saved key: the key would go to a server we do not know.
+    for (const altro of [{ host: '127.0.0.2' }, { utente: 'altro-login@smtp-brevo.com' }]) {
+      const no = await browser.submit('/master/posta', '/master/posta', {
+        ...form,
+        ...altro,
+        password: '',
+      });
+      assert.equal(no.status, 422);
+      assert.match(no.body, /scrivi di nuovo la chiave SMTP/);
+    }
+    const fermo = await prisma.postaPortale.findUniqueOrThrow({ where: { id: 'posta' } });
+    assert.equal(fermo.host, '127.0.0.1');
+    assert.equal(fermo.utente, form.utente);
+    // With the key written again it is saved.
+    const nuovo = await browser.submit('/master/posta', '/master/posta', {
+      ...form,
+      host: '127.0.0.2',
+    });
+    assert.equal(nuovo.status, 303);
   });
 
   it('reports a failed test with its code only, and switches off', async () => {

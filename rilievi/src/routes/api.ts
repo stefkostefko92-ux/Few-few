@@ -1,6 +1,6 @@
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { aziendaDellaChiave } from '../api/chiavi.js';
-import { apiLimiter } from '../http/limits.js';
+import { apiLimiter, apiReteLimiter } from '../http/limits.js';
 import { prisma } from '../db.js';
 import { FIELDS } from '../schede/fields.js';
 import { listSchede } from '../schede/list.js';
@@ -29,6 +29,7 @@ async function conChiave(req: Request, res: Response, next: NextFunction): Promi
     return;
   }
   res.locals.apiAzienda = chiave.aziendaId;
+  res.locals.apiChiave = chiave.chiaveId;
   next();
 }
 
@@ -43,7 +44,7 @@ function valore(v: unknown): unknown {
   return v;
 }
 
-apiRouter.use('/api/v1', apiLimiter, conChiave);
+apiRouter.use('/api/v1', apiReteLimiter, conChiave, apiLimiter);
 
 apiRouter.get('/api/v1/schede', async (req, res) => {
   const query =

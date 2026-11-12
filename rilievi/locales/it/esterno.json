@@ -46,7 +46,8 @@
       "passo2": "Ogni persona apre la pagina Account, inserisce la password del portale e collega il proprio account di lavoro.",
       "passo3": "Da quel momento può entrare con il pulsante «Accedi con Microsoft» o «Accedi con Google» nella pagina di accesso.",
       "responsabilita": "Il fornitore di identità lo sceglie e lo gestisce la vostra azienda (art. 4.6 delle Condizioni). Quando una persona lascia l'azienda, disattivate il suo account presso Microsoft o Google e anche qui, nella pagina Utenti: la password del portale resta valida finché l'account non viene disattivato.",
-      "hub0": "Non attivo"
+      "hub0": "Non attivo",
+      "disattivato": "Accesso con Microsoft e Google disattivato per l'azienda."
     }
   }
 }

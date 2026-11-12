@@ -12,6 +12,18 @@
     <% if (s.poi) { %><p><strong><%= t('abbonamento.poi', { livello: s.poi.livello, dal: fmt.dayRoma(s.poi.dal), data: fmt.dayRoma(new Date(s.poi.fino.getTime() - 1)) }) %></strong></p><% } %>
     <% if (s.solaLettura) { %><div class="toolbar"><a class="btn" href="/impostazioni/esportazione?azienda=<%= encodeURIComponent(azienda.id) %>"><%- include('../partials/icon', { name: 'download' }) %><span><%= t('abbonamento.esporta') %></span></a></div><% } %>
   </div>
+  <% if (ab.accessi) { %><section class="panel" aria-labelledby="h-accessi">
+    <h3 id="h-accessi"><%= t('abbonamento.accessi.titolo') %></h3>
+    <p class="muted"><%= t('abbonamento.accessi.testo') %></p>
+    <% if (ab.accessi.chiavi.length) { %><ul class="abbonamento-piani">
+      <% for (const k of ab.accessi.chiavi) { %><li>
+        <span><%= t('abbonamento.accessi.chiave', { nome: k.nome, prefisso: k.prefisso, data: fmt.dayRoma(k.scadeAt) }) %></span>
+        <form method="post" action="/impostazioni/api/<%= k.id %>/revoca"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="azienda" value="<%= azienda.id %>"><button class="btn btn--sm" type="submit"><%= t('api.revoca') %><span class="visually-hidden">: <%= k.nome %></span></button></form>
+      </li>
+      <% } %>
+    </ul><% } %>
+    <% if (ab.accessi.esterno) { %><form class="toolbar" method="post" action="/impostazioni/accesso/disattiva"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="azienda" value="<%= azienda.id %>"><span><%= t('abbonamento.accessi.esterno') %></span><button class="btn btn--sm" type="submit"><%= t('abbonamento.accessi.disattiva') %></button></form><% } %>
+  </section><% } %>
   <dl class="kv">
     <div class="kv__item"><dt><%= t('abbonamento.persone') %></dt><dd><%= s.maxPersone === null ? t('abbonamento.postiSenzaLimite', { n: occupati }) : t('abbonamento.posti', { n: occupati, max: s.maxPersone }) %></dd></div>
     <% if (ab.posti.inviti > 0) { %><div class="kv__item"><dt><%= t('abbonamento.invitiAttesa') %></dt><dd><%= ab.posti.inviti %></dd></div><% } %>

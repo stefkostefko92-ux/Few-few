@@ -36,6 +36,9 @@ export type SubmitResult = { ok: true; id: string } | { ok: false; error: 'busy'
  * Нова заявка — или обновена, ако от същия имейл вече чака една (без дубли в списъка). Отговорът към
  * посетителя е един и същ и в двата случая; MASTER получава писмо само за новата.
  */
+/** Колко време нова заявка от същия имейл поправя чакащата, вместо да стане отделна. */
+export const CORREZIONE_MS = 10 * 60_000;
+
 export async function submitAccessRequest(input: RequestInput): Promise<SubmitResult> {
   const lastDay = await prisma.accessRequest.count({
     where: { createdAt: { gte: new Date(Date.now() - DAY) } },
@@ -44,8 +47,15 @@ export async function submitAccessRequest(input: RequestInput): Promise<SubmitRe
   const saved = await prisma.$transaction(async (tx) => {
     // Две пращания от един имейл наведнъж (двоен клик) се редят едно след друго: един ред, едно писмо.
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${input.email}, 0))`;
+    // Само прясно пратената се поправя (двоен клик, грешка във формата): по-стара чакаща заявка не се
+    // презаписва от всеки, който знае имейла (одитът от 12 ноември 2026) — новата е отделен ред за MASTER.
     const pending = await tx.accessRequest.findFirst({
-      where: { email: input.email, status: 'NEW' },
+      where: {
+        email: input.email,
+        status: 'NEW',
+        updatedAt: { gt: new Date(Date.now() - CORREZIONE_MS) },
+      },
+      orderBy: { updatedAt: 'desc' },
       select: { id: true },
     });
     const row = pending

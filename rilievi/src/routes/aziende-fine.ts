@@ -8,6 +8,7 @@ import { setFlash } from '../http/flash.js';
 import { esportaLimiter } from '../http/limits.js';
 import { errorMessage, logger } from '../logger.js';
 import { renderShow } from './aziende.js';
+import { confermaPassword } from './conferma-password.js';
 
 /**
  * Краят на услугата за фирма — само MASTER (`aziende:manage`): износът на всичко (.tar) и изтриването на
@@ -54,8 +55,26 @@ export async function scaricaEsportazione(
   }
 }
 
-aziendeFineRouter.get('/aziende/:id/esporta', manage, esportaLimiter, async (req, res) => {
-  await scaricaEsportazione(req, res, String(req.params.id));
+/**
+ * С паролата на MASTER и с POST (одитът от 12 ноември 2026): преди — GET без нищо, а откраднатата сесия на
+ * MASTER изнасяше всяка фирма с една връзка. Опитите се броят в заключването (conferma-password.ts).
+ */
+aziendeFineRouter.post(
+  '/aziende/:id/esporta',
+  manage,
+  requireCsrf,
+  esportaLimiter,
+  async (req, res) => {
+    const esito = await confermaPassword(req, res);
+    if (esito === 'bloccato') return;
+    if (esito === 'errata') return renderShow(req, res, 422, 'esportazione.errore.password');
+    await scaricaEsportazione(req, res, String(req.params.id));
+  },
+);
+
+/** Старата връзка (GET) — към страницата на фирмата, при бутона. */
+aziendeFineRouter.get('/aziende/:id/esporta', manage, (req, res) => {
+  res.redirect(303, `/aziende/${encodeURIComponent(String(req.params.id))}#h-fine`);
 });
 
 aziendeFineRouter.post('/aziende/:id/elimina', manage, requireCsrf, async (req, res) => {

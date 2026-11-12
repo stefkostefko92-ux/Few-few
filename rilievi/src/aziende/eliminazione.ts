@@ -1,5 +1,6 @@
 import { rimuoviScheda } from '../allegati/archivio.js';
 import { writeAudit } from '../audit.js';
+import { destroyAllSessions } from '../auth/sessions.js';
 import { prisma } from '../db.js';
 import { sendMail } from '../mail/mailer.js';
 import { cambioMail } from '../mail/templates.js';
@@ -70,12 +71,47 @@ export async function eliminaAzienda(aziendaId: string, actorId: string | null):
         data: { conservaFino: conservaFinoDa(new Date()) },
       });
       await tx.membership.deleteMany({ where: { aziendaId } });
+      // Който е потвърждавал или подписвал документи на ДРУГА фирма (бил е и там), остава като ред: печатът им
+      // назовава кой е потвърдил и без него би паднал (одитът от 12 ноември 2026). Остава без фирма и спрян.
+      const candidati = membri.map((m) => m.userId);
+      const [fogli, verbali, buoni] = await Promise.all([
+        tx.intervento.findMany({
+          where: { confermatoById: { in: candidati } },
+          select: { confermatoById: true },
+          distinct: ['confermatoById'],
+        }),
+        tx.verbale.findMany({
+          where: { confermatoById: { in: candidati } },
+          select: { confermatoById: true },
+          distinct: ['confermatoById'],
+        }),
+        tx.buonoFirma.findMany({
+          where: { firmatoDaId: { in: candidati } },
+          select: { firmatoDaId: true },
+          distinct: ['firmatoDaId'],
+        }),
+      ]);
+      const legati = [
+        ...new Set(
+          [
+            ...fogli.map((r) => r.confermatoById),
+            ...verbali.map((r) => r.confermatoById),
+            ...buoni.map((r) => r.firmatoDaId),
+          ].filter((id): id is string => id !== null),
+        ),
+      ];
+      const senzaAzienda = { master: false, memberships: { none: {} } } as const;
+      const restano = await tx.user.findMany({
+        where: { id: { in: legati }, ...senzaAzienda },
+        select: { id: true },
+      });
+      for (const { id } of restano) await destroyAllSessions(id, undefined, tx);
+      await tx.user.updateMany({
+        where: { id: { in: restano.map((r) => r.id) }, deactivatedAt: null },
+        data: { deactivatedAt: new Date() },
+      });
       const soli = await tx.user.deleteMany({
-        where: {
-          id: { in: membri.map((m) => m.userId) },
-          master: false,
-          memberships: { none: {} },
-        },
+        where: { id: { in: candidati, notIn: restano.map((r) => r.id) }, ...senzaAzienda },
       });
       await tx.azienda.delete({ where: { id: aziendaId } });
       await writeAudit(

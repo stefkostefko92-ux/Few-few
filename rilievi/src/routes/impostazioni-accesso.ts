@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { writeAudit } from '../audit.js';
-import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
+import { principalOf, requireCapability, requireCsrf, requireUser } from '../auth/guards.js';
+import { aziendeDaAdmin, inSolaLettura } from '../auth/scope.js';
 import { fornitoriConfigurati } from '../auth/oidc.js';
 import type { Fornitore } from '../auth/oidc-stato.js';
 import { dominioDa, tenantDa } from '../auth/oidc-valori.js';
@@ -100,3 +101,54 @@ impostazioniAccessoRouter.post('/impostazioni/accesso', settings, requireCsrf, a
   setFlash(res, 'ok', 'esterno.impostazioni.salvato');
   res.redirect(303, pathSezione('accesso', azienda.id));
 });
+
+/**
+ * Изключването на входа с Microsoft и Google за фирмата е отнемане на достъп: по роля ADMIN (и MASTER), и при
+ * изтекъл абонамент (условията, чл. 4.1 и 12.5) и без регистрирано приложение при доставчика. Свързаните
+ * самоличности на хората остават техни; без позволението на фирмата входът не ги пуска.
+ */
+impostazioniAccessoRouter.post(
+  '/impostazioni/accesso/disattiva',
+  requireUser,
+  requireCsrf,
+  async (req, res) => {
+    const user = principalOf(req).user;
+    const wanted = (req.body as Record<string, unknown>).azienda;
+    const id = typeof wanted === 'string' ? wanted : '';
+    const azienda =
+      id && (user.master || aziendeDaAdmin(user).includes(id))
+        ? await prisma.azienda.findFirst({
+            where: { id, deactivatedAt: null },
+            select: { id: true, accessoMicrosoft: true, accessoGoogle: true },
+          })
+        : null;
+    if (!azienda) return notFound(req, res);
+    if (azienda.accessoMicrosoft !== null || azienda.accessoGoogle !== null) {
+      await prisma.$transaction(async (tx) => {
+        await tx.azienda.update({
+          where: { id: azienda.id },
+          data: { accessoMicrosoft: null, accessoGoogle: null },
+        });
+        await writeAudit(
+          {
+            actorId: user.id,
+            action: 'AZIENDA_ACCESSO_ESTERNO',
+            aziendaId: azienda.id,
+            targetType: 'azienda',
+            targetId: azienda.id,
+            meta: { microsoft: false, google: false },
+          },
+          tx,
+        );
+      });
+      dimenticaVisibili();
+    }
+    setFlash(res, 'ok', 'esterno.impostazioni.disattivato');
+    res.redirect(
+      303,
+      inSolaLettura(user, azienda.id)
+        ? `/impostazioni/abbonamento?azienda=${encodeURIComponent(azienda.id)}`
+        : pathSezione('accesso', azienda.id),
+    );
+  },
+);

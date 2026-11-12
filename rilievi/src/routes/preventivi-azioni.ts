@@ -1,6 +1,11 @@
 import { Router, type Response } from 'express';
 import { z } from 'zod';
-import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
+import {
+  principalOf,
+  requireCapability,
+  requireCapabilityPerTogliere,
+  requireCsrf,
+} from '../auth/guards.js';
 import { intestazioneDi } from '../aziende/dati.js';
 import { aziendaLogo } from '../aziende/service.js';
 import { config } from '../config.js';
@@ -11,7 +16,7 @@ import { preventivoMail } from '../mail/templates.js';
 import { nomeFilePreventivo, pdfDelPreventivo } from '../preventivi/documento.js';
 import type { PreventivoFull } from '../preventivi/elenco.js';
 import { cambiaStato, eliminaPreventivo, isStato, registraInvio } from '../preventivi/service.js';
-import { loadPreventivo, puoScrivere } from './preventivi-vista.js';
+import { loadPreventivo, puoScrivere, puoTogliere } from './preventivi-vista.js';
 import { notFound } from './schede-shared.js';
 
 /**
@@ -108,9 +113,13 @@ preventiviAzioniRouter.post(
 preventiviAzioniRouter.post('/preventivi/:id/stato', write, requireCsrf, async (req, res) => {
   const row = await loadPreventivo(req);
   if (!row || !puoScrivere(req, row)) return notFound(req, res);
-  const a = (req.body as Record<string, unknown>).stato;
+  const body = req.body as Record<string, unknown>;
+  const a = body.stato;
+  // Само върху видяната версия (одитът от 12 ноември 2026): колега е сменил офертата междувременно — не се
+  // отбелязва „Accettato“ на нещо невидяно.
   const ok =
     isStato(a) &&
+    body.base === row.updatedAt.toISOString() &&
     (await cambiaStato({
       id: row.id,
       aziendaId: row.aziendaId,
@@ -122,9 +131,11 @@ preventiviAzioniRouter.post('/preventivi/:id/stato', write, requireCsrf, async (
   res.redirect(303, `/preventivi/${row.id}`);
 });
 
-preventiviAzioniRouter.post('/preventivi/:id/elimina', write, requireCsrf, async (req, res) => {
+const togli = requireCapabilityPerTogliere('preventivi:write');
+
+preventiviAzioniRouter.post('/preventivi/:id/elimina', togli, requireCsrf, async (req, res) => {
   const row = await loadPreventivo(req);
-  if (!row || !puoScrivere(req, row)) return notFound(req, res);
+  if (!row || !puoTogliere(req, row)) return notFound(req, res);
   if (!(await eliminaPreventivo(principalOf(req).user.id, row.aziendaId, row.id))) {
     setFlash(res, 'error', 'preventivi.flash.nonEliminabile');
     res.redirect(303, `/preventivi/${row.id}`);

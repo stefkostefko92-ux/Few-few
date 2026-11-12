@@ -30,6 +30,7 @@ import { esportaLimiter } from '../http/limits.js';
 import { reauthPassword } from '../services/reauth.js';
 import type { SessionUser } from '../types.js';
 import { scaricaEsportazione } from './aziende-fine.js';
+import { confermaPassword } from './conferma-password.js';
 import { ICONE_SEZIONI, SEZIONI_IMPOSTAZIONI } from './impostazioni-vista.js';
 
 /**
@@ -178,6 +179,11 @@ impostazioniEsportazioneRouter.post(
     if (conferma !== azienda.name || body.letto !== '1') {
       return render(req, res, 422, aziende, azienda, 'esportazione.errore.conferma');
     }
+    // С паролата (одитът от 12 ноември 2026): искането спира услугата след 30 дни — не с открадната сесия.
+    const password = await confermaPassword(req, res);
+    if (password === 'bloccato') return;
+    if (password === 'errata')
+      return render(req, res, 422, aziende, azienda, 'esportazione.errore.passwordCambio');
     const esito = await richiediCambio(user, azienda.id, body.esito);
     if (esito === 'assente') return notFound(req, res);
     setFlash(res, esito === 'ok' ? 'ok' : 'info', `flash.cambio.${esito}`);

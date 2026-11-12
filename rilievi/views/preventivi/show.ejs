@@ -89,6 +89,7 @@
     <% for (const a of passaggi) { %><form method="post" action="/preventivi/<%= p.id %>/stato">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="stato" value="<%= a %>">
+      <input type="hidden" name="base" value="<%= p.updatedAt.toISOString() %>">
       <button class="btn<%= a === 'ACCETTATO' ? ' btn--primary' : '' %>" type="submit"><%= t('preventivi.passaggio.' + p.stato + '_' + a) %></button>
     </form>
     <% } %>
@@ -109,7 +110,9 @@
   </div>
   <div class="toolbar"><button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'mail' }) %><%= t('preventivi.email.invia') %></button></div>
 </form>
-
+<% } %>
+<%# Iztrivaneto na chernova ostava i pri iztekal abonament (usloviyata, chl. 12.5 c). %>
+<% if (locals.elimina) { %>
 <% if (p.stato === 'BOZZA') { %>
 <details class="panel buono-elimina">
   <summary><%= t('preventivi.elimina.titolo') %></summary>

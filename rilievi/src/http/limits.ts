@@ -1,4 +1,4 @@
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import rateLimit, { type Options } from 'express-rate-limit';
 import { SAFE_METHODS, sendError } from '../auth/guards.js';
 import { ipNetwork } from './ip.js';
@@ -86,14 +86,20 @@ export const copiaLimiter = limiter(60 * 60_000, 20, {
 });
 
 /**
- * API-то (routes/api.ts): 600 заявки в час на ключ (префиксът от заглавката; без ключ — мрежата), отговорът — JSON.
+ * API-то (routes/api.ts), отговорът — JSON. Два тавана (одитът от 12 ноември 2026: един таван по префикса от
+ * заглавката, който пише нападателят — всяка заявка с нов префикс беше нов брояч, а чужд ключ се изтощаваше с
+ * 600 невалидни заявки): първо мрежата, ПРЕДИ ключът да се чете — 1200 в час; после 600 в час на ПРОВЕРЕН ключ
+ * (`res.locals.apiChiave`, сложен от `conChiave`).
  */
+const troppeApi = (_req: Request, res: Response): void => {
+  res.status(429).json({ errore: 'troppe_richieste' });
+};
+export const apiReteLimiter = limiter(60 * 60_000, 1200, {
+  keyGenerator: (req) => `n:${networkKey(req)}`,
+  handler: troppeApi,
+});
 export const apiLimiter = limiter(60 * 60_000, 600, {
-  keyGenerator: (req) => {
-    const m = /^Bearer\s+rk_([a-z0-9]{12})_/.exec(req.get('authorization') ?? '');
-    return m ? `k:${m[1]}` : `n:${networkKey(req)}`;
-  },
-  handler: (_req, res) => {
-    res.status(429).json({ errore: 'troppe_richieste' });
-  },
+  keyGenerator: (req, res) =>
+    typeof res.locals.apiChiave === 'string' ? `k:${res.locals.apiChiave}` : `n:${networkKey(req)}`,
+  handler: troppeApi,
 });

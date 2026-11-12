@@ -74,6 +74,30 @@ const SALVATA = `<!doctype html>
 </body>
 </html>`;
 
+/** The same page when the form carried signatures: they are not kept — they will be drawn again. */
+const SALVATA_SENZA_FIRME = SALVATA.replace(
+  '<a href="/schede">',
+  '<p><strong>Le firme non sono state salvate</strong> sul dispositivo: dopo l\'invio andranno fatte di nuovo.</p>\n<a href="/schede">',
+);
+
+/**
+ * A signature never waits on the device (the audit of 12 November 2026: the work order was kept WITH the strokes
+ * of its signatures, readable in IndexedDB for 7 days): the fields `…firma` are emptied before the form is kept;
+ * a form that removes a signature (`togli`) is not kept at all. null — not to be kept.
+ */
+function senzaFirme(corpo) {
+  const campi = new URLSearchParams(corpo);
+  if (campi.has('togli')) return null;
+  let tolte = false;
+  for (const nome of [...campi.keys()]) {
+    if (/firma$/i.test(nome) && campi.getAll(nome).some((v) => v !== '')) {
+      campi.set(nome, '');
+      tolte = true;
+    }
+  }
+  return tolte ? { corpo: campi.toString(), tolte } : { corpo, tolte };
+}
+
 /** The forms kept when the network fails: new and edited field documents (never signatures, deletions). */
 const MODULI = /^\/(schede|interventi|buoni|verbali|cartelli|preventivi)(\/[a-z0-9]{20,40})?$/;
 const GIORNI = 7;
@@ -158,8 +182,11 @@ async function inviaOConserva(request, azione) {
     // Without the account (the page could not tell it) nothing is kept: no one else may see it.
     if (!utente) return pagina(OFFLINE, 503);
     try {
-      const corpo = await copia.text();
-      if (corpo.length > MAX_CORPO) return pagina(OFFLINE, 503);
+      const intero = await copia.text();
+      if (intero.length > MAX_CORPO) return pagina(OFFLINE, 503);
+      const pulito = senzaFirme(intero);
+      if (!pulito) return pagina(OFFLINE, 503);
+      const { corpo, tolte } = pulito;
       const origine = self.location.origin;
       const da =
         request.referrer && request.referrer.startsWith(`${origine}/`)
@@ -173,7 +200,7 @@ async function inviaOConserva(request, azione) {
         pagina: da,
         at: Date.now(),
       });
-      return pagina(SALVATA, 503);
+      return pagina(tolte ? SALVATA_SENZA_FIRME : SALVATA, 503);
     } catch {
       return pagina(OFFLINE, 503);
     }

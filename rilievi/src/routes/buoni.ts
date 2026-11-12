@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
-import { canIn } from '../auth/scope.js';
+import { canIn, canInPerTogliere } from '../auth/scope.js';
 import { datiDi } from '../buoni/dati.js';
 import { firmeVista, improntaFinale, type FirmaVista } from '../buoni/documento.js';
 import { formValuesDaBuono, formValuesDalBody, indiciRighe } from '../buoni/form-valori.js';
@@ -33,6 +33,9 @@ export const loadBuono = (req: Request) =>
 
 export const puoScrivere = (req: Request, row: BuonoFull): boolean =>
   canIn(principalOf(req).user, 'interventi:write', row.aziendaId);
+/** Изтриването остава и при изтекъл абонамент (условията, чл. 12.5 в) — auth/scope.ts. */
+export const puoTogliere = (req: Request, row: BuonoFull): boolean =>
+  canInPerTogliere(principalOf(req).user, 'interventi:write', row.aziendaId);
 
 export interface BuonoFormView {
   buono: BuonoFull | null;
@@ -116,6 +119,7 @@ buoniRouter.get('/buoni/:id', read, async (req, res) => {
     titleKey: 'buoni.titolo',
     ...vistaFoglio(row),
     modifica,
+    elimina: puoTogliere(req, row),
     informativa: modifica ? await informativaDi(row.aziendaId) : null,
     chiuso: chiuso(row),
     impronta: improntaFinale(row),

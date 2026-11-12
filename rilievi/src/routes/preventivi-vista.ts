@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { principalOf } from '../auth/guards.js';
-import { canIn, intersezioneScope, scopeFor } from '../auth/scope.js';
+import { canIn, canInPerTogliere, intersezioneScope, scopeFor } from '../auth/scope.js';
 import { prisma } from '../db.js';
 import type { PreventivoFull } from '../preventivi/elenco.js';
 import { getPreventivo } from '../preventivi/elenco.js';
@@ -27,6 +27,9 @@ export const loadPreventivo = (req: Request, id: string = String(req.params.id))
 
 export const puoScrivere = (req: Request, row: { aziendaId: string }): boolean =>
   canIn(principalOf(req).user, 'preventivi:write', row.aziendaId);
+/** Изтриването на чернова остава и при изтекъл абонамент (условията, чл. 12.5 в) — auth/scope.ts. */
+export const puoTogliere = (req: Request, row: { aziendaId: string }): boolean =>
+  canInPerTogliere(principalOf(req).user, 'preventivi:write', row.aziendaId);
 
 /** Фирмите за нова оферта: MASTER — активните с включени оферти; другите — тези с право на запис. */
 export async function aziendePerPreventivo(req: Request) {

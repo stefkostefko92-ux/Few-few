@@ -42,13 +42,15 @@
       "eliminazione": "I dati restano scaricabili fino al {data}; dopo sono cancellati definitivamente e le copie di sicurezza scadono entro 14 giorni.",
       "soloEsportazione": "Il servizio è terminato: da questo account puoi solo scaricare i dati dell'azienda.",
       "cambiaEsito": "Cambia la scelta",
-      "prorogaAltro": "Ti serve un periodo diverso? Scrivici: la proroga può avere la durata che ritieni adeguata."
+      "prorogaAltro": "Ti serve un periodo diverso? Scrivici: la proroga può avere la durata che ritieni adeguata.",
+      "password": "La password del tuo account"
     },
     "errore": {
       "esito": "Scegli cosa fare dei dati.",
       "conferma": "Scrivi esattamente il nome dell'azienda e conferma di aver letto le condizioni del cambio.",
       "proroga": "Scegli di quanti giorni prorogare il periodo.",
-      "password": "Password non corretta. Per scaricare i dati dell'azienda serve la password del tuo account."
+      "password": "Password non corretta. Per scaricare i dati dell'azienda serve la password del tuo account.",
+      "passwordCambio": "Password non corretta. Per chiedere il cambio di fornitore serve la password del tuo account."
     },
     "banner": {
       "titolo": "Cambio di fornitore in corso per {azienda}",

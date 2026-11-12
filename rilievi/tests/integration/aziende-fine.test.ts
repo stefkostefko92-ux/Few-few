@@ -6,7 +6,17 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { after, before, describe, it } from 'node:test';
-import { Browser, makeAzienda, makeUser, prisma, signedIn, startApp, stopApp } from './harness.js';
+import {
+  Browser,
+  makeAzienda,
+  makeUser,
+  PASSWORD,
+  prisma,
+  signedIn,
+  startApp,
+  stopApp,
+} from './harness.js';
+import { create as creaIntervento, firma, FORM } from './interventi-helpers.js';
 import { folder, newScheda, photo, processAll, upload } from './media.js';
 import { readTar } from './tar.js';
 
@@ -46,7 +56,13 @@ describe('the end of the service for a company', () => {
   it('gives the MASTER everything of a company in one file, without passwords or secrets', async () => {
     const { azienda, user, schedaId } = await companyWithData('Export Ascensori');
     const { browser: master } = await signedIn('MASTER');
-    const reply = await master.get(`/aziende/${azienda.id}/esporta`);
+    // With the password of the MASTER, by POST: a stolen session does not carry a whole company away.
+    const page = `/aziende/${azienda.id}`;
+    assert.equal((await master.get(`${page}/esporta`)).status, 303);
+    const senza = await master.submit(page, `${page}/esporta`, { password: 'sbagliata-9' });
+    assert.equal(senza.status, 422);
+    assert.match(senza.body, /Password non corretta/);
+    const reply = await master.submit(page, `${page}/esporta`, { password: PASSWORD });
     assert.equal(reply.status, 200);
     assert.equal(reply.headers.get('content-type'), 'application/x-tar');
     assert.match(reply.headers.get('content-disposition') ?? '', /^attachment; filename="rilievi-/);
@@ -86,6 +102,11 @@ describe('the end of the service for a company', () => {
 
     const { browser: admin } = await signedIn('ADMIN', azienda.id);
     assert.equal((await admin.get(`/aziende/${azienda.id}/esporta`)).status, 403);
+    assert.equal(
+      (await admin.submit('/account', `/aziende/${azienda.id}/esporta`, { password: PASSWORD }))
+        .status,
+      403,
+    );
     const log = await prisma.auditLog.count({
       where: { action: 'AZIENDA_EXPORT', aziendaId: azienda.id },
     });
@@ -112,7 +133,7 @@ describe('the end of the service for a company', () => {
     await master.submit(page, `${page}/stato`, { active: '0' });
     const shown = await master.get(page);
     assert.match(shown.body, new RegExp(`action="${page}/elimina"`));
-    assert.match(shown.body, new RegExp(`href="${page}/esporta"`));
+    assert.match(shown.body, new RegExp(`action="${page}/esporta"`));
 
     const wrong = await master.submit(page, `${page}/elimina`, { conferma: 'Altro Nome' });
     assert.equal(wrong.status, 400);
@@ -175,6 +196,46 @@ describe('the end of the service for a company', () => {
     });
     assert.equal(trace.actorId, null);
     assert.equal((trace.meta as { automatica?: boolean }).automatica, true);
+  });
+
+  it('keeps the person who confirmed sealed documents of another company, switched off', async () => {
+    // Paolo worked in B, confirmed a sheet there, then was moved to A only. A is deleted: the seal of the sheet
+    // in B names who confirmed it — deleting Paolo would break it (the audit of 12 November 2026).
+    const b = await makeAzienda('Resta Sigillo Srl');
+    const a = await makeAzienda('Sparisce Srl');
+    const paolo = await signedIn('TECNICO', b.id);
+    const id = await creaIntervento(paolo.browser, { ...FORM, azienda: b.id });
+    assert.equal((await firma(paolo.browser, id)).status, 303);
+    const solo = await signedIn('TECNICO', a.id);
+    await prisma.membership.create({
+      data: { userId: paolo.user.id, aziendaId: a.id, role: 'TECNICO' },
+    });
+    await prisma.membership.deleteMany({ where: { userId: paolo.user.id, aziendaId: b.id } });
+
+    const master = new Browser();
+    await master.login((await makeUser('MASTER')).email);
+    const page = `/aziende/${a.id}`;
+    await master.submit(page, `${page}/stato`, { active: '0' });
+    const via = await master.submit(page, `${page}/elimina`, { conferma: 'Sparisce Srl' });
+    assert.equal(via.status, 303, via.body.slice(0, 200));
+    assert.equal(await prisma.azienda.count({ where: { id: a.id } }), 0);
+    // Who worked only in A and confirmed nothing elsewhere is gone; Paolo stays, switched off, in no company.
+    assert.equal(await prisma.user.count({ where: { id: solo.user.id } }), 0);
+    const resta = await prisma.user.findUniqueOrThrow({
+      where: { id: paolo.user.id },
+      include: { memberships: true, sessions: true },
+    });
+    assert.ok(resta.deactivatedAt);
+    assert.equal(resta.memberships.length, 0);
+    assert.equal(resta.sessions.length, 0);
+    const foglio = await prisma.intervento.findUniqueOrThrow({ where: { id } });
+    assert.equal(foglio.confermatoById, paolo.user.id);
+    // The sheet in B still shows an intact seal.
+    const adminB = await signedIn('ADMIN', b.id);
+    const vista = await adminB.browser.get(`/interventi/${id}`);
+    assert.equal(vista.status, 200);
+    assert.doesNotMatch(vista.body, /il sigillo non corrisponde/);
+    assert.equal((await adminB.browser.get(`/interventi/${id}/pdf`)).status, 200);
   });
 
   it('tells the people of the company page when, and lets nobody else near it', async () => {

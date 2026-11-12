@@ -71,7 +71,16 @@ function load(fetch: (r: Request) => Promise<Response>) {
     clients: { claim: async () => undefined },
     location: { origin: ORIGIN },
   };
-  vm.runInNewContext(source, { self, fetch, Response, URL, indexedDB: idb, Date, setTimeout });
+  vm.runInNewContext(source, {
+    self,
+    fetch,
+    Response,
+    URL,
+    URLSearchParams,
+    indexedDB: idb,
+    Date,
+    setTimeout,
+  });
   return { listeners, idb };
 }
 
@@ -124,6 +133,46 @@ describe('unsent forms on the device', () => {
     assert.equal(bozza!.pagina, `${SCHEDA}/modifica`);
     // Another account on the same device does not see it.
     assert.deepEqual((await tell(listeners, { tipo: 'elenco', utente: ALTRO })).valore, []);
+  });
+
+  it('never keeps a signature on the device: the work order waits without them', async () => {
+    const BUONO = '/buoni/cm0000000000000000000002';
+    const { listeners } = load(offline);
+    await tell(listeners, { tipo: 'autore', azione: BUONO, utente: UTENTE });
+    const firma = encodeURIComponent(JSON.stringify({ s: [[10, 150, 120, 40]] }));
+    const event = post(
+      BUONO,
+      `seq-0-descrizione=Quadro&seq-0-firma=${firma}&ctl-prova-firma=${firma}&ctl-prova-esito=ok&_csrf=t`,
+    );
+    listeners.fetch!(event);
+    const html = await (await event.answer!).text();
+    assert.match(html, /<h1>Salvato su questo dispositivo<\/h1>/);
+    assert.match(html, /Le firme non sono state salvate/);
+    const [bozza] = (await tell(listeners, { tipo: 'elenco', utente: UTENTE })).valore as Array<
+      Record<string, string>
+    >;
+    const corpo = new URLSearchParams(bozza!.corpo);
+    assert.equal(corpo.get('seq-0-descrizione'), 'Quadro');
+    assert.equal(corpo.get('ctl-prova-esito'), 'ok');
+    assert.equal(corpo.get('seq-0-firma'), '');
+    assert.equal(corpo.get('ctl-prova-firma'), '');
+    assert.doesNotMatch(String(bozza!.corpo), /150/);
+    // A form without signatures says nothing about them.
+    const { listeners: altri } = load(offline);
+    await tell(altri, { tipo: 'autore', azione: BUONO, utente: UTENTE });
+    const senza = post(BUONO, 'seq-0-descrizione=Quadro&seq-0-firma=&_csrf=t');
+    altri.fetch!(senza);
+    assert.doesNotMatch(await (await senza.answer!).text(), /Le firme non sono state salvate/);
+    // Removing a signature is an action on a signature: not kept at all.
+    const togli = post(BUONO, 'seq-0-descrizione=Quadro&togli=s-0a1b2c3d&_csrf=t');
+    altri.fetch!(togli);
+    const risposta = await (await togli.answer!).text();
+    assert.match(risposta, /<h1>Nessuna connessione<\/h1>/);
+    const dopo = (await tell(altri, { tipo: 'elenco', utente: UTENTE })).valore as Array<
+      Record<string, string>
+    >;
+    assert.equal(dopo.length, 1);
+    assert.equal(new URLSearchParams(dopo[0]!.corpo).has('togli'), false);
   });
 
   it('keeps nothing for an account the page did not tell, nor for other forms', async () => {

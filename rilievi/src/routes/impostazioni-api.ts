@@ -1,7 +1,9 @@
 import { Router } from 'express';
-import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
+import { principalOf, requireCapability, requireCsrf, requireUser } from '../auth/guards.js';
+import { aziendeDaAdmin, inSolaLettura } from '../auth/scope.js';
 import { chiaviDi, creaChiave, revocaChiave } from '../api/chiavi.js';
 import { aziendeImpostabili } from '../aziende/sezioni.js';
+import { prisma } from '../db.js';
 import { setFlash } from '../http/flash.js';
 import { notFound, pathSezione, renderImpostazioni } from './impostazioni-vista.js';
 
@@ -47,18 +49,35 @@ impostazioniApiRouter.post('/impostazioni/api', settings, requireCsrf, async (re
   return vista(200, { chiaveNuova: esito.chiave });
 });
 
+/**
+ * Отмяната е отнемане на достъп, не настройка: по роля ADMIN във фирмата (и MASTER), не по `aziende:settings` —
+ * остава и при изтекъл абонамент (одитът от 12 ноември 2026: ключът четеше до година, а ADMIN не можеше да го
+ * спре; условията, чл. 4.1 и 12.5). Тогава връща към „Abbonamento“, единствения раздел, който фирмата вижда.
+ */
 impostazioniApiRouter.post(
   '/impostazioni/api/:id/revoca',
-  settings,
+  requireUser,
   requireCsrf,
   async (req, res) => {
     const body = req.body as Record<string, unknown>;
-    const aziende = await aziendeImpostabili(principalOf(req).user);
-    const azienda = aziende.find((a) => a.id === body.azienda);
+    const user = principalOf(req).user;
+    const wanted = typeof body.azienda === 'string' ? body.azienda : '';
+    const azienda =
+      wanted && (user.master || aziendeDaAdmin(user).includes(wanted))
+        ? await prisma.azienda.findFirst({
+            where: { id: wanted, deactivatedAt: null },
+            select: { id: true },
+          })
+        : null;
     if (!azienda) return notFound(req, res);
-    if (!(await revocaChiave(principalOf(req).user.id, azienda.id, String(req.params.id))))
+    if (!(await revocaChiave(user.id, azienda.id, String(req.params.id))))
       return notFound(req, res);
     setFlash(res, 'ok', 'api.revocata');
-    res.redirect(303, pathSezione('api', azienda.id));
+    res.redirect(
+      303,
+      inSolaLettura(user, azienda.id)
+        ? `/impostazioni/abbonamento?azienda=${encodeURIComponent(azienda.id)}`
+        : pathSezione('api', azienda.id),
+    );
   },
 );

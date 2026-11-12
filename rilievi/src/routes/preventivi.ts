@@ -26,7 +26,12 @@ import {
 } from '../preventivi/service.js';
 import { MAX_QUERY_LENGTH } from '../schede/search.js';
 import { aziendaFilterOf, aziendeOf, notFound } from './schede-shared.js';
-import { loadPreventivo, puoScrivere, renderPreventivoForm } from './preventivi-vista.js';
+import {
+  loadPreventivo,
+  puoScrivere,
+  puoTogliere,
+  renderPreventivoForm,
+} from './preventivi-vista.js';
 
 /**
  * Офертите (C1): списък (търсене, състояние, фирма), страница, редакция. Новата — preventivi-nuovo.ts;
@@ -74,6 +79,7 @@ preventiviRouter.get('/preventivi/:id', read, async (req, res) => {
     validoFino: validaFino(dati.data, dati.validitaGiorni),
     modifica: scrive && MODIFICABILI.includes(row.stato),
     scrive,
+    elimina: puoTogliere(req, row),
     passaggi: scrive ? passaggiDa(row.stato) : [],
     euro,
     quantitaTesto,

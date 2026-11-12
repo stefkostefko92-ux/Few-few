@@ -1,6 +1,12 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
-import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
+import {
+  principalOf,
+  requireCapability,
+  requireCapabilityPerTogliere,
+  requireCsrf,
+} from '../auth/guards.js';
+import { scopePerTogliere } from '../auth/scope.js';
 import { aziendaLogo } from '../aziende/service.js';
 import { improntaFinale, nomeFileBuono, pdfDelBuono } from '../buoni/documento.js';
 import type { ErroriBuono, FirmeRichieste } from '../buoni/form.js';
@@ -14,7 +20,7 @@ import { mailLimiter, pdfLimiter } from '../http/limits.js';
 import { firmaDalForm, type Firma } from '../interventi/firma.js';
 import { sendMail } from '../mail/mailer.js';
 import { buonoMail } from '../mail/templates.js';
-import { loadBuono, puoScrivere, vistaFoglio } from './buoni.js';
+import { loadBuono, puoScrivere, puoTogliere, vistaFoglio } from './buoni.js';
 import { informativaDi } from './firma-copia.js';
 import { scope } from './interventi.js';
 import { notFound } from './schede-shared.js';
@@ -58,6 +64,7 @@ async function renderShow(
     titleKey: 'buoni.titolo',
     ...vistaFoglio(row),
     modifica: puoScrivere(req, row),
+    elimina: puoTogliere(req, row),
     informativa: await informativaDi(row.aziendaId),
     chiuso: chiuso(row),
     impronta: improntaFinale(row),
@@ -160,11 +167,13 @@ buoniFirmeRouter.post('/buoni/:id/invia', write, mailLimiter, requireCsrf, async
   res.redirect(303, `/buoni/${row.id}`);
 });
 
-buoniFirmeRouter.post('/buoni/:id/elimina', write, requireCsrf, async (req, res) => {
+const togli = requireCapabilityPerTogliere('interventi:write');
+
+buoniFirmeRouter.post('/buoni/:id/elimina', togli, requireCsrf, async (req, res) => {
   const row = await loadBuono(req);
-  if (!row || !puoScrivere(req, row)) return notFound(req, res);
+  if (!row || !puoTogliere(req, row)) return notFound(req, res);
   const esito = await eliminaBuono(
-    scope(req, 'interventi:write'),
+    scopePerTogliere(principalOf(req).user, 'interventi:write'),
     row.id,
     principalOf(req).user.id,
   );

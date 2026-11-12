@@ -93,16 +93,24 @@
       dice(testi.accedi || '');
       return;
     }
-    if (res.status >= 500) {
+    // Too many requests or too big for the proxy: nothing was read — the copy stays.
+    if (res.status >= 500 || res.status === 429 || res.status === 413) {
       bottone.disabled = false;
       dice(testi.errore || '');
       return;
     }
-    await chiedi({ tipo: 'togli', azione: b.azione });
     if (res.redirected && res.ok) {
+      // Saved only if the answer is a page of the same kind of document ("/schede/…" for a scheda). A redirect
+      // elsewhere is a page that stands in the way (terms to accept, a new password): nothing was written —
+      // the copy stays and the person is taken there.
+      const tipo = (MODULI.exec(b.azione) || [])[1];
+      const salvato =
+        tipo && (arrivo.pathname === '/' + tipo || arrivo.pathname.startsWith('/' + tipo + '/'));
+      if (salvato) await chiedi({ tipo: 'togli', azione: b.azione });
       location.assign(arrivo.href);
       return;
     }
+    await chiedi({ tipo: 'togli', azione: b.azione });
     // Returned (errors, conflict): nothing saved — the usual sending shows the form with the data.
     await chiedi({ tipo: 'autore', azione: b.azione });
     const form = el('form');

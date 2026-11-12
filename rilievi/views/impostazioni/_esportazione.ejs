@@ -81,6 +81,10 @@
       <input class="input" id="esp-conferma" name="conferma" type="text" autocomplete="off" required maxlength="120"<% if (error === 'esportazione.errore.conferma') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
     </div>
     <label class="tick"><input type="checkbox" name="letto" value="1"><span class="tick__box" aria-hidden="true"></span><span><%= t('esportazione.cambio.letto') %> <a href="/condizioni#allegato-cambio"><%= t('esportazione.cambio.allegato') %></a></span></label>
+    <div class="field">
+      <label class="field__label" for="esp-cambio-password"><%= t('esportazione.cambio.password') %></label>
+      <input class="input" id="esp-cambio-password" name="password" type="password" autocomplete="current-password" required<% if (error === 'esportazione.errore.passwordCambio') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+    </div>
     <div class="toolbar"><button class="btn btn--danger" type="submit"><%= t('esportazione.cambio.richiedi') %></button></div>
   </form>
   <% } %>

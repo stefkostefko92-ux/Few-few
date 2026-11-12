@@ -6,6 +6,7 @@ import { mailLimiter } from '../http/limits.js';
 import { leggiFormPosta, PORTE_SMTP, type CampoPosta } from '../mail/posta-form.js';
 import { disattivaPosta, passwordSalvata, salvaPosta, statoPosta } from '../mail/posta.js';
 import { provaPosta } from '../mail/prova.js';
+import { confermaPassword } from './conferma-password.js';
 
 /**
  * „Email del portale“ в конзолата на MASTER (#32 — Brevo SMTP): сървърът, портът, логинът, ключът (само се пише —
@@ -28,7 +29,10 @@ const PREDEFINITI: Valori = {
 async function vista(
   res: Response,
   status: number,
-  extra: { valori?: Valori; errori?: Partial<Record<CampoPosta, string>> } = {},
+  extra: {
+    valori?: Valori;
+    errori?: Partial<Record<CampoPosta | 'passwordAccount', string>>;
+  } = {},
 ): Promise<void> {
   const stato = await statoPosta();
   const valori: Valori =
@@ -56,11 +60,16 @@ masterPostaRouter.get('/master/posta', manage, (_req, res) => vista(res, 200));
 
 masterPostaRouter.post('/master/posta', manage, requireCsrf, async (req, res) => {
   const body = corpo(req);
+  const salvato = (await statoPosta()).riga;
   const esito = leggiFormPosta(body, {
     produzione: isProduction(),
     passwordSalvata: await passwordSalvata(),
+    salvato: salvato ? { host: salvato.host, utente: salvato.utente } : null,
   });
-  if (!esito.ok) {
+  // С паролата на акаунта: оттук тръгват всички писма на портала (връзки за парола, кодове за подпис).
+  const conferma = await confermaPassword(req, res, 'passwordAccount');
+  if (conferma === 'bloccato') return;
+  if (!esito.ok || conferma === 'errata') {
     // Ключът не се връща във формата — нито написаният, нито записаният.
     const s = (k: string) => (typeof body[k] === 'string' ? (body[k] as string).slice(0, 300) : '');
     return vista(res, 422, {
@@ -71,7 +80,10 @@ masterPostaRouter.post('/master/posta', manage, requireCsrf, async (req, res) =>
         mittenteNome: s('mittenteNome'),
         mittenteEmail: s('mittenteEmail'),
       },
-      errori: esito.errori,
+      errori: {
+        ...(esito.ok ? {} : esito.errori),
+        ...(conferma === 'errata' ? { passwordAccount: 'posta.errore.passwordAccount' } : {}),
+      },
     });
   }
   await salvaPosta(principalOf(req).user.id, esito.valori);

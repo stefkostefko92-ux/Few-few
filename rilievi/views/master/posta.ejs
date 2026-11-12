@@ -66,6 +66,11 @@
         <div class="field__piede"><p class="field__hint" id="hint-mittenteEmail"><%= t(m + 'hint.mittenteEmail') %></p><% if (err('mittenteEmail')) { %><p class="field__error" id="err-mittenteEmail"><%= err('mittenteEmail') %></p><% } %></div>
       </div>
     </div>
+    <div class="field">
+      <label class="field__label" for="p-account"><%= t(m + 'campo.passwordAccount') %></label>
+      <input class="input" id="p-account" name="passwordAccount" type="password" maxlength="200" autocomplete="current-password" required<%- aria('passwordAccount', true) %>>
+      <div class="field__piede"><p class="field__hint" id="hint-passwordAccount"><%= t(m + 'hint.passwordAccount') %></p><% if (err('passwordAccount')) { %><p class="field__error" id="err-passwordAccount"><%= err('passwordAccount') %></p><% } %></div>
+    </div>
     <div class="toolbar"><button class="btn btn--primary" type="submit"><%= t(m + 'salva') %></button></div>
   </form>
 </div>

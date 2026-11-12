@@ -70,6 +70,13 @@
       "pagato": "Questa azienda ha un piano pagato su Revolut ancora in corso o in attesa: salvando lo sostituisci. Se è quello che vuoi, spunta la conferma e ricorda l'eventuale rimborso (art. 12.9).",
       "preavviso": "Questa azienda non ha una scadenza: per introdurla servono almeno 30 giorni di preavviso (art. 12.8). Scegli una data più lontana oppure spunta la conferma, se il cliente è già stato avvisato."
     },
-    "esporta": "Esporta tutti i dati"
+    "esporta": "Esporta tutti i dati",
+    "accessi": {
+      "titolo": "Accessi ancora attivi",
+      "testo": "Con l'abbonamento scaduto questi accessi restano attivi finché non li togli. Puoi revocarli qui.",
+      "chiave": "Chiave API «{nome}» ({prefisso}…), valida fino al {data}",
+      "esterno": "Accesso con Microsoft o Google attivo per l'azienda.",
+      "disattiva": "Disattiva"
+    }
   }
 }

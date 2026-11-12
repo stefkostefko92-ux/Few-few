@@ -35,8 +35,12 @@ import { originiCheckout } from './pagamenti/config.js';
 import { webhookRevolutRouter } from './routes/webhook-revolut.js';
 import { VERSIONE_SOFTWARE } from './versione.js';
 
-/** Записът на картата: нова (`/schede`) и промяна (`/schede/<id>`). */
-const FORMA_SCHEDA = /^\/schede(?:\/[a-z0-9]{20,40})?$/;
+/**
+ * Записът на картата: нова (`/schede`) и промяна (`/schede/<id>`) — и анотациите върху снимка (същият редактор и
+ * същите тавани като листа на скицника; над 1 MB даваше 413 — одитът от 12 ноември 2026).
+ */
+const FORMA_SCHEDA =
+  /^\/schede(?:\/[a-z0-9]{20,40}(?:\/allegati\/[a-z0-9]{20,40}\/annotazioni)?)?$/;
 
 /** Кратък отпечатък на статичните файлове — сменя адреса на CSS/JS при всяка промяна (кешът е дълъг). */
 function assetVersion(): string {

@@ -21,13 +21,15 @@
       "utente": "Login",
       "password": "Chiave SMTP",
       "mittenteNome": "Nome del mittente",
-      "mittenteEmail": "Email del mittente"
+      "mittenteEmail": "Email del mittente",
+      "passwordAccount": "La password del tuo account"
     },
     "hint": {
       "porta": "2525 funziona anche quando il fornitore del server blocca la 587. Con 465 la connessione è cifrata fin dall'inizio.",
       "password": "La chiave non viene mai mostrata dopo il salvataggio.",
       "passwordSalvata": "C'è già una chiave salvata: lascia il campo vuoto per tenerla, oppure scrivine una nuova.",
-      "mittenteEmail": "L'indirizzo da cui partono le email, per esempio no-reply@carbonstealth.eu."
+      "mittenteEmail": "L'indirizzo da cui partono le email, per esempio no-reply@carbonstealth.eu.",
+      "passwordAccount": "Serve per salvare: da questo server partono tutte le email del portale."
     },
     "errore": {
       "titolo": "Controlla i campi evidenziati.",
@@ -36,7 +38,9 @@
       "utente": "Scrivi il login SMTP, senza spazi.",
       "password": "Scrivi la chiave SMTP.",
       "mittenteNome": "Scrivi un nome di massimo 80 caratteri, senza i segni < > e virgolette.",
-      "mittenteEmail": "Scrivi un indirizzo email valido."
+      "mittenteEmail": "Scrivi un indirizzo email valido.",
+      "passwordAccount": "Password non corretta.",
+      "passwordNuovoServer": "Hai cambiato server o login: scrivi di nuovo la chiave SMTP."
     },
     "salva": "Salva e usa questo server",
     "disattiva": "Disattiva questo server",

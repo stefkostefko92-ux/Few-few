@@ -4,7 +4,7 @@ import { ordiniDellaScheda } from '../ordini/invio.js';
 import { moduliDellaScheda } from '../ordini/modulo-scheda.js';
 import { contaDaApprovare, ordineConsentito } from '../schede/approvazione.js';
 import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
-import { canAnywhere, canIn, spansAziende } from '../auth/scope.js';
+import { canAnywhere, canIn, canInPerTogliere, spansAziende } from '../auth/scope.js';
 import { cartelliDellaScheda } from '../cartelli/scheda.js';
 import { verbaliDellaScheda } from '../verbali/service.js';
 import { buoniDellaScheda } from '../buoni/elenco.js';
@@ -161,6 +161,10 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
     // Снимките и клиповете по раздели; качва, надписва и трие който пише във фирмата (не в кошчето).
     allegati: await allegatiDi(scheda.id),
     modifica: !scheda.deletedAt && canIn(principalOf(req).user, 'schede:write', scheda.aziendaId),
+    // Изтекъл абонамент: снимка се трие и тогава (условията, чл. 12.5 в) — само връзката за изтриване.
+    elimina:
+      !scheda.deletedAt &&
+      canInPerTogliere(principalOf(req).user, 'schede:write', scheda.aziendaId),
     showAzienda: spansAziende(scope(req, 'schede:read')),
     ident: schedaTitle(scheda, res.locals.t),
     sections: displaySections(scheda, res.locals.t, res.locals.fmt, scheda.azienda.ordineSezioni),
