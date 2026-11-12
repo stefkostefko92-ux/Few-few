@@ -2,11 +2,14 @@
 // there was no update to announce, so nobody sees the popup — the next update will be the first one.
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import { VOCI } from '../../src/novita/voci.js';
+import { vociAttive } from '../../src/novita/attive.js';
 import { prisma, signedIn, startApp, stopApp } from './harness.js';
 
 before(startApp);
 after(stopApp);
+
+// What this portal announces (the entry about a sign-in that is not switched on is left out).
+const VOCI = vociAttive();
 
 describe('the updates on a new installation', () => {
   it('are registered at the first page, each on its own day, and announce nothing', async () => {
