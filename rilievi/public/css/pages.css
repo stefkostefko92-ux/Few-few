@@ -380,3 +380,9 @@
   line-height: 1.25;
   height: auto;
 }
+
+/* Текст, написан от човек извън портала (сигнал, мотиви): редовете му остават, дълга дума не избутва страницата. */
+.testo-libero {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}

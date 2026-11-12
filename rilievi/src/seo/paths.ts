@@ -22,12 +22,21 @@ export const ESPORTAZIONE_PATH = '/esportazione';
 /** Състоянието на услугата (условията 2026-11-12, чл. 2.4) — публична, но `noindex`. */
 export const STATO_PATH = '/stato';
 
+/** Цените: активните планове от конзолата (src/routes/site-prezzi.ts). */
+export const PREZZI_PATH = '/prezzi';
+
+/** Сигналите за незаконно съдържание (чл. 16 Рег. (ЕС) 2022/2065) и страницата след пратен сигнал (`noindex`). */
+export const SEGNALAZIONI_PATH = '/segnalazioni';
+export const SEGNALAZIONE_INVIATA_PATH = '/segnalazioni/inviata';
+
 /** Индексираните страници — за sitemap и robots.txt. */
 export const PUBLIC_PATHS = [
   HOME_PATH,
+  PREZZI_PATH,
   PRIVACY_PATH,
   NOVITA_PATH,
   CONDIZIONI_PATH,
   ESPORTAZIONE_PATH,
+  SEGNALAZIONI_PATH,
 ] as const;
 export type PublicPath = (typeof PUBLIC_PATHS)[number];

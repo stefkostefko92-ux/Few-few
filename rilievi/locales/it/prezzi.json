@@ -1,0 +1,84 @@
+{
+  "prezzi": {
+    "meta": {
+      "title": "Prezzi e piani | Rilievi Impianti",
+      "description": "Quanto costa Rilievi Impianti: piani per azienda in base alle persone, primo mese gratuito, prezzi senza IVA, nessun rinnovo automatico.",
+      "keywords": "prezzi software ascensoristi, costo Rilievi Impianti, abbonamento software ascensori, piani e prezzi, prova gratuita, Carbon Stealth"
+    },
+    "nav": "Prezzi",
+    "titolo": "Prezzi di Rilievi Impianti",
+    "lead": "Rilievi Impianti si paga per azienda, non per persona: il piano dipende da quante persone lavorano nel portale. Il primo mese è gratuito e i prezzi sono senza IVA.",
+    "aggiornato": "Ultimo aggiornamento: {data}",
+    "piani": {
+      "titolo": "I piani",
+      "intro": "Scegli il livello in base alle persone e la durata che preferisci. Paghi in anticipo, una volta sola per tutta la durata.",
+      "livello": "Livello {n}",
+      "colonna": {
+        "durata": "Durata",
+        "prezzo": "Prezzo",
+        "mese": "Al mese"
+      },
+      "prezzo": "{prezzo} €",
+      "alMese": "{prezzo} € al mese",
+      "nonPubblicati": "I prezzi dei piani non sono ancora pubblicati su questa pagina. Scrivici a {email} oppure richiedi l'accesso: il primo mese è gratuito e non serve una carta.",
+      "iva": "IVA esclusa"
+    },
+    "come": {
+      "titolo": "Come funziona",
+      "prova": "Il primo mese è gratuito: parte quando l'amministratore della tua azienda accetta le condizioni di servizio. Non chiediamo una carta.",
+      "persone": "Nel numero di persone contano gli account attivi della tua azienda e gli inviti ancora aperti.",
+      "durata": "Paghi con carta sulla pagina sicura di Revolut: noi non vediamo i dati della carta.",
+      "rinnovo": "Il piano non si rinnova da solo: alla scadenza non ti addebitiamo nulla. Ti avvisiamo per email 14 e 3 giorni prima.",
+      "scadenza": "Se non scegli un nuovo piano, l'azienda resta in sola lettura: puoi consultare, esportare e cancellare i dati, ma non scriverne di nuovi.",
+      "fattura": "La fattura arriva entro {giorni} giorni dal pagamento."
+    },
+    "iva": {
+      "titolo": "IVA",
+      "testo": "I prezzi sono senza IVA. Per un'azienda italiana o di un altro paese dell'Unione europea, con una partita IVA valida nel VIES, si applica l'inversione contabile: paghi il prezzo indicato, senza IVA. Per un'azienda bulgara si aggiunge l'IVA bulgara del 20%."
+    },
+    "rimborsi": {
+      "titolo": "Rimborsi",
+      "testo": "Se il contratto finisce prima della scadenza di un piano pagato, ti rimborsiamo i giorni interi non usati, sullo stesso mezzo di pagamento, entro 30 giorni."
+    },
+    "faq": {
+      "titolo": "Domande frequenti sui prezzi",
+      "voci": {
+        "costo": {
+          "q": "Quanto costa Rilievi Impianti?",
+          "a": "Dipende da quante persone della tua azienda usano il portale: fino a 10, fino a 25 oppure oltre 25. I prezzi di ogni piano sono in questa pagina, senza IVA. Il primo mese è gratuito."
+        },
+        "prova": {
+          "q": "C'è una prova gratuita?",
+          "a": "Sì. Il primo mese è gratuito e parte quando l'amministratore dell'azienda accetta le condizioni di servizio. Non serve una carta."
+        },
+        "rinnovo": {
+          "q": "Il piano si rinnova da solo?",
+          "a": "No. Il piano non si rinnova da solo e alla scadenza non addebitiamo nulla. Prima della scadenza ti avvisiamo per email."
+        },
+        "scadenza": {
+          "q": "Cosa succede se non rinnovo?",
+          "a": "L'azienda resta in sola lettura: i dati si possono consultare, esportare e cancellare, ma non se ne possono scrivere di nuovi finché non scegli un piano."
+        },
+        "iva": {
+          "q": "I prezzi comprendono l'IVA?",
+          "a": "No, i prezzi sono senza IVA. Un'azienda dell'Unione europea con partita IVA valida nel VIES paga senza IVA, con l'inversione contabile. Un'azienda bulgara paga in più l'IVA del 20%."
+        },
+        "persone": {
+          "q": "Chi conta nel numero di persone?",
+          "a": "Contano gli account attivi della tua azienda e gli inviti ancora aperti. Se una persona viene disattivata, il suo posto torna libero."
+        },
+        "rimborso": {
+          "q": "Posso avere un rimborso?",
+          "a": "Sì, se il contratto finisce prima della scadenza di un piano pagato: rimborsiamo i giorni interi non usati, sullo stesso mezzo di pagamento, entro 30 giorni."
+        }
+      }
+    },
+    "cta": {
+      "titolo": "Vuoi provarlo?",
+      "testo": "Chiedi l'accesso per la tua azienda: ti rispondiamo noi e il primo mese non costa nulla.",
+      "richiedi": "Richiedi l'accesso",
+      "condizioni": "Leggi le condizioni di servizio"
+    },
+    "offerta": "Rilievi Impianti — {livello}, {durata}"
+  }
+}

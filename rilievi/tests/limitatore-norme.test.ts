@@ -168,7 +168,19 @@ describe('the result in words', () => {
     assert.equal(nuovo.v1, 'da 1,15 a 1,49 m/s');
     assert.equal(nuovo.norma, 'D.P.R. 1497/1963, art. 32');
     assert.equal(nuovo.intervento, 'Limitatore e paracadute');
-    assert.equal(nuovo.applicata, 'UNI EN 81-20:2020 — UNI 10411-1:2024, punto 6.7');
+    // Point 6.7 is in section 6 of the note: quoted by analogy, for the technician to judge (audit, 12 Nov 2026).
+    assert.equal(
+      nuovo.applicata,
+      'UNI EN 81-20:2020 — UNI 10411-1:2024, punto 6.7 (sezione 6), per analogia: da valutare dal tecnico',
+    );
+    // A CE lift with a new safety gear: the limits of its own standard, by point 18 (6.7 is section 6).
+    const ce = sintesi({
+      vn: 1,
+      tipo: 'progressivo',
+      norma: 'en81-1-1999',
+      intervento: 'paracadute',
+    });
+    assert.equal(ce.applicata, 'UNI EN 81-1:1999 o 2008 — UNI 10411-11:2024, punto 18');
     const veloce = sintesi({
       vn: 1.2,
       tipo: 'progressivo',

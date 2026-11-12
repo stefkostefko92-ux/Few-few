@@ -6,6 +6,7 @@
       "pagato": "Pagato il {data}: {totale} € — {piano}",
       "dovuto": "Rimborso dovuto (art. 12.9 delle Condizioni) alla cessazione del {data}: {importo} €",
       "verifica": "Pagamento ricevuto senza che il piano sia partito: si restituisce per intero.",
+      "nonDovuto": "Per le condizioni non è dovuto alcun rimborso: l'azienda è attiva oppure il piano è già finito. Se rimborsi lo stesso, l'abbonamento dell'azienda non cambia da solo: impostalo dalla pagina dell'azienda.",
       "massimo": "Su Revolut si possono restituire al massimo {max} € per questo pagamento.",
       "riparto": "L'importo proposto va sugli ordini pagati, in quest'ordine:",
       "parte": "{importo} € sull'ordine del {data}",

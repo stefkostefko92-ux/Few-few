@@ -5,6 +5,7 @@ import { allarme } from './allarmi/servizio.js';
 import { eseguiPassi, ricordaManutenzione } from './manutenzione-passi.js';
 import { aggiornaContestazioniAperte } from './pagamenti/contestazioni.js';
 import { riconciliaRimborsi } from './pagamenti/rimborsi-riconcilia.js';
+import { pulisciSegnalazioni } from './segnalazioni/servizio.js';
 import { pulisciArrivi } from './allegati/archivio.js';
 import { concludiCambi } from './aziende/cambio.js';
 import { caricaAnnunci } from './legale/annunci.js';
@@ -85,6 +86,8 @@ export async function runMaintenance(): Promise<void> {
       // Връщанията през Revolut, които още чакат крайното си състояние, и отворените спорове.
       ['rimborsi', () => riconciliaRimborsi(quando)],
       ['contestazioni', () => aggiornaContestazioniAperte()],
+      // Решените сигнали за незаконно съдържание след срока им (5 години; неразгледаемите — 1).
+      ['segnalazioni', () => pulisciSegnalazioni(quando)],
       ['piani', () => avviaPianiInCoda(quando)],
     ],
     quando,

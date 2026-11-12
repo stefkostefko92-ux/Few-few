@@ -22,6 +22,11 @@ export interface VoceNovita {
 
 /** Най-новите отгоре; в един ден — по важност. */
 export const VOCI: readonly VoceNovita[] = [
+  { id: '2026-11-12-versione-4', data: '2026-11-12' },
+  { id: '2026-11-12-condizioni-13', data: '2026-11-12' },
+  { id: '2026-11-12-prezzi', data: '2026-11-12' },
+  { id: '2026-11-12-vies-rimborsi', data: '2026-11-12' },
+  { id: '2026-11-12-segnalazioni', data: '2026-11-12' },
   { id: '2026-11-12-versione-3-1', data: '2026-11-12' },
   { id: '2026-11-12-versione-3', data: '2026-11-12' },
   { id: '2026-11-12-pagamento-carta', data: '2026-11-12' },

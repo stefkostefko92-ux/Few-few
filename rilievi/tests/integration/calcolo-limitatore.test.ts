@@ -180,7 +180,10 @@ describe('the governor calculation of a scheda', () => {
       page2,
       /data-esito="motivo">La UNI EN 81-20:2020 non prevede il paracadute istantaneo con effetto ammortizzato/,
     );
-    assert.match(page2, /data-esito="applicata">UNI EN 81-20:2020 — UNI 10411-1:2024, punto 6\.7</);
+    assert.match(
+      page2,
+      /data-esito="applicata">UNI EN 81-20:2020 — UNI 10411-1:2024, punto 6\.7 \(sezione 6\), per analogia: da valutare dal tecnico</,
+    );
     // D.P.R. 1497/1963, art. 32.2 (the owner's case, 9 November 2026): 0,82 m/s, rollers, only the
     // governor — up to 140 % of the operating speed, no lower limit; the contact of a new governor; the
     // warning for a category A bed lift (art. 32.3).

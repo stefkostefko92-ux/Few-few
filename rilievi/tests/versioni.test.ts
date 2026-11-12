@@ -16,16 +16,28 @@ import { leggiTesto } from '../src/legale/testi.js';
 
 afterEach(() => impostaAnnunci([]));
 
-/** A history with a version still to be announced (the real one has none after 2026-11-12). */
+/** A history with a version still to be announced (the real one has none after 2026-11-13). */
 const FUTURA = ['2026-11-10', '2027-01-12'] as const;
 
 describe('the versions of the legal texts', () => {
   it('put 2026-11-12 in force on its own day, without an announcement', () => {
     assert.equal(versioneVigente('CONDIZIONI', new Date('2026-11-11T22:59:59Z')), '2026-11-10');
     assert.equal(versioneVigente('CONDIZIONI', new Date('2026-11-11T23:00:00Z')), '2026-11-12');
-    assert.equal(versioneProssima('CONDIZIONI', new Date('2026-11-12T10:00:00Z')), null);
+  });
+
+  it('put 2026-11-13 in force at midnight (Rome) of its own day, without an announcement', () => {
+    // The owner, 12 November 2026: "at once" — still only his test companies in the portal.
+    const sera = new Date('2026-11-12T22:59:59Z');
+    assert.equal(versioneVigente('CONDIZIONI', sera), '2026-11-12');
+    assert.deepEqual(versioneProssima('CONDIZIONI', sera), {
+      versione: '2026-11-13',
+      dal: new Date('2026-11-12T23:00:00Z'),
+      annunciataAt: null,
+    });
+    assert.equal(versioneVigente('CONDIZIONI', new Date('2026-11-12T23:00:00Z')), '2026-11-13');
+    assert.equal(versioneProssima('CONDIZIONI', new Date('2026-11-13T10:00:00Z')), null);
     // 2027-01-12 never comes in: its text is inside 2026-11-12.
-    assert.equal(versioneVigente('CONDIZIONI', new Date('2027-06-01T10:00:00Z')), '2026-11-12');
+    assert.equal(versioneVigente('CONDIZIONI', new Date('2027-06-01T10:00:00Z')), '2026-11-13');
   });
 
   it('keep the current version while the next one is not announced', () => {
@@ -101,6 +113,33 @@ describe('the versions of the legal texts', () => {
       assert.ok(chiavi.includes(atteso), atteso);
     assert.ok(!chiavi.some((k) => k.startsWith('9.')), 'the liability cap is untouched');
     assert.ok(!chiavi.some((k) => k.startsWith('24')), 'the specific approval list is untouched');
+  });
+
+  it('list exactly the changes of 2026-11-13: the refund, VIES, the roles of the provider, moderation', () => {
+    const chiavi = modifiche(
+      leggiTesto('CONDIZIONI', '2026-11-12'),
+      leggiTesto('CONDIZIONI', '2026-11-13'),
+    ).map((m) => `${m.numero}:${m.tipo}`);
+    assert.deepEqual(chiavi, [
+      '12.9:modificato',
+      '12.10:nuovo',
+      '15.2:modificato',
+      ...Array.from({ length: 11 }, (_, i) => `25.${i + 1}:nuovo`),
+    ]);
+    // Nothing that needs the specific approval of arts. 1341–1342 c.c. again: art. 24 and its list are the same.
+    const prima = leggiTesto('CONDIZIONI', '2026-11-12');
+    const dopo = leggiTesto('CONDIZIONI', '2026-11-13');
+    assert.deepEqual(dopo.clausoleSpecifiche, prima.clausoleSpecifiche);
+    assert.deepEqual(
+      dopo.articoli.find((a) => a.numero === '24'),
+      prima.articoli.find((a) => a.numero === '24'),
+    );
+    const moderazione = dopo.articoli.find((a) => a.numero === '25')!;
+    assert.match(
+      moderazione.paragrafi.join(' '),
+      /il responsabile della moderazione di Carbon Stealth VCC/,
+    );
+    assert.match(moderazione.paragrafi.join(' '), /rilievi\.carbonstealth\.eu\/segnalazioni/);
   });
 
   it('list the subscription changes of 2026-11-12 on top of the Data Act text', () => {

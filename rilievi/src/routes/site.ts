@@ -26,7 +26,9 @@ import {
   ESPORTAZIONE_PATH,
   HOME_PATH,
   NOVITA_PATH,
+  PREZZI_PATH,
   PRIVACY_PATH,
+  SEGNALAZIONI_PATH,
   SENT_PATH,
   STATO_PATH,
 } from '../seo/paths.js';
@@ -93,6 +95,8 @@ export function siteLocals(req: Request, path: string | null) {
     novitaPath: NOVITA_PATH,
     condizioniPath: CONDIZIONI_PATH,
     esportazionePath: ESPORTAZIONE_PATH,
+    prezziPath: PREZZI_PATH,
+    segnalazioniPath: SEGNALAZIONI_PATH,
     statoPath: STATO_PATH,
     loginUrl: '/accesso',
     signedIn: Boolean(req.principal),

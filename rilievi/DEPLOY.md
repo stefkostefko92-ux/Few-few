@@ -87,6 +87,22 @@ sudo RILIEVI_SKIP_BACKUP=1 bash "$(sudo cat /opt/few-few/shared/rilievi/last-goo
    Sandbox е само проба: абонаментът на фирмата НЕ се сменя (тестова карта не дава Premium) и страницата на
    офертата го казва. После — Produzione с нейния ключ и пак „Registra il webhook“ (старият се маха сам).
 
+**Връщания и спорове (от версия 4.0).** След деплоя на 4.0 натисни „Registra il webhook“ още веднъж: новата
+регистрация иска и известията за спорове (`DISPUTE_*`); ако Revolut ги откаже за ключа или средата, порталът
+регистрира само поръчките и го казва — плащанията и връщанията работят, споровете се гледат в Revolut Business.
+Връщането се нарежда от „Pagamenti“ → „Rimborsa“ (с паролата); ключът на Merchant API трябва да има право и за
+връщания. Четенето на спорове е само в Produzione на Revolut.
+
+**Проверката на ДДС номера (VIES).** При покупка от фирма извън България порталът пита
+`https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number` — контейнерът трябва да излиза и към
+`ec.europa.eu` (HTTPS). Не отговаря ли VIES, покупката не тръгва („Riprova“); нищо за настройване няма
+(`VIES_API_BASE` е само за тестовете и в продукция не се чете). Проба от контейнера:
+
+```bash
+cd "$(sudo cat /opt/few-few/shared/rilievi/last-good)"
+sudo docker compose exec -T app node -e "fetch('https://ec.europa.eu/taxation_customs/vies/rest-api/check-status').then(r => console.log('ok', r.status), e => { console.error(e.cause ?? e); process.exit(1); })"
+```
+
 Контейнерът излиза към `merchant.revolut.com` и `sandbox-merchant.revolut.com` (HTTPS). Webhook-ът не иска нищо
 в nginx (тялото е до 64 KB, общото `location /`). Изгубено известие не губи плащане: връщането на човека и
 поддръжката (всеки час) питат Revolut за поръчката. Фактурата (до 5 дни, ЗДДС чл. 113(4)) се издава извън портала —
@@ -412,7 +428,11 @@ UTC`; без лични данни, пътища и адреси.
 (`RILIEVI_HEARTBEAT_URL` покрива само пропуснатия бекъп). **Отворено за собственика:** кой монитор (UptimeRobot,
 healthchecks.io или друг) и къде отиват неговите аларми.
 
-Порталът има и свои аларми към същия или друг webhook — настройват се от конзолата на MASTER (`/master/allarmi`).
+Порталът има и свои аларми към същия или друг webhook — настройват се от конзолата на MASTER (`/master/allarmi`:
+адресът, паролата ти, „Invia un messaggio di prova“): паднала стъпка на поддръжката, плащане за проверка, спор,
+неуспешно връщане, поща, която не тръгва, нов сигнал за незаконно съдържание. Контейнерът трябва да излиза към
+`discord.com` (HTTPS). Адресът се пази шифрован с ключ от `INTERVENTI_SEAL_KEY` — при възстановяване на друг
+сървър със същия ключ остава валиден.
 
 ## 7. Провалена миграция
 

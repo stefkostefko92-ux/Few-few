@@ -1,5 +1,12 @@
 import { testiAggiornati } from '../legale/versioni.js';
-import { COMPANY, CONTENT_UPDATED, ESPORTAZIONE_UPDATED, PRIVACY_UPDATED } from '../company.js';
+import {
+  COMPANY,
+  CONTENT_UPDATED,
+  ESPORTAZIONE_UPDATED,
+  PREZZI_UPDATED,
+  PRIVACY_UPDATED,
+  SEGNALAZIONI_UPDATED,
+} from '../company.js';
 import { DEFAULT_LOCALE, translate } from '../i18n.js';
 import { INVITE_DAYS } from '../services/invites.js';
 import { vociAttive } from '../novita/attive.js';
@@ -13,8 +20,10 @@ import {
   FEED_NOVITA_PATH,
   HOME_PATH,
   NOVITA_PATH,
+  PREZZI_PATH,
   PRIVACY_PATH,
   PUBLIC_PATHS,
+  SEGNALAZIONI_PATH,
   STATO_PATH,
   type PublicPath,
 } from './paths.js';
@@ -67,6 +76,8 @@ const PAGE_META: Record<PublicPath, { priority: string; freq: string; updated: s
     },
   },
   [ESPORTAZIONE_PATH]: { priority: '0.4', freq: 'monthly', updated: ESPORTAZIONE_UPDATED },
+  [PREZZI_PATH]: { priority: '0.8', freq: 'monthly', updated: PREZZI_UPDATED },
+  [SEGNALAZIONI_PATH]: { priority: '0.2', freq: 'yearly', updated: SEGNALAZIONI_UPDATED },
 };
 
 /** Всяка публична страница — един адрес, без езикови варианти. */
@@ -99,10 +110,12 @@ export function llmsTxt(base: string, contactEmail: string): string {
     '',
     '## Pagine',
     `- [Rilievi Impianti](${base}${HOME_PATH}): ${it('site.meta.description')}`,
+    `- [${it('prezzi.titolo')}](${base}${PREZZI_PATH}): ${it('prezzi.meta.description')}`,
     `- [${it('novita.titolo')}](${base}${NOVITA_PATH}): ${it('novita.meta.description')}`,
     `- [${it('privacy.title')}](${base}${PRIVACY_PATH})`,
     `- [${it('legale.pagina.title')}](${base}${CONDIZIONI_PATH}): ${it('legale.pagina.metaDescription')}`,
     `- [${it('esportazione.pagina.titolo')}](${base}${ESPORTAZIONE_PATH}): ${it('esportazione.pagina.meta.description')}`,
+    `- [${it('segnalazioni.titolo')}](${base}${SEGNALAZIONI_PATH}): ${it('segnalazioni.meta.description')}`,
     `- [${it('stato.nav')}](${base}${STATO_PATH})`,
     `- [${it('novita.titolo')} (RSS)](${base}${FEED_NOVITA_PATH})`,
     '',
@@ -116,6 +129,7 @@ export function llmsTxt(base: string, contactEmail: string): string {
     `- ${it('site.roles.lead')} Ruoli: ${roles}. ${it('site.roles.note')}`,
     `- ${it('site.steps.s3.title')}. ${it('site.steps.s3.text', { days: INVITE_DAYS })}`,
     `- ${it('esportazione.pagina.lead')} ${it('esportazione.pagina.costi.testo')}`,
+    `- ${it('prezzi.lead')} ${it('prezzi.come.rinnovo')}`,
     '',
     `## ${it('novita.titolo')}`,
     ...vociAttive()

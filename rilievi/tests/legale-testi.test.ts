@@ -36,6 +36,9 @@ const PUBBLICATI: Record<string, string> = {
   'condizioni-2027-01-12': '94fdec9fafbe730a38703ec96e49f0750d296b31e2ea9e12a572f4708a772903',
   // Allegato B + the free month, the Plans and read-only at the end (art. 12) — in force on its own day.
   'condizioni-2026-11-12': '1a9bffd58417673ae23a7464fce36bdc940ddcc499bd5eac7b8d02f3a4174dd7',
+  // The refund on the same means of payment (12.9), the VAT number in VIES (12.10), 15.2 and art. 25 (reports and
+  // moderation, Regulation (EU) 2022/2065) — in force on its own day; the specific approval (art. 24) is untouched.
+  'condizioni-2026-11-13': 'e731f2f74680652e4d8ce278b40c948fa6789084a0fea9569d077e8c796b1a0e',
 };
 
 const tutto = (doc: TestoLegaleDoc): string => testoPiano(doc);

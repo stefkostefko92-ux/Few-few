@@ -97,7 +97,7 @@ describe('the public addresses', () => {
     assert.equal(SENT_PATH, '/richiesta-inviata');
     assert.deepEqual(
       [...PUBLIC_PATHS],
-      ['/', '/privacy', '/novita', '/condizioni', '/esportazione'],
+      ['/', '/prezzi', '/privacy', '/novita', '/condizioni', '/esportazione', '/segnalazioni'],
     );
   });
 
@@ -110,6 +110,9 @@ describe('the public addresses', () => {
       '/condizioni',
       '/condizioni.pdf',
       '/esportazione',
+      // Version 4.0: the prices and the page to report illegal content (art. 16 of Regulation (EU) 2022/2065).
+      '/prezzi',
+      '/segnalazioni',
     ])
       assert.ok(robots.includes(`Allow: ${path}$\n`), path);
     assert.doesNotMatch(robots, /\/bg\/|\/en\//);
@@ -124,7 +127,9 @@ describe('the public addresses', () => {
 
   it('list every public page once in the sitemap, without language alternates', () => {
     const xml = sitemapXml(BASE);
-    assert.equal(xml.match(/<url>/g)?.length, 5);
+    assert.equal(xml.match(/<url>/g)?.length, 7);
+    assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/prezzi<\/loc>/);
+    assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/segnalazioni<\/loc>/);
     assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/esportazione<\/loc>/);
     assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/<\/loc>/);
     assert.match(xml, /<loc>https:\/\/rilievi\.example\.test\/privacy<\/loc>/);

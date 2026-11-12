@@ -18,7 +18,8 @@
     <h2 class="section__title" id="h-pagato"><%= t(m + 'statoPagamento.' + p.stato) %></h2>
     <p><%= t(r + 'pagato', { data: fmt.dateTime(p.completatoAt || p.createdAt), totale: euro(p.totaleCent), piano }) %></p>
     <% if (p.stato === 'DA_VERIFICARE') { %><p><%= t(r + 'verifica') %></p>
-    <% } else if (dovutoCent > 0 && cessazione) { %><p><strong><%= t(r + 'dovuto', { data: fmt.dayRoma(cessazione), importo: euro(dovutoCent) }) %></strong></p><% } %>
+    <% } else if (dovutoCent > 0 && cessazione) { %><p><strong><%= t(r + 'dovuto', { data: fmt.dayRoma(cessazione), importo: euro(dovutoCent) }) %></strong></p>
+    <% } else if (p.stato === 'COMPLETATO') { %><p class="muted"><%= t(r + 'nonDovuto') %></p><% } %>
     <% if (p.rimborsoCent !== null) { %><p><%= t(r + 'chiuso', { importo: euro(p.rimborsoCent) }) %></p><% } %>
   </section>
 

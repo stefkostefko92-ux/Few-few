@@ -104,6 +104,12 @@ const GRUPPI: ReadonlyArray<{ key: string; voci: readonly Definizione[] }> = [
       { href: '/master/posta', key: 'nav.posta', icon: 'mail', cap: 'aziende:manage' },
       { href: '/master/pagamenti', key: 'nav.pagamenti', icon: 'card', cap: 'aziende:manage' },
       { href: '/master/allarmi', key: 'nav.allarmi', icon: 'bell', cap: 'aziende:manage' },
+      {
+        href: '/master/segnalazioni',
+        key: 'nav.segnalazioni',
+        icon: 'flag',
+        cap: 'aziende:manage',
+      },
     ],
   },
 ];

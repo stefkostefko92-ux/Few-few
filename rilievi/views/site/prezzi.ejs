@@ -1,0 +1,75 @@
+<%
+  // Цените (routes/site-prezzi.ts): активните планове от конзолата, без ДДС; останалото — както казват условията,
+  // чл. 12. Въпросите са дума по дума тези в JSON-LD (seo/structured-pagine.ts).
+  const p = 'prezzi.';
+%><%- include('top', { pageTitle: t(p + 'meta.title'), description: t(p + 'meta.description'), keywords: t(p + 'meta.keywords'), extraSheets: ['site-percorso', 'site-legale', 'site-prezzi'] }) %>
+<div class="prose legale-pagina">
+  <nav class="percorso" aria-label="<%= t('novita.percorso') %>">
+    <ol>
+      <li><a href="<%= homePath %>">Rilievi Impianti</a></li>
+      <li><a href="<%= prezziPath %>" aria-current="page"><%= t(p + 'nav') %></a></li>
+    </ol>
+  </nav>
+  <h1><%= t(p + 'titolo') %></h1>
+  <p class="legale-pagina__lead"><%= t(p + 'lead') %></p>
+  <p class="prose__updated"><time datetime="<%= aggiornato.toISOString().slice(0, 10) %>"><%= t(p + 'aggiornato', { data: fmt.dayLong(aggiornato) }) %></time></p>
+
+  <section aria-labelledby="piani">
+    <h2 id="piani"><%= t(p + 'piani.titolo') %></h2>
+    <% if (!livelli.length) { %><p><%= t(p + 'piani.nonPubblicati', { email: contactEmail }) %></p>
+    <% } else { %><p><%= t(p + 'piani.intro') %></p>
+    <div class="prezzi">
+      <% for (const l of livelli) { %><section class="prezzi__livello" aria-labelledby="livello-<%= l.n %>">
+        <h3 id="livello-<%= l.n %>"><%= t(p + 'piani.livello', { n: l.n }) %><span class="prezzi__persone"><%= l.persone %></span></h3>
+        <table class="prezzi__tabella">
+          <thead><tr><th scope="col"><%= t(p + 'piani.colonna.durata') %></th><th scope="col"><%= t(p + 'piani.colonna.prezzo') %></th><th scope="col"><%= t(p + 'piani.colonna.mese') %></th></tr></thead>
+          <tbody>
+            <% for (const x of l.piani) { %><tr>
+              <th scope="row"><%= x.durata %></th>
+              <td data-label="<%= t(p + 'piani.colonna.prezzo') %>"><strong class="prezzi__prezzo"><%= t(p + 'piani.prezzo', { prezzo: x.prezzo }) %></strong> <span class="prezzi__iva"><%= t(p + 'piani.iva') %></span></td>
+              <% if (x.alMese) { %><td data-label="<%= t(p + 'piani.colonna.mese') %>"><%= t(p + 'piani.alMese', { prezzo: x.alMese }) %></td><% } else { %><td class="prezzi__vuoto"></td><% } %>
+            </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </section>
+      <% } %>
+    </div><% } %>
+  </section>
+
+  <section aria-labelledby="come">
+    <h2 id="come"><%= t(p + 'come.titolo') %></h2>
+    <ul>
+      <li><%= t(p + 'come.prova') %></li>
+      <li><%= t(p + 'come.persone') %></li>
+      <li><%= t(p + 'come.durata') %></li>
+      <li><%= t(p + 'come.rinnovo') %></li>
+      <li><%= t(p + 'come.scadenza') %></li>
+      <li><%= t(p + 'come.fattura', { giorni: giorniFattura }) %></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="iva">
+    <h2 id="iva"><%= t(p + 'iva.titolo') %></h2>
+    <p><%= t(p + 'iva.testo') %></p>
+  </section>
+
+  <section aria-labelledby="rimborsi">
+    <h2 id="rimborsi"><%= t(p + 'rimborsi.titolo') %></h2>
+    <p><%= t(p + 'rimborsi.testo') %></p>
+  </section>
+
+  <section aria-labelledby="faq">
+    <h2 id="faq"><%= t(p + 'faq.titolo') %></h2>
+    <% for (const id of faq) { %><h3 class="faq__q"><%= t(p + 'faq.voci.' + id + '.q') %></h3>
+    <p class="faq__a"><%= t(p + 'faq.voci.' + id + '.a') %></p>
+    <% } %>
+  </section>
+
+  <section aria-labelledby="prova">
+    <h2 id="prova"><%= t(p + 'cta.titolo') %></h2>
+    <p><%= t(p + 'cta.testo') %></p>
+    <p class="prezzi__azioni"><a class="btn btn--primary" href="<%= homePath %>#richiesta"><%= t(p + 'cta.richiedi') %></a> <a href="<%= condizioniPath %>"><%= t(p + 'cta.condizioni') %></a></p>
+  </section>
+</div>
+<%- include('bottom') %>

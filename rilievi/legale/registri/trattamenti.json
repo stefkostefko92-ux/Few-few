@@ -123,7 +123,7 @@
       {
         "id": "C5",
         "nome": "Fatturazione, pagamenti e abbonamenti",
-        "dati": "Ragione sociale, sede e partita IVA del Cliente; nome ed email dell'amministratore che paga; piano, periodo e importi; numero dell'ordine di Revolut; rimborsi. I dati della carta restano a Revolut Bank UAB (titolare autonomo): il fornitore non li riceve. Destinatari: Revolut Bank UAB per il pagamento, il consulente contabile e il software di fatturazione del fornitore",
+        "dati": "Ragione sociale, sede e partita IVA del Cliente; nome ed email dell'amministratore che paga; piano, periodo e importi; numero dell'ordine di Revolut; esito e numero di consultazione della verifica della partita IVA nel VIES; rimborsi e contestazioni del pagamento. I dati della carta restano a Revolut Bank UAB (titolare autonomo): il fornitore non li riceve. Destinatari: Revolut Bank UAB per il pagamento, la Commissione europea (VIES) per la verifica della partita IVA, il consulente contabile e il software di fatturazione del fornitore",
         "interessati": "Amministratori dei Clienti",
         "base": "Esecuzione del contratto e obblighi di legge contabili e fiscali (art. 6, par. 1, lett. b) e c))",
         "conservazione": "10 anni dalla fine dell'esercizio (art. 12 della legge bulgara sulla contabilità)"
@@ -143,6 +143,14 @@
         "interessati": "Amministratori dei Clienti",
         "base": "Esecuzione del contratto (art. 6, par. 1, lett. b))",
         "conservazione": "Finché esiste l'account; dell'avviso inviato resta solo la soglia raggiunta"
+      },
+      {
+        "id": "C8",
+        "nome": "Segnalazioni di contenuti illegali e decisioni di moderazione (artt. 16–18 Regolamento (UE) 2022/2065)",
+        "dati": "Nome ed email di chi segnala; posizione del contenuto e motivi; dichiarazione di buona fede; data e ora; decisione, misura e motivazione; comunicazioni al segnalante e agli Amministratori dell'azienda interessata; richieste di riesame ed esito; eventuale comunicazione alle autorità (art. 18)",
+        "interessati": "Chi segnala; persone citate o ritratte nel contenuto segnalato; Amministratori dell'azienda che ha caricato il contenuto",
+        "base": "Obbligo di legge (art. 6, par. 1, lett. c); artt. 16–18 Reg. (UE) 2022/2065; per i dati relativi a reati, art. 10 GDPR in base all'art. 18 del Regolamento); conservazione a fini di prova: legittimo interesse (art. 6, par. 1, lett. f))",
+        "conservazione": "5 anni dalla decisione o dall'esito del riesame; segnalazioni non esaminabili: 1 anno dalla risposta; in caso di contestazione, fino alla definizione"
       }
     ]
   },

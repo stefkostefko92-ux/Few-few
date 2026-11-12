@@ -9,7 +9,7 @@
     { name: 'rilievi_theme', purpose: t('privacy.cookies.theme'), kept: t('privacy.cookies.prefKept') },
     { name: 'rilievi_flash', purpose: t('privacy.cookies.flash'), kept: t('privacy.cookies.flashKept') },
   ];
-  const rows = ['request', 'account', 'inviti', 'lavoro', 'media', 'audit', 'accettazioni', 'pagamenti', 'calcoli', 'ip', 'backup'];
+  const rows = ['request', 'account', 'inviti', 'lavoro', 'media', 'audit', 'accettazioni', 'pagamenti', 'segnalazioni', 'calcoli', 'ip', 'backup'];
   const headers = ['data', 'why', 'basis', 'kept'];
   const params = { days: retentionDays, auditDays, inviteDays, endDays };
 %><%- include('top', { pageTitle: t('privacy.title') + ' — Rilievi Impianti', description: t('privacy.metaDescription') }) %>
@@ -56,6 +56,7 @@
     <li><%= t('privacy.recipients.hosting') %></li>
     <li><%= t('privacy.recipients.mail') %></li>
     <li><%= t('privacy.recipients.pagamenti') %></li>
+    <li><%= t('privacy.recipients.vies') %></li>
     <li><%= t('privacy.recipients.contabili') %></li>
   </ul>
   <p><%= t('privacy.recipients.text') %></p>
@@ -73,9 +74,7 @@
 
   <%# Reg. (UE) 2022/2065 (DSA), chl. 11, 12 i 16: tochka za kontakt i signali za nezakonno sadarzhanie. %>
   <h2 id="segnalazioni"><%= t('privacy.segnalazioni.title') %></h2>
-  <p><%= t('privacy.segnalazioni.text', { email: contactEmail }) %></p>
-  <p><%= t('privacy.segnalazioni.passi') %></p>
-  <p><%= t('privacy.segnalazioni.contatto') %></p>
+  <p><%= t('privacy.segnalazioni.text') %> <a href="<%= segnalazioniPath %>"><%= t('privacy.segnalazioni.link') %></a>.</p>
 
   <h2><%= t('privacy.changes.title') %></h2>
   <p><%= t('privacy.changes.text') %></p>

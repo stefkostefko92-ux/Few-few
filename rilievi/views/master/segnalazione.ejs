@@ -1,0 +1,112 @@
+<%
+  // Един сигнал (routes/master-segnalazioni.ts): текстът му, решението с мотивите (чл. 16(5), 17(3)), прегледът
+  // и уведомяването на органите. Нерешеният показва формата за решение; решеният — какво е решено.
+  const m = 'segnalazioni.master.';
+  const d = m + 'decisione.';
+  const aperta = s.stato === 'RICEVUTA' || s.stato === 'IN_ESAME';
+  const v = (k) => valori[k] || '';
+%><%- include('../partials/top', { title: s.riferimento + ' — ' + t(m + 'titolo'), narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="/master/segnalazioni"><%= t(m + 'torna') %></a>
+    <h1><%= s.riferimento %></h1>
+    <p class="page-head__sub"><%= t(m + 'ricevutaIl', { data: fmt.dateTime(s.createdAt) }) %> · <%= t(m + 'stato.' + s.stato) %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <% if (errore) { %><div class="errors" id="form-error" role="alert" tabindex="-1"><h2><%= t(errore) %></h2></div><% } %>
+  <section class="panel" aria-labelledby="h-segnalazione">
+    <h2 class="section__title" id="h-segnalazione"><%= t(m + 'segnalazione') %></h2>
+    <% if (s.minori) { %><div class="errors" role="status"><p><%= t(m + 'minori') %></p></div><% } %>
+    <h3><%= t(m + 'dove') %></h3>
+    <p class="testo-libero"><%= s.dove %></p>
+    <h3><%= t(m + 'motivo') %></h3>
+    <p class="testo-libero"><%= s.motivo %></p>
+    <h3><%= t(m + 'segnalante') %></h3>
+    <p><% if (s.nome || s.email) { %><%= s.nome || '' %><% if (s.email) { %> — <a href="mailto:<%= s.email %>"><%= s.email %></a><% } %><% } else { %><%= t(m + 'senzaNome') %><% } %></p>
+  </section>
+
+  <% if (aperta) { %><form class="panel form" method="post" action="/master/segnalazioni/<%= s.id %>/decisione" novalidate>
+    <h2 class="section__title"><%= t(d + 'titolo') %></h2>
+    <p class="muted"><%= t(d + 'intro') %></p>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <fieldset class="choice">
+      <legend><%= t(d + 'esito') %></legend>
+      <div class="choice__opts">
+        <% for (const e of esiti) { %><label class="tick"><input type="radio" name="esito" value="<%= e %>"<% if (v('esito') === e) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t(d + 'opzione.' + e) %></span></label>
+        <% } %>
+      </div>
+    </fieldset>
+    <div class="field field--wide">
+      <label class="field__label" for="dc-motivazione"><%= t(d + 'motivazione') %></label>
+      <textarea class="textarea" id="dc-motivazione" name="motivazione" rows="5" maxlength="5000" required aria-describedby="dc-motivazione-hint"><%= v('motivazione') %></textarea>
+      <p class="field__hint" id="dc-motivazione-hint"><%= t(d + 'motivazioneHint') %></p>
+    </div>
+    <fieldset class="legale__blocco">
+      <legend class="section__title"><%= t(d + 'misure') %></legend>
+      <div class="field field--wide">
+        <label class="field__label" for="dc-azienda"><%= t(d + 'azienda') %></label>
+        <select class="select" id="dc-azienda" name="azienda">
+          <option value=""><%= t(d + 'aziendaNessuna') %></option>
+          <% for (const a of aziende) { %><option value="<%= a.id %>"<% if (v('azienda') === a.id) { %> selected<% } %>><%= a.name %></option>
+          <% } %>
+        </select>
+      </div>
+      <div class="field field--wide">
+        <label class="field__label" for="dc-misura"><%= t(d + 'misura') %></label>
+        <textarea class="textarea" id="dc-misura" name="misura" rows="2" maxlength="500" aria-describedby="dc-misura-hint"><%= v('misura') %></textarea>
+        <p class="field__hint" id="dc-misura-hint"><%= t(d + 'misuraHint') %></p>
+      </div>
+      <div class="field field--wide">
+        <label class="field__label" for="dc-fatti"><%= t(d + 'fatti') %></label>
+        <textarea class="textarea" id="dc-fatti" name="fatti" rows="3" maxlength="5000"><%= v('fatti') %></textarea>
+      </div>
+      <div class="field field--wide">
+        <label class="field__label" for="dc-fondamento"><%= t(d + 'fondamento') %></label>
+        <textarea class="textarea" id="dc-fondamento" name="fondamento" rows="2" maxlength="500" aria-describedby="dc-fondamento-hint"><%= v('fondamento') %></textarea>
+        <p class="field__hint" id="dc-fondamento-hint"><%= t(d + 'fondamentoHint') %></p>
+      </div>
+    </fieldset>
+    <div class="toolbar"><button class="btn btn--primary" type="submit"><%= t(d + 'registra') %></button></div>
+  </form><% } else { %><section class="panel" aria-labelledby="h-presa">
+    <h2 class="section__title" id="h-presa"><%= t(m + 'presa.titolo') %>: <%= t(m + 'esitoPreso.' + s.esito) %></h2>
+    <p><%= s.decisaBy ? t(m + 'presa.il', { data: fmt.dateTime(s.decisaAt), nome: s.decisaBy.name }) : t(m + 'presa.ilSenza', { data: fmt.dateTime(s.decisaAt) }) %></p>
+    <h3><%= t(d + 'motivazione') %></h3>
+    <p class="testo-libero"><%= s.motivazione %></p>
+    <% if (s.misura) { %><h3><%= t(d + 'misura') %></h3><p class="testo-libero"><%= s.misura %></p>
+    <h3><%= t(d + 'fatti') %></h3><p class="testo-libero"><%= s.fatti %></p>
+    <h3><%= t(d + 'fondamento') %></h3><p class="testo-libero"><%= s.fondamento %></p>
+    <% if (s.aziendaNome) { %><p><%= t(m + 'presa.azienda', { azienda: s.aziendaNome }) %></p><% } %><% } %>
+    <% if (s.conservaFino) { %><p class="muted"><%= t(m + 'presa.conservata', { data: fmt.dayRoma(s.conservaFino) }) %></p><% } %>
+  </section>
+
+  <section class="panel" aria-labelledby="h-riesame">
+    <h2 class="section__title" id="h-riesame"><%= t(m + 'riesame.titolo') %></h2>
+    <% if (s.riesameAt) { %><p><%= t(m + 'riesame.concluso', { data: fmt.dateTime(s.riesameAt) }) %></p>
+    <p class="testo-libero"><%= s.riesameEsito %></p>
+    <% } else { %><p class="muted"><%= t(m + 'riesame.intro') %></p>
+    <form class="form" method="post" action="/master/segnalazioni/<%= s.id %>/riesame" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field field--wide">
+        <label class="field__label" for="rs-esito"><%= t(m + 'riesame.esito') %></label>
+        <textarea class="textarea" id="rs-esito" name="esito" rows="4" maxlength="5000" required><%= v('riesame') %></textarea>
+      </div>
+      <div class="toolbar"><button class="btn" type="submit"><%= t(m + 'riesame.registra') %></button></div>
+    </form><% } %>
+  </section><% } %>
+
+  <section class="panel" aria-labelledby="h-autorita">
+    <h2 class="section__title" id="h-autorita"><%= t(m + 'autorita.titolo') %></h2>
+    <% if (s.autoritaAt) { %><p><%= t(m + 'autorita.fatta', { autorita: s.autorita, data: fmt.dateTime(s.autoritaAt) }) %></p><% } %>
+    <p class="muted"><%= t(m + 'autorita.intro') %></p>
+    <form class="row-form" method="post" action="/master/segnalazioni/<%= s.id %>/autorita" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label class="field__label" for="au-autorita"><%= t(m + 'autorita.campo') %></label>
+        <input class="input" id="au-autorita" name="autorita" type="text" maxlength="200" required>
+      </div>
+      <button class="btn" type="submit"><%= t(m + 'autorita.registra') %></button>
+    </form>
+  </section>
+</div>
+<%- include('../partials/bottom') %>

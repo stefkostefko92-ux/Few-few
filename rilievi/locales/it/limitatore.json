@@ -54,12 +54,12 @@
     "riferimento": {
       "primaCe": {
         "limitatore": "UNI 10411-1:2024, punto 18",
-        "paracadute": "UNI 10411-1:2024, punto 6.7",
+        "paracadute": "UNI 10411-1:2024, punto 6.7 (sezione 6), per analogia: da valutare dal tecnico",
         "velocita": "UNI 10411-1:2024, punti 15.1 e 15.13"
       },
       "ce": {
         "limitatore": "UNI 10411-11:2024, punto 18",
-        "paracadute": "UNI 10411-11:2024, punto 6.7",
+        "paracadute": "UNI 10411-11:2024, punto 18",
         "velocita": "UNI 10411-11:2024, punto 15 f)"
       }
     },

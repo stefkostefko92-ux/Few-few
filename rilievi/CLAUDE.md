@@ -23,7 +23,9 @@ Modulo di pronto intervento“, като хартиения блок): номе�
 
 ## Версията
 
-**3.1 от 12 ноември 2026** (3.0 — същия ден; 3.1 — поправките от одита преди пазара; собственикът: „Смени версията на софтуера ни и започни да я тълкуваш като versione 3.0.
+**4.0 от 12 ноември 2026** (3.0 — същия ден; 3.1 — поправките от одита преди пазара; 4.0 — проверката във VIES,
+връщанията и споровете през Revolut, алармите в Discord, публичните `/prezzi` и `/segnalazioni` с модерирането,
+условията 2026-11-13; собственикът: „Смени версията на софтуера ни и започни да я тълкуваш като versione 3.0.
 След всеки patch вдигаш цифрата след 3, при големи добавяния вдигаш цялостното ниво“). MAJOR.MINOR в ЕДНО място —
 `src/versione.ts` (`VERSIONE_SOFTWARE`); `package.json` и `package-lock.json` го следват като `MAJOR.MINOR.0`
 (тестът `tests/versione.test.ts`). **Всеки patch** (поправка или малка промяна, която стига до хората) — второто
@@ -186,7 +188,11 @@ src/
   pagamenti/         Revolut: config.ts · revolut.ts (клиентът) · firma.ts (подписът на известията) · importi.ts (ДДС,
                      P. IVA) · offerta.ts · periodo.ts + situazione.ts (кога започва купеното) · servizio.ts (нова
                      поръчка) · riconcilia.ts + applica.ts (сверката, даването на периода) · avvisi.ts (писмата) ·
-                     rimborsi.ts (дължимото връщане, „фактурирано“) · piani.ts
+                     rimborsi.ts (дължимото връщане, „фактурирано“) · piani.ts · vies.ts + vies-ordine.ts
+                     (проверката на ДДС номера) · rimborso-revolut.ts + rimborsi-riparto.ts + rimborsi-riconcilia.ts
+                     (връщането през Revolut) · avvisi-rimborsi.ts · contestazioni.ts (споровете)
+  allarmi/           discord.ts (адресът, пращането, паузите — без база) · servizio.ts (настройката, `allarme()`)
+  segnalazioni/      form.ts (формулярът по чл. 16 DSA, без база) · servizio.ts (запис, решение, преглед, срок)
   legale/            условията и доказателствата: versioni.ts · accettazioni.ts · firma.ts (кодът) · annunci.ts ·
                      emissioni.ts · sigillo.ts · stato.ts · informativa.ts · pdfa.ts · registro-trattamenti.ts
   mail/              mailer.ts (пращането, пълният подпис, последният изход) · posta.ts + posta-form.ts (пощата от
@@ -207,8 +213,8 @@ views/               EJS: partials/ (горна и долна лента, таб
                      account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs; скицникът —
                      schede/_schizzo.ejs (листът като SVG), _schizzo-foglio.ejs, _schizzo-editor.ejs
 locales/it/          common · auth · schede · users · aziende · requests · site · mail · allegati · schizzi ·
-                     interventi · cartelli · argano · limitatore · verbali · buoni · preventivi
-                     (.json) — единственият
+                     interventi · cartelli · argano · limitatore · verbali · buoni · preventivi · pagamenti ·
+                     vies · rimborsi · allarmi · prezzi · segnalazioni (.json) — единственият
 public/              css/ (портал: base, buttons, shell, layout, plate, forms, pages, data, sheet, misure,
                      moduli, allegati, foto-stampa, schizzi, schizzo-editor, interventi, foglio, verbali, preventivi, cartelli, argano, print;
                      витрина: site, shaft,
@@ -237,7 +243,8 @@ public/              css/ (портал: base, buttons, shell, layout, plate, fo
                      `npm run brand:logo`), indexnow-key.txt
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
 deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh (базата + снимките, копие
-                     извън сървъра) · restore-test.sh · backup-alert.sh · nginx/ · systemd/
+                     извън сървъра) · restore-test.sh · backup-alert.sh · alert.sh (алармите на скриптовете —
+                     Discord webhook или друг адрес) · nginx/ · systemd/
 ```
 
 ## Правила, които не се нарушават
@@ -1194,10 +1201,12 @@ moduli:geat` (`scripts/moduli/geat.mjs` проверява всяко име, в
   **„Cosa si modifica“** (собственикът, 7 ноември 2026 — „провери за sostituzione всички файлове с
   нормативи“): четвърто задължително поле, без предварителен избор — „Solo il limitatore“ · „Limitatore e
   paracadute“ · „Vn aumentata oltre il 5 %“. Уредба отпреди CE (UNI 10411-1:2024): само ограничителят —
-  нормата при монтажа (т. 18, `uni-10411-1-2024.md:365`); и парашутът — UNI EN 81-20:2020 (т. 6.7, `:105`);
+  нормата при монтажа (т. 18, `uni-10411-1-2024.md:365`); и парашутът — UNI EN 81-20:2020 по аналогия с т. 6.7
+  (`:105`, раздел 6 — `:78`; приложимостта я преценява техникът — листът го казва; одитът от 12 ноември 2026);
   Vn нагоре над 5 % — UNI EN 81-20:2020 (т. 15.1 и 15.13, `:298`, `:317`); Vn надолу над 5 % — пак нормата
   при монтажа (т. 15.17, `:324`), затова отделен избор няма. CE уредба (UNI 10411-11:2024): границите на
-  оригинала при трите (т. 18, 6.7, 15 f) — `uni-10411-11-2024.md:288`, `:117`, `:252`). Контактът на нов
+  оригинала при трите (т. 18 за ограничителя и за ограничител с парашут, т. 15 f) — `uni-10411-11-2024.md:288`,
+  `:252`; т. 6.7, `:117`, е в раздел 6 и не се цитира). Контактът на нов
   ограничител — винаги по UNI EN 81-20:2020, 5.6.2.2.1.6 a) (т. 18; = EN 81-1:1999/2008, 9.9.11.1): преди V1
   при Vn > 1, иначе най-късно при V1 — и при EN 81-1:1987 (правилото B 9.9.11.1 за VVVF не важи за нов
   ограничител) и при D.P.R. 1497/1963. Резултатът и PDF-ът казват по коя норма и точка са границите
@@ -1409,8 +1418,56 @@ annotazioni`, само който пише във фирмата, само на 
   `tests/pagamenti-rimborsi.test.ts`, `tests/integration/pagamenti*.test.ts` с фалшив Revolut (`revolut-finto.ts`
   — по официалния OpenAPI 2026-08-17; `pagamenti-verifica.test.ts` — двете поръчки, замяната на плана в опашка,
   връщане + webhook заедно, „da verificare“, фактурирането, връщанията).
-  Отворено за собственика: проверка на ДДС номера във VIES (сега — само формата), връщания и спорове (chargeback) —
-  на ръка от MASTER.
+- **Версия 4.0 — ДДС, връщания, спорове** (собственикът, 12 ноември 2026: „Оправи точка 2 … точка 7 чрез
+  револют“; условията 2026-11-13, чл. 12.9–12.10; Данъчника — не е данъчен съвет):
+  - **VIES** (`pagamenti/vies.ts`, `vies-ordine.ts`): регистрацията по ЗДДС е по избор (чл. 100, ал. 1) — ставките
+    остават (20 % за български номер; обратно начисляване за друга държава от ЕС). При приемане на офертата
+    номерът на фирма извън България се проверява във VIES (официалният REST договор `swagger_publicVAT.yaml`:
+    `POST /check-vat-number` с нашия номер като заявител; грешките идват и с HTTP 200). Невалиден или VIES не
+    отговаря → нищо не се записва и нищо не тръгва към Revolut (`vies.errore.*`); валиден → `Pagamento.vies*`
+    (номерът на консултацията, часът, името и адресът от VIES), в CSV-то и на реда „Da fatturare“. Същата оферта,
+    приета втори път, не пита пак. `VIES_API_BASE` — само за тестовете и разработката (фалшивият VIES).
+  - **Връщане през Revolut** (`rimborso-revolut.ts`, `rimborsi-riparto.ts`, `rimborsi-riconcilia.ts`,
+    `routes/master-pagamenti-rimborsi.ts`, `views/master/rimborso.ejs`): страницата на връщането
+    (`/master/pagamenti/:id/rimborso`) показва дължимото, колко най-много може да отиде през Revolut и върху кои
+    поръчки; нареждането — само с паролата. `POST /api/orders/{id}/refund`; сумата отива върху поръчката на
+    плащането, остатъкът (надграждане с кредит) — върху поръчките от `creditoDa`; над платеното — отказ, нищо не
+    тръгва. Всяка част е ред `Rimborso`, чийто id е Idempotency-Key. Плащането става `RIMBORSATO` едва когато
+    поръчката за връщане се прочете `completed` (веднага, от webhook-а или от поддръжката); `rimborsoCent` е
+    върнатото върху поръчката на ТОВА плащане (кредитното известие следва фактурата). Изгубен отговор —
+    „Riprova“ със същия ключ или известието, познато по нашия id в `reference`; отказ — `FALLITO` с кода, нищо
+    не се променя, писмо и аларма. Ръчното отбелязване остава (върнато с превод).
+  - **Спорове** (`contestazioni.ts`, модел `Contestazione`): `DISPUTE_*` носи само `dispute_id` → `GET
+/api/disputes/{id}` (само в продукция на Revolut) → ред, вързан с плащането по поръчката; раздел
+    „Contestazioni“ със срока за отговор, писмо до MASTER, аларма. Порталът не решава нищо сам (изгубен спор не
+    пипа плащането и абонамента). Webhook-ът се регистрира и за споровете; при отказ от Revolut (400/422) — само
+    за поръчките, и го казва. **След деплой на 4.0: „Registra il webhook“ наново** (старият е без споровете).
+- **Алармите в Discord** (`src/allarmi/`, `routes/master-allarmi.ts`; собственикът, 12 ноември 2026): MASTER →
+  „Allarmi“ — адресът на webhook-а (само discord.com; шифрован, HKDF етикет `discord-webhook-v1`; само се пише),
+  вкл./изкл., пробно съобщение; всяка промяна — с паролата; одит без адреса. `allarme(вид, брой)` не се чака и не
+  хвърля; видовете — `TIPI_ALLARME` (паднала стъпка на поддръжката, плащане за проверка, спор, неуспешно връщане,
+  поща, нов сигнал), текстовете — `locales/it/allarmi.json`: САМО вид, брой и връзка — никога име, имейл, фирма
+  (затова Discord не е получател на лични данни; влезе ли такова поле — ред в политиката и DPA). Пауза на вид
+  (`PAUSA_MS`). Сървърните скриптове пращат към същия вид адрес през `deploy/alert.sh` (`RILIEVI_ALERT_URL`).
+- **Публичните `/prezzi` и `/segnalazioni`** (собственикът, 12 ноември 2026 — „Направи публична страница, назначи
+  мен като член за модерирането“; условията 2026-11-13, чл. 25; текстовете — Правният Разбирач, не е правен съвет):
+  - `/prezzi` (`routes/site-prezzi.ts`): активните планове от конзолата, без ДДС, само докато плащанията са
+    включени в среда, която дава период; цена не се измисля. Пълният SEO набор, FAQPage и `Offer` на план
+    (`seo/structured-pagine.ts`); в sitemap, robots, llms.txt и долната лента.
+  - `/segnalazioni` (`routes/segnalazioni.ts`, `segnalazioni/form.ts`): формулярът по чл. 16 от Рег. (ЕС)
+    2022/2065 — къде, защо, име и имейл (по избор само при отметката за чл. 16(2)(c)), добросъвестност; двойна
+    бисквитка, капан, 10/ч. на мрежа, 200 на денонощие. Потвърждението по имейл носи само номера (адресът не е
+    проверен — чужд текст не се праща на трети лица). Точката за контакт (чл. 11–12): `CONTACT_EMAIL`, it/bg/en.
+  - Модерирането (`routes/master-segnalazioni.ts`): отговорникът е РОЛЯ — MASTER, без име („il responsabile della
+    moderazione di Carbon Stealth VCC“). Решение веднъж, с мотиви до подателя (чл. 16(5)); при премахване или
+    ограничаване — фирмата, мярката, фактите и основанието (чл. 17(3), CHECK в базата) и писмо до нейните
+    администратори без самоличността на подателя; самото премахване MASTER прави в портала. Преглед (чл. 25.7)
+    и уведомяване на органите (чл. 18) се записват. Пазене: 5 години от решението или прегледа, 1 година за
+    неразгледаем сигнал (избор, не закон) — трие поддръжката; нерешен сигнал няма срок. Одит без текста.
+- **Условията 2026-11-13** — в сила от своя ден без обява (`SENZA_PREAVVISO`; собственикът: „Веднага“): 12.9
+  (връщането върху същото платежно средство; спорът), 12.10 (VIES), 15.2, нов чл. 25 (сигнали и модериране).
+  Чл. 24 и `clausoleSpecifiche` не са променени. Политиката: ред за сигналите, VIES като получател; регистърът
+  по чл. 30(1) — C5 (VIES, спорове) и новият C8.
 - **Входът с Microsoft / Google** (точка D1; условията 2026-11-12, чл. 4.6, A.3, A.13, B.8 b): OpenID Connect,
   authorization code + PKCE S256, поверителен клиент (`src/auth/oidc.ts` — откриването, страницата за вход, обменът,
   проверката на ID токена: RS256 от `jwks_uri`, издател — на Microsoft този на подписалата директория

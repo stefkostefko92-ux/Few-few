@@ -339,7 +339,7 @@
         "kept": "Per tutta la durata del contratto e per 10 anni dalla cancellazione dei dati dell'azienda, che avviene entro {endDays} giorni dalla cessazione; in caso di contestazione, fino alla sua definizione (art. 17, par. 3, lett. e) GDPR)"
       },
       "pagamenti": {
-        "data": "Fatturazione e pagamenti dei piani: ragione sociale, sede e partita IVA dell'azienda, nome ed email dell'amministratore che acquista, piano, durata, prezzo, IVA, data, esito e riferimento del pagamento ricevuti da Revolut, fatture e rimborsi. Non riceviamo né conserviamo il numero della carta",
+        "data": "Fatturazione e pagamenti dei piani: ragione sociale, sede e partita IVA dell'azienda, nome ed email dell'amministratore che acquista, piano, durata, prezzo, IVA, data, esito e riferimento del pagamento ricevuti da Revolut, esito e numero di consultazione della verifica della partita IVA nel VIES, fatture, rimborsi e contestazioni del pagamento (chargeback). Non riceviamo né conserviamo il numero della carta",
         "why": "Vendere e attivare i piani Premium, emettere fatture e rimborsi, tenere la contabilità",
         "basis": "Esecuzione del contratto, art. 6, par. 1, lett. b); obblighi di legge contabili e fiscali, art. 6, par. 1, lett. c) GDPR. Titolare: Carbon Stealth",
         "kept": "Fatture e documenti contabili: 10 anni dal 1° gennaio dell'anno successivo a quello a cui si riferiscono (art. 12 della legge bulgara sulla contabilità), o più a lungo se lo richiede la legge fiscale; i dati del piano per la durata del contratto e i 10 anni successivi, come il registro delle accettazioni; in caso di contestazione, fino alla sua definizione"
@@ -361,6 +361,12 @@
         "why": "Ripristinare il portale dopo un guasto o un errore",
         "basis": "Sicurezza del trattamento (art. 32 GDPR), per conto dell'azienda titolare",
         "kept": "Le copie giornaliere 14 giorni, poi cancellate: anche quello che eliminate resta nelle copie per questo tempo. Le copie fatte prima di ogni aggiornamento del portale: le ultime cinque"
+      },
+      "segnalazioni": {
+        "data": "Segnalazioni di contenuti illegali: nome ed email di chi segnala, dove si trova il contenuto, i motivi e la dichiarazione di buona fede, data e ora; la decisione, con i motivi e la misura adottata; le comunicazioni a chi segnala e agli amministratori dell'azienda che ha caricato il contenuto; le richieste di riesame e il loro esito",
+        "why": "Esaminare le segnalazioni, decidere e comunicare la decisione con i motivi; informare le autorità quando la legge lo impone; dimostrare come abbiamo gestito ogni segnalazione",
+        "basis": "Obbligo di legge, art. 6, par. 1, lett. c) GDPR (artt. 16–18 del Regolamento (UE) 2022/2065); conservazione come prova, legittimo interesse, art. 6, par. 1, lett. f) GDPR. Titolare: Carbon Stealth",
+        "kept": "5 anni dalla decisione o dall'esito del riesame; le segnalazioni che non abbiamo potuto esaminare, 1 anno dalla risposta; in caso di contestazione, fino alla sua definizione. Il nome di chi segnala non è comunicato all'azienda, salvo che sia strettamente necessario"
       }
     },
     "required": "Nome, azienda ed email servono per rispondere alla richiesta: senza di essi non possiamo valutarla. Gli altri campi sono facoltativi.",
@@ -390,7 +396,8 @@
       "mail": "Sendinblue SAS (Brevo), Francia — l'invio delle email, quando è attivo: inviti, link per una nuova password, avvisi di sicurezza dell'account (verifica in due passaggi, cambio di email), avvisi di nuove richieste agli amministratori del portale, il codice per firmare le condizioni di servizio e la copia delle condizioni accettate, le offerte accettate, gli avvisi di scadenza della prova e dei piani, gli avvisi sul cambio di fornitore e sulla cancellazione dei dati, i moduli di intervento e i verbali in PDF, con i nomi e le firme, che gli utenti inviano a un indirizzo scelto da loro o in copia a chi firma, e i moduli d'ordine che gli utenti inviano ai fornitori.",
       "pagamenti": "Revolut Bank UAB, Lituania — la pagina di pagamento con carta dei piani Premium. Revolut riceve i dati della carta e del pagamento e li tratta secondo i propri termini e la propria informativa (revolut.com/legal); a noi comunica solo esito, importo e riferimento del pagamento.",
       "text": "Non vendiamo dati e non li cediamo per pubblicità. Il portale e i suoi dati restano nell'Unione europea; Brevo può affidare parte dell'invio delle email a sub-responsabili fuori dall'UE, e in quel caso il trasferimento è tutelato da clausole contrattuali tipo (art. 46 GDPR). Per i pagamenti con carta vale anche l'informativa di Revolut.",
-      "contabili": "Il nostro consulente contabile e il software di fatturazione — i dati di fatturazione dei piani (ragione sociale, sede, partita IVA, importi), nei limiti necessari a emettere le fatture e a tenere la contabilità."
+      "contabili": "Il nostro consulente contabile e il software di fatturazione — i dati di fatturazione dei piani (ragione sociale, sede, partita IVA, importi), nei limiti necessari a emettere le fatture e a tenere la contabilità.",
+      "vies": "Commissione europea — il sistema VIES, per verificare la partita IVA di un'azienda di un altro Stato membro prima dell'acquisto di un piano. Il VIES riceve la partita IVA dell'azienda e la nostra e la confronta con la banca dati dell'amministrazione fiscale dello Stato che l'ha attribuita. Conserviamo l'esito e il numero di consultazione con il pagamento, per il tempo dei documenti contabili."
     },
     "security": {
       "title": "Sicurezza",
@@ -413,9 +420,8 @@
     },
     "segnalazioni": {
       "title": "Segnalare un contenuto illegale e punti di contatto",
-      "text": "Rilievi Impianti conserva i contenuti che le aziende clienti caricano (servizio di hosting ai sensi del Regolamento (UE) 2022/2065). Se ritieni che un contenuto presente sul portale sia illegale o violi i tuoi diritti — per esempio una foto in cui compari o un documento di cui sei titolare — scrivi a {email}. Indica: dove si trova il contenuto (indirizzo della pagina o descrizione precisa), perché lo ritieni illegale, il tuo nome e un recapito, e la dichiarazione che la segnalazione è fatta in buona fede.",
-      "passi": "Ti confermiamo la ricezione, esaminiamo la segnalazione senza ritardo e ti comunichiamo la decisione con i motivi; se limitiamo o rimuoviamo un contenuto, lo comunichiamo con i motivi anche all'azienda che lo ha caricato.",
-      "contatto": "Lo stesso indirizzo è il punto di contatto unico per le autorità e per gli utenti del servizio (artt. 11 e 12 del Regolamento). Lingue: italiano, bulgaro, inglese."
+      "text": "Rilievi Impianti conserva i contenuti che le aziende clienti caricano (servizio di memorizzazione ai sensi del Regolamento (UE) 2022/2065). Il modulo per segnalare un contenuto illegale, i tempi, la decisione motivata e il punto di contatto per le autorità e per gli utenti sono in una pagina dedicata:",
+      "link": "Segnalare un contenuto illegale"
     }
   }
 }

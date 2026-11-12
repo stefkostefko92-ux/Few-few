@@ -46,6 +46,9 @@ import { schedeRouter } from './schede.js';
 import { schedeStampaRouter } from './schede-stampa.js';
 import { schedeEtichettaRouter } from './schede-etichetta.js';
 import { siteRouter } from './site.js';
+import { sitePrezziRouter } from './site-prezzi.js';
+import { segnalazioniRouter } from './segnalazioni.js';
+import { masterSegnalazioniRouter } from './master-segnalazioni.js';
 import { usersRouter } from './users.js';
 import { usersManageRouter } from './users-manage.js';
 import { novitaRouter } from './novita.js';
@@ -73,6 +76,9 @@ export function montaRouter(app: Express): void {
   // API само за четене (ключ, не бисквитка) — най-напред: нищо от портала не стига до нея.
   app.use(apiRouter);
   app.use(siteRouter);
+  // Публичните страници извън витрината: цените и сигналите за незаконно съдържание.
+  app.use(sitePrezziRouter);
+  app.use(segnalazioniRouter);
   app.use(novitaRouter);
   app.use(esportazioneRouter);
   app.use(statoRouter);
@@ -88,6 +94,7 @@ export function montaRouter(app: Express): void {
   app.use(masterPagamentiRimborsiRouter);
   app.use(masterPagamentiRouter);
   app.use(masterAllarmiRouter);
+  app.use(masterSegnalazioniRouter);
   app.use(condizioniRouter);
   app.use(condizioniFirmaRouter);
   app.use(installaRouter);
