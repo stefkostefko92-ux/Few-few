@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
+import { annotazioniDa, viewBoxAnnotazioni } from './allegati/annotazioni.js';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import cookieParser from 'cookie-parser';
@@ -79,6 +80,8 @@ function baseLocals(req: Request, res: Response): void {
   res.locals.passwordMin = PASSWORD_MIN_LENGTH;
   res.locals.schizzoVista = VISTA_SCHIZZO;
   res.locals.schizzoForme = primitiviFoglio;
+  res.locals.annotazioniDi = annotazioniDa;
+  res.locals.viewBoxAnnotazioni = viewBoxAnnotazioni;
   res.locals.path = req.path;
   // Витрината — входът води към заявката за достъп.
   res.locals.landingPath = HOME_PATH;

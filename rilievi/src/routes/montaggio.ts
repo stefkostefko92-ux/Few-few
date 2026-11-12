@@ -23,6 +23,7 @@ import { interventiFirmaRouter } from './interventi-firma.js';
 import { verbaliFirmaRouter } from './verbali-firma.js';
 import { verbaliNuovoRouter } from './verbali-nuovo.js';
 import { verbaliRouter } from './verbali.js';
+import { allegatiAnnotazioniRouter } from './allegati-annotazioni.js';
 import { buoniFirmeRouter } from './buoni-firme.js';
 import { buoniNuovoRouter } from './buoni-nuovo.js';
 import { buoniRouter } from './buoni.js';
@@ -76,6 +77,7 @@ export function montaRouter(app: Express): void {
   app.use(schedeVersioniRouter);
   app.use(ordiniInvioRouter);
   app.use(allegatiRouter);
+  app.use(allegatiAnnotazioniRouter);
   app.use(cestinoRouter);
   app.use(ordiniRouter);
   app.use(calcoloRouter);

@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-12-annotazioni-foto": {
+        "area": "Schede",
+        "titolo": "Annotazioni sulle foto",
+        "testo": "Nel modulo della scheda ogni foto ha «Annota»: si apre l'editor degli schizzi a schermo intero con la foto sotto, e frecce, cerchi, quote e testi si disegnano direttamente sopra. Le annotazioni si vedono sulla miniatura, nella stampa e nel PDF della scheda e si salvano senza toccare il resto del modulo."
+      },
       "2026-11-12-senza-rete": {
         "area": "Portale",
         "titolo": "Moduli salvati anche senza rete",

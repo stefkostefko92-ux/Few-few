@@ -70,6 +70,14 @@
       "spostata": "{titolo}: posizione {n} di {totale}.",
       "anteprima": "Anteprima",
       "anteprimaHint": "Indicativa: nel PDF e nella stampa le foto continuano sotto la scheda."
+    },
+    "annotazioni": {
+      "annota": "Annota",
+      "modifica": "Modifica le annotazioni",
+      "titolo": "Annotazioni sulla foto",
+      "salvate": "Annotazioni salvate: compaiono anche nella stampa e nel PDF.",
+      "tolte": "Annotazioni tolte dalla foto.",
+      "errore": "Annotazioni non salvate: controlla la connessione e riprova."
     }
   }
 }

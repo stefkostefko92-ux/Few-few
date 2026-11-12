@@ -84,6 +84,7 @@ export const SELECT_ALLEGATO = {
   nomeOriginale: true,
   inStampa: true,
   ordineStampa: true,
+  annotazioni: true,
   caricatoDaId: true,
   createdAt: true,
 } as const satisfies Prisma.AllegatoSelect;

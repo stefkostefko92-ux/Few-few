@@ -207,6 +207,7 @@
       "LISTINO_UPDATE": "Listino prezzi modificato",
       "AZIENDA_PREVENTIVI": "Preventivi attivati o disattivati per l'azienda",
       "AZIENDA_PREVENTIVI_CONDIZIONI": "Condizioni predefinite dei preventivi modificate",
+      "ALLEGATO_ANNOTAZIONI": "Annotazioni di una foto modificate",
       "USER_EDIT": "Nome o email cambiati",
       "MEMBERSHIP_ADD": "Account aggiunto a un'azienda",
       "MEMBERSHIP_REMOVE": "Account tolto da un'azienda"

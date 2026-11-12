@@ -116,6 +116,8 @@ export const AUDIT_ACTIONS = [
   'LISTINO_UPDATE',
   'AZIENDA_PREVENTIVI',
   'AZIENDA_PREVENTIVI_CONDIZIONI',
+  // Анотациите върху снимка на картата (src/allegati/annotazioni.ts): само броят на елементите.
+  'ALLEGATO_ANNOTAZIONI',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

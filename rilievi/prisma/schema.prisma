@@ -729,6 +729,9 @@ model Allegato {
   /// Мястото на снимката в печата и PDF-а, избрано в „Stampa e PDF“ (10 ноември 2026); празно — по
   /// разделите в реда на фирмата и по реда на качване, след подредените.
   ordineStampa  Int?
+  /// Анотациите върху снимката (C5): лист от скицника `{e: [...]}` в единиците 1400 × 1000, снимката —
+  /// цяла, в средата (src/allegati/annotazioni.ts); null — без.
+  annotazioni   Json?
   tentativi     Int           @default(0)
   caricatoDaId  String?
   caricatoDa    User?         @relation("AllegatiCaricati", fields: [caricatoDaId], references: [id], onDelete: SetNull)

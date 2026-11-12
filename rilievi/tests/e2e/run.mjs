@@ -239,7 +239,7 @@ try {
       // The app on the home screen: installable for Chrome, offline notice, the steps of each device.
       await checkInstallableApp(browser, { base, shots, scheme, email, password });
       await checkInstallPhone(browser, { base, shots, scheme });
-      await checkAttachments(page, { sheetUrl, shots });
+      await checkAttachments(page, { sheetUrl, shots, scheme });
       await checkPhotoOrder(page, { sheetUrl, shots });
       await checkSketches(page, { base, aziendaPath, sheetUrl, shots, scheme });
     }
