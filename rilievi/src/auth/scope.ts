@@ -21,9 +21,14 @@ export function roleIn(user: AccessUser, aziendaId: string | null): Role | null 
 }
 
 type Membro = AccessUser['memberships'][number];
-/** Свършила фирма (`soloEsportazione`) не дава нищо — износът има своя проверка (routes/impostazioni-esportazione.ts). */
+/**
+ * Свършила фирма (`soloEsportazione`) не дава нищо — износът има своя проверка (routes/impostazioni-esportazione.ts).
+ * Офертите — само във фирма, в която MASTER ги е включил (`preventivi`).
+ */
 const puoMembro = (m: Membro, capability: Capability): boolean =>
-  !m.soloEsportazione && puo(m.role, capability, m.permessi);
+  !m.soloEsportazione &&
+  (!capability.startsWith('preventivi:') || m.preventivi === true) &&
+  puo(m.role, capability, m.permessi);
 
 /** Способността във фирмата на конкретен запис (карта, покана, човек). */
 export function canIn(user: AccessUser, capability: Capability, aziendaId: string | null): boolean {

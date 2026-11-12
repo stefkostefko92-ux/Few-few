@@ -47,6 +47,16 @@
       "logoMissing": "Scegli un file per il logo.",
       "eliminaAttiva": "Un'azienda attiva non si elimina: prima disattivala.",
       "eliminaNome": "Per confermare scrivi il nome dell'azienda esattamente com'è."
+    },
+    "preventivi": {
+      "title": "Preventivi",
+      "attivi": "Preventivi attivi per questa azienda.",
+      "spenti": "Preventivi non attivi per questa azienda.",
+      "text": "Con i preventivi attivi, l'azienda prepara preventivi numerati con listino prezzi, PDF e invio al cliente per email. Disattivandoli non si cancella nulla: preventivi e listino restano nell'esportazione e tornano visibili se li riattivi.",
+      "attiva": "Attiva i preventivi",
+      "disattiva": "Disattiva i preventivi",
+      "flashOn": "Preventivi attivati per l'azienda.",
+      "flashOff": "Preventivi disattivati per l'azienda. Nulla è stato cancellato."
     }
   },
   "impostazioni": {
@@ -106,7 +116,9 @@
         "interventi_read": "Vedere interventi e cartelli",
         "interventi_write": "Compilare interventi e cartelli",
         "audit_view": "Vedere il registro: le proprie azioni e quelle dei ruoli sotto il proprio",
-        "schede_approve": "Approvare le schede (se l'azienda usa l'approvazione)"
+        "schede_approve": "Approvare le schede (se l'azienda usa l'approvazione)",
+        "preventivi_read": "Vedere preventivi e listino",
+        "preventivi_write": "Compilare preventivi e modificare il listino"
       },
       "error": {
         "tooLong": "Massimo 40 caratteri.",

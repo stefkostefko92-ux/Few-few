@@ -90,59 +90,65 @@ enum AccessRequestStatus {
 /// Фирма — клиент на портала: свои хора, свои карти, свое лого на листа. Създава я само MASTER
 /// (собственикът на портала); всяка фирма вижда само своето (src/auth/scope.ts).
 model Azienda {
-  id                 String       @id @default(cuid())
-  name               String       @unique @db.VarChar(120)
+  id                   String       @id @default(cuid())
+  name                 String       @unique @db.VarChar(120)
   /// Логото за листа и PDF-а — вече прекодирано от src/aziende/logo.ts (PNG или JPEG, без метаданни).
-  logo               Bytes?
-  logoType           String?      @db.VarChar(20)
-  logoWidth          Int?
-  logoHeight         Int?
-  logoUpdatedAt      DateTime?
+  logo                 Bytes?
+  logoType             String?      @db.VarChar(20)
+  logoWidth            Int?
+  logoHeight           Int?
+  logoUpdatedAt        DateTime?
   /// Деактивирана фирма: хората ѝ не влизат и сесиите им падат; картите ѝ остават.
-  deactivatedAt      DateTime?
+  deactivatedAt        DateTime?
   /// Редът на разделите на картата във фирмата (ключовете от src/schede/fields.ts); празно — редът по
   /// подразбиране. Подрежда го администраторът ѝ (src/aziende/sezioni.ts).
-  ordineSezioni      String[]     @default([])
+  ordineSezioni        String[]     @default([])
   /// Скицникът — от 10 ноември 2026 винаги включен за всички (собственикът: „attiva gli schizzi per tutti
   /// … togli l'opzione per disattivarli“); кодът не чете колоната, тя остава за връщане назад.
-  schizzi            Boolean      @default(true)
+  schizzi              Boolean      @default(true)
   /// Последният даден номер на лист за интервенция във фирмата (собствен брояч от 1, без дупки):
   /// новият лист взема +1 в транзакцията си (src/interventi/service.ts).
-  interventiNumero   Int          @default(0)
+  interventiNumero     Int          @default(0)
   /// Данните на фирмата за главата на табелата „Avviso di fermo impianto“ (име, дейност, адрес,
   /// контакти, P. IVA) — попълва ги администраторът ѝ; проверени при запис и четени с недоверие
   /// (src/aziende/dati.ts). null — още не са записани.
-  datiSocietari      Json?
+  datiSocietari        Json?
   /// Шаблонът на табелата, избран в настройките (src/cartelli/modelli.ts); непознат или null — първият.
-  cartelloModello    String?      @db.VarChar(40)
+  cartelloModello      String?      @db.VarChar(40)
   /// Имената на ролите във фирмата ({ADMIN: „Titolare“, …}) — сменя ги администраторът ѝ; липсващото
   /// е името по подразбиране (src/auth/permessi.ts).
-  nomiRuoli          Json?
+  nomiRuoli            Json?
   /// Правата на ролите под ADMIN за картите, листовете, табелите и регистъра ({TECNICO: [...], …}) —
   /// сменя ги администраторът ѝ; липсващата роля е по йерархията (src/auth/permessi.ts).
-  permessiRuoli      Json?
+  permessiRuoli        Json?
   /// Версията на условията за услугата, приети за фирмата от неин ADMIN (src/legale/); различна от
   /// текущата — хората ѝ не ползват портала до приемането. Доказателството е в `Accettazione`.
-  condizioniVersione String?      @db.VarChar(20)
+  condizioniVersione   String?      @db.VarChar(20)
   /// Смяната на доставчика (Data Act, чл. 23–30; src/aziende/cambio.ts): поискана от ADMIN на фирмата;
   /// услугата продължава през прехода, който свършва в `cambioFineAt` (30 дни, веднъж удължен) — тогава
   /// фирмата се деактивира. Трите полета са заедно или ги няма (CHECK `Azienda_cambio_check`).
-  cambioRichiestoAt  DateTime?
-  cambioFineAt       DateTime?
-  cambioEsito        CambioEsito?
+  cambioRichiestoAt    DateTime?
+  cambioFineAt         DateTime?
+  cambioEsito          CambioEsito?
   /// Преходът е удължен веднъж (чл. 25(5) Data Act — правото е еднократно).
-  cambioProrogato    Boolean      @default(false)
+  cambioProrogato      Boolean      @default(false)
   /// Информацията по чл. 13 GDPR на страницата на подписа (листът за интервенция, протоколът), както
   /// фирмата я е написала — тя е администраторът; null — моделът, попълнен с данните ѝ (legale/informativa.ts).
-  informativaFirme   String?      @db.VarChar(4000)
+  informativaFirme     String?      @db.VarChar(4000)
   /// Одобрението на две стъпки на картите (C7) — включва го администраторът ѝ; по подразбиране — не.
-  approvazioneSchede Boolean      @default(false)
+  approvazioneSchede   Boolean      @default(false)
   /// „Buono di lavoro“: кодът на модула горе вдясно („Mod. PO-05-3 Ed. 02 …“) и клаузата долу — както
   /// фирмата ги е написала в настройките; null — нищо (src/buoni/).
-  buonoCodice        String?      @db.VarChar(80)
-  buonoClausola      String?      @db.VarChar(1000)
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  buonoCodice          String?      @db.VarChar(80)
+  buonoClausola        String?      @db.VarChar(1000)
+  /// Офертите (C1) — включва ги САМО MASTER на страницата на фирмата; по подразбиране — не.
+  preventiviAttivi     Boolean      @default(false)
+  /// Последният номер на оферта на фирмата (увеличава се в транзакцията на новата — без дупки и повторения).
+  preventiviNumero     Int          @default(0)
+  /// Условията за плащане по подразбиране на новата оферта (настройките на фирмата).
+  preventivoCondizioni String?      @db.VarChar(2000)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
   memberships       Membership[]
   invites           Invite[]
@@ -155,6 +161,8 @@ model Azienda {
   fornitori         Fornitore[]
   ordini            OrdineFornitore[]
   buoni             BuonoLavoro[]
+  preventivi        Preventivo[]
+  listino           VoceListino[]
   audit             AuditLog[]
   accessRequests    AccessRequest[]
 }
@@ -236,6 +244,8 @@ model User {
   buoniCreati         BuonoLavoro[]         @relation("BuoniCreati")
   buoniMod            BuonoLavoro[]         @relation("BuoniModificati")
   buoniFirme          BuonoFirma[]          @relation("BuoniFirmati")
+  preventiviCreati    Preventivo[]          @relation("PreventiviCreati")
+  preventiviMod       Preventivo[]          @relation("PreventiviModificati")
 
   @@index([invitedById])
   @@index([master])
@@ -634,6 +644,7 @@ model Scheda {
   versioni                     SchedaVersione[]
   ordini                       OrdineFornitore[]
   buoni                        BuonoLavoro[]
+  preventivi                   Preventivo[]
   createdAt                    DateTime                 @default(now())
   updatedAt                    DateTime                 @updatedAt
 
@@ -1493,4 +1504,71 @@ model BuonoFirma {
   @@unique([buonoId, posto])
   @@index([hash])
   @@index([firmatoDaId])
+}
+
+enum StatoPreventivo {
+  BOZZA
+  INVIATO
+  ACCETTATO
+  RIFIUTATO
+}
+
+/// Оферта към клиента на фирмата (C1; src/preventivi/): номерът е на фирмата, от 1; редовете — JSON с
+/// цели числа (центове, хилядни, стотни от процента — preventivi/importi.ts), проверен при запис и четен с
+/// недоверие; сборовете се смятат на сървъра при всеки запис и се пазят за списъка. Не е фактура.
+model Preventivo {
+  id               String          @id @default(cuid())
+  aziendaId        String
+  azienda          Azienda         @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  schedaId         String?
+  scheda           Scheda?         @relation(fields: [schedaId], references: [id], onDelete: SetNull)
+  numero           Int
+  data             DateTime        @db.Date
+  validitaGiorni   Int             @default(30)
+  cliente          String          @db.VarChar(200)
+  clienteIndirizzo String?         @db.VarChar(300)
+  clientePiva      String?         @db.VarChar(20)
+  clienteEmail     String?         @db.VarChar(254)
+  oggetto          String          @db.VarChar(300)
+  impianto         String?         @db.VarChar(300)
+  /// [{codice, descrizione, unita, quantita, prezzo, sconto, iva}] — до 100.
+  righe            Json            @default("[]")
+  note             String?         @db.VarChar(4000)
+  condizioni       String?         @db.VarChar(2000)
+  imponibile       Int             @default(0)
+  imposta          Int             @default(0)
+  totale           Int             @default(0)
+  stato            StatoPreventivo @default(BOZZA)
+  statoAt          DateTime?
+  searchText       String          @default("")
+  createdById      String?
+  createdBy        User?           @relation("PreventiviCreati", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById      String?
+  updatedBy        User?           @relation("PreventiviModificati", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@unique([aziendaId, numero])
+  @@index([aziendaId, createdAt])
+  @@index([schedaId])
+  @@index([createdById])
+  @@index([updatedById])
+}
+
+/// Ред от ценоразписа на фирмата (C1): цената в центове, ставката на ДДС; оттам се попълват редовете на
+/// офертата. До 1000 на фирма.
+model VoceListino {
+  id          String   @id @default(cuid())
+  aziendaId   String
+  azienda     Azienda  @relation(fields: [aziendaId], references: [id], onDelete: Cascade)
+  codice      String?  @db.VarChar(30)
+  descrizione String   @db.VarChar(300)
+  unita       String   @db.VarChar(12)
+  prezzo      Int
+  iva         Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([aziendaId, codice])
+  @@index([aziendaId, descrizione])
 }

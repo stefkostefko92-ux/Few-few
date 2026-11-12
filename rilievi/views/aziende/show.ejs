@@ -46,6 +46,17 @@
     <form method="post" action="/aziende/<%= azienda.id %>/logo/rimuovi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><div class="toolbar"><button class="btn btn--ghost" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t('aziende.logoRemove') %></button></div></form>
     <% } %>
   </section>
+  <%# Функциите по избор: офертите (C1) — включва ги само MASTER; изключени, нищо не се трие. %>
+  <section aria-labelledby="h-preventivi">
+    <h2 class="section__title" id="h-preventivi"><%= t('aziende.preventivi.title') %></h2>
+    <p><strong><%= t(azienda.preventiviAttivi ? 'aziende.preventivi.attivi' : 'aziende.preventivi.spenti') %></strong></p>
+    <p class="muted"><%= t('aziende.preventivi.text') %></p>
+    <form method="post" action="/aziende/<%= azienda.id %>/preventivi">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="attivi" value="<%= azienda.preventiviAttivi ? '0' : '1' %>">
+      <div class="toolbar"><button class="btn" type="submit"><%= t(azienda.preventiviAttivi ? 'aziende.preventivi.disattiva' : 'aziende.preventivi.attiva') %></button></div>
+    </form>
+  </section>
   <section aria-labelledby="h-access">
     <h2 class="section__title" id="h-access"><%= t('aziende.accessTitle') %></h2>
     <p class="muted"><%= t(azienda.deactivatedAt ? 'aziende.reactivateText' : 'aziende.deactivateText', { days: giorniPrimaEliminazione }) %></p>

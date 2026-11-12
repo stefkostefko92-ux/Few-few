@@ -18,6 +18,7 @@ export const MEMBERSHIP_SELECT = {
       permessiRuoli: true,
       nomiRuoli: true,
       condizioniVersione: true,
+      preventiviAttivi: true,
     },
   },
 } as const;
@@ -31,6 +32,7 @@ interface MembershipRow {
     permessiRuoli?: Prisma.JsonValue;
     nomiRuoli?: Prisma.JsonValue;
     condizioniVersione?: string | null;
+    preventiviAttivi?: boolean;
   };
 }
 
@@ -57,6 +59,7 @@ export function activeMemberships(
       permessi: permessiSalvati(row.azienda.permessiRuoli),
       nomiRuoli: nomiSalvati(row.azienda.nomiRuoli),
       condizioniVersione: row.azienda.condizioniVersione ?? null,
+      ...(row.azienda.preventiviAttivi === true ? { preventivi: true as const } : {}),
       ...(row.azienda.deactivatedAt === null ? {} : { soloEsportazione: true as const }),
     }))
     .sort((a, b) => a.aziendaName.localeCompare(b.aziendaName, 'it'));

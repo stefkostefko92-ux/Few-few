@@ -43,6 +43,8 @@ export function aziendeImpostabili(user: SessionUser) {
       buonoCodice: true,
       buonoClausola: true,
       approvazioneSchede: true,
+      preventiviAttivi: true,
+      preventivoCondizioni: true,
     },
   });
 }

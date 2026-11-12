@@ -17,7 +17,7 @@ import {
   notFound,
   pathSezione,
   renderImpostazioni,
-  SEZIONI_IMPOSTAZIONI,
+  sezioniDi,
   type AziendaImpostabile,
   type SezioneImpostazioni,
 } from './impostazioni-vista.js';
@@ -96,6 +96,11 @@ async function riepilogo(
         : 'impostazioni.hub.ordineBase',
     ),
     cartelli: t('impostazioni.hub.modello', { nome: modelloDi(azienda.cartelloModello).titolo }),
+    preventivi: t(
+      azienda.preventivoCondizioni
+        ? 'preventivi.impostazioni.hubSi'
+        : 'preventivi.impostazioni.hubNo',
+    ),
     buoni: t(
       azienda.buonoCodice || azienda.buonoClausola
         ? 'impostazioni.hub.buonoSi'
@@ -130,7 +135,7 @@ impostazioniRouter.get('/impostazioni', settings, async (req, res) => {
   res.render('impostazioni/index', {
     aziende,
     azienda,
-    sezioni: SEZIONI_IMPOSTAZIONI,
+    sezioni: sezioniDi(azienda),
     icone: ICONE_SEZIONI,
     riepilogo: await riepilogo(azienda, res.locals.t, res.locals.fmt.dayRoma),
     pathSezione,
@@ -142,7 +147,7 @@ impostazioniRouter.get('/impostazioni/:sezione', settings, async (req, res, next
   // Другите адреси под /impostazioni/ (шаблоните на табелата) са на своите рутери.
   if (!isSezione(sezione)) return next();
   const { aziende, azienda } = await aziendaScelta(req);
-  if (!azienda) return notFound(req, res);
+  if (!azienda || !sezioniDi(azienda).includes(sezione)) return notFound(req, res);
   renderImpostazioni(res, 200, {
     sezione,
     aziende,

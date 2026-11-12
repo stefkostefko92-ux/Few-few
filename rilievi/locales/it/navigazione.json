@@ -9,6 +9,8 @@
     "interventoDesc": "Il modulo di pronto intervento, firmato dal tecnico e dal cliente.",
     "buono": "Buono di lavoro",
     "buonoDesc": "Il cantiere passo per passo: sequenze di lavoro, controlli, resoconto e firme.",
+    "preventivo": "Preventivo",
+    "preventivoDesc": "Righe dal listino, IVA per aliquota, PDF e invio al cliente.",
     "verbale": "Verbale di cantiere",
     "verbaleDesc": "Il verbale di chiusura cantiere, con copia azienda e copia installatore.",
     "cartello": "Cartello fermo impianto",

@@ -104,6 +104,11 @@ src/
                      dati.ts (редът ↔ данните, с недоверие) · firme.ts (отпечатъци, план на подписите, печат —
                      без база) · service.ts (запис с подписите, изтриване) + elenco.ts (четене, търсене) ·
                      documento.ts (проверените подписи, PDF-ът) · pdf.ts + pdf-foglio.ts + pdf-sezioni.ts
+  preventivi/        офертите (C1): importi.ts (парите — цели центове, хилядни за количеството, стотни от
+                     процента за отстъпката; ДДС по ставка — без база) · form.ts (разборът, zod) · dati.ts
+                     (редовете ↔ JSON с недоверие, сборовете) · listino.ts (ценоразписът) · service.ts (номерът —
+                     брояч на фирмата; `base`; състоянията) · elenco.ts · azienda.ts (включването от MASTER,
+                     условията по подразбиране) · da-scheda.ts · documento.ts + pdf.ts + pdf-parti.ts (A4)
   verbali/           „Verbale di chiusura cantiere“: voci.ts (разделите и редовете на листа, кои са с
                      „Certificato“; разборът и четенето с недоверие) · form.ts (черновата, zod; попълването
                      от картата — само адрес, „N° buono“, дата) · service.ts (нов — картата пак в
@@ -177,10 +182,10 @@ views/               EJS: partials/ (горна и долна лента, таб
                      account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs; скицникът —
                      schede/_schizzo.ejs (листът като SVG), _schizzo-foglio.ejs, _schizzo-editor.ejs
 locales/it/          common · auth · schede · users · aziende · requests · site · mail · allegati · schizzi ·
-                     interventi · cartelli · argano · limitatore · verbali · buoni
+                     interventi · cartelli · argano · limitatore · verbali · buoni · preventivi
                      (.json) — единственият
 public/              css/ (портал: base, buttons, shell, layout, plate, forms, pages, data, sheet, misure,
-                     moduli, allegati, foto-stampa, schizzi, schizzo-editor, interventi, foglio, verbali, cartelli, argano, print;
+                     moduli, allegati, foto-stampa, schizzi, schizzo-editor, interventi, foglio, verbali, preventivi, cartelli, argano, print;
                      витрина: site, shaft,
                      site-hero, site-parts,
                      site-request),
@@ -978,6 +983,37 @@ moduli:geat` (`scripts/moduli/geat.mjs` проверява всяко име, в
   (`BUONO_DELETE`). В износа (`buoni` с `firme` в `dati.json`, PDF/A в `documenti/buoni/`) и в изтриването на фирмата.
   Миграция `20261112210000_buono_lavoro` (само добавя; CHECK-ове за JSON-а, часовете, мястото и отпечатъците; GIN
   индекс за търсенето).
+- **Офертите („Preventivi“)** (`src/preventivi/`, `routes/preventivi*.ts`, `views/preventivi/`; собственикът, 12
+  ноември 2026 — точка C1: „disattivato di default e attivabile dalle impostazioni master“): **изключени по
+  подразбиране** (`Azienda.preventiviAttivi`); включва и изключва ги САМО MASTER — раздел „Preventivi“ на страницата
+  на фирмата (`POST /aziende/:id/preventivi`, одит `AZIENDA_PREVENTIVI`). Изключени, ги няма за никого във фирмата:
+  `preventivi:read/write` минават само при `MembershipView.preventivi` (`scope.ts`, `puoMembro`; членството носи
+  флага от `memberships.ts`), заявките за MASTER филтрират `azienda.preventiviAttivi` (`elenco.ts`), менюто, бутонът
+  на картата, разделът на настройките (`sezioniDi`) и отметките в „Ruoli e permessi“ изчезват — а запис на ролите
+  при изключени оферти пази правата им каквито са (`capacitaNascoste`, `parseRuoli`). Нищо не се трие: включени
+  наново, офертите и ценоразписът са там; износът ги носи винаги. Права по подразбиране — от RESPONSABILE нагоре
+  (цените са търговска информация), сменят се в ролите; писането води четенето. Офертата: клиентът (име, адрес,
+  P. IVA/CF — 11 цифри с „IT“ или 16 знака, имейл), ден, валидност 1–365 (30), предмет, уредба, до 100 реда (код,
+  описание, мерна единица, количество, цена, отстъпка %, ставка 22/10/4), бележки, условия (идват от настройките на
+  фирмата — `Azienda.preventivoCondizioni`, раздел „Preventivi“, ADMIN, одит без текста). **Парите — само цели
+  числа** (`importi.ts`): центове, хилядни, стотни от процента; закръгляне математическо (BigInt, половината
+  нагоре) веднъж на стъпка — ред, после отстъпката; ДДС на сбора по ставка („riepilogo IVA“). Сборовете в
+  колоните (`imponibile/imposta/totale`, CHECK) смята само сървърът от прочетените редове — пратена сума се
+  пренебрегва (тестът го пази); браузърът (`public/js/preventivo.js`) показва същата аритметика само за ориентир.
+  Номерът — на фирмата, от 1 (`Azienda.preventiviNumero`, UPDATE … RETURNING в транзакцията и САМО при включени
+  оферти и активна фирма). Състояния: Bozza → Inviato → Accettato/Rifiutato (и обратно към Inviato — грешно
+  отбелязан изход); промяна само в Bozza/Inviato и върху отворената версия (`base`); трие се само чернова (одитът
+  пази номера — дупка в номерацията е допустима, офертата не е фискален документ). От картата (`?scheda=`):
+  уредбата, предметът и ред за всяка работа от картата — без цена (не се измисля); „Duplica“ (`?da=`); търсенето
+  `?cerca=` — общото с табелата. Ценоразписът (`/preventivi/listino`, `VoceListino`, до 1000 на фирма — броят под
+  заключен ред на фирмата; кодът — единствен; одит `LISTINO_UPDATE` без цените): „Aggiungi dal listino“ и кодът
+  в реда попълват празните полета (`/preventivi/listino.json` — само за пишещите във фирмата); цената на вече
+  направена оферта не следва ценоразписа. PDF/A A4 като писмо (логото, данните на фирмата, „Spett.le“, таблицата
+  с главата на всяка страница, обобщението по ставки, бележки, условия, „Per accettazione“, долу номер и „Pagina n
+  di N“). Писмо до клиента с PDF-а (`mailLimiter`, отговорът — до пратилия, адресът не се пази, черновата става
+  „Inviato“ само при тръгнало писмо; одит `PREVENTIVO_EMAIL` без адреса). В износа (`preventivi`, `listino`,
+  `documenti/preventivi/`) и в изтриването на фирмата. Миграция `20261113090000_preventivi` (само добавя; CHECK за
+  сумите, ценоразписа и брояча; GIN индекс за търсенето).
 - **Всеки лист с изчисление казва кой, с какво и кой трябва да го провери** (собственикът, 10 ноември 2026 —
   „Su ogni foglio dobbiamo scrivere che è stato generato dal nostro software, che non abbiamo nessuna
   responsabilità perché deve essere comunque controllato e firmato da persona istruita e da chi è stato

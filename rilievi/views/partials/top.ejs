@@ -6,7 +6,7 @@
   // Входът е без лентата на портала, но с чертежа на шахтата (shaft.css).
   // Темата „Personalizzato“: класът и светла/тъмна основа на <html>, стилът с цветовете — след останалите.
   const personale = typeof temaPersonale !== 'undefined' && temaPersonale ? temaPersonale : null;
-  const sheets = ['base', 'buttons', 'shell', 'sidenav', 'navigazione', 'cerca', 'layout', 'plate', 'forms', 'righe', 'pages', 'data', 'tabelle-strette', 'sheet', 'misure', 'moduli', 'allegati', 'foto-stampa', 'schizzi', 'schizzo-editor', 'schizzo-barre', 'interventi', 'foglio', 'verbali', 'buoni', 'cartelli', 'impostazioni', 'impostazioni-hub', 'master', 'master-grafico', 'master-strumenti', 'avvisi', 'argano', 'due-fattori', 'installa', 'legale'].concat(bareMain ? ['shaft'] : []);
+  const sheets = ['base', 'buttons', 'shell', 'sidenav', 'navigazione', 'cerca', 'layout', 'plate', 'forms', 'righe', 'pages', 'data', 'tabelle-strette', 'sheet', 'misure', 'moduli', 'allegati', 'foto-stampa', 'schizzi', 'schizzo-editor', 'schizzo-barre', 'interventi', 'foglio', 'verbali', 'buoni', 'preventivi', 'cartelli', 'impostazioni', 'impostazioni-hub', 'master', 'master-grafico', 'master-strumenti', 'avvisi', 'argano', 'due-fattori', 'installa', 'legale'].concat(bareMain ? ['shaft'] : []);
   // Прозорецът с новините след обновяване (src/novita/popup.ts) — само на вписан човек в портала.
   const novita = currentUser && !bareMain && typeof novitaPopup !== 'undefined' && novitaPopup ? novitaPopup : null;
   if (novita) sheets.push('novita');

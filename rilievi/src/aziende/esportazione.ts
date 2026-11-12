@@ -99,6 +99,8 @@ export interface PartiDati {
   calcoliLimitatore: unknown[];
   verbali: unknown[];
   buoni: unknown[];
+  preventivi: unknown[];
+  listino: unknown[];
   fornitori: unknown[];
   ordini: unknown[];
   registro: unknown[];
@@ -119,6 +121,8 @@ export function componiDati(parti: PartiDati, esportatoIl: Date): Record<Sezione
     calcoliLimitatore: parti.calcoliLimitatore,
     verbali: parti.verbali,
     buoni: parti.buoni,
+    preventivi: parti.preventivi,
+    listino: parti.listino,
     fornitori: parti.fornitori,
     ordini: parti.ordini,
     registro: parti.registro,
@@ -145,6 +149,8 @@ export async function esportaAzienda(
     calcoliLimitatore,
     verbali,
     buoni,
+    preventivi,
+    listino,
     fornitori,
     ordini,
     registro,
@@ -178,6 +184,9 @@ export async function esportaAzienda(
       orderBy: { createdAt: 'asc' },
       include: { firme: { orderBy: { firmatoAt: 'asc' }, select: SELECT_FIRMA_BUONO } },
     }),
+    // Офертите и ценоразписът — винаги, и при изключени оферти (нищо не се губи).
+    prisma.preventivo.findMany({ where: { aziendaId }, orderBy: { numero: 'asc' } }),
+    prisma.voceListino.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
     prisma.fornitore.findMany({
       where: { aziendaId },
       orderBy: { nome: 'asc' },
@@ -232,6 +241,8 @@ export async function esportaAzienda(
       calcoliLimitatore,
       verbali,
       buoni,
+      preventivi,
+      listino,
       fornitori,
       ordini,
       registro: registroVisibile,

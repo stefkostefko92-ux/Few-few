@@ -9,6 +9,8 @@ import {
   RUOLI_CONFIGURABILI,
 } from '../auth/permessi.js';
 import { CAMPI_DATI, datiSalvati, type DatiSocietari } from '../aziende/dati.js';
+import { capacitaNascoste } from '../aziende/ruoli.js';
+import { MAX_CONDIZIONI } from '../preventivi/azienda.js';
 import type { aziendeImpostabili } from '../aziende/sezioni.js';
 import { MODELLI, MODELLI_ID, modelloDi } from '../cartelli/modelli.js';
 import { modelloInformativa } from '../legale/informativa.js';
@@ -26,6 +28,7 @@ export const SEZIONI_IMPOSTAZIONI = [
   'scheda',
   'cartelli',
   'buoni',
+  'preventivi',
   'ruoli',
   'fornitori',
   'firme',
@@ -39,6 +42,7 @@ export const ICONE_SEZIONI: Readonly<Record<SezioneImpostazioni, string>> = {
   scheda: 'sheet',
   cartelli: 'stop',
   buoni: 'buono',
+  preventivi: 'euro',
   ruoli: 'users',
   fornitori: 'mail',
   firme: 'sign',
@@ -50,6 +54,10 @@ export const isSezione = (value: unknown): value is SezioneImpostazioni =>
   typeof value === 'string' && (SEZIONI_IMPOSTAZIONI as readonly string[]).includes(value);
 
 export type AziendaImpostabile = Awaited<ReturnType<typeof aziendeImpostabili>>[number];
+
+/** Разделите на фирмата: „Preventivi“ — само когато MASTER е включил офертите ѝ. */
+export const sezioniDi = (azienda: { preventiviAttivi: boolean }): SezioneImpostazioni[] =>
+  SEZIONI_IMPOSTAZIONI.filter((s) => s !== 'preventivi' || azienda.preventiviAttivi);
 
 /** Адресът на раздел за фирмата. */
 export const pathSezione = (sezione: SezioneImpostazioni, aziendaId: string): string =>
@@ -87,6 +95,7 @@ export interface VistaSezione {
   error?: string | null;
   dati?: { values: Record<string, string>; errors: Partial<Record<string, string>> };
   ruoli?: { values: Record<string, string | string[]>; errors: Partial<Record<string, string>> };
+  preventivi?: { valore: string; errore: boolean };
   /** Раздел „Condizioni“ — приемането и правилата на хората (routes/impostazioni.ts). */
   condizioni?: unknown;
   /** Раздел „Firme“ — информацията по чл. 13 на страницата на подписа (routes/impostazioni-firme.ts). */
@@ -102,7 +111,7 @@ export interface VistaSezione {
 export function renderImpostazioni(res: Response, status: number, view: VistaSezione): void {
   const { azienda } = view;
   res.status(status).render('impostazioni/sezione', {
-    sezioni: SEZIONI_IMPOSTAZIONI,
+    sezioni: sezioniDi(azienda),
     icone: ICONE_SEZIONI,
     ordine: ordineEffettivo(azienda.ordineSezioni),
     modificato: false,
@@ -119,7 +128,7 @@ export function renderImpostazioni(res: Response, status: number, view: VistaSez
     ruoli: { values: ruoliForm(azienda), errors: {} },
     ruoliAzienda: RUOLI_AZIENDA,
     ruoliConfigurabili: RUOLI_CONFIGURABILI,
-    capacita: CAPACITA_CONFIGURABILI,
+    capacita: CAPACITA_CONFIGURABILI.filter((c) => !capacitaNascoste(azienda).includes(c)),
     condizioni: null,
     fornitori: [],
     nuovoFornitore: { nome: '', email: '', errore: false },
@@ -127,6 +136,8 @@ export function renderImpostazioni(res: Response, status: number, view: VistaSez
       values: { codice: azienda.buonoCodice ?? '', clausola: azienda.buonoClausola ?? '' },
       errors: {},
     },
+    preventivi: { valore: azienda.preventivoCondizioni ?? '', errore: false },
+    maxCondizioniPreventivo: MAX_CONDIZIONI,
     maxCodice: 80,
     maxClausola: 1000,
     informativa: {

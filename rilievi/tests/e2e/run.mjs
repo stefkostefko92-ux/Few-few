@@ -23,7 +23,6 @@ import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
-import sharp from 'sharp';
 import {
   aligned,
   audit,
@@ -38,12 +37,10 @@ import { checkInvites } from './inviti.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
 import { checkCompanyData, checkEveryLink } from './collegati-tutti.mjs';
 import { checkInstallableApp, checkInstallPhone } from './installa.mjs';
-import { checkCartelli } from './cartelli.mjs';
 import { checkArgano } from './argano.mjs';
+import { checkDocumenti } from './documenti.mjs';
+import { logoE2E } from './logo.mjs';
 import { checkLimitatore } from './limitatore.mjs';
-import { checkInterventi } from './interventi.mjs';
-import { checkVerbali } from './verbali.mjs';
-import { checkBuoni } from './buoni.mjs';
 import { checkPhone } from './telefono.mjs';
 import { checkMovilift } from './movilift.mjs';
 import { checkPrintedNotes, fillDoorsAndChecks } from './porte.mjs';
@@ -72,18 +69,7 @@ const browser = await chromium.launch(
 let sheetUrl = '';
 let aziendaPath = '';
 const aziendaName = `Ascensori E2E ${Date.now()}`;
-// A logo with transparency, as a company would upload it.
-const logoFile = join(shots, 'logo-e2e.png');
-await sharp({
-  create: {
-    width: 900,
-    height: 260,
-    channels: 4,
-    background: { r: 15, g: 50, b: 120, alpha: 0.85 },
-  },
-})
-  .png()
-  .toFile(logoFile);
+const logoFile = await logoE2E(shots);
 
 try {
   // The public side first: the landing page and the policy, in Italian only, and an access request,
@@ -289,10 +275,7 @@ try {
     await page.goto(`${sheetUrl}/stampa`);
     await audit(page, `${scheme} print`);
     await page.screenshot({ path: join(shots, `${scheme}-print.png`), fullPage: true });
-    await checkInterventi(page, { base, shots, scheme, aziendaName });
-    await checkCartelli(page, { base, shots, scheme, aziendaPath, sheetUrl });
-    await checkVerbali(page, { base, shots, scheme, sheetUrl });
-    await checkBuoni(page, { base, shots, scheme, sheetUrl });
+    await checkDocumenti(page, { base, shots, scheme, aziendaName, aziendaPath, sheetUrl });
     if (scheme === 'light') await checkCompanyData(context, { base, aziendaName, scheme });
     await checkArgano(page, { shots, scheme, sheetUrl, aziendaId: aziendaPath.split('/').pop() });
     await checkLimitatore(page, { shots, scheme, sheetUrl });

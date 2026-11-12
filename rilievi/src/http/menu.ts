@@ -64,6 +64,7 @@ const GRUPPI: ReadonlyArray<{ key: string; voci: readonly Definizione[] }> = [
     voci: [
       { href: '/interventi', key: 'nav.interventi', icon: 'wrench', cap: 'interventi:read' },
       { href: '/buoni', key: 'nav.buoni', icon: 'buono', cap: 'interventi:read' },
+      { href: '/preventivi', key: 'nav.preventivi', icon: 'euro', cap: 'preventivi:read' },
       { href: '/verbali', key: 'nav.verbali', icon: 'sign', cap: 'interventi:read' },
       { href: '/cartelli', key: 'nav.cartelli', icon: 'stop', cap: 'interventi:read' },
     ],
@@ -124,6 +125,13 @@ const NUOVO: readonly Definizione[] = [
     descKey: 'nuovo.buonoDesc',
     icon: 'buono',
     cap: 'interventi:write',
+  },
+  {
+    href: '/preventivi/nuovo',
+    key: 'nuovo.preventivo',
+    descKey: 'nuovo.preventivoDesc',
+    icon: 'euro',
+    cap: 'preventivi:write',
   },
   {
     href: '/verbali/nuovo',

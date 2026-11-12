@@ -19,6 +19,8 @@ export interface MembershipView {
    * никаква способност в нея (auth/scope.ts), нищо за приемане (legale/stato.ts).
    */
   soloEsportazione?: true;
+  /** MASTER е включил офертите на фирмата (src/preventivi/) — без това `preventivi:*` не важи в нея. */
+  preventivi?: true;
 }
 
 /** Вписаният човек, както го виждат маршрутите и шаблоните. */

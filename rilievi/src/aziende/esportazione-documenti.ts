@@ -1,5 +1,7 @@
 import { pdfDelBuono } from '../buoni/documento.js';
 import { buonoPerId, buoniDi } from '../buoni/elenco.js';
+import { nomeFilePreventivo, pdfDelPreventivo } from '../preventivi/documento.js';
+import { preventiviDi, preventivoPerId } from '../preventivi/elenco.js';
 import { prisma } from '../db.js';
 import { config } from '../config.js';
 import { viewHelpers } from '../http/view.js';
@@ -40,10 +42,11 @@ export async function fileGeneratiDi(
   aziendaId: string,
   conVersioni: readonly string[],
 ): Promise<FileGenerato[]> {
-  const [interventi, verbali, buoni, logo] = await Promise.all([
+  const [interventi, verbali, buoni, preventivi, logo] = await Promise.all([
     interventiConfermatiDi(aziendaId),
     verbaliConfermatiDi(aziendaId),
     buoniDi(aziendaId),
+    preventiviDi(aziendaId),
     aziendaLogo(aziendaId),
   ]);
   const opzioni = {
@@ -82,6 +85,16 @@ export async function fileGeneratiDi(
       genera: async () => {
         const row = await buonoPerId(r.id);
         return row ? pdfDelBuono(row, opzioni) : null;
+      },
+    });
+  }
+  // Офертите — всяка, такава, каквато е (и при изключени оферти).
+  for (const r of preventivi) {
+    out.push({
+      nome: `documenti/preventivi/${nomeFilePreventivo(r.numero)}`,
+      genera: async () => {
+        const row = await preventivoPerId(r.id);
+        return row ? pdfDelPreventivo(row, opzioni) : null;
       },
     });
   }

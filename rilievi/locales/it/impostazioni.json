@@ -19,6 +19,10 @@
         "titolo": "Buono di lavoro",
         "desc": "Il codice del modulo in alto a destra e la clausola in fondo al buono di lavoro."
       },
+      "preventivi": {
+        "titolo": "Preventivi",
+        "desc": "Le condizioni con cui parte ogni nuovo preventivo e il listino prezzi."
+      },
       "ruoli": {
         "titolo": "Ruoli e permessi",
         "desc": "Il nome di ogni ruolo nell'azienda e cosa può fare chi lo ha."

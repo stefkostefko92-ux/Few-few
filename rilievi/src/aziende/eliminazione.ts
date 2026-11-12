@@ -50,6 +50,9 @@ export async function eliminaAzienda(aziendaId: string, actorId: string | null):
       await tx.verbale.deleteMany({ where: { aziendaId } });
       // „Buono di lavoro“ — подписите му падат с него (Cascade).
       await tx.buonoLavoro.deleteMany({ where: { aziendaId } });
+      // Офертите (Restrict към фирмата) и ценоразписът (Cascade — изрично, за реда на изтриването).
+      await tx.preventivo.deleteMany({ where: { aziendaId } });
+      await tx.voceListino.deleteMany({ where: { aziendaId } });
       await tx.calcoloArgano.deleteMany({ where: { aziendaId } });
       await tx.calcoloLimitatore.deleteMany({ where: { aziendaId } });
       // Снимките, скиците, мерките и изчислението на картата падат с нея (Cascade).

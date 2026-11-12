@@ -1,0 +1,125 @@
+<%
+  // Страницата на офертата (routes/preventivi.ts): клиентът, предметът и уредбата, редовете със сумите,
+  // обобщението по ставки на ДДС, бележките и условията; действията — промяна (в „Bozza“ и „Inviato“),
+  // копие, PDF, писмо до клиента, състоянието и изтриването на чернова (routes/preventivi-azioni.ts).
+  const p = preventivo;
+  const d = dati;
+  const giorno = (s) => fmt.day(new Date(s + 'T00:00:00Z'));
+%><%- include('../partials/top', { titleKey: 'preventivi.titolo' }) %>
+<div class="page-head">
+  <div>
+    <a href="/preventivi"><%= t('preventivi.indietro') %></a>
+    <h1><%= t('preventivi.numero', { n: p.numero }) %> <span class="stato-preventivo stato-preventivo--<%= p.stato.toLowerCase() %>"><%= t('preventivi.stato.' + p.stato) %></span></h1>
+    <p class="page-head__sub"><%= p.azienda.name %><% if (p.scheda && !p.scheda.deletedAt) { %> · <a href="/schede/<%= p.scheda.id %>"><%= t('cartelli.daScheda.apri') %></a><% } %></p>
+  </div>
+  <div class="toolbar">
+    <% if (modifica) { %><a class="btn" href="/preventivi/<%= p.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('preventivi.modifica') %></a><% } %>
+    <% if (scrive) { %><a class="btn" href="/preventivi/nuovo?da=<%= p.id %>"><%- include('../partials/icon', { name: 'copy' }) %><%= t('preventivi.duplica') %></a><% } %>
+    <a class="btn btn--primary" data-pdf href="/preventivi/<%= p.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('preventivi.scaricaPdf') %></a>
+  </div>
+</div>
+<div class="stack-gap">
+<% if (scrive && !modifica) { %><p class="notice"><%= t('preventivi.bloccatoNota') %></p><% } %>
+<p class="muted"><%= t('preventivi.creato', { nome: p.createdBy ? p.createdBy.name : '—', data: fmt.dateTime(p.createdAt) }) %><% if (p.updatedAt.getTime() !== p.createdAt.getTime()) { %> · <%= t('preventivi.modificato', { nome: p.updatedBy ? p.updatedBy.name : '—', data: fmt.dateTime(p.updatedAt) }) %><% } %></p>
+
+<section class="panel preventivo-testa" aria-labelledby="h-cliente">
+  <div>
+    <h2 class="section__title" id="h-cliente"><%= t('preventivi.sezione.cliente') %></h2>
+    <p><strong><%= d.cliente %></strong><% for (const riga of [d.clienteIndirizzo, d.clientePiva ? t('preventivi.pdf.piva', { piva: d.clientePiva }) : null, d.clienteEmail]) { if (riga) { %><br><%= riga %><% } } %></p>
+  </div>
+  <dl class="preventivo-dati">
+    <div><dt><%= t('preventivi.campo.data') %></dt><dd><%= giorno(d.data) %></dd></div>
+    <div><dt><%= t('preventivi.validoFino') %></dt><dd><%= giorno(validoFino) %></dd></div>
+    <div class="preventivo-dati__wide"><dt><%= t('preventivi.campo.oggetto') %></dt><dd><%= d.oggetto %></dd></div>
+    <% if (d.impianto) { %><div class="preventivo-dati__wide"><dt><%= t('preventivi.campo.impianto') %></dt><dd><%= d.impianto %></dd></div><% } %>
+  </dl>
+</section>
+
+<section aria-labelledby="h-righe">
+  <h2 class="section__title" id="h-righe"><%= t('preventivi.sezione.righe') %></h2>
+  <div class="table-scorre">
+  <table class="table preventivo-righe">
+    <caption class="visually-hidden"><%= t('preventivi.sezione.righe') %></caption>
+    <thead>
+      <tr>
+        <th scope="col"><%= t('preventivi.colonna.codice') %></th>
+        <th scope="col"><%= t('preventivi.colonna.descrizione') %></th>
+        <th scope="col"><%= t('preventivi.colonna.unita') %></th>
+        <th scope="col" class="importo"><%= t('preventivi.colonna.quantita') %></th>
+        <th scope="col" class="importo"><%= t('preventivi.colonna.prezzo') %></th>
+        <th scope="col" class="importo"><%= t('preventivi.colonna.sconto') %></th>
+        <th scope="col" class="importo"><%= t('preventivi.colonna.importo') %></th>
+        <th scope="col" class="importo"><%= t('preventivi.colonna.iva') %></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% d.righe.forEach((r, i) => { %><tr>
+        <td><%= r.codice || '' %></td>
+        <td class="preventivo-righe__descr"><%= r.descrizione %></td>
+        <td><%= r.unita || '' %></td>
+        <td class="importo"><%= quantitaTesto(r.quantita) %></td>
+        <td class="importo"><%= euro(r.prezzo) %></td>
+        <td class="importo"><%= r.sconto ? scontoTesto(r.sconto) : '' %></td>
+        <td class="importo"><%= euro(importi[i]) %></td>
+        <td class="importo"><%= r.iva %></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  </div>
+  <dl class="preventivo-totali">
+    <% for (const a of riepilogo.aliquote) { %>
+    <div><dt><%= t('preventivi.pdf.imponibileAliquota', { iva: a.iva }) %></dt><dd>€&nbsp;<%= euro(a.imponibile) %></dd></div>
+    <div><dt><%= t('preventivi.pdf.impostaAliquota', { iva: a.iva }) %></dt><dd>€&nbsp;<%= euro(a.imposta) %></dd></div>
+    <% } %>
+    <div><dt><%= t('preventivi.pdf.imponibile') %></dt><dd>€&nbsp;<%= euro(riepilogo.imponibile) %></dd></div>
+    <div><dt><%= t('preventivi.pdf.imposta') %></dt><dd>€&nbsp;<%= euro(riepilogo.imposta) %></dd></div>
+    <div class="preventivo-totali__totale"><dt><%= t('preventivi.pdf.totale') %></dt><dd>€&nbsp;<%= euro(riepilogo.totale) %></dd></div>
+  </dl>
+</section>
+
+<% if (d.note) { %><section aria-labelledby="h-note"><h2 class="section__title" id="h-note"><%= t('preventivi.campo.note') %></h2><p class="testo-libero"><%= d.note %></p></section><% } %>
+<% if (d.condizioni) { %><section aria-labelledby="h-condizioni"><h2 class="section__title" id="h-condizioni"><%= t('preventivi.campo.condizioni') %></h2><p class="testo-libero"><%= d.condizioni %></p></section><% } %>
+
+<% if (scrive) { %>
+<section class="panel" aria-labelledby="h-stato">
+  <h2 class="section__title" id="h-stato"><%= t('preventivi.sezione.stato') %></h2>
+  <p><%= t('preventivi.statoAttuale', { stato: t('preventivi.stato.' + p.stato) }) %><% if (p.statoAt) { %> · <%= fmt.dateTime(p.statoAt) %><% } %></p>
+  <div class="toolbar">
+    <% for (const a of passaggi) { %><form method="post" action="/preventivi/<%= p.id %>/stato">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="stato" value="<%= a %>">
+      <button class="btn<%= a === 'ACCETTATO' ? ' btn--primary' : '' %>" type="submit"><%= t('preventivi.passaggio.' + p.stato + '_' + a) %></button>
+    </form>
+    <% } %>
+  </div>
+</section>
+
+<form class="panel intervento-email" id="invia" method="post" action="/preventivi/<%= p.id %>/invia">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <h2><%= t('preventivi.email.titolo') %></h2>
+  <div class="field">
+    <label class="field__label" for="f-email"><%= t('preventivi.email.label') %></label>
+    <input class="input" id="f-email" name="email" type="email" required maxlength="254" autocomplete="email" value="<%= d.clienteEmail || '' %>" aria-describedby="h-email">
+    <p class="field__hint" id="h-email"><%= t('preventivi.email.hint') %></p>
+  </div>
+  <div class="field">
+    <label class="field__label" for="f-messaggio"><%= t('preventivi.email.messaggio') %></label>
+    <textarea class="textarea" id="f-messaggio" name="messaggio" rows="3" maxlength="2000"></textarea>
+  </div>
+  <div class="toolbar"><button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'mail' }) %><%= t('preventivi.email.invia') %></button></div>
+</form>
+
+<% if (p.stato === 'BOZZA') { %>
+<details class="panel buono-elimina">
+  <summary><%= t('preventivi.elimina.titolo') %></summary>
+  <form method="post" action="/preventivi/<%= p.id %>/elimina">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <p><%= t('preventivi.elimina.testo') %></p>
+    <button class="btn btn--danger" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t('preventivi.elimina.btn') %></button>
+  </form>
+</details>
+<% } %>
+<% } %>
+</div>
+<%- include('../partials/bottom') %>

@@ -26,6 +26,11 @@ import { verbaliRouter } from './verbali.js';
 import { buoniFirmeRouter } from './buoni-firme.js';
 import { buoniNuovoRouter } from './buoni-nuovo.js';
 import { buoniRouter } from './buoni.js';
+import { impostazioniPreventiviRouter } from './impostazioni-preventivi.js';
+import { preventiviAzioniRouter } from './preventivi-azioni.js';
+import { preventiviListinoRouter } from './preventivi-listino.js';
+import { preventiviNuovoRouter } from './preventivi-nuovo.js';
+import { preventiviRouter } from './preventivi.js';
 import { impostazioniBuonoRouter } from './impostazioni-buono.js';
 import { interventiInvioRouter } from './interventi-invio.js';
 import { requestsRouter } from './requests.js';
@@ -89,6 +94,12 @@ export function montaRouter(app: Express): void {
   app.use(buoniNuovoRouter);
   app.use(buoniRouter);
   app.use(buoniFirmeRouter);
+  // Преди preventiviRouter: `/preventivi/listino` и `/preventivi/nuovo` са преди `/preventivi/:id`.
+  app.use(preventiviListinoRouter);
+  app.use(preventiviNuovoRouter);
+  app.use(preventiviRouter);
+  app.use(preventiviAzioniRouter);
+  app.use(impostazioniPreventiviRouter);
   app.use(usersRouter);
   // След usersRouter: `/utenti/invita` е преди `/utenti/:id`.
   app.use(usersManageRouter);

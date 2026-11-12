@@ -106,6 +106,16 @@ export const AUDIT_ACTIONS = [
   'BUONO_DELETE',
   'BUONO_EMAIL',
   'AZIENDA_BUONO',
+  // Офертите (src/preventivi/): офертата (без сумите и клиента), състоянието, писмото (без адреса),
+  // ценоразписът (броят), включването от MASTER и условията на фирмата (без текста).
+  'PREVENTIVO_CREATE',
+  'PREVENTIVO_UPDATE',
+  'PREVENTIVO_STATO',
+  'PREVENTIVO_DELETE',
+  'PREVENTIVO_EMAIL',
+  'LISTINO_UPDATE',
+  'AZIENDA_PREVENTIVI',
+  'AZIENDA_PREVENTIVI_CONDIZIONI',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
@@ -132,7 +142,8 @@ export interface AuditEntry {
     | 'violazione'
     | 'fornitore'
     | 'ordine'
-    | 'buono';
+    | 'buono'
+    | 'preventivo';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */
   meta?: Prisma.InputJsonObject;

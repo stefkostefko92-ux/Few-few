@@ -107,6 +107,7 @@
     "openCartello": "Apri cartello",
     "openVerbale": "Apri il verbale",
     "openBuono": "Apri il buono",
+    "openPreventivo": "Apri il preventivo",
     "openCalcolo": "Apri calcolo",
     "openUser": "Apri utente",
     "action": {
@@ -198,6 +199,14 @@
       "BUONO_DELETE": "Buono di lavoro eliminato",
       "BUONO_EMAIL": "Buono di lavoro inviato per email",
       "AZIENDA_BUONO": "Intestazione del buono di lavoro modificata",
+      "PREVENTIVO_CREATE": "Preventivo creato",
+      "PREVENTIVO_UPDATE": "Preventivo modificato",
+      "PREVENTIVO_STATO": "Stato di un preventivo aggiornato",
+      "PREVENTIVO_DELETE": "Bozza di preventivo eliminata",
+      "PREVENTIVO_EMAIL": "Preventivo inviato per email",
+      "LISTINO_UPDATE": "Listino prezzi modificato",
+      "AZIENDA_PREVENTIVI": "Preventivi attivati o disattivati per l'azienda",
+      "AZIENDA_PREVENTIVI_CONDIZIONI": "Condizioni predefinite dei preventivi modificate",
       "USER_EDIT": "Nome o email cambiati",
       "MEMBERSHIP_ADD": "Account aggiunto a un'azienda",
       "MEMBERSHIP_REMOVE": "Account tolto da un'azienda"

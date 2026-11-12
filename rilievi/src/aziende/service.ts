@@ -24,6 +24,7 @@ const SUMMARY = {
   logoUpdatedAt: true,
   deactivatedAt: true,
   schizzi: true,
+  preventiviAttivi: true,
   createdAt: true,
 } satisfies Prisma.AziendaSelect;
 

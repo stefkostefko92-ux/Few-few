@@ -1,0 +1,225 @@
+{
+  "preventivi": {
+    "list": "Preventivi",
+    "listSub": "Preventivi numerati per i clienti dell'azienda: righe dal listino, IVA per aliquota, PDF e invio per email.",
+    "new": "Nuovo preventivo",
+    "titolo": "Preventivo",
+    "modifica": "Modifica",
+    "indietro": "Torna ai preventivi",
+    "torna": "Torna al preventivo",
+    "salva": "Salva il preventivo",
+    "numero": "Preventivo n. {n}",
+    "duplica": "Duplica",
+    "scaricaPdf": "Scarica PDF",
+    "bloccatoNota": "Il preventivo è accettato o rifiutato: per modificarlo riportalo prima a «Inviato».",
+    "creato": "Creato da {nome} il {data}",
+    "modificato": "Ultima modifica di {nome} il {data}",
+    "validoFino": "Valido fino al",
+    "totaliHint": "Totali indicativi: quelli del preventivo li calcola il portale al salvataggio.",
+    "tuttiGliStati": "Tutti gli stati",
+    "cerca": "Cerca per numero, cliente, oggetto, impianto, righe…",
+    "cercaLabel": "Cerca nei preventivi",
+    "cercaBtn": "Cerca",
+    "risultati": {
+      "one": "{n} preventivo",
+      "other": "{n} preventivi"
+    },
+    "empty": "Nessun preventivo.",
+    "emptyHint": "Crealo dalla scheda dell'impianto oppure da «Nuovo».",
+    "emptyCerca": "Nessun preventivo corrisponde alla ricerca.",
+    "statoAttuale": "Stato attuale: {stato}",
+    "stato": {
+      "BOZZA": "Bozza",
+      "INVIATO": "Inviato",
+      "ACCETTATO": "Accettato",
+      "RIFIUTATO": "Rifiutato"
+    },
+    "passaggio": {
+      "BOZZA_INVIATO": "Segna come inviato",
+      "INVIATO_ACCETTATO": "Segna come accettato",
+      "INVIATO_RIFIUTATO": "Segna come rifiutato",
+      "ACCETTATO_INVIATO": "Riporta a «Inviato»",
+      "RIFIUTATO_INVIATO": "Riporta a «Inviato»"
+    },
+    "colonna": {
+      "numero": "N°",
+      "cliente": "Cliente e oggetto",
+      "data": "Data",
+      "azienda": "Azienda",
+      "stato": "Stato",
+      "totale": "Totale",
+      "codice": "Codice",
+      "descrizione": "Descrizione",
+      "unita": "U.M.",
+      "quantita": "Quantità",
+      "prezzo": "Prezzo unitario",
+      "sconto": "Sconto %",
+      "importo": "Importo",
+      "iva": "IVA %",
+      "prezzoEuro": "Prezzo (€)",
+      "scontoPercento": "Sconto %",
+      "ivaPercento": "IVA %"
+    },
+    "campo": {
+      "cliente": "Cliente (ragione sociale o nome)",
+      "clienteIndirizzo": "Indirizzo del cliente",
+      "clientePiva": "P. IVA o codice fiscale",
+      "clienteEmail": "Email del cliente",
+      "oggetto": "Oggetto",
+      "impianto": "Impianto",
+      "data": "Data del preventivo",
+      "validitaGiorni": "Validità (giorni)",
+      "note": "Note",
+      "condizioni": "Condizioni"
+    },
+    "sezione": {
+      "cliente": "Cliente",
+      "documento": "Preventivo",
+      "righe": "Righe",
+      "note": "Note e condizioni",
+      "stato": "Stato del preventivo"
+    },
+    "hint": {
+      "piva": "11 cifre (anche con «IT») oppure 16 caratteri.",
+      "validita": "Da 1 a 365 giorni; vuoto: 30.",
+      "impianto": "Matricola, numero e indirizzo dell'impianto, se il preventivo è per un impianto.",
+      "condizioni": "Pagamento, tempi, garanzia: partono dalle impostazioni dell'azienda e si possono cambiare qui."
+    },
+    "riga": {
+      "titolo": "Riga {n}",
+      "togli": "Togli la riga",
+      "aggiungi": "Aggiungi una riga",
+      "hint": "Le righe vuote non vengono salvate. Per altre righe, salva e riapri il preventivo."
+    },
+    "errore": {
+      "required": "Campo obbligatorio.",
+      "tooLong": "Massimo {max} caratteri.",
+      "azienda": "Scegli l'azienda del preventivo.",
+      "data": "Data non valida (dal 2000 al 2099).",
+      "nessunaRiga": "Aggiungi almeno una riga.",
+      "troppeRighe": "Al massimo {n} righe.",
+      "quantita": "Quantità maggiore di zero, al massimo 3 decimali (es. 1,5).",
+      "prezzo": "Importo in euro, al massimo 2 decimali (es. 1.250,00).",
+      "sconto": "Sconto da 0 a 100 %, al massimo 2 decimali.",
+      "iva": "Scegli l'aliquota IVA: 22, 10 o 4 %.",
+      "clientePiva": "P. IVA di 11 cifre o codice fiscale di 16 caratteri.",
+      "clienteEmail": "Indirizzo email non valido.",
+      "validitaGiorni": "Da 1 a 365 giorni.",
+      "totale": "Il totale supera 21.474.836,47 €: dividi il lavoro in più preventivi."
+    },
+    "daScheda": {
+      "testo": "Dalla scheda arrivano l'impianto, l'oggetto e una riga per ogni lavoro previsto (senza prezzi). Senza scheda, compila i campi qui sotto.",
+      "nessuna": "Nessuna scheda trovata: puoi compilare il preventivo senza scheda.",
+      "crea": "Preventivo",
+      "dellaScheda": "Preventivi di questo impianto"
+    },
+    "email": {
+      "titolo": "Invia al cliente",
+      "label": "Email del destinatario",
+      "hint": "Il PDF del preventivo parte in allegato; la risposta arriva al tuo indirizzo. L'indirizzo non viene salvato. Una bozza diventa «Inviato».",
+      "messaggio": "Messaggio (facoltativo)",
+      "invia": "Invia il preventivo"
+    },
+    "elimina": {
+      "titolo": "Elimina la bozza",
+      "testo": "La bozza viene eliminata per sempre; il registro conserva il numero. Un preventivo inviato non si elimina.",
+      "btn": "Elimina la bozza"
+    },
+    "flash": {
+      "creato": "Preventivo creato.",
+      "salvato": "Preventivo salvato.",
+      "conflitto": "Nel frattempo qualcuno ha salvato questo preventivo. Le tue modifiche sono qui sotto: controllale e salva di nuovo.",
+      "bloccato": "Il preventivo è accettato o rifiutato: riportalo a «Inviato» per modificarlo.",
+      "inviato": "Preventivo inviato a {email}.",
+      "emailNonValida": "Indirizzo email non valido: il preventivo non è partito.",
+      "mailDisattivata": "L'invio delle email non è configurato: scarica il PDF e invialo tu.",
+      "nonInviato": "Invio non riuscito. Riprova tra qualche minuto.",
+      "stato": "Stato del preventivo aggiornato.",
+      "statoNo": "Cambio di stato non consentito: ricarica la pagina.",
+      "nonEliminabile": "Si elimina solo una bozza.",
+      "eliminato": "Bozza del preventivo n. {n} eliminata.",
+      "condizioni": "Condizioni predefinite dei preventivi salvate."
+    },
+    "mail": {
+      "oggetto": "Preventivo n. {n} – {azienda}",
+      "corpo": "Buongiorno,\n\nin allegato il preventivo n. {n} di {azienda} per: {oggetto}.",
+      "firma": "Cordiali saluti,\n{mittente}\n{azienda}"
+    },
+    "pdf": {
+      "titolo": "Preventivo n. {numero}",
+      "del": "del {data} · valido fino al {fino}",
+      "spettabile": "Spett.le",
+      "piva": "P. IVA / C.F. {piva}",
+      "oggetto": "Oggetto:",
+      "impianto": "Impianto:",
+      "imponibileAliquota": "Imponibile IVA {iva}%",
+      "impostaAliquota": "IVA {iva}%",
+      "imponibile": "Totale imponibile",
+      "imposta": "Totale IVA",
+      "totale": "Totale",
+      "accettazione": "Per accettazione",
+      "dataAccettazione": "Data",
+      "firmaCliente": "Timbro e firma del cliente",
+      "piede": "Preventivo n. {numero} · Generato con Rilievi Impianti (Carbon Stealth VCC) il {data}",
+      "pagina": "Pagina {n} di {tot}",
+      "colonna": {
+        "codice": "Codice",
+        "descrizione": "Descrizione",
+        "unita": "U.M.",
+        "quantita": "Quantità",
+        "prezzo": "Prezzo unit.",
+        "sconto": "Sc. %",
+        "importo": "Importo",
+        "iva": "IVA %"
+      }
+    },
+    "impostazioni": {
+      "intro": "Ogni nuovo preventivo parte con queste condizioni; nel preventivo si possono cambiare.",
+      "condizioni": "Condizioni predefinite",
+      "condizioniHint": "Pagamento, tempi di consegna, garanzia, validità. Massimo {max} caratteri; vuoto: nessuna.",
+      "errore": "Massimo {max} caratteri.",
+      "salva": "Salva le condizioni",
+      "listino": "Apri il listino prezzi",
+      "hubSi": "Condizioni predefinite compilate",
+      "hubNo": "Nessuna condizione predefinita"
+    },
+    "listino": {
+      "titolo": "Listino prezzi",
+      "modifica": "Modifica la voce",
+      "torna": "Torna al listino",
+      "nota": "Cambiare il prezzo qui non cambia i preventivi già fatti: lì resta il prezzo scritto.",
+      "voci": {
+        "one": "{n} voce",
+        "other": "{n} voci"
+      },
+      "apri": "Apri",
+      "intro": "Le voci del listino compilano le righe del preventivo (codice, descrizione, unità, prezzo, IVA). Fino a {n} voci per azienda.",
+      "nuova": "Nuova voce",
+      "aggiungiVoce": "Aggiungi la voce",
+      "cercaLabel": "Cerca nel listino",
+      "vuoto": "Il listino è vuoto.",
+      "vuotoCerca": "Nessuna voce corrisponde alla ricerca.",
+      "azioni": "Azioni",
+      "modificaVoce": "Modifica",
+      "salva": "Salva la voce",
+      "elimina": "Elimina la voce",
+      "eliminaTesto": "La voce sparisce dal listino; i preventivi che la usano non cambiano.",
+      "aggiungiLabel": "Aggiungi dal listino",
+      "cercaVoce": "Codice o descrizione",
+      "aggiungi": "Aggiungi",
+      "caricato": "{n} voci nel listino.",
+      "nonTrovata": "Voce non trovata nel listino: scegli una voce dall'elenco.",
+      "aggiunta": "Riga aggiunta: {descrizione}.",
+      "errore": {
+        "titolo": "Voce non salvata: correggi i campi segnati.",
+        "duplicato": "Questo codice è già nel listino.",
+        "pieno": "Il listino ha già {n} voci: eliminane qualcuna prima di aggiungerne."
+      },
+      "flash": {
+        "aggiunta": "Voce aggiunta al listino.",
+        "salvata": "Voce del listino salvata.",
+        "eliminata": "Voce eliminata dal listino."
+      }
+    }
+  }
+}

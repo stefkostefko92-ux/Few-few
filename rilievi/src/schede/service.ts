@@ -35,6 +35,7 @@ const WITH_PEOPLE = {
       ordineSezioni: true,
       schizzi: true,
       approvazioneSchede: true,
+      preventiviAttivi: true,
     },
   },
 } satisfies Prisma.SchedaInclude;

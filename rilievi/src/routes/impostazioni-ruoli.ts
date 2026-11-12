@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
-import { setRuoli, parseRuoli } from '../aziende/ruoli.js';
+import { permessiSalvati } from '../auth/permessi.js';
+import { capacitaNascoste, setRuoli, parseRuoli } from '../aziende/ruoli.js';
 import { aziendeImpostabili } from '../aziende/sezioni.js';
 import { setFlash } from '../http/flash.js';
 import { notFound, pathSezione, renderImpostazioni } from './impostazioni-vista.js';
@@ -19,7 +20,10 @@ impostazioniRuoliRouter.post('/impostazioni/ruoli', settings, requireCsrf, async
   const aziende = await aziendeImpostabili(user);
   const azienda = aziende.find((a) => a.id === body.azienda);
   if (!azienda) return notFound(req, res);
-  const parsed = parseRuoli(body, (role) => res.locals.t(`role.${role}`));
+  const parsed = parseRuoli(body, (role) => res.locals.t(`role.${role}`), {
+    nascoste: capacitaNascoste(azienda),
+    salvati: permessiSalvati(azienda.permessiRuoli),
+  });
   if (!parsed.ok) {
     return renderImpostazioni(res, 422, {
       sezione: 'ruoli',

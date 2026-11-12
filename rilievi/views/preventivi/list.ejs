@@ -1,0 +1,69 @@
+<%
+  // Офертите на фирмата — най-новите отгоре, с търсене (номер, клиент, предмет, уредба, редове) и филтър
+  // по състояние (routes/preventivi.ts).
+  const showAzienda = aziende.length > 0;
+  const params = new URLSearchParams();
+  if (aziendaFilter) params.set('azienda', aziendaFilter);
+  if (query) params.set('q', query);
+  if (stato) params.set('stato', stato);
+  const base = '/preventivi' + (params.toString() ? '?' + params.toString() : '');
+%><%- include('../partials/top', { titleKey: 'preventivi.list' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('preventivi.list') %></h1>
+    <p class="page-head__sub"><%= t('preventivi.listSub') %></p>
+  </div>
+  <div class="toolbar">
+    <a class="btn" href="/preventivi/listino<%= aziendaFilter ? '?azienda=' + encodeURIComponent(aziendaFilter) : '' %>"><%- include('../partials/icon', { name: 'euro' }) %><%= t('preventivi.listino.titolo') %></a>
+    <% if (can('preventivi:write')) { %><a class="btn btn--primary" href="/preventivi/nuovo"><%- include('../partials/icon', { name: 'plus' }) %><%= t('preventivi.new') %></a><% } %>
+  </div>
+</div>
+<form class="filter preventivi-cerca" method="get" action="/preventivi" role="search">
+  <% if (aziendaFilter) { %><input type="hidden" name="azienda" value="<%= aziendaFilter %>"><% } %>
+  <label class="field__label" for="preventivi-q"><%= t('preventivi.cercaLabel') %></label>
+  <div class="filter__row">
+    <input class="input" id="preventivi-q" name="q" type="search" maxlength="100" placeholder="<%= t('preventivi.cerca') %>" value="<%= query %>">
+    <label class="visually-hidden" for="preventivi-stato"><%= t('preventivi.colonna.stato') %></label>
+    <select class="select" id="preventivi-stato" name="stato">
+      <option value=""><%= t('preventivi.tuttiGliStati') %></option>
+      <% for (const s of stati) { %><option value="<%= s %>"<% if (stato === s) { %> selected<% } %>><%= t('preventivi.stato.' + s) %></option>
+      <% } %>
+    </select>
+    <button class="btn" type="submit"><%- include('../partials/icon', { name: 'search' }) %><%= t('preventivi.cercaBtn') %></button>
+  </div>
+</form>
+<% if (showAzienda) { %><%- include('../partials/azienda-filter', { action: '/preventivi', query }) %><% } %>
+<% if (query || stato) { %><p class="muted" role="status"><%= t('preventivi.risultati', { n: page.total }) %></p><% } %>
+<% if (page.rows.length === 0) { %>
+<div class="empty">
+  <p><strong><%= query || stato ? t('preventivi.emptyCerca') : t('preventivi.empty') %></strong></p>
+  <% if (!query && !stato && can('preventivi:write')) { %><p class="muted"><%= t('preventivi.emptyHint') %></p><% } %>
+</div>
+<% } else { %>
+<table class="table table--stack">
+  <caption class="visually-hidden"><%= t('preventivi.list') %></caption>
+  <thead>
+    <tr>
+      <th scope="col"><%= t('preventivi.colonna.numero') %></th>
+      <th scope="col"><%= t('preventivi.colonna.cliente') %></th>
+      <th scope="col"><%= t('preventivi.colonna.data') %></th>
+      <% if (showAzienda) { %><th scope="col"><%= t('preventivi.colonna.azienda') %></th><% } %>
+      <th scope="col"><%= t('preventivi.colonna.stato') %></th>
+      <th scope="col" class="importo"><%= t('preventivi.colonna.totale') %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% for (const row of page.rows) { %><tr>
+      <td data-label="<%= t('preventivi.colonna.numero') %>"><a class="row-link" href="/preventivi/<%= row.id %>"><%= t('preventivi.numero', { n: row.numero }) %></a></td>
+      <td class="wide" data-label="<%= t('preventivi.colonna.cliente') %>"><%= row.cliente %><br><span class="muted"><%= row.oggetto %></span></td>
+      <td class="date" data-label="<%= t('preventivi.colonna.data') %>"><%= fmt.day(row.data) %></td>
+      <% if (showAzienda) { %><td data-label="<%= t('preventivi.colonna.azienda') %>"><%= row.azienda.name %></td><% } %>
+      <td data-label="<%= t('preventivi.colonna.stato') %>"><span class="stato-preventivo stato-preventivo--<%= row.stato.toLowerCase() %>"><%= t('preventivi.stato.' + row.stato) %></span></td>
+      <td class="importo" data-label="<%= t('preventivi.colonna.totale') %>">€&nbsp;<%= euro(row.totale) %></td>
+    </tr>
+    <% } %>
+  </tbody>
+</table>
+<%- include('../partials/pager', { base, page: page.page, pages: page.pages }) %>
+<% } %>
+<%- include('../partials/bottom') %>

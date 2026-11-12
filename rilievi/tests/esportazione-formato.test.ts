@@ -23,6 +23,8 @@ const vuoto = {
   calcoliLimitatore: [],
   verbali: [],
   buoni: [],
+  preventivi: [],
+  listino: [],
   fornitori: [],
   ordini: [],
   registro: [],

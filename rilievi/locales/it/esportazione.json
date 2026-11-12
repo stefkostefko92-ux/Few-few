@@ -3,7 +3,7 @@
     "inCorso": "L'esportazione di questa azienda è già in corso. Attendi che finisca e riprova.",
     "scarica": {
       "titolo": "Scarica tutti i dati",
-      "testo": "Un unico file .tar con tutto quello che l'azienda ha nel portale: il file dati.json (azienda, persone e ruoli, schede con misure e schizzi, fogli di intervento con firme e sigilli, cartelli, calcoli, verbali, registro delle attività), il logo, le foto e i video già elaborati e i documenti confermati in PDF/A. Si apre con qualsiasi programma per archivi (7-Zip, Archivio di Windows e Mac, tar).",
+      "testo": "Un unico file .tar con tutto quello che l'azienda ha nel portale: il file dati.json (azienda, persone e ruoli, schede con misure e schizzi, fogli di intervento con firme e sigilli, cartelli, calcoli, verbali, buoni di lavoro, preventivi e listino, registro delle attività), il logo, le foto e i video già elaborati e i documenti confermati in PDF/A. Si apre con qualsiasi programma per archivi (7-Zip, Archivio di Windows e Mac, tar).",
       "esclusi": "Non contiene password, chiavi della verifica in due passaggi, link e codici di accesso: non sono dati dell'azienda, ma chiavi personali.",
       "bottone": "Scarica i dati (.tar)",
       "ultima": "Ultima esportazione: {data}, da {nome}.",
@@ -78,7 +78,7 @@
         "dati": "dati.json: tutti i dati in JSON (UTF-8). Date e ore in ISO 8601 (UTC); i numeri decimali sono testo, per esempio «6.5».",
         "logo": "logo.png o logo.jpg: il logo dell'azienda, se c'è.",
         "allegati": "allegati/<scheda>/<id>.jpg o .mp4: le foto (JPEG, fino a 2560 px, senza metadati) e i video (MP4, H.264 e AAC, fino a 1080p) già elaborati.",
-        "documenti": "documenti/: i fogli di intervento e i verbali confermati in PDF/A (per ogni verbale, la copia azienda e la copia installatore) e ogni buono di lavoro in PDF/A, così com'è al momento dell'esportazione.",
+        "documenti": "documenti/: i fogli di intervento e i verbali confermati in PDF/A (per ogni verbale, la copia azienda e la copia installatore) e ogni buono di lavoro e ogni preventivo in PDF/A, così com'è al momento dell'esportazione.",
         "versioni": "versioni/<scheda>.json: la cronologia di ogni scheda, un file per scheda."
       },
       "struttura": {
@@ -100,6 +100,8 @@
           "verbali": "I verbali di chiusura cantiere, con le firme, l'impronta e il sigillo.",
           "buoni": "I buoni di lavoro: dati generali, sequenze di lavoro (descrizione, esito, data, fornitore), controlli, resoconto e, in «firme», ogni firma con il suo posto (riga, controllo o firma in fondo), il tracciato, l'impronta SHA-256 di ciò che firma e il sigillo.",
           "registro": "Il registro delle attività dell'azienda, per il periodo in cui è conservato: chi, quando, che cosa, senza il contenuto delle schede. Le azioni dell'amministrazione del portale compaiono senza autore.",
+          "preventivi": "I preventivi (anche se i preventivi sono disattivati): numero, data, validità, cliente, oggetto, impianto, righe (codice, descrizione, unità, quantità in millesimi, prezzo in centesimi, sconto in centesimi di punto, aliquota IVA), totali in centesimi, note, condizioni e stato.",
+          "listino": "Il listino prezzi dell'azienda: codice, descrizione, unità, prezzo in centesimi e aliquota IVA.",
           "fornitori": "La rubrica dei fornitori per gli ordini: nome ed email.",
           "ordini": "Gli ordini inviati ai fornitori dal portale: scheda, modulo, destinatario, messaggio, stato e date."
         },

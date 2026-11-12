@@ -22,10 +22,11 @@ import {
   setAziendaLogo,
 } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
+import { setPreventiviAttivi } from '../preventivi/azienda.js';
 
 /**
  * Фирмите — само за MASTER (`aziende:manage`): създаване с име и лого, ново име, ново лого или без
- * лого, функциите по избор (скицникът), деактивиране. Логото се показва на хората на фирмата (листът за
+ * лого, функциите по избор (офертите), деактивиране. Логото се показва на хората на фирмата (листът за
  * печат) и на MASTER.
  */
 export const aziendeRouter: Router = Router();
@@ -163,6 +164,16 @@ aziendeRouter.post('/aziende/:id/stato', manage, requireCsrf, async (req, res) =
   if (!(await setAziendaActive(principalOf(req).user, id, active))) return notFound(req, res);
   setFlash(res, 'ok', active ? 'flash.aziendaReactivated' : 'flash.aziendaDeactivated');
   res.redirect(303, `/aziende/${encodeURIComponent(id)}`);
+});
+
+/** Офертите на фирмата — включва и изключва ги само MASTER (C1); нищо не се трие. */
+aziendeRouter.post('/aziende/:id/preventivi', manage, requireCsrf, async (req, res) => {
+  const id = String(req.params.id);
+  const attivi = (req.body as Record<string, unknown>).attivi === '1';
+  if (!isAziendaId(id) || !(await setPreventiviAttivi(principalOf(req).user, id, attivi)))
+    return notFound(req, res);
+  setFlash(res, 'ok', attivi ? 'aziende.preventivi.flashOn' : 'aziende.preventivi.flashOff');
+  res.redirect(303, `/aziende/${encodeURIComponent(id)}#h-preventivi`);
 });
 
 /**

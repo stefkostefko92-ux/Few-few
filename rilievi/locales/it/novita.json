@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-12-preventivi": {
+        "area": "Documenti",
+        "titolo": "Preventivi con listino prezzi",
+        "testo": "Per le aziende in cui l'amministrazione del portale li attiva: preventivi numerati dalla scheda dell'impianto o liberi, righe dal listino prezzi dell'azienda, sconto per riga, IVA al 22, 10 o 4 % riepilogata per aliquota, PDF/A con «Per accettazione» e invio al cliente per email. Stato bozza, inviato, accettato o rifiutato; condizioni predefinite nelle impostazioni."
+      },
       "2026-11-12-quadro-geat": {
         "area": "Schede",
         "titolo": "Quadro GEAT con il suo modulo",

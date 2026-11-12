@@ -232,3 +232,35 @@ export function ordineMail(params: {
     ],
   };
 }
+
+/** Офертата до клиента (routes/preventivi-azioni.ts): PDF-ът прикачен, отговорът — до пратилия. */
+export function preventivoMail(params: {
+  to: string;
+  replyTo: string;
+  numero: number;
+  azienda: string;
+  mittente: string;
+  oggetto: string;
+  messaggio: string | null;
+  pdf: Buffer;
+  filename: string;
+}): MailMessage {
+  const p = {
+    n: params.numero,
+    azienda: params.azienda,
+    mittente: params.mittente,
+    oggetto: params.oggetto,
+  };
+  return {
+    to: params.to,
+    replyTo: params.replyTo,
+    subject: t('preventivi.mail.oggetto', p),
+    text:
+      t('preventivi.mail.corpo', p) +
+      (params.messaggio ? `\n\n${params.messaggio}` : '') +
+      `\n\n${t('preventivi.mail.firma', p)}`,
+    attachments: [
+      { filename: params.filename, content: params.pdf, contentType: 'application/pdf' },
+    ],
+  };
+}
