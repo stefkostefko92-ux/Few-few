@@ -6,6 +6,7 @@ import { Download, Trash2, AlertTriangle, Shield, FileText } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import api from "../api";
 
 export default function PrivacySettingsPage() {
@@ -64,12 +65,7 @@ export default function PrivacySettingsPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-cs-text mb-2">{t("privacy.title")}</h1>
-        <p className="text-cs-muted">
-          {t("privacy.subtitle")}
-        </p>
-      </div>
+      <PageHeader title={t("privacy.title")} subtitle={t("privacy.subtitle")} />
 
       {message && (
         <div

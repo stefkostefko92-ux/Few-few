@@ -535,6 +535,38 @@ app.post("/internal/ticket-reply", async (req, res) => {
 });
 
 // v2.2 — Open a private discussion channel with applicant (pre-decision)
+// ─── Имена на членове за таблото (v53) ────────────────────────────────────────
+// Страницата „Игра“ показваше сурови Discord ID в класацията, покупките,
+// колекционерите, куестовете и trivia (преглед 10.10.2026). Играчите рядко са
+// влизали в таблото, затова имената не са в `users` — взимат се живо от
+// Discord, само за ID-тата, които таблото вече показва, и НЕ се пазят никъде.
+// Връща само членове на ТОЗИ guild (fetch е в рамките на guild-а): чужд ID
+// просто липсва в отговора. Таван 100 ID на заявка; извън кеша — по ЕДИН ID през
+// REST (Get Guild Member), до 25 на заявка: целият списък никога не се иска и
+// привилегированият intent не е нужен (docs/DISCORD_VERIFICATION.md §3.2).
+app.get("/internal/guild/:guildId/members", async (req, res) => {
+  const ids = [...new Set(String(req.query.ids || "").split(",").map((x) => x.trim()).filter((x) => /^\d{17,20}$/.test(x)))].slice(0, 100);
+  try {
+    const guild = client.guilds.cache.get(req.params.guildId)
+      || await client.guilds.fetch(req.params.guildId).catch(() => null);
+    if (!guild) return res.status(404).json({ ok: false, error: "Guild not found" });
+    const members = {};
+    const missing = [];
+    for (const id of ids) {
+      const m = guild.members.cache.get(id);
+      if (m) members[id] = m.displayName; else missing.push(id);
+    }
+    await Promise.all(missing.slice(0, 25).map(async (id) => {
+      const m = await guild.members.fetch(id).catch(() => null);
+      if (m) members[id] = m.displayName;
+    }));
+    res.json({ ok: true, members });
+  } catch (err) {
+    console.error("[guild-members]", err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ─── Каталог на guild-а: канали + роли (за избор от таблото) ────────────────
 //
 // ЗАЩО (сигнал от собственика, 08.08.2026: „нямам опция да избера в коя
@@ -921,7 +953,13 @@ app.post("/internal/application-apply-outcome", async (req, res) => {
       const member = await guild.members.fetch(userId).catch(() => null);
       result.memberFound = !!member;
       if (member) {
+        const me = guild.members.me;
         for (const roleId of rolesToAdd) {
+          // Гардът за роли (виж verification в interactionCreate.js): одобрена
+          // кандидатура не дава опасна, управлявана или над бота роля.
+          const role = guild.roles.cache.get(roleId) || await guild.roles.fetch(roleId).catch(() => null);
+          const unsafe = roleAssignabilityReason(role, me);
+          if (unsafe) { result.rolesFailed.push({ roleId, reason: unsafe }); continue; }
           try {
             await member.roles.add(roleId, "Application approved");
             result.rolesAdded.push(roleId);
@@ -1047,7 +1085,7 @@ app.post("/internal/giveaway-ended", async (req, res) => {
     // Update the giveaway message
     if (messageId) {
       try {
-        const { data: g } = await api.get(`/bot/giveaway/${giveawayId}`);
+        const { data: g } = await api.get(`/bot/giveaway/${giveawayId}`, { params: { serverId } });
         const { buildGiveawayMessage } = await import("./commands/giveaway.js");
         const { embeds, components } = buildGiveawayMessage(g, g.entryCount || 0);
         const msg = await channel.messages.fetch(messageId).catch(() => null);
@@ -1234,6 +1272,17 @@ app.post("/internal/game-settings-changed", async (req, res) => {
   const { invalidateGameSettings } = await import("./utils/game.js");
   invalidateGameSettings(serverId);
   res.json({ ok: true });
+});
+
+// v52 — таблото смени капана за спам ботове → изхвърли кеша и приведи
+// предупреждението в канала в съответствие (махни от стария, пусни в новия).
+app.post("/internal/honeypot-changed", async (req, res) => {
+  const { serverId, previous } = req.body || {};
+  if (!serverId) return res.status(400).json({ error: "serverId е задължителен" });
+  try {
+    const { syncBaitWarning } = await import("./utils/bait.js");
+    res.json(await syncBaitWarning(client, String(serverId), previous || null));
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 
 app.post("/internal/admin-broadcast", async (req, res) => {

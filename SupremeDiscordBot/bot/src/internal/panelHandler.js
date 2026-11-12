@@ -3,7 +3,7 @@ import { getPanel, markPanelSpawned } from "../utils/api.js";
 import { buildPanelMessage, buildMultiPanelMessage } from "../utils/embed.js";
 
 export async function handlePanelSpawn(client, { panelId, serverId, channelId }) {
-  const panel = await getPanel(panelId);
+  const panel = await getPanel(panelId, { serverId });
   const channel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId);
 
   if (!channel) throw new Error(`Channel ${channelId} not found`);
@@ -16,13 +16,13 @@ export async function handlePanelSpawn(client, { panelId, serverId, channelId })
   const { embeds, components } = buildPanelMessage(panel);
   const msg = await channel.send({ embeds, components });
 
-  await markPanelSpawned(panelId, channelId, msg.id);
+  await markPanelSpawned(panelId, channelId, msg.id, serverId);
 
   return { channelId, messageId: msg.id };
 }
 
 export async function handlePanelUpdate(client, { panelId, serverId }) {
-  const panel = await getPanel(panelId, { withSiblings: true });
+  const panel = await getPanel(panelId, { withSiblings: true, serverId });
   if (!panel.channelId || !panel.messageId) return;
 
   const channel = client.channels.cache.get(panel.channelId)
@@ -76,7 +76,7 @@ export async function handleMultiPanelSpawn(client, { panels, serverId, channelI
   // Маркирай КАЖДИЯ публикуван панел със същия messageId.
   const postedIds = panels.map((p) => p.id).filter((id) => !skipped.some((s) => s.id === id));
   for (const id of postedIds) {
-    await markPanelSpawned(id, channelId, msg.id).catch(() => {});
+    await markPanelSpawned(id, channelId, msg.id, serverId).catch(() => {});
   }
 
   return { channelId, messageId: msg.id, posted: postedIds, skipped };
