@@ -1,4 +1,4 @@
-// Point D1 — access through the Client's identity provider (terms 2027-01-12, art. 4.6): the pieces without
+// Point D1 — access through the Client's identity provider (terms 2026-11-12, art. 4.6): the pieces without
 // network or database. PKCE is S256 (RFC 7636), the state travels encrypted in a cookie, bound to its
 // provider and purpose, for 10 minutes; the company's tenant and Workspace domain are read strictly.
 import assert from 'node:assert/strict';

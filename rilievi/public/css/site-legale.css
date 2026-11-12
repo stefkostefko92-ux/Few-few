@@ -5,6 +5,12 @@
   line-height: 1.55;
 }
 
+/* Индиректните адреси в текста („rilievi.carbonstealth.eu/esportazione#giurisdizione“) не разтягат страницата
+   на телефон — пренасят се, щом не се събират. */
+.legale-pagina {
+  overflow-wrap: break-word;
+}
+
 .prose .legale-pagina__meta {
   font-size: 0.875rem;
   color: var(--muted);

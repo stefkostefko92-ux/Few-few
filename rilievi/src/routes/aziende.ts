@@ -23,6 +23,8 @@ import {
 } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
 import { setPreventiviAttivi } from '../preventivi/azienda.js';
+import { LIVELLI, statoAbbonamento } from '../abbonamenti/regole.js';
+import { ultimoGiornoDi } from '../abbonamenti/servizio.js';
 
 /**
  * Фирмите — само за MASTER (`aziende:manage`): създаване с име и лого, ново име, ново лого или без
@@ -123,6 +125,11 @@ export async function renderShow(
     maxKb: LOGO_MAX_BYTES / 1024,
     eliminaIl: azienda.deactivatedAt ? eliminazioneIl(azienda.deactivatedAt) : null,
     giorniPrimaEliminazione: GIORNI_PRIMA_DELL_ELIMINAZIONE,
+    abbonamento: {
+      stato: statoAbbonamento(azienda, new Date()),
+      ultimoGiorno: ultimoGiornoDi(azienda.abbonamentoFino),
+      livelli: Object.entries(LIVELLI).map(([n, max]) => ({ n: Number(n), max })),
+    },
   });
 }
 

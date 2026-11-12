@@ -1,0 +1,24 @@
+<%
+  // „Abbonamento“ (routes/impostazioni-abbonamento.ts): състоянието, заетите места и нивата по брой хора.
+  const ab = abbonamento;
+  const s = ab.stato;
+  const data = ab.ultimoGiorno ? fmt.dayRoma(ab.ultimoGiorno) : '';
+  const occupati = ab.posti.membri + ab.posti.inviti;
+%><section class="abbonamento" aria-labelledby="h-abbonamento">
+  <h2 class="section__title" id="h-abbonamento"><%= t('impostazioni.pagine.abbonamento.titolo') %></h2>
+  <div class="<%= s.solaLettura ? 'errors' : 'notice' %>" role="status">
+    <p><strong><%= t('abbonamento.stato.' + s.tipo + '.titolo', { data, livello: s.livello || '' }) %></strong></p>
+    <p><%= t('abbonamento.stato.' + s.tipo + '.testo', { data }) %></p>
+    <% if (s.solaLettura) { %><div class="toolbar"><a class="btn" href="/impostazioni/esportazione?azienda=<%= encodeURIComponent(azienda.id) %>"><%- include('../partials/icon', { name: 'download' }) %><span><%= t('abbonamento.esporta') %></span></a></div><% } %>
+  </div>
+  <dl class="kv">
+    <div class="kv__item"><dt><%= t('abbonamento.persone') %></dt><dd><%= s.maxPersone === null ? t('abbonamento.postiSenzaLimite', { n: occupati }) : t('abbonamento.posti', { n: occupati, max: s.maxPersone }) %></dd></div>
+    <% if (ab.posti.inviti > 0) { %><div class="kv__item"><dt><%= t('abbonamento.invitiAttesa') %></dt><dd><%= ab.posti.inviti %></dd></div><% } %>
+  </dl>
+  <h3><%= t('abbonamento.livelli.titolo') %></h3>
+  <ul class="abbonamento-livelli">
+    <% for (const l of ab.livelli) { %><li<% if (s.livello === l.n) { %> aria-current="true"<% } %>><strong><%= t('abbonamento.livello', { n: l.n }) %></strong> — <%= l.max === null ? t('abbonamento.livelli.oltre', { n: 25 }) : t('abbonamento.livelli.fino', { n: l.max }) %></li>
+    <% } %>
+  </ul>
+  <p class="field__hint"><%= t('abbonamento.contatto', { email: ab.contatto }) %></p>
+</section>

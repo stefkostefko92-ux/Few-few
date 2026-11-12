@@ -2,6 +2,7 @@ import { Prisma, type Role } from '@prisma/client';
 import type { SessionUser } from '../types.js';
 import { puo } from './permessi.js';
 import { can, isPrivileged, ROLE_LEVEL, type Capability } from './roles.js';
+import { CAPACITA_IN_SOLA_LETTURA } from '../abbonamenti/regole.js';
 
 /**
  * Обхватът на човека за една способност. Ролята е различна за всяка фирма (членствата), затова
@@ -23,10 +24,12 @@ export function roleIn(user: AccessUser, aziendaId: string | null): Role | null 
 type Membro = AccessUser['memberships'][number];
 /**
  * Свършила фирма (`soloEsportazione`) не дава нищо — износът има своя проверка (routes/impostazioni-esportazione.ts).
- * Офертите — само във фирма, в която MASTER ги е включил (`preventivi`).
+ * Офертите — само във фирма, в която MASTER ги е включил (`preventivi`). Изтекъл абонамент (`solaLettura`) —
+ * само четенето (src/abbonamenti/regole.ts).
  */
 const puoMembro = (m: Membro, capability: Capability): boolean =>
   !m.soloEsportazione &&
+  (!m.solaLettura || CAPACITA_IN_SOLA_LETTURA.has(capability)) &&
   (!capability.startsWith('preventivi:') || m.preventivi === true) &&
   puo(m.role, capability, m.permessi);
 

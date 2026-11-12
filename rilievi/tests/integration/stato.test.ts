@@ -1,4 +1,4 @@
-// The status page /stato (terms 2027-01-12, art. 2.4): public, not indexed, the parts of the Service now and
+// The status page /stato (terms 2026-11-12, art. 2.4): public, not indexed, the parts of the Service now and
 // the notices of the MASTER — an interruption under way, a planned maintenance, the last 90 days — and the
 // recovery objectives. Only the MASTER writes the notices.
 import assert from 'node:assert/strict';

@@ -1,0 +1,70 @@
+{
+  "abbonamento": {
+    "bloccoTitolo": "Abbonamento scaduto",
+    "blocco": "L'abbonamento dell'azienda è scaduto: puoi consultare, stampare e scaricare i dati, ma non crearne di nuovi né modificarli. L'amministratore può rinnovarlo in Impostazioni → Abbonamento.",
+    "livello": "Livello {n}",
+    "persone": "Persone nell'azienda",
+    "posti": "{n} su {max}",
+    "postiSenzaLimite": "{n}, senza limite",
+    "invitiAttesa": "Inviti in attesa (contano come persone)",
+    "contatto": "Per attivare o rinnovare l'abbonamento scrivi a {email}.",
+    "livelli": {
+      "titolo": "Livelli",
+      "fino": "fino a {n} persone",
+      "oltre": "oltre {n} persone",
+      "breveFino": "fino a {n}",
+      "breveOltre": "oltre {n}"
+    },
+    "stato": {
+      "illimitato": {
+        "titolo": "Nessuna scadenza",
+        "testo": "L'azienda usa il portale senza una data di scadenza."
+      },
+      "prova": {
+        "titolo": "Prova gratuita fino al {data}",
+        "testo": "Durante la prova puoi usare tutte le funzioni e invitare tutte le persone che vuoi. Alla fine non parte nessun pagamento: senza un abbonamento il portale passa in sola lettura e i dati restano tutti disponibili."
+      },
+      "attivo": {
+        "titolo": "Livello {livello} fino al {data}",
+        "testo": "L'abbonamento non si rinnova da solo: ti avvisiamo per email prima della scadenza."
+      },
+      "scaduto": {
+        "titolo": "Abbonamento scaduto il {data}",
+        "testo": "L'azienda è in sola lettura: si possono consultare, stampare e scaricare i dati, ma non crearne di nuovi né modificarli. L'esportazione di tutti i dati resta sempre disponibile."
+      }
+    },
+    "hub": {
+      "illimitato": "Nessuna scadenza",
+      "prova": "Prova gratuita fino al {data}",
+      "attivo": "Livello {livello} fino al {data}",
+      "scaduto": "Scaduto il {data}: sola lettura"
+    },
+    "banner": {
+      "link": "Scegli un abbonamento",
+      "scaduto": {
+        "titolo": "L'abbonamento di {azienda} è scaduto",
+        "testo": "È scaduto il {data}: puoi consultare e scaricare i dati, ma non crearne di nuovi né modificarli."
+      },
+      "prova": {
+        "titolo": "La prova gratuita di {azienda} sta per finire",
+        "testo": "L'ultimo giorno è il {data}. Dopo, senza un abbonamento, il portale passa in sola lettura."
+      },
+      "scade": {
+        "titolo": "L'abbonamento di {azienda} sta per scadere",
+        "testo": "L'ultimo giorno è il {data}. L'abbonamento non si rinnova da solo."
+      }
+    },
+    "master": {
+      "titolo": "Abbonamento",
+      "testo": "Per i pagamenti ricevuti fuori da Revolut: scegli il livello (1 fino a 10 persone, 2 fino a 25, 3 oltre 25) e l'ultimo giorno compreso. Senza livello non c'è limite di persone; senza data l'azienda non ha scadenza.",
+      "livello": "Livello",
+      "nessuno": "Nessun livello",
+      "fino": "Valido fino al (compreso)",
+      "salva": "Salva l'abbonamento",
+      "salvato": "Abbonamento salvato.",
+      "errore": "Controlla il livello e la data.",
+      "opzione": "Livello {n} ({persone})"
+    },
+    "esporta": "Esporta tutti i dati"
+  }
+}

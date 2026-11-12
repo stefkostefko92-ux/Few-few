@@ -6,7 +6,7 @@
     "pagina": {
       "title": "Condizioni di servizio e regole d'uso",
       "metaDescription": "Condizioni generali di servizio di Rilievi Impianti per le aziende, accordo sul trattamento dei dati (art. 28 GDPR) e regole d'uso per gli utenti.",
-      "lead": "Il rapporto tra Carbon Stealth VCC e le aziende che usano Rilievi Impianti è regolato dalle Condizioni generali di servizio e dall'Allegato A. Le accetta per l'azienda il suo amministratore, al primo accesso, con l'approvazione specifica delle clausole elencate all'art. 24 firmata con un codice inviato per email. Le regole d'uso valgono per ogni utente.",
+      "lead": "Il rapporto tra Carbon Stealth VCC e le aziende che usano Rilievi Impianti è regolato dalle Condizioni generali di servizio, dall'Allegato A (trattamento dei dati personali) e dall'Allegato B (cambio di fornitore ed esportazione dei dati). Le accetta per l'azienda il suo amministratore, al primo accesso, con l'approvazione specifica delle clausole elencate all'art. 24 firmata con un codice inviato per email. Le regole d'uso valgono per ogni utente.",
       "salva": "Puoi leggere, stampare e salvare questi testi prima di accettarli: usa la stampa del browser oppure scarica il PDF.",
       "pdf": "Scarica il PDF",
       "indice": "In questa pagina",
@@ -25,7 +25,7 @@
       "sede": "Sede legale",
       "partitaIva": "Partita IVA",
       "partitaIvaHint": "11 cifre per l'Italia; per un altro Paese dell'UE con il codice del Paese (es. DE123456789).",
-      "condizioni": "Ho letto e accetto, in nome e per conto dell'azienda indicata sopra, le Condizioni generali di servizio (versione del {versione}) e l'Allegato A – Accordo sul trattamento dei dati personali (art. 28 GDPR). Dichiaro di avere il potere di rappresentare e obbligare l'azienda.",
+      "condizioni": "Ho letto e accetto, in nome e per conto dell'azienda indicata sopra, le Condizioni generali di servizio (versione del {versione}), con l'Allegato A – Accordo sul trattamento dei dati personali (art. 28 GDPR) e l'Allegato B – Cambio di fornitore ed esportazione dei dati (Data Act). Dichiaro di avere il potere di rappresentare e obbligare l'azienda.",
       "passo": "Al passo successivo approvi specificamente le clausole dell'art. 24 e firmi con un codice che ti mandiamo per email.",
       "regoleTitolo": "Le tue regole d'uso",
       "regole": "Ho letto le Regole d'uso (art. 4.4 delle Condizioni) e l'avvertenza sui calcoli: i risultati sono un ausilio e prima di qualsiasi uso devono essere verificati e firmati da un tecnico abilitato.",
@@ -49,6 +49,10 @@
         "invio": "Non siamo riusciti a inviare il codice per email. Riprova tra qualche minuto; se l'errore resta, scrivi a Carbon Stealth.",
         "attendi": "Abbiamo appena inviato un codice: aspetta un minuto prima di chiederne un altro.",
         "troppi": "Hai chiesto troppi codici: riprova tra un'ora."
+      },
+      "prova": {
+        "titolo": "Un mese di prova gratuita",
+        "testo": "La prova inizia quando firmi con il codice e dura un mese: se firmi oggi, termina il {fine} a mezzanotte (ora di Roma). Durante la prova l'azienda usa tutte le funzioni, senza pagare e senza dati di pagamento. Alla fine non parte nessun pagamento: per continuare a creare e modificare dati serve un piano Premium (Impostazioni → Abbonamento), pagato in anticipo e senza rinnovo automatico. Senza piano il portale passa in sola lettura per tutti: i dati restano, si vedono, si stampano e si esportano gratuitamente. Ti avvisiamo 14 e 3 giorni prima della fine (art. 12 delle Condizioni)."
       }
     },
     "firma": {
@@ -112,7 +116,7 @@
     },
     "annuncio": {
       "titolo": "Nuove Condizioni di servizio dal {data}",
-      "testo": "Dal {data} entrano in vigore le nuove Condizioni di servizio, con il nuovo Allegato B sul cambio di fornitore e l'esportazione dei dati (Data Act). Le modifiche sono elencate su rilievi.carbonstealth.eu/condizioni/prossima. L'amministratore dell'azienda dovrà accettarle; fino ad allora vale la versione attuale. Chi non le accetta può recedere senza oneri prima della loro entrata in vigore (art. 18.3)."
+      "testo": "Dal {data} entrano in vigore le nuove Condizioni di servizio. Le modifiche sono elencate su rilievi.carbonstealth.eu/condizioni/prossima. L'amministratore dell'azienda dovrà accettarle; fino ad allora vale la versione attuale. Chi non le accetta può recedere senza oneri prima della loro entrata in vigore (art. 18.3)."
     },
     "prossima": {
       "title": "Prossima versione delle Condizioni",

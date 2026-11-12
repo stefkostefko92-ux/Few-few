@@ -3,7 +3,15 @@
   // първи. „Chiudi“ е форма (и без JavaScript — връща на същата страница); comunicazioni.js я праща във фонов
   // режим и маха лентата. Текстът е на редове, както е написан (CSS `white-space: pre-line`, без HTML).
   // Над тях — смяната на доставчика, която тече (src/aziende/cambio.ts): без „Chiudi“, до края на прехода.
+  // Абонаментът (src/abbonamenti/avvisi.ts): изтекъл — само четене; пробният месец или периодът свършва скоро.
 %><div class="avvisi" role="region" aria-label="<%= t('master.comunicazioni.banner.regione') %>">
+  <% for (const a of (locals.avvisiAbbonamento || [])) { %><section class="avviso avviso--<%= a.tipo === 'scaduto' ? 'urgente' : 'avviso' %>" aria-labelledby="abb-<%= a.aziendaId %>">
+    <div class="avviso__testa">
+      <h2 class="avviso__titolo" id="abb-<%= a.aziendaId %>"><%- include('icon', { name: 'alert' }) %><span><%= t('abbonamento.banner.' + a.tipo + '.titolo', { azienda: a.azienda }) %></span></h2>
+    </div>
+    <p class="avviso__testo"><%= t('abbonamento.banner.' + a.tipo + '.testo', { data: fmt.dayRoma(a.ultimoGiorno) }) %><% if (a.admin) { %> <a href="/impostazioni/abbonamento?azienda=<%= encodeURIComponent(a.aziendaId) %>"><%= t('abbonamento.banner.link') %></a><% } %></p>
+  </section>
+  <% } %>
   <% for (const c of (locals.cambiInCorso || [])) { %><section class="avviso avviso--avviso" aria-labelledby="cambio-<%= c.id %>">
     <div class="avviso__testa">
       <h2 class="avviso__titolo" id="cambio-<%= c.id %>"><%- include('icon', { name: 'alert' }) %><span><%= t('esportazione.banner.titolo', { azienda: c.name }) %></span></h2>

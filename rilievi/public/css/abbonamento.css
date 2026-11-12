@@ -1,0 +1,17 @@
+/* „Abbonamento“ в настройките (views/impostazioni/_abbonamento.ejs): разделът на редове с въздух. */
+.abbonamento {
+  display: grid;
+  gap: 16px;
+}
+
+.abbonamento h3,
+.abbonamento ul,
+.abbonamento dl {
+  margin: 0;
+}
+
+.abbonamento-livelli {
+  display: grid;
+  gap: 6px;
+  padding-left: 1.2em;
+}

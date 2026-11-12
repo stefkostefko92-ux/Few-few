@@ -47,6 +47,9 @@ export function aziendeImpostabili(user: SessionUser) {
       preventivoCondizioni: true,
       accessoMicrosoft: true,
       accessoGoogle: true,
+      abbonamentoFino: true,
+      abbonamentoProva: true,
+      abbonamentoLivello: true,
     },
   });
 }

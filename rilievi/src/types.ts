@@ -21,6 +21,11 @@ export interface MembershipView {
   soloEsportazione?: true;
   /** MASTER е включил офертите на фирмата (src/preventivi/) — без това `preventivi:*` не важи в нея. */
   preventivi?: true;
+  /** Краят на абонамента или на пробния месец (src/abbonamenti/); няма го — без срок. */
+  abbonamentoFino?: Date;
+  abbonamentoProva?: true;
+  /** Абонаментът е изтекъл: във фирмата остава само четенето (auth/scope.ts). */
+  solaLettura?: true;
 }
 
 /** Вписаният човек, както го виждат маршрутите и шаблоните. */

@@ -12,6 +12,7 @@ import { pulisciSfide } from './services/login-2fa.js';
 import { purgeOldRequests } from './requests/service.js';
 import { INVITI_SCADUTI_GIORNI } from './services/invites.js';
 import { DAY, HOUR } from './time.js';
+import { avvisaScadenze } from './abbonamenti/scadenze.js';
 
 /**
  * Чистене веднъж на час: изтекли сесии и входове, чакали кода на 2FA, грешните опити по мрежа (след ден),
@@ -46,6 +47,8 @@ export async function runMaintenance(): Promise<void> {
   const aziende = await eliminaAziendeScadute(now);
   // Доказателствата (приемания и изтеглени изчисления) след своя срок — src/legale/.
   const prove = await pulisciProve(now);
+  // Известията за края на пробния месец и на плана (чл. 12.6) — src/abbonamenti/scadenze.ts.
+  const avvisi = await avvisaScadenze(new Date(now));
   if (
     sessions +
       sfide +
@@ -57,7 +60,8 @@ export async function runMaintenance(): Promise<void> {
       arrivi +
       cambi +
       aziende +
-      prove >
+      prove +
+      avvisi >
     0
   ) {
     logger.info(
@@ -73,6 +77,7 @@ export async function runMaintenance(): Promise<void> {
         cambi,
         aziende,
         prove,
+        avvisi,
       },
       'поддръжка: изчистено',
     );

@@ -8,6 +8,7 @@ import { conservaFinoDa } from './emissioni.js';
 import { verificaCodice, type Dichiarati, type EsitoCodice } from './firma.js';
 import { CAMPI_ACCETTAZIONE, sigilloDi, taglia } from './sigillo.js';
 import { hashTesto, leggiTesto, testoPiano, type TestoLegaleDoc } from './testi.js';
+import { avviaProva } from '../abbonamenti/servizio.js';
 
 /** Откъде е дошло приемането — пази се в регистъра (чл. 19.1 от условията). */
 export interface Contesto {
@@ -132,6 +133,11 @@ export async function firmaCondizioni(
         otpVerificatoAt: esito.verificatoAt,
       };
       const copia = await copiaDi(firmato);
+      // Първото приемане за фирмата сключва договора: оттук тече пробният месец (src/abbonamenti/).
+      const primaVolta =
+        (await tx.accettazione.count({
+          where: { aziendaId: sfida.aziendaId, tipo: 'CONDIZIONI' },
+        })) === 0;
       const campi = {
         at,
         tipo: doc.tipo,
@@ -162,6 +168,7 @@ export async function firmaCondizioni(
         where: { id: sfida.aziendaId },
         data: { condizioniVersione: doc.versione },
       });
+      if (primaVolta) await avviaProva(tx, sfida.aziendaId, at);
       await writeAudit(
         {
           actorId: user.id,

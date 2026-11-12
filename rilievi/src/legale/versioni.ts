@@ -19,8 +19,20 @@ export const PREAVVISO_GIORNI = 30;
 
 /** Версиите на всеки текст, от най-старата; `versione` е и денят, от който може да влезе. */
 export const STORIA: Readonly<Record<TipoTesto, readonly string[]>> = {
-  CONDIZIONI: ['2026-11-10', '2027-01-12'],
+  CONDIZIONI: ['2026-11-10', '2026-11-12'],
   REGOLE: ['2026-11-10'],
+};
+
+/**
+ * Версии, които влизат от своя ден без обява. 2026-11-12 (пробният месец, плановете, само четенето — чл. 12):
+ * собственикът, 12 ноември 2026 — „Акаунтите са мои на всичките тестови фирми, не ми трябва да обявявам нищо …
+ * Новите условия влизат в сила днес“. Предизвестието по чл. 18.1 пази клиентите, а клиенти отвън още няма
+ * (Правният Разбирач: без външни фирми то няма на кого да служи). 2027-01-12 (Allegato B) не влиза никога:
+ * целият ѝ текст е в 2026-11-12, а файлът ѝ остава непипнат. Нова версия оттук нататък — само обявена.
+ */
+export const SENZA_PREAVVISO: Readonly<Record<TipoTesto, readonly string[]>> = {
+  CONDIZIONI: ['2026-11-12'],
+  REGOLE: [],
 };
 
 export interface Annuncio {
@@ -48,19 +60,30 @@ export function dataEntrata(versione: string, annuncio: Date): Date {
   return dalPreavviso > dalGiorno ? dalPreavviso : dalGiorno;
 }
 
-/** Откога е в сила версията; null — още не е обявена (не влиза). */
-export function inVigoreDal(tipo: TipoTesto, versione: string): Date | null {
-  if (STORIA[tipo][0] === versione) return mezzanotteRoma(versione);
+/**
+ * Откога е в сила версията; null — още не е обявена (не влиза). `storia` — само за тестовете (бъдеща версия,
+ * която още не съществува).
+ */
+export function inVigoreDal(
+  tipo: TipoTesto,
+  versione: string,
+  storia: readonly string[] = STORIA[tipo],
+): Date | null {
+  if (storia[0] === versione || SENZA_PREAVVISO[tipo].includes(versione))
+    return mezzanotteRoma(versione);
   const annuncio = annuncioDi(tipo, versione);
   return annuncio ? dataEntrata(versione, annuncio) : null;
 }
 
 /** Версията в сила в момента `now` — последната в `STORIA`, която вече е влязла. */
-export function versioneVigente(tipo: TipoTesto, now: Date = new Date()): string {
-  const storia = STORIA[tipo];
+export function versioneVigente(
+  tipo: TipoTesto,
+  now: Date = new Date(),
+  storia: readonly string[] = STORIA[tipo],
+): string {
   let vigente = storia[0]!;
   for (const v of storia) {
-    const dal = inVigoreDal(tipo, v);
+    const dal = inVigoreDal(tipo, v, storia);
     if (dal && dal <= now) vigente = v;
   }
   return vigente;
@@ -70,12 +93,16 @@ export function versioneVigente(tipo: TipoTesto, now: Date = new Date()): string
 export function versioneProssima(
   tipo: TipoTesto,
   now: Date = new Date(),
+  storia: readonly string[] = STORIA[tipo],
 ): { versione: string; dal: Date | null; annunciataAt: Date | null } | null {
-  const storia = STORIA[tipo];
-  const i = storia.indexOf(versioneVigente(tipo, now));
+  const i = storia.indexOf(versioneVigente(tipo, now, storia));
   const versione = storia[i + 1];
   if (!versione) return null;
-  return { versione, dal: inVigoreDal(tipo, versione), annunciataAt: annuncioDi(tipo, versione) };
+  return {
+    versione,
+    dal: inVigoreDal(tipo, versione, storia),
+    annunciataAt: annuncioDi(tipo, versione),
+  };
 }
 
 /** Действащите версии — четени при всяко обръщение, затова сменят деня сами. */

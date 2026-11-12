@@ -88,6 +88,28 @@
         "subject": "Accesso con {fornitore} scollegato — Rilievi Impianti",
         "body": "Ciao,\n\ndal tuo account del portale Rilievi Impianti è stato scollegato l'account {fornitore}: per entrare ora serve la password.\n\nSe non sei stato tu, cambia la password e avvisa l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
       }
+    },
+    "abbonamento": {
+      "prova": {
+        "prossimo": {
+          "subject": "La prova gratuita di {azienda} finisce tra {giorni} giorni — Rilievi Impianti",
+          "body": "Ciao,\n\nla prova gratuita di {azienda} su Rilievi Impianti finisce il {data} a mezzanotte (ora di Roma).\n\nDopo, per continuare a creare e modificare dati serve un piano Premium, pagato in anticipo e senza rinnovo automatico. Senza piano il portale passa in sola lettura per tutti: i dati restano, si vedono, si stampano e si esportano gratuitamente.\n\nScegli il piano qui: {link}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+        },
+        "scaduto": {
+          "subject": "La prova gratuita di {azienda} è finita — Rilievi Impianti",
+          "body": "Ciao,\n\nla prova gratuita di {azienda} su Rilievi Impianti è finita il {data}. Il portale ora è in sola lettura: i dati restano, si vedono, si stampano e si esportano gratuitamente, ma non si possono creare né modificare.\n\nCon un piano Premium tutte le funzioni tornano subito disponibili: {link}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+        }
+      },
+      "piano": {
+        "prossimo": {
+          "subject": "Il piano di {azienda} scade tra {giorni} giorni — Rilievi Impianti",
+          "body": "Ciao,\n\nil piano Premium di {azienda} su Rilievi Impianti scade il {data} a mezzanotte (ora di Roma). Non si rinnova da solo e non addebitiamo nulla.\n\nSenza un nuovo periodo il portale passa in sola lettura per tutti: i dati restano, si vedono, si stampano e si esportano gratuitamente.\n\nRinnova qui: {link}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+        },
+        "scaduto": {
+          "subject": "Il piano di {azienda} è scaduto — Rilievi Impianti",
+          "body": "Ciao,\n\nil piano Premium di {azienda} su Rilievi Impianti è scaduto il {data}. Il portale ora è in sola lettura: i dati restano, si vedono, si stampano e si esportano gratuitamente, ma non si possono creare né modificare.\n\nCon un nuovo periodo tutte le funzioni tornano subito disponibili: {link}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+        }
+      }
     }
   }
 }

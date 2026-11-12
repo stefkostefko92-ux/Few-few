@@ -3,6 +3,7 @@ import { allegatiRouter } from './allegati.js';
 import { auditRouter } from './audit.js';
 import { accessoRouter, calcoloRouter } from './accesso.js';
 import { aziendeRouter } from './aziende.js';
+import { aziendeAbbonamentoRouter } from './aziende-abbonamento.js';
 import { aziendeFineRouter } from './aziende-fine.js';
 import { cartelliNuovoRouter } from './cartelli-nuovo.js';
 import { cartelliRouter } from './cartelli.js';
@@ -25,6 +26,7 @@ import { verbaliNuovoRouter } from './verbali-nuovo.js';
 import { verbaliRouter } from './verbali.js';
 import { allegatiAnnotazioniRouter } from './allegati-annotazioni.js';
 import { apiRouter } from './api.js';
+import { impostazioniAbbonamentoRouter } from './impostazioni-abbonamento.js';
 import { impostazioniAccessoRouter } from './impostazioni-accesso.js';
 import { impostazioniApiRouter } from './impostazioni-api.js';
 import { buoniFirmeRouter } from './buoni-firme.js';
@@ -121,8 +123,11 @@ export function montaRouter(app: Express): void {
   app.use(usersManageRouter);
   app.use(aziendeRouter);
   app.use(aziendeFineRouter);
+  app.use(aziendeAbbonamentoRouter);
   // Преди impostazioniRouter: `/impostazioni/esportazione` е свой раздел с своя проверка (не по способност).
   app.use(impostazioniEsportazioneRouter);
+  // Също: „Abbonamento“ е по роля ADMIN — и изтеклата фирма го вижда.
+  app.use(impostazioniAbbonamentoRouter);
   app.use(impostazioniRouter);
   app.use(impostazioniFirmeRouter);
   app.use(impostazioniBuonoRouter);

@@ -28,6 +28,7 @@ import { FISSE, ordineEffettivo, type Verso } from '../schede/ordine.js';
  */
 export const SEZIONI_IMPOSTAZIONI = [
   'azienda',
+  'abbonamento',
   'scheda',
   'cartelli',
   'buoni',
@@ -44,6 +45,7 @@ export type SezioneImpostazioni = (typeof SEZIONI_IMPOSTAZIONI)[number];
 
 export const ICONE_SEZIONI: Readonly<Record<SezioneImpostazioni, string>> = {
   azienda: 'building',
+  abbonamento: 'card',
   scheda: 'sheet',
   cartelli: 'stop',
   buoni: 'buono',

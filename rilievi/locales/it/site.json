@@ -177,7 +177,8 @@
       "next": {
         "title": "Cosa succede dopo",
         "s1": "Leggiamo la richiesta e ti rispondiamo per email.",
-        "s2": "Se è tutto a posto, creiamo lo spazio della tua azienda e l'amministratore riceve l'invito.",
+        "s2": "Se è tutto a posto, creiamo lo spazio della tua azienda e l'amministratore riceve l'invito. Quando accetta le condizioni inizia un mese di prova gratuita, con tutte le funzioni.",
+        "prova": "Dopo la prova, per continuare a creare e modificare dati serve un piano Premium a pagamento, in base al numero di persone (fino a 10, fino a 25, oltre 25), pagato in anticipo e senza rinnovo automatico; i prezzi, IVA esclusa, sono indicati nel portale prima del pagamento e su richiesta. Senza piano il portale resta in sola lettura e i dati si esportano sempre gratuitamente. Il servizio è riservato a imprese e professionisti.",
         "s3": "I dati servono solo per rispondere alla richiesta e li cancelliamo dopo {days} giorni."
       },
       "contact": "Preferisci scrivere?",
@@ -219,7 +220,7 @@
     },
     "sent": {
       "title": "Richiesta inviata",
-      "text": "Grazie. Leggiamo la richiesta e ti rispondiamo all'indirizzo email che hai indicato. Se è tutto a posto, l'amministratore della tua azienda riceverà un invito per email.",
+      "text": "Grazie. Leggiamo la richiesta e ti rispondiamo all'indirizzo email che hai indicato. Se è tutto a posto, l'amministratore della tua azienda riceverà un invito per email; quando accetta le condizioni inizia un mese di prova gratuita.",
       "back": "Torna alla pagina iniziale"
     },
     "footer": {
@@ -240,7 +241,7 @@
     },
     "roles": {
       "title": "Titolare e responsabile",
-      "text": "Per il sito pubblico e per le richieste di accesso il titolare del trattamento è Carbon Stealth VCC. Per gli account e le schede di un'azienda che usa il portale, titolare è l'azienda: Carbon Stealth li tratta per suo conto, come responsabile del trattamento (art. 28 GDPR), solo per fornire il portale. Per questi dati rivolgetevi prima all'azienda per cui lavorate. Alla fine del servizio l'azienda riceve tutti i suoi dati in un unico file e, {endDays} giorni dopo la disattivazione, li cancelliamo definitivamente (art. 28, par. 3, lett. g) GDPR). Fanno eccezione il registro delle accettazioni e il registro dei calcoli emessi: Carbon Stealth li conserva come titolare, per dimostrare il contenuto del contratto e dei documenti generati e per difendersi in giudizio (vedi tabella). Non vengono cancellati con gli altri dati alla fine del servizio.",
+      "text": "Per il sito pubblico, per le richieste di accesso e per la fatturazione e i pagamenti dei piani il titolare del trattamento è Carbon Stealth VCC. Per gli account e le schede di un'azienda che usa il portale, titolare è l'azienda: Carbon Stealth li tratta per suo conto, come responsabile del trattamento (art. 28 GDPR), solo per fornire il portale. Per questi dati rivolgetevi prima all'azienda per cui lavorate. Alla fine del servizio l'azienda riceve tutti i suoi dati in un unico file e, {endDays} giorni dopo la disattivazione, li cancelliamo definitivamente (art. 28, par. 3, lett. g) GDPR). Fanno eccezione il registro delle accettazioni, il registro dei calcoli emessi e i documenti contabili: Carbon Stealth li conserva come titolare, per dimostrare il contenuto del contratto e dei documenti generati, per gli obblighi di legge e per difendersi in giudizio (vedi tabella). Non vengono cancellati con gli altri dati alla fine del servizio.",
       "contract": "Il rapporto con le aziende è regolato dalle Condizioni generali di servizio e dall'Accordo sul trattamento dei dati (Allegato A):"
     },
     "table": {
@@ -286,10 +287,16 @@
         "kept": "{auditDays} giorni, poi cancellato automaticamente"
       },
       "accettazioni": {
-        "data": "Registro delle accettazioni: per l'accettazione delle Condizioni generali di servizio, nome, email e ruolo dell'amministratore, ragione sociale, sede e partita IVA dichiarate, data e ora, versione e impronta del testo, clausole approvate specificamente, invio e verifica del codice monouso, indirizzo IP e tipo di browser, impronta della copia inviata; per ogni utente, la presa visione delle regole d'uso e dell'avvertenza sui calcoli (data, ora, versione, indirizzo IP e tipo di browser)",
+        "data": "Registro delle accettazioni: per l'accettazione delle Condizioni generali di servizio, nome, email e ruolo dell'amministratore, ragione sociale, sede e partita IVA dichiarate, data e ora, versione e impronta del testo, clausole approvate specificamente, invio e verifica del codice monouso, indirizzo IP e tipo di browser, impronta della copia inviata; per ogni offerta accettata, amministratore, azienda, piano, durata, prezzo, testo e impronta dell'offerta, data e ora, indirizzo IP e tipo di browser, riferimento del pagamento; per ogni utente, la presa visione delle regole d'uso e dell'avvertenza sui calcoli (data, ora, versione, indirizzo IP e tipo di browser)",
         "why": "Dimostrare chi ha concluso il contratto per l'azienda, quando e su quale testo; accertare, esercitare o difendere un diritto in sede giudiziaria",
         "basis": "Conclusione del contratto, art. 6, par. 1, lett. b); conservazione per legittimo interesse, art. 6, par. 1, lett. f) GDPR. Titolare: Carbon Stealth",
         "kept": "Per tutta la durata del contratto e per 10 anni dopo la sua cessazione; in caso di contestazione, fino alla sua definizione (art. 17, par. 3, lett. e) GDPR)"
+      },
+      "pagamenti": {
+        "data": "Fatturazione e pagamenti dei piani: ragione sociale, sede e partita IVA dell'azienda, nome ed email dell'amministratore che acquista, piano, durata, prezzo, IVA, data, esito e riferimento del pagamento ricevuti da Revolut, fatture e rimborsi. Non riceviamo né conserviamo il numero della carta",
+        "why": "Vendere e attivare i piani Premium, emettere fatture e rimborsi, tenere la contabilità",
+        "basis": "Esecuzione del contratto, art. 6, par. 1, lett. b); obblighi di legge contabili e fiscali, art. 6, par. 1, lett. c) GDPR. Titolare: Carbon Stealth",
+        "kept": "Fatture e documenti contabili: 10 anni dal 1° gennaio dell'anno successivo a quello a cui si riferiscono (art. 12 della legge bulgara sulla contabilità), o più a lungo se lo richiede la legge fiscale; i dati del piano per la durata del contratto e i 10 anni successivi, come il registro delle accettazioni; in caso di contestazione, fino alla sua definizione"
       },
       "calcoli": {
         "data": "Registro dei calcoli emessi: per ogni PDF di un calcolo, chi lo ha generato (nome ed email), per quale azienda, data e ora, tipo di calcolo, versione (build) del software, dati di ingresso, risultati riportati, riferimento del calcolo e impronta del file",
@@ -301,7 +308,7 @@
         "data": "Indirizzo IP",
         "why": "Limitare i tentativi ripetuti di accesso e l'invio massiccio di richieste",
         "basis": "Legittimo interesse, art. 6, par. 1, lett. f) GDPR",
-        "kept": "Nella memoria del server al massimo un'ora; per un accesso fallito, solo un'impronta cifrata (HMAC) della rete da cui arriva, mai l'indirizzo, per 24 ore. Non viene scritto nei log. Fa eccezione l'accettazione delle condizioni e delle regole d'uso: l'indirizzo IP è conservato nel registro delle accettazioni, per i tempi indicati sopra"
+        "kept": "Nella memoria del server al massimo un'ora; per un accesso fallito, solo un'impronta cifrata (HMAC) della rete da cui arriva, mai l'indirizzo, per 24 ore. Non viene scritto nei log. Fa eccezione l'accettazione delle condizioni, delle regole d'uso e delle offerte dei piani: l'indirizzo IP è conservato nel registro delle accettazioni, per i tempi indicati sopra"
       },
       "backup": {
         "data": "Copie di sicurezza del database e di foto e video (i dati qui sopra)",
@@ -331,8 +338,9 @@
     "recipients": {
       "title": "Chi altro vede i dati",
       "hosting": "netcup GmbH, Karlsruhe, Germania — il server su cui funziona il portale, in un data center in Germania. Con netcup è in vigore un accordo sul trattamento dei dati (art. 28 GDPR).",
-      "mail": "Sendinblue SAS (Brevo), Francia — l'invio delle email, quando è attivo: inviti, link per una nuova password, avvisi di sicurezza dell'account (verifica in due passaggi, cambio di email), avvisi di nuove richieste agli amministratori del portale, il codice per firmare le condizioni di servizio e la copia delle condizioni accettate, gli avvisi sul cambio di fornitore e sulla cancellazione dei dati, i moduli di intervento e i verbali in PDF, con i nomi e le firme, che gli utenti inviano a un indirizzo scelto da loro o in copia a chi firma, e i moduli d'ordine che gli utenti inviano ai fornitori.",
-      "text": "Non vendiamo dati e non li cediamo per pubblicità. Il portale e i suoi dati restano nell'Unione europea; Brevo può affidare parte dell'invio delle email a sub-responsabili fuori dall'UE, e in quel caso il trasferimento è tutelato da clausole contrattuali tipo (art. 46 GDPR)."
+      "mail": "Sendinblue SAS (Brevo), Francia — l'invio delle email, quando è attivo: inviti, link per una nuova password, avvisi di sicurezza dell'account (verifica in due passaggi, cambio di email), avvisi di nuove richieste agli amministratori del portale, il codice per firmare le condizioni di servizio e la copia delle condizioni accettate, le offerte accettate, gli avvisi di scadenza della prova e dei piani e le fatture, gli avvisi sul cambio di fornitore e sulla cancellazione dei dati, i moduli di intervento e i verbali in PDF, con i nomi e le firme, che gli utenti inviano a un indirizzo scelto da loro o in copia a chi firma, e i moduli d'ordine che gli utenti inviano ai fornitori.",
+      "pagamenti": "Revolut Bank UAB, Lituania — la pagina di pagamento con carta dei piani Premium. Revolut riceve i dati della carta e del pagamento e li tratta secondo i propri termini e la propria informativa (revolut.com/legal); a noi comunica solo esito, importo e riferimento del pagamento.",
+      "text": "Non vendiamo dati e non li cediamo per pubblicità. Il portale e i suoi dati restano nell'Unione europea; Brevo può affidare parte dell'invio delle email a sub-responsabili fuori dall'UE, e in quel caso il trasferimento è tutelato da clausole contrattuali tipo (art. 46 GDPR). Per i pagamenti con carta vale anche l'informativa di Revolut."
     },
     "security": {
       "title": "Sicurezza",

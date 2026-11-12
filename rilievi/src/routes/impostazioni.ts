@@ -12,6 +12,7 @@ import { setFlash } from '../http/flash.js';
 import { ultimaAccettazione } from '../legale/accettazioni.js';
 import { VERSIONE, versioneProssima } from '../legale/versioni.js';
 import { parseMossa, parseOrdine, sposta } from '../schede/ordine.js';
+import { rigaAbbonamento } from './impostazioni-abbonamento.js';
 import { vistaAccesso } from './impostazioni-accesso.js';
 import {
   ICONE_SEZIONI,
@@ -101,6 +102,7 @@ async function riepilogo(
         : 'impostazioni.hub.ordineBase',
     ),
     cartelli: t('impostazioni.hub.modello', { nome: modelloDi(azienda.cartelloModello).titolo }),
+    abbonamento: rigaAbbonamento(azienda, t, giorno),
     api: nChiavi > 0 ? t('api.hubN', { n: nChiavi }) : t('api.hub0'),
     accesso:
       [azienda.accessoMicrosoft ? 'Microsoft' : null, azienda.accessoGoogle ? 'Google' : null]

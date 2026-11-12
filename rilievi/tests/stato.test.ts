@@ -1,4 +1,4 @@
-// The status page /stato (terms 2027-01-12, art. 2.4): the state of the Service now, the interruptions under
+// The status page /stato (terms 2026-11-12, art. 2.4): the state of the Service now, the interruptions under
 // way, the planned maintenance and the recovery objectives. Notices are written by the MASTER (times in Rome);
 // the overall state comes from the live checks and the notices — an interruption under way is said even when
 // the checks are green.

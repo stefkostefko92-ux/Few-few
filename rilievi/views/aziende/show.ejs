@@ -57,6 +57,29 @@
       <div class="toolbar"><button class="btn" type="submit"><%= t(azienda.preventiviAttivi ? 'aziende.preventivi.disattiva' : 'aziende.preventivi.attiva') %></button></div>
     </form>
   </section>
+  <%# Абонаментът, зададен на ръка от MASTER (routes/aziende-abbonamento.ts) — за плащания извън Revolut. %>
+  <% const ab = abbonamento; const datafine = ab.stato.fino ? fmt.dayRoma(new Date(ab.stato.fino.getTime() - 1)) : ''; %>
+  <section aria-labelledby="h-abbonamento">
+    <h2 class="section__title" id="h-abbonamento"><%= t('abbonamento.master.titolo') %></h2>
+    <p><strong><%= t('abbonamento.stato.' + ab.stato.tipo + '.titolo', { data: datafine, livello: ab.stato.livello || '' }) %></strong></p>
+    <p class="muted"><%= t('abbonamento.master.testo') %></p>
+    <form class="row-form" method="post" action="/aziende/<%= azienda.id %>/abbonamento" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label class="field__label" for="abb-livello"><%= t('abbonamento.master.livello') %></label>
+        <select class="select" id="abb-livello" name="livello">
+          <option value=""<% if (!ab.stato.livello) { %> selected<% } %>><%= t('abbonamento.master.nessuno') %></option>
+          <% for (const l of ab.livelli) { %><option value="<%= l.n %>"<% if (ab.stato.livello === l.n) { %> selected<% } %>><%= t('abbonamento.master.opzione', { n: l.n, persone: l.max === null ? t('abbonamento.livelli.breveOltre', { n: 25 }) : t('abbonamento.livelli.breveFino', { n: l.max }) }) %></option>
+          <% } %>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field__label" for="abb-fino"><%= t('abbonamento.master.fino') %></label>
+        <input class="input" id="abb-fino" name="fino" type="date" value="<%= ab.ultimoGiorno %>">
+      </div>
+      <button class="btn" type="submit"><%= t('abbonamento.master.salva') %></button>
+    </form>
+  </section>
   <section aria-labelledby="h-access">
     <h2 class="section__title" id="h-access"><%= t('aziende.accessTitle') %></h2>
     <p class="muted"><%= t(azienda.deactivatedAt ? 'aziende.reactivateText' : 'aziende.deactivateText', { days: giorniPrimaEliminazione }) %></p>

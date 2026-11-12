@@ -6,7 +6,7 @@ import { setFlash } from '../http/flash.js';
 import { ACCETTA_PATH, COPIA_PATH, FIRMA_PATH } from '../legale/percorsi.js';
 import { daAccettare, inAttesa } from '../legale/stato.js';
 import { HOUR } from '../time.js';
-import type { Capability } from './roles.js';
+import { can, type Capability } from './roles.js';
 import { soloEsportazione } from './memberships.js';
 import { canAnywhere } from './scope.js';
 import type { Principal } from '../types.js';
@@ -120,8 +120,12 @@ export function requireCapability(capability: Capability) {
   return (req: Request, res: Response, next: NextFunction): void => {
     requireUser(req, res, () => {
       // Поне в една фирма; конкретният запис (карта, човек, покана) се проверява в своята фирма.
-      if (!canAnywhere(principalOf(req).user, capability)) {
-        sendError(req, res, 403, 'error.forbiddenTitle', 'error.forbidden');
+      const user = principalOf(req).user;
+      if (!canAnywhere(user, capability)) {
+        // Ролята би го позволила, но абонаментът на фирмата е изтекъл — казва се защо (src/abbonamenti/).
+        const scaduto = user.memberships.some((m) => m.solaLettura && can(m.role, capability));
+        if (scaduto) sendError(req, res, 403, 'abbonamento.bloccoTitolo', 'abbonamento.blocco');
+        else sendError(req, res, 403, 'error.forbiddenTitle', 'error.forbidden');
         return;
       }
       next();

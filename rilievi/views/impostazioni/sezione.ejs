@@ -15,6 +15,7 @@
   <%- include('_scelta', { azione: '/impostazioni/' + sezione }) %>
   <% if (error) { %><div class="errors" id="form-error" role="alert"><h2><%= t(error) %></h2></div><% } %>
   <% if (sezione === 'azienda') { %><%- include('_dati') %><% } %>
+  <% if (sezione === 'abbonamento') { %><%- include('_abbonamento') %><% } %>
   <% if (sezione === 'scheda') { %><%- include('_sezioni') %><%- include('_approvazione') %><% } %>
   <% if (sezione === 'cartelli') { %><%- include('_cartello') %><% } %>
   <% if (sezione === 'buoni') { %><%- include('_buono') %><% } %>

@@ -7,6 +7,10 @@
         "titolo": "Dati dell'azienda",
         "desc": "Ragione sociale, indirizzo e contatti: vanno sul cartello accanto al logo e nei moduli d'ordine."
       },
+      "abbonamento": {
+        "titolo": "Abbonamento",
+        "desc": "La prova gratuita, il livello in base al numero di persone e la scadenza."
+      },
       "scheda": {
         "titolo": "Scheda",
         "desc": "L'ordine delle sezioni della scheda (modulo, pagina, stampa e PDF) e l'approvazione delle schede."

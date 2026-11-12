@@ -152,6 +152,16 @@ model Azienda {
   /// null — изключено. Сменени или махнати, свързаните акаунти спират при следващия вход (src/auth/oidc*.ts).
   accessoMicrosoft     String?      @db.VarChar(36)
   accessoGoogle        String?      @db.VarChar(253)
+  /// Абонаментът (#31, #33 — src/abbonamenti/): нивото по брой хора (1 — до 10, 2 — до 25, 3 — над 25),
+  /// краят (полунощ по Рим; null — без срок: фирмите отпреди абонаментите, докато MASTER реши) и дали тече
+  /// безплатният пробен месец на нова фирма. Изтекъл — цялата фирма само чете (auth/scope.ts).
+  abbonamentoLivello   Int?
+  abbonamentoFino      DateTime?
+  abbonamentoProva     Boolean      @default(false)
+  /// Известията за края (чл. 12.6 — 14 и 3 дни преди, в деня): за кой край и коя е последната пратена
+  /// граница в дни (14, 3, 0) — всяка тръгва веднъж (src/abbonamenti/scadenze.ts).
+  avvisoScadenzaPer    DateTime?
+  avvisoScadenzaSoglia Int?
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
@@ -171,6 +181,8 @@ model Azienda {
   audit             AuditLog[]
   accessRequests    AccessRequest[]
   chiaviApi         ChiaveApi[]
+
+  @@index([abbonamentoFino])
 }
 
 /// Акаунт. Създава се САМО от приета покана (или от `owner:create` за първия MASTER) — регистрация няма.

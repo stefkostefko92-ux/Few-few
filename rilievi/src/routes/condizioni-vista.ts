@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { principalOf, safeNext } from '../auth/guards.js';
+import { MESI_PROVA, scadenzaDopoMesi } from '../abbonamenti/regole.js';
 import { datiSalvati } from '../aziende/dati.js';
 import { prisma } from '../db.js';
 import { amministratoriDi } from '../legale/accettazioni.js';
@@ -34,6 +35,19 @@ async function proposti(aziendaId: string, nome: string): Promise<Partial<Dichia
   };
 }
 
+/**
+ * Пробният месец на новата фирма (чл. 12.2) — каже се на страницата преди подписа: ако фирмата е в пробен
+ * период и още не е сключила договора, последният ден, ако подпише сега. Иначе null.
+ */
+async function provaDa(aziendaId: string): Promise<{ fine: Date } | null> {
+  const [row, firmate] = await Promise.all([
+    prisma.azienda.findUnique({ where: { id: aziendaId }, select: { abbonamentoProva: true } }),
+    prisma.accettazione.count({ where: { aziendaId, tipo: 'CONDIZIONI' } }),
+  ]);
+  if (!row?.abbonamentoProva || firmate > 0) return null;
+  return { fine: new Date(scadenzaDopoMesi(null, MESI_PROVA, new Date()).getTime() - 1) };
+}
+
 export async function renderAccetta(
   req: Request,
   res: Response,
@@ -58,6 +72,7 @@ export async function renderAccetta(
     },
     errori: form.errori,
     errore: form.errore,
+    prova: stato.condizioni === 'accetta' && azienda ? await provaDa(azienda.id) : null,
     versione: VERSIONE,
     next,
     condizioniPath: CONDIZIONI_PATH,

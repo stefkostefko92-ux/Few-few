@@ -60,7 +60,9 @@
       "name": "Inserisci nome e cognome (da 2 a 120 caratteri).",
       "azienda": "Scegli un'azienda attiva.",
       "emailTaken": "Questo indirizzo è già usato da un altro account.",
-      "password": "Per cambiare la tua email scrivi la tua password attuale, quella giusta."
+      "password": "Per cambiare la tua email scrivi la tua password attuale, quella giusta.",
+      "limitePersone": "L'azienda ha raggiunto il numero massimo di persone previsto dal suo abbonamento. Per invitare altre persone scegli un livello superiore in Impostazioni → Abbonamento.",
+      "solaLettura": "L'abbonamento dell'azienda è scaduto: non si possono invitare nuove persone. Rinnova l'abbonamento in Impostazioni → Abbonamento."
     },
     "subtitleMaster": "Al portale si accede solo su invito. Come Master gestisci tutti gli account, anche il tuo, e puoi mettere una persona in più aziende, con un ruolo diverso in ognuna.",
     "fullName": "Nome e cognome",
@@ -217,6 +219,7 @@
       "POSTA_IMPOSTATA": "Server email del portale impostato",
       "POSTA_DISATTIVATA": "Server email del portale disattivato",
       "POSTA_PROVA": "Email di prova inviata",
+      "AZIENDA_ABBONAMENTO": "Abbonamento modificato",
       "USER_EDIT": "Nome o email cambiati",
       "MEMBERSHIP_ADD": "Account aggiunto a un'azienda",
       "MEMBERSHIP_REMOVE": "Account tolto da un'azienda"

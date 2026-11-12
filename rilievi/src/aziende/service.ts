@@ -3,6 +3,7 @@ import { prisma } from '../db.js';
 import { writeAudit } from '../audit.js';
 import type { SessionUser } from '../types.js';
 import type { Logo } from './logo.js';
+import { MESI_PROVA, scadenzaDopoMesi } from '../abbonamenti/regole.js';
 
 /**
  * Фирмите. Създава ги и ги управлява само MASTER (маршрутите проверяват `aziende:manage`); тук е
@@ -25,6 +26,9 @@ const SUMMARY = {
   deactivatedAt: true,
   schizzi: true,
   preventiviAttivi: true,
+  abbonamentoLivello: true,
+  abbonamentoFino: true,
+  abbonamentoProva: true,
   createdAt: true,
 } satisfies Prisma.AziendaSelect;
 
@@ -128,14 +132,23 @@ export async function createAzienda(
   }
 }
 
-/** Записът на нова фирма с одита ѝ — в транзакцията на извикващия (името е проверено от него). */
+/**
+ * Записът на нова фирма с одита ѝ — в транзакцията на извикващия (името е проверено от него). Всяка нова
+ * фирма започва с безплатния пробен месец (#33 — src/abbonamenti/regole.ts).
+ */
 export async function insertAzienda(
   tx: Prisma.TransactionClient,
   actor: SessionUser,
   input: { name: string; logo: Logo | null },
+  now: Date = new Date(),
 ): Promise<{ id: string }> {
   const created = await tx.azienda.create({
-    data: { name: input.name, ...logoData(input.logo) },
+    data: {
+      name: input.name,
+      ...logoData(input.logo),
+      abbonamentoProva: true,
+      abbonamentoFino: scadenzaDopoMesi(null, MESI_PROVA, now),
+    },
     select: { id: true },
   });
   await writeAudit(

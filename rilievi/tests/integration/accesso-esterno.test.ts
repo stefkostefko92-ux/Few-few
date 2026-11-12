@@ -1,4 +1,4 @@
-// Point D1 — access through the Client's identity provider (terms 2027-01-12, art. 4.6): the company's
+// Point D1 — access through the Client's identity provider (terms 2026-11-12, art. 4.6): the company's
 // administrator names its Microsoft tenant or Google Workspace domain; each person links their own account
 // from "Account" with their password; then "Accedi con Microsoft/Google" opens a session — code flow with
 // PKCE, state and nonce, the ID token checked (signature, issuer of the tenant, audience, nonce) — but only

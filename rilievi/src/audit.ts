@@ -133,6 +133,8 @@ export const AUDIT_ACTIONS = [
   'POSTA_IMPOSTATA',
   'POSTA_DISATTIVATA',
   'POSTA_PROVA',
+  // Абонаментът на фирмата (src/abbonamenti/): нивото и денят (на ръка от MASTER или от плащане), без суми.
+  'AZIENDA_ABBONAMENTO',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

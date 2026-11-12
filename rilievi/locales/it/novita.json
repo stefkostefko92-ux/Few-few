@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-12-prova-abbonamento": {
+        "area": "Portale",
+        "titolo": "Un mese di prova e abbonamento per numero di persone",
+        "testo": "Ogni nuova azienda ha un mese di prova gratuita con tutte le funzioni, da quando l'amministratore accetta le condizioni. Poi si sceglie un abbonamento in base al numero di persone: fino a 10, fino a 25 oppure oltre 25. Non si rinnova da solo e avvisiamo 14 e 3 giorni prima della fine. Senza abbonamento il portale passa in sola lettura: i dati restano tutti, si consultano, si stampano e si esportano. Lo stato è in Impostazioni → Abbonamento."
+      },
       "2026-11-12-accesso-microsoft-google": {
         "area": "Portale",
         "titolo": "Accesso con Microsoft o Google",
