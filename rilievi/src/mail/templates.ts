@@ -108,6 +108,24 @@ export function interventoMail(params: {
   };
 }
 
+/** „Buono di lavoro“ по имейл — PDF-ът е прикачен (routes/buoni-firme.ts). */
+export function buonoMail(params: {
+  to: string;
+  numero: string;
+  azienda: string;
+  pdf: Buffer;
+  filename: string;
+}): MailMessage {
+  return {
+    to: params.to,
+    subject: t('buoni.mail.oggetto', { n: params.numero, azienda: params.azienda }),
+    text: t('buoni.mail.corpo', { n: params.numero, azienda: params.azienda }),
+    attachments: [
+      { filename: params.filename, content: params.pdf, contentType: 'application/pdf' },
+    ],
+  };
+}
+
 /** Съобщение на портала до администраторите на фирмите (src/master/comunicazioni.ts). */
 export function comunicazioneMail(params: {
   to: string;

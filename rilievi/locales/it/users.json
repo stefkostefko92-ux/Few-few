@@ -106,6 +106,7 @@
     "openIntervento": "Apri modulo",
     "openCartello": "Apri cartello",
     "openVerbale": "Apri il verbale",
+    "openBuono": "Apri il buono",
     "openCalcolo": "Apri calcolo",
     "openUser": "Apri utente",
     "action": {
@@ -191,6 +192,12 @@
       "FORNITORE_DELETE": "Fornitore tolto dalla rubrica",
       "ORDINE_INVIATO": "Modulo d'ordine inviato al fornitore",
       "ORDINE_STATO": "Stato di un ordine aggiornato",
+      "BUONO_CREATE": "Buono di lavoro creato",
+      "BUONO_UPDATE": "Buono di lavoro modificato",
+      "BUONO_FIRME": "Firme del buono di lavoro",
+      "BUONO_DELETE": "Buono di lavoro eliminato",
+      "BUONO_EMAIL": "Buono di lavoro inviato per email",
+      "AZIENDA_BUONO": "Intestazione del buono di lavoro modificata",
       "USER_EDIT": "Nome o email cambiati",
       "MEMBERSHIP_ADD": "Account aggiunto a un'azienda",
       "MEMBERSHIP_REMOVE": "Account tolto da un'azienda"

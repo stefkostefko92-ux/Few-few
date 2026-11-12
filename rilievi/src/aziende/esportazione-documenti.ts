@@ -1,3 +1,5 @@
+import { pdfDelBuono } from '../buoni/documento.js';
+import { buonoPerId, buoniDi } from '../buoni/elenco.js';
 import { prisma } from '../db.js';
 import { config } from '../config.js';
 import { viewHelpers } from '../http/view.js';
@@ -38,9 +40,10 @@ export async function fileGeneratiDi(
   aziendaId: string,
   conVersioni: readonly string[],
 ): Promise<FileGenerato[]> {
-  const [interventi, verbali, logo] = await Promise.all([
+  const [interventi, verbali, buoni, logo] = await Promise.all([
     interventiConfermatiDi(aziendaId),
     verbaliConfermatiDi(aziendaId),
+    buoniDi(aziendaId),
     aziendaLogo(aziendaId),
   ]);
   const opzioni = {
@@ -71,6 +74,16 @@ export async function fileGeneratiDi(
         },
       });
     }
+  }
+  // „Buono di lavoro“ — всеки лист, такъв, какъвто е (подписите с проверката им, както в портала).
+  for (const r of buoni) {
+    out.push({
+      nome: `documenti/buoni/${dayFromDate(r.createdAt)}-${r.id}.pdf`,
+      genera: async () => {
+        const row = await buonoPerId(r.id);
+        return row ? pdfDelBuono(row, opzioni) : null;
+      },
+    });
   }
   for (const schedaId of conVersioni) {
     out.push({

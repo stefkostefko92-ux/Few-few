@@ -99,6 +99,11 @@ src/
                      само без pdftoppm) · form.ts (zod) · service.ts (запис с `base`, изтриване,
                      одит) · da-scheda.ts (попълването от картата — без база) · scheda.ts (картата
                      на табелата: избор, търсене, паметта) · pdf.ts (A4 по посоката на шаблона, логото и данните на фирмата горе)
+  buoni/             „Buono di lavoro“: voci.ts (проверките, подписите долу, таваните) · posti.ts (мястото на
+                     подпис) · form.ts (разборът, zod) + form-valori.ts (стойностите на формата, от картата) ·
+                     dati.ts (редът ↔ данните, с недоверие) · firme.ts (отпечатъци, план на подписите, печат —
+                     без база) · service.ts (запис с подписите, изтриване) + elenco.ts (четене, търсене) ·
+                     documento.ts (проверените подписи, PDF-ът) · pdf.ts + pdf-foglio.ts + pdf-sezioni.ts
   verbali/           „Verbale di chiusura cantiere“: voci.ts (разделите и редовете на листа, кои са с
                      „Certificato“; разборът и четенето с недоверие) · form.ts (черновата, zod; попълването
                      от картата — само адрес, „N° buono“, дата) · service.ts (нов — картата пак в
@@ -172,7 +177,7 @@ views/               EJS: partials/ (горна и долна лента, таб
                      account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs; скицникът —
                      schede/_schizzo.ejs (листът като SVG), _schizzo-foglio.ejs, _schizzo-editor.ejs
 locales/it/          common · auth · schede · users · aziende · requests · site · mail · allegati · schizzi ·
-                     interventi · cartelli · argano · limitatore · verbali
+                     interventi · cartelli · argano · limitatore · verbali · buoni
                      (.json) — единственият
 public/              css/ (портал: base, buttons, shell, layout, plate, forms, pages, data, sheet, misure,
                      moduli, allegati, foto-stampa, schizzi, schizzo-editor, interventi, foglio, verbali, cartelli, argano, print;
@@ -931,6 +936,36 @@ approvazioneSchede` — включва го ADMIN в раздел „Scheda“ �
   („COPIA AZIENDA“ / „COPIA INSTALLATORE“ долу на всяка страница и в заглавието на файла), само при
   непокътнат печат. Права — тези на асистенцията (`interventi:read`/`interventi:write`). Без номер и без
   изтриване (както листа за интервенция); в износа и в изтриването на фирмата.
+- **„Buono di lavoro“** (`src/buoni/`, `routes/buoni*.ts`, `views/buoni/`; собственикът, 12 ноември 2026 — „una voce
+  nuovo buono di lavoro che ha queste caratteristiche e questi campi“, по хартиения лист; „Alcune firme possono essere
+  lasciate vuote per poi farle a mano sul foglio“; „da scheda o libero“; кодът и клаузата — „impostabili per
+  azienda“): „Documenti“ → „Buoni di lavoro“, „Nuovo“ и бутон на картата. Общите данни (дата на потвърждение,
+  геометър, поръчка, оферта, предвидените дни, матрикула, място, P.O.S. SÌ/NO с бележката, бележки) — колони;
+  редовете с работа — `sequenze` (JSON, до 30, всеки с постоянен id `[0-9a-f]{8}`: описание, OK / NON OK, ден,
+  доставчик); шестте проверки — `controlli` (ЕДИН списък, `CONTROLLI` в `voci.ts`, трите при смяна на таблото —
+  група); отчетът (начало и край с часа `HH:MM`, спиранията), фамилиите на техниците. JSON-ът се чете с недоверие
+  (`dati.ts`). От картата (`?scheda=`, търсенето `?cerca=` — общото с табелата и протокола): номерът на бона,
+  матрикулата, адресът и редовете с работите, които картата казва (`lavoriDi`); без карта — празен. Права — на
+  асистенцията (`interventi:read`/`write`), обхват по фирма, чужд — 404; записът — върху отворената версия (`base`).
+  **Подписите — всеки по избор и вързан за подписаното** (`buoni/firme.ts`, модел `BuonoFirma`, място `s-<ред>` /
+  `c-<проверка>` / `f-<долу>`): по реда и проверката — във формата (`firma.js`; подписан ред се чете само, стойностите
+  пътуват скрити, „Togli la firma“ е бутон `togli` — записва и маха); долу (пазачът, главният техник, геометърът,
+  началникът на работилницата) — на страницата на листа, върху записаното. Отпечатъкът: на реда — редът, на
+  проверката — изходът и денят, долу — целият лист с подписите по редовете (без тези долу). Променен подписан ред
+  без „Togli“ — 422 `modificata`, махнат — `tolta`; има ли подпис долу, листът е `chiuso` (формата пренасочва, POST-ът
+  не пише). Еднакви щрихи на две места — `uguale`, вече на който и да е документ на портала — `ripetuta`
+  (`firmeGiaUsate` гледа и `BuonoFirma`, под `LOCK_FIRME`). Всеки подпис носи печат HMAC (`INTERVENTI_SEAL_KEY`,
+  етикет `rilievi/buono/firma/v1`) над листа, мястото, щрихите, подписаното, часа и кой е бил вписан; валиден е само
+  при същия печат, щрихи и подписано днес (`statoFirme`) — невалидният се казва с думи, никога с щрихите. Празен подпис
+  е празно място на PDF-а (на ръка). PDF/A A4 като хартията (`pdf.ts` + `pdf-foglio.ts` + `pdf-sezioni.ts`): логото,
+  заглавието, кодът на модула горе вдясно, поне 8 реда, проверките, отчетът, подписите, клаузата; дълъг лист —
+  следваща страница с главата на таблицата; долу на всяка страница — „Generato con…“, броят на подписите,
+  отпечатъкът на листа под подписите долу и „Pagina n di N“. Кодът и клаузата — `Azienda.buonoCodice`/`buonoClausola`
+  (до 80 / 1000 знака, празно — нищо), раздел „Buono di lavoro“ на настройките, одит `AZIENDA_BUONO` без текста.
+  Имейл с PDF-а (`mailLimiter`, адресът не се пази, одит `BUONO_EMAIL`); изтриване — само на лист без подписи
+  (`BUONO_DELETE`). В износа (`buoni` с `firme` в `dati.json`, PDF/A в `documenti/buoni/`) и в изтриването на фирмата.
+  Миграция `20261112210000_buono_lavoro` (само добавя; CHECK-ове за JSON-а, часовете, мястото и отпечатъците; GIN
+  индекс за търсенето).
 - **Всеки лист с изчисление казва кой, с какво и кой трябва да го провери** (собственикът, 10 ноември 2026 —
   „Su ogni foglio dobbiamo scrivere che è stato generato dal nostro software, che non abbiamo nessuna
   responsabilità perché deve essere comunque controllato e firmato da persona istruita e da chi è stato

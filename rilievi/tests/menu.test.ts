@@ -22,6 +22,7 @@ describe('the menu', () => {
       '/calcolo-argano',
       '/calcolo-limitatore',
       '/interventi',
+      '/buoni',
       '/verbali',
       '/cartelli',
     ]);
@@ -44,6 +45,7 @@ describe('the menu', () => {
       [
         '/schede/nuova',
         '/interventi/nuovo',
+        '/buoni/nuovo',
         '/verbali/nuovo',
         '/cartelli/nuovo',
         '/calcolo-argano/nuovo',

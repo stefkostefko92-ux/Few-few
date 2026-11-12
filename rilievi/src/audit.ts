@@ -99,6 +99,13 @@ export const AUDIT_ACTIONS = [
   'FORNITORE_DELETE',
   'ORDINE_INVIATO',
   'ORDINE_STATO',
+  // „Buono di lavoro“ (src/buoni/): листът, подписите му (броят, без щрихите), писмото, кодът и клаузата.
+  'BUONO_CREATE',
+  'BUONO_UPDATE',
+  'BUONO_FIRME',
+  'BUONO_DELETE',
+  'BUONO_EMAIL',
+  'AZIENDA_BUONO',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
@@ -124,7 +131,8 @@ export interface AuditEntry {
     | 'comunicazione'
     | 'violazione'
     | 'fornitore'
-    | 'ordine';
+    | 'ordine'
+    | 'buono';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */
   meta?: Prisma.InputJsonObject;

@@ -7,6 +7,7 @@ import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/
 import { canAnywhere, canIn, spansAziende } from '../auth/scope.js';
 import { cartelliDellaScheda } from '../cartelli/scheda.js';
 import { verbaliDellaScheda } from '../verbali/service.js';
+import { buoniDellaScheda } from '../buoni/elenco.js';
 import { ordineSezioniDi } from '../aziende/sezioni.js';
 import { setFlash } from '../http/flash.js';
 import { businessDay } from '../time.js';
@@ -173,6 +174,10 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
     // Протоколите „Verbale di chiusura cantiere“ от картата — за който вижда асистенцията на фирмата.
     verbali: canIn(principalOf(req).user, 'interventi:read', scheda.aziendaId)
       ? await verbaliDellaScheda(scope(req, 'interventi:read'), scheda.id)
+      : null,
+    // „Buono di lavoro“ от картата — за който вижда асистенцията на фирмата.
+    buoni: canIn(principalOf(req).user, 'interventi:read', scheda.aziendaId)
+      ? await buoniDellaScheda(scope(req, 'interventi:read'), scheda.id)
       : null,
     // Одобрението, поръчките към доставчиците и версиите (routes/schede-approvazione.ts, ordini-invio.ts).
     flusso: {

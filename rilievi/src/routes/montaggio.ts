@@ -23,6 +23,10 @@ import { interventiFirmaRouter } from './interventi-firma.js';
 import { verbaliFirmaRouter } from './verbali-firma.js';
 import { verbaliNuovoRouter } from './verbali-nuovo.js';
 import { verbaliRouter } from './verbali.js';
+import { buoniFirmeRouter } from './buoni-firme.js';
+import { buoniNuovoRouter } from './buoni-nuovo.js';
+import { buoniRouter } from './buoni.js';
+import { impostazioniBuonoRouter } from './impostazioni-buono.js';
 import { interventiInvioRouter } from './interventi-invio.js';
 import { requestsRouter } from './requests.js';
 import { schedeRouter } from './schede.js';
@@ -81,6 +85,10 @@ export function montaRouter(app: Express): void {
   app.use(verbaliNuovoRouter);
   app.use(verbaliRouter);
   app.use(verbaliFirmaRouter);
+  // Преди buoniRouter: `/buoni/nuovo` е преди `/buoni/:id`.
+  app.use(buoniNuovoRouter);
+  app.use(buoniRouter);
+  app.use(buoniFirmeRouter);
   app.use(usersRouter);
   // След usersRouter: `/utenti/invita` е преди `/utenti/:id`.
   app.use(usersManageRouter);
@@ -90,6 +98,7 @@ export function montaRouter(app: Express): void {
   app.use(impostazioniEsportazioneRouter);
   app.use(impostazioniRouter);
   app.use(impostazioniFirmeRouter);
+  app.use(impostazioniBuonoRouter);
   app.use(impostazioniFlussoRouter);
   app.use(impostazioniRuoliRouter);
   app.use(requestsRouter);

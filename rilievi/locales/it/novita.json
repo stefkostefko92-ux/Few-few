@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-12-buono-lavoro": {
+        "area": "Documenti",
+        "titolo": "Il buono di lavoro, dalla scheda o da zero",
+        "testo": "Nuovo documento in «Documenti → Buoni di lavoro»: dati generali del cantiere, sequenze di lavoro con esito, data e fornitore, i sei controlli (anche quelli per la sostituzione del quadro), resoconto attività e firme. Dalla scheda si compilano da soli N° buono, matricola, ubicazione e i lavori previsti. Ogni firma è facoltativa: quelle vuote restano uno spazio nel PDF da firmare a mano. Codice del modulo e clausola si impostano per azienda."
+      },
       "2026-11-12-ordini-fornitori": {
         "area": "Schede",
         "titolo": "Invia il modulo d'ordine al fornitore dal portale",

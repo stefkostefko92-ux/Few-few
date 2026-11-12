@@ -136,6 +136,10 @@ model Azienda {
   informativaFirme   String?      @db.VarChar(4000)
   /// Одобрението на две стъпки на картите (C7) — включва го администраторът ѝ; по подразбиране — не.
   approvazioneSchede Boolean      @default(false)
+  /// „Buono di lavoro“: кодът на модула горе вдясно („Mod. PO-05-3 Ed. 02 …“) и клаузата долу — както
+  /// фирмата ги е написала в настройките; null — нищо (src/buoni/).
+  buonoCodice        String?      @db.VarChar(80)
+  buonoClausola      String?      @db.VarChar(1000)
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
@@ -149,6 +153,7 @@ model Azienda {
   verbali           Verbale[]
   fornitori         Fornitore[]
   ordini            OrdineFornitore[]
+  buoni             BuonoLavoro[]
   audit             AuditLog[]
   accessRequests    AccessRequest[]
 }
@@ -227,6 +232,9 @@ model User {
   schedeApprovate     Scheda[]              @relation("SchedeApprovate")
   versioniScritte     SchedaVersione[]      @relation("VersioniScritte")
   ordiniInviati       OrdineFornitore[]     @relation("OrdiniInviati")
+  buoniCreati         BuonoLavoro[]         @relation("BuoniCreati")
+  buoniMod            BuonoLavoro[]         @relation("BuoniModificati")
+  buoniFirme          BuonoFirma[]          @relation("BuoniFirmati")
 
   @@index([invitedById])
   @@index([master])
@@ -624,6 +632,7 @@ model Scheda {
   /// Записаните версии (src/schede/versioni.ts) и пратените поръчки (src/ordini/invio.ts).
   versioni                     SchedaVersione[]
   ordini                       OrdineFornitore[]
+  buoni                        BuonoLavoro[]
   createdAt                    DateTime                 @default(now())
   updatedAt                    DateTime                 @updatedAt
 
@@ -1413,4 +1422,74 @@ model OrdineFornitore {
   @@index([aziendaId, stato])
   @@index([schedaId])
   @@index([inviatoDaId])
+}
+
+/// „Buono di lavoro“ (собственикът, 12 ноември 2026 — по хартиения лист; src/buoni/): общите данни,
+/// редовете с работа (`sequenze` — JSON, проверен при запис и четен с недоверие), шестте проверки
+/// (`controlli`), отчетът и фамилиите на техниците. Подписите — в `BuonoFirma`, всеки по избор.
+model BuonoLavoro {
+  id             String       @id @default(cuid())
+  aziendaId      String
+  azienda        Azienda      @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  /// Картата, от която е попълнен (същата фирма — проверява се при записа); окончателно изтритата я нулира.
+  schedaId       String?
+  scheda         Scheda?      @relation(fields: [schedaId], references: [id], onDelete: SetNull)
+  numero         String?      @db.VarChar(40)
+  dataConferma   DateTime?    @db.Date
+  geometra       String?      @db.VarChar(80)
+  ordine         String?      @db.VarChar(40)
+  offerta        String?      @db.VarChar(40)
+  inizioPrevisto DateTime?    @db.Date
+  finePrevista   DateTime?    @db.Date
+  matricola      String?      @db.VarChar(40)
+  ubicazione     String?      @db.VarChar(200)
+  pos            Boolean?
+  note           String?      @db.VarChar(4000)
+  /// [{id, descrizione, esito: "ok"|"nonOk"|null, data: "YYYY-MM-DD"|null, fornitore}] — до 30.
+  sequenze       Json         @default("[]")
+  /// {<ключ на проверката>: {esito, data}} — ключовете от src/buoni/voci.ts.
+  controlli      Json         @default("{}")
+  noteControlli  String?      @db.VarChar(4000)
+  inizioLavori   DateTime?    @db.Date
+  inizioOra      String?      @db.VarChar(5)
+  fineLavori     DateTime?    @db.Date
+  fineOra        String?      @db.VarChar(5)
+  sospensioni    String?      @db.VarChar(4000)
+  tecnici        String?      @db.VarChar(200)
+  /// Нормализираният текст за търсене (номер, матрикула, място, поръчка, оферта, геометър).
+  searchText     String       @default("")
+  createdById    String?
+  createdBy      User?        @relation("BuoniCreati", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById    String?
+  updatedBy      User?        @relation("BuoniModificati", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  firme          BuonoFirma[]
+
+  @@index([aziendaId, createdAt])
+  @@index([schedaId, createdAt])
+  @@index([createdById])
+  @@index([updatedById])
+}
+
+/// Подпис на „Buono di lavoro“: мястото (`s-<ред>`, `c-<проверка>`, `f-<подпис долу>` — src/buoni/posti.ts),
+/// щрихите (600 × 200, src/interventi/firma.ts), SHA-256 на щрихите (копиран подпис се отказва в целия
+/// портал), SHA-256 на подписаното и печатът HMAC (src/buoni/firme.ts).
+model BuonoFirma {
+  id          String      @id @default(cuid())
+  buonoId     String
+  buono       BuonoLavoro @relation(fields: [buonoId], references: [id], onDelete: Cascade)
+  posto       String      @db.VarChar(24)
+  tratti      Json
+  hash        String      @db.Char(64)
+  impronta    String      @db.Char(64)
+  sigillo     String      @db.Char(64)
+  firmatoAt   DateTime
+  /// Кой е бил вписан, когато подписът е взет (подписва друг — техникът, пазачът; това е устройството).
+  firmatoDaId String?
+  firmatoDa   User?       @relation("BuoniFirmati", fields: [firmatoDaId], references: [id], onDelete: SetNull)
+
+  @@unique([buonoId, posto])
+  @@index([hash])
+  @@index([firmatoDaId])
 }

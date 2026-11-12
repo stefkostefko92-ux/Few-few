@@ -8,6 +8,7 @@ import {
   FORMATO_ESPORTAZIONE,
   SELECT_ALLEGATO,
   SELECT_AZIENDA,
+  SELECT_FIRMA_BUONO,
   SELECT_FORNITORE,
   SELECT_INVITO,
   SELECT_PERSONA,
@@ -97,6 +98,7 @@ export interface PartiDati {
   calcoliArgano: unknown[];
   calcoliLimitatore: unknown[];
   verbali: unknown[];
+  buoni: unknown[];
   fornitori: unknown[];
   ordini: unknown[];
   registro: unknown[];
@@ -116,6 +118,7 @@ export function componiDati(parti: PartiDati, esportatoIl: Date): Record<Sezione
     calcoliArgano: parti.calcoliArgano,
     calcoliLimitatore: parti.calcoliLimitatore,
     verbali: parti.verbali,
+    buoni: parti.buoni,
     fornitori: parti.fornitori,
     ordini: parti.ordini,
     registro: parti.registro,
@@ -141,6 +144,7 @@ export async function esportaAzienda(
     calcoliArgano,
     calcoliLimitatore,
     verbali,
+    buoni,
     fornitori,
     ordini,
     registro,
@@ -169,6 +173,11 @@ export async function esportaAzienda(
     prisma.calcoloArgano.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
     prisma.calcoloLimitatore.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
     prisma.verbale.findMany({ where: { aziendaId }, orderBy: { createdAt: 'asc' } }),
+    prisma.buonoLavoro.findMany({
+      where: { aziendaId },
+      orderBy: { createdAt: 'asc' },
+      include: { firme: { orderBy: { firmatoAt: 'asc' }, select: SELECT_FIRMA_BUONO } },
+    }),
     prisma.fornitore.findMany({
       where: { aziendaId },
       orderBy: { nome: 'asc' },
@@ -222,6 +231,7 @@ export async function esportaAzienda(
       calcoliArgano,
       calcoliLimitatore,
       verbali,
+      buoni,
       fornitori,
       ordini,
       registro: registroVisibile,

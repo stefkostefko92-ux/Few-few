@@ -96,6 +96,11 @@ async function riepilogo(
         : 'impostazioni.hub.ordineBase',
     ),
     cartelli: t('impostazioni.hub.modello', { nome: modelloDi(azienda.cartelloModello).titolo }),
+    buoni: t(
+      azienda.buonoCodice || azienda.buonoClausola
+        ? 'impostazioni.hub.buonoSi'
+        : 'impostazioni.hub.buonoNo',
+    ),
     ruoli: t(ruoli > 0 ? 'impostazioni.hub.ruoliSuoi' : 'impostazioni.hub.ruoliBase'),
     condizioni:
       condizioni.stato === 'firmate' && condizioni.accettazione

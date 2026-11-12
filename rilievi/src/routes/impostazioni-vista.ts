@@ -25,6 +25,7 @@ export const SEZIONI_IMPOSTAZIONI = [
   'azienda',
   'scheda',
   'cartelli',
+  'buoni',
   'ruoli',
   'fornitori',
   'firme',
@@ -37,6 +38,7 @@ export const ICONE_SEZIONI: Readonly<Record<SezioneImpostazioni, string>> = {
   azienda: 'building',
   scheda: 'sheet',
   cartelli: 'stop',
+  buoni: 'buono',
   ruoli: 'users',
   fornitori: 'mail',
   firme: 'sign',
@@ -92,6 +94,8 @@ export interface VistaSezione {
   /** Раздел „Fornitori“ — адресникът за поръчките (routes/impostazioni-flusso.ts). */
   fornitori?: Array<{ id: string; nome: string; email: string }>;
   nuovoFornitore?: { nome: string; email: string; errore: boolean };
+  /** Раздел „Buono di lavoro“ — кодът на модула и клаузата (routes/impostazioni-buono.ts). */
+  buono?: { values: { codice: string; clausola: string }; errors: Record<string, string> };
 }
 
 /** Страницата на един раздел — всичко, което частта му чете, с подразбиране от записаното. */
@@ -119,6 +123,12 @@ export function renderImpostazioni(res: Response, status: number, view: VistaSez
     condizioni: null,
     fornitori: [],
     nuovoFornitore: { nome: '', email: '', errore: false },
+    buono: {
+      values: { codice: azienda.buonoCodice ?? '', clausola: azienda.buonoClausola ?? '' },
+      errors: {},
+    },
+    maxCodice: 80,
+    maxClausola: 1000,
     informativa: {
       valore: azienda.informativaFirme ?? modelloInformativa(azienda),
       propria: azienda.informativaFirme !== null,

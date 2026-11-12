@@ -21,6 +21,7 @@ export const SEZIONI_DATI = [
   'calcoliArgano',
   'calcoliLimitatore',
   'verbali',
+  'buoni',
   'fornitori',
   'ordini',
   'registro',
@@ -38,6 +39,10 @@ export const SELECT_AZIENDA = {
   permessiRuoli: true,
   logo: true,
   logoType: true,
+  informativaFirme: true,
+  approvazioneSchede: true,
+  buonoCodice: true,
+  buonoClausola: true,
   createdAt: true,
   deactivatedAt: true,
 } as const satisfies Prisma.AziendaSelect;
@@ -91,6 +96,17 @@ export const SELECT_VERSIONE = {
   dati: true,
 } as const satisfies Prisma.SchedaVersioneSelect;
 
+/** Подписите на „Buono di lavoro“ — щрихите, отпечатъците и печатът (без връзката към листа: те са в него). */
+export const SELECT_FIRMA_BUONO = {
+  posto: true,
+  tratti: true,
+  hash: true,
+  impronta: true,
+  sigillo: true,
+  firmatoAt: true,
+  firmatoDaId: true,
+} as const satisfies Prisma.BuonoFirmaSelect;
+
 export const SELECT_REGISTRO = {
   at: true,
   actorId: true,
@@ -126,6 +142,7 @@ export function campiEsportati(): Record<SezioneDati, string[]> {
     calcoliArgano: campiDi('CalcoloArgano'),
     calcoliLimitatore: campiDi('CalcoloLimitatore'),
     verbali: campiDi('Verbale'),
+    buoni: [...campiDi('BuonoLavoro'), 'firme'],
     fornitori: chiavi(SELECT_FORNITORE),
     ordini: campiDi('OrdineFornitore'),
     registro: chiavi(SELECT_REGISTRO),

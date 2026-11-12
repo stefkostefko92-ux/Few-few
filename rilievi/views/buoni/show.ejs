@@ -1,0 +1,90 @@
+<%
+  // Страницата на „Buono di lavoro“: листът като на хартия, действията (Modifica, PDF, имейл, изтриване на
+  // лист без подписи) и подписите долу — на пазача, на главния техник, на геометъра, на началника на
+  // работилницата: всеки по избор, върху записания лист (routes/buoni-firme.ts).
+  const r = buono;
+  const errorKeys = Object.keys(errors);
+  const finaleLabel = (k) => t('buoni.finale.' + k);
+  const messageOf = (key) => t('buoni.errore.' + errors[key]);
+  const nFirme = r.firme.length;
+%><%- include('../partials/top', { titleKey: 'buoni.titolo', scripts }) %>
+<div class="page-head">
+  <div>
+    <a href="/buoni"><%= t('buoni.indietro') %></a>
+    <h1><%= t('buoni.titolo') %><%= r.numero ? ' ' + r.numero : '' %></h1>
+    <p class="page-head__sub"><%= r.azienda.name %><% if (r.scheda && !r.scheda.deletedAt) { %> · <a href="/schede/<%= r.scheda.id %>"><%= t('cartelli.daScheda.apri') %></a><% } %></p>
+  </div>
+  <div class="toolbar">
+    <% if (modifica && !chiuso) { %><a class="btn" href="/buoni/<%= r.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('buoni.modifica') %></a><% } %>
+    <a class="btn btn--primary" data-pdf href="/buoni/<%= r.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('buoni.scaricaPdf') %></a>
+  </div>
+</div>
+<div class="stack-gap">
+<% if (chiuso && modifica) { %><p class="notice"><%= t('buoni.firma.chiuso') %></p><% } %>
+<p class="muted buono-autori"><%= t('buoni.creato', { nome: r.createdBy ? r.createdBy.name : '—', data: fmt.dateTime(r.createdAt) }) %><% if (r.updatedAt.getTime() !== r.createdAt.getTime()) { %> · <%= t('buoni.modificato', { nome: r.updatedBy ? r.updatedBy.name : '—', data: fmt.dateTime(r.updatedAt) }) %><% } %></p>
+<%- include('_foglio') %>
+
+<section class="section buono-finali" id="firme" aria-labelledby="h-firme">
+  <h2 class="section__title" id="h-firme"><%= t('buoni.sezione.firme') %></h2>
+  <p class="field__hint"><%= t('buoni.firma.facoltative') %> <%= t('buoni.firma.finaliHint') %></p>
+  <% if (impronta) { %><p class="intervento-impronta"><%= t('interventi.conferma.impronta') %>: <span class="impronta"><%= impronta %></span></p><% } %>
+  <% if (errorKeys.length) { %>
+  <div class="errors" role="alert" id="error-summary" tabindex="-1">
+    <h2><%= t('scheda.errorSummary', { n: errorKeys.length }) %></h2>
+    <ul>
+      <% for (const key of errorKeys) { %><li><a href="#f-<%= key %>"><%= finaleLabel(key.replace(/^fin-|-firma$/g, '')) %>: <%= messageOf(key) %></a></li>
+      <% } %>
+    </ul>
+  </div>
+  <% } %>
+  <% if (modifica && informativa) { %><%- include('_informativa') %><% } %>
+  <% if (modifica) { %><form class="form" method="post" action="/buoni/<%= r.id %>/firme" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="base" value="<%= base %>">
+  <% } %>
+    <div class="firme__grid buono-finali__grid">
+      <% for (const k of finali) {
+           const name = 'fin-' + k + '-firma';
+           const stato = firme.get(postoFinale(k));
+           const errore = errors[name] ? messageOf(name) : ''; %>
+      <div class="buono-finale">
+        <% if (stato) { %><p class="firma__label"><%= finaleLabel(k) %></p>
+        <%- include('_firma-fatta', { stato, name, posto: postoFinale(k), label: finaleLabel(k), puoTogliere: modifica, errore }) %>
+        <% } else if (modifica) { %><%- include('_firma-pad', { name, label: finaleLabel(k), value: typeof values[name] === 'string' ? values[name] : '', errore }) %>
+        <% } else { %><p class="firma__label"><%= finaleLabel(k) %></p><p class="muted"><%= t('buoni.firma.vuota') %></p><% } %>
+      </div>
+      <% } %>
+    </div>
+  <% if (modifica) { %>
+    <div class="toolbar">
+      <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'sign' }) %><%= t('buoni.firma.salva') %></button>
+    </div>
+  </form><% } %>
+</section>
+
+<% if (modifica) { %>
+<form class="panel intervento-email" method="post" action="/buoni/<%= r.id %>/invia">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <h2><%= t('buoni.email.titolo') %></h2>
+  <div class="field">
+    <label class="field__label" for="f-email"><%= t('buoni.email.label') %></label>
+    <div class="intervento-email__row">
+      <input class="input" id="f-email" name="email" type="email" required maxlength="254" autocomplete="email" aria-describedby="h-email">
+      <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'mail' }) %><%= t('buoni.email.invia') %></button>
+    </div>
+    <p class="field__hint" id="h-email"><%= t('buoni.email.hint') %></p>
+  </div>
+</form>
+<% if (nFirme === 0) { %>
+<details class="panel buono-elimina">
+  <summary><%= t('buoni.elimina.titolo') %></summary>
+  <form method="post" action="/buoni/<%= r.id %>/elimina">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <p><%= t('buoni.elimina.testo') %></p>
+    <button class="btn btn--danger" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t('buoni.elimina.btn') %></button>
+  </form>
+</details>
+<% } else { %><p class="muted"><%= t('buoni.elimina.firmato') %></p><% } %>
+<% } %>
+</div>
+<%- include('../partials/bottom') %>

@@ -43,6 +43,7 @@ import { checkArgano } from './argano.mjs';
 import { checkLimitatore } from './limitatore.mjs';
 import { checkInterventi } from './interventi.mjs';
 import { checkVerbali } from './verbali.mjs';
+import { checkBuoni } from './buoni.mjs';
 import { checkPhone } from './telefono.mjs';
 import { checkMovilift } from './movilift.mjs';
 import { checkPrintedNotes, fillDoorsAndChecks } from './porte.mjs';
@@ -291,6 +292,7 @@ try {
     await checkInterventi(page, { base, shots, scheme, aziendaName });
     await checkCartelli(page, { base, shots, scheme, aziendaPath, sheetUrl });
     await checkVerbali(page, { base, shots, scheme, sheetUrl });
+    await checkBuoni(page, { base, shots, scheme, sheetUrl });
     if (scheme === 'light') await checkCompanyData(context, { base, aziendaName, scheme });
     await checkArgano(page, { shots, scheme, sheetUrl, aziendaId: aziendaPath.split('/').pop() });
     await checkLimitatore(page, { shots, scheme, sheetUrl });

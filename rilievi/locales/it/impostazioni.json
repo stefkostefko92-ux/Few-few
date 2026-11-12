@@ -15,6 +15,10 @@
         "titolo": "Cartello fermo impianto",
         "desc": "L'aspetto del cartello da affiggere, con il logo e i dati dell'azienda."
       },
+      "buoni": {
+        "titolo": "Buono di lavoro",
+        "desc": "Il codice del modulo in alto a destra e la clausola in fondo al buono di lavoro."
+      },
       "ruoli": {
         "titolo": "Ruoli e permessi",
         "desc": "Il nome di ogni ruolo nell'azienda e cosa può fare chi lo ha."
@@ -53,7 +57,9 @@
       "esportazioneUltima": "Ultima esportazione il {data}",
       "cambioInCorso": "Cambio di fornitore in corso: servizio fino al {data}",
       "informativaPropria": "Testo dell'azienda",
-      "informativaModello": "Modello predefinito"
+      "informativaModello": "Modello predefinito",
+      "buonoSi": "Codice o clausola compilati",
+      "buonoNo": "Solo logo e nome dell'azienda"
     },
     "condizioni": {
       "vigente": "Versione in vigore",

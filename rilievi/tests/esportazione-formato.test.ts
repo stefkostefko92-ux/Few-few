@@ -22,6 +22,7 @@ const vuoto = {
   calcoliArgano: [],
   calcoliLimitatore: [],
   verbali: [],
+  buoni: [],
   fornitori: [],
   ordini: [],
   registro: [],

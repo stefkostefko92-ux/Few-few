@@ -78,7 +78,7 @@
         "dati": "dati.json: tutti i dati in JSON (UTF-8). Date e ore in ISO 8601 (UTC); i numeri decimali sono testo, per esempio «6.5».",
         "logo": "logo.png o logo.jpg: il logo dell'azienda, se c'è.",
         "allegati": "allegati/<scheda>/<id>.jpg o .mp4: le foto (JPEG, fino a 2560 px, senza metadati) e i video (MP4, H.264 e AAC, fino a 1080p) già elaborati.",
-        "documenti": "documenti/: i fogli di intervento e i verbali confermati in PDF/A (per ogni verbale, la copia azienda e la copia installatore).",
+        "documenti": "documenti/: i fogli di intervento e i verbali confermati in PDF/A (per ogni verbale, la copia azienda e la copia installatore) e ogni buono di lavoro in PDF/A, così com'è al momento dell'esportazione.",
         "versioni": "versioni/<scheda>.json: la cronologia di ogni scheda, un file per scheda."
       },
       "struttura": {
@@ -89,7 +89,7 @@
         "sezioni": {
           "formato": "La versione del formato, oggi «{formato}». Se cambia in modo incompatibile, lo scriviamo qui.",
           "esportatoIl": "Data e ora dell'esportazione.",
-          "azienda": "L'azienda: nome, dati societari come inseriti, ordine delle sezioni della scheda, modello del cartello, nomi e permessi dei ruoli, date; logo è il nome del file nell'archivio.",
+          "azienda": "L'azienda: nome, dati societari come inseriti, ordine delle sezioni della scheda, modello del cartello, nomi e permessi dei ruoli, informativa per chi firma, approvazione delle schede, codice e clausola del buono di lavoro, date; logo è il nome del file nell'archivio.",
           "persone": "Le persone dell'azienda con il loro ruolo (ADMIN, DIREZIONE, RESPONSABILE, TECNICO, OPERATORE, CLIENTE) e la data di ingresso.",
           "inviti": "Gli inviti non ancora accettati, senza il link di accesso.",
           "schede": "Le schede di rilievo, anche quelle nel cestino, con tutti i campi, i moduli d'ordine compilati, le scelte di stampa, lo stato di approvazione e la cronologia delle versioni.",
@@ -98,6 +98,7 @@
           "calcoliArgano": "I calcoli argano con i dati di ingresso. I risultati non sono salvati: si ricalcolano dai dati.",
           "calcoliLimitatore": "I calcoli del limitatore con i dati di ingresso.",
           "verbali": "I verbali di chiusura cantiere, con le firme, l'impronta e il sigillo.",
+          "buoni": "I buoni di lavoro: dati generali, sequenze di lavoro (descrizione, esito, data, fornitore), controlli, resoconto e, in «firme», ogni firma con il suo posto (riga, controllo o firma in fondo), il tracciato, l'impronta SHA-256 di ciò che firma e il sigillo.",
           "registro": "Il registro delle attività dell'azienda, per il periodo in cui è conservato: chi, quando, che cosa, senza il contenuto delle schede. Le azioni dell'amministrazione del portale compaiono senza autore.",
           "fornitori": "La rubrica dei fornitori per gli ordini: nome ed email.",
           "ordini": "Gli ordini inviati ai fornitori dal portale: scheda, modulo, destinatario, messaggio, stato e date."
