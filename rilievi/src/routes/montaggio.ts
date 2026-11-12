@@ -55,6 +55,7 @@ import { masterRouter } from './master.js';
 import { masterComunicazioniRouter } from './master-comunicazioni.js';
 import { masterContrattiRouter } from './master-contratti.js';
 import { masterVerificaRouter } from './master-verifica.js';
+import { masterPostaRouter } from './master-posta.js';
 import { masterRegistriRouter } from './master-registri.js';
 
 /**
@@ -74,6 +75,7 @@ export function montaRouter(app: Express): void {
   app.use(masterVerificaRouter);
   app.use(masterComunicazioniRouter);
   app.use(masterRegistriRouter);
+  app.use(masterPostaRouter);
   app.use(condizioniRouter);
   app.use(condizioniFirmaRouter);
   app.use(installaRouter);

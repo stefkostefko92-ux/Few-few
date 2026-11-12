@@ -22,7 +22,9 @@ sudo bash /opt/few-few/current/rilievi/deploy/setup-env.sh
 
 Генерира `POSTGRES_PASSWORD`, `JWT_SECRET` и `INTERVENTI_SEAL_KEY` (`openssl rand -hex 32`), пише
 `PUBLIC_BASE_URL` и пита само за Brevo SMTP. Без SMTP порталът работи: поканите и връзките за нова парола
-се показват на екрана за копиране. Съществуващ `.env` не се пипа — промяна: `sudoedit
+се показват на екрана за копиране. Пощата се настройва и от конзолата на MASTER (`/master/posta` — сървър,
+порт, логин, ключ, подател, пробно писмо): докато е включена там, е над `SMTP_*` от `.env`; ключът е в базата
+шифрован с ключ, изведен от `INTERVENTI_SEAL_KEY`. Съществуващ `.env` не се пипа — промяна: `sudoedit
 /opt/few-few/shared/rilievi/.env`.
 
 `INTERVENTI_SEAL_KEY` е ключът на печата на потвърдените листове за интервенция (HMAC). Машина отпреди

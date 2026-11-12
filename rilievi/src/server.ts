@@ -6,7 +6,8 @@ import cookieParser from 'cookie-parser';
 import express, { type Express, type NextFunction, type Request, type Response } from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
-import { config, isProduction, mailEnabled } from './config.js';
+import { config, isProduction } from './config.js';
+import { assicuraPosta, mailEnabled } from './mail/posta.js';
 import { errorMessage, httpLogOptions, logger } from './logger.js';
 import { ROOT } from './paths.js';
 import { isPartial, renderError, SAFE_METHODS } from './auth/guards.js';
@@ -199,9 +200,11 @@ export function createServer(): Express {
   });
   app.use(attachPrefs);
   app.use(readFlash);
-  app.use((req: Request, res: Response, next: NextFunction) => {
+  app.use(async (req: Request, res: Response, next: NextFunction) => {
     // Данните са на поканени хора — нито браузърът, нито прокси пазят страниците.
     res.set('Cache-Control', 'no-store');
+    // Пощата от конзолата на MASTER — заредена веднъж, преди първото `mailEnabled()` (src/mail/posta.ts).
+    await assicuraPosta();
     baseLocals(req, res);
     next();
   });

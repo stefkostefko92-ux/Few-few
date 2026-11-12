@@ -128,6 +128,11 @@ export const AUDIT_ACTIONS = [
   'ACCESSO_ESTERNO_COLLEGATO',
   'ACCESSO_ESTERNO_SCOLLEGATO',
   'AZIENDA_ACCESSO_ESTERNO',
+  // Пощата на портала от конзолата на MASTER (src/mail/posta.ts): порт и нов ли е ключът — без ключа,
+  // логина и сървъра; пробното писмо — само изходът.
+  'POSTA_IMPOSTATA',
+  'POSTA_DISATTIVATA',
+  'POSTA_PROVA',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
@@ -156,7 +161,8 @@ export interface AuditEntry {
     | 'ordine'
     | 'buono'
     | 'preventivo'
-    | 'avviso';
+    | 'avviso'
+    | 'posta';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */
   meta?: Prisma.InputJsonObject;

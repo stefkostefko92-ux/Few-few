@@ -105,3 +105,13 @@ export function decifraStatoOidc(payload: string): string | null {
     return null;
   }
 }
+
+/** Ключът на SMTP сървъра на портала (#32), настроен от MASTER — в базата шифрован, никога показан. */
+export const cifraSmtp = (plaintext: string): string => cifra('smtp-pass-v1', plaintext);
+export function decifraSmtp(payload: string): string | null {
+  try {
+    return decifra('smtp-pass-v1', payload);
+  } catch {
+    return null;
+  }
+}

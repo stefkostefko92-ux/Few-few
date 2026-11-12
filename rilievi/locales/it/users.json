@@ -214,6 +214,9 @@
       "ACCESSO_ESTERNO_COLLEGATO": "Accesso con Microsoft o Google collegato",
       "ACCESSO_ESTERNO_SCOLLEGATO": "Accesso con Microsoft o Google scollegato",
       "AZIENDA_ACCESSO_ESTERNO": "Accesso con Microsoft o Google modificato",
+      "POSTA_IMPOSTATA": "Server email del portale impostato",
+      "POSTA_DISATTIVATA": "Server email del portale disattivato",
+      "POSTA_PROVA": "Email di prova inviata",
       "USER_EDIT": "Nome o email cambiati",
       "MEMBERSHIP_ADD": "Account aggiunto a un'azienda",
       "MEMBERSHIP_REMOVE": "Account tolto da un'azienda"

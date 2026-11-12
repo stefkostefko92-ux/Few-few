@@ -1,6 +1,7 @@
 import { buildCorrente } from '../build.js';
 import { spazioLibero } from '../allegati/archivio.js';
-import { mailEnabled, mediaConfig } from '../config.js';
+import { mediaConfig } from '../config.js';
+import { mailEnabled } from '../mail/posta.js';
 import { prisma } from '../db.js';
 import { errorMessage, logger } from '../logger.js';
 import { HOUR, MINUTE } from '../time.js';

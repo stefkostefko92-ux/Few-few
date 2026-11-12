@@ -137,8 +137,3 @@ export function mediaConfig(): MediaConfig {
 export function isProduction(): boolean {
   return config().NODE_ENV === 'production';
 }
-
-/** Има ли поща — от това зависи дали поканата тръгва по имейл, или само се показва за копиране. */
-export function mailEnabled(): boolean {
-  return Boolean(config().SMTP_HOST);
-}

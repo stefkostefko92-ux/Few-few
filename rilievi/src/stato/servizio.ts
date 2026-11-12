@@ -1,5 +1,5 @@
 import type { TipoAvvisoStato } from '@prisma/client';
-import { mailEnabled } from '../config.js';
+import { mailEnabled } from '../mail/posta.js';
 import { prisma } from '../db.js';
 import { esitoCoda, type Esito } from '../master/sistema.js';
 import { DAY } from '../time.js';
