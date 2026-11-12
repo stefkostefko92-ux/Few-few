@@ -14750,7 +14750,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 244
+        "lessons": 249
       },
       "evolution": [
         {
@@ -14866,9 +14866,20 @@
           "date": "2026-11-02",
           "event": "v22.8 — учене",
           "detail": "Научи: Meta Data Use Checkup — годишната рецертификация се брои от последната сертификация (не…"
+        },
+        {
+          "version": "23.3.0",
+          "date": "2026-11-12",
+          "event": "v23.3 — учене",
+          "detail": "Научи: Discord privileged intents — праг 10 000 уникални потребители (не сървъри); при достига… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „Discord privileged intents — праг 10 000 уникални потребители (не сървъри); при достига…\" (+4 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
