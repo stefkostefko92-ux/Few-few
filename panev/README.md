@@ -28,13 +28,15 @@ panev/
 │   ├── build.mjs             ← node site/build.mjs → 36 страници + sitemap + 404
 │   ├── data/products.mjs     ← всички кодове/цени от каталога (истина)
 │   ├── data/i18n/{it,en,bg}.mjs
-│   └── templates/{layout,pages,products,families}.mjs
+│   └── templates/{layout,pages,products,families,regola}.mjs
 ├── index.html · prodotti.html · catalogo.html · contatti.html
 │   privacy.html · condizioni.html          ← генерирани (IT)
 ├── en/ · bg/                 ← генерирани (EN, BG)
 ├── docs/catalogo-staffe-panev-2026.pdf     ← каталогът (72 стр., прави го `cd 3d && npm run catalog-pdf`)
 ├── img/                      ← изображения, img/catalogo/ превюта, img/brand/ оригиналът на логото
-├── css/site.css · js/site.js ← новият фронт
+├── css/site.css · js/site.js ← новият фронт (+ css/regola.css · js/regola.js: планката, която се регулира)
+├── img/regola/               ← кадрите на регулирането (3d/scripts/frames.mjs)
+├── img/cantiere/             ← снимките от обектите и производството (3d/scripts/photos.mjs, без EXIF)
 ├── fonts/Inter-var-*.woff2   ← self-hosted, вкл. кирилица
 ├── admin/ · lib/ · scripts/  ← server-side админ (JWT), SQLite, seed
 └── robots.txt · sitemap.xml · llms.txt · 404.html

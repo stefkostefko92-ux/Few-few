@@ -172,16 +172,16 @@ def sheet(p, img, count, cube):
     )
 
 
-def side_tab(tpl):
-    """The code index page with nothing left on it but its side tab (the pill and its soft shadow), no text."""
+def side_tab(tpl, src=TAB_SRC, area=TAB_AREA):
+    """A base page (the code index page) with nothing left on it but its side tab (the pill and its soft shadow), no text."""
     doc = pymupdf.open()
-    doc.insert_pdf(tpl, from_page=TAB_SRC, to_page=TAB_SRC)
+    doc.insert_pdf(tpl, from_page=src, to_page=src)
     page = doc[0]
     w, h = page.rect.br
-    for r in ((0, 0, TAB_AREA.x0, h), (TAB_AREA.x0, 0, w, TAB_AREA.y0), (TAB_AREA.x0, TAB_AREA.y1, w, h)):
+    for r in ((0, 0, area.x0, h), (area.x0, 0, w, area.y0), (area.x0, area.y1, w, h)):
         page.add_redact_annot(pymupdf.Rect(r), fill=False)
     page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_REMOVE, graphics=pymupdf.PDF_REDACT_LINE_ART_REMOVE_IF_TOUCHED, text=pymupdf.PDF_REDACT_TEXT_REMOVE)
-    page.add_redact_annot(TAB_AREA, fill=False)
+    page.add_redact_annot(area, fill=False)
     page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_NONE, graphics=pymupdf.PDF_REDACT_LINE_ART_NONE, text=pymupdf.PDF_REDACT_TEXT_REMOVE)
     if page.get_text("text").strip() or page.get_images() or len(page.get_drawings()) != 2:
         raise SystemExit("summary: the side tab template carries more than the tab")

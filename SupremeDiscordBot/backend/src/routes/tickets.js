@@ -103,7 +103,12 @@ router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
       })(),
     };
 
-    const [tickets, total] = await Promise.all([
+    // Броячите за табовете (концепцията на таблото, 10.10.2026): същите
+    // филтри БЕЗ статуса — колко са отворени/поети/затворени в търсения
+    // обхват. `serverId` остава в условието, така че броим само своя сървър.
+    const { status: _status, ...whereAnyStatus } = where;
+
+    const [tickets, total, byStatus] = await Promise.all([
       prisma.ticket.findMany({
         where,
       include: {
@@ -124,9 +129,11 @@ router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
       }))
     ),
       prisma.ticket.count({ where }),
+      prisma.ticket.groupBy({ by: ["status"], where: whereAnyStatus, _count: { _all: true } }),
     ]);
+    const statusCounts = Object.fromEntries(byStatus.map((r) => [r.status, r._count._all]));
 
-    res.json({ tickets, total, page: Number(page), limit: Number(limit) });
+    res.json({ tickets, total, statusCounts, page: Number(page), limit: Number(limit) });
   } catch (err) {
     next(err);
   }

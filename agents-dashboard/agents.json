@@ -617,28 +617,17 @@
           "detail": "Научи: TDM изключението не спасява достъп в нарушение на условията на платформа — Дир. 2019/79… (+57 още)"
         },
         {
-          "version": "39.5.0",
-          "date": "2026-11-11",
-          "event": "v39.5 — учене",
-          "detail": "Научи: ПОПРАВКА на записа от 2026-07-24 — чл. 2250 ал. 7 c.c. (данните на дружеството в „spazi… (+10 още)"
-        },
-        {
           "version": "39.7.0",
           "date": "2026-11-12",
           "event": "v39.7 — учене",
-          "detail": "Научи: При смяна на платежния канал (Stripe→Discord MoR) провери дали НОВИЯТ revoke път записв… (+1 още)"
+          "detail": "Научи: При смяна на платежния канал (Stripe→Discord MoR) провери дали НОВИЯТ revoke път записв… (+12 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-12",
           "type": "learning",
-          "summary": "Научи: „При смяна на платежния канал (Stripe→Discord MoR) провери дали НОВИЯТ revoke път записв…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-11",
-          "type": "learning",
-          "summary": "Научи: „ПОПРАВКА на записа от 2026-07-24 — чл. 2250 ал. 7 c.c. (данните на дружеството в „spazi…\" (+10 още) · 1 в карантина"
+          "summary": "Научи: „При смяна на платежния канал (Stripe→Discord MoR) провери дали НОВИЯТ revoke път записв…\" (+12 още) · 1 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -1212,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 634
+        "lessons": 633
       },
       "evolution": [
         {
@@ -2044,39 +2033,17 @@
           "detail": "Научи: sharp 0.35 с limitInputPixels не пази паметта при прогресивен JPEG (208 Mpx, 4:4:4, фай… (+1 още)"
         },
         {
-          "version": "56.9.0",
-          "date": "2026-11-11",
-          "event": "v56.9 — учене",
-          "detail": "Научи: Express обработчик на грешки, който винаги връща 500, превръща грешките на body-parser … (+8 още)"
-        },
-        {
-          "version": "57.1.0",
-          "date": "2026-11-12",
-          "event": "v57.1 — учене",
-          "detail": "Научи: В SupremeDiscordBot event модулите от bot/src/events се закачат и на главния, и на всек… (+1 още)"
-        },
-        {
           "version": "57.4.0",
           "date": "2026-11-12",
           "event": "v57.4 — учене",
-          "detail": "Научи: В SupremeDiscordBot revokeServer за Discord entitlement не пише accessUntil, а inExport… (+2 още)"
+          "detail": "Научи: В SupremeDiscordBot revokeServer за Discord entitlement не пише accessUntil, а inExport… (+13 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-12",
           "type": "learning",
-          "summary": "Научи: „В SupremeDiscordBot revokeServer за Discord entitlement не пише accessUntil, а inExport…\" (+2 още)"
-        },
-        {
-          "date": "2026-11-12",
-          "type": "learning",
-          "summary": "Научи: „В SupremeDiscordBot event модулите от bot/src/events се закачат и на главния, и на всек…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-11",
-          "type": "learning",
-          "summary": "Научи: „Express обработчик на грешки, който винаги връща 500, превръща грешките на body-parser …\" (+8 още) · 1 в карантина"
+          "summary": "Научи: „В SupremeDiscordBot revokeServer за Discord entitlement не пише accessUntil, а inExport…\" (+13 още) · 1 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -4342,14 +4309,14 @@
         },
         {
           "version": "23.1.0",
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "event": "v23.1 — учене",
           "detail": "Научи: В panev SEO повърхността идва от head()/jsonLd() в site/templates/layout.mjs; допълните…"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "type": "learning",
           "summary": "Научи: „В panev SEO повърхността идва от head()/jsonLd() в site/templates/layout.mjs; допълните…\" · 2 в карантина"
         },
@@ -4956,14 +4923,14 @@
         },
         {
           "version": "20.7.0",
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "event": "v20.7 — учене",
           "detail": "Научи: panev/ няма node_modules и server.js не тръгва без dotenv/express; за одит копирай прод… (+2 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "type": "learning",
           "summary": "Научи: „panev/ няма node_modules и server.js не тръгва без dotenv/express; за одит копирай прод…\" (+2 още)"
         },
@@ -7266,14 +7233,14 @@
         },
         {
           "version": "24.7.0",
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "event": "v24.7 — учене",
           "detail": "Научи: Docker тагът на OpenSEO standalone v0.1.25 сочи към друг digest от sha-78c5d85 (по-нов … (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "type": "learning",
           "summary": "Научи: „Docker тагът на OpenSEO standalone v0.1.25 сочи към друг digest от sha-78c5d85 (по-нов …\" (+1 още)"
         },
@@ -8936,14 +8903,14 @@
         },
         {
           "version": "21.2.0",
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "event": "v21.2 — учене",
           "detail": "Научи: YouTube закачането на коментар иска включени advanced features (до 24 ч), води се през … (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "type": "learning",
           "summary": "Научи: „YouTube закачането на коментар иска включени advanced features (до 24 ч), води се през …\" (+1 още)"
         },
@@ -10447,14 +10414,14 @@
         },
         {
           "version": "20.9.0",
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "event": "v20.9 — учене",
           "detail": "Научи: Във WebKit bug 290847 линк с Content-Disposition attachment (и inline PDF) в iOS home-s…"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "type": "learning",
           "summary": "Научи: „Във WebKit bug 290847 линк с Content-Disposition attachment (и inline PDF) в iOS home-s…\" · 1 в карантина"
         },
@@ -11921,28 +11888,17 @@
           "detail": "Научи: Nexus Dominion desktop nav-profile overflow (дълго име+титла) — правилният фикс е таван… (+14 още)"
         },
         {
-          "version": "22.9.0",
-          "date": "2026-11-12",
-          "event": "v22.9 — учене",
-          "detail": "Научи: В panev/css/site.css `:focus-visible` е navy-3 (#24408c); върху тъмните секции (#162862… (+1 още)"
-        },
-        {
           "version": "23.0.0",
           "date": "2026-11-12",
           "event": "v23.0 — учене",
-          "detail": "Научи: IBM Plex Sans Condensed във @fontsource няма основна кирилица (само cyrillic-ext), зато…"
+          "detail": "Научи: IBM Plex Sans Condensed във @fontsource няма основна кирилица (само cyrillic-ext), зато… (+2 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-12",
           "type": "learning",
-          "summary": "Научи: „IBM Plex Sans Condensed във @fontsource няма основна кирилица (само cyrillic-ext), зато…\" · 1 в карантина"
-        },
-        {
-          "date": "2026-11-12",
-          "type": "learning",
-          "summary": "Научи: „В panev/css/site.css `:focus-visible` е navy-3 (#24408c); върху тъмните секции (#162862…\" (+1 още)"
+          "summary": "Научи: „IBM Plex Sans Condensed във @fontsource няма основна кирилица (само cyrillic-ext), зато…\" (+2 още) · 1 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -13537,28 +13493,17 @@
           "detail": "Научи: В SupremeDiscordBot ботът резолвира канала през guildChannel(serverId, channelId), зато… (+10 още)"
         },
         {
-          "version": "21.3.0",
-          "date": "2026-11-12",
-          "event": "v21.3 — учене",
-          "detail": "Научи: discord.js 14.26.4 емитва guildMemberRemove само за кеширани членове и не емитва guildM… (+1 още)"
-        },
-        {
           "version": "21.6.0",
           "date": "2026-11-12",
           "event": "v21.6 — учене",
-          "detail": "Научи: SupremeDiscordBot - таблото пише само categoryOpenId, а formSession.js праща ticket-фор… (+2 още)"
+          "detail": "Научи: SupremeDiscordBot - таблото пише само categoryOpenId, а formSession.js праща ticket-фор… (+4 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-12",
           "type": "learning",
-          "summary": "Научи: „SupremeDiscordBot - таблото пише само categoryOpenId, а formSession.js праща ticket-фор…\" (+2 още)"
-        },
-        {
-          "date": "2026-11-12",
-          "type": "learning",
-          "summary": "Научи: „discord.js 14.26.4 емитва guildMemberRemove само за кеширани членове и не емитва guildM…\" (+1 още) · 1 в карантина"
+          "summary": "Научи: „SupremeDiscordBot - таблото пише само categoryOpenId, а formSession.js праща ticket-фор…\" (+4 още) · 1 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -14387,14 +14332,14 @@
         },
         {
           "version": "30.7.0",
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "event": "v30.7 — учене",
           "detail": "Научи: Регулярен израз в кука, закотвен в началото на команда (след ^ ; & | ( $( и sudo), проп… (+10 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "type": "learning",
           "summary": "Научи: „Регулярен израз в кука, закотвен в началото на команда (след ^ ; & | ( $( и sudo), проп…\" (+10 още) · 2 в карантина"
         },
@@ -16159,14 +16104,14 @@
         },
         {
           "version": "27.7.0",
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "event": "v27.7 — учене",
           "detail": "Научи: Инжекционен eval spec с маркери, които само назовават темата (име на пакет, пазач, „под… (+4 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "type": "learning",
           "summary": "Научи: „Инжекционен eval spec с маркери, които само назовават темата (име на пакет, пазач, „под…\" (+4 още) · 2 в карантина"
         },
@@ -16474,28 +16419,17 @@
           "detail": "Научи: DPR 162/1999 Capo II art. 15 c. 4 — manutentore almeno ogni 6 mesi (ascensori) / ogni a… (+1 още)"
         },
         {
-          "version": "19.6.0",
-          "date": "2026-11-11",
-          "event": "v19.6 — учене",
-          "detail": "Научи: Подмяната на етажни врати е modifica costruttiva по DPR 162/1999 (първоначален текст) ч…"
-        },
-        {
           "version": "19.8.0",
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "event": "v19.8 — учене",
-          "detail": "Научи: DPR 162/1999 (текст 1999) чл. 2 ал. 1 б. i) т. 5 не изброява поименно въжетата и тирант… (+1 още)"
+          "detail": "Научи: DPR 162/1999 (текст 1999) чл. 2 ал. 1 б. i) т. 5 не изброява поименно въжетата и тирант… (+2 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "type": "learning",
-          "summary": "Научи: „DPR 162/1999 (текст 1999) чл. 2 ал. 1 б. i) т. 5 не изброява поименно въжетата и тирант…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-11",
-          "type": "learning",
-          "summary": "Научи: „Подмяната на етажни врати е modifica costruttiva по DPR 162/1999 (първоначален текст) ч…\""
+          "summary": "Научи: „DPR 162/1999 (текст 1999) чл. 2 ал. 1 б. i) т. 5 не изброява поименно въжетата и тирант…\" (+2 още)"
         },
         {
           "date": "2026-11-04",
@@ -16565,14 +16499,14 @@
         },
         {
           "version": "0.3.0",
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "event": "v0.3 — учене",
           "detail": "Научи: В Korpora checkHoles (engine/model.js) дава 'error' само за застъпване cup/cup, всяко д… (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-11",
+          "date": "2026-11-12",
           "type": "learning",
           "summary": "Научи: „В Korpora checkHoles (engine/model.js) дава 'error' само за застъпване cup/cup, всяко д…\" (+1 още)"
         },

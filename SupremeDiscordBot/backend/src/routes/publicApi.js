@@ -19,6 +19,7 @@ const router = Router();
 export { VALID_SCOPES } from "../lib/apiKeyAuth.js";
 import { VALID_SCOPES } from "../lib/apiKeyAuth.js";
 import { bruteForceGuard, recordFailure, recordSuccess } from "../lib/bruteForce.js";
+import { ipKey } from "../lib/ipKey.js";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // API KEY MANAGEMENT (dashboard-authed)
@@ -127,7 +128,7 @@ const apiLimiter = rateLimit({
   max: 300,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.apiKey?.id || req.ip,
+  keyGenerator: (req) => req.apiKey?.id || ipKey(req.ip),
   message: { error: "API rate limit exceeded" },
 });
 
@@ -213,7 +214,7 @@ const preAuthLimiter = rateLimit({
   max: 60,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip,
+  keyGenerator: (req) => ipKey(req.ip),
   message: { error: "Too many requests — please slow down" },
 });
 

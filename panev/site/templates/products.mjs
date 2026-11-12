@@ -23,8 +23,8 @@ function tableHead(p) {
 }
 
 // Корицата на секция; на страницата с листата води и към страницата на семейството ѝ.
-function cover(t, sec, link) {
-  const html = sectionHead(t, t.products.sections[sec], SECTION_ID[sec]);
+function cover(t, sec, link, dark) {
+  const html = sectionHead(t, t.products.sections[sec], SECTION_ID[sec], { cover: dark });
   if (!link) return html;
   const fam = familyOf(sec);
   const more = `<p class="sec-more"><a href="${pagePath(t, fam)}">${esc(t.families.shared.more)}: ${esc(t.families[fam].crumb)}</a></p>`;
@@ -129,10 +129,11 @@ function specialBody(t) {
 </section>`;
 }
 
-// Секциите в реда на каталога; link: корицата води към страницата на семейството (на листата).
-export function sectionsHtml(t, keys, { link = false } = {}) {
+// Секциите в реда на каталога; link: корицата води към страницата на семейството (на листата);
+// covers: тъмните корици на секциите (на страниците по семейства — заглавия върху бяло).
+export function sectionsHtml(t, keys, { link = false, covers = true } = {}) {
   const body = { doors: doorsBody, su: (x) => cfgBody(x, 'su'), sd: (x) => cfgBody(x, 'sd'), sc: (x) => cfgBody(x, 'sc'), sg: sgBody, special: specialBody };
-  return keys.map((k) => `${cover(t, k, link)}\n${body[k](t)}`).join('\n\n');
+  return keys.map((k) => `${cover(t, k, link, covers)}\n${body[k](t)}`).join('\n\n');
 }
 
 export function orderCta(t) {

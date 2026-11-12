@@ -6,8 +6,20 @@
 import { esc, pagePath, crumbName } from './layout.mjs';
 import { FAMILIES, sectionsHtml, orderCta, itemListLd } from './products.mjs';
 import { COMPANY, CATALOG_PDF } from '../data/products.mjs';
+import { render3d } from './parts.mjs';
+import { regola, regolaScript } from './regola.mjs';
+import { cantiereSection } from './cantiere.mjs';
 
 export const FAMILY_KEYS = Object.keys(FAMILIES);
+
+// Снимката вдясно на заглавния блок: вратите и водачите се регулират на живо, SG и поръчковите са рендер.
+const still = (name, alt) => `<figure class="hero-still">${render3d(name, alt, { sizes: '(max-width: 1020px) 90vw, 460px', lazy: false, priority: true })}</figure>`;
+const VISUAL = {
+  famDoors: (t) => regola(t, 'porta', { priority: true }),
+  famGuides: (t) => regola(t, 'guida', { priority: true }),
+  famSg: (t) => still('sg-80-190', t.families.famSg.visualAlt),
+  famSpecial: (t) => still('braccio-160-190', t.families.famSpecial.visualAlt),
+};
 
 function crumbs(t, key) {
   const trail = ['home', 'products'].map((k) => `<a href="${pagePath(t, k)}">${esc(crumbName(t, k))}</a>`).join('<span aria-hidden="true"> › </span>');
@@ -30,7 +42,8 @@ export function familyPage(t, key) {
     .map((k) => `<li><a href="${pagePath(t, k)}">${esc(t.families[k].crumb)}</a></li>`).join('');
   return `
 <section class="page-head">
-  <div class="wrap">
+  <div class="wrap page-head-grid">
+    <div class="page-head-copy">
     ${crumbs(t, key)}
     <p class="kicker kicker-light">${esc(f.kicker)}</p>
     <h1>${esc(f.h1)}</h1>
@@ -40,14 +53,17 @@ export function familyPage(t, key) {
       <a class="btn btn-outline" href="${pagePath(t, 'viewer3d')}?${fam.view}">${esc(sh.see3d)}</a>
       <a class="btn btn-outline" href="${pdf}">${esc(sh.catalogPages(from, to))}</a>
     </div>
+    </div>
+    ${VISUAL[key](t)}
   </div>
 </section>
+${key === 'famDoors' || key === 'famGuides' ? regolaScript() : ''}
 
-${sectionsHtml(t, fam.sections)}
+${sectionsHtml(t, fam.sections, { covers: false })}
+${cantiereSection(t, key)}
 
 <section class="section section-tint" id="faq">
   <div class="wrap">
-    <p class="kicker">${esc(sh.faqKicker)}</p>
     <h2>${esc(f.faqTitle)}</h2>
     <div class="faq-list">${faq}
     </div>

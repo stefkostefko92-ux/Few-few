@@ -26,6 +26,8 @@ const app      = express();
 const PORT     = Number(process.env.PORT) || 3000;
 const BASE_URL = (process.env.BASE_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
 const IS_PROD  = process.env.NODE_ENV === 'production';
+// Онлайн плащането е спряно, освен ако PAYMENTS_ENABLED=true (виж /api/create-checkout-session).
+const PAYMENTS_ON = process.env.PAYMENTS_ENABLED === 'true';
 
 app.set('trust proxy', 1); // behind Nginx
 
@@ -104,14 +106,16 @@ function securityHeaders(req, res, next) {
   // Публичният сайт няма изпълними inline скриптове (само src=, application/json
   // и ld+json, които не изискват 'unsafe-inline'); админът има — затова само там.
   const needsInlineJs = req.path.startsWith('/admin');
+  // Плащанията са спрени (kill-switch): тогава страниците не разрешават нищо от домейните на Stripe.
+  const stripeOn = PAYMENTS_ON;
   const csp = [
     "default-src 'self'",
-    "script-src 'self'" + (needsInlineJs ? " 'unsafe-inline'" : '') + " https://js.stripe.com",
+    "script-src 'self'" + (needsInlineJs ? " 'unsafe-inline'" : '') + (stripeOn ? ' https://js.stripe.com' : ''),
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self'",
     "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://api.stripe.com",
-    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com", // 'self': 3D изгледът на началната страница
+    "connect-src 'self'" + (stripeOn ? ' https://api.stripe.com' : ''),
+    "frame-src 'self'" + (stripeOn ? ' https://js.stripe.com https://hooks.stripe.com' : ''), // 'self': 3D изгледът на началната страница
     "object-src 'self'",   // каталожният PDF се вгражда с <object>
     "base-uri 'self'",
     "form-action 'self'",
@@ -125,7 +129,7 @@ function securityHeaders(req, res, next) {
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy',
-    'geolocation=(), microphone=(), camera=(), payment=(self "https://js.stripe.com")');
+    `geolocation=(), microphone=(), camera=(), payment=${stripeOn ? '(self "https://js.stripe.com")' : '()'}`);
   if (IS_PROD) {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }

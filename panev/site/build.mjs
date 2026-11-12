@@ -19,28 +19,30 @@ import {
 import { viewerPage } from './templates/viewer.mjs';
 import { familyPage, familyLd, FAMILY_KEYS } from './templates/families.mjs';
 import { CATALOG_PDF } from './data/products.mjs';
+import { logoPicture } from './templates/asset.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const locales = [it, en, bg];
 
 // Допълнителните стилове — само на страниците, които ги ползват, с версия от съдържанието, за да
 // не остане стар файл в кеша: vista-3d.css (3D рендерите и 3D изгледа), listino.css (таблиците в
-// продуктовите карти на тесни места).
+// продуктовите карти на тесни места), regola.css (планката, която се регулира в заглавния блок).
 const versioned = (file) => `/${file}?v=${createHash('sha256').update(readFileSync(join(ROOT, file))).digest('hex').slice(0, 10)}`;
 const VISTA_CSS = versioned('css/vista-3d.css');
 const LISTINO_CSS = versioned('css/listino.css');
+const REGOLA_CSS = versioned('css/regola.css');
 const SITE_CSS = versioned('css/site.css');
 const STYLES = `<link rel="stylesheet" href="${SITE_CSS}">`;
 
 const PAGES = [
-  { key: 'home',     body: (t) => homePage(t, locales), ld: (t) => homeLd(t), css: [VISTA_CSS] },
+  { key: 'home',     body: (t) => homePage(t, locales), ld: (t) => homeLd(t), css: [VISTA_CSS, REGOLA_CSS] },
   { key: 'products', body: (t) => productsPage(t, locales), ld: (t) => productsLd(t), css: [VISTA_CSS, LISTINO_CSS] },
   { key: 'catalog',  body: (t) => catalogPage(t, locales),  ld: (t) => catalogLd(t) },
   { key: 'contacts', body: (t) => contactsPage(t, locales), ld: (t) => contactsLd(t) },
   { key: 'privacy',  body: (t) => privacyPage(t) },
   { key: 'terms',    body: (t) => termsPage(t) },
   // Страниците по семейства: под листата в пътеката (parents).
-  ...FAMILY_KEYS.map((key) => ({ key, body: (t) => familyPage(t, key), ld: (t) => familyLd(t, key), css: [VISTA_CSS, LISTINO_CSS], parents: ['products'] })),
+  ...FAMILY_KEYS.map((key) => ({ key, body: (t) => familyPage(t, key), ld: (t) => familyLd(t, key), css: [VISTA_CSS, LISTINO_CSS, REGOLA_CSS], parents: ['products'] })),
 ];
 
 let written = 0;
@@ -79,15 +81,17 @@ const notFound = `<!DOCTYPE html>
 </head>
 <body>
 <main id="main">
-  <section class="page-head"><div class="wrap">
+  <section class="page-head nf-page"><div class="wrap">
+    <a class="nf-logo" href="/">${logoPicture('Panev Ascensori', { width: 180 })}</a>
     <p class="kicker kicker-light">404</p>
-    <h1>Pagina non trovata · Page not found · Страницата не е намерена</h1>
+    <h1><span lang="it">Pagina non trovata</span><span lang="en">Page not found</span><span lang="bg">Страницата не е намерена</span></h1>
     <p class="sec-lead">L’indirizzo non esiste o è cambiato con il nuovo sito.</p>
     <div class="hero-cta">
       <a class="btn btn-white" href="/">Home · Italiano</a>
-      <a class="btn btn-outline" href="/en/">English</a>
-      <a class="btn btn-outline" href="/bg/">Български</a>
+      <a class="btn btn-outline" href="/en/" lang="en">English</a>
+      <a class="btn btn-outline" href="/bg/" lang="bg">Български</a>
     </div>
+    <p class="nf-credit">Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
   </div></section>
 </main>
 </body>

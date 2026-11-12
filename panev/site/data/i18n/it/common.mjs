@@ -145,4 +145,27 @@ export default {
     legalTitle: 'Note legali',
     rights: 'Tutti i diritti riservati.',
   },
+  regola: {
+    porta: { label: 'Regolazione angolare', alt: 'Piastra A 65 170 7 con staffa B 65 320: regolazione angolare da −8° a +8°, render 3D' },
+    guida: { label: 'Distanza guida–parete', alt: 'Supporto SU 220 160 con staffa SG 80 150 e guida del contrappeso: distanza dalla parete da 45 a 155 mm, render 3D' },
+    hint: 'Trascina la staffa o il cursore',
+    open3d: 'Apri la vista 3D',
+  },
+  cantiere: {
+    title: 'Dalla piegatura al vano',
+    lead: 'Prodotte a Cornaredo, montate su calcestruzzo irregolare e murature fuori squadra: foto reali dalla produzione e dai cantieri.',
+    famTitle: 'Montate su muri veri',
+    famLead: 'Foto dai cantieri: le staffe Panev su calcestruzzo irregolare e murature fuori squadra, regolate in opera.',
+    photos: {
+      'produzione': 'Staffe in produzione a Cornaredo',
+      'vano-finito': 'Un vano finito: guide staffate per tutta l’altezza',
+      'guida-giunzione': 'Supporto e staffa di giunzione sulla guida, ancorati al calcestruzzo',
+      'porta-pulita': 'Tre staffe B sotto la soglia della porta di piano',
+      'guida-supporto': 'Fissaggio della guida del contrappeso: supporto e staffa di giunzione regolati sul muro del vano, con il filo a piombo',
+      'guida-vano': 'La guida del contrappeso staffata lungo il vano di corsa',
+      'porta-soglia': 'Staffe sotto la soglia della porta di piano, su calcestruzzo irregolare',
+      'porta-staffe': 'Piastre A e staffe B sotto la soglia, regolate su un muro fuori squadra',
+      'porta-regolazione': 'Il giunto articolato in opera: la staffa segue la muratura',
+    },
+  },
 };
