@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 628
+        "lessons": 634
       },
       "evolution": [
         {
@@ -2037,9 +2037,31 @@
           "date": "2026-11-11",
           "event": "v56.9 — учене",
           "detail": "Научи: Express обработчик на грешки, който винаги връща 500, превръща грешките на body-parser … (+8 още)"
+        },
+        {
+          "version": "57.1.0",
+          "date": "2026-11-12",
+          "event": "v57.1 — учене",
+          "detail": "Научи: В SupremeDiscordBot event модулите от bot/src/events се закачат и на главния, и на всек… (+1 още)"
+        },
+        {
+          "version": "57.4.0",
+          "date": "2026-11-12",
+          "event": "v57.4 — учене",
+          "detail": "Научи: В SupremeDiscordBot revokeServer за Discord entitlement не пише accessUntil, а inExport… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „В SupremeDiscordBot revokeServer за Discord entitlement не пише accessUntil, а inExport…\" (+2 още)"
+        },
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „В SupremeDiscordBot event модулите от bot/src/events се закачат и на главния, и на всек…\" (+1 още)"
+        },
         {
           "date": "2026-11-11",
           "type": "learning",
@@ -11446,7 +11468,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 238
+        "lessons": 240
       },
       "evolution": [
         {
@@ -11888,9 +11910,15 @@
           "detail": "Научи: Nexus Dominion desktop nav-profile overflow (дълго име+титла) — правилният фикс е таван… (+14 още)"
         },
         {
-          "version": "22.8.0",
+          "version": "22.9.0",
           "date": "2026-11-12",
-          "event": "v22.8 — учене",
+          "event": "v22.9 — учене",
+          "detail": "Научи: В panev/css/site.css `:focus-visible` е navy-3 (#24408c); върху тъмните секции (#162862… (+1 още)"
+        },
+        {
+          "version": "23.0.0",
+          "date": "2026-11-12",
+          "event": "v23.0 — учене",
           "detail": "Научи: IBM Plex Sans Condensed във @fontsource няма основна кирилица (само cyrillic-ext), зато…"
         }
       ],
@@ -11899,6 +11927,11 @@
           "date": "2026-11-12",
           "type": "learning",
           "summary": "Научи: „IBM Plex Sans Condensed във @fontsource няма основна кирилица (само cyrillic-ext), зато…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „В panev/css/site.css `:focus-visible` е navy-3 (#24408c); върху тъмните секции (#162862…\" (+1 още)"
         },
         {
           "date": "2026-11-04",
@@ -13159,7 +13192,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 216
+        "lessons": 221
       },
       "evolution": [
         {
@@ -13491,9 +13524,31 @@
           "date": "2026-11-04",
           "event": "v21.1 — учене",
           "detail": "Научи: В SupremeDiscordBot ботът резолвира канала през guildChannel(serverId, channelId), зато… (+10 още)"
+        },
+        {
+          "version": "21.3.0",
+          "date": "2026-11-12",
+          "event": "v21.3 — учене",
+          "detail": "Научи: discord.js 14.26.4 емитва guildMemberRemove само за кеширани членове и не емитва guildM… (+1 още)"
+        },
+        {
+          "version": "21.6.0",
+          "date": "2026-11-12",
+          "event": "v21.6 — учене",
+          "detail": "Научи: SupremeDiscordBot - таблото пише само categoryOpenId, а formSession.js праща ticket-фор… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot - таблото пише само categoryOpenId, а formSession.js праща ticket-фор…\" (+2 още)"
+        },
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „discord.js 14.26.4 емитва guildMemberRemove само за кеширани членове и не емитва guildM…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -14706,7 +14761,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 244
+        "lessons": 249
       },
       "evolution": [
         {
@@ -14822,9 +14877,20 @@
           "date": "2026-11-02",
           "event": "v22.8 — учене",
           "detail": "Научи: Meta Data Use Checkup — годишната рецертификация се брои от последната сертификация (не…"
+        },
+        {
+          "version": "23.3.0",
+          "date": "2026-11-12",
+          "event": "v23.3 — учене",
+          "detail": "Научи: Discord privileged intents — праг 10 000 уникални потребители (не сървъри); при достига… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „Discord privileged intents — праг 10 000 уникални потребители (не сървъри); при достига…\" (+4 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -15462,7 +15528,7 @@
           "Docusaurus/MkDocs/VitePress (docs сайтове, версиониране, i18n); markdownlint/Vale",
           "Това репо: per-product CLAUDE.md/README, BG източник, runbook-и (deploy/DEPLOY.md), safety-critical низове"
         ],
-        "lessons": 225
+        "lessons": 227
       },
       "evolution": [
         {
@@ -15518,9 +15584,20 @@
           "date": "2026-11-04",
           "event": "v21.6 — учене",
           "detail": "Научи: Фикстурата за инжекция в уеб страница е в tools/agents/evals/fixtures/injection-web-pag… (+13 още)"
+        },
+        {
+          "version": "21.8.0",
+          "date": "2026-11-12",
+          "event": "v21.8 — учене",
+          "detail": "Научи: SupremeDiscordBot/README.md (ред 333, 350) още твърди „Postgres/Redis bound to localhos… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot/README.md (ред 333, 350) още твърди „Postgres/Redis bound to localhos…\" (+1 още)"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
