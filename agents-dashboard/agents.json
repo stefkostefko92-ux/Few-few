@@ -13159,7 +13159,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 223
+        "lessons": 224
       },
       "evolution": [
         {
@@ -13497,9 +13497,20 @@
           "date": "2026-11-12",
           "event": "v21.8 — учене",
           "detail": "Научи: Audit log събитието MemberDisconnect (и MemberMove) не носи target потребител (само cou… (+6 още)"
+        },
+        {
+          "version": "21.9.0",
+          "date": "2026-11-12",
+          "event": "v21.9 — учене",
+          "detail": "Научи: Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn…\""
+        },
         {
           "date": "2026-11-12",
           "type": "learning",
