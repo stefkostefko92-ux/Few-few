@@ -10,7 +10,7 @@ import { vi } from "vitest";
 
 const MODEL_METHODS = [
   "findUnique", "findFirst", "findMany", "create", "update", "updateMany",
-  "delete", "deleteMany", "upsert", "count", "aggregate", "createMany",
+  "delete", "deleteMany", "upsert", "count", "aggregate", "createMany", "groupBy",
 ];
 
 function makeModel() {

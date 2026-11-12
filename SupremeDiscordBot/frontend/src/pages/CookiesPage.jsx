@@ -7,7 +7,7 @@ export default function CookiesPage() {
   const EMAIL      = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
 
   return (
-    <LegalPage title="Cookie Policy" updated="7 August 2026">
+    <LegalPage title="Cookie Policy" updated="23 October 2026">
       <Seo
         title="Cookie Policy — Supreme Bot"
         description="Cookie Policy for Supreme Bot: a single strictly-necessary session cookie, no advertising or tracking cookies."
@@ -51,7 +51,7 @@ export default function CookiesPage() {
             </thead>
             <tbody className="text-cs-muted">
               <Tr>
-                <Td><code className="bg-cs-panel px-1 rounded">sid</code></Td>
+                <Td><code className="bg-cs-panel px-1 rounded">__Host-sid</code></Td>
                 <Td>Strictly necessary, HTTP-only, Secure</Td>
                 <Td>{COMPANY} (first-party)</Td>
                 <Td>
@@ -59,11 +59,11 @@ export default function CookiesPage() {
                   identifier — no personal data is stored in the cookie itself. Without this
                   cookie, you cannot remain logged in between page loads.
                 </Td>
-                <Td>7 days from last login (sliding)</Td>
+                <Td>7 days after it was last issued (normally at login)</Td>
                 <Td>
                   Art. 6(1)(b) GDPR — necessary for contract performance (providing the
-                  authenticated service). No consent required under ePrivacy Directive
-                  Recital 25 (strictly necessary exemption).
+                  authenticated service). No consent required under Art. 5(3) ePrivacy
+                  Directive (strictly necessary exemption; see also Recital 25).
                 </Td>
               </Tr>
             </tbody>
@@ -77,13 +77,14 @@ export default function CookiesPage() {
           <li><strong>HttpOnly</strong> — The cookie cannot be accessed by JavaScript, protecting against XSS attacks;</li>
           <li><strong>Secure</strong> — The cookie is only transmitted over HTTPS connections;</li>
           <li><strong>SameSite=Lax</strong> — The cookie is not sent with most cross-site requests, mitigating CSRF while remaining compatible with the Discord OAuth login redirect;</li>
-          <li><strong>Path=/</strong> — The cookie is scoped to the entire domain.</li>
+          <li><strong>Path=/</strong> — The cookie is sent for every page of this site;</li>
+          <li><strong>__Host- prefix</strong> — Your browser accepts the cookie only from this exact host, over HTTPS, with Path=/ and without a Domain attribute, so no other site or subdomain can set or overwrite it.</li>
         </ul>
       </S>
 
       <S title="3. Cookie Consent Banner">
         <p>
-          Under the EU ePrivacy Directive (Recital 25), cookies that are <em>strictly necessary</em>{" "}
+          Under Art. 5(3) of the EU ePrivacy Directive (see also Recital 25), cookies that are <em>strictly necessary</em>{" "}
           for a service explicitly requested by the user are exempt from the consent requirement.
           Our session cookie falls within this exemption because you explicitly request to log in,
           the cookie is essential for login to work, it contains no personal data in itself, and it
@@ -166,7 +167,7 @@ export default function CookiesPage() {
       <S title="6. How to Control and Delete Cookies">
         <p>
           You can control cookies through your browser settings. Note that deleting the
-          session cookie (<code className="bg-cs-panel px-1 rounded text-xs">sid</code>) will
+          session cookie (<code className="bg-cs-panel px-1 rounded text-xs">__Host-sid</code>) will
           log you out of the Service.
         </p>
         <p>Browser cookie management guides:</p>

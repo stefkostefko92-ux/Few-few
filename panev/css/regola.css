@@ -1,0 +1,129 @@
+/* ============================================================
+   „Regola tu“ — планката се регулира пред очите (site/templates/regola.mjs, js/regola.js),
+   снимките от обектите (site/templates/cantiere.mjs)
+   и тъмните заглавни блокове, които я носят: началото и страниците по семейства.
+   Фонът на сцената е студиото на рендерите (#cfd2d5), за да няма шев, докато кадърът се тегли.
+   ============================================================ */
+
+.regola { margin: 0; }
+.regola-stage {
+  position: relative; overflow: hidden; border-radius: 14px;
+  background: #cfd2d5;
+  box-shadow: 0 30px 60px -24px rgba(4, 9, 28, .6), 0 0 0 1px rgba(255, 255, 255, .08);
+  user-select: none; -webkit-user-select: none;
+  touch-action: pan-y;
+}
+.regola-stage img, .hero-still img {
+  display: block; width: 100%; height: auto;
+  pointer-events: none; -webkit-user-drag: none;
+}
+.regola.is-live .regola-stage { cursor: ew-resize; }
+.regola-stage.is-dragging { cursor: grabbing; }
+
+/* Управлението: голямата стойност е типографският подпис — числото от каталога, на живо. */
+.regola-ctl { display: grid; gap: .35rem; margin-top: 1.1rem; }
+.regola:not(.is-live) .regola-ctl { visibility: hidden; }
+@media (scripting: none) { .regola-ctl { display: none; } }
+.regola-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.regola-head label { font-size: .86rem; font-weight: 600; color: rgba(255, 255, 255, .78); }
+.regola-head output {
+  font-size: clamp(1.7rem, 3.2vw, 2.4rem); font-weight: 700; line-height: 1; color: #fff;
+  font-variant-numeric: tabular-nums; letter-spacing: -.02em; min-width: 5ch; text-align: right;
+}
+.regola-scale {
+  display: flex; justify-content: space-between; gap: .8rem;
+  font-size: .76rem; color: rgba(255, 255, 255, .62); font-variant-numeric: tabular-nums;
+}
+
+/* Плъзгачът: по една чертичка на стъпка (2° или 10 mm) — скалата на инструмента. */
+.regola input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 30px; margin: 0;
+  background: transparent; cursor: pointer;
+}
+.regola input[type="range"]::-webkit-slider-runnable-track {
+  height: 10px;
+  background:
+    linear-gradient(rgba(255, 255, 255, .55), rgba(255, 255, 255, .55)) center / 100% 2px no-repeat,
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, .45) 0 1px, transparent 1px calc((100% - 1px) / var(--steps, 8))) center / 100% 10px no-repeat;
+}
+.regola input[type="range"]::-moz-range-track {
+  height: 10px;
+  background:
+    linear-gradient(rgba(255, 255, 255, .55), rgba(255, 255, 255, .55)) center / 100% 2px no-repeat,
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, .45) 0 1px, transparent 1px calc((100% - 1px) / var(--steps, 8))) center / 100% 10px no-repeat;
+}
+.regola input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; margin-top: -7px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; border: 6px solid var(--navy-3);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .6), 0 4px 12px rgba(4, 9, 28, .45);
+}
+.regola input[type="range"]::-moz-range-thumb {
+  width: 24px; height: 24px; border-radius: 50%; box-sizing: border-box;
+  background: #fff; border: 6px solid var(--navy-3);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .6), 0 4px 12px rgba(4, 9, 28, .45);
+}
+.regola input[type="range"]:focus-visible { outline: none; }
+.regola input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--navy-3); }
+.regola input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--navy-3); }
+.regola-porta { --steps: 8; }
+.regola-guida { --steps: 11; }
+
+/* ── Началото: снимката вдясно е самата регулируема планка ── */
+.hero-regola { padding: 0; }
+.hero-regola::before, .hero-regola::after { display: none; }
+.hero-regola img { padding: 0; background: none; border-radius: 0; }  /* site.css: .hero-visual img е бялата рамка на стария рендер */
+.hero-regola .regola { max-width: 440px; margin-left: auto; }
+.hero h1 { font-size: clamp(2.2rem, 4.8vw, 3.5rem); letter-spacing: -.025em; line-height: 1.06; }
+
+/* ── Страниците по семейства: текст вляво, планката вдясно ── */
+.page-head-grid {
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 3rem; align-items: center;
+}
+.page-head-grid .regola-guida, .page-head-grid .hero-still { align-self: center; }
+.page-head-grid .regola-porta { max-width: 360px; margin-left: auto; }  /* висока: заглавният блок остава нисък */
+.hero-still {
+  margin: 0; overflow: hidden; border-radius: 14px; background: #cfd2d5;
+  box-shadow: 0 30px 60px -24px rgba(4, 9, 28, .6), 0 0 0 1px rgba(255, 255, 255, .08);
+}
+.hero-still picture { display: block; }
+
+@media (max-width: 1020px) {
+  .page-head-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .hero-regola .regola, .page-head-grid .regola-porta { max-width: 420px; margin-left: 0; }
+  .page-head-grid .regola-guida, .page-head-grid .hero-still { max-width: 560px; }
+}
+
+/* ── „Dal cantiere“: снимките от обектите (site/templates/cantiere.mjs) ──
+   Истинските шахти са тъмни: надписът е върху лек градиент отдолу, снимката е изрязана по клетката. */
+.cantiere-grid { display: grid; gap: 12px; margin-top: 1.8rem; }
+.cantiere-photo { position: relative; margin: 0; overflow: hidden; border-radius: 12px; background: var(--navy-deep); }
+.cantiere-photo picture { display: block; height: 100%; }
+.cantiere-photo img { width: 100%; height: 100%; object-fit: cover; }
+.cantiere-photo figcaption {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 2.4rem 1rem .85rem; font-size: .86rem; line-height: 1.4; color: #fff;
+  background: linear-gradient(rgba(10, 16, 40, 0), rgba(10, 16, 40, .86));
+}
+/* Началото: висока | две широки една над друга | висока */
+.cantiere-home .cantiere-grid { grid-template-columns: 1fr 1.5fr 1fr; grid-template-rows: repeat(2, 290px); }
+.cantiere-home .cantiere-vano-finito { grid-column: 1; grid-row: 1 / span 2; }
+.cantiere-home .cantiere-produzione { grid-column: 2; grid-row: 1; }
+.cantiere-home .cantiere-porta-regolazione { grid-column: 2; grid-row: 2; }
+.cantiere-home .cantiere-guida-supporto { grid-column: 3; grid-row: 1 / span 2; }
+/* Страниците по семейства: само неговите снимки, всяка в своя формат */
+.cantiere-fam .cantiere-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.cantiere-fam .cantiere-n2 { max-width: 620px; }
+.cantiere-fam .is-landscape { aspect-ratio: 4 / 3; }
+.cantiere-fam .is-portrait { aspect-ratio: 3 / 4; }
+
+@media (max-width: 760px) {
+  .cantiere-home .cantiere-grid { grid-template-columns: 1fr; grid-template-rows: none; }
+  .cantiere-home .cantiere-photo { grid-column: auto !important; grid-row: auto !important; }
+  .cantiere-home .is-landscape { aspect-ratio: 4 / 3; }
+  .cantiere-home .is-portrait { aspect-ratio: 4 / 5; }
+  .cantiere-fam .cantiere-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .cantiere-fam .is-landscape { grid-column: 1 / -1; }
+  .cantiere-photo figcaption { font-size: .8rem; padding: 2rem .8rem .7rem; }
+}

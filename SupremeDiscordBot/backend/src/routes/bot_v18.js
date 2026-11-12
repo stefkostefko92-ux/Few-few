@@ -148,20 +148,32 @@ router.post("/giveaway/create", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Томболите са по (id, serverId) навсякъде. `/giveaway end|reroll` приемаше
+// свободно въведен id → админ на сървър A приключваше/теглеше наново томбола на
+// сървър B (червен екип, 10.10.2026). Чужд id → 404, както несъществуващ.
+const GW_SNOWFLAKE = /^\d{17,20}$/;
+const gwServer = (req) => String(req.body?.serverId ?? req.query?.serverId ?? "");
+
 router.patch("/giveaway/:id/spawned", async (req, res, next) => {
+  const serverId = gwServer(req);
+  if (!GW_SNOWFLAKE.test(serverId)) return res.status(400).json({ error: "serverId required" });
+  if (!GW_SNOWFLAKE.test(String(req.body?.messageId))) return res.status(400).json({ error: "messageId required" });
   try {
-    const g = await prisma.giveaway.update({
-      where: { id: req.params.id },
-      data: { messageId: req.body.messageId },
+    const r = await prisma.giveaway.updateMany({
+      where: { id: req.params.id, serverId },
+      data: { messageId: String(req.body.messageId) },
     });
-    res.json(g);
+    if (r.count !== 1) return res.status(404).json({ error: "Giveaway not found" });
+    res.json({ ok: true });
   } catch (err) { next(err); }
 });
 
 router.get("/giveaway/:id", async (req, res, next) => {
+  const serverId = gwServer(req);
+  if (!GW_SNOWFLAKE.test(serverId)) return res.status(400).json({ error: "serverId required" });
   try {
-    const g = await prisma.giveaway.findUnique({
-      where: { id: req.params.id },
+    const g = await prisma.giveaway.findFirst({
+      where: { id: req.params.id, serverId },
       include: { _count: { select: { entries: true } } },
     });
     if (!g) return res.status(404).json({ error: "Giveaway not found" });
@@ -170,9 +182,11 @@ router.get("/giveaway/:id", async (req, res, next) => {
 });
 
 router.post("/giveaway/:id/enter", async (req, res, next) => {
-  const { userId } = req.body;
+  const { userId } = req.body || {};
+  const serverId = gwServer(req);
+  if (!GW_SNOWFLAKE.test(serverId) || !GW_SNOWFLAKE.test(String(userId))) return res.status(400).json({ error: "serverId and userId required" });
   try {
-    const g = await prisma.giveaway.findUnique({ where: { id: req.params.id } });
+    const g = await prisma.giveaway.findFirst({ where: { id: req.params.id, serverId } });
     if (!g) return res.status(404).json({ error: "Giveaway not found" });
     if (g.endedAt) return res.status(400).json({ error: "Giveaway has ended" });
 
@@ -198,13 +212,13 @@ router.post("/giveaway/:id/enter", async (req, res, next) => {
 // Cross-tenant IDOR guard: giveaway_id идва като свободен текст от /giveaway
 // end|reroll, а x-bot-secret е общ за всички сървъри. Ботът праща serverId от
 // interaction.guildId; скоупваме по него (чужд/непознат id -> 404, без теглене).
+// serverId минава през същата проверка за snowflake като останалите маршрути
+// за томболи (gwServer/GW_SNOWFLAKE) — обект или празно е 400.
 function giveawayAction(reroll) {
   return async (req, res, next) => {
+    const serverId = gwServer(req);
+    if (!GW_SNOWFLAKE.test(serverId)) return res.status(400).json({ error: "serverId required" });
     try {
-      const { serverId } = req.body || {};
-      if (typeof serverId !== "string" || !serverId) {
-        return res.status(400).json({ error: "serverId required" });
-      }
       const r = await pickGiveawayWinners(req.params.id, serverId, reroll);
       if (r.status === "notfound") return res.status(404).json({ error: "Giveaway not found" });
       if (r.status === "conflict") return res.status(409).json({ error: "Giveaway already ended" });
