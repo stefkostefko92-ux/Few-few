@@ -47,6 +47,13 @@ async function create(browser: Browser, form: Record<string, string | string[]> 
   return reply.location.split('/').pop()!;
 }
 
+/** The decision as the approver sends it: with the version of the sheet the page showed. */
+async function decidi(browser: Browser, id: string, form: Record<string, string>) {
+  const page = await browser.get(`/schede/${id}`, HTML);
+  const base = /name="base" value="([^"]+)"/.exec(page.body)?.[1] ?? '';
+  return browser.submit(`/schede/${id}`, `/schede/${id}/approvazione/decidi`, { ...form, base });
+}
+
 async function edit(browser: Browser, id: string, form: Record<string, string | string[]>) {
   const page = await browser.get(`/schede/${id}/modifica`);
   const base = /name="base" value="([^"]+)"/.exec(page.body)![1]!;
@@ -140,17 +147,28 @@ describe('the workflow of a sheet', () => {
       'a technician does not approve',
     );
     assert.match((await resp.get('/schede', HTML)).body, /1 scheda da approvare/);
+    // A decision on a version the approver has not seen does nothing.
     await resp.submit(`/schede/${id}`, `/schede/${id}/approvazione/decidi`, {
-      decisione: 'respingi',
-      nota: 'Manca la portata',
+      decisione: 'approva',
+      base: '2020-01-01T00:00:00.000Z',
     });
+    assert.equal(
+      (await prisma.scheda.findUniqueOrThrow({ where: { id } })).statoApprovazione,
+      'INVIATA',
+    );
+    await decidi(resp, id, { decisione: 'respingi', nota: 'Manca la portata' });
     let row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
     assert.equal(row.statoApprovazione, 'RESPINTA');
     assert.equal(row.notaApprovazione, 'Manca la portata');
     await tecnico.submit(`/schede/${id}`, `/schede/${id}/approvazione/invia`, {});
-    await resp.submit(`/schede/${id}`, `/schede/${id}/approvazione/decidi`, {
-      decisione: 'approva',
-    });
+    // Editing a sheet that is waiting sends it back to draft: what is approved is what was seen.
+    await edit(resp, id, { ...SURVEY, marca: 'Otis' });
+    assert.equal(
+      (await prisma.scheda.findUniqueOrThrow({ where: { id } })).statoApprovazione,
+      'BOZZA',
+    );
+    await tecnico.submit(`/schede/${id}`, `/schede/${id}/approvazione/invia`, {});
+    await decidi(resp, id, { decisione: 'approva' });
     row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
     assert.equal(row.statoApprovazione, 'APPROVATA');
     assert.equal(row.approvazioneDaId, responsabile.id);
@@ -158,9 +176,7 @@ describe('the workflow of a sheet', () => {
     // The sender never approves his own sheet.
     const id2 = await create(resp);
     await resp.submit(`/schede/${id2}`, `/schede/${id2}/approvazione/invia`, {});
-    await resp.submit(`/schede/${id2}`, `/schede/${id2}/approvazione/decidi`, {
-      decisione: 'approva',
-    });
+    await decidi(resp, id2, { decisione: 'approva' });
     assert.equal(
       (await prisma.scheda.findUniqueOrThrow({ where: { id: id2 } })).statoApprovazione,
       'INVIATA',

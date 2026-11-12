@@ -16,6 +16,7 @@
   </form><% } %>
   <% if (!scheda.deletedAt && flusso.approva && st === 'INVIATA') { %><form class="form form--tight" method="post" action="/schede/<%= scheda.id %>/approvazione/decidi">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="base" value="<%= scheda.updatedAt.toISOString() %>">
     <div class="field">
       <label class="field__label" for="f-nota-approvazione"><%= t('flusso.approvazione.nota') %></label>
       <textarea class="input" id="f-nota-approvazione" name="nota" rows="2" maxlength="1000" aria-describedby="hint-nota-approvazione"></textarea>

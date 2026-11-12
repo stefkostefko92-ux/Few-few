@@ -366,3 +366,17 @@
   border-top: 1px solid var(--line);
   overflow-wrap: anywhere;
 }
+
+/* „Invia al fornitore: <modulo>“ — името на модула е дълго: бутонът се пренася, не разширява страницата. */
+.flusso,
+.flusso__moduli > li {
+  min-width: 0;
+}
+
+.flusso__moduli .btn {
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+  line-height: 1.25;
+  height: auto;
+}

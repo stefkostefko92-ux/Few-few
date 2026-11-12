@@ -1,27 +1,43 @@
+import { prisma } from '../db.js';
 import { config } from '../config.js';
 import { viewHelpers } from '../http/view.js';
 import { DEFAULT_LOCALE, translatorFor } from '../i18n.js';
 import { sigilloIntatto } from '../interventi/conferma.js';
 import { renderInterventoPdf } from '../interventi/pdf.js';
-import { interventiConfermatiDi, numeroModulo } from '../interventi/service.js';
+import { interventiConfermatiDi, interventoPerId, numeroModulo } from '../interventi/service.js';
 import { dayFromDate } from '../time.js';
 import { sigilloVerbaleIntatto } from '../verbali/conferma.js';
 import { COPIE, renderVerbalePdf } from '../verbali/pdf.js';
-import { verbaliConfermatiDi } from '../verbali/service.js';
+import { verbalePerId, verbaliConfermatiDi } from '../verbali/service.js';
+import { SELECT_VERSIONE } from './formato.js';
 import { aziendaLogo } from './service.js';
 
 /**
- * PDF/A-тата на потвърдените документи в износа — `documenti/` (Allegato B, B.7 f) и g); собственикът,
- * 12 ноември 2026 — точка D6): листовете за интервенция и двете копия на всеки протокол. Правят се един по
- * един, докато архивът тече (не всички в паметта); документ с нарушен печат не се прави (описанието му
- * остава в dati.json), както и в портала.
+ * Файловете на износа, които се правят един по един, докато архивът тече (Кодаджията, 12 ноември 2026 —
+ * не всичко в паметта): PDF/A-тата на потвърдените документи (`documenti/`; Allegato B, B.7 f) и g)) и
+ * версиите на всяка карта (`versioni/<карта>.json` — в dati.json само пътят). Списъкът носи само id-тата;
+ * редът се чете точно преди файла. Документ с нарушен печат не се прави (null), както и в портала.
  */
-export interface DocumentoNelTar {
+export interface FileGenerato {
   nome: string;
-  genera: () => Promise<Buffer>;
+  genera: () => Promise<Buffer | null>;
 }
 
-export async function documentiDi(aziendaId: string): Promise<DocumentoNelTar[]> {
+export const fileVersioni = (schedaId: string): string => `versioni/${schedaId}.json`;
+
+/** Картите на фирмата, които имат записани версии. */
+export async function schedeConVersioni(aziendaId: string): Promise<string[]> {
+  const righe = await prisma.schedaVersione.groupBy({
+    by: ['schedaId'],
+    where: { scheda: { aziendaId } },
+  });
+  return righe.map((r) => r.schedaId);
+}
+
+export async function fileGeneratiDi(
+  aziendaId: string,
+  conVersioni: readonly string[],
+): Promise<FileGenerato[]> {
   const [interventi, verbali, logo] = await Promise.all([
     interventiConfermatiDi(aziendaId),
     verbaliConfermatiDi(aziendaId),
@@ -33,22 +49,41 @@ export async function documentiDi(aziendaId: string): Promise<DocumentoNelTar[]>
     fontDir: config().PDF_FONT_DIR,
     logo: logo?.data ?? null,
   };
-  const documenti: DocumentoNelTar[] = [];
-  for (const row of interventi) {
-    if (!sigilloIntatto(row)) continue;
-    documenti.push({
-      nome: `documenti/interventi/modulo-${numeroModulo(row.numero)}-${dayFromDate(row.data)}.pdf`,
-      genera: () => renderInterventoPdf(row, opzioni),
+  const out: FileGenerato[] = [];
+  for (const r of interventi) {
+    out.push({
+      nome: `documenti/interventi/modulo-${numeroModulo(r.numero)}-${dayFromDate(r.data)}.pdf`,
+      genera: async () => {
+        const row = await interventoPerId(r.id);
+        return row && sigilloIntatto(row) ? renderInterventoPdf(row, opzioni) : null;
+      },
     });
   }
-  for (const row of verbali) {
-    if (!sigilloVerbaleIntatto(row)) continue;
+  for (const r of verbali) {
     for (const copia of COPIE) {
-      documenti.push({
-        nome: `documenti/verbali/verbale-${dayFromDate(row.data)}-${row.id}-copia-${copia}.pdf`,
-        genera: () => renderVerbalePdf(row, { ...opzioni, copia }),
+      out.push({
+        nome: `documenti/verbali/verbale-${dayFromDate(r.data)}-${r.id}-copia-${copia}.pdf`,
+        genera: async () => {
+          const row = await verbalePerId(r.id);
+          return row && sigilloVerbaleIntatto(row)
+            ? renderVerbalePdf(row, { ...opzioni, copia })
+            : null;
+        },
       });
     }
   }
-  return documenti;
+  for (const schedaId of conVersioni) {
+    out.push({
+      nome: fileVersioni(schedaId),
+      genera: async () => {
+        const versioni = await prisma.schedaVersione.findMany({
+          where: { schedaId },
+          orderBy: { numero: 'asc' },
+          select: SELECT_VERSIONE,
+        });
+        return Buffer.from(JSON.stringify(versioni, null, 2), 'utf8');
+      },
+    });
+  }
+  return out;
 }

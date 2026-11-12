@@ -65,3 +65,15 @@ export const mailLimiter = limiter(60 * 60_000, 20, {
 export const esportaLimiter = limiter(60 * 60_000, 10, {
   keyGenerator: (req) => (req.principal ? `u:${req.principal.user.id}` : networkKey(req)),
 });
+
+/**
+ * Копието до подписалия при потвърждението (routes/firma-copia.ts) — същият таван като пращането по имейл
+ * (20/ч. на акаунт), брои се само когато е поискано копие (Кодаджията, 12 ноември 2026).
+ */
+export const copiaLimiter = limiter(60 * 60_000, 20, {
+  keyGenerator: (req) => (req.principal ? `u:${req.principal.user.id}` : networkKey(req)),
+  skip: (req) => {
+    const body = req.body as Record<string, unknown> | undefined;
+    return typeof body?.copiaEmail !== 'string' || body.copiaEmail.trim() === '';
+  },
+});

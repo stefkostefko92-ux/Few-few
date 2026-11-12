@@ -57,6 +57,7 @@ schedeApprovazioneRouter.post(
       principalOf(req).user,
       decisione,
       nota(body.nota),
+      typeof body.base === 'string' ? body.base : '',
     );
     setFlash(res, esito === 'ok' ? 'ok' : 'error', `flusso.approvazione.flash.${esito}`);
     res.redirect(303, `/schede/${encodeURIComponent(id)}`);

@@ -619,6 +619,8 @@ model Scheda {
   approvazioneDaId             String?
   approvazioneDa               User?                    @relation("SchedeApprovate", fields: [approvazioneDaId], references: [id], onDelete: SetNull)
   notaApprovazione             String?                  @db.VarChar(1000)
+  /// Кой е пратил картата за одобрение — той не я одобрява (четирите очи, в условието на самия запис).
+  inviataDaId                  String?
   /// Записаните версии (src/schede/versioni.ts) и пратените поръчки (src/ordini/invio.ts).
   versioni                     SchedaVersione[]
   ordini                       OrdineFornitore[]

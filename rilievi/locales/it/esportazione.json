@@ -78,7 +78,8 @@
         "dati": "dati.json: tutti i dati in JSON (UTF-8). Date e ore in ISO 8601 (UTC); i numeri decimali sono testo, per esempio «6.5».",
         "logo": "logo.png o logo.jpg: il logo dell'azienda, se c'è.",
         "allegati": "allegati/<scheda>/<id>.jpg o .mp4: le foto (JPEG, fino a 2560 px, senza metadati) e i video (MP4, H.264 e AAC, fino a 1080p) già elaborati.",
-        "documenti": "documenti/: i fogli di intervento e i verbali confermati in PDF/A (per ogni verbale, la copia azienda e la copia installatore)."
+        "documenti": "documenti/: i fogli di intervento e i verbali confermati in PDF/A (per ogni verbale, la copia azienda e la copia installatore).",
+        "versioni": "versioni/<scheda>.json: la cronologia di ogni scheda, un file per scheda."
       },
       "struttura": {
         "titolo": "Com'è fatto dati.json?",
@@ -105,7 +106,7 @@
           "misureBottoniere": "misureBottoniere: le misure delle bottoniere per fermata",
           "schizzi": "schizzi: i fogli dello schizzo, con il disegno in JSON",
           "allegati": "allegati: foto e video; file è il percorso nell'archivio, o null se il file non è ancora elaborato",
-          "versioni": "versioni: la cronologia della scheda, con i campi di ogni versione salvata (le ultime 100)"
+          "versioni": "versioni: il percorso del file versioni/<scheda>.json con la cronologia della scheda (le ultime 100 versioni salvate, ognuna con tutti i campi), o null"
         }
       },
       "esclusi": {

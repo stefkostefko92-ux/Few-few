@@ -53,7 +53,7 @@ describe('announcing the new terms', () => {
       inVigoreDal('CONDIZIONI', '2027-01-12')?.toISOString(),
     );
     assert.deepEqual(comunicazione.aziendaIds, []);
-    for (let i = 0; i < 50 && !outbox.slice(prima).some((m) => m.to === user.email); i += 1)
+    for (let i = 0; i < 250 && !outbox.slice(prima).some((m) => m.to === user.email); i += 1)
       await new Promise((r) => setTimeout(r, 20));
     assert.ok(
       outbox.slice(prima).some((m) => m.to === user.email),

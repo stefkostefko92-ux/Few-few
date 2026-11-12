@@ -58,6 +58,13 @@ describe('the export of a company by its own ADMIN', () => {
         expiresAt: new Date(Date.now() + 7 * DAY),
       },
     });
+    // A sheet: its versions go into a file of their own, next to dati.json.
+    const nuova = await browser.submit('/schede/nuova', '/schede', {
+      data: '2026-11-12',
+      indirizzo: 'Via Versioni 1',
+      fermate: '3',
+    });
+    const schedaId = nuova.location.split('/').pop()!;
     // A confirmed intervention sheet: its PDF/A goes into documenti/.
     const interventoId = await create(browser, FORM);
     assert.equal((await firma(browser, interventoId)).status, 303);
@@ -89,6 +96,9 @@ describe('the export of a company by its own ADMIN', () => {
     );
     assert.ok(pdf, 'the confirmed sheet as PDF/A');
     assert.equal(pdf[1].subarray(0, 8).toString('latin1'), '%PDF-1.7');
+    const versioni = [...entries].find(([name]) => name.endsWith(`/versioni/${schedaId}.json`));
+    assert.ok(versioni, 'the versions of the sheet');
+    assert.equal((JSON.parse(versioni[1].toString('utf8')) as unknown[]).length, 1);
     const json = [...entries].find(([name]) => name.endsWith('/dati.json'));
     assert.ok(json);
     const raw = json[1].toString('utf8');
@@ -104,6 +114,7 @@ describe('the export of a company by its own ADMIN', () => {
       ['nuovo@esempio.it'],
     );
     assert.doesNotMatch(raw, /tokenHash|passwordHash|hash-/);
+    assert.match(raw, new RegExp(`"versioni": "versioni/${schedaId}\\.json"`));
     // The portal owner stays out of the company's log, also in its export.
     assert.ok(!raw.includes(master.id), 'no MASTER id');
     assert.ok(
@@ -167,8 +178,13 @@ describe('switching provider', () => {
     assert.equal(dopo.cambioFineAt?.toISOString(), fineTransizione(ora).toISOString());
     assert.equal(dopo.deactivatedAt, null);
     // The emails go out after the reply.
-    for (let i = 0; i < 50 && outbox.length < prima + 2; i += 1)
-      await new Promise((r) => setTimeout(r, 20));
+    // Both emails go out after the reply, in the background: wait for them (up to 5 s under load).
+    const arrivate = () =>
+      outbox
+        .slice(prima)
+        .filter((m) => /Cambio di fornitore richiesto|chiede il cambio/.test(m.subject)).length >=
+      2;
+    for (let i = 0; i < 250 && !arrivate(); i += 1) await new Promise((r) => setTimeout(r, 20));
     const nuove = outbox.slice(prima).map((m) => m.subject);
     assert.ok(nuove.some((s) => /Cambio di fornitore richiesto per Cambia Ascensori/.test(s)));
     assert.ok(nuove.some((s) => /chiede il cambio di fornitore/.test(s)));

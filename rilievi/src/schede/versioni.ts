@@ -25,6 +25,7 @@ const ESCLUSI = new Set([
   'approvazioneAt',
   'approvazioneDaId',
   'notaApprovazione',
+  'inviataDaId',
 ]);
 
 export type Istantanea = Record<string, Prisma.JsonValue>;

@@ -19,6 +19,8 @@ function form(aziendaId: string, changes: Record<string, string | string[]>) {
       'schede:read',
       'schede:write',
       'schede:delete',
+      // Approving sheets (C7) is on by default from RESPONSABILE up; it acts only where the company uses it.
+      'schede:approve',
       'interventi:read',
       'interventi:write',
     ],
@@ -26,6 +28,8 @@ function form(aziendaId: string, changes: Record<string, string | string[]>) {
       'schede:read',
       'schede:write',
       'schede:delete',
+      // Approving sheets (C7) is on by default from RESPONSABILE up; it acts only where the company uses it.
+      'schede:approve',
       'interventi:read',
       'interventi:write',
     ],

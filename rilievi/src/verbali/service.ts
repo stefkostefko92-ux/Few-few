@@ -33,13 +33,18 @@ const INCLUDE = {
 
 export type VerbaleFull = Prisma.VerbaleGetPayload<{ include: typeof INCLUDE }>;
 
-/** Потвърдените протоколи на фирмата, цели — за PDF/A-тата в износа (aziende/esportazione-documenti.ts). */
-export function verbaliConfermatiDi(aziendaId: string): Promise<VerbaleFull[]> {
+/** Потвърдените протоколи на фирмата — само id и ден (износът ги прави един по един). */
+export function verbaliConfermatiDi(aziendaId: string) {
   return prisma.verbale.findMany({
     where: { aziendaId, confermatoAt: { not: null } },
     orderBy: { createdAt: 'asc' },
-    include: INCLUDE,
+    select: { id: true, data: true },
   });
+}
+
+/** Целият протокол по id — без обхват: само за износа на вече избраната фирма. */
+export function verbalePerId(id: string): Promise<VerbaleFull | null> {
+  return prisma.verbale.findUnique({ where: { id }, include: INCLUDE });
 }
 
 const LIST_SELECT = {

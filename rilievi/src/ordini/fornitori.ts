@@ -42,6 +42,8 @@ export async function aggiungiFornitore(
   dati: DatiFornitore,
 ): Promise<EsitoFornitore> {
   return prisma.$transaction(async (tx) => {
+    // Записите на една фирма — един по един: таванът и „вече е в адресника“ не се разминават.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${'fornitori:' + aziendaId}))`;
     if ((await tx.fornitore.count({ where: { aziendaId } })) >= MAX_FORNITORI) return 'troppi';
     const esiste = await tx.fornitore.findUnique({
       where: { aziendaId_email: { aziendaId, email: dati.email } },

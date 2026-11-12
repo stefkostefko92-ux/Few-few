@@ -12,10 +12,14 @@ import {
   SELECT_INVITO,
   SELECT_PERSONA,
   SELECT_REGISTRO,
-  SELECT_VERSIONE,
   type SezioneDati,
 } from './formato.js';
-import { documentiDi, type DocumentoNelTar } from './esportazione-documenti.js';
+import {
+  fileGeneratiDi,
+  fileVersioni,
+  schedeConVersioni,
+  type FileGenerato,
+} from './esportazione-documenti.js';
 import { fineTar, intestazioneTar, riempimentoTar } from './tar.js';
 
 /**
@@ -45,7 +49,7 @@ async function* contenuto(
   json: Buffer,
   logo: { data: Buffer; nome: string } | null,
   files: readonly FileNelTar[],
-  documenti: readonly DocumentoNelTar[],
+  generati: readonly FileGenerato[],
 ): AsyncGenerator<Buffer> {
   const now = new Date();
   yield intestazioneTar(`${base}/dati.json`, json.length, now);
@@ -71,12 +75,13 @@ async function* contenuto(
     if (sent < info.size) yield Buffer.alloc(info.size - sent);
     yield riempimentoTar(info.size);
   }
-  // PDF/A-тата — един по един: размерът е в главата, затова документът е цял, преди да тръгне.
-  for (const doc of documenti) {
-    const pdf = await doc.genera();
-    yield intestazioneTar(`${base}/${doc.nome}`, pdf.length, now);
-    yield pdf;
-    yield riempimentoTar(pdf.length);
+  // PDF/A-тата и версиите — един по един: размерът е в главата, затова файлът е цял, преди да тръгне.
+  for (const file of generati) {
+    const dati = await file.genera();
+    if (!dati) continue;
+    yield intestazioneTar(`${base}/${file.nome}`, dati.length, now);
+    yield dati;
+    yield riempimentoTar(dati.length);
   }
   yield fineTar();
 }
@@ -157,7 +162,6 @@ export async function esportaAzienda(
         misureBottoniere: true,
         schizzi: { orderBy: { ordine: 'asc' } },
         allegati: { orderBy: { createdAt: 'asc' }, select: SELECT_ALLEGATO },
-        versioni: { orderBy: { numero: 'asc' }, select: SELECT_VERSIONE },
       },
     }),
     prisma.intervento.findMany({ where: { aziendaId }, orderBy: { numero: 'asc' } }),
@@ -190,8 +194,11 @@ export async function esportaAzienda(
     r.actorId && masterIds.has(r.actorId) ? { ...r, actorId: null } : r,
   );
   const files: FileNelTar[] = [];
+  const conVersioni = await schedeConVersioni(aziendaId);
+  const versionate = new Set(conVersioni);
   const schedeJson = schede.map(({ allegati, ...scheda }) => ({
     ...scheda,
+    versioni: versionate.has(scheda.id) ? fileVersioni(scheda.id) : null,
     allegati: allegati.map((a) => {
       if (a.stato !== 'PRONTO') return { ...a, file: null };
       const nome = `allegati/${a.schedaId}/${a.id}.${a.tipo === 'VIDEO' ? 'mp4' : 'jpg'}`;
@@ -222,18 +229,18 @@ export async function esportaAzienda(
     new Date(),
   );
   const json = Buffer.from(JSON.stringify(dati, null, 2), 'utf8');
-  const documenti = await documentiDi(aziendaId);
+  const generati = await fileGeneratiDi(aziendaId, conVersioni);
   await writeAudit({
     actorId: actor.id,
     action: 'AZIENDA_EXPORT',
     aziendaId,
     targetType: 'azienda',
     targetId: aziendaId,
-    meta: { schede: schede.length, file: files.length, documenti: documenti.length },
+    meta: { schede: schede.length, file: files.length, generati: generati.length },
   });
   const giorno = new Date().toISOString().slice(0, 10);
   return {
     nomeFile: `${radice(aziendaId)}-${giorno}.tar`,
-    stream: Readable.from(contenuto(radice(aziendaId), json, logoFile, files, documenti)),
+    stream: Readable.from(contenuto(radice(aziendaId), json, logoFile, files, generati)),
   };
 }
