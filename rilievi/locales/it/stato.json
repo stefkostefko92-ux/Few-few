@@ -1,0 +1,97 @@
+{
+  "stato": {
+    "nav": "Stato del servizio",
+    "tipo": {
+      "INTERRUZIONE": "Interruzione",
+      "MANUTENZIONE": "Manutenzione"
+    },
+    "pagina": {
+      "meta": {
+        "title": "Stato del servizio — Rilievi Impianti",
+        "description": "Se Rilievi Impianti funziona in questo momento, le interruzioni in corso, le manutenzioni programmate e i tempi di ripristino.",
+        "keywords": "Carbon Stealth, Rilievi Impianti, stato del servizio, manutenzione programmata, interruzioni"
+      },
+      "titolo": "Stato del servizio",
+      "controllato": "Controllato il {data}.",
+      "generale": {
+        "ok": "Il servizio funziona regolarmente.",
+        "parziale": "Il servizio funziona, ma una parte ha un problema: lo trovi qui sotto.",
+        "manutenzione": "Manutenzione in corso: alcune funzioni possono non essere disponibili.",
+        "interruzione": "Il servizio ha un problema. Ci stiamo lavorando."
+      },
+      "esito": {
+        "ok": "Funziona",
+        "attenzione": "Rallentato",
+        "errore": "Non disponibile"
+      },
+      "parti": {
+        "titolo": "Le parti del servizio",
+        "portale": "Portale",
+        "dati": "Archivio dei dati",
+        "foto": "Elaborazione di foto e video",
+        "email": "Invio delle email"
+      },
+      "inCorso": {
+        "titolo": "Interruzioni e manutenzioni in corso",
+        "nessuno": "Nessuna in questo momento."
+      },
+      "programmate": {
+        "titolo": "Manutenzioni programmate",
+        "nessuna": "Nessuna manutenzione programmata."
+      },
+      "storico": {
+        "titolo": "Ultimi {giorni} giorni",
+        "nessuno": "Nessuna interruzione o manutenzione."
+      },
+      "ripristino": {
+        "titolo": "Copie di sicurezza e ripristino",
+        "dati": "Facciamo una copia di sicurezza dei dati ogni giorno: in caso di guasto grave si possono perdere al massimo le modifiche delle ultime {ore} ore.",
+        "tempo": "Dopo un guasto grave contiamo di rimettere in funzione il servizio entro {ore} ore.",
+        "nota": "Sono obiettivi della nostra organizzazione, non tempi garantiti.",
+        "condizioni": "Leggi le Condizioni di servizio"
+      },
+      "dal": "Dal {dal}",
+      "dalAl": "Dal {dal} al {al}"
+    },
+    "master": {
+      "titolo": "Stato del servizio",
+      "sub": "Gli avvisi che compaiono sulla pagina pubblica dello stato.",
+      "apri": "Apri la pagina pubblica",
+      "nuovo": "Nuovo avviso",
+      "modifica": "Modifica l'avviso",
+      "tipo": "Tipo",
+      "campo": {
+        "titolo": "Titolo",
+        "testo": "Testo per i clienti",
+        "inizio": "Inizio (ora italiana)",
+        "fine": "Fine (ora italiana)"
+      },
+      "hint": {
+        "testo": "Cosa non funziona o cosa si ferma, e cosa possono fare i clienti. Solo testo.",
+        "fine": "Interruzione: lasciala vuota finché il problema non è risolto. Manutenzione: obbligatoria."
+      },
+      "salva": "Salva l'avviso",
+      "salvato": "Avviso salvato: è già sulla pagina dello stato.",
+      "nessuno": "Nessun avviso.",
+      "colonna": {
+        "quando": "Quando",
+        "tipo": "Tipo",
+        "titolo": "Titolo",
+        "stato": "Stato"
+      },
+      "stati": {
+        "programmato": "Programmato",
+        "inCorso": "In corso",
+        "concluso": "Concluso"
+      },
+      "errore": {
+        "titolo": "Avviso non salvato: correggi i campi segnati.",
+        "required": "Campo obbligatorio.",
+        "tooLong": "Al massimo {max} caratteri.",
+        "data": "Data e ora non valide.",
+        "ordine": "La fine deve essere dopo l'inizio.",
+        "option": "Scegli il tipo."
+      }
+    }
+  }
+}

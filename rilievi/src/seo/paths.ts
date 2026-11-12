@@ -19,6 +19,9 @@ export const CONDIZIONI_PDF_PATH = '/condizioni.pdf';
 /** Износът на данните и смяната на доставчика (чл. 26 и 28 Data Act; src/aziende/formato.ts). */
 export const ESPORTAZIONE_PATH = '/esportazione';
 
+/** Състоянието на услугата (условията 2027-01-12, чл. 2.4) — публична, но `noindex`. */
+export const STATO_PATH = '/stato';
+
 /** Индексираните страници — за sitemap и robots.txt. */
 export const PUBLIC_PATHS = [
   HOME_PATH,

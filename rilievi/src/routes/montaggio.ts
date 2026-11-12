@@ -25,6 +25,7 @@ import { verbaliNuovoRouter } from './verbali-nuovo.js';
 import { verbaliRouter } from './verbali.js';
 import { allegatiAnnotazioniRouter } from './allegati-annotazioni.js';
 import { buoniFirmeRouter } from './buoni-firme.js';
+import { statoRouter } from './stato.js';
 import { buoniNuovoRouter } from './buoni-nuovo.js';
 import { buoniRouter } from './buoni.js';
 import { impostazioniPreventiviRouter } from './impostazioni-preventivi.js';
@@ -60,6 +61,7 @@ export function montaRouter(app: Express): void {
   app.use(siteRouter);
   app.use(novitaRouter);
   app.use(esportazioneRouter);
+  app.use(statoRouter);
   app.use(navigazioneRouter);
   app.use(masterRouter);
   app.use(masterContrattiRouter);

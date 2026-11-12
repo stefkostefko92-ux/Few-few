@@ -28,6 +28,7 @@ import {
   NOVITA_PATH,
   PRIVACY_PATH,
   SENT_PATH,
+  STATO_PATH,
 } from '../seo/paths.js';
 import { landingStructuredData, privacyStructuredData } from '../seo/structured-data.js';
 import { INVITE_DAYS, INVITI_SCADUTI_GIORNI } from '../services/invites.js';
@@ -92,6 +93,7 @@ export function siteLocals(req: Request, path: string | null) {
     novitaPath: NOVITA_PATH,
     condizioniPath: CONDIZIONI_PATH,
     esportazionePath: ESPORTAZIONE_PATH,
+    statoPath: STATO_PATH,
     loginUrl: '/accesso',
     signedIn: Boolean(req.principal),
     company: COMPANY,

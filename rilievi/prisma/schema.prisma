@@ -246,6 +246,7 @@ model User {
   buoniFirme          BuonoFirma[]          @relation("BuoniFirmati")
   preventiviCreati    Preventivo[]          @relation("PreventiviCreati")
   preventiviMod       Preventivo[]          @relation("PreventiviModificati")
+  avvisiStato         AvvisoStato[]         @relation("AvvisiStato")
 
   @@index([invitedById])
   @@index([master])
@@ -1574,4 +1575,27 @@ model VoceListino {
 
   @@unique([aziendaId, codice])
   @@index([aziendaId, descrizione])
+}
+
+/// Какво казва `/stato` (чл. 2.4 от условията, версия 2027-01-12): прекъсване в ход или планирана
+/// поддръжка, написани от MASTER. `fine` празно — прекъсването още трае. Не се трие: историята е на страницата.
+model AvvisoStato {
+  id          String          @id @default(cuid())
+  tipo        TipoAvvisoStato
+  titolo      String          @db.VarChar(160)
+  testo       String          @db.VarChar(2000)
+  inizio      DateTime
+  fine        DateTime?
+  createdById String?
+  createdBy   User?           @relation("AvvisiStato", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([inizio])
+  @@index([createdById])
+}
+
+enum TipoAvvisoStato {
+  INTERRUZIONE
+  MANUTENZIONE
 }

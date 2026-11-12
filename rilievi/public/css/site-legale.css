@@ -63,3 +63,69 @@
   font-size: 0.875rem;
   overflow-wrap: anywhere;
 }
+
+/* Състоянието на услугата (/stato): общото в рамка (дебела — проблем), частите в списък с дума, без цветове;
+   червеното — само за „Non disponibile“ (грешка). */
+.stato-generale {
+  margin: 16px 0 8px;
+  padding: 14px 16px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+}
+
+.stato-generale--interruzione,
+.stato-generale--manutenzione {
+  border-width: 3px;
+}
+
+.stato-parti {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stato-parti li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line, #d0d0d0);
+}
+
+.stato-esito--attenzione {
+  text-decoration: underline dashed;
+}
+
+.stato-esito--errore {
+  color: var(--danger, #b00020);
+}
+
+.stato-avvisi {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+}
+
+.stato-avviso {
+  padding: 12px 14px;
+  border: 1px solid var(--line, #d0d0d0);
+  border-left-width: 4px;
+  border-radius: 6px;
+}
+
+.stato-avviso p {
+  margin: 0 0 4px;
+}
+
+.stato-avviso__tipo {
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 0.8125rem;
+  text-transform: none;
+}
+
+.stato-avviso__testo {
+  white-space: pre-line;
+}

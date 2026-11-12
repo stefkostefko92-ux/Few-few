@@ -48,7 +48,8 @@
     "trattamenti": "Registro trattamenti",
     "violazioni": "Violazioni dei dati",
     "ordini": "Ordini ai fornitori",
-    "approvazioni": "Da approvare"
+    "approvazioni": "Da approvare",
+    "stato": "Stato del servizio"
   },
   "common": {
     "yes": "Sì",

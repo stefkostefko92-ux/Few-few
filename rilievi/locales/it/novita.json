@@ -22,6 +22,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-12-stato-servizio": {
+        "area": "Portale",
+        "titolo": "Pagina dello stato del servizio",
+        "testo": "Su /stato si vede se Rilievi Impianti funziona in questo momento, parte per parte: portale, archivio dei dati, elaborazione di foto e video, invio delle email. La pagina riporta anche le interruzioni in corso, le manutenzioni programmate con data e ora, gli ultimi 90 giorni e i tempi di ripristino che ci diamo. Il link è in fondo a ogni pagina."
+      },
       "2026-11-12-annotazioni-foto": {
         "area": "Schede",
         "titolo": "Annotazioni sulle foto",

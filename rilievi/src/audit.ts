@@ -118,6 +118,8 @@ export const AUDIT_ACTIONS = [
   'AZIENDA_PREVENTIVI_CONDIZIONI',
   // Анотациите върху снимка на картата (src/allegati/annotazioni.ts): само броят на елементите.
   'ALLEGATO_ANNOTAZIONI',
+  // Съобщенията на /stato (src/stato/avvisi.ts): видът, ново ли е, затворено ли е — без текста.
+  'STATO_AVVISO',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
@@ -145,7 +147,8 @@ export interface AuditEntry {
     | 'fornitore'
     | 'ordine'
     | 'buono'
-    | 'preventivo';
+    | 'preventivo'
+    | 'avviso';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */
   meta?: Prisma.InputJsonObject;

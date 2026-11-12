@@ -5,14 +5,15 @@ import { INVITE_DAYS } from '../services/invites.js';
 import { ULTIMO_AGGIORNAMENTO, VOCI } from '../novita/voci.js';
 import { FAQ_IDS, SERVIZI, sheetCounts, sheetLegend } from '../site/landing.js';
 import {
-  FEED_NOVITA_PATH,
-  HOME_PATH,
-  NOVITA_PATH,
   CONDIZIONI_PATH,
   CONDIZIONI_PDF_PATH,
   ESPORTAZIONE_PATH,
+  FEED_NOVITA_PATH,
+  HOME_PATH,
+  NOVITA_PATH,
   PRIVACY_PATH,
   PUBLIC_PATHS,
+  STATO_PATH,
   type PublicPath,
 } from './paths.js';
 
@@ -30,6 +31,7 @@ export function robotsTxt(base: string, indexNowKey: string): string {
     'User-agent: *',
     ...PUBLIC_PATHS.map((path) => `Allow: ${path}$`),
     'Allow: /accesso$',
+    `Allow: ${STATO_PATH}$`,
     'Allow: /password-dimenticata$',
     // „Installa l'app“ е публична с `noindex` — роботът трябва да влезе, за да го види.
     'Allow: /app$',
