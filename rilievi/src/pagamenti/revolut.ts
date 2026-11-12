@@ -50,7 +50,7 @@ const webhookSchema = z.object({
 
 async function chiama(
   c: ClienteRevolut,
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'DELETE',
   path: string,
   body?: unknown,
 ): Promise<unknown> {
@@ -72,6 +72,7 @@ async function chiama(
     throw new ErroreRevolut('rete');
   }
   if (!res.ok) throw new ErroreRevolut(res.status);
+  if (res.status === 204) return null;
   try {
     return (await res.json()) as unknown;
   } catch {
@@ -127,4 +128,10 @@ export async function registraWebhook(
     }),
   );
   return { id: w.id, segreto: w.signing_secret };
+}
+
+/** Маха регистриран webhook (преди нов или при смяна на ключа/средата — Revolut пази най-много 10). */
+export async function eliminaWebhook(c: ClienteRevolut, id: string): Promise<void> {
+  if (!/^[A-Za-z0-9-]{1,100}$/.test(id)) return;
+  await chiama(c, 'DELETE', `/api/webhooks/${encodeURIComponent(id)}`);
 }

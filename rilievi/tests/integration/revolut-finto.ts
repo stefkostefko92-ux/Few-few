@@ -21,7 +21,11 @@ export interface OrdineFinto {
 }
 
 export const ordini = new Map<string, OrdineFinto>();
-export const webhook: { url: string | null } = { url: null };
+export const webhook: { url: string | null; registrati: number; eliminati: string[] } = {
+  url: null,
+  registrati: 0,
+  eliminati: [],
+};
 export const chiamate: Array<{ method: string; path: string }> = [];
 
 let server: Server | null = null;
@@ -81,12 +85,19 @@ export async function avviaRevolutFinto(): Promise<void> {
     if (url.pathname === '/api/webhooks' && req.method === 'POST') {
       const b = JSON.parse(await corpo(req)) as { url: string; events: string[] };
       webhook.url = b.url;
+      webhook.registrati += 1;
       return json(200, {
-        id: 'wh-1',
+        id: `wh-${webhook.registrati}`,
         url: b.url,
         events: b.events,
         signing_secret: SEGRETO_WEBHOOK,
       });
+    }
+    const w = /^\/api\/webhooks\/([A-Za-z0-9-]+)$/.exec(url.pathname);
+    if (w && req.method === 'DELETE') {
+      webhook.eliminati.push(w[1]!);
+      res.writeHead(204);
+      return res.end();
     }
     json(404, { code: 'not_found' });
   });

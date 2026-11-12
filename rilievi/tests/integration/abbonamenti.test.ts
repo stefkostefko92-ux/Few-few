@@ -167,9 +167,14 @@ describe('the subscription of a company', () => {
     assert.equal(vietato.status, 403);
     const { browser: master } = await signedIn('MASTER');
     const pagina = `/aziende/${azienda.id}`;
+    // The end MASTER has seen: a payment in between makes the form stale.
+    const base = async () =>
+      /name="base" value="([^"]*)"/.exec((await master.get(pagina, HTML)).body)?.[1] ?? 'none';
+    const primo = await base();
     const ok = await master.submit(pagina, `/aziende/${azienda.id}/abbonamento`, {
       livello: '2',
       fino: '2027-12-31',
+      base: primo,
     });
     assert.equal(ok.status, 303);
     let riga = await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } });
@@ -185,15 +190,31 @@ describe('the subscription of a company', () => {
     assert.deepEqual(audit.meta, { origine: 'manuale', livello: 2, ultimoGiorno: '2027-12-31' });
     assert.match((await master.get(pagina, HTML)).body, /value="2027-12-31"/);
 
+    // The page seen before the change: nothing is overwritten.
+    const vecchia = await master.submit(pagina, `/aziende/${azienda.id}/abbonamento`, {
+      livello: '1',
+      fino: '2026-12-31',
+      base: primo,
+    });
+    assert.equal(vecchia.status, 303);
+    assert.equal(
+      (await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } })).abbonamentoLivello,
+      2,
+    );
     const male = await master.submit(pagina, `/aziende/${azienda.id}/abbonamento`, {
       livello: '9',
       fino: '2027-02-31',
+      base: await base(),
     });
     assert.equal(male.status, 303);
     riga = await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } });
     assert.equal(riga.abbonamentoLivello, 2);
 
-    await master.submit(pagina, `/aziende/${azienda.id}/abbonamento`, { livello: '', fino: '' });
+    await master.submit(pagina, `/aziende/${azienda.id}/abbonamento`, {
+      livello: '',
+      fino: '',
+      base: await base(),
+    });
     riga = await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } });
     assert.equal(riga.abbonamentoLivello, null);
     assert.equal(riga.abbonamentoFino, null);

@@ -29,6 +29,8 @@ const SUMMARY = {
   abbonamentoLivello: true,
   abbonamentoFino: true,
   abbonamentoProva: true,
+  abbonamentoCambioAt: true,
+  abbonamentoCambioLivello: true,
   createdAt: true,
 } satisfies Prisma.AziendaSelect;
 

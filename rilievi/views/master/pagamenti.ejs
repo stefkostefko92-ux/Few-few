@@ -34,6 +34,11 @@
       <input class="input" id="pg-chiave" name="chiave" type="password" autocomplete="new-password" maxlength="300" value="" aria-describedby="pg-chiave-hint">
       <p class="field__hint" id="pg-chiave-hint"><%= t(cfg.haChiave ? m + 'chiaveHint' : m + 'chiaveHintNuova') %></p>
     </div>
+    <div class="field field--wide">
+      <label class="field__label" for="pg-password"><%= t(m + 'passwordCampo') %></label>
+      <input class="input" id="pg-password" name="password" type="password" autocomplete="current-password" maxlength="256" value="" aria-describedby="pg-password-hint">
+      <p class="field__hint" id="pg-password-hint"><%= t(m + 'passwordHint') %></p>
+    </div>
     <div class="toolbar"><button class="btn btn--primary" type="submit"><%= t(m + 'salva') %></button></div>
   </form>
 

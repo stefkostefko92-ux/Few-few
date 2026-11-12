@@ -37,6 +37,7 @@ export async function avvisaScadenze(now: Date = new Date()): Promise<number> {
       name: true,
       abbonamentoFino: true,
       abbonamentoProva: true,
+      abbonamentoCambioAt: true,
       avvisoScadenzaPer: true,
       avvisoScadenzaSoglia: true,
     },
@@ -74,7 +75,8 @@ export async function avvisaScadenze(now: Date = new Date()): Promise<number> {
         abbonamentoAvvisoMail({
           to: m.user.email,
           azienda: a.name,
-          prova: a.abbonamentoProva,
+          // С план в опашка краят е на платения план, не на пробата.
+          prova: a.abbonamentoProva && !a.abbonamentoCambioAt,
           soglia,
           ultimoGiorno: new Date(fino.getTime() - 1),
           link,

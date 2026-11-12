@@ -6,7 +6,9 @@ import { config } from '../config.js';
 import { prisma } from '../db.js';
 import { clienteAttivo } from '../pagamenti/config.js';
 import { formatoEuro } from '../pagamenti/offerta.js';
+import { periodoDi } from '../pagamenti/periodo.js';
 import { pianiAttivi } from '../pagamenti/piani.js';
+import { situazioneDi } from '../pagamenti/situazione.js';
 import type { SessionUser } from '../types.js';
 import { ICONE_SEZIONI, sezioniDi } from './impostazioni-vista.js';
 
@@ -33,6 +35,8 @@ function aziendeAbbonamento(user: SessionUser) {
       abbonamentoFino: true,
       abbonamentoProva: true,
       abbonamentoLivello: true,
+      abbonamentoCambioAt: true,
+      abbonamentoCambioLivello: true,
     },
   });
 }
@@ -66,20 +70,25 @@ async function render(req: Request, res: Response): Promise<void> {
   const admin = user.memberships.some(
     (m) => m.aziendaId === azienda.id && m.role === 'ADMIN' && !m.soloEsportazione,
   );
-  const piani =
-    admin && azienda.abbonamentoFino && (await clienteAttivo())
-      ? (await pianiAttivi()).map((p) => {
-          const max = LIVELLI[p.livello as keyof typeof LIVELLI];
-          return {
-            id: p.id,
-            livello: p.livello,
-            mesi: p.mesi,
-            max,
-            prezzo: formatoEuro(p.prezzoCent),
-            basta: max === null || occupati <= max,
-          };
-        })
-      : null;
+  // План в опашка — нов не се купува, докато не започне (чл. 12.3): разделът казва кога.
+  const vendibile = admin && azienda.abbonamentoFino && !stato.poi && (await clienteAttivo());
+  const situazione = vendibile ? await situazioneDi(prisma, azienda.id, now) : null;
+  const piani = situazione
+    ? (await pianiAttivi()).map((p) => {
+        const max = LIVELLI[p.livello as keyof typeof LIVELLI];
+        const periodo = periodoDi(situazione.campi, situazione.segmenti, p, now);
+        return {
+          id: p.id,
+          livello: p.livello,
+          mesi: p.mesi,
+          max,
+          prezzo: formatoEuro(p.prezzoCent),
+          basta: max === null || occupati <= max,
+          // По-високо ниво при период, даден на ръка — само чрез MASTER (не се смята онлайн).
+          manuale: !periodo.ok && periodo.errore === 'manuale',
+        };
+      })
+    : null;
   res.render('impostazioni/sezione', {
     sezione: 'abbonamento',
     // Изтекла фирма: другите раздели са само за четене — тук и износът стигат.

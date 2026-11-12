@@ -29,21 +29,32 @@ export function leggiAbbonamentoManuale(body: Record<string, unknown>): Abboname
 export const ultimoGiornoDi = (fino: Date | null): string =>
   fino ? businessDay(new Date(fino.getTime() - 1)) : '';
 
+/** `base` — краят, който MASTER е видял (ISO или празно); друг сега (плащане междувременно) — 'cambiato'. */
 export async function impostaAbbonamento(
   actorId: string,
   aziendaId: string,
   v: AbbonamentoManuale,
-): Promise<boolean> {
+  base: string,
+): Promise<'ok' | 'assente' | 'cambiato'> {
   return prisma.$transaction(async (tx) => {
-    const { count } = await tx.azienda.updateMany({
+    await tx.$queryRaw`SELECT id FROM "Azienda" WHERE id = ${aziendaId} FOR UPDATE`;
+    const a = await tx.azienda.findUnique({
+      where: { id: aziendaId },
+      select: { abbonamentoFino: true },
+    });
+    if (!a) return 'assente';
+    if ((a.abbonamentoFino?.toISOString() ?? '') !== base) return 'cambiato';
+    await tx.azienda.update({
       where: { id: aziendaId },
       data: {
         abbonamentoLivello: v.livello,
         abbonamentoFino: v.ultimoGiorno ? mezzanotteRoma(v.ultimoGiorno, 1) : null,
         abbonamentoProva: false,
+        // Ръчното задаване решава всичко: и планът в опашка отпада (MASTER го е видял на страницата).
+        abbonamentoCambioAt: null,
+        abbonamentoCambioLivello: null,
       },
     });
-    if (count === 0) return false;
     await writeAudit(
       {
         actorId,
@@ -55,8 +66,22 @@ export async function impostaAbbonamento(
       },
       tx,
     );
-    return true;
+    return 'ok';
   });
+}
+
+/**
+ * Поддръжката: плановете в опашка, чийто ден е дошъл, стават сегашни (нивото, краят на пробата). Състоянието ги
+ * смята и без това (`abbonamentoAdesso`) — тук само се подреждат колоните.
+ */
+export async function avviaPianiInCoda(now: Date = new Date()): Promise<number> {
+  return prisma.$executeRaw`
+    UPDATE "Azienda"
+    SET "abbonamentoLivello" = "abbonamentoCambioLivello",
+        "abbonamentoProva" = false,
+        "abbonamentoCambioAt" = NULL,
+        "abbonamentoCambioLivello" = NULL
+    WHERE "abbonamentoCambioAt" IS NOT NULL AND "abbonamentoCambioAt" <= ${now}`;
 }
 
 /**

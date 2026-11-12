@@ -60,14 +60,17 @@ sudo bash /opt/few-few/current/rilievi/deploy/setup-env.sh
 продукция не се чете). Собственикът веднъж:
 
 1. В Revolut Business — ключът на Merchant API (Secret key). За проба първо ключът от sandbox акаунта
-   (developer.revolut.com → Merchant API → Get started обяснява къде е всеки).
-2. В портала, MASTER → „Pagamenti“: „Pagamenti attivi“, средата (Sandbox или Produzione), ключът → „Salva“.
-   Ключът се пази шифрован и не се показва повече; празно поле при следващ запис го оставя.
+   (developer.revolut.com → Merchant API → Get started обяснява къде е всеки). Ключ **без** подписване на
+   заявките (Ed25519 request signing) — порталът не го поддържа и всяка заявка би върнала 401.
+2. В портала, MASTER → „Pagamenti“: „Pagamenti attivi“, средата (Sandbox или Produzione), ключът и паролата ти →
+   „Salva“. Ключът се пази шифрован и не се показва повече; празно поле при следващ запис го оставя. Всеки MASTER
+   получава писмо при нов ключ или друга среда.
 3. „Registra il webhook“ — порталът записва в Revolut адреса `https://rilievi.carbonstealth.eu/webhook/revolut`
    (от `PUBLIC_BASE_URL`) и пази signing secret-а шифрован. Наново при смяна на ключа или на средата.
 4. Плановете (ниво, месеци, цена без ДДС) — в същата страница; „Non offrire più“ спира план, без да го трие.
-5. Проба в Sandbox с тестова карта на Revolut → „Ultimi pagamenti“ казва „Completato“, а фирмата — нивото и
-   края. После — Produzione с нейния ключ и пак „Registra il webhook“.
+5. Проба в Sandbox с тестова карта на Revolut → „Ultimi pagamenti“ казва „Completato“. На живия сървър плащане в
+   Sandbox е само проба: абонаментът на фирмата НЕ се сменя (тестова карта не дава Premium) и страницата на
+   офертата го казва. После — Produzione с нейния ключ и пак „Registra il webhook“ (старият се маха сам).
 
 Контейнерът излиза към `merchant.revolut.com` и `sandbox-merchant.revolut.com` (HTTPS). Webhook-ът не иска нищо
 в nginx (тялото е до 64 KB, общото `location /`). Изгубено известие не губи плащане: връщането на човека и

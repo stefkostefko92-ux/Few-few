@@ -56,3 +56,23 @@ export function pagamentoRicevutoMail(params: {
     }),
   };
 }
+
+/** Ключът или средата на плащанията са сменени — до всеки MASTER (откраднатата сесия не минава незабелязано). */
+export function pagamentiCambiatiMail(params: {
+  to: string;
+  chi: string;
+  ambiente: 'SANDBOX' | 'PRODUZIONE';
+  chiaveNuova: boolean;
+}): MailMessage {
+  return {
+    to: params.to,
+    subject: t('pagamenti.mail.cambiatiSubject'),
+    text: t(
+      params.chiaveNuova ? 'pagamenti.mail.cambiatiChiave' : 'pagamenti.mail.cambiatiAmbiente',
+      {
+        chi: params.chi,
+        ambiente: t(`pagamenti.master.ambiente.${params.ambiente}`),
+      },
+    ),
+  };
+}

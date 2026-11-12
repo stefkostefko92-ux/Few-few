@@ -8,6 +8,7 @@
     "postiSenzaLimite": "{n}, senza limite",
     "invitiAttesa": "Inviti in attesa (contano come persone)",
     "contatto": "Per attivare o rinnovare l'abbonamento scrivi a {email}.",
+    "poi": "Piano acquistato: livello {livello} dal {dal} al {data} compreso.",
     "livelli": {
       "titolo": "Livelli",
       "fino": "fino a {n} persone",
@@ -56,14 +57,15 @@
     },
     "master": {
       "titolo": "Abbonamento",
-      "testo": "Per i pagamenti ricevuti fuori da Revolut: scegli il livello (1 fino a 10 persone, 2 fino a 25, 3 oltre 25) e l'ultimo giorno compreso. Senza livello non c'è limite di persone; senza data l'azienda non ha scadenza.",
+      "testo": "Per i pagamenti ricevuti fuori da Revolut: scegli il livello (1 fino a 10 persone, 2 fino a 25, 3 oltre 25) e l'ultimo giorno compreso. Senza livello non c'è limite di persone; senza data l'azienda non ha scadenza. Il salvataggio sostituisce anche un piano acquistato che non è ancora iniziato.",
       "livello": "Livello",
       "nessuno": "Nessun livello",
       "fino": "Valido fino al (compreso)",
       "salva": "Salva l'abbonamento",
       "salvato": "Abbonamento salvato.",
       "errore": "Controlla il livello e la data.",
-      "opzione": "Livello {n} ({persone})"
+      "opzione": "Livello {n} ({persone})",
+      "cambiato": "L'abbonamento è cambiato nel frattempo (per esempio con un pagamento): controlla la pagina e salva di nuovo."
     },
     "esporta": "Esporta tutti i dati"
   }

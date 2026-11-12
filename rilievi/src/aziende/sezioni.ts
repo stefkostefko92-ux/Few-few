@@ -50,6 +50,8 @@ export function aziendeImpostabili(user: SessionUser) {
       abbonamentoFino: true,
       abbonamentoProva: true,
       abbonamentoLivello: true,
+      abbonamentoCambioAt: true,
+      abbonamentoCambioLivello: true,
     },
   });
 }

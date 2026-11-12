@@ -8,6 +8,10 @@ import { formatoEuro } from '../pagamenti/offerta.js';
 import { attivaPiano, creaPiano, leggiPiano, tuttiIPiani } from '../pagamenti/piani.js';
 import { riconcilia } from '../pagamenti/riconcilia.js';
 import { ErroreRevolut } from '../pagamenti/revolut.js';
+import { clearSessionCookie } from '../auth/sessions.js';
+import { sendMail } from '../mail/mailer.js';
+import { pagamentiCambiatiMail } from '../mail/templates-abbonamento.js';
+import { reauthPassword } from '../services/reauth.js';
 
 /**
  * „Pagamenti“ в конзолата на MASTER (#31): Revolut Business вкл./изкл., sandbox/продукция, ключът (само се пише),
@@ -67,6 +71,24 @@ masterPagamentiRouter.post(PATH, manage, requireCsrf, async (req, res) => {
   const raw = typeof b.chiave === 'string' ? b.chiave.trim() : '';
   if (raw.length > 300 || /\s|\p{Cc}/u.test(raw))
     return vista(res, 422, { erroreConfig: 'pagamenti.master.senzaChiave' });
+  // Нов ключ или друга среда решават къде отиват парите на клиентите: само с паролата (откраднатата сесия не
+  // пренасочва плащанията), с писмо до всички MASTER.
+  const prima = await leggiConfig();
+  const delicato = raw !== '' || prima.ambiente !== ambiente;
+  if (delicato) {
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { id: principalOf(req).user.id },
+      select: { id: true, passwordHash: true },
+    });
+    const password = typeof b.password === 'string' ? b.password : '';
+    const esito = password ? await reauthPassword(user, password) : 'wrong';
+    if (esito === 'locked') {
+      clearSessionCookie(res);
+      setFlash(res, 'error', 'flash.bloccatoSessione');
+      return res.redirect(303, '/accesso');
+    }
+    if (esito === 'wrong') return vista(res, 422, { erroreConfig: 'pagamenti.master.password' });
+  }
   const esito = await salvaConfig(principalOf(req).user.id, {
     attivo: b.attivo === '1',
     ambiente,
@@ -74,6 +96,7 @@ masterPagamentiRouter.post(PATH, manage, requireCsrf, async (req, res) => {
   });
   if (esito === 'senzaChiave')
     return vista(res, 422, { erroreConfig: 'pagamenti.master.senzaChiave' });
+  if (delicato) await avvisaMaster(principalOf(req).user.name, ambiente, raw !== '');
   setFlash(res, 'ok', 'pagamenti.master.salvato');
   res.redirect(303, PATH);
 });
@@ -108,3 +131,13 @@ masterPagamentiRouter.post(`${PATH}/:id/verifica`, manage, requireCsrf, async (r
   if (stato) setFlash(res, 'info', `pagamenti.master.statoPagamento.${stato}`);
   res.redirect(303, `${PATH}#h-pagamenti`);
 });
+
+/** Писмо до всеки MASTER: кой и какво е сменил (без ключа). */
+async function avvisaMaster(chi: string, ambiente: AmbienteRevolut, chiaveNuova: boolean) {
+  const master = await prisma.user.findMany({
+    where: { master: true, deactivatedAt: null },
+    select: { email: true },
+  });
+  for (const m of master)
+    await sendMail(pagamentiCambiatiMail({ to: m.email, chi, ambiente, chiaveNuova }));
+}

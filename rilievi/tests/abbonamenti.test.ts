@@ -54,28 +54,42 @@ describe('the subscription state', () => {
         { abbonamentoFino: null, abbonamentoProva: false, abbonamentoLivello: null },
         now,
       ),
-      { tipo: 'illimitato', fino: null, livello: null, maxPersone: null, solaLettura: false },
+      {
+        tipo: 'illimitato',
+        fino: null,
+        livello: null,
+        maxPersone: null,
+        solaLettura: false,
+        poi: null,
+      },
     );
     assert.deepEqual(
       statoAbbonamento(
         { abbonamentoFino: futuro, abbonamentoProva: true, abbonamentoLivello: null },
         now,
       ),
-      { tipo: 'prova', fino: futuro, livello: null, maxPersone: null, solaLettura: false },
+      {
+        tipo: 'prova',
+        fino: futuro,
+        livello: null,
+        maxPersone: null,
+        solaLettura: false,
+        poi: null,
+      },
     );
     assert.deepEqual(
       statoAbbonamento(
         { abbonamentoFino: futuro, abbonamentoProva: false, abbonamentoLivello: 2 },
         now,
       ),
-      { tipo: 'attivo', fino: futuro, livello: 2, maxPersone: 25, solaLettura: false },
+      { tipo: 'attivo', fino: futuro, livello: 2, maxPersone: 25, solaLettura: false, poi: null },
     );
     assert.deepEqual(
       statoAbbonamento(
         { abbonamentoFino: passato, abbonamentoProva: false, abbonamentoLivello: 1 },
         now,
       ),
-      { tipo: 'scaduto', fino: passato, livello: 1, maxPersone: 10, solaLettura: true },
+      { tipo: 'scaduto', fino: passato, livello: 1, maxPersone: 10, solaLettura: true, poi: null },
     );
     // The trial ends the same way: read-only.
     assert.equal(

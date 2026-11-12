@@ -7,7 +7,8 @@ import { after, before, describe, it } from 'node:test';
 import { avviaRevolutFinto, CHIAVE, fermaRevolutFinto, webhook } from './revolut-finto.js';
 
 await avviaRevolutFinto();
-const { BASE, prisma, signedIn, startApp, stopApp } = await import('./harness.js');
+const { BASE, outbox, PASSWORD, prisma, signedIn, startApp, stopApp } =
+  await import('./harness.js');
 const { decifraRevolut } = await import('../../src/auth/chiavi.js');
 
 before(startApp);
@@ -36,12 +37,30 @@ describe('the payments console', () => {
       chiave: '',
     });
     assert.equal(senza.status, 422);
+    // A new key only with the password of the MASTER (a stolen session does not redirect the payments).
+    for (const password of ['', 'sbagliata-123456']) {
+      const no = await browser.submit('/master/pagamenti', '/master/pagamenti', {
+        attivo: '1',
+        ambiente: 'SANDBOX',
+        chiave: CHIAVE,
+        password,
+      });
+      assert.equal(no.status, 422);
+      assert.match(no.body, /scrivi la tua password/);
+    }
+    assert.equal(await prisma.configPagamenti.count(), 0);
+    const prima = outbox.length;
     const ok = await browser.submit('/master/pagamenti', '/master/pagamenti', {
       attivo: '1',
       ambiente: 'SANDBOX',
       chiave: CHIAVE,
+      password: PASSWORD,
     });
     assert.equal(ok.status, 303);
+    // Every MASTER is told, without the key.
+    const avvisi = outbox.slice(prima).filter((m) => /impostazioni di Revolut/.test(m.subject));
+    assert.ok(avvisi.length >= 1);
+    assert.doesNotMatch(JSON.stringify(avvisi), new RegExp(CHIAVE));
     const riga = await prisma.configPagamenti.findUniqueOrThrow({ where: { id: 'revolut' } });
     assert.equal(riga.attivo, true);
     assert.ok(riga.chiaveEnc && !riga.chiaveEnc.includes(CHIAVE));
@@ -56,6 +75,13 @@ describe('the payments console', () => {
     const conWebhook = await prisma.configPagamenti.findUniqueOrThrow({ where: { id: 'revolut' } });
     assert.equal(conWebhook.webhookId, 'wh-1');
     assert.ok(conWebhook.webhookSegretoEnc && !conWebhook.webhookSegretoEnc.startsWith('wsk_'));
+    // Registered again: the old one is removed first (Revolut keeps at most 10).
+    await browser.submit('/master/pagamenti', '/master/pagamenti/webhook', {});
+    assert.deepEqual(webhook.eliminati, ['wh-1']);
+    assert.equal(
+      (await prisma.configPagamenti.findUniqueOrThrow({ where: { id: 'revolut' } })).webhookId,
+      'wh-2',
+    );
 
     // An empty key keeps the saved one; off keeps everything for later.
     await browser.submit('/master/pagamenti', '/master/pagamenti', {

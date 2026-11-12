@@ -23,6 +23,7 @@
       <% } %>
     </ul><% } %>
   </div><% } %>
+  <% if (sandboxProva) { %><div class="notice" role="status"><p><strong><%= t(p + 'sandbox') %></strong></p></div><% } %>
   <p><%= t(p + 'intro') %></p>
   <section class="offerta__testo" aria-labelledby="h-offerta">
     <h2 class="section__title" id="h-offerta"><%= offerta.righe[0] %></h2>
@@ -33,6 +34,7 @@
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="azienda" value="<%= azienda.id %>">
     <input type="hidden" name="piano" value="<%= piano.id %>">
+    <input type="hidden" name="hash" value="<%= offerta.hash %>">
     <fieldset class="legale__blocco">
       <legend class="section__title"><%= t(p + 'dati') %></legend>
       <% for (const k of campi) { %><div class="field">

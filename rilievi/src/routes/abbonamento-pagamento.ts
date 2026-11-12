@@ -3,11 +3,13 @@ import { principalOf, requireCsrf, requireUser, sendError } from '../auth/guards
 import { datiSalvati } from '../aziende/dati.js';
 import { prisma } from '../db.js';
 import { setFlash } from '../http/flash.js';
-import { writeLimiter } from '../http/limits.js';
+import { ritornoLimiter, writeLimiter } from '../http/limits.js';
 import { formatoEuro } from '../pagamenti/offerta.js';
 import { clienteAttivo } from '../pagamenti/config.js';
 import { partitaIvaDa } from '../pagamenti/importi.js';
 import { riconcilia } from '../pagamenti/riconcilia.js';
+import { daPeriodo } from '../pagamenti/situazione.js';
+import { config } from '../config.js';
 import { avviaPagamento, preparaOfferta, type Dichiarati } from '../pagamenti/servizio.js';
 
 /**
@@ -77,23 +79,30 @@ async function vistaOfferta(
 ): Promise<void> {
   const t = res.locals.t as (k: string, p?: Record<string, string | number>) => string;
   const user = principalOf(req).user;
-  // L'anteprima: con una P. IVA non valida si mostra come per l'Italia — la conferma la ricontrolla.
+  // Прегледът: с невалиден ДДС номер — като за Италия; потвърждението го проверява и сверява отпечатъка.
   const piva = partitaIvaDa(valori.partitaIva) ?? { numero: valori.partitaIva, paese: 'IT' };
-  const { offerta, occupati, basta } = await preparaOfferta(t, user, azienda.id, piano, {
+  const pronta = await preparaOfferta(t, user, azienda.id, piano, {
     ragioneSociale: valori.ragioneSociale || azienda.name,
     sede: valori.sede || '—',
     partitaIva: piva,
   });
+  if (!pronta.offerta) {
+    // План в опашка или период, даден на ръка: тук не се купува — разделът казва защо.
+    setFlash(res, 'info', `pagamenti.errore.${pronta.errore}`, { email: config().CONTACT_EMAIL });
+    return res.redirect(303, `${BASE}?azienda=${encodeURIComponent(azienda.id)}`);
+  }
+  const cli = await clienteAttivo();
   res.set('Cache-Control', 'no-store');
   res.status(status).render('impostazioni/offerta', {
     azienda,
     piano,
-    offerta,
-    totale: formatoEuro(offerta.importo.totale),
+    offerta: pronta.offerta,
+    totale: formatoEuro(pronta.offerta.importo.totale),
     valori,
     errori,
-    errore: errore ?? (basta ? null : 'pagamenti.errore.persone'),
-    occupati,
+    errore: errore ?? (pronta.basta ? null : 'pagamenti.errore.persone'),
+    occupati: pronta.occupati,
+    sandboxProva: cli !== null && !daPeriodo(cli.ambiente),
   });
 }
 
@@ -139,51 +148,67 @@ abbonamentoPagamentoRouter.post(
     if (Object.keys(errori).length > 0 || !dichiarati)
       return vistaOfferta(req, res, 422, azienda, piano, valori, errori, 'pagamenti.errore.titolo');
     const t = res.locals.t as (k: string, p?: Record<string, string | number>) => string;
-    const esito = await avviaPagamento(t, principalOf(req).user, azienda.id, piano.id, dichiarati, {
-      ip: req.ip ?? null,
-      userAgent: req.get('user-agent') ?? null,
-    });
+    const esito = await avviaPagamento(
+      t,
+      principalOf(req).user,
+      azienda.id,
+      piano.id,
+      dichiarati,
+      { ip: req.ip ?? null, userAgent: req.get('user-agent') ?? null },
+      typeof body.hash === 'string' ? body.hash : '',
+    );
     if (esito.ok) return res.redirect(303, esito.checkoutUrl);
     if (esito.errore === 'spenti' || esito.errore === 'piano') return notFound(req, res);
-    return vistaOfferta(
-      req,
-      res,
-      esito.errore === 'persone' ? 422 : 503,
-      azienda,
-      piano,
-      valori,
-      {},
-      esito.errore === 'persone' ? 'pagamenti.errore.persone' : 'pagamenti.errore.revolut',
-    );
+    const [status, chiave] =
+      esito.errore === 'cambiata'
+        ? [409, 'pagamenti.errore.cambiata']
+        : esito.errore === 'persone'
+          ? [422, 'pagamenti.errore.persone']
+          : esito.errore === 'revolut'
+            ? [503, 'pagamenti.errore.revolut']
+            : [409, `pagamenti.errore.${esito.errore}`];
+    return vistaOfferta(req, res, status, azienda, piano, valori, {}, chiave);
   },
 );
 
-abbonamentoPagamentoRouter.get(`${BASE}/esito/:id`, requireUser, async (req, res) => {
-  const p = await prisma.pagamento.findUnique({
-    where: { id: String(req.params.id) },
-    select: { id: true, aziendaId: true },
-  });
-  const azienda = p ? await aziendaAdmin(req, p.aziendaId) : null;
-  if (!p || !azienda) return notFound(req, res);
-  const stato = await riconcilia(p.id);
-  if (stato === 'COMPLETATO') {
-    const a = await prisma.azienda.findUniqueOrThrow({
-      where: { id: azienda.id },
-      select: { abbonamentoFino: true },
+// Връщането от Revolut пита Revolut — с таван, за да не изяде лимита на акаунта.
+abbonamentoPagamentoRouter.get(
+  `${BASE}/esito/:id`,
+  requireUser,
+  ritornoLimiter,
+  async (req, res) => {
+    const p = await prisma.pagamento.findUnique({
+      where: { id: String(req.params.id) },
+      select: { id: true, aziendaId: true },
     });
-    const fine = a.abbonamentoFino ? new Date(a.abbonamentoFino.getTime() - 1) : new Date();
-    setFlash(res, 'ok', 'pagamenti.esito.completato', {
-      data: new Intl.DateTimeFormat('it-IT', {
-        timeZone: 'Europe/Rome',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      }).format(fine),
-    });
-  } else if (stato === 'IN_ATTESA') {
-    setFlash(res, 'info', 'pagamenti.esito.attesa');
-  } else {
-    setFlash(res, 'error', 'pagamenti.esito.fallito');
-  }
-  res.redirect(303, `${BASE}?azienda=${encodeURIComponent(azienda.id)}`);
-});
+    const azienda = p ? await aziendaAdmin(req, p.aziendaId) : null;
+    if (!p || !azienda) return notFound(req, res);
+    const stato = await riconcilia(p.id);
+    if (stato === 'COMPLETATO') {
+      const fatto = await prisma.pagamento.findUniqueOrThrow({
+        where: { id: p.id },
+        select: { inizio: true, fine: true, ambiente: true },
+      });
+      const giorno = (d: Date) =>
+        new Intl.DateTimeFormat('it-IT', {
+          timeZone: 'Europe/Rome',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        }).format(d);
+      const fine = giorno(new Date((fatto.fine ?? new Date()).getTime() - 1));
+      if (!daPeriodo(fatto.ambiente)) setFlash(res, 'info', 'pagamenti.esito.prova');
+      else if (fatto.inizio && fatto.inizio.getTime() > Date.now())
+        setFlash(res, 'ok', 'pagamenti.esito.completatoCoda', {
+          inizio: giorno(fatto.inizio),
+          data: fine,
+        });
+      else setFlash(res, 'ok', 'pagamenti.esito.completato', { data: fine });
+    } else if (stato === 'IN_ATTESA') {
+      setFlash(res, 'info', 'pagamenti.esito.attesa');
+    } else {
+      setFlash(res, 'error', 'pagamenti.esito.fallito');
+    }
+    res.redirect(303, `${BASE}?azienda=${encodeURIComponent(azienda.id)}`);
+  },
+);

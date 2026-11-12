@@ -90,80 +90,84 @@ enum AccessRequestStatus {
 /// Фирма — клиент на портала: свои хора, свои карти, свое лого на листа. Създава я само MASTER
 /// (собственикът на портала); всяка фирма вижда само своето (src/auth/scope.ts).
 model Azienda {
-  id                   String       @id @default(cuid())
-  name                 String       @unique @db.VarChar(120)
+  id                       String       @id @default(cuid())
+  name                     String       @unique @db.VarChar(120)
   /// Логото за листа и PDF-а — вече прекодирано от src/aziende/logo.ts (PNG или JPEG, без метаданни).
-  logo                 Bytes?
-  logoType             String?      @db.VarChar(20)
-  logoWidth            Int?
-  logoHeight           Int?
-  logoUpdatedAt        DateTime?
+  logo                     Bytes?
+  logoType                 String?      @db.VarChar(20)
+  logoWidth                Int?
+  logoHeight               Int?
+  logoUpdatedAt            DateTime?
   /// Деактивирана фирма: хората ѝ не влизат и сесиите им падат; картите ѝ остават.
-  deactivatedAt        DateTime?
+  deactivatedAt            DateTime?
   /// Редът на разделите на картата във фирмата (ключовете от src/schede/fields.ts); празно — редът по
   /// подразбиране. Подрежда го администраторът ѝ (src/aziende/sezioni.ts).
-  ordineSezioni        String[]     @default([])
+  ordineSezioni            String[]     @default([])
   /// Скицникът — от 10 ноември 2026 винаги включен за всички (собственикът: „attiva gli schizzi per tutti
   /// … togli l'opzione per disattivarli“); кодът не чете колоната, тя остава за връщане назад.
-  schizzi              Boolean      @default(true)
+  schizzi                  Boolean      @default(true)
   /// Последният даден номер на лист за интервенция във фирмата (собствен брояч от 1, без дупки):
   /// новият лист взема +1 в транзакцията си (src/interventi/service.ts).
-  interventiNumero     Int          @default(0)
+  interventiNumero         Int          @default(0)
   /// Данните на фирмата за главата на табелата „Avviso di fermo impianto“ (име, дейност, адрес,
   /// контакти, P. IVA) — попълва ги администраторът ѝ; проверени при запис и четени с недоверие
   /// (src/aziende/dati.ts). null — още не са записани.
-  datiSocietari        Json?
+  datiSocietari            Json?
   /// Шаблонът на табелата, избран в настройките (src/cartelli/modelli.ts); непознат или null — първият.
-  cartelloModello      String?      @db.VarChar(40)
+  cartelloModello          String?      @db.VarChar(40)
   /// Имената на ролите във фирмата ({ADMIN: „Titolare“, …}) — сменя ги администраторът ѝ; липсващото
   /// е името по подразбиране (src/auth/permessi.ts).
-  nomiRuoli            Json?
+  nomiRuoli                Json?
   /// Правата на ролите под ADMIN за картите, листовете, табелите и регистъра ({TECNICO: [...], …}) —
   /// сменя ги администраторът ѝ; липсващата роля е по йерархията (src/auth/permessi.ts).
-  permessiRuoli        Json?
+  permessiRuoli            Json?
   /// Версията на условията за услугата, приети за фирмата от неин ADMIN (src/legale/); различна от
   /// текущата — хората ѝ не ползват портала до приемането. Доказателството е в `Accettazione`.
-  condizioniVersione   String?      @db.VarChar(20)
+  condizioniVersione       String?      @db.VarChar(20)
   /// Смяната на доставчика (Data Act, чл. 23–30; src/aziende/cambio.ts): поискана от ADMIN на фирмата;
   /// услугата продължава през прехода, който свършва в `cambioFineAt` (30 дни, веднъж удължен) — тогава
   /// фирмата се деактивира. Трите полета са заедно или ги няма (CHECK `Azienda_cambio_check`).
-  cambioRichiestoAt    DateTime?
-  cambioFineAt         DateTime?
-  cambioEsito          CambioEsito?
+  cambioRichiestoAt        DateTime?
+  cambioFineAt             DateTime?
+  cambioEsito              CambioEsito?
   /// Преходът е удължен веднъж (чл. 25(5) Data Act — правото е еднократно).
-  cambioProrogato      Boolean      @default(false)
+  cambioProrogato          Boolean      @default(false)
   /// Информацията по чл. 13 GDPR на страницата на подписа (листът за интервенция, протоколът), както
   /// фирмата я е написала — тя е администраторът; null — моделът, попълнен с данните ѝ (legale/informativa.ts).
-  informativaFirme     String?      @db.VarChar(4000)
+  informativaFirme         String?      @db.VarChar(4000)
   /// Одобрението на две стъпки на картите (C7) — включва го администраторът ѝ; по подразбиране — не.
-  approvazioneSchede   Boolean      @default(false)
+  approvazioneSchede       Boolean      @default(false)
   /// „Buono di lavoro“: кодът на модула горе вдясно („Mod. PO-05-3 Ed. 02 …“) и клаузата долу — както
   /// фирмата ги е написала в настройките; null — нищо (src/buoni/).
-  buonoCodice          String?      @db.VarChar(80)
-  buonoClausola        String?      @db.VarChar(1000)
+  buonoCodice              String?      @db.VarChar(80)
+  buonoClausola            String?      @db.VarChar(1000)
   /// Офертите (C1) — включва ги САМО MASTER на страницата на фирмата; по подразбиране — не.
-  preventiviAttivi     Boolean      @default(false)
+  preventiviAttivi         Boolean      @default(false)
   /// Последният номер на оферта на фирмата (увеличава се в транзакцията на новата — без дупки и повторения).
-  preventiviNumero     Int          @default(0)
+  preventiviNumero         Int          @default(0)
   /// Условията за плащане по подразбиране на новата оферта (настройките на фирмата).
-  preventivoCondizioni String?      @db.VarChar(2000)
+  preventivoCondizioni     String?      @db.VarChar(2000)
   /// Входът с доставчика на самоличност на клиента (D1, чл. 4.6 на условията): директорията на Microsoft
   /// Entra (tenant ID — GUID с малки букви) и домейнът на Google Workspace (`hd`). Пише ги ADMIN;
   /// null — изключено. Сменени или махнати, свързаните акаунти спират при следващия вход (src/auth/oidc*.ts).
-  accessoMicrosoft     String?      @db.VarChar(36)
-  accessoGoogle        String?      @db.VarChar(253)
+  accessoMicrosoft         String?      @db.VarChar(36)
+  accessoGoogle            String?      @db.VarChar(253)
   /// Абонаментът (#31, #33 — src/abbonamenti/): нивото по брой хора (1 — до 10, 2 — до 25, 3 — над 25),
   /// краят (полунощ по Рим; null — без срок: фирмите отпреди абонаментите, докато MASTER реши) и дали тече
   /// безплатният пробен месец на нова фирма. Изтекъл — цялата фирма само чете (auth/scope.ts).
-  abbonamentoLivello   Int?
-  abbonamentoFino      DateTime?
-  abbonamentoProva     Boolean      @default(false)
+  abbonamentoLivello       Int?
+  abbonamentoFino          DateTime?
+  abbonamentoProva         Boolean      @default(false)
+  /// Платеният план, който започва по-късно (след пробата или текущия план — чл. 12.3): от този момент нивото е
+  /// `abbonamentoCambioLivello` и пробата свършва; двете — заедно или нито едното (CHECK).
+  abbonamentoCambioAt      DateTime?
+  abbonamentoCambioLivello Int?
   /// Известията за края (чл. 12.6 — 14 и 3 дни преди, в деня): за кой край и коя е последната пратена
   /// граница в дни (14, 3, 0) — всяка тръгва веднъж (src/abbonamenti/scadenze.ts).
-  avvisoScadenzaPer    DateTime?
-  avvisoScadenzaSoglia Int?
-  createdAt            DateTime     @default(now())
-  updatedAt            DateTime     @updatedAt
+  avvisoScadenzaPer        DateTime?
+  avvisoScadenzaSoglia     Int?
+  createdAt                DateTime     @default(now())
+  updatedAt                DateTime     @updatedAt
 
   memberships       Membership[]
   invites           Invite[]
@@ -184,6 +188,7 @@ model Azienda {
   pagamenti         Pagamento[]
 
   @@index([abbonamentoFino])
+  @@index([abbonamentoCambioAt])
 }
 
 /// Акаунт. Създава се САМО от приета покана (или от `owner:create` за първия MASTER) — регистрация няма.
@@ -1757,9 +1762,16 @@ model Pagamento {
   createdBy      User?             @relation("PagamentiCreati", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt      DateTime          @default(now())
   completatoAt   DateTime?
-  /// Периодът, който плащането е дало (полунощ по Рим).
+  /// Периодът от офертата (полунощ по Рим): нивото важи от `inizio`, краят на абонамента става `fine`.
   inizio         DateTime?
   fine           DateTime?
+  /// Отпечатъкът на приетата оферта — второ „Accetta e paga“ на същата оферта отива на същата поръчка.
+  offertaHash    String?           @db.Char(64)
+  /// Стойността на платените и неизползвани дни, превърната в дни на по-високото ниво (чл. 12.4), без ДДС.
+  creditoCent    Int               @default(0)
+  /// Абонаментът при офертата: ако при плащането е друг, периодът се смята наново.
+  baseFino       DateTime?
+  baseLivello    Int?
 
   @@index([aziendaId])
   @@index([pianoId])

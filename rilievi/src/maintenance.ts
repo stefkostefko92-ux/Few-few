@@ -14,6 +14,7 @@ import { INVITI_SCADUTI_GIORNI } from './services/invites.js';
 import { DAY, HOUR } from './time.js';
 import { avvisaScadenze } from './abbonamenti/scadenze.js';
 import { riconciliaInSospeso } from './pagamenti/riconcilia.js';
+import { avviaPianiInCoda } from './abbonamenti/servizio.js';
 
 /**
  * Чистене веднъж на час: изтекли сесии и входове, чакали кода на 2FA, грешните опити по мрежа (след ден),
@@ -50,8 +51,9 @@ export async function runMaintenance(): Promise<void> {
   const prove = await pulisciProve(now);
   // Известията за края на пробния месец и на плана (чл. 12.6) — src/abbonamenti/scadenze.ts.
   const avvisi = await avvisaScadenze(new Date(now));
-  // Плащанията без отговор: сверка с Revolut (изгубен webhook), след 2 дни — изтекли (src/pagamenti/riconcilia.ts).
-  const pagamenti = await riconciliaInSospeso(new Date(now));
+  // Плащанията без отговор: сверка с Revolut (изгубен webhook); след 7 дни — изтекли, ако Revolut каже „неплатена“.
+  const pagamenti =
+    (await riconciliaInSospeso(new Date(now))) + (await avviaPianiInCoda(new Date(now)));
   if (
     sessions +
       sfide +

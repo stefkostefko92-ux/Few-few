@@ -62,9 +62,11 @@
   <section aria-labelledby="h-abbonamento">
     <h2 class="section__title" id="h-abbonamento"><%= t('abbonamento.master.titolo') %></h2>
     <p><strong><%= t('abbonamento.stato.' + ab.stato.tipo + '.titolo', { data: datafine, livello: ab.stato.livello || '' }) %></strong></p>
+    <% if (ab.stato.poi) { %><p><%= t('abbonamento.poi', { livello: ab.stato.poi.livello, dal: fmt.dayRoma(ab.stato.poi.dal), data: fmt.dayRoma(new Date(ab.stato.poi.fino.getTime() - 1)) }) %></p><% } %>
     <p class="muted"><%= t('abbonamento.master.testo') %></p>
     <form class="row-form" method="post" action="/aziende/<%= azienda.id %>/abbonamento" novalidate>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="base" value="<%= azienda.abbonamentoFino ? azienda.abbonamentoFino.toISOString() : '' %>">
       <div class="field">
         <label class="field__label" for="abb-livello"><%= t('abbonamento.master.livello') %></label>
         <select class="select" id="abb-livello" name="livello">

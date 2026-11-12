@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto';
-import { maxPersone, scadenzaDopoMesi } from '../abbonamenti/regole.js';
+import { maxPersone } from '../abbonamenti/regole.js';
 import { COMPANY } from '../company.js';
 import { importoDi, type Importo } from './importi.js';
+import type { Credito } from './periodo.js';
 
 /**
  * Офертата (чл. 12.1 на условията 2026-11-12; текстът — Правният Разбирач, не е правен съвет): какво вижда и
@@ -44,9 +45,15 @@ export interface DatiOfferta {
   utentiAttuali: number;
   email: string;
   versione: string;
-  /** Краят на текущия период (пробата или планът) — новият започва от него, ако е напред. */
-  fineAttuale: Date | null;
-  now: Date;
+  /** Периодът (pagamenti/periodo.ts): кога започва, кога свършва, превърнатите платени дни. */
+  periodo: {
+    modo: 'coda' | 'subito' | 'superiore';
+    inizio: Date;
+    fine: Date;
+    credito: Credito | null;
+  };
+  /** Планът в опашка чака края на пробата (иначе — на сегашния план). */
+  dopoProva: boolean;
 }
 
 export interface Offerta {
@@ -60,10 +67,10 @@ export interface Offerta {
 
 export function offertaDi(t: T, d: DatiOfferta): Offerta {
   const importo = importoDi(d.prezzoCent, d.partitaIva.paese);
-  const inizio = d.fineAttuale && d.fineAttuale.getTime() > d.now.getTime() ? d.fineAttuale : d.now;
-  const fine = scadenzaDopoMesi(d.fineAttuale, d.mesi, d.now);
+  const { inizio, fine, credito, modo } = d.periodo;
   const ultimo = giorno.format(new Date(fine.getTime() - 1));
   const max = maxPersone(d.livello);
+  const durata = durataMesi(t, d.mesi);
   const righe = [
     t('pagamenti.offerta.titolo'),
     t('pagamenti.offerta.fornitore', {
@@ -83,11 +90,28 @@ export function offertaDi(t: T, d: DatiOfferta): Offerta {
           utenti: t('pagamenti.offerta.utenti', { n: max }),
           utentiAttuali: d.utentiAttuali,
         }),
-    t('pagamenti.offerta.durata', {
-      durata: durataMesi(t, d.mesi),
-      inizio: giorno.format(inizio),
-      fine: ultimo,
-    }),
+    credito && credito.giorniExtra > 0
+      ? t('pagamenti.offerta.durataCredito', {
+          durata,
+          extra: credito.giorniExtra,
+          inizio: giorno.format(inizio),
+          fine: ultimo,
+        })
+      : t('pagamenti.offerta.durata', { durata, inizio: giorno.format(inizio), fine: ultimo }),
+    modo === 'coda'
+      ? t(d.dopoProva ? 'pagamenti.offerta.inizioDopoProva' : 'pagamenti.offerta.inizioDopoPiano', {
+          inizio: giorno.format(inizio),
+        })
+      : t('pagamenti.offerta.inizioSubito'),
+    ...(credito
+      ? [
+          t('pagamenti.offerta.credito', {
+            giorni: credito.giorni,
+            valore: formatoEuro(credito.valoreCent),
+            extra: credito.giorniExtra,
+          }),
+        ]
+      : []),
     t('pagamenti.offerta.prezzo', { prezzo: formatoEuro(importo.imponibile) }),
     importo.regime === 'iva-bg'
       ? t('pagamenti.offerta.ivaBg', { iva: formatoEuro(importo.iva) })

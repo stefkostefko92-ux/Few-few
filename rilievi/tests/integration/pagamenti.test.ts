@@ -59,20 +59,33 @@ async function azienda(nome: string, fino = new Date(Date.now() + 10 * GIORNO), 
 const piano = (livello: number, mesi: number, prezzoCent: number) =>
   prisma.pianoAbbonamento.create({ data: { livello, mesi, prezzoCent } });
 
-const paga = (
+/**
+ * Accepting an offer: the offer the person has seen is the one sealed. A first submission with another
+ * fingerprint gets the offer for the data sent (409) — then it is accepted with its own fingerprint.
+ */
+async function paga(
   b: InstanceType<typeof Browser>,
   aziendaId: string,
   pianoId: string,
   extra: Record<string, string> = {},
-) =>
+) {
+  const campi = { azienda: aziendaId, piano: pianoId, ...dati, accetto: 'si', ...extra };
   // The token of the session (any page): the offer page itself is 404 where paying is refused.
-  b.submit('/account', '/impostazioni/abbonamento/paga', {
-    azienda: aziendaId,
-    piano: pianoId,
-    ...dati,
-    accetto: 'si',
-    ...extra,
+  const prima = await b.submit('/account', '/impostazioni/abbonamento/paga', {
+    ...campi,
+    hash: '0'.repeat(64),
   });
+  if (prima.status !== 409) return prima;
+  const hash = /name="hash" value="([0-9a-f]{64})"/.exec(prima.body)?.[1];
+  assert.ok(hash, 'the new offer to accept');
+  return b.submit('/account', '/impostazioni/abbonamento/paga', { ...campi, hash });
+}
+
+/** The copy of the offer leaves after the answer: wait for it a little. */
+async function attendiPosta(test: (m: { to: string; text: string }) => boolean) {
+  for (let i = 0; i < 40 && !outbox.some(test); i += 1) await new Promise((r) => setTimeout(r, 50));
+  return outbox.some(test);
+}
 
 describe('paying a plan', () => {
   it('records the offer, pays on Revolut, starts the plan at the end of the trial, once', async () => {
@@ -122,16 +135,23 @@ describe('paying a plan', () => {
     const fineProva = (await prisma.azienda.findUniqueOrThrow({ where: { id: a.id } }))
       .abbonamentoFino!;
     await browser.get(`/impostazioni/abbonamento/esito/${pagamento.id}`, HTML);
+    // The plan waits for the end of the trial (art. 12.3): the trial goes on as it is until then.
     const dopo = await prisma.azienda.findUniqueOrThrow({ where: { id: a.id } });
-    assert.equal(dopo.abbonamentoProva, false);
-    assert.equal(dopo.abbonamentoLivello, 1);
+    assert.equal(dopo.abbonamentoProva, true);
+    assert.equal(dopo.abbonamentoLivello, null);
+    assert.equal(dopo.abbonamentoCambioAt?.toISOString(), fineProva.toISOString());
+    assert.equal(dopo.abbonamentoCambioLivello, 1);
     assert.equal(
       dopo.abbonamentoFino?.toISOString(),
       scadenzaDopoMesi(fineProva, 12, new Date()).toISOString(),
     );
     const fatto = await prisma.pagamento.findUniqueOrThrow({ where: { id: pagamento.id } });
     assert.equal(fatto.stato, 'COMPLETATO');
-    assert.ok(outbox.some((m) => m.to === user.email && /Offerta Premium/.test(m.text)));
+    assert.equal(fatto.inizio?.toISOString(), fineProva.toISOString());
+    assert.ok(await attendiPosta((m) => m.to === user.email && /Offerta Premium/.test(m.text)));
+    const sezione = await browser.get(`/impostazioni/abbonamento?azienda=${a.id}`, HTML);
+    assert.match(sezione.body, /Prova gratuita fino al/);
+    assert.match(sezione.body, /Piano acquistato: livello 1 dal/);
     // Again (return page, then the webhook): nothing more.
     await browser.get(`/impostazioni/abbonamento/esito/${pagamento.id}`, HTML);
     const ev = eventoFirmato('ORDER_COMPLETED', ordine.id);

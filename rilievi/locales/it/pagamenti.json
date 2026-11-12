@@ -13,6 +13,11 @@
       "pianoOltre": "Piano: Premium oltre 25 utenti, senza limite di persone. Oggi l'azienda ne ha {utentiAttuali}.",
       "utenti": "{n} utenti",
       "durata": "Durata: {durata}, dal {inizio} al {fine} compreso (fino a mezzanotte, ora di Roma).",
+      "durataCredito": "Durata: {durata} più {extra} giorni, dal {inizio} al {fine} compreso (fino a mezzanotte, ora di Roma).",
+      "inizioDopoProva": "Il piano inizia il {inizio}, alla fine della prova gratuita: fino ad allora la prova continua come oggi.",
+      "inizioDopoPiano": "Il piano inizia il {inizio}, alla fine del piano attuale: fino ad allora il piano attuale resta com'è.",
+      "inizioSubito": "Il piano inizia alla conferma del pagamento.",
+      "credito": "Giorni già pagati: i {giorni} giorni che restano del piano attuale valgono {valore} € IVA esclusa e diventano {extra} giorni del nuovo piano, già compresi nella durata (art. 12.4 delle Condizioni).",
       "prezzo": "Prezzo: {prezzo} € IVA esclusa, da pagare ora in un'unica soluzione.",
       "ivaInversione": "Fattura senza IVA bulgara, con inversione contabile (art. 196 della Direttiva 2006/112/CE): l'IVA la applica la tua azienda nel suo Paese.",
       "ivaBg": "IVA bulgara 20 %: {iva} €.",
@@ -36,7 +41,8 @@
       "accetto": "Ho letto l'offerta e la accetto per conto di {azienda}.",
       "paga": "Accetta e paga {totale} €",
       "indietro": "Puoi ancora tornare indietro e correggere i dati: il pagamento parte solo con questo pulsante.",
-      "torna": "Torna all'abbonamento"
+      "torna": "Torna all'abbonamento",
+      "sandbox": "Ambiente di prova (Sandbox): il pagamento è simulato e non attiva l'abbonamento."
     },
     "errore": {
       "titolo": "Controlla i campi evidenziati.",
@@ -45,7 +51,10 @@
       "partitaIva": "Partita IVA non valida per un'azienda dell'UE.",
       "accetto": "Per pagare devi accettare l'offerta.",
       "persone": "Questo piano non basta: l'azienda ha {n} persone (inviti compresi). Scegli un livello superiore.",
-      "revolut": "Revolut non risponde in questo momento. Riprova tra qualche minuto: non è stato addebitato nulla."
+      "revolut": "Revolut non risponde in questo momento. Riprova tra qualche minuto: non è stato addebitato nulla.",
+      "cambiata": "Abbiamo aggiornato l'offerta con i dati che hai scritto (per esempio l'IVA o le date): leggila e conferma di nuovo. Non è stato addebitato nulla.",
+      "inCoda": "Hai già acquistato il prossimo piano: potrai sceglierne un altro quando sarà iniziato.",
+      "manuale": "Il piano attuale è stato attivato fuori dal portale: per passare a un livello superiore prima della scadenza scrivi a {email}."
     },
     "piani": {
       "titolo": "Scegli un piano",
@@ -55,12 +64,15 @@
       "scegliCosa": "il livello {livello} per {durata}",
       "nessuno": "Nessun piano disponibile in questo momento. Per attivare l'abbonamento scrivi a {email}.",
       "troppoPiccolo": "Non basta per {n} persone",
-      "inizio": "Se la prova o il piano attuale sono ancora in corso, il nuovo periodo inizia alla loro fine."
+      "inizio": "Se la prova o il piano attuale sono ancora in corso, il nuovo periodo inizia alla loro fine.",
+      "manuale": "Per questo livello prima della scadenza scrivi a {email}"
     },
     "esito": {
       "completato": "Pagamento ricevuto: l'abbonamento è attivo fino al {data}. Ti abbiamo inviato per email la copia dell'offerta.",
       "attesa": "Revolut non ha ancora confermato il pagamento. Se hai pagato, l'abbonamento si attiva appena arriva la conferma.",
-      "fallito": "Il pagamento non è andato a buon fine: non è stato addebitato nulla. Puoi riprovare."
+      "fallito": "Il pagamento non è andato a buon fine: non è stato addebitato nulla. Puoi riprovare.",
+      "completatoCoda": "Pagamento ricevuto: il nuovo piano inizia il {inizio} e vale fino al {data}. Ti abbiamo inviato per email la copia dell'offerta.",
+      "prova": "Pagamento di prova ricevuto (Sandbox): l'abbonamento non cambia."
     },
     "master": {
       "titolo": "Pagamenti",
@@ -120,11 +132,17 @@
         "FALLITO": "Non riuscito",
         "ANNULLATO": "Annullato",
         "SCADUTO": "Scaduto"
-      }
+      },
+      "password": "Per cambiare la chiave o l'ambiente scrivi la tua password.",
+      "passwordCampo": "La tua password",
+      "passwordHint": "Serve solo se cambi la chiave o l'ambiente."
     },
     "mail": {
       "subject": "Pagamento ricevuto — {azienda} — Rilievi Impianti",
-      "body": "Ciao,\n\nabbiamo ricevuto il pagamento di {totale} € per {azienda}: l'abbonamento è attivo fino al {data}.\n\nQui sotto la copia dell'offerta che hai accettato.\n\n{offerta}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      "body": "Ciao,\n\nabbiamo ricevuto il pagamento di {totale} € per {azienda}: l'abbonamento è attivo fino al {data}.\n\nQui sotto la copia dell'offerta che hai accettato.\n\n{offerta}\n\nCarbon Stealth VCC — https://carbonstealth.eu",
+      "cambiatiSubject": "Pagamenti: impostazioni di Revolut cambiate — Rilievi Impianti",
+      "cambiatiChiave": "Ciao,\n\n{chi} ha inserito una nuova chiave di Revolut per i pagamenti (ambiente: {ambiente}).\n\nSe non sei stato tu o un collega, cambia subito la password e controlla la pagina Pagamenti della console.\n\nCarbon Stealth VCC — https://carbonstealth.eu",
+      "cambiatiAmbiente": "Ciao,\n\n{chi} ha cambiato l'ambiente dei pagamenti di Revolut: ora è {ambiente}.\n\nSe non sei stato tu o un collega, cambia subito la password e controlla la pagina Pagamenti della console.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
     }
   }
 }

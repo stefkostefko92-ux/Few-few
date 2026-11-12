@@ -21,6 +21,7 @@ export const MEMBERSHIP_SELECT = {
       preventiviAttivi: true,
       abbonamentoFino: true,
       abbonamentoProva: true,
+      abbonamentoCambioAt: true,
       cambioFineAt: true,
     },
   },
@@ -38,6 +39,7 @@ interface MembershipRow {
     preventiviAttivi?: boolean;
     abbonamentoFino?: Date | null;
     abbonamentoProva?: boolean;
+    abbonamentoCambioAt?: Date | null;
     cambioFineAt?: Date | null;
   };
 }
@@ -69,7 +71,10 @@ export function activeMemberships(
       ...(row.azienda.deactivatedAt === null ? {} : { soloEsportazione: true as const }),
       // Абонаментът е изтекъл: фирмата само чете (auth/scope.ts); краят — за лентата над страниците.
       ...(row.azienda.abbonamentoFino ? { abbonamentoFino: row.azienda.abbonamentoFino } : {}),
-      ...(row.azienda.abbonamentoProva ? { abbonamentoProva: true as const } : {}),
+      // Пробата, която свършва с абонамента: с план в опашка краят е на платения план, не на пробата.
+      ...(row.azienda.abbonamentoProva && !row.azienda.abbonamentoCambioAt
+        ? { abbonamentoProva: true as const }
+        : {}),
       // Само четене — не докато тече смяната на доставчика (чл. 12.7 и 17.3: услугата продължава изцяло).
       ...(row.azienda.abbonamentoFino &&
       row.azienda.abbonamentoFino.getTime() <= now &&

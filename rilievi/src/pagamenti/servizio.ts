@@ -1,5 +1,5 @@
 import { personeOccupate } from '../abbonamenti/persone.js';
-import { maxPersone } from '../abbonamenti/regole.js';
+import { maxPersone, statoAbbonamento } from '../abbonamenti/regole.js';
 import { writeAudit } from '../audit.js';
 import { config } from '../config.js';
 import { prisma } from '../db.js';
@@ -10,6 +10,8 @@ import { logger } from '../logger.js';
 import type { SessionUser } from '../types.js';
 import { clienteAttivo, originiCheckout } from './config.js';
 import { offertaDi } from './offerta.js';
+import { periodoDi } from './periodo.js';
+import { situazioneDi } from './situazione.js';
 import { segnaFallito } from './riconcilia.js';
 import { creaOrdine, ErroreRevolut } from './revolut.js';
 
@@ -48,7 +50,10 @@ export const CAMPI_OFFERTA = [
 
 export type EsitoAvvio =
   | { ok: true; checkoutUrl: string }
-  | { ok: false; errore: 'spenti' | 'piano' | 'persone' | 'revolut' };
+  | {
+      ok: false;
+      errore: 'spenti' | 'piano' | 'persone' | 'revolut' | 'cambiata' | 'inCoda' | 'manuale';
+    };
 
 export interface Dichiarati {
   ragioneSociale: string;
@@ -56,7 +61,7 @@ export interface Dichiarati {
   partitaIva: { numero: string; paese: string };
 }
 
-/** Офертата за показване и за записа — от плана и от фирмата сега. */
+/** Офертата за показване и за записа — от плана и от фирмата сега; периодът — pagamenti/periodo.ts. */
 export async function preparaOfferta(
   t: T,
   user: { email: string },
@@ -67,21 +72,27 @@ export async function preparaOfferta(
 ) {
   const azienda = await prisma.azienda.findUniqueOrThrow({
     where: { id: aziendaId },
-    select: { name: true, abbonamentoFino: true },
+    select: { name: true, abbonamentoFino: true, abbonamentoLivello: true },
   });
-  const posti = await personeOccupate(prisma, aziendaId, now);
+  const [posti, { campi, segmenti }] = await Promise.all([
+    personeOccupate(prisma, aziendaId, now),
+    situazioneDi(prisma, aziendaId, now),
+  ]);
   const occupati = posti.membri + posti.inviti;
+  const periodo = periodoDi(campi, segmenti, piano, now);
+  const max = maxPersone(piano.livello);
+  const basta = max === null || occupati <= max;
+  if (!periodo.ok) return { azienda, occupati, basta, errore: periodo.errore, offerta: null };
   const offerta = offertaDi(t, {
     ...dichiarati,
     ...piano,
     utentiAttuali: occupati,
     email: user.email,
     versione: VERSIONE.CONDIZIONI,
-    fineAttuale: azienda.abbonamentoFino,
-    now,
+    periodo,
+    dopoProva: statoAbbonamento(campi, now).tipo === 'prova',
   });
-  const max = maxPersone(piano.livello);
-  return { azienda, offerta, occupati, basta: max === null || occupati <= max };
+  return { azienda, occupati, basta, errore: null, offerta, periodo };
 }
 
 export async function avviaPagamento(
@@ -91,23 +102,35 @@ export async function avviaPagamento(
   pianoId: string,
   dichiarati: Dichiarati,
   ctx: { ip: string | null; userAgent: string | null },
+  /** Отпечатъкът на офертата, която човекът е видял и приел (скритото поле на формата). */
+  hashVisto: string,
 ): Promise<EsitoAvvio> {
   const cli = await clienteAttivo();
   if (!cli) return { ok: false, errore: 'spenti' };
   const piano = await prisma.pianoAbbonamento.findFirst({ where: { id: pianoId, attivo: true } });
   if (!piano) return { ok: false, errore: 'piano' };
   const now = new Date();
-  const { azienda, offerta, basta } = await preparaOfferta(
-    t,
-    user,
-    aziendaId,
-    piano,
-    dichiarati,
-    now,
-  );
+  const pronta = await preparaOfferta(t, user, aziendaId, piano, dichiarati, now);
+  const { azienda, offerta, basta } = pronta;
   // „Без срок“ (фирмите отпреди — чл. 12.8) не купува: планът би въвел срок, който още не важи за нея.
-  if (!azienda.abbonamentoFino) return { ok: false, errore: 'piano' };
+  if (!offerta)
+    return { ok: false, errore: pronta.errore === 'senzaScadenza' ? 'piano' : pronta.errore };
   if (!basta) return { ok: false, errore: 'persone' };
+  // Запечатва се само офертата, която човекът е видял (чл. 12.1): друга (сменени данни, ДДС, ден) — наново.
+  if (hashVisto !== offerta.hash) return { ok: false, errore: 'cambiata' };
+  // Второ „Accetta e paga“ на същата оферта (назад, втори раздел) — същата поръчка, не втора.
+  const stessa = await prisma.pagamento.findFirst({
+    where: {
+      aziendaId,
+      offertaHash: offerta.hash,
+      stato: 'IN_ATTESA',
+      checkoutUrl: { not: null },
+      createdAt: { gt: new Date(now.getTime() - 50 * 60_000) },
+    },
+    select: { checkoutUrl: true },
+  });
+  if (stessa?.checkoutUrl) return { ok: true, checkoutUrl: stessa.checkoutUrl };
+  const periodo = pronta.periodo;
   const pagamento = await prisma.$transaction(async (tx) => {
     const p = await tx.pagamento.create({
       data: {
@@ -125,6 +148,12 @@ export async function avviaPagamento(
         partitaIva: dichiarati.partitaIva.numero,
         ambiente: cli.ambiente,
         createdById: user.id,
+        offertaHash: offerta.hash,
+        inizio: periodo.inizio,
+        fine: periodo.fine,
+        creditoCent: periodo.credito?.valoreCent ?? 0,
+        baseFino: azienda.abbonamentoFino,
+        baseLivello: azienda.abbonamentoLivello,
       },
     });
     const campi = {

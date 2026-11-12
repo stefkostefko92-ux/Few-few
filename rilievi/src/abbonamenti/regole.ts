@@ -50,39 +50,64 @@ export interface CampiAbbonamento {
   abbonamentoFino: Date | null;
   abbonamentoProva: boolean;
   abbonamentoLivello: number | null;
+  /** Платеният план в опашка (чл. 12.3): от `abbonamentoCambioAt` нивото е `abbonamentoCambioLivello`. */
+  abbonamentoCambioAt?: Date | null;
+  abbonamentoCambioLivello?: number | null;
 }
 
 export type TipoAbbonamento = 'illimitato' | 'prova' | 'attivo' | 'scaduto';
 
 export interface StatoAbbonamento {
   tipo: TipoAbbonamento;
+  /** Краят на текущата част (пробата или планът сега); при план в опашка — денят, от който започва той. */
   fino: Date | null;
   livello: number | null;
   maxPersone: number | null;
   solaLettura: boolean;
+  /** Планът в опашка: нивото и краят на абонамента. */
+  poi: { dal: Date; livello: number; fino: Date } | null;
+}
+
+/** Нивото и пробата сега — с плана от опашката, ако вече е започнал. */
+export function abbonamentoAdesso(a: CampiAbbonamento, now: Date) {
+  const cambioAt = a.abbonamentoCambioAt ?? null;
+  const cambioLivello = a.abbonamentoCambioLivello ?? null;
+  const iniziato = cambioAt !== null && cambioAt.getTime() <= now.getTime();
+  return {
+    livello: iniziato ? cambioLivello : a.abbonamentoLivello,
+    prova: iniziato ? false : a.abbonamentoProva,
+    coda:
+      cambioAt !== null && !iniziato && cambioLivello !== null
+        ? { dal: cambioAt, livello: cambioLivello }
+        : null,
+  };
 }
 
 /**
  * Без срок (фирмите отпреди абонаментите — докато собственикът реши) — без таван; пробният месец — без таван
- * на хората; платеният — по нивото; изтеклият (и пробният) — само четене.
+ * на хората; платеният — по нивото; изтеклият — само четене. План в опашка: до деня си важи пробата или
+ * досегашният план (чл. 12.3).
  */
 export function statoAbbonamento(a: CampiAbbonamento, now: Date): StatoAbbonamento {
+  const { livello, prova, coda } = abbonamentoAdesso(a, now);
   if (a.abbonamentoFino === null) {
     return {
       tipo: 'illimitato',
       fino: null,
-      livello: a.abbonamentoLivello,
-      maxPersone: maxPersone(a.abbonamentoLivello),
+      livello,
+      maxPersone: maxPersone(livello),
       solaLettura: false,
+      poi: null,
     };
   }
   const scaduto = a.abbonamentoFino.getTime() <= now.getTime();
   return {
-    tipo: scaduto ? 'scaduto' : a.abbonamentoProva ? 'prova' : 'attivo',
-    fino: a.abbonamentoFino,
-    livello: a.abbonamentoLivello,
-    maxPersone: a.abbonamentoProva && !scaduto ? null : maxPersone(a.abbonamentoLivello),
+    tipo: scaduto ? 'scaduto' : prova ? 'prova' : 'attivo',
+    fino: coda && !scaduto ? coda.dal : a.abbonamentoFino,
+    livello,
+    maxPersone: prova && !scaduto ? null : maxPersone(livello),
     solaLettura: scaduto,
+    poi: coda && !scaduto ? { ...coda, fino: a.abbonamentoFino } : null,
   };
 }
 

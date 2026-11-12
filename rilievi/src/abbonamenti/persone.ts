@@ -15,7 +15,13 @@ export async function postoLibero(
   await tx.$queryRaw`SELECT id FROM "Azienda" WHERE id = ${aziendaId} FOR UPDATE`;
   const azienda = await tx.azienda.findUnique({
     where: { id: aziendaId },
-    select: { abbonamentoFino: true, abbonamentoProva: true, abbonamentoLivello: true },
+    select: {
+      abbonamentoFino: true,
+      abbonamentoProva: true,
+      abbonamentoLivello: true,
+      abbonamentoCambioAt: true,
+      abbonamentoCambioLivello: true,
+    },
   });
   if (!azienda) return false;
   const max = statoAbbonamento(azienda, now).maxPersone;

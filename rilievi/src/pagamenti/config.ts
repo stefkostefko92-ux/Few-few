@@ -3,7 +3,15 @@ import { writeAudit } from '../audit.js';
 import { cifraRevolut, decifraRevolut } from '../auth/chiavi.js';
 import { config, isProduction } from '../config.js';
 import { prisma } from '../db.js';
-import { BASI, ORIGINI_CHECKOUT, registraWebhook, type ClienteRevolut } from './revolut.js';
+import { logger } from '../logger.js';
+import {
+  BASI,
+  eliminaWebhook,
+  ErroreRevolut,
+  ORIGINI_CHECKOUT,
+  registraWebhook,
+  type ClienteRevolut,
+} from './revolut.js';
 
 /**
  * Настройката на плащанията (#31 — собственикът: „да мога да конфигурирам напълно от настройките на мастър акаунта
@@ -68,8 +76,11 @@ export async function salvaConfig(
 ): Promise<EsitoConfig> {
   const esistente = await prisma.configPagamenti.findUnique({ where: { id: 'revolut' } });
   if (v.attivo && !v.chiave && !esistente?.chiaveEnc) return 'senzaChiave';
-  // Нов ключ или друга среда — webhook-ът на старата вече не е наш: регистрира се наново.
+  // Нов ключ или друга среда — webhook-ът на старата вече не е наш: маха се със стария ключ и се регистрира наново.
   const cambio = v.chiave !== null || (esistente && esistente.ambiente !== v.ambiente);
+  const vecchia = esistente?.chiaveEnc ? decifraRevolut(esistente.chiaveEnc) : null;
+  if (cambio && esistente?.webhookId && vecchia)
+    await togliWebhook({ base: baseDi(esistente.ambiente), chiave: vecchia }, esistente.webhookId);
   const dati = {
     attivo: v.attivo,
     ambiente: v.ambiente,
@@ -98,10 +109,10 @@ export async function salvaConfig(
 export async function registraIlWebhook(actorId: string): Promise<'ok' | 'senzaChiave'> {
   const cfg = await leggiConfig();
   if (!cfg.chiave) return 'senzaChiave';
-  const w = await registraWebhook(
-    { base: baseDi(cfg.ambiente), chiave: cfg.chiave },
-    `${config().PUBLIC_BASE_URL}/webhook/revolut`,
-  );
+  const cliente = { base: baseDi(cfg.ambiente), chiave: cfg.chiave };
+  // Наново — първо старият (иначе всяко известие идва два пъти, а след 10 Revolut отказва).
+  if (cfg.webhookId) await togliWebhook(cliente, cfg.webhookId);
+  const w = await registraWebhook(cliente, `${config().PUBLIC_BASE_URL}/webhook/revolut`);
   await prisma.$transaction(async (tx) => {
     await tx.configPagamenti.update({
       where: { id: 'revolut' },
@@ -120,4 +131,14 @@ export async function registraIlWebhook(actorId: string): Promise<'ok' | 'senzaC
     );
   });
   return 'ok';
+}
+
+/** Маха webhook-а в Revolut; неуспехът само се записва в лога (вече изтрит, друг акаунт, срив). */
+async function togliWebhook(c: ClienteRevolut, id: string): Promise<void> {
+  try {
+    await eliminaWebhook(c, id);
+  } catch (error) {
+    if (!(error instanceof ErroreRevolut)) throw error;
+    logger.warn({ stato: error.stato }, 'revolut: il vecchio webhook non è stato tolto');
+  }
 }
