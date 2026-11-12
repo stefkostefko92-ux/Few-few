@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 628
+        "lessons": 631
       },
       "evolution": [
         {
@@ -2037,9 +2037,20 @@
           "date": "2026-11-11",
           "event": "v56.9 — учене",
           "detail": "Научи: Express обработчик на грешки, който винаги връща 500, превръща грешките на body-parser … (+8 още)"
+        },
+        {
+          "version": "57.1.0",
+          "date": "2026-11-12",
+          "event": "v57.1 — учене",
+          "detail": "Научи: В SupremeDiscordBot event модулите от bot/src/events се закачат и на главния, и на всек… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „В SupremeDiscordBot event модулите от bot/src/events се закачат и на главния, и на всек…\" (+1 още)"
+        },
         {
           "date": "2026-11-11",
           "type": "learning",
