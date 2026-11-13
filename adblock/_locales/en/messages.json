@@ -935,5 +935,9 @@
   "opt_who_row": {
     "message": "Requests: $1 · Days: $2",
     "description": "Settings: one company's row. $1 = blocked requests, $2 = days seen (of the last 30)."
+  },
+  "managedNote": {
+    "message": "Set by your organization",
+    "description": "Popup + Settings: on a control an administrator's policy locks (enterprise)."
   }
 }

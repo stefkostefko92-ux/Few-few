@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Požiadavky: $1 · Dni: $2"
+  },
+  "managedNote": {
+    "message": "Nastavené vašou organizáciou"
   }
 }

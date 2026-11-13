@@ -102,6 +102,12 @@ try {
     }
   }
 
+  // the first install registers the page scripts (6.0: by protection level, not the manifest) a few seconds in
+  for (let i = 0; i < 40; i++) {
+    if (await sw.evaluate(async () => (await chrome.scripting.getRegisteredContentScripts()).some((c) => c.id === "sa-page-standard-content"))) break;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+
   // ---- procedural policy in the isolated world (every source, here "My filters") ----
   await setStore({
     enabled: true, allowlist: [],
@@ -328,6 +334,45 @@ try {
     const card = await op.evaluate(() => ({ hidden: document.getElementById("whoCard").hidden, rows: [...document.querySelectorAll("#whoList li .who-name")].map((e) => e.textContent) }));
     ok(`who: Settings shows the card with Google in it (${JSON.stringify(card)})`, card.hidden === false && card.rows.includes("Google"));
     await op.close(); await tp.close();
+  }
+
+  // ---- 6.1 an administrator's policy: Settings and the popup lock what it sets, the SW refuses the rest.
+  //      The policy SOURCE is stubbed (writing Chrome's policy directory needs root on the test machine);
+  //      validation, enforcement and the UI are the real ones. ----
+  {
+    const extId = sw.url().split("/")[2];
+    await sw.evaluate(async () => {
+      self.__realPolicy = managedPolicy;
+      // what a read of chrome.storage.managed would give: the full read (managedPolicy) and the cached one (policyValue)
+      policyValue = SA_MANAGED.clean({ mode: "strict", disablePause: true, allowlist: ["corp.example"], features: { cookies: false } });
+      managedPolicy = async () => policyValue;
+      await enforceManaged();
+    });
+    const op = await ctx.newPage();
+    await op.goto(`chrome-extension://${extId}/options/options.html`);
+    await op.waitForTimeout(900);
+    const o = await op.evaluate(() => {
+      const $ = (id) => document.getElementById(id);
+      const corp = [...document.querySelectorAll("#allowList button[data-host]")].find((b) => b.dataset.host === "corp.example");
+      return { banner: !$("managedBanner").hidden, mode: $("modeSelect").disabled ? $("modeSelect").value : "unlocked", cookies: $("featCookies").disabled && !$("featCookies").checked,
+        gpc: $("featGpc").disabled, corp: !!corp && corp.disabled, note: $("modeSelect").title };
+    });
+    ok(`policy: Settings shows the banner and locks the level, the feature and the allowed site, nothing else (${JSON.stringify(o)})`,
+      o.banner && o.mode === "strict" && o.cookies && o.gpc === false && o.corp && /organi[sz]ation/i.test(o.note));
+    const refused = await op.evaluate(() => new Promise((r) => chrome.runtime.sendMessage({ type: "setMode", mode: "basic" }, r)));
+    ok("policy: the service worker refuses a locked change sent anyway", refused && refused.ok === false && refused.reason === "managed");
+    const pp = await ctx.newPage();
+    await pp.goto(`chrome-extension://${extId}/popup/popup.html`);
+    await pp.waitForTimeout(700);
+    const pu = await pp.evaluate(() => ({ toggle: document.getElementById("toggle").disabled, pause: document.getElementById("pauseBtn").disabled }));
+    ok(`policy: no switch-off and no pause in the popup (${JSON.stringify(pu)})`, pu.toggle && pu.pause);
+    await pp.close(); await op.close();
+    await sw.evaluate(async () => {
+      managedPolicy = self.__realPolicy;
+      policyValue = null; policyP = null;
+      await chrome.storage.local.set({ mode: "standard", allowlist: [], features: { ...(await chrome.storage.local.get("features")).features, cookies: true } });
+      await syncAllowRules(); await syncPageScripts(); await applyState();
+    });
   }
 } finally {
   await ctx.close();

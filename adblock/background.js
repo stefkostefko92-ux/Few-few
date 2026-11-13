@@ -6,7 +6,7 @@
 // Firefox (MV3 event page) has no importScripts: its manifest lists the same
 // files before this one (tools/package.sh builds that variant). lib/modes.js (6.0):
 // the protection modes — which page scripts are registered where.
-if (typeof importScripts === "function") importScripts("scriptlets/policy.js", "lib/abp2dnr.js", "lib/modes.js", "lib/who.js");
+if (typeof importScripts === "function") importScripts("scriptlets/policy.js", "lib/abp2dnr.js", "lib/modes.js", "lib/who.js", "lib/managed.js");
 
 const RULESET_IDS = ["ad_rules", "youtube_rules", "easylist", "easyprivacy", "removeparam", "urlhaus", "surrogates", "headers", "privacy", "gpc"];
 
@@ -26,6 +26,7 @@ async function getRuleCounts() {
 // Dynamic-rule id ranges, kept clear of the static rulesets.
 const YT_BYPASS_RULE_ID = 70000; // YouTube session bypass (allowAllRequests); below every sync range
 const PAUSE_RULE_ID = 69999;      // off / paused: one allowAllRequests rule above everything (dynamic rules too)
+const PAUSE_ALLOW_RULE_ID = 69997; // …and a plain allow for every request (6.1: allowAllRequests alone races — see setPauseRule)
 const FAKE_GV_RULE_ID = 69998;    // YouTube's fake googlevideo request (expire time in the past) — see fakeGvRule
 const DANGER_RULE_BASE = 69000;   // malware sites: the navigation goes to the warning page (≤ 50 rules)
 const DANGER_RULE_END = 69050;
@@ -322,6 +323,9 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     patch.noCosmetics = [];
   }
   if (Object.keys(patch).length) await chrome.storage.local.set(patch);
+  // 6.1: an administrator's policy — read in parallel: the first managed read takes ~2 s and must not delay
+  // the page scripts for everyone; with a policy, what it changes is applied (and re-synced) when it arrives
+  enforceManaged().catch((e) => console.warn("managed policy", e));
   // An update wipes alarms: without this a pause in progress lost its resume
   // alarm and protection stayed OFF until the next browser restart.
   await restorePause();
@@ -349,6 +353,7 @@ chrome.runtime.onStartup.addListener(async () => {
     "liveConfig",
   ]);
   if (sync) await pullFromSync();
+  enforceManaged().catch((e) => console.warn("managed policy", e)); // 6.1: in parallel (see onInstalled); it wins over sync
   await restorePause(pausedUntil);
   await syncPageScripts();
   await applyState();
@@ -434,6 +439,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
       await chrome.storage.local.set(diff);
       // 6.0: a mode from another device → its page scripts (applyState below does the MAIN-world ones).
       // Every writer of mode/siteModes calls this itself — a storage listener ran it twice per change.
+      await applyManaged(); // 6.1: another device cannot undo the administrator's policy
       if ("mode" in diff || "siteModes" in diff) await syncPageScripts();
       await applyState();
       await syncAllowRules();
@@ -441,6 +447,61 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
       await syncSiteBlocks();
     }
   }
+});
+
+// ---- 6.1 Managed policies (docs/ENTERPRISE.md): what an administrator sets in chrome.storage.managed ----
+// Read once per worker life (and again when the policy changes), validated by lib/managed.js; the
+// enforced values are written into storage.local, so everything else reads the state as before.
+// The first chrome.storage.managed.get after an install or a browser start takes ~2 s (Chrome loads the
+// schema; measured): the popup and the guards must not wait for it. policyNow() answers at once from the
+// last policy read (kept in storage.local as managedCache); the full read updates it.
+let policyP = null;
+let policyValue = null;
+function managedPolicy() {
+  if (!policyP) {
+    policyP = (async () => {
+      let raw = {};
+      try { raw = chrome.storage.managed ? await chrome.storage.managed.get(null) : {}; } catch { raw = {}; } // no policy → it may throw
+      let ids = null;
+      try { ids = (await getListCatalog()).map((e) => e.id); } catch {}
+      const policy = SA_MANAGED.clean(raw, ids);
+      policyValue = policy;
+      try { await chrome.storage.local.set({ managedCache: policy }); } catch {}
+      return policy;
+    })();
+  }
+  return policyP;
+}
+async function policyNow() {
+  if (policyValue) return policyValue;
+  managedPolicy().catch(() => {}); // the full read goes on; this answer must not wait for it
+  try { return SA_MANAGED.clean((await chrome.storage.local.get("managedCache")).managedCache, null); } catch { return {}; }
+}
+// Write what the policy enforces; returns the patch (null = nothing to do). Callers re-apply what depends on it.
+async function applyManaged() {
+  const policy = await managedPolicy();
+  if (!Object.keys(policy).length) return null;
+  const state = await chrome.storage.local.get(["mode", "siteModes", "allowlist", "features", "lists", "autoUpdate", "reviewAsk", "sync", "enabled", "pausedUntil"]);
+  const patch = SA_MANAGED.apply(state, policy);
+  if (!Object.keys(patch).length) return null;
+  if (patch.enabled) { try { await chrome.alarms.clear("resume"); } catch {} }
+  await chrome.storage.local.set(patch);
+  return patch;
+}
+async function enforceManaged() {
+  const patch = await applyManaged();
+  if (!patch) return;
+  if ("mode" in patch || "siteModes" in patch) await syncPageScripts();
+  if ("allowlist" in patch) await syncAllowRules();
+  await applyState(); // rulesets, lists, the pause rule and the MAIN-world scripts
+}
+const managedRefused = { ok: false, reason: "managed" };
+// the administrator changed the policy (Chrome re-reads it at most every few hours): apply it now
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "managed") return;
+  policyP = null;
+  policyValue = null;
+  enforceManaged().catch((e) => console.warn("managed policy", e));
 });
 
 // Restore or expire a pending pause (install/update AND browser start: alarms
@@ -456,6 +517,7 @@ async function restorePause(pausedUntil) {
 
 // temporary pause, auto-resumes via alarm
 async function pauseFor(minutes) {
+  if (!SA_MANAGED.allows(await policyNow(), { kind: "pause" })) return false; // 6.1: disablePause
   const now = Date.now();
   const until = now + minutes * 60000;
   // само кога (без сайт): 3 паузи за 7 дни са признак, че сайтове се чупят — картата „Сайтовете се чупят?“
@@ -481,7 +543,9 @@ async function expireAllows(now = Date.now()) {
   if (!due.length) return armAllowAlarm(allowUntil);
   const rest = { ...allowUntil };
   for (const h of due) delete rest[h];
-  await chrome.storage.local.set({ allowUntil: rest, allowlist: allowlist.filter((d) => !due.includes(d)) });
+  const policy = await policyNow(); // a site the policy allows stays allowed when the user's hour is up
+  const expire = due.filter((d) => SA_MANAGED.allows(policy, { kind: "allow", host: d, allow: false }));
+  await chrome.storage.local.set({ allowUntil: rest, allowlist: allowlist.filter((d) => !expire.includes(d)) });
   await syncAllowRules();
   await syncScriptlets();
   armAllowAlarm(rest);
@@ -499,6 +563,7 @@ async function setAllowHost(rawHost, allow, minutes) {
   let list = allowlist;
   const h = typeof rawHost === "string" ? rawHost.trim().toLowerCase() : "";
   if (!isHost(h)) return { ok: false, reason: "invalid host", allowlist: list };
+  if (!SA_MANAGED.allows(await policyNow(), { kind: "allow", host: h, allow })) return { ...managedRefused, allowlist: list };
   const until = { ...allowUntil };
   if (allow) {
     if (!list.includes(h)) {
@@ -544,7 +609,7 @@ chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === "resume") resumeNow();
   if (a.name === "allow-expire") expireAllows();
   if (a.name === "config-update") { fetchLiveConfig(); syncFakeGvRule(); }
-  if (a.name === "scriptlets-retry") syncScriptlets();
+  if (a.name === "scriptlets-retry") { syncPageScripts(); syncScriptlets(); } // 6.1: the page scripts too
   if (a.name === "subs-refresh") { refreshAllSubscriptions(); syncRemoteLists(undefined, true); }
   if (a.name === "yt-bypass-expire") chrome.storage.local.remove("ytBypassUntil").then(() => setYtBypassRule(false)).then(() => syncScriptlets());
 });
@@ -672,11 +737,16 @@ function syncPageScripts() {
 // 6.0: one site's mode (the popup's "Protection here", the repair page); the global mode clears the entry
 async function setSiteMode(host, want) {
   const site = typeof host === "string" ? host.trim().toLowerCase().replace(/^www\./, "") : "";
-  if (!isHost(site) || !SA_MODES.MODES.includes(want)) return { ok: false };
+  // the same host rule as the plan (lib/modes.js) — an entry the plan would drop must never be stored
+  if (!SA_MODES.isHost(site) || !SA_MODES.MODES.includes(want)) return { ok: false };
+  if (!SA_MANAGED.allows(await policyNow(), { kind: "siteMode", host: site })) return managedRefused;
   const { mode, siteModes } = await chrome.storage.local.get(["mode", "siteModes"]);
   const next = SA_MODES.cleanSiteModes(siteModes);
-  if (want === SA_MODES.normMode(mode)) delete next[site]; else next[site] = want;
-  if (Object.keys(next).length > 2000) return { ok: false, reason: "full" };
+  // the entry goes only if the site would get that level anyway — from its parent site's entry
+  // (example.com Basic → news.example.com set to Standard must be stored) or the global level
+  delete next[site];
+  if (SA_MODES.effectiveMode(site, mode, next) !== want) next[site] = want;
+  if (Object.keys(next).length > SA_MODES.MAX_SITES) return { ok: false, reason: "full" };
   await chrome.storage.local.set({ siteModes: next });
   await syncPageScripts();
   await syncScriptlets(); // main.js follows the level too (top frame / every frame / none)
@@ -702,14 +772,26 @@ async function doSyncPageScripts() {
     if (cur.length && sameRegistrations(cur, plan(siteModes))) return;
     if (cur.length) await scripting("unregisterContentScripts", { ids: cur.map((c) => c.id) });
   } catch (e) {}
+  // a failure is shown in Settings → engine health and retried in a minute (6.1: it was only a console line,
+  // and pages stayed without content.js until the next browser start)
+  const report = async (msg) => {
+    try { await chrome.storage.local.set({ pageScriptsError: msg }); } catch {}
+    if (msg) try { chrome.alarms.create("scriptlets-retry", { delayInMinutes: 1 }); } catch {}
+  };
   try {
     const p = plan(siteModes);
     if (p.length) await scripting("registerContentScripts", p);
+    await report("");
   } catch (e) {
     // a site entry Chrome refused must not leave every page without content scripts: the global mode alone
     console.warn("page scripts: per-site modes refused, global mode only", e);
-    const p = plan({});
-    if (p.length) await scripting("registerContentScripts", p);
+    try {
+      const p = plan({});
+      if (p.length) await scripting("registerContentScripts", p);
+      await report("per-site levels refused: " + String((e && e.message) || e));
+    } catch (e2) {
+      await report(String((e2 && e2.message) || e2));
+    }
   }
 }
 
@@ -759,7 +841,9 @@ async function scriptletPlan() {
     return out;
   };
   const allowPatterns = hostPatterns(allowlist);
-  const excludeMatches = hostPatterns(allowlist.concat(SA_MODES.basicSites(siteModes)));
+  // allowed sites + the sites that start a Basic region (a Basic parent with a site set higher below it is
+  // excluded exactly, so the subdomain keeps these — lib/modes.js basicExcludes)
+  const excludeMatches = hostPatterns(allowlist).concat(SA_MODES.basicExcludes(mode, siteModes));
 
   // uBlock Origin directives: DATA chunks (scriptlets/ubo/cNN.js) registered right
   // before the chunk build of the engine (scriptlets/ubo_engine.js), only on their own
@@ -837,16 +921,33 @@ async function scriptletPlan() {
   return all;
 }
 
+// 6.1: every writer of our dynamic DNR rules goes through ONE queue — each reads getDynamicRules() and then
+// replaces its range; two overlapping runs of the same writer (a sync from another device while the popup
+// allows a site) added the same ids twice, Chrome refused the second update and the older state stayed.
+// (The author-hosted lists keep their own queue: they wait on the network, and own a separate id range.)
+let dnrChain = Promise.resolve();
+function inDnrQueue(fn) {
+  const run = dnrChain.then(fn);
+  dnrChain = run.catch(() => {});
+  return run;
+}
+
 // Off / paused: static rulesets are switched off above, but DYNAMIC rules (live
 // channel, "My filters", author-hosted lists) are not rulesets — without this rule
 // they kept blocking during a pause. One allowAllRequests rule above every other
 // priority lets each page and everything it loads through while off.
-async function setPauseRule(paused) {
+function setPauseRule(paused) { return inDnrQueue(() => setPauseRuleNow(paused)); }
+async function setPauseRuleNow(paused) {
   try {
+    // allowAllRequests is attached to a frame when its navigation commits; a subresource the page asks for
+    // right away could still meet a dynamic block rule (1 in 6 pause cycles, measured in Chromium 2026-11-13).
+    // The plain allow (every type but main_frame) matches each request on its own, so nothing slips through.
     await chrome.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: [PAUSE_RULE_ID],
-      addRules: paused ? [{ id: PAUSE_RULE_ID, priority: 30000, action: { type: "allowAllRequests" },
-        condition: { resourceTypes: ["main_frame", "sub_frame"] } }] : [],
+      removeRuleIds: [PAUSE_RULE_ID, PAUSE_ALLOW_RULE_ID],
+      addRules: paused ? [
+        { id: PAUSE_RULE_ID, priority: 30000, action: { type: "allowAllRequests" }, condition: { resourceTypes: ["main_frame", "sub_frame"] } },
+        { id: PAUSE_ALLOW_RULE_ID, priority: 30000, action: { type: "allow" }, condition: {} },
+      ] : [],
     });
   } catch (e) {
     console.warn("pause rule update failed", e);
@@ -868,7 +969,8 @@ const cleanSiteBlocks = (v) => {
   }
   return out;
 };
-async function syncSiteBlocks() {
+function syncSiteBlocks() { return inDnrQueue(() => syncSiteBlocksNow()); }
+async function syncSiteBlocksNow() {
   try {
     const { siteBlocks = {} } = await chrome.storage.local.get("siteBlocks");
     const existing = (await chrome.declarativeNetRequest.getDynamicRules())
@@ -905,7 +1007,8 @@ async function dangerDomains() {
   return dangerDomainsCache;
 }
 const isDangerHost = (host, list) => list.some((d) => host === d || host.endsWith("." + d));
-async function syncDangerRedirect(on) {
+function syncDangerRedirect(on) { return inDnrQueue(() => syncDangerRedirectNow(on)); }
+async function syncDangerRedirectNow(on) {
   try {
     const existing = (await chrome.declarativeNetRequest.getDynamicRules())
       .filter((r) => r.id >= DANGER_RULE_BASE && r.id < DANGER_RULE_END).map((r) => r.id);
@@ -994,7 +1097,8 @@ function fakeGvRule(nowMs) {
   };
 }
 // With the YouTube ruleset (on + YouTube feature), refreshed with the live update (12 h).
-async function syncFakeGvRule(on) {
+function syncFakeGvRule(on) { return inDnrQueue(() => syncFakeGvRuleNow(on)); }
+async function syncFakeGvRuleNow(on) {
   if (on === undefined) {
     const { enabled, features } = await chrome.storage.local.get(["enabled", "features"]);
     on = enabled !== false && (features || DEFAULTS.features).youtube !== false;
@@ -1091,7 +1195,8 @@ function sanitizeConfig(cfg) {
   };
 }
 
-async function syncLiveRules(domains = []) {
+function syncLiveRules(domains = []) { return inDnrQueue(() => syncLiveRulesNow(domains)); }
+async function syncLiveRulesNow(domains = []) {
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
   // Live range only: remote filter lists live above REMOTE_RULE_BASE.
   const removeRuleIds = existing.filter((r) => r.id >= LIVE_RULE_BASE && r.id < REMOTE_RULE_BASE).map((r) => r.id);
@@ -1161,22 +1266,32 @@ async function fetchLiveConfigInner(force) {
 }
 
 // Rebuild the allowlist rules (one allowAllRequests rule per whitelisted host).
-async function syncAllowRules() {
+function syncAllowRules() { return inDnrQueue(() => syncAllowRulesNow()); }
+async function syncAllowRulesNow() {
   const { allowlist = [] } = await chrome.storage.local.get("allowlist");
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
   const removeRuleIds = existing
     .filter((r) => r.id >= ALLOW_RULE_BASE && r.id < LIVE_RULE_BASE)
     .map((r) => r.id);
 
-  const addRules = allowlist.filter(isHost).slice(0, ALLOW_RULE_MAX).map((domain, i) => ({
-    id: ALLOW_RULE_BASE + i,
+  // Two rules per site (6.1): allowAllRequests for the site's frames (and everything inside them), and a
+  // plain allow for whatever the site itself requests — allowAllRequests is attached to a frame when its
+  // navigation commits, and a request made right away could still be blocked (1 in 10 allow cycles, measured
+  // in Chromium 2026-11-13). Ids: 90000 + 2i and + 2i + 1 (5000 sites fill the range up to 99999).
+  const addRules = allowlist.filter(isHost).slice(0, ALLOW_RULE_MAX).flatMap((domain, i) => [{
+    id: ALLOW_RULE_BASE + 2 * i,
     priority: 10000,
     action: { type: "allowAllRequests" },
     condition: {
       requestDomains: [domain],
       resourceTypes: ["main_frame", "sub_frame"],
     },
-  }));
+  }, {
+    id: ALLOW_RULE_BASE + 2 * i + 1,
+    priority: 10000,
+    action: { type: "allow" },
+    condition: { initiatorDomains: [domain] },
+  }]);
 
   try {
     await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules });
@@ -1321,7 +1436,8 @@ async function removeSubscription(url) {
   return { ok: true };
 }
 
-async function syncUserRules() {
+function syncUserRules() { return inDnrQueue(() => syncUserRulesNow()); }
+async function syncUserRulesNow() {
   const { userFilters = "" } = await chrome.storage.local.get("userFilters");
   const domains = parseUserDomains(userFilters);
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
@@ -1556,7 +1672,6 @@ async function listCosmeticFor(host, chain) {
 }
 
 // blocked-request counters
-const tabMatched = new Map();
 let statsChain = Promise.resolve();
 let pendingCount = 0;
 let pendingBytes = 0;
@@ -1634,51 +1749,76 @@ function recordWho(company) {
     }).catch(() => {});
   }, 1000);
 }
+// ---- What counts as "blocked" (6.1) ----
+// getMatchedRules reports EVERY matched rule: the lists' exceptions (@@ → allow), the allowlist, the pause,
+// and the header rules that touch every request (Sec-GPC, Topics) — 5.x–6.0 counted all of them as blocked
+// (one blocked request showed as 7 on the badge: measured). rules/passive.json (tools/build_who.mjs) lists
+// the static rules that do not block; logListKey() rules out our own allow rules.
+let passiveP = null;
+function passiveMap() {
+  if (!passiveP) {
+    passiveP = fetch(chrome.runtime.getURL("rules/passive.json")).then((r) => r.json()).then((d) => {
+      const m = new Map();
+      for (const [rs, ids] of Object.entries((d && d.rules) || {})) m.set(rs, new Set(ids));
+      return m;
+    }).catch(() => { passiveP = null; return null; });
+  }
+  return passiveP;
+}
+function blocks(rule, passive) {
+  if (!rule || logListKey(rule) === null) return false;
+  const set = passive && passive.get(rule.rulesetId);
+  return !(set && set.has(rule.ruleId));
+}
+
 // The matches of a tab are read again on every badge refresh: only the ones newer than the last
-// counted are new. The mark is kept in storage.session (a service worker restart must not count
-// the same page twice) and serialised (two refreshes of one tab can overlap).
-const whoSeen = new Map(); // fallback when storage.session is missing
-let whoChain = Promise.resolve();
-function countWho(tabId, matched) {
-  whoChain = whoChain.then(async () => {
-    const map = await whoMap();
-    if (!map) return;
+// counted are new — for the totals, the daily chart and "Who we stopped" alike. The mark is kept in
+// storage.session (a service worker restart must not count the same page twice: 5.x kept it in memory
+// and counted a tab again after the worker slept) and serialised (two refreshes of one tab can overlap).
+const seenFallback = new Map(); // when storage.session is missing
+let countChain = Promise.resolve();
+function countBlocked(tabId, matched) {
+  countChain = countChain.then(async () => {
     const ses = chrome.storage.session;
-    const marks = ses ? (await ses.get("whoSeen")).whoSeen || {} : Object.fromEntries(whoSeen);
+    const marks = ses ? (await ses.get("seenMatches")).seenMatches || {} : Object.fromEntries(seenFallback);
     const since = Number(marks[tabId]) || 0;
     let max = since;
+    const fresh = [];
     for (const m of matched || []) {
       const t = Number(m.timeStamp) || 0;
       if (t <= since) continue;
       if (t > max) max = t;
-      recordWho(SA_WHO.companyOfRule(map, m.rule));
+      fresh.push(m);
     }
     if (max === since) return;
     marks[tabId] = max;
-    if (ses) await ses.set({ whoSeen: marks }); else whoSeen.set(String(tabId), max);
+    if (ses) await ses.set({ seenMatches: marks }); else seenFallback.set(String(tabId), max);
+    record(fresh.length, fresh.length * BLENDED_SIZE);
+    const map = await whoMap();
+    if (map) for (const m of fresh) recordWho(SA_WHO.companyOfRule(map, m.rule));
   }).catch(() => {});
-  return whoChain;
+  return countChain;
 }
-function forgetWhoTab(tabId) {
-  whoSeen.delete(String(tabId));
+function forgetTab(tabId) {
+  seenFallback.delete(String(tabId));
   const ses = chrome.storage.session;
   if (!ses) return;
-  whoChain = whoChain.then(async () => {
-    const marks = (await ses.get("whoSeen")).whoSeen || {};
+  countChain = countChain.then(async () => {
+    const marks = (await ses.get("seenMatches")).seenMatches || {};
     if (!(tabId in marks)) return;
     delete marks[tabId];
-    await ses.set({ whoSeen: marks });
+    await ses.set({ seenMatches: marks });
   }).catch(() => {});
 }
 
 if (DEBUG_COUNTING) {
   chrome.declarativeNetRequest.onRuleMatchedDebug.addListener((info) => {
-    const id = info?.rule?.ruleId;
-    // Don't count allow rules: the allowlist range and the YouTube bypass rule.
-    // Live block rules (≥ LIVE_RULE_BASE) DO count.
-    if ((id >= ALLOW_RULE_BASE && id < LIVE_RULE_BASE) || id === YT_BYPASS_RULE_ID || id === PAUSE_RULE_ID) return;
-    record(1, SIZE_BY_TYPE[info?.request?.type] ?? BLENDED_SIZE);
-    whoMap().then((map) => recordWho(SA_WHO.companyOfRule(map, info?.rule))).catch(() => {});
+    // only rules that block (not our allow rules, the lists' exceptions or the header rules) — see blocks()
+    passiveMap().then(async (passive) => {
+      if (!blocks(info?.rule, passive)) return;
+      record(1, SIZE_BY_TYPE[info?.request?.type] ?? BLENDED_SIZE);
+      recordWho(SA_WHO.companyOfRule(await whoMap(), info?.rule));
+    }).catch(() => {});
   });
 }
 
@@ -1720,29 +1860,24 @@ async function refreshBadge(tabId) {
     }
     if (!takeMatchedToken()) return deferBadge(tabId);
     const info = await chrome.declarativeNetRequest.getMatchedRules({ tabId });
-    const count = info?.rulesMatchedInfo?.length || 0;
-    if (!DEBUG_COUNTING) {
-      const prev = tabMatched.get(tabId) || 0;
-      if (count > prev) record(count - prev, (count - prev) * BLENDED_SIZE);
-      countWho(tabId, info?.rulesMatchedInfo);
-    }
-    tabMatched.set(tabId, count);
-    chrome.action.setBadgeText({ text: count > 0 ? String(count) : "", tabId });
+    const passive = await passiveMap();
+    const blocked = (info?.rulesMatchedInfo || []).filter((m) => blocks(m.rule, passive));
+    if (!DEBUG_COUNTING) countBlocked(tabId, blocked);
+    chrome.action.setBadgeText({ text: blocked.length > 0 ? String(blocked.length) : "", tabId });
   } catch (e) {}
 }
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
-  if (changeInfo.status === "loading" && changeInfo.url) tabMatched.set(tabId, 0);
   if (changeInfo.status === "complete") refreshBadge(tabId);
 });
 chrome.tabs.onActivated.addListener(({ tabId }) => refreshBadge(tabId));
-chrome.tabs.onRemoved.addListener((tabId) => { tabMatched.delete(tabId); forgetWhoTab(tabId); });
+chrome.tabs.onRemoved.addListener((tabId) => forgetTab(tabId));
 
 // Which list a matched rule belongs to (the popup localises the key).
 function logListKey(rule) {
   const rs = rule.rulesetId, id = rule.ruleId;
   if (rs === "_dynamic") {
-    if (id === YT_BYPASS_RULE_ID || id === PAUSE_RULE_ID || (id >= ALLOW_RULE_BASE && id < LIVE_RULE_BASE)) return null;
+    if (id === YT_BYPASS_RULE_ID || id === PAUSE_RULE_ID || id === PAUSE_ALLOW_RULE_ID || (id >= ALLOW_RULE_BASE && id < LIVE_RULE_BASE)) return null;
     if (id === FAKE_GV_RULE_ID) return "youtube";
     if (id >= DANGER_RULE_BASE && id < DANGER_RULE_END) return "malware";
     if (id >= REMOTE_RULE_BASE) return "lists";
@@ -1803,16 +1938,19 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   const claimedHost = (h) => (fromExtensionPage && typeof h === "string" ? h.trim().toLowerCase() : "");
   switch (msg.type) {
     case "toggle":
-      // A manual toggle cancels any active timed pause.
-      chrome.alarms.clear("resume");
-      chrome.storage.local.set({ enabled: msg.enabled, pausedUntil: 0 }, async () => {
-        await applyState();
-        sendResponse({ ok: true });
+      policyNow().then((policy) => {
+        if (msg.enabled === false && !SA_MANAGED.allows(policy, { kind: "disable" })) return sendResponse(managedRefused);
+        // A manual toggle cancels any active timed pause.
+        chrome.alarms.clear("resume");
+        chrome.storage.local.set({ enabled: msg.enabled, pausedUntil: 0 }, async () => {
+          await applyState();
+          sendResponse({ ok: true });
+        });
       });
       return true;
 
     case "pause":
-      pauseFor(msg.minutes || 30).then(() => sendResponse({ ok: true }));
+      pauseFor(msg.minutes || 30).then((r) => sendResponse(r === false ? managedRefused : { ok: true }));
       return true;
 
     case "resume":
@@ -1820,9 +1958,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
 
     case "setSync":
-      chrome.storage.local.set({ sync: !!msg.on }, async () => {
-        if (msg.on) await pushToSync();
-        sendResponse({ ok: true });
+      policyNow().then((policy) => {
+        if (!SA_MANAGED.allows(policy, { kind: "sync", value: !!msg.on })) return sendResponse(managedRefused);
+        chrome.storage.local.set({ sync: !!msg.on }, async () => {
+          if (msg.on) await pushToSync();
+          sendResponse({ ok: true });
+        });
       });
       return true;
 
@@ -1840,7 +1981,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           const info = await chrome.declarativeNetRequest.getMatchedRules({ tabId: msg.tabId });
           const agg = new Map();
           let total = 0;
+          const passive = await passiveMap();
           for (const m of info.rulesMatchedInfo || []) {
+            if (!blocks(m.rule, passive)) continue; // a list's exception or a header rule did not block anything
             const key = logListKey(m.rule || {});
             if (!key) continue; // allow rules (allowlist, YouTube bypass) are not blocks
             total++;
@@ -1860,24 +2003,28 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     case "setMode": {
       (async () => {
         if (!SA_MODES.MODES.includes(msg.mode)) return sendResponse({ ok: false });
+        if (!SA_MANAGED.allows(await policyNow(), { kind: "mode" })) return sendResponse(managedRefused);
         await chrome.storage.local.set({ mode: msg.mode });
         await syncPageScripts();
         await syncScriptlets();
         sendResponse({ ok: true, mode: msg.mode });
-      })();
+      })().catch(() => sendResponse({ ok: false }));
       return true;
     }
 
     // 6.0: the popup's "Protection here" — a site's mode; the global one clears the entry
     case "setSiteMode":
-      setSiteMode(msg.host, msg.mode).then(sendResponse);
+      setSiteMode(msg.host, msg.mode).then(sendResponse, () => sendResponse({ ok: false }));
       return true;
 
     // the repair page's "turn off element hiding here" — since 6.0 that is the site's Basic mode
-    // (on again = the global mode); the old noCosmetics list is folded into siteModes on update
+    // (on again = what the site inherits); the old noCosmetics list is folded into siteModes on update
     case "setNoCosmetics":
-      chrome.storage.local.get("mode", ({ mode }) => {
-        setSiteMode(msg.host, msg.off ? "basic" : SA_MODES.normMode(mode)).then(sendResponse);
+      chrome.storage.local.get(["mode", "siteModes"], ({ mode, siteModes }) => {
+        const site = typeof msg.host === "string" ? msg.host.trim().toLowerCase().replace(/^www\./, "") : "";
+        const rest = SA_MODES.cleanSiteModes(siteModes);
+        delete rest[site];
+        setSiteMode(site, msg.off ? "basic" : SA_MODES.effectiveMode(site, mode, rest)).then(sendResponse, () => sendResponse({ ok: false }));
       });
       return true;
 
@@ -1901,6 +2048,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         const out = { engineRegistered: false, enabledRulesets: [], dynamic: { user: 0, allow: 0, live: 0, ytBypass: false, danger: 0 }, liveVersion: 0, liveUpdated: 0, liveError: "", scriptletsError: "", ed25519: false, keys: SIG_PUBKEYS_B64.length, popupHosts: 0 };
         try { out.engineRegistered = (await chrome.scripting.getRegisteredContentScripts()).some((c) => c.id === SCRIPTLET_SCRIPT_ID || c.id.startsWith(SCRIPTLET_SCRIPT_ID + "-")); } catch {}
         try { out.engineBasic = SA_MODES.normMode((await chrome.storage.local.get("mode")).mode) === "basic"; } catch {}
+        try {
+          out.pageScripts = (await chrome.scripting.getRegisteredContentScripts()).filter((c) => c.id.startsWith(SA_MODES.PAGE_PREFIX)).length;
+          out.pageScriptsError = (await chrome.storage.local.get("pageScriptsError")).pageScriptsError || "";
+        } catch {}
         try { out.enabledRulesets = await chrome.declarativeNetRequest.getEnabledRulesets(); } catch {}
         try {
           for (const r of await chrome.declarativeNetRequest.getDynamicRules()) {
@@ -1908,7 +2059,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             else if (r.id >= DANGER_RULE_BASE && r.id < DANGER_RULE_END) out.dynamic.danger += (r.condition.requestDomains || []).length;
             else if (r.id >= REMOTE_RULE_BASE) continue; // counted as dynamic.remote below
             else if (r.id >= LIVE_RULE_BASE) out.dynamic.live += (r.condition.requestDomains || []).length || 1;
-            else if (r.id >= ALLOW_RULE_BASE) out.dynamic.allow++;
+            else if (r.id >= ALLOW_RULE_BASE) { if (r.action.type === "allowAllRequests") out.dynamic.allow++; } // 2 rules per site (6.1)
             else if (r.id >= USER_BLOCK_BASE) out.dynamic.user += (r.condition.requestDomains || []).length || 1;
           }
         } catch {}
@@ -2006,6 +2157,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             // 6.0: protection level — for every site, and the one in force here (siteMode = explicit or null)
             mode: SA_MODES.normMode(data.mode),
             effectiveMode: host ? SA_MODES.effectiveMode(host, data.mode, data.siteModes) : SA_MODES.normMode(data.mode),
+            // 6.1: what an administrator's policy locks (popup/Settings draw those controls disabled)
+            managed: SA_MANAGED.locks(await policyNow()),
             review: { url: storeUrl, on: reviewOn, ask: reviewAsk },
             // „Сайтовете се чупят?“ — само на уебсайт (бутонът отваря поправките за него)
             help: { ask: onSite && helpDue(data, now) },
@@ -2018,7 +2171,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
 
     case "setReviewAsk":
-      chrome.storage.local.set({ reviewAsk: !!msg.on }, () => sendResponse({ ok: true }));
+      policyNow().then((policy) => {
+        if (!SA_MANAGED.allows(policy, { kind: "reviewAsk", value: !!msg.on })) return sendResponse(managedRefused);
+        chrome.storage.local.set({ reviewAsk: !!msg.on }, () => sendResponse({ ok: true }));
+      });
       return true;
 
     case "card":
@@ -2058,7 +2214,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
 
     case "setAutoUpdate":
-      chrome.storage.local.set({ autoUpdate: !!msg.on }, () => sendResponse({ ok: true }));
+      policyNow().then((policy) => {
+        if (!SA_MANAGED.allows(policy, { kind: "autoUpdate", value: !!msg.on })) return sendResponse(managedRefused);
+        chrome.storage.local.set({ autoUpdate: !!msg.on }, () => sendResponse({ ok: true }));
+      });
       return true;
 
     case "setAllow":
@@ -2182,6 +2341,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       (async () => {
         const catalog = await getListCatalog();
         if (!catalog.some((e) => e.id === msg.id) || typeof msg.on !== "boolean") return sendResponse({ ok: false });
+        if (!SA_MANAGED.allows(await policyNow(), { kind: "list", id: msg.id, value: msg.on })) return sendResponse(managedRefused);
         const { lists = {} } = await chrome.storage.local.get("lists");
         const prev = lists[msg.id];
         lists[msg.id] = msg.on;
@@ -2202,9 +2362,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
 
     case "setFeatures":
-      chrome.storage.local.set({ features: msg.features }, async () => {
-        await applyState(); // youtube ruleset follows the youtube toggle
-        sendResponse({ ok: true });
+      policyNow().then((policy) => {
+        // the features the policy sets keep its values; the user's choice holds for the rest
+        const features = { ...(msg.features && typeof msg.features === "object" ? msg.features : {}), ...(policy.features || {}) };
+        chrome.storage.local.set({ features }, async () => {
+          await applyState(); // youtube ruleset follows the youtube toggle
+          sendResponse({ ok: true, features });
+        });
       });
       return true;
 
@@ -2291,6 +2455,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           clean.siteModes = foldNoCosmetics(legacyOff, "mode" in clean ? clean.mode : cur.mode, "siteModes" in clean ? clean.siteModes : cur.siteModes);
         }
         await chrome.storage.local.set(clean);
+        await applyManaged(); // 6.1: a backup cannot undo the administrator's policy
         if ("mode" in clean || "siteModes" in clean) await syncPageScripts();
         await applyState();
         await syncAllowRules();
@@ -2325,9 +2490,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         // Not on a site where the user turned element hiding off or allowed ads:
         // the html[data-tbab-on] gate covers it too, this keeps it out entirely.
         if (css.length && sender.tab && sender.tab.id >= 0 && !sender.frameId) {
-          chrome.storage.local.get(["noCosmetics", "allowlist"], (st) => {
+          chrome.storage.local.get(["noCosmetics", "allowlist", "mode", "siteModes"], (st) => {
             const chain = domainChain(senderHost || "");
-            const off = [].concat(st.noCosmetics || [], st.allowlist || []).some((d) => chain.includes(d));
+            // 6.0: a Basic site gets no content.js, but a frame of another level can still ask
+            const off = SA_MODES.effectiveMode(senderHost || "", st.mode, st.siteModes) === "basic" ||
+              [].concat(st.noCosmetics || [], st.allowlist || []).some((d) => chain.includes(d));
             if (!off) chrome.scripting.insertCSS({ target: { tabId: sender.tab.id, frameIds: [0] }, css: css.join("\n"), origin: "USER" }).catch(() => {});
           });
         }

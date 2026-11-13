@@ -13,6 +13,7 @@ const FALLBACK = {
   receiptText: "$1 requests blocked · $2 cookie banners answered · about $3 of data saved (an estimate)",
   shareCopied: "Link copied",
   modeBasicDesc: "Network blocking only: the lightest, almost nothing breaks. YouTube keeps its own protection.",
+  managedNote: "Set by your organization",
 };
 
 const toggle = $("toggle");
@@ -74,6 +75,10 @@ function load() {
 
       listDot.textContent = t("filtersCount", [(res.filterCount || 0).toLocaleString(UI_LANG)]);
       renderPause(res.pausedUntil || 0);
+      // 6.1: an administrator's policy — what it locks is drawn disabled (the service worker refuses it anyway)
+      const locks = res.managed || {};
+      const managedLock = (el) => { el.disabled = true; el.title = t("managedNote"); };
+      if (locks.pause) { managedLock(toggle); managedLock(pauseBtn); }
 
       $("reportBtn").hidden = !currentHost;
       if (currentHost) {
@@ -82,6 +87,10 @@ function load() {
         setAllowLabel(!res.allowed);
         modeSel.value = res.effectiveMode || "standard";
         modeSel.disabled = !!res.allowed;
+        const covered = (list) => (list || []).some((d) => currentHost === d || currentHost.endsWith("." + d));
+        if (locks.exceptions || covered(locks.siteModes)) managedLock(modeSel);
+        // the policy allows this site (no taking it out), or users may not allow sites at all
+        if ((res.allowed && covered(locks.allowlist)) || (!res.allowed && locks.exceptions)) managedLock(allowToggle);
         // Basic: nothing of ours runs on the page — no picker, and what it hid would not apply
         if (res.effectiveMode === "basic") {
           $("pickBtn").disabled = true;

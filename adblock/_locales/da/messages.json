@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Forespørgsler: $1 · Dage: $2"
+  },
+  "managedNote": {
+    "message": "Angivet af din organisation"
   }
 }

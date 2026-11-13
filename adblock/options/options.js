@@ -70,6 +70,7 @@ function load() {
     renderHealth();
     renderSubs();
     renderAllowlist(res.allowlist || []);
+    if (window.saApplyLocks) window.saApplyLocks(res.managed); // 6.1: an administrator's policy (options/managed.js)
   });
 
   chrome.storage.local.get(["customHidden", "userFilters", "smartLog", "siteBlocks"], (data) => {
@@ -146,7 +147,9 @@ function renderHealth() {
     ul.innerHTML = "";
     if (!h) { emptyRow(ul, L("opt_no_sw", "No response from the service worker.")); return; }
     const rows = [
-      [L("opt_h_engine", "Anti-adblock engine"), h.engineRegistered ? "registered (MAIN world, document_start)" : h.engineBasic && !h.scriptletsError ? "off (Basic)" : "NOT registered" + (h.scriptletsError ? " — " + h.scriptletsError : ""), h.engineRegistered || (h.engineBasic && !h.scriptletsError)],
+      [L("opt_h_engine", "Anti-adblock engine"), (h.engineRegistered ? "registered (MAIN world, document_start)" : h.engineBasic && !h.scriptletsError ? "off (Basic)" : "NOT registered" + (h.scriptletsError ? " — " + h.scriptletsError : "")) +
+        " · page scripts: " + (h.pageScriptsError ? "ERROR — " + h.pageScriptsError : (h.pageScripts || 0) + " registered"),
+        (h.engineRegistered || (h.engineBasic && !h.scriptletsError)) && !h.pageScriptsError],
       [L("opt_h_rulesets", "Static rulesets on"), h.enabledRulesets.length ? h.enabledRulesets.join(", ") : "none", h.enabledRulesets.length > 0],
       [L("opt_h_live", "Live filter domains"), String(h.dynamic.live) + (h.liveVersion ? " (filter set v" + h.liveVersion + ", " + ago(h.liveUpdated) + ")" : " (no update yet)"), !h.liveError],
       [L("opt_h_last", "Last update"), h.liveError ? "failed: " + h.liveError : h.liveUpdated ? "ok, " + ago(h.liveUpdated) : "not yet", !h.liveError],
@@ -248,6 +251,7 @@ function listRow(e) {
   const input = document.createElement("input");
   input.type = "checkbox";
   input.checked = !!e.on;
+  input.dataset.list = e.id; // options/managed.js locks the lists a policy sets
   input.setAttribute("aria-label", title.textContent);
   input.addEventListener("change", () => {
     input.disabled = true;
@@ -344,6 +348,7 @@ function renderAllowlist(list) {
     btn.className = "remove";
     btn.textContent = "×";
     btn.title = "Remove";
+    btn.dataset.host = domain; // options/managed.js: a site the policy allows has no working ×
     btn.onclick = () =>
       chrome.runtime.sendMessage({ type: "setAllow", host: domain, allow: false }, (res) =>
         renderAllowlist(res?.allowlist || [])

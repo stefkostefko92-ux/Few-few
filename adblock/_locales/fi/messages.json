@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Pyynnöt: $1 · Päivät: $2"
+  },
+  "managedNote": {
+    "message": "Organisaatiosi asettama"
   }
 }

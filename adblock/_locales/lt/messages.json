@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Užklausos: $1 · Dienos: $2"
+  },
+  "managedNote": {
+    "message": "Nustatė jūsų organizacija"
   }
 }

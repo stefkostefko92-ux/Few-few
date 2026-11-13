@@ -9,8 +9,8 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/uBlockOrigin/uAssets",
   "ruleset": true,
-  "network": 7034,
-  "cosmetic": 11985
+  "network": 7115,
+  "cosmetic": 11979
  },
  {
   "id": "plowe",
@@ -36,7 +36,7 @@
   "homepage": "https://easylist.to/",
   "ruleset": true,
   "network": 593,
-  "cosmetic": 17206
+  "cosmetic": 17230
  },
  {
   "id": "focus-chat",
@@ -62,7 +62,7 @@
   "homepage": "https://easylist.to/",
   "ruleset": true,
   "network": 168,
-  "cosmetic": 9189
+  "cosmetic": 9197
  },
  {
   "id": "focus-notifications",
@@ -75,7 +75,7 @@
   "homepage": "https://easylist.to/",
   "ruleset": true,
   "network": 290,
-  "cosmetic": 1977
+  "cosmetic": 1987
  },
  {
   "id": "focus-ai",
@@ -87,8 +87,8 @@
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://easylist.to/",
   "ruleset": true,
-  "network": 11,
-  "cosmetic": 308
+  "network": 12,
+  "cosmetic": 310
  },
  {
   "id": "focus-other",
@@ -100,8 +100,8 @@
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://easylist.to/",
   "ruleset": true,
-  "network": 425,
-  "cosmetic": 4266
+  "network": 426,
+  "cosmetic": 4270
  },
  {
   "id": "focus-shorts",
@@ -156,7 +156,7 @@
   "license": "CC BY-SA 3.0",
   "homepage": "https://forums.lanik.us/viewforum.php?f=98",
   "ruleset": true,
-  "network": 885,
+  "network": 886,
   "cosmetic": 665
  },
  {
@@ -171,8 +171,8 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
   "ruleset": true,
-  "network": 6148,
-  "cosmetic": 9455
+  "network": 6150,
+  "cosmetic": 9459
  },
  {
   "id": "reg-cs",
@@ -187,7 +187,7 @@
   "license": "CC BY-SA 4.0",
   "homepage": "https://github.com/tomasko126/easylistczechandslovak",
   "ruleset": true,
-  "network": 140,
+  "network": 142,
   "cosmetic": 454
  },
  {
@@ -202,8 +202,8 @@
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://easylist.to/",
   "ruleset": true,
-  "network": 1831,
-  "cosmetic": 6065
+  "network": 1832,
+  "cosmetic": 6077
  },
  {
   "id": "reg-et",
@@ -233,7 +233,7 @@
   "homepage": "https://github.com/finnish-easylist-addition/finnish-easylist-addition",
   "ruleset": true,
   "network": 175,
-  "cosmetic": 1525
+  "cosmetic": 1522
  },
  {
   "id": "reg-fr",
@@ -247,8 +247,8 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
   "ruleset": true,
-  "network": 4923,
-  "cosmetic": 5273
+  "network": 4924,
+  "cosmetic": 5278
  },
  {
   "id": "reg-el",
@@ -318,8 +318,8 @@
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://github.com/mediumkreation/IndianList",
   "ruleset": true,
-  "network": 5344,
-  "cosmetic": 11285
+  "network": 5351,
+  "cosmetic": 11322
  },
  {
   "id": "reg-fa",
@@ -363,8 +363,8 @@
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://github.com/easylist/EasyListHebrew",
   "ruleset": true,
-  "network": 295,
-  "cosmetic": 1343
+  "network": 296,
+  "cosmetic": 1354
  },
  {
   "id": "reg-it",
@@ -393,8 +393,8 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
   "ruleset": true,
-  "network": 2013,
-  "cosmetic": 13979
+  "network": 2018,
+  "cosmetic": 13998
  },
  {
   "id": "reg-ko",
@@ -408,8 +408,8 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/FilteringDev/filterslists-KO",
   "ruleset": true,
-  "network": 989,
-  "cosmetic": 2330
+  "network": 988,
+  "cosmetic": 2326
  },
  {
   "id": "reg-lt",
@@ -503,8 +503,8 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
   "ruleset": true,
-  "network": 5459,
-  "cosmetic": 14459
+  "network": 5462,
+  "cosmetic": 14446
  },
  {
   "id": "reg-es",
@@ -522,8 +522,8 @@
   "license": "GPL-3.0 / CC BY-SA 3.0",
   "homepage": "https://easylist.to/",
   "ruleset": true,
-  "network": 1681,
-  "cosmetic": 7805
+  "network": 1684,
+  "cosmetic": 7834
  },
  {
   "id": "reg-sl",
@@ -552,8 +552,8 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/lassekongo83/Frellwits-filter-lists",
   "ruleset": true,
-  "network": 1450,
-  "cosmetic": 3350
+  "network": 1458,
+  "cosmetic": 3346
  },
  {
   "id": "reg-th",
@@ -582,8 +582,8 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
   "ruleset": true,
-  "network": 1495,
-  "cosmetic": 10470
+  "network": 1503,
+  "cosmetic": 10509
  },
  {
   "id": "reg-uk",
@@ -597,8 +597,8 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
   "ruleset": true,
-  "network": 2821,
-  "cosmetic": 3405
+  "network": 2822,
+  "cosmetic": 3408
  },
  {
   "id": "reg-vi",
@@ -612,8 +612,8 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/abpvn/abpvn",
   "ruleset": true,
-  "network": 306,
-  "cosmetic": 845
+  "network": 305,
+  "cosmetic": 846
  },
  {
   "id": "reg-bg",

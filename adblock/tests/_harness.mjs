@@ -86,7 +86,9 @@ export function loadBackground(opts = {}) {
   const modes = readFileSync(join(ROOT, "lib", "modes.js"), "utf8");
   // …and importScripts("lib/who.js") (6.0): "Who we stopped", the per-company counts.
   const who = readFileSync(join(ROOT, "lib", "who.js"), "utf8");
-  const src = policy + "\n" + modes + "\n" + who + "\n" + body +
+  // …and importScripts("lib/managed.js") (6.1): an administrator's policy (chrome.storage.managed).
+  const managed = readFileSync(join(ROOT, "lib", "managed.js"), "utf8");
+  const src = policy + "\n" + modes + "\n" + who + "\n" + managed + "\n" + body +
     "\n;globalThis.__bg = { sanitizeConfig, safeSelector, parseUserDomains, domainBlockRules" + extra + " };";
   runInThisContext(src, { filename: "background.js" });
   return globalThis.__bg;

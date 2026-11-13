@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Maombi: $1 · Siku: $2"
+  },
+  "managedNote": {
+    "message": "Imewekwa na shirika lako"
   }
 }

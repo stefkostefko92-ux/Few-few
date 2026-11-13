@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Verzoeken: $1 · Dagen: $2"
+  },
+  "managedNote": {
+    "message": "Ingesteld door uw organisatie"
   }
 }

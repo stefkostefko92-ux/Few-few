@@ -58,6 +58,43 @@ ok("basic: nothing is injected anywhere", M.pageScriptPlan("basic", {}).length =
   ok("basic + a standard site → standard scripts only there, no consent-frame registration",
     p["standard-content"].matches.join() === "*://news.example.org/*,*://*.news.example.org/*" && !p["standard-cookies-cmp"] && Object.keys(p).length === 5);
 }
+// ---- 6.1: nested sites (a subdomain whose level differs from its parent's) — exhaustive over random trees ----
+{
+  const hit = (pat, host) => pat === "<all_urls>" || (() => {
+    const d = pat.slice(4, -2); // "*://d/*" or "*://*.d/*"
+    return d.startsWith("*.") ? host.endsWith("." + d.slice(2)) : host === d;
+  })();
+  const matchesHost = (r, h) => r.matches.some((p) => hit(p, h)) && !(r.excludeMatches || []).some((p) => hit(p, h));
+  const NAMES = ["a.test", "b.a.test", "c.b.a.test", "d.a.test", "e.d.a.test", "f.test", "g.f.test", "h.g.f.test", "x.c.b.a.test", "10.0.0.1", "intranet"];
+  let seed = 7;
+  const rnd = (n) => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) % n);
+  let bad = "";
+  for (let i = 0; i < 400 && !bad; i++) {
+    const g = M.MODES[rnd(3)];
+    const sm = {};
+    for (const h of NAMES) if (rnd(3) === 0) sm[h] = M.MODES[rnd(3)];
+    const plan = M.pageScriptPlan(g, sm).filter((r) => r.id.endsWith("-content"));
+    for (const h of NAMES.concat(["zz.b.a.test", "other.example", "q.intranet"])) {
+      const want = M.effectiveMode(h, g, sm);
+      const got = plan.filter((r) => matchesHost(r, h)).map((r) => r.id.replace(M.PAGE_PREFIX, "").replace(/\d*-content$/, ""));
+      const ok1 = want === "basic" ? got.length === 0 : got.length === 1 && got[0] === want;
+      if (!ok1) { bad = `global ${g}, ${JSON.stringify(sm)}: ${h} wants ${want}, registrations ${JSON.stringify(got)}`; break; }
+    }
+  }
+  ok(`nested sites: for 400 random trees every host gets exactly its own level's scripts (${bad || "all hosts right"})`, !bad);
+  const p = M.pageScriptPlan("standard", { "example.com": "basic", "news.example.com": "standard" });
+  ok("the reported case: global Standard, example.com Basic, news.example.com Standard → news gets the Standard scripts",
+    p.some((r) => r.id === "sa-page-standard2-content" && r.matches.includes("*://news.example.com/*")));
+  ok("3lift.com-style names (a digit first) still cover their subdomains; an IP has none",
+    M.patternsFor(["3lift.com", "10.0.0.1"]).join() === "*://3lift.com/*,*://*.3lift.com/*,*://10.0.0.1/*");
+  ok("single-label hosts (localhost, intranet names) are kept, so what the popup shows is what runs",
+    JSON.stringify(M.cleanSiteModes({ localhost: "basic", intranet: "strict" })) === JSON.stringify({ localhost: "basic", intranet: "strict" }) &&
+    M.effectiveMode("localhost", "standard", { localhost: "basic" }) === "basic");
+  ok("effectiveMode ignores what the plan would drop (a bad entry never shows in the popup)", M.effectiveMode("x.example", "standard", { "x.example": "turbo" }) === "standard");
+  ok("basicExcludes: a Basic parent with a Standard subdomain is excluded exactly, not with its subdomains",
+    M.basicExcludes("standard", { "example.com": "basic", "news.example.com": "standard" }).join() === "*://example.com/*" &&
+    M.basicExcludes("standard", { "shop.example": "basic" }).join() === "*://shop.example/*,*://*.shop.example/*");
+}
 ok("ids are unique", (() => { const ids = M.pageScriptPlan("standard", { "example.com": "strict" }).map((r) => r.id); return new Set(ids).size === ids.length; })());
 ok("basicSites", M.basicSites({ "a.org": "basic", "b.org": "strict" }).join() === "a.org");
 
@@ -124,6 +161,17 @@ ok(`consent platforms == CMP_FRAME_HOST_RE in cookies.js (${fromCookies})`, from
   ok("setSiteMode: a bad host or mode is refused", r && r.ok === false && r2 && r2.ok === false);
   const r3 = await sendMessage(mock.listeners, { type: "setSiteMode", host: "a.org", mode: "basic" }, { id: "test-ext", url: "https://evil.example/" , tab: { id: 1 } });
   ok("setSiteMode: a web page cannot send it", r3 === undefined && !("a.org" in (mock.store.get("siteModes") || {})));
+  // 6.1: a subdomain set to the global level under a parent with another level is stored (it was a no-op)
+  mock.store.set("mode", "standard");
+  mock.store.set("siteModes", { "example.com": "basic" });
+  r = await sendMessage(mock.listeners, { type: "setSiteMode", host: "news.example.com", mode: "standard" });
+  ok("setSiteMode: Standard on news.example.com under a Basic example.com is stored, so it takes effect",
+    r && r.ok && mock.store.get("siteModes")["news.example.com"] === "standard");
+  r = await sendMessage(mock.listeners, { type: "setSiteMode", host: "news.example.com", mode: "basic" });
+  ok("…and back to what the parent gives → the entry goes", r && r.ok && !("news.example.com" in mock.store.get("siteModes")));
+  r = await sendMessage(mock.listeners, { type: "setSiteMode", host: "intranet", mode: "strict" });
+  ok("setSiteMode: a single-label host (an intranet name) is stored and kept by the plan", r && r.ok && mock.store.get("siteModes").intranet === "strict");
+  mock.store.set("siteModes", {});
   // "Hide ad boxes here: Off" (≤ 5.8) is the site's Basic mode now
   const folded = bg.foldNoCosmetics(["WWW.Old.example", "kept.example", "bad host", 7], "standard", { "kept.example": "strict" });
   ok(`foldNoCosmetics: the old list → Basic sites, an existing entry wins, junk dropped (${JSON.stringify(folded)})`,
@@ -171,6 +219,6 @@ ok("manifest: content.js, cookies.js, anti-adblock, picker and the generic CSS a
   ["content.js", "cookies.js", "antiadblock.js", "picker.js", "cosmetic_generic.css"].every((f) => !inManifest.includes(f)));
 const pkg = readFileSync(join(ROOT, "tools", "package.sh"), "utf8");
 ok("package.sh insists on the page scripts and lib/modes.js",
-  ["content.js", "cookies.js", "antiadblock.js", "picker.js", "cosmetic_generic.css", "lib/modes.js"].every((f) => pkg.includes(`"${f}"`)) && /"lib\/modes\.js", ("lib\/who\.js", )?"background\.js"\]/.test(pkg));
+  ["content.js", "cookies.js", "antiadblock.js", "picker.js", "cosmetic_generic.css", "lib/modes.js"].every((f) => pkg.includes(`"${f}"`)) && /"lib\/modes\.js", ("lib\/who\.js", )?("lib\/managed\.js", )?"background\.js"\]/.test(pkg));
 
 done();

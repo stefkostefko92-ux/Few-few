@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Izicelo: $1 · Izinsuku: $2"
+  },
+  "managedNote": {
+    "message": "Kusethwe yinhlangano yakho"
   }
 }

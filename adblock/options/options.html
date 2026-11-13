@@ -18,6 +18,10 @@
   </header>
 
   <main>
+    <p class="managed-banner" id="managedBanner" role="note" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V5l8-3 8 3v16"/><path d="M9 21v-4h6v4M8 8h2M14 8h2M8 12h2M14 12h2"/></svg>
+      <span data-i18n="managedNote">Set by your organization</span>
+    </p>
     <section class="card stat-grid">
       <div class="stat">
         <div class="stat-num" id="blockedTotal">0</div>
@@ -284,6 +288,7 @@
 
   <script src="../lib/foreign.js"></script>
   <script src="options.js"></script>
+  <script src="managed.js"></script>
   <script src="who.js"></script>
 </body>
 </html>

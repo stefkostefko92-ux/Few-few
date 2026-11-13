@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "description": "__MSG_extDescription__",
   "author": "Carbon Stealth",
   "homepage_url": "https://adblock.carbonstealth.eu",
@@ -18,6 +18,9 @@
   "host_permissions": [
     "<all_urls>"
   ],
+  "storage": {
+    "managed_schema": "managed_schema.json"
+  },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
@@ -174,7 +177,6 @@
         "*://*7moviesrulz.*/*",
         "*://*7starhd.*/*",
         "*://*8xmovies.*/*",
-        "*://*9filmyzilla.*/*",
         "*://*9hentai.*/*",
         "*://*9kmovies.*/*",
         "*://*9tsu.*/*",
@@ -653,6 +655,7 @@
         "*://*ispunlock.*/*",
         "*://*itdmusic.*/*",
         "*://*itopmusic.*/*",
+        "*://*jagledam.*/*",
         "*://*jalshamoviez.*/*",
         "*://*jalshamoviezhd.*/*",
         "*://*janjua.*/*",
@@ -721,7 +724,6 @@
         "*://*komikcast.*/*",
         "*://*koyso.*/*",
         "*://*kstreaming.*/*",
-        "*://*kwik.*/*",
         "*://*l23movies.*/*",
         "*://*lablue.*/*",
         "*://*lanjutkeun.*/*",
@@ -982,6 +984,7 @@
         "*://*pasend.*/*",
         "*://*pasteit.*/*",
         "*://*pawastreams.*/*",
+        "*://*pawchive.*/*",
         "*://*pctfenix.*/*",
         "*://*pctnew.*/*",
         "*://*peliculas-dvdrip.*/*",

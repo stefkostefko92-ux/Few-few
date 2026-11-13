@@ -59,6 +59,10 @@ stays on your device.
 - **Who we stopped** (6.0, Settings), the companies whose servers the browser was
   kept from contacting in the last 30 days, counted on the device per company and
   day (`lib/who.js`, `rules/who.json` built by `tools/build_who.mjs`).
+- **Policies for organizations** (6.1), an administrator can preconfigure and lock
+  the level, allowed sites, features, lists and pausing through a Chrome policy for
+  the extension (`managed_schema.json`, `lib/managed.js`, `docs/ENTERPRISE.md`,
+  `/for-it-admins#policy`).
 - **Import from another ad blocker**, the allowed sites and own filters of a
   uBlock Origin, AdGuard or Adblock Plus backup (`lib/foreign.js`, checked
   again in the service worker; a rule it cannot apply is left out, never

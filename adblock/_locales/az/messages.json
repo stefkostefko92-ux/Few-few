@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Sorğular: $1 · Günlər: $2"
+  },
+  "managedNote": {
+    "message": "Təşkilatınız tərəfindən təyin edilib"
   }
 }

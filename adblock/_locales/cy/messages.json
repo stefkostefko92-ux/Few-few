@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Ceisiadau: $1 · Diwrnodau: $2"
+  },
+  "managedNote": {
+    "message": "Wedi’i osod gan eich sefydliad"
   }
 }

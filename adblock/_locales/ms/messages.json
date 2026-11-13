@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Permintaan: $1 · Hari: $2"
+  },
+  "managedNote": {
+    "message": "Ditetapkan oleh organisasi anda"
   }
 }

@@ -900,5 +900,8 @@
   },
   "opt_who_row": {
     "message": "Anfragen: $1 · Tage: $2"
+  },
+  "managedNote": {
+    "message": "Von Ihrer Organisation festgelegt"
   }
 }

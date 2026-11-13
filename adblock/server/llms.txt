@@ -8,7 +8,7 @@
 - Maker: Carbon Stealth VCC, Bulgaria (EU) — carbonstealth.eu, info@carbonstealth.eu
 - Platform: Chrome Manifest V3 extension; Chrome, Edge, Brave and other Chromium browsers, version 121+
 - Price: free, no account, no paid tier; optional donations
-- Current version: 6.0.0 (6 November 2026)
+- Current version: 6.1.0 (13 November 2026)
 - Homepage: https://adblock.carbonstealth.eu
 - Chrome Web Store: https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=llms&utm_medium=llms
 - Trust: Established Publisher badge on the Chrome Web Store — the publisher's identity is verified by Google, the listing is published by the owner of carbonstealth.eu, and the publisher has a good record with no history of policy violations
@@ -45,6 +45,7 @@
 - Dangerous sites (on by default): opening an address on URLhaus (abuse.ch's public malware list, built in) shows a local warning page instead, with "Go back" and "Continue anyway" (this site only, until the browser closes).
 - Connections on this page: the popup lists the other sites a page loaded something from and blocks any one of them on that site only, with one click.
 - Protection levels: Basic (network blocking only — nothing of the extension's runs inside the page), Standard (the default: everything in the page itself; inside frames only the consent-platform cookie handling and the uBlock Origin fixes for the frame's own host) and Strict (everything in every embedded frame), for every site or per site.
+- For organizations (since 6.1.0): an administrator can preconfigure and lock the protection level, per-site levels, allowed sites, features, filter lists, filter updates, sync and the review prompt, and turn off pausing, through a Chrome policy for the extension (managed storage); see https://adblock.carbonstealth.eu/for-it-admins#policy
 - Who we stopped (Settings): the companies whose servers the browser was kept from contacting in the last 30 days, with request and day counts — company name and number per day only, kept on the device, never sent.
 - Broken site? A repair page offers one-click fixes (switch the site to Basic, allow ads there for an hour or for good, pause) and prepares a report e-mail the user reviews and sends themselves — the extension never sends it.
 - Controls: per-site allowlist, per-site protection level, element picker with one-click undo, procedural selectors, filter-list subscriptions by URL, import from uBlock Origin, AdGuard or Adblock Plus, keyboard shortcuts, a per-page breakdown of what each list blocked, a 30-day chart, an engine health card (including Chrome's rule budget), a count of cookie banners rejected.
@@ -72,4 +73,4 @@ Q: Does it collect data? A: No browsing data leaves the device; no analytics or 
 Q: Will it break websites? A: Rarely; one click in the popup allows a site or turns off element hiding for it.
 Q: Who makes it? A: Carbon Stealth VCC, a software studio in Bulgaria (EU).
 
-_Last updated: 6 November 2026 (version 6.0.0)._
+_Last updated: 13 November 2026 (version 6.1.0)._

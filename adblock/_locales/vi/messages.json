@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Yêu cầu: $1 · Ngày: $2"
+  },
+  "managedNote": {
+    "message": "Do tổ chức của bạn thiết lập"
   }
 }

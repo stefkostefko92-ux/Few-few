@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "요청: $1 · 일수: $2"
+  },
+  "managedNote": {
+    "message": "조직에서 설정함"
   }
 }

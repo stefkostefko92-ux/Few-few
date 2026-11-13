@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Zahtjevi: $1 · Dani: $2"
+  },
+  "managedNote": {
+    "message": "Postavila vaša organizacija"
   }
 }

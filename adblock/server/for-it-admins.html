@@ -44,7 +44,7 @@
       "publisher": { "@id": "https://carbonstealth.eu/#organization" },
       "breadcrumb": { "@id": "https://adblock.carbonstealth.eu/for-it-admins#breadcrumb" },
       "datePublished": "2026-10-23",
-      "dateModified": "2026-10-23"
+      "dateModified": "2026-11-13"
     },
     {
       "@type": "BreadcrumbList",
@@ -189,7 +189,7 @@
       <div class="wrap">
         <h1>Supreme AdBlock for IT admins</h1>
         <p class="lead"><b>Force-install it with the Chrome policy <code>ExtensionInstallForcelist</code> or <code>ExtensionSettings</code>.</b> The extension ID is <code>chbjbiabkgocfbbfhednpbhfeipjcclk</code>. The update URL is <code>https://clients2.google.com/service/update2/crx</code>. Below: copy-paste examples, where to set them, how to check them, and what the extension does on your network.</p>
-        <p class="src">Policy syntax checked against Google's documentation on 23 October 2026. Extension version 5.5.1.</p>
+        <p class="src">Policy syntax checked against Google's documentation on 23 October 2026; extension policies (since version 6.1.0) on 13 November 2026.</p>
       </div>
     </header>
 
@@ -197,7 +197,7 @@
       <div class="wrap prose">
         <h2>What you need to know first</h2>
         <ul class="dots">
-          <li><b>No admin settings.</b> The extension has no policy schema and no managed storage. An admin can install it and pin it, but cannot preconfigure it. Every setting is chosen by the user, in the extension's Settings.</li>
+          <li><b>Admin settings (since 6.1.0).</b> You can preconfigure and lock the protection level, allowed sites, features and filter lists, and turn off pausing, with a policy for the extension. See <a href="#policy">Preconfigure and lock settings</a>. Settings you do not set stay the user's choice.</li>
           <li><b>No account, no analytics, no telemetry.</b> Like any download, the filter update reaches our server with the device's IP address and user agent; we do not log these requests. The network requests are listed <a href="#network">below</a> and in the <a href="/privacy#requests">privacy policy</a>, where you can check them yourself.</li>
           <li><b>Not a security product.</b> The malware warning compares an address with <a href="https://urlhaus.abuse.ch/" target="_blank" rel="noopener">URLhaus</a>, a public list of known malicious addresses. It is a warning for known addresses. It is not antivirus, not a web gateway and not a replacement for either.</li>
           <li><b>Browser.</b> Chrome 121 or newer. Installed from the <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=it_admins" target="_blank" rel="noopener">Chrome Web Store</a>.</li>
@@ -221,6 +221,42 @@
 <pre><code>{"chbjbiabkgocfbbfhednpbhfeipjcclk":{"installation_mode":"force_installed","update_url":"https://clients2.google.com/service/update2/crx","toolbar_pin":"force_pinned"}}</code></pre>
         <p><code>toolbar_pin</code> is optional. Its values are <code>force_pinned</code>, <code>default_pinned</code> and <code>default_unpinned</code>. Drop it if you do not want the icon pinned.</p>
         <p class="src">Sources: <a href="https://support.google.com/chrome/a/answer/9867568" target="_blank" rel="noopener">Configure ExtensionSettings policy</a> and <a href="https://support.google.com/chrome/a/answer/7532015" target="_blank" rel="noopener">Set Chrome app and extension policies (Windows)</a> for the single-line JSON and the update URL; <a href="https://chromeenterprise.google/policies/extension-settings/" target="_blank" rel="noopener">Google, ExtensionSettings</a> for <code>toolbar_pin</code>. All checked 23 October 2026.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="policy">
+      <div class="wrap prose">
+        <h2>Preconfigure and lock settings</h2>
+        <p>Since version 6.1.0 the extension reads a policy from Chrome's managed storage (<code>chrome.storage.managed</code>, schema <code>managed_schema.json</code> in the package). A value you set is applied on every device and the user cannot change it; Settings shows those controls locked, with the note “Set by your organization”. Values you leave out stay the user's choice. Nothing about the policy is sent anywhere.</p>
+        <div class="tablewrap">
+          <table>
+            <caption class="sr">Policy keys</caption>
+            <thead><tr><th scope="col">Key</th><th scope="col">Type</th><th scope="col">What it does</th></tr></thead>
+            <tbody>
+              <tr><th scope="row"><code>mode</code></th><td><code>"basic"</code>, <code>"standard"</code> or <code>"strict"</code></td><td>The protection level for every site. Basic blocks on the network only; Standard is the default; Strict also works inside embedded frames.</td></tr>
+              <tr><th scope="row"><code>siteModes</code></th><td>object: host → level</td><td>The level of particular sites, for example <code>{"intranet.example.com": "basic"}</code>. Up to 1,000 sites.</td></tr>
+              <tr><th scope="row"><code>allowlist</code></th><td>array of hosts</td><td>Sites where nothing is blocked. Added to the user's own allowed sites; the user cannot remove them.</td></tr>
+              <tr><th scope="row"><code>features</code></th><td>object: feature → true/false</td><td><code>cookies</code>, <code>antiAdblock</code>, <code>meta</code>, <code>youtube</code>, <code>smart</code>, <code>removeparam</code>, <code>malware</code>, <code>topics</code>, <code>privacy</code>, <code>gpc</code>, <code>twitch</code>.</td></tr>
+              <tr><th scope="row"><code>lists</code></th><td>object: list id → true/false</td><td>Filter lists by the id in <code>rules/lists.json</code>, for example <code>{"reg-de": true}</code>. An unknown id is ignored.</td></tr>
+              <tr><th scope="row"><code>autoUpdate</code></th><td>true/false</td><td>The signed filter update about twice a day.</td></tr>
+              <tr><th scope="row"><code>reviewAsk</code></th><td>true/false</td><td><code>false</code>: never ask users for a Chrome Web Store review.</td></tr>
+              <tr><th scope="row"><code>sync</code></th><td>true/false</td><td>Copying the settings to the user's browser account.</td></tr>
+              <tr><th scope="row"><code>disablePause</code></th><td>true/false</td><td><code>true</code>: users cannot pause protection or turn it off.</td></tr>
+              <tr><th scope="row"><code>disableUserExceptions</code></th><td>true/false</td><td><code>true</code>: users cannot allow sites or change the level of a site.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>A value of the wrong type, an unknown key or an invalid host name is skipped; the rest of the policy still applies.</p>
+        <h3>Linux</h3>
+        <p>Put a JSON file in <code>/etc/opt/chrome/policies/managed/</code>. Extension policies go under <code>3rdparty</code>, <code>extensions</code> and the extension ID:</p>
+<pre><code>{"3rdparty": {"extensions": {"chbjbiabkgocfbbfhednpbhfeipjcclk": {"mode": "strict", "allowlist": ["intranet.example.com"], "disablePause": true, "reviewAsk": false}}}}</code></pre>
+        <h3>Windows</h3>
+        <p>Chromium documents the registry key <code>HKLM\Software\Policies\Google\Chrome\3rdparty\extensions\chbjbiabkgocfbbfhednpbhfeipjcclk\policy</code> (or HKCU), with lists as numbered subkeys. Chromium marks its registry example as not yet verified, so check the result in <code>chrome://policy</code>.</p>
+        <h3>macOS</h3>
+        <p>The preference domain is <code>com.google.Chrome.extensions.chbjbiabkgocfbbfhednpbhfeipjcclk</code>, set with a configuration profile.</p>
+        <h3>Check it</h3>
+        <p>Open <code>chrome://policy</code>, choose <b>Reload policies</b> and find the extension's policies there. The extension applies a changed policy as soon as Chrome passes it on.</p>
+        <p class="src">Source: <a href="https://chromium.org/administrators/configuring-policy-for-extensions" target="_blank" rel="noopener">Chromium, Configuring policy for extensions</a> (the JSON layout, the registry key and the macOS domain) and <a href="https://developer.chrome.com/docs/extensions/reference/manifest/storage" target="_blank" rel="noopener">Chrome for Developers, Manifest for managed storage</a>; checked 13 November 2026. Google's Admin console help does not document the format of its extension policy field, so we do not give an Admin console example here.</p>
       </div>
     </section>
 

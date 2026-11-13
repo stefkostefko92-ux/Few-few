@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "ጥያቄዎች፦ $1 · ቀናት፦ $2"
+  },
+  "managedNote": {
+    "message": "በድርጅትዎ የተቀናበረ"
   }
 }

@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "请求：$1 · 天数：$2"
+  },
+  "managedNote": {
+    "message": "由你的组织设置"
   }
 }

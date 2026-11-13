@@ -900,5 +900,8 @@
   },
   "opt_who_row": {
     "message": "Richieste: $1 · Giorni: $2"
+  },
+  "managedNote": {
+    "message": "Impostato dalla tua organizzazione"
   }
 }

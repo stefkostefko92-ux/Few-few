@@ -75,22 +75,32 @@ ok(`storage stays ≤ 50 KB even at the caps (${(JSON.stringify(W.bump(worst, {}
   };
   globalThis.chrome = mock.chrome;
   const map = { v: 1, companies: ["Google", "Criteo"], rules: { easyprivacy: { 7: 0 }, easylist: { 9: 1 } } };
+  const passive = { v: 1, rules: { easylist: [50], gpc: [1] } }; // an @@ exception and the Sec-GPC header rule
   const fetched = [];
-  globalThis.fetch = async (u) => { fetched.push(String(u)); return { json: async () => map }; };
-  const bg = loadBackground({ chrome: mock.chrome, exports: "countWho, forgetWhoTab" });
+  globalThis.fetch = async (u) => { fetched.push(String(u)); return { json: async () => (String(u).endsWith("passive.json") ? passive : map) }; };
+  const exportsList = "countBlocked, forgetTab, blocks, passiveMap";
+  const bg = loadBackground({ chrome: mock.chrome, exports: exportsList });
   const m = (rulesetId, ruleId, t) => ({ rule: { rulesetId, ruleId }, tabId: 5, timeStamp: t });
   const first = [m("easyprivacy", 7, 1000), m("easyprivacy", 7, 1001), m("easylist", 9, 1002), m("_dynamic", 60001, 1003), m("easylist", 999, 1004)];
-  await bg.countWho(5, first);
-  await bg.countWho(5, first); // the same matches read again (the next badge refresh)
-  await bg.countWho(5, first.concat([m("easylist", 9, 2000)]));
+  await bg.countBlocked(5, first);
+  await bg.countBlocked(5, first); // the same matches read again (the next badge refresh)
+  await bg.countBlocked(5, first.concat([m("easylist", 9, 2000)]));
   await new Promise((r) => setTimeout(r, 1200)); // the 1 s write-behind
   const today = Object.values(mock.store.get("who") || {})[0] || {};
   ok(`SW: each match counted once, by company, unknown rules ignored (${JSON.stringify(today)})`, today.Google === 2 && today.Criteo === 2 && Object.keys(today).length === 2);
-  ok("SW: the map comes from the package (no network)", fetched.length >= 1 && fetched.every((u) => u === "chrome-extension://test-ext/rules/who.json"));
-  ok("SW: the last counted match of a tab survives a restart (storage.session)", session.get("whoSeen")["5"] === 2000);
-  await bg.forgetWhoTab(5);
+  ok("SW: …and the blocked total counts each one once (6 matches, read three times)", mock.store.get("blockedTotal") === 6);
+  ok("SW: the maps come from the package (no network)", fetched.length >= 1 && fetched.every((u) => /^chrome-extension:\/\/test-ext\/rules\/(who|passive)\.json$/.test(u)));
+  ok("SW: the last counted match of a tab survives a restart (storage.session)", session.get("seenMatches")["5"] === 2000);
+  ok("SW: no counting state in memory (5.x kept the per-tab count in a Map and counted a page again after the worker slept)",
+    !/const tabMatched = new Map/.test(readFileSync(join(ROOT, "background.js"), "utf8")));
+  const pm = await bg.passiveMap();
+  ok("blocks: a list's exception, the header rules and our allow rules are not blocks; a block rule is",
+    !bg.blocks({ rulesetId: "easylist", ruleId: 50 }, pm) && !bg.blocks({ rulesetId: "gpc", ruleId: 1 }, pm) &&
+    !bg.blocks({ rulesetId: "_dynamic", ruleId: 90000 }, pm) && !bg.blocks({ rulesetId: "_session", ruleId: 1 }, pm) &&
+    bg.blocks({ rulesetId: "easylist", ruleId: 9 }, pm) && bg.blocks({ rulesetId: "_dynamic", ruleId: 60001 }, pm));
+  await bg.forgetTab(5);
   await new Promise((r) => setTimeout(r, 20));
-  ok("SW: a closed tab's mark is dropped", !("5" in (session.get("whoSeen") || {})));
+  ok("SW: a closed tab's mark is dropped", !("5" in (session.get("seenMatches") || {})));
   const r = await sendMessage(mock.listeners, { type: "getWho" });
   ok("getWho: the summary for Settings (supported where Chrome reports our blocks)",
     r && r.ok && r.supported === true && r.items.length === 2 && r.items[0].n === 2);
@@ -109,7 +119,7 @@ ok("Settings: the card is hidden until the SW says it is supported, who.js after
   /<section class="card" id="whoCard" hidden>/.test(html) && html.indexOf('<script src="who.js">') > html.indexOf('<script src="options.js">'));
 const pkg = readFileSync(join(ROOT, "tools", "package.sh"), "utf8");
 ok("package.sh insists on lib/who.js, rules/who.json, options/who.js; Firefox loads lib/who.js",
-  /refs\.add\("lib\/who\.js"\)/.test(pkg) && /refs\.add\("rules\/who\.json"\)/.test(pkg) && /refs\.add\("options\/who\.js"\)/.test(pkg) && /"lib\/who\.js", "background\.js"\]/.test(pkg));
+  /refs\.add\("lib\/who\.js"\)/.test(pkg) && /refs\.add\("rules\/who\.json"\)/.test(pkg) && /refs\.add\("options\/who\.js"\)/.test(pkg) && /"lib\/who\.js", ("lib\/managed\.js", )?"background\.js"\]/.test(pkg));
 const privacy = readFileSync(join(ROOT, "server", "privacy.html"), "utf8");
 ok("the privacy policy describes it", /Who we stopped/.test(privacy));
 

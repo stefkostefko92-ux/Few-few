@@ -45,6 +45,7 @@ lib/who.js · rules/who.json  6.0 „Кого спряхме“ (Настрой�
                         се ГЕНЕРИРА: `node tools/build_who.mjs` след build_filters/generate_rules и след промяна на
                         popup/companies.js (`--check` е в tests/who.test.mjs); броенето е в refreshBadge (getMatchedRules,
                         по timeStamp, белегът на раздела в storage.session), картата — options/who.js
+lib/managed.js          6.1 политики за организации (managed_schema.json): clean/apply/allows/locks; UI — options/managed.js
 lib/modes.js            6.0 режими Basic/Standard/Strict (глобално + `siteModes` по сайт): чист планер (SA_MODES) —
                         кои страницови скриптове къде (`pageScriptPlan`, id `sa-page-*`); SW, Firefox background,
                         manifest-ът преди meta.js и tests/modes.test.mjs го ползват
@@ -167,6 +168,26 @@ bash tools/package.sh                         # билд + самопровер�
   има ЕДИН ред „Protection here“ — заместил „Hide ad boxes here“ (старият `noCosmetics` се сгъва в Basic при
   ъпдейт/внос, `foldNoCosmetics`); нов ред = над 600 px. Гейт: tests/modes.test.mjs + extension.browser (режимите
   в истински Chromium).
+
+- **Броене (6.1).** „Блокирани“, значката, дневната графика, „спестени“ и „Кого спряхме“ броят САМО блокиращи
+  правила: `getMatchedRules` докладва и изключенията на листите, allowlist-а, паузата и хедърите (GPC/Topics върху
+  всяка заявка — 1 блокирана заявка показваше 7). `blocks()` = `logListKey() !== null` и не е в `rules/passive.json`
+  (генерира го `tools/build_who.mjs` с who.json; `--check` в tests/who.test.mjs — пусни го след build_filters).
+  Белегът по раздел е в `storage.session` (`countBlocked`), никога в паметта на SW.
+- **Allow правила по двойки (6.1).** `allowAllRequests` се закача за рамката при потвърждаване на навигацията —
+  ранна заявка може да мине покрай него (измерено: 1/6 паузи, 1/10 разрешавания). Паузата = 69999 allowAllRequests
+  + 69997 `allow` с празно условие; всеки разрешен сайт = 90000+2i allowAllRequests + 90000+2i+1 `allow` по
+  `initiatorDomains`. Нов вид „разреши“ → същото. Всички записи на динамични правила (без отдалечените листи) — през
+  `inDnrQueue`.
+- **Вложени нива (6.1).** `excludeMatches` винаги бие `matches`: планът в `lib/modes.js` е по региони с отделна
+  регистрация за всяко ниво на влагане (`sa-page-<ниво>[N]-*`); uBO парчетата/gpc изключват Basic родител само
+  точно, ако под него има сайт с друго ниво (`basicExcludes`). Гейт: случайните дървета в tests/modes.test.mjs.
+- **Политики за организации (6.1, `docs/ENTERPRISE.md`).** `chrome.storage.managed` → `lib/managed.js`
+  (`clean` → `apply` в storage.local → `allows` във всеки обработчик, `locks` за UI). Налага се при инсталация,
+  старт, внос, синхронизация и промяна на политиката (`storage.onChanged` area "managed"). Нов потребителски път към
+  заключваема настройка → `SA_MANAGED.allows` в SW, не само изключен контрол в UI. Firefox: `storage` ключът се
+  маха от manifest-а (package.sh). Ръчен тест с истинска политика иска root (`/etc/opt/chrome/policies/managed`) —
+  browser тестът подменя само източника (`managedPolicy`).
 
 - **Единствена цел** (Web Store): блокиране на реклами/тракери. **Без remote
   code, никога.** Единствените мрежови заявки са дневен GET на

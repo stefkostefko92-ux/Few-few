@@ -105,6 +105,10 @@ try {
   ok("toggle-site command: the site is allowed (and the tab reloads)", (await get("allowlist")).allowlist.includes("shop-site.org"));
   await sw.evaluate(async (t) => { await runCommand("toggle-site", t); }, { id: shopTab.id, url: shopTab.url });
   ok("…again: blocked again", !(await get("allowlist")).allowlist.includes("shop-site.org"));
+  // the command reloads the tab: let that reload finish first — closing a page mid-reload hung this test
+  // (2 of 3 runs, at page.close; the first toggle above already waited)
+  await shop.waitForLoadState("load").catch(() => {});
+  await shop.waitForTimeout(600);
   await shop.close();
 
   // ---- Settings: chart, GPC, shortcuts, import ----

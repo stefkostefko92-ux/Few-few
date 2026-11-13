@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "リクエスト：$1 · 日数：$2"
+  },
+  "managedNote": {
+    "message": "組織によって設定されています"
   }
 }

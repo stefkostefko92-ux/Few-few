@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Solicitações: $1 · Dias: $2"
+  },
+  "managedNote": {
+    "message": "Definido pela sua organização"
   }
 }

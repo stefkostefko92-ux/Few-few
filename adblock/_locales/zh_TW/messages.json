@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "請求：$1 · 天數：$2"
+  },
+  "managedNote": {
+    "message": "由貴機構設定"
   }
 }

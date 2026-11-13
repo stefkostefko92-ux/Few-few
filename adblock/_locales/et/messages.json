@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Päringud: $1 · Päevad: $2"
+  },
+  "managedNote": {
+    "message": "Määratud teie organisatsiooni poolt"
   }
 }

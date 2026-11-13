@@ -898,5 +898,8 @@
   },
   "opt_who_row": {
     "message": "Kërkesa: $1 · Ditë: $2"
+  },
+  "managedNote": {
+    "message": "Caktuar nga organizata juaj"
   }
 }

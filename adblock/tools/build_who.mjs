@@ -12,6 +12,10 @@
 //
 // Формат: { "v": 1, "companies": [имена], "rules": { rulesetId: { ruleId: индекс } } }.
 // Пускай след build_filters.mjs / generate_rules.py и след промяна на popup/companies.js.
+//
+// 6.1: пише и rules/passive.json — статичните правила, които НЕ блокират (изключенията @@ → allow,
+// allowAllRequests, хедърите на GPC/Topics → modifyHeaders, upgradeScheme): getMatchedRules ги докладва
+// като всяко друго съвпадение и до 6.0 се броеха за „блокирани“. Формат: { "v": 1, "rules": { rulesetId: [id…] } }.
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,6 +23,20 @@ import { runInNewContext } from "node:vm";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "rules", "who.json");
+const OUT_PASSIVE = join(ROOT, "rules", "passive.json");
+const PASSIVE = new Set(["allow", "allowAllRequests", "modifyHeaders", "upgradeScheme"]);
+
+export function buildPassive() {
+  const manifest = JSON.parse(readFileSync(join(ROOT, "manifest.json"), "utf8"));
+  const rules = {};
+  for (const res of manifest.declarative_net_request?.rule_resources || []) {
+    const file = join(ROOT, res.path);
+    if (!existsSync(file)) continue;
+    const ids = JSON.parse(readFileSync(file, "utf8")).filter((r) => PASSIVE.has(r.action && r.action.type)).map((r) => r.id);
+    if (ids.length) rules[res.id] = ids;
+  }
+  return JSON.stringify({ v: 1, rules }) + "\n";
+}
 
 export function loadCompanies() {
   const ctx = {};
@@ -70,12 +88,16 @@ export function buildWho() {
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const json = buildWho();
+  const passive = buildPassive();
   if (process.argv.includes("--check")) {
     const cur = existsSync(OUT) ? readFileSync(OUT, "utf8") : "";
-    if (cur !== json) { console.error("rules/who.json is stale — run: node tools/build_who.mjs"); process.exit(1); }
-    console.log("who: rules/who.json is up to date");
+    const curP = existsSync(OUT_PASSIVE) ? readFileSync(OUT_PASSIVE, "utf8") : "";
+    if (cur !== json || curP !== passive) { console.error("rules/who.json or rules/passive.json is stale — run: node tools/build_who.mjs"); process.exit(1); }
+    console.log("who: rules/who.json and rules/passive.json are up to date");
   } else {
     writeFileSync(OUT, json);
+    writeFileSync(OUT_PASSIVE, passive);
+    console.log(`passive: ${Object.values(JSON.parse(passive).rules).reduce((a, x) => a + x.length, 0)} non-blocking rules (${(passive.length / 1024).toFixed(1)} KB) → rules/passive.json`);
     const d = JSON.parse(json);
     const n = Object.values(d.rules).reduce((a, m) => a + Object.keys(m).length, 0);
     console.log(`who: ${n} rules → ${d.companies.length} companies (${(json.length / 1024).toFixed(1)} KB) → rules/who.json`);

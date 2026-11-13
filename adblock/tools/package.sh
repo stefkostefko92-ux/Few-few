@@ -59,6 +59,7 @@ refs.add("blocked/blocked.js"); refs.add("blocked/blocked.css"); // the warning 
 refs.add("report/report.html");   // opened from the popup
 refs.add("popup/companies.js");   // the company behind each host in "Connections on this page"
 refs.add("lib/who.js"); refs.add("rules/who.json"); refs.add("options/who.js"); // 6.0 "Who we stopped"
+refs.add("lib/managed.js"); refs.add("managed_schema.json"); refs.add("rules/passive.json"); // 6.1 policies, what counts as blocked
 refs.add("welcome/welcome.html"); refs.add("welcome/welcome.js"); refs.add("welcome/welcome.css"); // first install
 refs.add("THIRD_PARTY_NOTICES.txt"); // linked from Settings; list licences ask for it
 refs.add("licenses/*");            // the licence texts the notices point to
@@ -103,7 +104,7 @@ node - "$ff_tmp/manifest.json" <<'NODE'
 const fs = require("fs");
 const p = process.argv[2];
 const m = JSON.parse(fs.readFileSync(p, "utf8"));
-m.background = { scripts: ["scriptlets/policy.js", "lib/abp2dnr.js", "lib/modes.js", "lib/who.js", "background.js"] };
+m.background = { scripts: ["scriptlets/policy.js", "lib/abp2dnr.js", "lib/modes.js", "lib/who.js", "lib/managed.js", "background.js"] };
 // gecko_android: без него AMO не показва разширението във Firefox за Android (Extension Workshop,
 // „version compatibility“). contextMenus/commands ги няма там — кодът ги вика само в try/?.
 m.browser_specific_settings = {
@@ -111,6 +112,7 @@ m.browser_specific_settings = {
   gecko_android: { strict_min_version: "128.0" },
 };
 delete m.minimum_chrome_version;
+delete m.storage; // managed_schema is Chrome's; Firefox reads the policy from its own enterprise policies (no schema)
 m.web_accessible_resources = (m.web_accessible_resources || []).map((w) => { const c = { ...w }; delete c.use_dynamic_url; return c; });
 fs.writeFileSync(p, JSON.stringify(m, null, 2) + "\n");
 NODE
