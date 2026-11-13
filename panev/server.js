@@ -26,6 +26,8 @@ const app      = express();
 const PORT     = Number(process.env.PORT) || 3000;
 const BASE_URL = (process.env.BASE_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
 const IS_PROD  = process.env.NODE_ENV === 'production';
+// Онлайн плащането е спряно, освен ако PAYMENTS_ENABLED=true (виж /api/create-checkout-session).
+const PAYMENTS_ON = process.env.PAYMENTS_ENABLED === 'true';
 
 app.set('trust proxy', 1); // behind Nginx
 
@@ -70,6 +72,8 @@ function runCleanup() {
   try {
     const n = db.pruneOldMessages();
     if (n) console.log(`[cleanup] ${n} messaggi oltre 24 mesi rimossi`);
+    const ips = db.clearOldMessageIps();
+    if (ips) console.log(`[cleanup] IP cancellato da ${ips} messaggi oltre 30 giorni`);
   } catch (e) { console.error('[cleanup]', e.message); }
 }
 runCleanup();
@@ -102,14 +106,16 @@ function securityHeaders(req, res, next) {
   // Публичният сайт няма изпълними inline скриптове (само src=, application/json
   // и ld+json, които не изискват 'unsafe-inline'); админът има — затова само там.
   const needsInlineJs = req.path.startsWith('/admin');
+  // Плащанията са спрени (kill-switch): тогава страниците не разрешават нищо от домейните на Stripe.
+  const stripeOn = PAYMENTS_ON;
   const csp = [
     "default-src 'self'",
-    "script-src 'self'" + (needsInlineJs ? " 'unsafe-inline'" : '') + " https://js.stripe.com",
+    "script-src 'self'" + (needsInlineJs ? " 'unsafe-inline'" : '') + (stripeOn ? ' https://js.stripe.com' : ''),
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self'",
     "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://api.stripe.com",
-    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com", // 'self': 3D изгледът на началната страница
+    "connect-src 'self'" + (stripeOn ? ' https://api.stripe.com' : ''),
+    "frame-src 'self'" + (stripeOn ? ' https://js.stripe.com https://hooks.stripe.com' : ''), // 'self': 3D изгледът на началната страница
     "object-src 'self'",   // каталожният PDF се вгражда с <object>
     "base-uri 'self'",
     "form-action 'self'",
@@ -123,7 +129,7 @@ function securityHeaders(req, res, next) {
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy',
-    'geolocation=(), microphone=(), camera=(), payment=(self "https://js.stripe.com")');
+    `geolocation=(), microphone=(), camera=(), payment=${stripeOn ? '(self "https://js.stripe.com")' : '()'}`);
   if (IS_PROD) {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
@@ -197,7 +203,9 @@ app.use((req, res, next) => {
                    // изходният код на генератора и вътрешните бележки не се сервират
                    /^\/site\b/i, /^\/CLAUDE\.md$/i, /^\/DEPLOY\.md$/i,
                    // изходният пакет на 3D каталога; сайтът сервира само билда му от /3d-viewer/
-                   /^\/3d(\/|$)/i];
+                   /^\/3d(\/|$)/i,
+                   // конфигурацията за деплой (nginx, systemd) и тестовете не са за публиката
+                   /^\/deploy(\/|$)/i, /^\/test(\/|$)/i];
   if (blocked.some(r => r.test(norm))) return res.status(404).send('Not found');
   next();
 });
@@ -529,39 +537,64 @@ app.get('/api/session-status', apiLimiter, async (req, res) => {
   }
 });
 
-// Contact form (public)
-app.post('/api/contact', contactLimiter, (req, res) => {
+// Риплай на формата без JavaScript (обикновен POST от <form>): кратка страница вместо JSON.
+const FORM_REPLY = {
+  ok: ['Messaggio ricevuto — ti risponderemo nei giorni lavorativi.', 'Message received — we reply on working days.', 'Съобщението е получено — отговаряме в работни дни.'],
+  err: ['Richiesta non inviata: compila i campi obbligatori e conferma l’informativa privacy.', 'Not sent: fill in the required fields and confirm the privacy notice.', 'Не е изпратено: попълни задължителните полета и потвърди информацията за поверителност.'],
+};
+function contactReply(req, res, status, payload) {
+  if (!req.is('application/x-www-form-urlencoded')) return res.status(status).json(payload);
+  const lines = FORM_REPLY[status < 400 ? 'ok' : 'err'];
+  res.status(status).type('html').send(`<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex"><title>Panev Ascensori</title><link rel="stylesheet" href="/css/site.css"></head>
+<body><main id="main"><section class="page-head"><div class="wrap">${lines.map((l) => `<p class="sec-lead">${l}</p>`).join('')}
+<p><a class="btn btn-white" href="/contatti#modulo">Contatti</a> <a class="btn btn-outline" href="/en/contacts#modulo">Contacts</a> <a class="btn btn-outline" href="/bg/kontakti#modulo">Контакти</a></p>
+</div></section></main></body></html>`);
+}
+
+// Contact form (public). JSON from js/site.js; a plain form post when JavaScript is off (POST, never GET:
+// the data would end up in the URL and the logs).
+app.post('/api/contact', express.urlencoded({ extended: false, limit: '100kb' }), contactLimiter, (req, res) => {
   try {
+    const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
     // Honeypot
-    if (req.body.website && String(req.body.website).trim() !== '') {
-      return res.json({ ok: true });
+    if (body.website && String(body.website).trim() !== '') {
+      return contactReply(req, res, 200, { ok: true });
     }
 
-    const { nome, email, tel, citta, azienda, servizio, oggetto, messaggio, privacy, source, items, totale, phpId } = req.body || {};
+    const { nome, email, tel, citta, azienda, servizio, oggetto, messaggio, privacy, source, phpId } = body;
+    // Il carrello arriva grezzo dal client: solo oggetti, al massimo 50 righe; il totale solo se è un numero.
+    const items = Array.isArray(body.items) ? body.items.filter((it) => it && typeof it === 'object').slice(0, 50) : [];
+    const totale = Number.isFinite(Number(body.totale)) && body.totale !== '' && body.totale != null ? Number(body.totale) : undefined;
 
-    if (!nome || !email || !messaggio || !privacy) {
-      return res.status(400).json({ error: 'Campi obbligatori mancanti' });
+    // La presa visione dell'informativa va confermata davvero (true dal JSON, "on" dal modulo senza JS).
+    if (!nome || !email || !messaggio || !(privacy === true || privacy === 'true' || privacy === 'on')) {
+      return contactReply(req, res, 400, { error: 'Campi obbligatori mancanti' });
     }
-    // Vendita esclusivamente B2B: la ragione sociale / partita IVA è obbligatoria
-    // (non solo `required` lato client). Formato P.IVA non forzato: il sito è
+    // Vendita esclusivamente B2B: la ragione sociale / partita IVA è obbligatoria per ogni
+    // richiesta dal sito (non solo `required` lato client). Formato P.IVA non forzato: il sito è
     // trilingue e un cliente non italiano ha una partita IVA di altro Stato UE.
-    if (String(source || '').startsWith('sito') && !String(azienda || '').trim()) {
-      return res.status(400).json({ error: 'Ragione sociale / partita IVA obbligatoria (operatività B2B)' });
+    if (!String(azienda || '').trim()) {
+      return contactReply(req, res, 400, { error: 'Ragione sociale / partita IVA obbligatoria (operatività B2B)' });
     }
     if (!validateEmail(email)) {
-      return res.status(400).json({ error: 'Email non valida' });
+      return contactReply(req, res, 400, { error: 'Email non valida' });
     }
 
     // If cart items provided, append a formatted product list to the message
     let fullMessage = sanitize(messaggio, 3000);
-    if (Array.isArray(items) && items.length > 0) {
+    if (items.length > 0) {
       // Санитизираме name/codice при съхранение (defense-in-depth): да не
       // носят payload на покой в messages.messaggio за бъдещ sink без escape.
-      const productLines = items.map(it =>
-        `  • ${sanitize(it.name || '', 150)} [${sanitize(it.codice || it.id || '', 60)}] — qty ${Math.max(1, Math.min(999, parseInt(it.qty, 10) || 1))} × €${Number(it.price || 0).toFixed(2)} = €${(Number(it.price || 0) * Number(it.qty || 1)).toFixed(2)}`
-      ).join('\n');
+      const productLines = items.map((it) => {
+        const qty = Math.max(1, Math.min(999, parseInt(it.qty, 10) || 1));
+        const price = Number(it.price);
+        const priced = it.price != null && it.price !== '' && Number.isFinite(price) && price > 0;
+        return `  • ${sanitize(it.name || '', 150)} [${sanitize(it.codice || it.id || '', 60)}] — qty ${qty} × ${priced ? `€${price.toFixed(2)} = €${(price * qty).toFixed(2)}` : 'a preventivo'}`;
+      }).join('\n');
+      const quoted = items.some((it) => !(Number(it.price) > 0));
       const totLine = typeof totale !== 'undefined'
-        ? `\n\nTOTALE: €${Number(totale).toFixed(2)} (IVA esclusa)`
+        ? `\n\nTOTALE: €${totale.toFixed(2)}${quoted ? ' + preventivo' : ''} (IVA esclusa)`
         : '';
       fullMessage = `=== PRODOTTI RICHIESTI (${items.length}) ===\n${productLines}${totLine}\n\n=== NOTE CLIENTE ===\n${fullMessage}`;
       fullMessage = fullMessage.slice(0, 5000);
@@ -580,7 +613,8 @@ app.post('/api/contact', contactLimiter, (req, res) => {
       ip:        auth.clientIp(req),
     });
 
-    console.log(`[contact] ${msg.id} ${msg.nome} <${msg.email}> source=${msg.source}${items ? ' items=' + items.length : ''}`);
+    // Nel log solo il riferimento: nome ed email restano nel database (niente dati personali nei log).
+    console.log(`[contact] ${msg.id} source=${msg.source}${items.length ? ' items=' + items.length : ''}`);
 
     // Send email (admin + user confirmation) — fire & return immediately
     mailer.sendContactEmails({
@@ -591,10 +625,9 @@ app.post('/api/contact', contactLimiter, (req, res) => {
       citta:     msg.citta,
       servizio:  msg.servizio,
       messaggio: sanitize(messaggio, 3000),
-      items:     Array.isArray(items) ? items : [],
+      items:     items,
       totale:    totale,
       msgId:     msg.id,
-      ip:        auth.clientIp(req),
       source:    msg.source,
     }).then(result => {
       console.log(`[contact:mail] ${msg.id} admin=${result.adminSent} user=${result.userSent}${result.errors.length ? ' errors=' + result.errors.join('|') : ''}`);
@@ -602,10 +635,10 @@ app.post('/api/contact', contactLimiter, (req, res) => {
       console.error(`[contact:mail] ${msg.id} failed:`, err.message);
     });
 
-    res.json({ ok: true, id: msg.id });
+    contactReply(req, res, 200, { ok: true, id: msg.id });
   } catch (err) {
     console.error('[contact]', err.message);
-    res.status(500).json({ error: 'Errore interno' });
+    contactReply(req, res, 500, { error: 'Errore interno' });
   }
 });
 
@@ -994,10 +1027,13 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error('[error]', err.message);
+  // Gli errori del client (JSON non valido, corpo troppo grande: err.status 4xx da body-parser) restano 4xx.
+  const status = Number.isInteger(err.status) && err.status >= 400 && err.status < 500 ? err.status : 500;
+  if (status === 500) console.error('[error]', err.message);
   if (req.path.startsWith('/api/')) {
-    return res.status(500).json({ error: IS_PROD ? 'Errore interno' : err.message });
+    return res.status(status).json({ error: status === 500 ? (IS_PROD ? 'Errore interno' : err.message) : 'Richiesta non valida' });
   }
+  if (status !== 500) return res.status(status).send('Richiesta non valida');
   res.status(500).sendFile(path.join(__dirname, 'index.html'));
 });
 

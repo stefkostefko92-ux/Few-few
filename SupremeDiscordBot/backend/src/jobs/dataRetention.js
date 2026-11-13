@@ -16,9 +16,10 @@
 // ON ERROR: logs but does NOT throw. Retention run failure must not crash backend.
 
 import { prisma } from "../lib/prisma.js";
-import { effectiveFreeWhere } from "../lib/premium.js";
+import { effectiveFreeWhere, exportWindowClosedWhere } from "../lib/premium.js";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+export const COMPANION_BATTLE_RETENTION_DAYS = 30;
 
 export async function runRetentionJob() {
   const startedAt = new Date();
@@ -28,6 +29,7 @@ export async function runRetentionJob() {
     abuseReportsDeleted: 0,
     removedServersPurged: 0,
     verificationAttemptsDeleted: 0,
+    companionBattlesDeleted: 0,
     errors: [],
   };
 
@@ -44,6 +46,16 @@ export async function runRetentionJob() {
     results.errors.push(`verificationAttempts: ${err.message}`);
   }
 
+  // ── 0б. Битките на спътниците (v53) — 30 дни. Охлажданията и лимитите четат
+  // само последните 24 ч, а рекордът (победи/загуби) е броячът на спътника —
+  // старите редове с двата Discord ID не са нужни на никого.
+  try {
+    const r = await prisma.companionBattle.deleteMany({ where: { createdAt: { lt: new Date(Date.now() - COMPANION_BATTLE_RETENTION_DAYS * MS_PER_DAY) } } });
+    results.companionBattlesDeleted = r?.count ?? 0;
+  } catch (err) {
+    results.errors.push(`companionBattles: ${err.message}`);
+  }
+
   // ── 1. Anonymize Free-tier closed tickets older than 30 days ────────────────
   try {
     const thirtyDaysAgo = new Date(Date.now() - 30 * MS_PER_DAY);
@@ -56,7 +68,14 @@ export async function runRetentionJob() {
         // Only anonymize if the server is not EFFECTIVELY premium — agency
         // seats and trials don't set the raw isPremium flag, and deleting a
         // paying agency customer's transcripts is irreversible data loss.
-        server: effectiveFreeWhere(),
+        //
+        // И НЕ в 30-дневния прозорец за експорт след края на платения период
+        // (А1): клиентът има право да си изтегли съдържанието (чл. 16(4) Дир.
+        // (ЕС) 2019/770; Условията му го обещават). Метлата на архивите в
+        // scheduler.js го зачиташе, тази чистка — не: план, свършил вчера,
+        // означаваше всичко по-старо от 30 дни изтрито още същата нощ.
+        // Доказано срещу жива база в integration/schema.integration.test.js.
+        server: { AND: [effectiveFreeWhere(), exportWindowClosedWhere()] },
         // Skip already-anonymized.
         //
         // ВНИМАНИЕ — СЪЩИЯТ КЛАС, който вече ни удари в секция 3б:
@@ -196,6 +215,8 @@ export async function runRetentionJob() {
           // Плащащ по ДРУГ път (активен agency seat или течащ trial) също не се
           // пипа — статусът в Stripe не покрива тези случаи.
           effectiveFreeWhere(),
+          // И не в прозореца за експорт (А1) — виж секция 1.
+          exportWindowClosedWhere(),
           // Веднъж изчистен → не го пипаме пак (маркерът е и одитната следа).
           { auditLogs: { none: { action: "SERVER_DATA_PURGED" } } },
         ],
@@ -243,6 +264,7 @@ export async function runRetentionJob() {
         prisma.memberCompanion.deleteMany({ where: { serverId } }),
         prisma.companionSpawn.deleteMany({ where: { serverId } }),
         prisma.companionTrade.deleteMany({ where: { serverId } }),
+        prisma.companionBattle.deleteMany({ where: { serverId } }),
         prisma.serverQuest.deleteMany({ where: { serverId } }),
         prisma.triviaRound.deleteMany({ where: { serverId } }),
         prisma.gameSettings.deleteMany({ where: { serverId } }),

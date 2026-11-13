@@ -28,21 +28,38 @@ export const REQUIRED_PERMISSIONS = [
   { flag: PermissionsBitField.Flags.ViewAuditLog, name: "View Audit Log" },
 ];
 
+// Препоръчителни права: с тях нещо работи по-добре, но липсата им НЕ е грешка
+// (старите инсталации ги нямат — Discord не ги е искал при поканата им).
+//
+// PinMessages (1<<51): от 2026 закачането/откачането на съобщения е отделно
+// право и не идва с Manage Messages (docs.discord.com/developers/topics/permissions,
+// PIN_MESSAGES = 0x0008000000000000). Без него приветствието в тикета не се
+// закача, но тикетът работи.
+export const RECOMMENDED_PERMISSIONS = [
+  { flag: PermissionsBitField.Flags.PinMessages, name: "Pin Messages" },
+];
+
 // Same bits, as an integer — used to build the re-invite URL (matches the
-// permissions above; keep in sync if REQUIRED_PERMISSIONS changes).
-// 361045814288 (без одитния дневник) | 1<<7 = 361045814416.
-export const INVITE_PERMISSIONS_INT = 361045814416;
+// permissions above; keep in sync if REQUIRED_PERMISSIONS/RECOMMENDED_PERMISSIONS change).
+// 361045814288 (без одитния дневник) | 1<<7 (ViewAuditLog) = 361045814416
+// | 1<<51 (PinMessages) = 2252160859499664.
+export const INVITE_PERMISSIONS_INT = 2252160859499664;
 
 /**
  * @param {import("discord.js").Guild} guild
- * @returns {{ me: import("discord.js").GuildMember, results: {name:string,has:boolean}[], missing: {name:string,has:boolean}[] }}
+ * `missing` са само ЗАДЪЛЖИТЕЛНИТЕ права; препоръчителните (PinMessages) са отделно
+ * в `recommendedMissing` — липсата им не е причина да се обявява грешка.
+ * @returns {{ me: import("discord.js").GuildMember, results: {name:string,has:boolean}[], missing: {name:string,has:boolean}[], recommendedMissing: {name:string,has:boolean}[] }}
  */
 export function checkBotPermissions(guild) {
   const me = guild.members.me;
   const perms = me.permissions;
   const results = REQUIRED_PERMISSIONS.map((r) => ({ name: r.name, has: perms.has(r.flag) }));
   const missing = results.filter((r) => !r.has);
-  return { me, results, missing };
+  const recommendedMissing = RECOMMENDED_PERMISSIONS
+    .map((r) => ({ name: r.name, has: perms.has(r.flag) }))
+    .filter((r) => !r.has);
+  return { me, results, missing, recommendedMissing };
 }
 
 /**
