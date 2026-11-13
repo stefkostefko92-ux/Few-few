@@ -19,6 +19,7 @@ import {
 } from '../documents/issue.js';
 import { DOWNLOAD_SELECT, sendDocumentFile } from '../routes/app-shared.js';
 import { requestRateKey } from '../http/ip.js';
+import { isIsoDate } from '../recurring/schedule.js';
 import { authenticateApiKey, type ApiPrincipal, type ApiScope } from './keys.js';
 import { DOCUMENT_ROW_SELECT, documentJson } from './serialize.js';
 
@@ -82,14 +83,8 @@ const ListQuery = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),
   after: z.string().regex(ID).optional(),
   status: z.enum(['ISSUED', 'CANCELLED']).optional(),
-  from: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional(),
-  to: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional(),
+  from: z.string().refine(isIsoDate).optional(),
+  to: z.string().refine(isIsoDate).optional(),
 });
 
 export function apiRouter(): Router {
@@ -112,6 +107,8 @@ export function apiRouter(): Router {
     const api = await authenticateApiKey(req.get('authorization'));
     if (!api) return fail(res, 401, 'unauthorized');
     if (!api.planAllows) return fail(res, 403, 'plan');
+    // Създателят вече не е член (махнат, напуснал, закрит профил) — ключът не чете и не издава.
+    if (!api.creatorActive) return fail(res, 403, 'access');
     req.api = api;
     next();
   });
@@ -147,6 +144,8 @@ export function apiRouter(): Router {
     const docs = await prisma.document.findMany({
       where: {
         organizationId: req.api!.organizationId,
+        // Keyset: документ, сменил статуса между страниците, не изяжда следващия (cursor+skip би).
+        ...(after ? { id: { gt: after } } : {}),
         status: status ?? { in: ['ISSUED', 'CANCELLED'] },
         ...(from || to
           ? {
@@ -159,7 +158,6 @@ export function apiRouter(): Router {
       },
       orderBy: { id: 'asc' },
       take: limit + 1,
-      ...(after ? { cursor: { id: after }, skip: 1 } : {}),
       select: DOCUMENT_ROW_SELECT,
     });
     const page = docs.slice(0, limit);
@@ -226,6 +224,12 @@ export function apiRouter(): Router {
     if (idempotencyKey && (await replay())) return;
     const actor = await accessOf(api);
     if (!actor) return fail(res, 403, 'access');
+    // Чужда или несъществуваща серия — 422, не „изчерпана“ (UPDATE-ът в издаването не ги различава).
+    const series = await prisma.documentSeries.findFirst({
+      where: { id: parsed.data.seriesId, organizationId: api.organizationId },
+      select: { id: true },
+    });
+    if (!series) return fail(res, 422, 'series');
     const settings = await issueSettings();
     try {
       const issued = await prisma.$transaction(async (tx) => {
@@ -280,10 +284,15 @@ export function apiRouter(): Router {
   router.use('/api', (error: unknown, _req: Request, res: Response, next: NextFunction) => {
     if (res.headersSent) return next(error);
     // Грешките на парсването на тялото (body-parser): невалиден JSON, твърде голямо тяло.
-    const status = (error as { status?: unknown }).status;
-    if (typeof status === 'number' && status >= 400 && status < 500) {
-      return fail(res, status, status === 413 ? 'tooLarge' : 'invalidJson');
+    // Само грешките на парсването на тялото са „invalidJson“/„tooLarge“ (body-parser слага `type`).
+    const type = (error as { type?: unknown }).type;
+    if (type === 'entity.too.large') return fail(res, 413, 'tooLarge');
+    if (type === 'charset.unsupported' || type === 'encoding.unsupported') {
+      return fail(res, 415, 'unsupportedEncoding');
     }
+    if (typeof type === 'string' && type.startsWith('entity.'))
+      return fail(res, 400, 'invalidJson');
+    if (error instanceof HttpError && error.status === 404) return fail(res, 404, 'notFound');
     logger.error({ err: errorMessage(error) }, 'грешка в API');
     fail(res, 500, 'error');
   });

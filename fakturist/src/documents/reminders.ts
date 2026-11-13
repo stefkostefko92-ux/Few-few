@@ -77,8 +77,10 @@ export async function runReminders(now = new Date()): Promise<number> {
   let sent = 0;
   let cursor: string | undefined;
   for (let page = 0; page < MAX_PAGES; page += 1) {
+    // Keyset (id > последния), не cursor+skip: документ, на който току-що е пратено напомняне, вече не
+    // минава филтъра и skip би прескочил истински ред.
     const docs = await prisma.document.findMany({
-      where: candidates(organizationIds, today),
+      where: { ...candidates(organizationIds, today), ...(cursor ? { id: { gt: cursor } } : {}) },
       select: {
         id: true,
         organizationId: true,
@@ -89,7 +91,6 @@ export async function runReminders(now = new Date()): Promise<number> {
       },
       orderBy: { id: 'asc' },
       take: PAGE,
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     });
     for (const doc of docs) {
       if (await remind(doc, today, now)) sent += 1;

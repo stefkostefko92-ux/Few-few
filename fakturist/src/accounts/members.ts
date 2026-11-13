@@ -322,6 +322,11 @@ export async function removeMember(input: {
       throw new MemberError('forbiddenRole');
     }
     await tx.membership.delete({ where: { id: member.id } });
+    // Ключовете за API, създадени от него, спират заедно с членството (SPEC 53).
+    await tx.apiKey.updateMany({
+      where: { organizationId: input.organizationId, createdById: member.userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
     await audit(tx, {
       actorId: input.actor.userId,
       organizationId: input.organizationId,

@@ -91,6 +91,10 @@ export async function closeAccount(input: { userId: string; password: string }):
   const now = new Date();
   await prisma.$transaction(async (tx) => {
     await tx.membership.deleteMany({ where: { userId: user.id } });
+    await tx.apiKey.updateMany({
+      where: { createdById: user.id, revokedAt: null },
+      data: { revokedAt: now },
+    });
     await tx.session.deleteMany({ where: { userId: user.id } });
     await tx.userToken.deleteMany({ where: { userId: user.id } });
     await tx.notification.deleteMany({ where: { toEmail: user.email, status: 'PENDING' } });

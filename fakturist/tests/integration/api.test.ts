@@ -312,3 +312,89 @@ test('невалиден JSON и твърде голямо тяло — JSON г�
   });
   assert.equal(big.status, 413);
 });
+
+test('ревю: страницата не губи документ, сменил статуса; невалидна дата и чужда серия — ясни кодове', async () => {
+  const all = (await (await api(issueKey, '/api/v1/documents?status=ISSUED&limit=100')).json()) as {
+    data: Array<{ id: string }>;
+  };
+  assert.ok(all.data.length >= 3);
+  const page1 = (await (await api(issueKey, '/api/v1/documents?status=ISSUED&limit=1')).json()) as {
+    data: Array<{ id: string }>;
+    next: string;
+  };
+  // Курсорният документ е анулиран между двете страници — следващият не бива да изчезне.
+  await prisma.document.update({ where: { id: page1.next }, data: { status: 'CANCELLED' } });
+  const page2 = (await (
+    await api(issueKey, `/api/v1/documents?status=ISSUED&limit=1&after=${page1.next}`)
+  ).json()) as { data: Array<{ id: string }> };
+  assert.equal(page2.data[0]?.id, all.data[1]?.id);
+  await prisma.document.update({ where: { id: page1.next }, data: { status: 'ISSUED' } });
+
+  const badDate = await api(issueKey, '/api/v1/documents?from=2026-13-45');
+  assert.equal(badDate.status, 400);
+  const otherSeries = await prisma.documentSeries.findFirstOrThrow({
+    where: { organizationId: otherOrgId },
+  });
+  const foreign = await post(issueKey, body({ seriesId: otherSeries.id }));
+  assert.equal(foreign.status, 422);
+  assert.equal(((await foreign.json()) as { error: string }).error, 'series');
+
+  const noXml = await prisma.document.create({
+    data: {
+      organizationId: orgId,
+      typeCode: '380',
+      status: 'ISSUED',
+      number: '0000009999',
+      issueDate: new Date(),
+      input: {},
+      buyerName: 'x',
+    },
+  });
+  const missing = await api(issueKey, `/api/v1/documents/${noXml.id}/ubl.xml`);
+  assert.equal(missing.status, 404);
+  assert.equal(((await missing.json()) as { error: string }).error, 'notFound');
+});
+
+test('ревю: махнат създател → ключът не чете; махане на член оттегля ключовете му', async () => {
+  const { removeMember } = await import('../../src/accounts/members.js');
+  const helper = await prisma.user.create({
+    data: { email: 'admin2@example.test', name: 'Втори админ', passwordHash: 'x' },
+  });
+  const membership = await prisma.membership.create({
+    data: { userId: helper.id, organizationId: orgId, role: 'ADMIN' },
+  });
+  const { createApiKey } = await import('../../src/api/keys.js');
+  const { key } = await createApiKey(
+    { organizationId: orgId, role: 'ADMIN', viaFirmId: null, mandateId: null },
+    helper.id,
+    { name: 'На админа', scopes: ['read'] },
+  );
+  assert.equal((await api(key, '/api/v1/series')).status, 200);
+  const ownerId = (
+    await prisma.membership.findFirstOrThrow({
+      where: { organizationId: orgId, role: 'OWNER' },
+    })
+  ).userId;
+  await removeMember({
+    organizationId: orgId,
+    membershipId: membership.id,
+    actor: { userId: ownerId, role: 'OWNER' },
+  });
+  assert.equal((await api(key, '/api/v1/series')).status, 401, 'оттеглен заедно с членството');
+  // Членство, изтрито без оттегляне (напр. ръчно) — 403, ключът пак не работи.
+  const second = await createApiKey(
+    { organizationId: orgId, role: 'OWNER', viaFirmId: null, mandateId: null },
+    ownerId,
+    { name: 'Временно', scopes: ['read'] },
+  );
+  await prisma.membership.updateMany({
+    where: { userId: ownerId, organizationId: orgId },
+    data: { userId: helper.id },
+  });
+  const orphan = await api(second.key, '/api/v1/series');
+  assert.equal(orphan.status, 403);
+  await prisma.membership.updateMany({
+    where: { userId: helper.id, organizationId: orgId },
+    data: { userId: ownerId },
+  });
+});

@@ -96,6 +96,8 @@ export interface ApiPrincipal {
   createdById: string | null;
   /** Планът вече няма `api` — ключът е валиден, но не работи (403, не 401). */
   planAllows: boolean;
+  /** Създателят е още член на фирмата — иначе ключът не работи за нищо (403). */
+  creatorActive: boolean;
 }
 
 /** `Authorization: Bearer fkt_…` → ключът; непознат, оттеглен или повреден → null. */
@@ -124,5 +126,10 @@ export async function authenticateApiKey(header: string | undefined): Promise<Ap
     ),
     createdById: found.createdById,
     planAllows: await orgHasFeature(found.organizationId, 'api'),
+    creatorActive:
+      found.createdById !== null &&
+      (await prisma.membership.count({
+        where: { userId: found.createdById, organizationId: found.organizationId },
+      })) > 0,
   };
 }
