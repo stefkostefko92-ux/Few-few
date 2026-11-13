@@ -51,6 +51,9 @@ def live_version():
 
 
 LV = "?v=" + live_version()
+# навигацията: до тази ширина — бутон с меню (същият праг е в src/App.jsx). Измерено на трите езика: началните
+# /en/ и /bg/ имат девет връзки и под ~820 px падат на втори ред; началната SPA се пренася до ~830 px.
+NAV_MAX = 900
 
 FONTS = ('<link id="cs-theme-fonts" rel="stylesheet" href="/fonts/fonts.css">'
          # the two faces every page paints first: fetched with the CSS, so the swap lands before first paint (CLS)
@@ -101,7 +104,7 @@ a{{color:var(--cs-c)}}
 .nav img{{height:34px!important;width:auto!important}}
 .nav>div a{{display:inline-block;padding:7px 0}}
 /* last nav link (Contatti / Contact / Контакти) = the call to action, like the SPA's ring-glow CTA */
-@media(min-width:761px){{.nav>div a:last-child{{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}}.nav>div a:last-child:hover{{background:rgba(0,229,255,.08)}}}}
+@media(min-width:{NAV_MAX + 1}px){{.nav>div a:last-child{{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}}.nav>div a:last-child:hover{{background:rgba(0,229,255,.08)}}}}
 /* portfolio: screenshots were 860px wide one after another; tighter and paired with their text */
 .w>.work-shot{{max-width:720px}}
 .nav-toggle{{display:none}}
@@ -146,17 +149,28 @@ a{{color:var(--cs-c)}}
   .hero-s{{padding:86px 16px 22px!important;background:url(/brand/bench-800.webp{LV}) 50% 64px/100% auto no-repeat,var(--cs-bg)}}
   .hero-s::before{{background:linear-gradient(180deg,rgba(10,12,14,.35) 0,rgba(10,12,14,.7) 120px,rgba(10,12,14,.9) 220px,var(--cs-bg) 280px)}}
   h1{{letter-spacing:-.005em!important;font-size:clamp(1.8rem,8vw,2.4rem)!important}}
+}}
+/* навигацията: бутон с меню до NAV_MAX px (на началните страници /en/ и /bg/ деветте връзки не се побират под ~820 px);
+   същият праг е и в началната SPA (src/App.jsx) — логото не се пипа */
+@media(max-width:{NAV_MAX}px){{
   .js .nav>div{{display:none}}
   .js .nav .nav-toggle{{display:flex;flex-direction:column;justify-content:center;gap:5px;width:44px;height:44px;padding:0 11px;background:none;border:1px solid rgba(0,229,255,.3);cursor:pointer;position:relative;z-index:1002}}
   .nav-toggle span{{display:block;height:2px;background:var(--cs-c);transition:transform .2s,opacity .2s}}
   .js .nav.open>div{{display:flex;position:fixed;inset:0;z-index:1001;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(10,12,14,.98)}}
   .js .nav.open>div a{{font-size:13px;letter-spacing:.25em;margin:0;padding:14px 24px;min-width:240px;text-align:center;border:1px solid rgba(245,245,240,.08);color:#C9D1D6}}
+  /* нисък екран (телефон на една страна): менюто се превърта вместо да се изрязва; полетата го центрират, когато има място */
+  .js .nav.open>div{{overflow-y:auto;overscroll-behavior:contain;justify-content:flex-start;padding:72px 0;box-sizing:border-box}}
+  .js .nav.open>div>a{{flex:none}}
+  .js .nav.open>div>a:first-child{{margin-top:auto}}
+  .js .nav.open>div>a:last-child{{margin-bottom:auto}}
   .nav.open .nav-toggle span:nth-child(1){{transform:translateY(7px) rotate(45deg)}}
   .nav.open .nav-toggle span:nth-child(2){{opacity:0}}
   .nav.open .nav-toggle span:nth-child(3){{transform:translateY(-7px) rotate(-45deg)}}
   html:not(.js) .nav>div{{display:flex;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;max-width:70vw}}
   html:not(.js) .nav>div a{{padding:9px 6px}}
 }}
+/* 761–NAV_MAX px: бутонът е 44 px, а редът с връзки, който замества, е 41 px — лентата остава 66 px и логото не мърда */
+@media(min-width:761px) and (max-width:{NAV_MAX}px){{.js .nav .nav-toggle{{margin:-1.5px 0}}}}
 @media(prefers-reduced-motion:reduce){{.nav-toggle span,.cta{{transition:none}}}}
 /* 404: the added legal footer was a flex sibling of the centred box, so the box sat in the left half */
 body:has(>.cs-legal-ft){{flex-direction:column}}
@@ -203,7 +217,7 @@ d.id=d.id||'cs-nav-links';var b=document.createElement('button');b.type='button'
 function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',o?'true':'false');b.setAttribute('aria-label',o?L.c:L.o);document.body.style.overflow=o?'hidden':'';}
 b.addEventListener('click',function(){set(!n.classList.contains('open'))});document.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus();}});
 d.addEventListener('click',function(e){if(e.target.closest('a'))set(false)});
-var mq=window.matchMedia&&matchMedia('(min-width:761px)');if(mq){var f=function(){if(mq.matches&&n.classList.contains('open'))set(false)};mq.addEventListener?mq.addEventListener('change',f):mq.addListener(f);}})();</script>"""
+var mq=window.matchMedia&&matchMedia('(min-width:@NAVMIN@px)');if(mq){var f=function(){if(mq.matches&&n.classList.contains('open'))set(false)};mq.addEventListener?mq.addEventListener('change',f):mq.addListener(f);}})();</script>""".replace("@NAVMIN@", str(NAV_MAX + 1))
 
 # „Жива“ лента (public/js/cs-live.js): лазерът минава веднъж през кадъра и светлината се плъзга по карбона
 # (встъпление 4,2 s + уталожване, общо под 5 s — WCAG 2.2.2), после сцената почива и реагира само на курсора. Зарежда се след load.

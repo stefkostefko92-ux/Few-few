@@ -59,9 +59,18 @@ All generated from the three logo renders (never hand-edit the PNGs):
 `logo.png`/`logo.webp`/`logo-nav.webp` = horizontal lockup at the historical 2.35:1
 ratio (387 static pages reference it with fixed width/height — keep that ratio);
 `brand/cs-logo-*.webp` = square logo (footer, mobile menu); `brand/cs-scene*.webp` =
-the former hero mark (the hero is now the live scene above; kept as brand art); `brand/cs-poster.webp` = about plate; `og-image*.png`, `icon-*.png`,
+the mark in the homepage hero (`.cs-hero-art`, over `HeroSignature.jsx`) — the logo, not to be changed; `brand/cs-poster.webp` = about plate; `og-image*.png`, `icon-*.png`,
 `apple-touch-icon.png`, `favicon.ico`/`.svg` = derived. Static-page nav/brand tweaks
 live in `scripts/rebrand-static.py` (idempotent, also patches the generators).
+
+## Navigation — one breakpoint for the whole site
+At **900px and below** the nav is the menu button (SPA: `.cs-hamburger` + `.cs-mobile-menu` in `src/App.jsx`;
+static pages: `.nav-toggle` from `NAV_JS` in `scripts/static-theme.py`, `NAV_MAX = 900`); above it, the links.
+Measured on all three languages: the SPA's six links + "site analysis" + the language switch wrap and run into
+the logo up to ~830px, and the static `/en/` and `/bg/` homepages (nine links) drop to a second row below
+~820px. Keep the two values equal. Both menus scroll on a short screen (a phone on its side, 844×390) instead of
+cutting items off; on screens where the menu fits nothing moved. The nav bar keeps its height (SPA 59px =
+`#cs-boot .navpad`, static 66px) — the button does not push the logo. The logo itself is not touched.
 
 ## Build & regenerate
 ```bash

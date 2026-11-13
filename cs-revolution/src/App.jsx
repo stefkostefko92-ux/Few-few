@@ -344,6 +344,14 @@ function SEOInjector() {
       .cs-mobile-menu.open { display:flex; }
       .cs-mobile-menu-item { font-size:14px; letter-spacing:.3em; color:#ccc; padding:12px 24px; border:1px solid rgba(245,245,240,.06); min-width:200px; text-align:center; }
       .cs-mobile-menu-close { position:absolute; top:16px; right:16px; width:40px; height:40px; border:1px solid rgba(0,229,255,.2); display:flex; align-items:center; justify-content:center; color:#00e5ff; font-size:18px; }
+      /* нисък екран (телефон на една страна, 844×390): менюто е по-високо от екрана — превърта се вместо да се
+         изрязва. Автоматичните полета центрират съдържанието, когато има място, и изчезват, когато няма;
+         бутонът за затваряне остава на мястото си, докато се превърта. */
+      .cs-mobile-menu { overflow-y:auto; overscroll-behavior:contain; justify-content:flex-start !important; padding:48px 0; box-sizing:border-box; }
+      .cs-mobile-menu > img { margin-top:auto; flex:none; }
+      .cs-mobile-menu > :last-child { margin-bottom:auto; }
+      .cs-mobile-menu > * { flex:none; }
+      .cs-mobile-menu-close { position:fixed !important; z-index:1; }
       
       /* PHONE: < 768px */
       @media(max-width:767px) {
@@ -396,9 +404,18 @@ function SEOInjector() {
         div[style*="linear-gradient(10deg"] { height:40px !important; }
       }
       
+      /* НАВИГАЦИЯ: под 901 px шестте връзки + „Анализ на сайта“ + езиците не се побират на един ред
+         (измерено на трите езика: при 768–820 px се пренасяха и „CHI SIAMO“ застъпваше логото) → бутон с меню,
+         както на телефон. Същият праг е и в статичните страници (scripts/static-theme.py, NAV_MAX). Логото не се пипа. */
+      @media(max-width:900px) {
+        .cs-hamburger { display:flex !important; }
+        .cs-nav-links { display:none !important; }
+        .cs-nav-meta { display:none !important; }
+        .cs-nav-lang { margin-left:auto; }
+      }
+
       /* TABLET: 768px - 1024px */
       @media(min-width:768px) and (max-width:1024px) {
-        .cs-hamburger { display:none; }
         .cs-nav-links > div { gap:12px !important; }
         
         #about { gap:40px !important; padding:80px 20px !important; }
