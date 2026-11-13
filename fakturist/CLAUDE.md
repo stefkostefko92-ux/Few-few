@@ -65,6 +65,9 @@ src/
                  (фактурата от Карбон Стелт) · revolut-client.ts (Merchant API) · card.ts (страница за
                  плащане, сверка, проверка на висящите) · expiry.ts · loop.ts (на 10 мин) ·
                  plan-view.ts · proforma-pdf.ts · entitlements.ts (функциите по план)
+  xml/           parse.ts (строг XML без DTD — за недоверени файлове)
+  incoming/      read-ubl.ts · read-cii.ts · check.ts (проверка, сверка на сумите) · register.ts
+  bank/          camt.ts · csv.ts · reconcile.ts (импорт, предложение, свързване, отмяна)
   api/           keys.ts (ключовете) · router.ts (REST v1) · serialize.ts (документът като JSON)
   recurring/     schedule.ts (графикът, периодът) · recurring.ts (шаблоните) · run.ts (работникът) · loop.ts
   features.ts    регистърът на функциите (live/planned + дата) — плановете, панелът и витрината четат оттук
@@ -75,7 +78,7 @@ src/
   pwa/           manifest.ts · device.ts (устройството по User-Agent за /prilozhenie)
   routes/        site · seo · health · pwa · legal · auth · account (нова парола, имейл) · install ·
                  invite (/pokana) · member-invite (/chlen) · app (+ app-issue, app-members, app-catalog, app-security, app-inbox,
-                 app-clients, app-settings, app-plan, app-recurring, app-doc-payments, app-api-keys,
+                 app-clients, app-settings, app-plan, app-recurring, app-doc-payments, app-api-keys, app-bank, app-incoming,
                  app-shared) · admin (+ admin-settings, admin-actions) ·
                  webhooks
   http/          upload.ts — multipart (multer, в паметта) + CSRF след разчитането · view · ip · cookies
@@ -144,6 +147,17 @@ scripts/         conformance/run.mjs (официалната проверка) �
   сървъра. Таван: 300/мин по IP преди ключа, 120/мин по ключ, 30/мин издавания. Ключът работи само докато
   създателят е член (махане на член и закриване на профил го оттеглят). Страниците — keyset (`id > after`),
   никога Prisma `cursor`+`skip` при филтър по променливо поле (губи редове).
+- **Входящи е-фактури** (SPEC 55, `src/incoming/`, „Входящи“): собствен строг XML парсер (`src/xml/parse.ts`
+  — без DTD/ентитети по конструкция, лимит на дълбочина и елементи; не сменяй с библиотека без ревю) →
+  UBL 2.1 или CII → модела на EN 16931 → изчисление + правилата → сверка на обявените суми (TOTALS).
+  Курсът на ЕЦБ и основанието за нулева ставка се възстановяват от бележката (BT-22), където ги пише и
+  ядрото. Файлът се записва и с грешки (получен е); XML-ът се пази както е. Тестът е обратен ход по всички
+  официални проби (`tests/incoming-read.test.ts`). Регистърът показва и доставените в шкафчето.
+- **Сверка с банката** (SPEC 54, `src/bank/`, „Банка“, план с `bank-matching`): camt.053 (само CRDT, BOOK,
+  без сторно; сборно постъпление — по транзакция) или CSV (UTF-8/windows-1251, „;“/„,“/таб, заглавия БГ/EN).
+  Пазят се само постъпленията; наредителят и основанието са лични данни на трети лица (скрити в панела).
+  Повторен файл — отказ; застъпване — `uniqueKey` на реда. Предложение по номер в основанието, иначе по
+  точен остатък при единствена фактура; потвърждава човек → плащане `BANK` в същата транзакция; отмяна.
 - **Правните документи** (общи условия, поверителност, договор за обработване — BG+EN, публикувани
   13.11.2026) са в `src/legal/documents.ts` (адреси, версия) и `views/legal/<документ>/<език>.ejs`.
   Съществена промяна на текста = нова `version` (регистрацията записва приетата в `LegalAcceptance`) и

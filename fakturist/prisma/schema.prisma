@@ -69,6 +69,20 @@ enum DocumentPaymentSource {
   BANK
 }
 
+/// Входяща е-фактура (SPEC 55), качена като файл: получена → платена или отказана.
+enum IncomingStatus {
+  RECEIVED
+  PAID
+  REJECTED
+}
+
+/// Ред от банково извлечение (SPEC 54): нов → свързан с плащане по документ или пропуснат.
+enum BankLineStatus {
+  NEW
+  MATCHED
+  IGNORED
+}
+
 enum PartyKind {
   CUSTOMER
   SUPPLIER
@@ -137,6 +151,8 @@ model User {
   paymentsCreated       Payment[]          @relation("PaymentCreatedBy")
   recurringCreated      RecurringInvoice[]
   apiKeysCreated        ApiKey[]
+  incomingCreated       IncomingInvoice[]  @relation("IncomingCreatedBy")
+  bankStatements        BankStatement[]    @relation("BankStatementCreatedBy")
   documentPayments      DocumentPayment[]
   paymentsConfirmed     Payment[]          @relation("PaymentConfirmedBy")
   auditEntries          AuditLog[]
@@ -233,6 +249,9 @@ model Organization {
   recurring        RecurringInvoice[]
   recurringAsFirm  RecurringInvoice[] @relation("RecurringFirm")
   apiKeys          ApiKey[]
+  incoming         IncomingInvoice[]
+  bankStatements   BankStatement[]
+  bankLines        BankLine[]
 
   @@index([kind])
   @@index([legalName])
@@ -818,6 +837,7 @@ model DocumentPayment {
   note        String?
   createdById String?
   createdBy   User?                 @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  bankLine    BankLine?
   createdAt   DateTime              @default(now())
 
   @@index([documentId])
@@ -873,4 +893,85 @@ model ApiIdempotency {
 
   @@unique([apiKeyId, key])
   @@index([documentId])
+}
+
+/// Входяща е-фактура, качена като UBL 2.1 или CII (SPEC 55). Доставените в шкафчето са в InboxEntry —
+/// регистърът показва и двете. XML-ът се пази както е получен; разчетените полета са за списъка.
+model IncomingInvoice {
+  id             String         @id @default(cuid())
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// UBL или CII
+  format         String
+  fileName       String?
+  xml            String
+  sha256         String
+  supplierName   String
+  supplierEik    String?
+  supplierVat    String?
+  number         String
+  typeCode       String
+  issueDate      DateTime?      @db.Date
+  dueDate        DateTime?      @db.Date
+  currency       String
+  payableCents   BigInt
+  vatCents       BigInt
+  /// Резултатът от проверката по правилата (кодове и текстове, без лични данни).
+  issues         Json
+  valid          Boolean
+  status         IncomingStatus @default(RECEIVED)
+  paidAt         DateTime?      @db.Date
+  createdById    String?
+  createdBy      User?          @relation("IncomingCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime       @default(now())
+
+  @@unique([organizationId, sha256])
+  @@index([organizationId, status, dueDate])
+  @@index([createdById])
+}
+
+/// Качено банково извлечение (CAMT.053 или CSV) — повторно качване на същия файл не прави нищо.
+model BankStatement {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// CAMT053 или CSV
+  format         String
+  fileName       String?
+  sha256         String
+  lineCount      Int
+  newLines       Int
+  createdById    String?
+  createdBy      User?        @relation("BankStatementCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime     @default(now())
+  lines          BankLine[]
+
+  @@unique([organizationId, sha256])
+  @@index([createdById])
+}
+
+/// Постъпление по сметката (само кредит — разходите не се пазят). `uniqueKey` не дублира ред от
+/// застъпващи се извлечения.
+model BankLine {
+  id                String           @id @default(cuid())
+  organizationId    String
+  organization      Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  statementId       String
+  statement         BankStatement    @relation(fields: [statementId], references: [id], onDelete: Cascade)
+  bookingDate       DateTime         @db.Date
+  amountCents       BigInt
+  currency          String
+  counterparty      String?
+  counterpartyIban  String?
+  remittance        String
+  bankRef           String?
+  uniqueKey         String
+  status            BankLineStatus   @default(NEW)
+  documentPaymentId String?          @unique
+  documentPayment   DocumentPayment? @relation(fields: [documentPaymentId], references: [id], onDelete: SetNull)
+  createdAt         DateTime         @default(now())
+
+  @@unique([organizationId, uniqueKey])
+  @@index([organizationId, status])
+  @@index([statementId])
 }

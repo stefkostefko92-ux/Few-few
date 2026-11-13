@@ -156,6 +156,44 @@ export function recordPayment(
   return prisma.$transaction((tx) => recordPaymentInTx(tx, input));
 }
 
+/** Махане на плащане в подадената транзакция; от сверката (`BANK`) — само от самата сверка. */
+export async function removePaymentInTx(
+  tx: Prisma.TransactionClient,
+  input: {
+    organizationId: string;
+    documentId: string;
+    paymentId: string;
+    actorId: string;
+    source: 'MANUAL' | 'BANK';
+  },
+): Promise<void> {
+  const doc = await lockDocument(tx, input.organizationId, input.documentId);
+  const payment = await tx.documentPayment.findFirst({
+    where: { id: input.paymentId, documentId: doc.id },
+  });
+  if (!payment) throw new DocumentPaymentError('notFound');
+  if (payment.source !== input.source) throw new DocumentPaymentError('source');
+  await tx.bankLine.updateMany({
+    where: { documentPaymentId: payment.id },
+    data: { documentPaymentId: null, status: 'NEW' },
+  });
+  await tx.documentPayment.delete({ where: { id: payment.id } });
+  const { state } = await recompute(tx, doc.id, doc.payableCents);
+  await audit(tx, {
+    actorId: input.actorId,
+    organizationId: input.organizationId,
+    action: 'document.payment.removed',
+    targetType: 'Document',
+    targetId: doc.id,
+    details: {
+      number: doc.number,
+      amountCents: payment.amountCents.toString(),
+      source: payment.source,
+      state,
+    },
+  });
+}
+
 /** Махане на ръчно отбелязано плащане (грешка при въвеждане); сверените се махат от сверката. */
 export async function removePayment(input: {
   organizationId: string;
@@ -163,22 +201,5 @@ export async function removePayment(input: {
   paymentId: string;
   actorId: string;
 }): Promise<void> {
-  await prisma.$transaction(async (tx) => {
-    const doc = await lockDocument(tx, input.organizationId, input.documentId);
-    const payment = await tx.documentPayment.findFirst({
-      where: { id: input.paymentId, documentId: doc.id },
-    });
-    if (!payment) throw new DocumentPaymentError('notFound');
-    if (payment.source !== 'MANUAL') throw new DocumentPaymentError('source');
-    await tx.documentPayment.delete({ where: { id: payment.id } });
-    const { state } = await recompute(tx, doc.id, doc.payableCents);
-    await audit(tx, {
-      actorId: input.actorId,
-      organizationId: input.organizationId,
-      action: 'document.payment.removed',
-      targetType: 'Document',
-      targetId: doc.id,
-      details: { number: doc.number, amountCents: payment.amountCents.toString(), state },
-    });
-  });
+  await prisma.$transaction((tx) => removePaymentInTx(tx, { ...input, source: 'MANUAL' }));
 }

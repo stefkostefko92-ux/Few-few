@@ -1,0 +1,58 @@
+<%- include('../partials/app-head', { title: t('app.bank.title') }) %>
+<% const day = (d) => d.toISOString().slice(0, 10).split('-').reverse().join('.'); %>
+<% const eur = (c, cur) => (Number(c) / 100).toFixed(2).replace('.', lang === 'bg' ? ',' : '.') + ' ' + cur; %>
+<p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
+<h1><%= t('app.bank.title') %></h1>
+<% if (ok) { %><p class="ok" role="status"><%= ok === 'imported' ? t('app.bank.ok.imported', { total: counts.total, created: counts.created }) : tOr('app.bank.ok.' + ok, t('app.catalog.saved.updated')) %></p><% } %>
+<% if (err) { %><p class="error" role="alert"><%= tOr('app.bank.err.' + err, t('auth.errors.invalid')) %></p><% } %>
+<% if (!feature) { %><p class="callout"><%= t('app.bank.needsPlan') %> <a href="/app/o/<%= org.id %>/plan"><%= t('app.plan.title') %></a></p><% } %>
+<p class="muted"><%= t('app.bank.intro') %></p>
+<% if (feature && canWrite) { %>
+<form method="post" action="/app/o/<%= org.id %>/banka" enctype="multipart/form-data" class="panel stack narrow-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label><%= t('app.bank.file') %><input type="file" name="file" required accept=".xml,.csv,.txt,application/xml,text/xml,text/csv"><span class="hint"><%= t('app.bank.fileHint') %></span></label>
+  <div><button type="submit"><%= t('app.bank.upload') %></button></div>
+</form>
+<% } %>
+<h2><%= t('app.bank.new') %></h2>
+<% if (lines.length === 0) { %><p class="muted"><%= t('app.bank.none') %></p><% } else { %>
+<div class="table-wrap"><table class="stack-table">
+  <thead><tr><th scope="col"><%= t('app.bank.date') %></th><th scope="col" class="num"><%= t('app.bank.amount') %></th><th scope="col"><%= t('app.bank.from') %></th><th scope="col"><%= t('app.bank.remittance') %></th><th scope="col"><%= t('app.bank.match') %></th></tr></thead>
+  <tbody>
+  <% lines.forEach(({ line, suggestion }) => { %>
+    <tr>
+      <td data-label="<%= t('app.bank.date') %>" class="mono"><%= day(line.bookingDate) %></td>
+      <td data-label="<%= t('app.bank.amount') %>" class="num mono"><%= eur(line.amountCents, line.currency) %></td>
+      <td data-label="<%= t('app.bank.from') %>"><%= line.counterparty || '—' %><% if (line.counterpartyIban) { %><br><span class="hint mono"><%= line.counterpartyIban %></span><% } %></td>
+      <td data-label="<%= t('app.bank.remittance') %>"><%= line.remittance || '—' %></td>
+      <td data-label="<%= t('app.bank.match') %>">
+        <% if (canWrite) { %>
+        <form method="post" action="/app/o/<%= org.id %>/banka/<%= line.id %>/svarzhi" class="inline-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label><span class="sr-only"><%= t('app.bank.number') %></span><input name="number" class="mono" inputmode="numeric" pattern="[0-9]{1,10}" required size="11" value="<%= suggestion ? suggestion.number : '' %>" placeholder="<%= t('app.bank.number') %>"></label>
+          <button type="submit" class="button-secondary"><%= t('app.bank.confirm') %></button>
+        </form>
+        <% if (suggestion) { %><span class="hint"><%= t('app.bank.reasons.' + suggestion.reason) %><%= suggestion.remainingCents !== line.amountCents ? ' · ' + t('app.bank.partial') : '' %></span><% } %>
+        <form method="post" action="/app/o/<%= org.id %>/banka/<%= line.id %>/propusni" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.bank.ignore') %></button></form>
+        <% } else if (suggestion) { %><span class="mono"><%= suggestion.number %></span><% } %>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<% if (done.length) { %>
+<h2><%= t('app.bank.done') %></h2>
+<ul class="invite-list">
+  <% done.forEach((line) => { %>
+    <li><span class="mono"><%= day(line.bookingDate) %></span> · <span class="mono"><%= eur(line.amountCents, line.currency) %></span> · <%= line.counterparty || '—' %> ·
+      <% if (line.status === 'MATCHED' && line.documentPayment) { %><%= t('app.bank.matchedTo') %> <a class="mono" href="/app/o/<%= org.id %>/d/<%= line.documentPayment.document.id %>"><%= line.documentPayment.document.number %></a><% } else { %><span class="muted"><%= t('app.bank.statuses.' + line.status) %></span><% } %>
+      <% if (canWrite) { %><form method="post" action="/app/o/<%= org.id %>/banka/<%= line.id %>/otmeni" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.bank.undo') %></button></form><% } %>
+    </li>
+  <% }) %>
+</ul>
+<% } %>
+<% if (statements.length) { %>
+<p class="hint"><%= t('app.bank.lastStatements') %> <% statements.forEach((s, i) => { %><%= i ? ' · ' : '' %><%= s.fileName || s.format %> (<%= s.newLines %>/<%= s.lineCount %>)<% }) %></p>
+<% } %>
+<%- include('../partials/app-foot') %>

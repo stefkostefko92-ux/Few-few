@@ -14,6 +14,8 @@ import { appPlanRouter } from './app-plan.js';
 import { appRecurringRouter } from './app-recurring.js';
 import { appDocPaymentsRouter } from './app-doc-payments.js';
 import { appApiKeysRouter } from './app-api-keys.js';
+import { appBankRouter } from './app-bank.js';
+import { appIncomingRouter } from './app-incoming.js';
 import { PAYABLE_TYPES } from '../documents/payments.js';
 import { sofiaToday } from '../time.js';
 import { appCatalogRouter } from './app-catalog.js';
@@ -56,6 +58,8 @@ export function appRouter(): Router {
   router.use(appRecurringRouter());
   router.use(appDocPaymentsRouter());
   router.use(appApiKeysRouter());
+  router.use(appBankRouter());
+  router.use(appIncomingRouter());
 
   router.get('/app', async (req, res) => {
     const user = req.principal!.user;

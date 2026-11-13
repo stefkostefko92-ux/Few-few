@@ -628,5 +628,115 @@
       "feature": "The API is in the Business plan and above.",
       "limit": "The limit of active keys is reached — revoke an old key."
     }
+  },
+  "bank": {
+    "title": "Bank",
+    "intro": "Upload a bank statement — incoming payments are linked to invoices by the number in the reference and the amount. You confirm; a confirmed line becomes a payment on the invoice.",
+    "needsPlan": "Bank matching is in the Business plan and above.",
+    "file": "Statement",
+    "fileHint": "camt.053 (XML) or CSV, up to 2 MB. Only incoming payments are kept.",
+    "upload": "Upload",
+    "new": "New incoming payments",
+    "none": "No new incoming payments.",
+    "date": "Date",
+    "amount": "Amount",
+    "from": "Payer",
+    "remittance": "Reference",
+    "match": "Invoice",
+    "number": "Invoice No.",
+    "confirm": "Link",
+    "ignore": "Skip",
+    "undo": "Undo",
+    "partial": "partial",
+    "reasons": {
+      "number": "by the number in the reference",
+      "amount": "by the amount"
+    },
+    "done": "Processed",
+    "matchedTo": "to",
+    "statuses": {
+      "NEW": "new",
+      "MATCHED": "linked",
+      "IGNORED": "skipped"
+    },
+    "lastStatements": "Last statements:",
+    "ok": {
+      "imported": "Payments read: {total}, new: {created}.",
+      "svarzhi": "The payment is recorded on the invoice.",
+      "propusni": "Skipped.",
+      "otmeni": "Undone."
+    },
+    "err": {
+      "feature": "Bank matching is in the Business plan and above.",
+      "duplicate": "This statement is already uploaded.",
+      "file": "Choose a file.",
+      "tooLarge": "The file is over 2 MB.",
+      "xml": "The XML file is not valid.",
+      "notCamt": "The XML file is not a camt.053 statement.",
+      "csvHeader": "We cannot find the date and amount columns in the CSV file.",
+      "csvEmpty": "The CSV file is empty.",
+      "encoding": "The file encoding is not recognised (UTF-8 or windows-1251).",
+      "tooMany": "Too many lines in one statement.",
+      "notFound": "No invoice with this number.",
+      "state": "The line is already processed.",
+      "currency": "The payment and the invoice are in different currencies.",
+      "number": "Enter an invoice number.",
+      "paymentAmount": "The amount exceeds the invoice balance.",
+      "paymentNotPayable": "No payment is recorded on this document.",
+      "paymentNotFound": "No such document.",
+      "paymentDate": "Invalid date.",
+      "paymentSource": "The payment is not from bank matching."
+    }
+  },
+  "incoming": {
+    "title": "Incoming",
+    "intro": "The register of received invoices: those delivered to your inbox come in automatically; an e-invoice from other software (UBL 2.1 or CII) is uploaded here and checked against EN 16931 and the Bulgarian VAT Act.",
+    "file": "E-invoice (XML)",
+    "fileHint": "UBL 2.1 or CII, up to 2 MB.",
+    "upload": "Upload and check",
+    "none": "No incoming invoices yet.",
+    "supplier": "Supplier",
+    "number": "Number",
+    "date": "Date",
+    "due": "Due",
+    "amount": "Amount due",
+    "vat": "VAT",
+    "format": "Format",
+    "status": "Status",
+    "statuses": {
+      "RECEIVED": "received",
+      "PAID": "paid",
+      "REJECTED": "rejected"
+    },
+    "sources": {
+      "upload": "uploaded",
+      "inbox": "from the inbox"
+    },
+    "hasIssues": "with errors",
+    "download": "Download XML",
+    "check": "Rule check",
+    "clean": "The document passes the EN 16931 and VAT Act checks.",
+    "checkHint": "The errors are the issuer’s — the document is stored as received. If in doubt, ask the supplier for a corrected document.",
+    "error": "error",
+    "warning": "note",
+    "changeStatus": "Status",
+    "paidOn": "Payment date",
+    "paidOnHint": "Only for “paid”.",
+    "ok": {
+      "uploaded": "The invoice is in the register and passes the checks.",
+      "uploadedIssues": "The invoice is in the register but has issues — see the check.",
+      "status": "The status is saved."
+    },
+    "err": {
+      "file": "Choose a file.",
+      "tooLarge": "The file is over 2 MB.",
+      "xml": "The file is not valid XML.",
+      "dtd": "The file contains a DTD or entities — refused (protection).",
+      "notInvoice": "The file is not a UBL 2.1 or CII invoice.",
+      "duplicate": "This file is already in the register.",
+      "encoding": "The file is not UTF-8.",
+      "date": "Enter the payment date (not in the future).",
+      "invalid": "Invalid status."
+    }
   }
 }

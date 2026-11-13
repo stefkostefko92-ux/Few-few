@@ -20,7 +20,11 @@ export class HttpError extends Error {
  * Адресите, които приемат multipart (качване на файл). Тялото им още не е разчетено, когато минава
  * csrf(), затова токенът се проверява след разчитането (src/http/upload.ts). Всеки друг multipart — 403.
  */
-const MULTIPART_PATHS = [/^\/app\/o\/[a-z0-9]{20,40}\/nastroyki\/logo$/];
+const MULTIPART_PATHS = [
+  /^\/app\/o\/[a-z0-9]{20,40}\/nastroyki\/logo$/,
+  /^\/app\/o\/[a-z0-9]{20,40}\/vhodyashti$/,
+  /^\/app\/o\/[a-z0-9]{20,40}\/banka$/,
+];
 
 /**
  * CSRF: всеки запис носи токена на сесията (скрито поле `_csrf`) и, ако браузърът подаде Origin, той е
