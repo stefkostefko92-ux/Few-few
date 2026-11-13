@@ -53,6 +53,14 @@
 </ul>
 <% } %>
 <% if (statements.length) { %>
-<p class="hint"><%= t('app.bank.lastStatements') %> <% statements.forEach((s, i) => { %><%= i ? ' · ' : '' %><%= s.fileName || s.format %> (<%= s.newLines %>/<%= s.lineCount %>)<% }) %></p>
+<h2><%= t('app.bank.statements') %></h2>
+<p class="hint"><%= t('app.bank.retention') %></p>
+<ul class="invite-list">
+  <% statements.forEach((s) => { %>
+    <li><span class="mono"><%= s.createdAt.toISOString().slice(0, 10).split('-').reverse().join('.') %></span> · <%= s.format === 'CAMT053' ? 'camt.053' : 'CSV' %> · <%= t('app.bank.statementLines', { created: s.newLines, total: s.lineCount }) %>
+      <% if (canWrite) { %><form method="post" action="/app/o/<%= org.id %>/banka/izvlechenie/<%= s.id %>/iztriy" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.bank.deleteStatement') %></button></form><% } %>
+    </li>
+  <% }) %>
+</ul>
 <% } %>
 <%- include('../partials/app-foot') %>

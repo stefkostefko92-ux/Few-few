@@ -50,7 +50,14 @@ test('почистването трие само изтеклото над ср�
   await mail('FAILED', ago(91), null);
   const oldPending = await mail('PENDING', ago(200), null);
 
-  assert.deepEqual(await purgeExpired(NOW), { sessions: 1, tokens: 1, mails: 2 });
+  assert.deepEqual(await purgeExpired(NOW), {
+    sessions: 1,
+    tokens: 1,
+    mails: 2,
+    erased: 0,
+    deleted: 0,
+    statements: 0,
+  });
   const ids = async (rows: Promise<Array<{ id: string }>>) => (await rows).map((r) => r.id).sort();
   assert.deepEqual(await ids(prisma.session.findMany()), [recent.id, live.id].sort());
   assert.deepEqual(await ids(prisma.userToken.findMany()), [recentToken.id]);

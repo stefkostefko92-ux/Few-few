@@ -25,11 +25,13 @@
     <% let first = true; payable.forEach((o) => { ['MONTH', 'YEAR'].forEach((interval) => { const q = o.quotes[interval]; if (!q) return; %>
       <label class="radio"><input type="radio" name="choice" value="<%= o.code %>:<%= interval %>"<%= first ? ' checked' : '' %> required>
         <span><strong><%= lang === 'bg' ? o.name.bg : o.name.en %></strong> · <%= t('app.plan.interval.' + interval) %><% if (o.current) { %> <span class="badge"><%= t('app.plan.yours') %></span><% } %><br>
-        <span class="mono"><%= eur(q.netCents) %></span> <span class="muted"><%= t('app.plan.net') %></span> + <span class="mono"><%= eur(q.vatCents) %></span> <span class="muted"><%= t('app.plan.vat') %></span> = <strong class="mono"><%= eur(q.totalCents) %></strong>
+        <% if (q.creditCents > 0) { %><span class="mono"><%= eur(q.listNetCents) %></span> − <span class="mono"><%= eur(q.creditCents) %></span> <span class="muted"><%= t('app.plan.credit') %></span> = <% } %><span class="mono"><%= eur(q.netCents) %></span> <span class="muted"><%= t('app.plan.net') %></span> + <span class="mono"><%= eur(q.vatCents) %></span> <span class="muted"><%= t('app.plan.vat') %></span> = <strong class="mono"><%= eur(q.totalCents) %></strong>
         <% if (q.clientCompanies !== null) { %><br><span class="hint"><%= t('app.plan.clients', { count: q.clientCompanies }) %></span><% } %></span>
       </label>
     <% first = false; }); }); %>
   </fieldset>
+  <% if (payable.some((o) => Object.values(o.quotes).some((q) => q.creditCents > 0))) { %><p class="hint"><%= t('app.plan.creditHelp') %></p><% } %>
+  <% if (current && options.some((o) => o.deferred.length > 0)) { %><p class="hint"><%= t('app.plan.downgradeHelp', { date: day(current.currentPeriodEnd) }) %></p><% } %>
   <fieldset class="choice">
     <legend><%= t('app.plan.method') %></legend>
     <% if (methods.card) { %><label class="radio"><input type="radio" name="method" value="card" checked> <span><strong><%= t('app.plan.card') %></strong><br><span class="hint"><%= t('app.plan.cardHelp') %></span></span></label><% } %>

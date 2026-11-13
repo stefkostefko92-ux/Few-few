@@ -535,6 +535,10 @@ model Payment {
   /// Основата и ДДС-ът (евроцентове), от които е `amountCents`; ставката към момента на поръчката.
   netCents          Int              @default(0)
   vatCents          Int              @default(0)
+  /// Прихванатата неизползвана част от предишния платен план (основа, евроцентове) — вече извадена от netCents.
+  creditCents       Int              @default(0)
+  /// Абонаментът, от който е прихванатото (creditCents) — при активиране трябва още да е действащият.
+  creditSubscriptionId String?
   vatRate           String           @default("20")
   /// Основанието за банков превод („FKT-XXXXXXXX“) — по него се сверява преводът.
   reference         String?          @unique
@@ -971,6 +975,8 @@ model BankLine {
   bankRef           String?
   uniqueKey         String
   status            BankLineStatus   @default(NEW)
+  /// Кога редът е свързан или пропуснат — от него тече срокът за заличаване на наредителя (90 дни).
+  decidedAt         DateTime?
   documentPaymentId String?          @unique
   documentPayment   DocumentPayment? @relation(fields: [documentPaymentId], references: [id], onDelete: SetNull)
   createdAt         DateTime         @default(now())

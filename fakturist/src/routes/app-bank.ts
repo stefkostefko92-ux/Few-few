@@ -1,7 +1,7 @@
 import { Router, type Request } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db.js';
-import { requireOrg } from '../auth/guards.js';
+import { HttpError, requireOrg } from '../auth/guards.js';
 import { roleCan } from '../auth/roles.js';
 import { orgHasFeature } from '../billing/entitlements.js';
 import { documentUpload, uploadStatus } from '../http/upload.js';
@@ -12,6 +12,7 @@ import {
   ignoreLine,
   importStatement,
   matchLine,
+  deleteStatement,
   ReconcileError,
   suggestMany,
   undoLine,
@@ -114,6 +115,17 @@ export function appBankRouter(): Router {
       if (!reason) throw error;
       res.redirect(303, `${base}?err=${reason}`);
     }
+  });
+
+  router.post('/app/o/:orgId/banka/izvlechenie/:statementId/iztriy', async (req, res) => {
+    const access = await writer(req);
+    try {
+      await deleteStatement(access, req.principal!.user.id, param(req, 'statementId'));
+    } catch (error) {
+      if (error instanceof ReconcileError) throw new HttpError(404);
+      throw error;
+    }
+    res.redirect(303, `/app/o/${access.organizationId}/banka?ok=deleted`);
   });
 
   router.post('/app/o/:orgId/banka/:lineId/:action', async (req, res) => {

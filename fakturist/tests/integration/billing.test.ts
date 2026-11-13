@@ -631,3 +631,141 @@ test('датата от извлечението: точна, не в бъдещ
   assert.equal(paidOn('13.11.2026', now), null);
   assert.equal(paidOn(undefined, now), null);
 });
+
+test('смяна на план: неизползваното се приспада (отстъпка на фактурата); по-евтиният — след края; второ прихващане — не', async () => {
+  const { prorationCredit } = await import('../../src/billing/proration.js');
+  const { vatCents } = await import('../../src/billing/billing-core.js');
+  const { execFileSync } = await import('node:child_process');
+  const shop = await register({
+    ...base,
+    kind: 'company',
+    name: 'Мария Иванова',
+    email: 'switch@example.test',
+    legalName: 'Сладкарница Роза ЕООД',
+    eik: '121604974',
+  });
+  const orgId = shop.organizationId;
+  const owner = await http.login('switch@example.test', PASSWORD);
+  // „Професионален“ за месец, платен преди 10 дни.
+  const firstPaid = new Date(Date.now() - 10 * 86_400_000);
+  const pro = await createOrder({
+    organizationId: orgId,
+    actorId: masterId,
+    planCode: 'pro',
+    interval: 'MONTH',
+    method: 'transfer',
+  });
+  assert.equal(pro.quote.creditCents, 0);
+  await activatePayment({ paymentId: pro.paymentId, paidAt: firstPaid });
+  const proSub = await prisma.subscription.findFirstOrThrow({
+    where: { organizationId: orgId, status: 'ACTIVE' },
+  });
+
+  // Същият план и период не се прихваща (удължава се от края си).
+  assert.equal((await quotePlan(orgId, 'pro', 'MONTH')).creditCents, 0);
+  const before = Date.now();
+  const quote = await quotePlan(orgId, 'business', 'YEAR');
+  const expected = (at: number) =>
+    prorationCredit({
+      paidNetCents: 900,
+      start: proSub.currentPeriodStart,
+      end: proSub.currentPeriodEnd,
+      now: new Date(at),
+    });
+  assert.ok(quote.creditCents <= expected(before) && quote.creditCents >= expected(Date.now()));
+  assert.ok(quote.creditCents > 500 && quote.creditCents < 900, 'около 2/3 от месеца');
+  assert.equal(quote.listNetCents, 29000);
+  assert.equal(quote.netCents, 29000 - quote.creditCents);
+  assert.equal(quote.vatCents, vatCents(quote.netCents));
+  assert.equal(quote.totalCents, quote.netCents + quote.vatCents);
+  assert.equal(quote.creditSubscriptionId, proSub.id);
+  const page = await (await http.get(owner, `/app/o/${orgId}/plan`)).text();
+  assert.match(page, /приспадане/);
+  assert.match(page, /Неизползваната част от платения сега план/);
+
+  // Две поръчки с прихващане от същия абонамент: втората затваря първата.
+  const first = await createOrder({
+    organizationId: orgId,
+    actorId: masterId,
+    planCode: 'business',
+    interval: 'YEAR',
+    method: 'transfer',
+  });
+  const second = await createOrder({
+    organizationId: orgId,
+    actorId: masterId,
+    planCode: 'business',
+    interval: 'YEAR',
+    method: 'transfer',
+  });
+  const order = await prisma.payment.findUniqueOrThrow({ where: { id: second.paymentId } });
+  assert.ok(order.creditCents > 0);
+  assert.equal(order.creditSubscriptionId, proSub.id);
+  assert.equal(order.netCents + order.creditCents, 29000);
+  assert.equal(order.amountCents, order.netCents + order.vatCents);
+  const orderPage = await (await http.get(owner, `/app/o/${orgId}/plan/${order.id}`)).text();
+  assert.match(orderPage, /Приспадане на неизползвания платен период/);
+  const proforma = await http.get(owner, `/app/o/${orgId}/plan/${order.id}/proforma.pdf`);
+  assert.equal(proforma.status, 200);
+  const proformaText = execFileSync('pdftotext', ['-', '-'], {
+    input: Buffer.from(await proforma.arrayBuffer()),
+  }).toString('utf8');
+  assert.match(proformaText, /Приспадане на неизползвания платен период/);
+  assert.match(proformaText, /290,00 €/);
+
+  const paidAt = new Date();
+  assert.equal((await activatePayment({ paymentId: order.id, paidAt })).activated, true);
+  const active = await prisma.subscription.findFirstOrThrow({
+    where: { organizationId: orgId, status: 'ACTIVE' },
+  });
+  assert.equal(active.planCode, 'business');
+  assert.equal(active.interval, 'YEAR');
+  assert.equal(active.currentPeriodStart.toISOString(), paidAt.toISOString(), 'от плащането');
+  const done = await prisma.payment.findUniqueOrThrow({ where: { id: order.id } });
+  const invoice = await prisma.document.findUniqueOrThrow({
+    where: { id: done.invoiceDocumentId! },
+  });
+  assert.equal(invoice.taxExclusiveCents, BigInt(order.netCents));
+  assert.equal(invoice.vatCents, BigInt(order.vatCents));
+  assert.equal(invoice.payableCents, 0n);
+  const ubl = invoice.ublXml ?? '';
+  const money = (c: number) => `${Math.floor(c / 100)}.${String(c % 100).padStart(2, '0')}`;
+  assert.match(ubl, /<cbc:PriceAmount currencyID="EUR">290(\.00)?<\/cbc:PriceAmount>/);
+  assert.match(ubl, /<cbc:LineExtensionAmount currencyID="EUR">290\.00<\/cbc:LineExtensionAmount>/);
+  const allowance = new RegExp(
+    '<cac:AllowanceCharge>\\s*<cbc:ChargeIndicator>false</cbc:ChargeIndicator>\\s*' +
+      '<cbc:AllowanceChargeReason>Приспадане на неизползвания платен период по предишния план</cbc:AllowanceChargeReason>\\s*' +
+      `<cbc:Amount currencyID="EUR">${money(order.creditCents).replace('.', '\\.')}</cbc:Amount>`,
+  );
+  assert.match(ubl, allowance);
+  assert.match(
+    ubl,
+    new RegExp(
+      `<cbc:TaxExclusiveAmount currencyID="EUR">${money(order.netCents)}</cbc:TaxExclusiveAmount>`,
+    ),
+  );
+  assert.match(
+    ubl,
+    new RegExp(
+      `<cbc:PrepaidAmount currencyID="EUR">${money(order.amountCents)}</cbc:PrepaidAmount>`,
+    ),
+  );
+
+  // Първата (заменена) поръчка, платена след това: прихванатият абонамент вече не е действащ.
+  await assert.rejects(
+    activatePayment({ paymentId: first.paymentId, paidAt: new Date() }),
+    (error: unknown) => error instanceof BillingError && error.code === 'creditStale',
+  );
+  assert.equal(
+    (await prisma.payment.findUniqueOrThrow({ where: { id: first.paymentId } })).status,
+    'CANCELLED',
+  );
+
+  // По-евтин план: неизползваното покрива целия нов период → след края на платения.
+  await assert.rejects(
+    quotePlan(orgId, 'pro', 'YEAR'),
+    (error: unknown) => error instanceof BillingError && error.code === 'downgrade',
+  );
+  const after = await (await http.get(owner, `/app/o/${orgId}/plan`)).text();
+  assert.match(after, /По-евтин план, чиято цена се покрива изцяло/);
+});

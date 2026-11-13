@@ -22,6 +22,8 @@ export interface ProformaSource {
   createdAt: Date;
   description: string;
   netCents: number;
+  /** Прихванатото от предишния платен план (основа); 0 — няма. */
+  creditCents: number;
   vatCents: number;
   vatRate: string;
   totalCents: number;
@@ -97,7 +99,14 @@ export async function proformaPdf(source: ProformaSource): Promise<Buffer> {
     .strokeColor(RULE)
     .stroke();
   doc.moveDown(0.6);
-  row(source.description, eur(source.netCents));
+  row(source.description, eur(source.netCents + source.creditCents));
+  if (source.creditCents > 0) {
+    row(
+      'Приспадане на неизползвания платен период по предишния план',
+      `− ${eur(source.creditCents)}`,
+    );
+    row('Данъчна основа', eur(source.netCents));
+  }
   row(`ДДС ${source.vatRate} %`, eur(source.vatCents));
   row('За плащане', eur(source.totalCents), true);
   doc.moveDown(1);

@@ -4,6 +4,7 @@ import { audit } from '../audit.js';
 import { setting } from '../admin/settings.js';
 import { issueSettings } from '../documents/issue.js';
 import { addPeriod, issuePlanInvoice } from './plan-invoice.js';
+import { currentCredit } from './proration.js';
 import {
   BillingError,
   VAT_RATE_PERCENT,
@@ -25,6 +26,13 @@ export interface Quote {
   planCode: string;
   planName: { bg: string; en: string };
   interval: Interval;
+  /** Цената на плана (основа) преди прихващането. */
+  listNetCents: number;
+  /** Прихванатата неизползвана част от сегашния платен план (proration.ts); 0 — няма. */
+  creditCents: number;
+  /** Абонаментът, от който е прихващането; null — няма. */
+  creditSubscriptionId: string | null;
+  /** Основата за плащане — след прихващането. */
   netCents: number;
   vatCents: number;
   totalCents: number;
@@ -58,14 +66,23 @@ export async function quotePlan(
     net += extra * plan.perClientCompanyCents * (interval === 'YEAR' ? 12 : 1);
   }
   if (net <= 0) throw new BillingError('free');
-  const vat = vatCents(net);
+  // Смяна на платен план: неизползваната част от платеното се приспада (решение на собственика).
+  const credit = await currentCredit(organizationId, plan.code, interval);
+  const creditCents = credit?.cents ?? 0;
+  // Кредитът покрива целия нов период (по-евтин план) — смяната е след края на платения период.
+  if (creditCents >= net) throw new BillingError('downgrade');
+  const payable = net - creditCents;
+  const vat = vatCents(payable);
   return {
     planCode: plan.code,
     planName: { bg: plan.nameBg, en: plan.nameEn },
     interval,
-    netCents: net,
+    listNetCents: net,
+    creditCents,
+    creditSubscriptionId: credit?.subscriptionId ?? null,
+    netCents: payable,
     vatCents: vat,
-    totalCents: net + vat,
+    totalCents: payable + vat,
     clientCompanies: clients,
   };
 }
@@ -106,6 +123,8 @@ export async function createOrder(input: {
         provider: input.method === 'card' ? 'REVOLUT' : 'MANUAL',
         amountCents: quote.totalCents,
         netCents: quote.netCents,
+        creditCents: quote.creditCents,
+        creditSubscriptionId: quote.creditSubscriptionId,
         vatCents: quote.vatCents,
         vatRate: String(VAT_RATE_PERCENT),
         currency: 'EUR',
@@ -134,7 +153,7 @@ export async function createOrder(input: {
 
 /**
  * Активиране на платена поръчка: плащането COMPLETED, нов абонаментен период (продължава текущия, ако
- * е същият план), фактура от Карбон Стелт с BT-7 = датата на плащането и платената сума (BT-113) — в
+ * е същият план; друг план — от датата на плащането, с прихванатото от стария), фактура от Карбон Стелт с BT-7 = датата на плащането и платената сума (BT-113) — в
  * ЕДНА транзакция; повторно извикване (втори webhook, двойно натискане) не прави нищо.
  */
 export async function activatePayment(input: {
@@ -180,6 +199,16 @@ export async function activatePayment(input: {
       (await tx.payment.count({ where: { subscriptionId: current.id, status: 'COMPLETED' } })) > 0
     ) {
       throw new BillingError('needsReview');
+    }
+    // Прихванатото е от абонамент, който вече не е действащият (друга поръчка го смени или периодът
+    // изтече преди плащането) — второ прихващане на същото време не се дава; мастърът решава.
+    if (
+      payment.creditCents > 0 &&
+      (!current ||
+        current.id !== payment.creditSubscriptionId ||
+        current.currentPeriodEnd <= input.paidAt)
+    ) {
+      throw new BillingError('creditStale');
     }
     const start =
       current &&

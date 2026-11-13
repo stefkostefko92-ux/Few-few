@@ -33,6 +33,7 @@ export async function issuePlanInvoice(
       provider: string;
       amountCents: number;
       netCents: number;
+      creditCents: number;
       reference: string | null;
     };
     customer: {
@@ -101,7 +102,18 @@ export async function issuePlanInvoice(
         : `Платено по банков път на ${bgDay(input.paidAt)}, основание ${input.payment.reference ?? ''}.`,
     ],
     precedingInvoices: [],
-    allowanceCharges: [],
+    // Прихванатото от предишния платен план — отстъпка на документа (основата и ДДС-ът са след нея).
+    allowanceCharges:
+      input.payment.creditCents > 0
+        ? [
+            {
+              isCharge: false,
+              amount: cents(input.payment.creditCents),
+              reason: 'Приспадане на неизползвания платен период по предишния план',
+              vat: { category: 'S', rate: String(VAT_RATE_PERCENT) },
+            },
+          ]
+        : [],
     vatExemptions: [],
     prepaidAmount: cents(input.payment.amountCents),
     lines: [
@@ -110,7 +122,7 @@ export async function issuePlanInvoice(
         name: `Абонамент за Фактурист — план „${input.planName}“, ${bgDay(input.start)}–${bgDay(input.end)}`,
         quantity: '1',
         unitCode: input.interval === 'YEAR' ? 'ANN' : 'MON',
-        netPrice: cents(input.payment.netCents),
+        netPrice: cents(input.payment.netCents + input.payment.creditCents),
         vat: { category: 'S', rate: String(VAT_RATE_PERCENT) },
         allowanceCharges: [],
         attributes: [],

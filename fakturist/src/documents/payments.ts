@@ -175,7 +175,7 @@ export async function removePaymentInTx(
   if (payment.source !== input.source) throw new DocumentPaymentError('source');
   await tx.bankLine.updateMany({
     where: { documentPaymentId: payment.id },
-    data: { documentPaymentId: null, status: 'NEW' },
+    data: { documentPaymentId: null, status: 'NEW', decidedAt: null },
   });
   await tx.documentPayment.delete({ where: { id: payment.id } });
   const { state } = await recompute(tx, doc.id, doc.payableCents);

@@ -207,6 +207,7 @@ export function appPlanRouter(): Router {
         payment.interval === 'YEAR' ? '12 месеца' : '1 месец'
       }`,
       netCents: payment.netCents,
+      creditCents: payment.creditCents,
       vatCents: payment.vatCents,
       vatRate: payment.vatRate,
       totalCents: payment.amountCents,

@@ -346,3 +346,56 @@ test('ревю: без план „Бизнес“ свързването на �
     data: { planCode: 'business' },
   });
 });
+
+test('правен преглед: срокът — наредителят се заличава след 90 дни, несвързан ред — след 12 месеца; изтриване', async () => {
+  const { purgeBankData } = await import('../../src/bank/retention.js');
+  const decided = await prisma.bankLine.findFirstOrThrow({ where: { status: 'IGNORED' } });
+  const fresh = await prisma.bankLine.findFirstOrThrow({ where: { status: 'NEW' } });
+  const day = 24 * 60 * 60 * 1000;
+  await prisma.bankLine.update({
+    where: { id: decided.id },
+    data: {
+      decidedAt: new Date(Date.now() - 91 * day),
+      counterparty: 'Петър Петров',
+      counterpartyIban: 'BG18RZBB91550123456789',
+    },
+  });
+  await prisma.bankLine.update({
+    where: { id: fresh.id },
+    data: { bookingDate: new Date(Date.now() - 366 * day) },
+  });
+  const result = await purgeBankData();
+  assert.ok(result.erased >= 1);
+  assert.ok(result.deleted >= 1);
+  const erased = await prisma.bankLine.findUniqueOrThrow({ where: { id: decided.id } });
+  assert.deepEqual(
+    [erased.counterparty, erased.counterpartyIban, erased.remittance],
+    [null, null, ''],
+  );
+  assert.ok(erased.amountCents > 0n, 'сумата остава');
+  assert.equal(await prisma.bankLine.count({ where: { id: fresh.id } }), 0);
+  // Името на файла не се пази.
+  assert.equal(
+    await prisma.bankStatement.count({
+      where: { fileName: { not: null }, createdAt: { gt: new Date(Date.now() - 60_000) } },
+    }),
+    0,
+  );
+  // Изтриване на извлечение: редовете си отиват, плащанията по фактурите — не.
+  const statement = await prisma.bankStatement.findFirstOrThrow({
+    where: { organizationId: orgId },
+  });
+  const payments = await prisma.documentPayment.count();
+  const res = await http.post(
+    owner,
+    `/app/o/${orgId}/banka/izvlechenie/${statement.id}/iztriy`,
+    {},
+  );
+  assert.match(res.headers.get('location') ?? '', /ok=deleted/);
+  assert.equal(await prisma.bankLine.count({ where: { statementId: statement.id } }), 0);
+  assert.equal(await prisma.documentPayment.count(), payments);
+  // Постъпление по-старо от 12 месеца не се внася наново.
+  const old = 'Дата;Основание;Кредит\r\n01.01.2025;стар;5,00\r\n';
+  const up = await upload(owner, `/app/o/${orgId}/banka`, 'old.csv', old, 'text/csv');
+  assert.match(up.headers.get('location') ?? '', /created=0&skipped=1/);
+});

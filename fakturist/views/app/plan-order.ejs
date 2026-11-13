@@ -12,6 +12,10 @@
 <% } %>
 <dl class="facts">
   <div><dt><%= t('app.plan.planLabel') %></dt><dd><%= planName %> · <%= t('app.plan.interval.' + payment.interval) %></dd></div>
+  <% if (payment.creditCents > 0) { %>
+  <div><dt><%= t('app.plan.listPrice') %></dt><dd class="mono"><%= eur(payment.netCents + payment.creditCents) %></dd></div>
+  <div><dt><%= t('app.plan.creditLong') %></dt><dd class="mono">− <%= eur(payment.creditCents) %></dd></div>
+  <% } %>
   <div><dt><%= t('app.plan.net') %></dt><dd class="mono"><%= eur(payment.netCents) %></dd></div>
   <div><dt><%= t('app.plan.vat') %> <%= payment.vatRate %> %</dt><dd class="mono"><%= eur(payment.vatCents) %></dd></div>
   <div><dt><%= t('app.plan.total') %></dt><dd class="mono strong"><%= eur(payment.amountCents) %></dd></div>

@@ -92,7 +92,6 @@ export function authRouter(): Router {
       return res.status(400).render('auth/login', { error: 'auth.invalid', next, email });
     }
     await attemptSucceeded(active.id);
-    rememberDevice(res, active.id);
     if (needsRehash(active.passwordHash) && parsed.success) {
       await prisma.user.update({
         where: { id: active.id },
@@ -102,6 +101,9 @@ export function authRouter(): Router {
     const needsCode = active.totpEnabledAt !== null;
     await startSession(res, active, !needsCode);
     if (!needsCode) {
+      // Довереното устройство — само след пълен вход (с втория фактор, ако е включен): иначе знаещият
+      // само паролата би получил бисквитка, която го пуска покрай заключването.
+      rememberDevice(res, active.id);
       await prisma.user.update({ where: { id: active.id }, data: { lastLoginAt: new Date() } });
       await prisma.$transaction((tx) =>
         audit(tx, {
@@ -166,6 +168,7 @@ export function authRouter(): Router {
       return res.status(400).render('auth/code', { error: 'auth.badCode', next });
     }
     await prisma.session.update({ where: { id: principal.sessionId }, data: { verified: true } });
+    rememberDevice(res, user.id);
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
     await prisma.$transaction((tx) =>
       audit(tx, {

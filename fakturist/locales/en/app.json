@@ -484,6 +484,11 @@
     "payNow": "Pay {amount}",
     "retry": "Try again",
     "cancel": "Cancel the order",
+    "credit": "credit",
+    "creditLong": "Credit for the unused paid period",
+    "listPrice": "Plan price excl. VAT",
+    "creditHelp": "The unused part of your current paid plan is deducted from the price — in proportion to the days left, excl. VAT. The new plan starts on the day of payment.",
+    "downgradeHelp": "A cheaper plan whose price is fully covered by the unused time can be ordered after the paid period ends ({date}).",
     "err": {
       "invalid": "Choose a plan, a period and a payment method.",
       "method": "This payment method is not available.",
@@ -493,7 +498,9 @@
       "noPrice": "This plan is priced by agreement — write to us.",
       "noSupplier": "Plan orders are not open yet.",
       "revolut": "The payment page did not open. Try again shortly.",
-      "expired": "The payment page has expired (24 hours). Place a new order from the page"
+      "expired": "The payment page has expired (24 hours). Place a new order from the page",
+      "downgrade": "The unused time covers the whole new period — order this plan after the paid period ends.",
+      "creditStale": "This order deducts a plan that is no longer active. Please place a new order."
     }
   },
   "recurring": {
@@ -670,12 +677,12 @@
       "MATCHED": "linked",
       "IGNORED": "skipped"
     },
-    "lastStatements": "Last statements:",
     "ok": {
       "imported": "Payments read: {total}, new: {created}.",
       "svarzhi": "The payment is recorded on the invoice.",
       "propusni": "Skipped.",
-      "otmeni": "Undone."
+      "otmeni": "Undone.",
+      "deleted": "The statement is deleted; payments on the invoices remain."
     },
     "err": {
       "feature": "Bank matching is in the Business plan and above.",
@@ -698,7 +705,11 @@
       "paymentDate": "Invalid date.",
       "paymentSource": "The payment is not from bank matching."
     },
-    "skipped": "Lines with an unreadable amount: {count} — check them in your bank."
+    "skipped": "Lines with an unreadable amount: {count} — check them in your bank.",
+    "statements": "Uploaded statements",
+    "retention": "We keep only incoming payments and only for matching: 90 days after a line is linked or skipped, the payer’s name, account and reference are erased; unmatched lines are deleted after 12 months. You and your bank keep the statements under the Accountancy Act.",
+    "statementLines": "{created} new of {total}",
+    "deleteStatement": "Delete"
   },
   "incoming": {
     "title": "Incoming",

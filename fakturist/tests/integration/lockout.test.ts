@@ -131,3 +131,48 @@ test('стъпката отшумява след ден без заключва�
   assert.ok(until && until.getTime() < Date.now() + 16 * MINUTE);
   assert.equal((await prisma.user.findUniqueOrThrow({ where: { id: userId } })).lockouts, 1);
 });
+
+test('правен преглед: с двуфакторен вход довереното устройство идва чак след кода', async () => {
+  const { generateTotpSecret, totpCodeAt, totpStep } = await import('../../src/auth/totp.js');
+  const { encryptTotpSecret } = await import('../../src/auth/keys.js');
+  const secret = generateTotpSecret();
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      totpSecretEnc: encryptTotpSecret(secret, userId),
+      totpEnabledAt: new Date(),
+      totpLastStep: null,
+      lockedUntil: null,
+      failedLogins: 0,
+      lockouts: 0,
+    },
+  });
+  const password = await tryLogin(PASSWORD);
+  assert.equal(password.status, 303);
+  const cookies = password.headers.getSetCookie();
+  assert.ok(
+    !cookies.some((c) => c.startsWith('fakturist_dev=') || c.startsWith('__Host-fakturist_dev=')),
+    'само с паролата — не',
+  );
+  const session = cookies.map((c) => c.split(';')[0]).join('; ');
+  const page = await fetch(`${http.origin}/vhod/kod`, { headers: { cookie: session } });
+  const csrf = /name="_csrf" value="([^"]+)"/.exec(await page.text())?.[1] ?? '';
+  const code = totpCodeAt(secret, totpStep(Math.floor(Date.now() / 1000)));
+  const done = await fetch(`${http.origin}/vhod/kod`, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: { 'content-type': 'application/x-www-form-urlencoded', cookie: session },
+    body: new URLSearchParams({ _csrf: csrf, code }),
+  });
+  assert.equal(done.status, 303);
+  assert.ok(
+    done.headers
+      .getSetCookie()
+      .some((c) => c.startsWith('fakturist_dev=') || c.startsWith('__Host-fakturist_dev=')),
+    'след кода — да',
+  );
+  await prisma.user.update({
+    where: { id: userId },
+    data: { totpSecretEnc: null, totpEnabledAt: null, totpLastStep: null },
+  });
+});

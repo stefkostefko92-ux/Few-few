@@ -145,8 +145,17 @@ export async function settleRevolutOrder(
       expectedAmountCents: order.amount,
     });
   } catch (error) {
-    if (!(error instanceof BillingError) || error.code !== 'needsReview') throw error;
-    await markForReview(payment, paidAt, 'superseded', { planCode: payment.planCode });
+    if (
+      !(error instanceof BillingError) ||
+      (error.code !== 'needsReview' && error.code !== 'creditStale')
+    )
+      throw error;
+    await markForReview(
+      payment,
+      paidAt,
+      error.code === 'creditStale' ? 'creditStale' : 'superseded',
+      { planCode: payment.planCode },
+    );
     return 'review';
   }
   if (result.activated) kickOutbox();
@@ -154,14 +163,15 @@ export async function settleRevolutOrder(
 }
 
 /**
- * Платено, но не за активиране (несъвпадение или заменена поръчка при по-нов платен план): FAILED с
+ * Платено, но не за активиране (несъвпадение, заменена поръчка при по-нов платен план или прихващане
+ * от абонамент, който вече не е действащият): FAILED с
  * датата на плащането — излиза от проверката на висящите (без шум в одита на 10 мин) и чака мастъра
  * (връщане на парите през Revolut). Записва се веднъж — условно по статуса.
  */
 async function markForReview(
   payment: { id: string; organizationId: string },
   paidAt: Date,
-  reason: 'mismatch' | 'superseded',
+  reason: 'mismatch' | 'superseded' | 'creditStale',
   details: Record<string, string | number | boolean | null>,
 ): Promise<void> {
   await prisma.$transaction(async (tx) => {

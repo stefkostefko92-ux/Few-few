@@ -76,6 +76,8 @@ export interface PlanOption {
   name: { bg: string; en: string };
   current: boolean;
   quotes: Partial<Record<Interval, Quote>>;
+  /** Периоди, които прихващането покрива изцяло (по-евтин план) — поръчват се след края на платения. */
+  deferred: Interval[];
 }
 
 export async function planPage(organizationId: string) {
@@ -125,12 +127,14 @@ export async function planPage(organizationId: string) {
   const options: PlanOption[] = [];
   for (const plan of plans) {
     const quotes: Partial<Record<Interval, Quote>> = {};
+    const deferred: Interval[] = [];
     for (const interval of ['MONTH', 'YEAR'] as const) {
       try {
         quotes[interval] = await quotePlan(organizationId, plan.code, interval);
       } catch (error) {
         // Безплатен план, „по договор“ или нулева сума — няма какво да се плати оттук.
         if (!(error instanceof BillingError)) throw error;
+        if (error.code === 'downgrade') deferred.push(interval);
       }
     }
     options.push({
@@ -138,6 +142,7 @@ export async function planPage(organizationId: string) {
       name: { bg: plan.nameBg, en: plan.nameEn },
       current: current?.planCode === plan.code,
       quotes,
+      deferred,
     });
   }
   // Фактурите идват в шкафчето на фирмата — връзката е към записа там.

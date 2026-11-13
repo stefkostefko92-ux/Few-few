@@ -14,7 +14,9 @@ export class BillingError extends Error {
       | 'notPending'
       | 'amountMismatch'
       | 'needsReview'
-      | 'expired',
+      | 'expired'
+      | 'downgrade'
+      | 'creditStale',
   ) {
     super(code);
   }
