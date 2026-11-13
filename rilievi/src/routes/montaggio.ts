@@ -8,6 +8,7 @@ import { aziendeFineRouter } from './aziende-fine.js';
 import { cartelliNuovoRouter } from './cartelli-nuovo.js';
 import { cartelliRouter } from './cartelli.js';
 import { cestinoRouter } from './cestino.js';
+import { clientiRouter } from './clienti.js';
 import { ordiniRouter } from './ordini.js';
 import { installaRouter } from './installa.js';
 import { impostazioniRouter } from './impostazioni.js';
@@ -139,6 +140,9 @@ export function montaRouter(app: Express): void {
   app.use(preventiviNuovoRouter);
   app.use(preventiviRouter);
   app.use(preventiviAzioniRouter);
+  // Регистърът на клиентите на фирмата (живее с офертите): `/clienti/nuovo` и `/clienti/elenco.json` са
+  // преди `/clienti/:id` в самия рутер.
+  app.use(clientiRouter);
   app.use(impostazioniPreventiviRouter);
   app.use(impostazioniApiRouter);
   app.use(impostazioniAccessoRouter);

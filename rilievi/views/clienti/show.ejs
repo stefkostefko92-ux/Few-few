@@ -1,0 +1,77 @@
+<%
+  // Профилът на клиент (routes/clienti.ts): данните му, офертите, написани за него, и „Nuovo preventivo“ —
+  // офертата идва с клиента вече написан. Изтриването пази офертите.
+  const c = cliente;
+  const vuoto = '—';
+  const tel = c.telefono ? c.telefono.replace(/[^\d+]/g, '') : '';
+%><%- include('../partials/top', { titleKey: 'clienti.titolo' }) %>
+<div class="page-head">
+  <div>
+    <a href="/clienti"><%= t('clienti.indietro') %></a>
+    <h1><%= c.nome %></h1>
+    <p class="page-head__sub"><%= c.azienda.name %></p>
+  </div>
+  <% if (scrive) { %><div class="toolbar">
+    <a class="btn" href="/clienti/<%= c.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('clienti.modifica') %></a>
+    <a class="btn btn--primary" href="/preventivi/nuovo?cliente=<%= c.id %>"><%- include('../partials/icon', { name: 'plus' }) %><%= t('clienti.nuovoPreventivo') %></a>
+  </div><% } %>
+</div>
+<div class="stack-gap">
+<p class="muted"><%= t('clienti.aggiunto', { data: fmt.day(c.createdAt) }) %><% if (c.updatedAt.getTime() !== c.createdAt.getTime()) { %> · <%= t('clienti.modificato', { data: fmt.day(c.updatedAt) }) %><% } %></p>
+
+<section class="panel" aria-labelledby="h-dati">
+  <h2 class="section__title" id="h-dati"><%= t('clienti.sezione.dati') %></h2>
+  <dl class="preventivo-dati">
+    <div class="preventivo-dati__wide"><dt><%= t('clienti.campo.indirizzo') %></dt><dd><%= c.indirizzo || vuoto %></dd></div>
+    <div><dt><%= t('clienti.campo.piva') %></dt><dd><%= c.piva || vuoto %></dd></div>
+    <div><dt><%= t('clienti.campo.telefono') %></dt><dd><% if (c.telefono) { %><a href="tel:<%= tel %>"><%= c.telefono %></a><% } else { %><%= vuoto %><% } %></dd></div>
+    <%# Imeylat e na tsyal red: dalag adres ne se chupi po sredata v tyasna kolona na telefon. %>
+    <div class="preventivo-dati__wide"><dt><%= t('clienti.campo.email') %></dt><dd><% if (c.email) { %><a href="mailto:<%= c.email %>"><%= c.email %></a><% } else { %><%= vuoto %><% } %></dd></div>
+    <div class="preventivo-dati__wide"><dt><%= t('clienti.campo.referente') %></dt><dd><%= c.referente || vuoto %></dd></div>
+    <% if (c.note) { %><div class="preventivo-dati__wide"><dt><%= t('clienti.campo.note') %></dt><dd class="testo-libero"><%= c.note %></dd></div><% } %>
+  </dl>
+</section>
+
+<section aria-labelledby="h-preventivi">
+  <h2 class="section__title" id="h-preventivi"><%= t('clienti.sezione.preventivi') %></h2>
+  <% if (preventivi.rows.length === 0) { %><p class="muted"><%= t('clienti.nessunPreventivo') %></p>
+  <% } else { %>
+  <% if (preventivi.total > preventivi.rows.length) { %><p class="muted"><%= t('clienti.ultimiPreventivi', { n: preventivi.rows.length, totale: preventivi.total }) %></p><% } %>
+  <table class="table table--stack">
+    <caption class="visually-hidden"><%= t('clienti.sezione.preventivi') %></caption>
+    <thead>
+      <tr>
+        <th scope="col"><%= t('preventivi.colonna.numero') %></th>
+        <th scope="col"><%= t('preventivi.campo.oggetto') %></th>
+        <th scope="col"><%= t('preventivi.colonna.data') %></th>
+        <th scope="col"><%= t('preventivi.colonna.stato') %></th>
+        <th scope="col" class="importo"><%= t('preventivi.colonna.totale') %></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for (const row of preventivi.rows) { %><tr>
+        <td data-label="<%= t('preventivi.colonna.numero') %>"><a class="row-link" href="/preventivi/<%= row.id %>"><%= t('preventivi.numero', { n: row.numero }) %></a></td>
+        <td class="wide" data-label="<%= t('preventivi.campo.oggetto') %>"><%= row.oggetto %></td>
+        <td class="date" data-label="<%= t('preventivi.colonna.data') %>"><%= fmt.day(row.data) %></td>
+        <td data-label="<%= t('preventivi.colonna.stato') %>"><span class="stato-preventivo stato-preventivo--<%= row.stato.toLowerCase() %>"><%= t('preventivi.stato.' + row.stato) %></span></td>
+        <td class="importo" data-label="<%= t('preventivi.colonna.totale') %>">€&nbsp;<%= euro(row.totale) %></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+  <% } %>
+</section>
+
+<%# Iztrivaneto na danni ostava i pri iztekal abonament (usloviyata, chl. 12.5 c). %>
+<% if (elimina) { %>
+<details class="panel buono-elimina">
+  <summary><%= t('clienti.elimina.titolo') %></summary>
+  <form method="post" action="/clienti/<%= c.id %>/elimina">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <p><%= t('clienti.elimina.testo') %></p>
+    <button class="btn btn--danger" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t('clienti.elimina.btn') %></button>
+  </form>
+</details>
+<% } %>
+</div>
+<%- include('../partials/bottom') %>

@@ -26,6 +26,8 @@ const INCLUDE = {
     },
   },
   scheda: { select: { id: true, matricola: true, numeroImpianto: true, deletedAt: true } },
+  // Профилът от регистъра на клиентите (на същата фирма — който вижда офертата, вижда и него).
+  clienteRegistro: { select: { id: true, nome: true } },
   createdBy: { select: { name: true } },
   updatedBy: { select: { name: true } },
 } satisfies Prisma.PreventivoInclude;

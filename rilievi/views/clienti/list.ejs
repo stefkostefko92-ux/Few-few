@@ -1,0 +1,61 @@
+<%
+  // Клиентите на фирмата — по име, с търсене (име, адрес, P. IVA, имейл, телефон, лице за контакт) и филтър
+  // по фирма при няколко (routes/clienti.ts).
+  const showAzienda = aziende.length > 0;
+  const params = new URLSearchParams();
+  if (aziendaFilter) params.set('azienda', aziendaFilter);
+  if (query) params.set('q', query);
+  const base = '/clienti' + (params.toString() ? '?' + params.toString() : '');
+%><%- include('../partials/top', { titleKey: 'clienti.list' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('clienti.list') %></h1>
+    <p class="page-head__sub"><%= t('clienti.listSub') %></p>
+  </div>
+  <div class="toolbar">
+    <% if (can('preventivi:write')) { %><a class="btn btn--primary" href="/clienti/nuovo<%= aziendaFilter ? '?azienda=' + encodeURIComponent(aziendaFilter) : '' %>"><%- include('../partials/icon', { name: 'plus' }) %><%= t('clienti.new') %></a><% } %>
+  </div>
+</div>
+<form class="filter preventivi-cerca" method="get" action="/clienti" role="search">
+  <% if (aziendaFilter) { %><input type="hidden" name="azienda" value="<%= aziendaFilter %>"><% } %>
+  <label class="field__label" for="clienti-q"><%= t('clienti.cercaLabel') %></label>
+  <div class="filter__row">
+    <input class="input" id="clienti-q" name="q" type="search" maxlength="100" placeholder="<%= t('clienti.cerca') %>" value="<%= query %>">
+    <button class="btn" type="submit"><%- include('../partials/icon', { name: 'search' }) %><%= t('clienti.cercaBtn') %></button>
+  </div>
+</form>
+<% if (showAzienda) { %><%- include('../partials/azienda-filter', { action: '/clienti', query }) %><% } %>
+<% if (query) { %><p class="muted" role="status"><%= t('clienti.risultati', { n: page.total }) %></p><% } %>
+<% if (page.rows.length === 0) { %>
+<div class="empty">
+  <p><strong><%= query ? t('clienti.emptyCerca') : t('clienti.empty') %></strong></p>
+  <% if (!query && can('preventivi:write')) { %><p class="muted"><%= t('clienti.emptyHint') %></p><% } %>
+</div>
+<% } else { %>
+<table class="table table--stack">
+  <caption class="visually-hidden"><%= t('clienti.list') %></caption>
+  <thead>
+    <tr>
+      <th scope="col"><%= t('clienti.colonna.nome') %></th>
+      <th scope="col"><%= t('clienti.colonna.indirizzo') %></th>
+      <th scope="col"><%= t('clienti.colonna.piva') %></th>
+      <th scope="col"><%= t('clienti.colonna.contatti') %></th>
+      <% if (showAzienda) { %><th scope="col"><%= t('clienti.colonna.azienda') %></th><% } %>
+      <th scope="col" class="importo"><%= t('clienti.colonna.preventivi') %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% for (const row of page.rows) { const contatti = [row.email, row.telefono].filter(Boolean); %><tr>
+      <td class="wide" data-label="<%= t('clienti.colonna.nome') %>"><a class="row-link" href="/clienti/<%= row.id %>"><%= row.nome %></a><% if (row.referente) { %><br><span class="muted"><%= row.referente %></span><% } %></td>
+      <td data-label="<%= t('clienti.colonna.indirizzo') %>"><%= row.indirizzo || '—' %></td>
+      <td data-label="<%= t('clienti.colonna.piva') %>"><%= row.piva || '—' %></td>
+      <td class="email" data-label="<%= t('clienti.colonna.contatti') %>"><% if (contatti.length === 0) { %>—<% } %><% contatti.forEach((riga, i) => { %><% if (i > 0) { %><br><% } %><%= riga %><% }) %></td>
+      <% if (showAzienda) { %><td data-label="<%= t('clienti.colonna.azienda') %>"><%= row.azienda.name %></td><% } %>
+      <td class="importo" data-label="<%= t('clienti.colonna.preventivi') %>"><%= row._count.preventivi %></td>
+    </tr>
+    <% } %>
+  </tbody>
+</table>
+<%- include('../partials/pager', { base, page: page.page, pages: page.pages }) %>
+<% } %>
+<%- include('../partials/bottom') %>

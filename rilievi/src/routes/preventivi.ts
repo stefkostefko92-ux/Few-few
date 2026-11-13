@@ -5,6 +5,7 @@ import { setFlash } from '../http/flash.js';
 import { datiDi, validaFino } from '../preventivi/dati.js';
 import { listPreventivi } from '../preventivi/elenco.js';
 import {
+  clienteIdCambiato,
   formValuesDalBody,
   formValuesDaPreventivo,
   parsePreventivo,
@@ -97,7 +98,12 @@ preventiviRouter.get('/preventivi/:id/modifica', write, async (req, res) => {
   }
   renderPreventivoForm(res, 200, {
     preventivo: row,
-    values: formValuesDaPreventivo(datiDi(row)),
+    // Профилът от регистъра — и какъв е бил при отварянето (`clienteIdPrima`): несменен, не се пипа.
+    values: {
+      ...formValuesDaPreventivo(datiDi(row)),
+      clienteId: row.clienteId ?? '',
+      clienteIdPrima: row.clienteId ?? '',
+    },
     errors: {},
     base: row.updatedAt.toISOString(),
     aziende: [],
@@ -128,6 +134,7 @@ preventiviRouter.post('/preventivi/:id', write, requireCsrf, async (req, res) =>
     base,
     data: parsed.data,
     actorId: principalOf(req).user.id,
+    clienteId: clienteIdCambiato(body),
   });
   if (esito.esito === 'missing') return notFound(req, res);
   if (esito.esito === 'bloccato') {

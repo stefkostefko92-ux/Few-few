@@ -231,7 +231,8 @@
     if (!riga) return;
     riempi(riga, v);
     totali();
-    if (stato) stato.textContent = (testi.aggiunta ?? '').replace('{descrizione}', v.descrizione);
+    if (stato)
+      stato.textContent = (testi.aggiunta ?? '').replace('{descrizione}', () => v.descrizione);
     if (ricerca) ricerca.value = '';
     campo(riga, 'quantita')?.focus();
   });

@@ -8,6 +8,8 @@ import {
 } from '../auth/guards.js';
 import { intestazioneDi } from '../aziende/dati.js';
 import { aziendaLogo } from '../aziende/service.js';
+import { clienteDalPreventivo } from '../clienti/dal-preventivo.js';
+import { MAX_CLIENTI } from '../clienti/service.js';
 import { config } from '../config.js';
 import { setFlash } from '../http/flash.js';
 import { mailLimiter, pdfLimiter } from '../http/limits.js';
@@ -22,7 +24,8 @@ import { notFound } from './schede-shared.js';
 /**
  * Офертата навън: PDF/A-ът (всеки, който я вижда), писмото до клиента с PDF-а (пише офертите; отговорът
  * — до пратилия; адресът не се пази, одитът — без него; черновата става „Inviato“), смяната на състоянието
- * (само по позволен преход) и изтриването на чернова.
+ * (само по позволен преход) и изтриването на чернова. Клиентът на офертата към регистъра на клиентите —
+ * `POST /preventivi/:id/cliente` (веднъж: вече записаният клиент само се свързва).
  */
 export const preventiviAzioniRouter: Router = Router();
 
@@ -129,6 +132,16 @@ preventiviAzioniRouter.post('/preventivi/:id/stato', write, requireCsrf, async (
       actorId: principalOf(req).user.id,
     }));
   setFlash(res, ok ? 'ok' : 'error', ok ? 'preventivi.flash.stato' : 'preventivi.flash.statoNo');
+  res.redirect(303, `/preventivi/${row.id}`);
+});
+
+preventiviAzioniRouter.post('/preventivi/:id/cliente', write, requireCsrf, async (req, res) => {
+  const row = await loadPreventivo(req);
+  if (!row || !puoScrivere(req, row)) return notFound(req, res);
+  const esito = await clienteDalPreventivo(principalOf(req).user.id, row.aziendaId, row.id);
+  if (esito.esito === 'missing') return notFound(req, res);
+  if (esito.esito === 'pieno') setFlash(res, 'error', 'clienti.flash.pieno', { max: MAX_CLIENTI });
+  else setFlash(res, 'ok', esito.nuovo ? 'clienti.flash.dalPreventivo' : 'clienti.flash.collegato');
   res.redirect(303, `/preventivi/${row.id}`);
 });
 

@@ -1,0 +1,90 @@
+{
+  "clienti": {
+    "list": "Clienti",
+    "listSub": "I clienti dell'azienda. Nel preventivo li scegli dall'anagrafica e i loro dati si compilano da soli.",
+    "new": "Nuovo cliente",
+    "titolo": "Cliente",
+    "modifica": "Modifica",
+    "modificaTitolo": "Modifica il cliente",
+    "indietro": "Torna ai clienti",
+    "torna": "Torna al cliente",
+    "salva": "Salva il cliente",
+    "cerca": "Nome, indirizzo, partita IVA, email, telefono…",
+    "cercaLabel": "Cerca nei clienti",
+    "cercaBtn": "Cerca",
+    "risultati": {
+      "one": "{n} cliente",
+      "other": "{n} clienti"
+    },
+    "empty": "Nessun cliente in anagrafica.",
+    "emptyHint": "Aggiungi il primo con «Nuovo cliente». Se hai già inserito un cliente in un preventivo, apri il preventivo e usa «Aggiungi all'anagrafica clienti».",
+    "emptyCerca": "Nessun cliente corrisponde alla ricerca.",
+    "aggiunto": "In anagrafica dal {data}",
+    "modificato": "ultima modifica il {data}",
+    "campo": {
+      "nome": "Nome o ragione sociale",
+      "indirizzo": "Indirizzo",
+      "piva": "P. IVA o codice fiscale",
+      "email": "Email",
+      "telefono": "Telefono",
+      "referente": "Referente",
+      "note": "Note"
+    },
+    "hint": {
+      "piva": "Partita IVA: 11 cifre (anche con «IT» davanti). Codice fiscale: 16 caratteri.",
+      "referente": "Chi contattare: l'amministratore, il portiere, l'ufficio tecnico.",
+      "note": "Appunti di lavoro, non compaiono nei preventivi: non scrivere dati sulla salute né giudizi sulla persona."
+    },
+    "errore": {
+      "required": "Campo obbligatorio.",
+      "tooLong": "Massimo {max} caratteri.",
+      "nome": "Nome non valido.",
+      "piva": "P. IVA di 11 cifre o codice fiscale di 16 caratteri.",
+      "email": "Indirizzo email non valido.",
+      "telefono": "Numero non valido: solo cifre, spazi e i segni + ( ) / . -",
+      "azienda": "Scegli l'azienda del cliente.",
+      "pieno": "L'anagrafica ha già {max} clienti: per aggiungerne uno elimina quelli che non servono più."
+    },
+    "colonna": {
+      "nome": "Cliente",
+      "indirizzo": "Indirizzo",
+      "piva": "P. IVA / C.F.",
+      "contatti": "Contatti",
+      "preventivi": "Preventivi",
+      "azienda": "Azienda"
+    },
+    "sezione": {
+      "dati": "Dati del cliente",
+      "preventivi": "Preventivi del cliente"
+    },
+    "nuovoPreventivo": "Nuovo preventivo",
+    "nessunPreventivo": "Nessun preventivo per questo cliente.",
+    "ultimiPreventivi": "Qui sotto gli ultimi {n} su {totale}.",
+    "elimina": {
+      "titolo": "Elimina il cliente",
+      "testo": "Il cliente viene eliminato dall'anagrafica in modo definitivo. I suoi preventivi non cambiano: i dati del cliente restano scritti in ognuno.",
+      "btn": "Elimina il cliente"
+    },
+    "flash": {
+      "creato": "Cliente aggiunto all'anagrafica.",
+      "salvato": "Cliente salvato.",
+      "eliminato": "Cliente eliminato dall'anagrafica.",
+      "conflitto": "Nel frattempo qualcuno ha salvato questo cliente. Le tue modifiche sono qui sotto: controllale e salva di nuovo.",
+      "pieno": "L'anagrafica ha già {max} clienti: il cliente non è stato aggiunto.",
+      "dalPreventivo": "Cliente aggiunto all'anagrafica clienti.",
+      "collegato": "Il cliente era già in anagrafica: ora il preventivo è collegato al suo profilo."
+    },
+    "preventivo": {
+      "profilo": "Apri il profilo del cliente",
+      "aggiungi": "Aggiungi all'anagrafica clienti",
+      "scegliLabel": "Scegli dall'anagrafica clienti",
+      "scegliCerca": "Nome, indirizzo o partita IVA",
+      "usa": "Usa questo cliente",
+      "caricati": "Clienti in anagrafica: {n}. Scrivi il nome e scegli una riga dall'elenco.",
+      "nonTrovato": "Cliente non riconosciuto: scegli una riga dall'elenco che compare mentre scrivi.",
+      "scelto": "Dati di {nome} inseriti. Se li correggi qui, cambiano solo in questo preventivo, non in anagrafica.",
+      "scollegato": "Hai cambiato il nome del cliente: il preventivo non è più collegato al profilo di {nome}.",
+      "vuoto": "L'anagrafica clienti è vuota: scrivi qui i dati del cliente. Dopo aver salvato il preventivo, aggiungi il cliente all'anagrafica con «Aggiungi all'anagrafica clienti»."
+    }
+  }
+}

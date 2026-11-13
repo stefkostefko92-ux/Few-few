@@ -110,6 +110,7 @@
     "openVerbale": "Apri il verbale",
     "openBuono": "Apri il buono",
     "openPreventivo": "Apri il preventivo",
+    "openCliente": "Apri il cliente",
     "openCalcolo": "Apri calcolo",
     "openUser": "Apri l'account",
     "action": {
@@ -210,6 +211,9 @@
       "LISTINO_UPDATE": "Listino prezzi modificato",
       "AZIENDA_PREVENTIVI": "Preventivi attivati o disattivati per l'azienda",
       "AZIENDA_PREVENTIVI_CONDIZIONI": "Condizioni predefinite dei preventivi modificate",
+      "CLIENTE_CREATE": "Cliente aggiunto all'anagrafica",
+      "CLIENTE_UPDATE": "Anagrafica cliente modificata",
+      "CLIENTE_DELETE": "Cliente eliminato dall'anagrafica",
       "ALLEGATO_ANNOTAZIONI": "Annotazioni di una foto modificate",
       "STATO_AVVISO": "Avviso della pagina di stato scritto o aggiornato",
       "API_CHIAVE_CREATA": "Chiave API creata",

@@ -1,5 +1,6 @@
 import type { Prisma, StatoPreventivo } from '@prisma/client';
 import { writeAudit } from '../audit.js';
+import { clienteDellAzienda } from '../clienti/service.js';
 import { prisma } from '../db.js';
 import { colonneDi } from './dati.js';
 import type { PreventivoData } from './form.js';
@@ -10,7 +11,8 @@ import type { PreventivoData } from './form.js';
  * включил офертите и фирмата е активна. Сборовете се смятат тук от редовете (`colonneDi`), никога от
  * пратеното. Промяна — само върху отворената версия (`base` = updatedAt) и само в „Bozza“ или „Inviato“:
  * приетата или отказаната оферта е документ — за промяна първо се връща в „Inviato“. Изтрива се само
- * чернова. Одитът — в същата транзакция, без клиента и без сумите.
+ * чернова. Одитът — в същата транзакция, без клиента и без сумите. `clienteId` — профилът от регистъра
+ * на клиентите, с който е попълнена: пази се само ако е на същата фирма (`clienteDellAzienda`), иначе — нищо.
  */
 
 export const STATI = [
@@ -42,6 +44,7 @@ export function createPreventivo(options: {
   actorId: string;
   aziendaId: string;
   schedaId: string | null;
+  clienteId?: string | null;
 }): Promise<EsitoPreventivo> {
   const { data, actorId, aziendaId, schedaId } = options;
   return prisma
@@ -65,6 +68,7 @@ export function createPreventivo(options: {
           ...colonneDi(data, counter.numero),
           aziendaId,
           schedaId,
+          clienteId: await clienteDellAzienda(tx, aziendaId, options.clienteId, data.cliente),
           numero: counter.numero,
           createdById: actorId,
           updatedById: actorId,
@@ -93,6 +97,8 @@ export function updatePreventivo(options: {
   base: string;
   data: PreventivoData;
   actorId: string;
+  /** Профилът от регистъра; `undefined` — формата не е сменила връзката и тя остава каквато е в базата. */
+  clienteId?: string | null;
 }): Promise<EsitoPreventivo> {
   const { id, aziendaId, data, actorId } = options;
   const base = new Date(options.base);
@@ -107,7 +113,15 @@ export function updatePreventivo(options: {
     if (!MODIFICABILI.includes(current.stato)) return { esito: 'bloccato' } as const;
     const updated = await tx.preventivo.updateMany({
       where: { id, aziendaId, updatedAt: base, stato: { in: [...MODIFICABILI] } },
-      data: { ...colonneDi(data, current.numero), updatedById: actorId },
+      data: {
+        ...colonneDi(data, current.numero),
+        updatedById: actorId,
+        ...(options.clienteId === undefined
+          ? {}
+          : {
+              clienteId: await clienteDellAzienda(tx, aziendaId, options.clienteId, data.cliente),
+            }),
+      },
     });
     if (updated.count === 0) return { esito: 'conflict' } as const;
     await audit(tx, actorId, 'PREVENTIVO_UPDATE', aziendaId, id, { numero: current.numero });

@@ -26,6 +26,12 @@
   <div>
     <h2 class="section__title" id="h-cliente"><%= t('preventivi.sezione.cliente') %></h2>
     <p><strong><%= d.cliente %></strong><% for (const riga of [d.clienteIndirizzo, d.clientePiva ? t('preventivi.pdf.piva', { piva: d.clientePiva }) : null, d.clienteEmail]) { if (riga) { %><br><%= riga %><% } } %></p>
+    <%# Profilat v registara na klientite, ili — za pisheshtite — butonat, koyto go zapisva tam. %>
+    <% if (p.clienteRegistro) { %><p class="preventivo-cliente-registro"><a href="/clienti/<%= p.clienteRegistro.id %>"><%= t('clienti.preventivo.profilo') %></a></p>
+    <% } else if (scrive) { %><form class="preventivo-cliente-registro" method="post" action="/preventivi/<%= p.id %>/cliente">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn btn--sm" type="submit"><%- include('../partials/icon', { name: 'plus' }) %><%= t('clienti.preventivo.aggiungi') %></button>
+    </form><% } %>
   </div>
   <dl class="preventivo-dati">
     <div><dt><%= t('preventivi.campo.data') %></dt><dd><%= giorno(d.data) %></dd></div>

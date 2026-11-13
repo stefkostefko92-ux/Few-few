@@ -103,7 +103,7 @@ export function renderPreventivoForm(
     scheda: null,
     ricerca: null,
     puoCercare: false,
-    scripts: ['preventivo'],
+    scripts: ['preventivo', 'preventivo-cliente'],
     ...view,
   });
 }

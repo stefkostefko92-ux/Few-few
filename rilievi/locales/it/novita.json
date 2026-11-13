@@ -25,6 +25,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-13-versione-5-0": {
+        "area": "Preventivi",
+        "titolo": "Versione 5.0: l'anagrafica clienti, i dati pronti nel preventivo",
+        "testo": "Ogni azienda ora ha la sua anagrafica clienti: la pagina «Clienti» nel menu, accanto ai preventivi. Per ogni cliente salvi nome o ragione sociale, indirizzo, partita IVA o codice fiscale, email, telefono, referente e note. Quando scrivi un preventivo scegli il cliente dall'anagrafica e i suoi dati si compilano da soli; se li correggi nel preventivo, valgono solo per quel preventivo. Dal profilo del cliente vedi i suoi preventivi e ne inizi uno nuovo già intestato a lui. Un cliente scritto a mano in un preventivo entra in anagrafica con il pulsante «Aggiungi all'anagrafica clienti». Eliminare un cliente non tocca i suoi preventivi. L'anagrafica c'è per le aziende con i preventivi attivi: la vede chi vede i preventivi e la modifica chi li scrive."
+      },
       "2026-11-13-versione-4-6": {
         "area": "Impostazioni",
         "titolo": "Versione 4.6: il listino prezzi nelle impostazioni, anche da Excel",

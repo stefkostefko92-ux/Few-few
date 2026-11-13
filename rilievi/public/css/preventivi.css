@@ -137,6 +137,11 @@
   overflow-wrap: anywhere;
 }
 
+/* Под клиента на офертата: връзката към профила му в регистъра или бутонът, който го записва там. */
+.preventivo-testa .preventivo-cliente-registro {
+  margin-top: 10px;
+}
+
 .preventivo-dati {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

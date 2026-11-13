@@ -1,5 +1,6 @@
 <%
-  // Формата на офертата (routes/preventivi-vista.ts): фирмата (при няколко), картата (по избор), клиентът,
+  // Формата на офертата (routes/preventivi-vista.ts): фирмата (при няколко), картата (по избор), клиентът
+  // (на ръка или от регистъра на клиентите — public/js/preventivo-cliente.js; `clienteId` помни профила),
   // документът (ден, валидност, предмет, уредба), редовете (записаните и още няколко празни; с JavaScript —
   // „Aggiungi una riga“ и „Aggiungi dal listino“), бележките и условията. Сумите — показани от браузъра,
   // сметнати от сървъра при записа.
@@ -31,7 +32,7 @@
     return t('preventivi.errore.required');
   };
   const anchorOf = (key) => key === 'righe' || key === 'totale' ? 'righe' : 'f-' + key;
-  const campo = (key, tipo, opts) => include('_campo', { key, tipo, wide: !!(opts && opts.wide), maxLength: max[key], valore: str(key), errore: errors[key] ? messageOf(key) : '', hint: opts && opts.hint ? opts.hint : '' });
+  const campo = (key, tipo, opts) => include('_campo', { key, tipo, wide: !!(opts && opts.wide), maxLength: max[key], valore: str(key), errore: errors[key] ? messageOf(key) : '', hint: opts && opts.hint ? opts.hint : '', doppia: !!(opts && opts.doppia) });
   const collegata = isEdit ? preventivo.scheda : null;
   const rigaVuota = { values: {}, errors: {}, messageOf };
 %><%- include('../partials/top', { titleKey: isEdit ? 'preventivi.modifica' : 'preventivi.new', narrowMain: true, scripts }) %>
@@ -61,6 +62,10 @@
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <% if (isEdit) { %><input type="hidden" name="base" value="<%= base %>"><% } %>
   <% if (!isEdit && scheda) { %><input type="hidden" name="scheda" value="<%= scheda.id %>"><% } %>
+  <%# Bez izbor na firma (edna firma, „Duplica“, oferta ot profila na klient) firmata patuva skrita. %>
+  <% if (!isEdit && !scheda && aziende.length === 0 && azienda) { %><input type="hidden" name="azienda" value="<%= azienda %>"><% } %>
+  <input type="hidden" name="clienteId" value="<%= str('clienteId') %>" data-cliente-id>
+  <% if (isEdit) { %><input type="hidden" name="clienteIdPrima" value="<%= str('clienteIdPrima') %>"><% } %>
   <% if (!isEdit && !scheda && aziende.length > 0) { %>
   <div class="field field--azienda">
     <label class="field__label" for="f-azienda"><%= t('scheda.field.azienda') %></label>
@@ -75,11 +80,21 @@
 
   <fieldset class="section">
     <legend class="section__title"><%= t('preventivi.sezione.cliente') %></legend>
+    <div class="preventivo-listino" data-clienti hidden data-caricati="<%= t('clienti.preventivo.caricati') %>" data-non-trovato="<%= t('clienti.preventivo.nonTrovato') %>" data-scelto="<%= t('clienti.preventivo.scelto') %>" data-scollegato="<%= t('clienti.preventivo.scollegato') %>">
+      <label class="field__label" for="f-registro-clienti"><%= t('clienti.preventivo.scegliLabel') %></label>
+      <div class="filter__row">
+        <input class="input" id="f-registro-clienti" type="search" list="clienti-voci" autocomplete="off" placeholder="<%= t('clienti.preventivo.scegliCerca') %>">
+        <button class="btn" type="button" data-clienti-usa><%- include('../partials/icon', { name: 'check' }) %><%= t('clienti.preventivo.usa') %></button>
+      </div>
+      <p class="field__hint" data-clienti-stato role="status"></p>
+      <datalist id="clienti-voci"></datalist>
+    </div>
+    <p class="field__hint" data-clienti-vuoto hidden><%= t('clienti.preventivo.vuoto') %></p>
     <div class="grid grid--righe">
       <%- campo('cliente', 'text', { wide: true }) %>
       <%- campo('clienteIndirizzo', 'text', { wide: true }) %>
       <%- campo('clientePiva', 'text', { hint: t('preventivi.hint.piva') }) %>
-      <%- campo('clienteEmail', 'email') %>
+      <%- campo('clienteEmail', 'email', { doppia: true }) %>
     </div>
   </fieldset>
 
