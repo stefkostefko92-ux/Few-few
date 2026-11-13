@@ -555,3 +555,5 @@
 {"t":"handoff","ts":"2026-11-12T23:37:20.766Z","id":"r6b175f9b","from":"dizayner","to":"оркестратор","status":"има бележки","run":"5441a3f8"}
 {"t":"start","ts":"2026-11-13T06:21:06.559Z","id":"r6cb19f91","flow":"авто","lead":"prevodach","auto":true}
 {"t":"handoff","ts":"2026-11-13T06:21:06.560Z","id":"r6cb19f91","from":"prevodach","to":"човек","status":"има бележки","run":"0b600041"}
+{"t":"start","ts":"2026-11-13T09:20:48.845Z","id":"rf9191021","flow":"авто","lead":"vps-adjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-13T09:20:48.845Z","id":"rf9191021","from":"vps-adjiyata","to":"оркестратор","status":"има бележки","run":"8fceec26"}
