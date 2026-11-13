@@ -14,7 +14,7 @@ import { eliminaAzienda } from '../../src/aziende/eliminazione.js';
 import { runMaintenance } from '../../src/maintenance.js';
 import { CAMPI_ACCETTAZIONE, sigilloValido } from '../../src/legale/sigillo.js';
 import { clausoleSpecifiche, hashTesto, leggiTesto } from '../../src/legale/testi.js';
-import { VERSIONE } from '../../src/legale/versioni.js';
+import { versioneDaFirmare, VERSIONE } from '../../src/legale/versioni.js';
 import {
   Browser,
   makeAzienda,
@@ -31,7 +31,9 @@ after(stopApp);
 
 const ACCETTA = '/condizioni/accetta';
 const FIRMA = '/condizioni/firma';
-const versioni = { versioneCondizioni: VERSIONE.CONDIZIONI, versioneRegole: VERSIONE.REGOLE };
+// The terms are signed in the version that enters by itself, if one is days away (legale/versioni.ts).
+const DA_FIRMARE = versioneDaFirmare('CONDIZIONI');
+const versioni = { versioneCondizioni: DA_FIRMARE, versioneRegole: VERSIONE.REGOLE };
 const DICHIARATI = {
   ragioneSociale: 'Ascensori Prova S.r.l.',
   sede: 'Via Roma 12, 20121 Milano (MI)',
@@ -178,7 +180,7 @@ describe("the company's terms, concluded by its ADMIN", () => {
 
   it('signs the specific approval with the code on a page of its own, records it, sends the copy', async () => {
     const { azienda, browser, user, codice } = await adminAlCodice();
-    const doc = leggiTesto('CONDIZIONI');
+    const doc = leggiTesto('CONDIZIONI', DA_FIRMARE);
     const page = (await browser.get(`${FIRMA}?next=%2Fschede`)).body;
     for (const { numero, descrizione } of clausoleSpecifiche(doc))
       assert.ok(
@@ -212,7 +214,7 @@ describe("the company's terms, concluded by its ADMIN", () => {
     const riga = await prisma.accettazione.findFirstOrThrow({
       where: { userId: user.id, tipo: 'CONDIZIONI' },
     });
-    assert.equal(riga.versione, VERSIONE.CONDIZIONI);
+    assert.equal(riga.versione, DA_FIRMARE);
     assert.equal(riga.hash, hashTesto(doc));
     assert.deepEqual(
       riga.clausole,
@@ -233,7 +235,7 @@ describe("the company's terms, concluded by its ADMIN", () => {
       'the rules ticked in the first step',
     );
     const dopo = await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } });
-    assert.equal(dopo.condizioniVersione, VERSIONE.CONDIZIONI);
+    assert.equal(dopo.condizioniVersione, DA_FIRMARE);
     assert.equal(
       await prisma.auditLog.count({
         where: { action: 'CONDIZIONI_ACCETTATE', aziendaId: azienda.id },

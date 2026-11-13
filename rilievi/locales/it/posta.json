@@ -25,7 +25,7 @@
       "passwordAccount": "La password del tuo account"
     },
     "hint": {
-      "porta": "2525 funziona anche quando il fornitore del server blocca la 587. Con 465 la connessione è cifrata fin dall'inizio.",
+      "porta": "La porta 2525 di solito funziona anche quando il fornitore del server del portale blocca le porte della posta (25, 465, 587). Con la 465 la connessione è cifrata fin dall'inizio.",
       "password": "La chiave non viene mai mostrata dopo il salvataggio.",
       "passwordSalvata": "C'è già una chiave salvata: lascia il campo vuoto per tenerla, oppure scrivine una nuova.",
       "mittenteEmail": "L'indirizzo da cui partono le email, per esempio no-reply@carbonstealth.eu.",
@@ -55,7 +55,26 @@
       "disattivata": "Server email disattivato.",
       "provaInviata": "Email di prova inviata a {email}.",
       "provaSpenta": "L'invio delle email non è attivo: salva prima un server.",
-      "provaErrore": "Il server non ha accettato la prova (codice {codice}). Controlla server, porta, login e chiave."
+      "provaErrore": "L'email di prova non è partita. Il motivo è scritto qui sotto, in «Ultima prova»."
+    },
+    "esito": {
+      "prova": "Ultima prova",
+      "invio": "Ultima email del portale",
+      "riuscita": "Inviata il {data}.",
+      "nonRiuscita": "Invio non riuscito il {data}.",
+      "consegna": "Se l'email di prova non arriva entro qualche minuto, controlla i log delle email transazionali nel tuo account Brevo: lì vedi se il messaggio è stato consegnato o bloccato.",
+      "risposta": "Risposta del server:",
+      "codice": "Codice tecnico: {codice}",
+      "falliti": "Email non partite di fila: {n}.",
+      "fase": {
+        "connessione": "Il portale non riesce a collegarsi a {host} sulla porta {porta}: il server non risponde. Quasi sempre è il fornitore del server del portale che blocca in uscita le porte della posta (25, 465, 587). Scegli un'altra porta dell'elenco, prima la 2525, poi salva e riprova. Se non risponde nessuna porta, sblocca le porte della posta nel pannello del fornitore del server del portale.",
+        "tls": "Il server {host} non ha accettato la connessione cifrata sulla porta {porta}. Le porte 587 e 2525 usano STARTTLS, la 465 è cifrata fin dall'inizio: scegli un'altra porta dell'elenco, salva e riprova.",
+        "accesso": "Il server ha rifiutato l'accesso. Controlla il login e scrivi di nuovo la chiave SMTP (è diversa dalla chiave API). Se nel tuo account Brevo è attivo il blocco degli indirizzi IP sconosciuti, autorizza l'indirizzo IP del server del portale.",
+        "mittente": "Il server ha rifiutato il mittente {mittente}. In Brevo questo indirizzo, o il suo dominio, deve essere verificato.",
+        "destinatario": "Il server ha rifiutato l'indirizzo del destinatario.",
+        "messaggio": "Il server ha rifiutato il messaggio dopo averlo ricevuto.",
+        "altro": "Il server ha risposto con un errore."
+      }
     }
   }
 }

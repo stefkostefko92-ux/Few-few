@@ -23,6 +23,25 @@ export async function checkPreventivi(page, { base, shots, scheme, aziendaPath, 
     if (!(await acceso())) fail(`${name}: quotes not on after the switch`);
   }
 
+  // Before any price list entry the search in the list stays hidden: the rows still fill the section
+  // (they once collapsed beside its title — the owner, 13 November 2026).
+  await page.goto(`${base}/preventivi/listino?azienda=${aziendaId}`);
+  if (!(await page.locator('td', { hasText: /^E2E-/ }).count())) {
+    await page.goto(`${base}/preventivi/nuovo`);
+    if (await page.locator('#f-azienda').count()) await page.selectOption('#f-azienda', aziendaId);
+    await page.waitForLoadState('networkidle');
+    if (!(await page.locator('[data-listino]').isHidden()))
+      fail(`${name}: the price-list search shows with an empty list`);
+    const larghezza = await page.evaluate(
+      () =>
+        document.querySelector('[data-righe]').getBoundingClientRect().width /
+        document.querySelector('#righe').getBoundingClientRect().width,
+    );
+    if (larghezza < 0.8)
+      fail(`${name}: the rows take ${Math.round(larghezza * 100)} % of the section`);
+    await aligned(page, `${name} form, empty price list`);
+  }
+
   // A price list entry.
   await page.goto(`${base}/preventivi/listino?azienda=${aziendaId}`);
   await page.fill('#f-voce-codice', `E2E-${scheme}`);

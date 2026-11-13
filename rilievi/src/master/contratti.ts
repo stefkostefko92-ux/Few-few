@@ -1,7 +1,7 @@
 import { writeAudit } from '../audit.js';
 import { prisma } from '../db.js';
 import { CAMPI_ACCETTAZIONE, sigilloValido } from '../legale/sigillo.js';
-import { condizioniValide, inVigoreDal, VERSIONE } from '../legale/versioni.js';
+import { condizioniValide, versioneDaFirmare, VERSIONE } from '../legale/versioni.js';
 import type { SessionUser } from '../types.js';
 
 /**
@@ -99,11 +99,13 @@ export async function elencoContratti(): Promise<RigaContratto[]> {
  * „Richiedi la firma“: фирма, отбелязана като приела без подпис (`esistente`), става клиент — нейният
  * ADMIN подписва наистина (DEPLOY.md: `condizioniVersione = NULL`). Само при `esistente`: подписаната не
  * се отменя оттук, чакащата вече чака. Хората ѝ — от следващата заявка (членството се чете при всяка).
+ * Работи и в навечерието на версия, която влиза сама (собственикът, 13 ноември 2026 — във версия 4.1 отказваше
+ * „до деня“): подписва се тя (`versioneDaFirmare`), веднъж.
  */
 export async function richiediFirma(
   master: SessionUser,
   aziendaId: string,
-): Promise<'ok' | 'stato' | 'missing' | { presto: Date }> {
+): Promise<'ok' | 'stato' | 'missing'> {
   return prisma.$transaction(async (tx) => {
     const azienda = await tx.azienda.findUnique({
       where: { id: aziendaId },
@@ -118,11 +120,6 @@ export async function richiediFirma(
         })
       : null;
     if (statoContratto(versione, firmata ? versione : null) !== 'esistente') return 'stato';
-    // Версията на фирмата още не е в сила: подписът сега би бил за досегашната и след дни — пак. Чака се денят.
-    if (versione !== VERSIONE.CONDIZIONI) {
-      const dal = versione ? inVigoreDal('CONDIZIONI', versione) : null;
-      return dal ? { presto: dal } : 'stato';
-    }
     const { count } = await tx.azienda.updateMany({
       where: { id: aziendaId, condizioniVersione: versione },
       data: { condizioniVersione: null },
@@ -135,7 +132,7 @@ export async function richiediFirma(
         aziendaId,
         targetType: 'azienda',
         targetId: aziendaId,
-        meta: { versione: VERSIONE.CONDIZIONI },
+        meta: { versione: versioneDaFirmare('CONDIZIONI') },
       },
       tx,
     );

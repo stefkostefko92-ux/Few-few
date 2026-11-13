@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import { VERSIONE } from '../../src/legale/versioni.js';
+import { versioneDaFirmare, VERSIONE } from '../../src/legale/versioni.js';
 import {
   Browser,
   linkFrom,
@@ -166,7 +166,7 @@ describe('invitations', () => {
     assert.equal(gate.status, 303);
     assert.equal(gate.location, '/condizioni/accetta?next=%2Fschede');
     const rules = await guest.submit('/condizioni/accetta', '/condizioni/accetta', {
-      versioneCondizioni: VERSIONE.CONDIZIONI,
+      versioneCondizioni: versioneDaFirmare('CONDIZIONI'),
       versioneRegole: VERSIONE.REGOLE,
       regole: 'si',
       next: '/schede',

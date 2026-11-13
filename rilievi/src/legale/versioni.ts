@@ -148,6 +148,24 @@ export const VERSIONE: Readonly<Record<TipoTesto, string>> = {
   },
 };
 
+/**
+ * Версията, която се подписва СЕГА (собственикът, 13 ноември 2026 — „Se su un'utente che non ha ancora firmato
+ * chiedo di firmare non succede niente“): действащата, а ако следващите влизат сами, без обява
+ * (`SENZA_PREAVVISO`) — последната от тях. В навечерието на такава версия подписът за действащата би важал
+ * часове и на другия ден би се искал пак; подписаната по-нова версия се брои за приета веднага
+ * (`versioniValide`). Обявена версия (чл. 18.1) НЕ се подписва предварително: предизвестието тече, а в деня ѝ
+ * всички приемат наново.
+ */
+export function versioneDaFirmare(
+  tipo: TipoTesto,
+  now: Date = new Date(),
+  storia: readonly string[] = STORIA[tipo],
+): string {
+  let i = storia.indexOf(versioneVigente(tipo, now, storia));
+  while (i + 1 < storia.length && SENZA_PREAVVISO[tipo].includes(storia[i + 1]!)) i += 1;
+  return storia[i]!;
+}
+
 /** Денят на последната действаща версия на двата текста — за sitemap и JSON-LD на `/condizioni`. */
 export function testiAggiornati(now: Date = new Date()): string {
   return [versioneVigente('CONDIZIONI', now), versioneVigente('REGOLE', now)].sort().at(-1) ?? '';

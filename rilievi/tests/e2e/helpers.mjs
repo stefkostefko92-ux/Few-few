@@ -163,7 +163,32 @@ export async function aligned(page, name) {
     return out;
   });
   for (const issue of issues) fail(`${name}: fields not aligned — ${issue}`);
+  await belowTitle(page, name);
   await selectsFit(page, name);
+}
+
+// Nothing in a form section sits beside its title. The title of a panel is a float: a block that does not
+// clear it (the rows of a quote after the hidden price-list search — the owner, 13 November 2026) collapses
+// to zero width at the right edge. Every shown child starts under the title and is not a sliver.
+async function belowTitle(page, name) {
+  const beside = await page.evaluate(() => {
+    const out = new Set();
+    for (const title of document.querySelectorAll('.form > .section > .section__title')) {
+      const section = title.parentElement;
+      for (let el = section; el; el = el.parentElement) el.style.contentVisibility = 'visible';
+      if (title.getClientRects().length === 0) continue;
+      const bottom = title.getBoundingClientRect().bottom;
+      const width = section.getBoundingClientRect().width;
+      for (const child of section.children) {
+        if (child === title || child.getClientRects().length === 0) continue;
+        const r = child.getBoundingClientRect();
+        if (r.top < bottom - 1 || (r.height > 40 && r.width < width / 4))
+          out.add(section.id || title.textContent.trim().slice(0, 40));
+      }
+    }
+    return [...out];
+  });
+  for (const section of beside) fail(`${name}: section "${section}" has content beside its title`);
 }
 
 // No drop-down cuts its options: the longest option text fits between the left padding and the arrow

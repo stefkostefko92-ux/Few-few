@@ -10,6 +10,8 @@ import {
   impostaAnnunci,
   inVigoreDal,
   modifiche,
+  STORIA,
+  versioneDaFirmare,
   versioneProssima,
   versioneVigente,
   versioniValide,
@@ -71,6 +73,39 @@ describe('the versions of the legal texts', () => {
       condizioniValide('2099-01-01', dopo),
       false,
       'an unknown version is not an acceptance',
+    );
+  });
+
+  // The owner, 13 November 2026: "Se su un'utente che non ha ancora firmato chiedo di firmare non succede
+  // niente" — the day before 2026-11-14 a signature could only be for the text of one more day.
+  it('have the administrator sign the version that enters by itself, not the one of the last day', () => {
+    const vigilia = new Date('2026-11-13T10:00:00Z');
+    assert.equal(versioneVigente('CONDIZIONI', vigilia), '2026-11-13');
+    assert.equal(versioneDaFirmare('CONDIZIONI', vigilia), '2026-11-14');
+    // What is signed is accepted at once and stays accepted when its day comes.
+    assert.equal(condizioniValide(versioneDaFirmare('CONDIZIONI', vigilia), vigilia), true);
+    const dopo = new Date('2026-11-14T10:00:00Z');
+    assert.equal(versioneDaFirmare('CONDIZIONI', dopo), versioneVigente('CONDIZIONI', dopo));
+    assert.equal(versioneDaFirmare('CONDIZIONI', new Date('2026-11-11T10:00:00Z')), '2026-11-14');
+    assert.equal(versioneDaFirmare('REGOLE', vigilia), versioneVigente('REGOLE', vigilia));
+  });
+
+  it('never have a version signed before its announced day', () => {
+    const storia = [...STORIA.CONDIZIONI, '2027-03-01'];
+    const oggi = new Date('2026-12-01T10:00:00Z');
+    assert.equal(versioneDaFirmare('CONDIZIONI', oggi, storia), '2026-11-14');
+    impostaAnnunci([
+      {
+        tipo: 'CONDIZIONI',
+        versione: '2027-03-01',
+        annunciatoAt: new Date('2026-11-20T09:00:00Z'),
+      },
+    ]);
+    // Announced and with a date: still the one in force until that day (art. 18.1 — the notice runs first).
+    assert.equal(versioneDaFirmare('CONDIZIONI', oggi, storia), '2026-11-14');
+    assert.equal(
+      versioneDaFirmare('CONDIZIONI', new Date('2027-03-01T10:00:00Z'), storia),
+      '2027-03-01',
     );
   });
 

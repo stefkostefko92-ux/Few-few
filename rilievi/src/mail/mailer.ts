@@ -4,7 +4,15 @@ import { COMPANY } from '../company.js';
 import { isProduction } from '../config.js';
 import { translatorFor } from '../i18n.js';
 import { logger } from '../logger.js';
-import { assicuraPosta, parametriSmtp, versionePosta, type ParametriSmtp } from './posta.js';
+import { diagnosiPosta, type DiagnosiPosta } from './diagnosi.js';
+import {
+  assicuraPosta,
+  parametriSmtp,
+  serverDi,
+  versionePosta,
+  type ParametriSmtp,
+  type ServerPosta,
+} from './posta.js';
 
 export interface MailMessage {
   to: string;
@@ -61,17 +69,36 @@ function remember(message: MailMessage, result: MailResult): void {
 }
 
 /**
- * Последният изход от истинско пращане (в паметта на процеса) — за „Salute del sistema“ и `/stato`: пощата
- * „работи“ по това дали писмата тръгват, не по това дали е настроена (одитът от 12 ноември 2026).
+ * Последният изход от истинско пращане (в паметта на процеса) — за „Salute del sistema“, `/stato` и страницата
+ * на пощата: пощата „работи“ по това дали писмата тръгват, не по това дали е настроена (одитът от 12 ноември
+ * 2026). При провал — и диагнозата (стъпката, кодовете, отговорът на сървъра — той само за MASTER).
  */
-let ultimoInvio: { at: Date; riuscito: boolean; falliti: number } | null = null;
-export const ultimoEsitoPosta = (): { at: Date; riuscito: boolean; falliti: number } | null =>
-  ultimoInvio;
-const segna = (riuscito: boolean): void => {
+export interface EsitoInvio {
+  at: Date;
+  riuscito: boolean;
+  falliti: number;
+  diagnosi: DiagnosiPosta | null;
+  /**
+   * Настройката, с която е пращано (`versionePosta`), и сървърът ѝ: след смяна на порта старата грешка не се
+   * показва като грешка на новия (Кодаджията, 13 ноември 2026 — 587 → 2525).
+   */
+  versione: number;
+  server: ServerPosta;
+}
+let ultimoInvio: EsitoInvio | null = null;
+export const ultimoEsitoPosta = (): EsitoInvio | null => ultimoInvio;
+/** И успешното пробно писмо е истинско писмо през същата настройка (mail/prova.ts). */
+export const segnaInvio = (
+  riuscito: boolean,
+  con: { versione: number; server: ServerPosta },
+  diagnosi: DiagnosiPosta | null = null,
+): void => {
   ultimoInvio = {
     at: new Date(),
     riuscito,
     falliti: riuscito ? 0 : (ultimoInvio?.falliti ?? 0) + 1,
+    diagnosi: riuscito ? null : diagnosi,
+    ...con,
   };
 };
 
@@ -103,21 +130,24 @@ export async function sendMail(grezzo: MailMessage): Promise<MailResult> {
     remember(message, 'disabled');
     return 'disabled';
   }
+  // Преди пращането: докато писмото чака сървъра, настройката може да се смени от конзолата.
+  const con = { versione: versionePosta(), server: serverDi(parametri) };
   try {
     await getTransport(parametri).sendMail({ from: parametri.from, ...message });
-    segna(true);
+    segnaInvio(true, con);
     remember(message, 'sent');
     return 'sent';
   } catch (error) {
-    // Само кодовете на грешката: текстът от SMTP сървъра често цитира адреса на получателя.
-    const e = error as { code?: unknown; responseCode?: unknown; command?: unknown };
-    segna(false);
+    // В лога — само стъпката и кодовете: текстът от SMTP сървъра често цитира адреса на получателя.
+    const d = diagnosiPosta(error);
+    segnaInvio(false, con, d);
     logger.error(
       {
         evento: 'posta.fallita',
-        code: typeof e.code === 'string' ? e.code : undefined,
-        responseCode: typeof e.responseCode === 'number' ? e.responseCode : undefined,
-        command: typeof e.command === 'string' ? e.command : undefined,
+        fase: d.fase,
+        code: d.codice,
+        ...(d.origine ? { origine: d.origine } : {}),
+        ...(d.risposta !== null ? { responseCode: d.risposta } : {}),
       },
       'писмото не тръгна',
     );

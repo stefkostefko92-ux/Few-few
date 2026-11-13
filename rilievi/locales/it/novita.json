@@ -25,6 +25,11 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-13-versione-4-2": {
+        "area": "Portale",
+        "titolo": "Versione 4.2: preventivo a tutta larghezza, firma più semplice",
+        "testo": "Quando compili un preventivo, le righe occupano di nuovo tutta la larghezza, anche se il listino dell'azienda è vuoto. Chi firma le condizioni di servizio firma direttamente la versione in vigore dal 14 novembre 2026, una volta sola. Se il codice per la firma non parte per email, il portale lo dice subito e il tentativo non conta nel limite dei codici all'ora."
+      },
       "2026-11-13-versione-4-1": {
         "area": "Portale",
         "titolo": "Versione 4.1: acquisto anche senza VIES e nota di credito sui rimborsi",

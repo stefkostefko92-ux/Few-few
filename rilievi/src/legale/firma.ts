@@ -5,7 +5,7 @@ import { hmacCodiceFirma } from '../auth/chiavi.js';
 import { prisma } from '../db.js';
 import { MINUTE } from '../time.js';
 import type { SessionUser } from '../types.js';
-import { VERSIONE, condizioniValide } from './versioni.js';
+import { condizioniValide, versioneDaFirmare } from './versioni.js';
 
 /** Колко важи кодът, колко грешни опита се допускат, колко често и колко пъти се праща нов. */
 export const CODICE_MINUTI = 10;
@@ -55,7 +55,7 @@ async function firmatarioDi(
 }
 
 export type EsitoAvvio =
-  | { ok: true; codice: string; email: string; scadeAt: Date }
+  | { ok: true; id: string; codice: string; email: string; scadeAt: Date }
   | { ok: false; motivo: 'ruolo' | 'attendi' | 'troppi' };
 
 /**
@@ -90,7 +90,7 @@ export async function avviaFirma(
         id,
         userId: user.id,
         aziendaId,
-        versione: VERSIONE.CONDIZIONI,
+        versione: versioneDaFirmare('CONDIZIONI'),
         dichiarati,
         codiceHmac: hmacCodiceFirma(id, codice),
         email: user.email,
@@ -98,7 +98,7 @@ export async function avviaFirma(
         scadeAt,
       },
     });
-    return { ok: true, codice, email: user.email, scadeAt } as const;
+    return { ok: true, id, codice, email: user.email, scadeAt } as const;
   });
 }
 

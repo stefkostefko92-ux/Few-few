@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import { improntaCalcolo } from '../../src/build.js';
 import { registraEmissione } from '../../src/legale/emissioni.js';
-import { VERSIONE } from '../../src/legale/versioni.js';
+import { versioneDaFirmare } from '../../src/legale/versioni.js';
 import {
   Browser,
   makeAzienda,
@@ -75,7 +75,7 @@ describe('the contracts', () => {
     const audit = await prisma.auditLog.findFirst({
       where: { action: 'CONDIZIONI_RICHIESTE', aziendaId: azienda.id },
     });
-    assert.deepEqual(audit?.meta, { versione: VERSIONE.CONDIZIONI });
+    assert.deepEqual(audit?.meta, { versione: versioneDaFirmare('CONDIZIONI') });
 
     // Now its administrator signs before using the portal.
     const browser = new Browser();
