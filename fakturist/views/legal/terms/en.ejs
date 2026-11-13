@@ -1,7 +1,7 @@
 <p>These terms govern the use of Fakturist — an online service for issuing invoices and notes, with the data also saved as structured XML under the European standard EN&nbsp;16931. By creating an account you accept them on behalf of the company you register. The Bulgarian text prevails.</p>
 
 <h2 id="provider">1. Who provides the service</h2>
-<p><%= company.name %> (<%= company.nameBg %>), EIK&nbsp;<%= company.eik %>, VAT&nbsp;no.&nbsp;<%= company.vat %>, <%= company.street.en %>, <%= company.postalCode %> <%= company.city.en %>, <%= company.region.en %>, Bulgaria, tel.&nbsp;<a href="<%= company.phoneHref %>"><%= company.phone %></a>, <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a>. Hereafter “we”.</p>
+<p><%= company.name %> (<%= company.nameBg %>), registered in the Commercial Register and Register of Non-Profit Legal Entities at the Bulgarian Registry Agency under EIK&nbsp;<%= company.eik %>, VAT&nbsp;no.&nbsp;<%= company.vat %>, <%= company.street.en %>, <%= company.postalCode %> <%= company.city.en %>, <%= company.region.en %>, Bulgaria, tel.&nbsp;<a href="<%= company.phoneHref %>"><%= company.phone %></a>, <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a>. Hereafter “we”.</p>
 
 <h2 id="audience">2. Who the service is for</h2>
 <p>Fakturist is for traders, legal entities, freelancers and accounting firms — for their professional activity. It is not intended for consumers within the meaning of the Bulgarian Consumer Protection Act. Whoever registers a company declares that they may represent it or are authorised by it, and accepts these terms and the <a href="<%= legalUrl('dpa') %>">data processing agreement</a> on its behalf.</p>
@@ -22,7 +22,7 @@
   <li>It delivers the document to the recipient's “inbox” if the recipient is registered in Fakturist with the same EIK (section&nbsp;7).</li>
   <li>It lets an accounting firm issue on behalf of a client company under a mandate (section&nbsp;8).</li>
 </ul>
-<p>Fakturist is not approved, certified or registered by the Bulgarian National Revenue Agency (NRA). Structured electronic invoices become mandatory from 2028 under the bill amending the VAT Act; once the requirements for software are adopted, we will adapt the service and let you know. Features marked as “planned” are not available yet.</p>
+<p>Fakturist is not approved, certified or registered by the Bulgarian National Revenue Agency (NRA). A bill amending the Bulgarian VAT Act provides for structured electronic invoices to become mandatory from 2028. It has not been adopted yet and the requirements may change; once they are adopted, we will adapt the service and let you know. Features marked as “planned” are not available yet.</p>
 
 <h2 id="documents">5. Responsibility for the content of documents</h2>
 <p>You are the issuer of the documents and are responsible for the accuracy of their data — recipient, goods and services, prices, VAT rates and grounds, exchange rate, dates — and for sending them where the law requires the recipient's consent to electronic invoices. We are responsible for the service working as described here and on the website.</p>
@@ -39,7 +39,7 @@
 </ul>
 
 <h2 id="inbox">7. The inbox</h2>
-<p>When you issue a document to a company registered in Fakturist with the same EIK (or VAT number), the document is delivered to its account and by email — with PDF and XML — to its owner and administrators, and to its accounting firm with an active mandate. By issuing such a document you agree to this delivery. The recipient sees only the delivered document and whether the sender is a verified company.</p>
+<p>When you issue a document to a company registered in Fakturist with the same EIK (or VAT number), the document is delivered to its account and by email — with PDF and XML — to its owner, administrators and accountants, and to the members of its accounting firm with an active mandate (owner, administrators, accountants). By issuing such a document you agree to this delivery. The recipient sees only the delivered document and whether the sender is a verified company.</p>
 
 <h2 id="firms">8. Accounting firms and mandates</h2>
 <ul>
@@ -61,17 +61,17 @@
 
 <h2 id="termination">11. Suspension and termination</h2>
 <ul>
-  <li>You may stop using the service at any time by writing to <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a>. A paid period is not refunded unless we have breached these terms.</li>
+  <li>You may stop using the service at any time by writing to <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a>. A paid period is not refunded unless we have breached these terms. If we discontinue the service, or you stop using it because of a change under section&nbsp;15 or an objection to a new sub-processor under the data processing agreement, we refund the amount paid for the unused period.</li>
   <li>We may suspend an account for a breach of section&nbsp;10 or a risk to the security of other users — after notifying you and, where possible, giving you time to remedy the breach.</li>
   <li>We may discontinue the service entirely with at least 60 days' notice.</li>
-  <li>After termination you have 30 days to download your documents; then we delete them under the data processing agreement.</li>
+  <li>After termination you have 30 days to download your documents (on request we send you an archive of all of them); then we delete them under the data processing agreement.</li>
 </ul>
 
 <h2 id="availability">12. Operation of the service</h2>
 <p>We aim for the service to run without interruption but do not guarantee it: maintenance, updates and failures are possible. We announce planned downtime on the website where possible. Before every update we back up the database.</p>
 
 <h2 id="liability">13. Liability</h2>
-<p>To the extent permitted by applicable law, we are liable only for direct and foreseeable damage caused by a breach of our obligations, and in total up to the amount the company paid for the service in the last 12 months. We are not liable for lost profits, for consequences of data entered by you, or for tax consequences of the content of documents. These limits do not apply to intent or gross negligence, nor wherever the law does not allow liability to be limited.</p>
+<p>To the extent permitted by applicable law, we are liable only for direct and foreseeable damage caused by a breach of our obligations, and in total up to the greater of the amount the company paid for the service in the last 12 months or 100&nbsp;euro. We are not liable for lost profits, for consequences of data entered by you, or for tax consequences of the content of documents. These limits do not apply to intent or gross negligence, nor wherever the law does not allow liability to be limited.</p>
 
 <h2 id="ip">14. Rights in the software</h2>
 <p>Fakturist, its code, design and brand are ours. You receive a non-exclusive right to use the service for the life of the account, for your own business or — for accounting firms — for the business of your clients.</p>

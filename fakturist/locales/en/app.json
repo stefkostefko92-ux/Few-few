@@ -159,7 +159,9 @@
       "notCreator": "The owner is invited by the firm that added the company to Fakturist. Your mandate waits for confirmation by the owner or by Fakturist.",
       "invited": "Fakturist or another firm has already invited the owner — wait for their answer.",
       "locked": "This company’s ownership was revoked in a dispute — only Fakturist invites a new owner."
-    }
+    },
+    "processorDeclaration": "I declare that the client company has authorised the firm in writing to use Fakturist for its documents and that the firm has taken on the obligations of a processor under Art. 28(3) GDPR in its contract with the client.",
+    "processorDeclarationLink": "Data processing agreement, section 1a"
   },
   "security": {
     "title": "Security",

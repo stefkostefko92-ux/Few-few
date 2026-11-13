@@ -12,14 +12,14 @@
       <tr><td>Name, email, language, password hash (Argon2id), email confirmation date, last sign-in</td><td>The account and signing in to it</td><td>Contract, Art.&nbsp;6(1)(b) GDPR</td><td>While the account exists</td></tr>
       <tr><td>Two-factor sign-in: secret key (encrypted with AES-256-GCM) and the last accepted step</td><td>A second factor at sign-in, if you turned it on</td><td>Contract</td><td>Until turned off or the account is closed</td></tr>
       <tr><td>The data of the company you are a member of (name, EIK, VAT number, address, IBAN) and your role in it</td><td>The particulars of documents and the rights in the account</td><td>Contract</td><td>While the company is registered</td></tr>
-      <tr><td>Session: the cookie and a record in the database (when it was created and used) — no IP address</td><td>To keep you signed in</td><td>Contract</td><td>Until sign-out or expiry: <%= sessionStandard %></td></tr>
-      <tr><td>Email links (new password, email confirmation): SHA-256 hash of the link, the address it was sent to, its validity</td><td>Security of the account</td><td>Contract; legitimate interest, Art.&nbsp;6(1)(f) GDPR</td><td>The link is valid 1 hour (password) or 7 days (email); the record — while the account exists</td></tr>
-      <tr><td>Emails from the queue: recipient address, kind of email, when it was sent</td><td>To send the email and see whether it went out</td><td>Contract</td><td>While the account exists</td></tr>
+      <tr><td>Session: the cookie and a record in the database (when it was created and used) — no IP address</td><td>To keep you signed in</td><td>Contract</td><td>Until sign-out or expiry: <%= sessionStandard %>; the record is deleted within 30 days after expiry</td></tr>
+      <tr><td>Email links (new password, email confirmation): SHA-256 hash of the link, the address it was sent to, its validity</td><td>Security of the account</td><td>Contract; legitimate interest, Art.&nbsp;6(1)(f) GDPR</td><td>The link is valid 1 hour (password) or 7 days (email); the record is deleted within 30 days after it expires</td></tr>
+      <tr><td>Emails from the queue: recipient address, kind of email, when it was sent</td><td>To send the email and see whether it went out</td><td>Contract</td><td>90 days after sending</td></tr>
       <tr><td>Invitations and mandates: the invitee's email, the link hash, who invited and when</td><td>Transferring a company to its owner and the accounting firm's work under a mandate</td><td>Contract; legitimate interest</td><td>The invitation is valid 7 days; the record — while the company is registered</td></tr>
-      <tr><td>Accepted legal documents: who, which document, which version, when</td><td>Proof of the contract</td><td>Legitimate interest</td><td>Five years after the account is closed (the general limitation period)</td></tr>
-      <tr><td>Audit log: who did what and when in the account and the company — no IP addresses and no emails</td><td>Accountability and defence in a dispute</td><td>Legitimate interest</td><td>While the company is registered</td></tr>
-      <tr><td>Payments: the payer's name, amount and reference from the bank transfer; the invoice for the payment</td><td>The paid plan contract and our accounting</td><td>Contract; legal obligation, Art.&nbsp;6(1)(c) GDPR</td><td>The periods under the Accountancy Act and the VAT Act</td></tr>
-      <tr><td>Emails you write to us</td><td>To answer you</td><td>Legitimate interest</td><td>Up to three years after the last email</td></tr>
+      <tr><td>Accepted legal documents: who, which document, which version, when</td><td>Proof of the contract</td><td>Legitimate interest: to prove the conclusion and content of the contract in a dispute</td><td>Five years after the account is closed (the general limitation period)</td></tr>
+      <tr><td>Audit log: who did what and when in the account and the company — no IP addresses and no emails</td><td>Accountability and defence in a dispute</td><td>Legitimate interest: to show who did what in a dispute or abuse</td><td>While the company is registered and up to 5 years after it is closed</td></tr>
+      <tr><td>Payments: the amount, date and reference of the payment; the invoice for it</td><td>The paid plan contract and our accounting</td><td>Contract; legal obligation, Art.&nbsp;6(1)(c) GDPR</td><td>The periods under the Accountancy Act and the VAT Act</td></tr>
+      <tr><td>Emails you write to us</td><td>To answer you</td><td>Legitimate interest: to answer and keep the correspondence in case of a dispute</td><td>Up to three years after the last email</td></tr>
     </tbody>
   </table>
 </div>
@@ -30,6 +30,8 @@
 
 <h2 id="recipients">Who else sees the data</h2>
 <ul>
+  <li>The other members of your company and its accounting firm with an active mandate; the recipient company of a document delivered to its inbox, and its members.</li>
+  <li>Our support team — under a duty of confidentiality and only as far as needed.</li>
   <li>netcup GmbH, Germany — the server Fakturist runs on, in a data centre in the European Union. The database backups are on it too.</li>
   <li>Sendinblue SAS (Brevo), France — sending the emails described below.</li>
   <li>Revolut Bank UAB, Lithuania, and the payer's bank — the payment data, as independent controllers under their own legal obligations.</li>
@@ -55,11 +57,11 @@
 <p>We make no decisions with legal effects on you solely by automated means. The rules check on issue stops a document with an error — it concerns the document, not you as a person. The temporary limit after many sign-in attempts lifts by itself.</p>
 
 <h2 id="security">Security</h2>
-<p>The connection is HTTPS only, with HSTS. Passwords are stored as Argon2id hashes, two-factor secret keys and integration keys — encrypted, and email links and invitations — only as hashes. Sessions live on the server and end at once on a new password. The master panel opens only with two-factor sign-in. Application logs contain no emails, passwords or IP addresses. Before every software update we back up the database.</p>
+<p>The connection is HTTPS only, with HSTS. Passwords are stored as Argon2id hashes, two-factor secret keys and integration keys — encrypted, and email links and invitations — only as hashes. Sessions live on the server and end at once on a new password. The master panel opens only with two-factor sign-in. Application logs contain no emails, passwords or IP addresses. Before every software update we back up the database; backups are kept for at most 90 days.</p>
 
 <h2 id="rights">Your rights</h2>
 <p>You have the right of access, rectification, erasure, restriction of processing, portability and to object to processing based on legitimate interest. Write to <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a> — we reply within one month. You can download every document as PDF and XML from the account at any time.</p>
-<p>On a request for erasure we close your account. Documents issued by the company belong to the company, and the law obliges it to keep them — so they remain in its account while it is registered.</p>
+<p>On a request for erasure we close your account within one month of the request (Art.&nbsp;12(3) GDPR). Documents issued by the company belong to the company, and the law obliges it to keep them — so they remain in its account while it is registered.</p>
 <p>You have the right to lodge a complaint with the Bulgarian Commission for Personal Data Protection (Sofia 1592, 2 Prof. Tsvetan Lazarov Blvd., <a href="https://www.cpdp.bg" target="_blank" rel="noopener">www.cpdp.bg</a>) or with the supervisory authority in the EU country where you live or work.</p>
 
 <h2 id="minors">Minors</h2>

@@ -4,7 +4,7 @@
 <section class="narrow wide-ish">
   <h1><%= t('app.client.title') %></h1>
   <p class="muted"><%= t('app.client.help') %></p>
-  <% if (Object.keys(errors).length) { %><div class="error-box" role="alert"><ul><% Object.entries(errors).forEach(([f, code]) => { %><li><% if (f === 'ownerEmail') { %><%= t('app.client.ownerEmail') %>: <%= tOr('app.client.errors.' + code, t('auth.errors.invalid')) %><% } else { %><%= tOr('auth.' + f, f) %>: <%= tOr('auth.errors.' + code, t('auth.errors.invalid')) %><% } %></li><% }) %></ul></div><% } %>
+  <% if (Object.keys(errors).length) { %><div class="error-box" role="alert"><ul><% Object.entries(errors).forEach(([f, code]) => { %><li><% if (f === 'processorDeclaration') { %><%= t('auth.errors.processorDeclaration') %><% } else if (f === 'ownerEmail') { %><%= t('app.client.ownerEmail') %>: <%= tOr('app.client.errors.' + code, t('auth.errors.invalid')) %><% } else { %><%= tOr('auth.' + f, f) %>: <%= tOr('auth.errors.' + code, t('auth.errors.invalid')) %><% } %></li><% }) %></ul></div><% } %>
   <form method="post" action="/app/o/<%= firm.id %>/klienti/nov" class="stack">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <label><%= t('auth.legalName') %><input name="legalName" required value="<%= v('legalName') %>"></label>
@@ -23,6 +23,7 @@
       <label><%= t('app.client.validFrom') %><input type="date" name="validFrom" required value="<%= v('validFrom') %>"></label>
     </div>
     <label<%= errors.ownerEmail ? ' class="has-error"' : '' %>><%= t('app.client.ownerEmail') %><input type="email" name="ownerEmail" autocomplete="off" spellcheck="false" value="<%= v('ownerEmail') %>" aria-describedby="owner-help"<%= errors.ownerEmail ? ' aria-invalid="true"' : '' %>><span class="hint" id="owner-help"><%= t('app.client.ownerEmailHelp') %></span></label>
+    <label class="check<%= errors.processorDeclaration ? ' has-error' : '' %>"><input type="checkbox" name="processorDeclaration" required<%= errors.processorDeclaration ? ' aria-invalid="true"' : '' %>> <span><%= t('app.client.processorDeclaration') %> <a href="<%= legalUrl('dpa') %>#kantori" target="_blank" rel="noopener"><%= t('app.client.processorDeclarationLink') %></a></span></label>
     <button type="submit"><%= t('app.client.save') %></button>
   </form>
 </section>

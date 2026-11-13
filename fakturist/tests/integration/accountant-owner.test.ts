@@ -76,6 +76,7 @@ function clientFields(eik: string, legalName: string, ownerEmail: string) {
     documentRef: 'Пълномощно № 3/01.11.2026',
     validFrom: '2026-11-01',
     ownerEmail,
+    processorDeclaration: 'on',
   };
 }
 
@@ -121,6 +122,11 @@ test('кантората добавя фирма и кани собствени�
   );
   assert.equal(created.status, 303);
   const client = await prisma.organization.findUniqueOrThrow({ where: { eik: '131063188' } });
+  // Декларацията на кантората по т. 1а от договора за обработване е записана за клиента.
+  assert.equal(
+    await prisma.legalAcceptance.count({ where: { organizationId: client.id, document: 'dpa' } }),
+    1,
+  );
   const mandate = await prisma.clientMandate.findFirstOrThrow({ where: { clientId: client.id } });
   assert.equal(mandate.status, 'PENDING');
   const invite = await prisma.transferInvite.findFirstOrThrow({
@@ -467,4 +473,23 @@ test('имейлът от поканата се вижда само от OWNER/A
   const theirs = await (await get(await login('viewer@example.test'), '/app')).text();
   assert.ok(theirs.includes('Книжарница Перо ООД'));
   assert.ok(!theirs.includes('pero-owner@example.test'));
+});
+
+test('без декларацията по т. 1а от договора за обработване кантората не добавя фирма', async () => {
+  const session = await login('accountant@example.test');
+  const { processorDeclaration: _declared, ...fields } = clientFields(
+    '200000041',
+    'Без Декларация ЕООД',
+    '',
+  );
+  const refused = await post(session, `/app/o/${firm.organizationId}/klienti/nov`, fields);
+  assert.equal(refused.status, 400);
+  assert.ok((await refused.text()).includes('Потвърдете декларацията'));
+  assert.equal(await prisma.organization.count({ where: { eik: '200000041' } }), 0);
+  // Със същите данни и декларацията — минава (отказът е само заради нея).
+  const accepted = await post(session, `/app/o/${firm.organizationId}/klienti/nov`, {
+    ...fields,
+    processorDeclaration: 'on',
+  });
+  assert.equal(accepted.status, 303);
 });

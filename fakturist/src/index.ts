@@ -3,11 +3,13 @@ import { prisma } from './db.js';
 import { errorMessage, logger } from './logger.js';
 import { createServer } from './server.js';
 import { startOutboxLoop } from './mail/outbox.js';
+import { startMaintenanceLoop } from './maintenance.js';
 
 async function main(): Promise<void> {
   const cfg = config();
   const app = createServer();
   startOutboxLoop();
+  startMaintenanceLoop();
   const server = app.listen(cfg.PORT, cfg.HOST, () => {
     logger.info({ port: cfg.PORT }, 'fakturist слуша');
   });

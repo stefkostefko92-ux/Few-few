@@ -29,6 +29,8 @@ LE_DIR="${FAKTURIST_LE_DIR:-/etc/letsencrypt}"
 HEALTH_WAIT="${FAKTURIST_HEALTH_WAIT:-90}"
 MIGRATION_WAIT="${FAKTURIST_MIGRATION_WAIT:-1800}"
 KEEP_BACKUPS="${FAKTURIST_KEEP_BACKUPS:-5}"
+# Най-голямата възраст на копие в дни (договорът за обработване, т. 11 — 90 дни).
+BACKUP_MAX_DAYS="${FAKTURIST_BACKUP_MAX_DAYS:-90}"
 SKIP_BACKUP="${FAKTURIST_SKIP_BACKUP:-0}"
 LAST_GOOD="${FAKTURIST_LAST_GOOD:-$SHARED/last-good}"
 # Отпечатъкът (SHA-256) на LEDGER_SEAL_KEY от първия успешен деплой. Самият ключ не е тук.
@@ -145,6 +147,18 @@ backup_db() {
   fi
   find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -printf '%T@ %p\n' | sort -rn |
     tail -n "+$((KEEP_BACKUPS + 1))" | cut -d' ' -f2- | xargs -r rm -f
+  # Договорът за обработване обещава най-много 90 дни (т. 11) — и по възраст, не само по брой.
+  find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -mtime "+$BACKUP_MAX_DAYS" -delete
+}
+
+# Копията се трият по възраст и между деплоите: дневна задача на cron (идемпотентно — презаписва се).
+install_backup_prune() {
+  local job=/etc/cron.daily/fakturist-backups
+  [ -d /etc/cron.daily ] || return 1
+  printf '#!/bin/sh\n# Фактурист: резервните копия преди деплой — най-много %s дни (договор за обработване, т. 11).\nfind %s -maxdepth 1 -name '"'"'pre-deploy-*.sql.gz'"'"' -mtime +%s -delete 2>/dev/null || true\n' \
+    "$BACKUP_MAX_DAYS" "$SHARED/backups" "$BACKUP_MAX_DAYS" >"$job.tmp"
+  chmod 755 "$job.tmp"
+  mv -f "$job.tmp" "$job"
 }
 
 # Миграция, която още тече (entrypoint-ът на app я прилага): ред в _prisma_migrations без край, без
@@ -275,6 +289,7 @@ main() {
   remember_live || warn "не записах $LAST_GOOD — откатът сочи предишния release"
   remember_seal_key || warn "не записах отпечатъка на LEDGER_SEAL_KEY — следващият деплой опитва пак"
   sync_nginx "$port" || warn "nginx не е обновен — Фактурист е жив на 127.0.0.1:$port"
+  install_backup_prune || warn "няма /etc/cron.daily — копията се трият по възраст само при деплой"
   hints || true
 }
 

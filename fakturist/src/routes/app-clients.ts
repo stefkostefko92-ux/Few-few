@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { LEGAL_DOCUMENTS } from '../legal/documents.js';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { HttpError, requireOrg } from '../auth/guards.js';
@@ -72,6 +73,8 @@ export function appClientsRouter(): Router {
         validFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
         // Имейлът на собственика — по избор; поканата тръгва в същата транзакция.
         ownerEmail: z.string().trim().max(254).optional(),
+        // Кантората е обработващ на клиента си, а ние — подобработващ (т. 1а от договора за обработване).
+        processorDeclaration: z.literal('on', { message: 'processorDeclaration' }),
       }),
     ).safeParse(req.body);
     if (!parsed.success) {
@@ -130,6 +133,15 @@ export function appClientsRouter(): Router {
           update: {
             documentRef: data.documentRef,
             validFrom: new Date(`${data.validFrom}T00:00:00Z`),
+          },
+        });
+        // Декларацията на кантората (т. 1а от договора за обработване) — записана за фирмата-клиент.
+        await tx.legalAcceptance.create({
+          data: {
+            userId: req.principal!.user.id,
+            organizationId: client.id,
+            document: 'dpa',
+            version: LEGAL_DOCUMENTS.dpa.version,
           },
         });
         await audit(tx, {
