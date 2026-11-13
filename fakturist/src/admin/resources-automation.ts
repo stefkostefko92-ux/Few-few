@@ -1,0 +1,107 @@
+import type { AdminResource } from './resources.js';
+
+/**
+ * Таблиците на Етап 2 в мастър панела: повтарящи се, плащания и напомняния (SPEC 51–52), API (SPEC 53),
+ * входящи и банка (SPEC 54–55). Личните данни на трети лица (наредител, IBAN, основание) и тайните
+ * (хешове на ключове, XML-ът на входящите) са в `hidden`.
+ */
+export const AUTOMATION_RESOURCES: AdminResource[] = [
+  {
+    model: 'RecurringInvoice',
+    slug: 'recurring',
+    group: 'documents',
+    label: { bg: 'Повтарящи се фактури', en: 'Recurring invoices' },
+    columns: [
+      'organizationId',
+      'name',
+      'frequency',
+      'status',
+      'nextRunOn',
+      'lastIssuedOn',
+      'failures',
+    ],
+    search: ['organizationId', 'name'],
+    // Шаблонът носи данните на получателя; адресът за писмата е личен.
+    hidden: ['template', 'sendTo'],
+    orderBy: { createdAt: 'desc' },
+  },
+  {
+    model: 'DocumentPayment',
+    slug: 'document-payments',
+    group: 'documents',
+    label: { bg: 'Плащания по документи', en: 'Document payments' },
+    columns: ['documentId', 'amountCents', 'paidOn', 'source', 'createdAt'],
+    search: ['documentId'],
+    hidden: ['note'],
+    orderBy: { createdAt: 'desc' },
+  },
+  {
+    model: 'PaymentReminder',
+    slug: 'reminders',
+    group: 'documents',
+    label: { bg: 'Напомняния', en: 'Reminders' },
+    columns: ['documentId', 'step', 'sentOn'],
+    search: ['documentId'],
+    hidden: [],
+    orderBy: { createdAt: 'desc' },
+  },
+  {
+    model: 'ApiKey',
+    slug: 'api-keys',
+    group: 'accounts',
+    label: { bg: 'API ключове', en: 'API keys' },
+    columns: ['organizationId', 'name', 'prefix', 'scopes', 'lastUsedAt', 'revokedAt', 'createdAt'],
+    search: ['organizationId', 'prefix'],
+    hidden: ['keyHash'],
+    orderBy: { createdAt: 'desc' },
+  },
+  {
+    model: 'ApiIdempotency',
+    slug: 'api-idempotency',
+    group: 'documents',
+    label: { bg: 'Повторени заявки (API)', en: 'Idempotent requests (API)' },
+    columns: ['apiKeyId', 'key', 'documentId', 'createdAt'],
+    search: ['apiKeyId', 'documentId'],
+    hidden: ['requestHash'],
+    orderBy: { createdAt: 'desc' },
+  },
+  {
+    model: 'IncomingInvoice',
+    slug: 'incoming',
+    group: 'documents',
+    label: { bg: 'Входящи е-фактури', en: 'Incoming e-invoices' },
+    columns: [
+      'organizationId',
+      'supplierName',
+      'number',
+      'issueDate',
+      'payableCents',
+      'status',
+      'valid',
+    ],
+    search: ['organizationId', 'number', 'supplierEik'],
+    hidden: ['xml', 'issues'],
+    orderBy: { createdAt: 'desc' },
+  },
+  {
+    model: 'BankStatement',
+    slug: 'bank-statements',
+    group: 'documents',
+    label: { bg: 'Банкови извлечения', en: 'Bank statements' },
+    columns: ['organizationId', 'format', 'lineCount', 'newLines', 'createdAt'],
+    search: ['organizationId'],
+    hidden: ['fileName', 'sha256'],
+    orderBy: { createdAt: 'desc' },
+  },
+  {
+    model: 'BankLine',
+    slug: 'bank-lines',
+    group: 'documents',
+    label: { bg: 'Постъпления от извлечения', en: 'Bank lines' },
+    columns: ['organizationId', 'bookingDate', 'amountCents', 'currency', 'status'],
+    search: ['organizationId'],
+    // Наредителят, сметката и основанието са лични данни на трети лица.
+    hidden: ['counterparty', 'counterpartyIban', 'remittance', 'bankRef', 'uniqueKey'],
+    orderBy: { createdAt: 'desc' },
+  },
+];

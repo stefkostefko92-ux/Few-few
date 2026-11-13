@@ -1,7 +1,11 @@
+import { AUTOMATION_RESOURCES } from './resources-automation.js';
+import { BILLING_RESOURCES } from './resources-billing.js';
+
 /**
  * Регистърът на мастър панела — ВСЯКА таблица от prisma/schema.prisma има ред тук (tests/admin-registry.test.ts
  * пада, ако някоя липсва). Така нов модел се появява в панела автоматично: списък, търсене, преглед на
  * запис и броят му на таблото. Чувствителните полета (`hidden`) никога не стигат до изгледа.
+ * Таблиците на автоматизацията (Етап 2) са в resources-automation.ts.
  */
 export interface AdminResource {
   /** Името на модела в Prisma. */
@@ -25,6 +29,8 @@ export interface AdminResource {
 }
 
 export const ADMIN_RESOURCES: AdminResource[] = [
+  ...BILLING_RESOURCES,
+  ...AUTOMATION_RESOURCES,
   {
     model: 'User',
     slug: 'users',
@@ -126,104 +132,6 @@ export const ADMIN_RESOURCES: AdminResource[] = [
     orderBy: { createdAt: 'desc' },
   },
   {
-    model: 'RecurringInvoice',
-    slug: 'recurring',
-    group: 'documents',
-    label: { bg: 'Повтарящи се фактури', en: 'Recurring invoices' },
-    columns: [
-      'organizationId',
-      'name',
-      'frequency',
-      'status',
-      'nextRunOn',
-      'lastIssuedOn',
-      'failures',
-    ],
-    search: ['organizationId', 'name'],
-    // Шаблонът носи данните на получателя; адресът за писмата е личен.
-    hidden: ['template', 'sendTo'],
-    orderBy: { createdAt: 'desc' },
-  },
-  {
-    model: 'DocumentPayment',
-    slug: 'document-payments',
-    group: 'documents',
-    label: { bg: 'Плащания по документи', en: 'Document payments' },
-    columns: ['documentId', 'amountCents', 'paidOn', 'source', 'createdAt'],
-    search: ['documentId'],
-    hidden: ['note'],
-    orderBy: { createdAt: 'desc' },
-  },
-  {
-    model: 'PaymentReminder',
-    slug: 'reminders',
-    group: 'documents',
-    label: { bg: 'Напомняния', en: 'Reminders' },
-    columns: ['documentId', 'step', 'sentOn'],
-    search: ['documentId'],
-    hidden: [],
-    orderBy: { createdAt: 'desc' },
-  },
-  {
-    model: 'ApiKey',
-    slug: 'api-keys',
-    group: 'accounts',
-    label: { bg: 'API ключове', en: 'API keys' },
-    columns: ['organizationId', 'name', 'prefix', 'scopes', 'lastUsedAt', 'revokedAt', 'createdAt'],
-    search: ['organizationId', 'prefix'],
-    hidden: ['keyHash'],
-    orderBy: { createdAt: 'desc' },
-  },
-  {
-    model: 'ApiIdempotency',
-    slug: 'api-idempotency',
-    group: 'documents',
-    label: { bg: 'Повторени заявки (API)', en: 'Idempotent requests (API)' },
-    columns: ['apiKeyId', 'key', 'documentId', 'createdAt'],
-    search: ['apiKeyId', 'documentId'],
-    hidden: ['requestHash'],
-    orderBy: { createdAt: 'desc' },
-  },
-  {
-    model: 'IncomingInvoice',
-    slug: 'incoming',
-    group: 'documents',
-    label: { bg: 'Входящи е-фактури', en: 'Incoming e-invoices' },
-    columns: [
-      'organizationId',
-      'supplierName',
-      'number',
-      'issueDate',
-      'payableCents',
-      'status',
-      'valid',
-    ],
-    search: ['organizationId', 'number', 'supplierEik'],
-    hidden: ['xml', 'issues'],
-    orderBy: { createdAt: 'desc' },
-  },
-  {
-    model: 'BankStatement',
-    slug: 'bank-statements',
-    group: 'documents',
-    label: { bg: 'Банкови извлечения', en: 'Bank statements' },
-    columns: ['organizationId', 'format', 'lineCount', 'newLines', 'createdAt'],
-    search: ['organizationId'],
-    hidden: ['fileName', 'sha256'],
-    orderBy: { createdAt: 'desc' },
-  },
-  {
-    model: 'BankLine',
-    slug: 'bank-lines',
-    group: 'documents',
-    label: { bg: 'Постъпления от извлечения', en: 'Bank lines' },
-    columns: ['organizationId', 'bookingDate', 'amountCents', 'currency', 'status'],
-    search: ['organizationId'],
-    // Наредителят, сметката и основанието са лични данни на трети лица.
-    hidden: ['counterparty', 'counterpartyIban', 'remittance', 'bankRef', 'uniqueKey'],
-    orderBy: { createdAt: 'desc' },
-  },
-  {
     model: 'InboxEntry',
     slug: 'inbox',
     group: 'documents',
@@ -261,55 +169,6 @@ export const ADMIN_RESOURCES: AdminResource[] = [
     search: ['action', 'targetId', 'actorId'],
     hidden: [],
     orderBy: { id: 'desc' },
-  },
-  {
-    model: 'Plan',
-    slug: 'plans',
-    group: 'billing',
-    label: { bg: 'Планове', en: 'Plans' },
-    columns: ['code', 'nameBg', 'priceMonthlyCents', 'priceYearlyCents', 'isPublic', 'isActive'],
-    search: ['code', 'nameBg', 'nameEn'],
-    hidden: [],
-    orderBy: { sortOrder: 'asc' },
-    editor: 'plan',
-  },
-  {
-    model: 'Subscription',
-    slug: 'subscriptions',
-    group: 'billing',
-    label: { bg: 'Абонаменти', en: 'Subscriptions' },
-    columns: ['organizationId', 'planCode', 'status', 'interval', 'currentPeriodEnd', 'provider'],
-    search: ['organizationId', 'planCode'],
-    hidden: [],
-    orderBy: { updatedAt: 'desc' },
-  },
-  {
-    model: 'Payment',
-    slug: 'payments',
-    group: 'billing',
-    label: { bg: 'Плащания', en: 'Payments' },
-    columns: [
-      'organizationId',
-      'amountCents',
-      'currency',
-      'provider',
-      'status',
-      'paidAt',
-      'createdAt',
-    ],
-    search: ['organizationId', 'providerOrderId'],
-    hidden: [],
-    orderBy: { createdAt: 'desc' },
-  },
-  {
-    model: 'WebhookEvent',
-    slug: 'webhooks',
-    group: 'billing',
-    label: { bg: 'Webhook събития', en: 'Webhook events' },
-    columns: ['provider', 'type', 'eventKey', 'receivedAt', 'processedAt'],
-    search: ['type', 'eventKey'],
-    hidden: [],
-    orderBy: { receivedAt: 'desc' },
   },
   {
     model: 'Setting',

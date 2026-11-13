@@ -41,7 +41,7 @@ export class MemberError extends Error {
   }
 }
 
-type Actor = { userId: string; role: MemberRole };
+export type Actor = { userId: string; role: MemberRole };
 
 export async function inviteMember(input: {
   organizationId: string;
@@ -272,68 +272,5 @@ export async function revokeMemberInvite(input: {
 }
 
 /** Смяна на роля: само на член под своята роля, към роля под своята; не и на себе си. */
-export async function changeMemberRole(input: {
-  organizationId: string;
-  membershipId: string;
-  actor: Actor;
-  role: MemberRole;
-}): Promise<void> {
-  await prisma.$transaction(async (tx) => {
-    await lockOrganization(tx, input.organizationId);
-    const member = await tx.membership.findFirst({
-      where: { id: input.membershipId, organizationId: input.organizationId },
-    });
-    if (!member) throw new MemberError('notFound');
-    if (member.userId === input.actor.userId) throw new MemberError('self');
-    if (
-      !canAssign(input.actor.role, member.role as MemberRole) ||
-      !canAssign(input.actor.role, input.role)
-    ) {
-      throw new MemberError('forbiddenRole');
-    }
-    await tx.membership.update({ where: { id: member.id }, data: { role: input.role } });
-    await audit(tx, {
-      actorId: input.actor.userId,
-      organizationId: input.organizationId,
-      action: 'member.role.changed',
-      targetType: 'Membership',
-      targetId: member.id,
-      details: { from: member.role, to: input.role },
-    });
-  });
-}
 
-/** Махане на член (под своята роля) или напускане (всеки освен собственика). */
-export async function removeMember(input: {
-  organizationId: string;
-  membershipId: string;
-  actor: Actor;
-}): Promise<void> {
-  await prisma.$transaction(async (tx) => {
-    await lockOrganization(tx, input.organizationId);
-    const member = await tx.membership.findFirst({
-      where: { id: input.membershipId, organizationId: input.organizationId },
-    });
-    if (!member) throw new MemberError('notFound');
-    const leaving = member.userId === input.actor.userId;
-    if (
-      leaving ? member.role === 'OWNER' : !canAssign(input.actor.role, member.role as MemberRole)
-    ) {
-      throw new MemberError('forbiddenRole');
-    }
-    await tx.membership.delete({ where: { id: member.id } });
-    // Ключовете за API, създадени от него, спират заедно с членството (SPEC 53).
-    await tx.apiKey.updateMany({
-      where: { organizationId: input.organizationId, createdById: member.userId, revokedAt: null },
-      data: { revokedAt: new Date() },
-    });
-    await audit(tx, {
-      actorId: input.actor.userId,
-      organizationId: input.organizationId,
-      action: leaving ? 'member.left' : 'member.removed',
-      targetType: 'Membership',
-      targetId: member.id,
-      details: { role: member.role },
-    });
-  });
-}
+export { changeMemberRole, removeMember } from './member-roles.js';
