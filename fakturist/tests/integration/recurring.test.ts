@@ -342,3 +342,80 @@ test('напомняния: само включени, +3 и +10 дни, по в
   await http.post(owner, `/app/o/${orgId}/d/${due.id}/plashtane`, { amount: '120', paidOn: today });
   await assert.rejects(composeReminderMail(note.toEmail, note.payload), /платен/);
 });
+
+test('ревю: стари документи без имейл не запушват напомнянията; кредитно известие — без напомняне', async () => {
+  const { externalMailAllowed } = await import('../../src/mail/external-quota.js');
+  const old = new Date(`${addDays(today, -60)}T00:00:00Z`);
+  // 250 стари просрочени фактури без имейл (отпреди полето BT-58) — преди поправката запушваха 200-те места.
+  await prisma.document.createMany({
+    data: Array.from({ length: 250 }, (_, i) => ({
+      organizationId: orgId,
+      typeCode: '380',
+      status: 'ISSUED' as const,
+      number: `90000${String(i).padStart(5, '0')}`,
+      issueDate: old,
+      dueDate: old,
+      input: { buyer: { name: 'Стар клиент' } },
+      buyerName: 'Стар клиент',
+      payableCents: 1000n,
+    })),
+  });
+  const fresh = await issue();
+  await prisma.document.update({
+    where: { id: fresh },
+    data: { dueDate: new Date(`${addDays(today, -4)}T00:00:00Z`) },
+  });
+  const credited = await issue();
+  await prisma.document.update({
+    where: { id: credited },
+    data: { dueDate: new Date(`${addDays(today, -4)}T00:00:00Z`) },
+  });
+  await prisma.document.create({
+    data: {
+      organizationId: orgId,
+      typeCode: '381',
+      status: 'ISSUED',
+      number: '9100000001',
+      issueDate: new Date(`${today}T00:00:00Z`),
+      input: {},
+      buyerName: 'Сладкарница Роза ЕООД',
+      precedingId: credited,
+      payableCents: 12000n,
+    },
+  });
+  const day = at(addDays(today, 40));
+  assert.equal(await runReminders(day), 1);
+  assert.equal(await prisma.paymentReminder.count({ where: { documentId: fresh } }), 2);
+  assert.equal(await prisma.paymentReminder.count({ where: { documentId: credited } }), 0);
+
+  // Дневният таван на писмата навън.
+  await prisma.$transaction(async (tx) => {
+    assert.equal(await externalMailAllowed(tx, orgId), true);
+    await tx.notification.createMany({
+      data: Array.from({ length: 200 }, () => ({
+        organizationId: orgId,
+        kind: 'document.sent',
+        toEmail: 'x@example.test',
+        payload: {},
+      })),
+    });
+    assert.equal(await externalMailAllowed(tx, orgId), false);
+    await tx.notification.deleteMany({ where: { toEmail: 'x@example.test' } });
+  });
+});
+
+test('ревю: честотата не се сменя след първото издаване', async () => {
+  const template = await prisma.recurringInvoice.findUniqueOrThrow({ where: { id: templateId } });
+  assert.ok(template.lastIssuedOn);
+  const res = await http.post(owner, `/app/o/${orgId}/povtaryashti/${templateId}`, {
+    name: template.name,
+    frequency: 'QUARTERLY',
+    nextRunOn: addDays(today, 1),
+    lineName: 'Поддръжка за {период}',
+  });
+  assert.match(res.headers.get('location') ?? '', /err=frequencyLocked/);
+  assert.equal(
+    (await prisma.recurringInvoice.findUniqueOrThrow({ where: { id: templateId } })).frequency,
+    'MONTHLY',
+  );
+});

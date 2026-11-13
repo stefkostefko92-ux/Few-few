@@ -4,6 +4,7 @@ import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { dec, isDecimalText, toCents } from '../einvoice/decimal.js';
 import { sofiaToday } from '../time.js';
+import { isIsoDate } from '../recurring/schedule.js';
 
 /**
  * Плащането по издаден документ (SPEC 52): платен / частично / неплатен по сбора на записаните плащания
@@ -116,7 +117,7 @@ export async function recordPaymentInTx(
     throw new DocumentPaymentError('amount');
   }
   const issued = doc.issueDate.toISOString().slice(0, 10);
-  if (Number.isNaN(Date.parse(input.paidOn)) || input.paidOn > today) {
+  if (!isIsoDate(input.paidOn) || input.paidOn > today) {
     throw new DocumentPaymentError('date');
   }
   // Плащане преди документа е аванс — то се отразява в документа (BT-113), не тук.

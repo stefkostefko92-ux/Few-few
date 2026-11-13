@@ -15,6 +15,7 @@ import {
   type IssueRequest,
 } from '../documents/issue.js';
 import { sofiaToday } from '../time.js';
+import { externalMailAllowed } from '../mail/external-quota.js';
 import { addDays, fillPeriod, nextAfter, periodKey, periodLabel } from './schedule.js';
 
 /**
@@ -109,6 +110,14 @@ async function runOne(id: string, today: string): Promise<Outcome> {
         const run = template.nextRunOn.toISOString().slice(0, 10);
         if (template.endOn && run > template.endOn.toISOString().slice(0, 10)) {
           await tx.recurringInvoice.update({ where: { id }, data: { status: 'ENDED' } });
+          await audit(tx, {
+            actorId: null,
+            organizationId: template.organizationId,
+            action: 'recurring.ended',
+            targetType: 'RecurringInvoice',
+            targetId: id,
+            details: { reason: 'endOn' },
+          });
           return 'ended';
         }
         const allowed = await orgHasFeature(template.organizationId, 'recurring', {
@@ -138,12 +147,15 @@ async function runOne(id: string, today: string): Promise<Outcome> {
             ...(ended ? { status: 'ENDED' } : {}),
           },
         });
-        if (template.sendTo) {
+        const mail =
+          template.sendTo !== null &&
+          (await externalMailAllowed(tx, template.organizationId, new Date()));
+        if (mail) {
           await tx.notification.create({
             data: {
               organizationId: template.organizationId,
               kind: 'document.sent',
-              toEmail: template.sendTo,
+              toEmail: template.sendTo!,
               payload: { documentId: issued.id },
             },
           });
@@ -154,7 +166,12 @@ async function runOne(id: string, today: string): Promise<Outcome> {
           action: 'recurring.issued',
           targetType: 'RecurringInvoice',
           targetId: id,
-          details: { documentId: issued.id, period },
+          details: {
+            documentId: issued.id,
+            period,
+            ...(template.sendTo && !mail ? { mailSkipped: 'dailyLimit' } : {}),
+            ...(ended ? { ended: true } : {}),
+          },
         });
         return 'issued';
       },
@@ -172,12 +189,23 @@ async function runOne(id: string, today: string): Promise<Outcome> {
 }
 
 async function advancePastToday(id: string, today: string): Promise<void> {
-  const template = await prisma.recurringInvoice.findUniqueOrThrow({ where: { id } });
-  const run = template.nextRunOn.toISOString().slice(0, 10);
-  const next = nextAfter(run, template.frequency, template.anchorDay, today);
-  await prisma.recurringInvoice.updateMany({
-    where: { id, nextRunOn: template.nextRunOn },
-    data: { nextRunOn: new Date(`${next}T00:00:00Z`) },
+  await prisma.$transaction(async (tx) => {
+    const template = await tx.recurringInvoice.findUniqueOrThrow({ where: { id } });
+    const run = template.nextRunOn.toISOString().slice(0, 10);
+    const next = nextAfter(run, template.frequency, template.anchorDay, today);
+    const moved = await tx.recurringInvoice.updateMany({
+      where: { id, nextRunOn: template.nextRunOn },
+      data: { nextRunOn: new Date(`${next}T00:00:00Z`) },
+    });
+    if (moved.count !== 1) return;
+    await audit(tx, {
+      actorId: null,
+      organizationId: template.organizationId,
+      action: 'recurring.skipped',
+      targetType: 'RecurringInvoice',
+      targetId: id,
+      details: { period: periodKey(run, template.frequency), next },
+    });
   });
 }
 

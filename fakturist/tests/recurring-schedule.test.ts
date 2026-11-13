@@ -46,3 +46,12 @@ test('{период} в текста става името на периода; 
   );
   assert.equal(fillPeriod('{x} без промяна', 'ноември 2026'), '{x} без промяна');
 });
+
+test('точна дата: 30 февруари не минава', async () => {
+  const { isIsoDate } = await import('../src/recurring/schedule.js');
+  assert.equal(isIsoDate('2026-02-28'), true);
+  assert.equal(isIsoDate('2028-02-29'), true);
+  assert.equal(isIsoDate('2026-02-30'), false);
+  assert.equal(isIsoDate('2026-13-01'), false);
+  assert.equal(isIsoDate('26-02-01'), false);
+});

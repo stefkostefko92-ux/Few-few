@@ -6,7 +6,7 @@ import type { OrgAccess } from '../auth/guards.js';
 import { orgHasFeature } from '../billing/entitlements.js';
 import { InvoiceInputSchema } from '../einvoice/index.js';
 import { sofiaToday } from '../time.js';
-import { addDays, nextAfter } from './schedule.js';
+import { addDays, isIsoDate, nextAfter } from './schedule.js';
 
 /**
  * Повтарящи се фактури (SPEC 51): шаблонът се прави от издадена фактура (380) — получателят, редовете,
@@ -14,10 +14,16 @@ import { addDays, nextAfter } from './schedule.js';
  * (`recurring`), само с правото да издава. Работникът е в `run.ts`.
  */
 export class RecurringError extends Error {
-  constructor(readonly code: 'feature' | 'notInvoice' | 'notFound' | 'invalid' | 'state') {
+  constructor(
+    readonly code:
+      'feature' | 'notInvoice' | 'notFound' | 'invalid' | 'state' | 'frequencyLocked' | 'limit',
+  ) {
     super(code);
   }
 }
+
+/** Таван на неприключените шаблони на фирма (злоупотреба с писмата навън). */
+export const MAX_OPEN_TEMPLATES = 100;
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const optional = <T extends z.ZodType>(schema: T) =>
@@ -43,10 +49,10 @@ export type RecurringForm = z.infer<typeof RecurringFormSchema>;
 
 /** Проверка на датите спрямо днес: първото издаване не е в миналото, краят е след него. */
 function checkDates(form: RecurringForm, today: string): void {
-  if (Number.isNaN(Date.parse(form.nextRunOn)) || form.nextRunOn < today) {
+  if (!isIsoDate(form.nextRunOn) || form.nextRunOn < today) {
     throw new RecurringError('invalid');
   }
-  if (form.endOn && (Number.isNaN(Date.parse(form.endOn)) || form.endOn < form.nextRunOn)) {
+  if (form.endOn && (!isIsoDate(form.endOn) || form.endOn < form.nextRunOn)) {
     throw new RecurringError('invalid');
   }
 }
@@ -116,6 +122,12 @@ export async function createRecurring(
   });
   if (!doc?.seriesId) throw new RecurringError('notInvoice');
   return prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`
+      SELECT "id" FROM "Organization" WHERE "id" = ${access.organizationId} FOR NO KEY UPDATE`;
+    const open = await tx.recurringInvoice.count({
+      where: { organizationId: access.organizationId, status: { not: 'ENDED' } },
+    });
+    if (open >= MAX_OPEN_TEMPLATES) throw new RecurringError('limit');
     const created = await tx.recurringInvoice.create({
       data: {
         organizationId: access.organizationId,
@@ -169,6 +181,11 @@ export async function updateRecurring(
   const current = await findRecurring(access, id);
   if (current.status === 'ENDED') throw new RecurringError('state');
   checkDates(form, today);
+  // Ключът на периода зависи от честотата („2026-11“ срещу „2026-Q4“): смяна след издаване би
+  // фактурирала същия месец втори път. Друга честота — нов шаблон.
+  if (current.lastIssuedOn && form.frequency !== current.frequency) {
+    throw new RecurringError('frequencyLocked');
+  }
   await prisma.$transaction(async (tx) => {
     await tx.recurringInvoice.update({
       where: { id: current.id },

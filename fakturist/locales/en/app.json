@@ -538,7 +538,9 @@
       "feature": "This feature is in the paid plans.",
       "notInvoice": "Only an issued invoice can be repeated.",
       "notFound": "No such recurring invoice.",
-      "state": "The action is not possible in this state."
+      "state": "The action is not possible in this state.",
+      "frequencyLocked": "The frequency cannot change after the first issue (it would bill the same period twice). End this one and create a new one.",
+      "limit": "The limit of 100 open recurring invoices is reached."
     },
     "errors": {
       "rejected": "the last issue failed the checks",

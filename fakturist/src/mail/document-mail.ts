@@ -94,8 +94,11 @@ export async function composeDocumentSentMail(
 export async function composeReminderMail(toEmail: string, payload: unknown): Promise<MailMessage> {
   const { documentId } = ReminderPayload.parse(payload);
   const doc = await load(documentId);
-  if (doc.status !== 'ISSUED' || doc.paymentState === 'PAID') {
-    throw new Error('Документът е платен или анулиран — без напомняне');
+  const credited = await prisma.document.count({
+    where: { precedingId: doc.id, typeCode: '381', status: 'ISSUED' },
+  });
+  if (doc.status !== 'ISSUED' || doc.paymentState === 'PAID' || credited > 0) {
+    throw new Error('Документът е платен, анулиран или с кредитно известие — без напомняне');
   }
   const number = doc.number ?? '';
   const signature = (await setting('documents.signature')) || BRAND.signature;
