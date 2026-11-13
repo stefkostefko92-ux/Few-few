@@ -11,6 +11,8 @@ import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import { useT } from "../contexts/I18nContext";
 import PageHeader from "../components/PageHeader";
+import { PremiumLockCard } from "../components/PremiumBadge";
+import { usePremium } from "../hooks/usePremium";
 import { useToast } from "../contexts/ToastContext";
 
 const defaultForm = () => ({
@@ -28,6 +30,7 @@ const defaultForm = () => ({
 export default function WebhooksPage() {
   const { t } = useT();
   const { serverId } = useParams();
+  const { isPremium, isLoading: tierLoading } = usePremium();
   const qc = useQueryClient();
   const [editing, setEditing] = useState(null); // null | "new" | id
   const [form, setForm] = useState(defaultForm());
@@ -113,12 +116,20 @@ export default function WebhooksPage() {
       <PageHeader
         title={t("webhooks.title")}
         subtitle={t("webhooks.subtitle")}
-        actions={(
+        actions={isPremium ? (
           <button onClick={openNew} className="cs-btn-primary cs-btn-sm flex items-center gap-2">
             <Plus className="w-4 h-4" aria-hidden="true" /> {t("webhooks.new")}
           </button>
-        )}
+        ) : null}
       />
+
+      {/* Създаването и редакцията са Premium (бекендът отказва с 403). Старият
+          раздел в „Автоматизация“ го казваше; тази страница показваше бутон,
+          който на Free водеше до грешка. Съществуващите webhooks остават
+          видими, за да могат да се изтрият след сваляне на плана. */}
+      {!tierLoading && !isPremium && (
+        <div className="mb-6"><PremiumLockCard feature={t("auto.wh.title")} description={t("auto.wh.desc")} /></div>
+      )}
 
       {isLoading && <div className="cs-card h-32 animate-pulse" />}
 
@@ -128,7 +139,7 @@ export default function WebhooksPage() {
         </div>
       )}
 
-      {!isLoading && !isError && hooks.length === 0 && (
+      {!isLoading && !isError && hooks.length === 0 && isPremium && (
         <EmptyState
           icon={WebhookIcon}
           title={t("webhooks.emptyTitle")}

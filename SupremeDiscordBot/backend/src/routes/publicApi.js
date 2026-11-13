@@ -20,6 +20,7 @@ export { VALID_SCOPES } from "../lib/apiKeyAuth.js";
 import { VALID_SCOPES } from "../lib/apiKeyAuth.js";
 import { bruteForceGuard, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 import { ipKey } from "../lib/ipKey.js";
+import { parsePaging, parseEnum, parseDate, parseExpiresInDays, publicTicket } from "../lib/publicApiQuery.js";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // API KEY MANAGEMENT (dashboard-authed)
@@ -50,6 +51,8 @@ mgmt.post("/:serverId/api-keys", requireServerAdmin, requirePremium("integration
   }
   const invalid = scopes.filter((s) => !VALID_SCOPES.includes(s));
   if (invalid.length) return res.status(400).json({ error: `Invalid scopes: ${invalid.join(", ")}` });
+  const exp = parseExpiresInDays(expiresInDays);
+  if (!exp.ok) return res.status(400).json({ error: exp.error });
 
   try {
     // Generate key: bpk_live_<32 random chars>
@@ -58,8 +61,8 @@ mgmt.post("/:serverId/api-keys", requireServerAdmin, requirePremium("integration
     const keyHash = crypto.createHash("sha256").update(fullKey).digest("hex");
     const keyPrefix = fullKey.slice(0, 20); // "bpk_live_abc123..." preview
 
-    const expiresAt = expiresInDays
-      ? new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000)
+    const expiresAt = exp.value
+      ? new Date(Date.now() + exp.value * 24 * 60 * 60 * 1000)
       : null;
 
     const apiKey = await prisma.apiKey.create({
@@ -209,12 +212,20 @@ function requireScope(scope) {
 // преди който и да е лимитер да се е изпълнил → налучкването на API ключове
 // беше НАПЪЛНО НЕДРОСЕЛИРАНО. Двата слоя се допълват: този пази ВХОДА по IP,
 // долният пази квотата per-key.
+//
+// Брои САМО неуспешната автентикация (401). Преди броеше всяка заявка и така
+// сам ограничаваше валидните клиенти до 60/мин на адрес — обещаните „300 в
+// минута на ключ“ (таблото, началната страница) бяха недостижими от един адрес
+// (сверка на Летописеца с кода, 13.11.2026). Блокираните заявки не стигат до
+// автентикацията, затова прагът остава затворен до края на прозореца.
 const preAuthLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 60,
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => ipKey(req.ip),
+  skipSuccessfulRequests: true,
+  requestWasSuccessful: (_req, res) => res.statusCode !== 401,
   message: { error: "Too many requests — please slow down" },
 });
 
@@ -250,15 +261,19 @@ api.get("/me", async (req, res, next) => {
 // GET /public/v1/tickets
 api.get("/tickets", requireScope("tickets:read"), async (req, res, next) => {
   try {
-    const { status, limit = 20, offset = 0 } = req.query;
+    const paging = parsePaging(req.query);
+    if (!paging.ok) return res.status(400).json({ error: paging.error });
+    const st = parseEnum(req.query.status, ["OPEN", "CLAIMED", "CLOSED", "ARCHIVED"]);
+    if (!st.ok) return res.status(400).json({ error: st.error });
+    const { limit, offset } = paging;
     const where = { serverId: req.serverId };
-    if (status) where.status = String(status);
+    if (st.value) where.status = st.value;
 
     const [items, total] = await Promise.all([
       prisma.ticket.findMany({
         where,
-        take: Math.min(Number(limit), 100),
-        skip: Number(offset),
+        take: limit,
+        skip: offset,
         orderBy: { createdAt: "desc" },
         select: {
           id: true, panelId: true, creatorId: true, channelId: true,
@@ -268,7 +283,7 @@ api.get("/tickets", requireScope("tickets:read"), async (req, res, next) => {
       }),
       prisma.ticket.count({ where }),
     ]);
-    res.json({ data: items, total, limit: Number(limit), offset: Number(offset) });
+    res.json({ data: items, total, limit, offset });
   } catch (err) { next(err); }
 });
 
@@ -279,7 +294,7 @@ api.get("/tickets/:id", requireScope("tickets:read"), async (req, res, next) => 
       where: { id: req.params.id, serverId: req.serverId },
     });
     if (!ticket) return res.status(404).json({ error: "Not found" });
-    res.json(ticket);
+    res.json(publicTicket(ticket));
   } catch (err) { next(err); }
 });
 
@@ -297,27 +312,34 @@ api.get("/forms", requireScope("forms:read"), async (req, res, next) => {
 // GET /public/v1/applications
 api.get("/applications", requireScope("applications:read"), async (req, res, next) => {
   try {
-    const { status, limit = 20, offset = 0 } = req.query;
+    const paging = parsePaging(req.query);
+    if (!paging.ok) return res.status(400).json({ error: paging.error });
+    const st = parseEnum(req.query.status, ["PENDING", "APPROVED", "DENIED", "INTERVIEW"]);
+    if (!st.ok) return res.status(400).json({ error: st.error });
+    const { limit, offset } = paging;
     const where = { serverId: req.serverId };
-    if (status) where.status = String(status);
+    if (st.value) where.status = st.value;
     const [items, total] = await Promise.all([
       prisma.application.findMany({
-        where, take: Math.min(Number(limit), 100), skip: Number(offset),
+        where, take: limit, skip: offset,
         orderBy: { createdAt: "desc" },
       }),
       prisma.application.count({ where }),
     ]);
-    res.json({ data: items, total, limit: Number(limit), offset: Number(offset) });
+    res.json({ data: items, total, limit, offset });
   } catch (err) { next(err); }
 });
 
 // GET /public/v1/analytics/daily?from=2026-04-01&to=2026-04-30
 api.get("/analytics/daily", requireScope("analytics:read"), async (req, res, next) => {
   try {
-    const { from, to } = req.query;
+    const f = parseDate(req.query.from, "from");
+    if (!f.ok) return res.status(400).json({ error: f.error });
+    const t = parseDate(req.query.to, "to");
+    if (!t.ok) return res.status(400).json({ error: t.error });
     const where = { serverId: req.serverId };
-    if (from) where.date = { ...where.date, gte: new Date(String(from)) };
-    if (to)   where.date = { ...where.date, lte: new Date(String(to)) };
+    if (f.value) where.date = { ...where.date, gte: f.value };
+    if (t.value) where.date = { ...where.date, lte: t.value };
 
     const metrics = await prisma.dailyMetric.findMany({
       where,

@@ -6,6 +6,7 @@ import {
   EQ_GEARED,
   EQ_GEARLESS,
   EQ_OLEO,
+  GEAT,
   MASTECH_NG120,
   MASTECH_QI,
   MOVILIFT,
@@ -37,10 +38,10 @@ import {
  * Mastech NG120 и QI Touch, `eg`, `el` и `eo` — таблото Elettroquadri geared, gearless и oleodinamico,
  * `pa` — листът за аргано, `sg` и `so` — листът на 2SG (окачванията при автоматични врати, операторът при
  * автоматични и полуавтоматични), `ar` — AMI 100 Mono RTBS, `dp` — таблото DMG
- * (Pitagora 4.0), `db` — бутониерите DMG (QF Fixtures).
+ * (Pitagora 4.0), `db` — бутониерите DMG (QF Fixtures), `gt` — таблото GEAT (собственикът, 12 ноември 2026).
  */
 export type Prefisso =
-  'oq' | 'om' | 'dp' | 'mn' | 'mq' | 'eg' | 'el' | 'eo' | 'pa' | 'sg' | 'so' | 'ar' | 'db';
+  'oq' | 'om' | 'dp' | 'mn' | 'mq' | 'eg' | 'el' | 'eo' | 'gt' | 'pa' | 'sg' | 'so' | 'ar' | 'db';
 
 export interface ModuloSlot {
   /** Марката, при която модулът се отваря; без нея — при всяка. */
@@ -139,6 +140,14 @@ export const SLOTS: readonly ModuloSlot[] = [
     prefix: 'eo',
     path: 'ordine-quadro-elettroquadri-oleodinamico',
     modulo: EQ_OLEO,
+  },
+  {
+    marca: { field: 'quadroMarca', value: 'GEAT' },
+    column: 'ordineQuadro',
+    question: 'quadroOrdine',
+    prefix: 'gt',
+    path: 'ordine-quadro-geat',
+    modulo: GEAT,
   },
   {
     column: 'preventivoArgano',

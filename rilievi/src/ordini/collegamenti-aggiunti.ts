@@ -20,6 +20,7 @@ export const AGGIUNTI: readonly Collegamento[] = [
       { luogo: 'eg', campo: 'nServizi' },
       { luogo: 'el', campo: 'nServizi' },
       { luogo: 'eo', campo: 'nServizi' },
+      { luogo: 'gt', campo: 'nServizi' },
     ],
   },
   {
@@ -44,6 +45,7 @@ export const AGGIUNTI: readonly Collegamento[] = [
       { luogo: 'el', campo: 'motoreKw' },
       { luogo: 'eo', campo: 'motoreKw' },
       { luogo: 'pa', campo: 'potenzaKw' },
+      { luogo: 'gt', campo: 'motoreKw' },
     ],
   },
   {
@@ -83,6 +85,7 @@ export const AGGIUNTI: readonly Collegamento[] = [
       { luogo: 'mq', campo: 'tensionePattino' },
       { luogo: 'eg', campo: 'pattinoV' },
       { luogo: 'eo', campo: 'pattinoV' },
+      { luogo: 'gt', campo: 'pattinoTensione' },
     ],
   },
   {

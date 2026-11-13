@@ -22,10 +22,13 @@ import {
   setAziendaLogo,
 } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
+import { setPreventiviAttivi } from '../preventivi/azienda.js';
+import { LIVELLI, statoAbbonamento } from '../abbonamenti/regole.js';
+import { ultimoGiornoDi } from '../abbonamenti/servizio.js';
 
 /**
  * Фирмите — само за MASTER (`aziende:manage`): създаване с име и лого, ново име, ново лого или без
- * лого, функциите по избор (скицникът), деактивиране. Логото се показва на хората на фирмата (листът за
+ * лого, функциите по избор (офертите), деактивиране. Логото се показва на хората на фирмата (листът за
  * печат) и на MASTER.
  */
 export const aziendeRouter: Router = Router();
@@ -122,6 +125,11 @@ export async function renderShow(
     maxKb: LOGO_MAX_BYTES / 1024,
     eliminaIl: azienda.deactivatedAt ? eliminazioneIl(azienda.deactivatedAt) : null,
     giorniPrimaEliminazione: GIORNI_PRIMA_DELL_ELIMINAZIONE,
+    abbonamento: {
+      stato: statoAbbonamento(azienda, new Date()),
+      ultimoGiorno: ultimoGiornoDi(azienda.abbonamentoFino),
+      livelli: Object.entries(LIVELLI).map(([n, max]) => ({ n: Number(n), max })),
+    },
   });
 }
 
@@ -163,6 +171,16 @@ aziendeRouter.post('/aziende/:id/stato', manage, requireCsrf, async (req, res) =
   if (!(await setAziendaActive(principalOf(req).user, id, active))) return notFound(req, res);
   setFlash(res, 'ok', active ? 'flash.aziendaReactivated' : 'flash.aziendaDeactivated');
   res.redirect(303, `/aziende/${encodeURIComponent(id)}`);
+});
+
+/** Офертите на фирмата — включва и изключва ги само MASTER (C1); нищо не се трие. */
+aziendeRouter.post('/aziende/:id/preventivi', manage, requireCsrf, async (req, res) => {
+  const id = String(req.params.id);
+  const attivi = (req.body as Record<string, unknown>).attivi === '1';
+  if (!isAziendaId(id) || !(await setPreventiviAttivi(principalOf(req).user, id, attivi)))
+    return notFound(req, res);
+  setFlash(res, 'ok', attivi ? 'aziende.preventivi.flashOn' : 'aziende.preventivi.flashOff');
+  res.redirect(303, `/aziende/${encodeURIComponent(id)}#h-preventivi`);
 });
 
 /**

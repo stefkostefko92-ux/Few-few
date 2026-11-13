@@ -71,6 +71,95 @@ export const AUDIT_ACTIONS = [
   // Условията за услугата (ADMIN за фирмата) и правилата за ползване (всеки) — src/legale/.
   'CONDIZIONI_ACCETTATE',
   'REGOLE_ACCETTATE',
+  // Конзолата на MASTER (src/master/): договорът поискан наново, съобщенията до фирмите, проверката на
+  // документ по кода или файла.
+  'CONDIZIONI_RICHIESTE',
+  'COMUNICAZIONE_CREATE',
+  'COMUNICAZIONE_STOP',
+  'PROVA_VERIFICA',
+  // Смяната на доставчика (Data Act; src/aziende/cambio.ts) и регистърът на нарушенията (чл. 33(5) GDPR).
+  'AZIENDA_CAMBIO_RICHIESTO',
+  'AZIENDA_CAMBIO_PROROGATO',
+  'AZIENDA_CAMBIO_ANNULLATO',
+  'AZIENDA_CAMBIO_ESITO',
+  'AZIENDA_CAMBIO_CONCLUSO',
+  'VIOLAZIONE_CREATE',
+  'VIOLAZIONE_UPDATE',
+  'CONDIZIONI_ANNUNCIATE',
+  // Информацията по чл. 13 на страницата на подписа (legale/informativa.ts).
+  'AZIENDA_INFORMATIVA',
+  // Двете копия на подписания протокол по имейл до подписалия (routes/firma-copia.ts).
+  'VERBALE_EMAIL',
+  // Одобрението на картите (schede/approvazione.ts), адресникът на доставчиците и поръчките (ordini/invio.ts).
+  'SCHEDA_INVIATA',
+  'SCHEDA_APPROVATA',
+  'SCHEDA_RESPINTA',
+  'AZIENDA_APPROVAZIONE',
+  'FORNITORE_CREATE',
+  'FORNITORE_DELETE',
+  'ORDINE_INVIATO',
+  'ORDINE_STATO',
+  // „Buono di lavoro“ (src/buoni/): листът, подписите му (броят, без щрихите), писмото, кодът и клаузата.
+  'BUONO_CREATE',
+  'BUONO_UPDATE',
+  'BUONO_FIRME',
+  'BUONO_DELETE',
+  'BUONO_EMAIL',
+  'AZIENDA_BUONO',
+  // Офертите (src/preventivi/): офертата (без сумите и клиента), състоянието, писмото (без адреса),
+  // ценоразписът (броят), включването от MASTER и условията на фирмата (без текста).
+  'PREVENTIVO_CREATE',
+  'PREVENTIVO_UPDATE',
+  'PREVENTIVO_STATO',
+  'PREVENTIVO_DELETE',
+  'PREVENTIVO_EMAIL',
+  'LISTINO_UPDATE',
+  'AZIENDA_PREVENTIVI',
+  'AZIENDA_PREVENTIVI_CONDIZIONI',
+  // Анотациите върху снимка на картата (src/allegati/annotazioni.ts): само броят на елементите.
+  'ALLEGATO_ANNOTAZIONI',
+  // Съобщенията на /stato (src/stato/avvisi.ts): видът, ново ли е, затворено ли е — без текста.
+  'STATO_AVVISO',
+  // Ключовете за API (src/api/chiavi.ts): кой ред — без ключа.
+  'API_CHIAVE_CREATA',
+  'API_CHIAVE_REVOCATA',
+  // Входът с доставчика на самоличност (D1): свързването и откачането (доставчикът, без самоличността)
+  // и настройката на фирмата (включено ли е — без директорията и домейна).
+  'ACCESSO_ESTERNO_COLLEGATO',
+  'ACCESSO_ESTERNO_SCOLLEGATO',
+  'AZIENDA_ACCESSO_ESTERNO',
+  // Пощата на портала от конзолата на MASTER (src/mail/posta.ts): порт и нов ли е ключът — без ключа,
+  // логина и сървъра; пробното писмо — само изходът.
+  'POSTA_IMPOSTATA',
+  'POSTA_DISATTIVATA',
+  'POSTA_PROVA',
+  // Абонаментът на фирмата (src/abbonamenti/): нивото и денят (на ръка от MASTER или от плащане), без суми.
+  'AZIENDA_ABBONAMENTO',
+  // Плащанията (src/pagamenti/): настройката (без ключове), плановете (нивото, срокът, цената), плащането
+  // (започнато, завършено, неуспешно — сумата в центове, без данни на картата).
+  'PAGAMENTI_IMPOSTATI',
+  'PIANO_CREATO',
+  'PIANO_MODIFICATO',
+  'PAGAMENTO_AVVIATO',
+  'PAGAMENTO_COMPLETATO',
+  'PAGAMENTO_FALLITO',
+  'PAGAMENTO_DA_VERIFICARE',
+  'PAGAMENTO_RIMBORSATO',
+  'PAGAMENTO_FATTURATO',
+  'NOTA_CREDITO_EMESSA',
+  // Връщането през Revolut (src/pagamenti/rimborso-revolut.ts): наредено (сумата, на колко поръчки) и неуспешно
+  // (кодът); спорът за плащане (chargeback) — само състоянието.
+  'PAGAMENTO_RIMBORSO_AVVIATO',
+  'PAGAMENTO_RIMBORSO_FALLITO',
+  'PAGAMENTO_CONTESTATO',
+  // Алармите към Discord (src/allarmi/): включени ли са и нов ли е адресът — без адреса; пробата — само изходът.
+  'ALLARMI_IMPOSTATI',
+  'ALLARMI_PROVA',
+  // Сигналите за незаконно съдържание (src/segnalazioni/; чл. 16–18 Рег. (ЕС) 2022/2065): получен, решен
+  // (изходът), преглед — без текста, без името и имейла на подателя.
+  'SEGNALAZIONE_RICEVUTA',
+  'SEGNALAZIONE_DECISA',
+  'SEGNALAZIONE_RIESAME',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
@@ -92,7 +181,19 @@ export interface AuditEntry {
     | 'intervento'
     | 'cartello'
     | 'calcolo'
-    | 'verbale';
+    | 'verbale'
+    | 'comunicazione'
+    | 'violazione'
+    | 'fornitore'
+    | 'ordine'
+    | 'buono'
+    | 'preventivo'
+    | 'avviso'
+    | 'posta'
+    | 'pagamento'
+    | 'allarmi'
+    | 'segnalazione'
+    | 'piano';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */
   meta?: Prisma.InputJsonObject;

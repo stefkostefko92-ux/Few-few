@@ -3,6 +3,7 @@ import { isPartial } from '../auth/guards.js';
 import { daAccettare, inAttesa } from '../legale/stato.js';
 import { errorMessage, logger } from '../logger.js';
 import { pubblicazioni } from './registro.js';
+import { vociAttive } from './attive.js';
 import { MAX_POPUP, nonLette, type VoceNovita } from './voci.js';
 
 /** Какво носи прозорецът на новините (views/partials/novita.ejs). */
@@ -34,7 +35,7 @@ export async function novitaLocals(req: Request, res: Response, next: NextFuncti
     return;
   }
   try {
-    const voci = nonLette(await pubblicazioni(), lette);
+    const voci = nonLette(await pubblicazioni(), lette, vociAttive());
     if (voci.length > 0) {
       res.locals.novitaPopup = {
         voci: voci.slice(0, MAX_POPUP),

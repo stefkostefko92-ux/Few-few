@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle, AlertTriangle, Server, Database, Bot } from "luc
 import { getStatus } from "../api";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo from "../components/Seo";
+import { SUPPORT_URL } from "../lib/support";
 
 export default function StatusPage() {
   const { data, isLoading, refetch } = useQuery({
@@ -99,7 +100,7 @@ export default function StatusPage() {
           <p>Infrastructure: Hetzner (Germany) · EU-only data residency</p>
           <p>Status checks refresh every 30 seconds · Cache: 30s</p>
           <p className="pt-2">
-            Report an issue: <a href="https://discord.gg/wpCRpy8B" className="text-cs-cyan underline">Discord support</a>
+            Report an issue: <a href={SUPPORT_URL} className="text-cs-cyan underline">Discord support</a>
           </p>
         </div>
       </div>

@@ -68,6 +68,53 @@ const schema = z
     SMTP_USER: optionalText(),
     SMTP_PASS: optionalText(),
     MAIL_FROM: z.string().min(3).default('Rilievi Impianti <no-reply@carbonstealth.eu>'),
+    /**
+     * Входът с доставчика на самоличност на клиента (D1, чл. 4.6) — по избор: без двете стойности на един
+     * доставчик бутонът и настройката му ги няма. Регистрацията на приложението (Microsoft Entra — много
+     * директории; Google Cloud — уеб клиент) с адрес за връщане `<PUBLIC_BASE_URL>/accesso/esterno/<доставчик>/ritorno`.
+     * AUTHORITY/ISSUER се сменят само за тестове (в продукция — само https).
+     */
+    OIDC_MICROSOFT_CLIENT_ID: optionalText(),
+    OIDC_MICROSOFT_CLIENT_SECRET: optionalText(),
+    OIDC_MICROSOFT_AUTHORITY: z
+      .string()
+      .url()
+      .default('https://login.microsoftonline.com')
+      .transform((url) => url.replace(/\/+$/, '')),
+    OIDC_GOOGLE_CLIENT_ID: optionalText(),
+    OIDC_GOOGLE_CLIENT_SECRET: optionalText(),
+    OIDC_GOOGLE_ISSUER: z
+      .string()
+      .url()
+      .default('https://accounts.google.com')
+      .transform((url) => url.replace(/\/+$/, '')),
+    /**
+     * Само за тестовете: адресът на фалшивия Revolut (src/pagamenti/config.ts). В продукция не се чете — там
+     * адресът идва от средата, избрана в конзолата (sandbox или продукция на Revolut).
+     */
+    REVOLUT_API_BASE: z
+      .string()
+      .url()
+      .optional()
+      .transform((url) => url?.replace(/\/+$/, '')),
+    /**
+     * Само за тестовете и машината за разработка: адресът на фалшивия VIES (src/pagamenti/vies.ts). В продукция
+     * не се чете — там се пита самата услуга на Европейската комисия.
+     */
+    VIES_API_BASE: z
+      .string()
+      .url()
+      .optional()
+      .transform((url) => url?.replace(/\/+$/, '')),
+    /**
+     * Само за тестовете: адресът на фалшивия Discord (src/allarmi/discord.ts). В продукция не се чете — алармите
+     * отиват само на discord.com, на адреса на webhook-а от конзолата.
+     */
+    DISCORD_API_BASE: z
+      .string()
+      .url()
+      .optional()
+      .transform((url) => url?.replace(/\/+$/, '')),
     /** Шрифтовете за PDF (DejaVu Sans — кирилица и италиански ударения). В образа: fonts-dejavu-core. */
     PDF_FONT_DIR: z.string().min(1).default('/usr/share/fonts/truetype/dejavu'),
     /** Срок за пазене на одита в дни (по подразбиране 2 години). */
@@ -116,9 +163,4 @@ export function mediaConfig(): MediaConfig {
 
 export function isProduction(): boolean {
   return config().NODE_ENV === 'production';
-}
-
-/** Има ли поща — от това зависи дали поканата тръгва по имейл, или само се показва за копиране. */
-export function mailEnabled(): boolean {
-  return Boolean(config().SMTP_HOST);
 }

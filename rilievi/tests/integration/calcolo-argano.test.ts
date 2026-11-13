@@ -84,7 +84,7 @@ describe('the machine calculation of a scheda', () => {
     );
 
     const form = (await browser.get(pagina(scheda.id))).body;
-    assert.match(form, /Dati proposti dal modulo rilievi dati argani/);
+    assert.match(form, /Dati proposti dal modulo «Dati argano»/);
     assert.match(form, /id="f-portata"[^>]*value="480"/);
     assert.match(form, /id="f-massaCabina"[^>]*value="600"/);
     assert.match(form, /<option value="1:2" selected>/);

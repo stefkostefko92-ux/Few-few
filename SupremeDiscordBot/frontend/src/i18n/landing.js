@@ -10,7 +10,7 @@ export const LANDING_TRANSLATIONS = {
     langName: "Български",
     title: "Supreme Bot — Discord бот за тикети, форми и кандидатури | Carbon Stealth",
     description:
-      "Supreme Bot е цялостна Discord SaaS платформа: тикет система, форми за кандидатстване, верификация, анкети, раздавания и AI отговори — управлявани от модерен уеб панел. ЕС хостинг, GDPR съвместимост.",
+      "Supreme Bot е цялостна Discord SaaS платформа: тикет система, форми за кандидатстване, верификация, анкети, раздавания и AI отговори — управлявани от модерен уеб панел. ЕС хостинг, експорт и изтриване на данните от таблото.",
     features: [
       { key: "ticket", title: "Тикет система", desc: "Неограничени тикети с панели, поемане, ескалация, преименуване, нива на приоритет, двустепенно затваряне и пълни архиви. Екипът може да отговаря директно от таблото." },
       { key: "forms", title: "Форми и кандидатури", desc: "Многостъпкови въпросници с валидация и разклоняване, преглед с причина за одобрение/отказ и личен канал за разговор с кандидата преди решението — пълна замяна на Appy.bot." },
@@ -90,7 +90,7 @@ export const LANDING_TRANSLATIONS = {
     langName: "Deutsch",
     title: "Supreme Bot — Discord-Bot für Tickets, Formulare & Bewerbungen | Carbon Stealth",
     description:
-      "Supreme Bot ist die All-in-One Discord-SaaS-Plattform: Ticketsystem, Bewerbungsformulare, Verifizierung, Umfragen, Gewinnspiele und KI-Antworten — verwaltet über ein modernes Web-Dashboard. EU-Hosting, DSGVO-konform.",
+      "Supreme Bot ist die All-in-One Discord-SaaS-Plattform: Ticketsystem, Bewerbungsformulare, Verifizierung, Umfragen, Gewinnspiele und KI-Antworten — verwaltet über ein modernes Web-Dashboard. EU-Hosting, Datenexport und -löschung im Dashboard.",
     features: [
       { key: "ticket", title: "Ticketsystem", desc: "Unbegrenzte Tickets über Button-Panels — übernehmen, eskalieren, umbenennen, Prioritätsstufen, zweistufiges Schließen, vollständige Transkripte. Das Team antwortet direkt aus dem Dashboard." },
       { key: "forms", title: "Formulare & Bewerbungen", desc: "Mehrstufige Fragebögen mit Validierung und Verzweigung, Prüfung mit Begründung bei Zusage/Absage und ein privater Kanal mit der bewerbenden Person vor der Entscheidung — ersetzt Appy.bot vollständig." },
@@ -170,7 +170,7 @@ export const LANDING_TRANSLATIONS = {
     langName: "Español",
     title: "Supreme Bot — Bot de Discord para tickets, formularios y solicitudes | Carbon Stealth",
     description:
-      "Supreme Bot es la plataforma SaaS todo en uno para Discord: sistema de tickets, formularios de solicitud, verificación, encuestas, sorteos y respuestas con IA — gestionado desde un panel web moderno. Alojamiento en la UE, cumplimiento RGPD.",
+      "Supreme Bot es la plataforma SaaS todo en uno para Discord: sistema de tickets, formularios de solicitud, verificación, encuestas, sorteos y respuestas con IA — gestionado desde un panel web moderno. Alojamiento en la UE, exportación y borrado de datos desde el panel.",
     features: [
       { key: "ticket", title: "Sistema de tickets", desc: "Tickets ilimitados con paneles de botones: reclamar, escalar, renombrar, niveles de prioridad, cierre en dos pasos y transcripciones completas. El equipo responde desde el panel." },
       { key: "forms", title: "Formularios y solicitudes", desc: "Cuestionarios de varios pasos con validación y ramificación, revisión con motivo de aprobación/rechazo y un canal privado con la persona candidata antes de decidir — sustituye por completo a Appy.bot." },
@@ -250,7 +250,7 @@ export const LANDING_TRANSLATIONS = {
     langName: "Français",
     title: "Supreme Bot — Bot Discord pour tickets, formulaires et candidatures | Carbon Stealth",
     description:
-      "Supreme Bot est la plateforme SaaS tout-en-un pour Discord : système de tickets, formulaires de candidature, vérification, sondages, concours et réponses IA — pilotés depuis un tableau de bord web moderne. Hébergement UE, conforme RGPD.",
+      "Supreme Bot est la plateforme SaaS tout-en-un pour Discord : système de tickets, formulaires de candidature, vérification, sondages, concours et réponses IA — pilotés depuis un tableau de bord web moderne. Hébergement UE, export et suppression des données depuis le tableau de bord.",
     features: [
       { key: "ticket", title: "Système de tickets", desc: "Tickets illimités via des panneaux à boutons : prise en charge, escalade, renommage, niveaux de priorité, fermeture en deux étapes et transcriptions complètes. L'équipe répond depuis le tableau de bord." },
       { key: "forms", title: "Formulaires & candidatures", desc: "Questionnaires multi-étapes avec validation et branchements, examen avec motif d'acceptation/refus et un salon privé avec la personne candidate avant la décision — remplace entièrement Appy.bot." },
@@ -330,7 +330,7 @@ export const LANDING_TRANSLATIONS = {
     langName: "Italiano",
     title: "Supreme Bot — Bot Discord per ticket, moduli e candidature | Carbon Stealth",
     description:
-      "Supreme Bot è la piattaforma SaaS tutto-in-uno per Discord: sistema di ticket, moduli di candidatura, verifica, sondaggi, giveaway e risposte IA — gestiti da una dashboard web moderna. Hosting UE, conforme GDPR.",
+      "Supreme Bot è la piattaforma SaaS tutto-in-uno per Discord: sistema di ticket, moduli di candidatura, verifica, sondaggi, giveaway e risposte IA — gestiti da una dashboard web moderna. Hosting UE, esportazione e cancellazione dei dati dalla dashboard.",
     features: [
       { key: "ticket", title: "Sistema di ticket", desc: "Ticket illimitati con pannelli a pulsanti: presa in carico, escalation, rinomina, livelli di priorità, chiusura in due passaggi e trascrizioni complete. Il team risponde dalla dashboard." },
       { key: "forms", title: "Moduli e candidature", desc: "Questionari a più passaggi con validazione e ramificazioni, revisione con motivazione di approvazione/rifiuto e un canale privato con chi si candida prima di decidere — sostituisce del tutto Appy.bot." },
@@ -410,7 +410,7 @@ export const LANDING_TRANSLATIONS = {
     langName: "Nederlands",
     title: "Supreme Bot — Discord-bot voor tickets, formulieren & sollicitaties | Carbon Stealth",
     description:
-      "Supreme Bot is het alles-in-één Discord SaaS-platform: ticketsysteem, sollicitatieformulieren, verificatie, polls, giveaways en AI-antwoorden — beheerd via een modern webdashboard. EU-hosting, AVG-conform.",
+      "Supreme Bot is het alles-in-één Discord SaaS-platform: ticketsysteem, sollicitatieformulieren, verificatie, polls, giveaways en AI-antwoorden — beheerd via een modern webdashboard. EU-hosting, gegevens exporteren en verwijderen in het dashboard.",
     features: [
       { key: "ticket", title: "Ticketsysteem", desc: "Onbeperkte tickets via knoppanelen — claimen, escaleren, hernoemen, prioriteitsniveaus, sluiten in twee stappen en volledige transcripten. Het team antwoordt vanuit het dashboard." },
       { key: "forms", title: "Formulieren & sollicitaties", desc: "Meerstapsvragenlijsten met validatie en vertakking, beoordeling met reden bij goedkeuring/afwijzing en een privékanaal met de kandidaat vóór de beslissing — vervangt Appy.bot volledig." },
@@ -490,7 +490,7 @@ export const LANDING_TRANSLATIONS = {
     langName: "Polski",
     title: "Supreme Bot — Bot Discord do ticketów, formularzy i rekrutacji | Carbon Stealth",
     description:
-      "Supreme Bot to kompleksowa platforma SaaS dla Discorda: system ticketów, formularze rekrutacyjne, weryfikacja, ankiety, konkursy i odpowiedzi AI — zarządzane z nowoczesnego panelu webowego. Hosting w UE, zgodność z RODO.",
+      "Supreme Bot to kompleksowa platforma SaaS dla Discorda: system ticketów, formularze rekrutacyjne, weryfikacja, ankiety, konkursy i odpowiedzi AI — zarządzane z nowoczesnego panelu webowego. Hosting w UE, eksport i usuwanie danych z panelu.",
     features: [
       { key: "ticket", title: "System ticketów", desc: "Nielimitowane zgłoszenia przez panele z przyciskami — przejmowanie, eskalacja, zmiana nazwy, poziomy priorytetu, dwustopniowe zamykanie i pełne transkrypcje. Zespół odpowiada prosto z panelu." },
       { key: "forms", title: "Formularze i rekrutacje", desc: "Wieloetapowe formularze z walidacją i rozgałęzieniami, ocena z uzasadnieniem przyjęcia/odrzucenia oraz prywatny kanał z kandydatem przed decyzją — w pełni zastępuje Appy.bot." },

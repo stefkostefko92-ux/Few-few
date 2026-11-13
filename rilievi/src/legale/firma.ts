@@ -5,7 +5,7 @@ import { hmacCodiceFirma } from '../auth/chiavi.js';
 import { prisma } from '../db.js';
 import { MINUTE } from '../time.js';
 import type { SessionUser } from '../types.js';
-import { VERSIONE } from './versioni.js';
+import { VERSIONE, condizioniValide } from './versioni.js';
 
 /** Колко важи кодът, колко грешни опита се допускат, колко често и колко пъти се праща нов. */
 export const CODICE_MINUTI = 10;
@@ -51,9 +51,7 @@ async function firmatarioDi(
     WHERE m."userId" = ${user.id} AND m."aziendaId" = ${aziendaId} AND a."deactivatedAt" IS NULL
     FOR UPDATE OF a`;
   const row = rows[0];
-  return row && row.role === 'ADMIN' && row.versione !== VERSIONE.CONDIZIONI
-    ? { name: row.name }
-    : null;
+  return row && row.role === 'ADMIN' && !condizioniValide(row.versione) ? { name: row.name } : null;
 }
 
 export type EsitoAvvio =

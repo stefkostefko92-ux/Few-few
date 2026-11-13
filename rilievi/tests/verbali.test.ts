@@ -7,6 +7,7 @@
 // installatore".
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
+import { assertPdfA2b } from './pdfa.js';
 import { describe, it } from 'node:test';
 import { PDFDocument } from 'pdf-lib';
 import { viewHelpers } from '../src/http/view.js';
@@ -353,7 +354,10 @@ describe(
       const row = { ...pieno(), voci: CONTENUTO.voci } as VerbaleFull;
       const titoli: string[] = [];
       for (const copia of COPIE) {
-        const doc = await PDFDocument.load(await renderVerbalePdf(row, { ...options, copia }));
+        const bytes = await renderVerbalePdf(row, { ...options, copia });
+        // Confirmed documents are archival: PDF/A-2b (owner, 12 November 2026 — point D6).
+        await assertPdfA2b(bytes);
+        const doc = await PDFDocument.load(bytes);
         assert.equal(doc.getPageCount(), 2, `${copia}: two pages, as the paper sheet`);
         for (const page of doc.getPages())
           assert.deepEqual(page.getSize(), { width: 595.28, height: 841.89 });

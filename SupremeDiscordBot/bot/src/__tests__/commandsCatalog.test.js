@@ -55,7 +55,7 @@ describe("каталог ↔ реалните команди", () => {
     expect(all.some((c) => c.name === "/premium export")).toBe(true);
   });
   it("/panel сигнатурата носи задължителния subcommand", () => {
-    const panel = all.find((c) => c.name === "/panel");
+    const panel = all.find((c) => c.name === "/panel spawn");
     expect(panel.signature).toContain("spawn");
   });
 });

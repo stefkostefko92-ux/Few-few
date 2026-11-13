@@ -48,6 +48,7 @@ export function LandingFooter({ lang, ui, guides, nav, supportUrl, company }) {
           <Col title={ui.product}>
             <L href="#features">{nav.features}</L>
             <L href="#pricing">{nav.pricing}</L>
+            <L href="/docs">{ui.docs}</L>
             <L href="/commands">{ui.commands}</L>
             <L href="/status">{ui.status}</L>
             <L href={supportUrl} ext>{ui.support}</L>

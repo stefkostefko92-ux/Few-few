@@ -140,11 +140,8 @@ curl -sI https://panevascensori.it/en/            # 200
 curl -sI https://panevascensori.it/data/panev.db  # 404 (базата не се сервира)
 ```
 
-След промяна по страници/`sitemap.xml` — подай към търсачките:
-
-```bash
-node tools/seo/indexnow.mjs https://panevascensori.it
-```
+След промяна по страници/`sitemap.xml` — подай към търсачките с командата от раздел „IndexNow“
+по-долу (с `--key-file` и `--key-location`; само с адреса на сайта не намира ключа).
 
 (Google **не** поддържа IndexNow — там разчитаме на свеж `sitemap.xml` +
 еднократна верификация в Search Console.)
@@ -248,10 +245,15 @@ unset PW
 на autodeploy. Подаване след промяна по страници/sitemap/hreflang/JSON-LD:
 
 ```bash
+# от корена на репото; на сървъра това е последният release:
+cd /opt/few-few/current
 node tools/seo/indexnow.mjs https://panevascensori.it \
   --key-file panev/d6e1a2e328c3fd92c84f47c85c1fb084.txt \
   --key-location https://panevascensori.it/d6e1a2e328c3fd92c84f47c85c1fb084.txt
 ```
+
+Инструментът търси по подразбиране `<сайт>/indexnow-key.txt`, какъвто Panev няма: без двата
+аргумента спира с „Липсва валиден IndexNow ключ“. `autodeploy.sh` не подава Panev автоматично.
 
 Търсачките теглят `keyLocation`, за да докажат собствеността — **файлът трябва да е
 жив, преди да подадеш**, иначе цялата партида се отхвърля.

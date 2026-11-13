@@ -32,7 +32,7 @@ export async function checkVerbali(page, { base, shots, scheme, sheetUrl }) {
   const group = await page
     .locator('#sidenav a[href="/verbali"]')
     .evaluate((a) => a.closest('ul')?.getAttribute('aria-labelledby') ?? '');
-  if (group !== 'nav-assistenza') fail(`${name}: "/verbali" is in "${group}"`);
+  if (group !== 'nav-documenti') fail(`${name}: "/verbali" is in "${group}"`);
   await audit(page, `${name} list`);
 
   // From the scheda: only the address, the N° buono and today's date.

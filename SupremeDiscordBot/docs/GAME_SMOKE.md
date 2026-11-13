@@ -19,7 +19,7 @@
   за играта, един за counting, един за trivia, един за обяви; една „безопасна“ роля под ролята
   на бота за награда за ниво.
 - [ ] Новите команди се виждат в Discord (`/daily`, `/profile`, `/leaderboard`, `/shop`,
-  `/companion`, `/quest`, `/trivia`, `/wyr`, `/tod`). Ако не — до ~1 час след старта на бота
+  `/companion` с `list|feed|trade|train|attack|pvp`, `/spawn`, `/quest`, `/trivia`, `/wyr`, `/tod`; извън играта и `/bait`). Ако не — до ~1 час след старта на бота
   (глобална регистрация) или ръчно `npm run deploy-commands` в контейнера на бота.
 
 ## 1. Табло (10 мин)

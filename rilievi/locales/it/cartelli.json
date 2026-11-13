@@ -1,6 +1,6 @@
 {
   "cartelli": {
-    "list": "Cartelli fermo impianto",
+    "list": "Cartelli di fermo impianto",
     "listSub": "Gli avvisi da affiggere quando l'ascensore è fermo, dal più recente. Il PDF usa il modello, il logo e i dati societari scelti nelle impostazioni dell'azienda.",
     "new": "Nuovo cartello",
     "modifica": "Modifica",
@@ -57,7 +57,10 @@
       "cerca": "Matricola, numero impianto o indirizzo",
       "cercaBtn": "Cerca",
       "nessuna": "Nessuna scheda trovata: compila il cartello a mano qui sotto.",
-      "altre": "Altre {n} schede: aggiungi una parola alla ricerca.",
+      "altre": {
+        "one": "Un'altra scheda: aggiungi una parola alla ricerca.",
+        "other": "Altre {n} schede: aggiungi una parola alla ricerca."
+      },
       "apri": "Apri la scheda",
       "cambia": "Usa un'altra scheda o nessuna",
       "proposto": "Testo proposto dai lavori indicati nella scheda: controllalo e aggiungi quando l'impianto torna in servizio.",

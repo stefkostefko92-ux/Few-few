@@ -32,6 +32,16 @@ const t = translatorFor('it');
 const PUBBLICATI: Record<string, string> = {
   'condizioni-2026-11-10': '01ebcd73a5da55b524c5b51dc622209124fa2adbe89553192aaa8234374622cc',
   'regole-2026-11-10': '8c3ab4b662c2cc9f1d4adbb0514ad433a09b8e1b4d95c362519887ba0d9475e3',
+  // Allegato B (Data Act) — never in force: its whole text is inside 2026-11-12 (versioni.ts).
+  'condizioni-2027-01-12': '94fdec9fafbe730a38703ec96e49f0750d296b31e2ea9e12a572f4708a772903',
+  // Allegato B + the free month, the Plans and read-only at the end (art. 12) — in force on its own day.
+  'condizioni-2026-11-12': '1a9bffd58417673ae23a7464fce36bdc940ddcc499bd5eac7b8d02f3a4174dd7',
+  // The refund on the same means of payment (12.9), the VAT number in VIES (12.10), 15.2 and art. 25 (reports and
+  // moderation, Regulation (EU) 2022/2065) — in force on its own day; the specific approval (art. 24) is untouched.
+  'condizioni-2026-11-13': 'e731f2f74680652e4d8ce278b40c948fa6789084a0fea9569d077e8c796b1a0e',
+  // Bulgarian VAT when the VAT number is not valid in VIES (12.1, 12.10), the credit note (12.9), 17.4 and the
+  // statement of reasons when an account is suspended because of its content (25.6) — in force on its own day.
+  'condizioni-2026-11-14': '0cb9938a6035f8443c1546134dae975a72cd0f12abcea917d2ee25a0fc2a3788',
 };
 
 const tutto = (doc: TestoLegaleDoc): string => testoPiano(doc);
@@ -92,9 +102,13 @@ describe('the terms of service', () => {
   });
 
   it('say what the portal does: the terms of deletion, of backup and of the registers', () => {
+    // Since 2026-11-12 (Allegato B): export only for 90 days after the deactivation, then deletion.
     assert.ok(
-      testo.includes(`Entro ${GIORNI_PRIMA_DELL_ELIMINAZIONE} giorni dalla disattivazione`),
+      testo.includes(
+        `per ${GIORNI_PRIMA_DELL_ELIMINAZIONE} giorni possono accedere alla sola pagina di esportazione`,
+      ),
     );
+    assert.ok(testo.includes(`Allo scadere dei ${GIORNI_PRIMA_DELL_ELIMINAZIONE} giorni`));
     const keep = /KEEP="\$\{RILIEVI_KEEP_DAILY:-(\d+)\}"/.exec(
       readFileSync(join(ROOT, 'deploy', 'backup.sh'), 'utf8'),
     )?.[1];
