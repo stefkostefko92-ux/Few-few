@@ -14,7 +14,9 @@ import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const OUT = join(ROOT, "agents-dashboard", "docs.js");
+// Изходът е override-ваем (DOCS_JS_OUT) — тестовете работят върху временно копие. Докато регенерираха
+// истинския docs.js на място, build-artifact.test.mjs (върви едновременно) го четеше по средата.
+const OUT = process.env.DOCS_JS_OUT || join(ROOT, "agents-dashboard", "docs.js");
 const CHECK = process.argv.includes("--check");
 
 // Ред: root CLAUDE.md пръв, после product CLAUDE.md по азбучен ред (едно ниво навътре).
@@ -78,7 +80,11 @@ const banner = "// АВТО-ГЕНЕРИРАН от tools/docs/collect-claude-md
 // псевдоним проверката `typeof docs === "undefined"` винаги пада и Docs табът показва вечния
 // плейсхолдър „Документите се зареждат от docs.js при деплой". Пишем и двете: `__DOCS__` е
 // стабилното име за външни четци, `docs` е това, което рендерът реално ползва.
-const body = banner + "window.__DOCS__ = " + JSON.stringify(payload, null, 2) + ";\nvar docs = window.__DOCS__;\n";
+// `</` излиза като `<\/` (валиден escape и в JSON, и в JavaScript — съдържанието е същото). Артефактът
+// вгражда този файл в <script>…</script>, а CLAUDE.md са проза: FiveM/CLAUDE.md споменава `</script>`
+// и буквалният низ затваряше вградения блок по-рано (2026-11-13: билдът на артефакта падаше при всяко
+// регенериране). В JSON `</` може да стои само в низ, затова замяната не пипа структурата.
+const body = banner + "window.__DOCS__ = " + JSON.stringify(payload, null, 2).replace(/<\//g, "<\\/") + ";\nvar docs = window.__DOCS__;\n";
 
 if (CHECK) {
   const cur = existsSync(OUT) ? readFileSync(OUT, "utf8") : "";

@@ -36,8 +36,11 @@ node tools/seo/indexnow.mjs https://<live-domain> \
 > само ключа.
 
 `deploy/autodeploy.sh` пинга след здрав релийз за zabobovdol, SupremeDiscordBot, mastilko, ospedali,
-adblock и korpora (само при променен sitemap, `korpora/deploy/deploy.sh`) — всеки по свой начин (общ ключ
-`INDEXNOW_<PROJ>` няма; проверено 2026-10-27). За останалите
+adblock, fivem, panev, korpora и rilievi (последните два само при променен sitemap, от собствения си
+`deploy/deploy.sh`) — всеки по свой начин (общ ключ `INDEXNOW_<PROJ>` няма; проверено 2026-11-13).
+Изход 0 от `tools/seo/indexnow.mjs` значи, че всички адреси от sitemap-а са подадени: непрочетен
+sitemap или sitemap без `<loc>` е изход 1 и не се подава нищо (до 2026-11-13 падаше мълчаливо към
+началната страница). За останалите
 продукти пусни командата ръчно след релийз, засягащ откриваемостта; vizitka има и свой пинг в
 `vizitka/deploy/server-setup.sh`. Пусни ръчно и при промяна на живо между релийзи (напр. публикуване
 през админ панела).

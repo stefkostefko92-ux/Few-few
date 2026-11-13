@@ -76,10 +76,10 @@ hooks, skills).
   affects discoverability (sitemap, new/changed pages, canonical/hreflang, JSON-LD,
   robots/llms), notify every engine that supports automatic submission via
   **IndexNow** (Bing, Yandex, Seznam, Naver, Yep — one call reaches all):
-  `node tools/seo/indexnow.mjs https://<live-domain>` (needs the site deployed with
-  its `indexnow-key.txt` at web root). `deploy/autodeploy.sh` pings after a healthy release for
-  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock and korpora (details: `deploy/README.md`);
-  for the rest run the command yourself. **Google does NOT
+  `node tools/seo/indexnow.mjs https://<live-domain>` (key at `/indexnow-key.txt`; a
+  `<key>.txt` site adds `--key-file` + `--key-location`). `deploy/autodeploy.sh` pings after a healthy release for
+  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora, rilievi, fivem, panev
+  (details: `deploy/README.md`); the rest: run it yourself. **Google does NOT
   support IndexNow** (sitemap ping retired 2023) — for Google keep the sitemap fresh
   (auto-discovered) and use Search Console (`tools/seo/gsc.mjs`).
 - **Keywords: always ≥5, one always „Carbon Stealth“.** Every site we build/touch
@@ -164,22 +164,14 @@ sudo bash /root/deploy/fetch-deploy.sh                    # main, all configured
 sudo REF=<клон|таг|SHA> PROJECTS="piuma" bash /opt/few-few/current/deploy/fetch-deploy.sh
 ```
 
-`fetch-deploy.sh` downloads, verifies the archive really is this repo, keeps the last two
-downloads and passes `ARCHIVE=` explicitly to `autodeploy.sh`. Uploading a ZIP by hand
-still works and is the fallback when the box has no outbound network:
+Box without outbound network → upload the ZIP by hand and run its `autodeploy.sh`
+(fallback flow: `deploy/README.md`).
 
-```bash
-cd /root && unzip -o Few-few.zip >/dev/null
-sudo bash /root/few-few-*/deploy/autodeploy.sh   # idempotent, monorepo-aware
-```
-
-`autodeploy.sh` (ships in the archive) unpacks a timestamped release under
-`/opt/few-few/releases/` and deploys each configured project — zabobovdol via
-Docker Compose (build + up + migrate, seed only on first run); medqr via rsync +
-`npm ci --omit=dev` + `systemctl restart medqr` (auto-rollback on health-check
-fail). Secrets stay on the server and carry over. Full flow + one-time hardening
-→ `deploy/README.md`, `zabobovdol/DEPLOY.md`, `medqr/deploy/DEPLOY.md`. The
-**VPS-аджията** agent owns this pipeline.
+`autodeploy.sh` (ships in the archive, idempotent) unpacks a timestamped release under
+`/opt/few-few/releases/` and deploys each configured project (Docker Compose or systemd;
+health check, rollback per product). Secrets stay on the server and carry over. Full
+flow + one-time hardening → `deploy/README.md`, `zabobovdol/DEPLOY.md`,
+`medqr/deploy/DEPLOY.md`. The **VPS-аджията** agent owns this pipeline.
 
 <!-- Maintainer hygiene (stripped from context, costs no tokens):
  • Keep this root file <200 lines and CROSS-CUTTING only. Adherence drops as it grows.

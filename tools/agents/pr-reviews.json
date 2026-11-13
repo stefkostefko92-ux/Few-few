@@ -245,6 +245,21 @@
       "ai-djiyata",
       "goladjiyata",
       "kodadjiyata"
+    ],
+    "72abc41b5419c6beb6a3c7fa9420c1994759bec5": [
+      "ai-djiyata",
+      "kodadjiyata",
+      "vps-adjiyata"
+    ],
+    "fb69033c82782c6643373a8040800ec48081f32f": [
+      "kodadjiyata",
+      "prodavacha",
+      "vps-adjiyata"
+    ],
+    "b6e768d4ea11a7de151802dad338d493666d76e9": [
+      "ai-djiyata",
+      "kodadjiyata",
+      "seo"
     ]
   },
   "runs": [
@@ -1231,6 +1246,78 @@
       "verdict": "поправки",
       "costUsd": 0.85,
       "date": "2026-10-27"
+    },
+    {
+      "pr": 376,
+      "sha": "72abc41b5419c6beb6a3c7fa9420c1994759bec5",
+      "agent": "kodadjiyata",
+      "verdict": "чисто",
+      "costUsd": 0.74,
+      "date": "2026-11-13"
+    },
+    {
+      "pr": 376,
+      "sha": "72abc41b5419c6beb6a3c7fa9420c1994759bec5",
+      "agent": "vps-adjiyata",
+      "verdict": "чисто",
+      "costUsd": 0.86,
+      "date": "2026-11-13"
+    },
+    {
+      "pr": 376,
+      "sha": "72abc41b5419c6beb6a3c7fa9420c1994759bec5",
+      "agent": "ai-djiyata",
+      "verdict": "поправки",
+      "costUsd": 0.94,
+      "date": "2026-11-13"
+    },
+    {
+      "pr": 376,
+      "sha": "fb69033c82782c6643373a8040800ec48081f32f",
+      "agent": "kodadjiyata",
+      "verdict": "чисто",
+      "costUsd": 0.78,
+      "date": "2026-11-13"
+    },
+    {
+      "pr": 376,
+      "sha": "fb69033c82782c6643373a8040800ec48081f32f",
+      "agent": "vps-adjiyata",
+      "verdict": "чисто",
+      "costUsd": 0.8,
+      "date": "2026-11-13"
+    },
+    {
+      "pr": 376,
+      "sha": "fb69033c82782c6643373a8040800ec48081f32f",
+      "agent": "prodavacha",
+      "verdict": "чисто",
+      "costUsd": 0.6,
+      "date": "2026-11-13"
+    },
+    {
+      "pr": 376,
+      "sha": "b6e768d4ea11a7de151802dad338d493666d76e9",
+      "agent": "kodadjiyata",
+      "verdict": "чисто",
+      "costUsd": 0.84,
+      "date": "2026-11-13"
+    },
+    {
+      "pr": 376,
+      "sha": "b6e768d4ea11a7de151802dad338d493666d76e9",
+      "agent": "seo",
+      "verdict": "чисто",
+      "costUsd": 0.55,
+      "date": "2026-11-13"
+    },
+    {
+      "pr": 376,
+      "sha": "b6e768d4ea11a7de151802dad338d493666d76e9",
+      "agent": "ai-djiyata",
+      "verdict": "чисто",
+      "costUsd": 1.54,
+      "date": "2026-11-13"
     }
   ]
 }
