@@ -27,9 +27,9 @@ const limiter = rateLimit({
 /** Грешни кодове за втория фактор в една сесия, след които тя се трие и се иска нов вход с парола. */
 export const MAX_FAILED_CODES = 5;
 
-/** Безопасен адрес за връщане след вход: само наш относителен път. */
+/** Безопасен адрес за връщане след вход: само наш относителен път (приложението, панелът, покана). */
 function safeNext(value: unknown): string {
-  return typeof value === 'string' && /^\/(app|admin)(\/[\w\-./?=&%]*)?$/.test(value)
+  return typeof value === 'string' && /^\/(app|admin|pokana)(\/[\w\-./?=&%]*)?$/.test(value)
     ? value
     : '/app';
 }

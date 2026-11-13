@@ -5,7 +5,7 @@ import { SITE_PAGES } from '../src/seo/pages.js';
 import { faqItems, structuredData } from '../src/seo/structured-data.js';
 import { llmsTxt, robotsTxt, sitemapXml } from '../src/routes/seo.js';
 
-const BASE = 'https://fakturist.bg';
+const BASE = 'https://fakturist.carbonstealth.eu';
 
 test('българският и английският речник имат точно едни и същи ключове', () => {
   const bg = keysOf('bg');

@@ -12,7 +12,7 @@ export interface AuditInput {
   targetType?: string;
   targetId?: string;
   /** Без лични данни: идентификатори, кодове, суми — не имена, имейли, адреси. */
-  details?: Record<string, string | number | boolean | null>;
+  details?: Record<string, string | number | boolean | null | string[]>;
 }
 
 /**

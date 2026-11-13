@@ -78,3 +78,49 @@ export function inboxReceivedMail(data: InboxMailData): {
 </div></body></html>`;
   return { subject, text, html };
 }
+
+export interface InviteMailData {
+  companyName: string;
+  companyEik: string | null;
+  link: string;
+  expires: string;
+  signature: string;
+  domain: string;
+}
+
+/** Поканата да поемете профила на фирма, добавена от кантора. Връзката е единственото копие на токена. */
+export function transferInviteMail(data: InviteMailData): {
+  subject: string;
+  text: string;
+  html: string;
+} {
+  const company = data.companyEik
+    ? `${data.companyName} (ЕИК ${data.companyEik})`
+    : data.companyName;
+  const intro = `${company} е добавена във Фактурист от счетоводната си кантора. Поканени сте да поемете профила ѝ като собственик: ще виждате документите, издадени от нейно име, и ще решавате кой има достъп до нея.`;
+  const validity = `Връзката важи до ${data.expires} и се използва веднъж.`;
+  const ignore = 'Ако не очаквате това писмо, не правете нищо — без приемане нищо не се променя.';
+  const text = [
+    'Здравейте,',
+    '',
+    intro,
+    '',
+    `Приемете поканата: ${data.link}`,
+    validity,
+    '',
+    ignore,
+    '',
+    '—',
+    data.signature,
+    data.domain,
+  ].join('\n');
+  const html = `<!doctype html><html lang="bg"><body style="margin:0;padding:24px;background:#f4f5f7;font-family:Arial,Helvetica,sans-serif;color:#131722">
+<div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #cfd4dd;padding:24px">
+<p style="margin:0 0 16px">${escapeHtml(intro)}</p>
+<p style="margin:0 0 8px"><a href="${escapeHtml(data.link)}" style="display:inline-block;background:#0b6b52;color:#ffffff;padding:10px 18px;text-decoration:none">Приеми поканата</a></p>
+<p style="margin:0 0 16px;font-size:13px;color:#485064">${escapeHtml(validity)}</p>
+<p style="margin:0 0 24px;font-size:13px;color:#485064">${escapeHtml(ignore)}</p>
+<p style="margin:0;font-size:12px;color:#485064">${escapeHtml(data.signature)}</p>
+</div></body></html>`;
+  return { subject: `Покана: поемете профила на ${data.companyName} във Фактурист`, text, html };
+}

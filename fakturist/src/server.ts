@@ -7,7 +7,7 @@ import { pinoHttp } from 'pino-http';
 import { BRAND } from './brand.js';
 import { COMPANY } from './company.js';
 import { config, isProduction } from './config.js';
-import { errorMessage, logger } from './logger.js';
+import { errorMessage, logger, safeLogPath } from './logger.js';
 import { ROOT } from './paths.js';
 import { translator, type Locale } from './i18n.js';
 import { assetVersion } from './http/assets.js';
@@ -93,11 +93,11 @@ export function createServer(): Express {
   app.use(
     pinoHttp({
       logger,
-      // Само методът, пътят без заявката и статусът — без хедъри, IP и тела.
+      // Само методът, пътят без заявката и без токени, и статусът — без хедъри, IP и тела.
       serializers: {
         req: (req: { method?: string; url?: string }) => ({
           method: req.method,
-          url: (req.url ?? '').split('?')[0],
+          url: safeLogPath(req.url ?? ''),
         }),
         res: (res: { statusCode?: number }) => ({ statusCode: res.statusCode }),
       },

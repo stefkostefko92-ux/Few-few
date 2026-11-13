@@ -88,7 +88,7 @@ model User {
   platformRole       PlatformRole @default(NONE)
   /// Мастър акаунтът от `owner:create` сменя паролата при първия вход.
   mustChangePassword Boolean      @default(false)
-  /// TOTP тайната — AES-256-GCM с ключ, изведен от JWT_SECRET (src/crypto.ts); никога в явен вид.
+  /// TOTP тайната — AES-256-GCM с ключ, изведен от LEDGER_SEAL_KEY (src/auth/keys.ts); никога в явен вид.
   totpSecretEnc      String?
   totpEnabledAt      DateTime?
   /// Последната приета стъпка на TOTP — повторен код в същия прозорец не минава (и след рестарт).
@@ -101,12 +101,15 @@ model User {
 
   sessions        Session[]
   memberships     Membership[]
-  issuedDocuments Document[]      @relation("IssuedBy")
+  issuedDocuments Document[]       @relation("IssuedBy")
   auditEntries    AuditLog[]
   inboxDecisions  InboxEntry[]
   mandatesCreated ClientMandate[]
   settingsChanged Setting[]
   flagsChanged    FeatureFlag[]
+  integrations    Integration[]
+  invitesCreated  TransferInvite[] @relation("InviteCreatedBy")
+  invitesAccepted TransferInvite[] @relation("InviteAcceptedBy")
 
   @@index([platformRole])
 }
@@ -169,6 +172,7 @@ model Organization {
   inboxReceived   InboxEntry[]     @relation("InboxRecipient")
   inboxSent       InboxEntry[]     @relation("InboxSender")
   notifications   Notification[]
+  transferInvites TransferInvite[]
 
   @@index([kind])
   @@index([legalName])
@@ -507,4 +511,47 @@ model Notification {
 
   @@index([status, nextAttemptAt])
   @@index([organizationId])
+}
+
+/// Външните услуги (Brevo SMTP, Revolut Merchant API), настроени от мастър панела. Схемата им е в
+/// src/admin/integrations.ts. Тайните са шифровани (AES-256-GCM, вързани с кода) и никога не се показват
+/// обратно — само последните 4 знака (`secretHints`). Панелът има предимство пред `.env`.
+model Integration {
+  code           String    @id
+  /// Нетайните настройки (хост, порт, подател, среда).
+  config         Json
+  secretsEnc     String?
+  secretHints    Json?
+  lastCheckAt    DateTime?
+  lastCheckOk    Boolean?
+  /// Грешката от последната проверка — без адреси и без тайни.
+  lastCheckError String?
+  updatedAt      DateTime  @updatedAt
+  updatedById    String?
+  updatedBy      User?     @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+}
+
+/// Прехвърлянето на фирма, добавена от кантора, към собственика ѝ (src/accounts/transfer.ts). Мастърът
+/// изпраща еднократна покана до имейла на собственика; в базата е само SHA-256 на токена.
+model TransferInvite {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// Имейлът, с който поканата се приема (малки букви).
+  email          String
+  tokenHash      String       @unique
+  createdById    String?
+  createdBy      User?        @relation("InviteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime     @default(now())
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  acceptedById   String?
+  acceptedBy     User?        @relation("InviteAcceptedBy", fields: [acceptedById], references: [id], onDelete: SetNull)
+  revokedAt      DateTime?
+
+  @@index([organizationId])
+  @@index([createdById])
+  @@index([acceptedById])
 }

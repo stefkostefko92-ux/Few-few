@@ -15,4 +15,56 @@
   <% }) %>
   <button type="submit"><%= t('admin.save') %></button>
 </form>
+
+<h2 id="integrations"><%= t('admin.integration.title') %></h2>
+<p class="muted wide-ish"><%= t('admin.integration.intro') %></p>
+<% integrations.forEach((item) => {
+  const def = item.definition;
+  const errs = errorsFor === item.code ? integrationErrors : {};
+  const fieldId = (name) => 'i-' + item.code + '-' + name;
+%>
+<section class="panel stack narrow-form" id="<%= item.code %>" aria-labelledby="h-<%= item.code %>">
+  <h3 id="h-<%= item.code %>"><%= def.label[lang] %></h3>
+  <p class="hint"><%= def.help[lang] %></p>
+  <p>
+    <span class="tag<%= item.source === 'none' ? '' : ' tag-active' %>"><%= t('admin.integration.source.' + item.source) %></span>
+    <% if (item.lastCheckAt) { %>
+      <span class="tag<%= item.lastCheckOk ? ' tag-active' : ' tag-pending' %>"><%= item.lastCheckOk ? t('admin.integration.checkOk') : t('admin.integration.checkFailed') %></span>
+      <span class="muted"><%= item.lastCheckAt.toISOString().slice(0, 16).replace('T', ' ') %> UTC</span>
+    <% } %>
+  </p>
+  <% if (item.lastCheckAt && !item.lastCheckOk && item.lastCheckError) { %>
+    <p class="error" role="alert"><%= tOr('admin.integration.checkErrors.' + item.lastCheckError, item.lastCheckError) %></p>
+  <% } %>
+  <% if (Object.keys(errs).length) { %>
+    <div class="error-box" role="alert"><ul><% Object.entries(errs).forEach(([name, code]) => { const f = def.fields.find((x) => x.name === name); %><li><a href="#<%= fieldId(name) %>"><%= f ? f.label[lang] : name %></a>: <%= tOr('admin.integration.errors.' + code, t('auth.errors.invalid')) %></li><% }) %></ul></div>
+  <% } %>
+  <form method="post" action="/admin/integratsii/<%= item.code %>" class="stack" autocomplete="off">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% def.fields.forEach((f) => { const value = item.values[f.name]; const invalid = errs[f.name] ? ' aria-invalid="true"' : ''; %>
+      <% if (f.kind === 'checkbox') { %>
+        <label class="check"><input type="checkbox" id="<%= fieldId(f.name) %>" name="<%= f.name %>"<%= value ? ' checked' : '' %>> <%= f.label[lang] %><% if (f.help) { %><span class="hint"><%= f.help[lang] %></span><% } %></label>
+      <% } else if (f.kind === 'select') { %>
+        <label><%= f.label[lang] %><select id="<%= fieldId(f.name) %>" name="<%= f.name %>"<%- invalid %>><% f.options.forEach((o) => { %><option value="<%= o %>"<%= value === o ? ' selected' : '' %>><%= t('admin.integration.options.' + o) %></option><% }) %></select></label>
+      <% } else if (f.kind === 'secret') { const hint = item.hints[f.name]; %>
+        <label><%= f.label[lang] %>
+          <input type="password" id="<%= fieldId(f.name) %>" name="<%= f.name %>" class="mono" autocomplete="new-password" spellcheck="false"<%- invalid %> aria-describedby="<%= fieldId(f.name) %>-h">
+          <span class="hint" id="<%= fieldId(f.name) %>-h"><%= hint ? t('admin.integration.secretSet', { hint }) : t('admin.integration.secretEmpty') %><% if (f.help) { %> <%= f.help[lang] %><% } %></span>
+        </label>
+        <% if (hint) { %><label class="check"><input type="checkbox" name="clear_<%= f.name %>"> <%= t('admin.integration.clearSecret') %></label><% } %>
+      <% } else { %>
+        <label><%= f.label[lang] %><input id="<%= fieldId(f.name) %>" name="<%= f.name %>" value="<%= value ?? '' %>"<%= f.kind === 'number' ? ' inputmode="numeric"' : '' %><% if (f.placeholder) { %> placeholder="<%= f.placeholder %>"<% } %> spellcheck="false"<%- invalid %>><% if (f.help) { %><span class="hint"><%= f.help[lang] %></span><% } %></label>
+      <% } %>
+    <% }) %>
+    <% if (item.code === 'revolut') { %>
+      <p class="hint"><%= t('admin.integration.webhookUrl') %> <code class="mono"><%= webhookUrl %></code></p>
+    <% } %>
+    <button type="submit"><%= t('admin.save') %></button>
+  </form>
+  <form method="post" action="/admin/integratsii/<%= item.code %>/proverka">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button type="submit" class="button-secondary"><%= item.code === 'smtp' ? t('admin.integration.checkSmtp', { email: masterEmail }) : t('admin.integration.checkRevolut') %></button>
+  </form>
+</section>
+<% }) %>
 <%- include('../partials/app-foot') %>

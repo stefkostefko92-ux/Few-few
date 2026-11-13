@@ -7,8 +7,9 @@ import { setting } from '../admin/settings.js';
 import { documentPdf } from '../documents/render.js';
 import { bgAmount } from '../documents/pdf.js';
 import { fromCents } from '../einvoice/decimal.js';
-import { inboxReceivedMail } from './templates.js';
-import { smtpSender, type MailMessage, type SendMail } from './mailer.js';
+import { decryptInviteToken } from '../auth/keys.js';
+import { inboxReceivedMail, transferInviteMail } from './templates.js';
+import { mailSender, type MailMessage, type SendMail } from './mailer.js';
 import { MINUTE } from '../time.js';
 
 /** Опитите на едно писмо; паузата расте: 1, 5, 15, 60, 240 минути. */
@@ -89,8 +90,32 @@ async function composeInboxMail(toEmail: string, payload: unknown): Promise<Mail
   };
 }
 
+const InvitePayload = z.object({ inviteId: z.string().min(1), tokenEnc: z.string().min(1) });
+
+/** Поканата за прехвърляне на фирма: връзката с токена (шифрован в опашката, хеширан в поканата). */
+async function composeInviteMail(toEmail: string, payload: unknown): Promise<MailMessage> {
+  const { inviteId, tokenEnc } = InvitePayload.parse(payload);
+  const invite = await prisma.transferInvite.findUniqueOrThrow({
+    where: { id: inviteId },
+    include: { organization: { select: { legalName: true, eik: true } } },
+  });
+  if (invite.acceptedAt || invite.revokedAt) throw new Error('Поканата вече не е отворена');
+  const token = decryptInviteToken(tokenEnc, inviteId);
+  const signature = (await setting('documents.signature')) || BRAND.signature;
+  const mail = transferInviteMail({
+    companyName: invite.organization.legalName,
+    companyEik: invite.organization.eik,
+    link: `${config().PUBLIC_BASE_URL}/pokana/${token}`,
+    expires: bgDate(invite.expiresAt),
+    signature,
+    domain: BRAND.signatureDomain,
+  });
+  return { to: toEmail, ...mail, attachments: [] };
+}
+
 async function compose(kind: string, toEmail: string, payload: unknown): Promise<MailMessage> {
   if (kind === 'inbox.received') return composeInboxMail(toEmail, payload);
+  if (kind === 'transfer.invite') return composeInviteMail(toEmail, payload);
   throw new Error(`Непознат вид писмо: ${kind}`);
 }
 
@@ -103,13 +128,15 @@ function safeError(error: unknown): string {
 
 /**
  * Праща чакащите писма. Всяко се „заема“ с условен UPDATE (броят опити трябва да е същият) — два процеса
- * не пращат едно писмо два пъти. Без настроена поща не прави нищо: писмата чакат.
+ * не пращат едно писмо два пъти. Без настроена поща не прави нищо: писмата чакат. Без `send` — пощата
+ * от мастър настройките (резерва: .env); `null` — изрично без поща.
  */
 export async function processOutbox(
-  send: SendMail | null = smtpSender(),
+  sendMail?: SendMail | null,
   now: Date = new Date(),
   limit = 20,
 ): Promise<{ sent: number; failed: number }> {
+  const send = sendMail === undefined ? await mailSender() : sendMail;
   if (!send) return { sent: 0, failed: 0 };
   const due = await prisma.notification.findMany({
     where: { status: 'PENDING', nextAttemptAt: { lte: now } },

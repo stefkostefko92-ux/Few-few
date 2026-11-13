@@ -43,6 +43,10 @@ test('тайните никога не са видими: хеш на парол
   const session = ADMIN_RESOURCES.find((r) => r.model === 'Session')!;
   assert.ok(user.hidden.includes('passwordHash') && user.hidden.includes('totpSecretEnc'));
   assert.ok(session.hidden.includes('csrfToken'));
+  const integration = ADMIN_RESOURCES.find((r) => r.model === 'Integration')!;
+  const invite = ADMIN_RESOURCES.find((r) => r.model === 'TransferInvite')!;
+  assert.ok(integration.hidden.includes('secretsEnc'));
+  assert.ok(invite.hidden.includes('tokenHash'));
   for (const resource of ADMIN_RESOURCES) {
     for (const field of resource.columns) {
       assert.equal(

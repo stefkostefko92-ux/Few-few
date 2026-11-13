@@ -29,3 +29,11 @@ export const logger = pino({ level: process.env.LOG_LEVEL ?? 'info', redact: RED
 export function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
+
+/**
+ * Пътят на заявката за лога: без заявката (`?…`) и без токена от връзката на покана — токенът в адреса е
+ * ключ за достъп и не трябва да остава в логовете.
+ */
+export function safeLogPath(url: string): string {
+  return (url.split('?')[0] ?? '').replace(/^\/pokana\/[^/]+/, '/pokana/[токен]');
+}

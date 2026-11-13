@@ -67,6 +67,21 @@ export function decryptTotpDraft(payload: string, userId: string): string | null
   }
 }
 
+/** Тайните на интеграциите (src/admin/integrations.ts) — вързани с кода: SMTP ключ не става Revolut ключ. */
+export const encryptIntegrationSecrets = (plaintext: string, code: string): string =>
+  encrypt('integration-secrets-v1', plaintext, `integration:${code}`);
+export const decryptIntegrationSecrets = (payload: string, code: string): string =>
+  decrypt('integration-secrets-v1', payload, `integration:${code}`);
+
+/**
+ * Токенът на поканата за прехвърляне, докато чака в опашката с писма. В TransferInvite е само хешът му;
+ * тук е шифрован и вързан с id на поканата.
+ */
+export const encryptInviteToken = (token: string, inviteId: string): string =>
+  encrypt('transfer-token-v1', token, `invite:${inviteId}`);
+export const decryptInviteToken = (payload: string, inviteId: string): string =>
+  decrypt('transfer-token-v1', payload, `invite:${inviteId}`);
+
 /** Печатът на веригата на документите (src/ledger/chain.ts). */
 export function sealHmac(content: string): string {
   return createHmac('sha256', derived('document-seal-v1')).update(content, 'utf8').digest('hex');

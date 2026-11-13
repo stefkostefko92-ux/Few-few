@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { HttpError, requireMaster, requireUser } from '../auth/guards.js';
-import { sealHmac } from '../auth/keys.js';
 import {
   ADMIN_RESOURCES,
   countResource,
@@ -12,18 +11,12 @@ import {
   PAGE_SIZE,
   resourceBySlug,
 } from '../admin/registry.js';
-import { invalidateSettings, SETTINGS, setting, type SettingKey } from '../admin/settings.js';
 import { FEATURES, FEATURE_GROUPS, isFeatureCode } from '../features.js';
 import { invalidatePublicPlans } from '../billing/public-plans.js';
-import {
-  CHAIN_START,
-  sha256,
-  verifyChainFrom,
-  type ChainProblem,
-  type ChainState,
-} from '../ledger/chain.js';
 import { money } from '../http/view.js';
-import { decideMandate } from '../accounts/mandates.js';
+import { transferStatus } from '../accounts/transfer.js';
+import { adminSettingsRouter } from './admin-settings.js';
+import { adminActionsRouter } from './admin-actions.js';
 
 /** Цена от формата на панела: „9,00“ → 900 цента; празно → null („по договор“). */
 const centsField = z
@@ -63,6 +56,8 @@ const PlanForm = z.object({
 export function adminRouter(): Router {
   const router = Router();
   router.use('/admin', requireUser(), requireMaster());
+  router.use(adminSettingsRouter());
+  router.use(adminActionsRouter());
 
   router.get('/admin', async (_req, res) => {
     const monthStart = new Date();
@@ -112,38 +107,16 @@ export function adminRouter(): Router {
     if (!resource) throw new HttpError(404);
     const row = await getResource(resource, String(req.params['id']).slice(0, 100));
     if (!row) throw new HttpError(404);
-    res.render('admin/record', { resource, row });
-  });
-
-  // --- Настройки -------------------------------------------------------------------------------------
-  router.get('/admin/nastroyki', async (_req, res) => {
-    const values: Record<string, unknown> = {};
-    for (const key of Object.keys(SETTINGS) as SettingKey[]) values[key] = await setting(key);
-    res.render('admin/settings', { settings: SETTINGS, values, saved: _req.query['ok'] === '1' });
-  });
-
-  router.post('/admin/nastroyki', async (req, res) => {
-    const body = req.body as Record<string, unknown>;
-    const actorId = req.principal!.user.id;
-    await prisma.$transaction(async (tx) => {
-      for (const [key, definition] of Object.entries(SETTINGS)) {
-        const raw = body[key];
-        let value: unknown;
-        if (typeof definition.default === 'boolean') value = raw === 'on';
-        else if (typeof definition.default === 'number') value = Number(raw);
-        else value = typeof raw === 'string' ? raw.trim() : definition.default;
-        const parsed = definition.schema.safeParse(value);
-        if (!parsed.success) throw new HttpError(400, `Невалидна стойност за ${key}`);
-        await tx.setting.upsert({
-          where: { key },
-          create: { key, value: parsed.data, updatedById: actorId },
-          update: { value: parsed.data, updatedById: actorId },
-        });
-      }
-      await audit(tx, { actorId, action: 'admin.settings.saved' });
+    // Фирма без собственик (добавена от кантора) — картата показва прехвърлянето.
+    const transfer =
+      resource.model === 'Organization' ? await transferStatus(String(row['id'])) : null;
+    const error = typeof req.query['greshka'] === 'string' ? req.query['greshka'] : null;
+    res.render('admin/record', {
+      resource,
+      row,
+      transfer,
+      error: error && /^[a-zA-Z.]{1,40}$/.test(error) ? error : null,
     });
-    invalidateSettings();
-    res.redirect(303, '/admin/nastroyki?ok=1');
   });
 
   // --- Функции (глобално включване) ------------------------------------------------------------------
@@ -230,127 +203,6 @@ export function adminRouter(): Router {
     });
     invalidatePublicPlans();
     res.redirect(303, `/admin/planove/${plan.code}?ok=1`);
-  });
-
-  // --- Проверка на веригата на документите на фирма --------------------------------------------------
-  router.get('/admin/veriga/:orgId', async (req, res) => {
-    const organizationId = String(req.params['orgId']);
-    const org = await prisma.organization.findUnique({ where: { id: organizationId } });
-    if (!org) throw new HttpError(404);
-    // На страници по 500 — голяма фирма не зарежда всичките си XML-и наведнъж.
-    let state: ChainState = CHAIN_START;
-    let problem: ChainProblem | null = null;
-    let count = 0;
-    for (;;) {
-      const docs = await prisma.document.findMany({
-        where: { organizationId, chainIndex: { gte: state.nextIndex } },
-        orderBy: { chainIndex: 'asc' },
-        take: 500,
-        select: {
-          organizationId: true,
-          chainIndex: true,
-          number: true,
-          typeCode: true,
-          issueDate: true,
-          payableCents: true,
-          vatCents: true,
-          ublXml: true,
-          ciiXml: true,
-          prevHash: true,
-          sha256: true,
-          seal: true,
-        },
-      });
-      if (docs.length === 0) break;
-      const result = verifyChainFrom(
-        docs.map((d) => ({
-          organizationId: d.organizationId,
-          chainIndex: d.chainIndex!,
-          number: d.number ?? '',
-          typeCode: d.typeCode,
-          status: 'ISSUED' as const,
-          issueDate: d.issueDate.toISOString().slice(0, 10),
-          payableCents: d.payableCents,
-          vatCents: d.vatCents,
-          ublSha256: sha256(d.ublXml ?? ''),
-          ciiSha256: sha256(d.ciiXml ?? ''),
-          prevHash: d.prevHash ?? '',
-          sha256: d.sha256 ?? '',
-          seal: d.seal ?? '',
-        })),
-        sealHmac,
-        state,
-      );
-      count += docs.length;
-      if (result.problem) {
-        problem = result.problem;
-        break;
-      }
-      state = result.state;
-      if (docs.length < 500) break;
-    }
-    res.render('admin/chain', { org, count, problem });
-  });
-
-  // --- Ръчно потвърждение на плащане (банков превод към Revolut Business) -----------------------------
-  router.post('/admin/plashtaniya/:id/potvardi', async (req, res) => {
-    const payment = await prisma.payment.findUnique({ where: { id: String(req.params['id']) } });
-    if (!payment) throw new HttpError(404);
-    await prisma.$transaction(async (tx) => {
-      // Условен запис: две едновременни потвърждения (или потвърждение + webhook) не минават двете.
-      const updated = await tx.payment.updateMany({
-        where: { id: payment.id, status: 'PENDING' },
-        data: { status: 'COMPLETED', paidAt: new Date() },
-      });
-      if (updated.count !== 1) throw new HttpError(409);
-      await audit(tx, {
-        actorId: req.principal!.user.id,
-        organizationId: payment.organizationId,
-        action: 'billing.payment.confirmed',
-        targetType: 'Payment',
-        targetId: payment.id,
-        details: { amountCents: payment.amountCents },
-      });
-    });
-    res.redirect(303, `/admin/r/payments/${payment.id}`);
-  });
-
-  // --- Пълномощни и потвърждаване на фирми ----------------------------------------------------------
-  router.post('/admin/palnomoshtni/:id/:decision', async (req, res) => {
-    const decision =
-      req.params['decision'] === 'potvardi'
-        ? 'approve'
-        : req.params['decision'] === 'ottegli'
-          ? 'revoke'
-          : null;
-    if (!decision) throw new HttpError(404);
-    const mandateId = String(req.params['id']);
-    await decideMandate({
-      mandateId,
-      actorId: req.principal!.user.id,
-      decision,
-      clientOrgId: null,
-    });
-    res.redirect(303, `/admin/r/mandates/${mandateId}`);
-  });
-
-  router.post('/admin/firmi/:id/potvardi', async (req, res) => {
-    const id = String(req.params['id']);
-    await prisma.$transaction(async (tx) => {
-      const updated = await tx.organization.updateMany({
-        where: { id, verifiedAt: null },
-        data: { verifiedAt: new Date() },
-      });
-      if (updated.count !== 1) throw new HttpError(409);
-      await audit(tx, {
-        actorId: req.principal!.user.id,
-        organizationId: id,
-        action: 'organization.verified',
-        targetType: 'Organization',
-        targetId: id,
-      });
-    });
-    res.redirect(303, `/admin/r/organizations/${id}`);
   });
 
   return router;

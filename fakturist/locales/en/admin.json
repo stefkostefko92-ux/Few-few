@@ -50,5 +50,65 @@
   "planned": "coming",
   "verifyOrg": "Verify the company",
   "approveMandate": "Confirm the authorisation",
-  "revokeMandate": "Revoke the authorisation"
+  "revokeMandate": "Revoke the authorisation",
+  "integration": {
+    "title": "Integrations",
+    "intro": "Keys are stored encrypted and never shown back — you only see the last 4 characters. An empty field keeps the saved value. Values set here take precedence over the server .env.",
+    "source": {
+      "panel": "From the panel",
+      "env": "From the server .env",
+      "none": "Not configured"
+    },
+    "checkOk": "Check passed",
+    "checkFailed": "Check failed",
+    "checkErrors": {
+      "unauthorized": "Revolut rejected the key (401/403). Make sure it is the Secret key for the selected environment.",
+      "missingKey": "No Secret API key is saved.",
+      "notConfigured": "Email is not configured.",
+      "network": "The server could not be reached.",
+      "smtp": "The SMTP server refused the connection."
+    },
+    "errors": {
+      "invalidHost": "Invalid server address.",
+      "invalidPort": "The port is a number from 1 to 65535.",
+      "invalidUser": "The login has no spaces.",
+      "invalidFrom": "The sender is “Name <address>” or just an address.",
+      "invalidSecret": "The key is at least 8 characters, no spaces.",
+      "invalidWebhookSecret": "The webhook secret starts with wsk_.",
+      "invalidEnvironment": "Choose sandbox or production."
+    },
+    "options": {
+      "sandbox": "Sandbox (testing)",
+      "production": "Production"
+    },
+    "secretSet": "Saved: {hint}. Empty — no change.",
+    "secretEmpty": "Not saved.",
+    "clearSecret": "Delete the saved key",
+    "webhookUrl": "Webhook address for Revolut:",
+    "checkSmtp": "Check and send a test email to {email}",
+    "checkRevolut": "Check the Revolut connection"
+  },
+  "transfer": {
+    "title": "Transfer to the owner",
+    "intro": "This company was added by an accounting firm and has no owner. Check a proof of representation (current Commercial Register extract or a power of attorney), then send an invitation to the representative's email. They take over the profile with one link; the firm's mandate stays.",
+    "pending": "Pending invitation to {email}, valid until {date}.",
+    "email": "Owner's email",
+    "checked": "I have checked the proof of representation.",
+    "button": "Transfer",
+    "resend": "Send a new invitation",
+    "revoke": "Revoke the invitation",
+    "sentTitle": "Invitation created",
+    "sent": "The invitation to {email} for {company} is valid until {date}.",
+    "mailQueued": "The email is queued and leaves within a minute.",
+    "mailNotReady": "Email is not configured yet — the message is waiting. You can also send the link yourself.",
+    "link": "The link",
+    "linkOnce": "Shown only now — the database keeps only its fingerprint. A new invitation revokes this one.",
+    "errors": {
+      "invalidEmail": "The email is invalid.",
+      "notChecked": "Tick that you have checked the proof of representation.",
+      "hasOwner": "The company already has an owner.",
+      "notFound": "Company not found.",
+      "invalid": "The invitation is no longer open."
+    }
+  }
 }

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { test } from 'node:test';
 import { rateKey } from '../src/http/ip.js';
+import { safeLogPath } from '../src/logger.js';
 
 test('таванът на заявките брои IPv6 по мрежа /64, IPv4 — по адрес', () => {
   assert.equal(rateKey('2001:db8:1:2:aaaa::1'), '2001:db8:1:2::/64');
@@ -24,4 +25,11 @@ test('шифрованата 2FA чернова не се пренася меж�
   assert.equal(decryptTotpDraft(draft, 'user-b'), null);
   const stored = encryptTotpSecret('JBSWY3DPEHPK3PXP', 'user-a');
   assert.throws(() => decryptTotpSecret(stored, 'user-b'));
+});
+
+test('токенът от връзката на покана и заявката не стигат до лога', () => {
+  const token = 'qoyVHXU11JDZ3t-R6kh_NJw5WTeunbjcZJOXkumXsyA';
+  assert.equal(safeLogPath(`/pokana/${token}`), '/pokana/[токен]');
+  assert.equal(safeLogPath(`/pokana/${token}?lang=en`), '/pokana/[токен]');
+  assert.equal(safeLogPath('/app/o/abc?next=/x'), '/app/o/abc');
 });

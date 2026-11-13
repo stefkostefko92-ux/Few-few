@@ -1,12 +1,12 @@
 import express, { Router } from 'express';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
-import { config } from '../config.js';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { logger } from '../logger.js';
 import { sha256 } from '../ledger/chain.js';
 import { verifyRevolutSignature } from '../billing/revolut.js';
+import { revolutSettings } from '../admin/integrations.js';
 
 /** Събитията на Revolut Merchant API, които ползваме; останалите се записват и пропускат. */
 const RevolutEvent = z.object({
@@ -25,10 +25,11 @@ export function webhooksRouter(): Router {
     '/webhooks/revolut',
     express.raw({ type: 'application/json', limit: '64kb' }),
     async (req, res) => {
-      const secret = config().REVOLUT_WEBHOOK_SECRET;
+      // Тайната от мастър настройките (резерва: REVOLUT_WEBHOOK_SECRET в .env); без нея — отказ.
+      const secret = (await revolutSettings()).webhookSecret;
       const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
       const valid =
-        secret !== undefined &&
+        secret !== null &&
         verifyRevolutSignature({
           secret,
           timestamp: req.get('revolut-request-timestamp'),
