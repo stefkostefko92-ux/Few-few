@@ -76,6 +76,8 @@ export async function issuePlanInvoice(
     // Данъчното събитие е получаването на плащането (чл. 25, ал. 7 ЗДДС) — датата му, не обработката.
     taxPointDate: isoDay(input.paidAt),
     currency: 'EUR',
+    // BT-10 — основанието на поръчката; Peppol (PEPPOL-EN16931-R003) иска референция на купувача.
+    buyerReference: input.payment.reference ?? undefined,
     buyer: {
       name: input.customer.legalName,
       legalId: input.customer.eik ?? undefined,

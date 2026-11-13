@@ -26,6 +26,7 @@ export async function buyerFromParty(
     city: party.addressCity,
     postalCode: party.postalCode,
     countryCode: party.countryCode,
+    email: party.email ?? '',
   };
 }
 
@@ -71,6 +72,7 @@ export async function saveBuyerAsParty(input: {
       addressStreet: field(input.buyer, 'street'),
       addressCity: field(input.buyer, 'city'),
       postalCode: field(input.buyer, 'postalCode'),
+      email: field(input.buyer, 'email'),
     });
     if (!parsed.success) return;
     const data = parsed.data;
@@ -94,6 +96,7 @@ export async function saveBuyerAsParty(input: {
           addressStreet: data.addressStreet,
           addressCity: data.addressCity,
           postalCode: data.postalCode ?? '',
+          email: data.email,
           eAddressScheme: data.vatNumber?.startsWith('BG') ? '9926' : null,
           eAddressValue: data.vatNumber?.startsWith('BG') ? data.vatNumber : null,
         },

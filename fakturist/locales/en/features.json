@@ -42,11 +42,11 @@
   },
   "recurring": {
     "name": "Recurring invoices",
-    "description": "Subscriptions and rents are issued automatically on the chosen date."
+    "description": "Subscriptions and rents are issued automatically on the chosen date — one invoice per period, optionally emailed to the client."
   },
   "reminders": {
     "name": "Payment reminders",
-    "description": "An email to your customer before and after the due date."
+    "description": "An email to the client 3 and 10 days after the due date if the invoice is unpaid — with the PDF and the balance."
   },
   "bank-matching": {
     "name": "Bank payment matching",

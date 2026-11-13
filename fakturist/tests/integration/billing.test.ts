@@ -280,6 +280,7 @@ test('банков превод: проформа с основанието, м�
     /<cbc:PrepaidAmount currencyID="EUR">10\.80<\/cbc:PrepaidAmount>/,
   );
   assert.match(invoice.ublXml ?? '', /основание FKT-/);
+  assert.match(invoice.ublXml ?? '', /<cbc:BuyerReference>FKT-[A-Z2-9]{8}<\/cbc:BuyerReference>/);
   // Фактурата е в шкафчето на клиента и писмото — в опашката.
   const entry = await prisma.inboxEntry.findFirstOrThrow({
     where: { documentId: invoice.id, recipientOrgId: customerOrgId },

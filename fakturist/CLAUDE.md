@@ -64,7 +64,8 @@ src/
                  billing-core.ts (ДДС, грешките) · orders.ts (цена, поръчка, активиране) · plan-invoice.ts
                  (фактурата от Карбон Стелт) · revolut-client.ts (Merchant API) · card.ts (страница за
                  плащане, сверка, проверка на висящите) · expiry.ts · loop.ts (на 10 мин) ·
-                 plan-view.ts · proforma-pdf.ts
+                 plan-view.ts · proforma-pdf.ts · entitlements.ts (функциите по план)
+  recurring/     schedule.ts (графикът, периодът) · recurring.ts (шаблоните) · run.ts (работникът) · loop.ts
   features.ts    регистърът на функциите (live/planned + дата) — плановете, панелът и витрината четат оттук
   seo/           pages.ts (страниците на витрината — единствен списък) · structured-data.ts (JSON-LD)
   catalog/       schemas.ts (zod на формите) · catalog.ts (контрагенти, артикули) · series.ts (сериите под
@@ -73,7 +74,7 @@ src/
   pwa/           manifest.ts · device.ts (устройството по User-Agent за /prilozhenie)
   routes/        site · seo · health · pwa · legal · auth · account (нова парола, имейл) · install ·
                  invite (/pokana) · member-invite (/chlen) · app (+ app-issue, app-members, app-catalog, app-security, app-inbox,
-                 app-clients, app-settings, app-plan, app-shared) · admin (+ admin-settings, admin-actions) ·
+                 app-clients, app-settings, app-plan, app-recurring, app-doc-payments, app-shared) · admin (+ admin-settings, admin-actions) ·
                  webhooks
   http/          upload.ts — multipart (multer, в паметта) + CSRF след разчитането · view · ip · cookies
 views/           site/ (витрината — Дизайнера) · app/ · admin/ · auth/ · errors/ · partials/
@@ -115,6 +116,20 @@ scripts/         conformance/run.mjs (официалната проверка) �
   `Subscription_one_active_per_org` (само в миграцията `20261113190000`; Prisma не го описва и не го
   трие при `migrate diff` — провери, ако генерираш нова миграция).
   Ключ за Revolut **без** подписване на заявките (Ed25519 се иска в продукция, ако е включено).
+- **Повтарящи се фактури** (SPEC 51, `src/recurring/`): шаблон от издадена фактура 380 („Повтаряй“) —
+  входът ѝ без номер, дати, доставчик и предплатено; текстът на редовете се редактира (`{период}` →
+  „ноември 2026“). Работникът (`run.ts`, на 10 мин) заключва шаблона (FOR UPDATE SKIP LOCKED) и издава в
+  същата транзакция от името на създателя — правото се проверява наново; Document(recurringId,
+  recurringPeriod) е уникален → един документ за период. Пропуснати периоди не се наваксват. Без право
+  или план → пауза; 3 поредни грешки → пауза. По пълномощно шаблонът помни кантората (`viaFirmId`).
+  Функциите по план — `orgHasFeature` (`src/billing/entitlements.ts`: live + глобалният флаг + планът).
+- **Плащане по документ и напомняния** (SPEC 52): `src/documents/payments.ts` — само 380/383 с
+  положителна сума, без надплащане, под FOR UPDATE на документа; сборът и състоянието се смятат наново
+  от записаните плащания. Напомнянията (`reminders.ts`) — само при `remindersEnabled` на фирмата и план с
+  `reminders`, +3 и +10 дни след падежа, до имейла на получателя от документа (BT-58, полето
+  `buyer[email]`), най-много едно писмо на ден; писмото се отказва, ако междувременно е платено.
+  Писмата до получатели извън Фактурист (`document.sent`, `document.reminder`) са с `replyTo` = имейлът
+  на фирмата.
 - **Правните документи** (общи условия, поверителност, договор за обработване — BG+EN, публикувани
   13.11.2026) са в `src/legal/documents.ts` (адреси, версия) и `views/legal/<документ>/<език>.ejs`.
   Съществена промяна на текста = нова `version` (регистрацията записва приетата в `LegalAcceptance`) и

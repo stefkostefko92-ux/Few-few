@@ -16,51 +16,8 @@ import { EAS_BG_VAT } from '../einvoice/codes.js';
 import { entryHash, GENESIS, sha256 } from '../ledger/chain.js';
 import { formatNumber } from './numbering.js';
 import { deliverToInbox, type Delivery } from '../inbox/deliver.js';
-import { HttpError, type OrgAccess } from '../auth/guards.js';
-import { roleCan, weaker, type MemberRole } from '../auth/roles.js';
-
-/**
- * Правото се проверява наново под заключването на фирмата: достъпът е сметнат от сесията в началото на
- * заявката, а междувременно собствеността може да е отнета или пълномощното — оттеглено.
- */
-async function recheckAccess(
-  tx: Prisma.TransactionClient,
-  access: OrgAccess,
-  actorId: string,
-): Promise<void> {
-  if (access.viaFirmId === null) {
-    const member = await tx.membership.findUnique({
-      where: { userId_organizationId: { userId: actorId, organizationId: access.organizationId } },
-      select: { role: true },
-    });
-    if (!member || !roleCan(member.role as MemberRole, 'documents.issue')) throw new HttpError(404);
-    return;
-  }
-  const now = new Date();
-  const [mandate, member] = await Promise.all([
-    access.mandateId
-      ? tx.clientMandate.findUnique({ where: { id: access.mandateId } })
-      : Promise.resolve(null),
-    tx.membership.findUnique({
-      where: { userId_organizationId: { userId: actorId, organizationId: access.viaFirmId } },
-      select: { role: true },
-    }),
-  ]);
-  const valid =
-    mandate !== null &&
-    mandate.status === 'ACTIVE' &&
-    mandate.firmId === access.viaFirmId &&
-    mandate.clientId === access.organizationId &&
-    mandate.validFrom.getTime() <= now.getTime() &&
-    (mandate.validTo === null || mandate.validTo.getTime() >= now.getTime());
-  if (
-    !valid ||
-    !member ||
-    !roleCan(weaker(member.role as MemberRole, 'ACCOUNTANT'), 'documents.issue')
-  ) {
-    throw new HttpError(404);
-  }
-}
+import type { OrgAccess } from '../auth/guards.js';
+import { recheckAccess } from './recheck.js';
 
 /**
  * Това, което издаващият подава: всичко без номера и без доставчика. Доставчикът идва от данните на
@@ -70,6 +27,12 @@ export const IssueRequestSchema = InvoiceInputSchema.omit({ number: true, seller
   seriesId: z.string().regex(/^[a-z0-9]{20,40}$/),
 });
 export type IssueRequest = z.infer<typeof IssueRequestSchema>;
+
+/** „Анулирай и издай нов“ (SPEC 47) и издаване от повтаряща се фактура за даден период (SPEC 51). */
+export interface IssueOptions {
+  replaces?: { documentId: string; reason: AnnulReason };
+  recurring?: { id: string; period: string };
+}
 
 export class IssueRejected extends Error {
   constructor(readonly issues: Issue[]) {
@@ -154,7 +117,7 @@ export async function issueDocument(
   actorId: string,
   request: IssueRequest,
   /** Анулиране по чл. 116 ЗДДС: новият документ заменя `documentId` в същата транзакция. */
-  options: { replaces?: { documentId: string; reason: AnnulReason } } = {},
+  options: IssueOptions = {},
 ): Promise<IssueResult> {
   const settings = await issueSettings();
   return prisma.$transaction((tx) => issueInTx(tx, access, actorId, request, options, settings));
@@ -169,7 +132,7 @@ export async function issueInTx(
   access: OrgAccess,
   actorId: string,
   request: IssueRequest,
-  options: { replaces?: { documentId: string; reason: AnnulReason } },
+  options: IssueOptions,
   settings: IssueSettings,
 ): Promise<IssueResult> {
   const { deadlineDays, requireBankAccount, profile, signature } = settings;
@@ -262,6 +225,8 @@ export async function issueInTx(
         firmId: access.viaFirmId,
         mandateId: access.mandateId,
         precedingId: preceding?.id ?? null,
+        recurringId: options.recurring?.id ?? null,
+        recurringPeriod: options.recurring?.period ?? null,
         issuedAt: new Date(),
       },
       select: { id: true },

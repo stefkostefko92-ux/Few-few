@@ -20,6 +20,7 @@
     <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/ubl.xml"><%= t('app.view.download') %> <%= t('app.view.ubl') %></a>
     <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/cii.xml"><%= t('app.view.download') %> <%= t('app.view.cii') %></a>
     <% if (locals.canAnnul) { %><a class="button-secondary" href="/app/o/<%= document.organizationId %>/nov?zamenya=<%= document.id %>"><%= t('app.annul.button') %></a><% } %>
+    <% if (locals.canRecur) { %><a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/povtaryay"><%= t('app.recurring.repeat') %></a><% } %>
   </div>
 </div>
 <dl class="facts">
@@ -34,6 +35,37 @@
   <% if (document.issuedBy) { %><div><dt><%= t('app.view.issuedBy') %></dt><dd><%= document.issuedBy.name %></dd></div><% } %>
   <% if (document.firm) { %><div><dt><%= t('app.view.viaFirm') %></dt><dd><%= document.firm.legalName %><% if (document.mandate) { %> · <span class="muted"><%= document.mandate.documentRef %></span><% } %></dd></div><% } %>
 </dl>
+<% if (document.recurring) { %><p class="muted"><%= t('app.recurring.fromTemplate') %> <a href="/app/o/<%= document.organizationId %>/povtaryashti/<%= document.recurring.id %>"><%= document.recurring.name %></a><% if (document.recurringPeriod) { %> · <span class="mono"><%= document.recurringPeriod %></span><% } %></p><% } %>
+<% if (locals.payable) { const remaining = document.payableCents - document.paidCents; const plain = (c) => (c / 100n).toString() + '.' + (c % 100n).toString().padStart(2, '0'); %>
+<section class="panel" id="plashtane" aria-labelledby="plashtane-h">
+  <h2 id="plashtane-h"><%= t('app.payment.title') %> <span class="tag<%= document.paymentState === 'PAID' ? ' tag-active' : document.paymentState === 'PARTIAL' ? ' tag-pending' : '' %>"><%= t('app.payment.states.' + document.paymentState) %></span></h2>
+  <% if (paymentResult) { %><p class="<%= paymentResult === 'ok' || paymentResult === 'removed' ? 'ok' : 'error' %>" role="status"><%= tOr('app.payment.result.' + paymentResult, t('auth.errors.invalid')) %></p><% } %>
+  <dl class="facts">
+    <div><dt><%= t('app.payment.paid') %></dt><dd class="mono"><%= money(document.paidCents) %></dd></div>
+    <div><dt><%= t('app.payment.remaining') %></dt><dd class="mono strong"><%= money(remaining) %></dd></div>
+  </dl>
+  <% if (document.payments.length) { %>
+  <ul class="invite-list">
+    <% document.payments.forEach((p) => { %>
+      <li><span class="mono"><%= p.paidOn.toISOString().slice(0, 10).split('-').reverse().join('.') %></span> · <span class="mono"><%= money(p.amountCents) %></span> · <%= t('app.payment.sources.' + p.source) %><% if (p.note) { %> · <span class="muted"><%= p.note %></span><% } %>
+        <% if (canPay && p.source === 'MANUAL') { %><form method="post" action="/app/o/<%= document.organizationId %>/d/<%= document.id %>/plashtane/<%= p.id %>/mahni" class="inline-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="link"><%= t('app.payment.remove') %></button></form><% } %>
+      </li>
+    <% }) %>
+  </ul>
+  <% } %>
+  <% if (canPay && remaining > 0n) { %>
+  <form method="post" action="/app/o/<%= document.organizationId %>/d/<%= document.id %>/plashtane" class="stack narrow-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="grid-2">
+      <label><%= t('app.payment.amount') %> (<%= document.currency %>)<input name="amount" inputmode="decimal" required value="<%= plain(remaining) %>" class="mono"></label>
+      <label><%= t('app.payment.date') %><input type="date" name="paidOn" required max="<%= today %>" value="<%= today %>"></label>
+    </div>
+    <label><%= t('app.payment.note') %> <span class="hint"><%= t('app.payment.noteHint') %></span><input name="note" maxlength="200"></label>
+    <div><button type="submit"><%= t('app.payment.record') %></button></div>
+  </form>
+  <% } %>
+</section>
+<% } %>
 <% document.inboxEntries.forEach((e) => { %>
 <p class="ok"><%= t('app.view.delivered', { name: e.recipientOrg.legalName }) %> · <%= t('app.inbox.status.' + e.status) %></p>
 <% }) %>

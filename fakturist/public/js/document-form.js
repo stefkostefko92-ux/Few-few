@@ -25,6 +25,7 @@
       set('buyer[city]', d.city);
       set('buyer[postalCode]', d.postalCode);
       set('buyer[countryCode]', d.countryCode);
+      set('buyer[email]', d.email);
     });
   }
 

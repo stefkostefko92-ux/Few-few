@@ -22,7 +22,7 @@
 <form method="get" action="/app/o/<%= org.id %>/nov" class="search-row" data-party-picker>
   <label><%= t('app.catalog.pickParty') %><select name="party" data-party-select>
     <option value=""><%= t('app.catalog.pickPartyNone') %></option>
-    <% parties.forEach((p) => { %><option value="<%= p.id %>" data-name="<%= p.name %>" data-legal-id="<%= p.eik || '' %>" data-vat-id="<%= p.vatNumber || '' %>" data-street="<%= p.addressStreet %>" data-city="<%= p.addressCity %>" data-postal-code="<%= p.postalCode %>" data-country-code="<%= p.countryCode %>"<%= val('buyer.name') === p.name ? ' selected' : '' %>><%= p.name %><%= p.eik ? ' · ' + p.eik : '' %></option><% }) %>
+    <% parties.forEach((p) => { %><option value="<%= p.id %>" data-name="<%= p.name %>" data-legal-id="<%= p.eik || '' %>" data-vat-id="<%= p.vatNumber || '' %>" data-street="<%= p.addressStreet %>" data-city="<%= p.addressCity %>" data-postal-code="<%= p.postalCode %>" data-country-code="<%= p.countryCode %>" data-email="<%= p.email || '' %>"<%= val('buyer.name') === p.name ? ' selected' : '' %>><%= p.name %><%= p.eik ? ' · ' + p.eik : '' %></option><% }) %>
   </select></label>
   <button type="submit" class="button-secondary" data-party-fill><%= t('app.catalog.fill') %></button>
 </form>
@@ -71,6 +71,7 @@
       <label><%= t('app.doc.city') %><input name="buyer[city]" required value="<%= val('buyer.city') %>"></label>
       <label><%= t('app.doc.postalCode') %><input name="buyer[postalCode]" class="mono" value="<%= val('buyer.postalCode') %>"></label>
       <label><%= t('app.doc.country') %><input name="buyer[countryCode]" maxlength="2" class="mono" value="<%= val('buyer.countryCode', 'BG') %>"></label>
+      <label class="span-2"><%= t('app.doc.buyerEmail') %><input type="email" name="buyer[email]" maxlength="200" autocomplete="off" value="<%= val('buyer.email') %>"><span class="hint"><%= t('app.doc.buyerEmailHint') %></span></label>
       <label class="check span-2"><input type="checkbox" name="saveBuyer"<%= val('saveBuyer') === 'on' ? ' checked' : '' %>> <%= t('app.catalog.saveBuyer') %></label>
     </div>
   </fieldset>

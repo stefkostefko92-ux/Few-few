@@ -14,6 +14,8 @@ export interface MailMessage {
   text: string;
   html: string;
   attachments: MailAttachment[];
+  /** Отговорът отива при фирмата-издател (писмата до получателите на документи), не при нас. */
+  replyTo?: string;
 }
 
 export type SendMail = (message: MailMessage) => Promise<void>;

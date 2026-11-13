@@ -11,6 +11,10 @@ import { appInboxRouter } from './app-inbox.js';
 import { appClientsRouter } from './app-clients.js';
 import { appSettingsRouter } from './app-settings.js';
 import { appPlanRouter } from './app-plan.js';
+import { appRecurringRouter } from './app-recurring.js';
+import { appDocPaymentsRouter } from './app-doc-payments.js';
+import { PAYABLE_TYPES } from '../documents/payments.js';
+import { sofiaToday } from '../time.js';
 import { appCatalogRouter } from './app-catalog.js';
 import { appMembersRouter } from './app-members.js';
 import { appIssueRouter } from './app-issue.js';
@@ -48,6 +52,8 @@ export function appRouter(): Router {
   router.use(appClientsRouter());
   router.use(appSettingsRouter());
   router.use(appPlanRouter());
+  router.use(appRecurringRouter());
+  router.use(appDocPaymentsRouter());
 
   router.get('/app', async (req, res) => {
     const user = req.principal!.user;
@@ -146,11 +152,31 @@ export function appRouter(): Router {
         replacedBy: { select: { id: true, number: true } },
         replaces: { select: { id: true, number: true } },
         _count: { select: { followers: { where: { status: 'ISSUED' } } } },
+        payments: {
+          orderBy: { paidOn: 'asc' },
+          select: { id: true, amountCents: true, paidOn: true, source: true, note: true },
+        },
+        recurring: { select: { id: true, name: true } },
       },
     });
     if (!document) throw new HttpError(404);
+    const canIssue = roleCan(access.role, 'documents.issue');
+    const payable =
+      document.status === 'ISSUED' &&
+      (PAYABLE_TYPES as readonly string[]).includes(document.typeCode) &&
+      document.payableCents > 0n;
     res.render('app/document', {
       document,
+      // Плащането (SPEC 52) и „Повтаряй“ (SPEC 51).
+      payable,
+      canPay: canIssue && payable,
+      canRecur: canIssue && document.status === 'ISSUED' && document.typeCode === '380',
+      paymentResult:
+        typeof req.query['plashtane'] === 'string' &&
+        /^[a-zA-Z]{2,20}$/.test(req.query['plashtane'])
+          ? req.query['plashtane']
+          : '',
+      today: sofiaToday(),
       money: (cents: bigint) => money(cents, document.currency, res.locals.lang),
       issued: req.query['issued'] === '1',
       // „Анулирай и издай нов“ — издаден документ без известия към него (SPEC 47).

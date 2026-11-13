@@ -222,6 +222,40 @@ export const zeroRated: InvoiceInput = {
   ],
 };
 
+/**
+ * Абонамент, платен с карта (SPEC 50 — фактурата на Карбон Стелт за план): получателят с имейл (BT-58),
+ * код 48 със сметката на доставчика, платената сума е BT-113 → за плащане 0.
+ * 1 × 9.00 (S 20) → ДДС 1.80, общо 10.80, предплатено 10.80.
+ */
+export const prepaidCard: InvoiceInput = {
+  number: '0000000201',
+  issueDate: '2026-11-13',
+  typeCode: '380',
+  currency: 'EUR',
+  taxPointDate: '2026-11-12',
+  buyerReference: 'FKT-ABCD2345',
+  notes: ['Платено с карта на 12.11.2026.'],
+  precedingInvoices: [],
+  seller,
+  buyer: { ...buyer, contact: { email: 'schetovodstvo@nap.example' } },
+  payment: { meansCode: '48', accountId: 'BG80BNBG96611020345678' },
+  prepaidAmount: '10.80',
+  allowanceCharges: [],
+  vatExemptions: [],
+  lines: [
+    {
+      id: '1',
+      name: 'Абонамент за Фактурист — план „Професионален“, 12.11.2026–12.12.2026',
+      quantity: '1',
+      unitCode: 'MON',
+      netPrice: '9.00',
+      vat: { category: 'S', rate: '20' },
+      allowanceCharges: [],
+      attributes: [],
+    },
+  ],
+};
+
 export const SAMPLES = {
   domestic,
   foreignCurrency,
@@ -229,4 +263,5 @@ export const SAMPLES = {
   creditNote,
   notRegistered,
   zeroRated,
+  prepaidCard,
 };

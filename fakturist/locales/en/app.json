@@ -122,7 +122,9 @@
     "issue": "Issue",
     "issueHelp": "The number is assigned on issue. An issued document cannot be edited — corrections are made with a note.",
     "problems": "The document was not issued — please fix:",
-    "warnings": "Issued with warnings:"
+    "warnings": "Issued with warnings:",
+    "buyerEmail": "Buyer email",
+    "buyerEmailHint": "Optional: for recurring invoice emails and payment reminders."
   },
   "view": {
     "issued": "The document has been issued.",
@@ -481,6 +483,106 @@
       "noSupplier": "Plan orders are not open yet.",
       "revolut": "The payment page did not open. Try again shortly.",
       "expired": "The payment page has expired (24 hours). Place a new order from the page"
+    }
+  },
+  "recurring": {
+    "title": "Recurring",
+    "repeat": "Repeat",
+    "fromTemplate": "From the recurring invoice",
+    "fromDocument": "The template is taken from invoice No. {number}: its buyer, lines, notes and payment.",
+    "how": "A recurring invoice is made from an issued invoice — the “Repeat” button on the document. Each period a new invoice is issued with the next number of the series, the issue date and a due date.",
+    "none": "No recurring invoices yet.",
+    "needsPlan": "This feature is in the paid plans.",
+    "newTitle": "New recurring invoice",
+    "name": "Name",
+    "frequency": "Frequency",
+    "next": "Next issue",
+    "nextHint": "The day of month is kept (31st → last day of a shorter month).",
+    "end": "End (optional)",
+    "endHint": "Nothing is issued after this date.",
+    "dueDays": "Due after (days)",
+    "dueDaysHint": "Empty — no due date.",
+    "sendTo": "Send to email (optional)",
+    "sendToHint": "PDF and XML on every issue. If the buyer is on Fakturist, the document also reaches their inbox.",
+    "periodHint": "In lines and notes “{period}” becomes the period: “November 2026”, “Q4 2026”, “2026”.",
+    "create": "Start",
+    "status": "Status",
+    "issuedCount": "Issued",
+    "issued": "Issued documents",
+    "frequencies": {
+      "MONTHLY": "every month",
+      "QUARTERLY": "every quarter",
+      "YEARLY": "every year"
+    },
+    "statuses": {
+      "ACTIVE": "active",
+      "PAUSED": "paused",
+      "ENDED": "ended"
+    },
+    "actions": {
+      "pause": "Pause",
+      "resume": "Resume",
+      "end": "End"
+    },
+    "ok": {
+      "created": "The recurring invoice is created.",
+      "updated": "Changes saved.",
+      "pause": "Paused.",
+      "resume": "Resumes from the next date.",
+      "end": "Ended.",
+      "remindersOn": "Reminders are on.",
+      "remindersOff": "Reminders are off."
+    },
+    "err": {
+      "invalid": "Check the fields: the date cannot be in the past, the end is after the next issue.",
+      "feature": "This feature is in the paid plans.",
+      "notInvoice": "Only an issued invoice can be repeated.",
+      "notFound": "No such recurring invoice.",
+      "state": "The action is not possible in this state."
+    },
+    "errors": {
+      "rejected": "the last issue failed the checks",
+      "seriesExhausted": "the series is exhausted",
+      "access": "the creator can no longer issue",
+      "feature": "the plan no longer includes the feature",
+      "error": "error while issuing"
+    },
+    "remindersTitle": "Overdue reminders",
+    "remindersHelp": "3 and 10 days after the due date the buyer receives an email with the invoice PDF and the amount outstanding — at the email on the document. Replies go to you. Paid invoices (marked on the document or from bank matching) get no reminder.",
+    "remindersToggle": "Send reminders to buyers",
+    "remindersOn": "Reminders are on.",
+    "remindersOffState": "Reminders are off.",
+    "lines": "Line text",
+    "line": "Line {n}"
+  },
+  "payment": {
+    "title": "Payment",
+    "states": {
+      "UNPAID": "unpaid",
+      "PARTIAL": "partly paid",
+      "PAID": "paid"
+    },
+    "paid": "Paid",
+    "remaining": "Outstanding",
+    "sources": {
+      "MANUAL": "marked by hand",
+      "BANK": "from bank matching"
+    },
+    "remove": "Remove",
+    "amount": "Amount",
+    "date": "Payment date",
+    "note": "Note",
+    "noteHint": "optional, e.g. “cash”",
+    "record": "Record payment",
+    "result": {
+      "ok": "The payment is recorded.",
+      "removed": "The payment is removed.",
+      "invalid": "Check the amount and the date.",
+      "amount": "The amount exceeds the outstanding balance or is zero.",
+      "date": "The date cannot be in the future or before the document.",
+      "notPayable": "No payment is recorded on this document.",
+      "notFound": "No such payment.",
+      "source": "A matched payment is removed from bank matching."
     }
   }
 }

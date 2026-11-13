@@ -82,6 +82,8 @@ export function formToIssueRequest(body: unknown): Record<string, unknown> {
         countryCode: text(buyer['countryCode'])?.toUpperCase() ?? 'BG',
       },
       electronicAddress: eScheme && eValue ? { scheme: eScheme, value: eValue } : undefined,
+      // BT-58 — имейлът на получателя: писмата на повтарящите се и напомнянията (SPEC 51–52).
+      contact: text(buyer['email']) ? { email: text(buyer['email'])?.toLowerCase() } : undefined,
     },
     payment: meansCode
       ? {
@@ -135,6 +137,7 @@ export function inputToFormValues(input: unknown): Record<string, unknown> {
       city: str(address['city']),
       postalCode: str(address['postalCode']),
       countryCode: str(address['countryCode']),
+      email: str(record(buyer['contact'])['email']),
     },
     payment: {
       meansCode: str(payment['meansCode']),
