@@ -40,7 +40,7 @@ file holds only what is true across all products. Keep it that way.
 | `piuma/` | Piuma — Instagram контент-двигател с админ панел (чернова → човешко одобрение → публикуване) + управлявани страници (автопилот по план + Instagram Insights) | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · BullMQ + Redis · Argon2id + TOTP · Anthropic SDK | BG/EN/IT · официален Instagram Platform API · витрина на `/` (нула JS, SEO/AEO пълен набор) · панел `/admin` (7 роли, 2FA, одит-верига, три езика) · агентът влиза с HMAC-подписани заявки, само чернови · акаунти се създават **ръчно** (ToS на Meta) |
 | `agentgw/` | Агентски шлюз — нашите агенти от собствен ЕС сървър за сайтовете чрез агентски ключове (ключ = сайт → позволени агенти + домейни) | Node 22 · TS strict (ESM) · Express 5 · Zod · Prisma · PostgreSQL · `@anthropic-ai/vertex-sdk` · ванилов уиджет | BG/EN/IT · Claude **само през Vertex AI в ЕС** (`eu`) · публичните агенти са само разговорни (нула инструменти) · разговорите не се пазят · `cs_pk_`/`cs_sk_` ключове с месечен таван |
 | `korpora/` | Korpora — проектиране на корпусни мебели в браузъра (3D, разкрой, чертежи с карта за пробиване, DXF/G-code) с акаунти и админ панел | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · zod · Argon2id + TOTP · three.js (esbuild, без CDN) · Docker | BG/EN/IT (редакторът засега BG) · korpora.carbonstealth.eu · 30 дни тест от потвърждаване на имейла · Premium 25 €/мес. без ДДС (−5/10/20 % за 3/6/12) · Lifetime 750 € · плановете се активират **ръчно** · каталогът от магазините е в репото **само шифрован** (ключът е само на сървъра) |
-| `fakturist/` | Фактурист — онлайн фактуриране за фирми и счетоводни кантори, ядро върху EN 16931 (UBL 2.1 + CII), готово за е-фактурите от 2028 г. | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · Docker | BG/EN · fakturist.carbonstealth.eu (тестове; в документите fakturist.eu), порт 4340 · XML-ът минава официалните XSD + Schematron на EN 16931 и Peppol · номерация без пропуски, верига от отпечатъци · кантори по пълномощно (чл. 113, ал. 7 ЗДДС) · **никога „одобрен от НАП“** |
+| `fakturist/` | Фактурист — онлайн фактуриране за фирми и счетоводни кантори, ядро върху EN 16931 (UBL 2.1 + CII), готово за е-фактурите от 2028 г. | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · Docker | BG/EN · fakturist.carbonstealth.eu (порт 4340) · XSD + Schematron на EN 16931/Peppol · **никога „одобрен от НАП“** |
 | `rilievi/` | Rilievi Impianti — портал за схемите за оглед на асансьори (карти, модули на доставчиците, листове за интервенция, табели, изчисление за аргано) | Node 22 · TS strict (ESM) · Express 5 · EJS · Prisma · PostgreSQL · Docker | IT · rilievi.carbonstealth.eu (порт 4330) · **само покана** · многофирмен, 7 роли · 2FA по избор |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
@@ -153,6 +153,9 @@ non-technical-editor pain appears. **Never** put sensitive/transactional/fiscal 
 Н-18/СУПТО, payments, accounts, inventory) in a hosted CMS. Full rationale → `docs/adr/0001-prisma-vs-sanity.md`.
 
 ## Deployment — `deploy/`
+
+**Server: netcup (EU/DE), not Hetzner** (owner, 2026-11-13); IP from DNS, never from memory
+(`getent hosts rilievi.carbonstealth.eu`).
 
 Canonical flow: the server fetches an **immutable archive for an exact ref** from the
 public repo and hands it to `autodeploy.sh`. Still **no `git pull` on the box** (no working

@@ -6754,7 +6754,7 @@
         "Grep",
         "Glob"
       ],
-      "mission": "Отговаря за сървъра под наем (Hetzner/ЕС, Ubuntu) и разгръщането: владее автоматизирания деплой от ръчно качен GitHub архив в /root до жив сървър (deploy/autodeploy.sh), Docker Compose / systemd, Nginx/Caddy, TLS, бекъпи, втвърдяване и диагностика.",
+      "mission": "Отговаря за сървъра под наем (netcup/ЕС, Ubuntu) и разгръщането: владее автоматизирания деплой от ръчно качен GitHub архив в /root до жив сървър (deploy/autodeploy.sh), Docker Compose / systemd, Nginx/Caddy, TLS, бекъпи, втвърдяване и диагностика.",
       "capabilities": [
         "Автодеплой: архив в /root → разопаковане → билд → миграции → live",
         "zabobovdol (Docker Compose + Nginx + Let's Encrypt)",
