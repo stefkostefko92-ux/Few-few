@@ -1201,7 +1201,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 636
+        "lessons": 637
       },
       "evolution": [
         {
@@ -2039,9 +2039,15 @@
           "detail": "Научи: В SupremeDiscordBot revokeServer за Discord entitlement не пише accessUntil, а inExport… (+13 още)"
         },
         {
-          "version": "57.6.0",
+          "version": "57.5.0",
+          "date": "2026-11-12",
+          "event": "v57.5 — учене",
+          "detail": "Научи: AES-GCM шифрован \"draft\" за TOTP тайна, върнат от клиента без AAD с userId, е преносим …"
+        },
+        {
+          "version": "57.7.0",
           "date": "2026-11-13",
-          "event": "v57.6 — учене",
+          "event": "v57.7 — учене",
           "detail": "Научи: discord.js 14.26.4 с Partials.GuildMember емитва guildMemberUpdate и за некеширан член … (+1 още)"
         }
       ],
@@ -2050,6 +2056,11 @@
           "date": "2026-11-13",
           "type": "learning",
           "summary": "Научи: „discord.js 14.26.4 с Partials.GuildMember емитва guildMemberUpdate и за некеширан член …\" (+1 още)"
+        },
+        {
+          "date": "2026-11-12",
+          "type": "learning",
+          "summary": "Научи: „AES-GCM шифрован \"draft\" за TOTP тайна, върнат от клиента без AAD с userId, е преносим …\""
         },
         {
           "date": "2026-11-12",
