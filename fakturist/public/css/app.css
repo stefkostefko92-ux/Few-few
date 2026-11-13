@@ -850,3 +850,8 @@ input[type='color'] {
   background: var(--bad-bg);
   color: var(--bad-ink);
 }
+
+/* План (views/app/plan-order.ejs): „Откажи поръчката“ не се лепи за панела. */
+.plan-cancel {
+  margin-top: var(--gap);
+}

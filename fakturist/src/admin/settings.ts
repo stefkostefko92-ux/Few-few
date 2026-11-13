@@ -69,6 +69,18 @@ export const SETTINGS = {
       en: 'A cap against mail abuse: one firm sends at most this many invitations in 24 hours.',
     },
   },
+  'billing.supplierOrgId': {
+    schema: z.union([z.literal(''), z.string().regex(/^[a-z0-9]{20,40}$/)]),
+    default: '',
+    label: {
+      bg: 'Фирмата, която издава фактурите за плановете',
+      en: 'The company that issues plan invoices',
+    },
+    help: {
+      bg: 'Id на организацията на Карбон Стелт във Фактурист (от „Организации“ в панела). Празно — поръчките на планове са спрени.',
+      en: 'Id of the Carbon Stealth organisation in Fakturist (from “Organisations” in the panel). Empty — plan orders are off.',
+    },
+  },
   'site.notice': {
     schema: z.string().max(300),
     default: '',

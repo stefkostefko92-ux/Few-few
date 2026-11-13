@@ -124,20 +124,56 @@ function sellerOf(org: {
  * 3. строи е-фактурата през ядрото (EN 16931 + ЗДДС); с фатална грешка — rollback;
  * 4. добавя звено във веригата (отпечатък + печат) и записва документа и одита.
  */
-export async function issueDocument(
-  access: OrgAccess,
-  actorId: string,
-  request: IssueRequest,
-  /** Анулиране по чл. 116 ЗДДС: новият документ заменя `documentId` в същата транзакция. */
-  options: { replaces?: { documentId: string; reason: AnnulReason } } = {},
-): Promise<{ id: string; number: string; warnings: Issue[]; delivery: Delivery | null }> {
+export interface IssueSettings {
+  deadlineDays: number;
+  requireBankAccount: boolean;
+  profile: 'en16931' | 'peppol';
+  signature: string;
+}
+
+/** Настройките на издаването от мастър панела — четат се преди транзакцията. */
+export async function issueSettings(): Promise<IssueSettings> {
   const [deadlineDays, requireBankAccount, profile, signature] = await Promise.all([
     setting('issue.deadlineDays'),
     setting('issue.requireBankAccount'),
     setting('issue.profile'),
     setting('documents.signature'),
   ]);
-  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  return { deadlineDays, requireBankAccount, profile, signature };
+}
+
+export type IssueResult = {
+  id: string;
+  number: string;
+  warnings: Issue[];
+  delivery: Delivery | null;
+};
+
+export async function issueDocument(
+  access: OrgAccess,
+  actorId: string,
+  request: IssueRequest,
+  /** Анулиране по чл. 116 ЗДДС: новият документ заменя `documentId` в същата транзакция. */
+  options: { replaces?: { documentId: string; reason: AnnulReason } } = {},
+): Promise<IssueResult> {
+  const settings = await issueSettings();
+  return prisma.$transaction((tx) => issueInTx(tx, access, actorId, request, options, settings));
+}
+
+/**
+ * Издаването в транзакция на извикващия (плащането на план издава фактурата си в транзакцията на
+ * активирането — SPEC 50). Заключва фирмата-доставчик; всичко се връща при грешка.
+ */
+export async function issueInTx(
+  tx: Prisma.TransactionClient,
+  access: OrgAccess,
+  actorId: string,
+  request: IssueRequest,
+  options: { replaces?: { documentId: string; reason: AnnulReason } },
+  settings: IssueSettings,
+): Promise<IssueResult> {
+  const { deadlineDays, requireBankAccount, profile, signature } = settings;
+  {
     const orgs = await tx.$queryRaw<Array<{ id: string }>>`
       SELECT "id" FROM "Organization" WHERE "id" = ${access.organizationId} FOR UPDATE`;
     if (orgs.length !== 1) throw new Error('Фирмата не съществува');
@@ -266,5 +302,5 @@ export async function issueDocument(
       warnings: built.issues.filter((issue) => issue.severity === 'warning'),
       delivery,
     };
-  });
+  }
 }

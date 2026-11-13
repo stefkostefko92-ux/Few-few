@@ -4,12 +4,14 @@ import { errorMessage, logger } from './logger.js';
 import { createServer } from './server.js';
 import { startOutboxLoop } from './mail/outbox.js';
 import { startMaintenanceLoop } from './maintenance.js';
+import { startBillingLoop } from './billing/loop.js';
 
 async function main(): Promise<void> {
   const cfg = config();
   const app = createServer();
   startOutboxLoop();
   startMaintenanceLoop();
+  startBillingLoop();
   const server = app.listen(cfg.PORT, cfg.HOST, () => {
     logger.info({ port: cfg.PORT }, 'fakturist слуша');
   });

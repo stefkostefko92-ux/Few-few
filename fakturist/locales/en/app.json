@@ -419,5 +419,67 @@
       "master": "A master account is not closed from here.",
       "transferFirst": "You are the only owner of a company with other members — remove them first or write to us to transfer ownership."
     }
+  },
+  "plan": {
+    "title": "Plan",
+    "current": "Current plan",
+    "until": "paid until {date}",
+    "none": "No active plan.",
+    "closed": "Plan orders are not open yet. Write to us if you want a paid plan now.",
+    "nothing": "No plan to pay for here. For “Custom” — write to us.",
+    "choose": "Plan and period",
+    "yours": "current",
+    "net": "excl. VAT",
+    "vat": "VAT",
+    "clients": "Client companies with an active mandate: {count}",
+    "method": "Payment method",
+    "card": "By card",
+    "cardHelp": "You pay on Revolut’s secure page. The plan starts when Revolut confirms the payment — usually within a minute.",
+    "transfer": "By bank transfer",
+    "transferHelp": "You get a pro forma with the IBAN and reference. The plan starts once the transfer arrives and we confirm it (within 1 business day).",
+    "terms": "The subscription follows the",
+    "termsLink": "terms of service",
+    "order": "Order",
+    "history": "Payments",
+    "date": "Date",
+    "reference": "Reference",
+    "status": "Status",
+    "total": "Total incl. VAT",
+    "invoice": "Invoice",
+    "interval": {
+      "MONTH": "1 month",
+      "YEAR": "12 months"
+    },
+    "statuses": {
+      "PENDING": "awaiting payment",
+      "COMPLETED": "paid",
+      "FAILED": "failed",
+      "REFUNDED": "refunded",
+      "CANCELLED": "cancelled"
+    },
+    "orderTitle": "Order {reference}",
+    "paid": "Paid on {date}. The plan is active; the invoice is in the company inbox and by email.",
+    "processing": "The payment is being processed — this page refreshes itself. The plan starts as soon as Revolut confirms the payment.",
+    "planLabel": "Plan",
+    "transferTitle": "Pay by bank transfer",
+    "beneficiary": "Beneficiary",
+    "amount": "Amount",
+    "transferNote": "Use the reference exactly — it links the transfer to the order. The invoice is dated with the payment date.",
+    "proforma": "Download pro forma (PDF)",
+    "cardTitle": "Pay by card",
+    "cardNote": "Revolut’s secure page opens. Card details never pass through us.",
+    "payNow": "Pay {amount}",
+    "retry": "Try again",
+    "cancel": "Cancel the order",
+    "err": {
+      "invalid": "Choose a plan, a period and a payment method.",
+      "method": "This payment method is not available.",
+      "notFound": "The plan is not available.",
+      "audience": "The plan is not for this kind of company.",
+      "free": "There is nothing to pay on this plan.",
+      "noPrice": "This plan is priced by agreement — write to us.",
+      "noSupplier": "Plan orders are not open yet.",
+      "revolut": "The payment page did not open. Try again shortly."
+    }
   }
 }

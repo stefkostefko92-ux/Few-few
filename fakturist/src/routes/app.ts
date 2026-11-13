@@ -10,6 +10,7 @@ import { appSecurityRouter } from './app-security.js';
 import { appInboxRouter } from './app-inbox.js';
 import { appClientsRouter } from './app-clients.js';
 import { appSettingsRouter } from './app-settings.js';
+import { appPlanRouter } from './app-plan.js';
 import { appCatalogRouter } from './app-catalog.js';
 import { appMembersRouter } from './app-members.js';
 import { appIssueRouter } from './app-issue.js';
@@ -46,6 +47,7 @@ export function appRouter(): Router {
   router.use(appInboxRouter());
   router.use(appClientsRouter());
   router.use(appSettingsRouter());
+  router.use(appPlanRouter());
 
   router.get('/app', async (req, res) => {
     const user = req.principal!.user;
@@ -122,6 +124,7 @@ export function appRouter(): Router {
       canManageMandates: roleCan(access.role, 'mandates.manage') && access.viaFirmId === null,
       canSettings: roleCan(access.role, 'org.settings') && access.viaFirmId === null,
       canMembers: roleCan(access.role, 'members.manage') && access.viaFirmId === null,
+      canBilling: roleCan(access.role, 'billing.manage') && access.viaFirmId === null,
       canParties: roleCan(access.role, 'parties.manage'),
       canItems: roleCan(access.role, 'items.manage'),
       canSeries: roleCan(access.role, 'series.manage') && access.viaFirmId === null,

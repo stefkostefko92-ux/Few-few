@@ -14,7 +14,8 @@ BG източник + EN.
 Node ≥22 · TypeScript strict (ESM, `NodeNext`) · Express 5 · EJS (строг CSP с nonce, `style-src-attr 'none'`)
 · Prisma 6 + PostgreSQL 16 · zod на всеки външен вход · pino (без PII) · Argon2id · JWT (jose, HS256) в
 HttpOnly бисквитка срещу сесия в базата · TOTP (RFC 6238, без зависимост) · IBM Plex Sans/Mono от
-@fontsource (без CDN). Плащания: Revolut Business (webhook с HMAC подпис) + ръчно потвърждение от панела.
+@fontsource (без CDN). Плащания: Revolut Merchant (поръчка с карта; webhook с HMAC подпис + повторно четене) + банков
+превод с потвърждение от панела.
 Поща: Brevo SMTP. Ключовете и на двете се попълват в мастър панела → Настройки (резерва: `.env`).
 
 ## Команди (гейтът)
@@ -59,7 +60,11 @@ src/
   admin/         resources.ts + registry.ts (ВСЯКА таблица → мастър панела; тест пада, ако липсва) ·
                  settings.ts (глобалните настройки — единствен списък) · integrations.ts (Brevo SMTP и
                  Revolut: полетата, шифрованите ключове, панел > .env) · integration-checks.ts (проверките)
-  billing/       plans.ts (началните планове) · public-plans.ts · seed-plans.ts · revolut.ts (подписът)
+  billing/       plans.ts (началните планове) · public-plans.ts · seed-plans.ts · revolut.ts (подписът) ·
+                 billing-core.ts (ДДС, грешките) · orders.ts (цена, поръчка, активиране) · plan-invoice.ts
+                 (фактурата от Карбон Стелт) · revolut-client.ts (Merchant API) · card.ts (страница за
+                 плащане, сверка, проверка на висящите) · expiry.ts · loop.ts (на 10 мин) ·
+                 plan-view.ts · proforma-pdf.ts
   features.ts    регистърът на функциите (live/planned + дата) — плановете, панелът и витрината четат оттук
   seo/           pages.ts (страниците на витрината — единствен списък) · structured-data.ts (JSON-LD)
   catalog/       schemas.ts (zod на формите) · catalog.ts (контрагенти, артикули) · series.ts (сериите под
@@ -68,7 +73,8 @@ src/
   pwa/           manifest.ts · device.ts (устройството по User-Agent за /prilozhenie)
   routes/        site · seo · health · pwa · legal · auth · account (нова парола, имейл) · install ·
                  invite (/pokana) · member-invite (/chlen) · app (+ app-issue, app-members, app-catalog, app-security, app-inbox,
-                 app-clients, app-settings, app-shared) · admin (+ admin-settings, admin-actions) · webhooks
+                 app-clients, app-settings, app-plan, app-shared) · admin (+ admin-settings, admin-actions) ·
+                 webhooks
   http/          upload.ts — multipart (multer, в паметта) + CSRF след разчитането · view · ip · cookies
 views/           site/ (витрината — Дизайнера) · app/ · admin/ · auth/ · errors/ · partials/
 locales/{bg,en}/ site · features · auth · app · admin · errors — еднакви ключове (тест)
@@ -92,6 +98,18 @@ scripts/         conformance/run.mjs (официалната проверка) �
 - **Никога „одобрен от НАП“ или „сертифициран“** — до наредбата по чл. 120а, ал. 9 от законопроекта такова
   одобрение не съществува.
 - Права по план — само от проверен webhook на Revolut или от мастър панела, никога от redirect.
+- **Поръчка на план** (SPEC 49–50, „План“ на фирмата — `billing.manage`, само пряк собственик): сумата е
+  само от `quotePlan` (цена без ДДС + ДДС 20 % half-up, цели центове). Карта → Revolut order
+  (`merchant_order_data.reference` = основанието „FKT-…“, `expire_pending_after` 24 ч; create НЯМА
+  Idempotency-Key → при прекъсната връзка поръчката се търси по основанието). Webhook-ът е само сигнал:
+  `settleRevolutOrder` чете поръчката наново и сверява id, сума, валута, основание, остатък; часът на
+  плащането е `updated_at` от `payments[]` (поле „платено на“ няма). Revolut праща webhook само 4 пъти за
+  ~30 мин → `reconcileCardPayments` (на 10 мин) хваща изгубените; мастърът има „Провери в Revolut“.
+  Банков превод → проформа (не е данъчен документ) → мастърът въвежда датата от извлечението.
+  Активирането и фактурата от организацията `billing.supplierOrgId` са в ЕДНА транзакция; BT-7 = датата
+  на плащането, BT-113 = сумата (за плащане 0). Заменена/отказана поръчка е CANCELLED и пак се активира,
+  ако все пак се плати. Изтекъл период → PAST_DUE + началният план (без автоматично подновяване).
+  Ключ за Revolut **без** подписване на заявките (Ed25519 се иска в продукция, ако е включено).
 - **Правните документи** (общи условия, поверителност, договор за обработване — BG+EN, публикувани
   13.11.2026) са в `src/legal/documents.ts` (адреси, версия) и `views/legal/<документ>/<език>.ejs`.
   Съществена промяна на текста = нова `version` (регистрацията записва приетата в `LegalAcceptance`) и

@@ -3,6 +3,10 @@ import { z } from 'zod';
 import { config } from '../config.js';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
+import { kickOutbox } from '../mail/outbox.js';
+import { activatePayment, BillingError } from '../billing/orders.js';
+import { settleRevolutOrder } from '../billing/card.js';
+import { RevolutError } from '../billing/revolut-client.js';
 import { HttpError } from '../auth/guards.js';
 import { sealHmac } from '../auth/keys.js';
 import {
@@ -32,6 +36,16 @@ const TransferForm = z.object({
  * Действията на мастър панела върху записи: проверка на веригата, потвърждения (плащане, фирма,
  * пълномощно) и прехвърляне на фирма, добавена от кантора, към собственика ѝ.
  */
+/** Датата от извлечението: точно ГГГГ-ММ-ДД, съществуваща, не в бъдещето, до година назад. */
+export function paidOn(raw: unknown, now = new Date()): Date | null {
+  if (typeof raw !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
+  const at = new Date(`${raw}T12:00:00Z`);
+  if (Number.isNaN(at.getTime()) || at.toISOString().slice(0, 10) !== raw) return null;
+  const today = now.toISOString().slice(0, 10);
+  if (raw > today || now.getTime() - at.getTime() > 366 * 24 * 60 * 60 * 1000) return null;
+  return at;
+}
+
 export function adminActionsRouter(): Router {
   const router = Router();
 
@@ -96,14 +110,35 @@ export function adminActionsRouter(): Router {
   });
 
   // --- Ръчно потвърждение на плащане (банков превод към Revolut Business) -----------------------------
+  // Поръчка на план (SPEC 49–50): активиране + фактура от Карбон Стелт в една транзакция; датата на
+  // плащането е от извлечението (BT-7). Плащане с карта не се потвърждава на ръка — само „Провери в
+  // Revolut“ (поръчката се чете оттам). Плащане без план (отпреди поръчките) — само се отбелязва.
   router.post('/admin/plashtaniya/:id/potvardi', async (req, res) => {
     const payment = await prisma.payment.findUnique({ where: { id: String(req.params['id']) } });
     if (!payment) throw new HttpError(404);
+    const paidAt = paidOn((req.body as Record<string, unknown>)['paidOn']);
+    if (!paidAt) throw new HttpError(400);
+    if (payment.planCode) {
+      if (payment.provider !== 'MANUAL') throw new HttpError(409);
+      try {
+        const result = await activatePayment({
+          paymentId: payment.id,
+          paidAt,
+          confirmedById: req.principal!.user.id,
+        });
+        if (!result.activated) throw new HttpError(409);
+      } catch (error) {
+        if (error instanceof BillingError) throw new HttpError(409);
+        throw error;
+      }
+      kickOutbox();
+      return res.redirect(303, `/admin/r/payments/${payment.id}`);
+    }
     await prisma.$transaction(async (tx) => {
       // Условен запис: две едновременни потвърждения (или потвърждение + webhook) не минават двете.
       const updated = await tx.payment.updateMany({
         where: { id: payment.id, status: 'PENDING' },
-        data: { status: 'COMPLETED', paidAt: new Date() },
+        data: { status: 'COMPLETED', paidAt, confirmedById: req.principal!.user.id },
       });
       if (updated.count !== 1) throw new HttpError(409);
       await audit(tx, {
@@ -116,6 +151,19 @@ export function adminActionsRouter(): Router {
       });
     });
     res.redirect(303, `/admin/r/payments/${payment.id}`);
+  });
+
+  // Плащане с карта, за което webhook не е дошъл: поръчката се чете от Revolut и се сверява (card.ts).
+  router.post('/admin/plashtaniya/:id/proveri', async (req, res) => {
+    const payment = await prisma.payment.findUnique({ where: { id: String(req.params['id']) } });
+    if (!payment?.providerOrderId) throw new HttpError(404);
+    let outcome: string;
+    try {
+      outcome = await settleRevolutOrder(payment.providerOrderId);
+    } catch (error) {
+      outcome = error instanceof RevolutError ? `revolut-${error.code}` : 'error';
+    }
+    res.redirect(303, `/admin/r/payments/${payment.id}?proverka=${encodeURIComponent(outcome)}`);
   });
 
   // --- Пълномощни и потвърждаване на фирми ----------------------------------------------------------

@@ -79,3 +79,37 @@ test('чужд ключ, подменено тяло, старо клеймо и
     false,
   );
 });
+
+test('клеймо в секунди (единицата не е потвърдена от първоизточник) — същата проверка и срок', () => {
+  const seconds = String(Math.floor(now / 1000));
+  assert.ok(
+    verifyRevolutSignature({
+      secret,
+      timestamp: seconds,
+      signature: sign(secret, seconds),
+      rawBody: body,
+      now,
+    }),
+  );
+  const stale = String(Math.floor(now / 1000) - 6 * 60);
+  assert.equal(
+    verifyRevolutSignature({
+      secret,
+      timestamp: stale,
+      signature: sign(secret, stale),
+      rawBody: body,
+      now,
+    }),
+    false,
+  );
+  assert.equal(
+    verifyRevolutSignature({
+      secret,
+      timestamp: '12345',
+      signature: sign(secret, '12345'),
+      rawBody: body,
+      now,
+    }),
+    false,
+  );
+});

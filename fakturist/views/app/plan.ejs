@@ -1,0 +1,60 @@
+<%- include('../partials/app-head', { title: t('app.plan.title') }) %>
+<% const day = (d) => d.toISOString().slice(0, 10).split('-').reverse().join('.'); %>
+<% const eur = (c) => (lang === 'bg' ? (c / 100).toFixed(2).replace('.', ',') + ' €' : '€' + (c / 100).toFixed(2)); %>
+<p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
+<h1><%= t('app.plan.title') %></h1>
+<% if (err) { %><p class="error" role="alert"><%= tOr('app.plan.err.' + err, t('auth.errors.invalid')) %></p><% } %>
+<section class="panel">
+  <h2><%= t('app.plan.current') %></h2>
+  <% if (current) { %>
+    <p><strong><%= lang === 'bg' ? current.plan.nameBg : current.plan.nameEn %></strong>
+    <% if (current.plan.priceMonthlyCents && current.currentPeriodEnd.getUTCFullYear() < 2100) { %> · <%= t('app.plan.until', { date: day(current.currentPeriodEnd) }) %><% } %></p>
+  <% } else { %><p class="muted"><%= t('app.plan.none') %></p><% } %>
+</section>
+
+<% const payable = options.filter((o) => Object.keys(o.quotes).length > 0); %>
+<% if (!methods.card && !methods.transfer) { %>
+  <p class="callout"><%= t('app.plan.closed') %></p>
+<% } else if (payable.length === 0) { %>
+  <p class="muted"><%= t('app.plan.nothing') %></p>
+<% } else { %>
+<form method="post" action="/app/o/<%= org.id %>/plan/poruchka" class="stack">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <fieldset class="choice">
+    <legend><%= t('app.plan.choose') %></legend>
+    <% let first = true; payable.forEach((o) => { ['MONTH', 'YEAR'].forEach((interval) => { const q = o.quotes[interval]; if (!q) return; %>
+      <label class="radio"><input type="radio" name="choice" value="<%= o.code %>:<%= interval %>"<%= first ? ' checked' : '' %> required>
+        <span><strong><%= lang === 'bg' ? o.name.bg : o.name.en %></strong> · <%= t('app.plan.interval.' + interval) %><% if (o.current) { %> <span class="badge"><%= t('app.plan.yours') %></span><% } %><br>
+        <span class="mono"><%= eur(q.netCents) %></span> <span class="muted"><%= t('app.plan.net') %></span> + <span class="mono"><%= eur(q.vatCents) %></span> <span class="muted"><%= t('app.plan.vat') %></span> = <strong class="mono"><%= eur(q.totalCents) %></strong>
+        <% if (q.clientCompanies !== null) { %><br><span class="hint"><%= t('app.plan.clients', { count: q.clientCompanies }) %></span><% } %></span>
+      </label>
+    <% first = false; }); }); %>
+  </fieldset>
+  <fieldset class="choice">
+    <legend><%= t('app.plan.method') %></legend>
+    <% if (methods.card) { %><label class="radio"><input type="radio" name="method" value="card" checked> <span><strong><%= t('app.plan.card') %></strong><br><span class="hint"><%= t('app.plan.cardHelp') %></span></span></label><% } %>
+    <% if (methods.transfer) { %><label class="radio"><input type="radio" name="method" value="transfer"<%= methods.card ? '' : ' checked' %>> <span><strong><%= t('app.plan.transfer') %></strong><br><span class="hint"><%= t('app.plan.transferHelp') %></span></span></label><% } %>
+  </fieldset>
+  <p class="hint"><%= t('app.plan.terms') %> <a href="/<%= lang === 'bg' ? 'obshti-usloviya' : 'en/terms' %>"><%= t('app.plan.termsLink') %></a></p>
+  <div><button type="submit"><%= t('app.plan.order') %></button></div>
+</form>
+<% } %>
+
+<% if (history.length) { %>
+<h2><%= t('app.plan.history') %></h2>
+<div class="table-wrap"><table class="stack-table">
+  <thead><tr><th scope="col"><%= t('app.plan.date') %></th><th scope="col"><%= t('app.plan.reference') %></th><th scope="col"><%= t('app.plan.status') %></th><th scope="col" class="num"><%= t('app.plan.total') %></th><th scope="col"><%= t('app.plan.invoice') %></th></tr></thead>
+  <tbody>
+  <% history.forEach((p) => { %>
+    <tr>
+      <td data-label="<%= t('app.plan.date') %>"><%= day(p.paidAt || p.createdAt) %></td>
+      <td data-label="<%= t('app.plan.reference') %>" class="mono"><a href="/app/o/<%= org.id %>/plan/<%= p.id %>"><%= p.reference || '—' %></a></td>
+      <td data-label="<%= t('app.plan.status') %>"><span class="tag<%= p.status === 'COMPLETED' ? ' tag-active' : p.status === 'PENDING' ? ' tag-pending' : '' %>"><%= t('app.plan.statuses.' + p.status) %></span></td>
+      <td data-label="<%= t('app.plan.total') %>" class="num mono"><%= eur(p.amountCents) %></td>
+      <td data-label="<%= t('app.plan.invoice') %>"><% if (p.inboxEntryId) { %><a href="/app/o/<%= org.id %>/shkafche/<%= p.inboxEntryId %>"><%= p.invoiceDocument.number %></a><% } else if (p.invoiceDocument) { %><span class="mono"><%= p.invoiceDocument.number %></span><% } else { %>—<% } %></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/app-foot') %>

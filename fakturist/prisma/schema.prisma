@@ -76,6 +76,8 @@ enum PaymentStatus {
   COMPLETED
   FAILED
   REFUNDED
+  /// Заменена от по-нова поръчка или отказана от клиента — ако все пак се плати, се активира.
+  CANCELLED
 }
 
 model User {
@@ -108,6 +110,8 @@ model User {
   memberships           Membership[]
   issuedDocuments       Document[]        @relation("IssuedBy")
   cancelledDocuments    Document[]        @relation("CancelledBy")
+  paymentsCreated       Payment[]         @relation("PaymentCreatedBy")
+  paymentsConfirmed     Payment[]         @relation("PaymentConfirmedBy")
   auditEntries          AuditLog[]
   inboxDecisions        InboxEntry[]
   mandatesCreated       ClientMandate[]
@@ -360,6 +364,8 @@ model Document {
   replaces           Document?       @relation("Replacement")
   cancelledById      String?
   cancelledBy        User?           @relation("CancelledBy", fields: [cancelledById], references: [id], onDelete: SetNull)
+  /// Плащането на план, за което е тази фактура (документите на Карбон Стелт за абонаментите).
+  paymentFor         Payment?        @relation("PaymentInvoice")
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
 
@@ -440,22 +446,45 @@ model Subscription {
 }
 
 model Payment {
-  id              String          @id @default(cuid())
-  organizationId  String
-  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  subscriptionId  String?
-  subscription    Subscription?   @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
-  amountCents     Int
-  currency        String          @default("EUR")
-  provider        PaymentProvider
+  id                String           @id @default(cuid())
+  organizationId    String
+  organization      Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  subscriptionId    String?
+  subscription      Subscription?    @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  /// Сумата за плащане С ДДС (евроцентове) — изчислена на сървъра (src/billing/orders.ts).
+  amountCents       Int
+  currency          String           @default("EUR")
+  provider          PaymentProvider
   /// Идентификаторът на поръчката при Revolut — уникален (идемпотентност на webhook-а).
-  providerOrderId String?         @unique
-  status          PaymentStatus   @default(PENDING)
-  paidAt          DateTime?
-  createdAt       DateTime        @default(now())
+  providerOrderId   String?          @unique
+  /// Страницата за плащане с карта (Revolut) — пренасочването след поръчката.
+  checkoutUrl       String?
+  status            PaymentStatus    @default(PENDING)
+  paidAt            DateTime?
+  /// Поръчаният план и периодът (SPEC 49) — null при плащания отпреди поръчките от профила.
+  planCode          String?
+  interval          BillingInterval?
+  /// Основата и ДДС-ът (евроцентове), от които е `amountCents`; ставката към момента на поръчката.
+  netCents          Int              @default(0)
+  vatCents          Int              @default(0)
+  vatRate           String           @default("20")
+  /// Основанието за банков превод („FKT-XXXXXXXX“) — по него се сверява преводът.
+  reference         String?          @unique
+  /// Фактурата за плащането, издадена от Карбон Стелт в транзакцията на активирането (SPEC 50).
+  invoiceDocumentId String?          @unique
+  invoiceDocument   Document?        @relation("PaymentInvoice", fields: [invoiceDocumentId], references: [id], onDelete: Restrict)
+  createdById       String?
+  createdBy         User?            @relation("PaymentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  /// Кой е потвърдил банковия превод в панела (null — webhook на Revolut).
+  confirmedById     String?
+  confirmedBy       User?            @relation("PaymentConfirmedBy", fields: [confirmedById], references: [id], onDelete: SetNull)
+  createdAt         DateTime         @default(now())
 
   @@index([organizationId])
   @@index([subscriptionId])
+  @@index([status, provider])
+  @@index([createdById])
+  @@index([confirmedById])
 }
 
 /// Получените webhook събития — всяко се обработва точно веднъж (уникален eventKey).

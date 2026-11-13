@@ -136,5 +136,21 @@
       "notCompany": "An accounting firm’s ownership is not revoked here."
     },
     "confirmOwner": "Owner verified"
+  },
+  "paidOn": "Payment date (from the statement)",
+  "paidOnHelp": "The tax point of the invoice (BT-7). The Carbon Stealth invoice is issued at once, into the client’s inbox.",
+  "paymentCheck": {
+    "help": "Card payment with no notice from Revolut: the order is read from Revolut and checked (amount, currency, reference). If paid, it is activated with an invoice.",
+    "button": "Check with Revolut",
+    "activated": "Paid — the plan is active and the invoice issued.",
+    "already": "The payment is already recorded.",
+    "notPaid": "The order is not paid at Revolut yet.",
+    "notFound": "No such order on our side.",
+    "mismatch": "The Revolut order does not match the record (amount, currency or reference) — not activated; see the audit log.",
+    "revolut-notConfigured": "Revolut is not set up (Settings → Revolut).",
+    "revolut-rejected": "Revolut refused the request (key or environment).",
+    "revolut-network": "No connection to Revolut — try again.",
+    "revolut-invalidResponse": "Unexpected response from Revolut.",
+    "error": "The check failed."
   }
 }

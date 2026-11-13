@@ -85,6 +85,10 @@ export function adminRouter(): Router {
       transfer,
       revoked: req.query['otneta'] === '1',
       error: error && /^[a-zA-Z.]{1,40}$/.test(error) ? error : null,
+      check:
+        typeof req.query['proverka'] === 'string' && /^[a-zA-Z-]{1,40}$/.test(req.query['proverka'])
+          ? req.query['proverka']
+          : null,
     });
   });
 

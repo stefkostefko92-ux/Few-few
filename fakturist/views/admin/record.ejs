@@ -54,9 +54,18 @@
   <% if (row.status !== 'REVOKED') { %><form method="post" action="/admin/palnomoshtni/<%= row.id %>/ottegli"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" class="button-secondary"><%= t('admin.revokeMandate') %></button></form><% } %>
 </div>
 <% } %>
-<% if (resource.model === 'Payment' && row.status === 'PENDING') { %>
-<form method="post" action="/admin/plashtaniya/<%= row.id %>/potvardi">
+<% if (resource.model === 'Payment' && check) { %><p class="<%= check === 'activated' || check === 'already' ? 'ok' : 'error' %>" role="status"><%= tOr('admin.paymentCheck.' + check, t('admin.paymentCheck.error')) %></p><% } %>
+<% if (resource.model === 'Payment' && row.provider === 'REVOLUT' && row.providerOrderId && (row.status === 'PENDING' || row.status === 'CANCELLED')) { %>
+<form method="post" action="/admin/plashtaniya/<%= row.id %>/proveri" class="stack narrow-form">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <p class="hint"><%= t('admin.paymentCheck.help') %></p>
+  <button type="submit"><%= t('admin.paymentCheck.button') %></button>
+</form>
+<% } %>
+<% if (resource.model === 'Payment' && (row.status === 'PENDING' || row.status === 'CANCELLED') && (row.provider === 'MANUAL' || !row.planCode)) { %>
+<form method="post" action="/admin/plashtaniya/<%= row.id %>/potvardi" class="stack narrow-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label><%= t('admin.paidOn') %><input type="date" name="paidOn" required value="<%= new Date().toISOString().slice(0, 10) %>"><span class="hint"><%= t('admin.paidOnHelp') %></span></label>
   <button type="submit"><%= t('admin.confirmPayment') %></button>
 </form>
 <% } %>

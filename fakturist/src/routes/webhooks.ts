@@ -1,12 +1,11 @@
 import express, { Router } from 'express';
 import { z } from 'zod';
-import { Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
-import { audit } from '../audit.js';
-import { logger } from '../logger.js';
+import { errorMessage, logger } from '../logger.js';
 import { sha256 } from '../ledger/chain.js';
 import { verifyRevolutSignature } from '../billing/revolut.js';
 import { revolutSettings } from '../admin/integrations.js';
+import { settleRevolutOrder } from '../billing/card.js';
 
 /** Събитията на Revolut Merchant API, които ползваме; останалите се записват и пропускат. */
 const RevolutEvent = z.object({
@@ -15,9 +14,10 @@ const RevolutEvent = z.object({
 });
 
 /**
- * Webhook на Revolut: суровото тяло (за подписа) → проверка на подписа → запис на събитието веднъж
- * (уникален ключ — повторената доставка не прави нищо) → при ORDER_COMPLETED плащането с този номер на
- * поръчка става COMPLETED. Правата по плана се дават САМО оттук или от мастър панела, никога от redirect.
+ * Webhook на Revolut: суровото тяло (за подписа) → проверка на подписа → запис на събитието (уникален
+ * ключ event:order_id — Revolut не праща id на събитието) → при ORDER_COMPLETED поръчката се чете наново
+ * и се сверява (src/billing/card.ts) → активиране + фактура. Правата по плана се дават САМО оттук,
+ * от проверката на висящите или от мастър панела, никога от пренасочването след плащането.
  */
 export function webhooksRouter(): Router {
   const router = Router();
@@ -47,42 +47,38 @@ export function webhooksRouter(): Router {
       if (!parsed.success) return res.status(400).end();
       const { event, order_id: orderId } = parsed.data;
       const eventKey = `revolut:${event}:${orderId ?? sha256(rawBody.toString('utf8'))}`;
+      // Записът е веднъж; „обработено“ се слага чак след успеха — повторената доставка след грешка
+      // опитва пак, след успех не прави нищо.
+      const seen = await prisma.webhookEvent.upsert({
+        where: { eventKey },
+        create: {
+          provider: 'REVOLUT',
+          eventKey,
+          type: event,
+          payloadHash: sha256(rawBody.toString('utf8')),
+        },
+        update: {},
+      });
+      if (seen.processedAt) return res.status(200).end();
       try {
-        await prisma.$transaction(async (tx) => {
-          await tx.webhookEvent.create({
-            data: {
-              provider: 'REVOLUT',
-              eventKey,
-              type: event,
-              payloadHash: sha256(rawBody.toString('utf8')),
-            },
-          });
-          if (event === 'ORDER_COMPLETED' && orderId) {
-            const payment = await tx.payment.findUnique({ where: { providerOrderId: orderId } });
-            if (payment && payment.status === 'PENDING') {
-              await tx.payment.update({
-                where: { id: payment.id },
-                data: { status: 'COMPLETED', paidAt: new Date() },
-              });
-              await audit(tx, {
-                actorId: null,
-                organizationId: payment.organizationId,
-                action: 'billing.payment.completed',
-                targetType: 'Payment',
-                targetId: payment.id,
-                details: { provider: 'REVOLUT', amountCents: payment.amountCents },
-              });
-            }
-          }
-          await tx.webhookEvent.update({ where: { eventKey }, data: { processedAt: new Date() } });
-        });
-      } catch (error) {
-        // Вече обработено събитие — 200, за да не го праща пак.
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-          return res.status(200).end();
+        let final = true;
+        if (event === 'ORDER_COMPLETED' && orderId) {
+          // Събитието е само сигнал: състоянието и сумата се четат наново от Revolut (card.ts).
+          const outcome = await settleRevolutOrder(orderId);
+          if (outcome === 'activated') logger.info({ event }, 'плащане с карта — активирано');
+          // Още неплатена (разминаване във времето) — повторната доставка или проверката я довършват.
+          final = outcome !== 'notPaid';
         }
-        logger.error({ event }, 'webhook на Revolut не се обработи');
-        return res.status(500).end();
+        if (final) {
+          await prisma.webhookEvent.update({
+            where: { eventKey },
+            data: { processedAt: new Date() },
+          });
+        }
+      } catch (error) {
+        logger.error({ event, err: errorMessage(error) }, 'webhook на Revolut не се обработи');
+        // Revolut опитва пак (3 пъти през 10 мин); после — проверката на висящите (card.ts).
+        return res.status(503).end();
       }
       res.status(200).end();
     },
