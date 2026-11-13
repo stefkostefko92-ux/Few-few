@@ -557,3 +557,7 @@
 {"t":"handoff","ts":"2026-11-12T23:37:20.766Z","id":"r6b175f9b","from":"dizayner","to":"оркестратор","status":"има бележки","run":"5441a3f8"}
 {"t":"start","ts":"2026-11-13T06:21:06.559Z","id":"r6cb19f91","flow":"авто","lead":"prevodach","auto":true}
 {"t":"handoff","ts":"2026-11-13T06:21:06.560Z","id":"r6cb19f91","from":"prevodach","to":"човек","status":"има бележки","run":"0b600041"}
+{"t":"start","ts":"2026-11-13T10:08:52.909Z","id":"r017cbb73","flow":"авто","lead":"dizayner","auto":true}
+{"t":"handoff","ts":"2026-11-13T10:08:52.909Z","id":"r017cbb73","from":"dizayner","to":"kodadjiyata","status":"има бележки","run":"264d5669"}
+{"t":"start","ts":"2026-11-13T10:10:40.236Z","id":"r8b52da23","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-13T10:10:40.236Z","id":"r8b52da23","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"c54bd8f8"}
