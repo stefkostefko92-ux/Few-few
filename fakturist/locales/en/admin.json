@@ -66,7 +66,9 @@
       "missingKey": "No Secret API key is saved.",
       "notConfigured": "Email is not configured.",
       "network": "The server could not be reached.",
-      "smtp": "The SMTP server refused the connection."
+      "smtp": "The SMTP server refused the connection.",
+      "tlsOnPlainPort": "This port does not start with TLS (2525 and 587 upgrade to TLS with STARTTLS). Untick “TLS from the start” — it is for port 465 only — save and check again.",
+      "plainOnTlsPort": "Port 465 starts with TLS right away. Tick “TLS from the start” or change the port to 2525 or 587."
     },
     "errors": {
       "invalidHost": "Invalid server address.",

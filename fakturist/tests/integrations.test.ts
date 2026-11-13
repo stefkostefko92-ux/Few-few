@@ -237,6 +237,45 @@ test('проверката на SMTP: връзка + пробно писмо д�
   assert.equal(scrub(`ключ ${SK} и a@b.c`, [SK]), 'ключ [тайна] и [адрес]');
 });
 
+test('проверката на SMTP: „TLS от началото“ на порт със STARTTLS (и обратното) — обяснение, не суров OpenSSL', async () => {
+  const opensslError = {
+    verify: async () => {
+      throw new Error(
+        'C0ECCB5A0C760000:error:0A00010B:SSL routines:tls_validate_record_header:wrong version number:../deps/openssl/openssl/ssl/record/methods/tlsany_meth.c:77:',
+      );
+    },
+    sendMail: async () => ({}),
+  };
+  const tls = await checkSmtp(opensslError, {
+    from: 'a@b.c',
+    to: 'master@example.test',
+    secrets: [BREVO_KEY],
+    connection: { secure: true, port: 2525 },
+  });
+  assert.deepEqual(tls, { ok: false, error: 'tlsOnPlainPort' });
+  const greeting = {
+    verify: async () => {
+      throw new Error('Greeting never received');
+    },
+    sendMail: async () => ({}),
+  };
+  const plain = await checkSmtp(greeting, {
+    from: 'a@b.c',
+    to: 'master@example.test',
+    secrets: [BREVO_KEY],
+    connection: { secure: false, port: 465 },
+  });
+  assert.deepEqual(plain, { ok: false, error: 'plainOnTlsPort' });
+  // Друга грешка остава както е (без адреси и ключ).
+  const other = await checkSmtp(greeting, {
+    from: 'a@b.c',
+    to: 'master@example.test',
+    secrets: [BREVO_KEY],
+    connection: { secure: false, port: 2525 },
+  });
+  assert.equal(other.error, 'Greeting never received');
+});
+
 test('писмото с поканата: екранирано име, връзка, срок; без друго копие на токена', () => {
   const link = 'https://fakturist.carbonstealth.eu/pokana/TOKEN123';
   const mail = transferInviteMail({

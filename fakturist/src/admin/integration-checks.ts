@@ -66,10 +66,40 @@ export interface SmtpTransport {
   sendMail(message: { from: string; to: string; subject: string; text: string }): Promise<unknown>;
 }
 
+/**
+ * Разминаване между отметката „TLS от началото“ и порта — най-честата грешка при настройка: TLS
+ * ръкостискане към порт със STARTTLS (2525/587) дава „wrong version number“ на OpenSSL; обикновена
+ * връзка към 465 чака поздрав, който никога не идва. Вместо суровия текст — код с обяснение в панела.
+ */
+export function smtpMismatch(
+  message: string,
+  connection: { secure: boolean; port: number },
+): 'tlsOnPlainPort' | 'plainOnTlsPort' | null {
+  if (
+    connection.secure &&
+    /wrong version number|WRONG_VERSION_NUMBER|tls_validate_record_header/i.test(message)
+  ) {
+    return 'tlsOnPlainPort';
+  }
+  if (
+    !connection.secure &&
+    connection.port === 465 &&
+    /greeting never received|timed? ?out|ETIMEDOUT|connection closed/i.test(message)
+  ) {
+    return 'plainOnTlsPort';
+  }
+  return null;
+}
+
 /** Връзка и вход към SMTP сървъра, после пробно писмо до мастъра — доказва целия път до пощата. */
 export async function checkSmtp(
   transport: SmtpTransport,
-  input: { from: string; to: string; secrets: readonly string[] },
+  input: {
+    from: string;
+    to: string;
+    secrets: readonly string[];
+    connection?: { secure: boolean; port: number };
+  },
 ): Promise<CheckResult> {
   try {
     await transport.verify();
@@ -81,6 +111,8 @@ export async function checkSmtp(
     });
     return { ok: true, error: null };
   } catch (error) {
-    return { ok: false, error: scrub(errorMessage(error), input.secrets) || 'smtp' };
+    const message = errorMessage(error);
+    const mismatch = input.connection ? smtpMismatch(message, input.connection) : null;
+    return { ok: false, error: mismatch ?? (scrub(message, input.secrets) || 'smtp') };
   }
 }

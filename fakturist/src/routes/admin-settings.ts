@@ -99,6 +99,7 @@ export function adminSettingsRouter(): Router {
             from: settings.from,
             to: req.principal!.user.email,
             secrets: [settings.pass ?? ''],
+            connection: { secure: settings.secure, port: settings.port },
           })
         : { ok: false, error: 'notConfigured' };
     } else {
