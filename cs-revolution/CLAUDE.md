@@ -20,46 +20,39 @@ properties — never `top`/`inset`/`width` of something that moves (a `top` swee
 effects only on `(hover:hover) and (pointer:fine)`; nothing blinks forever (WCAG 2.2.2).
 
 ## Live scenes — `public/js/cs-live.js` + `public/brand/live/`
-The hero of the homepage (`src/HeroLive.jsx`), the band behind the title of the static pages (`.hero-s`,
-`scripts/static-theme.py`) and the service icons are photoreal Blender renders that move **without video**:
-each scene is rendered once, split into light groups (`marketing/blender/*.py --live`, see its README), and
-`cs-live.js` blends the layers in WebGL — the studio light glides over carbon and chrome, the laser line goes
-where the pointer is. Rules that must survive any edit: the still frame (`*-poster.webp`, `bench-1600.webp`)
-is the LCP image and the whole experience under `prefers-reduced-motion`, data-saver, a weak GPU or no JS
-(the engine is gated **before** it loads); the homepage loops, so it has a pause button (WCAG 2.2.2, choice
-kept in `localStorage["cs-motion"]`); the static pages move on their own for under 5 s (`auto:"intro"`), then
-only with the pointer; icons light up on hover/focus and once when their row enters the viewport. Nothing
-blinks (WCAG 2.3.1 — at most 3 flashes/s on a quarter of a 10° field), and two mechanisms in the engine keep
-it so whatever the pointer does: `calm()` counts reversals of the **effective** target — always, also while
-there is no pointer, because a pointer darting in and out over the scene edge flips the target too (an
-earlier version reset the counter on "no pointer" and measured 4 flashes/s) — and makes the laser and the
-lamp follow lazily; `hold()` is the hard bound by construction: the laser may reverse direction at most
-twice in any second (three one-way passes = three flashes at most), the lamp once per second. Do not raise
-`CALM_AT` (3 measured 4/s) and do not remove `hold()`. Any change to the motion code is re-measured with the
+The band behind the title of the static pages (`.hero-s`, `scripts/static-theme.py`) and the service icons of
+the homepage are photoreal Blender renders that move **without video**: the scene is rendered once, split
+into light groups (`marketing/blender/*.py --live`, see its README), and `cs-live.js` blends the layers in
+WebGL — the studio light glides over carbon and chrome, the laser line goes where the pointer is. Rules that
+must survive any edit: the still frame (`bench-1600.webp` / `bench-800.webp`) is the LCP image and the whole
+experience under `prefers-reduced-motion`, data-saver, a weak GPU, a phone or no JS (the engine is gated
+**before** it loads); the static pages move on their own for under 5 s (`auto:"intro"`, WCAG 2.2.2), then
+only with the pointer; icons light up on hover/focus and once when their row enters the viewport. A scene
+that loops (`auto:"loop"`) needs a pause button on its page — none does today. Nothing blinks (WCAG 2.3.1 —
+at most 3 flashes/s on a quarter of a 10° field), and two mechanisms in the engine keep it so whatever the
+pointer does: `calm()` counts reversals of the **effective** target — always, also while there is no
+pointer, because a pointer darting in and out over the scene edge flips the target too (an earlier version
+reset the counter on "no pointer" and measured 4 flashes/s) — and makes the laser and the lamp follow
+lazily; `hold()` is the hard bound by construction: the laser may reverse direction at most twice in any
+second (three one-way passes = three flashes at most), the lamp once per second. Do not raise `CALM_AT`
+(3 measured 4/s) and do not remove `hold()`. Any change to the motion code is re-measured with the
 frame-by-frame flash test (pointer paths: sweep, circle, jumps, in/out, end-to-end; 0.5–8 Hz) before it
 ships. The pointer target is the **median** of a small neighbourhood of the position map, so a hole or an
-edge under the cursor does not flip it. The engine loads after `load`, in idle time. `#cs-boot` in
-`index.html` mirrors `.cs-hl-img` / `.cs-hl-shade` and the text column so the handover to React shifts
-nothing sideways.
+edge under the cursor does not flip it. The engine loads after `load`, in idle time.
+
+**The logo is not to be changed (owner, 2026-11-13).** The homepage hero keeps the mark exactly as it is:
+`HeroSignature.jsx` + the rendered logo scene (`/brand/cs-scene*.webp`, `.cs-hero-art`). A live scene that
+re-modelled the CS monogram as a machined part was built, shown and **rejected** — do not re-render,
+re-interpret, restyle or replace the logo anywhere (hero, nav, footer, icons, OG) unless the owner asks for
+exactly that. Motion around it is fine; the mark itself is not material for effects.
 
 **Cache version.** nginx serves every `.js/.webp/.png` with `immutable, max-age=1y` and the service worker is
 cache-first for them, but the engine, the layers, the stills (`bench-1600/800.webp`) and the icons have fixed
 names. So every URL to them carries `?v=<hash of their contents>`: computed in `vite.config.js`
-(`liveVersion` → `__CS_LIVE_V__` in the SPA, `%CS_LIVE_V%` in `index.html`) and by the same algorithm in
-`scripts/static-theme.py` (`live_version`). Never reference these files without it — a fix to the engine or
-a re-render would not reach a returning visitor for a year. After changing any of them: `static-theme.py` →
-`self-host-fonts.py` → `vite build` (the hash moves, ~400 static pages change — that is expected).
-
-Hero layout, two scenes: the wide one (`hero-*`, 16:9, emblem on the right, H1 capped at `43vw`) and the
-portrait one (`herop-*`, 2:3) for a **narrow and upright** screen — `(max-width:860px) and
-(max-aspect-ratio:1/1)`, the same query in `HeroLive.jsx`, its CSS, the `<picture>` and the two preloads in
-`index.html`. The portrait scene is anchored to the top at width `--hw` (an exact 2:3 box, no cropping) and
-the text starts under the emblem's plinth (`padding-top: calc(var(--hw)*.8)`), so on a short phone the H1
-never lands on the emblem — the section just grows taller than the screen. A phone held sideways gets the
-wide scene. Above ~1640px the hero text column (`.cs-hero-col`) stops following the centred 1180px grid — its
-left margin is capped at `10vw` — because the emblem's plinth starts at ~42% of the width and the title would
-run into it on 1920–2560px screens. Re-rendering a scene with a different framing means re-checking these
-numbers.
+(`liveVersion` → `__CS_LIVE_V__` in the SPA) and by the same algorithm in `scripts/static-theme.py`
+(`live_version`). Never reference these files without it — a fix to the engine or a re-render would not
+reach a returning visitor for a year. After changing any of them: `static-theme.py` → `self-host-fonts.py` →
+`vite build` (the hash moves, ~400 static pages change — that is expected).
 
 ## Brand assets — `public/brand/` + root icons
 All generated from the three logo renders (never hand-edit the PNGs):

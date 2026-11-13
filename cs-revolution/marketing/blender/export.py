@@ -129,10 +129,10 @@ def icons_live(src, live_dir, site, pad=10, width=288):
     return tot
 
 
-def site_live(live_dir, src, site, only=("bench", "hero", "herop", "icons")):
+def site_live(live_dir, src, site, only=("bench", "icons")):
     """Всичко за „живите“ сцени наведнъж: слоевете от --live рендерите → public/brand/live и public/brand/svc.
 
-    live_dir — папката с bench/, hero/, herop/, icons/ (изходът на header.py, hero.py и icons.py с --live);
+    live_dir — папката с bench/ и icons/ (изходът на header.py и icons.py с --live);
     src — папката с неподвижните икони (за общия изрез); site — public/brand.
     """
     dst = os.path.join(site, "live")
@@ -155,16 +155,6 @@ def site_live(live_dir, src, site, only=("bench", "hero", "herop", "icons")):
         still += save(im.crop((x0, 0, x0 + w // 2, h)).resize((800, 400), Image.LANCZOS), os.path.join(site, "bench-800"), 80)
         for n, sz in still:
             print(f"  {n:26s} {sz / 1024:7.1f} KB  (неподвижен кадър)")
-    if "hero" in only:
-        print("НАЧАЛНА — десктоп")
-        rep, _ = live(os.path.join(live_dir, "hero"), dst, "hero", base_scale=1.0, pass_scale=2 / 3,
-                      posters=(("", 1.0), ("-1280", 2 / 3)), poster_sweep=2)
-        show(rep)
-    if "herop" in only:
-        print("НАЧАЛНА — телефон")
-        rep, _ = live(os.path.join(live_dir, "herop"), dst, "herop", base_scale=2 / 3, pass_scale=0.5,
-                      posters=(("", 1.0), ("-720", 2 / 3)), poster_sweep=2)
-        show(rep)
     if "icons" in only:
         print("ИКОНИ")
         tot = icons_live(src, os.path.join(live_dir, "icons"), site)
@@ -177,8 +167,8 @@ if __name__ == "__main__":
     ap.add_argument("--site", required=True)
     ap.add_argument("--only", choices=("header", "icons"), default=None)
     ap.add_argument("--crop-x", type=float, default=0.43, help="ляв край на изреза за телефон, дял от ширината")
-    ap.add_argument("--live", default=None, help="папка с --live рендерите (bench/, hero/, herop/, icons/): изнася само живите слоеве")
-    ap.add_argument("--scenes", nargs="*", default=["bench", "hero", "herop", "icons"], help="с --live: кои сцени")
+    ap.add_argument("--live", default=None, help="папка с --live рендерите (bench/, icons/): изнася само живите слоеве")
+    ap.add_argument("--scenes", nargs="*", default=["bench", "icons"], help="с --live: кои сцени")
     a = ap.parse_args()
     if a.live:
         site_live(a.live, a.src, a.site, a.scenes)

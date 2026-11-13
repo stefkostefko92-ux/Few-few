@@ -24,7 +24,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://carbonstealth.eu/"},{"@type":"ListItem","position":2,"name":"Contatti","item":"https://carbonstealth.eu/contatti/"}]}</script>
-<link id="cs-theme-fonts" rel="stylesheet" href="/fonts/fonts.css"><link id="cs-theme-fonts-pre" rel="preload" as="font" type="font/woff2" href="/fonts/space-grotesk-latin-ecea81.woff2" crossorigin><link id="cs-theme-fonts-pre2" rel="preload" as="font" type="font/woff2" href="/fonts/space-mono-latin-e04b1d.woff2" crossorigin><link id="cs-theme-fonts-pre3" rel="preload" as="font" type="font/woff2" href="/fonts/space-mono-latin-0319ea.woff2" crossorigin><link id="cs-bench-pre" rel="preload" as="image" type="image/webp" href="/brand/bench-1600.webp?v=8dea30a964" media="(min-width:761px)" fetchpriority="high"><link id="cs-bench-pre2" rel="preload" as="image" type="image/webp" href="/brand/bench-800.webp?v=8dea30a964" media="(max-width:760px)" fetchpriority="high"><script id="cs-js-flag">document.documentElement.classList.add("js")</script><style id="cs-theme">
+<link id="cs-theme-fonts" rel="stylesheet" href="/fonts/fonts.css"><link id="cs-theme-fonts-pre" rel="preload" as="font" type="font/woff2" href="/fonts/space-grotesk-latin-ecea81.woff2" crossorigin><link id="cs-theme-fonts-pre2" rel="preload" as="font" type="font/woff2" href="/fonts/space-mono-latin-e04b1d.woff2" crossorigin><link id="cs-theme-fonts-pre3" rel="preload" as="font" type="font/woff2" href="/fonts/space-mono-latin-0319ea.woff2" crossorigin><link id="cs-bench-pre" rel="preload" as="image" type="image/webp" href="/brand/bench-1600.webp?v=4b320733b8" media="(min-width:761px)" fetchpriority="high"><link id="cs-bench-pre2" rel="preload" as="image" type="image/webp" href="/brand/bench-800.webp?v=4b320733b8" media="(max-width:760px)" fetchpriority="high"><script id="cs-js-flag">document.documentElement.classList.add("js")</script><style id="cs-theme">
 @font-face{font-family:'SG-fallback';src:local('Arial');size-adjust:96%;ascent-override:98%;descent-override:24%;line-gap-override:0%}
 @font-face{font-family:'SM-fallback';src:local('Courier New');size-adjust:108%;ascent-override:100%;descent-override:26%;line-gap-override:0%}
 :root{--cs-bg:#0A0C0E;--cs-ink:#C9D1D6;--cs-ink2:#9AA5AC;--cs-c:#00e5ff;--cs-line:rgba(201,209,214,.08)}
@@ -63,7 +63,7 @@ a{color:var(--cs-c)}
      двата му градиента скриват левия и долния ѝ ръб, когато лентата е по-широка или по-висока от нея.
      .cs-bench е рамката на „живата“ сцена (cs-live.js) — точно върху картината, под градиентите. */
   .hero-s{--bw:min(100vw,1560px);--bh:calc(var(--bw)/4);--by:calc(200px - var(--bh)*.49);min-height:300px;display:flex;align-items:center;
-    background:url(/brand/bench-1600.webp?v=8dea30a964) right var(--by)/var(--bw) var(--bh) no-repeat,var(--cs-bg)}
+    background:url(/brand/bench-1600.webp?v=4b320733b8) right var(--by)/var(--bw) var(--bh) no-repeat,var(--cs-bg)}
   .hero-s::after,.cs-bench{position:absolute;right:0;top:var(--by);width:var(--bw);height:var(--bh);pointer-events:none}
   .hero-s::after{content:"";z-index:-1;background:linear-gradient(90deg,var(--cs-bg) 0,rgba(10,12,14,0) 30%),linear-gradient(0deg,var(--cs-bg) 0,rgba(10,12,14,0) 24%)}
   .cs-bench{z-index:-2}
@@ -92,7 +92,7 @@ a{color:var(--cs-c)}
 .work-shot{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;object-position:top;border:1px solid rgba(0,229,255,.14);margin:28px 0 12px;background:#050607}
 /* phones */
 @media(max-width:760px){
-  .hero-s{padding:86px 16px 22px!important;background:url(/brand/bench-800.webp?v=8dea30a964) 50% 64px/100% auto no-repeat,var(--cs-bg)}
+  .hero-s{padding:86px 16px 22px!important;background:url(/brand/bench-800.webp?v=4b320733b8) 50% 64px/100% auto no-repeat,var(--cs-bg)}
   .hero-s::before{background:linear-gradient(180deg,rgba(10,12,14,.35) 0,rgba(10,12,14,.7) 120px,rgba(10,12,14,.9) 220px,var(--cs-bg) 280px)}
   h1{letter-spacing:-.005em!important;font-size:clamp(1.8rem,8vw,2.4rem)!important}
   .js .nav>div{display:none}
@@ -180,7 +180,7 @@ document.addEventListener('pointermove',function(e){px=e.clientX;py=e.clientY;k(
 document.documentElement.addEventListener('pointerleave',function(){t=null;w.classList.remove('on')})})();</script><script id="cs-live-boot">(function(){var h=document.querySelector('.hero-s');if(!h||!window.matchMedia)return;
 if(!matchMedia('(min-width:761px) and (hover:hover) and (pointer:fine)').matches||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
 var n=navigator.connection;if(n&&(n.saveData||/(^|-)2g$/.test(n.effectiveType||'')))return;
-function go(){var q='?v=8dea30a964',s=document.createElement('script');s.src='/js/cs-live.js'+q;s.onload=function(){fetch('/brand/live/bench.json'+q).then(function(r){return r.json()}).then(function(m){
+function go(){var q='?v=4b320733b8',s=document.createElement('script');s.src='/js/cs-live.js'+q;s.onload=function(){fetch('/brand/live/bench.json'+q).then(function(r){return r.json()}).then(function(m){
 var f=document.createElement('div');f.className='cs-bench';f.setAttribute('aria-hidden','true');h.appendChild(f);var d='/brand/live/bench-';
 window.CSLive.mount(f,{base:d+'base.webp'+q,sweep:d+'sweep.webp'+q,flood:d+'flood.webp'+q,pos:d+'pos.png'+q,sweeps:m.sweeps,sMin:m.sMin,sMax:m.sMax,s0:m.s0,scan:[m.s0-10,m.s0+6],auto:'intro',introSeconds:4.2,laserWidth:.05,restLaser:1})}).catch(function(){})};document.head.appendChild(s)}
 function idle(){(window.requestIdleCallback||function(f){setTimeout(f,700)})(go,{timeout:3000})}
