@@ -49,7 +49,6 @@ export function catalogPage(t, locales) {
 
 <section class="section section-tint">
   <div class="wrap">
-    <p class="kicker">${esc(c.previewKicker)}</p>
     <h2>${esc(c.previewTitle)}</h2>
     <ul class="preview-strip" tabindex="0" aria-label="${esc(c.previewTitle)}">${previews}</ul>
   </div>
@@ -91,7 +90,7 @@ export function contactsPage(t, locales) {
         <h2>${esc(c.orderEmailTitle)}</h2>
         <p>${esc(c.orderEmailBody)}</p>
         <p class="contact-mail">${esc(c.writeUs)} <a href="mailto:${COMPANY.email}">${COMPANY.email}</a></p>
-        <a class="btn btn-primary" href="${mailHref}">${esc(t.nav.orderCta)}</a>
+        <a class="btn btn-white" href="${mailHref}">${esc(t.nav.orderCta)}</a>
       </div>
 
       <h2 class="mt">${esc(c.dataTitle)}</h2>

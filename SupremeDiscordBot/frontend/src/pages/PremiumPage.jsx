@@ -21,6 +21,7 @@ import {
   getServers, getMyAgency, attachAgencyServer, detachAgencyServer, openAgencyPortal,
 } from "../api";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import { useToast } from "../contexts/ToastContext";
 import ConfirmDialog from "../components/ConfirmDialog";
 
@@ -135,7 +136,7 @@ export default function PremiumPage() {
   if (isError) {
     return (
       <div className="p-4 sm:p-6 lg:p-8">
-        <h1 className="text-2xl font-bold text-cs-text mb-4">{t("premium.badge")}</h1>
+        <PageHeader title={t("premium.badge")} />
         <div role="alert" className="cs-card bg-warning/10 border-warning/20 text-center py-10">
           <p className="text-warning font-semibold mb-2">{t("premium.statusLoadFailed")}</p>
           <p className="text-cs-muted text-sm">
@@ -171,10 +172,7 @@ export default function PremiumPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-cs-text">{t("premium.badge")}</h1>
-        <p className="text-cs-muted text-sm mt-1">{t("premium.subtitle")}</p>
-      </div>
+      <PageHeader title={t("premium.badge")} subtitle={t("premium.subtitle")} />
 
       {/* Current Status Banner */}
       {isPremium && (
@@ -224,7 +222,7 @@ export default function PremiumPage() {
         {/* Base */}
         <div className={`cs-card flex flex-col ${!isPremium ? "border-cs-cyan/30" : ""}`}>
           <div className="mb-6">
-            <p className="text-xs font-semibold text-cs-muted uppercase tracking-wider mb-2">{t("premium.basePlan")}</p>
+            <p className="text-xs font-semibold text-cs-muted mb-2">{t("premium.basePlan")}</p>
             <p className="text-3xl font-bold text-cs-text">{t("premium.priceFree")}</p>
             <p className="text-sm text-cs-muted mt-1">{t("premium.forever")}</p>
           </div>
@@ -247,12 +245,12 @@ export default function PremiumPage() {
         <div className={`cs-card flex flex-col border-cs-gold/30 ${isPremium ? "ring-1 ring-cs-gold/20" : ""}`}>
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <p className="text-xs font-semibold text-cs-gold uppercase tracking-wider">{t("premium.paidPlans")}</p>
+              <p className="text-xs font-semibold text-cs-gold">{t("premium.paidPlans")}</p>
               <Star className="w-3 h-3 text-cs-gold fill-cs-gold" />
             </div>
 
             {!isPremium && (
-              <div role="radiogroup" aria-label="Plan" className="grid grid-cols-2 gap-2 mb-3">
+              <div role="radiogroup" aria-label={t("premium.planPicker")} className="grid grid-cols-2 gap-2 mb-3">
                 {[["premium", Star], ["whitelabel", Crown]].map(([value, Icon]) => {
                   const active = plan === value;
                   return (
@@ -287,7 +285,7 @@ export default function PremiumPage() {
           </div>
 
           <ul className="space-y-2 flex-1">
-            <li className="text-xs text-cs-muted font-semibold uppercase tracking-wide mb-1">
+            <li className="text-xs text-cs-muted font-semibold mb-1">
               {plan === "whitelabel" && !isPremium ? t("premium.everythingPremium") : t("premium.everythingBase")}
             </li>
             {(isPremium ? PREMIUM_FEATURE_KEYS : upgradeFeatureKeys).map((k) => (
@@ -488,7 +486,7 @@ function AgencyManageCard({ agency, serverId, t }) {
         {/* Seats — директен етикет + лента */}
         <div>
           <div className="flex items-baseline justify-between mb-1">
-            <span className="text-xs text-cs-muted uppercase tracking-wider font-mono">{t("agency.seats")}</span>
+            <span className="text-xs text-cs-muted">{t("agency.seats")}</span>
             <span className="text-sm text-cs-text font-semibold tabular-nums">
               {t("agency.seatsUsed", { used: agency.seatsUsed, limit: agency.seatLimit })}
             </span>

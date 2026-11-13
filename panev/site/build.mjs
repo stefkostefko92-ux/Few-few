@@ -19,6 +19,7 @@ import {
 import { viewerPage } from './templates/viewer.mjs';
 import { familyPage, familyLd, FAMILY_KEYS } from './templates/families.mjs';
 import { CATALOG_PDF } from './data/products.mjs';
+import { logoPicture } from './templates/asset.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const locales = [it, en, bg];
@@ -80,15 +81,17 @@ const notFound = `<!DOCTYPE html>
 </head>
 <body>
 <main id="main">
-  <section class="page-head"><div class="wrap">
+  <section class="page-head nf-page"><div class="wrap">
+    <a class="nf-logo" href="/">${logoPicture('Panev Ascensori', { width: 180 })}</a>
     <p class="kicker kicker-light">404</p>
-    <h1>Pagina non trovata · Page not found · Страницата не е намерена</h1>
+    <h1><span lang="it">Pagina non trovata</span><span lang="en">Page not found</span><span lang="bg">Страницата не е намерена</span></h1>
     <p class="sec-lead">L’indirizzo non esiste o è cambiato con il nuovo sito.</p>
     <div class="hero-cta">
       <a class="btn btn-white" href="/">Home · Italiano</a>
-      <a class="btn btn-outline" href="/en/">English</a>
-      <a class="btn btn-outline" href="/bg/">Български</a>
+      <a class="btn btn-outline" href="/en/" lang="en">English</a>
+      <a class="btn btn-outline" href="/bg/" lang="bg">Български</a>
     </div>
+    <p class="nf-credit">Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
   </div></section>
 </main>
 </body>
