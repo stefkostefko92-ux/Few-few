@@ -71,13 +71,23 @@ async function renderSettings(
   });
 }
 
-/** Качванията на лого: 10 за 10 минути на човек (прекодирането е скъпо). */
+/**
+ * Качванията на лого: 20 за 10 минути на човек (прекодирането е скъпо). Над тавана — страницата с
+ * обяснение, не гол текст („Too many requests“ изглеждаше като срив).
+ */
 const uploadLimiter = rateLimit({
   windowMs: 10 * MINUTE,
-  limit: 10,
+  limit: 20,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   keyGenerator: (req) => req.principal?.user.id ?? requestRateKey(req),
+  handler: (req, res) => {
+    const orgId = String(req.params['orgId'] ?? '');
+    res.redirect(
+      303,
+      /^[a-z0-9]{20,40}$/.test(orgId) ? `/app/o/${orgId}/nastroyki?greshka=logoTooMany` : '/app',
+    );
+  },
 });
 
 export function appSettingsRouter(): Router {
@@ -86,7 +96,13 @@ export function appSettingsRouter(): Router {
   router.get('/app/o/:orgId/nastroyki', async (req, res) => {
     const access = await settingsAccess(req);
     const ok = typeof req.query['ok'] === 'string' && /^(pdf|logo|mahnato)$/.test(req.query['ok']);
-    await renderSettings(res, access.organizationId, {}, ok ? String(req.query['ok']) : null);
+    const tooMany = req.query['greshka'] === 'logoTooMany';
+    await renderSettings(
+      res,
+      access.organizationId,
+      tooMany ? { status: 429, errors: { logo: 'logoTooMany' } } : {},
+      ok ? String(req.query['ok']) : null,
+    );
   });
 
   router.post('/app/o/:orgId/nastroyki/pdf', async (req, res) => {

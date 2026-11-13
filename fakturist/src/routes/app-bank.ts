@@ -13,7 +13,7 @@ import {
   importStatement,
   matchLine,
   ReconcileError,
-  suggest,
+  suggestMany,
   undoLine,
 } from '../bank/reconcile.js';
 import { param } from './app-shared.js';
@@ -76,9 +76,7 @@ export function appBankRouter(): Router {
       }),
       orgHasFeature(access.organizationId, 'bank-matching', { viaFirmId: access.viaFirmId }),
     ]);
-    const suggestions = await Promise.all(
-      fresh.map((line) => suggest(access.organizationId, line)),
-    );
+    const suggestions = await suggestMany(access.organizationId, fresh);
     res.render('app/bank', {
       org,
       lines: fresh.map((line, i) => ({ line, suggestion: suggestions[i] })),
@@ -91,6 +89,7 @@ export function appBankRouter(): Router {
       counts: {
         total: Number(req.query['total']) || 0,
         created: Number(req.query['created']) || 0,
+        skipped: Number(req.query['skipped']) || 0,
       },
     });
   });
@@ -106,7 +105,10 @@ export function appBankRouter(): Router {
         name: req.file.originalname,
         buffer: req.file.buffer,
       });
-      res.redirect(303, `${base}?ok=imported&total=${result.total}&created=${result.created}`);
+      res.redirect(
+        303,
+        `${base}?ok=imported&total=${result.total}&created=${result.created}&skipped=${result.skipped}`,
+      );
     } catch (error) {
       const reason = failure(error);
       if (!reason) throw error;

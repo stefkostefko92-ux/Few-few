@@ -61,15 +61,19 @@ const COLUMNS = {
 type Column = keyof typeof COLUMNS;
 
 export function decodeCsv(buffer: Buffer): string {
+  let text: string;
   try {
-    return new TextDecoder('utf-8', { fatal: true }).decode(buffer).replace(/^﻿/, '');
+    text = new TextDecoder('utf-8', { fatal: true }).decode(buffer).replace(/^\uFEFF/, '');
   } catch {
     try {
-      return new TextDecoder('windows-1251', { fatal: true }).decode(buffer);
+      text = new TextDecoder('windows-1251', { fatal: true }).decode(buffer);
     } catch {
       throw new BankFormatError('encoding');
     }
   }
+  // 0x00 минава декодера, но PostgreSQL го отказва в TEXT — грешка на файла, не 500.
+  if (text.includes('\u0000')) throw new BankFormatError('encoding');
+  return text;
 }
 
 /** RFC 4180: кавички, удвоени кавички, нови редове вътре в полето. */
@@ -112,19 +116,18 @@ export function parseCsv(text: string, delimiter: string): string[][] {
   return rows;
 }
 
-function detectDelimiter(header: string): string {
-  const counts = [';', ',', '\t'].map((d) => [d, header.split(d).length - 1] as const);
-  counts.sort((a, b) => b[1] - a[1]);
-  return counts[0]![1] > 0 ? counts[0]![0] : ';';
-}
-
 const norm = (value: string) =>
   value.trim().toLowerCase().replace(/[„“"]/g, '').replace(/\s+/g, ' ');
 
 /** „1 080,00“, „1.080,00“, „1,080.00“, „1080.00“, „-50,5“ → центове. */
 export function parseAmount(raw: string | undefined): bigint | null {
-  let v = (raw ?? '').replace(/[\s ']/g, '').replace(/[A-Za-z€]/g, '');
+  let v = (raw ?? '')
+    .replace(/[\s\u00a0']/g, '')
+    .replace(/[A-Za-z€]/g, '')
+    .replace(/^\+/, '');
   if (!v) return null;
+  // Само точки, всяка следвана от точно 3 цифри („1.080“, „1.080.500“) — разделители за хилядни.
+  if (!v.includes(',') && /^-?\d{1,3}(\.\d{3})+$/.test(v)) v = v.split('.').join('');
   const lastComma = v.lastIndexOf(',');
   const lastDot = v.lastIndexOf('.');
   if (lastComma > -1 && lastDot > -1) {
@@ -148,15 +151,30 @@ export function parseDate(raw: string | undefined): string | null {
   return isIsoDate(iso) ? iso : null;
 }
 
-export function readCsv(text: string, defaultCurrency = 'EUR'): BankEntry[] {
-  const firstLine = text.split(/\r?\n/, 1)[0] ?? '';
-  const rows = parseCsv(text, detectDelimiter(firstLine));
-  // Заглавието може да не е на първия ред (банките слагат шапка със сметката) — първият ред с дата и сума.
-  const headerIndex = rows.findIndex((row) => {
+function findHeader(rows: string[][]): number {
+  return rows.findIndex((row) => {
     const cells = row.map(norm);
     const has = (col: Column) => cells.some((c) => (COLUMNS[col] as readonly string[]).includes(c));
     return has('date') && (has('amount') || has('credit'));
   });
+}
+
+export interface CsvResult {
+  entries: BankEntry[];
+  /** Редове с дата, но с неразчетена сума — показват се, не изчезват тихо. */
+  skipped: number;
+}
+
+export function readCsv(text: string, defaultCurrency = 'EUR'): CsvResult {
+  // Заглавието може да не е на първия ред (банките слагат шапка със сметката, понякога с друг
+  // разделител) — разделителят е този, с който се намира ред с дата и сума.
+  let rows: string[][] = [];
+  let headerIndex = -1;
+  for (const delimiter of [';', ',', '\t']) {
+    rows = parseCsv(text, delimiter);
+    headerIndex = findHeader(rows);
+    if (headerIndex !== -1) break;
+  }
   if (headerIndex === -1) throw new BankFormatError('csvHeader');
   const header = rows[headerIndex]!.map(norm);
   const index = (col: Column) =>
@@ -167,17 +185,18 @@ export function readCsv(text: string, defaultCurrency = 'EUR'): BankEntry[] {
   const cell = (row: string[], col: Column) =>
     columns[col] >= 0 ? (row[columns[col]] ?? '').trim() : '';
   const out: BankEntry[] = [];
+  let skipped = 0;
   for (const row of rows.slice(headerIndex + 1)) {
     const date = parseDate(cell(row, 'date'));
     if (!date) continue;
-    let amount: bigint | null;
-    if (columns.credit >= 0) {
-      amount = parseAmount(cell(row, 'credit'));
-    } else {
-      // Само „сума“: положителна = постъпление; ако има и „дебит“ с число — разход.
-      amount = parseAmount(cell(row, 'amount'));
-      if (columns.debit >= 0 && parseAmount(cell(row, 'debit'))) amount = null;
+    const raw = columns.credit >= 0 ? cell(row, 'credit') : cell(row, 'amount');
+    let amount = parseAmount(raw);
+    if (raw && amount === null) {
+      skipped += 1;
+      continue;
     }
+    // Само „сума“: положителна = постъпление; ако има и „дебит“ с число — разход.
+    if (columns.credit < 0 && columns.debit >= 0 && parseAmount(cell(row, 'debit'))) amount = null;
     if (amount === null || amount <= 0n) continue;
     out.push({
       bookingDate: date,
@@ -191,5 +210,5 @@ export function readCsv(text: string, defaultCurrency = 'EUR'): BankEntry[] {
     });
   }
   if (out.length === 0 && rows.length <= headerIndex + 1) throw new BankFormatError('csvEmpty');
-  return out;
+  return { entries: out, skipped };
 }

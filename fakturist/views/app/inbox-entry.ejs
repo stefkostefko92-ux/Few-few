@@ -9,9 +9,9 @@
     <h1 class="mono"><%= document.number %></h1>
   </div>
   <div class="actions">
-    <a class="button" href="/app/o/<%= entry.recipientOrgId %>/shkafche/<%= entry.id %>/pdf"><%= t('app.view.download') %> PDF</a>
-    <a class="button-secondary" href="/app/o/<%= entry.recipientOrgId %>/shkafche/<%= entry.id %>/ubl.xml"><%= t('app.view.download') %> <%= t('app.view.ubl') %></a>
-    <a class="button-secondary" href="/app/o/<%= entry.recipientOrgId %>/shkafche/<%= entry.id %>/cii.xml"><%= t('app.view.download') %> <%= t('app.view.cii') %></a>
+    <a class="button" href="/app/o/<%= entry.recipientOrgId %>/shkafche/<%= entry.id %>/pdf" target="_blank" rel="noopener"><%= t('app.view.download') %> PDF</a>
+    <a class="button-secondary" href="/app/o/<%= entry.recipientOrgId %>/shkafche/<%= entry.id %>/ubl.xml" target="_blank" rel="noopener"><%= t('app.view.download') %> <%= t('app.view.ubl') %></a>
+    <a class="button-secondary" href="/app/o/<%= entry.recipientOrgId %>/shkafche/<%= entry.id %>/cii.xml" target="_blank" rel="noopener"><%= t('app.view.download') %> <%= t('app.view.cii') %></a>
   </div>
 </div>
 <p class="<%= entry.senderOrg.verifiedAt ? 'ok' : 'callout' %>"><%= entry.senderOrg.verifiedAt ? t('app.inbox.verified') : t('app.inbox.unverifiedHelp') %></p>

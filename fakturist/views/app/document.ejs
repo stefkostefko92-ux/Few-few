@@ -6,7 +6,7 @@
     <p><strong><%= t('app.annul.isAnnulled', { date: document.cancelledAt ? document.cancelledAt.toISOString().slice(0, 10).split('-').reverse().join('.') : '' }) %></strong>
     <% if (document.cancelReason) { %> — <%= tOr('app.annul.reasons.' + document.cancelReason, document.cancelReason) %><% } %></p>
     <% if (document.replacedBy) { %><p><%= t('app.annul.replacedBy') %> <a class="mono" href="/app/o/<%= document.organizationId %>/d/<%= document.replacedBy.id %>"><%= document.replacedBy.number %></a></p><% } %>
-    <p><a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/protokol.pdf"><%= t('app.annul.protocol') %></a></p>
+    <p><a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/protokol.pdf" target="_blank" rel="noopener"><%= t('app.annul.protocol') %></a></p>
   </div>
 <% } %>
 <% if (document.replaces) { %><p class="muted"><%= t('app.annul.replaces') %> <a class="mono" href="/app/o/<%= document.organizationId %>/d/<%= document.replaces.id %>"><%= document.replaces.number %></a></p><% } %>
@@ -16,9 +16,9 @@
     <h1 class="mono"><%= document.number %></h1>
   </div>
   <div class="actions">
-    <a class="button" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/pdf"><%= t('app.view.download') %> PDF</a>
-    <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/ubl.xml"><%= t('app.view.download') %> <%= t('app.view.ubl') %></a>
-    <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/cii.xml"><%= t('app.view.download') %> <%= t('app.view.cii') %></a>
+    <a class="button" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/pdf" target="_blank" rel="noopener"><%= t('app.view.download') %> PDF</a>
+    <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/ubl.xml" target="_blank" rel="noopener"><%= t('app.view.download') %> <%= t('app.view.ubl') %></a>
+    <a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/cii.xml" target="_blank" rel="noopener"><%= t('app.view.download') %> <%= t('app.view.cii') %></a>
     <% if (locals.canAnnul) { %><a class="button-secondary" href="/app/o/<%= document.organizationId %>/nov?zamenya=<%= document.id %>"><%= t('app.annul.button') %></a><% } %>
     <% if (locals.canRecur) { %><a class="button-secondary" href="/app/o/<%= document.organizationId %>/d/<%= document.id %>/povtaryay"><%= t('app.recurring.repeat') %></a><% } %>
   </div>

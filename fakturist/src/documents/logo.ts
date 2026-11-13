@@ -11,12 +11,18 @@ import sharp from 'sharp';
  *    хвърля грешка извън всеки try/catch (процесът пада). Изходът от sharp е винаги валиден.
  */
 
-export const LOGO_MAX_BYTES = 1024 * 1024;
+/** Снимка от телефон (3–8 MB) се приема и се свежда до лого — хората качват каквото имат. */
+export const LOGO_MAX_BYTES = 10 * 1024 * 1024;
 /**
- * Над 16 Mpx (4000×4000) не е лого, а „бомба“ за паметта (1 MB PNG може да носи огромно изображение) —
- * sharp отказва още при четенето. Контейнерът има 512 MB.
+ * Таванът на пикселите: PNG — 16 Mpx (декодира се цял, 1 MB PNG може да е „бомба“ за паметта); JPEG и
+ * WebP — 50 Mpx (снимките от телефон са 12–48 Mpx; libvips ги чете умалени при свиването — shrink-on-load).
+ * Контейнерът има 512 MB.
  */
-const MAX_INPUT_PIXELS = 16_000_000;
+const MAX_INPUT_PIXELS: Record<LogoKind, number> = {
+  png: 16_000_000,
+  jpeg: 50_000_000,
+  webp: 50_000_000,
+};
 const OUT_BOX = { width: 1200, height: 600 };
 
 // Логото се качва рядко: кешът на libvips само би държал памет; една нишка и едно прекодиране наведнъж —
@@ -64,7 +70,7 @@ async function normalizeNow(
   try {
     const image = sharp(input, {
       failOn: 'error',
-      limitInputPixels: MAX_INPUT_PIXELS,
+      limitInputPixels: MAX_INPUT_PIXELS[kind],
       animated: false,
     });
     const meta = await image.metadata();

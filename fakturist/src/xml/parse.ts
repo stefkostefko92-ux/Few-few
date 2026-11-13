@@ -77,6 +77,10 @@ function parseAttributes(source: string): Record<string, string> {
 export function parseXml(input: string): XmlNode {
   const xml = input.startsWith('﻿') ? input.slice(1) : input;
   if (/<!DOCTYPE|<!ENTITY/i.test(xml)) throw new XmlError('dtd', 'DTD не се приема');
+  // Знаците, които XML 1.0 забранява (вкл. 0x00 — PostgreSQL не го приема в TEXT).
+  if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/.test(xml)) {
+    throw new XmlError('syntax', 'Забранен управляващ знак');
+  }
   const stack: XmlNode[] = [];
   let root: XmlNode | null = null;
   let count = 0;

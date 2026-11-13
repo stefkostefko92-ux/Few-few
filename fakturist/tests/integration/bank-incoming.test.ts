@@ -300,3 +300,49 @@ test('сверка: CSV извлечение (windows-1251 е в unit теста
   const res = await upload(owner, `/app/o/${orgId}/banka`, 'izvlechenie.csv', encoded, 'text/csv');
   assert.match(res.headers.get('location') ?? '', /ok=imported&total=1&created=1/);
 });
+
+test('ревю: два еднакви превода в един файл са два реда; 0x00 — грешка на файла, не 500', async () => {
+  const twice =
+    'Дата;Наредител;Основание;Кредит\r\n12.11.2026;Наемател;Наем;100,00\r\n12.11.2026;Наемател;Наем;100,00\r\n';
+  const res = await upload(owner, `/app/o/${orgId}/banka`, 'naem.csv', twice, 'text/csv');
+  assert.match(res.headers.get('location') ?? '', /ok=imported&total=2&created=2/);
+  // Същият файл с друго име (застъпване) — нищо ново.
+  const again = await upload(
+    owner,
+    `/app/o/${orgId}/banka`,
+    'naem2.csv',
+    `${twice}\r\n`,
+    'text/csv',
+  );
+  assert.match(again.headers.get('location') ?? '', /created=0/);
+  const nul = await upload(
+    owner,
+    `/app/o/${orgId}/banka`,
+    'nul.csv',
+    'Дата;Кредит\r\n13.11.2026;1\u0000\r\n',
+    'text/csv',
+  );
+  assert.match(nul.headers.get('location') ?? '', /err=encoding/);
+  const xml = await upload(
+    owner,
+    `/app/o/${orgId}/vhodyashti`,
+    'nul.xml',
+    '<Invoice><!-- \u0000 --></Invoice>',
+    'application/xml',
+  );
+  assert.match(xml.headers.get('location') ?? '', /err=encoding/);
+});
+
+test('ревю: без план „Бизнес“ свързването на вече внесен ред е отказано', async () => {
+  await prisma.subscription.updateMany({
+    where: { organizationId: orgId, status: 'ACTIVE' },
+    data: { planCode: 'free' },
+  });
+  const line = await prisma.bankLine.findFirstOrThrow({ where: { status: 'NEW' } });
+  const res = await http.post(owner, `/app/o/${orgId}/banka/${line.id}/svarzhi`, { number: '1' });
+  assert.match(res.headers.get('location') ?? '', /err=feature/);
+  await prisma.subscription.updateMany({
+    where: { organizationId: orgId, status: 'ACTIVE' },
+    data: { planCode: 'business' },
+  });
+});

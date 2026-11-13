@@ -102,7 +102,7 @@
     "category": "VAT category",
     "vatRate": "Rate %",
     "discount": "Discount %",
-    "linesHelp": "Empty lines are skipped. Decimals with a dot or comma.",
+    "linesHelp": "Empty lines are skipped. Decimals with a dot or a comma. Start typing a name — your items are suggested.",
     "payment": "Payment",
     "means": "Method",
     "iban": "IBAN",
@@ -124,7 +124,11 @@
     "problems": "The document was not issued — please fix:",
     "warnings": "Issued with warnings:",
     "buyerEmail": "Buyer email",
-    "buyerEmailHint": "Optional: for recurring invoice emails and payment reminders."
+    "buyerEmailHint": "Optional: for recurring invoice emails and payment reminders.",
+    "addLine": "+ Add line",
+    "addItem": "Add from items",
+    "addItemChoose": "choose…",
+    "noItems": "Save the goods and services you sell often once in"
   },
   "view": {
     "issued": "The document has been issued.",
@@ -228,7 +232,7 @@
     "noLogo": "No logo uploaded.",
     "uploadLogo": "Upload a logo",
     "replaceLogo": "Replace the logo",
-    "logoHelp": "PNG, JPEG or WebP up to 1 MB. It is re-encoded to at most 1200×600 pixels without metadata; SVG is not accepted.",
+    "logoHelp": "PNG, JPEG or WebP up to 10 MB — a phone photo works too. It is reduced to at most 1200×600 pixels without metadata (location); SVG is not accepted.",
     "uploadButton": "Upload",
     "removeLogo": "Remove the logo",
     "look": "Font, layout and colour",
@@ -275,10 +279,11 @@
       "invalid": "Choose from the list.",
       "invalidAccent": "The colour is in the #rrggbb form.",
       "lowContrast": "The colour is too light — choose a darker one.",
-      "logoTooLarge": "The file is over 1 MB.",
+      "logoTooLarge": "The file is over 10 MB.",
       "logoType": "The logo is PNG, JPEG or WebP.",
       "logoCorrupt": "The file cannot be read as an image.",
-      "logoMissing": "Choose a file."
+      "logoMissing": "Choose a file.",
+      "logoTooMany": "Too many uploads in a short time — try again in 10 minutes."
     }
   },
   "catalog": {
@@ -686,7 +691,8 @@
       "paymentNotFound": "No such document.",
       "paymentDate": "Invalid date.",
       "paymentSource": "The payment is not from bank matching."
-    }
+    },
+    "skipped": "Lines with an unreadable amount: {count} — check them in your bank."
   },
   "incoming": {
     "title": "Incoming",

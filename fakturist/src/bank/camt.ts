@@ -52,11 +52,13 @@ export function readCamt053(root: XmlNode): BankEntry[] {
       const currency = amountNode?.attrs['Ccy'] ?? '';
       const entryRef = textAt(entry, 'AcctSvcrRef') ?? textAt(entry, 'NtryRef');
       const txs = children(entry, 'NtryDtls').flatMap((d) => children(d, 'TxDtls'));
-      const split = txs.length > 1;
-      for (const [i, tx] of (txs.length ? txs : [undefined]).entries()) {
-        const amount = split
-          ? (cents(textAt(tx, 'AmtDtls/TxAmt/Amt')) ?? cents(textAt(tx, 'Amt')))
-          : cents(amountNode?.text);
+      const txAmount = (tx: XmlNode) =>
+        cents(textAt(tx, 'AmtDtls/TxAmt/Amt')) ?? cents(textAt(tx, 'Amt'));
+      // Сборно постъпление се разделя само ако всяка транзакция носи своята сума; иначе — цялото.
+      const split = txs.length > 1 && txs.every((tx) => txAmount(tx) !== null);
+      const parts = split ? txs : [txs[0]];
+      for (const [i, tx] of parts.entries()) {
+        const amount = split && tx ? txAmount(tx) : cents(amountNode?.text);
         if (amount === null || amount <= 0n) continue;
         const who = party(tx);
         out.push({

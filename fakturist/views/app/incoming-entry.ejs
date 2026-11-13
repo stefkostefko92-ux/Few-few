@@ -14,7 +14,7 @@
   <div><dt><%= t('app.incoming.format') %></dt><dd><%= entry.format %><% if (entry.fileName) { %> · <span class="muted"><%= entry.fileName %></span><% } %></dd></div>
   <div><dt><%= t('app.incoming.status') %></dt><dd><span class="tag"><%= t('app.incoming.statuses.' + entry.status) %></span><% if (entry.paidAt) { %> <span class="mono"><%= day(entry.paidAt) %></span><% } %></dd></div>
 </dl>
-<p><a class="button-secondary" href="/app/o/<%= orgId %>/vhodyashti/<%= entry.id %>/fail.xml" download><%= t('app.incoming.download') %></a></p>
+<p><a class="button-secondary" href="/app/o/<%= orgId %>/vhodyashti/<%= entry.id %>/fail.xml" download target="_blank" rel="noopener"><%= t('app.incoming.download') %></a></p>
 <section class="panel">
   <h2><%= t('app.incoming.check') %></h2>
   <% if (issues.length === 0) { %><p class="ok"><%= t('app.incoming.clean') %></p><% } else { %>

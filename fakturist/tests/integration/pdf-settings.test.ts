@@ -252,10 +252,43 @@ test('качването на лого е с таван на заявките н
   const org = await prisma.organization.findUniqueOrThrow({ where: { eik: '200000002' } });
   const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>');
   const statuses: number[] = [];
-  for (let i = 0; i < 11; i += 1) {
-    const res = await upload(s, `/app/o/${org.id}/nastroyki/logo`, svg, 'image/png', s.csrf);
-    statuses.push(res.status);
+  let last: Response | null = null;
+  for (let i = 0; i < 21; i += 1) {
+    last = await upload(s, `/app/o/${org.id}/nastroyki/logo`, svg, 'image/png', s.csrf);
+    statuses.push(last.status);
   }
-  assert.deepEqual(statuses.slice(0, 10), Array(10).fill(400));
-  assert.equal(statuses[10], 429);
+  assert.deepEqual(statuses.slice(0, 20), Array(20).fill(400));
+  // Над тавана — страницата с обяснение, не гол текст „Too many requests“ (изглеждаше като срив).
+  assert.equal(statuses[20], 303);
+  assert.equal(last?.headers.get('location'), `/app/o/${org.id}/nastroyki?greshka=logoTooMany`);
+  const page = await fetch(`${origin}/app/o/${org.id}/nastroyki?greshka=logoTooMany`, {
+    headers: { cookie: s.cookie },
+  });
+  assert.equal(page.status, 429);
+  assert.match(await page.text(), /опитайте пак след 10 минути/);
+});
+
+test('снимка от телефон (над 1 MB) се приема и се свежда до лого', async () => {
+  await register({
+    ...base,
+    kind: 'company',
+    name: 'Петя Колева',
+    email: 'photo@example.test',
+    legalName: 'Снимка ЕООД',
+    eik: '200000015',
+  });
+  const s = await login('photo@example.test');
+  const org = await prisma.organization.findUniqueOrThrow({ where: { eik: '200000015' } });
+  // ~1,7 MB JPEG (шум — не се компресира), 1400×1400 — по-рано: „Файлът е над 1 MB“.
+  const noise = Buffer.alloc(1400 * 1400 * 3);
+  for (let i = 0; i < noise.length; i += 1) noise[i] = (i * 2654435761) >>> 24;
+  const photo = await sharp(noise, { raw: { width: 1400, height: 1400, channels: 3 } })
+    .jpeg({ quality: 95 })
+    .toBuffer();
+  assert.ok(photo.length > 1024 * 1024);
+  const res = await upload(s, `/app/o/${org.id}/nastroyki/logo`, photo, 'image/jpeg', s.csrf);
+  assert.equal(res.status, 303);
+  const style = await prisma.pdfStyle.findUniqueOrThrow({ where: { organizationId: org.id } });
+  assert.ok(style.logo && style.logo.length < photo.length);
+  assert.ok((style.logoWidth ?? 0) <= 1200 && (style.logoHeight ?? 0) <= 600);
 });

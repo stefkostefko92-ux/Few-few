@@ -29,6 +29,43 @@
     });
   }
 
+  // Редовете: „+ Добави ред“ клонира последния ред с нов индекс (без таван от 6); таванът е 200 — колкото
+  // носи формата (parameterLimit в src/routes/mount.ts).
+  const MAX_LINES = 200;
+  const body = form.querySelector('[data-lines]');
+  const addButton = form.querySelector('[data-add-line]');
+  const addLine = () => {
+    if (!body || body.rows.length >= MAX_LINES) return null;
+    const last = body.rows[body.rows.length - 1];
+    const index = body.rows.length;
+    const row = last.cloneNode(true);
+    row.cells[0].textContent = String(index + 1);
+    for (const field of row.querySelectorAll('input, select')) {
+      field.name = field.name.replace(/^lines\[\d+\]/, `lines[${index}]`);
+      if (field.dataset.line !== undefined) field.dataset.line = String(index);
+      const label = field.getAttribute('aria-label');
+      if (label) field.setAttribute('aria-label', label.replace(/\d+$/, String(index + 1)));
+      if (field instanceof HTMLSelectElement) {
+        field.selectedIndex = Math.max(
+          0,
+          [...field.options].findIndex((o) => o.defaultSelected),
+        );
+      } else {
+        field.value = field.name.endsWith('[rate]') ? '20' : '';
+      }
+    }
+    body.appendChild(row);
+    if (body.rows.length >= MAX_LINES && addButton) addButton.disabled = true;
+    return row;
+  };
+  if (body && addButton) {
+    addButton.hidden = false;
+    addButton.addEventListener('click', () => {
+      const row = addLine();
+      row?.querySelector('input')?.focus();
+    });
+  }
+
   const list = document.getElementById('catalog-items');
   if (list) {
     const byName = new Map();
@@ -46,5 +83,23 @@
       const quantity = form.querySelector(`[name="lines[${line}][quantity]"]`);
       if (quantity && !quantity.value) quantity.value = '1';
     });
+
+    // „Добави от артикулите“: попълва първия празен ред (или нов) с името, мярката, цената и ДДС.
+    const itemPicker = document.querySelector('[data-item-picker]');
+    const itemSelect = document.querySelector('[data-item-select]');
+    if (itemPicker && itemSelect && body) {
+      itemPicker.hidden = false;
+      itemSelect.addEventListener('change', () => {
+        const item = byName.get(itemSelect.value);
+        if (!item) return;
+        const empty = [...body.rows].find((r) => !r.querySelector('input[data-line]')?.value);
+        const row = empty ?? addLine();
+        const input = row?.querySelector('input[data-line]');
+        if (!input) return;
+        input.value = itemSelect.value;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        itemSelect.value = '';
+      });
+    }
   }
 })();

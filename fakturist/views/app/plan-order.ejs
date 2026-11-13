@@ -30,7 +30,7 @@
     <div><dt><%= t('app.plan.reference') %></dt><dd class="mono strong"><%= payment.reference %></dd></div>
   </dl>
   <p class="hint"><%= t('app.plan.transferNote') %></p>
-  <p><a class="button button-secondary" href="/app/o/<%= orgId %>/plan/<%= payment.id %>/proforma.pdf" download><%= t('app.plan.proforma') %></a></p>
+  <p><a class="button button-secondary" href="/app/o/<%= orgId %>/plan/<%= payment.id %>/proforma.pdf" download target="_blank" rel="noopener"><%= t('app.plan.proforma') %></a></p>
 </section>
 <% } %>
 

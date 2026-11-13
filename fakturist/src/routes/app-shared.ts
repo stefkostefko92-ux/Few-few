@@ -54,7 +54,8 @@ export async function sendDocumentFile(
     const pdf = await documentPdf(document);
     res
       .type('application/pdf')
-      .set('Content-Disposition', `attachment; filename="${name}.pdf"`)
+      // inline: отваря се за преглед в нов прозорец (на iPhone в инсталираното приложение — с „Готово“).
+      .set('Content-Disposition', `inline; filename="${name}.pdf"`)
       .send(pdf);
     return;
   }

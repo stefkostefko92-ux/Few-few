@@ -3,7 +3,7 @@
 <% const eur = (c, cur) => (Number(c) / 100).toFixed(2).replace('.', lang === 'bg' ? ',' : '.') + ' ' + cur; %>
 <p><a href="/app/o/<%= org.id %>">← <%= org.legalName %></a></p>
 <h1><%= t('app.bank.title') %></h1>
-<% if (ok) { %><p class="ok" role="status"><%= ok === 'imported' ? t('app.bank.ok.imported', { total: counts.total, created: counts.created }) : tOr('app.bank.ok.' + ok, t('app.catalog.saved.updated')) %></p><% } %>
+<% if (ok) { %><p class="ok" role="status"><%= ok === 'imported' ? t('app.bank.ok.imported', { total: counts.total, created: counts.created }) + (counts.skipped ? ' ' + t('app.bank.skipped', { count: counts.skipped }) : '') : tOr('app.bank.ok.' + ok, t('app.catalog.saved.updated')) %></p><% } %>
 <% if (err) { %><p class="error" role="alert"><%= tOr('app.bank.err.' + err, t('auth.errors.invalid')) %></p><% } %>
 <% if (!feature) { %><p class="callout"><%= t('app.bank.needsPlan') %> <a href="/app/o/<%= org.id %>/plan"><%= t('app.plan.title') %></a></p><% } %>
 <p class="muted"><%= t('app.bank.intro') %></p>

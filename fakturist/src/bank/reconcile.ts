@@ -7,7 +7,6 @@ import { orgHasFeature } from '../billing/entitlements.js';
 import { parseXml, XmlError } from '../xml/parse.js';
 import {
   DocumentPaymentError,
-  PAYABLE_TYPES,
   recordPaymentInTx,
   removePaymentInTx,
 } from '../documents/payments.js';
@@ -27,7 +26,20 @@ export class ReconcileError extends Error {
   }
 }
 
-function lineKey(organizationId: string, e: BankEntry): string {
+/** Сверката е по план — и импортът, и свързването, пропускането и отмяната. */
+async function requireBankFeature(access: OrgAccess): Promise<void> {
+  const allowed = await orgHasFeature(access.organizationId, 'bank-matching', {
+    viaFirmId: access.viaFirmId,
+  });
+  if (!allowed) throw new ReconcileError('feature');
+}
+
+/**
+ * Ключът на реда: полетата + поредният номер на същите полета в ЕДИН файл — два реални превода с
+ * еднакви данни (наем 100 от един наредител в един ден) са два реда, а застъпващото се извлечение пак
+ * дава същите ключове и не дублира.
+ */
+function lineKey(organizationId: string, e: BankEntry, occurrence: number): string {
   return createHash('sha256')
     .update(
       [
@@ -38,13 +50,18 @@ function lineKey(organizationId: string, e: BankEntry): string {
         e.bankRef ?? '',
         e.remittance,
         e.counterpartyIban ?? '',
+        String(occurrence),
       ].join('\u0001'),
     )
     .digest('hex');
 }
 
 /** Разпознаване по съдържанието: XML → camt.053, иначе CSV. */
-export function readStatement(buffer: Buffer): { format: 'CAMT053' | 'CSV'; entries: BankEntry[] } {
+export function readStatement(buffer: Buffer): {
+  format: 'CAMT053' | 'CSV';
+  entries: BankEntry[];
+  skipped: number;
+} {
   const text = decodeCsv(buffer);
   if (text.trimStart().startsWith('<')) {
     let root;
@@ -55,22 +72,29 @@ export function readStatement(buffer: Buffer): { format: 'CAMT053' | 'CSV'; entr
       throw error;
     }
     if (!isCamt(root)) throw new BankFormatError('notCamt');
-    return { format: 'CAMT053', entries: readCamt053(root) };
+    return { format: 'CAMT053', entries: readCamt053(root), skipped: 0 };
   }
-  return { format: 'CSV', entries: readCsv(text) };
+  const csv = readCsv(text);
+  return { format: 'CSV', entries: csv.entries, skipped: csv.skipped };
 }
 
 export async function importStatement(
   access: OrgAccess,
   actorId: string,
   file: { name: string | null; buffer: Buffer },
-): Promise<{ statementId: string; total: number; created: number }> {
-  if (
-    !(await orgHasFeature(access.organizationId, 'bank-matching', { viaFirmId: access.viaFirmId }))
-  ) {
-    throw new ReconcileError('feature');
-  }
-  const { format, entries } = readStatement(file.buffer);
+): Promise<{ statementId: string; total: number; created: number; skipped: number }> {
+  await requireBankFeature(access);
+  const { format, entries, skipped } = readStatement(file.buffer);
+  const seen = new Map<string, number>();
+  const keyed = entries.map((e) => {
+    const base = lineKey(access.organizationId, e, 0);
+    const occurrence = (seen.get(base) ?? 0) + 1;
+    seen.set(base, occurrence);
+    return {
+      entry: e,
+      key: occurrence === 1 ? base : lineKey(access.organizationId, e, occurrence),
+    };
+  });
   const sha256 = createHash('sha256').update(file.buffer).digest('hex');
   try {
     return await prisma.$transaction(async (tx) => {
@@ -87,7 +111,7 @@ export async function importStatement(
         select: { id: true },
       });
       const created = await tx.bankLine.createMany({
-        data: entries.map((e) => ({
+        data: keyed.map(({ entry: e, key }) => ({
           organizationId: access.organizationId,
           statementId: statement.id,
           bookingDate: new Date(`${e.bookingDate}T00:00:00Z`),
@@ -97,7 +121,7 @@ export async function importStatement(
           counterpartyIban: e.counterpartyIban ?? null,
           remittance: e.remittance,
           bankRef: e.bankRef ?? null,
-          uniqueKey: lineKey(access.organizationId, e),
+          uniqueKey: key,
         })),
         skipDuplicates: true,
       });
@@ -111,9 +135,14 @@ export async function importStatement(
         action: 'bank.statement.imported',
         targetType: 'BankStatement',
         targetId: statement.id,
-        details: { format, total: entries.length, created: created.count },
+        details: { format, total: entries.length, created: created.count, skipped },
       });
-      return { statementId: statement.id, total: entries.length, created: created.count };
+      return {
+        statementId: statement.id,
+        total: entries.length,
+        created: created.count,
+        skipped,
+      };
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
@@ -121,76 +150,6 @@ export async function importStatement(
     }
     throw error;
   }
-}
-
-export interface Suggestion {
-  documentId: string;
-  number: string;
-  remainingCents: bigint;
-  reason: 'number' | 'amount';
-}
-
-/** Номерата във вид на фактура от основанието (3–10 цифри) → десетразрядни. */
-export function numbersIn(remittance: string): string[] {
-  const found = remittance.match(/\d{3,10}/g) ?? [];
-  return [...new Set(found.map((n) => n.padStart(10, '0')))];
-}
-
-/**
- * Предложение за ред: фактура с номера от основанието и остатък ≥ сумата (точният остатък — пръв);
- * иначе — единствената неплатена фактура с точно такъв остатък.
- */
-export async function suggest(
-  organizationId: string,
-  line: { remittance: string; amountCents: bigint; currency: string },
-): Promise<Suggestion | null> {
-  const open = {
-    organizationId,
-    status: 'ISSUED' as const,
-    typeCode: { in: [...PAYABLE_TYPES] },
-    paymentState: { in: ['UNPAID' as const, 'PARTIAL' as const] },
-    currency: line.currency,
-  };
-  const numbers = numbersIn(line.remittance);
-  if (numbers.length) {
-    const byNumber = await prisma.document.findMany({
-      where: { ...open, number: { in: numbers } },
-      select: { id: true, number: true, payableCents: true, paidCents: true },
-    });
-    const fitting = byNumber
-      .map((d) => ({ ...d, remaining: d.payableCents - d.paidCents }))
-      .filter((d) => d.remaining >= line.amountCents)
-      .sort(
-        (a, b) =>
-          Number(a.remaining === line.amountCents ? -1 : 0) -
-          Number(b.remaining === line.amountCents ? -1 : 0),
-      );
-    const best = fitting[0];
-    if (best?.number) {
-      return {
-        documentId: best.id,
-        number: best.number,
-        remainingCents: best.remaining,
-        reason: 'number',
-      };
-    }
-  }
-  const byAmount = await prisma.$queryRaw<Array<{ id: string; number: string }>>`
-    SELECT "id", "number" FROM "Document"
-    WHERE "organizationId" = ${organizationId} AND "status" = 'ISSUED'
-      AND "typeCode" IN ('380', '383') AND "paymentState" IN ('UNPAID', 'PARTIAL')
-      AND "currency" = ${line.currency}
-      AND "payableCents" - "paidCents" = ${line.amountCents}
-    LIMIT 2`;
-  if (byAmount.length === 1) {
-    return {
-      documentId: byAmount[0]!.id,
-      number: byAmount[0]!.number,
-      remainingCents: line.amountCents,
-      reason: 'amount',
-    };
-  }
-  return null;
 }
 
 async function lockLine(tx: Prisma.TransactionClient, organizationId: string, id: string) {
@@ -209,6 +168,7 @@ export async function matchLine(
   documentNumber: string,
 ): Promise<void> {
   const number = documentNumber.trim().padStart(10, '0');
+  await requireBankFeature(access);
   await prisma.$transaction(async (tx) => {
     const line = await lockLine(tx, access.organizationId, lineId);
     if (line.status !== 'NEW') throw new ReconcileError('state');
@@ -239,6 +199,7 @@ export async function ignoreLine(
   actorId: string,
   lineId: string,
 ): Promise<void> {
+  await requireBankFeature(access);
   await prisma.$transaction(async (tx) => {
     const line = await lockLine(tx, access.organizationId, lineId);
     if (line.status !== 'NEW') throw new ReconcileError('state');
@@ -255,10 +216,18 @@ export async function ignoreLine(
 
 /** Отмяна: свързаният ред — плащането се маха от документа; пропуснатият — пак „нов“. */
 export async function undoLine(access: OrgAccess, actorId: string, lineId: string): Promise<void> {
+  await requireBankFeature(access);
   await prisma.$transaction(async (tx) => {
     const line = await lockLine(tx, access.organizationId, lineId);
     if (line.status === 'IGNORED') {
       await tx.bankLine.update({ where: { id: line.id }, data: { status: 'NEW' } });
+      await audit(tx, {
+        actorId,
+        organizationId: access.organizationId,
+        action: 'bank.line.restored',
+        targetType: 'BankLine',
+        targetId: line.id,
+      });
       return;
     }
     if (line.status !== 'MATCHED' || !line.documentPaymentId) throw new ReconcileError('state');
@@ -277,3 +246,4 @@ export async function undoLine(access: OrgAccess, actorId: string, lineId: strin
 }
 
 export { DocumentPaymentError };
+export { numbersIn, suggest, suggestMany, type Suggestion } from './suggest.js';

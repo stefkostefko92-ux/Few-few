@@ -876,3 +876,9 @@ input[type='color'] {
   font-size: 0.8rem;
   line-height: 1.5;
 }
+
+/* Формата за документ: „Добави от артикулите“ — над редовете, не на цялата ширина. */
+.line-picker {
+  max-width: 28rem;
+  margin-bottom: 0.75rem;
+}

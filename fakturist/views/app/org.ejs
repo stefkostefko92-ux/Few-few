@@ -19,7 +19,7 @@
   <% if (canBilling) { %><a href="/app/o/<%= org.id %>/plan"><%= t('app.plan.title') %></a><% } %>
   <% if (canSettings) { %><a href="/app/o/<%= org.id %>/nastroyki"><%= t('app.settings.title') %></a><% } %>
   <% if (canSettings) { %><a href="/app/o/<%= org.id %>/api"><%= t('app.api.title') %></a><% } %>
-  <% if (canSettings) { %><a href="/app/o/<%= org.id %>/iznos.zip" download><%= t('app.export.link') %></a><% } %>
+  <% if (canSettings) { %><a href="/app/o/<%= org.id %>/iznos.zip" download target="_blank" rel="noopener"><%= t('app.export.link') %></a><% } %>
   <% if (canManageMandates && org.kind === 'COMPANY') { %><a href="/app/o/<%= org.id %>/palnomoshtni"><%= t('app.mandates.title') %><% if (pendingMandates > 0) { %> <span class="tag tag-pending"><%= pendingMandates %></span><% } %></a><% } %>
 </nav>
 <p class="muted"><%= t('app.org.usage', { issued: usage.issued }) %></p>

@@ -79,12 +79,22 @@
   <fieldset>
     <legend><%= t('app.doc.lines') %></legend>
     <p class="hint"><%= t('app.doc.linesHelp') %></p>
+    <% if (items.length) { %>
+    <label class="line-picker" data-item-picker hidden><%= t('app.doc.addItem') %>
+      <select data-item-select>
+        <option value=""><%= t('app.doc.addItemChoose') %></option>
+        <% items.forEach((i) => { %><option value="<%= i.name %>"><%= i.name %> · <%= i.netPrice %></option><% }) %>
+      </select>
+    </label>
+    <% } else { %>
+    <p class="hint"><%= t('app.doc.noItems') %> <a href="/app/o/<%= org.id %>/artikuli"><%= t('app.catalog.items') %></a></p>
+    <% } %>
     <div class="table-wrap"><table class="lines">
       <thead><tr>
         <th scope="col">#</th><th scope="col"><%= t('app.doc.lineName') %></th><th scope="col"><%= t('app.doc.quantity') %></th><th scope="col"><%= t('app.doc.unit') %></th>
         <th scope="col"><%= t('app.doc.price') %></th><th scope="col"><%= t('app.doc.category') %></th><th scope="col"><%= t('app.doc.vatRate') %></th><th scope="col"><%= t('app.doc.discount') %></th>
       </tr></thead>
-      <tbody>
+      <tbody data-lines>
       <% for (let i = 0; i < lineCount; i++) { %>
         <tr>
           <td class="mono muted"><%= i + 1 %></td>
@@ -99,6 +109,7 @@
       <% } %>
       </tbody>
     </table></div>
+    <p><button type="button" class="button-secondary" data-add-line hidden><%= t('app.doc.addLine') %></button></p>
   </fieldset>
 
   <div class="grid-2">

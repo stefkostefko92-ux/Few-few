@@ -60,3 +60,9 @@ test('дълбочина и брой елементи имат таван', () =
   assert.throws(() => parseXml('<a>'.repeat(200) + '</a>'.repeat(200)), XmlError);
   assert.throws(() => parseXml(`<a>${'<b/>'.repeat(200_001)}</a>`), XmlError);
 });
+
+test('ревю: забранени управляващи знаци (вкл. 0x00) — отказ', () => {
+  assert.throws(() => parseXml('<a><!-- \u0000 --></a>'), XmlError);
+  assert.throws(() => parseXml('<a>\u0007</a>'), XmlError);
+  assert.equal(parseXml('<a>\tред\r\n</a>').text, '\tред\r\n');
+});

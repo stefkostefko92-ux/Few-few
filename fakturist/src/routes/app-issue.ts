@@ -211,7 +211,13 @@ async function renderNewDocument(
         })
       : Promise.resolve(null),
   ]);
-  const lines = Array.isArray(form['lines']) ? form['lines'].length : 0;
+  // qs дава масив до 20 реда, а над това — обект с ключове „0“, „1“… (src/documents/form.ts, list()).
+  const rawLines = form['lines'];
+  const lines = Array.isArray(rawLines)
+    ? rawLines.length
+    : typeof rawLines === 'object' && rawLines !== null
+      ? Object.keys(rawLines).length
+      : 0;
   const today = new Date().toISOString().slice(0, 10);
   res.status(status).render('app/document-new', {
     org,
