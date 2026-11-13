@@ -1972,7 +1972,7 @@ export default function App(){
           42.3482{"°"}N {"·"} 23.0017{"°"}E<br/>BOBOV DOL {"·"} ALT 550M<br/><span style={{color:C}}>{"±"}0.02 TOL</span> {"·"} <span style={{color:C}}><i className="cs-live"/>MEASURING</span>
         </div>
 
-        <div style={{position:"relative",zIndex:10,maxWidth:1180,width:"100%",margin:"0 auto"}}>
+        <div className="cs-hero-col" style={{position:"relative",zIndex:10,maxWidth:1180,width:"100%",margin:"0 auto"}}>
           <div className="cs-hero-eb" style={{display:"flex",alignItems:"center",gap:14,fontSize:10,letterSpacing:".4em",color:INK2,marginBottom:"clamp(20px,4vh,40px)"}}>
             <span style={{width:24,height:1,flex:"none",background:C}}/>{t("hero_eyebrow")}
           </div>

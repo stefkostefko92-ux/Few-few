@@ -20,9 +20,10 @@
  *    курсора. Режим auto:"loop" (hero) върви постоянно и ЗАТОВА страницата дава бутон за пауза
  *    (api.pause / api.resume). Времето е натрупано (не стенен часовник): встъплението не „изтича“ в
  *    таб на заден план;
- *  - подвижната светлина и лазерът имат таван на скоростта (PHI_MAX, S_FAST) и се „успокояват“ при мятане
- *    на мишката напред-назад (calm): измерено кадър по кадър при 0.5–5 Hz — най-много 2 проблясъка в
- *    секунда върху четвърт от поле 10° (прагът на WCAG 2.3.1 е 3);
+ *  - подвижната светлина и лазерът имат таван на скоростта (PHI_MAX, S_FAST), „успокояват“ се при мятане
+ *    на мишката (calm) и по построение лазерът обръща посоката си най-много два пъти в секунда (hold):
+ *    измерва се кадър по кадър при 0.5–8 Hz, включително влизане/излизане на курсора и скокове между
+ *    краищата (прагът на WCAG 2.3.1 е 3 проблясъка в секунда върху четвърт от поле 10°);
  *  - cfg.pointer:false — сцената не следи курсора (само автоматичното движение);
  *  - рисува само докато е на екрана и табът е видим; при слаб графичен процесор първо сваля
  *    резолюцията, после се изключва и остава неподвижният кадър;
@@ -148,19 +149,31 @@
       gl.uniform1f(U("uK"), K);
       var uPhi = U("uPhi"), uSweepGain = U("uSweepGain"), uS0 = U("uS0"), uW = U("uW"), uLaser = U("uLaser"), uGlowK = U("uGlowK"), uFit = U("uFit");
 
-      // позицията под курсора: копие на картата в 2D платно (чете се по един пиксел)
+      // позицията под курсора: картата се чете веднъж в масив
       var pc = document.createElement("canvas");
-      pc.width = im[3].naturalWidth; pc.height = im[3].naturalHeight;
+      var PW = pc.width = im[3].naturalWidth, PH = pc.height = im[3].naturalHeight;
       var pctx = pc.getContext("2d", { willReadFrequently: true });
       pctx.drawImage(im[3], 0, 0);
+      var PD = pctx.getImageData(0, 0, PW, PH).data;
+      pc.width = pc.height = 1; pc = pctx = null;
       var iar = im[0].naturalWidth / im[0].naturalHeight;
       im = null;                                               // декодираните картини вече са в текстури — не ги държим
+      // Целта е МЕДИАНАТА на околността на курсора (5×5 проби, ±2% от ширината), не един пиксел: малък
+      // отвор или ръб под показалеца не мята целта напред-назад — линията отива върху повърхността, която
+      // преобладава там. Върху равна повърхност медианата е точно стойността под курсора.
+      var SR = Math.max(2, Math.round(PW * 0.01)), sbuf = [];
       function sAt(u, vv) {
-        var x = Math.max(0, Math.min(pc.width - 1, Math.round(u * pc.width)));
-        var y = Math.max(0, Math.min(pc.height - 1, Math.round(vv * pc.height)));
-        var d = pctx.getImageData(x, y, 1, 1).data;
-        if (d[0] + d[1] + d[2] === 0) return null;
-        return (d[0] * 256 + d[1]) / 65535;
+        var cx = Math.round(u * PW), cy = Math.round(vv * PH), n = 0;
+        for (var b = -2; b <= 2; b++) for (var a = -2; a <= 2; a++) {
+          var x = cx + a * SR, y = cy + b * SR;
+          if (x < 0 || y < 0 || x >= PW || y >= PH) continue;
+          var q = (y * PW + x) * 4;
+          if (PD[q] + PD[q + 1] + PD[q + 2] !== 0) sbuf[n++] = PD[q] * 256 + PD[q + 1];
+        }
+        if (n < 13) return null;                               // под курсора преобладава фонът → автоматичната цел
+        sbuf.length = n;
+        sbuf.sort(function (m1, m2) { return m1 - m2; });
+        return sbuf[n >> 1] / 65535;
       }
 
       var span = cfg.sMax - cfg.sMin;
@@ -173,21 +186,44 @@
       // phi0: положението на подвижната лампа, от което е сглобен неподвижният кадър — сцената тръгва оттам
       var ph0 = loop && cfg.phi0 != null ? Math.acos(1 - 2 * cfg.phi0 / (K - 1)) : 0;
       var st = { s: norm(scan[0]), phi: loop && cfg.phi0 != null ? cfg.phi0 : -1, laser: 0, clock: 0, lastMove: -1e9, wide: 1 };
-      // „Успокояване“ (WCAG 2.3.1). Проблясък за един пиксел = линията минава през него; за повече от три в
-      // секунда курсорът трябва да се мята напред-назад. Затова броим обръщанията на посоката на целта
-      // (с хистерезис, за да не се брои треперене): всяко трупа „възбуда“, която затихва за ~1.2 s, и колкото
-      // е по-голяма, толкова по-лениво следват лазерът и светлината. При нормално движение сцената отговаря
-      // веднага; при мятане застава около средното положение, вместо да „бие“.
+      // WCAG 2.3.1 — две защити. Проблясък за един пиксел = линията (или отражението на лампата) минава
+      // през него; за повече от три в секунда движението трябва да се обръща напред-назад.
+      //
+      // (а) „Успокояване“: броим обръщанията на ЕФЕКТИВНАТА цел (с хистерезис, за да не се брои треперене).
+      // Всяко трупа „възбуда“, която затихва за ~1.2 s, и колкото е по-голяма, толкова по-лениво следват
+      // лазерът и светлината. Броячът върви ВИНАГИ — и когато няма курсор: бързо влизане и излизане през
+      // ръба на сцената мята целта между курсора и автоматичното движение и трябва да се брои (иначе се
+      // заобикаля — намерено при прегледа, 4 проблясъка/s). CALM_AT не се вдига: при 3 пак е 4/s.
       var CALM_TAU = 1.2, CALM_AT = 1.5, HYS_S = 0.03 * Math.abs(norm(scan[1]) - norm(scan[0])), HYS_U = 0.03;
       var agS = { d: 0, ref: 0, ag: 0 }, agU = { d: 0, ref: 0, ag: 0 };
-      function calm(o, x, hys, dt, on) {
+      function calm(o, x, hys, dt) {
         o.ag *= Math.exp(-dt / CALM_TAU);
-        if (!on) { o.d = 0; o.ref = x; return 1 / (1 + Math.pow(o.ag / CALM_AT, 2)); }
         var dx = x - o.ref;
         if (o.d === 0) { if (Math.abs(dx) > hys) { o.d = dx > 0 ? 1 : -1; o.ref = x; } }
         else if (o.d * dx > 0) o.ref = x;
         else if (o.d * dx < -hys) { o.d = -o.d; o.ref = x; o.ag += 1; }
         return 1 / (1 + Math.pow(o.ag / CALM_AT, 2));
+      }
+      // (б) Твърда граница по построение, каквато и да е траекторията на курсора: самият лазер обръща
+      // посоката си най-много ДВА пъти във всеки прозорец от една секунда (WIN_S малко над 1 s). Две
+      // обръщания делят секундата на най-много три еднопосочни хода, а един ход минава през всеки пиксел
+      // веднъж → най-много три проблясъка в секунда от линията. Обикновен жест (поява на курсора + смяна
+      // на посоката) не чака; трето обръщане в същата секунда оставя лазера на място, докато прозорецът
+      // изтече. Лампата е фонова светлина: едно обръщане на LOCK_U секунди. Движение в рамките на
+      // хистерезиса (трептене на място) е свободно.
+      var WIN_S = 1.04, LOCK_U = 1.0, LHYS_S = 1.5 * W, LHYS_U = 0.12;
+      var lkS = { d: 0, ext: 0, t1: -1e9, t2: -1e9, x: NaN }, lkU = { d: 0, ext: 0, t1: -1e9, t2: -1e9, x: NaN };
+      function hold(o, x, mv, hys, t, lock, win) {             // връща позволеното преместване
+        if (o.x !== x) { o.d = 0; o.ext = x; }                 // стойността е сменена отвън (встъпление, нулиране)
+        var nx = x + mv;
+        if (o.d === 0) { if (Math.abs(nx - o.ext) > hys) { o.d = nx > o.ext ? 1 : -1; o.ext = nx; } }
+        else if ((nx - o.ext) * o.d >= 0) o.ext = nx;          // продължава в същата посока
+        else if ((o.ext - nx) * o.d > hys) {                   // иска обръщане
+          if (t - o.t2 >= lock && t - o.t1 > win) { o.d = -o.d; o.t1 = o.t2; o.t2 = t; o.ext = nx; }
+          else { nx = o.ext - o.d * hys; mv = nx - x; }        // още е рано: спира на ръба на хистерезиса
+        }
+        o.x = x + mv;
+        return mv;
       }
       var fit = [1, 1, 0, 0];
       var dprCap = cfg.dpr || 1.5, scale = 1, running = false, raf = 0, dead = false, paused = false, slow = 0, frames = 0, last = 0, resting = false;
@@ -234,14 +270,14 @@
           if (sp != null) target = sp;
           ptarget = (K - 1) * (cfg.sweepFlip ? 1 - pointer.u : pointer.u);
         }
-        // лазерът следва целта, но не по-бързо от цялото сканиране за S_FAST секунди, и се успокоява при мятане
-        // (виж calm по-горе; мери се с кадрова симулация на 30 fps при честоти 0.75–5 Hz)
-        var cS = calm(agS, target, HYS_S, dt, !!pointer), cU = calm(agU, pointer ? pointer.u : 0, HYS_U, dt, !!pointer);
-        var ds = (target - st.s) * (1 - Math.exp(-dt * (pointer ? 6.0 * cS : 3.0))), sc = sCap * dt;
-        st.s += Math.max(-sc, Math.min(sc, ds));
+        // лазерът следва целта, но не по-бързо от цялото сканиране за S_FAST секунди, успокоява се при мятане
+        // (calm) и обръща посоката си най-много два пъти в секунда (hold) — мери се с кадрова симулация на 30 fps
+        var cS = calm(agS, target, HYS_S, dt), cU = calm(agU, ptarget / Math.max(1, K - 1), HYS_U, dt);
+        var ds = (target - st.s) * (1 - Math.exp(-dt * (pointer ? 6.0 : 3.0) * cS)), sc = sCap * dt;
+        st.s += hold(lkS, st.s, Math.max(-sc, Math.min(sc, ds)), LHYS_S, t, 0, WIN_S);
         if (loop || t >= intro || pointer) {
-          var dp = (ptarget - st.phi) * (1 - Math.exp(-dt * 2.0 * (pointer ? cU : 1))), cap = PHI_MAX * dt;
-          st.phi += Math.max(-cap, Math.min(cap, dp));
+          var dp = (ptarget - st.phi) * (1 - Math.exp(-dt * 2.0 * cU)), cap = PHI_MAX * dt;
+          st.phi += hold(lkU, st.phi, Math.max(-cap, Math.min(cap, dp)), LHYS_U, t, LOCK_U, 0);
         }
         return auto || !!pointer;
       }

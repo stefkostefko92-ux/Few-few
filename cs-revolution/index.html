@@ -81,8 +81,10 @@
       linear-gradient(180deg,rgba(10,12,14,.7) 0,rgba(10,12,14,0) 16%); }
     #cs-boot .eb, #cs-boot h1, #cs-boot .sub { position: relative; z-index: 2; }
     /* same width cap as the React hero H1 (it stops before the emblem, which starts mid-screen) */
-    /* left edge on the 1180px column like the React H1 (the h1 rule above zeroes the auto margins) */
-    #cs-boot h1 { max-width: min(16ch, 43vw); margin-left: max(0px, calc((100% - 1180px) / 2)); }
+    /* left edge on the 1180px column like the React hero; above ~1640px the left margin stops growing at 10vw so
+       the title never reaches the emblem's plinth (same rule: .cs-hero-col in src/HeroLive.jsx) */
+    #cs-boot .eb, #cs-boot h1, #cs-boot .sub { margin-left: max(0px, min(calc((100% - 1180px) / 2), 10vw)); margin-right: auto; }
+    #cs-boot h1 { max-width: min(16ch, 43vw); }
     #cs-boot .eb i { flex: none; }
     /* on narrow windows the two mono lines wrap instead of running across the emblem (same rule in HeroLive.jsx) */
     @media (max-width: 1180px) { #cs-boot .eb, #cs-boot .sub { max-width: 40vw; line-height: 1.9; margin-left: 0; margin-right: auto; } }

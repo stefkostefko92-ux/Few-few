@@ -60,9 +60,14 @@ export default function HeroLive(props) {
           base: k + "-base.webp", sweep: k + "-sweep.webp", flood: k + "-flood.webp", pos: k + "-pos.png", glow: k + "-glow.webp",
           sweeps: m.sweeps, sMin: m.sMin, sMax: m.sMax, s0: m.s0, scan: m.scan, phi0: m.phi0, fit: set.fit,
           auto: "loop", laserWidth: 0.075, dpr: mq.matches ? 1.25 : 1.5,
+          // вертикалният кадър е за екрани без курсор и не го следи: в тесен прозорец на компютър лазерът и
+          // голямото отражение на пода заемат твърде голям дял от зрителното поле — при мятане на мишката
+          // измерването стига точно прага от 3 проблясъка/s, без запас; автоматичното движение е 1/s
+          pointer: !mq.matches,
           // двигателят се е изключил сам (слаб графичен процесор, загубен контекст, включено „намалено
           // движение“): остава неподвижният кадър и бутонът изчезва — няма какво да се паузира
-          onDead: function () { api.current = null; if (!gone) setMode("none"); }
+          // (destroy() от нас — завъртане на телефона, размонтиране — първо нулира api.current, затова не се брои)
+          onDead: function () { if (!api.current) return; api.current = null; if (!gone) setMode("none"); }
         });
       }).then(function (a) {
         loading = false;
@@ -73,7 +78,13 @@ export default function HeroLive(props) {
         setMode(wantOff ? "off" : "on");
       }).catch(function () { loading = false; if (!gone) setMode("none"); });
     }
-    function swap() { var a = api.current; if (a) { api.current = null; a.destroy(); } if (!wantOff && !mqR.matches) mount(); }
+    // смяна на кадъра (завъртане на телефона): на пауза остава неподвижният кадър И бутонът за пускане
+    function swap() {
+      var a = api.current;
+      if (a) { api.current = null; a.destroy(); }
+      if (mqR.matches) return;
+      if (wantOff) setMode("off"); else mount();
+    }
     function start() { (window.requestIdleCallback || function (f) { setTimeout(f, 500); })(function () { if (wantOff) setMode("off"); else mount(); }, { timeout: 2500 }); }
 
     if (document.readyState === "complete") start(); else window.addEventListener("load", start, { once: true });
@@ -130,6 +141,9 @@ export var HERO_LIVE_CSS =
   "#hero{padding-top:96px!important}" +
   "@media(max-height:560px){.cs-hl-pause{top:74px}}" +
   ".cs-hero-h1{max-width:min(16ch,43vw)!important}" +
+  // над ~1640 px центрираната колона (1180 px) би избутала заглавието върху поставката на емблемата (тя
+  // започва на ~42% от ширината), затова лявото поле спира да расте на 10vw
+  ".cs-hero-col{margin-left:max(0px,min(calc((100% - 1180px)/2),10vw))!important;margin-right:auto!important}" +
   "@media(max-width:1180px){.cs-hero-eb,.cs-hero-sub{max-width:40vw;line-height:1.9}}" +
   // Изправен тесен екран: сцената е закотвена ГОРЕ с ширина --hw (кутия точно 2:3, без изрязване), а текстът
   // започва под поставката на емблемата (тя е на 50% от височината на кадъра = 0.75 × --hw). Така на нисък
@@ -141,5 +155,6 @@ export var HERO_LIVE_CSS =
     ".cs-hl-img{object-position:50% 50%}" +
     ".cs-hl-shade{background:linear-gradient(180deg,rgba(10,12,14,.72) 0,rgba(10,12,14,0) 120px,rgba(10,12,14,0) calc(var(--hw)*.72),rgba(10,12,14,.8) calc(var(--hw)*.9),#0A0C0E calc(var(--hw)*1.36))}" +
     ".cs-hl-pause{top:74px;right:16px}" +
-    ".cs-hero-h1{max-width:16ch!important}.cs-hero-eb,.cs-hero-sub{max-width:none;line-height:inherit}}" +
+    ".cs-hero-h1{max-width:16ch!important}.cs-hero-eb,.cs-hero-sub{max-width:none;line-height:inherit}" +
+    ".cs-hero-col{margin-left:auto!important}}" +
   "@media(prefers-reduced-motion:reduce){.cs-hl-pause{display:none}}";
