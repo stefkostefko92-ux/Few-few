@@ -403,5 +403,21 @@
       "vatCharged": "VAT charged when it should not have been (para. 3)",
       "vatRate": "Wrong VAT rate (para. 6)"
     }
+  },
+  "export": {
+    "link": "Export (ZIP)",
+    "myData": "My data",
+    "myDataHelp": "Download your personal data in a machine-readable format (JSON): profile, memberships, accepted documents, sessions and your actions in the audit log (Art. 15 and 20 GDPR).",
+    "myDataButton": "Download my data",
+    "close": "Close the account",
+    "closeHelp": "The account is closed at once: sessions end, your name and email are erased. Companies' documents stay with them — the law obliges the company to keep them. If you are an owner, download the company export first.",
+    "closeConfirm": "I understand that closing cannot be undone.",
+    "closeButton": "Close the account",
+    "err": {
+      "closeConfirm": "Confirm the closing with the checkbox.",
+      "password": "The password is wrong.",
+      "master": "A master account is not closed from here.",
+      "transferFirst": "You are the only owner of a company with other members — remove them first or write to us to transfer ownership."
+    }
   }
 }

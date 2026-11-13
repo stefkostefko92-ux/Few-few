@@ -14,6 +14,7 @@
   <% if (canItems) { %><a href="/app/o/<%= org.id %>/artikuli"><%= t('app.catalog.items') %></a><% } %>
   <% if (canSeries) { %><a href="/app/o/<%= org.id %>/serii"><%= t('app.catalog.series') %></a><% } %>
   <% if (canSettings) { %><a href="/app/o/<%= org.id %>/nastroyki"><%= t('app.settings.title') %></a><% } %>
+  <% if (canSettings) { %><a href="/app/o/<%= org.id %>/iznos.zip" download><%= t('app.export.link') %></a><% } %>
   <% if (canManageMandates && org.kind === 'COMPANY') { %><a href="/app/o/<%= org.id %>/palnomoshtni"><%= t('app.mandates.title') %><% if (pendingMandates > 0) { %> <span class="tag tag-pending"><%= pendingMandates %></span><% } %></a><% } %>
 </nav>
 <p class="muted"><%= t('app.org.usage', { issued: usage.issued }) %></p>

@@ -13,6 +13,7 @@ import { appSettingsRouter } from './app-settings.js';
 import { appCatalogRouter } from './app-catalog.js';
 import { appMembersRouter } from './app-members.js';
 import { appIssueRouter } from './app-issue.js';
+import { appExportRouter } from './app-export.js';
 
 /** Документите, издадени от фирмата през текущия месец — за мекия лимит на безплатния план. */
 async function monthUsage(
@@ -41,6 +42,7 @@ export function appRouter(): Router {
   router.use(appCatalogRouter());
   router.use(appMembersRouter());
   router.use(appIssueRouter());
+  router.use(appExportRouter());
   router.use(appInboxRouter());
   router.use(appClientsRouter());
   router.use(appSettingsRouter());
