@@ -41,7 +41,7 @@ export default {
     },
     shippingTitle: 'Shipping & warranty',
     shipping: [
-      'Standard delivery 2 – 5 working days; express 24 – 48 h on request.',
+      'Standard delivery in about 2 – 3 working weeks; express in 1 week on request.',
       'Free shipping across Italy for orders above € 500 (excl. VAT).',
       '2-year warranty on manufacturing defects: apparent defects within 15 days of delivery, hidden defects within 15 days of discovery (and 24 months of delivery).',
       'Payment: advance bank transfer, RIBA for regular customers with a commercial credit line, credit card. Electronic invoicing via SdI.',

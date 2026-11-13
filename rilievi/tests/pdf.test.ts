@@ -100,7 +100,16 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
       foto: [
         {
           titolo: 'Impianto',
-          foto: [{ immagine: landscape, larghezza: 960, altezza: 720, didascalia: 'Ingresso' }],
+          // Annotated (C5): a red arrow over the photo, drawn in the PDF as on the page.
+          foto: [
+            {
+              immagine: landscape,
+              larghezza: 960,
+              altezza: 720,
+              didascalia: 'Ingresso',
+              annotazioni: { e: [{ t: 'p', c: 'r', s: 2, d: 'M200 200l400 300' }] },
+            },
+          ],
         },
         {
           titolo: 'Quadro',
@@ -109,6 +118,7 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
             larghezza: 720,
             altezza: 960,
             didascalia: 'Targa del quadro',
+            annotazioni: null,
           })),
         },
       ],

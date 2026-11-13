@@ -4,7 +4,12 @@
     <h1><%= t('schede.title') %></h1>
     <p class="page-head__sub"><%= t('schede.subtitle') %></p>
   </div>
+  <%# CSV — с филтъра и търсенето на страницата (routes/esporta-csv.ts). %>
+  <% const csvQ = new URLSearchParams(Object.entries({ azienda: aziendaFilter, q: query }).filter(([, v]) => v)).toString(); %>
+  <%# Bez nishto za svalyane — bez butona. %>
+  <% if (page.total > 0) { %><div class="toolbar"><a class="btn" href="/schede/esporta.csv<%= csvQ ? '?' + csvQ : '' %>" download><%- include('../partials/icon', { name: 'download' }) %><%= t('csv.scarica') %></a></div><% } %>
 </div>
+<% if (locals.daApprovareN > 0) { %><p class="notice"><a href="/approvazioni"><%= daApprovareN === 1 ? t('flusso.approvazione.daApprovare1') : t('flusso.approvazione.daApprovare', { n: daApprovareN }) %></a></p><% } %>
 <% if (aziende.length > 0) { %><%- include('../partials/azienda-filter', { action: '/schede' }) %><% } %>
 <form class="search" role="search" method="get" action="/schede" data-live-search>
   <% if (aziendaFilter) { %><input type="hidden" name="azienda" value="<%= aziendaFilter %>"><% } %>

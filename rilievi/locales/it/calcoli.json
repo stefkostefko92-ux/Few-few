@@ -1,7 +1,7 @@
 {
   "calcoli": {
     "piede": {
-      "generato": "Generato con Rilievi Impianti (Carbon Stealth VCC), build {build}, da {nome} il {quando} · Rif. {impronta}",
+      "generato": "Generato con Rilievi Impianti {versione} (Carbon Stealth VCC), build {build}, da {nome} il {quando} · Rif. {impronta}",
       "verifica": "Strumento di supporto al calcolo: privo di validità senza verifica e firma di un tecnico abilitato.",
       "salvato": "Calcolo salvato il {quando} da {nome}"
     },

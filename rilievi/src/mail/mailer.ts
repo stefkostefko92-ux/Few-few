@@ -1,6 +1,10 @@
 import nodemailer, { type Transporter } from 'nodemailer';
-import { config, isProduction, mailEnabled } from '../config.js';
+import { allarme } from '../allarmi/servizio.js';
+import { COMPANY } from '../company.js';
+import { isProduction } from '../config.js';
+import { translatorFor } from '../i18n.js';
 import { logger } from '../logger.js';
+import { assicuraPosta, parametriSmtp, versionePosta, type ParametriSmtp } from './posta.js';
 
 export interface MailMessage {
   to: string;
@@ -8,25 +12,36 @@ export interface MailMessage {
   text: string;
   /** Прикачени файлове (PDF-ът на листа за интервенция) — създадени на сървъра, никога пратени отвън. */
   attachments?: Array<{ filename: string; content: Buffer; contentType: string }>;
+  /** Отговорът — до човека, който е пратил (поръчката до доставчика); иначе — до портала. */
+  replyTo?: string;
 }
 
 /** `disabled` — няма SMTP: връзката се показва на екрана за копиране, нищо не е изгубено. */
 export type MailResult = 'sent' | 'disabled' | 'failed';
 
-let transport: Transporter | null = null;
+let transport: { versione: number; fonte: string; t: Transporter } | null = null;
 
 /** SMTP (Brevo на порт 2525 — минава и при блокирани 25/465/587), винаги шифровано (STARTTLS или TLS). */
-function getTransport(): Transporter {
-  if (transport) return transport;
-  const cfg = config();
-  transport = nodemailer.createTransport({
-    host: cfg.SMTP_HOST,
-    port: cfg.SMTP_PORT,
-    secure: cfg.SMTP_SECURE,
-    requireTLS: !cfg.SMTP_SECURE,
-    auth: cfg.SMTP_USER && cfg.SMTP_PASS ? { user: cfg.SMTP_USER, pass: cfg.SMTP_PASS } : undefined,
+export function creaTransport(p: ParametriSmtp): Transporter {
+  return nodemailer.createTransport({
+    host: p.host,
+    port: p.port,
+    secure: p.secure,
+    requireTLS: !p.secure,
+    auth: p.user && p.pass ? { user: p.user, pass: p.pass } : undefined,
+    connectionTimeout: 15_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 30_000,
   });
-  return transport;
+}
+
+/** Транспортът на текущата настройка — нов при всяка нова настройка от конзолата. */
+function getTransport(p: ParametriSmtp): Transporter {
+  if (transport && transport.versione === versionePosta() && transport.fonte === p.fonte)
+    return transport.t;
+  transport?.t.close();
+  transport = { versione: versionePosta(), fonte: p.fonte, t: creaTransport(p) };
+  return transport.t;
 }
 
 /** Кутията за разработка и тестове: какво би тръгнало. В продукция остава празна. */
@@ -45,21 +60,61 @@ function remember(message: MailMessage, result: MailResult): void {
   if (outbox.length > 200) outbox.shift();
 }
 
-export async function sendMail(message: MailMessage): Promise<MailResult> {
-  if (/[\r\n]/.test(message.to)) return 'failed';
-  if (!mailEnabled()) {
+/**
+ * Последният изход от истинско пращане (в паметта на процеса) — за „Salute del sistema“ и `/stato`: пощата
+ * „работи“ по това дали писмата тръгват, не по това дали е настроена (одитът от 12 ноември 2026).
+ */
+let ultimoInvio: { at: Date; riuscito: boolean; falliti: number } | null = null;
+export const ultimoEsitoPosta = (): { at: Date; riuscito: boolean; falliti: number } | null =>
+  ultimoInvio;
+const segna = (riuscito: boolean): void => {
+  ultimoInvio = {
+    at: new Date(),
+    riuscito,
+    falliti: riuscito ? 0 : (ultimoInvio?.falliti ?? 0) + 1,
+  };
+};
+
+/** Подписът, с който завършват текстовете на писмата в речника. */
+const FIRMA_BREVE = 'Carbon Stealth VCC — https://carbonstealth.eu';
+
+/**
+ * Пълните данни на изпращача под всяко писмо (одитът от 12 ноември 2026 — чл. 5 от Дир. 2000/31): правната
+ * форма, седалището, ЕИК и ДДС номерът — от едно място (company.ts и `company.*` в речника), не във всеки текст.
+ */
+export function conFirma(text: string): string {
+  if (!text.endsWith(FIRMA_BREVE)) return text;
+  const t = translatorFor('it');
+  const firma = [
+    `${t('company.legalName')} — ${t('company.legalForm')}`,
+    `${t('company.street')}, ${COMPANY.postalCode} ${t('company.city')}, ${t('company.country')}`,
+    `EIK ${COMPANY.eik} — ${t('company.vatLabel')} ${COMPANY.vat}`,
+    COMPANY.url,
+  ].join('\n');
+  return text.slice(0, -FIRMA_BREVE.length) + firma;
+}
+
+export async function sendMail(grezzo: MailMessage): Promise<MailResult> {
+  const message: MailMessage = { ...grezzo, text: conFirma(grezzo.text) };
+  if (/[\r\n]/.test(message.to) || /[\r\n]/.test(message.replyTo ?? '')) return 'failed';
+  await assicuraPosta();
+  const parametri = parametriSmtp();
+  if (!parametri) {
     remember(message, 'disabled');
     return 'disabled';
   }
   try {
-    await getTransport().sendMail({ from: config().MAIL_FROM, ...message });
+    await getTransport(parametri).sendMail({ from: parametri.from, ...message });
+    segna(true);
     remember(message, 'sent');
     return 'sent';
   } catch (error) {
     // Само кодовете на грешката: текстът от SMTP сървъра често цитира адреса на получателя.
     const e = error as { code?: unknown; responseCode?: unknown; command?: unknown };
+    segna(false);
     logger.error(
       {
+        evento: 'posta.fallita',
         code: typeof e.code === 'string' ? e.code : undefined,
         responseCode: typeof e.responseCode === 'number' ? e.responseCode : undefined,
         command: typeof e.command === 'string' ? e.command : undefined,
@@ -67,6 +122,8 @@ export async function sendMail(message: MailMessage): Promise<MailResult> {
       'писмото не тръгна',
     );
     remember(message, 'failed');
+    // Пощата не тръгва: и в Discord (без адреса) — писмата са единственият път към клиентите.
+    void allarme('posta');
     return 'failed';
   }
 }

@@ -8,6 +8,7 @@ import { hasKey, keysOf, LOCALES, translate } from '../src/i18n.js';
 import { ROOT } from '../src/paths.js';
 import { FIELDS, SECTIONS } from '../src/schede/fields.js';
 import { MISURA_COLUMNS } from '../src/schede/misure.js';
+import { SEZIONI_IMPOSTAZIONI } from '../src/routes/impostazioni-vista.js';
 
 describe('the dictionary', () => {
   it('is Italian only: one language, one folder', () => {
@@ -39,6 +40,11 @@ describe('the dictionary', () => {
     }
     for (const role of ALL_ROLES) assert.ok(hasKey('it', `role.${role}`), role);
     for (const action of AUDIT_ACTIONS) assert.ok(hasKey('it', `audit.action.${action}`), action);
+    // Every section of the settings has its title and description (the page, the hub, the local menu).
+    for (const s of SEZIONI_IMPOSTAZIONI) {
+      assert.ok(hasKey('it', `impostazioni.pagine.${s}.titolo`), s);
+      assert.ok(hasKey('it', `impostazioni.pagine.${s}.desc`), s);
+    }
   });
 
   it('picks the plural form by count', () => {

@@ -1,4 +1,6 @@
 import { readFile } from 'node:fs/promises';
+import type { Foglio } from '../schizzi/model.js';
+import { annotazioniDa } from './annotazioni.js';
 import sharp from 'sharp';
 import type { Translator } from '../i18n.js';
 import { SECTIONS, type SectionKey } from '../schede/fields.js';
@@ -82,6 +84,8 @@ export interface FotoPdf {
   larghezza: number;
   altezza: number;
   didascalia: string | null;
+  /** Анотациите (C5) — нарисувани над снимката в PDF-а; липсват — без. */
+  annotazioni?: Foglio | null;
 }
 
 export interface GruppoFotoPdf {
@@ -105,7 +109,13 @@ export async function fotoPerPdf(
               const immagine = await readFile(percorsi({ ...a, schedaId: scheda.id }).mini);
               const { width, height } = await sharp(immagine).metadata();
               if (!width || !height) return null;
-              return { immagine, larghezza: width, altezza: height, didascalia: a.didascalia };
+              return {
+                immagine,
+                larghezza: width,
+                altezza: height,
+                didascalia: a.didascalia,
+                annotazioni: annotazioniDa(a.annotazioni),
+              };
             } catch {
               return null;
             }

@@ -32,11 +32,11 @@ async function sign(page, index) {
 }
 
 export async function checkInterventi(page, { base, shots, scheme, aziendaName }) {
-  // The bar: four groups for the MASTER (Master apart from the company's Amministrazione), the current
+  // The bar: five groups for the MASTER (Master apart from the company's Amministrazione), the current
   // page marked.
   await page.goto(`${base}/interventi`);
   const groups = await page.locator('.sidenav__group').allTextContents();
-  if (groups.join('|') !== 'Rilievi|Assistenza elevatori|Amministrazione|Master')
+  if (groups.join('|') !== 'Impianti|Calcoli|Documenti|Amministrazione|Master')
     fail(`${scheme}: side bar groups ${groups.join('|')}`);
   if (!(await page.locator('.sidenav a[aria-current="page"][href="/interventi"]').count()))
     fail(`${scheme}: "Interventi" not marked in the bar`);
@@ -110,16 +110,22 @@ export async function checkInterventi(page, { base, shots, scheme, aziendaName }
   await page.screenshot({ path: join(shots, `${scheme}-intervento.png`), fullPage: true });
 }
 
-/** On a phone: ☰ opens the bar over the page, Esc closes it and gives focus back to ☰. */
+/**
+ * On a phone: "Menu" in the bottom bar (☰ on top only where the bar gives way to "Salva") opens the side
+ * bar over the page, Esc closes it and gives the focus back to the opener.
+ */
 export async function checkPhoneMenu(mobile, { base, scheme }) {
   await mobile.goto(`${base}/interventi`);
   const bar = mobile.locator('#sidenav');
-  if (await bar.isVisible()) fail(`${scheme} mobile: the side bar is open before ☰`);
-  await mobile.click('[data-nav-open]');
+  if (await bar.isVisible()) fail(`${scheme} mobile: the side bar is open before "Menu"`);
+  const opener = mobile.locator('[data-nav-open]:visible').first();
+  if ((await opener.getAttribute('class'))?.includes('rapida__voce') !== true)
+    fail(`${scheme} mobile: the side bar does not open from the bottom bar`);
+  await opener.click();
   await mobile.waitForTimeout(250);
-  if (!(await bar.isVisible())) fail(`${scheme} mobile: ☰ does not open the side bar`);
-  if ((await mobile.getAttribute('[data-nav-open]', 'aria-expanded')) !== 'true')
-    fail(`${scheme} mobile: ☰ does not say it is open`);
+  if (!(await bar.isVisible())) fail(`${scheme} mobile: "Menu" does not open the side bar`);
+  if ((await opener.getAttribute('aria-expanded')) !== 'true')
+    fail(`${scheme} mobile: "Menu" does not say it is open`);
   await audit(mobile, `${scheme} mobile menu`);
   await mobile.keyboard.press('Escape');
   await mobile.waitForTimeout(250);
@@ -127,5 +133,5 @@ export async function checkPhoneMenu(mobile, { base, scheme }) {
   const focused = await mobile.evaluate(() =>
     document.activeElement?.hasAttribute('data-nav-open'),
   );
-  if (!focused) fail(`${scheme} mobile: focus not back on ☰ after Esc`);
+  if (!focused) fail(`${scheme} mobile: focus not back on "Menu" after Esc`);
 }

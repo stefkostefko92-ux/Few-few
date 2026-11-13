@@ -1,0 +1,51 @@
+<%
+  // Едно нарушение в регистъра (routes/master-registri.ts): ново или записано — формата по раздели, часовете
+  // по Рим, грешките до полето. Записите не се трият.
+  const SEZIONI = {
+    evento: [['rilevataAt', 'dt'], ['eventoAt', 'dt'], ['titolo', 'text', 160], ['rilevazione', 'area', 2000], ['natura', 'area', 4000], ['ruolo', 'ruolo']],
+    impatto: [['categorieDati', 'area', 2000], ['interessati', 'area', 2000], ['aziende', 'area', 2000]],
+    valutazione: [['conseguenze', 'area', 4000], ['misure', 'area', 4000], ['rischio', 'rischio']],
+    avvisi: [['titolariAvvisatiAt', 'dt'], ['autoritaNotificataAt', 'dt'], ['autoritaProtocollo', 'text', 80], ['interessatiAvvisatiAt', 'dt'], ['motivazione', 'area', 4000]],
+    chiusura: [['lezioni', 'area', 4000], ['chiusaAt', 'dt']],
+  };
+  const titolo = id ? valori.titolo : t('master.violazioni.nuova');
+%><%- include('../partials/top', { title: titolo + ' — ' + t('master.violazioni.title'), narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="/master/violazioni"><%= t('master.violazioni.title') %></a>
+    <h1><%= titolo %></h1>
+    <% if (meta) { %><p class="page-head__sub"><%= t('master.violazioni.modifica', { data: fmt.dateTime(meta.createdAt) }) %><% if (meta.autore) { %> · <%= t('master.violazioni.autore', { nome: meta.autore }) %><% } %></p><% } %>
+  </div>
+</div>
+<% if (Object.keys(errori).length) { %><div class="errors" id="form-error" role="alert"><h2><%= t('master.violazioni.errore') %></h2></div><% } %>
+<form class="form" method="post" action="<%= id ? '/master/violazioni/' + id : '/master/violazioni' %>" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% for (const [sezione, campi] of Object.entries(SEZIONI)) { %><fieldset class="section">
+    <legend class="section__title"><%= t('master.violazioni.sezioni.' + sezione) %></legend>
+    <div class="grid">
+      <% for (const [k, tipo, max] of campi) {
+           const fid = 'v-' + k;
+           const err = errori[k]; %><div class="field<%= tipo === 'area' ? ' field--wide' : '' %>">
+        <% if (tipo === 'ruolo' || tipo === 'rischio') { const opts = tipo === 'ruolo' ? ruoli : rischi; %><fieldset class="choice"<% if (err) { %> aria-describedby="err-<%= fid %>"<% } %>>
+          <legend><%= t('master.violazioni.campi.' + k) %></legend>
+          <div class="choice__opts">
+            <% for (const o of opts) { %><label class="tick"><input type="radio" name="<%= k %>" value="<%= o %>"<% if (valori[k] === o) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('master.violazioni.' + (tipo === 'ruolo' ? 'ruoli.' : 'rischi.') + o) %></span></label>
+            <% } %>
+          </div>
+        </fieldset>
+        <% } else { %><label class="field__label" for="<%= fid %>"><%= t('master.violazioni.campi.' + k) %></label>
+        <% if (tipo === 'area') { %><textarea class="input" id="<%= fid %>" name="<%= k %>" rows="3" maxlength="<%= max %>"<% if (err) { %> aria-invalid="true" aria-describedby="err-<%= fid %>"<% } %>><%= valori[k] %></textarea>
+        <% } else { %><input class="input" id="<%= fid %>" name="<%= k %>" type="<%= tipo === 'dt' ? 'datetime-local' : 'text' %>"<% if (max) { %> maxlength="<%= max %>"<% } %> value="<%= valori[k] %>"<% if (err) { %> aria-invalid="true" aria-describedby="err-<%= fid %>"<% } %>><% } %>
+        <% } %>
+        <% if (err) { %><p class="field__error" id="err-<%= fid %>"><%= t('master.violazioni.erroreCampo') %></p><% } %>
+      </div>
+      <% } %>
+    </div>
+  </fieldset>
+  <% } %>
+  <div class="toolbar">
+    <button class="btn btn--primary" type="submit"><%= t('master.violazioni.salva') %></button>
+    <a class="btn" href="/master/violazioni"><%= t('master.violazioni.torna') %></a>
+  </div>
+</form>
+<%- include('../partials/bottom') %>

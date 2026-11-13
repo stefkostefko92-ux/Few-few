@@ -1,25 +1,45 @@
-import { Router } from 'express';
+import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.js';
 import { principalOf, requireCsrf, requireUser } from '../auth/guards.js';
 import { PASSWORD_MAX_LENGTH } from '../auth/password.js';
 import { clearSessionCookie } from '../auth/sessions.js';
 import { setFlash } from '../http/flash.js';
+import { fornitoriDelleAziende, identitaDi } from '../services/accesso-esterno.js';
 import { changePassword } from '../services/auth.js';
 import { statoDueFattori } from '../services/due-fattori.js';
 import { coloriForm } from './account-colori.js';
 
 export const accountRouter: Router = Router();
 
-accountRouter.get('/account', requireUser, async (req, res) => {
+/**
+ * Страницата „Account“ — и при грешка на някоя от формите ѝ (паролата, името, свързването с доставчика на
+ * самоличност): същото съдържание, с грешката отгоре.
+ */
+export async function renderAccount(
+  req: Request,
+  res: Response,
+  status: number,
+  error: string | null,
+  errorParams: Record<string, string> = {},
+): Promise<void> {
   const user = principalOf(req).user;
-  res.render('account/index', {
-    error: null,
+  const [dueFattori, offerti, collegati] = await Promise.all([
+    statoDueFattori(user.id),
+    user.master ? Promise.resolve([]) : fornitoriDelleAziende(user.id),
+    identitaDi(user.id),
+  ]);
+  res.status(status).render('account/index', {
+    error,
+    errorParams,
     name: user.name,
     colori: coloriForm(user),
-    dueFattori: await statoDueFattori(user.id),
+    dueFattori,
+    esterni: { offerti, collegati },
   });
-});
+}
+
+accountRouter.get('/account', requireUser, (req, res) => renderAccount(req, res, 200, null));
 
 const passwordSchema = z.object({
   current: z.string().max(PASSWORD_MAX_LENGTH * 4),
@@ -29,13 +49,7 @@ const passwordSchema = z.object({
 
 accountRouter.post('/account/password', requireUser, requireCsrf, async (req, res) => {
   const principal = principalOf(req);
-  const fail = (error: string): void => {
-    res.status(400).render('account/index', {
-      error,
-      name: principal.user.name,
-      colori: coloriForm(principal.user),
-    });
-  };
+  const fail = (error: string) => renderAccount(req, res, 400, error);
   const parsed = passwordSchema.safeParse(req.body);
   if (!parsed.success) return fail('password.problem.tooShort');
   if (parsed.data.password !== parsed.data.confirm) return fail('auth.error.confirm');
@@ -67,14 +81,7 @@ const nameSchema = z.object({ name: z.string().trim().min(2).max(120) });
 accountRouter.post('/account/profilo', requireUser, requireCsrf, async (req, res) => {
   const principal = principalOf(req);
   const parsed = nameSchema.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).render('account/index', {
-      error: 'auth.error.name',
-      name: principal.user.name,
-      colori: coloriForm(principal.user),
-    });
-    return;
-  }
+  if (!parsed.success) return renderAccount(req, res, 400, 'auth.error.name');
   await prisma.user.update({ where: { id: principal.user.id }, data: { name: parsed.data.name } });
   setFlash(res, 'ok', 'flash.profileSaved');
   res.redirect('/account');

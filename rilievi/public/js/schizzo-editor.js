@@ -93,7 +93,7 @@
       return;
     }
     paintPaper(baseCtx);
-    if (vista.zoom >= 2) {
+    if (vista.zoom >= 2 && !shared.sfondo.immagine) {
       // The half squares — where the grid snaps when the view is close.
       baseCtx.lineWidth = 0.5;
       baseCtx.strokeStyle = view.coloreGriglia;

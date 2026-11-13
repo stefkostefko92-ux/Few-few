@@ -1,0 +1,12 @@
+<%- include('../partials/top', { titleKey: 'nuovo.titolo', narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('nuovo.titolo') %></h1>
+    <p class="page-head__sub"><%= t(voci.length ? 'nuovo.sottotitolo' : 'nuovo.niente') %></p>
+  </div>
+</div>
+<% if (voci.length > 0) { %><ul class="scelte">
+  <% for (const voce of voci) { %><li><a class="scelta" href="<%= voce.href %>"><span class="scelta__icona"><%- include('../partials/icon', { name: voce.icon }) %></span><span class="scelta__testo"><span class="scelta__titolo"><%= t(voce.key) %></span><span class="scelta__desc"><%= t(voce.descKey) %></span></span><%- include('../partials/icon', { name: 'chevron' }) %></a></li>
+  <% } %>
+</ul><% } %>
+<%- include('../partials/bottom') %>

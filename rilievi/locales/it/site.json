@@ -26,18 +26,18 @@
       "app": "Vai alle schede"
     },
     "meta": {
-      "title": "Rilievi Impianti: la scheda di rilievo degli ascensori",
-      "description": "Scheda di rilievo dell'ascensore dal telefono, foglio di intervento firmato e cartelli di fermo impianto con il tuo logo. Accesso su richiesta.",
-      "keywords": "Carbon Stealth, scheda rilievo ascensore, rilievo impianti ascensori, sopralluogo ascensore, manutenzione ascensori, software per ascensoristi, matricola impianto, foglio di intervento ascensore, cartello fermo impianto",
+      "title": "Software per ascensoristi | Rilievi Impianti",
+      "description": "Software per ascensoristi: scheda di rilievo dal telefono, foglio di intervento firmato, moduli d'ordine e cartelli di fermo impianto. Primo mese gratuito.",
+      "keywords": "Carbon Stealth, scheda rilievo ascensore, rilievo impianti ascensori, sopralluogo ascensore, manutenzione ascensori, software per ascensoristi, matricola impianto, foglio di intervento ascensore, cartello fermo impianto, calcolo argano, verbale chiusura cantiere",
       "imageAlt": "Rendering 3D di un vano ascensore visto dalla fossa verso l'alto, con il nome Rilievi Impianti e Carbon Stealth VCC",
       "browser": "Un browser recente: Chrome, Edge, Firefox o Safari"
     },
     "hero": {
       "title": "Il rilievo dell'ascensore, campo per campo.",
-      "lead": "Dati di targa, funi, porte, quadro, argano o centralina, le bottoniere piano per piano: il tecnico compila la scheda dal telefono, l'ufficio la ritrova per matricola o indirizzo e la stampa con il logo dell'azienda.",
+      "lead": "Rilievi Impianti è il software web per le aziende di ascensori: il tecnico compila dal telefono la scheda di rilievo (dati di targa, funi, porte, quadro, argano o centralina, bottoniere piano per piano), in ufficio la trovi per matricola o indirizzo e la stampi con il logo della tua azienda. Il primo mese è gratuito.",
       "request": "Richiedi l'accesso",
       "login": "Accedi",
-      "note": "Non c'è registrazione libera: ogni azienda entra su richiesta e poi invita i propri tecnici."
+      "note": "L'accesso è su richiesta: ogni azienda entra con il suo amministratore, che poi invita i colleghi. Il primo mese è gratuito."
     },
     "photo": {
       "vano": "Rendering 3D di un vano ascensore visto dalla fossa verso l'alto: pareti in calcestruzzo, guide con le staffe, porte di piano illuminate, lampade del vano e la cabina in alto.",
@@ -51,49 +51,49 @@
     "legend": {
       "title": "La scheda, sezione per sezione",
       "lead": "{fields} campi in {sections} sezioni, nell'ordine della scheda di carta. Ogni numero è anche nel disegno, nel punto dell'impianto che la sezione descrive.",
-      "extra": "Le domande che non riguardano l'impianto non si vedono: serrature e pattino retrattile compaiono con porte manuali o semiautomatiche, l'operatore della cabina con porte semiautomatiche o automatiche, le sospensioni solo con porte automatiche, i tiranti in fossa solo negli impianti idraulici, fossa e testata ridotte solo negli impianti non idraulici."
+      "extra": "Le domande che non riguardano l'impianto restano nascoste. Per esempio: serrature e pattino solo con porte manuali o semiautomatiche, sospensioni solo con porte automatiche, tiranti in fossa solo negli impianti idraulici."
     },
     "features": {
       "title": "Dal sopralluogo all'ufficio",
       "search": {
-        "title": "Ritrovi ogni impianto in un attimo",
-        "text": "Cerca per numero impianto, matricola, indirizzo, marca, buono di lavoro o note. I risultati arrivano mentre scrivi e il numero esatto viene per primo."
+        "title": "Trovi l'impianto mentre scrivi",
+        "text": "Cerca per numero impianto, matricola, indirizzo, marca, buono di lavoro o note. I risultati compaiono mentre scrivi e il numero esatto viene per primo. Con Ctrl K cerchi in tutto il portale da qualsiasi pagina."
       },
       "phone": {
         "title": "Compili sul posto, dal telefono",
-        "text": "Campi grandi anche per le dita con i guanti, l'unità di misura dentro il campo e la data del giorno già scritta. Funziona nel browser, senza app da installare."
+        "text": "Campi grandi, comodi anche con i guanti; l'unità di misura è già nel campo e la data del giorno è già scritta. Si usa dal browser, senza installare nulla. Se nel vano non c'è rete, la scheda resta salvata sul telefono e la invii quando torna il segnale."
       },
       "print": {
         "title": "Stampi o mandi il PDF",
-        "text": "La scheda esce in A4 o in PDF, con il logo della tua azienda in alto e il nome di chi l'ha compilata."
+        "text": "La scheda esce in A4 o in PDF, con il logo della tua azienda in alto e il nome di chi l'ha compilata. Per il locale macchina stampi anche un'etichetta con il codice QR della scheda."
       },
       "orders": {
-        "title": "Moduli d'ordine dal rilievo",
-        "text": "Con un quadro Pelazza, Movilift, DMG (Pitagora 4.0), Mastech (NG120 o QI Touch) o Elettroquadri (geared, gearless o oleodinamico, secondo il tipo di impianto) la scheda compila il modulo d'ordine originale; con le bottoniere da sostituire, il modulo d'ordine delle bottoniere DMG; con l'argano da sostituire, la scheda dati dell'argano; con le sospensioni o l'operatore da cambiare, il modulo 2SG per operatori e sospensioni; con la fossa o la testata ridotta, le soluzioni da installare e i dati per l'ordine di AMI 100 Mono RTBS. Ogni modulo esce come PDF a parte. Pelazza, Movilift, DMG, Pitagora, Mastech, Elettroquadri, 2SG e AMI 100 sono marchi dei rispettivi titolari."
+        "title": "I moduli d'ordine si compilano dal rilievo",
+        "text": "Se il quadro va sostituito, la scheda compila il modulo d'ordine del costruttore: Pelazza, Movilift, DMG Pitagora 4.0, Mastech (NG120 o QI Touch), Elettroquadri (in base al tipo di impianto) e GEAT. Allo stesso modo prepara il modulo delle bottoniere DMG, la scheda dati dell'argano e il modulo 2SG per operatore e sospensioni. Se la fossa o la testata sono ridotte, prepara anche i dati di AMI 100 Mono RTBS. Ogni modulo esce in PDF e lo mandi al fornitore per email dal portale. I marchi citati appartengono ai rispettivi titolari."
       },
       "misure": {
         "title": "Misuri le bottoniere piano per piano",
-        "text": "Lunghezza, larghezza, interassi dei fori e display delle bottoniere vecchie: una riga per ogni fermata dell'impianto."
+        "text": "Per ogni fermata: lunghezza, larghezza, interasse dei fori e display della bottoniera da sostituire."
       },
       "safe": {
-        "title": "Il lavoro di squadra è protetto",
-        "text": "Se due persone modificano la stessa scheda, la seconda viene avvisata invece di sovrascrivere. Le schede eliminate restano nel cestino e ogni operazione finisce nel registro."
+        "title": "Nessuna modifica va persa",
+        "text": "Se due persone modificano la stessa scheda, la seconda riceve un avviso invece di sovrascrivere. Le ultime 100 versioni di ogni scheda restano consultabili, le schede eliminate passano dal cestino e ogni operazione è registrata. Se vuoi, una scheda passa dall'approvazione di un responsabile prima dell'ordine."
       }
     },
     "servizi": {
       "title": "Dopo il rilievo: assistenza e cantiere",
-      "lead": "Lo stesso portale accompagna l'impianto anche dopo il sopralluogo, con i dati che la scheda già conosce.",
+      "lead": "Lo stesso portale segue l'impianto anche dopo il sopralluogo e usa i dati che la scheda già contiene.",
       "intervento": {
         "title": "Il foglio di intervento, firmato sul telefono",
         "text": "Come il blocchetto di pronto intervento: numerato per azienda, con le voci da spuntare, le prove e gli orari. Tecnico e cliente firmano con il dito; dopo la conferma il foglio non si modifica più ed esce in PDF A4, anche via email."
       },
       "cartelli": {
         "title": "Cartelli di fermo impianto con il tuo logo",
-        "text": "Cinque modelli pronti, con il logo e i dati della tua azienda in alto. Dalla scheda dell'impianto si compilano da soli indirizzo, città e il testo per gli utenti, preso dai lavori previsti; per un impianto senza scheda li scrivi a mano."
+        "text": "Cinque modelli pronti, con il logo e i dati della tua azienda in alto. Se l'impianto ha una scheda, indirizzo, città e testo per gli utenti si compilano da soli in base ai lavori previsti; per un impianto senza scheda li scrivi a mano."
       },
       "allegati": {
         "title": "Foto, video e schizzi nella scheda",
-        "text": "Foto e video in ogni sezione, compressi in automatico; scegli tu quali foto finiscono in stampa. Su richiesta, gli schizzi a mano con quote e simboli del vano."
+        "text": "Foto e video in ogni sezione, compressi in automatico. Scegli quali foto vanno in stampa, in che ordine e di che grandezza, e puoi scriverci sopra. Gli schizzi a mano hanno quote e simboli del vano."
       },
       "permessi": {
         "title": "Ruoli e permessi su misura",
@@ -102,11 +102,23 @@
       "colori": {
         "title": "I tuoi colori",
         "text": "Ognuno sceglie per sé i colori di pagina, menu, testo e pulsanti; il portale controlla che restino leggibili."
+      },
+      "documenti": {
+        "title": "Buono di lavoro e verbale di chiusura cantiere",
+        "text": "Il buono di lavoro raccoglie le lavorazioni, i controlli e le firme; quelle che non fai sul telefono le metti a mano sul foglio stampato. Il verbale di chiusura cantiere lo firmano tecnico e supervisore ed esce in due copie PDF, per l'azienda e per l'installatore."
+      },
+      "calcoli": {
+        "title": "Calcolo dell'argano e del limitatore",
+        "text": "Il calcolo dell'argano sul modello RT-E MOD 10411-1 (velocità, funi, aderenza, pressione specifica) e i limiti della velocità di intervento V1 del limitatore (impianti elettrici a fune), secondo la norma che la UNI 10411-1:2024 o la UNI 10411-11:2024 indica per la modifica scelta. Ogni foglio riporta i dati usati e va controllato e firmato da un tecnico abilitato."
+      },
+      "dati": {
+        "title": "I dati restano tuoi",
+        "text": "L'amministratore scarica quando vuole tutti i dati dell'azienda in un unico file, anche per passare a un altro fornitore, senza costi. Ci sono anche l'esportazione in Excel (CSV) e un'API in sola lettura."
       }
     },
     "roles": {
       "title": "Ogni azienda nel suo spazio",
-      "lead": "Schede, persone e logo di un'azienda li vede solo quell'azienda. Dentro, sei ruoli decidono chi consulta, chi compila, chi elimina e chi invita; l'amministratore dell'azienda può rinominarli e cambiarne i permessi.",
+      "lead": "Schede, persone e logo di un'azienda li vede solo quell'azienda. In ogni azienda ci sono 6 ruoli: decidono chi consulta, chi compila, chi elimina e chi invita; l'amministratore dell'azienda può rinominarli e cambiarne i permessi.",
       "caption": "Che cosa può fare ogni ruolo",
       "role": "Ruolo",
       "yes": "Sì",
@@ -129,11 +141,11 @@
       },
       "s2": {
         "title": "La verifichiamo",
-        "text": "Leggiamo la richiesta e creiamo lo spazio della tua azienda."
+        "text": "Leggiamo la richiesta e prepariamo lo spazio della tua azienda."
       },
       "s3": {
         "title": "L'amministratore riceve l'invito",
-        "text": "Un link personale, valido {days} giorni, per scegliere la password."
+        "text": "Un link personale, valido {days} giorni, per scegliere la password. Quando accetta le condizioni inizia il mese di prova gratuita."
       },
       "s4": {
         "title": "L'amministratore invita i colleghi",
@@ -142,9 +154,21 @@
     },
     "faq": {
       "title": "Domande frequenti",
+      "cosa": {
+        "q": "Che cos'è Rilievi Impianti?",
+        "a": "Un software web per le aziende di ascensori: compili la scheda di rilievo dal telefono, la ritrovi per matricola o indirizzo e la stampi in A4 o in PDF. Comprende foglio di intervento, buono di lavoro, verbale di chiusura cantiere, cartelli di fermo impianto e i calcoli di argano e limitatore."
+      },
+      "marche": {
+        "q": "Per quali quadri compila il modulo d'ordine?",
+        "a": "Pelazza, Movilift, DMG Pitagora 4.0, Mastech, Elettroquadri e GEAT. Per le altre marche la scheda resta completa e il modulo lo compili a parte."
+      },
+      "lingua": {
+        "q": "In che lingua è il portale?",
+        "a": "Solo in italiano."
+      },
       "selfSignup": {
         "q": "Posso registrarmi da solo?",
-        "a": "No. L'accesso si ottiene solo su richiesta: compili il modulo, verifichiamo i dati e mandiamo l'invito all'amministratore della tua azienda."
+        "a": "No. L'accesso si ottiene su richiesta: compili il modulo, verifichiamo i dati e mandiamo l'invito all'amministratore della tua azienda."
       },
       "visibility": {
         "q": "Chi vede le schede della mia azienda?",
@@ -152,7 +176,7 @@
       },
       "app": {
         "q": "Serve un'app da installare?",
-        "a": "Non è obbligatoria: il portale si apre nel browser, su telefono, tablet e computer. Se vuoi, puoi aggiungerlo alla schermata Home o al computer come app, a schermo intero."
+        "a": "No: il portale si apre nel browser, su telefono, tablet e computer. Se vuoi, lo aggiungi alla schermata Home e si apre a schermo intero, come un'app."
       },
       "print": {
         "q": "Si può stampare la scheda?",
@@ -168,16 +192,37 @@
       },
       "data": {
         "q": "Dove sono conservati i dati?",
-        "a": "Su un server nell'Unione europea, in un database con un backup ogni giorno."
+        "a": "Su server nell'Unione europea, con una copia di sicurezza ogni giorno."
+      },
+      "costo": {
+        "q": "Quanto costa?",
+        "a": "Il primo mese è gratuito, con tutte le funzioni. Poi scegli un piano in base al numero di persone: fino a 10, fino a 25 oppure oltre 25. Si paga in anticipo, non si rinnova da solo e i prezzi, IVA esclusa, li vedi prima di pagare."
+      },
+      "scadenza": {
+        "q": "Cosa succede se l'abbonamento scade?",
+        "a": "Il portale passa in sola lettura: vedi, stampi e scarichi tutto, ma non crei né modifichi dati. Nessun dato viene cancellato e con un nuovo piano tutto torna come prima."
+      },
+      "offline": {
+        "q": "Si può lavorare dove non c'è rete?",
+        "a": "Sì. Se invii una scheda o un foglio di intervento senza rete, il documento resta salvato sul telefono fino a 7 giorni e lo invii quando torna il segnale."
+      },
+      "esporta": {
+        "q": "Posso portare via i miei dati?",
+        "a": "Sì, sempre e senza costi: l'amministratore scarica in un unico file tutti i dati dell'azienda, con foto e documenti, anche per passare a un altro fornitore."
+      },
+      "calcolo": {
+        "q": "I calcoli dell'argano e del limitatore sostituiscono il progettista?",
+        "a": "No. Il calcolo aiuta a controllare l'impianto con i dati del rilievo, ma va sempre verificato e firmato da un tecnico abilitato."
       }
     },
     "request": {
       "title": "Richiedi l'accesso",
-      "lead": "Raccontaci chi siete: ti rispondiamo all'email che indichi.",
+      "lead": "Scrivi chi sei e per quale azienda: ti rispondiamo all'email che indichi.",
       "next": {
         "title": "Cosa succede dopo",
         "s1": "Leggiamo la richiesta e ti rispondiamo per email.",
-        "s2": "Se è tutto a posto, creiamo lo spazio della tua azienda e l'amministratore riceve l'invito.",
+        "s2": "Se è tutto a posto, creiamo lo spazio della tua azienda e l'amministratore riceve l'invito. Quando accetta le condizioni inizia un mese di prova gratuita, con tutte le funzioni.",
+        "prova": "Dopo la prova, per creare e modificare dati serve un piano a pagamento in base al numero di persone (fino a 10, fino a 25, oltre 25). Si paga in anticipo, non si rinnova da solo e i prezzi, IVA esclusa, li vedi nel portale prima di pagare. Senza piano il portale resta in sola lettura e l'esportazione dei dati è sempre gratuita. Il servizio è per imprese e professionisti.",
         "s3": "I dati servono solo per rispondere alla richiesta e li cancelliamo dopo {days} giorni."
       },
       "contact": "Preferisci scrivere?",
@@ -197,7 +242,7 @@
         "S50_PLUS": "Più di 50"
       },
       "message": "Messaggio",
-      "messageHint": "Per esempio quanti impianti seguite o che cosa vi serve.",
+      "messageHint": "Per esempio quanti impianti segue la tua azienda o che cosa ti serve.",
       "privacy": "Ho letto l'informativa sulla privacy",
       "honeypot": "Lascia vuoto questo campo",
       "submit": "Invia la richiesta",
@@ -219,14 +264,16 @@
     },
     "sent": {
       "title": "Richiesta inviata",
-      "text": "Grazie. Leggiamo la richiesta e ti rispondiamo all'indirizzo email che hai indicato. Se è tutto a posto, l'amministratore della tua azienda riceverà un invito per email.",
+      "text": "Grazie. Leggiamo la richiesta e ti rispondiamo all'indirizzo email che hai indicato. Se è tutto a posto, l'amministratore della tua azienda riceverà un invito per email; quando accetta le condizioni inizia un mese di prova gratuita.",
       "back": "Torna alla pagina iniziale"
     },
     "footer": {
       "pages": "Pagine",
       "contact": "Contatti",
       "legal": "Note legali",
-      "trademarks": "I marchi citati appartengono ai rispettivi titolari."
+      "trademarks": "I marchi citati appartengono ai rispettivi titolari.",
+      "segnalazioni": "Segnalazioni",
+      "aggiornato": "Aggiornato il {data}"
     }
   },
   "privacy": {
@@ -240,7 +287,7 @@
     },
     "roles": {
       "title": "Titolare e responsabile",
-      "text": "Per il sito pubblico e per le richieste di accesso il titolare del trattamento è Carbon Stealth VCC. Per gli account e le schede di un'azienda che usa il portale, titolare è l'azienda: Carbon Stealth li tratta per suo conto, come responsabile del trattamento (art. 28 GDPR), solo per fornire il portale. Per questi dati rivolgetevi prima all'azienda per cui lavorate. Alla fine del servizio l'azienda riceve tutti i suoi dati in un unico file e, {endDays} giorni dopo la disattivazione, li cancelliamo definitivamente (art. 28, par. 3, lett. g) GDPR). Fanno eccezione il registro delle accettazioni e il registro dei calcoli emessi: Carbon Stealth li conserva come titolare, per dimostrare il contenuto del contratto e dei documenti generati e per difendersi in giudizio (vedi tabella). Non vengono cancellati con gli altri dati alla fine del servizio.",
+      "text": "Per il sito pubblico, per le richieste di accesso e per la fatturazione e i pagamenti dei piani il titolare del trattamento è Carbon Stealth VCC. Per gli account e le schede di un'azienda che usa il portale, titolare è l'azienda: Carbon Stealth li tratta per suo conto, come responsabile del trattamento (art. 28 GDPR), solo per fornire il portale. Per questi dati rivolgetevi prima all'azienda per cui lavorate. Alla fine del servizio l'azienda riceve tutti i suoi dati in un unico file e, {endDays} giorni dopo la disattivazione, li cancelliamo definitivamente (art. 28, par. 3, lett. g) GDPR). Fanno eccezione il registro delle accettazioni, il registro dei calcoli emessi e i documenti contabili: Carbon Stealth li conserva come titolare, per dimostrare il contenuto del contratto e dei documenti generati, per gli obblighi di legge e per difendersi in giudizio (vedi tabella). Non vengono cancellati con gli altri dati alla fine del servizio.",
       "contract": "Il rapporto con le aziende è regolato dalle Condizioni generali di servizio e dall'Accordo sul trattamento dei dati (Allegato A):"
     },
     "table": {
@@ -256,7 +303,7 @@
         "kept": "{days} giorni dall'ultima modifica della richiesta, poi cancellati automaticamente; prima, se ce lo chiedete"
       },
       "account": {
-        "data": "Email, nome, aziende e ruolo in ognuna, tema, hash della password (Argon2id), data dell'ultimo accesso, numero di password e codici errati, blocchi consecutivi e sessioni attive; se la attivi, la verifica in due passaggi: la chiave dell'app (cifrata, AES-256-GCM) e i codici di recupero (solo come impronta HMAC)",
+        "data": "Email, nome, aziende e ruolo in ognuna, tema, hash della password (Argon2id), data dell'ultimo accesso, numero di password e codici errati, blocchi consecutivi e sessioni attive; se la attivi, la verifica in due passaggi: la chiave dell'app (cifrata, AES-256-GCM) e i codici di recupero (solo come impronta HMAC); se colleghi l'accesso con Microsoft o Google, l'identificativo del tuo account presso quel fornitore (non la password); per le chiavi API dell'azienda: nome, prefisso, impronta della chiave, chi l'ha creata, ultimo uso e scadenza",
         "why": "L'account e l'accesso al portale per conto dell'azienda",
         "basis": "Scelta dall'azienda titolare (di norma art. 6, par. 1, lett. b) o f) GDPR); Carbon Stealth tratta i dati per suo conto (art. 28 GDPR)",
         "kept": "Finché l'account esiste; le sessioni fino all'uscita o alla scadenza. Chi lavora solo per un'azienda che smette di usare il portale: {endDays} giorni dopo la sua disattivazione, insieme ai suoi dati"
@@ -268,13 +315,13 @@
         "kept": "Accettato, finché esiste l'account; non accettato, {inviteDays} giorni dopo la scadenza, poi cancellato automaticamente"
       },
       "lavoro": {
-        "data": "Schede, moduli dei fornitori, schizzi, calcoli dell'argano, cartelli di fermo impianto e fogli di intervento: dati tecnici e indirizzi degli impianti e il nome di chi li compila; nei fogli di intervento anche i nomi dei tecnici e del cliente, le due firme tracciate sullo schermo (solo il tracciato, senza tempi né pressione) e l'impronta del contenuto firmato. L'indirizzo a cui si invia un foglio in PDF non viene conservato",
+        "data": "Schede, moduli dei fornitori, schizzi, calcoli dell'argano e del limitatore, cartelli di fermo impianto, fogli di intervento, verbali di chiusura cantiere e buoni di lavoro: dati tecnici e indirizzi degli impianti e il nome di chi li compila; nei fogli di intervento, nei verbali e nei buoni di lavoro anche i nomi di chi firma (tecnici, cliente, supervisore, custode, geometra, capo officina) e le firme tracciate sullo schermo (solo il tracciato, senza tempi né pressione), con l'impronta del contenuto firmato; nei preventivi, se l'azienda li usa, i dati dei suoi clienti: nome, indirizzo, partita IVA o codice fiscale ed email; la versione di ogni salvataggio della scheda; la rubrica dei fornitori (nome ed email) e gli ordini inviati ai fornitori, con il destinatario. L'indirizzo a cui si invia un documento in PDF, anche in copia a chi firma, non viene conservato",
         "why": "Il lavoro dell'azienda sugli impianti: rilievi, ordini ai fornitori, assistenza e cantiere",
         "basis": "Scelta dall'azienda titolare (di norma art. 6, par. 1, lett. b) o f) GDPR); Carbon Stealth tratta i dati per suo conto (art. 28 GDPR)",
         "kept": "Finché l'azienda li conserva: le schede fino all'eliminazione dal cestino, cartelli e calcoli fino alla loro eliminazione; i fogli di intervento confermati non si modificano. Tutto viene cancellato {endDays} giorni dopo la disattivazione dell'azienda"
       },
       "media": {
-        "data": "Foto e video caricati nelle schede: compressi sul server e senza i metadati del file (posizione GPS, modello del telefono, data dello scatto); il file originale non viene conservato",
+        "data": "Foto e video caricati nelle schede: compressi sul server e senza i metadati del file (posizione GPS, modello del telefono, data dello scatto); il file originale non viene conservato; le annotazioni disegnate sulle foto",
         "why": "Documentare il sopralluogo dell'impianto nella scheda dell'azienda",
         "basis": "Scelta dall'azienda titolare (di norma art. 6, par. 1, lett. b) o f) GDPR); Carbon Stealth tratta i dati per suo conto (art. 28 GDPR)",
         "kept": "Finché esistono il file e la scheda; eliminandoli (la scheda: dal cestino) vengono cancellati anche dal server, e comunque {endDays} giorni dopo la disattivazione dell'azienda"
@@ -286,10 +333,16 @@
         "kept": "{auditDays} giorni, poi cancellato automaticamente"
       },
       "accettazioni": {
-        "data": "Registro delle accettazioni: per l'accettazione delle Condizioni generali di servizio, nome, email e ruolo dell'amministratore, ragione sociale, sede e partita IVA dichiarate, data e ora, versione e impronta del testo, clausole approvate specificamente, invio e verifica del codice monouso, indirizzo IP e tipo di browser, impronta della copia inviata; per ogni utente, la presa visione delle regole d'uso e dell'avvertenza sui calcoli (data, ora, versione, indirizzo IP e tipo di browser)",
+        "data": "Registro delle accettazioni: per l'accettazione delle Condizioni generali di servizio, nome, email e ruolo dell'amministratore, ragione sociale, sede e partita IVA dichiarate, data e ora, versione e impronta del testo, clausole approvate specificamente, invio e verifica del codice monouso, indirizzo IP e tipo di browser, impronta della copia inviata; per ogni offerta accettata, amministratore, azienda, piano, durata, prezzo, testo e impronta dell'offerta, data e ora, indirizzo IP e tipo di browser, riferimento del pagamento; per ogni utente, la presa visione delle regole d'uso e dell'avvertenza sui calcoli (data, ora, versione, indirizzo IP e tipo di browser)",
         "why": "Dimostrare chi ha concluso il contratto per l'azienda, quando e su quale testo; accertare, esercitare o difendere un diritto in sede giudiziaria",
         "basis": "Conclusione del contratto, art. 6, par. 1, lett. b); conservazione per legittimo interesse, art. 6, par. 1, lett. f) GDPR. Titolare: Carbon Stealth",
-        "kept": "Per tutta la durata del contratto e per 10 anni dopo la sua cessazione; in caso di contestazione, fino alla sua definizione (art. 17, par. 3, lett. e) GDPR)"
+        "kept": "Per tutta la durata del contratto e per 10 anni dalla cancellazione dei dati dell'azienda, che avviene entro {endDays} giorni dalla cessazione; in caso di contestazione, fino alla sua definizione (art. 17, par. 3, lett. e) GDPR)"
+      },
+      "pagamenti": {
+        "data": "Fatturazione e pagamenti dei piani: ragione sociale, sede e partita IVA dell'azienda, nome ed email dell'amministratore che acquista, piano, durata, prezzo, IVA, data, esito e riferimento del pagamento ricevuti da Revolut, esito e numero di consultazione della verifica della partita IVA nel VIES, fatture, rimborsi e contestazioni del pagamento (chargeback). Non riceviamo né conserviamo il numero della carta",
+        "why": "Vendere e attivare i piani Premium, emettere fatture e rimborsi, tenere la contabilità",
+        "basis": "Esecuzione del contratto, art. 6, par. 1, lett. b); obblighi di legge contabili e fiscali, art. 6, par. 1, lett. c) GDPR. Titolare: Carbon Stealth",
+        "kept": "Fatture e documenti contabili: 10 anni dal 1° gennaio dell'anno successivo a quello a cui si riferiscono (art. 12 della legge bulgara sulla contabilità), o più a lungo se lo richiede la legge fiscale; i dati del piano per la durata del contratto e i 10 anni successivi, come il registro delle accettazioni; in caso di contestazione, fino alla sua definizione"
       },
       "calcoli": {
         "data": "Registro dei calcoli emessi: per ogni PDF di un calcolo, chi lo ha generato (nome ed email), per quale azienda, data e ora, tipo di calcolo, versione (build) del software, dati di ingresso, risultati riportati, riferimento del calcolo e impronta del file",
@@ -301,13 +354,19 @@
         "data": "Indirizzo IP",
         "why": "Limitare i tentativi ripetuti di accesso e l'invio massiccio di richieste",
         "basis": "Legittimo interesse, art. 6, par. 1, lett. f) GDPR",
-        "kept": "Nella memoria del server al massimo un'ora; per un accesso fallito, solo un'impronta cifrata (HMAC) della rete da cui arriva, mai l'indirizzo, per 24 ore. Non viene scritto nei log. Fa eccezione l'accettazione delle condizioni e delle regole d'uso: l'indirizzo IP è conservato nel registro delle accettazioni, per i tempi indicati sopra"
+        "kept": "Nella memoria del server al massimo un'ora; per un accesso fallito, solo un'impronta cifrata (HMAC) della rete da cui arriva, mai l'indirizzo, per 24 ore. Non viene scritto nei log. Fa eccezione l'accettazione delle condizioni, delle regole d'uso e delle offerte dei piani: l'indirizzo IP è conservato nel registro delle accettazioni, per i tempi indicati sopra"
       },
       "backup": {
         "data": "Copie di sicurezza del database e di foto e video (i dati qui sopra)",
         "why": "Ripristinare il portale dopo un guasto o un errore",
         "basis": "Sicurezza del trattamento (art. 32 GDPR), per conto dell'azienda titolare",
         "kept": "Le copie giornaliere 14 giorni, poi cancellate: anche quello che eliminate resta nelle copie per questo tempo. Le copie fatte prima di ogni aggiornamento del portale: le ultime cinque"
+      },
+      "segnalazioni": {
+        "data": "Segnalazioni di contenuti illegali: nome ed email di chi segnala, dove si trova il contenuto, i motivi e la dichiarazione di buona fede, data e ora; la decisione, con i motivi e la misura adottata; le comunicazioni a chi segnala e agli amministratori dell'azienda che ha caricato il contenuto; le richieste di riesame e il loro esito",
+        "why": "Esaminare le segnalazioni, decidere e comunicare la decisione con i motivi; informare le autorità quando la legge lo impone; dimostrare come abbiamo gestito ogni segnalazione",
+        "basis": "Obbligo di legge, art. 6, par. 1, lett. c) GDPR (artt. 16–18 del Regolamento (UE) 2022/2065); conservazione come prova, legittimo interesse, art. 6, par. 1, lett. f) GDPR. Titolare: Carbon Stealth",
+        "kept": "5 anni dalla decisione o dall'esito del riesame; le segnalazioni che non abbiamo potuto esaminare, 1 anno dalla risposta; in caso di contestazione, fino alla sua definizione. Il nome di chi segnala non è comunicato all'azienda, salvo che sia strettamente necessario"
       }
     },
     "required": "Nome, azienda ed email servono per rispondere alla richiesta: senza di essi non possiamo valutarla. Gli altri campi sono facoltativi.",
@@ -326,13 +385,19 @@
       "theme": "Il tema scelto (chiaro, scuro o automatico)",
       "prefKept": "1 anno",
       "flash": "Un messaggio una tantum dopo un'azione, per esempio «Salvato»",
-      "flashKept": "1 minuto"
+      "flashKept": "1 minuto",
+      "oidc": "Accesso con Microsoft o Google: tiene il filo tra la nostra pagina e quella del fornitore, cifrato",
+      "oidcKept": "{minutes} minuti, poi si cancella",
+      "dispositivo": "Sul tuo dispositivo, fuori dai cookie: se invii un modulo mentre manca la rete, il portale lo conserva nel browser finché non lo invii tu — al massimo 7 giorni, senza le firme — e lo cancella quando esci dall'account."
     },
     "recipients": {
       "title": "Chi altro vede i dati",
       "hosting": "netcup GmbH, Karlsruhe, Germania — il server su cui funziona il portale, in un data center in Germania. Con netcup è in vigore un accordo sul trattamento dei dati (art. 28 GDPR).",
-      "mail": "Sendinblue SAS (Brevo), Francia — l'invio delle email, quando è attivo: inviti, link per una nuova password, avvisi di sicurezza dell'account (verifica in due passaggi, cambio di email), avvisi di nuove richieste agli amministratori del portale, il codice per firmare le condizioni di servizio e la copia delle condizioni accettate, e i moduli di intervento in PDF, con i nomi e le firme, che gli utenti inviano a un indirizzo scelto da loro.",
-      "text": "Non vendiamo dati e non li cediamo per pubblicità. Il portale e i suoi dati restano nell'Unione europea; Brevo può affidare parte dell'invio delle email a sub-responsabili fuori dall'UE, e in quel caso il trasferimento è tutelato da clausole contrattuali tipo (art. 46 GDPR)."
+      "mail": "Sendinblue SAS (Brevo), Francia — l'invio delle email, quando è attivo: inviti, link per una nuova password, avvisi di sicurezza dell'account (verifica in due passaggi, cambio di email), avvisi di nuove richieste agli amministratori del portale, il codice per firmare le condizioni di servizio e la copia delle condizioni accettate, le offerte accettate, gli avvisi di scadenza della prova e dei piani, gli avvisi sul cambio di fornitore e sulla cancellazione dei dati, i moduli di intervento e i verbali in PDF, con i nomi e le firme, che gli utenti inviano a un indirizzo scelto da loro o in copia a chi firma, e i moduli d'ordine che gli utenti inviano ai fornitori.",
+      "pagamenti": "Revolut Bank UAB, Lituania — la pagina di pagamento con carta dei piani Premium. Revolut riceve i dati della carta e del pagamento e li tratta secondo i propri termini e la propria informativa (revolut.com/legal); a noi comunica solo esito, importo e riferimento del pagamento.",
+      "text": "Non vendiamo dati e non li cediamo per pubblicità. Il portale e i suoi dati restano nell'Unione europea; Brevo può affidare parte dell'invio delle email a sub-responsabili fuori dall'UE, e in quel caso il trasferimento è tutelato da clausole contrattuali tipo (art. 46 GDPR). Per i pagamenti con carta vale anche l'informativa di Revolut.",
+      "contabili": "Il nostro consulente contabile e il software di fatturazione — i dati di fatturazione dei piani (ragione sociale, sede, partita IVA, importi), nei limiti necessari a emettere le fatture e a tenere la contabilità.",
+      "vies": "Commissione europea — il sistema VIES, per verificare la partita IVA di un'azienda di un altro Stato membro prima dell'acquisto di un piano. Il VIES riceve la partita IVA dell'azienda e la nostra e la confronta con la banca dati dell'amministrazione fiscale dello Stato che l'ha attribuita. Conserviamo l'esito e il numero di consultazione con il pagamento, per il tempo dei documenti contabili."
     },
     "security": {
       "title": "Sicurezza",
@@ -352,6 +417,11 @@
     "changes": {
       "title": "Modifiche",
       "text": "Se modificheremo questa informativa, la nuova versione sarà pubblicata su questa pagina con la data dell'ultimo aggiornamento in alto."
+    },
+    "segnalazioni": {
+      "title": "Segnalare un contenuto illegale e punti di contatto",
+      "text": "Rilievi Impianti conserva i contenuti che le aziende clienti caricano (servizio di memorizzazione ai sensi del Regolamento (UE) 2022/2065). Il modulo per segnalare un contenuto illegale, i tempi, la decisione motivata e il punto di contatto per le autorità e per gli utenti sono in una pagina dedicata:",
+      "link": "Segnalare un contenuto illegale"
     }
   }
 }

@@ -117,7 +117,7 @@ export default {
       },
       {
         title: 'Get confirmation',
-        body: 'We reply with availability, total and delivery times: standard 2 – 5 working days, express 24 – 48 h on request.',
+        body: 'We reply with availability, total and delivery times: standard about 2 – 3 working weeks, express 1 week on request.',
       },
     ],
     freeShipping: 'Free shipping across Italy for orders above € 500 (excl.',
@@ -138,7 +138,7 @@ export default {
       },
       {
         q: 'How much is shipping and how long does delivery take?',
-        a: 'Shipping is free across Italy for orders above € 500 (excl. VAT); below that threshold costs are stated in the order confirmation. Standard delivery takes 2 – 5 working days, express 24 – 48 hours on request.',
+        a: 'Shipping is free across Italy for orders above € 500 (excl. VAT); below that threshold costs are stated in the order confirmation. Standard delivery takes about 2 – 3 working weeks, express 1 week on request.',
       },
       {
         q: 'What do DX and SX mean?',

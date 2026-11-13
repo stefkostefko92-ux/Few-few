@@ -21,6 +21,7 @@ import {
 } from './pdf-parti.js';
 import type { VerbaleFull } from './service.js';
 import { SEZIONI_VERBALE, valoriVerbale } from './voci.js';
+import { OPZIONI_PDFA } from '../legale/pdfa.js';
 
 /**
  * PDF-ът на „Verbale di chiusura cantiere“ — „uguale identico“ на хартиения лист на собственика (5 ноември
@@ -52,6 +53,8 @@ const FIRMA_BOX = { width: 180, height: 60 };
 function nuovoDoc(options: VerbalePdfOptions, azienda: string): PDFKit.PDFDocument {
   const fonts = fontsVerbale(options.fontDir);
   const doc = new PDFDocument({
+    // Потвърденият документ е за архива: PDF/A-2b (legale/pdfa.ts).
+    ...OPZIONI_PDFA,
     size: 'A4',
     // Без автоматични страници: всичко се реди на ръка; долното поле е за реда под рамката.
     margins: { top: M, left: M, right: M, bottom: 4 },
@@ -63,6 +66,8 @@ function nuovoDoc(options: VerbalePdfOptions, azienda: string): PDFKit.PDFDocume
   });
   doc.registerFont('Serif', fonts.regular);
   doc.registerFont('Serif-Bold', fonts.bold);
+  // Без шрифт по подразбиране (PDF/A): вграденият — преди всеки текст.
+  doc.font('Serif');
   return doc;
 }
 

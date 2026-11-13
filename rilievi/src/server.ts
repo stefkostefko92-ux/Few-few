@@ -1,11 +1,13 @@
 import { createHash, randomBytes } from 'node:crypto';
+import { annotazioniDa, viewBoxAnnotazioni } from './allegati/annotazioni.js';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import cookieParser from 'cookie-parser';
 import express, { type Express, type NextFunction, type Request, type Response } from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
-import { config, isProduction, mailEnabled } from './config.js';
+import { config, isProduction } from './config.js';
+import { assicuraPosta, mailEnabled } from './mail/posta.js';
 import { errorMessage, httpLogOptions, logger } from './logger.js';
 import { ROOT } from './paths.js';
 import { isPartial, renderError, SAFE_METHODS } from './auth/guards.js';
@@ -14,6 +16,7 @@ import type { Capability } from './auth/roles.js';
 import { canAnywhere, canIn } from './auth/scope.js';
 import { attachSession } from './auth/sessions.js';
 import { readFlash } from './http/flash.js';
+import { correnteDi, menuPer, rapidoCorrente } from './http/menu.js';
 import { writeLimiter } from './http/limits.js';
 import { applyPrefs, attachPrefs, themeUrl } from './http/prefs.js';
 import { PASSWORD_MIN_LENGTH } from './auth/password.js';
@@ -23,12 +26,21 @@ import { VISTA_SCHIZZO } from './schizzi/model.js';
 import { healthRouter } from './routes/health.js';
 import { pwaRouter } from './routes/pwa.js';
 import { novitaLocals } from './novita/popup.js';
+import { comunicazioniLocals } from './master/banner.js';
 import { countNewRequests } from './requests/service.js';
 import { montaRouter } from './routes/montaggio.js';
-import { HOME_PATH } from './seo/paths.js';
+import { HOME_PATH, STATO_PATH } from './seo/paths.js';
+import { originiFornitori } from './auth/oidc.js';
+import { originiCheckout } from './pagamenti/config.js';
+import { webhookRevolutRouter } from './routes/webhook-revolut.js';
+import { VERSIONE_SOFTWARE } from './versione.js';
 
-/** Записът на картата: нова (`/schede`) и промяна (`/schede/<id>`). */
-const FORMA_SCHEDA = /^\/schede(?:\/[a-z0-9]{20,40})?$/;
+/**
+ * Записът на картата: нова (`/schede`) и промяна (`/schede/<id>`) — и анотациите върху снимка (същият редактор и
+ * същите тавани като листа на скицника; над 1 MB даваше 413 — одитът от 12 ноември 2026).
+ */
+const FORMA_SCHEDA =
+  /^\/schede(?:\/[a-z0-9]{20,40}(?:\/allegati\/[a-z0-9]{20,40}\/annotazioni)?)?$/;
 
 /** Кратък отпечатък на статичните файлове — сменя адреса на CSS/JS при всяка промяна (кешът е дълъг). */
 function assetVersion(): string {
@@ -62,7 +74,13 @@ function baseLocals(req: Request, res: Response): void {
   res.locals.canIn = (capability: Capability, aziendaId: string | null): boolean =>
     user ? canIn(user, capability, aziendaId) : false;
   res.locals.ruolo = nomeRuolo(res.locals.t, nomiDellaSessione(user));
+  // Менюто — единственият списък в src/http/menu.ts (header.ejs, `/nuovo`, търсенето).
+  res.locals.menuPer = menuPer;
+  res.locals.correnteDi = correnteDi;
+  res.locals.rapidoCorrente = rapidoCorrente;
   res.locals.mailEnabled = mailEnabled();
+  // Версията на софтуера (src/versione.ts) — долу на всяка страница.
+  res.locals.versioneSoftware = VERSIONE_SOFTWARE;
   const cfg = config();
   res.locals.limitiAllegati = {
     file: MAX_FILE_PER_VOLTA,
@@ -73,6 +91,8 @@ function baseLocals(req: Request, res: Response): void {
   res.locals.passwordMin = PASSWORD_MIN_LENGTH;
   res.locals.schizzoVista = VISTA_SCHIZZO;
   res.locals.schizzoForme = primitiviFoglio;
+  res.locals.annotazioniDi = annotazioniDa;
+  res.locals.viewBoxAnnotazioni = viewBoxAnnotazioni;
   res.locals.path = req.path;
   // Витрината — входът води към заявката за достъп.
   res.locals.landingPath = HOME_PATH;
@@ -127,7 +147,8 @@ export function createServer(): Express {
           objectSrc: ["'none'"],
           baseUri: ["'none'"],
           frameAncestors: ["'none'"],
-          formAction: ["'self'"],
+          // Входът с Microsoft/Google (D1) и плащането (#31): формата пренасочва към доставчика.
+          formAction: ["'self'", ...originiFornitori(), ...originiCheckout()],
           manifestSrc: ["'self'"],
           ...(isProduction() ? { upgradeInsecureRequests: [] } : {}),
         },
@@ -154,6 +175,8 @@ export function createServer(): Express {
       ...httpLogOptions,
     }),
   );
+  // Известията на Revolut — суровото тяло (подписът е над него), преди всеки парсер, сесия и таван за записи.
+  app.use(webhookRevolutRouter);
   // Четири бележки по 4000 знака на кирилица са ~100 KB urlencoded, мерките на бутониерите — до 300
   // спирки (измерено: формата праща ~1950 параметъра с 300 спирки), отметките на снимките за печата —
   // до 300 (`MAX_PER_SCHEDA`). Таванът е над това, не повече. Само формата на картата носи и листовете
@@ -180,7 +203,17 @@ export function createServer(): Express {
   app.use(pwaRouter);
 
   // Всичко отвъд статиката: сесия → речник и тема → еднократно съобщение → общото за шаблоните.
-  app.use(attachSession);
+  // Паднала база: страницата на състоянието е за този момент — и вписаният я вижда (като гост), не 500.
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    attachSession(req, res, next).catch((error: unknown) => {
+      if (req.method !== 'GET' || req.path !== STATO_PATH) return next(error);
+      logger.error({ evento: 'sessione.db', err: errorMessage(error) }, 'stato: без сесия');
+      res.locals.currentUser = null;
+      res.locals.csrfToken = '';
+      res.locals.utenteBozze = '';
+      next();
+    });
+  });
   // Записът на картата: до 4 MB само за влязъл човек (листовете на скицника), иначе — до 1 MB.
   app.use((req, res, next) => {
     if (req.method !== 'POST' || !FORMA_SCHEDA.test(req.path)) return next();
@@ -188,9 +221,11 @@ export function createServer(): Express {
   });
   app.use(attachPrefs);
   app.use(readFlash);
-  app.use((req: Request, res: Response, next: NextFunction) => {
+  app.use(async (req: Request, res: Response, next: NextFunction) => {
     // Данните са на поканени хора — нито браузърът, нито прокси пазят страниците.
     res.set('Cache-Control', 'no-store');
+    // Пощата от конзолата на MASTER — заредена веднъж, преди първото `mailEnabled()` (src/mail/posta.ts).
+    await assicuraPosta();
     baseLocals(req, res);
     next();
   });
@@ -217,6 +252,8 @@ export function createServer(): Express {
   app.use(writeLimiter);
   // Прозорецът с новините след обновяване — на цяла страница на вписан човек (src/novita/popup.ts).
   app.use(novitaLocals);
+  // Съобщенията на MASTER до фирмите — лентите над страницата (src/master/banner.ts).
+  app.use(comunicazioniLocals);
   montaRouter(app);
 
   app.use((req: Request, res: Response) => {
@@ -226,8 +263,10 @@ export function createServer(): Express {
   app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
     // Грешка на заявката (твърде голямо тяло, счупено кодиране) остава 4xx и не е тревога: без стек.
     const status = errorStatus(error);
+    // С `req.log` редът носи номера на заявката (X-Request-Id) — същия като в реда на pino-http.
+    const log = (req as Request & { log?: typeof logger }).log ?? logger;
     if (status >= 400 && status < 500) {
-      logger.warn({ status, path: req.path }, 'отказана заявка');
+      log.warn({ evento: 'http.rifiutata', status, path: req.path }, 'отказана заявка');
       failRequest(
         req,
         res,
@@ -237,8 +276,9 @@ export function createServer(): Express {
       );
       return;
     }
-    logger.error(
+    log.error(
       {
+        evento: 'http.errore',
         err: errorMessage(error),
         stack:
           error instanceof Error ? error.stack?.split('\n').slice(0, 4).join(' | ') : undefined,

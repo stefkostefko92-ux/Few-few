@@ -4,11 +4,15 @@
 // back to the same page), never again until the next update; never to a new account for older updates.
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import { VOCI, MAX_POPUP } from '../../src/novita/voci.js';
+import { vociAttive } from '../../src/novita/attive.js';
+import { MAX_POPUP } from '../../src/novita/voci.js';
 import { translatorFor } from '../../src/i18n.js';
 import { Browser, prisma, signedIn, startApp, stopApp } from './harness.js';
 
 const t = translatorFor('it');
+// What this portal announces: without an application registered with Microsoft or Google (as in the tests) the
+// entry about that sign-in is not among them (tests/novita.test.ts).
+const VOCI = vociAttive();
 const HTML = { accept: 'text/html,application/xhtml+xml' };
 const POPUP = /<dialog class="novita"[^>]*data-novita/;
 /** The newest entry: published at the start of this file — the update; the others on their own day. */

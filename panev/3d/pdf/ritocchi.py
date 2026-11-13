@@ -8,6 +8,8 @@ re-typeset in place the way indice.py does for the index:
   ones read from their product pages (title, "Range regolazione");
 - the side tabs whose label was cut at 16 characters ("AZIENDA · QUALIT", "QUADRO COMPARATI", ...): a
   whole short word, in the pill of a page whose label is as long.
+One retouch is not a slip but the owner's decision (2026-11-13): printed 66 "Termini commerciali", the
+"Spedizione" card's delivery times, the same as the site's (site/data/i18n).
 gen.py prints one sheet per retouched page (sheet()), merge.py applies them on the base pages (apply()),
 verify.py checks them (check()). Units: pt."""
 import re
@@ -23,6 +25,10 @@ LEGEND, LEG_AREA, LEG_HIDDEN, LEG_PITCH, LEG_RULE = 4, pymupdf.Rect(40, 444, 800
 TABLE, TAB_AREA, TAB_HIDDEN = 63, pymupdf.Rect(44, 162.5, 405, 569.8), pymupdf.Rect(40, 569.8, 378, 578.8)
 HEAD_H, SERIES_H, ROW_H, INSET = 20.0, 16.5, 19.0, 8.85
 CONFIG = re.compile(r"^(S[UDC] \d+ \d+) · (SG \d+ \d+)$")
+SHIP, SHIP_AREA, SHIP_SIZE = 66, pymupdf.Rect(60, 364, 392, 388), 7.125
+SHIP_OLD = ("Gratuita in tutta Italia per ordini superiori a € 500 (IVA esclusa). Consegna standard 2 – 5 giorni", "lavorativi; express 24 – 48 ore su richiesta.")
+# Each line: its bold lead and the rest (the same widths as the base's Inter 700 / 400, so the line fits).
+SHIP_NEW = (("Gratuita in tutta Italia", " per ordini superiori a € 500 (IVA esclusa). Consegna standard in circa"), ("", "2 – 3 settimane lavorative; express in 1 settimana su richiesta."))
 
 
 def close(a, b):
@@ -121,8 +127,16 @@ def table(doc):
     return dict(cols=cols, head=head, lines=placed, added=added, bottom=y)
 
 
+def shipping(doc):
+    """Page 66's two lines of delivery times, where the base has them, with the new text."""
+    old = sorted(lines(doc[SHIP], SHIP_AREA), key=lambda t: t["y"])
+    if tuple(t["text"] for t in old) != SHIP_OLD:
+        raise SystemExit(f"ritocchi: page 66's delivery card reads {[t['text'] for t in old]}")
+    return dict(lines=[dict(x=t["x"], y=t["y"], bold=bold, text=text) for t, (bold, text) in zip(old, SHIP_NEW)])
+
+
 def build(base_pdf):
-    """One entry per retouched page, in page order: {page, tab?, legend?, table?}."""
+    """One entry per retouched page, in page order: {page, tab?, legend?, table?, shipping?}."""
     doc = pymupdf.open(base_pdf)
     pages = {LEGEND: dict(page=LEGEND, legend=legend(doc)), TABLE: dict(page=TABLE, table=table(doc))}
     for n, (label, src) in TABS.items():
@@ -130,6 +144,7 @@ def build(base_pdf):
         if abs((old.y0 + old.y1) - (new.y0 + new.y1)) > 1:
             raise SystemExit(f"ritocchi: the pills of pages {n} and {src} are not centred alike")
         pages.setdefault(n, dict(page=n))["tab"] = dict(label=label, src=src, old=(812, old.y0 - 17, 860, old.y1 + 21), area=(812, new.y0 - 15.9, 841.92, new.y1 + 20.1))
+    pages.setdefault(SHIP, dict(page=SHIP))["shipping"] = shipping(doc)
     return [pages[n] for n in sorted(pages)]
 
 
@@ -145,6 +160,8 @@ CSS = """
 .rt-series { background: #eaeef4; color: #162862; font-size: 6.375pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; border-bottom: 0.75pt solid #e2e6ea; }
 .rt-row { font-size: 7.125pt; color: #1b2733; border-bottom: 0.75pt solid #e2e6ea; }
 .rt-row .c { font-weight: 700; color: #162862; }
+.rt-ship { font-size: 7.125pt; line-height: 1; white-space: pre; color: #1b2733; }
+.rt-ship b { font-weight: 700; color: #162862; }
 """
 
 
@@ -159,6 +176,8 @@ def sheet(p):
             out += f'<div class="abs {cls}" style="left:{tx:.2f}pt;top:{ty - size * ASCENT - 0.27:.2f}pt">{escape(text)}</div>'
         rx, ry, rw = i["rule"]
         out += f'<div class="abs rt-rule" style="left:{rx:.2f}pt;top:{ry:.2f}pt;width:{rw:.2f}pt"></div>'
+    for t in p.get("shipping", {}).get("lines", []):
+        out += f'<div class="abs rt-ship" style="left:{t["x"]:.2f}pt;top:{t["y"] - SHIP_SIZE * ASCENT - 0.27:.2f}pt"><b>{escape(t["bold"])}</b>{escape(t["text"])}</div>'
     if "table" in p:
         t = p["table"]
         cols = t["cols"]
@@ -181,7 +200,8 @@ def wipe(page, text_rects, covered):
     page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_NONE, graphics=pymupdf.PDF_REDACT_LINE_ART_NONE, text=pymupdf.PDF_REDACT_TEXT_REMOVE)
     for r in covered:
         page.add_redact_annot(pymupdf.Rect(r), fill=False)
-    page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_NONE, graphics=pymupdf.PDF_REDACT_LINE_ART_REMOVE_IF_COVERED, text=pymupdf.PDF_REDACT_TEXT_NONE)
+    if covered:
+        page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_NONE, graphics=pymupdf.PDF_REDACT_LINE_ART_REMOVE_IF_COVERED, text=pymupdf.PDF_REDACT_TEXT_NONE)
 
 
 def apply(doc, tpl, gen, data):
@@ -198,6 +218,10 @@ def apply(doc, tpl, gen, data):
             left = [d["rect"] for d in page.get_drawings() if TAB_AREA.contains(d["rect"])]
             if page.get_text("text", clip=TAB_AREA).strip() or page.get_text("text", clip=TAB_HIDDEN).strip() or left:
                 raise SystemExit(f"ritocchi: the old comparison table is still on page 63 ({len(left)} drawings)")
+        if "shipping" in p:
+            wipe(page, [SHIP_AREA], [])
+            if page.get_text("text", clip=SHIP_AREA).strip():
+                raise SystemExit("ritocchi: the old delivery times are still on page 66")
         if "tab" in p:
             t = p["tab"]
             # The pill and its shadow run past the page's edge, and so does the rectangle that has to cover them
@@ -229,6 +253,8 @@ def check(doc, data):
                 got = flat(page.get_text(clip=pymupdf.Rect(t["cols"][0], line["y"] + 0.5, t["cols"][-1], line["y"] + line["h"] - 0.5)))
                 if got != want:
                     problems.append(f"page 63: the comparison table's line at {line['y']:.1f} reads {got}, not {want}")
+        if "shipping" in p and flat(page.get_text(clip=SHIP_AREA)) != flat("".join(t["bold"] + t["text"] for t in p["shipping"]["lines"])):
+            problems.append(f"page 66: the delivery card reads {page.get_text(clip=SHIP_AREA)!r}")
         if any(k in p for k in ("legend", "table")) and flat(page.get_text(clip=pymupdf.Rect(40, 563, 378, 578.8))):
             problems.append(f"page {p['page']}: text under the footer")
     return problems

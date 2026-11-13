@@ -19,6 +19,7 @@ import {
 import { numeroModulo, type InterventoFull } from './service.js';
 import { improntaLeggibile } from './sigillo.js';
 import { GRUPPI_VOCI, valoriVoci } from './voci.js';
+import { OPZIONI_PDFA } from '../legale/pdfa.js';
 
 /**
  * PDF-ът на листа за интервенция — една страница A4 като хартиения блок (собственикът, 30 октомври
@@ -114,6 +115,8 @@ export function fontsOf(dir: string): { regular: Buffer; bold: Buffer } {
 function nuovoDoc(row: InterventoFull, options: InterventoPdfOptions): PDFKit.PDFDocument {
   const fonts = fontsOf(options.fontDir);
   const doc = new PDFDocument({
+    // Потвърденият документ е за архива: PDF/A-2b (legale/pdfa.ts).
+    ...OPZIONI_PDFA,
     size: 'A4',
     margin: M,
     info: {
@@ -124,6 +127,8 @@ function nuovoDoc(row: InterventoFull, options: InterventoPdfOptions): PDFKit.PD
   });
   doc.registerFont('Sans', fonts.regular);
   doc.registerFont('Sans-Bold', fonts.bold);
+  // Без шрифт по подразбиране (PDF/A): вграденият — преди всеки текст.
+  doc.font('Sans');
   return doc;
 }
 

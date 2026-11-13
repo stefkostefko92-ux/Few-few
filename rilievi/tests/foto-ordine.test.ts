@@ -139,6 +139,7 @@ describe('the photos in the order chosen', () => {
     errore: null,
     inStampa: true,
     ordineStampa: null,
+    annotazioni: null,
     createdAt: new Date('2026-11-10T08:00:00Z'),
     ...over,
   });
