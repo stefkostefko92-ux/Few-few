@@ -20,9 +20,25 @@ import { adminActionsRouter } from './admin-actions.js';
 import { adminMastersRouter } from './admin-masters.js';
 import { PlanForm } from '../admin/plan-form.js';
 
+/**
+ * Регистърът по групи за менюто на панела (views/admin/_nav.ejs). „Планове“ са отделна връзка в главните,
+ * затова не се повтарят в групата „Плащания“.
+ */
+const ADMIN_NAV = (['accounts', 'documents', 'billing', 'platform'] as const).map((id) => ({
+  id,
+  items: ADMIN_RESOURCES.filter((r) => r.group === id && r.slug !== 'plans').map((r) => ({
+    slug: r.slug,
+    label: r.label,
+  })),
+}));
+
 export function adminRouter(): Router {
   const router = Router();
   router.use('/admin', requireUser(), requireMaster());
+  router.use('/admin', (_req, res, next) => {
+    res.locals.adminNav = ADMIN_NAV;
+    next();
+  });
   router.use(adminSettingsRouter());
   router.use(adminActionsRouter());
   router.use(adminMastersRouter());

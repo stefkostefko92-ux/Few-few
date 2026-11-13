@@ -7,22 +7,6 @@
   </div>
   <% if (canIssue) { %><a class="button" href="/app/o/<%= org.id %>/nov"><%= t('app.org.new') %></a><% } %>
 </div>
-<nav class="org-nav" aria-label="<%= org.legalName %>">
-  <a href="/app/o/<%= org.id %>/shkafche"><%= t('app.inbox.title') %><% if (unread > 0) { %> <span class="tag tag-active"><%= t('app.inbox.unread', { count: unread }) %></span><% } %></a>
-  <% if (canMembers) { %><a href="/app/o/<%= org.id %>/chlenove"><%= t('app.members.title') %></a><% } %>
-  <% if (canParties) { %><a href="/app/o/<%= org.id %>/kontragenti"><%= t('app.catalog.parties') %></a><% } %>
-  <% if (canItems) { %><a href="/app/o/<%= org.id %>/artikuli"><%= t('app.catalog.items') %></a><% } %>
-  <% if (canSeries) { %><a href="/app/o/<%= org.id %>/serii"><%= t('app.catalog.series') %></a><% } %>
-  <a href="/app/o/<%= org.id %>/vhodyashti"><%= t('app.incoming.title') %></a>
-  <a href="/app/o/<%= org.id %>/banka"><%= t('app.bank.title') %></a>
-  <a href="/app/o/<%= org.id %>/proformi"><%= t('app.proforma.title') %></a>
-  <a href="/app/o/<%= org.id %>/povtaryashti"><%= t('app.recurring.title') %></a>
-  <% if (canBilling) { %><a href="/app/o/<%= org.id %>/plan"><%= t('app.plan.title') %></a><% } %>
-  <% if (canSettings) { %><a href="/app/o/<%= org.id %>/nastroyki"><%= t('app.settings.title') %></a><% } %>
-  <% if (canSettings) { %><a href="/app/o/<%= org.id %>/api"><%= t('app.api.title') %></a><% } %>
-  <% if (canSettings) { %><a href="/app/o/<%= org.id %>/iznos.zip" download target="_blank" rel="noopener"><%= t('app.export.link') %></a><% } %>
-  <% if (canManageMandates && org.kind === 'COMPANY') { %><a href="/app/o/<%= org.id %>/palnomoshtni"><%= t('app.mandates.title') %><% if (pendingMandates > 0) { %> <span class="tag tag-pending"><%= pendingMandates %></span><% } %></a><% } %>
-</nav>
 <p class="muted"><%= t('app.org.usage', { issued: usage.issued }) %></p>
 <% if (usage.overLimit) { %><p class="callout"><%= t('app.org.limit', { limit: usage.limit }) %></p><% } %>
 <h2><%= t('app.org.documents') %></h2>

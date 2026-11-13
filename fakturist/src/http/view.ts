@@ -3,6 +3,7 @@ import { BRAND } from '../brand.js';
 import { COMPANY } from '../company.js';
 import { hasKey, translator, type Locale } from '../i18n.js';
 import { setting } from '../admin/settings.js';
+import { icon } from './icons.js';
 
 /** Езикът на приложението: избраният от човека, иначе от адреса (`?lang=en`), иначе български. */
 export function appLocale(req: Request): Locale {
@@ -20,6 +21,7 @@ export function appLocals() {
       res.locals.t = translator(locale);
       res.locals.tOr = (key: string, fallback: string): string =>
         hasKey(locale, key) ? translator(locale)(key) : fallback;
+      res.locals.icon = icon;
       res.locals.brand = BRAND;
       res.locals.company = COMPANY;
       res.locals.currentUser = req.principal?.user ?? null;

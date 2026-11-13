@@ -198,5 +198,13 @@
       "lastMaster": "This is the last master — grant the role to someone else first.",
       "nameRequired": "Enter a name for a new account."
     }
+  },
+  "nav": {
+    "menu": "Panel menu",
+    "registry": "Registry",
+    "masters": "Masters",
+    "chain": "Ledger chain",
+    "chainHint": "Checked from a company record",
+    "main": "Manage"
   }
 }

@@ -2,7 +2,9 @@
   "nav": {
     "companies": "Companies",
     "security": "Security",
-    "admin": "Master panel"
+    "admin": "Master panel",
+    "main": "Main",
+    "skip": "Skip to content"
   },
   "home": {
     "title": "Your companies",
@@ -801,6 +803,18 @@
       "mailLimit": "The limit of 200 emails per day to addresses outside Fakturist has been reached. Try tomorrow.",
       "noEmail": "Enter a valid email.",
       "type": "A pro forma invoice becomes an invoice or a prepayment invoice."
+    }
+  },
+  "orgNav": {
+    "label": "Company sections",
+    "menu": "Sections",
+    "overview": "Overview",
+    "groups": {
+      "documents": "Documents",
+      "catalog": "Catalogue",
+      "payments": "Payments",
+      "automation": "Automation",
+      "team": "Team and settings"
     }
   }
 }

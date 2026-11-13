@@ -449,5 +449,8 @@
       },
       "title": "More questions"
     }
+  },
+  "menu": {
+    "label": "Menu"
   }
 }

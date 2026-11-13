@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type NextFunction, type Request, type Response } from 'express';
 import { prisma } from '../db.js';
 import { HttpError, requireOrg, requireUser } from '../auth/guards.js';
 import { roleCan } from '../auth/roles.js';
@@ -44,9 +44,78 @@ async function monthUsage(
   return { issued, limit: subscription?.plan.monthlyDocumentSoftLimit ?? null };
 }
 
+/** Първият сегмент след /app/o/<id>/ на страниците с менюто на фирмата (HTML; файловете — не). */
+const ORG_NAV_SECTIONS = new Set([
+  'shkafche',
+  'vhodyashti',
+  'proformi',
+  'kontragenti',
+  'artikuli',
+  'serii',
+  'banka',
+  'plan',
+  'povtaryashti',
+  'api',
+  'chlenove',
+  'palnomoshtni',
+  'nastroyki',
+]);
+
+/**
+ * Менюто на фирмата (views/app/_org-nav.ejs) на началото ѝ и на разделите ѝ: условията кой линк се вижда са
+ * същите като досега. Достъп няма — няма меню; самата страница си връща 404/403 както преди.
+ */
+function orgNavLocals() {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const segment = req.path.split('/')[1] ?? '';
+      if (segment !== '' && !ORG_NAV_SECTIONS.has(segment)) {
+        next();
+        return;
+      }
+      const access = await requireOrg(req, 'documents.read').catch(() => null);
+      if (!access) {
+        next();
+        return;
+      }
+      const direct = access.viaFirmId === null;
+      const [org, unread, pendingMandates] = await Promise.all([
+        prisma.organization.findUniqueOrThrow({
+          where: { id: access.organizationId },
+          select: { id: true, kind: true },
+        }),
+        prisma.inboxEntry.count({ where: { recipientOrgId: access.organizationId, readAt: null } }),
+        prisma.clientMandate.count({
+          where: { clientId: access.organizationId, status: 'PENDING' },
+        }),
+      ]);
+      res.locals.orgNav = {
+        org,
+        unread,
+        pendingMandates,
+        // На началото на фирмата менюто е отворено и на телефон; в разделите се свива до текущия.
+        open: segment === '',
+        can: {
+          mandates: roleCan(access.role, 'mandates.manage') && direct,
+          settings: roleCan(access.role, 'org.settings') && direct,
+          members: roleCan(access.role, 'members.manage') && direct,
+          billing: roleCan(access.role, 'billing.manage') && direct,
+          parties: roleCan(access.role, 'parties.manage'),
+          items: roleCan(access.role, 'items.manage'),
+          series: roleCan(access.role, 'series.manage') && direct,
+        },
+      };
+      next();
+    } catch (error) {
+      next(error);
+    }
+  };
+}
+
 export function appRouter(): Router {
   const router = Router();
   router.use('/app', requireUser());
+  router.use('/app/o/:orgId', orgNavLocals());
   router.use(appSecurityRouter());
   router.use(appCatalogRouter());
   router.use(appMembersRouter());
@@ -125,23 +194,11 @@ export function appRouter(): Router {
       }),
       monthUsage(access.organizationId),
     ]);
-    const [unread, pendingMandates] = await Promise.all([
-      prisma.inboxEntry.count({ where: { recipientOrgId: access.organizationId, readAt: null } }),
-      prisma.clientMandate.count({ where: { clientId: access.organizationId, status: 'PENDING' } }),
-    ]);
+    // Разделите на фирмата (unread, пълномощни, права) са в `orgNav` — orgNavLocals по-долу.
     res.render('app/org', {
       org,
       access,
       documents,
-      unread,
-      pendingMandates,
-      canManageMandates: roleCan(access.role, 'mandates.manage') && access.viaFirmId === null,
-      canSettings: roleCan(access.role, 'org.settings') && access.viaFirmId === null,
-      canMembers: roleCan(access.role, 'members.manage') && access.viaFirmId === null,
-      canBilling: roleCan(access.role, 'billing.manage') && access.viaFirmId === null,
-      canParties: roleCan(access.role, 'parties.manage'),
-      canItems: roleCan(access.role, 'items.manage'),
-      canSeries: roleCan(access.role, 'series.manage') && access.viaFirmId === null,
       usage: { ...usage, ...softLimitState(usage.limit, usage.issued) },
       canIssue: roleCan(access.role, 'documents.issue'),
       money: (cents: bigint, currency: string) => money(cents, currency, res.locals.lang),
