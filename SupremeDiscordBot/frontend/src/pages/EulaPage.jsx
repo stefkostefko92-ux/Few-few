@@ -4,11 +4,12 @@
 // premium features, white-label, API usage, and enforcement.
 
 import Seo from "../components/Seo";
+import { SUPPORT_URL } from "../lib/support";
 
 export default function EulaPage() {
   const COMPANY = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
   const EMAIL   = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
-  const SUPPORT = import.meta.env.VITE_SUPPORT_URL   || "https://discord.gg/support";
+  const SUPPORT = SUPPORT_URL;
   const COUNTRY = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (

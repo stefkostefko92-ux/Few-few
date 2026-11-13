@@ -5,8 +5,9 @@
 // footer with the Carbon Stealth attribution and legal links), pulled into
 // one place so it does not drift across four near-identical pages.
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
+import { botInviteUrl } from "../lib/invite";
 
-const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
+const BOT_INVITE_URL = botInviteUrl();
 
 export default function PublicPageLayout({ crumb, children, maxWidth = "max-w-4xl" }) {
   return (

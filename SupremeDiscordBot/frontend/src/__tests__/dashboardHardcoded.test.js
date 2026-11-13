@@ -12,15 +12,17 @@
 // (собственикът), не клиентски екран. Login/LandingLocalized също — тяхната
 // локализация минава по друг път (`i18n/landing.js`, отделни маршрути).
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const PAGES = join(dirname(fileURLToPath(import.meta.url)), "..", "pages");
 const CLIENT_PAGES = [
-  "AutomationPage.jsx", "VerificationPage.jsx", "FormsPage.jsx", "SettingsPage.jsx",
+  "VerificationPage.jsx", "FormsPage.jsx", "SettingsPage.jsx",
   "PanelsPage.jsx", "KnowledgeBasePage.jsx", "TicketsPage.jsx", "ApiKeysPage.jsx",
   "ApplicationsPage.jsx", "AnalyticsPage.jsx", "WebhooksPage.jsx",
+  // Менюто по задачи (12.11.2026): „Автоматизация“ и дългите „Настройки“ са разделени.
+  "PollsGiveawaysPage.jsx", "MessagesPage.jsx", "WelcomeRolesPage.jsx", "BaitPage.jsx", "ActivityLogPage.jsx",
 ];
 const read = (f) => readFileSync(join(PAGES, f), "utf8");
 const lineOf = (s, i) => s.slice(0, i).split("\n").length;
@@ -73,7 +75,12 @@ const SCREENS = [
       "GamePage.jsx", "SecurityPage.jsx", "Dashboard.jsx"].map((f) => join("pages", f)),
   ...["Layout.jsx", "DashboardTopbar.jsx", "EmojiPicker.jsx", "PremiumToast.jsx", "ToastHost.jsx",
       "CookieConsent.jsx", "ConfirmDialog.jsx", "Modal.jsx", "EmptyState.jsx", "DiscordPicker.jsx",
-      "GraceBanner.jsx", "PastDueBanner.jsx", "MfaGate.jsx", "ServerCrest.jsx", "ErrorBoundary.jsx"].map((f) => join("components", f)),
+      "GraceBanner.jsx", "PastDueBanner.jsx", "MfaGate.jsx", "ServerCrest.jsx", "ErrorBoundary.jsx",
+      "PageTabs.jsx", "PageHeader.jsx", "BaitCard.jsx", "PremiumBadge.jsx"].map((f) => join("components", f)),
+  // Разделите и картите с настройки живеят в свои папки — всеки нов файл там
+  // влиза в гейта сам, без да го дописваме на ръка.
+  ...["automation", "settings"].flatMap((dir) =>
+    readdirSync(join(SRC, "components", dir)).filter((f) => f.endsWith(".jsx")).map((f) => join("components", dir, f))),
 ];
 // Собствени имена — фирмите-обработващи в страницата за поверителност и
 // импресумът (адресът на фирмата не се превежда). Имена на HTTP заглавия също.

@@ -216,7 +216,22 @@ const PAGES = [
   { path: `/dashboard/${SID}/settings`, name: "settings" },
   { path: `/dashboard/${SID}/forms`, name: "forms" },
   { path: `/dashboard/${SID}/panels`, name: "panels" },
-  { path: `/dashboard/${SID}/automation`, name: "automation" },
+  // Менюто по задачи (12.11.2026): „Автоматизация“ е разделена, а стръвта,
+  // дневникът и посрещането имат свои страници. Разделите се отварят по адрес
+  // (?tab=…) — така се проверява и самата връзка към раздел.
+  { path: `/dashboard/${SID}/polls`, name: "polls" },
+  { path: `/dashboard/${SID}/polls?tab=giveaways`, name: "polls-giveaways" },
+  { path: `/dashboard/${SID}/messages`, name: "messages" },
+  { path: `/dashboard/${SID}/messages?tab=scheduled`, name: "messages-scheduled" },
+  { path: `/dashboard/${SID}/welcome`, name: "welcome" },
+  { path: `/dashboard/${SID}/welcome?tab=autoroles`, name: "welcome-autoroles" },
+  { path: `/dashboard/${SID}/welcome?tab=role-saver`, name: "welcome-role-saver" },
+  { path: `/dashboard/${SID}/welcome?tab=reaction-roles`, name: "welcome-reaction-roles" },
+  { path: `/dashboard/${SID}/bait`, name: "bait" },
+  { path: `/dashboard/${SID}/activity-log`, name: "activity-log" },
+  { path: `/dashboard/${SID}/kb?tab=ai`, name: "kb-ai" },
+  // Старият адрес трябва да отвори новата страница, не „404“.
+  { path: `/dashboard/${SID}/automation`, name: "automation-moved" },
   { path: `/dashboard/${SID}/game`, name: "game" },
   // Останалите пет раздела на играта — дотогава проверката виждаше само „Обзор“
   // (одит 25.09.2026). `tab` = видимото име; кликът е като на потребител.
@@ -433,7 +448,8 @@ for (const view of [
   }
 
   // ─── Порталът на ролите: отвори и премери ────────────────────────────────
-  await page.goto(`${base}/dashboard/${SID}/settings`, { waitUntil: "load" }).catch(() => {});
+  // Автоматичните роли са раздел на „Посрещане и роли“ (до 12.11.2026 — дъното на „Настройки“).
+  await page.goto(`${base}/dashboard/${SID}/welcome?tab=autoroles`, { waitUntil: "load" }).catch(() => {});
   await page.waitForTimeout(900);
   // Надписът идва от речника на езика на акаунта (MP_LANG) — не е зашит.
   const addRole = page.locator(`button:has-text("${ADD_ROLE}")`).first();
@@ -444,27 +460,39 @@ for (const view of [
     // след скрола. `el.click()` от DOM не скролва нищо.
     // Скролва се най-близкият скролируем прародител: Layout-ът е `h-screen
     // overflow-hidden` и скролва <main>, а `window.scrollBy` там е безшумно нищо.
-    await addRole.evaluate((el) => {
+    const scrollToEdge = (el) => {
       let n = el.parentElement;
       while (n && n.scrollHeight <= n.clientHeight + 4) n = n.parentElement;
       (n || document.scrollingElement).scrollBy(0, el.getBoundingClientRect().bottom - (window.innerHeight - 100));
-      el.click();
-    });
+      return Math.round(el.getBoundingClientRect().bottom);
+    };
+    // Разделът „Автоматични роли“ е къс (12.11.2026) и бутонът не стига до ръба
+    // със скрол, както на старата дълга страница. Затова свиваме прозореца,
+    // докато бутонът застане на ~100px от долния край: същият случай — списък
+    // без място надолу — независимо колко е дълга страницата.
+    let vp = view.viewport;
+    const reach = await addRole.evaluate(scrollToEdge);
+    if (reach < vp.height - 200) {
+      vp = { width: vp.width, height: Math.max(420, reach + 100) };
+      await page.setViewportSize(vp);
+      await page.waitForTimeout(150);
+    }
+    await addRole.evaluate((el, scroll) => { new Function("el", `return (${scroll})(el)`)(el); el.click(); }, scrollToEdge.toString());
     await page.waitForTimeout(250);
     // Позицията на бутона В МОМЕНТА на отваряне — доказателство, че тестът
     // изобщо тества ръба; в средата на екрана и счупен код минава.
     const btnBottom = await addRole.evaluate((el) => Math.round(el.getBoundingClientRect().bottom));
-    note(btnBottom > view.viewport.height - 200, `${view.tag}: бутонът е НА ръба при отваряне (bottom=${btnBottom} от ${view.viewport.height})`);
+    note(btnBottom > vp.height - 200, `${view.tag}: бутонът е НА ръба при отваряне (bottom=${btnBottom} от ${vp.height})`);
     const box = await page.locator("[data-picker-portal]").first().boundingBox().catch(() => null);
     if (!box) note(false, `${view.tag}: списъкът с роли не се отвори`);
     else {
-      const vp = view.viewport;
       const inside = box.x >= -1 && box.y >= -1 && box.x + box.width <= vp.width + 1 && box.y + box.height <= vp.height + 1;
       note(inside, `${view.tag}: списъкът с роли е изцяло във viewport (${Math.round(box.y)}+${Math.round(box.height)} от ${vp.height})`);
       note(box.height >= 150, `${view.tag}: списъкът е използваем на височина (${Math.round(box.height)}px)`);
       await shot(page, join(SHOTS, `${view.tag}-role-picker-open.png`));
     }
-  } else note(false, `${view.tag}: бутонът „Add role…" липсва на Settings`);
+    await page.setViewportSize(view.viewport);
+  } else note(false, `${view.tag}: бутонът „Add role…" липсва на „Посрещане и роли“`);
 
   // ─── Долният блок на страничната лента: името и менюто за език ──────────
   // Собственикът, снимка 17.09.2026: името се режеше до една буква („Z"), а

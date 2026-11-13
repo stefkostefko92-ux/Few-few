@@ -19,7 +19,7 @@ import PastDueBanner from "./PastDueBanner";
 import GraceBanner from "./GraceBanner";
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
 import DashboardTopbar, { ServerSwitcher } from "./DashboardTopbar";
-import { buildServerNav } from "./dashboardNav";
+import { buildServerNav, buildSearchIndex } from "./dashboardNav";
 import { APP_VERSION_LABEL, RELEASE_NAME } from "../version";
 import { openCookiePreferences } from "./CookieConsent";
 
@@ -81,7 +81,7 @@ export default function Layout() {
     },
   ]), [serverId, t, isSuperUser]);
   const searchItems = useMemo(() => [
-    ...navGroups.flatMap((g) => g.items),
+    ...buildSearchIndex(navGroups),
     { to: "/dashboard/privacy-settings", icon: Shield, label: t("nav.privacy") },
     { to: "/dashboard/security", icon: KeyRound, label: t("nav.security") },
   ], [navGroups, t]);
