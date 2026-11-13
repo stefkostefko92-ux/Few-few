@@ -217,6 +217,7 @@ test('втори път, без право, с известие към доку�
     typeCode: '381',
     'preceding[number]': live.number!,
     'preceding[issueDate]': '2026-11-13',
+    'preceding[reason]': 'отстъпка след фактурата',
   });
   assert.equal(note.status, 303, await note.text());
   const blocked = await issue(owner, { replaces: live.id, annulReason: 'vatRate' });

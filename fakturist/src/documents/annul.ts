@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { audit } from '../audit.js';
+import { movePaymentsInTx } from './payments.js';
 
 /**
  * Анулиране по чл. 116 ЗДДС (SPEC 47; казусът — docs/kazus-anulirane.md). Анулира се само ПОГРЕШНО
@@ -37,7 +38,8 @@ export const ANNUL_REASON_TEXT: Record<AnnulReason, { bg: string; en: string }> 
 
 export class AnnulError extends Error {
   constructor(
-    readonly code: 'notFound' | 'notIssued' | 'hasFollowers' | 'typeMismatch' | 'invalidReason',
+    readonly code:
+      'notFound' | 'notIssued' | 'hasFollowers' | 'typeMismatch' | 'invalidReason' | 'overpaid',
   ) {
     super(code);
   }
@@ -120,6 +122,10 @@ export async function annulInTx(
     },
   });
   if (updated.count !== 1) throw new AnnulError('notIssued');
+  // Платеното по стария е за същата доставка — минава към новия; иначе новият е „неплатен“, тръгват
+  // напомняния към клиент, който вече е платил, а банката го предлага за следващото постъпление.
+  const { paid, payable } = await movePaymentsInTx(tx, old.id, input.newId);
+  if (paid > payable) throw new AnnulError('overpaid');
   await audit(tx, {
     actorId: input.actorId,
     organizationId: input.organizationId,

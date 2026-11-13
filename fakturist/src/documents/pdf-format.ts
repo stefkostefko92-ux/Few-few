@@ -86,3 +86,30 @@ export function partyLines(party: PartyInput, L: (bg: string) => string = (bg) =
     address,
   ].filter(Boolean);
 }
+
+/** Категориите, при които ставката се печата (стандартна и нулева); останалите — само кодът. */
+export const SHOWS_RATE = new Set(['S', 'Z']);
+
+/**
+ * Клетката „ДДС“ на реда: „20%“ / „0%“ за S и Z; за останалите — кодът на категорията (AE, E, K, G, O),
+ * а не „0%“: при обратно начисляване ставка не се посочва (чл. 114, ал. 4 ЗДДС), а освобождаването не е
+ * нулева ставка. Основанието е в разбивката.
+ */
+export function vatCell(category: string, rate: Dec | null | undefined): string {
+  if (!SHOWS_RATE.has(category) || !rate) return category;
+  return `${toPlain(rate)}%`;
+}
+
+/**
+ * Ред от разбивката по ДДС: „S 20%: основа …, ДДС …“. При обратно начисляване — без ставка и без данък
+ * (чл. 114, ал. 4 ЗДДС), само основата; основанието е на следващия ред.
+ */
+export function breakdownLine(
+  group: { category: string; rate: Dec | null; taxable: Dec; vat: Dec },
+  L: (text: string) => string,
+): string {
+  const rate = vatCell(group.category, group.rate);
+  const label = rate === group.category ? group.category : `${group.category} ${rate}`;
+  const vat = group.category === 'AE' ? '' : `, ${L('ДДС')} ${bgAmount(group.vat)}`;
+  return `${label}: ${L('основа')} ${bgAmount(group.taxable)}${vat}`;
+}

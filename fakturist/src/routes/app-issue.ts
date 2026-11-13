@@ -1,3 +1,4 @@
+import { isSubmissionClash, issuedWithToken, submissionToken } from '../documents/submission.js';
 import { Router, type Request, type Response } from 'express';
 import { prisma } from '../db.js';
 import { HttpError, requireOrg, type OrgAccess } from '../auth/guards.js';
@@ -25,6 +26,7 @@ import {
   PROFORMA_MESSAGES,
   renderNewDocument,
 } from './app-issue-view.js';
+import { sofiaToday } from '../time.js';
 
 const PEPPOL_NOT_ACTIVE = {
   bg: 'Фирмата не е регистрирана за Peppol — включете я от „Peppol“.',
@@ -65,7 +67,7 @@ export function appIssueRouter(): Router {
           })
         : null;
       if (!proforma) throw new HttpError(404);
-      const today = new Date().toISOString().slice(0, 10);
+      const today = sofiaToday();
       return renderNewDocument(req, res, access.organizationId, null, {
         ...inputToFormValues(proforma.input),
         typeCode: '380',
@@ -118,13 +120,22 @@ export function appIssueRouter(): Router {
       }));
       return renderNewDocument(req, res, access.organizationId, issues, req.body, 400);
     }
+    // Двоен клик / повторно изпращане: ключът вече е издал документ → към него, не втори номер.
+    const userId = req.principal!.user.id;
+    const token = submissionToken(bodyString(req, 'issueToken'));
+    const issuedPath = (id: string) => `/app/o/${access.organizationId}/d/${id}?issued=1`;
+    const earlier = token
+      ? await issuedWithToken({ userId, token, organizationId: access.organizationId })
+      : null;
+    if (earlier) return res.redirect(303, issuedPath(earlier));
     try {
       const language = bodyString(req, 'pdfLanguage');
-      const result = await issueDocument(access, req.principal!.user.id, request.data, {
+      const result = await issueDocument(access, userId, request.data, {
         replaces,
         pdfLanguage: isPdfLanguage(language) ? language : 'bg',
         fromProforma,
         peppol: bodyString(req, 'sendPeppol') === 'on',
+        ...(token ? { submission: { userId, token } } : {}),
       });
       if (bodyString(req, 'saveBuyer') === 'on') {
         await saveBuyerAsParty({
@@ -135,8 +146,16 @@ export function appIssueRouter(): Router {
       }
       // Писмата към шкафчето (и известията за анулирането) тръгват веднага след транзакцията.
       if (result.delivery || replaces) kickOutbox();
-      res.redirect(303, `/app/o/${access.organizationId}/d/${result.id}?issued=1`);
+      res.redirect(303, issuedPath(result.id));
     } catch (error) {
+      if (token && isSubmissionClash(error)) {
+        const done = await issuedWithToken({
+          userId,
+          token,
+          organizationId: access.organizationId,
+        });
+        if (done) return res.redirect(303, issuedPath(done));
+      }
       if (error instanceof IssueRejected) {
         return renderNewDocument(req, res, access.organizationId, error.issues, req.body, 400);
       }
@@ -150,7 +169,10 @@ export function appIssueRouter(): Router {
           400,
         );
       }
-      if (error instanceof ProformaError && (error.code === 'notOpen' || error.code === 'type')) {
+      if (
+        error instanceof ProformaError &&
+        (error.code === 'notOpen' || error.code === 'type' || error.code === 'buyer')
+      ) {
         return renderNewDocument(
           req,
           res,

@@ -5,11 +5,17 @@ import { ANNUL_REASONS } from '../documents/annul.js';
 import { COMMON_UNITS, PAYMENT_MEANS, VAT_CATEGORIES } from '../einvoice/codes.js';
 import { catalogForForm } from '../catalog/document-prefill.js';
 import { accessPoint, peppolAllowed } from '../peppol/settings.js';
+import { newSubmissionToken, submissionToken } from '../documents/submission.js';
+import { sofiaToday } from '../time.js';
 
 /** Формата за документ (views/app/document-new.ejs) — изгледът и съобщенията на маршрутите в app-issue.ts. */
 export type Issue = { rule: string; path: string; message: { bg: string; en: string } };
 
-export const PROFORMA_MESSAGES: Record<'notOpen' | 'type', { bg: string; en: string }> = {
+export const PROFORMA_MESSAGES: Record<'notOpen' | 'type' | 'buyer', { bg: string; en: string }> = {
+  buyer: {
+    bg: 'Фактурата от проформа е за същия получател — за друг издайте нова фактура, не от проформата.',
+    en: 'An invoice from a pro forma is for the same buyer — for another buyer issue a new invoice, not from the pro forma.',
+  },
   notOpen: {
     bg: 'Проформата вече е фактурирана или отказана.',
     en: 'The pro forma invoice has already been invoiced or cancelled.',
@@ -42,6 +48,10 @@ export const ANNUL_MESSAGES: Record<AnnulError['code'], { bg: string; en: string
   invalidReason: {
     bg: 'Изберете основанието за анулиране.',
     en: 'Choose the reason for the annulment.',
+  },
+  overpaid: {
+    bg: 'Платеното по анулирания документ надхвърля сумата на новия — първо уредете разликата (известие или връщане).',
+    en: 'The amount paid on the annulled document exceeds the new one — settle the difference first (note or refund).',
   },
 };
 
@@ -95,8 +105,12 @@ export async function renderNewDocument(
     : typeof rawLines === 'object' && rawLines !== null
       ? Object.keys(rawLines).length
       : 0;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = sofiaToday();
+  // Ключът се пази при повторно показване след грешка (нищо не е издадено) — иначе нов.
+  const issueToken =
+    submissionToken((form as Record<string, unknown>)['issueToken']) ?? newSubmissionToken();
   res.status(status).render('app/document-new', {
+    issueToken,
     org,
     series,
     parties: catalog.parties,

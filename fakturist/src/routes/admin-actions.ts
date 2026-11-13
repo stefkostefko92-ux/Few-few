@@ -25,6 +25,7 @@ import {
   OwnershipError,
   revokeOwnership,
 } from '../accounts/ownership.js';
+import { sofiaToday } from '../time.js';
 
 /** Поканата за прехвърляне: имейлът на собственика + отметката, че мастърът е проверил представителството. */
 const TransferForm = z.object({
@@ -41,7 +42,7 @@ export function paidOn(raw: unknown, now = new Date()): Date | null {
   if (typeof raw !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
   const at = new Date(`${raw}T12:00:00Z`);
   if (Number.isNaN(at.getTime()) || at.toISOString().slice(0, 10) !== raw) return null;
-  const today = now.toISOString().slice(0, 10);
+  const today = sofiaToday(now);
   if (raw > today || now.getTime() - at.getTime() > 366 * 24 * 60 * 60 * 1000) return null;
   return at;
 }

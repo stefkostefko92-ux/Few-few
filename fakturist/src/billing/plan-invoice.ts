@@ -17,10 +17,18 @@ function cents(value: number): string {
   return `${Math.floor(value / 100)}.${String(value % 100).padStart(2, '0')}`;
 }
 
+/**
+ * Краят на периода: същият ден след месец/година, а когато го няма (31.01 → февруари; 29.02 → година
+ * без него) — последният ден на целевия месец. `setUTCMonth` сам би прелял в следващия (31.01 → 03.03).
+ */
 export function addPeriod(from: Date, interval: Interval): Date {
+  const months = interval === 'YEAR' ? 12 : 1;
+  const target = from.getUTCMonth() + months;
+  const year = from.getUTCFullYear() + Math.floor(target / 12);
+  const month = target % 12;
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
   const end = new Date(from);
-  if (interval === 'YEAR') end.setUTCFullYear(end.getUTCFullYear() + 1);
-  else end.setUTCMonth(end.getUTCMonth() + 1);
+  end.setUTCFullYear(year, month, Math.min(from.getUTCDate(), lastDay));
   return end;
 }
 

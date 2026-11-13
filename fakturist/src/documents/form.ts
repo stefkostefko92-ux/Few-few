@@ -2,6 +2,9 @@
  * Формата за нов документ (views/app/document-new.ejs) → входът на услугата за издаване. Само
  * преобразува форма (празно поле = липсва, номериране на редовете); проверката е в zod схемата и в ядрото.
  */
+/** Основанието за известието (чл. 115, ал. 4, т. 2 ЗДДС) влиза в бележката (BT-22) с този префикс. */
+export const NOTE_REASON_PREFIX = 'Основание за известието: ';
+
 type Form = Record<string, unknown>;
 
 function text(value: unknown): string | undefined {
@@ -67,7 +70,10 @@ export function formToIssueRequest(body: unknown): Record<string, unknown> {
     buyerReference: text(form['buyerReference']),
     orderReference: text(form['orderReference']),
     paymentTerms: text(form['paymentTerms']),
-    notes: text(form['note']) ? [text(form['note'])] : [],
+    notes: [
+      ...(text(preceding['reason']) ? [`${NOTE_REASON_PREFIX}${text(preceding['reason'])}`] : []),
+      ...(text(form['note']) ? [text(form['note'])] : []),
+    ] as string[],
     precedingInvoices: text(preceding['number'])
       ? [{ number: text(preceding['number']), issueDate: text(preceding['issueDate']) }]
       : [],
@@ -127,8 +133,14 @@ export function inputToFormValues(input: unknown): Record<string, unknown> {
     buyerReference: str(doc['buyerReference']),
     orderReference: str(doc['orderReference']),
     paymentTerms: str(doc['paymentTerms']),
-    note: typeof notes[0] === 'string' ? notes[0] : '',
-    preceding: { number: str(preceding['number']), issueDate: str(preceding['issueDate']) },
+    note: str(notes.find((n) => typeof n === 'string' && !n.startsWith(NOTE_REASON_PREFIX))),
+    preceding: {
+      number: str(preceding['number']),
+      issueDate: str(preceding['issueDate']),
+      reason: str(
+        notes.find((n) => typeof n === 'string' && n.startsWith(NOTE_REASON_PREFIX)),
+      ).slice(NOTE_REASON_PREFIX.length),
+    },
     buyer: {
       name: str(buyer['name']),
       legalId: str(buyer['legalId']),

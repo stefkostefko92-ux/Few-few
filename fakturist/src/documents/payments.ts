@@ -89,6 +89,33 @@ async function recompute(
   return { paid, state };
 }
 
+/**
+ * „Анулирай и издай нов“: плащанията по стария документ са за същата доставка — минават към новия, двата
+ * се смятат наново. Връща платеното и дължимото по новия (надплащането решава извикващият).
+ */
+export async function movePaymentsInTx(
+  tx: Prisma.TransactionClient,
+  fromId: string,
+  toId: string,
+): Promise<{ paid: bigint; payable: bigint }> {
+  const moved = await tx.documentPayment.updateMany({
+    where: { documentId: fromId },
+    data: { documentId: toId },
+  });
+  const target = await tx.document.findUniqueOrThrow({
+    where: { id: toId },
+    select: { payableCents: true },
+  });
+  if (moved.count === 0) return { paid: 0n, payable: target.payableCents };
+  const source = await tx.document.findUniqueOrThrow({
+    where: { id: fromId },
+    select: { payableCents: true },
+  });
+  await recompute(tx, fromId, source.payableCents);
+  const { paid } = await recompute(tx, toId, target.payableCents);
+  return { paid, payable: target.payableCents };
+}
+
 export interface RecordPaymentInput {
   organizationId: string;
   documentId: string;

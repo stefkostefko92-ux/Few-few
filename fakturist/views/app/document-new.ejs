@@ -32,8 +32,9 @@
   <% items.forEach((i) => { %><option value="<%= i.name %>" data-unit="<%= i.unitCode %>" data-price="<%= i.netPrice %>" data-category="<%= i.vatCategory %>" data-rate="<%= i.vatRate %>"></option><% }) %>
 </datalist>
 <% } %>
-<form method="post" action="/app/o/<%= org.id %>/nov" class="doc-form">
+<form method="post" action="/app/o/<%= org.id %>/nov" class="doc-form" data-once>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="issueToken" value="<%= issueToken %>">
   <% if (proforma) { %>
   <p class="callout"><%= t('app.proforma.invoiceFrom', { number: proforma.number }) %></p>
   <input type="hidden" name="fromProforma" value="<%= proforma.id %>">
@@ -152,6 +153,7 @@
       <legend><%= t('app.doc.preceding') %></legend>
       <label><%= t('app.doc.precedingNumber') %><input name="preceding[number]" class="mono" value="<%= val('preceding.number') %>"></label>
       <label><%= t('app.doc.precedingDate') %><input type="date" name="preceding[issueDate]" value="<%= val('preceding.issueDate') %>"></label>
+      <label><%= t('app.doc.noteReason') %><input name="preceding[reason]" maxlength="300" value="<%= val('preceding.reason') %>"><span class="hint"><%= t('app.doc.noteReasonHint') %></span></label>
     </fieldset>
     <fieldset>
       <legend><%= t('app.doc.references') %></legend>

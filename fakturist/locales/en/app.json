@@ -118,6 +118,8 @@
     "preceding": "Corrects invoice (for a note)",
     "precedingNumber": "Number",
     "precedingDate": "Date",
+    "noteReason": "Reason for the note",
+    "noteReasonHint": "Required for credit and debit notes (Art. 115(4)(2) VAT Act) — e.g. “returned goods” or “discount after the invoice”.",
     "references": "References",
     "buyerReference": "Buyer reference",
     "orderReference": "Order number",

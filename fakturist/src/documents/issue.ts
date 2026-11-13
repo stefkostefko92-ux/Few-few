@@ -5,14 +5,8 @@ import { audit } from '../audit.js';
 import { annulInTx, type AnnulReason } from './annul.js';
 import { sealHmac } from '../auth/keys.js';
 import { setting } from '../admin/settings.js';
-import {
-  buildEInvoice,
-  InvoiceInputSchema,
-  type InvoiceInput,
-  type Issue,
-} from '../einvoice/index.js';
+import { buildEInvoice, InvoiceInputSchema, type Issue } from '../einvoice/index.js';
 import { toCents } from '../einvoice/decimal.js';
-import { EAS_BG_VAT } from '../einvoice/codes.js';
 import { entryHash, GENESIS, sha256 } from '../ledger/chain.js';
 import { formatNumber } from './numbering.js';
 import { deliverToInbox, type Delivery } from '../inbox/deliver.js';
@@ -22,6 +16,16 @@ import type { PdfLanguage } from './pdf-labels.js';
 import { linkProformaInvoice } from '../proforma/link.js';
 import { partyIdFromAddress } from '../peppol/ids.js';
 import { queueTransmission } from '../peppol/transmissions.js';
+import {
+  IssueRejected,
+  normalizePreceding,
+  notIssuable,
+  noteWithoutReason,
+  precedingDocument,
+  PEPPOL_NO_RECEIVER,
+  SeriesExhausted,
+  sellerOf,
+} from './issue-parts.js';
 
 /**
  * Това, което издаващият подава: всичко без номера и без доставчика. Доставчикът идва от данните на
@@ -50,63 +54,11 @@ export interface IssueOptions {
    * шкафчето доставя до нея и когато още не е потвърдена от мастъра.
    */
   knownRecipientOrgId?: string;
+  /** Еднократният ключ на формата (src/documents/submission.ts) — записва се в транзакцията. */
+  submission?: { userId: string; token: string };
 }
 
-export class IssueRejected extends Error {
-  constructor(readonly issues: Issue[]) {
-    super('Документът не минава проверките');
-  }
-}
-
-const PEPPOL_NO_RECEIVER: Issue = {
-  rule: 'PEPPOL-RECEIVER',
-  severity: 'fatal',
-  path: 'buyer.electronicAddress',
-  message: {
-    bg: 'За Peppol е нужен електронният адрес на получателя (напр. 9926 и ДДС номерът му).',
-    en: 'Peppol needs the buyer electronic address (e.g. 9926 and their VAT number).',
-  },
-};
-
-export class SeriesExhausted extends Error {
-  constructor() {
-    super('Серията е изчерпана');
-  }
-}
-
-type Seller = InvoiceInput['seller'];
-
-export function sellerOf(org: {
-  legalName: string;
-  eik: string | null;
-  vatNumber: string | null;
-  addressStreet: string;
-  addressCity: string;
-  postalCode: string;
-  countryCode: string;
-  email: string | null;
-  eAddressScheme: string | null;
-  eAddressValue: string | null;
-}): Seller {
-  return {
-    name: org.legalName,
-    legalId: org.eik ?? undefined,
-    vatId: org.vatNumber ?? undefined,
-    address: {
-      street: org.addressStreet,
-      city: org.addressCity,
-      postalCode: org.postalCode,
-      countryCode: org.countryCode,
-    },
-    electronicAddress:
-      org.eAddressScheme && org.eAddressValue
-        ? { scheme: org.eAddressScheme, value: org.eAddressValue }
-        : org.vatNumber
-          ? { scheme: EAS_BG_VAT, value: org.vatNumber }
-          : undefined,
-    contact: org.email ? { email: org.email } : undefined,
-  };
-}
+export { IssueRejected, SeriesExhausted, sellerOf };
 
 /**
  * Издава документ в една транзакция:
@@ -181,8 +133,10 @@ export async function issueInTx(
     const number = formatNumber(BigInt(raw));
 
     const { seriesId: _series, ...rest } = request;
+    // „5“ и „0000000005“ са един и същ номер — в XML-а и във връзката отива десетразрядният.
+    const precedingInvoices = rest.precedingInvoices.map(normalizePreceding);
     const built = buildEInvoice(
-      { ...rest, number, seller: sellerOf(org) },
+      { ...rest, precedingInvoices, number, seller: sellerOf(org) },
       {
         profile,
         issueDeadlineDays: deadlineDays,
@@ -191,6 +145,8 @@ export async function issueInTx(
       },
     );
     if (!built.ok) throw new IssueRejected(built.issues);
+    const wrongType = notIssuable(rest.typeCode) ?? noteWithoutReason(rest);
+    if (wrongType) throw new IssueRejected([wrongType]);
 
     const last = await tx.document.findFirst({
       where: { organizationId: org.id, chainIndex: { not: null } },
@@ -215,12 +171,11 @@ export async function issueInTx(
     };
     const hash = entryHash(content);
 
-    const preceding = built.input.precedingInvoices[0]
-      ? await tx.document.findFirst({
-          where: { organizationId: org.id, number: built.input.precedingInvoices[0].number },
-          select: { id: true },
-        })
-      : null;
+    const { linked: preceding, warnings: precedingWarnings } = await precedingDocument(
+      tx,
+      org.id,
+      built.input,
+    );
 
     const document = await tx.document.create({
       data: {
@@ -261,6 +216,11 @@ export async function issueInTx(
       },
       select: { id: true },
     });
+    if (options.submission) {
+      await tx.issueSubmission.create({
+        data: { organizationId: org.id, documentId: document.id, ...options.submission },
+      });
+    }
     await audit(tx, {
       actorId,
       organizationId: org.id,
@@ -323,7 +283,10 @@ export async function issueInTx(
     return {
       id: document.id,
       number,
-      warnings: built.issues.filter((issue) => issue.severity === 'warning'),
+      warnings: [
+        ...built.issues.filter((issue) => issue.severity === 'warning'),
+        ...precedingWarnings,
+      ],
       delivery,
     };
   }

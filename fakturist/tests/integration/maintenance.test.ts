@@ -49,6 +49,12 @@ test('почистването трие само изтеклото над ср�
   const recentSent = await mail('SENT', ago(100), ago(89));
   await mail('FAILED', ago(91), null);
   const oldPending = await mail('PENDING', ago(200), null);
+  const event = (receivedAt: Date, deliveryId: string) =>
+    prisma.peppolEvent.create({
+      data: { deliveryId, topic: 'InvoiceSent', partyId: '9926:BG131063188', receivedAt },
+    });
+  await event(ago(91), 'old-event-0001');
+  const recentEvent = await event(ago(89), 'new-event-0001');
 
   assert.deepEqual(await purgeExpired(NOW), {
     sessions: 1,
@@ -57,6 +63,8 @@ test('почистването трие само изтеклото над ср�
     erased: 0,
     deleted: 0,
     statements: 0,
+    submissions: 0,
+    peppolEvents: 1,
   });
   const ids = async (rows: Promise<Array<{ id: string }>>) => (await rows).map((r) => r.id).sort();
   assert.deepEqual(await ids(prisma.session.findMany()), [recent.id, live.id].sort());
@@ -65,4 +73,5 @@ test('почистването трие само изтеклото над ср�
     await ids(prisma.notification.findMany()),
     [recentSent.id, oldPending.id].sort(),
   );
+  assert.deepEqual(await ids(prisma.peppolEvent.findMany()), [recentEvent.id]);
 });

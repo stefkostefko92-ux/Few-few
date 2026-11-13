@@ -36,6 +36,17 @@ export const AUTOMATION_RESOURCES: AdminResource[] = [
     orderBy: { createdAt: 'desc' },
   },
   {
+    model: 'IssueSubmission',
+    slug: 'issue-submissions',
+    group: 'documents',
+    label: { bg: 'Еднократни ключове на „Издай“', en: 'One-time “Issue” keys' },
+    columns: ['organizationId', 'documentId', 'createdAt'],
+    search: ['organizationId', 'documentId'],
+    // Ключът е безобиден, но не е нужен на никого в панела.
+    hidden: ['token'],
+    orderBy: { createdAt: 'desc' },
+  },
+  {
     model: 'PeppolParticipant',
     slug: 'peppol-participants',
     group: 'documents',

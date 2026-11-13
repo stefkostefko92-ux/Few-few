@@ -13,6 +13,9 @@ export async function externalMailAllowed(
   organizationId: string,
   now = new Date(),
 ): Promise<boolean> {
+  // Под заключването на фирмата (до края на транзакцията на извикващия): работниците на напомнянията,
+  // повтарящите се и проформите не броят едновременно и не надхвърлят тавана.
+  await tx.$queryRaw`SELECT "id" FROM "Organization" WHERE "id" = ${organizationId} FOR NO KEY UPDATE`;
   const sent = await tx.notification.count({
     where: {
       organizationId,

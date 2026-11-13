@@ -57,7 +57,12 @@ function checkDates(form: RecurringForm, today: string): void {
   }
 }
 
-/** Входът на фактурата без номер, дати, доставчик и предплатено — шаблонът. */
+/**
+ * Входът на фактурата без номер, дати, доставчик и предплатено — шаблонът. Без курса към еврото (той е
+ * на ЕЦБ към деня на данъчното събитие — чл. 26, ал. 6 ЗДДС; фактура във валута с остарял курс е грешна,
+ * затова без курс тя спира с „rejected“ и се издава ръчно), без датата на доставка и без периода на
+ * фактуриране (те са на изходната фактура); адресът на доставка остава.
+ */
 export function templateOf(input: unknown): Prisma.InputJsonValue {
   const parsed = InvoiceInputSchema.parse(input);
   const {
@@ -67,9 +72,16 @@ export function templateOf(input: unknown): Prisma.InputJsonValue {
     taxPointDate: _taxPoint,
     dueDate: _due,
     prepaidAmount: _prepaid,
+    eurExchangeRate: _rate,
+    invoicingPeriod: _period,
+    delivery,
     ...rest
   } = parsed;
-  return { ...rest, precedingInvoices: [] } as unknown as Prisma.InputJsonValue;
+  return {
+    ...rest,
+    ...(delivery?.address ? { delivery: { address: delivery.address } } : {}),
+    precedingInvoices: [],
+  } as unknown as Prisma.InputJsonValue;
 }
 
 /** Редовете на шаблона за формата. */

@@ -1,3 +1,4 @@
+import { sofiaToday } from '../time.js';
 import { Router } from 'express';
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
@@ -98,6 +99,7 @@ export function adminRouter(): Router {
       resource.model === 'Organization' ? await transferStatus(String(row['id'])) : null;
     const error = typeof req.query['greshka'] === 'string' ? req.query['greshka'] : null;
     res.render('admin/record', {
+      today: sofiaToday(),
       resource,
       row,
       transfer,

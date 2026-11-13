@@ -7,7 +7,7 @@ import { audit } from '../audit.js';
  * (двоен клик, втори таб) хвърля и връща номера на фактурата.
  */
 export class ProformaError extends Error {
-  constructor(readonly code: 'notFound' | 'notOpen' | 'type' | 'mailLimit' | 'noEmail') {
+  constructor(readonly code: 'notFound' | 'notOpen' | 'type' | 'mailLimit' | 'noEmail' | 'buyer') {
     super(code);
   }
 }
@@ -26,6 +26,23 @@ export async function linkProformaInvoice(
   },
 ): Promise<void> {
   if (!PROFORMA_TARGET_TYPES.includes(input.typeCode)) throw new ProformaError('type');
+  // Фактурата от проформа е за същия получател (по ЕИК, а без ЕИК — по наименование).
+  const [proforma, invoice] = await Promise.all([
+    tx.proforma.findFirst({
+      where: { id: input.proformaId, organizationId: input.organizationId },
+      select: { buyerEik: true, buyerName: true },
+    }),
+    tx.document.findUniqueOrThrow({
+      where: { id: input.documentId },
+      select: { buyerEik: true, buyerName: true },
+    }),
+  ]);
+  if (!proforma) throw new ProformaError('notOpen');
+  const same =
+    proforma.buyerEik || invoice.buyerEik
+      ? proforma.buyerEik === invoice.buyerEik
+      : proforma.buyerName.trim().toLowerCase() === invoice.buyerName.trim().toLowerCase();
+  if (!same) throw new ProformaError('buyer');
   const linked = await tx.proforma.updateMany({
     where: { id: input.proformaId, organizationId: input.organizationId, status: 'OPEN' },
     data: { status: 'INVOICED', invoiceDocumentId: input.documentId, invoicedAt: new Date() },

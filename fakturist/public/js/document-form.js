@@ -119,4 +119,17 @@
       });
     }
   }
+
+  // „Издай“ се изпраща веднъж: вторият клик докато страницата зарежда не прави нищо (сървърът пак пази
+  // с еднократния ключ на формата — src/documents/submission.ts).
+  for (const form of document.querySelectorAll('form[data-once]')) {
+    form.addEventListener('submit', (event) => {
+      if (form.dataset.sent === '1') {
+        event.preventDefault();
+        return;
+      }
+      form.dataset.sent = '1';
+      form.setAttribute('aria-busy', 'true');
+    });
+  }
 })();

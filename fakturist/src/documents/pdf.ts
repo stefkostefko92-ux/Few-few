@@ -3,7 +3,17 @@ import { dec, toPlain } from '../einvoice/decimal.js';
 import { documentNote } from '../einvoice/notes.js';
 import type { Calculated } from '../einvoice/calculate.js';
 import type { InvoiceInput, PartyInput } from '../einvoice/model.js';
-import { bgAmount, bgDate, MEANS, partyLines, TITLES, UNITS, unitPrice } from './pdf-format.js';
+import {
+  bgAmount,
+  bgDate,
+  MEANS,
+  partyLines,
+  breakdownLine,
+  TITLES,
+  UNITS,
+  unitPrice,
+  vatCell,
+} from './pdf-format.js';
 import { drawDates, drawHeader, INK, METRICS, RULE, SOFT, tint, type Frame } from './pdf-layout.js';
 import type { ResolvedPdfStyle } from './pdf-style.js';
 import { drawFooters } from './pdf-footer.js';
@@ -202,7 +212,7 @@ export function renderPdf(
       toPlain(dec(source.quantity)).replace('.', ','),
       unitPrice(source.netPrice),
       discount,
-      line.rate ? `${toPlain(line.rate)}%` : line.category,
+      vatCell(line.category, line.rate),
       bgAmount(line.net),
     ];
     let x = left;
@@ -244,19 +254,11 @@ export function renderPdf(
     .text(L('РАЗБИВКА ПО ДДС'), left, y, { characterSpacing: 0.6 });
   let ly = y + m.small + 5;
   for (const group of calc.breakdown) {
-    const label = group.rate ? `${group.category} ${toPlain(group.rate)}%` : group.category;
     doc
       .font('sans')
       .fontSize(m.body)
       .fillColor(INK)
-      .text(
-        `${label}: ${L('основа')} ${bgAmount(group.taxable)}, ${L('ДДС')} ${bgAmount(group.vat)}`,
-        left,
-        ly,
-        {
-          width: width * 0.46,
-        },
-      );
+      .text(breakdownLine(group, L), left, ly, { width: width * 0.46 });
     ly = doc.y + 2;
     if (group.exemptionReason) {
       doc
@@ -270,8 +272,9 @@ export function renderPdf(
   if (calc.hasDocumentAllowances) row(L('Отстъпки'), `−${bgAmount(t.allowances)}`);
   if (calc.hasDocumentCharges) row(L('Надбавки'), bgAmount(t.charges));
   row(L('Данъчна основа'), bgAmount(t.taxExclusive));
-  row(L('ДДС'), bgAmount(t.vat));
-  if (t.vatInEur) row(L('ДДС в евро'), `${bgAmount(t.vatInEur)} EUR`);
+  const onlyReverse = calc.breakdown.every((group) => group.category === 'AE');
+  if (!onlyReverse) row(L('ДДС'), bgAmount(t.vat));
+  if (t.vatInEur && !onlyReverse) row(L('ДДС в евро'), `${bgAmount(t.vatInEur)} EUR`);
   row(L('Обща сума'), bgAmount(t.taxInclusive));
   if (t.prepaid.v !== 0n) row(L('Платено авансово'), `−${bgAmount(t.prepaid)}`);
   doc.moveTo(boxX, y).lineTo(right, y).lineWidth(1.2).strokeColor(style.accent).stroke();

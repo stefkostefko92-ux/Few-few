@@ -66,7 +66,7 @@
 <% if (resource.model === 'Payment' && (row.status === 'PENDING' || row.status === 'CANCELLED') && (row.provider === 'MANUAL' || !row.planCode)) { %>
 <form method="post" action="/admin/plashtaniya/<%= row.id %>/potvardi" class="stack narrow-form">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-  <label><%= t('admin.paidOn') %><input type="date" name="paidOn" required value="<%= new Date().toISOString().slice(0, 10) %>"><span class="hint"><%= t('admin.paidOnHelp') %></span></label>
+  <label><%= t('admin.paidOn') %><input type="date" name="paidOn" required value="<%= today %>"><span class="hint"><%= t('admin.paidOnHelp') %></span></label>
   <button type="submit"><%= t('admin.confirmPayment') %></button>
 </form>
 <% } %>

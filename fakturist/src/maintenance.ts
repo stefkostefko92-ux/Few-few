@@ -6,13 +6,16 @@ import { purgeBankData } from './bank/retention.js';
 /**
  * Сроковете от политиката за поверителност (views/legal/privacy): изтеклите сесии и връзките по имейл
  * се трият 30 дни след изтичането си, а изпратените и неуспешните писма от опашката — 90 дни след
- * изпращането (неуспешните — от създаването); данните от банковите извлечения — по bank/retention.ts.
+ * изпращането (неуспешните — от създаването); данните от банковите извлечения — по bank/retention.ts;
+ * еднократните ключове на „Издай“ — след 30 дни; известията от Peppol (с отговорите на доставчика) — 90 дни.
  * Нищо друго не се трие оттук: документите, одитът и приетите условия остават.
  */
 export const RETENTION = {
   expiredSessionsMs: 30 * DAY,
   expiredTokensMs: 30 * DAY,
   finishedMailsMs: 90 * DAY,
+  issueSubmissionsMs: 30 * DAY,
+  peppolEventsMs: 90 * DAY,
 } as const;
 
 export async function purgeExpired(now: Date = new Date()): Promise<{
@@ -22,6 +25,8 @@ export async function purgeExpired(now: Date = new Date()): Promise<{
   erased: number;
   deleted: number;
   statements: number;
+  submissions: number;
+  peppolEvents: number;
 }> {
   const before = (ms: number) => new Date(now.getTime() - ms);
   const sessions = await prisma.session.deleteMany({
@@ -40,7 +45,20 @@ export async function purgeExpired(now: Date = new Date()): Promise<{
     },
   });
   const bank = await purgeBankData(now);
-  return { sessions: sessions.count, tokens: tokens.count, mails: mails.count, ...bank };
+  const submissions = await prisma.issueSubmission.deleteMany({
+    where: { createdAt: { lt: before(RETENTION.issueSubmissionsMs) } },
+  });
+  const peppolEvents = await prisma.peppolEvent.deleteMany({
+    where: { receivedAt: { lt: before(RETENTION.peppolEventsMs) } },
+  });
+  return {
+    sessions: sessions.count,
+    tokens: tokens.count,
+    mails: mails.count,
+    ...bank,
+    submissions: submissions.count,
+    peppolEvents: peppolEvents.count,
+  };
 }
 
 /** При старт и на всеки 6 часа; грешка само се записва — следващият път опитва пак. */

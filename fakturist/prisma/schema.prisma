@@ -439,6 +439,7 @@ model Document {
   proforma           Proforma?
   peppolTransmission PeppolTransmission?
   nraReport          NraReport?
+  issueSubmission    IssueSubmission?
   reminders          PaymentReminder[]
   apiRequests        ApiIdempotency[]
   createdAt          DateTime             @default(now())
@@ -1124,7 +1125,7 @@ model NraReport {
   id             String          @id @default(cuid())
   organizationId String
   documentId     String          @unique
-  document       Document        @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document       Document        @relation(fields: [documentId], references: [id], onDelete: Restrict)
   typeCode       String
   ublSha256      String
   status         NraReportStatus @default(PENDING)
@@ -1135,4 +1136,21 @@ model NraReport {
 
   @@index([status, createdAt])
   @@index([organizationId, createdAt])
+}
+
+/// Еднократният ключ на формата „Издай“ (одитът от 13.11.2026): двоен клик или повторно изпращане на
+/// формата не издава втори документ — уникален (userId, token), записан в транзакцията на издаването.
+/// Пази се 30 дни (src/maintenance.ts).
+model IssueSubmission {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  token          String
+  documentId     String   @unique
+  document       Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, token])
+  @@index([organizationId])
+  @@index([createdAt])
 }
